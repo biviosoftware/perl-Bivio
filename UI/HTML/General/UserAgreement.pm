@@ -100,6 +100,10 @@ sub create_content {
     my($form) = Bivio::UI::HTML::DescriptivePageForm->new({
 	form_class => 'Bivio::Biz::Model::UserAgreementForm',
 	header => $_P->join([$text]),
+	submit_labels => {
+	    ok_button => 'i_agree_button',
+	    cancel_button => 'i_decline_button',
+	},
     });
 
     # No fields, just header
