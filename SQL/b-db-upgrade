@@ -35,12 +35,9 @@ system, so create other methods and "chain" them.
 use Bivio::Agent::Request;
 use Bivio::Biz::Model::DbUpgrade;
 use Bivio::Biz::Model::MGFSInstrument;
-use Bivio::Collection::Attributes;
 use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
-use Bivio::Type::Honorific;
-use Bivio::Type::EntryType;
 
 #=VARIABLES
 $| = 1;
@@ -216,166 +213,167 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _upgrade {
 
-    _upgrade_purge_bad_mgfs_records();
+    print("\ncreating member_allocation_t");
 
-    return;
-}
+    # expand entry_t.entry_type constraint to cover
+    # the new type MEMBER_LEGACY_UNIT_DISTRIBUTION
+    _do_sql('
+ALTER TABLE entry_t
+  drop constraint entry_t7
+/');
+    _do_sql('
+ALTER TABLE entry_t
+  add constraint entry_t7
+  check (entry_type between 1 and 6
+  or entry_type between 100 and 112
+  or entry_type between 200 and 218)
+/');
 
-# _upgrade_purge_bad_mgfs_records()
-#
-# Identifies and expunges instruments which aren't mgfs fundamental (ie
-# they don't get daily updates).
-#
-# Clubs referring to these get local copies.
-#
-# Commits to the database on each instrument purged.
-#
-sub _upgrade_purge_bad_mgfs_records {
+    # create new member_allocation_t table
+    _do_sql('
+CREATE TABLE member_allocation_t (
+  realm_id NUMBER(18),
+  user_id NUMBER(18),
+  allocation_date DATE,
+  tax_category NUMBER(3),
+  amount NUMBER(20,6)
+)
+  tablespace data_1m
+  pctfree 25 pctused 70 initrans 2 storage (freelists 8)
+/');
+    _do_sql('
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t1
+  primary key(realm_id, user_id, allocation_date, tax_category)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
+/');
+    _do_sql('
+ALTER TABLE member_allocation_t modify realm_id not null
+/
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX member_allocation_t3 on member_allocation_t (
+  realm_id
+)
+  tablespace index_8m
+  pctfree 50 initrans 4 storage (freelists 8)
+/
+ALTER TABLE member_allocation_t modify user_id not null
+/
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t4
+  foreign key (user_id)
+  references user_t(user_id)
+/
+CREATE INDEX member_allocation_t4 on member_allocation_t (
+  user_id
+)
+  tablespace index_8m
+  pctfree 50 initrans 4 storage (freelists 8)
+/
+ALTER TABLE member_allocation_t modify tax_category not null
+/
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t5
+  check (tax_category between 1 and 10)
+/
+ALTER TABLE member_allocation_t modify allocation_date not null
+/
+ALTER TABLE member_allocation_t modify amount not null
+/');
 
-    print(STDERR "fixing primary key for mgfs tables\n");
-    # add missing mgfs key constraints
-    foreach my $table (qw(mgfs_balance_sheet_t mgfs_cash_flow_t
-            mgfs_income_statement_t)) {
-	$table = uc($table);
-	_do_sql("
-ALTER TABLE $table drop constraint $table"."1
-/");
-
-	_do_sql("
-ALTER TABLE $table
-add constraint $table"."1
-primary key(mg_id, date_time, annual, quarter)
-using index tablespace index_1m pctfree 70 initrans 2 storage (freelists 1)
-/");
-    }
-
-    print(STDERR "scanning for slow-quote instruments\n");
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT mg_id, symbol, name, instrument_id
-            FROM mgfs_instrument_t
-            ORDER by symbol', []);
-
-    my($missing) = [];
-    my($clubs) = {};
-    while (my $row = $sth->fetchrow_arrayref) {
-	# mg_id, symbol, name, instrument_id
-	my($rec) = [@$row];
-
-	unless (_has_fundamental($rec->[0])) {
-	    push(@$missing, $rec);
-	    _add_clubs_owning($clubs, $rec);
-	}
-    }
-
-    # localize offending instruments
-    foreach my $club_id (keys(%$clubs)) {
-	foreach my $rec (@{$clubs->{$club_id}}) {
-	    print(STDERR "converting instrument for club_id $club_id\n");
-	    _make_local($club_id, $rec);
-	}
-    }
-
-    print(STDERR "deleting ".int(@$missing)." slow-quote instruments\n");
-    # delete the references to bad instruments in mgfs and global tables
-    foreach my $rec (@$missing) {
-	my($mg_id) = $rec->[0];
-	my($instrument_id) = $rec->[3];
-	print(STDERR ".");
-
-	Bivio::SQL::Connection->execute('
-                DELETE FROM mgfs_daily_quote_t
-                WHERE mg_id=?',
-		[$mg_id]);
-
-	foreach my $table (qw(mgfs_instrument_t instrument_t)) {
-	    Bivio::SQL::Connection->execute("
-                    DELETE FROM $table
-                    WHERE instrument_id=?",
-		    [$instrument_id]);
-	}
-
-	# commit after each, it is a lot of data to delete
-	# don't want rollback segment to max out
-	Bivio::SQL::Connection->commit;
-    }
-    print(STDERR "\n");
-    return;
-}
-
-
-# _add_clubs_owning(hash_ref clubs, string instrument_id)
-#
-# Adds an entry to clubs for each club which owns the instrument
-# identified by the specified instrument_id.
-#
-sub _add_clubs_owning {
-    my($clubs, $rec) = @_;
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT DISTINCT(realm_owner_t.realm_id)
-            FROM realm_instrument_entry_t, realm_instrument_t, realm_owner_t
-            WHERE realm_instrument_entry_t.realm_instrument_id
-                =realm_instrument_t.realm_instrument_id
-            AND realm_instrument_t.realm_id=realm_owner_t.realm_id
-            AND realm_instrument_t.instrument_id=?',
-	    [$rec->[3]]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($realm_id) = $row->[0];
-	my ($recs) = $clubs->{$realm_id};
-	unless (defined($recs)) {
-	    $clubs->{$realm_id} = $recs = [];
-	}
-	push (@$recs, $rec);
-    }
-    return;
-}
-
-# _has_fundamental(string mg_id) : boolean
-#
-# Returns true if the specified mgfs instrument has a fundamental record.
-#
-sub _has_fundamental {
-    my($mg_id) = @_;
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT COUNT(*)
-            FROM mgfs_fundamental_t
-            WHERE mg_id=?',
-	    [$mg_id]);
-    my($result) = 0;
-    while (my $row = $sth->fetchrow_arrayref) {
-	$result = $row->[0] || 0;
-    }
-    return $result;
-}
-
-# _make_local(string club_id, array_ref rec)
-#
-# Copies global instrument data into the local one and severs
-# the tie to the global version.
-#
-sub _make_local {
-    my($club_id, $rec) = @_;
-
-    use Bivio::Biz::Model::Instrument;
-    use Bivio::Biz::Model::RealmInstrument;
+    use Bivio::Auth::Realm;
+    use Bivio::Auth::RealmType;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Biz::Model::RealmTransaction;
+    use Bivio::Data::EW::ClubImporter;
+    use Bivio::Type::EntryType;
+    use Bivio::Biz::Model::EntryList;
 
     my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($type) = 'Bivio::Type::EntryType';
 
-    my($instrument_id) = $rec->[3];
-    my($inst) = Bivio::Biz::Model::Instrument->new($req);
-    $inst->unauth_load_or_die(instrument_id => $instrument_id);
+    # migrate all existing imported withdrawal/year-end distributions
+    # to member_allocation_t
 
-    my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
-    $realm_inst->unauth_load_or_die(instrument_id => $instrument_id,
-	   realm_id => $club_id);
+    # break unit distributions away from other transaction entries
+    print("\nbreaking legacy unit distributions into separate transactions");
+    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT DISTINCT entry_t.realm_transaction_id,
+                entry_t.entry_type
+            FROM entry_t, member_entry_t
+            WHERE entry_t.entry_id=member_entry_t.entry_id
+            AND (entry_type=?
+                OR (entry_type=? AND member_entry_t.units != 0))',
+	    [$type->MEMBER_WITHDRAWAL_DISTRIBUTION->as_sql_param,
+		    $type->MEMBER_DISTRIBUTION->as_sql_param]);
+    my($fields) = $txn->get_keys();
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($txn_id, $etype) = @$row;
+	$txn->unauth_load_or_die(realm_transaction_id => $txn_id);
+	my($values) = {};
+	foreach my $field (@$fields) {
+	    next if $field eq 'realm_transaction_id';
+	    $values->{$field} = $txn->get($field);
+	}
+	$txn->create($values);
 
-    my($new_values) = {
-	instrument_id => undef,
-    };
-    foreach my $field (qw(fed_tax_free instrument_type name ticker_symbol
-            exchange_name)) {
-	$new_values->{$field} = $inst->get($field);
+	if ($etype == $type->MEMBER_WITHDRAWAL_DISTRIBUTION->as_sql_param) {
+	    Bivio::SQL::Connection->execute('
+                    UPDATE entry_t
+                    SET realm_transaction_id=?
+                    WHERE realm_transaction_id=?
+                    AND entry_type=?',
+		    [$txn->get('realm_transaction_id'), $txn_id,
+			$type->MEMBER_WITHDRAWAL_DISTRIBUTION->as_sql_param]);
+	}
+	else {
+	    Bivio::SQL::Connection->execute('
+                    UPDATE entry_t
+                    SET realm_transaction_id=?
+                    WHERE realm_transaction_id=?
+                    AND entry_type=?
+                    AND entry_id IN (
+                        SELECT member_entry_t.entry_id
+                        FROM member_entry_t
+                        WHERE member_entry_t.entry_id=entry_t.entry_id
+                        AND units != 0)',
+		    [$txn->get('realm_transaction_id'), $txn_id,
+			$type->MEMBER_DISTRIBUTION->as_sql_param]);
+	}
     }
-    $realm_inst->update($new_values);
+
+    # change distributions to new legacy type
+    print("\nmoving member distribution types to legacy unit distribution");
+    Bivio::SQL::Connection->execute('
+            UPDATE entry_t
+            SET entry_type=?
+            WHERE entry_type in (?,?)',
+	    [$type->MEMBER_LEGACY_UNIT_DISTRIBUTION->as_sql_param,
+		    $type->MEMBER_WITHDRAWAL_DISTRIBUTION->as_sql_param,
+		    $type->MEMBER_DISTRIBUTION->as_sql_param]);
+
+    # migrate data to member_allocation_t using ClubImporter
+    print("\nmigrating imported distributions for all clubs");
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT realm_id
+            FROM realm_owner_t
+            WHERE realm_type=?
+            ORDER BY name',
+	    [Bivio::Auth::RealmType->CLUB->as_sql_param]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm_id) = $row->[0];
+	$realm->unauth_load_or_die(realm_id => $realm_id);
+	$req->set_realm(Bivio::Auth::Realm->new($realm));
+	print("\n\t".$realm->get('name'));
+	Bivio::Data::EW::ClubImporter->transform_allocations($realm);
+    }
+    print("\n*** done ***\n");
     return;
 }
 
