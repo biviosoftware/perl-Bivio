@@ -89,7 +89,7 @@ an exception is expected and must match the C<DieCode> exactly.
 
 Sometimes it is difficult to specify a return result.  For example, in
 L<Bivio::SQL::Connection|Bivio::SQL::Connection>, the result is often a
-L<DBI::st|DBI/"st">.  The result can't be compared structurally.
+C<DBI::st>.  The result can't be compared structurally.
 
 You can specify a I<result_ok> option to L<new|"new"> or at the
 object or method level.  Here's an example at instantiation:
@@ -188,12 +188,36 @@ result, the case case be written, e.g.:
 use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
+<<<<<<< Test.pm
+use Bivio::IO::ClassLoader;
+=======
+>>>>>>> 1.9
+
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
+<<<<<<< Test.pm
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(hash_ref options) : Bivio::Test
+
+You can specify the equals test.
+
+=cut
+
+sub new {
+    my($proto, $options) = @_;
+    return Bivio::Collection::Attributes::new($proto, $options);
+}
+
+=======
 =head1 FACTORIES
 
 =cut
@@ -214,6 +238,7 @@ sub new {
     return Bivio::Collection::Attributes::new($proto, $options);
 }
 
+>>>>>>> 1.9
 =head1 METHODS
 
 =cut
@@ -321,7 +346,11 @@ sub unit {
 
     # Compile blows up.  May want to "catch" and print result as opposed
     # to dying.
+<<<<<<< Test.pm
+    _unit_eval($self, _unit_compile($self, $tests));
+=======
     _eval($self, _compile($self, $tests));
+>>>>>>> 1.9
     return;
 }
 
@@ -390,6 +419,17 @@ sub _compile_assert_even {
 	unless int(@$value);
     return;
 }
+<<<<<<< Test.pm
+
+# _default_printer(array msg)
+#
+# Prints its arguments to STDOUT.
+#
+sub _default_printer {
+    return print(@_);
+}
+
+=======
 
 # _compile_case(hash_ref state, array_ref tests, array_ref params, array_ref expect)
 #
@@ -518,6 +558,7 @@ sub _default_print {
     return print(@_);
 }
 
+>>>>>>> 1.9
 # _die(array msg)
 #
 # Calls die for now.  Eventually, will tell more.
@@ -702,10 +743,174 @@ sub _summarize_scalar {
     return length($v) > 20 ? substr($v, 0, 20).'...' : $v;
 }
 
+<<<<<<< Test.pm
+# _unit_compile(self, array_ref objects) : array_ref
+=======
 # _test_sig(hash_ref test) : string
+>>>>>>> 1.9
 #
+<<<<<<< Test.pm
+# Compiles @$objects into a linear list of tuples.
+=======
 # Computes a signature for the test.
+>>>>>>> 1.9
 #
+<<<<<<< Test.pm
+sub _unit_compile {
+    my($self, $objects) = @_;
+    _assert_even($objects, 'tests');
+    my(@objects) = @$objects;
+    my(@result);
+    my($t) = 0;
+    while (@objects) {
+	$t++;
+	my($object, $methods) = splice(@objects, 0, 2);
+	$object = Bivio::IO::ClassLoader->simple_require($object)
+	    unless ref($object);
+	my($object_sig) = (ref($object) || $object).'#'.$t;
+	_die($object_sig, ': not a blessed reference')
+	    unless UNIVERSAL::isa($object, 'UNIVERSAL');
+	_assert_even($methods, $object_sig);
+	my(@methods) = @$methods;
+	my($g) = 0;
+	while (@methods) {
+	    $g++;
+	    my($method, $cases) = splice(@methods, 0, 2);
+	    my($method_sig) = $object_sig.'->'.$method.'#'.$g;
+	    _assert_even($cases, $method_sig);
+	    _die($object_sig, ': does not implement method ', $method)
+		unless UNIVERSAL::can($object, $method);
+	    my(@cases) = @$cases;
+	    my($c) = 0;
+	    while (@cases) {
+		$c++;
+		my($params, $expected) = splice(@cases, 0, 2);
+		my($case_sig) = $method_sig."(case#".$c.")";
+		_assert_array($params, $case_sig)
+		    unless ref($params) eq 'CODE';
+		_die($case_sig, ": expected result must be undef, array_ref, "
+			." code_ref (sub), or Bivio::DieCode")
+		    unless !defined($expected) || ref($expected)
+			&& (ref($expected) eq 'CODE'
+			    || ref($expected) eq 'ARRAY'
+			    || UNIVERSAL::isa($expected, 'Bivio::Type::Enum'));
+		push(@result, {
+		    object_sig => $object_sig,
+		    object => $object,
+		    method_sig => $method_sig,
+		    method => $method,
+		    case_sig => $case_sig,
+		    params => $params,
+		    expected => $expected,
+		});
+	    }
+	}
+    }
+    return \@result;
+}
+
+# _unit_eval(self, array_ref cases)
+#
+# Runs the tests as returned from _unit_compile().
+#
+sub _unit_eval {
+    my($self, $cases) = @_;
+    my($c) = 0;
+    my($printer) = $self->get_or_default('printer', \&_default_printer);
+    &$printer('1..'.int(@$cases)."\n");
+    my($err);
+    foreach my $case (@$cases) {
+	my($actual);
+	$c++;
+	$err = _unit_eval_params($case) if ref($case->{params}) eq 'CODE';
+	next if $err;
+	my($die) = Bivio::Die->catch(sub {
+	    my($method) = $case->{method};
+	    _trace($case->{object}, '->', $method, '(', $case->{params}, ')')
+		if $_TRACE;
+	    $actual = [$case->{object}->$method(@{$case->{params}})];
+	    return;
+	});
+	_trace('returned ', $die ? $die->as_string : $actual)
+	    if $_TRACE;
+	if (ref($case->{expected}) eq 'CODE') {
+	    $err = _unit_eval_result($case, $actual, $die);
+	}
+	elsif ($die) {
+	    $err = _unit_eval_die($case, $die);
+	}
+	elsif (ref($case->{expected}) eq 'ARRAY') {
+	    $err = 'expected '._summarize($case->{expected})
+		.' but got '._summarize($actual)
+		unless _equal($case->{expected}, $actual);
+	}
+	# else ignore result
+    }
+    continue {
+	&$printer(!$err
+	    ? "ok $c\n" : ("not ok $c $case->{case_sig}: $err\n"));
+	$err = undef;
+    }
+    return;
+}
+
+# _unit_eval_die(hash_ref case, Bivio::Die die) : string
+#
+# Unit evaluation ended in a die and there's no custom result_ok.
+# Compare the die with expected in expected is a die.  If the codes
+# compare, then ok.  Else return the error string.
+#
+sub _unit_eval_die {
+    my($case, $die) = @_;
+    my($code) = $die->get('code');
+    return 'unexpected '.$code->as_string
+	unless defined($case->{expected})
+	    && UNIVERSAL::isa($case->{expected}, 'Bivio::Type::Enum');
+    return 'expected '.$case->{expected}->as_string
+	.' but got '.$code->as_string
+	unless $case->{expected} eq $code;
+    return;
+}
+
+# _unit_eval_params(hash_ref case) : string
+#
+# Evaluates the $case->{params}, which is a sub.  Returns an error string if
+# the result of the sub call is not an array_ref.
+#
+sub _unit_eval_params {
+    my($case) = @_;
+    my($p);
+    my($die) = Bivio::Die->catch(sub {
+	$case->{params} = &{$case->{params}}($case->{object}, $case->{method});
+	return;
+    });
+    return 'Error in get_parameters: '.$die->as_string if $die;
+    return 'get_parameters did not return an array_ref'
+	unless ref($case->{params}) eq 'ARRAY';
+    return;
+}
+
+# _unit_eval_result(hash_ref case, any actual, Bivio::Die die) : string
+#
+# Calls custom result_ok.  Returns an error string if result_ok returns false
+# or if result_ok() dies.
+#
+sub _unit_eval_result {
+    my($case, $actual, $die) = @_;
+    my($err);
+    my($die2) = Bivio::Die->catch(sub {
+	$err = 'custom result_ok() failed'
+	    unless &{$case->{expected}}(
+		$case->{object},
+		$case->{method},
+		$case->{params},
+		$actual || $die,
+	       );
+	return;
+    });
+    return 'Error in result_ok: '.$die2->as_string if $die2;
+    return $err;
+=======
 sub _test_sig {
     my($test) = @_;
     my($sig) = '';
@@ -719,6 +924,7 @@ sub _test_sig {
 	.')'
 	if $test->{case_num};
     return $sig;
+>>>>>>> 1.9
 }
 
 =head1 COPYRIGHT
