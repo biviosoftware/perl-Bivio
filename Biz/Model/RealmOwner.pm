@@ -630,7 +630,8 @@ sub get_value {
 
     foreach my $inst (@$instruments) {
 	my($id) = $inst->[0];
-	my($price) = $price_dates->{$id}->[0] || 0;
+	my($price_date) = $price_dates->{$id};
+	my($price) = $price_date ? $price_date->[0] : 0;
 	$value = Bivio::Type::Amount->add($value,
 		Bivio::Type::Amount->mul($shares->{$id} || 0, $price));
     }
