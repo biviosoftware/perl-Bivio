@@ -271,7 +271,8 @@ If not writing to C<Sys::Syslog>, include the time in the log messages.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_MAX_ARG_LENGTH = $cfg->{max_arg_length};
+    $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
+	    = $cfg->{max_arg_length};
 
     # Must reset warn counter.  We don't call this except at config
     # time, so probably ok.  The low level code shouldn't loop. :-(
