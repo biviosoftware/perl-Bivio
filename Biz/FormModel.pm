@@ -217,6 +217,19 @@ sub execute {
     return;
 }
 
+
+=for html <a name="execute_cancel"></a>
+
+=head2 execute_cancel()
+
+Processes the form after a cancel.
+
+=cut
+
+sub execute_cancel {
+    return;
+}
+
 =for html <a name="execute_empty"></a>
 
 =head2 execute_empty()
@@ -586,6 +599,7 @@ sub _parse_submit {
 
     if ($value eq $self->SUBMIT_CANCEL) {
 	my($req) = $self->get_request;
+	$self->execute_cancel();
 	# client redirect on cancel
 	$req->client_redirect($req->get('task')->get('cancel'));
 	# Does not return
