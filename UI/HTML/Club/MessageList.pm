@@ -101,7 +101,8 @@ EOF
     $fields->{content}->initialize;
     $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
 	values => Bivio::UI::HTML::ActionButtons->get_list(
-	    'club_compose_message', 'club_admin_invite'),
+	    'club_compose_message', 'club_admin_add_member',
+	       'club_admin_invite_guest'),
     });
     $fields->{action_bar}->initialize;
 
