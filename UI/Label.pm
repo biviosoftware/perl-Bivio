@@ -191,6 +191,8 @@ _compile(
 	'Income and Expense Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Capital Gains and Losses Report'],
     CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => ['Miscellaneous Income and Deductions Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL => [
+	'Investment Performance Detail Report'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
