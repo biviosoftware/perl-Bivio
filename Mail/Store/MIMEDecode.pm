@@ -177,8 +177,14 @@ sub _extract_mime {
 #   $fields->{keywords}, $fields->{num_parts}, and $fields->{kbytes}
     _trace('file_name: ', $file_name) if $_TRACE;
     _trace('head: ', $entity->head()) if $_TRACE;
-    my($type) =   Bivio::Type::MIMEType->from_content_type(
-		    $entity->head->get('content-type'));
+    my($ctype) = $entity->head->get('content-type');
+    _trace('content type extracted from head: \"', $ctype, '\"');
+#TODO this is a complete hack.     
+    if(!$ctype){
+	$ctype = "text/plain";
+    }
+    _trace('content type: ' , $ctype);
+    my($type) =  Bivio::Type::MIMEType->from_content_type($ctype);
     _parse_mime($fields, $entity, $type);
 
 #TODO parse for keyword storage if MIME part content type is HTML
@@ -346,7 +352,6 @@ sub _parse_msg_line {
 	my($w);
 	foreach $w (split(/\s+/, $str)) {
 	    $keywords->{$w}++;
-#	}
     }
     return;
 }
