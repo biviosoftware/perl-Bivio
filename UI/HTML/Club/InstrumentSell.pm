@@ -144,7 +144,7 @@ sub execute {
 
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
 
-    $req->put(page_heading => 'Sell: '.$realm_inst
+    $req->put(page_heading => 'Record Sale: '.$realm_inst
 	    ->get_model('Instrument')->get('name').' (page 1 / 2)',
 	    page_subtopic => undef,
 	    page_content => $self);
