@@ -3,7 +3,14 @@
 package Bivio::Agent::HTTP::TestController;
 use strict;
 use Bivio::Agent::Controller();
+#use Bivio::Agent::Dispatcher();
 use Bivio::Agent::Request();
+use Bivio::UI::Menu();
+use Bivio::UI::TestView();
+use Bivio::UI::HTML::Presentation();
+use Bivio::UI::HTML::Page();
+use Bivio::BusObj::TestModel();
+
 $Bivio::Agent::HTTP::TestController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -38,7 +45,7 @@ C<Bivio::Agent::HTTP::TestController>
 #=VARIABLES
 
 #cached pages for _test3()
-my($PAGE) = 0;
+my($_PAGE) = 0;
 
 =head1 FACTORIES
 
@@ -46,20 +53,34 @@ my($PAGE) = 0;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Agent::HTTP::TestController
+=head2 static new(array views, View default_view) : Bivio::Agent::HTTP::TestController
 
 Creates a new TestController.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::Agent::Controller::new(@_);
+    my($proto, $views, $default_view) = @_;
+    my($self) = &Bivio::Agent::Controller::new($proto, $views, $default_view);
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_test_site"></a>
+
+=head2 static create_test_site()
+
+Creates a test animal site.
+
+=cut
+
+sub create_test_site {
+
+    &_create_page();
+}
 
 =for html <a name="handle_request"></a>
 
@@ -70,9 +91,22 @@ Exercises a simple page.
 =cut
 
 sub handle_request {
-    my($self,$req) = @_;
+    my($self, $req) = @_;
 
-    &_test3($req);
+    if ($_PAGE == 0) {
+	die("page not created");
+    }
+    my($view) = $self->get_view($req->get_view_name());
+
+    if (defined($view)) {
+
+	my($model) = Bivio::BusObj::TestModel->new({}, "T", "t");
+	$view->activate()->render($model, $req);
+	$req->set_state(Bivio::Agent::Request::OK);
+    }
+    else {
+	$req->set_state(Bivio::Agent::Request::NOT_HANDLED);
+    }
 }
 
 #=PRIVATE METHODS
@@ -84,7 +118,7 @@ sub _test {
 
     #$req->log_error("\n\ngot request!!!\n\n\n");
 
-    if (! $req->get_user()) {
+    if (! $req->get_user_name()) {
 	$req->set_state(Bivio::Agent::Request::AUTH_REQUIRED);
 	return;
     }
@@ -92,105 +126,69 @@ sub _test {
     $req->print("<html><body>");
     $req->print("target = ".$req->get_target_name()."<br>");
     $req->print("controller = ".$req->get_controller_name()."<br>");
-    $req->print("path = ".join('/', @{$req->get_path()})."<br>");
-    $req->print("user = ".$req->get_user()."<br>");
+    $req->print("view = ".$req->get_view_name()."<br>");
+    $req->print("user = ".$req->get_user_name()."<br>");
     $req->print("<p>\n");
 
     $req->print("</body></html>");
     $req->set_state(Bivio::Agent::Request::OK);
 }
 
-use Bivio::UI::HTML::TestView;
-use Bivio::UI::HTML::Presentation;
-use Bivio::UI::HTML::Page;
-
-# Creates a test page and renders it.
-#
-sub _test2 {
-    my($req) = @_;
-    my($test_view) = Bivio::UI::HTML::TestView->new("Test Title",
-	"<i>a test view</i>");
-
-    my($test_view2) = Bivio::UI::HTML::TestView->new("Test Title 2",
-	"<b>another test view</b>");
-
-    my($test_view3) = Bivio::UI::HTML::TestView->new("Test Title 3",
-	"<small>a little view</small>");
-
-    my($pres) = Bivio::UI::HTML::Presentation->new(
-	["test", $test_view,
-        "test2", $test_view2], "test2");
-
-    my($pres2) = Bivio::UI::HTML::Presentation->new(
-	["test3", $test_view3], "test3");
-
-    my($page) = Bivio::UI::HTML::Page->new(
-	["testcontroller", $pres,
-	"testcontroller2", $pres2], "testcontroller");
-
-    $page->set_path($req->get_path(), 1);
-
-    $page->render(undef, undef);
-    $req->set_state(Bivio::Agent::Request::OK);
-}
-
-# Creates an animal page and renders it.
-#
-sub _test3 {
-    my($req) = @_;
-
-    if ($PAGE == 0) {
-	print( STDERR "\n\ncreating animal page\n\n");
-	&_create_page();
-    }
-    $PAGE->set_path($req->get_path(), 1);
-    $PAGE->render(undef, $req);
-    $req->set_state(Bivio::Agent::Request::OK);
-}
-
 # Creates the animal friendly page.
 #
 sub _create_page {
-    my($paul_view) = Bivio::UI::HTML::TestView->new("Paul Moeller",
+    my($paul_view) = Bivio::UI::TestView->new("paul",
 	'<img src="/i/test/paul.jpg">');
 
-    my($ellen_view) = Bivio::UI::HTML::TestView->new("Ellen Moeller",
+    my($ellen_view) = Bivio::UI::TestView->new("ellen",
 	'<img src="/i/test/ellen.jpg">');
 
-    my($electra_view) = Bivio::UI::HTML::TestView->new("Electra the cat",
+    my($electra_view) = Bivio::UI::TestView->new("electra",
 	'<img src="/i/test/electra.jpg">');
 
-    my($orestes_view) = Bivio::UI::HTML::TestView->new("Orestes the cat",
+    my($orestes_view) = Bivio::UI::TestView->new("orestes",
 	'<img src="/i/test/orestes.jpg">');
 
-    my($ole_view) = Bivio::UI::HTML::TestView->new("Ole the dog",
+    my($ole_view) = Bivio::UI::TestView->new("ole",
 	'<img src="/i/test/ole.jpg">');
 
+    my($human_menu) = Bivio::UI::Menu->new(0,
+	    [$paul_view->get_name(), "Paul Moeller",
+	     $ellen_view->get_name(), "Ellen Moeller"]);
     my($human) = Bivio::UI::HTML::Presentation->new(
-	["Paul", $paul_view,
-	 "Ellen", $ellen_view], "Ellen");
+	    [$paul_view, $ellen_view], $human_menu);
 
+    my($cat_menu) = Bivio::UI::Menu->new(0,
+	    [$electra_view->get_name(), "Electra",
+	     $orestes_view->get_name(), "Orestes"]);
     my($cat) = Bivio::UI::HTML::Presentation->new(
-	["Electra", $electra_view,
-	 "Orestes", $orestes_view], "Electra");
+	    [$electra_view, $orestes_view], $cat_menu);
 
     my($dog) = Bivio::UI::HTML::Presentation->new(
-	["Ole", $ole_view], "Ole");
+	    [$ole_view]);
 
-    my($everybody) = Bivio::UI::HTML::Presentation->new(
-	["Paul", $paul_view,
-	 "Ellen", $ellen_view,
-	 "Electra", $electra_view,
-	 "Orestes", $orestes_view,
-	 "Ole", $ole_view], "Paul");
+    my($main_menu) = Bivio::UI::Menu->new(1,
+	    ['human', 'Human',
+	     'cat', 'Cat',
+	     'dog', 'Dog']);
 
     my($page) = Bivio::UI::HTML::Page->new(
-	["Human", $human,
-	 "Cat", $cat,
-	 "Dog", $dog,
-	 "Everybody", $everybody], "Cat");
+	    [$human, $cat, $dog], $main_menu);
 
-    $PAGE = $page;
+    $_PAGE = $page;
+
+    my($human_controller) = Bivio::Agent::HTTP::TestController->new(
+	    [$paul_view, $ellen_view], $ellen_view);
+    Bivio::Agent::Dispatcher::register_controller('', $human_controller);
+    Bivio::Agent::Dispatcher::register_controller('human', $human_controller);
+
+    my($dog_controller) = Bivio::Agent::HTTP::TestController->new(
+	    [$ole_view], $ole_view);
+    Bivio::Agent::Dispatcher::register_controller('dog', $dog_controller);
+
+    my($cat_controller) = Bivio::Agent::HTTP::TestController->new(
+	    [$electra_view, $orestes_view], $electra_view);
+    Bivio::Agent::Dispatcher::register_controller('cat', $cat_controller);
 }
 
 =head1 COPYRIGHT
