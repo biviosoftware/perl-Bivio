@@ -287,6 +287,10 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_http {
     my($self) = shift;
     # Must be @_ so format_uri handles overloading properly
+#TODO: Check $ENV{HTTPS} to see if set and generate URL based on that?
+#      Need to know if uri itself is in SSL domain...  Add another
+#      attribute to task?  Check to see if anonymous can access?
+#      See if task has a realm owner?
     return 'http://' . $self->get('http_host')
 	    . $self->format_uri(@_);
 }
