@@ -51,7 +51,7 @@ use Bivio::UI::HTML::Page;
 use Bivio::UI::HTML::Presentation;
 use Bivio::UI::Menu;
 use Bivio::UI::MessageBoard::DetailView;
-use Bivio::UI::MessageBoard::MessageListView;
+use Bivio::UI::MessageBoard::ListView;
 use Bivio::UI::Setup::Admin;
 use Bivio::UI::Setup::Club;
 use Bivio::UI::Setup::Finish;
@@ -113,7 +113,7 @@ sub create_site {
 
     my($user_list) = Bivio::UI::Admin::UserListView->new();
     my($add_user) = Bivio::UI::Admin::UserView->new();
-    my($message_list) = Bivio::UI::MessageBoard::MessageListView->new();
+    my($message_list) = Bivio::UI::MessageBoard::ListView->new();
     my($message_detail) = Bivio::UI::MessageBoard::DetailView->new();
 
     my($admin) = Bivio::UI::HTML::Presentation->new([$user_list, $add_user]);
