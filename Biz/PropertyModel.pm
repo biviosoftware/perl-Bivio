@@ -115,6 +115,23 @@ sub execute {
     return;
 }
 
+=for html <a name="execute_auth_user"></a>
+
+=head2 static execute_auth_user(Bivio::Agent::Request req)
+
+Loads this auth user's data as if realm_id.
+
+=cut
+
+sub execute_auth_user {
+    my($proto, $req) = @_;
+    my($user) = $req->get('auth_user');
+    Bivio::IO::Alert->die('no auth_user') unless $user;
+    my($self) = $proto->new($req);
+    $self->unauth_load(realm_id => $user->get('realm_id'));
+    return;
+}
+
 =for html <a name="execute_auth_realm"></a>
 
 =head2 static execute_load(Bivio::Agent::Request req)
