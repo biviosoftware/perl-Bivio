@@ -35,7 +35,7 @@ and delete interface to the C<user_t> table.
 =cut
 
 #=IMPORTS
-# also uses Email model
+# also uses Email, RealmOwner models
 use Bivio::Auth::RealmType;
 use Bivio::Die;
 use Bivio::SQL::Connection;
