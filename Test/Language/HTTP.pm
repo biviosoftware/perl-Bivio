@@ -274,6 +274,21 @@ sub home_page_uri {
     return $res;
 }
 
+=for html <a name="reload_page"></a>
+
+=head2 reload_page()
+
+Reloads the current page.  Intended to be used after a deviance
+test to clear errors so that conformance tests can be resumed.
+
+=cut
+
+sub reload_page {
+    my($self) = @_;
+    $self->visit_uri($self->get_uri());
+    return;
+}
+
 =for html <a name="submit_form"></a>
 
 =head2 submit_form(string submit_button, hash_ref form_fields)
