@@ -141,6 +141,47 @@ sub find_row_by_content {
     return undef;
 }
 
+=for html <a name="get_form_action"></a>
+
+=head2 get_form_action(Bivio::Test::HTMLAnalyzer self, string name) : string
+
+Return a string containing the 'action' of the named form.
+
+=cut
+
+sub get_form_action {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    Bivio::Die->die ("No such form!") unless defined ($fields->{$name});
+
+    my($form_name) = $fields->{$name}->{form_name};
+    return ($fields->{$name}->{forms}->{$form_name}->{action});
+    
+    return;
+}
+
+=for html <a name="get_form_method"></a>
+
+=head2 get_form_method(Bivio::Test::HTMLAnalyzer self, string name) : string
+
+Return a string containing the 'method' of the named form.  This should
+always be the string 'POST' or 'GET'.  (Use enumeration instead?)
+
+=cut
+
+sub get_form_method {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    Bivio::Die->die ("No such form!") unless defined ($fields->{$name});
+
+    my($form_name) = $fields->{$name}->{form_name};
+    return ($fields->{$name}->{forms}->{$form_name}->{method});
+    
+    return;
+}
+
 =for html <a name="list_private_fields"></a>
 
 =head2 list_private_fields(Bivio::Test::HTMLAnalyzer self, string name) : hash_ref
