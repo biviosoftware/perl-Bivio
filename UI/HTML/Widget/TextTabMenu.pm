@@ -191,7 +191,7 @@ sub render {
 #      which role the user plays in other realms.
 	next unless $req->task_ok($t);
 	# don't keep the query across menu items
-	my($link) = '<a href="'.$req->format_uri($t, undef)
+	my($link) = '<a href="'.$req->format_stateless_uri($t)
 		.'">'.$item->[0].'</a>';
         if ($t == $this_task) {
             $labels .= $fields->{highlight_prefix}
