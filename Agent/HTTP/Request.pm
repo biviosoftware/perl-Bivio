@@ -74,6 +74,10 @@ sub new {
     my($uri) = $r->uri;
     my($task_id, $auth_realm, $path_info)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
+
+    # Must re-escape the URI.
+    $uri = Bivio::Util::escape_uri($uri) if $uri;
+
     my($auth_user) = Bivio::Agent::HTTP::Cookie->parse($self, $r);
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
@@ -107,7 +111,7 @@ sub new {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(string new_uri, hash_ref new_query, string new_path_info)
+=head2 client_redirect(string new_uri, hash_ref new_query)
 
 =head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info)
 
@@ -142,8 +146,7 @@ sub client_redirect {
 		$new_path_info);
     }
     else {
-	my($new_uri, $new_query, $new_path_info) = @_;
-	$new_uri .= $new_path_info if $new_path_info;
+	my($new_uri, $new_query) = @_;
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
