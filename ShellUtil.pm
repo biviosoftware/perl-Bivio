@@ -316,7 +316,7 @@ sub new_other {
 	}
     }
     my($other) = $class->new($options);
-    $other->put_request($self->get_request) if $self->unsafe_get('req');
+    $other->put_request($self->get_request);
     $other->put(program => $self->unsafe_get('program') || '');
     return $other;
 }
@@ -458,7 +458,9 @@ sub finish {
     my($self, $abort) = @_;
     my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
-    return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
+    Bivio::SQL::Connection->set_dbi_name($fields->{prior_db})
+	if $fields->{prior_db};
+    return;
 }
 
 =for html <a name="get_request"></a>
@@ -474,7 +476,7 @@ if no request.
 sub get_request {
     my($self) = @_;
     if (ref($self)) {
-        $self->setup() unless $self->unsafe_get('req');
+	$self->setup() unless $self->unsafe_get('req');
         return $self->get('req');
     }
     my($req) = Bivio::Agent::Request->get_current;
@@ -555,6 +557,7 @@ sub main {
     my($proto, @argv) = @_;
     local($|) = 1;
     my($self) = $proto->new(\@argv);
+    $self->[$_IDI]->{in_main} = 1;
 
     if ($self->unsafe_get('db')) {
         # Setup DBI connection to access a probably non-default database
@@ -825,34 +828,14 @@ sub set_user_to_any_online_admin {
 
 =head2 setup()
 
-Configures the environment with a Job::Request and database
-connection (if need be).
-
-B<Doesn't configure the request if the db user isn't bivio.>
+Configures the environment for request.
 
 =cut
 
 sub setup {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
-
-    Bivio::IO::ClassLoader->simple_require(qw{
-        Bivio::Agent::Job::Request
-        Bivio::Agent::TaskId
-        Bivio::SQL::Connection
-    });
-    $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
-
-    # Create the request, then set the user (need the request to load models)
-    $self->put(req => Bivio::Agent::Job::Request->new({
-	auth_id => undef,
-	auth_user_id => undef,
-	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
-	timezone => Bivio::Type::DateTime->get_local_timezone(),
-    }));
-    $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
-	    _parse_realm_id($self, 'user'));
+    $fields->{in_main} ? _setup_for_main($self) : _setup_for_call($self);
     return;
 }
 
@@ -1101,6 +1084,55 @@ sub _result_ref {
 	$ref = $res;
     }
     return defined($$ref) && length($$ref) ? $ref : undef;
+}
+
+# _setup_for_call(self)
+#
+# Called from within a program.  Request must be setup already or dies.
+# Doesn't allow certain attributes.  Sets user and realm only if passed
+# explicitly.
+#
+sub _setup_for_call {
+    my($self) = @_;
+    my($req) = Bivio::Agent::Request->get_current;
+    Bivio::Die->die(ref($self), ": called without first creating a request")
+	unless $req;
+    $req->set_realm($self->get('realm')) if $self->unsafe_get('realm');
+    $req->set_user($self->get('user')) if $self->unsafe_get('user');
+    foreach my $attr (qw(db)) {
+	Bivio::Die->die($attr, ': cannot pass to ', ref($self), ' call')
+	    if $self->unsafe_get($attr);
+    }
+    $self->put_request($req);
+    return;
+}
+
+# _setup_for_main(self)
+#
+# Called from "main".  Always creates a Job::Request.  Initializes db.
+# Sets realm/user.
+#
+sub _setup_for_main {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
+    Bivio::IO::ClassLoader->simple_require(qw{
+        Bivio::Agent::Job::Request
+        Bivio::Agent::TaskId
+        Bivio::SQL::Connection
+    });
+    $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
+
+    # Create the request, then set the user (need the request to load models)
+    $self->put_request(Bivio::Agent::Job::Request->new({
+	auth_id => undef,
+	auth_user_id => undef,
+	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
+	timezone => Bivio::Type::DateTime->get_local_timezone(),
+    }));
+    $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
+	_parse_realm_id($self, 'user'));
+    return;
 }
 
 =head1 COPYRIGHT
