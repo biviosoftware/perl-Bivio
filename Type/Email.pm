@@ -46,6 +46,19 @@ sub IGNORE_PREFIX {
     return 'ignore-';
 }
 
+=for html <a name="INVALID_PREFIX"></a>
+
+=head2 INVALID_PREFIX : string
+
+Prefix used to indicate addresses which are invalid.
+
+
+=cut
+
+sub INVALID_PREFIX {
+    return 'invalid:';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 use Bivio::Mail::RFC822;
