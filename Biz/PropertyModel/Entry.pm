@@ -67,6 +67,8 @@ sub internal_initialize {
 		Bivio::SQL::Constraint::NOT_NULL()],
         tax_category => ['Bivio::Type::TaxCategory',
 		Bivio::SQL::Constraint::NOT_NULL()],
+	tax_basis => ['Bivio::Type::Boolean',
+		Bivio::SQL::Constraint::NOT_NULL()],
         amount => ['Bivio::Type::Amount',
 		Bivio::SQL::Constraint::NOT_NULL()],
         remark => ['Bivio::Type::Text',
