@@ -6,7 +6,7 @@ $Bivio::Biz::Model::InstrumentSellForm2::VERSION = sprintf('%d.%02d', q$Revision
 
 =head1 NAME
 
-Bivio::Biz::Model::InstrumentSellForm2 - 
+Bivio::Biz::Model::InstrumentSellForm2 - second part of instrument sell
 
 =head1 SYNOPSIS
 
@@ -26,7 +26,8 @@ use Bivio::Biz::FormModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::InstrumentSellForm2>
+C<Bivio::Biz::Model::InstrumentSellForm2> is the second part of instrument
+sell. Shows a lot list and fills values FIFO.
 
 =cut
 
@@ -304,7 +305,7 @@ sub validate {
 		$err = Bivio::TypeError::GREATER_THAN_QUANTITY();
 	    }
 	    else {
-		$sum += $v;
+		$sum = Bivio::Type::Amount->add($sum, $v);
 	    }
 	}
 	if (defined($err)) {
@@ -313,7 +314,7 @@ sub validate {
     }
     my($properties) = $self->internal_get;
     unless ($self->in_error) {
-#	if ($sum == 0 ) {
+
 	if ($self->get_request->get('form')->{stay_on_page}) {
 	    # see overridden in_error()
 	    $self->internal_put_error(stay_on_page =>
@@ -384,10 +385,10 @@ sub _create_sell_entry {
     my($gain) = Bivio::Type::Amount->sub(
 	    Bivio::Type::Amount->mul($amount, $share_value),
 	    $cost_basis);
-    $fields->{_determine_gain_type(
-		$lot_list->get('purchase_date'),
-		$transaction->get('date_time'))}
-	    += Bivio::Type::Amount->neg($gain);
+    my($gain_type) = _determine_gain_type($lot_list->get('purchase_date'),
+	    $transaction->get('date_time'));
+    $fields->{$gain_type} = Bivio::Type::Amount->add($fields->{$gain_type},
+	    $gain);
     return;
 }
 
