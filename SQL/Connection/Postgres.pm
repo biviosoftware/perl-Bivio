@@ -100,6 +100,7 @@ Fixes the Oracle SQL to conform to Postgres's requirements.
 
 sub internal_fixup_sql {
     my($self, $sql) = @_;
+    $sql = $self->SUPER::internal_fixup_sql($sql);
 
     # Julian date format is 'J SSSS'
     $sql =~ s/('J SSSS)S'/$1'/igs;
@@ -116,10 +117,6 @@ sub internal_fixup_sql {
 
     $sql = _fixup_outer_join($sql)
 	if $sql =~ /\(\+\)/;
-
-    $sql = _fixup_select_count($sql)
-	if $sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is;
-
     return $sql;
 }
 
@@ -247,17 +244,6 @@ sub _fixup_outer_join {
     $sql =~ s/,\s*(?=\sWHERE\s)//is;
     # Really should have an SQL lexicon...
     $sql =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
-    return $sql;
-}
-
-# _fixup_select_count(string sql) : string
-#
-# Removes 'order by' clause from purse 'select count(*) from ...'
-# queries. Order by confuses Postgres in that case, dbi_err 7.
-#
-sub _fixup_select_count {
-    my($sql) = @_;
-    $sql =~ s/\border\s+by\s.*$//is;
     return $sql;
 }
 
