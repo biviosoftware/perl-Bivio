@@ -27,10 +27,10 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application. 
+cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    (left) joins
+  * Bivio::SQL::Support improved some die messages
+  * Bivio::PetShop::Test::PetShop->add_to_cart fixed single item case
+
+  Revision 2.3  2004/01/29 17:55:43  david
+  * Bivio::Biz::FormModel->get_stay_on_page
+    Returns state of internal_stay_on_page.
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    Now differentiates between unspecified and undefined
+    values. Unspecified values are given the field's default
+    value. Undefined values are not modified.
+  * Bivio::Test::HTMLParser::Links
+    Links are stored as attributes indexed by their labels.
+  * Bivio::Test::Language::HTTP->verify_link
+    Verifies that the href of the given link matches the pattern.
+  * Bivio::Type and subclasses
     Undefined values now compare as equal.
   * Bivio::Type::DateTime->delta_days
     Returns the floating point difference between two DateTimes
