@@ -63,6 +63,7 @@ __PACKAGE__->compile(
     MAIL_FORWARD => [19],
     ANY_REALM_USER => [20],
     REALM_PUBLICIZE => [21],
+    FILE_ADMIN => [22],
 );
 
 =head1 METHODS
