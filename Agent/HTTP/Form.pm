@@ -71,11 +71,7 @@ sub parse {
     my($r) = $req->get('r');
 
     # Only accept forms via POST
-    unless ($r->method_number() eq Apache::Constants::M_POST()) {
-	Bivio::IO::Alert->warn('Method not POST: ',
-		$r->method(), '(', $r->method_number, ')');
-	return undef;
-    }
+    return undef unless $r->method_number() eq Apache::Constants::M_POST();
 
     # Check content type
     my($ct) = $r->header_in('Content-Type');
