@@ -59,6 +59,7 @@ EOF
 
 #=IMPORTS
 use XML::Parser;
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -79,11 +80,13 @@ my(%_XML_TO_HTML) = (
     filename => 'tt',
     firstterm => 'i',
     function => 'tt',
+    highlights => 0,
     literal => 'tt',
     orderedlist => 'ol',
+    itemizedlist => 'ul',
     para => 'p',
-    programlisting => 'pre',
     sect1 => 0,
+    sect2 => 0,
     simplesect => 0,
     superscript => 'sup',
     term => 0,
@@ -109,7 +112,7 @@ Parses I<xml_file> and returns HTML version of DocBook.
 sub xml_to_html {
     my($self, $xml_file) = @_;
     my($state) = {
-	out => '<html><body>',
+	out => '<html><body bgcolor=white text=black>',
 	footnotes => '',
 	footnote_counter => 1,
 	tag => [],
@@ -141,7 +144,8 @@ sub _xml_to_html_parse {
 	my($tag) = shift(@$tree);
 	unless ($tag) {
 	    # Literal
-	    $state->{out} .= shift(@$tree);
+	    $state->{out} .= $state->{escape_literal}
+		? Bivio::HTML->escape(shift(@$tree)) : shift(@$tree);
 	    next;
 	}
 	unshift(@{$state->{tag}}, $tag);
@@ -165,6 +169,18 @@ sub _xml_to_html_parse {
 	    $state->{out} .= "</$t>";
 	}
     }
+    return;
+}
+
+# _xml_to_html_parse_abstract(hash_ref state, array_ref tree)
+#
+# Converts to <centered table>.
+#
+sub _xml_to_html_parse_abstract {
+    my($state, $tree) = @_;
+    $state->{out} .= '<p><table width="70%" align=center border=0><tr><td align=center>';
+    _xml_to_html_parse($state, $tree);
+    $state->{out} .= '</td></tr></table></p>';
     return;
 }
 
@@ -231,13 +247,16 @@ sub _xml_to_html_parse_footnote {
 sub _xml_to_html_parse_graphic {
     my($state, $tree) = @_;
     my($f) = $state->{attrs}->{fileref};
+    my($align) = $state->{attrs}->{align} || 'center';
     die('<graphic> missing fileref attribute') unless $f;
     foreach my $s (qw(gif jpg)) {
 	next unless -r "$f.$s";
 	$f .= ".$s";
+	$state->{out} .= "<br><img border=0 src=$f align=$align><br>\n";
+	return;
     }
-    $state->{out} .= "<br><img border=0 src=$f align=center><br>\n";
-    return;
+    die($f, ': fileref in graphic does not exist');
+    # DOES NOT RETURN
 }
 
 # _xml_to_html_parse_listitem(hash_ref state, array_ref tree)
@@ -262,6 +281,20 @@ sub _xml_to_html_parse_note {
     return;
 }
 
+# _xml_to_html_parse_programlisting(hash_ref state, array_ref tree)
+#
+# Converts to <centered table>.
+#
+sub _xml_to_html_parse_programlisting {
+    my($state, $tree) = @_;
+    $state->{out} .= '<blockquote><pre>';
+    $state->{escape_literal} = 1;
+    _xml_to_html_parse($state, $tree);
+    $state->{escape_literal} = 0;
+    $state->{out} .= '</pre></blockquote>';
+    return;
+}
+
 # _xml_to_html_parse_quote(hash_ref state, array_ref tree)
 #
 # Converts to "bla".
@@ -280,7 +313,7 @@ sub _xml_to_html_parse_quote {
 #
 sub _xml_to_html_parse_sidebar {
     my($state, $tree) = @_;
-    $state->{out} .= '<table border=1 cellpadding=5 bgcolor="#CCCCCC"><tr><td>';
+    $state->{out} .= '<table width="95%" border=0 cellpadding=5 bgcolor="#CCCCCC"><tr><td>';
     _xml_to_html_parse(@_);
     $state->{out} .= '</td></tr></table>';
     return;
