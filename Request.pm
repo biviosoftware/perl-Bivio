@@ -8,6 +8,8 @@ use strict;
 use Carp ();
 use Apache::Constants ();
 use Bivio::Util;
+use Bivio::Data;
+use Bivio::Mail;
 
 $Bivio::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
