@@ -85,6 +85,9 @@ _compile(
     REALM_INSTRUMENT_NAME => ['Name', undef, 'RealmInstrument.name'],
     TICKER => ['Ticker', undef, 'Instrument.ticker_symbol'],
     NONE => [' '],
+    PRICE_PER_SHARE => ['Price/Share', undef,
+	   'RealmInstrumentValuation.price_per_share'],
+    NAME_TICKER => ['Name'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
