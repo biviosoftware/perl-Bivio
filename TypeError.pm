@@ -963,12 +963,6 @@ __PACKAGE__->compile([
 	'You must check this box to indicate you have read and accept '
 	.' the agreement(s).',
     ],
-    EMAIL_AT_BIVIO => [
-	137,
-	undef,
-	'Please enter a valid, non-bivio, email address',
-    ],
-
 ]);
 
 #=PRIVATE METHODS
