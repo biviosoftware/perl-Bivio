@@ -15,7 +15,7 @@ Bivio::IO::Config - simple configuration using perl syntax
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::IO::Config::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::IO::Config::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
