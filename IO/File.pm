@@ -35,6 +35,7 @@ use Cwd ();
 use File::Path ();
 use File::Basename ();
 use File::Spec ();
+use IO::File ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -51,33 +52,22 @@ Bivio::IO::Trace->register;
 =head2 static append(string file_name, string contents)
 
 Appends to a file with I<file_name> and appends I<contents> to it.
-Dies with an IO_ERROR on errors.
+Dies with an IO_ERROR on errors.  Turns on binmode.
 
 If the file name is '-', appends to C<STDOUT>.
 
 =cut
 
 sub append {
-    my(undef, $file_name, $contents) = @_;
-    my($c) = ref($contents) ? $contents : \$contents;
-    my($op) = 'open';
-#TODO: Share with write
- TRY: {
-	open(OUT, $file_name eq '-' ? '>>-' : '>> '.$file_name) || last TRY;
-	$op = 'print';
-	(print OUT $$c) || last TRY;
-	$op = 'close';
-        close(OUT) || last TRY;
-	_trace('Wrote ', length($$c), ' bytes to ', $file_name) if $_TRACE;
-	return;
+    my($proto, $file_name, $contents) = @_;
+    my($file) = $file_name;
+    unless (ref($file_name)) {
+	$file = IO::File->new(
+	    $file_name eq '-' ? '>>-' : ('>> ' . $file_name));
+	binmode($file_name);
     }
-
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $file_name,
-    });
-    # DOES NOT RETURN
+    $proto->write($file, ref($contents) ? $contents : \$contents);
+    return;
 }
 
 =for html <a name="chdir"></a>
@@ -181,7 +171,7 @@ Creates I<path> including parent directories.  Returns I<path>.
 sub mkdir_p {
     my(undef, $path, $permissions) = @_;
     Bivio::Die->die('no path supplied')
-	    unless defined($path) && length($path);
+	unless defined($path) && length($path);
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
     _trace($path) if $_TRACE;
     return $path;
@@ -237,28 +227,19 @@ file_name must be supplied.
 
 sub read {
     my(undef, $file_name, $file) = @_;
-    my($op) = 'open';
- TRY: {
-	unless ($file) {
-	    $file = \*Bivio::IO::File::IN;
-	    open($file, $file_name eq '-' ? '-' : '< '.$file_name) || last TRY;
-	}
-	$op = 'read';
-	my($offset, $read, $buf) = (0, 0, '');
-	$offset += $read
-		while $read = CORE::read($file, $buf, 0x1000, $offset);
-	defined($read) || last TRY;
-	$op = 'close';
-        close($file) || last TRY;
-	_trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
-	return \$buf;
+    unless ($file) {
+	$file = IO::File->new($file_name eq '-' ? '-' : '< '.$file_name)
+	    or _err('open', $file, $file_name);
     }
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $file_name,
-    });
-    # DOES NOT RETURN
+    my($offset, $read, $buf) = (0, 0, '');
+    $offset += $read
+	while $read = CORE::read($file, $buf, 0x1000, $offset);
+    defined($read)
+	or _err('read', $file, $file_name);
+    close($file)
+	or _err('close', $file, $file_name);
+    _trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
+    return \$buf;
 }
 
 =for html <a name="rename"></a>
@@ -302,43 +283,55 @@ sub rm_rf {
 
 =for html <a name="write"></a>
 
-=head2 static write(string file_name, string_ref contents, boolean binmode)
+=head2 static write(string file_name, any contents)
 
-=head2 static write(string file_name, string contents, boolean binmode)
+=head2 static write(glob_ref file, any contents)
 
 Creates a file with I<file_name> and writes I<contents> to it.
 Dies with an IO_ERROR on errors.
 
-If the file name is '-', writes to C<STDOUT>.  If I<binmode> is true, calls
-C<binmode> just after opening file.
+If the file name is '-', writes to C<STDOUT>.  Calls C<binmode> just after
+opening file.  If you don't want this, pass I<file> as a glob_ref.
 
 =cut
 
 sub write {
-    my(undef, $file_name, $contents, $binmode) = @_;
+    my(undef, $file_name, $contents) = @_;
     my($c) = ref($contents) ? $contents : \$contents;
-    my($op) = 'open';
- TRY: {
-	open(OUT, $file_name eq '-' ? '>-' : '> '.$file_name) || last TRY;
-	binmode(OUT);
-	$op = 'print';
-	(print OUT $$c) || last TRY;
-	$op = 'close';
-        close(OUT) || last TRY;
-	_trace('Wrote ', length($$c), ' bytes to ', $file_name)
-		if $_TRACE;
-	return;
+    my($file) = $file_name;
+    unless (ref($file)) {
+	$file = IO::File->new($file_name eq '-' ? '>-' : '> '.$file_name)
+	    or _err('open', $file, $file_name);
+	binmode($file);
     }
-
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $file_name,
-    });
-    # DOES NOT RETURN
+    (print $file $$c)
+	or _err('print', $file, $file_name);
+    close($file)
+	or _err('close', $file, $file_name);
+    _trace('Wrote ', length($$c), ' bytes to ', $file_name)
+	if $_TRACE;
+    return;
 }
 
 #=PRIVATE METHODS
+
+# _err(string op, glob_ref file, string file_name)
+#
+# close $file if defined, and dies.
+#
+sub _err {
+    my($op, $file, $file_name) = @_;
+    my($err) = "$!";
+    # Don't leave the file hanging open
+    close($file)
+	if $file;
+    Bivio::Die->throw_die('IO_ERROR', {
+	message => $err,
+	operation => $op,
+	entity => ref($file_name) ? "$file_name" : $file_name,
+    });
+    return;
+}
 
 =head1 COPYRIGHT
 
