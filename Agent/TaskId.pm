@@ -3023,7 +3023,7 @@ my(@_CFG) = (
         require_secure=1
     )],
     [qw(
-        CLUB_MEMBER_TAKE_OFFLINE
+        CLUB_ADMIN_MEMBER_TAKE_OFFLINE
         264
         CLUB
         ADMIN_READ&MEMBER_READ
