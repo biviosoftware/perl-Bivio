@@ -775,7 +775,7 @@ my(@_CFG) = (
         CLUB_ADMIN_INVITE
         75
         CLUB
-        ADMIN_WRITE
+        ADMIN_WRITE&MEMBER_WRITE
         %/admin/invite
         Bivio::Biz::Model::ClubInviteForm
         Bivio::UI::HTML::Club::Invite
@@ -785,7 +785,7 @@ my(@_CFG) = (
         CLUB_ADMIN_INVITE_LIST
         76
         CLUB
-        ADMIN_READ
+        ADMIN_READ&MEMBER_READ
         %/admin/invitations
         Bivio::Biz::Model::RealmInviteList
         Bivio::UI::HTML::Club::InviteList
@@ -907,7 +907,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_TRANSACTION_DELETE
         87
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/delete
         Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
@@ -1052,7 +1052,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
         101
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/accounting/member/withdrawal
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
@@ -1397,51 +1397,65 @@ my(@_CFG) = (
         CLUB_LEGACY_UPLOAD
         133
         CLUB
-        ADMIN_WRITE
-        %/legacy/upload2
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        %/accounting/import/legacy
+        Bivio::Biz::Model::Club->execute_load
+        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::LegacyClubUploadForm
         Bivio::UI::HTML::Club::LegacyClubUpload
         next=CLUB_LEGACY_SECURITY_RECONCILIATION
-        cancel=CLUB_HOME
+        cancel=CLUB_ADMIN_TOOLS
     )],
     [qw(
         CLUB_LEGACY_INVITE
         134
         CLUB
-        ADMIN_WRITE
-        %/legacy/invite
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        %/admin/invite/offline_members
         Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
         Bivio::Biz::Model::ImportedMemberInviteForm
         Bivio::UI::HTML::Club::ImportedMemberInvite
-        next=CLUB_HOME
+        next=CLUB_ADMIN_USER_LIST
+        cancel=CLUB_ADMIN_TOOLS
     )],
     [qw(
         CLUB_LEGACY_SECURITY_RECONCILIATION
         135
         CLUB
-        ADMIN_WRITE
-        %/legacy/securities
+        ACCOUNTING_WRITE
+        %/accounting/identify/listed_investments
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ImportedSecurityReconciliationForm
         Bivio::UI::HTML::Club::ImportedSecurityReconciliation
         next=CLUB_LEGACY_INVITE
+        cancel=CLUB_ADMIN_TOOLS
     )],
     [qw(
-        CLUB_CONFIRM_LEGACY_UPLOAD
+        CLUB_ACCOUNTING_CLEAR
         136
         CLUB
-        ADMIN_WRITE
-        %/legacy/upload
-        Bivio::Biz::Model::ConfirmUploadForm
-        Bivio::UI::HTML::Club::ConfirmUpload
-        next=CLUB_LEGACY_UPLOAD
-        cancel=CLUB_HOME
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        %/accounting/clear
+        Bivio::Biz::Model::Club->execute_load
+        Bivio::Biz::Model::ClearAccountingForm
+        Bivio::UI::HTML::Club::ClearAccounting
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ADMIN_TOOLS
+        137
+        CLUB
+        ACCOUNTING_WRITE
+        %/admin/tools
+        Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
+        Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
+        Bivio::UI::HTML::Club::AdminTools
     )],
     [qw(
         CLUB_LEGACY_UPLOAD_PROCESSOR
-        137
+        138
         CLUB
-        ADMIN_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         !
         Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Action::AccountingImport
