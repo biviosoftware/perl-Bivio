@@ -552,15 +552,11 @@ _compile(\%_MAP, [
         => 'My Site',
 
     # MAIL
-    MAIL_FROM => 'From',
-    MAIL_FROM_NAME => 'From',
-    MAIL_FROM_NAME_SORT => 'From',
+    ['MAIL_FROM', 'MAIL_FROM_NAME', 'MAIL_FROM_NAME_SORT'] => 'From',
     MAIL_TO => 'To',
     MAIL_CC => 'Cc',
-    MAIL_SUBJECT => 'Subject',
-    MAIL_SUBJECT_SORT => 'Subject',
-    MAIL_DATE => 'Date',
-    MAIL_DATE_TIME => 'Date',
+    ['MAIL_SUBJECT', 'MAIL_SUBJECT_SORT'] => 'Subject',
+    ['MAIL_DATE', 'MAIL_DATE_TIME'] => 'Date',
     MAIL_TEXT => 'Text',
     MAIL_ATT => 'Attach',
     ['MAIL_BYTES', 'size'] => 'Size',
