@@ -686,8 +686,7 @@ sub _has_transfer_of_interest {
 sub _meets_three_requirements {
     my($self, $date) = @_;
     return Bivio::Biz::Accounting::Tax->meets_three_requirements(
-	    $self->get_request->get('auth_realm')->get('owner'),
-	    $date);
+	    $self->get_request, $date);
 }
 
 =head1 COPYRIGHT
