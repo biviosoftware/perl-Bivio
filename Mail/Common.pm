@@ -47,7 +47,7 @@ use User::pwent ();
 use vars qw($_TRACE);
 my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
-my($_SENDMAIL) = '/usr/lib/sendmail -U -bd -oe m -i';
+my($_SENDMAIL) = '/usr/lib/sendmail -U -od b -oe m -i';
 Bivio::IO::Trace->register;
 my($_PKG) = __PACKAGE__;
 Bivio::IO::Config->register({
