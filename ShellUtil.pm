@@ -222,6 +222,7 @@ sub USAGE {
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::IO::File;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
@@ -493,33 +494,14 @@ sub put {
 
 =head2 static read_file(string file_name) : string_ref
 
-Returns the contents of the file.  If the file name is '-',
-input is read from STDIN.
-
-#TODO: Create Bivio::IO::File->read
+DEPRECATED: See L<Bivio::IO::File::read|Bivio::IO::File/"read">
 
 =cut
 
 sub read_file {
     my(undef, $file_name) = @_;
-    my($op) = 'open';
- TRY: {
-	open(IN, $file_name eq '-' ? '-' : '< '.$file_name) || last TRY;
-	$op = 'read';
-	my($offset, $read, $buf) = (0, 0, '');
-	$offset += $read while $read = read(IN, $buf, 0x1000, $offset);
-	defined($read) || last TRY;
-	$op = 'close';
-        close(IN) || last TRY;
-	_trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
-	return \$buf;
-    }
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $file_name,
-    });
-    # DOES NOT RETURN
+    Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->read');
+    return Bivio::IO::File->read($file_name);
 }
 
 =for html <a name="read_input"></a>
@@ -533,7 +515,7 @@ from STDIN.
 
 sub read_input {
     my($self) = @_;
-    return $self->read_file($self->get('input'));
+    return Bivio::IO::File->read($self->get('input'));
 }
 
 =for html <a name="ref_to_string"></a>
@@ -582,6 +564,8 @@ sub result {
 
 Configures the environment with a Job::Request and database
 connection (if need be).
+
+B<Doesn't configure the request if the db user isn't bivio.>
 
 =cut
 
@@ -677,35 +661,14 @@ sub verbose {
 
 =head2 static write_file(string file_name, string_ref contents)
 
-Creates a file with I<file_name> and writes I<contents> to it.
-Dies with an IO_ERROR on errors.
-
-If the file name is '-', writes to C<STDOUT>.
-
-#TODO: Create Bivio::IO::File->write
+DEPRECATED: See L<Bivio::IO::File::write|Bivio::IO::File/"write">
 
 =cut
 
 sub write_file {
     my(undef, $file_name, $contents) = @_;
-    my($op) = 'open';
- TRY: {
-	open(OUT, $file_name eq '-' ? '>-' : '> '.$file_name) || last TRY;
-	$op = 'print';
-	(print OUT $$contents) || last TRY;
-	$op = 'close';
-        close(OUT) || last TRY;
-	_trace('Wrote ', length($$contents), ' bytes to ', $file_name)
-		if $_TRACE;
-	return;
-    }
-
-    Bivio::Die->throw_die('IO_ERROR', {
-	message => "$!",
-	operation => $op,
-	entity => $file_name,
-    });
-    # DOES NOT RETURN
+    Bivio::IO::Alert->warn_deprecated('use Bivio::IO::File->write');
+    return Bivio::IO::File->read($file_name, $contents);
 }
 
 #=PRIVATE METHODS
@@ -859,7 +822,7 @@ sub _result_output {
     my($output) = $self->unsafe_get('output');
     return 0 unless $output;
 
-    $self->write_file($output, $res);
+    Bivio::IO::File->write($output, $res);
     return 1;
 }
 
