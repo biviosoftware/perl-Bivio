@@ -157,7 +157,7 @@ Query string used to identify this instance.
 sub format_query {
     my($self) = @_;
     return Bivio::SQL::ListQuery->format_uri_for_this(
-	    $self->internal_get, $self->internal_get_sql_support);
+	    $self->internal_get_sql_support, $self->internal_get);
 }
 
 =for html <a name="internal_initialize_sql_support"></a>
