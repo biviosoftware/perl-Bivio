@@ -190,6 +190,10 @@ and L<Bivio::Biz::Model::Preferences|Bivio::Biz::Model::Preferences>.
 
 Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
 
+=item user_state : Bivio::Type::UserState
+
+Is the user just a visitor, logged in, or out?  Set by LoginForm.
+
 =item uri : string
 
 URI from the incoming request unmodified.  It is already "escaped".
