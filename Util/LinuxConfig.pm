@@ -542,6 +542,10 @@ EOF
 ## Change system.redhat7 to create the file, and set here.
 #sysctl.conf
 #kernel/shmmax = 128000000
+#
+#So we always use the same timezone.
+#timezone = UTC		# actually, defaults to TZ environment setting
+#
 #    return;
 #}
 
