@@ -88,7 +88,8 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{is_constant});
     my($values) = $self->get(qw(values));
-    if ($fields->{is_constant} = (ref($values) eq 'HASH')) {
+    my($is_constant) = (ref($values) eq 'HASH');
+    if ($is_constant) {
 	my($v) = '';
 	_render($values, \$v);
 	$fields->{value} = $v;
@@ -96,6 +97,7 @@ sub initialize {
     else {
 	$fields->{values} = $values;
     }
+    $fields->{is_constant} = $is_constant;
     return;
 }
 
