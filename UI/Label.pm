@@ -205,6 +205,7 @@ _compile(
     CHILD_PRICE => ['Child Price/Share'],
     FRACTIONAL_SHARE_CASH => ['Cash Received'],
     ACQUIRING_TICKER_SYMBOL => ['Acquiring Ticker'],
+    PAYMENT => ['Payment'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
