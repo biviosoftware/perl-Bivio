@@ -90,42 +90,42 @@ the greater the privileges.  B<DO NOT DEPEND ON THIS RELATIONSHIP!>
 __PACKAGE__->compile(
     'UNKNOWN' => [
     	0,
-	'unknown',
+	'Unknown',
 	'user has yet to be authenticated',
     ],
     'ANONYMOUS' => [
     	1,
-	'not a user',
+	'Anonymous',
 	'user not supplied with request or unable to authenticate',
     ],
     'USER' => [
     	2,
-	'any user',
+	'Any User',
 	'privileges of any authenticated user, not particular to realm',
     ],
     'GUEST' => [
     	3,
-	'non-member',
+	'Guest',
 	'limited access to realm',
     ],
     'MEMBER' => [
     	4,
-	'member',
+	'Member',
 	'normal participant in realm',
     ],
     'TREASURER' => [
     	5,
-	'treasurer',
+	'Treasurer',
 	'normal and financial transaction privileges',
     ],
     'PRESIDENT' => [
     	6,
-	'president',
+	'President',
 	'normal, financial, and executive privileges',
     ],
     'ADMINISTRATOR' => [
     	7,
-	'administrator',
+	'Administrator',
 	'normal, financial, excecutive, and grant privileges',
     ],
 );
