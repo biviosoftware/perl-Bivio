@@ -79,8 +79,6 @@ sub create {
     return if $new_values->{mg_id} eq 'DATE';
     # workaround for unnamed MGFS data
     return if $new_values->{name} eq '';
-    use Data::Dumper;
-    print(Dumper($new_values));
 
     $new_values = _synchronize_instrument($self, $new_values, 0);
     $self->SUPER::create($new_values);
@@ -188,10 +186,8 @@ sub update {
 	    && ($new_values->{mg_id} eq 'DATE');
     # workaround for unnamed MGFS data
     return if exists($new_values->{name}) && $new_values->{name} eq '';
-    use Data::Dumper;
-    print(Dumper($new_values));
+
     $new_values = _synchronize_instrument($self, $new_values, 1);
-    print(Dumper($new_values));
     $self->SUPER::update($new_values);
     return;
 }
