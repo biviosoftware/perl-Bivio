@@ -54,6 +54,8 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 =cut
 
 #=IMPORTS
+#Avoid circular reference and pray east someone is using TypeError.
+#use Bivio::TypeError;
 use Carp ();
 
 #=VARIABLES
@@ -88,6 +90,23 @@ Returns enum value for specified integer.
 
 sub from_int {
     return _get_info(shift(@_), shift(@_) + 0)->[5];
+}
+
+=for html <a name="unsafe_from_any"></a>
+
+=head2 static unsafe_from_any(any thing) : Bivio::Type::Enum
+
+Returns enum value for specified name, short description, long description,
+enum, or integer in a case-insensitive manner.  If not found, returns
+C<undef>.
+
+=cut
+
+sub unsafe_from_any {
+    my($proto, $thing) = @_;
+    ref($thing) || ($thing = uc($thing));
+    my($info) = _get_info($proto, $thing, 1);
+    return $info ? $info->[5] : undef;
 }
 
 =head1 METHODS
@@ -289,9 +308,10 @@ Returns the enum for this integer.  If not an integer, throws an exception.
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value) && $value =~ /^\d+$/;
-    my($info) = _get_info($proto, $value);
-    return undef unless $info;
+    return undef unless defined($value);
+    return (undef, Bivio::TypeError::ENUM()) unless $value =~ /^\d+$/;
+    my($info) = _get_info($proto, $value, 1);
+    return (undef, Bivio::TypeError::NOT_FOUND()) unless $info;
     return $info->[5];
 }
 
