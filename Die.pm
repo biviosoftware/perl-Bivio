@@ -16,7 +16,7 @@ Bivio::Die - dispatch die_handler in modules on stack
 =cut
 
 use Bivio::Collection::Attributes;
-@Bivio::Die::ISA = qw(Bivio::Collection::Attributes);
+@Bivio::Die::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -50,7 +50,6 @@ use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::Enum;
-use UNIVERSAL ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -100,10 +99,13 @@ sub catch {
     $_IN_CATCH++;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
-	$_STACK_TRACE && print STDERR Carp::longmess($msg);
 	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
-		{message => $msg eq "\n" ? Bivio::IO::Alert->get_last_warning
-		    : $msg, program_error => 1}, caller));
+		{(message => $msg eq "\n" ? Bivio::IO::Alert->get_last_warning
+		    : $msg),
+		    program_error => 1,
+		},
+		caller));
+	return;
     };
     my($self) = eval {
 	&$sub();
@@ -134,17 +136,9 @@ sub as_string {
 	    return 0 if $curr->is_destroyed;
 	    my($c, $a, $p, $f, $l) = $curr->get(
 		'code', 'attrs', 'package', 'file', 'line');
-	    my($m) = [$c];
-	    if (%$a) {
-		# Don't just "join", because we want Alert to call
-		# as->string if appropriate.
-		push(@$m, ': ', map {
-		    ($_, ' => ', $a->{$_}, ', ')
-		} sort keys %$a);
-		pop(@$m);
-	    }
-	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef, $m);
-	    chop($res);
+	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef,
+		    _as_string_args($c, $a));
+	    chomp($res);
 	    return 1;
 	} || ($res .= 'ERROR: ' . $curr . "\n");
     }
@@ -198,15 +192,16 @@ sub destroy {
 
 =head2 static die(string arg1, ...)
 
-Wrapper for L<Bivio::IO::Alert::die|Bivio::IO::Alert/"die">.
-The routine ends up calling C<CORE::die> with clean arguments, e.g.
-handling excessively long arguments and C<undef>.
+Wrapper for L<throw|"throw">.  Takes similar arguments to CORE::die.
 
 =cut
 
 sub die {
-    shift;
-    return Bivio::IO::Alert->die(@_);
+    my($proto) = shift;
+    $proto->throw(Bivio::DieCode::DIE(), {
+	message => Bivio::IO::Alert->format_args(@_)
+    });
+    # DOES NOT RETURN
 }
 
 =for html <a name="eval"></a>
@@ -249,8 +244,8 @@ handling L<throw|"throw"> calls, e.g. die within die.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_STACK_TRACE = $cfg->{stack_trace};
-    $_STACK_TRACE_ERROR = $cfg->{stack_trace_error};
+    $_STACK_TRACE = $cfg->{stack_trace} ? 1 : 0;
+    $_STACK_TRACE_ERROR = $cfg->{stack_trace_error} ? 1 : 0;
     $_STACK_TRACE_ERROR = 0 if $_STACK_TRACE;
     return;
 }
@@ -318,26 +313,19 @@ In the second form, I<self> is "rethrown".
 sub throw {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     if (ref($proto)) {
-	# Rethrow of an existing die.  If inside a catch, must
+	# Rethrow of an existing die.  If inside a catch, set as current
+	# and pass by name.
 	$_CURRENT_SELF = $proto;
 	CORE::die("$proto\n") if $_IN_CATCH;
 	# Not in a catch, so must call handle_die explicitly
 	_handle_die($proto);
 	# _handle_die returns, but user called die.  So need to
 	# throw a bogus exception.
-	CORE::die($proto->as_string);
+	CORE::die($proto->unsafe_get('throw_quietly')
+		? "\n" : $proto->as_string."\n");
     }
-    $package ||= (caller)[0];
-    $file ||= (caller)[1];
-    $line ||= (caller)[2];
-    unless (ref($attrs) eq 'HASH') {
-	$attrs = defined($attrs)
-		? !ref($attrs) ? {message => $attrs}
-			:  {attrs => $attrs} : {};
-    }
-    $code = _check_code($code, $attrs);
-    my($self) = _new($proto, $code, $attrs, $package, $line);
-    CORE::die($_IN_CATCH ? "$self\n" : ($self->as_string."\n"));
+    my($self) = _new_from_throw($proto, $code, $attrs, $package, $line);
+    CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
 }
 
 =for html <a name="throw_die"></a>
@@ -351,10 +339,57 @@ C<$die> object (see e.g. L<Bivio::SQL::Connection|Bivio::SQL::Connection>).
 =cut
 
 sub throw_die {
-    return shift->throw(@_);
+    shift->throw(@_);
+    # DOES NOT RETURN
+}
+
+=for html <a name="throw_quietly"></a>
+
+=head2 static throw_quietly(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+=head2 throw_quietly()
+
+Same as L<throw|"throw">, but no stack trace or error message is output.
+
+=cut
+
+sub throw_quietly {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    if (ref($proto)) {
+	$proto->put(throw_quietly => 1);
+	$proto->throw;
+	# DOES NOT RETURN
+    }
+    my($self) = _new_from_throw(@_);
+    $self->put(throw_quietly => 1);
+    # Be quiet
+    CORE::die($_IN_CATCH ? "$self\n" : "\n");
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
+
+# _as_string_args(Bivio::DieCode code, hash_ref attrs) : any
+#
+# Tries to create an economical message.  Leaves formatting up
+# to Bivio::IO::Alert (see as_string).
+#
+sub _as_string_args {
+    my($code, $attrs) = @_;
+    return [$code, ': ', $attrs->{message}]
+	    if UNIVERSAL::isa($code, 'Bivio::DieCode')
+		    && int(keys(%$attrs)) <= 2 && $attrs->{message};
+    my($msg) = [$code];
+    if (%$attrs) {
+	# Don't just "join", because we want Alert to call
+	# as->string if appropriate.
+	push(@$msg, ': ', map {
+	    ($_, '=>', $attrs->{$_}, ' ')
+	} sort keys %$attrs);
+	pop(@$msg);
+    }
+    return $msg;
+}
 
 # _check_code(any code, hash_ref attrs) : Bivio::Type::Enum
 #
@@ -392,9 +427,8 @@ sub _handle_die {
 	local($SIG{__DIE__});
 	my($self) = @_;
 	if ($_STACK_TRACE_ERROR) {
-	    my($attrs) = $self->get('attrs');
-	    print STDERR Carp::longmess($self->as_string."\n")
-		    if $attrs->{program_error};
+	    my($a) = $self->get('attrs');
+	    _print_stack($self) if $a->{program_error};
 	}
 	my($i) = 0;
 	my(@a);
@@ -436,7 +470,7 @@ sub _handle_die {
 	    }
 	    else {
 		eval {
-		    &_trace($proto, "->handle_die: ", $msg) if $_TRACE;
+		    _trace($proto, "->handle_die: ", $msg) if $_TRACE;
 		};
 		$msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
 		_new_from_core_die($self,
@@ -472,11 +506,11 @@ sub _new {
     else {
 	$_CURRENT_SELF = $self;
     }
-    &_trace($self) if $_TRACE;
+    _trace($self) if $_TRACE;
     return $self;
 }
 
-# _new_from_core_die proto attrs package file line : Bivio::Die
+# _new_from_core_die(proto, hash_ref attrs, string package, string file, string line) : Bivio::Die
 #
 # Called with the result of a CORE::die.  If $attrs->{message} is equal to the
 # string form of any of the current die values, then return that value.
@@ -490,7 +524,42 @@ sub _new_from_core_die {
 	    return $curr if $msg eq "$curr\n";
 	}
     }
-    return _new(@_);
+    my($self) = _new($proto, $code, $attrs, $package, $file, $line);
+    _print_stack($self) if $_STACK_TRACE;
+    return $self;
+}
+
+# _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line) : Bivio::Die
+#
+# Sets attrs, file, line, etc.
+#
+sub _new_from_throw {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($i) = 0;
+    $i++ while caller($i) eq __PACKAGE__;
+    $package ||= (caller($i))[0];
+    $file ||= (caller($i))[1];
+    $line ||= (caller($i))[2];
+    unless (ref($attrs) eq 'HASH') {
+	$attrs = defined($attrs)
+		? !ref($attrs) ? {message => $attrs}
+			:  {attrs => $attrs} : {};
+    }
+    $code = _check_code($code, $attrs);
+    return _new($proto, $code, $attrs, $package, $file, $line);
+}
+
+# _print_stack(self)
+#
+# Prints the stack trace.
+#
+sub _print_stack {
+    my($self) = @_;
+    my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
+    return if $sp || $tq;
+    print STDERR Carp::longmess($self->as_string."\n");
+    $self->put(stack_printed => 1);
+    return;
 }
 
 =head1 COPYRIGHT
