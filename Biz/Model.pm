@@ -354,6 +354,54 @@ sub get_model {
     return $model;
 }
 
+=for html <a name="internal_get_iterator"></a>
+
+=head2 internal_get_iterator() : DBI::st
+
+Returns the iterator.
+
+=cut
+
+sub internal_get_iterator {
+    my($self) = @_;
+    return $self->[$_IDI]->{iterator} || $self->die('iteration not started');
+}
+
+=for html <a name="internal_iterate_next"></a>
+
+=head2 internal_iterate_next(hash_ref row, string converter) : array
+
+Returns (I<self>, I<row>) on success or () if no more.
+
+=cut
+
+sub internal_iterate_next {
+    my($self, $it, $row, $converter) = @_;
+    if (ref($it) eq 'HASH') {
+	$converter = $row;
+	$row = $it;
+	$it = $self->internal_get_iterator;
+    }
+    else {
+	# deprecated form
+    }
+    return $self->internal_get_sql_support->iterate_next(
+	$it, $row, $converter) ? ($self, $row) : ();
+}
+
+=for html <a name="internal_put_iterator"></a>
+
+=head2 internal_put_iterator(DBI::st it) : DBI::st
+
+Sets the iterator and returns its argument.
+
+=cut
+
+sub internal_put_iterator {
+    my($self, $it) = @_;
+    return $self->[$_IDI]->{iterator} = $it;
+}
+
 =for html <a name="put_on_request"></a>
 
 =head2 put_on_request()
@@ -506,36 +554,45 @@ sub internal_initialize_sql_support {
 
 =for html <a name="iterate_end"></a>
 
-=head2 iterate_end(ref iterator)
+=head2 iterate_end()
 
 Terminates the iterator.  See L<iterate_start|"iterate_start">.
 Does not modify model state, i.e. if loaded, stays loaded.
 
+B<Deprecated form accepts an iterator as the first argument.>
+
 =cut
 
 sub iterate_end {
-    my($self) = shift;
-    return $self->internal_get_sql_support->iterate_end(@_);
+    my($self, $it) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->internal_get_sql_support->iterate_end(
+       $it || $self->internal_get_iterator);
+    # Deprecated form passes in an iterator, which can only clear
+    # if the caller hasn't "changed" iterators.
+    $fields->{iterator} = undef
+	if !$it || $fields->{iterator} && $it == $fields->{iterator};
+    return;
 }
 
 =for html <a name="iterate_next"></a>
 
-=head2 iterate_next(ref iterator, hash_ref row) : boolean
+=head2 iterate_next(hash_ref row) : boolean
 
-=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+=head2 iterate_next(hash_ref row, string converter) : boolean
 
-I<iterator> was returned by L<iterate_start|"iterate_start">.
 I<row> is the resultant values by field name.
 I<converter> is optional and is the name of a
 L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
 
 Returns false if there is no next.
 
+B<Deprecated form accepts an iterator as the first argument.>
+
 =cut
 
 sub iterate_next {
-    my($self) = shift;
-    return $self->internal_get_sql_support->iterate_next(@_);
+    return shift->internal_iterate_next(@_) ? 1 : 0;
 }
 
 =for html <a name="merge_initialize_info"></a>

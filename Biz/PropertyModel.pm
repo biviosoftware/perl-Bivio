@@ -123,6 +123,29 @@ sub create {
     return $self;
 }
 
+=for html <a name="create_from_literals"></a>
+
+=head2 create_from_literals(hash_ref values) : self
+
+Converts and validates I<values> calling
+L<Bivio::Type::from_literal_or_die|Bivio::Type/"from_literal_or_die">
+for types of I<values>.
+
+B<Note: I<from_literal_or_die> dies on NULL.>
+
+Only validates keys which exist, i.e. primary keys or values which
+are defaulted by L<create|"create"> are not validated.
+
+=cut
+
+sub create_from_literals {
+    my($self, $values) = @_;
+    while (my($k, $v) = each(%$values)) {
+	$values->{$k} = $self->get_field_type($k)->from_literal_or_die($v);
+    }
+    return $self->create($values);
+}
+
 =for html <a name="create_or_unauth_update"></a>
 
 =head2 create_or_unauth_update(hash_ref new_values) : self
@@ -401,60 +424,61 @@ sub is_loaded {
 
 =for html <a name="iterate_next_and_load"></a>
 
-=head2 iterate_next_and_load(ref iterator) : boolean
+=head2 iterate_next_and_load() : boolean
 
-I<iterator> was returned by L<iterate_start|"iterate_start">.
 Will iterate to the next row and load the model with the row.
 Can be used to update a row.
 
 Returns false if there is no next.
 
+B<Deprecated form accepts an iterator as the first argument.>
+
 =cut
 
 sub iterate_next_and_load {
-    my($self, $it) = @_;
-    my($values) = {};
-    unless ($self->internal_get_sql_support->iterate_next(
-	    $it, $values)) {
-	return _unload($self, 1);
-    }
-
-    return _load($self, $values);
+    my($self) = shift;
+    my(undef, $row) = $self->internal_iterate_next(@_, {});
+    return $row ? _load($self, $row) : _unload($self, 1);
 }
 
 =for html <a name="iterate_next_and_load_new"></a>
 
-=head2 iterate_next_and_load_new(ref iterator) : Bivio::Biz::PropertyModel
+=head2 iterate_next_and_load_new() : Bivio::Biz::PropertyModel
 
 Same as L<iterate_next_and_load|"iterate_next_and_load">, but
 returns a new model instance for each row if iteration proceeds.
 Returns C<undef> if end of iteration.
 
+B<Deprecated form accepts an iterator as the first argument.>
+
 =cut
 
 sub iterate_next_and_load_new {
-    my($self, $it) = @_;
-    my($values) = {};
-    return undef
-	unless $self->internal_get_sql_support->iterate_next($it, $values);
+    my($self, $row) = shift->internal_iterate_next(@_, {});
+    return undef unless $row;
     my($new) = $self->new();
-    _load($new, $values);
+    _load($new, $row);
     return $new;
 }
 
 =for html <a name="iterate_start></a>
 
-=head2 iterate_start(string order_by) : ref
+=head2 iterate_start(string order_by)
 
-=head2 iterate_start(string order_by, hash_ref query) : ref
+=head2 iterate_start(string order_by, hash_ref query)
 
-Returns a handle which can be used to iterate the rows for this
-realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
+Begins an iteration which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next">,
+L<iterate_next_and_load|"iterate_next_and_load">, or
+L<iterate_next_and_load_new|"iterate_next_and_load_new">.
+L<iterate_end|"iterate_end"> should be called when you are through
+with the iteration.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords C<ORDER BY>.
 
 I<query> is the same as in L<load|"load">.
+
+B<Deprecated form returns the iterator.>
 
 =cut
 
@@ -462,8 +486,9 @@ sub iterate_start {
     my($self, $order_by, $query) = @_;
     $self->throw_die('DIE', 'no auth_id')
 	    unless $self->get_request->get('auth_id');
-    return $self->internal_get_sql_support->iterate_start($self, $order_by,
-	    _add_auth_id($self, $query || {}));
+    return $self->internal_put_iterator(
+	$self->internal_get_sql_support->iterate_start($self, $order_by,
+	    _add_auth_id($self, $query || {})));
 }
 
 =for html <a name="load"></a>
@@ -580,22 +605,26 @@ sub unauth_delete {
 B<Do not use this method unless you are sure the user is authorized
 to access all realms or all rows of the table.>
 
-Returns a handle which can be used to iterate ALL rows in
-the table (not just this realm) with
-L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
+Begins an iteration which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next">,
+L<iterate_next_and_load|"iterate_next_and_load">, or
+L<iterate_next_and_load_new|"iterate_next_and_load_new">.
+L<iterate_end|"iterate_end"> should be called when you are through
+with the iteration.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords
 C<ORDER BY>.
 
 I<query> is the same as in L<load|"load">.
 
+B<Deprecated form returns the iterator.>
 
 =cut
 
 sub unauth_iterate_start {
     my($self) = shift;
-    return $self->internal_get_sql_support->iterate_start($self, @_);
+    return $self->internal_put_iterator(
+	$self->internal_get_sql_support->iterate_start($self, @_));
 }
 
 =for html <a name="unauth_load"></a>

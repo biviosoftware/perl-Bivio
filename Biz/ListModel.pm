@@ -888,14 +888,15 @@ sub internal_set_cursor {
 
 =for html <a name="iterate_next"></a>
 
-=head2 iterate_next(ref iterator, hash_ref row) : boolean
+=head2 iterate_next(hash_ref row) : boolean
 
-=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+=head2 iterate_next(hash_ref row, string converter) : boolean
 
-I<iterator> was returned by L<iterate_start|"iterate_start">.
 I<row> is the resultant values by field name.
 I<converter> is optional and is the name of a
 L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+B<Puts row on I<self>, but doesn't clear model cache.>
 
 Returns false if there is no next.
 
@@ -908,9 +909,9 @@ returned and another row is attempted.
 =cut
 
 sub iterate_next {
-    my($self, $iterator, $row) = (shift, shift, shift);
-    while ($self->internal_get_sql_support->iterate_next(
-	$iterator, $row, @_)) {
+    while () {
+	my($self, $row) = shift->internal_iterate_next(@_);
+	last unless $row;
 	next if $self->can('internal_post_load_row')
 	   && !$self->internal_post_load_row($row);
 	$self->internal_put($row);
@@ -921,9 +922,8 @@ sub iterate_next {
 
 =for html <a name="iterate_next_and_load"></a>
 
-=head2 iterate_next_and_load(ref iterator) : boolean
+=head2 iterate_next_and_load() : boolean
 
-I<iterator> was returned by L<iterate_start|"iterate_start">.
 Will iterate to the next row and load the model with the row.
 
 It appears as if the model was loaded with one row and the
@@ -941,13 +941,14 @@ Returns false if there is no next.
 =cut
 
 sub iterate_next_and_load {
-    my($self, $iterator) = @_;
+    my($self, $it) = @_;
     my($fields) = $self->[$_IDI];
     my($row) = {};
     # Initialize once.  It will be overwritten if a real load happens.
     $fields->{rows} = [$row];
     $fields->{cursor} = 0;
-    while ($self->internal_get_sql_support->iterate_next($iterator, $row)) {
+    while ($self->internal_get_sql_support->iterate_next(
+	$it || $self->internal_get_iterator, $row)) {
 	next if $self->can('internal_post_load_row')
 	    && !$self->internal_post_load_row($row);
 	$self->internal_clear_model_cache;
@@ -964,9 +965,11 @@ sub iterate_next_and_load {
 
 =head2 iterate_start(Bivio::SQL::ListQuery query) : ref
 
-Returns a handle which can be used to iterate this list for this
-realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
+Begins an iteration which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next"> or
+L<iterate_next_and_load|"iterate_next_and_load">.
+L<iterate_end|"iterate_end"> should be called when you are through
+with the iteration.
 
 Use this method when you need to make one pass over the data (efficiently).
 
@@ -977,7 +980,7 @@ Calls L<internal_pre_load|"internal_pre_load">, but does not call
 L<internal_load|"internal_load">.  See L<iterate_next|"iterate_next">
 for semantics of row fixups.
 
-TODO: Can't have multiple iterators on same model.  It's too inconvenient.
+B<Deprecated form returns the iterator.>
 
 =cut
 
@@ -995,7 +998,8 @@ sub iterate_start {
     my($where) = $self->internal_pre_load($query, $sql_support, $params);
     $where = ' and '.$where if $where;
 
-    return $sql_support->iterate_start($query, $where, $params, $self);
+    return $self->internal_put_iterator(
+	$sql_support->iterate_start($query, $where, $params, $self));
 }
 
 =for html <a name="load_all"></a>
