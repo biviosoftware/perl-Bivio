@@ -36,6 +36,7 @@ C<Bivio::UI::Setup::Admin>
 
 #=IMPORTS
 use Bivio::Biz::UserDemographics;
+use Bivio::Biz::UserEmail;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -91,9 +92,13 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
 
     my($demographics) = Bivio::Biz::UserDemographics->new();
+    my($email) = Bivio::Biz::UserEmail->new();
 
     $req->print('<table border=0><tr><td>');
     $req->print('<table border=0 cellpadding=0 cellspacing=0>');
+
+    $req->print('First, let\'s get some information about the club
+administrator. Required fields are indicated with a *.<p>');
 
     if (! $user->get_status()->is_OK() ) {
 	$req->print('<font color="#FF0000">');
@@ -112,6 +117,7 @@ sub render {
 
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'password', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($email, 'email', $req, 1);
 
     $req->print('<tr><td>&nbsp;</td></tr>');
 
