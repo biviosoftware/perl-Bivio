@@ -169,7 +169,22 @@ my($_XML_TO_HTML_PROGRAM) = {
     'varlistentry/term' => ['dt'],
     warning =>
         '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
-    xref => '[CROSS-REFERENCE ${linkend}]',
+    xref => sub {
+	my($attr, $html, $clipboard) = @_;
+	my($glob) = $clipboard->{xml_file};
+	$glob =~ s,[^/]+(?=\.xml$),\*,;
+	my($target) = `fgrep -i -l 'id="$attr->{linkend}">' $glob`;
+	die($attr->{linkend}, ': not found in ', $glob)
+	    unless $target;
+	chomp($target);
+	my($title) = ${Bivio::IO::File->read($target)}
+	    =~ m{id="$attr->{linkend}".*?<title>(.*?)</title}s;
+	die($attr->{linkend}, ': title not found in ', $target)
+	    unless $title;
+	$target =~ s/xml$/html/;
+	$target =~ s,.*/,,;
+	return qq{<a href="$target#$attr->{linkend}">$title</a>};
+    },
 };
 
 =head1 METHODS
@@ -206,7 +221,9 @@ sub to_html {
     return _to_html(
 	'',
 	XML::Parser->new(Style => 'Tree')->parsefile($xml_file),
-        {});
+        {
+	    xml_file => $xml_file,
+	});
 }
 
 #=PRIVATE METHODS
@@ -260,7 +277,7 @@ sub _eval_op {
     my($op, $attr, $html, $clipboard) = @_;
     return 'ARRAY' eq ref($op)
 	    ? _to_tags($op, '') . $$html  . _to_tags([reverse(@$op)], '/')
-	: ref($op) eq 'CODE'
+	: 'CODE' eq ref($op)
 	    ? $op->($attr, $html, $clipboard)
 	: 'HASH' eq ref($op) || !ref($op)
 	    ? _eval_template($op, $attr, $html)
