@@ -91,7 +91,7 @@ sub lookup ($$$;$)
 	    $value = eval $value;
 #RJN: We don't cache any mail message information, because it can grow rapidly
 #	    $dont_cache = $file =~ /msg\d+.html$/; 		    # see below
-            $dont_cache = 0;
+            $dont_cache = 1;
 	}
 	else {
 	    $@ = "open failed: $!"; 			   # save error message
