@@ -180,6 +180,7 @@ my(@_MONTH_DAYS, @_MONTH_BASE);
 my(@_YEAR_BASE);
 my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
 my($_DATE_PREFIX) = FIRST_YEAR_IN_JULIAN_DAYS().' ';
+my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 _initialize();
 
 =head1 METHODS
@@ -268,6 +269,19 @@ sub date_from_parts {
 	    .$_TIME_SUFFIX;
 }
 
+=for html <a name="end_of_today"></a>
+
+=head2 end_of_today() : string
+
+Returns the date/time for the last second in the user's "today".
+Used to generate reports that includes the "end of business".
+
+=cut
+
+sub end_of_today {
+    return Bivio::Type::DateTime->set_end_of_day(Bivio::Type::DateTime->now);
+}
+
 =for html <a name="from_unix"></a>
 
 =head2 from_unix(int unix_time) : string
@@ -295,6 +309,51 @@ Returns date/time for now.
 
 sub now {
     return from_unix(__PACKAGE__, time);
+}
+
+=for html <a name="set_end_of_day"></a>
+
+=head2 set_end_of_day(string date_time) : string
+
+Sets the time component of the date/time to 23:59:59 in the user's
+time zone.
+
+=cut
+
+sub set_end_of_day {
+    my(undef, $date_time) = @_;
+    my($date, $time) = split(' ', $date_time);
+    my($req) = Bivio::Agent::Request->get_current;
+    my($tz) = $req->unsafe_get('timezone');
+
+    return $date.' '.$_END_OF_DAY unless defined($tz);
+    # The timezone is really a timezone offset for now.  This will
+    # have to be fixed someday, but not right now.
+    $tz *= 60;
+
+    # This algorithm is "dumb and stupid", because I'm trying to get it
+    # right.  Probably smarter ways...
+
+    # First figure out what the day is
+    $time -= $tz;
+    if ($time < 0) {
+	$date--;
+    }
+    elsif ($time >= SECONDS_IN_DAY()) {
+	$date++;
+    }
+
+    # Next figure out what day GMT is in when today is at end of day
+    $time = ($_END_OF_DAY + $tz) % SECONDS_IN_DAY();
+    if ($tz > 0) {
+	$date++;
+    }
+    elsif ($tz < 0) {
+	$date--;
+    }
+
+    # Return the adjusted date and time
+    return $date.' '.$time;
 }
 
 =for html <a name="date_from_parts"></a>
