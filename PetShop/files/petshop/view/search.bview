@@ -8,7 +8,10 @@ view_put(
     header_title => 'Search Results',
     menu_heading => Join([
 	'Search Results for: ',
-	vs_escape_html([['Model.ItemSearchList', '->get_query'], 'search']),
+        If([['Model.ItemSearchList', '->get_query'], 'search'],
+            vs_escape_html([['Model.ItemSearchList', '->get_query'],
+                'search']),
+           ),
     ]),
     menu_content => vs_paging_table('ItemSearchList',
 	vs_items_form('ItemSearchListForm')),
