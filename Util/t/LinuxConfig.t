@@ -148,10 +148,10 @@ other.host
 	    ],
 	], [
             'rhn_up2date_param', ['pkgSkipList', ''] => [
-		['etc/sysconfig/rhn/up2date', 'pkgSkipList=;'],
+		['etc/sysconfig/rhn/up2date', 'pkgSkipList='],
 	    ],
 	], [
-            'rhn_up2date_param', ['pkgSkipList', 'apache*'] => [
+            'rhn_up2date_param', ['pkgSkipList', 'apache*;'] => [
 		['etc/sysconfig/rhn/up2date', 'pkgSkipList=apache\*;'],
 	    ],
 	]),
