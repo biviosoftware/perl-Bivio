@@ -35,6 +35,8 @@ use Bivio::Biz::Model::RealmUser;
 use Bivio::Type::DepositType;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Widget::Currency;
+use Bivio::UI::HTML::Widget::Date;
 use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::Form;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
@@ -87,9 +89,8 @@ sub new {
 		],
 		[
 		    _field('Date',
-			    Bivio::UI::HTML::Widget::Text->new({
+			    Bivio::UI::HTML::Widget::Date->new({
 				field => 'RealmTransaction.dttm',
-				size => 10,
 			    })),
 		],
 		[
@@ -110,7 +111,7 @@ sub new {
 		],
 		[
 		    _field('Amount',
-			    Bivio::UI::HTML::Widget::Text->new({
+			    Bivio::UI::HTML::Widget::Currency->new({
 				field => 'Entry.amount',
 				size => 10,
 			    })),
