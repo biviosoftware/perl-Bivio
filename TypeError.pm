@@ -32,7 +32,6 @@ C<Bivio::TypeError> is a list of problems converting types.
 =cut
 
 #=IMPORTS
-use Bivio::TypeError;
 
 #=VARIABLES
 
