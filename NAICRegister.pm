@@ -81,7 +81,7 @@ sub _render_result{
     $output->print("<TR><TD>Instructor: <TD>" . $arguments->{instructor});
     $output->print("</TABLE>\n");
     $output->print("<CENTER>");
-    $output->print("<P><B><a href=\"/denver/denver.html\">Return To Denver Chapter Home Page</a></B>");
+    $output->print("<P><B><a href=\"/denver.html\">Return To Denver Chapter Home Page</a></B>");
     $output->print("</CENTER>");
 }
 
@@ -89,7 +89,7 @@ sub _render_result{
 sub _render_form{
     my($output) = @_;
     $output->print("<CENTER><H2>NAIC Denver Chapter Registration Form</H2>\n");
-    $output->print("<FORM action = \"/naic-denver\">\n");
+    $output->print("<FORM action = \"/denver\">\n");
     $output->print("<INPUT type=hidden name=view value=\"result\">\n");
     $output->print("<TABLE width = 90%>\n");
     $output->print("<TR><TD>Name:</TD><TD colspan = 2><input type=text size=50 name=username>\n");
