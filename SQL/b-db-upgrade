@@ -261,6 +261,27 @@ CREATE INDEX csi_instrument_t4 on csi_instrument_t (
     return;
 }
 
+# _upgrade_mail_t()
+#
+#
+#
+sub _upgrade_mail_t {
+    my() = @_;
+    print("updating mail_t\n");
+    _do_sql('
+alter table mail_t drop (is_thread_root) cascade constraints
+/
+alter table mail_t add num_replies number(9)
+/
+update mail_t set num_replies=0
+/
+alter table mail_t modify num_replies not null
+/
+');
+    Bivio::Biz::Util::Mail->main('rethread_all');
+    return;
+}
+
 # _usage(array message)
 #
 # Print a message and terminate
