@@ -275,7 +275,6 @@ sub validate_login {
     $login =~ s/\s+//g;
     $login = lc($login);
     $model->internal_put_field(login => $login);
-
     my($owner) = $model->new($model->get_request, 'RealmOwner');
     return $owner
 	if $owner->unauth_load_by_email_id_or_name($model->get('login'))
@@ -308,17 +307,19 @@ sub _assert_login {
 
 # _assert_realm(self)
 #
-# Validates realm_owner is valid
+# Validates realm_owner is valid. No longer checks for
+# valid password.
 #
 sub _assert_realm {
     my($self) = @_;
     return undef
 	unless my $realm = $self->get('realm_owner');
-    my($err) = $realm->is_offline_user ? "can't login as offline user"
+    my($err) = $realm->is_offline_user
+	? "can't login as offline user"
 	: $realm->get('realm_type') != Bivio::Auth::RealmType->USER
 	? "can't login as non-user"
-	: $realm->is_default ? "can't login as *the* USER realm"
-	: !$realm->has_valid_password ? "user's password is invalidated"
+	: $realm->is_default
+	? "can't login as *the* USER realm"
 	: '';
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
 	if $err;
@@ -358,6 +359,7 @@ sub _load_cookie_user {
 	return $auth_user
 	    if $auth_user->has_valid_password
 		&& $cp eq $auth_user->get('password');
+	_trace("is subst user => ", $req->is_substitute_user) if $_TRACE;
 	$req->warn($auth_user, ': user is not valid');
     }
     else {
