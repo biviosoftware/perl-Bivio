@@ -97,7 +97,7 @@ must render the C<STYLE> or C<META> tags as appropriate.
 
 =over 4
 
-=item html_tag_attrs : string []
+=item html_tag_attrs : any []
 
 Attributes to be applied to the html_tag used to generate the component.
 Only currently works for I<body> components.
@@ -250,8 +250,7 @@ sub render {
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
 	$bg, 'background', $req)
 	if $self->unsafe_render_attr('background', $source, \$bg) && $bg;
-    my($hta) = $fields->{body}->unsafe_get('html_tag_attrs');
-    $$buffer .= $hta if $hta;
+    $fields->{body}->unsafe_render_attr('html_tag_attrs', $source, $buffer);
     $$buffer .= ">\n";
 
     $fields->{body}->render($source, $buffer);
