@@ -33,6 +33,13 @@ There are two types of attributes: table and cell.
 
 =over 4
 
+=item align : string [CENTER]
+
+How to align the table.  The allowed (case
+insensitive) values are defined in
+L<Bivio::UI::Align|Bivio::UI::Align>.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
+
 =item bgcolor : string []
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
@@ -127,10 +134,11 @@ sub initialize {
     return if exists($fields->{rows});
     my($p) = '<table border=0 cellspacing=0 cellpadding=';
     # We don't want to check parents
-    my($expand, $bg) = $self->unsafe_get(qw(expand bgcolor));
+    my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
     my($rowspan);
     $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
     $p .= ' width="100%"' if $expand;
+    $p .= Bivio::UI::Align->as_html($align) if $align;
     $p .= Bivio::UI::Color->as_html($bg) if $bg;
     $fields->{prefix} = $p . '>';
     $fields->{suffix} = '</table>';
