@@ -98,7 +98,6 @@ my(%_RESERVED) = map {($_, 1)} qw(
     ignore
     info
     ingres
-    jobs
     login
     logout
     mail
