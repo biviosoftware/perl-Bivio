@@ -51,6 +51,7 @@ __PACKAGE__->compile(
     ADMIN_READ => [11],
     ADMIN_WRITE => [12],
     DOCUMENT_READ => [13],
+    LOGIN => [14],
 );
 
 =head1 METHODS
