@@ -134,8 +134,7 @@ sub _auth_user {
     return undef unless defined($name);
     my($user) = Bivio::Biz::PropertyModel::User->new($self);
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
-	    {request => $self, message => 'user not found',
-		entity => $name, user_name => $name})
+	    {request => $self, entity => $name})
 	    unless $user->unauth_load(name => $name);
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
 	    {request => $self, message => 'password mismatch',
