@@ -269,7 +269,6 @@ sub _parse_errors_complete {
 sub _parse_errors_init {
     my($self, $interval_minutes) = @_;
     # Initializes the request (timezone)
-    $self->get_request;
     $self->usage('interval_minutes must be supplied')
 	    if $interval_minutes <= 0;
     $self->put(email => $_CFG->{email})
