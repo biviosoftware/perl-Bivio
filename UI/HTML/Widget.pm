@@ -838,14 +838,14 @@ sub link_secure {
     return $self->director([sub {
 	    my($req) = shift->get_request;
 	    return Bivio::UI::HTML->get_value('want_secure', $req)
-		    ? $req->get('is_secure') ? 0 : 1 : 2;
+		    ? ($req->get('is_secure') ? 1 : 0) : 2;
 	}], {
-	0 => $self->page_text(
+	0 => $self->join(
 		"\n<p>&#149; ",
 		$self->link('Click here to switch to secure mode.',
 			['->format_http_toggling_secure']),
 		" &#149;\n"),
-	1 => $self->page_text("\n<p>&#149; This page is secure. &#149;\n"),
+	1 => $self->join("\n<p>&#149; This page is secure. &#149;\n"),
 	# When the facade doesn't support SSL
 	2 => $self->join("\n"),
     });
