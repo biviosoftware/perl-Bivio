@@ -2302,6 +2302,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentMergerForm
         Bivio::UI::HTML::Club::InstrumentMerger
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SPINOFF
@@ -2315,6 +2316,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSpinoffForm
         Bivio::UI::HTML::Club::InstrumentSpinoff
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_REINVEST
@@ -2327,6 +2329,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentReinvestForm
         Bivio::UI::HTML::Club::InstrumentReinvest
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SPINOFF_BASIS
@@ -2337,6 +2340,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::SpinoffBasisForm
         Bivio::UI::HTML::Club::SpinoffBasis
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_TRANSACTION_EDIT
