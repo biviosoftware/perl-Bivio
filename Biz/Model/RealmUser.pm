@@ -131,7 +131,8 @@ sub change_ownership {
     my($self, $user_id, $include_k1) = @_;
     my($req) = $self->get_request;
 
-    my(@tables) = qw(member_entry_t realm_transaction_t file_t realm_invite_t);
+    my(@tables) = qw(member_entry_t realm_transaction_t file_t realm_invite_t
+            member_allocation_t);
     push(@tables, 'tax_k1_t') if $include_k1;
 
     # change all references to the user
