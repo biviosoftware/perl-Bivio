@@ -839,6 +839,7 @@ sub _eval_params {
 sub _eval_result {
     my($case, $actual) = @_;
     my($custom);
+    my($show);
     my($result, $which) = ref($actual) eq 'Bivio::Die'
 	? ($actual->get('code'), 'die_code') : ($actual, 'return');
     if (ref($case->get('expect')) eq 'CODE') {
@@ -874,7 +875,7 @@ sub _eval_result {
 
 	}
     }
-    if (defined(my $ok = _eval_result_regexp($case, $result))) {
+    if (defined(my $ok = _eval_result_regexp($case, $result, \$show))) {
 	return undef
 	    if $ok;
     }
@@ -884,23 +885,23 @@ sub _eval_result {
     }
     return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
 	.' but got '
-	. Bivio::IO::Ref->to_short_string($case->get($which));
+	. ($show ? $$show : Bivio::IO::Ref->to_short_string($case->get($which)));
 }
 
-# _eval_result_regexp(Bivio::Test::Case case, any result) : boolean
+# _eval_result_regexp(Bivio::Test::Case case, any result, string_ref show) : boolean
 #
 # Returns true if result compares.  Returns false if doesn't compare.
 # Returns undef if not a Regexp or result is a DieCode.
 #
 sub _eval_result_regexp {
-    my($case, $result) = @_;
+    my($case, $result, $show) = @_;
     return undef
 	unless ref($case->get('expect')) eq 'Regexp'
 	&& ref($result) ne 'Bivio::DieCode';
 #TODO: Replace when perl bug is fixed.
     my($x) = $case->get('expect');
     $x = "$x";
-    return ${Bivio::IO::Ref->to_string($result)} =~ /$x/ ? 1 : 0;
+    return ${$$show = Bivio::IO::Ref->to_string($result)} =~ /$x/ ? 1 : 0;
 }
 
 # _prepare_case(self, Bivio::Test::Case case, string_ref err) : boolean
