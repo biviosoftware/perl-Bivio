@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    facade isn't explicitly set with /*<facade>
+  * Bivio::HTML::Scraper sets last_uri to the redirected uri
+  * Bivio::UI::Text no longer uses @x[] form (deprecated in perl 5.8)
+
+  Revision 2.18  2004/04/06 23:17:24  moeller
+  * Bivio::Collection::Attributes allow get_if_exists_else_put to put
+    any value, not just call a computed code_ref
+  * Bivio::Type::DateTime gettimeofday uses Time::HiRes to avoid
+    syscall.ph problem
+  * Bivio::UI::Mail::Widget::Message doesn't render empty to or cc
     attributes
   * Bivio::Util::Release added http_realm/user/password for retrieving
     files
