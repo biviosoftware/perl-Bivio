@@ -390,7 +390,6 @@ sub throw_quietly {
     }
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
 	    Carp::longmess('Bivio::Die::throw_quietly'));
-    $self->put(throw_quietly => 1);
     # Be quiet
     CORE::die($_IN_CATCH ? "$self\n" : "\n");
     # DOES NOT RETURN
@@ -530,6 +529,8 @@ sub _new {
 	file => $file,
 	line => $line,
     });
+    # FRAGILE
+    $self->put(throw_quietly => 1) if (caller(2))[3] =~ /throw_quietly/;
     if ($_CURRENT_SELF) {
 	my($curr, $next) = $_CURRENT_SELF;
 	$curr = $next while $next = $curr->get('next');
