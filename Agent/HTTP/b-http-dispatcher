@@ -108,8 +108,8 @@ EOF
     my($hostname) = hostname;
     my($handler) = $cfg->{handler};
     my(@start_mode) = $background ? () : ('-X');
-    my($bivio_conf) = $ENV{'BIVIO_CONF'}
-	    ? "PerlSetEnv BIVIO_CONF $ENV{'BIVIO_CONF'}" : '';
+    my($bconf) = $ENV{'BCONF'}
+	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
     my($hostip) = sprintf("%d.%d.%d.%d",
             unpack('C4', (gethostbyname($hostname))[4]));
 
@@ -276,7 +276,7 @@ ServerAdmin <$user>
 PerlWarn on
 # Can't be on and use PERLLIB.
 PerlFreshRestart off
-<$bivio_conf>
+<$bconf>
 PerlModule <$handler>
 #RJN: This doesn't work for some reason
 PassEnv ORACLE_HOME

@@ -29,31 +29,26 @@ Each module defines a C<handle_config> method and
 calls L<register|"register"> during initialization.
 
 This module parses I<@ARGV> at initialization time.  It removes any
-arguments which are destined for this module.  See the syntax
+arguments which are destined for this module.
 
-Without an argument or with just I<argv>, looks for the name of a configuration
-file as follows:
+Without an argument or with just I<@ARGV>, looks for the name of
+a configuration file as follows:
 
 =over 4
 
 =item 1.
 
-If running setuid, setgid, or as root, skip to step 4.
+If running setuid, setgid, or as root, skip to step 3.
 
 =item 2.
 
-If the environment variable I<$BIVIO_CONF> is defined,
+If the environment variable I<$BCONF> is defined,
 identifies the name of the configuration file which
 must contain a hash.
 
 =item 3.
 
-If the file F<bivio.conf> exists (in the current directory),
-it must contain a hash.
-
-=item 4.
-
-The file F</etc/bivio.conf> must exist and contain a hash.
+The file F</etc/bivio.bconf> must exist and contain a hash.
 
 =back
 
@@ -95,7 +90,7 @@ called L<register|"register">.
 
 =over 4
 
-=item $BIVIO_CONF
+=item $BCONF
 
 Name of configuration file if not running setuid, setgid, or as root.
 
@@ -105,14 +100,10 @@ Name of configuration file if not running setuid, setgid, or as root.
 
 =over 4
 
-=item bivio.conf
-
-Default value for environment variable I<$BIVIO_CONF>.
-
-=item /etc/bivio.conf
+=item /etc/bivio.bconf
 
 Name of configuration used if the programming is running setuid, setgid, or as
-root, or the file identified by C<$BIVIO_CONF> (or its default) is not found.
+root, or the file identified by C<$BCONF> (or its default) is not found.
 
 =back
 
@@ -404,10 +395,12 @@ sub _initialize {
     my($not_setuid) = $< == $> && $( == $);
     # If we are setuid or setgid or as root, then don't _initialize from
     # environment variables or files in the current directory.
-    # /etc/bivio.conf is last resort if the file doesn't exist.
-    my($file) = $ENV{'BIVIO_CONF'} || 'bivio.conf';
-    unless (-f $file && -r $file && $> != 0 && $not_setuid) {
-	$file = '/etc/bivio.conf';
+    # /etc/bivio.bconf is last resort if the file doesn't exist.
+#TODO: Removed deprecated form BIVIO_CONF
+    my($file) = $ENV{'BCONF'} || $ENV{'BIVIO_CONF'};
+    unless (defined($file) && -f $file && -r $file && $> != 0 && $not_setuid) {
+#TODO: Remove deprecated form of /etc/bivio.conf
+	$file = -f '/etc/bivio.bconf' ? '/etc/bivio.bconf' : '/etc/bivio.conf';
     }
     if (defined($file)) {
 #TODO: Should probably die if not readable?
