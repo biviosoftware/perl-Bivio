@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::ECCreditCardProcessor;
 use strict;
@@ -11,7 +11,7 @@ Bivio::Biz::Action::ECCreditCardProcessor - authorize.net interface
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
@@ -85,8 +85,7 @@ sub check_transaction_batch {
     my($proto, $req) = @_;
     _setup_user_agent();
     my($hreq) = HTTP::Request->new(
-	    POST => 'https://secure.authorize.net/Interface/minterface.dll?batchreport'
-	   );
+	POST => 'https://secure.authorize.net/Interface/minterface.dll?batchreport');
     $hreq->content_type('application/x-www-form-urlencoded');
     $hreq->content('x_Login='.$_GW_LOGIN.'&x_Password='.$_GW_PASSWORD.
             '&Action=DOWNLOAD&BATCHID=NULL');
@@ -159,19 +158,14 @@ sub handle_config {
 
 =head2 execute_process(Bivio::Agent::Request req) : boolean
 
-Process credit card payment online by contacting the payment gateway.
+Process credit card payment online by contacting the payment gateway
+for the current ECPayment.
 
 =cut
 
 sub execute_process {
     my($proto, $req) = @_;
-
-    my($payment) = $req->unsafe_get('Model.ECPayment')
-	|| Bivio::Biz::Model->new($req, 'ECPayment')->load_this_from_request;
-    _process_payment($payment);
-#TODO: This is kinda neat, but maybe too much of a hack?
-    my($buffer) = $payment->get('processor_response');
-    $req->get('reply')->set_output(\$buffer);
+    _process_payment($req->get('Model.ECPayment'));
     return;
 }
 
@@ -197,11 +191,8 @@ sub _process_payment {
     my($response) = $_USER_AGENT->request($hreq);
     my($response_string) = $response->as_string;
     _trace($response_string) if $_TRACE;
-#TODO: die message will contain login/password. OK?
-#TODO: Don't you want to log the response as well?
-    Bivio::Die->die('request failed: ', $hreq->as_string)
-		unless $response->is_success;
-    _trace('RESULT=', $response->content) if $_TRACE;
+    Bivio::Die->die('request failed: ', $response_string)
+	    unless $response->is_success;
 #TODO: RJN: Need more error checking on responses from external sites.
 #      @details is just assumed to be correct later on.
     my($result_code, @details) = split(',', $response->content);
@@ -236,22 +227,23 @@ sub _setup_user_agent {
 #
 sub _transact_form_data {
     my($payment) = @_;
+    my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = Bivio::Type::Date->to_parts(
-	$payment->get('credit_card_expiration_date'));
+	$cc_payment->get('card_expiration_date'));
     my($exp_date) = sprintf('%02d/%04d', $m, $y);
     my($test_request) = '';
-    my($credit_card_number);
+    my($card_number);
     my($amount);
     if ($_GW_TEST_MODE) {
         $test_request = '&x_Test_Request=TRUE';
-        $credit_card_number = '4222222222222';
+        $card_number = '4222222222222';
         # Amount field used to trigger response:
         # 1=Approved, 2=Declined, 3=Error
         $amount = int($payment->get('amount'));
 	# All other amounts are approved
 	$amount = 1 if $amount < 1 || $amount > 3;
     } else {
-        $credit_card_number = $payment->get('credit_card_number');
+        $card_number = $cc_payment->get('card_number');
 	# Amounts are always positiv.
         $amount = Bivio::Type::Amount->abs($payment->get('amount'));
     }
@@ -261,11 +253,12 @@ sub _transact_form_data {
             '&x_Login='.$_GW_LOGIN.
             '&x_Password='.$_GW_PASSWORD.
             '&x_Type='.$payment->get('status')->get_authorize_net_type.
-	    (defined($payment->get('processor_transaction_number'))
-		? '&x_Trans_ID='.$payment->get('processor_transaction_number')
+	    (defined($cc_payment->get('processor_transaction_number'))
+		? '&x_Trans_ID='
+		    .$cc_payment->get('processor_transaction_number')
 		: '').
             '&x_Amount='.$amount.
-            '&x_Card_Num='.$credit_card_number.
+            '&x_Card_Num='.$card_number.
             '&x_Description='.$payment->get('description').
             '&x_Exp_Date='.$exp_date.
             '&x_Cust_ID='.$payment->get('realm_id').
@@ -305,6 +298,8 @@ sub _update_status {
     }
     $payment->update({
 	status => $status,
+    });
+    $payment->get_model('ECCreditCardPayment')->update({
 	processed_date_time => Bivio::Type::DateTime->now,
 	processor_response => $msg,
 	processor_transaction_number => $processor_transaction_number,
@@ -330,7 +325,7 @@ sub _warn_declined {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 bivio Inc.  All Rights Reserved.
+Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
