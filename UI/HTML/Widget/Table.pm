@@ -84,42 +84,36 @@ Spacing around each cell in pixels.
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
-by looking up name.'_HEADING' in the Bivio::UI::Label enum.
-Each value in columns may be one of:
+by looking up (name, 'table_heading), then name.'_HEADING' in Bivio::UI::Label.
 
-=item want_sorting : boolean [1]
+Each column element is specified in one of the following forms:
 
-Should column sorting be displayed?
+Just the field name of the list model:
 
-=over 4
+    <field_name>
 
-=item string
+or an array_ref with the field_ref as the first element and attributes
+as subsequent elements:
 
-The field name in the ListModel.
+    [
+        <field_name>,
+        {
+            <attr1> => <value1>,
+            ...
+        },
+    ]
 
-=item array_ref
+or a hash_ref where one attribute is named I<field>, identifying the field:
 
-First element is the field.  Second is a hash_ref containing
-attributes.
+    {
+        field => <field_name>,
+        <attr1> => <value1>,
+        ...,
+    }
 
-=item hash_ref
+or the empty string which will render as the empty cell:
 
-May or may not have a field and the attrs describe how to create the
-widget.  The name of field is in the attribute named C<field>.
-
-=back
-
-An empty field will be rendered as a empty cell.
-
-=item column_enabler : UNIVERSAL
-
-The object which determines which columns to dynamically enable.
-If present, then the method:
-
-  enable_column(string name, Bivio::UI::HTML::Widget::Table table) : boolean
-
-will be invoked upon it prior to rendering the table to determine which
-columns to display.
+    '',
 
 =item empty_list_widget : Bivio::UI::HTML::Widget []
 
@@ -212,11 +206,13 @@ The name of the table.
 A separator will separate the cells from the summary.  The color will be
 C<table_separator>.
 
+=item want_sorting : boolean [1]
+
+Should column sorting be displayed?
+
 =back
 
-=head1 CELL ATTRIBUTES
-
-=over 4
+=head1 COLUMN ATTRIBUTES
 
 =item column_align : string [LEFT]
 
@@ -229,6 +225,16 @@ See also I<heading_align>.
 =item column_control : value
 
 A widget value which, if set, must be a true value to render the column.
+
+=item column_enabler : UNIVERSAL
+
+The object which determines which columns to dynamically enable.
+If present, then the method:
+
+  enable_column(string name, Bivio::UI::HTML::Widget::Table table) : boolean
+
+will be invoked upon it prior to rendering the table to determine which
+columns to display.
 
 =item column_expand : boolean [false]
 
@@ -612,12 +618,17 @@ sub _get_heading {
     my($heading) = $cell->get_or_default('column_heading', $col);
 
     unless (UNIVERSAL::isa($heading, 'Bivio::UI::HTML::Widget')) {
+	# Try to get the heading label first
 	if ($heading) {
-	    # try to get the heading label first
-	    my($hl) = $heading;
-	    $hl =~ s/\s/_/g;
-	    $hl =~ s/\./_/;
-	    $hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
+	    my($hl) = Bivio::UI::Label->unsafe_get_exactly(
+		    $heading, 'table_heading');
+	    unless ($hl) {
+		# Deprecated form: we do lots of substitutions to get value
+		$hl = $heading;
+		$hl =~ s/\s/_/g;
+		$hl =~ s/\./_/;
+		$hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
+	    }
 
 	    if (defined($hl)) {
 		$heading = $hl;
