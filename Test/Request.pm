@@ -118,6 +118,20 @@ sub capture_mail {
     return $self;
 }
 
+=for html <a name="clear_current"></a>
+
+=head2 clear_current()
+
+Clears current and calls parent.
+
+=cut
+
+sub clear_current {
+    my($self) = shift;
+    $_SELF = undef;
+    return $self->SUPER::clear_current(@_);
+}
+
 =for html <a name="execute_task"></a>
 
 =head2 static execute_task(any task_id, hash_ref req_attrs) : array_ref
