@@ -460,8 +460,13 @@ EOF
 {
     # Protect against error exit
     %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST
-} @{[$prefix ? qq{| sed -e 's#^#$prefix#' } : '']}
 EOF
+            $res .= '} ';
+            if ($prefix) {
+		my($p) = $prefix;
+		$p =~ s/(\W)/\\$1/g;
+		$res .= "| perl -p -e 's#^#\Q$prefix\E#'";
+	    }
 	}
 	elsif ($line =~ m#^/#) {
 	    $res .= "echo '$prefix$line'";
