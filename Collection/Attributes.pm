@@ -427,7 +427,7 @@ sub internal_get {
 
 =for html <a name="internal_put"></a>
 
-=head2 protected internal_put(hash_ref attrs)
+=head2 protected internal_put(hash_ref attrs) : self
 
 Replaces all the attributes with the hash.  Only subclasses may call this
 method (enforced).
@@ -441,7 +441,7 @@ sub internal_put {
     _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->[$_IDI] = $fields;
-    return;
+    return $self;
 }
 
 =for html <a name="is_empty"></a>
