@@ -50,11 +50,14 @@ Bivio::Test->unit([
 		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
-            'ifcfg_static', [qw(eth0 any.host 1.2.3.4/28 99)] => [
+            'ifcfg_static', ['eth0', '
+any.host
+other.host
+', '1.2.3.4/28', '99'] => [
 		['etc/sysconfig/network', "HOSTNAME=any.host\n"],
 		['etc/sysconfig/network-scripts/ifcfg-eth0',
 		    "NETMASK=255.255.255.240\nGATEWAY=1.2.3.99\n"],
-		['etc/hosts', "1.2.3.4\tany.host\n"],
+		['etc/hosts', "1.2.3.4\tany.host other.host\n"],
 		['etc/hosts', sub {${shift(@_)} !~ /99.*any.host/im}],
 	    ],
 	], [

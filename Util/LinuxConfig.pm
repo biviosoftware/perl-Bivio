@@ -468,10 +468,10 @@ sub ifcfg_static {
 	unless $gateway =~ s/^(?=\d{1,3}$)/$net/
 	    || ($gateway =~ /^((?:\d{1,3}\.){3})d{1,3}$/)[0] eq $net;
     $mask = '255.255.255.' . (256 - (1 << (32 - $mask)));
-    my($hostname) = $hostnames =~ /^(\S+)/;
+    $hostnames = [map(lc($_), split(' ', $hostnames))];
     return _edit($self, '/etc/sysconfig/network',
 	    [qr/^NETWORKING=.*\n/im, "NETWORKING=yes\n"],
-	    [qr/^HOSTNAME=.*\n/im, "HOSTNAME=$hostname\n"],
+	    [qr/^HOSTNAME=.*\n/im, "HOSTNAME=$hostnames->[0]\n"],
 	) . _edit($self, "/etc/sysconfig/network-scripts/ifcfg-$device",
 	    [sub {
 		 my($data) = @_;
@@ -490,9 +490,9 @@ EOF
 		 my($data) = @_;
 		 return map({
 		     $$data =~ s/^\s*[\d\.]+.*\s+\Q$_\E\s.*\n?$//mi ? 1 : ();
-		 } split(' ', $hostnames));
+		 } @$hostnames);
 	    }],
-	    ['$', "$ip\t$hostnames\n"],
+	    ['$', "$ip\t@$hostnames\n"],
 	);
 }
 
