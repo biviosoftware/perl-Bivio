@@ -151,8 +151,8 @@ sub follow_link {
 =head2 follow_link_in_table(string table_name, string find_heading, string find_value, string link_heading, string link_name)
 
 Finds the row identified by I<find_value> in column I<find_heading> of
-I<table_name> using
-L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.  If I<table_name> is undef, uses I<find_heading>.
+I<table_name> using I<_find_row>.
+If I<table_name> is undef, uses I<find_heading>.
 
 Then clicks on I<link_name> in column I<link_heading>.  I<link_heading>
 defaults to I<find_heading>.  If I<link_name> is C<undef>, expects one and only
@@ -167,8 +167,6 @@ sub follow_link_in_table {
     $table_name = $find_heading
 	unless defined($table_name);
     my($row) = _find_row($self, $table_name, $find_heading, $find_value);
-	#_assert_html($self)->get('Tables')->find_row(
-	#$table_name, $find_heading, $find_value);
     $link_heading = $find_heading
 	unless defined($link_heading);
     Bivio::Die->die(
@@ -299,6 +297,33 @@ sub submit_form {
 	    _fixup_uri($self, $form->{action}),
             _format_form($form, $submit_button, $form_fields)));
     _assert_form_response($self);
+    return;
+}
+
+=for html <a name="submit_from_table"></a>
+
+=head2 submit_from_table(string table_name, string find_heading, string find_value, string submit_name, hashref form_values)
+
+Finds the row identified by I<find_value> in column I<submit_heading>
+of I<table_name> using I<_find_row>.
+
+Then submits the form via I<submit_name>, passing in I<form_values>.
+If I<form_values> is undef, then substitutes an empty hashref.
+
+=cut
+
+sub submit_from_table {
+    my($self) = shift;
+    my($table_name) = @_ > 2 ? shift : $_[0];
+    my($find_heading, $find_value, $submit_name, $form_values) = @_;
+    $table_name = $find_heading
+	unless defined($table_name);
+    $form_values = {}
+	unless defined($form_values);
+    my($row) = _find_row($self, $table_name, $find_heading, $find_value);
+
+    _trace("row = ", $row) if $_TRACE;
+    $self->submit_form($submit_name . '_' . $row->{_row_index} => $form_values);
     return;
 }
 
@@ -437,7 +462,7 @@ sub _create_form_request {
 # _find_row(string table_name, string find_heading, string find_value) : hashref
 #
 # Returns the hashref for row identified by I<table_name>, <I>find_heading
-# and <I>find_value.
+# and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.  
 #
 sub _find_row {
     my($self, $table_name, $find_heading, $find_value) = @_;
