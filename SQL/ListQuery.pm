@@ -393,6 +393,7 @@ sub _format_uri_primary_key {
     my($res) = '';
     my($pk_cols) = $support->get('primary_key');
     my($is_array) = ref($pk) eq 'ARRAY';
+    # NOTE: Nice to agree with PropertyModel::format_query
     for (my($i) = 0; $i < int(@$pk_cols); $i++) {
 	$res .= $pk_cols->[$i]->{type}->to_uri(
 		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}})."\177";

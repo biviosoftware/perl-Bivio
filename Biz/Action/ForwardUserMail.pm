@@ -6,7 +6,7 @@ $Bivio::Biz::Action::ForwardUserMail::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 =head1 NAME
 
-Bivio::Biz::Action::ForwardUserMail - creates a new bivio club
+Bivio::Biz::Action::ForwardUserMail - forwards mail to user's real email
 
 =head1 EXTENDS
 
