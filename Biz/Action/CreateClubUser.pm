@@ -68,13 +68,6 @@ sub execute {
 	'user_id' => $user_id,
 	'role' => Bivio::Auth::Role->$role(),
     });
-
-    my($club_user) = Bivio::Biz::Model::ClubUser->new($req);
-    $club_user->create({
-	'club_id' => $club_id,
-	'user_id' => $user_id,
-	'mail_mode' => Bivio::Type::MailMode::WANT_ALL(),
-    });
     return;
 }
 

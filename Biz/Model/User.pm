@@ -38,6 +38,9 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::Enum;
 use Bivio::Type::Gender;
 use Bivio::Type::Name;
+use Bivio::Type::Line;
+use Bivio::Type::Country;
+use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
@@ -87,6 +90,8 @@ sub internal_initialize {
 	columns => {
             user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
+	    display_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NOT_NULL()],
             first_name => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
             middle_name => ['Bivio::Type::Name',
@@ -95,10 +100,24 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NONE()],
             gender => ['Bivio::Type::Gender',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            age => ['Bivio::Type::Integer',
+            birth_date => ['Bivio::Type::Date',
     		Bivio::SQL::Constraint::NONE()],
-	    display_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+	    street1 => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NONE()],
+	    street2 => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NONE()],
+	    city => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+	    state => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+	    zip => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+	    country => ['Bivio::Type::Country',
+    		Bivio::SQL::Constraint::NONE()],
+	    phone => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+	    fax => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
         },
 	auth_id => 'user_id',
     };

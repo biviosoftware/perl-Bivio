@@ -120,6 +120,11 @@ __PACKAGE__->compile(
 	undef,
 	'password and confirm password fields do not match',
     ],
+    COUNTRY => [
+	17,
+	undef,
+	'country must be exactly two letters',
+    ],
 );
 
 #=PRIVATE METHODS

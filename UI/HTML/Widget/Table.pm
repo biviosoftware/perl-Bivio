@@ -55,6 +55,13 @@ in C<summary_line> color and C<count> equal two.
 
 =over 4
 
+=item align : string [CENTER]
+
+How to align the table.  The allowed (case
+insensitive) values are defined in
+L<Bivio::UI::Align|Bivio::UI::Align>.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
+
 =item bgcolor : string []
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
@@ -209,7 +216,9 @@ sub initialize {
 	$p .= '<table border=0 cellspacing=0 cellpadding=';
 	# We don't want to check parents
 	$p .= $self->get_or_default('pad', 5);
-	$p .= ' width="95%" align=center'
+	$p .= Bivio::UI::Align->as_html(
+		$self->get_or_default('align', 'center'));
+	$p .= ' width="95%"'
 		if $self->get_or_default('expand', 0);
 	my($bgcolor) = $self->get_or_default('bgcolor', 0);
 	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;

@@ -90,11 +90,11 @@ sub get_outgoing_emails {
     my($self) = @_;
     # a 4 table join
     my($sql) = 'select user_email_t.email '
-	    .' from user_email_t, club_user_t '
-	    .' where club_user_t.club_id=?'
-	    .' and club_user_t.mail_mode='
-	    . Bivio::Type::MailMode::WANT_ALL->as_int
-	    .' and club_user_t.user_id=user_email_t.user_id';
+	    .' from user_email_t, realm_user_t '
+	    .' where realm_user_t.realm_id=?'
+	    .' and realm_user_t.role >='
+	    . Bivio::Auth::Role::MEMBER->as_int
+	    .' and realm_user_t.user_id=user_email_t.user_id';
     my($statement) = Bivio::SQL::Connection->execute($sql,
 	    [$self->get('club_id')], $self);
 

@@ -25,7 +25,6 @@ email addresses.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::ClubUser;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;

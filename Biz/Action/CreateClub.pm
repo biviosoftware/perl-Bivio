@@ -26,7 +26,6 @@ C<Bivio::Biz::Action::CreateClub> creates a club and its administrator.
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Action::CreateClubUser;
-use Bivio::Biz::Model::ClubUser;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::MailMessage;
