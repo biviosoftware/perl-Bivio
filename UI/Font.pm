@@ -96,6 +96,7 @@ _compile([
     TEXT_MENU_SELECTED => [$_SANS_SERIF, 'text_menu_font', 'strong'],
     DETAIL_CHOOSER => [$_SANS_SERIF, 'detail_chooser', 'strong'],
     MESSAGE_SUBJECT => [$_SANS_SERIF, undef],
+    LIST_ACTION => [undef, undef, 'small'],
 ]);
 
 =head1 METHODS
