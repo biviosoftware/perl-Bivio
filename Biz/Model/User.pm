@@ -165,8 +165,7 @@ values are identical.>
 =cut
 
 sub format_full_name {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
-
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($res) = '';
     foreach my $name ($model->unsafe_get($model_prefix.'first_name',
 	    $model_prefix.'middle_name', $model_prefix.'last_name')) {
@@ -190,7 +189,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_last_first_middle {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $proto->concat_last_first_middle($model->unsafe_get(
 	    $model_prefix.'last_name', $model_prefix.'first_name',
 	    $model_prefix.'middle_name'));
@@ -341,17 +340,6 @@ sub _get_realm {
     my($self) = @_;
     return Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
 	    ->unauth_load_or_die(realm_id => $self->get('user_id'));
-}
-
-# _process_model_prefix_args(self) : (proto, Bivio::Biz::Model, string)
-#
-# _process_model_prefix_args(proto, Bivio::Biz::Model model, string model_prefix) : (proto, Bivio::Biz::Model, string)
-#
-# Returns the class, target model and optional model prefix.
-#
-sub _process_model_prefix_args {
-    my($self, $model, $model_prefix) = @_;
-    return (ref($self) || $self, $model || $self, $model_prefix || '');
 }
 
 # _validate_names(self)
