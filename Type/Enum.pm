@@ -385,8 +385,11 @@ sub compile {
 	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid number "',
 		$d->[0], '"')
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
+
+	# Enforce to our syntax (not any syntax)
 	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid enum name')
-		    unless $name =~ /^[A-Z][A-Z0-9_]*$/;
+		    unless __PACKAGE__->is_valid_name($name);
+
 	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
 	$name_width = length($name) if length($name) > $name_width;
@@ -578,6 +581,19 @@ sub is_equal {
     my(undef, $left, $right) = @_;
     return 0 unless defined($left) && defined($right);
     return $left == $right ? 1 : 0;
+}
+
+=for html <a name="is_valid_name"></a>
+
+=head2 static is_valid_name(string name) : boolean
+
+Returns true if I<name> is a correctly formed enumerated type name.
+
+=cut
+
+sub is_valid_name {
+    my(undef, $name) = @_;
+    return $name =~ /^[A-Z][A-Z0-9_]*$/ ? 1 : 0;
 }
 
 =for html <a name="to_literal"></a>
