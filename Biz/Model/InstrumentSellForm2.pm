@@ -117,9 +117,6 @@ sub execute_input {
 	    realm_instrument_id => $realm_inst->get('realm_instrument_id'),
 	    amount => Bivio::Type::Amount->neg($properties->{commission}),
 	    tax_category => Bivio::Type::TaxCategory::NOT_TAXABLE(),
-	    tax_basis => 0,
-	    count => 0,
-	    external_identifier => '0',
 	});
     }
 
@@ -139,8 +136,6 @@ sub execute_input {
 	realm_account_id => $properties->{
 	    'RealmAccountEntry.realm_account_id'},
 	amount => $total_amount,
-	tax_category => Bivio::Type::TaxCategory::NOT_TAXABLE(),
-	tax_basis => 1,
 #TODO: really want a template for this kind of thing, for now ala easyware
 	remark => $realm_inst->get_model('Instrument')->get('name')
     });
@@ -363,9 +358,6 @@ sub _create_gain_entries {
 	        : $type eq 'mtcg'
  	            ? Bivio::Type::TaxCategory::MEDIUM_TERM_CAPITAL_GAIN()
 	            : Bivio::Type::TaxCategory::LONG_TERM_CAPITAL_GAIN(),
-	    tax_basis => 0,
-	    count => 0,
-	    external_identifier => 0,
 	});
     }
 
