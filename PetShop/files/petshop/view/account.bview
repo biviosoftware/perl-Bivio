@@ -16,7 +16,7 @@ view_put(menu_content => Form('UserAccountForm',
     Grid([
 	[
 	    String('Account Information:', 'page_heading')
-			    ->put(cell_colspan => 2),
+		->put(cell_colspan => 2),
 	], [
 	    String('User ID: ', 'form_field_label')
 		->put(row_control => [$edit_mode_condition]),
