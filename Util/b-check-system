@@ -113,6 +113,7 @@ sub check_messages {
 	    /sendmail\[\d+\]: \d+ aliases, longest/ && next;
 	    /sendmail\[\d+\]: \S+: clone \S+, owner=/ && next;
             /sendmail\[\d+\]: .+: DSN: User unknown/ && next;
+            /sendmail\[\d+\]: .+: timeout waiting for input from/ && next;
 
             /ssh\[\d+\]: connect\(\) from \S+ to \S+/ && next;
             /sshd2\[\d+\]: log:/ && next;
