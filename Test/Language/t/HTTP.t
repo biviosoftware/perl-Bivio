@@ -27,8 +27,8 @@ Bivio::Test->unit([
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
 home_page();
-goto_link('Sign-in');
-goto_link('New User');
+follow_link('Sign-in');
+follow_link('New User');
 my($id) = "test_http_$$";
 submit_form(submit => {
     'User ID:' => $id,
@@ -44,7 +44,7 @@ submit_form(submit => {
     'Telephone Number:' => '555-1212',
 });
 home_page();
-goto_link('MyAccount');
+follow_link('MyAccount');
 submit_form(search => {
 });
 submit_form(search => {

@@ -93,6 +93,21 @@ sub debug_print {
     return;
 }
 
+=for html <a name="follow_link"></a>
+
+=head2 follow_link(string link_name)
+
+Loads the page for the L<link_name|"link_name">
+
+=cut
+
+sub follow_link {
+    my($self, $link_text) = @_;
+    $self->visit_url(
+	_assert_html($self)->get_nested('Links', $link_text, 'href'));
+    return;
+}
+
 =for html <a name="get_html_parser"></a>
 
 =head2 get_html_parser() : Bivio::Test::HTMLParser
@@ -104,36 +119,6 @@ Returns the HTML parser for the current page.
 sub get_html_parser {
     my($self) = @_;
     return _assert_html($self);
-}
-
-=for html <a name="goto_link"></a>
-
-=head2 goto_link(string link_name)
-
-Loads the page for the L<link_name|"link_name">
-
-=cut
-
-sub goto_link {
-    my($self, $link_text) = @_;
-    $self->goto_uri(
-	_assert_html($self)->get_nested('Links', $link_text, 'href'));
-    return;
-}
-
-=for html <a name="goto_uri"></a>
-
-=head2 goto_uri(string uri)
-
-Loads the page using the specified URI.
-
-=cut
-
-sub goto_uri {
-    my($self, $uri) = @_;
-    _trace($uri) if $_TRACE;
-    _send_request($self, HTTP::Request->new(GET => _fixup_uri($self, $uri)));
-    return;
 }
 
 =for html <a name="handle_config"></a>
@@ -165,7 +150,7 @@ Requests the the home page.
 =cut
 
 sub home_page {
-    return shift->goto_uri($_CFG->{home_page_uri});
+    return shift->visit_url($_CFG->{home_page_uri});
 }
 
 =for html <a name="home_page_uri"></a>
@@ -193,6 +178,7 @@ B<File upload not supported yet.>
 
 sub submit_form {
     my($self, $submit_button, $form_fields) = @_;
+    $form_fields ||= {};
     my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields), $submit_button);
@@ -217,6 +203,21 @@ sub verify_text {
     my($self, $text) = @_;
     Bivio::Die->die($text, ': text not found in response')
 	unless _assert_response($self)->content =~ /$text/;
+    return;
+}
+
+=for html <a name="visit_url"></a>
+
+=head2 visit_url(string uri)
+
+Loads the page using the specified URI.
+
+=cut
+
+sub visit_url {
+    my($self, $uri) = @_;
+    _trace($uri) if $_TRACE;
+    _send_request($self, HTTP::Request->new(GET => _fixup_uri($self, $uri)));
     return;
 }
 
