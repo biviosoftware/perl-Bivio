@@ -34,10 +34,11 @@ and delete interface to the C<realm_owner_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RealmType;
 use Bivio::SQL::Constraint;
+use Bivio::SQL::Support;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
