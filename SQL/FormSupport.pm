@@ -40,7 +40,7 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 =over 4
 
-=item auth_id : array_ref (required)
+=item auth_id : array_ref
 
 A field or field identity which must be equal to
 request's I<auth_id> attribute.

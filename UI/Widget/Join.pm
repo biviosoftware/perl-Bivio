@@ -88,11 +88,15 @@ Initializes widget state and children.
 sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    # Already initialized?
     return if $fields->{values};
-    $fields->{values} = $self->get('values');
-    my($v);
+
+    # Save values and initialize children.  $name identifies each
+    # widget uniquely for debugging purposes.
     my($name) = 0;
-    foreach $v (@{$fields->{values}}) {
+    $fields->{values} = $self->get('values');
+    foreach my $v (@{$fields->{values}}) {
 	$self->initialize_value($name++, $v);
     }
     return;
