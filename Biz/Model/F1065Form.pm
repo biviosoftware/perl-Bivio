@@ -674,7 +674,7 @@ sub _calculate_income {
 
     # the Schedule D can be off by a few pennies, unfortunately
     if ($diff != 0) {
-	Bivio::IO::Alert->warn('adjusting allocations ', $diff);
+	Bivio::IO::Alert->info('adjusting allocations ', $diff);
 
 	# use income_general_individual to take up the slack
 	$properties->{income_general_individual} = $_M->add(
