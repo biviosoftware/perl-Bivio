@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Alert;
 use strict;
@@ -59,7 +59,9 @@ entry.
 my($_PERL_MSG_AT_LINE, $_LOGGER, $_LOG_FILE,
     $_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
     $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
-    $_MAX_WARNINGS, $_WARN_COUNTER, $_MAX_ARG_DEPTH, $_DEFAULT_MAX_ARG_DEPTH);
+    $_MAX_WARNINGS, $_WARN_COUNTER, $_MAX_ARG_DEPTH, $_DEFAULT_MAX_ARG_DEPTH,
+    $_DEFAULT_MAX_ELEMENT_COUNT, $_MAX_ELEMENT_COUNT,
+);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
@@ -67,6 +69,7 @@ BEGIN {
     $_DEFAULT_MAX_ARG_LENGTH = 2048;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_MAX_ARG_DEPTH = $_DEFAULT_MAX_ARG_DEPTH = 3;
+    $_MAX_ELEMENT_COUNT = $_DEFAULT_MAX_ELEMENT_COUNT = 20;
     $_WANT_PID = 0;
     $_WANT_TIME = 0;
     $_STACK_TRACE_WARN = 0;
@@ -88,6 +91,7 @@ Bivio::IO::Config->register({
     stack_trace_warn_deprecated => 0,
     max_arg_length => $_DEFAULT_MAX_ARG_LENGTH,
     max_arg_depth => $_DEFAULT_MAX_ARG_DEPTH,
+    max_element_count => $_DEFAULT_MAX_ELEMENT_COUNT,
     want_stderr => 0,
     want_pid => 0,
     want_time => 0,
@@ -130,8 +134,9 @@ sub bootstrap_die {
 
 Formats I<pkg>, I<file>, I<line>, I<sub>, and I<msg> into a pretty printed
 string.  Care is taken to truncate long arguments to
-L<get_max_arg_length|"get_max_arg_length">.  If an element of I<msg> is an
-object which supports
+L<get_max_arg_length|"get_max_arg_length">.  No more than I<max_element_count>
+will be printed per hash or array_ref.  I<max_arg_depth> limits depth of
+recursion.  If an element of I<msg> is an object which supports
 <Bivio::UNIVERSAL::as_string|Bivio::UNIVERSAL/"as_string">, C<as_string> will
 be called to convert the object to a string.
 
@@ -201,6 +206,16 @@ warnings.
 Maximum length of warning message components, i.e. arguments to
 L<die|"die"> and L<warn|"warn">.
 
+=item max_arg_depth : int [3]
+
+Maximum nesting of formatted output, i.e., will only recurse to
+I<max_arg_depth> in tree.
+
+=item max_element_count : int [20]
+
+Maximum number of elements to display in array_ref and hash_ref
+of formatted output.
+
 =item max_warnings : int [1000]
 
 Maximum number of warnings between L<reset_warn_counter|"reset_warn_counter">
@@ -250,6 +265,7 @@ sub handle_config {
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
 	    = $cfg->{max_arg_length};
     $_MAX_ARG_DEPTH = $cfg->{max_arg_depth};
+    $_MAX_ELEMENT_COUNT = $cfg->{max_element_count};
 
     # Must reset warn counter.  We don't call this except at config
     # time, so probably ok.  The low level code shouldn't loop. :-(
@@ -505,7 +521,7 @@ sub _format_string {
 	# Don't let as_string calls crash;  Only call as_string on refs.
 	if (ref($o) eq 'ARRAY') {
 	    my($s, $v) = '[';
-	    my($i) = 200;
+	    my($i) = $_MAX_ELEMENT_COUNT;
 	    foreach $v (@$o) {
 		$s .= _format_string($v, $depth) .',';
 		if (--$i <= 0) {
@@ -518,7 +534,7 @@ sub _format_string {
 
 	if (ref($o) eq 'HASH') {
 	    my($s, $v) = '{';
-	    my($i) = 200;
+	    my($i) = $_MAX_ELEMENT_COUNT;
 	    foreach $v (sort(keys(%$o))) {
 		$s .= _format_string($v, $depth)
 			.'=>'._format_string($o->{$v}, $depth).',';
@@ -632,7 +648,7 @@ sub _warn_handler {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
