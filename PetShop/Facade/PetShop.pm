@@ -192,6 +192,7 @@ sub _task {
     $t->group(FORBIDDEN => undef);
     $t->group(MY_SITE => 'my-site/*');
     $t->group(HELP => 'hp/*');
+    $t->group(FAVICON_ICO => '/favicon.ico');
     $t->group(PRODUCTS => 'pub/products');
     $t->group(ITEM_SEARCH => 'pub/search');
     $t->group(ITEMS => 'items');
@@ -233,6 +234,7 @@ sub _text {
     # SITE_ROOT task calls View->execute_uri and we look for pages in
     # the "site_root" directory.
     $t->group(view_execute_uri_prefix => 'site_root/');
+    $t->group(favicon_uri => '/i/favicon.ico');
 
     # No label is convenient to have
     $t->group(none => '');
