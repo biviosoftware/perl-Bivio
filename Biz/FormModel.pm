@@ -437,7 +437,8 @@ sub get_context_from_request {
 	    _trace('unwound context: ', $c) if $_TRACE;
 	    return $c;
 	}
-	$form = $model->internal_get_literals;
+#TODO: This is horribly inefficient, I think.
+	$form = $model->internal_get_field_values;
 	$context = $model->{$_PACKAGE}->{context};
     }
     elsif ($model = $req->get('task')->get('form_model')) {
@@ -671,6 +672,34 @@ field.
 =cut
 
 sub internal_field_constraint_error {
+}
+
+=for html <a name="internal_get_field_values"></a>
+
+=head2 internal_get_field_values() : hash_ref
+
+Returns the form as literals
+
+=cut
+
+sub internal_get_field_values {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($properties) = $self->internal_get;
+    my($res) = {
+	version => $self->get_info('version'),
+	TIMEZONE_FIELD() => $fields->{literals}->{TIMEZONE_FIELD()},
+    };
+    foreach my $n (@{$self->internal_get_hidden_field_names},
+	   @{$self->internal_get_visible_field_names}) {
+	my($fn) = $self->get_field_name_for_html($n);
+	my($v) = defined($properties->{$n})
+		? $self->get_field_info($n, 'type')
+			->to_literal($properties->{$n})
+		: _get_literal($fields, $fn);
+	$res->{$fn} = $v;
+    }
+    return $res;
 }
 
 =for html <a name="internal_get_file_field_names"></a>
@@ -911,7 +940,7 @@ sub unsafe_get_context_field {
     Carp::croak('form does not require_context') unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
-    Carp::croak('context does not contain form_model') unless $model;
+    return (undef) unless $model;
 
     # If there is no form, can't be a value
     return (undef) unless $c->{form};
@@ -1096,12 +1125,12 @@ sub _parse {
     # Ditto for timezone
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
 
+    # Allow ListFormModel to initialize its state
+    $self->internal_pre_parse_columns();
+
     # parse, but only save errors if it is a submit
     my($is_submit) = _parse_submit($self, $form);
     my($values) = {};
-
-    # Allow ListFormModel to initialize its state
-    $self->internal_pre_parse_columns();
 
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
