@@ -1129,7 +1129,7 @@ Returns a banner ad widget which fits in the page heading area.
 sub page_heading_banner_ad {
     my($proto) = @_;
     return $proto->link_static_site(
-	    $proto->image('promote_cfo_small'), 'hm/account-keeper')
+	    $proto->image('promote_stop_small'), 'hm/account-sync')
 	    ->put(control => $proto->html_value('want_ads'));
 }
 
