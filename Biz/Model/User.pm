@@ -34,32 +34,17 @@ and delete interface to the C<user_t> table.
 
 =cut
 
-
 #=IMPORTS
-use Bivio::Agent::Request;
-use Bivio::Biz::Model::ConnectSurvey;
-use Bivio::Biz::Model::RealmOwner;
-use Bivio::Biz::Model::RealmUser;
+# also uses Email model
+use Bivio::Auth::RealmType;
+use Bivio::Die;
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Date;
 use Bivio::Type::Email;
-use Bivio::Type::Enum;
 use Bivio::Type::Gender;
 use Bivio::Type::Location;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
-my($_SHADOW_PREFIX) = Bivio::Biz::Model::RealmOwner->SHADOW_PREFIX();
-my($_SHADOW_WITHDRAWN_PREFIX) =
-	Bivio::Biz::Model::RealmOwner->SHADOW_WITHDRAWN_PREFIX();
-my($_SHADOW_WITHDRAWN_SUFFIX) =
-	Bivio::Biz::Model::RealmOwner->SHADOW_WITHDRAWN_SUFFIX();
-# arbitrary value, allows for 99,999 name collisions
-my($_MAX_SHADOW_INDEX) = 99999;
-my($_MAX_SHADOW_NAME_SIZE) = Bivio::Type::RealmName->get_width - 8;
 
 =head1 METHODS
 
@@ -70,53 +55,29 @@ my($_MAX_SHADOW_NAME_SIZE) = Bivio::Type::RealmName->get_width - 8;
 =head2 cascade_delete()
 
 Deletes this user and all its related realm information. This will not
-delete club RealmUser data, and if it exists then this method will die.
+delete club RealmUser data, and if it exists then this method will die
+with a database constraint violation.
 
 =cut
 
 sub cascade_delete {
     my($self) = @_;
+    my($req) = $self->get_request;
+    my($realm) = _get_realm($self);
 
-    my($id) = $self->get('user_id');
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    $realm->unauth_load(realm_id => $id)
-	    || die("couldn't load realm from user");
-    # delete this user's RealmUser
-    my($realm_user) = Bivio::Biz::Model::RealmUser->new($self->get_request);
-    $realm_user->unauth_load_or_die(realm_id => $id, user_id => $id);
-    $realm_user->delete();
+    # switches to the user auth realm, restored at end of method
+    my($old_auth_realm) = $req->get('auth_realm');
+    $req->set_realm($realm);
 
-    # delete this user's profile, if it exists
-    my($survey) = Bivio::Biz::Model::ConnectSurvey->new($self->get_request);
-    $survey->delete() if $survey->unauth_load(realm_id => $id);
+    my($die) = Bivio::Die->catch(
+	    sub {
+		$self->SUPER::cascade_delete;
+		$realm->cascade_delete;
+	    });
 
-    # Clear the user from any outstanding invites.
-    # This happens if the user is a shadow user.
-    my($params) = [$id];
-    Bivio::SQL::Connection->execute('
-            DELETE from realm_invite_t
-            WHERE realm_user_id=?',
-	    $params);
-
-    # delete any tax or allocations records
-    foreach my $table (qw(tax_k1_t member_allocation_t)) {
-	Bivio::SQL::Connection->execute("
-                DELETE from $table
-                WHERE user_id=?",
-		$params);
-    }
-
-    # Delete any links from visitor_t.
-    Bivio::SQL::Connection->execute('
-            UPDATE visitor_t
-            SET user_id = NULL
-            WHERE user_id=?',
-	    $params);
-
-    $self->delete();
-
-    # delete realm specified data (email, address, ...)
-    $realm->cascade_delete();
+    # restore previous auth realm
+    $req->set_realm($old_auth_realm);
+    $die->throw if $die;
     return;
 }
 
@@ -158,9 +119,9 @@ sub count_all {
     my($proto, $req) = @_;
     my($sth) = Bivio::SQL::Connection->execute(
 	    "SELECT count(*)
-            FROM realm_owner_t 
+            FROM realm_owner_t
             WHERE name NOT LIKE '"
-	    .Bivio::Type::RealmName::SHADOW_PREFIX()
+	    .Bivio::Type::RealmName::OFFLINE_PREFIX()
 	    ."%'
             AND name NOT LIKE '%"
 	    .Bivio::Type::RealmName::TEST_SUFFIX()
@@ -174,29 +135,20 @@ sub count_all {
 
 =for html <a name="create"></a>
 
-=head2 create(hash_ref new_values)
+=head2 create(hash_ref new_values) : self
 
-Sets I<gender> if not set, then calls SUPER.
+Sets I<gender> if not set and computes the sorting name fields then
+calls SUPER.
 
 =cut
 
 sub create {
-    my($self, $values) = (shift, shift);
+    my($self, $values) = @_;
     $values->{gender} ||= Bivio::Type::Gender::UNKNOWN();
-    my($got_one) = 0;
-    foreach my $field (qw(last_name first_name middle_name)) {
-	my($value) = $values->{$field};
-	if (defined($value) && length($value)) {
-	    $values->{$field.'_sort'} = lc($value);
-	    $got_one++;
-	}
-	else {
-	    $values->{$field.'_sort'} = undef;
-	}
-    }
-    $self->throw_die('must have at least one of first, last, and middle names')
-	    unless $got_one;
-    return $self->SUPER::create($values, @_);
+    _compute_sorting_names($values);
+    my($res) = $self->SUPER::create($values);
+    _validate_names($self);
+    return $res;
 }
 
 =for html <a name="format_full_name"></a>
@@ -213,15 +165,12 @@ values are identical.>
 =cut
 
 sub format_full_name {
-    my($self, $model, $model_prefix) = @_;
-    # Always have at least one name.
-    my($p) = $model_prefix || '';
-    my($m) = $model || $self;
+    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
 
     my($res) = '';
-    foreach my $n ($m->unsafe_get(
-	    $p.'first_name', $p.'middle_name', $p.'last_name')) {
-	$res .= $n.' ' if defined($n);
+    foreach my $name ($model->unsafe_get($model_prefix.'first_name',
+	    $model_prefix.'middle_name', $model_prefix.'last_name')) {
+	$res .= $name.' ' if defined($name);
     }
     # Get rid of last ' '
     chop($res);
@@ -232,7 +181,7 @@ sub format_full_name {
 
 =head2 format_last_first_middle() : string
 
-=head2 static format_last_first_middle(Bivio::Biz::ListModel list_model, string model_prefix) : string
+=head2 static format_last_first_middle(Bivio::Biz::Model model, string model_prefix) : string
 
 Return Last, First Middle.
 
@@ -241,66 +190,10 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_last_first_middle {
-    my($self, $list_model, $model_prefix) = @_;
-    # Have at least one name or returns undef
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
-
-    return $self->concat_last_first_middle($m->unsafe_get(
-	    $p.'last_name', $p.'first_name', $p.'middle_name'));
-}
-
-=for html <a name="generate_shadow_user_name"></a>
-
-=head2 static generate_shadow_user_name(string first_name, string last_name) : string
-
-=head2 static generate_shadow_user_name(string first_name, string last_name) : string
-
-Creates a shadow realm name for the user with the specified first/last name.
-The name will be unique across current realms.
-
-The shadow user name format is:
-
-    =<first>_<last><num>
-
-Ex. =roberto_zanutta2-1
-
-The name portion will be truncated if necessary.
-
-=cut
-
-sub generate_shadow_user_name {
-    my(undef, $first_name, $last_name) = @_;
-
-    die("invalid first and last name")
-	    unless defined($first_name) || defined($last_name);
-    my($name) = $last_name || '';
-    $name = $first_name.'_'.$name if defined($first_name);
-    $name =~ s/\s/_/g;
-    $name =~ s/[\W]//g;
-    $name = $_SHADOW_PREFIX.lc($name);
-    if (length($name) > $_MAX_SHADOW_NAME_SIZE) {
-	$name = substr($name, 0, $_MAX_SHADOW_NAME_SIZE)
-    }
-    return _make_unique_name($name);
-}
-
-=for html <a name="generate_shadow_withdrawn_name"></a>
-
-=head2 static generate_shadow_withdrawn_name(string name) : string
-
-Creates a shadow name for the specified user name who has withdrawn.
-
-=cut
-
-sub generate_shadow_withdrawn_name {
-    my(undef, $name) = @_;
-    # need room for extra characters
-    if (length($name) > $_MAX_SHADOW_NAME_SIZE - 2) {
-	$name = substr($name, 0, $_MAX_SHADOW_NAME_SIZE - 2)
-    }
-    $name = $_SHADOW_WITHDRAWN_PREFIX.lc($name).$_SHADOW_WITHDRAWN_SUFFIX;
-    return _make_unique_name($name);
+    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    return $proto->concat_last_first_middle($model->unsafe_get(
+	    $model_prefix.'last_name', $model_prefix.'first_name',
+	    $model_prefix.'middle_name'));
 }
 
 =for html <a name="get_outgoing_emails"></a>
@@ -320,16 +213,14 @@ this user.
 sub get_outgoing_emails {
     my($self, $which) = @_;
 
-
     # Load Email
-    my($loc) = $which ? $which : Bivio::Type::Location::HOME();
-    my($email) = Bivio::Biz::Model::Email->new($self->get_request);
+    $which ||= Bivio::Type::Location::HOME();
+    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
     return undef unless $email->unauth_load(
-	    location => $loc, realm_id => $self->get('user_id'));
+	    location => $which, realm_id => $self->get('user_id'));
 
     # Validate address
-    my($a) = $email->get('email');
-    return undef unless Bivio::Type::Email->is_valid($a);
+    return undef unless Bivio::Type::Email->is_valid($email->get('email'));
 
     return [$email->get('email')];
 }
@@ -347,7 +238,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'user_t',
 	columns => {
-            user_id => ['PrimaryId', 'PRIMARY_KEY'],
+            user_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             first_name => ['Name', 'NONE'],
             first_name_sort => ['Name', 'NONE'],
             middle_name => ['Name', 'NONE'],
@@ -372,29 +263,24 @@ Checks to see if already invalidated.
 
 sub invalidate_email {
     my($self) = @_;
-    my($req) = $self->get_request;
-    my($id) = $self->get('user_id');
-    my($email) = Bivio::Biz::Model::Email->new($req)
-	    ->unauth_load_or_die(realm_id => $id);
+    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email')
+	    ->unauth_load_or_die(realm_id => $self->get('user_id'));
     my($address) = $email->get('email');
     my($prefix) = Bivio::Type::Email::INVALID_PREFIX();
     # Already invalidated?
     return if $address =~ /^\Q$prefix/o;
 
-    # Nope, need to invalidate and create notice
-    my($other) = Bivio::Biz::Model::Email->new($req);
+    # Nope, need to invalidate
+    my($other) = Bivio::Biz::Model->new($self->get_request, 'Email');
     my($i) = 0;
     $i++ while $other->unauth_load({email => $prefix.$i.$address});
     $email->update({email => $prefix.$i.$address});
-    Bivio::Biz::Model->new($self->get_request, 'RealmNotice')
-	->unauth_create_unless_type_exists(
-		$id, 'EMAIL_INVALID', undef);
     return;
 }
 
 =for html <a name="set_encrypted_password"></a>
 
-=head2 set_encrypted_password(string encrypted) : 
+=head2 set_encrypted_password(string encrypted) : self
 
 Sets a user's encrypted password to a new value.
 
@@ -402,17 +288,12 @@ Sets a user's encrypted password to a new value.
 
 sub set_encrypted_password {
     my($self, $encrypted) = @_;
-
-    my($id) = $self->get('user_id');
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    $realm->unauth_load(realm_id => $id)
-	    || die("couldn't load realm from user");
-    return $realm->update({password => $encrypted});
+    return _get_realm->update({password => $encrypted});
 }
 
 =for html <a name="update"></a>
 
-=head2 update(hash_ref new_values)
+=head2 update(hash_ref new_values) : self
 
 Updates the current model's values.  Validates one of
 first, last and middle are set.
@@ -420,49 +301,70 @@ first, last and middle are set.
 =cut
 
 sub update {
-    my($self, $new_values) = (shift, shift);
-    my($properties) = $self->internal_get;
-    my($got_one) = 0;
-    # Must either have a defined value
-    foreach my $n (qw(first_name middle_name last_name)) {
-	if (exists($new_values->{$n})) {
-	    if (defined($new_values->{$n}) && length($new_values->{$n})) {
-		$new_values->{$n.'_sort'} = lc($new_values->{$n});
-		$got_one++;
-	    }
-	    else {
-		# Set value to null
-		$new_values->{$n.'_sort'} = undef;
-	    }
-	}
-	# Don't need to check length, since user can't touch these values
-	elsif (defined($properties->{$n})) {
-	    $got_one++;
-	}
-    }
-    $self->throw_die('must have at least one of first, last, and middle names')
-	    unless $got_one;
-    return $self->SUPER::update($new_values, @_);
+    my($self, $new_values) = @_;
+    _compute_sorting_names($new_values);
+    my($res) = $self->SUPER::update($new_values);
+    _validate_names($self);
+    return $res;
 }
 
 #=PRIVATE METHODS
 
-# _make_unique_name(string name) : string
+# _compute_sorting_names(hash_ref values, boolean )
 #
-# Makes the specified name unique to the database.
+# Computes the first/middle/last sorting field values.
 #
-sub _make_unique_name {
-    my($name) = @_;
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($unique_num) = 0;
-    my($n);
-    while ($realm->unauth_load(name => $n = $name.$unique_num)) {
-	$unique_num++;
-	# Unlikely to happen, but we certainly want to die when it does.
-	die($n, ": too many collisions") if $unique_num > $_MAX_SHADOW_INDEX;
+sub _compute_sorting_names {
+    my($values) = @_;
+
+    # user lower case for sorting
+    foreach my $field (qw(first_name middle_name last_name)) {
+	next unless exists($values->{$field});
+
+	if (defined($values->{$field}) && length($values->{$field})) {
+	    $values->{$field.'_sort'} = lc($values->{$field});
+	}
+	else {
+	    # set both to undef
+	    $values->{$field} = undef;
+	    $values->{$field.'_sort'} = undef;
+	}
     }
-    return $n;
+    return;
+}
+
+# _get_realm() : Bivio::Biz::Model::RealmOwner
+#
+# Returns the realm owner for the current user_id.
+#
+sub _get_realm {
+    my($self) = @_;
+    return Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
+	    ->unauth_load_or_die(realm_id => $self->get('user_id'));
+}
+
+# _process_model_prefix_args(self) : (proto, Bivio::Biz::Model, string)
+#
+# _process_model_prefix_args(proto, Bivio::Biz::Model model, string model_prefix) : (proto, Bivio::Biz::Model, string)
+#
+# Returns the class, target model and optional model prefix.
+#
+sub _process_model_prefix_args {
+    my($self, $model, $model_prefix) = @_;
+    return (ref($self) || $self, $model || $self, $model_prefix || '');
+}
+
+# _validate_names(self)
+#
+# Dies unless at least one of first/middle/last names are set.
+#
+sub _validate_names {
+    my($self) = @_;
+    $self->throw_die('must have at least one of first, last, and middle names')
+	    unless defined($self->get('first_name'))
+		    || defined($self->get('middle_name'))
+			    || defined($self->get('last_name'));
+    return;
 }
 
 =head1 COPYRIGHT
