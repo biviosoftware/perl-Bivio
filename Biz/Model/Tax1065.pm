@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Tax1065;
 use strict;
 $Bivio::Biz::Model::Tax1065::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Tax1065::VERSION;
 
 =head1 NAME
 
@@ -126,17 +127,25 @@ sub load_or_default {
 
 =head2 update(hash_ref new_values)
 
+=head2 update(hash_ref new_values, boolean invalidate_allocations)
+
 Overrides PropertyModel.update to invalidate the AllocationCache when
 the allocation method is changed.
+
+By default allocations will be invalidated if the allocation method
+changes. To avoid this, specify invalidate_allocations as false.
 
 =cut
 
 sub update {
-    my($self, $new_values) = @_;
+    my($self, $new_values, $invalidate_allocations) = @_;
+    $invalidate_allocations = 1
+	    unless defined($invalidate_allocations);
 
     my($allocation_method) = $new_values->{allocation_method};
     if (defined($allocation_method)
-	    && $allocation_method != $self->get('allocation_method')) {
+	    && $allocation_method != $self->get('allocation_method')
+	    && $invalidate_allocations) {
 	my($cache) = Bivio::Biz::Accounting::AllocationCache->new(
 		$self->get_request);
 
