@@ -170,6 +170,11 @@ undefined, no striping will occur.
 If true, then heading rows are repeated every n rows where n is the page
 size preference for the current user.
 
+=item row_grouping_field : string
+
+Groups the column coloring based on the changes in the specified field.
+For example, transaction entries can be grouped by transaction id.
+
 =item show_headings : boolean [true]
 
 If true, then the column headings are rendered.
@@ -522,11 +527,25 @@ sub render {
     $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;
 
+    my($prev_value);
+    my($grouping_field) = $self->unsafe_get('row_grouping_field');
     $list->reset_cursor;
     while ($list->next_row) {
+
+	$is_even_row = !$is_even_row
+		if defined($grouping_field) && defined($prev_value)
+			&& $prev_value != $list->get($grouping_field);
+
 	$self->render_row($state->{cells}, $list, $buffer,
 		$is_even_row ? $state->{even_row} : $state->{odd_row}, 1);
-	$is_even_row = !$is_even_row;
+
+	if (defined($grouping_field)) {
+	    $prev_value = $list->get($grouping_field);
+	}
+	else {
+	    $is_even_row = !$is_even_row;
+	}
+
 	last if ++$row_count >= $max_rows;
 	_render_headings($state) if $row_count % $list_size == 0;
     }
