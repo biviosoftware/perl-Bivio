@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Format::Amount returns blank if zero_as_blank and
+    rounded amount is zero
+  * Bivio::UI::HTML::Widget::FormFieldLabel corrected &nbsp;
+
+  Revision 2.57  2005/03/08 20:34:15  moeller
   * Bivio::Delegate::SimpleTaskId added default ROBOTS_TXT task,
     allow robot browsing only for production sites
   * Bivio::Biz::Action::LocalFilePlain->execute_robots_txt
