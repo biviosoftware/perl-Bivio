@@ -47,6 +47,8 @@ use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
 use Bivio::UI::Label;
+use Bivio::ShellUtil;
+use Bivio::UI::HTML::Format::Link;
 
 #=VARIABLES
 
@@ -630,9 +632,10 @@ sub highlight {
 
 =for html <a name="href_goto"></a>
 
-=head2 href_goto(string uri) : array_ref
+=head2 href_goto(any uri) : array_ref
 
 Widget value to create a goto link href for "offsite" links.
+I<uri> may be a string or an array_ref (widget value).
 
 =cut
 
@@ -640,16 +643,8 @@ sub href_goto {
     my(undef, $uri) = @_;
     Bivio::Die->die($uri, ": must be an absolute uri")
 		unless $uri =~ m!^\w+://!;
-    # Don't want the $uri to be in a closure, so use eval.
-    return eval(<<"EOF") || die($@);
-        [sub {
-	    return Bivio::Agent::HTTP::Location->format_realmless(
-	     Bivio::Agent::TaskId::CLIENT_REDIRECT())
-	    .'?'
-	    .Bivio::Biz::Action::ClientRedirect->QUERY_TAG()
-	    .'='.Bivio::HTML->escape_query(qq($uri));
-        }];
-EOF
+    return ref($uri) ? [$uri, 'Bivio::UI::HTML::Format::Link']
+	    : ['Bivio::UI::HTML::Format::Link', $uri];
 }
 
 =for html <a name="image"></a>
