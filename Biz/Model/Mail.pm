@@ -56,7 +56,7 @@ use Bivio::MIME::TextToHTML;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
+my($_MAX_WIDTH) = Bivio::Type::Line->get_width;
 my($_UNKNOWN_ADDRESS);
 my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
 my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
@@ -92,17 +92,23 @@ sub create {
     my($from_email, $from_name) = $msg->get_from;
     $self->die('DIE', {message => 'missing or bad From: address'})
                 unless defined($from_email);
+    $self->die('DIE', {message => 'From: mail address too long'})
+                if length($from_email) > $_MAX_WIDTH;
 
     defined($from_name) || ($from_name = $from_email);
+    $from_name = substr($from_name, 0, $_MAX_WIDTH);
     my($reply_to_email) = $msg->get_reply_to;
+    $reply_to_email = substr($reply_to_email, 0, $_MAX_WIDTH)
+            if defined($reply_to_email);
 
     my($subject) = $msg->get_field('subject');
     my($sortable_subject);
     ($subject, $sortable_subject) = _sortable_subject($subject, $realm_name);
 
+    my($message_id) = substr($msg->get_message_id, 0, $_MAX_WIDTH);
     my($values) = {
 	realm_id => $realm_id,
-	message_id => $msg->get_message_id,
+	message_id => $message_id,
 	date_time => Bivio::Type::DateTime->from_unix($date_time),
 	from_name => $from_name,
 	from_name_sort => lc($from_name),
@@ -533,7 +539,7 @@ sub _sortable_subject {
     $subject = '(no subject)' unless defined($subject) && length($subject);
     # Strip the name prefix out of the message, but leave the "Re:"
     $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
-    $subject = substr($subject, 0, $_MAX_SUBJECT);
+    $subject = substr($subject, 0, $_MAX_WIDTH);
 
     my($sortable) = lc($subject);
     $sortable =~ s/^\s*re:\s*//;
