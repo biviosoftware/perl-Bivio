@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Grid.style is a verbatim attribute for
+    style values
+  * Bivio::Test::Language::HTTP->verify_title is case sensitive
+
+  Revision 2.27  2004/08/04 19:06:51  nagler
+  * Bivio::Test::Language::HTTP->verify_title validates the title is
+    what it is supposed to be.
   * Bivio::Type::PrimaryId->to/from_parts manipulates structured primary ids.
     set_file_volume_in_realm_id was removed.
   * Bivio::XML::DocBook->to_pdf converts XML to PDF via LaTeX
