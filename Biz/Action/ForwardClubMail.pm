@@ -52,8 +52,7 @@ sub execute {
     die('auth_realm not a club')
 	    unless ref($club) eq 'Bivio::Biz::PropertyModel::Club';
     my($msg) = $req->get('message');
-    &_trace('club mail ', $club->get('name'), ': ',
-	    $msg->get_message_id) if $_TRACE;
+    &_trace($club, ': ', $msg->get_message_id) if $_TRACE;
     my($in_msg);
     $in_msg = Bivio::Biz::PropertyModel::MailMessage->new($req);
     $in_msg->create($msg, $club);
