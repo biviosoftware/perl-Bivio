@@ -2786,6 +2786,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccountForm
         Bivio::UI::HTML::Club::RealmAccount
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_REALM_ACCOUNT_DELETE
@@ -2981,6 +2982,40 @@ my(@_CFG) = (
         Bivio::UI::HTML::Adm::CreateRealmNotice
         next=ADM_REALM_NOTICE_LIST
         require_secure=1
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_ADJUSTMENT
+        260
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/member/adjustment
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::MemberAdjustmentForm
+        Bivio::UI::HTML::Club::MemberAdjustment
+        next=CLUB_ACCOUNTING_MEMBER_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_ADJUSTMENT
+        261
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/account/adjustment
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::AccountAdjustmentForm
+        Bivio::UI::HTML::Club::AccountAdjustment
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_ADJUSTMENT
+        262
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/investment/adjustment
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::InstrumentAdjustmentForm
+        Bivio::UI::HTML::Club::InstrumentAdjustment
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
    );
 
