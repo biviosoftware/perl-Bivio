@@ -37,6 +37,9 @@ sub _DEFAULT_HTTP_CONTROLLER_NAME {
     return 'messages';
 }
 
+#=IMPORTS
+use Bivio::Agent::HTTP::SiteStart;
+
 #=VARIABLES
 
 # The controller implementations array lookup, keyed by name.
@@ -59,6 +62,8 @@ the request.
 
 sub handler {
     my($r) = @_;
+
+    Bivio::Agent::HTTP::SiteStart->init();
 
     my($request) = Bivio::Agent::HTTP::Request->new($r,
 	   _DEFAULT_HTTP_CONTROLLER_NAME());
@@ -154,8 +159,5 @@ $Id$
 #Bivio::Agent::HTTP::TestController->create_test_site();
 
 # site initialization - should be from config file
-
-use Bivio::Agent::HTTP::SiteStart;
-Bivio::Agent::HTTP::SiteStart->init();
 
 1;
