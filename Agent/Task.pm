@@ -250,7 +250,6 @@ the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
 sub execute {
     my($self, $req) = @_;
-    my($attrs) = $self->internal_get;
     $req->client_redirect_if_not_secure() if $self->get('require_secure');
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
@@ -260,14 +259,14 @@ sub execute {
 	# Redirect to FORBIDDEN if not browser or not auth_user
 	Bivio::Die->throw('FORBIDDEN',
 		{auth_user => $auth_user, entity => $auth_realm,
-		    auth_role => $auth_role, operation => $attrs->{id}})
+		    auth_role => $auth_role, operation => $self->get('id')})
 		    if $auth_user || !$agent->is_browser;
 	$req->server_redirect(Bivio::Agent::TaskId::LOGIN());
 	# DOES NOT RETURN
     }
     _invoke_pre_execute_handlers($req);
     my($i);
-    foreach $i (@{$attrs->{items}}) {
+    foreach $i (@{$self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
 	last if defined($instance)
