@@ -282,6 +282,11 @@ The literal text of the label.  The indirected value will be
 looked up once and used.  This avoids a second lookup.  Only
 used by DescriptivePageForm.
 
+=item column_width : string
+
+Set the width of the column explicitly.  I<column_expand> should be
+used in most cases.
+
 =item field : string
 
 Name of the column.  By default, it is the positional name.
@@ -763,8 +768,14 @@ sub render_row {
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
 	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
-        $$buffer .= ' width="100%"'
-                if $cell->get_or_default('heading_expand', 0);
+
+	if ($cell->get_or_default('heading_expand', 0)) {
+	    $$buffer .= ' width="100%"'
+	}
+	elsif ($cell->get_or_default('heading_width', 0)) {
+	    $$buffer .= ' width="'.$cell->get('heading_width').'"';
+	}
+
         $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
@@ -838,6 +849,7 @@ sub _get_heading {
 		    $self->get_or_default('heading_align', 'S')),
             column_span => $cell->get_or_default('column_span', 1),
             heading_expand => $cell->unsafe_get('column_expand'),
+	    heading_width => $cell->unsafe_get('column_width'),
            );
     $self->initialize_child_widget($heading);
     return $heading;
