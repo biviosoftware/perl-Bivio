@@ -121,7 +121,7 @@ sub create {
 	&_trace('msg is not null when we call ctor MimeDecode.') if $_TRACE;
     }
     _trace('creating MIMEDecode object') if $_TRACE;
-    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename);
+    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT);
     $mimeparser->parse_and_store();
     # due to the above two lines, all the MIME stuff in this
     # file will be removed shortly.
