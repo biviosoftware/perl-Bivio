@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    that must match the Bivio::Die->as_string value, or the deviance
+    test fails.
+  * Bivio::Type::Date->compare removed
+
   Revision 1.76  2003/08/19 18:39:19  david
   * Added Bivio::Type::Date->compare to compare two DateTimes only with
     respect to their dates.
