@@ -38,12 +38,6 @@ the client.  The following field names are currently in use:
 
 ip address of client (C<$r-E<gt>connection->remote_ip>)
 
-=item user_agreement
-
-This field is set by
-L<Bivio::Biz::Model::TermsOfServiceForm|Bivio::Biz::Model::CreateUserForm>
-when the user is sent the user agreement and accepts it.
-
 =item su
 
 This field is set by
@@ -51,9 +45,21 @@ L<Bivio::Biz::Model::SubstituteUserForm|Bivio::Biz::Model::SubstituteUserForm>
 when the user has been substituted succesfully.  It is cleared by
 L<Bivio::Biz::Action::Logout|Bivio::Biz::Action::Logout>.
 
+=item tz
+
+timezone (actually timezone offset).  It is set by
+L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
+This module puts it on the request.
+
 =item u
 
 login id (realm_id) of the authenticated user.
+
+=item ua
+
+This field is set by
+L<Bivio::Biz::Model::TermsOfServiceForm|Bivio::Biz::Model::CreateUserForm>
+when the user is sent the user agreement and accepts it.
 
 =back
 
@@ -62,10 +68,60 @@ update this documentation.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="SU_FIELD"></a>
+
+=head2 SU_FIELD : string
+
+Returns substitute user field name.
+Is managed by
+L<Bivio::Biz::Model::SubstituteUser|Bivio::Biz::Model::SubstituteUser>
+and
+L<Bivio::Biz::Model::LogoutForm|Bivio::Biz::Model::LogoutForm>.
+
+=cut
+
+sub SU_FIELD {
+    return 'su';
+}
+
+=for html <a name="TIMEZONE_FIELD"></a>
+
+=head2 TIMEZONE_FIELD : string
+
+Returns the timezone field name.  Is managed by
+L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
+
+=cut
+
+sub TIMEZONE_FIELD {
+    return 'tz';
+}
+
+=for html <a name="USER_AGREEMENT_FIELD"></a>
+
+=head2 USER_AGREEMENT_FIELD : string
+
+Returns the user agreement cookie.  Is managed by
+L<Bivio::Biz::Model::UserAgreementForm|Bivio::Biz::Model::UserAgreementForm>
+and
+L<Bivio::Biz::Model::CreateUserForm|Bivio::Biz::Model::CreateUserForm>.
+
+=cut
+
+sub USER_AGREEMENT_FIELD {
+    return '';
+}
+
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::Agent::HTTP::CookieState;
+use Bivio::IO::Alert;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use Bivio::Util;
 use Crypt::CBC;
 
@@ -77,6 +133,8 @@ my($_REMOTE_IP_FIELD) = 'i';
 my($_DOMAIN) = undef;
 my($_CIPHER) = undef;
 my($_TAG) = 'D';
+my($_TIMEZONE_FIELD) = TIMEZONE_FIELD();
+
 Bivio::IO::Config->register({
     domain => $_DOMAIN,
     tag => $_TAG,
@@ -86,6 +144,23 @@ Bivio::IO::Config->register({
 =head1 METHODS
 
 =cut
+
+=for html <a name="delete_field"></a>
+
+=head2 delete_field(Bivio::Agent::Request req, string name) : string
+
+Returns the field, if set.  Deletes it in any case.
+
+=cut
+
+sub delete_field {
+    my(undef, $req, $name) = @_;
+    my($cookie) = $req->unsafe_get('cookie');
+    return undef unless $cookie;
+    my($value) = $cookie->{$name};
+    delete($cookie->{$name});
+    return $value;
+}
 
 =for html <a name="handle_config"></a>
 
@@ -183,10 +258,11 @@ sub parse {
 	$state = Bivio::Agent::HTTP::CookieState::NO_DATA() unless $data;
 	unless ($state == Bivio::Agent::HTTP::CookieState::OK()) {
 	    # If we get here, then there was something pretty wrong.
-	    warn($state->get_long_desc);
+	    Bivio::IO::Alert->warn($state->get_long_desc);
 	    $data = undef;
 	}
-	$req->put(cookie => $data, cookie_state => $state);
+	$req->put(cookie => $data, cookie_state => $state,
+		timezone => $data ? $data->{$_TIMEZONE_FIELD} : undef);
     }
     _trace('state=', $state, '; data=', $data) if $_TRACE;
     return $user;
@@ -227,6 +303,36 @@ sub set {
     $r->header_out('Cache-Control', 'no-cache=set-cookie');
     $r->header_out('Set-Cookie', $s);
     return;
+}
+
+=for html <a name="set_field"></a>
+
+=head2 static set_field(Bivio::Agent::Request req, string name, string value)
+
+Sets the cookie
+
+=cut
+
+sub set_field {
+    my(undef, $req, $name, $value) = @_;
+    my($cookie) = $req->unsafe_get('cookie');
+    $req->put(cookie => ($cookie = {})) unless $cookie;
+    $cookie->{$name} = $value;
+    return;
+}
+
+=for html <a name="unsafe_get_field"></a>
+
+=head2 unsafe_get_field(Bivio::Agent::Request req, string name) : string
+
+Return the value form the field in the cookie.  May be C<undef>
+
+=cut
+
+sub unsafe_get_field {
+    my(undef, $req, $name) = @_;
+    my($cookie) = $req->unsafe_get('cookie');
+    return $cookie ? $cookie->{$name} : undef;
 }
 
 #=PRIVATE METHODS
