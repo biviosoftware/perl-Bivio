@@ -117,12 +117,12 @@ sub initialize {
     return if exists($fields->{values});
     $fields->{values} = [];
     my($target) = $_VS->vs_link_target_as_html($self);
-    $fields->{font} = $self->get_or_default('link_font', 'list_action');
+    my($font) = $self->get_or_default('link_font', 'list_action');
     foreach my $v (@{$self->get('values')}) {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    label => _init_label($self, $v->[0], $fields->{font}),
+	    label => _init_label($self, $v->[0], $font),
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
@@ -184,19 +184,18 @@ sub render {
 
     # Write executable actions
     my($sep) = '';
-    my($p, $s) = Bivio::UI::Font->format_html($fields->{font}, $req);
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
 	next if $v2->{control}
 		&& !$source->get_widget_value(@{$v2->{control}});
-	$$buffer .= $sep.$v2->{prefix}.
+	$$buffer .= $v2->{prefix}.
 		($v2->{format_uri}
 			? $source->get_widget_value(@{$v2->{format_uri}})
 			: $source->format_uri($v2->{method}, $v->{uri}))
-		.'">'.$p;
+		.'">';
 	ref($v2->{label}) ? $v2->{label}->render($source, $buffer)
 		: ($$buffer .= $v2->{label});
-	$$buffer .= $s."</a>";
+	$$buffer .= "</a>";
 	$sep = ",\n";
     }
     return;
