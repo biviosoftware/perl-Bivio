@@ -29,31 +29,19 @@ use Bivio::Type::Enum;
 C<Bivio::UI::FacadeChildType> defines the list of facade children.
 See L<Bivio::UI::Facade|Bivio::UI::Facade>.
 
+The implementation is delegated.  There must be a delegate entry for
+I<FacadeChildType> in
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader>'s configuration.
+
+Delegates must define a DEFAULT type, which is usually enum value zero (0).
+
 =cut
 
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile([
-	# This list is stored as preferences, so don't change the numbers.
-	# Leave space to allow to fill in holes.
-	DEFAULT => [
-	    0,
-	    'Normal',
-	],
-	SMALL => [
-	    10,
-	    'Small',
-	],
-	LARGE => [
-	    20,
-	    'Large',
-	],
-	EXTRA_LARGE => [
-	    30,
-	    'Extra Large',
-	],
-]);
+__PACKAGE__->compile(
+    Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
 
 =head1 METHODS
 

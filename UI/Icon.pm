@@ -93,7 +93,6 @@ Bivio::IO::Config->register({
 # we cache to avoid repeating not-found errors for each icon and for
 # performance (avoids (N-1)xM file reads).
 my(%_CACHE);
-Bivio::UI::Facade->register;
 
 =head1 METHODS
 
@@ -254,6 +253,20 @@ sub handle_config {
     $_DIR =~ s!([^/])$!$1/!;
     $_MISSING = $cfg->{missing_uri};
     $_CLEAR_DOT->{uri} = $cfg->{clear_dot_uri};
+    return;
+}
+
+=for html <a name="handle_register"></a>
+
+=head2 static handle_register()
+
+Registers with Facade.
+
+=cut
+
+sub handle_register {
+    my($proto) = @_;
+    Bivio::UI::Facade->register($proto);
     return;
 }
 

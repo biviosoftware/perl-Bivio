@@ -206,6 +206,20 @@ sub group {
     return;
 }
 
+=for html <a name="handle_register"></a>
+
+=head2 static abstract handle_register()
+
+Tells the component to handle_register with
+L<Bivio::UI::Facade|Bivio::UI::Facade>.  Can also perform global
+initialization.
+
+=cut
+
+$_ = <<'}'; # For emacs
+sub handle_register {
+}
+
 =for html <a name="initialization_complete"></a>
 
 =head2 initialization_complete()
@@ -263,13 +277,17 @@ attribute of I<req_or_facade>.
 =cut
 
 sub internal_get_value {
-    my($proto, $name, $req) = @_;
+    my($proto, $name, $req_or_facade) = @_;
 
     # If a reference, then dynamic.  Just get from instance.
     # Otherwise, $req and $facade behave similarly; they are both
     # Collection::Attributes with the class as the attribute name.
-    my($self) = ref($proto) ? $proto : $req->get($proto);
-
+    my($self) = ref($req_or_facade)
+	    ? ($req_or_facade->isa('Bivio::UI::Facade')
+		    ? $req_or_facade
+		    : $req_or_facade->get('Bivio::UI::Facade'))
+		->get($proto->simple_package_name)
+	    : $proto;
     my($fields) = $self->{$_PACKAGE};
 
     # Return undef_value if passed in undef.  Shouldn't happen...

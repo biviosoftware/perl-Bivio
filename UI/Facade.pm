@@ -64,6 +64,10 @@ Children do not have children, i.e. the tree is only two levels deep.
 The type of this child.  Must be unique to all children of
 this Facade.
 
+=item components : array_ref (facade,computed)
+
+List of component instances for this facade.
+
 =item initialize : sub (component)
 
 The initialization attribute is a C<sub> to initialize a Component.
@@ -90,49 +94,10 @@ Parent facade.
 Name of the facade as it appears in domain names and URIs.
 The base name of the Facade's package.
 
-=item E<lt>ModuleE<gt> : Bivio::UI::FacadeComponent (facade)
+=item E<lt>SimpleClassE<gt> : Bivio::UI::FacadeComponent (facade)
 
 Component instance for this facade.  The attribute name must
-be the package (ref($instance)) for the Component.
-
-=back
-
-=head2 URI TO CLASS LIST
-
-Each Facade class can assign its own uri, but they must all be
-unique.  The code words should be used only once.  Once a facade
-is in production or in test for production, its real URI should be
-used.
-
-=over 4
-
-=item ic : BUYandHOLD (production)
-
-=item investmentexpo : InvestmentExpo (production)
-
-=item aristau : WFN
-
-=item muri :
-
-=item cimo :
-
-=item dubeli : fool
-
-=item allwomeninvest : AllWomenInvest (production)
-
-=item ekclubs : Eklubs (production)
-
-=item ollon :
-
-=item stange :
-
-=item schnipo :
-
-=item boelle :
-
-=item laedli :
-
-=item uetli :
+be the simple package name for the Component.
 
 =back
 
@@ -140,8 +105,6 @@ used.
 
 #=IMPORTS
 use Bivio::Die;
-use Bivio::Biz::Model::Preferences;
-use Bivio::HTML;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -156,7 +119,9 @@ my($_INITIALIZED) = 0;
 my(%_CLASS_MAP);
 # Map of facade URIs to instances.
 my(%_URI_MAP);
-# List of components which have registered.
+# Simple class name -> full class name for components
+my(%_COMPONENTS);
+# Simple class names sorted topologically (prereqs first)
 my(@_COMPONENTS);
 my($_DEFAULT) = 'Prod';
 Bivio::IO::Config->register({
@@ -208,17 +173,18 @@ sub new {
     my($proto, $config) = @_;
     my($self) = Bivio::Collection::Attributes::new($proto);
     my($class) = ref($self);
+    my($simple_class) = $self->simple_package_name;
     Bivio::Die->die($class, ': duplicate initialization')
-		if $_CLASS_MAP{$class};
+		if $_CLASS_MAP{$simple_class};
     # Not yet initialized, but avoid infinite recursion in the
     # event of self-referential configuration.
-    $_CLASS_MAP{$class} = 1;
+    $_CLASS_MAP{$simple_class} = 1;
 
     # Only load production configuration.
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
 	# Anybody referencing this facade will get an error; see _load().
 	_trace($class, ': non-production Facade, not initializing');
-	delete($_CLASS_MAP{$class});
+	delete($_CLASS_MAP{$simple_class});
 	return undef;
     }
 
@@ -229,11 +195,8 @@ sub new {
     delete($config->{clone});
 
     # Check the uri after the clone is loaded.
-    my($uri) = lc($config->{uri});
-    unless ($uri) {
-	$uri = lc($class);
-	$uri =~ s/.*:://;
-    }
+    my($uri) = lc($config->{uri} || $simple_class);
+
     delete($config->{uri});
     Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
 	    ref($_URI_MAP{$uri}))
@@ -244,18 +207,20 @@ sub new {
     $self->internal_put({
 	uri => $uri,
 	is_production => $config->{is_production} ? 1 : 0,
-	is_default => $_DEFAULT eq $class ? 1 : 0,
+	is_default => $_DEFAULT eq $self->simple_package_name ? 1 : 0,
 	children => {},
     });
     delete($config->{is_production});
 
-    # Load all relevant components first.  This modifies @_COMPONENTS.
-    Bivio::IO::ClassLoader->simple_require(keys(%$config));
-
+    # Load all components before initializing.  This modifies @ & %_COMPONENTS.
+    foreach my $comp (keys(%$config)) {
+	my($c) = Bivio::IO::ClassLoader->map_require('FacadeComponent', $comp);
+	$c->handle_register;
+    }
     _initialize($self, $config, $clone);
 
     # Store globally
-    $_CLASS_MAP{$class} = $_URI_MAP{$uri} = $self;
+    $_CLASS_MAP{$simple_class} = $_URI_MAP{$uri} = $self;
     return $self;
 }
 
@@ -333,39 +298,6 @@ sub get_default {
     return $_CLASS_MAP{$_DEFAULT};
 }
 
-=for html <a name="get_uri_list"></a>
-
-=head2 static get_uri_list() : array_ref
-
-B<Only to be used by b-http-dispatcher.>
-
-Returns a list of URIs which identify the configured facades.
-
-=cut
-
-sub get_uri_list {
-    return [keys(%_URI_MAP)] if $_INITIALIZED;
-
-    # HACK: We aren't initialized, but b-http-dispatcher would like
-    # the list, so we'll just take a quick guess.
-    die("caller isn't b-http-dispatcher")
-	    if (caller(0))[3] =~ /::main$/;
-
-    my($pat) = _get_class_pattern();
-    my(@uri);
-    foreach my $file (glob($pat)) {
-	open(IN, $file) || next;
-	# Find the uri if set, otherwise the package base name in lc.
-	my($uri) = $file;
-	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
-	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);  	 #emacs
-	push(@uri, $uri2 || $uri);
-    }
-    close(IN);
-    _trace(\@uri) if $_TRACE;
-    return \@uri;
-}
-
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -385,8 +317,6 @@ a fully qualified class name.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_DEFAULT = $cfg->{default};
-    # Insert
-    $_DEFAULT = __PACKAGE__.'::'.$_DEFAULT unless $_DEFAULT =~ /::/;
     return;
 }
 
@@ -404,22 +334,7 @@ sub initialize {
     # Prevent recursion.  Initialization isn't re-entrant
     $_INITIALIZED = 1;
 
-    my($pat) = _get_class_pattern();
-
-    # Find all Facades
-    my(@classes);
-    foreach my $file (glob($pat)) {
-	my($m) = $file;
-	$m =~ s,.*/,,;
-	$m =~ s/\.pm//;
-	push(@classes, __PACKAGE__.'::'.$m);
-    }
-
-
-    # Load 'em up
-    foreach my $c (@classes) {
-	Bivio::IO::ClassLoader->simple_require($c);
-    }
+    Bivio::IO::ClassLoader->map_require_all('Facade');
 
     # Make sure the default facade is there and was properly initialized
     Bivio::Die->die($_DEFAULT,
@@ -449,20 +364,22 @@ I<facade_child_type> if not passed and set on the request.
 
 sub prepare_to_render {
     my(undef, $req, $type) = @_;
-    my($self) = $req->get('facade');
+    my($self) = $req->get(__PACKAGE__);
     my($children) = $self->unsafe_get('children');
 
     # No children?  If already a child, then got an error during
     # rendering or server_redirect(?) and we should just stay in the
     # same facade.
-    unless ($children && %$children) {
+    unless ($children  && %$children) {
 	_trace($self, ': no children') if $_TRACE;
 	return;
     }
 
     # If there is no child of this type, default case
     $type ||= Bivio::Biz::Model::Preferences->get_user_pref($req,
-	    'facade_child_type');
+	    'facade_child_type')
+	    if !$type && Bivio::IO::ClassLoader->is_loaded(
+		    'Bivio::Biz::Model::Preferences');
     unless ($children->{$type}) {
 	_trace($self, ': ', $type, ': no such child') if $_TRACE;
 	return;
@@ -474,7 +391,7 @@ sub prepare_to_render {
 
 =for html <a name="register"></a>
 
-=head2 static register(array_ref required_components)
+=head2 static register(string class, array_ref required_components)
 
 Registers new calling package.  I<required_components> is the list of
 classes which this component uses or C<undef>.   I<required_components>
@@ -483,22 +400,29 @@ will be loaded dynamically.
 =cut
 
 sub register {
-    my(undef, $required_components) = @_;
-    my($component_class) = caller;
+    my(undef, $class, $required_components) = @_;
+    my($simple_class) = $class->simple_package_name;
+
+    # Avoid recursion
+    return if exists($_COMPONENTS{$simple_class});
+    $_COMPONENTS{$simple_class} = undef;
 
     # Load prerequisites first, so they register.  This forces the
     # toposort.
-    Bivio::IO::ClassLoader->simple_require(@$required_components)
-		if $required_components;
+    foreach my $c (@$required_components) {
+	Bivio::IO::ClassLoader->map_require('FacadeComponent', $c)
+		    ->handle_register;
+    }
 
     # Assert that this component is kosher.
-    Bivio::Die->die($component_class, ': is not a FacadeComponent')
-		unless $component_class->isa('Bivio::UI::FacadeComponent');
-    Bivio::Die->die($component_class, ': already registered')
-		if grep($_ eq $component_class, @_COMPONENTS);
+    Bivio::Die->die($class, ': is not a FacadeComponent')
+		unless $class->isa('Bivio::UI::FacadeComponent');
+    Bivio::Die->die($class, ': already registered')
+		if $_COMPONENTS{$simple_class};
 
     # Register this component
-    push(@_COMPONENTS, $component_class);
+    push(@_COMPONENTS, $simple_class);
+    $_COMPONENTS{$simple_class} = $class;
     return;
 }
 
@@ -507,8 +431,8 @@ sub register {
 =head2 static setup_request(string uri, Bivio::Collection::Attributes req)
 
 Sets up the request with the appropriate Facade.  Sets the attribute
-I<facade> as well as all the components.  If I<uri> is not a valid
-Facade, writes a warning (only once) and uses the default Facade.
+I<Bivio::UI::Facade>.  If I<uri> is not a valid Facade, writes a warning (only
+once) and uses the default Facade.
 
 Only outputs the warning once.
 
@@ -530,7 +454,11 @@ sub setup_request {
 	$self = $_CLASS_MAP{$_DEFAULT};
     }
     _setup_request($self, $req);
-    $self->get('Bivio::UI::HTML')->setup_request($req);
+
+#TODO: DEPRECATED: Will remove once we have class to handle attributes
+#      which are normally on the request.
+    my($html) = $self->get('HTML');
+    $html->setup_request($req) if $html->can('setup_request');
     return;
 }
 
@@ -574,7 +502,8 @@ sub _initialize {
 		    unless $cc || $cfg->{initialize};
 
 	# Create the instance, initialize, seal, and store.
-	$self->put($c => $c->new($self, $cc, $cfg->{initialize}));
+	$self->put($c => $_COMPONENTS{$c}->new(
+		$self, $cc, $cfg->{initialize}));
 	delete($config->{$c});
     }
 
@@ -593,11 +522,10 @@ sub _initialize {
 #
 sub _load {
     my($clone) = @_;
-    $clone = __PACKAGE__.'::'.$clone unless $clone =~ /::/;
-    Bivio::IO::ClassLoader->simple_require($clone);
-    Bivio::Die->die($clone, ': not a Bivio::UI::Facade')
-		unless UNIVERSAL::isa($clone, 'Bivio::UI::Facade');
-    Bivio::Die->die($clone, ": did not call this module's new "
+    my($c) = Bivio::IO::ClassLoader->map_require('Facade', $clone);
+    Bivio::Die->die($c, ': not a Bivio::UI::Facade')
+		unless UNIVERSAL::isa($c, 'Bivio::UI::Facade');
+    Bivio::Die->die($c, ": did not call this module's new "
 	    ." (non-production Facade?") unless ref($_CLASS_MAP{$clone});
     return $_CLASS_MAP{$clone};
 }
@@ -610,7 +538,7 @@ sub _setup_request {
     my($self, $req) = @_;
     # Put facade and component map on request
     my($attrs) = $self->internal_get;
-    $req->put(facade => $self, map {($_, $attrs->{$_})} @_COMPONENTS);
+    $req->put($_PACKAGE => $self);
     _trace($self) if $_TRACE;
     return;
 }

@@ -53,7 +53,6 @@ sub UNDEF_CONFIG {
 use Bivio::UI::Facade;
 
 #=VARIABLES
-Bivio::UI::Facade->register;
 
 =head1 METHODS
 
@@ -96,6 +95,20 @@ sub format_html {
     # Return cached value
     return defined($attr) && defined($v->{$attr}) ? $v->{$attr}
 	    : _format_html($v->{config}, $attr);
+}
+
+=for html <a name="handle_register"></a>
+
+=head2 static handle_register()
+
+Registers with Facade.
+
+=cut
+
+sub handle_register {
+    my($proto) = @_;
+    Bivio::UI::Facade->register($proto);
+    return;
 }
 
 =for html <a name="internal_initialize_value"></a>

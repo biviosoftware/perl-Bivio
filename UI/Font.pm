@@ -118,7 +118,6 @@ use Bivio::UI::Facade;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-Bivio::UI::Facade->register(['Bivio::UI::Color']);
 # Map style names to numeric sizes
 my(%_SIZE_MAP) = (
     'xx-small' => 1,
@@ -197,6 +196,20 @@ sub get_attrs {
     return $v ? $v->{attrs} : undef;
 }
 
+=for html <a name="handle_register"></a>
+
+=head2 static handle_register()
+
+Registers with Facade.
+
+=cut
+
+sub handle_register {
+    my($proto) = @_;
+    Bivio::UI::Facade->register($proto, ['Color']);
+    return;
+}
+
 =for html <a name="initialization_complete"></a>
 
 =head2 initialization_complete()
@@ -224,43 +237,6 @@ sub initialization_complete {
 
     $self->SUPER::initialization_complete();
     return;
-}
-
-=for html <a name="initialize_children"></a>
-
-=head2 static initialize_children(Bivio::UI::Facade facade)
-
-Initializes the default facades.
-
-=cut
-
-sub initialize_children {
-    my($proto, $facade) = @_;
-    # Only initialize children if parent was created.  Won't be
-    # created on production if not is_production.
-    return unless $facade;
-
-    my(@default) = @{$facade->get('Bivio::UI::Font')->get_attrs('default')
-			     ->{$_CONFIG_ATTR}};
-    foreach my $cfg (
-	    ['small', 'xx-small'], # 1
-	    ['large', 'small'], # 3
-	    ['extra_large', 'medium']) { # 4
-	$facade->new_child({
-	    child_type => $cfg->[0],
-	    'Bivio::UI::Font' => {
-		initialize => sub {
-		    my($fc) = @_;
-		    $fc->value(default => [map {
-			s/^size=(.*)/size=$cfg->[1]/;
-			$_;
-			} @default
-		    ]);
-		    return;
-		},
-	    },
-	});
-    }
 }
 
 =for html <a name="internal_initialize_value"></a>
@@ -303,7 +279,7 @@ sub _initialize {
     my(@c) = @{$value->{config}};
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
 	my($name) = $value->{names}->[0];
-	if ($self->get_facade->get('Bivio::UI::Color')->exists($name)) {
+	if ($self->get_facade->get('Color')->exists($name)) {
 	    # Only set color if doesn't already exist.
 	    push(@c, 'color='.$name);
 	}
