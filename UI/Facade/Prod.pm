@@ -192,6 +192,7 @@ my($_SELF) = __PACKAGE__->new({
 		    list_action
 		    lookup_button
                     instrument_ticker_symbol
+	    	    form_field_example
             )],
 		   ['smaller']);
 	    $fc->group([qw(
@@ -207,7 +208,6 @@ my($_SELF) = __PACKAGE__->new({
 		    table_cell
 		    number_cell
                     action_button
-	    	    form_field_example
 		    report_page_heading
 	            radio
                     descriptive_page
