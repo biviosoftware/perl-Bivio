@@ -373,6 +373,11 @@ ALTER TABLE member_allocation_t modify amount not null
 	print("\n\t".$realm->get('name'));
 	Bivio::Data::EW::ClubImporter->transform_allocations($realm);
     }
+
+    # Add new MAIL_FORWARD permission flag (same as MAIL_WRITE)
+    use Bivio::Biz::Util::RealmRole;
+    Bivio::Biz::Util::RealmRole->set_same('MAIL_FORWARD', 'MAIL_WRITE');
+    
     print("\n*** done ***\n");
     return;
 }
