@@ -30,6 +30,8 @@ C<Bivio::UI::HTML::Widget::String> draws a string with decoration.  Does no
 alignment (see L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>
 for layout issues).
 
+The string is html-escaped and newlines are converted to C<E<lt>br E<gt>>.
+
 =head1 ATTRIBUTES
 
 =over 4
@@ -119,7 +121,7 @@ sub initialize {
     $fields->{value} = $self->get('value');
     $fields->{undef_value} = $self->get_or_default('undef_value', '');
     if ($fields->{is_constant} = !ref($fields->{value})) {
-    	$fields->{value} = $p.Bivio::Util::escape_html($fields->{value}).$s;
+    	$fields->{value} = $p._escape($fields->{value}).$s;
     }
     else {
 	$fields->{prefix} = $p;
@@ -167,13 +169,23 @@ sub render {
 		? $source->get_widget_value(@{$fields->{undef_value}})
 			: $fields->{undef_value}
 				unless defined($value);
-	$$buffer .= $fields->{prefix}.Bivio::Util::escape_html($value)
-		.$fields->{suffix};
+	$$buffer .= $fields->{prefix}._escape($value).$fields->{suffix};
     }
     return;
 }
 
 #=PRIVATE METHODS
+
+# _escape(string value) : string
+#
+# Escapes the string and replaces newlines with <br>.
+#
+sub _escape {
+    my($value) = @_;
+    $value = Bivio::Util::escape_html($value);
+    $value =~ s/\n/<br>/mg;
+    return $value;
+}
 
 =head1 COPYRIGHT
 
