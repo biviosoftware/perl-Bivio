@@ -33,8 +33,6 @@ and delete interface to the C<realm_role_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::PrimaryId;
 use Bivio::Auth::PermissionSet;
 
 #=VARIABLES
@@ -64,6 +62,30 @@ sub add_permissions {
 	    permission_set => $self->get('permission_set') | $permissions});
     }
     return;
+}
+
+=for html <a name="get_roles_for_permission"></a>
+
+=head2 get_roles_for_permission(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Permission permission) : Bivio::Auth::RoleSet
+
+Return all roles for I<realm> which have I<permission> set.
+
+=cut
+
+sub get_roles_for_permission {
+    my($self, $realm, $permission) = @_;
+    my($type_id) = $realm->get('realm_type')->as_int;
+    my($realm_id) = $realm->get('realm_id');
+    my($roles) = '';
+    foreach my $role (Bivio::Auth::Role::get_list()) {
+        next if $role eq Bivio::Auth::Role::UNKNOWN();
+	$self->unauth_load(realm_id => $realm_id, role => $role)
+                || $self->unauth_load_or_die(realm_id => $type_id, role => $role);
+        my($p) = $self->get('permission_set');
+        Bivio::Auth::RoleSet->set(\$roles, $role)
+                if Bivio::Auth::RoleSet->is_set(\$p, $permission);
+    }
+    return $roles;
 }
 
 =for html <a name="initialize_permissions"></a>
