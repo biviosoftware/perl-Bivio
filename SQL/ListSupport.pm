@@ -762,8 +762,11 @@ sub _prepare_where_date {
 	$$where .= $attrs->{where_begin_date};
 	push(@$params, $begin_date);
     }
-    $$where .= $attrs->{where_end_date};
-    push(@$params, $date);
+    # We don't add $date, if there is none
+    if ($date) {
+	$$where .= $attrs->{where_end_date};
+	push(@$params, $date);
+    }
     return;
 }
 
