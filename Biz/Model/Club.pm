@@ -58,6 +58,7 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
     version => 1,
     other => [
 	'Email.email',
+	'RealmUser.role',
     ],
     auth_id => [qw(RealmUser.realm_id)],
     primary_key => [
