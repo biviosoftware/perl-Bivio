@@ -203,6 +203,13 @@ UPDATE file_t SET is_public=0
     use Bivio::Biz::Util::Mail;
     Bivio::Biz::Util::Mail->do_all('migrate');
     Bivio::Biz::Util::Mail->reinit_sequence;
+
+    _do_sql('
+ALTER TABLE file_t modify is_public not null
+/
+ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
+/
+');
     return;
 }
 
