@@ -2383,6 +2383,18 @@ my(@_CFG) = (
         next=USER_ADMIN_PREFERENCES_EDIT
         help=change-preferences
     )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
+	237
+        CLUB
+        ACCOUNTING_READ&MEMBER_READ
+        ?/accounting/reports/journal
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::CompleteJournalList->execute_load_all
+	Bivio::UI::HTML::Club::CompleteJournal
+    )],
 );
 
 __PACKAGE__->compile(
