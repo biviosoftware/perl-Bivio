@@ -216,32 +216,168 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _upgrade {
 
-    # increase the entry_t.entry_type valid values to include 111
-    # (member withdrawal adjustment)
-    _drop_constraints('entry_t', 'entry_type');
-
-    _do_sql('
-ALTER TABLE entry_t modify entry_type not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t7
-  check (entry_type between 1 and 6
-  or entry_type between 100 and 111
-  or entry_type between 200 and 218)
-/
-');
-
-    # fix sign on withdrawal fees
-    Bivio::SQL::Connection->execute('
-            UPDATE entry_t
-            SET amount = -amount
-            WHERE entry_type=?',
-	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()->as_sql_param]);
+    _upgrade_purge_bad_mgfs_records();
 
     return;
 }
 
+# _upgrade_purge_bad_mgfs_records()
+#
+# Identifies and expunges instruments which aren't mgfs fundamental (ie
+# they don't get daily updates).
+#
+# Clubs referring to these get local copies.
+#
+# Commits to the database on each instrument purged.
+#
+sub _upgrade_purge_bad_mgfs_records {
 
+    print(STDERR "fixing primary key for mgfs tables\n");
+    # add missing mgfs key constraints
+    foreach my $table (qw(mgfs_balance_sheet_t mgfs_cash_flow_t
+            mgfs_income_statement_t)) {
+	$table = uc($table);
+	_do_sql("
+ALTER TABLE $table drop constraint $table"."1
+/");
+
+	_do_sql("
+ALTER TABLE $table
+add constraint $table"."1
+primary key(mg_id, date_time, annual, quarter)
+using index tablespace index_1m pctfree 70 initrans 2 storage (freelists 1)
+/");
+    }
+
+    print(STDERR "scanning for slow-quote instruments\n");
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT mg_id, symbol, name, instrument_id
+            FROM mgfs_instrument_t
+            ORDER by symbol', []);
+
+    my($missing) = [];
+    my($clubs) = {};
+    while (my $row = $sth->fetchrow_arrayref) {
+	# mg_id, symbol, name, instrument_id
+	my($rec) = [@$row];
+
+	unless (_has_fundamental($rec->[0])) {
+	    push(@$missing, $rec);
+	    _add_clubs_owning($clubs, $rec);
+	}
+    }
+
+    # localize offending instruments
+    foreach my $club_id (keys(%$clubs)) {
+	foreach my $rec (@{$clubs->{$club_id}}) {
+	    print(STDERR "converting instrument for club_id $club_id\n");
+	    _make_local($club_id, $rec);
+	}
+    }
+
+    print(STDERR "deleting ".int(@$missing)." slow-quote instruments\n");
+    # delete the references to bad instruments in mgfs and global tables
+    foreach my $rec (@$missing) {
+	my($mg_id) = $rec->[0];
+	my($instrument_id) = $rec->[3];
+	print(STDERR ".");
+
+	Bivio::SQL::Connection->execute('
+                DELETE FROM mgfs_daily_quote_t
+                WHERE mg_id=?',
+		[$mg_id]);
+
+	foreach my $table (qw(mgfs_instrument_t instrument_t)) {
+	    Bivio::SQL::Connection->execute("
+                    DELETE FROM $table
+                    WHERE instrument_id=?",
+		    [$instrument_id]);
+	}
+
+	# commit after each, it is a lot of data to delete
+	# don't want rollback segment to max out
+	Bivio::SQL::Connection->commit;
+    }
+    print(STDERR "\n");
+    return;
+}
+
+
+# _add_clubs_owning(hash_ref clubs, string instrument_id)
+#
+# Adds an entry to clubs for each club which owns the instrument
+# identified by the specified instrument_id.
+#
+sub _add_clubs_owning {
+    my($clubs, $rec) = @_;
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT DISTINCT(realm_owner_t.realm_id)
+            FROM realm_instrument_entry_t, realm_instrument_t, realm_owner_t
+            WHERE realm_instrument_entry_t.realm_instrument_id
+                =realm_instrument_t.realm_instrument_id
+            AND realm_instrument_t.realm_id=realm_owner_t.realm_id
+            AND realm_instrument_t.instrument_id=?',
+	    [$rec->[3]]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm_id) = $row->[0];
+	my ($recs) = $clubs->{$realm_id};
+	unless (defined($recs)) {
+	    $clubs->{$realm_id} = $recs = [];
+	}
+	push (@$recs, $rec);
+    }
+    return;
+}
+
+# _has_fundamental(string mg_id) : boolean
+#
+# Returns true if the specified mgfs instrument has a fundamental record.
+#
+sub _has_fundamental {
+    my($mg_id) = @_;
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT COUNT(*)
+            FROM mgfs_fundamental_t
+            WHERE mg_id=?',
+	    [$mg_id]);
+    my($result) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$result = $row->[0] || 0;
+    }
+    return $result;
+}
+
+# _make_local(string club_id, array_ref rec)
+#
+# Copies global instrument data into the local one and severs
+# the tie to the global version.
+#
+sub _make_local {
+    my($club_id, $rec) = @_;
+
+    use Bivio::Biz::Model::Instrument;
+    use Bivio::Biz::Model::RealmInstrument;
+
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+
+    my($instrument_id) = $rec->[3];
+    my($inst) = Bivio::Biz::Model::Instrument->new($req);
+    $inst->unauth_load_or_die(instrument_id => $instrument_id);
+
+    my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
+    $realm_inst->unauth_load_or_die(instrument_id => $instrument_id,
+	   realm_id => $club_id);
+
+    my($new_values) = {
+	instrument_id => undef,
+    };
+    foreach my $field (qw(fed_tax_free instrument_type name ticker_symbol
+            exchange_name)) {
+	$new_values->{$field} = $inst->get($field);
+    }
+    $realm_inst->update($new_values);
+    return;
+}
 
 # _usage(array message)
 #
