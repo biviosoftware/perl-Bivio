@@ -39,6 +39,7 @@ the body of which is stored in the file server.
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlSupport;
+use Bivio::File::Client;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -87,6 +88,7 @@ my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message', {
     bytes => 'bytes'
     });
 
+my($_FILE_CLIENT);
 
 =head1 FACTORIES
 
@@ -109,6 +111,11 @@ sub new {
     $self->{$_PACKAGE} = {};
     $_SQL_SUPPORT->initialize();
 
+    # defer server creation until after everything's configured
+    if (! $_FILE_CLIENT) {
+	$_FILE_CLIENT = Bivio::File::Client->new();
+    }
+
     return $self;
 }
 
@@ -125,15 +132,30 @@ Creates a new email message in the database with the specified values. After
 creation, this instance will have the same values. Returns 1 if successful,
 0 otherwise.
 
+The message body should be located at new_values->{body} and should be
+a string reference. The body will be stored on the file server in the
+path "club-id/messages/message-id".
+
 =cut
 
 sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #TODO: don't send non-sql fields to SqlSupport
-    return $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
+    my($body) = $new_values->{body};
+    # not part of sql, remove it from values
+    delete($new_values->{body});
+
+    # first do sql commit, it is possible to rollback if the file server fails
+    my ($status) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
 	    $new_values);
+
+    if ($status) {
+	$_FILE_CLIENT->create('/'.$new_values->{club}.'/messages/'
+		.$new_values->{id}, $body)
+		|| die("file server failed");
+    }
+    return $status;
 }
 
 =for html <a name="delete"></a>
@@ -148,7 +170,12 @@ Deletes the current model from the database. Returns 1 if successful,
 sub delete {
     my($self) = @_;
 
-    return $_SQL_SUPPORT->delete($self, 'where id=?', $self->get('id'));
+    # can't delete it, not supported by file server
+
+#    return $_SQL_SUPPORT->delete($self, 'where id=? and club=?',
+#	    $self->get('id'), $self->get('club'));
+
+    die("not implemented");
 }
 
 =for html <a name="find"></a>
@@ -166,14 +193,33 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'id'}) {
+    if (defined($fp->{id}) && $fp->{club}) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where id=?', $fp->{'id'});
+		'where id=? and club=?', $fp->{id}, $fp->{'club'});
     }
 
     $self->get_status()->add_error(
 	    Bivio::Biz::Error->new("Message not found"));
     return 0;
+}
+
+=for html <a name="get_body"></a>
+
+=head2 get_body() : string_ref
+
+Returns the htmlized body of the mail message. This is retrieved from the
+file server using the path "club-id/messages/message-id".
+
+=cut
+
+sub get_body {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($body);
+    $_FILE_CLIENT->get('/'.$self->get('club').'/messages/'.$self->get('id'),
+	    \$body) || die("couldn't get mail body");
+    return \$body;
 }
 
 =for html <a name="get_heading"></a>
@@ -214,10 +260,16 @@ Updates the current model's values and data store.
 sub update {
     my($self, $new_values) = @_;
 
+    # can't update message body, not supported by file server
+    if ($new_values->{body}) {
+	die("not implemented");
+    }
+
     #TODO: if 'id' is in new_values, make sure it is the same
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
-	    $new_values, 'where id=?', $self->get('id'));
+	    $new_values, 'where id=? and club=?',
+	    $self->get('id'), $self->get('club'));
 }
 
 #=PRIVATE METHODS
@@ -240,6 +292,11 @@ use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
 Bivio::IO::Config->initialize({
+    'Bivio::IPC::Client' => {
+	'addr' => 'localhost',
+	'port' => 9876
+    },
+
     'Bivio::Ext::DBI' => {
 	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
 	database => 'surf_test',
@@ -253,13 +310,14 @@ Bivio::IO::Config->initialize({
     });
 
 my($mail) = Bivio::Biz::Mail::Message->new();
-$mail->find({id => 10});
-$mail->delete();
+my($body) = "message body ... not very exciting\n";
+my($id) = int(rand(9999998)) + 1;
+
 $mail->create({
-    club => 6601425497792660,
-    id => 10,
+    club => '7957448535598810',
+    id => $id,
     ok => 1,
-    rfc822_id => 'a1',
+    rfc822_id => $id,
     date => '6/7/1995',
     receive_date => '8/9/1996',
     from_name => 'moeller',
@@ -267,13 +325,15 @@ $mail->create({
     from_user => 0,
     subject => 'test subject',
     synopsis => 'the quick brown fox jumps over the lazy dog',
-    bytes => 150
+    bytes => 150,
+    body => \$body,
     });
 $mail->update({date => '5/6/1955'});
-$Data::Dumper::Indent = 1;
-print(Dumper($mail));
+$mail->find({id => $id, club => '7957448535598810'});
+print($mail->get_body());
+#$Data::Dumper::Indent = 1;
+#print(Dumper($mail));
 
 Bivio::Biz::SqlConnection->get_connection()->commit();
 
 =cut
-
