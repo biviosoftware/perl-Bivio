@@ -41,8 +41,6 @@ use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::Honorific;
 
-
-
 #=VARIABLES
 $| = 1;
 
@@ -238,8 +236,6 @@ ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
 /
 ');
     _upgrade_mail_message_t();
-    _upgrade_user_title();
-    _upgrade_columns();
     return;
 }
 
@@ -265,6 +261,7 @@ sub _upgrade_mail_message_t {
     # We do this so we can delete clubs, without deleting mail_message_t
     # entries.
     _drop_constraints('mail_message_t', 'club_id');
+    _upgrade_user_title();
     return;
 }
 
@@ -304,6 +301,7 @@ ALTER TABLE $table modify honorific not null
 /
 ");
     }
+    _upgrade_columns();
     return;
 }
 
