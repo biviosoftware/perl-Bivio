@@ -5,11 +5,15 @@ use strict;
 
 =head1 NAME
 
-s-http-ping - calls Bivio::Util::HTTPPing
+b-http-ping - calls Bivio::Util::HTTPPing
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
-s-http-ping [options] command [args...]
+b-http-ping [options] command [args...]
 
 =head1 DESCRIPTION
 
