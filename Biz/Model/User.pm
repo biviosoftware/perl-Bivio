@@ -36,6 +36,7 @@ and delete interface to the C<user_t> table.
 
 #=IMPORTS
 use Bivio::Agent::Request;
+use Bivio::Biz::Model::ConnectSurvey;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::SQL::Connection;
@@ -81,9 +82,12 @@ sub cascade_delete {
 	    || die("couldn't load realm from user");
     # delete this user's RealmUser
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($self->get_request);
-    $realm_user->unauth_load(realm_id => $id, user_id => $id)
-	    || die("couldn't find user's RealmUser");
+    $realm_user->unauth_load_or_die(realm_id => $id, user_id => $id);
     $realm_user->delete();
+
+    # delete this user's profile, if it exists
+    my($survey) = Bivio::Biz::Model::ConnectSurvey->new($self->get_request);
+    $survey->delete() if $survey->unauth_load(realm_id => $id);
 
     # Clear the user from any outstanding invites.
     # This happens if the user is a shadow user.
