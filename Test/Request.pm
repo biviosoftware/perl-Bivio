@@ -88,10 +88,13 @@ Sets up self to look like an http request.  You probably don't need
 to pass I<cookie_class>.  See UserLoginForm.t and
 PersistentCookie.t for examples.
 
+Redirects are ignored.
+
 =cut
 
 sub setup_http {
     my($self, $cookie_class) = @_;
+    $self->ignore_redirects;
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER->execute($self, 1);
     my($r) = Bivio::Test::Bean->new;
