@@ -94,7 +94,7 @@ sub compare {
 
 =for html <a name="div"></a>
 
-=head2 div(string numerator, string denominator, int decimals) : string
+=head2 static div(string numerator, string denominator, int decimals) : string
 
 Divides numerator by denominator and returns the result using the specified
 decimal precision.
@@ -112,6 +112,24 @@ sub div {
 
     return _math_op('bdiv', $v, $v2,
 	    defined($decimals) ? $decimals : $proto->get_decimals());
+}
+
+=for html <a name="fraction_as_string"></a>
+
+=head2 static fraction_as_string(string number, int decimals) : string
+
+Returns the fractional part of I<number> up to decimals without
+the leading decimal with rounding.  If I<decimals> is zero, always
+returns the empty string.
+
+=cut
+
+sub fraction_as_string {
+    my($proto, $number, $decimals) = @_;
+    return '' if $decimals == 0;
+    my($res) = $proto->round($number, $decimals);
+    $res =~ s/.*\.//;
+    return $res;
 }
 
 =for html <a name="from_literal"></a>
