@@ -226,7 +226,8 @@ sub render {
 
     $$buffer .= $fields->{prefix};
     $$buffer .= ' alt="'.Bivio::HTML->escape(
-	    _render_alt($self, $fields, $source, $req)).'"';
+	    _render_alt($self, $fields, $source, $req)).'"'
+		    unless $fields->{prefix} =~ / alt=/;
 
     # May be a widget value
     my($src) = $fields->{src};
