@@ -177,8 +177,9 @@ Throws an exception if this is the singleton instance.
 
 sub assert_not_singleton {
     my($fields) = shift->[$_IDI];
-    return unless $fields->{is_singleton};
-    Carp::croak("can't create, update, read, or delete singleton instance");
+    die("can't create, update, read, or delete singleton instance")
+	if $fields->{is_singleton};
+    return;
 }
 
 =for html <a name="clone"></a>
