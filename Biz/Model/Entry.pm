@@ -77,8 +77,8 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             amount => ['Bivio::Type::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            remark => ['Bivio::Type::Text',
-    		Bivio::SQL::Constraint::NONE()],
+#            remark => ['Bivio::Type::Text',
+#    		Bivio::SQL::Constraint::NONE()],
         },
 	other => [
 #TODO: causes Deep recursion die
