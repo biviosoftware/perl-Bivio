@@ -779,6 +779,11 @@ __PACKAGE__->compile(
 	undef,
 	'the start date may not be less than the first valuation date',
     ],
+    END_DATE_GREATER_THAN_TODAY => [
+	100,
+	undef,
+	'the end date may not be greater than today',
+    ],
 );
 
 #=PRIVATE METHODS
