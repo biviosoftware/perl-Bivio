@@ -539,6 +539,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Setup::Member
         next=SETUP_MEMBER
     )],
+    [qw(
+        CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT
+        58
+        CLUB
+        MAIL_READ
+        _/mail/attachment
+        Bivio::UI::HTML::Club::MessageAttachment
+
+    )],
+	
 );
 
 __PACKAGE__->compile(
