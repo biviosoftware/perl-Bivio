@@ -139,6 +139,18 @@ sub is_password {
     return 1;
 }
 
+=for html <a name="is_secure_data"></a>
+
+=head2 is_secure_data() : boolean
+
+Don't render in logs.
+
+=cut
+
+sub is_secure_data {
+    return 1;
+}
+
 =for html <a name="is_valid"></a>
 
 =head2 static is_valid(string value) : boolean
