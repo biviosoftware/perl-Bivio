@@ -111,7 +111,6 @@ my($_XML_TO_HTML_PROGRAM) = {
         chapter
         preface
     )),
-    'figure/title' => [],
 
     # One-to-one mappings
     abstract => '<p><table width="70%" align="center" border="0"><tr>'
