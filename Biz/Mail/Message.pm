@@ -165,6 +165,19 @@ sub delete {
     die("not implemented");
 }
 
+=for html <a name="get_from_name"></a>
+
+=head2 get_from_name() : 
+
+
+
+=cut
+
+sub get_from_name {
+    my($self) = @_;
+    return $self->get('from_name');
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
