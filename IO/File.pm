@@ -239,23 +239,25 @@ sub rename {
 
 =for html <a name="write"></a>
 
-=head2 static write(string file_name, string_ref contents)
+=head2 static write(string file_name, string_ref contents, boolean binmode)
 
-=head2 static write(string file_name, string contents)
+=head2 static write(string file_name, string contents, boolean binmode)
 
 Creates a file with I<file_name> and writes I<contents> to it.
 Dies with an IO_ERROR on errors.
 
-If the file name is '-', writes to C<STDOUT>.
+If the file name is '-', writes to C<STDOUT>.  If I<binmode> is true, calls
+C<binmode> just after opening file.
 
 =cut
 
 sub write {
-    my(undef, $file_name, $contents) = @_;
+    my(undef, $file_name, $contents, $binmode) = @_;
     my($c) = ref($contents) ? $contents : \$contents;
     my($op) = 'open';
  TRY: {
 	open(OUT, $file_name eq '-' ? '>-' : '> '.$file_name) || last TRY;
+	binmode(OUT);
 	$op = 'print';
 	(print OUT $$c) || last TRY;
 	$op = 'close';
