@@ -71,10 +71,12 @@ Bivio::IO::Config->register({
 
 =for html <a name="catch"></a>
 
-=head2 catch(code sub) : Bivio::Die or undef
+=head2 catch(code_ref code) : Bivio::Die or undef
 
-Installs a local C<$SIG{__DIE__}> handler, calls I<sub>.
-If I<sub> succeeds without error, C<undef> is returned.
+=head2 catch(string code) : Bivio::Die or undef
+
+Installs a local C<$SIG{__DIE__}> handler, calls I<code>.
+If I<code> succeeds without error, C<undef> is returned.
 Otherwise, a C<Bivio::Die> object is returned.  These may
 be chained, i.e. if there is a C<die> within a C<die>,
 the first instance will be linked to the second and can
@@ -92,9 +94,9 @@ C<$SIG{__DIE__}> is specifically disabled.
 =cut
 
 sub catch {
-    my($proto, $sub) = @_;
+    my($proto, $code) = @_;
     Bivio::Die->die(Bivio::DieCode::CATCH_WITHIN_DIE(),
-	    {sub => $sub, program_error => 1}, (caller)[0], (caller)[2])
+	    {code => $code, program_error => 1}, (caller)[0], (caller)[2])
 		if $_IN_HANDLE_DIE;
     $_IN_CATCH++;
     local($SIG{__DIE__}) = sub {
@@ -110,7 +112,7 @@ sub catch {
 	return;
     };
     my($self) = eval {
-	&$sub();
+	ref($code) ? eval {&$code();} : eval($code);
 	1;
     } ? undef : $_CURRENT_SELF;
     $_CURRENT_SELF = undef;
@@ -574,7 +576,7 @@ sub _print_stack {
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
-    Bivio::IO::Alert->warn($self->as_string);
+    Bivio::IO::Alert->print_literally($self->as_string);
     Bivio::IO::Alert->print_literally($self->get('stack'));
     $self->put(stack_printed => 1);
     return;
