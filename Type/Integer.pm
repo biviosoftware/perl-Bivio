@@ -86,45 +86,6 @@ sub new {
 
 =cut
 
-=for html <a name="can_be_negative"></a>
-
-=head2 static can_be_negative : boolean
-
-Returns true if L<get_min|"get_min"> is less than 0.
-
-=cut
-
-sub can_be_negative {
-    my($proto) = @_;
-    return $proto->get_min < 0 ? 1 : 0;
-}
-
-=for html <a name="can_be_positive"></a>
-
-=head2 static can_be_positive : boolean
-
-Returns true if L<get_max|"get_max"> is greater than 0.
-
-=cut
-
-sub can_be_positive {
-    my($proto) = @_;
-    return $proto->get_max > 0  ? 1 : 0;
-}
-
-=for html <a name="can_be_zero"></a>
-
-=head2 static can_be_zero : boolean
-
-Returns true if range crosses through zero.
-
-=cut
-
-sub can_be_zero {
-    my($proto) = @_;
-    return $proto->get_max >= 0 && $proto->get_min <= 0 ? 1 : 0;
-}
-
 =for html <a name="compare"></a>
 
 =for html <a name="compare"></a>
