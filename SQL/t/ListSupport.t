@@ -14,6 +14,7 @@ print "ok 1\n";
 ######################### End of black magic.
 
 use Bivio::IO::Config;
+use Bivio::IO::Ref;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
 use Bivio::Type::Boolean;
@@ -161,7 +162,7 @@ my($query) = Bivio::SQL::ListQuery->new({
 }, $support);
 
 my($rows) = $support->load($query, '', []);
-t(int(@$rows), 5);
+t(scalar(@$rows), 5);
 # Make sure both primary keys are returned, even though we only listed one.
 t($rows->[0]->{'TListT1.date_time'}, $rows->[0]->{'TListT2.date_time'});
 
@@ -171,7 +172,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 100,
 }, $support);
 $rows = $support->load($query, '', []);
-t(int(@$rows), 20);
+t(scalar(@$rows), 20);
 
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 2,
@@ -195,7 +196,7 @@ t($rows->[1]->{'TListT1.gender'}, Bivio::Type::Gender::FEMALE());
 
 # Check internal fields which shouldn't be defined
 my($local_columns) = $support->get('local_columns');
-t(int(@$local_columns), 1);
+t(scalar(@$local_columns), 1);
 t($local_columns->[0]->{name}, 'local_field');
 t($local_columns->[0]->{type}, 'Bivio::Type::Integer');
 t($local_columns->[0]->{constraint}, Bivio::SQL::Constraint::NONE());
@@ -207,7 +208,7 @@ $query = Bivio::SQL::ListQuery->new({
     t => $now."\177".0,
 }, $support);
 $rows = $support->load($query, '', []);
-t(int(@$rows), 1);
+t(scalar(@$rows), 1);
 t($rows->[0]->{'TListT1.name'}, 'name00');
 t($rows->[0]->{'TListT1.toggle'}, 0);
 
@@ -218,6 +219,72 @@ $query = Bivio::SQL::ListQuery->new({
     t => Bivio::Type::DateTime->add_seconds($now, 10000)."\177".0,
 }, $support);
 $rows = $support->load($query, '', []);
-t(int(@$rows), 0);
+t(scalar(@$rows), 0);
 
+# Check paging
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 2,
+    o => '0a',
+}, $support);
+$rows = $support->load($query, '', []);
+t(scalar(@$rows), 2);
+t('name00', $rows->[1]->{'TListT1.name'});
+t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
 
+# Page 2
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 2,
+    o => '0a',
+    page_number => 2,
+}, $support);
+$rows = $support->load($query, '', []);
+t(scalar(@$rows), 2);
+t('name01', $rows->[1]->{'TListT1.name'});
+t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
+
+# Past last page with want_page_count
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 2,
+    o => '0a',
+    page_number => 999999,
+}, $support);
+$rows = $support->load($query, '', []);
+t(scalar(@$rows), 2);
+t('name09', $rows->[1]->{'TListT1.name'});
+t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
+
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 2,
+    o => '0a',
+    page_number => 999999,
+    want_page_count => 0,
+}, $support);
+$rows = $support->load($query, '', []);
+t(scalar(@$rows), 2);
+t('name09', $rows->[1]->{'TListT1.name'});
+t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
+# 20 rows, 10 pages
+t($query->get('page_number'), 10);
+
+# want_only_one_order_by
+# First get rows with full order_by, descending in second param
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 99999,
+    o => '1d0d',
+}, $support);
+$rows = $support->load($query, '', []);
+# Now get with only one order by
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 99999,
+    o => '1d0d',
+    want_only_one_order_by => 1,
+}, $support);
+my($rows2) = $support->load($query, '', []);
+# Shouldn't be the same
+t(Bivio::IO::Ref->nested_equals($rows, $rows2), 0);
