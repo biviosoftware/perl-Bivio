@@ -441,6 +441,7 @@ sub rollback {
     _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
     Bivio::Mail::Common->discard_queued_messages;
+    Bivio::Mail::Message->discard_queued_messages;
     return;
 }
 
