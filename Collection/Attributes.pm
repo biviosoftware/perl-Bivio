@@ -35,6 +35,7 @@ without polluting a class's internal field name space.
 
 #=IMPORTS
 use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -100,7 +101,7 @@ sub ancestral_get {
 	$fields = $fields->{parent}->{$_PACKAGE};
     }
     return $default if int(@_) > 2;
-    Bivio::IO::Alert->die($name, ': ancestral attribute not found');
+    _die($self, $name, ': ancestral attribute not found');
     # DOES NOT RETURN
 }
 
@@ -115,7 +116,7 @@ instance or its ancestors.
 
 sub ancestral_has_keys {
     my($self, @names) = @_;
-    Bivio::IO::Alert->die('missing arguments') unless @names;
+    _die($self, 'missing arguments') unless @names;
     my($fields) = $self->{$_PACKAGE};
     while (@names) {
 	# Top of array checked first, since we're splicing as we go
@@ -146,22 +147,23 @@ sub clone {
 
 =for html <a name="delete"></a>
 
-=head2 delete(string key, ...)
+=head2 delete(string key, ...) : self
 
 Removes the named attribute(s) from the map.  They needn't exist.
 
 =cut
 
 sub delete {
-    my($fields) = shift->{$_PACKAGE};
-    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
+    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     map {delete($fields->{$_})} @_;
-    return;
+    return $self;
 }
 
 =for html <a name="delete_all"></a>
 
-=head2 delete_all()
+=head2 delete_all() : self
 
 Removes all the parameters.
 
@@ -171,9 +173,9 @@ sub delete_all {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     # This is probably the fastest way to remove all elements
-    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->{$_PACKAGE} = {};
-    return;
+    return $self;
 }
 
 =for html <a name="delete_all_by_regexp"></a>
@@ -227,9 +229,9 @@ Returns its arguments.  Used for literal widget values.
 =cut
 
 sub echo {
-    shift;
+    my($self) = shift;
     return shift if int(@_) <= 1;
-    die('expecting an array context') unless wantarray;
+    _die($self, 'expecting an array context') unless wantarray;
     return @_;
 }
 
@@ -243,14 +245,15 @@ L<has_keys|"has_keys"> to test for existence.
 =cut
 
 sub get {
-    my($fields) = shift(@_)->{$_PACKAGE};
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
     my(@res) = map {
-	Bivio::IO::Alert->die($_, ": attribute doesn't exist")
+	_die($self, $_, ": attribute doesn't exist")
 		unless exists($fields->{$_});
 	$fields->{$_};
     } @_;
     return @res if wantarray;
-    die('get not called in array context') unless int(@res) == 1;
+    _die($self, 'get not called in array context') unless int(@res) == 1;
     return $res[0];
 }
 
@@ -265,8 +268,7 @@ Returns a single value by regular expression.  If not found, throws die.
 sub get_by_regexp {
     my($self, $pattern) = @_;
     my($match) = _unsafe_get_by_regexp(@_);
-    Bivio::IO::Alert->die($pattern, ': pattern not found')
-		unless defined($match);
+    _die($self, $pattern, ': pattern not found') unless defined($match);
     return $self->{$_PACKAGE}->{$match};
 }
 
@@ -329,7 +331,7 @@ sub get_nested {
 	    }
 	}
 	elsif (ref($v) eq 'ARRAY') {
-	    Bivio::IO::Alert->die($name, ": not an array index ", \@names)
+	    _die($self, $name, ": not an array index ", \@names)
 			unless $name =~ /^\d+$/;
 	    if ($name <= $#$v) {
 		$v = $v->[$name];
@@ -337,10 +339,10 @@ sub get_nested {
 	    }
 	}
 	else {
-	    Bivio::IO::Alert->die("can't index \"", $v, '" at name"',
+	    _die($self, "can't index \"", $v, '" at name"',
 		    $name, '" ', \@names);
 	}
-	Bivio::IO::Alert->die($name, ": attribute doesn't exist ", \@names);
+	_die($self, $name, ": attribute doesn't exist ", \@names);
     }
     return $v;
 }
@@ -373,7 +375,7 @@ sub get_shallow_copy {
 
 =for html <a name="get_widget_value"></a>
 
-=head2 get_widget_value(string param1, ...) : string
+=head2 get_widget_value(string param1, ...) : any
 
 Returns a value to the widget.  The return value is determined as follows:
 
@@ -441,16 +443,16 @@ Otherwise, die will be called.
 sub get_widget_value {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
-    Bivio::IO::Alert->die('too few arguments passed to ', $self) unless @_;
+    _die($self, 'too few arguments passed to ', $self) unless @_;
     my($param1) = shift;
-    my($value);
+    my(@value);
 
     return $self->get_widget_value(@_) ? 0 : 1 if $param1 eq '!';
 
     # What value does $param1 identify?
     if (exists($fields->{$param1})) {
 	# Plain old attribute, may be undef
-	$value = $fields->{$param1};
+	@value = ($fields->{$param1});
     }
     else {
 	# No such key, try to call the method on $param1
@@ -465,64 +467,68 @@ sub get_widget_value {
 #	    return $self if ref($self) eq $param1;
 
 	    # Otherwise, couldn't find it.
-	    Bivio::IO::Alert->die($param1, ': not found in source ', $self);
+	    _die($self, $param1, ': not found in source ', $self);
 	}
 
 	if (ref($param1) eq 'ARRAY') {
-	    $value = $self->get_widget_value(@$param1);
+	    @value = $self->get_widget_value(@$param1);
 	}
 	elsif (ref($param1) eq 'CODE') {
-	    $value = &$param1($self);
+	    @value = (&$param1($self));
 	}
 	else {
-	    Bivio::IO::Alert->die($param1,
-		    ": not found and can't get_widget_value");
+	    _die($self, $param1, ": not found and can't get_widget_value");
 	}
     }
 
     # Have value figure out what to do with it
-    unless (ref($value)) {
+    unless (ref($value[0])) {
 	# fall through, not a reference
     }
     elsif (!@_) {
 	# No more params, further checking not required
-	return $value;
+	return wantarray ? @value : $value[0];
     }
-    elsif ($value =~ /=/) {
+    elsif ($value[0] =~ /=/) {
 	# It's a blessed reference
-	return $value->get_widget_value(@_)
+	return $value[0]->get_widget_value(@_);
     }
     else {
 	# value is a hash or array ref
 	my($param2) = shift;
-	Bivio::IO::Alert->die($param1,
-		': is a ref, but not passed second param')
+	die($self, $param1, ': is a ref, but not passed second param')
 		    unless defined($param2);
-	$param2 = $self->get_widget_value(@$param2) if ref($param2) eq 'ARRAY';
-	if (ref($value) eq 'HASH') {
+	$param2 = $self->get_widget_value(@$param2)
+		if ref($param2) eq 'ARRAY';
+	if (ref($value[0]) eq 'HASH') {
 	    # key must exist
-	    Bivio::IO::Alert->die($param1, '->{', $param2, '}: does not exist')
-			unless exists($value->{$param2});
-	    $value = $value->{$param2};
+	    _die($self, $param1, '->{', $param2, '}: does not exist')
+			unless exists($value[0]->{$param2});
+	    @value = ($value[0]->{$param2});
 	}
-	elsif (ref($value) eq 'ARRAY') {
+	elsif (ref($value[0]) eq 'ARRAY') {
 	    # index must exist (and be a number)
-	    Bivio::IO::Alert->die($param1, '->[', $param2, ']: does not exist')
-			unless $param2 <= $#{$value};
-	    $value = $value->[$param2];
+	    die($self, $param1, '->[', $param2, ']: does not exist')
+			unless $param2 <= $#{$value[0]};
+	    @value = ($value[0]->[$param2]);
 	}
 	else {
-	    Bivio::IO::Alert->die($param1, ': unsupported reference type: ',
-		    ref($value));
+	    die($self, $param1, ': unsupported reference type: ',
+		    ref($value[0]));
 	}
     }
 
-    # Check for next param which must be able to get_widget_value.
-    return $value unless @_;
+    # Check for next param which must be able to get_widget_value or
+    # must be a widget value which returns something that can return
+    # a widget value.
+    return wantarray ? @value : $value[0] unless @_;
     $param1 = shift(@_);
-    return $param1->get_widget_value($value, @_)
+    $param1 = $self->get_widget_value(@$param1) if ref($param1) eq 'ARRAY';
+    return $param1->get_widget_value(@value, @_)
 	    if UNIVERSAL::can($param1, 'get_widget_value');
-    Bivio::IO::Alert->die("$param1: can't get_widget_value (not a formatter)");
+    die($self, $param1,
+	    ": can't get_widget_value (not a formatter)");
+    # DOES NOT RETURN
 }
 
 =for html <a name="has_keys"></a>
@@ -551,8 +557,9 @@ Modifying the hash will modify the attributes.
 =cut
 
 sub internal_get {
-    die("protected method") unless caller(0)->isa(__PACKAGE__);
-    return shift->{$_PACKAGE};
+    my($self) = @_;
+    _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
+    return $self->{$_PACKAGE};
 }
 
 
@@ -568,9 +575,9 @@ Modifying the hash will modify the attributes.
 =cut
 
 sub internal_put {
-    die("protected method") unless caller(0)->isa(__PACKAGE__);
     my($self, $fields) = @_;
-    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
+    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->{$_PACKAGE} = $fields;
     return;
 }
@@ -612,8 +619,9 @@ Returns I<self>.
 sub put {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
-    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    int(@_) % 2 == 0 || die("must be an even number of parameters");
+    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    _die($self, "must be an even number of parameters")
+	    unless int(@_) % 2 == 0;
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	$fields->{$k} = $v;
@@ -645,12 +653,14 @@ in its place.
 =cut
 
 sub unsafe_get {
-    my($fields) = shift(@_)->{$_PACKAGE};
+    my($self) = shift(@_);
+    my($fields) = $self->{$_PACKAGE};
     my(@res) = map {
 	exists($fields->{$_}) ? $fields->{$_} : undef;
     } @_;
     return @res if wantarray;
-    die('unsafe_get not called in array context') unless int(@res) == 1;
+    _die($self, 'unsafe_get not called in array context')
+	    unless int(@res) == 1;
     return $res[0];
 }
 
@@ -673,6 +683,20 @@ sub unsafe_get_by_regexp {
 
 #=PRIVATE METHODS
 
+# _die(self, any msg, ...)
+#
+# Terminates with nice message
+#
+sub _die {
+    my($self, @msg) = @_;
+    my($sub) = (caller(1))[3];
+    $sub =~ s/.*://;
+    my($die) = UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
+	    ? 'Bivio::Die' : 'Bivio::IO::Alert';
+    $die->die($self, '->', $sub, ': ', @msg);
+    # DOES NOT RETURN
+}
+
 # _unsafe_get_by_regexp(Bivio::Collection::Attributes self, string pattern) : string
 #
 # Returns the field for unsafe_get_by_regexp and get_by_regexp.
@@ -683,7 +707,7 @@ sub _unsafe_get_by_regexp {
     my($match);
     foreach my $k (keys(%$fields)) {
 	next unless $k =~ /$pattern/;
-	Bivio::IO::Alert->die($pattern, ': pattern matches more than one key',
+	_die($self, $pattern, ': pattern matches more than one key',
 		' (', $k, ' and ', $match, ')')
 		    if defined($match);
 	$match = $k;
