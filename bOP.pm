@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.88  2003/11/21 17:24:09  moeller
+  * Bivio::Test::Util->nightly now gets latest tests from CVS and runs
+    all acceptance tests
+
+  Revision 1.87  2003/11/19 23:29:34  david
     * Bivio::Biz::Model::QuerySearchBaseForm provides generic ability to
       redirect post data as URL query data. Default values for form/query
       data can be specified as an attribute of the field definition.
