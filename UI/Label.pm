@@ -110,7 +110,8 @@ _compile([
     MULTIPLE_PAYMENT => ['Enter Member Payments'],
     MULTIPLE_FEE => ['Enter Member Fees'],
     AMOUNT => ['Amount', undef, 'Entry.amount'],
-    ACCOUNT => ['Account', undef, 'RealmAccountEntry.realm_account_id'],
+    ACCOUNT => ['Account', undef, 'RealmAccount.realm_account_id',
+	    'RealmAccountEntry.realm_account_id'],
     REMARK => ['Remark', undef, 'RealmTransaction.remark'],
     DEFAULT_REMARK => ['Default Remark'],
     MEMBER_SPECIFIC_REMARK => ['Member Specific Remark'],
@@ -161,6 +162,8 @@ _compile([
     FOREIGN_TAXES => ['Foreign Taxes', undef,
 	    Bivio::Type::TaxCategory->FOREIGN_TAX->get_short_desc,
 	    'foreign_taxes_paid'],
+    NON_DEDUCTIBLE_EXPENSE => ['Non-Deductible Expense',
+	    Bivio::Type::TaxCategory->NON_DEDUCTIBLE_EXPENSE->get_short_desc],
     TOTAL_EXPENSE => ['Total Expense'],
     NET_PROFIT => ['Net Profit/(Loss)'],
     ALLOCATION_METHOD => ['Allocation Method'],
@@ -222,6 +225,7 @@ _compile([
     UNREALIZED_GAINS => ['Unrealized (Gains)/Losses Disbursed'],
     EXPENSE => ['Expense'],
     NEW_SHARES => ['New Shares'],
+    CATEGORY => ['Category', 'ExpenseCategory.expense_category_id'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
@@ -457,6 +461,7 @@ _compile([
     FILTRUM_TOP_HOLDINGS_INSTRUMENT_NAME => ["Top Club Holdings"],
     PERCENT_REALMS => ["\% Clubs\nWhich Own"],
     STOCK_WITHDRAWAL_VALUE_HEADING => ["Stock\nWithdrawal\nValue"],
+    NON_DEDUCTIBLE_EXPENSE_HEADING => ["Non-Deductible\nExpense"],
 
     # Page headings
     MAIL_LIST_PAGE_HEADING => ['Mail Message Board'],
