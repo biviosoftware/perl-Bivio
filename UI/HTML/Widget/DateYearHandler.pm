@@ -96,9 +96,7 @@ function dy_complete_date(s) {
 
   var pattern = new RegExp("[0-9]?[0-9]/[0-9]?[0-9](/[0-9][0-9])?");
 
-  alert(s_month.length);
-  alert(s_day.length);
-
+  # Had to hack this a bit, don't think Regex works in IE correctly
   if (!pattern.test(s.value)) {
     return;
   } else if (s_month.length > 2 || s_day.length > 2) {
