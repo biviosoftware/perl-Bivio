@@ -32,6 +32,7 @@ C<Bivio::IO::File> is a collection of file utilities.
 use Bivio::Die;
 use Bivio::IO::Trace;
 use File::Path ();
+use File::Basename ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -106,6 +107,26 @@ sub mkdir_p {
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
     _trace($path) if $_TRACE;
     return $path;
+}
+
+=for html <a name="mkdir_parent_only"></a>
+
+=head2 static mkdir_parent_only(string child, int permissions) : string
+
+Creates parent directories of I<child> if they don't exist.
+Doesn't create I<child>.
+
+Returns parent directory.
+
+=cut
+
+sub mkdir_parent_only {
+    my($proto, $child, $permissions) = @_;
+    Bivio::Die->die('no path supplied')
+	    unless defined($child) && length($child);
+    my($parent) = File::Basename::dirname($child);
+    Bivio::IO::File->mkdir_p($parent);
+    return $parent;
 }
 
 =for html <a name="pwd"></a>
