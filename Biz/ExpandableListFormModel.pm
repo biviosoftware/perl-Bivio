@@ -75,7 +75,7 @@ values depending on whether the task was redirected through add_rows.
 sub internal_load_field {
     my($self, $field) = @_;
     my($list) = $self->get_list_model;
-    my($rows) = $self->get_request->unsafe_get($_PACKAGE.'rows');
+    my($rows) = $self->get_request->unsafe_get(__PACKAGE__.'rows');
 
     my($value) = defined($rows)
 	    ? $rows->[$list->get_cursor]->{$field}
@@ -130,7 +130,7 @@ sub internal_initialize_list {
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get('form');
-    my($empty_row_count) = $req->unsafe_get($_PACKAGE.'empty_row_count');
+    my($empty_row_count) = $req->unsafe_get(__PACKAGE__.'empty_row_count');
     unless ($empty_row_count) {
 	if ($form) {
 	    $empty_row_count = $form->{
@@ -164,7 +164,7 @@ sub validate {
     if (defined($self->get('add_rows'))) {
 	# increment the empty_row count and redirect to the same task
 	my($req) = $self->get_request;
-	$req->put($_PACKAGE.'empty_row_count' =>
+	$req->put(__PACKAGE__.'empty_row_count' =>
 		$self->get('empty_row_count') + $_ROW_INCREMENT);
 
 	my($rows) = [];
@@ -174,7 +174,7 @@ sub validate {
 	    push(@$rows, {%{$self->internal_get}});
 	}
 	$self->reset_cursor;
-	$req->put($_PACKAGE.'rows' => $rows);
+	$req->put(__PACKAGE__.'rows' => $rows);
 	$req->server_redirect($req->get('task_id'));
     }
     $self->SUPER::validate();
