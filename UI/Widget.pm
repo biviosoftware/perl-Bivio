@@ -572,7 +572,8 @@ sub unsafe_render_attr {
 Evaluates I<value>.  If is a constant, simply appends to I<buffer>.  If it
 is a widget value (array_ref), calls I<source>C<-E<gt>get_widget_value>, to get
 the value.  If the resultant value or original value is a
-L<Bivio::UI::Widget|Bivio::UI::Widget>, calls render on the widget.
+L<Bivio::UI::Widget|Bivio::UI::Widget>, calls put_and_initialize and render
+on the widget.
 
 The result is appended to I<buffer>.  If the value or widget value is C<undef>,
 returns false and I<buffer> is unmodified.  I<buffer> should be a reference
@@ -598,6 +599,8 @@ sub unsafe_render_value {
 		if --$i < 0;
     }
     if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
+	$value->put_and_initialize(parent => undef)
+	    unless $value->has_keys('parent');
 	$value->render($source, $buffer);
     }
 # removed until all director widgets are fixed up
