@@ -35,6 +35,10 @@ C<Bivio::Biz::Model::UserPasswordForm>
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Realm::General;
+use Bivio::Biz::Model::UserLoginForm;
+use Bivio::Biz::Model::UserLostPasswordForm;
+use Bivio::Type::Password;
 
 #=VARIABLES
 
@@ -54,9 +58,19 @@ sub execute_ok {
     my($self) = @_;
     my($encrypted) = Bivio::Type::Password->encrypt(
         $self->get('new_password'));
-    _get_owner($self)->update({password => $encrypted});
-    $self->get_request->get('cookie')->put(
-	Bivio::Biz::Model::UserLoginForm->PASSWORD_FIELD => $encrypted);
+    my($lost_password_realm) = _get_lost_password_realm($self);
+    ($lost_password_realm || _get_owner($self))->update({
+        password => $encrypted});
+
+    if ($lost_password_realm) {
+        $self->get_instance('UserLoginForm')->execute($self->get_request, {
+            realm_owner => $lost_password_realm,
+        });
+    }
+    else {
+        $self->get_request->get('cookie')->put(
+            Bivio::Biz::Model::UserLoginForm->PASSWORD_FIELD => $encrypted);
+    }
     return;
 }
 
@@ -118,10 +132,13 @@ super user.
 
 sub internal_pre_execute {
     my($self, $method) = @_;
+    my($req) = $self->get_request;
+    my($lost_password_realm) = _get_lost_password_realm($self);
     $self->internal_put_field(display_old_password =>
-        $self->get_request->is_substitute_user ? 0 : 1);
+        ($lost_password_realm || $req->is_substitute_user)
+        ? 0 : 1);
     $self->internal_put_field(user_display_name =>
-        _get_owner($self)->get('display_name'));
+        ($lost_password_realm || _get_owner($self))->get('display_name'));
     return;
 }
 
@@ -146,6 +163,24 @@ sub validate {
 }
 
 #=PRIVATE SUBROUTINES
+
+# _get_lost_password_realm(self) : Bivio::Biz::Model
+#
+# Returns the realm of the lost password user. Returns undef if the
+# user is not present in the query.
+#
+sub _get_lost_password_realm {
+    my($self) = @_;
+    my($lost_password_realm) = Bivio::Biz::Model::UserLostPasswordForm
+        ->unsafe_get_realm_from_query($self->get_request);
+
+    unless ($lost_password_realm) {
+        Bivio::DieCode->NOT_FOUND->throw_die
+            if $self->get_request->get('auth_realm')->get('type')
+                ->equals_by_name('GENERAL');
+    }
+    return $lost_password_realm;
+}
 
 # _get_owner(self) : Bivio::Biz::Model::RealmOwner
 #
