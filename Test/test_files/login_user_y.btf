@@ -1,0 +1,4 @@
+_trace("This test is a simple login test.\n") if $_TRACE;
+Browser->login('btfusery', 'foobar');
+Browser->verify_title('btf');
+Browser->login(); #TODO replace with logout once index.html exists
