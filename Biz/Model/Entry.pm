@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::Entry;
 use strict;
 $Bivio::Biz::Model::Entry::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Entry::VERSION;
 
 =head1 NAME
 
@@ -34,13 +35,6 @@ and delete interface to the C<entry_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::Amount;
-use Bivio::Type::EntryClass;
-use Bivio::Type::EntryType;
-use Bivio::Type::PrimaryId;
-use Bivio::Type::TaxCategory;
-use Bivio::Type::Text;
 
 #=VARIABLES
 
@@ -61,28 +55,16 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'entry_t',
 	columns => {
-            entry_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            realm_transaction_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            class => ['Bivio::Type::EntryClass',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            entry_type => ['Bivio::Type::EntryType',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            tax_category => ['Bivio::Type::TaxCategory',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    tax_basis => ['Bivio::Type::Boolean',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            amount => ['Bivio::Type::Amount',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_transaction_id => ['PrimaryId', 'NOT_NULL'],
+            class => ['EntryClass', 'NOT_NULL'],
+            entry_type => ['EntryType', 'NOT_NULL'],
+            tax_category => ['TaxCategory', 'NOT_NULL'],
+	    tax_basis => ['Boolean', 'NOT_NULL'],
+            amount => ['Amount', 'NOT_NULL'],
         },
 	other => [
-#TODO: causes Deep recursion die
-#	    [qw(entry_id RealmAccountEntry.entry_id
-#                RealmInstrumentEntry.entry_id
-#		MemberEntry.entry_id)],
 	    [qw(realm_transaction_id RealmTransaction.realm_transaction_id)],
 	],
 	auth_id => 'realm_id',
