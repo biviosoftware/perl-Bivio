@@ -43,15 +43,13 @@ It is currently a placeholder.
 
 =head2 static from_literal(string value) : any
 
-Returns C<undef> if the value is invalid.
+Returns C<undef> if the string is empty.
 
 =cut
 
 sub from_literal {
-    shift;
-#TODO: Better validation.
-#TODO: NULL string handling.
-    return shift;
+    my(undef, $value) = @_;
+    return defined($value) && length($value) ? $value : undef;
 }
 
 #=PRIVATE METHODS

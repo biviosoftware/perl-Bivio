@@ -29,6 +29,7 @@ C<Bivio::Type::Number> is the base class for all number types.
 It is currently a placeholder.
 
 #=IMPORTS
+use Bivio::TypeError;
 
 #=VARIABLES
 
@@ -46,8 +47,11 @@ Makes sure is a number.  Does not except scientific notation.
 
 sub from_literal {
     my(undef, $value) = @_;
-#TODO: Improve the checks here
-    return $value =~ /^[-+]?\d+(?:\.\d+)?$/ ? $value : undef;
+    return undef unless defined($value) && $value =~ /\S/;
+    # Get rid of all blanks to be nice to user
+    $value =~ s/\s+//g;
+    return $value if $value =~ /^[-+]?\d+(?:\.\d+)?$/;
+    return (undef, Bivio::TypeError::NUMBER());
 }
 
 #=PRIVATE METHODS

@@ -289,8 +289,8 @@ Returns the enum for this integer.  If not an integer, throws an exception.
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless $value =~ /^[-+]?\d+$/;
-    my($info) = _get_info($proto, $value + 0);
+    return undef unless defined($value) && $value =~ /^\d+$/;
+    my($info) = _get_info($proto, $value);
     return undef unless $info;
     return $info->[5];
 }

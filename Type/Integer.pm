@@ -46,6 +46,7 @@ Dynamic subranges may be created using L<new|"new">.
 =cut
 
 #=IMPORTS
+use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -126,7 +127,7 @@ sub can_be_zero {
 
 =for html <a name="from_literal"></a>
 
-=head2 static from_literal(string value) : string
+=head2 static from_literal(string value) : int
 
 Makes sure is a number and within min/max.
 
@@ -134,10 +135,15 @@ Makes sure is a number and within min/max.
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value) && $value =~ /^[-+]?\d+$/;
-    $value =~ s/^([-+]?)0+/${1}0/;
+    # Null (blank) string and null are same thing.
+    return undef unless defined($value) && $value =~ /\S/;
+    # Get rid of all blanks to be nice to user
+    $value =~ s/\s+//g;;
+    return (undef, Bivio::TypeError::INTEGER())
+	    unless $value =~ /^[-+]?\d+$/;
+#TODO: Not correct because $value may wrap and test would be invalid
     return $proto->get_min <= $value && $proto->get_max >= $value
-	    ? int($value).'' : undef;
+	    ? int($value).'' : (undef, Bivio::TypeError::NUMBER_RANGE());
 }
 
 =for html <a name="get_decimals"></a>
