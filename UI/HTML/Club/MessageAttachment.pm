@@ -197,20 +197,13 @@ sub _content_type {
 #
 sub _numparts {
     my($body) = @_;
-    _trace('extracting numparts.') if $_TRACE;
-    my($i) = index($$body, 'X-BivioNumParts: ');
-    _trace('index of X-BivioNumParts: ', $i);
-    if($i == -1){
-	_trace('X-BivioNumParts was not found in this part') if $_TRACE;
+    $$body =~ /(X-BivioNumParts: *)(\d+)/;
+    if(!$1){
 	return 0;
     }
-    my($s) = substr($$body, $i, 255);
-    $i = index($s, "\n");
-#TODO don't use hard coded values for offset. In fact, should probably use
-# just a regular expression.
-    $s = substr($s, 17, $i-17);
-    _trace('number of MIME parts for this part: ', $s);
-    return $s;
+    else{
+	return $2;
+    }
 }
 
 =head1 COPYRIGHT
