@@ -64,7 +64,7 @@ my($_SRC_PATH) = "~/src/perl";
 sub OPTIONS {
     return {
 	%{__PACKAGE__->SUPER::OPTIONS()},
-#	facade => ['String', ''],
+	port => ['String', '8010'],
     };
 }
 
@@ -78,6 +78,7 @@ sub OPTIONS {
 
 sub OPTIONS_USAGE {
     return <<'EOF';
+    -port -- the port of the http server when we invoke the application. This will be in the BConf.pm file.
 EOF
 }
 
@@ -108,9 +109,10 @@ creates the initial application files. "Company" is hard coded for now :-)
 
 sub create {
     my($self, $appname, $dbname, $facade) = @_;
+    my($port) = $self->unsafe_get('port');
     $dbname = lc($appname) unless $dbname;
     $facade = lc($appname) unless $facade;
-    print "\nCreating directories for " . $appname;
+    print "\nCreating directories for " . $appname, " port: ", $port;
     _system("mkdir -p $_SRC_PATH/$appname/Facade");
     map({
 	print "\n\t", $_;
@@ -128,7 +130,7 @@ sub create {
     _create_ddl_files($appname);
     print "\nCreating boilerplate code... ";
     map({
-	my($file, $util) = @$_;
+	my($file, $util, $option) = @$_;
 	_write_boilerplate("$HOME/src/perl/$appname/$file", $util->new,
 	    $appname, $dbname, $facade, "Company");
 	print "\n\t", $file;
@@ -144,7 +146,7 @@ sub create {
 	   )
        );
     print "\nCreating developer bconf for " . $appname;
-    _make_bconf("$HOME/bconf/$appname.bconf", $appname, $dbname);
+    _make_bconf("$HOME/bconf/$appname.bconf", $appname, $dbname, $port);
     map({
 	_system("cp $_SRC_PATH/Bivio/Template/files/plain/i/*$_ $_SRC_PATH/$appname/files/plain/i/");
     } qw(gif));
@@ -170,8 +172,8 @@ sub _create_ddl_files {
 #
 #
 sub _make_bconf {
-    my($filename, $appname, $dbname) = @_;
-    my($bconf) = Bivio::Template::DevelBConf->new($appname, $dbname);
+    my($filename, $appname, $dbname, $port) = @_;
+    my($bconf) = Bivio::Template::DevelBConf->new($appname, $dbname, $port);
     my($buffer) = $bconf->get_code;
     my($file) = Bivio::IO::File->write($filename, \$buffer);
     return;
@@ -191,9 +193,9 @@ sub _system {
 	return;
     });
     return unless $die;
-#    Bivio::IO::Alert->print_literally(
-#	$$output . ${$die->get('attrs')->{output}});
-#    $die->throw;
+    Bivio::IO::Alert->print_literally(
+	$$output . ${$die->get('attrs')->{output}});
+    $die->throw;
     # DOES NOT RETURN
 }
 
