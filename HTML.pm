@@ -38,7 +38,10 @@ BEGIN {
 	    use Apache ();
 	    use Apache::Util ();
 	    sub escape { shift; return Apache::Util::escape_html(shift) }
-	    sub escape_uri { shift; return Apache::Util::escape_uri(shift) }
+	    sub escape_uri {
+		shift;
+		return _extra_escape_uri(Apache::Util::escape_uri(shift));
+	    }
 	    sub unescape_uri { shift; return Apache::unescape_url(shift) }
 	    1;
 	' || die($@);
@@ -47,7 +50,10 @@ BEGIN {
         eval '
 	    use URI::Escape ();
 	    sub escape { shift; return HTML::Entities::encode(shift) }
-	    sub escape_uri { shift; return URI::Escape::uri_escape(shift) }
+	    sub escape_uri {
+		shift;
+		return _extra_escape_uri(URI::Escape::uri_escape(shift));
+	    }
 	    sub unescape_uri { shift; return URI::Escape::uri_unescape(shift) }
 	    1;
 	' || die($@);
@@ -74,18 +80,12 @@ sub escape {
 
 =head2 static escape_query(string text) : string
 
-Escapes a query string replacing ampersands and equals as well as
-other URI characters which must be escaped.
+Same as escape_uri.
 
 =cut
 
 sub escape_query {
-    # Calls passing on.
-    my($proto, $v) = @_;
-    $v = $proto->escape_uri($v);
-    $v =~ s/\=/%3D/g;
-    $v =~ s/\&/%26/g;
-    return $v;
+    return shift->escape_uri(@_);
 }
 
 =for html <a name="escape_uri"></a>
@@ -127,6 +127,18 @@ sub unescape_uri {
 }
 
 #=PRIVATE METHODS
+
+# _extra_escape_uri(string v) : string
+#
+# Escapes & and = in URIs, because browsers don't do the right thing
+# in quoted strings.
+#
+sub _extra_escape_uri {
+    my($v) = @_;
+    $v =~ s/\=/%3D/g;
+    $v =~ s/\&/%26/g;
+    return $v;
+}
 
 =head1 COPYRIGHT
 

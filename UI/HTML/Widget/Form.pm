@@ -44,8 +44,6 @@ No special formatting is implemented.  For layout, use, e.g.
 
 Literal text to use as
 the C<ACTION> attribute of the C<FORM> tag.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
-before rendering.
 
 =item action : Bivio::Agent::TaskId [$req->format_uri]
 
@@ -55,8 +53,6 @@ Task to format_stateless_uri.
 
 Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
 used as the C<ACTION> attribute of the C<FORM> tag.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
-before rendering.
 
 =item cell_end_form : boolean [0]
 
@@ -191,7 +187,7 @@ sub initialize {
 	$fields->{action} = $action;
     }
     elsif (defined($action)) {
-	$p .= Bivio::HTML->escape($action);
+	$p .= $action;
     }
     else {
 	$fields->{action} = 1;
@@ -238,7 +234,7 @@ sub render {
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
 	$action =~ s/[&?]fc=[^&=]+//;
-	$$buffer .= Bivio::HTML->escape($action);
+	$$buffer .= $action;
     }
 
     # Set encoding type if form has a file field

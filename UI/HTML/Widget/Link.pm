@@ -125,7 +125,7 @@ sub initialize {
     ($fields->{value}, $href) = $self->get('value', 'href');
     my($p, $s) = ('<a'.$self->link_target_as_html, '');
     my($n) = $self->get_or_default('name', 0);
-    $p .= ' name="'.Bivio::HTML->escape($n).'"' if $n;
+    $p .= ' name="'.$n.'"' if $n;
     my($a) = $self->unsafe_get('attributes');
     $p .= $a if $a;
 
