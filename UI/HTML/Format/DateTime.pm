@@ -46,7 +46,10 @@ use Bivio::Type::DateTime;
 
 =head2 static get_widget_value(string time, Bivio::UI::DateTimeMode mode) : string
 
-Formats a date/time value as a string.
+=head2 static get_widget_value(string time, Bivio::UI::DateTimeMode mode, boolean no_timezone) : string
+
+Formats a date/time value as a string.  Unless I<no_timezone> is set,
+the timezone GMT will be appended.
 
 May pass string for I<mode> and it will be interpreted
 as a L<Bivio::UI::DateTimeMode|Bivio::UI::DateTimeMode>.
@@ -54,7 +57,7 @@ as a L<Bivio::UI::DateTimeMode|Bivio::UI::DateTimeMode>.
 =cut
 
 sub get_widget_value {
-    my(undef, $time, $mode) = @_;
+    my(undef, $time, $mode, $no_timezone) = @_;
     return '' unless defined($time);
     my($sec, $min, $hour, $mday, $mon, $year)
 	    = Bivio::Type::DateTime->to_parts($time);
@@ -65,7 +68,7 @@ sub get_widget_value {
 	    .($m == 3 ? ' ' : '')
 	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
 	    # This is even correct if just a time, no?
-	    .' GMT';
+	    .($no_timezone ? '': ' GMT');
 }
 
 #=PRIVATE METHODS
