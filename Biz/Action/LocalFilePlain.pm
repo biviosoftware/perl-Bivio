@@ -112,6 +112,25 @@ sub execute_favicon {
 	$req, Bivio::UI::Text->get_value('favicon_uri', $req));
 }
 
+=for html <a name="execute_robots_txt"></a>
+
+=head2 static execute_robots_txt(Bivio::Agent::Request req) : boolean
+
+Allow robot browsing only for production sites.
+
+=cut
+
+sub execute_robots_txt {
+    my($proto, $req) = @_;
+    my($disallow) = $req->get('is_production') ? '' : ' /';
+    $req->get('reply')->set_output_type('text/plain');
+    $req->get('reply')->set_output(\(<<"EOF"));
+User-agent: *
+Disallow:$disallow
+EOF
+    return 1;
+}
+
 #=PRIVATE METHODS
 
 # _open(Bivio::Agent::Request req, string file_name, string_ref mime_type) : file_handle
