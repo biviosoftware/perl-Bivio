@@ -100,6 +100,19 @@ sub format_name_ticker_symbol {
 	    $self->get_name, $self->get_ticker_symbol);
 }
 
+=for html <a name="get_count"></a>
+
+=head2 static get_count(Bivio::Agent::Request req) : string
+
+Returns the number of realm instruments for the current club.
+
+=cut
+
+sub get_count {
+    my($proto, $req) = @_;
+    return _get_count($req, 'realm_id', $req->get('auth_id'));
+}
+
 =for html <a name="get_fed_tax_free"></a>
 
 =head2 get_fed_tax_free() : string
