@@ -238,30 +238,45 @@ sub _text {
     # No label is convenient to have
     $t->group(none => '');
 
-    $t->group('CartItem.quantity' => 'Quantity');
-    $t->group('CartItem.unit_price' => 'Unit Price');
+    $t->group(Address => [
+        street1 => 'Street Address',
+        city => 'City',
+        state => 'State/Province',
+        country => 'Country',
+        zip => 'Postal Code',
+    ]);
+    $t->group(CartItem => [
+        quantity => 'Quantity',
+        unit_price => 'Unit Price',
+    ]);
+    $t->group(ECCreditCardPayment => [
+        card_number => 'Card Number',
+    ]);
     $t->group('Email.email' => 'E-Mail Address');
-    $t->group('EntityAddress.addr1' => 'Street Address');
-    $t->group('EntityAddress.addr2' => 'Street Address 2');
-    $t->group('EntityAddress.city' => 'City');
-    $t->group('EntityAddress.country' => 'Country');
-    $t->group('EntityAddress.state' => 'State/Province');
-    $t->group('EntityAddress.zip' => 'Postal Code');
-    $t->group('EntityPhone.phone' => 'Telephone Number');
-    $t->group('Item.item_id' => 'Item ID');
-    $t->group('Item.list_price' => 'Item Price');
-    $t->group('Order.card_type' => 'Credit Card Type');
-    $t->group('Order.credit_card' => 'Card Number');
-    $t->group('Product.description' => 'Description');
-    $t->group('Product.name' => 'Product Name');
-    $t->group('Product.product_id' => 'Product ID');
+    $t->group(Item => [
+        item_id => 'Item ID',
+        list_price => 'Item Price',
+    ]);
+    $t->group(Order => [
+        bill_to_name => 'Name',
+        ship_to_name => 'Name',
+    ]);
+    $t->group('Phone.phone' => 'Telephone Number');
+    $t->group(Product => [
+        description => 'Description',
+        name => 'Product Name',
+        product_id => 'Product ID',
+    ]);
     $t->group('login' => 'Email');
-    $t->group('RealmOwner.name' => 'User ID');
-    $t->group('RealmOwner.password' => 'Password');
+    $t->group(RealmOwner => [
+        name => 'User ID',
+        password => 'Password',
+    ]);
     $t->group(['User.first_name', 'Order.bill_to_first_name',
 	'Order.ship_to_first_name'] => 'First Name');
     $t->group(['User.last_name', 'Order.bill_to_last_name',
 	'Order.ship_to_last_name'] => 'Last Name');
+
     $t->group(add_to_cart => 'Add to Cart');
     $t->group(card_expire_year => 'Expiration Date');
     $t->group(continue => 'Continue');
