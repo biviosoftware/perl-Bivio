@@ -959,11 +959,15 @@ __PACKAGE__->compile([
 	'You must check this box to indicate you have read and accept '
 	.' the agreement(s).',
     ],
-    MERGE_FAILURE => [
+    MERGE_MEMBER_HAS_ACCOUNTING => [
 	137,
 	undef,
-	'Must merge one shadow member and one regular member without '
-	.' accounting.',
+	'The regular member in a merge may not have accounting.'
+    ],
+    MERGE_SIMILAR_MEMBERS => [
+	138,
+	undef,
+	'Must have one shadow member and one regular member'
     ],
 ]);
 
