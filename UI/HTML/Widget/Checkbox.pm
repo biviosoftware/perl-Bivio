@@ -32,6 +32,10 @@ C<Bivio::UI::HTML::Widget::Checkbox> is a form checkbox
 
 =over 4
 
+=item auto_submit : boolean [0]
+
+Should a click submit the form?
+
 =item field : string (required)
 
 Name of the form field.
@@ -47,10 +51,6 @@ String label to use.
 =item value : string [1]
 
 The checkbox's submit value.
-
-=item auto_submit : boolean [0]
-
-Should the a click submit the form?
 
 =back
 
