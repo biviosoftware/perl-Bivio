@@ -70,7 +70,11 @@ Bivio::Test->unit([
 	    # Simple and left with aliases
 	    'select count(*) from t_leftjoin_t1 ljt1, t_leftjoin_t2 ljt2, t_leftjoin_t3 ljt3 where ljt1.f1 = ljt3.f1 and ljt1.f1 = ljt2.f1(+)' => [[1]],
 	    # self join and left with aliases
-	    'select count(*) from t_leftjoin_t1 t1_1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t1 where t1_1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) AND t1_1.f1 = t_leftjoin_t1.f1' => [[1]],
+	    'select count(*) from t_leftjoin_t1 t1_1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t1 where t1_1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t1_1.f1 = t_leftjoin_t1.f1' => [[1]],
+	    # Emulated ListSupport query
+	    'select count(*) from t_leftjoin_t1 t_leftjoin_t1_1, t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
+	    # Mix it up a bit
+	    'select count(*) from t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 , t_leftjoin_t1 t_leftjoin_t1_1 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
        ],
     ],
 ]);
