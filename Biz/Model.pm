@@ -581,8 +581,11 @@ sub unsafe_get_request {
 #
 sub _initialize_class_info {
     my($class, $config) = @_;
+    Bivio::IO::ClassLoader->require_property_models;
+
     # Have here for safety to avoid infinite recursion if called badly.
     return if !$config && $_CLASS_INFO{$class};
+
     my($sql_support) = $class->internal_initialize_sql_support($config);
     my($ci) = {
 	sql_support => $sql_support,
