@@ -29,7 +29,6 @@ Bivio::UI::PDF::IndirectObj.
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use Bivio::UI::PDF::IndirectObjRef;
 use Bivio::UI::PDF::Regex;
 
 #=VARIABLES
