@@ -50,8 +50,6 @@ Returns C<undef> if the string is empty.
 sub from_literal {
     my($proto, $value) = @_;
     return undef unless defined($value) && length($value);
-    return (undef, Bivio::TypeError::TOO_LONG())
-	    if length($value) > $proto->get_width;
     return $value;
 }
 
