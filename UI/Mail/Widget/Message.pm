@@ -139,9 +139,11 @@ sub execute {
     my($recipients) = '';
     $self->unsafe_render_attr('recipients', $req, \$recipients);
     my(@recips) = ();
+
     foreach my $header (qw(to cc subject)) {
 	my($value) = '';
-	if ($self->unsafe_render_attr($header, $req, \$value)) {
+
+	if ($self->unsafe_render_attr($header, $req, \$value) && $value) {
 	    $msg->set_header(ucfirst($header), $value);
 	    push(@recips, $value) unless $header eq 'subject';
 	}
