@@ -11,7 +11,7 @@ Bivio::Biz::Model::MailReceiveDispatchForm - redirect to realm/task based on rec
 
 =head1 RELEASE SCOPE
 
-Bivio::Biz
+bOP
 
 =head1 SYNOPSIS
 

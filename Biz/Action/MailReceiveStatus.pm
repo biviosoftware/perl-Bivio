@@ -11,7 +11,7 @@ Bivio::Biz::Action::MailReceiveStatus - sets http error status
 
 =head1 RELEASE SCOPE
 
-Bivio::Biz
+bOP
 
 =head1 SYNOPSIS
 
