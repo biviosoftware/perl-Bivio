@@ -35,12 +35,10 @@ and delete interface to the C<instrument_t> table.
 
 #=IMPORTS
 use Bivio::SQL::Constraint;
-use Bivio::Type::Boolean;
 use Bivio::Type::InstrumentType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::Type::Text;
 use Bivio::SQL::Support;
 
 #=VARIABLES
@@ -59,26 +57,16 @@ sub internal_initialize {
     return Bivio::SQL::Support->new('instrument_t', {
         instrument_id => ['Bivio::Type::PrimaryId',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        club_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
         name => ['Bivio::Type::Line',
 		Bivio::SQL::Constraint::NOT_NULL()],
         ticker_symbol => ['Bivio::Type::Name',
 		Bivio::SQL::Constraint::NONE()],
         exchange_name => ['Bivio::Type::Name',
 		Bivio::SQL::Constraint::NONE()],
-        account_number => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
         instrument_type => ['Bivio::Type::InstrumentType',
 		Bivio::SQL::Constraint::NOT_NULL()],
         fed_tax_free => ['Bivio::Type::Boolean',
 		Bivio::SQL::Constraint::NOT_NULL()],
-        average_cost_method => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        drp_plan => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        remark => ['Bivio::Type::Text',
-		Bivio::SQL::Constraint::NONE()],
     });
 }
 
@@ -95,3 +83,4 @@ $Id$
 =cut
 
 1;
+
