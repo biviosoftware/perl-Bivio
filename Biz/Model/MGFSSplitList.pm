@@ -62,19 +62,19 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="internal_search"></a>
+=for html <a name="internal_pre_load"></a>
 
-=head2 internal_search(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
+=head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
 
-Returns the where clause and params associated as the result of a
-"search".
+Creates 'where' for the specified search ticker.
 
 =cut
 
-sub internal_search {
+sub internal_pre_load {
     my($self, $query, $support, $params) = @_;
-#TODO: throw corrupt_query?
-    push(@$params, $query->get('search'));
+    my($symbol) = $query->get('search');
+    die('missing search symbol') unless defined($symbol);
+    push(@$params, $symbol);
     return 'mgfs_instrument_t.symbol = ?';
 }
 
