@@ -79,10 +79,21 @@ sub parse {
     my($ct) = $r->header_in('Content-Type');
     if (defined($ct)) {
 	if ($ct =~ /^\s*application\/x-www-form-urlencoded/i) {
+
+            # Apache isn't doing length checking
+            # need to be careful that the data is >= content length
+            # if the client closes the socket early we don't want
+            # to process the data
+            my($buff);
+            $r->read($buff, $r->header_in("Content-length"));
+            $req->throw_die('CLIENT_ERROR', 'posted data < Content-length')
+                unless $buff
+                    && length($buff) >= $r->header_in("Content-length");
+            my(@form) = Apache::parse_args(1, $buff);
+
 	    # Let Apache do the parsing for us.  We protect against
 	    # "Odd number of elements" in form here.  The push fixes
 	    # that problem.  Users sometimes hack forms.
-	    my(@form) = $r->content();
 	    push(@form, '') if int(@form) % 2;
             my($form) = {@form};
             $req->throw_die('CLIENT_ERROR',
