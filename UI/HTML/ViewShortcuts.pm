@@ -966,7 +966,7 @@ Returns URL to support.
 
 sub vs_link_support {
     my($proto) = @_;
-    return $proto->vs_link(['support_email'], 'MAIL_SUPPORT');
+    return $proto->vs_link($proto->vs_support_email, 'MAIL_SUPPORT');
 }
 
 =for html <a name="vs_link_target_as_html"></a>
@@ -1270,8 +1270,7 @@ Returns a widget value which gets the support email.
 =cut
 
 sub vs_support_email {
-    #TODO: Replace with real facade-based value.
-    return [['->get_request'], 'support_email'];
+    return shift->vs_text('support_email');
 }
 
 =for html <a name="vs_support_phone"></a>
@@ -1283,8 +1282,7 @@ Returns a widget value which gets the support phone
 =cut
 
 sub vs_support_phone {
-    #TODO: Replace with real facade-based value.
-    return [['->get_request'], 'support_phone'];
+    return shift->vs_text('support_phone');
 }
 
 =for html <a name="vs_table"></a>

@@ -112,10 +112,6 @@ Are we running in production mode?
 
 Are we running in secure mode (SSL)?
 
-=item mailhost : string
-
-Host name to be used in mailto URLs and such.
-
 =item message : Bivio::Mail::Message
 
 Mail message represented by this request.
@@ -206,7 +202,7 @@ URI from the incoming request unmodified.  It is already "escaped".
 
 =item E<lt>ModuleE<gt> : Bivio::UNIVERSAL
 
-Maps I<E<lt>ModuleE<gt>> to an instance of that modules.  Actions
+Maps I<E<lt>ModuleE<gt>> to an instance of that modules.  Facade, Actions
 and Views will put instances as they are initialized on to the request.
 If there is an owner to the I<auth_realm>, this will be the first
 L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
@@ -230,24 +226,17 @@ use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::UserAgent;
+# We don't import any UI components here, because they are
+# initialized by Bivio::Agent::Dispatcher
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
-	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
 my($_IS_PRODUCTION) = 0;
-my($_MAIL_HOST) = "[$_HTTP_HOST]";
-my($_SUPPORT_PHONE);
-my($_SUPPORT_EMAIL);
 my($_CAN_SECURE);
 Bivio::IO::Config->register({
-    mail_host =>  $_MAIL_HOST,
-    http_host =>  $_HTTP_HOST,
     is_production => $_IS_PRODUCTION,
-    support_phone => Bivio::IO::Config->REQUIRED,
-    support_email => Bivio::IO::Config->REQUIRED,
     can_secure => 1,
 });
 my($_CURRENT);
@@ -264,8 +253,7 @@ my($_GENERAL);
 B<Don't call unless you are a subclass.>
 Use L<get_current_or_new|"get_current_or_new">.
 
-Creates a request with initial I<attributes>.  I<http_host> and I<mail_host>
-will be set as well, but may be overriden by subclass.
+Creates a request with initial I<attributes>.
 
 Subclasses must call L<internal_set_current|"internal_set_current">
 when the instance is sufficiently initialized.
@@ -278,12 +266,6 @@ sub internal_new {
     $self->put(request => $self,
 	    is_production => $_IS_PRODUCTION,
 	    txn_resources => [],
-
-#TODO: Remove these...
-	    http_host => $_HTTP_HOST,
-	    mail_host => $_MAIL_HOST,
-	    support_phone => $_SUPPORT_PHONE,
-	    support_email => $_SUPPORT_EMAIL,
 	    can_secure => $_CAN_SECURE,
 	   );
     # Make sure a value gets set
@@ -443,7 +425,7 @@ sub elapsed_time {
 =head2 format_email(string email) : string
 
 Formats the email address for inclusion in a mail header.
-If the host is missing, adds mail_host.
+If the host is missing, adds I<Text.mail_host>.
 
 If I<subject> or I<email> is an array_ref, will call
 L<get_widget_value|"get_widget_value"> with array value to get value.
@@ -456,7 +438,7 @@ sub format_email {
     $email = $self->get_widget_value(@$email) if ref($email);
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email unless defined($email);
-    $email .= '@' . $self->get('mail_host')
+    $email .= '@' .Bivio::UI::Text->get_value('mail_host', $self)
 	    unless $email =~ /\@/;
     return $email;
 }
@@ -518,14 +500,14 @@ sub format_http_insecure {
     # Must be @_ so format_uri handles overloading properly
     my($uri) = $self->format_uri(@_);
     return $uri if $uri =~ s/^https:/http:/;
-    return 'http://'.$self->get('http_host').$uri;
+    return 'http://'.Bivio::UI::Text->get_value('http_host', $self).$uri;
 }
 
 =for html <a name="format_http_prefix"></a>
 
 =head2 format_http_prefix(boolean require_secure) : string
 
-Returns the http or https prefix for this http_host.  Does not add
+Returns the http or https prefix for this I<Text.http_host>.  Does not add
 trailing '/'.
 
 You should pass in the I<require_secure> value for the task you are
@@ -538,7 +520,7 @@ sub format_http_prefix {
     # If is_secure is not set, default to non-secure
     return ($self->unsafe_get('is_secure') || $require_secure
 	    ? 'https://' : 'http://')
-	.$self->get('http_host');
+	    .Bivio::UI::Text->get_value('http_host', $self);
 }
 
 =for html <a name="format_mailto"></a>
@@ -547,7 +529,7 @@ sub format_http_prefix {
 
 Creates a mailto URI.  If I<email> is C<undef>, set to
 I<auth_realm> owner's name.   If I<email> is missing a host, uses
-I<mail_host>.
+I<Text.mail_host>.
 
 If I<subject> or I<email> is an array_ref, will call
 L<get_widget_value|"get_widget_value"> with array value to get value.
@@ -809,25 +791,9 @@ Host name configuration. Override this to proxy to another host.
 Only used for development systems (single server mode), which can't
 run in secure mode.
 
-=item http_host : string [`hostname` in dotted-decimal]
-
-Host to create absolute URIs.  May contain a port number.
-
 =item is_production : boolean [false]
 
 Are we running in production mode?
-
-=item mail_host : string ["[$http_host]"]
-
-Host used to create mail_to URIs.
-
-=item support_email : string (required)
-
-email to be displayed to get support
-
-=item support_phone : string (required)
-
-Phone number to be displayed to get support.
 
 =back
 
@@ -836,10 +802,6 @@ Phone number to be displayed to get support.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_IS_PRODUCTION = $cfg->{is_production};
-    $_HTTP_HOST = $cfg->{http_host};
-    $_MAIL_HOST = $cfg->{mail_host};
-    $_SUPPORT_PHONE = $cfg->{support_phone};
-    $_SUPPORT_EMAIL = $cfg->{support_email};
     $_CAN_SECURE = $cfg->{can_secure};
     return;
 }
@@ -981,7 +943,6 @@ Returns I<is_production> from the configuration.
 =cut
 
 sub is_production {
-    my($proto) = @_;
     return $_IS_PRODUCTION;
 }
 

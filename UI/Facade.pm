@@ -362,9 +362,9 @@ sub initialize {
 
 =for html <a name="prepare_to_render"></a>
 
-=head2 static prepare_to_render(Bivio::Agent::Request req)
+=head2 static prepare_to_render(Bivio::Agent::Request req) : self
 
-=head2 static prepare_to_render(Bivio::Agent::Request req, Bivio::UI::FacadeChildType child_type)
+=head2 static prepare_to_render(Bivio::Agent::Request req, Bivio::UI::FacadeChildType child_type) : self
 
 Called before rendering to lookup the user preference
 I<facade_child_type> if not passed and set on the request.
@@ -394,8 +394,7 @@ sub prepare_to_render {
 	return;
     }
 
-    _setup_request($children->{$type}, $req);
-    return;
+    return _setup_request($children->{$type}, $req);
 }
 
 =for html <a name="register"></a>
@@ -464,13 +463,7 @@ sub setup_request {
     else {
 	$self = $_CLASS_MAP{$_DEFAULT};
     }
-    _setup_request($self, $req);
-
-#TODO: DEPRECATED: Will remove once we have class to handle attributes
-#      which are normally on the request.
-    my($html) = $self->get('HTML');
-    $html->setup_request($req) if $html->can('setup_request');
-    return $self;
+    return _setup_request($self, $req);
 }
 
 #=PRIVATE METHODS
@@ -541,17 +534,15 @@ sub _load {
     return $_CLASS_MAP{$clone};
 }
 
-# _setup_request(Bivio::UI::Facade self, Bivio::Agent::Request req)
+# _setup_request(Bivio::UI::Facade self, Bivio::Agent::Request req) : self
 #
-# Sets facade and components on request.
+# Puts Bivio::UI::Facade on request with $self
 #
 sub _setup_request {
     my($self, $req) = @_;
-    # Put facade and component map on request
-    my($attrs) = $self->internal_get;
     $req->put($_PACKAGE => $self);
     _trace($self) if $_TRACE;
-    return;
+    return $self;
 }
 
 =head1 COPYRIGHT

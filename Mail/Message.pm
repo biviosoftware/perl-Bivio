@@ -178,7 +178,7 @@ sub create_message_id {
     my($now) = Bivio::Type::DateTime->gettimeofday;
     my($msg_id) = join('_', $http_addr, @$now, $$);
     $self->get_head->replace('Message-Id',
-            '<'.$msg_id .'@'.$req->get('mail_host').'>');
+            '<'.$req->format_email($msg_id).'>');
     return;
 }
 
@@ -586,7 +586,7 @@ sub set_headers_for_list_send {
 #TODO: Should find way to pass in request object
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
     my($req) = Bivio::Agent::Request->get_current_or_new();
-    my($sender) = $list_name . '-owner@' . $req->get('mail_host');
+    my($sender) = $req->format_email($list_name.'-owner');
     $head->replace('Sender', $sender);
     $head->replace('Precedence', 'list');
     $self->set_envelope_from($sender);

@@ -53,7 +53,6 @@ my(%_HOME_TASK_MAP) = (
     Bivio::Auth::RealmType::CLUB() => Bivio::Agent::TaskId::CLUB_HOME(),
     Bivio::Auth::RealmType::USER() => Bivio::Agent::TaskId::USER_HOME(),
 );
-my($_MAIL_HOST);
 
 =head1 METHODS
 
@@ -296,10 +295,10 @@ C<undef>, returns false.
 sub is_name_eq_email {
     my(undef, $req, $name, $email) = @_;
     return 0 unless defined($name) && defined($email);
-    $_MAIL_HOST = $req->get('mail_host') unless $_MAIL_HOST;
+    my($mail_host) = Bivio::UI::Text->get_value('mail_host', $req);
 #TODO: ANY OTHER mail_host aliases?
-    return $email eq $name.'@'.$_MAIL_HOST
-	    || $email eq $name.'@www.'.$_MAIL_HOST;
+    return $email eq $name.'@'.$mail_host
+	    || $email eq $name.'@www.'.$mail_host;
 }
 
 =for html <a name="is_offline_user"></a>
@@ -363,7 +362,7 @@ sub unauth_load_by_email {
 	    if $em->unauth_load(email => $email);
 
     # Strip off @mail_host and validate resulting name
-    my($mail_host) = '@'.$req->get('mail_host');
+    my($mail_host) = '@'.Bivio::UI::Text->get_value('mail_host', $req);
     return 0 unless $email =~ s/\Q$mail_host\E$//i;
     my($name) = Bivio::Type::RealmName->from_literal($email);
     return 0 unless defined($name);

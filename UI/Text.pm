@@ -139,6 +139,7 @@ sub UNDEF_VALUE {
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::IO::Config;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -146,6 +147,13 @@ Bivio::IO::Trace->register;
 my($_SEP) = SEPARATOR();
 my($_SEP_PAT) = SEPARATOR();
 $_SEP_PAT =~ s/(\W)/\\$1/g;
+my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
+	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
+my($_MAIL_HOST) = "[$_HTTP_HOST]";
+Bivio::IO::Config->register({
+    mail_host =>  $_MAIL_HOST,
+    http_host =>  $_HTTP_HOST,
+});
 
 =head1 METHODS
 
@@ -272,6 +280,35 @@ sub group {
     return;
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+For more info about configuration, please see
+L<value_host_groups|"value_host_groups">.
+
+=over 4
+
+=item http_host : string [`hostname` in dotted-decimal]
+
+Host to create absolute URIs.  May contain a port number.
+
+=item mail_host : string ["[$http_host]"]
+
+Host used to create mail_to URIs.
+
+=back
+
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_HTTP_HOST = $cfg->{http_host};
+    $_MAIL_HOST = $cfg->{mail_host};
+    return;
+}
+
 =for html <a name="handle_register"></a>
 
 =head2 static handle_register()
@@ -337,6 +374,98 @@ sub regroup {
     my($self, $name, $value) = @_;
     foreach my $group (@{_group($self, $name, $value)}) {
 	$self->SUPER::regroup(@$group);
+    }
+    return;
+}
+
+=for html <a name="value_host_groups"></a>
+
+=head2 value_host_groups(string mail_host)
+
+The I<Text.http_host> and I<Text.mail_host> groups are special, because they
+depend on local host information.  I<Text.http_host> is used to format absolute
+URIs (see
+L<Bivio::Agent::Request::format_http|Bivio::Agent::Request/"format_http">).
+I<Text.mail_host> is used to format email addresses (see
+L<Bivio::Agent::Request::format_email|Bivio::Agent::Request/"format_email">).
+
+L<handle_config|"handle_config"> is used to configure these host groups.
+For production systems, the configuration will look something like:
+
+    'Bivio::UI::Text' => {
+	http_host => 'www.mycompany.com',
+	mail_host => 'mycompany.com',
+    },
+
+The facade determines how these values are to be used in production.
+Typically, a facade has its own URI, e.g. you might support www.mycompany.com
+and www.myothercompany.com from the same bOP server.  You might do this for
+co-branding reasons.  These sites would be distinct and would have B<separate
+cookies>.  This last point is important.
+
+If you have a co-brand which you'd like to seamlessly integrate with your main
+site, you probably want co-brand URIs to be subdomains at the same level as
+your main site.  For example, you would have www.mycompany.com and
+cobrand1.mycompany.com.  These two URIs could share cookies.  Users would only
+need to login once to either www.mycompany.com or cobrand1.mycompany.com to
+gain access to both sites.
+
+I<value_host_groups> manages this magically for you.  Your main facade should
+define its I<Facade.uri> as C<www>.  The cobrand facades would define their
+I<Facade.uri> as C<cobrand1>, C<cobrand2>, ...  You would then call this method
+to set the URIs accordingly.  This substitution ONLY works if I<Facade.uri>
+does not contain dots (i.e. is a simple word).  Otherwise, the I<Facade.uri> is
+used verbatim for I<Text.http_host>.  Yes, the C<www.> is a hardwired pattern
+and it should be replaceable, but it's not.
+
+If you pass I<mail_host> to this method, it will be set as the
+I<Text.mail_host>.  Otherwise, the configured value will be used.
+
+B<Testing:> If
+L<Bivio::Agent::Request::is_production|Bivio::Agent::Request/"is_production">
+returns false, several things happen.  I<mail_host> is ignored.  It always goes
+to the configured value.  If the configured I<http_host> contains the prefix
+C<www.>, the I<Facade.uri> will be stripped of all dots and will replace the
+C<www.> in the configured I<http_host> to become this I<Text.http_host>.
+This facilitates testing of facades.  You can set your C</etc/hosts> file to
+include aliases for all your facades and it will "do the right thing" in
+L<Bivio::UI::Facade::setup_request|Bivio::UI::Facade/"setup_request">.
+
+B<Note: this method will call L<value|"value"> or L<group|"group">
+depending on the existence of I<http_host> and I<mail_host> in
+parent facades.>
+
+=cut
+
+sub value_host_groups {
+    my($self, $mail_host) = @_;
+    $mail_host ||= $_MAIL_HOST;
+    my($uri) = $self->get_facade->get('uri');
+    my($http_host) = $_HTTP_HOST;
+    my($http_method) =  $self->exists('http_host') ? 'value' : 'group';
+    my($mail_method) =  $self->exists('mail_host') ? 'value' : 'group';
+    if (Bivio::Agent::Request->is_production) {
+	if ($uri =~ /\./) {
+	    # Allows names like bivio.net
+	    $self->$http_method(http_host => $uri);
+	}
+	else {
+	    # Makes names like eklubs.bivio.com
+	    $http_host =~ s/^(?:www\.)?/$uri./;
+	    $self->$http_method(http_host => $http_host);
+	}
+	$self->$mail_method(mail_host => $mail_host);
+    }
+    else {
+	# Test/Development mode: Remove dots and put on front of
+	# configured HTTP_HOST if HTTP_HOST contains www.
+	$uri =~ s/\.//g;
+	my($http_host) = $_HTTP_HOST;
+	$http_host =~ s/^(?:www\.)?/$uri./;
+	$self->$http_method(http_host => $http_host);
+
+	# Mail host is *always* configured value during test
+	$self->$mail_method(mail_host => $_MAIL_HOST);
     }
     return;
 }

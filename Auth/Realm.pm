@@ -235,8 +235,8 @@ sub format_email {
     return $email if $email;
 
     # Compute and cache (since we are checking anyway)
-    $email = $self->get('owner_name').'@'
-	    .$self->get('owner')->get_request->get('mail_host');
+    $email = $self->get('owner')->get_request->format_email(
+	    $self->get('owner_name'));
     $self->put(_email => $email);
     return $email;
 }
