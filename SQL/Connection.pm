@@ -218,12 +218,15 @@ sub execute {
         	_execute_helper($self, $sql, $params, $has_blob, \$statement);
                 return 1;
             });
+        my($die_error) = $@;
+
 	$self->increment_db_time($start_time);
 	return $statement if $ok;
 
 	# Extract the errors
 	$err = $statement && $statement->err ? $statement->err + 0 : 0;
-	$errstr = $statement && $statement->errstr ? $statement->errstr : '';
+	$errstr = $statement && $statement->errstr
+            ? $statement->errstr : $die_error;
 
 	# If we get an error, it may be a timed-out connection.  We'll
 	# check the connection the next time through.
