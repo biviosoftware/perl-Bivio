@@ -155,16 +155,24 @@ sub audit_units {
 
 	if (Bivio::Type::Date->compare($val_date, $date) >= 0) {
 
-	    my($id, $amount, $units, $tran_date) = $entries->get(
-		    'Entry.entry_id', 'Entry.amount', 'MemberEntry.units',
-		    'RealmTransaction.date_time');
+	    my($id, $amount, $units, $tran_date) = $entries->get(qw(
+		    Entry.entry_id Entry.amount MemberEntry.units
+		    RealmTransaction.date_time));
 
 	    # don't include member payments on val_date if val_date>=tran_date
-	    my($unit_value) = _get_unit_value($self, $val_date,
+	    my($club_units, $value) = _get_units_and_value($self, $val_date,
 		    Bivio::Type::Date->compare($val_date, $tran_date) < 0);
-	    my($real_units) = Bivio::Type::Amount->div($amount, $unit_value);
+	    my($real_units);
+	    if ($club_units == 0 || $value == 0) {
+		$real_units = Bivio::Type::Amount->div($amount,
+			DEFAULT_UNIT_VALUE());
+	    }
+	    else {
+		$real_units = Bivio::Type::Amount->div(
+			Bivio::Type::Amount->mul($amount, $club_units),
+			$value);
+	    }
 
-	    #_trace("\n$units\t$real_units");
 	    # imported data correct to 6 decimal places
 	    if (Bivio::Type::Number->compare($units, $real_units, 6) != 0) {
 		my($display_date) = Bivio::Type::Date->to_literal($val_date);
@@ -638,7 +646,9 @@ Returns the unit value for the realm on the specified date.
 sub get_unit_value {
     my($self, $date) = @_;
 
-    return _get_unit_value($self, $date, 1);
+    my($units, $value) = _get_units_and_value($self, $date, 1);
+    return DEFAULT_UNIT_VALUE() if $units == 0 || $value == 0;
+    return Bivio::Type::Amount->div($units, $value);
 }
 
 =for html <a name="get_units"></a>
@@ -877,19 +887,18 @@ sub unauth_load_by_email {
 
 #=PRIVATE METHODS
 
-# _get_unit_value(string date, boolean include_todays_member_entries) : string
+# _get_units_and_value(string date, boolean include_todays_member_entries) : (string, string)
 #
-# Returns the unit value for the specified date.
+# Returns the the units owned and the club value for the specified date.
 # If include_todays_member_entries is false, then the result won't include
 # member entries on the specified date.
 #
-sub _get_unit_value {
+sub _get_units_and_value {
     my($self, $date, $include_todays_member_entries) = @_;
     my($fields) = $self->{$_PACKAGE};
     $date = Bivio::Type::Date->to_local_date($date);
-    my($cache) = $fields->{'_get_unit_value'.$date
-	.$include_todays_member_entries};
-    return $cache if $cache;
+    my($cache) = $fields->{'_get_units_and_value'.$date};
+    return @$cache if $cache;
 
     my($units) = $self->get_units($date);
     my($value) = $self->get_value($date);
@@ -909,8 +918,6 @@ sub _get_unit_value {
  	    AND realm_transaction_t.realm_id=?
 	    AND realm_transaction_t.date_time
                 = member_entry_t.valuation_date
-	    AND realm_transaction_t.date_time
-                = member_entry_t.valuation_date
 	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
 EOF
 
@@ -920,22 +927,18 @@ EOF
 	# returns at most one row
 	while (my $row = $sth->fetchrow_arrayref) {
 	    my($mem_units, $mem_value) = @$row;
+	    _trace("removing $mem_units units, $mem_value value");
 	    $units = Bivio::Type::Amount->sub($units, $mem_units)
 		    if ($mem_units);
 	    $value = Bivio::Type::Amount->sub($value, $mem_value)
 		    if ($mem_value);
 	}
     }
-    my($result) =  $units == 0 ? 0 : Bivio::Type::Amount->div($value, $units);
-
-    my($display_date) = Bivio::Type::Date->to_literal($date);
-    _trace("\nunit_value $display_date units: ".$units."\tvalue: ".$value);
-
-    # a value of 0 will only occur if no securities are owned
-    $result = DEFAULT_UNIT_VALUE() if $result == 0;
-    $fields->{'_get_unit_value'.$date
-	.$include_todays_member_entries} = $result;
-    return $result;
+    my($result) = [$units, $value];
+    $fields->{'_get_units_and_value'.$date} = $result;
+    _trace("\n", Bivio::Type::Date->to_literal($date), ' ',
+	    $units, ' ', $value) if $_TRACE;
+    return @$result;
 }
 
 =head1 COPYRIGHT
