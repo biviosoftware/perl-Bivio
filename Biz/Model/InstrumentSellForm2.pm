@@ -34,6 +34,7 @@ sell. Shows a lot list and fills values FIFO.
 #=IMPORTS
 use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmInstrumentEntry;
+use Bivio::Biz::Model::RealmInstrumentLotList;
 use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::IO::Trace;
@@ -242,16 +243,16 @@ sub internal_initialize {
 	hidden => [
 	    {
 		name => 'RealmTransaction.date_time',
-		type => 'Bivio::Type::Date',
-		constraint => Bivio::SQL::Constraint::NOT_NULL(),
+		type => 'Date',
+		constraint => 'NOT_NULL',
 	    },
 	    'RealmAccountEntry.realm_account_id',
 	    'RealmInstrumentEntry.count',
 	    'Entry.amount',
 	    {
 		name => 'commission',
-		type => 'Bivio::Type::Amount',
-		constraint => Bivio::SQL::Constraint::NONE(),
+		type => 'Amount',
+		constraint => 'NONE',
 	    },
 	    'RealmTransaction.remark',
 	],
@@ -275,10 +276,14 @@ if there are any.
 sub validate {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($req) = $self->get_request;
 
-    my($data) = $self->get_request->get('form') || {};
-    my($lot_list) =$self->get_request->get(
-	    'Bivio::Biz::Model::RealmInstrumentLotList');
+    my($data) = $req->get('form') || {};
+    my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
+    $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
+	    => $self->get('RealmTransaction.date_time'));
+    $lot_list->load();
+    my($lot_num) = 0;
     my($lots) = [];
     my($quantity) = [];
     my($count) = 0;
@@ -345,7 +350,7 @@ sub _create_gain_entries {
 	$inst_entry->create_entry($transaction, {
 	    entry_type => Bivio::Type::EntryType::INSTRUMENT_SELL(),
 	    realm_instrument_id => $id,
-	    amount => $fields->{$type},
+	    amount => Bivio::Type::Amount->round($fields->{$type}, 2),
 	    tax_category => $type eq 'stcg'
 	        ? Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN()
 	        : $type eq 'mtcg'
@@ -384,24 +389,24 @@ sub _create_sell_entry {
     my($gain) = Bivio::Type::Amount->sub(
 	    Bivio::Type::Amount->mul($amount, $share_value),
 	    $cost_basis);
-    my($gain_type) = _determine_gain_type($lot_list->get('purchase_date'),
-	    $transaction->get('date_time'));
+#    my($gain_type) = _determine_gain_type($lot_list->get('purchase_date'),
+#	    $transaction->get('date_time'));
+    my($gain_type) = lc(Bivio::Biz::Accounting::Tax->get_gain_type(
+	    $lot_list->get('purchase_date'),
+	    $transaction->get('date_time'))->get_short_desc);
+
     $fields->{$gain_type} = Bivio::Type::Amount->add($fields->{$gain_type},
 	    $gain);
     return;
 }
 
 
-#TODO: deprecated, use Bivio::Biz::AcountingTax::get_gain_type()
+=comment
 
 # _determine_gain_type(string purchase_date, string sell_date) : Bivio::Type::TaxCategory
 #
 # Returns the appropriate tax type for the instrument held between the two
 # dates.
-#
-# if days <= 1 year then STCG
-# else if sell in 1997 and (before may 7 or held <= 18 months) MTCG
-# otherwise LTCG
 #
 sub _determine_gain_type {
     my($purchase_date, $sell_date) = @_;
@@ -426,6 +431,8 @@ sub _determine_gain_type {
     }
     return 'ltcg';
 }
+
+=cut
 
 =head1 COPYRIGHT
 
