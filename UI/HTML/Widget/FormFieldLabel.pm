@@ -42,8 +42,10 @@ or C<form_field_error_label> fonts.
 =item label : string (required)
 
 Text to render for the visible label.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
-before rendering.
+
+=item label : widget (required)
+
+Widget to render for the label.
 
 =item field : string (required)
 
