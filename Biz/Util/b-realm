@@ -5,11 +5,11 @@ use strict;
 
 =head1 NAME
 
-b-realm-owner - manipulate realm_owner_t database table
+b-realm - manipulate realm_owner_t database table
 
 =head1 SYNOPSIS
 
-  b-realm-owner [-n] -init
+  b-realm options...
 
 =head1 DESCRIPTION
 
