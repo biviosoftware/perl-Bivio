@@ -53,9 +53,6 @@ Development environment configuration.
 sub dev_overrides {
     my($proto, $pwd, $host) = @_;
     return {
-	'Bivio::PetShop::Cookie' => {
-	    domain => $host,
-	},
 	'Bivio::UI::HTML::Widget::SourceCode' => {
 	    source_dir => "$pwd/src",
 	},
