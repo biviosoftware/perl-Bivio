@@ -316,7 +316,7 @@ Returns true if the realm is one of the default realms (general, user, club).
 
 sub is_default {
     my($self) = @_;
-    return 1 if $self->get('type') == Bivio::Auth::RealmType::GENERAL();
+    return 1 if $self->get('type') == Bivio::Auth::RealmType->GENERAL;
     return $self->get('owner')->is_default;
 }
 

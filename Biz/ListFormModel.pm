@@ -713,7 +713,6 @@ sub _execute_init {
 
     # Get the the list_class instance
     my($lm) = $self->internal_initialize_list();
-
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
 
