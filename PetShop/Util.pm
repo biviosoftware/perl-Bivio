@@ -47,6 +47,7 @@ As you:
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Util::RealmRole;
 
 #=VARIABLES
 
@@ -100,7 +101,7 @@ sub _init_demo {
     _init_demo_categories($self);
     _init_demo_products($self);
     _init_demo_items($self, _init_demo_suppliers($self));
-    _init_demo_user($self);
+    _init_demo_users($self);
     return;
 }
 
@@ -234,27 +235,35 @@ sub _init_demo_suppliers {
     return \@id;
 }
 
-# _init_demo_user(self)
+# _init_demo_users(self)
 #
-# Creates user demo with password "password".
+# Creates user demo@bivio.biz with password "password".  Creates user
+# root@bivio.biz.
 #
-sub _init_demo_user {
+sub _init_demo_users {
     my($self) = @_;
     my($req) = $self->get_request;
-    Bivio::Biz::Model->new($req, 'UserAccountForm')->execute($req, {
-	'User.first_name' => 'Demo',
-	'User.last_name' => 'User',
-	'Email.email' => 'info@bivio.biz',
-	'EntityAddress.addr1' => '1313 Mockingbird Lane',
-	'EntityAddress.addr2' => undef,
-	'EntityAddress.city' => 'Boulder',
-	'EntityAddress.state' => 'CO',
-	'EntityAddress.zip' => '80304',
-	'EntityAddress.country' => 'US',
-	'EntityPhone.phone' => '555-1212',
-	'RealmOwner.name' => 'demo',
-	'RealmOwner.password' => 'password',
-    });
+    foreach my $u ('demo', ($req->is_production ? () : ('root'))) {
+	$self->print("Created user $u\@bivio.biz\n");
+	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
+	    'User.first_name' => 'Demo',
+	    'User.last_name' => 'User',
+	    'Email.email' => "$u\@bivio.biz",
+	    'EntityAddress.addr1' => '1313 Mockingbird Lane',
+	    'EntityAddress.addr2' => undef,
+	    'EntityAddress.city' => 'Boulder',
+	    'EntityAddress.state' => 'CO',
+	    'EntityAddress.zip' => '80304',
+	    'EntityAddress.country' => 'US',
+	    'EntityPhone.phone' => '555-1212',
+	    'RealmOwner.password' => 'password',
+	    force_create => 1,
+	});
+	# demo accounts have real names, for ease of logging in
+	$req->get('auth_user')->update({
+	    name => $u,
+	});
+    }
     return;
 }
 
