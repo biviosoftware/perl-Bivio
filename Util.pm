@@ -264,6 +264,18 @@ sub shell {
     return \$res;
 }
 
+# escape_query(string) : string
+#
+# Calls escape_uri then escapes '=' and '&'.
+#
+sub escape_query {
+    # Calls passing on.
+    my($v) = &escape_uri;
+    $v =~ s/\=/%3D/g;
+    $v =~ s/\&/%26/g;
+    return $v;
+}
+
 1;
 __END__
 
