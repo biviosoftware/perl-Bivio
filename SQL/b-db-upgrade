@@ -276,7 +276,36 @@ grant ctxapp to bivio
 /
 EOF
 
+    # Back to bivio/bivio
     Bivio::SQL::Connection->set_dbi_name($prior_db);
+    _do_sql(<<'EOF');
+BEGIN ctx_ddl.drop_preference('im_storage'); END;
+/
+BEGIN ctx_ddl.create_preference('im_storage', 'BASIC_STORAGE'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'K_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'R_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'N_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_storage', 'P_TABLE_CLAUSE', 'tablespace index_64m'); END;
+/
+BEGIN ctx_ddl.drop_preference('im_filter'); END;
+/
+BEGIN ctx_ddl.create_preference('im_filter', 'USER_FILTER'); END;
+/
+BEGIN ctx_ddl.set_attribute('im_filter', 'COMMAND', 'b-content-filter'); END;
+/
+CREATE INDEX file_t15 on file_t(content) indextype is ctxsys.context
+    parameters ('storage im_storage filter im_filter nopopulate')
+/
+EOF
+
     _upgrade_volume4_names();
 
     print("\nRESTART DATABASE TO COMPLETE THE UPGRADE\n");
