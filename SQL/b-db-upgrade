@@ -248,9 +248,9 @@ sub _upgrade {
 
     _do_sql(<<'EOF');
 CREATE TABLESPACE ctxapp
-  datafile '/db/2/4/ctxapp_01.dbf' size 1025M reuse
-  default storage (initial 8m next 8m pctincrease 0
-      minextents 1 maxextents 128)
+  datafile '/db/2/4/ctxapp_01.dbf' size 513M reuse
+  default storage (initial 1m next 1m pctincrease 0
+      minextents 1 maxextents 500)
   online
 /
 EOF
@@ -264,6 +264,9 @@ EOF
 EOF
     print _sqlplus('ctxsys/ctxsys', <<"EOF");
 \@$ora_home/ctx/admin/defaults/drdefus
+EOF
+    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+exec Ctx_Adm.set_parameter('log_directory', '/var/log/oracle')
 EOF
 
     Bivio::SQL::Connection->set_dbi_name($prior_db);
