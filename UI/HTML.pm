@@ -93,7 +93,7 @@ sub get_data_disclaimer {
 				    <<'EOF', 'data_disclaimer')
 <{clear_dot(480, 10)}><br>
 Historical data and daily updates provided by
-<{link('Commodity Systems, Inc. (CSI)', 'http://www.csidata.com', 'link')}>.
+<{link('Commodity Systems, Inc. (CSI)', 'http://www.csidata.com', 0)}>.
 Data and information is provided for informational purposes only, and is not
 intended for trading purposes. Neither site_name() nor its data or content
 providers shall be liable for any errors or delays in the content, or
