@@ -311,8 +311,12 @@ sub send {
     my($fields) = $self->{$_PACKAGE};
     defined(@{$fields->{recipients}}) || die("no recipients\n");
 
-    &_trace('Sending msg to ', join(',',@{$fields->{recipients}})) if $_TRACE;
-    my($err);
+    # Always have header to do loop counting
+    my($num_loops) = $self->get_head->get('X-Bivio-Forwarded') || 0;
+    $self->get_head->replace('X-Bivio-Forwarded', $num_loops+1);
+
+    &_trace('To ', join(',',@{$fields->{recipients}})) if $_TRACE;
+
     # Use only one handle to avoid leaks
     my($fh) = \*Bivio::Mail::Message::OUT;
     my($pid) = open($fh, '|-');
