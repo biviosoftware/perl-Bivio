@@ -95,6 +95,8 @@ sub process_request {
 		});
 	if ($die && $die->get('code')
 		== Bivio::DieCode::SERVER_REDIRECT_TASK()) {
+	    #NOTE: Coupling with Request::internal_server_redirect.
+	    #      It already has set task and task_id
 	    my($attrs) = $die->get('attrs');
 	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
 		    if $_TRACE;

@@ -738,8 +738,15 @@ sub internal_server_redirect {
 
     # Save the form context before switching realms
     my($fc) = Bivio::Biz::FormModel->get_context_from_request($self);
-    $self->internal_redirect_realm($new_task, $new_realm);
 
+    # Set the realm AND task, because they MUST match.
+    # This matches what the Dispatcher will do.
+    #NOTE: Coupling with Dispatcher::process_request.
+    $self->internal_redirect_realm($new_task, $new_realm);
+    $self->put(task_id => $new_task,
+	    task => Bivio::Agent::Task->get_by_id($new_task));
+
+    # Now fill in the rest of the request context
     $self->put(uri =>
 	    # If there is no uri, use current one
 	    Bivio::Agent::HTTP::Location->task_has_uri($new_task)
