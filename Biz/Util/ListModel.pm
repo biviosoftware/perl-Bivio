@@ -11,7 +11,7 @@ Bivio::Biz::Util::ListModel - manipulate list models
 
 =head1 RELEASE SCOPE
 
-bOP
+Societas
 
 =head1 SYNOPSIS
 
