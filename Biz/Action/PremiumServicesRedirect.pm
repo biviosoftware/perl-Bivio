@@ -31,9 +31,11 @@ C<Bivio::Biz::Action::PremiumServicesRedirect> redirects to the premium services
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 METHODS
 
@@ -49,7 +51,7 @@ Redirects to the taxes page.
 
 sub execute {
     my($proto, $req) = @_;
-    $req->client_redirect(Bivio::UI::HTML::Widget->format_uri_static_site(
+    $req->client_redirect($_VS->vs_format_uri_static_site(
 	   $req, 'hm/services.html'));
     # DOES NOT RETURN
 }
