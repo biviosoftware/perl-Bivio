@@ -39,7 +39,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 #=IMPORTS
 use Data::Dumper;
+use Bivio::UI::DateRenderer;
 use Bivio::UI::StringRenderer;
+use Bivio::UI::HTML::EmailRenderer;
+use Bivio::UI::HTML::ListCellRenderer;
 
 =head1 FACTORIES
 
@@ -57,7 +60,8 @@ sub new {
     my($proto, $name) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
     $self->{$_PACKAGE} = {
-	renderer => []
+	col_renderer => [],
+	head_renderer => []
     };
     return $self;
 }
@@ -66,42 +70,33 @@ sub new {
 
 =cut
 
-=for html <a name="install_renderers"></a>
+=for html <a name="get_default_renderer"></a>
 
-=head2 install_renderers(ListModel)
+=head2 get_default_renderer(FieldDescriptor type) : ListCellRenderer
 
-Sets up the column renderers based on the ListModel field types.
-
-=cut
-
-sub install_renderers {
-    my($self, $model) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    #NOTE: may want to only do this if the model class has changed
-    $fields->{renderer} = [];
-    for(my($col) = 0; $col < $model->get_column_count(); $col++ ) {
-
-	$fields->{renderer}->[$col] = $self->lookup_renderer(
-		$model->get_column_descriptor($col));
-    }
-}
-
-=for html <a name="lookup_renderer"></a>
-
-=head2 lookup_renderer(FieldDescriptor type) : Renderer
-
-Returns a field renderer for the specified type.
+Returns a default renderer for the specified field type.
 
 =cut
 
-sub lookup_renderer {
+sub get_default_renderer {
     my($self, $type) = @_;
 
-    #TODO: move this to another class
+    my($inner);
+    my($attributes);
 
-    # for now always return a StringRenderer
-    return Bivio::UI::StringRenderer->new();
+    if ($type->get_type() == Bivio::Biz::FieldDescriptor::DATE()) {
+	$inner = Bivio::UI::DateRenderer->new();
+	$attributes = "nowrap";
+    }
+    elsif ($type->get_type() == Bivio::Biz::FieldDescriptor::EMAIL_REF()) {
+	$inner = Bivio::UI::HTML::EmailRenderer->new();
+	$attributes = "nowrap";
+    }
+    else {
+	$inner = Bivio::UI::StringRenderer->new();
+    }
+
+    return Bivio::UI::HTML::ListCellRenderer->new($inner);
 }
 
 =for html <a name="render"></a>
@@ -115,10 +110,6 @@ Draws the target, must be a ListModel.
 sub render {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-
-    $self->install_renderers($model);
-
-    #$req->log_error("\n\n".Dumper($fields)."\n\n");
 
     #TODO: hard-coded for now, need to configure it.
     $req->print('<table width="100%" border=0 cellpadding=5 cellspacing=0>');
@@ -199,12 +190,14 @@ sub render_body {
 
 	for (my($col) = 0; $col < $max_col; $col++ ) {
 
-	    #TODO: need a way to render td per type
-
-	    $req->print('<td align=left><small>');
-	    $fields->{renderer}->[$col]->render(
-		    $model->get_value_at($row, $col), $req);
-	    $req->print('&nbsp;</small></td>');
+	    my($cell_renderer) = $fields->{col_renderers}->[$col];
+	    if (! $cell_renderer) {
+		# lookup default - can be overridden by base class
+		$cell_renderer = $self->get_default_renderer(
+			$model->get_column_descriptor($col));
+		$fields->{col_renderers}->[$col] = $cell_renderer;
+	    }
+	    $cell_renderer->render($model->get_value_at($row, $col), $req);
 	}
 	$req->print('</tr>');
     }
@@ -222,6 +215,8 @@ sub render_heading {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    #TODO: use $fields->{head_renderer}
+
     $req->print('<tr bgcolor="#E0E0FF">');
     for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
 	$req->print('<th align=left><font face="arial,helvetica,sans-serif">
@@ -229,6 +224,36 @@ sub render_heading {
     }
 
     $req->print('</tr>');
+}
+
+=for html <a name="set_column_heading_renderer"></a>
+
+=head2 set_column_heading_renderer(int column, Renderer rdr)
+
+Sets the renderer to use for the heading of the specified column index.
+
+=cut
+
+sub set_column_heading_renderer {
+    my($self, $column, $renderer) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    $fields->{head_renderer}->[$column] = $renderer;
+}
+
+=for html <a name="set_column_renderer"></a>
+
+=head2 set_column_renderer(int column, ListCellRenderer rdr)
+
+Sets the renderer to use for the column with the specified index.
+
+=cut
+
+sub set_column_renderer {
+    my($self, $column, $renderer) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    $fields->{col_renderer}->[$column] = $renderer;
 }
 
 #=PRIVATE METHODS
