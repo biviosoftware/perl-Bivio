@@ -36,6 +36,7 @@ and delete interface to the C<member_entry_t> table.
 #=IMPORTS
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
+use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
@@ -65,6 +66,8 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             units => ['Bivio::Type::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
+	    valuation_date => ['Bivio::Type::Date',
+		Bivio::SQL::Constraint::NONE()],
         },
 #TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
