@@ -633,7 +633,7 @@ sub rhn_up2date_param {
     my($self, @args) = @_;
     return _edit($self, '/etc/sysconfig/rhn/up2date', map {
 	my($param, $value) = @$_;
-	[qr/\n$param\s*=\s*[^;]*;/m, "\n$param=$value;"],
+	[qr/\n$param\s*=\s*.*/m, "\n$param=$value;"],
     } @{$self->group_args(2, \@args)});
 }
 
