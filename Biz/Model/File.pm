@@ -318,8 +318,8 @@ sub delete_all_in_volume {
             AND file_id != ?',
 	    [$id, $volume->as_sql_param,
 		$volume->get_root_directory_id($id)]);
-    Bivio::Biz::Model::FileQuota->get_current_or_load(
-	    $self->get_request, $properties->{realm_id})->recompute;
+    Bivio::Biz::Model::FileQuota->get_current_or_load($self->get_request, $id)
+		->recompute;
     return;
 }
 
