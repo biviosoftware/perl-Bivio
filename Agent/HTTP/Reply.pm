@@ -29,6 +29,7 @@ output type will be 'text/html'.
 use Apache::Constants ();
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Die;
+use Bivio::IO::Alert;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Carp ();
@@ -180,7 +181,7 @@ sub die_to_http_code {
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
 	    if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
-    Carp::carp($die, ": unknown Bivio::DieCode")
+    Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
 		unless UNIVERSAL::isa($die, 'Bivio::DieCode');
     return _error(Apache::Constants::SERVER_ERROR(), $r);
 }
