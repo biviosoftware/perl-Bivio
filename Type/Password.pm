@@ -69,18 +69,25 @@ my($_VALID_LENGTH) = length(__PACKAGE__->encrypt('anything'));
 
 =cut
 
-=for html <a name="is_equal"></a>
+=for html <a name="compare"></a>
 
-=head2 static is_equal(string encrypted, string incoming) : boolean
+=head2 static compare(string encrypted, string incoming) : int
 
-Encrypts I<incoming> using I<salt> from I<encrypted>. Throws
+Encrypts I<incoming> using I<salt> from I<encrypted>.
 Returns true if encrypted versions match.
+
+C<undef> values are never equal.  This avoids security problems.
 
 =cut
 
-sub is_equal {
-    my($undef, $encrypted, $incoming) = @_;
-    return crypt($incoming, substr($encrypted, 0, 2)) eq $encrypted;
+sub compare {
+    my(undef, $encrypted, $incoming) = @_;
+    # Only equal if both values are defined
+    return -1
+	unless defined($encrypted);
+    return 1
+	unless defined($incoming);
+    return crypt($incoming, substr($encrypted, 0, 2)) cmp $encrypted;
 }
 
 =for html <a name="encrypt"></a>
