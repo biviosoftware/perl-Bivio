@@ -657,15 +657,11 @@ sub _get_heading {
     }
 
     if (defined($sort_fields) && @$sort_fields) {
-        # Restriction: Main sort field must be identical to column field
-        Bivio::Die->die($sort_fields->[0], ' ne ', $col,
-                ': sort field must be identical to column field')
-                    unless $sort_fields->[0] eq $col;
         $heading = $self->director([
-            sub {
-                my($sort_col) = shift->get_query->get('order_by')->[0];
-                return $sort_col eq $col ? 1 : 0;
-            }], {
+            Bivio::Die->eval_or_die("sub {
+                my(\$sort_col) = shift->get_query->get('order_by')->[0];
+                return \$sort_col eq '$sort_fields->[0]' ? 1 : 0;
+            }")], {
                 0 => $self->link($heading,
                         ['->format_uri_for_sort', $sort_fields]),
                 1 => $self->director([
