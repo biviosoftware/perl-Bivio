@@ -987,6 +987,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::FileTree
 	next=CLUB_COMMUNICATIONS_FILE_READ
         NOT_FOUND=FILE_READ_NOT_FOUND
+        help=files
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_DELETE
