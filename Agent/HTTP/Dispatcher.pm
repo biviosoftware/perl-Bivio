@@ -33,8 +33,6 @@ use Bivio::Agent::Dispatcher;
 
 C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
 handler.  It creates a single instance of itself on the first request.
-For testing, a subclass can register itself as the singleton using the
-method L<set_handler|"set_handler">.
 
 =cut
 
@@ -153,45 +151,6 @@ sub initialize {
     Bivio::Util::my_require('Bivio::Agent::Job::Dispatcher');
     # clear db time
     Bivio::SQL::Connection->get_db_time;
-    return;
-}
-
-=for html <a name="set_handler"></a>
-
-=head2 static set_handler(Bivio::Agent::HTTP::Dispatcher dispatcher)
-
-Overrides the default handler with the specified instance. This is useful
-for testing small parts of the system.
-
-A subclass for testing could look like this:
-
-    package MyTestDispatcher;
-
-    @MyTestDispatcher::ISA = qw(Bivio::Agent::HTTP::Dispatcher);
-
-    my($_INITIALIZED) = 0;
-
-    sub handler {
-	my($r) = @_;
-
-	if (! $_INITIALIZED) {
-	    Bivio::Agent::HTTP::Dispatcher->set_handler(__PACKAGE__->new());
-	    $_INITIALIZED = 1;
-	}
-	# handle the request in the base class (not -> notation)
-	return Bivio::Agent::HTTP::Dispatcher::handler($r);
-    }
-
-Be sure that the subclass name is the entry in the httpd.conf so that it
-can get the requests first.
-    PerlModule MyDispatcher
-    PerlHandler MyDispatcher
-
-=cut
-
-sub set_handler {
-    my(undef, $dispatcher) = @_;
-    $_SELF = $dispatcher;
     return;
 }
 
