@@ -44,6 +44,16 @@ my($_PACKAGE) = __PACKAGE__;
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
 my(%_DIE_TO_HTTP_CODE);
+my(%_STATUS_CODES) = map {($_, 1)} (
+	Apache::Constants::OK(),
+	Apache::Constants::NOT_FOUND(),
+	Apache::Constants::SERVER_ERROR(),
+	Apache::Constants::FORBIDDEN(),
+	Apache::Constants::HTTP_SERVICE_UNAVAILABLE(),
+	Apache::Constants::HTTP_BAD_REQUEST(),
+	302,
+	# Add in others as needed
+);
 
 =head1 FACTORIES
 
@@ -233,6 +243,24 @@ sub set_header {
     return;
 }
 
+=for html <a name="set_http_status"></a>
+
+=head2 set_http_status(int status)
+
+Sets the HTTP return code.  Use C<Apache::Constants> values, e.g.
+C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
+
+=cut
+
+sub set_http_status {
+    my($self, $status) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Bivio::IO::Alert->die($status, ': unknown HTTP status')
+		unless defined($status) && $_STATUS_CODES{$status};
+    $fields->{status} = $status;
+    return;
+}
+
 =for html <a name="set_last_modified"></a>
 
 =head2 set_last_modified(string date_time)
@@ -340,11 +368,14 @@ EOF
 sub _send_http_header {
     my($self, $req, $r) = @_;
     if ($req) {
+	my($fields) = $self->{$_PACKAGE};
+	# Set the status if was set, otherwise defaults to 200 by Apache
+	$r->status($fields->{status}) if defined($fields->{status});
+
 	# We set the cookie if we don't cache this answer
 	$self->set_cache_private() if $req->get('cookie')->header_out($r);
 
 	# Set any optional headers
-	my($fields) = $self->{$_PACKAGE};
 	if ($fields->{headers}) {
 	    foreach my $k (sort(keys(%{$fields->{headers}}))) {
 		$r->header_out($k, $fields->{headers}->{$k});
