@@ -71,6 +71,7 @@ _compile([
     TABLE_ROW_TITLE => [undef, undef, 'small', 'strong'],
     FORM_FIELD_LABEL => [undef, undef, 'small'],
     FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i', 'small'],
+    REALM_NAME => [$_SANS_SERIF, 'realm_name', 'big'],
 ]);
 
 =head1 METHODS
@@ -116,7 +117,7 @@ sub _compile {
 	if ($color || $face || defined($size)) {
 	    $p .= '<font';
 	    $p .= ' face="'.$face.'"' if $face;
-	    $p .= Bivio::UI::Color->as_html($color) if $color;
+	    $p .= Bivio::UI::Color->as_html_fg($color) if $color;
 	    $p .= ' size="'.$size.'"' if defined($size);
 	    $p .= '>';
 	    $s = '</font>' . $s;
