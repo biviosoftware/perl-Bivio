@@ -73,16 +73,17 @@ Bivio::IO::Config->register({
 
 =for html <a name="default_printer"></a>
 
-=head2 default_printer(string arg1, ...) : boolean
+=head2 default_printer(string msg) : boolean
 
-Writes arguments to L<Bivio::IO::Alert::print|Bivio::IO::Alert/"print">
+Writes I<msg> to
+L<Bivio::IO::Alert::print_literally|Bivio::IO::Alert/"print_literally">
 and returns result.
 
 =cut
 
 sub default_printer {
     my($msg) = @_;
-    return Bivio::IO::Alert->print('debug', $msg);
+    return Bivio::IO::Alert->print_literally($msg);
 }
 
 

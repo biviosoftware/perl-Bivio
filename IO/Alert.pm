@@ -323,18 +323,20 @@ sub info {
     return;
 }
 
-=for html <a name="print"></a>
+=for html <a name="print_literally"></a>
 
-=head2 static print(string severity, string msg)
+=head2 static print_literally(string msg)
 
-Writes an already formatted alert at a particular severity level.  The severity
-levels supported are C<debug> and C<err>.
+Prints the values without doing argument interpretation.
+
+B<Use sparingly.>  Much better to us L<warn|"warn"> and L<info|"info">.
 
 =cut
 
-sub print {
-    my(undef, $severity, $msg) = @_;
-    &$_LOGGER($severity, $msg);
+sub print_literally {
+    my(undef, $msg) = @_;
+    &$_LOGGER('debug', $msg);
+    return;
 }
 
 =for html <a name="reset_warn_counter"></a>

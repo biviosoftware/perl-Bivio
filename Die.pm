@@ -104,7 +104,9 @@ sub catch {
 		    : $msg),
 		    program_error => 1,
 		},
-		caller));
+		(caller)[0,1,2],
+		Carp::longmess("\n"),
+	       ));
 	return;
     };
     my($self) = eval {
@@ -199,8 +201,12 @@ Wrapper for L<throw|"throw">.  Takes similar arguments to CORE::die.
 sub die {
     my($proto) = shift;
     $proto->throw(Bivio::DieCode::DIE(), {
-	message => Bivio::IO::Alert->format_args(@_)
-    });
+	message => Bivio::IO::Alert->format_args(@_),
+	program_error => 1,
+    },
+	    (caller)[0,1,2],
+	    Carp::longmess("\n"),
+	   );
     # DOES NOT RETURN
 }
 
@@ -311,7 +317,7 @@ In the second form, I<self> is "rethrown".
 =cut
 
 sub throw {
-    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     if (ref($proto)) {
 	# Rethrow of an existing die.  If inside a catch, set as current
 	# and pass by name.
@@ -324,7 +330,8 @@ sub throw {
 	CORE::die($proto->unsafe_get('throw_quietly')
 		? "\n" : $proto->as_string."\n");
     }
-    my($self) = _new_from_throw($proto, $code, $attrs, $package, $line);
+    my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
+	    $stack || Carp::longmess("\n"));
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
 }
 
@@ -339,7 +346,8 @@ C<$die> object (see e.g. L<Bivio::SQL::Connection|Bivio::SQL::Connection>).
 =cut
 
 sub throw_die {
-    shift->throw(@_);
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    shift->throw($code, $attrs, $package, $file, $line, Carp::longmess("\n"));
     # DOES NOT RETURN
 }
 
@@ -357,10 +365,12 @@ sub throw_quietly {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     if (ref($proto)) {
 	$proto->put(throw_quietly => 1);
-	$proto->throw;
+	$proto->throw($proto, $code, $attrs, $package, $file, $line,
+		Carp::longmess("\n"));
 	# DOES NOT RETURN
     }
-    my($self) = _new_from_throw(@_);
+    my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
+	    Carp::longmess("\n"));
     $self->put(throw_quietly => 1);
     # Be quiet
     CORE::die($_IN_CATCH ? "$self\n" : "\n");
@@ -384,7 +394,7 @@ sub _as_string_args {
 	# Don't just "join", because we want Alert to call
 	# as->string if appropriate.
 	push(@$msg, ': ', map {
-	    ($_, '=>', $attrs->{$_}, ' ')
+	    ($_, '=>', $attrs->{$_}, ' ');
 	} sort keys %$attrs);
 	pop(@$msg);
     }
@@ -415,7 +425,7 @@ sub _check_code {
     return $code;
 }
 
-# _handle_die self
+# _handle_die(self)
 #
 # Called from within $SIG{__DIE__} inside catch.  $_CURRENT_SELF is
 # already created.  Calls the die handlers sequentially.  If errors
@@ -476,7 +486,8 @@ sub _handle_die {
 		_new_from_core_die($self,
 			Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
 			{message => $msg, proto => $proto, program_error => 1},
-			ref($proto) || $proto, $1, $2);
+			ref($proto) || $proto, $1, $2,
+			Carp::longmess("\n"));
 	    }
 	}
 	1;
@@ -484,20 +495,21 @@ sub _handle_die {
     $_IN_HANDLE_DIE--;
 }
 
-# _new proto attrs package file line : Bivio::Die
+# _new(proto, Bivio::Type::Enum code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
 #
 # Creates a new Bivio::Die from the specified parameters which all must
 # be "valid".  Sets $_CURRENT_SELF if $_CURRENT_SELF is undef.
 #
 sub _new {
-    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     my($self) = Bivio::Collection::Attributes::new($proto, {
 	next => undef,
 	code => $code,
 	attrs => $attrs,
 	package => $package,
 	file => $file,
-	line => $line});
+	line => $line,
+    });
     if ($_CURRENT_SELF) {
 	my($curr, $next) = $_CURRENT_SELF;
 	$curr = $next while $next = $curr->get('next');
@@ -507,34 +519,38 @@ sub _new {
 	$_CURRENT_SELF = $self;
     }
     _trace($self) if $_TRACE;
+    # After trace, so not too verbose
+    $self->put(stack => $stack);
     return $self;
 }
 
-# _new_from_core_die(proto, hash_ref attrs, string package, string file, string line) : Bivio::Die
+# _new_from_core_die(proto, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
 #
 # Called with the result of a CORE::die.  If $attrs->{message} is equal to the
 # string form of any of the current die values, then return that value.
 # Otherwise, create new Bivio::Die from the listed values.
 #
 sub _new_from_core_die {
-    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     if ($_CURRENT_SELF) {
 	my($msg) = $attrs->{message};
 	for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->get('next')) {
-	    return $curr if $msg eq "$curr\n";
+	    next unless $msg eq "$curr\n";
+	    return $curr;
 	}
     }
-    my($self) = _new($proto, $code, $attrs, $package, $file, $line);
+
+    my($self) = _new($proto, $code, $attrs, $package, $file, $line, $stack);
     _print_stack($self) if $_STACK_TRACE;
     return $self;
 }
 
-# _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line) : Bivio::Die
+# _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
 #
 # Sets attrs, file, line, etc.
 #
 sub _new_from_throw {
-    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     my($i) = 0;
     $i++ while caller($i) eq __PACKAGE__;
     $package ||= (caller($i))[0];
@@ -546,7 +562,7 @@ sub _new_from_throw {
 			:  {attrs => $attrs} : {};
     }
     $code = _check_code($code, $attrs);
-    return _new($proto, $code, $attrs, $package, $file, $line);
+    return _new($proto, $code, $attrs, $package, $file, $line, $stack);
 }
 
 # _print_stack(self)
@@ -557,7 +573,7 @@ sub _print_stack {
     my($self) = @_;
     my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
     return if $sp || $tq;
-    print STDERR Carp::longmess($self->as_string."\n");
+    Bivio::IO::Alert->print_literally($self->get('stack'));
     $self->put(stack_printed => 1);
     return;
 }
