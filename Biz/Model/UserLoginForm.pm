@@ -276,7 +276,7 @@ sub validate_login {
     $login = lc($login);
     $model->internal_put_field(login => $login);
 
-    my($owner) = $model->new($model->get_request, 'RealmOwner');
+    my($owner) = $model->new_other('RealmOwner');
     return $owner
 	if $owner->unauth_load_by_email_id_or_name($model->get('login'))
 	    && !$owner->is_offline_user
@@ -445,7 +445,7 @@ sub _su_logout {
     $req->delete('super_user_id');
     $req->get('cookie')->delete($self->SUPER_USER_FIELD)
 	if $req->unsafe_get('cookie');
-    my($realm) = $self->new($req, 'RealmOwner');
+    my($realm) = $self->new_other('RealmOwner');
     $self->execute($req, {
 	realm_owner => $realm->unauth_load({realm_id => $su})
 	    ? $realm : undef,
