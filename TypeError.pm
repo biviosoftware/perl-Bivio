@@ -827,7 +827,7 @@ __PACKAGE__->compile(
     NO_FRACTION_SHARES_CREATED => [
 	109,
 	undef,
-	'no fraction shares were created',
+	'no fractional shares were created',
     ],
 );
 
