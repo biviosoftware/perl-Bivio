@@ -44,11 +44,11 @@ my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 my($_INSTRUMENT_FEE_LIST) = Bivio::Biz::ListModel->new_anonymous({
     version => 1,
-    auth_id => [qw(RealmTransaction.realm_id)],
+    auth_id => 'RealmTransaction.realm_id',
     primary_key => [
 	[qw(Entry.entry_id)],
     ],
-    date => ['RealmTransaction.date_time'],
+    date => 'RealmTransaction.date_time',
     want_date => 1,
     can_iterate => 1,
     other => [qw(
