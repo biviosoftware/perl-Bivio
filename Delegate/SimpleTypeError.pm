@@ -457,6 +457,7 @@ sub get_delegate_info {
 	undef,
 	'operation not allowed for offline user',
     ],
+];
 }
 
 #=PRIVATE METHODS
