@@ -38,6 +38,67 @@ use Bivio::IO::Alert;
 
 =cut
 
+=for html <a name="nested_differences"></a>
+
+=head2 nested_differences(any left, any right) : string_ref
+
+Returns differences between left and right.  If no differences, returns
+undef.
+
+=cut
+
+sub nested_differences {
+    my($proto, $left, $right, $name) = @_;
+    $name ||= '';
+    return _diff_res($proto, $left, $right, $name)
+        unless defined($left) eq defined($right);
+    return undef
+	unless defined($left);
+    return _diff_res($proto, $left, $right, $name)
+        unless ref($left) eq ref($right);
+
+    # Scalar
+    return $left eq $right ? undef : _diff_res($proto, $left, $right, $name)
+	unless ref($left);
+
+    if (ref($left) eq 'ARRAY') {
+	return _diff_res($proto, $left, $right, $name . '->scalar()')
+	    unless int(@$left) == int(@$right);
+	my($res) = undef;
+	for (my($i) = 0; $i <= $#$left; $i++) {
+	    my($r) = $proto->nested_differences(
+		$left->[$i], $right->[$i], $name . "->[$i]");
+	    $res .= ($res ? "\n" : '') . $$r
+		if $r;
+	}
+	return $res ? \$res : undef;
+    }
+    if (ref($left) eq 'HASH') {
+	my(@l_keys) = sort(keys(%$left));
+	my(@r_keys) = sort(keys(%$right));
+	return _diff_res($proto, \@l_keys, \@r_keys, $name . '->keys()')
+	    unless $proto->nested_equals(\@l_keys, \@r_keys);
+	my($res) = undef;
+	foreach my $k (@l_keys) {
+	    my($r) = $proto->nested_differences($left->{$k}, $right->{$k},
+	       $name . "->{'$k'}");
+	    $res .= ($res ? "\n" : '') . $$r
+		if $r;
+	}
+	return $res ? \$res : undef;
+    }
+    return $proto->nested_differences($$left, $$right, '->')
+	if ref($left) eq 'SCALAR';
+
+    # blessed ref: Check if can equals and compare that way
+    return $left->equals($right)
+	? undef : _diff_res($proto, $left, $right, $name)
+	if UNIVERSAL::can($left, 'equals');
+
+    # CODE, GLOB, Regex, and blessed references should always be equal exactly
+    return $left eq $right ? undef : _diff_res($proto, $left, $right, $name);
+}
+
 =for html <a name="nested_equals"></a>
 
 =head2 nested_equals(any left, any right) : boolean
@@ -69,11 +130,11 @@ sub nested_equals {
 	return 1;
     }
     if (ref($left) eq 'HASH') {
-	my(@e_keys) = sort(keys(%$left));
-	my(@a_keys) = sort(keys(%$right));
+	my(@l_keys) = sort(keys(%$left));
+	my(@r_keys) = sort(keys(%$right));
 	return 0
-	    unless $proto->nested_equals(\@e_keys, \@a_keys);
-	foreach my $k (@e_keys) {
+	    unless $proto->nested_equals(\@l_keys, \@r_keys);
+	foreach my $k (@l_keys) {
 	    return 0
 		unless $proto->nested_equals($left->{$k}, $right->{$k});
 	}
@@ -124,17 +185,18 @@ sub to_short_string {
 
 =for html <a name="to_string"></a>
 
-=head2 static to_string(any ref, integer max_depth) : string_ref
+=head2 static to_string(any ref, integer max_depth, integer indent) : string_ref
 
 Converts I<ref> into a string_ref.  The string is formatted "tersely"
-using C<Data::Dumper>.
+using C<Data::Dumper>.  I<max_depth> is passed to Data::Dumper::Maxdepth.
+I<indent> is passed to Data::Dumper::Indent (defaults 1);
 
 =cut
 
 sub to_string {
-    my(undef, $ref, $max_depth) = @_;
+    my(undef, $ref, $max_depth, $indent) = @_;
     my($dd) = Data::Dumper->new([$ref]);
-    $dd->Indent(1);
+    $dd->Indent(defined($indent) ? $indent : 1);
     $dd->Terse(1);
     $dd->Deepcopy(1);
     $dd->Maxdepth($max_depth)
@@ -144,6 +206,22 @@ sub to_string {
 }
 
 #=PRIVATE METHODS
+
+# _diff_res(proto, any left, any right, string name) : string_ref
+#
+# Returns string, chomped if necessary
+#
+sub _diff_res {
+    my($proto, $left, $right, $name) = @_;
+    my($res) = join(' != ', map({
+	my($v) = $proto->to_string($_, 1, 0);
+	chomp($$v);
+	$$v;
+    } $left, $right));
+    $res .= " at $name"
+	if $name;
+    return \$res;
+}
 
 =head1 COPYRIGHT
 
