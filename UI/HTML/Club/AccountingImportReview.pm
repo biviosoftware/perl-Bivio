@@ -82,7 +82,9 @@ This page lists all transactions which have been successfully imported from your
 		    ['edit', 'CLUB_ACCOUNTING_TRANSACTION_EDIT', undef,
 			['->can_edit']],
 		]),
-	    ]),
+	    ], {
+		row_grouping_field => 'RealmTransaction.realm_transaction_id',
+	    }),
 	   );
 }
 
