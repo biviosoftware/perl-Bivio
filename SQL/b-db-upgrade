@@ -250,11 +250,12 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
+    _upgrade_fixup($req);
     _upgrade_add_basic_service_subscription($req);
     _upgrade_subscribed_taxes($req);
-    _upgrade_subscribe_free_trial($req);
     _upgrade_create_bivio_buck($req);
-    _upgrade_credit_current_subscribers($req);
+    my($subscribers) = _upgrade_credit_current_subscribers($req);
+    _upgrade_subscribe_free_trial($req, $subscribers);
     print("\n*** done ***\n");
     return;
 }
@@ -321,7 +322,7 @@ ALTER TABLE bivio_buck_t
     return;
 }
 
-# _upgrade_credit_current_subscribers(Bivio::Agent::Request req)
+# _upgrade_credit_current_subscribers(Bivio::Agent::Request req) : hash_ref
 #
 # Give current subscribes 30 bivio bucks.
 #
@@ -354,22 +355,49 @@ sub _upgrade_credit_current_subscribers {
 		amount => 30,
 	    });
     }
+    return $names;
+}
+
+# _upgrade_fixup(Bivio::Agent::Request req)
+#
+# Just in case run before.  We'll drop all FREE_TRIAL, bivio_buck_t,
+# and BASIC_SERVICE.
+#
+sub _upgrade_fixup {
+    my($req) = @_;
+    # just in case it has been run before
+    my($sth) = Bivio::SQL::Connection->execute('
+        DELETE FROM ec_subscription_t
+        WHERE ec_subscription_t.subscription_type=?',
+	[Bivio::Type::ECSubscription->FREE_TRIAL->as_int]);
+    if ($sth->rows) {
+	print("cleaning up prior run\n");
+
+	_do_sql('
+DROP TABLE bivio_buck_t
+/
+');
+	Bivio::SQL::Connection->execute('
+           DELETE FROM ec_payment_t
+           WHERE ec_subscription_id in (
+               SELECT ec_subscription_id FROM ec_subscription_t
+               WHERE ec_subscription_t.subscription_type=?)',
+	   [Bivio::Type::ECSubscription->BASIC_SERVICE->as_int]);
+	Bivio::SQL::Connection->execute('
+           DELETE FROM ec_subscription_t
+           WHERE ec_subscription_t.subscription_type=?',
+	   [Bivio::Type::ECSubscription->BASIC_SERVICE->as_int]);
+    }
     return;
 }
 
-# _upgrade_subscribe_free_trial(Bivio::Agent::Request req)
+# _upgrade_subscribe_free_trial(Bivio::Agent::Request req, hash_ref subscribers)
 #
 # Subscribes all clubs to a free trial period.
 #
 sub _upgrade_subscribe_free_trial {
-    my($req) = @_;
+    my($req, $subscribers) = @_;
     print("subscribing all clubs to free trial\n");
-
-    # just in case it has been run before
-    Bivio::SQL::Connection->execute('
-        DELETE FROM ec_subscription_t
-        WHERE ec_subscription_t.subscription_type=?',
-	[Bivio::Type::ECSubscription->FREE_TRIAL->as_int]);
 
     use Bivio::Type::RealmName;
     my($d) = Bivio::Type::Date->from_sql_value(
@@ -391,6 +419,7 @@ sub _upgrade_subscribe_free_trial {
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my($realm_id, $date, $name) = @$row;
+	next if $subscribers->{$name};
 	print("\t", $name, "\n");
 
 	# all free trials start now, end on Dec 31. 2001
