@@ -63,6 +63,7 @@ sub new {
 
     $self->{$_PACKAGE} = {
 	select => 'select '.join(',', @$col_map).' from '.$table_name.' ',
+	count => 'select count(*) from '.$table_name.' ',
 	col_field_count => $col_field_count
     };
     return $self;
@@ -131,8 +132,37 @@ sub find {
     return $model->get_status()->is_OK();
 }
 
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size(Model model, string where_clause, string value, ...) : int
+
+Returns the number of records in the result set for the specified where
+clause and value substitution. If an error occurs during the query, an
+error will be added to the model's status.
+
+=cut
+
+sub get_result_set_size {
+    my($self, $model, $where_clause, @values) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($conn) = Bivio::Biz::SqlConnection->get_connection();
+    my($sql) = $fields->{count}.$where_clause;
+    &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
+    my($statement) = $conn->prepare_cached($sql);
+
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
+
+    my($result) = $statement->fetchrow_arrayref()->[0];
+    $statement->finish();
+
+    return $result;
+}
+
 #=PRIVATE METHODS
 
+# _count_occurances(string str, string search) : int
+#
 # Returns the number of occurances of the specified value within a string.
 #
 sub _count_occurances {
@@ -140,7 +170,7 @@ sub _count_occurances {
 
     my($count) = 0;
     my($pos) = -1;
-    while (($pos = index($str, ',', $pos)) > -1) {
+    while (($pos = index($str, $search, $pos)) > -1) {
 	$count++;
 	$pos++;
     }
