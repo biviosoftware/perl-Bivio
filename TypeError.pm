@@ -210,6 +210,11 @@ __PACKAGE__->compile(
 	undef,
 	'email does not contain a @domain.com',
     ],
+    PHONE => [
+	35,
+	undef,
+	'invalid phone number',
+    ],
 );
 
 #=PRIVATE METHODS
