@@ -48,7 +48,8 @@ Bivio::IO::Trace->register;
 my($_SPECIAL_CHARS) = Bivio::Mail::RFC822::SPECIALS();
 my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
-my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
+#my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
+my($_SENDMAIL) = '/usr/lib/sendmail -U -oem -odb -i';
 Bivio::IO::Config->register({
     'errors_to' => $_ERRORS_TO,
     'sendmail' => $_SENDMAIL,
@@ -548,7 +549,8 @@ sub send {
     else { # child
         my(@cmd) = split(/\s+/, $_SENDMAIL);
         # Set mail sender (which will be the one receiving the bounce)
-        push(@cmd, '-f', $fields->{env_from} || $_ERRORS_TO);
+#        push(@cmd, '-f', $fields->{env_from} || $_ERRORS_TO);
+        push(@cmd, '-f' . ($fields->{env_from} || $_ERRORS_TO));
         _trace(join(' ', @cmd)) if $_TRACE;
         exec(@cmd, @{$fields->{recipients}}) || die("$_SENDMAIL: $!");
     }
