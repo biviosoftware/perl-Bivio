@@ -58,6 +58,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     admin
     administrator
     amanda
+    asd
     beta
     bin
     bivio
@@ -68,6 +69,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     dump
     dumper
     email
+    etc
     ftp
     games
     gopher
@@ -97,12 +99,12 @@ my(%_RESERVED) = map {($_, 1)} qw(
     operator
     oracle
     oraoper
+    owner
     pilot
     postgres
     postmaster
     pub
     public
-    redhat
     reqtrack
     research
     root
@@ -120,6 +122,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     user
     usr
     uucp
+    var
     webmaster
     webmistress
     xfs
