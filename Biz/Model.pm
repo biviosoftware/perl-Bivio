@@ -216,6 +216,49 @@ sub die {
     Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
+=for html <a name="get_model"></a>
+
+=head2 get_model(string name) : Bivio::Biz::PropertyModel
+
+Returns the named property model associated with this instance.
+If it can be loaded, it will be.
+
+=cut
+
+sub get_model {
+    my($self, $name) = @_;
+#TODO: clear_models?  Need to reset the state
+    my($fields) = $self->{$_PACKAGE};
+
+    # Asserts operation is valid
+    my($sql_support) = $self->internal_get_sql_support;
+
+    if (defined($fields->{models})) {
+	return $fields->{models}->{$name} if $fields->{models}->{$name};
+    }
+    else {
+	$fields->{models} = {};
+    }
+    my($models) = $sql_support->get('models');
+    Carp::croak($name, ': no such model') unless defined($models->{$name});
+    my($m) = $models->{$name};
+    my($properties) = $self->internal_get;
+    my($req) = $self->get_request;
+    # Always store the model.
+    my($mi) = $fields->{models}->{$name} = $m->{instance}->new($req);
+    my(@query) = ();
+    my($map) = $m->{primary_key_map};
+    foreach my $pk (keys(%$map)) {
+	my($v);
+	return $mi unless defined($v = $properties->{$map->{$pk}->{name}});
+	push(@query, $pk, $v);
+    }
+#TODO: SECURITY: Is this valid?
+    # Can be "unauth_load", because the primary load was authenticated
+    $mi->unauth_load(@query);
+    return $mi;
+}
+
 =for html <a name="get_request"></a>
 
 =head2 get_request() : Bivio::Agent::Request
