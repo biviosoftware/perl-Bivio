@@ -148,25 +148,3 @@ $Id$
 =cut
 
 1;
-
-=begin comment
-
-test('123', '456');
-test('.0000123', '456');
-test('123', '.000000456');
-test('823', '456');
-test('.0001', '.0001');
-test('.255', '.255', 2);
-test('.5', '.5', 0);
-test('.3', '.9', 1);
-test('-1.01', '5', 2);
-
-sub test {
-    my($v, $v2, $d) = @_;
-    print("$v + $v2 = ".Bivio::Type::Amount->add($v, $v2, $d)."\n");
-    print("$v - $v2 = ".Bivio::Type::Amount->sub($v, $v2, $d)."\n");
-    print("$v * $v2 = ".Bivio::Type::Amount->mul($v, $v2, $d)."\n");
-    print("$v / $v2 = ".Bivio::Type::Amount->div($v, $v2, $d)."\n\n");
-}
-
-=cut
