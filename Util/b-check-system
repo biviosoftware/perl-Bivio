@@ -36,7 +36,7 @@ while ($arg = shift) {
 check_diskuse();
 check_raid();
 verify_pkgs();
-check_mailq();
+#check_mailq();
 check_messages() && print_report();
 exit(0);
 
