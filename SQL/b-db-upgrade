@@ -227,7 +227,6 @@ ALTER TABLE entry_t
   or entry_type between 100 and 113
   or entry_type between 200 and 218)
 /
-<<<<<<< b-db-upgrade
 ');
 
     print("\n*** done ***\n");
