@@ -80,7 +80,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
-    $self->put(src => 'selector', alt => '');
+    $self->put(src => 'error_triangle', alt => '');
     $self->SUPER::initialize;
     return;
 }
