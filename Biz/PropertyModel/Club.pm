@@ -40,12 +40,43 @@ use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::MailMode;
 use Bivio::Type::PrimaryId;
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="check_kbytes"></a>
+
+=head2 check_kbytes(int kbytestin) : boolean
+
+Checks kbytestin to see if we'll go over the limit for this
+club's message allocation size.
+
+=cut
+
+sub check_kbytes {
+    _trace('check_kbytes called. Validating the size of the message.') if $_TRACE;
+    my($self, $kbytestin) = @_;
+    _trace('size to check is: ', $kbytestin) if $_TRACE;
+    my($curkbytes) = $self->get('kbytes_in_use');
+    my($maxkbytes) = $self->get('max_storage_kbytes');
+    _trace('max KBytes for club: ', $maxkbytes,
+	    'K current bytes in use: ', $curkbytes,
+	    'K mail message size: ', $$kbytestin, "K") if $_TRACE;
+    if( $curkbytes + $$kbytestin > $maxkbytes){
+	_trace('Size for this message exceeds limit for club.') if $_TRACE;
+	$$kbytestin = 0;
+	return 0;
+    }
+    $$kbytestin += $curkbytes;
+    _trace('The size of this message is ok for this club.') if $_TRACE;
+    return 1;
+}
 
 =for html <a name="get_outgoing_emails"></a>
 
