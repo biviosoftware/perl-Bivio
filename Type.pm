@@ -19,116 +19,9 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Type>
+C<Bivio::Type> base class of all types.
 
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CAN_BE_NEGATIVE"></a>
-
-=head2 CAN_BE_NEGATIVE : boolean
-
-Can the number be negative?
-
-=cut
-
-sub CAN_BE_NEGATIVE {
-    return undef;
-}
-
-=for html <a name="CAN_BE_POSITIVE"></a>
-
-=head2 CAN_BE_POSITIVE : boolean
-
-Can the number be positive?
-
-=cut
-
-sub CAN_BE_POSITIVE {
-    return undef;
-}
-
-=for html <a name="CAN_BE_ZERO"></a>
-
-=head2 CAN_BE_ZERO : boolean
-
-Can the number be equal to 0?
-
-=cut
-
-sub CAN_BE_ZERO {
-    return undef;
-}
-
-=for html <a name="DECIMALS"></a>
-
-=head2 DECIMALS : int
-
-Number of digits to the right of the decimal point.
-
-=cut
-
-sub DECIMALS {
-    return undef;
-}
-
-=for html <a name="MAX"></a>
-
-=head2 MAX : any
-
-Maximum value for this type in perl form.  Note that numbers
-are returned as strings if they are larger than can be handled
-by perl's integer type.
-
-=cut
-
-sub MAX {
-    return undef;
-}
-
-=for html <a name="MIN"></a>
-
-=head2 MIN : any
-
-Minimal value for this type in perl form.  Note that numbers
-are returned as strings if they are larger than can be handled
-by perl's integer type.
-
-
-=cut
-
-sub MIN {
-    return undef;
-}
-
-=for html <a name="PRECISION"></a>
-
-=head2 abstract PRECISION : int
-
-Maximum number of digits in a value of this type.
-
-=cut
-
-sub PRECISION {
-    return undef;
-}
-
-=for html <a name="WIDTH"></a>
-
-=head2 WIDTH : int
-
-Maximum number of characters for string representations of
-this value.  If a number cannot be negative, then will
-not include a character for a sign.
-
-=cut
-
-sub WIDTH {
-    die('abstract method');
-}
 
 #=IMPORTS
 
@@ -137,6 +30,42 @@ sub WIDTH {
 =head1 METHODS
 
 =cut
+
+=for html <a name="can_be_negative"></a>
+
+=head2 static can_be_negative : boolean
+
+Can the number be negative?
+
+=cut
+
+sub can_be_negative {
+    return undef;
+}
+
+=for html <a name="can_be_positive"></a>
+
+=head2 static can_be_positive : boolean
+
+Can the number be positive?
+
+=cut
+
+sub can_be_positive {
+    return undef;
+}
+
+=for html <a name="can_be_zero"></a>
+
+=head2 static can_be_zero : boolean
+
+Can the number be equal to 0?
+
+=cut
+
+sub can_be_zero {
+    return undef;
+}
 
 =for html <a name="from_literal"></a>
 
@@ -190,6 +119,73 @@ See L<from_sql_column|"from_sql_column">.
 sub from_sql_value {
     shift;
     return shift;
+}
+
+=for html <a name="get_decimals"></a>
+
+=head2 static get_decimals : int
+
+Number of digits to the right of the decimal point.
+
+=cut
+
+sub get_decimals {
+    return undef;
+}
+
+=for html <a name="get_max"></a>
+
+=head2 static get_max : any
+
+Maximum value for this type in perl form.  Note that numbers
+are returned as strings if they are larger than can be handled
+by perl's integer type.
+
+=cut
+
+sub get_max {
+    return undef;
+}
+
+=for html <a name="get_min"></a>
+
+=head2 static get_min : any
+
+Minimal value for this type in perl form.  Note that numbers
+are returned as strings if they are larger than can be handled
+by perl's integer type.
+
+
+=cut
+
+sub get_min {
+    return undef;
+}
+
+=for html <a name="get_precision"></a>
+
+=head2 static get_precision : int
+
+Maximum number of digits in a value of this type.
+
+=cut
+
+sub get_precision {
+    return undef;
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width : int
+
+Maximum number of characters for string representations of
+this value.  If a number cannot be negative, then will
+not include a character for a sign.
+
+=cut
+
+sub get_width {
+    die('abstract method');
 }
 
 =for html <a name="to_literal"></a>

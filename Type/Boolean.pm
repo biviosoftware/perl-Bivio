@@ -30,106 +30,6 @@ something to convert.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="CAN_BE_NEGATIVE"></a>
-
-=head2 CAN_BE_NEGATIVE : boolean
-
-Returns false.
-
-=cut
-
-sub CAN_BE_NEGATIVE {
-    return 0;
-}
-
-=for html <a name="CAN_BE_POSITIVE"></a>
-
-=head2 CAN_BE_POSITIVE : boolean
-
-Returns true.
-
-=cut
-
-sub CAN_BE_POSITIVE {
-    return 1;
-}
-
-=for html <a name="CAN_BE_ZERO"></a>
-
-=head2 CAN_BE_ZERO : boolean
-
-Returns true.
-
-=cut
-
-sub CAN_BE_ZERO {
-    return 1;
-}
-
-=for html <a name="DECIMALS"></a>
-
-=head2 DECIMALS : int
-
-Returns 0.
-
-=cut
-
-sub DECIMALS {
-    return 0;
-}
-
-=for html <a name="MAX"></a>
-
-=head2 MAX : int
-
-Returns 1.
-
-=cut
-
-sub MAX {
-    return 1;
-}
-
-=for html <a name="MIN"></a>
-
-=head2 MIN : int
-
-Returns 0.
-
-=cut
-
-sub MIN {
-    return 0;
-}
-
-=for html <a name="PRECISION"></a>
-
-=head2 PRECISION : int
-
-Returns 1.
-
-=cut
-
-sub PRECISION {
-    return 1;
-}
-
-=for html <a name="WIDTH"></a>
-
-=head2 WIDTH : int
-
-Returns 1.
-
-=cut
-
-sub WIDTH {
-    return 1;
-}
-
 #=IMPORTS
 
 #=VARIABLES
@@ -137,6 +37,102 @@ sub WIDTH {
 =head1 METHODS
 
 =cut
+
+=for html <a name="can_be_negative"></a>
+
+=head2 static can_be_negative : boolean
+
+Returns false.
+
+=cut
+
+sub can_be_negative {
+    return 0;
+}
+
+=for html <a name="can_be_positive"></a>
+
+=head2 static can_be_positive : boolean
+
+Returns true.
+
+=cut
+
+sub can_be_positive {
+    return 1;
+}
+
+=for html <a name="can_be_zero"></a>
+
+=head2 static can_be_zero : boolean
+
+Returns true.
+
+=cut
+
+sub can_be_zero {
+    return 1;
+}
+
+=for html <a name="get_decimals"></a>
+
+=head2 static get_decimals : int
+
+Returns 0.
+
+=cut
+
+sub get_decimals {
+    return 0;
+}
+
+=for html <a name="get_max"></a>
+
+=head2 static get_max : int
+
+Returns 1.
+
+=cut
+
+sub get_max {
+    return 1;
+}
+
+=for html <a name="get_min"></a>
+
+=head2 static get_min : int
+
+Returns 0.
+
+=cut
+
+sub get_min {
+    return 0;
+}
+
+=for html <a name="get_precision"></a>
+
+=head2 static get_precision : int
+
+Returns 1.
+
+=cut
+
+sub get_precision {
+    return 1;
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width : int
+
+Returns 1.
+
+=cut
+
+sub get_width {
+    return 1;
+}
 
 =for html <a name="to_sql_param"></a>
 

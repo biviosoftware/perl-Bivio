@@ -53,7 +53,7 @@ __PACKAGE__->compile(
     ],
 );
 
-sub IS_CONTINUOUS { return 0; }
+sub is_continuous { return 0; }
 
 1;
 
@@ -79,10 +79,10 @@ sub t {
 }
 
 my($t1) = Bivio::Type::Enum::T1->E0;
-t($t1->MIN == $t1->E0 && $t1->MAX == $t1->E2);
-t($t1->CAN_BE_ZERO && $t1->CAN_BE_POSITIVE && !$t1->CAN_BE_NEGATIVE);
-t($t1->WIDTH == 2);
-t($t1->PRECISION == 1);
+t($t1->get_min == $t1->E0 && $t1->get_max == $t1->E2);
+t($t1->can_be_zero && $t1->can_be_positive && !$t1->can_be_negative);
+t($t1->get_width == 2);
+t($t1->get_precision == 1);
 
 my($i);
 my($not_done) = 3;
@@ -96,13 +96,13 @@ foreach $i (0..2) {
     $not_done--;
 }
 t(!$not_done);
-t(int(@{[$t1->LIST]}) == 3);
+t(int(@{[$t1->get_list]}) == 3);
 
 my($t2) = Bivio::Type::Enum::T2->E_0;
-t($t2->MIN eq $t2->E_0 && $t2->MAX eq $t2->E_2);
-t($t2->CAN_BE_ZERO && $t2->CAN_BE_POSITIVE && !$t2->CAN_BE_NEGATIVE);
-t($t2->WIDTH == 3);
-t($t2->PRECISION == 1);
+t($t2->get_min eq $t2->E_0 && $t2->get_max eq $t2->E_2);
+t($t2->can_be_zero && $t2->can_be_positive && !$t2->can_be_negative);
+t($t2->get_width == 3);
+t($t2->get_precision == 1);
 
 $not_done = 2;
 foreach $i (0, 2) {
@@ -118,9 +118,9 @@ t($t2->E_0->get_short_desc eq 'E 0');
 t($t2->E_0->get_long_desc eq 'E 0');
 t($t2->E_2->get_short_desc eq 'e two');
 t($t2->E_2->get_long_desc eq 'e two');
-t(int(@{[$t1->LIST]}) == 3);
+t(int(@{[$t1->get_list]}) == 3);
 
 my($t3) = Bivio::Type::Enum::T3->E123456789;
-t(!$t3->CAN_BE_ZERO && $t3->CAN_BE_NEGATIVE && !$t3->CAN_BE_POSITIVE);
-t($t3->WIDTH == 10);
-t($t3->PRECISION == 9);
+t(!$t3->can_be_zero && $t3->can_be_negative && !$t3->can_be_positive);
+t($t3->get_width == 10);
+t($t3->get_precision == 9);

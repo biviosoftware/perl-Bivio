@@ -31,25 +31,25 @@ a compound name, use L<Bivio::Type::Line|Bivio::Type::Line>.
 
 =cut
 
-=head1 CONSTANTS
+#=IMPORTS
+
+#=VARIABLES
+
+=head1 METHODS
 
 =cut
 
-=for html <a name="WIDTH"></a>
+=for html <a name="get_width"></a>
 
-=head2 WIDTH : int
+=head2 static get_width : int
 
 Returns 30.
 
 =cut
 
-sub WIDTH {
+sub get_width {
     return 30;
 }
-
-#=IMPORTS
-
-#=VARIABLES
 
 #=PRIVATE METHODS
 

@@ -43,109 +43,109 @@ the type.  See F<sql/societas/sequences.sql> for a more complete discussion.
 
 =cut
 
-=head1 CONSTANTS
+#=IMPORTS
+
+#=VARIABLES
+
+=head1 METHODS
 
 =cut
 
-=for html <a name="CAN_BE_NEGATIVE"></a>
+=for html <a name="can_be_negative"></a>
 
-=head2 CAN_BE_NEGATIVE : boolean
+=head2 static can_be_negative : boolean
 
 Returns false.
 
 =cut
 
-sub CAN_BE_NEGATIVE {
+sub can_be_negative {
     return 0;
 }
 
-=for html <a name="CAN_BE_POSITIVE"></a>
+=for html <a name="can_be_positive"></a>
 
-=head2 CAN_BE_POSITIVE : boolean
+=head2 static can_be_positive : boolean
 
 Returns true.
 
 =cut
 
-sub CAN_BE_POSITIVE {
+sub can_be_positive {
     return 1;
 }
 
-=for html <a name="CAN_BE_ZERO"></a>
+=for html <a name="can_be_zero"></a>
 
-=head2 CAN_BE_ZERO : boolean
+=head2 static can_be_zero : boolean
 
 Returns false.
 
 =cut
 
-sub CAN_BE_ZERO {
+sub can_be_zero {
     return 0;
 }
 
-=for html <a name="DECIMALS"></a>
+=for html <a name="get_decimals"></a>
 
-=head2 DECIMALS : int
+=head2 static get_decimals : int
 
 Returns 0.
 
 =cut
 
-sub DECIMALS {
+sub get_decimals {
     return 0;
 }
 
-=for html <a name="MAX"></a>
+=for html <a name="get_max"></a>
 
-=head2 MAX : string
+=head2 static get_max : string
 
 Returns '999999999999999999'.
 
 =cut
 
-sub MAX {
+sub get_max {
     return '999999999999999999';
 }
 
-=for html <a name="MIN"></a>
+=for html <a name="get_min"></a>
 
-=head2 MIN : string
+=head2 static get_min : string
 
 Returns '100001'.
 
 =cut
 
-sub MIN {
+sub get_min {
     return '100001';
 }
 
-=for html <a name="PRECISION"></a>
+=for html <a name="get_precision"></a>
 
-=head2 abstract PRECISION : int
-
-Returns 18.
-
-=cut
-
-sub PRECISION {
-    return 18;
-}
-
-=for html <a name="WIDTH"></a>
-
-=head2 WIDTH : int
+=head2 static get_precision : int
 
 Returns 18.
 
 =cut
 
-sub WIDTH {
+sub get_precision {
     return 18;
 }
 
-#=IMPORTS
+=for html <a name="get_width"></a>
 
-#=VARIABLES
+=head2 static get_width : int
+
+Returns 18.
+
+=cut
+
+sub get_width {
+    return 18;
+}
 
 #=PRIVATE METHODS
 

@@ -33,25 +33,25 @@ first name, use L<Bivio::Type::Name|Bivio::Type::Name>.
 
 =cut
 
-=head1 CONSTANTS
+#=IMPORTS
+
+#=VARIABLES
+
+=head1 METHODS
 
 =cut
 
-=for html <a name="WIDTH"></a>
+=for html <a name="get_width"></a>
 
-=head2 WIDTH : int
+=head2 static get_width : int
 
 Returns 100.
 
 =cut
 
-sub WIDTH {
+sub get_width {
     return 100;
 }
-
-#=IMPORTS
-
-#=VARIABLES
 
 #=PRIVATE METHODS
 

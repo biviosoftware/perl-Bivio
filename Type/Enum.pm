@@ -53,60 +53,6 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="DECIMALS"></a>
-
-=head2 DECIMALS : int
-
-Returns 0.
-
-=cut
-
-sub DECIMALS {
-    return 0;
-}
-
-=for html <a name="IS_CONTINUOUS"></a>
-
-=head2 static IS_CONTINUOUS() : 1
-
-Is this enumeration an unbroken sequence?  By default, this is true.
-Enumerations which don't want to be continous should override this method.
-
-=cut
-
-sub IS_CONTINUOUS {
-    return 1;
-}
-
-=for html <a name="LIST"></a>
-
-=head2 abstract static LIST : array
-
-Return the list of all enumerated types.  These are not returned in
-any particular order.
-
-=cut
-
-sub LIST {
-    die('abstract method');
-}
-
-=for html <a name="WIDTH"></a>
-
-=head2 abstract WIDTH : int
-
-Defines the maximum width of L<get_name|"get_name">.
-
-=cut
-
-sub WIDTH {
-    die('abstract method');
-}
-
 #=IMPORTS
 use Carp ();
 
@@ -147,6 +93,56 @@ sub from_int {
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_decimals"></a>
+
+=head2 static get_decimals : int
+
+Returns 0.
+
+=cut
+
+sub get_decimals {
+    return 0;
+}
+
+=for html <a name="get_list"></a>
+
+=head2 abstract static get_list : array
+
+Return the list of all enumerated types.  These are not returned in
+any particular order.
+
+=cut
+
+sub get_list {
+    die('abstract method');
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width : int
+
+Defines the maximum width of L<get_name|"get_name">.
+
+=cut
+
+sub get_width {
+    die('abstract method');
+}
+
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : 1
+
+Is this enumeration an unbroken sequence?  By default, this is true.
+Enumerations which don't want to be continous should override this method.
+
+=cut
+
+sub is_continuous {
+    return 1;
+}
 
 =for html <a name="as_int"></a>
 
@@ -249,7 +245,7 @@ sub compile {
 EOF
     }
     defined($min) || Carp::croak('no values');
-    if ($pkg->IS_CONTINUOUS) {
+    if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
 	    defined($info{$n}) || Carp::croak("missing number $n");
@@ -270,14 +266,14 @@ EOF
     my($list) = join(',', @list);
     eval <<"EOF" || Carp::Croak("compilation failed: $@");
         package $pkg;
-        sub CAN_BE_NEGATIVE {return $can_be_negative;}
-        sub CAN_BE_POSITIVE {return $can_be_positive;}
-        sub CAN_BE_ZERO {return $can_be_zero;}
-	sub LIST {return ($list);}
-        sub MAX {return ${pkg}::$max();}
-        sub MIN {return ${pkg}::$min();}
-        sub PRECISION {return $precision;}
-        sub WIDTH {return $width;}
+        sub can_be_negative {return $can_be_negative;}
+        sub can_be_positive {return $can_be_positive;}
+        sub can_be_zero {return $can_be_zero;}
+	sub get_list {return ($list);}
+        sub get_max {return ${pkg}::$max();}
+        sub get_min {return ${pkg}::$min();}
+        sub get_precision {return $precision;}
+        sub get_width {return $width;}
         1;
 EOF
     return;

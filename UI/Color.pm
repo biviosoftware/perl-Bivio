@@ -52,22 +52,6 @@ The current color names are:
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="IS_CONTINUOUS"></a>
-
-=head2 IS_CONTINUOUS : false
-
-Returns false.
-
-=cut
-
-sub IS_CONTINUOUS {
-    return 0;
-}
-
 #=IMPORTS
 
 #=VARIABLES
@@ -119,6 +103,18 @@ Same as L<as_html|"as_html">, but generates C<BGCOLOR> attribute.
 sub as_html_bg {
     return sprintf(' bgcolor="#%06X"',
 	    Bivio::Type::Enum::from_any(@_)->as_int);
+}
+
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous : false
+
+Returns false.
+
+=cut
+
+sub is_continuous {
+    return 0;
 }
 
 #=PRIVATE METHODS

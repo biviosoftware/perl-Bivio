@@ -31,25 +31,25 @@ size string we allow in the database for our purposes.
 
 =cut
 
-=head1 CONSTANTS
+#=IMPORTS
+
+#=VARIABLES
+
+=head1 METHODS
 
 =cut
 
-=for html <a name="WIDTH"></a>
+=for html <a name="get_width"></a>
 
-=head2 WIDTH : int
+=head2 static get_width : int
 
 Returns 500.
 
 =cut
 
-sub WIDTH {
+sub get_width {
     return 500;
 }
-
-#=IMPORTS
-
-#=VARIABLES
 
 #=PRIVATE METHODS
 

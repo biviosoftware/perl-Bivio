@@ -76,19 +76,6 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
     return 2440588;
 }
 
-=for html <a name="WIDTH"></a>
-
-=head2 WIDTH : int
-
-Returns 10.  This is the largest string representation of the maximum
-perl integer (2^31).
-
-=cut
-
-sub WIDTH {
-    return 10;
-}
-
 =head1 METHODS
 
 =cut
@@ -133,6 +120,19 @@ Returns C<TO_CHAR(I<place_holder>, 'J SSSSS')>.
 sub from_sql_value {
     my(undef, $place_holder) = @_;
     return 'TO_CHAR('.$place_holder.",'".SQL_FORMAT()."')";
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width : int
+
+Returns 10.  This is the largest string representation of the maximum
+perl integer (2^31).
+
+=cut
+
+sub get_width {
+    return 10;
 }
 
 =for html <a name="to_sql_param"></a>
