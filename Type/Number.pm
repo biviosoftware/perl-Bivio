@@ -111,7 +111,7 @@ Returns true if range crosses through zero.
 sub can_be_zero {
     my($proto) = @_;
     return $proto->compare($proto->get_max, 0) >= 0
-	    && $proto->compate($proto->get_min, 0) <= 0 ? 1 : 0;
+	    && $proto->compare($proto->get_min, 0) <= 0 ? 1 : 0;
 }
 
 =for html <a name="compare"></a>
