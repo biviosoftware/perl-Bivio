@@ -187,7 +187,7 @@ sub _base {
 	'Bivio::IO::Trace' => {
 	},
 	'Bivio::Type::Secret' => {
-	    key => 'alphabet soup',
+	    key => 'alphabet',
 	},
 	'Bivio::UI::Text' => {
 	    http_host => 'localhost',
