@@ -41,7 +41,8 @@ L<internal_initialize_sql_support|"internal_initialize_sql_support">.  The
 context is how we got to this form, e.g. from another form and the contents of
 that form.  Forms with context return to the uri specified in the context on
 "ok" completion.  If the request has FormModel.require_context set to false,
-no context will be required.
+no context will be required.  If the task has require_context set to false
+and this is the primary form (Task.form_model), no context will be required.
 
 A query may have a context as well.  The form's context overrides
 the query's context.  The query's context is usually only valid
@@ -240,18 +241,26 @@ sub execute {
 	# DOES NOT RETURN
     }
 
-    # Is this an auxiliary form on the request?
-    my($primary_class) = $req->get('task')->get('form_model');
-    unless (defined($primary_class) && $primary_class eq ref($self)) {
+    # Is this a primary or auxiliary form on the request?
+    my($task) = $req->get('task');
+    my($primary_class) = $task->get('form_model');
+    $fields->{require_context} = $self->get_info('require_context')
+	    && $req->get_or_default(ref($self).'.'
+		    .'require_context', 1);
+    if (defined($primary_class) && $primary_class eq ref($self)) {
+	# Primary forms don't require context if task doesn't require
+	# context.
+	$fields->{require_context} = 0 unless $task->get('require_context');
+	_trace(ref($self), ': primary form') if $_TRACE;
+    }
+    else {
 	# Auxiliary forms are not the "main" form models on the page
 	# and therefore, do not have any input.  They always return
 	# back to this page, if they require_context.
 	_trace(ref($self), ': auxiliary form') if $_TRACE;
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request($req)
-		if $self->get_info('require_context')
-			&& $req->get_or_default(ref($self).'.'
-				.'require_context', 1);
+		if $fields->{require_context};
 	return $self->execute_empty;
     }
 
@@ -1274,8 +1283,8 @@ sub _get_literal {
 #
 sub _initial_context {
     my($self, $req) = @_;
-    my($sql_support) = $self->internal_get_sql_support();
-    return unless $sql_support->get('require_context');
+    my($fields) = $self->{$_PACKAGE};
+    return unless $fields->{require_context};
 
     my($c) = $req->unsafe_get('form_context');
     $c = Bivio::Biz::FormContext->empty($self) unless $c;
@@ -1301,7 +1310,7 @@ sub _parse {
 	    $form->{VERSION_FIELD()},
 	    $sql_support);
     # Parse context first
-    _parse_context($self, $form) if $sql_support->get('require_context');
+    _parse_context($self, $form) if $fields->{require_context};
     # Ditto for timezone
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
 
