@@ -101,9 +101,9 @@ Calls SUPER, but first deletes "this" invite cookie if set.
 =cut
 
 sub delete {
-    my($self) = @_;
+    my($self) = shift;
     $self->delete_cookie();
-    $self->SUPER::delete();
+    $self->SUPER::delete(@_);
     return;
 }
 
