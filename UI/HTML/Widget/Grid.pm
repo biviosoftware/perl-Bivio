@@ -306,9 +306,11 @@ Implements positional argument parsing for L<new|"new">.
 =cut
 
 sub internal_new_args {
-    my(undef, $values, $attributes) = @_;
+    my($proto, $values, $attributes) = @_;
     return "'values' must be an array_ref (rows) of array_refs (cells)"
 	unless ref($values) eq 'ARRAY';
+    return "'attributes' must be a hash_ref (missing extra square brackets?)"
+	if $attributes && ref($attributes) ne 'HASH';
     return {
         values => $values,
 	($attributes ? %$attributes : ()),
