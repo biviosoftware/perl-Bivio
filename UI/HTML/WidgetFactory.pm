@@ -124,7 +124,7 @@ sub create {
     }
     else {
 #TODO: This is broken in the case of $attrs->{value} existing.  Hack for now
-	$widget = _create_display($proto, $field_name, $field_type, $attrs);
+	$widget = _create_display($proto, $model, $field_name, $field_type, $attrs);
 	my(%attrs_copy) = %$attrs;
 	delete($attrs_copy{value});
 	# Wrap the resultant widget in a link?
@@ -144,12 +144,12 @@ sub create {
 
 #=PRIVATE METHODS
 
-# _create_display(string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
+# _create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
 #
 # Create a display-only widget for the specified field.
 #
 sub _create_display {
-    my($proto, $field, $type, $attrs) = @_;
+    my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
 	return $proto->load_and_new($attrs->{wf_class}, {
@@ -158,8 +158,7 @@ sub _create_display {
 	});
     }
 
-#TODO: should check if the list class "can()" format_name()
-    if ($field eq 'RealmOwner.name') {
+    if ($field eq 'RealmOwner.name' && $model->can('format_name')) {
 	return Bivio::UI::HTML::Widget::String->new({
 	    field => $field,
 #TODO: This is broken in the case of $attrs->{value} existing
