@@ -54,6 +54,8 @@ Formats a date time value as a string with the specified 2 or 4 digit year.
 
 sub get_widget_value {
     my(undef, $time, $year_digits) = @_;
+#TODO: Is this right?
+    return '' unless defined($time);
     die("invalid year_digits $year_digits") if (defined($year_digits)
 	    && $year_digits != 2 && $year_digits != 4);
     $year_digits ||= 4;
