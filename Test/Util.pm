@@ -113,9 +113,11 @@ EOF
 
 =for html <a name="task"></a>
 
-=head2 task(any task, any query, any path_info) : string_ref
+=head2 task(any task, any query, any path_info) : array_ref
 
-Executes the task, and returns the result.
+Executes the task, and returns the result. See
+L<Bivio::Test::Request->execute_task|Bivio::Test::Request->execute_task>
+for output details.
 
 =cut
 
