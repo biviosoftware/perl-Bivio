@@ -3,8 +3,10 @@
 use strict;
 use Bivio::Test;
 use Bivio::Mail::Incoming;
-use User::pwent ();
+use Bivio::Test::Request;
 
+my($req) = Bivio::Test::Request->initialize_fully;
+# use User::pwent ();
 # my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
 # Bivio::IO::Alert->warn('You will receive two identical mail messages');
 my($_USER) = 'nobody@example.com';
@@ -38,13 +40,15 @@ Four score and seven years ago...
 Fan Tango
 EOF
 
+
+my($host) = Sys::Hostname::hostname();
 my($_OUT) = <<"EOF";
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Fan Tango" <foo_bar\@example.net>
 Subject: some-list: This is my subject
-Sender: some-list-owner
+Sender: some-list-owner\@$host
 To: "Some-List" <some-list\@example.com>
-Reply-To: "My Fancy List" <some-list>
+Reply-To: "My Fancy List" <some-list\@$host>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -62,7 +66,7 @@ my($_BODY) = 'what a body';
 Bivio::Test->new('Bivio::Mail::Outgoing')->unit([
     [Bivio::Mail::Incoming->new(\$_IN)] => [
 	set_headers_for_list_send => [
-	    ['some-list', 'My Fancy List', 1, 1] => undef,
+	    ['some-list', 'My Fancy List', 1, 1, $req] => undef,
 	],
 	set_recipients => [
 	    [$_USER] => undef,
