@@ -145,6 +145,7 @@ sub REQUIRED {
 #=IMPORTS
 # This is the first module to initialize.  Don't import anything that
 # might import other bivio modules.
+use Bivio::BConf;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -478,15 +479,22 @@ sub _initialize {
 	$file = '/etc/bivio.bconf';
     }
     if (defined($file)) {
-#TODO: Should probably die if not readable?
-        warn("$file: not readable\n") if -e $file && !-r _;
-	my($actual) = do($file);
-	unless (ref($actual) eq 'HASH') {
-	    -e $file && die("$file: config parse failed: ",
-		$@ ? $@ : "empty or not a hash_ref");
-	    $actual = {};
+	# if the file isn't there and there is no BCONF setting,
+	# then use Bivio::BConf as a default
+	if (! -e $file && ! $ENV{'BCONF'}) {
+	    $_ACTUAL = Bivio::BConf->merge({});
 	}
-	$_ACTUAL = $actual;
+	else {
+#TODO: Should probably die if not readable?
+	    warn("$file: not readable\n") if -e $file && !-r _;
+	    my($actual) = do($file);
+	    unless (ref($actual) eq 'HASH') {
+		-e $file && die("$file: config parse failed: ",
+			$@ ? $@ : "empty or not a hash_ref");
+		$actual = {};
+	    }
+	    $_ACTUAL = $actual;
+	}
     }
 
     # Only process arguments in not_setuid case
