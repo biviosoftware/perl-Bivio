@@ -24,6 +24,11 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+	duplicate => [
+	    ['Forms', 'OK#0'] => undef,
+	    ['Forms', 'OK#1'] => undef,
+	],
+    ], [
 	'service-price' => [
 	    ['Forms', 'Recalculate Price'] => undef,
 	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price'] => undef,
