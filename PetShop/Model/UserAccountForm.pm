@@ -37,7 +37,6 @@ C<Bivio::PetShop::Model::UserAccountForm> creates a new user account.
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Die;
-use Bivio::PetShop::Type::EntityLocation;
 use Bivio::PetShop::Type::UserStatus;
 use Bivio::PetShop::Type::UserType;
 use Bivio::Type::Honorific;
@@ -62,25 +61,14 @@ sub execute_empty {
     my($self) = @_;
     return unless _is_editing($self);
     $self->load_from_model_properties($self->get_request->get('auth_user'));
-    # create a default account if necessary
-    my($account) = $self->new_other('UserAccount');
 
-    unless ($account->unsafe_load) {
-	$account = _create_default_account($self);
-    }
-
-    foreach my $model (qw(EntityAddress EntityPhone)) {
+    foreach my $model (qw(Address Email Phone)) {
 	$self->load_from_model_properties(
             $self->new_other($model)->load({
-                entity_id => $account->get('entity_id'),
-                location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
+                location => Bivio::Type::Location->PRIMARY,
             }));
     }
     $self->load_from_model_properties($self->new_other('User')->load);
-    $self->load_from_model_properties(
-        $self->new_other('Email')->load({
-            location => Bivio::Type::Location->HOME,
-        }));
     return;
 }
 
@@ -98,15 +86,14 @@ sub execute_ok {
 	unless _is_editing($self);
     my($account) = $self->new_other('UserAccount')->load;
 
-    foreach my $model (qw(User Email)) {
+    foreach my $model (qw(User)) {
 	$self->new_other($model)->load->update(
 	    $self->get_model_properties($model));
     }
 
-    foreach my $model (qw(EntityAddress EntityPhone)) {
+    foreach my $model (qw(Address Email Phone)) {
 	$self->new_other($model)->load({
-	    entity_id => $account->get('entity_id'),
-	    location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
+	    location => Bivio::Type::Location->PRIMARY,
 	})->update($self->get_model_properties($model));
     }
     Bivio::Die->die("invalid password")
@@ -127,16 +114,22 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
-	    'User.first_name',
-	    'User.last_name',
+            {
+                name => 'User.first_name',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'User.last_name',
+                constraint => 'NOT_NULL',
+            },
 	    'Email.email',
-	    'EntityAddress.addr1',
-	    'EntityAddress.addr2',
-	    'EntityAddress.city',
-	    'EntityAddress.state',
-	    'EntityAddress.zip',
-	    'EntityAddress.country',
-	    'EntityPhone.phone',
+            'Address.street1',
+            'Address.street2',
+            'Address.city',
+            'Address.state',
+            'Address.zip',
+            'Address.country',
+            'Phone.phone',
 	    {
 		name => 'RealmOwner.password',
 		constraint => 'NONE',
@@ -158,48 +151,18 @@ sub internal_initialize {
 
 =head2 validate()
 
-Ensures that name and password are valid if required.
+Ensures password is valid if required.
 
 =cut
 
 sub validate {
     my($self) = @_;
-
-    # either first or last name must be filled in
-    unless (defined($self->get('User.first_name'))
-	    || defined($self->get('User.last_name'))) {
-	$self->validate_not_null('User.last_name');
-    }
-
-    unless (_is_editing($self)) {
-	$self->validate_not_null('RealmOwner.password');
-    }
+    $self->validate_not_null('RealmOwner.password')
+        unless _is_editing($self);
     return;
 }
 
 #=PRIVATE METHODS
-
-# _create_default_account(self)
-#
-# Creates the default account/address/phone entries.
-#
-sub _create_default_account {
-    my($self) = @_;
-    my($account) = $self->new_other('UserAccount')->create({
-	user_id => $self->get_request->get('auth_user_id'),
-	entity_id => $self->new_other('Entity')->create->get('entity_id'),
-	status => Bivio::PetShop::Type::UserStatus->CUSTOMER,
-	user_type => Bivio::PetShop::Type::UserType->HOME_CONSUMER,
-    });
-
-    foreach my $model (qw(EntityAddress EntityPhone)) {
-	$self->new_other($model)->create({
-	    entity_id => $account->get('entity_id'),
-	    location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
-	});
-    }
-    return $account;
-}
 
 # _create_user()
 #
@@ -222,17 +185,25 @@ sub _create_user {
 	user_id => $user->get('user_id'),
 	honorific => Bivio::Type::Honorific->SELF,
     });
-    $self->new_other('Email')->create({
-	realm_id => $user->get('user_id'),
-	location => Bivio::Type::Location->HOME,
-	%{$self->get_model_properties('Email')},
+
+    foreach my $model (qw(Address Email Phone)) {
+	$self->new_other($model)->create({
+            realm_id => $user->get('user_id'),
+            location => Bivio::Type::Location->PRIMARY,
+            %{$self->get_model_properties($model)},
+	});
+    }
+    $self->new_other('UserAccount')->create({
+	user_id => $user->get('user_id'),
+	status => Bivio::PetShop::Type::UserStatus->CUSTOMER,
+	user_type => Bivio::PetShop::Type::UserType->HOME_CONSUMER,
     });
+
     my($req) = $self->get_request;
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $realm,
     });
     $req->set_realm($realm);
-    _create_default_account($self);
     return;
 }
 
