@@ -87,6 +87,19 @@ sub new {
 
 =cut
 
+=for html <a name="clear_cookies"></a>
+
+=head2 clear_cookies()
+
+Clear the cookies
+
+=cut
+
+sub clear_cookies {
+    shift->[$_IDI]->{cookies}->clear();
+    return;
+}
+
 =for html <a name="debug_print"></a>
 
 =head2 debug_print(string what)
@@ -485,14 +498,14 @@ sub verify_link {
 
 =for html <a name="verify_mail"></a>
 
-=head2 verify_mail(string email, string body_regex)
+=head2 verify_mail(string recipient_email, string body_regex)
 
-Get the last messages received for I<email> (see
+Get the last messages received for I<recipient_email> (see
 L<generate_email|"generate_email">) and verify that
 I<body_regex> matches.  Deletes the message on a match.
 
-Pools for I<mail_tries>.  If multiple messages come in simultaneously, will
-only complete if both I<email> and I<body_regex> match.
+Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
+only complete if both I<recipient_email> and I<body_regex> match.
 
 =cut
 
@@ -526,7 +539,7 @@ sub verify_mail {
     Bivio::Die->die(
 	$email_match ? ('Found mail for "', $email,
 	    '", but does not match ', qr/$body_regex/)
-	    : ('No mail for "', $email, '" found'),
+	    : ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
     );
     # DOES NOT RETURN
 }
