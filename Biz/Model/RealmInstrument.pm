@@ -51,64 +51,12 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="get_cost_per_share"></a>
-
-=head2 static get_cost_per_share(string realm_instrument_id, Bivio::Type::Date date) : string
-
-Returns the average cost per share for the specified instrument up to
-the specified date.
-
-=cut
-
-sub get_cost_per_share {
-#TODO: input array of instruments and use group by
-    my(undef, $realm_instrument_id, $date) = @_;
-
-#TODO: THIS SHOULD ALL BE DONE IN SQL!
-#      very clumsy with cost basis of fractional shares
-#      need to separate shares returned (ignored)
-#      from the value of the returned shares (affects total_cost)
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select entry_t.amount, realm_instrument_entry_t.count, entry_t.entry_type, entry_t.tax_basis, entry_t.tax_category from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
-	   [$realm_instrument_id,
-		   Bivio::Type::Date->to_sql_param($date)]);
-
-    my($total_cost) = 0.0;
-    my($total_count) = 0;
-    my($row);
-    while ($row = $sth->fetchrow_arrayref()) {
-	my($cost, $count, $type, $basis, $tax) = @$row;
-
-	if ($basis) {
-	    $total_cost += $cost;
-	}
-	elsif ($tax == Bivio::Type::TaxCategory->NOT_TAXABLE->as_int()
-#TODO: ugh - consider consolidating SHARES_AS_CASH types
-		&& ($type == Bivio::Type::EntryType
-			->INSTRUMENT_SPLIT_SHARES_AS_CASH->as_int()
-		    || $type == Bivio::Type::EntryType
-			->INSTRUMENT_SPINOFF_SHARES_AS_CASH->as_int()
-		    || $type == Bivio::Type::EntryType
-			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())) {
-	    $total_cost += $cost;
-	}
-	if ($basis) {
-	    $total_count += $count;
-	}
-    }
-    return $total_count == 0 ? 0
-	    : $total_cost / $total_count;
-}
-
 =for html <a name="get_first_buy_date"></a>
 
 =head2 static get_first_buy_date(string realm_instrument_id) : string
 
 Returns the date of the first buy or valuation of the specified
 instrument.
-
-=cut
 
 sub get_first_buy_date {
 #TODO: input array of instruments and use group by
@@ -143,94 +91,7 @@ sub get_first_buy_date {
     return $date;
 }
 
-=for html <a name="get_number_of_shares"></a>
-
-=head2 static get_number_of_shares(string realm_instrument_id, string date) : int
-
-Returns the number of shares of the specified realm instrument that are
-owned by on the specified date.
-
 =cut
-
-sub get_number_of_shares {
-#TODO: input array of instruments and use group by
-    my(undef, $realm_instrument_id, $date) = @_;
-
-    # note: doesn't include fractional shares paid in cash (not tax basis)
-
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
-	   [$realm_instrument_id,
-		   Bivio::Type::Date->to_sql_param($date)]);
-    return $sth->fetchrow_arrayref()->[0] || '0';
-}
-
-=for html <a name="get_share_price"></a>
-
-=head2 static get_share_price(string realm_instrument_id, string date) : string
-
-Returns the value of one share of the specified instrument on the specified
-date.
-
-=cut
-
-sub get_share_price {
-#TODO: input array of instruments and use group by
-    my(undef, $realm_instrument_id, $search_date, $realm) = @_;
-
-    # more clumsy SQL
-    # need to do one query, not for each instrument as now
-
-    # valuation algorithm:
-    #   if not in mgfs use local (realm_instrument_valuation_t).
-    #   if date < club create date local
-    #   if neither return 0, min date
-
-    my($value, $date);
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select mgfs_daily_quote_t.close, '
-	    .Bivio::Type::Date->from_sql_value(
-		    'mgfs_daily_quote_t.date_time')
-	    .' from realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t where realm_instrument_t.realm_instrument_id=? and realm_instrument_t.instrument_id=mgfs_instrument_t.instrument_id and mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id and mgfs_daily_quote_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?')
-	    .' order by mgfs_daily_quote_t.date_time desc',
-	    [$realm_instrument_id,
-		    Bivio::Type::Date->to_sql_param($search_date)]);
-
-    my($row);
-    if ($row = $sth->fetchrow_arrayref()) {
-	($value, $date) = @$row;
-	$date = Bivio::Type::Date->from_sql_column($date);
-	$sth->finish();
-    }
-
-    # use local validations if not present, or the date is pre bivio
-    if (! defined($value)
-	    || _date_less_than($date, $realm->get('creation_date_time'))) {
-
-	$sth = Bivio::SQL::Connection->execute(
-		'select realm_instrument_valuation_t.price_per_share, '
-		.Bivio::Type::Date->from_sql_value(
-			'realm_instrument_valuation_t.date_time')
-		.' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.date_time <= '
-		.Bivio::Type::Date->to_sql_value('?')
-		.' order by realm_instrument_valuation_t.date_time desc',
-		[$realm_instrument_id,
-			Bivio::Type::Date->to_sql_param($search_date)]);
-	if ($row = $sth->fetchrow_arrayref()) {
-	    ($value, $date) = @$row;
-	    $date = Bivio::Type::Date->from_sql_column($date);
-	    $sth->finish();
-	    return ($value, $date);
-	}
-    }
-
-    if (defined($value)) {
-	return ($value, $date);
-    }
-    return (0.0, Bivio::Type::Date->get_min);
-}
 
 =for html <a name="internal_initialize"></a>
 
