@@ -72,6 +72,8 @@ Anchor name.
 The value between the C<A> tags aka the label.  May be any
 renderable value
 (see L<Bivio::UI::Widget::render_value|Bivio::UI::Widget/"render_value">).
+If not a widget, will be wrapped in a I<Widget.String> with
+font I<link>.
 
 =back
 
@@ -95,9 +97,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new(any value, any href) : Bivio::UI::HTML::Widget::Link
 
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Link
-
 Creates a C<Link> widget with attributes I<value> and I<href>.
+
+=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Link
 
 If I<attributes> supplied, creates with attribute (name, value) pairs.
 
@@ -156,6 +158,11 @@ sub initialize {
     $p .= $a if $a;
 
     $fields->{value} = $self->initialize_attr('value');
+    $fields->{value} = $_VS->vs_new(
+	    'String', $fields->{value}, 'link'
+	)->put_and_initialize(parent => $self)
+	unless ref($fields->{value})
+	    && UNIVERSAL::isa($fields->{value}, 'Bivio::UI::Widget');
     $fields->{href} = _initialize_href($self);
     unless (ref($fields->{href})) {
 	# Format literally if a constant
