@@ -209,7 +209,7 @@ Default is false.
 =cut
 
 sub can_iterate {
-    return 0;
+    return shift->get_info('can_iterate');
 }
 
 =for html <a name="can_next_row"></a>
@@ -581,7 +581,8 @@ Used by Biz::Util::ListModel.
 =cut
 
 sub get_load_notes {
-    return shift->{$_PACKAGE}->{load_notes};
+    my($self) = @_;
+    return $self->{$_PACKAGE}->{load_notes};
 }
 
 =for html <a name="get_query"></a>
