@@ -45,11 +45,19 @@ Which form are we dealing with.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::Format::Date;
+use Bivio::Type::DateTime;
+use Bivio::Type::Date;
+use Bivio::UI::DateTimeMode;
+use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::HTML::Widget::DateTime;
+use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
+my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
+# Share functions with DateTime
+my($_FN) = Bivio::UI::HTML::Widget::DateTime->JAVASCRIPT_FUNCTION_NAME;
+my($_FUNCS) = Bivio::UI::HTML::Widget::DateTime->JAVASCRIPT_FUNCTIONS;
 
 =head1 FACTORIES
 
@@ -106,22 +114,34 @@ sub render {
 
     # first render initialization
     unless ($fields->{initialized}) {
-	my($type) = $fields->{type} = $form->get_field_type($field);
+	my($type) = $form->get_field_type($field);
+	# Might be a subclass of Bivio::Type::Date
 	my($width) = $type->get_width();
 	$fields->{prefix} = '<input name='
 		.$form->get_field_name_for_html($field)
-		." type=text size=$width maxlength=$width";
+		." type=text size=$width maxlength=$width value=\"";
+	$fields->{suffix} = '">';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix};
-    my($value) = $form->get($field) || '';
 
-    # need to change dates from 'J SSSSS' format to display format
-    if ($value =~ /\s/) {
-	$value = Bivio::UI::HTML::Format::Date->get_widget_value($value)
-    }
+    # Default is now
+    my($value) = $form->get($field);
+    $value = Bivio::Type::DateTime->now unless defined($value);
 
-    $$buffer .= ' value="'.$value.'">';
+    # What to render if javascript not available.  Must be acceptable
+    # to Date::from_literal.
+    my($gmt) = Bivio::Type::Date->to_literal($value);
+
+    # Share functions with DateTime
+    Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
+	    $_FN,
+	    $_FUNCS,
+	    # script
+	    "document.write('".$fields->{prefix}."');\n"
+	    ."$_FN(".join(',', $_MODE_INT, split(' ', $value), "'$gmt'").');'
+	    ."document.write('".$fields->{suffix}."');",
+	    # noscript
+	    $fields->{prefix}.$gmt.$fields->{suffix});
     return;
 }
 
