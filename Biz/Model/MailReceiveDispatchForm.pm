@@ -133,7 +133,7 @@ Two addresses are parsed:
 sub parse_recipient {
     my($self) = @_;
     my($to) = lc($self->get('recipient'));
-    my($name, $op) = $to =~ /^(\w+)(?:-(.+))?$/;
+    my($name, $op) = $to =~ /^(\w+)(?:-([^\.]+))?$/;
     ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
 	unless $name;
     _trace('name: ', $name, ' op: ', $op) if $_TRACE;
