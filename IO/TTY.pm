@@ -53,6 +53,7 @@ sub read_password {
     Term::ReadKey::ReadMode('noecho', \*TTY);
     my $password = <TTY>;
     Term::ReadKey::ReadMode(0, \*TTY);
+    print TTY "\n";
     close(TTY);
     chomp($password);
     return $password;
