@@ -2459,6 +2459,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::TransactionSummary
 	Bivio::UI::HTML::Club::TransactionSummary
         next=CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
+        help=transaction-history-report
     )],
 );
 
