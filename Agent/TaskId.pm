@@ -2194,7 +2194,14 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
         help=member-performance-detail-report
     )],
-#216
+    [qw(
+        DEFAULT_ERROR_REDIRECT_CORRUPT_FORM
+        216
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_corrupt_form
+    )],
     [qw(
         CLUB_HEADING_AS_FRAME
         217
