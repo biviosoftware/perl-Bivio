@@ -160,8 +160,6 @@ sub action_grid {
 
 =head2 static button() : array
 
-=head2 static button(string name) : array
-
 =head2 static button(string name, Bivio::Agent::TaskId task) : array
 
 =head2 static button(string name, Bivio::Agent::TaskId task, any description) : array
@@ -174,16 +172,11 @@ sub action_grid {
 
 If no I<name>, creates a
 L<Bivio::UI::HTML::Widget::StandardSubmit|Bivio::UI::HTML::Widget::StandardSubmit>.
-Else, creates a
-L<Bivio::UI::HTML::Widget::Submit|Bivio::UI::HTML::Widget::Submit>
-with the I<value> set to name, e.g. 'SUMBIT_OK'.
 
 Surrounds the widget with L<indent|"indent"> if has a name.
 C<StandardSubmit> is centered.
 
 If I<task> is supplied, creates a C<TaskButton> widget and indents.
-If I<name> is not supplied with I<task>, looks up I<task> by name
-in L<Bivio::UI::Label|Bivio::UI::Label>.
 
 If I<description> is supplied, a L<description|"description"> will precede the
 button.  If I<control> is not supplied in this case, the control will
@@ -197,7 +190,7 @@ Don't put a label on the description if I<no_label> is true.
 sub button {
     my($proto, $name, $task, $description, $no_label) = @_;
 
-    _use(qw(TaskButton Submit StandardSubmit));
+    _use(qw(TaskButton StandardSubmit));
     if ($task) {
 	# Create the button for simpler modes
 	$task = Bivio::Agent::TaskId->from_any($task);
@@ -229,9 +222,6 @@ sub button {
 		{1 => $proto->join($res),
 		    0 => $proto->join('')});
     }
-
-    return $proto->indent(
-	    Bivio::UI::HTML::Widget::Submit->new({value => $name})) if $name;
     return $proto->center(Bivio::UI::HTML::Widget::StandardSubmit->new());
 }
 
@@ -482,6 +472,31 @@ sub form {
     $form->put(value => $form->create_fields($values || []))
 	    if $values || $list_values;
     return $form;
+}
+
+=for html <a name="form_button"></a>
+
+=head2 static form_button(string field) : Bivio::UI::HTML::Widget::FormButton
+
+=head2 static form_button(string field, string label) : Bivio::UI::HTML::Widget::FormButton
+
+Creates a form button widget for the specified, fully qualified field name.
+The button label may be overridden by supplying the Bivio::UI::Lable value.
+
+=cut
+
+sub form_button {
+    my($proto, $field, $label) = @_;
+    _use('Bivio::UI::HTML::WidgetFactory');
+
+    if ($label) {
+	$label = Bivio::UI::Label->get_simple($label) unless ref($label);
+	return Bivio::UI::HTML::WidgetFactory->create($field, {
+	    label => $label,
+	});
+    }
+
+    return Bivio::UI::HTML::WidgetFactory->create($field);
 }
 
 =for html <a name="heading"></a>
@@ -978,22 +993,6 @@ sub string {
 	value => $value,
 	# Allow caller to set font to undef
 	int(@_) >= 3 ? (string_font => $font) : (),
-    });
-}
-
-=for html <a name="submit"></a>
-
-=head2 static submit(any value) : Bivio::UI::HTML::Widget::Submit
-
-Returns a submit button with I<value>.
-
-=cut
-
-sub submit {
-    my(undef, $value) = @_;
-    _use('Submit');
-    return Bivio::UI::HTML::Widget::Submit->new({
-	value => $value,
     });
 }
 
