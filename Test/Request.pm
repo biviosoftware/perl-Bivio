@@ -178,7 +178,7 @@ sub get_form {
 
 =for html <a name="initialize_fully"></a>
 
-=head2 initialize_fully(string task_id, hash_ref req_attrs) : self
+=head2 static initialize_fully(string task_id, hash_ref req_attrs) : self
 
 Initializes L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> fully
 with I<task_id> (defaults to SHELL_UTIL).
@@ -186,12 +186,14 @@ with I<task_id> (defaults to SHELL_UTIL).
 =cut
 
 sub initialize_fully {
-    my($proto, $task_id, $req_attrs) = @_;
+    my($self) = shift(@_);
+    $self = $self->get_instance unless ref($self);
+    my($task_id, $req_attrs) = @_;
     ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any(
 	$task_id || 'SHELL_UTIL');
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Agent::Dispatcher')->initialize;
-    my($self) = $proto->get_instance->put(%$req_attrs)->setup_all_facades;
+    $self->put(%$req_attrs)->setup_all_facades;
     Bivio::Die->die(
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
