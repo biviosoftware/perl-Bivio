@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Cookie;
 use strict;
 $Bivio::Agent::HTTP::Cookie::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::HTTP::Cookie::VERSION;
 
 =head1 NAME
 
@@ -626,7 +627,6 @@ sub _parse {
 	    Bivio::IO::Alert->warn('invalid ',
 		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
 		    ' cookie: encrypted=', $v, ' decrypted=', \@v);
-
 	    $bad = 1;
 	    # fall through, so we can see other bad cookies
 	}
@@ -645,8 +645,17 @@ sub _parse {
     }
     else {
 	# If we didn't get both cookies, always send them back.
-	$fields->{MODIFIED_FIELD()} = 1 unless
-		$fields->{received_persistent} && $fields->{received_volatile};
+	unless ($fields->{received_persistent}
+		&& $fields->{received_volatile}) {
+	    $fields->{MODIFIED_FIELD()} = 1;
+	    # Indicate that we are missing one, but not both.
+	    # This is an indication of bug #4768 and generally a misconfigured
+	    # browser.
+	    Bivio::IO::Alert->warn('missing ',
+		    $fields->{received_persistent} ? 'volatile' : 'persistent')
+			if $fields->{received_persistent}
+				|| $fields->{received_volatile};
+	}
     }
     return $fields;
 }
@@ -658,7 +667,7 @@ RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
