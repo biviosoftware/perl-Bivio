@@ -449,7 +449,6 @@ sub _http_request {
 	my($hres) = $self->get('user_agent')->request($hreq);
 	_trace($hres) if $_TRACE;
 	$self->get('cookie_jar')->extract_cookies($hres);
-	my($uri);
 	if ($hres->is_redirect) {
 	    $uri = $hres->header('Location');
 	    $self->client_error('unable to parse Locations header', {
