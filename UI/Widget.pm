@@ -597,13 +597,12 @@ sub unsafe_render_value {
 		' unwind widget value: ', $value)
 		if --$i < 0;
     }
-    if (ref($value)) {
-	$self->die($attr_name, $source,
-		'value is unknown type: ', $value)
-		unless UNIVERSAL::isa($value, __PACKAGE__);
+    if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
 	$value->render($source, $buffer);
     }
     else {
+        Bivio::IO::Alert->warn('rendering ref as string: ', $value)
+                if ref($value);
 	$$buffer .= $value;
     }
     return 1;
