@@ -106,8 +106,8 @@ sub execute {
 #TODO: need a generalized editable list
     $fields->{indirect}->put(value => _create_sell_table($req));
 
-    $req->put(page_heading => 'Record Sale: '.$realm_inst
-	    ->get_model('Instrument')->get('name').' (page 2 / 2)',
+    $req->put(page_heading => 'Record Sale: '.$realm_inst->get_name
+	    .' (page 2 / 2)',
 	    page_subtopic => undef,
 	    page_content => $self);
     Bivio::UI::HTML::Club::Page->execute($req);
