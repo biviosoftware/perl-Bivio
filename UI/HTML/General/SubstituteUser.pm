@@ -53,7 +53,7 @@ Create Grid I<values> for this form.
 sub create_fields {
     my($self) = @_;
     return [
-	[$self->add_field('RealmOwner.name', 'User', 20)],
+	[$self->add_field('login', 'User', 20)],
     ];
 }
 

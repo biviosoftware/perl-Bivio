@@ -87,20 +87,15 @@ sub execute_input {
     my($self) = @_;
     my($properties) = $self->internal_get;
     my($req) = $self->get_request;
-    my($owner) = Bivio::Biz::Model::RealmOwner->new($req);
-    unless ($owner->unauth_load(name => $properties->{'RealmOwner.name'})) {
-	$self->internal_put_error('RealmOwner.name',
-		Bivio::TypeError::NOT_FOUND());
-	return;
-    }
 
     # Only set the user if not already su'd
     Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
 	    $req->get('auth_user')->get('realm_id'))
 		unless defined(Bivio::Agent::HTTP::Cookie->unsafe_get_field(
 			$req, $_COOKIE_FIELD));
-    # Will set the user and role for this realm
-    $req->set_user($owner);
+
+    # Loaded by validate
+    $req->set_user($req->get('Bivio::Biz::Model::RealmOwner'));
     return;
 }
 
@@ -116,13 +111,48 @@ sub internal_initialize {
     return {
 	version => 1,
 	visible => [
-            'RealmOwner.name',
+	    {
+		name => 'login',
+		type => 'Bivio::Type::Line',
+		constraint => Bivio::SQL::Constraint::NOT_NULL(),
+	    },
 	],
 	auth_id => ['RealmOwner.realm_id'],
 	primary_key => [
 	    'RealmOwner.realm_id',
 	],
     };
+}
+
+=for html <a name="validate"></a>
+
+=head2 validate()
+
+Validate user is found.
+
+=cut
+
+sub validate {
+    my($self) = @_;
+    my($properties) = $self->internal_get();
+    return unless defined($properties->{'login'});
+
+    # Emulate what happens in Type::RealmName
+    $properties->{'login'} = lc($properties->{'login'});
+    $properties->{'login'} =~ s/\s+//g;
+
+    my($login) = $properties->{'login'};
+    my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    my($expected) = ($login =~ /@/ ? $owner->unauth_load_by_email($login)
+	    : $owner->unauth_load(name => $login))
+	    ? $owner->get('password') : undef;
+    # Also handles ("impossible case") of a NULL password
+    unless (defined($expected)) {
+	$self->internal_put_error('login',
+		Bivio::TypeError::NOT_FOUND());
+	return;
+    }
+    return;
 }
 
 #=PRIVATE METHODS
