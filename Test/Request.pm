@@ -74,6 +74,7 @@ sub get_instance {
 	    auth_user_id => undef,
 	    task_id => Bivio::Agent::TaskId->SHELL_UTIL,
 	    timezone => Bivio::Type::DateTime->timezone,
+            is_secure => 0,
 	});
 	$_SELF->put(reply => Bivio::Test::Reply->new);
 	$_SELF->set_realm(undef);
@@ -136,6 +137,19 @@ sub execute_task {
     $self->get('task')->execute($self);
     my($o) = $self->get('reply')->get_output;
     return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
+}
+
+=for html <a name="format_http_toggling_secure"></a>
+
+=head2 format_http_toggling_secure() : string
+
+Nop.
+
+=cut
+
+sub format_http_toggling_secure {
+    my($self) = @_;
+    return '';
 }
 
 =for html <a name="get_form"></a>
