@@ -2,8 +2,6 @@
 # $Id$
 package Bivio::Agent::Request;
 use strict;
-use Bivio::UNIVERSAL();
-use Bivio::Util();
 
 $Bivio::Agent::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
@@ -18,6 +16,7 @@ Bivio::Agent::Request - Abstract request wrapper
 
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Agent::Request::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
@@ -49,6 +48,10 @@ sub NOT_HANDLED { 2 };
 sub AUTH_REQUIRED { 3 };
 sub SERVER_ERROR { 4 }
 
+#=IMPORTS
+use Bivio::Biz::User;
+use Bivio::Util;
+
 #=VARIABLES
 
 my($_PACKAGE) = __PACKAGE__;
@@ -61,18 +64,19 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 new(string target_name, string controller_name, string user_name) : Bivio::Agent::Request
 
-Creates a Request using the specified target, controller, and user names.
-The initial state of the request is NOT_HANDLED.
+Creates a Request using the specified target, controller, and user.
+The initial state of the request is NOT_HANDLED. user may be undef,
+indicating that no authorization has been performed.
 
 =cut
 
 sub new {
-    my($proto, $target_name, $controller_name, $user_name) = @_;
+    my($proto, $target_name, $controller_name, $user) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
         target => $target_name,
         controller => $controller_name,
-        user => $user_name,
+        user => $user,
         reply_type => '',
         state => NOT_HANDLED,
 	start_time => Bivio::Util::gettimeofday
@@ -169,14 +173,14 @@ sub get_target_name {
 
 =for html <a name="get_user"></a>
 
-=head2 get_user_name() : string
+=head2 get_user() : User
 
 Returns the user. If no user exists (ie. no login has been done, then
 undef is returned.
 
 =cut
 
-sub get_user_name {
+sub get_user {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return $fields->{user};
