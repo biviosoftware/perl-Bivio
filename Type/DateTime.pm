@@ -682,6 +682,19 @@ sub local_now_as_file_name {
     return $proto->to_file_name(_adjust_to_local(__PACKAGE__->now()));
 }
 
+=for html <a name="local_to_parts"></a>
+
+=head2 local_to_parts(string date_time) : array
+
+Adjusts for local time and calls L<to_parts|"to_parts">.
+
+=cut
+
+sub local_to_parts {
+    my($self, $date_time) = @_;
+    return $self->to_parts(_adjust_to_local($date_time));
+}
+
 =for html <a name="max"></a>
 
 =head2 max(string left, string right) : string
