@@ -165,7 +165,7 @@ sub initialize_fully {
 	$task_id || 'SHELL_UTIL');
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Agent::Dispatcher')->initialize;
-    my($self) = $proto->get_instance->put(%$req_attrs)->setup_facade;
+    my($self) = $proto->get_instance->put(%$req_attrs)->setup_all_facades;
     Bivio::Die->die(
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
