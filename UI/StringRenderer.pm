@@ -59,7 +59,7 @@ sub new {
 
 =for html <a name="render"></a>
 
-=head2 render(UNIVERSAL target, Request req)
+=head2 render(ANY target, Request req)
 
 Draws the target string onto the request output stream.
 
