@@ -27,7 +27,7 @@ use Bivio::UI::HTML::Widget;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Search> draws a C<INPUT> tag with
-attribute C<TYPE=TEXT>. Adds a C<SUBMIT> button labeled "Go"
+attribute C<TYPE=TEXT>. Adds a C<SUBMIT> button labeled "Search"
 to the right.
 
 =head1 ATTRIBUTES
@@ -108,7 +108,8 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($req) = $source->get_request;
-    my($list) = $req->get_widget_value(@{$fields->{list}});
+    # search list might not be loaded
+    my($list) = $req->unsafe_get($fields->{list});
 
     my($action);
     # Public search?
@@ -128,10 +129,11 @@ sub render {
     $fields->{prefix} .= ' name=' . Bivio::SQL::ListQuery->to_char('search');
 
     my($p, $s) = Bivio::UI::Font->format_html('search_field', $req);
-    my($v) = Bivio::Type::String->to_html($list->get_query->get('search'));
-    _trace('v=', $v);
+    my($v) = $list ?
+            Bivio::Type::String->to_html($list->get_query->get('search'))
+                        : '';
     $$buffer .= $p.$fields->{prefix} . ' value="' . $v . '">';
-    $$buffer .= '<input type=submit value="Go">' . $s . '</form>';
+    $$buffer .= '<input type=submit value="Search">' . $s . '</form>';
 
     return;
 }
