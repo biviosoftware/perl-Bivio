@@ -20,7 +20,7 @@ my($T) = 2;
 
 # First section has *.tin files, second section doesn't.
 my(@names) = @ARGV
-	? map {[split(':')]} @ARGV
+	? map {[split(/:/, $_, 2)]} @ARGV
 	: (
     # Syntax: [display_name, expected first:middle:last]
     ['Dr. John', 'Dr.::John'],
@@ -43,7 +43,8 @@ foreach my $name (@names) {
     my($actual) = _concat($cuf->get(@fields));
     my($expected) = shift(@$name);
     print $actual eq $expected ? ("ok ", $T++, "\n")
-	    : ("not ok ", $T++, " ", $expected, ' != ', $actual, "\n");
+	    : ("not ok ", $T++, " (expected) ", $expected, ' != ',
+		    $actual, " (actual)\n");
 }
 
 sub _concat {
