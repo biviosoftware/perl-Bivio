@@ -167,8 +167,9 @@ sub delete {
 
 =for html <a name="get_from_name"></a>
 
-=head2 get_from_name() : 
+=head2 get_from_name() : string
 
+Returns the sender of this message (the "From:" field of the email)
 
 
 =cut
