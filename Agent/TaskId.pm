@@ -97,7 +97,7 @@ my(@_CFG) = (
 	3
         GENERAL
         DOCUMENT_READ
-        /
+        /*
 	Bivio::Biz::Action::HTTPDocument
     )],
 #TODO: MY_CLUB_SITE isn't right if user not part of club.
