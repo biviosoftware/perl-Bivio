@@ -1140,7 +1140,7 @@ sub map_primary_key_to_rows {
 
 Like L<Bivio::Biz::Model::map_iterate|Bivio::Biz::Model/"map_iterate">, but
 operates on rows of the table.  Calls L<next_row|"next_row"> until it returns
-false.  It does not call L<reset_cursor|"reset_cursor"> first.  Typical usage:
+false.  It calls L<reset_cursor|"reset_cursor"> first.  Typical usage:
 
     my($rows) = Bivio::Biz::Model->new($req, 'MyList')->load_all->map_rows;
 
@@ -1158,6 +1158,7 @@ sub map_rows {
     $map_iterate_handler ||= sub {
 	return shift->get_shallow_copy;
     };
+    $self->reset_cursor;
     while ($self->next_row) {
 	push(@$res, $map_iterate_handler->($self));
     }
