@@ -175,14 +175,14 @@ Returns the delegate for the specified class.
 sub require_delegate {
     my($proto, $class) = @_;
     my($module) = $_DELEGATES->{$class};
-    Bivio::IO::Alert->die("no delegate found for $class") unless $module;
+    Bivio::IO::Alert->die('no delegate found for ', $class) unless $module;
     $proto->simple_require($module);
     return $module;
 }
 
 =for html <a name="require_delegate_info"></a>
 
-=head2 require_delegate_info(string class) : ref
+=head2 require_delegate_info(string class) : any
 
 Returns the class specific delegate information. The delegate should
 define L<get_delegate_info|"get_delegate_info">.
