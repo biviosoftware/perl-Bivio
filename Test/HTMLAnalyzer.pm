@@ -64,6 +64,10 @@ sub new {
 
 #    $fields->{'Bivio::Test::HTMLParser'} = $p->{'Bivio::Test::HTMLParser'};
 
+    _find_button_home_page($self, $p);
+    _find_button_logout($self, $p);
+    _find_button_my_site($self, $p);
+
     _find_imagemenu($self, $p);
     _find_loginmenu($self, $p);
     _find_preferences($self, $p);
@@ -78,6 +82,54 @@ sub new {
 =cut
 
 #=PRIVATE METHODS
+
+# _find_button_home_page(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
+#
+# Identify the home page button on the HTML page, if any.
+# It is stored under fields->{buttons}->{homepage}.
+#
+sub _find_button_home_page {
+    my($self, $p) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if (exists ($p->{links}->{'Home Page'})) {
+	$fields->{buttons} = {} unless (defined ($fields->{buttons}));
+	$fields->{buttons}->{homepage} = $p->{links}->{'Home Page'};
+    }
+    return;
+}
+
+# _find_button_logout(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
+#
+# Identify the logout button on the HTML page, if any.
+# It is stored under fields->{buttons}->{logout}.
+#
+sub _find_button_logout {
+    my($self, $p) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if (exists ($p->{links}->{Logout})) {
+	$fields->{buttons} = {} unless (defined ($fields->{buttons}));
+	$fields->{buttons}->{logout} = $p->{links}->{Logout};
+    }
+    return;
+}
+
+# _find_button_my_site(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
+#
+# Identify the 'My Site' button on the HTML page, if any.
+# It is stored under fields->{buttons}->{mysite}.
+#
+sub _find_button_my_site {
+    my($self, $p) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    
+    if (exists ($p->{links}->{'My Site'})) {
+	$fields->{buttons} = {} unless (defined ($fields->{buttons}));
+	$fields->{buttons}->{mysite} = $p->{links}->{'My Site'};
+    }
+    return;
+}
 
 # _find_imagemenu(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
 #
