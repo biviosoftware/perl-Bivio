@@ -214,19 +214,29 @@ ALTER TABLE $table MODIFY $column $type
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
+
+    # increase the entry_t.entry_type valid values to include 111
+    # (member withdrawal adjustment)
+    _drop_constraints('entry_t', 'entry_type');
+
     _do_sql('
-DROP TABLE lock_t
+ALTER TABLE entry_t modify entry_type not null
 /
-CREATE TABLE lock_t (
-  realm_id NUMBER(18) primary key
-)
-  organization INDEX pctfree 95 initrans 255 storage (
-  initial 1m next 1m minextents 1 maxextents 500 freelists 32
-  pctincrease 0)
-  tablespace realm_data
-  nologging
+ALTER TABLE entry_t
+  add constraint entry_t7
+  check (entry_type between 1 and 6
+  or entry_type between 100 and 111
+  or entry_type between 200 and 218)
 /
 ');
+
+    # fix sign on withdrawal fees
+    Bivio::SQL::Connection->execute('
+            UPDATE entry_t
+            SET amount = -amount
+            WHERE entry_type=?',
+	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE->as_int]);
+
     return;
 }
 
