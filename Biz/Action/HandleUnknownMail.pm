@@ -33,6 +33,9 @@ Other mail gets bounced with a not-found.
 
 #=IMPORTS
 use Bivio::DieCode;
+use Bivio::Biz::Action::ForwardClubMail;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::Club;
 
 #=VARIABLES
 
@@ -62,6 +65,25 @@ sub execute {
     if ($who =~ /^ignore-/i) {
 	# Toss the message
 	return;
+    }
+    if ($who =~ /^(\w+)-(people|board)$/i) {
+	my($name, $which) = (lc($1), $2);
+	my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
+	if ($realm_owner->unauth_load(name => $name)
+		&& $realm_owner->get('realm_type')
+		== Bivio::Auth::RealmType::CLUB()) {
+	    my($club) = Bivio::Biz::Model::Club->new($req);
+	    $club->unauth_load(club_id => $realm_owner->get('realm_id'));
+	    if ($which eq 'people') {
+		Bivio::Biz::Action::ForwardClubMail->send(
+			$realm_owner, $club, $msg);
+	    }
+	    else {
+		Bivio::Biz::Action::ForwardClubMail->store(
+			$realm_owner, $club, $msg);
+	    }
+	    return;
+	}
     }
     $req->die(Bivio::DieCode::NOT_FOUND(), entity => $who);
     return;

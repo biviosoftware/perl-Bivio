@@ -49,7 +49,7 @@ request.
 =cut
 
 sub execute {
-    my(undef, $req) = @_;
+    my($proto, $req) = @_;
     my($realm_owner) = $req->get('auth_realm')->get('owner');
     die('auth_realm not a club')
 	    unless $realm_owner->get('realm_type') ==
@@ -58,14 +58,42 @@ sub execute {
     $club->load(club_id => $realm_owner->get('realm_id'));
     my($msg) = $req->get('message');
     &_trace($realm_owner, ': ', $msg->get_message_id) if $_TRACE;
-    my($in_msg);
-    $in_msg = Bivio::Biz::Model::MailMessage->new($req);
-    $in_msg->create($msg, $realm_owner, $club);
+    $proto->store($realm_owner, $club, $msg);
+    $proto->send($realm_owner, $club, $msg);
+    return;
+}
+
+=for html <a name="send"></a>
+
+=head2 static send(Bivio::Biz::Model::RealmOwner realm_owner, Bivio::Biz::Model::Club club, Bivio::Mail::Incoming msg)
+
+Sends the mail to the club members.
+
+=cut
+
+sub send {
+    my(undef, $realm_owner, $club, $msg) = @_;
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
     $out_msg->set_recipients($club->get_outgoing_emails());
     $out_msg->set_headers_for_list_send($realm_owner->get('name'),
 	    $realm_owner->get('display_name'), 1, 1);
     $out_msg->enqueue_send;
+    return;
+}
+
+=for html <a name="store"></a>
+
+=head2 static store(Bivio::Biz::Model::RealmOwner realm_owner, Bivio::Biz::Model::Club club, Bivio::Mail::Incoming msg)
+
+Stores the mail in the club message board.z
+
+=cut
+
+sub store {
+    my(undef, $realm_owner, $club, $msg) = @_;
+    my($in_msg);
+    $in_msg = Bivio::Biz::Model::MailMessage->new($club->get_request);
+    $in_msg->create($msg, $realm_owner, $club);
     return;
 }
 
