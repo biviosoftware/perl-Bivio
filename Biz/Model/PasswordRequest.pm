@@ -102,6 +102,9 @@ sub execute_load_from_query {
     # User hacked the query?
     $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
 	    'missing or incorrect this') unless $id && $id->[0];
+    $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
+	    'missing auth code') unless $actual;
+
     my($realm_id) = $id->[0];
     $self->unauth_load_or_die(realm_id => $realm_id);
     _trace('actual=', $actual,
@@ -110,7 +113,7 @@ sub execute_load_from_query {
     $self->throw_die(Bivio::DieCode::NOT_FOUND(),
 	    {actual => $actual, expected => $self->get('authorization_code'),
 		message => 'auth_code field mismatch'})
-	    unless $actual && $actual eq $self->get('authorization_code');
+	    unless $actual eq $self->get('authorization_code');
 
     # Now load realm, because we know $self is valid
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req)
