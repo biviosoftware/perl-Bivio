@@ -45,15 +45,20 @@ C<Bivio::Type::ECCreditCardType> lists the currently supported credit card types
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 
 #=VARIABLES
-
 __PACKAGE__->compile([
     UNKNOWN => [0],
     VISA => [1],
     MASTERCARD => [2, 'MasterCard'],
     AMEX => [3, 'Amex', 'American Express'],
 ]);
+
+Bivio::IO::Config->register({
+    supported_card_list => 'VISA MASTERCARD AMEX',
+});
+my($_SUPPORTED_CARDS);
 
 =head1 METHODS
 
@@ -79,13 +84,33 @@ sub get_by_number {
             if $len == 16 && $number =~ /^5[1-5]/;
     return $proto->AMEX
             if $len == 15 && $number =~ /^3[47]/;
-#    return $proto->DISCOVER
-#            if $len == 15 && $number =~ /^6/;
-#    return $proto->DINERS
-#            if $len == 15 && $number =~ /^3[068]/;
-#    return $proto->JCB
-#            if $len == 15 && $number =~ /^35/;
     return $proto->UNKNOWN;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item supported_card_list : string
+
+List of supported card enum names.
+Defaults to 'VISA MASTERCARD AMEX'.
+
+=back
+
+=cut
+
+sub handle_config {
+    my($proto, $cfg) = @_;
+
+    # map of enum name values, ensures they are valid before adding
+    $_SUPPORTED_CARDS = {
+	map {$proto->from_name($_)->get_name => 1}
+	    split(' ', $cfg->{supported_card_list}),
+    };
+    return;
 }
 
 =for html <a name="is_supported_by_number"></a>
@@ -97,7 +122,9 @@ Returns true if CC is supported.
 =cut
 
 sub is_supported_by_number {
-    return shift->get_by_number(@_)->equals_by_name('UNKNOWN') ? 0 : 1;
+    my($self, $number) = @_;
+    return $_SUPPORTED_CARDS->{$self->get_by_number($number)->get_name}
+	? 1 : 0;
 }
 
 #=PRIVATE METHODS
