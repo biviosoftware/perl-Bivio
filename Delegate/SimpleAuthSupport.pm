@@ -94,13 +94,14 @@ sub load_permissions {
     }
 
     my($rti) = $realm->get('type')->as_int;
-    _load_default_permissions($rti, $req) unless $_DEFAULT_PERMISSIONS{$rti};
+    _load_default_permissions($rti, $req)
+	unless $_DEFAULT_PERMISSIONS{$rti};
 
     # Copy just this role's permission if there is an owner
     my($res) = $_DEFAULT_PERMISSIONS{$rti}->{$role};
     # Return the permission, but make sure it exists
     Bivio::Die->die($realm, ': unable to load default permissions for ', $role)
-		unless defined($res);
+	unless defined($res);
     return $res;
 }
 
