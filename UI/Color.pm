@@ -48,17 +48,23 @@ __PACKAGE__->compile(
 	0xFFFFFF,
     ],
     HEADING_BG => [
-	0xE0E0FF,
-	'table_separator',
+	0xFFFFBB,  # E0E0FF,
     ],
-    TABLE_STRIPE_BG => [
-	0xFFE8E8,
-    ],
+#    TABLE_STRIPE_BG => [
+#	0xFFE8E8, # 0x99CCCC,
+#    ],
     ERROR => [
 	0xFF0000,
     ],
+    PAGE_TEXT => [
+	0x000000,
+    ],
     TEXT_TAB_BG => [
-	0x999999,
+	0x006666, # 0x999999,
+	'page_vlink',
+    ],
+    PAGE_LINK => [
+	0x000099,
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
@@ -68,6 +74,11 @@ __PACKAGE__->compile(
     ],
     ACTION_BAR => [
 	0xE9E3C7,
+	'table_separator',
+	'TABLE_STRIPE_BG',
+    ],
+    REALM_NAME => [
+	0xFF9900,
     ],
 );
 
@@ -81,12 +92,12 @@ __PACKAGE__->compile(
 
 =head2 as_html(any thing) : string
 
-Returns the color as a C<COLOR> attribute.
+Returns the color as a raw "string" value (in quotes).
 
 =cut
 
 sub as_html {
-    return sprintf(' color="#%06X"', Bivio::Type::Enum::from_any(@_)->as_int);
+    return sprintf('"#%06X"', Bivio::Type::Enum::from_any(@_)->as_int);
 }
 
 =for html <a name="as_html_bg"></a>
@@ -102,6 +113,18 @@ Same as L<as_html|"as_html">, but generates C<BGCOLOR> attribute.
 sub as_html_bg {
     return sprintf(' bgcolor="#%06X"',
 	    Bivio::Type::Enum::from_any(@_)->as_int);
+}
+
+=head2 as_html_fg() : string
+
+=head2 as_html_fg(any thing) : string
+
+Returns the color as a C<COLOR> attribute.
+
+=cut
+
+sub as_html_fg {
+    return sprintf(' color="#%06X"', Bivio::Type::Enum::from_any(@_)->as_int);
 }
 
 =for html <a name="is_continuous"></a>
