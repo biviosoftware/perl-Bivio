@@ -700,6 +700,26 @@ __PACKAGE__->compile(
 	undef,
 	'Import unsuccessful, the data file was truncated. Perhaps the A: drive ran out of space when exporting?',
     ],
+    WITHDRAWAL_GREATER_THAN_VALUE => [
+	85,
+	undef,
+	"The withdrawal may not be greater than the member's current value"
+    ],
+    CURRENT_USER_FULL_WITHDRAWAL => [
+	86,
+	undef,
+	"You may not perform a full withdrawal on yourself. Another accountant in the club must perform this task.",
+    ],
+    CURRENT_USER_DELETE => [
+	87,
+	undef,
+	"You may not remove yourself from the club. Another administrator in the club must perform this task.",
+    ],
+    DELETE_WITHDRAWN_USER => [
+	88,
+	undef,
+	"A withdrawn member may not be removed from the club.",
+    ],
 );
 
 #=PRIVATE METHODS
