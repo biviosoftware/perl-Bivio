@@ -477,7 +477,7 @@ sub date_from_parts_or_die {
 
 =for html <a name="delta_days"></a>
 
-=head2 delta_days(string start_date, string end_date) : int
+=head2 delta_days(string start_date, string end_date) : float
 
 Returns the floating point difference between two dates.
 
