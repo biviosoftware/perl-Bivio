@@ -38,9 +38,9 @@ use Crypt::CBC;
 
 
 #=VARIABLES
-# Should be short.  Placed on both ends of string to "ensure"
+# Should be short and non-numeric.  Placed on both ends of string to "ensure"
 # decryption worked.
-my($_MAGIC) = 'MAGIC';
+my($_MAGIC) = 'BWN';
 my($_CIPHER) = undef;
 Bivio::IO::Config->register({
     key => Bivio::IO::Config->REQUIRED,
@@ -63,11 +63,10 @@ sub from_literal {
 
     return undef unless $value;
 
-    # Decrypt and make sure surrounded by magic.
+    # Decrypt and make sure surrounded by magic and a time not before now
     my($s) = $_CIPHER->decrypt_hex($value);
     return (undef, Bivio::TypeError::SECRET()) unless
-	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC$//o;
-
+	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
     return ($s);
 }
 
@@ -119,8 +118,8 @@ Returns I<value> encrypted.
 sub to_literal {
     my(undef, $value) = @_;
     return undef unless defined($value);
-    # Surround with magic and encrypt
-    return $_CIPHER->encrypt_hex($_MAGIC.$value.$_MAGIC);
+    # Surround with magic and trailing time and encrypt
+    return $_CIPHER->encrypt_hex($_MAGIC.$value.$_MAGIC.time);
 }
 
 =for html <a name="to_sql_param"></a>
