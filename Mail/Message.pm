@@ -111,7 +111,7 @@ work with an existing message.
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
     my(undef, $rfc822) = @_;
-    ref($rfc822) || Bivio::IO::Alert->die('rfc822: not a string_ref');
+    defined($rfc822) && (ref($rfc822) || Bivio::IO::Alert->die('rfc822: not a string_ref'));
     my($parser) = MIME::Parser->new(output_to_core => 'ALL');
     $self->{$_PACKAGE} = {
 	'time' => time,
@@ -263,7 +263,7 @@ sub send_queued_messages {
 
 =for html <a name="send"></a>
 
-=head2 send() : Bivio::Type::Enum
+=head2 send():
 
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
@@ -276,7 +276,7 @@ sub send {
     my($fields) = $self->{$_PACKAGE};
     defined(@{$fields->{recipients}}) || die("no recipients\n");
 
-    &_trace('Sending msg to ', @{$fields->{recipients}}) if $_TRACE;
+    &_trace('Sending msg to ', join(',',@{$fields->{recipients}})) if $_TRACE;
     my($err);
     # Use only one handle to avoid leaks
     my($fh) = \*Bivio::Mail::Message::OUT;
@@ -336,7 +336,7 @@ sub set_headers_for_list_send {
     if ($list_in_subject) {
         my($s) = $head->get('Subject');
         if (defined($s)) {
-            $s =~ s/^(?!(\s*Re:\s*)*$list_name:)/$list_name:/is;
+            $s =~ s/^(?!(\s*Re:\s*)*$list_name: )/$list_name: /is;
 	    $head->replace('Subject', $s);
 	}
 	else {
@@ -461,7 +461,7 @@ sub get_date_time {
         &_trace($date, ' -> ', $date_time) if $_TRACE;
         return $date_time;
     } else {
-	Bivio::IO::Alert->warn("no Date");
+	Bivio::IO::Alert->warn("no Date or Received field avalable");
 	&_trace('no Date or Received field avalable') if $_TRACE;
 	return undef;
     }
