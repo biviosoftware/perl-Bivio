@@ -121,13 +121,13 @@ sub check_transaction_batch {
             next if $payment->get('status')->is_approved;
             Bivio::IO::Alert->warn('fixing status of approved payment: ',
                     $payment_id);
-            _update_status($payment, $status);
+            _update_status($proto, $payment, $status);
         } elsif ($status eq '2') {
             next if $payment->get('status')
                     == Bivio::Type::ECPaymentStatus->DECLINED;
             Bivio::IO::Alert->warn('fixing status of declined payment: ',
                     $payment_id);
-            _update_status($payment, $status);
+            _update_status($proto, $payment, $status);
         }
     }
     return;
@@ -168,20 +168,34 @@ for the current ECPayment.
 
 sub execute_process {
     my($proto, $req) = @_;
-    _process_payment($req->get('Model.ECPayment'));
+    _process_payment($proto, $req->get('Model.ECPayment'));
     return;
+}
+
+=for html <a name="internal_get_additional_form_data"></a>
+
+=head2 internal_get_additional_form_data(proto, Model.ECPayment payment) : string
+
+Allow subclasses to provide additional form data for the payment processor.
+Used by ECSecureSourceProcessor.
+
+=cut
+
+sub internal_get_additional_form_data {
+    my($proto, $payment) = @_;
+    return '';
 }
 
 #=PRIVATE SUBROUTINES
 
-# _process_payment(Model.ECPayment payment)
+# _process_payment(proto, Model.ECPayment payment)
 #
 # Send transaction data to the payment gateway and process results.
 # See http://secure.authorize.net/docs/developersguide.pml for
 # details of required field names and values.
 #
 sub _process_payment {
-    my($payment) = @_;
+    my($proto, $payment) = @_;
     return unless
 	$payment->get('method') == Bivio::Type::ECPaymentMethod->CREDIT_CARD;
     _setup_user_agent();
@@ -189,7 +203,7 @@ sub _process_payment {
 	    POST => 'https://secure.authorize.net/gateway/transact.dll'
 	   );
     $hreq->content_type('application/x-www-form-urlencoded');
-    $hreq->content(_transact_form_data($payment));
+    $hreq->content(_transact_form_data($proto, $payment));
     _trace($hreq) if $_TRACE;
     my($response) = $_USER_AGENT->request($hreq);
     my($response_string) = $response->as_string;
@@ -201,7 +215,7 @@ sub _process_payment {
     my($result_code, @details) = split(',', $response->content);
     Bivio::Die->die('cannot parse result string: ', $response->content)
 		unless defined($result_code);
-    _update_status($payment, $result_code, \@details);
+    _update_status($proto, $payment, $result_code, \@details);
     return;
 }
 
@@ -223,13 +237,13 @@ sub _setup_user_agent {
     return;
 }
 
-# _transact_form_data(Model.ECPayment payment) : string
+# _transact_form_data(proto, Model.ECPayment payment) : string
 #
 # Prepare payment transaction form data for capturing the amount.
 # Will add x_Test_Request=TRUE if in test mode.
 #
 sub _transact_form_data {
-    my($payment) = @_;
+    my($proto, $payment) = @_;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = Bivio::Type::Date->to_parts(
 	$cc_payment->get('card_expiration_date'));
@@ -267,16 +281,17 @@ sub _transact_form_data {
             '&x_Cust_ID='.$payment->get('realm_id').
             '&x_Invoice_Num='.$payment->get('ec_payment_id').
 	    '&x_Zip='.Bivio::HTML->escape_uri($cc_payment->get('card_zip')).
+            $proto->internal_get_additional_form_data($payment).
             $test_request;
 }
 
-# _update_status(Model.ECPayment payment, string result_code, array_ref details)
+# _update_status(proto, Model.ECPayment payment, string result_code, array_ref details)
 #
 # Update payment status given the gateway's result code.
 # Look at Authorize.Net developer's guide, app. C, for a list of error codes.
 #
 sub _update_status {
-    my($payment, $result_code, $details) = @_;
+    my($proto, $payment, $result_code, $details) = @_;
     my($error_code, $msg, $processor_transaction_number) =
 	$details ? (@$details)[1,2,5] : (undef, undef, undef);
     my($status);
@@ -308,16 +323,16 @@ sub _update_status {
 	processor_response => $msg,
 	processor_transaction_number => $processor_transaction_number,
     });
-    _warn_declined($payment) if $status->is_bad;
+    _warn_declined($proto, $payment) if $status->is_bad;
     return;
 }
 
-# _warn_declined(Model.ECPayment payment)
+# _warn_declined(proto, Model.ECPayment payment)
 #
 # Writes a warning about a declined or failed payment.
 #
 sub _warn_declined {
-    my($payment) = @_;
+    my($proto, $payment) = @_;
     my($req) = $payment->get_request;
     $req->warn(
 	$payment->get('status')->get_name,
