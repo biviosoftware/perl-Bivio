@@ -34,14 +34,13 @@ C<Bivio::Biz::Model::MGFSCompany>
 use Bivio::Data::MGFS::AuditorReport;
 use Bivio::Data::MGFS::Boolean;
 use Bivio::Data::MGFS::DataType;
-use Bivio::Data::MGFS::Date;
 use Bivio::Data::MGFS::Domicile;
 use Bivio::Data::MGFS::DowJonesMember;
 use Bivio::Data::MGFS::Fortune500Industrial;
 use Bivio::Data::MGFS::Id;
 use Bivio::Data::MGFS::Industry;
 use Bivio::Data::MGFS::Market;
-use Bivio::Data::MGFS::Number10;
+use Bivio::Data::MGFS::SICCode;
 use Bivio::Data::MGFS::SPIndustry;
 use Bivio::Data::MGFS::SPMember;
 use Bivio::Type::Amount;
@@ -86,9 +85,9 @@ sub internal_initialize {
 		    Bivio::SQL::Constraint::NOT_NULL()],
 	    market => ['Bivio::Data::MGFS::Market',
 		    Bivio::SQL::Constraint::NOT_NULL()],
-	    industry => ['Bivio::Type::String',
+	    industry => ['Bivio::Data::MGFS::Id',
 		    Bivio::SQL::Constraint::NOT_NULL()],
-	    primary_sic => ['Bivio::Type::Integer',
+	    primary_sic => ['Bivio::Data::MGFS::SICCode',
 		    Bivio::SQL::Constraint::NOT_NULL()],
 	    dow_jones_member => ['Bivio::Data::MGFS::DowJonesMember',
 		    Bivio::SQL::Constraint::NOT_NULL()],
