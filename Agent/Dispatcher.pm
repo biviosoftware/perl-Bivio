@@ -59,12 +59,6 @@ use Bivio::IO::Trace;
 use Bivio::UI::Facade;
 
 #=VARIABLES
-Bivio::Die->eval(qq{
-        use BSD::Resource;
-	# No core dumps please
-	setrlimit(RLIMIT_CORE, 0, 0);
-    }
-);
 my($_INITIALIZED);
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
