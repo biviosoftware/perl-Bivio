@@ -60,7 +60,7 @@ var $_VV=1.0;
 </script>
 <script language="JavaScript1.2">
 <!--
-var $_VV=1.2;
+$_VV=1.2;
 // -->
 </script>
 EOF
@@ -111,7 +111,7 @@ sub render {
 
 =for html <a name="strip"></a>
 
-=head2 static strip(string_ref code)
+=head2 static strip(string code) : string
 
 Strips leading blanks and comments.
 
@@ -120,11 +120,12 @@ Strips leading blanks and comments.
 sub strip {
     my(undef, $code) = @_;
     # Strip leading blanks and blank lines
-    $$code =~ s/\n\s+/\n/g;
+    $code =~ s/^\s+//sg;
+    $code =~ s/\n\s+/\n/g;
 
     # Strip comments
-    $$code =~ s/\/\/.*\n//g;
-    return;
+    $code =~ s/\/\/.*\n//g;
+    return $code;
 }
 
 #=PRIVATE METHODS
