@@ -132,7 +132,7 @@ sub mailto ($;$$) {
 sub timestamp ($) {
     my($time) = shift;
     defined($time) || ($time = time);
-    my($sec, $min, $hour, $day, $mon, $year) = localtime($time);
+    my($sec, $min, $hour, $day, $mon, $year) = gmtime($time);
     return sprintf('%04d%02d%02d%02d%02d%02d', $year + 1900, $mon + 1, $day,
 	   $hour, $min, $sec);
 }
