@@ -222,107 +222,7 @@ knows I<values> is valid.   L<validate|"validate"> is not called.
 
 sub execute {
     my($proto, $req, $values) = @_;
-    my($self) = $proto->new($req);
-    my($fields) = $self->{$_PACKAGE};
-
-    # Save in request
-    $req->put(ref($self) => $self);
-
-    # Called as an action internally, process values.  Do no validation.
-    if ($values) {
-	$self->internal_put($values);
-	$fields->{literals} = {};
-	# Forms called internally don't have a context.  Form models
-	# should blow up.
-	return 1 if _call_execute($self, 'execute_ok', 'ok_button');
-	return 0 unless $fields->{errors};
-	Bivio::Die->die($self->as_string,
-		": called with invalid values");
-	# DOES NOT RETURN
-    }
-
-    # Is this a primary or auxiliary form on the request?
-    my($task) = $req->get('task');
-    my($primary_class) = $task->get('form_model');
-    $fields->{require_context} = $self->get_info('require_context')
-	    && $req->get_or_default(ref($self).'.'
-		    .'require_context', 1);
-    if (defined($primary_class) && $primary_class eq ref($self)) {
-	# Primary forms don't require context if task doesn't require
-	# context.
-	$fields->{require_context} = 0 unless $task->get('require_context');
-	_trace(ref($self), ': primary form') if $_TRACE;
-    }
-    else {
-	# Auxiliary forms are not the "main" form models on the page
-	# and therefore, do not have any input.  They always return
-	# back to this page, if they require_context.
-	_trace(ref($self), ': auxiliary form') if $_TRACE;
-	$fields->{literals} = {};
-	$fields->{context} = $self->get_context_from_request($req)
-		if $fields->{require_context};
-	return _call_execute($self, 'execute_empty');
-    }
-
-    # Only save "generically" if not executed explicitly.
-    # sub-forms shouldn't be put on as THE form_model.  Should appear
-    # before $req->get_form for security reasons (see
-    # Bivio::Agent::Request->as_string).
-    $req->put(form_model => $self);
-
-    my($input) = $req->get_form();
-
-    # Parse context from the query string, if any
-    my($query) = $req->unsafe_get('query');
-    if ($query && $query->{fc}) {
-	# If there is an incoming context, must be syntactically valid.
-	my($c) = Bivio::Biz::FormContext->from_literal(
-		$self, $query->{fc});
-	$fields->{context} = $c;
-	# We don't want it to appear in any more URIs now that we can
-	# store it in a form.
-	delete($query->{fc});
-	$req->put(query => undef) unless int(keys(%$query));
-	_trace('context: ', $c) if $_TRACE;
-    }
-
-    # User didn't input anything, render blank form
-    unless ($input) {
-	$fields->{literals} = {};
-	$fields->{context} = _initial_context($self, $req)
-		unless $fields->{context};
-	return _call_execute($self, 'execute_empty');
-    }
-
-    # User submitted a form, parse, validate, and execute
-    # Cancel causes an immediate redirect.  parse() returns false
-    # on SUBMIT_UNWIND
-    $fields->{literals} = $input;
-
-    unless (_parse($self, $input)) {
-	# Allow the subclass to modify the state of the form after an unwind
-	$self->clear_errors;
-	return _call_execute($self, 'execute_unwind');
-    }
-
-    # determine the selected button, default is ok
-    my($button, $button_type) = ('ok_button', 'Bivio::Type::OKButton');
-    foreach my $field (@{$self->get_keys}) {
-	if (defined($self->get($field))) {
-	    my($type) = $self->get_field_type($field);
-	    ($button, $button_type) = ($field, $type)
-		    if $type->isa('Bivio::Type::FormButton');
-	}
-    }
-    $fields->{button_submitted} = $button;
-
-    return $self->validate_and_execute_ok($button)
-	    if $button_type->isa('Bivio::Type::OKButton');
-
-    return _call_execute($self, 'execute_cancel', $button)
-	    if $button_type->isa('Bivio::Type::CancelButton');
-
-    return _call_execute($self, 'execute_other', $button);
+    return $proto->new($req)->process($req, $values);
 }
 
 =for html <a name="execute_cancel"></a>
@@ -1068,6 +968,120 @@ sub load_from_model_properties {
 	$properties->{$pn} = $m->get($cn);
     }
     return;
+}
+
+=for html <a name="process"></a>
+
+=head2 process(Bivio::Agent::Request req) : boolean
+
+=head2 process(Bivio::Agent::Request req, hash_ref values) : boolean
+
+Does the work for L<execute|"execute"> after execute creates a I<self>.
+
+=cut
+
+sub process {
+    my($self, $req, $values) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Save in request
+    $req->put(ref($self) => $self);
+
+    # Called as an action internally, process values.  Do no validation.
+    if ($values) {
+	$self->internal_put($values);
+	$fields->{literals} = {};
+	# Forms called internally don't have a context.  Form models
+	# should blow up.
+	return 1 if _call_execute($self, 'execute_ok', 'ok_button');
+	return 0 unless $fields->{errors};
+	Bivio::Die->die($self->as_string,
+		": called with invalid values");
+	# DOES NOT RETURN
+    }
+
+    # Is this a primary or auxiliary form on the request?
+    my($task) = $req->get('task');
+    my($primary_class) = $task->get('form_model');
+    $fields->{require_context} = $self->get_info('require_context')
+	    && $req->get_or_default(ref($self).'.'
+		    .'require_context', 1);
+    if (defined($primary_class) && $primary_class eq ref($self)) {
+	# Primary forms don't require context if task doesn't require
+	# context.
+	$fields->{require_context} = 0 unless $task->get('require_context');
+	_trace(ref($self), ': primary form') if $_TRACE;
+    }
+    else {
+	# Auxiliary forms are not the "main" form models on the page
+	# and therefore, do not have any input.  They always return
+	# back to this page, if they require_context.
+	_trace(ref($self), ': auxiliary form') if $_TRACE;
+	$fields->{literals} = {};
+	$fields->{context} = $self->get_context_from_request($req)
+		if $fields->{require_context};
+	return _call_execute($self, 'execute_empty');
+    }
+
+    # Only save "generically" if not executed explicitly.
+    # sub-forms shouldn't be put on as THE form_model.  Should appear
+    # before $req->get_form for security reasons (see
+    # Bivio::Agent::Request->as_string).
+    $req->put(form_model => $self);
+
+    my($input) = $req->get_form();
+
+    # Parse context from the query string, if any
+    my($query) = $req->unsafe_get('query');
+    if ($query && $query->{fc}) {
+	# If there is an incoming context, must be syntactically valid.
+	my($c) = Bivio::Biz::FormContext->from_literal(
+		$self, $query->{fc});
+	$fields->{context} = $c;
+	# We don't want it to appear in any more URIs now that we can
+	# store it in a form.
+	delete($query->{fc});
+	$req->put(query => undef) unless int(keys(%$query));
+	_trace('context: ', $c) if $_TRACE;
+    }
+
+    # User didn't input anything, render blank form
+    unless ($input) {
+	$fields->{literals} = {};
+	$fields->{context} = _initial_context($self, $req)
+		unless $fields->{context};
+	return _call_execute($self, 'execute_empty');
+    }
+
+    # User submitted a form, parse, validate, and execute
+    # Cancel causes an immediate redirect.  parse() returns false
+    # on SUBMIT_UNWIND
+    $fields->{literals} = $input;
+
+    unless (_parse($self, $input)) {
+	# Allow the subclass to modify the state of the form after an unwind
+	$self->clear_errors;
+	return _call_execute($self, 'execute_unwind');
+    }
+
+    # determine the selected button, default is ok
+    my($button, $button_type) = ('ok_button', 'Bivio::Type::OKButton');
+    foreach my $field (@{$self->get_keys}) {
+	if (defined($self->get($field))) {
+	    my($type) = $self->get_field_type($field);
+	    ($button, $button_type) = ($field, $type)
+		    if $type->isa('Bivio::Type::FormButton');
+	}
+    }
+    $fields->{button_submitted} = $button;
+
+    return $self->validate_and_execute_ok($button)
+	    if $button_type->isa('Bivio::Type::OKButton');
+
+    return _call_execute($self, 'execute_cancel', $button)
+	    if $button_type->isa('Bivio::Type::CancelButton');
+
+    return _call_execute($self, 'execute_other', $button);
 }
 
 =for html <a name="put_context_fields"></a>
