@@ -279,6 +279,13 @@ my(@_XLATORS) = (
 		    'portfolio_deductions'
 		]
 	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f2-1a',
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'margin_interest'
+		],
+	       ),
  	Bivio::UI::PDF::Form::MoneyXlator->new(
 #		'f2-2',
 		'f2-2a',
