@@ -42,7 +42,7 @@ sub unescape_html { &HTML::Entities::decode }
 # gettimeofday -> [seconds, micros]
 sub gettimeofday () {
     my($i) = '8..bytes';
-    syscall(&SYS_gettimeofday, $i);
+    syscall(&SYS_gettimeofday, $i, 0);
     return [unpack('ll', $i)];
 }
 
