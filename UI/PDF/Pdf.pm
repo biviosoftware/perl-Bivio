@@ -45,6 +45,7 @@ C<Bivio::UI::PDF::Pdf>
 # }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::UI::PDF::ArrayIterator;
 use Bivio::UI::PDF::Emit;
 use Bivio::UI::PDF::FirstParsedUpdate;
@@ -53,6 +54,8 @@ use Bivio::UI::PDF::Regex;
 use Bivio::UI::PDF::ParsedUpdate;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_EOL_REGEX) = Bivio::UI::PDF::Regex::EOL_REGEX();
@@ -154,6 +157,20 @@ sub get_field_ref_by_name {
     return(${$fields->{'field_refs_ref'}}{$field_name});
 }
 
+=for html <a name="get_info_pointer"></a>
+
+=head2 get_info_pointer() : string
+
+Returns the value of the first update's info value.
+
+=cut
+
+sub get_info_pointer {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return($fields->{'sorted_updates_ref'}->[0]->get_info_pointer());
+}
+
 =for html <a name="get_length"></a>
 
 =head2 get_length() : 
@@ -246,12 +263,12 @@ sub get_xref_offset {
 #TODO: This is a hack.  Linearized documents have a dummy xref section in the
 # first update, so use the secont.
     my($xref_offset) = $fields->{'sorted_updates_ref'}->[0]->get_xref_offset();
-    if (0 == $xref_offset) {
+#    if (0 == $xref_offset) {
 	return($xref_offset);
-    }
-    else {
-	return($fields->{'sorted_updates_ref'}->[1]->get_xref_offset());
-    }
+#    }
+#    else {
+#	return($fields->{'sorted_updates_ref'}->[1]->get_xref_offset());
+#    }
 }
 
 =for html <a name="parse_complete_pdf"></a>
@@ -516,36 +533,52 @@ sub _sort_updates {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # First find the update with no prev offset.  There should be only one, and
-    # it should be the first update.
-    my($next_update_ref) = $self->_find_no_prev();
+#    # First find the update with no prev offset.  There should be only one, and
+#    # it should be the first update.
+#    my($next_update_ref) = $self->_find_no_prev();
+#
+#    # Now keep finding the next oldest update.
+##TODO: Can you use reverse to reverse an array savely, or do we need this
+## temporary?
+#    my(@updates_tmp);
+#    while (defined($next_update_ref)) {
+#	push(@updates_tmp, $next_update_ref);
+#	$next_update_ref
+#		= $self->_find_next_oldest_update($next_update_ref);
+#    }
+#    unless ($#updates_tmp == $#{$fields->{'updates_ref'}}) {
+#	# A file that has been lineraized doesn't have all its updates linked
+#	# together in the normal way.  Assume that if we are just missing one
+#	# update, the missing one is the liniarize update, which has a dummy
+#	# startxref offset of 0.  Add it in.
+#	if ($#updates_tmp + 1 == $#{$fields->{'updates_ref'}}) {
+#	    $next_update_ref = $self->_get_dummy_startxref_update();
+#	} else {
+#	    die("Missing updates; sorted ", $#updates_tmp + 1, " out of ",
+#		   $#{$fields->{'updates_ref'}} + 1, "\n");
+#	}
+#	push(@updates_tmp, $next_update_ref);
+#    }
+#
+#    # Now reverse the order.
+#    @{$fields->{'sorted_updates_ref'}} = reverse(@updates_tmp);
 
-    # Now keep finding the next oldest update.
-#TODO: Can you use reverse to reverse an array savely, or do we need this
-# temporary?
-    my(@updates_tmp);
-    while (defined($next_update_ref)) {
-	push(@updates_tmp, $next_update_ref);
-	$next_update_ref
-		= $self->_find_next_oldest_update($next_update_ref);
-    }
-    unless ($#updates_tmp == $#{$fields->{'updates_ref'}}) {
-	# A file that has been lineraized doesn't have all its updates linked
-	# together in the normal way.  Assume that if we are just missing one
-	# update, the missing one is the liniarize update, which has a dummy
-	# startxref offset of 0.  Add it in.
-	if ($#updates_tmp + 1 == $#{$fields->{'updates_ref'}}) {
-	    $next_update_ref = $self->_get_dummy_startxref_update();
-	} else {
-	    die("Missing updates; sorted ", $#updates_tmp + 1, " out of ",
-		   $#{$fields->{'updates_ref'}} + 1, "\n");
+    # sort on size instead.
+    $fields->{sorted_updates_ref} = [sort({
+	$b->get_size->get_value <=> $a->get_size->get_value;
+    } @{$fields->{updates_ref}})];
+
+
+    # debugging info
+    foreach my $update (@{$fields->{sorted_updates_ref}}) {
+	_trace("\n");
+	foreach my $method (qw(get_prev_offset get_size get_xref_offset)) {
+
+	    my($value) = $update->$method();
+	    _trace("\t$method => ".(defined($value)
+		    ? $value->get_value() : '<undef>')."\n");
 	}
-	push(@updates_tmp, $next_update_ref);
     }
-
-    # Now reverse the order.
-    @{$fields->{'sorted_updates_ref'}} = reverse(@updates_tmp);
-
     return;
 }
 
