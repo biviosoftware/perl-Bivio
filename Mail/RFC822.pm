@@ -417,12 +417,15 @@ sub DATE {
 
 =head2 TIME : string
 
-hour zone
+hour timezone
+
+Modifications to original spec:
+ - Allow doublequotes in timezone field
 
 =cut
 
 sub TIME {
-    return '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s+([-+\\w]{1,5})';
+    return '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s+([-+"\\w]{1,5})';
 }
 
 =cut
