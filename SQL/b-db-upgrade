@@ -261,6 +261,12 @@ ALTER TABLE realm_instrument_t
   add constraint realm_instrument_t8
   check (instrument_type between 1 and 4)
 /
+ALTER TABLE instrument_t DROP constraint instrument_t3
+/
+ALTER TABLE instrument_t
+  add constraint instrument_t3
+  check (instrument_type between 1 and 4)
+/
 EOF
     return;
 }
