@@ -32,23 +32,6 @@ the HTML part of a Facade.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="UNDEF_CONFIG"></a>
-
-=head2 UNDEF_CONFIG() : string
-
-Returns C<undef> which is uninterpreted
-by L<internal_initialize_value|"internal_initialize_value">.
-
-=cut
-
-sub UNDEF_CONFIG {
-    return undef;
-}
-
 #=IMPORTS
 use Bivio::Die;
 use Bivio::UI::Facade;
