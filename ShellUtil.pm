@@ -1002,7 +1002,7 @@ sub run_daemon {
 		last if --$max_duplicates <= 0;
 	    }
 	    else {
-		$children->{_start_daemon_child($args, $cfg)} = $args;
+		$children->{_start_daemon_child($self, $args, $cfg)} = $args;
 		sleep($cfg->{daemon_sleep_after_start});
 	    }
 	}
@@ -1480,12 +1480,12 @@ sub _setup_for_main {
     return;
 }
 
-# _start_daemon_child(array_ref args, hash_ref cfg) : int
+# _start_daemon_child(self, array_ref args, hash_ref cfg) : int
 #
 # Starts child process, appending to log.  Returns pid.
 #
 sub _start_daemon_child {
-    my($args, $cfg) = @_;
+    my($self, $args, $cfg) = @_;
     # Force a reconnect for both child and parent; avoids errors in
     # logs for parent.
     Bivio::SQL::Connection->disconnect;
@@ -1502,7 +1502,7 @@ sub _start_daemon_child {
 	    _trace('started: ', $child, ' ', $args) if $_TRACE;
 	    return $child;
 	}
-	Bivio::Agent::Request->clear_current;
+	$self->get_request->clear_current;
 	$0 = join(' ', @$args);
 	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
 	    join(' ', @$args[2 .. $#$args]));
