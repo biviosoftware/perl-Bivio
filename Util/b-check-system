@@ -265,7 +265,7 @@ sub check_diskuse {
 sub check_raid {
     my($mdfile) = '/proc/mdstat';
     if (open(F, $mdfile)) {
-        while(<F>) {
+        while (<F>) {
             /^md\d+.+_/ && print("WARNING: $mdfile: $_");
         }
         close(F);
