@@ -29,7 +29,7 @@ bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
-We'll be writing more here later.  Please visit
+We'll be writing more here later.  Please visit 
 http://www.bivio.biz for more info.
 
 =cut
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    generate_local_email()
+  * Bivio::Test::Language::HTTP->verify_mail() now accepts compiled
+    regular expressions, and also correctly matches recipient email address
+
+  Revision 2.32  2004/09/17 23:27:06  moeller
+  * added Bivio::Biz::Model->new_other(class) to dynamically create
+    models within subclass code.
+  * added Bivio::Test::LanguageHTTP->generate_email to return a
+    randomized local email address.
   * added Bivio::Test::LanguageHTTP->verify_mail to read mail received.
   * added email_user and mail_tries configuration values for
     Bivio::Test::LanguageHTTP.
