@@ -42,6 +42,14 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 List of columns order_by columns (in order).
 
+=item orabug_fetch_all_select : boolean
+
+If set, then selects must be read to completion.  The problem occurs
+on certain "wide" selects, e.g.
+L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>.
+An ORA-03113 error occurs on the next statement.  The slave has
+crashed.  The connection must be restarted.
+
 =item primary_key_types : array_ref
 
 List of primary key types in the order of I<primary_key_names>.
@@ -108,7 +116,7 @@ use Bivio::Biz::PropertyModel;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
 use Bivio::Util;
-use Carp();
+use Carp ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -197,6 +205,8 @@ sub new {
 	select_columns => [],
 	# Columns which have no corresponding property model field
 	local_columns => [],
+	# See discussion of =item orabug_fetch_all_select
+	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
     };
     $proto->init_version($attrs, $decl);
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
@@ -461,6 +471,10 @@ sub _load_this {
 		next => [map {
 		    $_->from_sql_column($row->[$j++]);
 		} @$types]);
+	# See discussion of =item orabug_fetch_all_select
+	if ($attrs->{orabug_fetch_all_select}) {
+	    0 while $statement->fetchrow_arrayref;
+	}
     }
     $statement->finish;
 
@@ -513,8 +527,13 @@ sub _load_list {
     }
 
     # Is there a next?
-    $query->put(has_next => 1, next => $page_number + 1) 
-	    if $statement->fetchrow_arrayref;
+    if ($statement->fetchrow_arrayref) {
+	$query->put(has_next => 1, next => $page_number + 1);
+	# See discussion of =item orabug_fetch_all_select
+	if ($attrs->{orabug_fetch_all_select}) {
+	    0 while $statement->fetchrow_arrayref;
+	}
+    }
     $statement->finish();
 
     # Return the page
