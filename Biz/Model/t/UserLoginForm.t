@@ -93,6 +93,7 @@ Bivio::Test->new({
 	    [{login => 'user'}] => Bivio::DieCode->NOT_FOUND,
 	    [{login => 'club'}] => Bivio::DieCode->NOT_FOUND,
 	    [{}] => Bivio::DieCode->DIE,
+	    [{login => 'bad%realm!name'}] => Bivio::DieCode->NOT_FOUND,
 	],
     ],
 ]);
