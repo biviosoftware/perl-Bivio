@@ -475,7 +475,7 @@ Verifies that the specified title appears on the page.
 sub verify_title {
     my($self, $title) = @_;
     Bivio::Die->die($title, ': title not found in response')
-	    unless $self->get_content =~ /<title>.*$title.*<\/title>/;
+	    unless $self->get_content =~ /<title>.*$title.*<\/title>/i;
     return;
 }
 
