@@ -164,18 +164,13 @@ sub _parse_line {
 	    my $chr = $_CHAR_MAP->{ord($x)};
 	    if($chr){$res .= $chr;}
 	    else {
-		if (ord($x) < 33 || ord($x) == 126){next;}
-		if(ord($x) > 32 && ord($x) < 127){
-		    $res .= $x;
-		}
-		else {
-		    $res .= '&#' . ord($x);
-		}
+		next if (ord($x) < 33 || ord($x) == 126);
+		$res .= (ord($x) > 32 && ord($x) < 127) ?
+			$x : '&#' . ord($x) . ';';
 	    }
 	}
 	$word = $res if(! $res eq(''));
 	if($word =~ /(\w*@\w*\.\w*)/){
-	    _trace('found email: ' , $word) if $_TRACE;
 	    $word = "<HREF=MAILTO:$word>$word</a>";
 	}
 	elsif($word =~ /(http:\/\/.*)/){
@@ -190,7 +185,6 @@ sub _parse_line {
 	    $suri =~ s/\?/\\?/g;
 	    $word =~ s/$suri/\<a HREF=http:\/\/$uri\>$uri\<\/a\>/;
 	}
-	_trace('pushing word: ', $word) if $_TRACE;
 	push @$newline, $word;
 	$res = '';
     }
