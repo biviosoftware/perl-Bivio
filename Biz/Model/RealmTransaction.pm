@@ -93,7 +93,7 @@ sub cascade_delete {
 
 =for html <a name="create"></a>
 
-=head2 create(hash_ref new_values)
+=head2 create(hash_ref new_values) : Bivio::Biz::Model::RealmTransaction
 
 Overrides PropertyModel::create() to default realm_id to the current realm.
 Defaults the user_id to the current auth_user.
@@ -109,8 +109,7 @@ sub create {
 	    unless exists($new_values->{user_id});
     $new_values->{modified_date_time} = Bivio::Type::DateTime->now
 	    unless exists($new_values->{modified_date_time});
-    $self->SUPER::create($new_values);
-    return;
+    return $self->SUPER::create($new_values);
 }
 
 =for html <a name="generate_entry_remark"></a>

@@ -78,7 +78,7 @@ my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
 
 =for html <a name="create"></a>
 
-=head2 create(Bivio::Mail::Message msg, int mail_id, int date)
+=head2 create(Bivio::Mail::Message msg, int mail_id, int date) : Bivio::Biz::Model::Mail
 
 Creates a mail message model from a L<Bivio::Mail::Message>.
  - Validates message fields
@@ -170,12 +170,11 @@ sub create {
     # Convert text parts to HTML and store all parts in cache
     my($cache_id) = $self->cache_parts($req, $msg->get_entity, $user_id);
 
-    $self->update({
+    return $self->update({
         rfc822_file_id => $rfc822_id,
         bytes => $bytes,
         cache_file_id => $cache_id
     });
-    return;
 }
 
 =for html <a name="delete"></a>
