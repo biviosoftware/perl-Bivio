@@ -41,7 +41,6 @@ Don't send a mail message, print report to stdout instead
 =cut
 
 #=IMPORTS
-use Bivio::Agent::Request;
 use Bivio::IO::Config;
 use Bivio::Mail::Message;
 use Sys::Hostname;
@@ -197,7 +196,7 @@ sub _send_report {
     $body_out->print($_REPORT);
     $body_out->close;
 
-    $mail->send(Bivio::Agent::Request->get_current_or_new);
+    $mail->send;
     return;
 }
 
