@@ -50,6 +50,12 @@ array_ref (value) containing the enum's values.  Doesn't support
 EnumSets, but could be made to.  This format is more convenient
 for the problem I have right now.
 
+If an element in the array_ref is a hash_ref, it can set atttributes
+on the radio button, e.g. I<control> and I<value>.
+
+The I<control> will be set to the choice, if the choice type is
+a TaskId.  See AbstractControl.
+
 B<If a L<Bivio::UI::Label|Bivio::UI::Label> exists for the
 enum name, it will be used in place of the description.>
 
@@ -120,6 +126,7 @@ sub new {
 	    value => $_->[0],
 	    label => $_->[1],
 	    auto_submit => $self->get_or_default('auto_submit', 0),
+	    %{$_->[2]},
 	});
     } @$items;
 
@@ -169,7 +176,7 @@ sub _load_items_from_enum_list {
     # id, display pairs
     my(@items);
     foreach my $item (@values) {
-	push(@items, [$item, Bivio::HTML->escape($item->get_long_desc)]);
+	push(@items, [$item, Bivio::HTML->escape($item->get_long_desc), {}]);
     }
 
     # Result
@@ -186,11 +193,22 @@ sub _load_items_from_enum_array {
     my($type, $value) = $choices->get('type', 'value');
     return [
 	map {
-	    my($e) = $type->from_any($_);
-	    [$e, Bivio::HTML->escape(
+	    my($attrs) = ref($_) eq 'HASH' ? $_ : {value => $_};
+	    my($e) = $type->from_any($attrs->{value});
+	    # Control is a task if it is just a string
+	    $attrs->{control} = $e->get_name
+		    if $type->isa('Bivio::Agent::TaskId')
+			    && !$attrs->{control};
+	    # Don't apply 'value' to the widget
+	    delete($attrs->{value});
+	    [
+		$e,
+		Bivio::HTML->escape(
 		    # Use the label if available
 		    Bivio::UI::Label->unsafe_get_simple($e->get_name)
-		    || $e->get_long_desc)];
+		    || $e->get_long_desc),
+		$attrs,
+	    ];
 	} @$value
     ];
 }
