@@ -78,7 +78,7 @@ sub process_request {
     my($self, @protocol_args) = @_;
     Bivio::Agent::Request->clear_current;
     my($die, $req, $task_id);
-    my($max_tries) = 3;
+    my($max_tries) = 4;
  TRY: {
 	$die = Bivio::Die->catch(
 		sub {
@@ -90,7 +90,8 @@ sub process_request {
 		    # Task checks authorization
 		    $task->execute($req);
 		});
-	if ($die && $die->get('code') == Bivio::DieCode::REDIRECT_TASK()) {
+	if ($die && $die->get('code')
+		== Bivio::DieCode::SERVER_REDIRECT_TASK()) {
 	    my($attrs) = $die->get('attrs');
 	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
 		    if $_TRACE;
