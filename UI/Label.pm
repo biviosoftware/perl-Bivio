@@ -409,6 +409,8 @@ _compile(
 
     # Form Fields
     INVITE_MESSAGE => ['Message'],
+    SEARCH_STRING => ['Search'],
+    SEARCH_RESULT => ['Result'],
 
     # Misc. Features
     NEW_HARDWARE => ['New Computers'],
