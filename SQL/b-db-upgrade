@@ -51,7 +51,7 @@ sub main {
 #TODO: Change this back to "eq 'upgrade'"
 	    unless $method && $method  =~ /^_upgrade/;
 
-    my($req) = Bivio::Agent::Request->new();
+    my($req) = Bivio::Agent::Request->get_current_or_new();
     my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
     if ($upgrade->unauth_load(version => $VERSION)) {
 	_usage("$VERSION already ran");
@@ -137,8 +137,9 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-
+    #
     # Make sure tablespace exists before doing anything
+    #
     my($statement) = _do(<<'EOF');
 SELECT DISTINCT tablespace_name
   FROM user_tablespaces
@@ -148,7 +149,28 @@ EOF
     die('Need to create realm_lob tablespace')
 	    unless $statement->fetchrow_arrayref;
 
+    #
+    # Update RealmRole table
+    #
+    use Bivio::Biz::Util::RealmRole;
+    Bivio::Biz::Util::RealmRole->init();
+
+    #
+    # We load realms here BEFORE creating tables, so we can
+    # rerun if there are bugs.  NEVER HAPPEN!
+    #
+    use Bivio::Biz::Model::RealmOwnerList;
+    my($realms) = Bivio::Biz::Model::RealmOwnerList->new();
+    $realms->unauth_load({
+	realm_type => Bivio::Auth::RealmType::CLUB(),
+	count => Bivio::Type::Integer->get_max,
+    });
+    die('unable to find more than ten clubs')
+	    unless $realms->get_result_set_size > 10;
+
+    #
     # Create file_t and file_quota_t
+    #
     _do(<<'EOF');
 CREATE TABLE file_quota_t (
   realm_id NUMBER(18),
@@ -165,12 +187,12 @@ CREATE TABLE file_t (
   volume NUMBER(2),
   directory_id NUMBER(18),
   name VARCHAR2(100),
+  name_sort VARCHAR2(100),
   user_id NUMBER(18),
   modified_date_time DATE,
   bytes NUMBER(9),
   is_directory NUMBER(1),
-  source_name VARCHAR2(500),
-  content_type VARCHAR2(500),
+  aux_info VARCHAR2(500),
   content BLOB
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
@@ -178,7 +200,7 @@ CREATE TABLE file_t (
   lob (content) store as
   (tablespace realm_lob storage
   (initial 100m next 100m pctincrease 0)
-  chunk 8k pctversion 10 nocache logging)
+  chunk 2k pctversion 10 nocache logging)
 /
 
 --
@@ -222,7 +244,7 @@ ALTER TABLE file_t
 /
 ALTER TABLE file_t modify volume not null
 /
-ALTER TABLE file_t add check (volume between 1 and 6)
+ALTER TABLE file_t add check (volume = 1)
 /
 ALTER TABLE file_t
   add foreign key (user_id)
@@ -232,6 +254,8 @@ ALTER TABLE file_t modify modified_date_time not null
 /
 ALTER TABLE file_t modify name not null
 /
+ALTER TABLE file_t modify name_sort not null
+/
 ALTER TABLE file_t modify bytes not null
 /
 ALTER TABLE file_t add check (bytes >= 0)
@@ -240,26 +264,34 @@ ALTER TABLE file_t modify is_directory not null
 /
 ALTER TABLE file_t add check (is_directory BETWEEN 0 AND 1)
 /
-ALTER TABLE file_t add unique(directory_id, name)
+ALTER TABLE file_t add unique(directory_id, name_sort)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
 
-CREATE INDEX file_directory_i ON file_t (
-  directory_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
-CREATE INDEX file_realm_volume_i ON file_t (
-  realm_id,
-  volume
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
+CREATE sequence file_s
+  minvalue 100011 maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
 /
 EOF
+
+    #
+    # Create the file systems
+    #
+    use Bivio::Biz::Model::File;
+    use Bivio::Biz::Model::RealmOwner;
+    my($realm) = Bivio::Biz::Model::RealmOwner->new();
+    my($realm_id) = '';
+    while ($realms->next_row) {
+	# May have multiple administrators
+	next if $realm_id eq $realms->get('RealmOwner.realm_id');
+	my($realm_id) = $realms->get('RealmOwner.realm_id');
+	die('failed to load realm ', $realm_id)
+		unless $realm->unauth_load($realm_id);
+	Bivio::Biz::Model::File->create_initial($realm,
+		$realms->get('RealmUser.user_id'));
+    }
+
     return;
 }
 
