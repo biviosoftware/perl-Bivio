@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::ScriptOnly added
+  * Bivio::Type::Secret escapes magic
+  * Bivio::Biz::Model::UserCreateForm: deleted warning
+
+  Revision 1.38  2003/01/20 20:58:30  nagler
+  * Bivio::Biz::Model::UserCreateForm defaults email (ignore) and password (invalid)
+  * Bivio::SQL::ListSupport.select_value lets you override value in SQL
+    select statement.   Handy for creating min/max fields or subqueries.
+  * Bivio::Test::Request->setup_http preserves query/path_info if supplied.
+  * Bivio::UI::HTML::Widget::DateTime formats font dynamically (like String)
+  * Bivio::UI::HTML::Widget::FormButton.label allows override default label
+  * Bivio::UI::HTML::Widget::FormField.form_field_label can be set explicitly
+  * Bivio::UI::HTML::Widget::JavaScript->has_been_rendered returns true
+    if widget has been rendered in this request.
+  * Bivio::UI::HTML::Widget::JavaScript->escape_string escapes contents
+    of a single quoted JS string
+  * Bivio::UI::HTML::Widget::Link.event_handler added
+  * Bivio::UI::HTML::Widget::Table.column_want_error_widget allows
+    override of default value (based on form field type)
   * Bivio::UI::HTML::Widget::Text.is_read_only allows override of
     is_field_editable().
   * Bivio::DocBook::XML various formatting and functional programming changes
