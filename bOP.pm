@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::Release supports rpm proxy like LWP ($ENV{http_proxy})
+  * Bivio::UI::Widget::Director.control can be a nested widget value
+    (uses render_attr)
+
   Revision 1.68  2003/06/10 23:39:29  nagler
   * Bivio::Collection::Attributes->ancestral_get uses "exists" instead
     of "defined".  Was impossible to undef an attribute before.
