@@ -244,7 +244,8 @@ sub merge_http_log {
 		    'DieCode::MISSING_COOKIES',
 		    'client sent HTTP/1.1 request without hostname',
 		    'mod_ssl: SSL handshake timed out',
-		    'Invalid method in request',
+		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
+		    'mod_ssl: SSL handshake interrupted by system',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
