@@ -62,11 +62,11 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
-=head2 processRecord(string date, array_ref type, array_ref fields)
+=head2 process_record(string date, array_ref type, array_ref fields)
 
 Sample records:
 
@@ -79,7 +79,7 @@ TALX,18191,20010122,3,2
 
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $type, $fields) = @_;
     my($values) = {
         csi_id => Bivio::Data::CSI::Id->from_literal($fields->[1]),
@@ -95,7 +95,7 @@ sub processRecord {
 
 # _initialize()
 #
-# Register for record types to process
+# Register our record type
 #
 sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,

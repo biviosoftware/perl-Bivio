@@ -66,10 +66,8 @@ sub create {
     my($self, $new_values) = @_;
     my($req) = $self->get_request;
 
-    # Make sure instrument exists
     my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
     $instrument->load(csi_id => $new_values->{csi_id});
-    # Store a copy of the closing price in another model
     my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
     $valuation->create({
         instrument_id => $instrument->get('instrument_id'),
@@ -103,11 +101,11 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
-=head2 processRecord(string date, array_ref type, array_ref fields)
+=head2 process_record(string date, array_ref type, array_ref fields)
 
 Sample records:
 
@@ -116,7 +114,7 @@ EBAY,31850,53,53.25,51.3125,53.1875,52.3125,35732
 
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $type, $fields) = @_;
     my($csi_id) = Bivio::Data::CSI::Id->from_literal($fields->[1]);
     my($values) = {
@@ -149,7 +147,6 @@ sub update {
     # Lookup instrument ID
     my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
     $instrument->load(csi_id => $new_values->{csi_id});
-    # Update the closing price in another model
     my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
     $valuation->update({
         instrument_id => $instrument->get('instrument_id'),

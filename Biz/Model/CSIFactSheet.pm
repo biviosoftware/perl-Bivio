@@ -82,9 +82,9 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
 MSAMX,45945,A,MSDW STRAT ADV MOD PT A,MU,MUTUAL,+2,
 MBRHX,24527,D,Merrill Lynch Asset Builder Quality B,MU,MUTUAL,+2,MBRHX
@@ -92,7 +92,7 @@ PYGNX,36205,M,Payden Gnma Fd,MU,MUTUAL,+2,PYGNX
 
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $record_type, $fields) = @_;
     my($values) = {
         csi_id => Bivio::Data::CSI::Id->from_literal($fields->[1]),
@@ -125,6 +125,7 @@ sub _initialize {
 # _sync_instrument_models(self, hash_ref values, Bivio::Type::InstrumentType type)
 #
 # Given a CSI Id, try to load the instruments.
+# Rename ticker symbol when the instrument is deleted (ie became obsolete).
 #
 sub _sync_instrument_models {
     my($self, $values, $type) = @_;

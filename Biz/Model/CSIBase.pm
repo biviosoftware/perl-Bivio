@@ -107,7 +107,7 @@ sub handleRecord {
         $_RECORD_HANDLERS{$record_type} = $handler;
     }
     $record_type = [$record_type] if $error_correction;
-    $handler->processRecord($date, $record_type, $fields);
+    $handler->process_record($date, $record_type, $fields);
     return;
 }
 
@@ -127,8 +127,8 @@ sub internal_register_handler {
             Bivio::Die->die('Attempt to re-register record type ', $type,
                     ' with class ', $class);
         }
-        Bivio::Die->die('Missing ', $class, '::processRecord')
-                    unless $class->can('processRecord');
+        Bivio::Die->die('Missing ', $class, '::process_record')
+                    unless $class->can('process_record');
         $_RECORD_HANDLERS{$type} = $class;
     }
     return;

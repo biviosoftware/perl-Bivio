@@ -6,7 +6,7 @@ $Bivio::Biz::Model::CSIImport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/
 
 =head1 NAME
 
-Bivio::Biz::Model::CSIImport - records CSI data file updates
+Bivio::Biz::Model::CSIImport - record CSI data file updates
 
 =head1 SYNOPSIS
 
@@ -58,15 +58,17 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, string type, array_ref fields) : boolean
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+
+=head2 process_record(string date, array_ref type, array_ref fields)
 
 Process various non-essential records
 
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $type, $fields) = @_;
     if (ref($type) eq 'ARRAY') {
         # Is an error correction record
@@ -76,7 +78,7 @@ sub processRecord {
         # no-op
     }
     elsif ($type eq Bivio::Data::CSI::RecordType::TEXT_MESSAGE()) {
-        Bivio::IO::Alert->warn(join(',', @$fields));
+        Bivio::IO::Alert->info(join(',', @$fields));
     }
     elsif ($type eq Bivio::Data::CSI::RecordType::STOCK_EXCHANGE_STATISTICS()) {
         # no-op

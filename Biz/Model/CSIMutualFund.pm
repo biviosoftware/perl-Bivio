@@ -60,6 +60,7 @@ _initialize();
 =head2 create(hash_ref new_values) : Bivio::Biz::Model::CSIMutualFund
 
 Create a new record.
+Also create corresponding InstrumentValuation model record
 
 =cut
 
@@ -69,7 +70,6 @@ sub create {
     # Load instrument ID given a CSI ID
     my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
     $instrument->load(csi_id => $new_values->{csi_id});
-    # Create corresponding InstrumentValuation model record
     my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
     $valuation->create({
         instrument_id => $instrument->get('instrument_id'),
@@ -100,17 +100,17 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
-=head2 processRecord(string date, array_ref type, array_ref fields)
+=head2 process_record(string date, array_ref type, array_ref fields)
 
 INSEX,6069,8.8,9.2
 
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $type, $fields) = @_;
     my($csi_id) = Bivio::Data::CSI::Id->from_literal($fields->[1]);
     my($values) = {
@@ -125,19 +125,18 @@ sub processRecord {
 
 =for html <a name="update"></a>
 
-=head2 update() : 
+=head2 update(hash_ref new_values) : Bivio::Biz::Model::CSIMutualFund
 
-
+Also update corresponding InstrumentValuation model record
 
 =cut
 
 sub update {
     my($self, $new_values) = @_;
     my($req) = $self->get_request;
-    # Load instrument ID given a CSI ID
+    # Load instrument ID from the given CSI ID
     my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
     $instrument->load(csi_id => $new_values->{csi_id});
-    # Update corresponding InstrumentValuation model record
     my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
     $valuation->update({
         instrument_id => $instrument->get('instrument_id'),
@@ -151,7 +150,7 @@ sub update {
 
 # _initialize()
 #
-# Register record types to process
+# Register our record type
 #
 sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,

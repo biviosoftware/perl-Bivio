@@ -26,11 +26,12 @@ use Bivio::Biz::Model::CSIBase;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::CSIDistribution> keep dividend and capital gains
+C<Bivio::Biz::Model::CSIDistribution> keeps dividend and capital gains
 
 =cut
 
 #=IMPORTS
+use Bivio::Data::CSI::DistributionType;
 use Bivio::Data::CSI::Id;
 use Bivio::Data::CSI::Quote;
 
@@ -63,11 +64,11 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="processRecord"></a>
+=for html <a name="process_record"></a>
 
-=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+=head2 process_record(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
-=head2 processRecord(string date, array_ref type, array_ref fields)
+=head2 process_record(string date, array_ref type, array_ref fields)
 
 Sample records:
 
@@ -77,12 +78,14 @@ ACMOX,35495,20001130,.030,.000
 ABEIX,35537,20001121,.021,.000
 BRMBX,35547,20001113,.000,10.076
 
+Create a separate entry for dividends and capital gains.
+The capital gains field can be missing.
+
 =cut
 
-sub processRecord {
+sub process_record {
     my($self, $date, $type, $fields) = @_;
     my($dividend) = Bivio::Data::CSI::Quote->from_literal($fields->[3]);
-    my($cap_gain) = Bivio::Data::CSI::Quote->from_literal($fields->[4]);
     my($values) = {
         csi_id => Bivio::Data::CSI::Id->from_literal($fields->[1]),
         distribution_date => Bivio::Type::Date->from_literal($date),
@@ -90,7 +93,7 @@ sub processRecord {
         amount => $dividend,
     };
     $self->create_or_update($values, $type) if $dividend > 0.0;
-    # The last field can be missing, so check for defined
+    my($cap_gain) = Bivio::Data::CSI::Quote->from_literal($fields->[4]);
     if (defined($cap_gain) && $cap_gain > 0.0) {
         $values->{amount_type}
                 = Bivio::Data::CSI::DistributionType::CAPITAL_GAINS();
