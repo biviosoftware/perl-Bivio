@@ -265,6 +265,29 @@ sub get_form_action {
     return;
 }
 
+=for html <a name="get_form_by_field_name"></a>
+
+=head2 get_form_by_field_name(string $match_name) : string
+
+Returns the name of the form containing the field name passed in.  Dies if no
+form contains that string.
+
+=cut
+
+sub get_form_by_field_name {
+    my($self, $match_name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    
+    foreach my $form (@{$fields->{form_list}}) {
+	_trace("Form is $form") if $_TRACE;
+	my($form_fields) = $self->list_public_fields($form);
+	foreach my $field_name (keys(%{$form_fields})) {
+	    return $form if ($field_name eq $match_name);
+	}
+    }
+    return;  #returns undef if hasn't already returned
+}
+
 =for html <a name="get_form_method"></a>
 
 =head2 get_form_method(Bivio::Test::HTMLAnalyzer self, string name) : string
