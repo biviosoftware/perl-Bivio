@@ -682,26 +682,11 @@ sub _has_transfer_of_interest {
 # Returns 1 if the club meets the three requirements needed to avoid
 # filling out the Scheduls L, M-1 and M-2.
 #
-# Are total receipts < $ 250,000
-# Are club assets < $ 600,000
-# Returned by due date (assumed true)
-#
 sub _meets_three_requirements {
     my($self, $date) = @_;
-    my($req) = $self->get_request;
-
-    my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
-    if (Bivio::Type::Amount->compare($income->get('total_income'),
-	    '250000') > 0) {
-	return 0;
-    }
-
-    my($realm) = $req->get('auth_realm')->get('owner');
-    if (Bivio::Type::Amount->compare($realm->get_value($date),
-	    '600000') > 0) {
-	return 0;
-    }
-    return 1;
+    return Bivio::Biz::Accounting::Tax->meets_three_requirements(
+	    $self->get_request->get('auth_realm')->get('owner'),
+	    $date);
 }
 
 =head1 COPYRIGHT
