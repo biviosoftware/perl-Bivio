@@ -648,7 +648,7 @@ sub get_unit_value {
 
     my($units, $value) = _get_units_and_value($self, $date, 1);
     return DEFAULT_UNIT_VALUE() if $units == 0 || $value == 0;
-    return Bivio::Type::Amount->div($units, $value);
+    return Bivio::Type::Amount->div($value, $units);
 }
 
 =for html <a name="get_units"></a>
