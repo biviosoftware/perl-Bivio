@@ -1197,7 +1197,7 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/edit/member/email
         Bivio::Biz::Model::ClubUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_real_member
+        Bivio::Biz::Action::TargetRealm->execute_this_online_member
         Bivio::Biz::Model::EmailForm
         Bivio::UI::HTML::Realm::EditEmail
         next=CLUB_ADMIN_USER_DETAIL
@@ -2442,7 +2442,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::Entry->execute_load_parent
         Bivio::Biz::Model::MemberEntry->execute_load_parent
-        Bivio::Biz::Model::MemberWithdrawalInfo->execute_load_all
+        Bivio::Biz::Model::MemberWithdrawalInfoList->execute_load_all
         Bivio::UI::HTML::Club::MemberWithdrawalReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
         help=member-withdrawal-report
@@ -3030,7 +3030,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::ClubUserList->execute_task_ok
-        Bivio::Biz::Model::TakeOfflineRealmUser
+        Bivio::Biz::Model::TakeOfflineForm
         Bivio::UI::HTML::Club::TakeOfflineUser
         next=CLUB_ADMIN_USER_LIST
         help=taking-offline
@@ -3188,7 +3188,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::ClubUserList->execute_load_target_as_this
         Bivio::Biz::Model::ClubUserList->execute_task_ok
-        Bivio::Biz::Model::TakeOfflineRealmUser
+        Bivio::Biz::Model::TakeOfflineForm
         Bivio::UI::HTML::Club::TakeOfflineUser
         next=CLUB_ADMIN_SELF_DISSOCIATE_DONE
         help=taking-offline
