@@ -26,9 +26,9 @@ use Bivio::Type::String;
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::Secret> encrypts its values before storing in the DB.
-The key is prompted at program startup if the configuration param
-I<prompt> is set to true.
+C<Bivio::Type::Secret> encrypts its values before storing in the DB.  The key
+is prompted if the configuration param I<prompt> is set to true.  Prompting at
+program startup if $ENV{MOD_PERL} is set or at first use if not.
 
 Database fields must be VARCHAR(4000) to allow for encryption expansion.
 
@@ -41,6 +41,7 @@ that the user enters.
 use Bivio::TypeError;
 use Bivio::Die;
 use Bivio::IO::Config;
+use Bivio::IO::TTY;
 use Crypt::CBC;
 
 #=VARIABLES
@@ -48,11 +49,13 @@ use Crypt::CBC;
 # decryption worked.
 my($_MAGIC) = 'BWN';
 # Character we use to blank out a word
-my($_FILL) = 'X';
+my($_FILL) = '*';
+# Before initialization (_init_cipher()) is set to key
 my($_CIPHER) = undef;
+my($_PROMPT) = 0;
 Bivio::IO::Config->register({
     key => Bivio::IO::Config->REQUIRED,
-    prompt => 0,
+    prompt => $_PROMPT,
 });
 
 =head1 METHODS
@@ -104,37 +107,52 @@ Do we need to prompt for a passphrase to decrypt I<key>?
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    my($key) = $cfg->{key};
-    return unless !$cfg->{prompt} || ($key = _decrypt_key($cfg));
-    $_CIPHER = Crypt::CBC->new($key, 'IDEA');
+    $_CIPHER = $cfg->{key};
+#TODO: Need a way to compute which programs need to decrypt the key.
+    $_PROMPT = $cfg->{prompt};
+    _init_cipher() if $ENV{MOD_PERL};
     return;
 }
 
-=for html <a name="to_literal"></a>
+=for html <a name="is_secure_data"></a>
 
-=head2 static to_literal(string value) : value
+=head2 is_secure_data() : boolean
 
-Converts to a invalid string which shows the last bit of the
-Secret, but nothing more.  Shows the last N chars of I<value> unless it
-is_password iwc it shows no chars.  N is selected dynamically
-based on the length of I<value>
+All secrets must be displayed/managed in a secure context.
 
 =cut
 
-sub to_literal {
-    my($proto, $value) = @_;
-    return '' unless defined($value) && length($value);
-
-    # It's important that this transform be repeatable.  The value will
-    # pass through to_literal several times in the event of form errors.
-    return length($value) x $_FILL if $proto->is_password;
-
-    # Show at most 4 chars of the real value.  If < 8 chars total,
-    # shows half the chars (rounding down).
-    my($len) = length($value) - 4;
-    $len = int((length($value) + 1) / 2) if $len < 4;
-    return $_FILL x $len.substr($value, $len);
+sub is_secure_data {
+    return 1;
 }
+
+#TODO: This doesn't work
+#
+#=for html <a name="to_html"></a>
+#
+#=head2 static to_html(string value) : value
+#
+#Converts to a invalid string which shows the last bit of the
+#Secret, but nothing more.  Shows the last N chars of I<value> unless it
+#is_password iwc it shows no chars.  N is selected dynamically
+#based on the length of I<value>
+#
+#=cut
+#
+#sub to_html {
+#    my($proto, $value) = @_;
+#    return '' unless defined($value) && length($value);
+#
+#    # It's important that this transform be repeatable.  The value will
+#    # pass through to_html several times in the event of form errors.
+#    return length($value) x $_FILL if $proto->is_password;
+#
+#    # Show at most 4 chars of the real value.  If < 8 chars total,
+#    # shows half the chars (rounding down).
+#    my($len) = length($value) - 4;
+#    $len = int((length($value) + 1) / 2) if $len < 4;
+#    return Bivio::HTML->escape($_FILL x $len.substr($value, $len));
+#}
 
 =for html <a name="to_sql_param"></a>
 
@@ -153,24 +171,44 @@ sub to_sql_param {
     return $_CIPHER->encrypt_hex($_MAGIC.$value.$_MAGIC.time);
 }
 
-=for html <a name="value_was_changed"></a>
-
-=head2 static value_has_changed(string old, string new) : boolean
-
-I<old> is a value from the database.  I<new> is a value which has passed
-through L<to_literal|"to_literal">.  I<old> is converted to a literal and the
-results compared.  If there is no difference, it is assumed that I<new> is not
-different and the field doesn't need to be updated.
-
-=cut
-
-sub value_has_changed {
-    my($proto, $old, $new) = @_;
-    $old = $proto->to_literal($old);
-    return 1 unless defined($old) == defined($new);
-    return 0 unless defined($old);
-    return $old eq $new ? 1 : 0;
-}
+#TODO: This code was related to using to_literal as a secret rendering
+#      section of code.  It's not right.
+#=for html <a name="value_was_changed"></a>
+#
+#=head2 static value_has_changed(string old, string new) : boolean
+#
+#I<old> is a value from the database.  I<new> is a value which has passed
+#through L<to_literal|"to_literal">.  I<old> is converted to a literal and the
+#results compared.  If there is no difference, it is assumed that I<new> is not
+#different and the field doesn't need to be updated.
+#
+#=cut
+#
+#sub value_has_changed {
+#    my($proto, $old, $new) = @_;
+#    $old = $proto->to_literal($old);
+#    return 1 unless defined($old) == defined($new);
+#    return 0 unless defined($old);
+#    return $old eq $new ? 1 : 0;
+#}
+#
+#=for html <a name="value_is_blanked"></a>
+#
+#=head2 value_is_blanked(string value) : boolean
+#
+#Returns true if I<value> is blanked out with the fill character
+#and I<probably> hasn't been modified.  Should be used by subclasses
+#which need to do validation in I<from_literal>.
+#
+#=cut
+#
+#sub value_is_blanked {
+#    my($proto, $value) = @_;
+#    return 0 unless length($value);
+#
+#    # If there is no transformation, is likely to be blanked.
+#    return $proto->to_literal($value) eq $value ? 1 : 0;
+#}
 
 #=PRIVATE METHODS
 
@@ -179,20 +217,21 @@ sub value_has_changed {
 # If cypher doesn't exist, blows up.
 #
 sub _assert_cipher {
-    return if $_CIPHER;
+    return if ref($_CIPHER) || _init_cipher();
     Bivio::Die->throw('CONFIG_ERROR',
 	    {entity => 'key', class => __PACKAGE__,
 	    message => 'no cipher configured'});
     # DOES NOT RETURN
 }
 
-# _decrypt_key(hash_ref cfg) : string
+# _decrypt_key(string key_in) : string
 #
 # Returns the key or undef.
 #
 sub _decrypt_key {
-    my($cfg) = @_;
+    my($key_in) = @_;
     $_CIPHER = undef;
+
     my($p) = Bivio::IO::TTY->read_password(__PACKAGE__.' passphrase: ');
     unless (defined($p)) {
 	Bivio::IO::Alert->warn('unable to open /dev/tty for key');
@@ -201,16 +240,30 @@ sub _decrypt_key {
 
     # Use this module to decrypt the key.  Protect against die, so
     # $_CIPHER can be reset.
-    my($key);
-    Bivio::Die->eval(
+    my($key_out) = Bivio::Die->eval(
 	    sub {
 		$_CIPHER = Crypt::CBC->new($p, 'IDEA');
-		$key = __PACKAGE__->from_sql_column($cfg->{key});
-		return;
+		return __PACKAGE__->from_sql_column($key_in);
 	    });
     $_CIPHER = undef;
-    Bivio::IO::Alert->warn('unable to decrypt key in config');
-    return $key;
+    Bivio::IO::Alert->warn('unable to decrypt key in config: ', $@)
+		if $@;
+    return $key_out;
+}
+
+# _init_cipher() : boolean
+#
+# Initializes the cipher.
+#
+sub _init_cipher {
+    # If no key, then blow up.
+    return 0 unless defined($_CIPHER);
+    my($key) = $_CIPHER;
+    $_CIPHER = undef;
+    $key = _decrypt_key($key) if $_PROMPT;
+    return 0 unless $key;
+    $_CIPHER = Crypt::CBC->new($key, 'IDEA');
+    return 1;
 }
 
 =head1 COPYRIGHT
