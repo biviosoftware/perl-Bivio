@@ -6,7 +6,7 @@
 #
 
 DB_LOGIN=${1:-bivio/bivio}
-DB_NAME=${2:-SOC}
+DB_NAME=${2:-d1b_SOC}
 BACKUP_HOST=${3:-s2b}
 TRANSFER_HOST=${4:-locker}
 REQNG_HOST=${5:-s1b}
