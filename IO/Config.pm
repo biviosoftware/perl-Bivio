@@ -167,9 +167,12 @@ sub REQUIRED {
 # This is the first module to initialize.  Don't import anything that
 # might import other bivio modules.
 # use Bivio::BConf;
+use File::Basename ();
+use File::Spec ();
 
 #=VARIABLES
 my($_PKG) = __PACKAGE__;
+my($_BCONF) = undef;
 # The configuration read off disk or passed in
 my($_ACTUAL) = {};
 # List of packages registered
@@ -183,6 +186,38 @@ _initialize(defined(@main::ARGV) ? \@main::ARGV : []);
 =head1 METHODS
 
 =cut
+
+=for html <a name="bconf_dir_hashes"></a>
+
+=head2 bconf_dir_hashes() : array
+
+Returns list of hashes from bconf dir in sorted order.
+
+=cut
+
+sub bconf_dir_hashes {
+    my($proto) = @_;
+    return map({
+	my($file) = $_;
+	my($data) = do($file) || die($@);
+	die($file, ': did not return a hash_ref')
+	    unless ref($data) eq 'HASH';
+	$data;
+    } sort(<@{[_bconf_dir($proto)]}/*.bconf>));
+}
+
+=for html <a name="bconf_file"></a>
+
+=head2 static bconf_file() : string
+
+Returns the bconf_file used by this module during initialization.
+It is available during initialization, i.e., in the I<bconf_file> itself.
+
+=cut
+
+sub bconf_file {
+    return $_BCONF;
+}
 
 =for html <a name="get"></a>
 
@@ -400,6 +435,24 @@ sub merge {
     return $result;
 }
 
+=for html <a name="merge_list"></a>
+
+=head2 merge_list(hash_ref custom, ..., hash_ref defaults) : hash_ref
+
+Returns a merge by applying any number of I<custom> values to I<defaults>.
+Calls L<merge|"merge"> from right to left.
+
+=cut
+
+sub merge_list {
+    my($proto, @cfg) = @_;
+    my($res) = {};
+    foreach my $c (reverse(@cfg)) {
+	$res = $proto->merge($c, $res);
+    }
+    return $res;
+}
+
 
 =for html <a name="register"></a>
 
@@ -485,6 +538,19 @@ sub _actual_changed {
     return;
 }
 
+# _bconf_dir(proto) : string_ref
+#
+# Returns the bconf.d directory relative to the file that was loaded.
+#
+sub _bconf_dir {
+    return File::Spec->catfile(
+	File::Basename::dirname(shift->bconf_file), 'bconf.d');
+}
+
+# _get_pkg(string pkg) : hash_ref
+#
+# Returns the config for pkg
+#
 sub _get_pkg {
     my($pkg) = @_;
     $_CONFIGURED{$pkg} && return $_ACTUAL->{$pkg};
@@ -569,32 +635,35 @@ sub _initialize {
     # If we are setuid or setgid, then don't _initialize from
     # environment variables or files in the current directory.
     # /etc/bivio.bconf is last resort if the file doesn't exist.
-    my($file) = $ENV{'BCONF'};
-    if ($is_setuid && $file) {
-	warn("Ignoring \$BCONF while running setuid");
-	$file = undef;
+    $_BCONF = $ENV{BCONF};
+    if ($is_setuid && defined($_BCONF)) {
+	warn('Ignoring $BCONF while running setuid');
+	$_BCONF = undef;
     }
-    unless (defined($file) && -f $file && -r $file) {
-	$file = '/etc/bivio.bconf' if -r '/etc/bivio.bconf';
+    unless (defined($_BCONF) && -f $_BCONF && -r $_BCONF) {
+	$_BCONF = '/etc/bivio.bconf'
+	    if -r '/etc/bivio.bconf';
     }
-    if (defined($file)) {
-	$_ACTUAL = do($file);
+    if (defined($_BCONF)) {
+	$_BCONF = File::Spec->rel2abs($_BCONF);
+	$_ACTUAL = do($_BCONF);
     }
     else {
 	# If there's no configuration, this will be {} as init'd above
 	# We don't do a eval with {}, because we want the use to happen
 	# dynamically.
-	eval '
+	eval('
 	    use Bivio::BConf;
 	    $_ACTUAL = Bivio::BConf->merge({});
-	';
-	$file = 'Bivio::BConf';
+	');
+	$_BCONF = File::Spec->rel2abs($INC{'Bivio/BConf.pm'});
     }
-    die("$file error: ", $@ || 'Must return hash ref')
+    die("$_BCONF error: ", $@ || 'Must return hash ref')
 	unless ref($_ACTUAL) eq 'HASH';
-    ($_ACTUAL->{$_PKG} ||= {})->{bconf_file} = $file;
+    ($_ACTUAL->{$_PKG} ||= {})->{bconf_file} = $_BCONF;
     # Only process arguments in not_setuid case
-    _process_argv($_ACTUAL, $argv) unless $is_setuid;
+    _process_argv($_ACTUAL, $argv)
+	unless $is_setuid;
     _actual_changed();
     return;
 }
