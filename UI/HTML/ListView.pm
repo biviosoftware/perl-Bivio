@@ -2,8 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::ListView;
 use strict;
-use Data::Dumper;
-use Bivio::UI::StringRenderer();
 $Bivio::UI::HTML::ListView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -23,6 +21,7 @@ L<Bivio::UI::View>
 
 =cut
 
+use Bivio::UI::View;
 @Bivio::UI::HTML::ListView::ISA = qw(Bivio::UI::View);
 
 =head1 DESCRIPTION
@@ -37,6 +36,10 @@ C<Bivio::UI::HTML::ListView>
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+
+#=IMPORTS
+use Data::Dumper;
+use Bivio::UI::StringRenderer;
 
 =head1 FACTORIES
 
@@ -201,7 +204,7 @@ sub render_body {
 	    $req->print('<td align=left><small>');
 	    $fields->{renderer}->[$col]->render(
 		    $model->get_value_at($row, $col), $req);
-	    $req->print('</small></td>');
+	    $req->print('&nbsp;</small></td>');
 	}
 	$req->print('</tr>');
     }
