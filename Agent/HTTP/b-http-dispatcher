@@ -83,6 +83,7 @@ sub main {
 	-x $httpd && ($_HTTPD = $httpd);
     }
     if ($execute) {
+        -f 'httpd.pid' && kill('TERM', `cat httpd.pid`);
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
 	system('cvs checkout html; cd html/societas; make INSTALLDIR=../')
 		unless -f 'html/index.html';
