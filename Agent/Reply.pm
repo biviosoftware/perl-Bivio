@@ -89,6 +89,20 @@ Sends the buffered reply data.
 sub send {
 }
 
+=for html <a name="set_output"></a>
+
+=head2 set_output(scalar_ref value)
+
+=head2 set_output(io_handle file)
+
+Sets the output to the file.  Output type must be set.
+I<file> or I<value> will be owned by this method.
+
+=cut
+
+sub set_output {
+}
+
 =for html <a name="set_output_type"></a>
 
 =head2 set_output_type(string type)
