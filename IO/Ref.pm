@@ -124,7 +124,7 @@ sub to_short_string {
 
 =for html <a name="to_string"></a>
 
-=head2 static to_string(any ref) : string_ref
+=head2 static to_string(any ref, integer max_depth) : string_ref
 
 Converts I<ref> into a string_ref.  The string is formatted "tersely"
 using C<Data::Dumper>.
@@ -132,11 +132,13 @@ using C<Data::Dumper>.
 =cut
 
 sub to_string {
-    my(undef, $ref) = @_;
+    my(undef, $ref, $max_depth) = @_;
     my($dd) = Data::Dumper->new([$ref]);
     $dd->Indent(1);
     $dd->Terse(1);
     $dd->Deepcopy(1);
+    $dd->Maxdepth($max_depth)
+	if defined $max_depth;
     my($res) = $dd->Dumpxs();
     return \$res;
 }

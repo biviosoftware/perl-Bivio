@@ -121,6 +121,11 @@ Names of I<visible> columns.
 
 =over 4
 
+=item default_value : any [undef]
+
+Specifies the default value.  Currently doesn't handle reference types
+properly.
+
 =item in_list : boolean
 
 True if the field is repeatable.
@@ -304,7 +309,6 @@ sub _init_column_classes {
 	    push(@{$attrs->{file_fields}}, $col);
 	}
 	$attrs->{has_secure_data} = 1 if $col->{type}->is_secure_data;
-
 	# Defaults to false and overwritten below
 	$col->{is_hidden} = 0;
     }

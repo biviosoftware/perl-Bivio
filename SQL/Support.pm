@@ -541,7 +541,8 @@ sub _init_column_from_hash {
 
     # Syntax checked in FormSupport.  Not used by other Model types.
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
-
+    $col->{default_value} = exists($decl->{default_value})
+        ? $decl->{default_value} : undef;
     _add_to_class($attrs, $class, $col);
     return $col;
 }
