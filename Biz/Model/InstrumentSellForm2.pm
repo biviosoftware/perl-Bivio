@@ -157,6 +157,11 @@ sub execute_input {
 	    $realm_inst->get('realm_instrument_id'),
 	    $properties->{'RealmTransaction.date_time'},
 	    $properties->{'RealmInstrumentValuation.price_per_share'});
+
+    # need to update units after this date
+    my($realm) = $req->get('auth_realm')->get('owner');
+    $realm->audit_units($properties->{'RealmTransaction.date_time'});
+
     return;
 }
 
