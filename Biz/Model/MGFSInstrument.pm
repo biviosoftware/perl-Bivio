@@ -64,8 +64,8 @@ sub create {
 	fed_tax_free => 0,
     });
     $new_values->{instrument_id} = $_INSTRUMENT->get('instrument_id');
-
-    return $self->SUPER::create($new_values);
+    $self->SUPER::create($new_values);
+    return;
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>
@@ -79,18 +79,10 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    qspvsd => [0, 1],
-	    qcpvsd => [0, 1],
-	    indb01 => [1, 1],
-	    chgdb01 => [1, 1],
-	    changes => [2, 1],
+	    indb01 => [0, 0],
+	    chgdb01 => [0, 1],
 	},
 	format => [
-	    {
-		mg_id => ['ID', 4, 8],
-		name => ['CHAR', 12, 80],
-		symbol => ['CHAR', 92, 5],
-	    },
 	    {
 		# skip sign on ID, always '+'
 		mg_id => ['ID', 44, 8],
