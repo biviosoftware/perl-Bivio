@@ -27,8 +27,6 @@ to which clubs she belongs.  Redirects request
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::Club;
-use Bivio::Auth::Realm::User;
 use Bivio::Biz::Model::UserClubList;
 use Bivio::IO::Trace;
 
