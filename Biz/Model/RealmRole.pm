@@ -138,13 +138,6 @@ sub internal_initialize {
 
 #=PRIVATE METHODS
 
-# _clone_realm(Bivio::Auth::Realm new)
-#
-# Clone the permission set for all roles. Check realm types are identical.
-#
-sub _clone_realm {
-}
-
 =head1 COPYRIGHT
 
 Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
