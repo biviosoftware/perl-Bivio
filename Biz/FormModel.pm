@@ -1325,7 +1325,8 @@ sub _parse_context {
     }
     else {
 	# OK, to not have incoming context unless have it from query
-	_initialize_context($self) unless $fields->{context};
+	_initialize_context($self, $self->get_request)
+		unless $fields->{context};
     }
     _trace('context: ', $fields->{context}) if $_TRACE;
     return;
