@@ -263,18 +263,23 @@ sub from_extension {
 	    ? $_EXT_TO_TYPE{$ext} : 'application/octet-stream';
 }
 
-=for html <a name="get_type_info"></a>
+=for html <a name="to_extension"></a>
 
-=head2 get_type_info(string type) : string
+=head2 to_extension(string content-type) : string
 
-Looks up type in _TYPE_TO_EXT table and returns
-undef if not found or the info string (suffix[,suffix]:description) otherwise.
+=head2 to_extension(string content-type) : array
+
+Looks up content-type and returns one or more possible extensions.
+Returns undef if content-type is unknown.
 
 =cut
 
-sub get_type_info {
+sub to_extension {
     my(undef, $type) = @_;
-    return exists($_TYPE_TO_EXT{$type}) ? $_TYPE_TO_EXT{$type} : undef;
+    return undef unless exists($_TYPE_TO_EXT{$type}) &&
+            $_TYPE_TO_EXT{$type} =~ /^([^:]+)/;
+    my(@ext) = split(',', $1);
+    return wantarray ? @ext : $ext[0];
 }
 
 #=PRIVATE METHODS

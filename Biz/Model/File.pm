@@ -424,9 +424,8 @@ sub get_mime_filename {
     # Use 'download.bin' in case the file type is unknown
     my($ct) = $self->get_mime_content_type;
     return 'download.bin' unless defined($ct);
-    my($info) = Bivio::MIME::Type->get_type_info($ct);
-    return 'download.bin' unless defined($info) && $info =~ /^([^,:]+)/;
-    return 'download.' . $1;
+    my($ext) = Bivio::MIME::Type->to_extension($ct);
+    return 'download.' . defined($ext) ? $1 : 'bin';
 }
 
 =for html <a name="internal_initialize"></a>
