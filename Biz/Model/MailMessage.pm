@@ -138,9 +138,6 @@ sub create {
 #return;
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
-    if($msg){
-	&_trace('msg is not null when we call ctor MimeDecode.') if $_TRACE;
-    }
     my($req) = $self->unsafe_get_request;
     my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT, $req);
     $mimeparser->parse_and_store();
