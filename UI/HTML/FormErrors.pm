@@ -211,6 +211,18 @@ sub _lookup {
     return $res;
 }
 
+# _mail_to(any source, string email, string subject) : string
+#
+# Returns a mailto href.
+#
+sub _mail_to {
+    my($source, $email, $subject) = @_;
+    return '<a href="'
+        .$source->get_request->format_mailto($email, $subject).'">'
+        .$email.'</a>';
+    return;
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
