@@ -158,18 +158,8 @@ Other Models can declare a method of the form:
 
 sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    my($name) = $model->get($model_prefix.'name');
-
-    if (Bivio::Type::RealmName->is_offline($name)) {
-	if ($name =~ /^=\(/o) {
-	    # show a withdrawn offline name in ()
-	    $name =~ s/^=(\(\w+\))\d+/$1/;
-	}
-	else {
-	    $name = '';
-	}
-    }
-    return $name;
+    return Bivio::Type::RealmName->to_literal(
+	$model->get($model_prefix.'name'));
 }
 
 =for html <a name="format_uri"></a>
