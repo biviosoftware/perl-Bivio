@@ -43,6 +43,10 @@ The context is how we got to this form, e.g. from another form and
 the contents of that form.  Forms with context return to the uri
 specified in the context on "ok" completion.
 
+A query may have a context as well.  The form's context overrides
+the query's context.  The query's context is usually only valid
+for empty forms.
+
 If the context contains a form, it may be manipulated with
 L<unsafe_get_context_field|"unsafe_get_context_field"> and
 L<put_context_fields|"put_context_fields">.
@@ -255,10 +259,25 @@ sub execute {
 
     my($input) = $req->unsafe_get('form');
 
+    # Parse context from the query string, if any
+    my($query) = $req->unsafe_get('query');
+    if ($query && $query->{fc}) {
+	# If there is an incoming context, must be syntactically valid.
+	my($c, $e) = Bivio::Type::SecretAny->from_literal($query->{fc});
+	$self->die(Bivio::DieCode::CORRUPT_QUERY(),
+		{field => 'fc', actual => $query->{fc},
+		    error => $e}) unless $c;
+	$fields->{context} = $c;
+	# We don't want it to appear in any more URIs now that we can
+	# store it in a form.
+	delete($query->{fc});
+	_trace('context: ', $c) if $_TRACE;
+    }
+
     # User didn't input anything, render blank form
     unless ($input) {
 	$fields->{literals} = {};
-	_initialize_context($self, $req);
+	_initialize_context($self, $req) unless $fields->{context};
 	$self->execute_empty;
 	return;
     }
@@ -382,9 +401,24 @@ sub execute_unwound {
     return;
 }
 
+=for html <a name="format_context_as_query"></a>
+
+=head2 static format_context_as_query(Bivio::Agent::Request req) : string
+
+Calls L<get_context_from_request|"get_context_from_request"> and
+formats as a query string value.
+
+=cut
+
+sub format_context_as_query {
+    my($self, $req) = @_;
+    return 'fc='.Bivio::Type::SecretAny->to_literal(
+	    $self->get_context_from_request($req));
+}
+
 =for html <a name="get_context_from_request"></a>
 
-=head2 static get_context_from_request(Bivio::Agent::Request req) : hash_ref
+=head2 static get_context_from_request(Bivio::Agent::Request hash_ref) : req
 
 Returns the context elements extracted from the request as hash_ref.
 If the form is I<redirecting> already, then the nested context
@@ -944,9 +978,11 @@ sub _parse_cols {
 #
 sub _parse_context {
     my($self, $form) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     if ($form->{context}) {
 	# If there is an incoming context, must be syntactically valid.
+	# Overwrites the query context, if any
 	my($c, $e) = Bivio::Type::SecretAny->from_literal($form->{context});
 	$self->die(Bivio::DieCode::CORRUPT_FORM(),
 		{field => 'context', actual => $form->{context},
@@ -954,10 +990,10 @@ sub _parse_context {
 	$self->{$_PACKAGE}->{context} = $c;
     }
     else {
-	# OK, to not have incoming context.
-	_initialize_context($self);
+	# OK, to not have incoming context unless have it from query
+	_initialize_context($self) unless $fields->{context};
     }
-    _trace('context: ', $self->{$_PACKAGE}->{context}) if $_TRACE;
+    _trace('context: ', $fields->{context}) if $_TRACE;
     return;
 }
 
@@ -985,6 +1021,10 @@ sub _parse_submit {
     # Cancel or other doesn't parse form, but allows the subclass
     # to do something on cancel, e.g. clear a cookie.
     _trace('cancel or other button: ', $value) if $_TRACE;
+
+#TODO: Use the context to return to what the user was doing.  May
+#      pop completely out of the context?  Problem is that for login
+#      it doesn't work right.
 
     my($req) = $self->get_request;
     $self->execute_other($value);
