@@ -207,6 +207,27 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="rename"></a>
+
+=head2 rename(string new_name)
+
+Renames the club and file server directories to the new name.
+
+=cut
+
+sub rename {
+    my($self, $new_name) = @_;
+
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    $realm->unauth_load(realm_id => $self->get('club_id'))
+	    || die("couldn't load realm from club");
+
+    # order is important here
+    Bivio::Biz::Model::MailMessage->rename_club($realm, $new_name);
+    $realm->update({name => $new_name});
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
