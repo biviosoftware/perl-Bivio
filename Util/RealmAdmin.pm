@@ -53,6 +53,7 @@ usage: b-realm-admin [options] command [args...]
 commands:
     create_user email display_name password [user_name] -- creates a new user
     delete_user -- deletes the user
+    invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user honorific -- adds user to realm
     leave_user -- adds user to realm
@@ -120,25 +121,32 @@ sub delete_user {
     return;
 }
 
+=for html <a name="invalidate_email"></a>
+
+=head2 invalidate_email()
+
+Invalidates the user's email address.
+
+=cut
+
+sub invalidate_email {
+    my($self) = @_;
+    _validate_user($self, 'Invalidate Email')
+        ->get_model('User')->invalidate_email;
+    return;
+}
+
 =for html <a name="invalidate_password"></a>
 
-=head2 invalidate_password() : 
+=head2 invalidate_password()
 
 Invalidate the user's password.
 
 =cut
 
 sub invalidate_password {
-    my($self, $password) = @_;
-    my($req) = $self->get_request();
-    $self->usage_error("missing user")
-        unless $self->unsafe_get('user');
-    $self->are_you_sure('Invalidate Password For '
-	. $req->get_nested(qw(auth_user display_name))
-	. ' of '
-	. $req->get_nested(qw(auth_realm owner display_name))
-	. '?');
-    $req->get('auth_user')->invalidate_password();
+    my($self) = @_;
+    _validate_user($self, 'Invalidate Password')->invalidate_password;
     return;
 }
 
@@ -191,23 +199,34 @@ Changes a user's password.
 
 sub reset_password {
     my($self, $password) = @_;
-    my($req) = $self->get_request;
-    $self->usage_error("missing user")
-        unless $self->unsafe_get('user');
     $self->usage_error("missing new password")
         unless defined($password);
-    $self->are_you_sure('RESET PASSWORD FOR '
-	. $req->get_nested(qw(auth_user display_name))
-	. ' of '
-	. $req->get_nested(qw(auth_realm owner display_name))
-	. '?');
-    $req->get('auth_user')->update({
+    _validate_user($self, 'Reset Password')->update({
         password => Bivio::Type::Password->encrypt($password),
     });
     return;
 }
 
 #=PRIVATE SUBROUTINES
+
+# _validate_user(self, string message) : Bivio::Biz::Model::RealmOwner
+#
+# Ensures the user is present, displays the are_you_sure using the
+# specified message.
+# Returns the user's realm.
+#
+sub _validate_user {
+    my($self, $message) = @_;
+    my($req) = $self->get_request;
+    $self->usage_error("missing user")
+        unless $self->unsafe_get('user');
+    $self->are_you_sure($message . ' for '
+	. $req->get_nested(qw(auth_user display_name))
+	. ' of '
+	. $req->get_nested(qw(auth_realm owner display_name))
+	. '?');
+    return $req->get('auth_user');
+}
 
 =head1 COPYRIGHT
 
