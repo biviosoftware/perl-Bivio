@@ -237,15 +237,17 @@ my($_SELF) = __PACKAGE__->new({
                     link
             )],
 		   []);
+
+	    # Home page fonts don't scale
 	    $fc->group(home_login_field_label => ['size=xx-small']);
 	    $fc->group(home_login_site_header => ['bold']);
 	    $fc->group(home_date => ['size=large']);
-
-	    # Club Index doesn't scale
 	    $fc->group(club_index_today => ['size=small']);
 	    $fc->group(club_index_change_plus => ['size=x-small']);
 	    $fc->group(club_index_change_zero => ['size=x-small']);
 	    $fc->group(club_index_change_minus => ['size=x-small']);
+	    $fc->group(mail_home_list_cell => ['size=x-small']);
+	    $fc->group(mail_home_list_heading => ['size=x-small', 'bold']);
 	    return;
 	}
     },
@@ -274,6 +276,9 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(logo_widget => $fc->get_standard_logo);
 	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(page_widget => $fc->get_standard_page);
+	    $fc->group(mail_home_list_trez_talk =>
+		    $_W->load_and_new('MailHomeList',
+			    {realm_name => 'trez_talk'}));
 	    return;
 	},
     },
