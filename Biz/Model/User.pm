@@ -39,14 +39,10 @@ and delete interface to the C<user_t> table.
 =cut
 
 #=IMPORTS
-# also uses Email, RealmOwner models
-use Bivio::Auth::RealmType;
 use Bivio::Die;
-use Bivio::SQL::Connection;
 use Bivio::Type::Email;
 use Bivio::Type::Gender;
 use Bivio::Type::Location;
-use Bivio::Type::RealmName;
 
 #=VARIABLES
 
@@ -77,10 +73,10 @@ sub cascade_delete {
     $req->set_realm($realm);
 
     my($die) = Bivio::Die->catch(
-	    sub {
-		$self->SUPER::cascade_delete;
-		$realm->cascade_delete;
-	    });
+        sub {
+            $self->SUPER::cascade_delete;
+            $realm->cascade_delete;
+        });
 
     # restore previous auth realm
     $req->set_realm($old_auth_realm);
@@ -97,21 +93,19 @@ Does the work of L<format_last_first_middle|"format_last_first_middle">.
 =cut
 
 sub concat_last_first_middle {
-    my(undef, $ln, $fn, $mn) = @_;
+    my(undef, $last, $first, $middle) = @_;
 
     # We shown the last_name as "-" if not set.
-    if (defined($ln)) {
+    if (defined($last)) {
 	my($res) = undef;
-	return $ln unless defined($fn) || defined($mn);
-	$res = $ln.',';
-	$res .= ' '.$fn if defined($fn);
-	$res .= ' '.$mn if defined($mn);
+	return $last unless defined($first) || defined($middle);
+	$res = $last . ',';
+	$res .= ' ' . $first if defined($first);
+	$res .= ' ' . $middle if defined($middle);
 	return $res;
     }
-
-    return $fn.' '.$mn if defined($fn) && defined($mn);
-
-    return defined($fn) ? $fn : $mn;
+    return $first . ' ' . $middle if defined($first) && defined($middle);
+    return defined($first) ? $first : $middle;
 }
 
 =for html <a name="create"></a>
@@ -125,7 +119,7 @@ calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{gender} ||= Bivio::Type::Gender::UNKNOWN();
+    $values->{gender} ||= Bivio::Type::Gender->UNKNOWN;
     _compute_sorting_names($values);
     my($res) = $self->SUPER::create($values);
     _validate_names($self);
@@ -148,9 +142,10 @@ values are identical.>
 sub format_full_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($res) = '';
+
     foreach my $name ($model->unsafe_get($model_prefix.'first_name',
-	    $model_prefix.'middle_name', $model_prefix.'last_name')) {
-	$res .= $name.' ' if defined($name);
+        $model_prefix . 'middle_name', $model_prefix . 'last_name')) {
+	$res .= $name . ' ' if defined($name);
     }
     # Get rid of last ' '
     chop($res);
@@ -172,8 +167,8 @@ See L<format_name|"format_name"> for params.
 sub format_last_first_middle {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $proto->concat_last_first_middle($model->unsafe_get(
-	    $model_prefix.'last_name', $model_prefix.'first_name',
-	    $model_prefix.'middle_name'));
+        $model_prefix . 'last_name', $model_prefix . 'first_name',
+        $model_prefix . 'middle_name'));
 }
 
 =for html <a name="get_outgoing_emails"></a>
@@ -192,16 +187,13 @@ this user.
 
 sub get_outgoing_emails {
     my($self, $which) = @_;
-
-    # Load Email
-    $which ||= Bivio::Type::Location->HOME();
-    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
-    return undef unless $email->unauth_load(
-	    location => $which, realm_id => $self->get('user_id'));
-
+    my($email) = $self->new_other('Email');
+    return undef unless $email->unauth_load({
+        location => $which || Bivio::Type::Location->HOME,
+        realm_id => $self->get('user_id'),
+    });
     # Validate address
     return undef unless Bivio::Type::Email->is_valid($email->get('email'));
-
     return [$email->get('email')];
 }
 
@@ -243,18 +235,19 @@ Checks to see if already invalidated.
 
 sub invalidate_email {
     my($self) = @_;
-    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email')
-	    ->unauth_load_or_die(realm_id => $self->get('user_id'));
+    my($email) = $self->new_other('Email')->unauth_load_or_die({
+        realm_id => $self->get('user_id'),
+    });
     my($address) = $email->get('email');
-    my($prefix) = Bivio::Type::Email::INVALID_PREFIX();
+    my($prefix) = Bivio::Type::Email->INVALID_PREFIX;
     # Already invalidated?
     return if $address =~ /^\Q$prefix/o;
 
     # Nope, need to invalidate
-    my($other) = Bivio::Biz::Model->new($self->get_request, 'Email');
+    my($other) = $self->new_other('Email');
     my($i) = 0;
-    $i++ while $other->unauth_load({email => $prefix.$i.$address});
-    $email->update({email => $prefix.$i.$address});
+    $i++ while $other->unauth_load({email => $prefix . $i . $address});
+    $email->update({email => $prefix . $i . $address});
     return;
 }
 
@@ -302,12 +295,12 @@ sub _compute_sorting_names {
 	next unless exists($values->{$field});
 
 	if (defined($values->{$field}) && length($values->{$field})) {
-	    $values->{$field.'_sort'} = lc($values->{$field});
+	    $values->{$field . '_sort'} = lc($values->{$field});
 	}
 	else {
 	    # set both to undef
 	    $values->{$field} = undef;
-	    $values->{$field.'_sort'} = undef;
+	    $values->{$field . '_sort'} = undef;
 	}
     }
     return;
@@ -319,8 +312,9 @@ sub _compute_sorting_names {
 #
 sub _get_realm {
     my($self) = @_;
-    return Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
-	    ->unauth_load_or_die(realm_id => $self->get('user_id'));
+    return $self->new_other('RealmOwner')->unauth_load_or_die({
+        realm_id => $self->get('user_id'),
+    });
 }
 
 # _validate_names(self)
@@ -330,9 +324,9 @@ sub _get_realm {
 sub _validate_names {
     my($self) = @_;
     $self->throw_die('must have at least one of first, last, and middle names')
-	    unless defined($self->get('first_name'))
-		    || defined($self->get('middle_name'))
-			    || defined($self->get('last_name'));
+        unless defined($self->get('first_name'))
+            || defined($self->get('middle_name'))
+            || defined($self->get('last_name'));
     return;
 }
 
