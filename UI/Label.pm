@@ -259,6 +259,7 @@ _compile(
     CLUB_ADMIN_PUBLIC => ['Allow Public Access'],
     CLUB_ADMIN_PRIVATE => ['Close Public Access'],
     CLUB_COMMUNICATIONS_FILE_READ => ['Files'],
+    CLUB_COMMUNICATIONS_FILE_RENAME => ['Rename File'],
     CLUB_COMMUNICATIONS_MESSAGE_LIST => ['Mail'],
     CLUB_COMMUNICATIONS_MAIL_LIST => ['Mail'],
     CLUB_CREATE => ['Create Club Site'],
