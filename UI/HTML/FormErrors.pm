@@ -27,9 +27,9 @@ C<get_long_desc> on the L<Bivio::TypeError|Bivio::TypeError>.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model;
 use Bivio::Die;
 use Bivio::Util;
-use Bivio::Collection::SingletonMap;
 
 #=VARIABLES
 # form_class->field->error returns a scalar ref
@@ -117,8 +117,7 @@ sub _compile {
 
 	# Populate $map, validating down the hierarchy
 	foreach my $form (@forms) {
-	    ($form) = Bivio::Collection::SingletonMap->get(
-		    'Bivio::Biz::Model::'.$form) if $form;
+	    $form = Bivio::Biz::Model->get_instance($form) if $form;
 	    my($m1) = $map->{ref($form) || $form} ||= {};
 	    foreach my $field (@fields) {
 		$form->get($field) if $field && $form;
