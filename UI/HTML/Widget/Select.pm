@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Select;
 use strict;
 $Bivio::UI::HTML::Widget::Select::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::Select::VERSION;
 
 =head1 NAME
 
@@ -61,7 +62,15 @@ Make the selection read-only
 
 =item enum_sort : string ['get_name']
 
-The comparison method for an enum.
+The method on an enum which returns the value to compare in the sort.
+If I<as_int>, the sort will be numeric.  Otherwise, it will be
+string (cmp).
+
+=item enum_sort : code_ref
+
+Sort method to call.  Enums passed in I<left> and I<right> params,
+just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
+a sub call, not a method call, so no method or self is passed.
 
 =item field : string (required)
 
@@ -141,7 +150,7 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
-    $fields->{enum_sort} = $self->get_or_default('enum_sort', 'get_name');
+    $fields->{enum_sort} = _enum_sort($self);
 
     my($choices) = $self->get('choices');
     $fields->{list_source} = undef;
@@ -221,6 +230,41 @@ sub render {
 
 #=PRIVATE METHODS
 
+# _enum_sort(self) : code_ref
+#
+# Returns the sort method.
+#
+sub _enum_sort {
+    my($self) = @_;
+    my($enum_sort) = $self->get_or_default('enum_sort', 'get_name');
+    return $enum_sort if ref($enum_sort) eq 'CODE';
+    Bivio::Die->die($enum_sort, ': enum_sort method not implemented by Enum')
+		unless Bivio::Type::Enum->can($enum_sort);
+    return \&_enum_sort_by_int if $enum_sort eq 'as_int';
+    # Create a sub which will do the comparisons using $enum_sort method.
+    return eval(<<"EOF") || die($@);
+	sub {
+            my(\$left, \$right) = \@_;
+            # Always puts "0" first.
+	    return -1 if \$left->as_int == 0;
+	    return 1 if \$right->as_int == 0;
+	    return \$left->$enum_sort cmp \$right->$enum_sort;
+	}
+EOF
+}
+
+# _enum_sort_by_int(string left, string right) : int
+#
+# Always puts "0" first.  Sorts numerically.
+#
+sub _enum_sort_by_int {
+    my($left, $right) = @_;
+    # Always put "0" (unknown) first.
+    return -1 if $left->as_int == 0;
+    return 1 if $right->as_int == 0;
+    return $left->as_int <=> $right->as_int;
+}
+
 # _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum enum)
 #
 # Loads items from the enum choices attribute. Enum values are static
@@ -241,15 +285,8 @@ sub _load_items_from_enum_list {
     my($self, $list) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # Sort by method name
-    my($sort_method) = $fields->{enum_sort};
     my(@values) = sort {
-	# Always put "0" (unknown) first.
-	return -1 if $a->as_int == 0;
-	return 1 if $b->as_int == 0;
-	return $sort_method eq 'as_int'
-		? $a->$sort_method() <=> $b->$sort_method()
-		: $a->$sort_method() cmp $b->$sort_method();
+	&{$fields->{enum_sort}}($a, $b);
     } @$list;
 
     shift(@values) unless $self->get_or_default('show_unknown', 1);
@@ -317,7 +354,7 @@ sub _load_items_from_list {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
