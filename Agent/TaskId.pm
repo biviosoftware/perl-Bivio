@@ -1454,6 +1454,7 @@ my(@_CFG) = (
         %/admin/tools
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
+        Bivio::Biz::Model::LocalValuationYearList->execute_load_all
         Bivio::UI::HTML::Club::AdminTools
     )],
     [qw(
