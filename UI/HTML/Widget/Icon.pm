@@ -190,7 +190,7 @@ sub initialize {
 	});
 	my($text_ia) = $self->unsafe_get('text_ia');
 	if (defined($text_ia)) {
-	    my($font_ia) = $simple->ancestral_get('icon_font_ia',
+	    my($font_ia) = $self->ancestral_get('icon_font_ia',
 		    'icon_text_ia');
 	    $self->put(
 		undef_value => Bivio::UI::HTML::Widget::Join->new({
