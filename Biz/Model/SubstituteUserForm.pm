@@ -198,6 +198,15 @@ sub validate {
 	return if $owner->unauth_load(realm_id => $login,
 		realm_type => Bivio::Auth::RealmType::USER());
     }
+    elsif ($login =~ /^(\w+)-admin$/) {
+	# Login by first admin
+	if ($owner->unauth_load(name => $1,
+		realm_type => Bivio::Auth::RealmType::CLUB())) {
+	    return if $owner->unauth_load(realm_id =>
+		    Bivio::Biz::Model::RealmAdminList->get_first_admin($owner),
+		    realm_type => Bivio::Auth::RealmType::USER());
+	}
+    }
     else {
 	# Login by name
 	return if $owner->unauth_load(name => $login,
