@@ -73,7 +73,7 @@ my($_CLEAR_DOT) = {
     width => 1,
 };
 my($_MISSING) = '/missing-image';
-my($_FILE_SUFFIX_SEARCH_LIST) = ['.gif', '.jpg', '.jpeg'];
+my($_FILE_SUFFIX_SEARCH_LIST) = ['.gif', '.jpg', '.jpeg', '.png'];
 Bivio::IO::Config->register({
     uri => $_URI,
     missing_uri => $_MISSING,
@@ -206,7 +206,7 @@ sub get_width_as_html {
 URI of single pixel transparent gif.
 See L<get_clear_dot|"get_clear_dot">.
 
-=item file_suffix_search_list : array_ref [['.gif', '.jpg', '.jpeg']]
+=item file_suffix_search_list : array_ref [['.gif', '.jpg', '.jpeg', '.png']]
 
 Ordered list of file suffices to search for when trying to find an icon.
 Two icons cannot share the same base name, e.g. only one of
