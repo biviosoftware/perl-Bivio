@@ -1,3 +1,4 @@
-Browser->login();
+Login->execute();
+Browser->go_uri('/my-club-site');
 Browser->submit({'Select Site' => 'Ask Candis'});
-Browser->verify_uri('candis');
+Verify->uri('candis');
