@@ -1001,7 +1001,7 @@ sub _save_rpm_file {
     Bivio::Die->die("Missing rpm file $rpm_file") unless -f $rpm_file;
 
     $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
-    _system("chown $_CFG->{rpm_user}.$_CFG->{RPM_GROUP} $rpm_file", $output);
+    _system("chown $_CFG->{rpm_user}.$_CFG->{rpm_group} $rpm_file", $output);
     _system("cp -p $rpm_file $_CFG->{rpm_home_dir}", $output);
     return;
 }
