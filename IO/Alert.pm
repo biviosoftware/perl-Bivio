@@ -350,7 +350,7 @@ sub _format_string {
     # Don't let as_string calls crash;  Only call as_string on refs.
     if (ref($o) eq 'ARRAY') {
 	my($s, $v) = '[';
-	my($i) = 10;
+	my($i) = 20;
 	foreach $v (@$o) {
 	    $s .= _format_string_simple($v) .',';
 	    if (--$i <= 0) {
@@ -362,7 +362,7 @@ sub _format_string {
     }
     if (ref($o) eq 'HASH') {
 	my($s, $v) = '{';
-	my($i) = 10;
+	my($i) = 20;
 	foreach $v (sort(keys(%$o))) {
 	    $s .= _format_string_simple($v)
 		    .'=>'._format_string_simple($o->{$v}).',';
