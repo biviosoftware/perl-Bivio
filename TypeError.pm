@@ -645,6 +645,11 @@ __PACKAGE__->compile(
 	undef,
 	'the valuation date may not exceed the transaction date',
     ],
+    NAME_LIKE_FUND => [
+	74,
+	undef,
+	'please enter your name, not your club\'s name',
+    ],
 );
 
 #=PRIVATE METHODS
