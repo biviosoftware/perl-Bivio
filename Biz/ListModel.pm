@@ -1257,15 +1257,16 @@ sub prev_row {
 
 =for html <a name="reset_cursor"></a>
 
-=head2 reset_cursor()
+=head2 reset_cursor() : self
 
 Places the cursor at the start of the list.
 
 =cut
 
 sub reset_cursor {
-    shift->[$_IDI]->{cursor} = -1;
-    return;
+    my($self) = @_;
+    $self->[$_IDI]->{cursor} = -1;
+    return $self;
 }
 
 =for html <a name="set_cursor"></a>
