@@ -31,18 +31,13 @@ C<Bivio::UI::HTML::Club::InstrumentSell>
 =cut
 
 #=IMPORTS
-use Bivio::Util;
 use Bivio::Biz::Model::RealmInstrument;
-use Bivio::UI::Font;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Currency;
 use Bivio::UI::HTML::Widget::Date;
 use Bivio::UI::HTML::Widget::Director;
-use Bivio::UI::HTML::Widget::Form;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
-use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Join;
-use Bivio::UI::HTML::Widget::Submit;
 use Bivio::UI::HTML::Widget::TextArea;
 
 #=VARIABLES
@@ -67,12 +62,12 @@ sub create_fields {
 	values => ['&nbsp;']});
     return [
 	[
-	    $self->add_field('RealmTransaction.date_time', 'Date',
+	    $self->create_caption('Date',
 		    Bivio::UI::HTML::Widget::Date->new({
 			field => 'RealmTransaction.date_time',
 		    })),
 	    $blank_cell,
-	    $self->add_field('RealmAccountEntry.realm_account_id', 'Account',
+	    $self->create_caption('Account',
 		    Bivio::UI::HTML::Widget::Select->new({
 			field => 'RealmAccountEntry.realm_account_id',
 			choices => [
@@ -83,20 +78,20 @@ sub create_fields {
 		    })),
 	],
 	[
-	    $self->add_field('RealmInstrumentEntry.count', '# of Shares',
+	    $self->create_caption('# of Shares',
 		    Bivio::UI::HTML::Widget::Currency->new({
 			field => 'RealmInstrumentEntry.count',
 			size => 10,
 		    })),
 	    $blank_cell,
-	    $self->add_field('Entry.amount', 'Price/Share',
+	    $self->create_caption('Price/Share',
 		    Bivio::UI::HTML::Widget::Currency->new({
 			field => 'RealmInstrumentValuation.price_per_share',
 			size => 10,
 		    })),
 	],
 	[
-	    $self->add_field('commission', 'Commission',
+	    $self->create_caption('Commission',
 		    Bivio::UI::HTML::Widget::Currency->new({
 			field => 'commission',
 			size => 10,
