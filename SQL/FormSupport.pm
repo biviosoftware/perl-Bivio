@@ -45,9 +45,36 @@ request's I<auth_id> attribute.
 The columns which are L<Bivio::Type::FileField|Bivio::Type::FileField>
 type.  C<undef> if no file fields.
 
+=item file_field_names : array_ref
+
+Names of I<file_fields> columns.
+
 =item hidden : array_ref
 
 List of columns which are to be sent to and returned from the user, unmodified.
+
+=item hidden_field_names : array_ref
+
+Names of I<hidden> columns.
+
+=item in_list : array_ref
+
+List of columns for which I<in_list> is true.
+
+=item in_list_field_names : array_ref
+
+Names of I<in_list> columns.
+
+=item list_class : string
+
+If set, fields are repeatable.  Primary key fields of the list model are
+added, automatically as hidden fields.
+
+It may be the simple model name or full ListModel on declaration.
+Will be prefixed with C<Bivio::Biz::ListModel::> and loaded
+dynamically.
+
+These fields are also added to I<hidden>.
 
 =item other : array_ref
 
@@ -55,7 +82,7 @@ A list of fields and field identities.  These are not output
 with the form.  They are used for internal communication between
 the form and the UI.
 
-=item primary_key : array_ref (required)
+=item primary_key : array_ref
 
 The list of fields and field identities that uniquely identifies a
 form.
@@ -74,23 +101,37 @@ declaration changes.  It is used to reject an out-of-date form.
 
 List of columns to be made visible to the user.
 
+=item visible_field_names : array_ref
+
+Names of I<visible> columns.
+
 =back
 
 =head1 COLUMN ATTRIBUTES
 
 =over 4
 
+=item in_list : boolean
+
+True if the field is repeatable.
+See L<Bivio::Biz::ListFormModel|Bivio::Biz::ListFormModel>.
+All these columns are in I<in_list> global attribute.
+
 =item is_file_field : boolean
 
 True if the field is a file field.
+
+=item is_visible : boolean
+
+True if the field is visible.
 
 =back
 
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model;
 use Bivio::IO::Trace;
-use Bivio::Biz::PropertyModel;
 use Bivio::Type::PrimaryId;
 use Bivio::Util;
 use Carp();
@@ -162,7 +203,15 @@ sub new {
 	has_field_field => 0,
     };
     $proto->init_version($attrs, $decl);
+
+    # Modify the declarations to include the list model primary key
+    _init_list_class($attrs, $decl);
+
     _init_column_classes($attrs, $decl);
+
+    # Finish up by creating in_list_columns
+    _init_list_columns($attrs, $decl);
+
     return &Bivio::SQL::Support::new($proto, $attrs);
 }
 
@@ -226,6 +275,75 @@ sub _init_column_classes {
 	    $attrs->{file_fields} = [] unless $attrs->{file_fields};
 	    push(@{$attrs->{file_fields}}, $col);
 	}
+
+	# Defaults to false and overwritten below
+	$col->{is_hidden} = 0;
+    }
+
+    # Reset is_visible for visible fields.
+    foreach my $col (@{$attrs->{visible}}) {
+	$col->{is_visible} = 1;
+    }
+
+    # Map field name lists
+    $attrs->{visible_field_names} = [sort(map {
+	$_->{name}
+    } @{$attrs->{visible}})];
+
+    $attrs->{hidden_field_names} = [sort(map {
+	$_->{name}
+    } @{$attrs->{hidden}})];
+
+    $attrs->{file_field_names} = [sort(map {
+	$_->{name}
+    } @{$attrs->{file_fields}})]
+		if $attrs->{file_fields};
+    return;
+}
+
+# _init_list_class(hash_ref attrs, hash_ref decl)
+#
+# Initialize the list_class and primary_key attributes by copying
+# list_class's primary_key to this model.
+#
+sub _init_list_class {
+    my($attrs, $decl) = @_;
+    # No list
+    return unless $decl->{list_class};
+
+    my($lm) = Bivio::Biz::Model->get_instance($decl->{list_class});
+    $attrs->{list_class} = ref($lm);
+
+    # Set the primary_key by copying the list_class's primary key
+    $decl->{hidden} = [] unless $decl->{hidden};
+    foreach my $col (@{$lm->get_info('primary_key')}) {
+	# Copy all the attributes, because list_class may override
+	# the attributes or have local fields.
+	my($c) = {
+	    name => $col->{name},
+	    type => $col->{type},
+	    constraint => $col->{constraint},
+	    in_list => 1,
+	};
+	push(@{$decl->{hidden}}, $c);
+    }
+    return;
+}
+
+# _init_list_columns(hash_ref attrs, hash_ref decl)
+#
+# Initialize in_list and in_list_field_names
+#
+sub _init_list_columns {
+    my($attrs, $decl) = @_;
+
+    $attrs->{in_list} = [];
+    $attrs->{in_list_field_names} = [];
+    foreach my $cn (@{$attrs->{column_names}}) {
+	my($col) = $attrs->{columns}->{$cn};
+	next unless $col->{in_list};
+	push(@{$attrs->{in_list}}, $col);
+	push(@{$attrs->{in_list_field_names}}, $cn);
     }
     return;
 }

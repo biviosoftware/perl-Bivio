@@ -48,15 +48,28 @@ my(%_CLASS_INFO);
 
 =head2 static get_instance() : Bivio::Biz::PropertyModel
 
-Returns the singleton for this class.
+=head2 static get_instance(any class) : Bivio::Biz::PropertyModel
 
-May not be called on anonymous Models.
+Returns the singleton for I<class>.  If I<class> is supplied,
+it may be just the simple name, i.e. without C<Bivio::Biz::Model::> prefix,
+and it will be dynamically loaded if need be.  I<class> may
+also be an instance of a model.
+
+May not be called on anonymous Models without I<class> argument.
 
 =cut
 
 sub get_instance {
-    my($proto) = @_;
-    my($class) = ref($proto) || $proto;
+    my($proto, $class) = @_;
+    if (defined($class)) {
+	$class = ref($class) if ref($class);
+	$class = 'Bivio::Biz::Model::'.$class unless $class =~ /::/;
+	# First time, make sure the class is loaded.
+	Bivio::Util::my_require($class) unless $_CLASS_INFO{$class};
+    }
+    else {
+	$class = ref($proto) || $proto;
+    }
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     return $_CLASS_INFO{$class}->{singleton};
 }
@@ -200,11 +213,13 @@ sub delete_all {
 
 Returns the constraint for this field.
 
+Calls L<get_field_info|"get_field_info">, so subclasses only need
+to override C<get_field_info>.
+
 =cut
 
 sub get_field_constraint {
-    return shift->{$_PACKAGE}->{class_info}->{sql_support}->
-	    get_column_constraint(@_);
+    return shift->get_field_info(shift, 'constraint');
 }
 
 =for html <a name="get_field_info"></a>
@@ -226,11 +241,13 @@ sub get_field_info {
 
 Returns the type of this field.
 
+Calls L<get_field_info|"get_field_info">, so subclasses only need
+to override C<get_field_info>.
+
 =cut
 
 sub get_field_type {
-    return shift->{$_PACKAGE}->{class_info}->{sql_support}->
-	    get_column_type(@_);
+    return shift->get_field_info(shift, 'type');
 }
 
 =for html <a name="get_info"></a>

@@ -42,18 +42,25 @@ for simplicity and code re-use.
 Column which identifies the auth_id field.  On some Support instances,
 this may not be defined.
 
+=item columns : hash_ref
+
+All columns in the model.  For forms, this includes I<visible> and
+I<hidden>.  For other models, this includes I<other>, I<primary_key>,
+etc.
+
 =item column_names : array_ref
 
-List of the columns.
+List of names in I<columns>.  This list is sorted.
 
 =item primary_key_names : array_ref
 
 List of primary key column names, which uniquely identify a row
-or value.
+or value. This list is in order that they were declared by
+the Model.
 
 =item primary_key : array_ref
 
-List of primary key columns in the order of I<primary_key_names>.
+List of primary key columns.  Same order as I<primary_key_names>.
 
 =item version : int
 
@@ -67,6 +74,10 @@ These attributes apply to fields (INCOMPLETE!)
 
 =over 4
 
+=item in_list : boolean
+
+Used by ListFormModel to indicate a column is in the list.
+
 =item sort_order : boolean
 
 Default order by option.
@@ -78,10 +89,14 @@ NOT NORMALLY USED.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
+use Bivio::IO::Alert;
 use Bivio::SQL::ListQuery;
 use Carp ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 FACTORIES
 
@@ -117,9 +132,11 @@ sub get_column_constraint {
 
 =for html <a name="get_column_info"></a>
 
+=head2 get_column_info(string column) : hash_ref
+
 =head2 get_column_info(string column, string attr) : any
 
-Returns I<attr> for I<column>.
+Returns I<attr> for I<column> or all attrs if attr not defined.
 
 =cut
 
@@ -127,8 +144,12 @@ sub get_column_info {
     my($columns) = shift->get('columns');
     my($name, $attr) = @_;
     my($col) = $columns->{$name};
-    Carp::croak("$name: no such column") unless $col;
-    Carp::croak("$name.$attr: no such attribute") unless exists($col->{$attr});
+
+    Bivio::IO::Alert->die($name, ': no such column') unless $col;
+    return $col unless defined($attr);
+
+    Bivio::IO::Alert->die($name, '.', $attr, ': no such attribute')
+		unless exists($col->{$attr});
     return $col->{$attr};
 }
 
@@ -220,6 +241,7 @@ sub init_column {
 	push(@{$model->{column_names_referenced}}, $column);
 	my($type) = $model->{instance}->get_field_type($column);
 	$col = {
+	    # Keep these attributes in synch with FormSupport::_init_list_class
 	    # Bivio::SQL::Support attributes
 	    name => $qual_col,
 	    type => $type,
@@ -231,6 +253,7 @@ sub init_column {
 	    column_name => $column,
 	    model => $model,
 	    sql_name => $model->{sql_name}.'.'.$column,
+	    in_list => 0,
 	};
 	$columns->{$qual_col} = $col unless $is_alias;
     }
@@ -396,6 +419,7 @@ sub _init_column_from_hash {
 	    if exists($decl->{sort_order});
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
+    $col->{in_list} = $decl->{in_list} ? 1 : 0;
     push(@{$attrs->{$class}}, $col);
     return $col;
 }
