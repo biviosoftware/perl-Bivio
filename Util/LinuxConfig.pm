@@ -180,7 +180,11 @@ Sets up C<b-sendmail-http> agent interface in sendmail.cf.
 =cut
 
 sub add_sendmail_http_agent {
-    my($self, $uri) = @_;
+    my($self, $uri, $program) = @_;
+    $program ||= '/usr/bin/b-sendmail-http';
+    die($program, ': not executable or not an absolute path')
+	unless -x $program && ! -d $program && $program =~ m{^/};
+    my($progbase) = $program =~ m{([^/]+)$};
     return _edit($self, '/etc/sendmail.cf',
 	# Force all local hosts to be seen as canonical hosts
 	[qr{(?<=Fw/etc/mail/local-host-names\n)},
@@ -200,10 +204,10 @@ sub add_sendmail_http_agent {
 	     # set properly by the line above.  Also, pass full user to
 	     # procmail, and b-sendmail-http will trim it
 	     $$data .= <<"EOF";
-Mbsendmailhttp,	P=/usr/bin/b-sendmail-http,
+Mbsendmailhttp,	P=$program,
 		F=9:|/\@ADFhlMnsPqS,
 		S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
-		A=b-sendmail-http \${client_addr} \$u\@\$h $uri /usr/bin/procmail -t -Y -a \$h -d \$u\@\$h
+		A=$progbase \${client_addr} \$u\@\$h $uri /usr/bin/procmail -t -Y -a \$h -d \$u\@\$h
 EOF
 	     return 1;
 	}],
