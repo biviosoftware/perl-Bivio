@@ -23,7 +23,7 @@ L<Bivio::Biz::PropertyModel>
 =cut
 
 use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::RealmTransaction::ISA = qw(Bivio::Biz::PropertyModel);
+@Bivio::Biz::Model::RealmTransaction::ISA = ('Bivio::Biz::PropertyModel');
 
 =head1 DESCRIPTION
 
@@ -55,16 +55,15 @@ use Bivio::Biz::Model::RealmUser;
 Deletes this transaction, and all its entires, member entries,
 instrument entries, and account entries.
 
-Note: this method doesn't audit the books after the date. The caller
-is responsible for ensuring the books are audited after this operation.
+Note: this method doesn't audit the books after the date or change
+a member's state. The caller is responsible for ensuring the books are
+audited after this operation.
 
 =cut
 
 sub cascade_delete {
     my($self) = @_;
     my($id) = $self->get('realm_transaction_id');
-
-    _pre_delete($self);
 
     # delete member, instrument, and account entries
     # and cash expenses
@@ -85,7 +84,6 @@ sub cascade_delete {
                 WHERE realm_transaction_id=?',
 		[$id]);
     }
-
     # delete the transaction
     $self->delete();
     return;
@@ -363,52 +361,6 @@ sub _generate_member_remark {
     }
     # guaranteed result if class is member
     return $result;
-}
-
-# _pre_delete()
-#
-# Performs any pre-delete processing. For now this means resetting a
-# member's state after a full withdrawal is deleted.
-#
-sub _pre_delete {
-    my($self) = @_;
-    my($req) = $self->get_request;
-
-#TODO: this isn't modular, need a better approach for post delete processing
-
-    # if this is a full withdrawal, then reset the member's status to member
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT entry_id
-            FROM entry_t
-            WHERE realm_transaction_id=?
-            AND class=?
-            AND entry_type in (?,?)',
-	    [$self->get('realm_transaction_id'),
-		    Bivio::Type::EntryClass::MEMBER->as_sql_param,
-		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH
-		    ->as_sql_param,
-		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK
-		    ->as_sql_param]);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($entry_id) = $row->[0];
-
-	# set the target status to MEMBER if it is WITHDRAWN
-	my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
-	$member_entry->load(entry_id => $entry_id);
-	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-	$realm_user->load(user_id => $member_entry->get('user_id'));
-
-	if ($realm_user->get('role') == Bivio::Auth::Role::WITHDRAWN()) {
-	    my($honorific) = Bivio::Type::Honorific::MEMBER();
-	    $realm_user->update({
-		role => $honorific->get_role,
-		honorific => $honorific,
-	    });
-	}
-	last;
-    }
-    return;
 }
 
 =head1 COPYRIGHT
