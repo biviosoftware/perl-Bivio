@@ -395,13 +395,21 @@ sub internal_initialize {
 
 =head2 set_is_public(boolean is_public)
 
-Sets the public bit in this message and all its CACHE files
+Sets the public bit in this message and all its files
 
 =cut
 
 sub set_is_public {
     my($self, $is_public) = @_;
     $self->update({is_public => $is_public});
+
+    my($file) = Bivio::Biz::Model::File->new($self->get_request);
+    $file->load(file_id => $self->get('rfc822_file_id'));
+    $file->update({
+        is_public => $is_public,
+        modified_date_time => $file->get('modified_date_time'),
+    });
+
     my($cache_file_id) = $self->get('cache_file_id');
     return unless defined($cache_file_id);
     my($realm_id) = $self->get('realm_id');
