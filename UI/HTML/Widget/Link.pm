@@ -49,6 +49,8 @@ to get string to use (see below).
 =item href : string (required)
 
 Literal text to use for C<HREF> attribute of C<A> tag.
+If href is in all capital letters, then it is treated as a task id,
+and a widget value for format_stateless_uri() will be used.
 
 =item link_target : string [] (inherited)
 
@@ -144,6 +146,10 @@ sub initialize {
 
     if (ref($href)) {
 	$fields->{href} = $href;
+    }
+    elsif ($href =~ /^[A-Z_0-9]+$/) {
+	$fields->{href} = ['->format_stateless_uri',
+	    Bivio::Agent::TaskId->$href()]
     }
     else {
 	$p .= ' href="'.$href.'"';
