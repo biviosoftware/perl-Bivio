@@ -253,6 +253,7 @@ sub _upgrade {
     _upgrade_add_basic_service_subscription($req);
     _upgrade_subscribed_taxes($req);
     _upgrade_subscribe_free_trial($req);
+    _upgrade_create_bivio_buck($req);
     print("\n*** done ***\n");
     return;
 }
@@ -278,6 +279,43 @@ ALTER TABLE ec_subscription_t
     return;
 }
 
+# _upgrade_create_bivio_buck(Bivio::Agent::Request req)
+#
+# Creates bivio_buck_t.
+#
+sub _upgrade_create_bivio_buck {
+    my($req) = @_;
+    print("creating bivio_buck_t\n");
+    _do_sql('
+CREATE TABLE bivio_buck_t (
+  realm_id NUMBER(18),
+  ec_payment_id NUMBER(18),
+  amount NUMBER(20,6)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+/
+ALTER TABLE bivio_buck_t
+  add constraint bivio_buck_t1
+  primary key(realm_id, ec_payment_id)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
+/
+ALTER TABLE bivio_buck_t
+  add constraint bivio_buck_t2
+  foreign key (ec_payment_id)
+  references ec_payment_t(ec_payment_id)
+/
+ALTER TABLE bivio_buck_t
+  add constraint bivio_buck_t3
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE bivio_buck_t modify amount not null
+/
+');
+    return;
+}
+
 # _upgrade_subscribe_free_trial(Bivio::Agent::Request req)
 #
 # Subscribes all clubs to a free trial period.
@@ -285,6 +323,12 @@ ALTER TABLE ec_subscription_t
 sub _upgrade_subscribe_free_trial {
     my($req) = @_;
     print("subscribing all clubs to free trial\n");
+
+    # just in case it has been run before
+    Bivio::SQL::Connection->execute('
+        DELETE FROM ec_subscription_t
+        WHERE ec_subscription_t.subscription_type=?',
+	[Bivio::Type::ECSubscription->FREE_TRIAL->as_int]);
 
     use Bivio::Type::RealmName;
     my($d) = Bivio::Type::Date->from_sql_value(
@@ -300,11 +344,19 @@ sub _upgrade_subscribe_free_trial {
         ORDER BY realm_owner_t.name",
 	['%'.Bivio::Type::RealmName->DEMO_CLUB]);
 
+    my($now) = Bivio::Type::Date->now;
+    my($dec_31_2001) = Bivio::Type::Date->from_literal('12/31/2001');
     my($subscription) = Bivio::Biz::Model->new($req, 'ECSubscription');
+
     while (my $row = $sth->fetchrow_arrayref) {
 	my($realm_id, $date, $name) = @$row;
 	print("\t", $name, "\n");
-	$subscription->start_free_trial($realm_id, $date);
+
+	# all free trials start now, end on Dec 31. 2001
+	$subscription->start_free_trial($realm_id, $date)->update({
+	    start_date => $now,
+	    end_date => $dec_31_2001,
+	});
     }
     return;
 }
