@@ -129,6 +129,21 @@ sub file_field {
     return [$file, $name];
 }
 
+=for html <a name="find_table_row"></a>
+
+=head2 find_table_row(string column_name, string column_value) : hash_ref
+
+=head2 find_table_row(string table_name, string column_name, string column_value) : hash_ref
+
+Conveniently calls
+L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
+
+=cut
+
+sub find_table_row {
+    return shift->get_html_parser()->get('Tables')->find_row(@_);
+}
+
 =for html <a name="follow_link"></a>
 
 =head2 follow_link(string link_name)
