@@ -7,7 +7,7 @@ $_ = $Bivio::XML::DocBook::VERSION;
 
 =head1 NAME
 
-Bivio::XML::DocBook - Manipulate DocBook files
+Bivio::XML::DocBook - converts XML DocBook files to HTML
 
 =head1 RELEASE SCOPE
 
@@ -30,7 +30,7 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::XML::DocBook> manipulate DocBook files.
+C<Bivio::XML::DocBook> converts XML DocBook files to HTML.
 
 =cut
 
@@ -117,7 +117,8 @@ sub _to_html_node {
 
 # _to_html_tags(array_ref names, string prefix) : string
 #
-# Convert @$names to tags with prefix ('/' or '').
+# Converts @$names to HTML tags with prefix ('/' or ''), and concatenates
+# the tags into a string.
 #
 sub _to_html_tags {
     my($names, $prefix) = @_;

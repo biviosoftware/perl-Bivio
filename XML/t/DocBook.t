@@ -7,6 +7,7 @@ Bivio::Test->unit([
     'Bivio::XML::DocBook' => [
 	to_html => [
 	    ['DocBook/01.xml'] => [Bivio::IO::File->read('DocBook/01.html')],
+	    ['DocBook/02.xml'] => [Bivio::IO::File->read('DocBook/02.html')],
 	],
     ],
 ]);
