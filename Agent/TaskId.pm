@@ -189,7 +189,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/reports/investments
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::InstrumentSummaryList
+        Bivio::UI::HTML::Club::InstrumentSummaryReport
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY
