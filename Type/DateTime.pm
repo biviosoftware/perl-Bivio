@@ -278,6 +278,39 @@ sub add_days {
     # DOES NOT RETURN
 }
 
+=for html <a name="add_months"></a>
+
+=head2 static add_months(string date_time, int months) : string
+
+Returns I<date_time> adjusted by I<> (may be negative).
+
+Aborts on range error.
+
+=cut
+
+sub add_months {
+    my($proto, $date_time, $months) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($date_time);
+
+    $year += $months / 12;
+    $mon += $months % 12;
+
+    if ($mon < 1) {
+	$mon += 12;
+	$year--;
+    }
+    elsif ($mon > 12) {
+	$mon -= 12;
+	$year++;
+    }
+
+    my($last_day) = $proto->get_last_day_in_month($mon, $year);
+    if ($mday > $last_day) {
+	$mday = $last_day;
+    }
+    return $proto->from_parts_or_die($sec, $min, $hour, $mday, $mon, $year);
+}
+
 =for html <a name="add_seconds"></a>
 
 =head2 static add_seconds(string date_time, int seconds) : string
@@ -986,7 +1019,7 @@ sub to_local_string {
 =head2 to_parts(string value) : array
 
 Returns the date/time in parts in the same order as C<gmtime>
-(set, min, hour, mday, mon, year), but mday is one-based and
+(sec, min, hour, mday, mon, year), but mday is one-based and
 year is four digits.
 
 Handles BOTH unix and date/time formats (for convenience).
