@@ -86,7 +86,7 @@ sub t {
 }
 my($m);
 my($req) = Bivio::Collection::Attributes->new;
-my($now) = time;
+my($now) = 315532800;
 foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::PropertyModel::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
@@ -108,9 +108,9 @@ EOF
     my($dttm) = $now;
     my($model) = $pkg->new($req);
     my($toggle) = 1;
-    foreach $gender ('MALE', 'FEMALE') {
-	foreach $auth_id (1..2) {
-	    foreach $name ('name00'..'name09') {
+    foreach $auth_id (1..2) {
+	foreach $name ('name00'..'name09') {
+	    foreach $gender ('FEMALE', 'MALE') {
 		$model->create({
 		    dttm => $dttm++,
 		    toggle => ($toggle = !$toggle),
@@ -221,12 +221,14 @@ t($rows->[0]->{'TListT1.gender'} == Bivio::Type::Gender::MALE()
 # Check just prior
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 1,
-    count => 100,
+    count => 10,
     j => $now."\177".0,
+    b0 => 'name00',
 }, $support);
 $rows = $support->load($query);
-t($rows->[0]->{'TListT1.dttm'} == $now);
-#DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
+# Should begin after first the first name.
+t($rows->[0]->{'TListT1.dttm'} == $now + 1);
+# DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
 
 # Check missed just prior
 $query = Bivio::SQL::ListQuery->new({
@@ -236,4 +238,4 @@ $query = Bivio::SQL::ListQuery->new({
     b0 => 'name00',
 }, $support);
 $rows = $support->load($query);
-t($rows->[0]->{'TListT1.name'} eq'name01');
+t($rows->[0]->{'TListT1.name'} eq 'name01');
