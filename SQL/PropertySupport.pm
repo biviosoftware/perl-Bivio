@@ -232,15 +232,16 @@ sub delete {
     my($self, $values, $die, $load_args) = @_;
     my($attrs) = $self->internal_get;
     my(@params) = map {
-	unless (exists($values->{$_})) {
+	my($n) = $_->{name};
+	unless (exists($values->{$n})) {
 	    $die ||= 'Bivio::Die';
 	    $die->die('DIE', {
 		message => 'missing primary key value for delete',
 		entity => $self,
-		column => $_});
+		column => $n});
 	}
-	$values->{$_};
-    } @{$attrs->{primary_key_names}};
+	$_->{type}->to_sql_param($values->{$_});
+    } @{$attrs->{primary_keys}};
     Bivio::SQL::Connection->execute($attrs->{delete}, \@params, $die,
 	   $attrs->{has_blob})->finish();
     return;
