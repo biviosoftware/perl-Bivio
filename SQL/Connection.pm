@@ -129,7 +129,7 @@ sub commit {
 Executes the specified statement and dies with an appropriate error
 if it fails.
 
-B<NOTE: All calls must go through this
+B<NOTE: All calls must go through this>
 
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 

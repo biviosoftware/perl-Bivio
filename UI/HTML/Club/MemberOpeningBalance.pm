@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Club::MemberOpeningBalance::VERSION = sprintf('%d.%02d', q$Rev
 
 =head1 NAME
 
-Bivio::UI::HTML::Club::MemberOpeningBalance - 
+Bivio::UI::HTML::Club::MemberOpeningBalance - show opening balance
 
 =head1 SYNOPSIS
 

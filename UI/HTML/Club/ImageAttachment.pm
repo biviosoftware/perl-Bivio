@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Club::ImageAttachment::VERSION = sprintf('%d.%02d', q$Revision
 
 =head1 NAME
 
-Bivio::UI::HTML::Club::ImageAttachment - 
+Bivio::UI::HTML::Club::ImageAttachment - show image attachments
 
 =head1 SYNOPSIS
 

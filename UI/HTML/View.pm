@@ -6,7 +6,7 @@ $Bivio::UI::HTML::View::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::HTML::View - 
+Bivio::UI::HTML::View - abstract viewer class
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Club::InstrumentSell::VERSION = sprintf('%d.%02d', q$Revision$
 
 =head1 NAME
 
-Bivio::UI::HTML::Club::InstrumentSell - 
+Bivio::UI::HTML::Club::InstrumentSell - sell an instrument
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Club::InstrumentValuation::VERSION = sprintf('%d.%02d', q$Revi
 
 =head1 NAME
 
-Bivio::UI::HTML::Club::InstrumentValuation - 
+Bivio::UI::HTML::Club::InstrumentValuation - show instrument valuation
 
 =head1 SYNOPSIS
 
