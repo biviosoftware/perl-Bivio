@@ -1329,6 +1329,8 @@ Adds in I<count> equal to L<LOAD_ALL_SIZE|"LOAD_ALL_SIZE">.
 
 If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
 
+Returns I<self>.
+
 =cut
 
 sub unauth_load_all {
@@ -1341,7 +1343,7 @@ sub unauth_load_all {
     }
     _unauth_load($self, $query);
     _assert_all($self);
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
