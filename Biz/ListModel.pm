@@ -73,8 +73,8 @@ sub new {
     my($proto, $name, $column_info) = @_;
     my($self) = &Bivio::Biz::Model::new($proto, $name);
     $self->{$_PACKAGE} = {
-	column_info => $column_info,
-	rows => []
+	'column_info' => $column_info,
+	'rows' => []
     };
     return $self;
 }
@@ -94,7 +94,7 @@ Returns the number of columns in the model.
 sub get_column_count {
     my($self, $col) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return scalar(@{$fields->{column_info}});
+    return int(@{$fields->{column_info}});
 }
 
 =for html <a name="get_column_descriptor"></a>
@@ -221,7 +221,7 @@ sub get_row_count {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    return scalar(@{$fields->{rows}});
+    return int(@{$fields->{rows}});
 }
 
 =for html <a name="get_sort_key"></a>
