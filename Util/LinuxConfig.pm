@@ -184,7 +184,8 @@ sub add_sendmail_http_agent {
     return _edit($self, '/etc/sendmail.cf',
 	[qr/\$#local \$: \$1/, '$#bsendmailhttp $: $1'],
 	# Remove any existing bsendmailhttp
-	[qr/\nMbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}/s, ''],
+	['\nMbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}', '',
+	    qr/^Mbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}/s],
 	# We don't set "w", sendmail-http does it itself
 	['$', <<"EOF", qr/\nMbsendmailhttp/],
 Mbsendmailhttp,	P=/usr/bin/b-sendmail-http,
