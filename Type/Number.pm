@@ -114,15 +114,15 @@ sub can_be_zero {
         && $proto->compare($proto->get_min, 0) <= 0 ? 1 : 0;
 }
 
-=for html <a name="compare"></a>
+=for html <a name="compare_defined"></a>
 
-=head2 static compare(string left, string right, int decimals) : int
+=head2 static compare_defined(string left, string right, int decimals) : int
 
-See L<Bivio::Type::compare|Bivio::Type/"compare">.
+See L<Bivio::Type::compare_defined|Bivio::Type/"compare_defined">.
 
 =cut
 
-sub compare {
+sub compare_defined {
     my($proto, $left, $right, $decimals) = @_;
     ($left, $right) = _make_objects($proto, $left, $right, $decimals);
     return $left->bcmp($right);
