@@ -121,6 +121,42 @@ sub follow_link {
     return;
 }
 
+=for html <a name="follow_link_in_table"></a>
+
+=head2 follow_link_in_table(string table_name, string find_heading, string find_value, string link_heading, string link_name)
+
+Finds the row identified by I<find_value> in column I<find_heading> of
+I<table_name> using
+L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.  If I<table_name> is undef, uses I<find_heading>.
+
+Then clicks on I<link_name> in column I<link_heading>.  I<link_heading>
+defaults to I<find_heading>.  If I<link_name> is C<undef>, expects one an only
+one link, and clicks on that.
+
+=cut
+
+sub follow_link_in_table {
+    my($self, $table_name, $find_heading, $find_value,
+	$link_heading, $link_name) = @_;
+    $table_name = $find_heading
+	unless defined($table_name);
+    my($row) = _assert_html($self)->get('Tables')->find_row(
+	$table_name, $find_heading, $find_value);
+    $link_heading = $find_heading
+	unless defined($link_heading);
+    Bivio::Die->die(
+	$link_heading, ': link column not found, or column empty',
+    ) unless defined($row->{$link_heading});
+    my($links) = $row->{$link_heading}->get('Links');
+    return $self->visit_uri($links->get($link_name)->{href})
+	if defined($link_name);
+    my($k) = $links->get_keys;
+    Bivio::Die->die(
+	$k, ': too many or too few links found in column ', $link_heading,
+    ) unless @$k == 1;
+    return $self->visit_uri($links->get($k->[0])->{href});
+}
+
 =for html <a name="get_content"></a>
 
 =head2 get_content() : string
