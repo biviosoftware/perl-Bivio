@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Format::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::UI::HTML::Format::DateTime - transforms a unix time to date/time string
+Bivio::UI::HTML::Format::DateTime - transforms a DateTime to date/time string
 
 =head1 SYNOPSIS
 
@@ -26,8 +26,8 @@ use Bivio::UI::HTML::Format;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Format::DateTime> formats a unix time into
-a date/time string.  May consult user preferences.
+C<Bivio::UI::HTML::Format::DateTime> formats a DateTime value
+to a date, time, or date and time string.
 
 =cut
 
