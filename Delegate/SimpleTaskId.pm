@@ -178,6 +178,13 @@ sub get_delegate_info {
             ANYBODY
             Action.Forbidden
         )],
+	[qw(
+            ROBOTS_TXT
+            15
+            GENERAL
+            ANYBODY
+            Action.LocalFilePlain->execute_robots_txt
+        )],
     ];
 }
 
