@@ -35,6 +35,7 @@ C<Bivio::Biz::Model::F1065Form> IRS 1065 fields
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Tax1065;
 use Bivio::SQL::Connection;
+use Bivio::Type::CountryCode;
 use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
 use Bivio::Type::F1065AccountingMethod;
@@ -522,7 +523,7 @@ sub internal_load_rows {
 	foreign_income => $self->get_foreign_income($self->get_request, $date),
 	foreign_tax => $_M->neg($income->get(
 		$tax->FOREIGN_TAX->get_short_desc)),
-	foreign_income_country => '',
+	foreign_income_country => _get_foreign_income_country($self),
 	tax_exempt_interest => $income->get(
 		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc),
 	cash_distribution => _get_cash_withdrawal_amount($self, $date),
@@ -629,6 +630,30 @@ sub _get_expenses {
     $properties->{portfolio_deductions} = $_M->sub(
 	    $deductions, $properties->{margin_interest});
     return;
+}
+
+# _get_foreign_income_country() : string
+#
+# Returns the name of the foreign country, or "See Attached" if > 1.
+#
+sub _get_foreign_income_country {
+    my($self) = @_;
+
+    my($list) = Bivio::Biz::Model::ForeignTaxCountryList->new(
+	    $self->get_request)->load_all;
+    my($size) = $list->get_result_set_size;
+
+    return '' if $size == 0;
+    return "See Attached" if $size > 1;
+
+    $list->set_cursor_or_die(0);
+
+    my($code) = Bivio::Type::CountryCode->unsafe_from_any(
+	    $list->get('RealmInstrument.country'));
+
+    return $code
+	    ? $code->get_short_desc
+	    : $list->get('RealmInstrument.country') || '';
 }
 
 # _get_member_count() : int
