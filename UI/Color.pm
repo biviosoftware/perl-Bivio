@@ -81,7 +81,9 @@ __PACKAGE__->compile(
 	0x66CC66,
     ],
     TABLE_STRIPE_BG => [
-	0xCCCCCC,
+	# This is not websafe, but it will round down to 0xCCCCCC
+	# on systems that have only 256 colors.
+	0xE4E4E4,
     ],
     REALM_NAME => [
 	0xFF6633,
