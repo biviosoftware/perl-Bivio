@@ -90,6 +90,7 @@ _compile(
 	   'RealmInstrumentValuation.price_per_share'],
     NAME_TICKER => ['Name'],
     VALUATION_SEARCH_DATE => ['Date'],
+    IMPORT_USER_INFO => ['Import Personal Data'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
@@ -114,6 +115,10 @@ _compile(
     CLUB_ACCOUNTING_FEE => ['Fees'],
     LOGOUT => ['Logout'],
     CLUB_ACCOUNTING_LOCAL_VALUATION_DATES => ['Change Past Valuations'],
+    GENERAL_PRIVACY => ['Safe and Private'],
+    USER_AGREEMENT_TEXT => ['Terms of Service'],
+    CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
+    CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
 );
 
 =head1 METHODS
