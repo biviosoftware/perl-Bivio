@@ -280,8 +280,7 @@ sub initialize {
     if (defined($file)) {
 	my($actual) = do $file;
 	unless (ref($actual) eq 'HASH') {
-	    -e $file && Bivio::IO::Alert->die(
-		"$file: config parse failed: ",
+	    -e $file && die("$file: config parse failed: ",
 		$@ ? $@ : "empty or not a hash_ref");
 	    $actual = {};
 	}
@@ -350,7 +349,7 @@ All configuration names must be fully specified.
 sub register {
     my($proto, $spec) = @_;
     my($pkg) = caller;
-    defined(&{$pkg . '::handle_config'}) || Bivio::IO::Alert->die(
+    defined(&{$pkg . '::handle_config'}) || die(
 	    "&$pkg\::handle_config not defined");
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
