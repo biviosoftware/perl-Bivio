@@ -1264,7 +1264,7 @@ my(@_CFG) = (
         135
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/identify/listed_investments
+        ?/accounting/identify/listed-investments:?/accounting/identify/listed_investments
         Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ImportedSecurityReconciliationForm
@@ -1479,7 +1479,7 @@ my(@_CFG) = (
         156
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/investment_sale
+        ?/accounting/reports/investment-sale:?/accounting/reports/investment_sale
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Type::ScheduleDParams->execute_show_distributions
@@ -1492,7 +1492,7 @@ my(@_CFG) = (
         157
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/income_and_expense
+        ?/accounting/reports/income-and-expense:?/accounting/reports/income_and_expense
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
@@ -1534,7 +1534,7 @@ my(@_CFG) = (
         161
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/income_and_deductions
+        ?/accounting/reports/income-and-deductions:?/accounting/reports/income_and_deductions
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
@@ -1614,7 +1614,7 @@ my(@_CFG) = (
         168
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/schedule_d
+        ?/accounting/tax99/schedule-d:?/accounting/tax99/schedule_d
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
@@ -1671,7 +1671,7 @@ my(@_CFG) = (
         173
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/investment/charges_paid
+        ?/accounting/investment/charges-paid:?/accounting/investment/charges_paid
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::InstrumentChargesForm
         Bivio::UI::HTML::Club::InstrumentCharges
@@ -1707,7 +1707,7 @@ my(@_CFG) = (
         176
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/accounting/tax99/missing_fields
+        ?/accounting/tax99/missing-fields:?/accounting/tax99/missing_fields
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
@@ -1837,7 +1837,7 @@ my(@_CFG) = (
         188
         CLUB
         ACCOUNTING_WRITE&ADMIN_WRITE
-        ?/accounting/opening_balance
+        ?/accounting/opening-balance:?/accounting/opening_balance
         Bivio::Biz::Model::AccountOpenBalanceForm
         Bivio::UI::HTML::Club::AccountOpenBalance
         next=CLUB_INVESTMENT_OPEN_BALANCE
@@ -1909,7 +1909,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_compressed
     )],
-      [qw(
+    [qw(
         CLUB_ADMIN_EXPORT_PLAIN
         195
         CLUB
@@ -1917,19 +1917,19 @@ my(@_CFG) = (
         ?/admin/clubexp.xml
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_plain
-      )],
-      [qw(
+    )],
+    [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
         196
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        ?/accounting/reports/member_status
+        ?/accounting/reports/member-status:?/accounting/reports/member_status
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberStatusList->execute_load_all
         Bivio::UI::HTML::Club::MemberStatusReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
-      )],
+    )],
     [qw(
         CLUB_MAIL_POST
         197
@@ -1999,6 +1999,40 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailForwardForm
         Bivio::UI::HTML::Club::MailForward
         next=CELEBRITY_MESSAGE_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK
+        203
+        CLUB
+        ACCOUNTING_READ&MEMBER_WRITE
+        ?/accounting/member/withdrawal-stock
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
+        Bivio::Biz::Model::MemberInstrumentWithdrawalListForm
+        Bivio::UI::HTML::Club::MemberInstrumentWithdrawalList
+        next=CLUB_ACCOUNTING_MEMBER_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_LOT_LIST
+        204
+        CLUB
+        ACCOUNTING_READ&MEMBER_WRITE
+        ?/accounting/investment/lot-list
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrumentLotList
+        Bivio::Biz::Model::RealmInstrumentLotListForm
+        Bivio::UI::HTML::Club::RealmInstrumentLotList
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST
+        205
+        CLUB
+        ACCOUNTING_READ&MEMBER_READ
+        ?/accounting/reports/withdrawals
+        Bivio::Biz::Model::MemberWithdrawalList
+        Bivio::UI::HTML::Club::MemberWithdrawalReportList
     )],
 );
 
