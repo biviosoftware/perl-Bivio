@@ -6,7 +6,7 @@ $Bivio::Biz::Action::CreateDemoClub::VERSION = sprintf('%d.%02d', q$Revision$ =~
 
 =head1 NAME
 
-Bivio::Biz::Action::CreateDemoClub - 
+Bivio::Biz::Action::CreateDemoClub - creates a demo club for a user
 
 =head1 SYNOPSIS
 
@@ -26,34 +26,19 @@ use Bivio::Biz::Action;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Action::CreateDemoClub>
+C<Bivio::Biz::Action::CreateDemoClub> creates a club for the user
+which is her private space.
 
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="NAME_SUFFIX"></a>
-
-=head2 NAME_SUFFIX : string
-
-the suffix of a user's demo club
-
-=cut
-
-sub NAME_SUFFIX {
-    return '_demo_club';
-}
 
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Biz::Action::CopyClub;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Type::RealmName;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 
@@ -76,13 +61,12 @@ sub execute {
     $realm->unauth_load(realm_id => $user->get('user_id'));
 
     # load and copy the demo club
-    my($name) = $realm->get('name')
-	    .Bivio::Biz::Action::CreateDemoClub::NAME_SUFFIX();
+    my($name) = $realm->get('name').Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
     $realm->unauth_load(name => 'demo')
 	    || die("couldn't find demo realm");;
     $req->put(source => $realm);
     $req->put(target_name => $name);
-    $req->put(target_display_name => $realm->get('display_name')
+    $req->put(target_display_name => $user->get('display_name')
 	."'s Demo Club");
     Bivio::Biz::Action::CopyClub->get_instance()->execute($req);
 
