@@ -481,13 +481,15 @@ Note that the I<path_info> is left on the URI.
 
 sub parse_uri {
     my($proto, $uri, $req) = @_;
-
     # We don't set the facade if the request already has one,
     # because parse_uri is currently called from more than one place
     # during the request.
-    my($facade) = $uri =~ s/^\/*\*([\w\.]+)// ? $1 : undef;
-    $facade = $req->unsafe_get('facade')
-	    || Bivio::UI::Facade->setup_request($facade, $req);
+    my($facade) = $req->unsafe_get('facade')
+	|| Bivio::UI::Facade->setup_request(
+	    $uri =~ s/^\/*\*([\w\.]+)// ? $1
+	        : $req->unsafe_get('r')
+	        ? $req->get('r')->hostname : undef,
+	    $req);
     my($self) = $facade->get('Task');
     my($fields) = $self->[$_IDI];
 
