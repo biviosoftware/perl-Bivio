@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Type::Enum>
+L<Bivio::Type::EnumDelegator>
 
 =cut
 
-use Bivio::Type::Enum;
-@Bivio::Type::ECService::ISA = ('Bivio::Type::Enum');
+use Bivio::Type::EnumDelegator;
+@Bivio::Type::ECService::ISA = ('Bivio::Type::EnumDelegator');
 
 =head1 DESCRIPTION
 
@@ -37,9 +37,7 @@ C<Bivio::Type::ECService>
 #=IMPORTS
 
 #=VARIABLES
-
-__PACKAGE__->compile(
-	Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
+__PACKAGE__->compile;
 
 =head1 METHODS
 
