@@ -243,8 +243,8 @@ sub format_help_uri {
 
 =head2 static format_realmless_uri(Bivio::Agent::TaskId task_id, string path_info, Bivio::Agent::Request req) : string
 
-Formats a stateless, realmless URI.  It uses my-club-site or
-my-site for the realm in the URI.
+Formats a stateless, realmless URI.  It uses I<Text.my_club_site> or
+I<Text.my_site> for the realm in the URI if it isn't the general realm.
 
 B<This is an experimental method.>
 
