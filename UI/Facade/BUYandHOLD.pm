@@ -136,7 +136,8 @@ __PACKAGE__->new({
 	    }));
 
 	    $fc->group(copyright_widget =>
-		    Bivio::UI::HTML->get_standard_copyright);
+		    Bivio::UI::HTML->get_standard_copyright->put(
+			    link_target => '_blank'));
 
 	    $fc->group(content_widget => Bivio::UI::HTML::Widget->indirect(
 			    ['page_scene']
