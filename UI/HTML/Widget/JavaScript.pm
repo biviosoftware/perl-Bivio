@@ -63,13 +63,13 @@ my($_JSV) = <<"EOF";
 <!--
 var $_VV=1.0;
 // -->
-</script>
-<script language="JavaScript1.2">
+</script><script language="JavaScript1.2">
 <!--
 $_VV=1.2;
 // -->
 </script>
 EOF
+chomp($_JSV);
 
 =head1 METHODS
 
