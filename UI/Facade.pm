@@ -95,6 +95,8 @@ used.
 
 =item cimo : eklubs
 
+=item dubeli : fool
+
 =item bumpliz :
 
 =item ollon :
@@ -106,8 +108,6 @@ used.
 =item boelle :
 
 =item laedli :
-
-=item dubeli :
 
 =item uetli :
 
