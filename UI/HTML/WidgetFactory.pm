@@ -144,6 +144,7 @@ sub create {
 	    value => $widget,
 	    control_off_value => $widget,
 	    %$wll,
+	    %attrs_copy,
 	}) if $wll;
 	$widget = $proto->secure_data($widget)->put(%attrs_copy)
 		if $field_type->is_secure_data;
