@@ -94,7 +94,7 @@ function @{[__PACKAGE__->MATH_ROUND]}(field)
   }
 
   // round to the penny
-  tmp = Math.round(tmp * 100) / 100;
+  tmp = Math.floor(tmp * 100) / 100;
 
   // add trailing and leading 0 if necessary
   tmp = new String(tmp);
