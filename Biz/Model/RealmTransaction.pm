@@ -217,7 +217,8 @@ sub _generate_instrument_remark {
     my($sth);
     if (defined($entry_id)) {
 	$sth = Bivio::SQL::Connection->execute('
-            SELECT instrument_t.name, realm_instrument_entry_t.count
+            SELECT realm_instrument_t.name || instrument_t.name,
+                realm_instrument_entry_t.count
             FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
                 instrument_t
             WHERE entry_t.entry_id=?
@@ -225,13 +226,14 @@ sub _generate_instrument_remark {
             AND realm_instrument_entry_t.realm_instrument_id
                 = realm_instrument_t.realm_instrument_id
             AND realm_instrument_t.instrument_id
-                = instrument_t.instrument_id
+                = instrument_t.instrument_id (+)
             AND realm_instrument_t.realm_id=?',
 	    [$entry_id, $self->get('realm_id')]);
     }
     else {
 	$sth = Bivio::SQL::Connection->execute('
-            SELECT instrument_t.name, realm_instrument_entry_t.count
+            SELECT realm_instrument_t.name || instrument_t.name,
+                realm_instrument_entry_t.count
             FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
                 instrument_t
             WHERE entry_t.realm_transaction_id=?
@@ -239,7 +241,7 @@ sub _generate_instrument_remark {
             AND realm_instrument_entry_t.realm_instrument_id
                 = realm_instrument_t.realm_instrument_id
             AND realm_instrument_t.instrument_id
-                = instrument_t.instrument_id
+                = instrument_t.instrument_id (+)
             AND realm_instrument_t.realm_id=?',
 	    [$self->get('realm_transaction_id', 'realm_id')]);
     }
