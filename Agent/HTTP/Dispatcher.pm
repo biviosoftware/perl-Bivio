@@ -134,10 +134,15 @@ sub handler {
 	return Apache::Constants::OK();
     });
     my($die) = $_SELF->process_request($r);
-    $r->log_reason($die->as_string)
+
+    # Log the error
+    if (defined($die) && $die->get('code')
 	    # Keep in synch with Reply::die_to_http_code
-	    if defined($die) && $die->get('code')
-		    ne Bivio::DieCode::CLIENT_REDIRECT_TASK();
+	    ne Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
+	my($u) = $r->user() || 'ANONYMOUS';
+	$r->log_reason($u.' '.$die->as_string)
+    }
+
     Apache->push_handlers('PerlCleanupHandler', sub {
 	Bivio::Agent::Job::Dispatcher->execute_queue();
 	return Apache::Constants::OK();
