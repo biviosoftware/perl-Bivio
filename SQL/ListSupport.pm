@@ -74,6 +74,11 @@ Date qualification field, used to qualify queries.
 
 Optionally override the FROM clause.  Use this feature with caution.
 
+=item group_by : array_ref
+
+Optionally, a list of fields and field identities that can be used
+to group the result.
+
 =item other : array_ref
 
 A list of fields and field identities that have no ordering.
@@ -484,7 +489,7 @@ sub _find_list_start {
 sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	    [qw(auth_id date parent_id primary_key order_by other)]);
+	    [qw(auth_id date parent_id primary_key order_by group_by other)]);
 
     if ($decl->{where}) {
 	$where .= length($where) ? ' AND ' : ' WHERE ';
@@ -793,6 +798,17 @@ sub _page_number {
     return int(--$num_rows/$query->get('count')) + $query->FIRST_PAGE();
 }
 
+# _prepare_group_by(self, string_ref where)
+#
+# Adds GROUP BY
+#
+sub _prepare_group_by {
+    my($self, $where, $params) = @_;
+    $$where .= ' GROUP BY '
+	. join(', ', map($_->{sql_name}, @{$self->get('group_by')}));
+    return;
+}
+
 # _prepare_order_by(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
 #
 # Generates the ORDER BY clause from the query and order_by columns.
@@ -853,6 +869,8 @@ sub _prepare_where {
     }
     _prepare_where_date($self, $query, $where, $params)
 	if $attrs->{date};
+    _prepare_group_by($self, $where)
+	if @{$attrs->{group_by}};
     _prepare_order_by($self, $query, $where, $params)
 	if @{$attrs->{order_by}};
 
