@@ -3,10 +3,11 @@
 package Bivio::Biz::Model::PortfolioDeductionList;
 use strict;
 $Bivio::Biz::Model::PortfolioDeductionList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::PortfolioDeductionList::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::PortfolioDeductionList - lists portfolio income entries
+Bivio::Biz::Model::PortfolioDeductionList - lists portfolio expense entries
 
 =head1 SYNOPSIS
 
@@ -32,17 +33,44 @@ C<Bivio::Biz::Model::PortfolioDeductionList> lists portfolio expense entries
 
 #=IMPORTS
 use Bivio::Biz::Accounting::Tax;
-use Bivio::Biz::Model::RealmInstrument;
-use Bivio::SQL::Connection;
 use Bivio::Type::Amount;
-use Bivio::Type::Date;
+use Bivio::Type::DateInterval;
 use Bivio::Type::DateTime;
-use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
+my($_INSTRUMENT_FEE_LIST) = Bivio::Biz::ListModel->new_anonymous({
+    version => 1,
+    auth_id => [qw(RealmTransaction.realm_id)],
+    primary_key => [
+	[qw(Entry.entry_id)],
+    ],
+    date => ['RealmTransaction.date_time'],
+    want_date => 1,
+    other => [qw(
+        Entry.amount
+        Entry.entry_type
+        Entry.class
+        Entry.tax_basis
+        Entry.tax_category
+        RealmInstrument.name
+        Instrument.name
+        ),
+	[qw(RealmTransaction.realm_transaction_id
+            Entry.realm_transaction_id)],
+	[qw(Entry.entry_id RealmInstrumentEntry.entry_id)],
+	[qw(RealmInstrumentEntry.realm_instrument_id
+            RealmInstrument.realm_instrument_id)],
+	[qw{RealmInstrument.instrument_id Instrument.instrument_id(+)}],
+    ],
+    where => [
+	'Entry.tax_category', '=',
+	Bivio::Type::TaxCategory::MISC_EXPENSE()->as_sql_param,
+    ],
+});
 
 =head1 METHODS
 
@@ -63,10 +91,6 @@ sub internal_initialize {
 	primary_key => [
 	    [qw(Entry.entry_id)],
 	],
-#	order_by => [qw(
-#	    RealmTransaction.date_time
-#            RealmTransaction.remark
-#        )],
 	other => [qw(
 	    RealmTransaction.date_time
             RealmTransaction.remark
@@ -74,18 +98,28 @@ sub internal_initialize {
             Entry.entry_type
             Entry.class
 	    Entry.tax_basis
+            ExpenseCategory.name
+            ExpenseCategory.deductible
 	    ),
 	    [qw(Entry.realm_transaction_id
                 RealmTransaction.realm_transaction_id)],
+	    [qw(Entry.entry_id ExpenseInfo.entry_id)],
+	    [qw(ExpenseInfo.expense_category_id
+                    ExpenseCategory.expense_category_id)],
 	],
 	where => [
 	    'Entry.entry_type', '=',
 	    Bivio::Type::EntryType::CASH_EXPENSE()->as_sql_param,
-            'and',
+            'AND',
             'Entry.class', '=',
 	    Bivio::Type::EntryClass::CASH()->as_sql_param,
-	    'and',
+	    'AND',
 	    'Entry.tax_basis', '=', '1',
+	    'AND',
+	    'ExpenseCategory.deductible', '=', '1',
+	    'AND',
+	    'RealmTransaction.date_time', 'BETWEEN',
+	    $_SQL_DATE_VALUE, 'AND', $_SQL_DATE_VALUE,
 	],
     };
 }
@@ -100,61 +134,35 @@ Returns rows.
 
 sub internal_load_rows {
     my($self, $query, $where, $params, $sql_support) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($req) = $self->get_request;
-
     my($rows) = $self->SUPER::internal_load_rows($query, $where, $params,
 	    $sql_support);
 
-    # get any investment fees
-    my($names) = {};
-    my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
-    my($date_param) = Bivio::Type::DateTime->from_sql_value(
-	    'realm_transaction_t.date_time');
-    my($date_value) = Bivio::Type::DateTime->to_sql_value('?');
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT realm_transaction_t.realm_transaction_id,
-                $date_param,
-                entry_t.entry_id, entry_t.amount, entry_t.entry_type,
-                entry_t.class, entry_t.tax_basis,
-                realm_instrument_entry_t.realm_instrument_id
-            FROM realm_transaction_t, entry_t, realm_instrument_entry_t
-            WHERE realm_transaction_t.realm_transaction_id
-                =entry_t.realm_transaction_id
-            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND entry_t.tax_category=?
-            AND realm_transaction_t.date_time >= $date_value
-            AND realm_transaction_t.date_time <= $date_value
-            AND realm_transaction_t.realm_id=?
-            ORDER BY realm_transaction_t.date_time",
-	    [Bivio::Type::TaxCategory->MISC_EXPENSE->as_int,
-		    $fields->{start_date}, $fields->{end_date},
-		    $req->get('auth_id')]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($txn_id, $date, $entry_id, $amount, $type, $class,
-		$basis, $inst_id) = @$row;
+    # add in any fees from instrument transactions
+    $_INSTRUMENT_FEE_LIST->load_all({
+	date => $self->get_request->get('report_date'),
+	interval => Bivio::Type::DateInterval::BEGINNING_OF_YEAR(),
+    });
 
-	unless (exists($names->{$inst_id})) {
-	    $realm_inst->load(realm_instrument_id => $inst_id);
-	    $names->{$inst_id} = "Investment fee: ".$realm_inst->get_name;
-	}
-	my($remark) = $names->{$inst_id};
-	push(@$rows, {
-	    'RealmTransaction.realm_transaction_id' => $txn_id,
-	    'RealmTransaction.date_time' => $date,
-	    'RealmTransaction.remark' => $remark,
-	    'Entry.entry_id' => $entry_id,
-	    'Entry.amount' => $amount,
-	    'Entry.entry_type' => Bivio::Type::EntryType->from_int($type),
-	    'Entry.class' => Bivio::Type::EntryClass->from_int($class),
-	    'Entry.tax_basis' => $basis,
-	});
+    while ($_INSTRUMENT_FEE_LIST->next_row) {
+	my($row) = $_INSTRUMENT_FEE_LIST->get_shallow_copy;
+	$row->{'RealmTransaction.remark'} = 'Investment fee: '
+		.($row->{'RealmInstrument.name'} || $row->{'Instrument.name'});
+	push(@$rows, $row);
     }
 
     # change the sign on all the amounts
     foreach my $row (@$rows) {
 	$row->{'Entry.amount'} = Bivio::Type::Amount->neg(
 		$row->{'Entry.amount'});
+
+	# use the expense category name in the remark
+	if ($row->{'ExpenseCategory.name'}) {
+	    my($remark) = $row->{'RealmTransaction.remark'};
+	    $row->{'RealmTransaction.remark'} = defined($remark)
+		    ? $row->{'ExpenseCategory.name'}."\n".$remark
+		    : $row->{'ExpenseCategory.name'};
+	}
+
 	$row->{'RealmTransaction.remark'} ||= '';
     }
 
@@ -179,29 +187,20 @@ sub internal_load_rows {
 
 =head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
 
-Returns the where clause and params associated as the result of a
-"search" or other "pre_load".
+Adds dynamic start/end dates to the SQL parameters.
 
 =cut
 
 sub internal_pre_load {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE} = {};
-    my($req) = $self->get_request;
-    my($end_date) = $req->get('report_date');
+    my($self, $query, $support, $params) = @_;
+    my($end_date) = $self->get_request->get('report_date');
 
     # get tax year start
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
 	    $end_date);
 
-    $fields->{start_date} = $start_date;
-    $fields->{end_date} = $end_date;
-    my($start) = Bivio::Type::DateTime->to_sql_value("'$start_date'");
-    my($end) = Bivio::Type::DateTime->to_sql_value("'$end_date'");
-    return "realm_transaction_t.date_time >= $start and ".
-	    "realm_transaction_t.date_time <= $end\n".
-		    'order by realm_transaction_t.date_time, '.
-			    'realm_transaction_t.remark';
+    push(@$params, $start_date, $end_date);
+    return '';
 }
 
 
