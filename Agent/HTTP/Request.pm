@@ -88,6 +88,8 @@ sub new {
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
     my $query_string = $r->args;
+#TODO: Apache bug: ?bla&foo=1 will generate "odd number elements in hash"
+#      warning.
     my($query) = defined($query_string) ? {$r->args} : undef;
     my($form) = $r->method_number() eq Apache::Constants::M_POST()
 	    ? {$r->content()} : undef;
@@ -123,10 +125,12 @@ sub new {
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
-If I<query> is not passed, will use this request's query string.
 If I<auth_realm> is C<undef>, request's realm will be used.
 
 =cut
+
+#TODO: Removed this, maybe put back
+#If I<query> is not passed, will use this request's query string.
 
 sub format_uri {
     my($self, $task_id, $query, $auth_realm) = @_;
@@ -139,7 +143,8 @@ sub format_uri {
     # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, int(@_) >= 4 ? $auth_realm : $self->get('auth_realm'));
-    $query = $self->get('query_string') unless int(@_) >= 3;
+#TODO: Is this right?
+#    $query = $self->get('query_string') unless int(@_) >= 3;
     return $uri unless defined($query);
     return $uri.'?'.$query unless ref($query);
 #TODO: Map query strings to brief names
