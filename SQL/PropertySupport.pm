@@ -55,6 +55,13 @@ handling in L<Bivio::SQL::Connection|Bivio::SQL::Connection>.
 The list of select_columns followed FROM table.  Does not include
 WHERE.
 
+=item primary_id_name : string
+
+Computed from the columns.  If there is a column which matches the table name
+followed by C<_id>, e.g. I<table_name_id> for a table called I<table_name_t>,
+this will be the I<primary_id_name> for the table.  See L<create|"create"> for
+how it is set automatically from its corresponding sequence.
+
 =back
 
 =cut
@@ -154,7 +161,7 @@ sub new {
 Inserts a new record into to database and loads the model's properties.
 Dies on errors.
 
-If there is a I<primary_id_column>, the value will be retrieved from
+If there is a I<primary_id_name>, the value will be retrieved from
 the sequence I<table_name_s> (table_name sans '_t', that is) I<if it
 not already set>.
 
