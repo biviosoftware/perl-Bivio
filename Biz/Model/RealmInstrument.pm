@@ -53,6 +53,29 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes this realm instrument and any valuations associated with it.
+This method will die if the instrument has any accounting transactions.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+
+    # delete any valuations
+    Bivio::SQL::Connection->execute('
+            DELETE FROM realm_instrument_valuation_t
+            WHERE realm_id=?
+            AND realm_instrument_id=?',
+	    [$self->get('realm_id', 'realm_instrument_id')]);
+
+    $self->delete();
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -92,6 +115,30 @@ sub get_name {
     return defined($self->get('instrument_id'))
 	    ? $self->get_model('Instrument')->get('name')
 	    : $self->get('name');
+}
+
+=for html <a name="has_transactions"></a>
+
+=head2 has_transactions() : boolean
+
+Returns 1 if the instrument has accounting transactions within the realm.
+
+=cut
+
+sub has_transactions {
+    my($self) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT COUNT(*)
+            FROM realm_instrument_entry_t
+            WHERE realm_id=?
+            AND realm_instrument_id=?',
+	    [$self->get('realm_id', 'realm_instrument_id')]);
+    my($found_transactions) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$found_transactions = $row->[0];
+    }
+    return $found_transactions > 0;
 }
 
 =for html <a name="set_instrument_id"></a>
