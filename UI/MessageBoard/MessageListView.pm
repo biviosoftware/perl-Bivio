@@ -37,8 +37,10 @@ C<Bivio::UI::MessageBoard::MessageListView>
 #=IMPORTS
 use Bivio::Biz::Mail::MessageList;
 use Bivio::IO::Trace;
+use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::ListCellRenderer;
 use Bivio::UI::HTML::ModelRefRenderer;
+use Bivio::UI::HTML::Presentation;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -160,7 +162,7 @@ sub get_nav_links {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_ICON());
 	$_DOWN_LINK->set_description("Next $next_items messages");
 	$_DOWN_LINK->set_url(&_make_path($self, $req)
-		.'?mf=index('.($index + $page_size).')');
+		.&_index($index + $page_size, $req));
     }
     else {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_IA_ICON());
@@ -183,7 +185,7 @@ sub get_nav_links {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_ICON());
 	$_UP_LINK->set_description("Previous $prev_items messages");
 	$_UP_LINK->set_url(&_make_path($self, $req)
-		.'?mf=index('.($index - $prev_items).')');
+		.&_index($index - $prev_items, $req));
     }
     else {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_IA_ICON());
@@ -194,7 +196,79 @@ sub get_nav_links {
     return $_NAV_LINKS;
 }
 
+=for html <a name="render_heading"></a>
+
+=head2 render_heading(ListModel model, Request req)
+
+Overrides base class to draw column sorting stuff. Test only.
+
+=cut
+
+sub render_heading {
+    my($self, $model, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    $req->print('<tr bgcolor="#E0E0FF">');
+    for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
+
+	$req->print('<th align=left>');
+	my($url) = '/'.$req->get_target_name().'/'.$req->get_controller_name()
+		.'/'.$self->get_name().'/';
+	my($dir) = '';
+	my($sort_key) = $model->get_sort_key($i);
+	if ($sort_key) {
+	    my($mf) = $req->get_arg('mf');
+
+	    if ($mf =~ /sort(.)\($sort_key\)/) {
+		if ($1 eq 'a') {
+		    $url .= '?mf=sortd('.$sort_key.')';
+		    $dir = ' <';
+		}
+		else {
+		    $url .= '?mf=sorta('.$sort_key.')';
+		    $dir = ' >';
+		}
+	    }
+	    else {
+		$url .= '?mf=sorta('.$sort_key.')';
+	    }
+	    $req->print('<a href="'.$url.'">');
+	}
+
+	$req->print('<font face="arial,helvetica,sans-serif">');
+	$req->print('<small>'.$model->get_column_heading($i)
+		.'</small></font>');
+
+	$req->print('</a>') if ($sort_key);
+	$req->print($dir) if ($dir);
+	$req->print('</th>');
+    }
+
+    $req->print('</tr>');
+}
+
 #=PRIVATE METHODS
+
+# _index(int index, Request req) : string
+#
+# Returns the mf params with the specified index.
+
+sub _index {
+    my($index, $req) = @_;
+    my($finder) = $req->get_arg('mf');
+
+    if (! $finder) {
+	$finder = 'index('.$index.')';
+    }
+    elsif ($finder =~ /index\(.*\)/) {
+	# replace
+	$finder =~ s/index\((\d+)\)/'index('.($index).')'/e;
+    }
+    else {
+	$finder .= ',index('.$index.')';
+    }
+    return '?mf='.$finder;
+}
 
 # _make_path(View view, Request req) : string
 #

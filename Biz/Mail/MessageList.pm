@@ -103,10 +103,13 @@ sub find {
 
     #TODO: remove hard-coded 15s
     if ($fp->{club}) {
+
+	my($order_by) = &_order_by($fp);
+
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
 		'where club=?', $fp->{'club'});
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		$fields->{index}, 15, 'where club=?', $fp->{'club'});
+		$fields->{index}, 15, 'where club=?'.$order_by, $fp->{'club'});
     }
 
     # set the selected message
@@ -126,6 +129,13 @@ sub find {
     $fields->{prev} = '';
     $fields->{next} = '';
     my($rows) = $self->internal_get_rows();
+    my($sort) = '';
+    if ($fp->{sorta}) {
+	$sort = ',sorta('.$fp->{sorta}.')';
+    }
+    elsif ($fp->{sortd}) {
+	$sort = ',sortd('.$fp->{sortd}.')';
+    }
 
     #TODO: needs revisiting
     for (my($i) = 0; $i < scalar(@$rows); $i++) {
@@ -139,11 +149,12 @@ sub find {
 	    $fields->{prev} = $i > 0 ? $rows->[$i-1]->[0]->[0] : undef;
 	    $fields->{next} = $i < scalar(@$rows) - 1
 		    ? 'index('.($index == 0 ? $index : $index + 1)
-			    .'),id('.$rows->[$i+1]->[0]->[0].')'
+			    .'),id('.$rows->[$i+1]->[0]->[0].')'.$sort
 		    : undef;
 	}
 	#TODO: need to get the rest of the fp params into this
-	$row->[0]->[0] = 'index('.($index >= 0 ? $index : 0).'),id('.$id.')';
+	$row->[0]->[0] = 'index('.($index >= 0 ? $index : 0).'),id('
+		.$id.')'.$sort;
     }
 
     return $self->get_status()->is_OK();
@@ -221,6 +232,24 @@ sub get_selected_message {
     return $fields->{selected};
 }
 
+=for html <a name="get_sort_key"></a>
+
+=head2 get_sort_key(int col) : string
+
+Returns the sorting key for the specified column index.
+
+=cut
+
+sub get_sort_key {
+    my($self, $col) = @_;
+
+#    return 'subject' if $col == 0;
+#    return 'from_name' if $col == 1;
+#    return 'dttm' if $col == 2;
+#    die("invalid column $col");
+    return ('subject','from_name', 'dttm')[$col];
+}
+
 =for html <a name="get_title"></a>
 
 =head2 abstract get_title() : string
@@ -268,6 +297,33 @@ sub _get_date_range {
     return '' if $count == 0;
     return $self->get_value_at(0, 2).' - '
 	    .$self->get_value_at($count - 1, 2);
+}
+
+# _order_by(hash fp) : string
+#
+# creates an 'order by' clause using values from the model find-params
+
+sub _order_by {
+    my($fp) = @_;
+
+    my($order_by) = '';
+    my($sort);
+
+    if ($fp->{sorta}) {
+	$sort = $fp->{sorta};
+	if ($sort eq 'subject' or $sort eq 'from_name'
+		or $sort eq 'dttm') {
+	    $order_by = ' order by email_message.'.$sort;
+	}
+    }
+    elsif ($fp->{sortd}) {
+	$sort = $fp->{sortd};
+	if ($sort eq 'subject' or $sort eq 'from_name'
+		or $sort eq 'dttm') {
+	    $order_by = ' order by email_message.'.$sort.' desc';
+	}
+    }
+    return $order_by;
 }
 
 =head1 COPYRIGHT
