@@ -38,6 +38,7 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
+my($_CONTINUED_STRING_REGEX) = Bivio::UI::PDF::Regex::CONTINUED_STRING_REGEX();
 
 =head1 FACTORIES
 
@@ -123,40 +124,63 @@ sub extract {
     my($self, $line_iter_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-#TODO: Assume that all the string text is on the current line for now.
     my($text) = ${$line_iter_ref->current_ref()};
     my($opening_char) = "\\" . $self->_get_opening_char();
     $text =~ s/\s*$opening_char//;
     $line_iter_ref->replace_first($text);
+    $fields->{'text'} = '';
 
     my($regex) = $self->_get_closing_regex();
-    if (${$line_iter_ref->current_ref()} =~ /$regex/) {
-	if (defined($1)) {
-	    $fields->{'text'} = $1;
-	    $line_iter_ref->replace_first($');
+    # Strings may span many lines.
+    while (1) {
+	if (${$line_iter_ref->current_ref()}
+		=~ /$regex|$_CONTINUED_STRING_REGEX/) {
+	    if (defined($1)) {
+		# We found the end of a string.
+		# If there are any '\)' sequences in the text, the regular
+		# expression will only return the text following the last one.
+		$fields->{'text'} .= $` . $&;
+		# Get rid of the closing paren or angle.
+		chop($fields->{'text'});
+
+		$line_iter_ref->replace_first($');
+
+		_trace("Extracting ", $self->_get_string_type(),
+			" string\n\t\"", $fields->{'text'}, "\"") if $_TRACE;
+		last;
+	    }
+	    elsif (defined($2)) {
+		# We found a continued string.
+		$fields->{'text'} .= $2;
+
+		$line_iter_ref->replace_first($');
+
+		_trace("Extracting continued string\n\t\"",
+			$fields->{'text'}, "\"") if $_TRACE;
+
+		# Go to the next line.
+		$line_iter_ref->increment();
+	    } else {
+		die(__FILE__,", ", __LINE__, ": no matched text returned\n");
+	    }
+	}
+	elsif ($self->_get_closing_char()
+		eq substr(${$line_iter_ref->current_ref()}, 0, 1)) {
+	    # The regular expression didn't match because the next character is
+	    # just the string closing character, which it doesn't match.
+	    $fields->{'text'} = '';
+	    $line_iter_ref->replace_first(
+		    substr(${$line_iter_ref->current_ref()}, 1));
 
 	    _trace("Extracting ", $self->_get_string_type(),
-		    " string\n\t\"", $text, "\"") if $_TRACE;
-	} else {
-	    die(__FILE__,", ", __LINE__, ": no matched text returned\n");
+		    " string\n\t\"", $fields->{'text'}, "\"") if $_TRACE;
+	    last;
+	}
+	else {
+	    die(__FILE__,", ", __LINE__, ": No match for \"",
+		    ${$line_iter_ref->current_ref()}, "\"\n");
 	}
     }
-    elsif ($self->_get_closing_char()
-	    eq substr(${$line_iter_ref->current_ref()}, 0, 1)) {
-	# The regular expression didn't match because the next character is
-	# just the string closing character, which it doesn't match.
-	$fields->{'text'} = '';
-	$line_iter_ref->replace_first(
-		substr(${$line_iter_ref->current_ref()}, 1));
-
-	_trace("Extracting ", $self->_get_string_type(),
-		" string\n\t\"", $text, "\"") if $_TRACE;
-    }
-    else {
-	die(__FILE__,", ", __LINE__, ": No match for \"",
-		${$line_iter_ref->current_ref()}, "\"\n");
-    }
-
     return;
 }
 

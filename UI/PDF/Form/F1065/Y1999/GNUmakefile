@@ -20,6 +20,7 @@ modules=  \
 	../IndirectObj.pm \
 	../IndirectObjRef.pm \
 	../Name.pm \
+	../Null.pm \
 	../Number.pm \
 	../ObjRef.pm \
 	../OpaqueUpdate.pm \

@@ -1,0 +1,5 @@
+The GNUmakefile in this directory controls the building of the .pdf
+file in all the sub-directories.  It also builds sub GNUmakefiles.
+The safest thing to do after any changes that may affect the .pdf
+files is to do a "make clean" in this directory and then a "make".
+This will rebuild everything.

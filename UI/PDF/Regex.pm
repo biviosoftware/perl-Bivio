@@ -77,6 +77,20 @@ sub COMMENT_REGEX {
     return('^\s*(%.*)');
 }
 
+=for html <a name="CONTINUED_STRING_REGEX"></a>
+
+=head2 CONTINUED_STRING_REGEX : string
+
+This regular expression matches the text of a string that is continued onto the
+next line.  It returns the text without the '\' that escapes the end of line
+character.
+
+=cut
+
+sub CONTINUED_STRING_REGEX {
+    return '(.*)\\\\$';
+}
+
 =for html <a name="DIC_END_REGEX"></a>
 
 =head2 DIC_END_REGEX : string
@@ -203,6 +217,18 @@ sub NAME_REGEX {
     return('^\s*/([-!"$&-+.0-;=?-Z\^-z|]+)');
 }
 
+=for html <a name="NULL_OBJ_REGEX"></a>
+
+=head2 NULL_OBJ_REGEX : string
+
+This regular expression matches the 'null' keyword of a null direct object.
+
+=cut
+
+sub NULL_OBJ_REGEX {
+    return '^\s*(null)';
+}
+
 =for html <a name="NUMBER_REGEX"></a>
 
 =head2 NUMBER_REGEX : string
@@ -289,14 +315,17 @@ This regular expression matches the end of an angle string and returns the text 
 =cut
 
 sub STRING_END_ANGLE_REGEX {
-    return('(.*[^\\\\]*)>');
+    return('([0-9a-fA-F\s]*)>');
+#    return('(.*[^\\\\]*)>');
 }
 
 =for html <a name="STRING_END_PAREN_REGEX"></a>
 
 =head2 STRING_END_PAREN_REGEX : string
 
-This regulare expression matches the end of a paren string and returns the text before the final ')'.
+This regulare expression matches the end of a paren string and returns the text
+before the final ')'.  If the string contains any '\)' sequences, it only
+returns the text following the last one.
 
 =cut
 

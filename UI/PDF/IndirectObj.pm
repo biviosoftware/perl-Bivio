@@ -30,6 +30,7 @@ use Bivio::UI::PDF::Array;
 use Bivio::UI::PDF::Boolean;
 use Bivio::UI::PDF::Dictionary;
 use Bivio::UI::PDF::Name;
+use Bivio::UI::PDF::Null;
 use Bivio::UI::PDF::Number;
 use Bivio::UI::PDF::Regex;
 use Bivio::UI::PDF::Stream;

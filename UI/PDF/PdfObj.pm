@@ -25,10 +25,13 @@ C<Bivio::UI::PDF::PdfObj>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::UI::PDF::IndirectObjRef;
 use Bivio::UI::PDF::Regex;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_ARRAY_END_REGEX) = Bivio::UI::PDF::Regex::ARRAY_END_REGEX();
@@ -37,6 +40,7 @@ my($_BOOLEAN_REGEX) = Bivio::UI::PDF::Regex::BOOLEAN_REGEX();
 my($_DIC_START_REGEX) = Bivio::UI::PDF::Regex::DIC_START_REGEX();
 my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
 my($_NAME_REGEX) = Bivio::UI::PDF::Regex::NAME_REGEX();
+my($_NULL_OBJ_REGEX) = Bivio::UI::PDF::Regex::NULL_OBJ_REGEX();
 my($_NUMBER_REGEX) = Bivio::UI::PDF::Regex::NUMBER_REGEX();
 my($_OBJ_REF_REGEX) = Bivio::UI::PDF::Regex::OBJ_REF_REGEX();
 my($_STRING_START_ANGLE_REGEX) = Bivio::UI::PDF::Regex::STRING_START_ANGLE_REGEX();
@@ -94,7 +98,9 @@ sub extract_direct_obj {
 
     my($direct_obj_ref);
 
-    if (${$line_iter_ref->current_ref()} =~ /$_ARRAY_START_REGEX|$_BOOLEAN_REGEX|$_DIC_START_REGEX|$_NAME_REGEX|$_OBJ_REF_REGEX|$_NUMBER_REGEX|$_STRING_START_PAREN_REGEX|$_STRING_START_ANGLE_REGEX/) {
+    _trace('Input text is "', ${$line_iter_ref->current_ref()}, '"') if $_TRACE;
+
+    if (${$line_iter_ref->current_ref()} =~ /$_ARRAY_START_REGEX|$_BOOLEAN_REGEX|$_DIC_START_REGEX|$_NAME_REGEX|$_OBJ_REF_REGEX|$_NUMBER_REGEX|$_STRING_START_PAREN_REGEX|$_STRING_START_ANGLE_REGEX|$_NULL_OBJ_REGEX/) {
 	if (defined($1)) {
 	    # We found the start of an array.
 	    $direct_obj_ref = Bivio::UI::PDF::Array->new();
@@ -119,10 +125,13 @@ sub extract_direct_obj {
 	    $direct_obj_ref = Bivio::UI::PDF::Number->new();
 	} elsif (defined($8)) {
 	    # We found the start of a string in parens.
-	    $direct_obj_ref = Bivio::UI::PDF::StringParen->new($direct_obj_ref);
+	    $direct_obj_ref = Bivio::UI::PDF::StringParen->new();
 	} elsif (defined($9)) {
 	    # We found the start of a string in angle brackets.
-	    $direct_obj_ref = Bivio::UI::PDF::StringAngle->new($direct_obj_ref);
+	    $direct_obj_ref = Bivio::UI::PDF::StringAngle->new();
+	} elsif (defined($10)) {
+	    # We found the start of a null object.
+	    $direct_obj_ref = Bivio::UI::PDF::Null->new();
 	} else {
 	    die(__FILE__,", ", __LINE__,
 		    ": No match text returned\n");

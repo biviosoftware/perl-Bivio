@@ -26,8 +26,6 @@ my($module_file, $module_class, $parent_class, $pdf_file, $xlator_set_class)
 # Create a Pdf object that parses the input Pdf file.
 my($pdf_ref) = Bivio::UI::PDF::Pdf->new();
 $pdf_ref->parse_complete_pdf($pdf_file);
-#$pdf_ref->print_stuff();
-#my($pdf_text_ref) = $pdf_ref->emit();
 
 # Read in the data, which is a template for the module file we are building.
 my($old_record_separator) = $/;

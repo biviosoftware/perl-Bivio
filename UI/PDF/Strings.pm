@@ -106,6 +106,18 @@ sub FIELD_TEXT {
     return('Field Text');
 }
 
+=for html <a name="NULL_OBJ_VALUE"></a>
+
+=head2 NULL_OBJ_VALUE : string
+
+
+
+=cut
+
+sub NULL_OBJ_VALUE {
+    return 'null';
+}
+
 =for html <a name="XLATOR_SET"></a>
 
 =head2 XLATOR_SET : string

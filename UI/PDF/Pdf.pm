@@ -369,31 +369,35 @@ sub parse_complete_pdf {
     # indirect references to all the field objects.
     my($acroform_ref) = $fields->{'catalog_ref'}->get_direct_obj_ref()
 	    ->get_value('AcroForm');
-    $acroform_ref = $acroform_ref->get_obj_number();
-    $acroform_ref = ${$fields->{'object_refs_ref'}}{$acroform_ref};
-    # This gets a reference to the dictionary, finally.
-    $acroform_ref = $acroform_ref->get_direct_obj_ref();
+    if (defined($acroform_ref)) {
+	$acroform_ref = $acroform_ref->get_obj_number();
+	$acroform_ref = ${$fields->{'object_refs_ref'}}{$acroform_ref};
+	# This gets a reference to the dictionary, finally.
+	$acroform_ref = $acroform_ref->get_direct_obj_ref();
 
-    # This is a reference to the array of indirect references to the field
-    # objects.
-    my($field_array_ref) = $acroform_ref->get_value('Fields')->get_array_ref();
+	# This is a reference to the array of indirect references to the field
+	# objects.
+	my($field_array_ref) = $acroform_ref->get_value('Fields')
+		->get_array_ref();
 
-    # Go through the array and add aeach object to the dictionary of field
-    # objects.
-    map {
-	# Each entry in the array should be a reference to an indirect object
-	# reference object.
-	my($obj_number) = $_->get_obj_number();
-	# Get a reference to an IndirectObj object.
-	my($indirect_obj_ref) = ${$fields->{'object_refs_ref'}}{$obj_number};
-	# Get a reference to the direct object (a dictionary).
-	my($direct_obj_ref) = $indirect_obj_ref->get_direct_obj_ref();
-	my($field_name) = undef;
-	$field_name = $direct_obj_ref->get_value('T')->get_value();
-	# Store a reference to the indirect object in the field_refs_ref
-	# dictionary with the field name as key.
-	${$fields->{'field_refs_ref'}}{$field_name} = $indirect_obj_ref;
-    } @{$field_array_ref};
+	# Go through the array and add aeach object to the dictionary of field
+	# objects.
+	map {
+	    # Each entry in the array should be a reference to an indirect
+	    # object reference object.
+	    my($obj_number) = $_->get_obj_number();
+	    # Get a reference to an IndirectObj object.
+	    my($indirect_obj_ref)
+		    = ${$fields->{'object_refs_ref'}}{$obj_number};
+	    # Get a reference to the direct object (a dictionary).
+	    my($direct_obj_ref) = $indirect_obj_ref->get_direct_obj_ref();
+	    my($field_name) = undef;
+	    $field_name = $direct_obj_ref->get_value('T')->get_value();
+	    # Store a reference to the indirect object in the field_refs_ref
+	    # dictionary with the field name as key.
+	    ${$fields->{'field_refs_ref'}}{$field_name} = $indirect_obj_ref;
+	} @{$field_array_ref};
+    }
 
     return;
 }
@@ -528,13 +532,13 @@ sub _sort_updates {
     unless ($#updates_tmp == $#{$fields->{'updates_ref'}}) {
 	# A file that has been lineraized doesn't have all its updates linked
 	# together in the normal way.  Assume that if we are just missing one
-	# update, and there are just two, total, that the missing one is the
-	# liniarize update, which has a dummy startxref offset of 0.  Add it
-	# in.
-	if ((0 == $#updates_tmp) && (1 == $#{$fields->{'updates_ref'}})) {
+	# update, the missing one is the liniarize update, which has a dummy
+	# startxref offset of 0.  Add it in.
+	if ($#updates_tmp + 1 == $#{$fields->{'updates_ref'}}) {
 	    $next_update_ref = $self->_get_dummy_startxref_update();
 	} else {
-	    die(__FILE__,", ", __LINE__, ": missing updates\n");
+	    die("Missing updates; sorted ", $#updates_tmp + 1, " out of ",
+		   $#{$fields->{'updates_ref'}} + 1, "\n");
 	}
 	push(@updates_tmp, $next_update_ref);
     }
