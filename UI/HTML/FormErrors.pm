@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::FormErrors;
 use strict;
 $Bivio::UI::HTML::FormErrors::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::FormErrors::VERSION;
 
 =head1 NAME
 
@@ -325,4 +326,9 @@ You cannot enter this transaction because no one in your club has
 made any payments prior to the transaction date.
 @{[_link($source, 'CLUB_ACCOUNTING_PAYMENT',
 'Enter member payments using this link')]}.
+%%
+AccountTransactionForm
+ExpenseCategory.expense_category_id
+PRIMARY_ID
+You must select an expense category.
 %%
