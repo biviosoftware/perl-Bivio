@@ -32,6 +32,8 @@ demo clubs.
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RealmType;
+use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberEntry;
@@ -55,25 +57,44 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 execute(Bivio::Agent::Request req)
 
-Uses the 'source_club_id' and 'target_club_id' request parameters to copy
-club data.
+Uses the 'source', 'target_name', and 'target_full_name' request
+parameters to copy club data.
 
 =cut
 
 sub execute {
     my($self, $req) = @_;
 
-    my($source) = $req->get('source_club_id');
-    my($target) = $req->get('target_club_id');
+    my($source) = $req->get('source');
+    my($source_id) = $source->get('realm_id');
+    my($name) = $req->get('target_name');
+    my($full_name) = $req->get('target_full_name');
 
-    my($id_map) = {$source => $target};
+    my($old_club) = Bivio::Biz::Model::Club->new($req);
+    $old_club->unauth_load(club_id => $source_id)
+	    || die("can't load source club $source_id");
+    my($new_club) = Bivio::Biz::Model::Club->new($req);
+    $new_club->create({
+	full_name => $full_name,
+	kbytes_in_use => $old_club->get('kbytes_in_use'),
+	max_storage_kbytes => $old_club->get('max_storage_kbytes')
+    });
+    my($new_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    $new_realm->create({
+	realm_id => $new_club->get('club_id'),
+	name => $name,
+	realm_type => Bivio::Auth::RealmType::CLUB()
+    });
+
+    my($id_map) = {$source_id => $new_realm->get('realm_id')};
 
     # mail messages
-    _copy($id_map, 'mail_message', {club_id => $source},
+    _copy($id_map, 'mail_message', {club_id => $source_id},
 	    Bivio::Biz::Model::MailMessage->new($req));
+    Bivio::Biz::Model::MailMessage->copy_club($source, $new_realm);
 
     # transactions and base entries
-    my($ids) = _copy($id_map, 'realm_transaction', {realm_id => $source},
+    my($ids) = _copy($id_map, 'realm_transaction', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmTransaction->new($req));
     foreach my $id (@$ids) {
 	_copy($id_map, 'entry', {realm_transaction_id => $id},
@@ -81,7 +102,7 @@ sub execute {
     }
 
     # instruments, valuations, and entries
-    $ids = _copy($id_map, 'realm_instrument', {realm_id => $source},
+    $ids = _copy($id_map, 'realm_instrument', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmInstrument->new($req));
     foreach my $id (@$ids) {
 	_copy($id_map, 'realm_instrument_valuation',
@@ -94,7 +115,7 @@ sub execute {
     }
 
     # accounts and entries
-    $ids = _copy($id_map, 'realm_account', {realm_id => $source},
+    $ids = _copy($id_map, 'realm_account', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmAccount->new($req));
     foreach my $id (@$ids) {
 	_copy($id_map, 'realm_account_entry', {realm_account_id => $id},
@@ -103,10 +124,10 @@ sub execute {
     }
 
     # members and entries
-    _copy($id_map, 'realm_user', {realm_id => $source},
+    _copy($id_map, 'realm_user', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmUser->new($req));
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select user_id from realm_user_t where realm_id=?', [$source]);
+	    'select user_id from realm_user_t where realm_id=?', [$source_id]);
     my($row);
     while ($row = $sth->fetchrow_arrayref) {
 	my($user_id) = $row->[0];
@@ -160,6 +181,8 @@ sub _copy {
 	if (defined($extra_field)) {
 	    $properties->{$extra_field} =
 		    $id_map->{$properties->{$extra_field}};
+	    # skip if not present (not part of realm)
+	    next unless defined($properties->{$extra_field});
 	}
 	$model->create($properties);
 
