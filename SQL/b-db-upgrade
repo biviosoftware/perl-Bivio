@@ -250,53 +250,26 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_recalculate_2001_gains($req);
+    _upgrade_add_renewal_column($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_recalculate_2001_gains(Bivio::Agent::Request req)
+# _upgrade_add_renewal_column(Bivio::Agent::Request req)
 #
-# Recaculates the gains for the 2001 year. Will add Five Year Capital
-# gains if appropriate.
+# Adds the ec_subscription_t.renewal_state.
 #
-sub _upgrade_recalculate_2001_gains {
+sub _upgrade_add_renewal_column {
     my($req) = @_;
-    use Bivio::Biz::Accounting::InstrumentAudit;
-    use Bivio::Biz::Accounting::AllocationCache;
-    my($audit) = Bivio::Biz::Accounting::InstrumentAudit->new($req);
-    my($date) = Bivio::Type::Date->from_literal_or_die('1/1/2001');
-
-    print("recalculating sale gains for 2001\n");
-
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT realm_owner_t.name
-        FROM realm_owner_t, club_t
-        WHERE realm_owner_t.realm_id=club_t.club_id
-        ORDER BY realm_owner_t.name',
-	[]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($name) = $row->[0];
-	print("\t", $name, "\n");
-	$req->set_realm($name);
-	$audit->audit($date);
-    }
-
-    # invalid allocations for affected clubs
-    print("clearing allocations for clubs with 5 year gains\n");
-    $sth  = Bivio::SQL::Connection->execute('
-        SELECT DISTINCT(realm_owner_t.name)
-        FROM realm_owner_t, entry_t
-        WHERE realm_owner_t.realm_id=entry_t.realm_id
-        AND entry_t.tax_category=?
-        ORDER BY realm_owner_t.name',
-	[Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->as_int]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($name) = $row->[0];
-	print("\t", $name, "\n");
-	$req->set_realm($name);
-	Bivio::Biz::Accounting::AllocationCache->new($req)->invalidate($date);
-    }
+    _add_column('ec_subscription_t', 'renewal_state', 'NUMBER(2)', 1);
+    _do_sql("
+ALTER TABLE ec_subscription_t modify renewal_state not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t4
+  check (renewal_state between 1 and 4)
+/
+");
     return;
 }
 
