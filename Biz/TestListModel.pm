@@ -2,8 +2,6 @@
 # $Id$
 package Bivio::Biz::TestListModel;
 use strict;
-use Bivio::Biz::FieldDescriptor();
-use Bivio::Biz::ListModel();
 $Bivio::Biz::TestListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -23,6 +21,7 @@ L<Bivio::Biz::ListModel>
 
 =cut
 
+use Bivio::Biz::ListModel;
 @Bivio::Biz::TestListModel::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
@@ -34,6 +33,9 @@ C<Bivio::Biz::TestListModel>
 =head1 CONSTANTS
 
 =cut
+
+#=IMPORTS
+use Bivio::Biz::FieldDescriptor;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -65,7 +67,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 find(hash find_params) : boolean
 
 Loads the list using the specified parameters. Query fields may be
 'index', ...
@@ -76,7 +78,7 @@ sub find {
     my($self, $fp) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $fields->{index} = $fp->get_value('index') || 1;
+    $fields->{index} = $fp->{'index'} || 1;
 }
 
 =for html <a name="get_column_count"></a>

@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::Biz::TestModel;
 use strict;
-use Bivio::Biz::Model();
 $Bivio::Biz::TestModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -22,6 +21,7 @@ L<Bivio::Biz::Model>
 
 =cut
 
+use Bivio::Biz::Model;
 @Bivio::Biz::TestModel::ISA = qw(Bivio::Biz::Model);
 
 =head1 DESCRIPTION
@@ -66,7 +66,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams p)
+=head2 find(hash find_params)
 
 This is ignored because test model has no state.
 
