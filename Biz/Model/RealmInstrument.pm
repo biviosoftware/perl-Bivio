@@ -51,48 +51,6 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="get_first_buy_date"></a>
-
-=head2 static get_first_buy_date(string realm_instrument_id) : string
-
-Returns the date of the first buy or valuation of the specified
-instrument.
-
-sub get_first_buy_date {
-#TODO: input array of instruments and use group by
-    my(undef, $realm_instrument_id) = @_;
-
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select '.Bivio::Type::DateTime->from_sql_value(
-		    'min(realm_transaction_t.date_time)')
-	    .' from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.entry_type = 200 and realm_instrument_entry_t.realm_instrument_id=?',
-	    [$realm_instrument_id]);
-
-    my($date);
-    my($row);
-    if ($row = $sth->fetchrow_arrayref()) {
-	$date = Bivio::Type::DateTime->from_sql_column($row->[0]);
-    }
-
-    $sth = Bivio::SQL::Connection->execute(
-	    'select '.Bivio::Type::DateTime->from_sql_value(
-		    'min(realm_instrument_valuation_t.date_time)')
-	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=?',
-	   [$realm_instrument_id]);
-
-    if ($row = $sth->fetchrow_arrayref()) {
-	my($date2) = Bivio::Type::DateTime->from_sql_column($row->[0]);
-
-	if (!defined($date) ||
-		Bivio::Type::DateTime->compare($date, $date2) > 0) {
-	    $date = $date2;
-	}
-    }
-    return $date;
-}
-
-=cut
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -130,25 +88,6 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
-
-# _date_less_than(string date, string date2) : boolean
-#
-# Returns true if date is less than date2.
-#
-sub _date_less_than {
-    my($date, $date2) = @_;
-
-    my($j, $s) = $date =~ /^(.*)\s(.*)$/;
-    my($j2, $s2) = $date2 =~ /^(.*)\s(.*)$/;
-
-    if ($j < $j2) {
-	return 1;
-    }
-    if ($j == $j2) {
-	return $s < $2;
-    }
-    return 0;
-}
 
 =head1 COPYRIGHT
 
