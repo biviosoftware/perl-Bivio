@@ -603,7 +603,7 @@ sub _parse_version {
     my($value) = $attrs->{v};
     $attrs->{version} = $support->get('version');
     return unless defined($value);
-    return if $attrs->{version} == $value;
+    return if $attrs->{version} eq $value;
     _die($die, Bivio::DieCode::VERSION_MISMATCH(), 'invalid version', $value);
 }
 
