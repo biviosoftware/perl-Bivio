@@ -380,7 +380,7 @@ my(@_CFG) = (
         Bivio::Type::ECSubscription->execute_account_keeper
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        next=CLUB_ADMIN_EC_ACCOUNT_SYNC_DONE
         cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
@@ -3013,7 +3013,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::AccountSyncForm
         Bivio::UI::HTML::Club::ECAccountSyncDone
-        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+        next=CLUB_ACCOUNTING_REALM_ACCOUNT_EDIT
         require_secure=1
     )],
    );
