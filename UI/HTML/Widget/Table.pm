@@ -304,6 +304,44 @@ sub new {
 
 =cut
 
+=for html <a name="create_cell"></a>
+
+=head2 create_cell(Bivio::Biz::Model model, string col, hash_ref attrs) : Bivio::UI::HTML::Widget
+
+Returns the widget for the specified cell. The model is used for
+column metadata which may be used to construct a widget.
+
+=cut
+
+sub create_cell {
+    my($self, $model, $col, $attrs) = @_;
+
+    my($cell);
+    # see if widget is already provided
+    if ($attrs->{column_widget}) {
+	$cell = $attrs->{column_widget};
+	$cell->put(%$attrs);
+    }
+    elsif ($col eq '') {
+#TODO: optimize, could share instances with common span
+	$cell =  Bivio::UI::HTML::Widget::Join->new({
+	    values => ['&nbsp;'],
+	    column_span => $attrs->{column_span} || 1,
+	});
+    }
+    else {
+	my($type) = $model->get_field_type($col);
+	$cell = Bivio::UI::HTML::WidgetFactory->create(
+		ref($model).'.'.$col, $attrs);
+	unless ($cell->has_keys('column_summarize')) {
+	    $cell->put(column_summarize => UNIVERSAL::isa($type,
+		    'Bivio::Type::Amount'));
+	}
+    }
+    $self->initialize_child_widget($cell);
+    return $cell;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -354,7 +392,7 @@ sub initialize {
 	else {
 	    $attrs = {field => $col};
 	}
-	my($cell) = _get_cell($self, $list, $col, $attrs);
+	my($cell) = $self->create_cell($list, $col, $attrs);
 	push(@$cells, $cell);
 
         # Can we sort on this column?
@@ -398,6 +436,28 @@ sub initialize {
     $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
     $fields->{table_prefix} = $prefix;
+    return;
+}
+
+=for html <a name="initialize_child_widget"></a>
+
+=head2 initialize_child_widget(Bivio::UI::HTML::Widget widget)
+
+Initializes the specified widget.
+
+=cut
+
+sub initialize_child_widget {
+    my($self, $widget) = @_;
+
+    $widget->put(parent => $self);
+    $widget->initialize;
+    my($column_prefix) = Bivio::UI::Align->as_html(
+	    $widget->get_or_default('column_align', 'LEFT'));
+    $column_prefix .= ' nowrap' if $widget->unsafe_get('column_nowrap');
+    my($span) = $widget->get_or_default('column_span', 1);
+    $column_prefix .= " colspan=$span" if $span != 1;
+    $widget->put(column_prefix => $column_prefix);
     return;
 }
 
@@ -448,7 +508,7 @@ sub render {
 
     # headings
     if ($self->get_or_default('show_headings', 1)) {
-	_render_row($headings, $list, $buffer);
+	$self->render_row($headings, $list, $buffer);
 	$$buffer .= "\n<tr><td colspan=$colspan>";
 	$fields->{separator}->render($list, $buffer);
 	$$buffer .= "</td>\n</tr>",
@@ -475,14 +535,14 @@ sub render {
 	    Bivio::Type::UserPreference::PAGE_SIZE());
     my($row_count) = 0;
     while ($list->next_row) {
-	_render_row($cells, $list, $buffer,
+	$self->render_row($cells, $list, $buffer,
 		$is_even_row ? $even_row : $odd_row, 1);
 	$is_even_row = !$is_even_row;
 
 	if ($repeat_headings) {
 	    $row_count++;
 	    if ($row_count % $list_size == 0) {
-		_render_row($headings, $list, $buffer);
+		$self->render_row($headings, $list, $buffer);
 		$$buffer .= "\n<tr><td colspan=$colspan>";
 		$fields->{separator}->render($list, $buffer);
 		$$buffer .= "</td>\n</tr>",
@@ -501,53 +561,51 @@ sub render {
     if ($self->get_or_default('summarize',
 	    $self->unsafe_get('summary_line_type') ? 1 : 0)) {
 	my($summary_list) = $list->get_summary;
-	_render_row($summary_cells, $summary_list, $buffer);
+	$self->render_row($summary_cells, $summary_list, $buffer);
     }
 
     # summary lines
     if ($self->unsafe_get('summary_line_type')) {
-	_render_row($summary_lines, $list, $buffer);
+	$self->render_row($summary_lines, $list, $buffer);
     }
 
     $$buffer .= "\n</table>" if $self->get_or_default('end_tag', 1);
     return;
 }
 
-#=PRIVATE METHODS
+=for html <a name="render_row"></a>
 
-# _get_cell(Bivio::Biz::ListModel list, string col, hash_ref attrs) : Bivio::UI::HTML::Widget
-#
-# Returns the widget for the specified cell. The list model is used for
-# column metadata which may be used to construct a widget.
-#
-sub _get_cell {
-    my($self, $list, $col, $attrs) = @_;
+=head2 render_row(array_ref cells, any source, string_ref buffer)
 
-    my($cell);
-    # see if widget is already provided
-    if ($attrs->{column_widget}) {
-	$cell = $attrs->{column_widget};
-	$cell->put(%$attrs);
+=head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean fix_space)
+
+Renders the specified set of widgets onto the output buffer.
+If fix_space is true, then empty strings will be rendered as '&nbsp;'.
+
+=cut
+
+sub render_row {
+    my($self, $cells, $source, $buffer, $row_prefix, $fix_space) = @_;
+    $row_prefix ||= "\n<tr>";
+    $$buffer .= $row_prefix;
+    foreach my $cell (@$cells) {
+	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
+        $$buffer .= ' width="100%"'
+                if $cell->get_or_default('heading_expand', 0);
+        $$buffer .= '>';
+
+	# Insert a "&nbsp;" if the widget doesn't render.  This
+	# makes the table look nicer on certain browsers.
+	my($start) = length($$buffer);
+	$cell->render($source, $buffer);
+	$$buffer .= '&nbsp;' if length($$buffer) == $start && $fix_space;
+	$$buffer .= '</td>';
     }
-    elsif ($col eq '') {
-#TODO: optimize, could share instances with common span
-	$cell =  Bivio::UI::HTML::Widget::Join->new({
-	    values => ['&nbsp;'],
-	    column_span => $attrs->{column_span} || 1,
-	});
-    }
-    else {
-	my($type) = $list->get_field_type($col);
-	$cell = Bivio::UI::HTML::WidgetFactory->create(
-		ref($list).'.'.$col, $attrs);
-	unless ($cell->has_keys('column_summarize')) {
-	    $cell->put(column_summarize => UNIVERSAL::isa($type,
-		    'Bivio::Type::Amount'));
-	}
-    }
-    _initialize_widget($self, $cell);
-    return $cell;
+    $$buffer .= "\n</tr>";
+    return;
 }
+
+#=PRIVATE METHODS
 
 # _get_column_count(array_ref cells) : int
 #
@@ -685,7 +743,7 @@ sub _get_heading {
             column_span => $cell->get_or_default('column_span', 1),
             heading_expand => $cell->unsafe_get('column_expand'),
            );
-    _initialize_widget($self, $heading);
+    $self->initialize_child_widget($heading);
     return $heading;
 }
 
@@ -704,7 +762,7 @@ sub _get_summary_cell {
 	values => ['&nbsp;'],
 	column_span => $cell->get_or_default('column_span', 1),
     });
-    _initialize_widget($self, $blank_string);
+    $self->initialize_child_widget($blank_string);
     return $blank_string;
 }
 
@@ -746,54 +804,8 @@ sub _get_summary_line {
 	});
     }
     $widget->put(column_span => $cell->get_or_default('column_span', 1));
-    _initialize_widget($self, $widget);
+    $self->initialize_child_widget($widget);
     return $widget;
-}
-
-# _initialize_widget(Bivio::UI::HTML::Widget widget)
-#
-# Initializes the specified widget.
-#
-sub _initialize_widget {
-    my($self, $widget) = @_;
-
-    $widget->put(parent => $self);
-    $widget->initialize;
-    my($column_prefix) = Bivio::UI::Align->as_html(
-	    $widget->get_or_default('column_align', 'LEFT'));
-    $column_prefix .= ' nowrap' if $widget->unsafe_get('column_nowrap');
-    my($span) = $widget->get_or_default('column_span', 1);
-    $column_prefix .= " colspan=$span" if $span != 1;
-    $widget->put(column_prefix => $column_prefix);
-    return;
-}
-
-# _render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean fix_space)
-#
-# _render_row(array_ref cells, any source, string_ref buffer)
-#
-# Renders the specified set of widgets onto the output buffer.
-# If fix_space is true, then empty strings will be rendered as '&nbsp;'.
-#
-sub _render_row {
-    my($cells, $source, $buffer, $row_prefix, $fix_space) = @_;
-    $row_prefix ||= "\n<tr>";
-    $$buffer .= $row_prefix;
-    foreach my $cell (@$cells) {
-	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
-        $$buffer .= ' width="100%"'
-                if $cell->get_or_default('heading_expand', 0);
-        $$buffer .= '>';
-
-	# Insert a "&nbsp;" if the widget doesn't render.  This
-	# makes the table look nicer on certain browsers.
-	my($start) = length($$buffer);
-	$cell->render($source, $buffer);
-	$$buffer .= '&nbsp;' if length($$buffer) == $start && $fix_space;
-	$$buffer .= '</td>';
-    }
-    $$buffer .= "\n</tr>";
-    return;
 }
 
 =head1 COPYRIGHT
