@@ -773,13 +773,13 @@ my(@_CFG) = (
         help=investment-transactions
     )],
     [qw(
-	SUBSTITUTE_USER
+	ADM_SUBSTITUTE_USER
 	82
         GENERAL
         ADMIN_WRITE
-        pub/su
+        adm/su:pub/su
 	Bivio::Biz::Model::SubstituteUserForm
-	Bivio::UI::HTML::General::SubstituteUser
+	Bivio::UI::HTML::Adm::SubstituteUser
         next=USER_HOME
         cancel=HTTP_DOCUMENT
     )],
@@ -2333,6 +2333,16 @@ my(@_CFG) = (
         DOCUMENT_READ
         !
         Bivio::UI::HTML::ErrorPages->execute_club_accounting_instrument_delete_faliure
+    )],
+    [qw(
+        ADM_FIND_REALM_OWNER
+        235
+        GENERAL
+        ADMIN_WRITE
+        adm/lookup
+        Bivio::Biz::Model::FindRealmOwnerForm
+        Bivio::UI::HTML::Adm::FindRealmOwner
+        next=HTTP_DOCUMENT
     )],
 );
 
