@@ -38,7 +38,7 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::Type::SourceClass;
+use Bivio::Type::EntryClass;
 use Bivio::Type::Text;
 use Bivio::SQL::Support;
 
@@ -60,7 +60,7 @@ sub internal_initialize {
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
         club_id => ['Bivio::Type::PrimaryId',
 		Bivio::SQL::Constraint::NOT_NULL()],
-        source_class => ['Bivio::Type::SourceClass',
+        source_class => ['Bivio::Type::EntryClass',
 		Bivio::SQL::Constraint::NOT_NULL()],
         dttm => ['Bivio::Type::DateTime',
 		Bivio::SQL::Constraint::NOT_NULL()],
