@@ -71,15 +71,16 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-#    my($draft) = $req->get_widget_value('Bivio::Biz::Model::F1065K1Form',
-#	    'draft');
+    my($draft) = $req->get_widget_value('Bivio::Biz::Model::F1065K1Form',
+	    'draft');
     my($real_form);
-#    if ($draft) {
-	$real_form = Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1Draft->new();
-#    }
-#    else {
-#	$real_form = Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1->new();
-#    }
+    if ($draft) {
+	$real_form =
+		Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1Draft->new();
+    }
+    else {
+	$real_form = Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1->new();
+    }
 
     return $real_form->execute($req);
 }
