@@ -69,11 +69,16 @@ Bivio::UI::Facade->register;
 Returns the color as an attribute=value string suitable for HTML,
 with a I<leading space>.
 
+If I<attr> contains a ':', returns a style attribute instead, e.g.
+
+    color: "#abcdef";
+
 If I<thing> returns false (zero or C<undef>), returns an empty string.
 
 See
 L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
 for description of last argument.
+
 
 =cut
 
@@ -86,7 +91,7 @@ sub format_html {
     return '' unless $v;
 
     # Return cached value
-    return defined($v->{$attr}) ? $v->{$attr}
+    return defined($attr) && defined($v->{$attr}) ? $v->{$attr}
 	    : _format_html($v->{config}, $attr);
 }
 
@@ -117,11 +122,13 @@ sub internal_initialize_value {
 
 # _format_html(int num, string attr) : string
 #
-# Formats the color attribute.
+# Formats the color attribute or style.
 #
 sub _format_html {
     my($num, $attr) = @_;
-    return $num >= 0 ? sprintf(' %s="#%06X"', $attr, $num) : '';
+    return '' if $num < 0;
+    return sprintf($attr =~ /:/ ? '%s "#%06X"'."\n" : ' %s="#%06X"',
+	    $attr, $num);
 }
 
 =head1 COPYRIGHT
