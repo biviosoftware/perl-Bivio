@@ -602,7 +602,7 @@ sub _sortable_subject {
     $subject =~ s/^\s*re:\s*// && ($reply_marker = '~');
     # Strip all non-alphanumerics
 #TODO: should we be stripping spaces?
-    $subject =~ s/[^a-z0-9]//g;
+    $subject =~ s/\s+//g;
     return $subject . $reply_marker;
 }
 
