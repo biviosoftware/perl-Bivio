@@ -39,6 +39,7 @@ use Bivio::Type::F1065ForeignTax;
 use Bivio::Type::F1065IRSCenter;
 use Bivio::Type::F1065Partner;
 use Bivio::Type::F1065Return;
+use Bivio::UI::HTML::Format::SSN;
 use Bivio::UI::PDF::Form::ButtonXlator;
 use Bivio::UI::PDF::Form::IntXlator;
 use Bivio::UI::PDF::Form::FracXlator;
@@ -59,8 +60,7 @@ my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-4',
 		[
-		    'User.TaxId',
-		    'tax_id'
+		    'user_tax_id',
 		]
 	       ),
  	Bivio::UI::PDF::Form::StringCatXlator->new(
@@ -422,7 +422,8 @@ sub set_up {
     # Load the user's tax id onto the request.
     my($user_tax_id) = Bivio::Biz::Model::TaxId->new($req);
     $user_tax_id->unauth_load_or_die(realm_id => $user_realm->get('realm_id'));
-    $req->put('User.TaxId' => $user_tax_id);
+    $req->put(user_tax_id => Bivio::UI::HTML::Format::SSN->get_widget_value(
+	    $user_tax_id->get('tax_id')));
 
     # Load the club's address onto the request.
     my($club_address) = Bivio::Biz::Model::Address->new($req);
