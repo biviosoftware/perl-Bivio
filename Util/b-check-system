@@ -189,7 +189,8 @@ sub check_messages {
             /qmail: \d+\.\d+ (new|info|starting|status|delivery|end)/ && next;
             /qmail: \d+\.\d+\+/ && next;
 
-            /rdistd\[\d+\]: / && next;
+            # Suppress these until we find out why it happens
+            /inetd\[\d+\]: pid \d+: exit status 1/ && next;
 
             /PAM_pwdb\[\d+\]: \(su\) session (opened|closed) for user/ && next;
             
