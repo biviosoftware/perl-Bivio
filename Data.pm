@@ -52,9 +52,9 @@ my(%_MIME_TYPES) = ();
 
 # Used by &_setup_table to define columns and the fields they correspond to
 my(@_DIR_COLUMNS) = (
-    ['File', 'uri', 'fit'],
-    ['Date', 'date', 'fit'],
-    ['Size', 'byte_size', 'fit'],
+    ['File', 'uri'],
+    ['Date', 'date'],
+    ['Size', 'byte_size'],
 );
 my($_DIR_TABLE) = Bivio::Club::Table->new(\@_DIR_COLUMNS, 'spreadsheet');
 
