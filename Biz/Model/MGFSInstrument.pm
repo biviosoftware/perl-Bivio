@@ -79,7 +79,7 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    qspvsd => [0, 0],
+	    qspvsd => [0, 1],
 	    qcpvsd => [0, 1],
 	    indb01 => [1, 1],
 	    chgdb01 => [1, 1],
