@@ -70,6 +70,46 @@ sub add {
 	    defined($decimals) ? $decimals : $proto->get_decimals());
 }
 
+=for html <a name="can_be_negative"></a>
+
+=head2 static can_be_negative : boolean
+
+Returns true if L<get_min|"get_min"> is less than 0.
+
+=cut
+
+sub can_be_negative {
+    my($proto) = @_;
+    return $proto->compare($proto->get_min, 0) < 0 ? 1 : 0;
+}
+
+=for html <a name="can_be_positive"></a>
+
+=head2 static can_be_positive : boolean
+
+Returns true if L<get_max|"get_max"> is greater than 0.
+
+=cut
+
+sub can_be_positive {
+    my($proto) = @_;
+    return $proto->compare($proto->get_max, 0) > 0 ? 1 : 0;
+}
+
+=for html <a name="can_be_zero"></a>
+
+=head2 static can_be_zero : boolean
+
+Returns true if range crosses through zero.
+
+=cut
+
+sub can_be_zero {
+    my($proto) = @_;
+    return $proto->compare($proto->get_max, 0) >= 0
+	    && $proto->compate($proto->get_min, 0) <= 0 ? 1 : 0;
+}
+
 =for html <a name="compare"></a>
 
 =head2 static compare(string left, string right, int decimals) : int
