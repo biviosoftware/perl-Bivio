@@ -79,12 +79,12 @@ sub can_be_zero {
 
 =head2 static get_decimals : int
 
-Returns 7.
+Returns 6.
 
 =cut
 
 sub get_decimals {
-    return 7;
+    return 6;
 }
 
 =for html <a name="get_max"></a>
@@ -96,7 +96,7 @@ Returns '9999999999999.9999999'.
 =cut
 
 sub get_max {
-    return '9999999999999.9999999';
+    return '9999999999999.999999';
 }
 
 =for html <a name="get_min"></a>
@@ -108,7 +108,7 @@ Returns '-9999999999999.9999999'.
 =cut
 
 sub get_min {
-    return '-9999999999999.9999999';
+    return '-9999999999999.999999';
 }
 
 =for html <a name="get_precision"></a>
@@ -127,7 +127,7 @@ sub get_precision {
 
 =head2 static get_width : int
 
-Returns 22.
+Returns 22 (includes decimal and sign).
 
 =cut
 
