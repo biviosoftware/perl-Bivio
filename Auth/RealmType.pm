@@ -48,11 +48,6 @@ access to a particular user
 
 access to a particular club
 
-=item PROXY
-
-proxy access to an owned realm.  Permissions are same as
-I<GENERAL>.
-
 =cut
 
 #=IMPORTS
@@ -81,11 +76,6 @@ __PACKAGE__->compile(
 	3,
 	undef,
 	'access to a particular club',
-    ],
-    'PROXY' => [
-	4,
-	undef,
-	'proxy access to an owned realm',
     ],
 );
 
