@@ -248,7 +248,7 @@ sub _create_user {
     # log the user in
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $realm,
-    });
+    }) if $req->unsafe_get('cookie');
 
     $req->set_user($realm);
     $req->set_realm($realm);
@@ -262,9 +262,8 @@ sub _create_user {
 #
 sub _is_editing {
     my($self) = @_;
-
-    return $self->get_request->get('user_state')
-	    == Bivio::Type::UserState->LOGGED_IN;
+    my($s) = $self->get_request->unsafe_get('user_state');
+    return $s && $s == Bivio::Type::UserState->LOGGED_IN;
 }
 
 =head1 COPYRIGHT
