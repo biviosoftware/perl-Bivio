@@ -172,7 +172,8 @@ sub create_message_id {
             split(/\./, $req->unsafe_get('client_addr')));
     my($now) = Bivio::Util::gettimeofday;
     my($msg_id) = join('_', $http_host, @$now, $$);
-    $self->get_head->replace('Message-Id', $msg_id .'@'.$req->get('mail_host'));
+    $self->get_head->replace('Message-Id',
+            '<'.$msg_id .'@'.$req->get('mail_host').'>');
     return;
 }
 
