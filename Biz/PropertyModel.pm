@@ -652,7 +652,7 @@ sub unauth_iterate_start {
 Loads the model as with L<unsafe_load|"unsafe_load">.  However, does
 not insert security realm into query params.  Use this when you
 B<are certain> there are no security issues involved with loading
-the date.
+the data.
 
 On success, saves model in request and returns true.
 

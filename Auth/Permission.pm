@@ -41,7 +41,7 @@ for how you define permissions on tasks.
 
 See L<Bivio::Agent::Task|Bivio::Agent::Task> and
 L<Bivio::Delegate::SimpleAuthSupport|Bivio::Delegate::SimpleAuthSupport>
-for how permissions on checked.
+for how permissions are checked.
 
 See L<Bivio::Biz::Model::RealmRole|Bivio::Biz::Model::RealmRole>
 and L<Bivio::Agent::Request|Bivio::Agent::Request> for how users
