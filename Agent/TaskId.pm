@@ -1842,6 +1842,16 @@ my(@_CFG) = (
         next=CLUB_INVESTMENT_OPEN_BALANCE
         cancel=CLUB_ADMIN_TOOLS
     )],
+    [qw(
+        CLUB_MAIL_DELETE
+        189
+        CLUB
+        MAIL_ADMIN
+        ?/mail/delete
+        Bivio::Biz::Model::MailList
+        Bivio::Biz::Action::ClubMailDelete
+        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
 );
 
 __PACKAGE__->compile(
