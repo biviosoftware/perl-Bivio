@@ -251,6 +251,7 @@ EOF
 sub _upgrade {
     my($req) = @_;
     _upgrade_add_charitable_sub_categories($req);
+    _upgrade_set_1065_draft_and_irs_center($req);
     print("\n*** done ***\n");
     return;
 }
@@ -303,6 +304,36 @@ sub _upgrade_add_charitable_sub_categories {
 		parent_category_id => $parent_id,
 	    });
 	}
+    }
+    return;
+}
+
+# _upgrade_set_1065_draft_and_irs_center(Bivio::Agent::Request req)
+#
+# Sets the draft field for the 2001 1065.
+# Sets the IRS center to unknown for 2001.
+#
+sub _upgrade_set_1065_draft_and_irs_center {
+    my($req) = @_;
+    print("updating 1065 for all clubs\n");
+    my($end_2001) = Bivio::Type::Date->from_literal('12/31/2001');
+    my($tax1065) = Bivio::Biz::Model->new($req, 'Tax1065');
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by realm_owner_t.name',
+            []);
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($realm_id, $name) = @$row;
+	$req->set_realm($name);
+
+	$tax1065->load_or_default($end_2001);
+	$tax1065->update({
+	    irs_center => Bivio::Type::F1065IRSCenter->UNKNOWN,
+	    draft => 1,
+	});
     }
     return;
 }
