@@ -89,6 +89,20 @@ sub ok {
     return ref($self) ? $self->[$_IDI]->{default_return} : undef;
 }
 
+=for html <a name="want_scalar"></a>
+
+=head2 want_scalar(any result, ...) : any
+
+Returns the results as an array in list context or scalar count
+in array context.
+
+=cut
+
+sub want_scalar {
+    shift;
+    return @_;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

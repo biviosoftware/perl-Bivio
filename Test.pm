@@ -184,13 +184,13 @@ L<create_object|"create_object"> will be set to
 L<default_create_object|"default_create_object">
 unless already set.
 
-=item create_object : code_ref
-
-See L<create_object|"create_object">
-
 =item compute_params : code_ref
 
 See L<compute_params|"compute_params">
+
+=item create_object : code_ref
+
+See L<create_object|"create_object">
 
 =item method_is_autoloaded : boolean [0]
 
@@ -203,6 +203,18 @@ You can override the print function used to output the results of the test.
 This is probably useful for testing L<Bivio::Test|Bivio::Test> itself.
 Only acceptable as an attribute on the
 L<Bivio::Test|Bivio::Test> object itself.
+
+=item want_scalar : boolean [0]
+
+Caveat: we recommend executing all methods in a list
+context, and that methods should avoid being dependent on context.
+(For an example of how to avoid being context sensitive,
+see L<Bivio::Collection::Attributes::get|Bivio::Collection::Attributes/"get">).
+
+That being said, you sometimes need to test modules which are
+context sensitive, i.e. they return a scalar in a scalar context
+and an array in a list context.  Set this to true if you want
+all methods in the case group to be invoked in a scalar context.
 
 =back
 
@@ -232,7 +244,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(@_CALLBACKS) = qw(check_return check_die_code compute_params create_object);
-my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name);
+my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
@@ -694,7 +706,10 @@ sub _eval {
 	my($die) = Bivio::Die->catch(sub {
 	    _trace($case) if $_TRACE;
             my($method) = $case->get('method');
-	    $result = [$case->get('object')->$method(@{$case->get('params')})];
+	    $result = [$case->unsafe_get('want_scalar')
+		? scalar($case->get('object')->$method(
+		    @{$case->get('params')}))
+		: $case->get('object')->$method(@{$case->get('params')})];
 	    return;
 	});
 	_trace('returned ', $die || $result) if $_TRACE;

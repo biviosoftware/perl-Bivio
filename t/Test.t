@@ -208,10 +208,28 @@ t(
 		[] => Bivio::DieCode->DIE,
 	    ],
 	    die => Bivio::DieCode->DIE,
+
+	    # Conformance: 46
+	    {
+		want_scalar => 1,
+		method => 'want_scalar',
+	    } => [
+		9 => 1,
+		[1, 2, 3] => 3,
+	    ],
+	    map({
+		{
+		    $_ ? (want_scalar => 0) : (),
+		    method => 'want_scalar',
+		} => [
+		    9 => 9,
+		    [1, 2, 3] => [1, 2, 3],
+		];
+	    } 0, 1),
 	],
 #TODO: Need more deviance tests
     ],
-    45,
+    51,
     [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44],
 );
 t(
