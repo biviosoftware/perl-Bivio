@@ -243,28 +243,25 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_permissions();
+    _upgrade_instrument_type();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_permissions()
+# _upgrade_instrument_type()
 #
-# Add ACCOUNT_READ and INVESTMENT_READ like ACCOUNTING_READ
+# Extend instrument_type constraint
 #
-sub _upgrade_permissions {
-    print("Upgrading permissions\n");
-    use Bivio::Biz::Util::RealmRole;
-    my($rr) = Bivio::Biz::Util::RealmRole->new;
-    $rr->set_same('ACCOUNTING_READ', 'ACCOUNT_READ');
-    $rr->set_same('ACCOUNTING_READ', 'INVESTMENT_READ');
-
-    print("Setting permissions for club_index\n");
-    $rr->set_realm_and_user('club_index');
-    $rr->edit('anonymous', '+accounting_read', '+investment_read',
-	    '+account_read');
-    $rr->edit('user', '+accounting_read', '+investment_read',
-	    '+account_read');
+sub _upgrade_instrument_type {
+    print("Upgrading instrument_type\n");
+    _do_sql(<<'EOF');
+ALTER TABLE realm_instrument_t DROP constraint realm_instrument_t8
+/
+ALTER TABLE realm_instrument_t
+  add constraint realm_instrument_t8
+  check (instrument_type between 1 and 4)
+/
+EOF
     return;
 }
 
