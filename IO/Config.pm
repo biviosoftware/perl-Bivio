@@ -433,7 +433,7 @@ sub _process_argv {
 	# Ensure the hashes exist down the chain, starting at the module ($m)
 	# perl in Lispish
 	my($ref, $car, $cdr) = ($actual, $m, $p);
-	while (length($cdr)) {
+	while (defined($cdr) && length($cdr)) {
 	    exists($ref->{$car}) || ($ref->{$car} = {});
             $ref = $ref->{$car};
 	    ($car, $cdr) = split(/\./, $cdr, 2);
