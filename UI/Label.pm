@@ -498,6 +498,7 @@ _compile(\%_MAP, [
     ],
     CLUB_ADMIN_PRIVATE => 'Close Public Access',
 
+    CLUB_ADM_EC_SUBSCRIPTION_EDIT => 'Edit Premium Service Subscription',
     CLUB_ADM_DELETE => 'Delete Club',
 
     CLUB_COMMUNICATIONS_FILE_READ => 'Files',
@@ -507,6 +508,8 @@ _compile(\%_MAP, [
 	'' => 'Mail',
 	help_topic => 'Mail Message Board',
     ],
+    CLUB_COMMUNICATIONS_MOTION_CREATE => 'Create Motion',
+    CLUB_COMMUNICATIONS_MOTION_LIST => 'Motions',
     CLUB_CREATE => 'Create Club Site',
     CLUB_CREATED => 'Congratulations!',
     CLUB_HOME => [
@@ -817,7 +820,8 @@ EOF
     # e-commerce
     ECPAYMENT_REALM => 'Club',
     ECPAYMENT_USER => 'Paid By',
-    ECPAYMENT_CREATION_DATE_TIME => 'Entered On',
+    ['ECPAYMENT_CREATION_DATE_TIME', 'ECPayment.creation_date_time']
+        => 'Entered On',
     ECPAYMENT_PAYMENT_TYPE => 'Paid For',
     ECPAYMENT_PROCESSOR_TRANSACTION_NUMBER => 'Transaction #',
     ECPAYMENT_PROCESSED_DATE_TIME => 'Processed On',
@@ -834,10 +838,13 @@ EOF
     ECPAYMENT_ACTION => 'Actions',
     ECSUBSCRIPTION_ACTION => 'Actions',
     ECSUBSCRIPTION_SUBSCRIPTION_TYPE => 'Service Name',
-    ECSUBSCRIPTION_START_DATE => 'Started on',
-    ECSUBSCRIPTION_END_DATE => 'Ends On',
+    ['ECSUBSCRIPTION_START_DATE', 'ECSubscription.start_date']
+        => 'Started on',
+    ['ECSUBSCRIPTION_END_DATE', 'ECSubscription.end_date']
+        => 'Ends On',
     ECSUBSCRIPTION_RENEWAL_METHOD => 'Next Renewal Method',
-    ECSUBSCRIPTION_RENEWAL_PERIOD => 'Renewal Period',
+    ['ECSUBSCRIPTION_RENEWAL_PERIOD', 'ECSubscription.renewal_period']
+        => 'Renewal Period',
     EC_TYPE => 'Subscriptions',
     EC_PRICELIST => 'Subscription Pricing',
     CARD_TYPE => 'Type of Credit Card',
