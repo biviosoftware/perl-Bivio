@@ -268,7 +268,7 @@ sub delete {
                     SELECT mail_id FROM mail_t
                     START WITH realm_id = ? AND mail_id = ?
                     CONNECT BY PRIOR thread_parent_id)',
-                [$realm_id, $properties->{thread_parent_id}, $realm_id]);
+                [$realm_id, $properties->{thread_parent_id}]);
     }
     else {
         # A thread root, get first reply and convert to new thread root
@@ -472,8 +472,7 @@ sub set_is_public {
                 AND volume = ?
             CONNECT BY PRIOR file_id = directory_id)
 EOF
-                [$is_public, $realm_id, $cache_file_id, $fv,
-                    $realm_id, $fv]);
+                [$is_public, $realm_id, $cache_file_id, $fv]);
     return;
 }
 
@@ -500,7 +499,7 @@ sub _connect_to_parent {
                 SELECT mail_id FROM mail_t
                 START WITH realm_id = ? AND mail_id = ?
                 CONNECT BY PRIOR thread_parent_id = mail_id)',
-            [$realm_id, $parent_id, $realm_id]);
+            [$realm_id, $parent_id]);
     return;
 }
 
