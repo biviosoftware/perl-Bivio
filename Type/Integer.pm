@@ -81,17 +81,15 @@ sub new {
 
 =cut
 
-=for html <a name="compare"></a>
+=for html <a name="compare_defined"></a>
 
-=for html <a name="compare"></a>
-
-=head2 static compare(string left, string right) : int
+=head2 static compare_defined(string left, string right) : int
 
 Returns the numeric comparison (E<lt>=E<gt>) of I<left> to I<right>.
 
 =cut
 
-sub compare {
+sub compare_defined {
     my(undef, $left, $right) = @_;
     return $left <=> $right;
 }
@@ -223,20 +221,6 @@ sub get_width {
     my($proto) = @_;
     my($min, $max) = ($proto->get_min, $proto->get_max);
     return length($min) > length($max) ? length($min) : length($max);
-}
-
-=for html <a name="is_equal"></a>
-
-=head2 static is_equal(int left, int right) : boolean
-
-Are the two values equal?  Uses "==" comparison.
-
-=cut
-
-sub is_equal {
-    my(undef, $left, $right) = @_;
-    return defined($left) == defined($right)
-	&& (!defined($right) || $left == $right) ? 1 : 0;
 }
 
 #=PRIVATE METHODS

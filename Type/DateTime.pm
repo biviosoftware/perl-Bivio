@@ -416,9 +416,9 @@ sub can_be_zero {
     return 0;
 }
 
-=for html <a name="compare"></a>
+=for html <a name="compare_defined"></a>
 
-=head2 compare(string left, string right) : int
+=head2 compare_defined(string left, string right) : int
 
 Returns 1 if I<left> is greater than I<right>.
 Returns 0 if I<left> is equal to I<right>.
@@ -426,14 +426,18 @@ Returns -1 if I<left> is less than I<right>.
 
 =cut
 
-sub compare {
+sub compare_defined {
     my(undef, $left, $right) = @_;
     my($ld, $lt) = split(/\s+/, $left);
     my($rd, $rt) = split(/\s+/, $right);
-    return 1 if $ld > $rd;
-    return -1 if $ld < $rd;
-    return 1 if $lt > $rt;
-    return -1 if $lt < $rt;
+    return 1
+	if $ld > $rd;
+    return -1
+	if $ld < $rd;
+    return 1
+	if $lt > $rt;
+    return -1
+	if $lt < $rt;
     return 0;
 }
 
