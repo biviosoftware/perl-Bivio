@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::WFN;
 use strict;
 $Bivio::UI::Facade::WFN::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::WFN::VERSION;
 
 =head1 NAME
 
@@ -92,15 +93,13 @@ __PACKAGE__->new({
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
 
-	    $fc->group(want_secure => 0);
-	    $fc->group(page_left_margin => 0);
-	    $fc->group(table_default_align => 'left');
-	    $fc->group(scene_show_profile => 1);
-	    $fc->group(scene_header => undef);
+	    $fc->initialize_standard_support;
+	    $fc->value(want_secure => 0);
+	    $fc->value(page_left_margin => 0);
+	    $fc->value(table_default_align => 'left');
 
 	    # Home page isn't special
-	    $fc->group(home_page => '');
-	    $fc->group(descriptive_page_width => 450);
+	    $fc->value(descriptive_page_width => 450);
 
 	    $fc->group(content_widget => Bivio::UI::HTML::Widget->join(
 		    Bivio::UI::HTML::Widget->indirect(
@@ -168,11 +167,11 @@ __PACKAGE__->new({
 	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(header_height => $fc->get_standard_header_height);
 
-	    $fc->group(text_menu_base_offset => 0);
-	    $fc->group(image_menu_left_cell => 0);
-	    $fc->group(image_menu_separator_width => 1);
+	    $fc->value(text_menu_base_offset => 0);
+	    $fc->value(image_menu_left_cell => 0);
+	    $fc->value(image_menu_separator_width => 1);
 
-	    $fc->group(logo_icon_width_as_html => ' width=0');
+	    $fc->value(logo_icon_width_as_html => ' width=0');
 	    return;
 	},
     },
@@ -186,7 +185,7 @@ __PACKAGE__->new({
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

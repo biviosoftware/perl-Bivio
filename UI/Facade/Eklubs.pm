@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::Eklubs;
 use strict;
 $Bivio::UI::Facade::Eklubs::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::Eklubs::VERSION;
 
 =head1 NAME
 
@@ -70,31 +71,20 @@ __PACKAGE__->new({
 	    $fc->group(site_name => 'eklubs');
 	    $fc->group(home_alt_text => 'eklubs home');
 
-	    $fc->group(want_secure => 0);
-	    $fc->group(page_left_margin => 20);
-	    $fc->group(table_default_align => 'center');
-	    $fc->group(scene_show_profile => 1);
-	    $fc->group(scene_header => undef);
-
-	    # Home page isn't special
-	    $fc->group(home_page => '');
-	    $fc->group(descriptive_page_width => 600);
+	    $fc->initialize_standard_support;
 
 	    # This one is used dynamically by ImageMenu in header_widget
 	    # widget.  It is not a required field.  Only if you are using
 	    # ImageMenu.
 	    my($icon) = $fc->get_facade->get('Bivio::UI::Icon');
-	    $fc->group(text_menu_base_offset =>
+	    $fc->value(text_menu_base_offset =>
 		    $icon->get_width('logo_full') + $icon->get_width('grad'));
 
-	    $fc->group(image_menu_left_cell =>
+	    $fc->value(image_menu_left_cell =>
 		    Bivio::UI::HTML::Widget->image('grad', ''));
 
-	    $fc->group(image_menu_separator_width => 1);
-	    $fc->group(text_menu_left_cell => undef);
-
 	    # Used by standard header
-	    $fc->group(logo_width_as_html =>
+	    $fc->value(logo_icon_width_as_html =>
 		    $icon->get_width_as_html('logo_full'));
 
 	    # These are required names, which are checked by page.
@@ -301,7 +291,7 @@ sub _header {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

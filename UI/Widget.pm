@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget;
 use strict;
 $Bivio::UI::Widget::VERSION = sprintf('d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Widget::VERSION;
 
 =head1 NAME
 
@@ -409,7 +410,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

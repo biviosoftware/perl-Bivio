@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::InvestmentExpo;
 use strict;
 $Bivio::UI::Facade::InvestmentExpo::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::InvestmentExpo::VERSION;
 
 =head1 NAME
 
@@ -82,27 +83,22 @@ __PACKAGE__->new({
 	    $fc->group(site_name => 'Investment Expo 2000');
 	    $fc->group(home_alt_text => 'Investment Expo 2000');
 
-	    $fc->group(want_secure => 0);
-	    $fc->group(page_left_margin => 0);
-	    $fc->group(table_default_align => 'center');
-	    $fc->group(scene_show_profile => 1);
-	    $fc->group(scene_header => undef);
-
-	    # Home page is special
-	    $fc->group(home_page =>
+	    $fc->initialize_standard_support;
+	    $fc->value(page_left_margin => 0);
+	    $fc->value(home_page =>
 		    Bivio::UI::Facade::InvestmentExpo::Home->new);
-	    $fc->group(descriptive_page_width => 480);
+	    $fc->value(descriptive_page_width => 480);
 
 	    # This one is used dynamically by ImageMenu in header_widget
 	    # widget.  It is not a required field.  Only if you are using
 	    # ImageMenu.
-	    $fc->group(text_menu_base_offset => 0);
-	    $fc->group(image_menu_left_cell => 0);
+	    $fc->value(text_menu_base_offset => 0);
+	    $fc->value(image_menu_left_cell => 0);
 
-	    $fc->group(text_menu_left_cell =>
+	    $fc->value(text_menu_left_cell =>
 		    Bivio::UI::HTML::Widget->image('subarrow'));
 
-	    $fc->group(image_menu_separator_width => 1);
+	    $fc->value(image_menu_separator_width => 1);
 
 	    # These are required names, which are checked by page.
 	    Bivio::UI::HTML::Widget->load_class('Page');
@@ -306,7 +302,7 @@ sub _realm_name {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

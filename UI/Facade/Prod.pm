@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::Prod;
 use strict;
 $Bivio::UI::Facade::Prod::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::Prod::VERSION;
 
 =head1 NAME
 
@@ -32,6 +33,7 @@ C<Bivio::UI::Facade::Prod> is the main production and default Facade.
 #=IMPORTS
 
 #=VARIABLES
+my($_W) = 'Bivio::UI::HTML::Widget';
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
@@ -219,17 +221,8 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(logo_icon => 'bivio');
 	    $fc->group(home_alt_text => 'bivio home');
 
-	    $fc->group(want_secure => 1);
-	    $fc->group(page_left_margin => 20);
-	    $fc->group(table_default_align => 'center');
-	    $fc->group(scene_show_profile => 1);
-	    $fc->group(scene_header => undef);
-
-	    # Home page isn't special
-	    $fc->group(home_page => '');
-	    $fc->group(descriptive_page_width => 600);
-
 	    $fc->initialize_standard_support;
+	    $fc->value(want_secure => 1);
 
 	    # These are required names, which are checked by page.
 	    $fc->group(page_widget => $fc->get_standard_page);
@@ -273,7 +266,7 @@ if ($_SELF) {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::BUYandHOLD;
 use strict;
 $Bivio::UI::Facade::BUYandHOLD::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::BUYandHOLD::VERSION;
 
 =head1 NAME
 
@@ -100,17 +101,22 @@ __PACKAGE__->new({
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
 
-	    $fc->group(want_secure => 0);
-	    $fc->group(page_left_margin => 0);
-	    $fc->group(table_default_align => 'left');
-	    $fc->group(scene_show_profile => 0);
+	    $fc->initialize_standard_support;
+	    $fc->value(page_left_margin => 0);
+	    $fc->value(table_default_align => 'left');
+	    $fc->value(scene_show_profile => 0);
 	    $fc->group(realm_chooser_button => 'go_small');
 
 	    # Special BUYandHOLD page
-	    $fc->group(home_page => Bivio::UI::Facade::BUYandHOLD::Home->new);
-	    $fc->group(descriptive_page_width => 480);
+	    $fc->value(home_page => Bivio::UI::Facade::BUYandHOLD::Home->new);
+	    $fc->value(descriptive_page_width => 480);
 
-	    $fc->group(scene_header => Bivio::UI::HTML::Widget::Grid->new({
+	    $fc->value(text_menu_base_offset => 0);
+	    $fc->value(image_menu_left_cell => 0);
+
+	    $fc->value(logo_icon_width_as_html => ' width=0');
+
+	    $fc->value(scene_header => Bivio::UI::HTML::Widget::Grid->new({
 		cell_align => 'n',
 		space => 2,
 		values => [
@@ -166,10 +172,6 @@ __PACKAGE__->new({
 	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(header_height => $fc->get_standard_header_height);
 
-	    $fc->group(text_menu_base_offset => 0);
-	    $fc->group(image_menu_left_cell => 0);
-
-	    $fc->group(logo_icon_width_as_html => ' width=0');
 	    return;
 	},
     },
@@ -220,7 +222,7 @@ sub _copyright {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
