@@ -35,7 +35,9 @@ C<Bivio::PetShop::Model::CartItemList>
 =cut
 
 #=IMPORTS
+use Bivio::PetShop::Model::Item;
 use Bivio::PetShop::Type::Price;
+use Bivio::PetShop::Type::StockStatus;
 
 #=VARIABLES
 
@@ -53,6 +55,7 @@ Loads the list for the order present on the request.
 
 sub execute_load_for_order {
     my($proto, $req) = @_;
+    # store the cart_id on the request, used in internal_pre_load()
     $req->put(cart_id => $req->get('Model.Order')->get('cart_id'));
     $proto->new($req)->load_all;
     return;
@@ -118,7 +121,10 @@ Adds the current cart_id to the query.
 
 sub internal_pre_load {
     my($self, $query, $support, $params) = @_;
-    push(@$params, $self->get_request->get('cart_id'));
+    # use the cart_id on the request, otherwise from the cookie
+    push(@$params, $self->get_request->unsafe_get('cart_id')
+	|| $self->new($self->get_request, 'Cart')->load_from_cookie
+	    ->get('cart_id'));
     return 'cart_item_t.cart_id=?';
 }
 
