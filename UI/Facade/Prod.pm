@@ -37,6 +37,8 @@ my($_W) = 'Bivio::UI::HTML::Widget';
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
+    # Bivio::UI::HTML sort of assumes this facade (and children) has this uri
+    uri => 'www',
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($fc) = @_;
