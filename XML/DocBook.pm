@@ -63,32 +63,59 @@ use HTML::Entities ();
 use XML::Parser ();
 
 #=VARIABLES
-my($_XML_TO_HTML_PROGRAM) = _compile_program({
+my($_XML_TO_HTML_PROGRAM) = _compile_program([
+    # Shared mappings
+    [qw(
+        answer/para
+	epigraph
+	figure
+	qandaentry
+	qandaset
+	question/para
+	sect1
+	sect2
+	simplesect
+	term
+	varlistentry
+    )] => [],
+    [qw(
+	citetitle
+	firstterm
+	replaceable
+    )] => ['i'],
+    [qw(
+	classname
+	command
+	constant
+	envar
+	filename
+	function
+	literal
+	property
+	type
+	userinput
+	varname
+    )] => ['tt'],
+    [qw(
+        answer
+        question
+    )] => '<i>${label}</i>${_}<br>',
+
+    # Unique mappings
     abstract => '<p><table width="70%" align=center border=0><tr>'
         . '<td align=center>${_}</td></tr></table></p>',
-    answer => '<p><i>${label}</i>${_}</p>',
-    'answer/para' => [],
     attribution => '<div align=right>-- ${_}</div>',
     blockquote => ['blockquote'],
-    'chapter/title' => ['h1'],
     chapter => sub {
 	my($attr, $html, $clipboard) = @_;
 	$$html .= "<h2>Footnotes</h2><ol>\n$clipboard->{footnotes}</ol>\n"
 	    if $clipboard->{footnotes};
 	return "<html><body>$$html</body></html>";
     },
-    citetitle => ['i'],
-    classname => ['tt'],
-    command => ['tt'],
+    'chapter/title' => ['h1'],
     comment => '<i>[COMMENT: ${_}]</i>',
-    constant => ['tt'],
     emphasis => ['b'],
-    envar => ['tt'],
-    epigraph => [],
-    figure => [],
     'figure/title' => ['center', 'b'],
-    filename => ['tt'],
-    firstterm => ['i'],
     footnote => sub {
 	my($attr, $html, $clipboard) = @_;
 	$clipboard->{footnote_idx}++;
@@ -98,48 +125,33 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
 	    . "[$clipboard->{footnote_idx}]</a>";
 
     },
-    function => ['tt'],
     graphic => {
 	template => '<br><img border=0 src="${fileref}" align=${align}><br>',
 	default_align => 'center',
     },
     itemizedlist => ['ul'],
     listitem => ['li'],
-    literal => ['tt'],
     note => '<blockquote><strong>Note:</strong><i>${_}</i></blockquote>',
     orderedlist => ['ol'],
     para => ['p'],
     programlisting => ['blockquote', 'pre'],
-    property => ['tt'],
-    replaceable => ['i'],
-    qandaentry => [],
-    qandaset => [],
-    question => '<p><i>${label}</i>${_}</p>',
-    'question/para' => [],
+    'qandaset/para' => ['p', 'i'],
     quote => '"${_}"',
-    sect1 => [],
     'sect1/title' => ['h2'],
-    sect2 => [],
     'sect2/title' => ['h3'],
     sidebar => '<table width="95%" border=0 cellpadding=5 bgcolor="#CCCCCC">'
         . '<tr><td>${_}</td></tr></table>',
     'sidebar/title' => ['h3'],
-    simplesect => [],
     superscript => ['sup'],
     systemitem => '<a href="${_}">${_}</a>',
-    term => [],
     trademark => '${_}&#153;',
-    type => ['tt'],
-    userinput => ['tt'],
     variablelist => ['dl'],
-    varlistentry => [],
     'varlistentry/listitem' => ['dd'],
     'varlistentry/term' => ['dt'],
-    varname => ['tt'],
     warning =>
         '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
     xref => '[CROSS-REFERENCE ${linkend}]',
-});
+]);
 
 =head1 METHODS
 
@@ -163,7 +175,7 @@ sub to_html {
 
 #=PRIVATE METHODS
 
-# _compile_program(hash_ref config) : hash_ref
+# _compile_program(array_ref config) : hash_ref
 #
 # Creates the $_XML_TO_HTML_PROGRAM hash from $config, which is a mapping of
 # XML tags to HTML commands.  If the HTML command is an array_ref, calls
@@ -172,16 +184,22 @@ sub to_html {
 #
 sub _compile_program {
     my($config) = @_;
-    while (my($xml, $html) = each(%$config)) {
-	$config->{$xml} = ref($html) eq 'ARRAY'
-	    ? {template => _compile_tags_to_html($html, '')
-		.'${_}'
-		._compile_tags_to_html([reverse(@$html)], '/')}
-	    : ref($html) eq 'CODE' ? {code => $html} : {template => $html}
-	    unless ref($html) eq 'HASH';
-	$config->{$xml}->{tag} = $xml;
+    my($res) = {};
+    while (@$config) {
+	my($xml_tags, $html) = splice(@$config, 0, 2);
+	foreach my $xml (ref($xml_tags) ? @$xml_tags : $xml_tags) {
+	    die("$xml: duplicate tag") if $res->{$xml};
+	    $res->{$xml} = ref($html) eq 'ARRAY'
+		? {template => _compile_tags_to_html($html, '')
+		    .'${_}'
+		    ._compile_tags_to_html([reverse(@$html)], '/')}
+		: ref($html) eq 'CODE' ? {code => $html}
+		: ref($html) eq 'HASH' ? {%$html}
+		: {template => $html};
+	    $res->{$xml}->{tag} = $xml;
+	}
     }
-    return $config;
+    return $res;
 }
 
 # _compile_tags_to_html(array_ref names, string prefix) : string
