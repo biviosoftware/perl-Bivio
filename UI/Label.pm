@@ -452,6 +452,7 @@ _compile(\%_MAP, [
 	help_topic => 'Adding Members and Guests',
     ],
     CLUB_ADMIN_MEMBER_DELETE => 'Member Delete',
+    CLUB_ADMIN_PREFERENCES_EDIT => 'Edit Club Configuration',
     CLUB_ADMIN_TOOLS => 'Administrative Tools',
     CLUB_ADMIN_USER_LIST => 'Club Roster',
     CLUB_ADMIN_PUBLIC => [
@@ -482,6 +483,7 @@ _compile(\%_MAP, [
     ],
     CLUB_SETUP_ACCOUNTING => 'Step 2: Setup Accounting',
     CLUB_SETUP_AGE => 'Step 3: Club History',
+    CLUB_SETUP_OPENING_BALANCE_CHOICE => 'Step 4: Choose duration of accounting history',
     DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
