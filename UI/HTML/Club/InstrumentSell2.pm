@@ -146,7 +146,7 @@ sub _create_sell_table {
 		Bivio::UI::HTML::Format::Date->get_widget_value(
 			$lot_list->get('acquisition_date')),
 		Bivio::UI::HTML::Format::Amount->get_widget_value(
-			$lot_list->get('quantity'), 7, 1),
+			$lot_list->get('quantity'), 6, 1),
 		Bivio::UI::HTML::Format::Amount->get_widget_value(
 			$lot_list->get('cost_per_share'), 4, 1),
 		Bivio::UI::HTML::Widget::Text->new({
