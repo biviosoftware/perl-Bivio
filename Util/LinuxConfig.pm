@@ -70,7 +70,7 @@ commands:
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
-    ifcfg_static device hostname ip_cfg gateway -- configure device with a static ip address
+    ifcfg_static device hostname ip_addr/bits [gateway] -- configure device with a static ip address
     resolv_conf domain nameserver ... -- updates resolv.conf with name servers
     rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
@@ -473,6 +473,8 @@ host 1.2.3.4.  Updates:
 I<hostnames> may contain space separated list.  First name is the primary host
 name.
 
+I<gateway> is an optional number identifying the gateway on the local net.
+
 =cut
 
 sub ifcfg_static {
@@ -483,10 +485,12 @@ sub ifcfg_static {
 	unless $mask;
     $self->usage_error($mask, ": network must be in range from 24-31")
 	unless $mask >= 24 && $mask <= 31;
-    $self->usage_error($gateway,
+    if (defined($gateway)) {
+	$self->usage_error($gateway,
 	': bad gateway or not on same net as ip_addr: ', $ip)
-	unless $gateway =~ s/^(?=\d{1,3}$)/$net/
-	    || ($gateway =~ /^((?:\d{1,3}\.){3})d{1,3}$/)[0] eq $net;
+	    unless $gateway =~ s/^(?=\d{1,3}$)/$net/
+		|| ($gateway =~ /^((?:\d{1,3}\.){3})d{1,3}$/)[0] eq $net;
+    }
     $mask = '255.255.255.' . (256 - (1 << (32 - $mask)));
     $hostnames = [map(lc($_), split(' ', $hostnames))];
     return _edit($self, '/etc/sysconfig/network',
@@ -500,8 +504,7 @@ DEVICE=$device
 ONBOOT=yes
 BOOTPROTO=none
 IPADDR=$ip
-NETMASK=$mask
-GATEWAY=$gateway
+NETMASK=$mask@{[$gateway ? "\nGATEWAY=$gateway" : '']}
 EOF
 		 return 1;
 	     }],
