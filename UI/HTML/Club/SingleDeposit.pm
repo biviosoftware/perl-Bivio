@@ -94,17 +94,10 @@ sub new {
 			    })),
 		],
 		[
-		    _field('Type',
-			    Bivio::UI::HTML::Widget::Select->new({
-				field => 'type',
-				choices => 'Bivio::Type::DepositType',
-			    })),
-		],
-		[
 		    _field('Account',
 			    Bivio::UI::HTML::Widget::Select->new({
 				field => 'RealmAccountEntry.realm_account_id',
-			      choices => 'Bivio::Biz::Model::RealmAccountList',
+				choices => 'account_list',
 				list_display_field => 'RealmAccount.name',
 			      list_id_field => 'RealmAccount.realm_account_id',
 			    })),
@@ -172,8 +165,25 @@ sub execute {
 #TODO: why User_2?
 	my($user) = $realm_user->get_model('User_2');
 
-	$req->put(page_heading => 'Member Deposit: '
-		.$user->get('display_name'),
+	my($task_id) = $req->get('task_id');
+	my($heading);
+	if ($task_id
+		== Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_PAYMENT()) {
+	    $heading = 'Payment: ';
+	    $req->put(account_list => $req->get_widget_value(
+		    'Bivio::Biz::Model::RealmAccountList'));
+	}
+	elsif ($task_id
+		== Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
+	    $heading = 'Fee: ';
+	    $req->put(account_list => $req->get_widget_value(
+		    'Bivio::Biz::Model::RealmValuationAccountList'));
+	}
+	else {
+	    die("unhandled task_id $task_id");
+	}
+
+	$req->put(page_heading => $heading.$user->get('display_name'),
 		page_subtopic => undef,
 		page_content => $fields->{form});
 	my($form) = $req->get('form_model');
