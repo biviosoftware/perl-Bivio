@@ -96,17 +96,6 @@ exactly.
 If the I<expect> is a code_ref, this will be a custom check_return (see below)
 for this case only.
 
-    Bivio::Test->unit([
-	Bivio::Math::EMA->new(30) => [
-	    compute => [
-	        [1] => sub {
-                    my($case, $
-                    return [1];
-                },
-	    ],
-        ],
-    ]);
-
 =head2 OPTIONS
 
 Sometimes it is difficult to specify a return result.  For example, in
