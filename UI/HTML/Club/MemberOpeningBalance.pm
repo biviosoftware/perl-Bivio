@@ -77,7 +77,8 @@ EOF
     });
     $form->put(value => $form->create_fields([
 	['RealmTransaction.date_time', 'Date', <<'EOF'],
-The accounting switch-over date.
+The accounting switch-over date. To ensure that taxes are correctly
+calculated, the date entered should be on a fiscal year boundary.
 EOF
 	['paid', 'Total Paid', <<'EOF'],
 The total cash contributions for the member to date.

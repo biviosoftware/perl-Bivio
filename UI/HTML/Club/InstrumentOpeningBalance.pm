@@ -51,7 +51,9 @@ sub create_content {
     my($self) = @_;
     return $self->form('Bivio::Biz::Model::InstrumentOpeningBalanceForm', [
 	    ['RealmTransaction.date_time', 'Purchase Date', <<'EOF'],
-The date the block of shares was purchased.
+The date the block of shares was purchased. To ensure that taxes are
+correctly calculated, the date entered should be on a fiscal year
+boundary.
 EOF
 	    ['Instrument.ticker_symbol', 'Ticker', $self->join(<<'EOF',
 The ticker symbol of the investment.  If the investment you purchased
