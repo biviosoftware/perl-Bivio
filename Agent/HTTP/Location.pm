@@ -297,7 +297,7 @@ Does the task have a uri?
 =cut
 
 sub task_has_uri {
-    my($undef, $task_id) = @_;
+    my(undef, $task_id) = @_;
     Bivio::IO::Alert->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     return defined($_FROM_TASK_ID{$task_id}->[1]) ? 1 : 0;
