@@ -140,6 +140,7 @@ my(%_SIZE_MAP) = (
 my(%_TAG_MAP) = (
     bold => 'b',
     italic => 'i',
+    code => 'tt',
     # No one handles +1/-1 correctly with styles.  small
     # and big work everywhere, it seems.
     larger => 'big',
