@@ -238,11 +238,14 @@ use strict;
     'Bivio::Agent::Request' => {
 	http_host => '<$host>:<$http_port>',
 	mail_host => '[<$host>]',
+	support_phone => '+1 (303) 417-0919',
+	support_email => 'support@bivio.com',
     },
     'Bivio::Agent::HTTP::Cookie' => {
 	key => 'my big secret',
 	expire_seconds => 86400,
 #	domain => '.bivio.com',
+	tag => '<$user>',
     },
     'Bivio::Agent::HTTP::Location' => {
 	document_root => '<$pwd>/html',
