@@ -221,8 +221,6 @@ sub set_headers_for_list_send {
     $reply_to_list && ($headers->{'reply-to'} = 'Reply-' . $headers->{to});
     # If there is no From:, add it now.
     $headers->{from} ||= "From: owner-$list_name\n";
-    # Set the envelope FROM which is used for bounces
-    $fields->{env_from} = "owner-$list_name";
     # Insert the list in the subject, if not already there
 #TODO: Need to upcase $list_name appropriately, e.g. Cosmic:, not cosmic:.
     if ($list_in_subject) {
