@@ -79,7 +79,7 @@ sub get_instruments_info {
 
 =for html <a name="get_unit_value"></a>
 
-=head2 get_unit_value(Bivio::Type::DateTime  date) : string
+=head2 get_unit_value(Bivio::Type::DateTime date) : string
 
 Returns the unit value for the realm on the specified date.
 
@@ -88,9 +88,12 @@ Returns the unit value for the realm on the specified date.
 sub get_unit_value {
     my($self, $date) = @_;
 
+    Carp::croak('missing date parameter') unless $date;
+
 #TODO: use Math::BigInt
     my($units) = $self->get_units($date);
-    return $units > 0 ? ($self->get_value($date) / $units) : 0;
+    return $units == 0 ? 0
+	    : $self->get_value($date) / $units;
 }
 
 =for html <a name="get_units"></a>
@@ -105,10 +108,13 @@ date.
 sub get_units {
     my($self, $date) = @_;
 
+    Carp::croak('missing date parameter') unless $date;
+
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(member_entry_t.units) from realm_transaction_t, entry_t, member_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = member_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_transaction_t.dttm <= '
 	    .Bivio::Type::DateTime->to_sql_value('?'),
-	    [$self->get('realm_id'), $date]);
+	    [$self->get('realm_id'),
+		    Bivio::Type::DateTime->to_sql_param($date)]);
 
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
@@ -123,6 +129,8 @@ Returns the realm's value on the specified date.
 
 sub get_value {
     my($self, $date) = @_;
+
+    Carp::croak('missing date parameter') unless $date;
 
 #TODO: investigating caching this value in the request
     my($value) = $self->get_tax_basis(Bivio::Type::EntryClass->CASH, $date);
@@ -152,10 +160,13 @@ date.
 sub get_tax_basis {
     my($self, $class, $date) = @_;
 
+    Carp::croak('missing date parameter') unless $date;
+
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(entry_t.amount) from realm_transaction_t, entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.tax_basis = 1 and realm_transaction_t.realm_id=? and entry_t.class=? and realm_transaction_t.dttm <= '
 	    .Bivio::Type::DateTime->to_sql_value('?'),
-	   [$self->get('realm_id'), $class->as_int(), $date]);
+	   [$self->get('realm_id'), $class->as_int(),
+		   Bivio::Type::DateTime->to_sql_param($date)]);
     return $sth->fetchrow_arrayref()->[0] || '0.00';
 }
 

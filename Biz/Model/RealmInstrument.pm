@@ -65,7 +65,8 @@ sub get_cost_per_share {
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
 	    .Bivio::Type::DateTime->to_sql_value('?'),
-	   [$realm_instrument_id, $date]);
+	   [$realm_instrument_id,
+		   Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($total_cost) = 0.0;
     my($total_count) = 0;
@@ -74,7 +75,8 @@ sub get_cost_per_share {
 	$total_cost += $row->[0];
 	$total_count += $row->[1];
     }
-    return $total_count > 0 ? ($total_cost / $total_count) : 0;
+    return $total_count == 0 ? 0
+	    : $total_cost / $total_count;
 }
 
 =for html <a name="get_first_buy_date"></a>
@@ -152,7 +154,8 @@ sub get_number_of_shares {
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
 	    .Bivio::Type::DateTime->to_sql_value('?'),
-	   [$realm_instrument_id, $date]);
+	   [$realm_instrument_id,
+		   Bivio::Type::DateTime->to_sql_param($date)]);
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
 
@@ -176,7 +179,8 @@ sub get_share_price {
 	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.dttm <= '
 	    .Bivio::Type::DateTime->to_sql_value('?')
 	    .' order by realm_instrument_valuation_t.dttm desc',
-	   [$realm_instrument_id, $date]);
+	   [$realm_instrument_id,
+		   Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($row);
     if ($row = $sth->fetchrow_arrayref()) {
