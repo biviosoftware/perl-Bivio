@@ -62,7 +62,8 @@ sub new {
     my($p) = Bivio::Test::HTMLParser->new($content);
     $p = $p->{'Bivio::Test::HTMLParser'};
 
-#    $fields->{'Bivio::Test::HTMLParser'} = $p->{'Bivio::Test::HTMLParser'};
+    # save parser's output, for reference.
+    $self->{'Bivio::Test::HTMLParser'} = $p;
 
     _find_button_home_page($self, $p);
     _find_button_logout($self, $p);

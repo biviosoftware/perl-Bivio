@@ -476,7 +476,7 @@ sub _parse_end_table {
 sub _parse_end_tr {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{currentrow})) {
+    if (defined ($fields->{currentrow}) && scalar(keys(%{$fields->{currentrow}})) > 0) {
 	if (defined ($fields->{currenttable})) {
 	    $fields->{currenttable}->{rows} = []
 		    unless (defined ($fields->{currenttable}->{rows}));
@@ -781,9 +781,9 @@ sub _parse_start_tr {
     $fields->{currentrow} = {};
 
     # cache row attributes, if any
-    if (defined ($attr)) {
-	$fields->{currentrow}->{attr} = $attr;
-    }
+#   if (defined ($attr)) {
+#	$fields->{currentrow}->{attr} = $attr;
+#   }
     return;
 }
 
