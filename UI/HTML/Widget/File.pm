@@ -112,13 +112,12 @@ sub render {
     # first render initialization
     if ($fields->{is_first_render}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<input name='
-		.$form->get_field_name_for_html($field)
-		.' type=file size='.$self->get('size');
+	$fields->{prefix} = '<input type=file size='.$self->get('size')
+		.' name=';
 	$fields->{is_first_render} = 0;
     }
-    $$buffer .= $fields->{prefix};
-    $$buffer .= ' value="'.$form->get_field_as_html($field).'">';
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
+	    .' value="'.$form->get_field_as_html($field).'">';
     return;
 }
 

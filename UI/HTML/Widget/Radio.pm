@@ -118,15 +118,17 @@ sub render {
 
     # first render initialization
     unless ($fields->{initialized}) {
-	$fields->{prefix} = '<nobr><input name='
-		.$form->get_field_name_for_html($field).' type=radio';
-	$fields->{suffix} = ' value="'.$value->to_html($value)."\">\n&nbsp;"
+	$fields->{prefix} = '<nobr><input name=';
+	$fields->{suffix} = ' type=radio value="'
+		.$value->to_html($value)."\">\n&nbsp;"
 		.$_FONT_PREFIX. Bivio::Util::escape_html($self->get('label'))
 		.$_FONT_SUFFIX.'</nobr>';
 	$fields->{initialized} = 1;
     }
 
     $$buffer .= $fields->{prefix}
+	    .$form->get_field_name_for_html($field)
+#TODO: is_equal?
 	    .($value eq $form->get($field) ? ' checked' : '')
 	    .$fields->{suffix};
     return;
