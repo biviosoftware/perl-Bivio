@@ -38,7 +38,6 @@ use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MemberTransactionList;
 use Bivio::Biz::Model::RealmAdminList;
-use Bivio::Biz::Model::RealmInvite;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::RealmUserList;
@@ -95,34 +94,23 @@ sub cascade_delete {
     my($self) = @_;
     my($id) = $self->get('club_id');
     my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    $realm->unauth_load(realm_id => $id)
-	    || die("couldn't load realm from club");
+    $realm->unauth_load_or_die(realm_id => $id);
 
-    # delete all accounting and shadow users
-    $self->delete_instruments_and_transactions();
+    # delete tables which contain realm data, but not linked to
+    # accounting transactions.
+    _delete_all($id, qw(realm_invite_t tax_k1_t tax_1065_t mail_t));
 
-    foreach my $table (qw(
-            realm_account_t
-            realm_user_t)) {
-
-	Bivio::SQL::Connection->execute('
-                DELETE FROM '.$table.'
-                WHERE realm_id=?',
-		[$id]);
-    }
-    Bivio::SQL::Connection->execute('
-            DELETE FROM mail_message_t
-            WHERE club_id=?',
-	    [$id]);
-
-    # delete realm invites
-    Bivio::Biz::Model::RealmInvite->cascade_delete($realm);
-
-    # delete file server/mail messages
-    Bivio::Biz::Model::Mail->delete_but_leave_files($realm);
+    # delete files
     Bivio::Biz::Model::File->cascade_delete($realm);
 
-    my($club_name) = $realm->get('name');
+    # Delete all accounting and shadow users
+    $self->delete_instruments_and_transactions();
+
+    # Delete all from tables which are used by accounting and
+    # aren't deleted by delete_instruments_and_transactions
+    _delete_all($id, qw(realm_user_t realm_account_t));
+
+    # Delete the club and then the realm
     $self->delete();
     $realm->cascade_delete;
     return;
@@ -355,6 +343,21 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _delete_all(string realm_id, string table, ...)
+#
+# Deletes all entries from tables.
+#
+sub _delete_all {
+    my($realm_id, @tables) = @_;
+    foreach my $t (@tables) {
+	Bivio::SQL::Connection->execute("
+                DELETE FROM $t
+                WHERE realm_id=?",
+		[$realm_id]);
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 

@@ -76,24 +76,6 @@ my($_MAX_INTEGER) = Bivio::Type::Integer->get_max;
 
 =cut
 
-=for html <a name="cascade_delete"></a>
-
-=head2 static cascade_delete(Bivio::Biz::Model::RealmOwner realm)
-
-Delete all invites for this realm.
-
-=cut
-
-sub cascade_delete {
-    my(undef, $realm) = @_;
-    my($id) = $realm->get('realm_id');
-    Bivio::SQL::Connection->execute('
-            DELETE FROM realm_invite_t
-            WHERE realm_id=?',
-	    [$id]);
-    return;
-}
-
 =for html <a name="check_accept"></a>
 
 =head2 static check_accept(Bivio::Agent::Request req)
