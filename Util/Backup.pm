@@ -123,7 +123,7 @@ sub mirror {
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
 	my($cfg) = Bivio::IO::Config->get($cfg_name);
 	$self->piped_exec_remote($cfg->{mirror_dest_host},
-	    "mkdir -p $cfg->{mirror_dest_dir}", undef, 1);
+	    "mkdir -p $cfg->{mirror_dest_dir}");
 	$res .= ${$self->piped_exec("rsync -e ssh -azlCSR --delete"
 	    . ($self->unsafe_get('noexecute') ? ' -n' : '')
 	    . ($_TRACE ? ' --progress' : '')
