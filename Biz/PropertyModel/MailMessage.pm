@@ -100,11 +100,27 @@ sub create {
     $self->SUPER::create($values);
     my($msgid) = $self->get('mail_message_id');
 #TODO: Update club_t.bytes here
-    #must get club and update number of bytes allocated and check
-    #to see if over the limit.
-    #Maybe add it to club.
+    _trace('validation of kbyte size for message.');
+
+#TODO This is a two step process. Probably should move the whole thing
+#into club. Also, this part could be done after parsing MIME parts.
+#That way we could probably increment the size of the entire message
+
+
+    my($kbytes) = $values->{kbytes};
+    my($isok) = $club->check_kbytes(\$kbytes);
+    #kbytes is incremented if okay.
+    if($isok eq(0)){
+	die("Mail message size exceeds max size for club.");
+    }
+    _trace('updating the KBYTES IN USE: ', $kbytes) if $_TRACE;
+    $club->update({
+	kbytes_in_use => $kbytes,
+    });
+
+    my $rfc = $msg->get_rfc822();
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
-	    \$body) || die("create failed: $body");
+	    \$rfc) || die("create failed: $rfc");
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
     if($msg){
