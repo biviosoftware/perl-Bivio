@@ -37,9 +37,13 @@ are named C<CVS>.
 
 =head1 ATTRIBUTES
 
+=over 4
+
 =item Request.uri : string
 
 Default file name.
+
+=back
 
 =cut
 
