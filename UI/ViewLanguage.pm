@@ -114,6 +114,9 @@ sub AUTOLOAD {
 	_die("$method is not implemented by $vs") unless $vs->can($method);
 	return $vs->$method(@args);
     }
+    # This is here for ViewShortcuts->vs_call.
+    return $proto->$method(@args)
+	if $method =~ /^view_/ && $proto->can($method);
     _die("$method invalid view function, widget, or shortcut.");
     # DOES NOT RETURN
 }
