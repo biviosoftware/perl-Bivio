@@ -27,6 +27,7 @@ C<get_long_desc> on the L<Bivio::TypeError|Bivio::TypeError>.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
 use Bivio::Die;
 use Bivio::Util;
@@ -71,11 +72,14 @@ sub to_html {
             my(\$unsafe_value) = \$form->get_field_as_literal(\$field);
             my(\$value) = \$unsafe_value;
             substr(\$value, 20) = '...' if length(\$value) > 20;
+            \$unsafe_value = Bivio::Util::escape_html(\$unsafe_value);
+            \$value = Bivio::Util::escape_html(\$value);
+            \$label = Bivio::Util::escape_html(\$label);
             "$$msg";
         ));
 
 	# Success return with escapes
-	return Bivio::Util::escape_html($res) if $res;
+	return $res if $res;
 
 	Bivio::IO::Alert->warn('Error interpolating: ', $msg,
 		': ', $@);
@@ -134,6 +138,29 @@ sub _compile {
     return $map;
 }
 
+# _escape(string text) : string
+#
+# Escape the html.  Use wherever you have a form value that needs
+# escaping.
+#
+sub _escape {
+    my($text) = @_;
+    return Bivio::Util::escape_html($text);
+}
+
+# _link(any source, string task, string text) : string
+#
+# Returns an href for the string.  See NO_VALUATION_FOR_DATE for
+# an example usage.
+#
+sub _link {
+    my($source, $task, $text) = @_;
+    $task = Bivio::Agent::TaskId->$task();
+    return '<a href="'
+	    .Bivio::Util::escape_html($source->format_stateless_uri($task))
+	    .'">'.Bivio::Util::escape_html($text).'</a>';
+}
+
 # _lookup(string class, string field, string error) : string
 #
 # Returns value in $_MAP, if defined.
@@ -169,14 +196,19 @@ $Id$
 #
 # Forms may be blank iwc the text applies to every form with that field,
 # by default.
+#
 # Fields may be blank iwc the text applies to all fields.
-# Double quotes in Text are escaped.  The result is eval'd when an error
-# occurs.  Valid variables during eval are: $unsafe_value (not truncated),
-# $value (truncated), $source, $form, $field, $label, $error,
-# plus anything in @{[]}.
+#
+# Double quotes in Text are escaped.  Text must be valid html use
+# the utilities (_escape and _link) where appropriate.
+#
+# The result is eval'd when an error occurs.  Valid variables during eval are:
+# $unsafe_value (not truncated, escaped), $value (truncated, escaped), $source,
+# $form, $field, $label (escaped), $error, plus anything in @{[]}.
 #
 # See to_html.
 #
+
 __DATA__
 CreateUserForm
 Email.email
@@ -230,4 +262,13 @@ file and click OK.
 FILE_FIELD_RESET_FOR_SECURITY
 Your browser has reset this file field for security reasons.
 The value sent to us was: $unsafe_value
+%%
+
+
+NO_VALUATION_FOR_DATE
+The date selected cannot be used, because your portfolio is missing
+valuations for unlisted investments.  Either change the date to a day
+when all unlisted investments have been valued or
+@{[_link($source, 'CLUB_ACCOUNTING_LOCAL_VALUE',
+'enter valuations for the date below using this link')]}.
 %%
