@@ -43,6 +43,20 @@ C<b-sendmail-http>, the bOP sendmail to http gateway.
 
 =cut
 
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+It's fatal to receive an empty mail message form
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    $self->throw_die(Bivio::DieCode->CORRUPT_QUERY, 'empty form');
+    # DOES NOT RETURN
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
