@@ -1064,9 +1064,9 @@ sub set_realm {
 
 =for html <a name="set_user"></a>
 
-=head2 set_user(Bivio::Biz::Model::RealmOwner user)
+=head2 set_user(Bivio::Biz::Model::RealmOwner user) : Bivio::Biz::Model
 
-=head2 set_user(string user_id_or_name)
+=head2 set_user(string user_id_or_name) : Bivio::Biz::Model
 
 B<Use
 L<Bivio::Biz::Model::LoginForm|Bivio::Biz::Model::LoginForm>
@@ -1082,6 +1082,8 @@ user_realms.
 
 B<Call this if you create/delete realms.>  It will refresh
 the cached I<user_realms> list.
+
+Returns I<auth_user>, which my be C<undef>.
 
 =cut
 
@@ -1113,7 +1115,7 @@ sub set_user {
     # Set the (cached) auth_role if requested (by default).
     $self->put_durable(auth_role => _get_role($self, $self->get('auth_id')))
 	    unless $dont_set_role;
-    return;
+    return $user;
 }
 
 =for html <a name="task_ok"></a>
