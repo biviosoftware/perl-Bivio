@@ -227,6 +227,21 @@ sub get_width {
     return length($min) > length($max) ? length($min) : length($max);
 }
 
+=for html <a name="is_equal"></a>
+
+=head2 static is_equal(int left, int right) : boolean
+
+Are the two values equal?  Uses "==" comparison.  undefs are not
+equal, paralleling what happens is SQL.
+
+=cut
+
+sub is_equal {
+    my(undef, $left, $right) = @_;
+    return 0 unless defined($left) && defined($right);
+    return $left == $right ? 1 : 0;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

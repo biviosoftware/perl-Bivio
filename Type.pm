@@ -198,6 +198,21 @@ sub get_width {
     die('abstract method');
 }
 
+=for html <a name="is_equal"></a>
+
+=head2 static is_equal(any left, any right) : boolean
+
+Are the two values equal?  Uses "eq" comparison.  undefs are not
+equal, paralleling what happens is SQL.
+
+=cut
+
+sub is_equal {
+    my(undef, $left, $right) = @_;
+    return 0 unless defined($left) && defined($right);
+    return $left eq $right ? 1 : 0;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 to_html(any value) : string
