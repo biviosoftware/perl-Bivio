@@ -34,7 +34,6 @@ one payment at a time.
 
 #=IMPORTS
 use Bivio::Biz::Model::ECPayment;
-use Bivio::Biz::Model::ECPaymentListAll;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -61,17 +60,17 @@ sub execute {
 
     # Setup job to call this method again
     Bivio::Agent::Job::Dispatcher->enqueue($req,
-            Bivio::Agent::TaskId::GENERAL_PAYMENTS_PROCESS_ALL(),
+            Bivio::Agent::TaskId::EC_PAYMENTS_PROCESS_ALL(),
             {process_all => 1});
     # Nothing returned to client
     my($buffer) = '';
     $req->get('reply')->set_output(\$buffer);
-    return;
+    return 0;
 }
 
 #=PRIVATE METHODS
 
-# _process_all(Bivio::Biz::Action::ECPaymentProcess self, Bivio::Agent::Request req)
+# _process_all(Bivio::Biz::Action::ECPaymentProcess self, Bivio::Agent::Request req) : boolean
 #
 # Go through list of all payments which need to be processed.
 # For each payment, setup user and realm, then execute a separate
@@ -81,32 +80,19 @@ sub _process_all {
     my($self, $req) = @_;
 
     my($task) = Bivio::Agent::Task->get_by_id(
-            Bivio::Agent::TaskId::CLUB_ADMIN_PROCESS_PAYMENT());
-    my($payment_list) = Bivio::Biz::Model::ECPaymentListAll->new($req);
+            Bivio::Agent::TaskId::CLUB_ADMIN_EC_PROCESS_PAYMENT());
+    my($payment_list) = Bivio::Biz::Model->new($req, 'ECAdmPaymentList');
 #TODO: How to pass a WHERE clause?? Only want certain records from the list.
     $payment_list->load_all;
     while ($payment_list->next_row) {
         my($payment) = $payment_list->get_model('ECPayment');
-        next unless Bivio::Type::ECPaymentStatus
-                ->needs_processing($payment->get('status'));
-        # Load user and club
-        my($realm_user) = Bivio::Biz::Model::RealmOwner->new($req);
-        $req->throw_die('NOT_FOUND', entity => $payment->get('user_id'))
-                unless $realm_user->unauth_load(
-                        realm_id => $payment->get('user_id'),
-                        realm_type => Bivio::Auth::RealmType::USER());
-        $req->set_user($realm_user);
-        my($realm_club) = Bivio::Biz::Model::RealmOwner->new($req);
-        $req->throw_die('NOT_FOUND', entity => $payment->get('realm_id'))
-                unless $realm_club->unauth_load(
-                        realm_id => $payment->get('realm_id'),
-                        realm_type => Bivio::Auth::RealmType::CLUB());
-        my($realm) = Bivio::Auth::Realm->new($realm_club);
-        $req->set_realm($realm);
+        next unless $payment->get('status')->needs_processing;
+        $req->set_user($payment->get('user_id'));
+        $req->set_realm($payment->get('realm_id'));
         $task->execute($req);
     }
     Bivio::Biz::Model::ECPayment->check_transaction_batch;
-    return;
+    return 0;
 }
 
 =head1 COPYRIGHT
