@@ -367,12 +367,14 @@ sub get_references {
     my($fields) = $self->{$_PACKAGE};
     my($refs, @refs);
     if (defined($refs = $fields->{entity}->head->get('References'))) {
-        while ($refs =~ s/<([^<>]+)>//) { push(@refs, $1); }
+        while ($refs =~ s/<([^<>]+)>//) {
+            unshift(@refs, $1);
+        }
     }
     if (defined($refs = $fields->{entity}->head->get('In-Reply-To'))) {
         # Only want last id
         $refs =~ s/<([^<>]+)>//g;
-        push(@refs, $1)  if $1;
+        unshift(@refs, $1) if $1;
     }
     # Remove duplicates
     my(%saw);
