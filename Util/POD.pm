@@ -306,6 +306,10 @@ sub _to_html {
 	);
 	_fixup_html($module, $html);
     }
+
+    # Delete junk that POD creates
+    unlink('pod2htmd.x~~');
+    unlink('pod2htmi.x~~');
     return;
 }
 
