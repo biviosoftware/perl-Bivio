@@ -112,6 +112,7 @@ sub initialize {
 	    || ['ok_button', 'cancel_button'];
 
     my($factory) = 'Bivio::UI::HTML::WidgetFactory';
+    Bivio::IO::ClassLoader->simple_require($factory);
     my($form) = Bivio::Biz::Model->get_instance(
 	    $self->ancestral_get('form_class'));
     my($labels) = $self->unsafe_get('labels') || {};
