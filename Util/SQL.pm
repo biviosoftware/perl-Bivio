@@ -88,12 +88,7 @@ See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
 sub create_db {
     my($self) = @_;
     $self->setup;
-    foreach my $file (@{_ddl_files($self)}){
-	# Set up new file so read_input returns new value each time
-	$self->print('Executing ', $file, "\n");
-	$self->put(input => $file);
-	$self->run;
-    }
+    _create_tables($self);
     Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
     $self->init_realm_role;
     return;
@@ -213,8 +208,8 @@ sub export_db {
     my($f) = ($dir || '.') . '/' . $db->{database} . '-'
 	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
     $self->piped_exec(
-	"env PGUSER=$db->{user} pg_dump --clean --format=c --blobs "
-	. " --file='$f' $db->{database}");
+	"env PGUSER='$db->{user}' pg_dump --clean --format=c --blobs "
+	. " --file='$f' --dbname '$db->{database}'");
     return "Exported $db->{database} to $f\n";
 }
 
@@ -253,11 +248,13 @@ Restores the database from file.
 
 sub import_db {
     my($self, $file) = @_;
+    $self->usage_error('missing file') unless $file;
     my($db) = _assert_postgres($self);
     $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
-    $self->piped_exec(
-	"env PGUSER=$db->{user} pg_restore --clean --format=c "
-	. " -d $db->{database} $file");
+    $self->piped_exec("dropdb --username $db->{user} $db->{database}", '', 1);
+    $self->piped_exec("createdb --username $db->{user} $db->{database}");
+    $self->piped_exec("pg_restore --format=c --username $db->{user}"
+	. " --dbname=$db->{database} < $file");
     return "Imported $file into $db->{database}\n";
 }
 
@@ -356,7 +353,8 @@ sub run_command {
     my($self, $commands) = @_;
     my($c) = _assert_postgres($self);
     return $self->piped_exec(
-	"psql -U '$c->{user}' -d '$c->{database}' 2>&1", $commands);
+	"psql --username '$c->{user}' --dbname '$c->{database}' 2>&1",
+	$commands);
 }
 
 #=PRIVATE METHODS
@@ -367,11 +365,26 @@ sub run_command {
 #
 sub _assert_postgres {
     my($self) = @_;
-    $self->get_request;
+    $self->setup;
     my($c) = Bivio::SQL::Connection->get_dbi_config;
     $self->usage_error($c->{connection}, ': connection type not supported')
 	unless $c->{connection} =~ /postgres/i;
     return $c;
+}
+
+# _create_tables(self)
+#
+# Only creates tables, no data populated.
+#
+sub _create_tables {
+    my($self) = @_;
+    foreach my $file (@{_ddl_files($self)}){
+	# Set up new file so read_input returns new value each time
+	$self->print('Executing ', $file, "\n");
+	$self->put(input => $file);
+	$self->run;
+    }
+    return;
 }
 
 # _ddl_files(self) : array_ref
@@ -383,7 +396,7 @@ sub _ddl_files {
     $self->get_request;
     my($f) = $self->ddl_files;
     $self->usage('must be run in files/ddl directory')
-	    unless -r $f->[0];
+	unless -r $f->[0];
     return $f;
 }
 
