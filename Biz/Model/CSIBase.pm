@@ -55,82 +55,39 @@ my(%_RECORD_HANDLERS);
 
 =cut
 
-=for html <a name="new"></a>
-
-=head2 static new(Bivio::Agent::Request) : Bivio::Biz::Model::CSIBase
-
-Creates an instance of an CSI Base model.
-
-=cut
-
-sub new {
-    my($self) = Bivio::Biz::PropertyModel::new(@_);
-    $self->{$_PACKAGE} = {};
-    return $self;
-}
-
 =head1 METHODS
 
 =cut
 
-=for html <a name="from_mgfs"></a>
-
-=head2 from_mgfs(string record, string file) : boolean
-
-Creates/updates an CSI model from the CSI record format.
-Bad records are written to <model>_reject and ignored.
-Returns 1 on success, 0 on failure.
-Failures should be rolled back.
-
-=cut
-
-sub from_mgfs {
-    my($self, $record, $file) = @_;
-
-    # lazy instantiation, kept in static map
-#    my($importer) = $_IMPORTER_MAP->{ref($self)};
-#    unless ($importer) {
-#	# the self is used only for type information
-#	$importer = Bivio::Data::CSI::Importer->new($self,
-#		$self->internal_get_mgfs_import_format);
-#	$_IMPORTER_MAP->{ref($self)} = $importer;
-#    }
-#    my($values);
-#    my($die) = Bivio::Die->catch(
-#	    sub {
-#		$values = $importer->parse($record, $file);
-#	    });
-#    $die ||= $self->try_to_update_or_create($values,
-#	    $importer->is_update($file));
-#    if ($die) {
-#	$self->write_reject_record($die, $record);
-#	return 0;
-#    }
-#    return 1;
-}
-
 =for html <a name="handleRecord"></a>
 
-=head2 handleRecord(string date, array_ref fields) : 
+=head2 static handleRecord(string date, string type, array_ref fields)
 
-
+Handle a CSI record by dispatching it to the appropriate model
+based on the record type.
 
 =cut
 
 sub handleRecord {
-    my($self) = shift;
-    my($date, $type) = @_;
+    my($proto, $req, $date, $type, $fields) = @_;
     my($record_type) = Bivio::Data::CSI::RecordType->from_any($type);
     Bivio::Die->die('No handler for record type ', $record_type)
                 unless exists($_RECORD_HANDLERS{$record_type});
-    my($handler) = $self->get_instance($_RECORD_HANDLERS{$record_type});
-    $handler->processRecord(@_);
+    my($handler) = $_RECORD_HANDLERS{$record_type};
+    unless (ref($handler)) {
+        _trace("Instantiating handler $handler") if $_TRACE;
+        $handler = $proto->get_instance($handler)->new($req);
+        $_RECORD_HANDLERS{$record_type} = $handler;
+    }
+    #_trace('Handling ', $record_type->to_string($record_type), ',',
+    #        $date, ',', join(',', @$fields)) if $_TRACE;
+    $handler->processRecord($date, $record_type, $fields);
     return;
 }
 
 =for html <a name="internal_register_handler"></a>
 
-=head2 static internal_register_handler(Bivio::Biz::Model::CSIBase class, Bivio::Data::CSIRecordType types)
+=head2 static internal_register_handler(Bivio::Biz::Model::CSIBase class, array types)
 
 Register class I<class> to handle record types I<types>.
 
@@ -144,6 +101,8 @@ sub internal_register_handler {
             Bivio::Die->die('Attempt to re-register record type ', $type,
                     ' with class ', $class);
         }
+        Bivio::Die->die('Missing ', $class, '::processRecord')
+                    unless $class->can('processRecord');
         $_RECORD_HANDLERS{$type} = $class;
     }
     return;
@@ -166,20 +125,6 @@ sub post_import {
     _audit_last_import_date($req);
 
     Bivio::SQL::Connection->commit;
-    return;
-}
-
-=for html <a name="processRecord"></a>
-
-=head2 processRecord(string date, string type, array_ref fields) : 
-
-
-
-=cut
-
-sub processRecord {
-    my($self, $date, $fields) = @_;
-    _trace();
     return;
 }
 
