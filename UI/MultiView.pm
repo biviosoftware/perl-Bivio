@@ -49,15 +49,14 @@ sub new {
     my($proto, $name, $views, $menu) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
     $self->{$_PACKAGE} = {
-	views => $views,
-	menu => $menu,
-	active_view => undef
+	'views' => $views,
+	'menu' => $menu,
+	'active_view' => undef
     };
     my($view);
     foreach $view (@$views) {
 	$view->set_parent($self);
     }
-
     return $self;
 }
 

@@ -51,9 +51,9 @@ sub new {
     my($proto, $top, $items) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	top => $top,
-	items => $items,
-	selected => undef
+	'top' => $top,
+	'items' => $items,
+	'selected' => undef
     };
     return $self;
 }
@@ -76,7 +76,7 @@ sub get_display_names {
     my(@result);
     my($items) = $fields->{items};
 
-    for (my($i) = 1; $i < scalar(@$items); $i += 2 ) {
+    for (my($i) = 1; $i < int(@$items); $i += 2 ) {
 	push(@result, $items->[$i]);
     }
     return \@result;
@@ -96,7 +96,7 @@ sub get_names {
     my(@result);
     my($items) = $fields->{items};
 
-    for (my($i) = 0; $i < scalar(@$items); $i += 2 ) {
+    for (my($i) = 0; $i < int(@$items); $i += 2 ) {
 	push(@result, $items->[$i]);
     }
     return \@result;
@@ -142,6 +142,7 @@ sub set_selected {
     my($self, $name) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{selected} = $name;
+    return;
 }
 
 #=PRIVATE METHODS

@@ -73,6 +73,7 @@ sub render {
     my($self, $date, $req) = @_;
     my($d, $m, $y) = (gmtime($date))[3,4,5];
     $req->print(sprintf('%02d/%02d/%02d', ++$m, $d, $y));
+    return;
 }
 
 #=PRIVATE METHODS

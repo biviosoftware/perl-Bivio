@@ -84,6 +84,7 @@ sub render {
 	$str = $target;
     }
     $req->print($str);
+    return;
 }
 
 #=PRIVATE METHODS

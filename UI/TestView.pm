@@ -54,8 +54,8 @@ sub new {
     my($self) = &Bivio::UI::View::new($proto, $name);
 
     $self->{$_PACKAGE} = {
-	output => $output,
-	default_model => $default_model
+	'output' => $output,
+	'default_model' => $default_model
     };
     return $self;
 }
@@ -91,6 +91,7 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
 
     $req->print($fields->{output});
+    return;
 }
 
 

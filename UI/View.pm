@@ -61,8 +61,8 @@ sub new {
     my($self) = &Bivio::UI::Renderer::new($proto);
 
     $self->{$_PACKAGE} = {
-        name => $name,
-        parent => undef
+        'name' => $name,
+        'parent' => undef
     };
     return $self;
 }
@@ -135,6 +135,7 @@ sub set_parent {
 	die('view '.$self->get_name().' already parented');
     }
     $fields->{parent} = $parent;
+    return;
 }
 
 #=PRIVATE METHODS
