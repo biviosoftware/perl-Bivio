@@ -542,6 +542,24 @@ sub to_sql_value {
     return 'TO_DATE('.$place_holder.",'".SQL_FORMAT()."')";
 }
 
+=for html <a name="to_string"></a>
+
+=head2 static to_string(string value) : string
+
+Converts to a human readable string
+
+=cut
+
+sub to_string {
+    my($proto, $date_time) = @_;
+    return '' unless defined($date_time);
+    my($sec, $min, $hour, $mday, $mon, $year)
+	    = $proto->to_parts($date_time);
+    # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
+    return sprintf('%02d/%02d/%04d %02d:%02d:%02d GMT', $mon, $mday, $year,
+	    $hour, $min, $sec);
+}
+
 #=PRIVATE METHODS
 
 # _initialize()
