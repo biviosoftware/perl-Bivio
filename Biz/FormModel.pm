@@ -234,7 +234,7 @@ sub execute {
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-	return 1 if $self->execute_ok('ok_button');
+	return 1 if _call_execute($self, 'execute_ok', 'ok_button');
 	return 0 unless $fields->{errors};
 	Bivio::Die->die($self->as_string,
 		": called with invalid values");
@@ -261,7 +261,7 @@ sub execute {
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request($req)
 		if $fields->{require_context};
-	return $self->execute_empty;
+	return _call_execute($self, 'execute_empty');
     }
 
     # Only save "generically" if not executed explicitly.
@@ -291,7 +291,7 @@ sub execute {
 	$fields->{literals} = {};
 	$fields->{context} = _initial_context($self, $req)
 		unless $fields->{context};
-	return $self->execute_empty;
+	return _call_execute($self, 'execute_empty');
     }
 
     # User submitted a form, parse, validate, and execute
@@ -302,7 +302,7 @@ sub execute {
     unless (_parse($self, $input)) {
 	# Allow the subclass to modify the state of the form after an unwind
 	$self->clear_errors;
-	return $self->execute_unwind();
+	return _call_execute($self, 'execute_unwind');
     }
 
     # determine the selected button, default is ok
@@ -319,10 +319,10 @@ sub execute {
     return $self->validate_and_execute_ok($button)
 	    if $button_type->isa('Bivio::Type::OKButton');
 
-    return $self->execute_cancel($button)
+    return _call_execute($self, 'execute_cancel', $button)
 	    if $button_type->isa('Bivio::Type::CancelButton');
 
-    return $self->execute_other($button);
+    return _call_execute($self, 'execute_other', $button);
 }
 
 =for html <a name="execute_cancel"></a>
@@ -886,6 +886,47 @@ sub internal_initialize_sql_support {
     return Bivio::SQL::FormSupport->new($proto->internal_initialize);
 }
 
+=for html <a name="internal_post_execute"></a>
+
+=head2 internal_post_execute(string method)
+
+Called to initialize info I<after> a validate_and_execute_ok, execute_empty,
+execute_unwind, execute_other, or execute_cancel.
+
+This routine must be robust against data errors and the like.
+I<method> is which method was just invoked, if the method did not
+end in an exception (including redirects).
+
+Does nothing by default.
+
+See also L<internal_pre_execute|"internal_pre_execute">.
+
+=cut
+
+sub internal_post_execute {
+    return;
+}
+
+=for html <a name="internal_pre_execute"></a>
+
+=head2 internal_pre_execute(string method)
+
+Called to initialize info before a validate_and_execute_ok, execute_empty,
+execute_unwind, execute_other, or execute_cancel.
+
+This routine must be robust against data errors and the like.
+I<method> is which method that is about to be invoked.
+
+Does nothing by default.
+
+See also L<internal_post_execute|"internal_post_execute">.
+
+=cut
+
+sub internal_pre_execute {
+    return;
+}
+
 =for html <a name="internal_pre_parse_columns"></a>
 
 =head2 internal_pre_parse_columns()
@@ -977,19 +1018,29 @@ sub internal_stay_on_page {
 
 =head2 load_from_model_properties(string model)
 
+=head2 load_from_model_properties(Bivio::Biz::Model model)
+
 Gets I<model> and copies all properties from I<model> to I<properties>.
+If I<model> is not a reference, calls L<get_model|"get_model"> first.
 
 =cut
 
 sub load_from_model_properties {
     my($self, $model) = @_;
     my($sql_support) = $self->internal_get_sql_support();
-    my($properties) = $self->internal_get();
     my($models) = $sql_support->get('models');
-    $self->die($model, ': no such model') unless defined($models->{$model});
-    my(%res);
+    my($m);
+    if (ref($model)) {
+	$m = $model;
+	$model = $m->simple_package_name;
+    }
+    else {
+	$self->die($model, ': no such model')
+		unless defined($models->{$model});
+	$m = $self->get_model($model);
+    }
+    my($properties) = $self->internal_get();
     my($column_aliases) = $sql_support->get('column_aliases');
-    my($m) = $self->get_model($model);
     foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
 #TODO: Document this is being used elsewhere!
 	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
@@ -1137,6 +1188,7 @@ sub validate_and_execute_ok {
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
     # to the user as possible.
+    $self->internal_pre_execute('validate_and_execute_ok');
     $self->validate();
     if ($fields->{errors}) {
 	_put_file_field_reset_errors($self);
@@ -1171,6 +1223,7 @@ sub validate_and_execute_ok {
 	    # DOES NOT RETURN
 	}
     }
+    $self->internal_post_execute('validate_and_execute_ok');
 
     # Some type of error, rollback and fall through to the next
     # task items.
@@ -1284,6 +1337,18 @@ sub _apply_type_error {
     }
     $die->throw_die() unless $got_one;
     return;
+}
+
+# _call_execute(self, string method, string args, ...) : any
+#
+# Calls internal_pre_execute, $method($args, ...), then internal_post_execute.
+#
+sub _call_execute {
+    my($self, $method) = (shift, shift);
+    $self->internal_pre_execute($method);
+    my($res) = $self->$method(@_);
+    $self->internal_post_execute($method);
+    return $res;
 }
 
 # _get_literal(hash_ref fields, string form_name) : string
@@ -1579,8 +1644,7 @@ sub _redirect {
 	_trace('no form, client_redirect: ', $c->{unwind_task},
 		'?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
-	# better.  We don't add in path_info, because it is already on
-	# the URI.
+	# better.
 	$req->client_redirect($c->{unwind_task}, $c->{realm},
 		$c->{query}, $c->{path_info});
 	# DOES NOT RETURN
