@@ -304,6 +304,8 @@ Data will be loaded starting at the specified index into the result set.
 
 I<where> is added to the internally generated select with I<params>.
 
+If I<want_this> or I<this> is set, only loads one element.
+
 =cut
 
 sub load {
@@ -313,7 +315,7 @@ sub load {
     return [] unless $self->unsafe_get('select');
 
     # Detail or list?
-    return $query->get('this')
+    return $query->get('this') || $query->unsafe_get('want_first_only')
 	    ? _load_this($self, $query, _execute_select(@_), $die)
 	    : _load_list(@_);
 }
@@ -494,8 +496,10 @@ sub _load_this {
     my($self, $query, $statement) = @_;
     my($attrs) = $self->internal_get;
     my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
+    my($want_first) = $query->unsafe_get('want_first_only');
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
-    _trace('looking for this ', $attrs->{primary_key_names}, ' = ', $this)
+    _trace($want_first ? 'looking for first'
+	    : ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
 	    if $_TRACE;
     my($types) = $attrs->{primary_key_types};
     my($prev, $row);
@@ -513,10 +517,16 @@ sub _load_this {
 #TODO: Should this be "is_equal"?  This is probably "good enough".
 #      It will slow it down a lot to make a method call for each
 #      row/attribute.  "eq" works in all cases and probably in future.
-	    $match &&= $this->[$j] eq $v;
+	    $match &&= $want_first || $this->[$j] eq $v;
 	    $j++;
 	    $v;
 	} @$types;
+	if ($want_first) {
+	    $query->put(this => $this = \@prev);
+	    _trace('found first ', $attrs->{primary_key_names}, ' = ', \@prev)
+		    if $_TRACE;
+	    last;
+	}
 	last if $match;
 	$prev = \@prev;
     }

@@ -158,7 +158,13 @@ if the single character attribute doesn't exist.
 The primary key values for this item.  The query should be to
 find this primary key.  There should only be one row returned.
 
-=item want_page_count : boolean
+=item want_first_only : boolean (optional)
+
+Set this to true if you want to get the first element and
+set it as I<this>.  Used by
+L<Bivio::SQL::ListModel::load|Bivio::SQL::ListModel/"load">.
+
+=item want_page_count : boolean (optional)
 
 Set this to true if you want to count the number of pages.
 

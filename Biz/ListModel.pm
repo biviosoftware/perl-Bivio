@@ -302,6 +302,21 @@ sub execute_load_this {
     return 0;
 }
 
+=for html <a name="execute_load_this_or_first"></a>
+
+=head2 static execute_load_this_or_first(Bivio::Agent::Request req) : boolean
+
+Loads I<this> from I<req> query or first element in list.
+
+=cut
+
+sub execute_load_this_or_first {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $self->load_this_or_first($self->parse_query_from_request());
+    return 0;
+}
+
 =for html <a name="format_query"></a>
 
 =head2 format_query(Bivio::Biz::QueryType type) : string
@@ -1019,9 +1034,9 @@ sub load_page {
 
 =for html <a name="load_this"></a>
 
-=head2 load_this(hash_ref query)
+=head2 load_this(hash_ref query) : Bivio::Biz::ListModel
 
-=head2 load_this(Bivio::SQL::ListQuery query)
+=head2 load_this(Bivio::SQL::ListQuery query) : Bivio::Biz::ListModel
 
 Loads the specified I<this> in I<query> which must be a form
 acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
@@ -1037,25 +1052,35 @@ I<auth_id> will be put in I<query> using the value in the request.
 
 Saves the model in the request.
 
+Returns I<self>.
+
 =cut
 
 sub load_this {
     my($self, $query) = @_;
     $query = $self->parse_query($query);
-
-    # Must specify a "this" else programming error.
     $self->throw_die('DIE', {message => 'missing this',
 	query => $query}) unless $query->unsafe_get('this');
+    return _load_this($self, $query);
+}
 
-    my($count) = _unauth_load($self, $query);
-    return if $count == 1;
+=for html <a name="load_this_or_first"></a>
 
-    $self->throw_die('NOT_FOUND', {message => 'this not found',
-	query => $query}) unless $count;
+=head2 load_this_or_first(hash_ref query) : Bivio::Biz::ListModel
 
-    $self->throw_die('TOO_MANY', {message => 'expecting just one this',
-	query => $query});
-    # DOES NOT RETURN
+=head2 load_this_or_first(Bivio::SQL::ListQuery query) : Bivio::Biz::ListModel
+
+Same as L<load_this|"load_this">, but if there is no I<this> on the
+query, loads the first element in the list.  If no first element,
+returns not found.
+
+=cut
+
+sub load_this_or_first {
+    my($self, $query) = @_;
+    $query = $self->parse_query($query);
+    $query->put(want_first_only => 1) unless $query->unsafe_get('this');
+    return _load_this($self, $query);
 }
 
 =for html <a name="map_primary_key_to_rows"></a>
@@ -1316,6 +1341,23 @@ sub _assert_all {
 	    .$self->LOAD_ALL_SIZE.' records')
 	    if $fields->{query}->get('has_next');
     return;
+}
+
+# _load_this(self, Bivio::SQL::ListQuery query)
+#
+# Loads this or first.
+#
+sub _load_this {
+    my($self, $query) = @_;
+    my($count) = _unauth_load($self, $query);
+    return $self if $count == 1;
+
+    $self->throw_die('NOT_FOUND', {message => 'this not found',
+	query => $query}) unless $count;
+
+    $self->throw_die('TOO_MANY', {message => 'expecting just one this',
+	query => $query});
+    # DOES NOT RETURN
 }
 
 # _new(Bivio::Biz::ListModel self) : Bivio::Biz::ListModel
