@@ -361,8 +361,7 @@ sub list {
 sub _create_URI {
     my($name) = @_;
     return $name if $name =~ /^http/;
-    return "$_RPM_HOST/$name" if $name =~ m:^/:;
-    return "$_RPM_HOST$_RPM_HOME_DIR/$name";
+    return "$_RPM_HOST/$name";
 }
 
 # _create_rpm_spec(string specin, string_ref output) : (string, string, string)
