@@ -271,8 +271,8 @@ sub _parse_header {
 		# \ without escaping and therefore we can't just do
 		# s/\\(.)/$1/g;
 
-		if ($h =~ s/^\"(.+?)\"\s*;\s*/;/o
-			|| $h =~ s/^\"(.+)\"\s*$//o
+		if ($h =~ s/^\"(.*?)\"\s*;\s*/;/o
+			|| $h =~ s/^\"(.*)\"\s*$//o
 			|| $h =~ s/^$_TOKEN\s*//o) {
 		    my($value) = $1;
 
