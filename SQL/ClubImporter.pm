@@ -33,17 +33,21 @@ use Bivio::Agent::TestRequest;
 use Bivio::Biz::Model::RealmInstrument;
 use Bivio::Biz::Model::RealmInstrumentEntry;
 use Bivio::Biz::Model::RealmInstrumentValuation;
+use Bivio::Biz::Model::RealmInstrumentValuationList;
 use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::EntryList;
 use Bivio::Biz::Model::MemberEntry;
+use Bivio::Biz::Model::MemberEntryList;
 use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Collection::Attributes;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::SQL::ListQuery;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
+use Bivio::Type::Integer;
 use Bivio::Type::TaxCategory;
 use Data::Dumper ();
 use Time::Local ();
@@ -482,6 +486,121 @@ sub new {
 
 =cut
 
+=for html <a name="generate_valuation_dates"></a>
+
+=head2 static generate_valuation_dates(string realm_id)
+
+Determines the correct valuation_date for member entries which affect
+units purchased.
+
+=cut
+
+sub generate_valuation_dates {
+    my(undef, $realm_id) = @_;
+
+    # determine the valuation dates used by easyware
+    # if all instruments are valued on one date, then it is a valuation date
+
+    my($visited_dates) = {};
+    my(@dates);
+    my($req) = Bivio::Collection::Attributes->new({});
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    $realm->unauth_load(realm_id => $realm_id)
+	    || die("unknown realm id $realm_id");
+    $req->put(auth_id => $realm->get('realm_id'));
+
+    my($valuations) = Bivio::Biz::Model::RealmInstrumentValuationList
+	    ->new($req);
+    $valuations->load(
+	    Bivio::SQL::ListQuery->new({
+		count => Bivio::Type::Integer->get_max,
+		auth_id => $realm->get('realm_id'),
+#TODO: this doesn't look right
+	    }, $valuations->internal_get_sql_support()));
+
+    # go through all the valuation records
+
+    while ($valuations->next_row) {
+	my($date) = $valuations->get('RealmInstrumentValuation.date_time');
+	next if exists($visited_dates->{$date}); # already been there
+
+	my($instruments) = $realm->get_number_of_shares($date);
+	# trim out instruments with no count
+	foreach my $id (keys(%$instruments)) {
+	    if ($instruments->{$id} == 0) {
+		delete($instruments->{$id});
+	    }
+	}
+	my(@ids) = keys(%$instruments);
+	my($count) = int(@ids);
+	next if $count == 0;
+
+	my($d) = Bivio::Type::DateTime->to_sql_value('?');
+	my($sth) = Bivio::SQL::Connection->execute("
+                SELECT COUNT(*)
+                FROM realm_instrument_valuation_t
+                WHERE realm_instrument_id IN (
+                    ".join(',', @ids).")
+                AND date_time=$d",
+		[$date]);
+
+	$visited_dates->{$date} = $date;
+
+	# see if all instruments have a value
+	if ($sth->fetchrow_arrayref->[0] == $count) {
+	    push(@dates, $date);
+	}
+    }
+
+    if ($_TRACE) {
+	my($debug_dates) = '';
+	foreach my $date (@dates) {
+	    $debug_dates .= "\t".Bivio::Type::Date->to_literal($date)."\n";
+	}
+	_trace("valuation dates =\n".$debug_dates);
+    }
+
+    # @dates contains a reverse order of valuation dates
+
+    # iterate all member entries which include units
+    # and set the valuation_date if not already specified
+
+    my($entries) = Bivio::Biz::Model::MemberEntryList->new($req);
+    my($entry) = Bivio::Biz::Model::MemberEntry->new($req);
+
+    $entries->load(
+	    Bivio::SQL::ListQuery->new({
+		count => Bivio::Type::Integer->get_max,
+		auth_id => $realm->get('realm_id'),
+#TODO: this doesn't look right
+	    }, $entries->internal_get_sql_support()));
+
+    while ($entries->next_row) {
+	next if ($entries->get('MemberEntry.units') == 0
+		|| defined($entries->get('MemberEntry.valuation_date')));
+
+	my($tran_date) = $entries->get('RealmTransaction.date_time');
+	my($val_date);
+
+	# find the closest valuation date
+	for my $date (@dates) {
+	    if (Bivio::Type::Date->compare($tran_date, $date) >= 0) {
+		$val_date = $date;
+		last;
+	    }
+	}
+
+	# default to the transaction date
+	$val_date ||= $tran_date;
+	$entry->load(entry_id => $entries->get('Entry.entry_id'));
+	_trace("\ntransaction date ".Bivio::Type::Date->to_literal($tran_date)
+		."\n  valuation date "
+		.Bivio::Type::Date->to_literal($val_date)."\n");
+	$entry->update({valuation_date => $val_date});
+    }
+    return;
+}
+
 =for html <a name="import_members"></a>
 
 =head2 import_members(hash attributes)
@@ -655,6 +774,9 @@ sub import_transactions {
     _link_spinoffs($self, $instrument_trans);
 
     _process_transactions($easyware_trans, $attributes);
+
+    # compute the implied valuation dates for easyware data
+    $self->generate_valuation_dates($attributes->{club_id});
 
     Bivio::SQL::Connection->commit();
 }
