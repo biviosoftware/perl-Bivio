@@ -1,4 +1,12 @@
 # $Id$
+BEGIN {
+    use Bivio::IO::Config;
+    Bivio::IO::Config->introduce_values({
+	'Bivio::Test::HTMLParser::Forms' => {
+	    error_color => '#990000',
+	},
+    });
+}
 use Bivio::Test;
 use Bivio::IO::File;
 my($_NEW) = 
@@ -91,6 +99,11 @@ Bivio::Test->new({
 	'petshop-item-detail' => [
 	    ['Tables', 'item', 'headings'] => [[]],
 	    ['Tables', 'item', 'rows', 0, 1] => ['18.50'],
+	],
+    ], [
+	'as-blacklists' => [
+	    ['Tables', 'IP Address', 'rows', 0, 2] => ['0'],
+	    ['Tables', 'IP Address', 'rows', 1, 2] => ['2'],
 	],
     ]),
     ['login', 'Forms'] => [
