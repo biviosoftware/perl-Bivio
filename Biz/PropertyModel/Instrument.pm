@@ -38,6 +38,7 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::InstrumentType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
+use Bivio::Type::Boolean;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
