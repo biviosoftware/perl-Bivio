@@ -174,6 +174,11 @@ column headers, etc.
 sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
+    if ($fields->{textarea}) {
+	$fields->{textarea}->{value}
+	    .= defined($text) ? Bivio::HTML->unescape($text) : '';
+	return;
+    }
     $text = $self->get('cleaner')->text($text);
     # We never label fields with blanks.  There are occassions where blanks
     # are upcalled just after the actual text.
@@ -188,6 +193,14 @@ sub html_parser_text {
 
 #=PRIVATE METHODS
 
+# _empty(string value) : boolean
+#
+# Returns true if !defined or zero length
+#
+sub _empty {
+    return !grep(defined($_) && length($_), @_);
+}
+
 # _end_font(hash_ref fields)
 #
 # Ends the current font.  Possibly saving last error.
@@ -197,7 +210,7 @@ sub _end_font {
     my($f) = pop(@{$fields->{font}});
     return unless defined($f->{color})
 	&& $f->{color} eq $_CFG->{error_color}
-	&& $fields->{text}
+	&& !_empty($fields->{text})
 	&& !_have_prefix_label($fields);
     $fields->{input_error} = $fields->{text};
     $fields->{text} = undef;
@@ -253,9 +266,7 @@ sub _end_table {
 #
 sub _end_textarea {
     my($fields) = @_;
-    $fields->{text} = '' unless defined($fields->{text});
     _trace($fields->{textarea}) if $_TRACE;
-    $fields->{textarea}->{value} = _text($fields, 1);
     $fields->{textarea} = undef;
     return;
 }
@@ -268,7 +279,8 @@ sub _end_th {
     my($fields) = @_;
     # There's a weird case where {text} will be the empty string,
     # but that's ok in this case.
-    $fields->{text} ||= ' ';
+    $fields->{text} = ' '
+	if _empty($fields->{text});
     push(@{$fields->{headers}}, _text($fields));
     _trace('push header ', $fields->{headers}->[$#{$fields->{headers}}])
 	if $_TRACE;
@@ -480,23 +492,24 @@ sub _start_input {
 
     # Text areas and select are special
     $fields->{$attr->{type}} = $attr
-	    if $attr->{type} =~ /^(?:select|textarea)$/;
+	if $attr->{type} =~ /^(?:select|textarea)$/;
 
     # Visible list form field is labeled with the header
-    if (defined($attr->{index})) {
-	Bivio::Die->die('missing headers on Widget::Table')
-	    unless $fields->{headers} && @{$fields->{headers}};
+    # if there is one.
+#TODO: Deal with the case when no header and not a checkbox
+    if (defined($attr->{index}) && $fields->{headers}
+	&& defined($fields->{headers}->[$fields->{cell_num}])) {
 	$fields->{text} = $fields->{headers}->[$fields->{cell_num}]
-		.'_'.$attr->{index};
+		. '_' . $attr->{index};
 	return _label_visible($fields);
     }
 
     # Nothing to label unless defined
-    return unless $fields->{text} || $fields->{prev_cell_text};
+    return if _empty($fields->{text}, $fields->{prev_cell_text});
 
     # A field has a label if the word preceding it begins with a ':'
     return _label_visible($fields)
-	    if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/;
+        if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/;
 
     # Unlabeled field.  Will be dealt with on closing tag or next text
     return;
@@ -583,9 +596,9 @@ sub _submit_label_clean {
 #
 sub _text {
     my($fields, $no_die) = @_;
-    my($res) = defined($fields->{text}) && length($fields->{text})
+    my($res) = !_empty($fields->{text})
 	? $fields->{text}
-	: defined($fields->{prev_cell_text}) && length($fields->{prev_cell_text})
+	: !_empty($fields->{prev_cell_text})
 	    ? $fields->{prev_cell_text}
         : $no_die ? ''
 	: Bivio::Die->die('no text field: ', $fields);
