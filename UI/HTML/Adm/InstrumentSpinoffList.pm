@@ -50,21 +50,16 @@ Returns the page content.
 sub create_content {
     my($self) = @_;
     $self->put_heading('ADM_SPINOFFS');
-    $self->put(page_action_bar => []);
+    $self->put(page_action_bar => ['adm_spinoff_create']);
 
-    return $self->join(
-	    '<p>&nbsp;',
-	    $self->link('ADM_SPINOFF_CREATE'),
-	    '<p>&nbsp;',
-	    $self->table('AdmInstrumentSpinoffList', [
-		'InstrumentSpinoff.spinoff_date',
-		'source_name',
-		'new_name',
-		['InstrumentSpinoff.remaining_basis', {decimals => 6}],
-		['InstrumentSpinoff.new_shares_ratio', {decimals => 6}],
-		$self->list_actions([['delete', 'ADM_SPINOFF_DELETE']]),
-	    ]),
-	   );
+    return $self->table('AdmInstrumentSpinoffList', [
+	'InstrumentSpinoff.spinoff_date',
+	'source_name',
+	'new_name',
+	['InstrumentSpinoff.remaining_basis', {decimals => 6}],
+	['InstrumentSpinoff.new_shares_ratio', {decimals => 6}],
+	$self->list_actions([['delete', 'ADM_SPINOFF_DELETE']]),
+    ]);
 }
 
 =for html <a name="execute"></a>
