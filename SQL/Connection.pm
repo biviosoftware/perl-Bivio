@@ -131,16 +131,16 @@ sub commit {
 
 =for html <a name="connect"></a>
 
-=head2 static connect() : Bivio::SQL::Connection
+=head2 static create() : Bivio::SQL::Connection
 
-=head2 static connect(string dbi_name) : Bivio::SQL::Connection
+=head2 static create(string dbi_name) : Bivio::SQL::Connection
 
 Returns a connection instance which uses the specified database
 configuration.
 
 =cut
 
-sub connect {
+sub create {
     my($proto, $dbi_name) = @_;
 
     my($key) = defined($dbi_name) ? $dbi_name : '<default>';
@@ -523,6 +523,7 @@ sub set_dbi_name {
 
     my($old) = $_DEFAULT_DBI_NAME;
     $_DEFAULT_DBI_NAME = $name;
+    _trace('default db set to ', $name) if $_TRACE;
     return $old;
 }
 
@@ -563,7 +564,7 @@ sub _execute_helper {
 #
 sub _get_instance {
     my($proto) = @_;
-    return $proto->connect($_DEFAULT_DBI_NAME);
+    return $proto->create($_DEFAULT_DBI_NAME);
 }
 
 # static _get_connection(self) : connection
@@ -588,7 +589,8 @@ sub _get_connection {
 	    $fields->{connection} = undef;
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
-	$fields->{connection} = $self->internal_dbi_connect;
+	$fields->{connection} =
+	    $self->internal_dbi_connect($fields->{dbi_name});
 	$fields->{db_is_read_only} = Bivio::Ext::DBI->get_config(
 		$fields->{dbi_name})->{is_read_only};
 	# Got a connection which will be reused on next call.  We don't
