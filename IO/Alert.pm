@@ -57,15 +57,16 @@ entry.
 
 #=VARIABLES
 my($_PERL_MSG_AT_LINE, $_LOGGER, $_LOG_FILE,
-	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
-        $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
-	$_MAX_WARNINGS, $_WARN_COUNTER);
+    $_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
+    $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
+    $_MAX_WARNINGS, $_WARN_COUNTER, $_MAX_ARG_DEPTH, $_DEFAULT_MAX_ARG_DEPTH);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
     $_LOGGER = \&_log_stderr;
     $_DEFAULT_MAX_ARG_LENGTH = 2048;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
+    $_MAX_ARG_DEPTH = $_DEFAULT_MAX_ARG_DEPTH = 3;
     $_WANT_PID = 0;
     $_WANT_TIME = 0;
     $_STACK_TRACE_WARN = 0;
@@ -86,6 +87,7 @@ Bivio::IO::Config->register({
     stack_trace_warn => 0,
     stack_trace_warn_deprecated => 0,
     max_arg_length => $_DEFAULT_MAX_ARG_LENGTH,
+    max_arg_depth => $_DEFAULT_MAX_ARG_DEPTH,
     want_stderr => 0,
     want_pid => 0,
     want_time => 0,
@@ -153,7 +155,7 @@ sub format_args {
     my($res) = '';
     foreach my $o (@_) {
 	# Only go three levels deep on structures
-	$res .= _format_string($o, 3);
+	$res .= _format_string($o, $_MAX_ARG_DEPTH);
     }
     $res .= "\n" unless substr($res, -1) eq "\n";
     return $res;
@@ -247,6 +249,7 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
 	    = $cfg->{max_arg_length};
+    $_MAX_ARG_DEPTH = $cfg->{max_arg_depth};
 
     # Must reset warn counter.  We don't call this except at config
     # time, so probably ok.  The low level code shouldn't loop. :-(
@@ -497,7 +500,6 @@ sub _format {
 #
 sub _format_string {
     my($o, $depth) = @_;
-
     # Avoid deep nesting
     if (--$depth > 0) {
 	# Don't let as_string calls crash;  Only call as_string on refs.
@@ -576,7 +578,7 @@ sub _log_apache {
 sub _log_file {
     my($msg) = @_;
     open(FILE, ">>$_LOG_FILE");
-    print FILE $msg;
+    print(FILE $msg);
     close(FILE);
     return;
 }
