@@ -185,3 +185,8 @@ EXISTS
 Another user has registered with this $label.  You may need to add a qualifier
 such as your zipcode, e.g. ${value}12345.
 %%
+
+
+NULL
+You must supply a value for $label.
+%%
