@@ -240,7 +240,7 @@ sub _initialize {
 	    'Premature (?:end|padding) of base64',
 	    'ListFormModel Bivio::DieCode::UPDATE_COLLISION',
 	    'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
-	    "can't login as shadow user",
+	    "can't login as offline user",
 	    'Bivio::Data::EW::ClubImporter::_parse_tax_id.*changed to',
 	    "MemberAllocationList.*report_date isn't on year-end",
 	    'EW::ClubImporter::.*incorrect imported allocations',

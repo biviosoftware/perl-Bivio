@@ -1531,7 +1531,7 @@ my(@_CFG) = (
         help=importing-naic-club-accounting
     )],
     [qw(
-        CLUB_ADMIN_SHADOW_MEMBER_INVITE
+        CLUB_ADMIN_OFFLINE_MEMBER_INVITE
         134
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
@@ -1553,7 +1553,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ImportedSecurityReconciliationForm
         Bivio::UI::HTML::Club::ImportedSecurityReconciliation
-        next=CLUB_ADMIN_SHADOW_MEMBER_INVITE
+        next=CLUB_ADMIN_OFFLINE_MEMBER_INVITE
         cancel=CLUB_ADMIN_TOOLS
     )],
     [qw(
@@ -2188,7 +2188,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberOpenBalanceList->execute_load_all
         Bivio::Biz::Model::MemberOpenBalanceListForm
         Bivio::UI::HTML::Club::MemberOpenBalanceList
-        next=CLUB_ADMIN_SHADOW_MEMBER_INVITE
+        next=CLUB_ADMIN_OFFLINE_MEMBER_INVITE
         help=opening-balance
     )],
     [qw(
