@@ -585,7 +585,7 @@ will use the task_id (dynamically).
 =cut
 
 sub vs_heading_as_label {
-    my($proto, $widget, $label) = @_;
+    my($proto, $label) = @_;
     return $proto->vs_heading(
 	    defined($label) ? Bivio::UI::Label->get_simple($label)
 	    : [sub {Bivio::UI::Label->get_simple(shift->get('task_id')
