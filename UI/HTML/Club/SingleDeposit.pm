@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::SingleDeposit - a single member deposit form
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::HTML::PageForm>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::SingleDeposit::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::HTML::PageForm;
+@Bivio::UI::HTML::Club::SingleDeposit::ISA = ('Bivio::UI::HTML::PageForm');
 
 =head1 DESCRIPTION
 
@@ -34,145 +34,99 @@ C<Bivio::UI::HTML::Club::SingleDeposit>
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::RealmAccountList;
 use Bivio::Biz::Model::RealmValuationAccountList;
-use Bivio::Type::DepositType;
-use Bivio::UI::Font;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Currency;
 use Bivio::UI::HTML::Widget::Date;
 use Bivio::UI::HTML::Widget::Director;
-use Bivio::UI::HTML::Widget::Form;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
-use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Select;
-use Bivio::UI::HTML::Widget::Submit;
-use Bivio::UI::HTML::Widget::Text;
 use Bivio::UI::HTML::Widget::TextArea;
-use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_FIELDS) = [];
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Club::SingleDeposit
-
-Creates and arranges a member single deposit dialog.
-
-=cut
-
-sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
-    my($fields) = $self->{$_PACKAGE} = {};
-    my($blank_cell) = Bivio::UI::HTML::Widget::Join->new({
-	values => ['&nbsp;']});
-    my($empty_cell) = Bivio::UI::HTML::Widget::String->new({
-	value => ''});
-    $fields->{form} = Bivio::UI::HTML::Widget::Form->new({
-	form_model => ['Bivio::Biz::Model::SingleDepositForm'],
-	value => Bivio::UI::HTML::Widget::Grid->new({
-	    pad => 5,
-	    values => [
-		[
-		    Bivio::UI::HTML::Widget::Director->new({
-			control => ['->unsafe_get', 'page_error'],
-			values => {},
-			cell_expand => 1,
-			cell_align => 'center',
-			undef_value => $blank_cell,
-			default_value => Bivio::UI::HTML::Widget::Join->new({
-			    values => [['page_error']],
-			}),
-		    }),
-		],
-		[
-		    _field('Date',
-			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmTransaction.date_time',
-			    })),
-		],
-		[
-		    Bivio::UI::HTML::Widget::Director->new({
-			control => ['show_valuation_date'],
-			values => {
-			    1 => Bivio::UI::HTML::Widget::FormFieldLabel->new({
-				label => 'Valuation Date',
-				field => 'valuation_date_time',
-			    }),
-			    0 => $empty_cell,
-			},
-		    }),
-		    Bivio::UI::HTML::Widget::Director->new({
-			control => ['show_valuation_date'],
-			values => {
-			    1 => Bivio::UI::HTML::Widget::Date->new({
-				field => 'valuation_date_time',
-			    }),
-			    0 => $empty_cell,
-			},
-		    }),
-#		    _field('Valuation Date',
-#			    Bivio::UI::HTML::Widget::Date->new({
-#				field => 'valuation_date_time',
-#			    })),
-		],
-		[
-		    _field('Account',
-			    Bivio::UI::HTML::Widget::Select->new({
-				field => 'RealmAccountEntry.realm_account_id',
-				choices => ['account_list'],
-				list_display_field => 'RealmAccount.name',
-			      list_id_field => 'RealmAccount.realm_account_id',
-			    })),
-		],
-		[
-		    _field('Amount',
-			    Bivio::UI::HTML::Widget::Currency->new({
-				field => 'Entry.amount',
-				size => 10,
-			    })),
-		],
-		[
-		    Bivio::UI::HTML::Widget::Join->new({
-			cell_expand => 1,
-			values => [
-			    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-				label => 'Remark',
-				field => 'RealmTransaction.remark',
-			    }),
-			    '<br>',
-			    Bivio::UI::HTML::Widget::TextArea->new({
-				cell_expand => 1,
-				field => 'RealmTransaction.remark',
-				rows => 3,
-				cols => 25,
-			    }),
-			],
-		    }),
-		],
-		[
-		    Bivio::UI::HTML::Widget::Submit->new({
-			cell_expand => 1,
-			cell_align => 'center',
-		    }),
-		],
-	    ],
-	}),
-    });
-    push(@$_FIELDS, ['valuation_date_time', 'Valuation Date']);
-    $fields->{form}->initialize;
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_fields"></a>
+
+=head2 create_fields() : array_ref
+
+Create Grid I<values> for this form.
+
+=cut
+
+sub create_fields {
+    my($self) = @_;
+
+    my($empty_cell) = Bivio::UI::HTML::Widget::String->new({
+	value => ''});
+    return [
+	[
+	    $self->create_caption('Date',
+		    Bivio::UI::HTML::Widget::Date->new({
+			field => 'RealmTransaction.date_time',
+		    })),
+	],
+	[
+	    Bivio::UI::HTML::Widget::Director->new({
+		control => ['show_valuation_date'],
+		values => {
+		    1 => Bivio::UI::HTML::Widget::FormFieldLabel->new({
+			label => 'Valuation Date',
+			field => 'valuation_date_time',
+		    }),
+		    0 => $empty_cell,
+		},
+	    }),
+	    Bivio::UI::HTML::Widget::Director->new({
+		control => ['show_valuation_date'],
+		values => {
+		    1 => Bivio::UI::HTML::Widget::Date->new({
+			field => 'valuation_date_time',
+		    }),
+		    0 => $empty_cell,
+		},
+	    }),
+	],
+	[
+	    $self->create_caption('Account',
+		    Bivio::UI::HTML::Widget::Select->new({
+			field => 'RealmAccountEntry.realm_account_id',
+			choices => ['account_list'],
+			list_display_field => 'RealmAccount.name',
+			list_id_field => 'RealmAccount.realm_account_id',
+		    })),
+	],
+	[
+	    $self->create_caption('Amount',
+		    Bivio::UI::HTML::Widget::Currency->new({
+			field => 'Entry.amount',
+			size => 10,
+		    })),
+	],
+	[
+	    Bivio::UI::HTML::Widget::Join->new({
+		cell_expand => 1,
+		values => [
+		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
+			label => 'Remark',
+			field => 'RealmTransaction.remark',
+		    }),
+		    '<br>',
+		    Bivio::UI::HTML::Widget::TextArea->new({
+			cell_expand => 1,
+			field => 'RealmTransaction.remark',
+			rows => 3,
+			cols => 25,
+		    }),
+		],
+	    }),
+	],
+    ];
+}
 
 =for html <a name="execute"></a>
 
@@ -201,6 +155,8 @@ sub execute {
     elsif ($task_id
 	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
 	$heading = 'Fee: ';
+
+	# fees only can be applied to a valuation account
 	$account_list = Bivio::Biz::Model::RealmValuationAccountList
 		->new($req);
 	$show_valuation_date = 0;
@@ -213,53 +169,29 @@ sub execute {
 
     $req->put(page_heading => $heading.$owner->get('display_name'),
 	    page_subtopic => undef,
-	    page_content => $fields->{form},
+	    page_content => $self,
 	    account_list => $account_list,
 	   );
-    my($form) = $req->get('form_model');
-
-    # error rendering
-#TODO: Replace with ErrorPage
-    if ($form->in_error) {
-	my($errors) = $form->get_errors;
-
-	my(@errors);
-	foreach my $f (@$_FIELDS) {
-	    my($n) = $f->[0];
-	    next unless defined($errors->{$n});
-	    push(@errors, Bivio::Util::escape_html(
-		    $f->[1].': '.$errors->{$n}->get_long_desc));
-	}
-
-	my($p, $s) = Bivio::UI::Font->as_html('error');
-	$req->put(page_error =>
-		"<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
-		.join("</td></tr>\n<tr><td><li>",
-			"${p}Please correct the following errors:$s",
-			@errors)
-		."</td></tr></table>\n<hr>");
-    }
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
 }
 
-#=PRIVATE METHODS
+=for html <a name="initialize"></a>
 
-# _field(string caption, Widget widget) : (FormFieldLabel, Widget)
-#
-# Returns a (label, widget) pair for the specified caption and widget.
-#
-sub _field {
-    my($caption, $widget) = @_;
+=head2 initialize()
 
-    my($label) = Bivio::UI::HTML::Widget::FormFieldLabel->new({
-	label => $caption,
-	field => $widget->get('field'),
-    });
+Sets attributes on self used by SUPER.
 
-    push(@$_FIELDS, [$label->get('field'), $caption]);
-    return ($label, $widget);
+=cut
+
+sub initialize {
+    my($self) = @_;
+    $self->put(form_model => ['Bivio::Biz::Model::SingleDepositForm']);
+    $self->SUPER::initialize;
+    return;
 }
+
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
