@@ -814,7 +814,8 @@ my(@_CFG) = (
         79
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
-        %/admin/roster/role/edit
+        %/admin/roster/privileges/edit
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Model::ClubUserRoleForm
         Bivio::UI::HTML::Club::EditUserRole
