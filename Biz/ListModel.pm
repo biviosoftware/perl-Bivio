@@ -21,6 +21,7 @@ L<Bivio::Biz::Model>
 
 =cut
 
+use Bivio::Biz::Model;
 @Bivio::Biz::ListModel::ISA = qw(Bivio::Biz::Model);
 
 =head1 DESCRIPTION
