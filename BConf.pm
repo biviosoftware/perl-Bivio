@@ -59,6 +59,7 @@ my($_DEFAULT_CONFIG) = {
 	maps => {
 	    Model => ['Bivio::Biz::Model'],
 	    Type => ['Bivio::Type'],
+	    CSVWidget => ['Bivio::UI::CSV::Widget', 'Bivio::UI::Widget'],
 	    HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 	    HTMLFormat => ['Bivio::UI::HTML::Format'],
 	    MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
