@@ -996,6 +996,7 @@ sub process {
 
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
+	$self->internal_pre_parse_columns;
 	$self->internal_put($values);
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
