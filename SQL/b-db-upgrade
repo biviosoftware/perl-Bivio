@@ -79,6 +79,28 @@ main(@ARGV);
 
 #=PRIVATE METHODS
 
+# _add_column(string table, string column, string sql_type, string value)
+#
+# Adds a column to the database and sets the default value.  Add constraints or
+# indices, add them after this call.
+#
+sub _add_column {
+    my($table, $column, $type, $value) = @_;
+    _do_sql("
+ALTER TABLE $table
+    ADD $column $type
+/
+");
+    return unless defined($value);
+
+    # Insert default values
+    _do_sql("
+update $table $column = $value
+/");
+
+    return;
+}
+
 # _do_sql(string sql) : statement
 #
 # Returns the last statement executed.
@@ -158,276 +180,126 @@ sub _fix_mgfs_names {
     return;
 }
 
+# _modify_column(string table, string column, string type)
+#
+# Change the type of the column.
+#
+sub _modify_column {
+    my($table, $column, $type) = @_;
+    _do_sql("
+ALTER TABLE $table $column $type
+");
+    return;
+}
+
 # _upgrade()
 #
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-
-    use Bivio::Auth::RealmType;
-    use Bivio::Agent::Request;
-    use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Data::EW::ClubImporter;
-    use Bivio::Type::EntryType;
-
-    # add start_date to club_t
+    _drop_constraints('file_t', 'volume');
     _do_sql('
-ALTER TABLE club_t
-    ADD start_date DATE
+ALTER TABLE file_t modify volume not null
 /
-');
-
-    # add country to realm_instrument_t
-    _do_sql('
-ALTER TABLE realm_instrument_t
-    ADD country CHAR(2)
+ALTER TABLE file_t add check (volume BETWEEN 1 AND 5)
 /
-');
-
-    # create the tax_1065_t and tax_k1_t tables
-    _do_sql('
-CREATE TABLE tax_1065_t (
-  realm_id NUMBER(18),
-  fiscal_end_date DATE,
-  partnership_type NUMBER(2),
-  partner_is_partnership NUMBER(1),
-  partnership_is_partner NUMBER(1),
-  consolidated_audit NUMBER(1),
-  publicly_traded NUMBER(1),
-  tax_shelter NUMBER(1),
-  foreign_account_country CHAR(2),
-  foreign_trust NUMBER(1),
-  return_type NUMBER(2),
-  irs_center NUMBER(3),
-  allocation_method NUMBER(2),
-  draft NUMBER(1)
+CREATE INDEX file_name_sort_i ON file_t (
+  name_sort
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
+  tablespace realm_indx
 /
+');
+    _add_column('file_t', 'is_public', 'NUMBER(1)');
+    _modify_column('file_t', 'aux_info', 'VARCHAR(4000)');
 
-CREATE TABLE tax_k1_t (
+
+    # mail_t
+    _do_sql('
+CREATE TABLE mail_t (
+  mail_id NUMBER(18),
   realm_id NUMBER(18),
-  user_id NUMBER(18),
-  fiscal_end_date DATE,
-  entity_type NUMBER(3),
-  partner_type NUMBER(2),
-  foreign_partner NUMBER(1)
+  message_id VARCHAR2(100),
+  date_time DATE,
+  from_name VARCHAR2(100),
+  from_name_sort VARCHAR2(100),
+  from_email VARCHAR2(100),
+  reply_to_email VARCHAR2(100),
+  subject VARCHAR2(100),
+  subject_sort VARCHAR2(100),
+  bytes NUMBER(9),
+  is_public NUMBER(1),
+  is_thread_root NUMBER(1),
+  thread_root_id NUMBER(18),
+  thread_parent_id NUMBER(18),
+  rfc822_file_id NUMBER(18),
+  cache_file_id NUMBER(18)
 )
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  storage (initial 50m next 50m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
 /
-
---
--- tax_1065_t
---
-ALTER TABLE tax_1065_t ADD primary key(realm_id, fiscal_end_date)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE tax_1065_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE tax_1065_t add check (partner_is_partnership between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (partnership_is_partner between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (consolidated_audit between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (publicly_traded between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (tax_shelter between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (foreign_trust between 0 and 1)
-/
-ALTER TABLE tax_1065_t add check (partnership_type between 0 and 5)
-/
-ALTER TABLE tax_1065_t add check (return_type between 0 and 4)
-/
-ALTER TABLE tax_1065_t add check (allocation_method between 1 and 2)
-/
-ALTER TABLE tax_1065_t modify partner_is_partnership not null
-/
-ALTER TABLE tax_1065_t modify partnership_is_partner not null
-/
-ALTER TABLE tax_1065_t modify consolidated_audit not null
-/
-ALTER TABLE tax_1065_t modify publicly_traded not null
-/
-ALTER TABLE tax_1065_t modify tax_shelter not null
-/
-ALTER TABLE tax_1065_t modify foreign_trust not null
-/
-ALTER TABLE tax_1065_t modify return_type not null
-/
-ALTER TABLE tax_1065_t add check (irs_center between 0 and 10)
-/
-ALTER TABLE tax_1065_t modify allocation_method not null
-/
-ALTER TABLE tax_1065_t modify draft not null
-/
-
---
--- tax_k1_t
---
-ALTER TABLE tax_k1_t ADD primary key(realm_id, user_id, fiscal_end_date)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE tax_k1_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE tax_k1_t
-  add foreign key (user_id)
-    references user_t(user_id)
-/
-ALTER TABLE tax_k1_t add check (entity_type between 0 and 12)
-/
-ALTER TABLE tax_k1_t add check (partner_type between 0 and 3)
-/
-ALTER TABLE tax_k1_t add check (foreign_partner between 0 and 1)
-/
-ALTER TABLE tax_k1_t modify entity_type not null
-/
-ALTER TABLE tax_k1_t modify partner_type not null
-/
-ALTER TABLE tax_k1_t modify foreign_partner not null
-/
-
-CREATE INDEX tax_1065_realm_i ON tax_1065_t (
+CREATE INDEX mail_realm_i ON mail_t (
   realm_id
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_indx
 /
-
-CREATE INDEX tax_k1_realm_i ON tax_k1_t (
-  realm_id
+CREATE INDEX mail_cache_file_i ON mail_t (
+  cache_file_id
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_indx
 /
-');
 
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_owner_t.realm_id
-            FROM realm_owner_t
-            WHERE realm_owner_t.realm_type=?
-            ORDER BY realm_owner_t.name',
-	    [Bivio::Auth::RealmType::CLUB()->as_sql_param]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	$realm->unauth_load(realm_id => $row->[0])
-		|| die("couldn't load realm ".$row->[0]);
-	$req->put(auth_id => $realm->get('realm_id'));
-
-	print(STDERR $realm->get('name')."\n");
-
-	# set tax free interest where appropriate
-	print(STDERR "\tupdating tax free interest\n");
-	Bivio::Data::EW::ClubImporter->update_tax_free_interest($realm);
-    }
-
-    # update all withdrawal fees, changing the sign
-    Bivio::SQL::Connection->execute('
-            UPDATE entry_t
-            SET amount = -amount
-            WHERE entry_id in (
-                SELECT entry_id
-                FROM entry_t
-                WHERE entry_type=?)',
-	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()->as_sql_param]);
-
-    _upgrade_reinvested_commissions();
-    return;
-}
-
-# _upgrade_reinvested_commissions()
-#
-# Fixes the tax category on all reinvested commission.
-# Existing records have a tax category of NOT_TAXABLE which isn't correct.
-#
-sub _upgrade_reinvested_commissions {
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_transaction_t.realm_transaction_id,
-                entry_t.tax_category
-            FROM realm_transaction_t, entry_t
-            WHERE realm_transaction_t.realm_transaction_id
-                =entry_t.realm_transaction_id
-            AND entry_t.entry_type=?',
-	    [Bivio::Type::EntryType->INSTRUMENT_DISTRIBUTION_INVESTMENT
-		    ->as_int]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($txn_id, $tax) = @$row;
-	Bivio::SQL::Connection->execute('
-                UPDATE entry_t
-                SET tax_category=?
-                WHERE realm_transaction_id=?
-                AND entry_type=?',
-		[$tax, $txn_id,
-			Bivio::Type::EntryType
-			->INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION
-			->as_int]);
-    }
-    _upgrade_visitor();
-    return;
-}
-
-# _upgrade_visitor()
-#
-# Creates the visitor table.
-#
-sub _upgrade_visitor {
-    _do_sql('
-CREATE TABLE visitor_t (
-  visitor_id NUMBER(18),
-  user_id NUMBER(18),
-  entry_uri VARCHAR2(100),
-  referer_uri VARCHAR2(100),
-  referer_realm_id NUMBER(18),
-  client_addr VARCHAR2(30),
-  creation_date_time DATE
+CREATE INDEX mail_rfc822_file_i ON mail_t (
+  rfc822_file_id
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
+  tablespace realm_indx
 /
-ALTER TABLE visitor_t ADD primary key(visitor_id)
+
+--
+-- mail_t
+--
+ALTER TABLE mail_t add primary key(mail_id)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
-ALTER TABLE visitor_t
-  add foreign key (referer_realm_id)
-    references realm_owner_t(realm_id)
+ALTER TABLE mail_t modify realm_id not null
 /
-ALTER TABLE visitor_t
-  add foreign key (user_id)
-    references user_t(user_id)
+ALTER TABLE mail_t 
+  add foreign key (realm_id)
+    references club_t(club_id)
 /
-ALTER TABLE visitor_t modify creation_date_time not null
+ALTER TABLE mail_t modify message_id not null
 /
-
-CREATE INDEX visitor_referer_realm_i ON visitor_t (
-  referer_realm_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
+ALTER TABLE mail_t modify date_time not null
 /
-
-CREATE INDEX visitor_user_i ON visitor_t (
-  user_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
+ALTER TABLE mail_t modify from_name not null
 /
-CREATE sequence visitor_s
-  minvalue 100012 maxvalue 999999999999999999
-  nocycle cache 10 increment BY 100000
+ALTER TABLE mail_t modify from_name_sort not null
+/
+ALTER TABLE mail_t modify from_email not null
+/
+ALTER TABLE mail_t modify subject not null
+/
+ALTER TABLE mail_t modify subject_sort not null
+/
+ALTER TABLE mail_t modify is_public not null
+/
+ALTER TABLE mail_t modify is_thread_root not null
+/
+ALTER TABLE mail_t 
+  add foreign key (rfc822_file_id)
+    references file_t(file_id)
+/
+ALTER TABLE mail_t 
+  add foreign key (cache_file_id)
+    references file_t(file_id)
+/
+ALTER TABLE mail_t modify bytes not null
 /
 ');
-    return;
 }
 
 # _usage(array message)
