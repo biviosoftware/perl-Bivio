@@ -2042,6 +2042,18 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberWithdrawalList
         Bivio::UI::HTML::Club::MemberWithdrawalReportList
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
+        206
+        CLUB
+        ACCOUNTING_READ&MEMBER_READ
+        ?/accounting/reports/withdrawal
+        Bivio::Biz::Model::Entry
+        Bivio::Biz::Model::MemberEntry
+        Bivio::Biz::Model::MemberWithdrawalInfo
+        Bivio::UI::HTML::Club::MemberWithdrawalReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
+    )],
 );
 
 __PACKAGE__->compile(
