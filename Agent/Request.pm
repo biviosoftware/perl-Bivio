@@ -240,13 +240,20 @@ sub new {
 
 Convenience routine which executes
 L<Bivio::Auth::Realm::can_user_execute_task|Bivio::Auth::Realm/"can_user_execute_task">
-for the current I<auth_realm> and current I<auth_user>.
+for the I<auth_realm> or one that matches the realm_type of the task
+and current I<auth_user>.
 
 =cut
 
 sub can_user_execute_task {
     my($self, $task) = @_;
-    return $self->get('auth_realm')->can_user_execute_task(
+
+    # If we can't get a realm, than can execute task
+    my($realm) = $self->internal_get_realm_for_task($task);
+    return 0 unless $realm;
+
+    # Execute in this realm?
+    return $realm->can_user_execute_task(
 	    Bivio::Agent::Task->get_by_id($task), $self);
 }
 
