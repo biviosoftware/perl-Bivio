@@ -320,6 +320,7 @@ _compile(
     AVERAGE_ANNUAL_RETURN_HEADING => ["Average\nAnnual Return"],
     AMOUNT_INVESTED_HEADING => ['Investments'],
     AMOUNT_RETURNED_HEADING => ['Returns'],
+    SHOW_INACTIVE => ['Show All'],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
