@@ -113,6 +113,11 @@ Bivio::Test->new({
 	'as-blacklist-detail' => [
 	    ['Tables', 'Server', 'rows', 2, 2] => ['request removal, website'],
 	],
+    ], [
+	'as-mail-campaign-list' => [
+	    ['Tables', 'First Seen', 'rows', 0, 1] => 'REMINDER: Boulder Software Club - First Annual Business Builders Series',
+	    ['Tables', 'First Seen', 'rows', 1, 1] => 'campaign.btest at 06/16/2003 17:21:39',
+	],
     ]),
     ['login', 'Forms'] => [
 	get_by_field_names => [
@@ -138,6 +143,20 @@ Bivio::Test->new({
 		return 0;
 	    }] => sub {
 		return $_TMP == 0 ? 1 : 0;
+	    },
+	],
+    ],
+    ['as-mail-campaign-list', 'Tables'] => [
+	do_rows => [
+	    ['First Seen', sub {
+		 my($row, $index) = @_;
+		 $_TMP = $row->{ID}
+		     if $index == 1 && $row->{Subject}
+			 eq 'campaign.btest at 06/16/2003 17:21:39';
+		 return 1;
+	    }] => sub {
+		shift->actual_return([$_TMP]);
+		return [1055805699];
 	    },
 	],
     ],
