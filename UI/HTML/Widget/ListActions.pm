@@ -188,11 +188,12 @@ sub render {
 	my($v2) = $v->{value};
 	next if $v2->{control}
 		&& !$source->get_widget_value(@{$v2->{control}});
-	$$buffer .= $v2->{prefix}.
-		($v2->{format_uri}
-			? $source->get_widget_value(@{$v2->{format_uri}})
-			: $source->format_uri($v2->{method}, $v->{uri}))
-		.'">';
+	$$buffer .= $sep
+	    . $v2->{prefix}
+	    . ($v2->{format_uri}
+		? $source->get_widget_value(@{$v2->{format_uri}})
+		: $source->format_uri($v2->{method}, $v->{uri}))
+	    . '">';
 	ref($v2->{label}) ? $v2->{label}->render($source, $buffer)
 		: ($$buffer .= $v2->{label});
 	$$buffer .= "</a>";
