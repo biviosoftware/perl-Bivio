@@ -264,7 +264,9 @@ sub new {
 
 Creates a child of I<self> (parent).  The I<child_type> attribute
 must be set, but no other attributes except components should
-be set.  The clone is always the parent.
+be set.  The clone is always the parent.  Components without
+a child initialize are shared fully, i.e. the parent's values
+and groups are copied verbatim to the child's.
 
 =cut
 

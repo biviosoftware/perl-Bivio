@@ -92,6 +92,8 @@ sub new {
 	initialize => $initialize,
     };
 
+    return $self if _init_from_parent($self);
+
     # Initialize undef value
     my($uv) = {config => $self->UNDEF_CONFIG, names => []};
     $self->internal_initialize_value($uv);
@@ -407,7 +409,7 @@ sub _assign {
     return;
 }
 
-# _init_from_clone(Bivio::UI::FacadeComponent self, Bivio::UI::FacadeComponent clone)
+# _init_from_clone(self, Bivio::UI::FacadeComponent clone)
 #
 # Calls the initialization depth first.
 #
@@ -418,6 +420,28 @@ sub _init_from_clone {
     _init_from_clone($self, $clone_fields->{clone});
     &{$clone_fields->{initialize}}($self) if $clone_fields->{initialize};
     return;
+}
+
+# _init_from_parent(self) : self
+#
+# Copy all the fields and groups verbatim.  Full sharing.
+#
+sub _init_from_parent {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    # No clone or have explicit initialize, need to copy
+    return 0 unless $fields->{clone} && !$fields->{initialize};
+
+    # Cloning from my parent?
+    my($parent) = $fields->{facade}->unsafe_get('parent');
+    my($clone_fields) = $fields->{clone}->{$_PACKAGE};
+    return 0 unless $parent && $parent == $clone_fields->{facade};
+
+    # Copy fields and groups
+    foreach my $field (qw(map undef_value read_only)) {
+	$fields->{$field} = $clone_fields->{$field};
+    }
+    return 1;
 }
 
 =head1 COPYRIGHT
