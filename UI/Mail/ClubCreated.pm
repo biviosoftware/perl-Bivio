@@ -58,7 +58,7 @@ sub execute {
 	    $recipient,
 	    # For syntax see Common::_text_to_html
 	    "Welcome to bivio", <<"EOF");
-Thank you for bringing your club to bivio.  Your private club homepage is:
+Congratulations on creating a bivio club.  Your private club homepage is:
 
     $url
 
@@ -66,17 +66,19 @@ Use bivio to:
 
     * Keep your club books.
     * Generate financial and performance reports.
-    * Share documents and exchange messages.
+    * Exchange messages and documents with club members.
 
-Sign up to AccountSync your brokerage accounts electronically to bivio,
-and avoid entering transactions by hand.  AccountSync is only \$95 per
-year (or about 50 cents per member per month):
+Did you know you can reconcile your books electronically?  AccountSync
+works with many popular brokerages, including Charles Schwab, E*Trade,
+TD Waterhouse, Ameritrade and BUYandHOLD.  Sign up and avoid entering
+transactions by hand:
 
     $as
 
-Promote yourself to CFO with our highest level of service, AccountKeeper.
-Your bivio AccountKeeper does all the work.  We will even sign your tax
-forms, all for only \$195 per year (or about \$1 per member per month):
+Promote yourself to CFO with full service bookkeeping.  Your bivio
+AccountKeeper does all the work.  We will even print, sign and send
+your club IRS tax forms, all for only \$195 per year (or about \$1
+per member per month):
 
     $ak
 
