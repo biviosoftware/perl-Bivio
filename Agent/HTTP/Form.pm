@@ -37,7 +37,7 @@ contains the attributes: name, content_type, filename, and content.
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use Apache::Constants;
+use Bivio::Ext::ApacheConstants;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -68,7 +68,7 @@ sub parse {
     my($r) = $req->get('r');
 
     # Only accept forms via POST
-    return undef unless $r->method_number() eq Apache::Constants::M_POST();
+    return undef unless $r->method_number() eq Bivio::Ext::ApacheConstants::M_POST();
 
     # Check content type
     my($ct) = $r->header_in('Content-Type');

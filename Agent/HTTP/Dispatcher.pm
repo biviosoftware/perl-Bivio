@@ -39,7 +39,7 @@ method L<set_handler|"set_handler">.
 =cut
 
 #=IMPORTS
-use Apache::Constants;
+use Bivio::Ext::ApacheConstants;
 use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::HTTP::Request;
@@ -117,7 +117,7 @@ sub handle_die {
 
 Handler called by C<mod_perl>.
 
-Returns an HTTP code defined in C<Apache::Constants>.
+Returns an HTTP code defined in C<Bivio::Ext::ApacheConstants>.
 
 =cut
 
@@ -132,7 +132,7 @@ sub handler {
 	    Bivio::Agent::Task->rollback;
 	    Bivio::Agent::Request->clear_current;
 	}
-	return Apache::Constants::OK();
+	return Bivio::Ext::ApacheConstants::OK();
     });
     my($die) = $_SELF->process_request($r);
 
@@ -148,7 +148,7 @@ sub handler {
 
     Apache->push_handlers('PerlCleanupHandler', sub {
 	Bivio::Agent::Job::Dispatcher->execute_queue();
-	return Apache::Constants::OK();
+	return Bivio::Ext::ApacheConstants::OK();
     }) unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
     return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
 }

@@ -30,7 +30,7 @@ URI for the most part, so we do, too.]
 =cut
 
 #=IMPORTS
-use Apache::Constants;
+use Bivio::Ext::ApacheConstants;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::HTTP::Form;
 use Bivio::Agent::HTTP::Location;

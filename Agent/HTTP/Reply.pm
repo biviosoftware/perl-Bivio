@@ -26,7 +26,7 @@ output type will be 'text/html'.
 =cut
 
 #=IMPORTS
-use Apache::Constants;
+use Bivio::Ext::ApacheConstants;
 use Bivio::Die;
 use Bivio::IO::Alert;
 use Bivio::DieCode;
@@ -45,12 +45,12 @@ my($_PACKAGE) = __PACKAGE__;
 # why...
 my(%_DIE_TO_HTTP_CODE);
 my(%_STATUS_CODES) = map {($_, 1)} (
-	Apache::Constants::OK(),
-	Apache::Constants::NOT_FOUND(),
-	Apache::Constants::SERVER_ERROR(),
-	Apache::Constants::FORBIDDEN(),
-	Apache::Constants::HTTP_SERVICE_UNAVAILABLE(),
-	Apache::Constants::HTTP_BAD_REQUEST(),
+	Bivio::Ext::ApacheConstants::OK(),
+	Bivio::Ext::ApacheConstants::NOT_FOUND(),
+	Bivio::Ext::ApacheConstants::SERVER_ERROR(),
+	Bivio::Ext::ApacheConstants::FORBIDDEN(),
+	Bivio::Ext::ApacheConstants::HTTP_SERVICE_UNAVAILABLE(),
+	Bivio::Ext::ApacheConstants::HTTP_BAD_REQUEST(),
 	302,
 	# Add in others as needed
 );
@@ -186,25 +186,25 @@ sub send {
 
 Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
 
-If I<die> is C<undef>, returns C<Apache::Constants::OK>.
+If I<die> is C<undef>, returns C<Bivio::Ext::ApacheConstants::OK>.
 
 =cut
 
 sub die_to_http_code {
     my(undef, $die, $r) = @_;
 
-    return Apache::Constants::OK() unless defined($die);
+    return Bivio::Ext::ApacheConstants::OK() unless defined($die);
     $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
-    return Apache::Constants::OK() unless defined($die);
+    return Bivio::Ext::ApacheConstants::OK() unless defined($die);
     unless (%_DIE_TO_HTTP_CODE) {
 	%_DIE_TO_HTTP_CODE = (
 	    # Keep in synch with HTTP::Dispatcher
 	    Bivio::DieCode::AUTH_REQUIRED()
-		=> Apache::Constants::AUTH_REQUIRED(),
-	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN(),
-	    Bivio::DieCode::NOT_FOUND() => Apache::Constants::NOT_FOUND(),
+		=> Bivio::Ext::ApacheConstants::AUTH_REQUIRED(),
+	    Bivio::DieCode::FORBIDDEN() => Bivio::Ext::ApacheConstants::FORBIDDEN(),
+	    Bivio::DieCode::NOT_FOUND() => Bivio::Ext::ApacheConstants::NOT_FOUND(),
 	    Bivio::DieCode::CLIENT_REDIRECT_TASK()
-		=> Apache::Constants::OK(),
+		=> Bivio::Ext::ApacheConstants::OK(),
 	);
     }
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
@@ -212,7 +212,7 @@ sub die_to_http_code {
     # The rest get mapped to SERVER_ERROR
     Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
 		unless UNIVERSAL::isa($die, 'Bivio::DieCode');
-    return _error(Apache::Constants::SERVER_ERROR(), $r);
+    return _error(Bivio::Ext::ApacheConstants::SERVER_ERROR(), $r);
 }
 
 =for html <a name="set_cache_private"></a>
@@ -252,7 +252,7 @@ sub set_header {
 
 =head2 set_http_status(int status)
 
-Sets the HTTP return code.  Use C<Apache::Constants> values, e.g.
+Sets the HTTP return code.  Use C<Bivio::Ext::ApacheConstants> values, e.g.
 C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
 
 =cut
@@ -305,14 +305,14 @@ sub set_output {
 
 #=PRIVATE METHODS
 
-# _error(int code, Apache::Request r) : Apache::Constants::OK
+# _error(int code, Apache::Request r) : Bivio::Ext::ApacheConstants::OK
 #
 # Workaround for apache in error mode.  Sends the reply in line.
 # This is due to a bug in apache which uses a form.  See Req#21
 #
 sub _error {
     my($code, $r) = @_;
-    return $code if $code == Apache::Constants::OK();
+    return $code if $code == Bivio::Ext::ApacheConstants::OK();
     $r->status($code);
     $r->content_type('text/html');
     _send_http_header(undef, undef, $r);
@@ -320,7 +320,7 @@ sub _error {
     my($uri) = $r->uri;
 
     # Ignore HEAD.  There was an error, give the whole body
-    if ($code == Apache::Constants::NOT_FOUND()) {
+    if ($code == Bivio::Ext::ApacheConstants::NOT_FOUND()) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
@@ -331,7 +331,7 @@ The requested URL $uri was not found on this server.<P>
 </BODY></HTML>
 EOF
     }
-    elsif ($code == Apache::Constants::FORBIDDEN()) {
+    elsif ($code == Bivio::Ext::ApacheConstants::FORBIDDEN()) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
@@ -362,7 +362,7 @@ in the server error log.<P>
 </BODY></HTML>
 EOF
     }
-    return Apache::Constants::OK();
+    return Bivio::Ext::ApacheConstants::OK();
 }
 
 # _send_http_header(Bivio::Agent::HTTP::Reply self, Bivio::Agent::Request req, Apache r)
