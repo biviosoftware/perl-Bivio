@@ -330,8 +330,11 @@ sub _label_option {
     $o->{label} = _text($fields);
     _trace($o) if $_TRACE;
     Bivio::Die->die('duplicate ', $which, ': ', $o, ' select: ', $group)
-		if $group->{options}->{$o->{label}};
+	if $group->{options}->{$o->{label}};
     $group->{options}->{$o->{label}} = $o;
+    # We take the "last" value selected as the default value
+    $group->{value} = $o->{value}
+	if $o->{selected} || !defined($group->{value});
 
     # Label the select?
     if ($fields->{option} && $o->{selected}
@@ -485,7 +488,8 @@ sub _start_input {
 #
 sub _start_option {
     my($fields, $attr) = @_;
-    Bivio::Die->die('not in a select: ', $fields) unless $fields->{select};
+    Bivio::Die->die('not in a select: ', $fields)
+	unless $fields->{select};
     $fields->{select}->{options} ||= {};
     $fields->{option} = $attr;
     return;
