@@ -45,6 +45,8 @@ Used to access the form within JavaScript.
 The date field to receive the new value. This value only get assigned
 if the source date is less than the current value.
 
+=back
+
 =cut
 
 =head1 CONSTANTS
