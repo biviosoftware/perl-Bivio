@@ -464,7 +464,7 @@ sub take_offline {
     # Sanity check...how many admins do we have?  Did user hack query?
     my($role) = $self->get('role');
     $self->throw_die('CORRUPT_QUERY', 'cannot delete sole ADMINISTRATOR')
-	    unless $self->is_sole_admin;
+	    if $self->is_sole_admin;
     # Can't take offline if guest
     $self->throw_die('CORRUPT_QUERY', 'cannot delete non-member')
 	    unless $any_user_ok || $self->is_member;
