@@ -244,8 +244,8 @@ May be called statically iwc the version is pulled from support.
 
 sub format_uri_for_this {
     my($self, $this_row, $support) = @_;
-    my(%attrs) = $self ? %{$self->internal_get()} :
-	    {version => $support->get('version')};
+    my(%attrs) = ref($self) ? %{$self->internal_get()} :
+	    (version => $support->get('version'));
     $attrs{this} = $this_row;
     $attrs{page_number} = undef;
     return _format_uri(\%attrs, $support);
