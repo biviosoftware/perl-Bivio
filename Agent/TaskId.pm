@@ -572,7 +572,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
-);
+    [qw(
+        CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT
+        61
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        _/mail/image
+        Bivio::UI::HTML::Club::MessageAttachment
+    )],
+
+       );
 
 __PACKAGE__->compile(
     map {($_->[0], [$_->[1]])} @_CFG
