@@ -51,7 +51,7 @@ use Bivio::Type::F1065Partner;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
-my($math) = 'Bivio::Type::Amount';
+my($_M) = 'Bivio::Type::Amount';
 
 =head1 METHODS
 
@@ -287,7 +287,7 @@ sub internal_load_rows {
 	$tax->LONG_TERM_CAPITAL_GAIN->get_short_desc, 0);
     $properties->{other_portfolio_income} = $allocations->get_or_default(
 	$tax->MISC_INCOME->get_short_desc, 0);
-    $properties->{portfolio_deductions} = $math->neg(
+    $properties->{portfolio_deductions} = $_M->neg(
 	    $allocations->get_or_default($tax->MISC_EXPENSE->get_short_desc,
 		    0));
 
@@ -295,7 +295,7 @@ sub internal_load_rows {
 	    ->get_investment_income($properties);
     $properties->{investment_expenses} = $properties->{portfolio_deductions};
 
-    $properties->{foreign_tax} = $math->neg(
+    $properties->{foreign_tax} = $_M->neg(
 	    $allocations->get_or_default($tax->FOREIGN_TAX->get_short_desc,
 		    0));
     $properties->{foreign_income} = _get_foreign_income($self,
@@ -388,8 +388,8 @@ sub _get_foreign_income {
 
     # return the percentage of the total foreign income
     # in proportion to the foreign_tax percentage
-    return $math->neg($math->mul($total_foreign_income,
-	    $math->div($foreign_tax, $total_foreign_tax)));
+    return $_M->neg($_M->mul($total_foreign_income,
+	    $_M->div($foreign_tax, $total_foreign_tax)));
 }
 
 # _get_percentage(Bivio::Biz::Model::RealmOwner user, string date, boolean start) : string
@@ -408,7 +408,7 @@ sub _get_percentage {
     my($date_own) = $ownership->get_ownership($date);
     return 0 unless exists($date_own->{$user->get('realm_id')});
 
-    return $math->mul($date_own->{$user->get('realm_id')}->[0], 100);
+    return $_M->mul($date_own->{$user->get('realm_id')}->[0], 100);
 }
 
 # _get_return_type(Bivio::Biz::Model::RealmOwner user, string date) : Bivio::Type::F1065Return

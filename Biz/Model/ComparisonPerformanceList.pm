@@ -40,7 +40,7 @@ use Bivio::Type::DateTime;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
-my($math) = 'Bivio::Type::Amount';
+my($_M) = 'Bivio::Type::Amount';
 
 =head1 FACTORIES
 
@@ -88,7 +88,7 @@ sub internal_get_count {
 
     # determine the number of shares affected by Entry.amount
     # on the transaction date
-    return _get_count($self, $math->neg($row->{'Entry.amount'}),
+    return _get_count($self, $_M->neg($row->{'Entry.amount'}),
 	    $row->{'RealmTransaction.date_time'});
 }
 
@@ -110,7 +110,7 @@ sub internal_get_end_value {
     # clean up the sql statement buffer if not exhausted
     $fields->{sth}->finish;
 
-    return ($math->mul($fields->{count}, $price), $fields->{count});
+    return ($_M->mul($fields->{count}, $price), $fields->{count});
 }
 
 =for html <a name="internal_get_start_value"></a>
@@ -169,7 +169,7 @@ sub _get_count {
     my($fields) = $self->{$_PACKAGE};
 
     my($price) = _get_price($self, $date);
-    my($count) = $math->div($amount, $price);
+    my($count) = $_M->div($amount, $price);
 
     # adjust count for future splits
     my($splits) = $fields->{splits};
@@ -178,10 +178,10 @@ sub _get_count {
 	last if Bivio::Type::Date->compare($date, $split_date) > 0;
 	#print(STDERR "adjusting $count by $ratio for "
 	#.Bivio::Type::Date->to_literal($date)."\n");
-	$count = $math->div($count, $ratio);
+	$count = $_M->div($count, $ratio);
     }
     die("couldn't calculate count") unless defined($count);
-    $fields->{count} = $math->add($fields->{count}, $count);
+    $fields->{count} = $_M->add($fields->{count}, $count);
     return $count;
 }
 
