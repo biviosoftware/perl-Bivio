@@ -1065,19 +1065,19 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=USER_ADMIN_PROFILE_EDIT
     )],
-    [qw(
-        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
-        101
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
-        ?/accounting/member/withdrawal
-        Bivio::Biz::Model::RealmUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
-        Bivio::Biz::Model::MemberWithdrawalForm
-        Bivio::UI::HTML::Club::MemberWithdrawal
-        next=CLUB_ACCOUNTING_MEMBER_DETAIL
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
+#        101
+#        CLUB
+#        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+#        ?/accounting/member/withdrawal
+#        Bivio::Biz::Model::RealmUserList
+#        Bivio::Biz::Action::TargetRealm->execute_this_member
+#        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+#        Bivio::Biz::Model::MemberWithdrawalForm
+#        Bivio::UI::HTML::Club::MemberWithdrawal
+#        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+#    )],
     [qw(
         CLUB_ADMIN_NAME_EDIT
         102
@@ -1740,7 +1740,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
-        Bivio::Biz::Model::WithdrawnAllocationList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
         Bivio::UI::HTML::FormDump
@@ -1821,16 +1820,16 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
         Bivio::UI::HTML::Tax::MemberDistributions
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_DATE_TEST
-        171
-        CLUB
-        ACCOUNTING_READ
-        ?/accounting/report_date_test
-        Bivio::Biz::Model::AccountingReportForm
-        Bivio::UI::HTML::DateTest
-        next=CLUB_ACCOUNTING_REPORT_DATE_TEST
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_DATE_TEST
+#        171
+#        CLUB
+#        ACCOUNTING_READ
+#        ?/accounting/report_date_test
+#        Bivio::Biz::Model::AccountingReportForm
+#        Bivio::UI::HTML::DateTest
+#        next=CLUB_ACCOUNTING_REPORT_DATE_TEST
+#    )],
     [qw(
         CLUB_ACCOUNTING_TAX99_DEDUCTIONS
         172
