@@ -57,7 +57,9 @@ sub handler {
     my($r) = @_;
 
     my($request) = Bivio::Agent::HTTP::Request->new($r);
+
     _process_request($request);
+#    eval '_process_request($request);' || die($@);
 
     return $request->get_http_return_code();
 }
@@ -74,7 +76,7 @@ written in html format.
 sub mhonarc_addhook {
     my($index, $filename) = @_;
 
-    die("not implemented yet\n");
+    die("not implemented yet");
 
     #my($request) = MailRequest->new($index, $filename);
     #_process_requesut($request);
@@ -83,7 +85,7 @@ sub mhonarc_addhook {
 
 =for html <a name="register_controller"></a>
 
-=head2 static register_controller(string name, Controller controller)
+=head2 static register_controller(String name, Controller controller)
 
 Controller implementation registration. Multiple controllers can be
 registered under the same name. Each controller will be invoked until
@@ -143,19 +145,8 @@ $Id$
 
 
 # for testing
-use Bivio::Agent::HTTP::TestController;
+use Bivio::Agent::HTTP::TestController();
 
-# Register the default controllers.
-#
-register_controller("",
-	Bivio::Agent::HTTP::TestController->new());
-register_controller("Dog",
-	Bivio::Agent::HTTP::TestController->new());
-register_controller("Cat",
-	Bivio::Agent::HTTP::TestController->new());
-register_controller("Human",
-	Bivio::Agent::HTTP::TestController->new());
-register_controller("Everybody",
-	Bivio::Agent::HTTP::TestController->new());
+Bivio::Agent::HTTP::TestController->create_test_site();
 
 1;
