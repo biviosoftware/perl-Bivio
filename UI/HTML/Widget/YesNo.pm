@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget::YesNo - Boolean widget
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
