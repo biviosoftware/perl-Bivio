@@ -256,8 +256,8 @@ sub _contains {
 #
 sub _find_files {
 
-    File::Find::find(
-	sub {
+    File::Find::find({
+	wanted => sub {
 	    my($name) = $File::Find::name;
 	    return unless $name =~ /\.pm$/;
 
@@ -267,6 +267,8 @@ sub _find_files {
 
 	    $_FILES->{$name} = 1;
 	},
+	follow => 1,
+    },
 	# Might be a symlink
 	$_SOURCE_DIR . '/.');
     return $_FILES;
