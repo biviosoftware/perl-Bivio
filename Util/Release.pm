@@ -96,23 +96,13 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_FILES_LIST) = '%{build_root}/b_release_files.list';
 my($_EXCLUDE_LIST) = '%{build_root}/b_release_files.exclude';
-my($_CVS_RPM_SPEC_DIR);
-my($_RPM_HOME_DIR);
-my($_RPM_HTTP_ROOT);
-my($_RPM_USER);
-my($_RPM_GROUP);
-my($_TMP_DIR) = "/var/tmp/build-$$";
-#TODO: Not sure this is right.  Probably should be local to the
-#      method doing the create.
-my($_START_DIR) = Bivio::IO::File->pwd;
-
-Bivio::IO::Config->register({
+Bivio::IO::Config->register(my $_CFG = {
     cvs_rpm_spec_dir => Bivio::IO::Config->REQUIRED,
     rpm_home_dir => Bivio::IO::Config->REQUIRED,
     rpm_http_root => Bivio::IO::Config->REQUIRED,
     rpm_user => Bivio::IO::Config->REQUIRED,
     rpm_group => undef,
-    tmp_dir => $_TMP_DIR,
+    tmp_dir => "/var/tmp/build-$$",
 });
 
 =head1 METHODS
@@ -222,17 +212,17 @@ sub build {
     $self->usage_error("Missing spec file\n") unless @packages;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
-	    unless $rpm_stage =~ /^[pcib]$/;
+	unless $rpm_stage =~ /^[pcib]$/;
 
     # validate configuration
-    Bivio::Die->die('rpm_home_dir dir, ', $_RPM_HOME_DIR, ' not found')
-		unless -d $_RPM_HOME_DIR;
+    Bivio::Die->die('rpm_home_dir dir, ', $_CFG->{rpm_home_dir}, ' not found')
+        unless -d $_CFG->{rpm_home_dir};
 
     my($output) = '';
-    _system("rm -rf $_TMP_DIR", \$output);
-    _system("mkdir $_TMP_DIR", \$output);
-    $output .= "Changing to $_TMP_DIR\n";
-    Bivio::IO::File->chdir($_TMP_DIR);
+    Bivio::IO::File->rm_rf($_CFG->{tmp_dir});
+    Bivio::IO::File->mkdir_p($_CFG->{tmp_dir});
+    $output .= "Changing to $_CFG->{tmp_dir}\n";
+    Bivio::IO::File->chdir($_CFG->{tmp_dir});
 
     my($arch) = _get_rpm_arch();
     _system("ln -s . $arch", \$output) unless -d $arch;
@@ -243,7 +233,7 @@ sub build {
 
 	my($rpm_command) = "rpm -b$rpm_stage $specout";
 	if ($self->get('noexecute')) {
-            $output .= "Would run: cd $_TMP_DIR; $rpm_command\n";
+            $output .= "Would run: cd $_CFG->{tmp_dir}; $rpm_command\n";
 	    next;
 	}
 	_system($rpm_command, \$output);
@@ -251,7 +241,8 @@ sub build {
 	_link_rpm_base("$fullname.$arch.rpm", "$base.rpm", \$output);
     }
 
-    _system("rm -rf $_TMP_DIR\n", \$output) unless $self->get('noexecute');
+    Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
+	unless $self->get('noexecute');
     return $output;
 }
 
@@ -298,12 +289,8 @@ Where the builds take place.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_CVS_RPM_SPEC_DIR = $cfg->{cvs_rpm_spec_dir};
-    $_RPM_HOME_DIR = $cfg->{rpm_home_dir};
-    $_RPM_HTTP_ROOT = $cfg->{rpm_http_root};
-    $_RPM_USER = $cfg->{rpm_user};
-    $_RPM_GROUP = $cfg->{rpm_group} || $cfg->{rpm_user};
-    $_TMP_DIR = $cfg->{tmp_dir};
+    $_CFG = {%$cfg};
+    $_CFG->{rpm_group} ||= $_CFG->{rpm_user};
     return;
 }
 
@@ -481,8 +468,8 @@ EOF
 #
 sub _b_release_include {
     my($to_include, $spec_dir, $version, $output) = @_;
-    _system("cd $_TMP_DIR && cvs checkout -f -r $version"
-	. " $_CVS_RPM_SPEC_DIR/$to_include", $output)
+    _system("cd $_CFG->{tmp_dir} && cvs checkout -f -r $version"
+	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
 	if $version;
     return ${Bivio::IO::File->read("$spec_dir$to_include")};
 }
@@ -518,12 +505,14 @@ sub _create_rpm_spec {
 
     my($cvs) = 0;
     if ($specin =~ /\.spec$/) {
-	$specin = $_START_DIR.'/'.$specin unless $specin =~ m!^/!;
+	$specin = Bivio::IO::File->pwd.'/'.$specin
+	    unless $specin =~ m!^/!;
     }
     else {
-        $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
+        $specin = "$_CFG->{cvs_rpm_spec_dir}/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
-	$specin = Bivio::IO::File->pwd.'/'.$specin unless $specin =~ m!^/!;
+	$specin = Bivio::IO::File->pwd.'/'.$specin
+	    unless $specin =~ m!^/!;
 	$cvs = 1;
     }
     my($spec_dir) = $specin;
@@ -537,7 +526,7 @@ sub _create_rpm_spec {
 %define _sourcedir .
 %define _topdir .
 %define _srcrpmdir .
-%define _rpmdir $_TMP_DIR
+%define _rpmdir $_CFG->{tmp_dir}
 %define _builddir .
 %define cvs cvs -Q checkout -f -r $version
 Release: $release
@@ -570,7 +559,7 @@ EOF
 sub _create_uri {
     my($name) = @_;
     return $name if $name =~ /^http/;
-    return "$_RPM_HTTP_ROOT/$name";
+    return "$_CFG->{rpm_http_root}/$name";
 }
 
 # _err_parser() : string
@@ -630,7 +619,7 @@ sub _get_rpm_arch {
 sub _link_rpm_base {
     my($rpm_file, $rpm_base, $output) = @_;
 
-    my($base_file) = "$_RPM_HOME_DIR/$rpm_base";
+    my($base_file) = "$_CFG->{rpm_home_dir}/$rpm_base";
     unlink($base_file);
     $$output .= "LINKING AS $base_file\n";
     _system("ln -s $rpm_file $base_file", $output);
@@ -686,9 +675,9 @@ sub _save_rpm_file {
     my($rpm_file, $output) = @_;
     Bivio::Die->die("Missing rpm file $rpm_file") unless -f $rpm_file;
 
-    $$output .= "SAVING RPM $rpm_file in $_RPM_HOME_DIR\n";
-    _system("chown $_RPM_USER.$_RPM_GROUP $rpm_file", $output);
-    _system("cp -p $rpm_file $_RPM_HOME_DIR", $output);
+    $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
+    _system("chown $_CFG->{rpm_user}.$_CFG->{RPM_GROUP} $rpm_file", $output);
+    _system("cp -p $rpm_file $_CFG->{rpm_home_dir}", $output);
     return;
 }
 
