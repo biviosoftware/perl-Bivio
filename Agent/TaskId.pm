@@ -266,7 +266,7 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?/msg-part/*
-        Bivio::Biz::Model::MailPartDownLoad
+        Bivio::Biz::Action::MailPartDownload
     )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
