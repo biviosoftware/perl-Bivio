@@ -127,8 +127,7 @@ sub from_mgfs {
 	    $values->{close} = $closes[$i];
 	    $values->{volume} = $volumes[$i];
 
-	    my($die) = $self->try_to_update_or_create($values,
-		   $file eq 'qcpvsd');
+	    my($die) = $self->try_to_update_or_create($values, 1);
 	    if ($die) {
 		$self->write_reject_record($die, $record);
 		last;
@@ -151,7 +150,7 @@ sub internal_get_mgfs_import_format {
 	file => {
 	    qspvsd => [0, 0],
 	    qcpvsd => [0, 1],
-	    indb02 => [1, 0],
+	    indb02 => [1, 1],
 	    chgdb02 => [1, 1],
 	},
 	format => [
