@@ -70,9 +70,11 @@ Transforms I<task_id> and I<realm> (if needed) into a URI.
 
 sub format {
     my(undef, $task_id, $realm) = @_;
-    Carp::croak($task_id->as_string, ': no such task')
+    Bivio::IO::Alert->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($uri) = $_FROM_TASK_ID{$task_id}->[1];
+    Bivio::IO::Alert->die($task_id, ': task has no uri')
+	    unless defined($uri);
 #TODO: Only can have realm owner at front of uri.
     if ($uri =~ /^_/) {
 	# If the realm doesn't have an owner, there's a bug somewhere
@@ -146,25 +148,36 @@ sub initialize {
 	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
 	}
 	else {
-	    die("$realm_type_name: unknown realm type");
+	    die("$task_id_name: $realm_type_name: unknown realm type");
 	}
 	my($rti) = $realm->get_type->as_int;
 	my($uri);
 	# Make the first one the alias
+	my($got_one) = 0;
 	foreach $uri (reverse(split(/:/, $uri_list))) {
-	    die("$uri: must begin with '_'")
-		    unless $is_general || $uri =~ /^_(\/|$)/;
-	    if ($_FROM_URI{$uri}) {
-		die("$uri $realm_type_name: uri already mapped to ",
-		       $_FROM_URI{$uri}->[$rti]->[0]->get_name)
-			if $_FROM_URI{$uri}->[$rti];
+	    $got_one++;
+	    if ($uri eq '!') {
+		# Special case: empty uri
+		$uri = undef;
 	    }
 	    else {
-		$_FROM_URI{$uri} = [];
+		die("$task_id_name: $uri: must begin with '_'")
+			unless $is_general || $uri =~ /^_(\/|$)/;
+		if ($_FROM_URI{$uri}) {
+		    die("$task_id_name: $uri $realm_type_name: uri already"
+			    .' mapped to ',
+			    $_FROM_URI{$uri}->[$rti]->[0]->get_name)
+			    if $_FROM_URI{$uri}->[$rti];
+		}
+		else {
+		    $_FROM_URI{$uri} = [];
+		}
+		$_FROM_URI{$uri}->[$rti] = [$task_id, $uri];
 	    }
-	    $_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri}->[$rti]
-		    = [$task_id, $uri];
+	    $_FROM_TASK_ID{$task_id} = [$task_id, $uri];
 	}
+	die("$task_id_name: must have at least on uri, use '!' for blank")
+		unless $got_one;
     } @$cfg;
     if (defined($_DOCUMENT_ROOT)) {
 	$_DOCUMENT_TASK
@@ -230,6 +243,21 @@ sub parse {
             realm_type => $realm->get_type->get_name})
 	    unless defined($_FROM_URI{$uri}->[$rti]);
     return ($_FROM_URI{$uri}->[$rti]->[0], $realm);
+}
+
+=for html <a name="task_has_uri"></a>
+
+=head2 task_has_uri(Bivio::Agent::TaskId task_id) : boolean
+
+Does the task have a uri?
+
+=cut
+
+sub task_has_uri {
+    my($undef, $task_id) = @_;
+    Bivio::IO::Alert->die($task_id, ': no such task')
+	    unless $_FROM_TASK_ID{$task_id};
+    return defined($_FROM_TASK_ID{$task_id}->[1]) ? 1 : 0;
 }
 
 
