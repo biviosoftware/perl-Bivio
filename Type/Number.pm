@@ -38,13 +38,12 @@ It provides arbitrary precision arithmetic for like-based numbers.
 #=IMPORTS
 # also uses Bivio::TypeError dynamically
 use Bivio::IO::ClassLoader;
-# import Math::BigInt because Math::FixedPrecision uses it but doesn't 'use' it
-use Math::BigInt ();
-use Math::FixedPrecision ();
+use GMP::Mpf ();
 
 #=VARIABLES
-my($_ROUNDING_MODE) = '+inf';
-$Math::FixedPrecision::round_mode = $_ROUNDING_MODE;
+my($_FUDGE) = _mpf('1e-20');
+my($_HALF) = _mpf('0.5');
+my($_POWER) = {};
 
 =head1 METHODS
 
@@ -60,7 +59,7 @@ Converts a negative into a positive number.
 
 sub abs {
     my($proto, $v) = @_;
-    return _make_object($proto, $v)->babs->bstr;
+    return _format($proto, abs(_mpf($v)));
 }
 
 =head2 static add(string v, string v2, int decimals) : string
@@ -72,8 +71,8 @@ If decimals is undef, then the default precision is used.
 
 sub add {
     my($proto, $v, $v2, $decimals) = @_;
-    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return $v->badd($v2)->bstr;
+    return _format($proto,
+        GMP::Mpf::overload_addeq(_mpf($v), _mpf($v2), 0), $decimals);
 }
 
 =for html <a name="can_be_negative"></a>
@@ -126,8 +125,7 @@ See L<Bivio::Type::compare_defined|Bivio::Type/"compare_defined">.
 
 sub compare_defined {
     my($proto, $left, $right, $decimals) = @_;
-    ($left, $right) = _make_objects($proto, $left, $right, $decimals);
-    return $left->bcmp($right);
+    return _mpf($left) <=> _mpf($right);
 }
 
 =for html <a name="div"></a>
@@ -143,8 +141,9 @@ Returns 'inf' when dividing by 0.
 
 sub div {
     my($proto, $v, $v2, $decimals) = @_;
-    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return scalar($v->bdiv($v2))->bstr;
+    return 'inf' if $v2 =~ /^[0.]+$/;
+    return _format($proto,
+        GMP::Mpf::overload_diveq(_mpf($v), _mpf($v2), 0), $decimals);
 }
 
 =for html <a name="fraction_as_string"></a>
@@ -279,8 +278,8 @@ If decimals is undef, then the default precision is used.
 
 sub mul {
     my($proto, $v, $v2, $decimals) = @_;
-    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return $v->bmul($v2)->bstr;
+    return _format($proto,
+        GMP::Mpf::overload_muleq(_mpf($v), _mpf($v2), 0), $decimals);
 }
 
 =for html <a name="neg"></a>
@@ -293,7 +292,7 @@ Returns a number with the opposite sign from the specified one.
 
 sub neg {
     my($proto, $number) = @_;
-    return _make_object($proto, $number)->bneg->bstr;
+    return _format($proto, - _mpf($number));
 }
 
 =for html <a name="round"></a>
@@ -307,8 +306,7 @@ Rounds the number to the specified number of decimal places.
 sub round {
     my($proto, $number, $decimals) = @_;
     Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
-    return _make_object($proto, $number, $decimals)
-        ->ffround(-$decimals, $_ROUNDING_MODE)->bstr;
+    return _format($proto, _mpf($number), $decimals);
 }
 
 =for html <a name="sign"></a>
@@ -338,8 +336,8 @@ If decimals is undef, then the default precision is used.
 
 sub sub {
     my($proto, $v, $v2, $decimals) = @_;
-    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return $v->bsub($v2)->bstr;
+    return _format($proto,
+        GMP::Mpf::overload_subeq(_mpf($v), _mpf($v2), 0), $decimals);
 }
 
 =for html <a name="to_literal"></a>
@@ -351,8 +349,8 @@ Converts from internal form to a literal string value.
 =cut
 
 sub to_literal {
-    my(undef, $value) = @_;
-    return shift->SUPER::to_literal(@_)
+    my($proto, $value) = @_;
+    return $proto->SUPER::to_literal($value)
 	unless defined($value);
 
     # remove leading '+', replace '.1', '-.1' with '0.1', '-0.1' respectively
@@ -377,29 +375,51 @@ Truncates the number to the specified number of decimal places.
 sub trunc {
     my($proto, $number, $decimals) = @_;
     Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
-    return _make_object($proto, $number)->ffround(-$decimals, 'trunc')->bstr;
+    my($pow) = 10 ** $decimals;
+    return return _format($proto, GMP::Mpf::trunc($number * $pow) / $pow,
+        $decimals);
 }
 
 #=PRIVATE METHODS
 
-# _make_object(proto, string v, string decimals) : Math::FixedPrecision
+# _format(proto, ref v) : string
 #
-# Converts the value to FixedPrecision if necessary.
+# _format(proto, ref v, int decimals) : string
 #
-sub _make_object {
+# Formats the amount, rounded to the specified number of decimals.
+#
+sub _format {
     my($proto, $v, $decimals) = @_;
-    return Math::FixedPrecision->new($v,
-        defined($decimals) ? $decimals : $proto->get_decimals);
+    $decimals = $proto->get_decimals
+        unless defined($decimals);
+    # add in a fudge factor for for values such as 0.07 which is represented
+    # internally as 0.0699999..., so floor() works correctly.
+    # Mpf seems to always use the lower value, so not needed for negatives
+    $v += $_FUDGE if $v > 0;
+    # round towards +inf
+    my($pow) = $_POWER->{$decimals} ||= 10 ** $decimals;
+    return GMP::sprintf('%.' . $decimals . 'f',
+       GMP::Mpf::floor($v * $pow + $_HALF) / $pow);
 }
 
-# _make_objects(proto, string v, string v2, int decimals) : (Math::FixedPrecision, Math::FixedPrecision)
+# _mpf(string value) : ref
 #
-# Returns two FixedPrecision objects for the specified values.
+# Returns a GMP::Mpf value for the specified string value.
 #
-sub _make_objects {
-    my($proto, $v, $v2, $decimals) = @_;
-    return (_make_object($proto, $v, $decimals),
-        _make_object($proto, $v2, $decimals));
+sub _mpf {
+    my($value) = @_;
+
+    unless (defined($value)) {
+        Bivio::IO::Alert->info('numeric amount not defined, defaulting to 0');
+        $value = 0;
+    }
+    # leading + not accepted by GMP
+    $value =~ s/^\+//;
+    # the empty concatenation is very important because it forces values
+    # passed as floats, such as 0.03 which is represented inexactly
+    # to become the literal '0.03' which can be more closely
+    # represented by Mpf (using 500 bits of precision)
+    return GMP::Mpf::mpf($value . '', 500);
 }
 
 =head1 COPYRIGHT
