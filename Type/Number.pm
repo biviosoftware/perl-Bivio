@@ -335,7 +335,8 @@ sub to_literal {
     $value =~ s/^-\./-0./;
 
     # remove trailing 0s after decimal point
-    $value =~ s/^(.*\..+?)(0+)$/$1/;
+    $value =~ s/^(.*\..+?)(0+)$/$1/
+        unless $value =~ s/\.0*$//;
     return $value;
 }
 
