@@ -111,7 +111,7 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my(@v, $v) = ();
     foreach $v (@{$fields->{values}}) {
-	push(@v, $v), next unless ref($v);
+	push(@v, Bivio::Util::escape_html($v)), next unless ref($v);
 	my($x) = $source->get_widget_value(@$v);
 	next unless defined($x) && length($x);
 	push(@v, Bivio::Util::escape_html($x));
