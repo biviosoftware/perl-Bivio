@@ -52,14 +52,49 @@ sub create_content {
     $self->put_heading('CLUB_ADMIN_ADD_MEMBER');
     return $self->form('AddMemberForm', [
 	    ['RealmOwner.display_name', 'Name', <<'EOF', 'Bob Smith'],
-Enter the member's full name.
+Enter the member's full name.  This name will appear in your Roster
+and Accounting.  You can update it at any time.
 EOF
 	    ['RealmInvite.email', 'Email', <<'EOF', 'bob747@aol.com'],
-Optionally, enter the member's email.
+Enter the email for the on-line member.
+This person will receive an invitation via email to join your club
+as a Member.  The message will contain a link (URL) to click
+on.  The Member must register as a bivio user, if they aren't one
+already.
 EOF
     ],
     {
-	header => 'Use this form to add a new club member.',
+	header => $self->join(<<'EOF',
+Use this form to add a Member to your club.  A member is a
+legal partner of your club.
+If the person you are inviting
+is not a partner,
+EOF
+		$self->link('use the Invite Guest form instead',
+			'CLUB_ADMIN_INVITE_GUEST'),
+		".\n",
+		<<'EOF',
+<p>
+There are
+two types of members: on-line and off-line.
+On-line members have email addresses, can log into bivio
+to view the club's books, and receive mail sent to the club's
+address.
+Off-line members do not have email addresses, cannot
+access club data, and cannot be listed as officers.
+<p>
+Officers can update personal data of all members.  Officers are
+responsible for having correct information for members
+on club tax forms.
+EOF
+	   ),
+	footer => $self->join(<<'EOF'),
+If this is an on-line Member, the next screen will show you that
+the Member was invited.
+<p>
+If this is an off-line Member, the next screen will allow you to
+edit the Member's personal data.
+EOF
     });
 }
 

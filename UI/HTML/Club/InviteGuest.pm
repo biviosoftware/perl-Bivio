@@ -51,12 +51,33 @@ sub create_content {
     my($self) = @_;
     $self->put_heading('CLUB_ADMIN_INVITE_GUEST');
     return $self->form('InviteGuestForm', [
-	    ['RealmInvite.email', 'Email', <<'EOF', 'bob747@aol.com'],
-Enter the email address of the guest.
+	    ['RealmInvite.email', undef, <<'EOF',
+Enter the email address of the Guest you would like to invite.
+This person will receive an invitation via email to join your club
+as a Guest.  The message will contain a link (URL) to click
+on.  The Guest must register as a bivio user, if they aren't one
+already.
 EOF
+		     'betsy@myisp.com, johnqpublic@aol.com'],
     ],
     {
-	header => 'Use this form to invite a guest user to the club.',
+	header => $self->join(<<'EOF',
+Use this form to invite a Guest to your club.  A Guest is not
+a legal partner of your club.  If the person you would like
+to add is a partner,
+EOF
+		$self->link('use the Add Member form instead',
+			'CLUB_ADMIN_ADD_MEMBER'),
+		".\n",
+		<<'EOF',
+<p>
+Guests have limited privileges.  They can
+view the club's data and member personal data (except social security
+numbers), but they
+cannot upload files and they do not receive messages sent to
+your club.  Guests cannot buy units in your club.
+EOF
+		       ),
     });
 }
 
