@@ -58,6 +58,9 @@ sub USAGE {
     return <<'EOF';
 usage: b-linux-config [options] command [args...]
 commands:
+    add_group group[:gid] -- add a group
+    add_user user[:uid] [group[:gid] [shell]] -- create a user
+    create_ssl_crt iso_country state city organization hostname -- create ssl certificate
     relay_domains host ... -- add hosts to sendmail relay-domains
     rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
     serial_console -- configure grub and init for serial port console
@@ -96,16 +99,12 @@ sub add_group {
     my($real) = (getgrnam($gname))[2];
     if (defined($real)) {
 	Bivio::Die->die("$gname: expected gid ($gid) but got ($real)")
-	    if defined($gid);
+	    if defined($gid) && $real != $gid;
 	return '';
     }
-    my($cmd) = 'groupadd '
+    return _exec($self, 'groupadd '
 	    . (defined($gid) ? "-g '$gid' " : '')
-	    . "'$gname'";
-    return "Would have executed: $cmd\n"
-	if $self->unsafe_get('noexecute');
-    $self->piped_exec($cmd);
-    return "Created group: $group\n";
+	    . "'$gname'")
 }
 
 =for html <a name="add_user"></a>
@@ -125,26 +124,56 @@ sub add_user {
     my($self, $user, $group, $shell) = @_;
     $self->usage_error('must at least supply a user') unless $user;
     my($res) = '';
-    if ($group) {
-	$res .= $self->add_group($group);
-	$group =~ s/:.*//;
-    }
+    $group = $user unless $group;
+    $res .= $self->add_group($group);
+    $group =~ s/:.*//;
     my($uname, $uid) = split(/:/, $user);
     my($real) = (getpwnam($uname))[3];
     if (defined($real)) {
 	Bivio::Die->die("$uname: expected uid ($uid) but got ($real)")
-	    if defined($uid);
+	    if defined($uid) && $uid != $real;
 	return '';
     }
-    my($cmd) = 'useradd -m '
+    return $res . _exec($self, 'useradd -m '
 	    . (defined($uid) ? "-u '$uid' " : '')
 	    . ($group ? "-g '$group' " : '')
 	    . ($shell ? "-s '$shell' " : '')
-	    . "'$uname'";
-    return $res . "Would have executed: $cmd\n"
-	if $self->unsafe_get('noexecute');
-    $self->piped_exec($cmd);
-    return $res . "Created user: $user\n";
+	    . "'$uname'");
+}
+
+=for html <a name="create_ssl_crt"></a>
+
+=head2 create_ssl_crt(string iso_country, string state, string city, string organization, string hostname) : string
+
+Creates SSL key, csr, and crt in ssl.* dirs.
+
+=cut
+
+sub create_ssl_crt {
+    my($self, $iso_country, $state, $city, $organization, $hostname) = @_;
+    my($res) = '';
+    my($f) = {};
+    foreach my $w (qw(key crt csr)) {
+	my($d) = _prefix_file("ssl.$w");
+	$f->{$w} = "$d/$hostname.$w";
+        next if -d $d;
+	$res .= "Created " . Bivio::IO::File->mkdir_p($d) . "\n";
+    }
+    return _exec($self, "openssl genrsa -out $f->{key} 1024")
+	. _exec($self,
+	    "openssl req -new -key $f->{key} -out $f->{csr}", <<"EOF")
+$iso_country
+$state
+$city
+$organization
+
+$hostname
+
+
+
+EOF
+	. _exec($self, "openssl x509 -req -days 10000 -in $f->{csr} "
+	    . "-signkey $f->{key} -out $f->{crt}");
 }
 
 =for html <a name="handle_config"></a>
@@ -275,6 +304,19 @@ sub _add_file {
 	if $> == 0;
     Bivio::IO::File->chmod($perms, $file);
     return "$file: created\n";
+}
+
+# _exec(self, string command, string $in) : string
+#
+# Execute obeying noexecute.
+#
+sub _exec {
+    my($self, $cmd, $in) = @_;
+    $in ||= '';
+    $cmd .= ' 2>&1';
+    return "Would have executed: $cmd\n"
+	if $self->unsafe_get('noexecute');
+    return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
 }
 
 # _insert_text(string file, array_ref op)
