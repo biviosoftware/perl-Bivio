@@ -413,7 +413,9 @@ sub format_uri {
     }
 
     # Need to get the list_uri or detail_uri from the request?
-    $uri ||= $req->get($type->get_uri_attr);
+    # If specific uri not found, use current task.
+    $uri ||= $req->unsafe_get($type->get_uri_attr) ||
+	    $req->format_stateless_uri($req->get('task_id'));
 
     if ($type->get_name =~ /PATH/) {
 	my($c) = $fields->{cursor};
