@@ -1086,8 +1086,7 @@ sub set_realm {
     _trace($new_realm, '; ', $new_role) if $_TRACE;
 
     # Don't set preferences unless browser
-    return unless $self->get('Bivio::Type::UserAgent')
-	    eq Bivio::Type::UserAgent::BROWSER();
+    return unless $self->get('Bivio::Type::UserAgent')->is_browser;
 
     # Don't set preferences if no auth_user
     return unless $self->get('auth_user');

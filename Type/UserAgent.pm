@@ -38,7 +38,13 @@ Could not determine user agent.
 
 =item BROWSER
 
-Netscape, IE, etc.
+Modern Netscape, IE, etc.  If we ever go beyond HTML4, there will
+be a BROWSER_HTML4 added and any HTML5 features will have to be
+supported.
+
+=item BROWSER_HTML3
+
+Older Netscape, IE, etc.
 
 =item MAIL
 
@@ -60,11 +66,43 @@ __PACKAGE__->compile(
     BROWSER => [1],
     MAIL => [2],
     JOB => [3],
+    BROWSER_HTML3 => [4],
 );
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="is_browser"></a>
+
+=head2 is_browser() : boolean
+
+Returns true if this instance is a browser.
+
+=cut
+
+sub is_browser {
+    return shift->get_name() =~ /^BROWSER/ ? 1 : 0;
+}
+
+=for html <a name="put_on_request"></a>
+
+=head2 static put_on_request(string http_user_agent, Bivio::Collection::Attributes req)
+
+Figures out the type of user agent from the I<http_user_agent> string
+and puts it on I<req>.
+
+=cut
+
+sub put_on_request {
+    my($proto, $ua, $req) = @_;
+    # MSIE is the only modern browser.  Will test with Netscape 6,
+    # once they get out of beta.
+    $req->put((ref($proto) || $proto) =>
+	    $ua =~ /MSIE [5678]/io ? $proto->BROWSER
+	    : $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3);
+    return;
+}
 
 #=PRIVATE METHODS
 
