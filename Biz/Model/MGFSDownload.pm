@@ -180,7 +180,7 @@ sub save {
 	close(OUT);
 
 	# unzip it if necessary
-	if ($file =~ /\.zip$/) {
+	if ($file =~ /\.zip$/i) {
 	    my($out) = `unzip -o $file`;
 
 	    # check unzip return code, anything except 0 is an error
