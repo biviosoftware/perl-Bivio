@@ -37,8 +37,9 @@ C<Bivio::UI::HTML::Widget::ListActions>
 An array_ref of array_refs where the order is the order of the
 actions to appear and the first element of sub-array_ref is the
 name of the action and the second element is the task name.
-The third optional element of sub-array_ref is the method name.
-By default, this is C<format_uri_for_this>.
+The third optional element of sub-array_ref is a
+L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>,
+default value is C<THIS_DETAIL>.
 
 Links will be rendered in the ListAction font.
 
@@ -47,6 +48,7 @@ Links will be rendered in the ListAction font.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::QueryType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -92,8 +94,9 @@ sub initialize {
 	push(@{$fields->{values}}, {
 	    prefix => '<a href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>\n",
-	    method => $v->[2] || 'format_uri_for_this',
+	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>",
+	    method => Bivio::Biz::QueryType->from_any(
+		    $v->[2] || 'THIS_DETAIL'),
 	});
     }
     return;
@@ -130,10 +133,12 @@ sub render {
     }
 
     # Write executable actions
+    my($sep) = '';
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
-	my($m) = $v2->{method};
-	$$buffer .= $v2->{prefix}.$source->$m($v->{uri}).$v2->{suffix};
+	$$buffer .= $sep.$v2->{prefix}.$source->format_uri($v2->{method},
+		$v->{uri}).$v2->{suffix};
+	$sep = ",\n";
     }
     return;
 }
