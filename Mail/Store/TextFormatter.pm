@@ -157,12 +157,6 @@ sub _parse_line {
     foreach my $word (@words){
 	$res = '';
 	my @chars = split(//, $word);
-	# sorry, Rob, but your algorithm didn't work...and didn't make
-	# much sense to me. It copied characters to $res IF AND ONLY IF
-	# they were in the map.
-
-	# I am sure there's a more lean way to do this, but for now
-	# it'll have to be a little ugly:
 	foreach my $x (@chars){
 	    my $chr = $_CHAR_MAP->{ord($x)};
 	    if($chr){$res .= $chr;}
@@ -191,7 +185,9 @@ sub _parse_line {
 	push @$newline, $word;
 	$res = '';
     }
-    return join ' ' , @$newline;
+    my $s =  join ' ' , @$newline;
+    $s =~ s/^&gt;/<BR>&gt;/;
+    return $s;
 }
 
 # _parse_paragraph() : 
