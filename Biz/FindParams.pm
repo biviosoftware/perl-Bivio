@@ -75,7 +75,7 @@ sub get_fields {
 
 =head2 get_value(string name) : string
 
-Returns the value of the named field.
+Returns the value of the named field or undef if no value exists.
 
 =cut
 
