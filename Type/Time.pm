@@ -104,6 +104,20 @@ sub get_width {
     return 13;
 }
 
+=for html <a name="now"></a>
+
+=head2 now() : string
+
+Returns time with DEFAULT_DATE for now.
+
+=cut
+
+sub now {
+    my($unix_time) = time;
+    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY() + 0.5);
+    return $_DATE_PREFIX.$s;
+}
+
 =for html <a name="to_sql_param"></a>
 
 =head2 to_sql_param(string param_value) : string
