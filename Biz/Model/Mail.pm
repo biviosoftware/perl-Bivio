@@ -404,19 +404,23 @@ sub set_is_public {
     $self->update({is_public => $is_public});
     my($cache_file_id) = $self->get('cache_file_id');
     return unless defined($cache_file_id);
+    my($realm_id) = $self->get('realm_id');
+    my($fv) = $_CACHE_VOLUME->as_sql_param;
     # Change is_public flag on all cache files for this message
     my($sth) = Bivio::SQL::Connection->execute(<<'EOF',
         UPDATE file_t
         SET is_public = ?
         WHERE file_id IN
         (SELECT file_id FROM file_t
-            START WITH file_id = ?
-            CONNECT BY PRIOR file_id = directory_id
-            AND realm_id = ?
-            AND volume = ?)
+            START WITH realm_id = ?
+                AND file_id = ?
+                AND volume = ?
+            CONNECT BY realm_id = ?
+                AND PRIOR file_id = directory_id
+                AND volume = ?)
 EOF
-                [$is_public, $cache_file_id,
-                    $self->get('realm_id'), $_CACHE_VOLUME->as_sql_param]);
+                [$is_public, $realm_id, $cache_file_id, $fv,
+                    $realm_id, $fv]);
     return;
 }
 
