@@ -236,7 +236,7 @@ sub _fix_sale_cost_basis {
     my($inst_id, $lot, $count, $amount) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute('
-            SELECT entry_t.entry_id,
+            SELECT entry_t.realm_transaction_id, entry_t.entry_id,
                 - realm_instrument_entry_t.count,
                 - entry_t.amount
             FROM entry_t, realm_instrument_entry_t
@@ -249,7 +249,7 @@ sub _fix_sale_cost_basis {
 		    $inst_id, $lot]);
 
     while (my $row = $sth->fetchrow_arrayref) {
-	my($entry_id, $sell_count, $sell_amount) = @$row;
+	my($txn_id, $entry_id, $sell_count, $sell_amount) = @$row;
 	my($adjustment);
 	# risky, could be a split followed by a partial sale
 	if ($sell_count >= $count) {
@@ -270,10 +270,46 @@ sub _fix_sale_cost_basis {
 		[Bivio::Type::Amount->neg(
 			Bivio::Type::Amount->add($sell_amount, $adjustment)),
 			$entry_id]);
+
+	_fix_sale_update_gain($txn_id, $adjustment);
     }
     return;
 }
 
+# _fix_sale_update_gain(string txn_id, string adjustment)
+#
+# Fixes the gain associated with the transaction by the adjustment amount.
+#
+sub _fix_sale_update_gain {
+    my($txn_id, $adjustment) = @_;
+    my($tax) = 'Bivio::Type::TaxCategory';
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT entry_id, amount
+            FROM entry_t
+            WHERE realm_transaction_id=?
+            AND tax_category in (?,?,?)',
+	    [$txn_id, $tax->SHORT_TERM_CAPITAL_GAIN->as_sql_param,
+		    $tax->MEDIUM_TERM_CAPITAL_GAIN->as_sql_param,
+		    $tax->LONG_TERM_CAPITAL_GAIN->as_sql_param]);
+    my($count) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($entry_id, $amount) = @$row;
+	if ($count == 0) {
+	    print(STDERR "\n\tadjust gain $amount - $adjustment");
+	    Bivio::SQL::Connection->execute('
+                    UPDATE entry_t
+                    SET amount=?
+                    WHERE entry_id=?',
+		    [Bivio::Type::Amount->sub($amount, $adjustment),
+			    $entry_id]);
+	}
+	$count++;
+    }
+    if ($count > 1) {
+	print(STDERR "\n** found > 1 gain type, applied to first **");
+    }
+    return;
+}
 
 # _upgrade()
 #
