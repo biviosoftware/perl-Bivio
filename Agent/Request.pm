@@ -1068,6 +1068,21 @@ sub push_txn_resource {
     return;
 }
 
+=for html <a name="put_durable"></a>
+
+=head2 put_durable(string key, string value, ...) : Bivio::Collection::Attributes
+
+Puts durable attributes on the request.  A durable attribute survives
+redirects.
+
+=cut
+
+sub put_durable {
+    my($self) = shift;
+#TODO: Store this info 
+    return $self->put(@_);
+}
+
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info, boolean no_context)
