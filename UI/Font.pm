@@ -96,7 +96,7 @@ _compile([
     REALM_NAME => [$_SANS_SERIF, 'realm_name', 'strong'],
     USER_NAME => [$_SANS_SERIF, 'user_name', 'big'],
     FORM_SUBMIT => [$_SANS_SERIF, undef],
-    SUBSTITUTE_USER => [$_SANS_SERIF, 'error', 'big', 'strong', 'blink'],
+    SUBSTITUTE_USER => [$_SANS_SERIF, 'error', 'big', 'strong'],
     FOOTER_MENU => [$_SANS_SERIF, 'footer_menu', 'small'],
     ACTION_BAR_STRING => [undef, undef, 'strong'],
     ACTION_BUTTON => [undef, undef],
