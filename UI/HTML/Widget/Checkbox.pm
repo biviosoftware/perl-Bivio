@@ -40,13 +40,20 @@ Should a click submit the form?
 
 Name of the form field.
 
+=item form_class : string (required, inherited)
+
+Class name of form are we dealing with.
+
 =item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
-=item label : string (required)
+=item label : string [get_form_field()]
 
 String label to use.
+
+If I<label> is C<undef>, will look up using I<field> with
+L<Bivio::UI::Label::get_form_field|Bivio::UI::Label/"get_form_field">.
 
 =item value : string [1]
 
@@ -57,8 +64,7 @@ The checkbox's submit value.
 =cut
 
 #=IMPORTS
-use Bivio::HTML;
-use Bivio::UI::Font;
+use Bivio::UI::Label;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -101,6 +107,12 @@ sub initialize {
     $fields->{field} = $self->get('field');
     $fields->{value} = $self->get_or_default('value', 1);
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
+    my($l) = $self->unsafe_get('label');
+    $l = Bivio::UI::Label->get_form_field(
+	    $self->ancestral_get('form_class'), $fields->{field})
+		unless defined($l);
+    $fields->{label} = $self->template_as_string(' '.$l.'<br>', 'checkbox')
+	    ->put_and_initialize(parent => $self);
     return;
 }
 
@@ -119,21 +131,17 @@ sub render {
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
-#TODO: look into prefix optimization
     unless ($fields->{initialized}) {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
 	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
 	$fields->{suffix} .= '>';
-	$fields->{label} = ' '
-		.Bivio::HTML->escape($self->get('label'))."\n";
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' checked' if $form->get($field);
-    my($p, $s) = Bivio::UI::Font->format_html(
-	    $self->ancestral_get('string_font', 'checkbox'), $req);
-    $$buffer .= $fields->{suffix}.$p.$fields->{label}.$s;
+    $$buffer .= $fields->{suffix};
+    $fields->{label}->render($source, $buffer);
     return;
 }
 
