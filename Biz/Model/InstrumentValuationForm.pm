@@ -141,6 +141,7 @@ sub validate {
     # advance the form page if no errors
     if ( ! $self->in_error && $properties->{page} == 1) {
 	$properties->{page} = 2;
+#TODO: This is broken
 	$self->internal_put_error('page',
 		Bivio::TypeError::NEXT_PAGE())
     }
