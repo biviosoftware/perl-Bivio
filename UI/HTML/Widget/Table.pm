@@ -44,6 +44,20 @@ If greater than zero, expand to "95%".  Otherwise, "100%"?
 
 =back
 
+=head1 REQUEST ATTRIBUTES
+
+=over 4
+
+=item I<source_name> : Bivio::Biz::ListModel
+
+List we are rendering.  I<source_name> is a table attribute.
+
+=item I<source_name>.table_max_rows : int
+
+Maximum number of I<source_name> rows to render.
+
+=back
+
 =head1 TABLE ATTRIBUTES
 
 =over 4
@@ -282,6 +296,7 @@ use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::Label;
 
 #=VARIABLES
+my($_INFINITY_ROWS) = 0x7fffffff;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -483,106 +498,40 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($req) = $source->get_request;
-    my($list) = $req->get($self->get('source_name'));
+    my($state) = _initialize_render_state($self, $source, $buffer);
+    return unless $state;
+    my($list) = $state->{list};
 
-    # check for an empty list
-    return $fields->{empty_list_widget}->render($source, $buffer)
-	    if $fields->{empty_list_widget}
-		    && $list->get_result_set_size == 0;
-
-    my($headings, $cells, $summary_cells, $summary_lines) =
-	    _get_enabled_widgets($self, $source);
-
-    if ($self->get_or_default('start_tag', 1)) {
-	$$buffer .= $fields->{table_prefix};
-	my($html) = $req->get('Bivio::UI::HTML');
-	$$buffer .= Bivio::UI::Align->as_html(
-		$self->get_or_default('align',
-                        $html->get_value('table_default_align')));
-
-	$$buffer .= $html->get_value('page_left_margin')
-		? ' width="95%"' : ' width="100%"'
-			if $self->unsafe_get('expand');
-	$$buffer .= '>';
-    }
+    _render_start($state) if $self->get_or_default('start_tag', 1);
 
 #TODO: optimize, for static tables just compute this once in initialize
-    my($colspan) = _get_column_count($cells);
+    _initialize_colspan($state);
+    _render_row_with_colspan($state, 'title') if $fields->{title};
+    _render_headings($state);
 
-    # table title
-    if ($fields->{title}) {
-	$$buffer .= "\n<tr><td colspan=$colspan>";
-	$fields->{title}->render($list, $buffer);
-	$$buffer .= "</td>\n</tr>",
-    }
-
-    # headings
-    if ($self->get_or_default('show_headings', 1)) {
-	$self->render_row($headings, $list, $buffer);
-	$$buffer .= "\n<tr><td colspan=$colspan>";
-	$fields->{separator}->render($list, $buffer);
-	$$buffer .= "</td>\n</tr>",
-    }
-
-    # rows
-    $list->reset_cursor;
-    my($is_even_row) = 0;
     # alternating row colors
-    my($odd_row) = "\n<tr"
-	    .Bivio::UI::Color->format_html(
-		    $self->get_or_default('odd_row_bgcolor',
-			    'table_odd_row_bg'),
-		    'bgcolor', $req).'>';
-    my($even_row) = "\n<tr"
-	    .Bivio::UI::Color->format_html(
-		    $self->get_or_default('even_row_bgcolor',
-			    'table_even_row_bg'),
-		    'bgcolor', $req).'>';
+    my($is_even_row) = 0;
+    _initialize_row_prefixes($state);
 
-
-    my($repeat_headings) = $self->get_or_default('repeat_headings', 0);
-    my($list_size) = $req->get_user_pref(
-	    Bivio::Type::UserPreference::PAGE_SIZE());
+    # Row counting
+    my($list_size) = $self->get_or_default('repeat_headings', 0)
+	    ? $req->get_user_pref(
+		    Bivio::Type::UserPreference::PAGE_SIZE())
+	    : $_INFINITY_ROWS;
+    my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');
+    $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;
+
+    $list->reset_cursor;
     while ($list->next_row) {
-	$self->render_row($cells, $list, $buffer,
-		$is_even_row ? $even_row : $odd_row, 1);
+	$self->render_row($state->{cells}, $list, $buffer,
+		$is_even_row ? $state->{even_row} : $state->{odd_row}, 1);
 	$is_even_row = !$is_even_row;
-
-	if ($repeat_headings) {
-	    $row_count++;
-	    if ($row_count % $list_size == 0) {
-		$self->render_row($headings, $list, $buffer);
-		$$buffer .= "\n<tr><td colspan=$colspan>";
-		$fields->{separator}->render($list, $buffer);
-		$$buffer .= "</td>\n</tr>",
-	    }
-	}
+	last if ++$row_count >= $max_rows;
+	_render_headings($state) if $row_count % $list_size == 0;
     }
 
-    $self->render_row($self->get('footer_row_widgets'), $list, $buffer)
-	    if $self->unsafe_get('footer_row_widgets');
-
-    # separator
-    if ($self->unsafe_get('trailing_separator')) {
-	$$buffer .= "\n<tr><td colspan=$colspan>";
-	$fields->{separator}->render($list, $buffer);
-	$$buffer .= "</td>\n</tr>",
-    }
-
-    # summary
-    if ($self->get_or_default('summarize',
-	    $self->unsafe_get('summary_line_type') ? 1 : 0)) {
-	my($summary_list) = $list->get_summary;
-	$self->render_row($summary_cells, $summary_list, $buffer);
-    }
-
-    # summary lines
-    if ($self->unsafe_get('summary_line_type')) {
-	$self->render_row($summary_lines, $list, $buffer);
-    }
-
-    $$buffer .= "\n</table>" if $self->get_or_default('end_tag', 1);
+    _render_trailer($state);
     return;
 }
 
@@ -619,60 +568,6 @@ sub render_row {
 }
 
 #=PRIVATE METHODS
-
-# _get_column_count(array_ref cells) : int
-#
-# Returns the number of columns spanned by the specified cells.
-#
-sub _get_column_count {
-    my($cells) = @_;
-    my($count) = 0;
-    foreach my $cell (@$cells) {
-	$count += $cell->get_or_default('column_span', 1);
-    }
-    return $count;
-}
-
-# _get_enabled_widgets(Bivio::UI::HTML::Widget::Table self, any source) : array
-#
-# Returns the heading, cell, summary, and line widgets which are currently
-# enabled.
-#
-sub _get_enabled_widgets {
-    my($self, $source) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    my($all_headings) = $fields->{headings};
-    my($all_cells) = $fields->{cells};
-    my($all_summary_cells) = $fields->{summary_cells};
-    my($all_summary_lines) = $fields->{summary_lines};
-
-    my($enabler) = $self->unsafe_get('column_enabler');
-    my($headings) = [];
-    my($cells) = [];
-    my($summary_cells) = [];
-    my($summary_lines) = [];
-    my($control);
-
-    # determine which columns to render
-    my($columns) = $self->get('columns');
-    for (my($i) = 0; $i < int(@$columns); $i++) {
-        my($col) = $columns->[$i];
-        if ($col) {
-            if (defined($enabler)) {
-                next unless $enabler->enable_column($col, $self);
-            }
-            elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
-                next unless $source->get_widget_value($control);
-            }
-        }
-        push(@$headings, $all_headings->[$i]);
-        push(@$cells, $all_cells->[$i]);
-        push(@$summary_cells, $all_summary_cells->[$i]);
-        push(@$summary_lines, $all_summary_lines->[$i]);
-    }
-    return ($headings, $cells, $summary_cells, $summary_lines);
-}
 
 # _get_heading(Bivio::Biz::ListModel list, string col, Bivio::UI::HTML::Widget cell, array_ref sort_fields) : Bivio::UI::HTML::Widget
 #
@@ -819,6 +714,179 @@ sub _get_summary_line {
     $widget->put(column_span => $cell->get_or_default('column_span', 1));
     $self->initialize_child_widget($widget);
     return $widget;
+}
+
+# _initialize_colspan(hash_ref state)
+#
+# Initializes "colspan" to the number of columns spanned by the
+# specified cells.
+#
+sub _initialize_colspan {
+    my($state) = @_;
+    my($count) = 0;
+    foreach my $cell (@{$state->{cells}}) {
+	$count += $cell->get_or_default('column_span', 1);
+    }
+    $state->{colspan} = $count;
+    return;
+}
+
+# _initialize_render_state(Bivio::UI::HTML::Widget::Table self, any source, string_ref buffer) : hash_ref
+#
+# Returns the heading, cell, summary, and line widgets which are currently
+# enabled.
+#
+sub _initialize_render_state {
+    my($self, $source, $buffer) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($req) = $source->get_request;
+    my($list_name) = $self->get('source_name');
+    my($list) = $req->get($list_name);
+
+    # check for an empty list
+    if ($fields->{empty_list_widget} && $list->get_result_set_size == 0) {
+	$fields->{empty_list_widget}->render($source, $buffer);
+	return undef;
+    }
+
+    my($all_headings) = $fields->{headings};
+    my($all_cells) = $fields->{cells};
+    my($all_summary_cells) = $fields->{summary_cells};
+    my($all_summary_lines) = $fields->{summary_lines};
+
+    my($enabler) = $self->unsafe_get('column_enabler');
+    my($headings) = [];
+    my($cells) = [];
+    my($summary_cells) = [];
+    my($summary_lines) = [];
+    my($control);
+
+    # determine which columns to render
+    my($columns) = $self->get('columns');
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+        my($col) = $columns->[$i];
+        if ($col) {
+            if (defined($enabler)) {
+                next unless $enabler->enable_column($col, $self);
+            }
+            elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
+                next unless $source->get_widget_value($control);
+            }
+        }
+        push(@$headings, $all_headings->[$i]);
+        push(@$cells, $all_cells->[$i]);
+        push(@$summary_cells, $all_summary_cells->[$i]);
+        push(@$summary_lines, $all_summary_lines->[$i]);
+    }
+    return {
+	self => $self,
+	fields => $fields,
+	source => $source,
+	buffer => $buffer,
+	req => $req,
+	list => $list,
+	list_name => $list_name,
+	headings => $headings,
+	cells => $cells,
+	summary_cells => $summary_cells,
+	summary_lines => $summary_lines,
+    };
+}
+
+# _initialize_row_prefixes(hash_ref state)
+#
+# Initializes even_row and odd_row row prefixes.
+#
+sub _initialize_row_prefixes {
+    my($state) = @_;
+    $state->{odd_row} = "\n<tr"
+	    .Bivio::UI::Color->format_html(
+		    $state->{self}->get_or_default('odd_row_bgcolor',
+			    'table_odd_row_bg'),
+		    'bgcolor', $state->{req}).'>';
+    $state->{even_row} = "\n<tr"
+	    .Bivio::UI::Color->format_html(
+		    $state->{self}->get_or_default('even_row_bgcolor',
+			    'table_even_row_bg'),
+		    'bgcolor', $state->{req}).'>';
+    return;
+}
+
+# _render_headings(hash_ref state)
+#
+# Renders the headings.  Checks show_headings.
+#
+sub _render_headings {
+    my($state) = @_;
+    $state->{show_headings} = $state->{self}
+	    ->get_or_default('show_headings', 1)
+		    unless defined($state->{show_headings});
+    return unless $state->{show_headings};
+    my($buffer) = $state->{buffer};
+    $state->{self}->render_row($state->{headings}, $state->{list}, $buffer);
+    _render_row_with_colspan($state, 'separator');
+    return;
+}
+
+# _render_row_with_colspan(hash_ref state, string widget_name)
+#
+# Renders a widget (currently only 'separator' or 'title') in a
+# row of its own.
+#
+sub _render_row_with_colspan {
+    my($state, $widget_name) = @_;
+    my($buffer) = $state->{buffer};
+    $$buffer .= "\n<tr><td colspan=".$state->{colspan}.'>';
+    $state->{fields}->{$widget_name}->render($state->{list}, $buffer);
+    $$buffer .= "</td>\n</tr>",
+    return;
+}
+
+# _render_start(hash_ref state)
+#
+# Renders start tag of table.
+#
+sub _render_start {
+    my($state) = @_;
+    my($buffer) = $state->{buffer};
+    $$buffer .= $state->{fields}->{table_prefix};
+    my($html) = $state->{req}->get('Bivio::UI::HTML');
+    $$buffer .= Bivio::UI::Align->as_html(
+	    $state->{self}->get_or_default('align',
+		    $html->get_value('table_default_align')));
+
+    $$buffer .= $html->get_value('page_left_margin')
+	    ? ' width="95%"' : ' width="100%"'
+		    if $state->{self}->unsafe_get('expand');
+    $$buffer .= '>';
+    return;
+}
+
+# _render_trailer(hash_ref state)
+#
+# Renders footer, trailing_separator, summary, and end_tag.
+#
+sub _render_trailer {
+    my($state) = @_;
+    my($self) = $state->{self};
+    $self->render_row($self->get('footer_row_widgets'),
+	    $state->{list}, $state->{buffer})
+	    if $self->unsafe_get('footer_row_widgets');
+
+    _render_row_with_colspan($state, 'separator')
+	    if $self->unsafe_get('trailing_separator');
+
+    $self->render_row($state->{summary_cells},
+	    $state->{list}->get_summary, $state->{buffer})
+	    if $self->get_or_default('summarize',
+		    $self->unsafe_get('summary_line_type') ? 1 : 0);
+
+    $self->render_row($state->{summary_lines}, $state->{list},
+	    $state->{buffer})
+	    if $self->unsafe_get('summary_line_type');
+
+    ${$state->{buffer}} .= "\n</table>" if $self->get_or_default('end_tag', 1);
+    return;
 }
 
 =head1 COPYRIGHT
