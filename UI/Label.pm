@@ -181,6 +181,7 @@ _compile(
     RETURN_TO => ['Return To'],
     PREPARATION_DATE => ['Report Preparation Date'],
     REMAINING_BASIS => ['Remaining Basis Percentage'],
+    INCOME_TYPE => ['Distribution Type'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
@@ -236,6 +237,7 @@ _compile(
     CLUB_ACCOUNTING_INVESTMENT_LIST => ['Investment Summary'],
     CLUB_ACCOUNTING_INVESTMENT_LOT_LIST => ['Investment Lots'],
     CLUB_ACCOUNTING_INVESTMENT_MERGER => ['Investment Merger'],
+    CLUB_ACCOUNTING_INVESTMENT_REINVEST => ['Reinvest Income'],
     CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
     CLUB_ACCOUNTING_INVESTMENT_SPINOFF => ['Investment Spin-off'],
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
