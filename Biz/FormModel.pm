@@ -1477,6 +1477,7 @@ sub _parse_cols {
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
 	    : 'internal_get_visible_field_names';
     foreach my $n (@{$self->$method()}) {
+	$n =~ s/^(.*)\.x\=/$1/;
 	my($fn) = $self->get_field_name_for_html($n);
 
 	# Handle complex form fields.  Avoid copies of huge data, so
@@ -1513,6 +1514,13 @@ sub _parse_cols {
 	my($v, $err) = $self->get_field_info($n, 'type')
 		->from_literal($form->{$fn});
 	$values->{$n} = $v;
+
+	# try one more time in case of image buttons, append '.x' to name
+	unless (defined($v) || defined($err)) {
+	    ($v, $err) = $self->get_field_info($n, 'type')
+		    ->from_literal($form->{$fn.'.x'});
+	    $values->{$n} = $v;
+	}
 
 	# Success?
 	if (defined($v)) {
