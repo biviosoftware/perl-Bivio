@@ -306,11 +306,24 @@ will cause an error.
 =cut
 
 sub compile {
-    my($pkg, %info) = @_;
+    my($pkg) = shift;
+    my(%info) = @_;
     defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
+
+    # Check for dup keys, because the hash has lost them.
+    if (int(@_)/2 != int(keys(%info))) {
+	# The value of %info is being checked here as well, but this makes
+	# the code simpler.  We know that all array_refs are uniquely named.
+	my(%found);
+	foreach my $k (@_) {
+	    Bivio::IO::Alert->die($k, ': duplicate entry')
+			if $found{$k}++;
+	}
+    }
+
     my($name);
     my($eval) = "package $pkg;\nmy(\$_INFO) = \\\%info;\n";
-    # Make a copy, because we're going to grow $decl.
+    # Make a copy, because we're going to grow the list.
     my($min, $max);
     my(@list);
     my(%info_copy) = %info;
