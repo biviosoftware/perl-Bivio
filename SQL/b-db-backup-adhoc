@@ -55,10 +55,9 @@ echo Writing to tape on ${BACKUP_HOST}
 /usr/local/bin/ssh ${BACKUP_HOST} tar cbf 200b /dev/tape /home/bkp/$DB_NAME/$ts
 
 echo Transferring to ${TRANSFER_HOST}
-ssh ${BACKUP_HOST} "scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
+ssh ${BACKUP_HOST} ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
 
 # Keep a few days worth of backup online
-cd ..
 thin=`ls -dt [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] | tail +$THIN_DAYS`
 if [ "$thin" ]; then
     echo Removing $thin
