@@ -289,7 +289,7 @@ sub _init_column_classes {
 	    # Check syntax of user designated fields
 	    die($col->{name}, ': duplicate form name (',
 		    $col->{form_name}, ')') if $form_names{$col->{form_name}};
-	    die($col->{name}, ': form name cannot be fNN. You probably have a field in both the \'visible\' and \'hidden\' sections of your form definition')
+	    die($col->{name}, q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.})
 		    if $col->{form_name} =~ /^f\d+/;
 	    $form_names{$col->{form_name}} = 1;
 	}
