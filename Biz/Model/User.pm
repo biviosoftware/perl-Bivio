@@ -141,6 +141,32 @@ sub concat_last_first_middle {
     return defined($fn) ? $fn : $mn;
 }
 
+=for html <a name="count_all"></a>
+
+=head2 static count_all(Bivio::Agent::Request req) : int
+
+Returns the total number of registered users.
+
+=cut
+
+sub count_all {
+    my($proto, $req) = @_;
+    my($sth) = Bivio::SQL::Connection->execute(
+	    "SELECT count(*)
+            FROM realm_owner_t 
+            WHERE name NOT LIKE '"
+	    .Bivio::Type::RealmName::SHADOW_PREFIX()
+	    ."%'
+            AND name NOT LIKE '%"
+	    .Bivio::Type::RealmName::TEST_SUFFIX()
+	    ."'
+            AND realm_type = "
+            .Bivio::Auth::RealmType::USER()->as_sql_param
+	   );
+    my($count) = $sth->fetchrow_array;
+    return $count;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
