@@ -127,6 +127,7 @@ Bivio::Test->unit([
 	get_part => [
 	    ['2378497 9', 'year'] => '1800',
 	    ['2378497 9', 'YEAR'] => '1800',
+	    ['2378497 9', 'NOT FOUND'] => Bivio::DieCode->DIE,
 	],
     ],
 ]);

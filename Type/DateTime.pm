@@ -275,14 +275,8 @@ my($_MONTH_TO_NUM) = {map {
     (uc($_NUM_TO_MONTH->[$_]), $_ + 1);
 } 0..$#$_NUM_TO_MONTH};
 
-my(%_PART_NAMES) = (
-    second => 0,
-    minute => 1,
-    hour => 2,
-    day => 3,
-    month => 4,
-    year => 5,
-);
+my($_PART_NUMBER) = {};
+@$_PART_NUMBER{qw(second minute hour day month year)} = 1..6;
 my($_LOCAL_TIMEZONE);
 my($_WINDOW_YEAR);
 _initialize();
@@ -668,11 +662,13 @@ Returns the specific part of the date. Valid parts are:
 
 sub get_part {
     my($proto, $date, $part_name) = @_;
-
-    my($index) = $_PART_NAMES{$part_name};
-    Bivio::Die->die('invalid part name', $part_name) unless defined($index);
-
-    return ($proto->to_parts($date))[$index];
+    return ($proto->to_parts($date))[
+	(
+	    $_PART_NUMBER->{$part_name}
+	    || $_PART_NUMBER->{lc($part_name)}
+	    || Bivio::Die->die($part_name, ': invalid part name'),
+	) - 1,
+    ];
 }
 
 =for html <a name="get_previous_day"></a>
