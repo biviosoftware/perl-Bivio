@@ -266,11 +266,23 @@ EOF
 		height => 106,
 	    },
 	    [<<'EOF'],
-Jerry Dressel and Rip West are America's leading experts in
-investment club accounting.  When they talk, E.F. Hutton listens.
+Investment Club Treasurers have been relying on Jerry
+Dressel's and Rip West's accounting and tax advice
+for years.  Together they have contributed literally
+thousands of messages to the
+<a href="http://www.better-investing.org">NAIC's</a>
+and
+<a href="http://www.fool.com">Motley Fool's</a>
+message boards.
 <p>
-Fire your questions at Trez Talk and you'll get more than
-your money's worth!
+Now Jerry and Rip have a place which they can
+call their own and, more importantly, you
+will always know where to find them.
+Trez Talk is your center for tax and accounting
+advice.
+<p>
+Yet another free service from bivio, your
+investment community.
 EOF
 	   );
     return;
