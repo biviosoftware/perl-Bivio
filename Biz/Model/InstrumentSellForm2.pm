@@ -383,56 +383,21 @@ sub _create_sell_entry {
 	tax_basis => 1,
 	count => Bivio::Type::Amount->neg($amount),
 	external_identifier => $lot_list->get('lot'),
+	acquisition_date => $lot_list->get('acquisition_date'),
     });
 
     # gain
     my($gain) = Bivio::Type::Amount->sub(
 	    Bivio::Type::Amount->mul($amount, $share_value),
 	    $cost_basis);
-#    my($gain_type) = _determine_gain_type($lot_list->get('purchase_date'),
-#	    $transaction->get('date_time'));
     my($gain_type) = lc(Bivio::Biz::Accounting::Tax->get_gain_type(
-	    $lot_list->get('purchase_date'),
+	    $lot_list->get('acquisition_date'),
 	    $transaction->get('date_time'))->get_short_desc);
 
     $fields->{$gain_type} = Bivio::Type::Amount->add($fields->{$gain_type},
 	    $gain);
     return;
 }
-
-
-=comment
-
-# _determine_gain_type(string purchase_date, string sell_date) : Bivio::Type::TaxCategory
-#
-# Returns the appropriate tax type for the instrument held between the two
-# dates.
-#
-sub _determine_gain_type {
-    my($purchase_date, $sell_date) = @_;
-
-    # This is literal days.  It doesn't matter what time.
-    my($days) = Bivio::Type::Date->delta_days($purchase_date,
-	    $sell_date);
-#TODO: handle leap year
-    if ($days <= 365) {
-	return 'stcg';
-    }
-    my(@parts) = Bivio::Type::DateTime->to_parts($sell_date);
-    my($sell_year) = $parts[5];
-    if ($sell_year == 1997) {
-	if (Bivio::Type::DateTime->compare($_MAY_7_1997, $sell_date) > 0) {
-	    return 'mtcg';
-	}
-#TODO; need to determine 18 months holding
-	if ($days < 18 * 30) {
-	    return 'mtcg';
-	}
-    }
-    return 'ltcg';
-}
-
-=cut
 
 =head1 COPYRIGHT
 
