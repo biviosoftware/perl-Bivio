@@ -682,8 +682,9 @@ Returns an array_ref of seconds and microseconds.
 
 sub gettimeofday {
     my($i) = '8..bytes';
-    syscall(&main::SYS_gettimeofday, $i, 0);
-    return [unpack('ll', $i)];
+    return [unpack('ll', $i)]
+	if Bivio::Die->eval(sub {syscall(&main::SYS_gettimeofday, $i, 0)});
+    return [time, 0];
 }
 
 =for html <a name="gettimeofday_diff_seconds"></a>
