@@ -958,7 +958,7 @@ my(@_CFG) = (
         adm/su
 	Bivio::Biz::Model::SubstituteUserForm
 	Bivio::UI::HTML::Adm::SubstituteUser
-        next=USER_HOME
+        next=MY_CLUB_SITE
         cancel=HTTP_DOCUMENT
         require_secure=1
     )],
