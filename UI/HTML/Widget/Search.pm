@@ -27,7 +27,7 @@ use Bivio::UI::HTML::Widget;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Search> draws a C<INPUT> tag with
-attribute C<TYPE=TEXT>. Adds a C<SUBMIT> button labeled "Search"
+attribute C<TYPE=TEXT>. Adds a C<SUBMIT> button labeled "Go"
 to the right.
 
 =head1 ATTRIBUTES
@@ -131,7 +131,7 @@ sub render {
     my($v) = Bivio::Type::String->to_html($list->get_query->get('search'));
     _trace('v=', $v);
     $$buffer .= $p.$fields->{prefix} . ' value="' . $v . '">';
-    $$buffer .= '<input type=submit value="Search">' . $s . '</form>';
+    $$buffer .= '<input type=submit value="Go">' . $s . '</form>';
 
     return;
 }
