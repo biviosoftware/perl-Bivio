@@ -189,7 +189,7 @@ CREATE TABLE connect_survey_t (
   age_range NUMBER(2),
   vicinity NUMBER(2),
   risk NUMBER(2),
-  outlook NUMBER(2),
+  outlook NUMBER(2)
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
