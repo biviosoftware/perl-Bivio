@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::Number uses Math::FixedPrecision.  If you are using Red
+    Hat 7.2, you need to install newer Math::BigInt package.
+  * Bivio::IO::Alert shows more elements of arrays and hashes
+
+  Revision 1.42  2003/02/26 19:38:15  nagler
+  * Bivio::Util::SQL->import_db revised to work with Postgres 7.3 and
+    reinitializes sequences properly.
+  * Bivio::Util::Release->install execs rpm with all packages so that
+    RPM handles dependencies.
+  * Fixed Bivio::Util::LinuxConfig->append_lines, wasn't converting $perms
+  * Bivio::Type::Month was missing the merry month of May
+  * Bivio::Test::Language->test_conformance added
   * Bivio::SQL::Connection->ping_connection added
   * Bivio::SQL::Connection::Postgres handle 'server closed the
     connection unexpectedly' error
