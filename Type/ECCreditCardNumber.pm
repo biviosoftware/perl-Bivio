@@ -54,7 +54,9 @@ Returns C<undef> if the value is empty or does not pass the Luhn test
 
 sub from_literal {
     my($proto, $value) = @_;
-    $value = $proto->SUPER::from_literal($value);
+    my($err);
+    ($value, $err) = $proto->SUPER::from_literal($value);
+    return ($value, $err) if $err;
     return undef unless defined($value);
 
     # Remove dashes and spaces to be friendly
