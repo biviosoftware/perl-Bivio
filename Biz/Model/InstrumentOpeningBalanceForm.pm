@@ -122,6 +122,7 @@ sub execute_input {
 	count => $properties->{'RealmInstrumentEntry.count'},
 	# use the transaction id to identify this block
 	external_identifier => $transaction->get('realm_transaction_id'),
+	acquisition_date => $transaction->get('date_time'),
     });
 
     # create a valuation entry for the instrument
