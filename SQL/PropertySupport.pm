@@ -233,7 +233,7 @@ sub unsafe_load {
     my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die);
     my($start_time) = Bivio::Util::gettimeofday();
     my($row) = $statement->fetchrow_arrayref();
-    my($too_many) = $statement->fetchrow_array ? 1 : 0 if $row;
+    my($too_many) = $statement->fetchrow_arrayref ? 1 : 0 if $row;
     Bivio::SQL::Connection->increment_db_time($start_time);
     my($values);
     if ($row) {
