@@ -52,33 +52,29 @@ __PACKAGE__->compile(
 	0,
 	'Unspecified',
     ],
-    PARTNER => [
+    TREASURER => [
 	1,
     ],
-    TREASURER => [
+    PRESIDENT => [
 	2,
     ],
-    PRESIDENT => [
+    VICE_PRESIDENT => [
 	3,
     ],
-    VICE_PRESIDENT => [
+    SECRETARY => [
 	4,
     ],
-    SECRETARY => [
+    ADMINISTRATOR => [
 	5,
     ],
-    ADMINISTRATOR => [
+    MEMBER => [
 	6,
     ],
-    MEMBER => [
-	7,
-    ],
     GUEST => [
-	8,
+	7,
     ],
 );
 my(%_ROLE_MAP) = (
-    PARTNER => 'MEMBER',
     TREASURER => 'ACCOUNTANT',
     PRESIDENT => 'ADMINISTRATOR',
     VICE_PRESIDENT => 'ADMINISTRATOR',
