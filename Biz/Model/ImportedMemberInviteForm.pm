@@ -73,6 +73,11 @@ sub execute_empty_row {
 	foreach my $field (qw(contact home_phone work_phone)) {
 	    my($value) = $member->{$field};
 	    next unless Bivio::Type::Email->is_valid($value);
+
+	    # protect against sending emails for test data
+	    unless ($self->get_request->unsafe_get('is_production')) {
+		$value = ':'.$value;
+	    }
 	    $self->internal_put_field('invite_email', $value);
 	    last;
 	}
