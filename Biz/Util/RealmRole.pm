@@ -426,3 +426,17 @@ b-realm-role CLUB ACCOUNTANT - \
     +ACCOUNTING_WRITE \
     +MEMBER_WRITE
 b-realm-role CLUB ADMINISTRATOR +
+
+#
+# Demo Club Permissions, same as CLUB GUEST
+b-realm-role demo_club ANONYMOUS - \
+    +ACCOUNTING_READ \
+    +ADMIN_READ \
+    +ANY_USER \
+    +DOCUMENT_READ \
+    +FINANCIAL_DATA_READ \
+    +LOGIN \
+    +MAIL_READ \
+    +MAIL_WRITE \
+    +MEMBER_READ \
+    +MOTION_READ
