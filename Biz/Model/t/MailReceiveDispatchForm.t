@@ -28,8 +28,9 @@ my($_check_return) = sub {
     $case->actual_return([
 	$_req->get('auth_user')	&& $_req->get('auth_user')->get('name'),
 	$_req->get('auth_realm')->unsafe_get('owner_name'),
+	$_req->get('task_id'),
     ]);
-    return $expect;
+    return [@$expect, Bivio::Agent::TaskId->MAIL_RECEIVE_IGNORE];
 };
 Bivio::Test->new({
     check_return => $_check_return,
