@@ -31,7 +31,7 @@ BEGIN {
 sub process_http ($$$) {
     my($proto, $r, $code) = @_;
     my($self) = {
-	'start_time' => &Bivio::Util::gettimeofday,
+	'start_time' => &Bivio::Util::gettimeofday(),
 	'r' => $r,
     };
     &_process($proto, $self, $code) && return &Apache::Constants::OK;

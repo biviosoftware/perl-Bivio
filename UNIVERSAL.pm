@@ -12,9 +12,12 @@ Bivio::UNIVERSAL - base class for all bivio modules
 
     use Bivio::UNIVERSAL;
     @ISA = qw(Bivio::Universal);
+
+    my($PACKAGE) = __PACKAGE__;
+
     sub new {
-	my($self) = &Bivio::UNIVERSAL(@_);
-	$self->{__PACKAGE__} = {'field1' => 'value1'};
+	my($self) = &Bivio::UNIVERSAL::new(@_);
+	$self->{$PACKAGE} = {'field1' => 'value1'};
 	return $self;
     }
 
@@ -28,6 +31,25 @@ methods defined here may be overriden.
 =cut
 
 #=VARIABLES
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(string name) : Bivio::UNIVERSAL
+
+Creates and blesses the object.
+
+=cut
+
+sub new {
+    my($proto) = @_;
+    my($self) = {};
+    bless($self, ref($proto) || $proto);
+    return $self;
+}
 
 =head1 METHODS
 

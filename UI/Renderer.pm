@@ -2,6 +2,7 @@
 # $Id$
 package Bivio::UI::Renderer;
 use strict;
+use Bivio::UNIVERSAL;
 $Bivio::UI::Renderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -42,7 +43,7 @@ Renders the target onto the Request's print stream.
 =cut
 
 sub render {
-    die( "abstract method Renderer::render invoked!\n" );
+    die("abstract method Renderer::render invoked!\n");
 }
 
 #=PRIVATE METHODS
