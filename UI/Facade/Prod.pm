@@ -98,9 +98,10 @@ my($_SELF) = __PACKAGE__->new({
 	    #
 	    # Table
 	    #
+	    $fc->group(table_heading => -1);
+
 	    # This is not websafe, but it will round down to 0xCCCCCC
 	    # on systems that have only 256 colors.
-	    $fc->group(table_heading => -1);
             $fc->group(table_even_row_bg => 0xE4E4E4);
 	    # List forms don't get stripes in the default view
 	    $fc->group(table_odd_row_bg => -1);
@@ -149,8 +150,13 @@ my($_SELF) = __PACKAGE__->new({
 		    time
             )],
 		   ['smaller']);
-	    $fc->group(['table_heading', 'normal_table_heading'] =>
-		    ['color=table_heading', 'bold']);
+	    $fc->group([qw(
+                    table_heading
+		    normal_table_heading
+                    filtrum_top_holdings_instrument_name
+            )],
+		    ['color=table_heading', 'bold'],
+		   );
 	    $fc->group([qw(
 		    form_submit
                     message_subject
@@ -179,12 +185,15 @@ my($_SELF) = __PACKAGE__->new({
 		    file_tree_bytes
 		    list_action
 		    lookup_button
+                    instrument_ticker_symbol
+                    filtrum_top_holdings_heading
             )],
 		   ['smaller']);
 	    $fc->group([qw(
                     action_bar_string
                     strong
                     table_row_title
+                    instrument_name
             )],
 		   ['bold']);
 	    $fc->group([qw(
