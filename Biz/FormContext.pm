@@ -46,6 +46,8 @@ an extra level of substitution.
 
 =head1 ATTRIBUTES
 
+=over 4
+
 =item cancel_task : Bivio::Agent::TaskId
 
 When the form's cancel button is hit, this task will be executed.
@@ -82,6 +84,8 @@ executed.  Is C<undef> for the GENERAL realm.
 
 When the form's OK button is hit, this task will be executed.
 Is always defined.
+
+=back
 
 =cut
 
@@ -340,15 +344,11 @@ sub _parse_hash {
     return unless defined($c->{$which});
 
     my(@v) = split(/$_HASH_CHAR/o, $c->{$which});
-    if (int(@v) % 2 == 0 && int(@v)) {
-	$c->{$which} = {@v};
-    }
-    else {
-	# Defaults to undef, i.e. no query or form
-	_parse_error($model, $c->{$which}, $which,
-		'uneven or empty hash');
-	$c->{$which} = undef;
-    }
+
+    # Handle uneven or empty hash case.
+    push(@v, undef) if int(@v) % 2;
+
+    $c->{$which} = {@v};
     return;
 }
 
