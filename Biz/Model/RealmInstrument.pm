@@ -186,6 +186,9 @@ sub unsafe_find_or_create {
     my($req) = $self->get_request;
     $ticker = uc($ticker);
 
+    # guard against multiple realm instruments with same ticker
+    return -1 if _get_count($req, 'ticker_symbol', $ticker) > 1;
+
     # check local instrument first
     if ($self->unsafe_load(ticker_symbol => $ticker)) {
 	return 1;
@@ -196,9 +199,13 @@ sub unsafe_find_or_create {
     unless ($inst->unsafe_load(ticker_symbol => $ticker)) {
 	return 0;
     }
+    my($inst_id) = $inst->get('instrument_id');
+
+    # guard agains multiple realm instruments with same instrument_id
+    return -1 if _get_count($req, 'instrument_id', $inst_id) > 1;
 
     # see if there is a realm instrument for it
-    unless ($self->unsafe_load(instrument_id => $inst->get('instrument_id'))) {
+    unless ($self->unsafe_load(instrument_id => $inst_id)) {
 	# need to create it
 	$self->create({
 	    instrument_id => $inst->get('instrument_id'),
@@ -254,6 +261,26 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _get_count(Bivio::Agent::Request req, string field, string value) : int
+#
+# Returns the number of RealmInstruments where the specified field
+# has the specified value.
+#
+sub _get_count {
+    my($req, $field, $value) = @_;
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT COUNT(*)
+            FROM realm_instrument_t
+            WHERE $field=?
+            AND realm_id=?",
+	    [$value, $req->get('auth_id')]);
+    my($count) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$count = $row->[0];
+    }
+    return $count;
+}
 
 =head1 COPYRIGHT
 
