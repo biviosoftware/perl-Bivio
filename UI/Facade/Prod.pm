@@ -180,7 +180,7 @@ my($_SELF) = __PACKAGE__->new({
 		   ['color=error', 'smaller']);
 	    $fc->group(form_field_label_in_text => ['bold']);
 	    $fc->group(icon_text_ia => []);
-	    $fc->group(realm_chooser_text => []);
+	    $fc->group(realm_chooser_text => ['color=page_text']);
 	    $fc->group(task_list_label_link => []);
 	    $fc->group(task_list_label_no_link => []);
 	    $fc->group(task_list_heading => ['bold']);
