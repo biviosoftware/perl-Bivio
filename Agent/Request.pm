@@ -263,7 +263,8 @@ when the instance is sufficiently initialized.
 sub internal_new {
     my($proto, $hash) = @_;
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
-    $self->put(request => $self,
+    $self->put_durable(durable_keys => {durable_keys => 1});
+    $self->put_durable(request => $self,
 	    is_production => $_IS_PRODUCTION,
 	    txn_resources => [],
 	    can_secure => $_CAN_SECURE,
@@ -364,9 +365,18 @@ method will be expanded over time.
 
 sub clear_nondurable_state {
     my($self) = @_;
-    # This is a hack for now
-    $self->delete(grep(/Bivio::Biz::/, @{$self->get_keys}));
-    $self->delete(grep(/Bivio::Societas::Biz::/, @{$self->get_keys}));
+#    # This is a hack for now
+#    $self->delete(grep(/Bivio::Biz::/, @{$self->get_keys}));
+#    $self->delete(grep(/Bivio::Societas::Biz::/, @{$self->get_keys}));
+#    $self->delete(grep(/^Model\./, @{$self->get_keys}));
+#    return;
+
+    my($durable_keys) = $self->get('durable_keys');
+    my(@non_durable_keys) = map { $durable_keys->{$_} ? () : $_ }
+	    @{$self->get_keys};
+    _trace("durable keys: ".join(',', keys(%$durable_keys))) if $_TRACE;
+    _trace("NON durable keys: ".join(',', @non_durable_keys)) if $_TRACE;
+    $self->delete(@non_durable_keys);
     return;
 }
 
@@ -906,7 +916,7 @@ sub internal_server_redirect {
     $new_query = Bivio::Agent::HTTP::Query->parse($new_query)
 	    if defined($new_query) && !ref($new_query);
     # Now fill in the rest of the request context
-    $self->put(uri =>
+    $self->put_durable(uri =>
 	    # If there is no uri, use current one
 	    Bivio::UI::Task->has_uri($new_task)
 	    ? $self->format_uri($new_task, undef, $new_realm,
@@ -973,7 +983,10 @@ redirects.
 
 sub put_durable {
     my($self) = shift;
-#TODO: Store this info 
+    my($durable_keys) = $self->get_or_default('durable_keys', {});
+    for (my ($i) = 0; $i < int(@_); $i += 2) {
+	$durable_keys->{$_[$i]} = 1;
+    }
     return $self->put(@_);
 }
 
@@ -1049,7 +1062,7 @@ sub set_realm {
 	    unless UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
-    $self->put(auth_realm => $new_realm,
+    $self->put_durable(auth_realm => $new_realm,
 	    auth_id => $realm_id,
 	    auth_role => $new_role);
     _trace($new_realm, '; ', $new_role) if $_TRACE;
@@ -1101,11 +1114,11 @@ sub set_user {
     }
     Bivio::Die->die($user, ': not a RealmOwner')
 	    if defined($user) && !$user->isa('Bivio::Biz::Model');
-    $self->put(auth_user => $user,
+    $self->put_durable(auth_user => $user,
 	    auth_user_id => $user ? $user->get('realm_id') : undef,
 	    user_realms => $user_realms);
     # Set the (cached) auth_role if requested (by default).
-    $self->put(auth_role => _get_role($self, $self->get('auth_id')))
+    $self->put_durable(auth_role => _get_role($self, $self->get('auth_id')))
 	    unless $dont_set_role;
     return;
 }
@@ -1236,7 +1249,7 @@ sub _get_realm {
 	    my($realm) = $self->unsafe_get('auth_user_realm');
 	    unless ($realm) {
 		$realm = Bivio::Auth::Realm->new($auth_user);
-		$self->put(auth_user_realm => $realm);
+		$self->put_durable(auth_user_realm => $realm);
 	    }
 	    return $realm;
 	}
