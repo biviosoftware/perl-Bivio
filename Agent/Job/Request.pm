@@ -72,7 +72,8 @@ sub new {
 
     # Realm
     my($realm);
-    if ($params->{auth_id}) {
+    if ($params->{auth_id} && $params->{auth_id}
+            != Bivio::Auth::RealmType::GENERAL()->as_int) {
 	$realm = Bivio::Auth::Realm->new($params->{auth_id}, $self);
     }
     else {
