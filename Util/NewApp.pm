@@ -9,10 +9,6 @@ $_ = $Bivio::Util::NewApp::VERSION;
 
 Bivio::Util::NewApp - creates initial structure for a new application
 
-=head1 RELEASE SCOPE
-
-bOP
-
 =head1 SYNOPSIS
 
     use Bivio::Util::NewApp;
