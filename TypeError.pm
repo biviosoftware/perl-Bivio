@@ -287,6 +287,16 @@ __PACKAGE__->compile(
 	undef,
 	'unable to decode data',
     ],
+    NO_SHARES_OWNED => [
+	50,
+	undef,
+	'no shares owned on the date specified',
+    ],
+    INVALID_SPLIT_SHARES => [
+	51,
+	undef,
+	'new shares can\'t equal old shares',
+    ],
 );
 
 #=PRIVATE METHODS
