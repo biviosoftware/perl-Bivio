@@ -298,6 +298,11 @@ sub _assert_login {
     $self->throw_die('NOT_FOUND', {
 	entity => $self->get('login'),
     }) if $self->in_error;
+    return undef
+	unless $realm;
+    $self->throw_die('NOT_FOUND', {entity => $realm,
+	message => "user's password is invalidated"})
+	unless $realm->has_valid_password;
     return $realm;
 }
 
@@ -307,20 +312,16 @@ sub _assert_login {
 #
 sub _assert_realm {
     my($self) = @_;
-    my($realm) = $self->get('realm_owner');
     return undef
-	unless $realm;
-    $self->throw_die('DIE', {entity => $realm,
-	message => "can't login as offline user"})
-	if $realm->is_offline_user();
-    $self->throw_die('DIE', {entity => $realm,
-	entity_type => $realm->get('realm_type'),
-	message => "can't login as non-user"})
-	unless $realm->get('realm_type')
-	    == Bivio::Auth::RealmType->USER;
-    $self->throw_die('DIE', {entity => $realm,
-	message => "can't login as *the* USER realm"})
-	if $realm->is_default;
+	unless my $realm = $self->get('realm_owner');
+    my($err) = $realm->is_offline_user ? "can't login as offline user"
+	: $realm->get('realm_type') != Bivio::Auth::RealmType->USER
+	? "can't login as non-user"
+	: $realm->is_default ? "can't login as *the* USER realm"
+	: !$realm->has_valid_password ? "user's password is invalidated"
+	: '';
+    $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
+	if $err;
     $self->internal_put_field(validate_called => 1);
     return $realm;
 }
