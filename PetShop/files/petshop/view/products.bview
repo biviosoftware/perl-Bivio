@@ -2,7 +2,6 @@
 #
 # Product list
 #
-use strict;
 view_parent('menu');
 view_put(
     header_title => 'Product Category',
