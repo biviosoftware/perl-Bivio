@@ -33,6 +33,7 @@ use Bivio::UI::Admin::UserView;
 use Bivio::UI::HTML::Page;
 use Bivio::UI::HTML::Presentation;
 use Bivio::UI::Menu;
+use Bivio::UI::MessageBoard::MessageListView;
 use Bivio::UI::Setup::Admin;
 use Bivio::UI::Setup::Club;
 use Bivio::UI::Setup::Finish;
@@ -88,8 +89,7 @@ sub init {
 
     my($user_list) = Bivio::UI::Admin::UserListView->new();
     my($add_user) = Bivio::UI::Admin::UserView->new();
-    my($message_list) = Bivio::UI::TestView->new("messages",
-	    "<i>Message List</i>", $default_model);
+    my($message_list) = Bivio::UI::MessageBoard::MessageListView->new();
     my($message_detail) = Bivio::UI::TestView->new("message", "<i>Message</i>",
 	    $default_model);
 
