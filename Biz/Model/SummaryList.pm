@@ -111,6 +111,18 @@ sub get_cursor {
     return 0;
 }
 
+=for html <a name="get_list_model"></a>
+
+=head2 get_list_model() : self
+
+Returns itself, the list model.
+
+=cut
+
+sub get_list_model {
+    return shift;
+}
+
 =for html <a name="get_request"></a>
 
 =head2 get_request() : Bivio::Agent::Request
