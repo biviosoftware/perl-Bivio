@@ -274,6 +274,7 @@ sub _upgrade_add_charitable_sub_categories {
             []);
     while (my $row = $sth->fetchrow_arrayref) {
         my($realm_id, $name) = @$row;
+	$req->set_realm($name);
 
         my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
                 SELECT expense_category_id
@@ -290,6 +291,10 @@ sub _upgrade_add_charitable_sub_categories {
 
 	foreach my $sub_category ('50% Limit Organization',
 	    '30% Limit Organization') {
+
+	    next if $category->unsafe_load({
+		name => $sub_category,
+	    });
 
 	    $category->create({
 		realm_id => $realm_id,
