@@ -54,12 +54,15 @@ use Bivio::IO::ClassLoader;
 
 =head2 static vs_blank_cell() : Bivio::UI::Widget
 
+=head2 static vs_blank_cell(int count) : Bivio::UI::Widget
+
 Returns a cell which renders a blank.  Makes the code clearer to use.
 
 =cut
 
 sub vs_blank_cell {
-    return shift->vs_join('&nbsp;');
+    my($proto, $count) = @_;
+    return $proto->vs_join('&nbsp;' x ($count || 1));
 }
 
 =for html <a name="vs_center"></a>
