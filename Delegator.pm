@@ -98,7 +98,7 @@ sub AUTOLOAD {
 #
 sub _get_delegate_class {
     my($proto) = @_;
-    return Bivio::IO::ClassLoader->require_delegate(ref($proto) || $proto);
+    return Bivio::IO::ClassLoader->delegate_require(ref($proto) || $proto);
 }
 
 =head1 COPYRIGHT

@@ -80,7 +80,7 @@ tasks defined in this module is:
 use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-my($_CFG) = Bivio::IO::ClassLoader->require_delegate_info(__PACKAGE__);
+my($_CFG) = Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__);
 
 __PACKAGE__->compile([
     map {($_->[0], [$_->[1]])} @$_CFG
