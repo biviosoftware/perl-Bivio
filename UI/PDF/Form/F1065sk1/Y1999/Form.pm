@@ -33,7 +33,6 @@ C<Bivio::UI::PDF::Form::F1065sk1::Y1999::Form>
 
 #=IMPORTS
 use Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1;
-use Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1Draft;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -73,18 +72,8 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     $req->get('Bivio::Biz::Model::F1065K1Form')->set_cursor_or_die(0);
-    my($draft) = $req->get_widget_value('Bivio::Biz::Model::F1065K1Form',
-	    'draft');
-    my($real_form);
-    if ($draft) {
-	$real_form =
-		Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1Draft->new();
-    }
-    else {
-	$real_form = Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1->new();
-    }
-
-    return $real_form->execute($req);
+    return Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1->new()
+	    ->execute($req);
 }
 
 #=PRIVATE METHODS
