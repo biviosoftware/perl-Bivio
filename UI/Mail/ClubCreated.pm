@@ -79,8 +79,8 @@ transactions by hand:
 
 Promote yourself to CFO with full service bookkeeping.  Your bivio
 AccountKeeper does all the work.  We will even print, sign and send
-your club IRS tax forms, all for only \$195 per year (or about \$1
-per member per month):
+your club IRS tax forms, all for only \$195 per year (certain
+restrictions apply).  To learn more, please visit:
 
     $ak
 
