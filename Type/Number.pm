@@ -32,6 +32,24 @@ It is currently a placeholder.
 
 #=VARIABLES
 
+=head1 METHODS
+
+=cut
+
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : string
+
+Makes sure is a number.  Does not except scientific notation.
+
+=cut
+
+sub from_literal {
+    my(undef, $value) = @_;
+#TODO: Improve the checks here
+    return $value =~ /^[-+]?\d+(?:\.\d+)?$/ ? $value : undef;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

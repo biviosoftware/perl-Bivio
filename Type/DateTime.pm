@@ -93,6 +93,20 @@ sub WIDTH {
 
 =cut
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : string
+
+Makes sure is a unsigned number.
+
+=cut
+
+sub from_literal {
+    my(undef, $value) = @_;
+#TODO: Improve the checks here
+    return $value =~ /^\d+$/ ? $value : undef;
+}
+
 =for html <a name="from_sql_column"></a>
 
 =head2 from_sql_column(string result) : string

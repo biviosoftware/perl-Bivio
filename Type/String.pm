@@ -35,6 +35,25 @@ It is currently a placeholder.
 
 #=VARIABLES
 
+=head1 METHODS
+
+=cut
+
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : any
+
+Returns C<undef> if the value is invalid.
+
+=cut
+
+sub from_literal {
+    shift;
+#TODO: Better validation.
+#TODO: NULL string handling.
+    return shift;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
