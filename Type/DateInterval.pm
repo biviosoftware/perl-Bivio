@@ -151,7 +151,7 @@ sub inc_to_end {
     my($self, $start_date) = @_;
     my($sub) = \&{'_inc_to_end_'.lc($self->get_name)};
     return defined(&$sub) ? &$sub($self, $start_date)
-	: $_DT->add_days($_DT->$self->inc($start_date), -1);
+	: $_DT->add_days($self->inc($start_date), -1);
 }
 
 =for html <a name="is_continuous"></a>
