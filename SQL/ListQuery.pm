@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListQuery;
 use strict;
 $Bivio::SQL::ListQuery::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::SQL::ListQuery::VERSION;
 
 =head1 NAME
 
@@ -49,6 +50,26 @@ The auth_id extracted from the request.
 
 Number of lines on a page.  Not passed in the query, set by the
 caller of L<new|"new">.
+
+=item date : Bivio::Type::Date
+
+Arbitrary date used to load the ListModel.  Bivio::Type::DateTime
+and a Bivio::Type::Date are both acceptable.
+
+You can pass C<date> or C<report_date> in the query string and it
+will be parsed as a date.
+
+Will be set to DateTime-E<gt>local_end_of_today if C<undef>
+and support has I<want_date> set.
+
+=item internal : Bivio::Type::DateInterval
+
+A L<Bivio::Type::DateInterval|Bivio::Type::DateInterval>.  Does not default.
+You can pass C<interval> in the query string and it will be parsed
+as an interval.
+
+Accepts a ref or tries to convert unsafe_from_any.  Is left at C<undef>,
+if not set.
 
 =item has_next : boolean
 
@@ -140,20 +161,24 @@ sub FIRST_PAGE {
 }
 
 #=IMPORTS
-use Bivio::HTML;
 use Bivio::Agent::HTTP::Query;
-use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
-use Bivio::Type;
+use Bivio::HTML;
+use Bivio::IO::Trace;
+use Bivio::Type::Date;
+use Bivio::Type::DateInterval;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::PrimaryId;
+use Bivio::Type;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(%_QUERY_TO_FIELDS) = (
+    'd' => 'date',
+    'i' => 'interval',
     'n' => 'page_number',
     'o' => 'order_by',
     'p' => 'parent_id',
@@ -590,8 +615,16 @@ sub _format_uri {
     }
 
     # search
-    $res .= 's='.Bivio::HTML->escape_query($attrs->{search}).'&'
+    $res .= 's='.Bivio::Type::String->to_query($attrs->{search}).'&'
 	    if defined($attrs->{search});
+
+    # date
+    $res .= 'd='.Bivio::Type::Date->to_query($attrs->{date}).'&'
+	    if defined($attrs->{date});
+
+    # interval
+    $res .= 'i='.Bivio::Type::DateInterval->to_query($attrs->{interval}).'&'
+	    if defined($attrs->{interval});
 
     # Delete trailing '&'
     chop($res);
@@ -628,6 +661,70 @@ sub _new {
     @{$attrs}{'has_prev', 'has_next', 'prev', 'next', 'prev_page', 'next_page'
 	  } = (0, 0, undef, undef, undef, undef);
     return Bivio::Collection::Attributes::new($proto, $attrs);
+}
+
+# _parse_date(hash_ref attrs, Bivio::SQL::Support support, ref die)
+#
+# Parses a date string.  We handle both a literal DateTime (J SSSSS) and
+# a Date (mm/dd/yyyy).  We also check for report_date and date passed
+# in.  If the date is invalid, we set it to undef or now depending on
+# value of want_date.
+#
+sub _parse_date {
+    my($attrs, $support, $die) = @_;
+    my($literal) = $attrs->{d} || $attrs->{date} || $attrs->{report_date} ||
+	    undef;
+    unless ($literal) {
+	$attrs->{date} = $support->unsafe_get('want_date')
+		? Bivio::Type::DateTime->local_end_of_today : undef;
+	return;
+    }
+
+    my($value, $e) = Bivio::Type::DateTime->from_literal($literal);
+    ($value, $e) = Bivio::Type::Date->from_literal($literal)
+	    unless $value;
+    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+	message => 'invalid date',
+	type_error => $e,
+    },
+	    $literal) unless $value;
+    $attrs->{date} = $value;
+    return;
+}
+
+# _parse_interval(hash_ref attrs, Bivio::SQL::Support support, ref die)
+#
+# Parses an interval as an unsafe_from_any or literal ref.
+#
+sub _parse_interval {
+    my($attrs, $support, $die) = @_;
+    my($literal) = $attrs->{i};
+    $literal = $attrs->{interval} unless defined($literal);
+
+    # Passed internally?
+    if (ref($literal)) {
+	# Already parsed, is a reference
+	_die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+	    message => 'not a Bivio::Type::DateInterval',
+	},
+		$literal)
+		unless UNIVERSAL::isa($literal, 'Bivio::Type::DateInterval');
+	$attrs->{interval} = $literal;
+	return;
+    }
+
+    # Empty?
+    return undef unless defined($literal) && length($literal);
+
+    # Parse
+    my($value, $e) = Bivio::Type::DateInterval->unsafe_from_any($literal);
+    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+	message => 'invalid interval',
+	type_error => $e,
+    },
+	    $literal) unless $value;
+    $attrs->{interval} = $value;
+    return;
 }
 
 # _parse_order_by(hash_ref attrs, Bivio::SQL::Support support, ref die)
@@ -749,7 +846,7 @@ sub _parse_this {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
