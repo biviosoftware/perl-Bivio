@@ -514,10 +514,12 @@ for execution.>
 
 sub initialize_ui {
     my($self) = @_;
-    $self->get_request;
+    my($req) = $self->get_request;
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher');
     Bivio::Agent::Dispatcher->initialize(1);
-    Bivio::UI::Facade->setup_request(undef, $self->get_request);
+    Bivio::UI::Facade->setup_request(undef, $req);
+    $req->put_durable(
+	task => Bivio::Agent::Task->get_by_id($req->get('task_id')));
     return;
 }
 
