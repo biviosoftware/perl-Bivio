@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999,2000,2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Die;
 use strict;
@@ -7,7 +7,7 @@ $_ = $Bivio::Die::VERSION;
 
 =head1 NAME
 
-Bivio::Die - dispatch die_handler in modules on stack
+Bivio::Die - manages exceptions with catch/die_handler and eval wrapper
 
 =head1 SYNOPSIS
 
@@ -601,7 +601,7 @@ sub _print_stack {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999,2000,2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
