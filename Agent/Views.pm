@@ -69,8 +69,8 @@ sub initialize {
 	Bivio::UI::Setup::Login
 	Bivio::UI::Setup::Finish
 	Bivio::UI::Setup::Intro
-	Bivio::UI::HTML::View::Test
     )]) || return 0;
+
     # Assemble pages and presentations from views.  Note that
     # the Views have backlinks to their parents, so they can never
     # be garbage collected--which is what we want.n
