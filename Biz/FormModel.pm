@@ -587,7 +587,7 @@ Get name for form appropriate to html.
 =cut
 
 sub get_field_name_for_html {
-    return shift->internal_get_sql_support->get_column_name_for_html(@_);
+    return shift->get_field_info(shift, 'form_name');
 }
 
 =for html <a name="get_model_properties"></a>
@@ -860,9 +860,9 @@ sub put_context_fields {
     my($f) = $c->{form} ||= {version => $mi->get_info('version')};
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
-	my($fn) = $self->get_field_name_for_html($k);
+	my($fn) = $mi->get_field_name_for_html($k);
 	# Convert with to_literal--context->{form} is in raw form
-	$f->{$fn} = $model->get_field_info($k, 'type')->to_literal($v);
+	$f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
     }
     _trace('new form: ', $c->{form}) if $_TRACE;
     return;
