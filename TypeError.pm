@@ -855,10 +855,10 @@ __PACKAGE__->compile([
 	undef,
 	'foreign taxes may only be associated with dividend distributions',
     ],
-    NUMBER_OUT_OF_RANGE => [
+    DATE_RANGE_OUTSIDE_OF_FISCAL_YEAR => [
 	115,
 	undef,
-	'the number is out of range',
+	'end date must be within the same year as the start date',
     ],
 ]);
 
