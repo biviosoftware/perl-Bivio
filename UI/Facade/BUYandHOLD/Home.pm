@@ -108,8 +108,8 @@ EOF
 		    $self->link_goto(
 			    'BUYandHOLD.com',
 			    'http://www.buyandhold.com/Buy?request=rr.refBy'
-			    .'&ref=BIVIO&dest=/bh/en/advert/closed'
-			    .'/splash_plain.html'),
+			    .'&ref=BIVIO&dest=/bh/en/advert/closed/bivio'
+			    .'/bivio.html'),
 		    <<'EOF',
 .
 <p>
