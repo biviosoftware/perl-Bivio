@@ -41,6 +41,7 @@ Subclasses define the actual authorization policies.
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::PropertyModel::RealmOwner;
+use Bivio::Biz::PropertyModel::RealmUser;
 use Bivio::Auth::Role;
 use Bivio::IO::Trace;
 use Carp ();
