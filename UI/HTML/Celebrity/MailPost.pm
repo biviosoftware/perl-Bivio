@@ -48,7 +48,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub create_content {
     my($self) = @_;
-    $self->put(page_heading => 'Post Mail Message');
+    $self->put(page_heading => 'Compose Mail Message');
 
     my($to_chooser) = Bivio::UI::HTML::Widget::Select->new({
         field => 'to',
@@ -95,7 +95,7 @@ sub execute {
 
     my($realm_owner) = $req->get('auth_realm')->get('owner');
     my($realm_name) =  $realm_owner->get('display_name');
-    my($topic) = 'Post Mail Message to ' .$realm_name;
+    my($topic) = 'Compose Mail Message to ' .$realm_name;
     $self->put(page_topic => $topic);
     $self->put(page_heading => 'Foo');
 
