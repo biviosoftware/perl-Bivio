@@ -405,7 +405,8 @@ Runs I<command> with I<input> (or empty input) and returns output.
 I<input> may be C<undef>.
 
 Throws exception if it can't write the input or if the command returns
-a non-zero exit result.
+a non-zero exit result.  The L<Bivio::Die|Bivio::Die> has an
+I<exit_code> attribute.
 
 =cut
 
@@ -418,13 +419,18 @@ sub piped_exec {
     unless ($pid) {
 	open(OUT, "| exec $command") || die("open $command: $!");
 	print OUT $$in;
-	close(OUT) || warn("write to $command failed: $!");
-	CORE::exit(0);
+	close(OUT);
+	# If there is a signal, return 99.  Otherwise, return exit code.
+	CORE::exit($? ? ($? >> 8) ? ($ >> 8) : 99 :  0);
     }
     local($/) = undef;
     my($res) = <IN>;
     $res ||= '';
-    close(IN) || die("$res\n$command failed: $!");
+    close(IN) || Bivio::Die->throw_die('DIE', {
+	message => 'command died with non-zero status',
+	entity => $command,
+	exit_code => $?,
+    });
     return \$res;
 }
 
