@@ -589,8 +589,6 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065Form',
 		    'income_general_individual',
 		],
-		',',
-		2
 	       ),
 );
 
