@@ -51,20 +51,20 @@ already exists: attempt to create an entity which already exists
 
 no permission: operation is not allowed on realm.
 
-=item CATCH_WITHIN_DIE
+=item CATCH_WITHIN_DIE: program_error
 
 catch called within die: Bivio::Die::catch was called within a call to die
 
-=item INVALID_DIE_CODE: code, attrs
+=item INVALID_DIE_CODE: code, attrs, program_error
 
 invalid die code: code passed to Bivio::Die->die is not an Bivio::Type::Enum.
 I<code> is the invalid code and I<attrs> are the original attributes.
 
-=item DIE: message
+=item DIE: message, program_error
 
 internal error: CORE::die was caught by Bivio::Die->catch
 
-=item DIE_WITHIN_HANDLE_DIE: message, proto
+=item DIE_WITHIN_HANDLE_DIE: message, proto, program_error
 
 die within handle_die: CORE::die was called while handling an existing die
 I<proto> is either the instance or class passed to C<handle_die>.
