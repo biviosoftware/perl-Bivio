@@ -17,12 +17,12 @@ Bivio::Biz::Model::MemberWithdrawalInfo - member withdrawal information
 
 =head1 EXTENDS
 
-L<Bivio::Biz::FormModel>
+L<Bivio::Biz::ListModel>
 
 =cut
 
-use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::MemberWithdrawalInfo::ISA = ('Bivio::Biz::FormModel');
+use Bivio::Biz::ListModel;
+@Bivio::Biz::Model::MemberWithdrawalInfo::ISA = ('Bivio::Biz::ListModel');
 
 =head1 DESCRIPTION
 
@@ -42,98 +42,6 @@ my($math) = 'Bivio::Type::Amount';
 
 =cut
 
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-Loads all values.
-
-=cut
-
-sub execute_empty {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($properties) = $self->internal_get;
-
-    # get the withdrawal entry info
-    my($entry) = $req->get('Bivio::Biz::Model::Entry');
-    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req);
-    $txn->load(realm_transaction_id => $entry->get('realm_transaction_id'));
-    $req->put(report_date => $txn->get('date_time'));
-
-    my($member_entry) = $req->get('Bivio::Biz::Model::MemberEntry');
-    my($user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    $user_realm->unauth_load_or_die(realm_id => $member_entry->get('user_id'));
-
-    $properties->{realm_id} = $req->get('auth_id');
-    $properties->{user_id} = $member_entry->get('user_id');
-    $properties->{name} = $user_realm->get('display_name');
-    $properties->{type} = $entry->get('entry_type');
-    $properties->{transaction_date} = $txn->get('date_time'),
-    $properties->{member_valuation_date} =
-	    $member_entry->get('valuation_date');
-
-    $properties->{units_withdrawn} = $math->neg($member_entry->get('units'));
-    $properties->{withdrawal_fee} = $math->neg(_get_transaction_amount($txn,
-	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()));
-    $properties->{withdrawal_amount} = $math->neg($entry->get('amount'));
-    $properties->{cash_withdrawn} = $math->neg(_get_transaction_amount(
-	    $txn, undef, Bivio::Type::EntryClass::CASH()));
-    $properties->{withdrawal_adjustment} = $math->neg($math->round(
-	    _get_transaction_amount($txn,
-		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_ADJUSTMENT()),
-	    2));
-
-    my($transfer_list) = Bivio::Biz::Model::InstrumentTransferList->new($req);
-    $transfer_list->load_all;
-
-    $properties->{transfer_valuation_date} =
-	    $transfer_list->get_transfer_valuation_date;
-    $properties->{instrument_fmv} = $math->round(
-	    $transfer_list->get_summary->get('market_value'), 2);
-    $properties->{member_tax_basis} = $math->round($math->neg(
-	    $transfer_list->get_member_tax_basis), 2);
-    $properties->{member_instrument_cost_basis} = $math->round(
-	    $transfer_list->get_summary->get('member_cost_basis'), 2);
-    $properties->{withdrawal_allocations} = $math->round($math->neg(
-	    $transfer_list->get_allocations), 2);
-
-    $properties->{withdrawal_realized_gain} = _add($properties, qw(
-            member_tax_basis withdrawal_allocations cash_withdrawn
-            member_instrument_cost_basis));
-    $properties->{show_realized_gain} = 1;
-
-    # partial withdrawals can't have a positive realized_gain
-    if (($properties->{type} ==
-	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_STOCK
-	    || $properties->{type} ==
-	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
-	    && $math->compare($properties->{withdrawal_realized_gain}, 0)
-	    <= 0) {
-	$properties->{withdrawal_realized_gain} = 0;
-	$properties->{show_realized_gain} = 0;
-    }
-    $properties->{withdrawal_value} = _add($properties, qw(
-            cash_withdrawn instrument_fmv withdrawal_fee
-            withdrawal_adjustment));
-    $properties->{unit_value} = $math->div(
-	    $properties->{withdrawal_value}, $properties->{units_withdrawn});
-
-    $properties->{pre_withdrawal_basis} =
-	    $math->neg($properties->{member_tax_basis});
-    $properties->{adjusted_basis} = $math->neg(
-	    $math->add($properties->{member_tax_basis},
-		    $properties->{withdrawal_allocations}));
-    $properties->{basis_withdrawn} = $math->add(
-	    $properties->{cash_withdrawn},
-	    $properties->{member_instrument_cost_basis});
-    $properties->{withdrawal_allocations} = $math->neg(
-	    $properties->{withdrawal_allocations});
-
-    $properties->{show_allocations} = _get_show_allocations($req);
-    return;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -145,7 +53,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	hidden => [
+	other => [
 	    {
 		name => 'user_id',
 		type => 'PrimaryId',
@@ -263,6 +171,120 @@ sub internal_initialize {
 	    },
 	],
     };
+}
+
+=for html <a name="internal_load"></a>
+
+=head2 internal_load(array_ref rows, Bivio::SQL::ListQuery query)
+
+Populates the single row of data.
+
+=cut
+
+sub internal_load {
+    my($self, @args) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # calling the superclass first puts this model on the request
+    # and allows InstrumentTransferList to reference it during the
+    # calculations
+    $self->SUPER::internal_load(@args);
+    my($req) = $self->get_request;
+    my($properties) = $fields->{properties};
+
+    # get the withdrawal entry info
+    my($entry) = $req->get('Bivio::Biz::Model::Entry');
+    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req);
+    $txn->load(realm_transaction_id => $entry->get('realm_transaction_id'));
+    $req->put(report_date => $txn->get('date_time'));
+
+    my($member_entry) = $req->get('Bivio::Biz::Model::MemberEntry');
+    my($user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    $user_realm->unauth_load_or_die(realm_id => $member_entry->get('user_id'));
+
+    $properties->{realm_id} = $req->get('auth_id');
+    $properties->{user_id} = $member_entry->get('user_id');
+    $properties->{name} = $user_realm->get('display_name');
+    $properties->{type} = $entry->get('entry_type');
+    $properties->{transaction_date} = $txn->get('date_time'),
+    $properties->{member_valuation_date} =
+	    $member_entry->get('valuation_date');
+
+    $properties->{units_withdrawn} = $math->neg($member_entry->get('units'));
+    $properties->{withdrawal_fee} = $math->neg(_get_transaction_amount($txn,
+	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()));
+    $properties->{withdrawal_amount} = $math->neg($entry->get('amount'));
+    $properties->{cash_withdrawn} = $math->neg(_get_transaction_amount(
+	    $txn, undef, Bivio::Type::EntryClass::CASH()));
+    $properties->{withdrawal_adjustment} = $math->neg($math->round(
+	    _get_transaction_amount($txn,
+		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_ADJUSTMENT()),
+	    2));
+
+    my($transfer_list) = Bivio::Biz::Model::InstrumentTransferList->new($req);
+    $transfer_list->load_all;
+
+    $properties->{transfer_valuation_date} =
+	    $transfer_list->get_transfer_valuation_date;
+    $properties->{instrument_fmv} = $math->round(
+	    $transfer_list->get_summary->get('market_value'), 2);
+    $properties->{member_tax_basis} = $math->round($math->neg(
+	    $transfer_list->get_member_tax_basis), 2);
+    $properties->{member_instrument_cost_basis} = $math->round(
+	    $transfer_list->get_summary->get('member_cost_basis'), 2);
+    $properties->{withdrawal_allocations} = $math->round($math->neg(
+	    $transfer_list->get_allocations), 2);
+
+    $properties->{withdrawal_realized_gain} = _add($properties, qw(
+            member_tax_basis withdrawal_allocations cash_withdrawn
+            member_instrument_cost_basis));
+    $properties->{show_realized_gain} = 1;
+
+    # partial withdrawals can't have a positive realized_gain
+    if (($properties->{type} ==
+	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_STOCK
+	    || $properties->{type} ==
+	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
+	    && $math->compare($properties->{withdrawal_realized_gain}, 0)
+	    <= 0) {
+	$properties->{withdrawal_realized_gain} = 0;
+	$properties->{show_realized_gain} = 0;
+    }
+    $properties->{withdrawal_value} = _add($properties, qw(
+            cash_withdrawn instrument_fmv withdrawal_fee
+            withdrawal_adjustment));
+    $properties->{unit_value} = $math->div(
+	    $properties->{withdrawal_value}, $properties->{units_withdrawn});
+
+    $properties->{pre_withdrawal_basis} =
+	    $math->neg($properties->{member_tax_basis});
+    $properties->{adjusted_basis} = $math->neg(
+	    $math->add($properties->{member_tax_basis},
+		    $properties->{withdrawal_allocations}));
+    $properties->{basis_withdrawn} = $math->add(
+	    $properties->{cash_withdrawn},
+	    $properties->{member_instrument_cost_basis});
+    $properties->{withdrawal_allocations} = $math->neg(
+	    $properties->{withdrawal_allocations});
+
+    $properties->{show_allocations} = _get_show_allocations($req);
+    return;
+}
+
+=for html <a name="internal_load_rows"></a>
+
+=head2 internal_load_rows(Bivio::SQL::ListQuery query, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
+
+Returns a single row with calculated values.
+
+=cut
+
+sub internal_load_rows {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE} = {
+	properties => {},
+    };
+    return [$fields->{properties}];
 }
 
 #=PRIVATE METHODS
