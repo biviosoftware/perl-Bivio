@@ -57,6 +57,14 @@ Bivio::Auth::RoleSet->set(\$_MEMBER_ROLES,
 	Bivio::Auth::Role::ADMINISTRATOR(),
        );
 
+my($_MEMBER_OR_WITHDRAWN_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_MEMBER_OR_WITHDRAWN_ROLES,
+	Bivio::Auth::Role::WITHDRAWN(),
+	Bivio::Auth::Role::MEMBER(),
+	Bivio::Auth::Role::ACCOUNTANT(),
+	Bivio::Auth::Role::ADMINISTRATOR(),
+       );
+
 =head1 CONSTANTS
 
 =cut
@@ -270,6 +278,25 @@ sub is_member {
     $model_prefix ||= '';
     $list_model ||= $self;
     return Bivio::Auth::RoleSet->is_set(\$_MEMBER_ROLES,
+	    $list_model->get($model_prefix.'role'));
+}
+
+=for html <a name="is_member_or_withdrawn"></a>
+
+=head2 is_member_or_withdrawn() : boolean
+
+=head2 static is_member_or_withdrawn(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if the user is a member or above, i.e. I<role> must
+be WITHDRAWN, MEMBER, ACCOUNT, or ADMINISTRATOR.
+
+=cut
+
+sub is_member_or_withdrawn {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    return Bivio::Auth::RoleSet->is_set(\$_MEMBER_OR_WITHDRAWN_ROLES,
 	    $list_model->get($model_prefix.'role'));
 }
 
