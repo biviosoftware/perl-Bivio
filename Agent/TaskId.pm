@@ -162,10 +162,10 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::ReportList
     )],
     [qw(
-        CLUB_ADMIN_MEMBER_LIST
+        CLUB_ADMIN_USER_LIST
         14
         CLUB
-        MEMBER_READ
+        ADMIN_READ&MEMBER_READ
         _/admin/roster
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserList
@@ -200,7 +200,7 @@ my(@_CFG) = (
         CLUB_COMMUNICATIONS_MEMBER_LIST
         18
         CLUB
-        MEMBER_READ
+        ADMIN_READ&MEMBER_READ
         _/rolodex
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -689,9 +689,71 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditComm
         next=USER_ADMIN_INFO
     )],
+<<<<<<< TaskId.pm
+    [qw(
+	UNKNOWN_MAIL
+	74
+        GENERAL
+        MAIL_WRITE
+        :
+	Bivio::Biz::Action::HandleUnknownMail
+    )],
+    [qw(
+        CLUB_ADMIN_INVITE
+        75
+        CLUB
+        ADMIN_WRITE
+        _/admin/invite
+        Bivio::Biz::Model::ClubInviteForm
+        Bivio::UI::HTML::Club::Invite
+        next=CLUB_ADMIN_INVITE_LIST
+    )],
+    [qw(
+        CLUB_ADMIN_INVITE_LIST
+        76
+        CLUB
+        ADMIN_READ
+        _/admin/invitations
+        Bivio::Biz::Model::RealmInviteList
+        Bivio::UI::HTML::Club::InviteList
+    )],
+    [qw(
+        CLUB_ADMIN_INVITE_ACCEPT
+        77
+        CLUB
+        LOGIN
+        _/admin/join
+        Bivio::Biz::Model::RealmInvite
+        Bivio::Biz::Model::ClubInviteAcceptForm
+        Bivio::UI::HTML::Club::InviteAccept
+        cancel=HTTP_DOCUMENT
+        next=CLUB_HOME
+    )],
+    [qw(
+        CLUB_ADMIN_USER_DETAIL
+        78
+        CLUB
+        ADMIN_READ&MEMBER_READ
+        _/admin/roster/detail
+        Bivio::Biz::Model::ClubUserList
+        Bivio::UI::HTML::Club::UserDetail
+    )],
+#TODO: next should be CLUB_ADMIN_USER_DETAIL for this user, not the list
+#      but there is a bug in next handling that doesn't keep query string.
+    [qw(
+        CLUB_ADMIN_USER_EDIT
+        79
+        CLUB
+        ADMIN_WRITE&MEMBER_WRITE
+        _/admin/roster/edit
+        Bivio::Biz::Model::ClubUserList
+        Bivio::Biz::Model::ClubUserForm
+        Bivio::UI::HTML::Club::EditUser
+        next=CLUB_ADMIN_USER_LIST
+    )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LOOKUP
-        74
+        80
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/lookup
@@ -702,7 +764,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_BUY
-        75
+        81
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/buy
