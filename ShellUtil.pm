@@ -274,6 +274,48 @@ sub new {
     return $self;
 }
 
+=for html <a name="new_other"></a>
+
+=head2 new_other(string class) : Bivio::ShellUtil
+
+Instantiates a new ShellUtil, whose class is I<class>.  Will load class
+dynamically (must be fully qualified).  Passes standard options from I<self>
+to I<other>
+Calls I<put_request> on I<other> if there's a request on I<self>, i.e.
+L<get_request|"get_request"> has been called.
+
+If I<self> is not an instance, no options are passed (defaults will
+be used in I<other>).
+
+You can override options by calling I<put> on I<other> after this
+call returns.
+
+=cut
+
+sub new_other {
+    my($self, $class) = @_;
+    Bivio::IO::ClassLoader->simple_require($class);
+    my($options) = [];
+    if (ref($self)) {
+	my($standard) = OPTIONS();
+	while (my($k, $v) = each(%$standard)) {
+	    if ($v->[0] eq 'Boolean') {
+		push(@$options, '-'.$k) if $self->unsafe_get($k);
+	    }
+	    else {
+		# We don't pass undef options.
+		my($actual) = $self->unsafe_get($k);
+		push(@$options, '-'.$k, $actual)
+			if defined($actual) != defined($v)
+				|| defined($v) && $v ne $actual;
+	    }
+	}
+    }
+    my($other) = $class->new($options);
+    $other->put_request($self->get_request) if $self->unsafe_get('req');
+    return $other;
+}
+
 =head1 METHODS
 
 =cut
