@@ -413,7 +413,10 @@ Put I<self> on the request as its class.
 sub execute {
     my($self, $req) = @_;
     Bivio::IO::Alert->bootstrap_die('not a reference') unless ref($self);
-    $req->put(ref($self) => $self);
+    $req->put(
+	ref($self) => $self,
+	'Type.'.$self->simple_package_name => $self,
+    );
     return 0;
 }
 
