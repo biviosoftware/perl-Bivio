@@ -130,8 +130,10 @@ _compile(
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
     CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
-    CLUB_ADMIN_ADD_MEMBER => ['Add Member'],
-    CLUB_ADMIN_INVITE_GUEST => ['Invite Guest'],
+    CLUB_ADMIN_MEMBER_ADD => ['Add Members'],
+    CLUB_ADMIN_GUEST_INVITE => ['Invite Guests'],
+    CLUB_ADMIN_INVITE_LIST => ['Invites'],
+    CLUB_ADMIN_USER_LIST => ['Roster'],
 );
 
 =head1 METHODS
