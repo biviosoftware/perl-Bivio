@@ -46,6 +46,7 @@ use Apache::Constants;
 use Bivio::Biz::FindParams;
 use Bivio::Biz::User;
 use Bivio::Util;
+use Data::Dumper;
 
 my($_PACKAGE) = __PACKAGE__;
 
@@ -73,6 +74,11 @@ sub new {
     $controller ||= $default_controller_name;
 
     my(%args) = $r->args;
+
+    # this will clobber the query args if present
+    if ($r->method() eq 'POST') {
+	&_add_posted_args($r, \%args);
+    }
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	    &_find_user($r->connection->user), $start_time);
     $self->{$_PACKAGE} = {
@@ -307,6 +313,20 @@ sub set_view_name {
 }
 
 #=PRIVATE METHODS
+
+# _add_posted_args(Apache::Request r, hash result)
+#
+# puts all the posted name=value pairts into the result hash
+
+sub _add_posted_args {
+    my($r, $result) = @_;
+
+    # returned as an array of name/value pairs
+    my(@posted) = $r->content();
+    for (my($i) = 0; $i < scalar(@posted); $i += 2) {
+	$result->{$posted[$i]} = $posted[$i+1];
+    }
+}
 
 # _find_user(string name) : User
 #
