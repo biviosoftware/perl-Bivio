@@ -47,6 +47,7 @@ use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_FILE_CLIENT);
 
 
 =head1 FACTORIES
@@ -64,6 +65,12 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
+    $fields ->{mime_uri} = Bivio::UI::HTML::Widget::Indirect->new({
+ 	      value => 0,
+	      cell_rowspan => 1,
+	      cell_compact => 1,
+	      cell_align => 'N',
+ 	    });
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
 	    '<center>by ',
@@ -81,9 +88,11 @@ sub new {
 		'Bivio::UI::HTML::Format::DateTime'],
 	    ' GMT</center><p>',
 	    ['Bivio::Biz::Model::MailMessage', '->get_body'],
+	    $fields->{mime_uri},
 	],
     });
     $fields->{content}->initialize;
+    $fields->{mime_uri}->initialize;
     $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
 	values => Bivio::UI::HTML::ActionButtons->get_list(
 	    'club_compose_message', 'club_reply_message'),
@@ -113,6 +122,31 @@ sub execute {
     $list->next_row;
     my($mail_message) = $list->get_model('MailMessage');
     my($subject) = $mail_message->get('subject');
+    my @mimen = $mail_message->get_num_mime_parts();
+    print(STDERR "\nNUMPARTS in this message: " . int(@mimen));
+    if( int(@mimen) != 0){
+	my @urls;
+	my $i = 1;
+	foreach my $ext (@mimen){
+	    print(STDERR "\npushing $ext");
+	    push(@urls,
+		    Bivio::UI::HTML::Widget::Link->new({
+			href  => $req->format_uri(
+				Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT(),
+				"att=".$ext),
+			value => Bivio::UI::HTML::Widget::String->new({
+			    value => 'Attachment '.$i++}),
+			}));
+	    push(@urls, "<BR>");
+	}
+	print(STDERR "\ncreating join");
+	my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
+	values => \@urls});
+	$mime_urls->initialize;
+	print(STDERR "\nsetting mime_uri array.\n");
+	$fields->{mime_uri}->put(value => $mime_urls);
+    }
+
     my($reply_subject) =
 	    Bivio::UI::HTML::Format::ReplySubject->get_widget_value($subject);
     $req->put(
