@@ -318,8 +318,9 @@ sub format_uri {
 	if ($path_info) {
 	    return _get_error($self, $task_name, 'uri requires path_info')
 			    unless $path_info;
-	    return _get_error($self, $task_name,
-		    'path_info must begin with slash (', $path_info, ')')
+	    # Be a little flexible on formatting.  path_info almost
+	    # always begins with a '/'.
+	    $path_info = '/'.$path_info
 			unless $path_info =~ /^\//;
 	    # Deletes trailing '/' on URI (only happens in case of DOC ROOT)
 	    $uri =~ s/\/$//;
@@ -546,6 +547,14 @@ sub parse_uri {
 	_trace($orig_uri, ' => site_root') if $_TRACE;
 	return ($_SITE_ROOT, $_GENERAL, '/'.$uri, $orig_uri);
     }
+
+    # If the Facade doesn't have a USER_HOME, there are no realms so
+    # don't hit the database.
+    $req->throw_die(Bivio::DieCode::NOT_FOUND,
+            {entity => $orig_uri,
+		uri => $uri,
+                message => 'site_root files should be in subdir'})
+	    unless $self->has_uri(Bivio::Agent::TaskId->USER_HOME);
 
     # Try to find the uri with the realm replaced by placeholder
     # Replace realm with underscore.  This is ugly, but good enough for now.
