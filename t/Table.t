@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..2\n"; }
+BEGIN { $| = 1; print "1..4\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Club::Table;

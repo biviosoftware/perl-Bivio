@@ -1,7 +1,6 @@
 MANIFEST
 Makefile.PL
 Changes
-test.pl
 Club/MenuItem.pm
 Club/Menu.pm
 Club/Page.pm

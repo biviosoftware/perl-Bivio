@@ -16,7 +16,7 @@ print "ok 1\n";
 use Bivio::Mail::Incoming;
 use User::pwent ();
 
-my($_USER) = User::pwent::getpwuid($>)->name;
+my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
 
 Bivio::IO::Config->initialize(\@ARGV);
 
@@ -53,7 +53,7 @@ EOF
 my($_OUT) = <<"EOF";
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Dan Hess" <dan_hess\@prodigy.net>
-$_USER: Subject: This is my subject
+Subject: $_USER: This is my subject
 Sender: owner-$_USER
 To: "My Fancy List" <$_USER>
 Reply-To: "My Fancy List" <$_USER>
@@ -75,7 +75,7 @@ my($test) = 2;
 my($bmo) = Bivio::Mail::Outgoing->new(Bivio::Mail::Incoming->new(\$_IN));
 $bmo->set_headers_for_list_send($_USER, 'My Fancy List', 1, 1);
 $bmo->set_recipients($_USER);
-print "You should be receiving two identical mail messages\n";
+print STDERR "\nYou should be receiving two identical mail messages\n";
 $bmo->send();
 $bmo->enqueue();
 $bmo->send_queued_messages();
