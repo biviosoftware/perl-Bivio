@@ -331,6 +331,34 @@ sub from_unix {
     return $j . ' ' . $s;
 }
 
+=for html <a name="max"></a>
+
+=head2 max(string left, string right) : string
+
+Returns the greater of the two dates.
+
+=cut
+
+sub max {
+    my($proto, $left, $right) = @_;
+    return $left if $proto->compare($left, $right) > 0;
+    return $right;
+}
+
+=for html <a name="min"></a>
+
+=head2 min(string left, string right) : string
+
+Returns the lesser of the two dates.
+
+=cut
+
+sub min {
+    my($proto, $left, $right) = @_;
+    return $left if $proto->compare($left, $right) < 0;
+    return $right;
+}
+
 =for html <a name="now"></a>
 
 =head2 now() : string
