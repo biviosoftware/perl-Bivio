@@ -67,6 +67,45 @@ sub new {
     });
 }
 
+=head1 METHODS
+
+=cut
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Returns value as string.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($t) = $self->get('type');
+    return (ref($t) || $t)
+	. '['
+	. $t->to_string($self->get('value'))
+	. ']';
+}
+
+=for html <a name="equals"></a>
+
+=head2 equals(any that) : boolean
+
+Returns true if I<self> equals I<that>.
+
+=cut
+
+sub equals {
+    my($self, $that) = @_;
+    return defined($that)
+	&& ref($self) eq ref($that)
+	&& $self->get('type') eq $that->get('type')
+	? $self->get('type')->is_equal(
+	    $self->get('value'), $that->get('value'))
+	: 0;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
