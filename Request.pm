@@ -35,7 +35,7 @@ sub process_http ($$$) {
 	'r' => $r,
     };
     &_process($proto, $self, $code) && return &Apache::Constants::OK;
-    $r->log_reason($@);
+    $r->log_reason($self->{error});
     return $self->{result};
 }
 
@@ -58,7 +58,7 @@ sub process_email ($$$) {
 	    undef, 'postmaster', "ERROR: $caller", <<"EOF", undef, $attach);
 Error while processing email message via Bivio::Request::process_mail:
 
-    $@
+    $self->{error}
 
 Apache result code: $self->{result}
 EOF
@@ -75,7 +75,7 @@ sub _process ($$$) {
     my($ok) = eval { &$code($self); 1;};
     unless ($ok) {
 	chop($@);
-	$self->{error} = @_;
+	$self->{error} = $@;
 	unless (defined($self->{result})) {
 	    $self->{error} = 'unexpected exception: ' . $self->{error};
 	    $self->{result} = &Apache::Constants::SERVER_ERROR;
