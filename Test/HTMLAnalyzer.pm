@@ -7,7 +7,7 @@ $_ = $Bivio::Test::HTMLAnalyzer::VERSION;
 
 =head1 NAME
 
-Bivio::Test::HTMLAnalyzer - semantically analyse Bivio pages
+Bivio::Test::HTMLAnalyzer - semantically analyze Bivio pages
 
 =head1 SYNOPSIS
 
@@ -17,12 +17,12 @@ Bivio::Test::HTMLAnalyzer - semantically analyse Bivio pages
 
 =head1 EXTENDS
 
-L<Bivio::UNIVERSAL>
+L<Bivio::Collection::Attributes>
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::HTMLAnalyzer::ISA = ('Bivio::UNIVERSAL');
+use Bivio::Collection::Attributes;
+@Bivio::Test::HTMLAnalyzer::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -61,7 +61,7 @@ Parse an HTML page and attempt to semantically analyze it.
 
 sub new {
     my($proto,$content) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = Bivio::Collection::Attributes::new($proto);
     my($fields) = $self->{$_PACKAGE} = {};
 
     my($p) = Bivio::Test::HTMLParser->new($content)->get_fields();
@@ -112,7 +112,8 @@ sub new {
 	$dd->Deepcopy(1);
 	print STDERR $dd->Dumpxs();
     }
-
+    #internal_put is supered up to Collection::Attributes
+    $self->internal_put($fields); 
     return $self;
 }
 
@@ -245,20 +246,6 @@ sub gen_form_uri {
 	fields => $form_fields });
 }
 
-=for html <a name="get_button_uri"></a>
-
-=head2 get_button_uri(string $label) : string
-
-Returns the url associated with a button name.
-
-=cut
-
-sub get_button_uri {
-    my($self, $label) = @_;
-    return $self->{$_PACKAGE}->{buttons}->{$label}
-	    || die("Can't find button: $label");
-}
-
 =for html <a name="get_form_action"></a>
 
 =head2 get_form_action(Bivio::Test::HTMLAnalyzer self, string name) : string
@@ -334,6 +321,29 @@ sub get_title {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return ($fields->{title});
+}
+
+=for html <a name="get_uri"></a>
+
+=head2 get_uri(string section, string target, string subtarget) : string
+
+Returns the uri for the specified area on the parsed page.  Uses $section to
+find the major area of the page (eg: imagemenu, buttons, etc.).  Uses $target
+to find the relevant part of the section (eg: logout, communications).  In
+cases where the structure goes one level deeper, the optional $subtarget is
+used.
+
+Examples: get_uri('imagemenu', 'communications', 'mail')
+          get_uri('buttons', 'logout')
+
+=cut
+#TODO: look at get_widget_value...test to see fields exist
+sub get_uri {
+    my($self, $section, $target, $subtarget) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{$section}->{$target}->{links}->{$subtarget}
+	    if (defined $subtarget);
+    return $self->get($section)->{$target};
 }
 
 =for html <a name="list_form_fields"></a>
@@ -515,7 +525,7 @@ sub _find_imagemenu {
 	}
 	elsif (exists($p->{tables}[$i]->{links}->{Mail})) {
 	    $fields->{imagemenu} = {} unless defined($fields->{imagemenu});
-	    $fields->{imagemenu}->{accounting} = $p->{tables}[$i];
+	    $fields->{imagemenu}->{communications} = $p->{tables}[$i];
 	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	    push(@{$p->{form_list}}, 'imagemenu');
 	}
