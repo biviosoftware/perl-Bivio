@@ -78,6 +78,18 @@ __PACKAGE__->compile([
 
 =cut
 
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req, boolean put_durable) : boolean
+
+Adds I<put_durable> to true if not supplied.
+
+=cut
+
+sub execute {
+    return shift->SUPER::execute(@_, @_ == 1 ? (1) : ());
+}
+
 =for html <a name="is_browser"></a>
 
 =head2 is_browser() : boolean
