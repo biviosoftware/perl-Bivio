@@ -108,6 +108,11 @@ sub check_messages {
             /sendmail\[\d+\]: alias database.*(auto|)rebuilt by \S+$/ && next;
             /sendmail\[\d+\]: rebuilding alias database/ && next;
             /sendmail\[\d+\]: \/etc\/aliases: \d+ aliases/ && next;
+	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: (message\-id|from|to)=/ && next;
+	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: locked/ && next;
+	    /sendmail\[\d+\]: \d+ aliases, longest/ && next;
+	    /sendmail\[\d+\]: \S+: clone \S+, owner=/ && next;
+            /sendmail\[\d+\]: .+: DSN: User unknown/ && next;
 
             /ssh\[\d+\]: connect\(\) from \S+ to \S+/ && next;
             /sshd2\[\d+\]: log:/ && next;
@@ -156,11 +161,6 @@ sub check_messages {
             /imapd\[\d+\]: Command stream end of file, while reading line/ && next;
 
             /sslwrap\[\d+\]: connect from/ && next;
-
-	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: (message\-id|from|to)=/ && next;
-	    /sendmail\[\d+\]: [A-Z]{3}[0-9]{5}: locked/ && next;
-	    /sendmail\[\d+\]: \d+ aliases, longest/ && next;
-	    /sendmail\[\d+\]: \S+: clone \S+, owner=/ && next;
 
             /ftpd\[\d+\]: connection from/ && next;
             /ftpd\[\d+\]: (|ANONYMOUS )FTP LOGIN FROM/ && next;
