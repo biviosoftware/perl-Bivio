@@ -26,14 +26,14 @@ cd $ts
 # INSTRUMENT_T is needed separately to allow a proper import of the two other dumps
 # Don't need consistent=y, because we only update once per day
 $ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y constraints=n statistics=none feedback=0 consistent=n file=./$ts-instrument.dmp 'tables=(INSTRUMENT_T,INSTRUMENT_MERGER_SPINOFF_T,INSTRUMENT_VALUATION_T)'
+gzip *.dmp
 
 # Consistent
 $ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y constraints=n statistics=none feedback=0 consistent=y file=./$ts-realm.dmp 'tables=(ACCOUNT_SYNC_T,ADDRESS_T,CLUB_T,CONNECT_SURVEY_T,DB_UPGRADE_T,EC_PAYMENT_T,EC_SUBSCRIPTION_T,EMAIL_T,ENTRY_T,EXPENSE_CATEGORY_T,EXPENSE_INFO_T,FILE_QUOTA_T,FILE_T,JAPAN_SURVEY_T,MAIL_T,MEMBER_ALLOCATION_T,MEMBER_ENTRY_T,PASSWORD_REQUEST_T,PHONE_T,PREFERENCES_T,REALM_ACCOUNT_ENTRY_T,REALM_ACCOUNT_T,REALM_DECOR_T,REALM_INSTRUMENT_ENTRY_T,REALM_INSTRUMENT_T,REALM_INSTRUMENT_VALUATION_T,REALM_INVITE_T,REALM_OWNER_T,REALM_ROLE_T,REALM_TRANSACTION_T,REALM_USER_T,TAX_1065_T,TAX_ID_T,TAX_K1_T,USER_T,VISITOR_T)'
+gzip *.dmp
 
 # Don't need consistent=y, because we only update once per day
 $ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y constraints=n statistics=none feedback=0 consistent=n file=./$ts-csi.dmp 'tables=(CSI_DISTRIBUTION_T,CSI_FACT_SHEET_T,CSI_IMPORT_T,CSI_INSTRUMENT_T,CSI_MUTUAL_FUND_T,CSI_SPLIT_T,CSI_STOCK_PRICE_T)'
-
-echo Compressing export dump files
 gzip *.dmp
 
 # Return to /home/bkp
