@@ -9,7 +9,7 @@ BEGIN {
 	    },
 	},
 	'Bivio::Test::Language::HTTP' => {
- 	    home_page_uri => 'http://petshop.bivio.biz',
+# 	    home_page_uri => 'http://petshop.bivio.biz',
 	},
     });
 }
@@ -49,7 +49,9 @@ submit_form(search => {
 submit_form(search => {
     _anon => 'dogs',
 });
-verify_text('Fire Station');
+verify_text('Adult Female German Shepherd');
+follow_link_in_table('Item ID', 'Item Name', 'Male Adult Corgi');
+verify_text('Friendly dog from Wales');
 debug_print('Forms');
 EOF
 	],
