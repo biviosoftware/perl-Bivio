@@ -64,50 +64,83 @@ use XML::Parser ();
 
 #=VARIABLES
 my($_XML_TO_HTML_PROGRAM) = _compile_program({
-    attribution => {
-	prefix => '<div align=right>-- ',
-	suffix => '</div>',
-    },
+    abstract => '<p><table width="70%" align=center border=0><tr>'
+        . '<td align=center>${_}</td></tr></table></p>',
+    attribution => '<div align=right>-- ${_}</div>',
     blockquote => ['blockquote'],
     'chapter/title' => ['h1'],
     chapter => sub {
-	my($html, $state) = @_;
-	$$html .= "<h2>Footnotes</h2><ol>\n$state->{footnotes}</ol>\n"
-	    if $state->{footnote_idx};
+	my($attr, $html, $clipboard) = @_;
+	$$html .= "<h2>Footnotes</h2><ol>\n$clipboard->{footnotes}</ol>\n"
+	    if $clipboard->{footnotes};
 	return "<html><body>$$html</body></html>";
     },
     citetitle => ['i'],
     classname => ['tt'],
     command => ['tt'],
+    comment => '<i>[COMMENT: ${_}]</i>',
+    constant => ['tt'],
     emphasis => ['b'],
+    envar => ['tt'],
     epigraph => [],
+    figure => [],
     filename => ['tt'],
+    firstterm => ['i'],
     footnote => sub {
-	my($html, $state) = @_;
-	$state->{footnote_idx}++;
-	$state->{footnotes}
-	    .= qq(<li><a name="$state->{footnote_idx}"></a>$$html</li>\n);
-	return qq(<a href="#$state->{footnote_idx}">[$state->{footnote_idx}]</a>);
+	my($attr, $html, $clipboard) = @_;
+	$clipboard->{footnote_idx}++;
+	$clipboard->{footnotes}
+	    .= qq(<li><a name="$clipboard->{footnote_idx}"></a>$$html</li>\n);
+	return qq(<a href="#$clipboard->{footnote_idx}">)
+	    . "[$clipboard->{footnote_idx}]</a>";
+
     },
     function => ['tt'],
+    graphic => {
+	template => '<br><img border=0 src="${fileref}" align=${align}><br>',
+	default_align => 'center',
+    },
+    b_include_file => sub {
+	my($attr, $html, $clipboard) = @_;
+	my($res) = Bivio::IO::File->read($attr->{file});
+	# merge lines that end in backslash
+	$$res =~ s/\\\n//sg;
+	$res = HTML::Entities::encode($$res);
+	# create markup from #\w+# values in file.
+	$res =~ s,#(/?\w+)#,<$1>,g;
+	return $res;
+    },
     itemizedlist => ['ul'],
     listitem => ['li'],
     literal => ['tt'],
+    note => '<blockquote><strong>Note:</strong><i>${_}</i></blockquote>',
+    orderedlist => ['ol'],
     para => ['p'],
     programlisting => ['blockquote', 'pre'],
     property => ['tt'],
-    quote => {
-	prefix => '"',
-	suffix => '"',
-    },
+    replaceable => ['i'],
+    quote => '"${_}"',
     sect1 => [],
     'sect1/title' => ['h2'],
+    sect2 => [],
+    'sect2/title' => ['h3'],
+    sidebar => '<table width="95%" border=0 cellpadding=5 bgcolor="#CCCCCC">'
+        . '<tr><td>${_}</td></tr></table>',
+    'sidebar/title' => ['h3'],
     simplesect => [],
-    systemitem => sub {
-	my($html) = @_;
-	return qq(<a href="$$html">$$html</a>);
-    },
+    superscript => ['sup'],
+    systemitem => '<a href="${_}">${_}</a>',
+    term => [],
+    trademark => '${_}&#153;',
+    type => ['tt'],
+    userinput => ['tt'],
+    variablelist => ['dl'],
+    varlistentry => [],
+    'varlistentry/listitem' => ['dd'],
+    'varlistentry/term' => ['dt'],
     varname => ['tt'],
+    note => '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
+    xref => '[CROSS-REFERENCE ${linkend}]',
 });
 
 =head1 METHODS
@@ -136,15 +169,19 @@ sub to_html {
 #
 # Creates the $_XML_TO_HTML_PROGRAM hash from $config, which is a mapping of
 # XML tags to HTML commands.  If the HTML command is an array_ref, calls
-# _compile_tags_to_html to create the prefix and suffix.
+# _compile_tags_to_html to create the template.  If the HTML command
+# is a code_ref, creates a 'code' element.  Defaults to a template.
 #
 sub _compile_program {
     my($config) = @_;
     while (my($xml, $html) = each(%$config)) {
-	$config->{$xml} = {
-	    prefix => _compile_tags_to_html($html, ''),
-	    suffix => _compile_tags_to_html([reverse(@$html)], '/'),
-	} if ref($html) eq 'ARRAY';
+	$config->{$xml} = ref($html) eq 'ARRAY'
+	    ? {template => _compile_tags_to_html($html, '')
+		.'${_}'
+		._compile_tags_to_html([reverse(@$html)], '/')}
+	    : ref($html) eq 'CODE' ? {code => $html} : {template => $html}
+	    unless ref($html) eq 'HASH';
+	$config->{$xml}->{tag} = $xml;
     }
     return $config;
 }
@@ -159,32 +196,50 @@ sub _compile_tags_to_html {
     return join('', map {"<$prefix$_>"} @$names);
 }
 
-# _eval_child(string tag, array_ref children, string parent_tag, hash_ref state) : string
+# _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
 #
 # Lookup $tag in context of $parent_tag to find operator, evaluate $children,
 # and then evaluate the found operator.  Returns the result of _eval_op.
 #
 sub _eval_child {
-    my($tag, $children, $parent_tag, $state) = @_;
+    my($tag, $children, $parent_tag, $clipboard) = @_;
     return HTML::Entities::encode($children) unless $tag;
-    # We ignore the attributes for now.
-    shift(@$children);
     return _eval_op(
 	_lookup_op($tag, $parent_tag),
-	_to_html($tag, $children, $state),
-	$state);
+        shift(@$children),
+	_to_html($tag, $children, $clipboard),
+	$clipboard);
 }
 
-# _eval_op(any op, string_ref html, hash_ref state) : string
+# _eval_op(any op, hash_ref attr, string_ref html, hash_ref clipboard) : string
 #
-# If $op is CODE, call the subroutine with $html and $state.  Otherwise,
-# surround $html with prefix and suffix from $op.  Return concatenation
-# or result of call to $op.
+# If $op has code, call the subroutine with $html and $clipboard.  Otherwise,
+# call _eval_template, which replaces attributes in $op->{template}.
 #
 sub _eval_op {
-    my($op, $html, $state) = @_;
-    return &$op($html, $state) if ref($op) eq 'CODE';
-    return $op->{prefix} . $$html . $op->{suffix};
+    my($op, $attr, $html, $clipboard) = @_;
+    return $op->{code} ? &{$op->{code}}($attr, $html, $clipboard)
+	: _eval_template($op, $attr, $html);
+}
+
+# _eval_template(string op, hash_ref attr, string_ref html) : string
+#
+# Replace $attr keys found in $op.  Attributes are words surrounded by
+# braces and beginning with a $.  The special attribute ${_} is replaced
+# with $html.  An attribute can have a default, which is simply the named
+# attribute on $op prefixed with 'default_'.
+#
+sub _eval_template {
+    my($op, $attr, $html) = @_;
+    my($res) = $op->{template};
+    $res =~ s/\$\{(\w+)\}/
+	$1 eq '_' ? $$html
+	    : defined($attr->{$1}) ? HTML::Entities::encode($attr->{$1})
+	    : defined($op->{'default_'.$1})
+		? HTML::Entities::encode($op->{'default_'.$1})
+	    : die("$1: missing attribute on tag <$op->{tag}> and no default")
+    /egx;
+    return $res;
 }
 
 # _lookup_op(string tag, string parent_tag) : hash_ref
@@ -199,14 +254,14 @@ sub _lookup_op {
 	|| die("$parent_tag/$tag: unhandled tag");
 }
 
-# _to_html(string tag, array_ref children, hash_ref state) : string_ref
+# _to_html(string tag, array_ref children, hash_ref clipboard) : string_ref
 #
 # Concatenate evaluation of $children and return the resultant HTML.
 #
 sub _to_html {
-    my($tag, $children, $state) = @_;
+    my($tag, $children, $clipboard) = @_;
     my($res) = '';
-    $res .= _eval_child(splice(@$children, 0, 2), $tag, $state)
+    $res .= _eval_child(splice(@$children, 0, 2), $tag, $clipboard)
 	while @$children;
     return \$res;
 }

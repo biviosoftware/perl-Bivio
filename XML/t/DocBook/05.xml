@@ -1,0 +1,52 @@
+<chapter>
+<title>Refactoring</title>
+<simplesect>
+
+<sidebar>
+<title>Customer Entropy</title>
+
+<para>
+Software entropy is only half of the problem XP addresses.
+</para>
+</sidebar>
+
+<variablelist>
+
+<varlistentry>
+<term><constant>some_const</constant></term>
+<listitem><para>
+is related to <envar>env var</envar>
+</para></listitem>
+</varlistentry>
+</variablelist>
+
+<orderedlist>
+<listitem><para>
+One
+</para></listitem>
+<listitem><para>
+<replaceable>Two</replaceable>
+</para></listitem>
+</orderedlist>
+
+</simplesect>
+
+<sect1>
+<title>Modern Physics</title>
+<sect2>
+<title>E = MC<superscript>2</superscript></title>
+<abstract>
+<para>
+to be or not to be.
+</para>
+</abstract>
+
+<figure>
+<graphic fileref="down-arrow.gif" align="center"/>
+</figure>
+
+<comment>Should I do this?</comment>
+</sect2>
+</sect1>
+
+</chapter>
