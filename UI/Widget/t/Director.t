@@ -1,25 +1,15 @@
 # Copyright (c) 2003 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 use strict;
-use Bivio::Test::Request;
-use Bivio::UI::Widget::Join;
-my($_req) = Bivio::Test::Request->get_instance;
-Bivio::Test->new({
-    class_name => 'Bivio::UI::Widget::Director',
-    compute_params => sub {
-	my($case, $params, $method) = @_;
-	return $params
-	    unless $method eq 'render';
-	$_req->put(control => $params->[0]);
-	my($x) = '';
-	return $method eq 'render' ? [$_req, \$x] : $params;
+use Bivio::Test::Widget;
+Bivio::Test::Widget->unit(
+    'Bivio::UI::Widget::Director',
+    sub {
+	my($req, $case, $params) = @_;
+	$req->put(control => $params->[0]);
+	return;
     },
-    check_return => sub {
-	my($case, $actual, $expected) = @_;
-	$case->actual_return([${$case->get('params')->[1]}]);
-	return $expected;
-    }
-})->unit([
+[
     [
 	['control'],
 	{
