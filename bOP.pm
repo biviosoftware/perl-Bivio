@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,77 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.23  2002/10/18 03:23:11  nagler
+  * Bivio::Biz::Model::MailReceiveDispatchForm missed last release
+
+  Revision 1.22  2002/10/18 03:14:38  nagler
+  * bOP-sequences CACHEs 1, because Postgres caches on client
+    side and sequences were growing by 10 every server restart.
+  * account.bview includes a better disclaimer
+  * Bivio::Biz::Model::UserLoginForm accepts name, email, or realm_id for
+    login field.  Executed directly (from another class), it accepts
+    "login" or "realm_owner".
+  * Bivio::Agent::HTTP::Request removed Bivio::Auth::Support.  Handled
+    by Cookie now.
+  * Bivio::Agent::Job::Request sets redirect state, but doesn't throw
+    exception when ignore_redirects is true.  ignore_redirects can be
+    turned on and off.
+  * Bivio::Agent::Request->set_user no longer uses dont_set_role parameter.
+    Handled from context in request.
+  * Regularized support for substitute/super users.  See Bivio::Agent::Request
+    and Bivio::Biz::Model::AdmSubstituteUserForm.
+  * Bivio::Agent::Task->execute checks return value of executables
+    for TaskId or Task attribute which is a TaskId.  Calls
+    client_redirect to that task_id.
+  * Bivio::Agent::Task->new accepts want_* and require_* as arbitrary
+    boolean attributes and *_task as TaskId attributes.  Allows TaskId
+    table to contain all state transitions.
+  * Bivio::Biz::Action::ClientRedirect simplified due to Task->execute change.
+  * Bivio::Biz::Action::ECCreditCardProcessor escapes card_zip in
+    command string.
+  * Bivio::Biz::ListModel->iterate_start stores the iterator with the
+    Model instance, so you no longer have to pass it in.  All iterate_*
+    routines are backwards compatible with old style calling syntax.
+  * Bivio::Biz::Model::MailReceiveBaseForm->execute_empty dies if
+    called.
+  * Bivio::Biz::Model->internal_initialize can return an as_string_fields
+    attribute, which allows you to customize debug (as_string) output.
+  * Bivio::Biz::PropertyModel->create_from_literals converts literals
+    using types for the model.  Makes it convient when calling with
+    the command line parameters.
+  * Bivio::ShellUtil->convert_literal added.
+  * Bivio::Biz::PropertyModel->unauth_load_parent_from_request added.
+  * Bivio::Biz::Util::RealmRole->un/make_super_user added.
+  * Bivio::Collection::Attributes->internal_put returns self.
+  * Bivio::Delegate::NoCookie->assert_is_ok added.
+  * Bivio::Delegate::PersistentCookie has more robust error checking
+  * Bivio::Delegate::SimpleTypeError added OFFLINE_USER and CONFIRM_PASSWORD
+    and DOMAIN_NAME
+  * Bivio::Ext::LWPUserAgent->new accepts want_redirects.
+  * Bivio::IO::Ref->to_scalar_ref added
+  * Bivio::Biz::Model::MailReceiveDispatchForm added along with
+    Bivio::Biz::Action::MailReceiveStatus.  See Bivio::PetShop::Agent::TaskId
+    for usage.
+  * PetShop has demo user.
+  * Bivio::SQL::Connection::Postgres has better SQL parsing/conversions.
+  * Bivio::ShellUtil is more testable.
+  * Bivio::Test::Case->actual_return added.
+  * Bivio::Test::Language::HTTP->get_html_parser added.
+  * Bivio::Test::Request support http, facades, etc.
+  * Bivio::Test->unit prints number of tests passed (sharing code
+    with Bivio::Util::Test).
+  * Bivio::Test.check_die is now Bivio::Test->check_die_code
+  * Bivio::Test.method_is_autoloaded avoids "can" check
+  * Bivio::Test.compute_object allows dynamic object creation from params
+  * Bivio::Type::String tests string length
+  * Bivio::Type::Enum->execute accepts a put_durable boolean param
+  * Bivio::Type::UserAgent->execute accepts a put_durable option
+    (true by default)
+  * Bivio::UI::HTML::Widget::String->render support truly dynamic
+    fonts (can be widget values).
+  * Bivio::UI::View->execute accepts a string_ref (used for testing)
+  * Bivio::Util::LinuxConfig->add_sendmail_http_agent added
   * Bivio::Util::SQL->ddl_files accepts base names (see
     Bivio::PetShop::Util
   * Bivio::Test::Reply added
