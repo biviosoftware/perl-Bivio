@@ -53,10 +53,10 @@ my($_LOADED_ALL_PROPERTY_MODELS);
 
 =head2 static get_instance(any class) : Bivio::Biz::Model
 
-Returns the singleton for I<class>.  If I<class> is supplied,
-it may be just the simple name, i.e. without C<Bivio::Biz::Model::> prefix,
-and it will be dynamically loaded if need be.  I<class> may
-also be an instance of a model.
+Returns the singleton for I<class>.  If I<class> is supplied, it may be just
+the simple name or a fully qualified class name.  It will be loaded with
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Model> map.
+I<class> may also be an instance of a model.
 
 May not be called on anonymous Models without I<class> argument.
 
@@ -213,7 +213,7 @@ of args.
 sub die {
     my($self, @args) = @_;
     $self->throw_die('DIE', {
-	message => Bivio::IO::Alert->die(@args),
+	message => Bivio::Die->die(@args),
 	program_error => 1,
     },
 	    caller);
