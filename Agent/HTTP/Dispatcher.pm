@@ -49,6 +49,7 @@ use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::AdminController;
 use Bivio::Agent::HTTP::ClubSetupController;
 use Bivio::Agent::HTTP::MessageController;
+use Bivio::Biz::TestModel;
 use Bivio::IO::Trace;
 use Bivio::UI::Admin::UserListView;
 use Bivio::UI::Admin::UserView;
