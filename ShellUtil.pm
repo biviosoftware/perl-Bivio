@@ -180,8 +180,8 @@ The default values are:
 	input => ['Line', '-'],
 	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
-	realm => ['Name', undef],
-	user => ['Name', undef],
+	realm => ['Line', undef],
+	user => ['Line', undef],
         output => ['Line', undef],
     }
 
@@ -208,8 +208,8 @@ sub OPTIONS {
 	input => ['Line', '-'],
 	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
-	realm => ['Name', undef],
-	user => ['Name', undef],
+	realm => ['Line', undef],
+	user => ['Line', undef],
         output => ['Line', undef],
     };
 }
