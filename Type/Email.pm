@@ -25,18 +25,62 @@ use Bivio::Type::Line;
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::Email> nothing implemented at the momemnt...
+C<Bivio::Type::Email> simple syntax checking on email addresses.
 
 =cut
 
 #=IMPORTS
+use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+# Borrowed from Bivio::Mail::Incoming.  Should really share code
+my($_822_ATOM) = '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
+my($_822_DOTTED_ATOMS) = "$_822_ATOM(?:\\.$_822_ATOM)*";
+my($_822_ATOM_ONLY_ADDR) = "$_822_DOTTED_ATOMS\@$_822_DOTTED_ATOMS";
+my($_822_DOMAIN_LITERAL) = '\\[(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^][\\\\])*)\\]';
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : array
+
+Returns C<undef> if the name is empty or zero length.
+Checks syntax and returns L<Bivio::TypeError|Bivio::TypeError>.
+
+=cut
+
+sub from_literal {
+    my($proto, $value) = @_;
+    return undef unless defined($value);
+    # Leave middle spaces, because user can't have them
+    $value =~ s/^\s+|\s+$//g;
+    return undef unless length($value);
+    return (undef, Bivio::TypeError::TOO_LONG())
+	    if length($value) > $proto->get_width;
+    # We always force to lower case to ensure values get into the
+    # database that can be searchable.
+    $value = lc($value);
+    # Must match a simple dotted atom address
+#TODO: parse out address and try to do a DNS resolution?
+#      I checked out Net::DNS, but it doesn't seem like it can
+#      handle timeouts properly.  (No way to stop the query once
+#      started(?)).  Anyway, we need a way to avoid entering bogus
+#      addresses.  The best way would be to mail the user the password. 
+#      I don't know if we could sustain this in the beginning.
+    return $value if $value =~ /^$_822_ATOM_ONLY_ADDR$/os;
+    # Give a reasonable error message
+    # We don't accept domain literal addresses?
+    return (undef, Bivio::TypeError::EMAIL_DOMAIN_LITERAL())
+	    if /$_822_DOMAIN_LITERAL/os;
+    # Must be qualified
+    return (undef, Bivio::TypeError::EMAIL_UNQUALIFIED())
+	    unless /\@/;
+    # Some other error
+    return (undef, Bivio::TypeError::EMAIL());
+}
 
 #=PRIVATE METHODS
 
