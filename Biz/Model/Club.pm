@@ -102,11 +102,11 @@ sub cascade_delete {
     # delete files
     Bivio::Biz::Model::File->cascade_delete($realm);
 
-    # Delete all accounting and shadow users
-    $self->delete_instruments_and_transactions();
+    # Delete all accounting
+    $self->delete_transactions_instruments_shadow_users();
 
     # Delete all from tables which are used by accounting and
-    # aren't deleted by delete_instruments_and_transactions
+    # aren't deleted by above.
     _delete_all($id, qw(realm_user_t realm_account_t));
 
     # Delete the club and then the realm
@@ -128,8 +128,10 @@ This "cleans the slate" for the club books.
 sub delete_instruments_and_transactions {
     my($self) = @_;
     my($id) = $self->get('club_id');
-
     my($req) = $self->get_request;
+
+    # This makes sure you don't load another club and try to delete it
+    # while operating in a different auth_realm.
     die("can't delete outside of auth_realm")
 	    unless $id == $req->get('auth_id');
 
@@ -146,20 +148,6 @@ sub delete_instruments_and_transactions {
                 DELETE FROM '.$table.'
                 WHERE realm_id=?',
 		[$id]);
-    }
-
-    # delete realm's existing shadow members
-    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-    my($user) = Bivio::Biz::Model::User->new($req);
-    my($list) = Bivio::Biz::Model::RealmUserList->new($req);
-    $list->load_all;
-    while ($list->next_row) {
-	next unless $list->is_shadow_user;
-
-	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
-	$realm_user->delete;
-	$user->unauth_load(user_id => $list->get('RealmUser.user_id'));
-	$user->cascade_delete;
     }
 
     return;
@@ -181,7 +169,8 @@ sub delete_member_by_name {
 
     # Find user
     my($user) = Bivio::Biz::Model::RealmOwner->new($req);
-    $user->unauth_load_or_die(name => $member);
+    $user->unauth_load_or_die(name => $member,
+	   realm_type => Bivio::Auth::RealmType::USER());
     my($user_id) = $user->get('realm_id');
 
     # If has txns, can't delete.
@@ -196,6 +185,54 @@ sub delete_member_by_name {
     $realm_user->load(
 	    realm_id => $id, user_id => $user_id);
     $realm_user->delete();
+    return;
+}
+
+=for html <a name="delete_shadow_users"></a>
+
+=head2 delete_shadow_users()
+
+Deletes the shadow users for this club.
+
+=cut
+
+sub delete_shadow_users {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+    # This makes sure you don't load another club and try to delete it
+    # while operating in a different auth_realm.
+    die("can't delete outside of auth_realm")
+	    unless $self->get('club_id') == $req->get('auth_id');
+
+    # delete realm's existing shadow members
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
+    my($list) = Bivio::Biz::Model::RealmUserList->new($req);
+    $list->load_all;
+    while ($list->next_row) {
+	next unless $list->is_shadow_user;
+
+	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
+	$realm_user->cascade_delete;
+	$user->unauth_load(user_id => $list->get('RealmUser.user_id'));
+	$user->cascade_delete;
+    }
+    return;
+}
+
+=for html <a name="delete_transactions_instruments_shadow_users"></a>
+
+=head2 delete_transactions_instruments_shadow_users()
+
+Deletes transactions, instruments, and shadow users.
+
+=cut
+
+sub delete_transactions_instruments_shadow_users {
+    my($self) = @_;
+    $self->delete_instruments_and_transactions;
+    $self->delete_shadow_users;
     return;
 }
 

@@ -98,6 +98,24 @@ sub MEMBER_ROLES {
 
 =cut
 
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes the user from the realm including any invites.
+Does not delete transactions or tax tables in the realm.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+    my($realm_id, $user_id) = $self->get('realm_id', 'user_id');
+    my($invite) = Bivio::Biz::Model::RealmInvite->new($self->get_request);
+    $invite->unauth_load(realm_id => $realm_id, realm_user_id => $user_id);
+    $invite->delete();
+    return $self->delete();
+}
+
 #TODO: Add code to make sure don't delete last admin.
 #      See ClubUserForm.  Throw type error on field and wille
 #      be picked up by form.
