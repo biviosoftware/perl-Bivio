@@ -234,7 +234,7 @@ sub format_uri_for_prev_page {
 
 =for html <a name="format_uri_for_this"></a>
 
-=head2 static format_uri_for_this(hash_ref this_row, Bivio::SQL::Support support) : string
+=head2 static format_uri_for_this(Bivio::SQL::Support support, hash_ref this_row) : string
 
 Generates the query string (URL-encoded) for the primary key
 of I<this_row> using the current query parameters.
@@ -244,7 +244,7 @@ May be called statically iwc the version is pulled from support.
 =cut
 
 sub format_uri_for_this {
-    my($self, $this_row, $support) = @_;
+    my($self, $support, $this_row) = @_;
     my(%attrs) = ref($self) ? %{$self->internal_get()} :
 	    (version => $support->get('version'));
     $attrs{this} = $this_row;
@@ -254,7 +254,7 @@ sub format_uri_for_this {
 
 =for html <a name="format_uri_for_this_child"></a>
 
-=head2 format_uri_for_this_child(hash_ref this_row, Bivio::SQL::Support support) : string
+=head2 format_uri_for_this_child(Bivio::SQL::Support support, hash_ref this_row) : string
 
 Generates the query string (URL-encoded) for the primary key
 of I<this_row> as the parent_id.  There is no page number.
@@ -262,7 +262,7 @@ of I<this_row> as the parent_id.  There is no page number.
 =cut
 
 sub format_uri_for_this_child {
-    my($self, $this_row, $support) = @_;
+    my($self, $support, $this_row) = @_;
     my(%attrs) = %{$self->internal_get()};
 #TODO: Probably need a check that this is really a primary id
 #TODO: Version in query is incorrect here.  Should be for child...
