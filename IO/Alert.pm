@@ -43,7 +43,7 @@ BEGIN {
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
     $_PACKAGE = __PACKAGE__;
     $_LOGGER = \&_log_stderr;
-    $_DEFAULT_MAX_ARG_LENGTH = 128;
+    $_DEFAULT_MAX_ARG_LENGTH = 256;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_WANT_PID = 0;
     $_STACK_TRACE_DIE = 0;
@@ -65,7 +65,7 @@ Bivio::IO::Config->register({
     'stack_trace_warn' => 0,
     'log_facility' => 'daemon',
     'log_name' => $0,
-    'max_arg_length' => 128,
+    'max_arg_length' => $_DEFAULT_MAX_ARG_LENGTH,
     'want_stderr' => 0,
     'syslog_socket' => 'unix',
     'want_pid' => 0,
@@ -99,7 +99,7 @@ If writing to C<Sys::Syslog>, the facility to use.
 
 If writing to C<Sys::Syslog>, the name of the server.
 
-=item max_arg_length : int [128]
+=item max_arg_length : int [256]
 
 Maximum length of warning message components, i.e. arguments to
 L<die|"die"> and L<warn|"warn">.

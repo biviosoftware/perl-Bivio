@@ -41,6 +41,7 @@ use Bivio::IO::Config;
 #use vars ($_TRACE);
 #Bivio::IO::Trace->register;
 #my($_PACKAGE) = __PACKAGE__;
+my($_ORACLE_HOME);
 Bivio::IO::Config->register({
     'ORACLE_HOME' => Bivio::IO::Config->REQUIRED,
     Bivio::IO::Config->NAMED => {
@@ -74,6 +75,9 @@ If an error is encountered, die is called.
 sub connect {
     my($proto, $database) = @_;
     my($cfg) = Bivio::IO::Config->get($database);
+#TODO: Is this really true
+    # Mod_perl wipes out %ENV on each request, it seems...
+    $ENV{ORACLE_HOME} ||= $_ORACLE_HOME;
     my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
 	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
     return $self;
@@ -97,7 +101,7 @@ sub connect {
 
 sub configure {
     my(undef, $cfg) = @_;
-    $ENV{ORACLE_HOME} = $cfg->{ORACLE_HOME};
+    $_ORACLE_HOME = $cfg->{ORACLE_HOME};
     return;
 }
 

@@ -1,0 +1,247 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-societas-start - start all the servers for Societas
+
+=head1 SYNOPSIS
+
+b-societas-start [-xterm] [-tmp] [-n] file-root
+
+=head1 DESCRIPTION
+
+B<b-societas-start> starts the necessary servers to serve societas.
+
+The directory <file-root> must contain the files to be served
+by L<b-file-server>.
+
+The command will output the root URL being served by
+L<b-http-dispatcher> and how to invoke L<b-sendmail-agent>
+to pass mail to L<b-mail-dispatcher>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-n>
+
+Don't actually run the servers, but print out the commands that
+would be executed and the configuration file which would be
+generated.
+
+=item B<-tmp>
+
+Creates a temporary directory F</tmp/societas$$> from which
+the programs will be run.  After the execution, the entire
+directory will be cleaned up.
+
+=item B<-xterm>
+
+Start the programs in separate xterms.  The xterm "names" will
+be the program names, so you can set up your ~/.Xdefaults to
+configure the geometry for each window separately.
+
+=back
+
+=cut
+
+#=IMPORTS
+use Bivio::IO::Config;
+use Bivio::IO::Alert;
+use Cwd ();
+
+#=VARIABLES
+
+sub main {
+    my(@argv) = @_;
+    $> == 0 && die('this program cannot be run as root');
+    Bivio::IO::Config->initialize(\@argv);
+    my($cmd_fmt) = '"$prog $arg"';
+    my($tmp);
+    my($file_root);
+    my($execute) = 1;
+    local($_);
+    while (@argv) {
+	$_ = shift(@argv);
+	/^-x(term)?$/
+		&& ($cmd_fmt = '"xterm -name $prog -e $prog $arg"', next);
+	/^-t(mp)?$/ && ($tmp = "/tmp/societas$$", next);
+	/^-n/ && ($execute = 0, next);
+	/^-/ && &_usage("unknown option \"$_\"");
+	defined($file_root) && &_usage('too many arguments');
+	$file_root = $_;
+    }
+    defined($file_root) && -d $file_root
+	    || &_usage('file server root must be supplied');
+    my($pwd) = &Cwd::cwd();
+    $file_root =~ s!^([^/])!$pwd/$1!;
+    if ($tmp) {
+	if ($execute) {
+	    mkdir($tmp, 0755) || die("mkdir $tmp: $!");
+	    chdir($tmp) || die("chdir $tmp: $!");
+	}
+	else {
+	    print STDOUT "Creating and cd'ing to $tmp\n";
+        }
+    }
+    my(%processes, $server);
+    $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{INT} = sub {
+	my($sig) = @_;
+	print STDERR "Caught SIG$sig--shutting down\n";
+	kill('KILL', keys %processes);
+	$execute && $tmp && chdir('/') && system("rm -rf $tmp");
+	exit(1);
+    };
+    $tmp || system('rm -f bivio[0-9]*.conf bmd[0-9]*');
+    my($conf) = $tmp ? "$tmp/bivio.conf" : "$pwd/bivio$$.conf";
+    $ENV{'BIVIO_CONF'} = $conf;
+    my($http_port) = 10000 + $> * 10;
+    my($file_port) = $http_port + 1;
+    my($mail_port) = ($tmp || $pwd) . "/bmd$$";
+    my($host) = `hostname`;
+    my($user) = getpwuid($>) || $>;
+    chop($host);
+    $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
+    print STDERR "http://$host:$http_port/\n",
+	    "b-sendmail-agent user $mail_port x x < input\n";
+    unless ($execute) {
+	print STDOUT "export BIVIO_CONF=$conf\n";
+	$conf = '&STDOUT';
+    }
+    open(OUT, ">$conf") || die("open $conf: $!");
+    while (<DATA>) {
+	# Yup, want an extra "e" to get double interpolation.  Kewl, huh?
+	s/<(\$\w+)>/$1/eeg;
+    }
+    continue {
+	(print OUT) || die("write $conf: $!");
+    }
+    close(OUT) || die("close $conf: $!");
+    close(DATA);
+    foreach $server (qw(b-file-server:file
+                   b-mail-dispatcher:mail
+                   b-http-dispatcher:http)) {
+	my($prog, $arg) = split(/:/, $server);
+	if ($execute) {
+	    my($pid) = fork;
+	    defined($pid) || die("fork: $!");
+	    if ($pid) {
+		$processes{$pid} = $prog;
+		print STDERR "[$pid] $prog\n";
+		next;
+	    }
+	}
+	# interpolate $prog and $arg in $cmd_fmt
+	my($cmd) = eval $cmd_fmt;
+	if ($execute) {
+	    exec($cmd);
+	    die("exec $cmd: $!");
+	}
+	else {
+	    print STDOUT "Starting: $cmd\n";
+	}
+    }
+    $execute || return 0;
+    my($pid);
+    while (($pid = wait) > 0) {
+	print STDERR "$pid: $processes{$pid}: exitted\n";
+    }
+    print STDERR "All servers exitted\n";
+    return 1;
+}
+
+sub _usage {
+    my($msg) = join('', @_);
+    print STDERR <<"EOF";
+$0: $msg
+usage: $0 [-tmp] [-xterm] [-n] file-root
+EOF
+    exit(1);
+}
+
+&main(@ARGV);
+
+=head1 X CONFIGURATION
+
+The B<-xterm> options will create three windows.  The following
+example configures the windows to be on the right hand side,
+stacked one on top of the other.  The fonts are small.
+
+    b-file-server*geometry: 80x22-0+0
+    b-mail-dispatcher*geometry: 80x22-0+250
+    b-http-dispatcher*geometry: 80x22-0+500
+    b-file-server*font: *-courier-medium-r-normal--10-*-iso8859-1
+    b-mail-dispatcher*font: *-courier-medium-r-normal--10-*-iso8859-1
+    b-http-dispatcher*font: *-courier-medium-r-normal--10-*-iso8859-1
+
+
+=head1 SEE ALSO
+
+Bivio::IO::Config, b-mail-dispatcher, b-file-server, b-http-dispatcher
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
+__DATA__
+use strict;
+{
+    'Bivio::IPC::Client' => {
+	'file' => {
+	    'addr' => '<$host>',
+	    'port' => '<$file_port>',
+	},
+	'mail' => {
+	    'proto' => 'unix',
+	    'port' => '<$mail_port>',
+	},
+    },
+    'Bivio::File::Server' => {
+	'file' => {
+	    'root' => '<$file_root>',
+	},
+    },
+    'Bivio::IPC::Server' => {
+	'file' => {
+	    'port' => '<$file_port>',
+	},
+	'mail' => {
+	    'proto' => 'unix',
+	    'port' => '<$mail_port>',
+	},
+    },
+    'Bivio::Ext::DBI' => {
+	'ORACLE_HOME' => '/usr/local/oracle/product/8.0.5',
+	'database' => 'surf_test',
+	'user' => '<$user>',
+	'password' => 'bivio,ho',
+    },
+    'Bivio::IO::Alert' => {
+	'stack_trace_die' => 1,
+	'stack_trace_warn' => 0,
+	'want_stderr' => 1,
+	'want_pid' => 1,
+	'intercept_die' => 1,
+	'intercept_warn' => 1,
+    },
+    'Bivio::IO::Trace' => {
+	'package_filter' => '/Bivio/',
+    },
+    'main' => {
+	'http' => {
+	    'port' => '<$http_port>',
+	},
+    },
+};

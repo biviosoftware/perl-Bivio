@@ -270,7 +270,7 @@ sub initialize {
 	# If we are setuid or setgid or as root, then don't initialize from
 	# environment variables or files in the current directory.
 	# /etc/bivio.conf is last resort if the file doesn't exist.
-	$file = $ENV{BIVIO_CONF} || 'bivio.conf';
+	$file = $ENV{'BIVIO_CONF'} || 'bivio.conf';
 	unless (-f $file && $> != 0 && $not_setuid) {
 	    $file = '/etc/bivio.conf';
 	}
@@ -351,7 +351,7 @@ sub register {
 	    "&$pkg\::configure not defined");
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
-    $_INITIALIZED && &_configure($pkg);
+    $_INITIALIZED && &{\&{$pkg . '::configure'}}($pkg, &_get_pkg($pkg));
     return;
 }
 

@@ -1,0 +1,240 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-http-dispatcher - starts Apache running Bivio::Agent::HTTP::Dispatcher
+
+=head1 SYNOPSIS
+
+b-http-dispatcher [--config] [server-name]
+b-http-dispatcher [--config] port
+
+=head1 DESCRIPTION
+
+B<b-http-dispatcher> is used to run L<httpd|httpd> in single user mode
+with a dynamically created configuration file.
+
+Logs are written to stdout.
+
+=cut
+
+#=IMPORTS
+use Bivio::IO::Config;
+use Bivio::IO::Alert;
+use Cwd ();
+
+#=VARIABLES
+my($_APACHE_HOME) = '/usr/local/apache';
+
+sub main {
+    my(@argv) = @_;
+    Bivio::IO::Config->initialize(\@argv);
+    my($port);
+    if (int(@argv) >= 1 && $argv[0] =~ /^\d+$/) {
+	$port = $argv[0];
+    }
+    else {
+	Bivio::IO::Config->register({
+	    Bivio::IO::Config->NAMED => {
+		'port' => Bivio::IO::Config->REQUIRED,
+	    },
+	});
+	my($cfg) = Bivio::IO::Config->get(@argv);
+	$port = $cfg->{port};
+    }
+    my($conf) = "httpd$$.conf";
+    system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
+    -d 'html/i' || system('cvs checkout html/i');
+    &symlink("$_APACHE_HOME/libexec", 'libexec');
+    my($user) = getpwuid($>) || $>;
+    my($group) = getgrgid($)) || $);
+    my($pwd) = &Cwd::cwd();
+    my($host) = `hostname`;
+    my($bivio_conf) = $ENV{'BIVIO_CONF'}
+	    ? "PerlSetEnv BIVIO_CONF $ENV{'BIVIO_CONF'}" : '';
+    chop($host);
+    $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
+    local($_);
+    open(OUT, "> $conf") || die("open $conf: $!");
+    while (<DATA>) {
+	# Yup, want an extra "e" to get double interpolation.  Kewl, huh?
+	s/<(\$\w+)>/$1/eeg;
+    }
+    continue {
+	(print OUT) || die("write $conf: $!");
+    }
+    close(OUT) || die("close $conf: $!");
+    close(DATA);
+    exec("$_APACHE_HOME/bin/httpd", '-X', '-f', "$pwd/$conf");
+    die("$_APACHE_HOME/bin/httpd: $!");
+}
+
+sub symlink {
+    my($file, $link) = @_;
+    -e $link || symlink($file, $link) || die("symlink($file, $link): $!");
+}
+
+sub configure {
+}
+
+&main(@ARGV);
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item $PERLLIB
+
+Must point to the appropriate development directory if you are
+starting the server for testing your own copy.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item html/i
+
+The command "cvs checkout html/i" will be executed in the current
+directory, if the directory doesn't already exist.
+
+=item httpd.lock.*
+
+is removed and rewritten with new pid
+
+=item httpd.pid
+
+is removed and rewritten with new pid
+
+=item httpd[0-9]*.conf
+
+is removed and rewritten with new pid
+
+=item libexec
+
+is linked to F</usr/local/apache/libexec> if it already doesn't exist.
+
+=back
+
+=head1 SEE ALSO
+
+Bivio::IO::Config, Bivio::Agent::HTTP::Dispatcher, httpd, mod_perl
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
+__DATA__
+#
+# This file was dynamically generated
+#
+ResourceConfig /dev/null
+AccessConfig /dev/null
+
+#
+# Configure modules minimally
+#
+LoadModule access_module      libexec/mod_access.so
+LoadModule config_log_module  libexec/mod_log_config.so
+LoadModule agent_log_module   libexec/mod_log_agent.so
+LoadModule referer_log_module libexec/mod_log_referer.so
+LoadModule mime_module        libexec/mod_mime.so
+LoadModule dir_module         libexec/mod_dir.so
+LoadModule setenvif_module    libexec/mod_setenvif.so
+
+ClearModuleList
+AddModule mod_access.c
+AddModule mod_log_config.c
+AddModule mod_log_agent.c
+AddModule mod_log_referer.c
+AddModule mod_mime.c
+AddModule mod_dir.c
+AddModule mod_so.c
+AddModule mod_setenvif.c
+AddModule mod_perl.c
+
+#
+# Server
+#
+ServerName <$host>
+ServerType standalone
+Port <$port>
+User <$user>
+Group <$group>
+ServerAdmin <$user>
+UseCanonicalName on
+# Single server operates strangely wrt KeepAlive
+KeepAlive off
+
+#
+# Perl
+#
+PerlWarn on
+# Can't be on and use PERLLIB.
+PerlFreshRestart on
+<$bivio_conf>
+PerlModule Bivio::Agent::HTTP:Dispatcher
+
+#
+# Files
+#
+ServerRoot <$pwd>
+DocumentRoot <$pwd>/html
+PidFile httpd.pid
+ErrorLog |cat
+# Possible values include: debug, info, notice, warn, error, crit,
+# alert, emerg.
+LogLevel debug
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+CustomLog |cat combined
+TypesConfig /etc/mime.types
+DefaultType text/html
+LockFile httpd.lock
+
+<Directory />
+Order deny,allow
+Deny from all
+</Directory>
+
+<Directory <$pwd>/html>
+AllowOverride None
+# Always FollowSymLinks for performance
+Options FollowSymLinks
+Allow from all
+</Directory>
+
+<LocationMatch "^/\w{3,}($|/)">
+AuthName bivio:<$port>
+AuthType Basic
+SetHandler perl-script
+PerlHandler Bivio::Agent::HTTP::Dispatcher
+</LocationMatch>
+
+<Location /i>
+AllowOverride None
+# Always FollowSymLinks for performance
+Options FollowSymLinks
+Allow from all
+</Location>
+
+#
+# Browsers
+#
+BrowserMatch "Mozilla/2" nokeepalive
+BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
+BrowserMatch "RealPlayer 4\.0" force-response-1.0
+BrowserMatch "Java/1\.0" force-response-1.0
+BrowserMatch "JDK/1\.0" force-response-1.0

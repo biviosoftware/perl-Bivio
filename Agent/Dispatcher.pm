@@ -29,109 +29,50 @@ which registered for that request.
 
 =cut
 
-=head1 CONSTANTS
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+
+=head1 FACTORIES
 
 =cut
 
-sub _DEFAULT_HTTP_CONTROLLER_NAME {
-    return 'messages';
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::Agent::Dispatcher
+
+Creates a new dispatcher.
+
+=cut
+
+sub new {
+    my($self) = &Bivio::UNIVERSAL::new(@_);
+    $self->{$_PACKAGE} = {
+	'controllers' => {},
+    };
+    return $self;
 }
-
-#=IMPORTS
-use Bivio::Agent::HTTP::SiteStart;
-
-#=VARIABLES
-
-# The controller implementations array lookup, keyed by name.
-#
-my(%_CONTROLLERS);
-
 =head1 METHODS
 
-=cut
+=for html <a name="process_request"></a>
 
-=for html <a name="handler"></a>
+=head2 process_request(Bivio::Agent::Request req)
 
-=head2 static handler(Apache::Request r) : int
-
-Handler called by mod_perl, creates a HTTP::Request which wraps
-Apache::Request. Then it invokes the appropriate Controller to handle
-the request.
-
-=cut
-
-sub handler {
-    my($r) = @_;
-
-    Bivio::Agent::HTTP::SiteStart->init();
-
-    my($request) = Bivio::Agent::HTTP::Request->new($r,
-	   _DEFAULT_HTTP_CONTROLLER_NAME());
-
-    _process_request($request);
-#    eval '_process_request($request);' || die($@);
-
-    return $request->get_http_return_code();
-}
-
-=for html <a name="mhonarc_addhook"></a>
-
-=head2 static mhonarc_addhook(int index, string filename) : int
-
-Called by mhamain.pl:output_mail (MHonArc/lib) after the message has been
-written in html format.
+Looks up and invokes the controller for the specified request. If a
+controller exists for the message, then the the controller's
+handle_request() method is invoked. If multiple controllers have
+registered using the same name, then each is invoked until one of
+them handles the request.
 
 =cut
 
-sub mhonarc_addhook {
-    my($index, $filename) = @_;
-
-    die("not implemented yet");
-
-    #my($request) = MailRequest->new($index, $filename);
-    #_process_requesut($request);
-    #return $request->get_mail_return_code();
-}
-
-=for html <a name="register_controller"></a>
-
-=head2 static register_controller(String name, Controller controller)
-
-Controller implementation registration. Multiple controllers can be
-registered under the same name. Each controller will be invoked until
-one of them handles the request.
-
-=cut
-
-sub register_controller {
-    my($name, $controller) = @_;
-
-    if (! $_CONTROLLERS{$name}) {
-
-	# create a list if it is a new name
-	$_CONTROLLERS{$name} = [];
-    }
-    my($list) = $_CONTROLLERS{$name};
-    push(@$list, $controller);
-}
-
-# _process_request(Request req)
-#
-# Looks up and invokes the controller for the specified request. If a
-# controller exists for the message, then the the controller's
-# handle_request() method is invoked. If multiple controllers have
-# registered using the same name, then each is invoked until one of
-# them handles the request.
-#
-sub _process_request {
-    my($req) = @_;
-
+sub process_request {
+    my($self, $req) = @_;
+    my($controllers) = $self->{$_PACKAGE}->{controllers};
     # make sure the request isn't already in error
     if ($req->get_state() != Bivio::Agent::Request::NOT_HANDLED ) {
 	return;
     }
-
-    my($list) = $_CONTROLLERS{$req->get_controller_name()};
+    my($list) = $controllers->{$req->get_controller_name()};
 
     # iterate the controller list until one of them handles the request
     if ($list) {
@@ -141,7 +82,35 @@ sub _process_request {
 	    return if $req->get_state() != Bivio::Agent::Request::NOT_HANDLED;
 	}
     }
+    return;
 }
+
+=for html <a name="register_controller"></a>
+
+=head2 static register_controller(string name, Bivio::Agent::Controller controller)
+
+Controller implementation registration. Multiple controllers can be
+registered under the same name. Each controller will be invoked until
+one of them handles the request.
+
+=cut
+
+sub register_controller {
+    my($self, $name, $controller) = @_;
+    my($controllers) = $self->{$_PACKAGE}->{controllers};
+    UNIVERSAL::isa($controller, 'Bivio::Agent::Controller')
+		|| die("not a controller");
+    if (!$controllers->{$name}) {
+	# create a list if it is a new name
+	$controllers->{$name} = [$controller];
+    }
+    else {
+	push(@{$controllers->{$name}}, $controller);
+    }
+    return;
+}
+
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
