@@ -106,43 +106,6 @@ sub format_mail {
 
 #=PRIVATE METHODS
 
-# _init() : 
-#
-# Initializes the char_table in fields.
-# This table holds all the mappings from 'funky' characters
-# to their HTML equivalents (i.e. '<', '>', '&', etc).
-#
-#TODO change this to be a static data structure. No need to pay
-# the initialization costs on every format_item();
-sub _init {
-    my($chars) = {};
-    my $i = 34;
-    my($key, $val);
-    while($i < 45){
-	$key = chr($i);
-	$val = "&#" . $i . ";";
-	eval "\$chars->{\$key}=\$val;";
-	$i++;
-    }
-    $i = 91;
-    while($i < 97){
-	$key = chr($i);
-	$val = "&#" . $i . ";";
-	eval "\$chars->{\$key}=\$val;";
-	$i++;
-    }
-    $i=123;
-    while($i < 256){
-	$key = chr($i);
-	$val = "&#" . $i . ";";
-	eval "\$chars->{\$key}=\$val;";
-	$i++;
-    }
-    $chars->{chr(60)} = "&lt;";
-    $chars->{chr(62)} = "&gt;";
-    return $chars;
-}
-
 # _parse(IO::Handle in, IO::Handle out) : 
 #
 # parses the in handle and writes modified lines
@@ -158,8 +121,6 @@ sub _parse {
     $out->print("\r\n<!DOCTYPE HTML PUBLIC");
     $out->print("\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n");
     $out->print("<HTML><HEAD></HEAD><BODY BGCOLOR=\"#CCCCCC\">");
-    
-#TODO don't hardcode the bg color.    
     my $s='';
     while(!$in->eof){
 	$s .= $in->getline();
