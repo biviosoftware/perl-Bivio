@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Bivio::UI::Mail::Widget::Message no longer requires the recipients
+  attribute to filled. If no recipients are specified, the attribute is
+  filled with the contents of to and cc.
+
+  Revision 2.5  2004/02/13 23:43:42  david
+  * Bivio::Biz::Model::QuerySearchBaseForm->internal_pre_execute loads
+  the default value of any fields that were not present on the form
+  submission.
+  * Bivio::Biz::Model::QuerySearchBaseForm->load_default_value is a
+  convenience method that loads the default value into the given field.
+  * Bivio::Test::Language::HTTP->verify_options verifies that a select
+  field has a given set of options.
   * Bivio::Test::Language::HTTP->verify_table tests to see if given
   table has a certain set of rows.
   * Bivio::Test::Language::HTTP->verify_uri can now take a regular expression.
