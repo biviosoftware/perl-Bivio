@@ -1,13 +1,13 @@
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Model::UserCreateForm;
+package Bivio::Biz::Model::UserCreateForm;
 use strict;
-$Bivio::Model::UserCreateForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Model::UserCreateForm::VERSION;
+$Bivio::Biz::Model::UserCreateForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::UserCreateForm::VERSION;
 
 =head1 NAME
 
-Bivio::Model::UserCreateForm - create a new user
+Bivio::Biz::Model::UserCreateForm - create a new user
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Model::UserCreateForm;
+    use Bivio::Biz::Model::UserCreateForm;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::Biz::FormModel>
 =cut
 
 use Bivio::Biz::FormModel;
-@Bivio::Model::UserCreateForm::ISA = ('Bivio::Biz::FormModel');
+@Bivio::Biz::Model::UserCreateForm::ISA = ('Bivio::Biz::FormModel');
 
 =head1 DESCRIPTION
 
-C<Bivio::Model::UserCreateForm> creates a new user.  Subclasses may want
+C<Bivio::Biz::Model::UserCreateForm> creates a new user.  Subclasses may want
 to override this form.
 
 =cut
