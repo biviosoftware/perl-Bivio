@@ -114,11 +114,13 @@ used.
 
 =item muri :
 
-=item cimo : eklubs
+=item cimo :
 
 =item dubeli : fool
 
 =item allwomeninvest : AllWomenInvest (production)
+
+=item ekclubs : Eklubs (production)
 
 =item ollon :
 
