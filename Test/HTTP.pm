@@ -49,52 +49,6 @@ Bivio::IO::Config->register({
 =cut
 
 
-=for html <a name="click_button"></a>
-
-=head2 static click_button(string target)
-
-Visits page associated with the url for the I<target> button.
-
-=cut
-#TODO Deprecate once new interface is available
-sub click_button {
-    my(undef, $target) = @_;
-    my($board) = Bivio::Test::BulletinBoard->get_current();
-    my($parsed_res) = $board->get('response');
-    die ("Must visit a page before clicking on a button.")
-	    unless (defined $parsed_res);
-    my($path_to_request) = $parsed_res->get_uri('buttons', $target);
-    _trace("Uri for button: $path_to_request") if $_TRACE;
-    $board->get('HTTPUtil')->http_href($path_to_request);
-    return;
-}
-
-=for html <a name="click_imagemenu"></a>
-
-=head2 static click_imagemenu(string target, optional string subtarget)
-
-Visits page associated with the url for the I<target> portion of the imagemenu.
-The optional argument I<subtarget> is used for accessing the expanded part of
-the imagemenu.
-
-=cut
-#TODO: deprecate once new interface is available
-sub click_imagemenu {
-    my(undef, $target, $subtarget) = @_;
-    my($board) = Bivio::Test::BulletinBoard->get_current();
-    my($parsed_res) = $board->get('response');
-    die ("Must visit a page before clicking on imagemenu.")
-	    unless (defined $parsed_res);
-
-    my($path_to_request) = $parsed_res->get_uri(
-	    'imagemenu', $target, $subtarget);
-    _trace("Path for imagemenu: $path_to_request") if $_TRACE;
-
-    $board->get('HTTPUtil')->http_href(
-	    $path_to_request);
-    return;
-}
-
 =for html <a name="dump_analyzer"></a>
 
 =head2 static dump_analyzer()
@@ -147,9 +101,38 @@ sub handle_config {
     return;
 }
 
+=for html <a name="link"></a>
+
+=head2 static link(string label)
+
+Visits the href associated with I<label> on the current page or dies.
+
+=cut
+
+sub link {
+    my($proto, $label) = @_;
+    my($scraper) = Bivio::Test::BulletinBoard->get_current()->get('response');
+
+
+    my($uri) = ($scraper->get('links'))->{$label}->{href};
+
+    die("Label: $label not found amoung page links.") unless (defined $uri);
+    _trace("Label: $label corresponds to: $uri") if $_TRACE; 
+  #  $proto->visit('/'.$uri);
+    return;
+}
+
 =for html <a name="login"></a>
 
-=head2 login(optional string $user, optional string $pass, optional boolean $save)
+=head2 static login(string $user, string $pass, boolean $save)
+
+=cut
+
+=head2 static login(string $user, string $pass)
+
+=cut
+
+=head2 static login()
 
 login is a static wrapper for the object method Login->execute().  It gets the
 current login object from the C<Bivio::Test::BulletinBoard>.  If login
@@ -236,7 +219,7 @@ sub verify_all {
 
 =for html <a name="verify_text"></a>
 
-=head2 verify_text(string text)
+=head2 static verify_text(string text)
 
 Dies if I<text> is not found within the current parsed response.
 
@@ -254,7 +237,7 @@ sub verify_text {
 
 =for html <a name="verify_title"></a>
 
-=head2 verify_title(string $match_title)
+=head2 static verify_title(string $match_title)
 
 Dies if title in current page does not match I<$match_title> (case
 insensitive).
@@ -273,7 +256,7 @@ sub verify_title {
 
 =for html <a name="verify_uri"></a>
 
-=head2 verify_uri(string path)
+=head2 static verify_uri(string path)
 
 Verifies that the uri of the current response contains I<path>.  The specified
 uri should optimally be only the path after the base uri so that this will
