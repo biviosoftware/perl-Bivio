@@ -122,8 +122,9 @@ sub render {
     my($value) = $fields->{value};
 
     # first render initialization
-    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
     unless ($fields->{initialized}) {
+	$fields->{initialized} = 1;
+	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'
 		.$value->to_html($value)
@@ -131,7 +132,6 @@ sub render {
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
 		.">&nbsp;"
 		.$p. Bivio::HTML->escape($self->get('label')).$s;
-	$fields->{initialized} = 1;
     }
 
     $$buffer .= $fields->{prefix}
