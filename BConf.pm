@@ -72,6 +72,9 @@ sub dev {
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
 	    },
+	    'Bivio::IO::Log' => {
+		directory => $pwd,
+	    },
 	    'Bivio::Test::Language::HTTP' => {
 		home_page_uri => "http://$host:$http_port",
 	    },
@@ -333,6 +336,9 @@ sub _base {
 	    want_pid => 0,
 	    want_stderr => 1,
 	    want_time => 1,
+	},
+	'Bivio::IO::Log' => {
+	    directory => '/var/log',
 	},
 	'Bivio::IO::Trace' => {
 	},
