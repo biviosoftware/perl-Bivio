@@ -1789,7 +1789,7 @@ my(@_CFG) = (
         CELEBRITY_MAIL_REPLY
         184
         PROXY
-        DOCUMENT_READ&MAIL_READ
+        DOCUMENT_READ
         pub/?/reply
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailPartList->execute_load_all
@@ -1923,7 +1923,7 @@ my(@_CFG) = (
         CLUB_MAIL_FORWARD
         197
         CLUB
-        MAIL_WRITE
+        MAIL_READ
         ?/mail/forward
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailForwardForm
@@ -1934,7 +1934,7 @@ my(@_CFG) = (
         CELEBRITY_MAIL_FORWARD
         198
         PROXY
-        MAIL_WRITE
+        MAIL_READ
         pub/?/forward
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailForwardForm
