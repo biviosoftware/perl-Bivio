@@ -244,6 +244,7 @@ my(@_CFG) = (
         MAIL_READ
         ?/mail-msg
         Bivio::Biz::Model::MailList
+        Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Club::MailDetail
     )],
     # These two tasks must have the same "first part".  The string
@@ -992,6 +993,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         pub/?/msg
         Bivio::Biz::Model::MailList
+        Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Celebrity::MailDetail
     )],
     # No actions, just a token for authentication action
