@@ -780,6 +780,8 @@ my(@_CFG) = (
         hm/contact.html
         Bivio::Biz::Action::HTTPDocument
     )],
+    # Redirect to MY_SITE by default, because the user may not be 
+    # logged in and USER_HOME requires an auth_realm.
     [qw(
 	REALM_REDIRECT
 	84
@@ -787,7 +789,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         goto
         Bivio::Biz::Action::RealmRedirect
-        next=USER_HOME
+        next=MY_SITE
     )],
 #85
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
