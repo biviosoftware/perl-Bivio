@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    replaced model->new() with model->new_other()
+  * Bivio::Test::Language::HTTP->verify_local_mail() now treats search
+    email case insensitive
+
+  Revision 2.35  2004/10/01 22:37:44  nagler
+  * Bivio::Agent::HTTP::Request->client_redirect calls throw_quietly to
+    avoid stack traces
+  * Bivio::Agent::Request->server_redirect calls throw_quietly.
+  * Bivio::Biz::FormModel refactored a bit to call methods, instead
+    of subroutines, e.g. $self->VERSION_FIELD instead of VERSION_FIELD()
+  * Bivio::Biz::Model->internal_initialize_local_fields generates
     hash_ref from array_refs for local fields in lists and forms.
   * Bivio::Test::Language::HTTP->verify_local_mail sleeps to allow
     sendmail to deliver the mail
