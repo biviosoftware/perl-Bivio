@@ -70,11 +70,9 @@ my($_DEFAULT_CONFIG) = {
 	stack_trace_error => 1,
     },
     'Bivio::Ext::DBI' => {
-	oracle_home => '/usr/local/oracle/product/8.1.6',
 	database => 'none',
 	user => 'none',
 	password => 'none',
-	connection => 'Bivio::SQL::Connection::Oracle',
     },
     'Bivio::IO::Alert' => {
 	intercept_warn => 1,
