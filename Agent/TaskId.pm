@@ -3034,6 +3034,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberOfflineForm
         Bivio::UI::HTML::Club::MemberTakeOffline
         next=CLUB_ADMIN_USER_LIST
+        help=taking-offline
     )],
     [qw(
         MEMBER_OFFLINE_CONFIRMATION
