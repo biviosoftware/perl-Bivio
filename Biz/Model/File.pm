@@ -413,7 +413,7 @@ sub delete_all_in_volume {
 
 =for html <a name="extract_mime_content_id"></a>
 
-=head2 extract_mime_content_id() : 
+=head2 extract_mime_content_id()
 
 Treats aux_info field as a MIME header to find the content id.
 Returns undef if not available.
