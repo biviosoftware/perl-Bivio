@@ -1126,7 +1126,6 @@ sub put_context_fields {
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	my($fn) = $mi->get_field_name_for_html($k);
-#TODO: CreditCardNumber isn't going to work here.
 	# Convert with to_literal--context->{form} is in raw form
 	$f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
     }
