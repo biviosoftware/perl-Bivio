@@ -129,6 +129,10 @@ sub initialize {
     $fields->{middle} = '</head><body';
     my($bg) = $self->ancestral_get('page_bgcolor', 'page_bg');
     $fields->{middle} .= Bivio::UI::Color->as_html_bg($bg) if $bg;
+    $fields->{middle} .= ' text='.Bivio::UI::Color->as_html('page_text');
+    $fields->{middle} .= ' link='.Bivio::UI::Color->as_html('page_link');
+    $fields->{middle} .= ' alink='.Bivio::UI::Color->as_html('page_link');
+    $fields->{middle} .= ' vlink='.Bivio::UI::Color->as_html('page_vlink');
     $fields->{middle} .= ">\n";
     my($v);
     foreach $v (($fields->{head}, $fields->{body})
