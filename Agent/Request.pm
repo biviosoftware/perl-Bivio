@@ -572,16 +572,30 @@ sub internal_redirect_realm {
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
+#TODO: MOVE THIS INTO MyClubRedirect or some other business logic.
+#      Eventually need specific list.
 		    # Club not found.  Try to redirect to DEMO_REDIRECT
 		    # which must be in GENERAL domain
 		    my($auth_user) = $self->unsafe_get('auth_user');
-		    if (defined($auth_user)) {
-			CORE::die('misconfiguration of DEMO_REDIRECT task')
+#TODO: Total hack.  This stuff needs a good going over...
+		    $self->client_redirect('/demo_club')
+			    unless defined($auth_user);
+		    Bivio::IO::Alert->die(
+			    'misconfiguration of DEMO_REDIRECT task')
 				if Bivio::Agent::TaskId::DEMO_REDIRECT()
 					eq $new_task;
-			$self->client_redirect(
-				Bivio::Agent::TaskId::DEMO_REDIRECT());
-		    }
+		    my($demo_name) = $auth_user->get('name')
+			    .Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
+		    my($demo_realm)
+			    = Bivio::Biz::Model::RealmOwner->new($self);
+		    # Only redirect to personal demo club if found
+		    $self->client_redirect(
+			    Bivio::Agent::TaskId::DEMO_REDIRECT())
+			    if $demo_realm->unauth_load(name => $demo_name);
+#TODO: This is coupled with my_club redirect
+		    # GO TO HOME instead of a club.  He can choose
+		    # realm chooser
+		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
 		}
 		Bivio::Die->die('AUTH_REQUIRED', {
 		    auth_user => undef,

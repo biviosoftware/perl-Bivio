@@ -87,7 +87,7 @@ my(@_CFG) = (
 	4
         GENERAL
         DOCUMENT_READ
-        my_club
+        home
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_HOME
     )],
@@ -110,7 +110,9 @@ my(@_CFG) = (
         hm/tour.html
         Bivio::Biz::Action::HTTPDocument
     )],
-#7
+#TODO: This is only temporary (ha!).  It names the demo_club
+#      as an HTTP_DOCUMENT.  It shouldn't never be executed.
+    #
     [qw(
 	LOGOUT
 	8
@@ -706,7 +708,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::CreateClub
         next=CLUB_CREATED
     )],
-    # Default page for users, see MY_CLUB_REDIRECT
     [qw(
         CLUB_HOME
         70
