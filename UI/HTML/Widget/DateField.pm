@@ -38,6 +38,13 @@ B<Don't use this for DateTime values.>
 
 Allow undef for field, i.e. don't fill in with now.
 
+=item event_handler : Bivio::UI::HTML::Widget []
+
+If set, this widget will be initialized as a child and must
+support a method C<get_html_field_attributes> which returns a
+string to be inserted in this fields declaration.
+I<event_handler> will be rendered before this field.
+
 =item field : string (required)
 
 Name of the form field.
@@ -59,6 +66,12 @@ use Bivio::UI::HTML::Format::DateTime;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
+my(@_ATTRS) = qw(
+    allow_undef
+    event_handler
+    field
+    form_model
+);
 
 =head1 FACTORIES
 
@@ -82,6 +95,19 @@ sub new {
 
 =cut
 
+=for html <a name="accepts_attribute"></a>
+
+=head2 static accepts_attribute(string attr) : boolean
+
+Does the widget accept this attribute?
+
+=cut
+
+sub accepts_attribute {
+    my(undef, $attr) = @_;
+    return grep($_ eq $attr, @_ATTRS);
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -97,6 +123,13 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
     $fields->{allow_undef} = $self->get_or_default('allow_undef', 0);
+
+    # Initialize handler, if any
+    $fields->{handler} = $self->unsafe_get('event_handler');
+    if ($fields->{handler}) {
+	$fields->{handler}->put(parent => $self);
+	$fields->{handler}->initialize;
+    }
     return;
 }
 
@@ -114,41 +147,50 @@ sub render {
     my($form) = $source->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
+#TODO: Merge with Text.  Too much duplicated code.
     # first render initialization
     unless ($fields->{initialized}) {
 	my($type) = $form->get_field_type($field);
 	# Might be a subclass of Bivio::Type::Date
 	my($width) = $type->get_width();
-	$fields->{prefix} = '<input name='
-		.$form->get_field_name_for_html($field)
-		." type=text size=$width maxlength=$width value=\"";
+	$fields->{prefix} = "<input type=text size=$width maxlength=$width";
+	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
+		$field) if $fields->{handler};
+	$fields->{prefix} .= ' name=';
 	$fields->{suffix} = '">';
 	$fields->{initialized} = 1;
     }
 
     # If field in error, just return the value user entered
-    if ($form->get_field_error($field)) {
-	$$buffer .= $fields->{prefix}.$form->get_field_as_html($field)
-		.$fields->{suffix};
-	return;
-    }
-
-    # Default is local_today unless allow_undef set
-    my($value) = $form->get($field);
-    unless (defined($value)) {
-	if ($fields->{allow_undef}) {
-	    $$buffer .= $fields->{prefix}.$fields->{suffix};
-	    return;
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
+	    .' value="';
+ SWITCH:
+    {
+	if ($form->get_field_error($field)) {
+	    $$buffer .= $form->get_field_as_html($field).$fields->{suffix};
+	    last SWITCH;
 	}
-	$value = Bivio::Type::Date->local_today;
+
+	# Default is local_today unless allow_undef set
+	my($value) = $form->get($field);
+	unless (defined($value)) {
+	    if ($fields->{allow_undef}) {
+		$$buffer .= $fields->{suffix};
+		last SWITCH;
+	    }
+	    $value = Bivio::Type::Date->local_today;
+	}
+
+	# We render the date in GMT always.  The only strange case
+	# is when we render the default.  Otherwise, values are
+	# coming from the db which means they are GMT anyway and
+	# have a fixed time component.
+	$$buffer .= Bivio::Type::Date->to_literal($value).$fields->{suffix};
     }
 
-    # We render the date in GMT always.  The only strange case
-    # is when we render the default.  Otherwise, values are
-    # coming from the db which means they are GMT anyway and
-    # have a fixed time component.
-    $$buffer .= $fields->{prefix}.
-	    Bivio::Type::Date->to_literal($value).$fields->{suffix};
+    # Handler is rendered after, because it probably needs to reference the
+    # field.
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
     return;
 }
 
