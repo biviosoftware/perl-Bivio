@@ -145,7 +145,7 @@ sub _check_error_log {
         (/Bivio::Agent::Job::Dispatcher:.*JOB_(START|END)/
                 || /Bivio::SQL::Connection::_get_connection.*reconnecting/
                 || /OpenSSL: error/
-                || /SSL handshake failed/
+                || /SSL handshake (failed|timed out)/
                 || /SSL error on reading data/
                 || /_vti_inf.html/
                 || /_vti_rpc/
