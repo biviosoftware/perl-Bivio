@@ -12,7 +12,7 @@ Bivio::UI::MessageBoard::MessageListView - a list of messages
 
     use Bivio::UI::MessageBoard::MessageListView;
     my($list) = Bivio::Biz::Mail::MessageList->new();
-    $list->find(Bivio::Biz::FindParams->new({club => 100});
+    $list->find(Bivio::Biz::FindParams->new({'club' => 100});
     my($view) = Bivio::UI::MessageBoard::MessageListView->new();
     $view->render($list, $req);
 
@@ -128,7 +128,7 @@ presentation when rendering.
 sub get_nav_links {
     my($self, $model, $req) = @_;
 
-    #TODO: get this from user preferences
+#TODO: get this from user preferences
     my($page_size) = 15;
 
     my($size) = $model->get_result_set_size();

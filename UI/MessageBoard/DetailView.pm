@@ -12,7 +12,7 @@ Bivio::UI::MessageBoard::DetailView - a message detail view
 
     use Bivio::UI::MessageBoard::DetailView;
     my($list) = Bivio::Biz::Mail::MessageList->new();
-    $list->find(Bivio::Biz::FindParams->new({club => 100, id => 20});
+    $list->find(Bivio::Biz::FindParams->new({'club' => 100, 'id' => 20});
     my($view) = Bivio::UI::MessageBoard::DetailView->new();
     $view->render($list, $req);
 
@@ -173,7 +173,7 @@ sub get_nav_links {
 	$_NEXT_LINK->set_url('');
     }
 
-    #TODO: don't show back if invalid index specified, fix 0,1 bug
+#TODO: don't show back if invalid index specified, fix 0,1 bug
 
     my($fp) = $req->get_model_args()->clone();
     $fp->remove('id');
@@ -199,7 +199,7 @@ sub render {
     my($self, $list, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #TODO: need to render from_name, date etc.
+#TODO: need to render from_name, date etc.
 
     my($message) = $list->get_selected_message();
     if ($message) {
@@ -208,6 +208,7 @@ sub render {
     else {
 	$req->print('<font color="red">Could not find message.</font>');
     }
+    return;
 }
 
 #=PRIVATE METHODS
