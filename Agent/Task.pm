@@ -19,8 +19,14 @@ Bivio::Agent::Task - defines the tuple (id, @items)
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Agent::Task::ISA = qw(Bivio::UNIVERSAL);
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
+=cut
+
+use Bivio::Collection::Attributes;
+@Bivio::Agent::Task::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -90,7 +96,6 @@ use Carp ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my(%_ID_TO_TASK) = ();
 my($_INITIALIZED);
 my(%_REDIRECT_DIE_CODES) = (
@@ -140,7 +145,6 @@ will be executed if this enum is thrown.
 
 sub new {
     my($proto, $id, $realm_type, $perm, @items) = @_;
-    my($self) = &Bivio::UNIVERSAL::new($proto);
 
     # Validate $id
     die("id invalid") unless $id->isa('Bivio::Agent::TaskId');
@@ -152,7 +156,7 @@ sub new {
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
-    my($fields) = $self->{$_PACKAGE} = {
+    my($attrs) = {
 	id => $id,
 	realm_type => $realm_type,
 	permission_set => $perm,
@@ -162,7 +166,7 @@ sub new {
     foreach $i (@items) {
 	if ($i =~ /=/) {
 	    # Map item
-	    _parse_map_item($fields, split(/=/, $i, 2));
+	    _parse_map_item($attrs, split(/=/, $i, 2));
 	    next;
 	}
 
@@ -172,29 +176,31 @@ sub new {
 	$method ||= 'execute';
 	Carp::croak($i, ": can't be executed (missing $method method)")
 		unless $c->can($method);
-	$fields->{form_model} = $class
-		unless $fields->{form_model}
+	$attrs->{form_model} = $class
+		unless $attrs->{form_model}
 			|| !$c->isa('Bivio::Biz::FormModel');
 	push(@new_items, [$c, $method]);
     }
 
     # Set form
-    if ($fields->{form_model}) {
+    if ($attrs->{form_model}) {
 	Carp::croak($id->as_string, ": FormModels require \"next=\" item")
-		    unless $fields->{next};
-	$fields->{require_context} = $fields->{form_model}->get_instance
+		    unless $attrs->{next};
+	$attrs->{require_context} = $attrs->{form_model}->get_instance
 		->get_info('require_context');
 	# default cancel to next unless present
-	$fields->{cancel} = $fields->{next} unless $fields->{cancel};
+	$attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
     }
     else {
-	$fields->{require_context} = 0;
+	$attrs->{require_context} = 0;
     }
 
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
-    $fields->{items} = \@new_items;
+    $attrs->{items} = \@new_items;
+    my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
+    $self->set_read_only;
     return $_ID_TO_TASK{$id} = $self;
 }
 
@@ -217,40 +223,23 @@ the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($attrs) = $self->internal_get;
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
 	my($auth_user) = $req->get('auth_user');
 	Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
 		{auth_user => $auth_user, entity => $auth_realm,
-		    auth_role => $auth_role, operation => $fields->{id}});
+		    auth_role => $auth_role, operation => $attrs->{id}});
     }
     my($i);
-    foreach $i (@{$fields->{items}}) {
+    foreach $i (@{$attrs->{items}}) {
 	my($instance, $method) = @$i;
 	$instance->$method($req);
     }
     _commit();
     $req->get('reply')->send($req);
     return;
-}
-
-=for html <a name="get"></a>
-
-=head2 get(string attr, ...) : (any, ...)
-
-Returns the list of attributes specified.
-
-=cut
-
-sub get {
-    my($fields) = shift->{$_PACKAGE};
-    return map {
-	Carp::croak("$_: no such attribute for ", $fields->{id}->as_string)
-		unless exists($fields->{$_});
-	$fields->{$_};
-    } @_;
 }
 
 =for html <a name="get_by_id"></a>
@@ -305,7 +294,7 @@ sub handle_die {
     return unless $proto->isa('Bivio::Agent::HTTP::Request');
 
     # Mapped?
-    my($new_task_id) = $proto->{$_PACKAGE}->{die_actions}->{$die_code};
+    my($new_task_id) = $proto->get('die_actions')->{$die_code};
     unless (defined($new_task_id)) {
 	# Default mapped?
 	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
@@ -389,21 +378,21 @@ sub _commit {
     return;
 }
 
-# _parse_map_item(hash_ref fields, string cause, string action)
+# _parse_map_item(hash_ref attrs, string cause, string action)
 #
 # Parses a new map item for this task.
 #
 sub _parse_map_item {
-    my($fields, $cause, $action) = @_;
+    my($attrs, $cause, $action) = @_;
     $action = Bivio::Agent::TaskId->from_any($action);
     if ($cause =~ /^(?:next|cancel)$/) {
 	# Special cases (non-enums)
-	$fields->{$cause} = $action;
+	$attrs->{$cause} = $action;
     }
     elsif ($cause =~ /(.+)::(.+)/) {
 	# Fully specified enum
 	my($class, $method) = ($1, $2);
-	Carp::croak("$cause: not an enum (", $fields->{id}->as_string, ')')
+	Carp::croak("$cause: not an enum (", $attrs->{id}->as_string, ')')
 		    unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
 	$cause = $class->from_name($method);
     }
@@ -412,9 +401,9 @@ sub _parse_map_item {
 	$cause = Bivio::DieCode->from_name($cause);
     }
     Carp::croak($cause->get_name, ': cannot be a mapped item (',
-	    $fields->{id}->as_string, ')')
+	    $attrs->{id}->as_string, ')')
 		if $_REDIRECT_DIE_CODES{$cause};
-    $fields->{die_actions}->{$cause} = $action;
+    $attrs->{die_actions}->{$cause} = $action;
     return;
 }
 
