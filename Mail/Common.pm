@@ -7,7 +7,7 @@ $_ = $Bivio::Mail::Common::VERSION;
 
 =head1 NAME
 
-Bivio::Mail::Common - utilities for mail modules (DEPRECATED)
+Bivio::Mail::Common - utilities for mail modules
 
 =head1 RELEASE SCOPE
 
