@@ -51,6 +51,11 @@ timezone (actually timezone offset).  It is set by
 L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 This module puts it on the request.
 
+=item ri
+
+RealmInvite field.  The user has clicked on a URL which contains
+a valid realm invite.
+
 =item u
 
 login id (realm_id) of the authenticated user.
@@ -81,6 +86,19 @@ L<Bivio::Biz::Model::LogoutForm|Bivio::Biz::Model::LogoutForm>.
 
 sub SU_FIELD {
     return 'su';
+}
+
+=for html <a name="REALM_INVITE_FIELD"></a>
+
+=head2 REALM_INVITE_FIELD : string
+
+Returns the realm_invite_id field name.  Is managed by
+L<Bivio::Biz::Model::RealmInvite|Bivio::Biz::Model::RealmInvite>.
+
+=cut
+
+sub REALM_INVITE_FIELD {
+    return 'ri';
 }
 
 =for html <a name="TIMEZONE_FIELD"></a>
