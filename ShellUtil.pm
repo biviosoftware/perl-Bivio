@@ -423,6 +423,23 @@ sub initialize_ui {
     return;
 }
 
+=for html <a name="is_loadavg_ok"></a>
+
+=head2 is_loadavg_ok() : boolean
+
+Returns TRUE if the machine load is below a configurable
+threshold.
+
+TODO: Make threshold configurable
+
+=cut
+
+sub is_loadavg_ok {
+    my($line) = Bivio::IO::File->read('/proc/loadavg');
+    my(@load) = $$line =~ /^([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/;
+    return $load[0] < 4 ? 1 : 0;
+}
+
 =for html <a name="main"></a>
 
 =head2 static main(array argv)
