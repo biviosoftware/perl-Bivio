@@ -700,6 +700,24 @@ sub unauth_load_this_from_request {
     return $q ? $self->unauth_load($q) : 0;
 }
 
+=for html <a name="unauth_load_parent_from_request"></a>
+
+=head2 unauth_load_parent_from_request() : boolean
+
+Parses the query from the request (or list_model) and then
+L<unauth_load|"unauth_load">.  If there is no query or the query is
+corrupt, returns false.
+
+See also L<load_parent_from_request|"load_parent_from_request">.
+
+=cut
+
+sub unauth_load_parent_from_request {
+    my($self) = @_;
+    my($q) = _parse_query($self, 1);
+    return $q ? $self->unauth_load($q) : 0;
+}
+
 =for html <a name="unsafe_load"></a>
 
 =head2 unsafe_load(hash_ref query) : boolean
