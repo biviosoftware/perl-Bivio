@@ -221,13 +221,12 @@ sub initialize {
 		die("$task_id_name: uri must not be /*") unless $uri;
 
 		# Is the URI valid?
+		my($path_info_count) = undef;
 		if ($is_general) {
-		    die("$task_id_name: path_info not allowed on GENERAL")
-			    if $has_path_info;
+		    $path_info_count = 1;
 		}
 		else {
 		    # URI with realm_owner
-		    my($path_info_count) = undef;
 		    if ($realm_type_name eq 'PROXY') {
 			die("$task_id_name: $uri: must begin with "
 				."'$_PROXY_PREFIX'")
@@ -239,14 +238,14 @@ sub initialize {
 				unless $uri =~ m!^\?(?:\/|$)!;
 			$path_info_count = 2;
 		    }
-		    # Make sure there is exactly one trailing component
-		    # for path_info URIs
-		    if ($has_path_info) {
-			my(@x) = split(/\//, $uri);
-			die("$task_id_name: $uri: path_info uris must"
-				." contain $path_info_count components")
-				if int(@x) != $path_info_count;
-		    }
+		}
+		# Make sure there is exactly one trailing component
+		# for path_info URIs
+		if ($has_path_info) {
+		    my(@x) = split(/\//, $uri);
+		    die("$task_id_name: $uri: path_info uris must"
+			    ." contain $path_info_count components")
+			    if int(@x) != $path_info_count;
 		}
 
 		# Save the URI in the map
@@ -320,9 +319,28 @@ sub parse {
 
     $uri = join('/', @uri);
 
-    # General realm is direct map, no placeholders are path_info
-    return ($_FROM_URI{$uri}->[$_GENERAL_INT]->{task}, $_GENERAL, '')
-	    if defined($_FROM_URI{$uri}->[$_GENERAL_INT]);
+    my($info);
+    # General realm simple map; no placeholders or path_info
+    return ($info->{task}, $_GENERAL, '')
+	    if defined($info = $_FROM_URI{$uri}->[$_GENERAL_INT]);
+
+    # Is this a general realm with path_info?  The above always
+    # maps "/", so know there is at least one component.
+    if (defined($info = $_FROM_URI{'/'.$uri[0]}->[$_GENERAL_INT])) {
+	# At this stage, we have to map to a general realm, because
+	# all first components of the general realm are not valid
+	# Bivio::Type::RealmName values.  Therefore, we fail with
+	# not found if it matches the first component, but there
+	# isn't a task for realm_info.
+	return ($info->{task}, $_GENERAL, '/'.join('/', @uri[1..$#uri]))
+		if $info->{has_path_info};
+
+	# The URI doesn't accept path_info, so not found.
+	$req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+	    orig_uri => $orig_uri,
+	    uri => $uri,
+	    message => 'no such general URI (not a path_info uri)'});
+    }
 
     # If first uri doesn't match a RealmName, can't be one.
     if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
@@ -397,9 +415,11 @@ sub parse {
     # is a rare case and NOT_FOUND processing is much faster than normal
     # requests anyway.
     $uri = join('/', @uri[0..$path_info_index]);
-    return ($_FROM_URI{$uri}->[$rti]->{task}, $realm,
+    return ($info->{task}, $realm,
 	    '/'.join('/', @uri[$path_info_index+1..$#uri]))
-	    if defined($_FROM_URI{$uri}) && defined($_FROM_URI{$uri}->[$rti]);
+	    if defined($_FROM_URI{$uri})
+		    && defined($info = $_FROM_URI{$uri}->[$rti])
+			    && $info->{has_path_info};
 
     # Well, really not found
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
