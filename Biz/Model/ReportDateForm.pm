@@ -119,18 +119,6 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="validate"></a>
-
-=head2 validate()
-
-Does nothing.
-
-=cut
-
-sub validate {
-    return;
-}
-
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
