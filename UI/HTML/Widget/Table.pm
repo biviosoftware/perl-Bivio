@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Table;
 use strict;
 $Bivio::UI::HTML::Widget::Table::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::Table::VERSION;
 
 =head1 NAME
 
@@ -130,6 +131,10 @@ undefined, no striping will occur.
 If true, the table C<WIDTH> will be C<95%> or C<100%> depending
 on Bivio::UI::HTML.page_left_margin.
 
+=item heading_font : font [table_heading]
+
+Font to use for table headings.
+
 =item list_class : string (required)
 
 The class name of the list model to be rendered. The list_class is used
@@ -159,6 +164,10 @@ default to the 'list_class' attribute if not defined.
 =item start_tag : boolean [true]
 
 If false, this widget won't render the C<&gt;TABLE&lt;>tag.
+
+=item string_font : string [table_cell]
+
+Font to use for rendering cells.
 
 =item summarize : boolean [false]
 
@@ -314,7 +323,7 @@ sub initialize {
 
     # Puts table_cell as the default font.
     $self->put(string_font => 'table_cell')
-	    unless defined($self->ancestral_get('string_font', undef));
+	    unless defined($self->unsafe_get('string_font'));
 
     my($columns) = $self->get('columns');
     my($lm) = $list;
@@ -629,7 +638,8 @@ sub _get_heading {
 	# wrap it in a string widget
 	$heading = Bivio::UI::HTML::Widget::String->new({
 	    value => $heading,
-	    string_font => 'table_heading',
+	    string_font => $self->get_or_default(
+		    'heading_font', 'table_heading'),
 	});
     }
 
@@ -787,7 +797,7 @@ sub _render_row {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
