@@ -120,7 +120,14 @@ my(@_CFG) = (
         hm/tour_new/index.html
         Bivio::Biz::Action::HTTPDocument
     )],
-#7
+    [qw(
+        ABOUT_US
+        7
+        GENERAL
+        DOCUMENT_READ
+        hm/about.html
+        Bivio::Biz::Action::HTTPDocument
+    )],
     [qw(
 	LOGOUT
 	8
