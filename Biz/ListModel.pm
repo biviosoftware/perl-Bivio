@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
 $Bivio::Biz::ListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::ListModel::VERSION;
 
 =head1 NAME
 
@@ -179,6 +180,20 @@ sub append_empty_rows {
 	# append a copy of the empty row
 	push(@$rows, {%$empty_row});
     }
+    return;
+}
+
+=for html <a name="append_load_notes"></a>
+
+=head2 append_load_notes(string msg)
+
+Appends I<msg> to the internal load notes.
+
+=cut
+
+sub append_load_notes {
+    my($self, $msg) = @_;
+    $self->{$_PACKAGE}->{load_notes} .= $msg;
     return;
 }
 
@@ -555,6 +570,20 @@ sub get_list_model {
     return shift;
 }
 
+=for html <a name="get_load_notes"></a>
+
+=head2 get_load_notes() : string
+
+Return notes about how the query list was loaded.
+
+Used by Biz::Util::ListModel.
+
+=cut
+
+sub get_load_notes {
+    return shift->{$_PACKAGE}->{load_notes};
+}
+
 =for html <a name="get_query"></a>
 
 =head2 get_query() : Bivio::SQL::ListQuery
@@ -697,6 +726,18 @@ sub internal_initialize_sql_support {
 	    $config || $proto->internal_initialize);
 }
 
+=for html <a name="internal_is_loaded"></a>
+
+=head2 internal_is_loaded() : boolean
+
+Returns true if is loaded.
+
+=cut
+
+sub internal_is_loaded {
+    return shift->{$_PACKAGE}->{rows} ? 1 : 0;
+}
+
 =for html <a name="internal_load"></a>
 
 =head2 internal_load(array_ref rows, Bivio::SQL::ListQuery query)
@@ -712,13 +753,15 @@ all the rows are loaded if I<self> implements this method.
 
 sub internal_load {
     my($self, $rows, $query) = @_;
-    my($empty_properties) = $self->{$_PACKAGE}->{empty_properties};
     # Easier to just replace the hash_ref
+    my($empty_properties, $load_notes) = @{$self->{$_PACKAGE}}{
+	qw(empty_properties load_notes)};
     $self->{$_PACKAGE} = {
 	rows => $rows,
 	cursor => -1,
 	query => $query,
 	empty_properties => $empty_properties,
+ 	load_notes => $load_notes,
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
@@ -743,6 +786,10 @@ Used to fix up a row after loading.  No state should be assumed except
 the row itself.
 
 =cut
+
+$_ = <<'}'; # emacs
+sub internal_post_load_row {
+}
 
 =for html <a name="internal_pre_load"></a>
 
@@ -1270,6 +1317,7 @@ sub _new {
     # NOTE: fields are dynamically replaced.  See, e.g. load.
     $self->{$_PACKAGE} = {
 	empty_properties => $self->internal_get,
+	load_notes => '',
     };
     return $self;
 }
@@ -1277,7 +1325,7 @@ sub _new {
 # _unauth_load(Bivio::Biz::ListModel self, hash_ref attrs) : int
 # _unauth_load(Bivio::Biz::ListModel self, Bivio::SQL::ListQuery query) : int
 #
-# Loads the model without forcing I<auth_id>.
+# Loads the model without forcing I<auth_id>.  Resets load_notes.
 #
 # I<attrs> is not the same as I<query> of L<load|"load">.  I<attrs> is
 # passed to
@@ -1292,6 +1340,8 @@ sub _new {
 #
 sub _unauth_load {
     my($self, $query) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{load_notes} =  '';
     my($sql_support) = $self->internal_get_sql_support;
 
     # Convert to listQuery
@@ -1317,7 +1367,7 @@ sub _unauth_load {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
