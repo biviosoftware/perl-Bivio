@@ -223,11 +223,25 @@ sub test_cleanup {
     return ($_SELF_IN_EVAL || $proto)->handle_cleanup();
 }
 
+=for html <a name="test_conformance"></a>
+
+=head2 test_conformance()
+
+Turn of deviance testing mode.  See also L<test_deviance|"test_deviance">.
+
+=cut
+
+sub test_conformance {
+    _assert_in_eval('test_setup')->delete('test_deviance');
+    return;
+}
+
 =for html <a name="test_deviance"></a>
 
 =head2 static test_deviance()
 
 Sets up test for deviance testing.  Expect all functions to fail.
+See also L<test_conformance|"test_conformance">
 
 =cut
 
