@@ -182,6 +182,25 @@ sub view_declare {
     return $proto->view_put(map {($_, undef)} @args);
 }
 
+=for html <a name="view_get"></a>
+
+=head2 view_get(string attr) : any
+
+Returns the attribute from the current view.  You probably want to use
+L<view_widget_value|"view_widget_value"> for values in widgets.  This routine
+is used for more complex widget value accesses.
+
+This works during evaluation of a view as well as during execution.
+
+=cut
+
+sub view_get {
+    my(undef, $attr) = _args(@_);
+    return ($_VIEW_IN_EVAL
+	|| Bivio::Agent::Request->get_current->get('Bivio::UI::View'))
+	->ancestral_get($attr);
+}
+
 =for html <a name="view_main"></a>
 
 =head2 static view_main(Bivio::UI::Widget widget)
