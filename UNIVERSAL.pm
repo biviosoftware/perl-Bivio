@@ -3,7 +3,7 @@
 package Bivio::UNIVERSAL;
 use strict;
 $Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UNIVERSAL::VERSION;
+# $_ = $Bivio::UNIVERSAL::VERSION;
 
 =head1 NAME
 
@@ -24,7 +24,7 @@ bOP
 C<Bivio::UNIVERSAL> is the base class for all bivio classes.  All of the
 methods defined here may be overriden.
 
-Please note the example use of new.
+Please note the example use of L<new|"new">.
 
 =cut
 
@@ -42,11 +42,11 @@ Creates and blesses the object.
 
 This is how you should always create objects:
 
-    my($_PACKAGE) = __PACKAGE__;
+    my($_IDI) = __PACKAGE__->instance_data_index;
 
     sub new {
 	my($self) = MySuperClass::new(@_);
-	$self->{$_PACKAGE} = {'field1' => 'value1'};
+	$self->[$_IDI] = {'field1' => 'value1'};
 	return $self;
     }
 
@@ -55,15 +55,19 @@ only "bless" in the system.  There are several advantages of this.
 Firstly, bless is inefficient and reblessing is an unnecessary
 operation.  Secondly, all object creations go through this one
 method, so we can track object allocations by adding just a little
-bit of code.
+bit of code.  Finally, the instance data name space is managed
+effectively.  See L<instance_data_index|"instance_data_index"> for
+more details.
+
+You can assign anything to your class's part of the instance data array.
+If you are concerned about performance, consider arrays or pseudo-hashes.
 
 =cut
 
 sub new {
     my($proto) = @_;
-    my($self) = {};
-    bless($self, ref($proto) || $proto);
-    return $self;
+#TODO: return bless([], ref($proto) || $proto);
+    return bless({}, ref($proto) || $proto);
 }
 
 =head1 METHODS
@@ -93,8 +97,46 @@ Returns the string form of I<self>.  By default, this is just I<self>.
 
 sub as_string {
     my($self) = @_;
-    # Ensure it is a string?
+#TODO: Ensure it is a string?
     return $self;
+}
+
+=for html <a name="instance_data_index"></a>
+
+=head2 static final instance_data_index() : int
+
+Returns the index into the instance data.  Usage:
+
+    my($_IDI) = __PACKAGE__->instance_data_index;
+
+    sub some_method {
+	my($self) = @_;
+	my($fields) = $self->[$_IDI];
+	...
+    }
+
+=cut
+
+sub instance_data_index {
+    my($pkg) = @_;
+    # Some sanity checks, since we don't access this often
+    die('must call statically form package body')
+	unless $pkg eq (caller)[0];
+    die('not a subclass of Bivio::UNIVERSAL')
+	unless $pkg->isa(__PACKAGE__);
+    # This class doesn't have any instance data.
+    my($idi) = -1;
+    for (; $pkg ne __PACKAGE__; $idi++) {
+	my($isa) = do {
+	    no strict 'refs';
+	    \@{$pkg . '::ISA'};
+	};
+	die($pkg, ': does not define @ISA') unless @$isa;
+	die($pkg, ': multiple inheritance not allowed; @ISA=', "@$isa")
+	    unless int(@$isa) == 1;
+	$pkg = $isa->[0];
+    }
+    return $idi;
 }
 
 =for html <a name="package_name"></a>
