@@ -2561,19 +2561,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::FileRename
         next=CLUB_COMMUNICATIONS_FILE_READ
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
-        220
-        CLUB
-        ACCOUNTING_READ&INVESTMENT_READ
-        ?/accounting/reports/comparison-performance
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::ComparisonDateSpanForm
-        Bivio::Biz::Model::RealmPerformanceList->execute_load_all
-        Bivio::Biz::Model::ComparisonPerformanceList->execute_load_all
-        Bivio::UI::HTML::Club::ComparisonPerformanceReport
-        next=CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
-    )],
+    #220
     [qw(
         ASK_CANDIS_MESSAGE_LIST_REDIRECT
         221
@@ -2823,28 +2811,28 @@ my(@_CFG) = (
         help=creating-accounts
      )],
     [qw(
-        CLUB_ACCOUNTING_IMPORT_REVIEW
+        CLUB_ACCOUNTING_SYNC_IDENTIFY
         245
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/import/review
-        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
+        ?/accounting/sync/identify
+        Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
         Bivio::Biz::Model::ImportedTransactionTypeForm
-        Bivio::UI::HTML::Club::AccountingImportReview
-        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+        Bivio::UI::HTML::Club::AccountingImportIdentify
+        next=CLUB_ACCOUNTING_SYNC_IDENTIFY
     )],
     [qw(
-        CLUB_ACCOUNTING_IMPORT_REVIEW2
+        CLUB_ACCOUNTING_SYNC_IDENTIFY2
         246
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/import/review2
-        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
-        Bivio::Biz::Model::RealmUserList->execute_load_all_active
+        ?/accounting/sync/identify2
+        Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
+        Bivio::Biz::Model::AllMemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_all_active
         Bivio::Biz::Model::ImportedTransactionForm
-        Bivio::UI::HTML::Club::AccountingImportReview
-        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+        Bivio::UI::HTML::Club::AccountingImportIdentify
+        next=CLUB_ACCOUNTING_SYNC_IDENTIFY
     )],
     [qw(
         CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
@@ -2891,6 +2879,15 @@ my(@_CFG) = (
         ?/setup-accounting
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
+    )],
+    [qw(
+        CLUB_ACCOUNTING_SYNC_REVIEW
+        251
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/sync/review
+        Bivio::Biz::Model::ImportedTransactionList->execute_load_review_page
+        Bivio::UI::HTML::Club::AccountingImportReview
     )],
 );
 
