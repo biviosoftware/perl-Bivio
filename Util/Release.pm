@@ -331,18 +331,9 @@ sub install {
     $self->usage_error("No packages to install?") unless @packages;
     my($output) = '';
 
-    # process optional args
-    my($rpm_opt) = '';
-    $rpm_opt .= '--force ' if $self->get('force');
-    $rpm_opt .= '--nodeps ' if $self->get('nodeps');
-
-#TODO: Need to restore once all hosts are on rpm 4.0
-#    # use proxy settings if present in environment (also used by LWP)
-#    if(defined($ENV{'http_proxy'})
-#            && $ENV{'http_proxy'} =~ m!^http://([^:]+):(\d+)!) {
-#        $rpm_opt .= "--httpproxy $1 --httpport $2 ";
-#	$output .= "Fetching via http proxy $1:$2\n";
-#    }
+    my(@command) = ('rpm', '-Uvh');
+    push(@command, '--force') if $self->unsafe_get('force');
+    push(@command, '--nodeps') if $self->unsafe_get('nodeps');
 
     # install all the packages
     for my $package (@packages) {
@@ -350,20 +341,16 @@ sub install {
 	    if $package =~ /\.\d+$/;
 	$package .= '-'.$self->get('version').'.rpm'
 	    unless $package =~ /\.rpm$/;
-	my($uri) = _create_uri($package);
-#TODO: remove extra copy when rpm 4 is everywhere
-	my($file) = _rpm_uri_to_filename($uri);
-	my($command) = "umask 022; GET '$uri' > '$file'"
-	    . "; rpm -Uvh $rpm_opt '$file'";
-	if ($self->get('noexecute')) {
-	    $output .= "Would run: $command\n";
-	    next;
-	}
-	_system($command, \$output);
-	unlink($file);
+	push(@command, _create_uri($package));
     }
-    $output =~ s/warning: (\S+) saved as (\S+)\s*/_err_parser($1, $2)/esg;
-    return $output;
+
+    $self->print(join(' ', 'command:', @command, "\n"));
+    return
+	if $self->get('noexecute');
+
+    umask(022);
+    exec(@command);
+    die("command failed: $!\n");
 }
 
 =for html <a name="list"></a>
