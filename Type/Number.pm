@@ -41,7 +41,7 @@ use Bivio::IO::ClassLoader;
 use Math::FixedPrecision ();
 
 #=VARIABLES
-my($_ROUNDING_MODE) = '+inf';
+my($_ROUNDING_MODE) = 'even';
 $Math::FixedPrecision::round_mode = $_ROUNDING_MODE;
 
 =head1 METHODS
