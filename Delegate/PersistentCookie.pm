@@ -30,11 +30,14 @@ use Bivio::Collection::Attributes;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::PersistentCookie> manages cookies arriving via HTTP and returns
-cookies to the user.
+C<Bivio::Delegate::PersistentCookie> manages cookies arriving via HTTP and
+returns cookies to the user.
 
 Cookies are persistent.  We always "save password".  You might want to use a
 more complex cookie management system.
+
+Cookie fields must begin with a letter.  Other fields may be saved
+temporarily
 
 =cut
 
@@ -114,8 +117,7 @@ sub assert_is_ok {
     return if $self->unsafe_get($proto->DATE_TIME_FIELD);
 
     $req->throw_die('MISSING_COOKIES', {
-	client_addr => $req->get('client_addr'),
-	time => $self->unsafe_get($proto->DATE_TIME_FIELD),
+	client_addr => $req->unsafe_get('client_addr'),
     });
     # DOES NOT RETURN
 }
@@ -177,7 +179,7 @@ sub handle_config {
 
 =for html <a name="header_out"></a>
 
-=head2 header_out(Apache::Request r, Bivio::Agent::Request req) : boolean
+=head2 header_out(Bivio::Agent::Request req, Apache::Request r) : boolean
 
 Writes the header.  If the cookie isn't written (not modified), returns
 false.
@@ -185,9 +187,8 @@ false.
 =cut
 
 sub header_out {
-    my($self, $r, $req) = @_;
+    my($self, $req, $r) = @_;
     my($fields) = $self->internal_get;
-
     # Only set if modified and a browser.
     return 0 unless $fields->{$_MODIFIED_FIELD}
 	&& $req->get('Type.UserAgent')->is_browser;
@@ -210,8 +211,7 @@ sub header_out {
 
     my($clear_text) = '';
     while (my($k, $v) = each(%$fields)) {
-	# Skip internal fields ($_MODIFIED_FIELD begins with '_')
-	next if $k =~ /^_/;
+	next unless $k =~ /^[a-z]/i;
 
 	# Only append the field if it is defined
 	$clear_text .= "$k$_SEP$v$_SEP" if defined($v);
@@ -236,6 +236,7 @@ Adds or replaces the named value(s).
 
 sub put {
     my($self) = shift;
+#TODO: Assert begins with a letter
     _trace(\@_) if $_TRACE;
     return $self->SUPER::put(@_, $_MODIFIED_FIELD, 1);
 }
