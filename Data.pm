@@ -68,35 +68,23 @@ sub lookup ($$$;$)
 	$value = do $absfile;
     }
     elsif ($type == &MHONARC) {
-	# Parse the mhonarc file which is "mostly" perl except for comments
-	# by mhonarc that aren't eliminable.  This trick is good enough
 	$absfile = &_home($br) . $file;
 	my($lock) = $absfile;
 	$lock =~ s,[^/]+$,.mhonarc.lck,;
-	my($retries) = 4;
+	my($retries) = 8;
+	# We don't lock out mhonarc, but we make sure that mhonarc isn't
+	# running to avoid half-baked input files.  The assumption is that
+	# perl's "do" is faster than the retry loop.  (There is still
+	# a big race condition, but it is good enough until we have a
+	# real database and replace mhonarc with something more reasonable.)
 	while (-e $lock) {
 	    --$retries < 0 && $br->server_busy("mhonarc locked: $lock");
-	    select(undef, undef, undef, 5 * rand() + 0.01);  # wait 0-5 seconds
+	    select(undef, undef, undef, 2 * rand() + 0.01);  # wait 0-2 seconds
 	}
-	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
-	if (open($fh, $absfile)) {
-	    local($/) = undef;
-	    local($_);		    # used as scratch variable by mhonarc files
-	    $value = <$fh>; 			# slurp it in ignore I/O errors
-#RJN: This is risky, because we may be chopping stuff within the body
-#of the message (assuming it is html) which looks like: <!-- -->bla<!-- -->
-#Unlikely during prototype phase but may be problems if becomes real.
-	    $value =~ s/\<\!\-\-.*\-\-\>//g; 	    	    # keep line numbers
-	    close($fh);
-	    $value = eval $value;
-#RJN: We don't cache any mail message information, because it can grow rapidly
-#	    $dont_cache = $file =~ /msg\d+.html$/; 		    # see below
-            $dont_cache = 1;
-	}
-	else {
-	    $@ = "open failed: $!"; 			   # save error message
-	    -e $absfile || return undef; 	     # not found => no messages
-	}
+	$value = do $absfile;
+	# There are too many mailing list files.  There's no cache management
+	# so don't want to bloat the server.
+	$dont_cache = 1;
     }
     elsif ($type == &ALL_KEYS) {
 	$absfile = &_home($br) . $file;
