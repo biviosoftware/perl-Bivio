@@ -296,37 +296,35 @@ I<RadioGrid> and I<CheckboxGrid> for examples.
 =cut
 
 sub layout_buttons {
-    my($self, $buttons, $max_width, $num_cols) = @_;
+    my($self, $buttons, $max_width) = @_;
+    my(@rows) = ();
+    my($s) = '&nbsp;' x 3;
 
-    my($rows);
+    # Max 4 items across in one row
     if (int(@$buttons) * $max_width < 60 && int(@$buttons) <= 4) {
-	# Layout in one row
-	my(@buttons) = map {($_, $_SPACER)} @$buttons;
-	pop(@buttons);
-	$rows = [\@buttons];
+        @$buttons = map {($_, $s)} @$buttons;
+        pop(@$buttons);
+        push(@rows, $buttons);
     }
     elsif ($max_width < 20) {
-	my($third) = int((int(@$buttons) + 2)/3);
-	$rows = [];
-	for (my($i) = 0; $i < $third; $i++) {
-	    push(@$rows, [$buttons->[$i],
-		$_SPACER, $buttons->[$i+$third] || $_SPACER,
-		$_SPACER, $buttons->[$i+2*$third] || $_SPACER]);
-	}
+        my($third) = int((int(@$buttons) + 2)/3);
+        for (my($i) = 0; $i < $third; $i++) {
+            push(@rows, [$buttons->[$i],
+                $s, $buttons->[$i+$third] || $s,
+                $s, $buttons->[$i+2*$third] || $s]);
+        }
     }
     elsif ($max_width < 30) {
-	my($half) = int((int(@$buttons) + 1)/2);
-	$rows = [];
-	for (my($i) = 0; $i < $half; $i++) {
-	    push(@$rows, [$buttons->[$i], $_SPACER,
-		$buttons->[$i+$half] || $_SPACER]);
-	}
+        my($half) = int((int(@$buttons) + 1)/2);
+        for (my($i) = 0; $i < $half; $i++) {
+            push(@rows, [$buttons->[$i], $s, $buttons->[$i+$half] || $s]);
+        }
     }
     else {
-	$rows = [map {[$_]} @$buttons];
+        push(@rows, [shift(@$buttons)]) while @$buttons;
     }
 
-    $self->put(values => $rows);
+    $self->put(values => \@rows);
     return;
 }
 
