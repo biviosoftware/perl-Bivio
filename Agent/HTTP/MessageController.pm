@@ -38,6 +38,7 @@ C<Bivio::Agent::HTTP::MessageController>
 use Bivio::Agent::Request;
 use Bivio::Biz::Club;
 use Bivio::Biz::ClubUser;
+use Bivio::Biz::FindParams;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -98,7 +99,7 @@ sub handle_request {
     if (defined($view)) {
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
-	$fp->{club} = $club->get('id');
+	$fp->put('club', $club->get('id'));
 	$model->find($fp);
 	$view->activate()->render($model, $req);
 	$req->set_state(Bivio::Agent::Request::OK);
@@ -120,20 +121,22 @@ sub _authorize_member {
     # has the user logged in?
     return (0) if ! $user;
 
-    # do the password's match?
+    # do the passwords match?
     unless($req->get_password()
 	    && $req->get_password() eq $user->get('password')) {
 	return (0);
     }
 
     my($club) = Bivio::Biz::Club->new();
-    $club->find({name => $req->get_target_name()});
+    $club->find(Bivio::Biz::FindParams->new(
+	    {name => $req->get_target_name()}));
 
     # does the club exist?
     return (0) if ! $club->get_status()->is_OK();
 
     my($club_user) = Bivio::Biz::ClubUser->new();
-    $club_user->find({club => $club->get('id'), user => $user->get('id')});
+    $club_user->find(Bivio::Biz::FindParams->new(
+	    {club => $club->get('id'), user => $user->get('id')}));
 
     # is the user a member of the club?
     return (0) if ! $club_user->get_status()->is_OK();

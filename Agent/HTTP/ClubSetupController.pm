@@ -92,7 +92,7 @@ sub handle_request {
     if (defined($view)) {
 
 	my($model) = $view->get_default_model();
-	if (scalar(%{$req->get_model_args()})) {
+	if (! $req->get_model_args()->is_empty()) {
 	    $model->find($req->get_model_args());
 	}
 	if ($req->get_action_name()) {

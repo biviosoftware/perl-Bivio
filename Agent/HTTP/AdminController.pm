@@ -38,6 +38,7 @@ C<Bivio::Agent::HTTP::AdminController>
 use Bivio::Agent::Request;
 use Bivio::Biz::Club;
 use Bivio::Biz::ClubUser;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::User;
 use Bivio::IO::Trace;
 
@@ -101,11 +102,11 @@ sub handle_request {
     if (defined($view)) {
 
 	my($model) = $view->get_default_model();
-	if (scalar(%{$req->get_model_args()})) {
-	    $model->find($req->get_model_args());
-	}
-	elsif ($view->get_name() eq 'users') {
-	    $model->find({'club' => $club->get('id')});
+	my($fp) = $req->get_model_args();
+	$fp->put('club', $club->get('id'));
+
+	if ($view->get_name eq 'users') {
+	    $model->find($fp);
 	}
 
 	if ($req->get_action_name()) {
@@ -120,7 +121,8 @@ sub handle_request {
 		$req->set_view_name('users');
 		$view = $self->get_view('users');
 		$model = $view->get_default_model();
-		$model->find({'club' => $club->get('id')});
+		$model->find(Bivio::Biz::FindParams->new(
+			{'club' => $club->get('id')}));
 	    }
 	}
 
@@ -154,13 +156,15 @@ sub _authorize_admin {
     }
 
     my($club) = Bivio::Biz::Club->new();
-    $club->find({name => $req->get_target_name()});
+    $club->find(Bivio::Biz::FindParams->new(
+	    {name => $req->get_target_name()}));
 
     # does the club exist?
     return (0) if ! $club->get_status()->is_OK();
 
     my($club_user) = Bivio::Biz::ClubUser->new();
-    $club_user->find({club => $club->get('id'), user => $user->get('id')});
+    $club_user->find(Bivio::Biz::FindParams->new(
+	    {club => $club->get('id'), user => $user->get('id')}));
 
     # is the user a member of the club?
     return (0) if ! $club_user->get_status()->is_OK();

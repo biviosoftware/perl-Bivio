@@ -51,6 +51,7 @@ have default views).
 #=IMPORTS
 use Apache::Constants;
 use Bivio::Agent::Request;
+use Bivio::Biz::FindParams;
 
 my($_PACKAGE) = __PACKAGE__;
 
@@ -157,9 +158,9 @@ sub get_http_return_code {
 
 =for html <a name="get_model_args"></a>
 
-=head2 get_model_args() : hash
+=head2 get_model_args() : Bivio::Biz::FindParams
 
-Returns the model finder arguments. Parsed from the 'mf' argument.
+Returns the model finder arguments. Created from the 'mf' argument.
 If no arguments are present, then an empty FindParams is returned.
 Argument format should be 'mf=arg(value),arg2(value2)'.
 ex. mf=foo(bar),x(7)
@@ -167,20 +168,9 @@ ex. mf=foo(bar),x(7)
 =cut
 
 sub get_model_args {
-
-    #DANGER: this won't work if there are ','  characters
-    #        embedded in the search values. '(' ')' are handled OK.
-
     my($self) = @_;
-    my($map) = {};
-    my($mf) = $self->get_arg('mf') || '';
 
-    foreach (split(',', $mf)) {
-	if (/^(\w+)\((.*)\)$/) {
-	    $map->{$1} = $2;
-	}
-    }
-    return $map;
+    return Bivio::Biz::FindParams->from_string($self->get_arg('mf') || '');
 }
 
 =for html <a name="get_model_name"></a>
@@ -318,7 +308,7 @@ sub _find_user {
     return undef if ! $name;
 
     my($user) = Bivio::Biz::User->new();
-    $user->find({name => $name});
+    $user->find(Bivio::Biz::FindParams->new({name => $name}));
 
     return $user->get_status()->is_OK() ? $user : undef;
 }
