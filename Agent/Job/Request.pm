@@ -70,6 +70,16 @@ sub new {
     });
     Bivio::Type::UserAgent->execute_job($self);
 
+    # all attributes need to be durable
+    $self->put_durable(
+	    %$params,
+	    start_time => $self->get('start_time'),
+	    form => $self->get('form'),
+	    query => $self->get('query'),
+	    reply => $self->get('reply'),
+	    'Bivio::Type::UserAgent' => $self->get('Bivio::Type::UserAgent'),
+	   );
+
     # Realm
     my($realm);
     if ($params->{auth_id} && $params->{auth_id}
