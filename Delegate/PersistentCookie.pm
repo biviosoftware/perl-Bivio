@@ -168,9 +168,8 @@ sub header_out {
     my($fields) = $self->internal_get;
 
     # don't send header unless we are in the correct Facade
-    if ($_DOMAIN) {
-	my($uri) = Bivio::UI::Facade->get_from_request_or_self($req)
-	    ->get('r')->server->server_hostname;
+    if ($_DOMAIN && $r) {
+	my($uri) = $r->server->server_hostname;
 	return 0 unless $uri =~ /\Q$_DOMAIN\E$/i;
 	_trace("in cookie domain: ", $_DOMAIN, ', uri: ', $uri) if $_TRACE;
     }
