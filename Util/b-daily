@@ -1,0 +1,42 @@
+#!perl -w
+# Copyright (c) 2001 bivio, Inc.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-daily - calls Bivio::Util::Daily
+
+=head1 SYNOPSIS
+
+b-daily [options] command [args...]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Util::Daily|Bivio::Util::Daily>
+
+=cut
+
+#=IMPORTS
+use Bivio::Util::Daily;
+
+#=VARIABLES
+Bivio::Util::Daily->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Util::Daily
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 bivio, Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
