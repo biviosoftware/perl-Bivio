@@ -67,12 +67,23 @@ sub create_content {
     $fields->{warning_message} = $self->join(
 	$self->string('Warning: ', 'warning'),
 	'<p>',
-	$self->string(<<'EOF', 'page_text')),
+	$self->string(<<'EOF', 'page_text'));
 Your club's receipts for the tax year were greater that $250,000 or the club's assets at the end of the year were greater than $600,000. As a result you will be required to manually complete Schedules L, M-1, and M-2; Item F on page 1 of Form 1065; and Item J and Schedule K-1.
 
 EOF
 
     $fields->{warning_message}->initialize;
+
+    $fields->{over_100_members} = $self->indirect(0);
+    $fields->{over_100_members_warning} = $self->join(
+	    $self->string('Warning: ', 'warning'),
+	    '<p>',
+	    $self->string(<<'EOF', 'page_text'));
+Your club has greater than 100 members and may be required to file electronically. Please refer to the Electronic Filing section of the IRS Instructions for Form 1065 for more information.
+
+EOF
+
+    $fields->{over_100_members_warning}->initialize;
 
     my($create_anyway) = $self->director(['task_id'], {
 	Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAXES_MISSING_FIELDS()
@@ -142,6 +153,9 @@ EOF
 	        $fields->{large_club_warning},
 	    ],
 	    [
+		$fields->{over_100_members},
+	    ],
+	    [
 		$self->string(<<'EOF'),
 Don't forget to sign and date the printed return and give each member a printed copy of their K-1.
 EOF
@@ -181,6 +195,11 @@ sub execute {
 	    Bivio::Biz::Accounting::Tax->meets_three_requirements(
 		    $req, $req->get('report_date'))
 	    ? 0 : $fields->{warning_message});
+
+    $fields->{over_100_members}->put(value =>
+	    $req->get('Bivio::Biz::Model::MemberAllocationList')
+	    ->get_result_set_size <= 100
+	    ? 0 : $fields->{over_100_members_warning});
 
     my($list) = $req->get('Bivio::Biz::Model::MemberTaxList');
 
