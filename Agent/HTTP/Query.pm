@@ -37,8 +37,9 @@ use Bivio::HTML;
 
 =head2 static format(hash_ref query) : string
 
-Returns the string version of the query.
-Returns C<undef> if I<query> is C<undef>.
+Returns the string version of the query.  Returns C<undef> if I<query> is
+C<undef>.  Attributes of the form C<ListQuery.>I<name> will be looked up
+with L<Bivio::ListQuery::to_char|Bivio::ListQuery/"to_char">.
 
 =cut
 
@@ -46,12 +47,14 @@ sub format {
     my(undef, $query) = @_;
     return undef unless $query;
     my($res) = '';
-    foreach my $k (keys(%$query)) {
+    # Always format the keys the same way
+    foreach my $k (sort(keys(%$query))) {
+	my($v) = $query->{$k};
+	$k = Bivio::SQL::ListQuery->to_char($k) if $k =~ s/^ListQuery\.//;
 	$res .= Bivio::HTML->escape_query($k).'='
 		# Sometimes the query value is not defined.  It may
 		# be a corrupt query, but shouldn't blow up.
-		.Bivio::HTML->escape_query(defined($query->{$k})
-			? $query->{$k} : '').'&';
+		.Bivio::HTML->escape_query(defined($v) ? $v : '').'&';
     }
     chop($res);
     return $res;
