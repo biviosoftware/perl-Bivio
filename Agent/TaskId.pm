@@ -1819,6 +1819,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TaxYearForm
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
+        Bivio::Biz::Model::ForeignTaxCountryList->execute_load_all
         Bivio::UI::HTML::Club::Taxes
         next=CLUB_ACCOUNTING_TAXES
     )],
@@ -1948,6 +1949,7 @@ my(@_CFG) = (
         ?/accounting/taxes/missing-fields
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Action::InactiveMemberHack
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
@@ -1972,6 +1974,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDList->execute_load_all
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::ForeignIncomeList->execute_load_all
         Bivio::Biz::Model::F1065Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065::YearSelector
         next=CLUB_ACCOUNTING_TAXES_F1065
@@ -1989,6 +1992,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::ForeignIncomeList->execute_load_all
         Bivio::Biz::Model::F1065K1Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065sk1::YearSelector
         next=CLUB_ACCOUNTING_TAXES_F1065
@@ -2802,6 +2806,18 @@ my(@_CFG) = (
 #        Bivio::UI::HTML::Club::AccountingImportReview
 #        next=CLUB_ACCOUNTING_IMPORT_REVIEW
 #    )],
+    [qw(
+        CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
+        247
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/foreign-income
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::ForeignIncomeList->execute_load_all
+        Bivio::UI::HTML::Tax::ForeignIncome
+        next=CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
+    )],
 );
 
 __PACKAGE__->compile([
