@@ -31,7 +31,7 @@ a widget, which is usually a
 L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
 but might be a
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-The widget or its children should be a
+The widget or its children should contain a
 L<Bivio::UI::HTML::Widget::Submit|Bivio::UI::HTML::Widget::Submit>.
 
 No special formatting is implemented.  For layout, use, e.g.
@@ -76,6 +76,7 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::UI::HTML::Widget::TimezoneField;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -138,7 +139,9 @@ sub initialize {
 
 =for html <a name="render"></a>
 
-=head2 render(string_ref buffer)
+=head2 render(any source, string_ref buffer)
+
+Render the form.
 
 =cut
 
@@ -159,6 +162,8 @@ sub render {
 			: Bivio::Agent::Request->get_current->format_uri();
 	$$buffer .= $action . "\">\n"
     }
+    # Timezone is computed on every form
+    Bivio::UI::HTML::Widget::TimezoneField->render($source, $buffer);
 
     # Hidden fields (if any)
     my($hidden) = $source->get_widget_value(@{$fields->{model}})
