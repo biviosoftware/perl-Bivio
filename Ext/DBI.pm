@@ -140,7 +140,7 @@ Password to use (named configuration)
 
 User to log in as (named configuration)
 
-=item connection : string (Bivio::SQL::OracleConnection)
+=item connection : string (required)
 
 The database connection implementation.
 

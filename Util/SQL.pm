@@ -47,9 +47,11 @@ Returns:
 
   usage: b-sql [options] command [args...]
   commands:
-      drop -- drops objects which would be created by running input
-      drop_and_run -- calls drop then run
-      run -- executes sql contained in input and dies on error
+    create_db -- initializes database (must be run from files/ddl directory)
+    destroy_db -- drops all the tables, indexes, and sequences created
+    drop -- drops objects which would be created by running input
+    drop_and_run -- calls drop then run
+    run -- executes sql contained in input and dies on error
 
 =cut
 
@@ -57,6 +59,8 @@ sub USAGE {
     return <<'EOF';
 usage: b-sql [options] command [args...]
 commands:
+    create_db -- initializes database (must be run from files/ddl directory)
+    destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
     run -- executes sql contained in input and dies on error
@@ -67,10 +71,70 @@ EOF
 use Bivio::SQL::Connection;
 
 #=VARIABLES
+my($_REALM_ROLE_CONFIG);
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_db"></a>
+
+=head2 create_db()
+
+Initializes petshop database.  Must be un from from C<files/ddl> directory,
+which contains C<*-tables.sql>, C<*-constraints.sql>, etc.
+
+See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
+
+=cut
+
+sub create_db {
+    my($self) = @_;
+    foreach my $file (@{_ddl_files($self)}){
+	# Set up new file so read_input returns new value each time
+	$self->print('Executing ', $file, "\n");
+	$self->put(input => $file);
+	$self->run;
+    }
+    Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
+    $self->init_realm_role;
+    return;
+}
+
+=for html <a name="ddl_files"></a>
+
+=head2 abstract static ddl_files() : array_ref
+
+Returns list of SQL data files used by L<create_db|"create_db"> and
+L<destroy_db|"destroy_db">.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub ddl_files {
+}
+
+=for html <a name="destroy_db"></a>
+
+=head2 destroy_db()
+
+Undoes the operations of L<create_db|"create_db">.
+
+=cut
+
+sub destroy_db {
+    my($self) = @_;
+    $self->are_you_sure('DROP THE ENTIRE DATABASE?');
+    # We drop in opposite order.  Some constraint drops will
+    # fail, but that's ok.  We need to drop the foreign key
+    # constraints so we can drop the tables.
+    foreach my $file (reverse(@{_ddl_files($self)})) {
+	$self->print('Dropping ', $file, "\n");
+	$self->put(input => $file);
+	$self->drop;
+    }
+    return;
+}
 
 =for html <a name="drop"></a>
 
@@ -122,6 +186,60 @@ sub drop_and_run {
     return $self->run;
 }
 
+=for html <a name="init_realm_role"></a>
+
+=head2 init_realm_role()
+
+Initializes the database with the values from
+L<realm_role_config|"realm_role_config">.
+
+=cut
+
+sub init_realm_role {
+    my($self) = @_;
+    my($cmd);
+    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
+    foreach my $line (@{$self->realm_role_config}) {
+	# Skip comments and blank cmds
+	next if $line =~ /^\s*(#|$)/;
+	$cmd .= $line;
+
+	# Continuation char at end of line?
+	next if $cmd =~ s/\\$/ /;
+
+	# Parse command
+	my(@args) = split(' ', $cmd);
+
+	# Delete the b-realm-role at the front of the configuration
+	shift(@args);
+
+	# Don't want a user to be loaded, so we use the default user
+	$rr->main('-u', 'user', @args);
+        $cmd = '';
+    }
+    return;
+}
+
+=for html <a name="realm_role_config"></a>
+
+=head2 realm_role_config() : array_ref
+
+Returns the realm role configuration.
+
+=cut
+
+sub realm_role_config {
+    my($self) = @_;
+    unless ($_REALM_ROLE_CONFIG) {
+	# Cache so the command is idempotent.
+	$_REALM_ROLE_CONFIG = [<DATA>];
+	chomp(@$_REALM_ROLE_CONFIG);
+	# Avoids error messages which point to <DATA>.
+	close(DATA);
+    }
+    return $_REALM_ROLE_CONFIG;
+}
+
 =for html <a name="run"></a>
 
 =head2 run()
@@ -140,6 +258,19 @@ sub run {
 }
 
 #=PRIVATE METHODS
+
+# _ddl_files(self) : array_ref
+#
+# Initializes self and calls ddl_files(), checking result.
+#
+sub _ddl_files {
+    my($self) = @_;
+    $self->get_request;
+    my($f) = $self->ddl_files;
+    $self->usage('must be run in files/ddl directory')
+	    unless -r $f->[0];
+    return $f;
+}
 
 # _parse(self) : array
 #
@@ -179,3 +310,73 @@ $Id$
 =cut
 
 1;
+__DATA__
+# The following is returned by realm_role_config().
+#
+# GENERAL Permissions
+#
+b-realm-role -r GENERAL -u user edit ANONYMOUS - \
+    +ANYBODY \
+    +DATA_READ
+b-realm-role -r GENERAL -u user edit USER - \
+    +ANONYMOUS \
+    +ANY_USER
+b-realm-role -r GENERAL -u user edit WITHDRAWN - \
+    +USER
+b-realm-role -r GENERAL -u user edit GUEST - \
+    +WITHDRAWN
+b-realm-role -r GENERAL -u user edit MEMBER - \
+    +DATA_WRITE
+b-realm-role -r GENERAL -u user edit ACCOUNTANT - \
+    +MEMBER
+b-realm-role -r GENERAL -u user edit ADMINISTRATOR - \
+    +ACCOUNTANT \
+    +ADMIN_READ \
+    +ADMIN_WRITE \
+    +DATA_WRITE
+
+#
+# USER Permissions
+#
+b-realm-role -r USER -u user edit ANONYMOUS - \
+    +ANYBODY
+b-realm-role -r USER -u user edit USER - \
+    +ANONYMOUS \
+    +ANY_USER
+b-realm-role -r USER -u user edit WITHDRAWN - \
+    +USER
+b-realm-role -r USER -u user edit GUEST - \
+    +WITHDRAWN
+b-realm-role -r USER -u user edit MEMBER - \
+    +GUEST \
+    +ADMIN_READ \
+    +DATA_READ \
+    +DATA_WRITE
+b-realm-role -r USER -u user edit ACCOUNTANT - \
+    +MEMBER \
+    +ADMIN_WRITE
+b-realm-role -r USER -u user edit ADMINISTRATOR - \
+    +ACCOUNTANT
+
+#
+# CLUB Permissions
+#
+b-realm-role -r CLUB -u user edit ANONYMOUS - \
+    +ANYBODY
+b-realm-role -r CLUB -u user edit USER - \
+    +ANONYMOUS \
+    +ANY_USER
+b-realm-role -r CLUB -u user edit WITHDRAWN - \
+    +USER
+b-realm-role -r CLUB -u user edit GUEST - \
+    +WITHDRAWN
+b-realm-role -r CLUB -u user edit MEMBER - \
+    +GUEST \
+    +ADMIN_READ \
+    +DATA_READ \
+    +DATA_WRITE
+b-realm-role -r CLUB -u user edit ACCOUNTANT - \
+    +MEMBER \
+    +ADMIN_WRITE
+b-realm-role -r CLUB -u user edit ADMINISTRATOR - \
+    +ACCOUNTANT

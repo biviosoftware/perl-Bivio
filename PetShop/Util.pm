@@ -21,56 +21,34 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::ShellUtil>
+L<Bivio::Util::SQL>
 
 =cut
 
-use Bivio::ShellUtil;
-@Bivio::PetShop::Util::ISA = ('Bivio::ShellUtil');
+use Bivio::Util::SQL;
+@Bivio::PetShop::Util::ISA = ('Bivio::Util::SQL');
 
 =head1 DESCRIPTION
 
 C<Bivio::PetShop::Util> are utilities for initializing and
 managing your PetShop.
 
-=cut
+How to create the database.  As root:
 
+   su - postgres
+   createuser petuser
+   createdb --username petuser --password petshop
 
-=head1 CONSTANTS
+As you:
 
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns:
-  usage: b-petshop [options] command [args...]
-  commands:
-      create_db -- initializes database (must be run from files/ddl directory)
-      destroy_db -- drops all the tables, indexes, and sequences created
+   cd files/ddl
+   b-petshop create_db
 
 =cut
-
-sub USAGE {
-    return <<'EOF';
-usage: b-petshop [options] command [args...]
-commands:
-    create_db -- initializes database (must be run from files/ddl directory)
-    destroy_db -- drops all the tables, indexes, and sequences created
-EOF
-}
 
 #=IMPORTS
 
 #=VARIABLES
-my(@_DATA);
-my(@_SQL_FILES) = map {
-    my($base) = $_;
-    map {
-	$base.'-'.$_.'.sql';
-    } qw(tables constraints sequences);
-} qw(bOP petshop);
 
 =head1 METHODS
 
@@ -88,46 +66,27 @@ See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
 =cut
 
 sub create_db {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($sql) = $self->new_other('Bivio::Util::SQL');
-    $self->usage('must be run in files/ddl directory')
-	    unless -r $_SQL_FILES[0];
-    foreach my $file (@_SQL_FILES) {
-	# Set up new file so read_input returns new value each time
-	$self->print('Executing ', $file, "\n");
-	$sql->put(input => $file);
-	$sql->run;
-    }
-    Bivio::Biz::Model->new($req, 'RealmOwner')->init_db;
-    _init_realm_role($self);
+    my($self) = shift;
+    $self->SUPER::create_db(@_);
     _init_demo($self);
     return;
 }
 
-=for html <a name="destroy_db"></a>
+=for html <a name="ddl_files"></a>
 
-=head2 destroy_db()
+=head2 ddl_files() : array_ref
 
-Undoes the operations of L<create_db|"create_db">.
+Returns DDL SQL files used to create/destroy database.
 
 =cut
 
-sub destroy_db {
-    my($self) = @_;
-    $self->usage('must be run in files/ddl directory')
-	    unless -r $_SQL_FILES[0];
-    $self->get_request;
-    my($sql) = $self->new_other('Bivio::Util::SQL');
-    # We drop in opposite order.  Some constraint drops will
-    # fail, but that's ok.  We need to drop the foreign key
-    # constraints so we can drop the tables.
-    foreach my $file (reverse(@_SQL_FILES)) {
-	$self->print('Dropping ', $file, "\n");
-	$sql->put(input => $file);
-	$sql->drop;
-    }
-    return;
+sub ddl_files {
+    return [map {
+	my($base) = $_;
+	map {
+	    $base.'-'.$_.'.sql';
+	} qw(tables constraints sequences);
+    } qw(bOP petshop)];
 }
 
 #=PRIVATE METHODS
@@ -274,43 +233,6 @@ sub _init_demo_suppliers {
     return \@id;
 }
 
-# _init_realm_role(self)
-#
-# Initializes the database with the values from __DATA__ section
-# in this file.
-#
-sub _init_realm_role {
-    my($self) = @_;
-    unless (@_DATA) {
-	# Cache so the command is idempotent.
-	@_DATA = <DATA>;
-	chomp(@_DATA);
-	# Avoids error messages which point to <DATA>.
-	close(DATA);
-    }
-    my($cmd);
-    my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
-    foreach my $line (@_DATA) {
-	# Skip comments and blank cmds
-	next if $line =~ /^\s*(#|$)/;
-	$cmd .= $line;
-
-	# Continuation char at end of line?
-	next if $cmd =~ s/\\$/ /;
-
-	# Parse command
-	my(@args) = split(' ', $cmd);
-
-	# Delete the b-realm-role at the front of the configuration
-	shift(@args);
-
-	# Don't want a user to be loaded, so we use the default user
-	$rr->main('-u', 'user', @args);
-        $cmd = '';
-    }
-    return;
-}
-
 =head1 COPYRIGHT
 
 Copyright (c) 2001 bivio Inc.  All rights reserved.
@@ -322,65 +244,3 @@ $Id$
 =cut
 
 1;
-__DATA__
-# The following is used by _init_realm_role, but could also be run as
-# a shell script.
-#
-# GENERAL Permissions
-#
-b-realm-role -r GENERAL edit ANONYMOUS - \
-    +ANYBODY \
-    +DATA_READ
-b-realm-role -r GENERAL edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r GENERAL edit WITHDRAWN - \
-    +USER
-b-realm-role -r GENERAL edit GUEST - \
-    +WITHDRAWN
-b-realm-role -r GENERAL edit MEMBER - \
-    +DATA_WRITE
-b-realm-role -r GENERAL edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r GENERAL edit ADMINISTRATOR - \
-    +ACCOUNTANT
-
-#
-# USER Permissions
-#
-b-realm-role -r USER edit ANONYMOUS - \
-    +ANYBODY
-b-realm-role -r USER edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r USER edit WITHDRAWN - \
-    +USER
-b-realm-role -r USER edit GUEST - \
-    +WITHDRAWN
-b-realm-role -r USER edit MEMBER - \
-    +DATA_READ \
-    +DATA_WRITE
-b-realm-role -r USER edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r USER edit ADMINISTRATOR - \
-    +ACCOUNTANT
-
-#
-# CLUB Permissions
-#
-b-realm-role -r CLUB edit ANONYMOUS - \
-    +ANYBODY
-b-realm-role -r CLUB edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r CLUB edit WITHDRAWN - \
-    +USER
-b-realm-role -r CLUB edit GUEST - \
-    +WITHDRAWN
-b-realm-role -r CLUB edit MEMBER - \
-    +DATA_READ \
-    +DATA_WRITE
-b-realm-role -r CLUB edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r CLUB edit ADMINISTRATOR - \
-    +ACCOUNTANT

@@ -78,6 +78,14 @@ The role can read, but not modify data in the realm.
 
 The role can write, but not read data in the realm.
 
+=item ADMIN_READ
+
+Read data about the realm
+
+=item ADMIN_WRITE
+
+Edit data about the realm.
+
 =back
 
 =cut
@@ -88,6 +96,8 @@ sub get_delegate_info {
 	ANY_USER => [2],
 	DATA_READ => [3],
 	DATA_WRITE => [4],
+	ADMIN_READ => [5],
+	ADMIN_WRITE => [6],
     ];
 }
 
