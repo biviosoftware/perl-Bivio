@@ -35,12 +35,6 @@ and delete interface to the C<instrument_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::InstrumentType;
-use Bivio::Type::Line;
-use Bivio::Type::Name;
-use Bivio::Type::Boolean;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -132,18 +126,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'instrument_t',
 	columns => {
-            instrument_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            ticker_symbol => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            exchange_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            instrument_type => ['Bivio::Type::InstrumentType',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            fed_tax_free => ['Bivio::Type::Boolean',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            instrument_id => ['PrimaryId', 'PRIMARY_KEY'],
+            name => ['Line', 'NOT_NULL'],
+            ticker_symbol => ['Name', 'NONE'],
+            exchange_name => ['Name', 'NONE'],
+            instrument_type => ['InstrumentType', 'NOT_NULL'],
+            fed_tax_free => ['Boolean', 'NOT_NULL'],
         },
     };
 }
