@@ -1474,7 +1474,7 @@ my(@_CFG) = (
         %/accounting/unlisted/new
         Bivio::Biz::Model::LocalInstrumentForm
         Bivio::UI::HTML::Club::LocalInstrument
-        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        next=CLUB_ACCOUNTING_INVESTMENT_BUY
     )],
     [qw(
         CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
