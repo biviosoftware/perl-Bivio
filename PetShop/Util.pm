@@ -232,7 +232,7 @@ sub _init_demo_products {
 	    'FI-SW-02:FISH:Tiger Shark:tigershark:Salt Water fish from Australia',
 	    'FI-FW-01:FISH:Koi:koi:Fresh Water fish from Japan',
 	    'FI-FW-02:FISH:Goldfish:reeffish:Fresh Water fish from China',
-	    'K9-BD-01:DOGS:Corgi:corgi:Friendly dog from England',
+	    'K9-BD-01:DOGS:Corgi:corgi:Friendly dog from Wales',
 	    'K9-PO-02:DOGS:Poodle:poodle:Cute dog from France',
 	    'K9-DL-01:DOGS:Dalmation:dalmation:Great dog for a Fire Station',
 	    'K9-RT-01:DOGS:German Shepard:shepard:Great family dog',
