@@ -35,6 +35,16 @@ Bivio::Test->unit([
 	} => [
 	    [<<"EOF"] => [undef],
 test_setup('HTTP');
+home_page();
+follow_link('Sign-in');
+test_deviance('You must supply a value');
+submit_form('submit');
+submit_form('submit' => {
+    'Email:' => 'foobar',
+});
+EOF
+	    [<<"EOF"] => [undef],
+test_setup('HTTP');
 use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
     if -e q{$mail_file};
