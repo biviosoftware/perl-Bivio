@@ -30,6 +30,22 @@ C<Bivio::Biz::Model::ActiveShadowMemberList> lists active shadow member
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="NOT_FOUND_IF_EMPTY"></a>
+
+=head2 NOT_FOUND_IF_EMPTY : boolean
+
+Returns false.  OK not to have active shadow members.
+
+=cut
+
+sub NOT_FOUND_IF_EMPTY {
+    return 0;
+}
+
 #=IMPORTS
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
