@@ -370,6 +370,19 @@ sub internal_get_visible_field_names {
     return shift->{$_PACKAGE}->{visible_field_names};
 }
 
+=for html <a name="internal_initialize_list"></a>
+
+=head2 internal_initialize_list(Bivio::Biz::Model::ListModel list)
+
+Called prior to doing any list manipulations. Allows subclasses to do
+any extra list changes.
+
+=cut
+
+sub internal_initialize_list {
+    return;
+}
+
 =for html <a name="internal_pre_parse_columns"></a>
 
 =head2 internal_pre_parse_columns()
@@ -623,6 +636,7 @@ sub _execute_init {
     # Get the the list_class instance
     my($lm) = $req->get($self->get_info('list_class'));
     $lm->reset_cursor;
+    $self->internal_initialize_list($lm);
 
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
