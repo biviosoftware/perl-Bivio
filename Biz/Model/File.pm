@@ -88,26 +88,6 @@ $_NOT_TSPECIALS =~ s/\[/[^/;
 
 =cut
 
-=for html <a name="cascade_delete"></a>
-
-=head2 static cascade_delete(Bivio::Biz::Model::RealmOwner realm)
-
-Deletes all files and quota.
-
-=cut
-
-sub cascade_delete {
-    my(undef, $realm) = @_;
-    my($id) = $realm->get('realm_id');
-    Bivio::SQL::Connection->execute('
-            DELETE FROM file_t
-            WHERE realm_id=?',
-	    [$id]);
-    my($fq) = Bivio::Biz::Model::FileQuota->new($realm->get_request);
-    $fq->delete() if $fq->unauth_load(realm_id => $id);
-    return;
-}
-
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -177,7 +157,7 @@ sub create {
 
 Creates the quota and initial file volumes.
 
-Demo club gets smaller default quota. 
+Demo club gets smaller default quota.
 
 =cut
 
@@ -487,12 +467,12 @@ sub internal_initialize {
 	table_name => 'file_t',
 	columns => {
             file_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             volume => ['FileVolume', 'NOT_ZERO_ENUM'],
             directory_id => ['PrimaryId', 'NONE'],
             name => ['FileName', 'NOT_NULL'],
             name_sort => ['FileName', 'NOT_NULL'],
-            user_id => ['PrimaryId', 'NOT_NULL'],
+            user_id => ['RealmUser.user_id', 'NOT_NULL'],
             modified_date_time => ['DateTime', 'NOT_NULL'],
             bytes => ['Integer', 'NOT_NULL'],
             is_directory => ['Boolean', 'NOT_NULL'],
