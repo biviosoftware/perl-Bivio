@@ -55,22 +55,6 @@ sub format_name {
             $self, 'RealmOwner.', @_);
 }
 
-=for html <a name="format_uri_hack"></a>
-
-=head2 format_uri_hack() : string
-
-#TODO: This is a HACK!!!  Need payment id for detail page
-
-=cut
-
-sub format_uri_hack {
-    my($self) = @_;
-    return $self->get_request->format_uri(
-	    Bivio::Agent::TaskId::ADM_EC_SUBSCRIPTION_EDIT(), {
-		p => $self->get('ECPayment.ec_payment_id'),
-	    });
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
