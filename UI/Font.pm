@@ -60,7 +60,7 @@ use Bivio::UI::Color;
 #   name => [face, color, size/style(s)]
 my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
-    PAGE_HEADING => [$_SANS_SERIF, undef, 'large', 'strong'],
+    PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
     TABLE_HEADING => [$_SANS_SERIF, undef, 'small', 'strong'],
     TABLE_CELL => [undef, undef, 'small'],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
