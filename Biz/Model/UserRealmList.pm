@@ -59,11 +59,13 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
+	can_iterate => 1,
 	other => [qw(
             RealmOwner.name
 	    RealmUser.role
 	    RealmUser.honorific
 	    RealmOwner.realm_type
+            RealmOwner.display_name
 	)],
 	primary_key => [
 	    [qw(RealmUser.realm_id RealmOwner.realm_id)],
