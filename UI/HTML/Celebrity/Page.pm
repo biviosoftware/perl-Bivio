@@ -267,7 +267,7 @@ EOF
 	    },
 	    [<<'EOF'],
 Investment Club Treasurers have been relying on Jerry
-Dressel's and Rip West's accounting and tax advice
+Dressel and Rip West's accounting and tax advice
 for years.  Together they have contributed literally
 thousands of messages to the
 <a href="http://www.better-investing.org">NAIC's</a>
