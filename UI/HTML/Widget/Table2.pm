@@ -499,7 +499,8 @@ sub _get_summary_line {
     my($self, $cell) = @_;
 
     my($widget);
-    if ($cell->get_or_default('column_summarize', 0)) {
+    if ($cell->get_or_default('column_summarize', 0)
+	    && $self->unsafe_get('summary_line_type')) {
 
 	my($line_type) = $self->unsafe_get('summary_line_type');
 	if ($line_type eq '-') {
