@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.50  2003/03/24 01:21:10  nagler
+  * Bivio::SQL::Connection::None is the default database connection
+
+  Revision 1.49  2003/03/24 00:51:41  nagler
+  * Bivio::BConf->merge_class_loader and merge_http_log ease
     configuration by merging arrays of values with defaults.
   * Bivio::IO::Config->merge prefixes arrays in values if parameter
     (merge_arrays) is passed.
