@@ -246,24 +246,13 @@ sub delete {
 
 =head2 delete_cookie()
 
-Delete this instance's cookie field. It might be that the user has
-an invite and she is, say, editing the invite list for her
-club.  Put the cookie field back in this weird case.
+Delete this instance's cookie field.
 
 =cut
 
 sub delete_cookie {
     my($self) = @_;
-    my($cookie) = $self->get_request->get('cookie');
-    my($c) = $cookie->unsafe_get($_COOKIE_FIELD);
-    $cookie->delete($_COOKIE_FIELD);
-
-    return unless defined($c);
-
-    # Don't actually delete the cookie if the user was editing the
-    # invite list.  User may have only submitted the id, not the auth_code.
-    my($id, $ac) = split(' ', $c);
-    $cookie->put($_COOKIE_FIELD, $c) if $c ne $self->get('realm_invite_id');
+    $self->get_request->get('cookie')->delete($_COOKIE_FIELD);
     return;
 }
 
@@ -306,7 +295,7 @@ sub execute_accept {
 	my($actual) = $lq->unsafe_get($_QUERY_FIELD) || '';
 	my($expected) = $self->get_auth_code();
 	_trace('actual=', $actual, '; expected=', $expected) if $_TRACE;
-	if (defined($actual) && length($actual)) {
+	if (length($actual)) {
 	    $self->throw_die(Bivio::DieCode::NOT_FOUND(),
 		    {actual => $actual, expected => $expected,
 			message => 'auth_code field mismatch'})
@@ -337,7 +326,7 @@ sub execute_accept {
 =head2 execute_delete_cookie(Bivio::Agent::Request req) : boolean
 
 Deletes our cookie field.  Call if you are sure we don't want
-to keep the cookie lying around.  Should'n be called on USER_CREATE
+to keep the cookie lying around.  Should'nt be called on USER_CREATE
 or LOGIN tasks.
 
 =cut
@@ -457,6 +446,15 @@ sub _check_cookie {
 
     my($id, $ac) = split(/$_SEPARATOR/o, $c);
 
+#TODO: RJN 6/8/2001 Short-lived cookie bug caused HASH(0xoaub) to get
+#      in cookie.
+    unless ($id =~ /^\d+$/) {
+	$req->warn($id, ': tossing bad cookie');
+	$cookie->delete($_COOKIE_FIELD);
+	return undef;
+    }
+
+    # Look for realm invite
     my($self) = $proto->new($req);
     if ($self->unauth_load(realm_invite_id => $id)) {
 	_trace('actual=', $ac, '; expected=', $self->get_auth_code) if $_TRACE;
