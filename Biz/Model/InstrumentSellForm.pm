@@ -109,7 +109,7 @@ sub internal_initialize {
 	    },
 	    'RealmAccountEntry.realm_account_id',
 	    'RealmInstrumentEntry.count',
-	    'RealmInstrumentValuation.price_per_share',
+	    'Entry.amount',
 	    {
 		name => 'commission',
 		type => 'Bivio::Type::Amount',
@@ -139,8 +139,8 @@ sub validate {
 
     my($properties) = $self->internal_get;
 
-    $self->validate_greater_than_zero(
-	    'RealmInstrumentValuation.price_per_share');
+    # amount can be zero for a worthless investment
+    $self->validate_not_negative('Entry.amount');
     $self->validate_greater_than_zero('RealmInstrumentEntry.count');
 
     my($req) = $self->get_request;

@@ -90,41 +90,37 @@ instrument cost basis and gain.
 
 sub execute_input {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($properties) = $self->internal_get();
     my($req) = $self->get_request();
-    my($auth_id) = $req->get('auth_id');
+    my($properties) = $self->internal_get();
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
+    my($realm_inst_id) = $realm_inst->get('realm_instrument_id');
+
+    my($total_amount) = Bivio::Type::Amount->sub(
+	    $properties->{'Entry.amount'}, $properties->{commission});
+    my($shares) = $properties->{'RealmInstrumentEntry.count'};
+    # value of the share at sale including commission
+    my($share_value) = Bivio::Type::Amount->div(
+	    $total_amount, $properties->{'RealmInstrumentEntry.count'});
 
     # create the transaction
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
-    my($values) = $self->get_model_properties('RealmTransaction');
-    $values->{realm_id} = $auth_id;
-    $values->{source_class} = Bivio::Type::EntryClass::INSTRUMENT();
-    $values->{user_id} = $req->get('auth_user')->get('realm_id');
-    $transaction->create($values);
+    $transaction->create({
+	source_class => Bivio::Type::EntryClass::MEMBER(),
+	date_time => $properties->{'RealmTransaction.date_time'},
+	remark => $properties->{'RealmTransaction.remark'},
+    });
 
-    my($inst_entry) = Bivio::Biz::Model::RealmInstrumentEntry->new($req);
-
-    # commission
+    # sale commission, not part of tax basis
     if (defined($properties->{commission}) && $properties->{commission} > 0) {
+	my($inst_entry) = Bivio::Biz::Model::RealmInstrumentEntry->new($req);
 	$inst_entry->create_entry($transaction, {
 	    entry_type =>
 	    Bivio::Type::EntryType::INSTRUMENT_SELL_COMMISSION_AND_FEE(),
-	    realm_instrument_id => $realm_inst->get('realm_instrument_id'),
+	    realm_instrument_id => $realm_inst_id,
 	    amount => Bivio::Type::Amount->neg($properties->{commission}),
 	    tax_category => Bivio::Type::TaxCategory::NOT_TAXABLE(),
 	});
     }
-
-    # compute total amount
-    my($total_amount) = Bivio::Type::Amount->sub(
-	    Bivio::Type::Amount->mul(
-		    $properties->{'RealmInstrumentEntry.count'},
-		    $properties->{'RealmInstrumentValuation.price_per_share'}),
-	    $properties->{commission} || 0);
-    my($share_value) = Bivio::Type::Amount->div(
-	    $total_amount, $properties->{'RealmInstrumentEntry.count'});
 
     # account entry
     my($account_entry) = Bivio::Biz::Model::RealmAccountEntry->new($req);
@@ -144,19 +140,17 @@ sub execute_input {
     while ($lot_list->next_row) {
 	my($amount) = $data->{'lot'.$count++};
 	if ($amount) {
-	    _create_sell_entry($self,
-		    $realm_inst->get('realm_instrument_id'),
+	    _create_sell_entry($self, $realm_inst_id,
 		    $transaction, $lot_list, $amount, $share_value);
 	}
     }
     $lot_list->reset_cursor;
-    _create_gain_entries($self, $realm_inst->get('realm_instrument_id'),
-	    $transaction);
+    _create_gain_entries($self, $realm_inst_id, $transaction);
 
     Bivio::Biz::Model::RealmInstrumentValuation->create_or_update(
-	    $realm_inst->get('realm_instrument_id'),
+	    $realm_inst_id,
 	    $properties->{'RealmTransaction.date_time'},
-	    $properties->{'RealmInstrumentValuation.price_per_share'});
+	    Bivio::Type::Amount->div($properties->{'Entry.amount'}, $shares));
 
     # need to update units after this date
     my($realm) = $req->get('auth_realm')->get('owner');
@@ -253,7 +247,7 @@ sub internal_initialize {
 	    },
 	    'RealmAccountEntry.realm_account_id',
 	    'RealmInstrumentEntry.count',
-	    'RealmInstrumentValuation.price_per_share',
+	    'Entry.amount',
 	    {
 		name => 'commission',
 		type => 'Bivio::Type::Amount',
