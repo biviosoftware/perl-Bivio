@@ -303,8 +303,9 @@ sub init_column_classes {
 	$attrs->{$class} = [];
 	my($list) = $decl->{$class};
 	next unless $list;
-	# *_id classes (auth_id and parent_id) are syntactically different
-	$list = [$list] if $class =~ /_id$/;
+	# auth_id, parent_id, and date always need to be wrapped.  They
+	# single entity.
+	$list = [$list] if $class =~ /^date$|_id$/;
 	foreach my $decl (@$list) {
 	    my(@aliases, $first, $col);
 	    if (ref($decl) eq 'HASH') {
