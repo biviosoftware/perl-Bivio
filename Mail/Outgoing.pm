@@ -274,6 +274,25 @@ sub set_recipients {
     return;
 }
 
+=for html <a name="set_envelope_from"></a>
+
+=head2 set_envelope_from(string email_list)
+
+=head2 set_envelope_from(array email_list)
+
+Sets the envelope FROM of this mail message.  It's the address
+which appears as Return-Path: in the outgoing message header and
+is used by MTAs to return bounces.
+
+=cut
+
+sub set_envelope_from {
+    my($self, $from) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{env_from} = $from;
+    return;
+}
+
 =for html <a name="as_string"></a>
 
 =head2 as_string() : string
