@@ -3060,8 +3060,8 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/spin-offs
-        Bivio::Biz::Model::InstrumentSpinoffList->execute_load_page
-        Bivio::UI::HTML::Adm::InstrumentSpinoffs
+        Bivio::Biz::Model::AdmInstrumentSpinoffList->execute_load_page
+        Bivio::UI::HTML::Adm::InstrumentSpinoffList
         require_secure=1
     )],
     [qw(
@@ -3070,7 +3070,7 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/spin-off/delete
-        Bivio::Biz::Model::InstrumentSpinoffList->execute_load_this
+        Bivio::Biz::Model::AdmInstrumentSpinoffList->execute_load_this
         Bivio::Biz::Action::InstrumentSpinoffDelete
         Bivio::Biz::Action::ClientRedirect->execute_next_stateless
         next=ADM_SPINOFFS
@@ -3082,8 +3082,8 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/spin-off/create
-        Bivio::Biz::Model::InstrumentSpinoffInfoForm
-        Bivio::UI::HTML::Adm::InstrumentSpinoffInfo
+        Bivio::Biz::Model::AdmInstrumentSpinoffForm
+        Bivio::UI::HTML::Adm::CreateInstrumentSpinoff
         next=ADM_SPINOFFS
         require_secure=1
     )],
