@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    Invalid URI and URI too long
+  * Bivio::Collection::Attributes->map_each iterates over keys and values
+  * Bivio::UI::HTML::Widget::SourceCode renders the "=for html" sections
+
+  Revision 2.51  2005/02/02 22:11:23  moeller
+  * Bivio::Biz::FormModel corrected load_from_model_properties() so it
     also works for ListFormModels
   * Bivio::Util::Release update() may not update anything so need to
     check before calling install()
