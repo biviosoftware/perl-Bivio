@@ -90,7 +90,7 @@ sub internal_create_models {
     my($self) = @_;
     my($req) = $self->get_request;
     my($user) = $self->new($req, 'User')->create(
-        _parse_names($self, $self->get('RealmOwner.display_name')));
+        $self->parse_display_name($self->get('RealmOwner.display_name')));
     my($realm) = $self->new($req, 'RealmOwner')->create({
 	realm_id => $user->get('user_id'),
 	name =>	 $self->unsafe_get('RealmOwner.name')
@@ -154,32 +154,17 @@ sub internal_initialize {
 	    $self->SUPER::internal_initialize, $info);
 }
 
-=for html <a name="validate"></a>
+=for html <a name="parse_display_name"></a>
 
-=head2 validate()
+=head2 parse_display_name(string display_name) : hash_ref
 
-Ensures the fields are valid.
+Returns a hash_ref of first_name, middle_name, last_name parsed from the
+display_name.  Suitable for L<Bivio::Biz::Model::User|Bivio::Biz::Model::User>
+updates.
 
 =cut
 
-sub validate {
-    my($self) = @_;
-    $self->internal_put_error('RealmOwner.password', 'CONFIRM_PASSWORD')
-	unless $self->get_field_error('RealmOwner.password')
-	    || $self->get_field_error('confirm_password')
-	    || $self->get('RealmOwner.password')
-		eq $self->get('confirm_password');
-    return;
-}
-
-#=PRIVATE SUBROUTINES
-
-# _parse_names(self, string display_name) : hash_ref
-#
-# Returns a hash_ref of first_name, middle_name, last_name parsed
-# from the display_name.
-#
-sub _parse_names {
+sub parse_display_name {
     my($self, $display_name) = @_;
     my($first, $middle, @last) = split(' ', $display_name);
 
@@ -200,6 +185,26 @@ sub _parse_names {
     _trace($result) if $_TRACE;
     return $result;
 }
+
+=for html <a name="validate"></a>
+
+=head2 validate()
+
+Ensures the fields are valid.
+
+=cut
+
+sub validate {
+    my($self) = @_;
+    $self->internal_put_error('RealmOwner.password', 'CONFIRM_PASSWORD')
+	unless $self->get_field_error('RealmOwner.password')
+	    || $self->get_field_error('confirm_password')
+	    || $self->get('RealmOwner.password')
+		eq $self->get('confirm_password');
+    return;
+}
+
+#=PRIVATE SUBROUTINES
 
 # _trim(string value) : string
 #
