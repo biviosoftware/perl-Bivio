@@ -57,6 +57,25 @@ sub headers_as_string {
     return $source->get_request->get("$self.headers");
 }
 
+=for html <a name="initialize"></a>
+
+=head2 initialize() 
+
+Initializes mime_type and mime_encoding if not already set.
+
+=cut
+
+sub initialize {
+    my($self) = @_;
+    foreach my $x (
+	[mime_type => 'multipart/mixed'],
+	[mime_encoding => '7bit'],
+    ) {
+	$self->get_if_exists_else_put(@$x);
+    }
+    return shift->SUPER::initialize(@_);
+}
+
 =for html <a name="render"></a>
 
 =head2 render(Bivio::UI::WidgetValueSource source, string_ref buffer)
@@ -70,8 +89,9 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($name) = 0;
     my($entity) = MIME::Entity->build(
-	Type => 'multipart/mixed',
-	Encoding => '7bit',
+        map({
+	    ($_ => ${$self->render_attr('mime_' . lc($_), $source)});
+	} qw(Type Encoding)),
     );
     foreach my $v (@{$self->get('values')}) {
 	my($e);
