@@ -77,14 +77,17 @@ sub execute {
 		Bivio::Biz::Action::ForwardClubMail->store(
 			$realm_owner, $club, $msg);
 	    }
-            else {
-                # club-owner
+            else { # club-owner
                 # Forward message unchanged to the Administrators
                 my($out_msg) = Bivio::Mail::Outgoing->new($msg);
                 my($admins) = Bivio::Biz::Model::RealmAdminList->new($req);
                 $admins->unauth_load_all({auth_id => $club->get('club_id')});
-                $out_msg->set_recipients($admins->get_outgoing_emails);
-                $out_msg->set_envelope_from($req->get('support_email'));
+                my($emails) = $admins->get_outgoing_emails;
+                my($support) = $req->get('support_email');
+                # Fall back to support in case no valid administrators available
+                $out_msg->set_recipients(
+                        defined($emails) ? $emails : $support);
+                $out_msg->set_envelope_from($support);
                 $out_msg->enqueue_send;
             }
 	    return;

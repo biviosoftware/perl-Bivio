@@ -41,7 +41,9 @@ use IO::Scalar;
 use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
+use Bivio::Mail::RFC822;
 use Bivio::Mail::Common;
+use Bivio::Mail::Address;
 use Time::Local ();
 require 'ctime.pl';
 
@@ -50,95 +52,6 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 # Bivio::IO::Config->register;
-
-#TODO: Move to Bivio::Mail::RFC822
-#TODO: Create Bivio::Mail::Address with parsing routines
-my($_822_CHAR) = '[\\0-\\177]';
-my($_822_ALPHA) = '[\\101-\\132\\141-\\172]';
-my($_822_DIGIT) = '[\\060-\\071]';
-my($_822_CTL) = '[\\0-\\037\\177-\\377]';
-my($_822_LWSP) = '[ \\t]';
-my($_822_SPECIALS) = '[][()<>@,;:\\\\".]';
-my($_822_ATOM) = '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
-my($_822_QUOTED_STRING) = '"(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
-my($_822_DOMAIN_LITERAL) = '\\[(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^][\\\\])*)\\]';
-# 822 comments can be nested.  We test for simple comments and if
-# that fails, we have to get complex.
-my($_822_NOT_NESTED_COMMENT)
-	= '\\((?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^()\\\\])*)\\)';
-my($_822_WORD) = "(?:$_822_ATOM|$_822_QUOTED_STRING)";
-# Single space mandated between words, but relax for parsing
-my($_822_PHRASE) = "$_822_WORD(?:\\s+$_822_WORD)*";
-my($_822_ATOM_ONLY_PHRASE) = "$_822_ATOM(?:\\s+$_822_ATOM)*";
-my($_822_LOCAL_PART) = "$_822_WORD(?:\\.$_822_WORD)*";
-my($_822_DOTTED_ATOMS) = "$_822_ATOM(?:\\.$_822_ATOM)*";
-my($_822_SUB_DOMAIN) = "(?:$_822_ATOM|$_822_DOMAIN_LITERAL)";
-my($_822_DOMAIN) = "$_822_SUB_DOMAIN(?:\\.$_822_SUB_DOMAIN)*";
-my($_822_ADDR_SPEC) = "$_822_LOCAL_PART\@$_822_DOMAIN";
-my($_822_ATOM_ONLY_ADDR) = "$_822_DOTTED_ATOMS\@$_822_DOTTED_ATOMS";
-my($_822_ROUTE) = "\@$_822_DOMAIN(?:,\@$_822_DOMAIN)*:";
-my($_822_ROUTE_ADDR) = "<(?:$_822_ROUTE)?$_822_ADDR_SPEC>";
-my($_822_MAILBOX) = "(?:$_822_ADDR_SPEC|(?:$_822_PHRASE\\s+)*$_822_ROUTE_ADDR)";
-my($_822_GROUP) = "$_822_PHRASE:(?:$_822_MAILBOX(?:,$_822_MAILBOX)*;";
-my($_822_ADDRESS) = "(?:$_822_MAILBOX|$_822_GROUP)";
-my($_822_FIELD_NAME) = '[\\041-\\071\\073-\\176]+:';
-my($_822_DAY) = "[a-zA-Z]{3}";
-my($_822_DATE) = '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
-# Be flexible with times, as I have seen 17:9:12
-my($_822_TIME) = '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s*([-+\\w]{1,5})';
-my($_822_DATE_TIME) = "(?:$_822_DAY\\s*,)?\\s*$_822_DATE\\s*$_822_TIME";
-my(%_822_MONTHS) = (
-    'JAN' => 0,
-    'FEB' => 1,
-    'MAR' => 2,
-    'APR' => 3,
-    'MAY' => 4,
-    'JUN' => 5,
-    'JUL' => 6,
-    'AUG' => 7,
-    'SEP' => 8,
-    'OCT' => 9,
-    'NOV' => 10,
-    'DEC' => 11,
-);
-my(%_822_TIME_ZONES) = (
-    'UT' => 0,
-    'GMT' => 0,
-    'Z' => 0,
-    'EST' => -500,
-    'EDT' => -400,
-    'CST' => -600,
-    'CDT' => -700,
-    'MST' => -700,
-    'MDT' => -800,
-    'PST' => -800,
-    'PDT' => -900,
-    'A' => -100,
-    'B' => -200,
-    'C' => -300,
-    'D' => -400,
-    'E' => -500,
-    'F' => -600,
-    'G' => -700,
-    'H' => -800,
-    'I' => -900,
-    # J not used
-    'K' => -1000,
-    'L' => -1100,
-    'M' => -1200,
-    'N' => +100,
-    'O' => +200,
-    'P' => +300,
-    'Q' => +400,
-    'R' => +500,
-    'S' => +600,
-    'T' => +700,
-    'U' => +800,
-    'V' => +900,
-    'W' => +1000,
-    'X' => +1100,
-    'Y' => +1200,
-);
 
 =head1 FACTORIES
 
@@ -244,7 +157,7 @@ sub get_from {
 	$fields->{from_name} = undef;
 	return wantarray ? (undef, undef) : undef;
     }
-    ($fields->{from_email}, $fields->{from_name}) = &_parse_addr($from);
+    ($fields->{from_email}, $fields->{from_name}) = Bivio::Mail::Address::parse($from);
     &_trace($from, ' -> (', $fields->{from_email}, ',',
 	   $fields->{from_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{from_email}, $fields->{from_name})
@@ -275,8 +188,9 @@ sub get_headers {
     my($fields) = $self->{$_PACKAGE};
     # Important to include the newline
     my($f);
-    foreach $f (split(/^(?=$_822_FIELD_NAME)/om, $fields->{header})) {
-	my($n) = $f =~ /^($_822_FIELD_NAME)/;
+    my($FIELD_NAME) = Bivio::Mail::RFC822->FIELD_NAME;
+    foreach $f (split(/^(?=$FIELD_NAME)/om, $fields->{header})) {
+	my($n) = $f =~ /^($FIELD_NAME)/o;
 	Bivio::IO::Alert->warn("invalid 822 field: $f"), next
 		    unless defined($n);
 	chop($n);
@@ -358,7 +272,7 @@ sub get_reply_to {
 	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{reply_to_email}, $fields->{reply_to_name})
-	    = &_parse_addr($reply_to);
+	    = Bivio::Mail::Address::parse($reply_to);
     &_trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
 	   $fields->{reply_to_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{reply_to_email}, $fields->{reply_to_name})
@@ -523,7 +437,7 @@ sub send {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     Bivio::Mail::Common->send($fields->{recipients}, $fields->{rfc822},
-	    $fields->{header_offset}, $self->get_from());
+	    $fields->{header_offset}, $self->get_from(), $fields->{extra_headers});
 }
 
 =for html <a name="set_recipients"></a>
@@ -560,144 +474,41 @@ sub uninitialize {
 
 #=PRIVATE METHODS
 
-sub _clean_comment {
-    local($_) = @_;
-    s/^\(//s && s/\)$//s || Carp::cluck("not a comment: $_");
-    s/\\(.)/$1/gs;
-    return $_;
-}
-
-sub _clean_route_addr {
-    local($_) = @_;
-    s/^\<//s && s/\>$//s || die("not a route address: $_");
-    return $_;
-}
-
-sub _clean_quoted_string {
-    local($_) = @_;
-    s/^\"//s && s/\"$//s || die("not a quoted string: $_");
-    s/\\(.)/$1/gs;
-    return $_;
-}
-
 # $name must be lc and ending with a ':'
 sub _get_field {
     my($fields, $name) = @_;
     # May be that the field is undefined.
     unless (exists($fields->{$name})) {
-	# Must not be \s, because maps to newline.  If the field is
-	# empty, will grab next field (line).
-	# CPERL-BUG: (?: |\t) is necessary because $name[ \t] would be bad
-	($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
+        # Must not be \s, because maps to newline.  If the field is
+        # empty, will grab next field (line).
+        # CPERL-BUG: (?: |\t) is necessary because $name[ \t] would be bad
+        ($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
     }
     return $fields->{$name};
 }
 
-# 822:
-#     For purposes of display, and when passing  such  struc-
-#     tured information to other systems, such as mail proto-
-#     col  services,  there  must  be  NO  linear-white-space
-#     between  <word>s  that are separated by period (".") or
-#     at-sign ("@") and exactly one SPACE between  all  other
-#     <word>s.  Also, headers should be in a folded form.
-#
-#     There is one type of bracket which must occur in matched pairs
-#     and may have pairs nested within each other:
-#
-#	 o   Parentheses ("(" and ")") are used  to  indicate  com-
-#	     ments.
-#
-#     There are three types of brackets which must occur in  matched
-#     pairs, and which may NOT be nested:
-#
-#	 o   Colon/semi-colon (":" and ";") are   used  in  address
-#	     specifications  to  indicate that the included list of
-#	     addresses are to be treated as a group.
-#
-#	 o   Angle brackets ("<" and ">")  are  generally  used  to
-#	     indicate  the  presence of a one machine-usable refer-
-#	     ence (e.g., delimiting mailboxes), possibly  including
-#	     source-routing to the machine.
-#
-#	 o   Square brackets ("[" and "]") are used to indicate the
-#	     presence  of  a  domain-literal, which the appropriate
-#	     name-domain  is  to  use  directly,  bypassing  normal
-#	     name-resolution mechanisms.
-#
-# These appear after -----Original Message-----
-#     From: Jeffrey Richer [SMTP:jricher@inet.net]
-#     From: . <winsv@ix.netcom.com>
-#     From: <MNatto@aol.com>
-# Probably part of Outlook.  Not a problem for us as the "Original Message"
-# is not an 822 thing.
-#
-# Parses the first address in the field. If there are multiple
-# addresses, only grabs the first one.
-sub _parse_addr {
-    local($_) = @_;
-    s/^\s+//s;
-    my($n, $a);
-    # Cases are optimized by their statistical counts.
-    # Joe Bob <joe@bob.com>
-    if (($n, $a)
-	    = /^($_822_ATOM_ONLY_PHRASE)\s*\<($_822_ATOM_ONLY_ADDR)\>/os) {
-	return ($a, $n);
-    }
-    # "Joe Bob" <joe@bob.com>
-    if (($n, $a) = /^($_822_QUOTED_STRING)\s*\<($_822_ATOM_ONLY_ADDR)\>/os) {
-	return ($a, &_clean_quoted_string($n));
-    }
-    # joe@bob.com -- grab first addr, not allowing comment
-    if (($a) = m!^($_822_ATOM_ONLY_ADDR)\s*(?:,|$)!os) {
-	return ($a, undef);
-    }
-    # joe@bob.com (Joe Bob)
-    if (($a, $n) = m!^($_822_ATOM_ONLY_ADDR)\s*($_822_NOT_NESTED_COMMENT)!os) {
-	return ($a, &_clean_comment($n));
-    }
-    if (($a, $n) = /^($_822_MAILBOX)\s*((?:$_822_NOT_NESTED_COMMENT)*)/os) {
-#TODO: Need to make sure we hit 99.99% of addresses with this
-#      We don't handle groups. ok?  What about "Undisclosed Recipients:;"?
-	# complex@addr (My comment) AND complex@addr
-	if ($a =~ /^$_822_ADDR_SPEC$/) {
-	    # $a is an address, no further parsing necessary
-	    return ($a, length($n) ? &_clean_comment($n) : $n);
-	}
-	# $_822_MAILBOX: <complex@addr>
-	if (($a) = /^($_822_ROUTE_ADDR)/) {
-	    return (&_clean_route_addr($a), undef);
-	}
-	# $_822_MAILBOX: My Comment <complex@addr>
-	if (($n, $a) = /^($_822_PHRASE)\s+($_822_ROUTE_ADDR)/) {
-	    return (&_clean_route_addr($a), $n);
-	}
-#TODO: error or assert_fail
-	die("822 regular expressions incorrect");
-    }
-    die("unable to parse address: $_");
-}
-
 sub _parse_date {
     local($_) = @_;
-    my($mday, $mon, $year, $hour, $min, $sec, $tz) = /^$_822_DATE_TIME/os;
+    my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
+    my($mday, $mon, $year, $hour, $min, $sec, $tz) = /^$DATE_TIME/os;
     defined($mday) || return &_parse_complex_date($_);
     $mon = uc($mon);
-    if (defined($_822_MONTHS{$mon})) {
-	$mon = $_822_MONTHS{$mon};
+    if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
+        $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
     }
     else {
-	Bivio::IO::Alert->warn("month \"$mon\" unknown in date \"$_\"");
-	$mon = 0;
+        Bivio::IO::Alert->warn("month \"$mon\" unknown in date \"$_\"");
+        $mon = 0;
     }
     $tz = uc($tz);
-    if (defined($_822_TIME_ZONES{$tz})) {
-	$tz = $_822_TIME_ZONES{$tz};
+    if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
+        $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
     }
     my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
     if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
-	$date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
+        $date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
     } elsif ($tz != 0) {
-	Bivio::IO::Alert->warn("timezone \"$tz\" unknown in date \"$_\"");
+        Bivio::IO::Alert->warn("timezone \"$tz\" unknown in date \"$_\"");
     }
     return $date_time;
 }

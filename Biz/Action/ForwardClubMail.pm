@@ -19,7 +19,7 @@ use Bivio::Biz::Action;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Action::ForwardClubMail> creates a club and its administrator.
+C<Bivio::Biz::Action::ForwardClubMail> forwards mail to a club's members.
 
 =cut
 
@@ -59,6 +59,10 @@ sub execute {
     my($club) = Bivio::Biz::Model::Club->new($req);
     $club->load(club_id => $realm_owner->get('realm_id'));
     my($msg) = $req->get('message');
+    my($headers) = $msg->get_headers;
+    if (exists($headers->{'x-bivio-forwarding'})) {
+        $req->die('FORBIDDEN', 'msg already has X-Bivio-Forwarding set, avoid mail loops');
+    }
     &_trace($realm_owner, ': ', $msg->get_message_id) if $_TRACE;
     $proto->store($realm_owner, $club, $msg);
     $proto->send($realm_owner, $club, $msg);
@@ -94,12 +98,12 @@ sub send {
     $out_msg->set_headers_for_list_send($realm_owner->get('name'),
 	    $display_name, 1, 1);
     # Include the club's URI in the header for convenience
-    # Was "Club Name (http...)", but is noisy when rendering in Netscape.
-    # There are three lines in a row with "Club Name" in it.
     $out_msg->set_header('Organization',
 	    $realm_owner->get_request->format_http(
 	    Bivio::Agent::TaskId::CLUB_HOME(),
 	    undef, Bivio::Auth::Realm->new($realm_owner)));
+    # Add a tag to catch mail loops
+    $out_msg->set_header('X-Bivio-Forwarding', $realm_owner->get('name'));
     $out_msg->enqueue_send;
     return;
 }

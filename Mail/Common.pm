@@ -165,7 +165,6 @@ sub send {
 #TODO: fork and exec, so can pass argument lists
 #TODO: recipients may be very long(?).  If so either throw an error
 #      or need to generate multiple sends.
-    &_trace('sending from ', $from) if $_TRACE && $from;
     &_trace('sending to ', $recipients) if $_TRACE;
     unless (open($fh, "| $_SENDMAIL '$from' '$recipients'")) {
 	$err = "open failed: $!";

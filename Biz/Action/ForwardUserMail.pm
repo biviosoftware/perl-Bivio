@@ -58,6 +58,11 @@ sub execute {
     _trace($req->unsafe_get('auth_realm'), ': ', $msg->get_message_id)
 	    if $_TRACE;
 
+    my($headers) = $msg->get_headers;
+    if (exists($headers->{'x-bivio-forwarding'})) {
+        $req->die('FORBIDDEN', 'msg already has X-Bivio-Forwarding set, avoid mail loops');
+    }
+            
     # Get the outgoing address(es)
     my($emails) = $user->get_outgoing_emails();
 
