@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget::DateYearHandler - txn to val date handler
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 

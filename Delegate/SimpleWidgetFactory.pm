@@ -239,6 +239,7 @@ sub _create_edit {
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return $_VS->vs_new('DateField', {
 	    field => $field,
+	    event_handler => $_VS->vs_new('DateYearHandler'),
 	    %$attrs,
 	});
     }
@@ -298,7 +299,7 @@ sub _create_edit {
 	$attrs->{label_on_field} = 0;
 	return $_VS->vs_new('FormButton', {
 	    field => $field,
-	    label => $_VS->vs_text($field),
+	    label => $_VS->vs_text($model->simple_package_name, $field),
 	    %$attrs,
 	});
     }
