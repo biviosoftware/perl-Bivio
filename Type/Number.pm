@@ -241,6 +241,32 @@ sub get_decimals {
     die("abstract method");
 }
 
+=for html <a name="max"></a>
+
+=head2 max(string left, string right) : string
+
+Returns maximum of I<left> and I<right>.
+
+=cut
+
+sub max {
+    my($self, $left, $right) = @_;
+    return $self->compare($left, $right) <= 0 ? $right : $left;
+}
+
+=for html <a name="min"></a>
+
+=head2 min(string left, string right) : string
+
+Returns minimum of I<left> and I<right>.
+
+=cut
+
+sub min {
+    my($self, $left, $right) = @_;
+    return $self->compare($left, $right) <= 0 ? $left : $right;
+}
+
 =for html <a name="mul"></a>
 
 =head2 mul(string v, string v2, int decimals) : string
