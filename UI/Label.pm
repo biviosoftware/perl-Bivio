@@ -212,7 +212,7 @@ _compile(
     CLUB_COMMUNICATIONS_MESSAGE_LIST => ['Mail'],
     CLUB_CREATE => ['Create Club Site'],
     CLUB_HOME => ['Club Site'],
-    CLUB_LEGACY_INVITE => ['Bring Members Online'],
+    CLUB_ADMIN_SHADOW_MEMBER_INVITE => ['Bring Members Online'],
     CLUB_LEGACY_SECURITY_RECONCILIATION => ['Identify Listed Investments'],
     CLUB_LEGACY_UPLOAD => ['Import NAIC Club Accounting(tm)'],
     CLUB_MAIL_DELETE => ['Mail Delete'],
@@ -298,6 +298,14 @@ _compile(
     REALMINSTRUMENTENTRY_ACQUISITION_DATE_HEADING => ["Acquisition\nDate"],
     MARKET_VALUE_HEADING => ["Market\nValue"],
     MEMBER_COST_BASIS_HEADING => ["Member's Adj.\nCost Basis"],
+
+    # Invite List
+    REALMINVITE_EMAIL_HEADING => ['Email'],
+    REALMINVITE_HONORIFIC_HEADING => ['Privileges'],
+    REALMINVITE_CREATION_DATE_TIME_HEADING => ['Date'],
+    INVITED_BY_HEADING => ['Invited By'],
+    AUTH_CODE_HEADING => ["Authorization\nCode"],
+    AUTH_CODE => ["Authorization Code"],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
