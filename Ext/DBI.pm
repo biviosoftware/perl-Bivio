@@ -81,6 +81,7 @@ sub connect {
     _trace('dbi:Oracle:', $cfg->{database}, ':',
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
+    Bivio::IO::Alert->warn('DATABASE IS READ ONLY') if $cfg->{is_read_only};
     my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
 	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
     return $self;
