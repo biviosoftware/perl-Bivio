@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::HTMLParser::Forms.error_color is configurable
+  * Bivio::UI::HTML::Widget::MathHandlerBase manipulates fields with commas
+  * Bivio::XML::DocBook upgraded to match book example and added real xrefs
+
+  Revision 1.40  2003/01/29 16:44:05  nagler
+  * Bivio::SQL::Connection::Postgres supports BYTEA (BLOB) types
+  * Bivio::Test::Language::HTTP->get_content returns current response content
+  * Bivio::UI::HTML::Widget::String render text dynamically, always
   * Bivio::UI::LocalFileType->CACHE added
   * Bivio::Util::LinuxConfig->append_lines adds lines to any file,
     creating if necessary
