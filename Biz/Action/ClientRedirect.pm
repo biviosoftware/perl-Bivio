@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::ClientRedirect;
 use strict;
 $Bivio::Biz::Action::ClientRedirect::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Action::ClientRedirect::VERSION;
 
 =head1 NAME
 
@@ -14,13 +15,19 @@ Bivio::Biz::Action::ClientRedirect - client redirect to specific task or URI
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::Action::ClientRedirect::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Biz::Action>
+
+=cut
+
+use Bivio::Biz::Action;
+@Bivio::Biz::Action::ClientRedirect::ISA = ('Bivio::Biz::Action');
 
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Action::ClientRedirect> redirects to the cancel or
-next task values.  There is no I<execute>, you must be explicit.
+next task values.
 
 You may also redirect to a specific task:
 
@@ -28,6 +35,8 @@ You may also redirect to a specific task:
 
 The subroutines are dynamically compiled from the lists of
 tasks in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+
+See also L<new|"new"> for instance-based redirects.
 
 =cut
 
@@ -50,13 +59,57 @@ use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 
 #=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 _compile();
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(string uri) : Bivio::Biz::Action::ClientRedirect
+
+If I<uri> is supplied, creates an instance which will redirect
+to I<uri> every time L<execute|"execute"> is called.
+
+If I<uri> is C<undef>, L<execute|"execute"> will throw an exception.
+
+=cut
+
+sub new {
+    my($proto, $uri) = @_;
+    my($self) = Bivio::UNIVERSAL::new($proto);
+    if ($uri) {
+	$self->{$_PACKAGE} = {
+	    uri => $uri,
+	};
+    }
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req) : boolean
+
+Redirects only if created with a I<uri>.
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+    Bivio::Die->die('cannot be called statically or without uri')
+		unless ref($self) && $self->{$_PACKAGE};
+    $req->client_redirect($self->{$_PACKAGE}->{uri});
+    # DOES NOT RETURN
+}
 
 =for html <a name="execute_cancel"></a>
 
@@ -141,7 +194,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
