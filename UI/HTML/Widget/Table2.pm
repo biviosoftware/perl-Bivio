@@ -33,6 +33,13 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
+=item align : string [CENTER]
+
+How to align the table.  The allowed (case
+insensitive) values are defined in
+L<Bivio::UI::Align|Bivio::UI::Align>.
+The value affects the C<ALIGN> attributes of the C<TABLE> tag.
+
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
@@ -250,6 +257,10 @@ sub initialize {
 	$fields->{empty_list_widget}->put(parent => $self);
 	$fields->{empty_list_widget}->initialize;
     }
+
+    $fields->{table_prefix} = "\n<table border=0 cellspacing=0 cellpadding=5 "
+	    ."align=".Bivio::UI::Align->as_html(
+		    $self->get_or_default('align', 'center')).'>';
     return;
 }
 
@@ -274,7 +285,7 @@ sub render {
     my($headings, $cells, $summary_cells, $summary_lines) =
 	    _get_enabled_widgets($self);
 
-    $$buffer .= "\n<table border=0 cellspacing=0 cellpadding=5 align=center>"
+    $$buffer .= $fields->{table_prefix}
 	    if $self->get_or_default('start_tag', 1);
 
 #TODO: optimize, for static tables just compute this once in initialize
