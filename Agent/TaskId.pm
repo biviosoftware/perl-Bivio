@@ -2890,7 +2890,46 @@ my(@_CFG) = (
         Bivio::Biz::Model::ImportedTransactionList->execute_load_review_page
         Bivio::UI::HTML::Club::AccountingImportReview
     )],
-);
+    [qw(
+        PASSWORD_FORGOTTEN
+        252
+        GENERAL
+        DOCUMENT_READ
+        pub/password-forgotten
+        Bivio::Biz::Model::PasswordRequestForm
+        Bivio::UI::HTML::General::ForgotPassword
+        next=PASSWORD_AUTHORIZATION_SENT
+    )],
+    [qw(
+        PASSWORD_AUTHORIZATION_SENT
+        253
+        GENERAL
+        DOCUMENT_READ
+        pub/password-reauthorized
+        Bivio::UI::HTML::General::ForgotPasswordConfirmation
+    )],
+    [qw(
+        PASSWORD_RESET
+        254
+        GENERAL
+        DOCUMENT_READ
+        pub/password-reset
+        Bivio::Biz::Model::PasswordRequest->execute_load_from_query
+        Bivio::Biz::Model::PasswordForm
+        Bivio::UI::HTML::User::EditPassword
+        next=CLUB_INTRO
+        NOT_FOUND=PASSWORD_REQUEST_NOT_FOUND
+        require_context=0
+    )],
+    [qw(
+        PASSWORD_REQUEST_NOT_FOUND
+        255
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_password_request_not_found
+    )]
+    ,);
 
 __PACKAGE__->compile([
     map {($_->[0], [$_->[1]])} @_CFG
