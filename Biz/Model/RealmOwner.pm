@@ -158,7 +158,7 @@ Other Models can declare a method of the form:
 
 sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Type::RealmName->to_literal(
+    return Bivio::Type::RealmName->to_string(
 	$model->get($model_prefix.'name'));
 }
 
