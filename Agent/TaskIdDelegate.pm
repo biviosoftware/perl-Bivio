@@ -499,7 +499,7 @@ sub get_delegate_info {
         ?/accounting/member/payment
         Bivio::Biz::Model::Lock
         Bivio::Type::EntryType->execute_member_payment
-        Bivio::Biz::Model::MemberList->execute_load_all_active
+        Bivio::Biz::Model::MemberList->execute_load_active_or_withdrawn
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::MemberPayment
@@ -676,7 +676,7 @@ sub get_delegate_info {
         ?/accounting/member/fee
         Bivio::Biz::Model::Lock
         Bivio::Type::EntryType->execute_member_payment_fee
-        Bivio::Biz::Model::MemberList->execute_load_all_active
+        Bivio::Biz::Model::MemberList->execute_load_active_or_withdrawn
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
 	Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::MemberFee
