@@ -289,7 +289,7 @@ sub init_model_primary_key_maps {
 	    my($cn) = $m->{name}.'.'.$pk;
 	    $proto->init_column($attrs, $cn, 'other', 0)
 		    unless $attrs->{column_aliases}->{$cn};
-	    $m->{primary_key_map}->{$cn} = $attrs->{column_aliases}->{$cn};
+	    $m->{primary_key_map}->{$pk} = $attrs->{column_aliases}->{$cn};
 	}
     }
     return;
