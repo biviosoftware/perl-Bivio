@@ -158,7 +158,8 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Model::AccountSummaryList->execute_load_all_with_query
+        Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
+        Bivio::Biz::Model::OffBookAccountSummaryList->execute_load_non_valuation_only
         Bivio::UI::HTML::Club::AccountList
         help=account-summary
     )],
@@ -1908,7 +1909,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&ADMIN_WRITE
         ?/accounting/opening-balance:?/accounting/opening_balance
-        Bivio::Biz::Model::AccountOpenBalanceForm
+        Bivio::Biz::Model::AccountOpenBalanceList->execute_load_all
+        Bivio::Biz::Model::AccountOpenBalanceListForm
         Bivio::UI::HTML::Club::AccountOpenBalance
         next=CLUB_INVESTMENT_OPEN_BALANCE
         cancel=CLUB_ADMIN_TOOLS
@@ -2497,6 +2499,25 @@ my(@_CFG) = (
 	Bivio::UI::HTML::Club::TransactionSummary
         next=CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
         help=transaction-history-report
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REALM_ACCOUNT
+        240
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/account
+        Bivio::Biz::Model::RealmAccountForm
+        Bivio::UI::HTML::Club::RealmAccount
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REALM_ACCOUNT_DELETE
+        242
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/account/detail/delete
+        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Action::RealmAccountDelete
     )],
 );
 
