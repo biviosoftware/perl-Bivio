@@ -45,6 +45,22 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 The user authenticated with the request.
 
+=item cookie : hash_ref
+
+This is the cookie that came in the HTTP header.  It may be
+C<undef>.  Very few tasks should access the cookie directly.
+If at all possible, the hidden form fields and the query string should
+be used to maintain state.
+
+Any fields set in the request cookie will be set in the reply.
+See L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>
+for details.
+
+=item cookie_state : Bivio::Agent::HTTP::CookieState
+
+Indicates the state of the cookie that arrived with the request.
+It may be C<undef>.
+
 =item form : hash_ref
 
 Attributes in url-encoded POST body or other agent equivalent.
@@ -149,9 +165,13 @@ my($_PACKAGE) = __PACKAGE__;
 my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
+my($_SUPPORT_PHONE);
+my($_SUPPORT_EMAIL);
 Bivio::IO::Config->register({
-    'mail_host' =>  $_MAIL_HOST,
-    'http_host' =>  $_HTTP_HOST,
+    mail_host =>  $_MAIL_HOST,
+    http_host =>  $_HTTP_HOST,
+    support_phone => Bivio::IO::Config->REQUIRED,
+    support_email => Bivio::IO::Config->REQUIRED,
 });
 my($_CURRENT);
 my($_GENERAL);
@@ -174,7 +194,10 @@ sub new {
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
     $self->put(request => $self,
 	    http_host => $_HTTP_HOST,
-	    mail_host => $_MAIL_HOST);
+	    mail_host => $_MAIL_HOST,
+	    support_phone => $_SUPPORT_PHONE,
+	    support_email => $_SUPPORT_EMAIL,
+	   );
     return $_CURRENT = $self;
 }
 
@@ -451,6 +474,14 @@ Host to create absolute URIs.  May contain a port number.
 
 Host used to create mail_to URIs.
 
+=item support_phone : string (required)
+
+Phone number to be displayed to get support.
+
+=item support_email : string (required)
+
+email to be displayed to get support
+
 =back
 
 =cut
@@ -459,10 +490,70 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_HTTP_HOST = $cfg->{http_host};
     $_MAIL_HOST = $cfg->{mail_host};
+    $_SUPPORT_PHONE = $cfg->{support_phone};
+    $_SUPPORT_EMAIL = $cfg->{support_email};
     return;
 }
 
 =for html <a name="internal_get_realm_for_task"></a>
+
+=head2 internal_get_realm_for_task(Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
+
+Returns the realm for the specified type.  task_id is passed for
+debugging purposes.
+
+=cut
+
+sub internal_get_realm_for_task {
+    my($self, $realm_type, $task_id) = @_;
+    # Find the appropriate realm
+    if ($realm_type eq Bivio::Auth::RealmType::GENERAL()) {
+	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
+	return $_GENERAL;
+    }
+    if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
+#TODO: This is wrong; need to allow user to go to club, from user realm
+	&_trace($task_id, ': for club realm, but no club specified');
+	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::DEMO_SUFFIX();
+	my($user_realms) = $self->get('user_realms');
+	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
+	foreach my $r (values(%$user_realms)) {
+	    next unless $r->{'RealmOwner.realm_type'}
+		    eq Bivio::Auth::RealmType::CLUB();
+	    my($rr) = $r->{'RealmUser.role'}->as_int;
+	    next unless  $rr > $role;
+	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix/x;
+	    $realm_id = $r->{'RealmUser.realm_id'};
+	    $role = $rr;
+	}
+	return undef unless $realm_id;
+	my($club) = Bivio::Biz::Model::RealmOwner->new($self);
+#TODO: This will bomb if the realm disappeared since (cached) user_realms
+#      was accessed.
+	$club->unauth_load(realm_id => $realm_id);
+	return Bivio::Auth::Realm::Club->new($club);
+    }
+    if ($realm_type eq Bivio::Auth::RealmType::USER()) {
+#TODO: Should this look in the user realm list?  This might point
+#      to an arbitrary user?
+	my($auth_user) = $self->get('auth_user');
+	if ($auth_user) {
+	    my($realm) = $self->unsafe_get('auth_user_realm');
+	    unless ($realm) {
+		$realm = Bivio::Auth::Realm::User->new($auth_user);
+		$self->put(auth_user_realm => $realm);
+	    }
+	    return $realm;
+	}
+	&_trace($task_id, ': for user realm, but no auth_user');
+#TODO: Distinguish between auth_user case and other cases
+	return undef;
+    }
+    CORE::die($realm_type->as_string, ': unknown realm type for ',
+	    $task_id->as_string);
+}
+
+=for html <a name="internal_redirect_realm"></a>
 
 =head2 internal_redirect_realm(TaskId new_task, Realm new_realm) : Realm
 
@@ -486,7 +577,7 @@ sub internal_redirect_realm {
 	# Only set realm if type is different
 	my($ar) = $self->get('auth_realm');
 	unless ($ar->get_type eq $trt) {
-	    $new_realm = _get_realm($self, $trt, $new_task);
+	    $new_realm = $self->internal_get_realm_for_task($trt, $new_task);
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
@@ -662,67 +753,13 @@ sub task_ok {
 	CORE::die("not yet implemented");
     }
     unless ($trt eq $art) {
-	$realm = _get_realm($self, $trt, $task_id);
+	$realm = $self->internal_get_realm_for_task($trt, $task_id);
 	return 0 unless $realm;
     }
     return $realm->can_user_execute_task($task, $self);
 }
 
 #=PRIVATE METHODS
-
-# _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
-#
-# Returns the realm for the specified type.  task_id is passed for
-# debugging purposes.
-#
-sub _get_realm {
-    my($self, $realm_type, $task_id) = @_;
-    # Find the appropriate realm
-    if ($realm_type eq Bivio::Auth::RealmType::GENERAL()) {
-	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
-	return $_GENERAL;
-    }
-    if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
-#TODO: This is wrong; need to allow user to go to club, from user realm
-	&_trace($task_id, ': for club realm, but no club specified');
-	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::DEMO_SUFFIX();
-	my($user_realms) = $self->get('user_realms');
-	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
-	foreach my $r (values(%$user_realms)) {
-	    next unless $r->{'RealmOwner.realm_type'}
-		    eq Bivio::Auth::RealmType::CLUB();
-	    my($rr) = $r->{'RealmUser.role'}->as_int;
-	    next unless  $rr > $role;
-	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix/x;
-	    $realm_id = $r->{'RealmUser.realm_id'};
-	    $role = $rr;
-	}
-	return undef unless $realm_id;
-	my($club) = Bivio::Biz::Model::RealmOwner->new($self);
-#TODO: This will bomb if the realm disappeared since (cached) user_realms
-#      was accessed.
-	$club->unauth_load(realm_id => $realm_id);
-	return Bivio::Auth::Realm::Club->new($club);
-    }
-    if ($realm_type eq Bivio::Auth::RealmType::USER()) {
-#TODO: Should this look in the user realm list?  This might point
-#      to an arbitrary user?
-	my($auth_user) = $self->get('auth_user');
-	if ($auth_user) {
-	    my($realm) = $self->unsafe_get('auth_user_realm');
-	    unless ($realm) {
-		$realm = Bivio::Auth::Realm::User->new($auth_user);
-		$self->put(auth_user_realm => $realm);
-	    }
-	    return $realm;
-	}
-	&_trace($task_id, ': for user realm, but no auth_user');
-#TODO: Distinguish between auth_user case and other cases
-	return undef;
-    }
-    CORE::die($realm_type->as_string, ': unknown realm type for ',
-	    $task_id->as_string);
-}
 
 # _get_role(Bivio::Agent::Request self, string realm_id) : Bivio::Auth::Role
 #
