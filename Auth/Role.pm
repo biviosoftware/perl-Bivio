@@ -54,7 +54,7 @@ any user: privileges of any authenticated user, not particular to realm
 
 =item WITHDRAWN
 
-withdrawn member: privileges of any authenticated user, not particular to realm
+withdrawn member: very limited access to this realm
 
 =item GUEST
 
@@ -99,8 +99,7 @@ __PACKAGE__->compile([
     'WITHDRAWN' => [
 	3,
 	'Withdrawn Member',
-	'withdrawn member: privileges of any authenticated user,'
-        .' not particular to realm',
+	'very limited access to this realm',
     ],
     'GUEST' => [
     	4,
