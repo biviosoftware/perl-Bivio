@@ -640,20 +640,6 @@ sub get_result_set_size {
     return int(@$rows);
 }
 
-=for html <a name="get_search_as_html"></a>
-
-=head2 get_search_as_html() : string
-
-Returns the search string as an html field value.
-
-=cut
-
-sub get_search_as_html {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{query}->get_search_as_html();
-}
-
 =for html <a name="get_summary"></a>
 
 =head2 get_summary() : Bivio::Biz::Model::SummaryList
