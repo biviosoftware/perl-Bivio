@@ -68,14 +68,18 @@ get hanging transactions.  No way to hit database.
 
 sub parse {
     my(undef, $req) = @_;
-    TRY: {
-	my($r) = $req->get('r');
+    my($r) = $req->get('r');
 
-	# Only accept forms via POST
-	last TRY unless $r->method_number() eq Apache::Constants::M_POST();
+    # Only accept forms via POST
+    unless ($r->method_number() eq Apache::Constants::M_POST()) {
+	Bivio::IO::Alert->warn('Method not POST: ',
+		$r->method(), '(', $r->method_number, ')');
+	return undef;
+    }
 
-	# Check content type
-	my($ct) = $r->header_in('Content-Type');
+    # Check content type
+    my($ct) = $r->header_in('Content-Type');
+    if (defined($ct)) {
 	if ($ct =~ /^\s*application\/x-www-form-urlencoded/i) {
 	    # Let Apache do the parsing for us.  There is a bug
 	    # here if the data isn't properly formatted.  Returns a
@@ -86,10 +90,9 @@ sub parse {
 	elsif ($ct =~ /^\s*multipart\/form-data/i) {
 	    return _parse($req, $r);
 	}
-	else {
-	    Bivio::IO::Alert->warn('unknown form Content-Type: ', $ct);
-	}
     }
+
+    Bivio::IO::Alert->warn('unknown form Content-Type: ', $ct);
     return undef;
 }
 
@@ -351,6 +354,8 @@ sub _read {
     # NOTE: Doesn't actually do a "soft" timeout.  Sets a hard
     # timeout.
     $r->read($$buf, $len) || $req->die('CLIENT_ERROR', 'read error');
+    $req->die('CLIENT_ERROR', 'buffer undefined after read')
+	    unless defined($$buf);
     $r->reset_timeout;
 }
 
