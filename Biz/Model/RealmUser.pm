@@ -39,6 +39,7 @@ use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
+use Bivio::Data::EW::ClubImporter;
 
 #=VARIABLES
 my($_ACTIVE_ROLES) = '';
@@ -95,6 +96,58 @@ sub MEMBER_ROLES {
 =head1 METHODS
 
 =cut
+
+=for html <a name="bring_offline"></a>
+
+=head2 bring_offline() : Bivio::Biz::Model::RealmUser
+
+Creates an off-line version of the RealmUser and moves all associated
+records to the offline version. Returns the off-line realm user.
+
+=cut
+
+sub bring_offline {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+    # create an off-line copy and move all associated records
+    my($user) = Bivio::Biz::Model::User->new($req);
+    $user->unauth_load_or_die(user_id => $self->get('user_id'));
+    my($address) = Bivio::Biz::Model::Address->new($req);
+    $address->unauth_load_or_die(
+	    realm_id => $user->get('user_id'),
+	    location => Bivio::Type::Location::HOME());
+    my($phone) = Bivio::Biz::Model::Phone->new($req);
+    $phone->unauth_load_or_die(
+	    realm_id => $user->get('user_id'),
+	    location => Bivio::Type::Location::HOME());
+    my($tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    $tax_id->unauth_load_or_die(
+	    realm_id => $user->get('user_id'));
+
+    my($importer) = Bivio::Data::EW::ClubImporter->new($req);
+    my($offline_realm_user) = $importer->create_user({
+	first_name => $user->get('first_name'),
+	middle_name => $user->get('middle_name'),
+	last_name => $user->get('last_name'),
+	active => 0,
+	street1 => $address->get('street1'),
+	city => $address->get('city'),
+	state => $address->get('state'),
+	zip => $address->get('zip'),
+	tax_id => $tax_id->get('tax_id'),
+	home_phone => $phone->get('phone'),
+    }, {
+	want_address => 1,
+	want_phone => 1,
+	want_ssn => 1,
+    });
+
+    # include the member's k-1
+    $self->change_ownership($offline_realm_user->get('user_id'), 1);
+
+    return $offline_realm_user;
+}
 
 =for html <a name="can_auth_user_edit"></a>
 
