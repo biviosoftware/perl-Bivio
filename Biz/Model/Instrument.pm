@@ -47,6 +47,26 @@ use Bivio::Type::PrimaryId;
 
 =cut
 
+=for html <a name="abbreviate_name"></a>
+
+=head2 static abbreviate_name(string name) : string
+
+Abbreviates an instrument name.
+
+Corporation --> Corp.
+Incorporated --> Inc.
+
+=cut
+
+sub abbreviate_name {
+    my(undef, $name) = @_;
+
+    $name =~ s/Corporation/Corp./i;
+    $name =~ s/Incorporated/Inc./i;
+
+    return $name;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
