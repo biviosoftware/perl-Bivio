@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Widget::Text;
 use strict;
 $Bivio::UI::HTML::Widget::Text::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::Text::VERSION;
 
 =head1 NAME
 
@@ -188,6 +189,7 @@ sub render {
     # Name
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' readonly' unless $form->is_field_editable($field);
 
     # Format if provided
     my($v);
