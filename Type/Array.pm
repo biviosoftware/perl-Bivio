@@ -32,6 +32,7 @@ a string representable type.  Not all conversions are supported.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -82,7 +83,7 @@ B<NOT SUPPORTED.>
 =cut
 
 sub from_literal {
-    die('not supported');
+    Bivio::Die->die('not supported');
 }
 
 =for html <a name="from_sql_column"></a>
@@ -132,7 +133,7 @@ B<NOT SUPPORTED>
 =cut
 
 sub to_query {
-    die('not supported');
+    Bivio::Die->die('not supported');
 }
 
 =for html <a name="to_sql_param"></a>
@@ -148,7 +149,7 @@ sub to_sql_param {
     my(undef, $param_value) = @_;
     # May be the empty string, which is same as C<undef>
     return $param_value ? join($;, map {
-	Bivio::IO::Alert->die($param_value, ': contains $; in an element')
+	Bivio::Die->die($param_value, ': contains $; in an element')
 		    if index($_, $;) >= $[;
 	$_;
     } @$param_value) : undef;
@@ -163,7 +164,7 @@ B<NOT SUPPORTED>
 =cut
 
 sub to_uri {
-    die('not supported');
+    Bivio::Die->die('not supported');
 }
 
 =for html <a name="to_xml"></a>
@@ -175,7 +176,7 @@ B<NOT SUPPORTED>
 =cut
 
 sub to_xml {
-    die('not supported');
+    Bivio::Die->die('not supported');
 }
 
 #=PRIVATE METHODS

@@ -270,7 +270,7 @@ sub add_days {
 		if FIRST_DATE_IN_JULIAN_DAYS() <= $j
 			&& $j < LAST_DATE_IN_JULIAN_DAYS();
     }
-    Bivio::IO::Alert->die('range_error: ', $date_time, ' + ', $days);
+    Bivio::Die->die('range_error: ', $date_time, ' + ', $days);
     # DOES NOT RETURN
 }
 
