@@ -93,9 +93,6 @@ sub render {
     my($prefix) = "document.$form_name.";
     my($target_amount) = $prefix . $source->get_field_name_for_html($self->get('target_field'));
     my($multiplier) = $self->get('multiplier');
-    $prefix .= $source->get_field_name_for_html($self->ancestral_get('field'));
-#    $prefix =~ s/(?<=_)0$//
-#	or die($prefix, ': not well formed html field for ', $self->ancestral_get('field'));
     Bivio::UI::HTML::Widget::JavaScript->render(
 	$source, $buffer, _function_name($self, $source), <<"EOF"
 
