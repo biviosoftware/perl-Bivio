@@ -365,16 +365,15 @@ sub format_query_with_auth_code {
 
 =head2 get_auth_code() : Bivio::Type::Integer
 
-=head2 static get_auth_code(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static get_auth_code(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns the authorization code for this invite.
 
 =cut
 
 sub get_auth_code {
-    my($self, $m, $p) = @_;
-    $p ||= '';
-    $m ||= $self;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($m, $p) = ($model, $model_prefix);
 
     # RealmInviteList assumes that only "get" is called.
     my($id, $realm_id, $date_time) = $m->get(
