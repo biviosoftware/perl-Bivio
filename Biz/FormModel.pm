@@ -140,6 +140,22 @@ sub execute {
     return;
 }
 
+=for html <a name="get_errors"></a>
+
+=head2 get_errors() : hash_ref
+
+Returns the list of field errors.  C<undef> if no errors.
+
+B<DO NOT MODIFY>.
+
+=cut
+
+sub get_errors {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{errors};
+}
+
 =for html <a name="get_field_error"></a>
 
 =head2 get_field_error(string name) : Bivio::TypeError
