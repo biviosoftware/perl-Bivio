@@ -88,6 +88,7 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {
 	'id' => $id,
     };
+    my($have_form) = 0;
     foreach $i (@items) {
 	if ($i =~ /^(next)=(\w+)$/) {
 	    $fields->{$1} = Bivio::Agent::TaskId->from_any($2);
@@ -95,9 +96,12 @@ sub new {
 	else {
 	    my($c) = Bivio::Collection::SingletonMap->get($i);
 	    Carp::croak($i, ": can't be executed") unless $c->can('execute');
+	    $have_form++ if $c->isa('Bivio::Biz::FormModel');
 	    push(@new_items, $c);
 	}
     }
+    Carp::croak($id->as_string, ": FormModels require \"next=\" item")
+		if $have_form && !$fields->{next};
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
@@ -197,10 +201,7 @@ and discard the mail queue unless is a REDIRECT_TASK.
 sub handle_die {
     my($proto, $die) = @_;
     return if $die->get('code') == Bivio::DieCode::REDIRECT_TASK();
-#TODO: Need to undo mkdir or writes in MailMessage.  Probably push on stack of
-#      commit handlers...??
-    Bivio::SQL::Connection->rollback;
-    Bivio::Mail::Common->discard_queued_messages;
+    $proto->rollback;
     return;
 }
 
@@ -223,6 +224,24 @@ sub initialize {
 	Bivio::Agent::Task->new(Bivio::Agent::TaskId->$id_name(), @items);
     } @$cfg;
     $_INITIALIZED = 1;
+    return;
+}
+
+=for html <a name="rollback"></a>
+
+=head2 rollback()
+
+Rollback an transactions.
+
+Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
+
+=cut
+
+sub rollback {
+#TODO: Need to undo mkdir or writes in MailMessage.  Probably push on stack of
+#      commit handlers...??
+    Bivio::SQL::Connection->rollback;
+    Bivio::Mail::Common->discard_queued_messages;
     return;
 }
 
