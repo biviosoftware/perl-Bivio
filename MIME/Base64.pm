@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::MIME::Base64;
 use strict;
 $Bivio::MIME::Base64::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::MIME::Base64::VERSION;
 
 =head1 NAME
 
@@ -41,14 +42,21 @@ use MIME::Base64 ();
 Converts I<encoded> to an unencoded form using the rules for
 http-base64 decoding.
 
+Returns C<undef> if the data couldn't be parsed.
+
 =cut
 
 sub http_decode {
     my(undef, $encoded) = @_;
     $encoded =~ tr/_*-/=+\//;
-#TODO: Need to catch decode errors.  MIME::Base64 outputs warnings, but
-#      silently succeeds.
-    return MIME::Base64::decode($encoded);
+    my($err) = 0;
+    local($SIG{__WARN__}) = sub {
+	$err++;
+	Bivio::IO::Alert->warn(@_);
+	return;
+    };
+    my($res) = MIME::Base64::decode($encoded);
+    return $err ? undef : $res;
 }
 
 =for html <a name="http_encode"></a>
@@ -71,7 +79,7 @@ sub http_encode {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
