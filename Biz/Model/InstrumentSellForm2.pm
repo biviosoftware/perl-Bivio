@@ -51,8 +51,7 @@ use Bivio::Type::TaxCategory;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_MAY_7_1997) = Bivio::Type::Date->date_from_parts(7, 5, 1997);
-
+my($math) = 'Bivio::Type::Amount';
 
 =head1 FACTORIES
 
@@ -96,11 +95,11 @@ sub execute_input {
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
     my($realm_inst_id) = $realm_inst->get('realm_instrument_id');
 
-    my($total_amount) = Bivio::Type::Amount->sub(
+    my($total_amount) = $math->sub(
 	    $properties->{'Entry.amount'}, $properties->{commission} || 0);
     my($shares) = $properties->{'RealmInstrumentEntry.count'};
     # value of the share at sale including commission
-    my($share_value) = Bivio::Type::Amount->div(
+    my($share_value) = $math->div(
 	    $total_amount, $properties->{'RealmInstrumentEntry.count'});
 
     # create the transaction
@@ -118,7 +117,7 @@ sub execute_input {
 	    entry_type =>
 	    Bivio::Type::EntryType::INSTRUMENT_SELL_COMMISSION_AND_FEE(),
 	    realm_instrument_id => $realm_inst_id,
-	    amount => Bivio::Type::Amount->neg($properties->{commission}),
+	    amount => $math->neg($properties->{commission}),
 	    tax_category => Bivio::Type::TaxCategory::NOT_TAXABLE(),
 	});
     }
@@ -148,10 +147,12 @@ sub execute_input {
     $lot_list->reset_cursor;
     _create_gain_entries($self, $realm_inst_id, $transaction);
 
-    Bivio::Biz::Model::RealmInstrumentValuation->create_or_update(
-	    $realm_inst_id,
-	    $properties->{'RealmTransaction.date_time'},
-	    Bivio::Type::Amount->div($properties->{'Entry.amount'}, $shares));
+    if ($realm_inst->is_local) {
+	Bivio::Biz::Model::RealmInstrumentValuation->create_or_update(
+		$realm_inst_id,
+		$properties->{'RealmTransaction.date_time'},
+		$math->div($properties->{'Entry.amount'}, $shares));
+    }
 
     # need to update units after this date
     my($realm) = $req->get('auth_realm')->get('owner');
@@ -306,7 +307,7 @@ sub validate {
     for (my($i) = 0; $i < $size; $i++) {
 	my($name) = 'lot'.$i;
 	my($value) = $data->{$name} || 0;
-	my($v, $err) = Bivio::Type::Amount->from_literal($value);
+	my($v, $err) = $math->from_literal($value);
 	if (defined($v)) {
 	    if ($v < 0) {
 		$err = Bivio::TypeError::GREATER_THAN_ZERO();
@@ -315,7 +316,7 @@ sub validate {
 		$err = Bivio::TypeError::GREATER_THAN_QUANTITY();
 	    }
 	    else {
-		$sum = Bivio::Type::Amount->add($sum, $v);
+		$sum = $math->add($sum, $v);
 	    }
 	}
 	if (defined($err)) {
@@ -364,7 +365,7 @@ sub _create_gain_entries {
 	$inst_entry->create_entry($transaction, {
 	    entry_type => Bivio::Type::EntryType::INSTRUMENT_SELL(),
 	    realm_instrument_id => $id,
-	    amount => Bivio::Type::Amount->round($fields->{$type}, 2),
+	    amount => $math->round($fields->{$type}, 2),
 	    tax_category => $type eq 'stcg'
 	        ? Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN()
 	        : $type eq 'mtcg'
@@ -385,31 +386,29 @@ sub _create_sell_entry {
     my($fields) = $self->{$_PACKAGE};
 
     # cost basis
-    my($cost_basis) = Bivio::Type::Amount->mul(
+    my($cost_basis) = $math->mul(
 	    $lot_list->get('cost_per_share'), $amount);
     my($inst_entry) = Bivio::Biz::Model::RealmInstrumentEntry->new(
 	    $self->get_request);
     $inst_entry->create_entry($transaction, {
 	entry_type => Bivio::Type::EntryType::INSTRUMENT_SELL(),
 	realm_instrument_id => $id,
-	amount => Bivio::Type::Amount->neg($cost_basis),
+	amount => $math->neg($cost_basis),
 	tax_category => Bivio::Type::TaxCategory::NOT_TAXABLE(),
 	tax_basis => 1,
-	count => Bivio::Type::Amount->neg($amount),
+	count => $math->neg($amount),
 	external_identifier => $lot_list->get('lot'),
 	acquisition_date => $lot_list->get('acquisition_date'),
     });
 
     # gain
-    my($gain) = Bivio::Type::Amount->sub(
-	    Bivio::Type::Amount->mul($amount, $share_value),
+    my($gain) = $math->sub( $math->mul($amount, $share_value),
 	    $cost_basis);
     my($gain_type) = lc(Bivio::Biz::Accounting::Tax->get_gain_type(
 	    $lot_list->get('acquisition_date'),
 	    $transaction->get('date_time'))->get_short_desc);
 
-    $fields->{$gain_type} = Bivio::Type::Amount->add($fields->{$gain_type},
-	    $gain);
+    $fields->{$gain_type} = $math->add($fields->{$gain_type}, $gain);
     return;
 }
 
