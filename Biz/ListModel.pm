@@ -242,6 +242,20 @@ sub can_next_row {
     return defined(shift->[$_IDI]->{cursor}) ? 1 : 0;
 }
 
+=for html <a name="empty_query"></a>
+
+=head2 empty_query() : Bivio::SQL::ListQuery
+
+Returns an empty query.  Does not contain an I<auth_id>.
+
+=cut
+
+sub empty_query {
+    my($self) = @_;
+    return Bivio::SQL::ListQuery->new(
+	{}, $self->internal_get_sql_support, $self);
+}
+
 =for html <a name="execute_load_all"></a>
 
 =head2 execute_load_all(Bivio::Agent::Request req) : boolean
@@ -778,10 +792,13 @@ Loads the ListModel with I<rows>.
 Calls L<internal_post_load_row|"internal_post_load_row"> after
 all the rows are loaded if I<self> implements this method.
 
+If I<query> is C<undef>, call L<empty_query|"empty_query">.
+
 =cut
 
 sub internal_load {
     my($self, $rows, $query) = @_;
+    $query ||= $self->empty_query;
     # Easier to just replace the hash_ref
     my($empty_properties, $load_notes) = @{$self->[$_IDI]}{
 	qw(empty_properties load_notes)};
