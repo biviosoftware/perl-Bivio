@@ -276,7 +276,7 @@ sub format_uri_for_this_property_model {
     my($self, $task, $name) = @_;
     $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
     my($query, $mi) = _get_model_query($self, $name);
-    $self->throw_die('NOT_FOUND', {
+    $self->throw_die('MODEL_NOT_FOUND', {
 	message => 'missing primary keys in self for model', entity => $name})
 	unless $query;
     return $self->get_request->format_uri(
@@ -365,7 +365,7 @@ the model could not be loaded.
 sub get_model {
     my($self) = shift;
     my($model) = $self->unsafe_get_model(@_);
-    $self->throw_die('NOT_FOUND', {
+    $self->throw_die('MODEL_NOT_FOUND', {
 	message => 'unable to load model', entity => $model})
 	    unless $model->is_loaded;
     return $model;

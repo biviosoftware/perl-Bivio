@@ -811,7 +811,8 @@ sub internal_load {
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
-    $self->throw_die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
+    $self->throw_die('MODEL_NOT_FOUND')
+        if $self->NOT_FOUND_IF_EMPTY && !@$rows;
     $self->put_on_request;
     my($req) = $self->unsafe_get_request;
     $req->put(list_model => $self) if $req;
@@ -1073,7 +1074,7 @@ unless I<query> is already a ListQuery.
 
 I<this> must be specified.
 
-Dies with NOT_FOUND if no rows are returned.
+Dies with MODEL_NOT_FOUND if no rows are returned.
 
 I<count> will be added to I<query> only if it is a hash_ref.
 
@@ -1366,7 +1367,7 @@ Returns self.
 sub set_cursor_or_not_found {
     my($self) = shift;
     return $self if $self->set_cursor(@_);
-    $self->throw_die('NOT_FOUND', {message => 'no such row',
+    $self->throw_die('MODEL_NOT_FOUND', {message => 'no such row',
 	entity => $_[0]});
 }
 
@@ -1461,7 +1462,7 @@ sub _load_this {
     my($count) = _unauth_load($self, $query);
     return $self->set_cursor_or_die(0) if $count == 1;
 
-    $self->throw_die('NOT_FOUND', {message => 'this not found',
+    $self->throw_die('MODEL_NOT_FOUND', {message => 'this not found',
 	query => $query}) unless $count;
 
     $self->throw_die('TOO_MANY', {message => 'expecting just one this',

@@ -334,7 +334,7 @@ See L<unauth_load_this_from_request|"unauth_load_this_from_request">
 sub execute_unauth_load_this {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
-    $self->throw_die('NOT_FOUND')
+    $self->throw_die('MODEL_NOT_FOUND')
 	unless $self->unauth_load_this_from_request;
     return 0;
 }
@@ -682,7 +682,7 @@ sub unauth_load {
 
 =head2 unauth_load_or_die(hash_ref query) : Bivio::Biz::Model
 
-See L<unauth_load|"unauth_load"> for params.  Throws a C<NOT_FOUND>
+See L<unauth_load|"unauth_load"> for params.  Throws a C<MODEL_NOT_FOUND>
 exception if the load fails.
 
 Returns I<self>.
@@ -844,7 +844,8 @@ sub _add_auth_id {
 sub _die_not_found {
     my($self, $args, $pkg, $file, $line) = @_;
     ($self, $args) = _load_args($self, @$args);
-    $self->throw_die(Bivio::DieCode::NOT_FOUND(), $args, $pkg, $file, $line);
+    $self->throw_die(Bivio::DieCode->MODEL_NOT_FOUND, $args, $pkg,
+        $file, $line);
     # DOES NOT RETURN
 }
 
