@@ -261,48 +261,21 @@ sub _upgrade {
 #
 sub _upgrade_ec_subscription {
     my($req) = @_;
-    print("Updating infinite subscriptions\n");
     my($d) = 'Bivio::Type::Date';
-    # change infinite subscription to be get_max - 1 year.
-    Bivio::SQL::Connection->execute("
-UPDATE ec_subscription_t set end_date = to_date(?, 'J SSSSS')
-WHERE end_date = to_date(?, 'J SSSSS')",
-	[
-	    # Hack: copied from Model.ECSubscription
-	    $d->add_days($d->get_max, -366),
-	    $d->get_max,
-	]);
-    print("Deleting free trials where other subscriptions in place\n");
-    # delete free_trials which have another subscription;
-    _do_sql('
-DELETE FROM ec_subscription_t
-WHERE subscription_type = '
-	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
-	.'
-AND realm_id IN (
-   SELECT realm_id
-   FROM ec_subscription_t
-   WHERE subscription_type != '
-	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
-	.'
-   )
-/'
-	);
 
-    print("Making all subscriptions non-overlapping\n");
+    print("Making all AccountKeeper subscriptions non-overlapping and ending on 12/31/2001\n");
     # Find all realms with more than one subscription
     my($realms) = [];
     my($sth) = Bivio::SQL::Connection->execute('
 SELECT distinct realm_owner_t.realm_id, realm_owner_t.name
   FROM ec_subscription_t, realm_owner_t
   WHERE realm_owner_t.realm_id = ec_subscription_t.realm_id
-  AND subscription_type != '
-	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
+  AND subscription_type = '
+	.Bivio::Type::ECSubscription->ACCOUNT_KEEPER->as_sql_param
 	.'
   AND realm_type = '
 	.Bivio::Auth::RealmType->CLUB->as_sql_param
 	.'
-  HAVING count(ec_subscription_id) > 1
   GROUP BY realm_owner_t.realm_id, realm_owner_t.name
   ORDER BY realm_owner_t.name
     ');
@@ -350,14 +323,16 @@ SELECT distinct realm_owner_t.realm_id, realm_owner_t.name
 	    $end_date = $start_date;
 	}
     }
-    print("Dropping renewal_period and renewal_method\n");
+    print("Adding index bivio_buck_t5 & Dropping ec_subscription_period\n");
     # Fix up tables (dropping columns and unnecessary constraints)
     _do_sql('
-DROP INDEX ec_subscription_t6
+CREATE INDEX bivio_buck_t5 on bivio_buck_t (
+  ec_payment_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
 /
-ALTER TABLE ec_subscription_t DROP COLUMN renewal_period
-/
-ALTER TABLE ec_subscription_t DROP COLUMN renewal_method
+ALTER TABLE ec_payment_t DROP COLUMN ec_subscription_period
 /
 ');
     return;
