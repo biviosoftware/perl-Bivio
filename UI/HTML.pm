@@ -43,9 +43,6 @@ the HTML part of a Facade.
 Returns C<undef> which is uninterpreted
 by L<internal_initialize_value|"internal_initialize_value">.
 
-Some configuration can't be C<undef> and will be checked
-in L<initialize_complete|"initialize_complete">.
-
 =cut
 
 sub UNDEF_CONFIG {
@@ -92,7 +89,7 @@ Registers with Facade.
 
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto, ['Icon', 'Color', 'Font']);
+    Bivio::UI::Facade->register($proto, ['Icon', 'Color', 'Font', 'Text']);
     return;
 }
 
