@@ -86,8 +86,8 @@ use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::File;
 use Bivio::Type::FileName;
-use HTTP::Request ();
-use LWP::UserAgent ();
+use Bivio::Ext::LWPUserAgent;
+use Bivio::Type::FileName;
 use Config ();
 
 #=VARIABLES
@@ -334,24 +334,31 @@ sub install {
     $rpm_opt .= '--force ' if $self->get('force');
     $rpm_opt .= '--nodeps ' if $self->get('nodeps');
 
-    # use proxy settings if present in environment (also used by LWP)
-    if(defined($ENV{'http_proxy'})
-            && $ENV{'http_proxy'} =~ m!^http://([^:]+):(\d+)!) {
-        $rpm_opt .= "--httpproxy $1 --httpport $2 ";
-	$output .= "Fetching via http proxy $1:$2\n";
-    }
+#TODO: Need to restore once all hosts are on rpm 4.0
+#    # use proxy settings if present in environment (also used by LWP)
+#    if(defined($ENV{'http_proxy'})
+#            && $ENV{'http_proxy'} =~ m!^http://([^:]+):(\d+)!) {
+#        $rpm_opt .= "--httpproxy $1 --httpport $2 ";
+#	$output .= "Fetching via http proxy $1:$2\n";
+#    }
 
     # install all the packages
     for my $package (@packages) {
+	$package .= '.rpm'
+	    if $package =~ /\.\d+$/;
 	$package .= '-'.$self->get('version').'.rpm'
-		unless $package =~ /\.rpm$/;
-        my($uri) = _create_URI($package);
-	my($command) = "umask 022; rpm -Uvh $rpm_opt $uri";
+	    unless $package =~ /\.rpm$/;
+	my($uri) = _create_uri($package);
+#TODO: remove extra copy when rpm 4 is everywhere
+	my($file) = _rpm_uri_to_filename($uri);
+	my($command) = "umask 022 && GET '$uri' > '$file'"
+	    . " && rpm -Uvh $rpm_opt '$file'";
 	if ($self->get('noexecute')) {
 	    $output .= "Would run: $command\n";
 	    next;
 	}
 	_system($command, \$output);
+	unlink($file);
     }
     $output =~ s/warning: (\S+) saved as (\S+)\s*/_err_parser($1, $2)/esg;
     return $output;
@@ -380,9 +387,8 @@ sub list {
     my($self, $uri) = @_;
     my($output) = '';
 
-    $uri = _create_URI($uri || '');
-    my($ua) = LWP::UserAgent->new();
-    $ua->env_proxy();
+    $uri = _create_uri($uri || '');
+    my($ua) = Bivio::Ext::LWPUserAgent->new;
     my($reply) = $ua->request(HTTP::Request->new('GET', $uri));
     Bivio::Die->die($uri, ": ", $reply->status_line)
 		unless $reply->is_success;
@@ -412,17 +418,6 @@ EOF
 %define allfiles cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'
 %define allcfgs cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'
 EOF
-}
-
-# _create_URI(string name) : string
-#
-# Returns a full URI for the specified file name. Prepends host and/or
-# directory if not already specified.
-#
-sub _create_URI {
-    my($name) = @_;
-    return $name if $name =~ /^http/;
-    return "$_RPM_HTTP_ROOT/$name";
 }
 
 # _create_rpm_spec(string specin, string_ref output) : (string, string, string)
@@ -476,6 +471,17 @@ EOF
     my($specout) = "$specin-build";
     Bivio::IO::File->write($specout, \$buf);
     return ($specout, "$name-$version", "$name-$version-$release");
+}
+
+# _create_uri(string name) : string
+#
+# Returns a full URI for the specified file name. Prepends host and/or
+# directory if not already specified.
+#
+sub _create_uri {
+    my($name) = @_;
+    return $name if $name =~ /^http/;
+    return "$_RPM_HTTP_ROOT/$name";
 }
 
 # _err_parser() : string
@@ -566,6 +572,16 @@ sub _read_all {
     my(@data) = <IN>;
     close(IN);
     return \@data;
+}
+
+# _rpm_uri_to_filename(string uri) : string
+#
+# Creates file name from $uri.  Ensures directory exists.
+#
+sub _rpm_uri_to_filename {
+    my($uri) = @_;
+    return Bivio::IO::File->mkdir_p('/var/spool/up2date')
+	. '/'. Bivio::Type::FileName->get_tail($uri);
 }
 
 # _save_rpm_file(string filename, string_ref output)
