@@ -60,8 +60,7 @@ sub new {
     my($proto, $name) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
     $self->{$_PACKAGE} = {
-	col_renderer => [],
-	head_renderer => []
+	col_renderer => []
     };
     return $self;
 }
@@ -117,7 +116,7 @@ sub render {
     $self->render_body($model, $req);
     $req->print('</table>');
 
-=for comment
+=begin comment
 
 <table width="100%" border=0 cellpadding=5 cellspacing=0>
 <tr bgcolor="#E0E0FF">
@@ -215,30 +214,46 @@ sub render_heading {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #TODO: use $fields->{head_renderer}
-
     $req->print('<tr bgcolor="#E0E0FF">');
     for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
-	$req->print('<th align=left><font face="arial,helvetica,sans-serif">
-<small>'.$model->get_column_heading($i).'</small></font></th>');
+
+	$req->print('<th align=left>');
+	my($dir) = '';
+
+	if ($model->get_sort_key($i)) {
+
+	    my($fp) = $req->get_model_args();
+	    my($fp2) = Bivio::Biz::FindParams->new();
+
+	    if ($fp->get('sort') and $fp->get('sort') =~ /(.)$i/) {
+		if ($1 eq 'a') {
+		    $fp2->put('sort', 'd'.$i);
+		    $dir = ' <';
+		}
+		elsif ($1 eq 'd') {
+		    $fp2->put('sort', 'a'.$i);
+		    $dir = ' >';
+		}
+	    }
+	    else {
+		$fp2->put('sort', 'a'.$i);
+	    }
+	    $req->print('<a href="/'.$req->get_target_name().'/'
+		    .$req->get_controller_name().'/'
+		    .$self->get_name().'/?mf='.$fp2->to_string().'">');
+	}
+
+	$req->print('<font face="arial,helvetica,sans-serif">');
+	$req->print('<small>'.$model->get_column_heading($i)
+		.'</small></font>');
+
+	$req->print('</a>') if ($model->get_sort_key($i));
+
+	$req->print($dir) if ($dir);
+	$req->print('</th>');
     }
 
     $req->print('</tr>');
-}
-
-=for html <a name="set_column_heading_renderer"></a>
-
-=head2 set_column_heading_renderer(int column, Renderer rdr)
-
-Sets the renderer to use for the heading of the specified column index.
-
-=cut
-
-sub set_column_heading_renderer {
-    my($self, $column, $renderer) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    $fields->{head_renderer}->[$column] = $renderer;
 }
 
 =for html <a name="set_column_renderer"></a>
