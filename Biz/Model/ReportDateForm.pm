@@ -75,6 +75,9 @@ sub execute_input {
     my($self) = @_;
 
     my($req) = $self->get_request();
+    $req->put('query', {
+	$_DATE_KEY => $self->get('report_date')
+    });
     $req->put('query_string', $_DATE_KEY.'='
 	    .Bivio::Util::escape_uri($self->get('report_date')));
 
