@@ -1738,15 +1738,19 @@ my(@_CFG) = (
         next=CLUB_ADMIN_INVITE_LIST
     )],
     [qw(
-        CLUB_ADMIN_GUEST_DELETE
+        CLUB_ADMIN_SELF_DELETE
         153
         CLUB
-        ADMIN_WRITE
-        ?/admin/guest/delete
-        Bivio::Biz::Model::ClubUserList->execute_load_this
-        Bivio::Biz::Model::DeleteGuestForm
-        Bivio::UI::HTML::Club::DeleteGuest
-        next=CLUB_ADMIN_USER_LIST
+        ADMIN_READ&MEMBER_READ
+        ?/admin/roster/delete/self
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
+        Bivio::Biz::Model::ClubUserList->execute_load_target_as_this
+        Bivio::Biz::Model::ClubUserList->execute_task_ok
+        Bivio::Biz::Model::DeleteRealmUserForm
+        Bivio::UI::HTML::Club::DeleteUser
+        next=CLUB_ADMIN_SELF_DISSOCIATE_DONE
+        want_query=0
     )],
     [qw(
         CLUB_ADMIN_GUEST_2_MEMBER
@@ -1756,6 +1760,7 @@ my(@_CFG) = (
         ?/admin/guest2member
         Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::ClubUserList->execute_load_this
+        Bivio::Biz::Action::TargetRealm->execute_this_guest
         Bivio::Biz::Model::Guest2MemberForm
         Bivio::UI::HTML::Club::Guest2Member
         next=CLUB_ADMIN_INVITE_LIST
@@ -2254,15 +2259,16 @@ my(@_CFG) = (
         help=member-transactions
     )],
     [qw(
-        CLUB_ADMIN_MEMBER_DELETE
+        CLUB_ADMIN_USER_DELETE
         192
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
-        ?/admin/member/delete
+        ?/admin/roster/delete:?/admin/member/delete:?/admin/guest/delete
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
-        Bivio::Biz::Model::DeleteMemberForm
-        Bivio::UI::HTML::Club::DeleteMember
+        Bivio::Biz::Model::ClubUserList->execute_task_ok
+        Bivio::Biz::Model::DeleteRealmUserForm
+        Bivio::UI::HTML::Club::DeleteUser
         next=CLUB_ADMIN_USER_LIST
     )],
 #TODO: These permissions are "wrong" in that you need, not write, but
@@ -3019,21 +3025,23 @@ my(@_CFG) = (
         CLUB_ADMIN_MEMBER_TAKE_OFFLINE
         264
         CLUB
-        ADMIN_READ&MEMBER_READ
-        ?/admin/member/take-offline
+        ADMIN_WRITE&MEMBER_WRITE
+        ?/admin/roster/take-offline
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
-        Bivio::Biz::Model::MemberOfflineForm
-        Bivio::UI::HTML::Club::MemberTakeOffline
+        Bivio::Biz::Model::ClubUserList->execute_task_ok
+        Bivio::Biz::Model::TakeOfflineRealmUser
+        Bivio::UI::HTML::Club::TakeOfflineUser
         next=CLUB_ADMIN_USER_LIST
         help=taking-offline
     )],
     [qw(
-        MEMBER_OFFLINE_CONFIRMATION
+        CLUB_ADMIN_SELF_DISSOCIATE_DONE
         265
-        USER
-        DOCUMENT_READ
-        ?/offline
-        Bivio::UI::HTML::User::MemberOfflineConfirmation
+        CLUB
+        LOGIN
+        ?/admin/roster/remove/self/done
+        Bivio::UI::HTML::Club::SelfDissociateDone
     )],
     [qw(
         CLUB_ADM_DELETE
@@ -3079,7 +3087,7 @@ my(@_CFG) = (
         require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_MEMBER_MERGE
+        CLUB_ADM_MEMBER_MERGE
         270
         CLUB
         ADMIN_WRITE&SUPER_USER_TRANSIENT
@@ -3169,6 +3177,22 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailCollapsedList
         next=CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
         help=mail
+    )],
+    [qw(
+        CLUB_ADMIN_SELF_TAKE_OFFLINE
+        278
+        CLUB
+        ADMIN_READ&MEMBER_READ
+        ?/admin/roster/take-offline/self
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
+        Bivio::Biz::Model::ClubUserList->execute_load_target_as_this
+        Bivio::Biz::Model::ClubUserList->execute_task_ok
+        Bivio::Biz::Model::TakeOfflineRealmUser
+        Bivio::UI::HTML::Club::TakeOfflineUser
+        next=CLUB_ADMIN_SELF_DISSOCIATE_DONE
+        help=taking-offline
+        want_query=0
     )],
 );
 
