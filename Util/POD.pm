@@ -211,14 +211,13 @@ sub _find_files {
 # Rewrites html with $_HTML_ROOT_TAG replaced with relative paths.
 #
 sub _fixup_html {
-    return;
     my($module, $html) = @_;
     my($rel_root) = $module;
     $rel_root =~ s!/+!/!g;
     $rel_root =~ s![^/]+$!!;
     $rel_root =~ s![^/]+!..!g;
     my($data) = Bivio::IO::File->read($html);
-    $$data =~ s/\Q$_HTML_ROOT_TAG\E\/*/$rel_root/sg;
+    my($n) = $$data =~ s/$_HTML_ROOT_TAG\/*/$rel_root/sg;
     Bivio::IO::File->write($html, $data);
     return
 }
