@@ -151,6 +151,7 @@ sub check_messages {
             /imapd\[\d+\]: connect from/ && next;
             /imapd\[\d+\]: imap service init from/ && next;
             /imapd\[\d+\]: Authenticated user=/ && next;
+            /imapd\[\d+\]: Moved \d+ bytes of new mail/ && next;
 
             /sslwrap\[\d+\]: connect from/ && next;
 
@@ -172,6 +173,7 @@ sub check_messages {
             /named\[\d+\]: sysquery: query/ && next;
             /named\[\d+\]: zone transfer/ && next;
             /named\[\d+\]: approved AXFR from/ && next;
+            /named\[\d+\]: named (startup|shutdown) succeeded/ && next;
             /named-xfer\[\d+\]: send AXFR query/ && next;
 
             /cvs\[\d+\]: connect from/ && next;
