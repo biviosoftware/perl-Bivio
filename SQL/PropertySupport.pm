@@ -29,7 +29,8 @@ use Bivio::SQL::Support;
 
 C<Bivio::SQL::PropertySupport> is SQL transaction support for
 L<Bivio::Biz::PropertyModel>s. PropertyModel life-cycle methods are
-supported throught L<"find">, L<"create">, L<"delete">, and L<"update">.
+supported throught L<"unsafe_load"> L<"create">, L<"delete">, and
+L<"update">.
 
 Support uses the L<Bivio::SQL::Connection> for connections and
 statement execution.
@@ -103,6 +104,9 @@ This module takes ownership of I<decl>.
 sub new {
     my($proto, $decl) = @_;
     my($attrs) = {
+	class => $decl->{class},
+	parents => {},
+	children => [],
 	table_name => $decl->{table_name},
 	columns => {},
 	primary_key => [],
@@ -159,7 +163,7 @@ sub create {
     my($attrs) = $self->internal_get;
     my($sql) = $attrs->{insert};
 
-    # Allow the caller to overrid primary_id.  Probably should check
+    # Allow the caller to override primary_id.  Probably should check
     # that isn't a valid sequence.
     my($pid) = $attrs->{primary_id_name};
     if ($pid) {
@@ -220,6 +224,46 @@ sub delete {
     return $rows ? 1 : 0;
 }
 
+=for html <a name="delete_all"></a>
+
+=head2 delete_all(hash_ref values, ref die) : int
+
+Deletes all the rows specified by the possibly partial key values.
+If an error occurs during the delete, calls die.
+Returns the number of rows deleted.
+
+=cut
+
+sub delete_all {
+    my($self, $values, $die) = @_;
+    my($attrs) = $self->internal_get;
+    my($sql) = 'delete from '.$attrs->{table_name}.' where ';
+    my($params) = [];
+    my($first_col) = 1;
+    foreach my $col (sort(keys(%$values))) {
+	$sql .= ($first_col ? '' : ' and ').$col.'=?';
+	push(@$params, $values->{$col});
+	$first_col = 0;
+    }
+    my($sth) = Bivio::SQL::Connection->execute($sql, $params, $die);
+    my($rows) = $sth->rows;
+    $sth->finish;
+    return $rows ? $rows : 0;
+}
+
+=for html <a name="get_children"></a>
+
+=head2 get_children() : array_ref
+
+Returns an array of (model class, key map) pairs.
+
+=cut
+
+sub get_children {
+    my($self) = @_;
+    return $self->get('children');
+}
+
 =for html <a name="iterate_start></a>
 
 =head2 iterate_start(ref die, string order_by) : ref
@@ -245,6 +289,20 @@ sub iterate_start {
     my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
     return $iterator;
+}
+
+=for html <a name="register_child_model"></a>
+
+=head2 register_child_model(string child, hash_ref key_map)
+
+Adds the (child, key_map) pair to the model's child list.
+
+=cut
+
+sub register_child_model {
+    my($self, $child, $key_map) = @_;
+    push(@{$self->get('children')}, $child, $key_map);
+    return;
 }
 
 =for html <a name="unsafe_load"></a>
@@ -354,6 +412,24 @@ sub update {
 
 #=PRIVATE METHODS
 
+# _add_parent_model(hash_ref attrs, string field, string parent_model, string parent_field)
+#
+# Adds the specified (parent_model, parent_field) mapping to the current
+# model's parent list.
+#
+sub _add_parent_model {
+    my($attrs, $field, $parent_model, $parent_field) = @_;
+    my($parents) = $attrs->{parents};
+    $parents->{$parent_model} ||= {};
+
+    # use field name to uniquely identify if field already in use
+    if (int(grep(/$field/, values(%{$parents->{$parent_model}})))) {
+	$parent_model .= '#'.$field;
+    }
+    $parents->{$parent_model}->{$field} = $parent_field;
+    return;
+}
+
 # _equals(scalar v, scalar v2) : boolean
 #
 # Returns true if v is exactly the same as v2
@@ -363,8 +439,6 @@ sub _equals {
     # oracle treats '' and null the same
     $v = '' unless defined($v);
     $v2 = '' unless defined($v2);
-#    return 0 if defined($v) != defined($v2);
-#    return 1 unless defined($v);  # both undefined
     return $v eq $v2;
 }
 
@@ -399,7 +473,14 @@ sub _init_columns {
 			? 1 : 0;
 	push(@{$attrs->{primary_key}}, $col)
 		if $col->{is_primary_key};
+
+	# related model field type
+	if ($cfg->[0] =~ /^(.*)\.(.*)$/) {
+	    my($parent_model, $parent_field) = ($1, $2);
+	    _add_parent_model($attrs, $n, $parent_model, $parent_field);
+	}
     }
+    _register_with_parents($attrs);
     Bivio::Die->die($attrs->{table_name}, ': too many BLOBs')
 		if $attrs->{has_blob} > 1;
     Bivio::Die->die($attrs->{table_name}, ': no primary keys')
@@ -490,6 +571,24 @@ sub _prepare_select {
 	} sort keys(%$query));
     }
     return $sql;
+}
+
+# _register_with_parents(hash_ref attrs)
+#
+# Registers the current model class with the each parent model/field
+# added during L<"_add_parent_model">.
+#
+sub _register_with_parents {
+    my($attrs) = @_;
+    my($parents) = $attrs->{parents};
+    foreach my $parent (keys(%$parents)) {
+	my($parent_class) = $parent;
+	$parent_class =~ s/^(.*)\#\w+$/$1/;
+	Bivio::Biz::Model->get_instance($parent_class)->new()
+		    ->register_child_model($attrs->{class},
+			    $parents->{$parent});
+    }
+    return;
 }
 
 =head1 COPYRIGHT
