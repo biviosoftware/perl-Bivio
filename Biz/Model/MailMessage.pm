@@ -107,11 +107,11 @@ sub create {
 
     my($kbytes) = $values->{kbytes};
     #NOTE this is an estimate:
-    my($isok) = $club->check_kbytes(\$kbytes);
-    #kbytes is incremented if okay.
-    if($isok eq(0)){
-	die("Mail message size exceeds max size for club.");
-    }
+#    my($isok) = $club->check_kbytes(\$kbytes);
+#    #kbytes is incremented if okay.
+#    if($isok eq(0)){
+#	die("Mail message size exceeds max size for club.");
+#    }
 
     my $rfc = $msg->get_rfc822();
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
@@ -132,9 +132,9 @@ sub create {
     my($curkbytes) = $club->get('kbytes_in_use') + $mimeparser->get_kbytes_written();
     _trace('updating kbytes_in_use for this club: ', $curkbytes) if $_TRACE;
 #TODO There could be rounding error, here:
-    $club->update({
-	kbytes_in_use => $curkbytes,
-    });
+#    $club->update({
+#	kbytes_in_use => $curkbytes,
+#    });
     return;
 }
 
