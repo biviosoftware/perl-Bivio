@@ -226,11 +226,11 @@ sub validate {
     $self->validate_not_negative('paid');
     $self->validate_greater_than_zero('RealmInstrumentEntry.count');
 
-    # check that the year is not over the fiscal boundary
-    if (Bivio::Type::Date->compare(
-	    $self->get('RealmTransaction.date_time'),
+    # check that the year is not over the fiscal boundary.
+    # Don't check if already in error (must be non-null)
+    my($date) = $self->get('RealmTransaction.date_time');
+    if (defined($date) && Bivio::Type::Date->compare($date,
 	    Bivio::Biz::Accounting::Tax->get_this_fiscal_year) > 0) {
-
 	$self->internal_put_error('RealmTransaction.date_time',
 		Bivio::TypeError::INVALID_OPENING_BALANCE_DATE())
     }
