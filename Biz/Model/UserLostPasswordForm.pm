@@ -65,7 +65,7 @@ sub execute_ok {
     })->update({password => Bivio::Type::Password->encrypt($password)});
 
     my($uri) = $req->format_http('CHANGE_PASSWORD', {
-        $_REALM_ID_KEY => Bivio::Type::PrimaryId->to_query(
+        $_REALM_ID_KEY => Bivio::Type::PrimaryId->to_literal(
             _get_email($self)->get('realm_id')),
         $_PASSWORD_KEY => $password,
     });
