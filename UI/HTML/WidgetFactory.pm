@@ -35,6 +35,8 @@ use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -59,18 +61,12 @@ sub create {
     $attrs ||= {};
 
     my($model, $field_name, $field_type) = _get_model_and_field_type($field);
-
-    my($display_only) = 1;
-    if (UNIVERSAL::isa($model, 'Bivio::Model::FormModel')) {
-	die("not implemented");
-    }
-
     my($widget);
-    if ($display_only) {
-	$widget = _create_display($field_name, $field_type, $attrs);
+    if (UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
+	$widget = _create_edit($model, $field_name, $field_type, $attrs);
     }
     else {
-	$widget = _create_edit($field_name, $field_type, $attrs);
+	$widget = _create_display($field_name, $field_type, $attrs);
     }
     return $widget;
 }
@@ -95,6 +91,7 @@ sub _create_display {
 #TODO: should check if the list class "can()" format_name()
     if ($field eq 'RealmOwner.name') {
 	return Bivio::UI::HTML::Widget::String->new({
+	    field => $field,
 	    value => ['->format_name'],
 	    %$attrs,
 	});
@@ -107,6 +104,7 @@ sub _create_display {
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return Bivio::UI::HTML::Widget::DateTime->new({
+	    field => $field,
 	    mode => 'DATE',
 	    column_align => 'E',
 	    value => [$field],
@@ -121,6 +119,7 @@ sub _create_display {
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Email')) {
 	return Bivio::UI::HTML::Widget::MailTo->new({
+	    field => $field,
 	    email => [$field],
 	    %$attrs,
 	});
@@ -133,19 +132,207 @@ sub _create_display {
 
     # default type is string
     return Bivio::UI::HTML::Widget::String->new({
+        field => $field,
 	value => [$field],
 	string_font => 'table_cell',
 	%$attrs,
     });
 }
 
-# _create_edit(string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
+# _create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
 #
 # Create an editable widget for the specified field.
 #
 sub _create_edit {
-    my($field, $type, $attrs) = @_;
-    die("not implemented");
+    my($model, $field, $type, $attrs) = @_;
+
+    if ($field eq 'Instrument.ticker_symbol') {
+	# Creates a text field with a "symbol lookup" button
+	return Bivio::UI::HTML::Widget::Join->new({
+	    # field is needed here by DescriptiveFormField
+	    field => $field,
+	    values => [
+		    Bivio::UI::HTML::Widget::Text->new({
+			field => $field,
+			size => 15,
+			%$attrs,
+		    }),
+		    ' ',
+		    Bivio::UI::HTML::Widget::Join->new({
+			values => [
+				'<input type=submit name="submit" value="'.
+		       Bivio::Biz::Model::InstrumentLookupForm::SYMBOL_LOOKUP()
+				.'">',
+		        ],
+		    }),
+		    ' ',
+		    Bivio::UI::HTML::Widget::Join->new({
+			values => [
+				'<input type=submit name="submit" value="'.
+		       Bivio::Biz::Model::LocalInstrumentForm::NEW_UNLISTED()
+				.'">',
+		        ],
+		    }),
+	    ],
+	});
+    }
+
+    if ($field eq 'valuation_search_date') {
+	# create a date field with a "refresh" button
+	return Bivio::UI::HTML::Widget::Join->new({
+	    field => $field,
+	    values => [
+		    Bivio::UI::HTML::Widget::DateField->new({
+			field => $field,
+			%$attrs,
+		    }),
+		    ' ',
+		    Bivio::UI::HTML::Widget::Join->new({
+			values => [
+				'<input type=submit name="submit" value="'.
+				Bivio::Biz::Model::LocalPricesForm::REFRESH()
+				.'">',
+		        ],
+		    }),
+	    ],
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
+	# Don't have larger than a 2x3 Grid
+	return Bivio::UI::HTML::Widget::Select->new({
+	    field => $field,
+	    choices => $type,
+	    %$attrs,
+#TODO: hacked in want_select, don't want radios for list forms
+	}) if $type->get_count() > 6 || $attrs->{want_select};
+
+	# Having label on field with radio grid is sloppy.
+	$attrs->{label_on_field} = 0;
+	return Bivio::UI::HTML::Widget::RadioGrid->new({
+	    field => $field,
+	    choices => $type,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
+	return Bivio::UI::HTML::Widget::DateField->new({
+	    field => $field,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::FileField')) {
+	return Bivio::UI::HTML::Widget::File->new({
+	    field => $field,
+	    size => 45,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
+	if (exists($attrs->{format})) {
+	    return Bivio::UI::HTML::Widget::Text->new({
+		field => $field,
+		size => 10,
+		%$attrs,
+	    });
+	}
+	return Bivio::UI::HTML::Widget::Currency->new({
+	    field => $field,
+	    size => 10,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::USTaxId')) {
+	return Bivio::UI::HTML::Widget::Text->new({
+	    field => $field,
+	    size => $type->get_width,
+	    format => 'Bivio::UI::HTML::Format::USTaxId',
+	    %$attrs,
+	});
+    }
+
+    # If the Text is in_list, don't make multiline.  Fall through
+    # to String below.
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Text')
+	&& !$model->get_field_info($field, 'in_list')) {
+	return Bivio::UI::HTML::Widget::TextArea->new({
+	    field => $field,
+	    rows => 5,
+	    cols => 45,
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::BLOB')) {
+	return Bivio::UI::HTML::Widget::TextArea->new({
+	    field => $field,
+	    rows => 15,
+	    cols => 60,
+	    %$attrs,
+	});
+    }
+
+    # Primary Ids are always select boxes.  The caller must supply
+    # the details of the select, however.
+    if (UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')) {
+	return Bivio::UI::HTML::Widget::Select->new({
+	    field => $field,
+	    %$attrs,
+	});
+    }
+
+    # PUT SUPERCLASSES last since they may be overridden
+
+#TODO: need to be intelligent here, create widget based on the field type
+    if (UNIVERSAL::isa($type, 'Bivio::Type::String')) {
+	return Bivio::UI::HTML::Widget::Text->new({
+	    field => $field,
+	    size => _default_size($type),
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::FormButton')) {
+	$attrs->{label_on_field} = 0;
+	return Bivio::UI::HTML::Widget::FormButton->new({
+	    field => $field,
+	    text => Bivio::UI::Label->get_simple($field),
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Boolean')) {
+	$attrs->{label_on_field} = 0;
+	return Bivio::UI::HTML::Widget::Checkbox->new({
+	    field => $field,
+	    label => Bivio::UI::Label->get_simple($field),
+	    %$attrs,
+	});
+    }
+
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
+	return Bivio::UI::HTML::Widget::Text->new({
+	    field => $field,
+	    size => $type->get_width,
+	    %$attrs,
+	});
+    }
+
+    Bivio::IO::Alert->die($type, ': unsupported type');
+}
+
+# _default_size(any type) : int
+#
+# Returns the default size for text boxes.
+#
+sub _default_size {
+    my($type) = @_;
+    my($w) = $type->get_width;
+    return $w <= 15 ? $w : $w <= Bivio::Type::Name->get_width ? 15 : 30;
 }
 
 # _get_model_and_field_type(string field) : (Bivio::Biz::Model, string, Bivio::Type)
@@ -155,9 +342,10 @@ sub _create_edit {
 sub _get_model_and_field_type {
     my($field) = @_;
 
-    # parse out the model and field names
-    my($model_name, $field_name) = $field =~ /^([\w\:]+)\.(.+)$/;
-    die("couldn't parse $field") unless $model_name && defined($field_name);
+    # parse out the model (everything up to the first ".") and field names
+    my($model_name, $field_name) = $field =~ /^([^\.]+)\.(.+)$/;
+    Bivio::IO::Alert->die($field, ": couldn't parse")
+                unless defined($model_name) && defined($field_name);
 
     my($model) = Bivio::Biz::Model->get_instance($model_name);
     return ($model, $field_name, $model->get_field_type($field_name));
