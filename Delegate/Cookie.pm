@@ -57,6 +57,7 @@ sub DATE_TIME_FIELD {
 #=IMPORTS
 use Bivio::Die;
 use Bivio::IO::Alert;
+use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
 use Bivio::Type::Secret;
 use Bivio::UI::Facade;
