@@ -275,10 +275,7 @@ Similar to L<to_uri|"to_uri">, but also escapes "&" and "="
 
 sub to_query {
     my($proto, $value) = @_;
-    my($v) = $proto->to_uri($value);
-    $v =~ s/\&/\%26/g;
-    $v =~ s/=/\%3D/g;
-    return $v;
+    return Bivio::Util::escape_query($proto->to_uri($value));
 }
 
 =for html <a name="to_sql_param"></a>
