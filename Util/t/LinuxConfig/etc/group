@@ -1,8 +1,8 @@
 root:x:0:root
-bin:x:1:root,bin,daemon
-daemon:x:2:root,bin,daemon
-sys:x:3:root,bin,adm
-adm:x:4:root,adm,daemon
+bin:x:1:bin,daemon
+daemon:x:2:bin,daemon
+sys:x:3:bin,adm
+adm:x:4:adm,daemon
 tty:x:5:
 disk:x:6:root
 lp:x:7:daemon,lp
