@@ -81,6 +81,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     hostmaster
     httpd
     general
+    ignore
     info
     ingres
     jobs
