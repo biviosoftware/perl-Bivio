@@ -1746,6 +1746,17 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberTaxList->execute_load_all
         Bivio::UI::HTML::Club::TaxTest
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWALS
+        165
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/withdrawals
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::CashWithdrawalList->execute_load_all
+        Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
+        Bivio::UI::HTML::Club::MemberWithdrawalReport
+    )],
 );
 
 __PACKAGE__->compile(
