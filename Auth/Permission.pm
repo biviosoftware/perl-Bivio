@@ -48,7 +48,7 @@ __PACKAGE__->compile([
     ACCOUNTING_WRITE => [3],
     MAIL_READ => [4],
     MAIL_WRITE => [5],
-    FINANCIAL_DATA_READ => [6],
+    NOT_IN_USE_1 => [6],
     MOTION_READ => [7],
     MOTION_WRITE => [8],
     MEMBER_READ => [9],
