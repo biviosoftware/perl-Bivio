@@ -298,16 +298,18 @@ This callback is defined as the code_ref either in the I<expect> location
 in a test case or as the I<check_return> group attribute.
 
 Will be called only if the actual result is a return and I<expect> is an
-array_ref, i.e. not a L<Bivio::Die|Bivio::Die> or C<undef>.
-
-Returns 1 or 0 when it compares the I<actual> to the I<expect> or
-some other criteria.   1 means pass.
+array_ref, scalar, or regular expression, i.e. not a L<Bivio::Die|Bivio::Die>
+or C<undef>.
 
 Returns an array_ref for the new value of I<case.expect>.  This module will
-then compare the I<expect> with I<actual>.
+then compare the I<expect> with I<actual>.  This is the preferred method,
+because it produces the most informative error messages.
 
 See L<Bivio::Test::Case::actual_return|Bivio::Test::Case/"actual_return">
 to see how to change the actual return value for comparisons.
+
+Returns 1 or 0 when it compares the I<actual> to the I<expect> or
+some other criteria.   1 means pass.
 
 B<Called as a I<sub>, not a method>.
 
@@ -548,7 +550,7 @@ sub _compile_method {
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
-    elsif (!ref($cases) || ref($cases) =~ /^(CODE|Regexp)$/) {
+    elsif (!ref($cases) || ref($cases) =~ /^(?:CODE|Regexp)$/) {
 	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
 	$cases = [
 	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
@@ -740,12 +742,14 @@ sub _eval_custom {
 	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
     }
     elsif ($which =~ /expect|return/
-	&& ref($res) && ref($res) ne 'ARRAY') {
-	$$err = 'an array_ref or scalar';
+	&& (ref($res) ? ref($res) !~ /^(?:ARRAY|Regexp)$/
+	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
+	$$err = 'an array_ref, Regexp, or boolean (0 or 1)';
     }
     elsif ($which =~ /die/
-	&& ref($res) && !UNIVERSAL::isa($res, 'Bivio::DieCode')) {
-	$$err = 'a Bivio::DieCode or scalar';
+	&& (ref($res) ? !UNIVERSAL::isa($res, 'Bivio::DieCode')
+	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
+	$$err = 'a Bivio::DieCode or boolean (0 or 1)';
     }
     else {
 	return $res;
@@ -820,20 +824,10 @@ sub _eval_result {
 	$custom = 'expect'
 	    if ref($result) eq 'ARRAY';
     }
-    elsif (ref($case->get('expect')) eq ref($result)) {
+    else {
 	$custom = "check_$which";
-	unless ($case->unsafe_get($custom)) {
-	    return undef if
-		Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
-	    $custom = undef;
-	}
-    }
-    elsif (ref($case->get('expect')) eq 'Regexp'
-	&& ref($result) ne 'Bivio::DieCode') {
-#TODO: Replace when perl bug is fixed.
-	my($x) = $case->get('expect');
-	$x = "$x";
-	return undef if ${Bivio::IO::Ref->to_string($result)} =~ /$x/;
+	$custom = undef
+	    unless $case->unsafe_get($custom);
     }
     if ($custom) {
 #TODO: Move off to separate method
@@ -841,33 +835,50 @@ sub _eval_result {
 	my($res) = _eval_custom(
 	    $case, $custom, [$actual, $case->get('expect')], \$err);
 	_trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
-	return $err if $err;
-	$custom = 'check_return' if $custom eq 'expect';
-	if ($custom eq 'check_return' ? ref($res) eq 'ARRAY'
-	    : ref($res) && UNIVERSAL::isa($res, 'Bivio::DieCode')) {
-	    $custom =~ s/^check_//;
+	return $err
+	    if $err;
+	$custom = 'check_return'
+	    if $custom eq 'expect';
+	$custom =~ s/^check_//;
+	if (ref($res)) {
 	    # New value for return or die, save and compare
 	    $case->expect($res);
-	    return undef
-		if Bivio::IO::Ref->nested_equals(
-		    $case->get('expect'),
-		    $result = $case->get($custom));
+	    $result = $case->get($custom);
 	}
-	elsif (defined($res) && !ref($res)) {
-	    return "custom $custom must return 0 or 1 if it returns a scalar"
-		unless $res =~ /^[01]$/;
-	    return undef if $res;
-        }
 	else {
-	    return "custom $custom must return a boolean (0 or 1) or "
-		. ($which eq 'return' ? 'array_ref' : 'Bivio::DieCode')
-		. ', not '
-	        . Bivio::IO::Ref->to_short_string($res);
+	    return $res ? undef
+		: "custom $custom return false because got"
+		    . Bivio::IO::Ref->to_short_string($case->get($which));
+
 	}
+    }
+    if (defined(my $ok = _eval_result_regexp($case, $result))) {
+	return undef
+	    if $ok;
+    }
+    elsif (ref($case->get('expect')) eq ref($result)) {
+	return undef if
+	    Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
     }
     return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
 	.' but got '
 	. Bivio::IO::Ref->to_short_string($case->get($which));
+}
+
+# _eval_result_regexp(Bivio::Test::Case case, any result) : boolean
+#
+# Returns true if result compares.  Returns false if doesn't compare.
+# Returns undef if not a Regexp or result is a DieCode.
+#
+sub _eval_result_regexp {
+    my($case, $result) = @_;
+    return undef
+	unless ref($case->get('expect')) eq 'Regexp'
+	&& ref($result) ne 'Bivio::DieCode';
+#TODO: Replace when perl bug is fixed.
+    my($x) = $case->get('expect');
+    $x = "$x";
+    return ${Bivio::IO::Ref->to_string($result)} =~ /$x/ ? 1 : 0;
 }
 
 # _prepare_case(self, Bivio::Test::Case case, string_ref err) : boolean

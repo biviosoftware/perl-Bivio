@@ -48,14 +48,14 @@ use Bivio::IO::Ref;
 =head2 actual_return(array_ref return)
 
 Sets the actual return value.  Need only be called from
-I<check_return>.
+I<check_return>.  Asserts that it is valid first.
 
 =cut
 
 sub actual_return {
     my($self, $return) = @_;
     Bivio::Die->die('Error in case ', $self,
-	': expect must be an array_ref, not ', $return)
+	': actual_return must be an array_ref, not ', $return)
 	unless ref($return) eq 'ARRAY';
     $self->put(return => $return);
     return;
@@ -92,6 +92,12 @@ sub as_string {
 =head2 expect(any expect)
 
 Sets I<expect> attribute for this case.  Asserts that it is valid first.
+Probably only need to call from
+L<Bivio::Test::compute_params|Bivio::Test/"compute_params">.
+
+See L<Bivio::Test::check_return|Bivio::Test/"check_return"> and
+L<Bivio::Test::check_die_code|Bivio::Test/"check_die_code">
+for simpler ways to change I<expect>.
 
 =cut
 

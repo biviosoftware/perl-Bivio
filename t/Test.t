@@ -131,6 +131,7 @@ t(
 	    },
 	} => [
 	    ok => [
+		# Conformance: 30
 		[] => sub {
 		    $_OBJECT = shift->get('object');
 		    return [3];
@@ -147,6 +148,7 @@ t(
 	    return Bivio::t::Test::Testee->new(5);
         } => [
 	    ok => [
+		# Conformance: 32
 		[] => sub {
 		    # Objects should be diffferent
 		    return 0 if $_OBJECT eq shift->get('object');
@@ -154,10 +156,62 @@ t(
 		},
 	    ],
         ],
+	{
+	    object => Bivio::t::Test::Testee->new('33'),
+	    check_return => sub {
+		my($case, $actual, $expect) = @_;
+		$case->actual_return(['hello']);
+		return $expect;
+	    },
+	    check_die_code => sub {Bivio::DieCode->DIE},
+        } => [
+	    # Conformance: 33
+	    ok => sub {
+		return qr/\[.*33.*\]/s;
+	    },
+	    ok => [
+		[] => ['hello'],
+	    ],
+	    ok => sub {[33]},
+	    ok => qr/hello/,
+	    # Deviance: 37
+	    ok => qr/no-found/,
+	    die => [
+		[] => Bivio::DieCode->NOT_FOUND,
+	    ],
+	    {
+		method => 'die',
+		check_die_code => sub {1},
+	    } => [
+		[] => Bivio::DieCode->DIE,
+	    ],
+	],
+	Bivio::t::Test::Testee->new('33') => [
+	    # Deviance: 40
+	    ok => qr/not-found/,
+	    # Deviance: 41
+	    ok => sub {undef},
+	    # Deviance: 42
+	    ok => sub {2},
+	    # Deviance: 43
+	    {
+		method => 'die',
+		check_die_code => sub {undef},
+	    } => [
+		[] => Bivio::DieCode->DIE,
+	    ],
+	    # Deviance: 44
+	    {
+		method => 'die',
+		check_die_code => sub {2},
+	    } => [
+		[] => Bivio::DieCode->DIE,
+	    ],
+	],
 #TODO: Need more deviance tests
     ],
-    32,
-    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28],
+    44,
+    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44],
 );
 t(
     {
