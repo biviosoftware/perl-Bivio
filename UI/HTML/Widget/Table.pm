@@ -84,6 +84,15 @@ instance will be created with the corresponding value.
 
 If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
 
+=item empty_list_widget : Bivio::UI::HTML::Widget []
+
+If set, the widget to display instead of the table when the
+list_model is empty.
+
+The I<source> will be the original source, not the list_model.
+
+If not set, displays an empty table (with headers).
+
 =item expand : boolean [false]
 
 If true, the table will C<WIDTH> will be C<100%>.
@@ -287,6 +296,12 @@ sub initialize {
 		unless $fields->{headings} || $fields->{cells};
     $fields->{source} = $self->get('source');
     $fields->{end_tag} = $self->get_or_default('end_tag', 1);
+    $fields->{empty_list_widget} = $self->get_or_default(
+	    'empty_list_widget', undef);
+    if ($fields->{empty_list_widget}) {
+	$fields->{empty_list_widget}->put(parent => $self);
+	$fields->{empty_list_widget}->initialize;
+    }
     return;
 }
 
@@ -299,7 +314,11 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $source = $source->get_widget_value(@{$fields->{source}});
+    my($list_model) = $source->get_widget_value(@{$fields->{source}});
+    return $fields->{empty_list_widget}->render($source, $buffer)
+	    if $fields->{empty_list_widget}
+		    && $list_model->get_result_set_size == 0;
+    $source = $list_model;
 
     # Headings
     my($close_row) = 0;
