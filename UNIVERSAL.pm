@@ -101,6 +101,35 @@ sub as_string {
     return $self;
 }
 
+=for html <a name="inheritance_ancestor_list"></a>
+
+=head2 inheritance_ancestor_list() : array_ref
+
+Returns list of anscestors of I<class>, closest ancestor is at index 0.
+Asserts single inheritance.  Must be descended from this class.
+
+=cut
+
+sub inheritance_ancestor_list {
+    my($proto) = @_;
+    my($class) = ref($proto) || $proto;
+    die('not a subclass of Bivio::UNIVERSAL')
+	unless $class->isa(__PACKAGE__);
+    # Broken if called from Bivio::UNIVERSAL
+    my($res) = [];
+    while ($class ne __PACKAGE__) {
+	my($isa) = do {
+	    no strict 'refs';
+	    \@{$class . '::ISA'};
+	};
+	die($class, ': does not define @ISA') unless @$isa;
+	die($class, ': multiple inheritance not allowed; @ISA=', "@$isa")
+	    unless int(@$isa) == 1;
+	push(@$res, $class = $isa->[0]);
+    }
+    return $res;
+}
+
 =for html <a name="instance_data_index"></a>
 
 =head2 static final instance_data_index() : int
@@ -122,21 +151,8 @@ sub instance_data_index {
     # Some sanity checks, since we don't access this often
     die('must call statically form package body')
 	unless $pkg eq (caller)[0];
-    die('not a subclass of Bivio::UNIVERSAL')
-	unless $pkg->isa(__PACKAGE__);
     # This class doesn't have any instance data.
-    my($idi) = -1;
-    for (; $pkg ne __PACKAGE__; $idi++) {
-	my($isa) = do {
-	    no strict 'refs';
-	    \@{$pkg . '::ISA'};
-	};
-	die($pkg, ': does not define @ISA') unless @$isa;
-	die($pkg, ': multiple inheritance not allowed; @ISA=', "@$isa")
-	    unless int(@$isa) == 1;
-	$pkg = $isa->[0];
-    }
-    return $idi;
+    return @{$pkg->inheritance_ancestor_list} - 1;
 }
 
 =for html <a name="package_name"></a>

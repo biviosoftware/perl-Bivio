@@ -984,15 +984,13 @@ sub _method_ok {
     my($self, $method) = @_;
     return 0 unless $method =~ /^([a-z]\w*)$/i;
     return 0 if $method =~ /^handle_/;
-#    return 0 unless $self->can($method);
-    my($can) = $self->can($method);
-    return 0 unless $can;
-    return 1 if $can eq \&{ref($self).'::'.$method};
-
-    return 0 if ref($self) eq __PACKAGE__;
     return 1 if $method eq 'usage';
-    return 0 if __PACKAGE__->can($method);
-    return 1;
+    foreach my $c (ref($self), @{$self->inheritance_ancestor_list}) {
+	last if $c eq __PACKAGE__;
+#TODO: Need to deprecate calls which __PACKAGE__->can($method) && $c->can.
+	return 1 if $c->can($method);
+    }
+    return 0;
 }
 
 # _parse_options(Bivio::ShellUtil self, array_ref argv) : hash_ref
