@@ -224,10 +224,12 @@ sub initialization_complete {
 
     # Initialize default first
     my($default) = $self->internal_get_value('default');
-    $self->bad_value({names => ['default']}, ': default font not defined')
+    $self->initialization_error(
+	    {names => ['default']}, ': default font not defined')
 	    unless $default;
     _initialize($self, $default, $default);
-    $self->bad_value($default, 'do not set color on default, use page_text')
+    $self->initialization_error(
+	    $default, 'do not set color on default, use page_text')
 	    if defined($default->{attrs}->{color});
 
     # Initialize the rest of the values
@@ -251,7 +253,7 @@ sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless (ref($v) eq 'ARRAY') {
-	$self->bad_value($value, 'not an array_ref');
+	$self->initialization_error($value, 'not an array_ref');
 	$value->{config} = [];
     }
 
@@ -309,7 +311,7 @@ sub _initialize {
 		    $1, '', $self->get_facade);
 	}
 	else {
-	    $self->bad_value($value, 'unknown attribute: ', $a);
+	    $self->initialization_error($value, 'unknown attribute: ', $a);
 	    %attrs = ();
 	    last;
 	}
