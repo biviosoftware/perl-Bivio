@@ -205,8 +205,10 @@ result, the case case be written, e.g.:
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::IO::Ref;
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::Test::Case;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -288,7 +290,7 @@ sub default_result_ok {
 	unless ref($expect) eq ref($actual)
 	    || UNIVERSAL::isa($expect, 'Bivio::DieCode')
 		&& UNIVERSAL::isa($actual, 'Bivio::DieCode');
-    return _eval_equal($expect, $actual);
+    return Bivio::IO::Ref->nested_equals($expect, $actual);
 }
 
 =for html <a name="result_ok"></a>
@@ -423,11 +425,11 @@ sub _compile_case {
 	unless !defined($expect) || ref($expect)
 	    && (ref($expect) =~ /^(ARRAY|CODE)$/
 		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
-    push(@$tests, {
+    push(@$tests, Bivio::Test::Case->new({
 	%$state,
 	params => $params,
 	expect => $expect,
-    });
+    }));
     _trace($tests->[$#$tests]) if $_TRACE;
     return;
 }
@@ -438,7 +440,7 @@ sub _compile_case {
 #
 sub _compile_die {
     my($state, @msg) = @_;
-    _die('Error compiling ', _test_sig($state), ': ', @msg);
+    _die('Error compiling ', Bivio::Test::Case->new({%$state}), ': ', @msg);
     # DOES NOT RETURN
 }
 
@@ -555,38 +557,41 @@ sub _eval {
     my($self, $tests) = @_;
     my($c) = 0;
     my($print) = $self->get_or_default('print', \&_default_print);
-    &$print('1..'.int(@$tests)."\n");
+    $print->('1..' . int(@$tests) . "\n");
     my($err);
-    foreach my $test (@$tests) {
+    foreach my $case (@$tests) {
 	$c++;
 	my($actual);
-	$test->{params} = _eval_params($test, [], \$err);
+	$case->put(params => _eval_params($case, [], \$err));
 	next if $err;
 	my($die) = Bivio::Die->catch(sub {
-	    my($method) = $test->{method};
-	    _trace($test->{object}, '->', $method, '(', $test->{params}, ')')
+	    my($method) = $case->get('method');
+	    _trace($case->get('object'), '->',
+		$method, '(', $case->get('params'), ')')
 		if $_TRACE;
-	    $actual = [$test->{object}->$method(@{$test->{params}})];
+	    $actual = [$case->get('object')->$method(@{$case->get('params')})];
 	    return;
 	});
 	_trace('returned ', $die || $actual) if $_TRACE;
 	if ($die) {
-	    $err = _eval_result($test, $die->get('code'));
+	    $case->put(die => $die);
+	    $err = _eval_result($case, $die->get('code'));
 	}
-	elsif (defined($test->{expect})) {
-	    $err = _eval_result($test, $actual);
+	elsif (defined($case->unsafe_get('expect'))) {
+	    $case->put(success => $actual);
+	    $err = _eval_result($case, $actual);
 	}
 	# else ignore result
     }
     continue {
-	&$print(!$err
-	    ? "ok $c\n" : ("not ok $c "._test_sig($test).": $err\n"));
+	$print->(!$err
+	    ? "ok $c\n" : ("not ok $c " . $case . ": $err\n"));
 	$err = undef;
     }
     return;
 }
 
-# _eval_custom(hash_ref test, string which, array_ref params, string_ref err) : any
+# _eval_custom(Bivio::Test::Case case, string which, array_ref params, string_ref err) : any
 #
 # Returns result of custom call $which (result_ok or compute_params).
 # If there is an error, $err will be set.  Checks for appropriate return
@@ -595,11 +600,13 @@ sub _eval {
 # $params only needs extra params for result_ok only.
 #
 sub _eval_custom {
-    my($test, $which, $params, $err) = @_;
+    my($case, $which, $params, $err) = @_;
     my($res);
     my($die) = Bivio::Die->catch(sub {
-	$res = &{$test->{$which}}(
-	    $test->{object}, $test->{method}, $test->{params}, @$params);
+	$res = $case->get($which)->(
+#TODO: change interface
+	    $case->get('object'), $case->get('method'),
+	    $case->get('params'), @$params);
 	return;
     });
     if ($die) {
@@ -616,88 +623,48 @@ sub _eval_custom {
     return $res;
 }
 
-# _eval_equal(any expect, any actual) : boolean
-#
-# Returns true if the two structures compare identically.
-#
-sub _eval_equal {
-    my($expect, $actual) = @_;
-    return 0 unless defined($expect) eq defined($actual);
-    return 1 unless defined($expect);
-
-    # References must match exactly or we've got a problem
-    return 0 unless ref($expect) eq ref($actual);
-
-    # Scalar
-    return $expect eq $actual ? 1 : 0 unless ref($expect);
-
-    if (ref($expect) eq 'ARRAY') {
-	return 0 unless int(@$expect) == int(@$actual);
-	for (my($i) = 0; $i <= $#$expect; $i++) {
-	    return 0 unless _eval_equal($expect->[$i], $actual->[$i]);
-	}
-	return 1;
-    }
-    if (ref($expect) eq 'HASH') {
-	my(@e_keys) = sort(keys(%$expect));
-	my(@a_keys) = sort(keys(%$actual));
-	return 0 unless _eval_equal(\@e_keys, \@a_keys);
-	foreach my $k (@e_keys) {
-	    return 0 unless _eval_equal($expect->{$k}, $actual->{$k});
-	}
-	return 1;
-    }
-    return _eval_equal($$expect, $$actual) if ref($expect) eq 'SCALAR';
-
-    # blessed ref: Check if can equals and compare that way
-    return $expect->equals($actual) ? 1 : 0
-	if UNIVERSAL::can($expect, 'equals');
-
-    # CODE, GLOB, Regex, and blessed references should always be equal exactly
-    return $expect eq $actual ? 1 : 0;
-}
-
-# _eval_params(hash_ref test, string_ref err) : array_ref
+# _eval_params(Bivio::Test::Case case, string_ref err) : array_ref
 #
 # Returns params.
 #
 sub _eval_params {
-    my($test, $err) = @_;
-    return _eval_custom($test, 'params', [], $err)
-	if ref($test->{params}) eq 'CODE';
-    return _eval_custom($test, 'compute_params', [], $err)
-	if $test->{compute_params};
-    return $test->{params};
+    my($case, $err) = @_;
+    return _eval_custom($case, 'params', [], $err)
+	if ref($case->get('params')) eq 'CODE';
+    return _eval_custom($case, 'compute_params', [], $err)
+	if $case->get('compute_params');
+    return $case->get('params');
 }
 
-# _eval_result(hash_ref test, any actual) : string
+# _eval_result(Bivio::Test::Case case, any actual) : string
 #
 # Calls the custom method, if need be.
 # Assumes type of result was already verified.
 #
 sub _eval_result {
-    my($test, $actual) = @_;
+    my($case, $actual) = @_;
     my($custom);
-    if (ref($test->{expect}) eq 'CODE') {
+    if (ref($case->get('expect')) eq 'CODE') {
 	$custom = 'expect';
     }
-    elsif (ref($test->{expect}) eq ref($actual)) {
-	if ($test->{result_ok}) {
+    elsif (ref($case->get('expect')) eq ref($actual)) {
+	if ($case->get('result_ok')) {
 	    $custom = 'result_ok';
 	}
 	else {
-	    return undef if _eval_equal($test->{expect}, $actual);
+	    return undef if
+		Bivio::IO::Ref->nested_equals($case->get('expect'), $actual);
 	}
     }
     if ($custom) {
 	my($err);
 	my($res) = _eval_custom(
-	    $test, $custom, [$test->{expect}, $actual], \$err);
+	    $case, $custom, [$case->get('expect'), $actual], \$err);
 	return $err if $err;
 	return undef if $res;
     }
-    return 'expected '._summarize($test->{expect})
-	.' but got '._summarize($actual);
+    return 'expected ' . _summarize($case->get('expect'))
+	.' but got ' . _summarize($actual);
 }
 
 # _summarize(any value) : string
@@ -710,25 +677,6 @@ sub _summarize {
     my($res) = Bivio::IO::Alert->format_args($value);
     chomp($res);
     return $res;
-}
-
-# _test_sig(hash_ref test) : string
-#
-# Computes a signature for the test.
-#
-sub _test_sig {
-    my($test) = @_;
-    my($sig) = '';
-    $sig .= (ref($test->{object}) || $test->{object} || '<Object>')
-	.'#'.$test->{object_num}
-	if $test->{object};
-    $sig .= '->'.($test->{method} || '<method>').'#'.$test->{method_num}
-	if $test->{method_num};
-    $sig .= '(case#'.$test->{case_num}
-	.($test->{params} ? '['._summarize($test->{params}).']' : '')
-	.')'
-	if $test->{case_num};
-    return $sig;
 }
 
 =head1 COPYRIGHT
