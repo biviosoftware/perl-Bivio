@@ -759,6 +759,11 @@ __PACKAGE__->compile(
 	undef,
 	'no investments have been selected to transfer',
     ],
+    AUTH_CODE => [
+	96,
+	undef,
+	'Authorization code does not match invite.',
+    ],
 );
 
 #=PRIVATE METHODS
