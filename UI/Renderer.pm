@@ -36,7 +36,7 @@ sub new {
 
 =for html <a name="render"></a>
 
-=head2 abstract render(UNIVERSAL target, Request req)
+=head2 abstract render(ANY target, Request req)
 
 Renders the target onto the Request's print stream.
 
