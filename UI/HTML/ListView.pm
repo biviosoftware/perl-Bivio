@@ -44,12 +44,21 @@ rendered as links for sorting columns.
 
 =cut
 
-#=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-
 #=IMPORTS
 use Bivio::UI::HTML::FieldUtil;
+use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::ListCellRenderer;
+use Bivio::UI::HTML::Presentation;
+
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+my($_UP_LINK) = Bivio::UI::HTML::Link->new(
+	Bivio::UI::HTML::Presentation::NAV_UP(),
+	'', '', '', '');
+my($_DOWN_LINK) = Bivio::UI::HTML::Link->new(
+	Bivio::UI::HTML::Presentation::NAV_DOWN(),
+	'', '', '', '');
+my($_NAV_LINKS) = [$_UP_LINK, $_DOWN_LINK];
 
 =head1 FACTORIES
 
@@ -105,6 +114,75 @@ sub get_default_renderer {
     }
 
     return Bivio::UI::HTML::ListCellRenderer->new($inner, $attributes);
+}
+
+=for html <a name="get_nav_links"></a>
+
+=head2 get_nav_links(Model model, Request req) : array
+
+Returns the up and down nav links. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
+
+=cut
+
+sub get_nav_links {
+    my($self, $model, $req) = @_;
+
+#TODO: get this from user preferences
+    my($page_size) = 15;
+
+    my($size) = $model->get_result_set_size();
+    my($index) = $model->get_index();
+    $index = 0 if $index >= $size;
+
+    my($next_items);
+    if ($index + $page_size > $size) {
+	$next_items = 0;
+    }
+    elsif ($index + 2 * $page_size > $size) {
+	$next_items = $size - $index - $page_size;
+    }
+    else {
+	$next_items = $page_size;
+    }
+
+    if ($next_items > 0) {
+	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_ICON());
+	$_DOWN_LINK->set_description("Next $next_items items");
+	$_DOWN_LINK->set_url($req->make_path()
+		.&_index($index + $page_size, $req));
+    }
+    else {
+	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_IA_ICON());
+	$_DOWN_LINK->set_description("No more items");
+	$_DOWN_LINK->set_url('');
+    }
+
+    my($prev_items);
+    if ($index == 0 ){
+	$prev_items = 0;
+    }
+    elsif ($index < $page_size) {
+	$prev_items = $index;
+    }
+    else {
+	$prev_items = $page_size;
+    }
+
+    if ($prev_items > 0) {
+	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_ICON());
+	$_UP_LINK->set_description("Previous $prev_items items");
+	$_UP_LINK->set_url($req->make_path()
+		.&_index($index - $prev_items, $req));
+    }
+    else {
+	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_IA_ICON());
+	$_UP_LINK->set_description("No previous items");
+	$_UP_LINK->set_url('');
+    }
+
+    return $_NAV_LINKS;
 }
 
 =for html <a name="render"></a>
@@ -245,6 +323,20 @@ sub set_column_renderer {
 }
 
 #=PRIVATE METHODS
+
+# _index(int index, Request req) : string
+#
+# Returns the finder params with the specified index. It is careful not to
+# clobber existing finder params.
+
+sub _index {
+    my($index, $req) = @_;
+
+    my($fp) = $req->get_model_args()->clone();
+    $fp->put('index', $index);
+    $fp->remove('club');
+    return '?'.$fp->as_string();
+}
 
 =head1 COPYRIGHT
 
