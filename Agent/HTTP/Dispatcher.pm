@@ -121,7 +121,10 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 sub handler {
     my($r) = @_;
     my($die) = $_SELF->process_request($r);
-    $r->log_reason($die->as_string) if defined($die);
+    $r->log_reason($die->as_string)
+	    # Keep in synch with Reply::die_to_http_code
+	    if defined($die) && $die->get('code')
+		    ne Bivio::DieCode::CLIENT_REDIRECT_TASK();
     return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
 }
 
