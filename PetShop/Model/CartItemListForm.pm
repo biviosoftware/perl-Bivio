@@ -35,6 +35,8 @@ C<Bivio::PetShop::Model::CartItemListForm>
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
+use Bivio::PetShop::Type::Price;
 
 #=VARIABLES
 
@@ -70,18 +72,16 @@ sub execute_ok_end {
     my($req) = $self->get_request;
 
     # ensure the the cart grand total doesn't exceed the Price precision
-    my($cart) = Bivio::Biz::Model->new($req, 'Cart');
-    if ($cart->unsafe_load(cart_id => $req->get('cart_id'))) {
-	my($value, $err) = Bivio::PetShop::Type::Price->from_literal(
-		$cart->get_total);
-	if ($err) {
-	    # put the error on the first row
-	    $self->reset_cursor;
-	    $self->next_row;
-	    $self->internal_put_error('CartItem.quantity'
-		    => 'TOTAL_EXCEEDS_PRECISION');
-	    return;
-	}
+    my($value, $err) = Bivio::PetShop::Type::Price->from_literal(
+	$self->new($req, 'Cart')->load_from_cookie->get_total);
+
+    if ($err) {
+	# put the error on the first row
+	$self->reset_cursor;
+	$self->next_row;
+	$self->internal_put_error('CartItem.quantity'
+	    => 'TOTAL_EXCEEDS_PRECISION');
+	return;
     }
 
     if ($self->get('ok_button')) {

@@ -53,22 +53,21 @@ Adds the specified item to the current cart.
 sub add_item_to_cart {
     my($proto, $item) = @_;
     my($req) = $item->get_request;
-
-    # ensure that cookies are enabled in the browser
-    Bivio::Agent::HTTP::Cookie->assert_is_ok($req);
+    my($cart_id) = $proto->new($req, 'Cart')->load_from_cookie
+	->get('cart_id');
 
     # if the item is already present, reset the quantity to 1
-    my($cart_item) = Bivio::Biz::Model->new($req, 'CartItem');
+    my($cart_item) = $proto->new($req, 'CartItem');
     if ($cart_item->unsafe_load({
 	item_id => $item->get('item_id'),
-	cart_id => $req->get('cart_id'),
+	cart_id => $cart_id,
     })) {
 	$cart_item->update({quantity => 1});
     }
     else {
 	# create the new cart item
 	$cart_item->create({
-	    cart_id => $req->get('cart_id'),
+	    cart_id => $cart_id,
 	    item_id => $item->get('item_id'),
 	    quantity => 1,
 	    unit_price => $item->get('list_price'),
