@@ -30,7 +30,7 @@ sub handler {
     print(STDERR "Todo.handler( ) called..\n\n\n");
     $r->content_type("text/html");
     $r->send_http_header;
-    $r->print("<HTML><BODY background=\"./background.jpg\">");
+    $r->print("<HTML><BODY bgcolor=\"#C0C0C0\">");
     my(%args) = $r->args;
     my(@keys) = keys %args;
     my(@values) = values %args;
