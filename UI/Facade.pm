@@ -434,6 +434,18 @@ sub get_local_file_name {
 	    . $type->get_path.$name;
 }
 
+=for html <a name="get_local_file_root"></a>
+
+=head2 get_local_file_root() : string
+
+Returns I<local_file_root> configuration.
+
+=cut
+
+sub get_local_file_root {
+    return $_CFG->{local_file_root};
+}
+
 =for html <a name="get_value"></a>
 
 =head2 static get_value(string name, Bivio::Collection::Attributes req_or_facade) : string
