@@ -480,6 +480,8 @@ sub _fixup_uri {
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : array_ref
 #
 # Returns URL encoded form.  Undefined fields are not submitted.
+# Note the special case handling for checkboxes may need to be extended
+# for other controls.
 #
 sub _format_form {
     my($form, $submit, $form_fields) = @_;
@@ -495,15 +497,14 @@ sub _format_form {
     foreach my $class (qw(hidden visible)) {
 	foreach my $v (values(%{$form->{$class}})) {
 	    next if $match->{$v};
-#  	    $res .= _format_field($v,
-#  		$v->{type} eq 'checkbox'
-#  		    ? $v->{checked}
-#  		        ? defined($v->{value})
-#  		            ? $v->{value}
-#  		            : 1
-#  		        : next
-#  		    : $v->{value});
-            push(@$result, $v->{name}, $v->{value});
+            push(@$result, $v->{name},
+		$v->{type} eq 'checkbox'
+		    ? $v->{checked}
+		        ? defined($v->{value})
+		           ? $v->{value}
+		           : 1
+		        : next
+		    : $v->{value});
 	}
     }
     # Needs to be some "true" value for our forms
