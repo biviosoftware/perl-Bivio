@@ -372,6 +372,16 @@ my(@_CFG) = (
         _/accounting/account/detail
         Bivio::UI::HTML::Club::Embargoed
     )],
+    [qw(
+        CLUB_ACCOUNTING_SINGLE_DEPOSIT
+        43
+        CLUB
+        MEMBER
+        _/accounting/member/deposit
+        Bivio::Biz::Model::SingleDepositForm
+        Bivio::UI::HTML::Club::SingleDeposit
+        next=CLUB_ACCOUNTING_SINGLE_DEPOSIT
+    )],
 );
 
 __PACKAGE__->compile(
