@@ -205,6 +205,7 @@ my($in_preface) = 0;
 my($in_keyword) = 0;
 my($keyword) = '';
 my($clean_normal) = 1;
+my($clean_literal) = 0;
 my($attrib) = '';
 my($label) = '';
 my($GRAPHIC_WIDTH) = "4.3in";
@@ -232,7 +233,7 @@ my($_CLEAN_VERB_CHAR) = {
     '{' => '\{',
     '}' => '\}',
     '\\' => '\symbol{92}',
-    "\n" => ' \linebreak[4]',
+    "\n" => ' \newline ',
 };
 
 my(@_CHAPTERS) = (
@@ -374,7 +375,7 @@ my($_XML_TO_LATEX_PROGRAM) = {
     '/emphasis' => '}',
     # Use texttt mode because some epigraphs use verbatim mode
     # which always appears as as true type font
-    epigraph => '\texttt{\begin{quote}',
+    epigraph => '\begin{quote}',
     # Output saved attribution after epigraph is closed
     '/epigraph' => sub {
 	return '\end{quote}}\begin{flushright}-- ' .
@@ -411,11 +412,11 @@ my($_XML_TO_LATEX_PROGRAM) = {
     '/listitem' => "\n",
     literallayout => sub {
 	$clean_normal = 0;
-	return '\begin{alltt}';
+	return '';
     },
     '/literallayout' => sub {
 	$clean_normal = 1;
-	return '\end{alltt}' . "\n";
+	return '' . "\n";
     },
     para => "\n",
     '/para' => "\n",
