@@ -1,0 +1,9 @@
+# $Id$
+[
+    ['links', 'next_1', 'href']
+    => '/rob_test/accounting/investment/detail?p=1622100009&n=2',
+    ['links', 'delete_3', 'href']
+    => '/rob_test/accounting/account/delete?t=107903400005&p=1622100009&fc=aNDE_!ccm9iX3Rlc3Q_!dcAExNjIyMTAwMDA5',
+    ['links', 'split_a', 'alt'] => 'Record a stock split',
+    ['head', 'title'] => 'Methode Electronics Cl A - rob_test',
+];
