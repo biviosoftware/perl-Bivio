@@ -35,19 +35,14 @@ and delete interface to the C<realm_user_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Agent::TaskId;
+# also uses User model
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
-use Bivio::Biz::Model::MemberEntry;
 use Bivio::Die;
 use Bivio::SQL::Connection;
-use Bivio::Type::RealmName;
 use Bivio::Type::DateTime;
-use Bivio::Type::Location;
-
-# Circular import
-# use Bivio::Data::EW::ClubImporter;
+use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_ACTIVE_ROLES) = '';
@@ -114,78 +109,6 @@ sub MEMBER_ROLES {
 
 =cut
 
-=for html <a name="can_auth_user_edit"></a>
-
-=head2 can_auth_user_edit() : boolean
-
-=head2 static can_auth_user_edit(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Return if the request's auth_user can edit the RealmUser.
-
-=cut
-
-sub can_auth_user_edit {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    # Always can edit self
-    return 1 if $proto->is_auth_user($model, $model_prefix);
-    # Can't edit if guest
-    return 0 if $proto->is_guest($model, $model_prefix);
-    # Can only edit if can execute NAME_EDIT task.
-    return $model->get_request->can_user_execute_task(
-	    Bivio::Agent::TaskId::CLUB_ADMIN_MEMBER_NAME_EDIT());
-}
-
-=for html <a name="change_ownership"></a>
-
-=head2 change_ownership(string user_id, boolean include_entries)
-
-Changes all tables owned in the current realm by this user to the specified
-user id.
-
-If I<include_entries> is true, then the member's entries, K1, and allocations
-will be moved.
-
-=cut
-
-sub change_ownership {
-    my($self, $user_id, $include_entries) = @_;
-    my($req) = $self->get_request;
-
-    my(@tables) = qw(realm_transaction_t file_t realm_invite_t);
-
-    if ($include_entries) {
-	Bivio::Die->die('change_ownership target has member entries')
-		    if (Bivio::Biz::Model::MemberEntry->has_transactions(
-			    $self->new($req)->load(user_id => $user_id)));
-
-	# replace the entry, k-1 and allocation info
-	foreach my $table (qw(member_entry_t tax_k1_t member_allocation_t)) {
-	    # delete any existing tax info for target user
-	    Bivio::SQL::Connection->execute("
-                    DELETE FROM $table
-                    WHERE user_id=?
-                    AND realm_id=?",
-		   [$user_id, $req->get('auth_id')]);
-	    push(@tables, $table);
-	}
-    }
-
-    # change all references to the user
-    foreach my $table (@tables) {
-	Bivio::SQL::Connection->execute("
-                UPDATE $table
-                SET user_id=?
-                WHERE user_id=?
-                AND realm_id=?",
-		[$user_id, $self->get('user_id'), $req->get('auth_id')]);
-    }
-    return;
-}
-
-#TODO: Add code to make sure don't delete last admin.
-#      See ClubUserForm.  Throw type error on field and wille
-#      be picked up by form.
-
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -196,41 +119,8 @@ Sets I<creation_date_time> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{creation_date_time} ||= Bivio::Type::DateTime->now();
+    $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
     return $self->SUPER::create($values);
-}
-
-=for html <a name="get_first_payment_date"></a>
-
-=head2 get_first_payment_date() : string
-
-Returns the first payment/opening balance date for the user in the current
-realm's accounts.
-
-Returns undef if no value exists. (User has never paid into realm)
-
-=cut
-
-sub get_first_payment_date {
-    my($self) = @_;
-
-    my($date_param) = Bivio::Type::DateTime->from_sql_value('MIN(date_time)');
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT $date_param
-            FROM realm_transaction_t, entry_t, member_entry_t
-            WHERE realm_transaction_t.realm_transaction_id
-                = entry_t.realm_transaction_id
-            AND entry_t.entry_id=member_entry_t.entry_id
-            AND realm_transaction_t.realm_id=?
-            AND member_entry_t.user_id=?
-            AND member_entry_t.units != 0",
-	    [$self->get('realm_id', 'user_id')]);
-    my($date) = undef;
-    my($row);
-    if ($row = $sth->fetchrow_arrayref) {
-	$date = $row->[0];
-    }
-    return $date;
 }
 
 =for html <a name="execute_auth_user"></a>
@@ -245,8 +135,7 @@ sub execute_auth_user {
     my($proto, $req) = @_;
     my($user) = $req->get('auth_user');
     Bivio::Die->die('no auth_user') unless $user;
-    my($self) = $proto->new($req);
-    $self->load(user_id => $user->get('realm_id'));
+    $proto->new($req)->load(user_id => $user->get('realm_id'));
     return;
 }
 
@@ -275,7 +164,7 @@ sub internal_initialize {
 	    # User_1 is the realm, if the realm_type is a user.
 	    [qw(realm_id Club.club_id User_1.user_id RealmOwner_1.realm_id)],
 	    # User_2 is the the "realm_user"
-	    [qw(user_id User_2.user_id  RealmOwner_2.realm_id)],
+	    [qw(user_id User_2.user_id RealmOwner_2.realm_id)],
 	],
     };
 }
@@ -287,7 +176,6 @@ sub internal_initialize {
 =head2 static is_auth_user(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if the current row is the request's auth_user.
-
 
 =cut
 
@@ -312,7 +200,7 @@ List Models can declare a method of the form:
 
     sub is_guest {
 	my($self) = shift;
-	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.', @_);
+	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.');
     }
 
 =cut
@@ -337,7 +225,7 @@ List Models can declare a method of the form:
 
     sub is_member {
 	my($self) = shift;
-	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.', @_);
+	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.');
     }
 
 =cut
@@ -414,68 +302,6 @@ sub is_super_user {
     return $proto->new()->unauth_load(
 	    realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
 	    user_id => $user_id);
-}
-
-=for html <a name="take_offline"></a>
-
-=head2 take_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
-
-Creates an off-line version of the RealmUser and moves all associated
-records to the offline version. Returns the off-line realm user.
-
-Dies if the user is not a member unless I<any_user_ok> is true.
-
-=cut
-
-sub take_offline {
-    my($self, $any_user_ok) = @_;
-    my($req) = $self->get_request;
-
-    # Sanity check...how many admins do we have?  Did user hack query?
-    my($role) = $self->get('role');
-    $self->throw_die('CORRUPT_QUERY', 'cannot delete sole ADMINISTRATOR')
-	    if $self->is_sole_admin;
-    # Can't take offline if guest
-    $self->throw_die('CORRUPT_QUERY', 'cannot delete non-member')
-	    unless $any_user_ok || $self->is_member;
-
-    # create an off-line copy and move all associated records
-    my($user) = Bivio::Biz::Model->new($req, 'User')
-	    ->unauth_load_or_die(user_id => $self->get('user_id'));
-    my($address) = Bivio::Biz::Model->new($req, 'Address')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'),
-		    location => Bivio::Type::Location::HOME());
-    my($phone) = Bivio::Biz::Model->new($req, 'Phone')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'),
-		    location => Bivio::Type::Location::HOME());
-    my($tax_id) = Bivio::Biz::Model->new($req, 'TaxId')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'));
-
-    my($offline_realm_user) = Bivio::Data::EW::ClubImporter->new($req)
-	    ->create_user({
-		first_name => $user->get('first_name'),
-		middle_name => $user->get('middle_name'),
-		last_name => $user->get('last_name'),
-		active => 0,
-		street1 => $address->get('street1'),
-		city => $address->get('city'),
-		state => $address->get('state'),
-		zip => $address->get('zip'),
-		tax_id => $tax_id->get('tax_id'),
-		home_phone => $phone->get('phone'),
-	    }, {
-		want_address => 1,
-		want_phone => 1,
-		want_ssn => 1,
-	    });
-
-    # include the member's k-1
-    $self->change_ownership($offline_realm_user->get('user_id'), 1);
-
-    return $offline_realm_user;
 }
 
 =for html <a name="unauth_load_user_or_die"></a>
