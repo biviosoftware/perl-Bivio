@@ -202,27 +202,38 @@ sub _fixup_outer_join {
     # select * from ec_payment_t LEFT JOIN ec_subscription_t ON
     # ec_payment_t.ec_payment_id=ec_subscription_t.ec_payment_id, realm_owner_t
     # where ec_payment_id.realm_id=realm_owner_t.realm_id
-
-#TODO: the regexps need to be refined
+    my($relations) = [];
     while ($sql =~ /\(\+\)/) {
-	$sql =~ s/AND?\s+([\w.]+)\s?\=\s?([\w.]+)\(\+\)//is
+	$sql =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s?\=\s?([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
 	    || Bivio::Die->die('failed to find outer join: ', $sql);
-
-	my($left, $right) = ($1, $2);
-	my($source_table) = _parse_table_name($left);
-	my($target_table) = _parse_table_name($right);
-
-	$sql =~ s/(\sFROM\s.*)$target_table(,)?(.*\sWHERE\s)/$1$3/is
-	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $sql);
-	my($join) = ' LEFT JOIN '.$target_table.' ON '.$left.' = '.$right.' ';
-
-	$sql =~ s/(\sFROM\s.*?$source_table)(.*\sWHERE\s)/$1$join$2/is
-	    || die('failed to insert outer join');
+	push(@$relations, [$3, $4]);
     }
-    # remove extra commas
-    $sql =~ s/,\s*(\swhere\s)/$1/is;
-    $sql =~ s/,\s*(\sleft\s)/$1/is;
-
+    Bivio::Die->die('too weird outer join: ', $sql)
+	if $sql =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
+    my($joins) = {};
+    foreach my $r (@$relations) {
+	my($left, $right) = @$r;
+	my($source_table) = lc(_parse_table_name($left));
+	my($target_table) = lc(_parse_table_name($right));
+	if ($joins->{$source_table}) {
+	    next if $joins->{$source_table}
+		=~ s/(?<=LEFT JOIN $target_table ON \()/$left = $right AND /is;
+	}
+	$joins->{$source_table}
+	    .= " LEFT JOIN $target_table ON ($left = $right)";
+	$sql =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b$target_table\b(,)?/$1/s
+	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $sql);
+    }
+    foreach my $source_table (sort(keys(%$joins))) {
+	$sql =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)/$1$joins->{$source_table}/is
+	    || Bivio::Die->die('failed to insert outer join "',
+		$joins->{$source_table}, '" into ', $sql);
+    }
+    # remove extra commas, trailing where
+    $sql =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
+    $sql =~ s/,\s*(?=\sWHERE\s)//is;
+    # Really should have an SQL lexicon...
+    $sql =~ s/\s(?:WHERE|AND)(?=\s*$|\s*\)|\s*(?:HAVING|GROUP|ORDER|UNION|INTERSECT)\b)//is;
     return $sql;
 }
 
