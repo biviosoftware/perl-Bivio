@@ -32,6 +32,15 @@ by L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>.
 
 ListSupport uses the L<Bivio::SQL::Connection> for statement execution.
 
+A field is a name of the form C<Model.field>.
+
+A field identity is an array_ref of fields.  The first field is the
+name that appears in the columns list.  The rest are aliases which
+are joined in the where clause with "=".
+
+Outer joins are supported for field identities.  An alias may end
+with '(+)'.
+
 =head1 ATTRIBUTES
 
 See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
@@ -264,6 +273,27 @@ sub load {
     return $query->get('this')
 	    ? _load_this($self, $query, $statement, $die)
 		    : _load_list($self, $query, $statement, $select, $params);
+}
+
+=for html <a name="iterate_start></a>
+
+=head2 iterate_start(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : ref
+
+Returns a handle which can be used to iterate the rows with
+L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+Arguments are the same as L<load|"load">.
+
+=cut
+
+sub iterate_start {
+    my($self, $query, $where, $params, $die) = @_;
+
+    my($select) = $self->unsafe_get('select');
+    $die->die('DIE', 'must support select') unless $select;
+
+    return _execute_select($self, $query, \$select, $params, $die);
 }
 
 #=PRIVATE METHODS

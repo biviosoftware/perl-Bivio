@@ -231,7 +231,7 @@ sub init_column {
     my($col);
     unless ($col = $columns->{$qual_col}) {
 	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
-	Carp::croak("$qual_col: invalid qualified column name")
+	Bivio::IO::Alert->die($qual_col, ': invalid qualified column name')
 		    unless $qual_model && $column;
 	my($model);
 	unless ($model = $attrs->{models}->{$qual_model}) {
@@ -279,6 +279,8 @@ sub init_column {
 Initialize the column classes.
 Returns the beginnings of the where clause (alias field identities)
 
+Supports outer joins for aliases.  The alias must end with "(+)".
+
 =cut
 
 sub init_column_classes {
@@ -309,12 +311,14 @@ sub init_column_classes {
 	    $column_aliases->{$first} = $col;
 	    my($alias);
 	    foreach $alias (@aliases) {
+		my($outer_join) = $alias =~ s/\Q(+)\E$// ? '(+)' : '';
 		# Creates a temporary column just to get sql_name and
 		# to make sure "model" is created if need be.
 		my($alias_col) = $proto->init_column(
 			$attrs, $alias, $class, 1);
 #TODO: Shouldn't allow where to be created for local columns
-		$where .= ' and '.$col->{sql_name}.'='.$alias_col->{sql_name};
+		$where .= ' and '.$col->{sql_name}.'='
+			.$alias_col->{sql_name}.$outer_join;
 		# All aliases point to main column.  They don't exist
 		# outside of this context.
 		$column_aliases->{$alias} = $col;
@@ -394,6 +398,59 @@ sub init_version {
     return;
 }
 
+=for html <a name="iterate_end"></a>
+
+=head2 iterate_end(ref iterator)
+
+Terminates the iterator.
+
+=cut
+
+sub iterate_end {
+    my($self, $iterator) = @_;
+    $iterator->finish;
+    return;
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next {
+    my($self, $iterator, $row, $converter) = @_;
+    my($start_time) = Bivio::Util::gettimeofday();
+    my($r) = $iterator->fetchrow_arrayref;
+    Bivio::SQL::Connection->increment_db_time($start_time);
+    unless ($r) {
+	# End
+	%$row = ();
+	$iterator->finish;
+	return 0;
+    }
+
+    # Convert values
+    my($attrs) = $self->internal_get;
+    my($cols) = $attrs->{select_columns};
+    for (my $i = $#$r; $i >= 0; $i--) {
+	my($c) = $cols->[$i];
+	my($t) = $c->{type};
+	my($v) = $t->from_sql_column($r->[$i]);
+	$row->{$c->{name}} = $converter ? $t->$converter($v) : $v;
+    }
+    return 1;
+}
+
 #=PRIVATE METHODS
 
 # _add_to_class(hash_ref attrs, string class, hash_ref col)
@@ -417,6 +474,7 @@ sub _init_column_from_hash {
     # case: "{ name => }"
     if (ref($first = $decl->{name})) {
 	# case: "{name => [a, b]}"
+#TODO: Does this work???  Where are aliases being referenced?
 	@$aliases = @$first;
 	$first = shift(@$aliases);
     }
