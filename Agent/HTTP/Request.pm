@@ -153,9 +153,9 @@ sub new {
 
 =head2 client_redirect(string new_uri, string new_query)
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info)
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, string new_path_info)
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, string new_path_info, boolean no_context)
 
 Client side redirect to the new task within the new realm.  If I<new_task>
 is the same as the current task, does an server_redirect.  Otherwise,
@@ -171,7 +171,8 @@ sub client_redirect {
     # when redirecting to same uri.
     my($uri);
     if (ref($_[0])) {
-	my($new_task, $new_realm, $new_query, $new_path_info) = @_;
+	my($new_task, $new_realm, $new_query, $new_path_info, $no_context)
+		= @_;
 
 	# use previous query if not specified, maintains state across pages
 	if (int(@_) <= 2) {
@@ -189,7 +190,7 @@ sub client_redirect {
 	$uri = $self->format_uri($new_task, $new_query,
 		defined($new_realm) ? $new_realm
 		: $self->get_realm_for_task($new_task),
-		$new_path_info);
+		$new_path_info, $no_context);
     }
     else {
 	my($new_uri, $new_query) = @_;

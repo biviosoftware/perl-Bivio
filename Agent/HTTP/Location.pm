@@ -110,9 +110,9 @@ sub find_task {
 
 =for html <a name="format"></a>
 
-=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req, boolean no_context, string path_info) : string
+=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req, string path_info, boolean no_context) : string
 
-=head2 static format(Bivio::Agent::TaskId task_id, string realm_name, Bivio::Agent::Request req, boolean no_context, string path_info) : string
+=head2 static format(Bivio::Agent::TaskId task_id, string realm_name, Bivio::Agent::Request req, string path_info, boolean no_context) : string
 
 Transforms I<task_id> and I<realm> (if needed) into a URI.
 I<realm_name> must be a legitimate realm name.
@@ -122,7 +122,7 @@ B<path_info is not escaped>
 =cut
 
 sub format {
-    my(undef, $task_id, $realm, $req, $no_context, $path_info) = @_;
+    my(undef, $task_id, $realm, $req, $path_info, $no_context) = @_;
     Bivio::Die->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($info) = $_FROM_TASK_ID{$task_id};
@@ -177,7 +177,6 @@ sub format {
 
 #TODO: Hack.  Recursion in FormModel otherwise
     return $uri if $no_context;
-
 #TODO: Tightly coupled with UI::HTML::Widget::Form.
     my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
     $uri .= Bivio::Biz::FormModel->format_context_as_query($req, $task_id)
@@ -204,8 +203,8 @@ sub format_realmless {
 	    $task_id,
 	    $_PLACEHOLDER{$_FROM_TASK_ID{$task_id}->{realm_type}},
 	    undef,
-	    1,
-	    undef);
+	    undef,
+	    1);
 }
 
 =for html <a name="get_document_path_info"></a>
