@@ -208,6 +208,9 @@ L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>.
 sub new {
     return Bivio::Collection::Attributes::new(@_, {}) if int(@_) == 1;
     return Bivio::Collection::Attributes::new(@_) if ref($_[1]) eq 'HASH';
+    # Handles weird case where undef is passed to mean "no value"
+    return Bivio::Collection::Attributes::new(@_)
+	if int(@_) == 2 && !defined($_[1]);
     my($proto) = shift;
     Bivio::Die->die($proto, '->new: only accepts a hash_ref argument')
 	unless $proto->can('internal_new_args');
