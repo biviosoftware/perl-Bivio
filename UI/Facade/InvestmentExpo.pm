@@ -159,14 +159,16 @@ sub _body {
 		}),
 	    ],
 	    [
-		Bivio::UI::Facade::InvestmentExpo::LeftMenu->new->put(
-			cell_align => 'nw',
-			cell_rowspan => 3,),
+		Bivio::UI::HTML::Widget->clear_dot(1, 25)->put(
+			cell_align => 'nw'),
 		Bivio::UI::HTML::Widget->blank_cell,
 		Bivio::UI::HTML::Widget->indirect(['page_image_menu'])->put(
 			cell_align => 'nw'),
 	    ],
 	    [
+		Bivio::UI::Facade::InvestmentExpo::LeftMenu->new->put(
+			cell_align => 'nw',
+			cell_rowspan => 2),
 		Bivio::UI::HTML::Widget->blank_cell,
 		Bivio::UI::HTML::Widget->indirect(['page_text_menu'])->put(
 			cell_align => 'nw'),
@@ -182,7 +184,7 @@ sub _body {
 			Bivio::UI::HTML::Widget->image('bivio_power'),
 			'http://www.bivio.com')->put(cell_align => 'sw'),
 		Bivio::UI::HTML::Widget->blank_cell,
-		_footer(),
+		_footer()->put(cell_align => 'nw'),
 	    ],
 	],
     });

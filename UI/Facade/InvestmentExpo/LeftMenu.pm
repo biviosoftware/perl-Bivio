@@ -132,7 +132,7 @@ sub initialize {
     # around with this.
     $fields->{prefix} = "<table cellpadding=2 border=0>\n"
 	    .'<tr><td width=14>'
-	    .Bivio::UI::HTML::Widget->clear_dot_as_html(14, 27)
+	    .Bivio::UI::HTML::Widget->clear_dot_as_html(14, 1)
 	    ."</td>\n<td></td></tr>\n";
     return;
 }
