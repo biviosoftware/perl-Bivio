@@ -34,11 +34,27 @@ C<Bivio::Biz::ExpandableListFormModel> list form which can have extra rows
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="ROW_INCREMENT"></a>
+
+=head2 ROW_INCREMENT : int
+
+number of empty rows to add to the list.
+
+=cut
+
+sub ROW_INCREMENT {
+    return 4;
+}
+
 #=IMPORTS
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_ROW_INCREMENT) = 4;
 
 =head1 FACTORIES
 
@@ -143,7 +159,7 @@ sub internal_initialize_list {
 	}
 	else {
 	    # default number of rows to add
-	    $empty_row_count = $_ROW_INCREMENT;
+	    $empty_row_count = $self->ROW_INCREMENT;
 	}
     }
     $self->internal_put_field('empty_row_count', $empty_row_count);
@@ -170,7 +186,7 @@ sub validate {
 	# increment the empty_row count and redirect to the same task
 	my($req) = $self->get_request;
 	$req->put(__PACKAGE__.'empty_row_count' =>
-		$self->get('empty_row_count') + $_ROW_INCREMENT);
+		$self->get('empty_row_count') + $self->ROW_INCREMENT);
 
 	my($rows) = [];
 	$self->reset_cursor;
