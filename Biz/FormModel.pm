@@ -721,6 +721,44 @@ sub validate {
     return;
 }
 
+=for html <a name="validate_greater_than_zero"></a>
+
+=head2 validate_greater_than_zero(string field)
+
+Ensures the specified field is greater than 0. Puts an error on the form
+if it fails.
+
+=cut
+
+sub validate_greater_than_zero {
+    my($self, $field) = @_;
+    my($value) = $self->internal_get()->{$field};
+    return unless defined($value);
+
+    $self->internal_put_error($field, Bivio::TypeError::GREATER_THAN_ZERO())
+	    unless $value > 0;
+    return;
+}
+
+=for html <a name="validate_not_negative"></a>
+
+=head2 validate_not_negative(string field) : boolean
+
+Ensures the specified field isn't negative. Puts an error on the form
+if it fails.
+
+=cut
+
+sub validate_not_negative {
+    my($self, $field) = @_;
+    my($value) = $self->internal_get()->{$field};
+    return unless defined($value);
+
+    $self->internal_put_error($field, Bivio::TypeError::NOT_NEGATIVE())
+	    unless $value >= 0;
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _apply_type_error(Bivio::Biz::FormModel self, Bivio::Die die)
