@@ -67,8 +67,13 @@ Updates the values in the account.
 
 sub execute_ok {
     my($self) = @_;
-    $self->get_model('RealmAccount')->update(
-	    $self->get_model_properties('RealmAccount'));
+    my($new) = $self->get_model_properties('RealmAccount');
+    my($model) = $self->get_model('RealmAccount');
+    my($old) = $model->get('external_password');
+    delete($new->{'RealmAccount.external_password'})
+	    unless Bivio::Type::ExternalPassword->value_has_changed(
+		    $old, $new->{'RealmAccount.external_password'});
+    $model->update($new);
     return;
 }
 
