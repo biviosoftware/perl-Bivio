@@ -311,6 +311,7 @@ sub install {
 	}
 	_system($command, \$output);
     }
+    $output =~ s/warning: (\S+) saved as (\S+)\s*/_err_parser($1, $2)/esg;
     return $output;
 }
 
@@ -421,6 +422,18 @@ EOF
     my($name) = _search('name', $base_spec)
 	    || Bivio::Die->die("$specin: Missing Name: tag!\n");
     return ($specout, "$name-$version", "$name-$version-$release");
+}
+
+# _err_parser() : string
+#
+# Gets rid of 'warning: x saved as y' if the files are the same
+#
+sub _err_parser {
+    my($orig, $final) = @_;
+    return ("warning: $orig saved as $final\n")
+	    unless ${Bivio::IO::File->read($orig)}
+		    eq ${Bivio::IO::File->read($final)};
+    return '';
 }
 
 # _get_date_format() : string
