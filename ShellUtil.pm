@@ -992,12 +992,12 @@ sub run_daemon {
     Bivio::IO::ClassLoader->simple_require('BSD::Resource');
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
-    my($i) = 3;
     while (1) {
 	my($max_duplicates) = $cfg->{daemon_max_children};
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
 	    my($args) = $next_command->();
 	    last unless $args;
+	    _reap_daemon_children($children);
 	    if (grep(
 		Bivio::IO::Ref->nested_equals($args, $_),
 		values(%$children),
@@ -1013,14 +1013,7 @@ sub run_daemon {
 	    }
 	}
 	return unless %$children;
-	my($stopped) = wait;
-	while ($stopped > 0) {
-	    _trace('stopped: ', $stopped, ' ', $children->{$stopped})
-		if $_TRACE;
-	    Bivio::IO::Alert->warn($stopped, ': unknown pid')
-	        unless delete($children->{$stopped});
-	    $stopped = waitpid(-1, POSIX::WNOHANG());
-	}
+	_reap_daemon_children($children, wait);
     }
     return;
 }
@@ -1365,6 +1358,22 @@ sub _process_exists {
     my($pid) = @_;
     $! = undef;
     return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
+}
+
+# _reap_daemon_children(hash_ref children, int stopped)
+#
+# Reap children without blocking
+#
+sub _reap_daemon_children {
+    my($children, $stopped) = @_;
+    while (!$stopped || $stopped > 0) {
+	_trace('stopped: ', $stopped, ' ', $children->{$stopped})
+	    if $_TRACE;
+	Bivio::IO::Alert->warn($stopped, ': unknown pid')
+	    unless delete($children->{$stopped});
+	$stopped = waitpid(-1, POSIX::WNOHANG());
+    }
+    return;
 }
 
 # _result_email(Bivio::ShellUtil self, string cmd, string_ref res) : boolean
