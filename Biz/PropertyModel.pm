@@ -54,7 +54,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::ListModel
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::PropertyModel
 
 Create a new PropertyModel associated with the request.
 
