@@ -246,6 +246,21 @@ sub round {
     return $proto->trunc($number, $decimals);
 }
 
+=for html <a name="sign"></a>
+
+=head2 static sign(string number) : int
+
+Returns -1, 0, +1 depending on the sign of number.
+
+=cut
+
+sub sign {
+    my($proto, $number) = @_;
+    my($sign) = $number =~ /^([-+])/;
+    return $sign eq '-' ? -1 : 1 if defined($sign);
+    return $proto->compare($number, 0) == 0 ? 0 : 1;
+}
+
 =for html <a name="sub"></a>
 
 =head2 static sub(string v, string v2, int decimals) : string
