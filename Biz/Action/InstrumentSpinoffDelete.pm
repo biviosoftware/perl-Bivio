@@ -31,9 +31,12 @@ C<Bivio::Biz::Action::InstrumentSpinoffDelete> deletes global spin-off info
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -42,17 +45,17 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="execute"></a>
 
-=head2 execute(Bivio::Agent::Request req)
+=head2 execute(Bivio::Agent::Request req) : boolean
 
-Deletes the instrument, then redirects to the investment list.
+Deletes the instrument.
 
 =cut
 
 sub execute {
     my($self, $req) = @_;
-    $req->get('Bivio::Biz::Model::InstrumentSpinoff')->delete;
-    $req->client_redirect(Bivio::Agent::TaskId::ADM_SPINOFFS(), undef, undef);
-    # DOES NOT RETURN
+    $req->get('Bivio::Biz::Model::InstrumentSpinoffList')
+	    ->set_cursor_or_die(0)->get_model('InstrumentSpinoff')->delete;
+    return 0;
 }
 
 #=PRIVATE METHODS
