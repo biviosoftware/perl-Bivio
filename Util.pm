@@ -37,6 +37,20 @@ BEGIN {
 #TODO: Fix this HACK.  Probably need once a day time for events like this?
 my($_THIS_YEAR) = (localtime)[5] + 1900;
 
+# are_you_sure()
+# are_you_sure(string prompt)
+#
+# Returns if user answers yes from STDIN.  Otherwise, dies with "Aborted".
+sub are_you_sure {
+    my($prompt) = @_;
+    $prompt ||= 'Are you sure?';
+    print STDERR $prompt, " (yes or no) ";
+    my $answer = <STDIN>;
+    $answer =~ s/\s+//g;
+    die("Operation aborted\n") unless $answer eq 'yes';
+    return;
+}
+
 sub unescape_html { &HTML::Entities::decode }
 
 # gettimeofday -> [seconds, micros]
@@ -259,7 +273,7 @@ C<&set_name>, C<&date>, and C<&set_date>:
         use Bivio::Util;
         &Bivio::Util::compile_attribute_accessors([qw(name date)]);
     }
-   
+
 The equivalent code would be:
 
     sub name ($) { shift->{name} }
