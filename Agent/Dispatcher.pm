@@ -68,10 +68,6 @@ them handles the request.
 sub process_request {
     my($self, $req) = @_;
     my($controllers) = $self->{$_PACKAGE}->{controllers};
-    # make sure the request isn't already in error
-    if ($req->get_state() != Bivio::Agent::Request::NOT_HANDLED ) {
-	return;
-    }
     my($list) = $controllers->{$req->get_controller_name()};
 
     # iterate the controller list until one of them handles the request
