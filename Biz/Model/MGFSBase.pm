@@ -33,13 +33,18 @@ C<Bivio::Biz::Model::MGFSBase>
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
+use Bivio::Biz::Model::MGFSInstrument;
 use Bivio::Die;
 use Bivio::Data::MGFS::Importer;
+use Bivio::SQL::Connection;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 # keyed by class name
 my($_IMPORTER_MAP) = {};
+
+my($_OLD_TICKER_TAG) = '-D';
 
 
 =head1 FACTORIES
@@ -137,6 +142,59 @@ The import format should be:
 
 sub internal_get_mgfs_import_format {
     die("abstract method");
+}
+
+=for html <a name="post_import"></a>
+
+=head2 static post_import()
+
+Performs post-import processing.
+Ticker clashes are resolved by appending '-D' to defunct symbols.
+Commits changes after processing.
+
+=cut
+
+sub post_import {
+    my($proto) = @_;
+
+    my($mgfs_instrument) = Bivio::Biz::Model::MGFSInstrument->new(
+	    Bivio::Agent::Request->get_current_or_new);
+    my($handled_ids) = {};
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT a.mg_id, b.mg_id, a.symbol
+            FROM mgfs_instrument_t a, mgfs_instrument_t b
+            WHERE a.mg_id != b.mg_id
+            AND a.symbol = b.symbol',
+	    []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($id, $id2, $symbol) = @$row;
+	next if exists($handled_ids->{$id});
+	my($sth2) = Bivio::SQL::Connection->execute('
+                SELECT mg_id, MAX(date_time) dt
+                FROM mgfs_daily_quote_t
+                WHERE mg_id in (?,?)
+                GROUP BY mg_id
+                ORDER BY dt desc',
+		[$id, $id2]);
+	my($mg_id, $date) = @{$sth2->fetchrow_arrayref};
+	my($mg_id2, $date2) = @{$sth2->fetchrow_arrayref};
+	if ($date eq $date2) {
+#TODO: handle this case by counting quotes if necessary
+	    print(STDERR
+		   "WARNING: unhandled ticker clash mg_id($mg_id, $mg_id2)\n");
+	}
+	else {
+	    # change the ticker on the one with the older quote date
+	    $mgfs_instrument->load(mg_id => $mg_id2);
+	    $mgfs_instrument->update({
+		symbol => $symbol.$_OLD_TICKER_TAG
+	    });
+	}
+	$handled_ids->{$id} = $id;
+	$handled_ids->{$id2} = $id2;
+    }
+    Bivio::SQL::Connection->commit;
+    return;
 }
 
 =for html <a name="try_to_update_or_create"></a>
