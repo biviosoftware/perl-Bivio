@@ -65,8 +65,8 @@ sub new {
     my($proto, $inner, $attributes) = @_;
     my($self) = &Bivio::UI::Renderer::new($proto);
     $self->{$_PACKAGE} = {
-	inner => $inner,
-	attributes => $attributes
+	'inner' => $inner,
+	'attributes' => $attributes
     };
     return $self;
 }
@@ -95,6 +95,7 @@ sub render {
     $req->print($str.'><small>');
     $fields->{inner}->render($target, $req);
     $req->print('</small></td>');
+    return;
 }
 
 #=PRIVATE METHODS

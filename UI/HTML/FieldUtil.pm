@@ -143,6 +143,7 @@ sub entry_field {
 	$req->print('> Guest<br>');
     }
     $req->print('</td></tr>');
+    return;
 }
 
 =for html <a name="get_renderer"></a>
@@ -166,7 +167,6 @@ sub get_renderer {
 	        Bivio::UI::HTML::EmailRefRenderer->new()
 	    };
     }
-
     return $_RENDERER_CACHE->{$descriptor->get_type()} || $_DEFAULT_RENDERER;
 }
 

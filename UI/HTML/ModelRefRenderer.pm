@@ -11,7 +11,7 @@ Bivio::UI::HTML::ModelRefRenderer - renders MODEL_REF types
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ModelRefRenderer;
-    my($fp) = Bivio::Biz::FindParams->new({id => 120});
+    my($fp) = Bivio::Biz::FindParams->new({'id' => 120});
     my($mr) = Bivio::UI::HTML::ModelRefRenderer->new();
     $mr->render([$fp->to_string(), 'To be or not to be...'], $req);
 
@@ -73,8 +73,8 @@ sub new {
     my($proto, $view_name, $controller_name) = @_;
     my($self) = &Bivio::UI::Renderer::new($proto);
     $self->{$_PACKAGE} = {
-	view_name => $view_name,
-	controller_name => $controller_name
+	'view_name' => $view_name,
+	'controller_name' => $controller_name
     };
     return $self;
 }
@@ -102,6 +102,7 @@ sub render {
 
     $req->print('<a href="'.$req->make_path($fields->{view_name},
 	    $fields->{controller_name}).'?'.$id.'">'.$text.'</a>');
+    return;
 }
 
 #=PRIVATE METHODS

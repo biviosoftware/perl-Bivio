@@ -12,7 +12,7 @@ Bivio::UI::HTML::ListView - A view which renders a ListModel.
 
     use Bivio::UI::HTML::ListView;
     my($users) = Bivio::Biz::UserList->new();
-    if ($users->find({club => $club_id})) {
+    if ($users->find({'club' => $club_id})) {
         my($list_view) = Bivio::UI::HTML::ListView->new('userlist');
         $list_view->render($users, $req);
     }
@@ -71,9 +71,9 @@ sub new {
     my($proto, $name, $attributes) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
     $self->{$_PACKAGE} = {
-	attributes => $attributes
+	'attributes' => $attributes
 	    || 'width="100%" border=0 cellpadding=5 cellspacing=0',
-	col_renderers => []
+	'col_renderers' => []
     };
     return $self;
 }
@@ -126,6 +126,7 @@ sub render {
     $self->render_heading($model, $req);
     $self->render_body($model, $req);
     $req->print('</table>');
+    return;
 }
 
 =for html <a name="render_body"></a>
@@ -165,6 +166,7 @@ sub render_body {
 	}
 	$req->print('</tr>');
     }
+    return;
 }
 
 =for html <a name="render_heading"></a>
@@ -212,7 +214,6 @@ sub render_heading {
 		    .$req->get_controller_name().'/'
 		    .$self->get_name().'/?'.$fp2->to_string().'">');
 	}
-
 	$req->print($model->get_column_heading($i));
 
 	$req->print('</a>') if ($model->get_sort_key($i));
@@ -221,8 +222,8 @@ sub render_heading {
 
 	$req->print('</th>');
     }
-
     $req->print('</tr>');
+    return;
 }
 
 =for html <a name="set_column_renderer"></a>
@@ -238,6 +239,7 @@ sub set_column_renderer {
     my($fields) = $self->{$_PACKAGE};
 
     $fields->{col_renderers}->[$column] = $renderer;
+    return;
 }
 
 #=PRIVATE METHODS

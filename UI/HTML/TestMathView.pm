@@ -160,6 +160,7 @@ sub render {
     my($self, $model, $req) = @_;
 
     $_LIST_VIEW->render($model, $req);
+    return;
 }
 
 #=PRIVATE METHODS

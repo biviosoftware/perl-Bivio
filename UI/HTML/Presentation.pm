@@ -191,6 +191,7 @@ sub render {
     $self->get_active_view()->render($model, $req);
 
     $req->print('</td></tr></table>');
+    return;
 }
 
 =for html <a name="render_action_bar"></a>
@@ -225,6 +226,7 @@ sub render_action_bar {
 	}
 	$req->print('</small></td></tr></table>');
     }
+    return;
 }
 
 =for html <a name="render_nav_bar"></a>
@@ -294,6 +296,7 @@ sub render_nav_bar {
 	$req->print('</td>');
     }
     $req->print('</tr></table>');
+    return;
 }
 
 =for html <a name="render_title"></a>
@@ -317,6 +320,7 @@ sub render_title {
     $req->print($model->get_title() || '&nbsp;');
 
     $req->print('</strong></big></font></td></tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS

@@ -169,11 +169,11 @@ sub new {
     my($proto, $name, $icon, $url, $text, $description) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	name => $name,
-	icon => $icon,
-	url => $url,
-	text => $text,
-	description => $description
+	'name' => $name,
+	'icon' => $icon,
+	'url' => $url,
+	'text' => $text,
+	'description' => $description
     };
     return $self;
 }
@@ -225,6 +225,7 @@ sub render {
     if ($url) {
 	$req->print('</a>');
     }
+    return;
 }
 
 =for html <a name="set_description"></a>
@@ -239,6 +240,7 @@ sub set_description {
     my($self, $description) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{description} = $description;
+    return;
 }
 
 =for html <a name="set_icon"></a>
@@ -253,6 +255,7 @@ sub set_icon {
     my($self, $icon) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{icon} = $icon;
+    return;
 }
 
 =for html <a name="set_text"></a>
@@ -267,6 +270,7 @@ sub set_text {
     my($self, $text) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{text} = $text;
+    return;
 }
 
 =for html <a name="set_url"></a>
@@ -281,6 +285,7 @@ sub set_url {
     my($self, $url) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{url} = $url;
+    return;
 }
 
 #=PRIVATE METHODS

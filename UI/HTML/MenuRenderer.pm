@@ -79,7 +79,7 @@ sub render {
     my($active) = $menu->get_selected();
 
     # don't show menu if is a sub menu and has only one item
-    if (!$menu->is_top() && scalar(@{$names}) <= 1) {
+    if (!$menu->is_top() && int(@{$names}) <= 1) {
         return;
     }
 
@@ -90,7 +90,7 @@ sub render {
     my($link_root) = $menu->is_top() ? '/'.$req->get_target_name().'/'
 	    : '/'.$req->get_target_name().'/'.$req->get_controller_name().'/';
 
-    for (my($i) = 0; $i < scalar(@$names); $i++) {
+    for (my($i) = 0; $i < int(@$names); $i++) {
         my($name) = $names->[$i];
 	my($display_name) = $display_names->[$i];
 	my($link) = '<a href="'.$link_root.$name.'">'.$display_name.'</a>';
@@ -120,8 +120,8 @@ sub render {
         $req->print('</tr><tr>');
         $req->print($html);
     }
-
     $req->print('</tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS

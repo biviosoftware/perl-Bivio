@@ -90,6 +90,7 @@ sub render {
     $subject = Apache::Util::escape_uri($subject);
     $req->print('<a href="mailto:'.$address.'?subject='.$subject.'">'
 	    .$name.'</a>');
+    return;
 }
 
 #=PRIVATE METHODS
