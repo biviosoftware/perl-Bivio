@@ -36,6 +36,8 @@ and in the cookie.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model;
+use Bivio::Die;
 
 #=VARIABLES
 
@@ -53,9 +55,13 @@ Clears the current cart and logs out the user.
 
 sub execute_clear_cart_and_logout {
     my($proto, $req) = @_;
-    my($cart) = Bivio::Biz::Model->new($req, 'Cart');
-    $cart->cascade_delete
-	    if $cart->unsafe_load({cart_id => $req->get('cart_id')});
+
+    # catch exceptions
+    # Postgres has a bug which doesn't allow a row to be added
+    # and then deleted in the same transaction
+    Bivio::Die->catch(sub {
+        Bivio::Biz::Model->new($req, 'Cart')->load_from_cookie->cascade_delete;
+    });
     $proto->execute($req);
     return 0;
 }
