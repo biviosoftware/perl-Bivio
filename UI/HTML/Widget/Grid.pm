@@ -45,6 +45,10 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
+=item border : number [0]
+
+The value to be passed to the C<BORDER> attributes of the C<TABLE> tag.
+
 =item expand : boolean [false]
 
 If true, the table will C<WIDTH> will be C<100%>.
@@ -159,7 +163,7 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{rows});
-    my($p) = '<table border=0';
+    my($p) = '<table border ='.$self->get_or_default('border', 0);
     # We don't want to check parents
     my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
