@@ -148,7 +148,7 @@ __PACKAGE__->compile(
     NOT_FOUND => [
 	22,
 	undef,
-	'value not found',
+	'not found',
     ],
     NOT_NEGATIVE => [
 	23,
@@ -166,13 +166,33 @@ __PACKAGE__->compile(
 	undef,
 	'four digit year required (mm/dd/yyyy)',
     ],
-    STATE => [
+    PASSWORD_MISMATCH => [
 	26,
+	undef,
+	'invalid password',
+    ],
+    LOGIN_TIMEOUT => [
+	27,
+	undef,
+	'your login session timed out, please re-enter your password',
+    ],
+    HASH => [
+	28,
+	undef,
+	'invalid hash value; corrupt input',
+    ],
+    MUST_LOGIN => [
+	29,
+	undef,
+	'your must login to access this link or command',
+    ],
+    STATE => [
+	30,
 	undef,
 	'state must be exactly two letters',
     ],
     MGFS_RATIO => [
-	27,
+	31,
 	undef,
 	'invalid ratio',
     ],
