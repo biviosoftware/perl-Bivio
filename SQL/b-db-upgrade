@@ -221,6 +221,7 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_add_five_year_capital_gain();
+    _upgrade_expense_t();
 
     print("\n*** done ***\n");
     return;
@@ -250,6 +251,20 @@ ALTER TABLE member_allocation_t
 /
 ');
 
+    return;
+}
+
+sub _upgrade_expense_t {
+    print("Adding unique constraint to expense_category_t\n");
+    _do_sql('
+CREATE UNIQUE INDEX expense_category_t7 on expense_category_t (
+  realm_id,
+  name
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+');
     return;
 }
 
