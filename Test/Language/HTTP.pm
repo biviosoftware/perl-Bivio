@@ -299,9 +299,13 @@ sub verify_form {
 	my($control) = $visibles->{$field};
 	Bivio::Die->die($control->{type}, " ", $field,
 	    ' unexpected setting from ', $form_fields->{$field}) unless
-		$control->{type} eq 'checkbox' ?
-		    defined($control->{checked}) == $form_fields->{$field}
-			: $form_fields->{$field} eq $control->{value};
+		$control->{type} eq 'checkbox'
+		    ? ($control->{checked}
+			? defined($control->{value})
+			    ? $control->{value} : 1 : 0)
+			== (defined($form_fields->{$field})
+			    ? $form_fields->{$field} : 0)
+		    : $form_fields->{$field} eq $control->{value};
     }
     return;
 }
