@@ -27,6 +27,23 @@ execute a task, and excutes the Task.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="MAX_SERVER_REDIRECTS"></a>
+
+=head2 MAX_SERVER_REDIRECTS : int
+
+Maximum number of server redirects.
+
+=cut
+
+sub MAX_SERVER_REDIRECTS {
+    return 4;
+}
+
 #=IMPORTS
 use BSD::Resource;
 use Bivio::Agent::HTTP::Location;
@@ -78,23 +95,31 @@ sub process_request {
     my($self, @protocol_args) = @_;
     Bivio::Agent::Request->clear_current;
     my($die, $req, $task_id);
-    my($try) = 0;
+    my($redirect_count) = -1;
  TRY: {
 	$die = Bivio::Die->catch(
 		sub {
-		    die("too many dispatcher retries") if ++$try > 4;
+		    die("too many dispatcher retries")
+			    if ++$redirect_count > MAX_SERVER_REDIRECTS();
 		    $req = $self->create_request(@protocol_args) unless $req;
 		    $task_id = $req->get('task_id') unless $task_id;
 		    _trace('Executing: ', $task_id) if $_TRACE;
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-		    $req->put(task => $task, redirect_count => $try - 1);
-#TODO: This is a hack.  Really should clear out all models.
+		    $req->put(task => $task,
+			    redirect_count => $redirect_count);
+#TODO: This is a hack.  Should we clear out all models(?)
 		    $req->delete(qw(list_model form_model));
 		    # Task checks authorization
 		    $task->execute($req);
 		});
+
+	# Is this redirect?  If we have exceeded redirect count, we may blow up
+	# with a DIE (see above).  It is better to check again here, because
+	# there may be a bug in the error redirect mapping.
 	if ($die && $die->get('code')
-		== Bivio::DieCode::SERVER_REDIRECT_TASK()) {
+		== Bivio::DieCode::SERVER_REDIRECT_TASK()
+	       && $redirect_count <= MAX_SERVER_REDIRECTS()) {
+
 	    #NOTE: Coupling with Request::internal_server_redirect.
 	    #      It already has set task and task_id
 	    my($attrs) = $die->get('attrs');
