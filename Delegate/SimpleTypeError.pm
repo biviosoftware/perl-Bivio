@@ -181,6 +181,22 @@ invalid password
 
 invalid US Zip; must be 5 or 9 digits.
 
+=item CREDITCARD_INVALID_NUMBER
+
+not a valid credit card number
+
+=item CREDITCARD_EXPIRED
+
+expiration date is in the past
+
+=item CREDITCARD_UNSUPPORTED_TYPE
+
+credit card type not supported; Amex, Visa and MasterCard only
+
+=item CREDITCARD_WRONG_TYPE
+
+card number does not match card type
+
 =back
 
 =cut
@@ -393,6 +409,26 @@ sub get_delegate_info {
 	37,
 	undef,
 	'invalid US Zip; must be 5 or 9 digits.',
+    ],
+    CREDITCARD_INVALID_NUMBER => [
+	38,
+	undef,
+	"not a valid credit card number",
+    ],
+    CREDITCARD_EXPIRED => [
+	39,
+	undef,
+	"expiration date is in the past",
+    ],
+    CREDITCARD_UNSUPPORTED_TYPE => [
+	40,
+	undef,
+	"credit card type not supported; Amex, Visa and MasterCard only",
+    ],
+    CREDITCARD_WRONG_TYPE => [
+	41,
+	undef,
+	"card number does not match card type",
     ],
 ];
 }
