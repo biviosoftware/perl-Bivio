@@ -66,12 +66,10 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	require_context => 1,
 	version => 1,
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 #=PRIVATE METHODS
