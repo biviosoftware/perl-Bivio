@@ -127,6 +127,10 @@ other.host
  		['etc/sendmail.cf', "names\nFP/etc/mail"],
  		['etc/sendmail.cf', '\$=w.*bsendmailhttp \$@ \$2 \$: \$1'],
 	    ],
+	    'add_sendmail_http_agent', ['localhost:8000/my_uri', '/bin/true'] => [
+		['etc/sendmail.cf', 'localhost:8000/my_uri'],
+ 		['etc/sendmail.cf', 'A=true'],
+	    ],
 	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
