@@ -1776,7 +1776,7 @@ my(@_CFG) = (
         CLUB_MAIL_REPLY
         183
         CLUB
-        MAIL_WRITE
+        MAIL_WRITE&MAIL_READ
         ?/mail/reply
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailPartList->execute_load_all
@@ -1789,7 +1789,7 @@ my(@_CFG) = (
         CELEBRITY_MAIL_REPLY
         184
         PROXY
-        DOCUMENT_READ
+        DOCUMENT_READ&MAIL_READ
         pub/?/reply
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailPartList->execute_load_all
