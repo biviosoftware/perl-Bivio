@@ -1,0 +1,12 @@
+<chapter>
+<title>Simple Chapter</title>
+<epigraph>
+<para>
+Representation <emphasis>is</emphasis> the essence of programming.
+</para>
+<attribution>Fred Brooks</attribution>
+</epigraph>
+<simplesect>
+<para>Some Text</para>
+</simplesect>
+</chapter>
