@@ -162,7 +162,7 @@ sub cascade_delete {
     # delete related records
     my($params) = [$id];
     foreach my $table (qw(email_t phone_t address_t realm_role_t
-            realm_decor_t tax_id_t preferences_t tax_1065_t
+            realm_decor_t realm_notice_t tax_id_t preferences_t tax_1065_t
             password_request_t)) {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
@@ -847,6 +847,24 @@ sub unauth_load_by_email {
 
     # Is it a valid user/club?
     return $self->unauth_load(@query, name => $name);
+}
+
+=for html <a name="unauth_load_by_email_id_or_name"></a>
+
+=head2 unauth_load_by_email_id_or_name(string email_id_or_name) : boolean
+
+If email_id_or_name has an '@', will try to unauth_load_by_email.
+Otherwise, tries to load by id or name.
+
+=cut
+
+sub unauth_load_by_email_id_or_name {
+    my($self, $email_id_or_name) = @_;
+    return $self->unauth_load_by_email($email_id_or_name)
+	    if $email_id_or_name =~ /@/;
+    return $self->unauth_load(realm_id => $email_id_or_name)
+	    if $email_id_or_name =~ /^\d+$/;
+    return $self->unauth_load(name => $email_id_or_name);
 }
 
 =for html <a name="unauth_load_by_id_or_name_or_die"></a>
