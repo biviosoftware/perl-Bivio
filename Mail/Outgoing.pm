@@ -256,8 +256,8 @@ sub set_headers_for_list_send {
     $headers->{precedence} = "Precedence: list\n";
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
-    $headers->{to} = "To: \"$list_title\" <$list_name>\n";
-    $reply_to_list && ($headers->{'reply-to'} = 'Reply-' . $headers->{to});
+    $reply_to_list &&
+            ($headers->{'reply-to'} = "Reply-To: \"$list_title\" <$list_name>\n");
     # If there is no From:, add it now.
     $headers->{from} ||= "From: $sender\n";
     # Insert the list in the subject, if not already there
