@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    for ADD_rows.
+  * Bivio::Biz::FormModel->validate is passed the form_button which was
+    pressed.
+
+  Revision 2.12  2004/03/02 13:31:02  nagler
+  * Bivio::Agent::Task->handle_die cleanly emulates server_redirect
     when modifying exception state.
   * Bivio::Biz::FormModel->get_context_from_request was not checking
     context state correctly in minor case
