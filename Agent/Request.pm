@@ -176,7 +176,7 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 Same as I<task>'s I<id>.
 
-=item timezone : string
+=item timezone : int
 
 The user's timezone (if available).  The timezone is an offsite in
 minutes from GMT.  See use in

@@ -5,7 +5,7 @@ use strict;
 
 =head1 NAME
 
-b-preferences - manipulate club_t database table
+b-preferences - Bivio::Biz::Util::Preferences
 
 =head1 SYNOPSIS
 
@@ -13,7 +13,7 @@ b-realm-owner -delete
 
 =head1 DESCRIPTION
 
-see L<Bivio::Biz::Util::Club|Bivio::Biz::Util::Club>.
+see L<Bivio::Biz::Util::Preferences|Bivio::Biz::Util::Preferences>.
 
 =cut
 
@@ -26,7 +26,7 @@ Bivio::Biz::Util::Preferences->main(@ARGV);
 
 =head1 SEE ALSO
 
-Bivio::IO::Config
+Bivio::Biz::Util::Preferences
 
 =head1 COPYRIGHT
 
