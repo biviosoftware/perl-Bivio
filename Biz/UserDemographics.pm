@@ -42,6 +42,7 @@ All of the fields are optional.
 
 #=IMPORTS
 use Bivio::Biz::Error;
+use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlSupport;
 use Bivio::IO::Trace;
 
@@ -91,8 +92,7 @@ sub new {
     my($self) = &Bivio::Biz::PropertyModel::new($proto, 'demographics',
 	    $_PROPERTY_INFO);
 
-    $self->{$_PACKAGE} = {
-    };
+    $self->{$_PACKAGE} = {};
 
     $_SQL_SUPPORT->initialize();
 
@@ -102,6 +102,50 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 create(hash new_values) : boolean
+
+Creates a new model in the database with the specified value. After creation,
+this instance has the same values.
+
+=cut
+
+sub create {
+    my($self, $new_values) = @_;
+
+    # because user and user-demographics are kept in the same database
+    # table right now, create() really justs updates the already existing
+    # record
+
+    $self->internal_get_fields()->{user} = $new_values->{user};
+    return $self->update($new_values);
+}
+
+=for html <a name="delete"></a>
+
+=head2 delete() : boolean
+
+Deletes the current model from the database. Returns 1 if successful,
+0 otherwise.
+
+=cut
+
+sub delete {
+    my($self) = @_;
+
+    # because user and user-demogrpahics are kept in the same database
+    # table right now, delete() just blanks demographic fields
+
+    return $self->update({
+	first_name => undef,
+	middle_name => undef,
+	last_name => undef,
+	gender => undef,
+	age => undef
+	});
+}
 
 =for html <a name="find"></a>
 
@@ -126,6 +170,22 @@ sub find {
 		Bivio::Biz::Error->new("User not found"));
     }
     return $self->get_status()->is_OK();
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash new_values) : boolean
+
+Updates the current model's values.
+NOTE: find should be called prior to an update.
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+
+    return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
+	    $new_values, 'where id=?', $self->get('user'));
 }
 
 #=PRIVATE METHODS
