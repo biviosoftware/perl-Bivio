@@ -201,6 +201,8 @@ sub destroy {
 
 =head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
+=head2 die()
+
 Any of the parameters may be undef. Package and line will be filled in by this
 module.  If you'd like to implement a module specific die, you might:
 
@@ -223,10 +225,14 @@ If I<attrs> is C<undef>, it will be set to the empty hash.
 If I<attrs> is a not a reference, it will be set to C<{message => $attrs}>.
 If I<attrs> is not a hash, it will be set to C<{attrs => $attrs}>.
 
+In the second form, I<self> is "rethrown".
+
 =cut
 
 sub die {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
+    CORE::die($_IN_CATCH ? "$proto\n" : $proto->as_string)
+	    if ref($proto);
     $package ||= (caller)[0];
     $file ||= (caller)[1];
     $line ||= (caller)[2];
