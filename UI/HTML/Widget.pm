@@ -571,7 +571,7 @@ sub heading_with_inactive_form {
 				'page_heading'))->put(align => 'left',
 					cell_expand => 1),
 		$proto->link(
-			$label.' is a now preference',
+			$label.' is now a preference',
 			'#preferences',
 		       'help_hint')->put(align => 'right',
 			      cell_nowrap => 1),
@@ -1194,6 +1194,29 @@ sub task_list {
 	values => $values,
 	want_sort => $want_sort,
     });
+}
+
+=for html <a name="template"></a>
+
+=head2 static template(string value, string font) : Bivio::UI::HTML::Template
+
+=head2 static template(string_ref value, string font) : Bivio::UI::HTML::Template
+
+Returns an instance of a Template widget configured with I<value>.
+
+If I<font> not supplied, defaults to I<page_text>.
+
+=cut
+
+sub template {
+    my($proto, $value, $font) = @_;
+    _use('Template');
+    return $proto->string(
+	    Bivio::UI::HTML::Widget::Template->new({
+		value => $value,
+	    }),
+	    defined($font) ? $font : 'page_text',
+    );
 }
 
 =for html <a name="toggle_secure"></a>
