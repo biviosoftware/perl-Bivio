@@ -177,6 +177,7 @@ sub check_messages {
             /named\[\d+\]: approved AXFR from/ && next;
             /named\[\d+\]: named (startup|shutdown) succeeded/ && next;
             /named\[\d+\]: NOTIFY\(SOA\) for non-secondary name/ && next;
+            /named\[\d+\]: .+(NS points to CNAME|All possible A RR's lame)/ && next;
             /named-xfer\[\d+\]: send AXFR query/ && next;
 
             /anacron\[\d+\]: Updated timestamp for job/ && next;
