@@ -104,21 +104,37 @@ sub _do {
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
+    use Bivio::Biz::Util::RealmInvite;
 
-    use Bivio::SQL::ClubImporter;
+    my($count) = Bivio::Biz::Util::RealmInvite->expire(1);
+    print STDERR "Deleting $count invites\n";
+    do(<<'EOF');
+-- Add the column
+ALTER TABLE realm_invite_t add user_id NUMBER(18)
+/
+-- Make sure user_id is initialized to something.
+-- This will bridge current uses.
+UPDATE realm_invite_t set user_id = realm_id
+/
+-- from realm_constraints.sql
+ALTER TABLE realm_invite_t modify user_id not null
+/
+-- from realm_indices.sql
+CREATE INDEX realm_invite_realm_i ON realm_invite_t (
+  realm_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
 
-    #
-    # Determine valuation dates for easyware valuations.
-    #
-    my($sth) = _do('
-            SELECT realm_id from realm_owner_t
-            /');
-
-    my($row);
-    while($row = $sth->fetchrow_arrayref) {
-	my($id) = $row->[0];
-	Bivio::SQL::ClubImporter->generate_valuation_dates($id);
-    }
+CREATE INDEX realm_invite_user_i ON realm_invite_t (
+  user_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+EOF
+    return;
 }
 
 # _usage(array message)
