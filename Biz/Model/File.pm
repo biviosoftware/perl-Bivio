@@ -358,9 +358,36 @@ sub fixup_root_directory_name {
     return;
 }
 
+=for html <a name="get_mime_content_type"></a>
+
+=head2 get_mime_content_type() : string
+
+Treats aux_info field as a MIME header to find the content type.
+Returns first occurence or 'text/plain' if none found.
+
+=cut
+
+sub get_mime_content_type {
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($aux_info) = $m->get($p.'aux_info');
+    # The regexp will match newline if the Content-Type line extends over
+    # two lines
+    return $1 if defined($aux_info)
+	    && $aux_info =~ /content-type:\s+([^;\n]+)/i;
+
+    # Extract content type from the filename.  MIME::Type always
+    # returns a valid content type as long as it is given an undef value.
+    my($fn) = _get_mime_filename($aux_info);
+    return Bivio::MIME::Type->from_extension(defined($fn) ? $fn : '');
+}
+
 =for html <a name="get_mime_filename"></a>
 
 =head2 get_mime_filename() : string
+
+=head2 static get_mime_filename(Bivio::Biz::ListModel list_model, string model_prefix) : string
 
 Treats aux_info field as a MIME header to find the (file)name specified.
 Strips a leading path. Returns first occurence if found. If not, it
@@ -375,42 +402,31 @@ Content-Type: image/gif;
         name="bivio_large.gif"
 Content-Disposition: inline; filename="C:\windows\TEMP\nsmailQT.gif"
 
+In the second form, I<list_model> is used to get the values, not I<self>.
+List Models can declare a method of the form:
+
+    sub get_mime_filename {
+	my($self) = shift;
+	Bivio::Biz::Model::File->get_mime_filename($self, 'File.', @_);
+    }
+
 =cut
 
 sub get_mime_filename {
-    my($self) = @_;
-    my($properties) = $self->internal_get;
-    if( $properties->{aux_info} =~ /(file|)name="([^"]+)"/ ) {
-        my($name) = $2;
-        $name =~ s|.*[\\/]||;
-        return $name;
-    }
-    else {
-        # Create a name based on the Content-Type based file suffix
-        # Use 'download.bin' in case the file type is unknown
-        my($ct) = $self->get_mime_content_type;
-        return 'download.bin' unless defined($ct);
-        my($info) = Bivio::MIME::Type->get_type_info($ct);
-        return 'download.bin' unless defined($info) && $info =~ /^([^,:]+)/;
-        return 'download.' . $1;
-    }
-}
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($aux_info) = $m->get($p.'aux_info');
+    my($fn) = _get_mime_filename($aux_info);
+    return $fn if defined($fn);
 
-=for html <a name="get_mime_content_type"></a>
-
-=head2 get_mime_content_type() : string
-
-Treats aux_info field as a MIME header to find the content type.
-Returns first occurence or 'text/plain' if none found.
-
-=cut
-
-sub get_mime_content_type {
-    my($self) = @_;
-    my($properties) = $self->internal_get;
-    # The regexp will match newline if the Content-Type line extends over two lines
-    return undef unless $properties->{aux_info} =~ /content-type:\s+([^;\n]+)/i;
-    return $1;
+    # Create a name based on the Content-Type based file suffix
+    # Use 'download.bin' in case the file type is unknown
+    my($ct) = $self->get_mime_content_type;
+    return 'download.bin' unless defined($ct);
+    my($info) = Bivio::MIME::Type->get_type_info($ct);
+    return 'download.bin' unless defined($info) && $info =~ /^([^,:]+)/;
+    return 'download.' . $1;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -476,6 +492,19 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _get_mime_filename(string aux_info) : string
+#
+# Returns the filename or name attribute from aux_info.
+#
+sub _get_mime_filename {
+    my($aux_info) = @_;
+    return undef
+	    unless defined($aux_info) && $aux_info =~ /(file|)name="([^"]+)"/;
+    my($name) = $2;
+    $name =~ s|.*[\\/]||;
+    return $name;
+}
 
 # _kbytes(int bytes) : int
 #
