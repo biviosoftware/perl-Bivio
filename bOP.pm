@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.66  2003/06/06 22:28:04  nagler
+  * Bivio::UI::Text::Widget::CSV renders comma separated version views
+
+  Revision 1.65  2003/06/06 22:17:39  nagler
+  * b-sendmail-http allows recipient to contain domain name
+  * Bivio::Biz::ListModel->iterate_next was not including auth_id and
+    parent_id fields
   * Bivio::Test::Request->setup_all_facades allows testing of different facades
   * Bivio::UI::HTML::Widget::JavaScript->render was adding spurious newlines
     which would create unexpected spaces
