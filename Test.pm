@@ -43,7 +43,12 @@ define what you want to test very succinctly.  Here's an example:
 The first argument to L<unit|"unit"> is a list of object groups.  An object
 group is tuple of the object (class or instance) and a list of method groups.
 A method group is a tuple of the method name followed by a list of test cases.
-Each test case is a tuple of a list of parameter(s) and a return value.
+Each test case is a tuple of parameters and a return value.
+
+In most cases, the parameters may be a simple array_ref as show above.  The
+parameters may also be a code_ref to be executed at the start of the test case.
+The subroutine must return an array_ref, which may be empty.  See
+L<get_parameters|"get_parameters"> for a description of this interface.
 
 If there is no return value, specify C<[undef]>.  That's what the method should
 return if it doesn't return anything.  perl methods return C<undef> implicitly
@@ -97,6 +102,23 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_parameters"></a>
+
+=head2 abstract sub get_parameters(any proto, string method) : array_ref
+
+Returns the parameters to be passed to I<method>.  I<proto> is the instance or
+class to be executed.
+
+The sub always returns a valid array_ref, which may be empty.
+
+B<Called as a I<sub>, not a method>.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub get_parameters {
+}
 
 =for html <a name="result_ok"></a>
 
@@ -289,7 +311,8 @@ sub _unit_compile {
 		$c++;
 		my($params, $expected) = splice(@cases, 0, 2);
 		my($case_name) = $group_name."(case#".$c.")";
-		_assert_array($params, $case_name);
+		_assert_array($params, $case_name)
+		    unless ref($params) eq 'CODE';
 		_die($case_name, ": expected result must be undef, array_ref, "
 			." code_ref (sub), or Bivio::DieCode")
 		    unless !defined($expected) || ref($expected)
@@ -319,9 +342,12 @@ sub _unit_eval {
     my($cases) = @_;
     my($c) = 0;
     print('1..'.int(@$cases)."\n");
+    my($err);
     foreach my $case (@$cases) {
-	$c++;
 	my($actual);
+	$c++;
+	$err = _unit_eval_params($case) if ref($case->{params}) eq 'CODE';
+	next if $err;
 	my($die) = Bivio::Die->catch(sub {
 	    my($method) = $case->{method};
 	    _trace($case->{proto}, '->', $method, '(', $case->{params}, ')')
@@ -331,44 +357,81 @@ sub _unit_eval {
 	});
 	_trace('returned ', $die ? $die->as_string : $actual)
 	    if $_TRACE;
-	my($err, $ok);
 	if (ref($case->{expected}) eq 'CODE') {
-	    my($die2) = Bivio::Die->catch(sub {
-		$ok = &{$case->{expected}}(
-		    $case->{proto},
-		    $case->{method},
-		    $case->{params},
-		    $actual || $die,
-		);
-		$err = 'custom result_ok() failed' unless $ok;
-		return;
-	    });
-	    $err = 'Error in result_ok: '.$die2->as_string
-		if $die2;
+	    $err = _unit_eval_result($case, $actual, $die);
 	}
 	elsif ($die) {
-	    my($code) = $die->get('code');
-	    if (defined($case->{expected})
-		&& UNIVERSAL::isa($case->{expected}, 'Bivio::DieCode')) {
-		$ok = $case->{expected} eq $code;
-		$err = 'expected '.$case->{expected}->as_string
-		    .' but got '.$code->as_string
-		    unless $ok;
-	    }
-	    else {
-		$err = 'unexpected '.$code->as_string;
-	    }
+	    $err = _unit_eval_die($case, $die);
 	}
 	elsif (ref($case->{expected}) eq 'ARRAY') {
-	    $ok = _equal($case->{expected}, $actual);
 	    $err = 'expected '._summarize($case->{expected})
-		.' but got '._summarize($actual);
+		.' but got '._summarize($actual)
+		unless _equal($case->{expected}, $actual);
 	}
 	# else ignore result
-
-	print($ok ? "ok $c\n" : ("not ok $c $case->{case_name}: $err\n"));
+    }
+    continue {
+	print(!$err ? "ok $c\n" : ("not ok $c $case->{case_name}: $err\n"));
     }
     return;
+}
+
+# _unit_eval_die(hash_ref case, Bivio::Die die) : string
+#
+# Unit evaluation ended in a die and there's no custom result_ok.
+# Compare the die with expected in expected is a die.  If the codes
+# compare, then ok.  Else return the error string.
+#
+sub _unit_eval_die {
+    my($case, $die) = @_;
+    my($code) = $die->get('code');
+    return 'unexpected '.$code->as_string
+	unless defined($case->{expected})
+	    && UNIVERSAL::isa($case->{expected}, 'Bivio::DieCode');
+    return 'expected '.$case->{expected}->as_string
+	.' but got '.$code->as_string
+	unless $case->{expected} eq $code;
+    return;
+}
+
+# _unit_eval_params(hash_ref case) : string
+#
+# Evaluates the $case->{params}, which is a sub.  Returns an error string if
+# the result of the sub call is not an array_ref.
+#
+sub _unit_eval_params {
+    my($case) = @_;
+    my($p);
+    my($die) = Bivio::Die->catch(sub {
+	$case->{params} = &{$case->{params}}($case->{proto}, $case->{method});
+	return;
+    });
+    return 'Error in get_parameters: '.$die->as_string if $die;
+    return 'get_parameters did not return an array_ref'
+	unless ref($case->{params}) eq 'ARRAY';
+    return;
+}
+
+# _unit_eval_result(hash_ref case, any actual, Bivio::Die die) : string
+#
+# Calls custom result_ok.  Returns an error string if result_ok returns false
+# or if result_ok() dies.
+#
+sub _unit_eval_result {
+    my($case, $actual, $die) = @_;
+    my($err);
+    my($die2) = Bivio::Die->catch(sub {
+	$err = 'custom result_ok() failed'
+	    unless &{$case->{expected}}(
+		$case->{proto},
+		$case->{method},
+		$case->{params},
+		$actual || $die,
+	       );
+	return;
+    });
+    return 'Error in result_ok: '.$die2->as_string if $die2;
+    return $err;
 }
 
 =head1 COPYRIGHT
