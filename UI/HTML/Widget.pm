@@ -832,7 +832,7 @@ sub link {
     }
     $label = $proto->string($label, defined($font) ? ($font) : ())
 	    unless UNIVERSAL::isa($label, 'Bivio::UI::HTML::Widget');
-    $widget_value = ['->format_stateless_uri',
+    $widget_value = [['->get_request'], '->format_stateless_uri',
 	Bivio::Agent::TaskId->$widget_value()]
 	    # Use widget value or abs_uri (literal)
 	    unless ref($widget_value) || $widget_value =~ m![/:#]!;
@@ -1040,6 +1040,7 @@ sub list_actions {
 	column_widget => Bivio::UI::HTML::Widget::ListActions->new({
 	    values => $actions,
 	}),
+	column_align => 'nw',
     };
 }
 
