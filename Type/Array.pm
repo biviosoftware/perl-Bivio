@@ -89,7 +89,7 @@ sub from_literal {
     my($proto, $value) = @_;
     return $value
 	? [split(/\s*,\s*/, $value)]
-	: [];
+	: undef;
 }
 
 =for html <a name="from_sql_column"></a>
