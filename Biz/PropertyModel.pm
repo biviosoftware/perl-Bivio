@@ -44,7 +44,7 @@ use Carp ();
 
 =for html <a name="create"></a>
 
-=head2 create(hash new_values)
+=head2 create(hash_ref new_values)
 
 Creates a new model in the database with the specified values. After creation,
 this instance takes ownership of I<new_values>.  Dies on error.
@@ -186,7 +186,7 @@ sub unsafe_load {
 
 =for html <a name="update"></a>
 
-=head2 update(hash new_values) : boolean
+=head2 update(hash_ref new_values) : boolean
 
 Updates the current model's values.
 NOTE: find should be called prior to an update.
