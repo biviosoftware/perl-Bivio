@@ -40,6 +40,10 @@ a call to
 L<Bivio::Biz::ListModel::format_uri|Bivio::Biz::ListModel/"format_uri">
 with I<wf_list_link> as the query type.
 
+=item wf_want_display : boolean []
+
+If true, the field will be rendered as a display only widget.
+
 =item wf_want_select : boolean []
 
 If true, will force a widget to a be a select, if it can.
@@ -105,7 +109,8 @@ sub create {
 
     my($model, $field_name, $field_type) = _get_model_and_field_type($field);
     my($widget);
-    if (UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
+    if (! $attrs->{wf_want_display}
+	    && UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
 	$widget = _create_edit($proto, $model, $field_name, $field_type,
 		$attrs);
     }
