@@ -142,8 +142,9 @@ sub audit_units {
 		    'Entry.entry_id', 'Entry.amount', 'MemberEntry.units',
 		    'RealmTransaction.date_time');
 
-	    # don't include member payments on val_date
-	    my($unit_value) = _get_unit_value($self, $val_date, 0);
+	    # don't include member payments on val_date if val_date>=tran_date
+	    my($unit_value) = _get_unit_value($self, $val_date,
+		    Bivio::Type::Date->compare($val_date, $tran_date) < 0);
 	    my($real_units) = Bivio::Type::Amount->div($amount, $unit_value);
 
 	    #_trace("\n$units\t$real_units");
@@ -292,7 +293,7 @@ sub get_cost_per_share {
 	WHERE realm_transaction_t.realm_transaction_id
 	    = entry_t.realm_transaction_id
 	AND entry_t.entry_id = realm_instrument_entry_t.entry_id
-	AND realm_instrument_entry_t.realm_id = ?
+	AND realm_transaction_t.realm_id = ?
 	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
@@ -357,7 +358,7 @@ sub get_number_of_shares {
 	    entry_t,
 	    realm_instrument_entry_t
 	WHERE
-	    realm_instrument_entry_t.realm_id = ?
+            realm_transaction_t.realm_id = ?
 	    AND realm_transaction_t.realm_transaction_id
 		    = entry_t.realm_transaction_id
 	    AND entry_t.entry_id = realm_instrument_entry_t.entry_id
@@ -640,6 +641,10 @@ sub internal_initialize {
 #
 sub _get_unit_value {
     my($self, $date, $include_todays_member_entries) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($cache) = $fields->{'_get_unit_value'.$date
+	.$include_todays_member_entries};
+    return $cache if $cache;
 
     my($units) = $self->get_units($date);
     my($value) = $self->get_value($date);
@@ -677,7 +682,10 @@ EOF
     _trace("\nunit_value $display_date units: ".$units."\tvalue: ".$value);
 
     # a value of 0 will only occur if no securities are owned
-    return $result || DEFAULT_UNIT_VALUE();
+    $result ||= DEFAULT_UNIT_VALUE();
+    $fields->{'_get_unit_value'.$date
+	.$include_todays_member_entries} = $result;
+    return $result;
 }
 
 =head1 COPYRIGHT
