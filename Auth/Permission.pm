@@ -29,6 +29,10 @@ C<Bivio::Auth::Permission> is used to specify a task's access
 permissions.  See L<Bivio::Agent::Task|Bivio::Agent::Task> for
 how the permissions are defined.
 
+NOTE: When you add a new permission, you must update the
+      corresponding table (realm_role_t) in the database.
+      Use tool b-realm-role for this.
+
 =cut
 
 #=IMPORTS
