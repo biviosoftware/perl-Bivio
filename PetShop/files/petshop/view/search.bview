@@ -7,7 +7,7 @@ view_put(header_title => 'Search');
 
 # ProductSearchList is loaded by task and available on the Request.
 # Table retrieves it dynamically from Request.Model.ProductSearchList
-view_put(menu_content => Table('ProductSearchList', [
+view_put(menu_content => vs_paging_table(Table('ProductSearchList', [
 
     # Table determines that product_id and name are in the order_by
     # of ProductSearchList.  You can turn off sorting explicitly.
@@ -36,4 +36,4 @@ view_put(menu_content => Table('ProductSearchList', [
     # string_font is inherited by Strings in this static widget hierarchy
     string_font => 'page_text',
     empty_list_widget => String('No products found.'),
-}));
+})));
