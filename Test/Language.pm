@@ -113,7 +113,7 @@ sub AUTOLOAD {
     my($die) = Bivio::Die->catch(sub {
 	return $self->$func(@args);
     });
-    _die($self, ' deviance call failed to die: ', $func, \@args)
+    _die($self, ' deviance call "', $td, '" failed to die: ', $func, \@args)
 	unless $die;
     _die($self, ' deviance call to ', $func, \@args, ' failed with "',
 	$die, '" but did not match pattern: ', $td)
