@@ -327,6 +327,31 @@ ALTER TABLE $table add check (role between 1 and 7)
     return;
 }
 
+# _upgrade_first_last_middle()
+#
+# Make sure one of first, last, or middle is set.
+#
+sub _upgrade_first_last_middle {
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT user_id, first_name, middle_name, last_name, name
+            FROM user_t, realm_owner_t
+            WHERE realm_owner_t.realm_id = user_t.user_id', []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($user_id, $first_name, $middle_name, $last_name, $name) = @$row;
+	next if defined($first_name) || defined($middle_name)
+		|| defined($last_name);
+	print STDERR "Bad name: $user_id => $name\n" if $name =~ /^=/;
+	# name is always downcased
+	Bivio::SQL::Connection->execute('
+                    UPDATE user_t
+                    SET last_name = ?, last_name_sort = ?
+                    WHERE user_id=?',
+		[$name, $name, $user_id]);
+    }
+
+    return;
+}
+
 # _upgrade_realm_role()
 #
 # Initialize realm-role table b/c WITHDRAWN is new
@@ -334,6 +359,7 @@ ALTER TABLE $table add check (role between 1 and 7)
 sub _upgrade_realm_role {
     use Bivio::Biz::Util::RealmRole;
     Bivio::Biz::Util::RealmRole->init();
+    _upgrade_first_last_middle();
     return;
 }
 
