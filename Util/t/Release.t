@@ -7,6 +7,7 @@ BEGIN {
 }
 use Bivio::IO::File;
 use Bivio::Test;
+#TODO: Shared with Release.t
 my($base) = Bivio::IO::File->rm_rf(Bivio::IO::File->pwd . '/Release/tmp');
 my($home) = Bivio::IO::File->mkdir_p("$base/h");
 Bivio::IO::File->mkdir_p(my $facades_dir = "$base/f");
