@@ -346,7 +346,9 @@ sub _parse_record {
 #
 sub _report {
     my($self, @args) = @_;
-    $self->{$_PACKAGE}->{res} .= Bivio::IO::Alert->format_args(@args)."\n";
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{res} .= Bivio::IO::Alert->format_args(@args);
+    $fields->{res} .= "\n" unless substr($fields->{res}, -1) eq "\n";
     return;
 }
 
