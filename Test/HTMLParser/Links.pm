@@ -139,11 +139,15 @@ sub _end_a {
 #
 sub _link {
     my($fields, $label, $alt) = @_;
-    push(@{$fields->{links}->{$label} ||= []}, {
+    Bivio::Die->die($label, ': duplicate label, href differs ',
+	$fields->{href})
+        if $fields->{links}->{$label}
+	    && $fields->{links}->{$label}->{href} ne $fields->{href};
+    $fields->{links}->{$label} = {
 	label => $label,
 	href => $fields->{href},
 	alt => $alt,
-    });
+    };
     return;
 }
 
