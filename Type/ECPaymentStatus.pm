@@ -57,7 +57,6 @@ a payment can be associated with. The current choices are:
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
 __PACKAGE__->compile([
     TRY_CAPTURE => [
 	1,
@@ -87,6 +86,17 @@ __PACKAGE__->compile([
 	9,
     ],
 ]);
+my($_SUCCESS_MAP) = {
+    TRY_CAPTURE => 'CAPTURED',
+    TRY_VOID => 'VOIDED',
+    TRY_CREDIT => 'CREDITED',
+};
+my($_AUTHORIZE_NET_MAP) = {
+    TRY_CAPTURE => 'AUTH_CAPTURE',
+    TRY_VOID => 'VOID',
+    TRY_CREDIT => 'CREDIT',
+};
+my($_APPROVED_SET, $_BAD_SET, $_NEEDS_PROCESSING_SET);
 
 =head1 METHODS
 
@@ -101,14 +111,7 @@ Return the appropriate Authorize.Net transaction type
 =cut
 
 sub get_authorize_net_type {
-    my($self) = @_;
-    return 'AUTH_CAPTURE'
-	    if $self == Bivio::Type::ECPaymentStatus::TRY_CAPTURE();
-    return 'VOID' if $self == Bivio::Type::ECPaymentStatus::TRY_VOID();
-    return 'CREDIT'
-	    if $self == Bivio::Type::ECPaymentStatus::TRY_CREDIT();
-    Bivio::Die->die('Status not appropriate: ', $self);
-    # DOES NOT RETURN
+    return _map(shift, $_AUTHORIZE_NET_MAP);
 }
 
 =for html <a name="get_success_state"></a>
@@ -120,51 +123,91 @@ From any TRY_* state, change to the corresponding success state.
 =cut
 
 sub get_success_state {
-    my($self) = @_;
-    my($new_state) = $self;
-    return Bivio::Type::ECPaymentStatus::CAPTURED()
-	    if $self == Bivio::Type::ECPaymentStatus::TRY_CAPTURE();
-    return Bivio::Type::ECPaymentStatus::VOIDED()
-	    if $self == Bivio::Type::ECPaymentStatus::TRY_VOID();
-    return Bivio::Type::ECPaymentStatus::CREDITED()
-	    if $self == Bivio::Type::ECPaymentStatus::TRY_CREDIT();
-#TODO: Is this right?
-    return $self;
+    my($res) = _map(shift, $_SUCCESS_MAP);
+    return __PACKAGE__->$res();
 }
 
 =for html <a name="is_approved"></a>
 
 =head2 is_approved() : boolean
 
-Return TRUE if self is one of the approved states
+Return TRUE if self is one of the approved states.
 
 =cut
 
 sub is_approved {
-    my($self) = @_;
-    return $self == Bivio::Type::ECPaymentStatus::CAPTURED()
-            || $self == Bivio::Type::ECPaymentStatus::VOIDED()
-                    || $self == Bivio::Type::ECPaymentStatus::CREDITED()
-			    ? 1 : 0;
+    return _is_set(shift, \$_APPROVED_SET);
+}
+
+=for html <a name="is_bad"></a>
+
+=head2 is_bad() : boolean
+
+Returns true if self is one of the declined states.
+
+=cut
+
+sub is_bad {
+    return _is_set(shift, \$_BAD_SET);
 }
 
 =for html <a name="needs_processing"></a>
 
 =head2 needs_processing() : boolean
 
-Return TRUE if self needs further processing
+Return TRUE if self needs further processing.
 
 =cut
 
 sub needs_processing {
-    my($self) = @_;
-    return $self == Bivio::Type::ECPaymentStatus::TRY_CAPTURE()
-            || $self == Bivio::Type::ECPaymentStatus::TRY_VOID()
-                    || $self == Bivio::Type::ECPaymentStatus::TRY_CREDIT()
-			    ? 1 : 0;
+    return _is_set(shift, \$_NEEDS_PROCESSING_SET);
 }
 
 #=PRIVATE METHODS
+
+# _init_set(string_ref set, array names) : string_ref
+#
+# Initializes a bit vector.
+#
+sub _init_set {
+    my($set) = shift;
+    $$set = '';
+    return Bivio::Type::ECPaymentStatusSet->set(
+	$set,
+	map {
+	    __PACKAGE__->$_(),
+	} @_
+    );
+}
+
+# _is_set(self, string_ref set) : boolean
+#
+# Returns true if $self is set in $set.  Initializes sets, if need be.
+#
+sub _is_set {
+    my($self, $set) = @_;
+    unless (defined($$set)) {
+	# Avoids circular import.
+	Bivio::IO::ClassLoader->simple_require(
+	    'Bivio::Type::ECPaymentStatusSet');
+	_init_set(\$_APPROVED_SET, qw(CAPTURED VOIDED CREDITED));
+	_init_set(\$_BAD_SET, qw(DECLINED FAILED));
+	_init_set(\$_NEEDS_PROCESSING_SET,
+	    qw(TRY_CAPTURE TRY_VOID TRY_CREDIT));
+    }
+    return Bivio::Type::ECPaymentStatusSet->is_set($set, $self);
+}
+
+# _map(self, hash_ref map) : string
+#
+# Maps value or blows up.
+#
+sub _map {
+    my($self, $map) = @_;
+    my($res) = $map->{$self->get_name};
+    Bivio::Die->die($self, ': invalid status') unless $res;
+    return $res;
+}
 
 =head1 COPYRIGHT
 
