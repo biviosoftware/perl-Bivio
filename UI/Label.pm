@@ -536,6 +536,11 @@ _compile([
     HELP_PRINTING => ['Printing'],
     HELP_FONT_SIZE => ['Font Size'],
     HELP_PRICE_DATABASE => ['Price Database'],
+    HELP_EXPENSE_ALLOCATION_METHODS => ['Expense Allocation Methods'],
+
+    # Help links
+    WHATS_THIS => ["what's this?"],
+    LEARN_MORE => ["[learn more]"],
 
     # Preferences
     PAGE_SIZE => ['List Size'],

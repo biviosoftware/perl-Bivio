@@ -737,6 +737,21 @@ sub label {
 	    defined($font) ? $font : 'label_in_text');
 }
 
+=for html <a name="learn_more"></a>
+
+=head2 static learn_more(string help_topic) : Bivio::UI::HTML::Widget
+
+=head2 static learn_more(string task) : Bivio::UI::HTML::Widget
+
+Creates a small "what's this?' link widget which points to the help for
+I<task> or I<help_topic>
+
+=cut
+
+sub learn_more {
+    return _link_help(@_, 'learn_more');
+}
+
 =for html <a name="link"></a>
 
 =head2 static link(string task) : Bivio::UI::HTML::Widget::Link
@@ -837,11 +852,9 @@ sub link_goto {
 
 =head2 static link_help(string label) : string
 
-=head2 static link_help(string label, string task) : string
+=head2 static link_help(string label, any task) : string
 
-=head2 static link_help(string label, array_ref task) : string
-
-=head2 static link_help(string label, Bivio::Agent::TaskId task) : string
+=head2 static link_help(string label, any task, string font) : string
 
 Returns the URL to the help topic for the specified task.
 See
@@ -851,11 +864,11 @@ for a description of I<task>'s values.
 =cut
 
 sub link_help {
-    my($self, $label, $task) = @_;
+    my($self, $label, $task, $font) = @_;
     Bivio::Die->die($label, ": label must be a string")
 	if !defined($label) || ref($label);
 
-    return shift->link($label, ['->format_help_uri', $task]);
+    return shift->link($label, ['->format_help_uri', $task], $font);
 }
 
 =for html <a name="link_secure"></a>
@@ -1215,7 +1228,38 @@ EOF
     );
 }
 
+=for html <a name="whats_this"></a>
+
+=head2 static whats_this(string help_topic) : Bivio::UI::HTML::Widget
+
+=head2 static whats_this(string task) : Bivio::UI::HTML::Widget
+
+Creates a small "what's this?' link widget which points to the help for
+I<task> or I<help_topic>
+
+=cut
+
+sub whats_this {
+    return _link_help(@_, 'whats_this');
+}
+
 #=PRIVATE METHODS
+
+# _link_help(Bivio::UI::HTML::Widget proto, string task, string label) : Bivio::UI::HTML::Widget
+#
+# Returns a help wid
+#
+sub _link_help {
+    my($proto, $task, $label) = @_;
+    my($path_info) = Bivio::Agent::TaskId->unsafe_from_name($task);
+    $path_info = Bivio::Agent::HTTP::Location->get_help_path_info($task)
+	    unless $path_info;
+    return $proto->link(
+	    Bivio::UI::Label->get_simple($label),
+	    ['->format_uri', Bivio::Agent::TaskId::HELP(), undef,
+		undef, $path_info],
+	    'help_hint');
+}
 
 # _use(string class, ....) : array
 #
