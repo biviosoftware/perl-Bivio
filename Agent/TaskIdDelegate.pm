@@ -3168,6 +3168,14 @@ sub get_delegate_info {
         next=HTTP_DOCUMENT
         require_secure=1
     )],
+    [qw(
+        CLUB_ADMIN_EC_PREMIUM_SERVICES
+        280
+        CLUB
+        ADMIN_READ&MEMBER_READ
+        ?/admin/premium-services
+        Bivio::Biz::Action::PremiumServicesRedirect
+    )],
 ];
 }
 
