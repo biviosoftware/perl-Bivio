@@ -81,7 +81,7 @@ sub render {
     my($self, $user, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #TODO: handle update as well
+#TODO: handle update as well
     my($action) = 'add';
     my($demographics) = Bivio::Biz::UserDemographics->new();
     my($email) = Bivio::Biz::UserEmail->new();
@@ -93,7 +93,7 @@ sub render {
     $req->print('Enter user information below. Required fields are'
 	    .' indicated with a *.<p>');
 
-    if (! $user->get_status()->is_OK() ) {
+    if (! $user->get_status()->is_ok() ) {
 	$req->print('<font color="#FF0000">');
 	my($errors) = $user->get_status()->get_errors();
 	foreach (@$errors) {
@@ -131,6 +131,7 @@ sub render {
 
     $req->print('</table></form>');
     $req->print('</td></tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS

@@ -91,7 +91,7 @@ sub render {
 
     # print any errors if present
 
-    if (! $user->get_status()->is_OK() ) {
+    if (! $user->get_status()->is_ok() ) {
 	$req->print('<font color="#FF0000">');
 	my($errors) = $user->get_status()->get_errors();
 	foreach (@$errors) {
@@ -126,8 +126,9 @@ sub render {
 	    .'<input type="submit" value="Next">'
 	    .'</td></tr>');
 
-    $req->print('</table></form>');
+    $req->print('</form></table>');
     $req->print('</td></tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS

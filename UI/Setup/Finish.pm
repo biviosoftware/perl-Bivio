@@ -92,6 +92,7 @@ sub render {
     $req->print('<p><input type="submit" value="Next">');
 
     $req->print('</form></td></tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS

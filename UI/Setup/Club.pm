@@ -85,7 +85,7 @@ sub render {
     $req->print('Now enter a short name for the club identifier, and a '
 	    .'descriptive name for the full name.<p>');
 
-    if (! $club->get_status()->is_OK() ) {
+    if (! $club->get_status()->is_ok() ) {
 	$req->print('<font color="#FF0000">');
 	my($errors) = $club->get_status()->get_errors();
 	foreach (@$errors) {
@@ -113,6 +113,7 @@ sub render {
 
     $req->print('</table></form>');
     $req->print('</td></tr></table>');
+    return;
 }
 
 #=PRIVATE METHODS
