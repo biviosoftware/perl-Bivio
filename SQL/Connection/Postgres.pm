@@ -105,6 +105,23 @@ sub internal_get_error_code {
     return $self->SUPER::internal_get_error_code($die_attrs);
 }
 
+=for html <a name="internal_get_retry_sleep"></a>
+
+=head2 internal_get_retry_sleep(int error, string message) : int
+
+Returns the number of seconds to sleep for the specified transient
+error code. 0 indicates retry immediately, undef indicates don't
+retry.
+
+=cut
+
+sub internal_get_retry_sleep {
+    my($self, $error, $message) = @_;
+    # retry in 15 seconds if database is gone. may have rebooted database
+    return 15 if $error == -1 && $message =~ /backend closed the channel/;
+    return undef;
+}
+
 =for html <a name="next_primary_id"></a>
 
 =head2 next_primary_id(string table_name, ref die) : string
