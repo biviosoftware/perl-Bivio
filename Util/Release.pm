@@ -545,13 +545,11 @@ sub _perl_make {
     return
 	'%define perl_make umask 022 && perl Makefile.PL < /dev/null && '
 	. " make POD2MAN=true\n"
-	. '%define perl_make_install umask 022; make ' . join(' ', map {
-	    my($n) = "install$_";
-	    $Config::Config{$n}
-		? (uc($n) . '=$RPM_BUILD_ROOT' . $Config::Config{$n})
-	        : '';
-	} qw(archlib bin man1dir man3dir privlib script
-             sitearch sitebin sitelib usrbinperl))
+	. '%define perl_make_install umask 022; make '
+	. join(' ', map {
+	     uc($_) . '=$RPM_BUILD_ROOT' . $Config::Config{$_};
+	} grep($_ =~ /^install(?!style)/ && $Config::Config{$_} =~ m!^/!,
+	    sort(keys(%Config::Config))))
 	.  ' POD2MAN=true pure_install && '
         . ' find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" '
 	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
