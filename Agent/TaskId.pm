@@ -2167,6 +2167,29 @@ my(@_CFG) = (
 #        Bivio::Biz::Model::AllClubList->execute_load_all
 #        Bivio::UI::HTML::General::AllClubs
 #    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
+        214
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/member-performance
+        Bivio::Biz::Model::DateSpanForm
+        Bivio::Biz::Model::MemberPerformanceList->execute_load_all
+        Bivio::UI::HTML::Club::MemberPerformanceReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
+        215
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/member-performance-detail
+        Bivio::Biz::Model::AllMemberList->execute_load_all
+        Bivio::Biz::Model::MemberDateSpanForm
+        Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
+        Bivio::UI::HTML::Club::MemberPerformanceDetailReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
+    )],
 );
 
 __PACKAGE__->compile(
