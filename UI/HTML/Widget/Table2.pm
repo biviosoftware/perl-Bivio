@@ -40,6 +40,10 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
+=item border : int [0]
+
+Width of border surrounding the table and its cells.
+
 =item cellpadding : int [5]
 
 Padding inside each cell in pixels.
@@ -321,8 +325,9 @@ sub initialize {
 	$fields->{empty_list_widget}->initialize;
     }
 
-    my($prefix) = "\n<table border=0 cellspacing=";
-    $prefix .= $self->get_or_default('cellspacing', 0);
+    my($prefix) = "\n<table border=";
+    $prefix .= $self->get_or_default('border', 0);
+    $prefix .= ' cellspacing=' . $self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding=' . $self->get_or_default('cellpadding', 5);
     $prefix .= Bivio::UI::Align->as_html(
 	    $self->get_or_default('align', 'center'));
