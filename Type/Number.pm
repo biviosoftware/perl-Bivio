@@ -411,7 +411,6 @@ sub _mpf {
     my($value) = @_;
 
     unless (defined($value)) {
-        Bivio::Die->die('numeric amount not defined, defaulting to 0');
         Bivio::IO::Alert->info('numeric amount not defined, defaulting to 0');
         $value = 0;
     }
