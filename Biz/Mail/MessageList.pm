@@ -120,8 +120,9 @@ Returns a suitable heading for the model.
 =cut
 
 sub get_heading {
-    #TODO: need better heading
-    return "Messages List";
+    my($self) = @_;
+
+    return $self->get_title();
 }
 
 =for html <a name="get_index"></a>
@@ -151,7 +152,7 @@ sub get_title {
     my($self) = @_;
 
     #TODO: need better title
-    return 'Message List / '.$self->get_result_set_size();
+    return 'Messages '.&_get_date_range($self);
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -169,6 +170,19 @@ sub get_result_set_size {
 }
 
 #=PRIVATE METHODS
+
+# _get_date_range() : string
+#
+# Returns the range of dates shown in the list as a string.
+
+sub _get_date_range {
+    my($self) = @_;
+
+    my($count) = $self->get_row_count();
+    return '' if $count == 0;
+    return $self->get_value_at(0, 2).' - '
+	    .$self->get_value_at($count - 1, 2);
+}
 
 =head1 COPYRIGHT
 
