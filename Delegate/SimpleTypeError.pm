@@ -408,7 +408,7 @@ sub get_delegate_info {
     NOT_ZERO => [
 	33,
 	undef,
-	'may be not be zero',
+	'may not be zero',
     ],
     TIME_COMPONENT_OF_DATE => [
 	34,
