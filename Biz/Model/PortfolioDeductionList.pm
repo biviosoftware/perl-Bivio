@@ -73,9 +73,48 @@ my($_INSTRUMENT_FEE_LIST) = Bivio::Biz::ListModel->new_anonymous({
     ],
 });
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::PortfolioDeductionList
+
+Creates a new portfolio deduction list.
+
+=cut
+
+sub new {
+    my($self) = Bivio::Biz::ListModel::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute_load_all_no_margin"></a>
+
+=head2 static execute_load_all_no_margin(Bivio::Agent::Request req) : boolean
+
+Loads the list, excluding margin interest expenses. Margin interest has
+a separate category on tax forms.
+
+=cut
+
+sub execute_load_all_no_margin {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($fields) = $self->{$_PACKAGE};
+
+    $fields->{exclude_margin_interest} = 1;
+    $self->load_all;
+
+    return 0;
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -198,6 +237,7 @@ Adds dynamic start/end dates to the SQL parameters.
 
 sub internal_pre_load {
     my($self, $query, $support, $params) = @_;
+    my($fields) = $self->{$_PACKAGE};
     my($end_date) = $self->get_request->get('report_date');
 
     # get tax year start
@@ -205,6 +245,10 @@ sub internal_pre_load {
 	    $end_date);
 
     push(@$params, $start_date, $end_date);
+
+    if ($fields->{exclude_margin_interest}) {
+	return 'expense_category_t.name != \'Margin Interest\'';
+    }
     return '';
 }
 
