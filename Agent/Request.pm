@@ -658,6 +658,8 @@ sub format_uri {
 
 =for html <a name="get_auth_role"></a>
 
+=head2 get_auth_role(string realm_id) : Bivio::Auth::Role
+
 =head2 get_auth_role(Bivio::Auth::Realm realm) : Bivio::Auth::Role
 
 Returns auth role for I<realm>.
@@ -666,7 +668,7 @@ Returns auth role for I<realm>.
 
 sub get_auth_role {
     my($self, $realm) = @_;
-    my($realm_id) = $realm->get('id');
+    my($realm_id) = ref($realm) ? $realm->get('id') : $realm;
     my($auth_id, $auth_role) = $self->unsafe_get(qw(auth_id auth_role));
 
     # Use (cached) value in $self if realm_id is the same.  Otherwise,
