@@ -110,6 +110,9 @@ sub from_literal {
     my($proto, $value) = @_;
     return undef unless defined($value) && $value =~ /\S/;
 
+    # Delete commas and dollar signs
+    $value =~ s/[,$]//g;
+
     # check for possible "i n/d" format
     if ($value =~ /\//) {
 	# parse it and convert to decimal
