@@ -1399,6 +1399,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/accounting/import
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::LegacyClubUploadForm
@@ -1412,6 +1413,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/admin/invite/offline_members
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
         Bivio::Biz::Model::ImportedMemberInviteForm
         Bivio::UI::HTML::Club::ImportedMemberInvite
@@ -1424,6 +1426,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         %/accounting/identify/listed_investments
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ImportedSecurityReconciliationForm
         Bivio::UI::HTML::Club::ImportedSecurityReconciliation
@@ -1436,6 +1439,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/accounting/clear
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::ClearAccountingForm
