@@ -17,7 +17,7 @@ Bivio::Collection::SingletonMap - maps classes to singleton objects
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Collection::SingletonMap::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Collection::SingletonMap::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
