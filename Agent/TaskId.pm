@@ -534,16 +534,16 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
         cancel=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
-    [qw(
-        CLUB_ACCOUNTING_INVESTMENT_VALUATION
-        51
-        CLUB
-        ACCOUNTING_WRITE
-        %/accounting/investment/valuation
-        Bivio::Biz::Model::InstrumentValuationForm
-        Bivio::UI::HTML::Club::InstrumentValuation
-        next=CLUB_ACCOUNTING_INVESTMENT_LIST
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_INVESTMENT_VALUATION
+#        51
+#        CLUB
+#        ACCOUNTING_WRITE
+#        %/accounting/investment/valuation
+#        Bivio::Biz::Model::InstrumentValuationForm
+#        Bivio::UI::HTML::Club::InstrumentValuation
+#        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+#    )],
     [qw(
         JAPAN_SURVEY
         52
@@ -1464,6 +1464,37 @@ my(@_CFG) = (
         !
         Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Action::AccountingImport
+    )],
+    [qw(
+        CLUB_ACCOUNTING_LOCAL_INSTRUMENT
+        139
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/investment/local
+        Bivio::Biz::Model::LocalInstrumentForm
+        Bivio::UI::HTML::Club::LocalInstrument
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
+        140
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/valuation/dates
+        Bivio::Biz::Model::LocalValuationYearList->execute_load_all
+        Bivio::Biz::Model::LocalValuationDateList
+        Bivio::UI::HTML::Club::LocalValuationDates
+    )],
+    [qw(
+        CLUB_ACCOUNTING_LOCAL_PRICES
+        141
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/valuation/prices
+        Bivio::Biz::Model::LocalPriceList
+        Bivio::Biz::Model::LocalPricesForm
+        Bivio::UI::HTML::Club::LocalPrices
+        next=CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
     )],
 );
 
