@@ -39,10 +39,6 @@ so we know the we are operating in super-user mode.
 =cut
 
 #=IMPORTS
-use Bivio::Agent::TaskId;
-use Bivio::Auth::RealmType;
-use Bivio::SQL::ListQuery;
-use Bivio::TypeError;
 
 #=VARIABLES
 
@@ -85,8 +81,8 @@ sub execute_ok {
     }
 
     $self->get_instance('UserLoginForm')->substitute_user(
-	$self->get_request,
 	$self->get('realm_owner'),
+	$self->get_request,
     );
     return 0;
 }

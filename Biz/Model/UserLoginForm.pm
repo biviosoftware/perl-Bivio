@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
@@ -26,7 +26,7 @@ L<Bivio::Biz::FormModel>
 =cut
 
 use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::UserLoginForm::ISA = qw(Bivio::Biz::FormModel);
+@Bivio::Biz::Model::UserLoginForm::ISA = ('Bivio::Biz::FormModel');
 
 =head1 DESCRIPTION
 
@@ -34,15 +34,56 @@ C<Bivio::Biz::Model::UserLoginForm> is used to login which changes the
 cookie.  Modules which "login" users should call <tt>execute</tt>
 with the new realm_owner.
 
+A user is logged in if his PASSWORD_FIELD is set in the cookie.  We keep the
+user_id in the cookie so we can track logged out users.
+
 =cut
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="SUPER_USER_FIELD"></a>
+
+=head2 SUPER_USER_FIELD : string
+
+Returns the cookie key for the super user value.
+
+=cut
+
+sub SUPER_USER_FIELD {
+    return 's';
+}
+
+=for html <a name="PASSWORD_FIELD"></a>
+
+=head2 PASSWORD_FIELD : string
+
+Returns the cookie key for the encrypted password field.
+
+=cut
+
+sub PASSWORD_FIELD {
+    return 'p';
+}
+
+=for html <a name="USER_FIELD"></a>
+
+=head2 USER_FIELD : string
+
+Returns the cookie key for the super user value.
+
+=cut
+
+sub USER_FIELD {
+    return 'u';
+}
 
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Auth::RealmType;
-use Bivio::Biz::Model::RealmOwner;
-use Bivio::IO::Alert;
+use Bivio::Auth::RealmType;
 use Bivio::IO::Trace;
-use Bivio::TypeError;
 use Bivio::Type::Password;
 use Bivio::Type::UserState;
 
@@ -50,7 +91,6 @@ use Bivio::Type::UserState;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
-my($_USER_FIELD) = 'uid';
 
 =head1 METHODS
 
@@ -72,34 +112,13 @@ sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
     my($properties) = $self->internal_get;
-
-    # Loaded by validate or called externally.  Set the cookie appropriately.
     my($realm) = $properties->{realm_owner};
-    my($realm_id) = $realm ? $realm->get('realm_id') : undef;
-
-    # If called directly, do some important sanity checks
-    if (!$properties->{validate_called} && $realm) {
-	$self->throw_die('DIE', {entity => $realm,
-	    message => "can't login as offline user"})
-		if $realm->is_offline_user();
-	$self->throw_die('DIE', {entity => $realm,
-	    entity_type => $realm->get('realm_type'),
-	    message => "can't login as non-user"})
-		unless $realm->get('realm_type')
-			== Bivio::Auth::RealmType::USER();
-	$self->throw_die('DIE', {entity => $realm,
-	    message => "can't login as *the* USER realm"})
-		if $realm->is_default;
-    }
-
-    # Set user first, so cookie code has a valid "auth_user"
-    $req->set_user($realm);
-
-    _trace($properties) if $_TRACE;
-
-    # Process the cookie
-    _execute_cookie($self, $req, $realm_id);
-
+    _assert_realm_owner($self, $realm)
+	if $realm && !$properties->{validate_called};
+    return _su_logout($self)
+	if !$realm && $req->is_substitute_user;
+    _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
+    _set_cookie_user($self, $realm, $req);
     return 0;
 }
 
@@ -117,23 +136,8 @@ from cookie to real code.
 
 sub handle_cookie_in {
     my($proto, $cookie, $req) = @_;
-
-    # Don't do anything if we don't have a user in the cookie
-    my($user_id) = $cookie->unsafe_get($_USER_FIELD);
-    _trace('user_id=', $user_id) if $_TRACE;
-    if ($user_id) {
-	# We are logged in, indicate by setting the user_id
-	$req->put_durable(
-		auth_user_id => $user_id,
-		user_state => Bivio::Type::UserState->LOGGED_IN);
-	_set_log_user($req, $user_id);
-    }
-    else {
-	# Not logged in
-	$req->put_durable(
-		auth_user_id => undef,
-		user_state => Bivio::Type::UserState->JUST_VISITOR);
-    }
+    _set_user($proto, _load_cookie_user($proto, $cookie, $req),
+	$cookie, $req);
     return;
 }
 
@@ -149,7 +153,7 @@ sub internal_initialize {
     my($self) = @_;
     my($info) = {
 	# Form versions are checked and mismatches causes VERSION_MISMATCH
-	version => 2,
+	version => 1,
 
 	# This form's "next" is the task which redirected to this form.
 	# If redirect was not from a task, returns to normal "next".
@@ -157,7 +161,11 @@ sub internal_initialize {
 
 	# Fields which are shown to the user.
 	visible => [
-	    'RealmOwner.name',
+	    {
+		name => 'login',
+		type => 'Line',
+		constraint => 'NOT_NULL',
+	    },
             'RealmOwner.password',
 	],
 
@@ -183,6 +191,31 @@ sub internal_initialize {
 	    $self->SUPER::internal_initialize, $info);
 }
 
+=for html <a name="substitute_user"></a>
+
+=head2 static substitute_user(Bivio::Biz::Model realm, Bivio::Agent::Request req)
+
+Become another user if you are super_user.
+
+=cut
+
+sub substitute_user {
+    my($proto, $realm, $req) = @_;
+    my($cookie) = $req->unsafe_get('cookie');
+
+    unless ($req->unsafe_get('super_user_id')) {
+	# Only set super_user_id field if not already set.  This keeps
+	# original user and doesn't allow someone to su to an admin and
+	# then su as that admin.
+	my($super_user_id) = $req->get('auth_user')->get('realm_id');
+	$cookie->put($proto->SUPER_USER_FIELD => $super_user_id)
+	    if $cookie;
+	$req->put_durable(super_user_id => $super_user_id);
+    }
+    $proto->execute($req, {realm_owner => $realm});
+    return;
+}
+
 =for html <a name="validate"></a>
 
 =head2 validate()
@@ -194,107 +227,206 @@ if there are any.
 
 sub validate {
     my($self) = @_;
-    my($properties) = $self->internal_get;
-    return unless defined($properties->{'RealmOwner.name'});
+    return if $self->in_error;
+
+    my($owner) = $self->validate_login($self);
+    return unless $owner;
+
+    unless (Bivio::Type::Password->is_equal(
+	$owner->get('password'),
+	$self->get('RealmOwner.password'),
+    )) {
+	$self->internal_put_error('RealmOwner.password', 'PASSWORD_MISMATCH');
+	return;
+    }
+    $self->internal_put_field(realm_owner => $owner);
+    $self->internal_put_field(validate_called => 1);
+    return;
+}
+
+=for html <a name="validate_login"></a>
+
+=head2 static validate_login(Bivio::Biz::FormModel model) : Bivio::Biz::Model
+
+Looks at I<login> field of I<model> and loads.
+Returns a RealmOwner model, if valid.
+
+=cut
+
+sub validate_login {
+    my(undef, $model) = @_;
+    $model->internal_put_field(validate_called => 1);
+    my($login) = $model->get('login');
+    return undef
+	unless defined($login);
 
     # Emulate what happens in Type::RealmName
-    my($login) = $properties->{'RealmOwner.name'};
-    my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    my($expected);
-    if ($login =~ /@/) {
-        $expected = $owner->get('password')
-                if $owner->unauth_load_by_email($login,
-                        realm_type => Bivio::Auth::RealmType::USER());
-        # Retry without the domain name
-        $login =~ s/@.*$// unless defined($expected);
-    }
-    $expected = $owner->unauth_load(name => $login,
-            realm_type => Bivio::Auth::RealmType::USER())
-            ? $owner->get('password') : undef
-                    unless defined($expected);
+    $login =~ s/\s+//g;
+    $login = lc($login);
+    $model->internal_put_field(login => $login);
 
-    # Not found or no password (don't allow to login)
-    unless (defined($expected)) {
-	$self->internal_put_error('RealmOwner.name',
-		Bivio::TypeError::NOT_FOUND());
-	return;
-    }
-
-    # Can't login is offline user (warn, because no one should do this)
-    if ($owner->is_offline_user) {
-	Bivio::IO::Alert->warn($owner, ": attempt to login as offline user");
-	$self->internal_put_error('RealmOwner.name',
-		Bivio::TypeError::NOT_FOUND());
-	return;
-    }
-
-    # Can't login as *the* USER
-    if ($owner->is_default) {
-	Bivio::IO::Alert->warn($owner, ": attempt to login as *the* USER");
-	$self->internal_put_error('RealmOwner.name',
-		Bivio::TypeError::NOT_FOUND());
-	return;
-    }
-
-    # User didn't enter a valid password.  Already errors on the form.
-    return unless defined($properties->{'RealmOwner.password'});
-
-    # Compare passwords
-    unless (Bivio::Type::Password->is_equal($expected,
-	    $properties->{'RealmOwner.password'})) {
-	$self->internal_put_error('RealmOwner.password',
-		Bivio::TypeError::PASSWORD_MISMATCH());
-	return;
-    }
-
-    # Finally, success
-    $properties->{realm_owner} = $owner;
-    $properties->{validate_called} = 1;
-    return;
+    my($owner) = $model->new($model->get_request, 'RealmOwner');
+    return $owner
+	if $owner->unauth_load_by_email_id_or_name($model->get('login'))
+	    && !$owner->is_offline_user
+	    && !$owner->is_default
+	    && $owner->get('realm_type') == Bivio::Auth::RealmType->USER;
+    $model->internal_put_error('login', 'NOT_FOUND');
+    return undef;
 }
 
 #=PRIVATE METHODS
 
-# _execute_cookie(Bivio::Biz::FormModel self, Bivio::Agent::Request req, string realm_id)
+# _assert_realm_owner(self, Bivio::Biz::Model realm)
 #
-# Checks to see if the cookie was received.
+# Validates realm_owner is valid
 #
-sub _execute_cookie {
-    my($self, $req, $realm_id) = @_;
-    Bivio::Agent::HTTP::Cookie->assert_is_ok($req) if $realm_id;
-
-    # Set login state and user (if not undef)
-    my($cookie) = $req->get('cookie');
-    if ($realm_id) {
-	$cookie->put($_USER_FIELD => $realm_id);
-    }
-    else {
-	$cookie->delete($_USER_FIELD);
-    }
-    # Update the log user
-    $self->handle_cookie_in($cookie, $req);
+sub _assert_realm_owner {
+    my($self, $realm) = @_;
+    $self->throw_die('DIE', {entity => $realm,
+	message => "can't login as offline user"})
+	if $realm->is_offline_user();
+    $self->throw_die('DIE', {entity => $realm,
+	entity_type => $realm->get('realm_type'),
+	message => "can't login as non-user"})
+	unless $realm->get('realm_type')
+	    == Bivio::Auth::RealmType->USER;
+    $self->throw_die('DIE', {entity => $realm,
+	message => "can't login as *the* USER realm"})
+	if $realm->is_default;
     return;
 }
 
-# _set_log_user(Bivio::Agent::Request req, string user_id)
+# _get(Bivio::Agent::HTTP::Cookie cookie, string field) : string
 #
-# Set the user for this connection. Shows up in the server log.
+# Returns cookie field, if there is a cookie.
+#
+sub _get {
+    my($cookie, $field) = @_;
+    return $cookie && $cookie->unsafe_get($field);
+}
+
+# _load_cookie_user(proto, Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req) : boolean
+#
+# Returns auth_user if logged in.  Otherwise indicates logged out or
+# just visitor.
+#
+sub _load_cookie_user {
+    my($proto, $cookie, $req) = @_;
+    return undef unless $cookie->unsafe_get($proto->USER_FIELD);
+    my($auth_user) = Bivio::Biz::Model->new($req, 'RealmOwner');
+    if ($auth_user->unauth_load(
+	realm_id => $cookie->get($proto->USER_FIELD),
+	realm_type => Bivio::Auth::RealmType->USER,
+    )) {
+	return $auth_user
+	    if $req->is_substitute_user;
+
+	# Must have password to be logged in
+	my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
+	return undef
+	    unless $cp;
+	return $auth_user
+	    if $auth_user->has_valid_password
+		&& $cp eq $auth_user->get('password');
+	$req->warn($auth_user, ': user is not valid');
+    }
+    else {
+	$req->warn($cookie->get($proto->USER_FIELD),
+	    ': user_id not found, logging out');
+    }
+    $cookie->delete($proto->USER_FIELD, $proto->PASSWORD_FIELD);
+    # If user is invalid, login as super user
+    _su_logout($proto->new($req))
+	if $req->is_substitute_user;
+    return undef;
+}
+
+# _set_cookie_user(Bivio::Biz::FormModel self, Bivio::Biz::Model::RealmOwner realm, Bivio::Agent::Request req)
+#
+# Checks to see if the cookie was received.  If so, set the state.
+#
+sub _set_cookie_user {
+    my($self, $realm, $req) = @_;
+
+    # If there's no cookie, just ignore (probably command line app)
+    my($cookie) = $req->unsafe_get('cookie');
+    return unless $cookie;
+
+    # If logging in, need to have a cookie.
+    Bivio::Agent::HTTP::Cookie->assert_is_ok($req)
+	if $realm;
+    if ($realm) {
+	$cookie->put(
+	    $self->USER_FIELD => $realm->get('realm_id'),
+	    $self->PASSWORD_FIELD => $realm->get('password'),
+	);
+    }
+    else {
+	$cookie->delete($self->PASSWORD_FIELD);
+    }
+    return;
+}
+
+# _set_log_user(proto, Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
+#
+# Set the user for this connection.  Shows up in the server log.
 #
 sub _set_log_user {
-    my($req, $id) = @_;
+    my($proto, $cookie, $req) = @_;
     my($r) = $req->unsafe_get('r');
-    return unless $r;
-
-    my($name) = $_USER_FIELD .'-'. $id;
-    # Set in the log (be careful not to assume 'r', because is called
-    # from execute_ok and from Cookie).
-    $r->connection->user($name);
+    return unless $r && _get($cookie, $proto->USER_FIELD);
+    my($super_user_id) = _get($cookie, $proto->SUPER_USER_FIELD);
+    $r->connection->user(
+	($super_user_id ? 'su-' . $super_user_id . '-' : '')
+	. ($req->get('user_state') == Bivio::Type::UserState->LOGGED_IN
+	    ? 'li-' : 'lo-')
+        . _get($cookie, $proto->USER_FIELD));
     return;
+}
+
+# _set_user(proto, Bivio::Biz::Model user, Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
+#
+# Sets user on request based on cookie state.
+#
+sub _set_user {
+    my($proto, $user, $cookie, $req) = @_;
+    $req->set_user($user);
+    $req->put_durable(
+	super_user_id => _get($cookie, $proto->SUPER_USER_FIELD),
+	user_state => $user ? Bivio::Type::UserState->LOGGED_IN
+	    : _get($cookie, $proto->USER_FIELD)
+	    ? Bivio::Type::UserState->LOGGED_OUT
+	    : Bivio::Type::UserState->JUST_VISITOR,
+    );
+    _set_log_user($proto, $cookie, $req);
+    return $user;
+}
+
+# _su_logout(self) : boolean
+#
+# Logout as substitute user, return to super user.
+#
+sub _su_logout {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($su) = $req->get('su');
+    $req->delete('super_user_id');
+    $req->get('cookie')->delete($self->SUPER_USER_FIELD)
+	if $req->unsafe_get('cookie');
+    my($realm) = $self->new($req, 'RealmOwner');
+    $self->execute($req, {
+	realm_owner => $realm->unauth_load({realm_id => $su})
+	    ? $realm : undef,
+    });
+    $req->client_redirect(Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER)
+	if $realm;
+    return undef;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
