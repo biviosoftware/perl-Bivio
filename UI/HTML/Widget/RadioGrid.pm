@@ -59,8 +59,6 @@ use Bivio::Type::Enum;
 use Bivio::UI::HTML::Widget::Radio;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-
 
 =head1 FACTORIES
 
@@ -92,37 +90,8 @@ sub new {
 	}),
     } @{_load_items_from_enum($self, $choices)};
 
-    #
-    my($width) = $choices->get_width_long_desc;
-    my(@rows) = ();
-    my($s) = '&nbsp;' x 3;
-
-    # Max 4 items across in one row
-    if (int(@items) * $width < 60 && int(@items) <= 4) {
-	my(@items) = map {($_, $s)} @items;
-	pop(@items);
-	push(@rows, \@items);
-    }
-    elsif ($width < 20) {
-	my($third) = int((int(@items) + 2)/3);
-	for (my($i) = 0; $i < $third; $i++) {
-	    push(@rows, [$items[$i],
-		$s, $items[$i+$third] || $s,
-		$s, $items[$i+2*$third] || $s]);
-	}
-    }
-    elsif ($width < 30) {
-	my($half) = int((int(@items) + 1)/2);
-	for (my($i) = 0; $i < $half; $i++) {
-	    push(@rows, [$items[$i], $s, $items[$i+$half] || $s]);
-	}
-    }
-    else {
-	push(@rows, [shift(@items)]) while @items;
-    }
-
-    # Set up the grid
-    $self->put(values => \@rows);
+    # Layout the buttons
+    $self->layout_buttons(\@items, $choices->get_width_long_desc);
     return $self;
 }
 

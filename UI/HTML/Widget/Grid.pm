@@ -261,6 +261,49 @@ sub is_constant {
     return $fields->{is_constant};
 }
 
+=for html <a name="layout_buttons"></a>
+
+=head2 layout_buttons(array_ref buttons, int max_width)
+
+Sets I<values> to I<buttons> laid out appropriately for I<max_width>,
+i.e. the maximum width of the buttons in characters.  See
+I<RadioGrid> and I<CheckboxGrid> for examples.
+
+=cut
+
+sub layout_buttons {
+    my($self, $buttons, $max_width) = @_;
+    my(@rows) = ();
+    my($s) = '&nbsp;' x 3;
+
+    # Max 4 items across in one row
+    if (int(@$buttons) * $max_width < 60 && int(@$buttons) <= 4) {
+	@$buttons = map {($_, $s)} @$buttons;
+	pop(@$buttons);
+	push(@rows, $buttons);
+    }
+    elsif ($max_width < 20) {
+	my($third) = int((int(@$buttons) + 2)/3);
+	for (my($i) = 0; $i < $third; $i++) {
+	    push(@rows, [$buttons->[$i],
+		$s, $buttons->[$i+$third] || $s,
+		$s, $buttons->[$i+2*$third] || $s]);
+	}
+    }
+    elsif ($max_width < 30) {
+	my($half) = int((int(@$buttons) + 1)/2);
+	for (my($i) = 0; $i < $half; $i++) {
+	    push(@rows, [$buttons->[$i], $s, $buttons->[$i+$half] || $s]);
+	}
+    }
+    else {
+	push(@rows, [shift(@$buttons)]) while @$buttons;
+    }
+
+    $self->put(values => \@rows);
+    return;
+}
+
 =for html <a name="render"></a>
 
 =head2 render(string_ref buffer)
