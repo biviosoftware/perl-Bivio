@@ -38,12 +38,29 @@ and delete interface to the C<email_t> table.
 
 #=IMPORTS
 use Bivio::Type::Email;
+use Bivio::Type::Location;
 
 #=VARIABLES
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute_load_home"></a>
+
+=head2 static execute_load_home(Bivio::Agent::Request req) : boolean
+
+Loads the home address for the current realm.
+
+=cut
+
+sub execute_load_home {
+    my($proto, $req) = @_;
+    $proto->new($req)->load({
+	location => Bivio::Type::Location->HOME,
+    });
+    return 0;
+}
 
 =for html <a name="create"></a>
 
