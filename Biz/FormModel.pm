@@ -624,6 +624,30 @@ sub in_error {
     return shift->[$_IDI]->{errors} ? 1 : 0;
 }
 
+=for html <a name="internal_catch_field_constraint_error"></a>
+
+=head2 internal_catch_field_constraint_error(string field, code_ref op) : boolean
+
+Executes I<op> and catches a die.  If the die is a I<DB_CONSTRAINT>, applies
+resultant I<type_error> to I<field>, and returns true.
+
+Returns false if I<op> executes without dying.
+
+=cut
+
+sub internal_catch_field_constraint_error {
+    my($self, $field, $op) = @_;
+    my($die) = Bivio::Die->catch($op);
+    return 0
+	unless $die;
+    $die->throw
+	unless $die->get('code')->equals_by_name('DB_CONSTRAINT')
+	    && UNIVERSAL::isa($die->get('attrs')->{type_error},
+		'Bivio::TypeError');
+    $self->internal_put_error($field, $die->get('attrs')->{type_error});
+    return 1;
+}
+
 =for html <a name="internal_clear_error"></a>
 
 =head2 internal_clear_error(string property)
