@@ -33,6 +33,7 @@ C<Bivio::Biz::Model::F1065ParametersForm> IRS 1065 parameters
 
 #=IMPORTS
 use Bivio::Biz::Model::Tax1065;
+use Bivio::Biz::Model::TaxYearSubForm;
 use Bivio::SQL::Connection;
 use Bivio::Type::CountryCode;
 use Bivio::Type::DateTime;
@@ -145,7 +146,6 @@ sub internal_initialize {
     my($info) = {
 	version => 4,
 	list_class => 'ForeignTaxCountryList',
-	require_context => 1,
 	visible => [
 	    'Tax1065.partnership_type',
 	    'Tax1065.partnership_is_partner',
@@ -195,7 +195,7 @@ sub internal_initialize {
 =head2 internal_initialize_list() : Bivio::Biz::ListModel
 
 Loads and returns the MemberTaxList using the date from the
-form context.
+query string.
 
 =cut
 
@@ -276,10 +276,7 @@ sub validate_start {
 #
 sub _get_end_date {
     my($self) = @_;
-    my($date) = $self->unsafe_get_context_field('date')
-	    || Bivio::Biz::Accounting::Tax->get_last_tax_year;
-    Bivio::Biz::Action::ReportDate->set_report_date($date, $self->get_request);
-    return $date;
+    return Bivio::Biz::Model::TaxYearSubForm->get_tax_date($self->get_request);
 }
 
 =head1 COPYRIGHT
