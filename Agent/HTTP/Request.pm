@@ -76,18 +76,18 @@ sub new {
     my(%args) = $r->args;
 
     # this will clobber the query args if present
-    if ($r->method() eq 'POST') {
+    if ($r->method_number() eq Apache::Constants::M_POST()) {
 	&_add_posted_args($r, \%args);
     }
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	    &_find_user($r->connection->user), $start_time);
     $self->{$_PACKAGE} = {
-        r => $r,
-	view_name => $view,
-        header_sent => 0,
-	args => \%args,
-	password => $password,
-	model_args => Bivio::Biz::FindParams->from_string($args{mf} || '')
+        'r' => $r,
+	'view_name' => $view,
+        'header_sent' => 0,
+	'args' => \%args,
+	'password' => $password,
+	'model_args' => Bivio::Biz::FindParams->from_string($args{mf} || '')
     };
     delete($args{mf});
 
@@ -145,15 +145,15 @@ sub get_http_return_code {
 
     # need to translate from Request state to Apache rc
     return Apache::Constants::AUTH_REQUIRED
-	    if $state == Bivio::Agent::Request::AUTH_REQUIRED;
+	    if $state == Bivio::Agent::Request->AUTH_REQUIRED;
     return Apache::Constants::FORBIDDEN
-	    if $state == Bivio::Agent::Request::FORBIDDEN;
+	    if $state == Bivio::Agent::Request->FORBIDDEN;
     return Apache::Constants::NOT_FOUND
-	    if $state == Bivio::Agent::Request::NOT_HANDLED;
+	    if $state == Bivio::Agent::Request->NOT_HANDLED;
     return Apache::Constants::OK
-	    if $state == Bivio::Agent::Request::OK;
+	    if $state == Bivio::Agent::Request->OK;
     return Apache::Constants::SERVER_ERROR
-	    if $state == Bivio::Agent::Request::SERVER_ERROR;
+	    if $state == Bivio::Agent::Request->SERVER_ERROR;
 
     die("invalid request state $state");
 }
@@ -250,7 +250,8 @@ sub print {
 	$fields->{r}->content_type($self->get_reply_type());
 	$fields->{r}->send_http_header;
     }
-    $fields->{r}->print($str || 'undef');
+    $fields->{r}->print(defined($str) ? $str : 'undef');
+    return;
 }
 
 =for html <a name="put_arg"></a>
@@ -266,6 +267,7 @@ sub put_arg {
     my($fields) = $self->{$_PACKAGE};
 
     $fields->{args}->{$name} = $value;
+    return;
 }
 
 =for html <a name="set_args"></a>
@@ -282,6 +284,7 @@ sub set_args {
     my($fields) = $self->{$_PACKAGE};
 
     $fields->{args} = $args;
+    return;
 }
 
 =for html <a name="set_view_name"></a>
@@ -296,6 +299,7 @@ sub set_view_name {
     my($self, $name) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{view_name} = $name;
+    return;
 }
 
 #=PRIVATE METHODS
@@ -309,9 +313,10 @@ sub _add_posted_args {
 
     # returned as an array of name/value pairs
     my(@posted) = $r->content();
-    for (my($i) = 0; $i < scalar(@posted); $i += 2) {
+    for (my($i) = 0; $i < int(@posted); $i += 2) {
 	$result->{$posted[$i]} = $posted[$i+1];
     }
+    return;
 }
 
 # _find_user(string name) : User
@@ -325,7 +330,7 @@ sub _find_user {
     return undef if ! $name;
 
     my($user) = Bivio::Biz::User->new();
-    return $user->find(Bivio::Biz::FindParams->new({name => $name}))
+    return $user->find(Bivio::Biz::FindParams->new({'name' => $name}))
 	    ? $user : undef;
 }
 
