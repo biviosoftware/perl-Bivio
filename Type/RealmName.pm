@@ -35,16 +35,28 @@ invalid RealmName names.  Syntax is limited.
 
 =cut
 
-=for html <a name="DEMO_CLUB_SUFFIX"></a>
+=for html <a name="DEMO_CLUB"></a>
 
-=head2 DEMO_CLUB_SUFFIX : string
+=head2 DEMO_CLUB : string
 
 Name used for the demo club.
 
 =cut
 
+sub DEMO_CLUB {
+    return 'demo_club';
+}
+
+=for html <a name="DEMO_CLUB_SUFFIX"></a>
+
+=head2 DEMO_CLUB_SUFFIX : string
+
+Suffix for a user's demo club.
+
+=cut
+
 sub DEMO_CLUB_SUFFIX {
-    return '_demo_club';
+    return '_'.DEMO_CLUB();
 }
 
 =for html <a name="SHADOW_PREFIX"></a>
