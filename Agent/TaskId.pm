@@ -162,7 +162,7 @@ my(@_CFG) = (
         16
         CLUB
         MAIL_READ
-        _:_/communications/mail:_/mail
+        _:_/mail
         Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageList
 
@@ -172,7 +172,7 @@ my(@_CFG) = (
         17
         CLUB
         MOTION_READ
-        _/communications/motions:_/motions
+        _/motions
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -180,7 +180,7 @@ my(@_CFG) = (
         18
         CLUB
         MEMBER_READ
-        _/communications/rolodex:_/rolodex
+        _/rolodex
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -398,7 +398,8 @@ my(@_CFG) = (
         44
         CLUB
         MAIL_READ
-        _/communications/mail/message
+        _/mail/msg
+        Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageDetail
 
     )],
