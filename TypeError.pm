@@ -898,7 +898,7 @@ __PACKAGE__->compile([
     CREDITCARD_UNSUPPORTED_TYPE => [
 	123,
 	undef,
-	"type of card not supported",
+	"credit card type not supported; Visa and MasterCard only",
     ],
     CREDITCARD_WRONG_TYPE => [
 	124,
