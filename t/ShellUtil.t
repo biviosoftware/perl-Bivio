@@ -45,6 +45,27 @@ Bivio::Test->unit([
 		);
 	        die("shouldn't get here!");
 	    } => 1,
+	    sub {
+		my($case) = @_;
+		$SIG{TERM} = sub {
+		    # Gets called after the lock was removed
+		    die('/tmp/ShellUtil.t.mylock.lockdir: exists')
+			if -d '/tmp/ShellUtil.t.mylock.lockdir';
+		    $case->put(got_sig_term => 1);
+		};
+		return [
+		    sub {
+			die('/tmp/ShellUtil.t.mylock.lockdir: not found')
+			    unless -d '/tmp/ShellUtil.t.mylock.lockdir';
+			kill('TERM', $$);
+		    },
+		    'ShellUtil.t.mylock',
+		];
+	    } => sub {
+		my($case) = @_;
+		$case->get('got_sig_term');
+		return 1;
+	    },
 	],
     ],
     'Bivio::t::ShellUtil::T1' => [
@@ -52,6 +73,7 @@ Bivio::Test->unit([
 	    t1 => [],
 	    rd1 => [],
 	],
+	# If this test is failing, check ShellUtil/mylog.log
 	read_log => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
     ],
 ]);

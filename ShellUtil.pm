@@ -247,6 +247,7 @@ use Bivio::Type::DateTime;
 use Bivio::TypeError;
 use File::Spec ();
 use POSIX ();
+use Sys::Hostname ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -636,7 +637,7 @@ B<DEPRECATED USAGE BELOW>
 
 =head2 DEPRECATED static lock_action(string action) : boolean
 
-Creates a file lock for I<action> in /tmp/.  If I<action> is undef,
+Creates a file lock for I<action> in I<lock_directory>.  If I<action> is undef,
 uses C<caller> sub.  The usage is:
 
     sub my_action {
@@ -648,6 +649,9 @@ uses C<caller> sub.  The usage is:
 This method forks a new process and returns true in the child process.
 The parent waits for the child and returns.  There is no timeout, so
 child must be designed to be robust.
+
+Catches TERM signal and resignals (to previous handler) bug first removes the
+lock.
 
 =cut
 
@@ -663,16 +667,25 @@ sub lock_action {
 		$lock_dir, ': unable to delete lock for dead process');
 	    return _lock_warning($lock_dir);
 	}
-	my($pid) = ${Bivio::IO::File->read($lock_pid)};
+	my($pid, $host) = split(/\s+/, ${Bivio::IO::File->read($lock_pid)});
 	return _lock_warning($lock_dir)
-	    if _process_exists($pid);
-	Bivio::IO::Alert->warn($pid, ": process doesn't exist, removing ",
-	    $lock_dir);
+	    if $host ne Sys::Hostname::hostname() || _process_exists($pid);
+	Bivio::IO::Alert->warn(
+	    $pid, ": process doesn't exist, removing ", $lock_dir);
 	# Don't test results, because there may be contention
 	unlink($lock_pid);
 	rmdir($lock_dir);
     }
-    Bivio::IO::File->write($lock_pid, $$);
+    # Write host after pid to be backwards compatible with just pid format.
+    Bivio::IO::File->write($lock_pid, $$ . ' ' . Sys::Hostname::hostname());
+    my($prev) = $SIG{TERM};
+    local($SIG{TERM}) = sub {
+	unlink($lock_pid);
+	rmdir($lock_dir);
+	$SIG{TERM} = $prev;
+	kill('TERM', $$);
+	return;
+    };
     my($die) = Bivio::Die->catch($op);
     unlink($lock_pid);
     rmdir($lock_dir);
