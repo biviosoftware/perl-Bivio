@@ -94,7 +94,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/accounts:_/accounts
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::AccountSummaryList
+        Bivio::UI::HTML::Club::AccountList
     )],
     [qw(
         CLUB_ACCOUNTING_HISTORY
@@ -110,7 +111,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/investments:_/investments
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::InstrumentSummaryList
+        Bivio::UI::HTML::Club::InstrumentList
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_LIST
@@ -352,6 +354,22 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/member/detail
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        41
+        CLUB
+        MEMBER
+        _/accounting/investment/detail
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        42
+        CLUB
+        MEMBER
+        _/accounting/account/detail
         Bivio::UI::HTML::Club::Embargoed
     )],
 );
