@@ -984,6 +984,11 @@ sub run_daemon {
     $self->get_request;
     Bivio::IO::ClassLoader->simple_require('Bivio::IO::Log');
     my($cfg) = Bivio::IO::Config->get($cfg_name);
+    # Makes log rotating simple: All processes share a log
+    Bivio::IO::Alert->set_printer(
+	'FILE',
+	Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
+    ) if $cfg->{daemon_log_file};
     Bivio::IO::ClassLoader->simple_require('BSD::Resource');
 #TODO: Fork/setsid is another program.  Need to set pid of process
 #TODO: Returned by parent on stdout
@@ -1492,11 +1497,6 @@ sub _start_daemon_child {
 	}
 	setpriority(BSD::Resource::PRIO_PROCESS(), 0,
 	    $cfg->{daemon_child_priority});
-	# Makes log rotating simple: All processes share a log
-	Bivio::IO::Alert->set_printer(
-	    'FILE',
-	    Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
-	) if $cfg->{daemon_log_file};
 	# Force a reconnect
 	Bivio::SQL::Connection->get_instance;
 	Bivio::Agent::Request->clear_current;
