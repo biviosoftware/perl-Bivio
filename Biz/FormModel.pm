@@ -292,7 +292,7 @@ sub execute {
 	$self->internal_put($values);
 	$fields->{literals} = {};
 	_initialize_context($self, $req);
-	$self->execute_input();
+	return 1 if $self->execute_input();
 	return 0 unless $fields->{errors};
 	Carp::croak($self->as_string, ": called with invalid values");
     }
@@ -319,8 +319,7 @@ sub execute {
     unless ($input) {
 	$fields->{literals} = {};
 	_initialize_context($self, $req) unless $fields->{context};
-	$self->execute_empty;
-	return 0;
+	return $self->execute_empty;
     }
 
     # User submitted a form, parse, validate, and execute
@@ -329,7 +328,10 @@ sub execute {
     $fields->{literals} = $input;
 
     # Don't rollback, because unwind doesn't necessarily mean failure
-    return 0 unless _parse($self, $input);
+    my($parse_res) = _parse($self, $input);
+    # In the special case when execute_other returns true, we just
+    # get out and don't rollback.
+    return $parse_res == -1 ? 1 : 0 unless $parse_res == 1;
 
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
@@ -339,14 +341,20 @@ sub execute {
 	_put_file_field_reset_errors($self);
     }
     else {
-	    # Try to catch and apply type errors thrown
-	my($die) = Bivio::Die->catch(sub {$self->execute_input();});
+	# Try to catch and apply type errors thrown
+	my($res);
+	my($die) = Bivio::Die->catch(sub {$res = $self->execute_input();});
 	if ($die) {
 	    # If not TypeError, just rethrow
 	    $die->die() unless $die->get('code')->isa('Bivio::TypeError');
 	    # Can we find the fields in the Form?
 	    _apply_type_error($self, $die);
 	}
+
+	# If execute_input returns true, just get out.  The task will
+	# stop executing so no need to test errors.
+	return 1 if $res;
+
 	if ($fields->{errors}) {
 	    _put_file_field_reset_errors($self);
 	}
@@ -364,40 +372,46 @@ sub execute {
 
 =for html <a name="execute_empty"></a>
 
-=head2 execute_empty()
+=head2 execute_empty() : boolean
 
 Processes an empty form.  By default is a no-op.
+
+B<Return true if you want the Form to execute immediately>
 
 =cut
 
 sub execute_empty {
-    return;
+    return 0;
 }
 
 =for html <a name="execute_input"></a>
 
-=head2 execute_input()
+=head2 execute_input() : boolean
 
 Processes the form after validation.  By default is an no-op.
+
+B<Return true if you want the Form to execute immediately>
 
 =cut
 
 sub execute_input {
-    return;
+    return 0;
 }
 
 =for html <a name="execute_other"></a>
 
-=head2 execute_other(string button)
+=head2 execute_other(string button) : boolean
 
 Processes the form after a cancel or other button is pressed.
 The button string is passed.  It will redirect to the cancel
 task for the form.
 
+B<Return true if you want the Form to execute immediately>
+
 =cut
 
 sub execute_other {
-    return;
+    return 0;
 }
 
 =for html <a name="format_context_as_query"></a>
@@ -1141,10 +1155,14 @@ sub _initialize_context {
     return;
 }
 
-# _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
+# _parse(Bivio::Biz::FormModel self, hash_ref form) : int
 #
 # Parses the form. If Cancel or Other is encountered, redirects immediately.
 # If it is SUBMIT_UNWIND, returns false.  If it is ok, returns true.
+#
+# Returns -1 if execute_other returns true.
+# Returns 0 if unwind.
+# Returns 1 if OK.
 #
 sub _parse {
     my($self, $form) = @_;
@@ -1164,6 +1182,9 @@ sub _parse {
 
     # parse, but only save errors if it is a submit
     my($is_submit) = _parse_submit($self, $form);
+
+    # Get out immediately if execute_other returns true
+    return -1 if $is_submit == -1;
     my($values) = {};
 
     _parse_cols($self, $form, $sql_support, $values, 1);
@@ -1275,12 +1296,15 @@ sub _parse_context {
     return;
 }
 
-# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form) : boolean
+# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form) : int
 #
 # Parses the submit button.  If there is an error, throws CORRUPT_FORM.
 # If the button is Cancel, will redirect immediately.  If the button
 # is "OK", returns true.  If the button is SUBMIT_UNWIND, returns false.
 #
+# Returns -1 if execute_other returns true.
+# Returns 0 if unwind.
+# Returns 1 if OK.
 #
 sub _parse_submit {
     my($self, $form) = @_;
@@ -1301,7 +1325,7 @@ sub _parse_submit {
     _trace('cancel or other button: ', $value) if $_TRACE;
 
     my($req) = $self->get_request;
-    $self->execute_other($value);
+    return -1 if $self->execute_other($value);
 
     # client redirect on cancel, no state is saved
     _redirect($self, 'cancel');
