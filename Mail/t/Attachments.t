@@ -13,7 +13,6 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
-use Bivio::Mail::Incoming;
 use User::pwent ();
 
 my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
