@@ -121,6 +121,7 @@ my(%_TYPE_TO_EXT) = (
     'application/x-ns-proxy-autoconfig','proxy:Netscape Proxy Auto Config',
     'application/x-patch',		'patch:Source code patch',
     'application/x-perl',		'pl:Perl program',
+    'application/x-pkcs7-signature',	'p7s:S/MIME Cryptographic Signature',
     'application/x-pointplus',		'css:pointplus file',
     'application/x-salsa',		'slc:salsa file',
     'application/x-script',		'script:A script file',
@@ -225,6 +226,7 @@ my(%_TYPE_TO_EXT) = (
     'text/setext',			'stx:Setext document',
     'text/sgml',			'sgml:SGML document',
     'text/tab-separated-values',	'tsv:Tab separated values',
+    'text/x-vcard',			'vcf:V Card',
     'text/x-speech',			'talk:Speech document',
 
     'video/isivideo',			'fvi:isi video',
