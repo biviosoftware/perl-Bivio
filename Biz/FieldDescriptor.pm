@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::Biz::FieldDescriptor;
 use strict;
-use Bivio::UNIVERSAL();
 $Bivio::Biz::FieldDescriptor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -12,7 +11,7 @@ Bivio::Biz::FieldDescriptor - A type descriptor for model properties.
 =head1 SYNOPSIS
 
     use Bivio::Biz::FieldDescriptor;
-    Bivio::Biz::FieldDescriptor->new();
+    my($fd) = Bivio::Biz::FieldDescriptor->lookup('STRING', 256);
 
 =cut
 
@@ -20,7 +19,8 @@ Bivio::Biz::FieldDescriptor - A type descriptor for model properties.
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::FieldDescriptor>
+C<Bivio::Biz::FieldDescriptor> describes the type of a piece of data,
+ie date, string, currency, ...
 
 =cut
 
@@ -161,6 +161,10 @@ sub STRING {
     return ROLE() + 1;
 }
 
+#=IMPORTS
+use Bivio::UNIVERSAL;
+use Carp();
+
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my(%_CACHE);
@@ -171,15 +175,21 @@ my(%_CACHE);
 
 =for html <a name="lookup"></a>
 
-=head2 static lookup(int type, float length) : FieldDescriptor
+=head2 static lookup(string type_name, float length) : FieldDescriptor
 
 Returns a new or cached FieldDescriptor with the specified type
-and length.
+and length. type_name should be the string form of one of the type
+constants above.
 
 =cut
 
 sub lookup {
-    my($proto, $type, $length) = @_;
+    my($proto, $type_name, $length) = @_;
+
+    #lookup name constant, makes config look nicer
+    my($type) = eval("$type_name()");
+    $type || Carp::croak("invalid type $type_name");
+
     my($cache_key) = $type.'_'.$length;
     my($result) = $_CACHE{$cache_key};
 
