@@ -372,8 +372,14 @@ sub handle_die {
 
     my($req) = Bivio::Agent::Request->get_current;
     $proto->rollback($req);
-    $req->warn('task_error=', $die) if $req;
 
+    if ($req) {
+        # don't log forbidden when no user, it will automatically goto login
+        unless ($die->get('code')->equals_by_name('FORBIDDEN')
+            && ! $req->get('auth_user')) {
+            $req->warn('task_error=', $die);
+        }
+    }
     # Is this an HTTP request? (We don't redirect on non-http requests)
     unless (UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request')) {
 	_trace('not an http request: ', $req) if $_TRACE;
