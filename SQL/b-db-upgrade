@@ -213,23 +213,175 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _upgrade {
 
-    print("\nexpanding entry_t.entry_type constraint");
-    # increase the entry_t.entry_type valid values to include 113
-    # (stock transfer date)
-    _drop_constraints('entry_t', 'entry_type');
-
+    print("\ndeleting all member_allocation_t records");
     _do_sql('
-ALTER TABLE entry_t modify entry_type not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t7
-  check (entry_type between 1 and 6
-  or entry_type between 100 and 113
-  or entry_type between 200 and 218)
+DELETE FROM member_allocation_t
 /
 ');
 
+    print("\nadding member_allocation_t.allocation_type");
+    _add_column('member_allocation_t', 'allocation_type', 'NUMBER(2)');
+
+    print("\nre-keying member_allocation_t");
+    _do_sql('
+ALTER TABLE member_allocation_t DROP CONSTRAINT member_allocation_t1
+/
+');
+    _do_sql('
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t1
+  primary key(realm_id, user_id, allocation_date, tax_category,
+    allocation_type)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
+/
+');
+
+    print("\nexpanding member_allocation_t tax_cateogry constraint");
+    _do_sql('
+ALTER TABLE member_allocation_t DROP CONSTRAINT member_allocation_t5
+/
+');
+    _do_sql('
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t5
+  check (tax_category between 1 and 10
+  or tax_category = 100)
+/
+');
+
+    _upgrade_redo_allocations();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_redo_allocations()
+#
+# Redo tax allocations for imported clubs.
+#
+sub _upgrade_redo_allocations {
+
+    use Bivio::Auth::Realm;
+    use Bivio::Biz::Accounting::Tax;
+    use Bivio::Biz::Accounting::MemberBasis;
+    use Bivio::Biz::Model::File;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Data::EW::ClubImporter;
+    use Bivio::Data::EW::ExportParser;
+    use Bivio::Type::Date;
+    use Bivio::Type::DateTime;
+    use Bivio::Type::EntryType;
+    use Bivio::Type::FileVolume;
+
+    # really make sure all allocations are gone
+    _do_sql('
+DELETE FROM member_allocation_t
+/
+');
+
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+
+    # delete all MEMBER_LEGACY_UNIT_DISTRIBUTION transactions
+    # these will get recreated during import_allocations()
+    print("\ndeleting existing legacy unit distributions");
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_transaction_id
+            FROM entry_t
+            WHERE entry_type=?',
+	    [Bivio::Type::EntryType->MEMBER_LEGACY_UNIT_DISTRIBUTION->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($txn_id) = $row->[0];
+	Bivio::SQL::Connection->execute('
+                DELETE FROM member_entry_t
+                WHERE entry_id IN (
+                    SELECT entry_id
+                    FROM entry_t
+                    WHERE realm_transaction_id=?)',
+		[$txn_id]);
+	Bivio::SQL::Connection->execute('
+                DELETE FROM entry_t
+                WHERE realm_transaction_id=?',
+		[$txn_id]);
+	Bivio::SQL::Connection->execute('
+                DELETE FROM realm_transaction_t
+                WHERE realm_transaction_id=?',
+		[$txn_id]);
+    }
+
+    # search EW_IMPORT volume for 'export_info.txt' files
+    my($file) = Bivio::Biz::Model::File->new($req);
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($auth_user) = Bivio::Biz::Model::RealmOwner->new($req);
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT file_t.file_id
+            FROM file_t, realm_owner_t
+            WHERE file_t.realm_id=realm_owner_t.realm_id
+            AND file_t.name=?
+            AND file_t.volume=?
+            ORDER BY realm_owner_t.name',
+	    ['export_info.txt', Bivio::Type::FileVolume::EW_IMPORT()->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+
+	# foreach export file:
+	#  * load the corresponding ncadata.dat file
+	#  * set the request's auth_realm and auth_user
+	#  * import allocations
+	#  * determing withdrawal gains
+
+	my($file_id) = $row->[0];
+	$file->unauth_load_or_die(file_id => $file_id);
+	my($info) = eval(${$file->get('content')});
+	$realm->unauth_load_or_die(realm_id => $file->get('realm_id'));
+	$req->set_realm(Bivio::Auth::Realm->new($realm));
+	print("\n".$realm->get('name'));
+
+	print("\n\tfinding club admin");
+	# get the first admin in the club
+	my ($sth2) = Bivio::SQL::Connection->execute('
+                SELECT realm_transaction_t.user_id
+                FROM realm_transaction_t
+                WHERE realm_transaction_t.realm_id=?
+                AND realm_transaction_t.date_time=(
+                    SELECT MIN(realm_transaction_t.date_time)
+                    FROM realm_transaction_t
+                    WHERE realm_transaction_t.realm_id=?)',
+		[$req->get('auth_id', 'auth_id')]);
+	my($user_id);
+	while (my $row2 = $sth2->fetchrow_arrayref) {
+	    $user_id ||= $row2->[0];
+	}
+	next unless $user_id;
+	$auth_user->unauth_load_or_die(realm_id => $user_id);
+	$req->set_user($auth_user);
+
+	$file->load(name => 'ncadata.dat',
+		volume => Bivio::Type::FileVolume::EW_IMPORT());
+	my($importer) = Bivio::Data::EW::ClubImporter->new(
+		Bivio::Data::EW::ExportParser->new($file->get('content')));
+
+	# it will die if the club has cleared the accounting
+	# since the last import
+	my($die) = Bivio::Die->catch(sub {
+	    print("\n\timporting allocations");
+	    $importer->import_allocations($info);
+	    print("\n\tcalculating withdrawal gains");
+	    Bivio::Biz::Accounting::MemberBasis
+			->calculate_all_realized_gain($req);
+
+	    # delete allocations for this year (the year isn't completed)
+	    my($start, $end) = Bivio::Biz::Accounting::Tax
+		    ->get_date_boundary_for_year(Bivio::Type::Date->now);
+	    my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
+	    Bivio::SQL::Connection->execute("
+                    DELETE FROM member_allocation_t
+                    WHERE allocation_date BETWEEN
+                        $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+                    AND realm_id=?",
+		    [$start, $end, $req->get('auth_id')]);
+	});
+	if ($die) {
+	    print("\n".$die->get('attrs')->{message});
+	}
+    }
     return;
 }
 
