@@ -124,7 +124,7 @@ sub internal_pre_load {
 
 =for html <a name="internal_post_load_row"></a>
 
-=head2 internal_post_load_row(hash_ref row)
+=head2 internal_post_load_row(hash_ref row) : boolean
 
 Computes the total cost for the row.
 
@@ -140,7 +140,7 @@ sub internal_post_load_row {
 		    : Bivio::PetShop::Type::StockStatus->NOT_IN_STOCK;
     $row->{item_name} = Bivio::PetShop::Model::Item->format_name(
 	    $row->{'Item.attr1'}, $row->{'Product.name'});
-    return;
+    return 1;
 }
 
 #=PRIVATE METHODS

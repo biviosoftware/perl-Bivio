@@ -74,7 +74,7 @@ sub internal_initialize {
 
 =for html <a name="internal_post_load_row"></a>
 
-=head2 internal_post_load_row(hash_ref row)
+=head2 internal_post_load_row(hash_ref row) : boolean
 
 Sets the item_name using Item.attr1 and Product.name.
 
@@ -84,7 +84,7 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{'item_name'} = Bivio::PetShop::Model::Item->format_name(
 	    $row->{'Item.attr1'}, $row->{'Product.name'});
-    return;
+    return 1;
 }
 
 #=PRIVATE METHODS
