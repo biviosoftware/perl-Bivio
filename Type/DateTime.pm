@@ -343,6 +343,61 @@ sub get_previous_day {
     return ($j - 1) . ' ' . $s;
 }
 
+=for html <a name="get_previous_month"></a>
+
+=head2 get_previous_month(string date) : string
+
+Returns the date value closest to the previous month of the specified date.
+
+=cut
+
+sub get_previous_month {
+    my($proto, $date) = @_;
+
+    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
+    if (--$month == 0) {
+	$month = 12;
+	$year--;
+    }
+
+    my($prev_date, $err);
+    # find the closest day of that month
+    for my $i (0 .. 3) {
+	($prev_date, $err) = $proto->date_from_parts($day, $month, $year);
+	last unless $err;
+	$day--;
+    }
+
+    # may drop off the end if original date near min
+    return $prev_date || $proto->get_min;
+}
+
+=for html <a name="get_previous_year"></a>
+
+=head2 get_previous_year(string date) : string
+
+Returns the date value closest to the previous year of the specified date.
+
+=cut
+
+sub get_previous_year {
+    my($proto, $date) = @_;
+
+    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
+    $year--;
+
+    my($prev_date, $err);
+    # find the closest day of that month
+    for my $i (0 .. 1) {
+	($prev_date, $err) = $proto->date_from_parts($day, $month, $year);
+	last unless $err;
+	$day--;
+    }
+
+    # may drop off the end if original date near min
+    return $prev_date || $proto->get_min;
+}
+
 =for html <a name="gettimeofday"></a>
 
 =head2 static gettimeofday() : array_ref
