@@ -1664,6 +1664,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/add/members
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::NumberedList->execute_load_page
         Bivio::Biz::Model::AddMemberListForm
@@ -1677,6 +1678,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/invite/guests
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::NumberedList->execute_load_page
         Bivio::Biz::Model::InviteGuestListForm
         Bivio::UI::HTML::Club::InviteGuestList
@@ -1738,6 +1740,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         ?/admin/guest2member
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::Guest2MemberForm
         Bivio::UI::HTML::Club::Guest2Member
@@ -2162,6 +2165,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         ?/accounting/members/openbal
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::MemberOpenBalanceList->execute_load_all
         Bivio::Biz::Model::MemberOpenBalanceListForm
         Bivio::UI::HTML::Club::MemberOpenBalanceList
@@ -2174,6 +2178,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&ADMIN_WRITE
         ?/accounting/investments/openbal
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::InstrumentOpenBalanceList->execute_load_all
         Bivio::Biz::Model::InstrumentOpenBalanceListForm
         Bivio::UI::HTML::Club::InstrumentOpenBalanceList
@@ -2186,6 +2191,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&ADMIN_WRITE
         ?/accounting/opening-balance:?/accounting/opening_balance
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::AccountOpenBalanceList->execute_load_all
         Bivio::Biz::Model::AccountOpenBalanceListForm
         Bivio::UI::HTML::Club::AccountOpenBalance
