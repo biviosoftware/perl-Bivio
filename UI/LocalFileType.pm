@@ -52,6 +52,10 @@ L<Bivio::UI::View|Bivio::UI::View> loads views from this tree.
 
 Denormalized files which can be rebuilt.
 
+=item REALM_DATA
+
+Files by realm.
+
 =back
 
 =cut
@@ -60,17 +64,21 @@ Denormalized files which can be rebuilt.
 
 #=VARIABLES
 __PACKAGE__->compile([
-    'PLAIN' => [
+    PLAIN => [
     	1,
 	'plain/',
     ],
-    'VIEW' => [
+    VIEW => [
 	2,
 	'view/',
     ],
-    'CACHE' => [
+    CACHE => [
         3,
         'cache/',
+    ],
+    REALM_DATA => [
+        4,
+        'realm-data/',
     ],
 ]);
 
