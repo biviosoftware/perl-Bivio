@@ -71,7 +71,7 @@ __PACKAGE__->compile([
     ],
     BASIC_SERVICE => [
 	4,
-	'Basic Service',
+	'Club Accounting',
     ],
     FREE_TRIAL => [
 	5,
