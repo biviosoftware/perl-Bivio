@@ -560,27 +560,23 @@ sub get_share_price_and_date {
     for (1..8) {
 	my($search_date) = $j--.' '.Bivio::Type::DateTime::DEFAULT_TIME();
 
-	my($d) = Bivio::Type::DateTime->from_sql_value(
-		'mgfs_daily_quote_t.date_time');
 	$sth = Bivio::SQL::Connection->execute("
 	        SELECT realm_instrument_t.realm_instrument_id,
-	    	    mgfs_daily_quote_t.close, $d
+	    	    mgfs_daily_quote_t.close
 	        FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
 	        WHERE realm_instrument_t.instrument_id
             	    =mgfs_instrument_t.instrument_id
                 AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
                 AND mgfs_daily_quote_t.date_time=$_SQL_DATE_VALUE
-                AND realm_instrument_t.realm_id =?
-                ORDER BY mgfs_daily_quote_t.date_time DESC",
+                AND realm_instrument_t.realm_id=?",
 		[$search_date, $self->get('realm_id')]);
 
 	my($found_quote) = 0;
 	while (my $row = $sth->fetchrow_arrayref) {
-	    ($id, $value, $val_date) = @$row;
-	    $val_date = Bivio::Type::DateTime->from_sql_column($val_date);
+	    ($id, $value) = @$row;
 
 	    unless (exists($result->{$id})) {
-		$result->{$id} = [$value, $val_date, 0];
+		$result->{$id} = [$value, $search_date, 0];
 	    }
 	    $found_quote = 1;
 	}
