@@ -595,27 +595,6 @@ sub initialize_standard_support {
     $self->group(logo_icon_width_as_html =>
 	    $self->get_facade->get('Bivio::UI::Icon')
 	    ->get_width_as_html($self->get_value('logo_icon')));
-
-    # Home page widgets
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::Filtrum');
-    $self->group(filtrum_holdings => $_W->join([
-	[sub {${Bivio::Biz::Util::Filtrum->realm_file('holdings_file')}}],
-    ]));
-    $self->group(club_index => $_W->join([
-	[sub {${Bivio::Biz::Util::Filtrum->realm_file('club_index_file')}}],
-    ]));
-    $self->group(home_login => $_W->load_and_new('HomeLogin'));
-    $self->group(home_login_image => $_W->load_and_new('HomeLoginImage'));
-    $self->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
-    $self->group(toggle_secure_widget => $_W->toggle_secure);
-    $self->group(register_button_widget => $_W->director(
-	    [sub {shift->get_request->get('user_state')
-			  == Bivio::Type::UserState::JUST_VISITOR() ? 1 : 0}],
-	    {
-		0 => '',
-		1 => $_W->link($_W->image('register', 'Sign up!'),
-		       'USER_CREATE'),
-	    }));
     return;
 }
 
