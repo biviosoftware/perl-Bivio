@@ -117,17 +117,12 @@ sub execute {
 	    if ($user->get_status()->is_ok()
 		    && $req->get_target_name() ne 'club') {
 
-#TODO: need cache of club, but where?
-		my($club) = Bivio::Biz::Club->new();
-		$club->load(Bivio::Biz::FindParams->new(
-			{'name' => $req->get_target_name()}));
-
 		# not checking find result, should have succeeded or
 		# it wouldn't be this far
 		my($club_user) = Bivio::Biz::ClubUser->new();
 
 		$club_user->create({
-		    'club' => $club->get('id'),
+		    'club' => $req->get('club')->get('id'),
 		    'user_' => $user->get('id'),
 		    'role' => $req->get_arg('role'),
 		    'email_mode' => 1
