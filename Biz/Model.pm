@@ -213,6 +213,24 @@ sub delete_all {
     die('not supported');
 }
 
+=for html <a name="die"></a>
+
+=head2 die(string arg1, ...)
+
+Calls L<throw_die|"throw_die"> with code DIE and message as (safe) concat
+of args.
+
+=cut
+
+sub die {
+    my($self, @args) = @_;
+    $self->throw_die('DIE', {
+	message => Bivio::IO::Alert->die(@args),
+    },
+	    caller);
+    # DOES NOT RETURN
+}
+
 =for html <a name="get_as"></a>
 
 =head2 get_as(string field, string converter)
@@ -287,7 +305,7 @@ sub get_info {
 
 =head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
-=head2 static throw_die(Bivio::Type::Enum code, string message, string package, string file, int line)
+=head2 static throw_die(Bivio::Type::Enum code, string message, string package, string file, int line)nn
 
 Terminate the I<model> as entity and request in I<attrs> with a specific code.
 
@@ -304,6 +322,7 @@ sub throw_die {
     ref($attrs) eq 'HASH' || ($attrs = {message => $attrs});
     $attrs->{model} = $self;
     Bivio::Die->throw($code, $attrs, $package, $file, $line);
+    # DOES NOT RETURN
 }
 
 =for html <a name="get_model"></a>
