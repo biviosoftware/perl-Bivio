@@ -100,9 +100,11 @@ sub drop {
 	next unless $s =~ /^(\s*)create(?:\s+unique)?\s+(\w+\s+\w+)\s+/is
 		|| $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is;
 	Bivio::Die->eval(sub {
+#TODO: don't want to ignore all errors - ex. db doesn't exist
 	    Bivio::SQL::Connection->execute($1.'drop '.$2);
 	    return;
 	});
+	Bivio::SQL::Connection->commit;
     }
     return;
 }
