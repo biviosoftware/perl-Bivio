@@ -62,6 +62,25 @@ sub can_be_zero {
     return 0;
 }
 
+=for html <a name="compare"></a>
+
+=head2 compare(string left, string right) : int
+
+Returns 1 if I<left> is greater than I<right>.
+Returns 0 if I<left> is equal to I<right>.
+Returns -1 if I<left> is less than I<right>.
+
+=cut
+
+sub compare {
+    my(undef, $left, $right) = @_;
+    my($ld, $lt) = split(/\s+/, $left);
+    my($rd, $rt) = split(/\s+/, $right);
+    return 1 if $ld > $rd;
+    return -1 if $ld < $rd;
+    return 0;
+}
+
 =for html <a name="delta_days"></a>
 
 =head2 delta_days(string start_date, string end_date) : int
