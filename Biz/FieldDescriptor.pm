@@ -44,7 +44,7 @@ sub BOOLEAN {
 
 =for html <a name="CURRENCY"></a>
 
-=head2 CURRENCY : string
+=head2 CURRENCY : int
 
 Currency type.
 
@@ -172,6 +172,18 @@ String type.
 
 sub STRING {
     return ROLE() + 1;
+}
+
+=for html <a name="USER_FULL_NAME"></a>
+
+=head2 USER_FULL_NAME : int
+
+Full name type.
+
+=cut
+
+sub USER_FULL_NAME {
+    return STRING() + 1;
 }
 
 #=IMPORTS
