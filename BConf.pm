@@ -113,7 +113,7 @@ Development environment configuration.
 sub dev {
     my($proto, $port, $overrides) = @_;
 
-    my($pwd) = `pwd`;
+    my($pwd) = $^O eq 'MSWin32' ? `cmd /c cd` : `pwd`;
     chomp($pwd);
     my($host) = `hostname`;
     chomp($host);
