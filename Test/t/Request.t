@@ -10,6 +10,9 @@ Bivio::Test->new('Bivio::Test::Request')->unit([
 	    my($case, $actual) = @_;
 	    return $actual->[0]->isa('Bivio::Test::Request') ? 1 : 0;
         },
+	set_realm_and_user => [
+	    demo => undef,
+	],
     ],
     sub {
 	my($req) = Bivio::Test::Request->get_instance;
