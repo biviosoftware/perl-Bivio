@@ -57,6 +57,8 @@ Which form are we dealing with.
 
 =item label : array_ref (required)
 
+=item label : Bivio::UI::Widget (required)
+
 String label to use.
 
 =item value : Bivio::Type::Enum (required)
@@ -128,17 +130,24 @@ sub control_on_render {
 		.">&nbsp;";
     }
 
-    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 
-    my($label) = $self->get('label');
-    $label = $source->get_widget_value(@$label) if ref($label);
     $$buffer .= $fields->{prefix}
 	    .$form->get_field_name_for_html($field)
 #TODO: is_equal?
 	    .(defined($form->get($field))
 		    && $value eq $form->get($field) ? ' checked' : '')
-	    .$fields->{suffix}
- 	    .$p.Bivio::HTML->escape($label).$s;
+	    .$fields->{suffix};
+
+    my($label) = $self->get('label');
+    if (UNIVERSAL::isa($label, 'Bivio::UI::Widget')) {
+	$label->render($source, $buffer);
+    }
+    else {
+	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
+	$label = $source->get_widget_value(@$label)
+	    if ref($label);
+	$$buffer .= $p.Bivio::HTML->escape($label).$s;
+    }
     return;
 }
 
@@ -158,6 +167,8 @@ sub initialize {
     $fields->{field} = $self->get('field');
     $fields->{value} = $self->get('value');
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
+    $self->get('label')->initialize
+	if UNIVERSAL::isa($self->get('label'), 'Bivio::UI::Widget');
     return $self->SUPER::initialize();
 }
 
