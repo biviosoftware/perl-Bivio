@@ -389,6 +389,27 @@ sub is_secure_data {
     return 0;
 }
 
+=for html <a name="put_on_request"></a>
+
+=head2 put_on_request(Bivio::Agent::Request req, boolean put_durable) : self
+
+Puts an instance of I<self> on request.  Only works with types which are
+instantiated.
+
+=cut
+
+sub put_on_request {
+    my($self, $req, $put_durable) = @_;
+    Bivio::IO::Alert->bootstrap_die($self, ': must be instance')
+	unless ref($self);
+    my($method) = $put_durable ? 'put_durable' : 'put';
+    $req->$method(
+	ref($self) => $self,
+	'Type.' . $self->simple_package_name => $self,
+    );
+    return $self;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 static to_html(any value) : string
