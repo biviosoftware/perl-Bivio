@@ -314,9 +314,7 @@ sub _inc_to_end_day {
 sub _inc_to_end_irs_tax_season {
     my($self, $start_date) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($start_date);
-    $year++
-	if $mon > 4 || $mon == 4 && $mday > 15;
-    return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, $year);
+    return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, ++$year);
 }
 
 # _inc_to_end_none(self, string start_date) : string
