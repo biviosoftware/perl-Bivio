@@ -111,10 +111,6 @@ Returns I<self>.
 sub create {
     my($self, $new_values) = @_;
     my($sql_support) = $self->internal_get_sql_support;
-    my($auth_field) = $sql_support->get('auth_id');
-#TODO: override existing value for auth_id if model has an auth_id
-    $new_values->{$auth_field->{name}} = $self->get_request->get('auth_id')
-	if $auth_field && !exists($new_values->{$auth_field->{name}});
     # Make sure all columns are defined
     my($n);
     foreach $n (@{$sql_support->get('column_names')}) {
