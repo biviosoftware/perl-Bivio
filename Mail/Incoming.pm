@@ -397,6 +397,20 @@ sub get_rfc822_io {
 
 }
 
+=for html <a name="get_rfc822_length"></a>
+
+=head2 get_rfc822_length() : int
+
+Returns length of C<rfc822>.
+
+=cut
+
+sub get_rfc822_length {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return length(${$fields->{rfc822}}) - $fields->{header_offset};
+}
+
 =for html <a name="get_subject"></a>
 
 =head2 get_subject() : string
