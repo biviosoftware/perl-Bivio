@@ -241,7 +241,7 @@ Bivio::IO::Config->register({
     can_secure => 1,
 });
 my($_CURRENT);
-my($_GENERAL) = Bivio::Auth::Realm::General->new;
+my($_GENERAL) = Bivio::Auth::Realm::General->get_instance;
 
 =head1 FACTORIES
 
@@ -897,16 +897,18 @@ sub internal_server_redirect {
     $new_query = Bivio::Agent::HTTP::Query->parse($new_query)
 	if defined($new_query);
     # Now fill in the rest of the request context
-    $self->put_durable(uri =>
-	    # If there is no uri, use current one
-	    Bivio::UI::Task->has_uri($new_task)
-	    ? $self->format_uri($new_task, undef, $new_realm,
-		    $new_path_info, $no_context) : $self->get('uri'),
-	    query => $new_query,
-	    form => $new_form,
-	    form_model => undef,
-	    path_info => $new_path_info,
-	    form_context => $fc);
+    $self->put_durable(
+	# If there is no uri, use current one
+	uri => Bivio::UI::Task->has_uri($new_task)
+	    ? $self->format_uri(
+		$new_task, undef, $new_realm, $new_path_info, $no_context)
+	    : $self->get('uri'),
+	query => $new_query,
+	form => $new_form,
+	form_model => undef,
+	path_info => $new_path_info,
+	form_context => $fc,
+    );
     return;
 }
 
@@ -1115,23 +1117,19 @@ Returns I<auth_user>, which my be C<undef>.
 =cut
 
 sub set_user {
-    my($self, $user, $dont_set_role) = @_;
-    Bivio::IO::Alert->warn_deprecated(
-	"dont_set_role is not longer a valid parameter")
-	    if $dont_set_role;
+    my($self, $user) = @_;
     # We don't set the role if there's not auth_realm
-    $dont_set_role = $self->unsafe_get('auth_realm') ? 0 : 1;
+    my($dont_set_role) = $self->unsafe_get('auth_realm') ? 0 : 1;
     $user = Bivio::Biz::Model->new($self, 'RealmOwner')
 	->unauth_load_by_id_or_name_or_die($user, 'USER')
-	    unless ref($user) || !defined($user);
+        unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
     _trace($user) if $_TRACE;
     if ($user) {
 	# Load the UserRealmList for this user.
-	my($user_id) = $user->get('realm_id');
 	my($list) = Bivio::Biz::Model->new($self, 'UserRealmList');
-	$list->unauth_load_all({auth_id => $user_id});
+	$list->unauth_load_all({auth_id => $user->get('realm_id')});
 	$user_realms = $list->map_primary_key_to_rows;
     }
     else {
@@ -1139,9 +1137,11 @@ sub set_user {
     }
     Bivio::Die->die($user, ': not a RealmOwner')
         if defined($user) && !$user->isa('Bivio::Biz::Model');
-    $self->put_durable(auth_user => $user,
+    $self->put_durable(
+	auth_user => $user,
 	auth_user_id => $user ? $user->get('realm_id') : undef,
-	user_realms => $user_realms);
+	user_realms => $user_realms,
+    );
     # Set the (cached) auth_role if requested (by default).
     $self->put_durable(auth_role => _get_role($self, $self->get('auth_id')))
 	unless $dont_set_role;
@@ -1200,6 +1200,7 @@ sub throw_die {
     $attrs->{user} = ref($user) ? $user->as_string : undef;
 
     Bivio::Die->throw($code, $attrs, $package, $file, $line);
+    # DOES NOT RETURN
 }
 
 =for html <a name="warn"></a>
