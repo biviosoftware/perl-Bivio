@@ -150,9 +150,9 @@ sub initialize {
     my($class) = ref($proto) || $proto;
     return if $_INFO{$class};
     my($enum) = $proto->get_enum_type;
-    Carp::croak("$enum: not an enum")
+    Bivio::Die->die($enum, ': not an enum')
 		unless UNIVERSAL::isa($enum, 'Bivio::Type::Enum');
-    Carp::croak("$enum: can't be an EnumSet, because can be negative")
+    Bivio::Die->die($enum, ": can't be an EnumSet, because can be negative")
 		if $enum->can_be_negative;
     my($length) = $enum->get_max->as_int + 1;
     my($min) = '';
@@ -165,8 +165,11 @@ sub initialize {
 	min => $min,
 	max => $max,
     };
-    # Pad appropriately
-    my($width) = $proto->get_width;
+
+    # Pad appropriately, because the enum may be smaller than the enumset.
+    my($width) = 2 * $proto->get_width;
+    Bivio::Die->die($enum, ": EnumSet is narrower than Enum")
+		if $width - length($max) < 0;
     foreach my $m ('min', 'max') {
 	my($s) = unpack('h*', $_INFO{$class}->{$m});
 	$s .= '0' x ($width - length($s));
@@ -254,7 +257,7 @@ sub to_sql_param {
     my($width) = 2 * $proto->get_width;
     # Exact match means field is correct.
     return $res if length($res) == $width;
-    Carp::croak('field too long') if length($res) > $width;
+    die('field too long') if length($res) > $width;
     # Pad with zeroes
     $res .= '0' x ($width - length($res));
     return $res;
