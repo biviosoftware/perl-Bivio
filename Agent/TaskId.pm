@@ -2170,7 +2170,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
         214
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-performance
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::DateSpanForm
@@ -2183,7 +2183,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
         215
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-performance-detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::AllMemberList->execute_load_all
