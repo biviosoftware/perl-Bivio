@@ -62,6 +62,7 @@ commands:
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
+    vacumm_db_continuously [minutes] - run vacuumdb every minutes (default 60)
 EOF
 }
 
@@ -408,6 +409,28 @@ sub run_command {
 	(ref($commands) ? $$commands : $commands)
 	. ($self->unsafe_get('noexecute') ? "\n;rollback;\n" : "\n;commit;\n"),
     );
+}
+
+=for html <a name="vacumm_db_continuously"></a>
+
+=head2 vacumm_db_continuously(int period_minutes)
+
+Runs the postgres vacuumdb -a command every I<period_minutes> (defaults to 60).
+Needs to be run as postgres user.
+
+=cut
+
+sub vacumm_db_continuously {
+    my($self, $period_minutes) = @_;
+    my($s) = 60 * ($period_minutes || 60);
+    while (1) {
+	# Catch so that we get debugging info to log
+	Bivio::Die->catch(sub {
+	    $self->piped_exec('vacuumdb --all --analyze --quiet 2>&1', '', 1);
+	});
+	sleep($s);
+    }
+    return;
 }
 
 #=PRIVATE METHODS
