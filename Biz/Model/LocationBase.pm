@@ -63,15 +63,16 @@ sub create {
 
 =head2 unauth_load(hash query) : boolean
 
-Sets I<location> if not set, then calls SUPER.
+If I<realm_id> is set and I<location> isn't, sets I<location> to I<HOME>
+and calls SUPER.
 
 =cut
 
 sub unauth_load {
     my($self) = shift;
     my($query) = int(@_) == 1 ? @_ : {@_};
-    $query->{location} = Bivio::Type::Location->HOME()
-	    unless $query->{location};
+    $query->{location} = Bivio::Type::Location->HOME
+	if !$query->{location} && $query->{realm_id};
     return $self->SUPER::unauth_load($query);
 }
 
