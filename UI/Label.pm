@@ -357,7 +357,8 @@ _compile([
     HTTP_DOCUMENT => ['Home Page'],
     LOGOUT => ['Logout'],
     MY_CLUB_SITE => ['My Club Site'],
-    USER_ADMIN_PREFERENCES_EDIT => ['Change Preferences'],
+    USER_ADMIN_PREFERENCES_EDIT => ['Change Preferences', undef,
+	'USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT'],
     USER_AGREEMENT_TEXT => ['Terms of Service'],
     USER_HOME => ['My Site', 'MY_SITE'],
 
