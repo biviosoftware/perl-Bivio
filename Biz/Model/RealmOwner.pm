@@ -118,15 +118,13 @@ sub audit_units {
     my($req) = $self->get_request;
     my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
     my($entries) = Bivio::Biz::Model::MemberEntryList->new($req);
-#TODO: really want all entries >= date, for now just get all of them
-    $entries->load(
-	    Bivio::SQL::ListQuery->new({
-		count => Bivio::Type::Integer->get_max,
-		auth_id => $req->get('auth_id'),
-#TODO: want the transaction date ascending, this isn't apparent
-		o => '0a',
-#TODO: this doesn't look right
-	    }, $entries->internal_get_sql_support()));
+
+    # just get entries past the specified valuation date
+    $req->put(Bivio::Biz::Model::MemberEntryList::VALUATION_DATE_KEY()
+	    => $date);
+    $entries->load({
+	count => Bivio::Type::Integer->get_max,
+    });
 
     while ($entries->next_row) {
 	my($val_date) = $entries->get('MemberEntry.valuation_date');
