@@ -257,9 +257,11 @@ Subclasses shouldn't override this method.
 sub load {
     my($self) = shift;
     $self->unsafe_load(@_) && return;
-    $self->get_request->put(error_object => $self,
-	    error_message => 'not found');
-    die('not found');
+    my($req) = $self->get_request;
+    $req->put(error_object => $self, error_message => 'not found');
+    my($reply) = $req->get('reply');
+    $reply->set_state($reply->NOT_HANDLED);
+    die(ref($self), ': not found');
 }
 
 =for html <a name="unauth_load"></a>
