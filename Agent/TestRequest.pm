@@ -11,7 +11,6 @@ Bivio::Agent::TestRequest - a parameterized request for testing
 =head1 SYNOPSIS
 
     use Bivio::Agent::TestRequest;
-    Bivio::Agent::TestRequest->new();
 
 =cut
 
@@ -43,76 +42,23 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 new(string target_name) : Bivio::Agent::TestRequest
+=head2 new(hash attributes) : Bivio::Agent::TestRequest
 
-=head2 new(string target_name, string controller_name) : Bivio::Agent::TestRequest
-
-=head2 new(string target_name, string controller_name, User user) : Bivio::Agent::TestRequest
-
-=head2 new(string target_name, string controller_name, User user, hash args) : Bivio::Agent::TestRequest
-
-Creates a test request with the specified target, controller, and user.
-An optional hash of initial args may also be specified
+Creates a test request with the specified attributes
 
 =cut
 
 sub new {
-    my($proto, $target, $controller, $user, $args) = @_;
-    my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	    $user, Bivio::Util::gettimeofday());
-    $args ||= {};
-    $self->{$_PACKAGE} = {
-	'args' => $args
-    };
+    my($proto, $attributes) = @_;
+    $attributes->{start_time} = Bivio::Util::gettimeofday();
+    my($self) = &Bivio::Agent::Request::new($proto, $attributes);
+
     return $self;
 }
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="get_arg"></a>
-
-=head2 get_arg(string name) : string
-
-Returns the value of the named request argument.
-
-=cut
-
-sub get_arg {
-    my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{args}->{$name};
-}
-
-=for html <a name="print"></a>
-
-=head2 print(string str)
-
-Writes the value to STDOUT.
-
-=cut
-
-sub print {
-    my($self, $str) = @_;
-    print(STDOUT $str);
-    return;
-}
-
-=for html <a name="put_arg"></a>
-
-=head2 put_arg(string name, string value)
-
-Adds or updates the argument to the specified value.
-
-=cut
-
-sub put_arg {
-    my($self, $name, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{args}->{$name} = $value;
-    return;
-}
 
 #=PRIVATE METHODS
 
