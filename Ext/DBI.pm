@@ -34,9 +34,12 @@ name which is used to connect to.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_ORACLE_HOME);
 Bivio::IO::Config->register({
     'oracle_home' => $ENV{ORACLE_HOME} || Bivio::IO::Config->REQUIRED,
@@ -76,6 +79,9 @@ sub connect {
     $ENV{ORACLE_HOME} ||= $_ORACLE_HOME;
     my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
 	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
+    _trace('dbi:Oracle:', $cfg->{database}, ':',
+	    $cfg->{user}, '/', $cfg->{password},
+	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
     return $self;
 }
 
