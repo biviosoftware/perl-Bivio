@@ -306,6 +306,15 @@ NameVirtualHost <$hostip>:<$port>
     </LocationMatch>
 </VirtualHost>
 
+<VirtualHost <$hostip>:<$port>>
+    ServerName net.<$hostname>
+    DocumentRoot <$pwd>/html/net
+    <Directory />
+        AllowOverride None
+        Options FollowSymLinks
+    </Directory>
+</VirtualHost>
+
 <$facades>
 
 BrowserMatch "Mozilla/2" nokeepalive
