@@ -26,7 +26,8 @@ my($_HOME) = 'clubs/';
 
 my($_DEFAULT_PAGE);
 my($_MESSAGE_PAGE);
-my(@_PAGES, $_PAGE_MENU, %_URI_TO_PAGE_MAP);
+my(@_PAGES, $_PAGE_MENU, %_URI_TO_PAGE_MAP,
+   $_MAILINGLIST_PAGE_MENU, %_MAILINGLIST_URI_TO_PAGE_MAP);
 if (defined($ENV{MOD_PERL})) {
     eval '
 	use Bivio::Club::Page::Agreement;
@@ -48,11 +49,13 @@ if (defined($ENV{MOD_PERL})) {
     );
     $_PAGE_MENU = Bivio::Club::Menu->new(\@_PAGES);
     %_URI_TO_PAGE_MAP = map {($_->URI, $_)} @_PAGES;
+    %_MAILINGLIST_URI_TO_PAGE_MAP = map {($_->URI, $_)} ($_MESSAGE_PAGE);
+    $_MAILINGLIST_PAGE_MENU = Bivio::Club::Menu->new([$_MESSAGE_PAGE]);
 }
 
 sub message_page { $_MESSAGE_PAGE }
 
-sub page_menu { $_PAGE_MENU }
+sub page_menu { shift->{page_menu} }
 
 # Handler called by mod_perl
 sub handler ($) {
@@ -109,8 +112,9 @@ sub authenticate ($$)
     $br->set_club($self);
     defined($self->members->{$br->user->name}) && return; 	  # club member
     defined($self->guests) &&
-	defined($self->guests->{$self->name}) ||
+	defined($self->guests->{$br->user->name}) ||
 	    $br->forbidden('not a club member'); 		  # not a guest
+    $self->{mailinglist_only} && return; 	  # mailinglists aren't limited
     $br->make_read_only;				  # guest, limit access
 }
 
@@ -122,7 +126,8 @@ sub member_attr ($$$) {
 
 sub email ($) {
     my($self) = @_;
-    &Bivio::Util::email($self->name);
+    defined($self->{email}) && return $self->{email};
+    return $self->{email} = &Bivio::Util::email($self->name);
 }
 
 sub lookup_data ($$$$;$) {
@@ -163,6 +168,14 @@ sub lookup ($$) {
     my($self) = &Bivio::Data::lookup($data, $proto, $br);
     defined($self) || return undef;
     $self->{data_dir} = $data . '/';
+    if ($self->{mailinglist_only}) {
+	$self->{page_map} = \%_MAILINGLIST_URI_TO_PAGE_MAP;
+	$self->{page_menu} = $_MAILINGLIST_PAGE_MENU;
+    }
+    else {
+	$self->{page_map} = \%_URI_TO_PAGE_MAP;
+	$self->{page_menu} = $_PAGE_MENU;
+    }
     return $self;
 }
 # _process_http $br
@@ -182,7 +195,7 @@ sub _process_http ($) {
     # NOTE: $1 not reset if match fails
     $path =~ s,^/+([^/]+)/*,, && ($page = $1);
     $page = !defined($page) ? $_DEFAULT_PAGE
-	: defined($_URI_TO_PAGE_MAP{$page}) ? $_URI_TO_PAGE_MAP{$page}
+	: defined($self->{page_map}->{$page}) ? $self->{page_map}->{$page}
 	    : $br->not_found("no such page");
     $br->set_path_info($path);
     return $page->request($br);
