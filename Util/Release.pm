@@ -200,6 +200,7 @@ usage: b-release [options] command [args...]
 commands:
     build package ... -- compile & build rpms
     build_tar project ... -- build perl tar distribution
+    create_stream [rpm ...] -- generate a stream for this host or rpms
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
     install_tar project ... -- install perl tars from network repository
@@ -286,6 +287,21 @@ sub build_tar {
 	}
 	return;
     });
+}
+
+=for html <a name="create_stream"></a>
+
+=head2 create_stream(string file, ...) : string
+
+Returns all the packages on this host or from I<file>s in the format of an update stream used
+by
+
+=cut
+
+sub create_stream {
+    my($self, @file) = @_;
+    unshift(@file, @file ? 'p' : 'a');
+    return `rpm -q@file --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
 }
 
 =for html <a name="get_projects"></a>
@@ -607,23 +623,21 @@ Lists packages in I<stream> that have updates.
 =cut
 
 sub list_updates {
-    my($self, $stream) = @_;
-    $self->usage_error("No stream specified.") unless $stream;
-    return join("\n", @{_get_update_list($stream)})."\n";
+    return join('', map("$_\n", @{_get_update_list(@_)}));
 }
 
 =for html <a name="update"></a>
 
 =head2 update(string stream)
 
-Download and apply package updates.
+Download and apply package updates for the current stream.  Does not install
+packages if they aren't already on the current host.
 
 =cut
 
 sub update {
-    my($self, $stream) = @_;
-    $self->usage_error("No stream specified.") unless $stream;
-    $self->install(@{_get_update_list($stream)});
+    my($self) = @_;
+    return $self->install(@{_get_update_list(@_)});
 }
 
 #=PRIVATE METHODS
@@ -981,26 +995,27 @@ sub _get_rpm_arch {
 
 # _get_update_list(string stream) : array_ref
 #
-# Returns a list of packages to be applied as updates
+# Returns a list of packages that exist on this machine and need updating.
 #
-
 sub _get_update_list {
-    my($stream) = shift;
-    my(@local_rpms) = split(/\n/, `rpm -qa --queryformat '%{NAME}  %{VERSION}-%{RELEASE}\n' | sort`);
-
-    my(@server_rpms) = split(/\n/, ${_http_get("$stream-rpms.txt")});
-    my(%local_rpms, @update_rpms);
-    foreach my $rpm (@local_rpms) {
-	$local_rpms{$rpm} = 1;
-    }
-
-    foreach my $rpm (@server_rpms) {
-	$rpm =~ /(.*  .*)  (.*)/;
-	push(@update_rpms, $2)
-	    unless exists $local_rpms{$1};
-    }
-
-    return [@update_rpms];
+    my($self, $stream) = @_;
+    $self->usage_error("no stream specified.")
+	unless $stream;
+    my($local_rpms) = {
+	map({
+	    ($_ => 1, ($_ =~ /^(\S+)/)[0] => 1);
+	} split(
+	    /\n/,
+	    `rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' | sort`,
+	)),
+    };
+    return [
+	map({
+	    my($base, $version, $rpm) = split(/\s+/, $_);
+	    !$local_rpms->{"$base $version"} && $local_rpms->{$base}
+	        ? $rpm : ();
+	} split(/\n/, ${_http_get("$stream-rpms.txt")})),
+    ];
 }
 
 # _http_get(string uri, string_ref output) : string_ref
