@@ -32,12 +32,19 @@ use LWP::UserAgent ();
 
 C<Bivio::Ext::LWPUserAgent> adds timeouts and proxy handling to LWP::UserAgent.
 
+If you trace this module, also turns on tracing in LWP::Debug.  See
+L<new|"new">.
+
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
+use LWP::Debug ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_HTTP_PROXY);
 Bivio::IO::Config->register({
     http_proxy => undef,
@@ -53,6 +60,8 @@ Bivio::IO::Config->register({
 
 Calls SUPER::new and sets timeout and proxy.
 
+Turns on LWP::Debug if $_TRACE is true for this class.
+
 =cut
 
 sub new {
@@ -67,6 +76,7 @@ sub new {
     elsif ($ENV{http_proxy}) {
         $self->proxy(['http', 'https'], $ENV{http_proxy});
     }
+    LWP::Debug::level("+debug") if $_TRACE;
     return $self;
 }
 
@@ -90,6 +100,19 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_HTTP_PROXY = $cfg->{http_proxy};
     return;
+}
+
+=for html <a name="redirect_ok"></a>
+
+=head2 static redirect_ok() : boolean
+
+Always returns false.  Redirects need to be handled at higher level for cookies
+and logging.
+
+=cut
+
+sub redirect_ok {
+    return 0;
 }
 
 #=PRIVATE METHODS
