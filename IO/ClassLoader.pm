@@ -472,8 +472,7 @@ sub _require {
 		last;
 	    }
 	}
-        # Doesn't generate a stack trace
-	Bivio::Die->throw('NOT_FOUND',
+	Bivio::Die->throw_quietly('NOT_FOUND',
 		message => "Can't locate $file in \@INC"
 		." (\@INC contains: @INC)")
 	    unless $ok;
