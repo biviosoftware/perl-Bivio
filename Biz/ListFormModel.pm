@@ -458,7 +458,8 @@ sub next_row {
 	my($n, $fn) = @{$f}{'name', 'form_name'};
 	my($nr) = $n.$_SEP.$row;
 	$values->{$n} = $values->{$nr};
-	$literals->{$fn} = $literals->{$fn.$_SEP.$row};
+	# No literals for "other" entries
+	$literals->{$fn} = $literals->{$fn.$_SEP.$row} if defined($fn);
 	$errors->{$n} = $errors->{$nr} if $errors;
     }
     return 1;
@@ -589,7 +590,8 @@ sub _clear_row {
     foreach my $f (@{$self->get_info('in_list')}) {
 	my($n, $fn) = @{$f}{'name', 'form_name'};
 	delete($values->{$n});
-	delete($literals->{$fn});
+	# Other fields don't have form names
+	delete($literals->{$fn}) if defined($fn);
 	delete($errors->{$n}) if $errors;
     }
     return;
@@ -624,22 +626,28 @@ sub _execute_init {
 
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
-    my($in_list, $visible_cols, $hidden_cols)
-	    = $sql_support->get('in_list', 'visible', 'hidden');
+
+    # Do not use in_list columns attribute, because it contains "other"
+    # columns as well.
+    my($visible_cols, $hidden_cols) = $sql_support->get('visible', 'hidden');
     my($visible, $hidden) = ([], []);
 
     my(@file_fields);
 #TODO: Cache this
     # Initialize not in_list visible/hidden names
+    my(@in_list);
     foreach my $c (@$visible_cols, @$hidden_cols) {
-	next if $c->{in_list};
+	if ($c->{in_list}) {
+	    push(@in_list, $c);
+	    next;
+	}
 	push(@{$c->{is_visible} ? $visible : $hidden}, $c->{name});
 	push(@file_fields, $c->{name}) if $c->{is_file_field};
     }
 
     # Initialize in_list visible and hidden names
     for (my($row) = $lm->get_result_set_size - 1; $row >= 0; $row--) {
-	foreach my $c (@$in_list) {
+	foreach my $c (@in_list) {
 	    my($nr) = $c->{name}.$_SEP.$row;
 	    push(@{$c->{is_visible} ? $visible : $hidden}, $nr);
 	    push(@file_fields, $nr) if $c->{is_file_field};
