@@ -188,23 +188,20 @@ sub as_string {
     return _get_info($self, undef)->[4];
 }
 
-=for html <a name="compare"></a>
+=for html <a name="compare_defined"></a>
 
-=head2 static compare(any left, any right) : int
+=head2 static compare_defined(any left, any right) : int
 
 Performs the numeric comparison of the enum values.  C<undef> is treated as
-"least".
+"least" (see L<Bivio::Type::compare|Bivio::Type/"compare">).
 
 =cut
 
-sub compare {
+sub compare_defined {
     my(undef, $left, $right) = @_;
-    return defined($left) ? -1 : 1
-	unless defined($left) eq defined($right);
-    return 0
-	unless defined($left);
-    Bivio::IO::Alert->bootstrap_die(ref($left), ' != ', ref($right),
-	': type mismatch') unless ref($left) eq ref($right);
+    Bivio::IO::Alert->bootstrap_die(
+	ref($left), ' != ', ref($right), ': type mismatch'
+    ) unless ref($left) eq ref($right);
     return $left->as_int <=> $right->as_int;
 }
 
@@ -630,25 +627,6 @@ Enumerations which don't want to be continous should override this method.
 
 sub is_continuous {
     return 1;
-}
-
-=for html <a name="is_equal"></a>
-
-=head2 static is_equal(Bivio::Type::Enum left, Bivio::Type::Enum right) : boolean
-
-Are the two values equal?  Uses "==" comparison.  undefs are
-equal.
-
-=cut
-
-sub is_equal {
-    my(undef, $left, $right) = @_;
-    return defined($left) eq defined($right)
-	? defined($left)
-	    ? $left == $right
-		? 1 : 0
-	    : 1
-        : 0;
 }
 
 =for html <a name="is_valid_name"></a>
