@@ -2250,6 +2250,18 @@ my(@_CFG) = (
 #        Bivio::UI::HTML::Club::FileRename
 #	 next=CLUB_COMMUNICATIONS_FILE_READ
 #    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
+        220
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/comparison-performance
+        Bivio::Biz::Model::ComparisonDateSpanForm
+        Bivio::Biz::Model::RealmPerformanceList->execute_load_all
+        Bivio::Biz::Model::ComparisonPerformanceList->execute_load_all
+        Bivio::UI::HTML::Club::ComparisonPerformanceReport
+        next=CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
+    )],
 );
 
 __PACKAGE__->compile(
