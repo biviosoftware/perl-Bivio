@@ -566,24 +566,13 @@ sub parse {
 
 =head2 static setup_facade(string facade, Bivio::Agent::Request req)
 
-Sets up the facade.  We diddle http_host here for lack of
-a better place right now.
-
-TODO: Make this general.  For now it will work fine.
+Sets up the facade.
 
 =cut
 
 sub setup_facade {
     my($proto, $facade, $req) = @_;
     Bivio::UI::Facade->setup_request($facade, $req);
-    $facade = $req->get('facade');
-    return if $facade->get('is_default');
-
-    # Not the default facade
-    my($http_host) = $req->get(qw(http_host));
-    my($uri) = $facade->get('uri');
-    $http_host =~ s/^(?:www\.)?/$uri./;
-    $req->put(http_host => $http_host);
     return;
 }
 
