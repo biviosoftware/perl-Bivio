@@ -89,8 +89,10 @@ my($support) = Bivio::SQL::PropertySupport->new({
 });
 my($load) = $support->unsafe_load({$_ID => $_MIN_ID});
 t(!defined($load));
-my($values) = {gender => Bivio::Type::Gender::FEMALE(),
-   boolean => 0};
+my($values) = {
+   gender => Bivio::Type::Gender::FEMALE(),
+   boolean => 0,
+};
 $support->create($values);
 $load = $support->unsafe_load({$_ID => $_MIN_ID});
 t(defined($load));
@@ -127,5 +129,19 @@ t($load->{dt} eq Bivio::Type::Date->from_unix($time));
 t($load->{gender} == Bivio::Type::Gender::MALE);
 $support->delete($load);
 Bivio::SQL::Connection->commit;
-$load = $support->unsafe_load({$_ID => $_MIN_ID});
-t(!defined($load));
+t(!defined($support->unsafe_load({$_ID => $_MIN_ID})));
+t(!defined($support->unsafe_load({name => undef})));
+$support->create({
+    name => undef,
+    line => 'line',
+    text => 'text',
+    amount => '20.7',
+    boolean => 99,
+    date_time => Bivio::Type::DateTime->from_unix($time),
+    dt => Bivio::Type::Date->from_unix($time),
+    tm => Bivio::Type::Time->from_unix($time),
+    gender => Bivio::Type::Gender::MALE(),
+});
+t(defined($support->unsafe_load({name => undef})));
+
+
