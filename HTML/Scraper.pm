@@ -366,6 +366,8 @@ C<undef>, returns the empty string.
 sub strip_tags_and_whitespace {
     my($proto, $value) = @_;
     return '' unless defined($value);
+    #convert <br> to a space, globally.
+    $value =~ s/<br>/ /ig;
     $value =~ s/<[^>]+>//g;
     # Some sites don't always terminate with a ';'
     $value =~ s/&nbsp;?/ /ig;
