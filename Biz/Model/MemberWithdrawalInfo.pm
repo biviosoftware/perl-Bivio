@@ -273,8 +273,10 @@ sub internal_load {
     $properties->{withdrawal_value} = _add($properties, qw(
             cash_withdrawn instrument_fmv withdrawal_fee
             withdrawal_adjustment));
-    $properties->{unit_value} = $_M->div(
-	    $properties->{withdrawal_value}, $properties->{units_withdrawn});
+    $properties->{unit_value} = $properties->{units_withdrawn} == 0
+	    ? 0
+	    : $_M->div($properties->{withdrawal_value},
+		    $properties->{units_withdrawn});
 
     $properties->{pre_withdrawal_basis} =
 	    $_M->neg($properties->{member_tax_basis});
