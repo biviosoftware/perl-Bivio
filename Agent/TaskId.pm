@@ -1854,11 +1854,16 @@ my(@_CFG) = (
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
 #184
+        # CLUB_MAIL_ADMIN_RECEIVE has permission DOCUMENT_READ
+        # (and not MAIL_WRITE) so that there are no restrictions
+        # on who can send a message to <club>-owner. Even if a club
+        # has restricted mail permissions, any bounces have to be
+        # accepted and must not cause an additional bounce.
     [qw(
         CLUB_MAIL_ADMIN_RECEIVE
         185
         CLUB
-        MAIL_WRITE
+        DOCUMENT_READ
         !
         Bivio::Biz::Action::ClubMailAdmin
         Bivio::UI::Mail::Receive
