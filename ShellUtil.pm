@@ -646,7 +646,7 @@ sub result {
 
 =for html <a name="set_realm_and_user"></a>
 
-=head2 static set_realm_and_user(any realm, any user)
+=head2 static set_realm_and_user(any realm, any user) : self
 
 Sets the I<realm> and I<user> on L<get_request|"get_request">.
 If I<realm> is C<undef>, sets to General realm.
@@ -664,14 +664,14 @@ sub set_realm_and_user {
 
     if (defined($user)) {
 	$req->set_user($user);
-	return;
+	return $self;
     }
 
     # $realm may be a string (name or id), so must get to check type
     $self->set_user_to_first_admin
 	    unless $req->get('auth_realm')->get_type
 		    == Bivio::Auth::RealmType::GENERAL();
-    return;
+    return $self;
 }
 
 =for html <a name="set_user_to_first_admin"></a>
