@@ -142,8 +142,11 @@ sub new {
     $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
 
     # Cache as much of the statements as possible
+    $attrs->{select_columns} = [map {
+	$columns->{$_};
+    } @$column_names];
     $attrs->{select} = 'select '.join (',', map {
-	$columns->{$_}->{type}->from_sql_value($_)
+	$columns->{$_}->{type}->from_sql_value($_);
     } @$column_names)." from $table_name where ";
     $attrs->{insert} = "insert into $table_name ("
 	    .join(',', @$column_names).') values ('
@@ -258,6 +261,91 @@ sub delete {
     return $rows ? 1 : 0;
 }
 
+=for html <a name="iterate_end"></a>
+
+=head2 iterate_end(ref iterator)
+
+Terminates the iterator.
+
+=cut
+
+sub iterate_end {
+    my($self, $iterator) = @_;
+    $iterator->finish;
+    return;
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next {
+    my($self, $iterator, $row, $converter) = @_;
+    my($start_time) = Bivio::Util::gettimeofday();
+    my($r) = $iterator->fetchrow_arrayref;
+    Bivio::SQL::Connection->increment_db_time($start_time);
+    unless ($r) {
+	# End
+	%$row = ();
+	$iterator->finish;
+	return 0;
+    }
+
+    # Convert values
+    my($attrs) = $self->internal_get;
+    my($cols) = $attrs->{select_columns};
+    for (my $i = $#$r; $i >= 0; $i--) {
+	my($c) = $cols->[$i];
+	my($t) = $c->{type};
+	my($v) = $t->from_sql_column($r->[$i]);
+	$row->{$c->{name}} = $converter ? $t->$converter($v) : $v;
+    }
+    return 1;
+}
+
+=for html <a name="iterate_start></a>
+
+=head2 iterate_start(ref die, string auth_id, string order_by) : ref
+
+Returns a handle which can be used to iterate the rows with
+L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+I<auth_id> must be the auth_id for the table.
+
+I<order_by> is an SQL C<ORDER BY> clause without the keywords
+C<ORDER BY>.
+
+=cut
+
+sub iterate_start {
+    my($self, $die, $auth_id, $order_by) = @_;
+    my($attrs) = $self->internal_get;
+    $die->die('DIE', 'auth_id not supplied') unless $auth_id;
+    $die->die('DIE', 'Model does not have auth_id') unless $attrs->{auth_id};
+
+    my($columns) = $attrs->{columns};
+    my(@params);
+    my($sql) =  $attrs->{select}.$attrs->{auth_id}->{sql_name}
+	    .'='.$attrs->{auth_id}->{sql_pos_param}
+	    .' order by '.$order_by;
+    push(@params, $attrs->{auth_id}->{type}->to_sql_param($auth_id));
+    my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
+	   $attrs->{has_blob});
+    return $iterator;
+}
+
 =for html <a name="unsafe_load"></a>
 
 =head2 unsafe_load(hash_ref query) : hash_ref
@@ -297,8 +385,8 @@ sub unsafe_load {
 	my($columns) = $attrs->{columns};
 	my($i) = 0;
 	$values = {map {
-	    ($_, $columns->{$_}->{type}->from_sql_column($row->[$i++]));
-	} @{$attrs->{column_names}}};
+	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+	} @{$attrs->{select_columns}}};
     }
     $statement->finish();
     return $values;

@@ -193,6 +193,58 @@ sub internal_initialize_sql_support {
     return $sql_support;
 }
 
+=for html <a name="iterate_end"></a>
+
+=head2 iterate_end(ref iterator)
+
+Terminates the iterator.  See L<iterate_start|"iterate_start">.
+
+=cut
+
+sub iterate_end {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_end(@_);
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_next(@_);
+}
+
+=for html <a name="iterate_start></a>
+
+=head2 iterate_start(string order_by) : ref
+
+Returns a handle which can be used to iterate the rows with
+L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+I<order_by> is an SQL C<ORDER BY> clause without the keywords
+C<ORDER BY>.
+
+=cut
+
+sub iterate_start {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_start(
+	    $self, $self->get_request->get('auth_id'), @_);
+}
+
 =for html <a name="load"></a>
 
 =head2 load(hash query)
