@@ -989,6 +989,8 @@ If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
 B<Does not use the query from the request.>  Does force I<auth_id>,
 however.
 
+Returns I<self>.
+
 =cut
 
 sub load_all {
@@ -997,7 +999,7 @@ sub load_all {
     $query->put(count => $self->LOAD_ALL_SIZE);
     _unauth_load($self, $query);
     _assert_all($self);
-    return;
+    return $self;
 }
 
 =for html <a name="load_page"></a>
