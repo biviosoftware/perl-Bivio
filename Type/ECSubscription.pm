@@ -39,7 +39,7 @@ a realm can be subscribed to. The current choices are:
 
 =item ACCOUNT_KEEPER
 
-=item BASIC_SERVICE
+=item CLUB_ACCOUNTING
 
 =item FREE_TRIAL
 
@@ -71,7 +71,7 @@ __PACKAGE__->compile([
 	3,
         'AccountKeeper',
     ],
-    BASIC_SERVICE => [
+    CLUB_ACCOUNTING => [
 	4,
 	'Club Accounting',
     ],
@@ -95,7 +95,7 @@ my(%_UPGRADE_INDEX);
 	FREE_TRIAL
 	PREMIUM_SUPPORT
 	TAX_SEASON
-	BASIC_SERVICE
+	CLUB_ACCOUNTING
 	ACCOUNT_SYNC
 	ACCOUNT_KEEPER
     );
