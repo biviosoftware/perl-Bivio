@@ -72,6 +72,13 @@ Sort method to call.  Enums passed in I<left> and I<right> params,
 just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
 a sub call, not a method call, so no method or self is passed.
 
+=item event_handler : Bivio::UI::HTML::Widget []
+
+If set, this widget will be initialized as a child and must
+support a method C<get_html_field_attributes> which returns a
+string to be inserted in this fields declaration.
+I<event_handler> will be rendered before this field.
+
 =item field : string (required)
 
 Name of the form field.
@@ -112,6 +119,20 @@ use Bivio::Type::Enum;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my(@_ATTRS) = qw(
+    auto_submit
+    auto_submit
+    choices
+    disabled
+    enum_sort
+    event_handler
+    field
+    form_model
+    list_display_field
+    list_id_field
+    show_unknown
+    size
+);
 
 =head1 FACTORIES
 
@@ -134,6 +155,19 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="accepts_attribute"></a>
+
+=head2 static accepts_attribute(string attr) : boolean
+
+Does the widget accept this attribute?
+
+=cut
+
+sub accepts_attribute {
+    my(undef, $attr) = @_;
+    return grep($_ eq $attr, @_ATTRS);
+}
 
 =for html <a name="initialize"></a>
 
@@ -177,6 +211,13 @@ sub initialize {
 	Carp::croak(ref($choices), ': unknown choices type (not a set)');
     }
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
+
+    # Initialize handler, if any
+    $fields->{handler} = $self->unsafe_get('event_handler');
+    if ($fields->{handler}) {
+	$fields->{handler}->put(parent => $self)->initialize;
+    }
+
     return;
 }
 
@@ -197,7 +238,11 @@ sub render {
     my($field) = $fields->{field};
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<select name=';
+	$fields->{prefix} = '<select ';
+	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
+		$field, $source) if $fields->{handler};
+	$fields->{prefix} .= ' name=';
+
 	$fields->{initialized} = 1;
     }
 
@@ -228,6 +273,11 @@ sub render {
     }
     # No newline, don't know what follows.
     $$buffer .= '</select>'.$s;
+
+    # Handler is rendered after, because it probably needs to reference the
+    # field.
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
+
     return;
 }
 
