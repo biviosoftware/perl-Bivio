@@ -160,7 +160,6 @@ database requests. Invoking this method clears the counter.
 =cut
 
 sub get_db_time {
-    return 0 if ! $_TRACE;
     my($result) = $_DB_TIME;
     $_DB_TIME = 0;
     return $result;
