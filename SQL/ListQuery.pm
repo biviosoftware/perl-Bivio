@@ -359,17 +359,17 @@ sub format_uri_for_this_child {
 
 =for html <a name="format_uri_for_this_page"></a>
 
-=head2 format_uri_for_this_page(Bivio::SQL::Support support) : string
+=head2 format_uri_for_this_page(Bivio::SQL::Support support, hash_ref new_attrs) : string
 
 Generates the query string (URL-encoded) for this page.
+I<new_attrs> can be passed in to extend or override existing attributes.
 
 =cut
 
 sub format_uri_for_this_page {
-    my($self, $support) = @_;
-    my(%attrs) = %{$self->internal_get()};
+    my($self, $support, $new_attrs) = @_;
+    my(%attrs) = (%{$self->internal_get()}, %$new_attrs);
     $attrs{this} = undef;
-    $attrs{page_number} = $attrs{page_number};
     return _format_uri(\%attrs, $support);
 }
 
@@ -653,7 +653,7 @@ sub _parse_order_by {
 	my($index, $dir) = ($1, $2);
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
-	push(@$res, $order_by->[$index], $dir eq 'a');
+	push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
     }
 
     # Add in default order_by values not explicitly listed.
