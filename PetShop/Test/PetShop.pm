@@ -30,7 +30,8 @@ use Bivio::Test::Language::HTTP;
 
 =head1 DESCRIPTION
 
-C<Bivio::PetShop::Test::PetShop>
+C<Bivio::PetShop::Test::PetShop> tracks the shopping cart in an internal
+field.  L<verify_cart|"verify_cart"> uses this to test the results.
 
 =cut
 
@@ -39,6 +40,7 @@ use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_A) = 'Bivio::Type::Amount';
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 METHODS
 
@@ -55,16 +57,14 @@ of the cart.
 
 sub add_to_cart {
     my($self) = @_;
-    my($cart) = $self->unsafe_get('petshop_cart');
-    $self->put(petshop_cart => $cart = {})
-	unless $cart;
+    my($fields) = $self->[$_IDI] ||= {};
     my($row) = $self->get_html_parser->get_nested('Tables', 'item', 'rows', 0);
-    ($cart->{$row->[0]} ||= {
+    $self->submit_form(add_to_cart => {});
+    (($fields->{cart} ||= {})->{$row->[0]} ||= {
 	name => $row->[0],
 	quantity => 0,
 	price => $row->[1],
     })->{quantity}++;
-    $self->submit_form(add_to_cart => {});
     return;
 }
 
@@ -79,6 +79,7 @@ Logs in as demo user, if need be.
 
 sub checkout_as_demo {
     my($self) = @_;
+    my($fields) = $self->[$_IDI];
     $self->login_as_demo;
     $self->follow_link('Cart');
     $self->verify_cart();
@@ -91,7 +92,7 @@ sub checkout_as_demo {
     $self->verify_text('Shipping Address');
     $self->submit_form('continue');
 #   $self->verify_order();
-    $self->delete('petshop_cart');
+    $self->delete($fields->{cart});
     return;
 }
 
@@ -114,6 +115,47 @@ sub login_as_demo {
     return;
 }
 
+=for html <a name="remove_from_cart"></a>
+
+=head2 remove_from_cart(string item_name)
+
+Removes I<item_name> from cart.
+
+=cut
+
+sub remove_from_cart {
+    my($self, $item_name) = @_;
+    my($fields) = $self->[$_IDI];
+    delete($fields->{cart}->{
+	_find_in_cart($self, $item_name, sub {
+	    my($index) = @_;
+	    $self->submit_form("remove_$index");
+	    return;
+	})->{name}
+    });
+    return;
+}
+
+=for html <a name="update_cart"></a>
+
+=head2 update_cart(string item_name, int quantity)
+
+Sets I<quantity> for I<item_name> in the cart.
+
+=cut
+
+sub update_cart {
+    my($self, $item_name, $quantity) = @_;
+    _find_in_cart($self, $item_name, sub {
+	 my($index) = @_;
+	 $self->submit_form(update_cart => {
+	     "Quantity_$index" => $quantity,
+	 });
+	 return;
+    })->{quantity} = $quantity;
+    return;
+}
+
 =for html <a name="verify_cart"></a>
 
 =head2 verify_cart()
@@ -125,20 +167,21 @@ If no arguments supplied, calls L<verify_cart_is_empty|"verify_cart_is_empty">.
 
 sub verify_cart {
     my($self) = @_;
-    my($cart) = $self->unsafe_get('petshop_cart') || {};
+    my($fields) = $self->[$_IDI];
     return $self->verify_cart_is_empty
-	unless %$cart;
+	unless $fields->{cart} && %{$fields->{cart}};
     # Tables are named by their first column by default
     my($t) = _cart($self)->get_html_parser->get('Tables')
 	->unsafe_get('Remove');
-    Bivio::Die->die('cart is empty, expecting items: ', $cart)
+    Bivio::Die->die('cart is empty, expecting items: ', $fields->{cart})
 	unless $t;
     my($rows) = [@{$t->{rows}}];
     my($i) = 0;
     my($total) = 0;
-    foreach my $item (sort({$a->{name} cmp $b->{name}} values(%$cart))) {
+    foreach my $item (sort({$a->{name} cmp $b->{name}}
+	values(%{$fields->{cart}}))) {
 	my($r) = shift(@$rows);
-	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
+	Bivio::Die->die("too few rows ($i); missing items: ", $fields->{cart})
 	    unless $r;
 	Bivio::Die->die("missing item: ", $item)
 	    unless $r->[2] eq $item->{name};
@@ -150,7 +193,7 @@ sub verify_cart {
 	$total = $_A->add($total, $t);
     }
     continue {
-	delete($cart->{$item->{name}});
+	delete($fields->{cart}->{$item->{name}});
 	$i++;
     }
     Bivio::Die->die("too many rows (expected $i); extra items: ", $rows)
@@ -187,6 +230,29 @@ sub _cart {
 	unless $self->get_html_parser->get_nested('Cleaner', 'html')
 	    =~ /Shopping Cart:/;
     return $self;
+}
+
+# _find_in_cart(self, string item_name, code_ref op) : hash_ref
+#
+# Returns item in internal cart.
+#
+sub _find_in_cart {
+    my($self, $item_name, $op) = @_;
+    my($fields) = $self->[$_IDI];
+    my($t) = _cart($self)->get_html_parser->get('Tables')
+	->unsafe_get('Remove');
+    my($i) = -1;
+    foreach my $row (@{$t->{rows}}) {
+	$i++;
+	next unless $row->[2] eq $item_name;
+	$op->($i);
+	die('no items in internal cart')
+	    unless $fields->{cart} && %{$fields->{cart}};
+	return $fields->{cart}->{$item_name}
+	    || die(qq{item "$item_name" not in internal cart});
+    }
+    die(qq{item "$item_name" not in cart});
+    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT
