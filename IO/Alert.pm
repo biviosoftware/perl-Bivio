@@ -36,7 +36,8 @@ redefinitions here.
 
 #=VARIABLES
 my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER,
-	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID);
+	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID,
+       $_STACK_TRACE_DIE, $_STACK_TRACE_WARN);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
@@ -45,10 +46,13 @@ BEGIN {
     $_DEFAULT_MAX_ARG_LENGTH = 128;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_WANT_PID = 0;
+    $_STACK_TRACE_DIE = 0;
+    $_STACK_TRACE_WARN = 0;
 }
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Carp ();
 
 #=INITIALIZATION
 # Normalize error messages
@@ -56,7 +60,9 @@ $SIG{__DIE__} = \&_initial_die_handler;
 $SIG{__WARN__} = \&_warn_handler;
 Bivio::IO::Config->register({
     'intercept_die' => 0,
+    'stack_trace_die' => 0,
     'intercept_warn' => 1,
+    'stack_trace_warn' => 0,
     'log_facility' => 'daemon',
     'log_name' => $0,
     'max_arg_length' => 128,
@@ -98,6 +104,16 @@ If writing to C<Sys::Syslog>, the name of the server.
 Maximum length of warning message components, i.e. arguments to
 L<die|"die"> and L<warn|"warn">.
 
+=item stack_trace_die : boolean [false]
+
+If true, implies B<intercept_die> is true and will print a stack trace
+on L<die|"die">.
+
+=item stack_trace_warn : boolean [false]
+
+If true, implies B<intercept_warn> is true and will print a stack trace
+on L<warn|"warn">.
+
 =item want_stderr : boolean [false]
 
 If true, always writes to C<STDERR>.  Otherwise, determines where to write as
@@ -134,8 +150,12 @@ If not writing to C<Sys::Syslog>, include the pid in the log messages.
 sub configure {
     my(undef, $cfg) = @_;
     $_MAX_ARG_LENGTH = $cfg->{max_arg_length};
-    $SIG{__WARN__} = $cfg->{intercept_warn} ? \&_warn_handler : '';
-    $SIG{__DIE__} = $cfg->{intercept_die} ? \&_die_handler : '';
+    $_STACK_TRACE_DIE = $cfg->{stack_trace_die};
+    $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
+    $SIG{__DIE__} = $cfg->{intercept_die} || $cfg->{stack_trace_die}
+	    ? \&_die_handler : '';
+    $SIG{__WARN__} = $cfg->{intercept_warn} || $cfg->{stack_trace_warn}
+	    ? \&_warn_handler : '';
     if ($cfg->{want_stderr}) {
 	$_LOGGER = \&_log_stderr;
     }
@@ -264,6 +284,7 @@ sub _call_format {
 
 sub _die_handler {
     &_warn_handler(@_);
+    $_STACK_TRACE_DIE && &_trace_stack();
     CORE::die("\n");
 }
 
@@ -320,14 +341,16 @@ sub _initial_warn_handler {
 }
 
 sub _log_apache {
-    my($severity, $msg) =@_;
+    my($severity, $msg) = @_;
 #RJN: How to log a "notice" from mod_perl?
     if (Apache->request) {
 	Apache->request->log_error($msg);
     }
     else {
-#pjm: something has gone wrong at httpd startup, need something better
-	die($msg);
+	# something has gone wrong at httpd startup, pick
+	# another output medium. (DO NOT CALL die, because
+	# will recurse if intercept_die is true.
+	&_log_stderr(@_);
     }
 }
 
@@ -341,11 +364,20 @@ sub _log_stderr {
     print STDERR $msg;
 }
 
+sub _trace_stack {
+#RJN: reaching inside Carp isn't great.  Also copying code from &warn
+#     is not pretty either.
+    # Doesn't trim stack trace, so may be really long.  Have an
+    # absolute limit?
+    &$_LOGGER('err', Carp::longmess(''));
+}
+
 sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
     $msg =~ s/$_PERL_MSG_AT_LINE//os;
     Bivio::IO::Alert->warn($msg);
+    $_STACK_TRACE_WARN && &_trace_stack();
 }
 
 =head1 COPYRIGHT
