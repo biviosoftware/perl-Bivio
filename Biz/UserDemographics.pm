@@ -35,6 +35,8 @@ C<Bivio::Biz::UserDemographics>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Error;
+use Bivio::Biz::SqlSupport;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
@@ -42,7 +44,13 @@ use Bivio::IO::Trace;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::IO::Config->register;
+Bivio::IO::Config->register({
+    model_name => Bivio::IO::Config->REQUIRED,
+    property_cfg => Bivio::IO::Config->REQUIRED,
+
+    table_name => Bivio::IO::Config->REQUIRED,
+    sql_field_map => Bivio::IO::Config->REQUIRED
+});
 my($_CLASS_CFG);
 my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new();
 
@@ -66,7 +74,6 @@ sub new {
     $self->{$_PACKAGE} = {
     };
     return $self;
-
 }
 
 =head1 METHODS
