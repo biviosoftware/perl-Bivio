@@ -66,7 +66,7 @@ Bivio::Test->new('Bivio::Biz::Model')->unit([
 	    [] => 0,
 	],
 	iterate_end => undef,
-	iterate_map => [
+	map_iterate => [
 	    [undef, 'name desc'] => [$_categories],
 	    # Must be closures, because depends on deferred eval of
 	    # previous operations.

@@ -554,52 +554,6 @@ sub iterate_end {
     return;
 }
 
-=for html <a name="iterate_map"></a>
-
-=head2 iterate_map(code_ref iterate_map_handler, any other_args, ...) : array_ref
-
-Calls L<iterate_start|"iterate_start"> to start the iteration with
-I<iterate_args>.
-For each row, calls L<iterate_next_and_load|"iterate_next_and_load">
-followed by L<iterate_map_handler|"iterate_map_handler">.
-Terminates the iteration with L<iterate_end|"iterate_end">.
-
-Returns the aggregated result of L<iterate_map_handler|"iterate_map_handler">
-as an array_ref.
-
-If I<iterate_map_handler> is C<undef>, the default handler simply returns all
-the rows.
-
-=cut
-
-sub iterate_map {
-    my($self, $iterate_map_handler) = (shift, shift);
-    my($res) = [];
-    $self->iterate_start(@_);
-    $iterate_map_handler ||= sub {
-	return $self->get_shallow_copy;
-    };
-    while ($self->iterate_next_and_load) {
-	push(@$res, $iterate_map_handler->());
-    }
-    $self->iterate_end;
-    return $res;
-}
-
-=for html <a name="iterate_map_handler"></a>
-
-=head2 abstract iterate_map_handler() : boolean
-
-Called by L<iterate_map|"iterate_map"> for each row of the iteration.  Returns
-value(s) which are pushed onto the resultant map by
-L<iterate_map|"iterate_map">.
-
-=cut
-
-$_ = <<'}'; # emacs
-sub iterate_map_handler {
-}
-
 =for html <a name="iterate_next"></a>
 
 =head2 iterate_next(hash_ref row) : boolean
@@ -631,6 +585,52 @@ in the model, so the normal model queries work.
 
 $_ = <<'}'; # emacs
 sub iterate_next_and_load {
+}
+
+=for html <a name="map_iterate"></a>
+
+=head2 map_iterate(code_ref map_iterate_handler, any other_args, ...) : array_ref
+
+Calls L<iterate_start|"iterate_start"> to start the iteration with
+I<iterate_args>.
+For each row, calls L<iterate_next_and_load|"iterate_next_and_load">
+followed by L<map_iterate_handler|"map_iterate_handler">.
+Terminates the iteration with L<iterate_end|"iterate_end">.
+
+Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
+as an array_ref.
+
+If I<map_iterate_handler> is C<undef>, the default handler simply returns all
+the rows.
+
+=cut
+
+sub map_iterate {
+    my($self, $map_iterate_handler) = (shift, shift);
+    my($res) = [];
+    $self->iterate_start(@_);
+    $map_iterate_handler ||= sub {
+	return $self->get_shallow_copy;
+    };
+    while ($self->iterate_next_and_load) {
+	push(@$res, $map_iterate_handler->($self));
+    }
+    $self->iterate_end;
+    return $res;
+}
+
+=for html <a name="map_iterate_handler"></a>
+
+=head2 abstract map_iterate_handler(Bivio::Biz::Model self) : boolean
+
+Called by L<map_iterate|"map_iterate"> for each row of the iteration.  Passed
+the model which is being iterated. Returns value(s) which are pushed onto the
+resultant map by L<map_iterate|"map_iterate">.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub map_iterate_handler {
 }
 
 =for html <a name="merge_initialize_info"></a>
