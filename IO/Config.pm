@@ -42,7 +42,7 @@ a configuration file as follows:
 
 =item 1.
 
-If running setuid, setgid, or as root, skip to step 3.
+If running setuid or setgid, skip to step 3.
 
 =item 2.
 
@@ -96,7 +96,7 @@ called L<register|"register">.
 
 =item $BCONF
 
-Name of configuration file if not running setuid, setgid, or as root.
+Name of configuration file if not running setuid or setgid.
 
 =back
 
@@ -106,8 +106,8 @@ Name of configuration file if not running setuid, setgid, or as root.
 
 =item /etc/bivio.bconf
 
-Name of configuration used if the programming is running setuid, setgid, or as
-root, or the file identified by C<$BCONF> (or its default) is not found.
+Name of configuration used if the program is running setuid or setgid
+or the file identified by C<$BCONF> (or its default) is not found.
 
 =back
 
@@ -468,14 +468,11 @@ sub _initialize {
     # On failure, we have no configuration.
     $_ACTUAL = {};
     my($not_setuid) = $< == $> && $( == $);
-#TODO: Port to other operating systems
-    my($not_root) = $^O eq 'MSWin32' || $> != 0;
-    # If we are setuid or setgid or as root, then don't _initialize from
+    # If we are setuid or setgid, then don't _initialize from
     # environment variables or files in the current directory.
     # /etc/bivio.bconf is last resort if the file doesn't exist.
     my($file) = $ENV{'BCONF'};
-    unless (defined($file) && -f $file && -r $file
-	    && $not_root && $not_setuid) {
+    unless (defined($file) && -f $file && -r $file && $not_setuid) {
 	$file = '/etc/bivio.bconf';
     }
     if (defined($file)) {
