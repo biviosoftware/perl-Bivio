@@ -326,9 +326,17 @@ sub validate {
     unless ($self->in_error) {
 
 	if ($self->get_request->get('form')->{stay_on_page}) {
-	    # see overridden in_error()
-	    $self->internal_put_error(stay_on_page =>
-		    Bivio::TypeError::UNKNOWN());
+
+	    # automatically advance if there is only one lot, or if
+	    # the 'average cost' method is used
+
+	    my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
+	    unless ($realm_inst->get('average_cost_method')
+		    || $lot_list->get_result_set_size == 1) {
+		# see overridden in_error()
+		$self->internal_put_error(stay_on_page =>
+			Bivio::TypeError::UNKNOWN());
+	    }
 	}
 	elsif ($properties->{'RealmInstrumentEntry.count'} != $sum) {
 	    $self->internal_put_error('', Bivio::TypeError::INVALID_SUM());
