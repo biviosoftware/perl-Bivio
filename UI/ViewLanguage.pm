@@ -110,8 +110,10 @@ sub AUTOLOAD {
     }
     if ($method =~ /^vs_/) {
 	my($vs) = $view->ancestral_get('view_shortcuts', undef);
-	_die("view_shortcuts() must be called before $method") unless $vs;
-	_die("$method is not implemented by $vs") unless $vs->can($method);
+	_die("view_shortcuts() or view_parent() must be called before $method")
+	    unless $vs;
+	_die("$method is not implemented by $vs or its superclass(es)")
+	    unless $vs->can($method);
 	return $vs->$method(@args);
     }
     # This is here for ViewShortcuts->vs_call.
