@@ -219,8 +219,8 @@ sub internal_load_rows {
 	return $r unless $r == 0;
 
 	# description
-	$r = $a->{'RealmTransaction.remark'}
-	cmp $b->{'RealmTransaction.remark'};
+	$r = ($a->{'RealmTransaction.remark'} || '')
+	cmp ($b->{'RealmTransaction.remark'} || '');
 	return $r;
     } @$rows);
 
