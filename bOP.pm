@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Text.handler is dynamically rendered
+  * Bivio::UI::HTML::Widget::Title->new accepts value as first arg
+  * Bivio::UI::Icon->format_html_attribute returns icon name in HTML attr
 
   Revision 1.20  2002/07/26 21:58:48  nagler
   * Bivio::Delegate::PersistentCookie needs to use $r
