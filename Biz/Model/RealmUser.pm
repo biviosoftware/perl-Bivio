@@ -37,6 +37,7 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::Type::RealmName;
 # Circular import
 # use Bivio::Data::EW::ClubImporter;
 
@@ -62,6 +63,15 @@ Bivio::Auth::RoleSet->set(\$_MEMBER_OR_WITHDRAWN_ROLES,
 	Bivio::Auth::Role::ACCOUNTANT(),
 	Bivio::Auth::Role::ADMINISTRATOR(),
        );
+my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
+	    FROM realm_owner_t, realm_user_t
+	    WHERE realm_user_t.realm_id = ?
+	    AND user_id != ?
+	    AND role = "
+	    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
+	    AND realm_user_t.user_id = realm_owner_t.realm_id
+	    AND realm_owner_t.name NOT LIKE '"
+	    .Bivio::Type::RealmName::SHADOW_PREFIX()."\%'";
 
 =head1 CONSTANTS
 
@@ -95,75 +105,6 @@ sub MEMBER_ROLES {
 =head1 METHODS
 
 =cut
-
-=for html <a name="take_offline"></a>
-
-=head2 take_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
-
-Creates an off-line version of the RealmUser and moves all associated
-records to the offline version. Returns the off-line realm user.
-
-Dies if the user is not a member unless I<any_user_ok> is true.
-
-=cut
-
-sub take_offline {
-    my($self, $any_user_ok) = @_;
-    my($req) = $self->get_request;
-
-    # Sanity check...how many admins do we have?  Did user hack query?
-    my($role) = $self->get('role');
-    my($realm_admin_list) = Bivio::Biz::Model::RealmAdminList->new($req);
-    $realm_admin_list->load_all();
-    $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
-	    "Cannot delete sole ADMINISTRATOR")
-	    if ($role == Bivio::Auth::Role::ADMINISTRATOR()
-		    && $realm_admin_list->get_result_set_size() < 2);
-    # Can't take offline if guest
-    $self->die('User ', $self->get('user_id'), ' is ',
-	    $role, ' but must be a MEMBER/ADMIN of ', $self->get('realm_id'))
-	    unless $any_user_ok
-		    || $role == Bivio::Auth::Role::MEMBER()
-		    || $role == Bivio::Auth::Role::ADMINISTRATOR();
-
-    # create an off-line copy and move all associated records
-    my($user) = Bivio::Biz::Model::User->new($req)
-	    ->unauth_load_or_die(user_id => $self->get('user_id'));
-    my($address) = Bivio::Biz::Model->new($req, 'Address')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'),
-		    location => Bivio::Type::Location::HOME());
-    my($phone) = Bivio::Biz::Model->new($req, 'Phone')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'),
-		    location => Bivio::Type::Location::HOME());
-    my($tax_id) = Bivio::Biz::Model->new($req, 'TaxId')
-	    ->unauth_load_or_die(
-		    realm_id => $user->get('user_id'));
-
-    my($offline_realm_user) = Bivio::Data::EW::ClubImporter->new($req)
-	    ->create_user({
-		first_name => $user->get('first_name'),
-		middle_name => $user->get('middle_name'),
-		last_name => $user->get('last_name'),
-		active => 0,
-		street1 => $address->get('street1'),
-		city => $address->get('city'),
-		state => $address->get('state'),
-		zip => $address->get('zip'),
-		tax_id => $tax_id->get('tax_id'),
-		home_phone => $phone->get('phone'),
-	    }, {
-		want_address => 1,
-		want_phone => 1,
-		want_ssn => 1,
-	    });
-
-    # include the member's k-1
-    $self->change_ownership($offline_realm_user->get('user_id'), 1);
-
-    return $offline_realm_user;
-}
 
 =for html <a name="can_auth_user_edit"></a>
 
@@ -217,7 +158,7 @@ sub cascade_delete {
 Changes all tables owned in the current realm by this user to the specified
 user id.
 
-If 'include_k1' is true, then the member's TaxK1 record and member
+If I<include_k1> is true, then the member's TaxK1 record and member
 allocations will be moved.
 
 =cut
@@ -325,24 +266,18 @@ sub execute_auth_user {
 
 =head2 has_transactions() : boolean
 
+=head2 static has_transactions(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
 Returns 1 if the user has accounting transactions within the realm.
 
 =cut
 
 sub has_transactions {
-    my($self) = @_;
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT COUNT(*)
+    return _cache_in_request(@_,
+	    'SELECT COUNT(*)
             FROM member_entry_t
             WHERE realm_id=?
-            AND user_id=?',
-	    [$self->get('realm_id', 'user_id')]);
-    my($count) = 0;
-    while (my $row = $sth->fetchrow_arrayref) {
-	$count = $row->[0] || 0;
-    }
-    return $count ? 1 : 0;
+            AND user_id=?');
 }
 
 =for html <a name="internal_initialize"></a>
@@ -375,7 +310,7 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="can_auth_user_edit"></a>
+=for html <a name="is_auth_user"></a>
 
 =head2 is_auth_user() : boolean
 
@@ -393,7 +328,7 @@ sub is_auth_user {
     my($auth_user) = $list_model->get_request->get('auth_user');
     return 0 unless $auth_user;
     return $list_model->get($model_prefix.'user_id')
-	    == $auth_user->get('realm_id') ? 1 : 0;
+	    eq $auth_user->get('realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_guest"></a>
@@ -486,6 +421,91 @@ sub is_member_or_withdrawn {
 	    $list_model->get($model_prefix.'role'));
 }
 
+=for html <a name="is_sole_admin"></a>
+
+=head2 is_sole_admin() : boolean
+
+=head2 static is_sole_admin(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if this is the only online ADMINISTRATOR left in the realm.
+
+=cut
+
+sub is_sole_admin {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    # Check to see if an admin at all.  This avoids a db query for most
+    # realm users.
+    return 0 unless $list_model->get($model_prefix.'role')
+	    == Bivio::Auth::Role::ADMINISTRATOR();
+    return _cache_in_request(@_, $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
+}
+
+=for html <a name="take_offline"></a>
+
+=head2 take_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
+
+Creates an off-line version of the RealmUser and moves all associated
+records to the offline version. Returns the off-line realm user.
+
+Dies if the user is not a member unless I<any_user_ok> is true.
+
+=cut
+
+sub take_offline {
+    my($self, $any_user_ok) = @_;
+    my($req) = $self->get_request;
+
+    # Sanity check...how many admins do we have?  Did user hack query?
+    my($role) = $self->get('role');
+    $self->throw_die('CORRUPT_QUERY', 'cannot delete sole ADMINISTRATOR')
+	    if $role == Bivio::Auth::Role::ADMINISTRATOR()
+		    && Bivio::Biz::Model::RealmAdminList->is_only_admin(
+			    $self->get('user_id'), $req);
+    # Can't take offline if guest
+    $self->throw_die('CORRUPT_QUERY', 'cannot delete non-member')
+	    unless $any_user_ok || $self->is_member;
+
+    # create an off-line copy and move all associated records
+    my($user) = Bivio::Biz::Model::User->new($req)
+	    ->unauth_load_or_die(user_id => $self->get('user_id'));
+    my($address) = Bivio::Biz::Model->new($req, 'Address')
+	    ->unauth_load_or_die(
+		    realm_id => $user->get('user_id'),
+		    location => Bivio::Type::Location::HOME());
+    my($phone) = Bivio::Biz::Model->new($req, 'Phone')
+	    ->unauth_load_or_die(
+		    realm_id => $user->get('user_id'),
+		    location => Bivio::Type::Location::HOME());
+    my($tax_id) = Bivio::Biz::Model->new($req, 'TaxId')
+	    ->unauth_load_or_die(
+		    realm_id => $user->get('user_id'));
+
+    my($offline_realm_user) = Bivio::Data::EW::ClubImporter->new($req)
+	    ->create_user({
+		first_name => $user->get('first_name'),
+		middle_name => $user->get('middle_name'),
+		last_name => $user->get('last_name'),
+		active => 0,
+		street1 => $address->get('street1'),
+		city => $address->get('city'),
+		state => $address->get('state'),
+		zip => $address->get('zip'),
+		tax_id => $tax_id->get('tax_id'),
+		home_phone => $phone->get('phone'),
+	    }, {
+		want_address => 1,
+		want_phone => 1,
+		want_ssn => 1,
+	    });
+
+    # include the member's k-1
+    $self->change_ownership($offline_realm_user->get('user_id'), 1);
+
+    return $offline_realm_user;
+}
+
 =for html <a name="unauth_load_user_or_die"></a>
 
 =head2 unauth_load_user_or_die() : Bivio::Biz::Model::User
@@ -501,6 +521,30 @@ sub unauth_load_user_or_die {
 }
 
 #=PRIVATE METHODS
+
+# _cache_in_request(self, string query) : boolean
+# _cache_in_request(proto, Bivio::Biz::Model list_model, string model_prefix, string query) : boolean
+#
+# Computes the boolean $query, unless it already is on the request.
+# Must accept a [realm, user] as params.
+#
+sub _cache_in_request {
+    my($self, $list_model, $model_prefix, $query) = @_;
+    unless ($query) {
+	$query = $list_model;
+	$model_prefix = '';
+	$list_model = $self;
+    }
+    my($req) = $list_model->get_request;
+    my($realm, $user) = $list_model->get(
+	    $model_prefix.'realm_id', $model_prefix.'user_id');
+    return $req->get_if_exists_else_put(
+	    (caller(1))[3].$realm.'-'.$user =>
+	    sub {
+		return Bivio::SQL::Connection->execute_one_row(
+			$query, [$realm, $user])->[0] ? 1 : 0;
+	    });
+}
 
 =head1 COPYRIGHT
 
