@@ -264,8 +264,8 @@ bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
 or I<list_uri> depending on the type.
 
 If the type is I<THIS_PATH>, the list must have a I<path_info> attribute
-which doesn't begin with a leading slash.  See
-L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>
+which doesn't begin with a leading slash and is already URI-escaped.
+See L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>
 for an example.
 
 =cut
