@@ -498,9 +498,6 @@ Returns the where clause and params associated as the result of a
 =cut
 
 sub internal_pre_load {
-    # Returns empty where when user passes in search string and
-    # search string is not supported.
-#TODO: throw corrupt_query?
     return '';
 }
 
