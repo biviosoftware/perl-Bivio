@@ -121,7 +121,7 @@ sub new {
     Carp::croak('too many auth_id fields')
 		if int(@{$attrs->{auth_id}}) > 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
-
+    $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
 
     # Cache as much of the statements as possible
     $attrs->{select} = 'select '.join (',', map {
