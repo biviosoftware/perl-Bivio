@@ -225,7 +225,7 @@ sub get {
 
 =for html <a name="handle_config"></a>
 
-=head2 abstract static handle_config(hash cfg)
+=head2 abstract callback handle_config(hash cfg)
 
 This method is upcalled during the call to L<register|"register">.
 It will be passed I<cfg> for the registrant.  The values parallel
@@ -235,6 +235,35 @@ the registered configuration.
 
 $_ = <<'}'; # for emacs
 sub handle_config {
+}
+
+=for html <a name="introduce_values"></a>
+
+=head2 static introduce_values(hash_ref new_values)
+
+Adds I<new_values> to the running programs configuration.  This routine should
+be called sparingly.  There's no guarantee running programs can handle dynamic
+reconfiguration.  L<handle_config|"handle_config"> will be called.
+
+Typical usage:
+
+    BEGIN {
+        use Bivio::IO::Config;
+        Bivio::IO::Config->introduce_values({
+            value1 => ...,
+        });
+    }
+
+The earlier in the program's initialization process this is executed, the less
+likely it is to cause problems.
+
+=cut
+
+sub introduce_values {
+    my($proto, $new_values) = @_;
+    die('new_values must be a hash_ref') unless ref($new_values) eq 'HASH';
+    $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
+    return;
 }
 
 =for html <a name="merge"></a>

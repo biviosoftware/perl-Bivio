@@ -4,35 +4,32 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..10\n"; }
+BEGIN { $| = 1; print "1..5\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
+BEGIN {
+    @ARGV = qw(
+        --Bivio::IO::Config::t::T1.p4=p4
+        --Bivio::IO::Config::t::T1.p5=p5
+    );
+}
 use Bivio::IO::Config;
-use Bivio::IO::Alert;
+Bivio::IO::Config->introduce_values({
+    'Bivio::IO::Config::t::T1' => {
+	p1 => 'p1',
+	p3 => 'p3',
+        goodbye => {
+	    p3 => 'gp3',
+	    p4 => 'gp4',
+        },
+    },
+});
 $loaded = 1;
 print "ok 1\n";
 
 ######################### End of black magic.
 
-die("NEED TO REWRITE TO USE fork() etc.");
-
 my($T) = 1;
-sub dev_init {
-    ++$T;
-    print eval {
-	Bivio::IO::Config->initialize(@_);
-	1;
-    } ? "not ok $T\n" : "ok $T\n";
-}
-
-sub conf_init {
-    ++$T;
-    print eval {
-	Bivio::IO::Config->initialize(@_);
-	1;
-    } ? "ok $T\n" : "not ok $T\n";
-}
-
 sub dev_get {
     ++$T;
     my($caller) = caller;
@@ -41,20 +38,27 @@ sub dev_get {
 	Bivio::IO::Config->get(\@_);
 	1;
     " ? "$@not ok $T\n" : "ok $T\n";
+    return;
 }
 
 sub conf_get {
     ++$T;
     my($caller) = caller;
-    print eval "
+    my($res) = eval "
         package $caller;
 	Bivio::IO::Config->get(\@_);
-	1;
-    " ? "ok $T\n" : "$@not ok $T\n";
+    ";
+    print $res ? "ok $T\n" : "$@not ok $T\n";
+    return $res;
 }
 
-package Bivio::IO::Config::T1;
-sub handle_config {}
+package Bivio::IO::Config::t::T1;
+my($_CFG);
+sub handle_config {
+    shift;
+    $_CFG = shift;
+    return;
+}
 Bivio::IO::Config->register({
     'p1' => Bivio::IO::Config->REQUIRED,
     'p2' => 'p2',
@@ -62,57 +66,56 @@ Bivio::IO::Config->register({
        p3 => Bivio::IO::Config->REQUIRED,
        p4 => undef,
        p5 => 39
-    }
+    },
 });
 
-&main::dev_init({});
-&main::conf_init({
-    'Bivio::IO::Config::T1' => {
-	'p1' => 'p1',
-    }
-});
-&main::conf_get();
-&main::dev_get('hello');
-&main::dev_get(undef);
-&main::conf_init({
-    'Bivio::IO::Config::T1' => {
-	'p1' => 'p1',
-	'p3' => 'p3',
-    }
-});
-&main::conf_get(undef);
-my($c) = Bivio::IO::Config->get(undef);
+my($c) = main::conf_get(undef);
+main::dev_get('hello');
 my($k);
 foreach $k (qw(p3 p4 p5)) {
-    exists($c->{$k}) || die("missing $k");
+    die("missing named $k") unless exists($c->{$k});
+    die("bad $k, $c->{$k}") unless $c->{$k} eq $k;
 }
 foreach $k (qw(p1 p2)) {
-    exists($c->{$k}) && die("shouldn't be set $k");
+    die("shouldn't be set named $k") if exists($c->{$k});
+}
+foreach $k (qw(p1 p2)) {
+    die("missing $k") unless exists($_CFG->{$k});
+    die("bad $k, $_CFG->{$k}") unless $_CFG->{$k} eq $k;
+}
+$c = main::conf_get('goodbye');
+
+foreach $k (qw(p3 p4)) {
+    die("missing named $k") unless exists($c->{$k});
+    die("bad $k, $c->{$k}") unless $c->{$k} eq 'g'.$k;
+}
+foreach $k (qw(p5)) {
+    die("missing named $k") unless exists($c->{$k});
+    die("bad $k, $c->{$k}") unless $c->{$k} eq $k;
+}
+foreach $k (qw(p1 p2)) {
+    die("shouldn't be set named $k") if exists($c->{$k});
 }
 
-open(OUT, '> ' . ($ENV{BIVIO_CONF} = "bivio.conf$$")) || die("open: $!");
-print OUT <<'EOF';
-{
-    'Bivio::IO::Config::T1' => {
-	'p1' => 'p1',
-	'p3' => 'p3',
-    },
+1;
+
+# Test whether bconf is being read
+package Bivio::IO::Alert;
+sub handle_config {
+    return;
 }
-EOF
-close(OUT) || die("close: $!");
-my(@argv) = qw(
-    --Bivio::IO::Config::T1.p2=p2
-    --Bivio::IO::Config::T1.p4=p4
-    --Bivio::IO::Config::T1.p5=p5
-);
-&main::conf_init(\@argv);
-unlink($ENV{BIVIO_CONF});
-&main::conf_get(undef);
-$c = Bivio::IO::Config->get(undef);
-foreach $k (qw(p3 p4 p5)) {
-    $c->{$k} ne $k && die("missing or invalid $k");
-}
-$c = Bivio::IO::Config->get();
-foreach $k (qw(p1 p2)) {
-    $c->{$k} ne $k && die("missing or invalid $k");
-}
+
+Bivio::IO::Config->register({
+    intercept_warn => 1,
+    stack_trace_warn => -1,
+    stack_trace_warn_deprecated => 0,
+    max_arg_length => 99,
+    want_stderr => 0,
+    want_pid => 0,
+    want_time => 0,
+    max_warnings => 2000,
+});
+
+my($c2) = main::conf_get();
+die('stack_trace_warn invalid') unless $c2->{stack_trace_warn} != -1;
+1;
