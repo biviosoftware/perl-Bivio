@@ -198,6 +198,7 @@ CREATE TABLE tax_1065_t (
   foreign_account_country CHAR(2),
   foreign_trust NUMBER(1),
   return_type NUMBER(2),
+  irs_center NUMBER(3),
   allocation_method NUMBER(2)
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
@@ -209,7 +210,6 @@ CREATE TABLE tax_k1_t (
   user_id NUMBER(18),
   fiscal_end_date DATE,
   entity_type NUMBER(3),
-  irs_center NUMBER(3),
   partner_type NUMBER(2),
   foreign_partner NUMBER(1)
 )
@@ -217,6 +217,9 @@ CREATE TABLE tax_k1_t (
   tablespace realm_data
 /
 
+--
+-- tax_1065_t
+--
 ALTER TABLE tax_1065_t ADD primary key(realm_id, fiscal_end_date)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
@@ -257,9 +260,14 @@ ALTER TABLE tax_1065_t modify foreign_trust not null
 /
 ALTER TABLE tax_1065_t modify return_type not null
 /
+ALTER TABLE tax_1065_t add check (irs_center between 0 and 10)
+/
 ALTER TABLE tax_1065_t modify allocation_method not null
 /
 
+--
+-- tax_k1_t
+--
 ALTER TABLE tax_k1_t ADD primary key(realm_id, user_id, fiscal_end_date)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
@@ -274,15 +282,11 @@ ALTER TABLE tax_k1_t
 /
 ALTER TABLE tax_k1_t add check (entity_type between 0 and 12)
 /
-ALTER TABLE tax_k1_t add check (irs_center between 0 and 10)
-/
 ALTER TABLE tax_k1_t add check (partner_type between 0 and 3)
 /
 ALTER TABLE tax_k1_t add check (foreign_partner between 0 and 1)
 /
 ALTER TABLE tax_k1_t modify entity_type not null
-/
-ALTER TABLE tax_k1_t modify irs_center not null
 /
 ALTER TABLE tax_k1_t modify partner_type not null
 /
