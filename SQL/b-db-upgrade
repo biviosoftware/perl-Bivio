@@ -199,7 +199,8 @@ CREATE TABLE tax_1065_t (
   foreign_trust NUMBER(1),
   return_type NUMBER(2),
   irs_center NUMBER(3),
-  allocation_method NUMBER(2)
+  allocation_method NUMBER(2),
+  draft NUMBER(1)
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
@@ -263,6 +264,8 @@ ALTER TABLE tax_1065_t modify return_type not null
 ALTER TABLE tax_1065_t add check (irs_center between 0 and 10)
 /
 ALTER TABLE tax_1065_t modify allocation_method not null
+/
+ALTER TABLE tax_1065_t modify draft not null
 /
 
 --
