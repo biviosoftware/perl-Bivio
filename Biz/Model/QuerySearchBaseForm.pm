@@ -58,15 +58,9 @@ sub emit_query_values {
 		my($v) = $self->unsafe_get($_);
 		my($dv) = $self->get_field_info($_, 'default_value');
 		my($t) = $self->get_field_info($_, 'type');
-		if (defined($v)) {
-		    $v = undef if $t->is_equal($dv, $v);
-		}
-		else {
-		    $v = $dv;
-		}
-		defined($v) ? ($_ => $t->to_literal($v)) : ();
+		$t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v));
 		# might want to check for type=FormButton instead
-	    } grep({$_ ne 'ok_button'}
+	    } grep({!($_ =~ /_button/)}
 		@{$self->get_info('visible_field_names')})),
 	};
 }
@@ -161,30 +155,30 @@ sub internal_initialize {
 
 =for html <a name="load_query_value"></a>
 
-=head2 load_query_value() : 
+=head2 load_query_value(hash_ref query, string field)
 
 Load query value into form model. Load the default value if no value is
-present on the query. Can optionally specify a query alias for the field.
+present on the query.
 
 =cut
 
 sub load_query_value {
     my($self, $query, $field, $alias) = @_;
-
-    if (exists($query->{$alias||$field})) {
-	my($v, $e) = $self->get_field_type($field)
-	    ->from_literal($query->{$alias||$field});
+    Bivio::Die->die($alias, ': alias not support for fields ', $field)
+       if $alias;
+    my($v, $e);
+    if (exists($query->{$field})) {
+	($v, $e) = $self->get_field_type($field)
+	    ->from_literal($query->{$field});
 	if ($e) {
 	    $self->internal_put_error($field => $e);
-	}
-	else {
-	    $self->internal_put_field($field => $v);
+	    return;
 	}
     }
-    elsif (!$alias) {
-	$self->internal_put_field($field =>
-	    $self->get_field_info($field, 'default_value'));
+    else {
+	$v = $self->get_field_info($field, 'default_value');
     }
+    $self->internal_put_field($field => $v);
     return;
 }
 
