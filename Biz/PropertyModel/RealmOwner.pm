@@ -41,6 +41,7 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::EntryClass;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::Password;
 
 #=VARIABLES
 
