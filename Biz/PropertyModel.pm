@@ -315,14 +315,17 @@ sub format_query_for_parent {
 
 =head2 format_query_for_this() : string
 
-Query string used to identify this instance.
+=head2 static format_query_for_this(hash_ref load_query) : string
+
+Query string used to identify this instance.  If supplied I<load_query>,
+must contain primary keys for the model.
 
 =cut
 
 sub format_query_for_this {
-    my($self) = @_;
+    my($self, $query) = @_;
     return Bivio::SQL::ListQuery->format_uri_for_this(
-	    $self->internal_get_sql_support, $self->internal_get);
+	    $self->internal_get_sql_support, $query || $self->internal_get);
 }
 
 =for html <a name="get_keys"></a>
