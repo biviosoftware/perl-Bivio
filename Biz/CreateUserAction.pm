@@ -35,7 +35,10 @@ C<Bivio::Biz::CreateUserAction>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Club;
+use Bivio::Biz::ClubUser;
 use Bivio::Biz::UserDemographics;
+use Bivio::Biz::UserEmail;
 use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
 use Data::Dumper;
@@ -104,14 +107,51 @@ sub execute {
 	foreach (@{$demographics->get_status()->get_errors()}) {
 	    $user->get_status()->add_error($_);
 	}
+
+	if ($user->get_status()->is_OK()) {
+	    # the same for email
+	    my($email) = Bivio::Biz::UserEmail->new();
+	    $values = &_create_field_map($email, $req);
+
+	    $email->create($values);
+
+	    foreach (@{$email->get_status()->get_errors()}) {
+		$user->get_status()->add_error($_);
+	    }
+	}
+
+	#HACK: ignoring for club setup
+	# add the user to the club if necessary
+	if ($user->get_status()->is_OK()
+		&& $req->get_target_name() ne 'club') {
+
+	    #TODO: need cache of club, but where?
+	    my($club) = Bivio::Biz::Club->new();
+	    $club->find({name => $req->get_target_name()});
+
+	    # not checking find result, should have succeeded or
+	    # it wouldn't be this far
+	    my($club_user) = Bivio::Biz::ClubUser->new();
+
+	    $club_user->create({
+		club => $club->get('id'),
+		user => $user->get('id'),
+		role => $req->get_arg('role'),
+		email_mode => 1
+		});
+
+	    foreach (@{$club_user->get_status()->get_errors()}) {
+		$user->get_status()->add_error($_);
+	    }
+	}
     }
 
     if ($user->get_status()->is_OK()) {
-	Bivio::Biz::SqlConnection->get_connection()->commit();
+	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }
     else {
-	Bivio::Biz::SqlConnection->get_connection()->rollback();
+	Bivio::Biz::SqlConnection->rollback();
 	return 0;
     }
 }
