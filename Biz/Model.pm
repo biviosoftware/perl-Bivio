@@ -171,6 +171,19 @@ sub get_field_constraint {
 	    get_column_constraint(@_);
 }
 
+=for html <a name="get_field_info"></a>
+
+=head2 get_field_info(string field, string attr) : any
+
+Returns I<attr> for I<field>.
+
+=cut
+
+sub get_field_info {
+    return shift->{$_PACKAGE}->{class_info}->{sql_support}
+	    ->get_column_info(@_);
+}
+
 =for html <a name="get_field_type"></a>
 
 =head2 get_field_type(string name) : Bivio::Type

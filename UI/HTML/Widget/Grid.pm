@@ -229,7 +229,25 @@ sub initialize {
 	}
     }
     $fields->{rows} = $rows;
+    $fields->{is_constant} = 0;
+    $fields->{is_first_render} = 1;
     return;
+}
+
+
+=for html <a name="is_constant"></a>
+
+=head2 is_constant : boolean
+
+Will return true if always renders exactly the same way.
+
+=cut
+
+sub is_constant {
+    my($fields) = shift->{$_PACKAGE};
+    Carp::croak('can only be called after first render')
+		if $fields->{is_first_render};
+    return $fields->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -241,9 +259,11 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $$buffer .= $fields->{value}, return if $fields->{is_constant};
+
+    my($start) = length($$buffer);
     $$buffer .= $fields->{prefix};
     my($r, $c);
-#TODO: Optimize for is_constant
     foreach $r (@{$fields->{rows}}) {
 	$$buffer .= "<tr>\n";
 	foreach $c (@$r) {
@@ -252,6 +272,21 @@ sub render {
 	$$buffer .= '</tr>';
     }
     $$buffer .= $fields->{suffix};
+
+    if ($fields->{is_first_render}) {
+	$fields->{is_first_render} = 0;
+
+	# Are the values constant?
+	my($constant) = 1;
+	foreach $r (@{$fields->{rows}}) {
+	    foreach $c (@$r) {
+		last unless $constant &&= !ref($c) || $c->is_constant;
+	    }
+	}
+	# If values are constant, save off what we just rendered
+	$fields->{value} = substr($$buffer, $start)
+		if $fields->{is_constant} = $constant;
+    }
     return;
 }
 

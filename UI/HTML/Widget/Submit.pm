@@ -6,7 +6,7 @@ $Bivio::UI::HTML::Widget::Submit::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 =head1 NAME
 
-Bivio::UI::HTML::Widget::Submit - renders a submit button of a form
+Bivio::UI::HTML::Widget::Submit - a submit input field
 
 =head1 SYNOPSIS
 
@@ -22,15 +22,13 @@ L<Bivio::UI::HTML::Widget>
 =cut
 
 use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Submit::ISA = qw(Bivio::UI::HTML::Widget);
+@Bivio::UI::HTML::Widget::Submit::ISA = ('Bivio::UI::HTML::Widget');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget::Submit> draws a submit button.  The
-font is always I<FORM_SUBMIT>.
+C<Bivio::UI::HTML::Widget::Submit> is an input of type C<SUBMIT>.
 
-If the form's L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> returns an empty
-string, the button won't be rendered.
+Font is always C<FORM_SUBMIT>.
 
 =head1 ATTRIBUTES
 
@@ -40,12 +38,21 @@ string, the button won't be rendered.
 
 Which form are we dealing with.
 
+=item value : string (required)
+
+The method on I<form_model> which returns the submit button value,
+e.g. C<SUBMIT_OK> or C<SUBMIT_CANCEL>.
+
+=item value : array_ref (required)
+
+The value of the label to use.  Used only by forms which have
+dynamic submit buttons.
+
 =back
 
 =cut
 
 #=IMPORTS
-use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -56,9 +63,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Submit
+=head2 static new() : Bivio::UI::HTML::Widget::Submit
 
-Creates a new Submit widget.
+Creates a Submit widget.
 
 =cut
 
@@ -76,7 +83,7 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.
+Initializes from configuration attributes.
 
 =cut
 
@@ -85,6 +92,8 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
+    $fields->{value} = $self->get('value');
+    $fields->{is_constant} = 0;
     $fields->{is_first_render} = 1;
     return;
 }
@@ -93,7 +102,8 @@ sub initialize {
 
 =head2 is_constant : boolean
 
-Will return true if always renders exactly the same way.
+Is this instance a constant?
+
 
 =cut
 
@@ -101,34 +111,45 @@ sub is_constant {
     my($fields) = shift->{$_PACKAGE};
     Carp::croak('can only be called after first render')
 		if $fields->{is_first_render};
-    return 1;
+    return $fields->{is_constant};
 }
 
 =for html <a name="render"></a>
 
-=head2 render(any source, submit_ref buffer)
+=head2 render(any source, string_ref buffer)
 
-Render the object.
+Draws the date field on the specified buffer.
 
 =cut
 
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value}, return unless $fields->{is_first_render};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
-    my($name) = $form->SUBMIT();
-    my($p, $s) = Bivio::UI::Font->as_html('form_submit');
-    my($ok) = $form->SUBMIT_OK;
-    my($cancel) = $form->SUBMIT_CANCEL;
-    # There's always an OK, but not be a cancel.
-    $fields->{value} = $p.'<input type=submit name='.$name.' value="'.$ok.'">';
-    $fields->{value} .=
-	    '&nbsp;<input type=submit name='.$name.' value="'.$cancel.'">'
-		    if $cancel;
-    $fields->{value} .= $s;
-    $$buffer .= $fields->{value};
-    $fields->{is_first_render} = 0;
+    $$buffer .= $fields->{value}, return if $fields->{is_constant};
+
+    my($value) = $fields->{value};
+
+    if ($fields->{is_first_render}) {
+	my($model) = $source->get_widget_value(@{$fields->{model}});
+	$fields->{is_first_render} = 0;
+	my($p, $s) = Bivio::UI::Font->as_html('form_submit');
+	$fields->{prefix} = $p.'<input type=submit name="'
+		.$model->SUBMIT().'" value="';
+	$fields->{suffix} = '">'.$s;
+	unless (ref($value)) {
+	    $fields->{is_constant} = 1;
+	    my($method) = $fields->{value};
+	    $fields->{value} = $fields->{prefix}
+		    .Bivio::Util::escape_html($model->$method())
+		    .$fields->{suffix};
+	    $$buffer .= $fields->{value};
+	    return;
+	}
+    }
+    $$buffer .= $fields->{prefix}
+	    .Bivio::Util::escape_html(
+		    $source->get_widget_value(@{$fields->{value}}))
+	    .$fields->{suffix};
     return;
 }
 

@@ -43,7 +43,7 @@ use Bivio::UI::HTML::Widget::FormFieldLabel;
 use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Hidden;
 use Bivio::UI::HTML::Widget::Join;
-use Bivio::UI::HTML::Widget::Submit;
+use Bivio::UI::HTML::Widget::StandardSubmit;
 use Bivio::UI::HTML::Widget::TextArea;
 use Bivio::UI::HTML::Widget::DateTime;
 
@@ -100,7 +100,7 @@ sub new {
 			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::Submit->new({
+		    Bivio::UI::HTML::Widget::StandardSubmit->new({
 			cell_expand => 1,
 			cell_align => 'center',
 			has_next => 1,
@@ -140,7 +140,7 @@ sub new {
 			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::Submit->new({
+		    Bivio::UI::HTML::Widget::StandardSubmit->new({
 			cell_expand => 1,
 			cell_align => 'center',
 		    }),

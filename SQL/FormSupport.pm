@@ -39,6 +39,10 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 List of columns which are to be sent to and returned from the user, unmodified.
 
+=item require_context : boolean
+
+True if the form expects to have context when operating.
+
 =item visible : array_ref
 
 List of columns to be made visible to the user.
@@ -145,6 +149,7 @@ sub new {
 	column_aliases => {},
 	# Columns which have no corresponding property model field
 	local_columns => [],
+	require_context => $decl->{require_context} ? 1 : 0,
     };
     $proto->init_version($attrs, $decl);
     _init_column_classes($attrs, $decl);

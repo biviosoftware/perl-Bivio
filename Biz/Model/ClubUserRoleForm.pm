@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::Model::ClubUserForm;
+package Bivio::Biz::Model::ClubUserRoleForm;
 use strict;
-$Bivio::Biz::Model::ClubUserForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::ClubUserRoleForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::Model::ClubUserForm - edit a club member
+Bivio::Biz::Model::ClubUserRoleForm - edit a club member's role
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::Model::ClubUserForm;
-    Bivio::Biz::Model::ClubUserForm->new($req);
+    use Bivio::Biz::Model::ClubUserRoleForm;
+    Bivio::Biz::Model::ClubUserRoleForm->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::FormModel>
 =cut
 
 use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::ClubUserForm::ISA = qw(Bivio::Biz::FormModel);
+@Bivio::Biz::Model::ClubUserRoleForm::ISA = qw(Bivio::Biz::FormModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::ClubUserForm> edit a club user's function
+C<Bivio::Biz::Model::ClubUserRoleForm> edit a club user's function
 and privileges.
 
 =cut

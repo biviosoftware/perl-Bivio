@@ -52,9 +52,8 @@ sub execute_empty {
     my($self) = @_;
     my($properties) = $self->internal_get;
 
-    # Target is auth_realm
-    my($owner) = $self->get_request->get('auth_realm')->get('owner');
-    $properties->{'Phone.realm_id'} = $owner->get('realm_id');
+    my($target) = $self->get_request->get('user_target');
+    $properties->{'Phone.realm_id'} = $target->get('realm_id');
 #TODO: Make work for multiple addrs
     $properties->{'Phone.location'} = Bivio::Type::Location::HOME();
     $self->load_from_model_properties('Phone');
@@ -79,8 +78,8 @@ sub execute_input {
 
     # Target is auth_realm
     unless ($properties->{'Phone.realm_id'}) {
-	my($owner) = $self->get_request->get('auth_realm')->get('owner');
-	$properties->{'Phone.realm_id'} = $owner->get('realm_id');
+	my($target) = $self->get_request->get('user_target');
+	$properties->{'Phone.realm_id'} = $target->get('realm_id');
     }
     $properties->{'Phone.location'} = Bivio::Type::Location::HOME();
 

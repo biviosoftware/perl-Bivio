@@ -117,7 +117,7 @@ sub render {
     unless ($fields->{initialized}) {
 	$fields->{prefix} = '<nobr><input name='
 		.$form->get_field_name_for_html($field).' type=radio';
-	$fields->{suffix} = ' value="'.$value->to_html($value).'">&nbsp;'
+	$fields->{suffix} = ' value="'.$value->to_html($value)."\">\n&nbsp;"
 		.Bivio::Util::escape_html($self->get('label'))
 		.'</nobr>';
 	$fields->{initialized} = 1;

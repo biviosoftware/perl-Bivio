@@ -31,9 +31,13 @@ The following fields are returned by L<get|"get">:
 
 =over 4
 
-=item permission_set
+=item cancel
 
-L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
+The task_id to go to in other cases. Not required.
+
+=item form_model
+
+The first form model in I<items> or C<undef>.
 
 =item id
 
@@ -48,9 +52,9 @@ A list of classes which have an C<execute> method.
 The next task_id to go to in certain cases.  Not always
 defined.
 
-=item cancel
+=item permission_set
 
-The task_id to go to in other cases. Not required.
+L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
 
 =item realm_type
 
@@ -119,7 +123,11 @@ sub new {
 	    $method ||= 'execute';
 	    Carp::croak($i, ": can't be executed (missing $method method)")
 			unless $c->can($method);
-	    $have_form++ if $c->isa('Bivio::Biz::FormModel');
+	    if ($c->isa('Bivio::Biz::FormModel')) {
+		$fields->{form_model} = $class
+			unless $fields->{form_model};
+		$have_form++;
+	    }
 	    push(@new_items, [$c, $method]);
 	}
     }
@@ -128,6 +136,9 @@ sub new {
 		    if !$fields->{next};
 	# default cancel to next unless present
 	$fields->{cancel} = $fields->{next} unless $fields->{cancel};
+    }
+    else {
+	$fields->{form_model} = undef;
     }
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after

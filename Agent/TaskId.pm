@@ -537,10 +537,52 @@ my(@_CFG) = (
         hm/thanks_japan.html
 	Bivio::Biz::Action::HTTPDocument
     )],
-    #54
-    #55
-    #56
-    #57
+    # This assumes that user always has privileges to edit "self"
+    # Technically, this isn't the case.
+    [qw(
+        CLUB_ADMIN_USER_ADDRESS_EDIT
+        54
+        CLUB
+        DOCUMENT_READ
+        _/admin/edit/self/address
+        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Model::AddressForm
+        Bivio::UI::HTML::User::EditAddress
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_USER_NAME_EDIT
+        55
+        CLUB
+        DOCUMENT_READ
+        _/admin/edit/self/name
+        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Model::UserNameForm
+        Bivio::UI::HTML::User::EditName
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_USER_COMM_EDIT
+        56
+        CLUB
+        DOCUMENT_READ
+        _/admin/edit/self/phone_email
+        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Model::CommForm
+        Bivio::UI::HTML::User::EditComm
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_USER_PASSWORD_EDIT
+        57
+        CLUB
+        DOCUMENT_READ
+        _/admin/edit/self/password
+        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Model::PasswordForm
+        Bivio::UI::HTML::User::EditPassword
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT
         58
@@ -578,14 +620,14 @@ my(@_CFG) = (
         _/mail/image
         Bivio::UI::HTML::Club::ImageAttachment
     )],
-    # This URI must match the form in the user agreement document.
     [qw(
-        USER_AGREEMENT_FORM
+        USER_AGREEMENT
         62
         GENERAL
         LOGIN
         pub/user_agreement
         Bivio::Biz::Model::UserAgreementForm
+        Bivio::UI::HTML::General::UserAgreement
         next=USER_CREATE
         cancel=HTTP_DOCUMENT
     )],
@@ -641,6 +683,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         _/admin/edit/name
+        Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::User::EditName
         next=USER_ADMIN_INFO
@@ -670,6 +713,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         _/admin/edit/password
+        Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
         next=USER_ADMIN_INFO
@@ -680,6 +724,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         _/admin/edit/address
+        Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::AddressForm
         Bivio::UI::HTML::User::EditAddress
         next=USER_ADMIN_INFO
@@ -690,6 +735,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         _/admin/edit/phone_email
+        Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::CommForm
         Bivio::UI::HTML::User::EditComm
         next=USER_ADMIN_INFO
@@ -742,17 +788,15 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserDetail
     )],
-#TODO: next should be CLUB_ADMIN_USER_DETAIL for this user, not the list
-#      but there is a bug in next handling that doesn't keep query string.
     [qw(
-        CLUB_ADMIN_USER_EDIT
+        CLUB_ADMIN_USER_ROLE_EDIT
         79
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
-        _/admin/roster/edit
+        _/admin/roster/role/edit
         Bivio::Biz::Model::ClubUserList
-        Bivio::Biz::Model::ClubUserForm
-        Bivio::UI::HTML::Club::EditUser
+        Bivio::Biz::Model::ClubUserRoleForm
+        Bivio::UI::HTML::Club::EditUserRole
         next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(

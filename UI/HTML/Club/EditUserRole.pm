@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::UI::HTML::Club::EditUser;
+package Bivio::UI::HTML::Club::EditUserRole;
 use strict;
-$Bivio::UI::HTML::Club::EditUser::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::UI::HTML::Club::EditUserRole::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::HTML::Club::EditUser - edits a user's title/role
+Bivio::UI::HTML::Club::EditUserRole - edits a user's title/role
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::HTML::Club::EditUser;
-    Bivio::UI::HTML::Club::EditUser->new();
+    use Bivio::UI::HTML::Club::EditUserRole;
+    Bivio::UI::HTML::Club::EditUserRole->new();
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::UI::HTML::Widget>
 =cut
 
 use Bivio::UI::HTML::PageForm;
-@Bivio::UI::HTML::Club::EditUser::ISA = ('Bivio::UI::HTML::PageForm');
+@Bivio::UI::HTML::Club::EditUserRole::ISA = ('Bivio::UI::HTML::PageForm');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Club::EditUser> edits a club user's title/role.
+C<Bivio::UI::HTML::Club::EditUserRole> edits a club user's title/role.
 
 =cut
 
@@ -63,24 +63,6 @@ sub create_fields {
     Bivio::Auth::RoleSet->set(\$roles,
 	    Bivio::Auth::Role::UNKNOWN());
     return [
-	[
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Login',
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['Bivio::Biz::Model::ClubUserList',
-		    'RealmOwner.name'],
-	    }),
-	],
-	[
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Name',
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['Bivio::Biz::Model::ClubUserList',
-		    'RealmOwner.display_name'],
-	    }),
-	],
 	[$self->add_field('title', 'Function',
 		Bivio::UI::HTML::Widget::Select->new({
 		    field => 'title',
@@ -113,7 +95,8 @@ sub execute {
     my($list) = $req->get('Bivio::Biz::Model::ClubUserList');
     $self->die(Bivio::DieCode::NOT_FOUND())
 	    unless $list->set_cursor(0);
-    $req->put(page_heading => 'Change Function and Privileges',
+    $req->put(page_heading => 'Change Function and Privileges for'
+	    .$list->get('RealmOwner.display_name'),
 	    page_subtopic => 'Change Function and Privileges',
 	    page_content => $self);
     Bivio::UI::HTML::Club::Page->execute($req);
@@ -130,7 +113,7 @@ Sets attributes on self used by SUPER.
 
 sub initialize {
     my($self) = @_;
-    $self->put(form_model => ['Bivio::Biz::Model::ClubUserForm']);
+    $self->put(form_model => ['Bivio::Biz::Model::ClubUserRoleForm']);
     $self->SUPER::initialize;
     return;
 }

@@ -175,6 +175,7 @@ Converts from internal form to a literal string value.
 
 sub to_literal {
     my(undef, $value) = @_;
+    return undef unless defined($value);
     $value =~ s/^\+//;
     return $value;
 }

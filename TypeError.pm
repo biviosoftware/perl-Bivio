@@ -272,6 +272,21 @@ __PACKAGE__->compile(
 #TODO: This can only happen if someone corrupted the form
 	'invalid accounting report selected',
     ],
+    ANY => [
+	47,
+	undef,
+	'data corrupted',
+    ],
+    ANY_EVAL => [
+	48,
+	undef,
+	'data corrupted during processing',
+    ],
+    SECRET => [
+	49,
+	undef,
+	'unable to decode data',
+    ],
 );
 
 #=PRIVATE METHODS

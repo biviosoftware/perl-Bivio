@@ -55,12 +55,6 @@ This module puts it on the request.
 
 login id (realm_id) of the authenticated user.
 
-=item ua
-
-This field is set by
-L<Bivio::Biz::Model::TermsOfServiceForm|Bivio::Biz::Model::CreateUserForm>
-when the user is sent the user agreement and accepts it.
-
 =back
 
 You may I<sparingly> add other fields, but be sure to
@@ -100,21 +94,6 @@ L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 
 sub TIMEZONE_FIELD {
     return 'tz';
-}
-
-=for html <a name="USER_AGREEMENT_FIELD"></a>
-
-=head2 USER_AGREEMENT_FIELD : string
-
-Returns the user agreement cookie.  Is managed by
-L<Bivio::Biz::Model::UserAgreementForm|Bivio::Biz::Model::UserAgreementForm>
-and
-L<Bivio::Biz::Model::CreateUserForm|Bivio::Biz::Model::CreateUserForm>.
-
-=cut
-
-sub USER_AGREEMENT_FIELD {
-    return '';
 }
 
 #=IMPORTS

@@ -316,6 +316,9 @@ use strict;
 	    file_mode => 0777,
 	},
     },
+    'Bivio::Type::Secret' => {
+	key => 'my other secret',
+    },
     'Bivio::UI::Icon' => {
 	uri => '/i',
 	directory => '<$pwd>/html/i',

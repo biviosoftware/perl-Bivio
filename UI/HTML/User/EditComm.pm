@@ -26,7 +26,10 @@ use Bivio::UI::HTML::PageForm;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::User::EditComm> allows user to update communications info
+C<Bivio::UI::HTML::User::EditComm> allows user to update communications info.
+
+B<This is a multi-moded page.>  It can be rendered as a
+Club or User page.
 
 =cut
 
@@ -35,6 +38,7 @@ use Bivio::UI::HTML::Page;
 use Bivio::UI::HTML::PageForm;
 use Bivio::Biz::Model::CommForm;
 use Bivio::UI::HTML::User::Page;
+use Bivio::UI::HTML::Club::Page;
 
 #=VARIABLES
 
@@ -70,11 +74,11 @@ L<Bivio::UI::HTML::User::Page::execute|Bivio::UI::HTML::User::Page/"execute">.
 
 sub execute {
     my($self, $req) = @_;
-    $req->put(page_heading => 'Change Phone & Email',
+    $req->put(page_heading => 'Change Phone & Email for '
+	    .$req->get('user_target')->get('display_name'),
 	    page_subtopic => 'Change Phone & Email',
-	    page_topic => 'Admin',
 	    page_content => $self);
-    Bivio::UI::HTML::User::Page->execute($req);
+    Bivio::UI::HTML::Page->execute($req);
     return;
 }
 

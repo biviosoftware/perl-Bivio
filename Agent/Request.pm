@@ -160,6 +160,7 @@ use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::Action::CreateDemoClub;
 use Bivio::Biz::Model::UserRealmList;
+use Bivio::Biz::FormModel;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -615,22 +616,22 @@ sub internal_initialize {
 
 =head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
 
-Sets all values and saves I<prev_query>, etc.
+Sets all values and saves form context.
 
 =cut
 
 sub internal_server_redirect {
     my($self, $new_task, $new_realm, $new_query, $new_form) = @_;
-    # Keep the request's query for context on form OK and CANCEL.
-    my($form, $uri, $query) = $self->unsafe_get(qw(form uri query));
+
+    # Save the form context before switching realms
+    my($fc) = Bivio::Biz::FormModel->get_context_from_request($self);
     $self->internal_redirect_realm($new_task, $new_realm);
     $self->put(uri => $self->format_uri($new_task, undef),
 	    query => $new_query,
 	    query_string => Bivio::Agent::HTTP::Query->format($new_query),
 	    form => $new_form,
-	    prev_form => $form,
-	    prev_uri => $uri,
-	    prev_query => $query);
+	    form_model => undef,
+	    form_context => $fc);
     return;
 }
 

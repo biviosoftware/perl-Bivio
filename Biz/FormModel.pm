@@ -28,21 +28,32 @@ has fields like other models.  Fields are either I<visible> or
 I<hidden>.  A FormModel may have a primary_key which is useful to know
 how to load the form values from the database.
 
-There are two modes the forms operate in: create and update.  update is
-currently broken.  create is the mode where there is blank form which
-has been filled in by the user.
-
 If there is a form associated with the request, the individual fields are
 validated and then the form-specific L<validate|"validate"> method is
 called to do cross-field validation.
 
 If the validation passes, i.e. no errors are put with
-L<internal_put_error|"internal_put_error">, then either L<update|"update">
-or L<create|"create"> is called depending on whether a database record
-could be loaded with the information on the form or not.
+L<internal_put_error|"internal_put_error">, then
+L<execute_input|"execute_input"> is called.
 
-Form field errors are always one of the enums in
-L<Bivio::TypeError|Bivio::TypeError>.
+A form may have a context.  This is specified by the C<require_context>
+in
+L<internal_initialize_sql_support|"internal_initialize_sql_support">.
+The context is how we got to this form, e.g. from another form and
+the contents of that form.  Forms with context return to the uri
+specified in the context on "ok" completion.
+
+If the context contains a form, it may be manipulated with
+L<unsafe_get_context_field|"unsafe_get_context_field"> and
+L<put_context_fields|"put_context_fields">.
+For example, a symbol lookup form might set the symbol selected
+in the form which requested the lookup.
+
+If a form is executed as a the result of a server redirect
+and L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> is set,
+no data transforms will occur and the form will render literally
+as it was entered before.  User gets a new opportunity to OK or
+CANCEL.
 
 The only tight connection to HTML is the way submit buttons are rendered.
 The problem is that the value of a submit type field is the text that
@@ -51,9 +62,15 @@ back.  The routines L<SUBMIT|"SUBMIT">, L<SUBMIT_OK|"SUBMIT_OK">, and
 L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> can be overridden by subclasses if
 they would like different text to appear.
 
-Free form input widgets (Text and TextArea) retrieve field values with
-L<get_field_as_html|"get_field_as_html">, because the field may be in error and
-the errant literal value may not be valid for the type.
+A form may specialize its L<is_submit_ok|"is_submit_ok"> method.
+This allows, for example, the form to have multiple "ok" buttons.
+
+Form field errors are always one of the enums in
+L<Bivio::TypeError|Bivio::TypeError>.
+
+Free text input widgets (Text and TextArea) retrieve field values with
+L<get_field_as_html|"get_field_as_html">, because the field may be in error
+and the errant literal value may not be valid for the type.
 
 =cut
 
@@ -103,6 +120,21 @@ sub SUBMIT_OK {
     return '  OK  ';
 }
 
+=for html <a name="SUBMIT_UNWIND"></a>
+
+=head2 SUBMIT_UNWIND : string
+
+Returns the internal tag string for continuation of a form
+which was redirected initially to another form.
+
+B<DO NOT USE THIS VALUE FOR SUBMIT LABELS.>
+
+=cut
+
+sub SUBMIT_UNWIND {
+    return '!@#unwind#@!';
+}
+
 =for html <a name="TIMEZONE_FIELD"></a>
 
 =head2 TIMEZONE_FIELD : string
@@ -116,11 +148,12 @@ sub TIMEZONE_FIELD {
 }
 
 #=IMPORTS
+use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
+use Bivio::Type::SecretAny;
 use Bivio::Util;
-use Bivio::Agent::HTTP::Cookie;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -152,6 +185,21 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="clear_errors"></a>
+
+=head2 clear_errors()
+
+Remove any errors on fields on the form.
+
+=cut
+
+sub clear_errors {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{errors} = undef;
+    return;
+}
 
 =for html <a name="execute"></a>
 
@@ -187,11 +235,16 @@ sub execute {
     my($self) = $proto->new($req);
     my($fields) = $self->{$_PACKAGE};
 
+    # Save in request, so can be added to prev_context
+    $req->put(ref($self) => $self, form_model => $self);
+
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
 	$self->internal_put($values);
+	$fields->{literals} = {};
+	_initialize_context($self, $req);
 	$self->execute_input();
-	return _put_self($self) unless $fields->{errors};
+	return unless $fields->{errors};
 	Carp::croak($self->as_string, ": called with invalid values");
     }
 
@@ -199,13 +252,21 @@ sub execute {
 
     # User didn't input anything, render blank form
     unless ($input) {
+	$fields->{literals} = {};
+	_initialize_context($self, $req);
 	$self->execute_empty;
-	return _put_self($self);
+	return;
     }
 
     # User submitted a form, parse, validate, and execute
-    # Cancel causes an immediate redirect.
-    _parse($self, $input);
+    # Cancel causes an immediate redirect.  parse() returns false
+    # on SUBMIT_UNWIND
+    $fields->{literals} = $input;
+
+    # Don't rollback, because unwind doesn't necessarily mean failure
+    return unless _parse($self, $input);
+
+    # If the form has errors, the transaction will be rolled back
     unless ($fields->{errors}) {
 	$self->validate();
 	unless ($fields->{errors}) {
@@ -218,16 +279,47 @@ sub execute {
 		_apply_type_error($self, $die);
 	    }
 	    unless ($fields->{errors}) {
-		# Success, redirect to the next task.
+		# Success, redirect to the next task or to the task in
+		# the context.
 		my($req) = $self->get_request;
-		$req->client_redirect($req->get('task')->get('next'));
+		$req->client_redirect($req->get('task')->get('next'))
+			unless $fields->{context};
+
+		my($f) = $fields->{context}->{form};
+		unless ($f) {
+		    _trace('no form, client_redirect: ',
+			    $fields->{context}->{uri},
+			    '?', $fields->{context}->{query}) if $_TRACE;
+		    # If there is no form, redirect to client so looks
+		    # better.
+		    $req->client_redirect(
+			    @{$fields->{context}}{qw(uri query)});
+		    # DOES NOT RETURN
+		}
+
+		# Do an server redirect to context, because can't do
+		# client redirect (no way to pass form state (reasonably)).
+		# Indicate to the next form that this is a SUBMIT_UNWIND
+		$f->{$self->SUBMIT} = $self->SUBMIT_UNWIND;
+
+		# Ensure this form_model is seen as the redirect model
+		# by get_context_from_request and set a flag so it
+		# knows to pop context instead of pushing.
+		$req->put(form_model => $self);
+		$fields->{redirecting} = 1;
+
+		# Redirect calls us back in get_context_from_request
+		_trace('have form, server_redirect: ',
+			$fields->{context}->{uri},
+			'?', $fields->{context}->{query}) if $_TRACE;
+		$req->server_redirect(
+			@{$fields->{context}}{qw(uri query)}, $f);
 		# DOES NOT RETURN
 	    }
 	}
     }
     # Some type of error, rollback and put self so can render form again
     Bivio::Agent::Task->rollback;
-    _put_self($self);
     return;
 }
 
@@ -270,6 +362,61 @@ sub execute_other {
     return;
 }
 
+=for html <a name="execute_unwound"></a>
+
+=head2 execute_unwound()
+
+Called when the chained form returns and does a server_redirect
+back to this form.
+
+B<The form fields are not parsed.>  The values are left in their
+literal state.
+
+=cut
+
+sub execute_unwound {
+    return;
+}
+
+=for html <a name="get_context_from_request"></a>
+
+=head2 static get_context_from_request(Bivio::Agent::Request req) : hash_ref
+
+Returns the context elements extracted from the request as hash_ref.
+If the form is I<redirecting> already, then the nested context
+is returned.
+
+=cut
+
+sub get_context_from_request {
+    my(undef, $req) = @_;
+    my($model) = $req->unsafe_get('form_model');
+
+    # If there is a model, make sure not redirecting
+    if ($model) {
+	my($fields) = $model->{$_PACKAGE};
+	if ($fields->{redirecting}) {
+	    # Just in case, clear the sentinel
+	    $fields->{redirecting} = 0;
+
+	    # If redirecting, return the stacked context if there is one
+	    my($c) = $fields->{context};
+	    $c = $c->{form_context} if $c;
+	    _trace('unwound context: ', $c) if $_TRACE;
+	    return $c;
+	}
+    }
+
+    # Construct a new context from existing state in request
+    my($res) = {};
+    foreach my $c (qw(uri form query form_context)) {
+	$res->{$c} = $req->unsafe_get($c);
+    }
+    $res->{form_model} = ref($model);
+    _trace('new context: ', $res) if $_TRACE;
+    return $res;
+}
+
 =for html <a name="get_errors"></a>
 
 =head2 get_errors() : hash_ref
@@ -302,9 +449,9 @@ sub get_field_as_html {
     my($fields) = $self->{$_PACKAGE};
     my($value) = $self->unsafe_get($name);
     return $self->get_field_type($name)->to_html($value) if defined($value);
-    return '' unless
-	    $fields->{literals} && defined($fields->{literals}->{$name});
-    return Bivio::Util::escape_html($fields->{literals}->{$name});
+    my($fn) = $self->get_field_info($name, 'form_name');
+    return '' unless defined($fields->{literals}->{$fn});
+    return Bivio::Util::escape_html($fields->{literals}->{$fn});
 }
 
 =for html <a name="get_field_error"></a>
@@ -338,14 +485,17 @@ sub get_hidden_field_values {
     my($sql_support) = $self->internal_get_sql_support();
 #TODO: make a constant
     my(@res);
-    push(@res, 'version', $sql_support->get('version'));
+    push(@res, version => $sql_support->get('version'));
+    push(@res, context =>
+	    Bivio::Type::SecretAny->to_literal($fields->{context}))
+	    if $fields->{context};
     my($properties) = $self->internal_get();
     my($literals) = $fields->{literals};
     foreach my $col (@{$sql_support->get('hidden')}) {
 	my($n) = $col->{name};
 	my($v) = $col->{type}->to_literal($properties->{$n});
-        $v = $literals && defined($literals->{$n}) ? $literals->{$n} : ''
-		unless defined($v);
+        $v = defined($literals->{$col->{form_name}})
+		? $literals->{$col->{form_name}} : '' unless defined($v);
 	push(@res, $col->{form_name}, $v);
     }
     return \@res;
@@ -434,10 +584,6 @@ sub internal_put_error {
     _trace($property, ': ', $error->as_string) if $_TRACE;
     $fields->{errors} = {} unless $fields->{errors};
     $fields->{errors}->{$property} = $error;
-    if (defined($literal)) {
-	$fields->{literals} = {} unless $fields->{literals};
-	$fields->{literals}->{$property} = $literal;
-    }
     return;
 }
 
@@ -445,8 +591,12 @@ sub internal_put_error {
 
 =head2 is_submit_ok(string button_value, hash_ref form) : boolean
 
-Returns true if the button value is "SUBMIT_OK".  Subclasses can override this,
-but probably don't need to.
+Returns true if the button value is L<SUBMIT_OK|"SUBMIT_OK">.
+Subclasses can override this, but probably don't need to.
+
+If overriding, you must catch the L<SUBMIT_UNWIND|"SUBMIT_UNWIND">
+if you don't want to render the form without errors in the event
+of an unwind.
 
 =cut
 
@@ -494,6 +644,70 @@ sub load_from_model_properties {
     return;
 }
 
+=for html <a name="put_context_fields"></a>
+
+=head2 put_context_fields(string name, any value, ....)
+
+Allows you to put multiple context fields on this form's context.
+
+=cut
+
+sub put_context_fields {
+    my($self) = shift;
+    Carp::croak("must be an even number of parameters")
+		unless int(@_) && int(@_) % 2 == 0;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('form does not require_context') unless $fields->{context};
+    my($c) = $fields->{context};
+    my($model) = $c->{form_model};
+    Carp::croak('context does not contain form_model') unless $model;
+
+    my($mi) = $model->get_instance;
+    my($other_cols) = $mi->get_info('columns');
+    # If there is no form, initialize
+    my($f) = $c->{form} ||= {version => $mi->get_info('version')};
+    while (@_) {
+	my($k, $v) = (shift(@_), shift(@_));
+	my($col) = $other_cols->{$k};
+	Carp::croak("$model.$k: no such field") unless $col;
+	# Convert with to_literal--context->{form} is in raw form
+	$f->{$col->{form_name}} = $col->{type}->to_literal($v);
+    }
+    _trace('new form: ', $c->{form}) if $_TRACE;
+    return;
+}
+
+=for html <a name="unsafe_get_context_field"></a>
+
+=head2 unsafe_get_context_field(string name) : array
+
+Returns the value of the context field.  Result is the same as
+L<Bivio::Type::from_literal|Bivio::Type/"from_literal">.
+
+Note: this is a heavy operation, because it converts the form value
+each time.
+
+=cut
+
+sub unsafe_get_context_field {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('form does not require_context') unless $fields->{context};
+    my($c) = $fields->{context};
+    my($model) = $c->{form_model};
+    Carp::croak('context does not contain form_model') unless $model;
+
+    # If there is no form, can't be a value
+    return (undef) unless $c->{form};
+
+    # From the form_model's sql_support, get the type and return
+    # the result of from_literal.
+    my($mi) = $model->get_instance;
+    my($type) = $mi->get_field_info($name, 'type');
+    my($fn) = $mi->get_field_info($name, 'form_name');
+    return $type->from_literal($c->{form}->{$fn});
+}
+
 =for html <a name="validate"></a>
 
 =head2 validate()
@@ -537,31 +751,40 @@ sub _apply_type_error {
     return;
 }
 
-# _convert_values_to_form(Bivio::Biz::FormModel self, hash_ref values) : hash_ref
+# _initialize_context(Bivio::Biz::FormModel self, Bivio::Agent::Request req)
 #
-# Converts values to the form as if it came in from html.
-# This is a bit inefficient, but at least we use the same logic.
+# If "self" does not have context, does nothing (context is undef).
+# Else, initialize the context to the "next" task unless the context
+# is passed in from the req.
 #
-sub _convert_values_to_form {
-    my($self, $values) = @_;
-#TODO: Should this be made more efficient, i.e. avoid convert roundtrip
-    my($sql_support) = $self->internal_get_sql_support;
-    my($columns) = $sql_support->get('columns');
-    my($form) = {
-	version => $sql_support->get('version'),
-	submit => $self->SUBMIT_OK,
-    };
-    foreach my $k (keys(%$values)) {
-	my($col) = $columns->{$k};
-	Carp::croak("$k: unknown column") unless defined($col);
-	$form->{$col->{form_name}} = $col->{type}->to_literal($values->{$k});
+sub _initialize_context {
+    my($self, $req) = @_;
+    my($sql_support) = $self->internal_get_sql_support();
+    return unless $sql_support->get('require_context');
+
+    my($c) = $req->unsafe_get('form_context');
+    unless ($c) {
+	my($next) = $req->get('task')->get('next');
+	my($form_model) = Bivio::Agent::Task->get_by_id($next)
+		->get('form_model');
+	$c = {
+	    form_model => $form_model,
+	    uri => $req->format_stateless_uri($next),
+	    query => undef,
+	    # Only create a form if there is a form_model on next task
+	    form => undef,
+	    form_context => undef,
+	};
     }
+    $self->{$_PACKAGE}->{context} = $c;
+    _trace('context: ', $c) if $_TRACE;
     return;
 }
 
-# _parse(Bivio::Biz::FormModel self, hash_ref form)
+# _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
 #
-# Parses the form. If Cancel is encountered, redirects immediately.
+# Parses the form. If Cancel or Other is encountered, redirects immediately.
+# If it is SUBMIT_UNWIND, returns false.  If it is ok, returns true.
 #
 sub _parse {
     my($self, $form) = @_;
@@ -571,13 +794,18 @@ sub _parse {
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self, $form->{version}, $sql_support);
-    _parse_submit($self, $form->{$self->SUBMIT}, $form);
+    # Parse context first, so can be used by parse_submit (is_submit_ok)
+    _parse_context($self, $form) if $sql_support->get('require_context');
+    # Ditto for timezone
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
+
+    # Parse only if parse_submit says it is ok to parse
+    return 0 unless _parse_submit($self, $form);
     my($values) = {};
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
     $self->internal_put($values);
-    return;
+    return 1;
 }
 
 # _parse_col(Bivio::Biz::FormModel self, hash_ref form, Bivio::SQL::FormSupport sql_support, hash_ref values, boolean is_hidden)
@@ -612,29 +840,62 @@ sub _parse_cols {
 			error => $err});
 	}
 	else {
-	    $self->internal_put_error($col->{name}, $err, $form->{$fn});
+	    $self->internal_put_error($col->{name}, $err);
 	}
     }
     return;
 }
 
-# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form)
+# _parse_context(Bivio::Biz::FormModel self, string value, hash_ref form, Bivio::SQL::FormSupport sql_support)
+#
+# Parses the form's context.  If there is no context, creates it.
+# ONLY CALL IF require_context
+#
+sub _parse_context {
+    my($self, $form) = @_;
+
+    if ($form->{context}) {
+	# If there is an incoming context, must be syntactically valid.
+	my($c, $e) = Bivio::Type::SecretAny->from_literal($form->{context});
+	$self->die(Bivio::DieCode::CORRUPT_FORM(),
+		{field => 'context', actual => $form->{context},
+		    error => $e}) unless $c;
+	$self->{$_PACKAGE}->{context} = $c;
+    }
+    else {
+	# OK, to not have incoming context.
+	_initialize_context($self);
+    }
+    _trace('context: ', $self->{$_PACKAGE}->{context}) if $_TRACE;
+    return;
+}
+
+# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form) : boolean
 #
 # Parses the submit button.  If there is an error, throws CORRUPT_FORM.
 # If the button is Cancel, will redirect immediately.  If the button
-# is "OK", just returns.
+# is "OK", returns true.  If the button is SUBMIT_UNWIND, returns false.
 #
 sub _parse_submit {
-    my($self, $value, $form) = @_;
+    my($self, $form) = @_;
+    my($value) = $form->{$self->SUBMIT};
 
-    return if $self->is_submit_ok($value, $form);
+    # Is the button an OK?
+    return 1 if $self->is_submit_ok($value, $form);
 
+    # It wasn't an ok, if SUBMIT_UNWIND, then don't parse the form.
+    if ($self->SUBMIT_UNWIND eq $value) {
+	_trace('unwind button, not parsing form') if $_TRACE;
+	return 0;
+    }
+
+    # Cancel or other doesn't parse form, but allows the subclass
+    # to do something on cancel, e.g. clear a cookie.
     _trace('cancel or other button: ', $value) if $_TRACE;
 
-    # Cancel or another button
     my($req) = $self->get_request;
     $self->execute_other($value);
-    # client redirect on cancel
+    # client redirect on cancel, no state is saved
     $req->client_redirect($req->get('task')->get('cancel'));
     # DOES NOT RETURN
 }
@@ -672,17 +933,6 @@ sub _parse_version {
 	    {field => 'version',
 		expected => $sql_support->get('version'),
 		actual => $value});
-    return;
-}
-
-# _put_self(Bivio::Biz::FormModel self)
-#
-# Sets itself in the request and returns.
-#
-sub _put_self {
-    my($self) = @_;
-    # Render form filled in from db, new form, or form with errors
-    $self->get_request->put(ref($self) => $self, form_model => $self);
     return;
 }
 

@@ -98,11 +98,24 @@ Returns the constraint of the column.
 =cut
 
 sub get_column_constraint {
+    return shift->get_column_info(@_, 'constraint');
+}
+
+=for html <a name="get_column_info"></a>
+
+=head2 get_column_info(string column, string attr) : any
+
+Returns I<attr> for I<column>.
+
+=cut
+
+sub get_column_info {
     my($columns) = shift->get('columns');
-    my($name) = shift;
+    my($name, $attr) = @_;
     my($col) = $columns->{$name};
     Carp::croak("$name: no such column") unless $col;
-    return $col->{constraint};
+    Carp::croak("$name.$attr: no such attribute") unless exists($col->{$attr});
+    return $col->{$attr};
 }
 
 =for html <a name="get_column_name"></a>
@@ -131,11 +144,7 @@ Returns the type of the column.
 =cut
 
 sub get_column_type {
-    my($columns) = shift->get('columns');
-    my($name) = shift;
-    my($col) = $columns->{$name};
-    Carp::croak("$name: no such column") unless $col;
-    return $col->{type};
+    return shift->get_column_info(@_, 'type');
 }
 
 =for html <a name="has_columns"></a>

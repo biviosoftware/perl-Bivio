@@ -58,7 +58,7 @@ use Bivio::UI::HTML::Widget::FormFieldLabel;
 use Bivio::UI::HTML::Widget::FormErrorList;
 use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Select;
-use Bivio::UI::HTML::Widget::Submit;
+use Bivio::UI::HTML::Widget::StandardSubmit;
 use Bivio::UI::HTML::Widget::Text;
 use Bivio::Util;
 
@@ -85,7 +85,7 @@ sub new {
     my($grid_values) = $self->create_fields;
     # Add the submit button
     push(@$grid_values, [
-	Bivio::UI::HTML::Widget::Submit->new({
+	Bivio::UI::HTML::Widget::StandardSubmit->new({
 	    cell_expand => 1,
 	    cell_align => 'center',
 	}),
