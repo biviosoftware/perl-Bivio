@@ -95,14 +95,14 @@ my(%_XML_TO_HTML) = (
 
 =for html <a name="xml_to_html"></a>
 
-=head2 xml_to_html() : string_ref
+=head2 xml_to_html(string xml_file) : string_ref
 
-Parses input and converts into an HTML output.
+Parses I<xml_file> and returns HTML version of DocBook.
 
 =cut
 
 sub xml_to_html {
-    my($self) = @_;
+    my($self, $xml_file) = @_;
     my($state) = {
 	out => '<html><body>',
 	footnotes => '',
@@ -111,8 +111,9 @@ sub xml_to_html {
     };
     _xml_to_html_parse(
 	$state,
-	XML::Parser->new(Style => 'Tree')->parsefile('unit-testing.xml'));
-    $state->{out} .= $state->{footnotes}.'</body></html>';
+	XML::Parser->new(Style => 'Tree')->parsefile($xml_file));
+    $state->{out} .= '<p><h2>Footnotes</h2>'
+	.$state->{footnotes}.'</body></html>';
     return \$state->{out};
 }
 
@@ -214,10 +215,11 @@ sub _xml_to_html_parse_epigraph {
 sub _xml_to_html_parse_footnote {
     my($state, $tree) = @_;
     my($i) = $state->{footnote_counter}++;
-    $state->{out} .= '<a href="footnoote-'.$i.'"><sup>'.$i."</sup></a>\n";
+    $state->{out} .= '<a href="#footnoote-'.$i.'">['.$i."]</a>\n";
     my($out) = $state->{out};
-    $state->{out} = '<a name="footnoote-'.$i.'"><sup>'.$i."</sup></a>\n";
+    $state->{out} = '';
     _xml_to_html_parse($state, $tree);
+    $state->{out} =~ s!(<p>)!$1<a name="footnoote-$i">[$i]</a>\n!;
     $state->{footnotes} .= $state->{out};
     $state->{out} = $out;
     return;
