@@ -88,7 +88,7 @@ sub create {
     $_FILE_CLIENT->append('/'. $club_name . '/mbox/'
 	    . sprintf("%04d%02d", $year, ++$mon), \$mbox)
 	    || die("mbox append failed: $mbox");
-#TODO: Need to truncate these.  If from_email is too long, what to do?
+#TODO:: Need to truncate these.  If from_email is too long, what to do?
     my($from_email, $from_name) = $msg->get_from();
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to();
@@ -101,7 +101,7 @@ sub create {
 	'from_email' => $from_email,
 	'reply_to_email' => $reply_to_email,
 	'subject' => $msg->get_subject || '',
-#TODO: Measure real size (all unpacked files)
+#TODO:: Measure real size (all unpacked files)
 	'kbytes' => int((length($body) + 1023)/ 1024),
 	'subject_sort' => &_sortable_subject($msg->get_subject( ) || '',
 		$club_name),
@@ -109,8 +109,8 @@ sub create {
     };
     $self->SUPER::create($values);
     my $msgid = $self->get('mail_message_id');
-#TODO: Update club_t.bytes here
-    $_FILE_CLIENT->create('/' . $club_name . '/messages/rfc922/'
+#TODO:: Update club_t.bytes here
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/rfc822/'
 	    . $values->{mail_message_id}, \$body)|| die("create of file failed: $body");
 
     # Handle email attachments. Here's a first cut...
@@ -122,23 +122,21 @@ sub create {
 	    . $msgid, \$body)
 	    || die("file server failed: $body");
 
-# Handle email attachments. Here's a first cut...
-
-    my($mail_message) = $msg->get_rfc822( ); #offset from header
-    # note that above method returns a COPY not a REFERENCE.
-    # this may actually be necessary, I don't know. I think
-    # parser->read( ) will WRITE to this area!!
-
-    $file->open(\$mail_message);
     my $entity = $parser->read($file);
-    $file->close;
 
     #now extract all the mime attachments
     &_trace('extracting MIME attachments for this mail message') if $_TRACE;
 #    my $msgid = $values->{mail_message_id};
-    &_trace('extracting MIME attachments') if $_TRACE;
     _extract_mime($entity, 0, $club_name, $msgid);
-    &_trace('Done extractng MIME attachments') if $_TRACE;
+    
+    #crude reset of the file position:
+    $file = $msg->get_rfc822_io();
+    my $keywords = _parse_keywords($file);
+    $file->close;
+    my $rslt = "";
+    $_FILE_CLIENT->set_keywords('/' . $club_name . '/messages/html/' . $values->{mail_message_id} . ".0",
+	    $keywords,
+	    \$rslt);
     return;
 }
 
@@ -249,48 +247,133 @@ sub setup_club {
 
 #=PRIVATE METHODS
 
-=head1 COPYRIGHT
-
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
-
-
-#RETURNS a stripped, lowercase version of the subject line for sorting.
-sub _sortable_subject {
-    my($subject, $clubname) = @_;
-    if(!$clubname){
-	die('no club name supplied to _sortable_subject');
+# _get_date(line : string reference) : string
+#
+# Probably should return a reference.
+# This method extracts a DATE from the line.
+# Note the assumption is we are parsing a message header, where the line
+# BEGINS with Date:, rather than parsing a date that might occur inside
+# the mail message body. 
+#
+#TODO: don't assume this is a mail header field. 
+sub _get_date {
+    my($line) = @_;
+    if($$line =~ s/^Date:\s*//){
+	my @date = split /\s*/, $$line;
+	return _todate(\@date);
     }
-    if(!$subject){
-	die('no subject supplied to _sortable_subject');
-    }
-
-    $subject = lc($subject);
-    $subject =~ s/^re:\s*($clubname)?//i;
-    $subject =~ s/\W//gi;
-    $subject .= "~";
-    return $subject;
 }
 
-sub _sortable_name {
-    my($from_name, $from_email) = @_;
-    if(!$from_name){
-	die('no from_name supplied to _sortable_name');
+# _parse_keywords(file : IO::File) : void
+#
+# parses the mail message for all words.
+# Note that right now, this method is receiving an IO::Handle from
+# the mail message which includes the mail header. We should just be
+# parsing the mail *body*
+#
+sub _parse_keywords {
+    my($file) = @_;
+    &_trace("_parse_keywords called.") if $_TRACE;
+    my %keywords;# = {};
+    LOOP : while(!$file->eof( )){
+	my $line = $file->getline( );
+	&_trace($line) if $_TRACE;
+	if($line =~ /^Date:/){
+	    my $fdate = _get_date(\$line);
+	    next LOOP;
+	}
+	if($line =~ s/^From:\s*//){
+	    next LOOP;
+	}
+	if($line =~ s/^To:\s*//){
+	    next LOOP;
+	}
+	if($line =~ s/^Subject:\s*//){
+	    next LOOP;
+	}
+	_parse_msg_line(\$line, \%keywords);
+
     }
-    my($str) = lc($from_name .  " <" . $from_email . ">" );
-    $str =~ s/[!#$%^&*-+=]/\s/g;
-    return $str;
+    my(@keys) = keys %keywords;
+    my(@values) = values %keywords;
+    my $totalwords = 0;
+#    while(@keys){
+#	my $n = pop(@values);
+#	$totalwords += $n;
+#	&_trace(pop(@keys) . "\" => " . $n) if $_TRACE;
+#    }
+#    &_trace("Total Number of Words: $totalwords") if $_TRACE;
+    return \%keywords;
+}
+
+# _parse_msg_line(line : string reference, keywords : hash) : void
+#
+# parses a line of text, putting each word found into the
+# supplied hash, incrementing the index (number of times this word
+# is found in this line) in the hash or defining it as '1' if the
+# word was not there already. This is not necessary, but was an easy
+# way to put the words into the hash and has the added bonus that if
+# we wanted to do "weighting" of words in messages, we could do that
+# easily. The caller can simply ignore the number field for now
+#
+# NOTE: that this line also strips out unwanted chars. We take out
+# ALL HTML! Also, I remove funky characters, and characters from HTML
+# that are not normally encoded inside angle brackets (i.e. &nbsp)
+#
+# All words are stored lower case only.
+#
+#
+#TODO: STORE THIS INFORMATION INTO THE FILE SERVER!
+sub _parse_msg_line {
+    my($line, $keywords) = @_;
+    &_trace("_parse_msg_line called.") if $_TRACE;
+    my $str = $$line;
+    if(!$$line){
+	print(STDERR "NULL LINE.\n");
+	return;
+    }
+    $str =~ s/--//g;
+    $str =~ s/nbsp//g;
+    $str =~ s/\<.*\>//g;
+    $str =~ s/[.]\s//g;
+    $str =~ s/[!@#%^&*,();:\t\[\]]//g;
+    #let's assume we don't care about case:
+    $str = lc($str);
+    #and let's put off worrying about if this is MSWord, Excel, etc.
+    my @words = split /\s/, $str;
+    for(my $x = 0; $x < $#words +1; $x++){
+	my $n = $keywords->{$words[$x]};
+	my $i = $n ? $n+1 : 1;
+	if($words[$x] eq("")){
+	    print(STDERR "found null word. Skipping.\n");
+	}
+	else{
+	    &_trace("found: " . $words[$x]) if $_TRACE;
+	    $keywords->{$words[$x]} = $i;
+	}
+    }
+    
+}
+
+# _todate(date string) : string
+# gets an array of elements, each corresponding to
+# parts of the date stripped out of a line;
+# [day][date][month-abbreviated][year][time][gmtoffset]
+# receives an arrayref, returns a scalar (formatted string)
+#
+#
+sub _todate {
+    my($date) = @_;
+    my $d = "@$date[2] ";
+    $d .= @$date[1] =~ /\d\d/ ? @$date : "0" . @$date[1];
+    $d .= " @$date[3]";
+    return $d;
 }
 
 
-#NOTE this method returns a scalar, not a reference.
+#NOTE: this method returns a scalar, not a reference.
 #The mime header is assumed to be small.
-#TODO don't use tie'd handles. 
+#TODO: don't use tie'd handles. 
 sub _extract_mime_header($ ){
     my($entity) = @_;
     my $s;
@@ -300,8 +383,8 @@ sub _extract_mime_header($ ){
     return $s;
 }
 
-# NOTE this method returns a scalar reference.
-#TODO don't use tied handles.
+#NOTE: this method returns a scalar reference.
+#TODO: don't use tied handles.
 sub _extract_mime_body_decoded($ ){
     my($entity) = @_;
     my $s;
@@ -388,6 +471,34 @@ sub _extract_mime{
         _extract_mime($e, $fileindex, $club_name, $message_id);
     }
 }
+
+sub _sortable_subject {
+     my($subject, $clubname) = @_;
+     if(!$clubname){
+       die('no club name supplied to _sortable_subject');
+     }
+     if(!$subject){
+       die('no subject supplied to _sortable_subject');
+     }
+ 
+     $subject = lc($subject);
+     $subject =~ s/^re:\s*($clubname)?//i;
+     $subject =~ s/\W//gi;
+     $subject .= "~";
+     return $subject;
+}
+
+# constructs a string we can store and use as a "sortable" subject.
+sub _sortable_name {
+     my($from_name, $from_email) = @_;
+     if(!$from_name){
+       die('no from_name supplied to _sortable_name');
+     }
+     my($str) = lc($from_name .  " <" . $from_email . ">" );
+     $str =~ s/[!#$%^&*-+=]/\s/g;
+     return $str;
+}
+
 
 1;
 
