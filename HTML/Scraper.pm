@@ -287,7 +287,7 @@ result to I<file_name>.
 
 If not successful, throws an exception.
 
-Handles up to two redirects, but then blows up.
+Handles up to four redirects, but then blows up.
 
 =cut
 
@@ -413,7 +413,7 @@ sub _format_form {
 
 # _http_request(self, HTTP::Request hreq) : HTTP::Response
 #
-# Tries to fetch up to three times, then dies with too many redirects.
+# Tries to redirect up to four times, then dies with too many redirects.
 #
 sub _http_request {
     my($self, $hreq) = @_;
