@@ -51,8 +51,10 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-admin [options] command [args...]
 commands:
-    create_user email display_name password -- creates a new user
+    create_user email display_name password [user_name] -- creates a new user
     delete_user -- deletes the user
+    join_user honorific -- adds user to realm
+    leave_user -- adds user to realm
 EOF
 }
 
@@ -68,23 +70,28 @@ use Bivio::Type::Honorific;
 
 =for html <a name="create_user"></a>
 
-=head2 create_user(string email, string display_name, string password)
+=head2 create_user(string email, string display_name, string password, string user_name)
 
 Creates a new user.  Does not validate the arguments.  AuthUser is
-new users (L<Bivio::Biz::Model::UserCreateForm|Bivio::Biz::Model::UserCreateForm>).
+new users (L<Bivio::Biz::Model::UserCreateForm|Bivio::Biz::Model::UserCreateForm>).  Last option is optional.  It allows you to force the I<user_name>
+to be something specific.
 
 =cut
 
 sub create_user {
-    my($self, $email, $display_name, $password) = @_;
+    my($self, $email, $display_name, $password, $user_name) = @_;
     $self->usage_error("missing argument")
 	unless $email && $display_name && $password;
     my($req) = $self->get_request;
+#TODO: Need to move this to form model.  execute should have validate option.
     Bivio::Biz::Model->get_instance('UserCreateForm')->execute($req, {
-	'Email.email' => $email,
-	'RealmOwner.display_name' => $display_name,
-	'RealmOwner.password' => $password,
-	confirm_password => $password,
+	'Email.email' => $self->convert_literal('Email', $email),
+	'RealmOwner.display_name' =>
+	    $self->convert_literal('Line', $display_name),
+	'RealmOwner.password' => $self->convert_literal('Password', $password),
+	confirm_password => $self->convert_literal('Password', $password),
+	$user_name ? ('RealmOwner.name' =>
+	    $self->convert_literal('RealmName', $user_name)) : (),
     });
     return;
 }
@@ -107,6 +114,45 @@ sub delete_user {
     $req->get('auth_user')->cascade_delete;
     $req->set_user(undef);
     $req->set_realm(undef);
+    return;
+}
+
+=for html <a name="join_user"></a>
+
+=head2 join_user(string honorific)
+
+Adds user to realm with I<honorific>.
+
+=cut
+
+sub join_user {
+    my($self, $honorific) = @_;
+    my($req) = $self->get_request;
+    Bivio::Biz::Model->new($req, 'RealmUser')->create({
+	realm_id => $req->get('auth_id'),
+	user_id => $req->get('auth_user_id'),
+	honorific => $self->convert_literal('Honorific', $honorific),
+    });
+    return;
+}
+
+=for html <a name="leave_user"></a>
+
+=head2 leave_user()
+
+Drops I<user> from I<realm>.
+
+=cut
+
+sub leave_user {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::Biz::Model->new($req, 'RealmUser')->unauth_delete({
+	realm_id => $req->get('auth_id')
+	   || $self->usage_error('realm not set'),
+	user_id => $req->get('auth_user_id')
+	   || $self->usage_error('user not set'),
+    });
     return;
 }
 
