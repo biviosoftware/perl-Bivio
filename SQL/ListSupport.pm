@@ -568,13 +568,14 @@ sub _load_list {
     if ($query->unsafe_get('want_page_count')) {
 	my($statement) = Bivio::SQL::Connection->execute(
 		$attrs->{select_count}.$where, $params);
-	my($page_count) = _page_number($query, $statement->fetchrow_array);
+	my($row_count) = $statement->fetchrow_array;
+	my($page_count) = _page_number($query, $row_count);
 	_trace('page_count=', $page_count) if $_TRACE;
 	if ($page_number > $page_count) {
 	    _trace('page_number (',  $page_number, ') > count') if $_TRACE;
 	    $query->put(page_number => $page_number = $page_count);
 	}
-	$query->put(page_count => $page_count);
+	$query->put(page_count => $page_count, row_count => $row_count);
     }
 
     my($select) = $attrs->{select}.$where;

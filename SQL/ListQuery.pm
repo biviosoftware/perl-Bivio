@@ -106,8 +106,8 @@ It is an array_ref to preserve the order specified by the user.
 
 =item page_count : int
 
-Number of pages in the list.  Only set if I<want_page_count> is
-true.
+Total number of pages that can be returned by this the query.  Only set if
+I<want_page_count> is true.
 
 =item page_number : int
 
@@ -128,6 +128,11 @@ primary key of next item.
 =item prev_page : int
 
 page number of next page.
+
+=item row_count : int
+
+Total number of rows that can be returned by this the query.  Only set if
+I<want_page_count> is true.
 
 =item search : string
 
