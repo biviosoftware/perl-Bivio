@@ -362,7 +362,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
-        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
+        cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -376,7 +376,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
-        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
+        cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -399,7 +399,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
-        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
+        cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -852,7 +852,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
-        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
+        cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
