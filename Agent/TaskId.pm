@@ -2158,6 +2158,7 @@ my(@_CFG) = (
         ?/admin/public
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::PublicRealmForm
         Bivio::UI::HTML::Club::PublicRealm
         next=CLUB_ADMIN_TOOLS
@@ -2169,6 +2170,7 @@ my(@_CFG) = (
         ADMIN_WRITE
         ?/admin/private
         Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::PrivateRealmForm
         Bivio::UI::HTML::Club::PrivateRealm
         next=CLUB_ADMIN_TOOLS
