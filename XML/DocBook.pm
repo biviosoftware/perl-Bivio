@@ -149,7 +149,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     'quote/quote' => q{'${_}'},
     'sect1/title' => ['h2'],
     'sect2/title' => ['h3'],
-    sidebar => '<table width="95%" border=0 cellpadding=5 bgcolor="#CCCCCC">'
+    sidebar => '<table width="95%" border=1 cellpadding=5 bgcolor="#CCCCCC">'
         . '<tr><td>${_}</td></tr></table>',
     'sidebar/title' => ['h3'],
     superscript => ['sup'],
