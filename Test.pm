@@ -174,6 +174,11 @@ See L<check_return|"check_return">.
 
 See L<compute_params|"compute_params">
 
+=item method_is_autoloaded : boolean [0]
+
+By default, an object must implement the methods in the test cases. For
+AUTOLOAD cases, set this option to true.
+
 =item print : code_ref (global attribute)
 
 You can override the print function used to output the results of the test.
@@ -208,6 +213,8 @@ use Bivio::Test::Case;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(@_CALLBACKS) = qw(check_return check_die compute_params);
+my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', 'method_is_autoloaded');
+my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
 =head1 FACTORIES
 
@@ -343,6 +350,19 @@ sub unit {
 
 #=PRIVATE METHODS
 
+# _add_option(hash_ref state, hash_ref in, hash_ref option) : boolean
+#
+# Sets $option in $state to value in $in.  Returns false if
+# $option not in $in.
+#
+sub _add_option {
+    my($state, $in, $option) = @_;
+    return 0 unless exists($in->{$option});
+    $state->{$option} = $in->{$option};
+    delete($in->{$option});
+    return 1;
+}
+
 # _assert_options(hash_ref options)
 #
 # Validates result_ok, compute_params, and printer options.
@@ -351,10 +371,10 @@ sub _assert_options {
     my($options) = @_;
     die('options not a hash_ref') unless ref($options) eq 'HASH';
     my($o) = {%$options};
-    foreach my $c (@_CALLBACKS, 'print') {
+    foreach my $c (@_ALL_OPTIONS) {
 	next unless exists($o->{$c});
 	die($c, ': option not a subroutine (code_ref)')
-	    unless ref($o->{$c}) eq 'CODE';
+	    unless ref($o->{$c}) eq 'CODE' || $c eq 'method_is_autoloaded';
 	delete($o->{$c});
     }
     _die('unknown option(s) passed to new: ', join(' ', sort(keys(%$o))))
@@ -372,7 +392,7 @@ sub _compile {
 	object_num => 0,
 	map {
 	    ($_ => $self->unsafe_get($_));
-	} @_CALLBACKS
+	} @_CASE_OPTIONS
     };
     _compile_assert_even($objects, $state);
     my(@objects) = @$objects;
@@ -447,8 +467,9 @@ sub _compile_method {
     $method = $state->{method};
     _compile_die($state, (ref($state->{object}) || $state->{object}),
 	' does not implement method "', $method, '"')
-	unless defined($method) && !ref($method)
-	    && UNIVERSAL::can($state->{object}, $method);
+	unless $state->{method_is_autoloaded}
+	    || defined($method) && !ref($method)
+		&& UNIVERSAL::can($state->{object}, $method);
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
@@ -513,10 +534,9 @@ sub _compile_options {
 	my($h) = {%$entity_or_hash};
 	_compile_die($state, '"', $which, '" must be specified in HASH')
 	    unless $h->{$which};
+	_add_option($state, $h, 'method_is_autoloaded');
 	foreach my $c (@_CALLBACKS, $which) {
-	    next unless exists($h->{$c});
-	    $state->{$c} = $h->{$c};
-	    delete($h->{$c});
+	    next unless _add_option($state, $h, $c);
 	    next if $c eq $which;
 	    _compile_die($state, $c, ' is not a subroutine (code_ref)')
 		unless ref($state->{$c}) eq 'CODE';
