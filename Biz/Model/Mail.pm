@@ -227,9 +227,15 @@ sub delete {
     else {
         _trace('Message not part of a thread') if $_TRACE;
     }
+
+    # Need to delete the mail_t entry before deleting the files
+    # because of the foreign key constraints
+    return 0 unless $self->SUPER::delete(@_);
+
     my($file) = Bivio::Biz::Model::File->new($req);
     if( defined($properties->{rfc822_file_id}) ) {
-        _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id}) if $_TRACE;
+        _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id})
+                if $_TRACE;
         # Not clear why have to load it to delete it??
         $file->load(
                 file_id => $properties->{rfc822_file_id},
@@ -238,14 +244,15 @@ sub delete {
         $file->delete;
     }
     if( defined($properties->{cache_file_id}) ) {
-        _trace('Deleting cache file, id=', $properties->{cache_file_id}) if $_TRACE;
+        _trace('Deleting cache file, id=', $properties->{cache_file_id})
+                if $_TRACE;
         $file->load(
                 file_id => $properties->{cache_file_id},
                 volume => $_CACHE_VOLUME,
                );
         $file->delete;
     }
-    return $self->SUPER::delete(@_);
+    return 1;
 }
 
 =for html <a name="cache_parts"></a>
@@ -397,7 +404,6 @@ sub _walk_attachment_tree {
             is_directory => 0,
             name => $mail_id,
             user_id => $user_id,
-            # Store complete header only for sub-parts, not for single-part messages
             aux_info => $aux_info,
             content => \$content,
             directory_id => $dir_id,
