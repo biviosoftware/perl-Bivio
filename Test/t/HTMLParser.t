@@ -9,7 +9,7 @@ BEGIN {
 }
 use Bivio::Test;
 use Bivio::IO::File;
-my($_NEW) = 
+my($_TMP);
 Bivio::Test->new({
     class_name => 'Bivio::Test::HTMLParser',
     create_object => sub {
@@ -124,6 +124,21 @@ Bivio::Test->new({
 	get_by_headings => [
 	    ['Remove'] => undef,
 	    ['Not found'] => Bivio::DieCode->DIE,
+	],
+	do_rows => [
+	    ['Remove', sub {
+		my($row, $index) = @_;
+		unless ($_TMP) {
+		    die('index not 0 first time')
+			unless $index eq 0;
+		}
+		die('In Stock is not yes')
+		    unless $row->{'In Stock'} eq 'yes';
+		$_TMP = $index;
+		return 0;
+	    }] => sub {
+		return $_TMP == 0 ? 1 : 0;
+	    },
 	],
     ],
 ]);
