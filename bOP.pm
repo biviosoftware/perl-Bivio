@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::XML::DocBook->to_pdf indents examples by 2 and fixed some
+    font problems.  Still problems with margins and some example
+    indentation.
+
+  Revision 2.48  2005/01/05 23:35:30  nagler
+  * IMPORTANT: Bivio::Type::Number now uses GMP available from:
+    http://www.gnu.org/software/gmp/
+    You need to install the GMP.pm files.  Here's what works on Unix:
+
+      tar xzf gmp-4.1.4.tar.gz
+      cd gmp-4.1.4
+      ./configure --enable-mpbsd
+      make install
+      cd demos/perl
+      perl Makefile.PL GMP_BUILDDIR=../..
+      make install
+
+    This change makes Bivio::Type::Number much faster.
   * Bivio::type::DateTime->from_literal recognizes to_file_name format
   * Removed Bivio::UI::Color->format_pdf
   * Bivio::UI::PDF::* removed
