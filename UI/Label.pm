@@ -436,6 +436,8 @@ _compile(
     HELP_MEMBER_TRANSACTIONS => ['Member Transactions'],
     HELP_DELETING_TRANSACTIONS => ['Deleting Transactions'],
     HELP_TAX_ALLOCATION_METHODS => ['Tax Allocation Methods'],
+    HELP_EXPENSES => ['Expenses'],
+    HELP_FEES => ['Fees'],
 );
 
 =head1 METHODS
