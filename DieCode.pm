@@ -85,9 +85,9 @@ corrupt query: user request contains invalid query value.  This is
 not the same as invalid input.  The query has been corrupted.  It
 might be due to an error on the server.
 
-=item REDIRECT_TASK: task_id
+=item SERVER_REDIRECT_TASK: task_id
 
-redirect task: direct dispatcher to switch to the specified task.
+server redirect task: direct dispatcher to switch to the specified task.
 Transactions, messages, etc. SHOULD NOT be rolled back.
 
 =item CORRUPT_FORM: message, entity, class
@@ -166,9 +166,9 @@ __PACKAGE__->compile(
 	'corrupt query',
 	'user request contains invalid query value',
     ],
-    REDIRECT_TASK => [
+    SERVER_REDIRECT_TASK => [
 	11,
-	'redirect task',
+	'server redirect task',
 	'direct dispatcher to switch to new task',
     ],
     CORRUPT_FORM => [
