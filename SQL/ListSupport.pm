@@ -82,8 +82,9 @@ sub new {
 
     # number of fields per column entry
     my($col_field_count) = [];
+    my($n);
     foreach (@$col_map) {
-	push(@$col_field_count, &_count_occurances($_, ',') + 1);
+	push(@$col_field_count, &_count_occurances($n, ',') + 1);
     }
 
     $self->{$_PACKAGE} = {

@@ -86,16 +86,17 @@ sub new {
     my($column_names) = $fields->{column_names} = [sort keys %$column_cfg];
     my($primary_key_names) = $fields->{primary_key_names} = [];
     # Go through columns and
-    foreach (@$column_names) {
-	my($cfg) = $column_cfg->{$_};
-	$columns->{$_} = {
-	    name => $_,
+    my($n);
+    foreach $n (@$column_names) {
+	my($cfg) = $column_cfg->{$n};
+	$columns->{$n} = {
+	    name => $n,
 	    type => $cfg->[0],
 	    constraint => $cfg->[1],
 	    sql_pos_param => $cfg->[0]->to_sql_value('?'),
 	};
-	push(@$primary_key_names, $_)
-		if $columns->{$_}->{is_primary_key}
+	push(@$primary_key_names, $n)
+		if $columns->{$n}->{is_primary_key}
 			= $cfg->[1] eq Bivio::SQL::Constraint::PRIMARY_KEY();
     }
     Carp::croak("$table_name: no primary keys")
@@ -233,8 +234,9 @@ Does the table have the specified columns
 
 sub has_columns {
     my($columns) = shift->{$_PACKAGE}->{columns};
-    foreach (@_) {
-	return 0 unless exists($columns->{$_});
+    my($n);
+    foreach $n (@_) {
+	return 0 unless exists($columns->{$n});
     }
     return 1;
 }
@@ -300,19 +302,20 @@ sub update {
     my($columns) = $fields->{columns};
     my($set);
     my(@params);
-    foreach (@{$fields->{column_names}}) {
-	my($column) = $columns->{$_};
+    my($n);
+    foreach $n (@{$fields->{column_names}}) {
+	my($column) = $columns->{$n};
 	if ($column->{is_primary_key}) {
 	    # Ensure primary keys aren't different, because PropertyModel
 	    # always copies new_values to old_values on success
-	    $new_values->{$_} = $old_values->{$_};
+	    $new_values->{$n} = $old_values->{$n};
 	    # Don't update primary keys
 	    next;
 	}
-	my($old) = $old_values->{$_};
-	my($new) = $new_values->{$_};
+	my($old) = $old_values->{$n};
+	my($new) = $new_values->{$n};
 	next if _equals($old, $new);
-	$set .= $_.'='.$column->{sql_pos_param}.',';
+	$set .= $n.'='.$column->{sql_pos_param}.',';
 	push(@params, $column->{type}->to_sql_param($new));
     }
     # check if any changes required
@@ -324,8 +327,8 @@ sub update {
     # remove the extra ',' from set
     chop($set);
     # add primary key values for the primary_where
-    foreach (@{$fields->{primary_key_names}}) {
-	push(@params, $columns->{$_}->{type}->to_sql_param($old_values->{$_}));
+    foreach $n (@{$fields->{primary_key_names}}) {
+	push(@params, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
     }
     Bivio::SQL::Connection->execute(
 	    $fields->{update}.$set.$fields->{primary_where}, \@params, $die);

@@ -144,8 +144,9 @@ sub create {
     my($fields) = $self->{$_PACKAGE};
     my($sql_support) = $fields->{class_info}->{sql_support};
     # Make sure all columns are defined
-    foreach (@{$sql_support->get_column_names}) {
-	$new_values->{$_} = undef unless exists($new_values->{$_});
+    my($n);
+    foreach $n (@{$sql_support->get_column_names}) {
+	$new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
     $fields->{properties} = $new_values;
@@ -351,8 +352,9 @@ sub update {
     my($properties) = $fields->{properties};
     $fields->{class_info}->{sql_support}->update($properties,
 	    $new_values, $self);
-    foreach (keys(%$new_values)) {
-	$properties->{$_} =  $new_values->{$_};
+    my($n);
+    foreach $n (keys(%$new_values)) {
+	$properties->{$n} =  $new_values->{$n};
     }
     return;
 }

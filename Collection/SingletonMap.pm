@@ -99,11 +99,14 @@ of this routine in the future.
 
 sub put {
     my($pkg, $classes) = @_;
-    foreach (@$classes) {
-	Bivio::Util::my_require($_);
+    my($c);
+    foreach $c (@$classes) {
+	Bivio::Util::my_require($c);
     }
     $_MAP{$pkg} = {map {
-	($_, $_->new);
+	my($x) = $_;
+	# "new" may overwrite $_
+	($x, $x->new);
     } @$classes};
     return;
 }

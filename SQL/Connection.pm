@@ -104,6 +104,8 @@ sub execute {
 	message => $@,
 	dbi_err => $err,
 	dbi_errstr => $statement->errstr,
+	sql => $sql,
+	sql_params => $params,
     };
     eval {
 	# Clean up just in case statement is cached
@@ -192,8 +194,9 @@ sub _trace_sql {
     my($sql, $params) = @_;
     my(@args);
     my($sep) = ' [';
-    foreach (ref($params) ? @$params : ()) {
-	push(@args, $sep, $_);
+    my($p);
+    foreach $p (ref($params) ? @$params : ()) {
+	push(@args, $sep, $p);
 	$sep = ',';
     }
     @args && push(@args, ']');
