@@ -1762,7 +1762,7 @@ my(@_CFG) = (
         USER_MAIL_RECEIVE
         178
         USER
-        MAIL_RECEIVE
+        MAIL_WRITE
         !
         Bivio::Biz::Action::UserMailPeople
         Bivio::UI::Mail::Receive
@@ -1771,8 +1771,9 @@ my(@_CFG) = (
         CLUB_MAIL_RECEIVE
         179
         CLUB
-        MAIL_RECEIVE&MAIL_WRITE
+        MAIL_WRITE
         !
+        Bivio::Biz::Action::ClubMailBoard
         Bivio::Biz::Action::ClubMailPeople
         Bivio::UI::Mail::Receive
     )],
@@ -1780,7 +1781,7 @@ my(@_CFG) = (
         CLUB_MAIL_BOARD_RECEIVE
         180
         CLUB
-        MAIL_RECEIVE&MAIL_WRITE
+        MAIL_WRITE
         !
         Bivio::Biz::Action::ClubMailBoard
         Bivio::UI::Mail::Receive
@@ -1789,7 +1790,7 @@ my(@_CFG) = (
         CLUB_MAIL_PEOPLE_RECEIVE
         181
         CLUB
-        MAIL_RECEIVE
+        MAIL_WRITE
         !
         Bivio::Biz::Action::ClubMailPeople
         Bivio::UI::Mail::Receive
@@ -1798,7 +1799,7 @@ my(@_CFG) = (
         CLUB_MAIL_ADMIN_RECEIVE
         182
         CLUB
-        MAIL_RECEIVE
+        MAIL_WRITE
         !
         Bivio::Biz::Action::ClubMailAdmin
         Bivio::UI::Mail::Receive
