@@ -117,6 +117,7 @@ sub internal_fixup_sql {
 
     $sql = _fixup_outer_join($sql)
 	if $sql =~ /\(\+\)/;
+    _trace($sql) if $_TRACE;
     return $sql;
 }
 
@@ -262,15 +263,19 @@ sub _fixup_outer_join {
 	my($source_table) = lc(_parse_table_name($left));
 	my($target_table) = lc(_parse_table_name($right));
 	if ($joins->{$source_table}) {
+	    # We already added the LEFT JOIN $target_table in $joins
 	    next if $joins->{$source_table}
 		=~ s/(?<=LEFT JOIN $target_table ON \()/$left = $right AND /is;
 	}
+	# Remove target_table from FROM, and save LEFT JOIN in $joins
 	$from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b((?:\w+\s+)?$target_table)\b,?/$1/s
 	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $from_where);
 	$joins->{$source_table} .= " LEFT JOIN $2 ON ($left = $right)";
     }
+    # Remove target table(s) from FROM and add $joins to FROM
     foreach my $source_table (sort(keys(%$joins))) {
-	$from_where =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)/$1$joins->{$source_table}/is
+print STDERR $source_table, "\n";
+	$from_where =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)(?=\s*,|\s+WHERE\b)/$1$joins->{$source_table}/is
 	    || Bivio::Die->die('failed to insert outer join "',
 		$joins->{$source_table}, '" into ', $from_where);
     }
