@@ -578,42 +578,6 @@ sub heading_as_label {
 		    ->get_name)}]);
 }
 
-=for html <a name="heading_with_inactive_form"></a>
-
-=head2 static heading_with_inactive_form(string label, boolean is_report) : Bivio::UI::HTML::Widget
-
-DEPRECATED
-
-REMOVE AFTER 1/1/2001.  REMOVE anchor in EditPreferencesTable.
-
-=cut
-
-sub heading_with_inactive_form {
-    my($proto, $label, $is_report) = @_;
-    _use(qw(Bivio::UI::HTML::Club::ReportPage Grid Form Checkbox));
-    return Bivio::UI::HTML::Widget::Grid->new({
-	expand => 1,
-	values => [
-	    [
-		($is_report ? Bivio::UI::HTML::Club::ReportPage
-			->get_heading_with_one_date('page_heading')
-			: $proto->string([
-			    sub {
-				return Bivio::UI::Label->get_simple(
-					shift->get('task_id')->get_name);
-			    }],
-				'page_heading'))->put(align => 'left',
-					cell_expand => 1),
-		$proto->link(
-			$label.' is now a preference',
-			'#preferences',
-		       'help_hint')->put(align => 'right',
-			      cell_nowrap => 1),
-	    ],
-        ],
-    });
-}
-
 =for html <a name="heading_with_search"></a>
 
 =head2 static heading_with_search(string label) : Bivio::UI::HTML::Widget
