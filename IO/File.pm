@@ -118,7 +118,7 @@ sub chown_by_name {
     my($o) = (CORE::getpwnam($owner))[2];
     Bivio::Die->die($owner, ': no such user')
 	unless defined($o);
-    my($g) = (CORE::getpwnam($group))[3];
+    my($g) = (CORE::getgrnam($group))[2];
     Bivio::Die->die($group, ': no such group')
 	unless defined($g);
     foreach my $file (@file) {
