@@ -33,8 +33,8 @@ use Bivio::IO::Trace;
 use Bivio::Mail::Address;
 use Bivio::Mail::RFC822;
 use Bivio::Type::DateTime;
-use MIME::Parser;
-use Time::Local;
+use MIME::Parser ();
+use Time::Local ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
