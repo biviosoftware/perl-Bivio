@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::JapanSurvey;
 use strict;
 $Bivio::Biz::Model::JapanSurvey::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::JapanSurvey::VERSION;
 
 =head1 NAME
 
@@ -32,13 +33,7 @@ and delete interface to the C<japan_survey_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
-use Bivio::Type::Line;
-use Bivio::Type::Name;
-use Bivio::Type::Boolean;
-use Bivio::Type::Country;
-use Bivio::Type::Amount;
 
 #=VARIABLES
 
@@ -79,28 +74,19 @@ sub internal_initialize {
 	    # This is actually bogus, but there is no way to have a
 	    # model without a primary key at this time.
 	    # (There is no consistent way to delete then.)
-	    creation_date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    client_addr => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    has_invested_before => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NONE()],
-	    has_broker => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NONE()],
-	    is_club_member => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NONE()],
-	    would_start_club => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NONE()],
-	    is_interested_in_market => ['Bivio::Type::Country',
-		Bivio::SQL::Constraint::NONE()],
-	    would_invest_yen => ['Bivio::Type::Amount',
-		Bivio::SQL::Constraint::NONE()],
+	    creation_date_time => ['DateTime', 'PRIMARY_KEY'],
+	    client_addr => ['Name', 'PRIMARY_KEY'],
+	    has_invested_before => ['Boolean', 'NONE'],
+	    has_broker => ['Boolean', 'NONE'],
+	    is_club_member => ['Boolean', 'NONE'],
+	    would_start_club => ['Boolean', 'NONE'],
+	    is_interested_in_market => ['Country', 'NONE'],
+	    would_invest_yen => ['Amount', 'NONE'],
 	    # This can't be Email, because we can't kick back the form
 	    # with errors, so there can be no errors.  The rest
 	    # are input with radio buttons so there isn't likely
 	    # to be errors.  We want the attempt at an email address.
-            email => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NONE()],
+            email => ['Line', 'NONE'],
         },
     };
 }
