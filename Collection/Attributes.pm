@@ -230,14 +230,17 @@ Returns a value to the widget.  The return value is determined as follows:
 
 =item 1.
 
-I<param1> is a valid attribute,
+I<param1> is a valid attribute or I<param1> is a attribute pattern
+(begins and ends with slash "/").  If it is an attribute pattern,
+it will be matched against I<all> keys.  One and only one match
+may be found.  Otherwise, it is an error.
 
 =over 4
 
 =item 1.1.
 
-Attribute it is not a reference or there are no
-more parameters, the value of the attribute will be returned unless there are
+Attribute is not a reference or there are no more parameters.
+The value of the attribute will be returned unless there are
 more parameters in which case the next parameter must be a blessed reference
 which supports C<get_widget_value>.  The first argument will be the attribute
 and the rest of the arguments will be passed.
@@ -294,14 +297,45 @@ Otherwise, die will be called.
 sub get_widget_value {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
+    Bivio::IO::Alert->die('too few arguments passed to ', $self) unless @_;
     my($param1) = shift;
     my($value);
-    # No such key, try to call the method on $param1
-    unless (exists($fields->{$param1})) {
+
+    # What value does $param1 identify?
+    if (exists($fields->{$param1})) {
+	# Plain old attribute, may be undef
+	$value = $fields->{$param1};
+    }
+    elsif ($param1 =~ m!^/(.+)/$!) {
+	# Attribute pattern
+	my($pat) = $1;
+	my($match);
+	foreach my $k (keys(%$fields)) {
+	    next unless $k =~ /$pat/;
+	    Carp::croak("$param1: matches more than one key ($k and $match)")
+			if $match;
+	    $match = $k;
+	}
+	Carp::croak("$param1: pattern not found") unless $match;
+	$value = $fields->{$match};
+    }
+    else {
+	# No such key, try to call the method on $param1
 	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
-	return $param1->get_widget_value(@_)
-		if UNIVERSAL::can($param1, 'get_widget_value');
+	if (UNIVERSAL::can($param1, 'get_widget_value')) {
+	    # Have to have params to call get_widget_value
+	    return $param1->get_widget_value(@_) if @_;
+
+#TODO: Document this very special case...
+	    # Return self if we're looking for self
+	    return $self if ref($self) eq $param1;
+
+	    # Otherwise, couldn't find it.
+	    Bivio::IO::Alert->die($param1, ': not found in source ', $self);
+	}
+
 	if ($param1 =~ s/^\+\+//) {
+	    # Auto increment?
 	    Carp::croak("++${param1}: not found")
 			unless exists($fields->{$param1});
 	    $value = ++$fields->{$param1};
@@ -318,22 +352,21 @@ sub get_widget_value {
 	    }
 	}
     }
-    else {
-	# scalar or undef attribute
-	$value = $fields->{$param1};
-    }
+
+    # Have value figure out what to do with it
     unless (ref($value)) {
-	# fall through
+	# fall through, not a reference
     }
     elsif (!@_) {
 	# No more params, further checking not required
 	return $value;
     }
     elsif ($value =~ /=/) {
+	# It's a blessed reference
 	return $value->get_widget_value(@_)
     }
     else {
-	# value is a ref
+	# value is a hash or array ref
 	my($param2) = shift;
 	Carp::croak("$param1: is a ref, but not passed second param")
 		    unless defined($param2);
@@ -355,6 +388,7 @@ sub get_widget_value {
 		    . ref($value));
 	}
     }
+
     # Check for next param which must be able to get_widget_value.
     return $value unless @_;
     $param1 = shift(@_);
