@@ -61,8 +61,9 @@ sub DATE_TIME_FIELD {
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
-use Bivio::Type::Secret;
 use Bivio::Type::DateTime;
+use Bivio::Type::Secret;
+use Bivio::UI::Facade;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -192,10 +193,12 @@ sub header_out {
     # Only set if modified and a browser.
     return 0 unless $fields->{$_MODIFIED_FIELD}
 	&& $req->get('Type.UserAgent')->is_browser;
-
+    my($domain) = $_CFG->{domain}
+        || Bivio::UI::Facade->get_from_request_or_self($req)->unsafe_get(
+            'cookie_domain');
     # don't send header unless we are in the correct server
-    return 0 if $_CFG->{domain}
-	&& $r->server->server_hostname !~ /\Q$_CFG->{domain}\E$/i;
+    return 0 if $domain
+	&& $r->server->server_hostname !~ /\Q$domain\E$/i;
 
     # Set the time field so we can see if the cookie comes back and
     # for sessions.
@@ -205,10 +208,9 @@ sub header_out {
     # cookie.  Allows us to track users better (on non-secure portions of the
     # site).
     my($p) = '; path=/';
-    $p .= "; domain=$_CFG->{domain}" if $_CFG->{domain};
+    $p .= "; domain=$domain" if $domain;
     $p .= $_EXPIRES;
     _trace('data=', $fields) if $_TRACE;
-
     my($clear_text) = '';
     while (my($k, $v) = each(%$fields)) {
 	next unless $k =~ /^[a-z]/i;
