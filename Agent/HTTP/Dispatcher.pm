@@ -140,7 +140,8 @@ sub handler {
 	    # Keep in synch with Reply::die_to_http_code
 	    ne Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
 	my($u) = $r->user() || 'ANONYMOUS';
-	$r->log_reason($u.' '.$die->as_string)
+	my($ip) = $r->connection->remote_ip || '0.0.0.0';
+	$r->log_reason($ip.' '.$u.' '.$die->as_string)
     }
 
     Apache->push_handlers('PerlCleanupHandler', sub {
