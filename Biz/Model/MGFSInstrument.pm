@@ -184,11 +184,14 @@ Updates an MGFS Instrument, and its corresponding Instrument.
 
 sub update {
     my($self, $new_values) = @_;
-    return if $new_values->{mg_id} eq 'DATE';
+    return if defined($new_values->{mg_id})
+	    && ($new_values->{mg_id} eq 'DATE');
     # workaround for unnamed MGFS data
     return if exists($new_values->{name}) && $new_values->{name} eq '';
-
+    use Data::Dumper;
+    print(Dumper($new_values));
     $new_values = _synchronize_instrument($self, $new_values, 1);
+    print(Dumper($new_values));
     $self->SUPER::update($new_values);
     return;
 }
@@ -204,12 +207,15 @@ sub _synchronize_instrument {
     my($fields) = $self->{$_PACKAGE};
 
     # only create/update if it is a stock
-    if ($fields->{is_stock}) {
+    if ($fields->{is_stock} || ($update && $self->get('instrument_id'))) {
 	$_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new(
 		$self->get_request);
 
 	if ($update) {
-	    $new_values->{ticker_symbol} = $self->get('symbol');
+	    $new_values->{ticker_symbol} =
+		    exists($new_values->{symbol})
+			    ? $new_values->{symbol}
+			    : $self->get('symbol');
 	    $_INSTRUMENT->unauth_load(instrument_id =>
 		    $self->get('instrument_id'));
 	    $_INSTRUMENT->update($new_values);
