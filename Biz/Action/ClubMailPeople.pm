@@ -35,6 +35,7 @@ TODO: Need to actually support "the guests".
 
 #=IMPORTS
 use Bivio::Mail::Message;
+use Bivio::Biz::Model::RealmOwner;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
