@@ -56,6 +56,12 @@ sub main {
 	    /^Subject:\s*.*\]\s*(.*)/ && ($hdr{Subject} = $1) =~ s/"/'/g;
 	    /^$/ && last;
 	}
+	unless (eof(IN)) {
+	    # Get the last subject
+	    while (<IN>) {
+		/^Subject:\s*.*\]\s*(.*)/ && ($hdr{Subject} = $1) =~ s/"/'/g;
+	    }
+	}
 	next if $hdr{Merged};
 	my($z) = $hdr{Date} =~ /\((\d+)/;
 	my(undef, undef, undef, $d, $m, $y) = localtime($z);
