@@ -76,11 +76,7 @@ subclass doesn't implement the method.
 sub AUTOLOAD {
     my($proto, @args) = @_;
     # magic variable, created by perl
-    my($method) = $AUTOLOAD;
-
-    # strip out package prefix
-    $method =~ s/.*:://;
-
+    my($method) = $AUTOLOAD =~ /([^:]+)$/;
     # don't forward destructors, it will be handled by perl
     return if $method eq 'DESTROY';
 
