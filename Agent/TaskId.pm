@@ -1794,7 +1794,7 @@ my(@_CFG) = (
         MAIL_WRITE
         !
         Bivio::Biz::Action::ClubMailBoard
-        Bivio::Biz::Action::ClubMailPeople
+        Bivio::Biz::Action::ClubMailMembers
         Bivio::UI::Mail::Receive
         NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
@@ -1811,8 +1811,19 @@ my(@_CFG) = (
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
-        CLUB_MAIL_PEOPLE_RECEIVE
+        CLUB_MAIL_MEMBERS_RECEIVE
         181
+        CLUB
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailMembers
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+    )],
+    [qw(
+        CLUB_MAIL_PEOPLE_RECEIVE
+        182
         CLUB
         MAIL_WRITE
         !
@@ -1823,7 +1834,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_MAIL_ADMIN_RECEIVE
-        182
+        183
         CLUB
         MAIL_WRITE
         !
@@ -1834,7 +1845,7 @@ my(@_CFG) = (
     )],
     [qw(
         MAIL_RECEIVE_NO_RESOURCES
-        183
+        184
         GENERAL
         DOCUMENT_READ
         !
@@ -1842,7 +1853,7 @@ my(@_CFG) = (
     )],
     [qw(
         MAIL_RECEIVE_NOT_FOUND
-        184
+        185
         GENERAL
         DOCUMENT_READ
         !
