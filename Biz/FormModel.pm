@@ -195,7 +195,14 @@ sub execute {
     unless ($fields->{errors}) {
 	$self->validate();
 	unless ($fields->{errors}) {
-	    $self->execute_input();
+	    # Try to catch and apply type errors thrown
+	    my($die) = Bivio::Die->catch(sub {$self->execute_input();});
+	    if ($die) {
+		# If not TypeError, just rethrow
+		$die->die() unless $die->get('code')->isa('Bivio::TypeError');
+		# Can we find the fields in the Form?
+		_apply_type_error($self, $die);
+	    }
 	    unless ($fields->{errors}) {
 		# Success, redirect to the next task.
 		my($req) = $self->get_request;
@@ -446,6 +453,34 @@ sub validate {
 
 #=PRIVATE METHODS
 
+# _apply_type_error(Bivio::Biz::FormModel self, Bivio::Die die)
+#
+# Looks up the columns and table in this form model.  If found,
+# applies the errors to the form model.
+#
+sub _apply_type_error {
+    my($self, $die) = @_;
+    my($err, $attrs) = $die->get('code', 'attrs');
+    my($table, $columns) = @{$attrs}{'table','columns'};
+    $die->die() unless defined($table);
+    my($sql_support) = $self->internal_get_sql_support();
+    my($models) = $sql_support->get('models');
+    my($got_one) = 0;
+    foreach my $n (sort(keys(%$models))) {
+	my($m) = $models->{$n}->{instance};
+	next unless $table eq $m->get_info('table_name');
+	foreach my $c (@$columns) {
+	    my($my_col) = "$n.$c";
+	    if ($sql_support->has_columns($my_col)) {
+		$got_one = 1;
+		$self->internal_put_error($my_col, $err);
+	    }
+	}
+    }
+    $die->die() unless $got_one;
+    return;
+}
+
 # _convert_values_to_form(Bivio::Biz::FormModel self, hash_ref values) : hash_ref
 #
 # Converts values to the form as if it came in from html.
@@ -512,7 +547,13 @@ sub _parse_cols {
 	my($fn) = $col->{form_name};
 	my($v, $err) = $col->{type}->from_literal($form->{$fn});
 	$values->{$col->{name}} = $v;
-	next if defined($v);
+	if (defined($v)) {
+	    # Zero field ok?
+	    next unless $col->{constraint}
+		    == Bivio::SQL::Constraint::NOT_ZERO_ENUM();
+	    next if $v->as_int != 0;
+	    $err = Bivio::TypeError::UNSPECIFIED();
+	}
 	# Null field ok?
 	unless ($err) {
 	    next if $col->{constraint} == Bivio::SQL::Constraint::NONE();
