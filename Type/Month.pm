@@ -42,7 +42,7 @@ __PACKAGE__->compile([
     FEBRUARY => [2, 'Feb', 'February', '02'],
     MARCH => [3, 'Mar', 'March', '03'],
     APRIL => [4, 'Apr', 'April', '04'],
-    MAY => [5, '05'],
+    MAY => [5, 'May', 'May', '05'],
     JUNE => [6, 'Jun', 'June', '06'],
     JULY => [7, 'Jul', 'July', '07'],
     AUGUST => [8, 'Aug', 'August', '08'],
