@@ -39,7 +39,6 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_=);
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
