@@ -51,7 +51,8 @@ use Sys::Hostname ();
 
 =head2 dev(int http_port, hash_ref overrides) : hash_ref
 
-Development environment configuration.
+Development environment configuration. Will read bconf.d config in bconf.d
+subdir of where your *.bconf resides.
 
 =cut
 
@@ -62,8 +63,10 @@ sub dev {
 #TODO: local_file_root is wrong.  Base on $INC{ref($proto)}
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
-    return _validate_config(_merge(
+    my($home) = $ENV{HOME} || $pwd;
+    return _validate_config(Bivio::IO::Config->merge_list(
 	$overrides || {},
+	Bivio::IO::Config->bconf_dir_hashes,
 	$proto->dev_overrides($pwd, $host, $user, $http_port),
 	{
 	    'Bivio::Agent::Request' => {
@@ -91,6 +94,11 @@ sub dev {
 		email => '',
 		error_file => 'stderr.log',
 		pager_email => '',
+	    },
+	    'Bivio::Util::Release' => {
+		rpm_home_dir => "$home/tmp/b-release/home",
+		rpm_user => $user,
+		tmp_dir => "$home/tmp/b-release/build",
 	    },
     	    main => {
 		http => {
@@ -127,8 +135,11 @@ module.
 
 sub merge {
     my($proto, $overrides) = @_;
-    return _merge($overrides || {},
-	$proto->merge_overrides(Sys::Hostname::hostname()), _base($proto));
+    return Bivio::IO::Config->merge_list(
+	$overrides || {},
+	$proto->merge_overrides(Sys::Hostname::hostname()),
+	_base($proto),
+    );
 }
 
 =for html <a name="merge_class_loader"></a>
@@ -195,17 +206,9 @@ takes precedence over the rest.
 
 sub merge_dir {
     my($proto, $overrides) = @_;
-    return _merge(
+    return Bivio::IO::Config->merge_list(
 	$overrides || {},
-	(
-	    map {
-		my($file) = $_;
-		my($data) = do($file) || die($@);
-		die($file, ': did not return a hash_ref')
-		    unless ref($data) eq 'HASH';
-		$data;
-	    } sort(</etc/bconf.d/*.bconf>),
-	),
+	Bivio::IO::Config->bconf_dir_hashes,
 	$proto->merge_overrides(Sys::Hostname::hostname()),
 	_base($proto));
 }
@@ -349,6 +352,10 @@ sub _base {
 	    http_suffix => 'localhost',
 	    mail_host => 'localhost',
 	},
+	'Bivio::Util::Release' => {
+	    rpm_home_dir => '/usr/src/redhat/RPMS/noarch',
+	    rpm_user => 'nobody',
+	},
 	'Bivio::ShellUtil' => {
 	    vacuum_db_continuously => {
 		daemon_max_children => 1,
@@ -370,19 +377,6 @@ sub _base {
 	    },
 	},
     };
-}
-
-# _merge(hash_ref cfgN, ...) : hash_ref
-#
-# Merges configuration hashes with $cfgN being last override.
-#
-sub _merge {
-    my(@cfg) = @_;
-    my($res) = {};
-    foreach my $c (reverse(@cfg)) {
-	$res = Bivio::IO::Config->merge($c, $res);
-    }
-    return $res;
 }
 
 # _validate_config(hash_ref config) : hash_ref
