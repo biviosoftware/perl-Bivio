@@ -211,6 +211,9 @@ sub from_literal {
 		\$sub_err);
 	$c->{form_context} = undef if $sub_err;
     }
+    else {
+	$c->{form_context} = undef;
+    }
 
     $c->{form_model} = Bivio::Agent::Task->get_by_id($c->{unwind_task})
 	    ->get('form_model');
@@ -341,7 +344,10 @@ sub _parse_hash {
     my($model, $c, $which) = @_;
 
     # Not an error if undefined
-    return unless defined($c->{$which});
+    unless (defined($c->{$which})) {
+	$c->{$which} = undef;
+	return;
+    }
 
     my(@v) = split(/$_HASH_CHAR/o, $c->{$which});
 
@@ -360,7 +366,10 @@ sub _parse_path_info {
     my($model, $c) = @_;
 
     # Not an error if undefined
-    return unless defined($c->{path_info});
+    unless (defined($c->{path_info})) {
+	$c->{path_info} = undef;
+	return;
+    }
 
     unless ($c->{path_info} =~ m!^/!) {
 	# Defaults to undef, i.e. no query or form
@@ -381,7 +390,10 @@ sub _parse_realm {
     my($v) = $c->{realm};
 
     # Not an error if undefined
-    return unless defined($v);
+    unless (defined($v)) {
+	$c->{realm} = undef;
+	return;
+    }
 
     # If auth_realm and incoming are same, leave as undef.
     my($is_proxy) = $v =~ s/^$_PROXY_CHAR//;
@@ -427,7 +439,10 @@ sub _parse_task {
 
     # Don't output an error, but return false.  The error is output
     # by from_literal in any event.
-    return 0 unless defined($num);
+    unless (defined($num)) {
+	$c->{$which} = undef;
+	return 0;
+    }
 
     unless ($num =~ /^\d+$/) {
 	_parse_error($model, $num, $which, 'task is not a number');
