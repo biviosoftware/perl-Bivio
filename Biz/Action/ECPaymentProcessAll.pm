@@ -83,14 +83,15 @@ sub _process_all {
             Bivio::Agent::TaskId::CLUB_ADMIN_EC_PROCESS_PAYMENT());
     my($payment_list) = Bivio::Biz::Model->new($req, 'AdmECPaymentList');
 #TODO: How to pass a WHERE clause?? Only want certain records from the list.
-    $payment_list->load_all;
-    while ($payment_list->next_row) {
+    my($it) = $payment_list->iterate_start({});
+    while ($payment_list->iterate_next_and_load($it)) {
+        next unless $payment_list->get('ECPayment.status')->needs_processing;
         my($payment) = $payment_list->get_model('ECPayment');
-        next unless $payment->get('status')->needs_processing;
         $req->set_user($payment->get('user_id'));
         $req->set_realm($payment->get('realm_id'));
         $task->execute($req);
     }
+    $payment_list->iterate_end($it);
     Bivio::Societas::Biz::Model::ECPayment->check_transaction_batch;
     return 0;
 }
