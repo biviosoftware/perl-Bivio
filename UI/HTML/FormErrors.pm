@@ -128,6 +128,7 @@ sub _compile {
 	    }
 	}
     }
+    close(DATA);
     return $map;
 }
 
