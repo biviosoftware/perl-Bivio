@@ -262,7 +262,7 @@ __PACKAGE__->new({
 			),
 			Bivio::UI::HTML::Widget->link(
 			    Bivio::UI::HTML::Widget->image(
-				'bivio_powered',
+				'bivio_power',
 				'bivio - accounting, reports, taxes, and'
 				.' administration for your investment club',
 			    ),
