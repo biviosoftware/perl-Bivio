@@ -78,7 +78,8 @@ my($_PAGE_SIZE) = {
     ledger => [1224, 792],
     '11x17' => [792, 1224],
 };
-my($_MARGIN) = 20;
+my($_VERTICAL_MARGIN) = 30;
+my($_HORIZONTAL_MARGIN) = 30;
 
 =head1 FACTORIES
 
@@ -117,8 +118,9 @@ sub initialize {
         unless $self->unsafe_get('page_size');
 
     my($width, $height) = @{$_PAGE_SIZE->{$self->get('page_size')}};
-    $self->put(location => [$_MARGIN, $_MARGIN]);
-    $self->put(size => [$width - 2 * $_MARGIN, $height - 2 * $_MARGIN]);
+    $self->put(location => [$_HORIZONTAL_MARGIN, $_VERTICAL_MARGIN]);
+    $self->put(size => [$width - 2 * $_HORIZONTAL_MARGIN,
+        $height - 2 * $_VERTICAL_MARGIN]);
 
     foreach my $section (@{$self->get('sections')}) {
         $self->initialize_value('section', $section);
