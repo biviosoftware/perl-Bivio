@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# $Id$
+#
+# Crude script to capture all traffic on eth0 and eth1 on a machine
+# Assumes to be started on the hour.
+# Saves data for a week, stores it in /home/capture.
+#
+HOST=`hostname|sed -e 's/\..*//'`
+DUMP="`date +%a-%H`.dump"
+cd /home/capture
+/usr/sbin/tethereal -n -t a -R 'tcp.port == 80' -i eth0 -w $HOST-eth0-$DUMP >/dev/null 2>&1 &
+A=$!
+/usr/sbin/tethereal -n -t a -R 'tcp.port == 80 or tcp.port == 81' -i eth1 -w $HOST-eth1-$DUMP >/dev/null 2>&1 &
+B=$!
+sleep 3660
+kill -TERM $A $B 2>/dev/null
+wait
+gzip -f $HOST-eth0-$DUMP $HOST-eth1-$DUMP
