@@ -51,7 +51,7 @@ request is from HTTP.>
 
 The form model in I<items> or C<undef>.
 
-=item id : Bivio::Agent::TaskId|Bivio::Agent::TaskId (required)
+=item id : Bivio::Agent::TaskId (required)
 
 L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 
@@ -87,9 +87,21 @@ if the I<form_model> doesn't require it already.
 L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
 (even if supplied) if this is false.
 
+=item want_[a-z0-9_]+ : boolean []
+
+Custom boolean attribute.
+
 =item require_secure : boolean [0]
 
 Task must be in secure mode to function.
+
+=item require_[a-z0-9_]+ : boolean []
+
+Custom boolean attribute.
+
+=item [a-z0-9_]+_task : Bivio::Agent::TaskId []
+
+Custom task value for redirects.
 
 =back
 
@@ -142,7 +154,7 @@ and I<action> are mapped as follows:
 
 =over 4
 
-=item cancel : string
+=item cancel : Bivio::Agent::TaskId
 
 The "Cancel" task of a form.  If not specified, defaults to
 the I<next> task.
@@ -257,13 +269,16 @@ sub execute {
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
 	my($auth_user, $agent) = $req->get(
-		'auth_user', 'Bivio::Type::UserAgent');
+	    'auth_user', 'Bivio::Type::UserAgent');
 	# Redirect to FORBIDDEN if not browser or not auth_user
-	Bivio::Die->throw('FORBIDDEN',
-		{auth_user => $auth_user, entity => $auth_realm,
-		    auth_role => $auth_role, operation => $self->get('id')})
-		    if $auth_user || !$agent->is_browser;
-	$req->server_redirect(Bivio::Agent::TaskId::LOGIN());
+	Bivio::Die->throw('FORBIDDEN', {
+	    auth_user => $auth_user,
+	    entity => $auth_realm,
+	    auth_role => $auth_role,
+	    operation => $self->get('id'),
+	}) if $auth_user || !$agent->is_browser;
+#TODO: Throw FORBIDDEN and have DEFAULT_FORBIDDEN check if logged in.
+	$req->server_redirect(Bivio::Agent::TaskId->LOGIN);
 	# DOES NOT RETURN
     }
     _invoke_pre_execute_handlers($req);
@@ -274,11 +289,22 @@ sub execute {
 	my($res) = defined($instance)
 		? $instance->$method(@$args, $req) : &$method(@$args, $req);
 	next unless $res;
-	last unless ref($res);
-	$req->client_redirect($res)
-	    if UNIVERSAL::isa($res, 'Bivio::Agent::TaskId');
+	my($next) = $res;
+	unless (ref($res)) {
+	    # Boolean true means "I'm done"
+	    last if $res eq '1';
+	    $next = $self->unsafe_get($res);
+	}
+	_trace('redirecting to: ', $next) if $_TRACE;
+	$req->client_redirect($next)
+	    if ref($next) && UNIVERSAL::isa($next, 'Bivio::Agent::TaskId');
 	Bivio::IO::Alert->warn_deprecated(
-	    'execute must return boolean or a Bivio::Agent::TaskId');
+	    $self->get('id'), ' item ',
+	    defined($instance)
+	    ? (ref($instance) || $instance) . '->' . $method
+	    : 'code',
+	    ': must return boolean, Bivio::Agent::TaskId, or attribute',
+	    ', not ', $res);
 	last;
     }
     $self->commit($req);
@@ -296,8 +322,10 @@ Returns the task associated with the id.
 
 sub get_by_id {
     my(undef, $id) = @_;
+    $id = Bivio::Agent::TaskId->from_name($id)
+        unless ref($id);
     Bivio::Die->die($id, ": no task associated with id")
-		unless $_ID_TO_TASK{$id};
+	unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
 
@@ -550,14 +578,14 @@ sub _parse_map_item {
 
     return _put_attr($attrs, $cause,
 	    Bivio::Type::Boolean->from_literal_or_die($action))
-	    if $cause =~ /^(?:require_context|want_query|require_secure)$/;
+	    if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
 
     # These items all have tasks as actions
     $action = Bivio::Agent::TaskId->from_any($action);
 
     # Special cases (non-enums)
     return _put_attr($attrs, $cause, $action)
-	    if $cause =~ /^(?:next|cancel|login)$/;
+	    if $cause =~ /^(?:next|cancel|login|[a-z0-9_]+_task)$/;
 
     # Map die action
     if ($cause =~ /(.+)::(.+)/) {
@@ -569,6 +597,8 @@ sub _parse_map_item {
     }
     else {
 	# Must be a DieCode
+	Bivio::Die->die($cause, ': not a valid attribute name')
+	    unless Bivio::DieCode->is_valid_name($cause);
 	$cause = Bivio::DieCode->from_name($cause);
     }
     Bivio::Die->die($cause->get_name, ': cannot be a mapped item (',
