@@ -143,7 +143,8 @@ sub html_parser_text {
 sub _end_a {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    _link($self, $fields->{text}) if $fields->{text};
+    _link($self, $fields->{text})
+	if $fields->{text} && defined($fields->{href});
     $fields->{href} = undef;
     return;
 }
@@ -176,12 +177,15 @@ sub _link {
 #
 sub _start_a {
     my($fields, $attr) = @_;
-    Bivio::Die->die('already have an href (missing </a>). current=',
-	    $fields->{href},
-	    ' new=', $attr->{href}) if $fields->{href};
+    Bivio::Die->die(
+	'already have an href (missing </a>). current=', $fields->{href},
+	' new=', $attr->{href},
+    ) if $fields->{href};
     return if $attr->{name} && !$attr->{href};
-    Bivio::Die->die('missing href: ', $attr) unless defined($attr->{href})
-		|| $attr->{name};
+    unless (defined($attr->{href}) || $attr->{name}) {
+	Bivio::IO::Alert->info('missing href, ignoring: ', $attr);
+	return;
+    }
     $fields->{href} = $attr->{href};
     $fields->{text} = '';
     return;

@@ -8,6 +8,7 @@ BEGIN {
     });
 }
 use Bivio::Test;
+use Bivio::DieCode;
 use Bivio::IO::File;
 my($_TMP);
 Bivio::Test->new({
@@ -24,6 +25,10 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+	'missing-href' => [
+	    ['Links', 'missing'] => Bivio::DieCode->DIE,
+	],
+    ], [
 	duplicate => [
 	    ['Forms', 'OK#0'] => undef,
 	    ['Forms', 'OK#1'] => undef,
