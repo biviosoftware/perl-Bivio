@@ -61,14 +61,14 @@ Bivio::IO::Config->register({
 
 =for html <a name="format"></a>
 
-=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req) : string
+=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req, boolean no_context) : string
 
 Transforms I<task_id> and I<realm> (if needed) into a URI.
 
 =cut
 
 sub format {
-    my(undef, $task_id, $realm, $req) = @_;
+    my(undef, $task_id, $realm, $req, $no_context) = @_;
     Bivio::IO::Alert->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($uri) = $_FROM_TASK_ID{$task_id}->[1];
@@ -84,6 +84,9 @@ sub format {
 	$uri =~ s/.*%/$ro/g;
     }
     $uri = '/'.$uri unless $uri =~ /^\//;
+
+#TODO: Hack.  Recursion in FormModel otherwise
+    return $uri if $no_context;
 
 #TODO: Tightly coupled with UI::HTML::Widget::Form.
     my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');

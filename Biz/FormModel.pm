@@ -448,7 +448,9 @@ sub get_context_from_request {
     }
     $res->{next} = $req->unsafe_get('uri');
     my($cancel) = $req->get('task')->unsafe_get('cancel');
-    $res->{cancel} = $req->format_uri($cancel) if $cancel;
+#TODO: Tight coupling to avoid recursion
+    $res->{cancel} = Bivio::Agent::HTTP::Location->format($cancel,
+	   $req->get('auth_realm'), $req, 1) if $cancel;
     $res->{form_model} = ref($model);
 
     # Fix up file fields if any
