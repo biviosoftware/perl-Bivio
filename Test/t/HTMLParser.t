@@ -169,5 +169,11 @@ Bivio::Test->new({
 		return [1055805699];
 	    },
 	],
+	find_row => [
+	    ['First Seen', 'Subject', 'campaign.btest at 06/16/2003 17:21:39']
+	        => qr{href.*/dev/campaign-domains\?p=33600023}m,
+	    ['Subject', 'campaign.btest at 06/16/2003 17:21:39']
+	        => qr{href.*/dev/campaign-domains\?p=33600023}m,
+	],
     ],
 ]);
