@@ -2229,8 +2229,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/withdrawal
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Model::MemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::MemberWithdrawalForm
         Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
