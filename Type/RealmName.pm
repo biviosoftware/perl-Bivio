@@ -71,7 +71,6 @@ my(%_RESERVED) = map {($_, 1)} qw(
     dump
     dumper
     email
-    endo
     ftp
     games
     gopher
@@ -114,7 +113,6 @@ my(%_RESERVED) = map {($_, 1)} qw(
     setup
     shutdown
     site
-    societas
     support
     sync
     sys
