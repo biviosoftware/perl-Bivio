@@ -1,5 +1,4 @@
 #!perl -w
-# $Id$
 use strict;
 use Bivio::Test;
 use Bivio::IO::File;
