@@ -272,3 +272,10 @@ when all unlisted investments have been valued or
 @{[_link($source, 'CLUB_ACCOUNTING_LOCAL_VALUE',
 'enter valuations for the date below using this link')]}.
 %%
+
+
+NAME_LIKE_FUND
+The name you entered seems to be a club name.
+First you register yourself with bivio.  The next step
+is to create your own private club space on bivio.
+%%
