@@ -51,6 +51,9 @@ Creates a model for the current realm with default values.
 sub create_default {
     my($self, $fiscal_end_date) = @_;
 
+#TODO: determine irs center from club address
+    my($irs_center) = Bivio::Type::F1065IRSCenter->UNKNOWN;
+
     $self->create({
 	realm_id => $self->get_request->get('auth_id'),
 	fiscal_end_date => $fiscal_end_date,
@@ -63,6 +66,7 @@ sub create_default {
 	foreign_account_country => undef,
 	foreign_trust => 0,
 	return_type => Bivio::Type::F1065Return::UNKNOWN(),
+	irs_center => $irs_center,
 	allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
     });
     return;
@@ -92,6 +96,7 @@ sub internal_initialize {
 	    foreign_account_country => ['Country', 'NONE'],
 	    foreign_trust => ['Boolean', 'NOT_NULL'],
 	    return_type => ['F1065Return', 'NOT_NULL'],
+	    irs_center => ['F1065IRSCenter', 'NOT_NULL'],
 	    allocation_method => ['AllocationMethod', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
