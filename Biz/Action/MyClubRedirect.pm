@@ -63,7 +63,7 @@ sub execute {
 		realm_id => $club_id, user_id => $user_id)
 		&& $realm_user->is_member_or_guest()) {
 	    $req->client_redirect(
-		    Bivio::Agent::TaskId::CLUB_HOME(),
+		    $req->get('task')->get('next'),
 		    Bivio::Auth::Realm->new($club_id, $req),
 		    undef, undef);
 	    # DOES NOT_RETURN
@@ -80,7 +80,7 @@ sub execute {
 	# Got a club, go to it.  Don't bother setting pref.  Will
 	# get set when user comes back in from redirect
 	$req->client_redirect(
-		Bivio::Agent::TaskId::CLUB_HOME(),
+		$req->get('task')->get('next'),
 		Bivio::Auth::Realm->new($list->get('RealmUser.realm_id'),
 			$req),
 		undef, undef);
