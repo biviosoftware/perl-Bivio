@@ -3062,6 +3062,7 @@ my(@_CFG) = (
         adm/spin-offs
         Bivio::Biz::Model::InstrumentSpinoffList->execute_load_page
         Bivio::UI::HTML::Adm::InstrumentSpinoffs
+        require_secure=1
     )],
     [qw(
         ADM_SPINOFF_DELETE
@@ -3069,8 +3070,11 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/spin-off/delete
-        Bivio::Biz::Model::InstrumentSpinoff->execute_load_this
+        Bivio::Biz::Model::InstrumentSpinoffList->execute_load_this
         Bivio::Biz::Action::InstrumentSpinoffDelete
+        Bivio::Biz::Action::ClientRedirect->execute_next_stateless
+        next=ADM_SPINOFFS
+        require_secure=1
     )],
     [qw(
         ADM_SPINOFF_CREATE
@@ -3081,6 +3085,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSpinoffInfoForm
         Bivio::UI::HTML::Adm::InstrumentSpinoffInfo
         next=ADM_SPINOFFS
+        require_secure=1
     )],
 );
 
