@@ -562,6 +562,11 @@ __PACKAGE__->compile(
 	undef,
 	'email address loops back to itself; must not be the same as your login name',
     ],
+    SOURCE_NOT_EQUAL_TARGET => [
+	58,
+	undef,
+	'source account and target account must be different',
+    ],
 );
 
 #=PRIVATE METHODS
