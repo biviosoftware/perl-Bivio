@@ -1,0 +1,47 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-realm-invite - manipulate realm_invite_t database table
+
+=head1 SYNOPSIS
+
+  b-realm-invite [-n] -expire
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::RealmInvite|Bivio::Biz::Util::RealmInvite>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::RealmInvite;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+Bivio::Biz::Util::RealmInvite->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Biz::Util::RealmInvite
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
