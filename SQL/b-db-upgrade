@@ -138,129 +138,27 @@ EOF
 #
 sub _upgrade {
 
-    use Bivio::Auth::RealmType;
-    use Bivio::Agent::Request;
-    use Bivio::Biz::Model::File;
-    use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Biz::Model::RealmOwnerList;
-    use Bivio::Type::DateTime;
-    use Bivio::Type::FileVolume;
-    use Bivio::Type::Integer;
+    use Bivio::Type::EntryType;
+    use Bivio::Type::EntryClass;
 
-    # drop and readd file_t volume constraints, adds expanded volume check
-    # to include the EW_IMPORT volume
-    _drop_constraints('file_t', 'volume');
-    _do('
-ALTER TABLE file_t modify volume not null
-/
-ALTER TABLE file_t add check (volume BETWEEN 1 AND 2)
-/
-');
-
-    # fix Herly Industries Inc Wts 1999 ticker problem
-    Bivio::SQL::Connection->execute("
-            UPDATE instrument_t
-            SET ticker_symbol='HRLYW'
-            WHERE instrument_id = (
-                SELECT instrument_id
-                FROM mgfs_instrument_t
-                WHERE symbol='HRLYW'
-            )");
-
-    # add check on ticker so it doesn't happen again
-    _do('
-ALTER TABLE instrument_t modify ticker_symbol not null
-/
-');
-
-    # update existing shadow names, add "-1" active flag to end of each
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT name FROM realm_owner_t
-            WHERE name like '=%'",
-	    []);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($name) = $row->[0];
-	unless ($name =~ /-\d+$/) {
-	    Bivio::SQL::Connection->execute('
-                    UPDATE realm_owner_t
-                    SET name=?
-                    WHERE name=?',
-		    [$name.'-1', $name]);
-	}
-    }
-
-    # add EW_IMPORT file volume to existing clubs
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    my($realms) = Bivio::Biz::Model::RealmOwnerList->new($req);
-    $realms->unauth_load({
-        realm_type => Bivio::Auth::RealmType::CLUB(),
-        count => Bivio::Type::Integer->get_max,
-    });
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($realm_id) = '';
-    my($file) = Bivio::Biz::Model::File->new($req);
-    while ($realms->next_row) {
-        # May have multiple administrators
-        next if $realm_id eq $realms->get('RealmOwner.realm_id');
-        $realm_id = $realms->get('RealmOwner.realm_id');
-        die('failed to load realm ', $realm_id)
-                unless $realm->unauth_load(realm_id => $realm_id);
-	$req->put(auth_id => $realm_id);
-
-	my($volume) = Bivio::Type::FileVolume::EW_IMPORT();
-	my($user_id) = $realms->get('RealmUser.user_id');
-	$file->create({
-	    file_id => $volume->get_root_directory_id($realm_id),
-	    realm_id => $realm_id,
-	    volume => $volume,
-	    directory_id => undef,
-	    name => $volume->get_name.$realm_id,
-	    user_id => $user_id,
-	    modified_date_time => Bivio::Type::DateTime->now,
-	    bytes => 0,
-	    is_directory => 1,
-	    aux_info => undef,
-	    content => undef,
-	});
-    }
-
-do('
-CREATE TABLE lock_t (
-  realm_id NUMBER(18),
-  type NUMBER(2),
-  host VARCHAR2(100),
-  process_id NUMBER(9),
-  sentinel NUMBER(1),
-  creation_date_time DATE
-)
-/
---
--- lock_t
---
-ALTER TABLE lock_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE lock_t
-  add primary key(type, realm_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE lock_t modify type NOT NULL
-/
-ALTER TABLE lock_t ADD CHECK (type BETWEEN 1 AND 1)
-/
-ALTER TABLE lock_t modify host NOT NULL
-/
-ALTER TABLE lock_t modify process_id NOT NULL
-/
-ALTER TABLE lock_t modify sentinel NOT NULL
-/
-ALTER TABLE lock_t ADD CHECK (sentinel BETWEEN 0 AND 1)
-/
-ALTER TABLE lock_t modify creation_date_time NOT NULL
-/
-');
+    # patches the bug in InstrumentBuy and InstrumentSell
+    # which was assigning the transaction the wrong source_class
+    Bivio::SQL::Connection->execute('
+            UPDATE realm_transaction_t
+            SET realm_transaction_t.source_class=?
+            WHERE realm_transaction_t.realm_transaction_id in (
+                SELECT DISTINCT realm_transaction_t.realm_transaction_id
+                FROM realm_transaction_t, entry_t
+                WHERE realm_transaction_t.realm_transaction_id
+                    = entry_t.realm_transaction_id
+                AND (entry_t.entry_type=? OR entry_t.entry_type=?)
+                AND realm_transaction_t.source_class=?)',
+	    [
+		    Bivio::Type::EntryClass::INSTRUMENT->as_int,
+		    Bivio::Type::EntryType::INSTRUMENT_BUY->as_int,
+		    Bivio::Type::EntryType::INSTRUMENT_SELL->as_int,
+		    Bivio::Type::EntryClass::MEMBER->as_int,
+	    ]);
 
     return;
 }
