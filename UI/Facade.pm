@@ -332,6 +332,21 @@ sub as_string {
     return 'Facade['.$self->simple_package_name.'.'.lc($type->get_name).']';
 }
 
+=for html <a name="get_all_classes"></a>
+
+=head2 static get_all_classes() : array_ref
+
+List of all Facades by simple class name.  Must be fully initialized to call
+this function.
+
+=cut
+
+sub get_all_classes {
+    die('not all classes available, because not fully initialized')
+	unless shift->is_fully_initialized;
+    return [sort(keys(%_CLASS_MAP))];
+}
+
 =for html <a name="get_default"></a>
 
 =head2 get_default() : Bivio::UI::Facade
@@ -373,13 +388,16 @@ sub get_from_request_or_self {
 =head2 static get_instance(string simple_class) : Bivio::UI::Facade
 
 Returns facade instance for I<simple_class>.  Facade must be initialized.
+Returns default facade, if I<simple_class> is C<undef> or false.
 
 =cut
 
 sub get_instance {
     my($proto, $simple_class) = @_;
+    return $proto->get_default
+	unless $simple_class;
     Bivio::Die->die($simple_class, ': no such facade')
-	    unless $_CLASS_MAP{$simple_class};
+        unless $_CLASS_MAP{$simple_class};
     return $_CLASS_MAP{$simple_class};
 }
 
@@ -619,7 +637,9 @@ sub register {
 
 =for html <a name="setup_request"></a>
 
-=head2 static setup_request(string uri_or_domain, Bivio::Collection::Attributes req) : sel
+=head2 setup_request(Bivio::Agent::Request req) : self
+
+=head2 static setup_request(string uri_or_domain, Bivio::Agent::Request req) : self
 
 Sets up the request with the appropriate Facade.  Sets the attribute
 I<Bivio::UI::Facade>.  If I<uri_or_domain> is not a valid Facade, writes a
@@ -633,6 +653,13 @@ Returns the facade.
 
 sub setup_request {
     my($proto, $uri_or_domain, $req) = @_;
+    if (ref($uri_or_domain)) {
+	Bivio::Die->die($uri_or_domain, ': is not a Request')
+	    unless UNIVERSAL::isa($uri_or_domain, 'Bivio::Agent::Request');
+	Bivio::Die->die('must not be called statically')
+	    unless ref($proto);
+	return _setup_request($proto, $uri_or_domain);
+    }
     my($self);
     _trace('uri: ', $uri_or_domain) if $_TRACE;
     if (defined($uri_or_domain)) {
