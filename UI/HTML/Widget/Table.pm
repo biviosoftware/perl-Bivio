@@ -60,7 +60,7 @@ in C<summary_line> color and C<count> equal two.
 How to align the table.  The allowed (case
 insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
-The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
+The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
 =item bgcolor : string []
 
