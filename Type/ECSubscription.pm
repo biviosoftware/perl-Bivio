@@ -31,6 +31,10 @@ a realm can be subscribed to. The current choices are:
 
 =over 4
 
+=item UNKNOWN
+
+=item PREMIUM_SUPPORT
+
 =item ACCOUNT_SYNC
 
 =item ACCOUNT_KEEPER
@@ -45,13 +49,21 @@ a realm can be subscribed to. The current choices are:
 my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
-    ACCOUNT_SYNC => [
+    UNKNOWN => [
+	0,
+        'None',
+    ],
+    PREMIUM_SUPPORT => [
 	1,
-        'Account Sync',
+        'Premium Support',
+    ],
+    ACCOUNT_SYNC => [
+	2,
+        'AccountSync',
     ],
     ACCOUNT_KEEPER => [
-	2,
-        'Account Keeper',
+	3,
+        'AccountKeeper',
     ],
 ]);
 
