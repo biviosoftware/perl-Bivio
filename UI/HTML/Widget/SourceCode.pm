@@ -320,7 +320,9 @@ sub _reformat_pod {
 	    if ($doc) {
 		$doc = _unescape_pod($doc);
 		my($match_doc) = $doc;
-		$match_doc =~ s/([()\[\]])/\\$1/g;
+		# escape any regexp meta characters in variable
+		$match_doc =~ s/\\/\\\\/g;
+		$match_doc =~ s/([|()\[{^\$*+?.])/\\$1/g;
 		$line =~ s,$match_doc,<b>$doc</b>,;
 	    }
 	    $line = '# '.$line;
