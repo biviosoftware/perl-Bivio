@@ -726,9 +726,7 @@ sub _parse_date_value {
 	    ? Bivio::Type::DateTime->local_end_of_today : undef
 		    unless $literal;
 
-    my($value, $e) = Bivio::Type::DateTime->from_literal($literal);
-    ($value, $e) = Bivio::Type::Date->from_literal($literal)
-	    unless $value;
+    my($value, $e) = Bivio::Type::Date->from_literal($literal);
     _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
 	message => 'invalid date',
 	type_error => $e,
