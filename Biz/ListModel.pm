@@ -512,18 +512,18 @@ If I<direction> is undefined, uses the first field's default sort order.
 
 sub format_uri_for_sort {
     my($self, $uri_or_task, $direction, @order_fields) = @_;
-    my($fields) = $self->[$_IDI];
-
-    my($main_field) = $order_fields[0];
-    my($main_order) = defined($direction)
-            ? $direction : $self->get_field_info($main_field, 'sort_order');
-
+    my($order) = defined($direction)
+        ? $direction
+        : $self->get_field_info($order_fields[0], 'sort_order');
     my(@order_by);
+
     foreach my $field (@order_fields) {
-        push(@order_by, $field, $main_order);
+        push(@order_by, $field, $order);
     }
-    return $self->format_uri('THIS_LIST',
-	    $uri_or_task, {order_by => \@order_by});
+    return $self->format_uri('THIS_LIST', $uri_or_task, {
+        order_by => \@order_by,
+        page_number => 1,
+    });
 }
 
 =for html <a name="format_uri_for_this"></a>
