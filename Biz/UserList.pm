@@ -48,8 +48,8 @@ my($_COLUMN_INFO) = [
     ['Full Name', Bivio::Biz::FieldDescriptor->lookup('USER_FULL_NAME', 3)]
     ];
 
-my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('user_, club_user',
-	['user_.name', 'user_.first_name,user_.middle_name,user_.last_name']);
+my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('user_t, club_user_t',
+	['user_t.name', 'user_t.first_name,user_t.middle_name,user_t.last_name']);
 
 =head1 FACTORIES
 
@@ -91,15 +91,13 @@ sub load {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->get('club')) {
-
-	# club users, max 1000?
-	return $_SQL_SUPPORT->load($self, $self->internal_get_rows(), 0, 1000,
-		'where club_user.club=? and club_user.user_=user_.id'
-		.$self->get_order_by($fp), $fp->get('club'));
-    }
-
-    return 1;
+    defined($fp->get('club_id'))
+	    || die("missing club_id find param");
+    # club users, max 1000?
+#TODO: Fix 1000 here.
+    return $_SQL_SUPPORT->load($self, $self->internal_get_rows(), 0, 1000,
+	    'where club_user_t.club_id=? and club_user_t.user_id=user_t.id'
+	    .$self->get_order_by($fp), $fp->get('club_id'));
 }
 
 =for html <a name="get_default_sort_key"></a>

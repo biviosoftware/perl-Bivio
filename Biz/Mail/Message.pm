@@ -48,12 +48,10 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
-    'club' => ['Internal Club ID',
+    'club_id' => ['Internal Club ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     'id' => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    'ok' => ['OK',
-	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)],
     'rfc822_id' => ['RFC822 ID',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
     'dttm' => ['Date',
@@ -64,13 +62,11 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
     'subject' => ['Subject',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-    'synopsis' => ['Synopsis',
-	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
     'bytes' => ['Number of Bytes',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)]
     };
 
-my($_SQL_SUPPORT) = Bivio::SQL::Support->new('email_message',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('email_message_t',
 	keys(%$_PROPERTY_INFO));
 
 Bivio::IO::Config->register({
@@ -164,7 +160,7 @@ sub delete {
     # can't delete it, not supported by file server
 
 #    return $_SQL_SUPPORT->delete($self, 'where id=? and club=?',
-#	    $self->get('id'), $self->get('club'));
+#	    $self->get('id'), $self->get('club_id'));
 
     die("not implemented");
 }
@@ -204,9 +200,10 @@ sub load {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if (defined($fp->get('id')) && $fp->get('club')) {
+    if (defined($fp->get('id')) && $fp->get('club_id')) {
 	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
-		'where id=? and club=?', $fp->get('id'), $fp->get('club'));
+		'where id=? and club_id=?',
+		$fp->get('id'), $fp->get('club_id'));
     }
 
     $self->get_status()->add_error(
@@ -228,7 +225,7 @@ sub get_body {
     my($fields) = $self->{$_PACKAGE};
 
     my($body);
-    $_FILE_CLIENT->get('/'.$self->get('club').'/messages/'.$self->get('id'),
+    $_FILE_CLIENT->get('/'.$self->get('club_id').'/messages/'.$self->get('id'),
 	    \$body) || die("couldn't get mail body");
     return \$body;
 }
@@ -299,8 +296,8 @@ sub update {
 #TODO: if 'id' is in new_values, make sure it is the same
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
-	    $new_values, 'where id=? and club=?',
-	    $self->get('id'), $self->get('club'));
+	    $new_values, 'where id=? and club_id=?',
+	    $self->get('id'), $self->get('club_id'));
 }
 
 #=PRIVATE METHODS
@@ -310,7 +307,6 @@ sub _create_from_incoming {
     # Archive mail message first
     my($mbox) = $bmi->get_unix_mailbox;
 #TODO: Get id from sequence
-    my($id) = int(rand(999999)) + 1;
     # $dttm is always valid
     my($dttm) = $bmi->get_dttm() || time;
     my($mon, $year) = (gmtime($dttm))[4,5];
@@ -322,18 +318,13 @@ sub _create_from_incoming {
     my($reply_to_email) = $bmi->get_reply_to();
     my($body) = $bmi->get_body();
     my($values) = {
-	'club' => $club->get('id'),
-	'id' => $id,
-#TODO: Does the ok bit make sense?
-	'ok' => 1,
+	'club_id' => $club->get('id'),
 	'rfc822_id' => $bmi->get_message_id,
 	'dttm' => $dttm,
 	'from_name' => $from_name,
 	'from_email' => $from_email,
 	'reply_to_email' => $reply_to_email,
 	'subject' => $bmi->get_subject || '',
-#TODO: Do a real synopsis here
-	'synopsis' => $bmi->get_subject || '',
 #TODO: Measure real size (all unpacked files)
 	'bytes' => length($body),
     };
@@ -341,8 +332,9 @@ sub _create_from_incoming {
     my($ok) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
 	    $values);
     if ($ok) {
+#TODO: Update club_t.bytes here
 	$_FILE_CLIENT->create('/' . $club->get('id') . '/messages/'
-		. $id, \$body)
+		. $values->{id}, \$body)
 		|| die("file server failed: $body");
     }
     return $ok;
@@ -390,13 +382,11 @@ my($id) = int(rand(9999998)) + 1;
 $mail->create({
     'club' => '7957448535598810',
     'id' => $id,
-    'ok' => 1,
     'rfc822_id' => $id,
     'dttm' => '6/7/1995',
     'from_name' => 'moeller',
     'from_email' => 'moeller@bivio.com',
     'subject' => 'test subject',
-    'synopsis' => 'the quick brown fox jumps over the lazy dog',
     'bytes' => 150,
     'body' => \$body,
     });

@@ -81,17 +81,13 @@ sub execute {
     }
 
     eval {
-#TODO: need to have the db assign the id as a sequence
-	$req->put_arg('id', int(rand(999999)) + 1);
-
 	my($values) = &_create_field_map($user, $req);
 
 	$user->create($values);
 	if ($user->get_status()->is_ok()) {
-
-	    $req->put_arg('user_', $user->get('id'));
 	    my($demographics) = Bivio::Biz::UserDemographics->new();
 	    $values = &_create_field_map($demographics, $req);
+	    $values->{id} = $user->get('id');
 
 	    $demographics->create($values);
 
@@ -122,8 +118,8 @@ sub execute {
 		my($club_user) = Bivio::Biz::ClubUser->new();
 
 		$club_user->create({
-		    'club' => $req->get('club')->get('id'),
-		    'user_' => $user->get('id'),
+		    'club_id' => $req->get('club')->get('id'),
+		    'user_id' => $user->get('id'),
 		    'role' => $req->get_arg('role'),
 		    'email_mode' => 1
 		});

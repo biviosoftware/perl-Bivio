@@ -85,17 +85,19 @@ sub handle_request {
 
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
-	$fp->put('club', $club->get('id'));
+	$fp->put('club_id', $club->get('id'));
 
+#Q: Why load the model first, before know what the action is?
 	if ($view->get_name eq 'users') {
 	    $model->load($fp);
 	}
 
-	if ($req->get_action_name()) {
-	    $model->get_action($req->get_action_name())->execute($model, $req);
+	my($action_name) = $req->get_action_name();
+	if ($action_name) {
+	    $model->get_action($action_name)->execute($model, $req);
 
 	    if ($model->get_status()->is_ok()
-		    && $req->get_action_name() eq 'add'
+		    && $action_name eq 'add'
 		    && $req->get_view_name() eq 'user') {
 
 		# successful user add
@@ -104,7 +106,7 @@ sub handle_request {
 		$view = $self->get_view('users');
 		$model = $view->get_default_model();
 		$model->load(Bivio::Biz::FindParams->new(
-			{'club' => $club->get('id')}));
+			{'club_id' => $club->get('id')}));
 	    }
 	}
 

@@ -45,9 +45,9 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
-    'club' => ['Club Internal ID',
+    'club_id' => ['Club Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    'user_' => ['User Internal ID',
+    'user_id' => ['User Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     'role' => ['Role',
 	    Bivio::Biz::FieldDescriptor->lookup('ROLE', 2)],
@@ -55,7 +55,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)]
     };
 
-my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club_user',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club_user_t',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -117,8 +117,8 @@ Deletes the current model from the database. Returns 1 if successful,
 sub delete {
     my($self) = @_;
 
-    return $_SQL_SUPPORT->delete($self, 'where club=? and user_=?',
-	    $self->get('club'), $self->get('user_'));
+    return $_SQL_SUPPORT->delete($self, 'where club_id=? and user_id=?',
+	    $self->get('club_id'), $self->get('user_id'));
 }
 
 =for html <a name="find"></a>
@@ -126,7 +126,7 @@ sub delete {
 =head2 load(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
-are 'club' and 'user_'.
+are 'club' and 'user_id'.
 
 =cut
 
@@ -136,10 +136,10 @@ sub load {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->has_keys('club', 'user_')) {
+    if ($fp->has_keys('club_id', 'user_id')) {
 	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
-		'where club=? and user_=?', $fp->get('club'),
-		$fp->get('user_'));
+		'where club_id=? and user_id=?', $fp->get('club_id'),
+		$fp->get('user_id'));
     }
 
     $self->get_status()->add_error(
@@ -186,8 +186,8 @@ sub update {
     my($self, $new_values) = @_;
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
-	    $new_values, 'where club=? and user_=?',
-	    $self->get('club'), $self->get('user_'));
+	    $new_values, 'where club_id=? and user_id=?',
+	    $self->get('club_id'), $self->get('user_id'));
 }
 
 #=PRIVATE METHODS

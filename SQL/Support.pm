@@ -127,6 +127,8 @@ names which correspond to the same named model property.
 sub new {
     my($proto, $table_name, @columns) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
+    $table_name =~ /_t/i
+	    || Carp::croak("$table_name: invalid table name, must end in _t");
 
     $self->{$_PACKAGE} = {
 	'table_name' => $table_name,
@@ -151,12 +153,15 @@ Inserts a new record into to database and loads the model's properties. If
 successful, the properties hash will contain the new values. Otherwise
 the model's L<Bivio::Biz::Status> will contain error messages.
 
+If the first column is named C<id>, the value will be retrieved from
+the sequence I<table_name_s> (table_name sans '_t', that is).
+
 =cut
 
 sub create {
     my($self, $model, $properties, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("not initialized");
 
     my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) = Bivio::SQL::Connection->get_connection();
@@ -164,12 +169,16 @@ sub create {
 
     my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
+    my($id_col) = $fields->{id_column};
     my(@values);
 
     for (my($i) = 0; $i < int(@$columns); $i++) {
 	my($col) = $columns->[$i];
 	push(@values, $types->[$i] == SQL_DATE_TYPE()
-		? $self->from_time($new_values->{$col}) : $new_values->{$col});
+		? $self->from_time($new_values->{$col})
+                : $id_col eq $i
+		? ($new_values->{$col} = _next_id($self, $model, $conn))
+		: $new_values->{$col});
     }
 
     &_trace_sql($sql, @values) if $_TRACE;
@@ -207,7 +216,7 @@ model's L<Bivio::Biz::Status> will contain the error messages.
 sub delete {
     my($self, $model, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("not initialized");
 
     my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) =  Bivio::SQL::Connection->get_connection();
@@ -273,20 +282,25 @@ sub initialize {
     my($select) = 'select ';
     my($insert) = 'insert into '.$fields->{table_name}
 	    .' ('.join(',', @$columns).') values (';
-
+    $fields->{id_column} = -1;
     for (my($i) = 0; $i < int(@$columns); $i++) {
 	my($col) = $columns->[$i];
-
 	if ($types->[$i] == SQL_DATE_TYPE()) {
 	    $select .= qq{TO_CHAR($col,'}.DATE_FORMAT().q{'),};
 	    $insert .= q{TO_DATE(?,'}.DATE_FORMAT().q{'),};
 	}
 	else {
+	    if ($col eq 'id') {
+		$fields->{id_column} = $i;
+		($fields->{next_id} = 'select '
+			# Trim _t which is required (see create)
+			. substr($fields->{table_name}, 0, -2)
+			. '_s.nextval from dual');
+	    }
 	    $select .= $col.',';
 	    $insert .= '?,';
 	}
     }
-
     # remove extra ','
     chop($select);
     chop($insert);
@@ -312,7 +326,7 @@ messages.
 sub load {
     my($self, $model, $properties, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("not initialized");
 
     my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) =  Bivio::SQL::Connection->get_connection();
@@ -383,7 +397,7 @@ L<Bivio::Biz::Statis> will contain any error messages.
 sub update {
     my($self, $model, $properties, $new_values, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("not initialized");
 
     my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($sql) = &_create_update_statement($self, $properties, $new_values,
@@ -509,6 +523,20 @@ sub _get_column_types {
 
     $statement->finish();
     return $column_types;
+}
+
+# _next_id(Bivio::SQL::Support self, Bivio::Biz::Model model, Bivio::SQL::Connection conn) : int
+#
+# Returns the next primary key id for this table
+sub _next_id {
+    my($self, $model, $conn) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($statement) = $conn->prepare($fields->{next_id});
+    &_trace($fields->{next_id}) if $_TRACE;
+    Bivio::SQL::Connection->execute($statement, $model);
+    my($id) = $statement->fetchrow_array();
+    $statement->finish();
+    return $id;
 }
 
 # _trace_sql(string sql, array values)

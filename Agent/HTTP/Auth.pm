@@ -63,7 +63,10 @@ sub authorize_admin {
     $club || return undef;
 
     # is the user an admin of the club?
-    return undef if $club_user->get('role') != 0;
+    if ($club_user->get('role') != 0) {
+	&_trace('not admin (', $club_user->get('role'), ')') if $_TRACE;
+	return undef;
+    }
 
     return ($club, $club_user);
 }
@@ -83,12 +86,17 @@ sub authorize_club_user {
     my(undef, $req) = @_;
 
     # has the user logged in?
-    return undef if ! $req->exists('user');
+    unless ($req->exists('user')) {
+	&_trace('no user') if $_TRACE;
+	return undef;
+    }
     my($user) = $req->get('user');
 
     # do the password's match?
     unless($req->exists('password')
 	    && $req->get('password') eq $user->get('password')) {
+	&_trace($req->get('password'), ' != ', $user->get('password'))
+		if $_TRACE;
 	return undef;
     }
 
@@ -98,10 +106,9 @@ sub authorize_club_user {
 
     # does the club exist?
     return undef if ! $club->get_status()->is_ok();
-
     my($club_user) = Bivio::Biz::ClubUser->new();
     $club_user->load(Bivio::Biz::FindParams->new(
-	    {'club' => $club->get('id'), 'user_' => $user->get('id')}));
+	    {'club_id' => $club->get('id'), 'user_id' => $user->get('id')}));
 
     # is the user a member of the club?
     return undef if ! $club_user->get_status()->is_ok();

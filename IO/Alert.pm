@@ -56,7 +56,6 @@ use Carp ();
 
 #=INITIALIZATION
 # Normalize error messages
-$SIG{__DIE__} = \&_initial_die_handler;
 $SIG{__WARN__} = \&_warn_handler;
 Bivio::IO::Config->register({
     'intercept_die' => 0,

@@ -56,7 +56,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 9)]
     };
 
-my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club_t',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -216,12 +216,12 @@ sub get_outgoing_emails {
 
     # a 4 table join
     my($statement) = $conn->prepare_cached(
-	    'select user_email.email '
-	    .'from user_email, user_, club, club_user '
-	    .'where club.id=? '
-	    .'and club.id=club_user.club '
-	    .'and club_user.user_=user_.id '
-	    .'and user_.id=user_email.user_');
+	    'select user_email_t.email '
+	    .'from user_email_t, user_t, club_t, club_user_t '
+	    .'where club_t.id=? '
+	    .'and club_t.id=club_user_t.club_id '
+	    .'and club_user_t.user_id=user_t.id '
+	    .'and user_t.id=user_email_t.user_id');
 
     Bivio::SQL::Connection->execute($statement, $self, $self->get('id'));
 

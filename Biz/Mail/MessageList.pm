@@ -46,7 +46,7 @@ my($_COLUMN_INFO) = [
 	['Date', Bivio::Biz::FieldDescriptor->lookup('DATE')]
        ];
 
-my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('email_message',
+my($_SQL_SUPPORT) = Bivio::SQL::ListSupport->new('email_message_t',
 	['id,subject', 'from_name,from_email,subject', 'dttm']);
 
 =head1 FACTORIES
@@ -241,18 +241,19 @@ sub load {
     $fields->{index} = $fp->get('index') || 0;
 
 #TODO: remove hard-coded 15s
-    if ($fp->get('club')) {
+    defined($fp->get('club_id')) || die("missing club_id in find params");
 
-	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
-		'where club=?', $fp->get('club'));
+    $fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
+	    'where club_id=?', $fp->get('club_id'));
 
-	$_SQL_SUPPORT->load($self, $self->internal_get_rows(),
-		$fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
-		$fp->get('club'));
-    }
+#TODO: 15 has to go away
+    $_SQL_SUPPORT->load($self, $self->internal_get_rows(),
+	    $fields->{index}, 15,
+	    'where club_id=?'.$self->get_order_by($fp),
+	    $fp->get('club_id'));
 
     # set the selected message
-    if ($fp->has_keys('id', 'club')) {
+    if ($fp->has_keys('id', 'club_id')) {
 
 	my($message) = Bivio::Biz::Mail::Message->new();
 	$fields->{selected} = $message->load($fp) ? $message : undef;
@@ -284,7 +285,7 @@ sub _create_model_references {
     my($rows) = $self->internal_get_rows();
     my($search_id) = defined($fp->get('id')) ? $fp->get('id') : -1;
     my($fp2) = $fp->clone();
-    $fp2->remove('club');
+    $fp2->remove('club_id');
 
     for (my($i) = 0; $i < int(@$rows); $i++) {
 	my($row) = $rows->[$i];

@@ -35,9 +35,6 @@ C<Bivio::Agent::HTTP::MessageController>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Club;
-use Bivio::Biz::ClubUser;
-use Bivio::Biz::FindParams;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -100,7 +97,7 @@ sub handle_request {
     if ($view) {
 	my($model) = $view->get_default_model();
 	my($fp) = $req->get_model_args();
-	$fp->put('club', $club->get('id'));
+	$fp->put('club_id', $club->get('id'));
 	$model->load($fp); # error handling done by view
 	$view->activate()->render($model, $req);
 

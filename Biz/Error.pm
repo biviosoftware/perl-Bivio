@@ -17,7 +17,12 @@ action.
 
 =cut
 
+#=IMPORTS
+use Bivio::IO::Trace;
+
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -38,6 +43,7 @@ sub new {
     $self->{$_PACKAGE} = {
 	'message' => $message
     };
+    &_trace((caller)[0], ':', (caller)[2], ' ', $message) if $_TRACE;
     return $self;
 }
 

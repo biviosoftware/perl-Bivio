@@ -64,7 +64,7 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     };
 
-my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_t',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -82,7 +82,7 @@ load the model with values.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user_',
+    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user_id',
 	    $_PROPERTY_INFO);
 
     $self->{$_PACKAGE} = {};
@@ -209,7 +209,7 @@ sub get_demographics {
 
 #TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
-    $demo->load(Bivio::Biz::FindParams->new({'user_' => $self->get('id')}));
+    $demo->load(Bivio::Biz::FindParams->new({'user_id' => $self->get('id')}));
     return $demo;
 }
 
@@ -227,10 +227,10 @@ sub get_email_addresses {
 
     # a 4 table join
     my($statement) = $conn->prepare_cached(
-	    'select user_email.email '
-	    .'from user_email, user_ '
-	    .'where user_.id=? '
-	    .'and user_.id=user_email.user_');
+	    'select user_email_t.email '
+	    .'from user_email_t, user_t '
+	    .'where user_t.id=? '
+	    .'and user_t.id=user_email_t.user_id');
 
     Bivio::SQL::Connection->execute($statement, $self, $self->get('id'));
 

@@ -48,13 +48,13 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_PROPERTY_INFO) = {
-    'user_' => ['Internal User ID',
+    'user_id' => ['Internal User ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     'email' => ['Email',
 	    Bivio::Biz::FieldDescriptor->lookup('EMAIL', 255)]
     };
 
-my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_email',
+my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_email_t',
 	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
@@ -71,7 +71,7 @@ Creates a new user-email mapping model.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user_email',
+    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user_email_t',
 	    $_PROPERTY_INFO);
 
     $self->{$_PACKAGE} = {};
@@ -121,8 +121,8 @@ Deletes the current model from the database. Returns 1 if successful,
 sub delete {
     my($self) = @_;
 
-    return $_SQL_SUPPORT->delete($self, 'where user_=? and email=?',
-	    $self->get('user_'), $self->get('email'));
+    return $_SQL_SUPPORT->delete($self, 'where user_id=? and email=?',
+	    $self->get('user_id'), $self->get('email'));
 }
 
 =for html <a name="find"></a>
@@ -199,7 +199,7 @@ sub get_user {
     my($self) = @_;
 
     my($user) = Bivio::Biz::User->new();
-    $user->load(Bivio::Biz::FindParams->new({'id' => $self->get('user_')}));
+    $user->load(Bivio::Biz::FindParams->new({'id' => $self->get('user_id')}));
     return $user;
 }
 
