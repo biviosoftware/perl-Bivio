@@ -79,7 +79,7 @@ my($_SU_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =for html <a name="execute_input"></a>
 
-=head2 execute_input()
+=head2 execute_input() : boolean
 
 Logs in the I<realm_owner> and updates the cookie.
 
@@ -103,10 +103,10 @@ sub execute_input {
 	    $req->put(super_user_id => $super_user_id);
 	}
 
-	# Execute the login
+	# MUST BE LAST (may redirect)
 	Bivio::Biz::Model::LoginForm->execute($req,
 		{realm_owner => $new_user});
-	return;
+	return 0;
     }
 
     # Unset (Logout)
@@ -129,9 +129,11 @@ sub execute_input {
 
 	# Unable to load super user (no permissions), so ordinary logout
     }
+
+    # MUST BE LAST (may redirect)
     Bivio::Biz::Model::LoginForm->execute($req,
 	    {realm_owner => undef});
-    return;
+    return 0;
 }
 
 =for html <a name="internal_initialize"></a>
