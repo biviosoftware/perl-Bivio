@@ -241,6 +241,7 @@ use strict;
 	'mail' => {
 	    'proto' => 'unix',
 	    'port' => '<$mail_port>',
+	    'file_mode' => 0777,
 	},
     },
     'main' => {
