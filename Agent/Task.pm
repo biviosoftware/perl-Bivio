@@ -244,6 +244,36 @@ sub new {
 
 =cut
 
+=for html <a name="commit"></a>
+
+=head2 static commit(Bivio::Agent::request req)
+
+Commits transactions to storage if necessary, but first calls
+handle_commit for txn_resources.
+
+=cut
+
+sub commit {
+    my(undef, $req) = @_;
+    # Always commit before sending queued messages.  The database
+    # is more important than email and mail dispatcher may need the
+    # state to accurately send the email.  If we get an error
+    # while rendering view, don't commit since the only side effect
+    # is that there might be some external state outside of SQL DB
+    # which needs to be garbage-collected.
+    #
+    # These modules are intelligent and won't do anything if there
+    # were no modifications.
+    #
+    _call_txn_resources($req, 'handle_commit');
+    Bivio::SQL::Connection->commit;
+    Bivio::Mail::Common->send_queued_messages;
+    Bivio::Mail::Message->send_queued_messages;
+#TODO: Garbage collect state that doesn't agree with SQL DB
+    # Note: rollback is in handle_die
+    return;
+}
+
 =for html <a name="execute"></a>
 
 =head2 execute(Bivio::Agent::Request req)
@@ -279,7 +309,7 @@ sub execute {
 	# Don't continue if returns true.
 	last if defined($instance) ? $instance->$method($req) : &$method($req);
     }
-    _commit($req);
+    $self->commit($req);
     $req->get('reply')->send($req);
     return;
 }
@@ -324,7 +354,7 @@ sub handle_die {
     my($die_code) = $die->get('code');
     if ($_REDIRECT_DIE_CODES{$die_code}) {
 	# commit redirects: current task is completed
-	_commit(Bivio::Agent::Request->get_current);
+	$proto->commit(Bivio::Agent::Request->get_current);
 	return;
     }
 
@@ -381,7 +411,9 @@ sub initialize {
 
 =for html <a name="rollback"></a>
 
-=head2 rollback()
+=head2 DEPRECATED rollback()
+
+=head2 rollback(Bivio::Agent::Request req)
 
 Rollback the current transaction.  Call C<handle_rollback> with
 L<txn_resources|"txn_resources">.  Clears any queued mail.
@@ -391,9 +423,11 @@ Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 =cut
 
 sub rollback {
+    my(undef, $req) = @_;
+    Bivio::IO::Alert->warn_deprecated('missing request');
     # NOTE: Bivio::Biz::Model::Lock::release behaves a particular way
     # and this code must stay in synch with it.
-    my($req) = Bivio::Agent::Request->get_current;
+    $req ||= Bivio::Agent::Request->get_current;
     _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
     Bivio::Mail::Common->discard_queued_messages;
@@ -419,32 +453,6 @@ sub _call_txn_resources {
 
     # Empty the list
     $req->put(txn_resources => []);
-    return;
-}
-
-# _commit(Bivio::Agent::request req)
-#
-# Commits transactions to storage if necessary, but first calls
-# handle_commit for txn_resources.
-#
-sub _commit {
-    my($req) = @_;
-    # Always commit before sending queued messages.  The database
-    # is more important than email and mail dispatcher may need the
-    # state to accurately send the email.  If we get an error
-    # while rendering view, don't commit since the only side effect
-    # is that there might be some external state outside of SQL DB
-    # which needs to be garbage-collected.
-    #
-    # These modules are intelligent and won't do anything if there
-    # were no modifications.
-    #
-    _call_txn_resources($req, 'handle_commit');
-    Bivio::SQL::Connection->commit;
-    Bivio::Mail::Common->send_queued_messages;
-    Bivio::Mail::Message->send_queued_messages;
-#TODO: Garbage collect state that doesn't agree with SQL DB
-    # Note: rollback is in handle_die
     return;
 }
 
