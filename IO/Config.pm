@@ -145,7 +145,7 @@ sub REQUIRED {
 #=IMPORTS
 # This is the first module to initialize.  Don't import anything that
 # might import other bivio modules.
-use Bivio::BConf;
+# use Bivio::BConf;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -482,7 +482,13 @@ sub _initialize {
 	# if the file isn't there and there is no BCONF setting,
 	# then use Bivio::BConf as a default
 	if (! -e $file && ! $ENV{'BCONF'}) {
-	    $_ACTUAL = Bivio::BConf->merge({});
+	    # If there's no configuration, this will be {} as init'd above
+	    # We don't do a eval with {}, because we want the use to happen
+	    # dynamically.
+	    eval '
+		use Bivio::BConf;
+		$_ACTUAL = Bivio::BConf->merge({});
+	    ';
 	}
 	else {
 #TODO: Should probably die if not readable?
