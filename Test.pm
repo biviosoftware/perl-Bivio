@@ -31,7 +31,7 @@ define what you want to test very succinctly.  Here's an example:
     use strict;
     use Bivio::TypeError;
     use Bivio::Type::Integer;
-    Bivio::Test->run([
+    Bivio::Test->unit([
         Bivio::Type::Integer => [
             from_literal => [
 	        [1] => [1],
@@ -40,7 +40,7 @@ define what you want to test very succinctly.  Here's an example:
         ],
     ]);
 
-The first argument to L<run|"run"> is a list of object groups.  An object
+The first argument to L<unit|"unit"> is a list of object groups.  An object
 group is tuple of the object (class or instance) and a list of method groups.
 A method group is a tuple of the method name followed by a list of test cases.
 Each test case is a tuple of a list of parameter(s) and a return value.
@@ -119,9 +119,9 @@ $_ = <<'}'; # emacs
 sub result_ok {
 }
 
-=for html <a name="run"></a>
+=for html <a name="unit"></a>
 
-=head2 run(array_ref tests)
+=head2 unit(array_ref tests)
 
 Evaluates I<tests> which are defined as tuples of tuples of tuples.
 see L<DESCRIPTION|"DESCRIPTION"> for the syntax.
@@ -132,11 +132,11 @@ front-end to C<Test::Harness>.
 
 =cut
 
-sub run {
+sub unit {
     my($proto, $tests) = @_;
     # Compile blows up.  May want to "catch" and print result as opposed
     # to dying.
-    _run(_compile($tests));
+    _unit_eval(_unit_compile($tests));
     return;
 }
 
@@ -165,62 +165,6 @@ sub _assert_even {
     _die($name, ': no elements in array')
 	unless int(@$value);
     return;
-}
-
-# _compile(array_ref tests) : array_ref
-#
-# Compiles @$tests into a linear list of tuples.
-#
-sub _compile {
-    my($tests) = @_;
-    _assert_even($tests, 'tests');
-    my(@tests) = @$tests;
-    my(@result);
-    my($t) = 0;
-    while (@tests) {
-	$t++;
-	my($proto, $group) = splice(@tests, 0, 2);
-	$proto = Bivio::IO::ClassLoader->simple_require($proto)
-	    unless ref($proto);
-	my($proto_name) = (ref($proto) || $proto).'#'.$t;
-	_die($proto_name, ': not a blessed reference')
-	    unless UNIVERSAL::isa($proto, 'UNIVERSAL');
-	_assert_even($group, $proto_name);
-	my(@group) = @$group;
-	my($g) = 0;
-	while (@group) {
-	    $g++;
-	    my($method, $cases) = splice(@group, 0, 2);
-	    my($group_name) = $proto_name.'->'.$method.'#'.$g;
-	    _assert_even($cases, $group_name);
-	    _die($proto_name, ': does not implement method ', $method)
-		unless UNIVERSAL::can($proto, $method);
-	    my(@cases) = @$cases;
-	    my($c) = 0;
-	    while (@cases) {
-		$c++;
-		my($params, $expected) = splice(@cases, 0, 2);
-		my($case_name) = $group_name."(case#".$c.")";
-		_assert_array($params, $case_name);
-		_die($case_name, ": expected result must be undef, array_ref, "
-			." code_ref (sub), or Bivio::DieCode")
-		    unless !defined($expected) || ref($expected)
-			&& (ref($expected) eq 'CODE'
-			    || ref($expected) eq 'ARRAY'
-			    || UNIVERSAL::isa($expected, 'Bivio::DieCode'));
-		push(@result, {
-		    proto_name => $proto_name,
-		    proto => $proto,
-		    group_name => $group_name,
-		    method => $method,
-		    case_name => $case_name,
-		    params => $params,
-		    expected => $expected,
-		});
-	    }
-	}
-    }
-    return \@result;
 }
 
 # _die(array msg)
@@ -275,11 +219,103 @@ sub _result_ok {
     return;
 }
 
-# _run(array_ref cases)
+# _summarize(array_ref value) : string
 #
-# Runs the tests as returned from _compile().
+# Returns a string summary of the array_ref.
 #
-sub _run {
+sub _summarize {
+    my($value) = @_;
+    return '[]' unless @$value;
+    my($res) = '[';
+    my($i) = 0;
+    foreach my $v (@$value) {
+	if (++$i > 3) {
+	    # Extra dot gets chopped below
+	    $res .= '....';
+	    last;
+	}
+	$res .= ref($v)
+	    ? UNIVERSAL::can($v, 'as_string')
+	        ? _summarize_scalar($v->as_string)
+	        : ref($v)
+	    : _summarize_scalar($v);
+	$res .= ',';
+    }
+    chop($res);
+    return $res.']';
+}
+
+# _summarize_scalar(string v) : string
+#
+# Trims the scalar if too long.  Outputs undef, if undefined.
+#
+sub _summarize_scalar {
+    my($v) = @_;
+    return 'undef' unless defined($v);
+    return length($v) > 20 ? substr($v, 0, 20).'...' : $v;
+}
+
+# _unit_compile(array_ref tests) : array_ref
+#
+# Compiles @$tests into a linear list of tuples.
+#
+sub _unit_compile {
+    my($tests) = @_;
+    _assert_even($tests, 'tests');
+    my(@tests) = @$tests;
+    my(@result);
+    my($t) = 0;
+    while (@tests) {
+	$t++;
+	my($proto, $group) = splice(@tests, 0, 2);
+	$proto = Bivio::IO::ClassLoader->simple_require($proto)
+	    unless ref($proto);
+	my($proto_name) = (ref($proto) || $proto).'#'.$t;
+	_die($proto_name, ': not a blessed reference')
+	    unless UNIVERSAL::isa($proto, 'UNIVERSAL');
+	_assert_even($group, $proto_name);
+	my(@group) = @$group;
+	my($g) = 0;
+	while (@group) {
+	    $g++;
+	    my($method, $cases) = splice(@group, 0, 2);
+	    my($group_name) = $proto_name.'->'.$method.'#'.$g;
+	    _assert_even($cases, $group_name);
+	    _die($proto_name, ': does not implement method ', $method)
+		unless UNIVERSAL::can($proto, $method);
+	    my(@cases) = @$cases;
+	    my($c) = 0;
+	    while (@cases) {
+		$c++;
+		my($params, $expected) = splice(@cases, 0, 2);
+		my($case_name) = $group_name."(case#".$c.")";
+		_assert_array($params, $case_name);
+		_die($case_name, ": expected result must be undef, array_ref, "
+			." code_ref (sub), or Bivio::DieCode")
+		    unless !defined($expected) || ref($expected)
+			&& (ref($expected) eq 'CODE'
+			    || ref($expected) eq 'ARRAY'
+			    || UNIVERSAL::isa($expected, 'Bivio::DieCode'));
+		push(@result, {
+		    proto_name => $proto_name,
+		    proto => $proto,
+		    group_name => $group_name,
+		    method => $method,
+		    case_name => $case_name,
+		    params => $params,
+		    expected => $expected,
+		});
+	    }
+	}
+    }
+    return \@result;
+}
+
+# _unit_eval(array_ref cases)
+#
+# Runs the tests as returned from _unit_compile().
+#
+sub _unit_eval {
     my($cases) = @_;
     my($c) = 0;
     print('1..'.int(@$cases)."\n");
@@ -333,42 +369,6 @@ sub _run {
 	print($ok ? "ok $c\n" : ("not ok $c $case->{case_name}: $err\n"));
     }
     return;
-}
-
-# _summarize(array_ref value) : string
-#
-# Returns a summary of the array_ref.
-#
-sub _summarize {
-    my($value) = @_;
-    return '[]' unless @$value;
-    my($res) = '[';
-    my($i) = 0;
-    foreach my $v (@$value) {
-	if (++$i > 3) {
-	    # Extra dot gets chopped below
-	    $res .= '....';
-	    last;
-	}
-	$res .= ref($v)
-	    ? UNIVERSAL::can($v, 'as_string')
-	        ? _summarize_scalar($v->as_string)
-	        : ref($v)
-	    : _summarize_scalar($v);
-	$res .= ',';
-    }
-    chop($res);
-    return $res.']';
-}
-
-# _summarize_scalar(string v) : string
-#
-# Trims the scalar if too long.  Outputs undef, if undefined.
-#
-sub _summarize_scalar {
-    my($v) = @_;
-    return 'undef' unless defined($v);
-    return length($v) > 20 ? substr($v, 0, 20).'...' : $v;
 }
 
 =head1 COPYRIGHT
