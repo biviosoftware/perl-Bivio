@@ -153,11 +153,49 @@ sub internal_initialize {
     });
 }
 
+=for html <a name="internal_pre_execute"></a>
+
+=head2 internal_pre_execute() : 
+
+Load the default value of any fields that were not present on the form.
+
+=cut
+
+sub internal_pre_execute {
+    my($self) = shift;
+    my($form) = $self->get_request()->get('form');
+    return unless defined($form);
+
+    map({
+	my($fn) = $self->get_field_name_for_html($_);
+	$self->load_default_value($_)
+	    unless exists($form->{$fn});
+	# might want to check for type=FormButton instead
+    } grep({!($_ =~ /_button/)}
+	@{$self->get_info('visible_field_names')}));
+    return;
+}
+
+=for html <a name="load_default_value"></a>
+
+=head2 load_default_value(string field) : 
+
+Set the field to its default value.
+
+=cut
+
+sub load_default_value {
+    my($self, $field) = @_;
+    $self->internal_put_field($field =>
+	$self->get_field_info($field, 'default_value'));
+    return;
+}
+
 =for html <a name="load_query_value"></a>
 
 =head2 load_query_value(hash_ref query, string field)
 
-Load query value into form model. Load the default value if no value is
+Load query value into form model.  Load the default value if no value is
 present on the query.
 
 =cut
