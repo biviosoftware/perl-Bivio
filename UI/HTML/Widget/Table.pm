@@ -214,6 +214,11 @@ Name of the column.  By default, it is the positional name.
 
 If true, the column won't wrap text.
 
+=item column_order_by : array_ref
+
+The list of sort fields to use when sorting on this column.
+By default, this is the field name of the column.
+
 =item column_span : int [1]
 
 The value for the C<COLSPAN> tag, which is not inserted if C<1>.
@@ -298,12 +303,16 @@ sub initialize {
 	    unless defined($self->ancestral_get('string_font', undef));
 
     my($columns) = $self->get('columns');
+    my($lm) = $list;
+    if ($list->isa('Bivio::Biz::ListFormModel')) {
+        $lm = $list->get_info('list_class')->get_instance;
+    }
+    my($sort_columns) = $lm->get_info('order_by_names');
 
-#TODO: optimize, don't create summary widgets unless they are needed
-
-    # create widgets for each heading, column, and summar
+    # Create widgets for each heading, column, and summary
     my($cells) = [];
     my($headings) = [];
+#TODO: optimize, don't create summary widgets unless they are needed
     my($summary_cells) = [];
     my($summary_lines) = [];
     foreach my $col (@$columns) {
@@ -320,10 +329,15 @@ sub initialize {
 	else {
 	    $attrs = {field => $col};
 	}
-
 	my($cell) = _get_cell($self, $list, $col, $attrs);
 	push(@$cells, $cell);
-	push(@$headings, _get_heading($self, $col, $cell));
+
+        # Can we sort on this column?
+        my($sort_fields) = $cell->unsafe_get('column_order_by')
+                || [grep($col eq $_, @$sort_columns)]
+                        if defined($sort_columns);
+
+        push(@$headings, _get_heading($self, $lm, $col, $cell, $sort_fields));
 	push(@$summary_cells, _get_summary_cell($self, $cell));
 	push(@$summary_lines, _get_summary_line($self, $cell));
     }
@@ -389,7 +403,7 @@ sub render {
 	my($html) = $req->get('Bivio::UI::HTML');
 	$$buffer .= Bivio::UI::Align->as_html(
 		$self->get_or_default('align',
-			$html->get_value('table_default_align')));
+                        $html->get_value('table_default_align')));
 
 	$$buffer .= $html->get_value('page_left_margin')
 		? ' width="95%"' : ' width="100%"'
@@ -550,12 +564,12 @@ sub _get_enabled_widgets {
     return ($headings, $cells, $summary_cells, $summary_lines);
 }
 
-# _get_heading(string col, Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+# _get_heading(Bivio::Biz::ListModel list, string col, Bivio::UI::HTML::Widget cell, array_ref sort_fields) : Bivio::UI::HTML::Widget
 #
 # Returns the table heading widget for the specified column widget.
 #
 sub _get_heading {
-    my($self, $col, $cell) = @_;
+    my($self, $list, $col, $cell, $sort_fields) = @_;
 
     my($label) = $cell->get_or_default('column_heading', $col);
     if ($label) {
@@ -579,13 +593,52 @@ sub _get_heading {
 	    $label = Bivio::UI::Label->get_simple($l) unless defined($label);
 	}
     }
+
     my($heading) = Bivio::UI::HTML::Widget::String->new({
-	value => $label,
-	string_font => 'table_heading',
-	column_align => $cell->get_or_default('heading_align', 'S'),
-	column_span => $cell->get_or_default('column_span', 1),
-        heading_expand => $cell->unsafe_get('column_expand'),
+        value => $label,
+        string_font => 'table_heading',
     });
+    if (defined($sort_fields) && @$sort_fields) {
+        # Restriction: Main sort field must be identical to column field
+        Bivio::IO::Alert->die($sort_fields->[0], ' ne ', $col,
+                ': sort field must be identical to column field')
+                    unless $sort_fields->[0] eq $col;
+        $heading = $self->director([
+            sub {
+                my($sort_col) = shift->get_query->get('order_by')->[0];
+                return $sort_col eq $col ? 1 : 0;
+            }], {
+                0 => $self->link($heading,
+                        ['->format_uri_for_sort', $sort_fields]),
+                1 => $self->director([
+                    sub {
+                        return shift->get_query->get('order_by')->[1];
+                    }], {
+                        0 => $self->join([
+                            $self->link($heading, ['->format_uri_for_sort',
+                                $sort_fields, 1]),
+                            ' ',
+                            $self->image('sort_up',
+                                    'This column sorted in descending order')
+                            ->put(align => 'BOTTOM'),
+                            ]),
+                        1 => $self->join([
+                            $self->link($heading, ['->format_uri_for_sort',
+                                $sort_fields, 0]),
+                            ' ',
+                            $self->image('sort_down',
+                                    'This column sorted in ascending order')
+                            ->put(align => 'BOTTOM'),
+                        ]),
+                    }),
+            });
+    }
+    $heading->put(
+            column_nowrap => 1,
+            column_align => $cell->get_or_default('heading_align', 'S'),
+            column_span => $cell->get_or_default('column_span', 1),
+            heading_expand => $cell->unsafe_get('column_expand'),
+           );
     _initialize_widget($self, $heading);
     return $heading;
 }
