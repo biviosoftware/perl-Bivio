@@ -45,7 +45,7 @@ Returns C<undef> if I<query> is C<undef>.
 sub format {
     my(undef, $query) = @_;
     return undef unless $query;
-    my($res);
+    my($res) = '';
     foreach my $k (keys(%$query)) {
 	$res .= Bivio::Util::escape_uri($k).'='
 		.Bivio::Util::escape_uri($query->{$k}).'&';
