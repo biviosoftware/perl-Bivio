@@ -30,7 +30,19 @@ use Bivio::UI::Widget;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget::MetaTags>
+C<Bivio::UI::HTML::Widget::MetaTags> is used like:
+
+    Page({
+	head => Join([
+	    MetaTags(
+                "This is a cool site",
+                "Cool stuff, Stuff that is cool, coolest stuff",
+	    ),
+	    Title([
+		view_widget_value('title'),
+		view_widget_value('sub_title'),
+	    ]),
+	]),
 
 =cut
 
