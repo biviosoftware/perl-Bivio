@@ -79,6 +79,8 @@ sub new {
     $self->[$_IDI] = {
 	cookies => HTTP::Cookies->new,
 	user_agent => Bivio::Ext::LWPUserAgent->new,
+	history => [],
+	history_length => 3,
     };
     return $self;
 }
@@ -271,6 +273,26 @@ Returns the uri for the current page.  Blows up if no current uri.
 sub get_uri {
     return shift->[$_IDI]->{uri}
 	|| Bivio::Die->die('no current uri');
+}
+
+=for html <a name="go_back"></a>
+
+=head2 go_back()
+
+Goes back one element in the history.  If there is no history, blows
+up.
+
+=cut
+
+sub go_back {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    my($x) = pop(@{$fields->{history}})
+	|| Bivio::Die->die('no page to go back to');
+    while (my($k, $v) = each(%$x)) {
+	$fields->{$k} = $v;
+    }
+    return;
 }
 
 =for html <a name="handle_config"></a>
@@ -880,8 +902,15 @@ sub _send_request {
 	. $self->get('test_script') . ':' . _get_script_line($self)
 	. ')');
     my($redirect_count) = 0;
-    $fields->{response} = undef;
-    $fields->{html_parser} = undef;
+    push(@{$fields->{history}}, {
+	map({
+	    my($x) = $fields->{$_};
+	    $fields->{$_} = undef;
+	    ($_ => $x);
+	} qw(uri response html_parser)),
+    }) if $fields->{response};
+    shift(@{$fields->{history}})
+	while @{$fields->{history}} > $fields->{history_length};
     while () {
 	$fields->{uri} = $request->uri->as_string;
 	$fields->{cookies}->add_cookie_header($request);

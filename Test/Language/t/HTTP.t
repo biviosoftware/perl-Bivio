@@ -87,6 +87,13 @@ EOF
 test_setup('HTTP');
 home_page();
 follow_link('Sign-in');
+go_back();
+verify_text(qr/View\.main/);
+test_deviance(qr/no page to go back to/);
+go_back();
+test_conformance();
+home_page();
+follow_link('Sign-in');
 follow_link('New User');
 my($id) = "test_http_$$";
 submit_form(submit => {
