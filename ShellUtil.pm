@@ -305,7 +305,10 @@ if no request.
 
 sub get_request {
     my($self) = @_;
-    return $self->get('req') if ref($self);
+    if (ref($self)) {
+        $self->setup() unless $self->unsafe_get('req');
+        return $self->get('req');
+    }
     my($req) = Bivio::Agent::Request->get_current;
     Bivio::Die->die('no request') unless $req;
     return $req;
@@ -349,7 +352,16 @@ sub main {
     my($self) = $proto->new(_parse_options($proto, \@argv));
     $self->put(argv => \@orig_argv);
     $self->{$_PACKAGE} = {};
-    $self->setup();
+
+    if ($self->unsafe_get('db')) {
+        # Setup DBI connection to access a probably non-default database
+        $self->setup();
+    }
+    my($p) = $0;
+    $p =~ s!.*/!!;
+    $p =~ s!\.\w+$!!;
+    $self->put(program => $p);
+
     my($cmd, $res);
     my($die) = Bivio::Die->catch(sub {
 	if (@argv && _method_ok($self, $argv[0])) {
@@ -364,7 +376,7 @@ sub main {
 	}
 	return $res;
     });
-    $self->finish($die ? 1 : 0);
+    $self->finish($die ? 1 : 0) if $self->unsafe_get('req');;
     $die->throw() if $die;
     $self->result($cmd, $res);
     return;
@@ -395,7 +407,7 @@ sub piped_exec {
     unless ($pid) {
 	open(OUT, "| exec $command") || die("open $command: $!");
 	print OUT $$in;
-	close(OUT) || die("write to $command failed: $!");
+	close(OUT) || warn("write to $command failed: $!");
 	CORE::exit(0);
     }
     local($/) = undef;
@@ -519,25 +531,21 @@ sub setup {
     my($fields) = $self->{$_PACKAGE};
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
 
-
     Bivio::IO::ClassLoader->simple_require(qw{
         Bivio::Agent::Job::Request
         Bivio::Agent::TaskId
         Bivio::SQL::Connection
     });
     $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
+    return unless Bivio::Ext::DBI->get_config($db)->{user} eq 'bivio';
 
-    my($p) = $0;
-    $p =~ s!.*/!!;
-    $p =~ s!\.\w+$!!;
     $realm = _parse_realm_id($self, 'realm');
     $user = _parse_realm_id($self, 'user');
     $self->put(req => Bivio::Agent::Job::Request->new({
 	auth_id => $realm,
 	auth_user_id => $user,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
-    }),
-	    program => $p);
+    }));
 
     my($req) = $self->get('req');
     if ($realm && !$user) {
