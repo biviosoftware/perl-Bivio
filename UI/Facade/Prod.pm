@@ -174,6 +174,8 @@ __PACKAGE__->new({
 		    'form_field_label_in_text');
 	    $comp->create_group([undef, 'icon_text_ia'],
 		    'icon_text_ia');
+	    $comp->create_group([undef, 'page_text'],
+		    'realm_chooser_text');
 	    $comp->create_group([undef, 'task_list_label'],
 		    'task_list_label');
 	    $comp->create_group([undef, 'task_list_heading', 'strong'],
