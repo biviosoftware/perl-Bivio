@@ -179,7 +179,8 @@ sub create {
 #		    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
 	}
 	else {
-	    $new_values->{$pid} = _next_primary_id($self, $die);
+	    $new_values->{$pid} = Bivio::SQL::Connection->next_primary_id(
+		    $attrs->{table_name}, $die);
 	}
     }
     my($columns) = $attrs->{columns};
@@ -240,8 +241,7 @@ Returns the number of rows deleted.
 
 sub delete_all {
     my($self, $values, $die) = @_;
-    my($attrs) = $self->internal_get;
-    my($sql) = 'delete from '.$attrs->{table_name}.' where ';
+    my($sql) = 'delete from '.$self->get('table_name').' where ';
     my($params) = [];
     my($first_col) = 1;
     foreach my $col (sort(keys(%$values))) {
@@ -286,12 +286,11 @@ C<ORDER BY>.
 
 sub iterate_start {
     my($self, $die, $order_by, $query) = @_;
-    my($attrs) = $self->internal_get;
     my(@params);
     my($sql) = _prepare_select($self, $query, \@params);
     $sql .= ' order by '.$order_by;
     my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
-	   $attrs->{has_blob});
+	    $self->get('has_blob'));
     return $iterator;
 }
 
@@ -533,26 +532,12 @@ sub _init_statements {
 	    ." from $attrs->{table_name} "
 		    .$attrs->{primary_where}." for update";
 
-    # Next_primary_id
     my($primary_id_name) = $attrs->{table_name};
     $primary_id_name =~ s/_t$/_id/;
     if ($attrs->{columns}->{$primary_id_name}) {
 	$attrs->{primary_id_name} = $primary_id_name;
-	$attrs->{next_primary_id} = 'select '
-		. substr($attrs->{table_name}, 0, -2)
-		. '_s.nextval from dual';
     }
     return;
-}
-
-# _next_primary_id(Bivio::SQL::PropertySupport self, ref die) : string
-#
-# Returns the next primary key id for this table
-sub _next_primary_id {
-    my($self, $die) = @_;
-    my($attrs) = $self->internal_get;
-    return Bivio::SQL::Connection->execute($attrs->{next_primary_id},
-	    $_EMPTY_ARRAY, $die)->fetchrow_array;
 }
 
 # _prepare_select(Bivio::SQL::PropertySupport self, hash_ref query, array_ref params) : string
