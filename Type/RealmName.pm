@@ -58,6 +58,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     admin
     administrator
     advoco
+    amanda
     amicus
     beta
     bin
@@ -123,6 +124,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     uucp
     webmaster
     webmistress
+    xfs
 );
 
 =head1 METHODS
