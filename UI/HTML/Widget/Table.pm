@@ -66,6 +66,14 @@ by heading specific attributes.
 The bgcolor of the heading row as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.
 
+=item no_end_tag : boolean [false]
+
+If true, this widget won't render the end-table tag.
+
+=item no_start_tag : boolean [false]
+
+If true, this widget won't render the start-table tag.
+
 =item headings : array_ref (required)
 
 The widgets that are to be used for the column headings.
@@ -161,17 +169,21 @@ Initializes static information.
 =cut
 
 sub initialize {
-    my($self, $source) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{headings});
-    my($p) = '<table border=0 cellspacing=0 cellpadding=';
-    # We don't want to check parents
-    $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
-    $p .= ' width="100%"' if $self->get_or_default('expand', 0);
-    my($bgcolor) = $self->get_or_default('bgcolor', 0);
-    $p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
-    $p .= '><tr';
-    $bgcolor = $self->get_or_default('heading_bgcolor', 'heading_bg');
+    my($p) = '';
+    if (! $self->get_or_default('no_start_tag', 0)) {
+	$p .= '<table border=0 cellspacing=0 cellpadding=';
+	# We don't want to check parents
+	$p .= $self->get_or_default('pad', $_DEFAULT_PAD);
+	$p .= ' width="100%"' if $self->get_or_default('expand', 0);
+	my($bgcolor) = $self->get_or_default('bgcolor', 0);
+	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
+	$p .= '>';
+    }
+    $p .= '<tr';
+    my($bgcolor) = $self->get_or_default('heading_bgcolor', 'heading_bg');
     $p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
 
     # Headings
@@ -214,6 +226,8 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    print(STDERR "\n\n$source\n\n".$fields->{source}->[0]."\n\n"
+	   .$source->get($fields->{source}->[0])."\n\n");
     $source = $source->get_widget_value(@{$fields->{source}});
 
     # Headings
@@ -232,7 +246,9 @@ sub render {
     }
 
     # Always close off row, because headings is left unclosed
-    $$buffer .= "</tr></table>\n";
+    $$buffer .= "</tr>";
+    $$buffer .= "</table>" if (! $self->get_or_default('no_end_tag', 0));
+
     return;
 }
 
@@ -245,6 +261,7 @@ sub render {
 #
 sub _init_cell {
     my($self, $cells, $attrs, $cell) = @_;
+
     unless (UNIVERSAL::isa($cell, 'Bivio::UI::HTML::Widget')) {
 	$cell = Bivio::UI::HTML::Widget::String->new({
 		value => $cell,
