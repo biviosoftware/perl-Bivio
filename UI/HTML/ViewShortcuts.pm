@@ -537,7 +537,7 @@ Returns a uri formatted for the static site.
 
 sub vs_format_uri_static_site {
     my(undef, $req, $page) = @_;
-    return $req->format_uri(Bivio::Agent::TaskId::HTTP_DOCUMENT(),
+    return $req->format_uri(Bivio::Agent::TaskId->SITE_ROOT,
 	    undef,
 	    '',
 	    # path info must begin with a '/'
@@ -947,7 +947,7 @@ sub vs_link_static_site {
     my($proto, $label, $page, $font) = @_;
     return $proto->vs_link($label,
 	    [['->get_request'], '->format_uri',
-		Bivio::Agent::TaskId::HTTP_DOCUMENT(),
+		Bivio::Agent::TaskId->SITE_ROOT,
 		undef,
 		'',
 		# path info must begin with a '/'
@@ -1424,11 +1424,11 @@ sub vs_whats_this {
 #
 sub _link_help {
     my($proto, $task, $label) = @_;
-    my($task_id) = Bivio::Agent::TaskId->unsafe_from_name($task);
+    my($task_id) = Bivio::Agent::TaskId->unsafe_from_name($task)
+	    || Bivio::Agent::TaskId->HELP;
     return $proto->vs_link(
 	    $proto->vs_text($label),
-	    $task_id ? [['->get_request'], '->format_help_uri', $task_id]
-	    	    : [['->get_request'], '->format_stateless_uri', 'HELP'],
+	    [['->get_request'], '->format_help_uri', $task_id],
 	    'help_hint')
 	    ->put(control => $proto->vs_html_value('want_help'));
 }
