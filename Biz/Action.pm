@@ -120,7 +120,7 @@ L<get_instance|"get_instance">.
 sub put_on_request {
     my($self, $req) = @_;
     Bivio::Die->die($self, ': must be instance')
-	if !ref($self);
+	unless ref($self);
     Bivio::Die->die($self, ': may not put singleton on request')
 	if $self->get_instance == $self;
     foreach my $key ('Action.' . $self->simple_package_name, ref($self)) {
