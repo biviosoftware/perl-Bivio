@@ -30,7 +30,9 @@ C<Bivio::Biz::SqlListSupport>
 
 #=IMPORTS
 use Bivio::Biz::SqlConnection;
+use Bivio::Biz::SqlSupport;
 use Bivio::IO::Trace;
+use Carp();
 use Data::Dumper;
 
 #=VARIABLES
@@ -62,9 +64,11 @@ sub new {
     }
 
     $self->{$_PACKAGE} = {
-	select => 'select '.join(',', @$col_map).' from '.$table_name.' ',
+	select => undef,
 	count => 'select count(*) from '.$table_name.' ',
-	col_field_count => $col_field_count
+	col_field_count => $col_field_count,
+	col_map => $col_map,
+	table_name => $table_name
     };
     return $self;
 }
@@ -85,6 +89,7 @@ and substitution values. At most the specified max rows will be loaded.
 sub find {
     my($self, $model, $rows, $index, $max, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $fields->{select} || Carp::croak("SqlListSupport not initialized");
     my($col_field_count) = $fields->{col_field_count};
 
     # clear the result set
@@ -146,6 +151,7 @@ error will be added to the model's status.
 sub get_result_set_size {
     my($self, $model, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $fields->{select} || Carp::croak("SqlListSupport not initialized");
 
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{count}.$where_clause;
@@ -158,6 +164,51 @@ sub get_result_set_size {
     $statement->finish();
 
     return $result;
+}
+
+=for html <a name="initialize"></a>
+
+=head2 initialize()
+
+Gets type information from the database. Executed only once per instance.
+
+=cut
+
+sub initialize {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # check if already initialized
+    return if $fields->{select};
+
+    my($conn) =  Bivio::Biz::SqlConnection->get_connection();
+    my($sql) = 'select '.join(',', @{$fields->{col_map}})
+	    .' from '.$fields->{table_name};
+
+    &_trace($sql) if $_TRACE;
+
+    my($statement) = $conn->prepare($sql);
+    my($names) = $statement->{NAME_lc};
+    my($types) = $statement->{TYPE};
+
+    my($select) = 'select ';
+    for(my($i) = 0; $i < scalar(@$names); $i++) {
+	if ($types->[$i] == Bivio::Biz::SqlSupport::SQL_DATE_TYPE()) {
+	    $select .= 'TO_CHAR('.$names->[$i].",'"
+		    .Bivio::Biz::SqlSupport::DATE_FORMAT()."'),";
+	}
+	else {
+	    $select .= $names->[$i].',';
+	}
+    }
+
+    $statement->finish();
+
+    # remove extra ','
+    chop($select);
+
+    $select .= ' from '.$fields->{table_name}.' ';
+    $fields->{select} = $select;
 }
 
 #=PRIVATE METHODS
