@@ -61,13 +61,12 @@ sub create_entry {
     $properties->{class} = Bivio::Type::EntryClass::CASH();
     ($properties->{realm_id}, $properties->{realm_transaction_id})
 	    = $trans->get('realm_id', 'realm_transaction_id');
-    $properties->{realm_transaction_id} = $trans->get('realm_transaction_id');
 
     # defaults
     $properties->{tax_category} = Bivio::Type::TaxCategory::NOT_TAXABLE()
-	    unless defined($properties->{tax_category});
+	    unless exists($properties->{tax_category});
     $properties->{tax_basis} = 1
-	    unless defined($properties->{tax_basis});
+	    unless exists($properties->{tax_basis});
 
     my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
     $entry->create($properties);
