@@ -267,14 +267,17 @@ sub _eval_child {
 
 # _eval_op(any op, hash_ref attr, string_ref html, hash_ref clipboard) : string
 #
-# Wraps $html in HTML tags defined by $op.  If $op is a ARRAY, call
-# _to_tags() to convert the simple tag names to form the prefix and
-# suffix.  If $op is a HASH or string (!ref), calls _eval_template.  If $op
-# is CODE, call the subroutine with $html and $clipboard.  Dies if
-# $op's type is not handled (program error in $_XML_TO_HTML_PROGRAM).
+# Wraps $html in HTML tags defined by $op, prefixing with an anchor if
+# $attr->{id}.  If $op is a ARRAY, call _to_tags() to convert the simple tag
+# names to form the prefix and suffix.  If $op is a HASH or string (!ref),
+# calls _eval_template.  If $op is CODE, call the subroutine with $html and
+# $clipboard.  Dies if $op's type is not handled (program error in
+# $_XML_TO_HTML_PROGRAM).
 #
 sub _eval_op {
     my($op, $attr, $html, $clipboard) = @_;
+    substr($$html, 0, 0) = qq{<a name="$attr->{id}"></a>}
+	if $attr->{id};
     return 'ARRAY' eq ref($op)
 	    ? _to_tags($op, '') . $$html  . _to_tags([reverse(@$op)], '/')
 	: 'CODE' eq ref($op)
