@@ -156,14 +156,15 @@ sub parse_and_store {
     _parse_keywords($s, $keywords);
     _parse_keywords($msg->get_date_time(), $keywords);
 
-    _trace('extracting MIME attachments for mail message. File: ',
-	    $file_name) if $_TRACE;
+#    _trace('extracting MIME attachments for mail message. File: ',
+#	    $file_name) if $_TRACE;
     _extract_mime($fields, $fields->{parser}->read(
 	    $msg->get_rfc822_io()), $file_name);
     my($rslt);
     $fields->{file_client}->set_keywords($file_name, $keywords, \$rslt)
 	    || die("set_keywords failed: \$rslt");
-    _trace('total bytes written: ', $fields->{kbytes}, ' K') if $_TRACE;
+    _trace($file_name, ': total bytes written: ', $fields->{kbytes}, ' K')
+	    if $_TRACE;
     return;
 }
 
@@ -186,7 +187,7 @@ sub _extract_mime {
     if(!$ctype){
 	$ctype = "text/plain";
     }
-    _trace('content type: ' , $ctype);
+#    _trace('content type: ' , $ctype);
     my($type) =  Bivio::Type::MIMEType->from_content_type($ctype);
     _parse_mime($fields, $entity, $type);
 
@@ -195,7 +196,7 @@ sub _extract_mime {
     _write_entity_to_file($fields, $entity, $file_name, $type);
 
     my(@parts) = $entity->parts();
-    _trace('number of parts for this MIME part is ', int(@parts)) if $_TRACE;
+#    _trace('number of parts for this MIME part is ', int(@parts)) if $_TRACE;
     return unless @parts;
 
 #TODO: BTW, From the man page of MIME::Entity
@@ -207,25 +208,25 @@ sub _extract_mime {
     my($i) = -1;
     my($subentity);
     for $subentity (@parts) {
-	_trace('getting part ', ++$i) if $_TRACE;
-	_trace('subentity is valid') if $_TRACE && $subentity;
+#	_trace('getting part ', ++$i) if $_TRACE;
+#	_trace('subentity is valid') if $_TRACE && $subentity;
 	my($content_type) = Bivio::Type::MIMEType->from_content_type(
 		$subentity->head->get('content-type'));
 	if ($content_type == Bivio::Type::MIMEType::MESSAGE_RFC822()) {
 #TODO We need to do the same thing for message/digest
-	    _trace('part', $i, ' is an rfc822 message.') if $_TRACE;
+#	    _trace('part', $i, ' is an rfc822 message.') if $_TRACE;
 	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
             my($root_entity) = $parser->read(
 		    $subentity->bodyhandle->open('r'));
-	    _trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE && !$root_entity;
+#	    _trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE && !$root_entity;
 	    return unless $root_entity;
 	    _extract_mime($fields, $root_entity, $file_name."_$i");
 	}
 	else { #if ($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()) {
-	    _trace('calling _extract_mime on this part: ', $i) if $_TRACE;
+#	    _trace('calling _extract_mime on this part: ', $i) if $_TRACE;
 	    _extract_mime($fields, $subentity, $file_name."_$i");
 	}
-	_trace('done with part ', $i) if $_TRACE;
+#	_trace('done with part ', $i) if $_TRACE;
     }
     return;
 }
@@ -240,7 +241,7 @@ sub _extract_mime {
 #
 #
 sub _extract_mime_body_decoded {
-    _trace('EXTRACT_MIME_BODY_DECODED called.') if $_TRACE;
+#    _trace('EXTRACT_MIME_BODY_DECODED called.') if $_TRACE;
     my($fields, $entity) = @_;
     my($s);
     my($line) = '';
@@ -267,13 +268,13 @@ sub _extract_mime_body_decoded {
 # as a scalar.
 sub _extract_mime_header {
     my($fields, $entity) = @_;
-    _trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
+#    _trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
     my($s);
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
     $entity->head->print($file);
     my(@parts) = $entity->parts();
-    _trace('>>>>adding custom header field X-BivioNumParts:', int(@parts)) if $_TRACE;
+#    _trace('>>>>adding custom header field X-BivioNumParts:', int(@parts)) if $_TRACE;
     $file->print('X-BivioNumParts: ', int(@parts)."\n");
     $file->close();
     return $s;
@@ -303,26 +304,26 @@ sub _format_body {
 sub _handle_image_attachments {
     my($line, $subpart_index, $fields) = @_;
     if($$line =~  /\<.*("cid:part.+")/){
-	_trace(']]]]]]]]]]]]]FOUND CID.PART match: ', $1) if $_TRACE;
+#	_trace(']]]]]]]]]]]]]FOUND CID.PART match: ', $1) if $_TRACE;
 	my($req) = $fields->{request};
 	my $sb = $1;
 	my $fname = $fields->{filename};
-	_trace('filename: ', $fname);
+#	_trace('filename: ', $fname);
 	$fname =~ /_(\d*)$/;
-	_trace('subpart index: ' , $$subpart_index);
+#	_trace('subpart index: ' , $$subpart_index);
 	my $index = $1+1 + $$subpart_index++;
 #	$$subpart_index += 1;
-	_trace('index: ', $index) if $_TRACE;
+#	_trace('index: ', $index) if $_TRACE;
 	$fname =~ s/_(\d*)$/_$index/;
 	my $attachment_id = $fname;
 	$attachment_id =~ /\/(\d.*$)/;
-	_trace('task image ID: ', $1);
+#	_trace('task image ID: ', $1);
 	my $uri = "\"".$req->format_uri(
 	    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
 	    "img=".$1)."\"";
-	_trace('setting URI: ', $uri) if $_TRACE;
+#	_trace('setting URI: ', $uri) if $_TRACE;
 	$$line =~ s/"cid:part.+"/$uri/;
-	_trace('calling the method again...');
+#	_trace('calling the method again...');
 	_handle_image_attachments($line, $subpart_index, $fields);
     }
     return;
@@ -356,7 +357,7 @@ sub _parse_keywords {
 #
 sub _parse_mime {
     my($fields, $entity, $content_type) = @_;
-    _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
+#    _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
     if($content_type == Bivio::Type::MIMEType->TEXT_PLAIN
 	    ||  $content_type == Bivio::Type::MIMEType->TEXT_HTML){
         my($file) = IO::Scalar->new(_extract_mime_body_decoded(
@@ -382,7 +383,7 @@ sub _parse_msg_line {
     my($str, $fields) = @_;
     my($keywords) = $fields->{keywords};
     unless (length($str)) {
-	_trace('line is zero length, ignoring') if $_TRACE;
+#	_trace('line is zero length, ignoring') if $_TRACE;
 	return;
     }
     #modifies both the string ref and $fields->{multi_line_flag}:
@@ -393,7 +394,7 @@ sub _parse_msg_line {
     $str =~ s/\&[a-z][A-Z]//g;
     $str =~ s/[.]\s//g;
     $str =~ s/[!#%^&*,();:\t\[\]]//g;
-    _trace('stripped line is "', $str, '"') if $_TRACE;
+#    _trace('stripped line is "', $str, '"') if $_TRACE;
     $str =~ s/^\s+//;
 	my($w);
 	foreach $w (split(/\s+/, $str)) {
@@ -443,9 +444,9 @@ sub _write_entity_to_file {
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
     if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN){
-	_trace('message is text/plain so formatting it...') if $_TRACE;
+#	_trace('message is text/plain so formatting it...') if $_TRACE;
 	my($formatted_mail) = _format_body($entity);
-	_trace('formatted mail: ', $$formatted_mail);
+#	_trace('formatted mail: ', $$formatted_mail);
 	$msg_hdr .= $$formatted_mail if defined($$formatted_mail);
     }
     else{

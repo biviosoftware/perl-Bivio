@@ -91,7 +91,7 @@ Formats the text/plain MIME body.
 
 sub format_item {
     my($proto, $body) = @_;
-    _trace('body: ', $body) if $_TRACE;
+#    _trace('body: ', $body) if $_TRACE;
     my($io) = $body->open('r');
     return format_mail($io);
 }
@@ -149,7 +149,7 @@ sub _parse {
 #
 sub _parse_line {
     my $line = shift;
-    _trace('parse_line is handling: ' , $line) if $_TRACE;
+#    _trace('parse_line is handling: ' , $line) if $_TRACE;
     my @words = split(" ", $line);
     my $len = @words;
     return "" unless ($len > 0);
@@ -168,11 +168,11 @@ sub _parse_line {
 	    }
 	}
 	$word = $res if(! $res eq(''));
-	_trace('word to parse: ' , $word) if $_TRACE;
+#	_trace('word to parse: ' , $word) if $_TRACE;
 	if($word =~ /\w*@\w*\.\w*/){
 #	if($word =~ /\w*@[a-z]*/){
 	    $word = "<a HREF=MAILTO:$word>$word</a>";
-	    _trace('found a mailto: ', $word) if $_TRACE;
+#	    _trace('found a mailto: ', $word) if $_TRACE;
 	}
 	elsif($word =~ /(http:\/\/.*)/){
 	    my $uri = $1;
