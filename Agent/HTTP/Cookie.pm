@@ -117,6 +117,19 @@ sub ENTRY_URI_FIELD {
     return 'e';
 }
 
+=for html <a name="EPOCH"></a>
+
+=head2 EPOCH : int
+
+Returns the earliest time that should be in any cookie (1/1/2000).
+Used to check the cookie is valid.
+
+=cut
+
+sub EPOCH {
+    return 946684800;
+}
+
 =for html <a name="LOGIN_FIELD"></a>
 
 =head2 LOGIN_FIELD : string
@@ -281,10 +294,15 @@ my($_SU_FIELD) = SU_FIELD();
 my($_LOGIN_PERSISTENT) = Bivio::Type::LoginCookie->PERSISTENT->as_int;
 my($_SEP) = SEPARATOR();
 my(@_HANDLERS);
-# LOGIN_FIELD is handled specially
+# LOGIN_FIELD is handled specially.  These fields are added to the
+# cookie in this order.
 my(@_PERSISTENT_FIELDS) = (ENTRY_URI_FIELD(), REALM_INVITE_FIELD(),
-	REFERER_REALM_FIELD(), REFERER_URI_FIELD(), $_TIME_FIELD,
-	TIMEZONE_FIELD(), USER_FIELD(), VISITOR_FIELD());
+	REFERER_REALM_FIELD(), REFERER_URI_FIELD(),
+	TIMEZONE_FIELD(), USER_FIELD(), VISITOR_FIELD(),
+	# Time field is what we use to validate the cookie.  The cookie might
+	# get truncated iwc the last field will get chomped and we'll detect
+	# the lack of a timefield.
+	$_TIME_FIELD);
 my(@_VOLATILE_FIELDS) = (SU_FIELD(), $_TIME_FIELD);
 
 Bivio::IO::Config->register({
@@ -432,8 +450,9 @@ sub header_out {
 	    && $req->get('Bivio::Type::UserAgent')
 		    == Bivio::Type::UserAgent::BROWSER();
 
-    # Since our fields is encrypted, we don't need to header_out "secure".
-    # Allows us to track users better (on non-secure portions of the site).
+    # Since our fields are encrypted, we don't need to return a "secure"
+    # cookie.  Allows us to track users better (on non-secure portions of the
+    # site).
     my($p) = '; path=/';
     $p .= "; domain=$_DOMAIN" if $_DOMAIN;
     my($v) = $p;
@@ -491,6 +510,10 @@ sub register {
 #
 # Encrypt the fields in to_copy and prefix with tag.  If is_persistent,
 # only copy login_field if PERSISTENT.
+#
+# Write the fields in the order they are given.  Do not sort.  This ensures
+# the time field is the last part of the persistent cookie (which may be
+# quite large).  We use the time field for validation.
 #
 sub _encrypt {
     my($fields, $to_copy, $tag, $is_persistent) = @_;
@@ -563,17 +586,23 @@ sub _parse {
 	my(%v) = @v;
 
 	# If we don't have a time field, the cookie is invalid.  Can't have
-	# time in the future.  We assume all our servers are time synchronized.
-	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time) {
+	# time in the future or too far in the past.  We assume all our servers
+	# are time synchronized.
+	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time
+	       && $v{$_TIME_FIELD} > EPOCH()) {
 	    # Bad cookie
 	    _trace('unable to decrypt cookie') if $_TRACE;
+
+#TODO: This may be a noisy error message, but makes sense to try it.
+	    Bivio::IO::Alert->warn('invalid cookie, time field = ',
+		    $v{$_TIME_FIELD}) if $v{$_TIME_FIELD};
 
 	    # force a new cookie to be written
 	    $fields->{MODIFIED_FIELD()} = 1;
 	    next;
 	}
 
-	# Copy over all the field values; they will be parsed by the handler
+	# Copy over all the field values; they will be parsed by the handlers
 	while (my($k, $v) = each(%v)) {
 	    $fields->{$k} = $v;
 	}
