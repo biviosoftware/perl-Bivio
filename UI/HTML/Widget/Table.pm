@@ -533,13 +533,23 @@ sub _get_heading {
 
     my($label) = $cell->get_or_default('column_heading', $col);
     if ($label) {
-        my($l) = $label;
-	$l =~ s/\s/_/g;
-	$label = Bivio::UI::Label->unsafe_get_simple($l);
-	unless (defined($label)) {
-	    # Replace periods with underscores and try to append "_heading"
+	# try to get the heading label first
+	my($hl) = $label;
+	$hl =~ s/\s/_/g;
+	$hl =~ s/\./_/;
+	$hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
+
+	if (defined($hl)) {
+	    $label = $hl;
+	}
+	else {
+	    # try the simple version
+	    my($l) = $label;
+	    $l =~ s/\s/_/g;
+	    $label = Bivio::UI::Label->unsafe_get_simple($l);
+
+	    # then without periods
 	    $l =~ s/\./_/;
-	    $label = Bivio::UI::Label->unsafe_get_simple($l.'_HEADING');
 	    $label = Bivio::UI::Label->get_simple($l) unless defined($label);
 	}
     }
