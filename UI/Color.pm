@@ -58,6 +58,7 @@ __PACKAGE__->compile(
     ],
     ERROR => [
 	0x990000,
+	'warning',
     ],
     PAGE_TEXT => [
 	0x000000,
@@ -80,6 +81,8 @@ __PACKAGE__->compile(
 	'text_menu_font',
         'celebrity_box',
 	'description_label',
+	'task_list_heading',
+	'task_list_label',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,

@@ -75,11 +75,13 @@ use Bivio::UI::Color;
 my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
     PAGE_HEADING => [$_SANS_SERIF, 'page_heading', 'strong'],
+    TASK_LIST_HEADING => [undef, 'task_list_heading', 'strong'],
     TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     NORMAL_TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     TABLE_CELL => [undef, undef],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'b'],
+    WARNING => [undef, 'warning', 'b'],
     LIST_ERROR => [undef, 'error', 'small'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
@@ -88,6 +90,7 @@ _compile([
     FORM_FIELD_LABEL => [undef, undef],
     FORM_FIELD_IN_TEXT => [undef, 'form_field_in_text', 'strong'],
     DESCRIPTION_LABEL => [undef, 'description_label', 'strong'],
+    TASK_LIST_LABEL => [undef, 'task_list_label'],
     FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i'],
     REALM_NAME => [$_SANS_SERIF, 'realm_name', 'strong'],
     USER_NAME => [$_SANS_SERIF, 'user_name', 'big'],
@@ -107,6 +110,7 @@ _compile([
     CELEBRITY_BOX_TITLE => [$_SANS_SERIF, 'celebrity_box_title'],
     CELEBRITY_BOX_TEXT => [$_SANS_SERIF, undef, 'small'],
     FILE_TREE_BYTES => [undef, undef, 'small'],
+    LABEL_IN_TEXT => [undef, undef, 'b'],
 ]);
 
 =head1 METHODS
