@@ -134,6 +134,12 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     },
     itemizedlist => ['ul'],
     listitem => ['li'],
+    literallayout => sub {
+	my($attr, $html) = @_;
+	$$html =~ s/\n/<br>\n/g;
+	$$html =~ s/ /&nbsp;/g;
+	return $$html;
+    },
     note => '<blockquote><strong>Note:</strong><i>${_}</i></blockquote>',
     orderedlist => ['ol'],
     para => ['p'],
