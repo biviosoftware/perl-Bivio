@@ -50,6 +50,7 @@ my($_INSTRUMENT_FEE_LIST) = Bivio::Biz::ListModel->new_anonymous({
     ],
     date => ['RealmTransaction.date_time'],
     want_date => 1,
+    can_iterate => 1,
     other => [qw(
         Entry.amount
         Entry.entry_type
@@ -138,17 +139,19 @@ sub internal_load_rows {
 	    $sql_support);
 
     # add in any fees from instrument transactions
-    $_INSTRUMENT_FEE_LIST->load_all({
+    my($iter) = $_INSTRUMENT_FEE_LIST->iterate_start({
 	date => $self->get_request->get('report_date'),
 	interval => Bivio::Type::DateInterval::BEGINNING_OF_YEAR(),
     });
 
-    while ($_INSTRUMENT_FEE_LIST->next_row) {
-	my($row) = $_INSTRUMENT_FEE_LIST->get_shallow_copy;
+    my($row) = {};
+    while ($_INSTRUMENT_FEE_LIST->iterate_next($iter, $row)) {
 	$row->{'RealmTransaction.remark'} = 'Investment fee: '
 		.($row->{'RealmInstrument.name'} || $row->{'Instrument.name'});
-	push(@$rows, $row);
+	# copy the row values into a new hash
+	push(@$rows, {%$row});
     }
+    $_INSTRUMENT_FEE_LIST->iterate_end($iter);
 
     # change the sign on all the amounts
     foreach my $row (@$rows) {
@@ -156,8 +159,10 @@ sub internal_load_rows {
 		$row->{'Entry.amount'});
 
 	# use the expense category name in the remark
+	# if it isn't the generic "Deductible Expense"
 	if ($row->{'ExpenseCategory.name'}) {
 	    my($remark) = $row->{'RealmTransaction.remark'};
+	    next if $row->{'ExpenseCategory.name'} eq 'Deductible Expense';
 	    $row->{'RealmTransaction.remark'} = defined($remark)
 		    ? $row->{'ExpenseCategory.name'}."\n".$remark
 		    : $row->{'ExpenseCategory.name'};
