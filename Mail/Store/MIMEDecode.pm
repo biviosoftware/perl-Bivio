@@ -365,6 +365,7 @@ sub _parse_mime {
     my($fields, $entity, $content_type) = @_;
 #    _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
     if($content_type == Bivio::Type::MIMEType->TEXT_PLAIN
+	    ||  $content_type == Bivio::Type::MIMEType->TEXT_ENRICHED
 	    ||  $content_type == Bivio::Type::MIMEType->TEXT_HTML){
         my($file) = IO::Scalar->new(_extract_mime_body_decoded(
 		$fields, $entity));
@@ -444,13 +445,14 @@ sub _write_entity_to_file {
     my($msg_hdr) = _extract_mime_header($fields, $entity);
     #changed this to be HTML because all our mail messages
     #are written to the file server in HTML form
-    $msg_hdr =~ s/text\/plain/text\/html/;
+    $msg_hdr =~ s/text\/(plain|enriched)/text\/html/;
     die($file_name, ': header is undef')
 	    unless defined($msg_hdr) && length($msg_hdr);
     my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
-    if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()){
+    if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN() ||
+       $content_type == Bivio::Type::MIMEType::TEXT_ENRICHED() ){
 #	_trace('message is text/plain so formatting it...') if $_TRACE;
 	my($formatted_mail) = _format_body($entity);
 #	_trace('formatted mail: ', $$formatted_mail);

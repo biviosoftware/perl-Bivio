@@ -6,7 +6,7 @@ $Bivio::Mail::Store::TextFormatter::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::Mail::Store::TextFormatter - A simple text/plain formatting tool.
+Bivio::Mail::Store::TextFormatter - A simple text/plain or text/enriched formatting tool.
 
 =head1 SYNOPSIS
 
@@ -69,7 +69,7 @@ Bivio::IO::Trace->register;
 
 =head2 static format_item(MIME::Body body) : scalar_ref
 
-Formats the text/plain MIME body.
+Formats a text/plain or text/enriched MIME body.
 
 =cut
 
@@ -132,6 +132,7 @@ sub _parse {
 sub _parse_line {
     my $line = shift;
 #    _trace('parse_line is handling: ' , $line) if $_TRACE;
+    _delete_enriched_tags(\$line);
     my @words = split(' ', $line);
     my $len = @words;
     return "" unless ($len > 0);
@@ -177,6 +178,7 @@ sub _parse_paragraph {
     }
     foreach my $line (@lines){
 #	$line =~ s/\>/\&gt;/g;
+        # $line =~ s/[\x00-\x19]//g; # delete control characters
 	$$out .= "\n" . _parse_line($line);
     }
 }
@@ -196,6 +198,21 @@ sub _subparse {
 	$$out .= "</P>\n";
     }
     
+}
+
+sub _delete_enriched_tags {
+    my($str) = @_;
+    $$str =~ s|<<|<|gi; # should map to \&lt;, but not displayed correctly
+
+    $$str =~ s|<fontfamily>\s*<param>([^<]+)</param>||gi;
+    $$str =~ s|<color>\s*<param>\s*(\S+)\s*</param>||gi;
+    $$str =~ s|<excerpt>\s*(<param>([^<]*)</param>)?||gi;
+    $$str =~ s|<lang>\s*<param>([^<]*)</param>||gi;
+    $$str =~ s|<paraindent>\s*<param>([^<]*)</param>||gi;
+
+    $$str =~ s,<(/?)(bold|italic|underline|fixed|smaller|bigger)>,,gi;
+    $$str =~ s,<(/?)(fontfamily|color|center|flushleft|flushright)>,,gi;
+    $$str =~ s,<(/?)(flushboth|paraindent|excerpt|lang|nofill)>,,gi;
 }
 
 
