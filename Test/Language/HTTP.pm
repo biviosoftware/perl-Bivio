@@ -93,6 +93,19 @@ sub debug_print {
     return;
 }
 
+=for html <a name="get_html_parser"></a>
+
+=head2 get_html_parser() : Bivio::Test::HTMLParser
+
+Returns the HTML parser for the current page.
+
+=cut
+
+sub get_html_parser {
+    my($self) = @_;
+    return _assert_html($self);
+}
+
 =for html <a name="goto_link"></a>
 
 =head2 goto_link(string link_name)
