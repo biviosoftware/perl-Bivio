@@ -241,6 +241,19 @@ sub get_decimals {
     return undef;
 }
 
+=for html <a name="get_default"></a>
+
+=head2 static abstract get_default() : any
+
+returns a value used to generate default values for preferences and query
+strings. See L<Bivio::Type::PageSize|Bivio::Type::PageSize>
+
+=cut
+
+$_ = <<'}'; # emacs
+sub get_default {
+}
+
 =for html <a name="get_max"></a>
 
 =head2 static get_max : any
