@@ -48,6 +48,11 @@ my(@_CFG) = (
     # URLs can be aliases, separated by a colon. However, the first
     # on is returned on get from task id.  See HTTP::Location code.
     #
+    # A URI which contains a '%', will have a realm owner name in that
+    # position.
+    #
+    # Use '!' to mean "no uri".
+    #
     # LOGIN privileges mean something special.  It means the task
     # must be executed from an encrypted context.  Only tasks which
     # require the user to enter sensitive information, e.g. passwords,
@@ -129,7 +134,7 @@ my(@_CFG) = (
         9
         CLUB
         ACCOUNTING_READ
-        _/accounting/accounts:_/accounts
+        %/accounting/accounts:%/accounts
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
@@ -139,7 +144,7 @@ my(@_CFG) = (
         10
         CLUB
         ACCOUNTING_READ
-        _/accounting/history
+        %/accounting/history
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -147,7 +152,7 @@ my(@_CFG) = (
         11
         CLUB
         ACCOUNTING_READ
-        _/accounting/investments:_/investments
+        %/accounting/investments:%/investments
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
@@ -157,7 +162,7 @@ my(@_CFG) = (
         12
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        _/accounting/members
+        %/accounting/members
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
@@ -169,7 +174,7 @@ my(@_CFG) = (
         13
         CLUB
         ACCOUNTING_READ
-        _/accounting/reports
+        %/accounting/reports
         Bivio::Biz::Model::AccountingReportForm
         Bivio::UI::HTML::Club::AccountingReport
         next=CLUB_HOME
@@ -179,7 +184,7 @@ my(@_CFG) = (
         14
         CLUB
         ADMIN_READ&MEMBER_READ
-        _/admin/roster
+        %/admin/roster
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserList
     )],
@@ -188,7 +193,7 @@ my(@_CFG) = (
         15
         CLUB
         ADMIN_READ
-        _/admin/preferences:_/preferences
+        %/admin/preferences:%/preferences
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -196,7 +201,7 @@ my(@_CFG) = (
         16
         CLUB
         MAIL_READ
-        _/mail
+        %/mail
         Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageList
 
@@ -206,7 +211,7 @@ my(@_CFG) = (
         17
         CLUB
         MOTION_READ
-        _/motions
+        %/motions
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -214,7 +219,7 @@ my(@_CFG) = (
         18
         CLUB
         ADMIN_READ&MEMBER_READ
-        _/rolodex
+        %/rolodex
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -222,7 +227,7 @@ my(@_CFG) = (
         19
         CLUB
         DOCUMENT_READ
-        _/library
+        %/library
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -230,7 +235,7 @@ my(@_CFG) = (
         20
         CLUB
         FINANCIAL_DATA_READ
-        _/research/ssg
+        %/research/ssg
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
@@ -238,7 +243,7 @@ my(@_CFG) = (
 	21
         CLUB
         ACCOUNTING_READ
-        _/accounting/reports/valuation
+        %/accounting/reports/valuation
         Bivio::Biz::Action::ReportDate
 	Bivio::Biz::Model::AccountValuationList->execute_load_all
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
@@ -249,7 +254,7 @@ my(@_CFG) = (
 #        22
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/journal
+#        %/accounting/reports/journal
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -257,7 +262,7 @@ my(@_CFG) = (
 #        23
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/transactions
+#        %/accounting/reports/transactions
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
     [qw(
@@ -265,7 +270,7 @@ my(@_CFG) = (
         24
         CLUB
         ACCOUNTING_READ
-        _/accounting/reports/investments
+        %/accounting/reports/investments
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
@@ -275,7 +280,7 @@ my(@_CFG) = (
 #        25
 #        CLUB
 #        ACCOUNTING_READ
-#        _/accounting/reports/investment-history
+#        %/accounting/reports/investment-history
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
     [qw(
@@ -283,7 +288,7 @@ my(@_CFG) = (
         26
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/members
+        %/accounting/reports/members
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
@@ -293,7 +298,7 @@ my(@_CFG) = (
 #        27
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/member-status
+#        %/accounting/reports/member-status
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -301,7 +306,7 @@ my(@_CFG) = (
 #        28
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/member-value
+#        %/accounting/reports/member-value
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -309,7 +314,7 @@ my(@_CFG) = (
 #        29
 #        CLUB
 #        ACCOUNTING_READ
-#        _/accounting/reports/withdrawal-earnings
+#        %/accounting/reports/withdrawal-earnings
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
     [qw(
@@ -317,7 +322,7 @@ my(@_CFG) = (
         30
         CLUB
         ACCOUNTING_READ
-        _/accounting/reports/accounts
+        %/accounting/reports/accounts
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
@@ -327,7 +332,7 @@ my(@_CFG) = (
 #        31
 #        CLUB
 #        ACCOUNTING_READ
-#        _/accounting/reports/cash-journal
+#        %/accounting/reports/cash-journal
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -335,7 +340,7 @@ my(@_CFG) = (
 #        32
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/cash-contributions
+#        %/accounting/reports/cash-contributions
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -343,7 +348,7 @@ my(@_CFG) = (
 #        33
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/pettycash-contributions
+#        %/accounting/reports/pettycash-contributions
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -351,7 +356,7 @@ my(@_CFG) = (
 #        34
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/pettycash-journal
+#        %/accounting/reports/pettycash-journal
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -359,7 +364,7 @@ my(@_CFG) = (
 #        35
 #        CLUB
 #        ACCOUNTING_READ&MEMBER_READ
-#        _/accounting/reports/distributions
+#        %/accounting/reports/distributions
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -367,7 +372,7 @@ my(@_CFG) = (
 #        36
 #        CLUB
 #        ACCOUNTING_READ
-#        _/accounting/reports/income-expense
+#        %/accounting/reports/income-expense
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
 #    [qw(
@@ -375,7 +380,7 @@ my(@_CFG) = (
 #        37
 #        CLUB
 #        ACCOUNTING_READ
-#        _/accounting/reports/balance-sheet
+#        %/accounting/reports/balance-sheet
 #        Bivio::UI::HTML::Club::Embargoed
 #    )],
     [qw(
@@ -399,7 +404,7 @@ my(@_CFG) = (
         40
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        _/accounting/member/detail
+        %/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::RealmUserList->execute_load_all
@@ -410,7 +415,7 @@ my(@_CFG) = (
         41
         CLUB
         ACCOUNTING_READ
-        _/accounting/investment/detail
+        %/accounting/investment/detail
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentTransactionList
         Bivio::Biz::Model::RealmInstrument
@@ -422,7 +427,7 @@ my(@_CFG) = (
         42
         CLUB
         ACCOUNTING_READ
-        _/accounting/account/detail
+        %/accounting/account/detail
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountTransactionList
         Bivio::Biz::Model::RealmAccount
@@ -434,7 +439,7 @@ my(@_CFG) = (
         43
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        _/accounting/member/payment
+        %/accounting/member/payment
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
@@ -445,7 +450,7 @@ my(@_CFG) = (
         44
         CLUB
         MAIL_READ
-        _/mail/msg
+        %/mail/msg
         Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageDetail
     )],
@@ -454,7 +459,7 @@ my(@_CFG) = (
         45
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/account/interest
+        %/accounting/account/interest
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -465,7 +470,7 @@ my(@_CFG) = (
         46
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/account/dividend
+        %/accounting/account/dividend
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -476,7 +481,7 @@ my(@_CFG) = (
         47
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/account/income
+        %/accounting/account/income
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -487,7 +492,7 @@ my(@_CFG) = (
         48
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/account/expense
+        %/accounting/account/expense
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -498,7 +503,7 @@ my(@_CFG) = (
         49
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/detail/buy
+        %/accounting/investment/detail/buy
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentBuyForm
@@ -510,20 +515,20 @@ my(@_CFG) = (
         50
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/sell
+        %/accounting/investment/sell
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentSellForm
         Bivio::UI::HTML::Club::InstrumentSell
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
-        cancel=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        cancel=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_VALUATION
         51
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/valuation
+        %/accounting/investment/valuation
         Bivio::Biz::Model::InstrumentValuationForm
         Bivio::UI::HTML::Club::InstrumentValuation
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -553,7 +558,7 @@ my(@_CFG) = (
         54
         CLUB
         DOCUMENT_READ
-        _/admin/edit/self/address
+        %/admin/edit/self/address
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::AddressForm
         Bivio::UI::HTML::User::EditAddress
@@ -564,7 +569,7 @@ my(@_CFG) = (
         55
         CLUB
         DOCUMENT_READ
-        _/admin/edit/self/name
+        %/admin/edit/self/name
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::User::EditName
@@ -575,7 +580,7 @@ my(@_CFG) = (
         56
         CLUB
         DOCUMENT_READ
-        _/admin/edit/self/phone_email
+        %/admin/edit/self/phone_email
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::CommForm
         Bivio::UI::HTML::User::EditComm
@@ -585,8 +590,8 @@ my(@_CFG) = (
         CLUB_ADMIN_USER_PASSWORD_EDIT
         57
         CLUB
-        DOCUMENT_READ
-        _/admin/edit/self/password
+        DOCUMENT_READ&LOGIN
+        %/admin/edit/self/password
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
@@ -597,7 +602,7 @@ my(@_CFG) = (
         58
         CLUB
         MAIL_READ
-        _/mail/attachment
+        %/mail/attachment
         Bivio::UI::HTML::Club::MessageAttachment
     )],
     # MUST MATCH Bivio::Biz::Action::REALM_REDIRECT
@@ -615,7 +620,7 @@ my(@_CFG) = (
         60
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        _/accounting/member/fee
+        %/accounting/member/fee
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
@@ -626,20 +631,10 @@ my(@_CFG) = (
         61
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        _/mail/image
+        %/mail/image
         Bivio::UI::HTML::Club::ImageAttachment
     )],
-    [qw(
-        USER_AGREEMENT
-        62
-        GENERAL
-        DOCUMENT_READ
-        !
-        Bivio::Biz::Model::UserAgreementForm
-        Bivio::UI::HTML::General::UserAgreement
-        next=USER_CREATE
-        cancel=HTTP_DOCUMENT
-    )],
+    #62
     # This URI must identify the user agreement document file.
     [qw(
         USER_AGREEMENT_TEXT
@@ -667,7 +662,7 @@ my(@_CFG) = (
         65
         USER
         DOCUMENT_READ
-        _
+        %
         Bivio::UI::HTML::User::Home
     )],
     [qw(
@@ -675,7 +670,7 @@ my(@_CFG) = (
         66
         USER
         ADMIN_READ
-        _/admin:_/admin/info
+        %/admin:%/admin/info
         Bivio::UI::HTML::User::AdminInfo
     )],
     [qw(
@@ -683,7 +678,7 @@ my(@_CFG) = (
         67
         USER
         ADMIN_READ
-        _/clubs
+        %/clubs
         Bivio::Biz::Model::UserClubList
         Bivio::UI::HTML::User::ClubList
     )],
@@ -692,7 +687,7 @@ my(@_CFG) = (
         68
         USER
         ADMIN_WRITE
-        _/admin/edit/name
+        %/admin/edit/name
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::User::EditName
@@ -703,7 +698,7 @@ my(@_CFG) = (
         69
         USER
         ADMIN_WRITE
-        _/create_club
+        %/create_club
         Bivio::Biz::Model::CreateClubForm
         Bivio::UI::HTML::User::CreateClub
         next=CLUB_CREATED
@@ -713,15 +708,15 @@ my(@_CFG) = (
         70
         CLUB
         DOCUMENT_READ
-        _
+        %
         Bivio::UI::HTML::Club::Home
     )],
     [qw(
         USER_ADMIN_PASSWORD_EDIT
         71
         USER
-        ADMIN_WRITE
-        _/admin/edit/password
+        ADMIN_WRITE&LOGIN
+        %/admin/edit/password
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
@@ -732,7 +727,7 @@ my(@_CFG) = (
         72
         USER
         ADMIN_WRITE
-        _/admin/edit/address
+        %/admin/edit/address
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::AddressForm
         Bivio::UI::HTML::User::EditAddress
@@ -743,7 +738,7 @@ my(@_CFG) = (
         73
         USER
         ADMIN_WRITE
-        _/admin/edit/phone_email
+        %/admin/edit/phone_email
         Bivio::Biz::Action::SetUserTarget
         Bivio::Biz::Model::CommForm
         Bivio::UI::HTML::User::EditComm
@@ -762,7 +757,7 @@ my(@_CFG) = (
         75
         CLUB
         ADMIN_WRITE
-        _/admin/invite
+        %/admin/invite
         Bivio::Biz::Model::ClubInviteForm
         Bivio::UI::HTML::Club::Invite
         next=CLUB_ADMIN_INVITE_LIST
@@ -772,7 +767,7 @@ my(@_CFG) = (
         76
         CLUB
         ADMIN_READ
-        _/admin/invitations
+        %/admin/invitations
         Bivio::Biz::Model::RealmInviteList
         Bivio::UI::HTML::Club::InviteList
     )],
@@ -797,7 +792,7 @@ my(@_CFG) = (
         78
         CLUB
         ADMIN_READ&MEMBER_READ
-        _/admin/roster/detail
+        %/admin/roster/detail
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserDetail
     )],
@@ -806,7 +801,7 @@ my(@_CFG) = (
         79
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
-        _/admin/roster/role/edit
+        %/admin/roster/role/edit
         Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Model::ClubUserRoleForm
         Bivio::UI::HTML::Club::EditUserRole
@@ -817,7 +812,7 @@ my(@_CFG) = (
         80
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/lookup
+        %/accounting/investment/lookup
         Bivio::Biz::Model::InstrumentLookupForm
         Bivio::Biz::Model::InstrumentLookupList
         Bivio::UI::HTML::Club::InstrumentLookup
@@ -828,7 +823,7 @@ my(@_CFG) = (
         81
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/buy
+        %/accounting/investment/buy
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
@@ -857,7 +852,7 @@ my(@_CFG) = (
 	REALM_REDIRECT
 	84
         GENERAL
-        ANY_USER
+        DOCUMENT_READ
         goto
         Bivio::Biz::Action::RealmRedirect
         next=USER_HOME
@@ -867,49 +862,54 @@ my(@_CFG) = (
         85
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/sell2
+        %/accounting/investment/sell2
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmInstrumentLotList->execute_load_all
         Bivio::Biz::Model::InstrumentSellForm2
         Bivio::UI::HTML::Club::InstrumentSell2
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
+#TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_TRANSACTION_DELETE
         86
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/delete
+        %/accounting/investment/delete
+        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
+#TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
         CLUB_ACCOUNTING_MEMBER_TRANSACTION_DELETE
         87
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/member/delete
+        %/accounting/member/delete
+        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
-        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+        next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSACTION_DELETE
         88
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/account/delete
+        %/accounting/account/delete
+        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
-        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_INCOME
         89
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/income
+        %/accounting/investment/income
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentIncomeForm
@@ -921,7 +921,7 @@ my(@_CFG) = (
         90
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/investment/split
+        %/accounting/investment/split
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::InstrumentSplitForm
         Bivio::UI::HTML::Club::InstrumentSplit
@@ -952,7 +952,7 @@ my(@_CFG) = (
         93
         USER
         DOCUMENT_READ
-        _/new
+        %/new
         Bivio::Biz::Model::Email->execute_load
         Bivio::UI::HTML::User::New
     )],
@@ -961,7 +961,7 @@ my(@_CFG) = (
         94
         CLUB
         DOCUMENT_READ
-        _/new_user
+        %/new_user
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::Biz::Model::Email->execute_auth_user
         Bivio::UI::HTML::Club::UserNew
@@ -971,7 +971,7 @@ my(@_CFG) = (
         95
         CLUB
         DOCUMENT_READ
-        _/new
+        %/new
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
     )],
@@ -1002,7 +1002,7 @@ my(@_CFG) = (
         98
         USER
         DOCUMENT_READ
-        _/new_connect
+        %/new_connect
         Bivio::Biz::Model::Email->execute_load
         Bivio::UI::HTML::User::New
     )],
@@ -1011,7 +1011,7 @@ my(@_CFG) = (
         99
         USER
         ADMIN_WRITE
-        _/admin/edit/profile
+        %/admin/edit/profile
         Bivio::Biz::Model::ConnectSurveyForm
         Bivio::UI::HTML::User::EditProfile
         next=USER_ADMIN_INFO
@@ -1030,7 +1030,7 @@ my(@_CFG) = (
         101
         CLUB
         ACCOUNTING_WRITE
-        _/accounting/member/withdrawal
+        %/accounting/member/withdrawal
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::MemberWithdrawalForm
@@ -1042,7 +1042,7 @@ my(@_CFG) = (
         102
         CLUB
         ADMIN_WRITE
-        _/admin/edit/name
+        %/admin/edit/name
         Bivio::Biz::Model::ClubNameForm
         Bivio::UI::HTML::Club::EditName
         next=CLUB_ADMIN_USER_LIST
@@ -1057,18 +1057,42 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::DemoRename
     )],
 #TODO: Shadow realms have no data protection.  We may need to
-#      have a second security check in LoadShadowRealm or something.
+#      have a second security check in SetProxyRealm or something.
 #      For now, the list is small so easy to manage.
-#    [qw(
-#        ASK_CANDIS
-#        102
-#        GENERAL
-#        LOGIN
-#        pub/ask_candis
-#        Bivio::Biz::Action::SetShadowRealm
-#        Bivio::Biz::Model::MessageList
-#        Bivio::UI::HTML::Club::MessageList
-#    )],
+    [qw(
+        CELEBRITY_MESSAGE_LIST
+        104
+        PROXY
+        DOCUMENT_READ
+        pub/%
+        Bivio::Biz::Model::MessageList
+        Bivio::UI::HTML::Celebrity::MessageList
+    )],
+    [qw(
+        CELEBRITY_MESSAGE_DETAIL
+        105
+        PROXY
+        DOCUMENT_READ
+        pub/%/msg
+        Bivio::Biz::Model::MessageList
+        Bivio::UI::HTML::Celebrity::MessageDetail
+    )],
+    # No actions, just a token for authentication action
+    [qw(
+        CELEBRITY_MAIL_COMPOSE
+        106
+        PROXY
+        DOCUMENT_READ
+        !
+    )],
+    [qw(
+        DEFAULT_ERROR_REDIRECT_FORBIDDEN
+        107
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::General::Forbidden
+    )],
 );
 
 __PACKAGE__->compile(
@@ -1076,7 +1100,6 @@ __PACKAGE__->compile(
 );
 
 =head1 METHODS
-
 
 =cut
 
