@@ -67,10 +67,10 @@ sub main {
     &{\&{$method}}($req);
 
     # creates a completion entry in db to prevent re-running
-#    $upgrade->create({
-#	version => $VERSION,
-#	run_date_time => Bivio::Type::DateTime->now
-#    });
+    $upgrade->create({
+	version => $VERSION,
+	run_date_time => Bivio::Type::DateTime->now
+    });
     Bivio::SQL::Connection->commit;
 
     return 1;
@@ -222,7 +222,9 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _sqlplus {
     my($db_login, $actions) = @_;
-    my($res) = Bivio::ShellUtil::piped_exec("sqlplus $db_login", <<"EOF");
+    my($res) = Bivio::ShellUtil::piped_exec(undef, 'su oracle -c sqlplus',
+            <<"EOF");
+$db_login
 set linesize 10000
 set pagesize 10000
 whenever sqlerror exit sql.sqlcode rollback
@@ -247,24 +249,21 @@ sub _upgrade {
     _do_sql(<<'EOF');
 CREATE TABLESPACE ctxapp
   datafile '/db/2/4/ctxapp_01.dbf' size 1025M reuse
-  default storage (initial 64m next 64m pctincrease 0
-      minextents 1 maxextents 32)
+  default storage (initial 8m next 8m pctincrease 0
+      minextents 1 maxextents 128)
   online
+/
 EOF
     my($ora_home) = Bivio::Ext::DBI->get_config($dba)->{oracle_home};
-    _sqlplus('internal', <<'EOF');
-@$ora_home/ctx/admin/dr0csys ctxsys ctxapp temp
+    print _sqlplus('internal', <<"EOF");
+\@$ora_home/ctx/admin/dr0csys ctxsys ctxapp temp
 EOF
     # Need to pass the full path to the ctxx library
-    _sqlplus('ctxsys/ctxsys', <<"EOF");
-@$ora_home/ctx/admin/dr0inst $ora_home/ctx/lib/libctxx8.so
+    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+\@$ora_home/ctx/admin/dr0inst $ora_home/ctx/lib/libctxx8.so
 EOF
-    _sqlplus('ctxsys/ctxsys', <<"EOF");
-@$ora_home/ctx/admin/defaults/drdefus
-EOF
-
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-BEGIN Ctx_Adm.set_parameter('log_directory', '/var/log/oracle'); END;
+    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+\@$ora_home/ctx/admin/defaults/drdefus
 EOF
 
     Bivio::SQL::Connection->set_dbi_name($prior_db);
