@@ -3,8 +3,8 @@
 .PHONEY:	clean
 
 dirs := \
-	f1065/y1999 \
-	f1065sk1/y1999
+	F1065/Y1999 \
+	F1065sk1/Y1999
 
 makefiles := $(dirs:=/GNUmakefile)
 

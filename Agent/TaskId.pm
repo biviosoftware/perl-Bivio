@@ -1590,7 +1590,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ScheduleDForm
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form
-	Bivio::UI::PDF::Form::f1065::y1999::Form
+	Bivio::UI::PDF::Form::F1065::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(
@@ -1606,7 +1606,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
-	Bivio::UI::PDF::Form::f1065sk1::y1999::Form
+	Bivio::UI::PDF::Form::F1065sk1::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(

@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 # Call with:
-#	Complete path name of target module file.
+#	Name of target module file.
 #	Complete class name of target module.
 #	Complete parent class name of target module.
-#	Complete path name of pdf file.
+#	Name of pdf file.
 #	Complete class name of XlatorSet class for the tartet module.
 
 use strict;

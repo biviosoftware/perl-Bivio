@@ -10,21 +10,24 @@ unless (0 == $#ARGV) {
     die("usage: $0 <sub-directory>\n");
 }
 
-my($top) = '../' . $ARGV[0];
+my($dir) = $ARGV[0];
+$dir =~ s(/$)();
+
+my($top) = '../' . $dir;
 $top =~ s([^/]+)(..)g;
 
-my($pdf, $junk) = split('/', $ARGV[0]);
-$pdf .= '.pdf';
+my(@pdfs) = `ls $dir/*.pdf`;
 
 my($bivio_form) = 'Bivio::UI::PDF::Form';
-my($class) = $bivio_form . '::' . $ARGV[0] . '::Form';
-$class =~ s(/)(::)g;
+
+my($class_prefix) = $bivio_form . '::' . $dir . '::Form';
+$class_prefix =~ s(/)(::)g;
 
 my($parent) = $bivio_form . '::Form';
 
 my(@modules) = `ls *.pm ../*.pm`;
 
-my($xlator_set) = $class;
+my($xlator_set) = $class_prefix;
 $xlator_set =~ s/Form$/XlatorSet/;
 
 my($text);
@@ -32,8 +35,15 @@ while (<DATA>) {
     if (/top=/) {
 	$text .= 'top=' . $top . "\n";
     }
-    elsif (/pdf=/) {
-	$text .= 'pdf=' . $pdf . "\n";
+    elsif (/forms=/) {
+	$text .= 'forms=';
+	map {
+	    chop;
+	    s(.*/)();
+	    s/\.pdf//;
+	    $text .= ' Form' . $_ . '.pm';
+	} @pdfs;
+	$text .= "\n";
     }
     elsif (/modules=/) {
 	$text .= 'modules= ';
@@ -43,8 +53,8 @@ while (<DATA>) {
 	} @modules;
 	$text .="\n";
     }
-    elsif (/class=/) {
-	$text .= 'class=' . $class . "\n";
+    elsif (/class_prefix=/) {
+	$text .= 'class_prefix=' . $class_prefix . "\n";
     }
     elsif (/parent=/) {
 	$text .= 'parent=' . $parent . "\n";
@@ -57,8 +67,8 @@ while (<DATA>) {
     }
 }
 
-open(OUT, ">$ARGV[0]/GNUmakefile")
-	or die("Can't open $ARGV[0]/GNUmakefile\n");
+open(OUT, ">$dir/GNUmakefile")
+	or die("Can't open $dir/GNUmakefile\n");
 print(OUT $text);
 
 1;
@@ -67,21 +77,23 @@ __DATA__
 .PHONEY:	clean
 
 top=
-pdf=
-class=
+forms=
+class_prefix=
 parent=
 modules=
 xlator_set=
 
-form=$(top)/Form
-
 deps= \
-	$(addprefix $(form)/, $(modules)) \
+	$(addprefix $(top)/Form/, $(modules)) \
 	XlatorSet.pm \
-	$(pdf)
+	$(pdfs)
 
-Form.pm:	$(deps)
-	$(form)/buildFormModule.pl $@ $(class) $(parent) $(pdf) $(xlator_set)
+Form%.pm : %.pdf
+	$(top)/Form/buildFormModule.pl $@ $(class_prefix)$* $(parent) $< $(xlator_set)
+
+all:	$(forms)
+
+$(forms):	$(deps)
 
 clean:
-	rm -f Form.pm
+	rm -f $(forms)
