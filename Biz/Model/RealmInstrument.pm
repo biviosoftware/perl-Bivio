@@ -176,6 +176,19 @@ sub is_local {
     return defined($self->get('instrument_id')) ? 0 : 1;
 }
 
+=for html <a name="is_using_lots"></a>
+
+=head2 is_using_lots() : boolean
+
+Returns true if the instrument uses lots (not average cost).
+
+=cut
+
+sub is_using_lots {
+    my($self) = @_;
+    return ! $self->get('average_cost_method');
+}
+
 =for html <a name="set_instrument_id"></a>
 
 =head2 set_instrument_id(string instrument_id)
