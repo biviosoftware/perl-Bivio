@@ -106,6 +106,7 @@ EOF
     my($pwd) = &Cwd::cwd();
     my($hostname) = hostname;
     my($handler) = $cfg->{handler};
+    my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $cfg->{handler}";
     my(@start_mode) = $background ? () : ('-X');
     my($bconf) = $ENV{'BCONF'}
 	? "PerlSetEnv BCONF $ENV{'BCONF'}" : '';
@@ -266,7 +267,7 @@ PerlWarn on
 # Can't be on and use PERLLIB.
 PerlFreshRestart off
 <$bconf>
-PerlModule <$handler>
+<$perl_module>
 #RJN: This doesn't work for some reason
 PassEnv ORACLE_HOME
 PassEnv DBI_USER
