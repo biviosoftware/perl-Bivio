@@ -165,6 +165,20 @@ sub sub {
 	    defined($decimals) ? $decimals : $proto->get_decimals());
 }
 
+=for html <a name="to_literal"></a>
+
+=head2 to_literal(any value) : string
+
+Converts from internal form to a literal string value.
+
+=cut
+
+sub to_literal {
+    my(undef, $value) = @_;
+    $value =~ s/^\+//;
+    return $value;
+}
+
 =for html <a name="trunc"></a>
 
 =head2 trunc(string number, int decimals) : string
