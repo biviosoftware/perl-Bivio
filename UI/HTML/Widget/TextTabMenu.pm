@@ -190,7 +190,8 @@ sub render {
 #TODO: Bug: tasks in other realm types are not visible.  Need to know
 #      which role the user plays in other realms.
 	next unless $req->task_ok($t);
-	my($link) = '<a href="'.$req->format_uri($t)
+	# don't keep the query across menu items
+	my($link) = '<a href="'.$req->format_uri($t, undef)
 		.'">'.$item->[0].'</a>';
         if ($t == $this_task) {
             $labels .= $fields->{highlight_prefix}
