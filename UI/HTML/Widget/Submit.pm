@@ -131,20 +131,21 @@ sub render {
 
     if ($fields->{is_first_render}) {
 	my($model) = $source->get_widget_value(@{$fields->{model}});
-	$fields->{is_first_render} = 0;
 	my($p, $s) = Bivio::UI::Font->as_html('form_submit');
 	$fields->{prefix} = $p.'<input type=submit name="'
 		.$model->SUBMIT().'" value="';
 	$fields->{suffix} = '">'.$s;
 	unless (ref($value)) {
-	    $fields->{is_constant} = 1;
 	    my($method) = $fields->{value};
 	    $fields->{value} = $fields->{prefix}
 		    .Bivio::Util::escape_html($model->$method())
 		    .$fields->{suffix};
 	    $$buffer .= $fields->{value};
+	    $fields->{is_constant} = 1;
+	    $fields->{is_first_render} = 0;
 	    return;
 	}
+	$fields->{is_first_render} = 0;
     }
     $$buffer .= $fields->{prefix}
 	    .Bivio::Util::escape_html(
