@@ -482,15 +482,18 @@ sub verify_form {
 
 =for html <a name="verify_link"></a>
 
+=head2 verify_link(string link_name)
+
 =head2 verify_link(string link_name, regexp_ref pattern)
 
-Verifies that the href of the given I<link_name> matches I<pattern>
+Verifies that named link exists and matches the specified pattern.
 
 =cut
 
 sub verify_link {
     my($self, $link_text, $pattern) = @_;
     my($href) = _assert_html($self)->get_nested('Links', $link_text, 'href');
+    return unless $pattern;
     Bivio::Die->die('Link "', $link_text, '" does not match "', $pattern, '"')
 	unless $href =~ $pattern;
     return;
