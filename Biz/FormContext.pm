@@ -15,14 +15,17 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Biz::FormContext;
-    my($hash) = Bivio::Biz::FormContext->from_literal($form_model, $string);
-    my($string) = Bivio::Biz::FormContext->to_literal($req, $hash);
-    my($hash) = Bivio::Biz::FormContext->empty($form_model);
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::FormContext::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
+=cut
+
+use Bivio::Collection::Attributes;
+@Bivio::Biz::FormContext::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -33,7 +36,7 @@ context from the form state in
 L<Bivio::Biz::FormModel::get_context_from_request|Bivio::Biz::FormModel/"get_context_from_request">.
 The two classes are therefore very tightly coupled.
 
-A form context is a hash_ref containing attributes which tell the
+A form context is a Bivio::Collection::Attributes which tell the
 FormModel how to "unwind", i.e. how to go back to what the user
 was doing before the current form.  Contexts may be nested, which
 adds to the complexity.
@@ -93,6 +96,7 @@ Is always defined.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Ref;
 use Bivio::IO::Trace;
 use Bivio::MIME::Base64;
 
@@ -120,25 +124,94 @@ my($_SEPARATOR) = '!';
 # Tightly coupled with $Bivio::SQL::ListQuery::_SEPARATOR.
 my($_HASH_CHAR) = "\01";
 
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(hash_ref attrs) : Bivio::Biz::FormContext
+
+Trace the output
+
+=cut
+
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    _trace($self) if $_TRACE;
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
 
-=for html <a name="empty"></a>
+=for html <a name="as_literal"></a>
 
-=head2 static empty(Bivio::Biz::FormModel model) : hash_ref
+=head2 as_literal(Bivio::Agent::Request req) : string
 
-Returns the empty context for the current task and realm.
+Returns the stringified version of I<self>.  I<req> is used to
+gather state, e.g. default realm.
 
 =cut
 
-sub empty {
-    my(undef, $model) = @_;
+sub as_literal {
+    my($self, $req) = @_;
+    my($res) = '';
+    my($attrs) = $self->internal_get;
+    _trace($attrs) if $_TRACE;
+    # The order is the same as @_CHARS.  nice for debugging
+    _format_task(\$res, $attrs, 'unwind_task');
+    # Don't format cancel, if it doesn't contain anything
+    _format_task(\$res, $attrs, 'cancel_task')
+	if defined($attrs->{cancel_task})
+	    && $attrs->{cancel_task} != $attrs->{unwind_task};
+    _format_realm(\$res, $attrs);
+    _format_hash(\$res, $attrs, 'query');
+    _format_hash(\$res, $attrs, 'form');
+    _format_string(\$res, 'path_info', $attrs->{path_info});
+    # Recurse nested context only if we aren't reentering same task
+    _format_string(\$res, 'form_context',
+	$attrs->{form_context}->as_literal($req))
+	if $attrs->{form_context}
+	    && $attrs->{form_context}->get('unwind_task')
+		!= $attrs->{unwind_task};
+    # Remove trailing separator
+    chop($res);
+    _trace($res) if $_TRACE;
+    return $res;
+}
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Converted for debugging purposes.  Use L<as_literal|"as_literal"> for most
+purposes.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    return ref($self)
+	? Bivio::IO::Ref->to_short_string($self->get_shallow_copy)
+	: $self;
+}
+
+=for html <a name="new_empty"></a>
+
+=head2 static new_empty(Bivio::Biz::FormModel model) : Bivio::Biz::FormContext
+
+Returns the new_empty context for the current task and realm.
+
+=cut
+
+sub new_empty {
+    my($proto, $model) = @_;
     my($req) = $model->get_request;
     my($realm) = $req->get('auth_realm');
-    $realm = undef if $realm->get('type') == Bivio::Auth::RealmType::GENERAL();
     my($task) = $req->get('task');
-    return {
+    return $proto->new({
 	unwind_task => $task->get('next'),
 	cancel_task => $task->get('cancel'),
 	form_model => $task->get('form_model'),
@@ -152,19 +225,41 @@ sub empty {
 	path_info => undef,
 	form => undef,
 	form_context => undef,
-    };
+    });
 }
 
-=for html <a name="from_literal"></a>
+=for html <a name="new_from_form"></a>
 
-=head2 static from_literal(Bivio::Biz::FormModel model, string value) : hash_ref
+=head2 static new_from_form(Bivio::Biz::FormModel model, hash_ref form_fields, Bivio::Biz::FormContext calling_context, Bivio::Agent::Request req) : Bivio::Biz::FormContext
 
-Parses the form context from the query or the form.  Errors result in
-a warning and _initial_context being returned.
+Returns a new object for the current I<form> and I<calling_context>.
 
 =cut
 
-sub from_literal {
+sub new_from_form {
+    my($proto, $model, $form_fields, $calling_context, $req) = @_;
+    return $proto->new({
+	form_model => ref($model) || undef,
+	form => $form_fields,
+	form_context => $calling_context,
+	query => $req->unsafe_get('query'),
+	path_info => $req->unsafe_get('path_info'),
+	unwind_task => $req->unsafe_get('task_id'),
+	cancel_task => $req->get('task')->unsafe_get('cancel'),
+	realm => $req->get('auth_realm'),
+    });
+}
+
+=for html <a name="new_from_literal"></a>
+
+=head2 static new_from_literal(Bivio::Biz::FormModel model, string value) : Bivio::Biz::FormContext
+
+Parses the form context from the query or the form.  Errors result in
+a warning and L<new_empty|"new_empty"> returned.
+
+=cut
+
+sub new_from_literal {
     # $err is boolean_ref used during recursion, hence it isn't in the
     # documentation.
     my($proto, $model, $value, $err) = @_;
@@ -178,13 +273,13 @@ sub from_literal {
 	unless ($which) {
 	    # If the context is completely screwed up, then return initial.
 	    $$err = 1 if $err;
-	    return _parse_error($model, $item, $which,
+	    return _parse_error($proto, $model, $item, $which,
 		    'missing or invalid element');
 	}
 
 	$which = $_CHAR_TO_KEY{$which};
 	$c->{$which} = Bivio::MIME::Base64->http_decode($enc);
-	return _parse_error($model, $item, $which, 'http_decode error')
+	return _parse_error($proto, $model, $item, $which, 'http_decode error')
 		unless defined($c->{$which});
     }
 
@@ -192,7 +287,7 @@ sub from_literal {
     # because it may clear all the rest of the state
     unless (_parse_task($model, $c, 'unwind_task')) {
 	$$err = 1 if $err;
-	return _parse_error($model, undef, 'unwind_task',
+	return _parse_error($proto, $model, undef, 'unwind_task',
 		'missing or bad unwind_task');
     }
 
@@ -204,58 +299,72 @@ sub from_literal {
 
     if (defined($c->{form_context})) {
 	my($sub_err);
-	$c->{form_context} = $proto->from_literal($model, $c->{form_context},
-		\$sub_err);
-	$c->{form_context} = undef if $sub_err;
+	$c->{form_context} = $proto->new_from_literal(
+	    $model, $c->{form_context}, \$sub_err);
+	$c->{form_context} = undef
+	    if $sub_err;
     }
     else {
 	$c->{form_context} = undef;
     }
 
     $c->{form_model} = Bivio::Agent::Task->get_by_id($c->{unwind_task})
-	    ->get('form_model');
-    return $c;
+	->get('form_model');
+    return $proto->new($c);
 }
 
-=for html <a name="to_literal"></a>
+=for html <a name="return_redirect"></a>
 
-=head2 to_literal(Bivio::Agent::Request req, hash_ref context) : string
+=head2 return_redirect(string which, Bivio::Agent::Request req)
 
-Returns the stringified version of I<context>.  I<req> is used to
-gather state, e.g. default realm.
+Redirects back to the task contained in the context.  I<which> may be
+'cancel' or 'next'.
+
+Does not return.
 
 =cut
 
-sub to_literal {
-    my($proto, $req, $context) = @_;
-    my($res) = '';
+sub return_redirect {
+    my($self, $model, $which) = @_;
+    my($req) = $model->get_request;
+    my($c) = $self->internal_get;
+    unless ($c->{form}) {
+	if ($which eq 'cancel' && $c->{cancel_task}) {
+	    _trace('no form, client_redirect: ', $c->{cancel_task}) if $_TRACE;
+	    # If there is no form, redirect to client so looks
+	    # better.  get_context_from_request will do the right thing
+	    # and return the stacked context.
+	    $req->client_redirect($c->{cancel_task}, $c->{realm},
+		   $c->{query}, $c->{path_info});
+	    # DOES NOT RETURN
+	}
 
-    _trace($context) if $_TRACE;
+	# Next or cancel (not form)
+	_trace('no form, client_redirect: ', $c->{unwind_task},
+	    '?', $c->{query}) if $_TRACE;
+	# If there is no form, redirect to client so looks
+	# better.
+	$req->client_redirect(
+	    $c->{unwind_task}, $c->{realm}, $c->{query}, $c->{path_info});
+	# DOES NOT RETURN
+    }
 
-    # The order is the same as @_CHARS.  nice for debugging
-    _format_task(\$res, $context, 'unwind_task');
+    # Do an server redirect to context, because can't do
+    # client redirect (no way to pass form state (reasonably)).
+    # Indicate to the next form that this is a SUBMIT_UNWIND
+    # Make sure you use that form's SUBMIT_UNWIND button.
+    # In the cancel case, we chain the cancels.
 
-    # Don't format cancel, if it doesn't contain anything
-    _format_task(\$res, $context, 'cancel_task')
-	    if defined($context->{cancel_task}) &&
-		    $context->{cancel_task} != $context->{unwind_task};
+    # Initializes context
+    my($f) = $c->{form};
+    $f->{$model->NEXT_FIELD} = $which eq 'cancel' ? 'cancel' : 'unwind';
 
-    _format_realm(\$res, $context);
-    _format_hash(\$res, $context, 'query');
-    _format_hash(\$res, $context, 'form');
-    _format_string(\$res, 'path_info', $context->{path_info});
-
-    # Recurse nested context only if we aren't reentering same task
-    _format_string(\$res, 'form_context',
-	    $proto->to_literal($req, $context->{form_context}))
-	    if $context->{form_context}
-		    && $context->{form_context}->{unwind_task}
-			    != $context->{unwind_task};
-
-    # Remove trailing separator
-    chop($res);
-    _trace($res) if $_TRACE;
-    return $res;
+    # Redirect calls model back in get_context_from_request
+    _trace('have form, server_redirect: ', $c->{unwind_task},
+	'?', $c->{query}) if $_TRACE;
+    $req->server_redirect(
+	$c->{unwind_task}, $c->{realm}, $c->{query}, $f, $c->{path_info});
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
@@ -267,10 +376,9 @@ sub to_literal {
 sub _format_hash {
     my($res, $c, $which) = @_;
     my($h) = $c->{$which};
-    return unless $h;
-
     _format_string($res, $which, join($_HASH_CHAR, map {
-	defined($h->{$_}) ? ($_, $h->{$_}) : ()} keys(%$h)));
+	defined($h->{$_}) ? ($_, $h->{$_}) : ()} keys(%$h)))
+	if $h;
     return;
 }
 
@@ -282,9 +390,8 @@ sub _format_realm {
     my($res, $c) = @_;
     return unless $c->{realm};
     my($name) = $c->{realm}->unsafe_get('owner_name');
-    return unless defined($name);
-
-    _format_string($res, 'realm', $name);
+    _format_string($res, 'realm', $name)
+	if defined($name);
     return;
 }
 
@@ -294,10 +401,10 @@ sub _format_realm {
 #
 sub _format_string {
     my($res, $which, $value) = @_;
-    return unless defined($value) && length($value);
-
     $$res .= $_KEY_TO_CHAR{$which}
-	    .Bivio::MIME::Base64->http_encode($value).$_SEPARATOR;
+	. Bivio::MIME::Base64->http_encode($value)
+	. $_SEPARATOR
+	if defined($value) && length($value);
     return;
 }
 
@@ -307,25 +414,22 @@ sub _format_string {
 #
 sub _format_task {
     my($res, $c, $which) = @_;
-    return unless $c->{$which};
-
-    _format_string($res, $which, $c->{$which}->as_int);
+    _format_string($res, $which, $c->{$which}->as_int)
+	if $c->{$which};
     return;
 }
 
-# _parse_error(Bivio::Biz::FormModel model, string value, string which, string msg) : hash_ref
+# _parse_error(proto, Bivio::Biz::FormModel model, string value, string which, string msg) : hash_ref
 #
-# Output a warning and return the empty context if requested.
+# Output a warning and return the empty context if requested.  $proto
+# only needed if you want an new_empty() call.
 #
 sub _parse_error {
-    my($model, $value, $which, $msg) = @_;
-
+    my($proto, $model, $value, $which, $msg) = @_;
     Bivio::IO::Alert->warn(ref($model), ': attr=', $which,
-	    ', value=', $value, ', msg=', $msg);
+	', value=', $value, ', msg=', $msg);
     # Don't do any work if in a void context
-    return unless defined(wantarray);
-
-    return __PACKAGE__->empty($model);
+    return $proto && $proto->new_empty($model);
 }
 
 # _parse_hash(Bivio::Biz::FormModel model, hash_ref c, string which)
@@ -334,38 +438,33 @@ sub _parse_error {
 #
 sub _parse_hash {
     my($model, $c, $which) = @_;
-
     # Not an error if undefined
     unless (defined($c->{$which})) {
 	$c->{$which} = undef;
 	return;
     }
-
     my(@v) = split(/$_HASH_CHAR/o, $c->{$which});
-
-    # Handle uneven or empty hash case.
-    push(@v, undef) if int(@v) % 2;
-
+    # Handle uneven case.
+    push(@v, undef)
+	if int(@v) % 2;
     $c->{$which} = {@v};
     return;
 }
 
-# _parse_hash(Bivio::Biz::FormModel model, hash_ref c)
+# _parse_path_info(Bivio::Biz::FormModel model, hash_ref c)
 #
 # Checks path_info is correct.
 #
 sub _parse_path_info {
-    my($model, $c) = @_;
-
+    my($proto, $model, $c) = @_;
     # Not an error if undefined
     unless (defined($c->{path_info})) {
 	$c->{path_info} = undef;
 	return;
     }
-
     unless ($c->{path_info} =~ m!^/!) {
 	# Defaults to undef, i.e. no query or form
-	_parse_error($model, $c->{path_info}, 'path_info',
+	_parse_error(undef, $model, $c->{path_info}, 'path_info',
 		"path_info doesn't begin with slash");
 	$c->{path_info} = undef;
     }
@@ -380,13 +479,11 @@ sub _parse_path_info {
 sub _parse_realm {
     my($model, $c) = @_;
     my($v) = $c->{realm};
-
     # Not an error if undefined
     unless (defined($v)) {
 	$c->{realm} = undef;
 	return;
     }
-
     my($req) = $model->get_request;
     my($realm) = $req->get('auth_realm');
     my($name) = $realm->unsafe_get('owner_name');
@@ -395,7 +492,6 @@ sub _parse_realm {
 	$c->{realm} = $realm;
 	return;
     }
-
     my($o) = Bivio::Biz::Model::RealmOwner->new($req);
     if ($o->unauth_load(name => $v)) {
 	# This will blow if $o is "general".  Someone had to have hacked it.
@@ -403,7 +499,7 @@ sub _parse_realm {
     }
     else {
 	# Defaults to undef, use default realm.
-	_parse_error($model, $v, 'realm',
+	_parse_error(undef, $model, $v, 'realm',
 		'realm not found');
 	$c->{realm} = undef;
     }
@@ -417,26 +513,22 @@ sub _parse_realm {
 sub _parse_task {
     my($model, $c, $which) = @_;
     my($num) = $c->{$which};
-
     # Don't output an error, but return false.  The error is output
-    # by from_literal in any event.
+    # by new_from_literal in any event.
     unless (defined($num)) {
 	$c->{$which} = undef;
 	return 0;
     }
-
     unless ($num =~ /^\d+$/) {
-	_parse_error($model, $num, $which, 'task is not a number');
+	_parse_error(undef, $model, $num, $which, 'task is not a number');
 	$c->{$which} = undef;
 	return 0;
     }
-
     $c->{$which} = Bivio::Agent::TaskId->unsafe_from_any($num);
     unless ($c->{$which}) {
-	_parse_error($model, $num, $which, 'task not found');
+	_parse_error(undef, $model, $num, $which, 'task not found');
 	return 0;
     }
-
     return 1;
 }
 
