@@ -93,12 +93,12 @@ sub check_transaction_batch {
 	    next;
 	}
         _trace('transaction data: ', join(',', @fields));
+
         # Skip errors as they will be retried if not fatal
         $status =~ /^[12]$/ || next;
-        unless ($payment->unauth_load(ec_payment_id => $payment_id)) {
-	    Bivio::IO::Alert->warn('cannot load payment: ', $payment_id);
-	    next;
-	}
+        # Ignore payments we don't know about
+        next unless $payment->unauth_load(ec_payment_id => $payment_id);
+
         if ($status eq '1') {
             next if $payment->get('status')->is_approved;
             Bivio::IO::Alert->warn('fixing status of approved payment: ',
