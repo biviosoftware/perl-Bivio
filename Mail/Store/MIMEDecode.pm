@@ -246,6 +246,7 @@ sub _extract_mime_body_decoded {
     my($line) = '';
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
+    my($subpart_index) = 0;
     my($req) = $fields->{request};
     my($io) = $entity->open('r');
     my($message_id) = $fields->{message}->get_message_id();
@@ -258,7 +259,7 @@ sub _extract_mime_body_decoded {
 		my $fname = $fields->{filename};
 		_trace('EXTRACTING TO FILE: ', $fname) if $_TRACE;
 		$fname =~ /_(\d*)$/;
-		my $index = $1+1;
+		my $index = $1+1+$subpart_index;
 		$fname =~ s/_(\d*)$/_$index/;
 		my $attachment_id = $fname;
 		$attachment_id =~ /\/(\d.*$)/;
