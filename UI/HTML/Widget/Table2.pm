@@ -44,10 +44,32 @@ The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
 The column names to display, in order. Column headings will be assigned
 by looking up name.'_HEADING' in the Bivio::UI::Label enum.
-Each value in columns may be a string, which is the field name, or
-an array of [field, {attrs}] pairs. The attrs are passed to the widget
-which will render this field.
+Each value in columns may be one of:
+
+=over 4
+
+=item string
+
+The field name in the ListModel.
+
+=item array_ref
+
+First element is the field.  Second is a hash_ref containing
+attributes.
+
+=item hash_ref
+
+May or may not have a field and the attrs describe how to create the
+widget.  The name of field is in the attribute named C<field>.
+
+=back
+
 An empty field will be rendered as a empty cell.
+
+=item column_control_hash : string
+
+Is the name of an attribute on I<source> which maps all columns to
+a boolean value.  If the boolean is true, the column will be rendered.
 
 =item column_enabler : UNIVERSAL
 
@@ -125,7 +147,12 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 =item column_heading : string
 
 The heading label to use for the columns heading. By default, the column
-name is used to look up the heading label.
+name is used to look up the heading label.  The name of the label
+is the I<column_heading> with C<_HEADING> appended.
+
+=item field : string
+
+Name of the column.  By default, it is the positional name.
 
 =item column_nowrap : boolean [false]
 
@@ -159,6 +186,7 @@ use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Enum;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::LineCell;
+use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::PercentCell;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::Icon;
@@ -217,8 +245,19 @@ sub initialize {
     my($summary_cells) = [];
     my($summary_lines) = [];
     foreach my $col (@$columns) {
-	my($attrs) = {};
-	($col, $attrs) = @$col if ref($col);
+	my($attrs);
+	if (ref($col) eq 'ARRAY') {
+	    ($col, $attrs) = @$col;
+	    $attrs->{field} = $col unless $attrs->{field};
+	    $col = $attrs->{field} unless $col;
+	}
+	elsif (ref($col) eq 'HASH') {
+	    $attrs = $col;
+	    $col = $attrs->{field} || '';
+	}
+	else {
+	    $attrs = {field => $col};
+	}
 
 	my($cell) = _get_cell($self, $list, $col, $attrs);
 	push(@$cells, $cell);
@@ -283,7 +322,7 @@ sub render {
 		    && $list->get_result_set_size == 0;
 
     my($headings, $cells, $summary_cells, $summary_lines) =
-	    _get_enabled_widgets($self);
+	    _get_enabled_widgets($self, $source);
 
     $$buffer .= $fields->{table_prefix}
 	    if $self->get_or_default('start_tag', 1);
@@ -380,6 +419,17 @@ sub _create_cell_widget {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Email')) {
+	return Bivio::UI::HTML::Widget::MailTo->new({
+	    email => [$field],
+	    %$attrs,
+	});
+    }
+
+    # Numbers are just right adjusted strings.  Falls through
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
+	$attrs->{column_align} = 'right' unless $attrs->{column_align}
+    }
 
     # default type is string
     return Bivio::UI::HTML::Widget::String->new({
@@ -415,7 +465,7 @@ sub _get_cell {
 	$cell = _create_cell_widget($col, $type, $attrs);
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize => UNIVERSAL::isa($type,
-		'Bivio::Type::Amount'));
+		    'Bivio::Type::Amount'));
 	}
     }
     _initialize_widget($self, $cell);
@@ -435,13 +485,13 @@ sub _get_column_count {
     return $count;
 }
 
-# _get_enabled_widgets($self) : (array_ref, array_ref, array_ref, array_ref)
+# _get_enabled_widgets(Bivio::UI::HTML::Widget::Table2 self, any source) : array
 #
 # Returns the heading, cell, summary, and line widgets which are currently
 # enabled.
 #
 sub _get_enabled_widgets {
-    my($self) = @_;
+    my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     my($all_headings) = $fields->{headings};
@@ -450,7 +500,12 @@ sub _get_enabled_widgets {
     my($all_summary_lines) = $fields->{summary_lines};
 
     my($enabler) = $self->unsafe_get('column_enabler');
-    if (defined($enabler)) {
+    unless ($enabler) {
+	# The enabler is a hash
+	my($a) = $self->unsafe_get('column_control_hash');
+	$enabler = $source->get($a) if $a;
+    }
+    if (ref($enabler)) {
 
 	my($headings) = [];
 	my($cells) = [];
@@ -462,7 +517,19 @@ sub _get_enabled_widgets {
 	for (my($i) = 0; $i < int(@$columns); $i++) {
 	    my($col) = $columns->[$i];
 	    if ($col) {
-		next unless $enabler->enable_column($col, $self);
+		# The enabler is a hash
+		if (ref($enabler) eq 'HASH') {
+		    unless ($enabler->{$col}) {
+			Bivio::IO::Alert->die('column_control_hash (',
+				$self->unsafe_get('column_control_hash'),
+				') missing column:', $col)
+				    unless defined($enabler->{$col});
+			next;
+		    }
+		}
+		else {
+		    next unless $enabler->enable_column($col, $self);
+		}
 	    }
 	    push(@$headings, $all_headings->[$i]);
 	    push(@$cells, $all_cells->[$i]);
