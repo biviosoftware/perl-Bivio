@@ -55,7 +55,7 @@ sub add_item_to_cart {
     my($req) = $item->get_request;
 
     # ensure that cookies are enabled in the browser
-    Bivio::PetShop::Agent::Cookie->assert_is_ok($req);
+    Bivio::Agent::HTTP::Cookie->assert_is_ok($req);
 
     # if the item is already present, reset the quantity to 1
     my($cart_item) = Bivio::Biz::Model->new($req, 'CartItem');
