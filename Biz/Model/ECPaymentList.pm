@@ -90,6 +90,7 @@ sub internal_initialize {
             ECPayment.remark
             ECPayment.salesperson_id
             ECPayment.service
+            ECPayment.point_of_sale
             ECSubscription.start_date
             ECSubscription.end_date
             ECSubscription.renewal_state
@@ -101,7 +102,6 @@ sub internal_initialize {
             ECCreditCardPayment.card_expiration_date
             ECCreditCardPayment.card_name
             ECCreditCardPayment.card_zip
-            ECCreditCardPayment.point_of_sale
        )],
     };
 }
