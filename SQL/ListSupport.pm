@@ -371,11 +371,11 @@ sub _init_column_classes {
     }
     # auth_id must be at most one column.  Turn into that column or undef.
     Bivio::Die->die('too many auth_id fields')
-		if int(@{$attrs->{auth_id}}) > 1;
+	if int(@{$attrs->{auth_id}}) > 1;
 
     # date must be at most one column.  Turn into that column or undef.
     Bivio::Die->die('too many date fields')
-		if int(@{$attrs->{date}}) > 1;
+	if int(@{$attrs->{date}}) > 1;
 
     # Unwind one level--wrapped in array by _init_column_classes
     foreach my $c ('auth_id', 'parent_id', 'date') {
@@ -385,7 +385,7 @@ sub _init_column_classes {
 
     # primary_key must be at least one column if there are models.
     Bivio::Die->die('no primary_key fields')
-		unless @{$attrs->{primary_key}} || !%{$attrs->{models}};
+        unless @{$attrs->{primary_key}} || !%{$attrs->{models}};
     # Sort all names in a select alphabetically.
     $attrs->{primary_key} = [sort {$a->{name} cmp $a->{name}}
 	@{$attrs->{primary_key}}];
@@ -452,8 +452,11 @@ sub _init_column_lists {
 	@sel_cols = grep($_ ne $col, @sel_cols);
     }
 
-    # Put primary key back on front
-    unshift(@sel_cols, @{$attrs->{primary_key}});
+    # Put primary key back on front, if it is part of select
+    $attrs->{can_load_this} = 1;
+    unshift(@sel_cols,
+	grep($_->{in_select} || ($attrs->{can_load_this} = 0),
+	    @{$attrs->{primary_key}}));
     $attrs->{select_columns} = \@sel_cols;
 
     # Get names and set select_index
@@ -494,86 +497,6 @@ sub _init_column_lists {
 		.$attrs->{date}->{sql_name}.' <= '.$_DATE_SQL_VALUE;
     }
     return;
-}
-
-# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, DBI::Statement statement) : array_ref
-#
-# Load "this" from statement.  We search serially through all records.
-# There doesn't appear to be a better way to do this, because we need
-# to know "prev".  Eventually, this will have to be PL/SQL.
-#
-sub _load_this {
-    my($self, $query, $statement) = @_;
-    my($attrs) = $self->internal_get;
-    my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
-    my($want_first) = $query->unsafe_get('want_first_only');
-    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
-    _trace($want_first ? 'looking for first'
-	    : ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
-	    if $_TRACE;
-    my($types) = $attrs->{primary_key_types};
-    my($prev, $row);
-    my($row_count) = 0;
-    for (;;) {
-	$statement->finish(), return []
-		unless $row = $statement->fetchrow_arrayref;
-	$row_count++;
-
-	# Convert the entire primary key and save in $prev if no match
-	my($j) = 0;
-	my($match) = 1;
-	my(@prev) = map {
-	    my($v) = $_->from_sql_column($row->[$j]);
-#TODO: Should this be "is_equal"?  This is probably "good enough".
-#      It will slow it down a lot to make a method call for each
-#      row/attribute.  "eq" works in all cases and probably in future.
-	    $match &&= $want_first || $this->[$j] eq $v;
-	    $j++;
-	    $v;
-	} @$types;
-	if ($want_first) {
-	    $query->put(this => $this = \@prev);
-	    _trace('found first ', $attrs->{primary_key_names}, ' = ', \@prev)
-		    if $_TRACE;
-	    last;
-	}
-	last if $match;
-	$prev = \@prev;
-    }
-
-    # Found it, copy all columns of this
-    _trace('found this at row #', $row_count) if $_TRACE;
-    my($i) = 0;
-    my($rows) = [{
-	(map {
-	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
-	} @{$attrs->{select_columns}}),
-	# Add in auth_id to every row as constant for convenience
-	$attrs->{auth_id} ? ($attrs->{auth_id}->{name} => $auth_id) : (),
-	$attrs->{parent_id} ? ($attrs->{parent_id}->{name} => $parent_id) : (),
-    }];
-
-    # Set prev if defined
-    $query->put(prev => $prev, has_prev => 1) if $prev;
-
-    # Set next if more rows
-    my($next) = $statement->fetchrow_arrayref;
-    if ($next) {
-	my($j) = 0;
-	$query->put(has_next => 1,
-		next => [map {
-		    $_->from_sql_column($row->[$j++]);
-		} @$types]);
-	# See discussion of =item orabug_fetch_all_select
-	if ($attrs->{orabug_fetch_all_select}) {
-	    0 while $statement->fetchrow_arrayref;
-	}
-    }
-    $statement->finish;
-
-    # Which page are we on?
-    $query->put(page_number => _page_number($query, $row_count));
-    return $rows;
 }
 
 # _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, string where, array_ref params, any die) : array_ref
@@ -685,6 +608,88 @@ sub _load_list {
 
     # Return the page
     return \@rows;
+}
+
+# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, DBI::Statement statement, any die) : array_ref
+#
+# Load "this" from statement.  We search serially through all records.
+# There doesn't appear to be a better way to do this, because we need
+# to know "prev".  Eventually, this will have to be PL/SQL.
+#
+sub _load_this {
+    my($self, $query, $statement, $die) = @_;
+    my($attrs) = $self->internal_get;
+    $die->throw_die('DIE', 'cannot load this, primary key must be in_select')
+	unless $attrs->{can_load_this};
+    my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
+    my($want_first) = $query->unsafe_get('want_first_only');
+    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
+    _trace($want_first ? 'looking for first'
+	: ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
+	if $_TRACE;
+    my($types) = $attrs->{primary_key_types};
+    my($prev, $row);
+    my($row_count) = 0;
+    for (;;) {
+	$statement->finish(), return []
+		unless $row = $statement->fetchrow_arrayref;
+	$row_count++;
+
+	# Convert the entire primary key and save in $prev if no match
+	my($j) = 0;
+	my($match) = 1;
+	my(@prev) = map {
+	    my($v) = $_->from_sql_column($row->[$j]);
+#TODO: Should this be "is_equal"?  This is probably "good enough".
+#      It will slow it down a lot to make a method call for each
+#      row/attribute.  "eq" works in all cases and probably in future.
+	    $match &&= $want_first || $this->[$j] eq $v;
+	    $j++;
+	    $v;
+	} @$types;
+	if ($want_first) {
+	    $query->put(this => $this = \@prev);
+	    _trace('found first ', $attrs->{primary_key_names}, ' = ', \@prev)
+		    if $_TRACE;
+	    last;
+	}
+	last if $match;
+	$prev = \@prev;
+    }
+
+    # Found it, copy all columns of this
+    _trace('found this at row #', $row_count) if $_TRACE;
+    my($i) = 0;
+    my($rows) = [{
+	(map {
+	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+	} @{$attrs->{select_columns}}),
+	# Add in auth_id to every row as constant for convenience
+	$attrs->{auth_id} ? ($attrs->{auth_id}->{name} => $auth_id) : (),
+	$attrs->{parent_id} ? ($attrs->{parent_id}->{name} => $parent_id) : (),
+    }];
+
+    # Set prev if defined
+    $query->put(prev => $prev, has_prev => 1) if $prev;
+
+    # Set next if more rows
+    my($next) = $statement->fetchrow_arrayref;
+    if ($next) {
+	my($j) = 0;
+	$query->put(has_next => 1,
+		next => [map {
+		    $_->from_sql_column($row->[$j++]);
+		} @$types]);
+	# See discussion of =item orabug_fetch_all_select
+	if ($attrs->{orabug_fetch_all_select}) {
+	    0 while $statement->fetchrow_arrayref;
+	}
+    }
+    $statement->finish;
+
+    # Which page are we on?
+    $query->put(page_number => _page_number($query, $row_count));
+    return $rows;
 }
 
 # _page_number(Bivio::SQL::ListQuery query, int row_number) : int
