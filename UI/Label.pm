@@ -172,7 +172,8 @@ _compile(
     PRE_WITHDRAWAL_BASIS => ["Member's Basis Before Withdrawal"],
     ADJUSTED_BASIS => ['(A)  Adjusted basis'],
     BASIS_WITHDRAWN => ['(B)  Total'],
-    WITHDRAWAL_REALIZED_GAIN => ["Gain Realized on Withdrawal (B)-(A)"],
+    WITHDRAWAL_REALIZED_GAIN => ["Gain/(Loss) Realized on Withdrawal (B)-(A)"],
+    BASIS_AFTER_WITHDRAWAL => ["Member's Basis After Withdrawal"],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
