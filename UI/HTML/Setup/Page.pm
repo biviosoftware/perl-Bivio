@@ -151,6 +151,7 @@ sub _initialize {
 			    src => ['Bivio::UI::Icon', 'bivio'],
 			    alt => 'bivio home',
 			}),
+			cell_compact => 1,
 			cell_align => 'sw',
 		    }),
 		    Bivio::UI::HTML::Widget::String->new({
@@ -163,6 +164,7 @@ sub _initialize {
 			value => [start_time => 0,
 				'Bivio::UI::HTML::Format::DateTime'],
 			cell_align => 'se',
+			cell_compact => 1,
 			string_font => 'time',
 		    }),
 		],
@@ -176,9 +178,8 @@ sub _initialize {
 			cell_expand => 1,
 			cell_align => 'center',
 			undef_value => $blank_cell,
-			default_value => Bivio::UI::HTML::Widget::String->new({
-			    value => ['page_error'],
-			    string_font => 'error',
+			default_value => Bivio::UI::HTML::Widget::Join->new({
+			    values => [['page_error']],
 			}),
 		    }),
 		],
