@@ -1266,9 +1266,11 @@ sub make_dictionary_links_code {
     my($self) = shift;
     my($i, $pattern, $switches, $options, $code, $href, $key, $s_sw, $r_sw);
 
+    local($^W) = 0;
     $code = <<EOCode;
 sub dynamic_make_dictionary_links {
 	my(\$self) = shift;
+    local(\$^W) = 0;
     my(\$line_link) = (\$self->{line_action} | \$LINK);
     my(\$before, \$linkme, \$line_with_links, \$link_line, \@done_with_link);
 
