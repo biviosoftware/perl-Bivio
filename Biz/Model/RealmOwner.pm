@@ -499,7 +499,7 @@ EOF
 
 =head2 get_share_price_and_date(string date) : hash_ref
 
-Returns a hash of realm_instrument_id => [value, date] for the all
+Returns a hash of realm_instrument_id => [value, date, is_local] for the all
 the RealmInstruments on the specified date.
 
 =cut
@@ -540,7 +540,7 @@ sub get_share_price_and_date {
     my($row);
     while ($row = $sth->fetchrow_arrayref) {
 	($id, $value) = @$row;
-	$result->{$id} = [$value, $date];
+	$result->{$id} = [$value, $date, 1];
     }
 
     my($d) = Bivio::Type::DateTime->from_sql_value(
@@ -563,7 +563,7 @@ EOF
 	$val_date = Bivio::Type::DateTime->from_sql_column($val_date);
 
 	unless (exists($result->{$id})) {
-	    $result->{$id} = [$value, $val_date];
+	    $result->{$id} = [$value, $val_date, 0];
 	}
     }
 
@@ -601,7 +601,7 @@ EOF
 	if ($row2 = $sth2->fetchrow_arrayref()) {
 	    ($value, $val_date) = @$row2;
 	    $val_date = Bivio::Type::DateTime->from_sql_column($val_date);
-	    $result->{$id} = [$value, $val_date];
+	    $result->{$id} = [$value, $val_date, 1];
 	}
     }
 
