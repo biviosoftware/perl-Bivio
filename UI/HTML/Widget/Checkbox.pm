@@ -141,7 +141,7 @@ sub render {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
 	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
-	$fields->{suffix} .= '>';
+	$fields->{suffix} .= ">\n";
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
