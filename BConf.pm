@@ -67,6 +67,12 @@ sub dev {
 	    'Bivio::Agent::Request' => {
 		can_secure => 0,
 	    },
+	    'Bivio::IO::Alert' => {
+		want_time => 0,
+	    },
+	    'Bivio::Test::Language' => {
+		home_page_uri => "http://$host:$port",
+	    },
 	    'Bivio::UI::FacadeComponent' => {
 		die_on_error => 1,
 	    },
@@ -77,9 +83,6 @@ sub dev {
 	    'Bivio::UI::Text' => {
 		http_host => "$host:$port",
 		mail_host => $host,
-	    },
-	    'Bivio::IO::Alert' => {
-		want_time => 0,
 	    },
 	    main => {
 		http => {

@@ -98,6 +98,9 @@ sub merge_overrides {
 		TestLanguage => ['Bivio::PetShop::Test'],
 	    },
 	},
+	'Bivio::Test::Language::HTTP' => {
+	    home_page_uri => 'http://petshop.bivio.biz',
+	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
 	},
