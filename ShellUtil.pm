@@ -346,6 +346,30 @@ sub commit_or_rollback {
     return;
 }
 
+=for html <a name="email_file"></a>
+
+=head2 email_file(string email, string subject, string file_name)
+
+Sends I<file_name> to I<email> with I<subject>.  Content type is determined
+from suffix of I<file_name>.  File is always an attachment.
+
+=cut
+
+sub email_file {
+    my($self, $email, $subject, $file_name) = @_;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing',
+	   'Bivio::MIME::Type');
+    my($msg) = Bivio::Mail::Outgoing->new();
+    my($content) = Bivio::IO::File->read($file_name);
+    $msg->set_recipients($email);
+    $msg->set_header('Subject', $subject);
+    my($type) = Bivio::MIME::Type->from_extension($file_name);
+    $msg->set_content_type('multipart/mixed');
+    $msg->attach($content, $type, $file_name, -T $file_name ? 0 : 1);
+    $msg->send();
+    return;
+}
+
 =for html <a name="finish"></a>
 
 =head2 finish(boolean abort)
