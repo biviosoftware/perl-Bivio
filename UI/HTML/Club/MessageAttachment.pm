@@ -145,33 +145,11 @@ sub execute {
     if ($numparts eq(0)) {
 	_trace('there are zero numparts for this MIME part') if $_TRACE;
 	my $ctypestr = _content_type(\$body);
-	if ($ctypestr =~ 'text/plain') {
-	    $esc = 1;
-	}
-	#everything we get from the file server should be text/html
-	if ($ctypestr =~ 'text/html') {
-	    $esc = 0;
-	}
-	if ($ctypestr =~ "image/") {
-	    $esc = 0;
-	    $html = "\n<IMG SRC=".$req->format_uri(
-		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
-		    "img=".$attachment_id).">";
-	}
-	else {
-#TODO: This is totally wrong, I suspect.  If no index found, then a total
-#      hack.
-#TODO: More hackery to fix text/plain being incorrect here.  It is already
-#      been converted to html, but the header still has text/plain...
-	    my($s) = substr($body, index($body, "\n\n") + 1);
-	    $html = $s =~ /^\s*\<!DOC/i ? $s
-		    : $esc ? Bivio::Util::escape_html($s) : $s;
-	}
-	$str = Bivio::UI::HTML::Widget::Join->new({
-	    values => [$html],
-	});
-	$str->initialize();
-	$fields->{attachment}->put(value => $str);
+        my($s) = substr($body, index($body, "\n\n") + 2);
+        my($reply) = $req->get('reply');
+        $reply->set_output_type($ctypestr);
+        $reply->set_output(\$s);
+        return;
     }
     else {
 	my(@urls);
@@ -237,8 +215,7 @@ sub handle_config {
 #
 sub _content_type {
     my($body) = @_;
-    return $$body =~ /^(Content-Type:\s*\S+)/
-	    ? $1 : 'Content-Type: text/plain';
+    return $$body =~ /^Content-Type:\s*(\S+)/ ? $1 : 'text/plain';
 }
 
 # _numparts(scalar_ref) : int
