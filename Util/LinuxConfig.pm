@@ -183,7 +183,7 @@ sub add_sendmail_http_agent {
 	[qr/\$#local \$: \$1/, '$#bsendmailhttp $: $1'],
 	# We don't set "w", sendmail-http does it itself
 	['$', <<"EOF", qr/\nMbsendmailhttp/],
-Mbsendmailhttp,	P=/usr/local/bin/b-sendmail-http,
+Mbsendmailhttp,	P=/usr/bin/b-sendmail-http,
 	F=9:|/\@ADFhlMnsPqS,
 	S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
 	A=b-sendmail-http \${client_addr} \$u $uri /usr/bin/procmail -t -Y -a \$h -d \$u
