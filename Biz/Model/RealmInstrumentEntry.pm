@@ -34,8 +34,10 @@ and delete interface to the C<realm_instrument_entry_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Entry;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
+use Bivio::Type::EntryClass;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 
@@ -44,6 +46,30 @@ use Bivio::Type::PrimaryId;
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_entry"></a>
+
+=head2 create_entry(Bivio::Biz::Model::RealmTransactions trans, hash_ref properties)
+
+Creates the instrument entry, and transaction entry for the specified
+transaction, using the values from the specified properties hash. Dies
+on failure.
+
+=cut
+
+sub create_entry {
+    my($self, $trans, $properties) = @_;
+
+    $properties->{class} = Bivio::Type::EntryClass::INSTRUMENT();
+    $properties->{realm_transaction_id} = $trans->get('realm_transaction_id');
+
+    my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
+    $entry->create($properties);
+
+    $properties->{entry_id} = $entry->get('entry_id');
+    $self->create($properties);
+    return;
+}
 
 =for html <a name="internal_initialize"></a>
 
