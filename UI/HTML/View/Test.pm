@@ -186,7 +186,7 @@ EOF
 	   Bivio::UI::HTML::Widget::ActionBar->new({
 	      values => Bivio::UI::HTML::ActionButtons->get_list('test_view',
 		     'test_view'),
-	      bgcolor => 'icon_text_ia',
+	      action_bar_bgcolor => 'icon_text_ia',
 	      string_font => 'error',
 	      cell_align => 'right',
 	   }),

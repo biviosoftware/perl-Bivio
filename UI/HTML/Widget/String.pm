@@ -95,7 +95,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
-    my($font) = $self->unsafe_get('string_font');
+    my($font) = $self->ancestral_get('string_font', undef);
     my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
     $fields->{value} = $self->get('value');
     if (ref($fields->{value})) {
