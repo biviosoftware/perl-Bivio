@@ -100,7 +100,9 @@ A value in I<rows> looks like:
     ],
 
 If I<task> is true, I<label> will be wrapped in a link.
-I<task> may be name or an actual C<TaskId> instance.
+I<task> may be name, an actual C<TaskId> instance or
+an array_ref in which case it is treated as a widget value
+returning the proper URI at rendering time.
 
 If I<value> is a widget, it is used literally.
 
@@ -132,7 +134,8 @@ sub action_grid {
 	$label = $proto->string(
 		Bivio::UI::Label->from_any($label)->get_short_desc);
 	$label = Bivio::UI::HTML::Widget::Link->new({
-	    href => ['->format_uri', Bivio::Agent::TaskId->from_any($task)],
+	    href => ref($task) eq 'ARRAY' ? $task
+            : ['->format_uri', Bivio::Agent::TaskId->from_any($task)],
 	    value => $label
 	}) if $task;
 	$label->put(cell_align => 'ne');
