@@ -450,9 +450,11 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/payment
         Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Type::EntryType->execute_MEMBER_PAYMENT
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
-        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+        next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_DETAIL
@@ -630,9 +632,11 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/fee
         Bivio::Biz::Action::TargetRealm->execute_this_member
-        Bivio::Biz::Model::SingleDepositForm
+        Bivio::Type::EntryType->execute_MEMBER_PAYMENT_FEE
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+	Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
-        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+        next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT
@@ -1349,6 +1353,34 @@ my(@_CFG) = (
         Bivio::Biz::Model::PhoneForm
         Bivio::UI::HTML::Realm::EditPhone
         next=CLUB_ADMIN_INFO
+    )],
+    # Order of lists is important.  RealmAccountList must be last
+    [qw(
+        CLUB_ACCOUNTING_PAYMENT
+        130
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/accounting/payment
+        Bivio::Type::EntryType->execute_MEMBER_PAYMENT
+        Bivio::Biz::Model::RealmMemberList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Biz::Model::MultipleDepositForm
+        Bivio::UI::HTML::Club::MultiplePayment
+        next=CLUB_ACCOUNTING_MEMBER_LIST
+    )],
+    # Order of lists is important.  RealmValuationAccountList must be last
+    [qw(
+        CLUB_ACCOUNTING_FEE
+        131
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/accounting/fee
+        Bivio::Type::EntryType->execute_MEMBER_PAYMENT_FEE
+        Bivio::Biz::Model::RealmMemberList->execute_load_all
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::MultipleDepositForm
+        Bivio::UI::HTML::Club::MultipleFee
+        next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
 );
 
