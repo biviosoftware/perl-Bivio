@@ -6,113 +6,163 @@ package Bivio::NAICRegister;
 use strict;
 use Apache::Constants qw(OK);
 use Bivio::Mail::Outgoing;
+use Bivio::Util;
 
+my($_FORM) = <<'EOF';
+<html><head><title>NAIC Denver Chapter Registration Form</title>
+</head><body>
+<CENTER>
+<H2>NAIC Denver Chapter Registration Form</H2>
+<FORM action="/denver-register" method=POST>
+<TABLE width="1%">
+<TR>
+  <TD>Name:</TD><TD colspan=2><input type=text size=50 name=name></TD>
+</TR><TR>
+  <TD nowrap>Home Phone:</TD><TD><input type=text size=20 name=home_phone></TD>
+  <TD nowrap align=right>Work Phone:&nbsp;&nbsp;<input type=text size=15 name=work_phone></TD>
+</TR><TR>
+  <TD>Address:</TD><TD colspan=2><input type=text size=50 name=address>
+</TR><TR><TD>City:</TD><TD><input type=text size=20 name=city></TD>
+  <TD nowrap align=right>State:&nbsp;&nbsp;<input type=text size=2 name=state>
+  &nbsp;Zip:&nbsp;&nbsp;<input type=text size=12 name=zip></TD>
+</TR><TR>
+  <TD>Email:</TD><TD colspan=2><input type=text size=50 name=email>
+</TR><TR>
+  <TD nowrap>Name of Class:</TD><TD colspan=2><input type=text size=50 name=name_of_class></TD>
+</TR><TR>
+  <TD>Date:</TD><TD><input type=text size=20 name=date></TD>
+  <TD nowrap align=right>Fee:&nbsp;&nbsp;<input type=text size=15 name=fee></TD>
+</TR><TR>
+  <TD nowrap>Class Number:</TD><TD><input type=text size=20 name=class_number></TD>
+  <TD nowrap align=right>Section:&nbsp;&nbsp;<input type=text size=15 name=section></TD>
+</TR><TR>
+  <TD>Instructor:</TD><TD colspan=2><input type=text size=50 name=instructor></TD>
+</TR><TR>
+  <TD colspan=3 align=center><INPUT type=submit value="Submit">
+</TR>
+</FORM>
+</TABLE>
+</CENTER>
+</body>
+</html>
+EOF
+my(%_LABELS);
+my(@_FIELDS);
+foreach (split(/\n/, $_FORM)) {
+    /([\w\s]+:).*name=(\w+)/ || next;
+    $_LABELS{$2} = $1;
+    push(@_FIELDS, $2);
+    print STDERR "$1 $2\n";
 
+}
+my(%_NOT_REQUIRED_FIELDS) = (work_phone => 1);
 
 sub handler {
     my $r = shift;
     $r->content_type("text/html");
     $r->send_http_header;
-    my(%args) = $r->args;
-    my(@keys) = keys %args;
-    my(@values) = values %args;
-    if (%args){
-	my($view) = $args{view};
-	if($view eq('result')){
-	    _render_result($r, \%args );
+    if ($r->method_number == Apache::Constants::M_POST()) {
+	my(%args) = $r->content;
+        if (_check_fields(\%args)) {
+	    _render_result($r, \%args);
+	}
+	else {
+	    _render_form($r, \%args);
 	}
     }
-    else{
+    else {
 	_render_form($r);
     }
-    $r->print("</BODY></HTML>");
     return OK;
 }
 
 
 sub _send_mail{
-    my($arguments) = @_;
-    my $s;
+    my($args) = @_;
     my $outmail = Bivio::Mail::Outgoing->new( );
-    $outmail->set_recipients([qw(nagler)]);
-
-    $outmail->set_header("From", $arguments->{email});
-    $outmail->set_header("To", 'nagler');
-    $outmail->set_header("Cc", $arguments->{email});
-    $s .= "\nThe following information was submitted by " . $arguments->{username};
-    $s .= "\n\nName: \t" . $arguments->{username};
-    $s .= "\nHome Phone:\t" . $arguments->{homephone};
-    $s .= "\nWork Phone:\t" . $arguments->{workhone};
-    $s .= "\nAddress:  \t" . $arguments->{address};
-    $s .= " " . $arguments->{city};
-    $s .= ", " . $arguments->{state};
-    $s .= " " . $arguments->{zip};
-    $s .= "\nEmail:\t" . $arguments->{email};
-    $s .= "\nClass:\t" . $arguments->{class};
-    $s .= "\nDate:\t" . $arguments->{date};
-    $s .= "\nSection:\t" . $arguments->{section};
-    $s .= "\nFee:\t" . $arguments->{fee};
-    $s .= "\nInstructor:\t" . $arguments->{instructor};
+    $outmail->set_recipients(['nagler', $args->{email}]);
+    my($n) = $args->{name};
+    $n =~ s/(["\\])/\\$1/g;
+    $outmail->set_header('From', qq!"$n" <$args->{email}>!);
+    $outmail->set_header('Subject', 'NAIC Registration');
+    $outmail->set_header('To', 'nagler');
+    $outmail->set_header('Cc', $args->{email});
+    my($s) = "NAIC Denver Chapter Registration:\n\n";
+    foreach (@_FIELDS) {
+	$s .= sprintf('%-14s %s'."\n", $_LABELS{$_}, $args->{$_});
+    }
     $outmail->set_body($s);
     $outmail->send( );
 }
 
 
 sub _render_result{
-    my($output, $arguments) = @_;
-    my(@keys) = keys %$arguments;
-    my(@values) = values %$arguments;
-    _send_mail($arguments);
-    $output->print("<H2>NAIC Denver Chapter Registration Form</H2>\n");
-    $output->print("The following information was submitted to the Denver Chapter:<P><P>");
-    $output->print("<table width = 60%>\n");
-    $output->print("<TR><TD width = 15%>Name: <TD>" . $arguments->{username});
-    $output->print("<TR><TD>Home Phone: <TD> " . $arguments->{homephone});
-    $output->print("<TR><TD>Work Phone: <TD> " . $arguments->{workhone});
-    $output->print("<TR><TD>Address: <TD> " . $arguments->{address});
-    $output->print("<TR><TD>City: <TD>" . $arguments->{city});
-    $output->print("<TR><TD>State: <TD>" . $arguments->{state});
-    $output->print("<TR><TD>Zip: <TD>" . $arguments->{zip});
-    $output->print("<TR><TD>Email: <TD>" . $arguments->{email});
-    $output->print("<TR><TD>Name of Class: <TD>" . $arguments->{class});
-    $output->print("<TR><TD>Date: <TD>" . $arguments->{date});
-    $output->print("<TR><TD>Section: <TD>" . $arguments->{section});
-    $output->print("<TR><TD>Fee: <TD>" . $arguments->{fee});
-    $output->print("<TR><TD>Instructor: <TD>" . $arguments->{instructor});
-    $output->print("</TABLE>\n");
-    $output->print("<CENTER>");
-    $output->print("<P><B><a href=\"/denver.html\">Return To Denver Chapter Home Page</a></B>");
-    $output->print("</CENTER>");
+    my($output, $args) = @_;
+    _send_mail($args);
+    my($s) = <<'EOF';
+<html><head><title>NAIC Denver Chapter Registration Complete</title>
+</head><body>
+<h2>NAIC Denver Chapter Registration Complete</h2>
+The following information was submitted to the Denver Chapter:<P><P>
+<table>
+EOF
+    foreach (@_FIELDS) {
+	$s .= sprintf('<TR><TD>%s</TD><TD>%s</TD></TR>'."\n",
+		$_LABELS{$_}, $args->{$_});
+    }
+    $s .= <<'EOF';
+</TABLE>
+<CENTER>
+<P><B><a href="/denver.html">Return To Denver Chapter Home Page</a></B>
+</CENTER>
+</body>
+</html>
+EOF
+    $output->print($s);
 }
 
-
-sub _render_form{
-    my($output) = @_;
-    $output->print("<CENTER><H2>NAIC Denver Chapter Registration Form</H2>\n");
-    $output->print("<FORM action = \"/denver-register\">\n");
-    $output->print("<INPUT type=hidden name=view value=\"result\">\n");
-    $output->print("<TABLE width = 90%>\n");
-    $output->print("<TR><TD>Name:</TD><TD colspan = 2><input type=text size=50 name=username>\n");
-    $output->print("<TR><TD>Home Phone:</TD><TD><input type=text size=12 name=homephone>\n");
-    $output->print("<TD>Work Phone:</TD><TD><input type=text size=12 name=workhone>\n");
-    $output->print("<TR><TD>Address:</TD><TD colspan = 2><input type=text size=50 name=address>\n");
-    $output->print("<TR><TD>City:</TD><TD><input type=text size=30 name=city>\n");
-    $output->print("<TD>State:</TD><TD><input type=text size=30 name=state>\n");
-    $output->print("<TR><TD>Zip:</TD><TD><input type=text size=12 name=zip>\n");
-    $output->print("<TR><TD>Email:</TD><TD colspan = 2><input type=text size=50 name=email>\n");
-    $output->print("<TR><TD>Name of Class:</TD><TD colspan = 2><input type=text size=50 name=class>\n");
-    $output->print("<TR><TD>Date:</TD><TD colspan = 2><input type=text size=20 name=date>\n");
-    $output->print("<TR><TD>Class Number:</TD><TD><input type=text size=20 name=classnumber>\n");
-    $output->print("<TR><TD>Section:</TD><TD colspan = 2><input type=text size=20 name=section>\n");
-    $output->print("<TR><TD>Fee:</TD><TD colspan = 2><input type=text size=20 name=fee>\n");
-    $output->print("<TR><TD>Instructor:</TD><TD colspan = 2><input type=text size=50 name=instructor>\n");
-    $output->print("<TR><TD colspan = 4><INPUT type=submit value=\"Submit\">\n");
-    $output->print("</FORM>\n");
-    $output->print("</TABLE>\n");
-    $output->print("</CENTER>\n");
+sub _render_form {
+    my($output, $args) = @_;
+    my($form) = $_FORM;
+    if (defined($args)) {
+	my($x) = '<p><font color=red><i>Please fill in required fields'
+		.'</i></font></p>';
+	$form =~ s/(<H2>.*<\/H2>)/$1$x/;
+	foreach (@_FIELDS) {
+	    if (length($args->{$_})) {
+		my($v) = Bivio::Util::escape_html($args->{$_});
+		$form =~ s/(name=$_)\b/$1 value="$v"/;
+	    }
+	    elsif (!$_NOT_REQUIRED_FIELDS{$_}) {
+print STDERR "$_ $args->{$_}\n";
+		my($x) = $_;
+                $x =~ s/_/ /g;
+		$form =~ s/\b($x:)/<font color=red><i>$1<\/i><\/font>/i;
+	    }
+	}
+    }
+    $output->print($form);
 }
 
-
-
+sub _check_fields {
+    my($args) = @_;
+    my($err) = 0;
+    foreach (@_FIELDS) {
+	if (defined($args->{$_})) {
+	    $args->{$_} =~ s/^\s+|\s+$//g;
+	}
+	else {
+	    $args->{$_} = '';
+	}
+    }
+    foreach (@_FIELDS) {
+	length($args->{$_}) && next;
+	if ($_ =~ /phone$/) {
+	    next if length($args->{work_phone}) || length($args->{home_phone});
+	}
+	$err++;
+    }
+    return !$err;
+}
 
 1;
