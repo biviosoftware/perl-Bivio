@@ -258,7 +258,7 @@ sub get_model {
     foreach my $pk (keys(%$map)) {
 	my($v);
 	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
-	    _trace($self, ': loading ', $m, ' missing key ',
+	    _trace($self, ': loading ', $m->{instance}, ' missing key ',
 		    $map->{$pk}->{name}) if $_TRACE;
 	    return $mi;
 	}
