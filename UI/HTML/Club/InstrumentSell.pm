@@ -119,7 +119,7 @@ sub execute {
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
     my($realm) = $req->get('auth_realm')->get('owner');
     my($shares_owned) = $realm->get_number_of_shares(Bivio::Type::Date->now)
-	    ->{$realm_inst->get('realm_instrument_id')};
+	    ->{$realm_inst->get('realm_instrument_id')} || 0;
     $req->put(realm_inst_name => $realm_inst->get_name
 	    .", $shares_owned shares owned");
     $self->SUPER::execute($req);
