@@ -507,7 +507,7 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_mailto {
     my($self, $email, $subject) = @_;
     my($res) = 'mailto:'
-	    . Apache::Util::escape_uri($self->format_email($email));
+	    . Bivio::Util::escape_uri($self->format_email($email));
     $subject = $self->get_widget_value(@$subject) if ref($subject);
     if (defined($subject)) {
 	# This is a bug.  Currently Outlook doesn't understand
