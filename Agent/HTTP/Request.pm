@@ -4,6 +4,7 @@ package Bivio::Agent::HTTP::Request;
 use strict;
 use Apache::Constants;
 use Bivio::Agent::Request();
+use Bivio::Biz::FindParams();
 $Bivio::Agent::HTTP::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -28,6 +29,20 @@ L<Bivio::Agent::Request> is a Bivio Request wrapper for an Apache::Request.
 =head1 DESCRIPTION
 
 C<Bivio::Agent::HTTP::Request>
+
+http://bivio.com/<target>/<controller>/<view>?m=<model>
+ &mf=<arg1>(<val1>),<arg2>(<val2>)...&ma=<action>&...
+
+where <target> is a person or club
+ <controller> is the controller id (messages, accounting, ...)
+ <view> is the view id (list, detail, ...)
+ <model> is a model class type (motion, document,...)
+ <arg1>(<val1>)... are model finder parameters
+ <action> is what to do with the model (update, vote, ...)
+
+The rest of the arguments are action parameters.
+Much of the URI is optional (views have default models, controller
+have default views).
 
 =cut
 
@@ -79,6 +94,19 @@ sub new {
 
 =cut
 
+=for html <a name="get_action_name"></a>
+
+=head2 get_action_name() : string
+
+Returns the requested action.
+
+=cut
+
+sub get_action_name {
+    my($self) = @_;
+    return $self->get_arg('ma');
+}
+
 =for html <a name="get_arg"></a>
 
 =head2 get_arg(string name) : string
@@ -124,6 +152,47 @@ sub get_http_return_code {
     #otherwise, an invalid state was set, log it and die
     $self->log_error("invalid request state $state");
     die("invalid request state $state");
+}
+
+=for html <a name="get_model_args"></a>
+
+=head2 get_model_args() : FindParams
+
+Returns the model finder arguments. Parsed from the 'mf' argument.
+If no arguments are present, then an empty FindParams is returned.
+Argument format should be 'mf=arg(value),arg2(value2)'.
+ex. mf=foo(bar),x(7)
+
+=cut
+
+sub get_model_args {
+
+    #DANGER: this won't work if there are ','  characters
+    #        embedded in the search values. '(' ')' are handled OK.
+
+    my($self) = @_;
+    my($map) = {};
+    my($mf) = $self->get_arg('mf');
+
+    foreach (split(',', $mf)) {
+	if (/^(\w+)\((.*)\)$/) {
+	    $map->{$1} = $2;
+	}
+    }
+    return Bivio::Biz::FindParams->new($map);
+}
+
+=for html <a name="get_model_name"></a>
+
+=head2 get_model_name() : string
+
+Returns the requested model name. Parsed from the 'm' argument.
+
+=cut
+
+sub get_model_name {
+    my($self) = @_;
+    return $self->get_arg('m');
 }
 
 =for html <a name="get_view_name"></a>
@@ -241,20 +310,5 @@ $Id$
 
 =cut
 
-=head1 x
-
-sub t {
-    my($target, $controller, $path) = @_;
-    print("target = $target\ncontroller = $controller\n");
-    my($p);
-    foreach $p (@$path) {
-	print($p.'/');
-    }
-    print("\n");
-}
-
-t(_parse_request("/localhost"));
-
-=cut
 
 1;
