@@ -329,15 +329,15 @@ sub execute_delete_cookie {
     return 0;
 }
 
-=for html <a name="format_query"></a>
+=for html <a name="format_query_with_auth_code"></a>
 
-=head2 format_query() : string
+=head2 format_query_with_auth_code() : string
 
 Formats the query string with I<this> and I<auth_code>.
 
 =cut
 
-sub format_query {
+sub format_query_with_auth_code {
     my($self) = @_;
     return $self->SUPER::format_query().'&'.$_QUERY_FIELD
 	    .'='.$self->get_auth_code;
