@@ -1362,7 +1362,7 @@ sub _parse_timezone {
     # to handle timezone as undef.
     return unless defined($v);
 
-    unless ($v =~ /^\d+$/) {
+    unless ($v =~ /^[+-]?\d+$/) {
 	Bivio::IO::Alert->warn($v, ':timezone field in form invalid');
 	return;
     }
