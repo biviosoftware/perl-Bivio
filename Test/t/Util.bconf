@@ -1,0 +1,7 @@
+Bivio::IO::Config->merge({
+    Bivio::IO::ClassLoader => {
+	maps => {
+	    TestLanguage => ['Bivio::Test::t::Language'],
+	},
+    },
+}, do($ENV{ORIGINAL_BCONF}));

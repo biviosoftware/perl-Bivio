@@ -80,48 +80,56 @@ Bivio::IO::Trace->register;
 
 =for html <a name="acceptance"></a>
 
-=head2 acceptance(string tests, ...)
+=head2 acceptance(string test, ...) : string_ref
 
-Run acceptance tests.
+Executes I<test>(s) under L<Bivio::Test::Language|Bivio::Test::Language>.
+I<test> may be a directory or file name.  If it is a directory, all tests
+(C<*.btest>) files will be executed.  All tests must end in C<*.btest>.
+
+When only one test is run, shows the output of the test.
 
 =cut
 
 sub acceptance {
-    my($self, $tests) = _find_files(\@_, 't');
-    _run($self, $tests, sub {
-        my($self, $test) = @_;
-	my($max, $ok) = (-1, 0);
-	foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $test 2>&1")})) {
-	    _trace($line) if $_TRACE;
-	    if ($max >= 0) {
-		$ok++ if $line =~ /^ok\s*(\d+)/;
-	    }
-	    elsif ($line =~ /^1\.\.(\d+)/) {
-		$max = $1;
-	    }
+    my($self, $tests) = _find_files(\@_, 'btest');
+    return _run($self, $tests, sub {
+        my($self, $test, $out) = @_;
+	my($ok) = 0;
+	foreach my $line (split(/\n/,
+	    $$out = ${$self->piped_exec("$^X -w - 2>&1", <<"EOF", 1)})) {
+use strict;
+use Bivio::Test::Language;
+print "1..1\n";
+my(\$die) = Bivio::Test::Language->test_run(qw{$test});
+print(\$die ? "not ok: " . \$die->as_string . "\n" : "1 ok\n");
+EOF
+            chomp($line);
+            $ok++ if $line eq "1 ok";
 	}
-	return $ok == $max;
+	return $ok;
     });
-    return;
 }
 
 =for html <a name="unit"></a>
 
-=head2 unit(string test, ...)
+=head2 unit(string test, ...) : string_ref
 
-Executes I<test>(s) by calling C<Test::Harness::runtests>.  I<test> may be
-a directory or file name.  If it is a directory, all tests (C<*.t>) files
-will be executed.  All tests must end in C<*.t>.
+Executes I<test>(s).  I<test> may be a directory or file name.  If it is a
+directory, all tests (C<*.t>) files will be executed.  All tests must end in
+C<*.t>.
+
+When only one test is run, shows the output of the test.
 
 =cut
 
 sub unit {
     my($self, $tests) = _find_files(\@_, 't');
-    _run($self, $tests, sub {
-        my($self, $test) = @_;
+    return _run($self, $tests, sub {
+        my($self, $test, $out) = @_;
 	my($max, $ok) = (-1, 0);
-	foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $test 2>&1")})) {
-	    _trace($line) if $_TRACE;
+	foreach my $line (split(/\n/,
+	    $$out = ${$self->piped_exec("$^X -w $test 2>&1", undef, 1)})) {
+	    chomp($line);
 	    if ($max >= 0) {
 		$ok++ if $line =~ /^ok\s*(\d+)/;
 	    }
@@ -131,7 +139,6 @@ sub unit {
 	}
 	return $ok == $max;
     });
-    return;
 }
 
 #=PRIVATE METHODS
@@ -165,34 +172,43 @@ sub _find_files {
 #
 sub _run {
     my($self, $tests, $action) = @_;
-    my($total_ok, $total_max) = (0, 0);
+    my($ok, $max) = (0, 0);
+    my($one_dir) = keys(%$tests) == 1;
+    foreach my $t (values(%$tests)) {
+	$max += @$t;
+    }
+    $self->usage_error('no tests found') unless $max;
     foreach my $d (sort(keys(%$tests))) {
-	$self->print("*** Entering: $d\n");
+	$self->print("*** Entering: $d\n") unless $one_dir;
 	Bivio::IO::File->chdir($d);
 	foreach my $t (@{$tests->{$d}}) {
 	    $self->print(sprintf('%20s: ', $t));
-	    _trace('running: ', $t) if $_TRACE;
 	    my($res) = 'FAILED';
-	    if (&$action($self, $t)) {
+	    my($out);
+	    if (&$action($self, $t, \$out)) {
 		$res = 'PASSED';
-		$total_ok++;
+		$ok++;
 	    }
 	    $self->print($res, "\n");
-	    $total_max++;
+	    $out ||= '';
+	    $out =~ s/^/  /mg;
+	    if ($max == 1) {
+		$self->print("Output:\n", $out);
+	    }
         }
-	$self->print("*** Leaving: $d\n\n");
+	$self->print("*** Leaving: $d\n\n") unless $one_dir;
     }
-    unless ($total_max == $total_ok) {
+    unless ($max == $ok) {
 	$self->print(
 	    sprintf('FAILED %d (%.1f%%) and passed %d (%.1f%%)' . "\n",
 		map {
-		    ($_, 100 * $_ / $total_max);
-		} ($total_max - $total_ok), $total_ok
+		    ($_, 100 * $_ / $max);
+		} ($max - $ok), $ok
 	));
 	Bivio::Die->throw_quietly('DIE');
         # DOES NOT RETURN
     }
-    $self->print("All ($total_max) tests passed\n");
+    $self->print("All ($max) tests passed\n");
     return;
 }
 

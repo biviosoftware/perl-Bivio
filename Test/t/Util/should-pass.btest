@@ -1,0 +1,3 @@
+# $Id$
+test_setup('T1', 'x1');
+
