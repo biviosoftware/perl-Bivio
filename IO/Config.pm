@@ -411,7 +411,7 @@ sub _initialize {
     }
     if (defined($file)) {
 #TODO: Should probably die if not readable?
-        warn("$file: not readable\n") unless -e $file && -r _;
+        warn("$file: not readable\n") if -e $file && !-r _;
 	my($actual) = do($file);
 	unless (ref($actual) eq 'HASH') {
 	    -e $file && die("$file: config parse failed: ",
