@@ -46,7 +46,7 @@ my(\$i) = 1;
 my(\$m) = sub {
    my(\$x) = \$_[0] || \$e1;
 Bivio::IO::File->write(q{$mail_file} . \$i++, <<"END");
-From: someone\@example.com
+From: someone\\\@example.com
 To: \$x
 
 You have mail
