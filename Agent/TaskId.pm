@@ -206,6 +206,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/valuation
+	Bivio::Biz::ListModel::AccountValuationList
 	Bivio::Biz::ListModel::InstrumentValuationList
 	Bivio::UI::HTML::Club::ValuationStatement
     )],
