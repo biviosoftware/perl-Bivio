@@ -93,6 +93,19 @@ sub debug_print {
     return;
 }
 
+=for html <a name="do_table_rows"></a>
+
+=head2 do_table_rows(string table_name, code_ref do_rows_callback)
+
+Conveniently calls
+L<Bivio::Test::HTMLParser::Tables::do_rows|Bivio::Test::HTMLParser::Tables/"do_rows">.
+
+=cut
+
+sub do_table_rows {
+    return shift->get_html_parser()->get('Tables')->do_rows(@_);
+}
+
 =for html <a name="follow_link"></a>
 
 =head2 follow_link(string link_name)
