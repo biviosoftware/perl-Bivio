@@ -71,7 +71,7 @@ admin privileges.
 sub execute_if_allowed {
     my($proto, $req) = @_;
     return 0 unless $req->can_user_execute_task(
-            Bivio::Agent::TaskId::CLUB_ADMIN_SUBSCRIBE_ACCOUNT_SYNC());
+            Bivio::Agent::TaskId::CLUB_ADMIN_EC_SUBSCRIBE_ACCOUNT_SYNC());
     return $proto->execute($req);
 }
 
