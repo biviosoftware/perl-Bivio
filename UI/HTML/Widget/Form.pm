@@ -129,6 +129,7 @@ sub initialize {
 	$fields->{action} = 1;
     }
     $fields->{prefix} = $p;
+    $fields->{end_tag} = $self->get_or_default('end_tag', 1);
     $fields->{model} = $self->get('form_model');
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
@@ -170,7 +171,7 @@ sub render {
 
     # Rest of the form
     $fields->{value}->render($source, $buffer);
-    $$buffer .= '</form>';
+    $$buffer .= '</form>' if $fields->{end_tag};
     return;
 }
 
