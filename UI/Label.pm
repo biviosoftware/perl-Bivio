@@ -41,10 +41,11 @@ _compile(
     PHONE => ['Phone', undef, 'Phone.phone'],
     TAX_ID => ['Tax ID', undef, 'TaxId.tax_id'],
     EMAIL => ['Email', undef, 'Email.email'],
-    PASSWORD => ['Password'],
+    PASSWORD => ['Password', undef, 'RealmOwner.password'],
     OLD_PASSWORD => ['Old Password'],
     NEW_PASSWORD => ['New Password'],
     CONFIRM_NEW_PASSWORD => ['Confirm New'],
+    LOGIN => ['Login'],
 
     # Address labels
     ADDRESS => ['Address'],
@@ -64,7 +65,7 @@ _compile(
 
     # User labels
     USER_DISPLAY_NAME => ['Name'],
-    USER_NAME => ['User ID'],
+    USER_NAME => ['User ID', undef, 'name_or_email'],
     USER_FIRST_NAME => ['First Name', undef, 'User.first_name'],
     USER_MIDDLE_NAME => ['Middle Name', undef, 'User.middle_name'],
     USER_LAST_NAME => ['Last Name', undef, 'User.last_name'],
