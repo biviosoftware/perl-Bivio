@@ -284,6 +284,7 @@ sub execute_load_all_with_query {
 
 #TODO: Need to check for "this".  It is a corrupt query if it is
 #    passed in.
+#TODO: I found it useful to have a "this", so maybe it's not a bad idea.
 #    For now, we delete the this.
     $query->put(this => undef);
 
