@@ -420,6 +420,8 @@ _compile(
     # Announcements
     ANNOUNCE_EDITING =>['Edit Transactions'],
     ANNOUNCE_FRACTIONAL => ['Cash in Lieu'],
+    ANNOUNCE_SAVE_ATTACH => ['Save Attachments to Files'],
+    ANNOUNCE_UNZIP => ['Multiple File Upload'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
