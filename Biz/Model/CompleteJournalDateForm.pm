@@ -31,6 +31,10 @@ C<Bivio::Biz::Model::CompleteJournalDateForm> date range for complete journal
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::Tax;
+use Bivio::Biz::Action::ReportDate;
+use Bivio::Type::Date;
+use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -55,8 +59,8 @@ sub execute_empty {
 		    $self->get_request->get('report_date'));
     $self->internal_put_field(start_date => $start_date);
     $self->internal_put_field(end_date => $end_date);
-    $self->get_request->put(report_date => $end_date);
-
+    Bivio::Biz::Action::ReportDate->set_report_date(
+	    $end_date, $self->get_request);
     return;
 }
 
@@ -79,7 +83,8 @@ sub execute_ok {
 	$self->internal_put_field(end_date => $fiscal_end);
     }
 
-    $self->get_request->put(report_date => $fiscal_end);
+    Bivio::Biz::Action::ReportDate->set_report_date(
+	    $fiscal_end, $self->get_request);
     $self->internal_stay_on_page;
     return;
 }
