@@ -3091,7 +3091,7 @@ my(@_CFG) = (
         CLUB_ADMIN_MEMBER_MERGE
         270
         CLUB
-        DOCUMENT_READ
+        ADMIN_WRITE
         ?/adm/merge-members
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
