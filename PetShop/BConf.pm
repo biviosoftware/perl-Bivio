@@ -19,8 +19,14 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::PetShop::BConf::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::BConf>
+
+=cut
+
+use Bivio::BConf;
+@Bivio::PetShop::BConf::ISA = ('Bivio::BConf');
 
 =head1 DESCRIPTION
 
@@ -29,106 +35,77 @@ C<Bivio::PetShop::BConf> default petshop.bivio.biz configuration.
 =cut
 
 #=IMPORTS
-use Bivio::BConf;
 
 #=VARIABLES
-my($_DEFAULT_CONFIG) = Bivio::BConf->merge({
-    'Bivio::IO::ClassLoader' => {
-	delegates => {
-	    'Bivio::Agent::TaskId' => 'Bivio::PetShop::Agent::TaskId',
-	    'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::PersistentCookie',
-	    'Bivio::UI::HTML::FormErrors' =>
-	    	'Bivio::PetShop::UI::FormErrors',
-	    'Bivio::TypeError' => 'Bivio::PetShop::TypeError',
-	    'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
-	},
-	maps => {
-	    Model => ['Bivio::PetShop::Model', 'Bivio::Biz::Model'],
-	    Type => [ 'Bivio::PetShop::Type', 'Bivio::Type'],
-	    HTMLWidget => ['Bivio::PetShop::Widget',
-		'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
-	    Facade => ['Bivio::PetShop::Facade'],
-	    Action => ['Bivio::PetShop::Action', 'Bivio::Biz::Action'],
-	    TestLanguage => ['Bivio::PetShop::Test'],
-	},
-    },
-    'Bivio::UI::Facade' => {
-        default => 'PetShop',
-    },
-    'Bivio::UI::Text' => {
-	http_host => 'petshop.bivio.biz',
-	mail_host => 'bivio.biz',
-    },
-});
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="dev"></a>
+=for html <a name="dev_overrides"></a>
 
-=head2 dev(int port, hash_ref overrides) : hash_ref
+=head2 dev_overrides(string pwd, string host) : hash_ref
 
 Development environment configuration.
 
 =cut
 
-sub dev {
-    my($proto, $port, $overrides) = @_;
-
-    my($pwd) = `pwd`;
-    chomp($pwd);
-    # Make sure petshop symlink exists (local_file_prefix is petshop)
-    symlink('.', 'files/petshop') unless -l 'files/petshop';
-    my($host) = `hostname`;
-    chomp($host);
-    return Bivio::IO::Config->merge($overrides || {},
-	    $proto->merge({
-		'Bivio::Agent::Request' => {
-		    can_secure => 0,
-		},
-		'Bivio::PetShop::Cookie' => {
-		    domain => $host,
-		},
-		'Bivio::UI::FacadeComponent' => {
-		    die_on_error => 1,
-		},
-		'Bivio::UI::Facade' => {
-		    local_file_root => "$pwd/files",
-		    want_local_file_cache => 0,
-		},
-		'Bivio::UI::Text' => {
-		    http_host => "$host:$port",
-		    mail_host => $host,
-		},
-		'Bivio::UI::HTML::Widget::SourceCode' => {
-		    source_dir => "$pwd/src",
-		},
-		'Bivio::IO::Alert' => {
-		    want_time => 0,
-		},
-		main => {
-		    http => {
-			port => $port,
-		    },
-		},
-	    }));
+sub dev_overrides {
+    my($proto, $pwd, $host) = @_;
+    return {
+	'Bivio::PetShop::Cookie' => {
+	    domain => $host,
+	},
+	'Bivio::UI::HTML::Widget::SourceCode' => {
+	    source_dir => "$pwd/src",
+	},
+    };
 }
 
-=for html <a name="merge"></a>
+=for html <a name="merge_overrides"></a>
 
-=head2 merge(hash_ref custom) : hash_ref
+=head2 merge_overrides(string pwd, string host) : hash_ref
 
-Uses I<custom> config to override default config defined in this
-module.
+Base configuration.
 
 =cut
 
-sub merge {
-    my($proto, $config) = @_;
-
-    # make a copy of the default, then add the supplied config recursively
-    return Bivio::IO::Config->merge($config, $_DEFAULT_CONFIG);
+sub merge_overrides {
+    return {
+	'Bivio::Ext::DBI' => {
+	    database => 'petdb',
+	    user => 'petuser',
+	    password => 'petpass',
+	    connection => 'Bivio::SQL::Connection::Postgres',
+	},
+	'Bivio::IO::ClassLoader' => {
+	    delegates => {
+		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Agent::TaskId',
+		'Bivio::Agent::HTTP::Cookie' =>
+		    'Bivio::Delegate::PersistentCookie',
+		'Bivio::UI::HTML::FormErrors' =>
+	    	    'Bivio::PetShop::UI::FormErrors',
+		'Bivio::TypeError' => 'Bivio::PetShop::TypeError',
+		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
+	    },
+	    maps => {
+		Model => ['Bivio::PetShop::Model', 'Bivio::Biz::Model'],
+		Type => [ 'Bivio::PetShop::Type', 'Bivio::Type'],
+		HTMLWidget => ['Bivio::PetShop::Widget',
+		    'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		Facade => ['Bivio::PetShop::Facade'],
+		Action => ['Bivio::PetShop::Action', 'Bivio::Biz::Action'],
+		TestLanguage => ['Bivio::PetShop::Test'],
+	    },
+	},
+	'Bivio::UI::Facade' => {
+	    default => 'PetShop',
+	},
+	'Bivio::UI::Text' => {
+	    http_host => 'petshop.bivio.biz',
+	    mail_host => 'bivio.biz',
+	},
+    };
 }
 
 #=PRIVATE METHODS
