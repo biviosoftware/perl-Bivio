@@ -78,7 +78,8 @@ sub main {
     }
     if ($execute) {
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
-	-d 'html/i' || system('cvs checkout html/i');
+	system('cvs checkout html; cd html/societas; make INSTALLDIR=../')
+		unless -d 'html/index.html';
 	&symlink("$_APACHE_HOME/libexec", 'libexec');
 	&symlink('.', 'logs');
     }
@@ -157,10 +158,13 @@ starting the server for testing your own copy.  See L<"FILES">.
 
 =over 4
 
-=item html/i
+=item html/index.html
 
-The command "cvs checkout html/i" will be executed in the current
-directory, if the directory doesn't already exist.
+=item html/societas
+
+The command "cvs checkout html/societas" will be executed in the current
+directory and the static site will be built,
+if the directory doesn't already exist.
 
 =item httpd.lock.*
 
