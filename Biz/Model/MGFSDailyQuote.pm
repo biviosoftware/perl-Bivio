@@ -533,6 +533,7 @@ sub _unsplit {
     my($self, $values) = @_;
     my($mg_id) = $values->{mg_id};
     my($date) = $values->{date_time};
+    return $values unless $date;
     # only interested in first part
     $date =~ s/^(.*)\s/$1/;
 
