@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..8\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::UI::Widget;
@@ -22,7 +22,7 @@ my($w2) = Bivio::UI::Widget->new({
     parent => $w1,
    });
 
-my($_TEST_NUM) = 1;
+my($_TEST_NUM) = 2;
 sub conf {
     my($res) = @_;
     print $res ? "ok $_TEST_NUM\n" : "not ok $_TEST_NUM\n";
@@ -47,11 +47,12 @@ dev(eval {
 });
 my($v1, $v2) = $w1->unsafe_get('not found', '1');
 conf(!defined($v1) && $v2 eq '1');
-my($b) = '';
-use Bivio::Type::DateInterval;
-conf($w1->unsafe_render_value('any',
-    Bivio::Type::DateInterval->WEEK,
-    undef, \$b) && $b eq 'Bivio::Type::DateInterval::WEEK');
+# removed, this case has been commented out in Bivio/UI/Widget.pm
+#my($b) = '';
+#use Bivio::Type::DateInterval;
+#conf($w1->unsafe_render_value('any',
+#    Bivio::Type::DateInterval->WEEK,
+#    undef, \$b) && $b eq 'Bivio::Type::DateInterval::WEEK');
 my($b2) = '';
 conf($w1->unsafe_render_value('any',
     \$b,
