@@ -61,7 +61,7 @@ Create a new PropertyModel associated with the request.
 
 sub new {
     my($self) = Bivio::Biz::Model::new(@_);
-    _unload($self);
+    _unload($self, 0);
     return $self;
 }
 
@@ -413,7 +413,7 @@ sub iterate_next_and_load {
     my($values) = {};
     unless ($self->internal_get_sql_support->iterate_next(
 	    $it, $values)) {
-	return _unload($self);
+	return _unload($self, 1);
     }
 
     return _load($self, $values);
@@ -624,7 +624,7 @@ sub unauth_load {
     my($self, $query) = _load_args(@_);
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load($query, $self);
-    return _unload($self) unless $values;
+    return _unload($self, 1) unless $values;
     return _load($self, $values);
 }
 
@@ -901,15 +901,15 @@ sub _query_err {
     return undef;
 }
 
-# _unload(self) : boolean
+# _unload(self, boolean delete_from_request) : boolean
 #
 # Always returns false.
 #
 sub _unload {
-    my($self) = @_;
+    my($self, $delete_from_request) = @_;
     $self->internal_clear_model_cache;
     $self->internal_put({});
-    $self->delete_from_request;
+    $self->delete_from_request if $delete_from_request;
     return 0;
 }
 
