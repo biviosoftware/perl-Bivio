@@ -660,6 +660,7 @@ sub piped_exec {
 	Bivio::Die->throw_die('DIE', {
 	    message => 'command died with non-zero status',
 	    entity => $command,
+	    input => $in,
 	    output => \$res,
 	    exit_code => $?,
 	}) unless $ignore_exit_code;
