@@ -213,6 +213,10 @@ operation not allowed for offline user
 
 password and confirm password fields do not match
 
+=item DOMAIN_NAME
+
+invalid internet domain name
+
 =back
 
 =cut
@@ -465,6 +469,11 @@ sub get_delegate_info {
 	45,
 	undef,
 	'password and confirm password fields do not match',
+    ],
+    DOMAIN_NAME => [
+	46,
+	undef,
+	'invalid internet domain name',
     ],
 ];
 }
