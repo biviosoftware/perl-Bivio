@@ -43,6 +43,21 @@ my($_CONNECTION);
 
 =cut
 
+=for html <a name="commit"></a>
+
+=head2 commit()
+
+Commits the current transaction.
+
+=cut
+
+sub commit {
+    my($self) = @_;
+
+    &_trace('commit') if $_TRACE;
+    $self->get_connection()->commit();
+}
+
 =for html <a name="execute"></a>
 
 =head2 execute(statement sth, Model m, string value, ...)
@@ -96,6 +111,21 @@ sub get_connection {
 	$_CONNECTION = Bivio::Ext::DBI->connect();
     }
     return $_CONNECTION;
+}
+
+=for html <a name="rollback"></a>
+
+=head2 rollback()
+
+Rolls back the current transaction.
+
+=cut
+
+sub rollback {
+    my($self) = @_;
+
+    &_trace('rollback') if $_TRACE;
+    $self->get_connection()->rollback();
 }
 
 #=PRIVATE METHODS
