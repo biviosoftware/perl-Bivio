@@ -220,6 +220,32 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="is_guest"></a>
+
+=head2 is_guest() : boolean
+
+=head2 static is_guest(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if the user is a GUEST.
+
+In the second form, I<list_model> is used to get the values, not I<self>.
+List Models can declare a method of the form:
+
+    sub is_guest {
+	my($self) = shift;
+	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.', @_);
+    }
+
+=cut
+
+sub is_guest {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    return $list_model->get($model_prefix.'role') ==
+	    Bivio::Auth::Role::GUEST() ? 1 : 0;
+}
+
 =for html <a name="is_member"></a>
 
 =head2 is_member() : boolean
