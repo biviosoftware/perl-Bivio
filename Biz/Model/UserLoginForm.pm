@@ -452,7 +452,8 @@ sub _su_logout {
     });
     _trace($realm) if $_TRACE;
     return $realm->is_loaded
-	? Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
+	? $req->get('task')->unsafe_get('su_task')
+	    || Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
 }
 
 =head1 COPYRIGHT
