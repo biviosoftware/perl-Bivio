@@ -63,6 +63,8 @@ my(%_RESERVED) = map {($_, 1)} qw(
     info
     ingres
     jobs
+    login
+    logout
     mail
     majordomo
     manager
