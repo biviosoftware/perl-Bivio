@@ -15,7 +15,7 @@ Bivio::Biz::SqlConnection - a database connection manager
     my($con) = Bivio::Biz::SqlConnection->get_connection();
     my($statement) = $conn->prepare('update user_ set name=?');
     Bivio::Biz::SqlConnection->execute($statement, $model, 'foo');
-    if ($model->get_status()->is_OK()) {
+    if ($model->get_status()->is_ok()) {
         Bivio::Biz::SqlConnection->commit();
     }
     else {
@@ -64,6 +64,7 @@ sub commit {
 
     &_trace('commit') if $_TRACE;
     $self->get_connection()->commit();
+    return;
 }
 
 =for html <a name="execute"></a>
@@ -87,7 +88,7 @@ sub execute {
 	my($err) = $statement->err;
 	my($msg);
 
-	#TODO: add more application error processing here
+#TODO: add more application error processing here
 
 	$msg = 'already exists' if $err == 1;
 	$msg = 'required value missing' if $err == 1400;
@@ -102,6 +103,7 @@ sub execute {
 	    die $@;
 	}
     }
+    return;
 }
 
 =for html <a name="get_connection"></a>
@@ -167,6 +169,7 @@ sub rollback {
 
     &_trace('rollback') if $_TRACE;
     $self->get_connection()->rollback();
+    return;
 }
 
 #=PRIVATE METHODS

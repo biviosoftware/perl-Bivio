@@ -13,11 +13,11 @@ Bivio::Biz::Status - A collection of errors.
     use Bivio::Biz::Status;
     my($status) = Bivio::Biz::Status->new();
 
-    print($status->is_OK());
+    print($status->is_ok());
     $status->add_error(Bivio::Biz::Error->new("foo"));
-    print($status->is_OK());
+    print($status->is_ok());
     $status->clear();
-    print($status->is_OK());
+    print($status->is_ok());
 
 =cut
 
@@ -50,7 +50,7 @@ Creates a new Status with no initial errors.
 sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
-	errors => []
+	'errors' => []
     };
     return $self;
 }
@@ -71,6 +71,7 @@ sub add_error {
     my($self, $error) = @_;
     my($fields) = $self->{$_PACKAGE};
     push(@{$fields->{errors}}, $error);
+    return;
 }
 
 =for html <a name="clear"></a>
@@ -87,6 +88,7 @@ sub clear {
 
     my(@a) = @{$fields->{errors}};
     $#a = 0;
+    return;
 }
 
 =for html <a name="get_errors"></a>
@@ -103,19 +105,19 @@ sub get_errors {
     return $fields->{errors};
 }
 
-=for html <a name="is_OK"></a>
+=for html <a name="is_ok"></a>
 
-=head2 is_OK() : boolean
+=head2 is_ok() : boolean
 
 Returns > 0 if there are no errors.
 
 =cut
 
-sub is_OK {
+sub is_ok {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    return ! scalar(@{$fields->{errors}});
+    return ! int(@{$fields->{errors}});
 }
 
 #=PRIVATE METHODS
