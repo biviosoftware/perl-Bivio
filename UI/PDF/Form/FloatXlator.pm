@@ -94,20 +94,23 @@ sub add_value {
 
     my($int, $frac);
     if ($input_value =~ /$_FLOAT_REGEX/) {
-	if (defined($1)) {
+	if ($1 && $1 != 0) {
 	    # There is an integer part.
 	    $int = Bivio::UI::PDF::Form::IntXlator
 		    ->format_int($1, $fields->{'separator'});
 	}
 	else {
-	    $int = 0;
+	    $int = '0';
 	}
 
-	if (defined($2)) {
+	if ($2 && $2 != 0) {
 	    # There is a fractional part.
 	    $frac = $2;
 	} else {
 	    $frac = 0;
+
+	    # don't render 0
+	    return if $int eq '0';
 	}
 	$frac = Bivio::UI::PDF::Form::FracXlator
 		->format_frac($2, $fields->{'digit_count'});
