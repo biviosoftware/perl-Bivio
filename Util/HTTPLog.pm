@@ -254,7 +254,7 @@ sub _initialize {
 	    '::warn:\d+ adjusting allocations',
 	    'HTTP::Form::_parse_header:\d+ unexpected field',
 	    '::warn:\d+ not importing data - transactions already exist',
-	    '::warn:\d+ Message very similar to parent, maybe a loop',
+	    '::warn:\d+ Message very similar to (?:earlier one|parent)',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
