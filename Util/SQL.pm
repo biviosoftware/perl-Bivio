@@ -220,21 +220,12 @@ sub init_realm_role {
     my($cmd);
     my($rr) = $self->new_other('Bivio::Biz::Util::RealmRole');
     foreach my $line (@{$self->realm_role_config}) {
-	# Skip comments and blank cmds
 	next if $line =~ /^\s*(#|$)/;
 	$cmd .= $line;
-
-	# Continuation char at end of line?
 	next if $cmd =~ s/\\$/ /;
-
-	# Parse command
 	my(@args) = split(' ', $cmd);
-
-	# Delete the b-realm-role at the front of the configuration
 	shift(@args);
-
-	# Don't want a user to be loaded, so we use the default user
-	$rr->main('-u', 'user', @args);
+	$rr->main(@args);
         $cmd = '';
     }
     return;
