@@ -2843,11 +2843,11 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_SYNC_IDENTIFY
     )],
     [qw(
-        CLUB_ACCOUNTING_SYNC_IDENTIFY2
+        CLUB_ACCOUNTING_SYNC_IDENTIFY_DETAIL
         246
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/sync/identify2
+        ?/accounting/sync/identify-detail
         Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
         Bivio::Biz::Model::AllMemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_all_active
