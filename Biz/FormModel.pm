@@ -424,6 +424,7 @@ sub get_context_from_request {
     my($model) = $req->unsafe_get('form_model');
 
     # If there is a model, make sure not redirecting
+    my($form, $context);
     if ($model) {
 	my($fields) = $model->{$_PACKAGE};
 	if ($fields->{redirecting}) {
@@ -436,29 +437,33 @@ sub get_context_from_request {
 	    _trace('unwound context: ', $c) if $_TRACE;
 	    return $c;
 	}
+	$form = $model->internal_get_literals;
+	$context = $model->{$_PACKAGE}->{context};
     }
     elsif ($model = $req->get('task')->get('form_model')) {
 	$model = $model->get_instance;
+	($form, $context) = $req->unsafe_get('form', 'context');
     }
 
     # Construct a new context from existing state in request
-    my($res) = {};
-    foreach my $c (qw(form query form_context)) {
-	$res->{$c} = $req->unsafe_get($c);
-    }
-    $res->{unwind_uri} = $req->unsafe_get('uri');
+    my($res) = {
+	form_model => ref($model),
+	form => $form,
+	form_context => $context,
+	query => $req->unsafe_get('query'),
+	unwind_uri => $req->unsafe_get('uri'),
+    };
     my($cancel) = $req->get('task')->unsafe_get('cancel');
 #TODO: Tight coupling to avoid recursion
     $res->{cancel_uri} = Bivio::Agent::HTTP::Location->format($cancel,
 	    $req->get('auth_realm'), $req, 1) if $cancel;
-    $res->{form_model} = ref($model);
 
     # Fix up file fields if any
     my($ff);
-    if ($res->{form} && $model
+    if ($form && $model
 	    && ($ff = $model->internal_get_file_field_names)) {
 	# Need to copy, because we don't want to trash existing form.
-	my($f) = {%{$res->{form}}};
+	my($f) = {%$form};
 
 	# Iterate over file fields
 	foreach my $n (@$ff) {
