@@ -34,10 +34,13 @@ system, so create other methods and "chain" them.
 #=IMPORTS
 use Bivio::Agent::Request;
 use Bivio::Biz::Model::DbUpgrade;
+use Bivio::Biz::Model::MGFSInstrument;
 use Bivio::Collection::Attributes;
 use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
+
+
 
 #=VARIABLES
 
@@ -132,181 +135,25 @@ EOF
     return;
 }
 
-# _fix_cost_basis_for_commissions()
+# _fix_mgfs_names(hash_ref name_map)
 #
-# Changes the external_identifier on commissions to the same as the buy
-# identifier.
+# Takes a map of (bad_name => 'good_name') and updates mgfs_instrument_t
+# and instrument_t.
 #
-sub _fix_cost_basis_for_commissions {
+sub _fix_mgfs_names {
+    my($name_map) = @_;
 
-    # find commission with external_identifier of 0
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_owner_t.name,
-                entry_t.realm_transaction_id, entry_t.entry_id,
-                realm_instrument_entry_t.realm_instrument_id,
-                entry_t.amount
-            FROM realm_owner_t, entry_t, realm_instrument_entry_t
-            WHERE realm_owner_t.realm_id=entry_t.realm_id
-            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND entry_type=?
-            AND external_identifier=?
-            ORDER BY realm_owner_t.name',
-	    [Bivio::Type::EntryType->INSTRUMENT_BUY_COMMISSION->as_sql_param,
-		    '0']);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($name, $txn_id, $entry_id, $inst_id, $amount) = @$row;
-	next if $name =~ /_demo_club$/;
+    my($mgfs_instrument) = Bivio::Biz::Model::MGFSInstrument->new(
+	    Bivio::Agent::Request->get_current_or_new);
+    foreach my $bad_name (keys(%$name_map)) {
+	if ($mgfs_instrument->unsafe_load(name => $bad_name)) {
 
-	my($count) = _fix_cost_basis_get_count($txn_id);
-
-	# find and correct their external_identifier
-	my($lot) = _fix_cost_basis_get_lot($txn_id);
-	next unless $lot;
-
-	print(STDERR "\n$name, lot = $lot, commission = $amount");
-	Bivio::SQL::Connection->execute('
-                UPDATE realm_instrument_entry_t
-                SET external_identifier=?
-                WHERE entry_id=?',
-		[$lot, $entry_id]);
-
-	# find any sales for that lot, and update the cost basis
-	_fix_sale_cost_basis($inst_id, $lot, $count, $amount);
-    }
-    print(STDERR "\n");
-    return;
-}
-
-# _fix_cost_basis_get_count(string txn_id) : string
-#
-# Returns the number of shares bought for the specified transaction.
-#
-sub _fix_cost_basis_get_count {
-    my($txn_id) = @_;
-    my($count);
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT SUM(realm_instrument_entry_t.count)
-            FROM entry_t, realm_instrument_entry_t
-            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND entry_t.realm_transaction_id=?',
-	    [$txn_id]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	$count = $row->[0];
-    }
-
-    die("couldn't find count") unless $count;
-    return $count;
-}
-
-# _fix_cost_basis_get_lot(string txn_id) : string
-#
-# Returns the lot id associated with the transaction.
-#
-sub _fix_cost_basis_get_lot {
-    my($txn_id) = @_;
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_instrument_entry_t.external_identifier
-            FROM entry_t, realm_instrument_entry_t
-            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND entry_t.tax_basis=1
-            AND entry_t.realm_transaction_id=?
-            AND external_identifier != ?
-            AND external_identifier IS NOT NULL',
-	    [$txn_id, '0']);
-    my($lot);
-    while (my $row = $sth->fetchrow_arrayref) {
-	$lot = $row->[0];
-    }
-    unless ($lot) {
-	use Bivio::Biz::Model::RealmTransaction;
-	my($txn) = Bivio::Biz::Model::RealmTransaction->new();
-	$txn->unauth_load_or_die(realm_transaction_id => $txn_id);
-	print(STDERR "\n** skipping lot $txn_id, probable mutual fund, ".
-		Bivio::Type::Date->to_literal($txn->get('date_time'))." **");
-    }
-    return $lot;
-}
-
-# _fix_sale_cost_basis(string inst_id, string lot, string count, string amount)
-#
-# Updates any sale for the specified lot
-#
-sub _fix_sale_cost_basis {
-    my($inst_id, $lot, $count, $amount) = @_;
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT entry_t.realm_transaction_id, entry_t.entry_id,
-                - realm_instrument_entry_t.count,
-                - entry_t.amount
-            FROM entry_t, realm_instrument_entry_t
-            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND entry_t.tax_basis=1
-            AND entry_type=?
-            AND realm_instrument_entry_t.realm_instrument_id=?
-            and external_identifier=?',
-	    [Bivio::Type::EntryType->INSTRUMENT_SELL->as_sql_param,
-		    $inst_id, $lot]);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($txn_id, $entry_id, $sell_count, $sell_amount) = @$row;
-	my($adjustment);
-	# risky, could be a split followed by a partial sale
-	if ($sell_count >= $count) {
-	    $adjustment = $amount;
+	    # this will all synchronize with the instrument_t table
+	    $mgfs_instrument->update({name => $name_map->{$bad_name}});
 	}
 	else {
-	    $adjustment = Bivio::Type::Amount->round(
-		    Bivio::Type::Amount->mul($amount,
-		    Bivio::Type::Amount->div($sell_count, $count)), 2);
+	    print(STDERR "\nmgfs_instrument name '$bad_name' not found\n");
 	}
-	print(STDERR "\n\tadjust cost basis, $sell_amount by $adjustment ".
-		"($sell_count, $count)");
-
-	Bivio::SQL::Connection->execute('
-                UPDATE entry_t
-                SET amount=?
-                WHERE entry_id=?',
-		[Bivio::Type::Amount->neg(
-			Bivio::Type::Amount->add($sell_amount, $adjustment)),
-			$entry_id]);
-
-	_fix_sale_update_gain($txn_id, $adjustment);
-    }
-    return;
-}
-
-# _fix_sale_update_gain(string txn_id, string adjustment)
-#
-# Fixes the gain associated with the transaction by the adjustment amount.
-#
-sub _fix_sale_update_gain {
-    my($txn_id, $adjustment) = @_;
-    my($tax) = 'Bivio::Type::TaxCategory';
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT entry_id, amount
-            FROM entry_t
-            WHERE realm_transaction_id=?
-            AND tax_category in (?,?,?)',
-	    [$txn_id, $tax->SHORT_TERM_CAPITAL_GAIN->as_sql_param,
-		    $tax->MEDIUM_TERM_CAPITAL_GAIN->as_sql_param,
-		    $tax->LONG_TERM_CAPITAL_GAIN->as_sql_param]);
-    my($count) = 0;
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($entry_id, $amount) = @$row;
-	if ($count == 0) {
-	    print(STDERR "\n\tadjust gain $amount - $adjustment");
-	    Bivio::SQL::Connection->execute('
-                    UPDATE entry_t
-                    SET amount=?
-                    WHERE entry_id=?',
-		    [Bivio::Type::Amount->sub($amount, $adjustment),
-			    $entry_id]);
-	}
-	$count++;
-    }
-    if ($count > 1) {
-	print(STDERR "\n** found > 1 gain type, applied to first **");
     }
     return;
 }
@@ -317,15 +164,154 @@ sub _fix_sale_update_gain {
 #
 sub _upgrade {
 
+    use Bivio::Auth::RealmType;
     use Bivio::Agent::Request;
     use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Data::EW::DateCalculator;
+    use Bivio::Data::EW::ClubImporter;
+    use Bivio::Type::EntryType;
+
+    # add start_date to club_t
+    _do('
+ALTER TABLE club_t
+    ADD start_date DATE
+/
+');
+
+    # add country to realm_instrument_t
+    _do('
+ALTER TABLE realm_instrument_t
+    ADD country CHAR(2)
+/
+');
+
+    # create the tax_1065_t and tax_k1_t tables
+    _do('
+CREATE TABLE tax_1065_t (
+  realm_id NUMBER(18),
+  fiscal_end_date DATE,
+  partnership_type NUMBER(2),
+  partner_is_partnership NUMBER(1),
+  partnership_is_partner NUMBER(1),
+  consolidated_audit NUMBER(1),
+  publicly_traded NUMBER(1),
+  tax_shelter NUMBER(1),
+  foreign_account_country CHAR(2),
+  foreign_trust NUMBER(1),
+  return_type NUMBER(2)
+  allocation_method NUMBER(2),
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+/
+
+CREATE TABLE tax_k1_t (
+  realm_id NUMBER(18),
+  user_id NUMBER(18),
+  fiscal_end_date DATE,
+  entity_type NUMBER(3),
+  irs_center NUMBER(3),
+  partner_type NUMBER(2),
+  foreign_partner NUMBER(1)
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+/
+
+ALTER TABLE tax_1065_t ADD primary key(realm_id, fiscal_end_date)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE tax_1065_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE tax_1065_t add check (partner_is_partnership between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (partnership_is_partner between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (consolidated_audit between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (publicly_traded between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (tax_shelter between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (foreign_trust between 0 and 1)
+/
+ALTER TABLE tax_1065_t add check (partnership_type between 0 and 5)
+/
+ALTER TABLE tax_1065_t add check (return_type between 0 and 4)
+/
+ALTER TABLE tax_1065_t add check (allocation_method between 1 and 2)
+/
+ALTER TABLE tax_1065_t modify partner_is_partnership not null
+/
+ALTER TABLE tax_1065_t modify partnership_is_partner not null
+/
+ALTER TABLE tax_1065_t modify consolidated_audit not null
+/
+ALTER TABLE tax_1065_t modify publicly_traded not null
+/
+ALTER TABLE tax_1065_t modify tax_shelter not null
+/
+ALTER TABLE tax_1065_t modify foreign_trust not null
+/
+ALTER TABLE tax_1065_t modify return_type not null
+/
+ALTER TABLE tax_1065_t modify allocation_method not null
+/
+
+ALTER TABLE tax_k1_t ADD primary key(realm_id, user_id, fiscal_end_date)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE tax_k1_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE tax_k1_t
+  add foreign key (user_id)
+    references user_t(user_id)
+/
+ALTER TABLE tax_k1_t add check (entity_type between 0 and 12)
+/
+ALTER TABLE tax_k1_t add check (irs_center between 0 and 10)
+/
+ALTER TABLE tax_k1_t add check (partner_type between 0 and 3)
+/
+ALTER TABLE tax_k1_t add check (foreign_partner between 0 and 1)
+/
+ALTER TABLE tax_k1_t modify entity_type not null
+/
+ALTER TABLE tax_k1_t modify irs_center not null
+/
+ALTER TABLE tax_k1_t modify partner_type not null
+/
+ALTER TABLE tax_k1_t modify foreign_partner not null
+/
+
+CREATE INDEX tax_1065_realm_i ON tax_1065_t (
+  realm_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+
+CREATE INDEX tax_k1_realm_i ON tax_k1_t (
+  realm_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+');
 
     my($req) = Bivio::Agent::Request->get_current_or_new;
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
     my($sth) = Bivio::SQL::Connection->execute('
-            SELECT club_id
-            FROM club_t',[]);
+            SELECT realm_owner_t.realm_id
+            FROM realm_owner_t
+            WHERE realm_owner_t.realm_type=?
+            ORDER BY realm_owner_t.name',
+	    [Bivio::Auth::RealmType::CLUB()->as_sql_param]);
     while (my $row = $sth->fetchrow_arrayref) {
 	$realm->unauth_load(realm_id => $row->[0])
 		|| die("couldn't load realm ".$row->[0]);
@@ -333,12 +319,21 @@ sub _upgrade {
 
 	print(STDERR $realm->get('name')."\n");
 
-	# compute instrument acquisition dates
-	print(STDERR "\tcomputing acquisition dates\n");
-	Bivio::Data::EW::DateCalculator->generate_acquisition_dates($realm);
+	# set tax free interest where appropriate
+	print(STDERR "\tupdating tax free interest\n");
+	Bivio::Data::EW::ClubImporter->update_tax_free_interest($realm);
     }
 
-    _fix_cost_basis_for_commissions();
+    # update all withdrawal fees, changing the sign
+    Bivio::SQL::Connection->execute('
+            UPDATE entry_t
+            SET amount = -amount
+            WHERE entry_id in (
+                SELECT entry_id
+                FROM entry_t
+                WHERE entry_type=?)',
+	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()->as_sql_param]);
+
     return;
 }
 
