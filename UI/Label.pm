@@ -188,7 +188,7 @@ _compile(\%_MAP, [
     NAME_TICKER => 'Name',
     ['FED_TAX_FREE', 'RealmInstrument.fed_tax_free']
         => 'Federal Tax Free',
-    VALUATION_SEARCH_DATE => 'Date',
+    ['VALUATION_SEARCH_DATE', 'InstrumentSpinoff.spinoff_date'] => 'Date',
     IMPORT_USER_INFO => 'Import User Information',
     WANT_SSN => 'Social Security Numbers',
     WANT_PHONE => 'Telephone Numbers',
@@ -310,6 +310,13 @@ _compile(\%_MAP, [
     FOREIGN_INCOME_COUNTRY_HEADING => '17a. Country',
     FOREIGN_INCOME_HEADING => "17c(1). Passive\nForeign Gross Income",
     FOREIGN_TAXES_PAID_HEADING => "17f. Total Foreign\nTaxes Paid",
+    SOURCE_NAME => 'Source',
+    NEW_NAME => 'New Security',
+    'InstrumentSpinoff.remaining_basis' => 'Remaining Basis',
+    'InstrumentSpinoff.new_shares_ratio' => 'New Shares Ratio',
+    'InstrumentSpinoff_remaining_basis_HEADING' => "Remaining\nBasis",
+    'InstrumentSpinoff_new_shares_ratio_HEADING' => "New Shares\nRatio",
+    NEW_TICKER_SYMBOL => 'New Ticker Symbol',
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => 'Accounting Reports',
@@ -397,6 +404,8 @@ _compile(\%_MAP, [
 
     # Tasks (sorted alphabetically)
     ADM_REALM_NOTICE_LIST => 'Notices',
+    ADM_SPINOFF_CREATE => 'Create New Spin-off Information',
+    ADM_SPINOFFS => 'Spin-offs',
     CLUB_ACCOUNTING_ACCOUNT_DETAIL => 'Account Detail',
     CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => 'Account Dividend',
     CLUB_ACCOUNTING_ACCOUNT_EXPENSE => 'Account Expense',
