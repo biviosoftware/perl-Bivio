@@ -695,6 +695,7 @@ field.
 =cut
 
 sub internal_field_constraint_error {
+    return;
 }
 
 =for html <a name="internal_get_field_values"></a>
