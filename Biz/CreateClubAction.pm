@@ -96,17 +96,14 @@ sub execute {
 		}
 	    }
 	    my($bbmm) = Bivio::Biz::Mail::Message->new();
-	    $bbmm->setup_club($bbmm);
+	    $bbmm->setup_club($club);
 	}
     };
 
     # check for exceptions
     if ($@) {
 	Bivio::Biz::SqlConnection->rollback();
-	&_trace($@);
-
-	# probably want to raise an alert - something crashed.
-	return 0;
+	die($@);
     }
 
     if ($club->get_status()->is_OK()) {
@@ -115,7 +112,7 @@ sub execute {
     }
 
     Bivio::Biz::SqlConnection->rollback();
-    return 0;
+    die(join("\n", map {$_->get_message} @{$club->get_status->get_errors}));
 }
 
 #=PRIVATE METHODS

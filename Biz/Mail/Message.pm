@@ -180,26 +180,6 @@ sub configure {
     return;
 }
 
-=for html <a name="create_club"></a>
-
-=head2 create_club(Bivio::Biz::Club club)
-
-Creates the club message storage area.
-
-=cut
-
-sub create_club {
-    my($self, $club) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($res);
-    my($id) = $club->get('id');
-    my($dir);
-    foreach $dir ($id, "$id/mbox", "$id/messages") {
-	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
-    }
-    return;
-}
-
 =for html <a name="delete"></a>
 
 =head2 delete() : boolean
@@ -289,6 +269,26 @@ Returns the mail subject.
 sub get_title {
     my($self) = @_;
     return $self->get('subject');
+}
+
+=for html <a name="setup_club"></a>
+
+=head2 setup_club(Bivio::Biz::Club club)
+
+Creates the club message storage area.
+
+=cut
+
+sub setup_club {
+    my($self, $club) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($res);
+    my($id) = $club->get('id');
+    my($dir);
+    foreach $dir ($id, "$id/mbox", "$id/messages") {
+	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
+    }
+    return;
 }
 
 =for html <a name="update"></a>
