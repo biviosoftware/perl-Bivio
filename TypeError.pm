@@ -34,7 +34,6 @@ C<Bivio::TypeError> is a list of problems converting types.
 #=IMPORTS
 
 #=VARIABLES
-
 __PACKAGE__->compile(
     UNKNOWN => [
 	0,
@@ -140,6 +139,16 @@ __PACKAGE__->compile(
 	20,
 	undef,
 	'must be greater than zero',
+    ],
+    ENUM => [
+	21,
+	undef,
+	'invalid enumerated type literal',
+    ],
+    NOT_FOUND => [
+	22,
+	undef,
+	'value not found',
     ],
 );
 
