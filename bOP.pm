@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    configuration by merging arrays of values with defaults.
+  * Bivio::IO::Config->merge prefixes arrays in values if parameter
+    (merge_arrays) is passed.
 
   Revision 1.48  2003/03/23 13:37:19  nagler
   * Bivio::UI::HTML::Widget::Hidden allows you to add hidden fields.
