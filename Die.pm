@@ -51,6 +51,7 @@ use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Carp ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -251,6 +252,8 @@ If I<code> is a string or string_ref, will be evaled in the caller's package.
 NOTE: Warnings are not suppressed during code execution.
 
 $_ is localized in this call.  Do not assume it will be modified by I<code>.
+
+Returns C<undef> in the event of an error, just like C<CORE::eval>.
 
 =cut
 
