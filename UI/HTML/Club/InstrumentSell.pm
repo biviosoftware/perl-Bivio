@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::InstrumentSell - sell an instrument
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::PageForm>
+L<Bivio::UI::HTML::DescriptivePage>
 
 =cut
 
-use Bivio::UI::HTML::PageForm;
-@Bivio::UI::HTML::Club::InstrumentSell::ISA = ('Bivio::UI::HTML::PageForm');
+use Bivio::UI::HTML::DescriptivePage;
+@Bivio::UI::HTML::Club::InstrumentSell::ISA = ('Bivio::UI::HTML::DescriptivePage');
 
 =head1 DESCRIPTION
 
@@ -31,14 +31,8 @@ C<Bivio::UI::HTML::Club::InstrumentSell>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::RealmInstrument;
-use Bivio::UI::HTML::Club::Page;
-use Bivio::UI::HTML::Widget::Currency;
-use Bivio::UI::HTML::Widget::DateField;
-use Bivio::UI::HTML::Widget::Director;
-use Bivio::UI::HTML::Widget::FormFieldLabel;
-use Bivio::UI::HTML::Widget::Join;
-use Bivio::UI::HTML::Widget::TextArea;
+use Bivio::Type::Date;
+use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -47,75 +41,54 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="create_fields"></a>
+=for html <a name="create_content"></a>
 
-=head2 create_fields() : array_ref
+=head2 create_content()
 
-Create Grid I<values> for this form.
+Returns the form.
 
 =cut
 
-sub create_fields {
+sub create_content {
     my($self) = @_;
-
-    my($blank_cell) = Bivio::UI::HTML::Widget::Join->new({
-	values => ['&nbsp;']});
-    return [
-	[
-	    $self->create_caption('Date',
-		    Bivio::UI::HTML::Widget::DateField->new({
-			field => 'RealmTransaction.date_time',
-		    })),
-	    $blank_cell,
-	    $self->create_caption('Account',
-		    Bivio::UI::HTML::Widget::Select->new({
-			field => 'RealmAccountEntry.realm_account_id',
+    $self->put_heading('CLUB_ACCOUNTING_INVESTMENT_SELL');
+    return $self->join(
+	    # a dynamic heading
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['realm_inst_name'],
+	    }),
+	    ' (page 1 / 2)<p>',
+	    $self->form('Bivio::Biz::Model::InstrumentSellForm', [
+	    ['RealmTransaction.date_time', undef, <<'EOF'],
+Enter the date of the sale.
+EOF
+	    ['RealmAccountEntry.realm_account_id', undef, <<'EOF', undef,
+Select the account which received the money from the sale.
+EOF
+		    {
 			choices => [
 				'Bivio::Biz::Model::RealmValuationAccountList',
 			       ],
 			list_display_field => 'RealmAccount.name',
 			list_id_field => 'RealmAccount.realm_account_id',
-		    })),
-	],
-	[
-	    $self->create_caption('# of Shares',
-		    Bivio::UI::HTML::Widget::Currency->new({
-			field => 'RealmInstrumentEntry.count',
-			size => 10,
-		    })),
-	    $blank_cell,
-	    $self->create_caption('Price/Share',
-		    Bivio::UI::HTML::Widget::Currency->new({
-			field => 'RealmInstrumentValuation.price_per_share',
-			size => 10,
-		    })),
-	],
-	[
-	    $self->create_caption('Commission',
-		    Bivio::UI::HTML::Widget::Currency->new({
-			field => 'commission',
-			size => 10,
-		    })),
-	],
-	[
-	    Bivio::UI::HTML::Widget::Join->new({
-		cell_expand => 1,
-		values => [
-			Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			    label => 'Remark',
-			    field => 'RealmTransaction.remark',
-			}),
-			'<br>',
-			Bivio::UI::HTML::Widget::TextArea->new({
-			    cell_expand => 1,
-			    field => 'RealmTransaction.remark',
-			    rows => 3,
-			    cols => 40,
-			}),
-		],
-	    }),
-	],
-    ];
+		    }
+	    ],
+	    ['Entry.amount', 'Total Amount', <<'EOF'],
+Enter the total amount of the sale excluding commission,
+which is entered below.  The per share price will be computed
+from this value.
+EOF
+	    ['RealmInstrumentEntry.count', undef, <<'EOF'],
+Enter the number of shares or bonds sold.
+EOF
+	    ['commission', undef, <<'EOF'],
+Enter the broker's commission charge for the sale.
+EOF
+	    ['RealmTransaction.remark', undef, <<'EOF'],
+Enter any notes associated with the sale.
+EOF
+    ],
+    ));
 }
 
 =for html <a name="execute"></a>
@@ -142,28 +115,14 @@ sub execute {
 	}
     }
 
+    # set the dynamic heading and call the super class
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
-
-    $req->put(page_heading => 'Record Sale: '.$realm_inst->get_name
-	    .' (page 1 / 2)',
-	    page_subtopic => undef,
-	    page_content => $self);
-    Bivio::UI::HTML::Club::Page->execute($req);
-    return;
-}
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Sets attributes on self used by SUPER.
-
-=cut
-
-sub initialize {
-    my($self) = @_;
-    $self->put(form_model => ['Bivio::Biz::Model::InstrumentSellForm']);
-    $self->SUPER::initialize;
+    my($realm) = $req->get('auth_realm')->get('owner');
+    my($shares_owned) = $realm->get_number_of_shares(Bivio::Type::Date->now)
+	    ->{$realm_inst->get('realm_instrument_id')};
+    $req->put(realm_inst_name => $realm_inst->get_name
+	    .", $shares_owned shares owned");
+    $self->SUPER::execute($req);
     return;
 }
 
