@@ -87,14 +87,7 @@ affect the external representation, just the implementation of the query.
 
 You can order this model by I<RealmOwner.name>, I<ClubUser.mail_mode>, or
 I<RealmUser.role>.  While it may not make the most sense to order by
-I<ClubUser.mail_mode>, it is allowed and "why not?".  The restriction on
-C<order_by> is that the field may not be null and is ordered in a
-way which is visible to the user.  Ordering by PrimaryId makes no
-sense, because the user shouldn't every see primary ids.
-
-The I<User.last_name> isn't an C<order_by> field, because it can be null.
-We put it in C<other>, so that it is available to be presented to the
-user.
+I<ClubUser.mail_mode>, it is allowed and "why not?".
 
 The I<User.user_id> and its aliases
 I<ClubUser.user_id>, I<RealmOwner.realm_id>, and I<RealmUser.user_id>,
@@ -161,7 +154,7 @@ A list of fields and field identities that have no ordering.
 =item order_by : array_ref
 
 A list of fields and field identities that can be used to sort
-the result.  order_by values must not be null.
+the result.
 
 =item parent_id : array_ref
 
@@ -325,14 +318,9 @@ sub _init_column_classes {
     # primary keys and initialize primary_key_map.
     __PACKAGE__->init_model_primary_key_maps($attrs);
 
-    # order_by may be empty and stays in specified order.  Update some avlues
+    # order_by may be empty and stays in specified order.
     my($i) = 0;
     foreach my $c (@{$attrs->{order_by}}) {
-	my($cc) = $c->{constraint};
-#TODO: If SQL::Constraint changes, this will probably break.
-#      SQL::Constraint really is a set.
-	Carp::croak($c->{name}, ": order_by must not be nullable")
-		    if $cc == Bivio::SQL::Constraint::NONE();
 	$c->{order_by_index} = $i++;
     }
 
