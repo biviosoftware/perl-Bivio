@@ -73,7 +73,7 @@ commands:
     enable_service service ... -- enables service
     rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
-    serial_console -- configure grub and init for serial port console
+    serial_console [speed] -- configure grub and init for serial port console
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
 }
@@ -498,27 +498,39 @@ sub rhn_up2date_param {
 
 =for html <a name="serial_console"></a>
 
-=head2 serial_console() : string
+=head2 serial_console(string speed) : string
 
 Makes a serial console on ttyS0.  Modifies grub.conf, securetty, and
-inittab.   May be called repeatedly.
+inittab.   May be called repeatedly.  I<speed> defaults to 38400.
 
 =cut
 
 sub serial_console {
-    my($self) = @_;
-    return _edit($self, '/etc/securetty', ['$', "ttyS0\n"])
-	. _edit($self, '/etc/inittab', ['(?<=getty tty6\n)',
-	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
+    my($self, $speed) = @_;
+    $speed ||= '38400';
+    return _edit($self, '/etc/securetty', ['$', "ttyS0\n", "ttyS0\n"])
+	. _edit($self, '/etc/inittab',
+	    ['(?<=getty tty6\n)(S0:[^\n]+\n)?',
+		"S0:2345:respawn:/sbin/agetty ttyS0 $speed\n",
+		'S0.*agetty',
+	    ],
+	    ["ttyS0 \\d+\n", "ttyS0 $speed\n"],
+	   )
         . _edit($self, '/etc/grub.conf',
 	    ['(?<!\#)splashimage', '#splashimage'],
-	    ["(?=\n\tinitrd)", ' console=ttyS0,38400'],
-	    ["\ntimeout=10\n", <<'EOF']);
-
-timeout=5
-serial --unit=0 --speed=38400
-terminal --timeout=1 serial
-EOF
+	    ["(?=\n\tinitrd)", " console=ttyS0,$speed",
+		'console=ttyS0,'
+	    ],
+	    ['console=ttyS0,\d+', "console=ttyS0,$speed"],
+	    ["\ntimeout=\\d+\n", "\ntimeout=5\n"],
+	    ["(?<=\ntimeout=5\n)", "serial --unit=0 --speed=$speed\n",
+		"serial --unit=0 --speed=",
+	    ],
+  	    ['serial --unit=0 --speed=\d+', "serial --unit=0 --speed=$speed"],
+  	    ["(?<=serial --unit=0 --speed=$speed\n)",
+  		"terminal --timeout=1 serial\n",
+  	    ],
+        );
 }
 
 =for html <a name="sshd_param"></a>
