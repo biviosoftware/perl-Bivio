@@ -1237,6 +1237,24 @@ sub validate_not_null {
     return;
 }
 
+=for html <a name="validate_not_zero"></a>
+
+=head2 validate_not_zero(string field)
+
+Ensures the specified field isn't 0. Puts an error on the form if it fails.
+
+=cut
+
+sub validate_not_zero {
+    my($self, $field) = @_;
+    my($value) = $self->get($field);
+    return unless defined($value);
+
+    $self->internal_put_error($field, Bivio::TypeError::NOT_ZERO())
+	    if $value == 0;
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _apply_type_error(Bivio::Biz::FormModel self, Bivio::Die die)
