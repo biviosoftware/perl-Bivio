@@ -24,8 +24,11 @@ C<Bivio::Biz::Action::CreateClub> creates a club and its administrator.
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RealmType;
 use Bivio::Biz::Action::CreateClubUser;
 use Bivio::Biz::PropertyModel::ClubUser;
+use Bivio::Biz::PropertyModel::Club;
+use Bivio::Biz::PropertyModel::RealmOwner;
 use Bivio::Biz::PropertyModel::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
@@ -54,11 +57,18 @@ sub execute {
     my($user) = $req->get('auth_user');
 
     my($values) = $req->get_fields('form', \@_ALLOWED_FIELDS);
+    my($name) = $values->{name};
     my($club) = Bivio::Biz::PropertyModel::Club->new($req);
     # There has to be an auth_user or can't create a club
-    $values->{'bytes_in_use'} = 0;
-    $values->{'bytes_max'} = 8 * 1024 * 1024;
+    $values->{'kbytes_in_use'} = 0;
+    $values->{'max_storage_kbytes'} = 8 * 1024;
     $club->create($values);
+    my($club_id) = $club->get('club_id');
+
+    my($realm_owner) = Bivio::Biz::PropertyModel::RealmOwner->new($req);
+    $realm_owner->create({name => $name,
+	realm_id => $club_id,
+	realm_type => Bivio::Auth::RealmType::CLUB()});
 
     # Create the first club user, the auth_user as administrator
     $req->get('form')->{role} = Bivio::Auth::Role::ADMINISTRATOR->as_int;

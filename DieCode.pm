@@ -81,47 +81,47 @@ authentication required: user must authenticate first before proceeding
 
 #=VARIABLES
 __PACKAGE__->compile(
-    'UNKNOWN' => [
+    UNKNOWN => [
     	0,
 	'unknown',
 	'unexpected error',
     ],
-    'NOT_FOUND' => [
+    NOT_FOUND => [
     	1,
 	'not found',
 	'entity was not found',
     ],
-    'ALREADY_EXISTS' => [
+    ALREADY_EXISTS => [
     	2,
 	'already exists',
 	'attempt to create an entity which already exists',
     ],
-    'FORBIDDEN' => [
+    FORBIDDEN => [
     	3,
 	'no permission',
 	'operation is not allowed on entity',
     ],
-    'CATCH_WITHIN_DIE' => [
+    CATCH_WITHIN_DIE => [
     	4,
 	'catch called within die',
 	'Bivio::Die::catch was called within a call to die',
     ],
-    'INVALID_DIE_CODE' => [
+    INVALID_DIE_CODE => [
     	5,
 	'invalid die code',
 	'code passed to Bivio::Die->die is not an Bivio::Type::Enum',
     ],
-    'DIE' => [
+    DIE => [
     	6,
 	'internal error',
 	'CORE::die was caught by Bivio::Die->catch',
     ],
-    'DIE_WITHIN_HANDLE_DIE' => [
+    DIE_WITHIN_HANDLE_DIE => [
     	7,
 	'die within handle_die',
 	'CORE::die was called while handling an existing die',
     ],
-    'AUTH_REQUIRED' => [
+    AUTH_REQUIRED => [
     	8,
 	'authentication required',
 	'user must authenticate first before proceeding',

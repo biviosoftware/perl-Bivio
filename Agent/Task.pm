@@ -177,6 +177,8 @@ and discard the mail queue.
 
 sub handle_die {
     my($proto, $die_msg) = @_;
+#TODO: Need to undo mkdir in MailMessag.  Probably push on stack of
+#      commit handlers...
     # Only rollback if there was an action
     if (ref($proto) eq __PACKAGE__ && $proto->{$_PACKAGE}->{action_class}) {
 	Bivio::SQL::Connection->rollback;

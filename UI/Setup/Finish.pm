@@ -41,7 +41,7 @@ use Bivio::Agent::TaskId;
 sub execute {
     my($self, $req) = @_;
     $self->activate->render(
-	    $req->get('Bivio::Biz::PropertyModel::Club'), $req);
+	    $req->get('Bivio::Biz::PropertyModel::RealmOwner'), $req);
     return;
 }
 
@@ -54,13 +54,13 @@ Shows the congratulatory view.
 =cut
 
 sub render {
-    my($self, $club, $req) = @_;
+    my($self, $realm_owner, $req) = @_;
     my($reply) = $req->get_reply();
 
     $reply->print('<table border=0><tr><td>');
 
     # Club created.  Need to switch realms.
-    my($realm) = Bivio::Auth::Realm::Club->new($club);
+    my($realm) = Bivio::Auth::Realm::Club->new($realm_owner);
     $reply->print('<form action='
 	    .$req->format_uri(Bivio::Agent::TaskId::CLUB_MEMBER_LIST,
 		   undef, $realm)

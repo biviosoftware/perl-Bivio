@@ -38,7 +38,7 @@ use Bivio::Biz::Model;
 C<Bivio::Biz::PropertyModel> is the complement to L<Bivio::Biz::ListModel>
 and represents a row of data from storage. Each field is accessed by
 name using the L<"get"> method. Field type information is available
-by invoking L<"get_field_descriptor">. PropertyModel has several
+by invoking L<"get_field_type">. PropertyModel has several
 lifecycle methods for interacting with storage: L<"create">, L<"delete">,
 and L<"update">.
 
@@ -96,11 +96,10 @@ sub new {
     my($class) = ref($self);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
-    my($properties) = {};
-    local($_);
-    foreach (keys(%{$ci->{property_info}})) {
-	$properties->{$_} = undef;
-    }
+    my($properties) = {map {
+	    ($_, undef);
+	} @{$ci->{sql_support}->get_column_names}
+    };
     $self->{$_PACKAGE} = {
 	request => $req,
 	properties => $properties,
@@ -136,15 +135,20 @@ sub as_string {
 =head2 create(hash new_values)
 
 Creates a new model in the database with the specified values. After creation,
-this instance has the same values.  Dies on error.
+this instance takes ownership of I<new_values>.  Dies on error.
 
 =cut
 
 sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{class_info}->{sql_support}->create(
-	    $self, $fields->{properties}, $new_values);
+    my($sql_support) = $fields->{class_info}->{sql_support};
+    # Make sure all columns are defined
+    foreach (@{$sql_support->get_column_names}) {
+	$new_values->{$_} = undef unless exists($new_values->{$_});
+    }
+    $sql_support->create($new_values, $self);
+    $fields->{properties} = $new_values;
     $self->get_request->put(ref($self), $self);
     return;
 }
@@ -159,11 +163,8 @@ Deletes the current model from the database.   Dies on error.
 
 sub delete {
     my($self) = @_;
-#TODO: Should the fields be nulled?
     my($fields) = $self->{$_PACKAGE};
-    my($ci) = $fields->{class_info};
-    $ci->{sql_support}->delete($self, $ci->{primary_where},
-	    $self->get(@{$ci->{primary_keys}}));
+    $fields->{class_info}->{sql_support}->delete($fields->{properties}, $self);
     return;
 }
 
@@ -190,19 +191,6 @@ sub get {
     return $res[0];
 }
 
-=for html <a name="get_field_descriptor"></a>
-
-=head2 get_field_descriptor(string name) : FieldDescriptor
-
-Returns the descriptor for the named field. See L<Bivio::Biz::FieldDescriptor>.
-
-=cut
-
-sub get_field_descriptor {
-    my($self, $name) = @_;
-    return &_get_property_info_value($self, $name, 1);
-}
-
 =for html <a name="get_field_names"></a>
 
 =head2 get_field_names() : array
@@ -218,6 +206,17 @@ sub get_field_names {
     my($fields) = $self->{$_PACKAGE};
     my(@names) = keys(%{$fields->{properties}});
     return \@names;
+}
+
+=for html <a name="get_field_type"></a>
+
+=head2 get_field_type(string name) : Bivio::Type
+
+=cut
+
+sub get_field_type {
+    my($sql_support) = shift->{$_PACKAGE}->{class_info}->{sql_support};
+    return $sql_support->get_column_type(@_);
 }
 
 =for html <a name="get_request"></a>
@@ -245,7 +244,6 @@ method (enforced).
 sub internal_get_fields {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-
     caller(0)->isa($_PACKAGE) || Carp::croak("protected method");
     return $fields->{properties};
 }
@@ -305,17 +303,9 @@ sub unauth_load {
     my($fields) = $self->{$_PACKAGE};
     my($ci) = $fields->{class_info};
     # Don't bother checking query.  Will kick back if empty.
-
-    # Create the where clause
-    my($where, @values);
-    while (my($k, $v) = each(%query)) {
-	Carp::croak('invalid field name syntax') unless $k =~ /^\w{1,32}$/;
-	$where .= (defined($where) ? ' and ' : 'where ') . $k . '=?';
-	push(@values, $v);
-    }
-
-    return 0 unless $ci->{sql_support}->unsafe_load(
-	    $self, $fields->{properties}, $where, @values);
+    my($values) = $ci->{sql_support}->unsafe_load(\%query, $self);
+    return 0 unless $values;
+    $fields->{properties} = $values;
     # If found, put a reference to this model in request
     $self->get_request->put(ref($self), $self);
     return 1;
@@ -341,8 +331,8 @@ sub unsafe_load {
 
     # Ensure we are only getting data from the realm we are authorized
     # to operate in.
-    my($k, $v) = $req->unsafe_get('auth_owner_id_field', 'auth_owner_id');
-    # Will override existing value for auth_owner if any
+    my($k, $v) = $req->unsafe_get('auth_id_field', 'auth_id');
+    # Will override existing value for auth_id if any
     return $self->unauth_load(@_, $k ? ($k, $v) : ());
 }
 
@@ -358,47 +348,26 @@ NOTE: find should be called prior to an update.
 sub update {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($ci) = $fields->{class_info};
-    my($pk) = $ci->{primary_keys};
     my($properties) = $fields->{properties};
-    # Ensure primary keys aren't different in new_values from properties
-    # or SQL::Support will try to update them.
-    map {$new_values->{$_} = $properties->{$_}} @$pk;
-    $ci->{sql_support}->update($self, $properties,
-	    $new_values, $ci->{primary_where}, $self->get(@$pk));
+    $fields->{class_info}->{sql_support}->update($properties,
+	    $new_values, $self);
+    foreach (keys(%$new_values)) {
+	$properties->{$_} =  $new_values->{$_};
+    }
     return;
 }
 
 #=PRIVATE METHODS
 
-# _get_property_info_value(self, string name, int index) : any
-#
-# Returns the value at the specified index of the named property's
-# configuration
-
-sub _get_property_info_value {
-    my($self, $name, $index) = @_;
-    my($property_info) = $self->{$_PACKAGE}->{class_info}->{property_info};
-    my($property) = $property_info->{$name};
-    Carp::croak("$name: unknown property") unless $property;
-    return $property->[$index];
-}
-
 sub _initialize_class_info {
     my($class) = @_;
-    my($ci) = $class->internal_initialize;
-    $_CLASS_INFO{$class} = $ci = {
-	property_info => $ci->[0],
-	sql_support => $ci->[1],
-	primary_keys => $ci->[2],
+    my($sql_support) = $class->internal_initialize;
+    my($ci) = $_CLASS_INFO{$class} = {
+	sql_support => $sql_support,
+	as_string_fields => [@{$sql_support->get_primary_key_names}],
     };
-    $ci->{sql_support}->initialize;
-    $ci->{primary_where} = 'where ' . join(' and ',
-	    map {$_ . '=?'} @{$ci->{primary_keys}});
-    # sort is so as_string is always in the same order
-    $ci->{as_string_fields} = [sort @{$ci->{primary_keys}}];
     unshift(@{$ci->{as_string_fields}}, 'name')
-	    if defined($ci->{property_info}->{name})
+	    if $sql_support->has_columns('name')
 		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
     return;
 }

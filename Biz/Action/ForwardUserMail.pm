@@ -49,12 +49,15 @@ Forwards the email to the owner of the auth_realm.
 
 sub execute {
     my(undef, $req) = @_;
-    my($user) = $req->get('auth_realm')->get('owner');
+    my($user_id) = $req->get('auth_id');
+#TODO: This probably should be RealmType
     die('auth_realm not a user')
-	    unless ref($user) eq 'Bivio::Biz::PropertyModel::User';
+	    unless $req->get('auth_id_field') eq 'user_id';
+    my($user) = Bivio::Biz::PropertyModel::User->new($req);
+    $user->load(user_id => $user_id);
     my($msg) = $req->get('message');
-    &_trace('user mail ', $user->get('name'), ': ',
-	    $msg->get_message_id) if $_TRACE;
+    &_trace($req->get('auth_realm')->get('owner'),
+	    ': ', $msg->get_message_id) if $_TRACE;
     (my($addrs) = $user->get_email_addresses()) || return;
     $msg->set_recipients($addrs);
     $msg->enqueue_send;

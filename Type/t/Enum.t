@@ -53,15 +53,37 @@ __PACKAGE__->compile(
     ],
 );
 
-sub is_continuous { return 0; }
+sub IS_CONTINUOUS { return 0; }
+
+1;
+
+package Bivio::Type::Enum::T3;
+
+use Bivio::Type::Enum;
+@Bivio::Type::Enum::T3::ISA = qw(Bivio::Type::Enum);
+
+__PACKAGE__->compile(
+    'E123456789' => [
+    	-123456789,
+    ],
+);
 
 1;
 
 package main;
 
+my($T) = 2;
+sub t {
+    print shift(@_) ? "ok $T\n" : ("not ok $T at line ", (caller)[2], "\n");
+    $T++;
+}
+
 my($t1) = Bivio::Type::Enum::T1->E0;
-print $t1->min eq $t1->E0 && $t1->max eq $t1->E2
-	? "ok 2\n" : "not ok 2\n";
+t($t1->MIN eq $t1->E0 && $t1->MAX eq $t1->E2);
+t($t1->CAN_BE_ZERO && $t1->CAN_BE_POSITIVE && !$t1->CAN_BE_NEGATIVE);
+t($t1->WIDTH == 2);
+t($t1->PRECISION == 1);
+
 my($i);
 my($not_done) = 3;
 foreach $i (0..2) {
@@ -73,12 +95,15 @@ foreach $i (0..2) {
     $t1->$e()->get_long_desc eq "e $i" || last;
     $not_done--;
 }
-print $not_done ? "not ok 3\n" : "ok 3\n";
-print int($t1->get_list()) == 3 ? "ok 4\n" : "not ok 4\n";
+t(!$not_done);
+t(int(@{[$t1->LIST]}) == 3);
 
 my($t2) = Bivio::Type::Enum::T2->E_0;
-print $t2->min eq $t2->E_0 && $t2->max eq $t2->E_2
-	? "ok 5\n" : "not ok 5\n";
+t($t2->MIN eq $t2->E_0 && $t2->MAX eq $t2->E_2);
+t($t2->CAN_BE_ZERO && $t2->CAN_BE_POSITIVE && !$t2->CAN_BE_NEGATIVE);
+t($t2->WIDTH == 3);
+t($t2->PRECISION == 1);
+
 $not_done = 2;
 foreach $i (0, 2) {
     my($e) = 'E_' . $i;
@@ -92,5 +117,10 @@ $t2->E_0->get_short_desc eq 'e 0' || ($not_done = -999999);
 $t2->E_0->get_long_desc eq 'e 0' || ($not_done = -999999);
 $t2->E_2->get_short_desc eq 'e two' || ($not_done = -999999);
 $t2->E_2->get_long_desc eq 'e two' || ($not_done = -999999);
-print $not_done ? "not ok 6\n" : "ok 6\n";
-print int($t1->get_list()) == 3 ? "ok 7\n" : "not ok 7\n";
+t(!$not_done);
+t(int(@{[$t1->LIST]}) == 3);
+
+my($t3) = Bivio::Type::Enum::T3->E123456789;
+t(!$t3->CAN_BE_ZERO && $t3->CAN_BE_NEGATIVE && !$t3->CAN_BE_POSITIVE);
+t($t3->WIDTH == 10);
+t($t3->PRECISION == 9);

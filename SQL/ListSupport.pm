@@ -35,9 +35,25 @@ statement execution.
 
 =cut
 
+# For now has to be here, because want to checkin intermediate with
+# new SQL::Support and old ListSupport
+sub UNIX_EPOCH_IN_JULIAN_DAYS {
+    return 2440588;
+}
+sub SECONDS_IN_DAY {
+    return 86400;
+}
+
+sub SQL_DATE_TYPE {
+    return 9;
+}
+sub DATE_FORMAT {
+    return 'J SSSSS';
+}
+
+
 #=IMPORTS
 use Bivio::SQL::Connection;
-use Bivio::SQL::Support;
 use Bivio::IO::Trace;
 use Bivio::Util;
 use Carp();
@@ -99,19 +115,16 @@ sub load {
     my($fields) = $self->{$_PACKAGE};
     $fields->{select} || Carp::croak("SqlListSupport not initialized");
 
-    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($col_field_count) = $fields->{col_field_count};
 
     # clear the result set
     my(@a) = @$rows;
     $#a = 0;
 
-    my($conn) = Bivio::SQL::Connection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
-    my($statement) = $conn->prepare_cached($sql);
-
-    Bivio::SQL::Connection->execute($statement, $model, @values);
+    my($statement) = Bivio::SQL::Connection->execute($sql, \@values, $model);
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
 
     my($row);
     my($i) = 0;
@@ -150,8 +163,7 @@ sub load {
     $statement->finish();
 
     if ($_TRACE) {
-	Bivio::SQL::Connection->increment_db_time(
-		Bivio::Util::time_delta_in_seconds($start_time));
+	Bivio::SQL::Connection->increment_db_time($start_time);
     }
     return;
 }
@@ -171,20 +183,16 @@ sub get_result_set_size {
     my($fields) = $self->{$_PACKAGE};
     $fields->{select} || Carp::croak("SqlListSupport not initialized");
 
-    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
-    my($conn) = Bivio::SQL::Connection->get_connection();
     my($sql) = $fields->{count}.$where_clause;
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
-    my($statement) = $conn->prepare_cached($sql);
+    my($statement) = Bivio::SQL::Connection->execute($sql, \@values, $model);
 
-    Bivio::SQL::Connection->execute($statement, $model, @values);
-
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($result) = $statement->fetchrow_arrayref()->[0];
     $statement->finish();
 
     if ($_TRACE) {
-	Bivio::SQL::Connection->increment_db_time(
-		Bivio::Util::time_delta_in_seconds($start_time));
+	Bivio::SQL::Connection->increment_db_time($start_time);
     }
     return $result;
 }
@@ -217,9 +225,9 @@ sub initialize {
 
     my($select) = 'select ';
     for(my($i) = 0; $i < int(@$names); $i++) {
-	if ($types->[$i] == Bivio::SQL::Support::SQL_DATE_TYPE()) {
+	if ($types->[$i] == SQL_DATE_TYPE()) {
 	    $select .= 'TO_CHAR('.$names->[$i].",'"
-		    .Bivio::SQL::Support::DATE_FORMAT()."'),";
+		    .DATE_FORMAT()."'),";
 	}
 	else {
 	    $select .= $names->[$i].',';
@@ -240,8 +248,16 @@ sub initialize {
 
 sub _convert_value {
     my($types, $index, $value) = @_;
-    return $types->[$index] == Bivio::SQL::Support::SQL_DATE_TYPE()
-	    ? Bivio::SQL::Support->to_time($value) : $value;
+    return $types->[$index] == SQL_DATE_TYPE()
+	    ? _to_time($value) : $value;
+}
+
+sub _to_time {
+    my(undef, $sql_date) = @_;
+    defined($sql_date) || return undef;
+    # BTW, I tried "eval '111+5555'" here and it was MUCH slower.
+    my($j, $s) = split(/ /, $sql_date);
+    return ($j - &UNIX_EPOCH_IN_JULIAN_DAYS) * &SECONDS_IN_DAY + $s;
 }
 
 # _count_occurances(string str, string search) : int

@@ -36,6 +36,9 @@ use Bivio::Agent::Views;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
+# This is here to avoid a bunch of error messages when societas
+# is started in stack_trace_warn.
+use MIME::Parser;
 
 #=VARIABLES
 # No cor dumps please
@@ -84,8 +87,8 @@ sub process_request {
 	if ($owner) {
 	    my($f) = $auth_realm->get('owner_id_field');
 	    # owner is put by PropertyModel
-	    $req->put(auth_owner_id => $owner->get($f),
-		    auth_owner_id_field => $f);
+	    $req->put(auth_id => $owner->get('realm_id'),
+		    auth_id_field => $f);
 	}
 	my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
 	my($task) = Bivio::Agent::Task->get_by_id($task_id);

@@ -133,10 +133,12 @@ sub format_uri {
 sub _auth_user {
     my($self, $name, $password) = @_;
     return undef unless defined($name);
-    my($user) = Bivio::Biz::PropertyModel::User->new($self);
+    my($user) = Bivio::Biz::PropertyModel::RealmOwner->new($self);
+#TODO: Do we want to allow club logins?
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
 	    {request => $self, entity => $name, message => 'user not found'})
-	    unless $user->unauth_load(name => $name);
+	    unless $user->unauth_load(name => $name)
+		    && defined($user->get('password'));
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
 	    {request => $self, message => 'password mismatch',
 		entity => $name, auth_user => $user})

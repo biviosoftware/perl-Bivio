@@ -25,6 +25,7 @@ C<Bivio::Biz::Action::CreateClubUser>
 
 #=IMPORTS
 use Bivio::Auth::Role;
+use Bivio::Type::MailMode;
 use Bivio::Biz::Action::CreateUser;
 
 #=VARIABLES
@@ -32,7 +33,7 @@ my(@_REALM_USER_FIELDS) = qw(
     role
 );
 my(%_ROLE_IDS) = map {
-    (Bivio::Auth::Role->$_()->as_int, 1);
+    ($_, 1);
 } qw(ADMINISTRATOR MEMBER GUEST);
 
 =head1 METHODS
@@ -51,28 +52,28 @@ request.
 sub execute {
     my($self, $req) = @_;
     # These must be set
-    my($user, $club) = $req->get('Bivio::Biz::PropertyModel::User',
-	    'Bivio::Biz::PropertyModel::Club');
+    my($club_id) = $req->get('auth_id');
+#TODO: This is fragile.
+    my($user) = $req->get('Bivio::Biz::PropertyModel::User');
+    my($user_id) = $user->get('user_id');
     # not checking find result, should have succeeded or
     # it wouldn't be this far
     my($values) = $req->get_fields('form', \@_REALM_USER_FIELDS);
-    my($role_id) = $values->{role};
-    die("invalid role id ($role_id)")
-	    unless defined($_ROLE_IDS{$role_id});
-    my($club_id) = $club->get('club_id');
-    my($user_id) = $user->get('user_id');
+    my($role) = $values->{role};
+    die("invalid role ($role)")
+	    unless defined($_ROLE_IDS{$role});
     my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
     $realm_user->create({
 	'realm_id' => $club_id,
 	'user_id' => $user_id,
-	'role' => $role_id,
+	'role' => Bivio::Auth::Role->$role(),
     });
 
     my($club_user) = Bivio::Biz::PropertyModel::ClubUser->new($req);
     $club_user->create({
 	'club_id' => $club_id,
 	'user_id' => $user_id,
-	'email_mode' => 1
+	'mail_mode' => Bivio::Type::MailMode::WANT_ALL(),
     });
     return;
 }

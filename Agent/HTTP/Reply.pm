@@ -130,17 +130,16 @@ sub die_to_http_code {
 
 =for html <a name="print"></a>
 
-=head2 print(string str)
+=head2 print(string str, ...)
 
 Writes the specified string to the request's output stream.
 
 =cut
 
 sub print {
-    my($self,$str) = @_;
-    Carp::croak('argument undefined') unless defined($str);
+    my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{output} .= $str;
+    $fields->{output} .= join('', @_);
     return;
 }
 

@@ -24,25 +24,27 @@ C<Bivio::Biz::Action::CreateUser>
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::PropertyModel::Club;
 use Bivio::Biz::PropertyModel::ClubUser;
+use Bivio::Biz::PropertyModel::RealmOwner;
 use Bivio::Biz::PropertyModel::RealmUser;
-use Bivio::Biz::PropertyModel::UserDemographics;
 use Bivio::Biz::PropertyModel::UserEmail;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::Type::Gender;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my(@_USER_FIELDS) = qw(
+my(@_REALM_OWNER_FIELDS) = qw(
     name
     password
     confirm_password
 );
-my(@_USER_DEMOGRAPHICS_FIELDS) = qw(
+my(@_USER_FIELDS) = qw(
     first_name
     middle_name
     last_name
@@ -69,23 +71,30 @@ request.
 sub execute {
     my(undef, $req) = @_;
 
-    # make sure password fields match
+    # Create user first to get user_id, so can create realm_owner
     my($user) = Bivio::Biz::PropertyModel::User->new($req);
     my($values) = $req->get_fields('form', \@_USER_FIELDS);
+    my($gender) = $values->{gender};
+    $values->{gender} = Bivio::Type::Gender->$gender();
+    $user->create($values);
+    my($user_id) = $user->get('user_id');
+
+    # make sure password fields match
+    my($realm_owner) = Bivio::Biz::PropertyModel::RealmOwner->new($req);
+    $values = $req->get_fields('form', \@_REALM_OWNER_FIELDS);
 #TODO: Validate the list of form fields
+    die('password fields must be filled in')
+	    unless defined($values->{password})
+		    && defined($values->{confirm_password});
     if ($values->{password} ne $values->{confirm_password}) {
 	$values->{password} = '';
 	$values->{confirm_password} = '';
 	die('password fields did not match');
     }
     delete($values->{confirm_password});
-    $user->create($values);
-    my($user_id) = $user->get('user_id');
-
-    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new($req);
-    $values = $req->get_fields('form', \@_USER_DEMOGRAPHICS_FIELDS);
-    $values->{user_id} = $user_id;
-    $demographics->create($values);
+    $values->{realm_id} = $user_id;
+    $values->{realm_type} = Bivio::Auth::RealmType::USER();
+    $realm_owner->create($values);
 
     my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
     $values = $req->get_fields('form', \@_USER_EMAIL_FIELDS);

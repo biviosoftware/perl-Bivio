@@ -54,6 +54,26 @@ sub new {
 
 =cut
 
+=for html <a name="die"></a>
+
+=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+Terminate the I<model> as entity and request in I<attrs> with a specific code.
+
+=cut
+
+sub die {
+    my($self, $code, $attrs, $package, $file, $line) = @_;
+    $package ||= (caller)[0];
+    $file ||= (caller)[1];
+    $line ||= (caller)[2];
+    $attrs ||= {};
+    ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
+    $attrs->{entity} = $self;
+    $attrs->{request} = $self->get_request;
+    Bivio::Die->die($code, $attrs, $package, $file, $line);
+}
+
 =for html <a name="find"></a>
 
 =head2 abstract load(string key, string value, ...) : boolean

@@ -51,6 +51,7 @@ sub gettimeofday () {
 #   Time $start_time was initiated (in seconds)
 sub time_delta_in_seconds ($) {
     my($start_time) = shift;
+    Carp::croak('invalid start_time') unless $start_time;
     my($end_time) = &gettimeofday;
     return $end_time->[0] - $start_time->[0]
         + ($end_time->[1] - $start_time->[1]) / 1000000.0;

@@ -1,27 +1,27 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Type::SingletonMap;
+package Bivio::Collection::SingletonMap;
 use strict;
-$Bivio::Type::SingletonMap::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Collection::SingletonMap::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Type::SingletonMap - maps classes to singleton objects
+Bivio::Collection::SingletonMap - maps classes to singleton objects
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::SingletonMap;
-    Bivio::Type::SingletonMap->put($classes);
-    Bivio::Type::SingletonMap->get($class1, $class2, ...);
+    use Bivio::Collection::SingletonMap;
+    Bivio::Collection::SingletonMap->put($classes);
+    Bivio::Collection::SingletonMap->get($class1, $class2, ...);
 
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Type::SingletonMap::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Collection::SingletonMap::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::SingletonMap> maps class names to singleton objects
+C<Bivio::Collection::SingletonMap> maps class names to singleton objects
 of those classes.  Singletons are initialized at startup with
 a call to C<new>.
 
@@ -99,7 +99,9 @@ of this routine in the future.
 
 sub put {
     my($pkg, $classes) = @_;
-    Bivio::Util::my_require(@$classes);
+    foreach (@$classes) {
+	Bivio::Util::my_require($_);
+    }
     $_MAP{$pkg} = {map {
 	($_, $_->new);
     } @$classes};

@@ -26,6 +26,8 @@ C<Bivio::Biz::Action::ForwardClubMail> creates a club and its administrator.
 #=IMPORTS
 use Bivio::Mail::Outgoing;
 use Bivio::Biz::PropertyModel::MailMessage;
+use Bivio::Biz::PropertyModel::RealmOwner;
+use Bivio::Auth::RealmType;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -48,17 +50,20 @@ request.
 
 sub execute {
     my(undef, $req) = @_;
-    my($club) = $req->get('auth_realm')->get('owner');
+    my($realm_owner) = $req->get('auth_realm')->get('owner');
     die('auth_realm not a club')
-	    unless ref($club) eq 'Bivio::Biz::PropertyModel::Club';
+	    unless $realm_owner->get('realm_type') ==
+		    Bivio::Auth::RealmType::CLUB();
+    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
+    $club->load(club_id => $realm_owner->get('realm_id'));
     my($msg) = $req->get('message');
-    &_trace($club, ': ', $msg->get_message_id) if $_TRACE;
+    &_trace($realm_owner, ': ', $msg->get_message_id) if $_TRACE;
     my($in_msg);
     $in_msg = Bivio::Biz::PropertyModel::MailMessage->new($req);
-    $in_msg->create($msg, $club);
+    $in_msg->create($msg, $realm_owner, $club);
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
     $out_msg->set_recipients($club->get_outgoing_emails());
-    $out_msg->set_headers_for_list_send($club->get('name'),
+    $out_msg->set_headers_for_list_send($realm_owner->get('name'),
 	    $club->get('full_name'), 1, 1);
     $out_msg->enqueue_send;
     return;

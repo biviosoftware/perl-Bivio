@@ -47,7 +47,7 @@ AccessConfig /dev/null
 #
 ServerName <$host>
 ServerType standalone
-Port <$port>
+Listen <$port>
 User <$user>
 Group <$user>
 ServerAdmin <$user>
@@ -81,7 +81,9 @@ CustomLog |cat combined
 TypesConfig /etc/mime.types
 DefaultType text/html
 LockFile httpd.lock
+HostnameLookups off
 
+DirectoryIndex index.html
 <Directory />
 AllowOverride None
 Options FollowSymLinks

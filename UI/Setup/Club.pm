@@ -44,7 +44,7 @@ sub execute {
     my($self, $req) = @_;
 #TODO: Need to allow for no model in rendering code
     $self->activate->render(
-	    Bivio::Biz::PropertyModel::Club->new($req), $req);
+	    Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
     return;
 }
 
@@ -57,9 +57,10 @@ Creates a form for editing the specified Club model.
 =cut
 
 sub render {
-    my($self, $club, $req) = @_;
+    my($self, $realm_owner, $req) = @_;
     my($reply) = $req->get_reply();
 
+    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
 
@@ -73,7 +74,7 @@ sub render {
 #TODO: Need to get club_create from somewhere
     $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
-    Bivio::UI::HTML::FieldUtil->entry_field($club, 'name', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_owner, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'full_name', $req, 1);
 
     # could add club preferences here...

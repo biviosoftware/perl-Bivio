@@ -31,8 +31,14 @@ Bivio::Type::Enum - base class for enumerated types
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Type::Enum::ISA = qw(Bivio::UNIVERSAL);
+=head1 EXTENDS
+
+L<Bivio::Type>
+
+=cut
+
+use Bivio::Type::Number;
+@Bivio::Type::Enum::ISA = qw(Bivio::Type::Number);
 
 =head1 DESCRIPTION
 
@@ -43,11 +49,63 @@ enumerated type.  The subroutines are blessed, so the routines
 L<as_int|"as_int">, L<as_string|"as_string">, etc. can be called using
 method lookup syntax.
 
+An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
+
 =cut
 
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="DECIMALS"></a>
+
+=head2 DECIMALS : int
+
+Returns 0.
+
+=cut
+
+sub DECIMALS {
+    return 0;
+}
+
+=for html <a name="IS_CONTINUOUS"></a>
+
+=head2 static IS_CONTINUOUS() : 1
+
+Is this enumeration an unbroken sequence?  By default, this is true.
+Enumerations which don't want to be continous should override this method.
+
+=cut
+
+sub IS_CONTINUOUS {
+    return 1;
+}
+
+=for html <a name="LIST"></a>
+
+=head2 static LIST() : array
+
+Return the list of all enumerated types.  These are not returned in
+any particular order.
+
+=cut
+
+sub LIST {
+    die('abstract method');
+}
+
+=for html <a name="WIDTH"></a>
+
+=head2 WIDTH : int
+
+Defines the maximum width of L<get_name|"get_name">.
+
+=cut
+
+sub WIDTH {
+    die('abstract method');
+}
 
 #=IMPORTS
 use Carp ();
@@ -68,7 +126,7 @@ Returns enum value for specified string, enum, or integer.
 =cut
 
 sub from_any {
-    return &_get_info(shift(@_), shift(@_))->[4];
+    return &_get_info(shift(@_), shift(@_))->[5];
 }
 
 =for html <a name="from_int"></a>
@@ -80,20 +138,7 @@ Returns enum value for specified integer.
 =cut
 
 sub from_int {
-    return &_get_info(shift(@_), shift(@_) + 0)->[4];
-}
-
-=for html <a name="get_list"></a>
-
-=head2 static get_list() : array
-
-Return the list of all enumerated types.  These are not returned in
-any particular order.
-
-=cut
-
-sub get_list {
-    return @{&_get_info(shift(@_), '_list')};
+    return &_get_info(shift(@_), shift(@_) + 0)->[5];
 }
 
 =head1 METHODS
@@ -122,7 +167,7 @@ Returns fully-qualified string representation of enum value.
 
 sub as_string {
     my($self) = shift;
-    return ref($self) . '::' . &_get_info($self, undef)->[3];
+    return &_get_info($self, undef)->[4];
 }
 
 =for html <a name="compile"></a>
@@ -147,9 +192,12 @@ sub compile {
     my($min, $max);
     my(@list);
     my(%info_copy) = %info;
+    my($width) = 0;
+    my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
-	ref($d) eq 'ARRAY'
-		|| Carp::croak("$name: does not point to an array");
+	Carp::croak("$name: is a reserved word") if $proto->can($name);
+	Carp::croak("$name: does not point to an array")
+		    unless ref($d) eq 'ARRAY';
 	if (int(@$d) == 1) {
 	    my($n) = lc($name);
 	    $n =~ s/_/ /g;
@@ -165,8 +213,13 @@ sub compile {
 		|| Carp::croak("$name: invalid number \"$d->[0]\"");
         $name =~ /^[A-Z][A-Z0-9_]*$/
 		|| Carp::croak("$name: invalid enum name");
-	# Fill out declaration to reverse map number to name
+	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
+	$width = length($name) if length($name) > $width;
+	my($as_string) = $pkg.'::'.$name;
+	# Index 4: as_string
+	push(@$d, $as_string);
+	push(@list, $as_string.'()');
 	# ALSO Ensures we convert $d->[0] into an integer!
 	if (defined($min)) {
 	    $d->[0] < $min->[0] && ($min = $d);
@@ -175,8 +228,9 @@ sub compile {
 	else {
 	    $min = $max = $d;
 	}
+	$can_be_zero = 1 if $d->[0] == 0;
 	$info{$d->[0]} = $d;
-	push(@list, $d->[0]);
+	# Index 5: enum instance
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
@@ -184,9 +238,7 @@ sub compile {
 EOF
     }
     defined($min) || Carp::croak('no values');
-    $info{_min} = $min;
-    $info{_max} = $max;
-    if ($pkg->is_continuous) {
+    if ($pkg->IS_CONTINUOUS) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
 	    defined($info{$n}) || Carp::croak("missing number $n");
@@ -195,9 +247,41 @@ EOF
     eval($eval . '; 1')
 	    || Carp::croak("compilation failed: $@");
     $_MAP{$pkg} = \%info;
-    # Must happen last
-    $info{_list} = [map {$pkg->from_int($_)} @list];
+    # Must happen last after enum references are defined.
+    my($can_be_negative) = $min->[0] < 0;
+    my($can_be_positive) = $max->[0] > 0;
+    # Compute number of digits in maximum sized integer
+    my($precision) = abs($max->[0]);
+    $precision = abs($min->[0]) if abs($min->[0]) > $precision;
+    $precision = length($precision);
+    $min = $min->[3];
+    $max = $max->[3];
+    my($list) = join(',', @list);
+    eval <<"EOF" || Carp::Croak("compilation failed: $@");
+        package $pkg;
+        sub CAN_BE_NEGATIVE {return $can_be_negative;}
+        sub CAN_BE_POSITIVE {return $can_be_positive;}
+        sub CAN_BE_ZERO {return $can_be_zero;}
+	sub LIST {return ($list);}
+        sub MAX {return ${pkg}::$max();}
+        sub MIN {return ${pkg}::$min();}
+        sub PRECISION {return $precision;}
+        sub WIDTH {return $width;}
+        1;
+EOF
     return;
+}
+
+=for html <a name="from_sql_column"></a>
+
+=head2 static from_sql_column(int value) : Bivio::Type::Enum
+
+Returns the enum for this type.
+
+=cut
+
+sub from_sql_column {
+    return &_get_info(shift(@_), shift(@_) + 0)->[5];
 }
 
 =for html <a name="get_long_desc"></a>
@@ -236,41 +320,16 @@ sub get_short_desc {
     return &_get_info(shift(@_), undef)->[1];
 }
 
-=for html <a name="is_continuous"></a>
+=for html <a name="to_sql_param"></a>
 
-=head2 is_continuous() : 1
+=head2 static to_sql_param(Bivio::Type::Enum value) : int
 
-Is this enumeration an unbroken sequence?  By default, this is true.
-Enumerations which don't want to be continous should override this method.
-
-=cut
-
-sub is_continuous {
-    return 1;
-}
-
-=for html <a name="min"></a>
-
-=head2 static min() : Bivio::Type::Enum
-
-Returns the minimum
+Returns integer representation of I<value>
 
 =cut
 
-sub min {
-    return _get_info(shift(@_), '_min')->[4];
-}
-
-=for html <a name="max"></a>
-
-=head2 static max() : Bivio::Type::Enum
-
-Returns the maximum
-
-=cut
-
-sub max {
-    return _get_info(shift(@_), '_max')->[4];
+sub to_sql_param {
+    return &_get_info(shift(@_), shift(@_))->[0];
 }
 
 #=PRIVATE METHODS

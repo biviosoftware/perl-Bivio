@@ -202,7 +202,7 @@ sub load {
     $fields->{index} = $query{index} || 0;
 
     my($realm, $club_id) = $self->get_request->get(
-	    'auth_owner_id_field', 'auth_owner_id');
+	    'auth_id_field', 'auth_id');
     # Sanity check doesn't hurt
     die('attempt to read messages from wrong realm')
 	    unless $realm eq 'club_id';

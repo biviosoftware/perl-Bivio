@@ -17,12 +17,12 @@ Bivio::Auth::Realm - abstract class defining access to resources
 
 =head1 EXTENDS
 
-L<Bivio::Type::Attributes>
+L<Bivio::Collection::Attributes>
 
 =cut
 
-use Bivio::Type::Attributes;
-@Bivio::Auth::Realm::ISA = qw(Bivio::Type::Attributes);
+use Bivio::Collection::Attributes;
+@Bivio::Auth::Realm::ISA = qw(Bivio::Collection::Attributes);
 
 =head1 DESCRIPTION
 
@@ -40,6 +40,7 @@ Subclasses define the actual authorization policies.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
+use Bivio::Biz::PropertyModel::RealmOwner;
 use Bivio::Auth::Role;
 use Bivio::IO::Trace;
 use Carp ();
@@ -55,7 +56,7 @@ my(%_CLASS_TO_TYPE) = map {
     # Don't need to "use" these modules, because don't actually
     # reference the class--just a name here.
     ("Bivio::Auth::Realm::$class", $_);
-} Bivio::Auth::RealmType->get_list;
+} Bivio::Auth::RealmType->LIST;
 my(%_REALM_TO_TASK_ID_TO_ROLE) = ();
 
 =head1 FACTORIES
@@ -66,28 +67,44 @@ my(%_REALM_TO_TASK_ID_TO_ROLE) = ();
 
 =head2 static new() : Bivio::Auth::Realm
 
-=head2 static new(hash_ref task_id_to_role, Bivio::Biz::Model owner, string owner_class, string owner_id_field) : Bivio::Auth::Realm
+=head2 static new(Bivio::Biz::Model owner) : Bivio::Auth::Realm
+
+=head2 static new(Bivio::Biz::Model owner) : Bivio::Auth::Realm
 
 If the realm has an I<owner>, it will be stored here.
 
 =cut
 
 sub new {
-    my($proto, $owner, $owner_class, $owner_id_field) = @_;
+    my($proto, $owner) = @_;
     $_INITIALIZED || _initialize();
+    if ($proto eq __PACKAGE__) {
+	Carp::croak("no owner") unless $owner;
+	my($realm_type) = $owner->get('realm_type');
+#TODO: Clean this up
+	return Bivio::Auth::Realm::Club->new($owner)
+		if $realm_type == Bivio::Auth::RealmType::CLUB();
+	return Bivio::Auth::Realm::User->new($owner)
+		if $realm_type == Bivio::Auth::RealmType::USER();
+	Carp::croak($realm_type->as_string, ": unknown realm type");
+    }
     my($class) = ref($proto) || $proto;
-    my($self) = &Bivio::Type::Attributes::new($proto,
+    my($self) = &Bivio::Collection::Attributes::new($proto,
 	    {task_id_to_role =>
 		$_REALM_TO_TASK_ID_TO_ROLE{$_CLASS_TO_TYPE{$class}}});
-    return $self
-	    unless defined($owner_class);
-    Carp::croak('owner not specified or not a ', $owner_class)
-	    unless UNIVERSAL::isa($owner, $owner_class);
-    my($owner_id) = $owner->get($owner_id_field);
+    return $self unless $owner;
+    Carp::croak('owner not specified or not a PropertyModel::RealmOwner')
+	    unless UNIVERSAL::isa($owner,
+		    'Bivio::Biz::PropertyModel::RealmOwner');
+#TODO: Change this so everyone knows realm_id?
+    my($owner_id) = $owner->get('realm_id');
     $owner_id || Carp::croak('owner must have valid id (must be loaded)');
+#TODO: Fix this hack
+    my($owner_id_field) = $class;
+    $owner_id_field =~ s/.*::(\w+)/\L$1_id/;
     $self->put(owner => $owner, owner_id => $owner_id,
 	    owner_id_field => $owner_id_field,
-	   owner_name => $owner->get('name'));
+	    owner_name => $owner->get('name'));
     return $self;
 }
 
@@ -160,7 +177,7 @@ Returns the role the (to be) authenticated user plays in this realm.
 
 sub get_user_role {
     my($self, $auth_user, $req) = @_;
-    my($user_id) = $auth_user && $auth_user->get('user_id');
+    my($user_id) = $auth_user && $auth_user->get('realm_id');
     return Bivio::Auth::Role::ANONYMOUS
 	    unless $user_id;
     my($owner) = $self->unsafe_get('owner');
@@ -171,7 +188,7 @@ sub get_user_role {
 	    unless $realm_user->unauth_load(
 		    realm_id => $self->get('owner_id'),
 		    user_id => $user_id);
-    return Bivio::Auth::Role->from_int($realm_user->get('role'));
+    return $realm_user->get('role');
 }
 
 

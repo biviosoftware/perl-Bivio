@@ -18,8 +18,8 @@ Bivio::Die - dispatch die_handler in modules on stack
 
 =cut
 
-use Bivio::Type::Attributes;
-@Bivio::Die::ISA = qw(Bivio::Type::Attributes);
+use Bivio::Collection::Attributes;
+@Bivio::Die::ISA = qw(Bivio::Collection::Attributes);
 
 =head1 DESCRIPTION
 
@@ -351,7 +351,7 @@ sub _handle_die {
 #
 sub _new {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
-    my($self) = Bivio::Type::Attributes::new($proto, {
+    my($self) = Bivio::Collection::Attributes::new($proto, {
 	next => undef,
 	code => $code,
 	attrs => $attrs,

@@ -44,7 +44,7 @@ use Bivio::Auth::Role;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Biz::PropertyModel::User owner) : Bivio::Auth::Realm::User
+=head2 static new(Bivio::Biz::PropertyModel::RealmOwner owner) : Bivio::Auth::Realm::User
 
 Define the realm owned by this particular user.
 
@@ -52,8 +52,7 @@ Define the realm owned by this particular user.
 
 sub new {
     my($proto, $owner) = @_;
-    return &Bivio::Auth::Realm::new($proto,
-	    $owner, 'Bivio::Biz::PropertyModel::User', 'user_id');
+    return &Bivio::Auth::Realm::new($proto, $owner);
 }
 
 #=PRIVATE METHODS

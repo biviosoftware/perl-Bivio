@@ -64,35 +64,11 @@ sub entry_field {
 #      instead build up the string and then call reply->print.
     $reply->print('<tr><td>');
     $reply->print('*&nbsp;') if $required;
-    my($fd) = $model->get_field_descriptor($field);
+    my($type) = $model->get_field_type($field);
 
     # Get the current value from the model
     my($value) = $model->get($field);
-
-    if ($fd->get_type() == Bivio::Biz::FieldDescriptor::STRING
-	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::CURRENCY
-	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::NUMBER
-	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::DATE
-	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::EMAIL) {
-#TODO: Need to put in label here
-	$reply->print('<label for="'.$field.'">'
-		.'NEED LABEL: '.$field.': </label></td><td>');
-	$reply->print('<input type="text" name="'.$field
-		.'" maxlength='.$fd->get_size());
-
-	if (defined($value)) {
-	    $reply->print(' value="'.$value.'"');
-	}
-	if ($fd->get_size() < 15) {
-	    $reply->print(' size='.$fd->get_size());
-	}
-	elsif ($fd->get_size() > 40) {
-	    # 40 is pretty big for an entry field
-	    $reply->print(' size=40');
-	}
-	$reply->print('>');
-    }
-    elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::BOOLEAN) {
+    if ($type eq 'Bivio::Type::Boolean') {
 	$reply->print('<input type="checkbox" name="'.$field.'"');
 #TODO: Is this correct or should there be a test for defined($value)?
 	if ($value) {
@@ -100,22 +76,27 @@ sub entry_field {
 	}
 	$reply->print('>');
     }
-    elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::GENDER) {
-	$reply->print('<input type="radio" name="'.$field
-		.'" value="M"');
-	if (defined($value) && $value eq "M") {
-	    $reply->print(' checked');
+    elsif ($type->isa('Bivio::Type::Enum')) {
+	my($e);
+#TODO: Encapsulate valid values so can validate input as well.
+#      Must be clear definition of what a form allows and doesn't or
+#      we'll have security problems.
+	#enums always have a value
+	$value = $type->can('UNKNOWN') ? $type->UNKNOWN : ($type->LIST)[0]
+		unless defined($value);
+	foreach $e ($type->LIST) {
+	    my($n) = $e->get_name;
+	    my($d) = $e->get_short_desc;
+	    my($checked) = defined($value) && $value == $e ? ' checked' : '';
+	    $reply->print(<<"EOF");
+<input type="radio" name="$field" value="$n"$checked>&nbsp;$d<br>
+EOF
 	}
-	$reply->print('> Male <br><input type="radio" name="'
-		.$field.'" value="F"');
-	if (defined($value) && $value eq "F") {
-	    $reply->print(' checked');
-	}
-	$reply->print('> Female <br>');
     }
-    elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::PASSWORD) {
+#TODO: Need to make this an attribute or constraint or something
+    elsif ($field =~ /password/) {
 	$reply->print('<label for="password">Password: </label></td><td>'
-		.'<input type="password" name="password" maxlength=32');
+		.qq!<input type="password" name="$field" maxlength=30!);
 	if (defined($value)) {
 	    $reply->print(' value="'.$value.'"');
 	}
@@ -129,19 +110,19 @@ sub entry_field {
 	}
 	$reply->print('><br></td></tr>');
     }
-    elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::ROLE) {
-	my($role);
-#TODO: Encapsulate valid values so can validate input as well.
-#      Must be clear definition of what a form allows and doesn't or
-#      we'll have security problems.
-	foreach $role (qw(ADMINISTRATOR MEMBER GUEST)) {
-	    my($r) = Bivio::Auth::Role->$role();
-	    my($i, $n) = ($r->as_int, ucfirst(lc($r->get_name)));
-	    my($checked) = defined($value) && $value == $i ? ' checked' : '';
-	    $reply->print(<<"EOF");
-<input type="radio" name="$field" value=$i$checked>&nbsp;$n<br>
-EOF
+    else {
+#TODO: Need to put in label here
+	$reply->print('<label for="'.$field.'">'
+		.'NEED LABEL: '.$field.': </label></td><td>');
+	my($size) = $type->WIDTH;
+	$reply->print('<input type="text" name="'.$field
+		.'" maxlength='.$size);
+
+	if (defined($value)) {
+	    $reply->print(' value="'.$value.'"');
 	}
+	$reply->print(' size='.($size < 30 ? $size : 30));
+	$reply->print('>');
     }
     $reply->print('</td></tr>');
     return;

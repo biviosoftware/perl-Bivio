@@ -11,8 +11,8 @@ Bivio::Agent::Request - Abstract request wrapper
 
 =cut
 
-use Bivio::Type::Attributes;
-@Bivio::Agent::Request::ISA = ('Bivio::Type::Attributes');
+use Bivio::Collection::Attributes;
+@Bivio::Agent::Request::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -24,28 +24,29 @@ The Attributes are defined:
 
 =over 4
 
-=item auth_realm : Bivio::Biz::Model
+=item auth_realm : Bivio::Auth::Realm
 
-The realm in which the request operates, e.g. a club or a user.
+The realm in which the request operates.
 
 =time auth_role : Bivio::Auth::Role
 
 Role I<auth_user> is allowed to play in I<auth_realm>.
 Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
-=time auth_owner_id : int
+=time auth_id : int
 
-Value of C<auth_realm->get('owner')->get(I<auth_owner_id_field>)>.
+Value of C<auth_realm->get('owner')->get('realm_id')>.
 Only valid if I<auth_realm> has an owner.
 
-=time auth_owner_id_field : string
+=time auth_id_field : string
 
-Name of primary key field in I<auth_owner>.
+Name of primary key field for use in other Models besides
+auth_realm.  Currently either C<club_id> or C<user_id>.
 Only valid if I<auth_realm> has an owner.
 
-=time auth_user : Bivio::Biz::PropertyModel::User
+=time auth_user : Bivio::Biz::PropertyModel::RealmOwner
 
-The user authenticated with the request
+The user authenticated with the request.
 
 =item form : hash_ref
 
@@ -130,7 +131,7 @@ will be set as well, but may be overriden by subclass.
 
 sub new {
     my($proto, $hash) = @_;
-    my($self) = &Bivio::Type::Attributes::new($proto, $hash);
+    my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
     $self->put('http_host', $_HTTP_HOST);
     $self->put('mail_host', $_MAIL_HOST);
     return $_CURRENT = $self;
@@ -157,18 +158,21 @@ sub clear_current {
 
 =for html <a name="die"></a>
 
-=head2 die(Bivio::Type::Enum code, hash_ref attrs)
+=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
 Terminate the request with a specific code.
 
 =cut
 
 sub die {
-    my($self, $code, $attrs) = @_;
-    $attrs || ($attrs = {});
+    my($self, $code, $attrs, $package, $file, $line) = @_;
+    $package ||= (caller)[0];
+    $file ||= (caller)[1];
+    $line ||= (caller)[2];
+    $attrs ||= {};
     ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
     $attrs->{request} = $self;
-    Bivio::Die->die($code, $attrs, caller);
+    Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
 =for html <a name="elapsed_time"></a>

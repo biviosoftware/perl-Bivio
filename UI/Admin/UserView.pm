@@ -27,7 +27,6 @@ C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::PropertyModel::User
 use Bivio::Agent::TaskId;
 use Bivio::Biz::PropertyModel::ClubUser;
 use Bivio::Biz::PropertyModel::User;
-use Bivio::Biz::PropertyModel::UserDemographics;
 use Bivio::UI::HTML::FieldUtil;
 
 #=VARIABLES
@@ -45,7 +44,7 @@ use Bivio::UI::HTML::FieldUtil;
 sub execute {
     my($self, $req) = @_;
 #TODO: Need to do load_from_request allowing for not found.
-    $self->activate->render(Bivio::Biz::PropertyModel::User->new($req), $req);
+    $self->activate->render(Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
     return;
 }
 
@@ -58,11 +57,11 @@ Creates a form for editing the L<Bivio::Biz::PropertyModel::User> model.
 =cut
 
 sub render {
-    my($self, $user, $req) = @_;
+    my($self, $realm_owner, $req) = @_;
     my($reply) = $req->get_reply();
 
 #TODO: handle update as well
-    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new($req);
+    my($user) = Bivio::Biz::PropertyModel::User->new($req);
     my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
     my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
 
@@ -79,18 +78,18 @@ sub render {
 
     $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
-    Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
-    Bivio::UI::HTML::FieldUtil->entry_field($user, 'password', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_owner, 'name', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_owner, 'password', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($email, 'email', $req, 1);
 
     $reply->print('<tr><td>&nbsp;</td></tr>');
 
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'first_name', $req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'middle_name',$req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'last_name', $req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'age', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'first_name', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'middle_name',$req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'last_name', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'age', $req);
     $reply->print('<tr><td>&nbsp;</td></tr>');
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'gender', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'gender', $req);
     $reply->print('<tr><td>&nbsp;</td></tr>');
     $reply->print('<tr><td>Role</td></tr>');
     Bivio::UI::HTML::FieldUtil->entry_field($realm_user, 'role', $req);

@@ -228,6 +228,15 @@ PerlWarn on
 PerlFreshRestart off
 <$bivio_conf>
 PerlModule <$handler>
+#RJN: This doesn't work for some reason
+PassEnv ORACLE_HOME
+PassEnv DBI_USER
+PassEnv DBI_PASS
+PassEnv ORACLE_SID
+PerlPassEnv ORACLE_HOME
+PerlPassEnv DBI_USER
+PerlPassEnv DBI_PASS
+PerlPassEnv ORACLE_SID
 
 #
 # Files
@@ -250,7 +259,7 @@ AllowOverride None
 Options FollowSymLinks
 </Directory>
 
-<LocationMatch "^/[a-z_][a-z_][a-z_][a-z_]+($|/)">
+<LocationMatch "^/[a-z0-9A-Z_][a-z0-9A-Z_][a-z0-9A-Z_][a-z0-9A-Z_]+($|/)">
 AuthName bivio:<$port>
 AuthType Basic
 SetHandler perl-script

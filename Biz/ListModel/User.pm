@@ -53,8 +53,9 @@ my($_SQL_SUPPORT);
 =cut
 
 sub internal_initialize {
-    $_SQL_SUPPORT = Bivio::SQL::ListSupport->new('user_t, club_user_t',
-	['user_t.name',
+    $_SQL_SUPPORT = Bivio::SQL::ListSupport->new(
+	    'realm_owner_t, user_t, club_user_t',
+	['realm_owner_t.name',
 		'user_t.first_name,user_t.middle_name,user_t.last_name']);
     return [[
 	    ['Login Name', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
@@ -75,13 +76,14 @@ Loads the list given the specified search parameters.
 sub load {
     my($self, %query) = @_;
     my($realm, $club_id) = $self->get_request->get(
-	    'auth_owner_id_field', 'auth_owner_id');
+	    'auth_id_field', 'auth_id');
     # Sanity check doesn't hurt
     die('attempt to check user in wrong realm')
 	    unless $realm eq 'club_id';
 #TODO: Fix 1000 here.
     $_SQL_SUPPORT->load($self, $self->internal_get_rows(), 0, 1000,
 	    'where club_user_t.club_id=?'
+	    .' and club_user_t.user_id=realm_owner_t.realm_id'
 	    .' and club_user_t.user_id=user_t.user_id'
 	    .$self->get_order_by(\%query), $club_id);
     return;

@@ -114,7 +114,7 @@ sub main {
     open(OUT, ">$conf") || die("open $conf: $!");
     while (<DATA>) {
 	# Yup, want an extra "e" to get double interpolation.  Kewl, huh?
-	s/<(\$\w+)>/$1/eeg;
+	s/<(\$[^>]+)>/$1/eeg;
     }
     continue {
 	(print OUT) || die("write $conf: $!");
@@ -241,10 +241,10 @@ use strict;
 	stack_trace => 1,
     },
     'Bivio::Ext::DBI' => {
-	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
-	database => 'surf_test',
-	user => '<$user>',
-	password => 'bivio,ho',
+	oracle_home => '<$ENV{ORACLE_HOME}>',
+	database => '<$ENV{ORACLE_SID}>',
+	user => '<$ENV{DBI_USER}>',
+	password => '<$ENV{DBI_PASS}>',
     },
     'Bivio::File::Server' => {
 	file => {

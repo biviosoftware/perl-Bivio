@@ -24,7 +24,7 @@ C<Bivio::UI::Setup::Admin> shows an admin creation screen.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::PropertyModel::UserDemographics;
+use Bivio::Biz::PropertyModel::User;
 use Bivio::Biz::PropertyModel::UserEmail;
 use Bivio::Agent::TaskId;
 
@@ -44,7 +44,7 @@ sub execute {
     my($self, $req) = @_;
 #TODO: Need to allow for no model in rendering code
     $self->activate->render(
-	    Bivio::Biz::PropertyModel::User->new($req), $req);
+	    Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
     return;
 }
 
@@ -57,11 +57,11 @@ Creates a form for editing the club administrator's User model.
 =cut
 
 sub render {
-    my($self, $user, $req) = @_;
+    my($self, $realm_owner, $req) = @_;
     my($reply) = $req->get_reply();
 
     # used for type information only
-    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new($req);
+    my($user) = Bivio::Biz::PropertyModel::User->new($req);
     my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
 
 #TODO: Put some line breaks so easier to read.  Don't call print so many times.
@@ -80,18 +80,18 @@ sub render {
     # render all the entry fields - values are from the model or
     # the request.
 
-    Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
-    Bivio::UI::HTML::FieldUtil->entry_field($user, 'password', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_owner, 'name', $req, 1);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_owner, 'password', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($email, 'email', $req, 1);
 
     $reply->print('<tr><td>&nbsp;</td></tr>');
 
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'first_name', $req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'middle_name',$req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'last_name', $req);
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'age', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'first_name', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'middle_name',$req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'last_name', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'age', $req);
     $reply->print('<tr><td>&nbsp;</td></tr>');
-    Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'gender', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($user, 'gender', $req);
 
     $reply->print('<tr><td>&nbsp;</td></tr>');
     $reply->print('<tr><td>'

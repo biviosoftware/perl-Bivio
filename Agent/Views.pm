@@ -18,12 +18,12 @@ Bivio::Agent::Views - initializes and maps all views
 
 =head1 EXTENDS
 
-L<Bivio::Type::SingletonMap>
+L<Bivio::Collection::SingletonMap>
 
 =cut
 
-use Bivio::Type::SingletonMap;
-@Bivio::Agent::Views::ISA = qw(Bivio::Type::SingletonMap);
+use Bivio::Collection::SingletonMap;
+@Bivio::Agent::Views::ISA = qw(Bivio::Collection::SingletonMap);
 
 =head1 DESCRIPTION
 
@@ -69,6 +69,7 @@ sub initialize {
 	Bivio::UI::Setup::Login
 	Bivio::UI::Setup::Finish
 	Bivio::UI::Setup::Intro
+	Bivio::UI::HTML::View::Test
     )]) || return 0;
     # Assemble pages and presentations from views.  Note that
     # the Views have backlinks to their parents, so they can never

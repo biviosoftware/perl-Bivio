@@ -11,16 +11,7 @@ Bivio::SQL::Connection - a database connection manager
 =head1 SYNOPSIS
 
     use Bivio::SQL::Connection;
-
-    my($con) = Bivio::SQL::Connection->get_connection();
-    my($statement) = $conn->prepare('update user_ set name=?');
-    Bivio::SQL::Connection->execute($statement, $model, 'foo');
-    if ($model->get_status()->is_ok()) {
-        Bivio::SQL::Connection->commit();
-    }
-    else {
-        Bivio::SQL::Connection->rollback();
-    }
+    Bivio::SQL::Connection->execute('update user_t set name=?', ['foo']);
 
 =cut
 
@@ -38,6 +29,7 @@ to the database at all times.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
+use Carp ();
 use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 
@@ -76,28 +68,42 @@ sub commit {
 
 =for html <a name="execute"></a>
 
-=head2 execute(statement sth, Model m, string value, ...)
+=head2 execute(statement sth)
+
+=head2 execute(statement sth, array_ref params)
+
+=head2 execute(statement sth, array_ref params, ref die)
 
 Executes the specified statement and dies with an appropriate error
 if it fails.
 
+I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
+
 =cut
 
 sub execute {
-    my(undef, $statement, $model, @values) = @_;
+    my($self, $sql, $params, $die) = @_;
 
+    my($statement, $start_time);
     eval {
-	$statement->execute(@values);
+	if ($_TRACE) {
+	    _trace_sql($sql, $params);
+	    $start_time = Bivio::Util::gettimeofday();
+	}
+#TODO: Need to investigate problems and performance of cached statements
+#TODO: If do cache, then make sure not "active" when making call.
+	$statement = $self->get_connection->prepare($sql);
+	ref($params) ? $statement->execute(@$params)
+		: $statement->execute();
+	$self->increment_db_time($start_time);
     };
-    return unless $@;
+    return $statement unless $@;
 
     my($err) = $statement->err;
     my($attrs) = {
 	message => $@,
 	dbi_err => $err,
 	dbi_errstr => $statement->errstr,
-	entity => $model,
-	request => $model->get_request,
     };
     eval {
 	# Clean up just in case statement is cached
@@ -105,9 +111,10 @@ sub execute {
     };
 #TODO: add more application error processing here
 #TODO: Add reply processingn
-    my($die_code) = defined($_ERR_TO_DIE_CODE{$err})
+    my($die_code) = defined($err) && defined($_ERR_TO_DIE_CODE{$err})
 	    ? $_ERR_TO_DIE_CODE{$err} : Bivio::DieCode::UNKNOWN;
-    Bivio::Die->die($die_code, $attrs, caller);
+    $die ||= 'Bivio::Die';
+    $die->die($die_code, $attrs, caller);
 }
 
 =for html <a name="get_connection"></a>
@@ -144,7 +151,7 @@ sub get_db_time {
 
 =for html <a name="increment_db_time"></a>
 
-=head2 static increment_db_time(int amount) : int
+=head2 static increment_db_time(int start_time) : int
 
 If tracing is enabled, this increments the database time counter and
 returns its new value.
@@ -153,9 +160,9 @@ returns its new value.
 
 sub increment_db_time {
     return 0 if ! $_TRACE;
-    my(undef, $amount) = @_;
-
-    $_DB_TIME += $amount;
+    my(undef, $start_time) = @_;
+    Carp::croak('invalid start_time') unless $start_time;
+    $_DB_TIME += Bivio::Util::time_delta_in_seconds($start_time);
     return $_DB_TIME;
 }
 
@@ -176,6 +183,24 @@ sub rollback {
 }
 
 #=PRIVATE METHODS
+
+# _trace_sql(string sql, array_ref params)
+#
+# Traces the specified sql statement with parameters.
+
+sub _trace_sql {
+    my($sql, $params) = @_;
+    my(@args);
+    my($sep) = ' [';
+    foreach (ref($params) ? @$params : ()) {
+	push(@args, $sep, $_);
+	$sep = ',';
+    }
+    @args && push(@args, ']');
+    # Let trace deal with string truncation and undef
+    &_trace($sql, @args);
+    return;
+}
 
 =head1 COPYRIGHT
 

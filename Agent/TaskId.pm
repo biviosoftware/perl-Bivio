@@ -175,6 +175,15 @@ my(@_CFG) = (
 	undef
 	Setup::Club
     )],
+    [qw(
+	TEST_VIEW
+	13
+        PUBLIC
+        ANONYMOUS
+        test
+	undef
+	HTML::View::Test
+    )],
 );
 # Fix up undefs to be real undefs
 map {map {$_ eq 'undef' && ($_ = undef)} @$_} @_CFG;

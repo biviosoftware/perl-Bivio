@@ -35,19 +35,15 @@ name which is used to connect to.
 
 #=IMPORTS
 use Bivio::IO::Config;
-#use Bivio::IO::Trace;
 
 #=VARIABLES
-#use vars ($_TRACE);
-#Bivio::IO::Trace->register;
-#my($_PACKAGE) = __PACKAGE__;
 my($_ORACLE_HOME);
 Bivio::IO::Config->register({
-    'ORACLE_HOME' => Bivio::IO::Config->REQUIRED,
+    'oracle_home' => $ENV{ORACLE_HOME} || Bivio::IO::Config->REQUIRED,
     Bivio::IO::Config->NAMED => {
-	'database' => Bivio::IO::Config->REQUIRED,
-	'user' => Bivio::IO::Config->REQUIRED,
-	'password' => Bivio::IO::Config->REQUIRED,
+	'database' => $ENV{ORACLE_SID} || Bivio::IO::Config->REQUIRED,
+	'user' => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
+	'password' => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
     },
 });
 my($_DEFAULT_OPTIONS) = {
@@ -93,7 +89,21 @@ sub connect {
 
 =over 4
 
-=item name : type [default]
+=item database : string [$ENV{ORACLE_SID} || required]
+
+Database to connect to (named configuration)
+
+=item oracle_home : string [$ENV{ORACLE_HOME} || required]
+
+Where oracle resides
+
+=item password : string [$ENV{DBI_PASS} || required]
+
+Password to use (named configuration)
+
+=item user : string [$ENV{DBI_USER} || required]
+
+User to log in as (named configuration)
 
 =back
 
@@ -101,7 +111,7 @@ sub connect {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_ORACLE_HOME = $cfg->{ORACLE_HOME};
+    $_ORACLE_HOME = $cfg->{oracle_home};
     return;
 }
 

@@ -1,26 +1,26 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Type::Attributes;
+package Bivio::Collection::Attributes;
 use strict;
-$Bivio::Type::Attributes::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Collection::Attributes::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Type::Attributes - a collection of key/value pairs
+Bivio::Collection::Attributes - a collection of key/value pairs
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::Attributes;
-    Bivio::Type::Attributes->new($initial_map);
+    use Bivio::Collection::Attributes;
+    Bivio::Collection::Attributes->new($initial_map);
 
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Type::Attributes::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Collection::Attributes::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::Attributes> provides a useful wrapper around a hash of values.
+C<Bivio::Collection::Attributes> provides a useful wrapper around a hash of values.
 
 It can be subclassed to allow arbitrary named attributes
 without polluting a class's internal field name space.
@@ -43,13 +43,13 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Type::Attributes
+=head2 static new() : Bivio::Collection::Attributes
 
 Creates an empty instance.
 
 =cut
 
-=head2 static new(hash map) : Bivio::Type::Attributes
+=head2 static new(hash map) : Bivio::Collection::Attributes
 
 Creates an instance with I<map>. The constructor doesn't copy
 the map, so don't modify the hash after invoking this.
@@ -70,7 +70,7 @@ sub new {
 
 =for html <a name="clone"></a>
 
-=head2 clone() : Bivio::Type::Attributes
+=head2 clone() : Bivio::Collection::Attributes
 
 Creates a duplicate copy of this instance.
 
