@@ -1,0 +1,8 @@
+# $Id$
+
+view_class_map('HTMLWidget');
+view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
+
+view_main(SourceCode({
+    uri => 'src',
+}));
