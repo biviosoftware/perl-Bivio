@@ -464,10 +464,10 @@ __PACKAGE__->compile([
 	undef,
 	'field may not be unspecified',
     ],
-    ALREADY_INVITED => [
+    DATE_RANGE_GREATER_THAN_ONE_YEAR => [
 	38,
 	undef,
-	'an invitation was already extended to this person',
+	'the date range may not be greater than one year',
     ],
     CLUB_USER_ROLE => [
 	39,
@@ -859,11 +859,6 @@ __PACKAGE__->compile([
 	115,
 	undef,
 	'end date must be within the same year as the start date',
-    ],
-    DATE_RANGE_GREATER_THAN_ONE_YEAR => [
-	116,
-	undef,
-	'the date range may not be greater than one year',
     ],
 ]);
 
