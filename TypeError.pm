@@ -3,6 +3,7 @@
 package Bivio::TypeError;
 use strict;
 $Bivio::TypeError::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::TypeError::VERSION;
 
 =head1 NAME
 
@@ -271,7 +272,7 @@ invalid file format for export file chosen
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     UNKNOWN => [
 	0,
     ],
@@ -854,13 +855,18 @@ __PACKAGE__->compile(
 	undef,
 	'foreign taxes may only be associated with dividend distributions',
     ],
-);
+    NUMBER_OUT_OF_RANGE => [
+	115,
+	undef,
+	'the number is out of range',
+    ],
+]);
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio, Inc.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

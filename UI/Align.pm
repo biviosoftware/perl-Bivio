@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Align;
 use strict;
 $Bivio::UI::Align::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Align::VERSION;
 
 =head1 NAME
 
@@ -66,7 +67,7 @@ The alignments and their values are:
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'N' => [
 	1,
 	'north',
@@ -132,7 +133,7 @@ __PACKAGE__->compile(
 	undef,
 	' valign=bottom',
     ],
-);
+]);
 
 =head1 METHODS
 
@@ -161,7 +162,7 @@ sub as_html {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

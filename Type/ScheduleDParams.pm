@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::ScheduleDParams;
 use strict;
 $Bivio::Type::ScheduleDParams::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::ScheduleDParams::VERSION;
 
 =head1 NAME
 
@@ -51,7 +52,7 @@ don't show gains distributions in sub lists
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'UNKNOWN' => [
     	0,
 	'unknown',
@@ -64,7 +65,7 @@ __PACKAGE__->compile(
 	2,
 	'hide distributions',
     ],
-);
+]);
 
 =head1 METHODS
 
@@ -74,7 +75,7 @@ __PACKAGE__->compile(
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::RealmType;
 use strict;
 $Bivio::Auth::RealmType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Auth::RealmType::VERSION;
 
 =head1 NAME
 
@@ -56,7 +57,7 @@ access to a particular club
 
 #=PRIVATE METHODS
 
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'UNKNOWN' => [
     	0,
 	undef,
@@ -77,11 +78,11 @@ __PACKAGE__->compile(
 	undef,
 	'access to a particular club',
     ],
-);
+]);
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

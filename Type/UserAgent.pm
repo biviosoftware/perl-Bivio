@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::UserAgent;
 use strict;
 $Bivio::Type::UserAgent::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::UserAgent::VERSION;
 
 =head1 NAME
 
@@ -61,13 +62,13 @@ Background job
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     UNKNOWN => [0],
     BROWSER => [1],
     MAIL => [2],
     JOB => [3],
     BROWSER_HTML3 => [4],
-);
+]);
 
 =head1 METHODS
 
@@ -108,7 +109,7 @@ sub put_on_request {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -3,6 +3,7 @@
 package Bivio::UI::Label;
 use strict;
 $Bivio::UI::Label::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Label::VERSION;
 
 =head1 NAME
 
@@ -36,7 +37,7 @@ is used as the name.
 use Bivio::Type::TaxCategory;
 
 #=VARIABLES
-_compile(
+_compile([
 #TODO: Should these be dynamically looked up?
     # Common labels
     NONE => [' '],
@@ -516,7 +517,7 @@ _compile(
     MAIL => ['Mail'],
     PROFILE => ['Profile'],
     PREFERENCES => ['Preferences'],
-);
+]);
 
 =head1 METHODS
 
@@ -554,28 +555,28 @@ sub unsafe_get_simple {
 
 #=PRIVATE METHODS
 
-# _compile(array cfg)
+# _compile(array_ref cfg)
 #
 # Inserts numeric ID into the list.
 #
 sub _compile {
-    my(@cfg) = @_;
+    my($cfg) = @_;
     my($i) = 1;
     my($skip) = 1;
-    foreach my $c (@cfg) {
+    foreach my $c (@$cfg) {
 	next if $skip;
 	unshift(@$c, $i++);
     }
     continue {
 	$skip = !$skip;
     }
-    __PACKAGE__->compile(@cfg);
+    __PACKAGE__->compile($cfg);
     return;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

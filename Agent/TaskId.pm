@@ -3,6 +3,7 @@
 package Bivio::Agent::TaskId;
 use strict;
 $Bivio::Agent::TaskId::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::TaskId::VERSION;
 
 =head1 NAME
 
@@ -2397,9 +2398,9 @@ my(@_CFG) = (
     )],
 );
 
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     map {($_->[0], [$_->[1]])} @_CFG
-);
+]);
 
 =head1 METHODS
 
@@ -2433,7 +2434,7 @@ sub is_continuous {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

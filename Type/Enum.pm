@@ -301,7 +301,7 @@ sub as_string {
 
 =for html <a name="compile"></a>
 
-=head2 static compile(hash declaration)
+=head2 static compile(array_ref declaration)
 
 Hash of enum names pointing to array containing number, short
 description, and, long description.  If the long description
@@ -319,7 +319,7 @@ will cause an error.
 
 Example compile:
 
-    __PACKAGE__->compile(
+    __PACKAGE__->compile([
         'NAME1' => {
             1,
             'short description',
@@ -331,36 +331,52 @@ Example compile:
         'NAME2' => {
             2,
         },
-    );
+    ]);
+
+An array_ref is used, so this module can check for duplicate names.
 
 Reference an Enum value with:
 
     __PACKAGE__->NAME1;
 
+B<DEPRECATED FORM: accepts an array, not a array_ref.>
+
 =cut
 
 sub compile {
     my($pkg) = shift;
-    my(%info) = @_;
     defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
 
+    my($args) = @_;
+#TODO: Remove once no more deprecated warnings.
+    if (int(@_) > 1) {
+	# DEPRECATED FORM
+	$args = [@_];
+	Bivio::IO::Alert->warn_deprecated('pass an array_ref');
+    }
+
+    Bivio::IO::Alert->die($pkg, ': first argument must be an array_ref')
+		if ref($args) ne 'ARRAY';
+    # Will warn if odd number of elements
+    my($info) = {@$args};
+
     # Check for dup keys, because the hash has lost them.
-    if (int(@_)/2 != int(keys(%info))) {
-	# The value of %info is being checked here as well, but this makes
-	# the code simpler.  We know that all array_refs are uniquely named.
+    if (int(@$args)/2 != int(keys(%$info))) {
+	# The value of %$info is being checked here as well, but this makes the
+	# code simpler.  We know that all array_refs are uniquely named.
 	my(%found);
-	foreach my $k (@_) {
+	foreach my $k (@$args) {
 	    Bivio::IO::Alert->die($k, ': duplicate entry')
 			if $found{$k}++;
 	}
     }
 
     my($name);
-    my($eval) = "package $pkg;\nmy(\$_INFO) = \\\%info;\n";
+    my($eval) = "package $pkg;\nmy(\$_INFO) = \$info;\n";
     # Make a copy, because we're going to grow the list.
     my($min, $max);
     my(@list);
-    my(%info_copy) = %info;
+    my(%info_copy) = %$info;
     my($name_width) = 0;
     my($short_width) = 0;
     my($long_width) = 0;
@@ -407,17 +423,17 @@ sub compile {
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
 	Bivio::IO::Alert->die($pkg, '::', $d->[0], ': duplicate int value (',
-		$d->[3], ' and ', $info{$d->[0]}->[3], ')')
-		    if defined($info{$d->[0]});
-	$info{$d->[0]} = $d;
+		$d->[3], ' and ', $info->{$d->[0]}->[3], ')')
+		    if defined($info->{$d->[0]});
+	$info->{$d->[0]} = $d;
 	# Map descriptions only if not already mapped.
-	$info{uc($d->[1])} = $d unless defined($info{uc($d->[1])});
-	$info{uc($d->[2])} = $d unless defined($info{uc($d->[2])});
+	$info->{uc($d->[1])} = $d unless defined($info->{uc($d->[1])});
+	$info->{uc($d->[2])} = $d unless defined($info->{uc($d->[2])});
 	# Map extra aliases
 	foreach my $alias (@aliases) {
 	    Bivio::IO::Alert->die($pkg, '::', $alias, ': duplicate alias')
-			if defined($info{uc($alias)});
-	    $info{uc($alias)} = $d;
+			if defined($info->{uc($alias)});
+	    $info->{uc($alias)} = $d;
 	}
 	# Index 5: enum instance
 	my($ln) = lc($name);
@@ -433,12 +449,12 @@ EOF
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
             Bivio::IO::Alert->die($pkg, ': missing number (', $n, ') in enum')
-	        unless defined($info{$n});
+	        unless defined($info->{$n});
 	}
     }
     eval($eval . '; 1')
 	    || Carp::croak("compilation failed: $@");
-    $_MAP{$pkg} = \%info;
+    $_MAP{$pkg} = $info;
     # Must happen last after enum references are defined.
     my($can_be_negative) = $min->[0] < 0;
     my($can_be_positive) = $max->[0] > 0;

@@ -3,7 +3,6 @@
 # $Id$
 #
 use strict;
-
 BEGIN { $| = 1; print "1..26\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
@@ -18,7 +17,7 @@ package Bivio::Type::Enum::T1;
 use Bivio::Type::Enum;
 @Bivio::Type::Enum::T1::ISA = qw(Bivio::Type::Enum);
 
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'E0' => [
     	0,
 	'e0',
@@ -34,7 +33,7 @@ __PACKAGE__->compile(
 	'e2',
 	'e 2',
     ],
-);
+]);
 
 1;
 
@@ -43,7 +42,7 @@ package Bivio::Type::Enum::T2;
 use Bivio::Type::Enum;
 @Bivio::Type::Enum::T2::ISA = qw(Bivio::Type::Enum);
 
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'E_0' => [
     	0,
     ],
@@ -51,7 +50,7 @@ __PACKAGE__->compile(
     	2,
 	'e two',
     ],
-);
+]);
 
 sub is_continuous { return 0; }
 
@@ -62,11 +61,11 @@ package Bivio::Type::Enum::T3;
 use Bivio::Type::Enum;
 @Bivio::Type::Enum::T3::ISA = qw(Bivio::Type::Enum);
 
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'E123456789' => [
     	-123456789,
     ],
-);
+]);
 
 1;
 

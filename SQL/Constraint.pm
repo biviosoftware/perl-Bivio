@@ -1,8 +1,10 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Constraint;
 use strict;
 $Bivio::SQL::Constraint::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::SQL::Constraint::VERSION;
+$_ = $Bivio::SQL::Constraint::VERSION;
 
 =head1 NAME
 
@@ -59,19 +61,19 @@ may not be null and must be non-zero enumerated type value
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     NONE => [0],
     PRIMARY_KEY => [1],
     NOT_NULL => [2],
     NOT_NULL_UNIQUE => [3],
     NOT_ZERO_ENUM => [4],
-);
+]);
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Gender;
 use strict;
 $Bivio::Type::Gender::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Gender::VERSION;
 
 =head1 NAME
 
@@ -42,17 +43,17 @@ C<Bivio::Type::Gender> defines male, female, and unknown gender values.
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     UNKNOWN => [0, 'Unspecified'],
     FEMALE => [1],
     MALE => [2],
-);
+]);
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

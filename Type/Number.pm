@@ -41,6 +41,20 @@ use Math::BigInt ();
 
 =cut
 
+=for html <a name="abs"></a>
+
+=head2 static abs(string v) : string
+
+Converts a negative into a positive number.
+
+=cut
+
+sub abs {
+    my(undef, $v) = @_;
+    $v =~ s/^-//;
+    return $v;
+}
+
 =head2 static add(string v, string v2, int decimals) : string
 
 Adds two numbers and returns the result using the specified decimal precision.
@@ -59,9 +73,7 @@ sub add {
 
 =head2 static compare(string left, string right, int decimals) : int
 
-Returns > 0 if I<v> is greater than I<v2>.
-Returns 0 if I<v> is equal to I<v2>.
-Returns < 0 if I<v> is less than I<v2>.
+See L<Bivio::Type::compare|Bivio::Type/"compare">.
 
 =cut
 

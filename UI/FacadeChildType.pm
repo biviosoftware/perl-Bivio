@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::FacadeChildType;
 use strict;
 $Bivio::UI::FacadeChildType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::FacadeChildType::VERSION;
 
 =head1 NAME
 
@@ -33,7 +34,7 @@ See L<Bivio::UI::Facade|Bivio::UI::Facade>.
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
 	# This list is stored as preferences, so don't change the numbers.
 	# Leave space to allow to fill in holes.
 	DEFAULT => [
@@ -52,7 +53,7 @@ __PACKAGE__->compile(
 	    30,
 	    'Extra Large',
 	],
-       );
+]);
 
 =head1 METHODS
 
@@ -86,7 +87,7 @@ sub is_continuous {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

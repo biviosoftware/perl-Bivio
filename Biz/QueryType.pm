@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::QueryType;
 use strict;
 $Bivio::Biz::QueryType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::QueryType::VERSION;
 
 =head1 NAME
 
@@ -87,7 +88,7 @@ only the order_by and parent will be used.
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     # Name, method, and which uri to default to.
     NEXT_DETAIL => [1, 'format_uri_for_next', 'detail_uri'],
     PREV_DETAIL => [2, 'format_uri_for_prev', 'detail_uri'],
@@ -102,7 +103,7 @@ __PACKAGE__->compile(
     NO_QUERY => [11, '', 'list_uri'],
     THIS_DETAIL_WITH_PATH => [12, 'format_uri_for_this', 'detail_uri'],
     ANY_LIST => [13, 'format_uri_for_any_list', 'list_uri'],
-);
+]);
 
 =head1 METHODS
 
@@ -112,7 +113,7 @@ __PACKAGE__->compile(
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

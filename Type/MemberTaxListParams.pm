@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::MemberTaxListParams;
 use strict;
 $Bivio::Type::MemberTaxListParams::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::MemberTaxListParams::VERSION;
 
 =head1 NAME
 
@@ -51,7 +52,7 @@ hide valid members
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     'UNKNOWN' => [
     	0,
 	'unknown',
@@ -64,7 +65,7 @@ __PACKAGE__->compile(
 	2,
 	'hide valid members',
     ],
-);
+]);
 
 =head1 METHODS
 
@@ -74,7 +75,7 @@ __PACKAGE__->compile(
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

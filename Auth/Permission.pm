@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Permission;
 use strict;
 $Bivio::Auth::Permission::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Auth::Permission::VERSION;
 
 =head1 NAME
 
@@ -38,7 +39,7 @@ NOTE: When you add a new permission, you must update the
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile(
+__PACKAGE__->compile([
     # DO NOT CHANGE the numbers in this list, the values are
     # stored in the database.
     UNKNOWN => [0],
@@ -64,7 +65,7 @@ __PACKAGE__->compile(
     ANY_REALM_USER => [20],
     REALM_PUBLICIZE => [21],
     FILE_ADMIN => [22],
-);
+]);
 
 =head1 METHODS
 
@@ -74,7 +75,7 @@ __PACKAGE__->compile(
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
