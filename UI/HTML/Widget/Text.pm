@@ -196,7 +196,7 @@ sub render {
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
 	$field, $source) if $fields->{handler};
-    $$buffer .= ' readonly'
+    $$buffer .= ' disabled'
 	if $self->get_or_default('is_read_only',
             ! $form->is_field_editable($field));
 
