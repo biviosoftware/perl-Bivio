@@ -12,9 +12,14 @@ Bivio::IO::Trace - statement level trace management
 
     use Bivio::IO::Trace;
     Bivio::IO::Trace->register;
-    &T("this is my message");
-    $T && &T("This is ", &a_complex, " list of arguments");
+    &_trace("this is my message");
+    $_TRACE && &_trace("This is ", &a_complex, " list of arguments");
     Bivio::IO::Trace->set_filters('/my message/');
+
+=cut
+
+use Bivio::UNIVERSAL;
+@Bivio::IO::Alert::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
@@ -41,6 +46,7 @@ L<filter|"filter">  will be treated as always true.
 
 use Carp ();
 use Bivio::IO::Alert;
+use Bivio::IO::Config;
 
 #=VARIABLES
 
@@ -57,17 +63,40 @@ my($_PKG_SUB) = \&_false;
 # Sub used for printing.  See &print.
 my($_PRINTER) = \&default_printer;
 
-#=INITIALIZATION
-
-# If we are setuid or setgid, then don't initialize from environment
-# variables.
-if ($< == $> && $( == $)) {
-    Bivio::IO::Trace->set_filters($ENV{BIVIO_TRACE}, $ENV{BIVIO_TRACE_PACKAGES});
-}
+Bivio::IO::Config->register(\&_configure);
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="configure"></a>
+
+=head2 configure(hash cfg)
+
+=over 4
+
+=item filter : string [undef]
+
+Initial L<filter|"filter">
+
+=item package_filter : string [undef]
+
+Initial L<package_filter|"package_filter">
+
+=item printer : code [default_printer]
+
+Initial L<printer|"printer">
+
+=back
+
+=cut
+
+sub configure {
+    my($class, $cfg) = @_;
+    &set_filters(undef, $cfg->{filter}, $cfg->{package_filter});
+    &set_printer(undef, ref($cfg->{printer}) eq 'CODE'
+	    ? $cfg->{printer} : \&default_printer);
+}
 
 =for html <a name="default_printer"></a>
 
@@ -100,7 +129,7 @@ sub filter {
 
 =head2 static package_filter() : string
 
-Return the current package filter. 
+Return the current package filter.
 To set, use L<set_filters|"set_filters">.
 
 =cut
@@ -351,22 +380,6 @@ sub _false {
 sub _true {
     return 1;
 }
-
-=head1 ENVIRONMENT
-
-=over 4
-
-=item $BIVIO_TRACE
-
-initial value of L<filter|"filter"> only if the program is not running
-setuid or setgid.
-
-=item $BIVIO_TRACE_PACKAGES
-
-initial value of L<package_filter|"package_filter"> only if the program is not
-running setuid or setgid.
-
-=back
 
 =head1 BUGS
 

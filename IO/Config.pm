@@ -11,12 +11,25 @@ Bivio::IO::Config - simple configuration using perl syntax
 =head1 SYNOPSIS
 
     use Bivio::IO::Config;
-    my($cfg) = Bivio::IO::Config->get();
-    my($cfg) = Bivio::IO::Config->get("Some::Package");
+    Bivio::IO::Config->register();
+    sub configure {
+	my($class, $cfg) = @_;
+	$cfg->{param1} && ...;
+    }
+
+    Bivio::IO::Config->initialize(@ARGV);
+    Bivio::IO::Config->initialize({
+	'Some::Package' => {
+	    'some_param' => $some_value,
+	},
+	'Some::Other::Package' => {
+	    'some_other_param' => $some_other_value,
+	},
+    });
 
 =cut
 
-use Bivio::IO::Config;
+use Bivio::UNIVERSAL;
 @Bivio::IO::Config::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
@@ -25,12 +38,24 @@ C<Bivio::IO::Config> is a simple configuration mechanism.  A configuration file
 is a hash_ref of packages and hash_refs.  Each package's hash_ref contains
 configuration name/value tuples.
 
+Modules are dynamically configured in the order they are initialized.
+Each module defines a C<configure> method and
+calls L<register|"register"> during initialization.
+When L<initialize|"initialize"> is called, the registrants are
+upcalled with their configuration.
+
 =cut
+
+# Do not use explicitly, to ensure this module initialized first
+# use Bivio::IO::Alert;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_DATA);
+# So we behave nicely before we are initialized
+my($_DATA) = {};
 my($_INITIALIZED) = 0;
+# List of packages registered
+my(@_REGISTERED) = ();
 
 =head1 METHODS
 
@@ -52,51 +77,101 @@ L<initialize|"initialize"> should be called by main.
 
 sub get {
     my($proto, $package) = @_;
-    $_INITIALIZED || Bivio::IO::Config->initialize();
     defined($package) || ($package = caller);
     return ref($_DATA->{$package}) eq 'HASH' ? $_DATA->{$package} : {};
 }
 
 =for html <a name="initialize"></a>
 
-=head2 initialize(array argv)
+=head2 initialize(string arg1, ...)
 
-Initializes the configuration from the command line arguments or from the
-environment variable C<$BIVIO_CONFIG>.  Will be called automatically if not
-called by main.
+=head2 initialize(hash config)
+
+Initializes the configuration from the command line arguments, from an explicit
+hash, or from the environment variable C<$BIVIO_CONFIG> (only if not running
+setuid).
+
+Calls registrants if configuration is valid.
 
 =cut
 
 sub initialize {
-    $_INITIALIZED && return;
-    # On failure, we have no configuration.  The caller is free to
-    # continue.
-    $_DATA = {};
+    my(undef, $arg) = @_;
     $_INITIALIZED = 1;
-    shift(@_);
+    # On failure, we have no configuration.
+    $_DATA = {};
     my($file);
-    if (@_) {
-	-r $_[0] || die("usage: $0 config.pl\n");
-	$file = $_[0];
+    if (defined($arg)) {
+	if (ref($arg) eq 'HASH') {
+	    $_DATA = $arg;
+	}
+	else {
+	    -r $arg || die("$arg: not readable file\nusage: $0 config.pl");
+	    $file = $arg;
+	}
     }
-    elsif (defined($ENV{BIVIO_CONFIG})) {
+    # If we are setuid or setgid, then don't initialize from environment
+    # variables.
+    elsif ($< == $> && $( == $) && defined($ENV{BIVIO_CONFIG})) {
 	-r $ENV{BIVIO_CONFIG}
 		|| die("\$BIVIO_CONFIG environment variable invalid\n");
 	$file = $ENV{BIVIO_CONFIG};
     }
-    else {
-	return;
+    if (defined($file)) {
+	my($data) = do $file;
+	ref($data) eq 'HASH'
+		|| die("$file: config parse failed: ", $@ ? $@
+			: "empty or not a hash_ref");
+	$_DATA = $data;
     }
-    my($data) = do $file;
-    unless (ref($data) eq 'HASH') {
-	$@ && die("$file: config parse failed: $@");
-	die("$file: not a config file");
+    # Call registrants in FIFO
+    my($r);
+    foreach $r (@_REGISTERED) {
+	&_configure($r);
     }
-    $_DATA = $data;
+    return;
+}
+
+=for html <a name="register"></a>
+
+=head2 register()
+
+Calling package will be put in the list of packages to be configured.  A
+callback may happen immediately, if L<initialize|"initialize"> was called
+already.
+
+The calling package must define a C<configure> method which takes two
+arguments, the class and the configuration as a hash.
+
+=cut
+
+sub register {
+    my($proto) = @_;
+    my($pkg) = caller;
+    defined(&{$pkg . '::configure'}) || die("&$pkg\::configure not defined");
+    push(@_REGISTERED, $pkg);
+    $_INITIALIZED && &_configure($pkg);
     return;
 }
 
 #=PRIVATE METHODS
+
+sub _configure {
+    my($pkg) = @_;
+    Bivio::IO::Alert->eval_or_warn(sub {
+	&{\&{$pkg . '::configure'}}($pkg, &get(undef, $pkg))
+    });
+}
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item $BIVIO_CONFIG
+
+Name of configuration file if not passed command-line arguments.
+
+=back
 
 =head1 COPYRIGHT
 
