@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2002 bivio Software Artisans, Inc.  All Rights reserved.
+# Copyright (c) 2001-2004 bivio Software Artisans, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    require_explicit_su attribute.  If true, it will not automatically
+    logout substituted users or substitute to new users
+  * Bivio::Util::Release had some minor bugs in new functions
+
+  Revision 2.10  2004/02/25 23:15:24  nagler
+  * Removed Bivio::UI::WidgetValueSource change from previous release.
+    It was not backwards compatible.
   * Bivio::Biz::ListModel->map_rows calls reset cursor
   * Bivio::UI::Facade->get_local_file_root returns local_file_root
   * Bivio::Util::Release->install_tar is the install compliment to build_tar
@@ -945,7 +952,7 @@ http://www.bivio.biz for more info.
 
 =cut
 
-Copyright (c) 2001-2002 bivio Software Artisans, Inc.  All Rights reserved.
+Copyright (c) 2001-2004 bivio Software Artisans, Inc.  All Rights reserved.
 
 =head1 COPYRIGHT
 
