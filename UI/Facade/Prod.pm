@@ -161,6 +161,7 @@ my($_SELF) = __PACKAGE__->new({
 		    celebrity_box_text
 		    profile_box_text
 		    copyright_and_disclaimer
+                    data_disclaimer
 		    report_footer
 		    time
             )],

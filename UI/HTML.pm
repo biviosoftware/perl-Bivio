@@ -67,6 +67,46 @@ Bivio::UI::Facade->register(['Bivio::UI::Icon', 'Bivio::UI::Color',
 
 =cut
 
+=for html <a name="get_data_disclaimer"></a>
+
+=head2 static get_data_disclaimer() : Bivio::UI::HTML::Widget
+
+Returns the data disclaimer widget (which is a director)
+
+=cut
+
+sub get_data_disclaimer {
+    my($proto) = @_;
+    # Only render csi data if accounting page
+    return $_W->director(
+	    [sub {
+		 # Some tasks don't have uris; always have names
+		 return shift->get('task_id')->get_name =~ /ACCOUNTING/
+			 ? 1 : 0;
+	     }],
+	    {
+		0 => 0,
+		1 => Bivio::UI::HTML::Widget::Grid->new({
+		    values => [[
+			$_W->clear_dot(1, 1)->put(cell_width => '50%'),
+			$_W->template_as_string(
+				    <<'EOF', 'data_disclaimer')
+<{clear_dot(480, 10)}><br>
+Historical data and daily updates provided by
+<{link('Commodity Systems, Inc. (CSI)', 'http://www.csidata.com', 'link')}>.
+Data and information is provided for informational purposes only, and is not
+intended for trading purposes. Neither site_name() nor its data or content
+providers shall be liable for any errors or delays in the content, or
+for any actions taken in reliance thereon.
+EOF
+				->put(cell_align => 'center'),
+			$_W->clear_dot(1, 1)->put(cell_width => '50%'),
+			],
+		    ],
+		}),
+	    });
+}
+
 =for html <a name="get_header"></a>
 
 =head2 static get_header() : Bivio::UI::HTML::Widget
@@ -252,6 +292,9 @@ sub get_standard_footer {
 				cell_nowrap => 1),
 		    ]],
 		}),
+	    ],
+	    [
+		$proto->get_data_disclaimer()->put(cell_expand => 1),
 	    ],
 	],
     });
