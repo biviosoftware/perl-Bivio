@@ -32,7 +32,6 @@ and delete interface to the C<file_quota_t> table.
 
 =cut
 
-
 =head1 CONSTANTS
 
 =cut
@@ -63,6 +62,7 @@ sub DEFAULT_MAX_KBYTES_FOR_DEMO_CLUB {
 }
 
 #=IMPORTS
+use Bivio::SQL::Connection;
 use Bivio::Type::FileVolume;
 
 #=VARIABLES
@@ -143,7 +143,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'file_quota_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             kbytes => ['Integer', 'NOT_NULL'],
             max_kbytes => ['Integer', 'NOT_NULL'],
         },

@@ -53,8 +53,8 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'tax_k1_t',
 	columns => {
-	    realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    user_id => ['PrimaryId', 'PRIMARY_KEY'],
+	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+	    user_id => ['RealmUser.user_id', 'PRIMARY_KEY'],
 	    fiscal_end_date => ['Date', 'PRIMARY_KEY'],
 	    entity_type => ['F1065Entity', 'NOT_NULL'],
 	    partner_type => ['F1065Partner', 'NOT_NULL'],
