@@ -47,15 +47,16 @@ use Crypt::CBC;
 #=VARIABLES
 # Should be short and non-numeric.  Placed on both ends of string to "ensure"
 # decryption worked.
-my($_MAGIC) = 'BWN';
-# Character we use to blank out a word
-my($_FILL) = '*';
+my($_MAGIC) = 'X';
+my($_ALGORITHM) = 'DES';
 # Before initialization (_init_cipher()) is set to key
 my($_CIPHER) = undef;
 my($_PROMPT) = 0;
 Bivio::IO::Config->register({
     key => Bivio::IO::Config->REQUIRED,
     prompt => $_PROMPT,
+    magic => $_MAGIC,
+    algorithm => $_ALGORITHM,
 });
 
 =head1 METHODS
@@ -110,6 +111,8 @@ sub handle_config {
     $_CIPHER = $cfg->{key};
 #TODO: Need a way to compute which programs need to decrypt the key.
     $_PROMPT = $cfg->{prompt};
+    $_MAGIC = $cfg->{magic};
+    $_ALGORITHM = $cfg->{algorithm};
     _init_cipher() if $ENV{MOD_PERL};
     return;
 }
@@ -125,34 +128,6 @@ All secrets must be displayed/managed in a secure context.
 sub is_secure_data {
     return 1;
 }
-
-#TODO: This doesn't work
-#
-#=for html <a name="to_html"></a>
-#
-#=head2 static to_html(string value) : value
-#
-#Converts to a invalid string which shows the last bit of the
-#Secret, but nothing more.  Shows the last N chars of I<value> unless it
-#is_password iwc it shows no chars.  N is selected dynamically
-#based on the length of I<value>
-#
-#=cut
-#
-#sub to_html {
-#    my($proto, $value) = @_;
-#    return '' unless defined($value) && length($value);
-#
-#    # It's important that this transform be repeatable.  The value will
-#    # pass through to_html several times in the event of form errors.
-#    return length($value) x $_FILL if $proto->is_password;
-#
-#    # Show at most 4 chars of the real value.  If < 8 chars total,
-#    # shows half the chars (rounding down).
-#    my($len) = length($value) - 4;
-#    $len = int((length($value) + 1) / 2) if $len < 4;
-#    return Bivio::HTML->escape($_FILL x $len.substr($value, $len));
-#}
 
 =for html <a name="to_sql_param"></a>
 
@@ -170,45 +145,6 @@ sub to_sql_param {
     # Surround with magic and trailing time and encrypt
     return $_CIPHER->encrypt_hex($_MAGIC.$value.$_MAGIC.time);
 }
-
-#TODO: This code was related to using to_literal as a secret rendering
-#      section of code.  It's not right.
-#=for html <a name="value_was_changed"></a>
-#
-#=head2 static value_has_changed(string old, string new) : boolean
-#
-#I<old> is a value from the database.  I<new> is a value which has passed
-#through L<to_literal|"to_literal">.  I<old> is converted to a literal and the
-#results compared.  If there is no difference, it is assumed that I<new> is not
-#different and the field doesn't need to be updated.
-#
-#=cut
-#
-#sub value_has_changed {
-#    my($proto, $old, $new) = @_;
-#    $old = $proto->to_literal($old);
-#    return 1 unless defined($old) == defined($new);
-#    return 0 unless defined($old);
-#    return $old eq $new ? 1 : 0;
-#}
-#
-#=for html <a name="value_is_blanked"></a>
-#
-#=head2 value_is_blanked(string value) : boolean
-#
-#Returns true if I<value> is blanked out with the fill character
-#and I<probably> hasn't been modified.  Should be used by subclasses
-#which need to do validation in I<from_literal>.
-#
-#=cut
-#
-#sub value_is_blanked {
-#    my($proto, $value) = @_;
-#    return 0 unless length($value);
-#
-#    # If there is no transformation, is likely to be blanked.
-#    return $proto->to_literal($value) eq $value ? 1 : 0;
-#}
 
 #=PRIVATE METHODS
 
@@ -242,7 +178,7 @@ sub _decrypt_key {
     # $_CIPHER can be reset.
     my($key_out) = Bivio::Die->eval(
 	    sub {
-		$_CIPHER = Crypt::CBC->new($p, 'IDEA');
+		$_CIPHER = Crypt::CBC->new($p, $_ALGORITHM);
 		return __PACKAGE__->from_sql_column($key_in);
 	    });
     $_CIPHER = undef;
@@ -262,7 +198,7 @@ sub _init_cipher {
     $_CIPHER = undef;
     $key = _decrypt_key($key) if $_PROMPT;
     return 0 unless $key;
-    $_CIPHER = Crypt::CBC->new($key, 'IDEA');
+    $_CIPHER = Crypt::CBC->new($key, $_ALGORITHM);
     return 1;
 }
 
