@@ -40,6 +40,31 @@ it is not a L<Bivio::Type::Number|Bivio::Type::Number>.
 
 =cut
 
+=for html <a name="DEFAULT_TIME"></a>
+
+=head2 DEFAULT_TIME : int
+
+Returns 21:59:59 in seconds (79199).  Used when the
+user doesn't supply a "clock" part in from_literal, e.g.
+in L<Bivio::Type::Date|Bivio::Type::Date>.  This module may
+use it eventually, which is why it is declared here.
+
+The time 21:59:59 is interpreted in GMT, since both
+L<Bivio::Type::Date|Bivio::Type::Date> and
+L<Bivio::Type::Time|Bivio::Type::Time> are interpreted in
+GMT.  It is the latest time in the day in Middle European
+Time (MET) during DST.  This means that a DateTime without a
+clock component in MET will still be the same date in GMT
+and in the US.
+
+This is a compromise until we have more time work on DateTime.
+
+=cut
+
+sub DEFAULT_TIME {
+    return 79199;
+}
+
 =for html <a name="SECONDS_IN_DAY"></a>
 
 =head2 SECONDS_IN_DAY : int
@@ -68,7 +93,7 @@ sub SQL_FORMAT {
 
 =head2 UNIX_EPOCH_IN_JULIAN_DAYS : int
 
-Number of days between the unix and julian epoch
+Number of days between the unix and julian epoch.
 
 =cut
 
@@ -76,22 +101,72 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
     return 2440588;
 }
 
+#=IMPORTS
+use Bivio::TypeError;
+
 =head1 METHODS
 
 =cut
 
+=for html <a name="can_be_negative"></a>
+
+=head2 static can_be_negative : boolean
+
+Returns false.
+
+=cut
+
+sub can_be_negative {
+    return 0;
+}
+
+=for html <a name="can_be_positive"></a>
+
+=head2 static can_be_positive : boolean
+
+Returns true.
+
+=cut
+
+sub can_be_positive {
+    return 1;
+}
+
+=for html <a name="can_be_zero"></a>
+
+=head2 static can_be_zero : boolean
+
+Returns true.
+
+=cut
+
+sub can_be_zero {
+    return 1;
+}
+
 =for html <a name="from_literal"></a>
 
-=head2 static from_literal(string value) : string
+=head2 static from_literal(string value) : array
 
 Makes sure is a unsigned number.
 
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-#TODO: Improve the checks here
-    return $value =~ /^\d+$/ ? $value : undef;
+    my($proto, $value) = @_;
+    return undef unless defined($value) && $value =~ /\S/;
+    # Get rid of all blanks to be nice to user
+    return (undef, Bivio::TypeError::DATE_TIME())
+	    unless $value =~ /^\s*(\d+)\s*$/;
+    $value = $1;
+    # Get rid of leading zeroes for range check
+    $value =~ s/^0+/0/g;
+    # Compare as strings for date range, because don't want integer
+    # conversion to wrap
+    return (undef, Bivio::TypeError::DATE_RANGE())
+	    unless length($value) < $proto->get_width
+		    || $value le $proto->get_max;
+    return int($value);
 }
 
 =for html <a name="from_sql_column"></a>
@@ -120,6 +195,54 @@ Returns C<TO_CHAR(I<place_holder>, 'J SSSSS')>.
 sub from_sql_value {
     my(undef, $place_holder) = @_;
     return 'TO_CHAR('.$place_holder.",'".SQL_FORMAT()."')";
+}
+
+=for html <a name="get_decimals"></a>
+
+=head2 static get_decimals : int
+
+Return 0.
+
+=cut
+
+sub get_decimals {
+    return 0;
+}
+
+=for html <a name="get_max"></a>
+
+=head2 get_max() : int
+
+Maximum date: Jan 19 03:14:07 2038 GMT.
+
+=cut
+
+sub get_max {
+    return 0x7fffffff;
+}
+
+=for html <a name="get_min"></a>
+
+=head2 get_min() : int
+
+Returns 0.
+
+=cut
+
+sub get_min {
+    return 0;
+}
+
+=for html <a name="get_precision"></a>
+
+=head2 static get_precision : int
+
+Maximum number of digits in a value of this type.
+
+=cut
+
+sub get_precision {
+    return 10;
 }
 
 =for html <a name="get_width"></a>

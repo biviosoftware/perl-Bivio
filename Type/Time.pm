@@ -33,6 +33,84 @@ of seconds since the unix epoch.
 
 =cut
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : array
+
+Convert from the following formats: h:m:s or h:m:s am, etc.
+
+=cut
+
+sub from_literal {
+    my(undef, $value) = @_;
+#TODO: Improve the checks here
+    return undef unless defined($value) && $value =~ /\S/;
+    # Get rid of all blanks to be nice to user
+    $value =~ s/\s+//g;
+    return (undef, Bivio::TypeError::TIME) unless
+	    $value =~ m!^(\d+):(\d+)(?::(\d+))?(?:([ap])(?:|m|\.m\.))?$!i;
+    my($h, $m, $s, $am_pm) = ($1, $2, $3, $4);
+    $s = 0 unless defined($s);
+    if (defined($am_pm)) {
+	return (undef, Bivio::TypeError::HOUR) if $h > 12;
+	if ($h == 12) {
+	    # 12 a.m is really 0 o'clock
+	    $h = 0 if $am_pm eq 'a';
+	}
+	else {
+	    # 12:\d+ p.m. is noon, not midnight
+	    $h += 12 if $am_pm eq 'p';
+	}
+    }
+    else {
+	if ($h > 23) {
+	    # 24:0:0 is allowed
+	    return (undef, Bivio::TypeError::HOUR) if $h > 24
+		    || $m + $s > 0;
+	    $h = 0;
+	}
+    }
+    return (undef, Bivio::TypeError::MINUTE) if $m > 59;
+    return (undef, Bivio::TypeError::SECOND) if $s > 59;
+    return ($h * 60 + $m) * 60 + $s;
+}
+
+=for html <a name="get_max"></a>
+
+=head2 get_max() : int
+
+Seconds in day minus one.
+
+=cut
+
+sub get_max {
+    return 86399;
+}
+
+=for html <a name="get_precision"></a>
+
+=head2 static get_precision : int
+
+Returns 5 for 86399.
+
+=cut
+
+sub get_precision {
+    return 5;
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width : int
+
+Returns 13 for hh:mm:ss a.m.
+
+=cut
+
+sub get_width {
+    return 13;
+}
+
 =for html <a name="to_sql_param"></a>
 
 =head2 to_sql_param(string param_value) : string
