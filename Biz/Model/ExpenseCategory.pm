@@ -36,6 +36,7 @@ or non-deductible. May be a sub-category of an existing expense.
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_DEFAULT_DEDUCTIBLE) = {
+    'Accounting & Tax Services' => undef,
     'Bond Insurance' => undef,
     'Educational Material' => {
 	'Books & Videos' => undef,
@@ -55,7 +56,6 @@ my($_DEFAULT_DEDUCTIBLE) = {
     },
     'Service Charges & Fees' => undef,
     'Software & Technical Support' => undef,
-    'Tax Preparation' => undef,
 };
 
 my($_DEFAULT_NONDEDUCTIBLE) = {
