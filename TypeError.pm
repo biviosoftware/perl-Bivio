@@ -27,7 +27,235 @@ use Bivio::Type::Enum;
 
 C<Bivio::TypeError> is a list of problems converting types.
 
-#TODO: Make a list in doc here
+=over 4
+
+=item UNKNOWN
+
+=item INTEGER
+
+expecting a number without a decimal point
+
+=item NUMBER_RANGE
+
+number outside of expected range
+
+=item NAME
+
+name is not valid
+
+=item DATE_TIME
+
+date time must be number of seconds since Jan 1, 1970
+
+=item DATE
+
+invalid date format, must be mm/dd/yyyy
+
+=item TIME
+
+invalid time format, must be hh:mm, hh:mm a, hh:mm:ss p
+
+=item NUMBER
+
+expecting a number
+
+=item YEAR_RANGE
+
+year outside of valid range (1800 to 2199)
+
+=item EXISTS
+
+already exists
+
+=item MONTH
+
+invalid month
+
+=item DAY_OF_MONTH
+
+invalid day for this month
+
+=item HOUR
+
+invalid hour
+
+=item MINUTE
+
+invalid minute
+
+=item SECOND
+
+invalid second
+
+=item NULL
+
+field may not be empty
+
+=item CONFIRM_PASSWORD
+
+password and confirm password fields do not match
+
+=item COUNTRY
+
+country must be exactly two letters
+
+=item PASSWORD
+
+invalid password; must be at least six characters
+
+=item REALM_NAME
+
+The name you create must begin with a letter and only contain
+letters, numbers, and underscores, and be at least
+three characters long. Once created, you will be able to
+send mail to thename@bivio.com.
+
+=item GREATER_THAN_ZERO
+
+must be greater than zero
+
+=item ENUM
+
+invalid enumerated type literal
+
+=item NOT_FOUND
+
+not found
+
+=item NOT_NEGATIVE
+
+can not be negative
+
+=item TOO_LONG
+
+field is too long; there may be a problem with your browser
+
+=item YEAR_DIGITS
+
+four digit year required (mm/dd/yyyy)
+
+=item PASSWORD_MISMATCH
+
+invalid password
+
+=item LOGIN_TIMEOUT
+
+your login session timed out, please re-enter your password
+
+=item HASH
+
+invalid hash value; corrupt input
+
+=item MUST_LOGIN
+
+your must login to access this link or command
+
+=item STATE
+
+state must be exactly two letters
+
+=item MGFS_RATIO
+
+invalid ratio
+
+=item EMAIL
+
+invalid email address; should be of the form mary@aol.com
+
+=item EMAIL_DOMAIN_LITERAL
+
+email addresses with domain literals [w.x.y.z] are not acceptable
+
+=item EMAIL_UNQUALIFIED
+
+email does not contain a @domain.com
+
+=item PHONE
+
+invalid phone number
+
+=item DEMO_CLUB_SUFFIX
+
+name may not end in _demo_club
+
+=item UNSPECIFIED
+
+field may not be unspecified
+
+=item ALREADY_INVITED
+
+an invitation was already extended to this person
+
+=item CLUB_USER_ROLE
+
+can only be Guest, Member, Accountant, or Administrator
+
+=item LAST_CLUB_ADMIN
+
+there must be at least one Administrator in a club
+
+=item INVALID_SUM
+
+shares sold doesn't match sum
+
+=item GREATER_THAN_QUANTITY
+
+shares sold is greater than the lot quantity
+
+=item SHARES_SOLD_EXCEEDS_OWNED
+
+shares sold exceeds shares owned
+
+=item MISSING_DISTRIBUTION_AMOUNT
+
+enter at least one distribution amount
+
+=item TEXT_TOO_LONG
+
+input is too long.  Maximum size is 500 characters.
+
+=item INVALID_ACCOUNTING_REPORT
+
+invalid accounting report selected
+
+=item ANY
+
+data corrupted
+
+=item ANY_EVAL
+
+data corrupted during processing
+
+=item SECRET
+
+unable to decode data
+
+=item NO_SHARES_OWNED
+
+no shares owned on the date specified
+
+=item INVALID_SPLIT_SHARES
+
+new shares can't equal old shares
+
+=item REALM_INVITE_STATE
+
+B<No text is not to be displayed to the user.
+This error is only internally.>
+
+=item FIRST_NAME_LENGTH
+
+first name is too long
+
+=item MIDDLE_NAME_LENGTH
+
+middle name is too long
+
+=item LAST_NAME_LENGTH
+
+last name is too long
+
+=back
 
 =cut
 

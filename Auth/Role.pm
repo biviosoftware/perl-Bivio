@@ -69,14 +69,6 @@ administrator: all privileges
 
 =back
 
-For the time being, privileges are granted to roles statically, i.e.
-all club admins can add members.  This architecture will allow
-us to migrate when the time is right.
-
-Moreover, the roles have been defined such that each privilege is a
-complete super/subset of the other.  The higher the numeric value,
-the greater the privileges.  B<DO NOT DEPEND ON THIS RELATIONSHIP!>
-
 =cut
 
 #=IMPORTS
