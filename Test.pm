@@ -94,7 +94,7 @@ expected to be thrown and must match the L<Bivio::DieCode|Bivio::DieCode>
 exactly.
 
 If the I<expect> is a code_ref, this will be a custom check_return (see below)
-for this case only.  If the 
+for this case only.
 
     Bivio::Test->unit([
 	Bivio::Math::EMA->new(30) => [
