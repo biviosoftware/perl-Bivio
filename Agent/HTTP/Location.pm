@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Location;
 use strict;
 $Bivio::Agent::HTTP::Location::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::HTTP::Location::VERSION;
 
 =head1 NAME
 
@@ -330,19 +331,19 @@ sub initialize_map {
 		$uri = undef;
 	    }
 	    else {
+		# Is this a path_info uri?  We remove the trailing /*, because
+		# we want to allow for "empty" path info
+		$has_path_info = $uri =~ s/\/\*$//;
+		$uri = '/' unless length($uri);
+
 		# Delete dup slashes and leading / (except DOC ROOT task)
 		$uri =~ s/\/{2,}/\//g;
 		$uri =~ s/^\/(.)/$1/g;
 
-		# Is this a path_info uri?  We remove the trailing /*, because
-		# we want to allow for "empty" path info
-		$has_path_info = $uri =~ s/\/\*$//;
-		die("$task_id_name: uri must not be /*") unless $uri;
-
 		# Is the URI valid?
 		my($path_info_count) = undef;
 		if ($realm_type == Bivio::Auth::RealmType::GENERAL()) {
-		    $path_info_count = 1;
+		    $path_info_count = $uri eq '/' ? 0 : 1;
 		}
 		else {
 		    # URI with realm_owner
@@ -387,7 +388,9 @@ sub initialize_map {
 		unless $got_one;
     }
 
-    # Make sure all URIs don't collide with path_info uris
+    # Make sure all URIs don't collide with path_info uris.
+    # DOCUMENT_TASK is special, because it is the only URI which begins
+    # with '/'.
     foreach my $piu (keys(%path_info_uri)) {
 	foreach my $uri (keys(%_FROM_URI)) {
 	    die("URI ($uri) collides with path_info uri ($piu)")
@@ -404,6 +407,7 @@ sub initialize_map {
 	    = $_FROM_TASK_ID{Bivio::Agent::TaskId::MY_SITE()}
 	    ->{uri};
     $_PLACEHOLDER{Bivio::Auth::RealmType::GENERAL()} = undef;
+
     return;
 }
 
@@ -574,7 +578,7 @@ sub task_has_uri {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
