@@ -57,6 +57,7 @@ sub internal_initialize {
 	other => [qw(
             RealmOwner.name
 	    RealmUser.role
+	    RealmUser.title
 	    RealmOwner.realm_type
 	)],
 	primary_key => [
