@@ -100,13 +100,14 @@ sub execute {
 	    die("Could not determine image subtype in ImageAttachment.execute(). Only handling JPEG and GIF now.");
 	}
 	_trace('subtype of this image is: ', $subtype) if $_TRACE;
+#TODO: optimize
 	my($stream) = substr($body, $i);
 	$i = index($stream, "\n\n");
 	$stream = substr($stream, $i+2);
 	_trace('writing the image data to the stream') if $_TRACE;
 	_trace('output type: ', 'image/', $subtype) if $_TRACE;
 	$req->get('reply')->set_output_type("image/".$subtype);
-	$req->get('reply')->print($stream);
+	$req->get('reply')->set_output(\$stream);
     }
     return;
 }
