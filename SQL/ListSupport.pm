@@ -264,7 +264,7 @@ sub new {
 	# Default is false
 	map({
 	    $_ => $decl->{$_} ? 1 : 0;
-	} qw(can iterate want_date)),
+	} qw(can_iterate want_date)),
 	# Default is true
 	want_select => !defined($decl->{want_select}) || $decl->{want_select}
 	         ? 1 : 0,
