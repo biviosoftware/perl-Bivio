@@ -54,6 +54,8 @@ L<Bivio::Type::EnumSet|Bivio::Type::EnumSet> and value
 is a string (set)
 or type is L<Bivio::Type::EnumSet|Bivio::Type::Integer> and value
 is an array_ref.
+or type is L<Bivio::Type::EnumSet|Bivio::Type::String> and value
+is an array_ref of strings (value is 1..n)
 
 =item choices : array_ref (required, get_request)
 
@@ -332,6 +334,9 @@ sub _load_items {
 	return _load_items_from_integer_array($self, $choices)
 		if $t->isa('Bivio::Type::Integer')
 			&& ref($choices->get('value')) eq 'ARRAY';
+	return _load_items_from_string_array($self, $choices)
+		if $t->isa('Bivio::Type::String')
+			&& ref($choices->get('value')) eq 'ARRAY';
     }
     Bivio::Die->throw_die('DIE', {
 	message => 'unknown choices type',
@@ -392,7 +397,7 @@ sub _load_items_from_enum_set {
     return _load_items_from_enum_list($self, \@choices);
 }
 
-# _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+# _load_items_from_integer_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
 #
 # Loads the items from an integer array_ref.
 #
@@ -432,6 +437,16 @@ sub _load_items_from_list {
     $list->reset_cursor;
 
     return \@items;
+}
+
+# _load_items_from_string_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+#
+# Loads the items from an string array_ref.
+#
+sub _load_items_from_string_array {
+    my($self, $choices) = @_;
+    my($i) = 1;
+    return [map {($i++, Bivio::HTML->escape($_))} @{$choices->get('value')}];
 }
 
 =head1 COPYRIGHT

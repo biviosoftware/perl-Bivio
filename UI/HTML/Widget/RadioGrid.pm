@@ -123,19 +123,26 @@ sub new {
 	   && ref($choices->get('value')) eq 'ARRAY') {
 	$items = _load_items_from_enum_array($self, $choices);
     }
+    elsif ($choices->isa('Bivio::TypeValue')
+	   && $choices->get('type')->isa('Bivio::Type::String')
+	   && ref($choices->get('value')) eq 'ARRAY') {
+	$items = _load_items_from_string_array($self, $choices);
+    }
     else {
 	Bivio::Die->die($choices, ': unsupported choices type');
     }
 
     my($cc) = $self->unsafe_get('column_count');
     my($wtl) = $self->get_or_default('want_text', 0);
+    my($max_width) = 0;
     # Convert to Radio
     my(@items) = map {
 	Bivio::UI::HTML::Widget::Radio->new({
 	    field => $field,
 	    value => $_->[0],
-	    label => $wtl ? $_VS->vs_text('radiogrid', $_->[0]->get_name)
-	    : $_->[1],
+	    label => _max_width(\$max_width,
+		$wtl ? $_VS->vs_text('radiogrid', $_->[0]->get_name)
+		: $_->[1]),
 	    auto_submit => $self->get_or_default('auto_submit', 0),
 	    %{$_->[2]},
 	});
@@ -146,7 +153,7 @@ sub new {
 	$self->layout_buttons_row_major(\@items, $cc);
     }
     else {
-	$self->layout_buttons(\@items, $choices->get_width_long_desc);
+	$self->layout_buttons(\@items, $max_width);
     }
     return $self;
 }
@@ -186,14 +193,14 @@ sub _load_items_from_enum_list {
     # id, display pairs
     my(@items);
     foreach my $item (@values) {
-	push(@items, [$item, Bivio::HTML->escape($item->get_long_desc), {}]);
+	push(@items, [$item, $item->get_long_desc, {}]);
     }
 
     # Result
     return \@items;
 }
 
-# _load_items_from_enum_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+# _load_items_from_enum_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices) : array
 #
 # Loads the items from an array_ref which contains enums or enum names/ints.
 # Keeps order.
@@ -213,11 +220,33 @@ sub _load_items_from_enum_array {
 	    delete($attrs->{value});
 	    [
 		$e,
-		Bivio::HTML->escape($e->get_long_desc),
+		$e->get_long_desc,
 		$attrs,
 	    ];
 	} @$value
     ];
+}
+
+# _load_items_from_string_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+#
+# Loads the items from an array_ref which contains strings
+# Keeps order.
+#
+sub _load_items_from_string_array {
+    my($self, $choices) = @_;
+    my($i) = 1;
+    return [map {[$i++, $_, {}]}
+	@{$choices->get('value')}];
+}
+
+# _max_width(int_ref max, string label) : string
+#
+# Updates $$max and returns label.
+#
+sub _max_width {
+    my($max, $label) = @_;
+    $$max = length($label) if $$max < length($label);
+    return $label;
 }
 
 =head1 COPYRIGHT

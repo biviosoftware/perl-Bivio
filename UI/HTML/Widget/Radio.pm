@@ -63,6 +63,10 @@ String label to use.
 
 Value of button.
 
+=item value : int (required)
+
+Value of button.
+
 =back
 
 =cut
@@ -118,7 +122,7 @@ sub control_on_render {
 	$fields->{initialized} = 1;
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'
-		.$value->to_html($value)
+		.(ref($value) ? $value->to_html($value) : $value)
 		."\""
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
 		.">&nbsp;";
