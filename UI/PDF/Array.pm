@@ -79,6 +79,7 @@ sub clone {
     my($fields) = $self->{$_PACKAGE};
     my($clone) = Bivio::UI::PDF::Array->new();
     my($clone_fields) = $clone->{$_PACKAGE};
+    local($_);
 
     map {
 	push (@{$clone_fields->{'value_refs'}}, $_->clone());
@@ -98,6 +99,8 @@ sub clone {
 sub emit {
     my($self, $emit_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
+
     $emit_ref->append_no_new_lines('[ ');
     map {
 	if ($self->get_max_line()
@@ -125,6 +128,8 @@ sub emit_length {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($length) = 4;	# 2 for the initial '[ ' and 1 for the final ']'.
+    local($_);
+
     map {
 	$length += $_->emit_length() + 1;	# 1 for a space.
     } @{$fields->{'value_refs'}};

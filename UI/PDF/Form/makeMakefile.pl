@@ -4,6 +4,8 @@
 
 use strict;
 
+local($_);
+
 unless (0 == $#ARGV) {
     die("usage: $0 <sub-directory>\n");
 }

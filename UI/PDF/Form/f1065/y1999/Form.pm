@@ -1,6 +1,6 @@
 # This file was built by buildFormModule.pl
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
-# $Id: Form.pm,v 1.2 2000/03/21 21:54:52 nagler Exp $
+# $Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
 package Bivio::UI::PDF::Form::f1065::y1999::Form;
 use strict;
 $Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.2 $ =~ /\d+/g);
@@ -153,14 +153,14 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
 
-$Id: Form.pm,v 1.2 2000/03/21 21:54:52 nagler Exp $
+$Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
 
 =cut
 
 1;
 
 __DATA__
-%%% PDF Base File %%%
+!!! PDF Base File !!!
 %PDF-1.3%‚„œ”
 560 0 obj<< /Linearized 1 /O 563 /H [ 6769 2147 ] /L 187066 /E 52043 /N 4 /T 175747 >> endobj                                                     xref560 174 0000000016 00000 n
 0000003832 00000 n
@@ -1151,15 +1151,15 @@ q 1 1 6.209 5.7165 re W n BT /ZaDb 9 Tf 0 0 0.627 rg  1 0 0 1 0.2976 0.6228 Tm (
 0000175395 00000 n
 0000175650 00000 n
 trailer<</Size 560/ID[<46d7e0c94bd27f78db32d5118d8ac846><46d7e0c94bd27f78db32d5118d8ac846>]>>startxref173%%EOF
-%%% Base Root Pointer %%%
+!!! Base Root Pointer !!!
 561 0 R
-%%% Base Size %%%
+!!! Base Size !!!
 734
-%%% Base Xref Offset %%%
+!!! Base Xref Offset !!!
 173
-%%% Xlator Set Class %%%
+!!! Xlator Set Class !!!
 Bivio::UI::PDF::Form::f1065::y1999::XlatorSet
-%%% Field Text %%%
+!!! Field Text !!!
 414 0 obj
 << /T (f1-4) /Kids [ 571 0 R ] /FT /Tx /DA (/HeBo 9 Tf 0 0 0.627 rg) >>
 endobj
@@ -1334,24 +1334,6 @@ endobj
 /Parent 418 0 R
 >>
 endobj
-416 0 obj
-<< /T (c1-1) /Kids [ 590 0 R ] /FT /Btn /DA (/ZaDb 9 Tf 0 0 0.627 rg) >>
-endobj
-590 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 171.33466 627.66541 180.00137 634.66547 ]
-/F 4
-/P 563 0 R
-/AS /Off
-/AP << /N << /Yes 594 0 R >> /D << /Yes 591 0 R /Off 592 0 R >> >>
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/H /T
-/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
-/Parent 416 0 R
->>
-endobj
 417 0 obj
 <<
 /T (c1-2)
@@ -1377,6 +1359,24 @@ endobj
 /AP << /N << /Yes 598 0 R >> /D << /Yes 596 0 R /Off 597 0 R >> >>
 /AA << >>
 /Parent 417 0 R
+>>
+endobj
+416 0 obj
+<< /T (c1-1) /Kids [ 590 0 R ] /FT /Btn /DA (/ZaDb 9 Tf 0 0 0.627 rg) >>
+endobj
+590 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 171.33466 627.66541 180.00137 634.66547 ]
+/F 4
+/P 563 0 R
+/AS /Off
+/AP << /N << /Yes 594 0 R >> /D << /Yes 591 0 R /Off 592 0 R >> >>
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/H /T
+/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
+/Parent 416 0 R
 >>
 endobj
 448 0 obj
@@ -1471,24 +1471,6 @@ endobj
 /AP << /N << /Yes 58 0 R >> /D << /Yes 59 0 R /Off 60 0 R >> >>
 >>
 endobj
-54 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 229.72723 447.51849 236.93628 455.23499 ]
-/DR 730 0 R
-/P 1 0 R
-/AS /Off
-/F 4
-/H /T
-/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
-/T (c2-11)
-/FT /Btn
-/AA << >>
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/AP << /N << /Yes 348 0 R >> /D << /Yes 349 0 R /Off 350 0 R >> >>
->>
-endobj
 53 0 obj
 <<
 /Type /Annot
@@ -1505,6 +1487,24 @@ endobj
 /AA << >>
 /DA (/ZaDb 9 Tf 0 0 0.627 rg)
 /AP << /N << /Yes 345 0 R >> /D << /Yes 346 0 R /Off 347 0 R >> >>
+>>
+endobj
+56 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 63.72723 434.51849 71.93628 443.23499 ]
+/DR 730 0 R
+/P 1 0 R
+/AS /Off
+/F 4
+/H /T
+/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
+/T (c2-13)
+/FT /Btn
+/AA << >>
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/AP << /N << /Yes 351 0 R >> /D << /Yes 352 0 R /Off 353 0 R >> >>
 >>
 endobj
 57 0 obj
@@ -1525,22 +1525,22 @@ endobj
 /AP << /N << /Yes 354 0 R >> /D << /Yes 355 0 R /Off 356 0 R >> >>
 >>
 endobj
-56 0 obj
+54 0 obj
 <<
 /Type /Annot
 /Subtype /Widget
-/Rect [ 63.72723 434.51849 71.93628 443.23499 ]
+/Rect [ 229.72723 447.51849 236.93628 455.23499 ]
 /DR 730 0 R
 /P 1 0 R
 /AS /Off
 /F 4
 /H /T
 /MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
-/T (c2-13)
+/T (c2-11)
 /FT /Btn
 /AA << >>
 /DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/AP << /N << /Yes 351 0 R >> /D << /Yes 352 0 R /Off 353 0 R >> >>
+/AP << /N << /Yes 348 0 R >> /D << /Yes 349 0 R /Off 350 0 R >> >>
 >>
 endobj
 460 0 obj
@@ -2337,22 +2337,6 @@ endobj
 /DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
-196 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 229.33508 171.66193 238.33514 179.66197 ]
-/F 4
-/P 5 0 R
-/T (c3-1)
-/FT /Btn
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/H /T
-/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
-/AS /Off
-/AP << /N << /Yes 405 0 R >> /D << /Yes 406 0 R /Off 407 0 R >> >>
->>
-endobj
 197 0 obj
 <<
 /Type /Annot
@@ -2367,6 +2351,22 @@ endobj
 /MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
 /AS /Off
 /AP << /N << /Yes 408 0 R >> /D << /Yes 409 0 R /Off 410 0 R >> >>
+>>
+endobj
+196 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 229.33508 171.66193 238.33514 179.66197 ]
+/F 4
+/P 5 0 R
+/T (c3-1)
+/FT /Btn
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/H /T
+/MK << /CA (4) /AC (˛ˇ) /RC (˛ˇ) >>
+/AS /Off
+/AP << /N << /Yes 405 0 R >> /D << /Yes 406 0 R /Off 407 0 R >> >>
 >>
 endobj
 198 0 obj
@@ -2557,4 +2557,4 @@ endobj
 /Parent 514 0 R
 >>
 endobj
-%%% Data End %%%
+!!! Data End !!!

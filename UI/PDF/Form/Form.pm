@@ -34,20 +34,23 @@ C<Bivio::UI::PDF::Form>
 =head2 SECTION_NAME_REGEX : string
 
 This regular expression returns the name of a section of data from a section
-header of the form "%%% <section name> %%%'.
+header of the form "!!! <section name> !!!'.
 
 =cut
 
 sub SECTION_NAME_REGEX {
-    return('%%% (.*) %%%');
+    return('!!! (.*) !!!');
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::UI::PDF::BuiltUpdate;
 use Bivio::UI::PDF::OpaqueUpdate;
 use Bivio::UI::PDF::Strings;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_EOL_REGEX) = Bivio::UI::PDF::Regex::EOL_REGEX();
@@ -96,10 +99,6 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-
-    unless ($self->initialized()) {
-	$self->initialize();
-    }
 
     # Add an OpaqueUpdate that contains the base Pdf text to the Pdf object.
     my($base_update_ref) = $self->get_base_update_ref();
@@ -181,18 +180,26 @@ sub internal_read_data {
 
     while (1) {
 	$last_section = $next_section;
+	if (defined($last_section) && ($_DATA_END eq $last_section)) {
+	    _trace('Got data end section');
+	    last;
+	}
 	my($text_ref) = _get_section($fh_ref, \$next_section);
-
 	unless (defined($last_section)) {
 	    next;
 	}
+
+	_trace("last section is \"", $last_section, "\"") if $_TRACE;
+
 	if ($_BASE_FILE eq $last_section) {
+	    _trace('Got base file section');
 #TODO: fix this
 die("undef text_ref") if ! defined($text_ref);
 	    chop(${$text_ref});
 	    $base_pdf_text_ref = $text_ref;
 	}
 	elsif ($_BASE_ROOT eq $last_section) {
+	    _trace('Got base root section');
 	    if (${$text_ref} =~ /$_OBJ_REF_REGEX/) {
 		unless (defined($1) && defined($2)) {
 		    die(__FILE__, ", ", __LINE__,
@@ -205,6 +212,7 @@ die("undef text_ref") if ! defined($text_ref);
 	    }
 	}
 	elsif ($_BASE_SIZE eq $last_section) {
+	    _trace('Got base size section');
 	    if (${$text_ref} =~ /$_NUMBER_REGEX/) {
 		unless (defined($1)) {
 		    die(__FILE__, ", ", __LINE__, ": missing base size\n");
@@ -216,6 +224,7 @@ die("undef text_ref") if ! defined($text_ref);
 	    }
 	}
 	elsif ($_BASE_XREF eq $last_section) {
+	    _trace('Got base xref section');
 	    if (${$text_ref} =~ /$_NUMBER_REGEX/) {
 		unless (defined($1)) {
 		    die(__FILE__, ", ", __LINE__, ": missing base xref\n");
@@ -226,10 +235,8 @@ die("undef text_ref") if ! defined($text_ref);
 		die(__FILE__, ", ", __LINE__, ": no match\n");
 	    }
 	}
-	elsif ($_DATA_END eq $last_section) {
-	    last;
-	}
 	elsif ($_FIELD_TEXT eq $last_section) {
+	    _trace('Got field text section');
 	    chop(${$text_ref});
 
 	    # We have the Pdf text of the field objects.  Parse it into
@@ -259,6 +266,7 @@ die("undef text_ref") if ! defined($text_ref);
 	    }
 	}
 	elsif ($_XLATOR_SET eq $last_section) {
+	    _trace('Got xlator set section');
 	    chop(${$text_ref});
  	    eval("require ${$text_ref};");
  	    if ($@) {
@@ -287,6 +295,7 @@ die("undef text_ref") if ! defined($text_ref);
 sub _get_section {
     my($fh_ref, $next_section_ref) = @_;
     my($text);
+    local($_);
 
     while (<$fh_ref>) {
 	if (/$_SECTION_NAME_REGEX/) {
@@ -295,6 +304,7 @@ sub _get_section {
 	}
 	$text .= $_;
     }
+    _trace("Text is \"", $text, "\"") if $_TRACE;
     Bivio::IO::Alert->die('unexpected end of file');
 }
 

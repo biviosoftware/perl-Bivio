@@ -83,6 +83,7 @@ sub clone {
     my($fields) = $self->{$_PACKAGE};
     my($clone) = Bivio::UI::PDF::Dictionary->new();
     my($clone_fields) = $clone->{$_PACKAGE};
+    local($_);
 
     map {
 	${$clone_fields->{'values'}}{$_} = ${$fields->{'values'}}{$_}->clone();
@@ -103,6 +104,7 @@ sub clone {
 sub emit {
     my($self, $emit_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
 
     # Find out how many characters this object will emit to decide whether or
     # not to render it on one line.

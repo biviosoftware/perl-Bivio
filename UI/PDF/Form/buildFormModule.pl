@@ -36,20 +36,20 @@ my($module_text) = <DATA>;
 $/ = $old_record_separator;
 
 # Insert the module's class name.
-$module_text =~ s/%%%Class%%%/$module_class/g;
+$module_text =~ s/!!!Class!!!/$module_class/g;
 # Insert the module's parent name.
-$module_text =~ s/%%%Parent%%%/$parent_class/g;
+$module_text =~ s/!!!Parent!!!/$parent_class/g;
 # Insert the XlatorSet class name.
-$module_text =~ s/(%%% Xlator Set Class %%%)/$1\n$xlator_set_class/;
+$module_text =~ s/(!!! Xlator Set Class !!!)/$1\n$xlator_set_class/;
 # Insert the pointer to the root object of the Pdf file.
 my($root_pointer) = $pdf_ref->get_root_pointer()->get_value();
-$module_text =~ s/(%%% Base Root Pointer %%%)/$1\n$root_pointer/;
+$module_text =~ s/(!!! Base Root Pointer !!!)/$1\n$root_pointer/;
 # Insert the size.
 my($size) = $pdf_ref->get_size()->get_value();
-$module_text =~ s/(%%% Base Size %%%)/$1\n$size/;
+$module_text =~ s/(!!! Base Size !!!)/$1\n$size/;
 # Insert the xref offset.
 my($xref_offset) = $pdf_ref->get_xref_offset()->get_value();
-$module_text =~ s/(%%% Base Xref Offset %%%)/$1\n$xref_offset/;
+$module_text =~ s/(!!! Base Xref Offset !!!)/$1\n$xref_offset/;
 
 # Find all the Pdf fields referenced in the XlatorSet and insert their text.
 eval("require $xlator_set_class;");
@@ -58,6 +58,7 @@ if ($@) {
 }
 my($xlators_array_ref) = $xlator_set_class->get_xlators_ref();
 my($emit_ref) = Bivio::UI::PDF::Emit->new();
+local($_);
 map {
     my(@field_names) = $_->get_pdf_field_names();
     map {
@@ -70,11 +71,11 @@ map {
 } @{$xlators_array_ref};
 my($field_text_ref) = $emit_ref->get_text_ref();
 chop(${$field_text_ref});
-$module_text =~ s/(%%% Field Text %%%)/$1\n${$field_text_ref}/;
+$module_text =~ s/(!!! Field Text !!!)/$1\n${$field_text_ref}/;
 
 # Inser the text of the base Pdf file.
 my($pdf_text_ref) = $pdf_ref->get_pdf_text_ref();
-$module_text =~ s/(%%% PDF Base File %%%)/$1\n${$pdf_text_ref}/;
+$module_text =~ s/(!!! PDF Base File !!!)/$1\n${$pdf_text_ref}/;
 
 open(OUT, ">$module_file") or die("Error opening \"$module_file\"\n");
 print(OUT $module_text);
@@ -85,33 +86,33 @@ __DATA__
 # This file was built by buildFormModule.pl
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package %%%Class%%%;
+package !!!Class!!!;
 use strict;
-$%%%Class%%%::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$!!!Class!!!::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-%%%Class%%% - 
+!!!Class!!! - 
 
 =head1 SYNOPSIS
 
-    use %%%Class%%%;
-    %%%Class%%%->new();
+    use !!!Class!!!;
+    !!!Class!!!->new();
 
 =cut
 
 =head1 EXTENDS
 
-L<%%%Parent%%%>
+L<!!!Parent!!!>
 
 =cut
 
-use %%%Parent%%%;
-@%%%Class%%%::ISA = ('%%%Parent%%%');
+use !!!Parent!!!;
+@!!!Class!!!::ISA = ('!!!Parent!!!');
 
 =head1 DESCRIPTION
 
-C<%%%Class%%%>
+C<!!!Class!!!>
 
 =cut
 
@@ -119,7 +120,6 @@ C<%%%Class%%%>
 use Bivio::UI::PDF::OpaqueUpdate;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 # Keep a reference to an OpaqueUpdate that contains the text of the base Pdf
 # document to which we are adding field values.
@@ -136,8 +136,8 @@ my($_FIELD_DICTIONARY_REF);
 # Key = object number
 # Value = reference to corresponding indirect object.
 my($_OBJ_DICTIONARY_REF);
-
 my($_INITIALIZED) = 0;
+__PACKAGE__->initialize();
 
 =head1 FACTORIES
 
@@ -145,16 +145,14 @@ my($_INITIALIZED) = 0;
 
 =for html <a name="new"></a>
 
-=head2 static new() : %%%Class%%%
+=head2 static new() : !!!Class!!!
 
 
 
 =cut
 
 sub new {
-    my($self) = %%%Parent%%%::new(@_);
-    $self->{$_PACKAGE} = {};
-    return $self;
+    return !!!Parent!!!::new(@_);
 }
 
 =head1 METHODS
@@ -163,67 +161,60 @@ sub new {
 
 =for html <a name="get_base_update_ref"></a>
 
-=head2 get_base_update_ref() : 
+=head2 static get_base_update_ref() : 
 
 
 
 =cut
 
 sub get_base_update_ref {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return($_BASE_UPDATE_REF);
+    return $_BASE_UPDATE_REF;
 }
 
 =for html <a name="get_field_ref"></a>
 
-=head2 get_field_ref() : 
+=head2 static get_field_ref() : 
 
 
 
 =cut
 
 sub get_field_ref {
-    my($self, $field_name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my(undef, $field_name) = @_;
     my($field_obj_ref) = ${$_FIELD_DICTIONARY_REF}{$field_name};
-    unless (defined($field_obj_ref)) {
-	die("Clone failure; did you forget to remake the Form.pm file?");
-    }
-    return($field_obj_ref->clone());
+    die("Clone failure; did you forget to remake the Form.pm file?")
+	    unless defined($field_obj_ref);
+    return $field_obj_ref->clone();
 }
 
 =for html <a name="get_obj_ref"></a>
 
-=head2 get_obj_ref() : 
+=head2 static get_obj_ref() : 
 
 
 
 =cut
 
 sub get_obj_ref {
-    my($self, $obj_number) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return(${$_OBJ_DICTIONARY_REF}{$obj_number}->clone());
+    my(undef, $obj_number) = @_;
+    return ${$_OBJ_DICTIONARY_REF}{$obj_number}->clone();
 }
 
 =for html <a name="get_xlator_set_ref"></a>
 
-=head2 get_xlator_set_ref() : 
+=head2 static get_xlator_set_ref() : 
 
 
 
 =cut
 
 sub get_xlator_set_ref {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return($_XLATOR_SET_REF);
+    return $_XLATOR_SET_REF;
 }
 
 =for html <a name="initialize"></a>
 
-=head2 initialize() : 
+=head2 static initialize() : 
 
 
 
@@ -231,26 +222,12 @@ sub get_xlator_set_ref {
 
 sub initialize {
     my($proto) = @_;
+    return if $_INITIALIZED;
     ($_BASE_UPDATE_REF, $_XLATOR_SET_REF, $_FIELD_DICTIONARY_REF,
 	   $_OBJ_DICTIONARY_REF)
-	    = $proto->_read_data(\*DATA);
-
+	    = $proto->internal_read_data(\*DATA);
     $_INITIALIZED = 1;
-
     return;
-}
-
-=for html <a name="initialized"></a>
-
-=head2 initialized() : 
-
-
-
-=cut
-
-sub initialized {
-    my($proto) = @_;
-    return($_INITIALIZED);
 }
 
 #=PRIVATE METHODS
@@ -268,10 +245,10 @@ $Id$
 1;
 
 __DATA__
-%%% PDF Base File %%%
-%%% Base Root Pointer %%%
-%%% Base Size %%%
-%%% Base Xref Offset %%%
-%%% Xlator Set Class %%%
-%%% Field Text %%%
-%%% Data End %%%
+!!! PDF Base File !!!
+!!! Base Root Pointer !!!
+!!! Base Size !!!
+!!! Base Xref Offset !!!
+!!! Xlator Set Class !!!
+!!! Field Text !!!
+!!! Data End !!!

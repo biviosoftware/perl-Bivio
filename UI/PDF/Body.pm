@@ -99,6 +99,8 @@ sub add_obj {
 sub emit {
     my($self, $emit_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
+
     map {
 	$_->emit($emit_ref);
 	# If the item is an indirect object (and not a comment), add a
@@ -177,6 +179,8 @@ sub get_objects_array_ref {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my(@objects_array);
+    local($_);
+
     map {
 	# If the item is an indirect object (and not a comment), add a
 	# reference to it to the objects array.

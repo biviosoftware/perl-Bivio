@@ -90,6 +90,7 @@ sub add_obj_ref {
 sub emit {
     my($self, $emit_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
 
     # Sort the objects in order of object number.  The xref has subsections of
     # objects with consecutive object numbers.

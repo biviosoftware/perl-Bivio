@@ -63,6 +63,7 @@ sub new {
 sub create_value_objs {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
 
     # Get a reference to the array of xlators for this set.  Call add_value for
     # each one so it can add whatever values to the value_objs array it can.

@@ -133,6 +133,7 @@ sub emit {
 sub emit_with_kids {
     my($self, $emit_ref, $pdf_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
 
     # I think this only makes sense with a dictionary object.
     unless ($self->is_dictionary()) {

@@ -131,6 +131,7 @@ sub emit {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($emit_ref) = Bivio::UI::PDF::Emit->new();
+    local($_);
 
     map {
 	$_->emit($emit_ref);
@@ -164,6 +165,7 @@ sub get_field_ref_by_name {
 sub get_length {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
 
     # Add up the lengths of all the top level updates.
     my($length);
@@ -265,6 +267,7 @@ sub parse_complete_pdf {
     my($fields) = $self->{$_PACKAGE};
     my($text_ref);
     my(@lines);
+    local($_);
 
     # Handle the various cases of overloading of this function.
     if (!defined($arg1)) {
@@ -453,6 +456,8 @@ sub set_base_xref_offset {
 sub _find_next_oldest_update {
     my($self, $update_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
+
     map {
 	my($prev_offset) = $_->get_prev_offset();
 	if (defined($prev_offset)) {
@@ -472,6 +477,8 @@ sub _find_next_oldest_update {
 sub _find_no_prev {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
+
     map {
 	my($prev_offset) = $_->get_prev_offset();
 	unless (defined($prev_offset)) {
@@ -489,6 +496,8 @@ sub _find_no_prev {
 sub _get_dummy_startxref_update {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    local($_);
+
     map {
 	my($xref_offset) = $_->get_xref_offset();
 	if (defined($xref_offset) && (0 == $xref_offset->get_value())) {
