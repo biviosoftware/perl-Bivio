@@ -63,25 +63,40 @@ sub SHADOW_PREFIX {
     return '=';
 }
 
+=for html <a name="SHADOW_WITHDRAWN_PREFIX"></a>
+
+=head2 SHADOW_WITHDRAWN_PREFIX : string
+
+Returns previx character for a withdrawn shadow user
+
+=cut
+
+sub SHADOW_WITHDRAWN_PREFIX {
+    return SHADOW_PREFIX().'(';
+}
+
+=for html <a name="SHADOW_WITHDRAWN_SUFFIX"></a>
+
+=head2 SHADOW_WITHDRAWN_SUFFIX : string
+
+Returns the suffix character for a withdrawn shadow user
+
+=cut
+
+sub SHADOW_WITHDRAWN_SUFFIX {
+    return ')';
+}
+
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Accounting::Audit;
 use Bivio::Biz::Model::Email;
-use Bivio::Biz::Model::MemberEntry;
-use Bivio::Biz::Model::MemberEntryList;
-use Bivio::Biz::Model::RealmInstrument;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::SQL::ListQuery;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
-use Bivio::Type::Integer;
-use Bivio::Type::Name;
-use Bivio::Type::Number;
-use Bivio::Type::Password;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
@@ -93,6 +108,7 @@ my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 my($_DEMO_THRESHOLD) = Bivio::Type::RealmName->get_width
 	- length($_DEMO_SUFFIX);
 my($_SHADOW_PREFIX) = SHADOW_PREFIX();
+my($math) = 'Bivio::Type::Amount';
 
 =head1 FACTORIES
 
@@ -127,68 +143,14 @@ specified date.
 
 sub audit_units {
     my($self, $date) = @_;
-    $date = Bivio::Type::Date->to_local_date($date);
 
 #TODO: the whole caching scheme is really messed up wrt get_unit_value
 # this needs to be reworked
     # clear any cached values
     $self->{$_PACKAGE} = {};
 
-    my($req) = $self->get_request;
-    my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
-    my($entries) = Bivio::Biz::Model::MemberEntryList->new($req);
-
-    # just get entries past the specified valuation date
-    $req->put(Bivio::Biz::Model::MemberEntryList::VALUATION_DATE_KEY()
-	    => $date);
-    $entries->load({
-	count => Bivio::Type::Integer->get_max,
-    });
-
-    while ($entries->next_row) {
-	my($val_date) = $entries->get('MemberEntry.valuation_date');
-	next unless defined($val_date);
-	next unless $entries->get('Entry.tax_basis');
-
-	my($type) = $entries->get('Entry.entry_type');
-	next unless ($type == Bivio::Type::EntryType::MEMBER_PAYMENT()
-#TODO: add handling for other types as they become known
-#		|| $type
-#		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH()
-#		|| $type
-#		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH);
-	       );
-
-	if (Bivio::Type::Date->compare($val_date, $date) >= 0) {
-
-	    my($id, $amount, $units, $tran_date) = $entries->get(qw(
-		    Entry.entry_id Entry.amount MemberEntry.units
-		    RealmTransaction.date_time));
-
-	    # don't include member payments on val_date if val_date>=tran_date
-	    my($club_units, $value) = _get_units_and_value($self, $val_date,
-		    Bivio::Type::Date->compare($val_date, $tran_date) < 0);
-	    my($real_units);
-	    if ($club_units == 0 || $value == 0) {
-		$real_units = Bivio::Type::Amount->div($amount,
-			DEFAULT_UNIT_VALUE());
-	    }
-	    else {
-		$real_units = Bivio::Type::Amount->div(
-			Bivio::Type::Amount->mul($amount, $club_units),
-			$value);
-	    }
-
-	    # imported data correct to 6 decimal places
-	    if (Bivio::Type::Number->compare($units, $real_units, 6) != 0) {
-		my($display_date) = Bivio::Type::Date->to_literal($val_date);
-		_trace("\n$display_date units incorrect:\n\t"
-			."$units != $real_units");
-		$member_entry->load(entry_id => $id);
-		$member_entry->update({units => $real_units});
-	    }
-	}
-    }
+    my($auditor) = Bivio::Biz::Accounting::Audit->new($self);
+    $auditor->audit_units($date);
     return;
 }
 
@@ -348,7 +310,20 @@ sub format_name {
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
     my($name) = $m->get($p.'name');
-    return ($name =~ /^=/) ? '' : $name;
+
+    if ($name =~ /^$_SHADOW_PREFIX/o) {
+
+#TODO: couldn't use constants because the '(' screw up the regex...
+	if ($name =~ /^=\(/o) {
+
+	    # show a withdrawn shadow name in ()
+	    $name =~ s/^=(\(\w+\))\d+/$1/;
+	}
+	else {
+	    $name = '';
+	}
+    }
+    return $name;
 }
 
 =for html <a name="format_uri"></a>
@@ -453,7 +428,7 @@ EOF
 	}
 
 	if ($basis) {
-	    $pair->[0] = Bivio::Type::Amount->add($pair->[0], $cost);
+	    $pair->[0] = $math->add($pair->[0], $cost);
 	}
 	elsif ($tax == Bivio::Type::TaxCategory->NOT_TAXABLE->as_int()
 #TODO: ugh - consider consolidating SHARES_AS_CASH types
@@ -467,17 +442,17 @@ EOF
 #		    || $type == Bivio::Type::EntryType
 #			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())
 	       )) {
-	    $pair->[0] = Bivio::Type::Amount->add($pair->[0], $cost);
+	    $pair->[0] = $math->add($pair->[0], $cost);
 	}
 
 	if ($basis) {
-	    $pair->[1] = Bivio::Type::Amount->add($pair->[1], $count);
+	    $pair->[1] = $math->add($pair->[1], $count);
 	}
     }
     foreach my $id (keys(%$result)) {
 	my($total_cost, $total_count) = @{$result->{$id}};
 	$result->{$id} = $total_count == 0 ? 0
-	    : Bivio::Type::Amount->div($total_cost, $total_count);
+	    : $math->div($total_cost, $total_count);
     }
     return $result;
 }
@@ -651,9 +626,9 @@ Returns the unit value for the realm on the specified date.
 sub get_unit_value {
     my($self, $date) = @_;
 
-    my($units, $value) = _get_units_and_value($self, $date, 1);
+    my($units, $value) = $self->get_units_and_value($date, 1);
     return DEFAULT_UNIT_VALUE() if $units == 0 || $value == 0;
-    return Bivio::Type::Amount->div($value, $units);
+    return $math->div($value, $units);
 }
 
 =for html <a name="get_units"></a>
@@ -690,6 +665,66 @@ EOF
     return $units;
 }
 
+=for html <a name="get_units_and_value"></a>
+
+=head2 get_units_and_value(string date, boolean include_todays_member_entries) : (string, string)
+
+Returns the the units owned and the club value for the specified date.
+If include_todays_member_entries is false, then the result won't include
+member entries on the specified date.
+
+=cut
+
+sub get_units_and_value {
+    my($self, $date, $include_todays_member_entries) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $date = Bivio::Type::Date->to_local_date($date);
+    my($cache) = $fields->{
+	'get_units_and_value'.$date.$include_todays_member_entries};
+    return @$cache if $cache;
+
+    my($units) = $self->get_units($date);
+    my($value) = $self->get_value($date);
+
+    unless ($include_todays_member_entries) {
+
+	# get the member unit and amount for the day
+	# then subtract it from the previous totals
+	my($query) = <<"EOF";
+  	    SELECT SUM(member_entry_t.units),
+                SUM(entry_t.amount)
+	    FROM realm_transaction_t, entry_t, member_entry_t
+	    WHERE realm_transaction_t.realm_transaction_id
+	        =entry_t.realm_transaction_id
+	    AND entry_t.entry_id=member_entry_t.entry_id
+	    AND entry_t.tax_basis=1
+            AND realm_transaction_t.date_time=member_entry_t.valuation_date
+	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
+ 	    AND realm_transaction_t.realm_id=?
+EOF
+
+	my($sth) = Bivio::SQL::Connection->execute($query,
+		[Bivio::Type::DateTime->to_sql_param($date),
+			$self->get('realm_id')]);
+	# returns at most one row
+	while (my $row = $sth->fetchrow_arrayref) {
+	    my($mem_units, $mem_value) = @$row;
+	    _trace("removing $mem_units units, $mem_value value")
+		    if $_TRACE;
+	    $units = $math->sub($units, $mem_units)
+		    if $mem_units;
+	    $value = $math->sub($value, $mem_value)
+		    if $mem_value;
+	}
+    }
+    my($result) = [$units, $value];
+    $fields->{
+	'get_units_and_value'.$date.$include_todays_member_entries} = $result;
+    _trace("\n", Bivio::Type::Date->to_literal($date), ' ',
+	    $units, ' ', $value) if $_TRACE;
+    return @$result;
+}
+
 =for html <a name="get_value"></a>
 
 =head2 get_value(string date) : string
@@ -715,8 +750,8 @@ sub get_value {
 	my($id) = $inst->[0];
 	my($price_date) = $price_dates->{$id};
 	my($price) = $price_date ? $price_date->[0] : 0;
-	$value = Bivio::Type::Amount->add($value,
-		Bivio::Type::Amount->mul($shares->{$id} || 0, $price));
+	$value = $math->add($value,
+		$math->mul($shares->{$id} || 0, $price));
     }
     $fields->{'get_value'.$date} = $value;
     return $value;
@@ -891,60 +926,6 @@ sub unauth_load_by_email {
 }
 
 #=PRIVATE METHODS
-
-# _get_units_and_value(string date, boolean include_todays_member_entries) : (string, string)
-#
-# Returns the the units owned and the club value for the specified date.
-# If include_todays_member_entries is false, then the result won't include
-# member entries on the specified date.
-#
-sub _get_units_and_value {
-    my($self, $date, $include_todays_member_entries) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $date = Bivio::Type::Date->to_local_date($date);
-    my($cache) = $fields->{'_get_units_and_value'.$date};
-    return @$cache if $cache;
-
-    my($units) = $self->get_units($date);
-    my($value) = $self->get_value($date);
-
-    unless ($include_todays_member_entries) {
-
-	# get the member unit and amount for the day
-	# then subtract it from the previous totals
-	my($query) = <<"EOF";
-  	    SELECT SUM(member_entry_t.units),
-                SUM(entry_t.amount)
-	    FROM realm_transaction_t, entry_t, member_entry_t
-	    WHERE realm_transaction_t.realm_transaction_id
-	        =entry_t.realm_transaction_id
-	    AND entry_t.entry_id = member_entry_t.entry_id
-            AND entry_t.tax_basis = 1
- 	    AND realm_transaction_t.realm_id=?
-	    AND realm_transaction_t.date_time
-                = member_entry_t.valuation_date
-	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
-EOF
-
-	my($sth) = Bivio::SQL::Connection->execute($query,
-		[$self->get('realm_id'),
-			Bivio::Type::DateTime->to_sql_param($date)]);
-	# returns at most one row
-	while (my $row = $sth->fetchrow_arrayref) {
-	    my($mem_units, $mem_value) = @$row;
-	    _trace("removing $mem_units units, $mem_value value");
-	    $units = Bivio::Type::Amount->sub($units, $mem_units)
-		    if ($mem_units);
-	    $value = Bivio::Type::Amount->sub($value, $mem_value)
-		    if ($mem_value);
-	}
-    }
-    my($result) = [$units, $value];
-    $fields->{'_get_units_and_value'.$date} = $result;
-    _trace("\n", Bivio::Type::Date->to_literal($date), ' ',
-	    $units, ' ', $value) if $_TRACE;
-    return @$result;
-}
 
 =head1 COPYRIGHT
 
