@@ -209,6 +209,7 @@ use Bivio::SQL::Connection;
 use Bivio::Type::RealmName;
 use Bivio::Type::UserAgent;
 use Bivio::Type::UserPreference;
+use Bivio::Type::ClubPreference;
 use Bivio::Util;
 use Carp ();
 
@@ -538,6 +539,29 @@ sub get_auth_role {
     # Use (cached) value in $self if realm_id is the same.  Otherwise,
     # go through entire lookup process.
     return $auth_id eq $realm_id ? $auth_role : _get_role($self, $realm_id);
+}
+
+=for html <a name="get_club_pref"></a>
+
+=head2 get_club_pref(any pref) : any
+
+Gets a club preference.  I<pref> must be a
+L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
+The value returned may be C<undef> if club is undefined or preference
+not set iwc the default should be used.
+
+=cut
+
+sub get_club_pref {
+    my($self, $pref) = @_;
+    my($auth_realm) = $self->get('auth_realm');
+    return undef unless $auth_realm && $auth_realm->get('type')
+	    == Bivio::Auth::RealmType::CLUB();
+    return Bivio::Biz::Model::Preferences->get_value(
+	    $self,
+	    'club_prefs',
+	    $auth_realm->get('owner'),
+	    Bivio::Type::ClubPreference->from_any($pref));
 }
 
 =for html <a name="get_current"></a>
@@ -943,6 +967,33 @@ sub server_redirect_in_handle_die {
     $self->internal_server_redirect($new_task, @_);
     $die->get('attrs')->{task_id} = $new_task;
     $die->put(code => Bivio::DieCode::SERVER_REDIRECT_TASK());
+    return;
+}
+
+=for html <a name="set_club_pref"></a>
+
+=head2 set_club_pref(any pref, any value)
+
+Sets a club preference.  I<pref> must be a
+L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
+I<value> may be undef.
+
+Avoid setting defaults in the file.  If the value is same as
+default, don't set it.
+
+=cut
+
+sub set_club_pref {
+    my($self, $pref, $value) = @_;
+    my($auth_realm) = $self->get('auth_realm');
+    return undef unless $auth_realm && $auth_realm->get('type')
+	    == Bivio::Auth::RealmType::CLUB();
+    Bivio::Biz::Model::Preferences->set_value(
+	    $self,
+	    'club_prefs',
+	    $auth_realm->get('owner'),
+	    Bivio::Type::ClubPreference->from_any($pref),
+	    $value);
     return;
 }
 
