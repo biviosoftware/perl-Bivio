@@ -30,11 +30,29 @@ invalid RealmName names.  Syntax is limited.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DEMO_CLUB_SUFFIX"></a>
+
+=head2 DEMO_CLUB_SUFFIX : string
+
+Name used for the demo club.
+
+=cut
+
+sub DEMO_CLUB_SUFFIX {
+    return '_demo_club';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_DEMO_CLUB_SUFFIX) = DEMO_CLUB_SUFFIX();
 my(%_RESERVED) = map {($_, 1)} qw(
     adm
     admin
@@ -131,6 +149,8 @@ sub from_literal {
 	    unless $value =~ /^[a-z][a-z0-9_]{2,}$/;
     return (undef, Bivio::TypeError::EXISTS())
 	    if defined($_RESERVED{$value});
+    return (undef, Bivio::TypeError::DEMO_CLUB_SUFFIX())
+	    if $value =~ /$_DEMO_CLUB_SUFFIX/o;
     return $value;
 }
 
