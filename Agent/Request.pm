@@ -243,6 +243,7 @@ Bivio::Auth::RoleSet->set(\$_ACTIVE_CLUB_ROLES,
 	Bivio::Auth::Role::ACCOUNTANT(),
 	Bivio::Auth::Role::ADMINISTRATOR(),
 	);
+my($_DEFAULT_HELP) = Bivio::Agent::Task->DEFAULT_HELP();
 
 =head1 FACTORIES
 
@@ -397,6 +398,29 @@ sub format_email {
     $email .= '@' . $self->get('mail_host')
 	    unless $email =~ /\@/;
     return $email;
+}
+
+=for html <a name="format_help_uri"></a>
+
+=head2 format_help_uri() : string
+
+=head2 format_help_uri(Bivio::Agent::TaskId task_id) : string
+
+Formats the uri for the current task or I<task_id>.  If the task
+doesn't have a help entry, defaults to help task.
+
+I<task_id> may be a widget value.
+
+=cut
+
+sub format_help_uri {
+    my($self, $task_id) = @_;
+    $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
+    $task_id = $self->get('task_id') unless $task_id;
+    return $self->format_uri(Bivio::Agent::TaskId::HELP(),
+	    undef, undef,
+	    Bivio::Agent::Task->get_by_id($task_id)->unsafe_get('help')
+	    || $_DEFAULT_HELP);
 }
 
 =for html <a name="format_http"></a>
