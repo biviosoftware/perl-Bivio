@@ -180,7 +180,7 @@ sub follow_link {
 
 =for html <a name="follow_link_in_table"></a>
 
-=head2 follow_link_in_table(string find_heading, string find_value)
+=head2 follow_link_in_table(string table_name, string find_heading, string find_value)
 
 =head2 follow_link_in_table(string table_name, string find_heading, string find_value, string link_heading, string link_name)
 
