@@ -42,8 +42,11 @@ tasks defined in this module is:
 #=VARIABLES
 my(@_CFG) = (
     # Always start enums at 1, so 0 can be reserved for UNKNOWN.
-    # DO NOT CHANGE the order of this list, the values may be
+    # DO NOT CHANGE the numbers in this list, the values may be
     # stored in the database.
+    #
+    # ACHTUNG: Any static top level URI names, must be in
+    #          Bivio::Type::RealmName::_RESERVED list
     [qw(
 	CLUB_MAIL_FORWARD
 	1
@@ -315,6 +318,16 @@ my(@_CFG) = (
         MEMBER
         _/accounting/reports/balance-sheet
         Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        SETUP_USER
+        38
+        ANY_USER
+        USER
+        setup/user
+        Bivio::Biz::Model::UserForm
+        Bivio::UI::HTML::Setup::User
+        next=SETUP_USER
     )],
 );
 
