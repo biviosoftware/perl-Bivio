@@ -53,7 +53,8 @@ sub get_delegate_info {
 	    1
 	    GENERAL
 	    ANYBODY
-	    Action.LocalFilePlain
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
 	)],
 	[qw(
 	    SITE_ROOT
