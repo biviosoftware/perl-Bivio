@@ -50,28 +50,12 @@ that paragraph.
 use IO::Scalar;
 use IO::Handle;
 use Bivio::IO::Trace;
+use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_CHAR_MAP) = {
-38 => "&amp;",
-34 => "&quot;",
-60 => "&lt;",
-62 => "&gt;",
-160 =>"&nbsp;",
-162 => "&cent;",
-163 => "&pound;",
-165 => "&yen;",
-169 => "&copy;",
-174 => "&reg;",
-177 => "&plusmn;",
-182 => "&para;",
-247 => "&divide;",
-
-};
-
 
 =head1 FACTORIES
 
@@ -145,46 +129,30 @@ sub _parse {
 # _parse_line() : 
 #
 #
-#
 sub _parse_line {
     my $line = shift;
 #    _trace('parse_line is handling: ' , $line) if $_TRACE;
-    my @words = split(" ", $line);
+    my @words = split(' ', $line);
     my $len = @words;
     return "" unless ($len > 0);
     my $newline = ();
-    my $res = '';
     foreach my $word (@words){
-	$res = '';
-	my @chars = split(//, $word);
-	foreach my $x (@chars){
-	    my $chr = $_CHAR_MAP->{ord($x)};
-	    if($chr){$res .= $chr;}
-	    else {
-		next if (ord($x) < 33 || ord($x) == 126);
-		$res .= (ord($x) > 32 && ord($x) < 127) ?
-			$x : '&#' . ord($x) . ';';
-	    }
-	}
-	$word = $res if(! $res eq(''));
+        Bivio::Util::escape_html($word);
 #	_trace('word to parse: ' , $word) if $_TRACE;
-	if($word =~ /\w*@\w*\.\w*/){
-#	if($word =~ /\w*@[a-z]*/){
-	    $word = "<a HREF=MAILTO:$word>$word</a>";
+	if($word =~ /(\w+@([[\w-]{2,}\.?){2,}(\?.+|))/){
+	    my $uri = $1;
+	    $word = "$`<a HREF=\"MAILTO:$uri\">$uri</a>$'";
 #	    _trace('found a mailto: ', $word) if $_TRACE;
 	}
-	elsif($word =~ /(https?:\/\/.*)/){
+	elsif($word =~ /(https?:\/\/([[\w-]{2,}\.?){2,}.*?)[\>\)\]\,]?$/){
 	    my $uri = $1;
-	    my $suri = $1;
-	    $word =~ s/\Q$suri/\<a HREF=$uri\>$uri\<\/a\>/;
+	    $word =~ s/\Q$uri/\<a HREF=\"$uri\"\>$uri\<\/a\>/;
 	}
-	elsif($word =~ /(www\..*[^\.])/){
+	elsif($word =~ /(www(\.[\w-]{2,}){2,}.*?)[\>\)\]\,]?$/){
 	    my $uri = $1;
-	    my $suri = $1;
-	    $word =~ s/\Q$suri/\<a HREF=http:\/\/$uri\>$uri\<\/a\>/;
+	    $word =~ s/\Q$uri/\<a HREF=\"http:\/\/$uri\"\>$uri\<\/a\>/;
 	}
-	push @$newline, $word;
-	$res = '';
+        push @$newline, $word;
     }
     my $s =  join ' ' , @$newline;
     $s =~ s/^&gt;/<BR>&gt;/;
