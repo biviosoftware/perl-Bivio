@@ -120,7 +120,7 @@ sub check_accept_after_login {
     if ($invite) {
 
 	# New User registering via an invite URL
-	if ($req->get('Bivio::Biz::Model::CreateUserForm')) {
+	if ($req->unsafe_get('Bivio::Biz::Model::CreateUserForm')) {
 	    Bivio::Biz::Model::RealmInviteAcceptForm->execute($req, {});
 	    $req->client_redirect(Bivio::Agent::TaskId::CLUB_USER_NEW());
 	    # DOES NOT RETURN
