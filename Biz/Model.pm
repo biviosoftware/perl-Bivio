@@ -598,7 +598,8 @@ followed by L<map_iterate_handler|"map_iterate_handler">.
 Terminates the iteration with L<iterate_end|"iterate_end">.
 
 Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
-as an array_ref.
+as an array_ref, calling L<get_shallow_copy|"get_shallow_copy"> to get each
+row's values.
 
 If I<map_iterate_handler> is C<undef>, the default handler simply returns all
 the rows.
@@ -610,7 +611,7 @@ sub map_iterate {
     my($res) = [];
     $self->iterate_start(@_);
     $map_iterate_handler ||= sub {
-	return $self->get_shallow_copy;
+	return shift->get_shallow_copy;
     };
     while ($self->iterate_next_and_load) {
 	push(@$res, $map_iterate_handler->($self));
@@ -621,11 +622,14 @@ sub map_iterate {
 
 =for html <a name="map_iterate_handler"></a>
 
-=head2 abstract map_iterate_handler(Bivio::Biz::Model self) : boolean
+=head2 callback map_iterate_handler(Bivio::Biz::Model self) : boolean
 
 Called by L<map_iterate|"map_iterate"> for each row of the iteration.  Passed
 the model which is being iterated. Returns value(s) which are pushed onto the
 resultant map by L<map_iterate|"map_iterate">.
+
+To use as a simple C<foreach> and not a C<map>, put a C<return;> at the end, so
+that nothing is returned.  I<map_iterate_handler> is called in a list context.
 
 =cut
 
