@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::Biz::Model;
 use strict;
-use Bivio::Biz::Status();
 $Bivio::Biz::Model::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -16,6 +15,7 @@ Bivio::Biz::Model - a business object
 
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Biz::Model::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
@@ -27,6 +27,9 @@ C<Bivio::Biz::Model>
 =head1 CONSTANTS
 
 =cut
+
+#=IMPORTS
+use Bivio::Biz::Status;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -59,9 +62,9 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 abstract find(FindParams p) : boolean
+=head2 abstract find(hash find_params) : boolean
 
-Loads the model using values from the specified FindParams.
+Loads the model using values from the specified search parameters.
 Returns 1 if successful, or 0 if no data was loaded.
 
 =cut
