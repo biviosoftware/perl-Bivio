@@ -202,6 +202,8 @@ sub die_to_http_code {
 	    => Bivio::Ext::ApacheConstants->FORBIDDEN,
 	Bivio::DieCode->NOT_FOUND
 	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
+	Bivio::DieCode->MODEL_NOT_FOUND
+	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
 	Bivio::DieCode->CLIENT_REDIRECT_TASK
 	    => Bivio::Ext::ApacheConstants->OK,
     ) unless %_DIE_TO_HTTP_CODE;
