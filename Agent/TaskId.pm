@@ -391,8 +391,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         _/accounting/member/payment
+        Bivio::Biz::Model::MemberSummaryList
         Bivio::Biz::Model::SingleDepositForm
-        Bivio::Biz::Model::RealmAccountList
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
@@ -455,8 +455,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/buy
+        Bivio::Biz::Model::InstrumentSummaryList
         Bivio::Biz::Model::InstrumentBuyForm
-        Bivio::Biz::Model::RealmValuationAccountList
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
@@ -569,8 +569,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         _/accounting/member/fee
+        Bivio::Biz::Model::MemberSummaryList
         Bivio::Biz::Model::SingleDepositForm
-        Bivio::Biz::Model::RealmValuationAccountList
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
