@@ -3,16 +3,23 @@ use Bivio::Test;
 use Bivio::Collection::Attributes;
 Bivio::Test->unit([
     Bivio::Collection::Attributes->new({
-	a => '1',
+	a => '3',
 	b => ['A', 'B'],
 	c => {A => 1, B => 2},
 	d => Bivio::Collection::Attributes->new({a => 99}),
     }) => [
 	get_nested => [
-	    ['a'] => ['1'],
+	    a => 3,
 	    ['b', 1] => ['B'],
-	    ['c', 'B'] => [2],
-	    ['d', 'a'] => [99],
+	    ['c', 'B'] => 2,
+	    ['d', 'a'] => 99,
+	],
+	{
+	    method => 'get',
+	    want_scalar => 1,
+	} => [
+	    ['a', 'b'] => Bivio::DieCode->DIE,
+	    a => 3,
 	],
     ],
 ]);
