@@ -64,13 +64,15 @@ sub main {
 	$hdr{Date} = sprintf('%02d/%02d/%02d', $m, $d, $y);
 	$buffer .= "\"".join('","', map {$hdr{$_}} @_FIELDS)."\"\n";
     }
-    my(undef, undef, undef, $d, $m, $y) = localtime(time);
+    my($s, $mi, $h, $d, $m, $y) = localtime(time);
     $y += 1900;
     $m++;
-    my($date) = sprintf('%02d/%02d/%02d', $m, $d, $y);
+    my($date) = sprintf('%02d/%02d/%02d %02d:%02d:%02d', $m, $d, $y,
+	   $h, $mi, $s);
     my($title) = "ReqTrack Active List ($date)";
     if ($mail) {
 	my($name) = sprintf('reqtrack-%04d%02d%02d.csv', $y, $m, $d);
+	$buffer = "\"$title\"\n".$buffer;
 	Bivio::Mail::send(undef, $mail, "$title", '', [], [{
 	    content_type => 'application/x-unknown-content-type-Excel.CSV',
 	    name => $name,
