@@ -317,6 +317,23 @@ sub get_db_time {
     return $result;
 }
 
+=for html <a name="get_dbi_config"></a>
+
+=head2 static get_dbi_config() : hash_ref
+
+Returns a copy of the dbi configuration for this connection.  See
+L<Bivio::Ext::DBI::get_config|Bivio::Ext::DBI/"get_config">.
+
+=cut
+
+sub get_dbi_config {
+    my($self) = @_;
+    return _get_instance($self)->get_dbi_config
+	unless ref($self);
+    my($fields) = $self->[$_IDI];
+    return Bivio::Ext::DBI->get_config($fields->{dbi_name});
+}
+
 =for html <a name="get_dbi_prefix"></a>
 
 =head2 static abstract get_dbi_prefix(hash_ref cfg) : string
