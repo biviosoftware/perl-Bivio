@@ -59,6 +59,8 @@ _compile(
     STATE => ['State', undef, 'Address.state'],
     ZIP => ['Zip', undef, 'Address.zip'],
     COUNTRY => ['Country', undef, 'Address.country'],
+    ADDRESS_COUNTRY => ['Country'],
+    ADDRESS_STATE => ['State'],
 
     # Club labels
     CLUB_DISPLAY_NAME => ['Name'],
@@ -293,6 +295,7 @@ _compile(
     FILE_ACTION => ['Action'],
     FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
     FILE_SIZE => ['Size'],
+    FILE_LOCATION => ['Location'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
