@@ -38,6 +38,37 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="quiet_visit"></a>
+
+=head2 quiet_visit() : Page visitor with less output that returns the response.
+
+This version of visit is meant to be used by modules that need to visit a page as part of a longer process.  It returns a reference to the response so it doesn't need to be gotten again by the caller.  It also checks the response for errors.
+
+=cut
+
+sub quiet_visit {
+    my($proto, $uri) = @_;
+    _trace("Current method is quiet_visit(). Current url is:", $uri, "\n")
+	    if $_TRACE;
+
+    my($response) = HTTPTools::http_href('URL', $uri);
+
+    if (!defined $response) {
+	_trace("Failed to get response from server for $uri.\n") if $_TRACE;
+    }
+    elsif ($response->{HTTP_RESPONSE}->is_success) {
+	my ($board) = Bivio::Test::BulletinBoard->get_current();
+	$board->put(response => $response);
+	_trace("Visiting page: " , ($board->get('response'))->{TITLE} , "\n")
+		if $_TRACE;
+    }
+    else {
+	_trace("Error: Page did not load successfully.\n
+                Text gotten was:\n$response\n") if $_TRACE;
+    }
+    return $response;
+}
+
 =for html <a name="visit"></a>
 
 =head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
@@ -53,16 +84,19 @@ sub visit {
 
     my($response) = HTTPTools::http_href('URL', $uri);
 
-    if (!defined $response) {
-	print("Failed to get response from server for $uri.\n");
+    if ($response = undef) {
+	Bivio::Test::Engine->print_later(
+		"Failed to get response from server for $uri.\n");
     }
     elsif ($response->{HTTP_RESPONSE}->is_success) {
 	my ($board) = Bivio::Test::BulletinBoard->get_current();
 	$board->put(response => $response);
-	print("Visiting page: " , ($board->get('response'))->{TITLE} , "\n");
+	Bivio::Test::Engine->print_later(
+		"Visiting page: " , ($board->get('response'))->{TITLE} , "\n");
     }
     else {
-	print("Error: Page did not load successfully.\n");
+	Bivio::Test::Engine->print_later(
+		"Error: Page did not load successfully.\n");
       	_trace("Text gotten was: ", $response, "\n");
     }
     return;
