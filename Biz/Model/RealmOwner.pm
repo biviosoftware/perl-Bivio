@@ -213,7 +213,7 @@ sub create {
 	    unless defined($values->{display_name});
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless defined($values->{creation_date_time});
-    $values->{password} = 'xx'
+    $values->{password} = Bivio::Type::Password->INVALID()
 	    unless defined($values->{password});
     return $self->SUPER::create($values);
 }
@@ -650,6 +650,19 @@ sub get_share_price_and_date {
     return $result;
 }
 
+=for html <a name="has_valid_password"></a>
+
+=head2 has_valid_password() : boolean
+
+Returns true if self's password is valid.
+
+=cut
+
+sub has_valid_password {
+    my($self) = @_;
+    return Bivio::Type::Password->is_valid($self->get('password'));
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -750,6 +763,24 @@ sub is_shadow_user {
     my($m) = $list_model || $self;
     my($name) = $m->get($p.'name');
     return $name =~ /^$_SHADOW_PREFIX/o ? 1 : 0;
+}
+
+=for html <a name="is_super_user"></a>
+
+=head2 is_super_user() : boolean
+
+Returns true if I<self> is a super user.
+
+=cut
+
+sub is_super_user {
+    my($self) = @_;
+#TODO: Need to encapsulate GENERAL->as_int.  I guess it is good enough here.
+    # If it loads, then the user is certainly special
+    return Bivio::Biz::Model->new($self->get_request, 'RealmUser')
+	    ->unauth_load(
+		    realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
+		    user_id => $self->get('realm_id'));
 }
 
 =for html <a name="unauth_load_by_email"></a>
