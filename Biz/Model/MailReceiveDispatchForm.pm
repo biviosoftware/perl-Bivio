@@ -154,14 +154,18 @@ Returns (realm, op) from recipient.  I<op> may be undef.
 
 Two addresses are parsed:
 
-   op.realm
-   realm-op
+   op.realm+tag
+   realm-op+tag
+
+Where +tag is like sendmail style +anything after the address.  You don't need
++tag.
 
 =cut
 
 sub parse_recipient {
     my($self) = @_;
     my($to) = lc($self->get('recipient'));
+    $to =~ s/\+.*$//g;
     my($name, $op) = $to =~ /^(\w+)(?:-([^\.]+))?$/;
     ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
 	unless $name;
