@@ -37,6 +37,7 @@ C<Bivio::Biz::Mail::MessageList>
 
 #=IMPORTS
 use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::Mail::Message;
 use Bivio::Biz::SqlListSupport;
 use Bivio::IO::Trace;
 
@@ -70,8 +71,11 @@ sub new {
 
     $self->{$_PACKAGE} = {
 	index => 0,
-	size => 0
-	};
+	size => 0,
+	selected => undef,
+	next => '',
+	prev => ''
+    };
     $_SQL_SUPPORT->initialize();
     return $self;
 }
@@ -104,11 +108,43 @@ sub find {
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
 		$fields->{index}, 15, 'where club=?', $fp->{'club'});
     }
-    else {
-	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self, '');
-	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		$fields->{index}, 15, '');
+
+    # set the selected message
+    if (defined($fp->{id}) && $fp->{club}) {
+
+	my($message) = Bivio::Biz::Mail::Message->new();
+	$message->find({id => $fp->{id}, club => $fp->{club}});
+
+	$fields->{selected} = $message->get_status()->is_OK()
+		? $message : undef;
     }
+    else {
+	$fields->{selected} = undef;
+    }
+
+    $fields->{prev} = '';
+    $fields->{next} = '';
+    my($rows) = $self->internal_get_rows();
+
+    #TODO: needs revisiting
+    for (my($i) = 0; $i < scalar(@$rows); $i++) {
+	my($row) = $rows->[$i];
+	my($index) = $i + $fp->{index} - 1;
+	$index = 0 if $index < 0;
+	# col 0, part 0
+	my($id) = $row->[0]->[0];
+
+	if (defined($fp->{id}) and $fp->{id} eq $id) {
+	    $fields->{prev} = $i > 0 ? $rows->[$i-1]->[0]->[0] : undef;
+	    $fields->{next} = $i < scalar(@$rows) - 1
+		    ? 'index('.($index == 0 ? $index : $index + 1)
+			    .'),id('.$rows->[$i+1]->[0]->[0].')'
+		    : undef;
+	}
+	#TODO: need to get the rest of the fp params into this
+	$row->[0]->[0] = 'index('.($index >= 0 ? $index : 0).'),id('.$id.')';
+    }
+
     return $self->get_status()->is_OK();
 }
 
@@ -141,6 +177,49 @@ sub get_index {
     return $fields->{index};
 }
 
+=for html <a name="get_next_message_id"></a>
+
+=head2 get_next_message_id() : 
+
+Returns the find-params for the next-to-the-selected message.
+
+=cut
+
+sub get_next_message_id {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{next} || '';
+}
+
+=for html <a name="get_prev_message_id"></a>
+
+=head2 get_prev_message_id() : string
+
+Returns the find-params for the previous-to-the-selected message.
+
+=cut
+
+sub get_prev_message_id {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{prev} || '';
+}
+
+=for html <a name="get_selected_message"></a>
+
+=head2 get_selected_message() : Message
+
+Returns the selected email message or undef if none was selected.
+
+=cut
+
+sub get_selected_message {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{selected};
+}
+
 =for html <a name="get_title"></a>
 
 =head2 abstract get_title() : string
@@ -151,6 +230,11 @@ Returns a suitable title of the model.
 
 sub get_title {
     my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{selected}) {
+	return $fields->{selected}->get('subject');
+    }
 
     #TODO: need better title
     return 'Messages '.&_get_date_range($self);
