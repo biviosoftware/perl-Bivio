@@ -39,8 +39,6 @@ use Bivio::Type::PrimaryId;
 use Bivio::Type::Email;
 
 #=VARIABLES
-my($_SHADOW_PREFIX) = '=';
-my($_IGNORE) = Bivio::Type::Email->IGNORE_PREFIX;
 
 =head1 METHODS
 
@@ -61,32 +59,20 @@ sub create {
     return $self->SUPER::create($values);
 }
 
-=for html <a name="format_email"></a>
-
-=head2 format_email() : string
-
-Returns the email for display. Shadow accounting email addresses
-returns ''.
-
-=cut
-
-sub format_email {
-    my($self) = @_;
-    my($email) = $self->get('email');
-    return ($email =~ /^$_IGNORE/o) ? '' : $email;
-}
-
 =for html <a name="generate_shadow_email"></a>
 
-=head2 static generate_shadow_email(string email, string club_id) : string
+=head2 static generate_shadow_email(string email, string realm_id) : string
 
-Returns a shadow email address for the specified email / club_id combo.
+Returns a shadow email address for the specified email / realm_id combo.
 
 =cut
 
 sub generate_shadow_email {
-    my(undef, $email, $club_id) = @_;
-    return $_IGNORE.$_SHADOW_PREFIX.$email.'_'.$club_id;
+    my(undef, $email, $realm_id) = @_;
+    # Colon (':') causes the email address to be invalid.  The realm_id is an
+    # integer and won't make email address invalid.  Must be invalid,
+    # so User/Club->get_outgoing_emails won't return these addresses.
+    return $email.':'.$realm_id;
 }
 
 =for html <a name="internal_initialize"></a>
