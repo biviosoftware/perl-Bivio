@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Die;
 use strict;
 $Bivio::Die::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$_ = $Bivio::Die::VERSION;
 
 =head1 NAME
 
@@ -494,7 +495,7 @@ sub _new_from_core_die {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
