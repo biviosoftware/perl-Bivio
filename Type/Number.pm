@@ -142,7 +142,7 @@ Dies if dividing by 0.
 sub div {
     my($proto, $v, $v2, $decimals) = @_;
     Bivio::Die->die('divide by zero: ', $v, '/', $v2)
-        if $v2 =~ /^[0.]+$/;
+        if ! defined($v2) || $v2 =~ /^[0.]+$/;
     return _format($proto,
         GMP::Mpf::overload_diveq(_mpf($v), _mpf($v2), 0), $decimals);
 }
