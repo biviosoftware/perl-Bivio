@@ -51,7 +51,6 @@ sub REALM_PLACEHOLDER {
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::Realm;
-use Bivio::Auth::Realm::Proxy;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
@@ -243,8 +242,6 @@ sub initialize {
     $_INITIALIZED && return;
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     $_GENERAL = Bivio::Auth::Realm::General->new;
-    my($_PROXY_PREFIX) = Bivio::Auth::Realm::Proxy::FIRST_URI_COMPONENT()
-	    .'/'.$_REALM_PLACEHOLDER_PAT;
     my(%path_info_uri);
     foreach my $c (@$cfg) {
 	my($task_id_name, $realm_type_name, $uri_list) = @{$c}[0,2,4];
@@ -259,7 +256,7 @@ sub initialize {
 	}
 
 #TODO: Shouldn't have to do this mapping here.  Should be in RealmType.
-	elsif ($realm_type_name =~ /^(CLUB|USER|PROXY)$/) {
+	elsif ($realm_type_name =~ /^(CLUB|USER)$/) {
 	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
 	}
 	else {
@@ -296,19 +293,10 @@ sub initialize {
 		}
 		else {
 		    # URI with realm_owner
-		    if ($realm_type_name eq 'PROXY') {
-			die("$task_id_name: $uri: must begin with "
-				."'$_PROXY_PREFIX'")
-				unless $uri =~ m!^$_PROXY_PREFIX(?:\/(.*)|$)!o;
-			$path_info_count = 3;
-		    }
-		    else {
-			die("$task_id_name: $uri: must begin with '"
-				.REALM_PLACEHOLDER()."'")
-				unless $uri
-					=~ m!^$_REALM_PLACEHOLDER_PAT(?:\/|$)!;
-			$path_info_count = 2;
-		    }
+                    die("$task_id_name: $uri: must begin with '"
+                            .REALM_PLACEHOLDER()."'")
+                            unless $uri =~ m!^$_REALM_PLACEHOLDER_PAT(?:\/|$)!;
+                    $path_info_count = 2;
 		}
 		# Make sure there is exactly one trailing component
 		# for path_info URIs
@@ -460,42 +448,21 @@ sub parse {
     my($realm);
     # Up to which component is checked for path_info URI
     my($path_info_index) = undef;
-    if ($uri[0] eq Bivio::Auth::Realm::Proxy::FIRST_URI_COMPONENT()) {
-	#
-	# Proxy Realm
-	#
-	# RJN: This is experimental.  I'm not sure if this is the right
-	# 	   approach, because all Celebrity realms may not contain the
-	# 	   same URIs.
-	# Be friendly, by downcasing
-	my($name) = lc($uri[1]);
-	$uri[1] = REALM_PLACEHOLDER();
 
-	# Blows up if not found.
-	$realm = Bivio::Auth::Realm::Proxy->from_name($name);
+    # Be friendly, by downcasing
+    my($name) = lc($uri[0]);
+    $uri[0] = REALM_PLACEHOLDER();
 
-	# Component after realm name must identify path_info URI
-	$path_info_index = 2;
-    }
-    else {
-	#
-	# Ordinary Realm
-	#
-	# Be friendly, by downcasing
-	my($name) = lc($uri[0]);
-	$uri[0] = REALM_PLACEHOLDER();
-
-	# Is this a valid, authorized realm with a task for this uri?
-	my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-	$req->die(Bivio::DieCode::NOT_FOUND,
-		{entity => $name, uri => $orig_uri,
-		    class => 'Bivio::Auth::Realm',
-		    message => 'no such realm'})
-		unless $o->unauth_load(name => $name);
-	$realm = Bivio::Auth::Realm->new($o);
-	# Component after realm name must identify path_info URI
-	$path_info_index = 1;
-    }
+    # Is this a valid, authorized realm with a task for this uri?
+    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
+    $req->die(Bivio::DieCode::NOT_FOUND,
+            {entity => $name, uri => $orig_uri,
+                class => 'Bivio::Auth::Realm',
+                message => 'no such realm'})
+            unless $o->unauth_load(name => $name);
+    $realm = Bivio::Auth::Realm->new($o);
+    # Component after realm name must identify path_info URI
+    $path_info_index = 1;
 
     # Found the realm, now try to find the URI (without checking path_info)
     $uri = join('/', @uri);
