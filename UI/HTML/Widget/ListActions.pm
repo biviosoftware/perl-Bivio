@@ -40,6 +40,8 @@ name of the action and the second element is the task name.
 The third optional element of sub-array_ref is a
 L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>,
 default value is C<THIS_DETAIL>.
+The fourth optional element is a control.  If the control returns
+true, the action is rendered.
 
 Links will be rendered in the ListAction font.
 
@@ -97,6 +99,7 @@ sub initialize {
 	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>",
 	    method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL'),
+	    control => $v->[3],
 	});
     }
     return;
@@ -136,6 +139,8 @@ sub render {
     my($sep) = '';
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
+	next if $v2->{control}
+		&& !$source->get_widget_value(@{$v2->{control}});
 	$$buffer .= $sep.$v2->{prefix}.$source->format_uri($v2->{method},
 		$v->{uri}).$v2->{suffix};
 	$sep = ",\n";
