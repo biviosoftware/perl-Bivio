@@ -4,6 +4,7 @@ package Bivio::Agent::Dispatcher;
 use strict;
 
 $Bivio::Agent::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::Dispatcher::VERSION;
 
 =head1 NAME
 
@@ -53,9 +54,6 @@ use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
-# This is here to avoid a bunch of error messages when societas
-# is started in stack_trace_warn.
-use MIME::Parser;
 
 #=VARIABLES
 # No core dumps please
