@@ -21,14 +21,14 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Collection::SingletonMap> maps class names to singleton objects
-of those classes.  Singletons are initialized at startup with
-a call to C<new>.
+C<Bivio::Collection::SingletonMap> maps class names to singleton objects of
+those classes.  Singletons are initialized with a call to C<get_instance> or
+C<new> depending on which exists.
 
 This class needn't be subclassed but typically is.  If it is,
 the classes are stored in distinct spaces.  This would allow
 instantiating singletons in different ways in different
-contexts.  Subclasses of this module COULD control how the
+contexts.  Subclasses of this module I<could> control how the
 singletons are instantiated.  Currently, there is only way
 to instantiate.
 
@@ -54,60 +54,43 @@ my(%_MAP);
 Returns the list of named instances.  I<class> is qualified by
 the package which owns the map.
 
+If the singleton doesn't exist, tries to "put" it.
+
 =cut
 
 sub get {
-    my($map) = $_MAP{shift(@_)};
+    my($proto) = shift;
+    my($class) = ref($proto) || $proto;
+    $_MAP{$class} = {} unless $_MAP{$class};
+    my($map) = $_MAP{$class};
     @_ || Carp::croak('must supply at least one class argument');
     return map {
-	exists($map->{$_}) || Carp::croak("$_: no such class in cache");
-	$map->{$_}
+	$proto->put($_) unless exists($map->{$_});
+	$map->{$_};
     } @_;
-}
-
-=for html <a name="initialize"></a>
-
-=head2 initialize(array_ref classes) : boolean
-
-Special form of L<put|"put">.  If the map already contains an entry for this
-package, returns false and does nothing.  Otherwise, calls L<put|"put">.
-
-Simplies implementation of C<initialize> method in subclasses.
-
-=cut
-
-sub initialize {
-    my($pkg) = shift;
-    # Use $pkg-> form to allow subclasses to override put and still
-    # retain this functionality.
-    return 0 if $_MAP{$pkg};
-    $pkg->put(@_);
-    return 1;
 }
 
 =for html <a name="put"></a>
 
-=head2 static put(array_ref classes)
+=head2 static put(string class1, ...)
 
-I<classes> is a list of class names which are instantiated with
-C<new>.  Will C<require> the modules, so you needed C<use> them.
-
-I<classes> is passed as an C<array_ref> to allow for expansion
-of this routine in the future.
+I<classes> is a list of class names which are instantiated with C<get_instance>
+or C<new>.  Will C<require> the modules, so you needn't C<use> them.  If class
+is already instantiated, won't re-instantiate.
 
 =cut
 
 sub put {
-    my($pkg, $classes) = @_;
+    my($proto) = shift;
+    my($class) = ref($proto) || $proto;
+    $_MAP{$class} = {} unless $_MAP{$class};
+    my($map) = $_MAP{$class};
     my($c);
-    foreach $c (@$classes) {
+    foreach $c (@_) {
+	next if $map->{$c};
 	Bivio::Util::my_require($c);
+	$map->{$c} = $c->can('get_instance') ? $c->get_instance : $c->new;
     }
-    $_MAP{$pkg} = {map {
-	my($x) = $_;
-	# "new" may overwrite $_
-	($x, $x->new);
-    } @$classes};
     return;
 }
 
