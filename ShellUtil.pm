@@ -771,7 +771,7 @@ sub result {
 Sets the I<realm> and I<user> on L<get_request|"get_request">.
 If I<realm> is C<undef>, sets to General realm.
 If I<user> is C<undef> and not general realm, calls
-L<set_user_to_first_admin|"set_user_to_first_admin">.
+L<set_user_to_any_online_admin|"set_user_to_any_online_admin">.
 
 =cut
 
@@ -788,26 +788,26 @@ sub set_realm_and_user {
     }
 
     # $realm may be a string (name or id), so must get to check type
-    $self->set_user_to_first_admin
+    $self->set_user_to_any_online_admin
 	    unless $req->get('auth_realm')->get_type
 		    == Bivio::Auth::RealmType::GENERAL();
     return $self;
 }
 
-=for html <a name="set_user_to_first_admin"></a>
+=for html <a name="set_user_to_any_online_admin"></a>
 
-=head2 static set_user_to_first_admin() : Bivio::Biz::Model::RealmOwner
+=head2 static set_user_to_any_online_admin() : Bivio::Biz::Model::RealmOwner
 
 Sets the user to first_admin on I<self> and I<req>.  Returns the
 first admin.
 
 =cut
 
-sub set_user_to_first_admin {
+sub set_user_to_any_online_admin {
     my($self) = @_;
     my($req) = $self->get_request;
-    $req->set_user(Bivio::Biz::Model->new($req, 'RealmAdminList')
-	    ->get_first_admin($req->get('auth_realm')->get('owner')));
+    $req->set_user(
+	    Bivio::Biz::Model->new($req, 'RealmUser')->get_any_online_admin);
     my($user) = $req->get('auth_user');
     $self->put(user => $user->get('name'));
     return $user;
@@ -835,7 +835,6 @@ sub setup {
         Bivio::SQL::Connection
     });
     $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
-    return unless Bivio::Ext::DBI->get_config($db)->{user} eq 'bivio';
 
     # Create the request, then set the user (need the request to load models)
     $self->put(req => Bivio::Agent::Job::Request->new({
@@ -1026,7 +1025,8 @@ sub _parse_options {
 sub _parse_realm_id {
     my($self, $attr) = @_;
     my($realm) = $self->unsafe_get($attr);
-    return $realm unless defined($realm);
+    # Any "false" realm is not found
+    return undef unless $realm;
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model');
     my($ro) = Bivio::Biz::Model->get_instance('RealmOwner')->new();
     $self->usage_error($realm, ': no such ', $attr)
