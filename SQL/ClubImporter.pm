@@ -893,7 +893,7 @@ sub _create_entry {
 	}
 	elsif ($trans->{class} == Bivio::Type::EntryClass->INSTRUMENT) {
 	    $trans->{amount} = - $trans->{amount};
-	    $trans->{shares} = - $trans->{shares};
+	    $trans->{count} = - $trans->{count};
 	}
 	# the cash account is always correct
     }
