@@ -53,7 +53,9 @@ C<Bivio::UI::HTML::Widget::SumMultiplierHandler>
 
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
-    return ' onBlur="'. _function_name($self, $source) . '(this)"';
+    my($req) = $source->get_request;
+    my($model) = $req->get($self->ancestral_get('form_class'));
+    return ' onBlur="'. _function_name($self, $model) . '(this)"';
 }
 
 =for html <a name="render"></a>
@@ -68,18 +70,19 @@ widget values.
 sub render {
     my($self, $source, $buffer) = @_;
 #    $self->SUPER::render($source, $buffer);
-    return if Bivio::UI::HTML::Widget::JavaScript
-	->has_been_rendered($source, _function_name($self, $source));
     my($req) = $source->get_request;
+    my($model) = $req->get($self->ancestral_get('form_class'));
+    return if Bivio::UI::HTML::Widget::JavaScript
+	->has_been_rendered($source, _function_name($self, $model));
     my($form_name) = $self->ancestral_get('form_name');
     my($prefix) = "document.$form_name.";
-    my($total) = $prefix . $source->get_field_name_for_html($self->get('sum_field'));
+    my($total) = $prefix . $model->get_field_name_for_html($self->get('sum_field'));
     my($multiplier) = $self->get('multiplier');
     my($vals) = $self->get('fields');
     Bivio::UI::HTML::Widget::JavaScript->render(
-	$source, $buffer, _function_name($self, $source), <<"EOF"
+	$source, $buffer, _function_name($self, $model), <<"EOF"
 
-function @{[_function_name($self, $source)]}(field)
+function @{[_function_name($self, $model)]}(field)
 {
     @{[$self->MATH_ROUND]}(field);
     $total.value =
@@ -88,7 +91,7 @@ EOF
 	. join("\n- -",
 	    # ASSUMES: form names follow specific structure.
 	    map({
-		$prefix . $source->get_field_name_for_html($_) . ".value";
+		$prefix . $model->get_field_name_for_html($_) . ".value";
 	    } @$vals)
 	) . <<"EOF"
 
@@ -107,9 +110,9 @@ EOF
 #
 #
 sub _function_name {
-    my($self, $source) = @_;
+    my($self, $model) = @_;
     return 'csxm_' . $self->ancestral_get('form_name')
-	. '_' . $source->get_field_name_for_html($self->get('sum_field'));
+	. '_' . $model->get_field_name_for_html($self->get('sum_field'));
 }
 
 =head1 COPYRIGHT
