@@ -38,9 +38,11 @@ It provides arbitrary precision arithmetic for like-based numbers.
 #=IMPORTS
 # also uses Bivio::TypeError dynamically
 use Bivio::IO::ClassLoader;
-use Math::BigInt ();
+use Math::FixedPrecision ();
 
 #=VARIABLES
+my($_ROUNDING_MODE) = '+inf';
+$Math::FixedPrecision::round_mode = $_ROUNDING_MODE;
 
 =head1 METHODS
 
@@ -55,9 +57,8 @@ Converts a negative into a positive number.
 =cut
 
 sub abs {
-    my(undef, $v) = @_;
-    $v =~ s/^-//;
-    return $v;
+    my($proto, $v) = @_;
+    return sprintf('%s', _make_object($proto, $v)->babs);
 }
 
 =head2 static add(string v, string v2, int decimals) : string
@@ -69,9 +70,8 @@ If decimals is undef, then the default precision is used.
 
 sub add {
     my($proto, $v, $v2, $decimals) = @_;
-
-    return _math_op('badd', $v, $v2,
-	    defined($decimals) ? $decimals : $proto->get_decimals());
+    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
+    return sprintf('%s', $v->badd($v2));
 }
 
 =for html <a name="can_be_negative"></a>
@@ -111,7 +111,7 @@ Returns true if range crosses through zero.
 sub can_be_zero {
     my($proto) = @_;
     return $proto->compare($proto->get_max, 0) >= 0
-	    && $proto->compare($proto->get_min, 0) <= 0 ? 1 : 0;
+        && $proto->compare($proto->get_min, 0) <= 0 ? 1 : 0;
 }
 
 =for html <a name="compare"></a>
@@ -124,16 +124,8 @@ See L<Bivio::Type::compare|Bivio::Type/"compare">.
 
 sub compare {
     my($proto, $left, $right, $decimals) = @_;
-
-    $decimals = $proto->get_decimals() unless defined($decimals);
-    $left = _pad_decimal($proto->round($left, $decimals), $decimals);
-    $right = _pad_decimal($proto->round($right, $decimals), $decimals);
-
-    # remove the .
-    $left =~ s/\.//;
-    $right =~ s/\.//;
-
-    return Math::BigInt->new($left)->bcmp(Math::BigInt->new($right));
+    ($left, $right) = _make_objects($proto, $left, $right, $decimals);
+    return $left->bcmp($right);
 }
 
 =for html <a name="div"></a>
@@ -142,20 +134,15 @@ sub compare {
 
 Divides numerator by denominator and returns the result using the specified
 decimal precision.
-If decimals is undef, then the default precision is used.
-Returns 'NaN' if the value isn't valid, ie. x/0.
 
-NOTE: the result is truncated, not rounded
-
-#TODO: the result is should be rounded, not truncated
+Returns 'inf' when dividing by 0.
 
 =cut
 
 sub div {
     my($proto, $v, $v2, $decimals) = @_;
-
-    return _math_op('bdiv', $v, $v2,
-	    defined($decimals) ? $decimals : $proto->get_decimals());
+    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
+    return sprintf('%s', scalar($v->bdiv($v2)));
 }
 
 =for html <a name="fraction_as_string"></a>
@@ -224,7 +211,7 @@ sub from_literal {
 
     Bivio::IO::ClassLoader->simple_require('Bivio::TypeError');
     # not a number
-    return (undef, Bivio::TypeError::NUMBER())
+    return (undef, Bivio::TypeError->NUMBER)
 	    unless defined($parsed_value);
 
     # round to the acceptable number of decimals
@@ -235,7 +222,7 @@ sub from_literal {
 	    if $proto->compare($parsed_value, $proto->get_min) >= 0
 		    && $proto->compare($parsed_value, $proto->get_max) <= 0;
 
-    return (undef, Bivio::TypeError::NUMBER_RANGE());
+    return (undef, Bivio::TypeError->NUMBER_RANGE);
 }
 
 =for html <a name="get_decimals"></a>
@@ -258,17 +245,12 @@ Multiplies two numbers and returns the result using the specified decimal
 precision.
 If decimals is undef, then the default precision is used.
 
-NOTE: the result is truncated, not rounded
-
-#TODO: the result is should be rounded, not truncated
-
 =cut
 
 sub mul {
     my($proto, $v, $v2, $decimals) = @_;
-
-    return _math_op('bmul', $v, $v2,
-	    defined($decimals) ? $decimals : $proto->get_decimals());
+    ($v, $v2) = _make_objects($proto, $v, $v2);
+    return sprintf('%s', $v->bmul($v2));
 }
 
 =for html <a name="neg"></a>
@@ -281,14 +263,7 @@ Returns a number with the opposite sign from the specified one.
 
 sub neg {
     my($proto, $number) = @_;
-
-    return $number if $proto->compare($number, 0) == 0;
-
-    my($sign, $num);
-    if (($sign, $num) = $number =~ /^([-+])(.*)$/) {
-	return ($sign eq '-' ? '+' : '-').$num;
-    }
-    return '-'.$number;
+    return sprintf('%s', _make_object($proto, $number)->bneg);
 }
 
 =for html <a name="round"></a>
@@ -301,13 +276,9 @@ Rounds the number to the specified number of decimal places.
 
 sub round {
     my($proto, $number, $decimals) = @_;
-    die("invalid decimals $decimals") if $decimals < 0;
-    my($rounder) = '0.'.('0' x $decimals).'5';
-    if ($number =~ /^[-]/) {
-	$rounder = '-'.$rounder;
-    }
-    $number = $proto->add($number, $rounder, $decimals + 1);
-    return $proto->trunc($number, $decimals);
+    Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
+    return sprintf('%s', _make_object($proto, $number, $decimals)
+        ->ffround(-$decimals, $_ROUNDING_MODE));
 }
 
 =for html <a name="sign"></a>
@@ -337,9 +308,8 @@ If decimals is undef, then the default precision is used.
 
 sub sub {
     my($proto, $v, $v2, $decimals) = @_;
-
-    return _math_op('bsub', $v, $v2,
-	    defined($decimals) ? $decimals : $proto->get_decimals());
+    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
+    return sprintf('%s', $v->bsub($v2));
 }
 
 =for html <a name="to_literal"></a>
@@ -374,88 +344,31 @@ Truncates the number to the specified number of decimal places.
 
 sub trunc {
     my($proto, $number, $decimals) = @_;
-    die("invalid decimals $decimals") if $decimals < 0;
-
-    my($int, $dec);
-    if (($int, $dec) = $number =~ /^(.*)\.(.*)$/) {
-
-	if (length($dec) > $decimals) {
-	    $dec = substr($dec, 0, $decimals);
-	    $number = $int.'.'.$dec;
-	}
-    }
-    return $number;
+    Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
+    return sprintf('%s', _make_object($proto, $number)
+        ->ffround(-$decimals, 'trunc'));
 }
 
 #=PRIVATE METHODS
 
-# _math_op(string op, string v, string v2, int decimals) : string
+# _make_object(proto, string v, string decimals) : Math::FixedPrecision
 #
-# Performs the specified math operation on the values, using the
-# specified decimal precision.
+# Converts the value to FixedPrecision if necessary.
 #
-sub _math_op {
-    my($op, $v, $v2, $decimals) = @_;
-    die("invalid decimals $decimals") if $decimals < 0;
-    $v ||= 0;
-    $v2 ||= 0;
-
-    # right pad with zeros, double for div
-    $v = _pad_decimal($v, $op eq 'bdiv' ? $decimals * 2 : $decimals);
-    $v2 = _pad_decimal($v2, $decimals);
-
-    # remove the .
-    $v =~ s/\.//;
-    $v2 =~ s/\.//;
-
-    my($result) = Math::BigInt->new($v)->$op(Math::BigInt->new($v2));
-    # strip and save the sign
-    $result =~ s/^(.)//;
-    my($sign) = $1;
-
-    if ($op eq 'bmul') {
-	# trim off extra decimals
-	$result = substr($result, 0, length($result) - $decimals);
-    }
-    # left pad with zeros
-    my($left_pad) = ($decimals + 1) - length($result);
-    if ($left_pad > 0) {
-	$result = ('0' x $left_pad).$result;
-    }
-
-    # put the . back in
-    if ($decimals != 0) {
-	my($expr) = '(.*)('.('.' x $decimals).')';
-	$result =~ s/^$expr$/$1\.$2/x;
-    }
-    return $sign.$result;
+sub _make_object {
+    my($proto, $v, $decimals) = @_;
+    return Math::FixedPrecision->new($v,
+        defined($decimals) ? $decimals : $proto->get_decimals);
 }
 
-# _pad_decimal(string value, int count) : string
+# _make_objects(proto, string v, string v2, int decimals) : (Math::FixedPrecision, Math::FixedPrecision)
 #
-# Pads the specified numeric string to exactly count decimal places.
+# Returns two FixedPrecision objects for the specified values.
 #
-sub _pad_decimal {
-    my($value, $count) = @_;
-
-    my($length) = length($value);
-    my($dot_pos) = index($value, '.');
-    my($decimals) = ($dot_pos == -1) ? undef : $length - $dot_pos - 1;
-
-    # pad to exactly count decimal places
-    if (! defined($decimals)) {
-	$value .= '.'.('0' x $count);
-    }
-    elsif ($decimals < $count) {
-	$value .= '0' x ($count - $decimals);
-    }
-    elsif ($decimals > $count) {
-	$value = substr($value, 0, $length - ($decimals - $count));
-	if ($value eq '.') {
-	    $value = '0';
-	}
-    }
-    return $value;
+sub _make_objects {
+    my($proto, $v, $v2, $decimals) = @_;
+    return (_make_object($proto, $v, $decimals),
+        _make_object($proto, $v2, $decimals));
 }
 
 =head1 COPYRIGHT
