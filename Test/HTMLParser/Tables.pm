@@ -61,19 +61,8 @@ Parses cleaned html for forms.
 sub new {
     my($proto, $parser) = @_;
     my($self) = $proto->SUPER::new;
-    my($fields) = $self->[$_IDI] = {
-	cleaner => $parser->get('Cleaner'),
-	tables => {},
-    };
-
-    my($p) = Bivio::Ext::HTMLParser->new($self);
-    $p->ignore_elements(qw(script style));
-    $p->parse($fields->{cleaner}->get('html'));
-
-    $self->internal_put($fields->{tables});
-    # We only need the fields while parsing.  Avoids memory leaks (circ refs)
-    $self->[$_IDI] = undef;
-    return $self->set_read_only;
+    $self->[$_IDI] = {};
+    return $self;
 }
 
 =head1 METHODS
@@ -115,7 +104,7 @@ Dispatch to the _end_XXX routines.
 sub html_parser_end {
     my($self, $tag) = @_;
     my($fields) = $self->[$_IDI];
-    _call_op('end', $tag, $fields);
+    _call_op('end', $tag, $self);
     return;
 }
 
@@ -130,8 +119,8 @@ Calls _fixup_attr then dispatches to the _start_XXX routines.
 sub html_parser_start {
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
-    return if _call_op('start', $tag, $fields, $attr);
-    return _start_input($fields, $attr)
+    return if _call_op('start', $tag, $self, $attr);
+    return _start_input($self, $attr)
 	if $attr->{type};
     return;
 }
@@ -148,7 +137,7 @@ sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
     return unless $fields->{in_data_table};
-    $fields->{text} .= $fields->{cleaner}->text($text);
+    $fields->{text} .= $text;
     return;
 }
 
@@ -182,43 +171,47 @@ sub _delete_empty_rows {
     return;
 }
 
-# _end_table(hash_ref fields)
+# _end_table(self)
 #
 # The only tables we track are "data" tables.
 #
 sub _end_table {
-    my($fields) = @_;
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
     return unless $fields->{in_data_table} && !--$fields->{in_data_table};
     # Delete totally empty rows (probably separators)
     _delete_empty_rows($fields->{table}->{rows});
-    $fields->{tables}->{
-	$fields->{table}->{label} ||= '_anon#' . keys(%{$fields->{tables}})
+    $self->get('elements')->{
+	$fields->{table}->{label} ||= '_anon#'
+	    . keys(%{$self->get('elements')})
     } = $fields->{table};
     _trace($fields->{table}) if $_TRACE;
     delete($fields->{table});
     return;
 }
 
-# _end_td(hash_ref fields)
+# _end_td(self)
 #
 # Adds the text from column to current row
 #
 sub _end_td {
-    my($fields) = @_;
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
     return unless $fields->{table};
-    _save_cell($fields,
+    _save_cell($self, $fields,
 	$fields->{table}->{rows}->[$#{$fields->{table}->{rows}}]);
     return;
 }
 
-# _end_th(hash_ref fields)
+# _end_th(self)
 #
 # Ends the "th".  Saves the cell and id for table (if not already there).
 #
 sub _end_th {
-    my($fields) = @_;
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
     return unless $fields->{table};
-    my($t) = _save_cell($fields, $fields->{table}->{headings});
+    my($t) = _save_cell($self, $fields, $fields->{table}->{headings});
     $fields->{table}->{label} ||= $t;
     return;
 }
@@ -253,16 +246,16 @@ sub _in_data {
     return ($fields->{in_data_table} || 0) == 1 ? 1 : 0;
 }
 
-# _save_cell(hash_ref fields, array_ref row) : string
+# _save_cell(self, hash_ref fields, array_ref row) : string
 #
 # Checks colspan to see if needs filling.  Returns the found text,
 # if any.
 #
 sub _save_cell {
-    my($fields, $row) = @_;
+    my($self, $fields, $row) = @_;
     return
 	unless $fields->{in_data_table} == 1;
-    my($t) = _text($fields);
+    my($t) = $self->get('cleaner')->text(_text($fields));
     push(@$row, $t);
     _trace($t) if $_TRACE;
     push(@$row, undef)
@@ -270,22 +263,24 @@ sub _save_cell {
     return $t;
 }
 
-# _start_input(hash_ref fields, hash_ref attr)
+# _start_input(self, hash_ref attr)
 #
 # Saves "value" attribute.
 #
 sub _start_input {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     $fields->{text} .= $attr->{value} || '';
     return;
 }
 
-# _start_table(hash_ref fields, hash_ref attr)
+# _start_table(self, hash_ref attr)
 #
 # Increments in_data_table
 #
 sub _start_table {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     $fields->{in_data_table}++
 	if $fields->{in_data_table};
     _found_table($fields, $attr->{id})
@@ -293,12 +288,13 @@ sub _start_table {
     return;
 }
 
-# _start_td(hash_ref fields, hash_ref attr)
+# _start_td(self, hash_ref attr)
 #
 # Starts a TD.
 #
 sub _start_td {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     # Don't separate cells in nested table
 #TODO: Format like a table, e.g. </td> -> ' ', </tr> -> \n
     return unless _in_data($fields);
@@ -307,22 +303,24 @@ sub _start_td {
     return;
 }
 
-# _start_th(hash_ref fields, hash_ref attr)
+# _start_th(self, hash_ref attr)
 #
 # Starts a TH and initializes {table} if necessary.
 #
 sub _start_th {
-    my($fields, $attrs) = @_;
+    my($self, $attrs) = @_;
+    my($fields) = $self->[$_IDI];
     _found_table($fields);
     return _start_td(@_);
 }
 
-# _start_tr(hash_ref fields, hash_ref attr, string tag)
+# _start_tr(self, hash_ref attr, string tag)
 #
 # Only adds rows if rows has been initialized.
 #
 sub _start_tr {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     return unless _in_data($fields);
     push(@{$fields->{table}->{rows}}, [])
 	if $fields->{table}->{rows};
@@ -331,7 +329,7 @@ sub _start_tr {
 
 # _text(hash_ref fields) : string
 #
-# Returns the text field or dies if not defined.
+# Returns the cleaned text field or an empty string if not defined.
 #
 sub _text {
     my($fields) = @_;
