@@ -252,7 +252,9 @@ sub setup_club {
     my($res);
     my($club_name) = $club->get('name');
     my($dir);
-    foreach $dir ("$club_name/messages/rfc822", "$club_name/messages/html") {
+    foreach $dir ("$club_name", "$club_name/messages",
+	    "$club_name/messages/rfc822", "$club_name/messages/html") {
+
 	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
     }
     return;
