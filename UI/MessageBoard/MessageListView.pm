@@ -50,7 +50,7 @@ my($_DOWN_LINK) = Bivio::UI::HTML::Link->new(
 	'', '', '', '');
 my($_NAV_LINKS) = [$_UP_LINK, $_DOWN_LINK];
 
-my($_COMPOSE_LINK) = Bivio::UI::HTML::Link->new( 'compose',
+my($_COMPOSE_LINK) = Bivio::UI::HTML::Link->new('compose',
 	'"/i/compose.gif" border=0',
 	'mailto:bogus@localhost', 'Compose',
 	'Compose a new message to the club');
@@ -70,7 +70,7 @@ Creates a MessageListView.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::UI::HTML::ListView::new($proto, 'messages');
+    my($self) = &Bivio::UI::HTML::ListView::new($proto, 'list');
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -136,7 +136,7 @@ sub get_nav_links {
     if ($next_items > 0) {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_ICON());
 	$_DOWN_LINK->set_description("Next $next_items messages");
-	$_DOWN_LINK->set_url('./'.$self->get_name()
+	$_DOWN_LINK->set_url(&_make_path($self, $req)
 		.'?mf=index('.($index + $page_size).')');
     }
     else {
@@ -159,7 +159,7 @@ sub get_nav_links {
     if ($prev_items > 0) {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_ICON());
 	$_UP_LINK->set_description("Previous $prev_items messages");
-	$_UP_LINK->set_url('./'.$self->get_name()
+	$_UP_LINK->set_url(&_make_path($self, $req)
 		.'?mf=index('.($index - $prev_items).')');
     }
     else {
@@ -172,6 +172,18 @@ sub get_nav_links {
 }
 
 #=PRIVATE METHODS
+
+# _make_path(View view, Request req) : string
+#
+# Creates a path string to the specified view using the current club,
+# and controller from the request.
+
+sub _make_path {
+    my($view, $req) = @_;
+
+    return '/'.$req->get_target_name().'/'.$req->get_controller_name()
+	    .'/'.$view->get_name();
+}
 
 =head1 COPYRIGHT
 
