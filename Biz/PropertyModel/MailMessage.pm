@@ -111,7 +111,7 @@ sub create {
 
 # Handle email attachments. Here's a first cut...
 
-    my($mail_message) = $msg->get_rfc( ); #offset from header
+    my($mail_message) = $msg->get_rfc822( ); #offset from header
     # note that above method returns a COPY not a REFERENCE.
     # this may actually be necessary, I don't know. I think
     # parser->read( ) will WRITE to this area!!
