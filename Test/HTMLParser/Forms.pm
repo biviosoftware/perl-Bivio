@@ -312,6 +312,8 @@ sub _end_table {
 sub _end_textarea {
     my($fields) = @_;
     _trace($fields->{textarea}) if $_TRACE;
+    $fields->{textarea}->{value} = ''
+        unless defined($fields->{textarea}->{value});
     $fields->{textarea} = undef;
     return;
 }
