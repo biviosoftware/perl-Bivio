@@ -237,6 +237,7 @@ sub _upgrade {
     while (my $row = $sth->fetchrow_arrayref) {
 	my($realm_id) = $row->[0];
 	$realm->unauth_load_or_die(realm_id => $realm_id);
+	next if $realm->get('name') =~ /_demo_club$/;
 	print("\t".$realm->get('name')."\n");
 	$req->set_realm(Bivio::Auth::Realm->new($realm));
 
