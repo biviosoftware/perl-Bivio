@@ -146,6 +146,21 @@ sub unsafe_from_name {
 
 =cut
 
+=for html <a name="compare"></a>
+
+=head2 static compare(any left, any right) : int
+
+Performs the numeric comparison of the enum values.
+
+=cut
+
+sub compare {
+    my(undef, $left, $right) = @_;
+    Bivio::IO::Alert->die(ref($left), ' != ', ref($right),
+	    ': type mismatch') unless ref($left) eq ref($right);
+    return $left->as_int <=> $right->as_int;
+}
+
 =for html <a name="execute"></a>
 
 =head2 execute(Bivio::Agent::Request req) : boolean
@@ -604,7 +619,7 @@ Returns the string representation of the value.
 sub to_string {
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return _get_info($proto, $value)->[4];
+    return _get_info($proto, $value)->[3];
 }
 
 =for html <a name="to_xml"></a>

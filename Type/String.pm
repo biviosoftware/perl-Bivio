@@ -39,6 +39,23 @@ It is currently a placeholder.
 
 =cut
 
+=for html <a name="compare"></a>
+
+=for html <a name="compare"></a>
+
+=head2 static compare(string left, string right) : int
+
+Returns the string comparison (cmp) of I<left> to I<right>.
+
+=back
+
+=cut
+
+sub compare {
+    my(undef, $left, $right) = @_;
+    return $left cmp $right;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : any

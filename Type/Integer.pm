@@ -125,6 +125,21 @@ sub can_be_zero {
     return $proto->get_max >= 0 && $proto->get_min <= 0 ? 1 : 0;
 }
 
+=for html <a name="compare"></a>
+
+=for html <a name="compare"></a>
+
+=head2 static compare(string left, string right) : int
+
+Returns the numeric comparison (E<lt>=E<gt>) of I<left> to I<right>.
+
+=cut
+
+sub compare {
+    my(undef, $left, $right) = @_;
+    return $left <=> $right;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array

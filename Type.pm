@@ -70,6 +70,35 @@ sub can_be_zero {
     return undef;
 }
 
+=for html <a name="compare"></a>
+
+=head2 abstract static compare(any left, any right) : int
+
+Compares two values and returns the same as perl's
+C<cmp> operator, namely:
+
+=over 4
+
+=item negative
+
+I<left> is the lesser value.
+
+=item zero
+
+I<left> and I<right> are equal.
+
+=item positive
+
+I<right> is the lesser value.
+
+=back
+
+=cut
+
+$_ = <<'}'; # emacs
+sub compare {
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array

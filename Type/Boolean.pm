@@ -16,12 +16,12 @@ Bivio::Type::Boolean - formal numeric specification of the boolean type
 
 =head1 EXTENDS
 
-L<Bivio::Type::Number>
+L<Bivio::Type::Integer>
 
 =cut
 
-use Bivio::Type::Number;
-@Bivio::Type::Boolean::ISA = qw(Bivio::Type::Number);
+use Bivio::Type::Integer;
+@Bivio::Type::Boolean::ISA = qw(Bivio::Type::Integer);
 
 =head1 DESCRIPTION
 
