@@ -185,6 +185,37 @@ sub get_keywords {
     return;
 }
 
+=for html <a name="get_num_mime_parts"></a>
+
+=head2 get_num_mime_parts() : 
+
+Returns the number of MIME parts for this part.
+
+=cut
+
+sub get_num_mime_parts {
+#TODO this is inefficient. We're loading the file and looking for the X-BivioNumParts
+#custom field. Also, I'm duplicating that file with substr.
+    
+    my($self) = @_;
+    my($body);
+    my(@linkarray);
+    my($club_id, $msg_id) = $self->get('club_id', 'mail_message_id');
+    my($req) = $self->get_request();
+    my($club_name) = $req->get('auth_realm')->get('owner_name');
+    my($filename) = '/'.$club_name.'/messages/html/'.$msg_id;
+    die("couldn't get mail body: $body")
+	    unless$_FILE_CLIENT->get($filename, \$body);
+    my($start) = index($body, 'X-BivioNumParts: ');
+    my($xbivio) = substr($body, $start+17, 255); #hack!
+    $start = index($xbivio, "\n");
+    my($nparts) = substr($xbivio, 0, int($start));
+    for(my $i = 0; $i < $nparts; $i++){
+	push(@linkarray, "$msg_id"."_$i");
+    }
+    return @linkarray;
+}
+
 
 =for html <a name="handle_config"></a>
 
@@ -275,6 +306,20 @@ sub internal_initialize {
 	    [qw(club_id Club.club_id)],
 	],
     };
+}
+
+=for html <a name="make_mime_uri"></a>
+
+=head2 make_mime_uri() : 
+
+
+
+=cut
+
+sub make_mime_uri {
+    my($self, $index) = @_;
+    my($msgid) = $self->get('mail_message_id');
+    return $msgid . "_$index";
 }
 
 =for html <a name="setup_club"></a>
