@@ -70,6 +70,10 @@ iterate.
 
 Date qualification field, used to qualify queries.
 
+=item from : string
+
+Optionally override the FROM clause.  Use this feature with caution.
+
 =item other : array_ref
 
 A list of fields and field identities that have no ordering.
@@ -274,7 +278,7 @@ sub new {
 	);
     }
 
-    _init_column_lists($attrs, _init_column_classes($attrs, $decl));
+    _init_column_lists($attrs, $decl, _init_column_classes($attrs, $decl));
     my($self) = Bivio::SQL::Support::new($proto, $attrs);
     Bivio::SQL::ListQuery->initialize_support($self);
 #TODO: make $self read_only?
@@ -432,7 +436,7 @@ sub _init_column_classes {
     return $where;
 }
 
-# _init_column_lists(hash_ref attrs, string where)
+# _init_column_lists(hash_ref attrs, hash_ref decl, string where)
 #
 # Creates many of the lists in $attrs which are derived from the class
 # lists (primary_key, order_by).  Creates select and select_this
@@ -440,7 +444,7 @@ sub _init_column_classes {
 # only if "where" is defined (see _init_column_classes).
 #
 sub _init_column_lists {
-    my($attrs, $where) = @_;
+    my($attrs, $decl, $where) = @_;
 
     # Lists are sorted to keep Oracle's cache happy across invocations
     $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
@@ -498,12 +502,15 @@ sub _init_column_lists {
     $where = ' AND '.$attrs->{parent_id}->{sql_name}.'='
 	    .$attrs->{parent_id_type}->to_sql_value('?').$where
 		    if $attrs->{parent_id};
-    my($from) = ' FROM '.join(',',
+    my($from) = ' ' . (
+	$decl->{from}
+	|| 'FROM '. join(',',
 		    map {
 			my($tn) = $_->{instance}->get_info('table_name');
 			$tn eq $_->{sql_name}
 				? $tn : $tn.' '.$_->{sql_name};
-		    } sort(values(%{$attrs->{models}})));
+		    } sort(values(%{$attrs->{models}})))
+    );
     if ($attrs->{auth_id}) {
 	$where =~ s/^\s*WHERE\s+/ AND /i;
 	$from .= ' WHERE '
