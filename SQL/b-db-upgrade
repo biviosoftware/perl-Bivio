@@ -250,29 +250,28 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_ellis_bio_link($req);
+    _upgrade_add_basic_service_subscription($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_ellis_bio_link(Bivio::Agent::Request req)
+# _upgrade_add_basic_service_subscription(Bivio::Agent::Request req)
 #
-# Adds a link to a new article in Ellis' bio.
+# Expands the subscription type to include Basic Service.
 #
-sub _upgrade_add_ellis_bio_link {
+sub _upgrade_add_basic_service_subscription {
     my($req) = @_;
-    $req->set_realm('take_stock');
+    print("expanding ec_subscription_t.subscription_type\n");
+    _drop_constraints('ec_subscription_t', 'subscription_type');
 
-    my($article_link) = qq|<a href="/hm/take-stock-011008.html">Earnings are Down. Should I Sell?</a>
-<br>&nbsp;<br>
-|;
-
-    my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
-    $decor->load;
-    my($bio) = $decor->get('profile_bio');
-    $bio =~ s/(Father of Technamental)/$article_link$1/
-	|| die("couldn't find text in bio");
-    $decor->update({profile_bio => $bio});
+    _do_sql('
+ALTER TABLE ec_subscription_t modify subscription_type not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t3
+  check (subscription_type between 1 and 4)
+/
+');
 
     return;
 }
