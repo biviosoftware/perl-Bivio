@@ -1107,6 +1107,8 @@ sub set_club_pref {
 
 =head2 set_realm(Bivio::Auth::Realm new_realm)
 
+=head2 set_realm(string new_realm)
+
 Changes attributes to be authorized for I<new_realm>.  Also
 sets C<auth_role>.
 
@@ -1114,6 +1116,8 @@ sets C<auth_role>.
 
 sub set_realm {
     my($self, $new_realm) = @_;
+    $new_realm = Bivio::Auth::Realm->new($new_realm, $self)
+	    unless ref($new_realm);
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     $self->put(auth_realm => $new_realm,
