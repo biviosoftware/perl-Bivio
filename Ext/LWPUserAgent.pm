@@ -47,8 +47,9 @@ use vars ('$_TRACE');
 my($_PKG) = __PACKAGE__;
 Bivio::IO::Trace->register;
 my($_HTTP_PROXY);
-Bivio::IO::Config->register({
+Bivio::IO::Config->register(my $_CFG = {
     http_proxy => undef,
+    timeout    => 60,
 });
 
 =head1 FACTORIES
@@ -74,10 +75,10 @@ sub new {
 	want_redirects => $want_redirects ? 1 : 0,
     };
     # Relatively short timeout, so we don't get stuck in remote services.
-    $self->timeout(60);
+    $self->timeout($_CFG->{timeout});
     # Use a proxy if configured
-    if (defined($_HTTP_PROXY)) {
-        $self->proxy(['http', 'https'], $_HTTP_PROXY);
+    if (defined($_CFG->{http_proxy})) {
+        $self->proxy(['http', 'https'], $_CFG->{http_proxy});
     }
     elsif ($ENV{http_proxy}) {
         $self->proxy(['http', 'https'], $ENV{http_proxy});
@@ -104,7 +105,7 @@ sub new {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_HTTP_PROXY = $cfg->{http_proxy};
+    $_CFG = $cfg;
     return;
 }
 
