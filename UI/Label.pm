@@ -247,6 +247,7 @@ _compile(\%_MAP, [
     ['ACQUISITION_DATE', 'RealmInstrumentEntry.acquisition_date']
         => 'Acquisition Date',
     COST_PER_SHARE => 'Cost/Share',
+    COST => 'Cost Basis',
     TRANSFER_VALUATION_DATE => 'Transfer Valuation Date',
     WITHDRAWAL_VALUE => 'Withdrawal Value',
     WITHDRAWAL_FEE => 'Withdrawal Fee',
