@@ -50,18 +50,19 @@ use Bivio::Type::PrimaryId;
 
 =for html <a name="get_instruments_info"></a>
 
-=head2 static get_instruments_info(string realm_id) : array_ref
+=head2 get_instruments_info() : array_ref
 
 Returns an array of realm instrument records (id, name, symbol).
 
 =cut
 
 sub get_instruments_info {
-    my(undef, $realm_id) = @_;
+    my($self) = @_;
 
 #TODO: make this a ListModel
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_t.realm_instrument_id, instrument_t.name, instrument_t.ticker_symbol from realm_instrument_t, instrument_t where realm_instrument_t.instrument_id = instrument_t.instrument_id and realm_id=? order by instrument_t.name', [$realm_id]);
+	    'select realm_instrument_t.realm_instrument_id, instrument_t.name, instrument_t.ticker_symbol from realm_instrument_t, instrument_t where realm_instrument_t.instrument_id = instrument_t.instrument_id and realm_id=? order by instrument_t.name',
+	    [$self->get('realm_id')]);
 
     my($result) = [];
 
@@ -75,19 +76,18 @@ sub get_instruments_info {
 
 =for html <a name="get_value"></a>
 
-=head2 static get_value(string realm_id, Bivio::Type::DateTime date) : string
+=head2 get_value(Bivio::Type::DateTime date) : string
 
 Returns the realm's value on the specified date.
 
 =cut
 
 sub get_value {
-    my($self, $realm_id, $date) = @_;
+    my($self, $date) = @_;
 
-    my($value) = $self->get_tax_basis($realm_id,
-	    Bivio::Type::EntryClass->CASH, $date);
+    my($value) = $self->get_tax_basis(Bivio::Type::EntryClass->CASH, $date);
 
-    my($instruments) = $self->get_instruments_info($realm_id);
+    my($instruments) = $self->get_instruments_info();
     my($inst);
     foreach $inst (@$instruments) {
 #TODO: use Math::BigInt
@@ -102,7 +102,7 @@ sub get_value {
 
 =for html <a name="get_tax_basis"></a>
 
-=head2 static get_tax_basis(string realm_id, EntryClass class, Bivio::Type::DateTime date) : string
+=head2 get_tax_basis(EntryClass class, Bivio::Type::DateTime date) : string
 
 Returns the total tax basis of the specified entry class up to the specified
 date.
@@ -110,11 +110,11 @@ date.
 =cut
 
 sub get_tax_basis {
-    my(undef, $realm_id, $class, $date) = @_;
+    my($self, $class, $date) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(entry_t.amount) from realm_transaction_t, entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.tax_basis = 1 and realm_transaction_t.realm_id=? and entry_t.class=? and realm_transaction_t.dttm <= TO_DATE(?,\'J SSSSS\')',
-	   [$realm_id, $class->as_int(), $date]);
+	   [$self->get('realm_id'), $class->as_int(), $date]);
     return $sth->fetchrow_arrayref()->[0] || '0.00';
 }
 
