@@ -75,13 +75,13 @@ my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 // s_month - source month
 // s_day - source day
 // s_year - source year
-// c_date - full current date (taken from local machine)
 // c_year - current year (taken from local machine)
 // slash_1 - index of first slash
 // slash_2 - index of second slash (-1 if not present)
 function dy_complete_date(s) {
-  c_date = new Date();
-  c_year = c_date.getFullYear();
+  if (s.value.length == 0)
+    return;
+  c_year = new Date().getFullYear();
   slash_1 = s.value.indexOf('/');
   slash_2 = s.value.indexOf('/', slash_1 + 1);
   s_month = s.value.substring(0, slash_1);
