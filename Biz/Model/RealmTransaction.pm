@@ -243,13 +243,13 @@ sub _generate_instrument_remark {
     while ($row = $sth->fetchrow_arrayref) {
 	my($name, $count) = @$row;
 	$result ||= $name;
+	$count = abs($count);
 
 	# get the grammar right
 	if ($count == 1) {
 	    $result = '1 Share '.$name if $count > 0;
 	}
 	elsif ($count != 0) {
-	    $count = abs($count);
 	    $result = $count.' Shares '.$name if $count > 0;
 	}
     }
