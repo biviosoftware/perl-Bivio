@@ -559,7 +559,7 @@ sub convert {
     } until (!$self->{nextline} && !$self->{line} && !$self->{prev});
 
     $self->{prev} = "";
-    &endlist($self->{listnum})
+    $self->endlist($self->{listnum})
             if ($self->{mode} & $LIST); # End all lists
     $self->emit($self->{prev});
 
