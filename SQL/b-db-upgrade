@@ -222,11 +222,7 @@ ALTER TABLE file_t
 /
 ALTER TABLE file_t modify volume not null
 /
-ALTER TABLE file_t
-  add foreign key (realm_id, volume)
-    references file_volume_t(realm_id, type)
-/
-ALTER TABLE file_t add check (volume between 1 and 5)
+ALTER TABLE file_t add check (volume between 1 and 6)
 /
 ALTER TABLE file_t
   add foreign key (user_id)
