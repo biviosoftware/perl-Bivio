@@ -208,6 +208,8 @@ sub _read_data {
 	    next;
 	}
 	if ($_BASE_FILE eq $last_section) {
+#TODO: fix this
+die("undef text_ref") if ! defined($text_ref);
 	    chop(${$text_ref});
 	    $base_pdf_text_ref = $text_ref;
 	}
