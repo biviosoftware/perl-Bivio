@@ -174,7 +174,7 @@ sub begin_txn ($$) {
     until (@_TXN_FILES) {
 	unless (defined($_TXN_HANDLE)) {
 	    $_TXN_HANDLE = \*Bivio::Data::TXN;
-	    open($_TXN_HANDLE, '>' . &_home($br) . '.lock') || next;
+	    open($_TXN_HANDLE, '> ' . &_home($br) . '.lock') || next;
 	}
 	flock($_TXN_HANDLE, &Fcntl::LOCK_EX) && last;
     }
@@ -264,7 +264,7 @@ sub _write ($$$) {
     my($timestamp) = &Bivio::Util::timestamp(time);
     my($new) = $absfile . '.tmp' . $timestamp;
     my($old) = $absfile . '.old' . $timestamp;
-    open($fh, ">$new") || $br->server_error("open $new: $!");
+    open($fh, '> ' . $new) || $br->server_error("open $new: $!");
     (print $fh $s) || $br->server_error("print $new: $!");
     close($fh) || $br->server_error("close $new: $!");
     unlink($old);				# just in case, shouldn't exist
@@ -279,8 +279,8 @@ sub _write ($$$) {
 # infinite recursion.
 sub _copy ($$$) {
     my($from, $to, $br) = @_;
-    open(COPY_TO, ">$to") || goto _copy_error;
-    open(COPY_FROM, "<$from") || goto _copy_error;
+    open(COPY_TO, '> ' . $to) || goto _copy_error;
+    open(COPY_FROM, '< ' . $from) || goto _copy_error;
     for (;;) {
 	my($r, $w, $t, $buf);
 	defined($r = sysread(COPY_FROM, $buf, 8192)) || goto _copy_error;
