@@ -6,23 +6,23 @@ use diagnostics;
 
 =head1 NAME
 
-b-bap - build, package and manage software snapshots
+b-pack - build, package and manage software snapshots
 
 =head1 SYNOPSIS
 
-  b-bap -b cvs-tag [-g grade-level] rpm-spec
-  b-bap -l pkg-name
-  b-bap -g grade-level pkg-name-version
-  b-bap -i grade-level [--force] [--nodeps] pkg-name
+ b-pack -b cvs-tag [-g grade-level] rpm-spec
+ b-pack -l pkg-name
+ b-pack -g grade-level pkg-name-version
+ b-pack -i grade-level [--force] [--nodeps] pkg-name
 
 =head1 DESCRIPTION
 
-B<b-bap> is used to build, package and manage software snapshots.
+B<b-pack> is used to build, package and manage software snapshots.
         
- B<b-bap> -b creates a snapshot of a software package using a RPM spec file.
- B<b-bap> -g grades an existing snapshot to a specific grade level.
- B<b-bap> -i installs a package, using the version with the given grade level.
- B<b-bap> -l lists currently available package snapshots.
+ B<b-pack> -b creates a snapshot of a software package using a RPM spec file.
+ B<b-pack> -g grades an existing snapshot to a specific grade level.
+ B<b-pack> -i installs a package, using the version with the given grade level.
+ B<b-pack> -l lists currently available package snapshots.
 
 =head1 OPTIONS
 
@@ -84,7 +84,7 @@ my($cvs_root) = $ENV{'CVSROOT'} || die("CVSROOT: not set");
 $cvs_root =~ s/.+://;
 my($cvs_co_pat) = 'checkout \('.$cvs_root.'\/([^,]+),v, ([\d\.]+),';
 
-my($tmp_dir) = "/var/tmp/b-bap-$$";
+my($tmp_dir) = "/var/tmp/b-pack-$$";
 my(@n) = localtime;
 my($date_tag) = sprintf("%4d%02d%02d_%02d%02d%02d", 1900+$n[5], 1+$n[4],
         $n[3], $n[2], $n[1], $n[0]);
@@ -183,7 +183,7 @@ sub action_b {
     close(IN);
 
     # Create a new RPM so we can add a few things
-    my($spec_out) = "$spec_in-b-bap";
+    my($spec_out) = "$spec_in-b-pack";
     open(SPECOUT, ">$spec_out") || die("$spec_out: $!");
     print SPECOUT <<"EOF";
 %define _topdir .
@@ -541,13 +541,13 @@ sub create_url {
 
 sub usage {
     my($msg) = @_;
-    $msg && warn("b-bap: $msg\n");
+    $msg && warn("b-pack: $msg\n");
     warn <<EOF;
 Usage:
-    b-bap -b cvs-tag [-g grade-level] rpm-spec
-    b-bap -l pkg-name
-    b-bap -g grade-level pkg-name-version
-    b-bap -i grade-level [--force] [--nodeps] pkg-name 
+    b-pack -b cvs-tag [-g grade-level] rpm-spec
+    b-pack -l pkg-name
+    b-pack -g grade-level pkg-name-version
+    b-pack -i grade-level [--force] [--nodeps] pkg-name 
 EOF
     exit(1);
 }
