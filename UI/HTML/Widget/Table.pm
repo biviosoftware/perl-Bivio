@@ -147,6 +147,11 @@ Widgets which will be rendered as the last row in the table.
 
 Font to use for table headings.
 
+=item heading_separator : boolean [show_headings]
+
+A separator will separate the headings from the cells.  The color will be
+C<table_separator>.
+
 =item list_class : string (required)
 
 The class name of the list model to be rendered. The list_class is used
@@ -856,17 +861,20 @@ sub _initialize_row_prefixes {
 
 # _render_headings(hash_ref state)
 #
-# Renders the headings.  Checks show_headings.
+# Renders the headings.  Checks show_headings and heading_separator.
 #
 sub _render_headings {
     my($state) = @_;
-    $state->{show_headings} = $state->{self}
-	    ->get_or_default('show_headings', 1)
-		    unless defined($state->{show_headings});
-    return unless $state->{show_headings};
-    my($buffer) = $state->{buffer};
-    $state->{self}->render_row($state->{headings}, $state->{list}, $buffer);
-    _render_row_with_colspan($state, 'separator');
+    unless (defined($state->{show_headings})) {
+	$state->{show_headings} = $state->{self}
+		->get_or_default('show_headings', 1);
+	$state->{heading_separator} = $state->{self}
+		->get_or_default('heading_separator', $state->{show_headings});
+    }
+    $state->{self}->render_row($state->{headings},
+	    $state->{list}, $state->{buffer}) if $state->{show_headings};
+    _render_row_with_colspan($state, 'separator')
+	    if $state->{heading_separator};
     return;
 }
 
