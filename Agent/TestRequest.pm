@@ -26,12 +26,15 @@ use Bivio::Agent::Request;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::TestRequest> can be used for testing UI and Model
-components indepently from a web or mail server.
+components indepently from a web or mail server. TestRequest also
+implements most of Bivio::Agent::Reply interface so it can act as
+its own reply in calls to get('reply').
 
 =cut
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::Agent::HTTP::Location;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -53,12 +56,59 @@ sub new {
     $attributes->{start_time} = Bivio::Util::gettimeofday();
     my($self) = &Bivio::Agent::Request::new($proto, $attributes);
 
+    # also handles its own replies
+    $self->put('reply', $self);
+
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="flush"></a>
+
+=head2 flush()
+
+Reply method. NOP
+
+=cut
+
+sub flush {
+    return;
+}
+
+=for html <a name="format_uri"></a>
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id) : string
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query) : string
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
+
+Hacked implementation from HTTP::Request
+
+=cut
+
+sub format_uri {
+
+    # HACK - use HTTP::Request implementation
+    return Bivio::Agent::HTTP::Request::format_uri(@_);
+}
+
+=for html <a name="print"></a>
+
+=head2 print(string str)
+
+Reply method. Prints the specified value to STDOUT.
+
+=cut
+
+sub print {
+    my($self, $str) = @_;
+    print($str);
+    return;
+}
 
 #=PRIVATE METHODS
 
