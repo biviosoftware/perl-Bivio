@@ -57,6 +57,9 @@ sub execute_input {
     my($realm_user) = $list->get_model('RealmUser');
     $realm_user->cascade_delete();
 
+#TODO: Need to generalize "delete_this"
+    $req->client_redirect($req->get('task')->get('next'),
+            undef, $list->format_query(Bivio::Biz::QueryType::ANY_LIST()));
     return;
 }
 
@@ -71,7 +74,6 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	require_context => 1,
     };
 }
 
