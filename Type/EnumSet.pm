@@ -47,16 +47,17 @@ my(%_INFO) = ();
 
 =for html <a name="clear"></a>
 
-=head2 clear(string_ref vector, Bivio::Type::Enum bit, ...)
+=head2 clear(string_ref vector, Bivio::Type::Enum bit, ...) : string_ref
 
-Clears I<bit>(s) in I<vector>.
+=head2 clear(string vector, Bivio::Type::Enum bit, ...) : string_ref
+
+Clears I<bit>(s) in I<vector>.  Returns I<vector> as a string_ref (always).
 
 =cut
 
 sub clear {
-    shift;
-    my($vector) = shift;
-    foreach my $bit (@_) {
+    my($vector, $bits) = _parse_args(\@_);
+    foreach my $bit (@$bits) {
 	vec($$vector, $bit->as_int, 1) = 0;
     }
     return;
@@ -187,14 +188,15 @@ sub initialize {
 
 =head2 is_set(string_ref vector, Bivio::Type::Enum bit, ...) : boolean
 
+=head2 is_set(string vector, Bivio::Type::Enum bit, ...) : boolean
+
 Returns true if all I<bit>(s) are set in I<vector>.
 
 =cut
 
 sub is_set {
-    shift;
-    my($vector) = shift;
-    foreach my $bit (@_) {
+    my($vector, $bits) = _parse_args(\@_);
+    foreach my $bit (@$bits) {
 	return 0 unless vec($$vector, $bit->as_int, 1);
     }
     return 1;
@@ -202,19 +204,20 @@ sub is_set {
 
 =for html <a name="set"></a>
 
-=head2 set(string_ref vector, Bivio::Type::Enum bit, ....)
+=head2 set(string_ref vector, Bivio::Type::Enum bit, ....) : string_ref
 
-Sets I<bit>(s) in I<vector>.
+=head2 set(string vector, Bivio::Type::Enum bit, ....) : string_ref
+
+Sets I<bit>(s) in I<vector>.  Returns I<vector> as string_ref (always).
 
 =cut
 
 sub set {
-    shift;
-    my($vector) = shift;
-    foreach my $bit (@_) {
+    my($vector, $bits) = _parse_args(\@_);
+    foreach my $bit (@$bits) {
 	vec($$vector, $bit->as_int, 1) = 1;
     }
-    return;
+    return $vector;
 }
 
 =for html <a name="to_literal"></a>
@@ -238,7 +241,7 @@ Returns a list of the form '(N,M,O,P)'.
 =cut
 
 sub to_sql_list {
-    my($proto, $vector) = @_;
+    my($vector) = _parse_args(\@_);
     return '()' unless ref($vector) && length($$vector);
     return '('.join(',',
 	    map {vec($$vector, $_, 1) ? ($_) : ()} 0..length($$vector)*8-1)
@@ -247,7 +250,7 @@ sub to_sql_list {
 
 =for html <a name="to_sql_param"></a>
 
-=head2 static to_sql_param(Bivio::Type::Enum value) : int
+=head2 static to_sql_param(string value) : int
 
 Returns the database representation (lower nybble first, hex string)
 of the bit vector.
@@ -269,6 +272,19 @@ sub to_sql_param {
 }
 
 #=PRIVATE METHODS
+
+# _parse_args(array_ref args) : array
+#
+# Returns ($vector, $bits) based on @$args.
+#
+# Could technically typecheck @$bits.
+#
+sub _parse_args {
+    my($args) = @_;
+    shift(@$args);
+    my($vector) = shift(@$args);
+    return ((ref($vector) ? $vector : \$vector), $args);
+}
 
 =head1 COPYRIGHT
 
