@@ -208,14 +208,16 @@ sub to_literal {
 
 =head2 to_local_date(string date_time) : string
 
-Converts a date time to the appropriate date boundary.
+Converts a date time to the most recent date boundary.
 
 =cut
 
 sub to_local_date {
     my(undef, $date_time) = @_;
-    my($date, undef) = split(' ', $date_time);
-#TODO: need to figure out which date using locale
+    my($date, $time) = split(' ', $date_time);
+    if ($time < Bivio::Type::DateTime::DEFAULT_TIME()) {
+	$date--;
+    }
     return $date.' '.Bivio::Type::DateTime::DEFAULT_TIME();
 }
 
