@@ -208,7 +208,10 @@ sub render {
     Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
 	    $_FN,
 	    $_FUNCS,
-	    "$_FN(".join(',', $mi, split(' ', $value), "'$gmt'").')',
+	    # Must not begin dates with 0 (netscape barfs, so have to
+	    # print as decimals
+	    "$_FN(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value),
+		    "'$gmt'").')',
 	    $gmt);
     return;
 }
