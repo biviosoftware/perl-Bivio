@@ -194,6 +194,17 @@ sub _xml_to_html_parse_attribution {
     return;
 }
 
+# _xml_to_html_parse_b_includeperl(hash_ref state, array_ref tree)
+#
+# Includes file attribute as a literal file, first escaping as html.
+#
+sub _xml_to_html_parse_b_includeperl {
+    my($state, $tree) = @_;
+    $state->{out} .= Bivio::HTML->escape(
+	${Bivio::IO::File->read($state->{attrs}->{file})});
+    return;
+}
+
 # _xml_to_html_parse_blockquote(hash_ref state, array_ref tree)
 #
 # Converts to <blockquote>.
@@ -204,7 +215,7 @@ sub _xml_to_html_parse_blockquote {
 
 # _xml_to_html_parse_comment(hash_ref state, array_ref tree)
 #
-# Converts to <>.
+# Converts to a [COMMENT; bla bla].
 #
 sub _xml_to_html_parse_comment {
     my($state, $tree) = @_;
@@ -216,7 +227,7 @@ sub _xml_to_html_parse_comment {
 
 # _xml_to_html_parse_epigraph(hash_ref state, array_ref tree)
 #
-# Converts to <>.
+# Converts to blockquote with atttribution.
 #
 sub _xml_to_html_parse_epigraph {
     my($state, $tree) = @_;
