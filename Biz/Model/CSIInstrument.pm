@@ -62,6 +62,20 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values) : Bivio::Biz::Model::CSIInstrument
+
+We don't allow updates for now.
+
+=cut
+
+sub update {
+    my($self) = @_;
+    Bivio::Die->die("no updates allowed (maybe, but let's see first...)");
+    # DOES NOT RETURN
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
