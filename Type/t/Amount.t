@@ -74,8 +74,7 @@ Bivio::Test->unit([
         ],
         trunc => [
             ['1.555', 2] => ['1.55'],
-#TODO: fails current implementation, but passes new GMP version
-#            ['1.9999999999999', 0] => [1],
+            ['1.9999999999999', 0] => [1],
             ['-2.555', 1] => ['-2.5'],
         ],
         compare => [
