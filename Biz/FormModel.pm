@@ -445,7 +445,7 @@ sub _parse_submit {
     if (defined($value)) {
 	if ($value eq SUBMIT_CANCEL()) {
 	    my($req) = $self->get_request;
-	    $req->redirect($req->get('task')->get('next'));
+	    $req->redirect($req->get('task')->get('cancel'));
 	    # Does not return
 	}
 	return if $value eq SUBMIT_OK()	|| $value eq SUBMIT_NEXT();
