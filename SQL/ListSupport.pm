@@ -60,6 +60,17 @@ The categories:
 A field or field identity which must be equal to
 request's I<auth_id> attribute.
 
+=item can_iterate : boolean [0]
+
+By default lists can't be iterated.  If you set this to true, you can
+iterate.
+
+=item date : array_ref
+
+=item date : string
+
+Date qualification field, used to qualify queries.
+
 =item other : array_ref
 
 A list of fields and field identities that have no ordering.
@@ -110,7 +121,12 @@ declaration changes.  It is used to reject an out-dated query.
 
 =item want_date : boolean [0]
 
-Do we expect a date in the query?  If so, default will be today.
+#TODO: It may make sense to just use the "date" field.
+
+=item want_select : boolean [1]
+
+Is this going to be in the select?  If false, like setting
+in_select to false for all columns.
 
 =item want_level_in_select : boolean
 
@@ -180,16 +196,17 @@ The user cannot set the C<auth_id>.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::Biz::PropertyModel;
+use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
-use Carp ();
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
+my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
 
 =head1 FACTORIES
 
@@ -230,6 +247,10 @@ sub new {
 	# See discussion of =item orabug_fetch_all_select
 	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
 	want_date => $decl->{want_date} ? 1 : 0,
+	can_iterate => $decl->{can_iterate} ? 1 : 0,
+	# Default is true
+	want_select => !defined($decl->{want_select}) || $decl->{want_select}
+	         ? 1 : 0,
     };
     $proto->init_version($attrs, $decl);
 
@@ -249,6 +270,7 @@ sub new {
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
     my($self) = Bivio::SQL::Support::new($proto, $attrs);
     Bivio::SQL::ListQuery->initialize_support($self);
+#TODO: make $self read_only?
     return $self;
 }
 
@@ -323,7 +345,7 @@ sub _execute_select {
 sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	    [qw(auth_id parent_id primary_key order_by other)]);
+	    [qw(auth_id date parent_id primary_key order_by other)]);
 
     if ($decl->{where}) {
 	$where .= length($where) ? ' and ' : ' where ';
@@ -342,17 +364,21 @@ sub _init_column_classes {
 	}
     }
     # auth_id must be at most one column.  Turn into that column or undef.
-    Carp::croak('too many auth_id fields')
+    Bivio::Die->die('too many auth_id fields')
 		if int(@{$attrs->{auth_id}}) > 1;
 
+    # auth_id must be at most one column.  Turn into that column or undef.
+    Bivio::Die->die('too many date fields')
+		if int(@{$attrs->{date}}) > 1;
+
     # Unwind one level--wrapped in array by _init_column_classes
-    foreach my $c ('auth_id', 'parent_id') {
+    foreach my $c ('auth_id', 'parent_id', 'date') {
 	$attrs->{$c} = $attrs->{$c}->[0];
     }
-    return undef unless %{$attrs->{models}};
+    return undef unless %{$attrs->{models}} && $attrs->{want_select};
 
     # primary_key must be at least one column if there are models.
-    Carp::croak('no primary_key fields')
+    Bivio::Die->die('no primary_key fields')
 		unless @{$attrs->{primary_key}} || !%{$attrs->{models}};
     # Sort all names in a select alphabetically.
     $attrs->{primary_key} = [sort {$a->{name} cmp $a->{name}}
@@ -392,7 +418,7 @@ sub _init_column_lists {
 
     # No BLOBs
     foreach my $c (values(%{$attrs->{columns}})) {
-	Carp::croak($c->{name}, ': cannot have a blob in a ListModel')
+	Bivio::Die->die($c->{name}, ': cannot have a blob in a ListModel')
 		    if $c->{type} eq 'Bivio::Type::BLOB';
     }
 
@@ -640,6 +666,28 @@ sub _page_number {
     return int(--$row_number/$query->get('count')) + $query->FIRST_PAGE();
 }
 
+# _prepare_order_by(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
+#
+# Generates the ORDER BY clause from the query and order_by columns.
+#
+sub _prepare_order_by {
+    my($self, $query, $where, $params) = @_;
+    my($attrs) = $self->internal_get;
+
+    # Formats order_by clause if there are order_by columns
+    my($qob) = $query->get('order_by');
+    my($columns) = $attrs->{columns};
+    $$where .= ' order by';
+    for (my($i) = 0; $i < int(@$qob); $i += 2) {
+	# Append to order_by (name, order)
+	$$where .= ' '.$columns->{$qob->[$i]}->{sql_name}
+		.($qob->[$i+1] ? ',' : ' desc,');
+    }
+    # Remove trailing comma
+    chop($$where);
+    return;
+}
+
 # _prepare_where(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
 #
 # Prepare select statement based on query, auth_id, and parent_id.  Assumes
@@ -651,26 +699,41 @@ sub _prepare_where {
     my($attrs) = $self->internal_get;
 
     # Insert parent_id and auth_id
-    my($parent_id, $qob) =  $query->get('parent_id', 'order_by');
+    my($parent_id) =  $query->get('parent_id');
     unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
 	    if $attrs->{parent_id};
     unshift(@$params, Bivio::Type::PrimaryId->to_sql_param(
 	    $query->get('auth_id')))
 	    if $attrs->{auth_id};
 
-    # Formats order_by clause if there are order_by columns
-    if (@{$attrs->{order_by}}) {
-	my($columns) = $attrs->{columns};
-	$$where .= ' order by';
-	for (my($i) = 0; $i < int(@$qob); $i += 2) {
-	    # Append to order_by (name, order)
-	    $$where .= ' '.$columns->{$qob->[$i]}->{sql_name}
-		    .($qob->[$i+1] ? ',' : ' desc,');
-	}
-	# Remove trailing comma
-	chop($$where);
+    _prepare_where_date($self, $query, $where, $params) if $attrs->{date};
+    _prepare_order_by($self, $query, $where, $params) if @{$attrs->{order_by}};
+
+    return;
+}
+
+# _prepare_where_date(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
+#
+# Generates the where date qualification from the query and the date column.
+#
+sub _prepare_where_date {
+    my($self, $query, $where, $params) = @_;
+    my($attrs) = $self->internal_get;
+    my($date, $interval) = $query->get(qw(date interval));
+    unless (defined($date)) {
+#TODO: make this a $req->warn  or fix Alert to have a hook to $req on warn
+	Bivio::IO::Alert->warn('query has interval "',
+		$interval, '" but no date, ignoring')
+		    if $interval;
+	return;
     }
 
+    if ($interval) {
+	$$where .= ' AND '.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
+	push(@$params, $interval->dec($date));
+    }
+    $$where .= ' AND '.$attrs->{date}->{sql_name}.' <= '.$_DATE_SQL_VALUE;
+    push(@$params, $date);
     return;
 }
 
