@@ -53,12 +53,11 @@ sub new {
     $fields->{content} = Bivio::UI::HTML::Widget::Table->new({
 	source => ['Bivio::Biz::Model::MessageList'],
 	headings => [
-		'Author',
 		'Subject',
+		'Author',
 		'Date',
 	],
 	cells => [
-		['MailMessage.from_name'],
 		Bivio::UI::HTML::Widget::Link->new({
         #    	    href => ['->format_uri_for_this'],
 		    href => ['->hacked_uri'],
@@ -66,7 +65,9 @@ sub new {
 			value => ['MailMessage.subject'],
 	        }),
 	    }),
-            ['MailMessage.dttm'],
+    	    ['MailMessage.from_name'],
+            ['MailMessage.dttm',
+		   'Bivio::UI::HTML::Format::Date', 2],
 	],
 	});
     $fields->{content}->initialize;
