@@ -10,7 +10,7 @@ DB_NAME=${2:-SOC}
 BACKUP_HOST=${3:-s2b}
 TRANSFER_HOST=${4:-locker}
 REQNG_HOST=${5:-s1b}
-KEEP_DAYS=${6:-7}
+KEEP_DAYS=${6:-6}
 
 HOST=`hostname`
 HOST=`expr $HOST : '\([^\.]*\)\.' '|' $HOST`
