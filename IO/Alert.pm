@@ -455,8 +455,8 @@ sub _call_format {
 }
 
 sub _die_handler {
-    &_warn_handler(@_);
-    $_STACK_TRACE_DIE && &_trace_stack();
+    _warn_handler(@_);
+    _trace_stack() if $_STACK_TRACE_DIE;
     CORE::die("\n");
 }
 
@@ -561,7 +561,7 @@ sub _format_string {
 sub _format_string_simple {
     my($o) = @_;
     return '<undef>' unless defined($o);
-    my($s) = ref($o) && &UNIVERSAL::can($o, 'as_string')
+    my($s) = ref($o) && UNIVERSAL::can($o, 'as_string')
 	    ? (eval {$o->as_string} || $o) : $o;
     return length($s) > $_MAX_ARG_LENGTH
 		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
@@ -590,7 +590,7 @@ sub _log_apache {
 	# something has gone wrong at httpd startup, pick
 	# another output medium. (DO NOT CALL die, because
 	# will recurse if intercept_die is true.
-	&_log_stderr(@_);
+	_log_stderr(@_);
     }
 }
 
@@ -603,7 +603,7 @@ sub _log_file {
 
 sub _log_syslog {
     my($severity, $msg) = @_;
-    &Sys::Syslog::syslog($severity, $msg);
+    Sys::Syslog::syslog($severity, $msg);
 }
 
 sub _log_stderr {
@@ -630,7 +630,7 @@ sub _warn_handler {
     # Trim perl's message format (not enough info)
     $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     Bivio::IO::Alert->warn($msg);
-    $_STACK_TRACE_WARN && &_trace_stack();
+    _trace_stack() if $_STACK_TRACE_WARN;
 }
 
 =head1 COPYRIGHT
