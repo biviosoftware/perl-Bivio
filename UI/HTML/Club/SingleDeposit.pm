@@ -98,7 +98,7 @@ sub create_fields {
 	    $self->create_caption('Account',
 		    Bivio::UI::HTML::Widget::Select->new({
 			field => 'RealmAccountEntry.realm_account_id',
-			choices => ['account_list'],
+			choices => ['/AccountList$/'],
 			list_display_field => 'RealmAccount.name',
 			list_id_field => 'RealmAccount.realm_account_id',
 		    })),
@@ -146,37 +146,27 @@ sub execute {
     # get the selected user and load them
     my($owner) = $req->get('target_realm_owner');
 
-    my($task_id) = $req->get('task_id');
-    my($heading, $account_list, $show_valuation_date);
-    if ($task_id
-	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_PAYMENT()) {
+    my($heading, $show_valuation_date);
+    my($entry_type) = $req->get('Bivio::Type::EntryType');
+    if ($entry_type == Bivio::Type::EntryType::MEMBER_PAYMENT()) {
 	$heading = 'Payment: ';
-	$account_list = Bivio::Biz::Model::RealmAccountList->new($req);
 	$show_valuation_date = 1;
     }
-    elsif ($task_id
-	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
+    elsif ($entry_type == Bivio::Type::EntryType::MEMBER_PAYMENT_FEE()) {
 	$heading = 'Fee: ';
-
 	# fees only can be applied to a valuation account
-	$account_list = Bivio::Biz::Model::RealmValuationAccountList
-		->new($req);
 	$show_valuation_date = 0;
     }
     else {
-	die("unhandled task_id $task_id");
+	$req->die('DIE', {message => 'unhandled entry_type',
+	    entity => $entry_type});
     }
     $req->put(show_valuation_date => $show_valuation_date);
-    $account_list->load();
 
     # set the account to broker
-    my($form) = $req->get('Bivio::Biz::Model::SingleDepositForm');
-    $form->set_account($account_list->get_default_broker_account);
-
     $req->put(page_heading => $heading.$owner->get('display_name'),
 	    page_subtopic => undef,
 	    page_content => $self,
-	    account_list => $account_list,
 	   );
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
