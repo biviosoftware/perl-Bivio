@@ -45,6 +45,13 @@ This field is set by
 L<Bivio::Biz::Model::TermsOfServiceForm|Bivio::Biz::Model::CreateUserForm>
 when the user is sent the user agreement and accepts it.
 
+=item su
+
+This field is set by
+L<Bivio::Biz::Model::SubstituteUserForm|Bivio::Biz::Model::SubstituteUserForm>
+when the user has been substituted succesfully.  It is cleared by
+L<Bivio::Biz::Action::Logout|Bivio::Biz::Action::Logout>.
+
 =item u
 
 login id (realm_id) of the authenticated user.
