@@ -121,7 +121,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/accounts:_/accounts
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
     )],
     [qw(
@@ -138,7 +138,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investments:_/investments
-        Bivio::Biz::Model::InstrumentSummaryList
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
     )],
     [qw(
@@ -147,7 +147,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/members
-        Bivio::Biz::Model::MemberSummaryList
+        Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
     )],
     [qw(
@@ -223,8 +223,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/valuation
-	Bivio::Biz::Model::AccountValuationList
-	Bivio::Biz::Model::InstrumentValuationList
+	Bivio::Biz::Model::AccountValuationList->execute_load_all
+	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
     )],
     [qw(
@@ -249,7 +249,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/investments
-        Bivio::Biz::Model::InstrumentSummaryList
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
     )],
     [qw(
@@ -266,7 +266,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/members
-        Bivio::Biz::Model::MemberSummaryList
+        Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
     )],
     [qw(
@@ -299,7 +299,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/accounts
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
     )],
     [qw(
