@@ -56,12 +56,13 @@ my($_FLOAT_REGEX) = Bivio::UI::PDF::Regex::FLOAT_REGEX();
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, $output_field, $get_widget_value_array_ref, $separator,
-	    $digit_count) = @_;
+	    $digit_count, $show_zero) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
 	'get_widget_value_array_ref' => $get_widget_value_array_ref,
 	'separator' => $separator,
-	'digit_count' => $digit_count
+	'digit_count' => $digit_count,
+	show_zero => $show_zero,
     };
     return $self;
 }
@@ -110,7 +111,7 @@ sub add_value {
 	    $frac = 0;
 
 	    # don't render 0
-	    return if $int eq '0';
+	    return if $int eq '0' && ! $fields->{show_zero};
 	}
 	$frac = Bivio::UI::PDF::Form::FracXlator
 		->format_frac($2, $fields->{'digit_count'});
