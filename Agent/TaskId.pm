@@ -837,7 +837,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentLookupForm
         Bivio::Biz::Model::InstrumentLookupList
         Bivio::UI::HTML::Club::InstrumentLookup
-        next=CLUB_ACCOUNTING_INVESTMENT_LOOKUP
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_BUY
