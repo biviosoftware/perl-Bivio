@@ -33,14 +33,17 @@ It provides links to MIME parts (such as attached GIF, JPEG files).
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Biz::Model::MessageList;
 use Bivio::Biz::Model::MailMessage;
+use Bivio::Biz::Model::MessageList;
 use Bivio::DieCode;
+use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -67,7 +70,7 @@ sub new {
 	    Bivio::UI::HTML::Widget::Link->new({
 		href => ['->format_mailto',
 		    ['Bivio::Biz::Model::MailMessage', 'from_email'],
-		    ['Bivio::Biz::Model::MailMessage', 'subject'],
+		    ['reply_subject'],
 		],
 		value => Bivio::UI::HTML::Widget::String->new({
 		    value => ['Bivio::Biz::Model::MailMessage', 'from_name'],
@@ -81,6 +84,11 @@ sub new {
 	],
     });
     $fields->{content}->initialize;
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
+	values => Bivio::UI::HTML::ActionButtons->get_list(
+	    'club_compose_message', 'club_reply_message'),
+    });
+    $fields->{action_bar}->initialize;
     return $self;
 }
 
@@ -105,10 +113,13 @@ sub execute {
     $list->next_row;
     my($mail_message) = $list->get_model('MailMessage');
     my($subject) = $mail_message->get('subject');
+    my($reply_subject) =
+	    Bivio::UI::HTML::Format::ReplySubject->get_widget_value($subject);
     $req->put(
 	    page_subtopic => substr($subject, 0, 60),
 	    page_heading => $subject,
 	    page_content => $fields->{content},
+	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::DETAIL(),
 	    list_model => $list,
 	    list_uri => $req->format_uri(
@@ -116,7 +127,8 @@ sub execute {
 		    undef),
 	    detail_uri => $req->format_uri(
 		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_DETAIL(),
-		    undef)
+		    undef),
+	    reply_subject => $reply_subject,
 	    );
     Bivio::UI::HTML::Club::Page->execute($req);
 }
