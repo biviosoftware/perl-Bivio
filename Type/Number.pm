@@ -253,7 +253,7 @@ If decimals is undef, then the default precision is used.
 
 sub mul {
     my($proto, $v, $v2, $decimals) = @_;
-    ($v, $v2) = _make_objects($proto, $v, $v2);
+    ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
     return $v->bmul($v2)->bstr;
 }
 
