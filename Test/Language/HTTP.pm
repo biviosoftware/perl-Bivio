@@ -519,7 +519,7 @@ sub verify_mail {
     for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
 	if (my(@found) = map({
 	    my($msg) = Bivio::IO::File->read($_);
-	    ($email_match = $$msg =~ /^(?:to|cc):.*\b\Q$email/i)
+	    ($email_match = $$msg =~ /^(?:to|cc):.*\b\Q$email/mi)
 	        && $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
 	    } _grep_mail_dir(
