@@ -43,10 +43,12 @@ sub SECTION_NAME_REGEX {
 }
 
 #=IMPORTS
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::UI::PDF::BuiltUpdate;
 use Bivio::UI::PDF::OpaqueUpdate;
 use Bivio::UI::PDF::Strings;
+use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -200,7 +202,7 @@ die("undef text_ref") if ! defined($text_ref);
 	}
 	elsif ($_BASE_ROOT eq $last_section) {
 	    _trace('Got base root section');
-	    if (${$text_ref} =~ /$_OBJ_REF_REGEX/) {
+	    if (${$text_ref} =~ /$_OBJ_REF_REGEX/o) {
 		unless (defined($1) && defined($2)) {
 		    die(__FILE__, ", ", __LINE__,
 			    ": missing obj number and/or object generation\n");
@@ -213,7 +215,7 @@ die("undef text_ref") if ! defined($text_ref);
 	}
 	elsif ($_BASE_SIZE eq $last_section) {
 	    _trace('Got base size section');
-	    if (${$text_ref} =~ /$_NUMBER_REGEX/) {
+	    if (${$text_ref} =~ /$_NUMBER_REGEX/o) {
 		unless (defined($1)) {
 		    die(__FILE__, ", ", __LINE__, ": missing base size\n");
 		}
@@ -225,7 +227,7 @@ die("undef text_ref") if ! defined($text_ref);
 	}
 	elsif ($_BASE_XREF eq $last_section) {
 	    _trace('Got base xref section');
-	    if (${$text_ref} =~ /$_NUMBER_REGEX/) {
+	    if (${$text_ref} =~ /$_NUMBER_REGEX/o) {
 		unless (defined($1)) {
 		    die(__FILE__, ", ", __LINE__, ": missing base xref\n");
 		}
@@ -241,7 +243,7 @@ die("undef text_ref") if ! defined($text_ref);
 
 	    # We have the Pdf text of the field objects.  Parse it into
 	    # indirect objects.  First create an array of lines of text.
-	    my(@lines) = split(/$_EOL_REGEX/, ${$text_ref});
+	    my(@lines) = split(/$_EOL_REGEX/o, ${$text_ref});
 	    # Create an iterator for the @lines array.
 	    my($line_iter_ref) = Bivio::UI::PDF::ArrayIterator->new(\@lines);
 
@@ -268,16 +270,15 @@ die("undef text_ref") if ! defined($text_ref);
 	elsif ($_XLATOR_SET eq $last_section) {
 	    _trace('Got xlator set section');
 	    chop(${$text_ref});
- 	    eval("require ${$text_ref};");
- 	    if ($@) {
- 		die(__FILE__, ", ", __LINE__, ": require error \"$@\"\n");
- 	    }
+	    Bivio::Util::my_require($$text_ref);
 	    $xlator_set_ref = ${$text_ref}->new();
 	}
 	else {
-	    die(__FILE__, ", ", __LINE__, ": bad section name\n");
+	    Bivio::IO::Alert->die($last_section, ": bad section name\n");
 	}
     }
+    # Close, so warnings don't always say "at chunk 9993813 of <DATA>"
+    close($fh_ref);
 
     $base_update_ref = Bivio::UI::PDF::OpaqueUpdate->new($base_pdf_text_ref,
 	    $base_root_ref, $base_size_ref, $base_xref_ref);
@@ -298,7 +299,7 @@ sub _get_section {
     local($_);
 
     while (<$fh_ref>) {
-	if (/$_SECTION_NAME_REGEX/) {
+	if (/$_SECTION_NAME_REGEX/o) {
 	    ${$next_section_ref} = $1;
 	    return \$text;
 	}
