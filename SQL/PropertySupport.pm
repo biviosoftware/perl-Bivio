@@ -88,11 +88,11 @@ Creates a SQL support instance. I<decl> is defined as follows:
        table_name => 'name',
        columns => {
             column_name => [Bivio::Type, Bivio::SQL::Constraint]
-            searchable => [
+            searchable => {
                 type => 'MyType',
                 constraint => 'NOT_NULL',
                 is_searchable => 1,
-            ],
+            },
        }
     }
 
@@ -387,7 +387,7 @@ sub _init_columns {
 	$col->{constraint}
 		= Bivio::SQL::Constraint->from_any($col->{constraint});
 	$col->{sql_name} = $col->{name} = $n;
-	$col->{is_searchable} = 0 unless $col->{is_searchable};
+	$col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
 	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
 	$attrs->{has_blob} = 1
 		if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
