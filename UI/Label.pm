@@ -768,6 +768,18 @@ sub get_simple {
     # DOES NOT RETURN
 }
 
+=for html <a name="get_widget_value"></a>
+
+=head2 static get_widget_value(string name, ...) : string
+
+Same as L<get_simple|"get_simple">.
+
+=cut
+
+sub get_widget_value {
+    return shift->get_simple(@_);
+}
+
 =for html <a name="unsafe_get_simple"></a>
 
 =head2 unsafe_get_simple(string name) : string
