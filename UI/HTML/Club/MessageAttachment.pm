@@ -117,6 +117,7 @@ sub execute {
 	$ctypestr = substr($ctypestr, 0, $i);
 	print(STDERR "\nctypestr = $ctypestr\n");
 	if($ctypestr =~ 'text/plain'){$esc = 1;}
+	#everything we get from the file server should be text/html
 	if($ctypestr =~ 'text/html'){$esc = 0;}
 	if($ctypestr =~ "image/"){
 	    $esc = 0;
