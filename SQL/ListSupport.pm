@@ -686,6 +686,7 @@ sub _page_number {
 # _prepare_order_by(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
 #
 # Generates the ORDER BY clause from the query and order_by columns.
+# If query is missing order by, no order by is generated.
 #
 sub _prepare_order_by {
     my($self, $query, $where, $params) = @_;
@@ -693,6 +694,7 @@ sub _prepare_order_by {
 
     # Formats order_by clause if there are order_by columns
     my($qob) = $query->get('order_by');
+    return unless $qob && @$qob;
     my($columns) = $attrs->{columns};
     $$where .= ' order by';
     for (my($i) = 0; $i < int(@$qob); $i += 2) {
