@@ -7,7 +7,7 @@ $_ = $Bivio::Biz::Model::CSIMutualFund::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::CSIMutualFund - provide daily quotes formats
+Bivio::Biz::Model::CSIMutualFund - provide daily mutual funds data
 
 =head1 SYNOPSIS
 
@@ -27,7 +27,7 @@ use Bivio::Biz::Model::CSIBase;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::CSIMutualFund>
+C<Bivio::Biz::Model::CSIMutualFund> provides daily mutual funds data
 
 =cut
 
@@ -36,7 +36,6 @@ use Bivio::Biz::Model::InstrumentValuation;
 use Bivio::Data::CSI::Id;
 use Bivio::Data::CSI::Quote;
 use Bivio::Data::CSI::RecordType;
-use Bivio::IO::Trace;
 
 =head1 CONSTANTS
 
@@ -44,6 +43,8 @@ use Bivio::IO::Trace;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 _initialize();
 
 =head1 FACTORIES
@@ -53,6 +54,30 @@ _initialize();
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values) : Bivio::Biz::Model::CSIMutualFund
+
+Create a new record.
+
+=cut
+
+sub create {
+    my($self, $new_values) = @_;
+    my($req) = $self->get_request;
+    # Load instrument ID given a CSI ID
+    my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
+    $instrument->load(csi_id => $new_values->{csi_id});
+    # Create corresponding InstrumentValuation model record
+    my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
+    $valuation->create({
+        instrument_id => $instrument->get('instrument_id'),
+        closing_date => $new_values->{price_date},
+        closing_price => $new_values->{net_asset_value},
+    });
+    return $self->SUPER::create($new_values);
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -79,12 +104,14 @@ sub internal_initialize {
 
 =head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
 
+=head2 processRecord(string date, array_ref type, array_ref fields)
+
 INSEX,6069,8.8,9.2
 
 =cut
 
 sub processRecord {
-    my($self, $date, $record_type, $fields) = @_;
+    my($self, $date, $type, $fields) = @_;
     my($csi_id) = Bivio::Data::CSI::Id->from_literal($fields->[1]);
     my($values) = {
         csi_id => $csi_id,
@@ -92,25 +119,39 @@ sub processRecord {
         net_asset_value => Bivio::Data::CSI::Quote->from_literal($fields->[2]),
         ask_price => Bivio::Data::CSI::Quote->from_literal($fields->[3]),
     };
-    $self->create($values);
-
-    my($req) = $self->get_request;
-    my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
-    $instrument->load(csi_id => $csi_id);
-    my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
-    $valuation->create({
-        instrument_id => $instrument->get('instrument_id'),
-        closing_date => $values->{price_date},
-        closing_price => $values->{net_asset_value},
-    });
+    $self->create_or_update($values, $type);
     return;
+}
+
+=for html <a name="update"></a>
+
+=head2 update() : 
+
+
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+    my($req) = $self->get_request;
+    # Load instrument ID given a CSI ID
+    my($instrument) = Bivio::Biz::Model::CSIInstrument->new($req);
+    $instrument->load(csi_id => $new_values->{csi_id});
+    # Update corresponding InstrumentValuation model record
+    my($valuation) = Bivio::Biz::Model::InstrumentValuation->new($req);
+    $valuation->update({
+        instrument_id => $instrument->get('instrument_id'),
+        closing_date => $new_values->{price_date},
+        closing_price => $new_values->{net_asset_value},
+    });
+    return $self->SUPER::update($new_values);
 }
 
 #=PRIVATE METHODS
 
 # _initialize()
 #
-#
+# Register record types to process
 #
 sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,
