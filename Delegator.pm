@@ -53,7 +53,6 @@ sub new {
     $self->{$_PACKAGE} = {
 	delegate => _get_delegate_class($proto)->new(@args),
     };
-    $self->post_create(@args);
     return $self;
 }
 
@@ -75,11 +74,12 @@ sub AUTOLOAD {
     # magic variable, created by perl
     my($method) = $AUTOLOAD;
 
-    # don't forward destructors
-    return if $method =~ /DESTROY/;
-
     # strip out package prefix
     $method =~ s/.*:://;
+
+    # don't forward destructors, it will be handled by perl
+    return if $method eq 'DESTROY';
+
     _trace((ref($proto) ? 'self' : 'proto'), '->',
 	    $method, '(', join(', ', @args), ')') if $_TRACE;
 
@@ -88,19 +88,6 @@ sub AUTOLOAD {
 	return $fields->{delegate}->$method(@args);
     }
     return _get_delegate_class($proto)->$method(@args);
-}
-
-=for html <a name="post_create"></a>
-
-=head2 post_create(...)
-
-Subclasses may override this to perform any post creation activity. Does
-nothing by default. The arguments will be the same as L<new|"new">.
-
-=cut
-
-sub post_create {
-    return;
 }
 
 #=PRIVATE METHODS
