@@ -96,6 +96,9 @@ sub internal_initialize {
             ECPayment.ec_subscription_start_date
             ECPayment.ec_subscription_period
             ECPayment.processor_response
+            ECPayment.ec_payment_id
+            ECPayment.realm_id
+            ECPayment.ec_subscription_id
         )],
         other => [
             [qw(ECPayment.realm_id RealmOwner.realm_id)],
