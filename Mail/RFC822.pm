@@ -422,10 +422,15 @@ hour timezone
 Modifications to original spec:
  - Allow doublequotes in timezone field
 
+TODO: Parse the following variations:
+
+Thu Sep 21 16:15:07 2000
+Sat, 23 Sep 2000 17:27:48
+
 =cut
 
 sub TIME {
-    return '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s+([-+"\\w]{1,5})';
+    return '(\\d\\d?):(\\d\\d?)(?:|:(\\d\\d))\\s+([-+"\\w]{1,5})';
 }
 
 =cut
@@ -492,6 +497,7 @@ sub TIME_ZONES {
             'MDT' => -800,
             'PST' => -800,
             'PDT' => -900,
+            'HST' => -1100,
             'A' => -100,
             'B' => -200,
             'C' => -300,
