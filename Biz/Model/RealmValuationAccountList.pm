@@ -31,6 +31,7 @@ C<Bivio::Biz::Model::RealmValuationAccountList>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::RealmAccount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -38,6 +39,32 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_default_broker_account"></a>
+
+=head2 get_default_broker_account() : string
+
+Returns the realm_account_id for the default broker account.
+Calling this method will reset the cursor.
+
+=cut
+
+sub get_default_broker_account {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($id);
+    $self->reset_cursor;
+    while ($self->next_row) {
+	if ($self->get('RealmAccount.name')
+		eq Bivio::Biz::Model::RealmAccount::BROKER()) {
+	    $id = $self->get('RealmAccount.realm_account_id');
+	    last;
+	}
+    }
+    $self->reset_cursor;
+    return $id;
+}
 
 =for html <a name="internal_initialize"></a>
 
