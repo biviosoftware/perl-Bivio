@@ -42,16 +42,31 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 create_content() : Bivio::UI::HTML::Widget
 
-Simple grid.
+Won't get here.
 
 =cut
 
 sub create_content {
     my($self) = @_;
+    # Won't get here.
     return $self->join(
 	    $self->link($self->string('Return to Investment Clubs', 'strong'),
 		    'http://www.allwomeninvest.com/investment_club.htm'),
 	   );
+}
+
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req) : boolean
+
+Go to allwomeninvest home.
+
+=cut
+
+sub execute {
+    my(undef, $req) = @_;
+    $req->client_redirect('http://www.allwomeninvest.com');
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
