@@ -31,8 +31,6 @@ call L<die|"die"> or C<CORE::die>.  This will result in an error state.
 
 Classes do not register with this module.  Instead, the method
 L<catch|"catch"> which sets C<$SIG{__DIE__}> locally is used.
-This makes for clean interaction with L<Bivio::IO::Alert|Bivio::IO::Alert>,
-which is the global C<$SIG{__DIE__}> registrant.
 
 This module is policy neutral with respect to error handling.  It
 holds errors and it is the responsibility of the L<catch|"catch"> caller

@@ -79,7 +79,7 @@ If true, L<are_you_sure|"are_you_sure"> will always return true.
 Reads the input file. If C<->, reads from stdin.  See
 L<read_input|"read_input">.
 
-=item input : ref
+=item input : string_ref
 
 The contents of the input file.  Value is returned verbatim from
 L<read_input|"read_input">.
