@@ -49,6 +49,10 @@ The number of rows to show.
 
 The number of character columns to show.
 
+=item readonly : boolean (optional) [0]
+
+Don't allow text-editing
+
 =item wrap : string (optional) [OFF]
 
 The text wrapping mode.
@@ -101,6 +105,7 @@ sub initialize {
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
     $fields->{wrap} = $self->get_or_default('wrap', 'off');
+    $fields->{readonly} = $self->get_or_default('readonly', 0);
     return;
 }
 
@@ -125,8 +130,9 @@ sub render {
 	$fields->{prefix} = '<textarea'
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
-		.' wrap='.$fields->{wrap}
-		.' name=';
+		.' wrap='.$fields->{wrap};
+        $fields->{prefix} .= ' readonly' if $fields->{readonly};
+	$fields->{prefix} .= ' name=';
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix}
