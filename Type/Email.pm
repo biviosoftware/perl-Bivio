@@ -68,16 +68,17 @@ sub from_literal {
 #      I checked out Net::DNS, but it doesn't seem like it can
 #      handle timeouts properly.  (No way to stop the query once
 #      started(?)).  Anyway, we need a way to avoid entering bogus
-#      addresses.  The best way would be to mail the user the password. 
+#      addresses.  The best way would be to mail the user the password.
 #      I don't know if we could sustain this in the beginning.
     return $value if $value =~ /^$_822_ATOM_ONLY_ADDR$/os;
-    # Give a reasonable error message
-    # We don't accept domain literal addresses?
-    return (undef, Bivio::TypeError::EMAIL_DOMAIN_LITERAL())
-	    if /$_822_DOMAIN_LITERAL/os;
-    # Must be qualified
-    return (undef, Bivio::TypeError::EMAIL_UNQUALIFIED())
-	    unless /\@/;
+#TODO: This is weak.  Either make good, or just use general message
+#    # Give a reasonable error message
+#    # We don't accept domain literal addresses?
+#    return (undef, Bivio::TypeError::EMAIL_DOMAIN_LITERAL())
+#	    if /$_822_DOMAIN_LITERAL/os;
+#    # Must be qualified
+#    return (undef, Bivio::TypeError::EMAIL_UNQUALIFIED())
+#	    unless /\@/;
     # Some other error
     return (undef, Bivio::TypeError::EMAIL());
 }
