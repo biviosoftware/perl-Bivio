@@ -11,18 +11,17 @@ Bivio::UI::HTML::Format - superclass of widget value formatters
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format;
-    Bivio::UI::HTML::Format->get_widget_value($source, @params);
 
 =cut
 
 =head1 EXTENDS
 
-L<Bivio::UNIVERSAL>
+L<Bivio::UI::WidgetValueSource>
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::UI::HTML::Format::ISA = ('Bivio::UNIVERSAL');
+use Bivio::UI::WidgetValueSource;
+@Bivio::UI::HTML::Format::ISA = ('Bivio::UI::WidgetValueSource');
 
 =head1 DESCRIPTION
 
@@ -46,8 +45,6 @@ use Bivio::HTML;
 
 #=VARIABLES
 
-
-
 =head1 FACTORIES
 
 =cut
@@ -58,45 +55,27 @@ use Bivio::HTML;
 
 =head2 static get_instance(any class) : Bivio::UI::HTML::Format
 
-Returns a usable instance (or class).  The name will be prefixed
-if necessary.  The class will be loaded dynamically.
+Returns an instance of I<class>.  I<class> may be just the simple name or a
+fully qualified class name.  It will be loaded with
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<HTMLFormat> map.
+
+The "instance" returned may a fully-qualified class, since instances and
+classes are equivalent in perl.
 
 =cut
 
 sub get_instance {
     my($proto, $class) = @_;
-    if (defined($class)) {
-	$class = ref($class) if ref($class);
-	$class = 'Bivio::UI::HTML::Format::'.$class unless $class =~ /::/;
-	# Make sure the class is loaded.
-	Bivio::IO::ClassLoader->simple_require($class);
-    }
-    else {
-	$class = ref($proto) || $proto;
-	Bivio::Die->die('invalid class; cannot be ', __PACKAGE__)
-		    if $class eq __PACKAGE__;
-    }
-    Bivio::Die->die($class, ': not a ', __PACKAGE__)
-		unless UNIVERSAL::isa($class, __PACKAGE__);
+    $class = Bivio::IO::ClassLoader->map_require('HTMLFormat', $class)
+	    unless ref($class);
+    Bivio::IO::Alert->bootstrap_die($class, ': not a Bivio::UI::HTML::Format')
+		unless UNIVERSAL::isa($class, 'Bivio::UI::HTML::Format');
     return $class;
 }
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="get_widget_value"></a>
-
-=head2 abstract static get_widget_value(string source, any arg1, ...) : any
-
-Calls C<$source->get_widget_value(arg1, ...)>, formats the result,
-and returns it.
-
-=cut
-
-sub get_widget_value {
-    die('abstract method');
-}
 
 =for html <a name="result_is_html"></a>
 
