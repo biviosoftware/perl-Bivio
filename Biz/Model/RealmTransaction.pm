@@ -250,7 +250,8 @@ sub _generate_instrument_remark {
     if (defined($entry_id)) {
 	$sth = Bivio::SQL::Connection->execute('
             SELECT realm_instrument_t.name || instrument_t.name,
-                realm_instrument_entry_t.count
+                realm_instrument_entry_t.count,
+                entry_t.entry_type
             FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
                 instrument_t
             WHERE entry_t.entry_id=?
@@ -265,7 +266,8 @@ sub _generate_instrument_remark {
     else {
 	$sth = Bivio::SQL::Connection->execute('
             SELECT realm_instrument_t.name || instrument_t.name,
-                realm_instrument_entry_t.count
+                realm_instrument_entry_t.count,
+                entry_t.entry_type
             FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
                 instrument_t
             WHERE entry_t.realm_transaction_id=?
@@ -282,9 +284,22 @@ sub _generate_instrument_remark {
     my($total) = 0;
     my($name) = '';
     while (my $row = $sth->fetchrow_arrayref) {
-	my($count);
-	($name, $count) = @$row;
-	$total += abs($count);
+	my($count, $type);
+	($name, $count, $type) = @$row;
+
+	if (defined($entry_id)) {
+	    $total += abs($count);
+	}
+	elsif ($type == Bivio::Type::EntryType::INSTRUMENT_SPLIT()->as_int
+		|| $type == Bivio::Type::EntryType::INSTRUMENT_SPINOFF()
+		->as_int
+		|| $type == Bivio::Type::EntryType::INSTRUMENT_MERGER()
+		->as_int) {
+	    # skipping
+	}
+	else {
+	    $total += abs($count);
+	}
     }
 
     # get the grammar right
