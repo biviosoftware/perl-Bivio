@@ -734,6 +734,31 @@ __PACKAGE__->compile(
 	undef,
 	"invalid export file format selected",
     ],
+    SHARES_SELECTED_EXCEEDS_OWNED => [
+	91,
+	undef,
+	'shares selected exceeds shares owned',
+    ],
+    TRANSFER_DATE_LESS_THAN_VAL_DATE => [
+	92,
+	undef,
+	'the transfer valuation date must be greater than or equal to the member valuation date',
+    ],
+    TRANSFER_DATE_EXCEED_TRANSACTION_DATE => [
+	93,
+	undef,
+	'the transfer valuation date may not exceed the transaction date',
+    ],
+    SELECTED_VALUE_GREATER_THAN_WITHDRAWAL_VALUE => [
+	94,
+	undef,
+	'the selected value exceeds the withdrawal value',
+    ],
+    NO_INVESTMENTS_SELECTED => [
+	95,
+	undef,
+	'no investments have been selected to transfer',
+    ],
 );
 
 #=PRIVATE METHODS
