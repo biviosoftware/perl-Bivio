@@ -61,7 +61,8 @@ sub create_entry {
     my($self, $trans, $properties) = @_;
 
     $properties->{class} = Bivio::Type::EntryClass::INSTRUMENT();
-    $properties->{realm_transaction_id} = $trans->get('realm_transaction_id');
+    ($properties->{realm_id}, $properties->{realm_transaction_id})
+	    = $trans->get('realm_id', 'realm_transaction_id');
 
     my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
     $entry->create($properties);
@@ -86,6 +87,8 @@ sub internal_initialize {
 	columns => {
             entry_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
             realm_instrument_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
             count => ['Bivio::Type::Amount',
