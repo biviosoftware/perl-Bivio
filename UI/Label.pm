@@ -681,6 +681,21 @@ Value',
     CREATE_USER_DISPLAY_NAME => 'Your Name',
     CREATE_USER_NAME_IN_TEXT => 'Pick your own User ID and Password',
     SECURE_MODE_LINK => 'Switch to secure mode',
+    AccountSyncForm => [
+	accept_agreement => <<'EOF',
+I agree with the
+<{link_static_site('AccountSync Amendment', 'hm/account-access', 0)}>
+to the site_name()
+<{link_static_site('Terms of Service', 'hm/user', 0)}>.
+EOF
+    ],
+    RealmAccountForm => [
+	edit => 'Change Account Information',
+	new => 'New Account Information',
+	'RealmAccount.institution' => 'Brokerage',
+	'RealmAccount.account_number' => 'Brokerage Login',
+	'RealmAccount.external_password' => 'Brokerage Password',
+    ],
 
     # Announcements
     ANNOUNCE_ZACKS => 'Zacks Research',
@@ -797,6 +812,22 @@ Value',
 
 =cut
 
+=for html <a name="get_form_field"></a>
+
+=head2 static get_form_field(string form_class, string field) : string
+
+Looks up the form field label.  Handles backwards compatibility issues.
+
+=cut
+
+sub get_form_field {
+    my($proto, $form_class, $field) = @_;
+    # We allow you to specify the form_class, then field name
+    my($res) = $proto->unsafe_get_exactly(
+	    $form_class->simple_package_name, $field);
+    return defined($res) ? $res : $proto->get_simple($field);
+}
+
 =for html <a name="get_simple"></a>
 
 =head2 get_simple(string name) : string
@@ -869,7 +900,7 @@ sub unsafe_get_simple {
     my($res) = $_MAP{lc($name)};
     foreach my $q (map {lc($_)} @qualifier) {
 	return $res unless ref($res);
-	# Defaults always exist
+	# If a default is missing, it's undef.
 	$res = defined($res->{$q}) ? $res->{$q} : $res->{''};
     }
 
@@ -905,9 +936,7 @@ sub _map {
 	# Explode the map
 	$value = _compile({}, $value);
 	($value->{''}) = values(%$value) if int(values(%$value)) == 1;
-	Bivio::Die->die($name, '=>', $value,
-		': missing default and more than one value')
-		    unless defined($value->{''});
+	# If a default is missing, that's ok
     }
     $name = [$name] unless ref($name);
     Bivio::Die->die($name, '=>', $value, ': expecting an array_ref')
