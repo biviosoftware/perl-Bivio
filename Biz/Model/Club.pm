@@ -174,7 +174,7 @@ sub delete_instruments_and_transactions {
     # need to reset any withdrawn members to member
     # otherwise they can't be deleted using the UI
     my($list) = Bivio::Biz::Model::RealmUserList->new($req);
-    my($it) = $list->iterate_start({});
+    my($it) = $list->iterate_start({show_inactive => 1});
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     my($member) = Bivio::Type::Honorific::MEMBER();
     while ($list->iterate_next_and_load($it)) {
@@ -254,7 +254,7 @@ sub delete_shadow_users {
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     my($user) = Bivio::Biz::Model::User->new($req);
     my($list) = Bivio::Biz::Model::RealmUserList->new($req);
-    my($it) = $list->iterate_start({});
+    my($it) = $list->iterate_start({show_inactive => 1});
     while ($list->iterate_next_and_load($it)) {
 	next unless $list->is_shadow_user;
 

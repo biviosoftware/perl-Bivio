@@ -1258,7 +1258,7 @@ my(@_CFG) = (
         ?/accounting/payment
         Bivio::Biz::Model::Lock
         Bivio::Type::EntryType->execute_member_payment
-        Bivio::Biz::Model::MemberList->execute_load_all
+        Bivio::Biz::Model::MemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultiplePayment
@@ -1628,7 +1628,7 @@ my(@_CFG) = (
         ?/accounting/tax99/f1065.pdf
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
@@ -1647,7 +1647,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065K1Form->execute_load_all
@@ -1662,7 +1662,7 @@ my(@_CFG) = (
         ?/accounting/tax99
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::AllocationMethodForm
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Club::Tax99
         next=CLUB_ACCOUNTING_TAX99
     )],
@@ -1683,7 +1683,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/k1/options
         Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Model::F1065K1ParametersForm
         Bivio::UI::HTML::Club::F1065K1Parameters
         next=CLUB_ACCOUNTING_TAX99
@@ -1776,7 +1776,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
         Bivio::Type::MemberTaxListParams->execute_hide_valid_members
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Tax::Checklist
         next=CLUB_ACCOUNTING_TAX99_CHECKLIST
     )],
@@ -1791,7 +1791,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
         Bivio::Type::MemberTaxListParams->execute_hide_valid_members
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Tax::Checklist
         next=CLUB_ACCOUNTING_TAX99_CHECKLIST
     )],
@@ -2008,7 +2008,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberStatusDateForm
-        Bivio::Biz::Model::MemberStatusList->execute_load_all
+        Bivio::Biz::Model::MemberStatusList->execute_load_all_with_inactive
         Bivio::UI::HTML::Club::MemberStatusReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
         help=member-status-report
@@ -2176,7 +2176,7 @@ my(@_CFG) = (
         ?/accounting/reports/investment-performance-detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::InstrumentDateSpanForm
-        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::Biz::Model::InstrumentPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
@@ -2225,7 +2225,7 @@ my(@_CFG) = (
         ?/accounting/reports/member-performance
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::DateSpanForm
-        Bivio::Biz::Model::MemberPerformanceList->execute_load_all
+        Bivio::Biz::Model::MemberPerformanceList->execute_load_all_with_inactive_and_no_units
         Bivio::UI::HTML::Club::MemberPerformanceReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
         help=member-performance-report
@@ -2238,7 +2238,7 @@ my(@_CFG) = (
         ?/accounting/reports/member-performance-detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::MemberDateSpanForm
-        Bivio::Biz::Model::AllMemberList->execute_load_all
+        Bivio::Biz::Model::AllMemberList->execute_load_all_with_inactive
         Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
