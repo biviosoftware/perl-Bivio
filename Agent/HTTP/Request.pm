@@ -9,6 +9,14 @@ $_ = $Bivio::Agent::HTTP::Request::VERSION;
 
 Bivio::Agent::HTTP::Request - An HTTP Request
 
+=head1 RELEASE SCOPE
+
+bOP
+
+=head1 SYNOPSIS
+
+   use Bivio::Agent::HTTP::Request;
+
 =head1 EXTENDS
 
 L<Bivio::Agent::Request>

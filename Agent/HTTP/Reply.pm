@@ -8,6 +8,14 @@ $Bivio::Agent::HTTP::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::Agent::HTTP::Reply - a HTTP reply
 
+=head1 RELEASE SCOPE
+
+bOP
+
+=head1 SYNOPSIS
+
+   use Bivio::Agent::HTTP::Reply;
+
 =head1 EXTENDS
 
 L<Bivio::Agent::Reply>

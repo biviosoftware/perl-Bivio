@@ -92,7 +92,8 @@ use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 use Bivio::Type::DateTime;
-use DBD::Oracle qw(:ora_types);
+# See reference to ORA_BLOB below
+# use DBD::Oracle qw(:ora_types);
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -445,7 +446,9 @@ sub _execute_helper {
 	    foreach my $p (@$params) {
 		$$statement->bind_param($i++, $p), next unless ref($p);
 		# I wonder if it stores a reference or a copy?
-		$$statement->bind_param($i++,  $$p, {ora_type => ORA_BLOB});
+		# DBD::Oracle::ORA_BLOB is 113.  Saves importing DBD::Oracle
+		# explicitly.
+		$$statement->bind_param($i++,  $$p, {ora_type => 113});
 	    }
 	    # Parameters are bound, so don't pass below
 	    $params = undef;
