@@ -249,9 +249,13 @@ sub _create_display {
 	});
     }
 
-    # Numbers are just right adjusted strings.  Falls through
+    # Default number formatting
     if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
-	$attrs->{column_align} = 'right' unless $attrs->{column_align}
+	return Bivio::UI::HTML::Widget::AmountCell->new({
+	    field => $field,
+	    decimals => $type->get_decimals,
+	    %$attrs,
+	}),
     }
 
     # default type is string
