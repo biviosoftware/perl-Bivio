@@ -55,8 +55,8 @@ sub SQL_DATE_TYPE {
 #=IMPORTS
 use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
+use Bivio::Util;
 use Carp();
-use Data::Dumper;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -114,6 +114,7 @@ sub create {
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{insert};
 
@@ -137,6 +138,11 @@ sub create {
 	    $properties->{$_} = $new_values->{$_};
 	}
     }
+
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
+    }
     return $model->get_status()->is_OK();
 }
 
@@ -154,6 +160,7 @@ sub delete {
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{delete}.$where_clause;
     &_trace_sql($sql, @values) if $_TRACE;
@@ -165,6 +172,10 @@ sub delete {
 
     $statement->finish();
 
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
+    }
     return $model->get_status()->is_OK();
 }
 
@@ -227,6 +238,7 @@ sub find {
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
     &_trace_sql($sql, @values) if $_TRACE;
@@ -253,6 +265,10 @@ sub find {
 		Bivio::Biz::Error->new("Not Found"));
     }
     $statement->finish();
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
+    }
     return $model->get_status()->is_OK();
 }
 
@@ -269,6 +285,7 @@ sub update {
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($sql) = &_create_update_statement($self, $properties, $new_values,
 	    $where_clause);
 
@@ -292,6 +309,10 @@ sub update {
 	foreach (keys(%$new_values)) {
 	    $properties->{$_} = $new_values->{$_};
 	}
+    }
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
     }
     return $model->get_status()->is_OK();
 }

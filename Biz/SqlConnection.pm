@@ -38,6 +38,7 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CONNECTION);
+my($_DB_TIME) = 0;
 
 =head1 METHODS
 
@@ -111,6 +112,39 @@ sub get_connection {
 	$_CONNECTION = Bivio::Ext::DBI->connect();
     }
     return $_CONNECTION;
+}
+
+=for html <a name="get_db_time"></a>
+
+=head2 static get_db_time() : int
+
+If tracing is enabled, this returns the amount of time spent processing
+database requests. Invoking this method clears the counter.
+
+=cut
+
+sub get_db_time {
+    return 0 if ! $_TRACE;
+    my($result) = $_DB_TIME;
+    $_DB_TIME = 0;
+    return $result;
+}
+
+=for html <a name="increment_db_time"></a>
+
+=head2 static increment_db_time(int amount) : int
+
+If tracing is enabled, this increments the database time counter and
+returns its new value.
+
+=cut
+
+sub increment_db_time {
+    return 0 if ! $_TRACE;
+    my(undef, $amount) = @_;
+
+    $_DB_TIME += $amount;
+    return $_DB_TIME;
 }
 
 =for html <a name="rollback"></a>

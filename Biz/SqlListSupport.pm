@@ -32,8 +32,8 @@ C<Bivio::Biz::SqlListSupport>
 use Bivio::Biz::SqlConnection;
 use Bivio::Biz::SqlSupport;
 use Bivio::IO::Trace;
+use Bivio::Util;
 use Carp();
-use Data::Dumper;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -91,6 +91,8 @@ sub find {
     my($self, $model, $rows, $index, $max, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{select} || Carp::croak("SqlListSupport not initialized");
+
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($col_field_count) = $fields->{col_field_count};
 
     # clear the result set
@@ -136,6 +138,10 @@ sub find {
     }
     $statement->finish();
 
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
+    }
     return $model->get_status()->is_OK();
 }
 
@@ -154,6 +160,7 @@ sub get_result_set_size {
     my($fields) = $self->{$_PACKAGE};
     $fields->{select} || Carp::croak("SqlListSupport not initialized");
 
+    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{count}.$where_clause;
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
@@ -164,6 +171,10 @@ sub get_result_set_size {
     my($result) = $statement->fetchrow_arrayref()->[0];
     $statement->finish();
 
+    if ($_TRACE) {
+	Bivio::Biz::SqlConnection->increment_db_time(
+		Bivio::Util::time_delta_in_seconds($start_time));
+    }
     return $result;
 }
 
