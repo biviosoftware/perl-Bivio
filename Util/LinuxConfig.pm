@@ -71,7 +71,7 @@ commands:
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
-    rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
+    rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console -- configure grub and init for serial port console
     sshd_param param value ... -- add or delete a parameter from sshd config
@@ -445,14 +445,18 @@ Renames rpmnew files to actual file.
 
 Usage is typically:
 
-    b-linux-config -noexecute rename_rpmnew $(find /etc /var /usr -name \*.rpmnew)
+    b-linux-config -noexecute rename_rpmnew all
 
-Returns list of actions.
+Returns list of actions.  "all" is the following:
+
+    find /etc /var /usr -name \*.rpmnew
 
 =cut
 
 sub rename_rpmnew {
     my($self, @rpmnew_file) = @_;
+    @rpmnew_file = `find /etc /var /usr -name '*.rpmnew'`
+	if "@rpmnew_file" eq 'all';
     my($res) = '';
     foreach my $n (map {_prefix_file($_)} @rpmnew_file) {
 	my($f) = $n;
