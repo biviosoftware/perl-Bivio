@@ -332,8 +332,8 @@ sub director {
 	control => $control,
 	values => $values ? $values : {},
     });
-    $res->put(default_value => $default_value) if $default_value;
-    $res->put(undef_value => $undef_value) if $undef_value;
+    $res->put(default_value => $default_value) if defined($default_value);
+    $res->put(undef_value => $undef_value) if defined($undef_value);
     return $res;
 }
 
