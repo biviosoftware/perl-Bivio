@@ -651,10 +651,11 @@ sub _parse {
 	    # Indicate that we are missing one, but not both.
 	    # This is an indication of bug #4768 and generally a misconfigured
 	    # browser.
-	    Bivio::IO::Alert->warn('missing ',
-		    $fields->{received_persistent} ? 'volatile' : 'persistent')
-			if $fields->{received_persistent}
-				|| $fields->{received_volatile};
+#TODO: Why is this too noisy?
+#	    Bivio::IO::Alert->warn('missing ',
+#		    $fields->{received_persistent} ? 'volatile' : 'persistent')
+#			if $fields->{received_persistent}
+#				|| $fields->{received_volatile};
 	}
     }
     return $fields;
