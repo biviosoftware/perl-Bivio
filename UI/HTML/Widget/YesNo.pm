@@ -121,7 +121,7 @@ sub render {
 	    $$buffer .= ' checked';
 	}
 
-	$$buffer .= '>&nbsp';
+	$$buffer .= '>&nbsp;';
 	$fields->{$name.'_widget'}->render($source, $buffer);
     }
     return;
