@@ -220,8 +220,46 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
+    _upgrade_expense_category_name();
+    _upgrade_account_sync_user();
     _upgrade_password_request();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_account_sync_user
+#
+# Changes transactions associated with user account_sync to bivio.
+#
+sub _upgrade_account_sync_user {
+
+    Bivio::SQL::Connection->execute("
+        UPDATE realm_transaction_t
+        SET user_id=(
+            SELECT realm_id
+            FROM realm_owner_t
+            WHERE realm_owner_t.name='bivio')
+        WHERE user_id=(
+            SELECT realm_id
+            FROM realm_owner_t
+            WHERE realm_owner_t.name='account_sync')", []);
+
+    return;
+}
+
+# _upgrade_expense_category_name()
+#
+# Changes the expense category "Tax Preparation" to
+# "Accounting & Tax Services".
+#
+sub _upgrade_expense_category_name {
+
+    _do_sql("
+UPDATE expense_category_t
+SET name='Accounting & Tax Services'
+WHERE name='Tax Preparation'
+/
+");
     return;
 }
 
