@@ -390,8 +390,38 @@ my(@_CFG) = (
         CLUB
         TREASURER
         _/accounting/account/interest
-        Bivio::Biz::Model::AccountInterestForm
-        Bivio::UI::HTML::Club::AccountInterest
+        Bivio::Biz::Model::AccountTransactionForm
+        Bivio::UI::HTML::Club::AccountTransaction
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_DIVIDEND
+        45
+        CLUB
+        TREASURER
+        _/accounting/account/dividend
+        Bivio::Biz::Model::AccountTransactionForm
+        Bivio::UI::HTML::Club::AccountTransaction
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_INCOME
+        46
+        CLUB
+        TREASURER
+        _/accounting/account/income
+        Bivio::Biz::Model::AccountTransactionForm
+        Bivio::UI::HTML::Club::AccountTransaction
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_EXPENSE
+        47
+        CLUB
+        TREASURER
+        _/accounting/account/expense
+        Bivio::Biz::Model::AccountTransactionForm
+        Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
     )],
 );
