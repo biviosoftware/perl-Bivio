@@ -115,8 +115,6 @@ my($_SEPARATOR) = '!';
 # Forms don't have binary data.
 # Tightly coupled with $Bivio::SQL::ListQuery::_SEPARATOR.
 my($_HASH_CHAR) = "\01";
-# Character which precedes a proxy realm.
-my($_PROXY_CHAR) = '-';
 
 =head1 METHODS
 
@@ -272,17 +270,13 @@ sub _format_hash {
 
 # _format_realm(string_ref res, hash_ref c)
 #
-# Gets owner_name.  If defined, formats as string.  Prefixes with
-# $_PROXY_CHAR if proxy realm.
+# Gets owner_name.  If defined, formats as string.
 #
 sub _format_realm {
     my($res, $c) = @_;
     return unless $c->{realm};
     my($name) = $c->{realm}->unsafe_get('owner_name');
     return unless defined($name);
-
-    $name = $_PROXY_CHAR.$name
-	    if $c->{realm}->get('type') == Bivio::Auth::RealmType::PROXY();
 
     _format_string($res, 'realm', $name);
     return;
@@ -374,7 +368,7 @@ sub _parse_path_info {
 
 # _parse_realm(Bivio::Biz::FormModel model, hash_ref c) : Bivio::Auth::Realm
 #
-# Returns the realm contained in $realm.  Checks for proxy realms, general,
+# Returns the realm contained in $realm.  Checks for general,
 # etc.  Returns undef if it can't set.
 #
 sub _parse_realm {
@@ -384,17 +378,6 @@ sub _parse_realm {
     # Not an error if undefined
     unless (defined($v)) {
 	$c->{realm} = undef;
-	return;
-    }
-
-    # If auth_realm and incoming are same, leave as undef.
-    my($is_proxy) = $v =~ s/^$_PROXY_CHAR//;
-
-    if ($is_proxy) {
-#TODO: Delete this eventually.
-	# Dies if not found.  Ok since proxies aren't long for this world
-	$c->{realm} = Bivio::Auth::Realm::Proxy->from_name($v);
-	_trace($c->{realm}, ': is a proxy realm') if $_TRACE;
 	return;
     }
 
