@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000-2004 bivio, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateInterval;
 use strict;
@@ -59,6 +59,10 @@ Six months.
 
 Three months.
 
+=item IRS_TAX_SEASON
+
+From 1/1 to 4/15 next year.
+
 =back
 
 =cut
@@ -93,6 +97,9 @@ __PACKAGE__->compile([
     THREE_MONTHS => [
 	-5,
     ],
+    IRS_TAX_SEASON => [
+	-6,
+    ],
 ]);
 
 =head1 METHODS
@@ -109,9 +116,8 @@ Returns I<date_time> decremented by this DateInterval.
 
 sub dec {
     my($self, $date_time) = @_;
-    return $_DT->add_days($date_time, -$self->as_int)
-	    if $self->as_int >= 0;
-    return &{\&{'_dec_'.lc($self->get_name)}}($date_time);
+    return $self->as_int >= 0 ? $_DT->add_days($date_time, -$self->as_int)
+	: &{\&{'_dec_'.lc($self->get_name)}}($date_time);
 }
 
 =for html <a name="inc"></a>
@@ -124,9 +130,8 @@ Returns I<date_time> incremented by this DateInterval.
 
 sub inc {
     my($self, $date_time) = @_;
-    return $_DT->add_days($date_time, $self->as_int)
-	    if $self->as_int >= 0;
-    return &{\&{'_inc_'.lc($self->get_name)}}($date_time);
+    return $self->as_int >= 0 ? $_DT->add_days($date_time, $self->as_int)
+	: &{\&{'_inc_'.lc($self->get_name)}}($date_time);
 }
 
 =for html <a name="inc_to_end"></a>
@@ -146,7 +151,7 @@ FISCAL_YEAR increments to 12/31.
 sub inc_to_end {
     my($self, $start_date) = @_;
     my($sub) = \&{'_inc_to_end_'.lc($self->get_name)};
-    return defined(&$sub) ? &$sub($self, $start_date)
+    return defined(&$sub) ? $sub->($self, $start_date)
 	: $_DT->add_days($self->inc($start_date), -1);
 }
 
@@ -171,7 +176,21 @@ sub is_continuous {
 sub _dec_fiscal_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
-    $year-- if $mday == 1 && $mon == 1;
+    $year--
+	if $mday == 1 && $mon == 1;
+    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
+}
+
+# _dec_irs_tax_season(string date_time) : string
+#
+# If on or before 4/15, goes to 1/1 prior year.  Else, goes to 1/1 of this
+# year.
+#
+sub _dec_irs_tax_season {
+    my($date_time) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
+    $year--
+	if $mon < 4 || $mon == 4 && $mday <= 15;
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
@@ -241,6 +260,14 @@ sub _inc_fiscal_year {
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, 1 + $year);
 }
 
+# _inc_irs_tax_season(string date_time) : string
+#
+# Goes to the beginning of next year (just like fiscal year)
+#
+sub _inc_irs_tax_season {
+    return _inc_fiscal_year(@_);
+}
+
 # _inc_month(string date_time) : string
 #
 # Goes to same date/time next month.  Goes to end of month if outside
@@ -280,6 +307,18 @@ sub _inc_to_end_day {
     return shift;
 }
 
+# _inc_to_end_irs_tax_season(self, string start_date) : string
+#
+# Goes to 4/15 of this year if at or before 4/15.
+#
+sub _inc_to_end_irs_tax_season {
+    my($self, $start_date) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($start_date);
+    $year++
+	if $mon > 4 || $mon == 4 && $mday > 15;
+    return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, $year);
+}
+
 # _inc_to_end_none(self, string start_date) : string
 #
 # No-op.
@@ -305,7 +344,7 @@ sub _inc_year {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000-2004 bivio, Inc.  All rights reserved.
 
 =head1 VERSION
 
