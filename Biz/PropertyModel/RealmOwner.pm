@@ -133,7 +133,7 @@ sub internal_initialize {
 	columns => {
             name => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            password => ['Bivio::Type::Name',
+            password => ['Bivio::Type::Password',
     		Bivio::SQL::Constraint::NOT_NULL()],
             realm_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
