@@ -57,15 +57,20 @@ use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
 use Bivio::Type::DateTime;
 use Bivio::Type::Email;
+use Bivio::Type::Integer;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::RealmInviteState;
 use Bivio::Type::Text;
+use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->REALM_INVITE_FIELD;
+my($_QUERY_FIELD) = 'x';
+my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
+my($_MAX_INTEGER) = Bivio::Type::Integer->get_max;
 
 =head1 METHODS
 
@@ -185,16 +190,30 @@ sub execute_accept {
     my($q) = $req->unsafe_get('query');
     if ($req->unsafe_get('query')) {
 #TODO: Really want unauth_load_from_query
-	$q = Bivio::SQL::ListQuery->new({%$q, auth_id => 1, count => 1},
+	my($lq) = Bivio::SQL::ListQuery->new({%$q, auth_id => 1, count => 1},
 		$self->internal_get_sql_support, $self);
-	my($id) = $q->unsafe_get('this');
+	my($id) = $lq->unsafe_get('this');
 
 	# User hacked the query?
-	$self->die(Bivio::DieCode::CORRUPT_QUERY()) unless $id && $id->[0];
+	$self->die(Bivio::DieCode::CORRUPT_QUERY(),
+		'missing or incorrect this') unless $id && $id->[0];
 
 	# If it didn't load, just like cookie not found
-	$req->die(Bivio::DieCode::NOT_FOUND())
+	$self->die(Bivio::DieCode::NOT_FOUND(),
+		'invite not found in db from query')
 		unless $self->unauth_load(realm_invite_id => $id->[0]);
+
+#TODO: Remove check after 2/16/00
+	my($actual) = $q->{$_QUERY_FIELD};
+	if (defined($actual)) {
+	    my($expected) = _magic($self);
+	    $self->die(Bivio::DieCode::NOT_FOUND(),
+		    'missing magic query field') unless $actual;
+	    $self->die(Bivio::DieCode::NOT_FOUND(),
+		    {actual => $actual, expected => $expected,
+			message => 'magic field mismatch'})
+		    unless $actual eq $expected;
+	}
 
 	# Loaded ok, so set in the cookie
 	Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
@@ -212,6 +231,19 @@ sub execute_accept {
 
     _set_state($self, $req);
     return;
+}
+
+=for html <a name="format_query"></a>
+
+=head2 format_query() : string
+
+Formats the query string with I<this> and I<magic>.
+
+=cut
+
+sub format_query {
+    my($self) = @_;
+    return $self->SUPER::format_query().'&'.$_QUERY_FIELD.'='._magic($self);
 }
 
 =for html <a name="internal_initialize"></a>
@@ -284,6 +316,27 @@ sub _check_cookie {
     _trace($c, ': not found, deleting cookie') if $_TRACE;
     Bivio::Agent::HTTP::Cookie->delete_field($req, $_COOKIE_FIELD);
     return $c;
+}
+
+# _magic(Bivio::Biz::Model::RealmInvite self) : string
+#
+# Returns a unique string (trap door) from this invite which is
+# checked when execute_accept is called.
+#
+sub _magic {
+    my($self) = @_;
+    my($id, $realm_id, $date_time) = $self->get(
+	    qw(realm_invite_id realm_id creation_date_time));
+
+    # None of this is critical except that the algorithm can't change
+    # without changing the version.  We don't really take advantage
+    # of the internals.
+    $id = int($id/$_MIN_PRIMARY_ID % $_MAX_INTEGER);
+    $realm_id = int($realm_id/$_MIN_PRIMARY_ID % $_MAX_INTEGER);
+    my($date, $time) = split(/\s+/, $date_time);
+
+    # XOR all these values
+    return $id ^ $realm_id ^ $date ^ $time;
 }
 
 # _set_state(Bivio::Biz::Model::RealmInvite self, Bivio::Agent::Request req)
