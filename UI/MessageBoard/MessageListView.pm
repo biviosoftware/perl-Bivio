@@ -37,6 +37,8 @@ C<Bivio::UI::MessageBoard::MessageListView>
 #=IMPORTS
 use Bivio::Biz::Mail::MessageList;
 use Bivio::IO::Trace;
+use Bivio::UI::HTML::ListCellRenderer;
+use Bivio::UI::HTML::ModelRefRenderer;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -102,6 +104,27 @@ Returns the default model ready for rendering.
 sub get_default_model {
     #NOTE: could cache this
     return Bivio::Biz::Mail::MessageList->new();
+}
+
+=for html <a name="get_default_renderer"></a>
+
+=head2 get_default_renderer(FieldDescriptor type) : ListCellRenderer
+
+Returns a default renderer for the specified field type.
+
+=cut
+
+sub get_default_renderer {
+    my($self, $type) = @_;
+
+    if ($type->get_type() == Bivio::Biz::FieldDescriptor::MODEL_REF()) {
+
+	return Bivio::UI::HTML::ListCellRenderer->new(
+		Bivio::UI::HTML::ModelRefRenderer->new('detail'));
+    }
+
+    # let super class handle it
+    return &Bivio::UI::HTML::ListView::get_default_renderer($self, $type);
 }
 
 =for html <a name="get_nav_links"></a>
