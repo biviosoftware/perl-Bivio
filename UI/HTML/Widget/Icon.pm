@@ -137,7 +137,7 @@ Creates a new Icon widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = &Bivio::UI::HTML::Widget::Director::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -150,7 +150,7 @@ sub new {
 
 =head2 initialize()
 
-Builds up the attributes for SUPER (Director).  If there are text values,
+Builds up the attributes for SUPER (Director).
 
 =cut
 
