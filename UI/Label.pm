@@ -188,7 +188,8 @@ _compile(\%_MAP, [
     NAME_TICKER => 'Name',
     ['FED_TAX_FREE', 'RealmInstrument.fed_tax_free']
         => 'Federal Tax Free',
-    ['VALUATION_SEARCH_DATE', 'InstrumentMergerSpinoff.action_date'] => 'Date',
+    ['VALUATION_SEARCH_DATE', 'InstrumentMergerSpinoff.action_date',
+	'CSISplit.split_date'] => 'Date',
     IMPORT_USER_INFO => 'Import User Information',
     WANT_SSN => 'Social Security Numbers',
     WANT_PHONE => 'Telephone Numbers',
@@ -296,7 +297,8 @@ _compile(\%_MAP, [
     UNALLOCATED_EARNINGS => 'Unallocated Earnings - (Losses)',
     UNREALIZED_GAINS => 'Unrealized (Gains)/Losses Disbursed',
     EXPENSE => 'Expense',
-    NEW_SHARES => 'New Shares',
+    ['NEW_SHARES', 'CSISplit.new_shares'] => 'New Shares',
+    ['CSISplit.old_shares'] => 'Old Shares',
     ['CATEGORY', 'ExpenseCategory.expense_category_id']
         => 'Category',
     ['TAX_FREE_INTEREST', 'RealmAccount.tax_free']
@@ -318,6 +320,11 @@ _compile(\%_MAP, [
     'InstrumentMergerSpinoff_remaining_basis_HEADING' => "Remaining\nBasis",
     'InstrumentMergerSpinoff_new_shares_ratio_HEADING' => "New Shares\nRatio",
     NEW_TICKER_SYMBOL => 'New Ticker Symbol',
+    'CSIStockPrice.open' => 'Open',
+    'CSIStockPrice.high' => 'High',
+    'CSIStockPrice.low' => 'Low',
+    'close' => 'Close',
+    'CSIStockPrice.volume' => 'Volume',
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => 'Accounting Reports',
@@ -407,6 +414,8 @@ _compile(\%_MAP, [
     ADM_REALM_NOTICE_LIST => 'Notices',
     ADM_MERGER_SPINOFF_CREATE => 'Create New Merger/Spin-off Information',
     ADM_MERGER_SPINOFF_LIST => 'Mergers & Spin-offs',
+    ADM_QUOTE_LIST => 'Historical Quotes',
+    ADM_SPLIT_LIST => 'Splits',
     CLUB_ACCOUNTING_ACCOUNT_DETAIL => 'Account Detail',
     CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => 'Account Dividend',
     CLUB_ACCOUNTING_ACCOUNT_EXPENSE => 'Account Expense',
