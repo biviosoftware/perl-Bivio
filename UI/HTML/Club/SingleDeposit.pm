@@ -92,7 +92,7 @@ sub new {
 		[
 		    _field('Date',
 			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmTransaction.dttm',
+				field => 'RealmTransaction.date_time',
 			    })),
 		],
 		[
@@ -161,13 +161,10 @@ sub execute {
     # get the selected user and load them
     my($list) = $req->get('Bivio::Biz::Model::MemberSummaryList');
     $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
-#TODO: won't work if someone already advanced it!
+    # Make sure we are on the first entry
+    $list->reset_cursor;
     $list->next_row;
-    my($user_id) = $list->get('RealmUser.user_id');
-    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-    $realm_user->load(user_id => $user_id);
-#TODO: why User_2?
-    my($user) = $realm_user->get_model('User_2');
+    my($owner) = $list->get_model('RealmOwner');
 
     my($task_id) = $req->get('task_id');
     my($heading, $account_list);
@@ -187,7 +184,7 @@ sub execute {
     }
     $account_list->load();
 
-    $req->put(page_heading => $heading.$user->get('display_name'),
+    $req->put(page_heading => $heading.$owner->get('display_name'),
 	    page_subtopic => undef,
 	    page_content => $fields->{form},
 	    account_list => $account_list,
@@ -195,6 +192,7 @@ sub execute {
     my($form) = $req->get('form_model');
 
     # error rendering
+#TODO: Replace with ErrorPage
     if ($form->in_error) {
 	my($errors) = $form->get_errors;
 
