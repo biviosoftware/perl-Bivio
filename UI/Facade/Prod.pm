@@ -125,7 +125,7 @@ my($_SELF) = __PACKAGE__->new({
 		    0xFFCC33);
 
 	    # Club Index
-	    $fc->group(club_index_change_plus => 0x00FF33);
+	    $fc->group(club_index_change_plus => 0x00CC33);
 	    $fc->group(club_index_change_zero => 0x000000);
 	    $fc->group(club_index_change_minus => 0xFF0033);
 	    return;
