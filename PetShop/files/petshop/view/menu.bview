@@ -1,0 +1,37 @@
+# $Id$
+#
+# Product menu items parent page.
+#
+# Parameters:
+view_put(menu_heading => '');
+view_declare('menu_content');
+
+view_parent('header');
+
+# construct a list of menu links for products
+my($menu_cells) = [map {
+    my($category) = Bivio::PetShop::Type::Category->$_();
+    (
+	Link(String($category->get_short_desc), vs_product_uri($category)),
+	Join([' | ']),
+    );
+} qw(FISH DOGS REPTILES CATS BIRDS)];
+# remove the extra 'Join([' |'
+pop(@$menu_cells);
+
+view_put(header_content => Join([
+    Grid({
+	string_font => 'page_heading',
+	expand => 1,
+	pad => 4,
+	values => [
+	    [
+		Join($menu_cells)->put(cell_align => 'center'),
+	    ],
+	    [
+		String(view_widget_value('menu_heading')),
+	    ],
+	],
+    }),
+    view_widget_value('menu_content'),
+]));

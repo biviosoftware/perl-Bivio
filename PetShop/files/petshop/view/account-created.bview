@@ -1,0 +1,9 @@
+# $Id$
+#
+# Account creation confirmation
+#
+
+view_parent('account-confirmation');
+view_put(header_title => 'Account Created');
+view_put(message => 'Your account was successfully created. '
+	.'Thank you for registering with us.');

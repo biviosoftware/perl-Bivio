@@ -1,0 +1,78 @@
+# $Id$
+#
+# Order review prior to commit
+#
+
+view_parent('menu');
+view_put(header_title => 'Confirm Shipping Data');
+
+# Returns a widget value which looks up the specified OrderForm
+# field in the OrderConfirmationForm's context.
+my($order_field) = sub {
+    my($field) = @_;
+    return ['Model.OrderConfirmationForm', '->unsafe_get_context_field',
+	$field];
+};
+
+# Returns a widget which render the specified address fields.
+my($address_widget) = sub {
+    my($name_prefix, $address) = @_;
+
+    return Join([
+	String(&$order_field('Order.'.$name_prefix.'_first_name')),
+	' ',
+	String(&$order_field('Order.'.$name_prefix.'_last_name')),
+	'<br>',
+	String(&$order_field('EntityAddress_'.$address.'.addr1')),
+	'<br>',
+	If(&$order_field('EntityAddress_'.$address.'.addr2'),
+	    Join([
+		String(&$order_field('EntityAddress_'.$address.'.addr2')),
+		'<br>',
+	    ]),
+	    Join([''])
+	),
+	String(&$order_field('EntityAddress_'.$address.'.city')),
+	', ',
+	String(&$order_field('EntityAddress_'.$address.'.state')),
+	vs_space(2),
+	String(&$order_field('EntityAddress_'.$address.'.zip')),
+	'<p>',
+    ]);
+};
+
+view_put(menu_content => Form({
+    form_class => 'OrderConfirmationForm',
+    value => Grid({
+	string_font => 'page_text',
+	pad => 5,
+	values => [
+	    [
+		String(Join([
+		    'Please confirm that the following data is correct '
+		    .'and press the <b>Continue</b> button to ship the '
+		    .'order',
+		])),
+	    ],
+	    [
+		String('Billing Address', 'page_heading'),
+	    ],
+	    [
+		&$address_widget('bill_to', 1),
+	    ],
+	    [
+		String('Shipping Address', 'page_heading'),
+	    ],
+	    [
+		&$address_widget('ship_to', 2),
+	    ],
+	    [
+		ImageFormButton({
+		    image => 'continue',
+		    field => 'ok_button',
+		    alt => 'Continue',
+		}),
+	    ],
+	],
+    }),
+}));

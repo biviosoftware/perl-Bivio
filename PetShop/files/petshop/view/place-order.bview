@@ -1,0 +1,74 @@
+# $Id$
+#
+# Order entry
+#
+
+use Bivio::UI::HTML::WidgetFactory;
+my($_WF) = 'Bivio::UI::HTML::WidgetFactory';
+
+view_parent('menu');
+view_put(header_title => 'Enter Your Information');
+
+view_put(menu_content => Form({
+    form_class => 'OrderForm',
+    value => Grid({
+	string_font => 'page_text',
+	pad => 2,
+	values => [
+	    [
+		String('Credit Card Information:', 'page_heading')
+			->put(cell_colspan => 2),
+	    ],
+	    [
+		vs_form_field('OrderForm.Order.card_type', {
+		    show_unknown => 0,
+		    wf_want_select => 1,
+		    enum_sort => 'as_int',
+		}),
+	    ],
+	    [
+		vs_form_field('OrderForm.Order.credit_card'),
+	    ],
+	    [
+		String('Expiration Date: ', 'form_field_label'),
+		Join([
+		    String('Month: ', 'form_field_label'),
+		    $_WF->create('OrderForm.card_expire_month', {
+			enum_sort => 'get_short_desc',
+		    }),
+		    String(' Year: ', 'form_field_label'),
+		    $_WF->create('OrderForm.card_expire_year', {
+			enum_sort => 'get_short_desc',
+		    }),
+		]),
+	    ],
+	    [
+		String('Billing Address:', 'page_heading')
+		        ->put(cell_colspan => 2),
+	    ],
+	    [
+		String(Join([
+		    'Please confirm that the following Billing Address '
+		    .'is correct and press the <b>Continue</b> button',
+		]))->put(cell_colspan => 2),
+	    ],
+	    [
+		vs_form_field('OrderForm.Order.bill_to_first_name'),
+	    ],
+	    [
+		vs_form_field('OrderForm.Order.bill_to_last_name'),
+	    ],
+	    vs_address_fields('OrderForm', '_1'),
+	    [
+		vs_form_field('OrderForm.ship_to_billing_address'),
+	    ],
+	    [
+		ImageFormButton({
+		    image => 'continue',
+		    field => 'ok_button',
+		    alt => 'Continue',
+		}),
+	    ],
+	],
+    }),
+}));

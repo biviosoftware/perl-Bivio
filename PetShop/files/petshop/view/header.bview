@@ -1,0 +1,55 @@
+# $Id$
+#
+# Page menu_heading parent for all Pet Shop views
+#
+# Parameters:
+view_declare('header_content');
+view_put(header_title => 'bOP Pet Shop Demo');
+
+view_class_map('HTMLWidget');
+view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
+
+view_main(Page({
+    head => Title({values => [view_widget_value('header_title')]}),
+    string_font => 'page_text',
+    body => Join([
+	Grid({
+	    bgcolor => 'header_background',
+	    expand => 1,
+	    values => [
+		[
+		    Link(Image('banner2', 'none'), 'MAIN'),
+		    Search({}),
+		    Join([
+			Link(String('Cart'), 'CART'),
+			' | ',
+			# display varies on logged in user state
+			If(['auth_user'],
+			    Join([
+				Link(String('Sign-out'), 'LOGOUT'),
+				' | ',
+				Link(String('MyAccount'), 'USER_ACCOUNT_EDIT'),
+			    ]),
+			    Link(String('Sign-in'), 'LOGIN'),
+			),
+			' | ',
+			Link(String('?', 'page_heading'), 'HELP'),
+			vs_space(),
+			'<br>',
+			vs_space(),
+			'<br>',
+			Link(Image('bivio_power')->put(align => 'se'),
+				'http://www.bivio.net'),
+		    ])->put(
+			cell_align => 'E',
+			string_font => 'menu_link',
+			cell_nowrap => 1,
+		    ),
+		],
+	    ],
+	}),
+
+	# The child's content
+	view_widget_value('header_content'),
+    ]),
+}));

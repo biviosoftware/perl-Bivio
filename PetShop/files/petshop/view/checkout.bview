@@ -1,0 +1,55 @@
+# $Id$
+#
+# Shopping cart checkout review
+#
+
+view_parent('menu');
+view_put(header_title => 'Check Out');
+view_put(menu_heading => 'Shopping Cart:');
+
+view_put(menu_content => Grid({
+    values => [
+	[
+	    vs_space(),
+	],
+	[
+	    Table('CartItemList', [
+		'Item.item_id',
+		['item_name', {
+		    wf_list_link => {
+			query => 'THIS_CHILD_LIST',
+			task => 'ITEM_DETAIL',
+		    },
+		}],
+		'in_stock',
+		'CartItem.unit_price',
+		'CartItem.quantity',
+		'total_cost',
+	    ])->put(
+		    cellpadding => 2,
+		    cellspacing => 2,
+		    footer_row_widgets => [
+			String('Total:', 'table_heading'),
+			vs_space()->put(column_span => 4),
+			TableSummaryCell({
+			    field => 'total_cost',
+			    string_font => 'table_heading',
+			}),
+		    ],
+	    ),
+	],
+	[
+	    vs_space(),
+	],
+	[
+	    Link({
+#TODO: need a general way to link to this
+		href => '/my-site/place-order',
+		value => Image({
+		    src => 'continue',
+		    alt => 'Continue',
+		}),
+	    }),
+	],
+    ],
+}));

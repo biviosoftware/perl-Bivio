@@ -1,0 +1,49 @@
+# $Id$
+#
+# Login page
+#
+
+view_parent('menu');
+view_put(header_title => 'Sign In');
+
+view_put(menu_content => Join([
+    '<br><center>',
+    String('Please sign into the bOP Pet Shop Demo', 'page_heading'),
+    '</center>',
+    '<br><br><br><br>',
+
+    Form({
+	form_class => 'LoginForm',
+	value => Grid({
+	    align => 'center',
+	    pad => 2,
+	    values => [
+		[
+		    vs_form_field('LoginForm.RealmOwner.name'),
+		],
+		[
+		    vs_form_field('LoginForm.RealmOwner.password'),
+		],
+		[
+		    vs_space(),
+		    ImageFormButton({
+			cell_colspan => 2,
+			image => 'submit',
+			field => 'ok_button',
+			alt => 'Submit',
+		    }),
+		],
+		[
+		    vs_space(),
+		],
+		[
+		    vs_space(),
+		    Link({
+			href => 'USER_ACCOUNT_CREATE',
+			value => String('New User', 'page_text'),
+		    }),
+		],
+	    ],
+	}),
+    }),
+]));

@@ -1,0 +1,62 @@
+# $Id$
+#
+# Account editing
+#
+
+view_parent('menu');
+view_put(header_title => 'Account');
+
+# returns true if the account is being edited
+my($edit_mode_condition) = sub {
+    my($source) = @_;
+    return $source->get_request->get('task_id')
+            == Bivio::Agent::TaskId->USER_ACCOUNT_EDIT;
+};
+
+view_put(menu_content => Form({
+    form_class => 'UserAccountForm',
+    value => Grid({
+	string_font => 'page_text',
+	pad => 2,
+	values => [
+	    [
+		String('Account Information:', 'page_heading')
+			->put(cell_colspan => 2),
+	    ],
+	    [
+		String('User ID: ', 'form_field_label')
+		        ->put(row_control => [$edit_mode_condition]),
+		String(['Model.UserAccountForm', 'RealmOwner.name']),
+	    ],
+	    [
+		vs_form_field('UserAccountForm.RealmOwner.name', {},
+			['!', $edit_mode_condition]),
+	    ],
+	    [
+		vs_form_field('UserAccountForm.RealmOwner.password', {},
+			['!', $edit_mode_condition]),
+	    ],
+	    [
+		vs_form_field('UserAccountForm.Email.email'),
+	    ],
+	    [
+		String('Address:', 'page_heading')
+		        ->put(cell_colspan => 2),
+	    ],
+	    [
+		vs_form_field('UserAccountForm.User.first_name'),
+	    ],
+	    [
+		vs_form_field('UserAccountForm.User.last_name'),
+	    ],
+	    vs_address_fields('UserAccountForm', ''),
+	    [
+		ImageFormButton({
+		    image => 'submit',
+		    field => 'ok_button',
+		    alt => 'Submit',
+		}),
+	    ],
+	],
+    }),
+}));

@@ -1,0 +1,64 @@
+# $Id$
+#
+# Main page with image map of products.
+#
+view_parent('header');
+
+# The default page title.  Child views can override this.
+view_put(header_title => 'Welcome to the bOP Pet Shop Demo');
+
+# Construct the left menu cells from the list of products.
+my(@left_menu_cells) = map {
+    my($category) = Bivio::PetShop::Type::Category->$_();
+    (
+	[
+	    Link(
+		String($category->get_short_desc, 'heading_link'),
+		vs_product_uri($category)),
+	],
+	[String($category->get_long_desc, 'main_description_text')],
+	[Join(['<br>', vs_space()])],
+    );
+} qw(FISH DOGS REPTILES CATS BIRDS);
+
+# Construct the image map from a list of products and coordinates.
+my(@image_map) = map {
+    my($product, $coords) = split(/:/, $_);
+    ('<area href="', vs_product_uri($product),
+	    qq!" alt="$product" coords="$coords">\n!);
+} (
+    'Dogs:116,6,255,210',
+    'Dogs:255,22,306,123',
+    'Fish:2,124,104,200',
+    'Dogs:38,204,141,281',
+    'Reptiles:141,237,243,314',
+    'Cats:243,204,345,279',
+    'Birds:267,124,369,200',
+);
+
+# The header_content is defined in header.bview of which this view is a child.
+view_put(header_content => Grid({
+    expand => 1,
+    space => 2,
+    pad => 2,
+    values => [
+	[
+	    Grid({
+		space => 2,
+		expand => 1,
+		width => 200,
+		cell_bgcolor => 'category_background',
+		values => [
+		    @left_menu_cells,
+		],
+		cell_align => 'NW',
+	    }),
+	    vs_space(),
+	    Join(["<map name=\"mainmap\">\n",
+		@image_map,
+		"</map>\n",
+		Image('main', 'none')->put(attributes => ' usemap="#mainmap"'),
+	    ]),
+	],
+    ],
+}));

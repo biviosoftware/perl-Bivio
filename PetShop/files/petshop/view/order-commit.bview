@@ -1,0 +1,161 @@
+# $Id$
+#
+# Order detail
+#
+view_parent('menu');
+view_put(header_title => 'Order Shipped');
+
+# Returns a address widget which renders the specified EntityAddress.
+my($address_widget) = sub {
+    my($field) = @_;
+
+    return Join([
+	String([$field, 'addr1']),
+	'<br>',
+	If([$field, 'addr2'],
+		Join([String([$field, 'addr2']), '<br>',]),
+		Join([''])),
+	String([$field, 'city']),
+	', ',
+	String([$field, 'state']),
+	vs_space(2),
+	String([$field, 'zip']),
+    ])->put(string_font => 'page_text');
+};
+
+view_put(menu_content => Grid({
+    space => 12,
+    string_font => 'page_text',
+    values => [
+	[
+	    Join([
+		String('Date: ', 'page_heading'),
+		String(['Model.Order', 'order_date', 'HTMLFormat.Date']),
+	    ]),
+	],
+	[
+	    Join([
+		String('Account: ', 'page_heading'),
+		String(['auth_user', 'name']),
+		'<br>',
+	    ]),
+	],
+	[
+	    String('Order Information:', 'page_heading'),
+	],
+	[
+	    Join([
+		String('Order ID: ', 'form_field_label'),
+		String(['Model.Order', 'order_id']),
+		'<br>',
+	    ]),
+	],
+	[
+	    Table('CartItemList', [
+		'Item.item_id',
+		['item_name', {
+		    wf_list_link => {
+			query => 'THIS_CHILD_LIST',
+			task => 'ITEM_DETAIL',
+		    },
+		}],
+		'CartItem.unit_price',
+		'CartItem.quantity',
+		'total_cost',
+	    ], {
+		cellpadding => 2,
+		cellspacing => 2,
+		footer_row_widgets => [
+		    String('Total:', 'table_heading'),
+		    vs_space()->put(column_span => 3),
+		    TableSummaryCell({
+			field => 'total_cost',
+			string_font => 'table_heading',
+		    }),
+		],
+	    }),
+	],
+	[
+	    String('Shipping Information:', 'page_heading'),
+	],
+	[
+	    Join([
+		String('Shipping Address:'),
+		'<br>',
+		String(['Model.Order', 'ship_to_first_name']),
+		vs_space(),
+		String(['Model.Order', 'ship_to_last_name']),
+		'<br>',
+		# Attribute is put on the request by view_pre_execute
+		&$address_widget('order-commit.ship_to_address'),
+	    ]),
+	],
+	[
+	    Join([
+		String('Carrier: '),
+		String(['Model.Order', 'courier']),
+	    ]),
+	],
+	[
+	    String('Billing Information:', 'page_heading'),
+	],
+	[
+	    Join([
+		String('Bill To Address:'),
+		'<br>',
+		String(['Model.Order', 'bill_to_first_name']),
+		vs_space(),
+		String(['Model.Order', 'bill_to_last_name']),
+		'<br>',
+		# Attribute is put on the request by view_pre_execute
+		&$address_widget('order-commit.bill_to_address'),
+		'<p>',
+	    ]),
+	],
+	[
+	    String('Credit Card Information:'),
+	],
+	[
+	    Grid({
+		pad => 2,
+		values => [
+		    [
+			String('Type: '),
+			String([['Model.Order', 'card_type'],
+			    '->get_short_desc']),
+		    ],
+		    [
+			String('Number: '),
+			String(['Model.Order', 'credit_card']),
+		    ],
+		    [
+			String('Expiration Date: '),
+			CreditCardExpiration({
+			    value => ['Model.Order', 'expiration_date'],
+			}),
+		    ],
+		],
+	    }),
+	],
+	[
+	    Join([
+		String('Status: ', 'page_heading'),
+		String([['Model.OrderStatus', 'status'], '->get_short_desc']),
+	    ]),
+	],
+    ],
+}));
+
+view_pre_execute(sub {
+    my($req) = @_;
+    my($order_id) = $req->get('Model.Order')->get('order_id');
+    foreach my $a (qw(BILL_TO SHIP_TO)) {
+	# Construct a unique address (based on this View's name), since
+	# the Request.* address space by all classes.
+	$req->put('order-commit.'.lc($a).'_address' => Bivio::Biz::Model->new(
+	    $req, 'EntityAddress')->load({
+		entity_id => $order_id,
+		location => Bivio::PetShop::Type::EntityLocation->$a(),
+	    }));
+    }
+});

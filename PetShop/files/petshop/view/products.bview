@@ -1,0 +1,24 @@
+# $Id$
+#
+# Product list
+#
+
+view_parent('menu');
+view_put(header_title => 'Product Category');
+
+# use the category from the first item in the list
+view_put(menu_heading => String([
+    ['Model.ProductList', '->set_cursor_or_die', 0], 'Product.category_id']));
+
+view_put(menu_content => Table('ProductList', [
+    'Product.product_id',
+    ['Product.name', {
+	wf_list_link => {
+	    query => 'THIS_CHILD_LIST',
+	    task => 'ITEMS',
+	},
+    }],
+])->put(
+	cellpadding => 2,
+	cellspacing => 2,
+       ));

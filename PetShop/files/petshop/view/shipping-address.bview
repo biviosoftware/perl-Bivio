@@ -1,0 +1,35 @@
+# $Id$
+#
+# Order shipping information entry
+#
+
+view_parent('menu');
+view_put(header_title => 'Enter Shipping Information');
+
+view_put(menu_content => Form({
+    form_class => 'ShippingAddressForm',
+    value => Grid({
+	pad => 2,
+	values => [
+	    [
+		String('Please enter the name and address you would like '
+			.'your order shipped.', 'page_text')
+			->put(cell_colspan => 2),
+	    ],
+	    [
+		vs_form_field('ShippingAddressForm.Order.ship_to_first_name'),
+	    ],
+	    [
+		vs_form_field('ShippingAddressForm.Order.ship_to_last_name'),
+	    ],
+	    vs_address_fields('OrderForm', '_2'),
+	    [
+		ImageFormButton({
+		    image => 'continue',
+		    field => 'ok_button',
+		    alt => 'Continue',
+		}),
+	    ],
+	],
+    }),
+}));

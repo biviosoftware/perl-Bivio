@@ -1,0 +1,74 @@
+# $Id$
+#
+# Shopping cart
+#
+
+view_parent('menu');
+view_put(header_title => 'Cart');
+view_put(menu_heading => 'Shopping Cart:');
+
+view_put(menu_content => If(
+    ['Model.CartItemList', '->get_result_set_size'],
+    Form({
+	form_class => 'CartItemListForm',
+	value => Grid({
+	    values => [
+		[
+		    Table('CartItemListForm', [
+			['remove', {
+			    column_widget => ImageFormButton({
+				image => 'remove',
+				field => 'remove',
+				alt => 'Remove Item From Shopping Cart',
+			    }),
+			}],
+			'Item.item_id',
+			['item_name', {
+			    wf_list_link => {
+				query => 'THIS_CHILD_LIST',
+				task => 'ITEM_DETAIL',
+			    },
+			}],
+			'in_stock',
+			'CartItem.unit_price',
+			['CartItem.quantity', {
+			    size => 4,
+			}],
+			'total_cost',
+		    ])->put(
+			    cellpadding => 2,
+			    cellspacing => 2,
+			    footer_row_widgets => [
+				vs_space(),
+				String('Total:', 'table_heading'),
+				vs_space()->put(column_span => 4),
+				TableSummaryCell({
+				    field => 'total_cost',
+				    string_font => 'table_heading',
+				}),
+			    ],
+			   ),
+		    vs_space(),
+		    ImageFormButton({
+			image => 'update_cart',
+			field => 'update_cart',
+			alt => 'Update',
+		    }),
+		],
+		[
+		    vs_space(),
+		],
+		[
+		    ImageFormButton({
+			image => 'checkout',
+			field => 'ok_button',
+			alt => 'Proceed to Checkout',
+		    }),
+		],
+	    ],
+	}),
+    }),
+
+    # Else
+    String('Your shopping cart is empty.', 'page_text'),
+));

@@ -1,0 +1,60 @@
+# $Id$
+#
+# Item detail
+#
+
+view_parent('menu');
+view_put(header_title => 'Product Information');
+
+view_put(menu_content => Form({
+    form_class => 'ItemForm',
+    value => Grid({
+	string_font => 'page_text',
+	pad => 5,
+	values => [
+	    [
+		String(['Model.Item', '->format_name'],	'page_heading'),
+		AmountCell({
+		    field => ['Model.Item', 'list_price'],
+		}),
+		If(
+		    [['->get_request'], 'Model.Inventory', 'quantity'],
+		    Join([
+			AmountCell({
+			    field => ['Model.Inventory', 'quantity'],
+			    decimals => 0,
+			}),
+			String(' in stock'),
+		    ]),
+		    # Else
+		    String('Back Ordered', 'error'),
+		),
+		ImageFormButton({
+		    image => 'add_to_cart',
+		    field => 'ok_button',
+		    alt => 'Add Item to Your Shopping Cart',
+		}),
+	    ],
+	    [
+		Image(['Model.Product', 'image_name'],
+		    Join([
+			['Model.Item', '->format_name'],
+			': ',
+			['Model.Product', 'description']
+		    ]),
+		),
+		String(['Model.Product', 'description'])->put(
+		    cell_colspan => 2,
+		    cell_align => 'S',
+		),
+	    ],
+	],
+    }),
+}));
+
+view_pre_execute(sub {
+    my($req) = @_;
+    # load the item's product model
+    $req->get('Model.Item')->get_model('Product');
+    return;
+});

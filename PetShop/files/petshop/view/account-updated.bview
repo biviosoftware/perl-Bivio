@@ -1,0 +1,8 @@
+# $Id$
+#
+# Account update confirmation
+#
+
+view_parent('account-confirmation');
+view_put(header_title => 'Account Updated');
+view_put(message => 'Your account was successfully updated.');

@@ -1,0 +1,31 @@
+# $Id$
+#
+# Parent view of all confirmation pages
+#
+# Parameters:
+view_declare('message');
+
+view_parent('menu');
+view_put(menu_heading => 'Welcome to the bOP Pet Shop Demo');
+
+view_put(menu_content => Grid({
+    string_font => 'page_text',
+    values => [
+	[vs_space()],
+	[String(view_widget_value('message'))],
+	[String(<<'EOF')],
+
+Please select the shopping cart link to check out or one of the categories
+from the menu bar to continue shopping.
+
+EOF
+#TODO: doesn't work
+#	[Link(String('Shop Main Page'), 'MAIN')],
+	[
+	    Link({
+		value => String('Shop Main Page'),
+		href => 'MAIN',
+	    }),
+	],
+    ],
+}));

@@ -1,0 +1,18 @@
+# $Id$
+#
+# Missing cookies error page
+#
+
+view_parent('header');
+view_put(header_title => 'Missing Cookies');
+
+view_put(header_content => Join([
+    '<p>',
+    String('Browser Missing Cookies', 'page_heading'),
+    '<p>',
+    String(<<'EOF', 'page_text'),
+It seems that your browser does not support cookies.  The Pet Shop
+demo requires that cookies be enabled for you to sign-in, or add items
+to a cart.
+EOF
+]));

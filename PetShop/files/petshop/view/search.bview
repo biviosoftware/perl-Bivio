@@ -1,0 +1,39 @@
+# $Id$
+#
+# Product search results
+#
+view_parent('menu');
+view_put(header_title => 'Search');
+
+# ProductSearchList is loaded by task and available on the Request.
+# Table retrieves it dynamically from Request.Model.ProductSearchList
+view_put(menu_content => Table('ProductSearchList', [
+
+    # Table determines that product_id and name are in the order_by
+    # of ProductSearchList.  You can turn off sorting explicitly.
+    'Product.product_id',
+
+    ['Product.name', {
+	# Tell WidgetFactory to wrap Product.name in a Link to detail page
+	wf_list_link => {
+	    # The detail view is another list. Product.name is its parent_id.
+	    query => 'THIS_CHILD_LIST',
+	    task => 'ITEMS',
+	},
+    }],
+
+    # Description is an an image (image_name) and string (description)
+    ['Product.description', {
+	column_widget => Join([
+	    Image(['Product.image_name'], ['Product.description']),
+	    ' ',
+	    String(['Product.description']),
+	]),
+    }],
+], {
+    cellpadding => 2,
+    cellspacing => 2,
+    # string_font is inherited by Strings in this static widget hierarchy
+    string_font => 'page_text',
+    empty_list_widget => String('No products found.'),
+}));
