@@ -30,6 +30,35 @@ something to convert.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="FALSE"></a>
+
+=head2 FALSE : int
+
+Returns 0
+
+=cut
+
+sub FALSE {
+    return 0;
+}
+
+=for html <a name="TRUE"></a>
+
+=head2 TRUE : int
+
+Returns 1
+
+=cut
+
+sub TRUE {
+    return 1;
+}
+
 #=IMPORTS
 
 #=VARIABLES
