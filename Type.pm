@@ -326,13 +326,15 @@ sub to_literal {
 =head2 static to_query(any value) : string
 
 Returns a value that can be used as a query string.
-Similar to L<to_uri|"to_uri">, but also escapes "&" and "="
+Similar to L<to_uri|"to_uri">, but
+calls L<Bivio::HTML::escape_query|Bivio::HTML/"escape_query">
 
 =cut
 
 sub to_query {
     my($proto, $value) = @_;
-    return Bivio::HTML->escape_query($proto->to_uri($value));
+    return '' unless defined($value);
+    return Bivio::HTML->escape_query($proto->to_literal($value));
 }
 
 =for html <a name="to_sql_param"></a>
