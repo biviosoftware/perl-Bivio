@@ -44,12 +44,33 @@ use Bivio::Type::RealmName;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::Password;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Sets I<creation_date_time>, I<password> (to invalid),
+and I<display_name> if not set, then calls SUPER.
+
+=cut
+
+sub create {
+    my($self, $values) = @_;
+    $values->{display_name} = $values->{name}
+	    unless defined($values->{display_name});
+    $values->{creation_date_time} = Bivio::Type::DateTime->now()
+	    unless defined($values->{creation_date_time});
+    $values->{password} = 'xx'
+	    unless defined($values->{password});
+    return $self->SUPER::create($values);
+}
 
 =for html <a name="format_email"></a>
 
@@ -158,7 +179,7 @@ sub get_units {
     Carp::croak('missing date parameter') unless $date;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(member_entry_t.units) from realm_transaction_t, entry_t, member_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = member_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_transaction_t.dttm <= '
+	    'select sum(member_entry_t.units) from realm_transaction_t, entry_t, member_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = member_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_transaction_t.date_time <= '
 	    .Bivio::Type::Date->to_sql_value('?'),
 	    [$self->get('realm_id'),
 		    Bivio::Type::Date->to_sql_param($date)]);
@@ -210,7 +231,7 @@ sub get_tax_basis {
     Carp::croak('missing date parameter') unless $date;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(entry_t.amount) from realm_transaction_t, entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.tax_basis = 1 and realm_transaction_t.realm_id=? and entry_t.class=? and realm_transaction_t.dttm <= '
+	    'select sum(entry_t.amount) from realm_transaction_t, entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.tax_basis = 1 and realm_transaction_t.realm_id=? and entry_t.class=? and realm_transaction_t.date_time <= '
 	    .Bivio::Type::Date->to_sql_value('?'),
 	   [$self->get('realm_id'), $class->as_int(),
 		   Bivio::Type::Date->to_sql_param($date)]);
@@ -230,14 +251,18 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_owner_t',
 	columns => {
-            name => ['Bivio::Type::RealmName',
+            realm_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            name => ['Bivio::Type::RealmName',
+    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
             password => ['Bivio::Type::Password',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
             realm_type => ['Bivio::Auth::RealmType',
     		Bivio::SQL::Constraint::NOT_NULL()],
+	    display_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+	    creation_date_time => ['Bivio::Type::DateTime',
+		Bivio::SQL::Constraint::NOT_NULL()],
         },
 	auth_id => 'realm_id',
 	other => [
