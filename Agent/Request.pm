@@ -272,6 +272,7 @@ sub internal_new {
 	   );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
+    _trace($self) if $_TRACE;
     return $self;
 }
 
