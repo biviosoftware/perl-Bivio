@@ -246,41 +246,22 @@ EOF
 
 sub _upgrade {
     my($req) = @_;
-    _upgrade_convert_fees_to_commissions($req);
+    _upgrade_1065_fields($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_convert_fees_to_commissions(Bivio::Agent::Request req)
+# _upgrade_1065_fields(Bivio::Agent::Request req)
 #
-# Converts investment fees after 1/1/2002 into commissions.
+# Adds released_to_members fields to the tax_1065_t.
 #
-sub _upgrade_convert_fees_to_commissions {
+sub _upgrade_1065_fields {
     my($req) = @_;
-    use Bivio::Data::EW::ClubImporter;
-    use Bivio::Biz::Accounting::AllocationCache;
-    use Bivio::Biz::Accounting::InstrumentAudit;
-    print("converting investment fees into commissions\n");
-    my($date) = Bivio::Type::Date->from_literal('1/1/2002');
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT realm_owner_t.name
-        FROM realm_owner_t, club_t
-        WHERE realm_owner_t.realm_id=club_t.club_id
-        ORDER BY realm_owner_t.name', []);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-        my($name) = $row->[0];
-        $req->set_realm($name);
-
-        if (Bivio::Data::EW::ClubImporter
-            ->convert_fees_into_commissions($req)) {
-
-            print("\t", $name, "\n");
-            Bivio::Biz::Accounting::InstrumentAudit->new($req)->audit($date);
-            Bivio::Biz::Accounting::AllocationCache->new($req)
-                    ->invalidate($date);
-        }
-    }
+    _add_column('tax_1065_t', 'released_to_members', 'NUMBER(1)', '0');
+    _do_sql(<<'EOF');
+ALTER TABLE tax_1065_t modify released_to_members not null
+/
+EOF
     return;
 }
 
