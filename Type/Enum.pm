@@ -113,6 +113,19 @@ sub from_name {
     return $info->[5];
 }
 
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::Type::Enum
+
+Returns I<proto>, i.e. class method invoked on.
+
+=cut
+
+sub get_instance {
+    my($proto) = @_;
+    return $proto;
+}
+
 =for html <a name="unsafe_from_any"></a>
 
 =head2 static unsafe_from_any(any thing) : Bivio::Type::Enum
@@ -133,6 +146,21 @@ sub unsafe_from_any {
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req)
+
+Put I<self> on the request as its class.
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+    Carp::croak('not a reference') unless ref($self);
+    $req->put(ref($self) => $self);
+    return;
+}
 
 =for html <a name="get_count"></a>
 
@@ -342,6 +370,7 @@ sub compile {
 	# Index 5: enum instance
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
+            sub execute_$name {shift; return ${pkg}::${name}()->execute(\@_)};
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
@@ -483,6 +512,21 @@ sub get_widget_value {
     $method =~ s/^\-\>//;
     my($value) = $self->$method();
     return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
+}
+
+=for html <a name="is_equal"></a>
+
+=head2 static is_equal(Bivio::Type::Enum left, Bivio::Type::Enum right) : boolean
+
+Are the two values equal?  Uses "==" comparison.  undefs are not
+equal, paralleling what happens is SQL.
+
+=cut
+
+sub is_equal {
+    my(undef, $left, $right) = @_;
+    return 0 unless defined($left) && defined($right);
+    return $left == $right ? 1 : 0;
 }
 
 =for html <a name="to_literal"></a>
