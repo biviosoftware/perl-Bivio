@@ -31,7 +31,7 @@ C<Bivio::Biz::Model::TransactionSummaryDateForm> date fields for txn report
 =cut
 
 #=IMPORTS
-use Bivio::TypeError;
+use Bivio::Biz::Model::CompleteJournalDateForm;
 use Bivio::Type::Date;
 
 #=VARIABLES
@@ -52,10 +52,15 @@ Sets default dates, using one month span.
 sub execute_empty {
     my($self) = @_;
 
-    my($end_date) = $self->get_request->get('report_date');
+    my($start_date, $end_date) = Bivio::Biz::Model::CompleteJournalDateForm
+	->get_dates_from_query($self->get_request);
+
+    unless ($start_date && $end_date) {
+	$end_date = $self->get_request->get('report_date');
+	$start_date = Bivio::Type::Date->get_previous_month($end_date);
+    }
     $self->internal_put_field(end_date => $end_date);
-    $self->internal_put_field(start_date =>
-	    Bivio::Type::Date->get_previous_month($end_date));
+    $self->internal_put_field(start_date => $start_date);
 
     return;
 }
@@ -71,6 +76,10 @@ Sets the start and end date values.
 sub execute_ok {
     my($self) = @_;
     $self->internal_stay_on_page;
+
+    # save dates in query so CSV gets same args
+    Bivio::Biz::Model::CompleteJournalDateForm->save_dates_in_query(
+	$self->get_request, $self->get(qw(start_date end_date)));
     return;
 }
 
@@ -124,13 +133,13 @@ sub validate {
 
 	if (Bivio::Type::Date->compare($start_date, $end_date) > 0) {
 	    $self->internal_put_error('start_date',
-		    Bivio::TypeError::START_DATE_GREATER_THAN_REPORT_DATE());
+		'START_DATE_GREATER_THAN_REPORT_DATE');
 	}
 
 	my($prev_year) = Bivio::Type::Date->get_previous_year($end_date);
 	if (Bivio::Type::Date->compare($start_date, $prev_year) < 0) {
 	    $self->internal_put_error('start_date',
-		    Bivio::TypeError::DATE_RANGE_GREATER_THAN_ONE_YEAR());
+		'DATE_RANGE_GREATER_THAN_ONE_YEAR');
 	}
     }
     return;
