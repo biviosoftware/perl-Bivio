@@ -113,6 +113,12 @@ sub _open {
 	my($fh) = \*Bivio::Biz::Action::LocalFilePlain::IN;
 	if (CORE::open($fh, '< '.$doc)) {
 	    _trace($doc, ': opened') if $_TRACE;
+
+	    # If the file type is unknown (octet-stream), but perl thinks
+	    # it is text, we return it as text.
+	    $$mime_type = 'text/plain'
+		if $$mime_type eq 'application/octet-stream'
+		&& -T $fh;
 	    return $fh;
 	}
 	_trace('open(', $doc, "): $!") if $_TRACE;
