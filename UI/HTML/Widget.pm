@@ -165,7 +165,11 @@ sub action_grid {
 
 =head2 static button(string name, Bivio::Agent::TaskId task, any description) : array
 
+=head2 static button(string name, Bivio::Agent::TaskId task, any description, boolean no_label) : array
+
 =head2 static button(array_ref control, Bivio::Agent::TaskId task, any description) : array
+
+=head2 static button(array_ref control, Bivio::Agent::TaskId task, any description, boolean no_label) : array
 
 If no I<name>, creates a
 L<Bivio::UI::HTML::Widget::StandardSubmit|Bivio::UI::HTML::Widget::StandardSubmit>.
@@ -185,10 +189,12 @@ button.  If I<control> is not supplied in this case, the control will
 be I<can_user_execute_task>.  If I<control> returns true, the
 description and button will be displayed.
 
+Don't put a label on the description if I<no_label> is true.
+
 =cut
 
 sub button {
-    my($proto, $name, $task, $description) = @_;
+    my($proto, $name, $task, $description, $no_label) = @_;
 
     _use(qw(TaskButton Submit StandardSubmit));
     if ($task) {
@@ -213,7 +219,9 @@ sub button {
 
 	# Put description in front of button
 	unshift(@$res,
-		$proto->description($name || $task->get_name, $description));
+		$proto->description(
+			$no_label ? undef : ($name || $task->get_name),
+			$description));
 
 	# Have control, create a director
 	return $proto->director($control,
@@ -323,14 +331,17 @@ Returns a descriptive paragraph which begins with I<label> and
 is followed by I<body>.  If I<body> is an array_ref, it will
 be unwrapped (@$body).
 
+If I<label> is C<undef>, no label will be put on the paragraph.
+
 =cut
 
 sub description {
     my($proto, $label, $body) = @_;
     return ('&nbsp;<br>',
-	    $proto->string(Bivio::UI::Label->get_simple($label).'.',
-		    'description_label'),
-	    ' ',
+	    defined($label)
+	    ? ($proto->string(Bivio::UI::Label->get_simple($label).'.',
+		    'description_label'), ' ')
+	    : (),
 	    ref($body) eq 'ARRAY' ? @$body : $body,
 	    '<br>');
 }
