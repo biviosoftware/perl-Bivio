@@ -21,12 +21,19 @@ L<Bivio::UI::HTML::Widget>
 
 =cut
 
+use Bivio::IO::Trace;
 use Bivio::UI::HTML::Widget;
 @Bivio::UI::HTML::Club::ImageAttachment::ISA = ('Bivio::UI::HTML::Widget');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Club::ImageAttachment>
+C<Bivio::UI::HTML::Club::ImageAttachment> handles displaying an image stored
+as a MIME attachment in the file server. The MIME attachment was stored with
+the MIME header information, an X-BivioNumParts custom field which defines how
+many other MIME parts there are to this part, and the actual MIME data (if any).
+In this case, we know the MIME data is an image (either image/jpeg or image/gif)
+and need to satisfy a request for the image data (an IMG SRC= HTML tag is
+being handled by the server).
 
 =cut
 
@@ -34,6 +41,8 @@ C<Bivio::UI::HTML::Club::ImageAttachment>
 use Bivio::IO::Config;
 
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
@@ -56,13 +65,7 @@ my($_FILE_CLIENT);
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-#    $fields ->{content} = Bivio::UI::HTML::Widget::Indirect->new({
-# 	      value => 0,
-#	      cell_rowspan => 1,
-#	      cell_compact => 1,
-#	      cell_align => 'N',
-# 	    });
-#    $fields->{content}->initialize;
+    _trace('constructed new ImageAttachment object to handle image request') if $_TRACE;
     return $self;
 }
 
@@ -74,7 +77,8 @@ sub new {
 
 =head2 execute() :
 
-Placeholder for checking into cvs
+This execute method returns to the $request->reply object the stream of raw image
+data needed to display the image.
 
 
 =cut
@@ -83,6 +87,7 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($body);
+    _trace('executing ImageAttachment.execute method. ') if $_TRACE;
     if (defined($req->get('query')) && defined($req->get('query')->{img})) {
 	my($club_name) = $req->get('auth_realm')->get('owner_name');
 	my($attachment_id) = $req->get('query')->{img};
@@ -90,14 +95,18 @@ sub execute {
 	die("couldn't get mime  body for $attachment_id. Error: $body")
 	    unless $_FILE_CLIENT->get($filename, \$body);
 	my($i) = index($body, "X-BivioNumParts: ");
+	_trace('index of X-BivioNumParts is: ', $i) if $_TRACE;
 	my($subtype) = _get_image_subtype(\$body);
 	if(!$subtype){
-	    die("Could not determine image subtype in ImageAttachment.execute()");
+	    die("Could not determine image subtype in ImageAttachment.execute(). Only handling JPEG and GIF now.");
 	}
+	_trace('subtype of this image is: ', $subtype) if $_TRACE;
 	my($stream) = substr($body, $i);
 	$i = index($stream, "\n");
-	$stream = substr($stream, $i);
-	$req->get('reply')->set_output_type("image/$subtype");
+	$stream = substr($stream, $i+1);
+	_trace('writing the image data to the stream') if $_TRACE;
+	_trace('output type: ', 'image/', $subtype) if $_TRACE;
+	$req->get('reply')->set_output_type("image/".$subtype);
 	$req->get('reply')->print($stream);
 	$req->get('reply')->flush();
     }
