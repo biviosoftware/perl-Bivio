@@ -511,8 +511,7 @@ _compile([
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_EXPO => ['Miami Investment Expo'],
-    ANNOUNCE_EQUAL_EXPENSES => ['Equally Allocated Expenses'],
+    ANNOUNCE_NEW_PREFERENCES => ['New Preferences'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
