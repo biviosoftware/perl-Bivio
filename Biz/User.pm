@@ -41,6 +41,8 @@ UserPreferences.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Club;
+use Bivio::Biz::CreateUserAction;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlSupport;
@@ -58,7 +60,7 @@ my($_PROPERTY_INFO) = {
     name => ['User ID',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
     password => ['Password',
-	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
+	    Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     };
 
 my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_', {
@@ -108,8 +110,25 @@ sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    return $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
-	    $new_values);
+    if ($new_values->{'name'} =~ /^\w\w\w\w(\w)*$/) {
+
+	# make sure a club doesn't have the same name
+	my($club) = Bivio::Biz::Club->new();
+
+	if ($club->find({'name' => $new_values->{'name'}})) {
+	    $self->get_status()->add_error(
+		    Bivio::Biz::Error->new('already exists'));
+	}
+	else {
+	    $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
+		    $new_values);
+	}
+    }
+    else {
+	$self->get_status()->add_error(
+		Bivio::Biz::Error->new("invalid id"));
+    }
+    return $self->get_status()->is_OK();
 }
 
 =for html <a name="delete"></a>
@@ -156,6 +175,24 @@ sub find {
     return 0;
 }
 
+=for html <a name="get_action"></a>
+
+=head2 get_action(string name) : Action
+
+Returns the named action or undef if no action exists for
+that name.
+
+=cut
+
+sub get_action {
+    my($self, $name) = @_;
+
+    if ($name eq 'add') {
+	return Bivio::Biz::CreateUserAction->new();
+    }
+    return undef;
+}
+
 =for html <a name="get_demographics"></a>
 
 =head2 get_demographics() : UserDemographics
@@ -196,7 +233,15 @@ has demographics.
 =cut
 
 sub get_full_name {
-    die("not implemented");
+    my($self) = @_;
+
+    if ($self->get('id')) {
+	#TODO: create this from demograhics data
+	return 'Full Name'
+    }
+    else {
+	return 'Add User';
+    }
 }
 
 =for html <a name="get_heading"></a>
@@ -270,6 +315,8 @@ $Id$
 1;
 
 
+=pod
+
 #use Bivio::Biz::ListModel;
 use Bivio::Biz::SqlConnection;
 use Bivio::Biz::UserList;
@@ -289,22 +336,41 @@ Bivio::IO::Config->initialize({
         },
     });
 
-#=pod
 
 my($user) = Bivio::Biz::User->new();
-$user->find({id => 1});
+my($fields) = $user->get_field_names();
+print(ref($fields)."\n");
+foreach (@$fields) {
+    print($_."\n");
+}
+print(Dumper($user->get_field_names()));
+
+
+#$user->find({id => 1});
 #$user->find({name => 'paul'});
-my($demo) = $user->get_demographics();
-$user->update({'password', "QWERTY"});
-$user->find({id => 3});
-$user->delete();
-$user->create({id => 3, name => 'ted', password => 'RAZOR'});
-print(Dumper($user->get_status()->get_errors()));
-$user->create({id => 3, name => 'ted2', password => 'RAZOR'});
-print(Dumper($user->get_status()->get_errors()));
+#my($demo) = $user->get_demographics();
+#print(Dumper($demo));
+
+#$user->update({'password', "QWERTY"});
+#$user->find({id => 3});
+#$user->delete();
+#$user->create({id => 3, name => 'ted', password => 'RAZOR'});
+#print(Dumper($user->get_status()->get_errors()));
+#$user->create({id => 3, name => 'ted2', password => 'RAZOR'});
+#print(Dumper($user->get_status()->get_errors()));
 #print(Dumper($user));
 
-#=cut
+my($user) = Bivio::Biz::User->new();
+$user->find({id => 5});
+$user->delete if $user->get_status()->is_OK();
+$user->create({id => 5, name => 'buddy', password => 'hotdog'});
+my($demo) = $user->get_demographics();
+$demo->update({first_name => 'Orestes', last_name => 'the Cat', gender => 'M',
+    age => 4});
+$demo->update({gender => undef});
+$demo->delete();
+
+=cut
 
 =pod
 
@@ -312,6 +378,7 @@ my($list) = Bivio::Biz::UserList->new();
 $list->find({});
 print(Dumper($list));
 
+Bivio::Biz::SqlConnection->get_connection()->commit();
+
 =cut
 
-Bivio::Biz::SqlConnection->get_connection()->commit();
