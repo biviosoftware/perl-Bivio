@@ -41,11 +41,16 @@ of digits for the site and the number of digits for the type has yet to be
 made.  Since we have only one site and many types, the lowest digits identify
 the type.  See F<sql/societas/sequences.sql> for a more complete discussion.
 
+Late breaking news.... The fifth digit is now a tag to allow us to
+load static info, e.g. FileVolume index.
+
 =cut
+
 
 #=IMPORTS
 
 #=VARIABLES
+my($_FILE_VOLUME_TAG) = '1';
 
 =head1 METHODS
 
@@ -91,7 +96,7 @@ sub can_be_zero {
 
 =head2 static from_literal(string value) : string
 
-Make sure is at least 6 digits long with no leading zeroes.
+Make sure is at least one digit long, non-zero, and unsigned.
 
 =cut
 
@@ -100,10 +105,11 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
-    # Must be at least six digits with no leading zeroes
     $value =~ s/^0+//g;
-    return $value if $value =~ /^\d{6,}$/;
-    return (undef, Bivio::TypeError::NUMBER());
+    # Make sure is a digit.  Can't do more, because we allow
+    # "special" primary ids (see Type::FileVolume).
+    return $value if $value =~ /^\d+$/;
+    return (undef, Bivio::TypeError::PRIMARY_ID());
 }
 
 =for html <a name="get_decimals"></a>
@@ -134,7 +140,8 @@ sub get_max {
 
 =head2 static get_min : string
 
-Returns '100001'.
+Returns '100001'.  This is for automatically generated (sequence) primary
+ids.   Special primary ids must always be below this value.
 
 =cut
 
@@ -164,6 +171,22 @@ Returns 18.
 
 sub get_width {
     return 18;
+}
+
+=for html <a name="set_file_volume_in_realm_id"></a>
+
+=head2 set_file_volume_in_realm_id(string realm_id, int volume) : string
+
+This guarantees a unique, static file volume id.
+
+=cut
+
+sub set_file_volume_in_realm_id {
+    my($self, $realm_id, $volume) = @_;
+    die($realm_id, ': invalid realm_id')
+	    if $realm_id < get_min();
+    substr($realm_id, -5, 3) = sprintf('%d%02d', $_FILE_VOLUME_TAG, $volume);
+    return $realm_id;
 }
 
 =for html <a name="to_html"></a>
