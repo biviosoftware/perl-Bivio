@@ -1,0 +1,7 @@
+{
+    'Bivio::IO::Config::t::T1' => {
+	# This one should be overriden by 1.bconf
+	p1_1 => 2,
+	p2_2 => 2,
+    },
+};

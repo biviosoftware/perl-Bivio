@@ -1,0 +1,15 @@
+use strict;
+use Bivio::IO::Config;
+Bivio::IO::Config->merge_list(
+    {
+	'Bivio::IO::Config::t::T1' => {
+	    p1 => 'p1',
+	    p3 => 'p3',
+	    goodbye => {
+		p3 => 'gp3',
+		p4 => 'gp4',
+	    },
+	},
+    },
+    Bivio::IO::Config->bconf_dir_hashes,
+);
