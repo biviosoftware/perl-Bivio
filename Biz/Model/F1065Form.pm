@@ -734,7 +734,7 @@ sub _get_expenses {
 #
 sub _get_member_count {
     my($self) = @_;
-    return $self->get_request->get('Bivio::Biz::Model::MemberAllocationList')
+    return $self->get_request->get('Bivio::Biz::Model::MemberTaxList')
 	    ->get_result_set_size;
 }
 
