@@ -27,7 +27,7 @@ use Bivio::Type::Enum;
 
 C<Bivio::DieCode> defines generic error codes to be passed to
 L<Bivio::Die>.  Subsystems should define their own error codes
-there appropriate.
+where appropriate.
 
 Codes are defined as follows: name: attributes.  The attributes
 may be passed to L<Bivio::Die::die|Bivio::Die/"die"> the I<attrs>
@@ -120,6 +120,10 @@ error reading or writing to the client.
 =item UPDATE_COLLISION: entity, class
 
 two or more people are trying to update your records simultaneously
+
+=item MAIL_LOOP: entity, class, error
+
+avoid a mail loop by not forwarding a message a second time
 
 =item DB_ERROR: entity, class, error
 
@@ -234,6 +238,11 @@ __PACKAGE__->compile(
 	19,
 	undef,
 	'unexpected error while communicating with database',
+    ],
+    MAIL_LOOP => [
+	20,
+	undef,
+	'avoid a mail loop',
     ],
 );
 
