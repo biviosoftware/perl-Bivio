@@ -257,11 +257,12 @@ sub handle_config {
 
     $_STACK_TRACE_DIE = $cfg->{stack_trace_die};
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
-#TODO: This isn't correct.  Want to set back to "old" configuration
-    $SIG{__DIE__} = $cfg->{intercept_die} || $cfg->{stack_trace_die}
-	    ? \&_die_handler : $SIG{__DIE__};
-    $SIG{__WARN__} = $cfg->{intercept_warn} || $cfg->{stack_trace_warn}
-	    ? \&_warn_handler : $SIG{__WARN__};
+
+    $SIG{__DIE__} = \&_die_handler
+	    if $cfg->{intercept_die} || $cfg->{stack_trace_die};
+    $SIG{__WARN__} = \&_warn_handler
+	    if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
+
     if ($cfg->{want_stderr}) {
 	$_LOGGER = \&_log_stderr;
     }
@@ -334,14 +335,30 @@ sub warn {
     CORE::die("\n");
 }
 
+=for html <a name="warn_deprecated"></a>
+
+=head2 static warn_deprecated(string message)
+
+Puts out a message warning of a deprecated usage.  Must be called
+from the routine whose usage is deprecated.
+
+=cut
+
+sub warn_deprecated {
+    my($proto, $message) = @_;
+    $proto->warn('DEPRECATED: ', (caller(1))[3], ': ', $message,
+	    ' called from ', (caller(2))[0], ':', (caller(2))[2]);
+    return;
+}
+
 #=PRIVATE METHODS
 
 sub _call_format {
     my($msg) = @_;
     my($i) = 0;
     $i++ while caller($i) eq __PACKAGE__;
-    return &_format(undef,
-	    ((caller($i))[0,1,2], (caller($i+1))[$[+3] || undef),
+    return _format(undef,
+	    ((caller($i))[0,1,2], (caller($i+1))[3] || undef),
 	    $msg);
 }
 
@@ -371,7 +388,7 @@ sub _format {
     elsif (defined($sub) && $sub ne '(eval)') {
 	$text .= $sub;
     }
-    # Ususally called in an initialization body
+    # Usually called in an initialization body
     else {
 	$text .= defined($pkg) ? $pkg : defined($file) ? $file : '';
     }
