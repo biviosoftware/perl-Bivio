@@ -356,14 +356,9 @@ sub are_you_sure {
     # Force?
     return if $self->unsafe_get('force');
 
-    # Ask
     $prompt ||= 'Are you sure?';
-    print STDERR $prompt, " (yes or no) ";
-
-    # Get answer stripping spaces to be nice.
-    my $answer = <STDIN>;
-    $answer =~ s/\s+//g;
-    $self->usage_error("Operation aborted") unless $answer eq 'yes';
+    $self->usage_error("Operation aborted")
+	unless $self->readline_stdin($prompt." (yes or no) ") eq 'yes';
 
     # Yes answer
     return;
@@ -652,14 +647,14 @@ sub piped_exec {
 
 =head2 print(any arg, ...) : int
 
-Writes output to STDOUT.  Returns result of print.
+Writes output to STDERR.  Returns result of print.
 This method may be overriden.
 
 =cut
 
 sub print {
     shift;
-    return print STDOUT @_;
+    return print(STDERR @_);
 }
 
 =for html <a name="put"></a>
@@ -721,6 +716,24 @@ sub read_input {
     my($self) = @_;
     my($input) = $self->get('input');
     return ref($input) ? $input : Bivio::IO::File->read($input);
+}
+
+=for html <a name="readline_stdin"></a>
+
+=head2 readline_stdin(string prompt) : string
+
+Prints I<prompt>, and returns answer stripped of leading and trailing
+whitespace.
+
+=cut
+
+sub readline_stdin {
+    my($self, $prompt) = @_;
+    $self->print($prompt);
+    my $answer = <STDIN>;
+    chomp($answer);
+    $answer =~ s/^\s+|\s+$//g;
+    return $answer;
 }
 
 =for html <a name="ref_to_string"></a>
