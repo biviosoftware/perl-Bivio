@@ -94,7 +94,7 @@ Bivio::IO::Trace->register;
 
 # A map of field names to default value for "decimals" attribute.
 my(%_DEFAULT_DECIMALS) = (
-    quantity => 3,
+    quantity => 4,
     share_price => 4,
     units => 6,
 );
