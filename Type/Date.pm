@@ -220,6 +220,20 @@ sub now {
     return shift->from_unix(time);
 }
 
+=for html <a name="to_file_name"></a>
+
+=head2 static to_file_name(string value) : string
+
+Returns I<value> as a string that can be used as a part of filename.
+
+=cut
+
+sub to_file_name {
+    my($proto, $value) = @_;
+    my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($value);
+    return sprintf('%04d%02d%02d', $year, $mon, $day);
+}
+
 =for html <a name="to_literal"></a>
 
 =head2 to_literal(any value) : string

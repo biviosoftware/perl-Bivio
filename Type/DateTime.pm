@@ -455,10 +455,8 @@ Returns L<now|"now"> as a timestamp which can be embedded in a file name.
 =cut
 
 sub now_as_file_name {
-    my($time) = time;
-    my($sec, $min, $hour, $day, $mon, $year) = gmtime($time);
-    return sprintf('%04d%02d%02d%02d%02d%02d', $year + 1900, $mon + 1, $day,
-	   $hour, $min, $sec);
+    my($proto) = @_;
+    return $proto->to_file_name($proto->now);
 }
 
 =for html <a name="now_as_string"></a>
@@ -645,6 +643,21 @@ Returns 13.
 
 sub get_width {
     return 13;
+}
+
+=for html <a name="to_file_name"></a>
+
+=head2 static to_file_name(string value) : string
+
+Returns I<value> as a string that can be used as a part of filename.
+
+=cut
+
+sub to_file_name {
+    my($proto, $value) = @_;
+    my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($value);
+    return sprintf('%04d%02d%02d%02d%02d%02d', $year, $mon, $day,
+	    $hour, $min, $sec);
 }
 
 =for html <a name="to_parts"></a>
