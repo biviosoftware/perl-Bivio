@@ -40,6 +40,7 @@ use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::Honorific;
+use Bivio::Type::EntryType;
 
 #=VARIABLES
 $| = 1;
