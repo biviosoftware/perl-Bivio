@@ -3,6 +3,7 @@
 package Bivio::Biz::PropertyModel;
 use strict;
 $Bivio::Biz::PropertyModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::PropertyModel::VERSION;
 
 =head1 NAME
 
@@ -87,6 +88,33 @@ sub create {
     my($req) = $self->unsafe_get_request;
     $req->put(ref($self), $self) if $req;
     return $self;
+}
+
+=for html <a name="create_or_update"></a>
+
+=head2 create_or_update(hash_ref new_values) : Bivio::Biz::PropertyModel
+
+Tries to load the model based on its primary key values.
+If the load is successful, the model will be updated with
+the new values. Otherwise, a new model is created.
+
+Returns I<self>.
+
+=cut
+
+sub create_or_update {
+    my($self, $new_values) = @_;
+    my(%pk_values);
+    my($have_keys) = 1;
+    foreach my $pk (@{$self->get_info('primary_key_names')}) {
+        unless (exists($new_values->{$pk})) {
+            $have_keys = 0;
+            last;
+        }
+        $pk_values{$pk} = $new_values->{$pk};
+    }
+    return $have_keys && $self->unsafe_load(%pk_values)
+        ? $self->update($new_values) : $self->create($new_values);
 }
 
 =for html <a name="delete"></a>
