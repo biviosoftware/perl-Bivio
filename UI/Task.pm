@@ -83,11 +83,40 @@ I<path_info> appended (see L<format_uri|"format_uri">).
 
 =back
 
+=head1 REQUIRED TASKS
+
+=over 4
+
+=item HELP
+
+The task which L<format_help_uri|"format_help_uri"> uses to format uris.
+This task must have a I<help> attribute which is where help is routed
+to.
+
+=item SITE_ROOT
+
+The I<uri> of this task must be C</*>, i.e. the root of all URIs.
+This task will be executed.
+
+=back
+
 =cut
 
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="HELP_INDEX"></a>
+
+=head2 HELP_INDEX : string
+
+Index for help tree.
+
+=cut
+
+sub HELP_INDEX {
+    return '/index.html';
+}
 
 =for html <a name="UNDEF_CONFIG"></a>
 
@@ -132,10 +161,7 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_GENERAL) = Bivio::Auth::Realm::General->new;
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
-my($_DOCUMENT_ROOT) = undef;
-Bivio::IO::Config->register({
-    document_root => Bivio::IO::Config->REQUIRED,
-});
+my($_SITE_ROOT) = Bivio::Agent::TaskId->SITE_ROOT;
 my($_REALM_PLACEHOLDER) = '?';
 my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
@@ -202,7 +228,8 @@ sub format_help_uri {
 #TODO: Allow HELP per realm_type
 	    Bivio::Agent::TaskId->HELP,
 	    undef,
-	    $info && $info->{help} ? $info->{help} : undef,
+	    $info && $info->{help} ? $info->{help}
+	    : Bivio::UI::Text->get_value('help_index_path_info'),
 	    0,
 	    $req,
 	   );
@@ -313,44 +340,6 @@ sub format_uri {
     return $uri;
 }
 
-=for html <a name="get_document_root"></a>
-
-=head2 get_document_root(Bivio::Collection::Attributes req_or_facade) : string
-
-Returns the document root for this facade.
-
-=cut
-
-sub get_document_root {
-    my($proto, $req_or_facade) = @_;
-    my($self) = $proto->internal_get_self($req_or_facade);
-    return $self->{$_PACKAGE}->{document_root};
-}
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item document_root : string (required)
-
-If defined, URIs not found by the normal mechanism will be sought
-for in this directory.  The realm is specified by
-C<HTTP_DOCUMENT> task.
-
-=back
-
-=cut
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_DOCUMENT_ROOT = $cfg->{document_root};
-    die("$_DOCUMENT_ROOT: not a directory") unless -d $_DOCUMENT_ROOT;
-    $_DOCUMENT_ROOT =~ s!([^/])$!$1/!;
-    return;
-}
-
 =for html <a name="handle_register"></a>
 
 =head2 static handle_register()
@@ -363,6 +352,24 @@ sub handle_register {
     my($proto) = @_;
     Bivio::UI::Facade->register($proto, ['Text']);
     return;
+}
+
+=for html <a name="has_help"></a>
+
+=head2 has_help(Bivio::Agent::TaskId task_id, Bivio::Collection::Attributes req_or_facade) : boolean
+
+=head2 has_help(string task_id, Bivio::Collection::Attributes req_or_facade) : boolean
+
+Does the task have a help topic?
+
+=cut
+
+sub has_help {
+    my($proto, $task_id, $req_or_facade) = @_;
+    return defined($proto->internal_get_value(
+	    ref($task_id) ? $task_id->get_name : $task_id, $req_or_facade)
+	    ->{help}
+	   ) ? 1 : 0;
 }
 
 =for html <a name="has_uri"></a>
@@ -485,7 +492,7 @@ sub parse_uri {
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
 	$req->put_durable(initial_uri => '/');
-	return ($fields->{document_task}, $_GENERAL, '', '/');
+	return ($_SITE_ROOT, $_GENERAL, '', '/');
     }
 
     # Question mark is a special character
@@ -508,13 +515,13 @@ sub parse_uri {
     }
 
     # Is this a general realm with path_info?  URI has at least
-    # one component.
+    # one component at this stage, so $uri[0] is defined.
     if (defined($info = $fields->{from_uri}->{$uri[0]}->[$_GENERAL_INT])) {
 	# At this stage, we have to map to a general realm, because
 	# all first components of the general realm are not valid
 	# Bivio::Type::RealmName values.  Therefore, we fail with
-	# not found if it matches the first component, but there
-	# isn't a task for realm_info.
+	# not found if it matches the first component, but the task
+	# doesn't have path_info.
 	if ($info->{has_path_info}) {
 	    _trace($orig_uri, ' => ', $info->{task}) if $_TRACE;
 	    return ($info->{task}, $_GENERAL, '/'.join('/', @uri[1..$#uri]),
@@ -531,18 +538,9 @@ sub parse_uri {
 
     # If first uri doesn't match a RealmName, can't be one.
     if ($uri[0] !~ /^\w{3,}$/) {
-	# Not a realm, but is it a document and is it found?
-	if (defined($fields->{document_root})
-		&& -e ($fields->{document_root}.$uri)) {
-	    _trace($orig_uri, ' => document_task') if $_TRACE;
-	    return ($fields->{document_task}, $_GENERAL, '/'.$uri, $orig_uri);
-	}
-
-	# Not found
-	$req->throw_die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
-	    entity => $_DOCUMENT_ROOT.$uri,
-	    message => 'no such document'});
-	# DOES NOT RETURN
+	# Not a realm, so try SITE_ROOT
+	_trace($orig_uri, ' => site_root') if $_TRACE;
+	return ($_SITE_ROOT, $_GENERAL, '/'.$uri, $orig_uri);
     }
 
     # Try to find the uri with the realm replaced by placeholder
@@ -653,17 +651,11 @@ sub _get_error {
 
 # _init_basic(self)
 #
-# Initializes document_task
+# Ensures SITE_ROOT defined.
 #
 sub _init_basic {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    # Make sure HTTP_DOCUMENT is defined
-    $fields->{document_task}
-	    = $self->internal_get_value('http_document')->{task};
-    my($uri) = $self->get_facade->get('uri');
-    $fields->{document_root} = $_DOCUMENT_ROOT
-	    unless -d ($fields->{document_root} = $_DOCUMENT_ROOT.$uri.'/');
+    $self->internal_get_value('SITE_ROOT');
     return;
 }
 
@@ -714,9 +706,8 @@ sub _init_err {
     $value->{is_valid} = 0;
     $value->{has_path_info} = 0;
     $value->{realm_type} = $_GENERAL;
-    # This task must always be defined.  Can't use "document_task", because
-    # not defined until initialization_complete.
-    $value->{task} = Bivio::Agent::TaskId->HTTP_DOCUMENT;
+    # This task must always be defined.
+    $value->{task} = Bivio::Agent::TaskId->SITE_ROOT;
     return;
 }
 
@@ -727,7 +718,9 @@ sub _init_err {
 sub _init_from_uri {
     my($self, $groups) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my(%from_uri, %path_info_uri);
+    my(%from_uri);
+#TODO: Remove
+#    my(%path_info_uri);
     foreach my $group (@$groups) {
 	next unless $group->{is_valid} && $group->{aliases};
 	my($rti) = $group->{realm_type}->as_int;
@@ -745,20 +738,25 @@ sub _init_from_uri {
 		$from_uri{$uri} = [];
 	    }
 	    $from_uri{$uri}->[$rti] = $group;
-	    $path_info_uri{$uri}++ if $group->{has_path_info};
+#TODO: remove possibly
+#	    $path_info_uri{$uri}++ if $group->{has_path_info};
 	}
     }
 
-    # Make sure all URIs don't collide with path_info uris.
-    # document_task is special, because it is the only URI which begins
-    # with '/', so it doesn't match any other uris which can't begin
-    # with '/'.
-    foreach my $piu (keys(%path_info_uri)) {
-	foreach my $uri (keys(%from_uri)) {
-	    _init_err($uri, 'path_info uri collision with', $piu)
-		    if $uri =~ m!\Q$piu/!;
-	}
-    }
+#TODO: This test isn't really useful.  You may want a general foo/* URI
+#      and a specific "foo/bar" URI (task).  parse_uri will always route
+#      to the more specific URI. 
+#    # Make sure all URIs don't collide with path_info uris.
+#    # document_task is special, because it is the only URI which begins
+#    # with '/', so it doesn't match any other uris which can't begin
+#    # with '/'.
+#    foreach my $piu (keys(%path_info_uri)) {
+#	foreach my $uri (keys(%from_uri)) {
+#	    _init_err($uri, 'path_info uri collision with', $piu)
+#		    if $uri =~ m!\Q$piu/!;
+#	}
+#    }
+
     $fields->{from_uri} = \%from_uri;
     return;
 }
