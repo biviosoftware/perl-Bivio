@@ -215,6 +215,21 @@ sub set_realm_and_user {
     return $self;
 }
 
+=for html <a name="setup_all_facades"></a>
+
+=head2 setup_all_facades() : self
+
+Same as L<setup_facade|"setup_facade">, but initializes all facades.
+
+=cut
+
+sub setup_all_facades {
+    my($self) = shift->setup_http;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher')
+	->initialize(0);
+    return $self->setup_facade;
+}
+
 =for html <a name="setup_facade"></a>
 
 =head2 setup_facade() : self
