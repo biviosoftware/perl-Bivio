@@ -51,7 +51,7 @@ sub SERVER_ERROR { 4 }
 
 #=VARIABLES
 
-my($PACKAGE) = __PACKAGE__;
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
@@ -69,7 +69,7 @@ The initial state of the request is NOT_HANDLED.
 sub new {
     my($proto, $target_name, $controller_name, $user_name) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    $self->{$PACKAGE} = {
+    $self->{$_PACKAGE} = {
         target => $target_name,
         controller => $controller_name,
         user => $user_name,
@@ -94,7 +94,7 @@ Returns the number of seconds elapsed since the request was created.
 
 sub elapsed_time {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return Bivio::Util::time_delta_in_seconds($fields->{start_time});
 }
 
@@ -120,7 +120,7 @@ Returns the name of the controller.
 
 sub get_controller_name {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return $fields->{controller};
 }
 
@@ -134,7 +134,7 @@ Returns the reply format type.
 
 sub get_reply_type {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return $fields->{reply_type};
 }
 
@@ -149,7 +149,7 @@ values described above.
 
 sub get_state {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return $fields->{state};
 }
 
@@ -163,7 +163,7 @@ Returns the target of the request (ie, user or club name).
 
 sub get_target_name {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return $fields->{target};
 }
 
@@ -176,9 +176,9 @@ undef is returned.
 
 =cut
 
-sub get_user {
+sub get_user_name {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     return $fields->{user};
 }
 
@@ -229,7 +229,7 @@ Sets the reply format type.
 
 sub set_reply_type {
     my($self, $type) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     $fields->{reply_type} = $type;
 }
 
@@ -244,7 +244,7 @@ constant values describe above.
 
 sub set_state {
     my($self, $state) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     $fields->{state} = $state;
 }
 
