@@ -1878,7 +1878,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::DeleteMemberForm
         Bivio::UI::HTML::Club::DeleteMember
         next=CLUB_ADMIN_USER_LIST
-        help=deleting_members
     )],
 #TODO: These permissions are "wrong" in that you need, not write, but
 #      everybody has read and this means people could read the ssns
