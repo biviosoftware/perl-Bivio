@@ -314,6 +314,7 @@ _compile(
     FILE_IS_PUBLIC_ALT => ['File is publicly viewable'],
     FILE_SIZE => ['Size'],
     FILE_LOCATION => ['Location'],
+    MAKE_PUBLIC => ['Publish Contents'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
