@@ -1925,7 +1925,7 @@ my(@_CFG) = (
         CLUB_MAIL_POST
         197
         CLUB
-        MAIL_WRITE
+        MAIL_WRITE&MAIL_READ
         ?/mail/post
         Bivio::Biz::Model::MailPostForm
         Bivio::Biz::Model::MailToList->execute_load_all
