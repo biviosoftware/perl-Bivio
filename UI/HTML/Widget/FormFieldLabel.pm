@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::Widget::Director>
+L<Bivio::UI::Widget::If>
 
 =cut
 
-use Bivio::UI::Widget::Director;
-@Bivio::UI::HTML::Widget::FormFieldLabel::ISA = ('Bivio::UI::Widget::Director');
+use Bivio::UI::Widget::If;
+@Bivio::UI::HTML::Widget::FormFieldLabel::ISA = ('Bivio::UI::Widget::If');
 
 =head1 DESCRIPTION
 
@@ -80,7 +80,7 @@ Nothing here.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::Widget::Director::new(@_);
+    my($self) = &Bivio::UI::Widget::If::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }
@@ -93,7 +93,7 @@ sub new {
 
 =head2 initialize()
 
-Builds up the attributes for SUPER (Director).
+Builds up the attributes for SUPER (If).
 
 =cut
 
@@ -105,15 +105,14 @@ sub initialize {
     my($model) = $self->ancestral_get('form_model');
     $self->put(
 	control => [['->get_request'], $model, '->get_field_error', $field],
-	values => {},
-	default_value => $_VS->vs_join([
+        control_on_value => $_VS->vs_join([
 	    $_VS->vs_image('error_triangle', 'error here', {
 	       align => 'SW',
 	    }),
 	    '&nbsp',
 	    $_VS->vs_string($label, 'form_field_error_label'),
 	]),
-	undef_value =>  $_VS->vs_string($label, 'form_field_label'),
+	control_off_value =>  $_VS->vs_string($label, 'form_field_label'),
     );
     $self->SUPER::initialize;
     $fields->{initialized} = 1;
