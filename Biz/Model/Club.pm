@@ -34,12 +34,13 @@ and delete interface to the C<club_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
+use Bivio::Type::Location;
 use Bivio::Type::MailMode;
 use Bivio::Type::PrimaryId;
-use Bivio::IO::Trace;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -88,13 +89,15 @@ If an error occurs during processing, then undef is returned.
 
 sub get_outgoing_emails {
     my($self) = @_;
-    # a 4 table join
-    my($sql) = 'select user_email_t.email '
-	    .' from user_email_t, realm_user_t '
+#TODO: Need to fix this so looks at all roles and checks MAIL_RECEIVE
+#TODO: Need Location policy.  Probably need a field added to table.
+#      which says where people want email sent from bivio.
+    my($sql) = 'select email_t.email '
+	    .' from email_t, realm_user_t '
 	    .' where realm_user_t.realm_id=?'
 	    .' and realm_user_t.role >='
-	    . Bivio::Auth::Role::MEMBER->as_int
-	    .' and realm_user_t.user_id=user_email_t.user_id';
+	    .Bivio::Auth::Role::MEMBER->as_int
+	    .' and realm_user_t.user_id=email_t.realm_id';
     my($statement) = Bivio::SQL::Connection->execute($sql,
 	    [$self->get('club_id')], $self);
 
@@ -124,8 +127,6 @@ sub internal_initialize {
 	columns => {
             club_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            full_name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
             kbytes_in_use => ['Bivio::Type::Integer',
     		Bivio::SQL::Constraint::NOT_NULL()],
             max_storage_kbytes => ['Bivio::Type::Integer',
