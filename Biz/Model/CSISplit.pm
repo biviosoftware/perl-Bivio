@@ -6,7 +6,7 @@ $Bivio::Biz::Model::CSISplit::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 =head1 NAME
 
-Bivio::Biz::Model::CSISplit - provide split format
+Bivio::Biz::Model::CSISplit - keep stock splits
 
 =head1 SYNOPSIS
 
@@ -26,12 +26,11 @@ use Bivio::Biz::Model::CSIBase;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::CSISplit>
+C<Bivio::Biz::Model::CSISplit> keeps stock splits
 
 =cut
 
 #=IMPORTS
-use Bivio::Data::CSI::Amount;
 use Bivio::Data::CSI::Id;
 
 #=VARIABLES
@@ -65,15 +64,15 @@ sub internal_initialize {
 
 =for html <a name="processRecord"></a>
 
-=head2 processRecord()
+=head2 processRecord(string date, Bivio::Data::CSI::RecordType type, array_ref fields)
+
+=head2 processRecord(string date, array_ref type, array_ref fields)
+
+Sample records:
 
 DFXI,40202,20010116,3,2
 DCTG,40402,20010116,3,1
 PDCI,40596,20010116,105,100
-SCHL,4034,20010117,2,1
-ALBY,33330,20010117,10,7
-FTCH,33712,20010117,1,6
-MBWM,33750,20010117,105,100
 BIFP,40039,20010117,1,14
 IDPH,9222,20010118,3,1
 TALX,18191,20010122,3,2
@@ -88,7 +87,7 @@ sub processRecord {
         new_shares => Bivio::Type::Integer->from_literal($fields->[3]),
         old_shares => Bivio::Type::Integer->from_literal($fields->[4]),
     };
-    $self->create($values);
+    $self->create_or_update($values, $type);
     return;
 }
 
@@ -96,7 +95,7 @@ sub processRecord {
 
 # _initialize()
 #
-# Register for certain record types to process
+# Register for record types to process
 #
 sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,
