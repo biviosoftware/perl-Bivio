@@ -36,6 +36,7 @@ C<Bivio::SQL::Connection::Postgres>
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 
@@ -167,7 +168,8 @@ EOF
 		    if $_TRACE;
 	    if (7 == $attrs->{dbi_err}) {
 		# duplicate key
-		$die_code = Bivio::TypeError::EXISTS();
+		$attrs->{type_error} = Bivio::TypeError->EXISTS;
+		$die_code = Bivio::DieCode->DB_CONSTRAINT;
 	    }
 	}
 	else {

@@ -138,7 +138,7 @@ sub catch {
     }
 
     # Return scalar with $die
-    my($res) = _eval($code);
+    my $res = _eval($code);
     $$die = _catch_done($proto);
     return $$die ? undef : $res;
 }
@@ -257,7 +257,14 @@ $_ is localized in this call.  Do not assume it will be modified by I<code>.
 sub eval {
     my(undef, $code) = @_;
     local($SIG{__DIE__});
-    return _eval($code);
+    if (wantarray) {
+	my(@res) = _eval($code);
+	$_CURRENT_SELF = undef;
+	return @res;
+    }
+    my $res = _eval($code);
+    $_CURRENT_SELF = undef;
+    return $res;
 }
 
 =for html <a name="eval_or_die"></a>
@@ -280,7 +287,7 @@ sub eval_or_die {
 	return @res unless $die;
     }
     else {
-	my($res) = $proto->catch($code, \$die);
+	my $res = $proto->catch($code, \$die);
 	return $res unless $die;
     }
     $die->throw;
@@ -330,7 +337,7 @@ sub is_destroyed {
 
 =for html <a name="set_code"></a>
 
-=head2 set_code(Bivio::Type::Enum code, string new_attr, any new_attr_value, ...)
+=head2 set_code(Bivio::DieCode code, string new_attr, any new_attr_value, ...)
 
 Change the I<code> associated with I<self> and set new attributes.
 
@@ -346,7 +353,7 @@ sub set_code {
 
 =for html <a name="throw"></a>
 
-=head2 static throw(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static throw(Bivio::DieCode code, hash_ref attrs, string package, string file, int line)
 
 =head2 throw()
 
@@ -355,13 +362,13 @@ module.  If you'd like to implement a module specific die, you might:
 
     sub throw_die {
 	my($self, $code, $msg) = @_;
-	Bivio::Die->throw(My::Package::DieCode->from_any($code),
+	Bivio::Die->throw(Bivio::DieCode->unsafe_from_any($code),
 		{msg => $msg, object => $self}, caller);
     }
 
 C<caller> will be called in an array context and return the appropriate
 attributes about the caller in the right order.  Note that
-L<Bivio::Type::Enum::from_any|Bivio::Type::Enum/"from_any">
+L<Bivio::Type::Enum::unsafe_from_any|Bivio::Type::Enum/"unsafe_from_any">
 returns C<undef> if $code isn't found, so it is entirely safe.
 
 If I<code> is C<undef>, it will be set to C<Bivio::DieCode::UNKNOWN>.
@@ -397,7 +404,7 @@ sub throw {
 
 =for html <a name="throw_die"></a>
 
-=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static throw_die(Bivio::DieCode code, hash_ref attrs, string package, string file, int line)
 
 Calls L<throw|"throw">.  This allows clean implementations of
 C<throw_die> in other modules.  You can pass C<Bivio::Die> as a
@@ -414,7 +421,7 @@ sub throw_die {
 
 =for html <a name="throw_quietly"></a>
 
-=head2 static throw_quietly(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static throw_quietly(Bivio::DieCode code, hash_ref attrs, string package, string file, int line)
 
 =head2 throw_quietly()
 
@@ -478,20 +485,20 @@ sub _catch_done {
     return $self;
 }
 
-# _check_code(any code, hash_ref attrs) : Bivio::Type::Enum
+# _check_code(any code, hash_ref attrs) : Bivio::DieCode
 #
 # Validates code and sets attributes to error state if invalid.
 #
 sub _check_code {
     my($code, $attrs) = @_;
     if (defined($code)) {
-	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
+	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::DieCode')) {
 	    if (my $c = Bivio::DieCode->unsafe_from_any($code)) {
 		$code = $c;
 	    } else {
 		my($a) = {%$attrs};
 		%$attrs = (code => $code, attrs => $a, program_error => 1);
-		$code = Bivio::DieCode::INVALID_DIE_CODE();
+		$code = Bivio::DieCode->INVALID_DIE_CODE;
 	    }
 	}
     }
@@ -593,7 +600,7 @@ sub _handle_die {
     $_IN_HANDLE_DIE--;
 }
 
-# _new(proto, Bivio::Type::Enum code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
+# _new(proto, Bivio::DieCode code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
 #
 # Creates a new Bivio::Die from the specified parameters which all must
 # be "valid".  Sets $_CURRENT_SELF if $_CURRENT_SELF is undef.

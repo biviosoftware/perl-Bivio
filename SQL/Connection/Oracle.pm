@@ -285,7 +285,8 @@ EOF
 		    if $_TRACE;
 	    if (1 == $attrs->{dbi_err}) {
 		# unique constraint violated (ORA-00001)
-		$die_code = Bivio::TypeError::EXISTS();
+		$attrs->{type_error} = Bivio::TypeError->EXISTS;
+		$die_code = Bivio::DieCode->DB_CONSTRAINT;
 	    }
 	    elsif (2290 == $attrs->{dbi_err}) {
 		# check constraint violated (ORA-02290)
@@ -294,14 +295,14 @@ EOF
 		# the Task level and it will map to a different
 		# task.
 		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode::NO_RESOURCES();
+		    $die_code = Bivio::DieCode->NO_RESOURCES;
 		}
 	    }
 	    elsif (2292 == $attrs->{dbi_err}) {
 		# integrity constraint violated (ORA-02292)
 		# child record not found
 		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode::NO_RESOURCES();
+		    $die_code = Bivio::DieCode->NO_RESOURCES;
 		}
 	    }
 	}

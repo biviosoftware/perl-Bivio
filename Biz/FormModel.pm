@@ -1247,7 +1247,7 @@ sub validate_and_execute_ok {
 	my($die) = Bivio::Die->catch(sub {
 	        $res = $self->execute_ok($form_button);});
 	if ($die) {
-	    if ($die->get('code')->isa('Bivio::TypeError')) {
+	    if ($die->get('code')== Bivio::DieCode->DB_CONSTRAINT) {
 		# Type errors are "normal"
 		_apply_type_error($self, $die);
 	    }
@@ -1365,7 +1365,10 @@ sub validate_not_zero {
 #
 sub _apply_type_error {
     my($self, $die) = @_;
-    my($err, $attrs) = $die->get('code', 'attrs');
+    my($attrs) = $die->get('attrs');
+    my($err) = $attrs->{type_error};
+    Bivio::Die->die($err, ': die type_error not a Bivio::TypeError')
+	unless ref($err) && UNIVERSAL::isa($err, 'Bivio::TypeError');
     my($table, $columns) = @{$attrs}{'table','columns'};
     $die->throw_die() unless defined($table);
     my($sql_support) = $self->internal_get_sql_support();

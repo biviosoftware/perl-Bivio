@@ -318,7 +318,7 @@ sub _unit_compile {
 		    unless !defined($expected) || ref($expected)
 			&& (ref($expected) eq 'CODE'
 			    || ref($expected) eq 'ARRAY'
-			    || UNIVERSAL::isa($expected, 'Bivio::DieCode'));
+			    || UNIVERSAL::isa($expected, 'Bivio::Type::Enum'));
 		push(@result, {
 		    proto_name => $proto_name,
 		    proto => $proto,
@@ -388,7 +388,7 @@ sub _unit_eval_die {
     my($code) = $die->get('code');
     return 'unexpected '.$code->as_string
 	unless defined($case->{expected})
-	    && UNIVERSAL::isa($case->{expected}, 'Bivio::DieCode');
+	    && UNIVERSAL::isa($case->{expected}, 'Bivio::Type::Enum');
     return 'expected '.$case->{expected}->as_string
 	.' but got '.$code->as_string
 	unless $case->{expected} eq $code;

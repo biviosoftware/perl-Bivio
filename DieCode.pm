@@ -142,6 +142,10 @@ unexpected end of file
 
 missing or bad configuration
 
+=item DB_CONSTRAINT : type_error, table, columns
+
+unexpected database constraint violation
+
 =back
 
 =cut
@@ -289,6 +293,12 @@ __PACKAGE__->compile([
 	22,
 	undef,
 	'missing or incorrect configuration.  Please check your bconf file.',
+    ],
+    DB_CONSTRAINT => [
+	# type_error, table, columns
+	23,
+	undef,
+	'unexpected database constraint violation',
     ],
 ]);
 
