@@ -177,14 +177,12 @@ sub _parse_line {
 	elsif($word =~ /(http:\/\/.*)/){
 	    my $uri = $1;
 	    my $suri = $1;
-	    $suri =~ s/\?/\\?/g;
-	    $word =~ s/$suri/\<a HREF=$uri\>$uri\<\/a\>/;
+	    $word =~ s/\Q$suri/\<a HREF=$uri\>$uri\<\/a\>/;
 	}
 	elsif($word =~ /(www\..*[^\.])/){
 	    my $uri = $1;
 	    my $suri = $1;
-	    $suri =~ s/\?/\\?/g;
-	    $word =~ s/$suri/\<a HREF=http:\/\/$uri\>$uri\<\/a\>/;
+	    $word =~ s/\Q$suri/\<a HREF=http:\/\/$uri\>$uri\<\/a\>/;
 	}
 	push @$newline, $word;
 	$res = '';
