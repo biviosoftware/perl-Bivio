@@ -1,0 +1,2 @@
+Browser->login();
+Browser->submit('Select Site', {'Select Site' => 'Ask Candis'});
