@@ -119,6 +119,37 @@ sub internal_initialize {
 	    $self->SUPER::internal_initialize, $info);
 }
 
+=for html <a name="validate"></a>
+
+=head2 validate()
+
+Ensures the date fields are acceptable.
+
+=cut
+
+sub validate {
+    my($self) = @_;
+
+    my($start_date, $end_date) = $self->get(qw(start_date end_date));
+    if ($start_date && $end_date) {
+
+	if (Bivio::Type::Date->compare($start_date, $end_date) > 0) {
+	    $self->internal_put_error('start_date',
+		    Bivio::TypeError::START_DATE_GREATER_THAN_REPORT_DATE());
+	}
+	else {
+	    # check that dates are in same year
+	    my($fiscal_end) = Bivio::Biz::Accounting::Tax
+		    ->get_end_of_fiscal_year($start_date);
+	    if (Bivio::Type::Date->compare($end_date, $fiscal_end) > 0) {
+		$self->internal_put_error('end_date',
+			Bivio::TypeError::DATE_RANGE_OUTSIDE_OF_FISCAL_YEAR());
+	    }
+	}
+    }
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
