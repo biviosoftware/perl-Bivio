@@ -1,7 +1,7 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegator;
-#use strict;
+use strict;
 $Bivio::Delegator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::Delegator::VERSION;
 
@@ -37,6 +37,7 @@ use Bivio::IO::ClassLoader;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+use vars ('$AUTOLOAD');
 
 =head1 FACTORIES
 
@@ -46,8 +47,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new(...) : Bivio::Delegator
 
-Creates a new instance of the delegator and the delegate. Invokes
-L<post_create|"post_create"> with the arguments.
+Creates a new instance of the delegator and the delegate.
 
 =cut
 
