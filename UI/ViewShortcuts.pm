@@ -38,6 +38,7 @@ applications will subclass this class.
 #=IMPORTS
 use Bivio::UI::Text;
 use Bivio::UI::HTML;
+use Bivio::UI::ViewLanguage;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -45,6 +46,22 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="vs_call"></a>
+
+=head2 vs_call(string method, any arg, ...) : any
+
+Calls I<method> as it would be called from a I<bview> file.  Only works when
+called within views.
+
+=cut
+
+sub vs_call {
+    my(undef, $method, @args) = @_;
+    # Fake an AUTOLOAD
+    local($Bivio::UI::ViewLanguage::AUTOLOAD) = $method;
+    return Bivio::UI::ViewLanguage->AUTOLOAD(@args);
+}
 
 =for html <a name="vs_html"></a>
 
