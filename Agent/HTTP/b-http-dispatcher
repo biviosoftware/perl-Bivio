@@ -294,7 +294,7 @@ MinSpareServers 1
 MaxSpareServers 4
 StartServers 1
 MaxClients 4
-MaxRequestsPerChild 1000
+MaxRequestsPerChild 100000
 LimitRequestBody 4194304
 
 ServerRoot <$pwd>
