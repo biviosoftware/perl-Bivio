@@ -51,9 +51,7 @@ sub visit {
     my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
-    my($util) = ($board->get('HTTPUtil'));
-
-    $util->get_response($uri);
+    Bivio::Test::BulletinBoard->get_current->get('HTTPUtil')->get_response($uri);
     return;
 }
 
