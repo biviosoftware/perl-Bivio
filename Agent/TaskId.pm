@@ -1103,6 +1103,48 @@ my(@_CFG) = (
         %/admin/edit/profile/done
         Bivio::UI::HTML::User::EditProfileDone
     )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_OPENING_BALANCE
+        109
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/accounting/member/openbal
+        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Model::MemberOpeningBalanceForm
+        Bivio::UI::HTML::Club::MemberOpeningBalance
+        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_OPENING_BALANCE
+        110
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/investment/openbal
+        Bivio::Biz::Model::InstrumentOpeningBalanceForm
+        Bivio::UI::HTML::Club::InstrumentOpeningBalance
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_OPENING_BALANCE
+        111
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/account/openbal
+        Bivio::Biz::Model::AccountOpeningBalanceForm
+        Bivio::UI::HTML::Club::AccountOpeningBalance
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_TRANSFER
+        112
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/account/transfer
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::AccountTransferForm
+        Bivio::UI::HTML::Club::AccountTransfer
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
 );
 
 __PACKAGE__->compile(
