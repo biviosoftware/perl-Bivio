@@ -3092,7 +3092,7 @@ my(@_CFG) = (
         270
         CLUB
         DOCUMENT_READ
-        ?/adm/merge
+        ?/adm/merge-members
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::MemberList->execute_load_all
