@@ -370,6 +370,24 @@ EOF
     'subject' => 'test4',
     'date_time' => 951372715,
 },
+'test5.msg'
+=>
+{
+    'content_type' => 'multipart/mixed; boundary="------------F385799F1182BDC18EA4C6E4"',
+    'from_name' => 'Martin Lichtin',
+    'from_email' => 'lichtin@bivio.com',
+    'subject' => 'test5',
+    'date_time' => 951372715,
+},
+'test6.msg'
+=>
+{
+    'content_type' => 'multipart/mixed; boundary="------------F385799F1182BDC18EA4C6E4"',
+    'from_name' => 'Martin Lichtin',
+    'from_email' => 'lichtin@bivio.com',
+    'subject' => 'test6',
+    'date_time' => 951372715,
+},
 );
 
 my($test) = 2;
@@ -398,7 +416,6 @@ while (($msg, $fields) = each(%_MSGS)) {
     ($num_parts || &assert_eq('body', $bm->get_entity->body_as_string)) || next;
     my($num_of_parts);
     $entity->dump_skeleton;
-    # ($num_of_parts == 1) || die;
     print "ok $test\n";
 }
 continue {
@@ -430,8 +447,8 @@ EOF
 
 my($bm) = Bivio::Mail::Message->new(\$msg);
 $bm->add_recipients(User::pwent::getpwuid($>)->name);
-my($r) = $bm->get_recipients;
-$r->[0] eq User::pwent::getpwuid($>)->name || die;
+my(@r) = $bm->get_recipients;
+$r[0] eq User::pwent::getpwuid($>)->name || die;
 $bm->enqueue_send;
 $bm->send_queued_messages;
 print "ok $test\n";
