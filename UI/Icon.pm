@@ -32,6 +32,7 @@ You must supply width and height for images which aren't GIFs.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use GD ();
@@ -104,7 +105,8 @@ sub get_widget_value {
     my($res);
     unless (open($fh, $file)) {
 	# Don't be too noisy, because we retry misses.
-	warn("$file: unable to open: $!") unless $_CACHE{$name};
+	Bivio::IO::Alert->warn(
+		"$file: unable to open: $!") unless $_CACHE{$name};
 	$res = $_MISSING;
     }
     else {
@@ -115,7 +117,7 @@ sub get_widget_value {
 		($res->{width}, $res->{height}) = $gif->getBounds;
 	    }
 	    else {
-		warn("$file: unable to determine size");
+		Bivio::IO::Alert->warn("$file: unable to determine size");
 	    }
 	}
 	close($fh);
@@ -154,10 +156,10 @@ URI prefix for icons.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_URI = $cfg->{uri};
-    warn("$_URI: is not absolute") unless $_URI =~ m!^/!;
+    Bivio::IO::Alert->warn("$_URI: is not absolute") unless $_URI =~ m!^/!;
     $_URI =~ s!([^/])$!$1/!;
     $_DIR = $cfg->{directory};
-    warn("$_DIR: not a directory") unless -d $_DIR;
+    Bivio::IO::Alert->warn("$_DIR: not a directory") unless -d $_DIR;
     $_DIR =~ s!([^/])$!$1/!;
     $_MISSING->{uri} = $cfg->{missing_uri};
     $_CLEAR_DOT->{uri} = $cfg->{clear_dot_uri};
