@@ -117,16 +117,16 @@ sub execute {
     my($input) = $req->unsafe_get('form');
     my($self) = $proto->new($req);
 #TODO: Bind to "form" too?
-    my($list_model) = $req->unsafe_get('list_model');
+#    my($list_model) = $req->unsafe_get('list_model');
     my($list_properties);
-    # If there is a list_model associated with this form, then we have
-    # to make sure it loaded successfully and that there was a "this"
-    # on the query.
-    if ($list_model) {
-	$self->die(Bivio::DieCode::NOT_FOUND(),
-		list_model => $list_model) unless $list_model->next_row;
-	$list_properties = $list_model->internal_get();
-    }
+#    # If there is a list_model associated with this form, then we have
+#    # to make sure it loaded successfully and that there was a "this"
+#    # on the query.
+#    if ($list_model) {
+#	$self->die(Bivio::DieCode::NOT_FOUND(),
+#		list_model => $list_model) unless $list_model->next_row;
+#	$list_properties = $list_model->internal_get();
+#    }
     if ($input) {
 	_execute_input($self, $input, $list_properties);
 	# Errors occured processing input, rollback
