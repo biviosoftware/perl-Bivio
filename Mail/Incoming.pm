@@ -517,7 +517,8 @@ sub _parse_date {
 sub _parse_complex_date {
 #TODO: NEED TO IMPLEMENT!
     local($_) = @_;
-    die("unable to parse date: $_");
+    Bivio::IO::Alert->warn('unable to parse date: ', $_);
+    return time;
 }
 
 =head1 COPYRIGHT
