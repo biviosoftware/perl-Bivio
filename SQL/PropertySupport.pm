@@ -114,15 +114,15 @@ sub new {
 	    constraint => Bivio::SQL::Constraint->from_any($cfg->[1]),
 	    sql_name => $n,
 
-	    # Other attributes
-	    sql_pos_param => $cfg->[0]->to_sql_value('?'),
 	};
 	Bivio::SQL::Support->init_type($col, $cfg->[0]);
+	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
 	$attrs->{has_blob} = 1
-		if UNIVERSAL::isa($cfg->[0], 'Bivio::Type::BLOB');
+		if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
+	$columns->{$n}->{is_primary_key}
+		= $col->{constraint} eq Bivio::SQL::Constraint::PRIMARY_KEY();
 	push(@$primary_key_names, $n), push(@$primary_key, $col)
-		if $columns->{$n}->{is_primary_key}
-			= $cfg->[1] eq Bivio::SQL::Constraint::PRIMARY_KEY();
+		if $columns->{$n}->{is_primary_key};
     }
     Carp::croak("$table_name: too many BLOBs")
 		if $attrs->{has_blob} > 1;
