@@ -86,13 +86,23 @@ Loads the list given the specified search parameters.
 
 sub find {
     my($self, $fp) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    #TODO: remove hard-coded 100s
-
-    return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
+    #TODO: remove hard-coded 20s
+    if ($fp->{'club'}) {
+	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
+		'where club=?', $fp->{'club'});
+	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
+		20, 'where club=?', $fp->{'club'});
+    }
+    else {
+	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self, '');
+	$_SQL_SUPPORT->find($self, $self->internal_get_rows(), 20, '');
+    }
+    return $self->get_status()->is_OK();
 }
 
 =for html <a name="get_heading"></a>
@@ -108,6 +118,21 @@ sub get_heading {
     return "Messages List";
 }
 
+=for html <a name="get_index"></a>
+
+=head2 get_index() : int
+
+Returns the index of the first item into the result set.
+
+=cut
+
+sub get_index {
+    my($self, $fp) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{index};
+}
+
 =for html <a name="get_title"></a>
 
 =head2 abstract get_title() : string
@@ -117,8 +142,24 @@ Returns a suitable title of the model.
 =cut
 
 sub get_title {
+    my($self) = @_;
+
     #TODO: need better title
-    return "Message List";
+    return 'Message List / '.$self->get_result_set_size();
+}
+
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the total number of rows in the query.
+
+=cut
+
+sub get_result_set_size {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{size};
 }
 
 #=PRIVATE METHODS
