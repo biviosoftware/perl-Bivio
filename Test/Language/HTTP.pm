@@ -460,7 +460,7 @@ Verifies that the specified text appears on the page.
 sub verify_text {
     my($self, $text) = @_;
     Bivio::Die->die($text, ': text not found in response')
-	unless $self->get_content =~ /$text/;
+	unless $self->get_content =~ /$text/s;
     return;
 }
 
