@@ -34,6 +34,7 @@ Shows a table of all transaction entries and OK and Cancel to really do it.
 #=IMPORTS
 use Bivio::Biz::Model::EntryList;
 use Bivio::Biz::Model::RealmTransaction;
+use Bivio::Type::Integer;
 use Bivio::Type::TaxCategory;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::AmountCell;
@@ -170,7 +171,10 @@ sub execute {
     my($self, $req) = @_;
     my($entry) = $req->get('Bivio::Biz::Model::Entry');
     my($entry_list) = Bivio::Biz::Model::EntryList->new($req);
-    $entry_list->load({p => $entry->get('realm_transaction_id')});
+    $entry_list->load({
+	p => $entry->get('realm_transaction_id'),
+	count => Bivio::Type::Integer->get_max,
+    });
 
     my($tran) = Bivio::Biz::Model::RealmTransaction->new($req);
     $tran->load(realm_transaction_id => $entry->get('realm_transaction_id'));
