@@ -16,7 +16,7 @@ sub find {
     if (/^\w+.pm$/) {
 	my($file) = $File::Find::name;
 	$file =~ s!^\./!!;
-	$pm{$file} = '$(INST_LIB)/' . $file;
+	$pm{$file} = '$(INST_LIBDIR)/' . $file;
 	return;
     }
     -d $_ && !/^[.A-Z]/ && ($File::Find::prune = 1);
