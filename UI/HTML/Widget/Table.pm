@@ -485,6 +485,7 @@ sub initialize {
 	    $attrs = {field => $col};
 	}
 	my($cell) = $self->create_cell($list, $col, $attrs);
+
 	push(@$cells, $cell);
 
         # Can we sort on this column?
@@ -602,16 +603,19 @@ sub render {
     my($grouping_field) = $self->unsafe_get('row_grouping_field');
     $list->reset_cursor;
     while ($list->next_row) {
+	my($grouping_value) = defined($grouping_field)
+		? $list->get_list_model->get($grouping_field)
+		: undef;
 
 	$is_even_row = !$is_even_row
 		if defined($grouping_field) && defined($prev_value)
-			&& $prev_value != $list->get($grouping_field);
+			&& $prev_value != $grouping_value;
 
 	$self->render_row($state->{cells}, $list, $buffer,
 		$is_even_row ? $state->{even_row} : $state->{odd_row}, 1);
 
 	if (defined($grouping_field)) {
-	    $prev_value = $list->get($grouping_field);
+	    $prev_value = $grouping_value;
 	}
 	else {
 	    $is_even_row = !$is_even_row;
@@ -847,14 +851,12 @@ sub _initialize_render_state {
     my($columns) = $self->get('columns');
     for (my($i) = 0; $i < int(@$columns); $i++) {
         my($col) = $columns->[$i];
-        if ($col) {
-            if (defined($enabler)) {
-                next unless $enabler->enable_column($col, $self);
-            }
-            elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
-                next unless $source->get_widget_value(@$control);
-            }
+        if ($col && defined($enabler)) {
+	    next unless $enabler->enable_column($col, $self);
         }
+	if ($control = $all_cells->[$i]->unsafe_get('column_control')) {
+	    next unless $source->get_widget_value(@$control);
+	}
         push(@$headings, $all_headings->[$i]);
         push(@$cells, $all_cells->[$i]);
         push(@$summary_cells, $all_summary_cells->[$i]);
