@@ -170,9 +170,15 @@ sub render {
 
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
+
+	# It works better to have one extra space if the size == max.
+	my($s) = $fields->{size};
+	my($w) = $type->get_width();
+	$s++ if $s == $w;
+
 	$fields->{prefix} = '<input type='
 		.($type->is_password ? 'password' : 'text')
-		.' size='.$fields->{size}.' maxlength='.$type->get_width();
+		.' size='.$s.' maxlength='.$w;
 	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
 		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
