@@ -217,14 +217,16 @@ sub create {
 
 =for html <a name="delete"></a>
 
-=head2 delete(hash_ref values)
+=head2 delete(hash_ref values) : boolean
 
-=head2 delete(hash_ref values, ref die)
+=head2 delete(hash_ref values, ref die) : boolean
 
 Removes the row with identified by the specified parameterized where_clause
 and substitution values. If an error occurs during the delete, calls die.
 
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
+
+Returns true if something was deleted.
 
 =cut
 
@@ -242,9 +244,12 @@ sub delete {
         }
 	$columns->{$_}->{type}->to_sql_param($values->{$_});
     } @{$attrs->{primary_key_names}};
-    Bivio::SQL::Connection->execute($attrs->{delete}, \@params, $die,
-           $attrs->{has_blob})->finish();
-    return;
+    my($sth) = Bivio::SQL::Connection->execute($attrs->{delete},
+	    \@params, $die,
+	    $attrs->{has_blob});
+    my($rows) = $sth->rows;
+    $sth->finish();
+    return $rows ? 1 : 0;
 }
 
 =for html <a name="unsafe_load"></a>

@@ -196,9 +196,9 @@ sub create_initial {
 
 =for html <a name="delete"></a>
 
-=head2 delete()
+=head2 delete() : boolean
 
-=head2 delete(hash load_args)
+=head2 delete(hash load_args) : boolean
 
 Deletes the file.  If it is a directory, deletes all files below.
 
@@ -302,13 +302,14 @@ EOF
     # Delete the rows we just found.  Apparently you can't call
     # DELETE with a CONNECT BY.  Don't ask me why, I suppose she'll die. ;-)
 #TODO: Move this into SQL::Connection.  Should be able to iterate over a list
+    my($rows) = 0;
     while (@files) {
 	my($params) = '?,' x (int(@files) > $_MAX_SQL_PARAMS
 		? $_MAX_SQL_PARAMS : int(@files));
 	chop($params);
 	# We set volume here in case there is something really weird going on,
 	# i.e. parallel deletes.
-	Bivio::SQL::Connection->execute(<<"EOF",
+	my($sth) = Bivio::SQL::Connection->execute(<<"EOF",
 	    DELETE
 	    FROM file_t
 	    WHERE realm_id = ?
@@ -318,6 +319,7 @@ EOF
 		[$args->{realm_id},
 		    $args->{volume}->as_sql_param(),
 		    splice(@files, 0, $_MAX_SQL_PARAMS)]);
+	$rows += $sth->rows;
     }
 
     # Update the directory with the correct uid and modified_date_time.
@@ -325,7 +327,7 @@ EOF
 	    = $self->get_request->get('auth_user')->get('realm_id');
     $args->{modified_date_time} = Bivio::Type::DateTime->now();
     _update_directory($self, $args, -$kbytes);
-    return;
+    return $rows ? 1 : 0;
 }
 
 =for html <a name="fixup_root_directory_name"></a>

@@ -113,6 +113,8 @@ sub create {
 
 =head2 delete()
 
+=head2 static delete(hash load_args) : boolean
+
 Calls SUPER, but first deletes "this" invite cookie if set.
 
 =cut
@@ -120,8 +122,7 @@ Calls SUPER, but first deletes "this" invite cookie if set.
 sub delete {
     my($self) = shift;
     $self->delete_cookie();
-    $self->SUPER::delete(@_);
-    return;
+    return $self->SUPER::delete(@_);
 }
 
 =for html <a name="delete_cookie"></a>
