@@ -43,6 +43,7 @@ and string respectively).
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Apache::Constants;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Reply;
@@ -50,6 +51,10 @@ use Bivio::Biz::PropertyModel::User;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Util;
+
+#=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 FACTORIES
 
@@ -81,9 +86,11 @@ sub new {
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
-    my($query) = (defined $r->args) ? {$r->args} : undef;
+    my $query_string = $r->args;
+    my($query) = defined($query_string) ? {$r->args} : undef;
     my($form) = $r->method_number() eq Apache::Constants::M_POST()
 	    ? {$r->content()} : undef;
+    _trace($r->method, ': form= ', $form, ' query= ', $query) if $_TRACE;
 
     # AUTH: Make sure the auth_id is NEVER set by the user.
     #       We are making a presumption about how the models work.
@@ -97,7 +104,8 @@ sub new {
 	    auth_realm => $auth_realm,
 	    auth_user => $auth_user,
 	    form => $form,
-	    query => {$r->args},
+	    query => $query,
+	    query_string => $query_string,
 	    task_id => $task_id,
 	   );
     return $self;
@@ -109,10 +117,13 @@ sub new {
 
 =for html <a name="format_uri"></a>
 
+=head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
+
 =head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
+If I<query> is not passed, will use this request's query string.
 If I<auth_realm> is C<undef>, request's realm will be used.
 
 =cut
@@ -124,11 +135,13 @@ sub format_uri {
     $query = $self->get_widget_value(@$query) if ref($query) eq 'ARRAY';
     $auth_realm = $self->get_widget_value(@$auth_realm)
 	    if ref($auth_realm) eq 'ARRAY';
-    $task_id ||= $self->get('task_id');
+    $task_id = $self->get('task_id') unless $task_id;
     # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, int(@_) >= 4 ? $auth_realm : $self->get('auth_realm'));
-    return $uri unless defined $query && %$query;
+    $query = $self->get('query_string') unless int(@_) >= 3;
+    return $uri unless defined($query);
+    return $uri.'?'.$query unless ref($query);
 #TODO: Map query strings to brief names
     my(@s);
     while (my($k, $v) = each(%$query)) {
