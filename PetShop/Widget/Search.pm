@@ -71,8 +71,12 @@ sub render {
     my($field_prefix, $field_suffix) = Bivio::UI::Font->format_html(
 	    'input_field', $req);
 
+#TODO: This should use a SearchForm.  There's no need to inline, e.g.
+#      Form('SearchForm', Join(['<br>', Text('search'), ' ',
+#             FormButton('search')]), {method => 'GET'})
+#      SearchForm needs to set the html name to ListQuery->to_char.
     $$buffer .= '<br><form method=get action="'
-	    .$req->format_stateless_uri(Bivio::Agent::TaskId->PRODUCT_SEARCH)
+	    .$req->format_stateless_uri(Bivio::Agent::TaskId->ITEM_SEARCH)
 	    .'">'
 	    .$field_prefix
 	    .'<input type=text size=14 name='
