@@ -76,11 +76,11 @@ main(@ARGV);
 
 #=PRIVATE METHODS
 
-# _do(string sql) : statement
+# _do_sql(string sql) : statement
 #
 # Returns the last statement executed.
 #
-sub _do {
+sub _do_sql {
     my($sql) = @_;
     my($statement);
     my($s) = '';
@@ -109,7 +109,7 @@ sub _do {
 sub _drop_constraints {
     my($table, $column) = map {uc($_)} @_;
     # Find all constraints on the table
-    my($statement) = _do(<<"EOF");
+    my($statement) = _do_sql(<<"EOF");
 	    SELECT user_cons_columns.constraint_name
 	      FROM user_cons_columns, user_constraints
 	      WHERE user_cons_columns.column_name = '$column'
@@ -126,7 +126,7 @@ EOF
 
     # Drop the constraints
     foreach my $c (@constraints) {
-	_do("ALTER TABLE $table drop constraint $c
+	_do_sql("ALTER TABLE $table drop constraint $c
                 /");
     }
     return;
@@ -242,7 +242,7 @@ sub _upgrade {
     use Bivio::Type::FileVolume;
 
     # add the acquisition date field
-    _do('
+    _do_sql('
 ALTER TABLE realm_instrument_entry_t
    ADD acquisition_date DATE
 /
@@ -278,7 +278,7 @@ ALTER TABLE realm_instrument_entry_t
 #
 sub _upgrade_prefs {
     # Fix up missing constraints
-    do('
+    _do_sql('
 CREATE TABLE preferences_t (
   realm_id NUMBER(18),
   perl BLOB
