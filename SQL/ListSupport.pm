@@ -252,11 +252,12 @@ sub _execute_select {
     my($attrs) = $self->internal_get;
 
     # Insert parent_id and auth_id
-    my($auth_id, $parent_id, $qob) =  $query->get('auth_id', 'parent_id',
-	   'order_by');
+    my($parent_id, $qob) =  $query->get('parent_id', 'order_by');
     unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
 	    if $attrs->{parent_id};
-    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($auth_id));
+    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param(
+	    $query->get('auth_id')))
+	    if $attrs->{auth_id};
 
     # Formats order_by clause if there are order_by columns
     if (@{$attrs->{order_by}}) {
@@ -286,7 +287,7 @@ sub _init_column_classes {
 	    [qw(auth_id parent_id primary_key order_by other)]);
 
     if ($decl->{where}) {
-	$where .= ' and';
+	$where .= length($where) ? ' and ' : ' where ';
 	foreach my $e (@{$decl->{where}}) {
 	    if (defined($attrs->{column_aliases}->{$e})) {
 		my($col) = $attrs->{column_aliases}->{$e};
@@ -297,15 +298,15 @@ sub _init_column_classes {
 	    }
 	}
     }
+    # auth_id must be at most one column.  Turn into that column or undef.
+    Carp::croak('too many auth_id fields')
+		if int(@{$attrs->{auth_id}}) > 1;
+
     # Unwind one level--wrapped in array by _init_column_classes
     foreach my $c ('auth_id', 'parent_id') {
 	$attrs->{$c} = $attrs->{$c}->[0];
     }
     return undef unless %{$attrs->{models}};
-
-    # auth_id must exist
-    Carp::croak("no auth_id or too many auth_id fields")
-		unless $attrs->{auth_id};
 
     # primary_key must be at least one column if there are models.
     Carp::croak('no primary_key fields')
@@ -328,10 +329,6 @@ sub _init_column_classes {
 #      SQL::Constraint really is a set.
 	Carp::croak($c->{name}, ": order_by must not be nullable")
 		    if $cc == Bivio::SQL::Constraint::NONE();
-	# Used by order_by constraints (begin, end)
-	$c->{'<='}
-		= ' and '.$c->{sql_name}.'<='.$c->{type}->to_sql_value('?');
-	($c->{'>='} = $c->{'<='}) =~ s/\<\=/\>\=/;
 	$c->{order_by_index} = $i++;
     }
 
@@ -363,7 +360,8 @@ sub _init_column_lists {
     # and auth_id
     my(%ignore) = map {
 	($_->{name}, 1),
-    } (@{$attrs->{primary_key}}, $attrs->{auth_id},
+    } (@{$attrs->{primary_key}},
+	    $attrs->{auth_id} ? ($attrs->{auth_id}) : (),
 	    $attrs->{parent_id} ? ($attrs->{parent_id}) : (),
 	    @{$attrs->{local_columns}});
     $attrs->{select_columns} = [
@@ -391,11 +389,17 @@ sub _init_column_lists {
 			my($tn) = $_->{instance}->get_info('table_name');
 			$tn eq $_->{sql_name}
 				? $tn : $tn.' '.$_->{sql_name};
-		    } sort(values(%{$attrs->{models}})))
-	    .' where '
-	    .$attrs->{auth_id}->{sql_name}
-	    .'='.$_PRIMARY_ID_SQL_VALUE
-	    .$where;
+		    } sort(values(%{$attrs->{models}})));
+    if ($attrs->{auth_id}) {
+	$where =~ s/^ where / and /;
+	$attrs->{select} .= ' where '
+		.$attrs->{auth_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
+			.$where;
+    }
+    else {
+	$where =~ s/^ and / where /;
+	$attrs->{select} .= $where;
+    }
     return;
 }
 
@@ -408,8 +412,8 @@ sub _init_column_lists {
 sub _load_this {
     my($self, $query, $statement, $fob_start, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($auth_id, $count, $parent_id, $this)
-	    = $query->get(qw(auth_id count parent_id this));
+    my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
+    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
     _trace('looking for this ', $attrs->{primary_key_names}, ' = ', $this)
 	    if $_TRACE;
     my($types) = $attrs->{primary_key_types};
@@ -440,7 +444,7 @@ sub _load_this {
 	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
 	} @{$attrs->{select_columns}}),
 	# Add in auth_id to every row as constant for convenience
-	$attrs->{auth_id}->{name} => $auth_id,
+	$attrs->{auth_id} ? ($attrs->{auth_id}->{name} => $auth_id) : (),
 	$attrs->{parent_id} ? ($attrs->{parent_id}->{name} => $parent_id) : (),
     }];
 
@@ -469,8 +473,9 @@ sub _load_this {
 sub _load_list {
     my($self, $query, $statement, $fob_start, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($auth_id, $count, $page_number, $parent_id, $this)
-	    = $query->get(qw(auth_id count page_number parent_id this));
+    my($count, $page_number, $parent_id, $this)
+	    = $query->get(qw(count page_number parent_id this));
+    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
 
     # Set prev first
     $query->put(has_prev => 1, prev => $page_number - 1) if $page_number > 0;
@@ -481,7 +486,7 @@ sub _load_list {
     }
 
     # Avoid pointer chasing in loop
-    my($auth_id_name) = $attrs->{auth_id}->{name};
+    my($auth_id_name) =  $attrs->{auth_id} ? $attrs->{auth_id}->{name} : undef;
     my($parent_id_name) = $attrs->{parent_id} ? $attrs->{parent_id}->{name}
 	    : undef;
     my($select_columns) = $attrs->{select_columns};
@@ -498,7 +503,7 @@ sub _load_list {
 		($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
 	    } @$select_columns),
 	    # Add in auth_id and parent_id to every row for convenience
-	    $auth_id_name => $auth_id,
+	    ($auth_id_name ? ($auth_id_name => $auth_id) : ()),
 	    $parent_id_name ? ($parent_id_name => $parent_id) : (),
 	});
     }

@@ -149,8 +149,9 @@ B<I<query> will be subsumed by this module.  Do not use it again.>
 
 sub new {
     my($proto, $attrs, $support, $die) = @_;
-    Carp::croak('invalid query arg')
-		unless $attrs->{auth_id} && $attrs->{count};
+    Carp::croak('missing count') unless $attrs->{count};
+    Carp::croak('missing auth_id')
+		if $support->get('auth_id') && !$attrs->{auth_id};
     my($k);
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
