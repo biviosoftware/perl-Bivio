@@ -177,6 +177,19 @@ sub REGEX_CTIME {
     return '(?:\w+ )?(\w+)\s+(\d+) (\d+):(\d+):(\d+)(?: \w+)? (\d+)';
 }
 
+=for html <a name="REGEX_LITERAL"></a>
+
+=head2 REGEX_LITERAL : string
+
+Returns the "literal" regex (two integers separated by spaces).  Doesn't
+include begin and trailing anchors.
+
+=cut
+
+sub REGEX_LITERAL {
+    return '(\d+) (\d+)';
+}
+
 =for html <a name="REGEX_STRING"></a>
 
 =head2 REGEX_STRING : string
@@ -248,10 +261,11 @@ my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
 my($_DATE_PREFIX) = FIRST_DATE_IN_JULIAN_DAYS().' ';
 my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
-my(@_MONTH) = ('Jan','Feb','Mar','Apr','May','Jun',
-	'Jul','Aug','Sep','Oct','Nov','Dec');
-# Maps uc(months) to numbers (see _initialize() and _from_ctime())
-my(%_MONTH);
+my($_NUM_TO_MONTH) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
+my($_MONTH_TO_NUM) = {map {
+    (uc($_NUM_TO_MONTH->[$_]), $_ + 1);
+} 0..$#$_NUM_TO_MONTH};
+
 my(%_PART_NAMES) = (
     second => 0,
     minute => 1,
@@ -260,6 +274,7 @@ my(%_PART_NAMES) = (
     month => 4,
     year => 5,
 );
+my($_REGEX_LITERAL) = REGEX_LITERAL();
 my($_REGEX_CTIME) = REGEX_CTIME();
 my($_REGEX_ALERT) = REGEX_ALERT();
 my($_REGEX_STRING) = REGEX_STRING();
@@ -474,7 +489,7 @@ sub english_month3 {
     my(undef, $month) = @_;
     Bivio::Die->die('month out of range: ', $month)
 		unless 1 <= $month && $month <= 12;
-    return $_MONTH[$month - 1];
+    return $_NUM_TO_MONTH->[$month - 1];
 }
 
 =for html <a name="from_local_literal"></a>
@@ -490,7 +505,7 @@ sub from_local_literal {
     my($proto, $value) = @_;
     my($res, $err) = $proto->from_literal($value);
     return ($res, $err) unless $res;
-    return (_adjust_from_local($res), undef);
+    return (_adjust_from_local($res));
 }
 
 =for html <a name="from_parts"></a>
@@ -838,7 +853,7 @@ sub rfc822 {
     my($sec, $min, $hour, $mday, $mon, $year, $wday)
 	    = gmtime($unix_time);
     return sprintf('%s, %2d %s %04d %02d:%02d:%02d GMT',
-	    $_DOW[$wday], $mday, $_MONTH[$mon], $year + 1900,
+	    $_DOW[$wday], $mday, $_NUM_TO_MONTH->[$mon], $year + 1900,
 	    $hour, $min, $sec);
 }
 
@@ -916,13 +931,13 @@ sub from_literal {
     # Fix up blanks (multiples, leading, trailing)
     $value =~ s/^\s+|\s+$//;
     $value =~ s/\s+/ /g;
-    my($res, $err);
+    my(@res);
     foreach my $method (
 	\&_from_literal, \&_from_alert, \&_from_ctime, \&_from_string) {
-	return ($res, $err) if &$method($proto, $value, \$res, \$err);
+	return @res if @res = &$method($proto, $value);
     }
     # unknown format
-    return (undef, Bivio::TypeError::DATE_TIME());
+    return (undef, Bivio::TypeError->DATE_TIME);
 }
 
 =for html <a name="from_sql_value"></a>
@@ -1201,70 +1216,59 @@ sub _compute_local_timezone {
     return;
 }
 
-# _from_alert(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+# _from_alert(proto, string value) : array
 #
-# Returns true if it matches the pattern.  Parses alert format.
+# Returns ($res, $err) if it matches the pattern.  Parses alert format.
 #
 sub _from_alert {
     my($proto, $value, $res, $err) = @_;
     my($y, $mon, $d, $h, $m, $s) = $value =~ /^$_REGEX_ALERT$/o;
-    return 0 unless defined($s);
-    ($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
-    return 1;
+    return () unless defined($s);
+    return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
 
-# _from_ctime(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+# _from_ctime(proto, string value) : array
 #
-# Returns true if it matches the pattern.  Parses ctime format.
+# Returns ($res, $err) if it matches the pattern.  Parses ctime format.
 #
 sub _from_ctime {
     my($proto, $value, $res, $err) = @_;
     my($mon, $d, $h, $m, $s, $y) = $value =~ /^$_REGEX_CTIME$/o;
-    return 0 unless defined($y);
-    $mon = $_MONTH{uc($mon)};
-    if (defined($mon)) {
-	($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
-    }
-    else {
-	$$err = Bivio::TypeError::MONTH();
-    }
-    return 1;
+    return () unless defined($y);
+
+    return (undef, Bivio::TypeError->MONTH)
+	unless defined($mon = $_MONTH_TO_NUM->{uc($mon)});
+    return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
-# _from_literal(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+# _from_literal(proto, string value) : array
 #
-# Returns true if it matches the pattern.  Parses literal format.
+# Returns ($res, $err) if it matches the pattern.  Parses literal format.
 #
 sub _from_literal {
     my($proto, $value, $res, $err) = @_;
-    my($date, $time) = $value =~ /^(\d+) (\d+)$/;
-    return 0 unless defined($time);
-    if (length($date) > length(LAST_DATE_IN_JULIAN_DAYS())
+    my($date, $time) = $value =~ /^$_REGEX_LITERAL$/o;
+    return () unless defined($time);
+    return (undef, Bivio::TypeError->DATE_RANGE)
+	if length($date) > length(LAST_DATE_IN_JULIAN_DAYS())
 	    || $date < FIRST_DATE_IN_JULIAN_DAYS()
-	    || $date > LAST_DATE_IN_JULIAN_DAYS()) {
-	$$err = Bivio::TypeError::DATE_RANGE();
-    }
-    elsif (length($time) > length(SECONDS_IN_DAY())
-	    || $time >= SECONDS_IN_DAY()) {
-	$$err = Bivio::TypeError::TIME_RANGE();
-    }
-    else {
-	$$res = $date.' '.$time;
-    }
-    return 1;
+	    || $date > LAST_DATE_IN_JULIAN_DAYS();
+    return (undef, Bivio::TypeError->TIME_RANGE)
+	if length($time) > length(SECONDS_IN_DAY())
+	    || $time >= SECONDS_IN_DAY();
+    return ($date.' '.$time)
 }
 
-# _from_string(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+# _from_string(proto, string value) : array
 #
-# Returns true if it matches to_string pattern.  Parses string format.
+# Returns ($res, $err) if it matches to_string pattern.  Parses string format.
 #
 sub _from_string {
     my($proto, $value, $res, $err) = @_;
     my($mon, $d, $y, $h, $m, $s) = $value =~ /^$_REGEX_STRING$/o;
-    return 0 unless defined($s);
-    ($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
-    return 1;
+    return () unless defined($s);
+    return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
 
@@ -1298,8 +1302,6 @@ sub _initialize {
 	$_YEAR_BASE[$yy] = $_YEAR_BASE[$yy-1]
 		+ ($_IS_LEAP_YEAR[$yy-1] ? 366 : 365);
     }
-    my($i) = 1;
-    %_MONTH = map {(uc($_), $i++)} @_MONTH;
     _compute_local_timezone();
 
     # Windowing year is always 20 years ahead of now.

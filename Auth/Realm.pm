@@ -83,14 +83,14 @@ my($_INITIALIZED) = 0;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 # Create class names from REALM_TYPE names.
-my(%_CLASS_TO_TYPE) = map {
+my($_CLASS_TO_TYPE) = {map {
     my($class) = lc($_->get_name);
     $class =~ s/(^|_)(\w)/\u$2/g;
     # Don't need to "use" these modules, because don't actually
     # reference the class--just a name here.
     ("Bivio::Auth::Realm::$class", $_);
-} Bivio::Auth::RealmType->get_list;
-my(%_TYPE_TO_CLASS) = reverse(%_CLASS_TO_TYPE);
+} Bivio::Auth::RealmType->get_list};
+my($_TYPE_TO_CLASS) = {reverse(%$_CLASS_TO_TYPE)};
 # Maps realm types to permission sets
 my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
@@ -143,7 +143,7 @@ sub new {
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
-	my($type) = $_CLASS_TO_TYPE{ref($self)};
+	my($type) = $_CLASS_TO_TYPE->{ref($self)};
 	$self->put(id => $type->as_int, type => $type);
 	return $self;
     }
@@ -302,8 +302,8 @@ sub get_type {
     # just from class.
     return $proto->get('type') if ref($proto);
     Bivio::Die->die($proto, ': unknown realm class')
-	    unless exists($_CLASS_TO_TYPE{$proto});
-    return $_CLASS_TO_TYPE{$proto};
+	    unless exists($_CLASS_TO_TYPE->{$proto});
+    return $_CLASS_TO_TYPE->{$proto};
 }
 
 =for html <a name="is_default"></a>
@@ -331,7 +331,7 @@ sub _initialize {
     $_INITIALIZED = 1;
     foreach my $t ('GENERAL', 'USER', 'CLUB') {
 	my($rt) = Bivio::Auth::RealmType->$t();
-	my($rc) = $_TYPE_TO_CLASS{$rt};
+	my($rc) = $_TYPE_TO_CLASS->{$rt};
 	Bivio::IO::ClassLoader->simple_require($rc);
     }
     return;
