@@ -78,6 +78,8 @@ List Models can declare a method of the form:
 	Bivio::Biz::Model::Address->format($self, 'Address.', @_);
     }
 
+Always returns a valid (defined) string, but may be zero length.
+
 =cut
 
 sub format {
@@ -91,13 +93,13 @@ sub format {
 	$sep = '  ';
     }
     chop($csz), chop($csz) if defined($csz);
-    my($res) = undef;
+    my($res) = '';
     my(@f) = $m->unsafe_get($p.'street1', $p.'street2', $p.'country');
     splice(@f, 2, 0, $csz);
     foreach my $n (@f) {
 	$res .= $n."\n" if defined($n);
     }
-    chop($res) if defined($res);
+    chop($res);
     return $res;
 }
 
