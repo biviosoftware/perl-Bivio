@@ -140,7 +140,7 @@ my(@_QUERY) = ('version', grep($_ ne 'version',
 
 =head2 static new(hash_ref query, Bivio::SQL::Support support, ref die) : Bivio::SQL::ListQuery
 
-Creates a new Support.  I<auth_id> and I<count> must be set in
+Creates a new ListQuery.  I<auth_id> and I<count> must be set in
 I<query>.  I<count> is the default page size to use.
 
 B<I<query> will be subsumed by this module.  Do not use it again.>
@@ -149,16 +149,40 @@ B<I<query> will be subsumed by this module.  Do not use it again.>
 
 sub new {
     my($proto, $attrs, $support, $die) = @_;
-    Carp::croak('missing count') unless $attrs->{count};
     Carp::croak('missing auth_id')
 		if $support->get('auth_id') && !$attrs->{auth_id};
-    my($k);
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
-    foreach $k (@_QUERY) {
+    foreach my $k (@_QUERY) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
     # Reset attrs that are set by Support
+    @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
+    my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
+    return $self;
+}
+
+=for html <a name="unauth_new"></a>
+
+=head2 static unauth_new(hash_ref attrs, Bivio::Biz::Model model, Bivio::SQL::Support support) : Bivio::SQL::ListQuery
+
+Creates a new ListQuery using the I<attrs> supplied.  No checking
+is done on the values.  I<auth_id> may or may not be set.
+
+I<version> will be set from I<model>.
+
+B<I<attrs> will be subsumed by this module.  Do not use it again.>
+
+=cut
+
+sub unauth_new {
+    my($proto, $attrs, $model, $support) = @_;
+    # Always set these
+    $attrs->{v} = $model->get_info('version');
+    foreach my $k (@_QUERY) {
+	&{\&{'_parse_'.$k}}($attrs, $support, $model)
+		unless exists($attrs->{$k});
+    }
     @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
     my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
     return $self;
@@ -361,13 +385,17 @@ sub get_sort_order_for_type {
 
 # _die(Bivio::Type::Enum code, string message, string value)
 #
+# _die(Bivio::Type::Enum code, hash_ref attrs, string value)
+#
 # Calls Bivio::Die::die with appropriate params
 #
 sub _die {
-    my($die, $code, $msg, $value) = @_;
+    my($die, $code, $attrs, $value) = @_;
+    $attrs = {message => $attrs} unless ref($attrs);
+    $attrs->{class} =  'Bivio::SQL::ListQuery';
+    $attrs->{entity} = $value;
     $die ||= 'Bivio::Die';
-    $die->die($code, {entity => $value,
-	class => 'Bivio::SQL::ListQuery', message => $msg}, caller);
+    $die->die($code, $attrs, caller);
 }
 
 # _format_uri(hash_ref attrs, Bivio::SQL::Support support) : string
@@ -392,7 +420,7 @@ sub _format_uri {
 	    if defined($attrs->{page_number});
 
     # order_by
-    if ($attrs->{order_by}) {
+    if ($attrs->{order_by} && @{$attrs->{order_by}}) {
 	my($ob) = $attrs->{order_by};
 	$res .= '&o=';
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
@@ -509,9 +537,10 @@ sub _parse_pk {
     foreach my $t (@{$support->get('primary_key_types')}) {
 #TODO: Need to check for correct number of \177 values
 	my($literal) = shift(@pk);
-	my($v) = $t->from_literal($literal);
+	my($v, $err) = $t->from_literal($literal);
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(),
-		"invalid $name", $attrs->{$tag}) unless defined($v);
+		{message => "invalid $name", error => $err},
+		$attrs->{$tag}) unless defined($v);
 	push(@$res, $v);
     }
     return;
