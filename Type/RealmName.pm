@@ -71,6 +71,18 @@ sub SHADOW_PREFIX {
     return '=';
 }
 
+=for html <a name="TEST_SUFFIX"></a>
+
+=head2 TEST_SUFFIX : string
+
+Convention which identifies of test clubs and users.
+
+=cut
+
+sub TEST_SUFFIX {
+    return '_test';
+}
+
 #=IMPORTS
 use Bivio::HTML;
 use Bivio::TypeError;
