@@ -52,7 +52,6 @@ Saves all fields into the order form context.
 
 sub execute_ok {
     my($self) = @_;
-
     # copy the current values into the OrderForm context
     $self->put_context_fields(%{$self->internal_get});
     return;
@@ -68,23 +67,20 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	require_context => 1,
 	version => 1,
 	visible => [
-	    'Order.ship_to_first_name',
-	    'Order.ship_to_last_name',
-	    'EntityAddress_2.addr1',
-	    'EntityAddress_2.addr2',
-	    'EntityAddress_2.city',
-	    'EntityAddress_2.state',
-	    'EntityAddress_2.zip',
-	    'EntityAddress_2.country',
-	    'EntityPhone_2.phone',
+  	    'Order.ship_to_name',
+  	    'Address_2.street1',
+  	    'Address_2.street2',
+  	    'Address_2.city',
+  	    'Address_2.state',
+  	    'Address_2.zip',
+  	    'Address_2.country',
+  	    'Phone_2.phone',
 	],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 #=PRIVATE METHODS
