@@ -217,6 +217,19 @@ sub execute_input_start {
     return;
 }
 
+=for html <a name="format_uri"></a>
+
+=head2 format_uri() : 
+
+Proxy to ListModel::format_uri, see there for details.
+
+=cut
+
+sub format_uri {
+    my($self) = shift;
+    return $self->get_list_model->format_uri(@_);
+}
+
 =for html <a name="get_field_info"></a>
 
 =head2 get_field_info(string field, string attr) : any
