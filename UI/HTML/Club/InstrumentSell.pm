@@ -74,7 +74,7 @@ EOF
 		    }
 	    ],
 	    ['Entry.amount', 'Total Amount', <<'EOF'],
-Enter the total amount of the sale excluding commission,
+Enter the total amount of the sale excluding commission or fees,
 which is entered below.  The per share price will be computed
 from this value.
 EOF
@@ -82,7 +82,7 @@ EOF
 Enter the number of shares or bonds sold.
 EOF
 	    ['commission', undef, <<'EOF'],
-Enter the broker's commission charge for the sale.
+Enter the broker's commission charge and any SEC fees for the sale.
 EOF
 	    ['RealmTransaction.remark', undef, <<'EOF'],
 Enter any notes associated with the sale.
