@@ -234,7 +234,7 @@ Returns a list of the form '(N,M,O,P)'.
 
 sub to_sql_list {
     my($proto, $vector) = @_;
-    return '()' unless defined($vector) && length($vector);
+    return '()' unless ref($vector) && length($$vector);
     return '('.join(',',
 	    map {vec($$vector, $_, 1) ? ($_) : ()} 0..length($$vector)*8-1)
 	    .')';
