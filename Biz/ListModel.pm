@@ -205,6 +205,24 @@ sub format_uri_for_this_list {
 		    $sql_support);
 }
 
+=for html <a name="get_hidden_field_values"></a>
+
+=head2 get_hidden_field_values() : array_ref
+
+  Q: Can you say hack?
+  I knew you could...
+
+Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
+
+=cut
+
+sub get_hidden_field_values {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{query}->get_hidden_field_values(
+	    $self->internal_get_sql_support());
+}
+
 =for html <a name="get_result_set_size"></a>
 
 =head2 get_result_set_size() : int
@@ -217,6 +235,20 @@ sub get_result_set_size {
     my($rows) = shift->{$_PACKAGE}->{rows};
     Carp::croak('not loaded') unless $rows;
     return int(@$rows);
+}
+
+=for html <a name="get_search_as_html"></a>
+
+=head2 get_search_as_html() : string
+
+Returns the search string as an html field value.
+
+=cut
+
+sub get_search_as_html {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{query}->get_search_as_html();
 }
 
 =for html <a name="has_next"></a>
@@ -334,6 +366,9 @@ sub load {
     else {
 	$query->put('auth_id' => $auth_id);
     }
+    my($where, $params);
+    $where = $self->internal_search($query, $sql_support, $params = [])
+	    if defined($query->{search});
     $self->internal_load($sql_support->load($query, $self), $query);
     return;
 }
