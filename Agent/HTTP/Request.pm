@@ -147,6 +147,19 @@ sub client_redirect {
     Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
 }
 
+=for html <a name="format_stateless_uri"></a>
+
+=head2 format_stateless_uri(Bivio::Agent::TaskId task_id) : string
+
+Creates a URI relative to this host/port/realm without a query string.
+
+=cut
+
+sub format_stateless_uri {
+    my($self, $task_id) = @_;
+    return $self->format_uri($task_id, undef);
+}
+
 =for html <a name="format_uri"></a>
 
 =head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
@@ -155,12 +168,10 @@ sub client_redirect {
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
+If I<query> is not passed, will use this request's query string.
 If I<auth_realm> is C<undef>, request's realm will be used.
 
 =cut
-
-#TODO: Removed this, maybe put back
-#If I<query> is not passed, will use this request's query string.
 
 sub format_uri {
     my($self, $task_id, $query, $auth_realm) = @_;
