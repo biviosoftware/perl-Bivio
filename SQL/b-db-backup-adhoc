@@ -55,7 +55,8 @@ cp TAPE $ts
 echo Transferring to $BACKUP_HOST
 ssh $BACKUP_HOST "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
 scp -pr $ts ${BACKUP_HOST}:/home/bkp/$DB_NAME
-echo Writing to tape (if it exists) on $BACKUP_HOST
+
+echo "Writing to tape (if it exists) on $BACKUP_HOST"
 /usr/local/bin/ssh $BACKUP_HOST "[ -c /dev/tape ] && tar cbf 200b /dev/tape /home/bkp/$DB_NAME/$ts"
 
 if [ "$TRANSFER_HOST" != "NONE" ]; then
