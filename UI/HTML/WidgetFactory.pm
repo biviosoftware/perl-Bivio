@@ -96,10 +96,11 @@ sub create {
     my($model, $field_name, $field_type) = _get_model_and_field_type($field);
     my($widget);
     if (UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
-	$widget = _create_edit($model, $field_name, $field_type, $attrs);
+	$widget = _create_edit($proto, $model, $field_name, $field_type,
+		$attrs);
     }
     else {
-	$widget = _create_display($field_name, $field_type, $attrs);
+	$widget = _create_display($proto, $field_name, $field_type, $attrs);
 
 	# Wrap the resultant widget in a link?
 	my($wll) = $widget->unsafe_get('wf_list_link');
@@ -119,7 +120,7 @@ sub create {
 # Create a display-only widget for the specified field.
 #
 sub _create_display {
-    my($field, $type, $attrs) = @_;
+    my($proto, $field, $type, $attrs) = @_;
 
 #TODO: should check if the list class "can()" format_name()
     if ($field eq 'RealmOwner.name') {
@@ -192,35 +193,24 @@ sub _create_display {
 # Create an editable widget for the specified field.
 #
 sub _create_edit {
-    my($model, $field, $type, $attrs) = @_;
+    my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($field eq 'Instrument.ticker_symbol') {
+
 	# Creates a text field with a "symbol lookup" button
 	return Bivio::UI::HTML::Widget::Join->new({
 	    # field is needed here by DescriptiveFormField
 	    field => $field,
 	    values => [
-		    Bivio::UI::HTML::Widget::Text->new({
-			field => $field,
-			size => 15,
-			%$attrs,
-		    }),
-		    ' ',
-		    Bivio::UI::HTML::Widget::Join->new({
-			values => [
-				'<input type=submit name="submit" value="'.
-		       Bivio::Biz::Model::InstrumentLookupForm::SYMBOL_LOOKUP()
-				.'">',
-		        ],
-		    }),
-		    ' ',
-		    Bivio::UI::HTML::Widget::Join->new({
-			values => [
-				'<input type=submit name="submit" value="'.
-		       Bivio::Biz::Model::LocalInstrumentForm::NEW_UNLISTED()
-				.'">',
-		        ],
-		    }),
+		Bivio::UI::HTML::Widget::Text->new({
+		    field => $field,
+		    size => 15,
+		    %$attrs,
+		}),
+		' ',
+		$proto->create(ref($model).'.lookup_button'),
+		' ',
+		$proto->create(ref($model).'.unlisted_button'),
 	    ],
 	});
     }
