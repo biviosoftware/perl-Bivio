@@ -394,6 +394,20 @@ sub commit_or_rollback {
     return;
 }
 
+=for html <a name="convert_literal"></a>
+
+=head2 static convert_literal(string type, any value) : any
+
+Calls L<Bivio::Type::from_literal_or_die|Bivio::Type/"from_literal_or_die">
+on I<value> by loading I<type> first.
+
+=cut
+
+sub convert_literal {
+    my($proto, $type) = (shift, shift);
+    return Bivio::Type->get_instance($type)->from_literal_or_die(@_);
+}
+
 =for html <a name="email_file"></a>
 
 =head2 email_file(string email, string subject, string file_name)
