@@ -269,6 +269,21 @@ sub date_from_parts {
 	    .$_TIME_SUFFIX;
 }
 
+=for html <a name="diff_seconds"></a>
+
+=head2 diff_seconds(string left, string right) : int
+
+Subtract I<right> from I<left> and return the number of seconds.
+
+=cut
+
+sub diff_seconds {
+    my(undef, $left, $right) = @_;
+    my($lj, $ls) = split(' ', $left);
+    my($rj, $rs) = split(' ', $right);
+    return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
+}
+
 =for html <a name="end_of_today"></a>
 
 =head2 end_of_today() : string
