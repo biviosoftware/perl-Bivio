@@ -199,6 +199,7 @@ my($_SELF) = __PACKAGE__->new({
                     checkbox
                     page_text
                     input_field
+                    mailto
             )],
 		   []);
 	    return;
