@@ -55,12 +55,14 @@ commands:
     delete_user -- deletes the user
     join_user honorific -- adds user to realm
     leave_user -- adds user to realm
+    reset_password password -- reset a user's password
 EOF
 }
 
 #=IMPORTS
 use Bivio::Biz::Model;
 use Bivio::Type::Honorific;
+use Bivio::Type::Password;
 
 #=VARIABLES
 
@@ -152,6 +154,33 @@ sub leave_user {
 	   || $self->usage_error('realm not set'),
 	user_id => $req->get('auth_user_id')
 	   || $self->usage_error('user not set'),
+    });
+    return;
+}
+
+=for html <a name="reset_password"></a>
+
+=head2 reset_password(string password)
+
+Changes a user's password.
+
+=cut
+
+sub reset_password {
+    my($self, $password) = @_;
+    my($req) = $self->get_request;
+    # protect against setting first_admin
+    $self->usage_error("Do not use -r to set user, use -u")
+        if $self->unsafe_get('realm');
+    $self->usage_error("missing user")
+        unless $self->unsafe_get('user');
+    $self->usage_error("missing new password")
+        unless defined($password);
+    $self->are_you_sure('RESET PASSWORD FOR '
+	. $req->get_nested(qw(auth_user display_name))
+	. '?');
+    $req->get('auth_user')->update({
+        password => Bivio::Type::Password->encrypt($password),
     });
     return;
 }
