@@ -66,8 +66,8 @@ sub create_content {
     $fields->{large_club_warning} = $self->indirect(0);
     $fields->{warning_message} = $self->join(
 	$self->string('Warning: ', 'warning'),
-	$self->string(<<'EOF'));
-
+	'<p>',
+	$self->string(<<'EOF', 'page_text')),
 Your club's receipts for the tax year were greater that $250,000 or the club's assets at the end of the year were greater than $600,000. As a result you will be required to manually complete Schedules L, M-1, and M-2; Item F on page 1 of Form 1065; and Item J and Schedule K-1.
 
 EOF
