@@ -22,7 +22,8 @@ $Bivio::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 BEGIN {
     use Bivio::Util;
     &Bivio::Util::compile_attribute_accessors(
-	[qw(title full_name watchlist name members guests data_dir)],
+	[qw(title full_name watchlist name members
+            guests data_dir time_limit)],
 	'no_set');
 }
 
@@ -49,7 +50,7 @@ sub page_menu { $_PAGE_MENU }
 my(%_URI_TO_PAGE_MAP) = map {($_->URI, $_)} @_PAGES;
 
 sub handler ($) {
-    return Bivio::Request->execute(shift, \&_request);
+    return Bivio::Request->process_http(shift, \&_process_http);
 }
 
 sub init ($$) {
@@ -62,9 +63,9 @@ sub init ($$) {
 #
 #   Authenticates the user for the club and passes on to one of @_PAGES.
 #
-sub _request ($) {
+sub _process_http ($) {
     my($br) = @_;
-    my($user) = Bivio::User->authenticate($br);
+    my($user) = Bivio::User->authenticate_http($br);
     my($path);
     ($path = $br->r->uri) =~ s,^/+([^/]+),,;
     my($name) = $1;

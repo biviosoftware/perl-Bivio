@@ -160,6 +160,15 @@ sub date_range ($$) {
     return $left . ' - ' . $right;
 }
 
+# sub send_mail ($$$) {
+#     my($to, $subject, $body) = @_;
+#     my($fh) = \*Bivio::Util::OUT;	   # Use only one handle to avoid leaks
+#     open($fh, "| sendmail '$to'") || goto send_mail_error;
+#     close($fh) && $? == 0 || goto send_mail_error;
+#  send_mail_error:
+#     
+# }
+
 1;
 __END__
 

@@ -21,7 +21,7 @@ BEGIN {
 
 # execute $class $r $sub
 # Creates a new request and saves a copy of "$r" in "r"
-sub execute ($$$) {
+sub process_http ($$$) {
     my($proto, $r, $code) = @_;
     my($self) = {
 	'start_time' => &Bivio::Util::gettimeofday,
@@ -68,7 +68,7 @@ sub auth_failure ($@) {
     $self->_terminate(&Apache::Constants::AUTH_REQUIRED, @_);
 }
 
-# Set a not found error code
+# Redirect
 sub redirect ($$) {
     my($self, $redirect) = @_;
     $self->r->err_header_out('Location', $redirect);
@@ -95,6 +95,11 @@ sub server_busy ($@) {
     shift->_terminate(&Apache::Constants::HTTP_SERVICE_UNAVAILABLE, @_);
 }
 
+# Terminate the request with a bad request
+sub bad_request ($@) {
+    shift->_terminate(&Apache::Constants::BAD_REQUEST, @_);
+}
+
 # Terminate an incoming request with a particular Apache::Constants result
 sub _terminate ($$@) {
     my($self) = shift;
@@ -112,10 +117,25 @@ sub _terminate ($$@) {
 	@_, "\n");				     	 # \n avoids perl noise
 }
 
+sub document_root {
+    my($self) = shift;
+    defined($self->r) && return $self->r->document_root;
+# Need to specify this....
+    return undef;
+}
+
 # elapsed_time $self -> $seconds
 #   Time since request was initiated (in seconds)
 sub elapsed_time ($) {
     return &Bivio::Util::time_delta_in_seconds(shift->{start_time});
+}
+
+sub fields_posted ($) {
+    my($self) = shift;
+    my($ct) = $self->r->header_in("Content-type");
+    $ct eq 'application/x-www-form-urlencoded'
+	|| $self->bad_request("invalid content type: \"$ct\"");
+    return {$self->r->content};
 }
 
 1;

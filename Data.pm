@@ -82,7 +82,8 @@ sub lookup ($$$;$)
 	    $dont_cache = $file =~ /msg\d+.html$/; 		    # see below
 	}
 	else {
-	    $@ = "open failed: $!";
+	    $@ = "open failed: $!"; 			   # save error message
+	    -e $absfile || return undef; 	     # not found => no messages
 	}
     }
     elsif ($type == &ALL_KEYS) {
@@ -211,7 +212,7 @@ sub _copy ($$$) {
 
 
 sub _home ($) {
-    $_Home || ($_Home = shift->r->document_root . &_REL_HOME);
+    $_Home || ($_Home = shift->document_root . &_REL_HOME);
 }
 
 sub begin_txn ($$) {
@@ -230,6 +231,7 @@ sub begin_txn ($$) {
     }
     push(@_TXN_FILES, $file);		       # we hold the lock at this point
     &invalidate_cache($file);
+#RJN: BUG: Need to reget club and user, because they are cached in $br!
     my($res) = &lookup($file, $proto_or_sub, $br);
     return $res;
 

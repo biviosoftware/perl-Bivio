@@ -23,7 +23,7 @@ my $_HOME = 'users/';
 # authenticate $class $br -> $user
 #   Extracts the user/passwd from the incoming record and searches the
 #   database for the user.
-sub authenticate ($$)
+sub authenticate_http ($$)
 {
     my($proto, $br) = @_;
     my($ret, $sent_pw) = $br->r->get_basic_auth_pw();
