@@ -209,63 +209,6 @@ sub die {
     return Bivio::IO::Alert->die(@_);
 }
 
-=for html <a name="throw"></a>
-
-=head2 static throw(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
-
-=head2 throw()
-
-Any of the parameters may be undef. Package and line will be filled in by this
-module.  If you'd like to implement a module specific die, you might:
-
-    sub throw_die {
-	my($self, $code, $msg) = @_;
-	Bivio::Die->throw(My::Package::DieCode->from_any($code),
-		{msg => $msg, object => $self}, caller);
-    }
-
-C<caller> will be called in an array context and return the appropriate
-attributes about the caller in the right order.  Note that
-L<Bivio::Type::Enum::from_any|Bivio::Type::Enum/"from_any">
-returns C<undef> if $code isn't found, so it is entirely safe.
-
-If I<code> is C<undef>, it will be set to C<Bivio::DieCode::UNKNOWN>.
-If I<code> is a string, it will be converted to a L<Bivio::DieCode>
-if possible.
-
-If I<attrs> is C<undef>, it will be set to the empty hash.
-If I<attrs> is a not a reference, it will be set to C<{message => $attrs}>.
-If I<attrs> is not a hash, it will be set to C<{attrs => $attrs}>.
-
-In the second form, I<self> is "rethrown".
-
-=cut
-
-sub throw {
-    my($proto, $code, $attrs, $package, $file, $line) = @_;
-    if (ref($proto)) {
-	# Rethrow of an existing die.  If inside a catch, must
-	$_CURRENT_SELF = $proto;
-	CORE::die("$proto\n") if $_IN_CATCH;
-	# Not in a catch, so must call handle_die explicitly
-	_handle_die($proto);
-	# _handle_die returns, but user called die.  So need to
-	# throw a bogus exception.
-	CORE::die("\n");
-    }
-    $package ||= (caller)[0];
-    $file ||= (caller)[1];
-    $line ||= (caller)[2];
-    unless (ref($attrs) eq 'HASH') {
-	$attrs = defined($attrs)
-		? !ref($attrs) ? {message => $attrs}
-			:  {attrs => $attrs} : {};
-    }
-    $code = _check_code($code, $attrs);
-    my($self) = _new($proto, $code, $attrs, $package, $line);
-    CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
-}
-
 =for html <a name="eval"></a>
 
 =head2 eval(code_ref sub) : any
@@ -338,6 +281,77 @@ sub set_code {
     $self->put(code => _check_code($code, $attrs));
     %$attrs = (%$attrs, @new_attrs) if @new_attrs;
     return;
+}
+
+=for html <a name="throw"></a>
+
+=head2 static throw(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+=head2 throw()
+
+Any of the parameters may be undef. Package and line will be filled in by this
+module.  If you'd like to implement a module specific die, you might:
+
+    sub throw_die {
+	my($self, $code, $msg) = @_;
+	Bivio::Die->throw(My::Package::DieCode->from_any($code),
+		{msg => $msg, object => $self}, caller);
+    }
+
+C<caller> will be called in an array context and return the appropriate
+attributes about the caller in the right order.  Note that
+L<Bivio::Type::Enum::from_any|Bivio::Type::Enum/"from_any">
+returns C<undef> if $code isn't found, so it is entirely safe.
+
+If I<code> is C<undef>, it will be set to C<Bivio::DieCode::UNKNOWN>.
+If I<code> is a string, it will be converted to a L<Bivio::DieCode>
+if possible.
+
+If I<attrs> is C<undef>, it will be set to the empty hash.
+If I<attrs> is a not a reference, it will be set to C<{message => $attrs}>.
+If I<attrs> is not a hash, it will be set to C<{attrs => $attrs}>.
+
+In the second form, I<self> is "rethrown".
+
+=cut
+
+sub throw {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    if (ref($proto)) {
+	# Rethrow of an existing die.  If inside a catch, must
+	$_CURRENT_SELF = $proto;
+	CORE::die("$proto\n") if $_IN_CATCH;
+	# Not in a catch, so must call handle_die explicitly
+	_handle_die($proto);
+	# _handle_die returns, but user called die.  So need to
+	# throw a bogus exception.
+	CORE::die("\n");
+    }
+    $package ||= (caller)[0];
+    $file ||= (caller)[1];
+    $line ||= (caller)[2];
+    unless (ref($attrs) eq 'HASH') {
+	$attrs = defined($attrs)
+		? !ref($attrs) ? {message => $attrs}
+			:  {attrs => $attrs} : {};
+    }
+    $code = _check_code($code, $attrs);
+    my($self) = _new($proto, $code, $attrs, $package, $line);
+    CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
+}
+
+=for html <a name="throw_die"></a>
+
+=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+Calls L<throw|"throw">.  This allows clean implementations of
+C<throw_die> in other modules.  You can pass C<Bivio::Die> as a
+C<$die> object (see e.g. L<Bivio::SQL::Connection|Bivio::SQL::Connection>).
+
+=cut
+
+sub throw_die {
+    return shift->throw(@_);
 }
 
 #=PRIVATE METHODS
