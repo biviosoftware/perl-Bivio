@@ -158,7 +158,7 @@ sub queue_mail_as_user ($$$@) {
     my($to) = '"' . $self->full_name . '" <' . $self->email . '>';
     my($from) = '"' . $br->user->full_name . '" <' . $br->user->email . '>';
     &Bivio::Mail::queue($from, [$self->email, $to],
-			$subject, $body, "X-URL: $uri");
+			$subject, $body, ["X-URL: $uri"]);
 }
 
 # lookup $proto $name $br -> $club
