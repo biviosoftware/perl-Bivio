@@ -370,6 +370,19 @@ sub increment_db_time {
     return $_DB_TIME;
 }
 
+=for html <a name="is_read_only"></a>
+
+=head2 is_read_only() : boolean
+
+Returns true if the current database connection is to a read-only
+database.
+
+=cut
+
+sub is_read_only {
+    return $_DB_IS_READ_ONLY;
+}
+
 =for html <a name="rollback"></a>
 
 =head2 rollback()
