@@ -85,9 +85,41 @@ Sets I<creation_date_time> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{creation_date_time} = Bivio::Type::DateTime->now()
-	    unless $values->{creation_date_time};
+    $values->{creation_date_time} ||= Bivio::Type::DateTime->now();
     return $self->SUPER::create($values);
+}
+
+=for html <a name="get_first_payment_date"></a>
+
+=head2 get_first_payment_date() : string
+
+Returns the first payment/opening balance date for the user in the current
+realm's accounts.
+
+Returns undef if no value exists. (User has never paid into realm)
+
+=cut
+
+sub get_first_payment_date {
+    my($self) = @_;
+
+    my($date_param) = Bivio::Type::DateTime->from_sql_value('MIN(date_time)');
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT $date_param
+            FROM realm_transaction_t, entry_t, member_entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                = entry_t.realm_transaction_id
+            AND entry_t.entry_id=member_entry_t.entry_id
+            AND realm_transaction_t.realm_id=?
+            AND member_entry_t.user_id=?
+            AND member_entry_t.units != 0",
+	    [$self->get('realm_id', 'user_id')]);
+    my($date) = undef;
+    my($row);
+    if ($row = $sth->fetchrow_arrayref) {
+	$date = $row->[0];
+    }
+    return $date;
 }
 
 =for html <a name="execute_auth_user"></a>
