@@ -94,11 +94,6 @@ sub execute_ok {
     my($values) = $self->get_model_properties('Tax1065');
     my($end_date) = Bivio::Biz::Accounting::Tax->get_last_tax_year;
 
-#TODO: bug in form, doesn't handle undef booleans
-    $values->{partnership_is_partner} ||= 0;
-    $values->{partner_is_partnership} ||= 0;
-    $values->{consolidated_audit} ||= 0;
-
     my($tax) = Bivio::Biz::Model::Tax1065->new($req);
     $tax->load(fiscal_end_date => $end_date);
     $tax->update($values);
