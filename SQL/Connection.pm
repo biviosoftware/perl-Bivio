@@ -112,13 +112,21 @@ my($_NEED_COMMIT) = 0;
 my($_DB_TIME) = 0;
 # Allow for a bit larger space than maximum blob
 my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
-my(%_ERR_TO_DIE_CODE) = (
+my(%_ERR_TO_DIE) = (
 # Why bother?
 #	1400 => Bivio::DieCode::ALREADY_EXISTS,
 #	die('required value missing') if $err == 1400;
 #    die('invalid number') if $err == 1722;
         # ORA-00060: deadlock detected
-	60 => Bivio::DieCode::UPDATE_COLLISION(),
+    60 => {
+	code => Bivio::DieCode->UPDATE_COLLISION,
+    },
+    # ORA-12154: TNS:could not resolve service name
+    12154 => {
+	code => Bivio::DieCode->CONFIG_ERROR,
+	message => 'Invalid database configuration. Oracle not configured?',
+	program_error => 1,
+    },
 );
 
 #
@@ -243,7 +251,7 @@ sub execute {
 	$_NEED_PING = 1;
 
 	# Can we retry?
-	last TRY unless (exists($_ERR_RETRY_SLEEP{$err}));
+	last TRY unless exists($_ERR_RETRY_SLEEP{$err});
 
 	# Don't retry if connection has executed DML already
 	if ($_NEED_COMMIT) {
@@ -294,9 +302,18 @@ sub execute {
 
     # If we don't have a die_code, map it simply
     unless ($die_code) {
-	if (defined($err) && defined($_ERR_TO_DIE_CODE{$err})) {
-	    # These are program manageable errors, hence program_error=0
-	    $die_code = $_ERR_TO_DIE_CODE{$err};
+	unless ($err) {
+#TODO: This maybe should get moved up top.  I didn't want to change too much
+#      now, since we don't know what types of errors Oracle reports.
+	    # Some errors have to be parsed out.
+	    ($err) = $attrs->{message} =~ /ORA-0*(\d+):/;
+	    $err ||= 0;
+	}
+	if (defined($err) && defined($_ERR_TO_DIE{$err})) {
+	    # These may be program manageable errors;  See my(%_ERR_TO_DIE).
+	    $attrs = {%$attrs, %{$_ERR_TO_DIE{$err}}};
+	    $die_code = $attrs->{code};
+	    delete($attrs->{code});
 	}
 	else {
 	    $attrs->{program_error} = 1;
