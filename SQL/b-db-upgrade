@@ -215,147 +215,18 @@ sub _upgrade {
 
     use Bivio::Agent::Request;
     use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Biz::Model::RealmDecor;
-    use Bivio::Biz::Util::Club;
-    use Bivio::Biz::Util::RealmRole;
+    use Bivio::Biz::Model::Mail;
 
-    print("Creating realm_decor_t table\n");
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-
+    print("Re-publishing public mail messages\n");
     my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-CREATE TABLE realm_decor_t (
-  realm_id NUMBER(18),
-  show_all_columns NUMBER(1),
-  show_disclaimer NUMBER(1),
-  show_profile NUMBER(1),
-  disclaimer VARCHAR2(4000),
-  profile_title VARCHAR2(100),
-  profile_bio VARCHAR2(4000),
-  portrait_filename VARCHAR2(100),
-  portrait_width NUMBER(9),
-  portrait_height NUMBER(9)
-)
-  tablespace data_1m
-  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+    SELECT mail_id FROM mail_t
+            WHERE is_public=1
 EOF
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-ALTER TABLE realm_decor_t
-  add constraint realm_decor_t1
-  primary key(realm_id)
-  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
-EOF
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-ALTER TABLE realm_decor_t
-  add constraint realm_decor_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
-EOF
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-ALTER TABLE realm_decor_t
-  add constraint realm_decor_t3
-  check (show_all_columns BETWEEN 0 AND 1)
-EOF
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-ALTER TABLE realm_decor_t
-  add constraint realm_decor_t4
-  check (show_disclaimer BETWEEN 0 AND 1)
-EOF
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
-ALTER TABLE realm_decor_t
-  add constraint realm_decor_t5
-  check (show_profile BETWEEN 0 AND 1)
-EOF
-
-    print("Renaming celebrity clubs\n");
-    Bivio::Biz::Util::Club->rename('ask_candis', 'ask_candis_inbox', 1);
-    Bivio::Biz::Util::Club->rename('ask_candis_publish', 'ask_candis', 1);
-    Bivio::Biz::Util::Club->rename('trez_talk', 'trez_talk_inbox', 1);
-    Bivio::Biz::Util::Club->rename('trez_talk_publish', 'trez_talk', 1);
-
-    print("Fixing permissions for the celebrity clubs\n");
-    # Allow everyone to mail
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'ANONYMOUS', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'USER', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'WITHDRAWN', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'GUEST', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'USER', '+MAIL_FORWARD');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'WITHDRAWN', '+MAIL_FORWARD');
-    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'GUEST', '+MAIL_FORWARD');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'ANONYMOUS', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'USER', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'WITHDRAWN', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'GUEST', '+MAIL_WRITE');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'USER', '+MAIL_FORWARD');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'WITHDRAWN', '+MAIL_FORWARD');
-    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'GUEST', '+MAIL_FORWARD');
-
-    print("Setup decoration for the celebies\n");
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($decor) = Bivio::Biz::Model::RealmDecor->new($req);
-
-    $realm->unauth_load_or_die(name => 'ask_candis');
-    $decor->create({
-        realm_id => $realm->get('realm_id'),
-        show_all_columns => 0,
-        show_disclaimer => 1,
-        show_profile => 1,
-        disclaimer => 	    <<'EOF',
-Disclaimer: statements are opinions expressed by Candis King. These statements
-are not intended to replace professional advice. When in doubt, follow the
-advice of your local tax advisor or accountant who is familiar with your
-particular circumstances.
-EOF
-        profile_title => 'Candis King',
-        portrait_filename => 'candis_king.jpg',
-        profile_bio => <<'EOF',
-Feel free to ask Candis King your nuts-and-bolts questions about bivio,
-investing, and the investment club experience.
-<p>
-Well known in club circles, Candis has traveled the US teaching investment
-classes, and is a frequent writer for publications ranging from the
-Motley Fool to the Armchair Millionaire.
-<p>
-A telecom industry veteran, the mother of two says her only regret in life
-is not having joined a club sooner.  Though enthusiastic about her clubs,
-she's willing to take the bad with the good.  "We've committed just about
-every investment mistake there is," she says, "but we've learned from them,
-and so our experience has been overwhelmingly positive."
-EOF
-       });
-
-    $realm->unauth_load_or_die(name => 'trez_talk');
-    $decor->create({
-        realm_id => $realm->get('realm_id'),
-        show_all_columns => 0,
-        show_disclaimer => 1,
-        show_profile => 1,
-        disclaimer => 	    <<'EOF',
-Disclaimer: statements are opinions expressed by Rip West and Jerry Dressel
-and are not official statements from either bivio or the IRS. These statements
-are not intended to replace professional tax or accounting advice.
-When in doubt, follow the advice of your local tax advisor or accountant
-who is familiar with your particular circumstances.
-EOF
-        profile_title => 'Jerry & Rip',
-        portrait_filename => 'jerry_rip.jpg',
-        profile_bio => <<'EOF',
-Jerry Dressel and Rip West will answer your questions about club
-accounting and taxes.
-<p>
-Investment club treasurers have been relying on them for years,
-via the <a href="http://www.better-investing.org">NAIC</a> and
-<a href="http://www.fool.com">Motley Fool</a> message boards.
-Now you can find their sound advice right here at "Trez Talk"
-on bivio.
-<p>
-Jerry is a pilot for Northwest Airlines who keeps himself busy teaching
-accounting courses for fellow investors. Though Rip "has failed retirement
-three times" he's had a lot more success as a financial planner, investment
-advisor, and accountant, having launched his own CPA firm back in the 1950s.
-Both have worked extensively with computers, and they have decades of
-investment club experience between them.
-EOF
-       });
+    my($mail) = Bivio::Biz::Model::Mail->new;
+    while (my $row = $sth->fetchrow_arrayref) {
+        $mail->unauth_load(mail_id => $row->[0]);
+        $mail->set_is_public(1);
+    }
 
     print("\n*** done ***\n");
     return;
