@@ -126,17 +126,20 @@ sub create {
 
 Returns the first, middle, and last names as one string.
 
+B<You should use RealmOwner.display_name whenever possible as the
+values are identical.>
+
 =cut
 
 sub format_full_name {
     my($self) = @_;
-    # Have at least on name or returns undef
-    my($res) = undef;
+    my($res) = '';
+    # Always have at least one name.
     foreach my $n ($self->unsafe_get(qw(first_name middle_name last_name))) {
-	$res .= $n.' ' if defined($n);
+ 	$res .= $n.' ' if defined($n);
     }
     # Get rid of last ' '
-    chop($res) if defined($res);
+    chop($res);
     return $res;
 }
 
