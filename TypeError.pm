@@ -304,6 +304,21 @@ __PACKAGE__->compile(
 	# This error is only internally.
 	'',
     ],
+    FIRST_NAME_LENGTH => [
+	53,
+	undef,
+	'first name is too long',
+    ],
+    MIDDLE_NAME_LENGTH => [
+	54,
+	undef,
+	'middle name is too long',
+    ],
+    LAST_NAME_LENGTH => [
+	55,
+	undef,
+	'last name is too long',
+    ],
 );
 
 #=PRIVATE METHODS
