@@ -33,6 +33,7 @@ is used as the name.
 =cut
 
 #=IMPORTS
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 _compile(
@@ -101,6 +102,36 @@ _compile(
     WANT_SSN => ['Social Security Numbers'],
     WANT_PHONE => ['Telephone Numbers'],
     WANT_ADDRESS => ['Addresses'],
+    PARTNER_IS_PARTNERSHIP => [
+	    'Is a member of this club also a partnership?',
+	   undef, 'Tax1065.partner_is_partnership'],
+    PARTNERSHIP_IS_PARTNER => [
+	    'Is this club a partner in another partnership?',
+	    undef, 'Tax1065.partnership_is_partner'],
+    CONSOLIDATED_AUDIT => [
+	    'Is this partnership subject to the consolidated audit procedures of 6221 through 6223?',
+	    undef, 'Tax1065.consolidated_audit'],
+    ENTITY_TYPE => ['Entity Type', undef, 'TaxK1.entity_type'],
+    PARTNER_TYPE => ['Partner Type', undef, 'TaxK1.partner_type'],
+    IRS_CENTER => ['IRS Center', undef, 'TaxK1.irs_center'],
+    FOREIGN_PARTNER => ['Foreign Partner', undef, 'TaxK1.foreign_partner'],
+    NAME_AND_SSN => ['Name (SSN)'],
+    SHORT_TERM_CAPITAL_GAIN => ['Short-Term Capital Gains', undef,
+	    Bivio::Type::TaxCategory->SHORT_TERM_CAPITAL_GAIN->get_short_desc],
+    MEDIUM_TERM_CAPITAL_GAIN => ['Medium-Term Capital Gains', undef,
+	    Bivio::Type::TaxCategory->MEDIUM_TERM_CAPITAL_GAIN
+	    ->get_short_desc],
+    LONG_TERM_CAPITAL_GAIN => ['Long-Term Capital Gains', undef,
+	    Bivio::Type::TaxCategory->LONG_TERM_CAPITAL_GAIN->get_short_desc],
+    MISC_INCOME => ['Miscellaneous Income', undef,
+	    Bivio::Type::TaxCategory->MISC_INCOME->get_short_desc],
+    TOTAL_INCOME => ['Total Income'],
+    MISC_EXPENSE => ['Miscellaneous Expense', undef,
+	    Bivio::Type::TaxCategory->MISC_EXPENSE->get_short_desc],
+    FOREIGN_TAXES => ['Foreign Taxes', undef,
+	    Bivio::Type::TaxCategory->FOREIGN_TAX->get_short_desc],
+    TOTAL_EXPENSE => ['Total Expense'],
+    NET_PROFIT => ['Net Profit/(Loss)'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
@@ -183,6 +214,15 @@ _compile(
     REALMTRANSACTION_REMARK_HEADING => ['Description'],
     ENTRY_AMOUNT_HEADING => ['Amount'],
     REALMINSTRUMENTENTRY_COUNT_HEADING => ['Shares'],
+
+    # HTML Tax attachment label headings
+    TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
+    TAX_DESCRIPTION_OF_PROPERTY_6_HEADING => ['6 (a) Description of property'],
+    TAX_ACQUISITION_DATE_HEADING => ['(b) Date acquired'],
+    TAX_SELL_DATE_HEADING => ['(c) Date sold'],
+    TAX_SALES_PRICE_HEADING => ['(d) Sales price'],
+    TAX_COST_BASIS_HEADING => ['(e) Cost or other basis'],
+    TAX_GAIN_HEADING => ['(f) Gain or (loss)'],
 );
 
 =head1 METHODS
