@@ -37,6 +37,18 @@ which modifies the database.
 
 =cut
 
+=for html <a name="CAN_LIMIT_AND_OFFSET"></a>
+
+=head2 CAN_LIMIT_AND_OFFSET : boolean
+
+The implemenation allows C<LIMIT> and C<OFFSET> clauses.
+
+=cut
+
+sub CAN_LIMIT_AND_OFFSET {
+    return 0;
+}
+
 =for html <a name="MAX_BLOB"></a>
 
 =head2 MAX_BLOB : int
@@ -105,6 +117,43 @@ my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 
 =cut
 
+=for html <a name="connect"></a>
+
+=head2 static create() : Bivio::SQL::Connection
+
+=head2 static create(string dbi_name) : Bivio::SQL::Connection
+
+B<DEPRECATED: Use L<get_instance|"get_instance">>.
+
+=cut
+
+sub create {
+    Bivio::IO::Alert->warn_deprecated('use get_instance()');
+    return shift->get_instance(@_);
+}
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance(string dbi_name) : Bivio::SQL::Connection
+
+Returns the singleton instance for configured I<dbi_name> database.
+
+=cut
+
+sub get_instance {
+    my($proto, $dbi_name) = @_;
+
+    my($key) = defined($dbi_name) ? $dbi_name : '<default>';
+    # cache connections by dbi_name
+    unless ($_CONNECTIONS->{$key}) {
+	my($module) = Bivio::Ext::DBI->get_config($dbi_name)->{connection};
+	Bivio::IO::ClassLoader->simple_require($module);
+	_trace($module) if $_TRACE;
+	$_CONNECTIONS->{$key} = $module->internal_new($dbi_name);
+    }
+    return $_CONNECTIONS->{$key};
+}
+
 =for html <a name="internal_new"></a>
 
 =head2 static internal_new(string dbi_name) : Bivio::SQL::Connection
@@ -159,31 +208,6 @@ sub commit {
     _get_connection($self)->commit() unless $fields->{db_is_read_only};
     $fields->{need_commit} = 0;
     return;
-}
-
-=for html <a name="connect"></a>
-
-=head2 static create() : Bivio::SQL::Connection
-
-=head2 static create(string dbi_name) : Bivio::SQL::Connection
-
-Returns a connection instance which uses the specified database
-configuration.
-
-=cut
-
-sub create {
-    my($proto, $dbi_name) = @_;
-
-    my($key) = defined($dbi_name) ? $dbi_name : '<default>';
-    # cache connections by dbi_name
-    unless ($_CONNECTIONS->{$key}) {
-	my($module) = Bivio::Ext::DBI->get_config($dbi_name)->{connection};
-	Bivio::IO::ClassLoader->simple_require($module);
-	_trace($module) if $_TRACE;
-	$_CONNECTIONS->{$key} = $module->internal_new($dbi_name);
-    }
-    return $_CONNECTIONS->{$key};
 }
 
 =for html <a name="disconnect"></a>
@@ -670,7 +694,7 @@ sub _execute_helper {
 #
 sub _get_instance {
     my($proto) = @_;
-    return $proto->create($_DEFAULT_DBI_NAME);
+    return $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
 # static _get_connection(self) : connection

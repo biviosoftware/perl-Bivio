@@ -38,6 +38,18 @@ C<Bivio::SQL::Connection::Postgres>
 
 =cut
 
+=for html <a name="CAN_LIMIT_AND_OFFSET"></a>
+
+=head2 CAN_LIMIT_AND_OFFSET : boolean
+
+Postgres supports C<LIMIT> and C<OFFSET>.
+
+=cut
+
+sub CAN_LIMIT_AND_OFFSET {
+    return 1;
+}
+
 =for html <a name="REQUIRE_COMMIT_OR_ROLLBACK"></a>
 
 =head2 REQUIRE_COMMIT_OR_ROLLBACK : boolean
