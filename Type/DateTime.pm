@@ -343,6 +343,19 @@ sub now {
     return from_unix(__PACKAGE__, time);
 }
 
+=for html <a name="now_as_string"></a>
+
+=head2 now_as_string() : string
+
+Convience routine to print L<now|"now">.
+
+=cut
+
+sub now_as_string {
+    my($proto) = @_;
+    return $proto->to_string($proto->now);
+}
+
 =for html <a name="rfc822"></a>
 
 =head2 rfc822() : string
