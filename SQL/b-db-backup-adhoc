@@ -30,24 +30,28 @@ cd $ts
 # Note: INSTRUMENT_T exported again
 /usr/local/oracle/product/8.1.5/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y constraints=n statistics=none feedback=0 consistent=n file=./$ts-mgfs.dmp 'tables=(MGFS_BALANCE_SHEET_T,MGFS_CASH_FLOW_T,MGFS_COMPANY_BOARD_T,MGFS_COMPANY_SEGMENT_T,MGFS_COMPANY_T,MGFS_DAILY_QUOTE_T,MGFS_DOWNLOAD_T,MGFS_FUNDAMENTAL_T,MGFS_INCOME_STATEMENT_T,MGFS_INSTRUMENT_T,MGFS_SECONDARY_SIC_T,MGFS_SIC_CODE_T,MGFS_SPLIT_T,MGFS_SP_INDUSTRY_T,INSTRUMENT_T)'
 
-echo dbs-admin-$HOST
-tar czf - /usr/local/oracle/product/8.1.5/dbs /usr/local/oracle/product/8.1.5/admin /usr/local/oracle/product/8.1.5/network/admin >$ts-$HOST-dbs-admin.tgz
-
-echo reqng-${BACKUP_HOST}
-/usr/local/bin/ssh ${BACKUP_HOST} tar czf - /usr/local/reqng >$ts-${BACKUP_HOST}-reqng.tgz 
-/usr/local/bin/ssh ${BACKUP_HOST} tar czf - /home/httpd >$ts-${BACKUP_HOST}-httpd.tgz 
-
 echo Compressing *mgfs.dmp
 gzip *mgfs.dmp
 echo Compressing *realm.dmp
 gzip *realm.dmp
 
-# Backup to /home/bkp
+echo dbs-admin-$HOST
+tar czf - /usr/local/oracle/product/8.1.5/dbs /usr/local/oracle/product/8.1.5/admin /usr/local/oracle/product/8.1.5/network/admin >$ts-$HOST-dbs-admin.tgz
+
+if [ "$BACKUP_HOST" != "NONE" ]; then
+    echo reqng-${BACKUP_HOST}
+    /usr/local/bin/ssh ${BACKUP_HOST} tar czf - /usr/local/reqng >$ts-${BACKUP_HOST}-reqng.tgz 
+    /usr/local/bin/ssh ${BACKUP_HOST} tar czf - /home/httpd >$ts-${BACKUP_HOST}-httpd.tgz 
+fi
+
+# Return to /home/bkp
 cd ..
 
-echo Transferring to $BACKUP_HOST
-ssh $BACKUP_HOST "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
-scp -pr $ts ${BACKUP_HOST}:/home/bkp/$DB_NAME
+if [ "$BACKUP_HOST" != "NONE" ]; then
+    echo Transferring to $BACKUP_HOST
+    ssh $BACKUP_HOST "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
+    scp -pr $ts ${BACKUP_HOST}:/home/bkp/$DB_NAME
+fi
 
 if [ "$TRANSFER_HOST" != "NONE" ]; then
     echo Transferring to $TRANSFER_HOST
