@@ -136,7 +136,8 @@ string.  Otherwise,
 
 sub execute_home_page_if_site_root {
     my(undef, $req) = @_;
-    $req->client_redirect(Bivio::UI::Text->get_value('home_page_uri', $req))
+    $req->client_redirect_contextless(
+	    Bivio::UI::Text->get_value('home_page_uri', $req))
 	    if $req->get('uri') =~ m!^/?$!;
     return 0;
 }
