@@ -348,7 +348,7 @@ sub get_uri_list {
 	# Find the uri if set, otherwise the package base name in lc.
 	my($uri) = $file;
 	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
-	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);
+	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);  	 #emacs
 	push(@uri, $uri2 || $uri);
     }
     close(IN);
