@@ -558,6 +558,19 @@ sub get_model_properties {
     return \%res;
 }
 
+=for html <a name="get_stay_on_page"></a>
+
+=head2 get_stay_on_page() : boolean
+
+Returns state of L<internal_stay_on_page|"internal_stay_on_page">.
+
+=cut
+
+sub get_stay_on_page {
+    # May not be set
+    return shift->[$_IDI]->{stay_on_page} ? 1 : 0;
+}
+
 =for html <a name="handle_cookie_in"></a>
 
 =head2 handle_cookie_in(Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
