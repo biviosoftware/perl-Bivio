@@ -67,7 +67,7 @@ sub check_accept {
     my($proto, $req) = @_;
 
     my($self) = _check_cookie($proto, $req);
-    _set_state($self, $req) if $self;
+    _set_state($self, $req) if ref($self);
     return;
 }
 
