@@ -1060,7 +1060,16 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_invite_not_found
     )],
-#92
+    [qw(
+        CLUB_SETUP_SWITCHOVER_CHOICE
+        92
+        CLUB
+        ADMIN_READ
+        ?/switchover-choice
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::UI::HTML::Club::New
+        help=switchover-date
+    )],
     [qw(
         USER_NEW
         93
@@ -2866,16 +2875,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::EditPreferences
         next=CLUB_ADMIN_PREFERENCES_EDIT
         require_context=0
-    )],
-    [qw(
-        CLUB_SETUP_SWITCHOVER_CHOICE
-        252
-        CLUB
-        ADMIN_READ
-        ?/switchover-choice
-        Bivio::Biz::Model::RealmUser->execute_auth_user
-        Bivio::UI::HTML::Club::New
-        help=switchover-date
     )],
 );
 
