@@ -65,6 +65,10 @@ PDFFont attributes may be the following
 use Bivio::UI::Color;
 
 #=VARIABLES
+my($_ENCODING) = {
+    Symbol => 'builtin',
+    ZapfDingbats => 'builtin',
+};
 
 =head1 METHODS
 
@@ -136,8 +140,8 @@ sub set_font {
 
     # Lookup name
     my($value) = $proto->internal_get_value($name, $req);
-
-    $pdf->setfont($pdf->findfont($value->{font}, "host", 0), $value->{size});
+    $pdf->setfont($pdf->findfont($value->{font},
+        $_ENCODING->{$value->{font}} || 'host', 0), $value->{size});
 
     # need to reset these each time
     foreach my $param (qw(underline overline strikeout)) {
