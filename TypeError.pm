@@ -154,10 +154,6 @@ your must login to access this link or command
 
 state must be exactly two letters
 
-=item MGFS_RATIO
-
-invalid ratio
-
 =item EMAIL
 
 invalid email address; should be of the form mary@aol.com
@@ -427,7 +423,7 @@ __PACKAGE__->compile([
 	undef,
 	'state must be exactly two letters',
     ],
-    MGFS_RATIO => [
+    INVALID_RATIO => [
 	31,
 	undef,
 	'invalid ratio',
