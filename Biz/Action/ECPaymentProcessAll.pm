@@ -80,7 +80,7 @@ sub _process_all {
 
     # check batch before and after.  Sometimes there is an error downloading
     # the status, and we have accidentally resubmitted a payments.
-    Bivio::Societas::Biz::Model::ECPayment->check_transaction_batch;
+    Bivio::Societas::Biz::Model::ECPayment->check_transaction_batch($req);
     my($task) = Bivio::Agent::Task->get_by_id(
             Bivio::Agent::TaskId->CLUB_ADMIN_EC_PROCESS_PAYMENT);
     my($ecp) = Bivio::Biz::Model->new($req, 'ECPayment');
