@@ -77,7 +77,7 @@ sub add_to_cart {
     }
     else {
 	my($row) = $self->get_html_parser
-	    ->get_nested('Tables', 'Item ID', 'rows', 0);
+	    ->get_nested('Tables', 'item', 'rows', 0);
 	$item_name = $row->[0]->get('text');
 	$price = $row->[1]->get('text');
     }
