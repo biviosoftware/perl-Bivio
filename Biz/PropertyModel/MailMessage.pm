@@ -51,7 +51,7 @@ use Bivio::SQL::Support;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars qw(&_TRACE);
+use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_SQL_SUPPORT);
 Bivio::IO::Config->register({
@@ -134,11 +134,11 @@ sub create {
     $file->close;
 
     #now extract all the mime attachments
-    &_trace('extracting MIME attachments for this mail message') if &_TRACE;
+    &_trace('extracting MIME attachments for this mail message') if $_TRACE;
 #    my $msgid = $values->{mail_message_id};
-    &_trace('extracting MIME attachments') if &_TRACE;
+    &_trace('extracting MIME attachments') if $_TRACE;
     _extract_mime($entity, 0, $club_name, $msgid);
-    &_trace('Done extractng MIME attachments') if &_TRACE;
+    &_trace('Done extractng MIME attachments') if $_TRACE;
     return;
 }
 
@@ -327,7 +327,7 @@ sub _write_mime_header{
 # filename, clubname scalarRef
 sub _write_mime{
     my($filename, $clubname, $msg) = @_;
-    &_trace('writing file: $filename') if &_TRACE;
+    &_trace('writing file: $filename') if $_TRACE;
     $_FILE_CLIENT->create('/' . $clubname . '/messages/html/'
     . $filename, $msg) || die("writing of mime part failed: $$msg");
 }
@@ -338,9 +338,9 @@ sub _write_mime{
 
 sub _extract_mime{
     my($entity, $fileindex, $club_name, $message_id) = @_;
-    &_trace('extract index: $fileindex') if &_TRACE;
+    &_trace('extract index: $fileindex') if $_TRACE;
     my($numparts) = $entity->parts( ) || 0; #number of parts;
-    &_trace('number of parts: $numparts') if &_TRACE;
+    &_trace('number of parts: $numparts') if $_TRACE;
 
 #    if($fileindex > 0 ){ # then we're probably talking about sub parts. Whatever that means.
     my $mime = _extract_mime_body_decoded($entity);
@@ -350,38 +350,38 @@ sub _extract_mime{
     my $write=1;
     my $ctype = $entity->head->get('content-type');
     my $hdr = _extract_mime_header($entity);
-    &_trace('content type: \"$ctype\"') if &_TRACE;
+    &_trace('content type: \"$ctype\"') if $_TRACE;
     if($mime){
 	if($ctype =~ /multipart\/alternative/){
 	    #maybe throw away the text/plain, and just write out the HTML
-	    &_trace('content-type is multipart/alternative. Not writing this part.') if &_TRACE;
+	    &_trace('content-type is multipart/alternative. Not writing this part.') if $_TRACE;
 	    $write = 0;
 	}
 	if($ctype =~ /multipart\/mixed/){
-	    &_trace('content type is multipart/mixed. Not writing this part.') if &_TRACE;
+	    &_trace('content type is multipart/mixed. Not writing this part.') if $_TRACE;
 	    $write = 0;
 	}
 	if($ctype =~ /text\/plain/){
 	    $textplain = 1;
 	}
 	if($textplain eq(1) && $write eq(1)){ 
-	    &_trace('content type is text/plain') if &_TRACE;
-	    &_trace('wrapping with <PRE></PRE>') if &_TRACE;
+	    &_trace('content type is text/plain') if $_TRACE;
+	    &_trace('wrapping with <PRE></PRE>') if $_TRACE;
 	    $msg = "<PRE>\n" . $msg . "\n</PRE>\n";
 	    _write_mime($outputfilename, $club_name, \$msg);
             _write_mime_header($club_name, $outputfilename, \$hdr);
 	}
 	else{ #could be text/html or some other mime type
-	    &_trace('content-type is not text/plain. it is \"$ctype\"') if &_TRACE;
+	    &_trace('content-type is not text/plain. it is \"$ctype\"') if $_TRACE;
 	    if($write eq(1)){
-		&_trace('writing straight through.') if &_TRACE;
+		&_trace('writing straight through.') if $_TRACE;
 		_write_mime($outputfilename, $club_name, \$msg);
 		_write_mime_header($club_name, $outputfilename, \$hdr);
 	    }
 	}
     }
 
-    &_trace('found $numparts elements. ') if &_TRACE;
+    &_trace('found $numparts elements. ') if $_TRACE;
     for(my $index=0; $index < $numparts; $index += 1){
 	my $e = $entity->part($index);
 	$fileindex = $fileindex + 1;
