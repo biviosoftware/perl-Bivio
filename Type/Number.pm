@@ -167,6 +167,8 @@ Returns a number with the opposite sign from the specified one.
 sub neg {
     my($proto, $number) = @_;
 
+    return $number if $proto->compare($number, 0) == 0;
+
     my($sign, $num);
     if (($sign, $num) = $number =~ /^([-+])(.*)$/) {
 	return ($sign eq '-' ? '+' : '-').$num;
