@@ -301,7 +301,7 @@ _compile([
     CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
-    CLUB_ACCOUNTING_INVESTMENT_CHARGES_PAID => ['Charges Paid From Dividends'],
+    CLUB_ACCOUNTING_INVESTMENT_CHARGES_PAID => ['Charges Paid by Company'],
     CLUB_ACCOUNTING_INVESTMENT_DETAIL => ['Investment Detail'],
     CLUB_ACCOUNTING_INVESTMENT_INCOME => ['Investment Income'],
     CLUB_ACCOUNTING_INVESTMENT_LIST => ['Investment Summary'],
