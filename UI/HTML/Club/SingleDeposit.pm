@@ -164,7 +164,7 @@ sub execute {
     $req->put(show_valuation_date => $show_valuation_date);
 
     # set the account to broker
-    $req->put(page_heading => $heading.$owner->get('display_name'),
+    $req->put(page_title_value => $heading.$owner->get('display_name'),
 	    page_subtopic => undef,
 	    page_content => $self,
 	   );

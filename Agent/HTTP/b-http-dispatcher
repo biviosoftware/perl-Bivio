@@ -52,7 +52,6 @@ use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Cwd ();
 use Sys::Hostname;
-use Bivio::Agent::Request;
 use Bivio::UI::Facade;
 
 #=VARIABLES
@@ -113,8 +112,8 @@ EOF
     my($hostip) = sprintf("%d.%d.%d.%d",
             unpack('C4', (gethostbyname($hostname))[4]));
 
-    Bivio::UI::Facade->initialize;
     my($facades) = '';
+    # TIGHT COUPLING with Bivio::UI::Facade
     foreach my $facade (@{Bivio::UI::Facade->get_uri_list}) {
 	$facades .= <<"EOF";
 	    <VirtualHost $hostip:$port>

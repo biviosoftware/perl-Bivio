@@ -160,7 +160,7 @@ sub execute {
 	$comparison_heading = "Comparing $realm_name with $inst_name";
     }
 
-    $req->put(page_heading => $fields->{heading},
+    $req->put(page_title_value => $fields->{heading},
 	    page_content => $fields->{report},
 	    realm_irr => $realm_list->get_irr,
 	    comparison_irr => $compare_list->get_irr,

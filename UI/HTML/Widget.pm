@@ -37,7 +37,8 @@ Provides many utility routines to help create widgets.
 #NOTE: Do not import any widgets here, use _use().
 #      This class uses many other Widgets, but it is the parent class
 #      of all Widgets.  We avoid import circularities by using
-#      Bivio::Util::my_require via _use().
+#      Bivio::Util::my_require via _use().  It is also used in
+#      facade initialization.
 use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
@@ -46,7 +47,6 @@ use Bivio::UI::Label;
 use Bivio::Util;
 
 #=VARIABLES
-my($_MAILTO_SUPPORT);
 
 =head1 FACTORIES
 
@@ -569,6 +569,22 @@ sub indent {
     return ("\n<blockquote>\n", @_, "\n</blockquote>\n");
 }
 
+=for html <a name="indirect"></a>
+
+=head2 indirect(any value) : Bivio::UI::HTML::Widget::Indirect
+
+
+
+=cut
+
+sub indirect {
+    my(undef, $value) = @_;
+    _use('Indirect');
+    return Bivio::UI::HTML::Widget::Indirect->new({
+	value => $value,
+    });
+}
+
 =for html <a name="join"></a>
 
 =head2 static join(array_ref values) : Bivio::UI::HTML::Widget::Join
@@ -624,7 +640,7 @@ If I<label> is not a widget, will wrap in a C<String> widget.
 If I<task> is passed, will create a widget value by formatting
 as a stateless uri for the TaskId named by I<task>.
 
-If I<abs_uri> is passed, it must contain a / or :.
+If I<abs_uri> is passed, it must contain a / or : or #.
 
 
 =cut
@@ -643,7 +659,7 @@ sub link {
     $widget_value = ['->format_stateless_uri',
 	Bivio::Agent::TaskId->$widget_value()]
 	    # Use widget value or abs_uri (literal)
-	    unless ref($widget_value) || $widget_value =~ m![/:]!;
+	    unless ref($widget_value) || $widget_value =~ m![/:#]!;
     return Bivio::UI::HTML::Widget::Link->new({
 	href => $widget_value,
 	value => $label,
@@ -736,12 +752,8 @@ Returns URL to support.
 =cut
 
 sub link_support {
-    my($self) = @_;
-    return $_MAILTO_SUPPORT if $_MAILTO_SUPPORT;
-    my($req) = Bivio::Agent::Request->new();
-    my($email) = $req->get('support_email');
-    $_MAILTO_SUPPORT = '<a href="mailto:'.$email.'">'.$email.'</a>';
-    return $_MAILTO_SUPPORT;
+    my($proto) = @_;
+    return $proto->mailto([['->get_request'], 'support_email']);
 }
 
 =for html <a name="link_target_as_html"></a>
@@ -751,11 +763,13 @@ sub link_support {
 Looks up the attribute I<link_target> ancestrally and renders
 it as ' target="XXX"' (with leading space) whatever its value is.
 
+Default is '_top', because we don't use frames.
+
 =cut
 
 sub link_target_as_html {
     my($self) = @_;
-    my($t) = $self->ancestral_get('link_target', undef);
+    my($t) = $self->ancestral_get('link_target', '_top');
     return defined($t) ? (' target="'.Bivio::Util::escape_html($t).'"') : '';
 }
 
@@ -813,6 +827,24 @@ sub list_actions {
 	    values => $actions,
 	}),
     };
+}
+
+=for html <a name="load_class"></a>
+
+=head2 load_class(string widget, ...)
+
+Loads a widget class dynamically.  Can be used by modules which
+want to avoid static imports.
+
+Widgets can be referred to by their base class name, e.g.
+C<load_class('Grid')> loads C<Bivio::UI::HTML::Widget::Grid>.
+
+=cut
+
+sub load_class {
+    shift;
+    _use(@_);
+    return;
 }
 
 =for html <a name="mailto"></a>

@@ -46,7 +46,6 @@ sub MAX_SERVER_REDIRECTS {
 
 #=IMPORTS
 use BSD::Resource;
-use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Task;
 use Bivio::Die;
@@ -149,10 +148,22 @@ Initialize Agent state.
 sub initialize {
     $_INITIALIZED && return;
     $_INITIALIZED = 1;
+    # Need a current request for initialization
+    Bivio::Agent::Request->get_current_or_new;
+
+    # Initialize URI map
+    Bivio::Util::my_require('Bivio::Agent::HTTP::Location');
     Bivio::Agent::HTTP::Location->initialize;
+
+    # Initialize all tasks and task items
     Bivio::Agent::Task->initialize;
+
+    # Initialize user interface support
     Bivio::Util::my_require('Bivio::UI::Facade');
     Bivio::UI::Facade->initialize;
+    Bivio::Util::my_require('Bivio::UI::HTML::Page');
+    Bivio::UI::HTML::Page->initialize;
+
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;
     return;
 }

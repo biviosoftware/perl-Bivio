@@ -58,6 +58,7 @@ Should the a click submit the form?
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::UI::Font;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -114,7 +115,8 @@ Draws the checkbox on the specified buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
 #TODO: look into prefix optimization
@@ -122,13 +124,16 @@ sub render {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
 	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
-	$fields->{suffix} .= '> '
+	$fields->{suffix} .= '>';
+	$fields->{label} = ' '
 		.Bivio::Util::escape_html($self->get('label'))."\n";
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' checked' if $form->get($field);
-    $$buffer .= $fields->{suffix};
+    my($p, $s) = Bivio::UI::Font->format_html(
+	    $self->ancestral_get('string_font', 'checkbox'), $req);
+    $$buffer .= $fields->{suffix}.$p.$fields->{label}.$s;
     return;
 }
 

@@ -37,36 +37,35 @@ __PACKAGE__->new({
     is_production => 1,
     'Bivio::UI::Color' => {
 	initialize => sub {
-	    my($comp) = @_;
-	    $comp->create_group(-1, qw(
+	    my($fc) = @_;
+	    $fc->create_group(-1, qw(
 		    table_odd_row_bg
 		    list_form_even_row_bg
 		    list_form_odd_row_bg
 	    ));
-	    $comp->create_group(0xFFFFFF, qw(
+	    $fc->create_group(0xFFFFFF, qw(
                     page_bg
 		    image_menu_separator
-		    report_page_heading_bg
 		    celebrity_box_title
 		    profile_box_title
 		    celebrity_box_text_bg
 		    profile_box_text_bg
             ));
-	    $comp->create_group(0x990000, qw(
+	    $fc->create_group(0x990000, qw(
 		    error
 		    warning
 	    ));
-	    $comp->create_group(0x000000, qw(
+	    $fc->create_group(0x000000, qw(
     		    page_text
 	            table_separator
             ));
-	    $comp->create_group(0x009999, qw(
+	    $fc->create_group(0x009999, qw(
 		    stripe_above_menu
 		    celebrity_disclaimer
 		    decor_disclaimer
 		    tax_disclaimer
             ));
-	    $comp->create_group(0x006666, qw(
+	    $fc->create_group(0x006666, qw(
 		    footer_menu
 	            page_vlink
 	            page_alink
@@ -84,22 +83,22 @@ __PACKAGE__->new({
 	            task_list_heading
 	            task_list_label
             ));
-            $comp->create_group(0xEEEEEE, qw(
+            $fc->create_group(0xEEEEEE, qw(
                     icon_text_ia
             ));
-            $comp->create_group(0x66CC66, qw(
+            $fc->create_group(0x66CC66, qw(
                     summary_line
             ));
 	    # This is not websafe, but it will round down to 0xCCCCCC
 	    # on systems that have only 256 colors.
-            $comp->create_group(0xE4E4E4, qw(
+            $fc->create_group(0xE4E4E4, qw(
                     table_even_row_bg
             ));
-            $comp->create_group(0xFF6633, qw(
+            $fc->create_group(0xFF6633, qw(
                     realm_name
             ));
-            $comp->create_group(0xFFCC33, qw(
-                    top_menu_bg
+            $fc->create_group(0xFFCC33, qw(
+                    image_menu_bg
                     text_menu_line
             ));
 	    return;
@@ -107,102 +106,104 @@ __PACKAGE__->new({
     },
     'Bivio::UI::Font' => {
 	initialize => sub {
-	    my($comp) = @_;
+	    my($fc) = @_;
 	    my($ss) = 'verdana,arial,sans-serif';
-	    $comp->create_group([$ss, 'celebrity_box_title'],
+	    $fc->create_group([$ss, 'celebrity_box_title'],
 		    'celebrity_box_title');
-	    $comp->create_group([$ss, 'profile_box_title', 'strong'],
+	    $fc->create_group([$ss, 'profile_box_title', 'strong'],
 		    'profile_box_title');
-	    $comp->create_group([$ss, 'celebrity_disclaimer', 'small'],
+	    $fc->create_group([$ss, 'celebrity_disclaimer', 'small'],
 		    'celebrity_disclaimer');
-	    $comp->create_group([$ss, 'decor_disclaimer', 'small'],
+	    $fc->create_group([$ss, 'decor_disclaimer', 'small'],
 		    'decor_disclaimer');
-	    $comp->create_group([$ss, 'detail_chooser', 'strong'],
+	    $fc->create_group([$ss, 'detail_chooser', 'strong'],
 		    'detail_chooser');
-	    $comp->create_group([$ss, 'error', 'big', 'strong'], qw(
+	    $fc->create_group([$ss, 'error', 'big', 'strong'], qw(
 		    error_icon
 	            substitute_user
             ));
-	    $comp->create_group([$ss, 'footer_menu', 'small'],
+	    $fc->create_group([$ss, 'footer_menu', 'small'],
 		    'footer_menu');
-	    $comp->create_group([$ss, 'page_heading', 'big', 'strong'],
-		    'report_page_heading');
-	    $comp->create_group([$ss, 'page_heading', 'small'],
+	    $fc->create_group([$ss, 'page_heading', 'small'],
 		    'checked_icon');
-	    $comp->create_group([$ss, 'page_heading', 'strong'],
+	    $fc->create_group([$ss, 'page_heading', 'strong'],
 		    'page_heading');
-	    $comp->create_group([$ss, 'realm_name', 'strong'],
+	    $fc->create_group([$ss, 'realm_name', 'strong'],
 		    'realm_name');
-	    $comp->create_group([$ss, 'tax_disclaimer', 'i'],
+	    $fc->create_group([$ss, 'tax_disclaimer', 'i'],
 		    'tax_disclaimer');
-	    $comp->create_group([$ss, 'text_menu_font', 'strong'], qw(
+	    $fc->create_group([$ss, 'text_menu_font', 'strong'], qw(
 		    prev_next_bar_link
 		    text_menu_selected
             ));
-	    $comp->create_group([$ss, 'text_menu_font'],
+	    $fc->create_group([$ss, 'text_menu_font'],
 		    'text_menu_normal');
-	    $comp->create_group([$ss, 'user_name', 'big'],
+	    $fc->create_group([$ss, 'user_name', 'big'],
 		    'user_name');
-	    $comp->create_group([$ss, undef, 'small'], qw(
+	    $fc->create_group([$ss, undef, 'small'], qw(
 		    celebrity_box_text
 		    profile_box_text
 		    copyright_and_disclaimer
 		    report_footer
 		    time
             ));
-	    $comp->create_group([$ss, undef, 'strong'], qw(
+	    $fc->create_group([$ss, undef, 'strong'], qw(
 		    table_heading
 		    normal_table_heading
 	    ));
-	    $comp->create_group([$ss, undef], qw(
+	    $fc->create_group([$ss, undef], qw(
 		    form_submit
                     message_subject
                     prev_next_bar_text
             ));
-	    $comp->create_group([undef, 'description_label', 'strong'],
+	    $fc->create_group([undef, 'description_label', 'strong'],
 		    'description_label');
-	    $comp->create_group([undef, 'error', 'b'], qw(
+	    $fc->create_group([undef, 'error', 'b'], qw(
 		    error
 		    form_field_error
 		    warning
             ));
-	    $comp->create_group([undef, 'error', 'i'],
+	    $fc->create_group([undef, 'error', 'i'],
 		    'form_field_error_label');
-	    $comp->create_group([undef, 'error', 'small'],
+	    $fc->create_group([undef, 'error', 'small'],
 		    'list_error',
 		    'checkbox_error');
-	    $comp->create_group([undef, 'form_field_label_in_text', 'strong'],
+	    $fc->create_group([undef, 'form_field_label_in_text', 'strong'],
 		    'form_field_label_in_text');
-	    $comp->create_group([undef, 'icon_text_ia'],
+	    $fc->create_group([undef, 'icon_text_ia'],
 		    'icon_text_ia');
-	    $comp->create_group([undef, 'page_text'],
+	    $fc->create_group([undef, 'page_text'],
 		    'realm_chooser_text');
-	    $comp->create_group([undef, 'task_list_label'],
+	    $fc->create_group([undef, 'task_list_label'],
 		    'task_list_label');
-	    $comp->create_group([undef, 'task_list_heading', 'strong'],
+	    $fc->create_group([undef, 'task_list_heading', 'strong'],
 		    'task_list_heading');
-	    $comp->create_group([undef, undef, 'b'],
+	    $fc->create_group([undef, undef, 'b'],
 		    'label_in_text');
-	    $comp->create_group([undef, undef, 'i'],
+	    $fc->create_group([undef, undef, 'i'],
 		    'italic');
-	    $comp->create_group([undef, undef, 'small'], qw(
+	    $fc->create_group([undef, undef, 'small'], qw(
 		    file_tree_bytes
 		    list_action
 		    lookup_button
             ));
-	    $comp->create_group([undef, undef, 'strong'], qw(
+	    $fc->create_group([undef, undef, 'strong'], qw(
                     action_bar_string
                     strong
                     table_row_title
             ));
-	    $comp->create_group([undef, undef], qw(
+	    $fc->create_group([undef, undef], qw(
 		    form_field_description
 		    form_field_label
 		    table_cell
 		    number_cell
                     action_button
 	    	    form_field_example
+		    report_page_heading
 	            radio
+                    descriptive_page
+                    page_legend
+                    checkbox
             ));
 	    return;
 	}
@@ -210,6 +211,28 @@ __PACKAGE__->new({
     'Bivio::UI::Icon' => {
 	# No initialization
 	initialize => sub {},
+    },
+    'Bivio::UI::HTML' => {
+	initialize => sub {
+	    my($fc) = @_;
+
+	    # Some required strings and values
+	    $fc->create_group('bivio', 'logo_icon', 'site_name');
+	    $fc->create_group('bivio home', 'home_alt_text');
+	    $fc->create_group('page_left_margin', 20);
+	    $fc->create_group('table_default_align', 'center');
+
+	    $fc->initialize_standard_support;
+
+	    # These are required names, which are checked by page.
+	    $fc->create_group($fc->get_standard_page, 'page_widget');
+	    $fc->create_group($fc->get_standard_header, 'header_widget');
+	    $fc->create_group($fc->get_standard_logo, 'logo_widget');
+	    $fc->create_group($fc->get_standard_head, 'head_widget');
+	    $fc->create_group($fc->get_standard_header_height,
+		    'header_height');
+	    return;
+	},
     },
 });
 

@@ -481,21 +481,24 @@ sub is_empty {
 
 =for html <a name="put"></a>
 
-=head2 put(string key, string value, ...)
+=head2 put(string key, string value, ...) : Bivio::Collection::Attributes
 
 Adds or replaces the named value(s).
+
+Returns I<self>.
 
 =cut
 
 sub put {
-    my($fields) = shift->{$_PACKAGE};
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
     die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     int(@_) % 2 == 0 || Carp::croak("must be an even number of parameters");
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	$fields->{$k} = $v;
     }
-    return;
+    return $self;
 }
 
 =for html <a name="set_read_only"></a>

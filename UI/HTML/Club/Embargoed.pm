@@ -75,7 +75,7 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $req->put(page_subtopic => undef, page_heading => 'Embargoed',
+    $req->put(page_subtopic => undef, page_title_value => 'Embargoed',
 	   page_content => $fields->{message},
 	   page_action_bar => $fields->{action_bar});
     Bivio::UI::HTML::Club::Page->execute($req);

@@ -87,7 +87,7 @@ Creates a new Page widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::HTML::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

@@ -46,6 +46,7 @@ Name of the field to render.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::Format::Printf;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;

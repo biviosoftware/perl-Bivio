@@ -141,7 +141,7 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $req->put(page_heading => $fields->{heading},
+    $req->put(page_title_value => $fields->{heading},
 	    page_content => $fields->{content});
     Bivio::UI::HTML::Club::ReportPage->execute($req);
     return;

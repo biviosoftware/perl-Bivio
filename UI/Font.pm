@@ -38,9 +38,9 @@ The configuration of a font is an array_ref.  The elements are:
 The face(s) is a list of valid HTML font face, e.g.
 C<verdana,sans,serif,>.  The color must be a valid
 L<Bivio::UI::Color|Bivio::UI::Color>.  The modifiers
-may either be a numeric size, e.g. +1, -3, 2, or
 one of the various HTML font modifiers, e.g. C<strong>,
-C<tt>, and C<small>.
+C<tt>, and C<small> or a C<FONT> tag attribute,
+e.g. "size=+1" and "class=content".
 
 =cut
 
@@ -115,21 +115,24 @@ sub internal_initialize_value {
     }
 
     my($face, $color, @styles) = @$v;
-    my($size);
     my($p, $s) = ('', '');
+    my($attrs) = '';
     while (@styles) {
 	my($style) = shift(@styles);
-	$size = $style, next if $style =~ /^[-+]?\d+$/;
+	if ($style =~ /=/) {
+	    $attrs .= ' '.$style;
+	    next;
+	}
 	$p .= "<$style>";
 	$s = "</$style>" . $s;
     }
 
-    if ($color || $face || defined($size)) {
+    if ($color || $face || $attrs) {
 	$p .= '<font';
 	$p .= ' face="'.$face.'"' if $face;
 	$p .= Bivio::UI::Color->format_html($color, 'color', $self->get_facade)
 		if $color;
-	$p .= ' size="'.$size.'"' if defined($size);
+	$p .= $attrs;
 	$p .= '>';
 	$s = '</font>' . $s;
     }

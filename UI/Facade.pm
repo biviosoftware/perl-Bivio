@@ -56,6 +56,10 @@ I<initialize> takes one argument: the Component being initialized.
 The component will already have the I<facade> to which it belongs
 as an attribute when I<initialize> is called.
 
+=item is_default : boolean (facade)
+
+Returns true if this is the default facade.
+
 =item is_production : boolean (facade)
 
 If set to true, the Facade will be found in a production environment.
@@ -71,6 +75,41 @@ The base name of the Facade's package.
 
 Component instance for this facade.  The attribute name must
 be the package (ref($instance)) for the Component.
+
+=back
+
+=head2 URI TO CLASS LIST
+
+Each Facade class can assign its own uri, but they must all be
+unique.  The code words should be used only once.  Once a facade
+is in production or in test for production, its real URI should be
+used.
+
+=over 4
+
+=item x1 : Cool
+
+=item aristau : WFN
+
+=item muri : BUYandHOLD
+
+=item cimo : eklubs
+
+=item bumpliz :
+
+=item ollon :
+
+=item stange :
+
+=item schnipo :
+
+=item boelle :
+
+=item laedli :
+
+=item dubeli :
+
+=item uetli :
 
 =back
 
@@ -178,6 +217,7 @@ sub new {
     $self->internal_put({
 	uri => $uri,
 	is_production => $config->{is_production} ? 1 : 0,
+	is_default => $_DEFAULT eq $class ? 1 : 0,
     });
     delete($config->{is_production});
 
@@ -200,10 +240,7 @@ sub new {
 		    unless $cc || $cfg->{initialize};
 
 	# Create the instance, initialize, seal, and store.
-	my($ci) = $c->new($self, $cc);
-	&{$cfg->{initialize}}($ci) if $cfg->{initialize};
-	$ci->initialization_complete;
-	$self->put($c => $ci);
+	$self->put($c => $c->new($self, $cc, $cfg->{initialize}));
 	delete($config->{$c});
     }
 
@@ -221,16 +258,49 @@ sub new {
 
 =cut
 
+=for html <a name="get_default"></a>
+
+=head2 get_default() : Bivio::UI::Facade
+
+Get the default facade.
+
+=cut
+
+sub get_default {
+    return $_CLASS_MAP{$_DEFAULT};
+}
+
 =for html <a name="get_uri_list"></a>
 
 =head2 static get_uri_list() : array_ref
+
+B<Only to be used by b-http-dispatcher.>
 
 Returns a list of URIs which identify the configured facades.
 
 =cut
 
 sub get_uri_list {
-    return [keys(%_URI_MAP)];
+    return [keys(%_URI_MAP)] if $_INITIALIZED;
+
+    # HACK: We aren't initialized, but b-http-dispatcher would like
+    # the list, so we'll just take a quick guess.
+    die("caller isn't b-http-dispatcher")
+	    if (caller(0))[3] =~ /::main$/;
+
+    my($pat) = _get_class_pattern();
+    my(@uri);
+    foreach my $file (glob($pat)) {
+	open(IN, $file) || next;
+	# Find the uri if set, otherwise the package base name in lc.
+	my($uri) = $file;
+	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
+	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);
+	push(@uri, $uri2 || $uri);
+    }
+    close(IN);
+    _trace(\@uri) if $_TRACE;
+    return \@uri;
 }
 
 =for html <a name="handle_config"></a>
@@ -271,14 +341,7 @@ sub initialize {
     # Prevent recursion.  Initialization isn't re-entrant
     $_INITIALIZED = 1;
 
-    # Compute the location where this module was loaded from by
-    # turning this module into a perl module path name, looking
-    # up in %INC, then turning into a glob pattern
-    my($pat) = __PACKAGE__;
-    $pat =~ s,::,/,g;
-    $pat .= '.pm';
-    $pat = $INC{$pat};
-    $pat =~ s/(\.pm)$/\/*$1/;
+    my($pat) = _get_class_pattern();
 
     # Find all Facades
     my(@classes);
@@ -288,6 +351,7 @@ sub initialize {
 	$m =~ s/\.pm//;
 	push(@classes, __PACKAGE__.'::'.$m);
     }
+
 
     # Load 'em up
     Bivio::Util::my_require(@classes);
@@ -376,6 +440,22 @@ sub setup_request {
 }
 
 #=PRIVATE METHODS
+
+# _get_class_pattern() : string
+#
+# Returns a pattern to find the classes to be loaded.
+#
+sub _get_class_pattern {
+    # Compute the location where this module was loaded from by
+    # turning this module into a perl module path name, looking
+    # up in %INC, then turning into a glob pattern
+    my($pat) = __PACKAGE__;
+    $pat =~ s,::,/,g;
+    $pat .= '.pm';
+    $pat = $INC{$pat};
+    $pat =~ s/(\.pm)$/\/*$1/;
+    return $pat;
+}
 
 # _load(string class) : Bivio::UI::Facade
 #

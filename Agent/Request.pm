@@ -231,7 +231,6 @@ my($_IS_PRODUCTION) = 0;
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
 my($_SUPPORT_PHONE);
 my($_SUPPORT_EMAIL);
-my($_SUPPORT_EMAIL_AS_HTML);
 Bivio::IO::Config->register({
     mail_host =>  $_MAIL_HOST,
     http_host =>  $_HTTP_HOST,
@@ -254,31 +253,49 @@ my($_DEFAULT_HELP) = Bivio::Agent::Task->DEFAULT_HELP();
 
 =cut
 
-=for html <a name="new"></a>
+=for html <a name="internal_new"></a>
 
-=head2 static new(hash_ref attributes) : Bivio::Agent::Request
+=head2 static internal_new(hash_ref attributes) : Bivio::Agent::Request
+
+B<Don't call unless you are a subclass.>
+Use L<get_current_or_new|"get_current_or_new">.
 
 Creates a request with initial I<attributes>.  I<http_host> and I<mail_host>
 will be set as well, but may be overriden by subclass.
 
+Subclasses must call L<internal_set_current|"internal_set_current">
+when the instance is sufficiently initialized.
+
 =cut
 
-sub new {
+sub internal_new {
     my($proto, $hash) = @_;
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
     $self->put(request => $self,
 	    is_production => $_IS_PRODUCTION,
+	    txn_resources => [],
 
+	    # These will be modified by Location::_setup_facade.
 	    http_host => $_HTTP_HOST,
 	    mail_host => $_MAIL_HOST,
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
-	    support_email_as_html => $_SUPPORT_EMAIL_AS_HTML,
-	    txn_resources => [],
 	   );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
-    return $_CURRENT = $self;
+    return $self;
+}
+
+=for html <a name="new"></a>
+
+=head2 static new()
+
+B<Terminates caller.>  Use L<get_current_or_new|"get_current_or_new">.
+
+=cut
+
+sub new {
+    die('only can initialize from subclasses');
 }
 
 =head1 METHODS
@@ -634,7 +651,15 @@ for utilities.
 
 sub get_current_or_new {
     my($proto) = @_;
-    return $proto->get_current || $proto->new();
+    my($current) = $proto->get_current;
+    return $current if $current;
+
+    # This class doesn't set current; need to do it explicitly
+    return $proto->internal_new()->internal_set_current
+	    if $proto eq __PACKAGE__;
+
+    # Subclasses set current
+    return $proto->new();
 }
 
 =for html <a name="get_fields"></a>
@@ -797,8 +822,6 @@ sub handle_config {
     $_MAIL_HOST = $cfg->{mail_host};
     $_SUPPORT_PHONE = $cfg->{support_phone};
     $_SUPPORT_EMAIL = $cfg->{support_email};
-    $_SUPPORT_EMAIL_AS_HTML = '<a href="mailto:'.$_SUPPORT_EMAIL
-	    .'">'.$_SUPPORT_EMAIL.'</a>';
     return;
 }
 
@@ -930,6 +953,21 @@ sub internal_server_redirect {
 	    new_path_info => $new_path_info,
 	    form_context => $fc);
     return;
+}
+
+=for html <a name="internal_set_current"></a>
+
+=head2 internal_set_current() : Bivio::Agent::Request
+
+Called by subclasses when Request initialized.  Returns self.
+
+=cut
+
+sub internal_set_current {
+    my($self) = @_;
+    Bivio::IO::Alert->die($self, ': must be reference')
+		unless ref($self);
+    return $_CURRENT = $self;
 }
 
 =for html <a name="is_production"></a>

@@ -32,7 +32,7 @@ identifiers (alphanumerics and underscores), but lower-case names
 are more efficient on lookups.
 
 A FacadeComponent is initialized by a Facade.  It may be passed
-a I<clone> as a base configuration.  A I<value> is a hash_ref
+a I<clone> as a base initialization.  A I<value> is a hash_ref
 with at least one key, the I<config>, which is used to initialize
 the rest of the I<value>.  See
 L<internal_initialize_value|"internal_initialize_value"> for
@@ -68,15 +68,16 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::UI::Facade facade, Bivio::UI::FacadeComponent clone) : Bivio::UI::FacadeComponent
+=head2 static new(Bivio::UI::Facade facade, Bivio::UI::FacadeComponent clone, sub initialize) : Bivio::UI::FacadeComponent
 
 Instantiate the component and set its facade.  I<clone> is used as the
-base configuration.
+base initialization, if supplied,
+and then I<initialize> is called, if supplied.
 
 =cut
 
 sub new {
-    my($proto, $facade, $clone) = @_;
+    my($proto, $facade, $clone, $initialize) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     Bivio::IO::Alert->die($facade, ': missing or invalid facade')
 		unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
@@ -85,6 +86,8 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {
 	map => {},
 	facade => $facade,
+	clone => $clone,
+	initialize => $initialize,
     };
 
     # Initialize undef value
@@ -92,21 +95,10 @@ sub new {
     $self->internal_initialize_value($uv);
     $fields->{undef_value} = $uv;
 
-    return $self unless $clone;
-
-    # Initialize from clone: discover groups
-    my($clone_map) = $clone->{$_PACKAGE}->{map};
-    my(%groups) = ();
-    while (my($k, $v) = each(%$clone_map)) {
-	# Each hash_ref has a unique reference
-	$groups{$v} = [$v->{config}] unless $groups{$v};
-	push(@{$groups{$v}}, $k);
-    }
-
-    # Create the initial groups from the clone
-    foreach my $v (values(%groups)) {
-	$self->create_group(@$v);
-    }
+    # Initialize from clone, self, and complete
+    _init_from_clone($self, $clone);
+    &$initialize($self) if $initialize;
+    $self->initialization_complete;
     return $self;
 }
 
@@ -308,8 +300,8 @@ its subclasses as follows:
         config => $value
     });
 
-The value of I<config> must not be modified, as it is used during
-cloning of this FacadeComponent.
+The value of I<config> must not be modified, as it may be copied
+from the I<clone>.
 
 If there is an error, subclasses should try to recover outputting
 a warning using I<name>.
@@ -390,6 +382,19 @@ sub _assign {
     Bivio::IO::Alert->die($self, '->', $name, ': invalid name syntax')
 		unless $name =~ /^\w+$/;
     $map->{$name} = $value;
+    return;
+}
+
+# _init_from_clone(Bivio::UI::FacadeComponent self, Bivio::UI::FacadeComponent clone)
+#
+# Calls the initialization depth first.
+#
+sub _init_from_clone {
+    my($self, $clone) = @_;
+    return unless $clone;
+    my($clone_fields) = $clone->{$_PACKAGE};
+    _init_from_clone($self, $clone_fields->{clone});
+    &{$clone_fields->{initialize}}($self);
     return;
 }
 

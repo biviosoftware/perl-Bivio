@@ -89,7 +89,7 @@ sub JAVASCRIPT_FUNCTION_NAME {
 use Bivio::Agent::Request;
 use Bivio::Type::DateTime;
 use Bivio::UI::DateTimeMode;
-use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::Font;
 use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
@@ -181,6 +181,8 @@ sub initialize {
     $fields->{mode} = Bivio::UI::DateTimeMode->from_any(
 	    $self->get_or_default('mode', 'DATE'))->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
+    $fields->{font} = $self->ancestral_get('string_font', undef);
+    return;
 }
 
 =for html <a name="render"></a>
@@ -197,8 +199,15 @@ sub render {
     die('not initialized') unless exists($fields->{value});
     my($value) = $source->get_widget_value(@{$fields->{value}});
 
+    my($p, $s) = $fields->{font} ? Bivio::UI::Font->format_html(
+	    $fields->{font}, $source->get_request) : ('', '');
+    $$buffer .= $p;
     # Don't display anything if null
-    $$buffer .= $fields->{undef_value}, return unless defined($value);
+    unless (defined($value)) {
+	$$buffer .= $fields->{undef_value};
+	$$buffer .= $s;
+	return;
+    }
     my($gmt) = Bivio::UI::HTML::Format::DateTime->get_widget_value(
 	    $value, $fields->{mode});
     my($mi) = $fields->{mode};
@@ -212,6 +221,7 @@ sub render {
 	    "$_FN(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value),
 		    "'$gmt'").');',
 	    $gmt);
+    $$buffer .= $s;
     return;
 }
 

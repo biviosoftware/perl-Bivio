@@ -56,7 +56,8 @@ Creates a Request from the queued I<params>.
 sub new {
     my($proto, $params) = @_;
     my($start_time) = Bivio::Util::gettimeofday();
-    my($self) = Bivio::Agent::Request::new($proto, {
+#TODO: Need to handle Facades!
+    my($self) = Bivio::Agent::Request::internal_new($proto, {
 	# We set the params here, because we want to override values
 	%$params,
 	start_time => $start_time,
@@ -76,6 +77,7 @@ sub new {
 	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
 	$realm = $_GENERAL;
     }
+    $self->internal_set_current();
 
     # User
     my($auth_user);

@@ -180,14 +180,6 @@ sub _lookup {
     return $res;
 }
 
-# _support()
-#
-# Customer support email
-#
-sub _support {
-    return Bivio::UI::HTML::DescriptivePage->link_support();
-}
-
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
@@ -297,7 +289,7 @@ is to create your own private club space on bivio.
 INCORRECT_EXPORT_FILE_NAME
 The file you upload must be named NCADATA.DAT.  We only support
 imports from NAIC Club Accounting software.  If you are trying to
-upload another format, please email the file to @{[_support()]}
+upload another format, please email the file to customer support
 and we will try to import your data.
 %%
 AddMemberListForm
@@ -318,5 +310,5 @@ ACCOUNTING_IMPORT_IN_FILES
 The Files area is not used to Import Club Accounting.  You should
 use @{[_link($source, 'CLUB_LEGACY_UPLOAD')]} located under
 Administration &gt; Tools.  If you don't understand this message,
-please contact @{[_support()]}.
+please contact customer support.
 %%

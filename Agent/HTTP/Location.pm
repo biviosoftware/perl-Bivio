@@ -380,9 +380,14 @@ Note that the I<path_info> is left on the URI.
 
 sub parse {
     my(undef, $req, $uri) = @_;
+
+#TODO: Need to make Location a separate module.
+    # We don't set the facade if the request already has one,
+    # because parse is currently called from more than one place
+    # during the request.
     my($facade) = $uri =~ s/^\/*\*(\w+)// ? $1 : undef;
-    Bivio::UI::Facade->setup_request($facade, $req)
-		unless $req->has_keys('facade');
+    _setup_facade($facade, $req) unless $req->has_keys('facade');
+
     my($orig_uri) = $uri;
     $uri =~ s!^/+!!;
 
@@ -534,6 +539,33 @@ sub task_has_uri {
 
 
 #=PRIVATE METHODS
+
+# _setup_facade(string facade, Bivio::Agent::Request req)
+#
+# Sets up the facade.  We diddle http_host here for lack of
+# a better place right now.
+#
+#TODO: Make this general.  For now it will work fine.
+#
+sub _setup_facade {
+    my($facade, $req) = @_;
+    Bivio::UI::Facade->setup_request($facade, $req);
+    $facade = $req->get('facade');
+    return if $facade->get('is_default');
+
+    # Not the default facade
+    my($http_host, $mail_host, $support_email)
+	    = $req->get(qw(http_host mail_host support_email));
+    my($uri) = $facade->get('uri');
+    $http_host =~ s/^(?:www\.)?/$uri./;
+    $mail_host =~ s/^(?:www\.)?/$uri./;
+    # Won't replace if $support_email has no host iwc it will be
+    # set to $mail_host.
+    $support_email =~ s/\@(?:www\.)?/\@$uri./;
+    $req->put(http_host => $http_host, mail_host => $mail_host,
+	    support_email => $support_email);
+    return;
+}
 
 =head1 COPYRIGHT
 

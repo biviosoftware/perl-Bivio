@@ -71,7 +71,7 @@ sub new {
     my($via) = $r->header_in('via');
     $r->connection->remote_ip($via) if defined($via);
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
-    my($self) = Bivio::Agent::Request::new($proto, {
+    my($self) = Bivio::Agent::Request::internal_new($proto, {
 	start_time => $start_time,
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
@@ -97,6 +97,9 @@ sub new {
     my($task_id, $auth_realm, $path_info);
     ($task_id, $auth_realm, $path_info, $uri)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
+
+    # We have a Facade, so Request is "pretty much initialized".
+    $self->internal_set_current();
 
     # Must re-escape the URI.
     $uri = Bivio::Util::escape_uri($uri) if $uri;

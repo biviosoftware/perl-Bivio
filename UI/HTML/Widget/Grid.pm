@@ -117,7 +117,7 @@ blank place holders.
 
 Sets the cell height explicitly.
 
-=item cell_height : array_ref []
+=item cell_height_as_html : array_ref []
 
 Sets the cell height explicitly from a widget value.  The
 widget value must return the full attribute, e.g. use
@@ -135,9 +135,9 @@ The value passed to C<ROWSPAN> attribute of the C<TD> tag.
 
 Sets the cell width explicitly.
 
-=item cell_width : array_ref []
+=item cell_width_as_html : array_ref []
 
-Sets the cell height explicitly from a widget value.  The
+Sets the cell width explicitly from a widget value.  The
 widget value must return the full attribute, e.g. use
 L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
 
@@ -219,17 +219,18 @@ sub initialize {
 		# May set attributes on itself
 		$c->put('parent', $self);
 		$c->initialize($self, $source);
-		my($align, $width, $height, $colspan, $rowspan);
-		($expand, $align, $colspan, $rowspan, $width, $height)
+		my($expand2, $align, $colspan, $rowspan, $width, $height,
+		       $width_as_html, $height_as_html)
 			= $c->unsafe_get(qw(cell_expand
 				cell_align cell_colspan cell_rowspan cell_width
-				cell_height));
-		if ($expand) {
+				cell_height cell_width_as_html
+                                cell_height_as_html));
+		if ($expand2) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
 		    _append(\@p, " colspan=$expand_cols") if $expand_cols > 1;
-		    _append(\@p, ' width="100%"') if $expand;
+		    _append(\@p, ' width="100%"') if $expand2;
 		    $expand_cols = 1;
 		}
 #TODO: Need better crosschecking
@@ -241,10 +242,11 @@ sub initialize {
 		_append(\@p, ' nowrap')
 			if $c->get_or_default('cell_nowrap', 0);
 #TODO: Should be a number or percent?
-		_append(\@p, ref($width) ? $width : qq! width="$width"!)
-			if $width;
-		_append(\@p, ref($height) ? $height : qq! height="$height"!)
-			if $height;
+		_append(\@p, qq! width="$width"!) if $width;
+		_append(\@p, qq! height="$height"!) if $height;
+		_append(\@p, $width_as_html) if $width_as_html;
+		_append(\@p, $height_as_html) if $height_as_html;
+
 		# NOTE: Start tag will be closed by render in case there
 		# is a cell_bgcolor.
 		$end = $c->get_or_default('cell_end', 1);

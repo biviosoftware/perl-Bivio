@@ -29,11 +29,23 @@ use Bivio::UI::HTML::Widget;
 C<Bivio::UI::HTML::Widget::Table> renders a
 L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
+=head1 FACADE ATTRIBUTES
+
+=over 4
+
+=item table_default_align : string
+
+=item page_left_margin : int
+
+If greater than zero, expand to "95%".  Otherwise, "100%"?
+
+=back
+
 =head1 TABLE ATTRIBUTES
 
 =over 4
 
-=item align : string [center]
+=item align : string [Bivio::UI::HTML.table_align]
 
 How to align the table.  The allowed (case
 insensitive) values are defined in
@@ -109,7 +121,8 @@ undefined, no striping will occur.
 
 =item expand : boolean [false]
 
-If true, the table C<WIDTH> will be C<95%>.
+If true, the table C<WIDTH> will be C<95%> or C<100%> depending
+on Bivio::UI::HTML.page_left_margin.
 
 =item list_class : string (required)
 
@@ -278,6 +291,10 @@ sub initialize {
     $self->put(source_name => ref($list))
 	    unless $self->has_keys('source_name');
 
+    # Puts table_cell as the default font.
+    $self->put(string_font => 'table_cell')
+	    unless defined($self->ancestral_get('string_font', undef));
+
     my($columns) = $self->get('columns');
 
 #TODO: optimize, don't create summary widgets unless they are needed
@@ -339,10 +356,7 @@ sub initialize {
     $prefix .= $self->get_or_default('border', 0);
     $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
-    $prefix .= Bivio::UI::Align->as_html(
-	    $self->get_or_default('align', 'center'));
-    $prefix .= ' width="95%"' if $self->unsafe_get('expand');
-    $fields->{table_prefix} = $prefix.'>';
+    $fields->{table_prefix} = $prefix;
     return;
 }
 
@@ -368,8 +382,17 @@ sub render {
     my($headings, $cells, $summary_cells, $summary_lines) =
 	    _get_enabled_widgets($self, $source);
 
-    $$buffer .= $fields->{table_prefix}
-	    if $self->get_or_default('start_tag', 1);
+    if ($self->get_or_default('start_tag', 1)) {
+	$$buffer .= $fields->{table_prefix};
+	my($html) = $req->get('Bivio::UI::HTML');
+	$$buffer .= Bivio::UI::Align->as_html(
+		$self->get_or_default('align',
+			$html->get_value('table_default_align')));
+	$$buffer .= $html->get_value('page_left_margin')
+		? ' width="95%"' : ' width="100%"'
+			if $self->unsafe_get('expand');
+	$$buffer .= '>';
+    }
 
 #TODO: optimize, for static tables just compute this once in initialize
     my($colspan) = _get_column_count($cells);
