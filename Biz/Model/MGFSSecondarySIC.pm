@@ -52,10 +52,8 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_secondary_sic_t',
 	columns => {
-	    mg_id => ['Bivio::Data::MGFS::Id',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    code => ['Bivio::Data::MGFS::SICCode',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
+	    mg_id => ['Bivio::Data::MGFS::Id', 'PRIMARY_KEY'],
+	    code => ['Bivio::Data::MGFS::SICCode', 'PRIMARY_KEY'],
 	},
     };
 }
