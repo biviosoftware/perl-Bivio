@@ -1602,7 +1602,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
-        Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
@@ -1728,6 +1727,20 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/checklist
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::TaxId->execute_load
+        Bivio::Type::MemberTaxListParams->execute_hide_valid_members
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::UI::HTML::Tax::Checklist
+        next=CLUB_ACCOUNTING_TAX99_CHECKLIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_MISSING_FIELDS
+        176
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/tax99/missing_fields
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
