@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Number;
 use strict;
 $Bivio::Type::Number::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Number::VERSION;
 
 =head1 NAME
 
@@ -81,10 +82,14 @@ sub compare {
     my($proto, $left, $right, $decimals) = @_;
 
     $decimals = $proto->get_decimals() unless defined($decimals);
-    $left = $proto->round($left, $decimals);
-    $right = $proto->round($right, $decimals);
+    $left = _pad_decimal($proto->round($left, $decimals), $decimals);
+    $right = _pad_decimal($proto->round($right, $decimals), $decimals);
 
-    return _math_op('bcmp', $left, $right, $decimals);
+    # remove the .
+    $left =~ s/\.//;
+    $right =~ s/\.//;
+
+    return Math::BigInt->new($left)->bcmp(Math::BigInt->new($right));
 }
 
 =for html <a name="div"></a>
@@ -306,7 +311,6 @@ sub _math_op {
     $v =~ s/\.//;
     $v2 =~ s/\.//;
 
-#    print("($v) ($v2)\n");
     my($result) = Math::BigInt->new($v)->$op(Math::BigInt->new($v2));
     # strip and save the sign
     $result =~ s/^(.)//;
@@ -359,7 +363,7 @@ sub _pad_decimal {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
