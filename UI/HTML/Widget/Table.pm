@@ -426,6 +426,82 @@ sub create_cell {
     return $cell;
 }
 
+=for html <a name="get_render_state"></a>
+
+=head2 get_render_state(any source, string_ref buffer) : hash_ref
+
+B<Not for general use.>
+
+Returns the heading, cell, summary, and line widgets which are currently
+enabled.
+
+Returns I<undef> if the table has no rows and there is an
+I<empty_list_widget>.
+
+=cut
+
+sub get_render_state {
+    my($self, $source, $buffer) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($req) = $source->get_request;
+    my($list_name) = $self->get('source_name');
+    my($list) = $req->get($list_name);
+
+    # check for an empty list
+    if ($fields->{empty_list_widget} && $list->get_result_set_size == 0) {
+	$fields->{empty_list_widget}->render($source, $buffer);
+	return undef;
+    }
+
+    my($all_headings) = $fields->{headings};
+    my($all_cells) = $fields->{cells};
+    my($all_summary_cells) = $fields->{summary_cells};
+    my($all_summary_lines) = $fields->{summary_lines};
+
+    my($enabler) = $self->unsafe_get('column_enabler');
+    my($headings) = [];
+    my($cells) = [];
+    my($summary_cells) = [];
+    my($summary_lines) = [];
+    my($control);
+
+    # determine which columns to render
+    my($columns) = $self->get('columns');
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+        my($col) = $columns->[$i];
+        if ($col && defined($enabler)) {
+	    next unless $enabler->enable_column($col, $self);
+        }
+	if ($control = $all_cells->[$i]->unsafe_get('column_control')) {
+	    next unless $source->get_widget_value(@$control);
+	}
+        push(@$headings, $all_headings->[$i]);
+        push(@$cells, $all_cells->[$i]);
+        push(@$summary_cells, $all_summary_cells->[$i]);
+        push(@$summary_lines, $all_summary_lines->[$i]);
+    }
+    my($state) = {
+	self => $self,
+	fields => $fields,
+	source => $source,
+	buffer => $buffer,
+	req => $req,
+	list => $list,
+	list_name => $list_name,
+	headings => $headings,
+	cells => $cells,
+	summary_cells =>
+	    ($self->get_or_default('summarize',
+		$self->unsafe_get('summary_line_type') ? 1 : 0)
+	    ? $summary_cells : undef),
+	summary_lines => $summary_lines,
+	show_headings => $self->get_or_default('show_headings', 1),
+    };
+    $state->{heading_separator}
+	= $self->get_or_default('heading_separator', $state->{show_headings});
+    return $state;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -493,7 +569,6 @@ sub initialize {
     $fields->{cells} = $cells;
     $fields->{summary_lines} = $summary_lines;
     $fields->{summary_cells} = $summary_cells;
-
     my($title) = $self->unsafe_get('title');
     if (defined($title)) {
 	$fields->{title} = $_VS->vs_new('String', {
@@ -552,6 +627,21 @@ sub initialize_child_widget {
     return;
 }
 
+=for html <a name="internal_as_string"></a>
+
+=head2 internal_as_string() : array
+
+Returns the list model.
+
+See L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
+
+=cut
+
+sub internal_as_string {
+    my($self) = @_;
+    return $self->unsafe_get('list_class');
+}
+
 =for html <a name="internal_new_args"></a>
 
 =head2 static internal_new_args(any arg, ...) : any
@@ -585,7 +675,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($req) = $source->get_request;
-    my($state) = _initialize_render_state($self, $source, $buffer);
+    my($state) = $self->get_render_state($source, $buffer);
     return unless $state;
     my($list) = $state->{list};
 
@@ -827,66 +917,6 @@ sub _initialize_colspan {
     return;
 }
 
-# _initialize_render_state(Bivio::UI::HTML::Widget::Table self, any source, string_ref buffer) : hash_ref
-#
-# Returns the heading, cell, summary, and line widgets which are currently
-# enabled.
-#
-sub _initialize_render_state {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($req) = $source->get_request;
-    my($list_name) = $self->get('source_name');
-    my($list) = $req->get($list_name);
-
-    # check for an empty list
-    if ($fields->{empty_list_widget} && $list->get_result_set_size == 0) {
-	$fields->{empty_list_widget}->render($source, $buffer);
-	return undef;
-    }
-
-    my($all_headings) = $fields->{headings};
-    my($all_cells) = $fields->{cells};
-    my($all_summary_cells) = $fields->{summary_cells};
-    my($all_summary_lines) = $fields->{summary_lines};
-
-    my($enabler) = $self->unsafe_get('column_enabler');
-    my($headings) = [];
-    my($cells) = [];
-    my($summary_cells) = [];
-    my($summary_lines) = [];
-    my($control);
-
-    # determine which columns to render
-    my($columns) = $self->get('columns');
-    for (my($i) = 0; $i < int(@$columns); $i++) {
-        my($col) = $columns->[$i];
-        if ($col && defined($enabler)) {
-	    next unless $enabler->enable_column($col, $self);
-        }
-	if ($control = $all_cells->[$i]->unsafe_get('column_control')) {
-	    next unless $source->get_widget_value(@$control);
-	}
-        push(@$headings, $all_headings->[$i]);
-        push(@$cells, $all_cells->[$i]);
-        push(@$summary_cells, $all_summary_cells->[$i]);
-        push(@$summary_lines, $all_summary_lines->[$i]);
-    }
-    return {
-	self => $self,
-	fields => $fields,
-	source => $source,
-	buffer => $buffer,
-	req => $req,
-	list => $list,
-	list_name => $list_name,
-	headings => $headings,
-	cells => $cells,
-	summary_cells => $summary_cells,
-	summary_lines => $summary_lines,
-    };
-}
-
 # _initialize_row_prefixes(hash_ref state)
 #
 # Initializes even_row and odd_row row prefixes.
@@ -912,16 +942,11 @@ sub _initialize_row_prefixes {
 #
 sub _render_headings {
     my($state) = @_;
-    unless (defined($state->{show_headings})) {
-	$state->{show_headings} = $state->{self}
-		->get_or_default('show_headings', 1);
-	$state->{heading_separator} = $state->{self}
-		->get_or_default('heading_separator', $state->{show_headings});
-    }
     $state->{self}->render_row($state->{headings},
-	    $state->{list}, $state->{buffer}) if $state->{show_headings};
+	$state->{list}, $state->{buffer})
+	if $state->{show_headings};
     _render_row_with_colspan($state, 'separator')
-	    if $state->{heading_separator};
+	if $state->{heading_separator};
     return;
 }
 
@@ -980,8 +1005,7 @@ sub _render_trailer {
 
     $self->render_row($state->{summary_cells},
 	    $state->{list}->get_summary, $state->{buffer})
-	    if $self->get_or_default('summarize',
-		    $self->unsafe_get('summary_line_type') ? 1 : 0);
+	    if $state->{summary_cells};
 
     $self->render_row($state->{summary_lines}, $state->{list},
 	    $state->{buffer})
