@@ -326,15 +326,14 @@ sub internal_from_literal_warning {
 
 =head2 static is_equal(any left, any right) : boolean
 
-Are the two values equal?  Uses "eq" comparison.  undefs are not
-equal, paralleling what happens is SQL.
+Are the two values equal?  Uses "eq" comparison.
 
 =cut
 
 sub is_equal {
     my(undef, $left, $right) = @_;
-    return 0 unless defined($left) && defined($right);
-    return $left eq $right ? 1 : 0;
+    return defined($left) == defined($right)
+	&& (!defined($right) || $left eq $right) ? 1 : 0;
 }
 
 =for html <a name="is_password"></a>
@@ -391,8 +390,8 @@ See L<from_literal|"from_literal">.
 =cut
 
 sub to_literal {
-    shift;
-    return shift;
+    my(undef, $value) = @_;
+    return defined($value) ? $value : '';
 }
 
 =for html <a name="to_query"></a>
