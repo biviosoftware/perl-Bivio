@@ -34,6 +34,7 @@ C<Bivio::Biz::Model::TransactionDeleteForm> deletes a transaction and entries
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::Auth::Role;
+use Bivio::Biz::Accounting::Audit;
 use Bivio::Biz::Accounting::InstrumentAudit;
 use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::MemberEntry;
@@ -216,8 +217,7 @@ sub _post_delete {
     }
 
     # need to update units after this date
-    $self->get_request->get('auth_realm')->get('owner')->audit_units($date);
-
+    Bivio::Biz::Accounting::Audit->new($self->get_request)->audit_units($date);
     return;
 }
 
