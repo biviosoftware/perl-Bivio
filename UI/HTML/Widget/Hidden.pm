@@ -96,6 +96,25 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(string field) : hash_ref
+
+=head2 static internal_new_args(string field, hash_ref attributes) : hash_ref
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $field, $attributes) = @_;
+    return '"field" attribute must be defined' unless defined($field);
+    return {
+        field => $field,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, Text_ref buffer)
