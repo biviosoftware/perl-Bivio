@@ -36,6 +36,7 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::IO::Alert;
 use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::Name;
@@ -87,6 +88,23 @@ sub create {
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless $values->{creation_date_time};
     return $self->SUPER::create($values);
+}
+
+=for html <a name="execute_auth_user"></a>
+
+=head2 static execute_auth_user(Bivio::Agent::Request req)
+
+Loads this realm for this auth user.
+
+=cut
+
+sub execute_auth_user {
+    my($proto, $req) = @_;
+    my($user) = $req->get('auth_user');
+    Bivio::IO::Alert->die('no auth_user') unless $user;
+    my($self) = $proto->new($req);
+    $self->load(user_id => $user->get('realm_id'));
+    return;
 }
 
 =for html <a name="internal_initialize"></a>
