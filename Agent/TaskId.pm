@@ -1442,7 +1442,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         ?/admin/invite/delete
-        Bivio::Biz::Model::RealmInvite
+        Bivio::Biz::Model::RealmInviteList->execute_load_this
         Bivio::Biz::Model::DeleteInviteForm
         next=CLUB_ADMIN_INVITE_LIST
     )],
