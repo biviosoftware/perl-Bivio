@@ -28,6 +28,10 @@ use Bivio::UI::Widget::ControlBase;
 
 C<Bivio::UI::Widget::If> is a simple "if" control.
 
+=head1 ATTRIBUTES
+
+=over 4
+
 =item control : string []
 
 =item control : Bivio::Agent::TaskId [] (get_request)
@@ -46,6 +50,8 @@ renders nothing.  May be a widget value, widget, etc.
 
 The value to use when I<control> returns true.  May be a widget value, widget,
 etc.
+
+=back
 
 =cut
 
