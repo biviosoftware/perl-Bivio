@@ -116,6 +116,32 @@ sub cascade_delete {
     return $self->delete();
 }
 
+=for html <a name="change_ownership"></a>
+
+=head2 change_ownership(string user_id)
+
+Changes all tables owned in the current realm by this user to the specified
+user id.
+
+=cut
+
+sub change_ownership {
+    my($self, $user_id) = @_;
+    my($req) = $self->get_request;
+
+    # change all references to the user
+    foreach my $table (qw(member_entry_t realm_transaction_t tax_k1_t file_t
+            realm_invite_t)) {
+	Bivio::SQL::Connection->execute("
+                UPDATE $table
+                SET user_id=?
+                WHERE user_id=?
+                AND realm_id=?",
+		[$user_id, $self->get('user_id'), $req->get('auth_id')]);
+    }
+    return;
+}
+
 #TODO: Add code to make sure don't delete last admin.
 #      See ClubUserForm.  Throw type error on field and wille
 #      be picked up by form.
