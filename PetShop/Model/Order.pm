@@ -43,21 +43,6 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="get_status"></a>
-
-=head2 get_status() : Bivio::PetShop::Type::OrderStatus
-
-Returns the current status for the order.
-
-sub get_status {
-    my($self) = @_;
-    return Bivio::Biz::Model->new($self->get_request, 'OrderStatus')->load({
-	order_id => $self->get('order_id'),
-    })->get('status');
-}
-
-=cut
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
