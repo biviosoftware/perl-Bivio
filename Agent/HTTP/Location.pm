@@ -221,6 +221,25 @@ sub get_document_root {
     return $_DOCUMENT_ROOT;
 }
 
+=for html <a name="get_help_path_info"></a>
+
+=head2 static get_help_path_info(string topic) : string
+
+Returns the path_info to be passed to HELP task for this topic.
+
+=cut
+
+sub get_help_path_info {
+    my(undef, $topic) = @_;
+    Bivio::Die->die($topic, ': invalid help topic')
+		unless $topic =~ /^[\w-]+$/;
+#TODO: This presumes a lot.  Too much?
+    $topic = '/'.$topic.'.html';
+    Bivio::Die->die($topic, ': help file not found')
+		unless $_HELP_ROOT.$topic;
+    return $topic;
+}
+
 =for html <a name="get_help_root"></a>
 
 =head2 get_help_root() : string
