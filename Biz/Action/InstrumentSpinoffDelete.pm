@@ -32,7 +32,6 @@ C<Bivio::Biz::Action::InstrumentSpinoffDelete> deletes global spin-off info
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use Bivio::Agent::TaskId;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -53,7 +52,7 @@ Deletes the instrument.
 
 sub execute {
     my($self, $req) = @_;
-    $req->get('Bivio::Biz::Model::InstrumentSpinoffList')
+    $req->get('Bivio::Biz::Model::AdmInstrumentSpinoffList')
 	    ->set_cursor_or_die(0)->get_model('InstrumentSpinoff')->delete;
     return 0;
 }
