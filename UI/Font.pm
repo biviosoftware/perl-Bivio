@@ -46,10 +46,12 @@ errors.  Feel free to add to the list in internal_initialize:
     class=string
     id=string
     bold
+    code
     italic
     larger
     smaller
-    code
+    strike
+    underline
 
 Do not surround values to the right of the equals (=) with quotes.
 The string following size can be a number as long as a style sheet
@@ -132,6 +134,18 @@ my(%_SIZE_MAP) = (
     'large' => 5,
     'x-large' => 6,
     'xx-large' => 7,
+);
+# Certain attributes map one to one to tags.  See refererences to
+# _TAG_MAP below and _initialize_html
+my(%_TAG_MAP) = (
+    bold => 'b',
+    italic => 'i',
+    # No one handles +1/-1 correctly with styles.  small
+    # and big work everywhere, it seems.
+    larger => 'big',
+    smaller => 'small',
+    strike => 'strike',
+    underline => 'u',
 );
 # Attribute should only be used by this module
 my($_CONFIG_ATTR) = '_config';
@@ -296,19 +310,8 @@ sub _initialize {
     my(%attrs, @tags);
     $attrs{$_CONFIG_ATTR} = \@c;
     foreach my $a (@c) {
-	if ($a eq 'bold') {
-	    $attrs{weight} = 'bold';
-	}
-	elsif ($a eq 'italic') {
-	    $attrs{style} = 'italic';
-	}
-	elsif ($a eq 'code') {
-	    $attrs{code} = 1;
-	}
-	elsif ($a =~ /^(smaller|larger)$/) {
-	    # No one handles +1/-1 correctly with styles.  small
-	    # and big work everywhere, it seems.
-	    $attrs{rel_size} = $a eq 'larger' ? 'big' : 'small';
+	if ($_TAG_MAP{$a}) {
+	    $attrs{$_TAG_MAP{$a}} = 1;
 	}
 	elsif ($a =~ /^(family|size|class|id)=(.*)/) {
 	    # May be blank
@@ -356,28 +359,12 @@ sub _initialize_html {
     }
     $p .= '>' if $p;
 
-    # Generate physical styles: <B> and <I>
-    if (defined($attrs{style}) &&  $attrs{style} eq 'italic') {
-	$p .= '<i>';
-	$s = '</i>'.$s;
+    # Copy the tag-based attributes
+    foreach my $k (keys(%attrs)) {
+	next unless $k =~ /^tag_(\w+)$/;
+	$p .= "<$1>";
+	$s = "</$1>".$s;
     }
-
-    if (defined($attrs{weight}) && $attrs{weight} eq 'bold') {
-	$p .= '<b>';
-	$s = '</b>'.$s;
-    }
-
-    if ($attrs{code}) {
-	$p .= '<tt>';
-	$s = '</tt>'.$s;
-    }
-
-    # Generate physical styles: <B> and <I>
-    if (defined($attrs{rel_size})) {
-	$p .= "<$attrs{rel_size}>";
-	$s = "</$attrs{rel_size}>".$s;
-    }
-
     return [$p, $s];
 }
 
