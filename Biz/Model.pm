@@ -591,11 +591,13 @@ sub iterate_next_and_load {
 
 =head2 map_iterate(code_ref map_iterate_handler, any other_args, ...) : array_ref
 
-Calls L<iterate_start|"iterate_start"> to start the iteration with
-I<iterate_args>.
-For each row, calls L<iterate_next_and_load|"iterate_next_and_load">
-followed by L<map_iterate_handler|"map_iterate_handler">.
-Terminates the iteration with L<iterate_end|"iterate_end">.
+=head2 map_iterate(code_ref map_iterate_handler, string iterate_start, any other_args, ...) : array_ref
+
+Calls L<iterate_start|"iterate_start"> or I<iterate_start> (if supplied)
+to start the iteration with I<iterate_args>.  For each row, calls
+L<iterate_next_and_load|"iterate_next_and_load"> followed by
+L<map_iterate_handler|"map_iterate_handler">.  Terminates the iteration with
+L<iterate_end|"iterate_end">.
 
 Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
 as an array_ref, calling L<get_shallow_copy|"get_shallow_copy"> to get each
@@ -608,8 +610,10 @@ the rows.
 
 sub map_iterate {
     my($self, $map_iterate_handler) = (shift, shift);
+    my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
+	&& $self->can($_[0]) ? shift : 'iterate_start';
     my($res) = [];
-    $self->iterate_start(@_);
+    $self->$iterate_start(@_);
     $map_iterate_handler ||= sub {
 	return shift->get_shallow_copy;
     };
