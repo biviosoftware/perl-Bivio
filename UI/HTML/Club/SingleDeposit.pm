@@ -61,6 +61,9 @@ Create Grid I<values> for this form.
 sub create_fields {
     my($self) = @_;
 
+    # need this to get error messages to display label
+    $self->map_field('MemberEntry.valuation_date', 'Valuation Date');
+
     my($empty_cell) = Bivio::UI::HTML::Widget::String->new({
 	value => ''});
     return [
@@ -76,7 +79,7 @@ sub create_fields {
 		values => {
 		    1 => Bivio::UI::HTML::Widget::FormFieldLabel->new({
 			label => 'Valuation Date',
-			field => 'valuation_date',
+			field => 'MemberEntry.valuation_date',
 		    }),
 		    0 => $empty_cell,
 		},
@@ -85,7 +88,7 @@ sub create_fields {
 		control => ['show_valuation_date'],
 		values => {
 		    1 => Bivio::UI::HTML::Widget::DateField->new({
-			field => 'valuation_date',
+			field => 'MemberEntry.valuation_date',
 		    }),
 		    0 => $empty_cell,
 		},
@@ -120,7 +123,7 @@ sub create_fields {
 			cell_expand => 1,
 			field => 'RealmTransaction.remark',
 			rows => 3,
-			cols => 25,
+			cols => 40,
 		    }),
 		],
 	    }),
