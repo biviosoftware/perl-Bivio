@@ -96,21 +96,21 @@ sub new {
 
 =cut
 
-=for html <a name="execute_load_all_no_margin"></a>
+=for html <a name="execute_load_all_for_taxes"></a>
 
-=head2 static execute_load_all_no_margin(Bivio::Agent::Request req) : boolean
+=head2 static execute_load_all_for_taxes(Bivio::Agent::Request req) : boolean
 
-Loads the list, excluding margin interest expenses. Margin interest has
-a separate category on tax forms.
+Loads the list, excluding margin interest and charitable expenses. Both
+have a separate category on tax forms.
 
 =cut
 
-sub execute_load_all_no_margin {
+sub execute_load_all_for_taxes {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     my($fields) = $self->[$_IDI];
 
-    $fields->{exclude_margin_interest} = 1;
+    $fields->{for_taxes} = 1;
     $self->load_all;
 
     return 0;
@@ -246,8 +246,12 @@ sub internal_pre_load {
 
     push(@$params, $start_date, $end_date);
 
-    if ($fields->{exclude_margin_interest}) {
-	return 'expense_category_t.name != \'Margin Interest\'';
+    if ($fields->{for_taxes}) {
+
+	return 'expense_category_t.name NOT IN (\''
+	    .join("','", Bivio::Societas::Biz::Model::ExpenseCategory
+		->get_charitable_names).'\')'
+		    .' AND expense_category_t.name != \'Margin Interest\'';
     }
     return '';
 }
