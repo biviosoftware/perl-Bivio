@@ -31,6 +31,7 @@ C<Bivio::Biz::Model::RealMemberList> lists a club's true members
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RoleSet;
 use Bivio::Biz::Model::RealmOwner;
 
 #=VARIABLES
@@ -51,12 +52,17 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($proto) = @_;
     my($res) = $proto->SUPER::internal_initialize();
+    my($roles) = Bivio::Biz::Model::RealmUser->MEMBER_ROLES();
     push(@{$res->{other}},
 	    [qw(RealmUser.user_id TaxId.realm_id)],
 	    'TaxId.tax_id');
     push(@{$res->{where}},
 	'AND',
 	'RealmOwner.name', 'NOT LIKE', "'$_SHADOW_PREFIX%'",
+	'AND',
+	'RealmUser.role',
+	'IN',
+	Bivio::Auth::RoleSet->to_sql_list(\$roles),
     );
     return $res;
 }
