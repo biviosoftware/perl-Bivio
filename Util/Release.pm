@@ -344,7 +344,7 @@ sub list {
     Bivio::Die->die($uri, ": ", $reply->status_line)
 		unless $reply->is_success;
     for my $line (split("\n", $reply->content)) {
-	if ($line =~ /.+\">\s(\S+\.rpm)<\/A>/) {
+	if ($line =~ /.+\">\s*(\S+\.rpm)<\/A>/) {
 	    $output .= "$1\n";
 	}
     }
