@@ -82,6 +82,7 @@ The commands executed would be:
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::File;
@@ -91,6 +92,8 @@ use Bivio::Type::FileName;
 use Config ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_CVS_RPM_SPEC_DIR);
 my($_RPM_HOME_DIR);
 my($_RPM_HTTP_ROOT);
@@ -351,8 +354,8 @@ sub install {
 	my($uri) = _create_uri($package);
 #TODO: remove extra copy when rpm 4 is everywhere
 	my($file) = _rpm_uri_to_filename($uri);
-	my($command) = "umask 022 && GET '$uri' > '$file'"
-	    . " && rpm -Uvh $rpm_opt '$file'";
+	my($command) = "umask 022; GET '$uri' > '$file'"
+	    . "; rpm -Uvh $rpm_opt '$file'";
 	if ($self->get('noexecute')) {
 	    $output .= "Would run: $command\n";
 	    next;
@@ -617,14 +620,17 @@ sub _search {
 #
 sub _system {
     my($command, $output) = @_;
-    $$output .= "** $command\n" . `$command 2>&1`;
-
-    if ($?) {
-	# print out current output and die with the status code
-	Bivio::IO::Alert->print_literally($$output);
-	Bivio::Die->die("$command failed, exit status: ",$?);
-    }
-    return;
+    my($die) = Bivio::Die->catch(sub {
+	$command =~ s/'/"/g;
+	$$output .= "** $command\n";
+	$$output .= ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")};
+	return;
+    });
+    return unless $die;
+    Bivio::IO::Alert->print_literally(
+	$$output . ${$die->get('attrs')->{output}});
+    $die->throw;
+    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT
