@@ -1013,7 +1013,10 @@ sub process {
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-	my($res) = _call_execute($self, 'execute_ok', 'ok_button');
+
+	$self->internal_pre_execute('execute_ok');
+	my($res) = _call_execute_ok($self, 'ok_button');
+	$self->internal_post_execute('execute_ok');
 	return $res if $res;
 	return 0 unless $fields->{errors};
 	if ($_TRACE) {
@@ -1239,22 +1242,7 @@ sub validate_and_execute_ok {
     }
     else {
 	# Catch errors and rethrow unless we can process
-	my($res);
-	my($die) = Bivio::Die->catch(sub {
-	    $res = $self->execute_ok($form_button);});
-	if ($die) {
-	    if ($die->get('code')== Bivio::DieCode->DB_CONSTRAINT) {
-		# Type errors are "normal"
-		_apply_type_error($self, $die);
-	    }
-	    else {
-		$die->throw_die();
-		# DOES NOT RETURN
-	    }
-
-	    # Can we find the fields in the Form?
-	}
-
+	my($res) = _call_execute_ok($self, $form_button);
 	# If execute_ok returns true, just get out.  The task will
 	# stop executing so no need to test errors.
 	return $res if $res;
@@ -1395,6 +1383,31 @@ sub _call_execute {
     $self->internal_pre_execute($method);
     my($res) = $self->$method(@_);
     $self->internal_post_execute($method);
+    return $res;
+}
+
+# _call_execute_ok(self, string form_button) : any
+#
+# Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
+# violations.
+#
+sub _call_execute_ok {
+    my($self, $form_button) = @_;
+    my($res);
+    my($die) = Bivio::Die->catch(sub {
+        $res = $self->execute_ok($form_button);
+	return;
+    });
+    if ($die) {
+	if ($die->get('code') == Bivio::DieCode->DB_CONSTRAINT) {
+	    # Type errors are "normal"
+	    _apply_type_error($self, $die);
+	}
+	else {
+	    $die->throw_die();
+	    # DOES NOT RETURN
+	}
+    }
     return $res;
 }
 
