@@ -234,7 +234,7 @@ $Id$
 
 1;
 
-=pod
+=for comment
 
 use Data::Dumper;
 
@@ -256,6 +256,7 @@ my($mail) = Bivio::Biz::Mail::Message->new();
 $mail->find({id => 10});
 $mail->delete();
 $mail->create({
+    club => 6601425497792660,
     id => 10,
     ok => 1,
     rfc822_id => 'a1',
