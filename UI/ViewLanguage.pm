@@ -217,6 +217,21 @@ sub view_parent {
     return;
 }
 
+=for html <a name="view_pre_execute"></a>
+
+=head2 static view_pre_execute(code_ref code)
+
+Code to be executed prior to rendering the view.
+
+=cut
+
+sub view_pre_execute {
+    my($proto, $code) = _args(@_);
+    _die('view_pre_execute must be a code_ref') unless ref($code) eq 'CODE';
+    _put(view_pre_execute => $code);
+    return;
+}
+
 =for html <a name="view_put"></a>
 
 =head2 static view_put(string attr_name, string attr_value, ....)

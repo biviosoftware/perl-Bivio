@@ -188,6 +188,9 @@ How the view inherits attributes.
 
 See L<Bivio::UI::ViewLanguage::view_class_map|Bivio::UI::ViewLanguage/"view_class_map">.
 
+=item view_pre_execute : code_ref
+
+A code reference to be execute prior to each call to L<render|"render">.
 
 =item view_shortcuts : Bivio::UI::ViewShortcutsBase
 
@@ -347,6 +350,7 @@ sub execute {
     my($prev_current) = $_CURRENT;
     $_CURRENT = $self;
     $req->put($_PACKAGE => $self);
+    _pre_execute($self, $req);
     my($die) = Bivio::Die->catch(sub {
 	    $self->ancestral_get('view_main')->execute($req);
     });
@@ -446,6 +450,19 @@ sub _find_file {
     }
     $self->compile_die('not found');
     # DOES NOT RETURN
+}
+
+# _pre_execute(self, Bivio::Agent::Request req)
+#
+# Recursively invokes the view_pre_execute code_ref for the parents and
+# this view.
+#
+sub _pre_execute {
+    my($self, $req) = @_;
+    my($parent, $code) = $self->unsafe_get(qw(parent view_pre_execute));
+    _pre_execute($parent, $req) if $parent;
+    $code->($req) if $code;
+    return;
 }
 
 =head1 COPYRIGHT
