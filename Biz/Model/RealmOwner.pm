@@ -33,6 +33,24 @@ and delete interface to the C<realm_owner_t> table.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DEFAULT_UNIT_VALUE"></a>
+
+=head2 DEFAULT_UNIT_VALUE : string
+
+The unit value used when a valid unit value can't be caluculated.
+Used when a club if first started, but no securities have been purchased.
+
+=cut
+
+sub DEFAULT_UNIT_VALUE {
+    return '10.0';
+}
+
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmInstrument;
@@ -401,8 +419,10 @@ sub get_unit_value {
     my($self, $date) = @_;
 
     my($units) = $self->get_units($date);
-    return $units == 0 ? 0
+    my($result) =  $units == 0 ? 0
 	    : Bivio::Type::Amount->div($self->get_value($date), $units);
+    # a value of 0 will only occur if no securities are owned
+    return $result || DEFAULT_UNIT_VALUE();
 }
 
 =for html <a name="get_units"></a>
