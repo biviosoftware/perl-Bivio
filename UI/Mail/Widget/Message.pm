@@ -45,7 +45,7 @@ constants, widgets, or widget values which return widgets.
 
 =item body : any []
 
-The body of the message.  B<Attachments not supported.>
+The body of the message.
 
 =item cc : any []
 
@@ -55,6 +55,11 @@ the actual send-to addresses.
 =item from : any (required)
 
 The From: address in the header.
+
+=item headers : any []
+
+Any additional headers.  Returns a string in RFC 822 header format.  Each
+header appears on its own line.
 
 =item recipients : any (required)
 
@@ -71,10 +76,9 @@ The Subject: address in the header.
 The To: address(es) in the header.  See I<recipients> for
 the actual send-to addresses.
 
-=item headers : any []
+=item want_aol_munge : boolean [true]
 
-Any additional headers.  Returns a collection of lines which are
-headers.
+munge body by wrapping urls and email addresses in HTMl.
 
 =back
 
@@ -141,18 +145,17 @@ sub execute {
     }
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
-    _headers($self, $msg, $req);
 
-    my($body) = '';
-    $self->unsafe_render_value('body', $fields->{body}, $req, \$body);
-    if ($recipients =~ /\@(?:aol|compuserve|cs).com$/i) {
+    my($body) = $self->render_attr('body', $req);
+#TODO: Headers must be rendered after body, b/c Widget::MIMEEntity
+#      depends on this.
+    _headers($self, $msg, $req);
+    if ($self->get_or_default('want_aol_munge', 1)
+	&&  $recipients =~ /\@(?:aol|compuserve|cs).com$/i) {
 	# AOL and compuserv are totally brain dead.
-	$msg->set_body(_text_to_aol($body));
+	$body = _text_to_aol($body);
     }
-    else {
-	# The rest of the word understands plain text with links.
-	$msg->set_body($body);
-    }
+    $msg->set_body($$body);
     $msg->enqueue_send;
     return;
 }
@@ -205,6 +208,7 @@ sub _headers {
 	    && $b;
     foreach my $h (split(/\n(?=\S)/, $b)) {
 	chomp($h);
+	next unless $h;
 	Bivio::Die->die($h, ': invalid header')
 	    unless $h =~ /^(\S+):\s*(.+)/s;
         $msg->set_header($1, $2);
@@ -212,7 +216,7 @@ sub _headers {
     return;
 }
 
-# _text_to_aol(string text) : string
+# _text_to_aol(string_ref text) : string_ref
 #
 # Generates something that AOL's mail reader can understand.  AOL
 # does not highlight links unless they are in an <a href>.  It also
@@ -221,7 +225,7 @@ sub _headers {
 sub _text_to_aol {
     my($text) = @_;
     my($html) = "<html>\n";
-    foreach my $line (split(/\n/, $text)) {
+    foreach my $line (split(/\n/, $$text)) {
 	# Put in minimal tags to generate links.  Don't replace anything
 	# else.
 	$line =~ s/(https?:\S+\w)/<a href="$1">$1<\/a>/g;
@@ -229,7 +233,7 @@ sub _text_to_aol {
 	$html .= $line ."\n";
     }
     $html .= "</html>\n";
-    return $html;
+    return \$html;
 }
 
 =head1 COPYRIGHT
