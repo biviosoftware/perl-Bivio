@@ -65,18 +65,6 @@ sub from_sql_column {
     return defined($_[1]) ? \$_[1] : undef;
 }
 
-=for html <a name="to_html"></a>
-
-=head2 static to_html(any value) : string
-
-B<NOT SUPPORTED>
-
-=cut
-
-sub to_html {
-    die("can't convert a blob to html");
-}
-
 =for html <a name="to_literal"></a>
 
 =head2 static to_literal(any value) : string
