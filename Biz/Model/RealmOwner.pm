@@ -189,6 +189,24 @@ sub cascade_delete {
     return;
 }
 
+=for html <a name="clear_units_cache"></a>
+
+=head2 clear_units_cache(string date)
+
+Clears the cache used to keep units values on the specified date.
+
+=cut
+
+#TODO: total hack, need to get this out of RealmOwner
+# and create a separate cache manager class for auditing
+
+sub clear_units_cache {
+    my($self, $date) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    delete($fields->{'get_units'.$date});
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
