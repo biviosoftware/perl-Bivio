@@ -327,39 +327,7 @@ sub execute {
 	    _put_file_field_reset_errors($self);
 	}
 	else {
-	    # Success, redirect to the next task or to the task in
-	    # the context.
-	    my($req) = $self->get_request;
-	    $req->client_redirect($req->get('task')->get('next'))
-		    unless $fields->{context};
-
-	    my($c) = $fields->{context};
-	    my($f) = $c->{form};
-	    unless ($f) {
-		_trace('no form, client_redirect: ', $c->{uri},
-			'?', $c->{query}) if $_TRACE;
-		# If there is no form, redirect to client so looks
-		# better.
-		$req->client_redirect(@{$c}{qw(uri query)});
-		# DOES NOT RETURN
-	    }
-
-	    # Do an server redirect to context, because can't do
-	    # client redirect (no way to pass form state (reasonably)).
-	    # Indicate to the next form that this is a SUBMIT_UNWIND
-	    # Make sure you use that form's SUBMIT_UNWIND button.
-	    $f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
-
-	    # Ensure this form_model is seen as the redirect model
-	    # by get_context_from_request and set a flag so it
-	    # knows to pop context instead of pushing.
-	    $req->put(form_model => $self);
-	    $fields->{redirecting} = 1;
-
-	    # Redirect calls us back in get_context_from_request
-	    _trace('have form, server_redirect: ', $c->{uri},
-		    '?', $c->{query}) if $_TRACE;
-	    $req->server_redirect(@{$c}{qw(uri query)}, $f);
+	    _redirect($self, 'next');
 	    # DOES NOT RETURN
 	}
     }
@@ -482,18 +450,20 @@ sub get_context_from_request {
 
     # Fix up file fields if any
     my($ff);
-    if ($res->{form} && $model && ($ff = $model->get_info('file_fields'))) {
+    if ($res->{form} && $model
+	    && ($ff = $model->internal_get_file_field_names)) {
 	# Need to copy, because we don't want to trash existing form.
 	my($f) = {%{$res->{form}}};
 
 	# Iterate over file fields
-	foreach my $col (@$ff) {
-	    my($fn) = $col->{form_name};
+	foreach my $n (@$ff) {
+	    my($fn) = $model->get_field_name_for_html($n);
 	    # Converts to just the file name.  We'd never get this back,
 	    # but we can stuff it into the form.  Widget::File
 	    # knows how to handle this.
-	    $f->{$fn} = $col->{type}->to_literal($f->{$fn});
-	    _trace($col->{name}, ': set value=', $f->{$fn}) if $_TRACE;
+	    $f->{$fn} = $model->get_field_info($n, 'type')
+		    ->to_literal($f->{$fn});
+	    _trace($n, ': set value=', $f->{$fn}) if $_TRACE;
 	}
 
 	# Save new copy
@@ -515,9 +485,7 @@ B<DO NOT MODIFY>.
 =cut
 
 sub get_errors {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{errors};
+    return shift->{$_PACKAGE}->{errors};
 }
 
 =for html <a name="get_field_as_html"></a>
@@ -535,8 +503,9 @@ sub get_field_as_html {
     my($self, $name) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($value) = $self->unsafe_get($name);
-    return $self->get_field_type($name)->to_html($value) if defined($value);
-    my($fn) = $self->get_field_info($name, 'form_name');
+    return $self->get_field_info($name, 'type')->to_html($value)
+	    if defined($value);
+    my($fn) = $self->get_field_name_for_html($name);
     return Bivio::Util::escape_html(_get_literal($fields, $fn));
 }
 
@@ -556,8 +525,9 @@ sub get_field_as_literal {
     my($self, $name) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($value) = $self->unsafe_get($name);
-    return $self->get_field_type($name)->to_literal($value) if defined($value);
-    my($fn) = $self->get_field_info($name, 'form_name');
+    return $self->get_field_info($name, 'type')->to_literal($value)
+	    if defined($value);
+    my($fn) = $self->get_field_name_for_html($name);
     return _get_literal($fields, $fn);
 }
 
@@ -597,12 +567,13 @@ sub get_hidden_field_values {
 	    Bivio::Type::SecretAny->to_literal($fields->{context}))
 	    if $fields->{context};
     my($properties) = $self->internal_get();
-    foreach my $col (@{$sql_support->get('hidden')}) {
-	my($n) = $col->{name};
+    foreach my $n (@{$self->internal_get_hidden_field_names}) {
+	my($fn) = $self->get_field_name_for_html($n);
 	my($v) = defined($properties->{$n})
-		? $col->{type}->to_literal($properties->{$n})
-		: _get_literal($fields, $col->{form_name});
-	push(@res, $col->{form_name}, $v);
+		? $self->get_field_info($n, 'type')
+			->to_literal($properties->{$n})
+		: _get_literal($fields, $fn);
+	push(@res, $fn, $v);
     }
     return \@res;
 }
@@ -654,7 +625,7 @@ Returns true if any of the form fields are in error.
 =cut
 
 sub in_error {
-    return defined(shift->{$_PACKAGE}->{errors});
+    return shift->{$_PACKAGE}->{errors} ? 1 : 0;
 }
 
 =for html <a name="internal_clear_error"></a>
@@ -663,12 +634,15 @@ sub in_error {
 
 Clears the error on I<property> if any.
 
+If I<property> is null, clears the "form" error.
+
 =cut
 
 sub internal_clear_error {
     my($self, $property) = @_;
     my($fields) = $self->{$_PACKAGE};
     return unless $fields->{errors};
+    $property = '_' unless $property;
     delete($fields->{errors}->{$property});
     delete($fields->{errors}) unless %{$fields->{errors}};
     return;
@@ -689,6 +663,62 @@ field.
 sub internal_field_constraint_error {
 }
 
+=for html <a name="internal_get_file_field_names"></a>
+
+=head2 internal_get_file_field_names() : array_ref
+
+B<Used internally to this module and ListFormModel.>
+
+Returns I<file_field_names> attribute.
+
+=cut
+
+sub internal_get_file_field_names {
+    return shift->internal_get_sql_support()->unsafe_get('file_field_names');
+}
+
+=for html <a name="internal_get_hidden_field_names"></a>
+
+=head2 internal_get_hidden_field_names() : array_ref
+
+B<Used internally to this module and ListFormModel.>
+
+Returns I<hidden_field_names> attribute.
+
+=cut
+
+sub internal_get_hidden_field_names {
+    return shift->internal_get_sql_support()->get('hidden_field_names');
+}
+
+=for html <a name="internal_get_literals"></a>
+
+=head2 internal_get_literals() : hash_ref
+
+B<Used internally to this module and ListFormModel.>
+
+Returns the literals hash_ref.
+
+=cut
+
+sub internal_get_literals {
+    return shift->{$_PACKAGE}->{literals};
+}
+
+=for html <a name="internal_get_visible_field_names"></a>
+
+=head2 internal_get_visible_field_names() : array_ref
+
+B<Used internally to this module and ListFormModel.>
+
+Returns I<visible_field_names> attribute.
+
+=cut
+
+sub internal_get_visible_field_names {
+    return shift->internal_get_sql_support()->get('visible_field_names');
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
@@ -707,25 +737,40 @@ sub internal_initialize_sql_support {
     return Bivio::SQL::FormSupport->new($proto->internal_initialize);
 }
 
+=for html <a name="internal_pre_parse_columns"></a>
+
+=head2 internal_pre_parse_columns()
+
+B<Used internally to this module and ListFormModel.>
+
+Called just before C<_parse_cols> is called, so C<ListFormModel> can
+initialize its list_model to determine number of rows to expect.
+
+=cut
+
+sub internal_pre_parse_columns {
+    return;
+}
+
 =for html <a name="internal_put_error"></a>
 
-=head2 internal_put_error(string property, Bivio::TypeError error)
+=head2 internal_put_error(string property, any error)
 
-=head2 internal_put_error(string property, Bivio::TypeError error, string literal)
+Associate I<error> with I<property>.
 
-=head2 internal_put_error(string property, string error)
+If I<property> is C<undef>, error applies to entire form.
 
-=head2 internal_put_error(string property, string error, string literal)
-
-Associate I<error> with I<property>.  If I<literal> in error is defined,
-associate as well.
+I<error> must be a L<Bivio::TypeError|Bivio::TypeError> or
+a name thereof.
 
 =cut
 
 sub internal_put_error {
-    my($self, $property, $error, $literal) = @_;
+    my($self, $property, $error) = @_;
+    Carp::croak('too many args, literal deprecated') if int(@_) > 3;
     my($fields) = $self->{$_PACKAGE};
     $error = Bivio::TypeError->from_any($error);
+    $property = '_' unless $property;
     _trace($property, ': ', $error->as_string) if $_TRACE;
     $fields->{errors} = {} unless $fields->{errors};
     $fields->{errors}->{$property} = $error;
@@ -795,6 +840,9 @@ sub load_from_model_properties {
 
 Allows you to put multiple context fields on this form's context.
 
+B<Does not work for I<in_list> ListForm fields unless you specify
+the field name explicitly, e.g. RealmOwner.name.1>.
+
 =cut
 
 sub put_context_fields {
@@ -808,15 +856,13 @@ sub put_context_fields {
     Carp::croak('context does not contain form_model') unless $model;
 
     my($mi) = $model->get_instance;
-    my($other_cols) = $mi->get_info('columns');
     # If there is no form, initialize
     my($f) = $c->{form} ||= {version => $mi->get_info('version')};
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
-	my($col) = $other_cols->{$k};
-	Carp::croak("$model.$k: no such field") unless $col;
+	my($fn) = $self->get_field_name_for_html($k);
 	# Convert with to_literal--context->{form} is in raw form
-	$f->{$col->{form_name}} = $col->{type}->to_literal($v);
+	$f->{$fn} = $model->get_field_info($k, 'type')->to_literal($v);
     }
     _trace('new form: ', $c->{form}) if $_TRACE;
     return;
@@ -849,7 +895,7 @@ sub unsafe_get_context_field {
     # the result of from_literal.
     my($mi) = $model->get_instance;
     my($type) = $mi->get_field_info($name, 'type');
-    my($fn) = $mi->get_field_info($name, 'form_name');
+    my($fn) = $mi->get_field_name_for_html($name);
     return $type->from_literal($c->{form}->{$fn});
 }
 
@@ -1029,6 +1075,10 @@ sub _parse {
     # parse, but only save errors if it is a submit
     my($is_submit) = _parse_submit($self, $form);
     my($values) = {};
+
+    # Allow ListFormModel to initialize its state
+    $self->internal_pre_parse_columns();
+
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
     $self->internal_put($values);
@@ -1044,8 +1094,10 @@ sub _parse {
 sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
     my($fields) = $self->{$_PACKAGE};
-    foreach my $col (@{$sql_support->get($is_hidden ? 'hidden' : 'visible')}) {
-	my($fn) = $col->{form_name};
+    my($method) = $is_hidden ? 'internal_get_hidden_field_names'
+	    : 'internal_get_visible_field_names';
+    foreach my $n (@{$self->$method()}) {
+	my($fn) = $self->get_field_name_for_html($n);
 
 	# Handle complex form fields.  Avoid copies of huge data, so
 	# don't assign to temporary until kind (complex/simple) is known.
@@ -1053,17 +1105,16 @@ sub _parse_cols {
 	    my($fv) = $form->{$fn};
 	    # Was there an error in Bivio::Agent::HTTP::Form
 	    if ($fv->{error}) {
-		$self->internal_put_error($col->{name}, $fv->{error});
+		$self->internal_put_error($n, $fv->{error});
 		next;
 	    }
 
 	    # Not expecting a complex form field?
-	    unless ($col->{is_file_field}) {
+	    unless ($self->get_field_info($n, 'is_file_field')) {
 		# Be friendly and let the guy set the content this way.
 		# We don't really know how browser handle things like this.
 		if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE()) {
-		    $self->internal_put_error($col->{name},
-			    Bivio::TypeError::TOO_LONG());
+		    $self->internal_put_error($n, 'TOO_LONG');
 		    next;
 		}
 		# Only FileFields know how to handle complex field values.
@@ -1074,19 +1125,19 @@ sub _parse_cols {
 	# Make sure the simple field isn't too large
 	elsif (defined($form->{$fn})
 		&& length($form->{$fn}) > $self->MAX_FIELD_SIZE()) {
-	    $self->internal_put_error($col->{name},
-		    Bivio::TypeError::TOO_LONG());
+	    $self->internal_put_error($n, 'TOO_LONG');
 	    next;
 	}
 
 	# Finally, parse the value
-	my($v, $err) = $col->{type}->from_literal($form->{$fn});
-	$values->{$col->{name}} = $v;
+	my($v, $err) = $self->get_field_info($n, 'type')
+		->from_literal($form->{$fn});
+	$values->{$n} = $v;
 
 	# Success?
 	if (defined($v)) {
 	    # Zero field ok?
-	    next unless $col->{constraint}
+	    next unless $self->get_field_info($n, 'constraint')
 		    == Bivio::SQL::Constraint::NOT_ZERO_ENUM();
 	    next if $v->as_int != 0;
 	    $err = Bivio::TypeError::UNSPECIFIED();
@@ -1094,18 +1145,18 @@ sub _parse_cols {
 
 	# Null field ok?
 	unless ($err) {
-	    next if $col->{constraint} == Bivio::SQL::Constraint::NONE();
+	    next if $self->get_field_info($n, 'constraint')
+		    == Bivio::SQL::Constraint::NONE();
 	    $err = Bivio::TypeError::NULL();
 	}
 
 	# Error in field.  Save the original value.
 	if ($is_hidden) {
 	    $self->die(Bivio::DieCode::CORRUPT_FORM(),
-		    {field => $col->{name}, actual => $form->{$fn},
-			error => $err});
+		    {field => $n, actual => $form->{$fn}, error => $err});
 	}
 	else {
-	    $self->internal_put_error($col->{name}, $err);
+	    $self->internal_put_error($n, $err);
 	}
     }
     return;
@@ -1162,14 +1213,11 @@ sub _parse_submit {
     # to do something on cancel, e.g. clear a cookie.
     _trace('cancel or other button: ', $value) if $_TRACE;
 
-#TODO: Use the context to return to what the user was doing.  May
-#      pop completely out of the context?  Problem is that for login
-#      it doesn't work right.
-
     my($req) = $self->get_request;
     $self->execute_other($value);
+
     # client redirect on cancel, no state is saved
-    $req->client_redirect($req->get('task')->get('cancel'));
+    _redirect($self, 'cancel');
     # DOES NOT RETURN
 }
 
@@ -1217,13 +1265,12 @@ sub _put_file_field_reset_errors {
     my($self) = @_;
     # If there were errors, provide feedback to the user about
     # file fields which are special.
-    my($file_fields) = $self->get_info('file_fields');
+    my($file_fields) = $self->internal_get_file_field_names;
     return unless $file_fields;
 
     my($fields) = $self->{$_PACKAGE};
     my($properties) = $self->internal_get;
-    foreach my $ff (@$file_fields) {
-	my($n) = $ff->{name};
+    foreach my $n (@$file_fields) {
 	# Don't replace an existing error
 	next unless defined($properties->{$n}) && !$fields->{errors}->{$n};
 
@@ -1232,6 +1279,51 @@ sub _put_file_field_reset_errors {
 		Bivio::TypeError::FILE_FIELD_RESET_FOR_SECURITY())
     }
     return;
+}
+
+# _redirect(Bivio::Biz::FormModel self, string which) : 
+#
+# Redirect to the "next" or "cancel" task depending on "which" if there
+# is no context.  Otherwise, redirect to context.
+#
+sub _redirect {
+    my($self, $which) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Success, redirect to the next task or to the task in
+    # the context.
+    my($req) = $self->get_request;
+    $req->client_redirect($req->get('task')->get($which))
+	    unless $fields->{context};
+
+    my($c) = $fields->{context};
+    my($f) = $c->{form};
+    unless ($f) {
+	_trace('no form, client_redirect: ', $c->{uri},
+		'?', $c->{query}) if $_TRACE;
+	# If there is no form, redirect to client so looks
+	# better.
+	$req->client_redirect(@{$c}{qw(uri query)});
+	# DOES NOT RETURN
+    }
+
+    # Do an server redirect to context, because can't do
+    # client redirect (no way to pass form state (reasonably)).
+    # Indicate to the next form that this is a SUBMIT_UNWIND
+    # Make sure you use that form's SUBMIT_UNWIND button.
+    $f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
+
+    # Ensure this form_model is seen as the redirect model
+    # by get_context_from_request and set a flag so it
+    # knows to pop context instead of pushing.
+    $req->put(form_model => $self);
+    $fields->{redirecting} = 1;
+
+    # Redirect calls us back in get_context_from_request
+    _trace('have form, server_redirect: ', $c->{uri},
+	    '?', $c->{query}) if $_TRACE;
+    $req->server_redirect(@{$c}{qw(uri query)}, $f);
+    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT
