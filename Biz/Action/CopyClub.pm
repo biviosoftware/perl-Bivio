@@ -49,7 +49,7 @@ use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::TaxId;
 use Bivio::SQL::Connection;
-use Bivio::Type::ClubUserTitle;
+use Bivio::Type::Honorific;
 
 #=VARIABLES
 
@@ -143,7 +143,7 @@ sub execute {
 	    undef,
 	    {
 		role => Bivio::Auth::Role::MEMBER(),
-		title => Bivio::Type::ClubUserTitle::MEMBER(),
+		honorific => Bivio::Type::Honorific::MEMBER(),
 	    });
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select user_id from realm_user_t where realm_id=?', [$source_id]);

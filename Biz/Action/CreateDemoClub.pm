@@ -36,6 +36,7 @@ use Bivio::Auth::Role;
 use Bivio::Biz::Action::CopyClub;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Type::Honorific;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
@@ -80,15 +81,15 @@ sub execute {
 
     # guard against the silly case where the current user is a demo user
     unless ($realm_user->unauth_load(
-	'realm_id' => $realm->get('realm_id'),
-	'user_id' => $user->get('user_id'))) {
+	    realm_id => $realm->get('realm_id'),
+	    user_id => $user->get('user_id'))) {
 
-	my($title) = Bivio::Type::ClubUserTitle::ADMINISTRATOR();
+	my($honor) = Bivio::Type::Honorific::ADMINISTRATOR();
 	$realm_user->create({
-	    'realm_id' => $realm->get('realm_id'),
-	    'user_id' => $user->get('user_id'),
-	    'role' => $title->get_role(),
-	    'title' => $title->get_short_desc(),
+	    realm_id => $realm->get('realm_id'),
+	    user_id => $user->get('user_id'),
+	    role => $honor->get_role(),
+	    honorific => $honor,
 	});
     }
     return;
