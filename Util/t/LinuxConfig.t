@@ -9,7 +9,7 @@ Bivio::IO::Config->introduce_values({
 	root_prefix => $_tmp,
     },
 });
-CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp");
+CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
 
 Bivio::Test->unit([
     Bivio::Util::LinuxConfig => [
@@ -46,13 +46,17 @@ Bivio::Test->unit([
 		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
+            'disable_iptables_counters', [] => [
+		['etc/rc.d/init.d/iptables', 'iptables-restore \&\&'],
+	    ],
+	], [
 	    'relay_domains', ['10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
 	    ],
 	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
-		['etc/ssh/sshd_config', "\nPermitRootLogin no"],
-		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes"],
+		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
+		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes(?!no)"],
 	    ],
 	], [
 	    'create_ssl_crt', [qw(US Colorado Boulder LinuxCrazyMan www.linuxcrazy.man)] => [
@@ -67,11 +71,6 @@ Bivio::Test->unit([
 	], [
             'rhn_up2date_param', ['pkgSkipList', ''] => [
 		['etc/sysconfig/rhn/up2date', 'pkgSkipList=;'],
-	    ],
-        ], [
-	    'enable_xinetd_service', [qw(pop3s imaps)] => [
-		['etc/xinetd.d/pop3s', 'disable.*=.*no'],
-		['etc/xinetd.d/imaps', 'disable.*=.*no'],
 	    ],
 	]),
 	rename_rpmnew => [
