@@ -284,6 +284,20 @@ sub diff_seconds {
     return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
 }
 
+=for html <a name="get_previous_day"></a>
+
+=head2 static get_previous_day(string date) : string
+
+Returns the date value for the day previous to the specified date.
+
+=cut
+
+sub get_previous_day {
+    my($proto, $date) = @_;
+    my($j, $s) = split(' ', $date);
+    return ($j - 1) . ' ' . $s;
+}
+
 =for html <a name="local_end_of_today"></a>
 
 =head2 local_end_of_today() : string
