@@ -72,6 +72,16 @@ test_deviance(qr/No mail for /);
 verify_local_mail(\$e2, 'You have mail');
 test_conformance();
 verify_local_mail(\$e1, 'You have mail');
+\$m->();
+\$m->();
+test_deviance(qr/wrong number of messages matched/);
+verify_local_mail(\$e1, 'You have mail');
+test_conformance();
+foreach (verify_local_mail(\$e1, 'You have mail', 2)) {
+    \$\$_ =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
+        or die('bad return value from verify_local_mail()');
+}
+
 EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
