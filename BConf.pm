@@ -193,6 +193,7 @@ sub _base {
 		HTMLFormat => ['Bivio::UI::HTML::Format'],
 		HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 		MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+		TestLanguage => ['Bivio::Test::Language'],
 		Model => ['Bivio::Biz::Model'],
 		TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		Type => ['Bivio::Type'],
