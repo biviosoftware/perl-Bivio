@@ -1307,13 +1307,14 @@ sub whats_this {
 
 # _link_help(Bivio::UI::HTML::Widget proto, string task, string label) : Bivio::UI::HTML::Widget
 #
-# Returns a help wid
+# Returns a help widget
 #
 sub _link_help {
     my($proto, $task, $label) = @_;
-    my($path_info) = Bivio::Agent::TaskId->unsafe_from_name($task);
-    $path_info = Bivio::Agent::HTTP::Location->get_help_path_info($task)
-	    unless $path_info;
+    my($task_id) = Bivio::Agent::TaskId->unsafe_from_name($task);
+    my($path_info) = $task_id
+	    ? Bivio::Agent::Task->get_by_id($task_id)->get('help')
+	    : Bivio::Agent::HTTP::Location->get_help_path_info($task);
     return $proto->link(
 	    Bivio::UI::Label->get_simple($label),
 	    ['->format_uri', Bivio::Agent::TaskId::HELP(), undef,
