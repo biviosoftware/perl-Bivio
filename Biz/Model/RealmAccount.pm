@@ -34,62 +34,10 @@ and delete interface to the C<realm_account_t> table.
 
 =cut
 
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="BANK"></a>
-
-=head2 BANK : string
-
-Predefined bank account name.
-
-=cut
-
-sub BANK {
-    return 'Bank';
-}
-
-=for html <a name="BROKER"></a>
-
-=head2 BROKER : string
-
-Predefined broker account name.
-
-=cut
-
-sub BROKER {
-    return 'Broker';
-}
-
-=for html <a name="PETTY_CASH"></a>
-
-=head2 PETTY_CASH : string
-
-Predefined petty cash account name.
-
-=cut
-
-sub PETTY_CASH {
-    return 'Petty Cash';
-}
-
-=for html <a name="SUSPENSE"></a>
-
-=head2 SUSPENSE : string
-
-Predefined suspense account name
-
-=cut
-
-sub SUSPENSE {
-    return 'Suspense';
-}
-
 #=IMPORTS
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
+use Bivio::Type::ClubPreference;
 
 #=VARIABLES
 
@@ -187,24 +135,39 @@ sub internal_initialize {
 
 =head2 create_initial(string realm_id)
 
-Create the initial accounts (BANK, BROKER, SUSPENSE, and PETTY_CASH)
-for the current request's realm.
+Create the initial account, "Broker"
 
 =cut
 
 sub create_initial {
     my($self, $realm_id) = @_;
-    $realm_id ||= $self->get_request->get('auth_id');
 
-    foreach my $name (BANK(), BROKER(), SUSPENSE(), PETTY_CASH()) {
-	$self->create({
-	    realm_id => $realm_id,
-	    name => $name,
-	    tax_free => 0,
-	    in_valuation => $name eq PETTY_CASH() ? 0 : 1,
-	});
-    }
+    $self->create({
+	realm_id => $realm_id ||= $self->get_request->get('auth_id'),
+	name => 'Broker',
+	tax_free => 0,
+	in_valuation => 1,
+    });
     return;
+}
+
+=for html <a name="unsafe_load_default"></a>
+
+=head2 unsafe_load_default() : boolean
+
+Loads the default account, using the DEFAULT_ACCOUNT club preference. Returns
+true if successfully, loaded, false otherwise.
+
+=cut
+
+sub unsafe_load_default {
+    my($self) = @_;
+
+    my($default_id) = $self->get_request->get_club_pref(
+	    Bivio::Type::ClubPreference::DEFAULT_ACCOUNT());
+
+    return ($default_id && $self->unsafe_load(realm_account_id => $default_id))
+	    ? 1 : 0;
 }
 
 #=PRIVATE METHODS
