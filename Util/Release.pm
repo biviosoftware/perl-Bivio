@@ -240,8 +240,7 @@ sub build {
 
 	my($rpm_command) = "rpm -b$rpm_stage $specout";
 	if ($self->get('noexecute')) {
-            $output .= "Would run: $rpm_command\n"
-		    ."           in directory $_TMP_DIR\n";
+            $output .= "Would run: cd $_TMP_DIR; $rpm_command\n";
 	    next;
 	}
 	_system($rpm_command, \$output);
@@ -394,7 +393,153 @@ sub list {
     return $output;
 }
 
-#=PRIVATE METHODS
+#=PRIVATE METHODS, '.');
+
+# _b_release_macro_create_files_spec(string perl_root, string local_file_root)
+#
+# Generates rest of spec from perl_root and file_root
+#
+sub _b_release_macro_create_files_spec {
+    my($perl_root, $local_file_root) = @_;
+    return <<"EOF1"
+\%define perl_root $perl_root
+\%define perl_root_lc @{[lc($perl_root)]}
+\%define local_file_root $local_file_root
+Name: files.@{[lc($perl_root)]}
+EOF1
+	. <<'EOF2';
+%define files_cvs_module perl/%{perl_root}/files
+Summary: %{perl_root} Application Modules
+Group: %{perl_root}/Modules
+Provides: %{name}
+
+%description
+%{perl_root} Apache Files
+
+%prep
+%{cvs} %{files_cvs_module}
+
+%build
+
+%install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+tgt=%{build_root}/var/www/facades/%{local_file_root}
+mkdir -p $tgt
+cd %{files_cvs_module}
+find view plain ddl -name CVS -prune -o -print \
+    | tar Tcf - - | (cd $tgt; tar xpf -)
+
+cd %{build_root}
+(
+    echo '%defattr(-,root,apache)'
+    echo "%attr(0750,root,apache) %dir $f"
+    find var/www -type d | grep /facades/ | sed -e 's#^#%attr(0750,root,apache) %dir /#'
+    %{allfiles} | grep -v '/files.list$'
+) > %{build_root}/files.list
+
+%files -f %{build_root}/files.list
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+%post
+
+%postun
+EOF2
+}
+
+# _b_release_macro_create_perl_spec(string perl_root, string exe_prefix)
+#
+# Generates rest of spec from perl_root and exe_prefix
+#
+sub _b_release_macro_create_perl_spec {
+    my($perl_root, $exe_prefix) = @_;
+    return <<"EOF1"
+\%define perl_root $perl_root
+\%define perl_root_lc @{[lc($perl_root)]}
+\%define perl_exe_prefix $exe_prefix
+Name: perl.@{[lc($perl_root)]}
+EOF1
+	. <<'EOF2';
+%define perl_cvs_module perl/%{perl_root}
+Summary: %{perl_root} Application Modules
+Group: %{perl_root}/Modules
+Provides: %{name}
+
+%description
+%{perl_root} Application Modules - manual pages suppressed
+
+%prep
+%{cvs} %{perl_cvs_module}
+cd perl
+cat <<'END' > Makefile.PL
+use strict;
+require 5.005;
+use ExtUtils::MakeMaker ();
+use File::Find ();
+my(@_EXE_FILES, %_MODULES);
+File::Find::find(sub {
+    my($file) = $File::Find::name;
+    $file =~ s!^\./!!;
+    push(@_EXE_FILES, $file)
+        if /^%{perl_exe_prefix}-[-\w]+$/;
+    $_MODULES{$file} = '$(INST_LIBDIR)/' . $file
+        if /\.pm$/;
+    return;
+}, '%{perl_root}');
+ExtUtils::MakeMaker::WriteMakefile(
+            NAME => '%{name}',
+        ABSTRACT => '%{summary}',
+         VERSION => '%{version}',
+       EXE_FILES => \@_EXE_FILES,
+	    'PM' => \%_MODULES,
+          AUTHOR => '%{copyright}',
+            dist => {COMPRESS => 'gzip -f', SUFFIX => 'gz'},
+       PREREQ_PM => {},
+);
+END
+
+%build
+cd perl
+%{perl_make}
+
+%install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+cd perl
+%{perl_make_install}
+(
+    echo '%defattr(-,root,root)'
+    %{allfiles} | grep -v '/files.list$'
+) > %{build_root}/files.list
+
+%files -f %{build_root}/files.list
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+%post
+
+%postun
+EOF2
+}
+
+# _build_root(array_ref specin)
+#
+#
+sub _build_root {
+    my($build_root) = @_;
+    $build_root ||= 'install';
+    $build_root = Bivio::IO::File->pwd.'/'.$build_root
+	unless $build_root =~ m,^/,;
+    return <<"EOF"
+BuildRoot: $build_root
+\%define build_root $build_root
+EOF
+        . <<'EOF';
+%define allfiles cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'
+%define allcfgs cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'
+EOF
+}
 
 # _create_URI(string name) : string
 #
@@ -423,13 +568,9 @@ sub _create_rpm_spec {
         $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
     }
-    my($base_spec) = _read_all($specin);
+    my($base_spec) =  _read_all($specin);
     my($release) = _search('release', $base_spec) || _get_date_format();
-
-    my($specout) = "$specin-build";
-    open(SPECOUT, ">$specout") || Bivio::Die->die("$specout: $!");
-
-    print(SPECOUT <<"EOF"._perl_make());
+    my($buf) = <<"EOF" . _perl_make();
 %define _sourcedir .
 %define _topdir .
 %define _srcrpmdir .
@@ -438,31 +579,22 @@ sub _create_rpm_spec {
 %define cvs cvs -Q checkout -f -r $version
 Release: $release
 EOF
-    print(SPECOUT "Version: $version\n")
+    $buf .= "Version: $version\n"
 	    unless _search('version', $base_spec);
-    print(SPECOUT "Copyright: Bivio\n")
+    $buf .= "Copyright: Bivio\n"
 	    unless _search('copyright', $base_spec);
-
+    $buf .= _build_root(_search('buildroot'));
     for my $line (@$base_spec) {
-	if ($line =~ /^buildroot: (.+)$/i) {
-	    my($build_root) = $1;
-	    unless ($build_root =~ m,^/,) {
-		$build_root = Bivio::IO::File->pwd.'/'.$build_root;
-	    }
-	    print(SPECOUT <<"EOF");
-BuildRoot: $build_root
-%define allfiles cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'
-%define allcfgs cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'
-EOF
-	    next;
-	}
-	print(SPECOUT $line) unless $line =~ /^release: /i;
+        $line =~ s/\b(_b_release_macro_\w+\(.*\);)/Bivio::Die->eval_or_die("$1")/e;
+	$buf .= $line unless $line =~ /^(buildroot|release): /i;
     }
-    close(SPECOUT);
 
-    $version = _search('version', $base_spec) || $version;
-    my($name) = _search('name', $base_spec)
-	    || Bivio::Die->die("$specin: Missing Name: tag!\n");
+    $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
+    Bivio::Die->die("$specin: Missing Name: tag!\n")
+	unless my($name) = $buf =~ /\nName:\s*(\S+)/i;
+
+    my($specout) = "$specin-build";
+    Bivio::IO::File->write($specout, \$buf);
     return ($specout, "$name-$version", "$name-$version-$release");
 }
 
@@ -518,7 +650,8 @@ sub _link_rpm_base {
 # %define perl_make_install ....
 #
 sub _perl_make {
-    return '%define perl_make umask 022 && perl Makefile.PL < /dev/null && '
+    return
+	'%define perl_make umask 022 && perl Makefile.PL < /dev/null && '
 	. " make POD2MAN=true\n"
 	. '%define perl_make_install umask 022; make ' . join(' ', map {
 	    my($n) = "install$_";
