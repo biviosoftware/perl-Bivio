@@ -322,6 +322,10 @@ The value for the C<COLSPAN> tag, which is not inserted if C<1>.
 Determines whether the specified cell will be summarized. Only applies to
 numeric columns. By default, numeric columns always summarize.
 
+=item column_want_error_widget : boolean [see create_cell]
+
+Force creation of error widget around the cell if true.
+
 =item column_widget : Bivio::UI::Widget
 
 The widget which will be used to render the column. By default the column
@@ -387,6 +391,7 @@ sub create_cell {
     my($self, $model, $col, $attrs) = @_;
 
     my($cell);
+    my($need_error_widget) = 0;
     # see if widget is already provided
     if ($attrs->{column_widget}) {
 	$cell = $attrs->{column_widget};
@@ -401,7 +406,6 @@ sub create_cell {
     }
     else {
 	my($use_list) = 0;
-	my($need_error_widget) = 0;
 
 	# if the source is a ListFormModel, use editable fields
 	if (UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')) {
@@ -418,22 +422,6 @@ sub create_cell {
 	my($type) = $model->get_field_type($col);
 	$cell = Bivio::UI::HTML::WidgetFactory->create(
 		ref($model).'.'.$col, $attrs);
-	if ($need_error_widget) {
-	    # wrap the cell, including an error widget
-	    $cell = $_VS->vs_new('Join', {
-		# Need to copy attributes when putting Widget around $cell.
-		%{$cell->get_shallow_copy},
-		# Our attributes override, however.
-		values => [
-		    $_VS->vs_new('FormFieldError', {
-			field => $col,
-		        label => $_VS->vs_text(
-				$model->simple_package_name, $col),
-		    }),
-		    $cell,
-		],
-	    });
-	}
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize =>
 		UNIVERSAL::isa($type,'Bivio::Type::Number')
@@ -442,6 +430,23 @@ sub create_cell {
 		? 1 : 0);
 	}
 	$cell->put(column_use_list => $use_list);
+    }
+    if ($cell->get_or_default(
+	'column_want_error_widget', $need_error_widget)) {
+	# wrap the cell, including an error widget
+	$cell = $_VS->vs_new('Join', {
+	    # Need to copy attributes when putting Widget around $cell.
+	    %{$cell->get_shallow_copy},
+	    # Our attributes override, however.
+	    values => [
+		$_VS->vs_new('FormFieldError', {
+		    field => $col,
+		    label => $_VS->vs_text(
+			    $model->simple_package_name, $col),
+		}),
+		$cell,
+	    ],
+	});
     }
     $self->initialize_child_widget($cell);
     return $cell;
