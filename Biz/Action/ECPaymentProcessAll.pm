@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UNIVERSAL>
+L<Bivio::Biz::Action::JobBase>
 
 =cut
 
-use Bivio::Biz::Action;
-@Bivio::Biz::Action::ECPaymentProcessAll::ISA = ('Bivio::Biz::Action');
+use Bivio::Biz::Action::JobBase;
+@Bivio::Biz::Action::ECPaymentProcessAll::ISA = ('Bivio::Biz::Action::JobBase');
 
 =head1 DESCRIPTION
 
@@ -51,43 +51,19 @@ Bivio::IO::Trace->register;
 
 =cut
 
-=for html <a name="execute"></a>
+=for html <a name="internal_execute"></a>
 
-=head2 execute(Bivio::Agent::Request req) : boolean
+=head2 internal_execute(Bivio::Agent::Request req) : any
 
-Creates a job to start processing the pending credit card
-payments in the background.
+Go through list of all payments which need to be processed.
+For each payment, setup user and realm, then call ECCreditCardProcessor
+to handle it.
 
 =cut
 
-sub execute {
+sub internal_execute {
     my($self, $req) = @_;
-
-    return _process_all($self, $req) if $req->unsafe_get('process_all');
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
-
-    # Setup job to call this method again
-    Bivio::Agent::Job::Dispatcher->enqueue($req,
-            Bivio::Agent::TaskId->EC_PAYMENTS_PROCESS_ALL,
-            {process_all => 1});
-    # Nothing returned to client
-    my($buffer) = '';
-    $req->get('reply')->set_output(\$buffer);
-    return 0;
-}
-
-#=PRIVATE METHODS
-
-# _process_all(self, Bivio::Agent::Request req) : boolean
-#
-# Go through list of all payments which need to be processed.
-# For each payment, setup user and realm, then call ECCreditCardProcessor
-# to handle it.
-#
-sub _process_all {
-    my($self, $req) = @_;
-
-    # check batch before and after.  Sometimes there is an error downloading
+    # check batch before.  Sometimes there is an error downloading
     # the status, and we have accidentally resubmitted a payments.
     Bivio::Biz::Action::ECCreditCardProcessor->check_transaction_batch($req);
     my($ecp) = Bivio::Biz::Model->new($req, 'ECPayment');
@@ -101,6 +77,8 @@ sub _process_all {
     $ecp->iterate_end($it);
     return 0;
 }
+
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
