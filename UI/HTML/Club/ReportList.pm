@@ -131,6 +131,9 @@ sub _create_report_links {
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT(),
 	    "Valuation Statement");
+
+=begin comment
+
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL(),
 	    "Complete Journal");
@@ -138,19 +141,29 @@ sub _create_report_links {
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY(),
 	    "Transaction Summary");
 
+=cut
+
     $html .= '</ul>Investment<ul>';
 
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY(),
 	    "Investment Summary");
+
+=begin comment
+
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY(),
 	    "Individual Investment History");
+
+=cut
 
     $html .= '</ul>Member<ul>';
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY(),
 	    "Member Summary");
+
+=begin comment
+
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_MEMBER_STATUS(),
 	    "Member Status");
@@ -161,12 +174,17 @@ sub _create_report_links {
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_WITHDRAWAL_EARNINGS(),
 	    "Withdrawal Earnings Report");
 
+=cut
+
     $html .= '</td><td>&nbsp;</td><td valign="top">';
 
     $html .= '</ul>Cash Account<ul>';
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY(),
 	    "Cash Account Summary");
+
+=begin
+
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_CASH_JOURNAL(),
 	    "Cash Journal Listing");
@@ -190,6 +208,8 @@ sub _create_report_links {
     $html .= _create_bullet_link(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_BALANCE_SHEET(),
 	    "Balance Sheet");
+
+=cut
 
     $html .= '</ul></td></tr></table>';
 
