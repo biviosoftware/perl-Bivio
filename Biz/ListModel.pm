@@ -74,7 +74,7 @@ Associates this model with the request.
 
 sub new {
     my($proto, $req) = @_;
-    my($self) = &Bivio::Biz::Model::new($proto, $req);
+    my($self) = &Bivio::Biz::Model::new($proto, {}, $req);
     my($class) = ref($self);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};

@@ -42,16 +42,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model
+=head2 static new(hash_ref properties, Bivio::Agent::Request req) : Bivio::Biz::Model
 
 Creates a new model.
 
 =cut
 
 sub new {
-    my($proto, $req) = @_;
-    Carp::croak('invalid request') unless ref($req);
-    my($self) = &Bivio::Collection::Attributes::new($proto, {});
+    my($proto, $properties, $req) = @_;
+    my($self) = &Bivio::Collection::Attributes::new($proto, $properties);
     $self->{$_PACKAGE} = {
 	request => $req,
     };
@@ -114,7 +113,8 @@ sub die {
     $attrs ||= {};
     ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
     $attrs->{entity} = $self;
-    $attrs->{request} = $self->get_request;
+    # Don't call get_request, because will blow up if not set.
+    $attrs->{request} = $self->{$_PACKAGE}->{request};
     Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
@@ -127,8 +127,10 @@ Returns the request associated with this model.
 =cut
 
 sub get_request {
-    my($fields) = shift->{$_PACKAGE};
-    return $fields->{request};
+    my($self) = @_;
+    my($req) = $self->{$_PACKAGE}->{request};
+    Carp::croak($self, ": request not set") unless $req;
+    return $req;
 }
 
 =for html <a name="find"></a>
