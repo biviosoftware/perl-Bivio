@@ -104,7 +104,10 @@ sub get_by_field_names {
 	    if $found;
 	$found = $values;
     }
-    return $found || Bivio::Die->die(\@name, ': no form matches named fields');
+    return $found if $found;
+
+    Bivio::Die->die(\@name, ': no form matches named fields, visible fields: ',
+        map({[sort(keys(%{$_->{visible}}))]} values(%$forms)));
 }
 
 =for html <a name="handle_config"></a>
