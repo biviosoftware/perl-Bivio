@@ -71,18 +71,59 @@ EOF
 
 =for html <a name="render"></a>
 
-=head2 static render(any source, string_ref buffer)
+=head2 static render(any source, string_ref buffer, string module_tag, string common_code, string script, string no_script_html)
 
-Render the JavaScript version tag.
+Render the JavaScript version tag if not already rendered.
+Renders the I<common_code> for I<module_tag> if not already
+rendered.  Renders I<script> and I<no_script_html> if defined.
 
 =cut
 
 sub render {
-    my(undef, $source, $buffer) = @_;
+    my(undef, $source, $buffer, $module_tag, $common_code,
+	    $script, $no_script_html) = @_;
     my($req) = Bivio::Agent::Request->get_current;
-    return if $req->unsafe_get('javascript_jsv');
-    $$buffer .= $_JSV;
-    $req->put(javascript_jsv => 1);
+    my($tag) = 'javascript_'.$module_tag;
+
+    # Render common code
+    unless ($req->unsafe_get($tag)) {
+	# Render "global" common code first
+	unless ($req->unsafe_get('javascript_jsv')) {
+	    $$buffer .= $_JSV;
+	    $req->put(javascript_jsv => 1);
+	}
+	$$buffer .= "<script language=\"JavaScript\">\n<!--\n".$common_code;
+	$req->put($tag => 1);
+    }
+    else {
+	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
+    }
+
+    # Render the script
+    $$buffer .= $script if defined($script);
+    $$buffer .= "\n// -->\n</script>";
+
+    # Render noscript
+    return unless defined($no_script_html);
+    $$buffer .= '<noscript>'.$no_script_html.'</noscript>';
+    return;
+}
+
+=for html <a name="strip"></a>
+
+=head2 static strip(string_ref code)
+
+Strips leading blanks and comments.
+
+=cut
+
+sub strip {
+    my(undef, $code) = @_;
+    # Strip leading blanks and blank lines
+    $$code =~ s/\n\s+/\n/g;
+
+    # Strip comments
+    $$code =~ s/\/\/.*\n//g;
     return;
 }
 
