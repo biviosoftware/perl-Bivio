@@ -385,10 +385,6 @@ uses current request's I<task_id>.
 If I<uri_or_task> is a valid enum name or is an actual TaskId instance,
 I<uri_or_task> will be treated as a task.
 
-If I<uri_or_task> is an array_ref, it will be evaluated as a widget value:
-
-     $self->get_widget_value(@$uri);
-
 Otherwise, I<uri_or_task> will be treated as a uri.
 
 If I<query_args> are provided, they'll be added to the query.
@@ -488,7 +484,7 @@ sub format_uri_for_prev_page {
 
 =for html <a name="format_uri_for_sort"></a>
 
-=head2 format_uri_for_sort(any uri_or_task, array_ref order_fields, boolean direction) : string
+=head2 format_uri_for_sort(any uri_or_task, boolean direction, array order_fields) : string
 
 Format I<uri_or_task> for I<THIS_LIST> to sort by the fields
 I<order_fields> and order by I<direction>.
@@ -497,15 +493,15 @@ If I<direction> is undefined, uses the first field's default sort order.
 =cut
 
 sub format_uri_for_sort {
-    my($self, $uri_or_task, $order_fields, $direction) = @_;
+    my($self, $uri_or_task, $direction, @order_fields) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($main_field) = $order_fields->[0];
+    my($main_field) = $order_fields[0];
     my($main_order) = defined($direction)
             ? $direction : $self->get_field_info($main_field, 'sort_order');
 
     my(@order_by);
-    foreach my $field (@$order_fields) {
+    foreach my $field (@order_fields) {
         push(@order_by, $field, $main_order);
     }
     return $self->format_uri('THIS_LIST',
@@ -1375,9 +1371,6 @@ sub _format_uri_args {
 	    if $query_args && $type != Bivio::Biz::QueryType->THIS_LIST;
 
     if (defined($uri)) {
-	if (ref($uri) eq 'ARRAY') {
-	    $uri = $self->get_widget_value(@$uri);
-	}
 	if (!ref($uri)) {
 	    $uri = Bivio::Agent::TaskId->$uri()
 		    if Bivio::Agent::TaskId->is_valid_name($uri);
