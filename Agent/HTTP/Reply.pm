@@ -108,15 +108,15 @@ EOF
     return;
 }
 
-=for html <a name="flush"></a>
+=for html <a name="send"></a>
 
-=head2 flush(Bivio::Agent::Request req)
+=head2 send(Bivio::Agent::Request req)
 
 Sends the buffered reply data.
 
 =cut
 
-sub flush {
+sub send {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
@@ -125,7 +125,8 @@ sub flush {
 	# only do this the first time
 	$fields->{header_sent} = 1;
 	$fields->{r}->header_out('Content-Length',
-		$size = -s $fields->{file_handle}) if $fields->{file_handle};
+		$size = $fields->{file_handle} ? -s $fields->{file_handle}
+		: length($fields->{output}));
 	# We always set a cookie
 	Bivio::Agent::HTTP::Cookie->set($req, $fields->{r});
 	$fields->{r}->content_type($self->get_output_type());

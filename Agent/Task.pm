@@ -144,7 +144,7 @@ sub new {
 
 Executes the task for the specified request.  Checks that the request is
 authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
-Calls C<reply-E<gt>flush>.
+Calls C<reply-E<gt>send>.
 
 B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
 the fact that L<handle_die|"handle_die"> is called to execute rollback.
@@ -167,7 +167,7 @@ sub execute {
 	$i->execute($req);
     }
     _commit();
-    $req->get('reply')->flush($req);
+    $req->get('reply')->send($req);
     return;
 }
 
