@@ -47,22 +47,20 @@ my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 =head2 delete_for_year(string date)
 
 Deletes all existing member allocations for the year of the specified
-date.
+date and all years after.
 
 =cut
 
 sub delete_for_year {
     my($self, $date) = @_;
 
-    my($start_date, $end_date) = Bivio::Biz::Accounting::Tax
-	    ->get_date_boundary_for_year($date);
-
+    # invalidates from that year forward
     Bivio::SQL::Connection->execute("
             DELETE FROM member_allocation_t
-            WHERE allocation_date
-                BETWEEN $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+            WHERE allocation_date >= $_SQL_DATE_VALUE
             AND realm_id=?",
-	    [$start_date, $end_date, $self->get_request->get('auth_id')]);
+	    [Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year($date),
+		$self->get_request->get('auth_id')]);
 
     return;
 }
