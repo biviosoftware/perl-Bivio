@@ -34,6 +34,7 @@ use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Enum;
 use Bivio::UI::HTML::Widget::File;
 use Bivio::UI::HTML::Widget::FormButton;
+use Bivio::UI::HTML::Widget::IRRCell;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::PercentCell;
@@ -90,19 +91,23 @@ sub create {
 sub _create_display {
     my($field, $type, $attrs) = @_;
 
-#TODO: make this a Percent type, models should use it instead
-    if ($field =~ /percent/) {
-	return Bivio::UI::HTML::Widget::PercentCell->new({
-	    field => $field,
-	    %$attrs,
-	});
-    }
-
 #TODO: should check if the list class "can()" format_name()
     if ($field eq 'RealmOwner.name') {
 	return Bivio::UI::HTML::Widget::String->new({
 	    field => $field,
 	    value => ['->format_name'],
+	    %$attrs,
+	});
+    }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::IRR')) {
+	return Bivio::UI::HTML::Widget::IRRCell->new({
+	    field => $field,
+	    %$attrs,
+	});
+    }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Percent')) {
+	return Bivio::UI::HTML::Widget::PercentCell->new({
+	    field => $field,
 	    %$attrs,
 	});
     }
