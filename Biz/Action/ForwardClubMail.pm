@@ -24,11 +24,13 @@ C<Bivio::Biz::Action::ForwardClubMail> creates a club and its administrator.
 =cut
 
 #=IMPORTS
-use Bivio::Mail::Outgoing;
+use Bivio::Agent::TaskId;
+use Bivio::Auth::Realm;
+use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::RealmOwner;
-use Bivio::Auth::RealmType;
 use Bivio::IO::Trace;
+use Bivio::Mail::Outgoing;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -75,8 +77,16 @@ sub send {
     my(undef, $realm_owner, $club, $msg) = @_;
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
     $out_msg->set_recipients($club->get_outgoing_emails());
+    my($display_name) = $realm_owner->get('display_name');
     $out_msg->set_headers_for_list_send($realm_owner->get('name'),
-	    $realm_owner->get('display_name'), 1, 1);
+	    $display_name, 1, 1);
+    # Include the club's URI in the header for convenience
+    # Was "Club Name (http...)", but is noisy when rendering in Netscape.
+    # There are three lines in a row with "Club Name" in it.
+    $out_msg->set_header('Organization',
+	    $realm_owner->get_request->format_http(
+	    Bivio::Agent::TaskId::CLUB_HOME(),
+	    undef, Bivio::Auth::Realm->new($realm_owner)));
     $out_msg->enqueue_send;
     return;
 }
