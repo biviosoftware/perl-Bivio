@@ -36,6 +36,8 @@ C<Bivio::Biz::Model::UserForm>
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Action::CopyClub;
+use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
@@ -84,9 +86,31 @@ sub create {
     };
 
     # Always set user as admin of own realm
-    $model = Bivio::Biz::Model::RealmUser->new($self->get_request);
+    my($req) = $self->get_request;
+    $model = Bivio::Biz::Model::RealmUser->new($req);
     $model->create({
 	'realm_id' => $values->{user_id},
+	'user_id' => $values->{user_id},
+	'role' => Bivio::Auth::Role::ADMINISTRATOR(),
+    });
+
+    # load and copy the demo club
+    my($demo_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($name) = $self->get('RealmOwner.name')."_demo_club";
+    $demo_realm->unauth_load(name => 'demo')
+	    || die("couldn't find demo realm");;
+    $req->put(source => $demo_realm);
+    $req->put(target_name => $name);
+    $req->put(target_full_name => $self->get_model('User')->get('display_name')
+	."'s Demo Club");
+    Bivio::Biz::Action::CopyClub->get_instance()->execute($req);
+
+    # add the user to the user's demo club
+    my($new_realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    $new_realm->unauth_load(name => $name);
+    $model = Bivio::Biz::Model::RealmUser->new($req);
+    $model->create({
+	'realm_id' => $new_realm->get('realm_id'),
 	'user_id' => $values->{user_id},
 	'role' => Bivio::Auth::Role::ADMINISTRATOR(),
     });
