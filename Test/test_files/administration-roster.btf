@@ -22,7 +22,7 @@ Verify->text('Billy the Test');
  
 Browser->click('delete_1');
 #Verify->title('');
-Verify->text('remove the following');
+Verify->text('remove this user');
  
 Browser->submit({
      _form => 'scene',
@@ -98,7 +98,7 @@ Verify->text('ignore@bivio.com');
  
 Browser->click('delete_1');
 #Verify->title('');
-Verify->text('remove the following');
+Verify->text('remove this user');
  
 Browser->submit({
      _form => 'scene',

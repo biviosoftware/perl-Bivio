@@ -24,8 +24,8 @@ Verify->title('Roster');
 Verify->text('Club Roster');
  
 Browser->click('delete_1');
-#Verify->title('');
-Verify->text('remove the following');
+Verify->title('Delete User');
+Verify->text('remove this user');
  
 Browser->submit({
      _form => 'scene',
@@ -67,7 +67,7 @@ Browser->submit({
      'Email_0' => '',
      }, 'OK');
 Verify->title('Invites');
-Verify->text('Guest');
+Verify->text("no outstanding invitations");
  
 Browser->click('bring_online_a');
 Verify->title('Bring Members Online');
@@ -82,8 +82,8 @@ Verify->text('Club Roster');
 Verify->text('ignore@bivio.com');
  
 Browser->click('delete_1');
-#Verify->title('');
-Verify->text('remove the following');
+Verify->title('Delete User');
+Verify->text('remove this user');
  
 Browser->submit({
      _form => 'scene',
