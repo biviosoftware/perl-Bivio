@@ -416,7 +416,7 @@ Returns the enum for this integer or name.  If not found, returns an error.
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value);
+    return undef unless defined($value) && $value ne '';
     my($info);
     if ($value =~ /^-?\d+$/) {
 	$info = _get_info($proto, $value, 1);
