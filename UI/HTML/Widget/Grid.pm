@@ -272,11 +272,13 @@ sub render {
     $$buffer .= $fields->{prefix};
     my($r, $c);
     foreach $r (@{$fields->{rows}}) {
-	$$buffer .= "<tr>\n";
+	my($row) = "<tr>\n";
 	foreach $c (@$r) {
-	    ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
+	    ref($c) ? $c->render($source, \$row) : ($row .= $c);
 	}
-	$$buffer .= '</tr>';
+	$row .= '</tr>';
+	# If row is completely empty, don't render it.
+	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
     $$buffer .= $fields->{suffix};
 
