@@ -951,6 +951,7 @@ sub set_realm {
     $self->put(auth_realm => $new_realm,
 	    auth_id => $realm_id,
 	    auth_role => $new_role);
+    _trace($new_realm, '; ', $new_role) if $_TRACE;
 
     # Don't set preferences unless browser
     return unless $self->get('Bivio::Type::UserAgent')
@@ -1002,6 +1003,7 @@ sub set_user {
     my($self, $user, $dont_set_role) = @_;
     # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
+    _trace($user) if $_TRACE;
     if ($user) {
 	# Load the UserRealmList.  For right now, the auth_id is this
 	# user since we don't have a realm.
