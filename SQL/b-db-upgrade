@@ -251,6 +251,7 @@ EOF
 sub _upgrade {
     my($req) = @_;
     _upgrade_add_basic_service_subscription($req);
+    _upgrade_subscribed_taxes($req);
     print("\n*** done ***\n");
     return;
 }
@@ -273,6 +274,35 @@ ALTER TABLE ec_subscription_t
 /
 ');
 
+    return;
+}
+
+# _upgrade_subscribed_taxes(Bivio::Agent::Request req)
+#
+# Adds TAXES permission to any club which has an active subscription.
+#
+sub _upgrade_subscribed_taxes {
+    my($req) = @_;
+    use Bivio::Biz::Util::RealmRole;
+    print("updating TAXES permissions for subscribed clubs\n");
+    my($role_util) = Bivio::Biz::Util::RealmRole->new();
+
+    my($sth) = Bivio::SQL::Connection->execute('
+        SELECT UNIQUE(realm_owner_t.name)
+        FROM realm_owner_t, ec_subscription_t
+        WHERE realm_owner_t.realm_id=ec_subscription_t.realm_id
+        AND SYSDATE BETWEEN
+           ec_subscription_t.start_date
+           AND ec_subscription_t.end_date
+        ORDER BY realm_owner_t.name', []);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name) = $row->[0];
+	print("\t", $name, "\n");
+	$role_util->set_realm_and_user($name);
+	$role_util->edit('ADMINISTRATOR', '+TAXES');
+	$role_util->edit('ACCOUNTANT', '+TAXES');
+    }
     return;
 }
 
