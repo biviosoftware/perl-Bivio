@@ -915,6 +915,11 @@ __PACKAGE__->compile([
 	undef,
 	'the valuation date must be earlier than the transaction date for full withdrawals, or partial withdrawals which include fees.',
     ],
+    SELECT_VALID_FOREIGN_TAX_COUNTRY => [
+	127,
+	undef,
+	'select the foreign tax source for the investment',
+    ],
 ]);
 
 #=PRIVATE METHODS
