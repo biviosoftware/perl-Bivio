@@ -76,7 +76,7 @@ sub create_fields {
 		values => {
 		    1 => Bivio::UI::HTML::Widget::FormFieldLabel->new({
 			label => 'Valuation Date',
-			field => 'valuation_date_time',
+			field => 'valuation_date',
 		    }),
 		    0 => $empty_cell,
 		},
@@ -85,7 +85,7 @@ sub create_fields {
 		control => ['show_valuation_date'],
 		values => {
 		    1 => Bivio::UI::HTML::Widget::DateField->new({
-			field => 'valuation_date_time',
+			field => 'valuation_date',
 		    }),
 		    0 => $empty_cell,
 		},
