@@ -39,6 +39,7 @@ use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberTransactionList;
 use Bivio::Biz::Model::RealmAdminList;
+use Bivio::Biz::Model::RealmInvite;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::RealmUserList;
