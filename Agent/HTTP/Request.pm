@@ -76,7 +76,12 @@ sub new {
 	is_secure => $ENV{HTTPS} || _is_hack_https_port($r)
 	? 1 : 0,
     });
-    Bivio::Type::UserAgent->execute_browser($self);
+
+    # Determine the UA.  b-sendmail-http sets the User-Agent to
+    # b-sendmail-http.  We're a little flexible so we can catch changes.
+    my($ua) = $r->header_in('user-agent') || '';
+    $ua =~ /b-sendmail/i ? Bivio::Type::UserAgent->execute_mail($self)
+	    : Bivio::Type::UserAgent->execute_browser($self);
 
     # Cookie parsed first, so referral and log code works properly.
     my($cookie) = Bivio::Agent::HTTP::Cookie->new($self, $r);
