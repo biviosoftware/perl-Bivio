@@ -49,6 +49,7 @@ my($_DEFAULT_CONFIG) = Bivio::BConf->merge({
 		'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 	    Facade => ['Bivio::PetShop::Facade'],
 	    Action => ['Bivio::PetShop::Action', 'Bivio::Biz::Action'],
+	    TestLanguage => ['Bivio::PetShop::Test'],
 	},
     },
     'Bivio::UI::Facade' => {
