@@ -46,6 +46,8 @@ Titles always map to a role.  See L<get_role|"get_role">.
 
 =item GUEST
 
+=item WITHDRAWN
+
 =back
 
 =cut
@@ -81,6 +83,9 @@ __PACKAGE__->compile(
     GUEST => [
 	7,
     ],
+    WITHDRAWN => [
+	8,
+    ],
 );
 my(%_ROLE_MAP) = (
     TREASURER => 'ACCOUNTANT',
@@ -90,6 +95,7 @@ my(%_ROLE_MAP) = (
     ADMINISTRATOR => 'ADMINISTRATOR',
     MEMBER => 'MEMBER',
     GUEST => 'GUEST',
+    WITHDRAWN => 'WITHDRAWN',
 );
 
 # Fixup so real names

@@ -377,8 +377,10 @@ b-realm-role GENERAL USER - \
     +ANONYMOUS \
     +ANY_USER \
     +MAIL_RECEIVE
-b-realm-role GENERAL GUEST - \
+b-realm-role GENERAL WITHDRAWN - \
     +USER
+b-realm-role GENERAL GUEST - \
+    +WITHDRAWN
 b-realm-role GENERAL MEMBER - \
     +GUEST
 b-realm-role GENERAL ACCOUNTANT - \
@@ -394,8 +396,10 @@ b-realm-role USER ANONYMOUS - \
 b-realm-role USER USER - \
     +ANONYMOUS \
     +ANY_USER
+b-realm-role USER WITHDRAWN - \
+    +USER
 b-realm-role USER GUEST - \
-    +USER \
+    +WITHDRAWN \
     +DOCUMENT_READ
 b-realm-role USER MEMBER - \
     +GUEST
@@ -412,8 +416,10 @@ b-realm-role CLUB ANONYMOUS - \
 b-realm-role CLUB USER - \
     +ANONYMOUS \
     +ANY_USER
+b-realm-role CLUB WITHDRAWN - \
+    +USER
 b-realm-role CLUB GUEST - \
-    +USER \
+    +WITHDRAWN \
     +ADMIN_READ \
     +ACCOUNTING_READ \
     +DOCUMENT_READ \
@@ -445,8 +451,10 @@ b-realm-role demo_club ANONYMOUS - \
     +MOTION_READ
 b-realm-role demo_club USER - \
     +ANONYMOUS
-b-realm-role demo_club GUEST - \
+b-realm-role demo_club WITHDRAWN - \
     +USER
+b-realm-role demo_club GUEST - \
+    +WITHDRAWN
 #TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role demo_club MEMBER - \
     +GUEST
@@ -463,8 +471,10 @@ b-realm-role ask_candis_publish ANONYMOUS - \
 b-realm-role ask_candis_publish USER - \
     +ANONYMOUS \
     +ANY_USER
+b-realm-role ask_candis_publish WITHDRAWN - \
+    +USER
 b-realm-role ask_candis_publish GUEST - \
-    +USER \
+    +WITHDRAWN \
     +ADMIN_READ \
     +ACCOUNTING_READ \
     +DOCUMENT_READ \
@@ -489,8 +499,10 @@ b-realm-role trez_talk_publish ANONYMOUS - \
 b-realm-role trez_talk_publish USER - \
     +ANONYMOUS \
     +ANY_USER
+b-realm-role trez_talk_publish WITHDRAWN - \
+    +USER
 b-realm-role trez_talk_publish GUEST - \
-    +USER \
+    +WITHDRAWN \
     +ADMIN_READ \
     +ACCOUNTING_READ \
     +DOCUMENT_READ \
