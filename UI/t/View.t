@@ -1,4 +1,4 @@
-# Copyright (c) 2002 Quantitative Marketing Partners, Inc.  All Rights Reserved.
+# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 use Bivio::UI::View;
