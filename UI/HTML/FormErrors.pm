@@ -298,7 +298,7 @@ RealmOwner.display_name
 EXISTS
 This person is already belongs to your club.
 %%
-AddMemberListForm InviteGuestListForm InviteMemberListForm
+AddMemberListForm InviteGuestListForm InviteMemberListForm ResendInviteForm
 RealmInvite.email
 EXISTS
 This person already belongs to your club or
