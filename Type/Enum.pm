@@ -161,13 +161,37 @@ sub get_list {
 
 =for html <a name="get_width"></a>
 
-=head2 static get_width : int
+=head2 static abstract get_width : int
 
 Defines the maximum width of L<get_name|"get_name">.
 
 =cut
 
 sub get_width {
+    die('abstract method');
+}
+
+=for html <a name="get_width_long_desc"></a>
+
+=head2 static abstract get_width_long_desc() : int
+
+Defines the maximum width of L<get_long_desc|"get_long_desc">.
+
+=cut
+
+sub get_width_long_desc {
+    die('abstract method');
+}
+
+=for html <a name="get_width_short_desc"></a>
+
+=head2 static abstract get_width_short_desc() : int
+
+Defines the maximum width of L<get_short_desc|"get_short_desc">.
+
+=cut
+
+sub get_width_short_desc {
     die('abstract method');
 }
 
@@ -239,7 +263,9 @@ sub compile {
     my($min, $max);
     my(@list);
     my(%info_copy) = %info;
-    my($width) = 0;
+    my($name_width) = 0;
+    my($short_width) = 0;
+    my($long_width) = 0;
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
 	Carp::croak("$name: is a reserved word") if $proto->can($name);
@@ -251,7 +277,9 @@ sub compile {
 	    $n =~ s/_(\w?)/ \u$1/g;
 	    $d->[1] = $n;
 	}
+	$short_width = length($d->[1]) if length($d->[1]) > $short_width;
 	$d->[2] = $d->[1] unless defined($d->[2]);
+	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
 	# Remove aliases
 	my(@aliases) = splice(@$d, 3);
 	Carp::croak("$name: invalid number \"$d->[0]\"")
@@ -260,7 +288,7 @@ sub compile {
 		    unless $name =~ /^[A-Z][A-Z0-9_]*$/;
 	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
-	$width = length($name) if length($name) > $width;
+	$name_width = length($name) if length($name) > $name_width;
 	my($as_string) = $pkg.'::'.$name;
 	# Index 4: as_string
 	push(@$d, $as_string);
@@ -323,7 +351,9 @@ EOF
         sub get_max {return ${pkg}::$max();}
         sub get_min {return ${pkg}::$min();}
         sub get_precision {return $precision;}
-        sub get_width {return $width;}
+        sub get_width {return $name_width;}
+        sub get_width_long_desc {return $long_width;}
+        sub get_width_short_desc {return $short_width;}
         1;
 EOF
     return;
@@ -355,7 +385,9 @@ Returns the enum for this value.
 =cut
 
 sub from_sql_column {
-    return _get_info(shift(@_), shift(@_) + 0)->[5];
+    my($proto, $value) = @_;
+    return undef unless defined($value);
+    return _get_info($proto, $value + 0)->[5];
 }
 
 =for html <a name="get_long_desc"></a>
@@ -436,7 +468,9 @@ Return the integer representation of I<value>
 =cut
 
 sub to_literal {
-    return _get_info(shift(@_), shift(@_))->[0];
+    my($proto, $value) = @_;
+    return undef unless defined($value);
+    return _get_info($proto, $value)->[0];
 }
 
 =for html <a name="to_sql_param"></a>
@@ -448,7 +482,9 @@ Returns integer representation of I<value>
 =cut
 
 sub to_sql_param {
-    return _get_info(shift(@_), shift(@_))->[0];
+    my($proto, $value) = @_;
+    return undef unless defined($value);
+    return _get_info($proto, $value)->[0];
 }
 
 #=PRIVATE METHODS
