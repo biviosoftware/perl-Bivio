@@ -1015,6 +1015,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_READ
         ?/files/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -1033,6 +1034,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file-delete/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FileDirectoryList->execute_load_all
@@ -1047,6 +1049,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file-upload/*:?/file_upload/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -1061,6 +1064,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file-replace/*:?/file_replace/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -1075,6 +1079,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/new-file-folder/*:?/new_file_folder/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -2226,6 +2231,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file-rename/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
@@ -2290,6 +2296,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file-unzip/*
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
