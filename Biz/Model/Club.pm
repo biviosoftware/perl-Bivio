@@ -54,10 +54,10 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_COUNT_ALL_WHERE_CLAUSE) =
         "name NOT LIKE '%"
-	.Bivio::Type::RealmName::DEMO_CLUB()
+	.Bivio::Type::RealmName->DEMO_CLUB
 	."'
         AND name NOT LIKE '%"
-	.Bivio::Type::RealmName::TEST_SUFFIX()
+	.Bivio::Type::RealmName->TEST_SUFFIX
 	."'
         AND realm_type = "
         .Bivio::Auth::RealmType::CLUB()->as_sql_param;

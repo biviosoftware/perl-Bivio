@@ -125,10 +125,10 @@ sub count_all {
 	    "SELECT count(*)
             FROM realm_owner_t
             WHERE name NOT LIKE '"
-	    .Bivio::Type::RealmName::OFFLINE_PREFIX()
+	    .Bivio::Type::RealmName->OFFLINE_PREFIX
 	    ."%'
             AND name NOT LIKE '%"
-	    .Bivio::Type::RealmName::TEST_SUFFIX()
+	    .Bivio::Type::RealmName->TEST_SUFFIX
 	    ."'
             AND realm_type = "
             .Bivio::Auth::RealmType::USER()->as_sql_param

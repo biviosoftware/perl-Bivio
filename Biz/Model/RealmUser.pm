@@ -78,7 +78,7 @@ my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
 	    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
 	    AND realm_user_t.user_id = realm_owner_t.realm_id
 	    AND realm_owner_t.name NOT LIKE '"
-	    .Bivio::Type::RealmName::OFFLINE_PREFIX()."\%'";
+	    .Bivio::Type::RealmName->OFFLINE_PREFIX."\%'";
 
 =head1 CONSTANTS
 
