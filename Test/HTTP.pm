@@ -49,20 +49,17 @@ Bivio::IO::Config->register({
 =cut
 
 
-=for html <a name="dump_analyzer"></a>
+=for html <a name="dump_this"></a>
 
-=head2 static dump_analyzer()
+=head2 static dump_this()
 
 for debugging purposes only.
 
 =cut
 
-sub dump_analyzer {
-    my($proto) = @_;
-    Bivio::Test::Login->execute();
-    my($parsed_res) = Bivio::Test::BulletinBoard->get_current()->get(
-	    'response');
-    my($dd) = Data::Dumper->new([$parsed_res]);
+sub dump_this {
+    my($proto, $to_dump) = @_;
+    my($dd) = Data::Dumper->new([$to_dump]);
     $dd->Indent(1);
     $dd->Terse(1);
     $dd->Deepcopy(1);
@@ -183,23 +180,33 @@ that the last page visited contains the form to submit.
 =cut
 
 sub post_form {
-    my($undef, $fields_and_input) = @_;
+    my($proto, $form, $fields_and_input) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
-    my($parsed_res) = $board->get('response');
-    # get form by looking at first field listed
-    my($form) = $parsed_res->get_form_by_field_name(
-	    (keys(%{$fields_and_input}))[0]);
-    _trace("Form to fill out: $form") if $_TRACE;
-#TODO: doesn't check rest of fields
 
-    # Put each input under $input->{<field>}->{value}
-    my($form_fields) = $parsed_res->list_public_fields($form);
+    my($form_data) = $board->get('response')->get('forms')->{$form};
+
+    _trace("Current uri is:", $board->get('current_uri')) if $_TRACE;
+    _trace("Form action: ", $form_data->{action},
+	   "Form method: ", $form_data->{method}) if $_TRACE;
+
+#TODO:  get form by looking at first field listed
+
+    # Fill in form fields if they exist
     foreach my $field (keys(%{$fields_and_input})) {
-	$form_fields->{$field}->{value} = $fields_and_input->{$field};
+	if (exists $form_data->{visible}->{$field}) {
+	    $form_data->{visible}->{$field}->{value}
+		= $fields_and_input->{$field};
+	}
+	else {
+	    die("Field: ". $field." not found in form.");
+	}
     }
 
+    #$proto->dump_this($form_data);
+
     # Get page, parse, and store
-    $board->get('HTTPUtil')->http_form($form_fields, $form);
+    $board->get('HTTPUtil')->execute_post(
+	    $form_data->{action}, _build_content_string($form_data));
     return;
 }
 
@@ -248,8 +255,8 @@ insensitive).
 
 sub verify_title {
     my(undef, $match_title) = @_;
-    my($page_title) = Bivio::Test::BulletinBoard->get_current()->get(
-	    'response')->get_title();
+    my($page_title) = (Bivio::Test::BulletinBoard->get_current()->get(
+	    'response')->get('head'))->{title};
     die("Failed verification.
          title: $page_title does not match expected: $match_title")
 	    unless $page_title =~ /$match_title/i;
@@ -308,6 +315,30 @@ sub _add_path {
     $uri =~ s/(^.*\/).*$/$1$link/;
     _trace("Added path to $link.  Now: $uri") if $_TRACE;
     return $uri;
+}
+
+# _build_content_string(hashref $form_data) : string
+#
+# Builds content string (eg: v=c_ana&f3=foobar ..) from hidden and visible
+# field names and values
+#
+sub _build_content_string {
+    my($form_data) = @_;
+    my($content) = '';
+    foreach my $hash (keys %{$form_data->{hidden}}) {
+	$content .= $form_data->{hidden}{$hash}->{name}.'='
+		.$form_data->{hidden}{$hash}->{value}.'&'
+		if (defined $form_data->{hidden}{$hash}->{value});
+    }
+    foreach my $hash (keys %{$form_data->{visible}}) {
+	$content .= $form_data->{visible}{$hash}->{name}.'='
+		.$form_data->{visible}{$hash}->{value}.'&'
+		if (defined $form_data->{visible}{$hash}->{value});
+    }
+    #remove trailing '&'
+    chop($content);
+    _trace("Content to post: $content") if $_TRACE;
+    return $content;
 }
 
 # _unravel_and_match(string $match, unknown $content) : boolean
