@@ -197,10 +197,11 @@ C<table_separator>.
 
 =item column_align : string [LEFT]
 
-How to align the value within the cell or heading.  The allowed (case
+How to align the value within the cell.  The allowed (case
 insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
+See also I<heading_align>.
 
 =item column_control : value
 

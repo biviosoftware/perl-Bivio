@@ -13,7 +13,8 @@ b-file
 
 =head1 DESCRIPTION
 
-B<b-file> command line utilities for listing and accessing files
+B<b-file> command line utilities for listing and accessing files.
+See L<Bivio::Biz::Util::File|Bivio::Biz::Util::File>.
 
 =cut
 
