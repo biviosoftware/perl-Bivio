@@ -413,7 +413,7 @@ sub _handle_die {
 		next;
 	    }
 	    my($proto) = $DB::args[0];
-	    UNIVERSAL::can($proto, 'handle_die') || next;
+	    $proto && UNIVERSAL::can($proto, 'handle_die') || next;
 	    # Don't call twice if in same "entry" into module
 	    $prev_proto ne $proto || next;
 	    $prev_proto = $proto;
