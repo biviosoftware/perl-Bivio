@@ -45,16 +45,20 @@ L<Bivio::Biz::Model::SubstituteUserForm|Bivio::Biz::Model::SubstituteUserForm>
 when the user has been substituted succesfully.  It is cleared by
 L<Bivio::Biz::Action::Logout|Bivio::Biz::Action::Logout>.
 
+=item ri
+
+RealmInvite field.  The user has clicked on a URL which contains
+a valid realm invite.
+
+=item t
+
+Time field.  Makes the cypher better.
+
 =item tz
 
 timezone (actually timezone offset).  It is set by
 L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 This module puts it on the request.
-
-=item ri
-
-RealmInvite field.  The user has clicked on a URL which contains
-a valid realm invite.
 
 =item u
 
@@ -131,6 +135,7 @@ my($_DOMAIN) = undef;
 my($_CIPHER) = undef;
 my($_TAG) = 'D';
 my($_TIMEZONE_FIELD) = TIMEZONE_FIELD();
+my($_TIME_FIELD) = 't';
 my($_SU_FIELD) = SU_FIELD();
 
 Bivio::IO::Config->register({
@@ -289,8 +294,13 @@ sub set {
     $s .= " Domain=$_DOMAIN;" if $_DOMAIN;
     $cookie->{$_REMOTE_IP_FIELD} = $r->connection->remote_ip;
     my($user) = Bivio::Agent::Request->get_current->get('auth_user');
+
     # Ensure user is set to undef if not set
     $cookie->{$_USER_FIELD} = $user ? $user->get('realm_id') : undef;
+
+    # Add in a random factor (not checked, just helps CBC)
+    $cookie->{$_TIME_FIELD} = time;
+
     _trace('data=', $cookie) if $_TRACE;
     my($cs) = '';
     foreach my $k (sort(keys(%$cookie))) {
@@ -298,6 +308,7 @@ sub set {
     }
     # remove trailing $;
     chop($cs);
+
     # encrypt and store as value
     $s = "$_TAG=".$_CIPHER->encrypt_hex($cs).'; '.$s;
     # No expiry means not saved in cookies file on disk
