@@ -3,6 +3,7 @@
 #
 # Works best with PetShop from a speed point of view.
 #
+use Bivio::Mail::Outgoing;
 use Bivio::Test::Request;
 Bivio::Test->new('Bivio::Test::Request')->unit([
     'Bivio::Test::Request' => [
@@ -17,7 +18,8 @@ Bivio::Test->new('Bivio::Test::Request')->unit([
     sub {
 	my($req) = Bivio::Test::Request->get_instance;
 	$req->capture_mail;
-	my($msg) = Bivio::Mail::Message->new(\(<<'EOF'));
+        my($msg) = Bivio::Mail::Outgoing->new(
+            Bivio::Mail::Incoming->new(\(<<'EOF')));
 From: Joe Blow <joe@blow.com>
 To: mary@com.com
 
