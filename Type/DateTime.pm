@@ -183,6 +183,7 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Type::Array;
 use Bivio::TypeError;
 $^O !~ /win32/i && CORE::require 'syscall.ph';
@@ -329,6 +330,53 @@ sub diff_seconds {
     return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
 }
 
+=for html <a name="from_parts"></a>
+
+=head2 static from_parts(int sec, int min, int hour, int mday, int mon, int year) : array
+
+Returns the date/time value from I<sec>, I<min>, I<hour>, I<mday>,
+I<mon>, and I<year>.
+
+=cut
+
+sub from_parts {
+    my($proto, $sec, $min, $hour, $mday, $mon, $year) = @_;
+    my($date, $err) = $proto->date_from_parts($mday, $mon, $year);
+    return (undef, $err) if $err;
+    my($time, $err2) = $proto->time_from_parts($sec, $min, $hour);
+    return (undef, $err2) if $err2;
+    return (split(' ', $date))[0].' '.(split(' ', $time))[1];
+}
+
+=for html <a name="get_local_timezone"></a>
+
+=head2 static get_local_timezone() : int
+
+Returns the localtime zone in minutes suitable for setting
+on L<Bivio::Agent::Request|Bivio::Agent::Request>.
+
+This value is computed dynamically which means it can account
+for the shift in daylight savings time.
+
+=cut
+
+sub get_local_timezone {
+    my($proto) = @_;
+    my($now) = time();
+    my($sec, $min, $hour, $mday, $mon, $year) = _localtime($now);
+    ++$mon;
+    $year += 1900;
+    my($local, $err) = $proto->from_parts(
+	    $sec, $min, $hour, $mday, $mon, $year);
+    Bivio::Die->die('DIE', {
+	message => 'unable to convert localtime',
+	type_error => $err,
+	entity => $now,
+    }) unless $local;
+    return int($proto->diff_seconds($proto->from_unix($now), $local)
+	    / 60 + 0.5);
+}
+
 =for html <a name="get_previous_day"></a>
 
 =head2 static get_previous_day(string date) : string
@@ -459,6 +507,21 @@ sub from_unix {
     my($j) = int(($unix_time - $s)/SECONDS_IN_DAY() + 0.5)
 	    + UNIX_EPOCH_IN_JULIAN_DAYS();
     return $j . ' ' . $s;
+}
+
+=for html <a name="localtime_as_file_name"></a>
+
+=head2 localtime_as_file_name() : string
+
+Returns the current time in localtime as a file name.
+
+=cut
+
+sub localtime_as_file_name {
+    my($proto) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = _localtime(time);
+    return sprintf('%04d%02d%02d%02d%02d%02d', $year, $mon, $mday,
+	    $hour, $min, $sec);
 }
 
 =for html <a name="max"></a>
@@ -599,23 +662,6 @@ sub set_local_end_of_day {
     return $date.' '.$time;
 }
 
-=for html <a name="date_from_parts"></a>
-
-=head2 time_from_parts(int sec, int min, int hour) : array
-
-Returns the date/time value comprising the parts.  If there is an
-error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
-
-=cut
-
-sub time_from_parts {
-    my(undef, $sec, $min, $hour) = @_;
-    return (undef, Bivio::TypeError::HOUR) if $hour > 23 || $hour < 0;
-    return (undef, Bivio::TypeError::MINUTE) if $min > 59 || $min < 0;
-    return (undef, Bivio::TypeError::SECOND) if $sec > 59 || $sec < 0;
-    return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
-}
-
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
@@ -715,6 +761,23 @@ sub to_file_name {
 	    $hour, $min, $sec);
 }
 
+=for html <a name="time_from_parts"></a>
+
+=head2 time_from_parts(int sec, int min, int hour) : array
+
+Returns the date/time value comprising the parts.  If there is an
+error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
+
+=cut
+
+sub time_from_parts {
+    my(undef, $sec, $min, $hour) = @_;
+    return (undef, Bivio::TypeError::HOUR) if $hour > 23 || $hour < 0;
+    return (undef, Bivio::TypeError::MINUTE) if $min > 59 || $min < 0;
+    return (undef, Bivio::TypeError::SECOND) if $sec > 59 || $sec < 0;
+    return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
+}
+
 =for html <a name="to_parts"></a>
 
 =head2 to_parts(string value) : array
@@ -730,12 +793,7 @@ sub to_parts {
     my($date, $time) = split(/\s+/, $value);
 
     # Unix time doesn't have a "$time" component
-    unless (defined($time)) {
-	my($sec, $min, $hour, $mday, $mon, $year) = localtime($value);
-	$year += 1900;
-	$mon++;
-	return ($sec, $min, $hour, $mday, $mon, $year);
-    }
+    return _localtime($value) unless defined($time);
 
     # Parse time component
     my($sec) = int($time % 60 + 0.5);
@@ -868,6 +926,18 @@ sub _initialize {
 	$_YEAR_BASE[$yy] = $_YEAR_BASE[$yy-1]
 		+ ($_IS_LEAP_YEAR[$yy-1] ? 366 : 365);
     }
+}
+
+# _localtime(string unix_time) : array
+#
+# Returns the parts adjust for month and year.
+#
+sub _localtime {
+    my($unix_time) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = localtime($unix_time);
+    $mon++;
+    $year += 1900;
+    return ($sec, $min, $hour, $mday, $mon, $year);
 }
 
 =head1 COPYRIGHT
