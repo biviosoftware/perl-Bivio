@@ -882,6 +882,19 @@ sub now_as_string {
     return $proto->to_string($proto->now);
 }
 
+=for html <a name="now_as_year"></a>
+
+=head2 now_as_year() : int
+
+Returns the year from L<now|"now">.
+
+=cut
+
+sub now_as_year {
+    my($proto) = @_;
+    return $proto->get_part($proto->now, 'year');
+}
+
 =for html <a name="rfc822"></a>
 
 =head2 rfc822() : string
