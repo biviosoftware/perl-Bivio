@@ -250,7 +250,7 @@ sub warn {
 
 sub _call_format {
     my($msg) = @_;
-    my($i) = 1;
+    my($i) = 0;
     $i++ while caller($i) eq __PACKAGE__;
     return &_format(undef,
 	    ((caller($i))[0,1,2], (caller($i+1))[$[+3] || undef),
@@ -265,13 +265,27 @@ sub _die_handler {
 sub _format {
     my(undef, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
-    my($text) = $_WANT_PID ? "($$) " : '';
-    $text .= defined($file) && $file =~ /^\(eval (\d+)\)$/
-	    ? ((defined($pkg) ? ($pkg . '::') : '') . 'eval' . $1)
-		    : defined($sub) ? $sub
-			    : defined($pkg) ? $pkg
-				    : defined($file) ? $file : 'line';
-    defined($line) && ($text .= "[$line]");
+    my($text) = $_WANT_PID ? "[$$]" : '';
+    my($is_eval) = $file =~ s/^\(eval (\d+)\)$/eval$1/;
+    if (defined($pkg) && $pkg eq 'main') {
+	# main doesn't give us much info, so use the file instead
+	$pkg = defined($file) ? $file : 'main';
+    }
+    if ($is_eval) {
+	# prefix the pkg if available
+	defined($pkg) && ($text .= $pkg . '::');
+	$text .= $file;
+    }
+    # (eval) is set as the sub if the eval is in the initialization code
+    # and is a block ({}) eval and not an expr ('') eval.
+    elsif (defined($sub) && $sub ne '(eval)') {
+	$text .= $sub;
+    }
+    # Ususally called in an initialization body
+    else {
+	$text .= defined($pkg) ? $pkg : defined($file) ? $file : '';
+    }
+    defined($line) && ($text .= ":$line");
     $text .= ' ';
     my($o);
     foreach $o (@$msg) {
