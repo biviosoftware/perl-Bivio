@@ -114,6 +114,8 @@ _compile([
     CELEBRITY_BOX_TEXT => [$_SANS_SERIF, undef, 'small'],
     FILE_TREE_BYTES => [undef, undef, 'small'],
     LABEL_IN_TEXT => [undef, undef, 'b'],
+    CHECKED_ICON => [$_SANS_SERIF, 'page_heading', 'small'],
+    ERROR_ICON => [$_SANS_SERIF, 'error', 'big', 'strong'],
 ]);
 
 =head1 METHODS
