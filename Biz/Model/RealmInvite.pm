@@ -309,8 +309,7 @@ sub execute_accept {
 		entity => $self, model => $proto) unless ref($self);
     }
 
-    _set_state($self, $req);
-    _redirect_unless_logged_in($req);
+    _redirect_unless_logged_in($req, _set_state($self, $req));
     return;
 }
 
@@ -460,8 +459,7 @@ sub _check_cookie {
 # Redirects to register page if not a bivio user
 #
 sub _redirect_unless_logged_in {
-    my($req) = @_;
-    my($state) = $req->get('realm_invite_state');
+    my($req, $state) = @_;
     if ($state == Bivio::Type::RealmInviteState::IS_USER
 	   || $state == Bivio::Type::RealmInviteState::EMAIL_MATCHES_USER) {
 	_trace("State is: IS_USER or EMAIL_MATCHES_USER");
@@ -475,8 +473,9 @@ sub _redirect_unless_logged_in {
 }
 
 # _set_state(Bivio::Biz::Model::RealmInvite self, Bivio::Agent::Request req)
+#           : string
 #
-# Sets the realm_invite_state $req.
+# Sets the realm_invite_state and returns it.
 #
 sub _set_state {
     my($self, $req) = @_;
@@ -511,7 +510,7 @@ sub _set_state {
 	    realm_invite_shadow_user => $shadow,
 	   );
     _trace($self->get('realm_invite_id'), ': state=', $state) if $_TRACE;
-    return;
+    return Bivio::Type::RealmInviteState->$state();
 }
 
 =head1 COPYRIGHT
