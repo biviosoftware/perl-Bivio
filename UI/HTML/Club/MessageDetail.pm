@@ -45,12 +45,20 @@ use Bivio::UI::HTML::Format::DateTime;
 use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
+use Bivio::UI::HTML::Widget::Image;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_FILE_CLIENT);
+my($_IMAGE_MAP) = {
+    'text/html' => 'html_attachment',
+    'text/plain' => 'text_attachment',
+    'image/gif' => 'gif_attachment',
+    'image/jpeg' => 'jpeg_attachment',
+    undef => 'attachment'
+    };
 
 
 =head1 FACTORIES
@@ -146,16 +154,19 @@ sub execute {
     if( int(@mimen) != 0){
 	my @urls;
 	my $i = 1;
-	foreach my $ext (@mimen){
+	print(STDERR "\nFOUND " . int(@mimen) . " attachments for this message.\n");
+	foreach my $info (@mimen){
+	    my $gifname = $_IMAGE_MAP->{$info->{type}};
 	    push(@urls,
 		    Bivio::UI::HTML::Widget::Link->new({
 			href  => $req->format_uri(
 				Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT(),
-				"att=".$ext),
-			value => Bivio::UI::HTML::Widget::String->new({
-			    value => 'Attachment '.$i++}),
+				"att=".$info->{message_id}."_".$info->{attachment_number}),
+			value => Bivio::UI::HTML::Widget::Image->new({
+			    src => ['Bivio::UI::Icon', $gifname],
+			    alt => 'Attachment '.$i++}),
 			}));
-	    push(@urls, "<BR>");
+	    push(@urls, "&nbsp;");
 	}
 	my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
 	values => \@urls});

@@ -242,10 +242,10 @@ use strict;
     'Bivio::Agent::HTTP::Location' => {
 	document_root => '<$pwd>/html',
     },
-    'Bivio::UI::HTML::Club::MessageAttachment' => {
+    'Bivio::UI::HTML::Club::ImageAttachment' => {
 	file_server => 'file',
     },
-    'Bivio::UI::HTML::Club::ImageAttachment' => {
+    'Bivio::UI::HTML::Club::MessageAttachment' => {
 	file_server => 'file',
     },
     'Bivio::Biz::Model::MailMessage' => {
@@ -255,6 +255,9 @@ use strict;
 	file_server => 'file',
     },
     'Bivio::Mail::Store::MIMEDecode' => {
+	file_server => 'file',
+    },
+    'Bivio::Biz::Model::MailMessage' => {
 	file_server => 'file',
     },
     'Bivio::Die' => {

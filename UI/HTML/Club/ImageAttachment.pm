@@ -65,7 +65,6 @@ my($_FILE_CLIENT);
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    _trace('constructed new ImageAttachment object to handle image request') if $_TRACE;
     return $self;
 }
 
