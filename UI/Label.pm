@@ -97,7 +97,7 @@ _compile(
     INSTRUMENT_TYPE => ['Category', undef, 'RealmInstrument.instrument_type'],
     LOCAL_INSTRUMENTS => ['Unlisted Investments'],
     PRICE_PER_SHARE => ['Price/Share', undef,
-	   'RealmInstrumentValuation.price_per_share'],
+	   'RealmInstrumentValuation.price_per_share', 'share_price'],
     NAME_TICKER => ['Name'],
     FED_TAX_FREE => ['Federal Tax Free', undef,
 	'RealmInstrument.fed_tax_free'],
@@ -146,7 +146,12 @@ _compile(
     NEW_UNLISTED => ['New Unlisted'],
     FEE => ['Fee'],
     WITHDRAWAL_TYPE => ['Type'],
-    REFRESH => ['Refresh'],
+    REFRESH => ['Refresh', undef, 'refresh_button'],
+    SELECTED => ['Selected'],
+    LOT_BUTTON => ['Lots'],
+    ACQUISITION_DATE => ['Acquisition Date'],
+    COST_PER_SHARE => ['Cost/Share'],
+    TRANSFER_VALUATION_DATE => ['Transfer Valuation Date'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
@@ -162,12 +167,16 @@ _compile(
     CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
+    CLUB_ACCOUNTING_INVESTMENT_LOT_LIST => ['Investment Lots'],
     CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
     CLUB_ACCOUNTING_LOCAL_VALUATION_DATES => ['Change Past Valuations'],
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL => ['Member Withdrawal'],
+    CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK => [
+	'Member Investment Withdrawal'],
     CLUB_ACCOUNTING_PAYMENT => ['Payments'],
-    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => ['Income and Expense Statement'],
+    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
+	'Income and Expense Statement'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Investment Sale Gain/(Loss)'],
     CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status'],
     CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
@@ -267,6 +276,7 @@ _compile(
     PAID_YTD_HEADING => ["Paid YTD"],
     UNITS_YTD_HEADING => ["Units YTD"],
     TAX_BASIS_HEADING => ["Tax Basis"],
+    REALMOWNER_DISPLAY_NAME_HEADING => ['Name'],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
