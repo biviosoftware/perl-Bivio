@@ -736,7 +736,7 @@ sub render {
 
 	$is_even_row = !$is_even_row
 		if defined($grouping_field) && defined($prev_value)
-			&& $prev_value != $grouping_value;
+			&& $prev_value ne $grouping_value;
 
 	$self->render_row($state->{cells}, $list, $buffer,
 	    _row_prefix($state,
