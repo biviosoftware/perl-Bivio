@@ -122,8 +122,10 @@ other.host
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
  		['etc/sendmail.cf', 'Mbsendmailhttp'],
- 		['etc/sendmail.cf', 'R=AddDomain'],
+ 		['etc/sendmail.cf', sub {${shift(@_)} =~ m{R=EnvToL}}],
  		['etc/sendmail.cf', 'A=b-sendmail-http'],
+ 		['etc/sendmail.cf', "names\nFP/etc/mail"],
+ 		['etc/sendmail.cf', '\$=w.*bsendmailhttp \$@ \$2 \$: \$1'],
 	    ],
 	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [

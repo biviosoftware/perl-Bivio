@@ -182,17 +182,31 @@ Sets up C<b-sendmail-http> agent interface in sendmail.cf.
 sub add_sendmail_http_agent {
     my($self, $uri) = @_;
     return _edit($self, '/etc/sendmail.cf',
-	[qr/\$#local \$: \$1/, '$#bsendmailhttp $: $1'],
-	# Remove any existing bsendmailhttp
-	['\nMbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}', '',
-	    qr/^Mbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}/s],
-	# We don't set "w", sendmail-http does it itself
-	['$', <<"EOF", qr/\nMbsendmailhttp/],
+	# Force all local hosts to be seen as canonical hosts
+	[qr{(?<=Fw/etc/mail/local-host-names\n)},
+	    "FP/etc/mail/local-host-names\n"],
+	# Sets $h to host part if we have host
+	[qr/R\$\+ < \@ \$=w \. \>\s+\$#(?:local|bsendmailhttp) \$: \$1/,
+	    'R$+ < @ $=w . >		$#bsendmailhttp $@ $2 $: $1'],
+	# No host, set to $j (canonical host)
+	[qr/R\$\+\s+\$#(?:local|bsendmailhttp) \$: \$1/,
+	    'R$+		$#bsendmailhttp $@ $j $: $1'],
+	# Remove any existing bsendmailhttp, and append new
+	[sub {
+	     my($data) = @_;
+	     $$data =~ s/Mbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}//g;
+	     # We don't set "w", sendmail-http looks up in /etc/passwd itself
+	     # Don't use ruleset 5 (F=5), because it overwrites $h which is
+	     # set properly by the line above.  Also, pass full user to
+	     # procmail, and b-sendmail-http will trim it
+	     $$data .= <<"EOF";
 Mbsendmailhttp,	P=/usr/bin/b-sendmail-http,
-	F=9:|/\@ADFhlMnsPqS,
-	S=EnvFromL/HdrFromL, R=AddDomain/HdrToL, T=DNS/RFC822/X-Unix,
-	A=b-sendmail-http \${client_addr} \$u $uri /usr/bin/procmail -t -Y -a \$h -d \$u
+		F=9:|/\@ADFhlMnsPqS,
+		S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
+		A=b-sendmail-http \${client_addr} \$u\@\$h $uri /usr/bin/procmail -t -Y -a \$h -d \$u\@\$h
 EOF
+	     return 1;
+	}],
     );
 }
 

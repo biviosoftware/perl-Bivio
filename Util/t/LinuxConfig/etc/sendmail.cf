@@ -1487,4 +1487,3 @@ Mlocal,		P=/usr/bin/procmail, F=lsDFMAw5:/|@qSPfhn9, S=EnvFromL/HdrFromL, R=EnvT
 Mprog,		P=/usr/sbin/smrsh, F=lsDFMoqeu9, S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, D=$z:/,
 		T=X-Unix/X-Unix/X-Unix,
 		A=smrsh -c $u
-
