@@ -54,7 +54,7 @@ If an element in the array_ref is a hash_ref, it can set atttributes
 on the radio button, e.g. I<control> and I<value>.
 
 The I<control> will be set to the choice, if the choice type is
-a TaskId.  See AbstractControl.
+a TaskId.  See ControlBase.
 
 B<If a L<Bivio::UI::Label|Bivio::UI::Label> exists for the
 enum name, it will be used in place of the description.>

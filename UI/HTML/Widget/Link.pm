@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Link - renders a URI link
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget::AbstractControl>
+L<Bivio::UI::HTML::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::HTML::Widget::AbstractControl;
-@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::HTML::Widget::AbstractControl');
+use Bivio::UI::HTML::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -40,7 +40,7 @@ with leading space.
 
 =item control : any
 
-See L<Bivio::UI::HTML::Widget::AbstractControl|Bivio::UI::HTML::Widget::AbstractControl>.
+See L<Bivio::UI::HTML::Widget::ControlBase|Bivio::UI::HTML::Widget::ControlBase>.
 
 =item href : array_ref (required)
 
@@ -87,7 +87,7 @@ Creates a new Link widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::AbstractControl::new(@_);
+    my($self) = Bivio::UI::HTML::Widget::ControlBase::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
