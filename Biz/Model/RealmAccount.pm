@@ -97,6 +97,21 @@ use Bivio::Type::DateTime;
 
 =cut
 
+=for html <a name="create"></a>
+
+=head2 create(hash_ref values)
+
+Fills in the I<institution> if not set.
+
+=cut
+
+sub create {
+    my($self, $values) = (shift, shift);
+    $values->{institution} = Bivio::Type::Institution->UNKNOWN()
+	    unless $values->{institution};
+    return $self->SUPER::create($values, @_);
+}
+
 =for html <a name="get_value"></a>
 
 =head2 get_value(string date) : string
@@ -158,9 +173,9 @@ sub internal_initialize {
             name => ['Line', 'NOT_NULL'],
             tax_free => ['Boolean', 'NOT_NULL'],
             in_valuation => ['Boolean', 'NOT_NULL'],
-            institution_id => ['PrimaryId', 'NONE'],
+            institution => ['Institution', 'NOT_NULL'],
             account_number => ['Name', 'NONE'],
-            external_password => ['Name', 'NONE'],
+            external_password => ['Password', 'NONE'],
         },
 	auth_id => 'realm_id',
     };
