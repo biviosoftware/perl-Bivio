@@ -82,6 +82,22 @@ and the errant literal value may not be valid for the type.
 
 =cut
 
+=for html <a name="MAX_FIELD_SIZE"></a>
+
+=head2 MAX_FIELD_SIZE : int
+
+To avoid tossing around huge chunks of invalid data, we have an maximum
+size of a field for non-FileField values.
+
+I<Subclasses may override this method and should if they expect
+huge fields, e.g. mail message bodies.>
+
+=cut
+
+sub MAX_FIELD_SIZE {
+    return 0x10000;
+}
+
 =for html <a name="SUBMIT"></a>
 
 =head2 SUBMIT : string
@@ -257,7 +273,7 @@ sub execute {
 	Carp::croak($self->as_string, ": called with invalid values");
     }
 
-    my($input) = $req->unsafe_get('form');
+    my($input) = $req->get_form();
 
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
@@ -295,7 +311,10 @@ sub execute {
     # validate is always called so we try to return as many errors
     # to the user as possible.
     $self->validate();
-    unless ($fields->{errors}) {
+    if ($fields->{errors}) {
+	_put_file_field_reset_errors($self);
+    }
+    else {
 	    # Try to catch and apply type errors thrown
 	my($die) = Bivio::Die->catch(sub {$self->execute_input();});
 	if ($die) {
@@ -304,7 +323,10 @@ sub execute {
 	    # Can we find the fields in the Form?
 	    _apply_type_error($self, $die);
 	}
-	unless ($fields->{errors}) {
+	if ($fields->{errors}) {
+	    _put_file_field_reset_errors($self);
+	}
+	else {
 	    # Success, redirect to the next task or to the task in
 	    # the context.
 	    my($req) = $self->get_request;
@@ -421,7 +443,7 @@ sub format_context_as_query {
 
 =for html <a name="get_context_from_request"></a>
 
-=head2 static get_context_from_request(Bivio::Agent::Request hash_ref) : req
+=head2 static get_context_from_request(Bivio::Agent::Request hash_ref) : hash_ref
 
 Returns the context elements extracted from the request as hash_ref.
 If the form is I<redirecting> already, then the nested context
@@ -447,6 +469,9 @@ sub get_context_from_request {
 	    return $c;
 	}
     }
+    elsif ($model = $req->get('task')->get('form_model')) {
+	$model = $model->get_instance;
+    }
 
     # Construct a new context from existing state in request
     my($res) = {};
@@ -454,6 +479,27 @@ sub get_context_from_request {
 	$res->{$c} = $req->unsafe_get($c);
     }
     $res->{form_model} = ref($model);
+
+    # Fix up file fields if any
+    my($ff);
+    if ($res->{form} && $model && ($ff = $model->get_info('file_fields'))) {
+	# Need to copy, because we don't want to trash existing form.
+	my($f) = {%{$res->{form}}};
+
+	# Iterate over file fields
+	foreach my $col (@$ff) {
+	    my($fn) = $col->{form_name};
+	    # Converts to just the file name.  We'd never get this back,
+	    # but we can stuff it into the form.  Widget::File
+	    # knows how to handle this.
+	    $f->{$fn} = $col->{type}->to_literal($f->{$fn});
+	    _trace($col->{name}, ': set value=', $f->{$fn}) if $_TRACE;
+	}
+
+	# Save new copy
+	$res->{form} = $f;
+    }
+
     _trace('new context: ', $res) if $_TRACE;
     return $res;
 }
@@ -491,8 +537,7 @@ sub get_field_as_html {
     my($value) = $self->unsafe_get($name);
     return $self->get_field_type($name)->to_html($value) if defined($value);
     my($fn) = $self->get_field_info($name, 'form_name');
-    return '' unless defined($fields->{literals}->{$fn});
-    return Bivio::Util::escape_html($fields->{literals}->{$fn});
+    return Bivio::Util::escape_html(_get_literal($fields, $fn));
 }
 
 =for html <a name="get_field_as_literal"></a>
@@ -513,8 +558,7 @@ sub get_field_as_literal {
     my($value) = $self->unsafe_get($name);
     return $self->get_field_type($name)->to_literal($value) if defined($value);
     my($fn) = $self->get_field_info($name, 'form_name');
-    return '' unless defined($fields->{literals}->{$fn});
-    return $fields->{literals}->{$fn};
+    return _get_literal($fields, $fn);
 }
 
 =for html <a name="get_field_error"></a>
@@ -553,12 +597,11 @@ sub get_hidden_field_values {
 	    Bivio::Type::SecretAny->to_literal($fields->{context}))
 	    if $fields->{context};
     my($properties) = $self->internal_get();
-    my($literals) = $fields->{literals};
     foreach my $col (@{$sql_support->get('hidden')}) {
 	my($n) = $col->{name};
-	my($v) = $col->{type}->to_literal($properties->{$n});
-        $v = defined($literals->{$col->{form_name}})
-		? $literals->{$col->{form_name}} : '' unless defined($v);
+	my($v) = defined($properties->{$n})
+		? $col->{type}->to_literal($properties->{$n})
+		: _get_literal($fields, $col->{form_name});
 	push(@res, $col->{form_name}, $v);
     }
     return \@res;
@@ -614,9 +657,43 @@ sub in_error {
     return defined(shift->{$_PACKAGE}->{errors});
 }
 
+=for html <a name="internal_clear_error"></a>
+
+=head2 internal_clear_error(string property)
+
+Clears the error on I<property> if any.
+
+=cut
+
+sub internal_clear_error {
+    my($self, $property) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return unless $fields->{errors};
+    delete($fields->{errors}->{$property});
+    delete($fields->{errors}) unless %{$fields->{errors}};
+    return;
+}
+
+=for html <a name="internal_field_constraint_error"></a>
+
+=head2 internal_field_constraint_error(string property, Bivio::TypeError error)
+
+This method is called when a DB constraint is encountered during the
+form's execution.
+
+The default action is a no-op.  The error is already "put" on the
+field.
+
+=cut
+
+sub internal_field_constraint_error {
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
+
+=head2 static internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
 
 Returns the L<Bivio::SQL::FormSupport|Bivio::SQL::FormSupport>
 for this class.  Calls L<internal_initialize|"internal_initialize">
@@ -625,7 +702,9 @@ to get the hash_ref to initialize the sql support instance.
 =cut
 
 sub internal_initialize_sql_support {
-    return Bivio::SQL::FormSupport->new(shift->internal_initialize);
+    my($proto, $config) = @_;
+    die('cannot create anonymous PropertyModels') if $config;
+    return Bivio::SQL::FormSupport->new($proto->internal_initialize);
 }
 
 =for html <a name="internal_put_error"></a>
@@ -633,6 +712,10 @@ sub internal_initialize_sql_support {
 =head2 internal_put_error(string property, Bivio::TypeError error)
 
 =head2 internal_put_error(string property, Bivio::TypeError error, string literal)
+
+=head2 internal_put_error(string property, string error)
+
+=head2 internal_put_error(string property, string error, string literal)
 
 Associate I<error> with I<property>.  If I<literal> in error is defined,
 associate as well.
@@ -642,8 +725,7 @@ associate as well.
 sub internal_put_error {
     my($self, $property, $error, $literal) = @_;
     my($fields) = $self->{$_PACKAGE};
-    Carp::croak('not a Bivio::TypeError')
-		unless UNIVERSAL::isa($error, 'Bivio::TypeError');
+    $error = Bivio::TypeError->from_any($error);
     _trace($property, ': ', $error->as_string) if $_TRACE;
     $fields->{errors} = {} unless $fields->{errors};
     $fields->{errors}->{$property} = $error;
@@ -871,11 +953,29 @@ sub _apply_type_error {
 	    if ($sql_support->has_columns($my_col)) {
 		$got_one = 1;
 		$self->internal_put_error($my_col, $err);
+		$self->internal_field_constraint_error($my_col, $err);
 	    }
 	}
     }
     $die->die() unless $got_one;
     return;
+}
+
+# _get_literal(hash_ref fields, string form_name) : string
+#
+# Returns the literal value of the named form field.  Special care
+# is taken to return only the filename attribute of complex form fields.
+#
+sub _get_literal {
+    my($fields, $form_name) = @_;
+    my($value) = $fields->{literals}->{$form_name};
+    return '' unless defined($value);
+    return $value unless ref($value);
+
+    # If a complex form field has a filename, return it.  Otherwise,
+    # return nothing.  We never returnn the "content" back to the user
+    # with FileFields.
+    return defined($value->{filename}) ? $value->{filename} : '';
 }
 
 # _initialize_context(Bivio::Biz::FormModel self, Bivio::Agent::Request req)
@@ -941,14 +1041,49 @@ sub _parse {
 # Parses the form field and returns the value.  Stores errors in the
 # fields->{errors}.
 #
-#
 sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
     my($fields) = $self->{$_PACKAGE};
     foreach my $col (@{$sql_support->get($is_hidden ? 'hidden' : 'visible')}) {
 	my($fn) = $col->{form_name};
+
+	# Handle complex form fields.  Avoid copies of huge data, so
+	# don't assign to temporary until kind (complex/simple) is known.
+	if (ref($form->{$fn})) {
+	    my($fv) = $form->{$fn};
+	    # Was there an error in Bivio::Agent::HTTP::Form
+	    if ($fv->{error}) {
+		$self->internal_put_error($col->{name}, $fv->{error});
+		next;
+	    }
+
+	    # Not expecting a complex form field?
+	    unless ($col->{is_file_field}) {
+		# Be friendly and let the guy set the content this way.
+		# We don't really know how browser handle things like this.
+		if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE()) {
+		    $self->internal_put_error($col->{name},
+			    Bivio::TypeError::TOO_LONG());
+		    next;
+		}
+		# Only FileFields know how to handle complex field values.
+		# Revert to simple field value.
+		$form->{$fn} = ${$fv->{content}};
+	    }
+	}
+	# Make sure the simple field isn't too large
+	elsif (defined($form->{$fn})
+		&& length($form->{$fn}) > $self->MAX_FIELD_SIZE()) {
+	    $self->internal_put_error($col->{name},
+		    Bivio::TypeError::TOO_LONG());
+	    next;
+	}
+
+	# Finally, parse the value
 	my($v, $err) = $col->{type}->from_literal($form->{$fn});
 	$values->{$col->{name}} = $v;
+
+	# Success?
 	if (defined($v)) {
 	    # Zero field ok?
 	    next unless $col->{constraint}
@@ -956,11 +1091,13 @@ sub _parse_cols {
 	    next if $v->as_int != 0;
 	    $err = Bivio::TypeError::UNSPECIFIED();
 	}
+
 	# Null field ok?
 	unless ($err) {
 	    next if $col->{constraint} == Bivio::SQL::Constraint::NONE();
 	    $err = Bivio::TypeError::NULL();
 	}
+
 	# Error in field.  Save the original value.
 	if ($is_hidden) {
 	    $self->die(Bivio::DieCode::CORRUPT_FORM(),
@@ -1069,6 +1206,31 @@ sub _parse_version {
 	    {field => 'version',
 		expected => $sql_support->get('version'),
 		actual => $value});
+    return;
+}
+
+# _put_file_field_reset_errors(Bivio::Biz::FormModel self)
+#
+# Puts FILE_FIELD_RESET_FOR_SECURITY on file fields not in error.
+#
+sub _put_file_field_reset_errors {
+    my($self) = @_;
+    # If there were errors, provide feedback to the user about
+    # file fields which are special.
+    my($file_fields) = $self->get_info('file_fields');
+    return unless $file_fields;
+
+    my($fields) = $self->{$_PACKAGE};
+    my($properties) = $self->internal_get;
+    foreach my $ff (@$file_fields) {
+	my($n) = $ff->{name};
+	# Don't replace an existing error
+	next unless defined($properties->{$n}) && !$fields->{errors}->{$n};
+
+	# Tells user that we didn't clear the field, the browser did.
+	$self->internal_put_error($n,
+		Bivio::TypeError::FILE_FIELD_RESET_FOR_SECURITY())
+    }
     return;
 }
 
