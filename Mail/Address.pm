@@ -109,7 +109,7 @@ sub parse {
     }
     # "Joe Bob" <joe@bob.com>
     if (($n, $a) = /^($QUOTED_STRING)\s*\<($ATOM_ONLY_ADDR)\>/os) {
-	return ($a, &_clean_quoted_string($n));
+	return ($a, _clean_quoted_string($n));
     }
     # joe@bob.com -- grab first addr, not allowing comment
     if (($a) = m!^($ATOM_ONLY_ADDR)\s*(?:,|$)!os) {
@@ -117,7 +117,7 @@ sub parse {
     }
     # joe@bob.com (Joe Bob)
     if (($a, $n) = m!^($ATOM_ONLY_ADDR)\s*($NOT_NESTED_COMMENT)!os) {
-	return ($a, &_clean_comment($n));
+	return ($a, _clean_comment($n));
     }
     if (($a, $n) = /^($MAILBOX)\s*((?:$NOT_NESTED_COMMENT)*)/os) {
 #TODO: Need to make sure we hit 99.99% of addresses with this
@@ -125,18 +125,26 @@ sub parse {
 	# complex@addr (My comment) AND complex@addr
 	if ($a =~ /^$ADDR_SPEC$/) {
 	    # $a is an address, no further parsing necessary
-	    return ($a, length($n) ? &_clean_comment($n) : $n);
+	    return ($a, length($n) ? _clean_comment($n) : undef);
 	}
 	# $MAILBOX: <complex@addr>
 	if (($a) = /^($ROUTE_ADDR)/) {
-	    return (&_clean_route_addr($a), undef);
+	    return (_clean_route_addr($a), undef);
 	}
 	# $MAILBOX: My Comment <complex@addr>
 	if (($n, $a) = /^($PHRASE)\s+($ROUTE_ADDR)/) {
-	    return (&_clean_route_addr($a), $n);
+	    return (_clean_route_addr($a), $n);
 	}
 #TODO: error or assert_fail
 	Bivio::Die->die('regexps incorrect, cannot parse: ', $_);
+    }
+
+    # Illegal implementations follow:
+    #
+    # PoorImpl.com <hackers@foo.com>
+    if (($n, $a) = /^([^<>"]+)\s*\<($ATOM_ONLY_ADDR)\>/os) {
+	$n =~ s/\s+$//;
+	return ($a, _clean_quoted_string(qq{"$n"}));
     }
     Bivio::IO::Alert->warn('Unable to parse address: ', $_);
     return (undef, undef);
