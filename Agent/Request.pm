@@ -24,7 +24,21 @@ C<Bivio::Agent::Request> Request provides a common interface for http,...
 requests to the application.  The transport specific
 Request implementation initializes most of these values
 
-The Attributes are defined:
+=head1 ATTRIBUTES
+
+During request processing, attributes are added to the Request object.
+Some attributes are models (by class name, see below).  Others are
+"standard", i.e. those shown below.  Yet others are task specific.
+
+Attributes specific to a task should be uniquely named so thery
+can be found easily in the code and to avoid name space collisions.
+They should be documented in the class which sets them under
+the B<REQUEST ATTRIBUTES> heading.  See, for example,
+L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>.
+
+Task specific attributes should be avoided in general.  Try to
+put the state in a model, e.g. a FormModel or ListModel with local
+fields.
 
 =over 4
 
@@ -153,7 +167,7 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 =item task_id : Bivio::Agent::TaskId
 
-Identifier used to find I<task>.
+Same as I<task>'s I<id>.
 
 =item this_host : string
 
@@ -161,7 +175,9 @@ This host (hostname).
 
 =item timezone : string
 
-The user's timezone (if available).
+The user's timezone (if available).  The timezone is an offsite in
+minutes from GMT.  See use in
+L<Bivio::Type::DateTime|Bivio::Type::DateTime>.
 
 =item txn_resources : array_ref
 
@@ -176,10 +192,6 @@ Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
 =item uri : string
 
 URI from the incoming request unmodified.  It is already "escaped".
-
-=item visitor_id : string
-
-The id of the visitor from the cookie.
 
 =item E<lt>ModuleE<gt> : Bivio::UNIVERSAL
 
@@ -404,19 +416,26 @@ sub format_email {
 
 =head2 format_help_uri() : string
 
+=head2 format_help_uri(string task_id) : string
+
+=head2 format_help_uri(array_ref task_id) : string
+
 =head2 format_help_uri(Bivio::Agent::TaskId task_id) : string
 
 Formats the uri for the current task or I<task_id>.  If the task
 doesn't have a help entry, defaults to help task.
 
-I<task_id> may be a widget value.
+I<task_id> may be a widget value, string (the name), or
+a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
 =cut
 
 sub format_help_uri {
     my($self, $task_id) = @_;
     $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
-    $task_id = $self->get('task_id') unless $task_id;
+    $task_id = $task_id ? ref($task_id) ? $task_id
+	    : Bivio::Agent::TaskId->from_any($task_id)
+		    : $self->get('task_id');
     return $self->format_uri(Bivio::Agent::TaskId::HELP(),
 	    undef, undef,
 	    Bivio::Agent::Task->get_by_id($task_id)->unsafe_get('help')
@@ -844,11 +863,9 @@ sub internal_redirect_realm {
 		    # realm chooser
 		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
 		}
-		Bivio::Die->die('AUTH_REQUIRED', {
-		    auth_user => undef,
-		    entity => Bivio::Auth::RealmType::USER(),
-		    auth_role => undef,
-		    operation => $new_task});
+
+		# Need to login as a user.
+		$self->server_redirect(Bivio::Agent::TaskId::LOGIN());
 	    }
 	}
     }
@@ -885,7 +902,7 @@ sub internal_initialize {
 
 Sets all values and saves form context.
 
-The second form is used by L<cilent_redirect|"cilent_redirect">.
+The second form is used by L<client_redirect|"client_redirect">.
 
 =cut
 
@@ -1155,7 +1172,7 @@ sub task_ok {
     # Normal case is for task and realm types to match, if not...
     if (defined($realm_id)) {
 #TODO: Need to handle multiple realms, e.g. list of clubs to switch to
-	CORE::die("not yet implemented");
+	$self->die("not yet implemented");
     }
     unless ($trt eq $art) {
 	$realm = _get_realm($self, $trt, $task_id);
