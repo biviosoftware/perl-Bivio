@@ -297,6 +297,7 @@ _compile(
     MAIL_BYTES => ['Size'],
     MAIL_DELETE => ['Delete'],
     MAIL_IS_PUBLIC => ['Public', undef, 'Mail.is_public'],
+    MAIL_IS_PUBLIC_ALT => ['Message is publicly viewable'],
     MAIL_APPLY => ['Apply Changes'],
 
     # FILES
@@ -305,6 +306,7 @@ _compile(
     FILE_LAST_MODIFIED => ['Last Modified'],
     FILE_ACTION => ['Action'],
     FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
+    FILE_IS_PUBLIC_ALT => ['File is publicly viewable'],
     FILE_SIZE => ['Size'],
     FILE_LOCATION => ['Location'],
 

@@ -15,8 +15,14 @@ Bivio::UI::HTML::WidgetFactory - creates widgets for model fields
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::UI::HTML::WidgetFactory::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::UI::HTML::Widget>
+
+=cut
+
+use Bivio::UI::HTML::Widget;
+@Bivio::UI::HTML::WidgetFactory::ISA = ('Bivio::UI::HTML::Widget');
 
 =head1 DESCRIPTION
 
@@ -131,6 +137,12 @@ sub _create_display {
 	});
     }
 
+    if ($field =~ /is_public$/) {
+	return $proto->checkmark($field)->put(
+	    column_align => 'center',
+	);
+    }
+
     if (UNIVERSAL::isa($type, 'Bivio::Type::IRR')) {
 	return Bivio::UI::HTML::Widget::IRRCell->new({
 	    field => $field,
@@ -234,6 +246,28 @@ sub _create_edit {
 		    }),
 	    ],
 	});
+    }
+
+    if ($field =~ /is_public$/) {
+	return $proto->director(
+		[['->get_request'], 'user_can_modify_is_public'],
+		{
+		    0 => $proto->checkmark($field),
+		    1 => Bivio::UI::HTML::Widget::Checkbox->new({
+			field => $field,
+			label => '',
+                    }),
+		}
+	       )->put(
+		       column_align => 'center',
+		       column_control => [
+			   sub { my($req) = shift->get_request;
+				 return $req->get(
+					 'realm_decor_show_all_columns')
+					 && $req->get('realm_is_public');
+			     }],
+		       %$attrs,
+		      );
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {

@@ -239,6 +239,26 @@ sub center {
     return ("\n<div align=center>\n", @_, "\n</div>\n");
 }
 
+=for html <a name="checkmark"></a>
+
+=head static checkmark(string field) : Bivio::UI::HTML::Widget
+
+Shows a checkmark for the field.  Looks up $field."_ALT" for
+alt text for image.
+
+=cut
+
+sub checkmark {
+    my($proto, $field) = @_;
+    my($alt) = $field;
+    $alt =~ s/\./_/;
+    $alt = Bivio::UI::Label->get_simple($alt.'_ALT');
+    return $proto->director([$field], {
+	0 => '',
+	1 => $proto->image('check_on', $alt),
+    });
+}
+
 =for html <a name="clear_dot"></a>
 
 =head2 clear_dot(any width, any height) : Bivio::UI::HTML::Widget::ClearDot

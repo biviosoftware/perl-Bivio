@@ -24,6 +24,16 @@ C<Bivio::Biz::Action::PublicRealm> sets the C<realm_is_public> attribute
 on the request.  This is used by lists, forms and UI modules to allow, but
 restrict anonymous access.
 
+=head1 REQUEST ATTRIBUTES
+
+=over 4
+
+=item user_can_modify_is_public : boolean
+
+Set to true if user as "is_public" privs and the realm is public.
+
+=back
+
 =cut
 
 #=IMPORTS
@@ -92,6 +102,10 @@ sub execute {
     $req->put(
             is_realm_user => $is_realm_user,
             realm_is_public => $realm_is_public,
+#TODO: Trace
+	    user_can_modify_is_public => $realm_is_public
+	    && $req->can_user_execute_task(
+		    Bivio::Agent::TaskId::CLUB_ADMIN_PUBLIC()),
            );
     return;
 }

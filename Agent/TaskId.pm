@@ -218,7 +218,7 @@ my(@_CFG) = (
         ?/mail
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_page
-        Bivio::Biz::Model::MailListForm->execute_if_admin
+        Bivio::Biz::Model::MailListForm->execute_if_allowed
         Bivio::UI::HTML::Club::MailList
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
@@ -965,7 +965,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Action::FileDownload->execute_if_file
         Bivio::Biz::Model::FileTreeList->execute_load_all
-        Bivio::Biz::Model::FileTreeListForm->execute_if_realm_user
+        Bivio::Biz::Model::FileTreeListForm->execute_if_allowed
         Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileTree
 	next=CLUB_COMMUNICATIONS_FILE_READ
