@@ -111,8 +111,8 @@ sub from_literal {
 
 =head2 static is_ignore(string email) : boolean
 
-Returns true if is L<is_valid|"is_valid"> and does not
-begin with L<IGNORE_PREFIX|"IGNORE_PREFIX">.
+Returns true if is not L<is_valid|"is_valid"> or 
+begins with L<IGNORE_PREFIX|"IGNORE_PREFIX">.
 
 =cut
 
@@ -135,6 +135,23 @@ sub is_valid {
     my($proto, $email) = @_;
     my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
     return defined($email) && $email =~ /^$ATOM_ONLY_ADDR$/os ? 1 : 0;
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 to_xml(any value) : string
+
+Returns I<value> formatted properly for XML.
+
+HACK: if I<value> L<is_ignore|"is_ignore">, it rendered as the empty string.
+This is assumed by L<Bivio::UI::XML::ClubExport|Bivio::UI::XML::ClubExport>.
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value) && !$proto->is_ignore($value);
+    return Bivio::Util::escape_html($value);
 }
 
 #=PRIVATE METHODS
