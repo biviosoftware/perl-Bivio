@@ -67,10 +67,10 @@ sub create_entry {
 	    = $trans->get('realm_id', 'realm_transaction_id');
 
     # defaults
-    $properties->{tax_basis} = 0 unless defined($properties->{tax_basis});
-    $properties->{count} = 0 unless defined($properties->{count});
+    $properties->{tax_basis} = 0 unless exists($properties->{tax_basis});
+    $properties->{count} = 0 unless exists($properties->{count});
     $properties->{external_identifier} = 0
-	    unless defined($properties->{external_identifier});
+	    unless exists($properties->{external_identifier});
 
     my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
     $entry->create($properties);
