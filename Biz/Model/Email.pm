@@ -58,6 +58,21 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+=for html <a name="format_email"></a>
+
+=head2 format_email() : string
+
+Returns the email for display. Shadow accounting email addresses
+returns ''.
+
+=cut
+
+sub format_email {
+    my($self) = @_;
+    my($email) = $self->get('email');
+    return ($email =~ /^ignore-=/) ? '' : $email;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
