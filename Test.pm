@@ -85,6 +85,22 @@ of C<make_array_ref>.
 If the expected (declared) return value is a L<Bivio::DieCode|Bivio::DieCode>,
 an exception is expected and must match the C<DieCode> exactly.
 
+If the expected is a code_ref, this will be a custom result_ok (see below)
+for this case only.
+
+    Bivio::Test->unit([
+	Bivio::Math::EMA->new(30) => [
+	    compute => [
+	        [1] => sub {
+		    my($object, $method, $params, $expect, $actual) = @_;
+		    return 0
+			unless defined($actual->[0]) && !ref($actual->[0]);
+		    return $actual->[0] == 1;
+		},
+	    ],
+        ],
+    ]);
+
 =head2 OPTIONS
 
 Sometimes it is difficult to specify a return result.  For example, in
@@ -402,10 +418,10 @@ sub _compile_case {
     $state->{case_num}++;
     _compile_assert_array($params, $state);
     _compile_die($state, "expected result must be undef, array_ref, "
-	." or Bivio::DieCode")
+	." CODE, or Bivio::DieCode")
 	unless !defined($expect) || ref($expect)
-	    && (ref($expect) eq 'ARRAY'
-	    || UNIVERSAL::isa($expect, 'Bivio::DieCode'));
+	    && (ref($expect) =~ /^(ARRAY|CODE)$/
+		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
     push(@$tests, {
 	%$state,
 	params => $params,
@@ -648,17 +664,24 @@ sub _eval_equal {
 #
 sub _eval_result {
     my($test, $actual) = @_;
-    if (ref($test->{expect}) eq ref($actual)) {
+    my($custom);
+    if (ref($test->{expect}) eq 'CODE') {
+	$custom = 'expect';
+    }
+    elsif (ref($test->{expect}) eq ref($actual)) {
 	if ($test->{result_ok}) {
-	    my($err);
-	    my($res) = _eval_custom(
-		$test, 'result_ok', [$test->{expect}, $actual], \$err);
-	    return $err if $err;
-	    return undef if $res;
+	    $custom = 'result_ok';
 	}
 	else {
 	    return undef if _eval_equal($test->{expect}, $actual);
 	}
+    }
+    if ($custom) {
+	my($err);
+	my($res) = _eval_custom(
+	    $test, $custom, [$test->{expect}, $actual], \$err);
+	return $err if $err;
+	return undef if $res;
     }
     return 'expected '._summarize($test->{expect})
 	.' but got '._summarize($actual);
