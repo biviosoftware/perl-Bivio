@@ -97,6 +97,7 @@ _compile([
     DETAIL_CHOOSER => [$_SANS_SERIF, 'detail_chooser', 'strong'],
     MESSAGE_SUBJECT => [$_SANS_SERIF, undef],
     LIST_ACTION => [undef, undef, 'small'],
+    STRONG => [undef, undef, 'strong'],
 ]);
 
 =head1 METHODS
