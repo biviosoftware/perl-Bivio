@@ -50,6 +50,7 @@ text/html parts.
 use Bivio::File::Client;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Agent::Request;
 use Bivio::Type::MIMEType;
 use Carp ();
 use IO::Scalar;
@@ -79,7 +80,7 @@ object used to write the MIME parts.
 =cut
 
 sub new {
-    my($proto, $mail_incoming, $file_name, $file_client) = @_;
+    my($proto, $mail_incoming, $file_name, $file_client, $request) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
         message => $mail_incoming,
@@ -91,6 +92,8 @@ sub new {
 	io_scalar => IO::Scalar->new(),
 	file_client => $file_client,
 	multi_line_flag => 0,
+	request => $request,
+	filename => '',
     };
     return $self;
 }
@@ -176,10 +179,9 @@ sub _extract_mime {
     my($fields, $entity, $file_name) = @_;
     Carp::croak('no entity was passed to _extract_mime()') unless $entity;
 #   $fields->{keywords}, $fields->{num_parts}, and $fields->{kbytes}
-    _trace('file_name: ', $file_name) if $_TRACE;
-    _trace('head: ', $entity->head()) if $_TRACE;
     my($ctype) = $entity->head->get('content-type');
-    _trace('content type extracted from head: \"', $ctype, '\"');
+    $fields->{filename} = $file_name;
+
 #TODO this is a complete hack.     
     if(!$ctype){
 	$ctype = "text/plain";
@@ -238,14 +240,37 @@ sub _extract_mime {
 #
 #
 sub _extract_mime_body_decoded {
+    _trace('EXTRACT_MIME_BODY_DECODED called.') if $_TRACE;
     my($fields, $entity) = @_;
     my($s);
+    my($line) = '';
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
+    my($req) = $fields->{request};
     my($io) = $entity->open('r');
+    my($message_id) = $fields->{message}->get_message_id();
     if (defined($io)) {
-	my($line);
-	$file->print($line) while defined($line = $io->getline);
+	while(!$io->eof()){
+	    my($line) = $io->getline();
+	    if($line =~ /("cid:part.*")/){
+		_trace('FOUND CID.PART match: ', $1) if $_TRACE;
+		my $sb = $1;
+		my $fname = $fields->{filename};
+		_trace('EXTRACTING TO FILE: ', $fname) if $_TRACE;
+		$fname =~ /_(\d*)$/;
+		my $index = $1+1;
+		$fname =~ s/_(\d*)$/_$index/;
+		my $attachment_id = $fname;
+		$attachment_id =~ /\/(\d.*$)/;
+		_trace('task image ID is going to be ', $1);
+		my $uri = "\"".$req->format_uri(
+		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
+		    "img=".$1)."\">";
+		_trace('setting URI: ', $uri) if $_TRACE;
+		$line =~ s/$sb/$uri/;
+	    }
+	    $file->print($line);# while defined($line);
+	}
 	$io->close();
     }
     $file->close();
