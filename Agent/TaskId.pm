@@ -1561,7 +1561,7 @@ my(@_CFG) = (
         Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
-        Bivio::Biz::Model::ScheduleDForm
+        Bivio::Biz::Model::ScheduleDList
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form
 	Bivio::UI::PDF::Form::F1065::Y1999::Form
@@ -1625,7 +1625,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
-        Bivio::Biz::Model::ScheduleDForm
+        Bivio::Biz::Model::ScheduleDList
         Bivio::UI::HTML::Tax::ScheduleD
         next=CLUB_ACCOUNTING_TAX99_SCHEDULE_D
     )],
