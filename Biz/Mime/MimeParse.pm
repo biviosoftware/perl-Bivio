@@ -75,9 +75,29 @@ sub new {
         message => $mailincoming,
 	parser => $parser,
 	filename => $filename,
+	kbytes => 0,
+	numparts => 0,
 	keywords => \%keywords,
     };
     return $self;
+}
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="get_num_parts"></a>
+
+=head2 get_num_parts(void) : int
+
+returns the number of MIME parts written to the file server.
+
+=cut
+
+sub get_num_parts {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{numparts};
 }
 
 =for html <a name="handle_config"></a>
@@ -117,6 +137,7 @@ sub parse {
     my $entity  = $fields->{parser}->read($file);
     my $keywords = $fields->{keywords};
     my $filename = $fields->{filename};
+    my($numparts) = $fields->{numparts};
     #we know the first part is the main mail message. We want
     #to store keywords For Subject, To, Date, and From fields
     _parse_keywords($msg->get_subject(), $keywords);
@@ -126,8 +147,8 @@ sub parse {
     _trace('extracting MIME attachments for mail message. File: ', $filename) if $_TRACE;
     # the second field is the file "extension". For the main message part, this should
     # be undef since there is no _0, _1, _0_1 suffix
-    _extract_mime($entity, $filename, undef, $keywords);
-
+    _extract_mime($entity, $filename, undef, $keywords, \$numparts);
+    $fields->{numparts} = $numparts;
     _trace('getting all the keywords we found...') if $_TRACE;
     my $k = $fields->{keywords};
 #   my(@keys) = keys %$k;
@@ -152,7 +173,7 @@ sub parse {
 # recursively.
 #
 sub _extract_mime {
-    my($entity, $filename, $ext, $keywords) = @_;
+    my($entity, $filename, $ext, $keywords, $tnumparts) = @_;
     if(!$entity){
 	die('no entity was passed to _extract_mime()') if $_TRACE;
     }
@@ -165,7 +186,7 @@ sub _extract_mime {
 #TODO parse for keyword storage if MIME part content type is HTML
 #right now, we're only parsing for keywords MIME type "plain-text".
 
-    _write_mime($entity, $filename); #writes the mime to a file.
+    _write_mime($entity, $filename, $tnumparts); #writes the mime to a file.
 
     my($numparts) = $entity->parts || 0;
     my($i) = 0;
@@ -188,11 +209,11 @@ sub _extract_mime {
 	    if(!$rootentity){
 		_trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE;
 	    }
-	    _extract_mime($rootentity, $filename, "_" . $i, $keywords);
+	    _extract_mime($rootentity, $filename, "_" . $i, $keywords, $tnumparts);
 	}
 	elsif($ctype =~ /text\/plain/){ #then we want keywords from it
 	    print(STDERR "message is text plain.\n");
-	    _extract_mime($subentity, $filename, '_' . $i, $keywords); #recurse
+	    _extract_mime($subentity, $filename, '_' . $i, $keywords, $tnumparts); 
 	}
     }
     return;
@@ -313,7 +334,7 @@ sub _parse_msg_line {
 # Writes the mime header and body content to a file.
 #
 sub _write_mime {
-    my($entity, $filename) = @_;
+    my($entity, $filename, $parts) = @_;
     #extract the header and body, and shove them into a string.
     #probably I should re-use a scalar ref or an IO handle for both of these.
     my $msghdr = _extract_mime_header($entity);
@@ -328,6 +349,8 @@ sub _write_mime {
     my $msg = $msghdr;
     if($$msgbody){$msg .= $$msgbody;}
     $_FILE_CLIENT->create($filename, \$msg) || die("write failed: $$msg");
+    #increment the parts counter:
+    $$parts++;
     return;
 }
 
