@@ -259,11 +259,11 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    # new update_flag 2, won't change existing records
-	    qspvsd => [0, 2],
-	    qcpvsd => [0, 2],
-	    indb02 => [1, 1],
-	    chgdb02 => [1, 1],
+# no longer used, QSPVSD files only update once a month
+#	    qspvsd => [0, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+#	    qcpvsd => [0, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+	    indb02 => [1, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+	    chgdb02 => [1, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
 	},
 	format => [
 	    {
@@ -295,18 +295,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_daily_quote_t',
 	columns => {
-	    mg_id => ['Bivio::Data::MGFS::Id',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            date_time => ['Bivio::Data::MGFS::Date',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    high => ['Bivio::Data::MGFS::Quote',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            low => ['Bivio::Data::MGFS::Quote',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            close => ['Bivio::Data::MGFS::Quote',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            volume => ['Bivio::Data::MGFS::Amount',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+	    mg_id => ['Bivio::Data::MGFS::Id', 'PRIMARY_KEY'],
+            date_time => ['Bivio::Data::MGFS::Date', 'PRIMARY_KEY'],
+	    high => ['Bivio::Data::MGFS::Quote', 'NOT_NULL'],
+            low => ['Bivio::Data::MGFS::Quote', 'NOT_NULL'],
+            close => ['Bivio::Data::MGFS::Quote', 'NOT_NULL'],
+            volume => ['Bivio::Data::MGFS::Amount', 'NOT_NULL'],
         },
     };
 }
