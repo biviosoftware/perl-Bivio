@@ -49,9 +49,9 @@ my(%_CLASS_INFO);
 
 =for html <a name="get_instance"></a>
 
-=head2 static get_instance() : Bivio::Biz::PropertyModel
+=head2 static get_instance() : Bivio::Biz::Model
 
-=head2 static get_instance(any class) : Bivio::Biz::PropertyModel
+=head2 static get_instance(any class) : Bivio::Biz::Model
 
 Returns the singleton for I<class>.  If I<class> is supplied,
 it may be just the simple name, i.e. without C<Bivio::Biz::Model::> prefix,
@@ -83,6 +83,8 @@ sub get_instance {
 
 =head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model
 
+=head2 static new(Bivio::Agent::Request req, string model) : Bivio::Biz::Model
+
 Creates a Model with the specified request, if supplied.
 
 A PropertyModel may only be loaded if I<req> is non-null.
@@ -90,13 +92,14 @@ A PropertyModel may only be loaded if I<req> is non-null.
 =cut
 
 sub new {
-    my($proto, $req) = @_;
-    my($class) = ref($proto) || $proto;
+    my($proto, $req, $model) = @_;
+    my($class) = defined($model) ? ref(__PACKAGE__->get_instance($model))
+	    : (ref($proto) || $proto);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency
-    my($self) = Bivio::Collection::Attributes::new($proto,
+    my($self) = Bivio::Collection::Attributes::new($class,
 	    {@{$ci->{properties}}});
     $self->{$_PACKAGE} = {
 	class_info => $ci,
