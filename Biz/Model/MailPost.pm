@@ -96,6 +96,8 @@ sub execute_input {
 
     # Allow subclasses to modify header or body
     $self->internal_modify_mail($req, $msg);
+    # Get header handle again, might have changed
+    $header = $msg->get_head;
 
     my($att, $att_name);
     # Handle a number of attachments
@@ -122,7 +124,7 @@ sub execute_input {
     foreach my $field ('to_any', 'cc') {
         $addrs = $fields->{$field};
         next unless defined(@$addrs);
-        $header->add($field, join(',', @$addrs));
+        $header->add($field eq 'to_any' ? 'To' : $field, join(',', @$addrs));
         $msg->add_recipients($addrs);
         $msg->enqueue_send;
     }
@@ -135,10 +137,17 @@ sub execute_input {
             my($list) = $req->get('Bivio::Biz::Model::MailList');
             $list->set_cursor_or_not_found(0);
             my($mail) = $list->get_model('Mail');
-            $msg->add_recipients($mail->get('from_email'));
+            my($author) = $mail->get('from_email');
+            $header->add('To', $author);
+            $msg->add_recipients($author);
             $msg->enqueue_send;
        }
         else {
+            my($name) = $req->get('auth_realm')->get('owner_name');
+            my($suffix) =  $to->get_long_desc;
+            $name .= '-' . $suffix
+                    if defined($suffix) && length($suffix);
+            $header->add('To', $name);
             Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
         }
     }
@@ -227,6 +236,9 @@ sub validate {
     my($req) = $self->get_request;
     # No state maintained across validations
     my($fields) = $self->{$_PACKAGE} = {};
+
+    $self->die('DIE', { message => 'both to and to_any defined'})
+            if defined($self->get('to')) && defined($self->get('to_any'));
 
     # Only allow limited fields for non-users
     my($email, $att);
