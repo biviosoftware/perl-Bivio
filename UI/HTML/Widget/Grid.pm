@@ -34,7 +34,7 @@ There are two types of attributes: table and cell.
 
 =over 4
 
-=item align : string [CENTER]
+=item align : string []
 
 How to align the table.  The allowed (case
 insensitive) values are defined in
