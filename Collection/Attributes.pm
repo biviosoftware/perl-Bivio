@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Collection::Attributes;
 use strict;
 $Bivio::Collection::Attributes::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Collection::Attributes::VERSION;
 
 =head1 NAME
 
@@ -244,6 +245,48 @@ Returns the list of keys.
 sub get_keys {
     my(@names) = keys(%{shift->{$_PACKAGE}});
     return \@names;
+}
+
+=for html <a name="get_nested"></a>
+
+=head2 get_nested(string name, string subname, ...) : any
+
+Looks up I<name> and indexes with I<subname>, if supplied.  Continues with
+subnames.  Works both with hash_refs and array_refs.  There is type checking on
+I<subname> if the value is an array_ref.
+
+Similar to L<get_widget_value|"get_widget_value">, but not as complex.
+
+Note that the value returned may be C<undef> if the nested lookup
+exists, but is C<undef>.
+
+=cut
+
+sub get_nested {
+    my($self, @names) = @_;
+    my($v) = $self->{$_PACKAGE};
+    foreach my $name (@names) {
+	if (ref($v) eq 'HASH') {
+	    if (exists($v->{$name})) {
+		$v = $v->{$name};
+		next;
+	    }
+	}
+	elsif (ref($v) eq 'ARRAY') {
+	    Bivio::IO::Alert->die($name, ": not an array index ", \@names)
+			unless $name =~ /^\d+$/;
+	    if ($name <= $#$v) {
+		$v = $v->[$name];
+		next;
+	    }
+	}
+	else {
+	    Bivio::IO::Alert->die("can't index \"", $v, '" at name"',
+		    $name, '" ', \@names);
+	}
+	Bivio::IO::Alert->die($name, ": attribute doesn't exist ", \@names);
+    }
+    return $v;
 }
 
 =for html <a name="get_or_default"></a>
@@ -540,7 +583,7 @@ sub unsafe_get {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
