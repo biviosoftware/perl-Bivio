@@ -44,6 +44,7 @@ sub _request ($) {
 #    length($path) || $br->redirect($r->uri() . '/');
     my($ct) = "text/html";
     {
+	$path =~ /CVS/ && $br->not_found("CVS directory");
 	$path =~ /.html$/ && last;
 	$path =~ /^[^.]*$/ && ($path .= '/index.html', last);  	    # no suffix
 	$path =~ /.gif$/ && ($ct = "image/gif", last);
