@@ -179,8 +179,8 @@ my(@_XLATORS) = (
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-12', 'Yes'),
 		Bivio::Type::F1065Partnership::LIMITED_LIABILITY(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-13', 'Yes'),
-		Bivio::Type::F1065Partnership::OTHER(),
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-14', 'Yes')
+#		Bivio::Type::F1065Partnership::OTHER(),
+#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-14', 'Yes')
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
