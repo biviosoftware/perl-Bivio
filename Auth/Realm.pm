@@ -50,8 +50,7 @@ clubs and users.  General does not have an owner.
 =item owner_name : string
 
 Named retrieved from realm owner.  Not defined for the general realm.
-Always use this value and owner-E<gt>get('name').  Proxy realms
-override this value.
+Always use this value and owner-E<gt>get('name').
 
 =item type : Bivio::Auth::RealmType
 
@@ -140,19 +139,13 @@ sub new {
 	return $self;
     }
 
-    # Have owner.  Permissions may be general if PROXY
     my($type) = $owner->get('realm_type');
-    if ($type eq Bivio::Auth::RealmType::PROXY()) {
-	$self->{$_PACKAGE} =$_DEFAULT_PERMISSION_SET{$type};
-	# Proxy realms don't have real RealmOwners
-    }
-    else {
-	$self->{$_PACKAGE} = {
-		default_permission_set => $_DEFAULT_PERMISSION_SET{$type},
-	};
-	Carp::croak('not a Model::RealmOwner') unless UNIVERSAL::isa($owner,
-		'Bivio::Biz::Model::RealmOwner');
-    }
+    $self->{$_PACKAGE} = {
+        default_permission_set => $_DEFAULT_PERMISSION_SET{$type},
+    };
+    Carp::croak('not a Model::RealmOwner') unless UNIVERSAL::isa($owner,
+            'Bivio::Biz::Model::RealmOwner');
+
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');
     Carp::croak('owner must have valid id (must be loaded)')
@@ -227,17 +220,17 @@ sub can_user_execute_task {
 
 =head2 format_email() : string
 
-How to mail to this realm.  Only works for realms with owners.
+How to mail to this realm.
 
 =cut
 
 sub format_email {
     my($self) = @_;
-    # This is more than caching. It allows Proxy to override this value.
+    # This is more than caching. It allows for overriding.
     my($email) = $self->unsafe_get('_email');
     return $email if $email;
 
-    # Not a Proxy, just compute and cache (since we are checking anyway)
+    # Compute and cache (since we are checking anyway)
     $email = $self->get('owner_name').'@'
 	    .$self->get('owner')->get_request->get('mail_host');
     $self->put(_email => $email);
@@ -254,11 +247,11 @@ Returns the root of the file server.
 
 sub format_file {
     my($self) = @_;
-    # This is more than caching. It allows Proxy to override this value.
+    # This is more than caching. It allows to override this value.
     my($file) = $self->unsafe_get('_file');
     return $file if $file;
 
-    # Not a Proxy, just compute and cache (since we are checking anyway)
+    # Compute and cache (since we are checking anyway)
     $file = $self->get('owner_name');
     $self->put(_file => $file);
     return $file;
@@ -275,11 +268,11 @@ Only works for realms with owners.
 
 sub format_uri {
     my($self) = @_;
-    # This is more than caching. It allows Proxy to override this value.
+    # This is more than caching. It allows to override this value.
     my($uri) = $self->unsafe_get('_uri');
     return $uri if $uri;
 
-    # Not a Proxy, just compute and cache (since we are checking anyway)
+    # Compute and cache (since we are checking anyway)
     $uri = $self->get('owner')->format_uri();
     $self->put(_uri => $uri);
     return $uri;
@@ -297,7 +290,7 @@ B<DEPRECATED>.
 
 sub get_type {
     my($proto) = @_;
-    # Get the type from the instance itself (Proxy perhaps) otherwise
+    # Get the type from the instance itself otherwise
     # just from class.
     return $proto->get('type') if ref($proto);
     Carp::croak("$proto: unknown realm class")
@@ -321,17 +314,11 @@ sub _initialize {
     my(@roles) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 #DBCACHE: realm_role_t
-    foreach my $t ('GENERAL', 'USER', 'CLUB', 'PROXY') {
+    foreach my $t ('GENERAL', 'USER', 'CLUB') {
 	my($rt) = Bivio::Auth::RealmType->$t();
 	my($rti) = $rt->as_int;
 	my($rc) = $_TYPE_TO_CLASS{$rt};
 	Bivio::Util::my_require($rc);
-#TODO: Should this be in the database?  ALways the same as General.
-	if ($rt->get_name eq 'PROXY') {
-	    $_DEFAULT_PERMISSION_SET{$rt} = $_DEFAULT_PERMISSION_SET{
-		Bivio::Auth::RealmType::GENERAL()};
-	    next;
-	}
 	my($dp) = $_DEFAULT_PERMISSION_SET{$rt} = {};
 	foreach my $r (@roles) {
 	    die($rt->as_string, ': unable to load default permissions for ',
