@@ -48,7 +48,10 @@ sub format {
     my($res) = '';
     foreach my $k (keys(%$query)) {
 	$res .= Bivio::Util::escape_query($k).'='
-		.Bivio::Util::escape_query($query->{$k}).'&';
+		# Sometimes the query value is not defined.  It may
+		# be a corrupt query, but shouldn't blow up.
+		.Bivio::Util::escape_query(defined($query->{$k})
+			? $query->{$k} : '').'&';
     }
     chop($res);
     return $res;
