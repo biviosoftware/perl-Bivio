@@ -41,9 +41,10 @@ sub main {
     while (@argv) {
 	my($a) = shift(@argv);
 	$a =~ /^-(m|mail)$/ && ($mail = shift(@argv), next);
-	$a =~ /^-/ && _usage("unknown option \"$a\"");
+	_usage("unknown option \"$a\"") if $a =~ /^-/;
 	$_DIR = $a;
     }
+    _usage("$_DIR: not a directory") unless -d $_DIR;
     my($buffer) = "\"".join('","', @_FIELDS)."\"\n";
     Bivio::IO::Config->initialize(\@argv);
     local($_);
