@@ -42,9 +42,10 @@ my(\$e1) = generate_email();
 test_deviance(qr/No mail for /);
 verify_mail(\$e1, '');
 test_conformance();
+my(\$i) = 1;
 my(\$m) = sub {
    my(\$x) = \$_[0] || \$e1;
-Bivio::IO::File->write(q{$mail_file}, <<"END");
+Bivio::IO::File->write(q{$mail_file} . \$i++, <<"END");
 To: \$x
 
 You have mail
@@ -62,8 +63,9 @@ verify_mail(\$e2, '');
 test_deviance(qr/Found mail for .* but does not match /);
 verify_mail(\$e1, 'this should not match');
 test_conformance();
-\$m->(\$e1, 'You have mail');
-\$m->(\$e2, 'You have mail');
+\$m->(\$e2);
+verify_mail(\$e2, 'You have mail');
+verify_mail(\$e1, 'You have mail');
 EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
