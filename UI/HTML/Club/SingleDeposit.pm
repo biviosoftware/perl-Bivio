@@ -97,11 +97,23 @@ sub new {
 		[
 		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
 			label => 'Type',
-			field => 'Entry.entry_type',
+			field => 'type',
 		    }),
 		    Bivio::UI::HTML::Widget::Select->new({
-			field => 'Entry.entry_type',
+			field => 'type',
 			choices => 'Bivio::Type::DepositType',
+		    }),
+		],
+		[
+		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
+			label => 'Account',
+			field => 'account',
+		    }),
+		    Bivio::UI::HTML::Widget::Select->new({
+			field => 'account',
+			choices => 'Bivio::Biz::Model::RealmAccountList',
+			list_display_field => 'RealmAccount.name',
+			list_id_field => 'RealmAccount.realm_account_id',
 		    }),
 		],
 		[
