@@ -78,6 +78,7 @@ my($_PACKAGE) = __PACKAGE__;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
+my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 
 =head1 FACTORIES
 
@@ -699,6 +700,19 @@ sub internal_initialize {
 	    [qw(realm_id Club.club_id User.user_id)],
 	],
     };
+}
+
+=for html <a name="is_demo_club"></a>
+
+=head2 is_demo_club() : boolean
+
+Returns true if demo_club.
+
+=cut
+
+sub is_demo_club {
+    my($self) = @_;
+    return $self->get('name') =~ /$_DEMO_SUFFIX$/o ? 1 : 0;
 }
 
 =for html <a name="is_name_eq_email"></a>
