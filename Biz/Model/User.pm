@@ -372,8 +372,9 @@ Checks to see if already invalidated.
 
 sub invalidate_email {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($id) = $self->get('user_id');
-    my($email) = Bivio::Biz::Model::Email->new($self->get_request)
+    my($email) = Bivio::Biz::Model::Email->new($req)
 	    ->unauth_load_or_die(realm_id => $id);
     my($address) = $email->get('email');
     my($prefix) = Bivio::Type::Email::INVALID_PREFIX();
@@ -381,10 +382,13 @@ sub invalidate_email {
     return if $address =~ /^\Q$prefix/o;
 
     # Nope, need to invalidate and create notice
-    $email->update({email => $prefix.$address});
+    my($other) = Bivio::Biz::Model::Email->new($req);
+    my($i) = 0;
+    $i++ while $other->unauth_load({email => $prefix.$i.$address});
+    $email->update({email => $prefix.$i.$address});
     Bivio::Biz::Model->new($self->get_request, 'RealmNotice')
-		->unauth_create_unless_type_exists(
-			$id, 'EMAIL_INVALID', undef);
+	->unauth_create_unless_type_exists(
+		$id, 'EMAIL_INVALID', undef);
     return;
 }
 
