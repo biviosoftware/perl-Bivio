@@ -81,7 +81,7 @@ sub internal_initialize {
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             start_date => ['Date', 'NOT_NULL'],
             end_date => ['Date', 'NOT_NULL'],
-	    renewal_state => ['ECRenewalState', 'NOT_NULL'],
+	    renewal_state => ['ECRenewalState', 'NOT_ZERO_ENUM'],
         },
         auth_id => 'realm_id',
 	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
