@@ -133,7 +133,7 @@ sub mirror {
 		     unless $_ =~ m!^/!;
 		 $_;
 	      } @{$cfg->{mirror_include_dirs}})
-	    . "' '$cfg->{mirror_dest_host}:$cfg->{mirror_dest_dir}'")};
+	    . "' '$cfg->{mirror_dest_host}:$cfg->{mirror_dest_dir}' 2>&1")};
     }
     return \$res;
 }
