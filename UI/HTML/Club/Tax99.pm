@@ -66,21 +66,14 @@ sub create_content {
 		$self->join('&nbsp;'),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Tax Options',
-		    string_font => 'page_heading',
-		}),
+		$self->string('Tax Options', 'page_heading'),
 	    ],
 	    [
-		$self->join('&nbsp;'),
-	    ],
-	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => <<'EOF',
+		$self->string(<<'EOF'),
+
 Before selecting the reports below, follow the option links to specify extra information about your partnership and members.
 
 EOF
-		}),
 	    ],
 	    [
 		$self->join(
@@ -130,10 +123,7 @@ EOF
 		}),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Informational Reports',
-		    string_font => 'page_heading',
-		}),
+		$self->string('Informational Reports', 'page_heading'),
 	    ],
 	    [
 		$self->join('&nbsp;'),
@@ -151,22 +141,27 @@ EOF
 		),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Tax Forms',
-		    string_font => 'page_heading',
-		}),
+		$self->string('Tax Forms', 'page_heading'),
 	    ],
 	    [
-		$self->join('&nbsp;'),
-	    ],
-	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => <<'EOF',
+		$self->string(<<'EOF'),
+
 Investment clubs are required to file one copy of Form 1065, one copy of Schedule K-1 for each member, and the Schedule D and supplementary schedules below. Each member should also receive a copy of the Schedule K-1 for their records.
 
 Form 1065 is only an informational return, used to report gains and losses for the partnership. Taxable items are allocated proportionally among members, who then claim their portion of the club's tax burden on their individual tax returns.
 EOF
-		}),
+	    ],
+	    [
+		$self->join(
+		    $self->string('
+To property view the PDF tax forms requires the free Adobe Acrobat Reader version 4.0 or greater. Download the latest Acrobat Reader '),
+		    Bivio::UI::HTML::Widget::Link->new({
+			value => $self->string('here'),
+			href =>
+			'http://www.adobe.com/products/acrobat/readstep.html',
+		    }),
+		    $self->string('.'),
+		),
 	    ],
 	    [
 		$self->join('&nbsp;'),
@@ -179,10 +174,7 @@ EOF
 		$self->join('&nbsp;'),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Member K-1 (pdf)',
-		    string_font => 'table_heading',
-		}),
+		$self->string('Member K-1 (pdf)', 'table_heading'),
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::MultiColumnedList->new({
@@ -200,10 +192,8 @@ EOF
 		$self->join('&nbsp;'),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Required Schedules and Itemizations',
-		    string_font => 'page_heading',
-		}),
+		$self->string('Required Schedules and Itemizations',
+			'page_heading'),
 	    ],
 	    [
 		$self->string(<<'EOF'),
