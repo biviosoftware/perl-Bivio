@@ -182,6 +182,19 @@ sub create_message_id {
     return;
 }
 
+=for html <a name="discard_queued_messages"></a>
+
+=head2 discard_queued_messages() : 
+
+Empties the send queue, throwing away all messages in the queue.
+
+=cut
+
+sub discard_queued_messages {
+    @_QUEUE = ();
+    return;
+}
+
 =for html <a name="enqueue_send"></a>
 
 =head2 enqueue_send()
