@@ -797,13 +797,15 @@ sub from_literal {
     # Get rid of all blanks to be nice to user
     return (undef, Bivio::TypeError::DATE_TIME())
 	    unless $value =~ /^\s*(\d+)\s+(\d+)\s*$/;
-    $value = "$1 $2";
-    # Compare as strings for date range, because don't want integer
-    # conversion to wrap
-#    return (undef, Bivio::TypeError::NUMBER_RANGE())
-#	    unless length($value) < $proto->get_width
-#		    || $value le $proto->get_max;
-    return $value;
+    my($date, $time) = ($1, $2);
+    return (undef, Bivio::TypeError::DATE_RANGE())
+	    unless length($date) <= length($proto->LAST_DATE_IN_JULIAN_DAYS())
+		    && $date >= $proto->FIRST_DATE_IN_JULIAN_DAYS()
+		    && $date <= $proto->LAST_DATE_IN_JULIAN_DAYS();
+    return (undef, Bivio::TypeError::TIME_RANGE())
+	    unless length($time) <= length($proto->SECONDS_IN_DAY())
+		    && $time < $proto->SECONDS_IN_DAY();
+    return $date.' '.$time;
 }
 
 =for html <a name="from_sql_value"></a>
