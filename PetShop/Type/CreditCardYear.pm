@@ -38,14 +38,6 @@ C<Bivio::PetShop::Type::CreditCardYear>
 
 #=VARIABLES
 __PACKAGE__->compile([
-    Y2001 => [
-        2001,
-        '2001',
-    ],
-    Y2002 => [
-        2002,
-        '2002',
-    ],
     Y2003 => [
         2003,
         '2003',
