@@ -9,6 +9,10 @@ $_ = $Bivio::Util::Release::VERSION;
 
 Bivio::Util::Release - build and release management
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     b-release [options] command [args...]

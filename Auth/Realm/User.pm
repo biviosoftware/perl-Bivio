@@ -8,6 +8,10 @@ $Bivio::Auth::Realm::User::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Auth::Realm::User - defines the realm owned by a particular user
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Realm::User;

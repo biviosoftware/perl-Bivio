@@ -8,6 +8,10 @@ $Bivio::Type::CancelButton::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::CancelButton - cancel button
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::CancelButton;

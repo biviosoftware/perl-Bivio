@@ -9,6 +9,10 @@ $_ = $Bivio::UI::FacadeComponent::VERSION;
 
 Bivio::UI::FacadeComponent - maps logical names to facade-specific values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::FacadeComponent;

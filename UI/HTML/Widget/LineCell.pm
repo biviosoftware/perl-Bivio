@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::LineCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 Bivio::UI::HTML::Widget::LineCell - renders a double line cell
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::LineCell;

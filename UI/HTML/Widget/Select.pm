@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Select::VERSION;
 
 Bivio::UI::HTML::Widget::Select - select from a list of several items
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Select;

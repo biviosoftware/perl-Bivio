@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Icon::VERSION;
 
 Bivio::UI::Icon - returns widget image values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Icon;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Link::VERSION;
 
 Bivio::UI::HTML::Widget::Link - renders a URI link
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Link;

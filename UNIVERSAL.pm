@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
 $Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UNIVERSAL::VERSION;
 
 =head1 NAME
 
@@ -133,7 +134,7 @@ C<UNIVERSAL>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

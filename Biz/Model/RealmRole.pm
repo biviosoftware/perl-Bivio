@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::RealmRole::VERSION;
 
 Bivio::Biz::Model::RealmRole - manipulate realm_role_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::RealmRole;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Text::VERSION;
 
 Bivio::UI::HTML::Widget::Text - text and password form input fields
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Text;

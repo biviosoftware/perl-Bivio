@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::FormFieldError::VERSION;
 
 Bivio::UI::HTML::Widget::FormFieldError - an error message for a form field
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::FormFieldError;

@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::JavaScript::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 Bivio::UI::HTML::Widget::JavaScript - renders a JavaScript version flag
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::JavaScript;

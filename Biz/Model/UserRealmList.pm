@@ -8,6 +8,10 @@ $Bivio::Biz::Model::UserRealmList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /
 
 Bivio::Biz::Model::UserRealmList - a list of realms to which a user belongs
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::UserRealmList;

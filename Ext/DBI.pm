@@ -8,6 +8,10 @@ $Bivio::Ext::DBI::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Ext::DBI - configuration wrapper around DBI
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Ext::DBI;

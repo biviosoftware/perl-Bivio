@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::Club::VERSION;
 
 Bivio::Biz::Model::Club - interface to club_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::Club;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Page::VERSION;
 
 Bivio::UI::HTML::Widget::Page - renders an HTML page
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Page;

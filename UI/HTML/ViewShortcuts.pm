@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::ViewShortcuts::VERSION;
 
 Bivio::UI::HTML::ViewShortcuts - html helper routines
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ViewShortcuts

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::FacadeChildType::VERSION;
 
 Bivio::UI::FacadeChildType - list of facade children supported
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::FacadeChildType;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Search::VERSION;
 
 Bivio::UI::HTML::Widget::Search - search field
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Search;

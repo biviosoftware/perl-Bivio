@@ -8,6 +8,10 @@ $Bivio::Biz::Accounting::Ratio::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+
 
 Bivio::Biz::Accounting::Ratio - safe ratio multiplication
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Accounting::Ratio;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::Grid::VERSION;
 
 Bivio::UI::HTML::Widget::Grid - lays out widgets in a grid (html table)
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Grid;

@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::ListQuery::VERSION;
 
 Bivio::SQL::ListQuery - internal representation of an SQL query
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::ListQuery;

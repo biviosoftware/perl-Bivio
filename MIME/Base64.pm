@@ -9,6 +9,10 @@ $_ = $Bivio::MIME::Base64::VERSION;
 
 Bivio::MIME::Base64 - implements modified base64 operations
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::MIME::Base64;

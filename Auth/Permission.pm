@@ -9,6 +9,10 @@ $_ = $Bivio::Auth::Permission::VERSION;
 
 Bivio::Auth::Permission - used to define task access requirements
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Permission;

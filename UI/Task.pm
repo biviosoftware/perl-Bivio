@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Task::VERSION;
 
 Bivio::UI::Task - provides URIs for tasks
 n
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Task;

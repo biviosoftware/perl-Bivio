@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::TextArea::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 Bivio::UI::HTML::Widget::TextArea - large text input field
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::TextArea;

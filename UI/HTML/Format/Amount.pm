@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Format::Amount::VERSION;
 
 Bivio::UI::HTML::Format::Amount - formats numeric values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format::Amount;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Text::VERSION;
 
 Bivio::UI::Text - tagged text of a facade
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Text;

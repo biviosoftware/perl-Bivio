@@ -9,6 +9,10 @@ $_ = $Bivio::UI::ViewShortcutsBase::VERSION;
 
 Bivio::UI::ViewShortcutsBase - site specific helper methods for templates and views
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::ViewShortcutsBase;

@@ -8,6 +8,10 @@ $Bivio::Auth::PermissionSet::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g)
 
 Bivio::Auth::PermissionSet - permission set for tasks
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::PermissionSet;

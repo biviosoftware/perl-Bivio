@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Format::DateTime::VERSION;
 
 Bivio::UI::HTML::Format::DateTime - transforms a DateTime to date/time string
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format::DateTime;

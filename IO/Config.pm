@@ -9,6 +9,10 @@ $_ = $Bivio::IO::Config::VERSION;
 
 Bivio::IO::Config - simple configuration using perl syntax
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::Config;

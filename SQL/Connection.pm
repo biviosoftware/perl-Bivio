@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::Connection::VERSION;
 
 Bivio::SQL::Connection - a database connection manager
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::Connection;

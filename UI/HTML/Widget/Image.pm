@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::Image::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d
 
 Bivio::UI::HTML::Widget::Image - renders an in-line image
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Image;

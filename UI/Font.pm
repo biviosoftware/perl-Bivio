@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Font::VERSION;
 
 Bivio::UI::Font - named fonts
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Font;
@@ -150,7 +154,7 @@ See
 L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
 for description of last argument.
 
-=head3 REQUEST ATTRIBUTES
+=head2 REQUEST ATTRIBUTES
 
 =over 4
 

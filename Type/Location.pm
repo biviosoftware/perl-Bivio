@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Location::VERSION;
 
 Bivio::Type::Location - identifies a physical location of address, phone, email
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Location;

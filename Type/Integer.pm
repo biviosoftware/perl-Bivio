@@ -8,6 +8,10 @@ $Bivio::Type::Integer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::Integer - superclass of all numerically manipulable integer types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Integer;

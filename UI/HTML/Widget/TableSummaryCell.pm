@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::TableSummaryCell::VERSION;
 
 Bivio::UI::HTML::Widget::TableSummaryCell - row summary cell for a table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::TableSummaryCell;

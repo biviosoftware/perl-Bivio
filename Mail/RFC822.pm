@@ -8,6 +8,10 @@ $Bivio::Mail::RFC822::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Mail::RFC822 - Defines the proper syntax for mail message headers
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Mail::RFC822;

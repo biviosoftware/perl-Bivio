@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::Email::VERSION;
 
 Bivio::Biz::Model::Email - interface to email_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::Email;

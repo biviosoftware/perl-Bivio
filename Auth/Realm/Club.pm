@@ -8,6 +8,10 @@ $Bivio::Auth::Realm::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Auth::Realm::Club - defines the realm owned by a particular club
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Realm::Club;

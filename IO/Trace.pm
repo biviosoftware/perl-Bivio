@@ -8,6 +8,10 @@ $Bivio::IO::Trace::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::IO::Trace - statement level trace management
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::Trace;

@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::Title::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d
 
 Bivio::UI::HTML::Widget::Title - renders title from subtopic, topic, and realm
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Title;

@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::Support::VERSION;
 
 Bivio::SQL::Support - common interface to Support and ListSupport
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::Support;

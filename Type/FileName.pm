@@ -8,6 +8,10 @@ $Bivio::Type::FileName::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::FileName - makes sure name does not contain certain special chars
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::FileName;

@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::AmountCell::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 Bivio::UI::HTML::Widget::AmountCell - formats a cell with a number
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::AmountCell;

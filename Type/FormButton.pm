@@ -8,6 +8,10 @@ $Bivio::Type::FormButton::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::FormButton - a form button type
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::FormButton;

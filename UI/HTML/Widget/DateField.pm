@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::DateField::VERSION;
 
 Bivio::UI::HTML::Widget::DateField - a date field for forms
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::DateField;

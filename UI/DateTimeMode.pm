@@ -9,6 +9,10 @@ $_ = $Bivio::UI::DateTimeMode::VERSION;
 
 Bivio::UI::DateTimeMode - list of display modes for date times
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::DateTimeMode;

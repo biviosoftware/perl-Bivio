@@ -8,6 +8,10 @@ $Bivio::UI::Widget::Director::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 Bivio::UI::Widget::Director - directs rendering to one widget of a set
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::Director;

@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Date::VERSION;
 
 Bivio::Type::Date - describes the type date without a clock component
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Date;

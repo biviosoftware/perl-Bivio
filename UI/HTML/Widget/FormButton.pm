@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::FormButton::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 Bivio::UI::HTML::Widget::FormButton - a dynamic submit button
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::FormButton;

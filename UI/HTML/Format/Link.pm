@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Format::Link::VERSION;
 
 Bivio::UI::HTML::Format::Link - formats an href adding a goto, if necessary
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format::Link;

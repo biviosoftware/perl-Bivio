@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::Reply::VERSION;
 
 Bivio::Agent::Reply - a user agent reply
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     my($req) = ...;

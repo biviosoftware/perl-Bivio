@@ -9,6 +9,10 @@ $_ = $Bivio::Type::UserAgent::VERSION;
 
 Bivio::Type::UserAgent - defines type of the user agent for a request
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::UserAgent;

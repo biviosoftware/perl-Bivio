@@ -8,6 +8,10 @@ $Bivio::Ext::ApacheConstants::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 Bivio::Ext::ApacheConstants - defines apache constants simply
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Ext::ApacheConstants;

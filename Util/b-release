@@ -7,6 +7,10 @@ use strict;
 
 b-release - calls Bivio::Util::Release
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
 b-release [options] command [args...]

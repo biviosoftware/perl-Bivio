@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::FormErrors::VERSION;
 
 Bivio::UI::HTML::FormErrors - maps form, field, and TypeError to strings
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::FormErrors;

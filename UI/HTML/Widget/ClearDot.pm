@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::ClearDot::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 Bivio::UI::HTML::Widget::ClearDot - renders an in-line ClearDot
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::ClearDot;

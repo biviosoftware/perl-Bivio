@@ -9,6 +9,10 @@ $_ = $Bivio::Type::DateTime::VERSION;
 
 Bivio::Type::DateTime - base class for all date/time types and type in itself
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::DateTime;

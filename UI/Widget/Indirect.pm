@@ -8,6 +8,10 @@ $Bivio::UI::Widget::Indirect::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 Bivio::UI::Widget::Indirect - renders an arbitrary widget dynamically
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::Indirect;

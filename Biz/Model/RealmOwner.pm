@@ -11,6 +11,10 @@ $_ = $Bivio::Biz::Model::RealmOwner::VERSION;
 
 Bivio::Biz::Model::RealmOwner - interface to realm_owner_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::RealmOwner;

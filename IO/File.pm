@@ -9,6 +9,10 @@ $_ = $Bivio::IO::File::VERSION;
 
 Bivio::IO::File - file utilities
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::File;

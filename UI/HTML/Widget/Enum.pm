@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::Enum::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+
 
 Bivio::UI::HTML::Widget::Enum - renders an enum as a string
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Enum;

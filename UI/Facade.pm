@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Facade::VERSION;
 
 Bivio::UI::Facade - determines the outward representation of a set of components
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Facade;

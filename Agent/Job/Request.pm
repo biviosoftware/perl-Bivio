@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::Job::Request::VERSION;
 
 Bivio::Agent::Job::Request - Bivio::Agent::Request wrapper for jobs
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::Job::Request;

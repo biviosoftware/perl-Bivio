@@ -8,6 +8,10 @@ $Bivio::Auth::RoleSet::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Auth::RoleSet - role set for configuration forms
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::RoleSet;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Color::VERSION;
 
 Bivio::UI::Color - named colors
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Color;

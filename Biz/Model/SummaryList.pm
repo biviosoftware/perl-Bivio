@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::SummaryList::VERSION;
 
 Bivio::Biz::Model::SummaryList - a list model summary
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::SummaryList;

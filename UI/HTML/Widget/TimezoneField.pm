@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::TimezoneField::VERSION = sprintf('%d.%02d', q$Revision
 
 Bivio::UI::HTML::Widget::TimezoneField - hidden field which computes Timezone
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::TimezoneField;

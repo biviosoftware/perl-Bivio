@@ -9,6 +9,10 @@ $_ = $Bivio::UI::WidgetValueSource::VERSION;
 
 Bivio::UI::WidgetValueSource - defines get_widget_value interface
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::WidgetValueSource;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::WidgetFactory::VERSION;
 
 Bivio::UI::HTML::WidgetFactory - creates widgets for model fields
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::WidgetFactory;

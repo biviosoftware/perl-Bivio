@@ -10,6 +10,10 @@ $_ = $Bivio::Agent::Dispatcher::VERSION;
 
 Bivio::Agent::Dispatcher - HTTP and email dispatcher
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::Dispatcher;

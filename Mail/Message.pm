@@ -8,6 +8,10 @@ $Bivio::Mail::Message::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Mail::Message - handle a mail message
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Mail::Message;

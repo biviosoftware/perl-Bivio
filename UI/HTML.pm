@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::VERSION;
 
 Bivio::UI::HTML - named html components
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML;

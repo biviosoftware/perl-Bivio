@@ -9,6 +9,10 @@ $_ = $Bivio::Type::TextArea::VERSION;
 
 Bivio::Type::TextArea - very long version of Text used for HTML areas
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::TextArea;

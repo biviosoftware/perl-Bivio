@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 Bivio::UI::HTML::Widget::DateTime - prints dates/times in html
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::DateTime;

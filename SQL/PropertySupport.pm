@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::PropertySupport::VERSION;
 
 Bivio::SQL::PropertySupport - sql support for PropertyModels
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::PropertySupport;

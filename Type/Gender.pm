@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Gender::VERSION;
 
 Bivio::Type::Gender - defines male, female, and unknown genders
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Gender;

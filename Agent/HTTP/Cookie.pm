@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::HTTP::Cookie::VERSION;
 
 Bivio::Agent::HTTP::Cookie - manage HTTP cookies
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::HTTP::Cookie;

@@ -309,14 +309,14 @@ sub get_by_id {
 =head2 static handle_die(Bivio::Die die)
 
 Something happened while executing a request, so we have to rollback
-and discard the mail queue unless is a <tt>CLIENT_REDIRECT_TASK</tt>
-or <tt>SERVER_REDIRECT_TASK</tt>.
+and discard the mail queue unless is a C<CLIENT_REDIRECT_TASK>
+or C<SERVER_REDIRECT_TASK>.
 
 If I<proto> is a reference which can map the I<die> code in
 one of its I<die_actions> (cannot be redirect code) if the
 request is from HTTP.
 
-The die code is converted to <tt>SERVER_REDIRECT_TASK</tt>
+The die code is converted to C<SERVER_REDIRECT_TASK>
 with the mapped die_action set as its I<task_id> attribute.
 
 If no specific I<die_action> is found, the C<DEFAULT_ERROR_REDIRECT_>

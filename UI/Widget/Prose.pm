@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Widget::Prose::VERSION;
 
 Bivio::UI::Widget::Prose - renders text embedded with widgets and values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::Prose;

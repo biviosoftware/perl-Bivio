@@ -9,6 +9,10 @@ $_ = $Bivio::UI::ViewLanguage::VERSION;
 
 Bivio::UI::ViewLanguage - defines and compiles the view language
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::ViewLanguage;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Widget::If::VERSION;
 
 Bivio::UI::Widget::If - simple binary conditional
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::If;

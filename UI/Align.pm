@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Align::VERSION;
 
 Bivio::UI::Align - html table alignments (north, center, bottom, etc.)
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Align;

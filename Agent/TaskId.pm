@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::TaskId::VERSION;
 
 Bivio::Agent::TaskId - enum of identifying all Societas tasks
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::TaskId;

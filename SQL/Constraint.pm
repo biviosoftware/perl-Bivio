@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::Constraint::VERSION;
 
 Bivio::SQL::Constraint - enum of contraints on SQL fields
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::Constraint;

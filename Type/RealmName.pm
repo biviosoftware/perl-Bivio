@@ -11,7 +11,7 @@ Bivio::Type::RealmName - realm owner name, e.g. club or user name
 
 =head1 RELEASE SCOPE
 
-bOP
+Societas -- needs to be delegated before can be supported by bOP
 
 =head1 SYNOPSIS
 

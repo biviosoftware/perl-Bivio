@@ -8,6 +8,10 @@ $Bivio::Agent::HTTP::Query::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Agent::HTTP::Query - formats query strings
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::HTTP::Query;

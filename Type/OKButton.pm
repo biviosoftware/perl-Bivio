@@ -8,6 +8,10 @@ $Bivio::Type::OKButton::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::OKButton - OK button
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::OKButton;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Widget::Join::VERSION;
 
 Bivio::UI::Widget::Join - renders a sequence of widgets and strings
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::Join;

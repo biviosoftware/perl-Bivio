@@ -9,6 +9,10 @@ $_ = $Bivio::Type::DateInterval::VERSION;
 
 Bivio::Type::DateInterval - various date periods
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::DateInterval;

@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::ImageFormButton::VERSION = sprintf('%d.%02d', q$Revisi
 
 Bivio::UI::HTML::Widget::ImageFormButton - renders an input type=image
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::ImageFormButton;

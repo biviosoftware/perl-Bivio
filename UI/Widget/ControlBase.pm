@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Widget::ControlBase::VERSION;
 
 Bivio::UI::Widget::ControlBase - controls widget rendering with a control
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::ControlBase;

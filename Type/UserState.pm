@@ -9,6 +9,10 @@ $_ = $Bivio::Type::UserState::VERSION;
 
 Bivio::Type::UserState - logged in, registered, just visitor
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::UserState;

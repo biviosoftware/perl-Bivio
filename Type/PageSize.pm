@@ -8,6 +8,10 @@ $Bivio::Type::PageSize::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::PageSize - number of lines on a page for ListModel queries
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::PageSize;

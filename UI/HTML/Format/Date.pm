@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Format::Date::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+
 
 Bivio::UI::HTML::Format::Date - transforms a unix time to date/time string
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format::Date;

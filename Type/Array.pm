@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Array::VERSION;
 
 Bivio::Type::Array - array utilities, not a true type
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Array;

@@ -9,6 +9,10 @@ $_ = $Bivio::Auth::RealmType::VERSION;
 
 Bivio::Auth::RealmType - enum of authentication realm types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::RealmType;

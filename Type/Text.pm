@@ -8,6 +8,10 @@ $Bivio::Type::Text::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::Text - holds the largest indexable text string
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Text;

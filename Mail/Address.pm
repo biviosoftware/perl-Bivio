@@ -8,6 +8,10 @@ $Bivio::Mail::Address::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Mail::Address - parses e-mail addresses according to RFC 822
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Mail::Address;

@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::FormSupport::VERSION;
 
 Bivio::SQL::FormSupport - sql support for ListModels
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::FormSupport;

@@ -9,6 +9,10 @@ $_ = $Bivio::Auth::Role::VERSION;
 
 Bivio::Auth::Role - authorized roles enum
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Role;

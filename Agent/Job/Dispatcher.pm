@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::Job::Dispatcher::VERSION;
 
 Bivio::Agent::Job::Dispatcher - run tasks
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::Job::Dispatcher;

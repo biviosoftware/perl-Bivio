@@ -11,6 +11,10 @@ $_ = $Bivio::Biz::Model::User::VERSION;
 
 Bivio::Biz::Model::User - interface to user_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::User;

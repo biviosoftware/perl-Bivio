@@ -8,6 +8,10 @@ $Bivio::Auth::Realm::General::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g
 
 Bivio::Auth::Realm::General - defines the realm without an owner
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Realm::General;

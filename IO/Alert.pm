@@ -9,6 +9,10 @@ $_ = $Bivio::IO::Alert::VERSION;
 
 Bivio::IO::Alert - safely formatted error messages and warnings
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::Alert;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::LocalFileType::VERSION;
 
 Bivio::UI::LocalFileType - identifies local file trees
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::LocalFileType;

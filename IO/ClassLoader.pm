@@ -9,6 +9,10 @@ $_ = $Bivio::IO::ClassLoader::VERSION;
 
 Bivio::IO::ClassLoader - implements dynamic class loading
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::ClassLoader;

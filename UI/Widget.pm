@@ -9,6 +9,10 @@ $_ = $Bivio::UI::Widget::VERSION;
 
 Bivio::UI::Widget - a renderable object
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget;

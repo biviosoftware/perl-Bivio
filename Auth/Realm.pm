@@ -9,6 +9,10 @@ $_ = $Bivio::Auth::Realm::VERSION;
 
 Bivio::Auth::Realm - abstract class defining access to resources
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Auth::Realm;

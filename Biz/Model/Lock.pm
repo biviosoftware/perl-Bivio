@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::Lock::VERSION;
 
 Bivio::Biz::Model::Lock - mutual exclusion for an area of a realm
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     Bivio::Biz::Model::Lock->execute_accounting_import;

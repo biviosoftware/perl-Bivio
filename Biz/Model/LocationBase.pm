@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::LocationBase::VERSION;
 
 Bivio::Biz::Model::LocationBase - base class for Address, Email, etc.
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::LocationBase;

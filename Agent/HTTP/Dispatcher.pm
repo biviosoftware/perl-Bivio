@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::HTTP::Dispatcher::VERSION;
 
 Bivio::Agent::HTTP::Dispatcher - dispatches Apache httpd requests
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
 

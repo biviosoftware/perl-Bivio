@@ -8,6 +8,10 @@ $Bivio::Agent::HTTP::Form::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Agent::HTTP::Form - parses incoming form data
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::HTTP::Form;

@@ -9,6 +9,10 @@ $_ = $Bivio::UI::View::VERSION;
 
 Bivio::UI::View - a language for creating hierarchies of UI widgets
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::View;
@@ -100,7 +104,7 @@ in your configuration file and has a name and a path.  You can have as many
 class maps as you like in the configuration.  The view or its parents need only
 specify the map's name.
 
-=head3 Values
+=head2 Values
 
 View instances present values to users.  The values come from many sources.
 Some are constants in the view, e.g. 'Hello' and ' world' in the first example.

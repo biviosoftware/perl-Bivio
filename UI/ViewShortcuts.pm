@@ -9,6 +9,10 @@ $_ = $Bivio::UI::ViewShortcuts::VERSION;
 
 Bivio::UI::ViewShortcuts - common helper routines for Views and Widgets
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::ViewShortcuts;

@@ -8,6 +8,10 @@ $Bivio::MIME::Type::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::MIME::Type - maps mime types to file extensions
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::MIME::Type;
