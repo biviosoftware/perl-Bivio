@@ -271,10 +271,28 @@ sub get_date_time {
         _trace($date, ' -> ', $date_time) if $_TRACE;
         return $date_time;
     } else {
-	Bivio::IO::Alert->warn("no Date or Received field avalable");
-	_trace('no Date or Received field avalable') if $_TRACE;
+	Bivio::IO::Alert->warn('No Date or Received field found');
 	return undef;
     }
+}
+
+=for html <a name="get_field"></a>
+
+=head2 get_field(string name) : string
+
+Returns the value for field "name", or undef if field does not exist.
+Unfolds the value.
+
+=cut
+
+sub get_field {
+    my($self, $name) = @_;
+    my($value) = $self->get_head->get($name);
+    return undef unless defined($value);
+    chomp($value);
+    # Return unfolded value
+    $value =~ s/\r?\n[ \t]/ /gs;
+    return $value;
 }
 
 =for html <a name="get_from"></a>
@@ -300,24 +318,6 @@ sub get_from {
 	Bivio::IO::Alert->warn('Missing From: header');
         return wantarray ? (undef, undef) : undef;
     }
-}
-
-=for html <a name="get_field"></a>
-
-=head2 get_field(string name) : string
-
-Returns the value for field "name", or undef if field does not exist
-
-=cut
-
-sub get_field {
-    my($self, $name) = @_;
-    my($value) = $self->get_head->get($name);
-    return undef unless defined($value);
-    chomp($value);
-    # Return unfolded value
-    $value =~ s/\r?\n[ \t]/ /gs;
-    return $value;
 }
 
 =for html <a name="get_recipients"></a>
@@ -626,21 +626,26 @@ sub _parse_header {
 #
 sub _parse_date {
     local($_) = @_;
+
     my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
     my($mday, $mon, $year, $hour, $min, $sec, $tz) = /$DATE_TIME/os;
-    defined($mday)
-            || (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef);
+    (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef)
+            unless defined($mday);
     $mon = uc($mon);
     if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
         $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
     }
     else {
-        Bivio::IO::Alert->warn('month "', $mon, '" unknown in: ', $_);
+        Bivio::IO::Alert->warn('month "', $mon, '" unknown in date: ', $_);
         $mon = 0;
     }
+
     my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
 
+    # Make upper-case and remove quotes
     $tz = uc($tz);
+    $tz =~ s/"//g;
+
     if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
         $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
     }
