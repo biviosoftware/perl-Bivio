@@ -90,6 +90,10 @@ I<event_handler> will be rendered before this field.
 
 Name of the form field.
 
+=item first_string_index : int [1]
+
+Index of first string item.
+
 =item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
@@ -346,7 +350,7 @@ sub _load_items {
     # DOES NOT RETURN
 }
 
-# _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum enum)
+# _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum justenum)
 #
 # Loads items from the enum choices attribute. Enum values are static
 # so this is called during initialize.
@@ -445,7 +449,7 @@ sub _load_items_from_list {
 #
 sub _load_items_from_string_array {
     my($self, $choices) = @_;
-    my($i) = 1;
+    my($i) = $self->get_or_default('first_string_index', 1);
     return [map {($i++, Bivio::HTML->escape($_))} @{$choices->get('value')}];
 }
 
