@@ -589,8 +589,8 @@ sub _eval_custom {
 	return undef;
     }
     if ($which eq 'compute_params' && defined($res)
-	&& (!ref($res) || ref($res) ne 'ARRAY'
-	    || !UNIVERSAL::isa($res, 'Bivio::DieCode'))) {
+	&& !(ref($res) || ref($res) eq 'ARRAY'
+	    || UNIVERSAL::isa($res, 'Bivio::DieCode'))) {
 	$$err = 'custom compute_params did not return an array_ref: '
 	    ._summarize($res);
 	return undef;
