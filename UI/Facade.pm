@@ -570,6 +570,7 @@ Returns the facade.
 sub setup_request {
     my($proto, $uri, $req) = @_;
     my($self);
+    _trace('uri: ', $uri) if $_TRACE;
     if (defined($uri)) {
 	$uri = lc($uri);
 	$self = $_URI_MAP{$uri};
