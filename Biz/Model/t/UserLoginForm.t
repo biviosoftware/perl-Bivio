@@ -37,8 +37,9 @@ my($_check_return) = sub {
     Bivio::Die->die('bad is_super_user=', $_req->is_super_user)
 	if $_req->is_super_user
 	    xor ($expect->[0] || '') eq 'root';
-    return [$_req->get('auth_user')
-	&& $_req->get('auth_user')->get('name')];
+    $case->actual_return([$_req->get('auth_user')
+	&& $_req->get('auth_user')->get('name')]);
+    return $expect;
 };
 Bivio::Test->new({
     compute_params => $_compute_params,
