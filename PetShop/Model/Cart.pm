@@ -58,7 +58,7 @@ sub get_total {
     my($self) = @_;
 
     my($amount) = 0;
-    my($list) = Bivio::Biz::Model->new($self->get_request, 'CartItemList')
+    my($list) = $self->new($self->get_request, 'CartItemList')
 	    ->load_all;
     while ($list->next_row) {
 	$amount = Bivio::PetShop::Type::Price->add($amount,
@@ -67,43 +67,19 @@ sub get_total {
     return $amount;
 }
 
+
 =for html <a name="handle_cookie_in"></a>
 
 =head2 static handle_cookie_in(Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
 
-Checks for the 'cart_id' field. Creates a new cart if the cart doesn't
-exist, or already has an order associated with it.
+Always set a value in the cookie, so the cookie can be validated when
+the cart_id needs to be stored later.
 
 =cut
 
 sub handle_cookie_in {
     my($proto, $cookie, $req) = @_;
-    my($cart_id) = $cookie->unsafe_get('cart_id');
-
-    # check if the cart exists
-    if (defined($cart_id)
-	    && $proto->new($req)->unsafe_load(cart_id => $cart_id)) {
-
-	# don't use the cart_id if an order is associated with it
-	if (Bivio::Biz::Model->new($req, 'Order')
-		->unauth_load(cart_id => $cookie->get('cart_id'))) {
-	    $cart_id = undef;
-	}
-    }
-    else {
-	# cart doesn't exist
-	$cart_id = undef;
-    }
-
-    # create a new one if necessary
-    unless (defined($cart_id)) {
-	$cart_id = $proto->new($req)->create({
-	    creation_date => Bivio::Type::Date->now,
-	})->get('cart_id');
-    }
-
-    $cookie->put(cart_id => $cart_id);
-    $req->put_durable(cart_id => $cart_id);
+    $cookie->put(value => 1);
     return;
 }
 
@@ -124,6 +100,54 @@ sub internal_initialize {
 	    creation_date => ['Date', 'NOT_NULL'],
 	},
     };
+}
+
+=for html <a name="load_from_cookie"></a>
+
+=head2 load_from_cookie() : self
+
+Checks for the 'cart_id' field. Creates a new cart if the cart doesn't
+exist, or already has an order associated with it. Stores the cart_id
+in the cookie.
+
+Throws a MISSING_COOKIES exception if the browser does not have cookies
+enabled.
+
+=cut
+
+sub load_from_cookie {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+    # ensure that cookies are enabled in the browser
+    Bivio::Agent::HTTP::Cookie->assert_is_ok($req);
+
+    my($cookie) = $req->get('cookie');
+    my($cart_id) = $cookie->unsafe_get('cart_id');
+
+    # check if the cart exists
+    if (defined($cart_id) && $self->unsafe_load(cart_id => $cart_id)) {
+
+	# don't use the cart_id if an order is associated with it
+	if ($self->new($req, 'Order')
+		->unauth_load(cart_id => $cookie->get('cart_id'))) {
+	    $cart_id = undef;
+	}
+    }
+    else {
+	# cart doesn't exist
+	$cart_id = undef;
+    }
+
+    # create a new one if necessary
+    unless (defined($cart_id)) {
+	$cart_id = $self->create({
+	    creation_date => Bivio::Type::Date->now,
+	})->get('cart_id');
+    }
+
+    $cookie->put(cart_id => $cart_id);
+    return $self;
 }
 
 #=PRIVATE METHODS
