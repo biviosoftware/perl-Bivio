@@ -280,6 +280,18 @@ sub get_list_model {
     return shift->{$_PACKAGE}->{list_model};
 }
 
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the result set size for I<list_model>.
+
+=cut
+
+sub get_result_set_size {
+    return shift->get_list_model->get_result_set_size;
+}
+
 =for html <a name="internal_clear_error"></a>
 
 =head2 internal_clear_error(string property)
