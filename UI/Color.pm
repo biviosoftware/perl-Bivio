@@ -50,6 +50,9 @@ __PACKAGE__->compile(
     HEADING_BG => [
 	0xFFFFBB,  # E0E0FF,
     ],
+    USER_HEADING_BG => [
+	0x99CCCC,
+    ],
 #    TABLE_STRIPE_BG => [
 #	0xFFE8E8, # 0x99CCCC,
 #    ],
@@ -62,6 +65,7 @@ __PACKAGE__->compile(
     TEXT_TAB_BG => [
 	0x006666, # 0x999999,
 	'page_vlink',
+	'USER_NAME',
     ],
     PAGE_LINK => [
 	0x000099,
