@@ -111,35 +111,35 @@ sub parse {
     my($fields) = $self->{$_PACKAGE};
     my $msg = $fields->{message};
     if(!$msg){
-	&_trace("Mail incoming is undefined!") if $_TRACE;
+	_trace("Mail incoming is undefined!") if $_TRACE;
     }
     my $file = $msg->get_rfc822_io(); #creates a file handle from the message
     my $entity  = $fields->{parser}->read($file);
     my $keywords = $fields->{keywords};
     my $filename = $fields->{filename};
     #we know the first part is the main mail message. We want
-    #to store keywords for subject, to, date, and from fields
+    #to store keywords For Subject, To, Date, and From fields
     _parse_keywords($msg->get_subject(), $keywords);
     _parse_keywords($msg->get_reply_to(), $keywords);
     _parse_keywords($msg->get_dttm(), $keywords);
-    # now extract all the mime attachments
-    &_trace('extracting MIME attachments for mail message. File: ', $filename) if $_TRACE;
+    # now extract all the MIME attachments
+    _trace('extracting MIME attachments for mail message. File: ', $filename) if $_TRACE;
     # the second field is the file "extension". For the main message part, this should
     # be undef since there is no _0, _1, _0_1 suffix
     _extract_mime($entity, $filename, undef, $keywords);
 
-    &_trace('getting all the keywords we found...') if $_TRACE;
+    _trace('getting all the keywords we found...') if $_TRACE;
     my $k = $fields->{keywords};
-    my(@keys) = keys %$k;
-    print(STDERR "KEYWORDS-------------------------------");
-    while(@keys){
-	print(STDERR "\n\"" . pop(@keys) . "\"");
-    }
-    print(STDERR "\n");
-    &_trace('Writing the keywords to the file') if $_TRACE;
+#   my(@keys) = keys %$k;
+#   print(STDERR "KEYWORDS-------------------------------");
+#   while(@keys){
+#	print(STDERR "\n\"" . pop(@keys) . "\"");
+#   }
+#   print(STDERR "\n");
+#   _trace('Writing the keywords to the file') if $_TRACE;
     my $rslt;
     $_FILE_CLIENT->set_keywords($filename, $keywords, \$rslt) || die("set_keywords failed: \$body");
-    &_trace('done with the keyword storage.') if $_TRACE;
+    _trace('done with the keyword storage.') if $_TRACE;
     
     return;
 }
@@ -169,7 +169,7 @@ sub _extract_mime {
 
     my($numparts) = $entity->parts || 0;
     my($i) = 0;
-    &_trace('number of parts for this MIME part is ', $numparts) if $_TRACE;
+    _trace('number of parts for this MIME part is ', $numparts) if $_TRACE;
     if($numparts eq(0)){
 	return;
     }
@@ -178,7 +178,8 @@ sub _extract_mime {
 	my($subentity) = $entity->part($i);
 	my($head) = $subentity->head();
 	my($ctype) = $head->get('content-type');
-	if($ctype =~ /message\/rfc822/){
+	if($ctype =~ /message\/rfc822/){ #special case processing for nested MIMEs.
+#TODO We need to do the same thing for message/digest
 	    _trace('the MIME part is an rfc922 message. Sub parsing this...') if $_TRACE;
 	    my($bodyhandle) = $subentity->bodyhandle();
 	    my($io) = $bodyhandle->open('r');
@@ -225,9 +226,9 @@ sub _extract_mime_header {
 #TODO: use single file handle to avoid leaks
     my $file = IO::Scalar->new(\$s);
     my($head) = $entity->head;
-    &_trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
+    _trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
     $head->print($file);
-    &_trace('done writing mime_header');
+    _trace('done writing mime_header');
     return $s;
 }
 
@@ -257,7 +258,7 @@ sub _parse_keywords {
 sub _parse_mime {
     my($entity, $keywords) = @_;
     my($ctype) = lc($entity->head->get('content-type'));
-    &_trace('PARSE THE MIME: the mime type is ', $ctype) if $_TRACE;
+    _trace('PARSE THE MIME: the mime type is ', $ctype) if $_TRACE;
     if($ctype =~ /text\/plain/){ #then we want keywords from it
 	print(STDERR "message is text plain.\n");
 	my $body = _extract_mime_body_decoded($entity);
@@ -277,7 +278,7 @@ sub _parse_mime {
 # Called for each line of a MIME part that is text/plain.
 #
 sub _parse_msg_line {
-    &_trace("_parse_msg_line called.") if $_TRACE;
+    _trace("_parse_msg_line called.") if $_TRACE;
     my($line, $keywords) = @_;
     my($str) = $$line;
     if (!$$line){
@@ -317,15 +318,12 @@ sub _write_mime {
     #probably I should re-use a scalar ref or an IO handle for both of these.
     my $msghdr = _extract_mime_header($entity);
     if(!$msghdr){
-	die('the message header is undef');
+	die('the message header is undef in _write_mime.');
     }
     my $msgbody = _extract_mime_body_decoded($entity);
     if(!$$msgbody){
 	#this may not be an error at all. multipart/mixed might contain no body.
-	#However, I thought I would get the 'this is a multipart message in MIME
-	#format in the body. It seems to DISAPPEAR when the parser is done with it.
-	#shit.
-	&_trace('the message contains no body') if $_TRACE;
+	_trace('the message contains no body') if $_TRACE;
     }
     my $msg = $msghdr;
     if($$msgbody){$msg .= $$msgbody;}
