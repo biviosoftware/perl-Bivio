@@ -1019,7 +1019,6 @@ sub process {
 
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
-	_trace('values: ', $values);
 	$self->internal_pre_parse_columns;
 	$self->internal_put($values);
 	$fields->{literals} = {};
@@ -1341,7 +1340,8 @@ sub validate_not_negative {
     return unless defined($value);
 
     $self->internal_put_error($field, Bivio::TypeError::NOT_NEGATIVE())
-	    unless $value >= 0;    return;
+	    unless $value >= 0;
+    return;
 }
 
 =for html <a name="validate_not_null"></a>
