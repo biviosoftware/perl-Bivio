@@ -39,8 +39,6 @@ use Bivio::Agent::TaskId;
 use Bivio::Biz::QueryType;
 use Bivio::PetShop::Type::Category;
 use Bivio::UI::HTML::Widget::FormField;
-use Bivio::UI::HTML::Widget::Grid;
-use Bivio::UI::Widget::Join;
 
 #=VARIABLES
 
@@ -63,34 +61,26 @@ sub vs_address_fields {
 
     # state/zip are shown on one line
     my($state_zip) = [
-	Bivio::UI::HTML::Widget::FormField->new(
-		$address.'.state')->get_label_and_field,
-	$proto->vs_space(3),
-	Bivio::UI::HTML::Widget::FormField->new(
-		$address.'.zip')->get_label_and_field,
+	$proto->vs_form_field($address.'.state'),
+	$proto->vs_blank_cell(3),
+	$proto->vs_form_field($address.'.zip'),
     ];
     $state_zip = [$state_zip->[0],
-	Bivio::UI::HTML::Widget::Grid->new({
-	    values => [
-		[(@$state_zip)[1..4]],
-	    ],
-	}),
+	$proto->vs_new('Grid', [
+	    [(@$state_zip)[1..4]],
+	]),
     ];
 
     return (
-	    [Bivio::UI::HTML::Widget::FormField->new(
-		    $address.'.addr1')->get_label_and_field],
-	    [$proto->vs_space, Bivio::UI::HTML::Widget::FormField->new(
-		    $address.'.addr2')],
-	    [Bivio::UI::HTML::Widget::FormField->new(
-		    $address.'.city')->get_label_and_field],
-	    $state_zip,
-	    [Bivio::UI::HTML::Widget::FormField->new(
-		    $address.'.country')->get_label_and_field],
-	    [Bivio::UI::HTML::Widget::FormField->new(
-		    $form_name.'.EntityPhone'.$address_suffix.'.phone')
-		    ->get_label_and_field],
-	   );
+	[$proto->vs_form_field($address.'.addr1')],
+	[$proto->vs_blank_cell, Bivio::UI::HTML::Widget::FormField->new(
+	    $address.'.addr2')],
+	[$proto->vs_form_field($address.'.city')],
+	$state_zip,
+	[$proto->vs_form_field($address.'.country')],
+	[$proto->vs_form_field(
+	    $form_name.'.EntityPhone'.$address_suffix.'.phone')],
+       );
 }
 
 =for html <a name="vs_paging_table"></a>
@@ -139,24 +129,6 @@ sub vs_product_uri {
 	    Bivio::PetShop::Type::Category->unsafe_from_any($category)
 	    ->get_name(),
 	}, undef, undef];
-}
-
-=for html <a name="vs_space"></a>
-
-=head2 vs_space() : Bivio::UI::Widget
-
-Returns a widget which renders a single &nbsp; value.
-
-=head2 vs_space(int count) : Bivio::UI::Widget
-
-Returns a widget which renders a series of &nbsp; values.
-
-=cut
-
-sub vs_space {
-    my($self, $count) = @_;
-    $count ||= 1;
-    return Bivio::UI::Widget::Join->new(['&nbsp;' x $count]);
 }
 
 #=PRIVATE METHODS
