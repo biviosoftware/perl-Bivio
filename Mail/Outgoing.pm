@@ -298,7 +298,7 @@ sub set_header {
 
 =for html <a name="set_headers_for_list_send"></a>
 
-=head2 set_headers_for_list_send(string list_name, string list_title, boolean reply_to_list, boolean list_in_subject)
+=head2 set_headers_for_list_send(string list_name, string list_title, boolean reply_to_list, boolean list_in_subject, Bivio::Agent::Request req)
 
 Removes the headers that are either to be replaced or are uninteresting on a
 resend.  This is used for mailing list resends, not simple alias forwarding.
@@ -314,7 +314,7 @@ by MTA (sendmail).
 =cut
 
 sub set_headers_for_list_send {
-    my($self, $list_name, $list_title, $reply_to_list, $list_in_subject) = @_;
+    my($self, $list_name, $list_title, $reply_to_list, $list_in_subject, $req) = @_;
     my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
 #TODO: Being too restrictive on list_name syntax?
@@ -325,11 +325,13 @@ sub set_headers_for_list_send {
     foreach $name (@_REMOVE_FOR_LIST_RESEND) {
 	delete $headers->{$name};
     }
-    my($sender) = "$list_name-owner";
+    my($sender) = $req->format_email("$list_name-owner");
     $headers->{sender} = "Sender: $sender\n";
     $self->set_envelope_from($sender);
-    $reply_to_list &&
-            ($headers->{'reply-to'} = "Reply-To: \"$list_title\" <$list_name>\n");
+    $headers->{'reply-to'} = qq{Reply-To: "$list_title" <}
+	. $req->format_email($list_name)
+	. ">\n"
+	if $reply_to_list;
     # If there is no From:, add it now.
     $headers->{from} ||= "From: $sender\n";
     # Insert the list in the subject, if not already there
