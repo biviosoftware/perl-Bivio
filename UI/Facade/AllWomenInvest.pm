@@ -106,6 +106,7 @@ __PACKAGE__->new({
 	    $fc->group(home_alt_text => 'AllWomenInvest - '
 		    .'Unleashing the financial power of women');
 
+	    $fc->group(want_secure => 0);
 	    $fc->group(page_left_margin => 20);
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);

@@ -70,6 +70,7 @@ __PACKAGE__->new({
 	    $fc->group(site_name => 'eklubs');
 	    $fc->group(home_alt_text => 'eklubs home');
 
+	    $fc->group(want_secure => 0);
 	    $fc->group(page_left_margin => 20);
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);

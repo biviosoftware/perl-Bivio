@@ -37,8 +37,8 @@ use Bivio::UI::Facade::InvestmentExpo::LeftMenu;
 #=VARIABLES
 __PACKAGE__->new({
     clone => 'Prod',
-    is_production => 0,
-    uri => 'ollon',
+    is_production => 1,
+    uri => 'investmentexpo',
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($fc) = @_;
@@ -82,6 +82,7 @@ __PACKAGE__->new({
 	    $fc->group(site_name => 'Investment Expo 2000');
 	    $fc->group(home_alt_text => 'Investment Expo 2000');
 
+	    $fc->group(want_secure => 0);
 	    $fc->group(page_left_margin => 0);
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);

@@ -200,6 +200,7 @@ my($_SELF) = __PACKAGE__->new({
                     page_text
                     input_field
                     mailto
+                    link
             )],
 		   []);
 	    return;
@@ -218,6 +219,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(logo_icon => 'bivio');
 	    $fc->group(home_alt_text => 'bivio home');
 
+	    $fc->group(want_secure => 1);
 	    $fc->group(page_left_margin => 20);
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);

@@ -100,6 +100,7 @@ __PACKAGE__->new({
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
 
+	    $fc->group(want_secure => 0);
 	    $fc->group(page_left_margin => 0);
 	    $fc->group(table_default_align => 'left');
 	    $fc->group(scene_show_profile => 0);
