@@ -326,7 +326,7 @@ sub get_from {
     my($head) = $self->get_head;
     my($from) = $head->get('from') || $head->get('apparently-from');
     if (defined($from)) {
-        my($email, $name) = Bivio::Mail::Address::parse($from);
+        my($email, $name) = Bivio::Mail::Address->parse($from);
         _trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
     } else {
@@ -396,7 +396,7 @@ sub get_reply_to {
     my($self) = @_;
     my($reply_to) = $self->get_head->get('reply-to');
     if (defined($reply_to)) {
-        my($email, $name) = Bivio::Mail::Address::parse($reply_to);
+        my($email, $name) = Bivio::Mail::Address->parse($reply_to);
         _trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
     } else {

@@ -11,7 +11,6 @@ Bivio::Mail::Address - parses e-mail addresses according to RFC 822
 =head1 SYNOPSIS
 
     use Bivio::Mail::Address;
-    my($email, $name) = Bivio::Mail::Address->parse($addr);
 
 =cut
 
@@ -47,7 +46,7 @@ my($PHRASE) = Bivio::Mail::RFC822->PHRASE;
 
 =for html <a name="parse"></a>
 
-=head2 parse(string addr) : array
+=head2 static parse(string addr) : array
 
 822:
     For purposes of display, and when passing  such  struc-
@@ -96,7 +95,8 @@ could not be parse successfully.
 =cut
 
 sub parse {
-    local($_) = @_;
+    my(undef, $addr) = @_;
+    local($_) = $addr;
     s/^\s+//s;
     my($n, $a);
     # Cases are optimized by their statistical counts.

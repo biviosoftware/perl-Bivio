@@ -157,7 +157,7 @@ sub get_from {
 	$fields->{from_name} = undef;
 	return wantarray ? (undef, undef) : undef;
     }
-    ($fields->{from_email}, $fields->{from_name}) = Bivio::Mail::Address::parse($from);
+    ($fields->{from_email}, $fields->{from_name}) = Bivio::Mail::Address->parse($from);
     &_trace($from, ' -> (', $fields->{from_email}, ',',
 	   $fields->{from_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{from_email}, $fields->{from_name})
@@ -272,7 +272,7 @@ sub get_reply_to {
 	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{reply_to_email}, $fields->{reply_to_name})
-	    = Bivio::Mail::Address::parse($reply_to);
+	    = Bivio::Mail::Address->parse($reply_to);
     &_trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
 	   $fields->{reply_to_name}, ')') if $_TRACE;
     return wantarray ? ($fields->{reply_to_email}, $fields->{reply_to_name})
