@@ -44,7 +44,8 @@ Creates a new model with the specified class name.
 =cut
 
 sub new {
-    my($self, $name) = &Bivio::UNIVERSAL::new(@_);
+    my($proto, $name) = @_;
+    my($self) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
 	name => $name,
 	status => Bivio::Biz::Status->new()
