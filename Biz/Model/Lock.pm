@@ -38,12 +38,15 @@ process can't acquire the same lock twice.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::SQL::Connection;
 use Bivio::TypeError;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -65,20 +68,29 @@ task item.  Put this instance on the Task:
 
 sub acquire {
     my($self) = @_;
-    my($values) = {
-	realm_id => $self->get_request->get('auth_id'),
-    };
-
+    my($req) = $self->get_request;
+    $req->get(ref($self))->throw_die(
+	'EXISTS', {
+	    message => 'more than one lock on the request',
+	}) if $req->unsafe_get(ref($self));
+    my($values) = {realm_id => $req->get('auth_id')};
     # try to get the lock
     my($die) = Bivio::Die->catch(sub {$self->create($values)});
-    return unless $die;
-
-    # someone already has it or are we trying to acquire it again?
-    $self->throw_die('UPDATE_COLLISION', $values)
-	    if $die->get('code') == Bivio::TypeError::EXISTS();
-
-    # something else bad happened
-    $die->throw_die();
+    if ($die) {
+	# someone already has it or are we trying to acquire it again?
+	if ($die->get('code')->equals_by_name('DB_CONSTRAINT')) {
+	    my($a) = $die->unsafe_get('attrs');
+	    $self->throw_die('UPDATE_COLLISION', $values)
+		if ref($a) && ref($a->{type_error})
+		    && $a->{type_error}->equals_by_name('EXISTS');
+	}
+	# something else bad happened
+	$die->throw_die();
+	# DOES NOT RETURN
+    }
+    _trace($self) if $_TRACE;
+    $req->push_txn_resource($self);
+    return;
 }
 
 =for html <a name="execute"></a>
@@ -91,11 +103,7 @@ Acquires a lock on this realm.
 
 sub execute {
     my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    $req->get(ref($self))->die('EXISTS', 'more than one lock on the request')
-	    if $req->unsafe_get(ref($self));
-    $self->acquire();
-    $req->push_txn_resource($self);
+    $proto->new($req)->acquire;
     return;
 }
 
@@ -172,6 +180,7 @@ sub release {
     $self->throw_die('DIE', 'no locks on request') unless $req_lock;
     $self->throw_die('DIE', {message => 'too many locks on the same request',
 	request_lock => $req_lock}) unless $req_lock == $self;
+    _trace($self) if $_TRACE;
     $req->delete(ref($self));
 
     # If it can't release the lock and database is writable, blow up.
