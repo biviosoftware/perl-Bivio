@@ -186,7 +186,8 @@ sub get_column_name {
     my($column_aliases) = shift->get('columns_aliases');
     my($name) = shift;
     my($col) = $column_aliases->{$name};
-    Carp::croak("$name: no such column alias") unless $col;
+    Bivio::Die->die($name, ': no such column alias')
+        unless $col;
     return $col->{name};
 }
 
@@ -359,8 +360,10 @@ Also initializes I<as_string_fields>.
 
 sub init_common_attrs {
     my($proto, $attrs, $decl) = @_;
-    Carp::croak("version: not declared or invalid (not positive integer)")
-		unless $decl->{version} && $decl->{version} =~ /^\d+$/;
+    Bivio::Die->die(
+	$decl->{version},
+	': version not declared or invalid (not positive integer)'
+    ) unless $decl->{version} && $decl->{version} =~ /^\d+$/;
     $attrs->{version} = $decl->{version};
 #TODO: Validate the list
     $attrs->{as_string_fields} = $decl->{as_string_fields}
@@ -516,10 +519,12 @@ sub _init_column_from_hash {
     }
     else {
 	# case: "{name => local_field}"
-	Carp::croak($first, ': declared at least twice')
-		    if $attrs->{columns}->{$first};
-	Carp::croak('type and constraint must be defined')
-		    unless $decl->{type} && $decl->{name};
+	Bivio::Die->die($first, ': column declared at least twice')
+	    if $attrs->{columns}->{$first};
+	foreach my $x (qw(type name)) {
+	    Bivio::Die->die($x, ': must be defined for "', $first, '"')
+		unless $decl->{$x};
+	}
 	$col = {name => $first};
 	push(@{$attrs->{local_columns}}, $col);
 	$attrs->{columns}->{$first} = $col;
