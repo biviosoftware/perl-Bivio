@@ -87,12 +87,27 @@ _compile(
     NONE => [' '],
 
     # NCA Import
+    NCADATA => ['NCADATA.DAT'],
+
+    # Menu Titles
+    CLUB_ADMIN => ['Administration'],
+    CLUB_ACCOUNTING => ['Accounting'],
+    CLUB_COMMUNICATIONS => ['Communications'],
+
+    REALM_CHOOSER => ['Select Area'],
+
+    # Tasks
     CLUB_LEGACY_INVITE => ['Bring Members On-line'],
     CLUB_LEGACY_SECURITY_RECONCILIATION => ['Identify Listed Investments'],
     CLUB_ACCOUNTING_CLEAR => ['Clear On-line Accounting'],
-    CLUB_LEGACY_UPLOAD => ['Import Legacy Accounting'],
-    NCADATA => ['NCADATA.DAT'],
+    CLUB_LEGACY_UPLOAD => ['Import Club Accounting'],
     CLUB_ADMIN_TOOLS => ['Administration Tools'],
+    CLUB_ADMIN_INVITE => ['Add Members'],
+    CLUB_HOME => ['Your Club Area'],
+    USER_HOME => ['Your Personal Area'],
+    CLUB_ACCOUNTING_PAYMENT => ['Payments'],
+    CLUB_ACCOUNTING_FEE => ['Fees'],
+    LOGOUT => ['Logout'],
 );
 
 =head1 METHODS

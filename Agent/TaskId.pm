@@ -1398,7 +1398,7 @@ my(@_CFG) = (
         133
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
-        %/accounting/import/legacy
+        %/accounting/import
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::LegacyClubUploadForm
@@ -1436,6 +1436,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/accounting/clear
+        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::ClearAccountingForm
         Bivio::UI::HTML::Club::ClearAccounting

@@ -65,7 +65,7 @@ EOF
     ],
     {
 	header => $self->join(<<'EOF'),
-This is the last part of the legacy import process.
+This is the last part of the import process.
 <p>
 Use this form to bring your off-line members to bivio.
 EOF
