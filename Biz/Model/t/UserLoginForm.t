@@ -42,10 +42,12 @@ my($_check_return) = sub {
     return $expect;
 };
 Bivio::Test->new({
-    compute_params => $_compute_params,
     check_return => $_check_return,
 })->unit([
-    'Bivio::Biz::Model::UserLoginForm' => [
+    {
+	compute_params => $_compute_params,
+	object => 'Bivio::Biz::Model::UserLoginForm',
+    } => [
 	execute => [
 	    demo => 'demo',
 	    [undef] => [undef],
@@ -75,6 +77,22 @@ Bivio::Test->new({
 	],
 	substitute_user => [
 	    demo => Bivio::DieCode->DIE,
+	],
+    ],
+    {
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    return [$_req, @$params];
+        },
+	object => 'Bivio::Biz::Model::UserLoginForm',
+    } => [
+	execute => [
+	    # Logs out previous test
+	    [{login => undef}] => [undef],
+	    [{login => 'demo'}] => 'demo',
+	    [{login => 'user'}] => Bivio::DieCode->NOT_FOUND,
+	    [{login => 'club'}] => Bivio::DieCode->NOT_FOUND,
+	    [{}] => Bivio::DieCode->DIE,
 	],
     ],
 ]);
