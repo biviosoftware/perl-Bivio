@@ -73,7 +73,7 @@ EOF
             ['ECSubscription.subscription_type', {
                 heading_align => 'LEFT',
             }],
-            ['ECSubscription.start_date_time', {
+            ['ECSubscription.start_date', {
                 column_align => 'CENTER',
             }],
             ['ECSubscription.end_date', {
@@ -101,10 +101,10 @@ EOF
                     'ECSubscription.subscription_type', '->get_short_desc'],
                         [['->get_list_model'], '->format_uri', 'THIS_DETAIL']),
             },
-            ['ECSubscription.start_date_time', {
+            ['ECSubscription.start_date', {
                 column_align => 'CENTER',
                 column_widget => $self->date_time(
-                        [['->get_list_model'], 'ECSubscription.start_date_time']),
+                        [['->get_list_model'], 'ECSubscription.start_date']),
             }],
             ['ECSubscription.end_date', {
                 column_align => 'CENTER',
@@ -157,14 +157,14 @@ EOF
                         0 => Bivio::UI::HTML::Widget::ListActions->new({
                             values => [
                                 ['renew subscription',
-                                         'CLUB_ADMIN_SUBSCRIPTION_PAYMENT',
+                                         'CLUB_ADMIN_EC_SUBSCRIPTION_PAYMENT',
                                          'THIS_DETAIL'],
                             ],
                         }),
                         1 => Bivio::UI::HTML::Widget::ListActions->new({
                             values => [
                                 ['extend subscription',
-                                         'CLUB_ADMIN_SUBSCRIPTION_PAYMENT',
+                                         'CLUB_ADMIN_EC_SUBSCRIPTION_PAYMENT',
                                          'THIS_DETAIL'],
                             ],
                         }),
@@ -221,7 +221,7 @@ sub execute {
 	    list_model => $list,
 	    list_uri => $req->format_stateless_uri($req->get('task_id')),
 	    detail_uri => $req->format_stateless_uri(
-		    Bivio::Agent::TaskId::CLUB_ADMIN_SUBSCRIPTION_DETAIL()),
+		    Bivio::Agent::TaskId::CLUB_ADMIN_EC_SUBSCRIPTION_DETAIL()),
 	   );
     return Bivio::UI::HTML::Page->execute($req);
 }
