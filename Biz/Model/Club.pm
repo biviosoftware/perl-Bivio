@@ -37,6 +37,7 @@ and delete interface to the C<club_t> table.
 use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
+use Bivio::Biz::Model::MemberTransactionList;
 use Bivio::Biz::Model::RealmAdminList;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
