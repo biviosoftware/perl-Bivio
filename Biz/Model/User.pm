@@ -51,6 +51,10 @@ use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_SHADOW_PREFIX) = Bivio::Biz::Model::RealmOwner->SHADOW_PREFIX();
+my($_SHADOW_WITHDRAWN_PREFIX) =
+	Bivio::Biz::Model::RealmOwner->SHADOW_WITHDRAWN_PREFIX();
+my($_SHADOW_WITHDRAWN_SUFFIX) =
+	Bivio::Biz::Model::RealmOwner->SHADOW_WITHDRAWN_SUFFIX();
 # arbitrary value, allows for 99,999 name collisions
 my($_MAX_SHADOW_INDEX) = 99999;
 my($_MAX_SHADOW_NAME_SIZE) = Bivio::Type::RealmName->get_width - 8;
@@ -237,18 +241,25 @@ sub generate_shadow_user_name {
     if (length($name) > $_MAX_SHADOW_NAME_SIZE) {
 	$name = substr($name, 0, $_MAX_SHADOW_NAME_SIZE)
     }
+    return _make_unique_name($name);
+}
 
-    my($req) = Bivio::Agent::Request->get_current
-	    || Bivio::Agent::Request->new();
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($unique_num) = 0;
-    my($n);
-    while ($realm->unauth_load(name => $n = $name.$unique_num)) {
-	$unique_num++;
-	# Unlikely to happen, but we certainly want to die when it does.
-	die($n, ": too many collisions") if $unique_num > $_MAX_SHADOW_INDEX;
+=for html <a name="generate_shadow_withdrawn_name"></a>
+
+=head2 static generate_shadow_withdrawn_name(string name) : string
+
+Creates a shadow name for the specified user name who has withdrawn.
+
+=cut
+
+sub generate_shadow_withdrawn_name {
+    my(undef, $name) = @_;
+    # need room for extra characters
+    if (length($name) > $_MAX_SHADOW_NAME_SIZE - 2) {
+	$name = substr($name, 0, $_MAX_SHADOW_NAME_SIZE - 2)
     }
-    return $n;
+    $name = $_SHADOW_WITHDRAWN_PREFIX.lc($name).$_SHADOW_WITHDRAWN_SUFFIX;
+    return _make_unique_name($name);
 }
 
 =for html <a name="get_outgoing_emails"></a>
@@ -363,6 +374,24 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _make_unique_name(string name) : string
+#
+# Makes the specified name unique to the database.
+#
+sub _make_unique_name {
+    my($name) = @_;
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($unique_num) = 0;
+    my($n);
+    while ($realm->unauth_load(name => $n = $name.$unique_num)) {
+	$unique_num++;
+	# Unlikely to happen, but we certainly want to die when it does.
+	die($n, ": too many collisions") if $unique_num > $_MAX_SHADOW_INDEX;
+    }
+    return $n;
+}
 
 =head1 COPYRIGHT
 
