@@ -41,15 +41,18 @@ use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
 my($_FIELD) = Bivio::Biz::FormModel->TIMEZONE_FIELD;
-my($_FUNCS) = <<"EOF";
+my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 function tzf(){
     // Compute the timezone
+    if(navigator.appName.indexOf('Netscape')>=0
+            &&parseFloat(navigator.appVersion)<4.0)
+        // Netscape 3.01 doesn' handle inserting tags dynamically
+        return;
     var d=new Date();
     var o=d.getTimezoneOffset();
     document.write('<input name=$_FIELD type=hidden value="'+o+'">');
 }
 EOF
-Bivio::UI::HTML::Widget::JavaScript->strip(\$_FUNCS);
 
 =head1 METHODS
 
@@ -66,7 +69,7 @@ sub render {
     Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
 	    'tzf',
 	    $_FUNCS,
-	    "tzf()");
+	    "tzf();");
     return;
 }
 
