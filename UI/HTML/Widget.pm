@@ -313,7 +313,9 @@ sub clear_dot_as_html {
 
 =head2 static date_time(any value, any mode) : Bivio::UI::HTML::Widget::DateTime
 
-Returns a C<Widget::DateTime> for the I<value> and I<mode>.
+Returns a C<Widget::DateTime> for the I<value> and I<mode>.  
+
+If I<value> is undef, uses DateTime-E<gt>now.
 
 =cut
 
@@ -321,7 +323,7 @@ sub date_time {
     my(undef, $value, $mode) = @_;
     _use('DateTime');
     return Bivio::UI::HTML::Widget::DateTime->new({
-	value => $value,
+	value => defined($value) ? $value : [sub {Bivio::Type::DateTime->now}],
 	int(@_) >= 3 ? (mode => $mode) : (),
     });
 }
