@@ -2910,7 +2910,7 @@ my(@_CFG) = (
         252
         GENERAL
         DOCUMENT_READ
-        pub/password-forgotten
+        pub/lost-password
         Bivio::Biz::Model::PasswordRequestForm
         Bivio::UI::HTML::General::ForgotPassword
         next=PASSWORD_AUTHORIZATION_SENT
@@ -2920,7 +2920,7 @@ my(@_CFG) = (
         253
         GENERAL
         DOCUMENT_READ
-        pub/password-reauthorized
+        pub/sent-password
         Bivio::UI::HTML::General::ForgotPasswordConfirmation
     )],
     [qw(
@@ -2928,7 +2928,7 @@ my(@_CFG) = (
         254
         GENERAL
         DOCUMENT_READ
-        pub/password-reset
+        pub/reset-password
         Bivio::Biz::Model::PasswordRequest->execute_load_from_query
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
