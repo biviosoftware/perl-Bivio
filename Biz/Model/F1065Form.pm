@@ -40,6 +40,7 @@ use Bivio::Type::CountryCode;
 use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
 use Bivio::Type::F1065AccountingMethod;
+use Bivio::Type::F1065Partner;
 use Bivio::Type::F1065Partnership;
 use Bivio::Type::F1065Return;
 use Bivio::Type::F1065ForeignTax;
@@ -379,12 +380,52 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'active_income',
+		name => 'income_general_corporate',
 		type => 'Amount',
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'passive_income',
+		name => 'income_general_individual',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_general_partnership',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_general_exempt_org',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_general_other',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_limited_corporate',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_limited_individual',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_limited_partnership',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_limited_exempt_org',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'income_limited_other',
 		type => 'Amount',
 		constraint => 'NONE',
 	    },
@@ -467,8 +508,16 @@ Returns a single row with calculated values.
   1065 page 4 Analysis of Net Income
 
   1       F1065Form.net_income
-  2a(ii)  F1065Form.active_income
-  2a(iii) F1065Form.passive_income
+  2a(i)   F1065Form.income_general_corporate
+  2a(ii)  F1065Form.income_general_individual
+  2a(iv)  F1065Form.income_general_partnership
+  2a(v)   F1065Form.income_general_exempt_org
+  2a(vi)  F1065Form.income_general_other
+  2b(i)   F1065Form.income_limited_corporate
+  2b(ii)  F1065Form.income_limited_individual
+  2b(iv)  F1065Form.income_limited_partnership
+  2b(v)   F1065Form.income_limited_exempt_org
+  2b(vi)  F1065Form.income_limited_other
 
 =cut
 
@@ -532,7 +581,7 @@ sub internal_load_rows {
     };
 
     Bivio::Biz::Accounting::Tax->round_all($self, $properties);
-    _calculate_income($self, $properties);
+    _calculate_income($self, $properties, $date);
 
     return [$properties];
 }
@@ -552,13 +601,12 @@ sub _add {
     return $sum;
 }
 
-# _calculate_income(hash_ref properties)
+# _calculate_income(hash_ref properties, string date)
 #
-# Calculates net_income, active_income, and passive_income based
-# on the current values.
+# Calculates net_income, and the income by partner type fields
 #
 sub _calculate_income {
-    my($self, $properties) = @_;
+    my($self, $properties, $date) = @_;
 
     # net_income
     $properties->{net_income} = _add($properties,
@@ -570,12 +618,60 @@ sub _calculate_income {
 	    $properties->{net_income}, _add($properties,
 		    qw(portfolio_deductions margin_interest foreign_tax)));
 
-    # passive_income
-    $properties->{passive_income} = $properties->{foreign_income};
+    my($list) = $self->get_request->get('Bivio::Biz::Model::MemberTaxList');
+    $list->reset_cursor;
 
-    # active_income
-    $properties->{active_income} = $_M->sub(
-	    $properties->{net_income}, $properties->{passive_income});
+    while ($list->next_row) {
+	my($k1) = Bivio::Biz::Model::TaxK1->new($self->get_request)
+		->load_or_default($list->get('RealmUser.user_id'), $date);
+
+	# categorize by member partner type and entity type
+	my($field) = 'income_';
+	if ($k1->get('partner_type') == Bivio::Type::F1065Partner::GENERAL()) {
+	    $field .= 'general_';
+	}
+	else {
+	    $field .= 'limited_';
+	}
+
+	my($type) = $k1->get('entity_type');
+	if ($type == $type->CORPORATION) {
+	    $field .= 'corporate';
+	}
+	elsif ($type == $type->INDIVIDUAL) {
+	    $field .= 'individual';
+	}
+	elsif ($type == $type->PARTNERSHIP) {
+	    $field .= 'partnership';
+	}
+	elsif ($type == $type->EXEMPT_ORGANIZATION) {
+	    $field .= 'exempt_org';
+	}
+	else {
+	    $field .= 'other';
+	}
+	$properties->{$field} = $_M->add($properties->{$field} || 0,
+		$list->get('taxable_net_income'));
+    }
+
+    # ensure the amounts match the partnership net income
+    my($total) = 0;
+    foreach my $field (qw(income_general_corporate income_general_individual
+            income_general_partnership income_general_exempt_org
+            income_general_other income_limited_corporate
+            income_limited_individual income_limited_partnership
+            income_limited_exempt_org income_limited_other)) {
+
+	if ($properties->{$field}) {
+	    $total = $_M->add($total, $properties->{$field});
+	}
+	else {
+	    $properties->{$field} = 0;
+	}
+    }
+    Bivio::IO::Alert->warn($total, ' != ', $properties->{net_income})
+		unless $_M->compare($total, $properties->{net_income}) == 0;
+
     return;
 }
 
