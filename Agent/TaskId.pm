@@ -362,6 +362,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -375,6 +376,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -397,6 +399,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(
@@ -450,7 +453,14 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ECPayment->execute_process
     )],
-#38
+    [qw(
+        CLUB_ADMIN_EC_PAYMENT_CANCELLED
+        38
+        CLUB
+        ADMIN_READ
+        ?/admin/subscribe/cancelled
+        Bivio::UI::HTML::Club::ECPaymentCancelled
+    )],
     [qw(
 	GENERAL_PRIVACY
 	39
@@ -842,6 +852,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
         next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        next=CLUB_ADMIN_EC_PAYMENT_CANCELLED
         require_secure=1
     )],
     [qw(

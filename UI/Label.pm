@@ -416,6 +416,7 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_PAYMENT => 'Payments',
     CLUB_ACCOUNTING_TAX99 => 'U.S. Taxes',
     CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION => 'Member Tax Allocation Report',
+    CLUB_ADMIN_EC_PAYMENT_CANCELLED => 'Payment Cancelled',
     CLUB_ADMIN_EC_SUBSCRIPTIONS => 'Premium Subscriptions',
     CLUB_ADMIN_EC_SUBSCRIBE_DONE => 'Thank You!',
     CLUB_ADMIN_EC_PAYMENTS => 'Premium Payments',
