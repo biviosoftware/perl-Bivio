@@ -342,7 +342,7 @@ sub format_uri {
 
 =head2 get_instruments_info() : array_ref
 
-Returns an array of realm instrument records (id, name, symbol).
+Returns an array of realm instrument records (id, name, symbol, instrument_id).
 
 =cut
 
@@ -356,7 +356,8 @@ sub get_instruments_info {
     my($query) = <<'EOF';
 	SELECT realm_instrument_t.realm_instrument_id,
 	    realm_instrument_t.name || instrument_t.name cat_name,
-	    realm_instrument_t.ticker_symbol || instrument_t.ticker_symbol
+	    realm_instrument_t.ticker_symbol || instrument_t.ticker_symbol,
+            realm_instrument_t.instrument_id
 	FROM realm_instrument_t, instrument_t
         WHERE realm_instrument_t.instrument_id = instrument_t.instrument_id (+)
 	AND realm_id=?
@@ -369,8 +370,8 @@ EOF
 
     my($row);
     while ($row = $sth->fetchrow_arrayref) {
-	my($id, $name, $symbol) = @$row;
-	push(@$result, [$id, $name, $symbol]);
+	my($id, $name, $symbol, $instrument_id) = @$row;
+	push(@$result, [$id, $name, $symbol, $instrument_id]);
     }
     $fields->{get_instruments_info} = $result;
     return $result;
