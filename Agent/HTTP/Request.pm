@@ -80,7 +80,7 @@ sub new {
 	? 1 : 0,
     });
     $self->put_durable(
-	    start_time => $self->get('$start_time'),
+	    start_time => $self->get('start_time'),
 	    reply => $self->get('reply'),
 	    r => $self->get('r'),
 	    client_addr => $self->get('client_addr'),
