@@ -38,7 +38,7 @@ test_setup('HTTP');
 use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
     if -e q{$mail_file};
-my(\$e1) = generate_email();
+my(\$e1) = generate_local_email();
 test_deviance(qr/No mail for /);
 verify_mail(\$e1, '');
 test_conformance();
@@ -46,6 +46,7 @@ my(\$i) = 1;
 my(\$m) = sub {
    my(\$x) = \$_[0] || \$e1;
 Bivio::IO::File->write(q{$mail_file} . \$i++, <<"END");
+From: someone\@example.com
 To: \$x
 
 You have mail
@@ -56,7 +57,7 @@ verify_mail(\$e1, 'You have mail');
 test_deviance(qr/No mail for /);
 verify_mail(\$e1, 'You have mail');
 test_conformance();
-my(\$e2) = generate_email('.*');
+my(\$e2) = generate_local_email('.*');
 \$m->();
 test_deviance(qr/No mail for /);
 verify_mail(\$e2, '');
