@@ -1,0 +1,426 @@
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+package Bivio::Biz::Util::RealmRole;
+use strict;
+$Bivio::Biz::Util::RealmRole::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+=head1 NAME
+
+Bivio::Biz::Util::RealmRole - manipulate realm_role_t database table
+
+=head1 SYNOPSIS
+
+    use Bivio::Biz::Util::RealmRole;
+    Bivio::Biz::Util::RealmRole->init();
+    Bivio::Biz::Util::RealmRole->edit($realm, $role, @operations);
+    Bivio::Biz::Util::RealmRole->list($realm, $role);
+    Bivio::Biz::Util::RealmRole->main(@ARGV);
+
+=cut
+
+use Bivio::UNIVERSAL;
+@Bivio::Biz::Util::RealmRole::ISA = ('Bivio::UNIVERSAL');
+
+=head1 DESCRIPTION
+
+C<Bivio::Biz::Util::RealmRole>'s L<main|"main">
+is used to manipulate the C<realm_role_t> in the
+database.  There are three modes: list, edit, and B<-init>.
+
+In list mode, a realm with an optional role is specified and the
+permissions that are set are listed.  The output can be used as
+input to this program.  If no I<realm> is specified, the entire
+table is dumped.  If no I<role> is specified, only the particular
+realm is dumped.
+
+In edit mode, the C<realm_role_t> is modified.  A role must be specified.  The
+role is followed by one or more operations.  An operation either adds or
+subtracts from the set in the table for the particular I<realm> and
+I<role>.  The operand is either a I<role> or a I<permission> name.
+If it is a I<permission>, only that permission is added or subtracted.
+If it is a I<role>, the I<role>'s vector is added or subtracted.  The
+I<role> operand can be tho same as the I<role> being modified in which
+case C<+> (add) is a no-op and C<-> (subtract) clears the entire vector.
+
+If there is no operand, then C<-> clears all permissions and
+C<+> sets all permissions.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-init>
+
+Initialize the database with the default permissions.
+
+=item B<-n>
+
+Do not commit the transaction.
+
+=back
+
+=cut
+
+#=IMPORTS
+use Bivio::Auth::Permission;
+use Bivio::Auth::PermissionSet;
+use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmRole;
+use Bivio::Die;
+use Bivio::DieCode;
+use Bivio::IO::Config;
+use Bivio::SQL::Connection;
+
+#=VARIABLES
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="edit"></a>
+
+=head2 edit(string realm_name, string role_name, string operation, ...)
+
+Updates the databes for I<realm_name> and I<role_name>.  I<operation>
+begins with C<+> or C<-> and may have an I<operand> which is either
+a L<Bivio::Auth::Role|Bivio::Auth::Role> or
+a L<Bivio::Auth::Permission|Bivio::Auth::Permission>.
+If there is no operand, the permission set is cleared (C<->) or
+all set (C<+>).
+
+B<Does not commit changes to DB.>
+
+=cut
+
+sub edit {
+    my(undef, $realm_name, $role_name, @operations) = @_;
+    my($realm_id) = _get_realm_id($realm_name);
+    $role_name = uc($role_name);
+    my($role) = Bivio::Auth::Role->$role_name();
+
+    # Get the database value or an empty set
+    my($ps) = _get_permission_set($realm_id, $role, 1);
+
+    # Modify the initial value
+    foreach my $op (@operations) {
+	_usage("$op: invalid operation syntax") unless $op =~ /^([-+])(\w*)$/;
+	my($which, $operand) = ($1, uc($2));
+	if (length($operand)) {
+	    my($p) = Bivio::Auth::Permission->unsafe_from_any($operand);
+	    if ($p && $p->get_name eq $operand) {
+		vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
+	    }
+	    else {
+		my($r) = Bivio::Auth::Role->unsafe_from_any($operand);
+		_usage("$op: neither a Role nor Permission")
+			unless $r && $r->get_name eq $operand;
+		my($s) = _get_permission_set($realm_id, $r, 0);
+		# Set lengths must match for ~$s to work properly
+		Bivio::DieCode::DIE()->die(
+			'ASSERTION FAULT: set lengths differ')
+			    unless length($s) eq length($ps);
+		$ps = $which eq '+' ? ($ps | $s) : ($ps & ~$s);
+	    }
+	}
+	else {
+	    $ps = $which eq '+' ? Bivio::Auth::PermissionSet->get_max
+		    : Bivio::Auth::PermissionSet->get_min;
+	}
+    }
+    my($rr) = Bivio::Biz::Model::RealmRole->new();
+    $rr->unauth_load(realm_id => $realm_id, role => $role)
+	    ? $rr->update({permission_set => $ps})
+	    : $rr->create({realm_id => $realm_id, role => $role,
+		permission_set => $ps});
+    return;
+}
+
+=for html <a name="init"></a>
+
+=head2 init()
+
+Initializes the database with the values from C<__DATA__> section
+in this file.
+
+B<Does not commit changes to DB.>
+
+=cut
+
+sub init {
+    my($line);
+    local($_);
+    while (<DATA>) {
+	# Skip comments and blank lines
+	next if /^\s*(#|$)/;
+	chop;
+	$line .= $_;
+	next if $line =~ s/\\$/ /;
+	my(@args) = split(' ', $line);
+	# Delete the b-realm-role at the front
+	shift(@args);
+	edit(undef, @args);
+        $line = '';
+    }
+    return;
+}
+
+=for html <a name="list"></a>
+
+=head2 list(string realm_name, string role_name)
+
+Print the permission sets so they can be used as input to this program.
+If I<realm_name> is C<undef>, gets all realms.
+If I<role_name> is C<undef>, gets all roles.
+
+=cut
+
+sub list {
+    my(undef, $realm_name, $role_name) = @_;
+    my($realms) = defined($realm_name)
+	    ? {_get_realm_id($realm_name), $realm_name} : _get_realms();
+    my(@roles) = defined($role_name)
+	    ? Bivio::Auth::Role->from_any($role_name)
+	    : sort {$a->as_int <=> $b->as_int} Bivio::Auth::Role->get_list;
+    # sort keys numerically, we know they are positive so this trick works
+    my(@realm_ids) = sort {
+	my($i) = length($a) - length($b);
+	$i ? $i : $a cmp $b
+    } keys(%$realms);
+    my($rr) = Bivio::Biz::Model::RealmRole->new;
+    # Sort by name for easier readability
+    my(@p_list) = sort {
+	$a->get_name cmp $b->get_name
+    } Bivio::Auth::Permission->get_list;
+    my($sep) = '';
+    foreach my $realm_id (@realm_ids) {
+	my($prev_ps, $prev_role);
+	my($realm_name) = $realms->{$realm_id};
+	# Roles are ascending, so can use $prev_role to shorten lists
+	print <<"EOF" if int(@realm_ids) > 1;
+$sep#
+# $realm_name Permissions
+#
+EOF
+	$sep = "\n";
+	foreach my $role (@roles) {
+	    unless ($rr->unauth_load(realm_id => $realm_id, role => $role)) {
+		# print $realm_name, ' ', $role->get_name, ": not set\n";
+		next;
+	    }
+	    # Always clear the set before adding in values
+	    my($res) = $0." $realm_name ".$role->get_name;
+	    my($ps) = $rr->get('permission_set');
+	    if ($ps eq Bivio::Auth::PermissionSet->get_max) {
+		$res .= ' +';
+	    }
+	    else {
+		$res .= ' -';
+	    # If the previous role is a subset, delete those bits and
+	    # just add the role to the output.
+		my($s) = $ps;
+		if (defined($prev_ps) && ($prev_ps & $ps) eq $prev_ps) {
+		    $res .= " \\\n    +$prev_role";
+		    $s &= ~$prev_ps;
+		}
+		foreach my $p (@p_list) {
+		    $res .= " \\\n    +".$p->get_name
+			    if vec($s, $p->as_int, 1);
+		}
+	    }
+	    print $res, "\n";
+	    $prev_role = $role->get_name;
+	    $prev_ps = $ps;
+	}
+    }
+    return;
+}
+
+=for html <a name="main"></a>
+
+=head2 main(array argv) : int
+
+Parses its arguments.  If I<argv> contains:
+
+=over 4
+
+=item C<-init>
+
+calls L<init|"init">
+
+=item two or fewer arguments
+
+calls L<list|"list">
+
+=item three or more arguments
+
+calls L<edit|"edit">
+
+=back
+
+Calls L<Bivio::SQL::Connection::commit|Bivio::SQL::Connection/"commit">
+if either L<init|"init"> or L<edit|"edit"> is called.
+
+=cut
+
+sub main {
+    my(undef, @argv) = @_;
+    Bivio::IO::Config->initialize(\@argv);
+    my($execute) = 1;
+    $execute = 0, shift(@argv) if @argv && $argv[0] eq '-n';
+    if (int(@argv) && $argv[0] eq '-init') {
+	init(undef);
+    }
+    elsif (int(@argv) <= 2) {
+	list(undef, @argv);
+	return;
+    }
+    else {
+	edit(undef, @argv);
+    }
+    $execute && Bivio::SQL::Connection->commit();
+    return;
+}
+
+#=PRIVATE METHODS
+
+# _get_realm_id(string realm_name) : string
+#
+# Returns realm_id for realm_name or blows up.
+#
+sub _get_realm_id {
+    my($realm_name) = @_;
+    # Since from_any may map to anything, we check the type name
+    # against realm_name exactly.
+    my($rt) = Bivio::Auth::RealmType->unsafe_from_any($realm_name);
+    return $rt->as_int if $rt && $rt->get_name eq uc($realm_name);
+
+    # Look in the database
+    my($ro) = Bivio::Biz::Model::RealmOwner->new;
+    _usage($realm_name, ": realm not found")
+	    unless $ro->unauth_load(name => $realm_name);
+    return $ro->get('realm_id');
+}
+
+# _get_realms() : hash_ref
+#
+# Returns all realms in realm_role_t in a single hash (realm_id, name).
+#
+sub _get_realms {
+    my(%res) = map {
+	($_->as_int, $_->get_name)
+    } Bivio::Auth::RealmType->get_list;
+    my($statement) = Bivio::SQL::Connection->execute(<<'EOF');
+	    SELECT distinct realm_role_t.realm_id, name
+	      FROM realm_owner_t, realm_role_t
+	      WHERE realm_role_t.realm_id = realm_owner_t.realm_id
+EOF
+    while (my($realm_id, $name) = $statement->fetchrow_array) {
+	# Don't re-insert default realms
+	next if $realm_id <= Bivio::Auth::RealmType->get_max;
+	$res{$realm_id} = $name;
+    }
+    return \%res;
+}
+
+# _get_permission_set(string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
+#
+# Returns the permission_set for the realm and role.
+#
+sub _get_permission_set {
+    my($realm_id, $role, $dont_die) = @_;
+    my($rr) = Bivio::Biz::Model::RealmRole->new();
+    return $rr->get('permission_set')
+	    if $rr->unauth_load(realm_id => $realm_id, role => $role);
+    # Make sure the initial value is correct
+    return Bivio::Auth::PermissionSet->get_min if $dont_die;
+    _usage($role->as_string, ": not set for realm");
+}
+
+# _usage(array msg)
+#
+# Outputs a message and dies
+#
+sub _usage {
+    Bivio::DieCode::DIE()->die(<<"EOF");
+b-realm-role: @{[join('', @_)]}
+usage: b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
+       b-realm-role -init
+EOF
+}
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+1;
+__DATA__
+#
+# GENERAL Permissions
+#
+b-realm-role GENERAL ANONYMOUS - \
+    +MAIL_WRITE
+b-realm-role GENERAL USER - \
+    +ANONYMOUS \
+    +DOCUMENT_READ
+b-realm-role GENERAL GUEST - \
+    +USER
+b-realm-role GENERAL MEMBER - \
+    +GUEST
+b-realm-role GENERAL TREASURER - \
+    +MEMBER
+b-realm-role GENERAL PRESIDENT - \
+    +TREASURER
+b-realm-role GENERAL ADMINISTRATOR +
+
+#
+# USER Permissions
+#
+b-realm-role USER ANONYMOUS - \
+    +MAIL_WRITE
+b-realm-role USER USER - \
+    +ANONYMOUS
+b-realm-role USER GUEST - \
+    +USER \
+    +DOCUMENT_READ
+b-realm-role USER MEMBER - \
+    +GUEST
+b-realm-role USER TREASURER - \
+    +MEMBER
+b-realm-role USER PRESIDENT - \
+    +TREASURER
+b-realm-role USER ADMINISTRATOR +
+
+#
+# CLUB Permissions
+#
+b-realm-role CLUB ANONYMOUS - \
+    +MAIL_WRITE
+b-realm-role CLUB USER - \
+    +ANONYMOUS
+b-realm-role CLUB GUEST - \
+    +USER \
+    +ACCOUNTING_READ \
+    +DOCUMENT_READ \
+    +MOTION_READ
+b-realm-role CLUB MEMBER - \
+    +GUEST \
+    +ADMIN_READ \
+    +FINANCIAL_DATA_READ \
+    +MAIL_READ \
+    +MEMBER_READ
+b-realm-role CLUB TREASURER - \
+    +MEMBER \
+    +ACCOUNTING_WRITE \
+    +MEMBER_WRITE
+b-realm-role CLUB PRESIDENT - \
+    +TREASURER \
+    +ADMIN_WRITE
+b-realm-role CLUB ADMINISTRATOR +

@@ -1,0 +1,48 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-realm-role - manipulate realm_role_t database table
+
+=head1 SYNOPSIS
+
+  b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
+  b-realm-role [-n] -init
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::RealmRole;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+Bivio::Biz::Util::RealmRole->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Biz::Util::RealmRole
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:

@@ -1,0 +1,47 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-realm-owner - manipulate realm_owner_t database table
+
+=head1 SYNOPSIS
+
+  b-realm-owner [-n] -init
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::RealmOwner|Bivio::Biz::Util::RealmOwner>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::RealmOwner;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+Bivio::Biz::Util::RealmOwner->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Biz::Util::RealmOwner
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
