@@ -220,6 +220,20 @@ sub to_literal {
     return defined($value) ? $value : '';
 }
 
+=for html <a name="to_query"></a>
+
+=head2 to_query(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, returns as is--always valid query.
+
+=cut
+
+sub to_query {
+    my($self, $value) = @_;
+    return defined($value) ? $value : '';
+}
+
 =for html <a name="to_uri"></a>
 
 =head2 to_uri(any value) : string
