@@ -75,6 +75,24 @@ EOF
 
 =cut
 
+=for html <a name="escape_string"></a>
+
+=head2 escape_string(string_ref unescaped_text) : string_ref
+
+Converts a text string into something safely escaped.
+Returns its first argument.
+
+=cut
+
+sub escape_string {
+    my($self, $text) = @_;
+    $$text =~ s/\\/\\\\/g;
+    $$text =~ s/'/\\'/g;
+    $$text =~ s/\n/\\n/g;
+    $$text =~ s#/#\\/#g;
+    return $text;
+}
+
 =for html <a name="has_been_rendered"></a>
 
 =head2 has_been_rendered(any source, string module_tag) : boolean
