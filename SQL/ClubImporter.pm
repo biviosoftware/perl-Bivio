@@ -325,7 +325,11 @@ my($_TYPE_MAP) = {
     101 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
 	    11, 0],
 
-#TODO: SpFr-Mtcg, SDFr-Mtcg, MrgFr-Mtcg: trans (12, 13, 14)
+#TODO: SDFr-Mtcg, MrgFr-Mtcg: trans (13, 14)
+
+    # SpFr-Mtcg
+    103 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    12, 0],
 };
 
 # created for the set of transactions implicitly associated with easyware
@@ -758,6 +762,7 @@ sub _create_entries {
     my($easyware_trans, $transaction, $source_id, $dttm, $transaction_type,
 	    $attributes) = @_;
     my($set_index) = $_TYPE_MAP->{$transaction_type}->[2];
+    die("unknown tran type $transaction_type") unless defined($set_index);
     my($set) = $_TRANSACTION_ID_SET->[$set_index];
     my($handled) = 0;
 
