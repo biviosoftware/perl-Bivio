@@ -77,30 +77,6 @@ Bivio::IO::Config->register({
 	'handler' => 'Bivio::Agent::HTTP::Dispatcher',
     },
 });
-my($_DYNAMIC_MODULES) = <<'EOF';
-LoadModule env_module         modules/mod_env.so
-LoadModule config_log_module  modules/mod_log_config.so
-LoadModule mime_module        modules/mod_mime.so
-LoadModule status_module      modules/mod_status.so
-LoadModule info_module        modules/mod_info.so
-LoadModule rewrite_module     modules/mod_rewrite.so
-LoadModule setenvif_module    modules/mod_setenvif.so
-LoadModule perl_module        modules/libperl.so
-
-#  Reconstruction of the complete module list from all available modules
-#  (static and shared ones) to achieve correct module execution order.
-#  [WHENEVER YOU CHANGE THE LOADMODULE SECTION ABOVE UPDATE THIS, TOO]
-ClearModuleList
-AddModule mod_env.c
-AddModule mod_log_config.c
-AddModule mod_mime.c
-AddModule mod_status.c
-AddModule mod_info.c
-AddModule mod_rewrite.c
-AddModule mod_so.c
-AddModule mod_setenvif.c
-AddModule mod_perl.c
-EOF
 
 sub main {
     my(@argv) = @_;
@@ -168,8 +144,7 @@ EOF
 EOF
     }
 
-    # We need to specify dynamic modules if it is the generic install
-    my($modules) = $_HTTPD eq '/usr/sbin/httpd' ? $_DYNAMIC_MODULES : '';
+    my($modules) = _dynamic_modules($_HTTPD);
 
     local($_);
     my($conf) = $execute ? "httpd$$.conf" : "&STDOUT";
@@ -192,6 +167,38 @@ EOF
     else {
 	print "Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n";
     }
+}
+
+# _dynamic_modules(string httpd) : string
+#
+# Returns AddModule and LoadModule statements.
+#
+sub _dynamic_modules {
+    my($httpd) = @_;
+    my($loaded) = {map {
+	/\s*(mod_\w+\.c)/ ? ($1, 1) : ();
+    } split("\n", `$httpd -l`)};
+    my($load);
+    my($add);
+    foreach my $module (qw(
+	env
+	log_config
+	mime
+	status
+	info
+	rewrite
+        so
+	setenvif
+	perl:libperl)) {
+	my($base, $so) = split(/:/, $module);
+	my($mod) = "mod_$base.c";
+	$add .= "AddModule $mod";
+	next if $loaded->{$mod};
+	$so = "mod_$base" unless $so;
+	$load .= "LoadModule ${base}_module\t\tmodules/$so.so\n";
+    }
+    return '' unless $load;
+    return $load . "ClearModuleList\nAddModule mod_so.c\n" . $add;
 }
 
 sub symlink {
