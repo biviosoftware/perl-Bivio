@@ -365,7 +365,6 @@ the entire RFC822, offset by the header_offset.
 =cut
 
 sub get_rfc822 {
-    print(STDERR "get_rfc822\n");
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return substr(${$fields->{rfc822}}, $fields->{header_offset});
