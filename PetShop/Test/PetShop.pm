@@ -87,6 +87,7 @@ sub add_to_cart {
 	quantity => 0,
 	price => $price,
     })->{quantity}++;
+    $self->verify_cart;
     return;
 }
 
@@ -104,7 +105,7 @@ sub checkout_as_demo {
     my($fields) = $self->[$_IDI];
     $self->login_as_demo;
     $self->follow_link('Cart');
-    $self->verify_cart();
+    $self->verify_cart;
     $self->submit_form('checkout');
     # Displays what's in the cart (check this?)
     $self->follow_link('continue');
@@ -165,13 +166,13 @@ Removes I<item_name> from cart.
 sub remove_from_cart {
     my($self, $item_name) = @_;
     my($fields) = $self->[$_IDI];
-    delete($fields->{cart}->{
-	_find_in_cart($self, $item_name, sub {
-	    my($index) = @_;
-	    $self->submit_form("remove_$index");
-	    return;
-	})->{name}
+    _find_in_cart($self, $item_name, sub {
+	my($index) = @_;
+	$self->submit_form("remove_$index");
+	return;
     });
+    delete($fields->{cart}->{$item_name});
+    $self->verify_cart;
     return;
 }
 
@@ -201,13 +202,16 @@ Sets I<quantity> for I<item_name> in the cart.
 
 sub update_cart {
     my($self, $item_name, $quantity) = @_;
+    my($fields) = $self->[$_IDI];
     _find_in_cart($self, $item_name, sub {
-	 my($index) = @_;
-	 $self->submit_form(update_cart => {
-	     "Quantity_$index" => $quantity,
-	 });
-	 return;
-    })->{quantity} = $quantity;
+	my($index) = @_;
+	$self->submit_form(update_cart => {
+	    "Quantity_$index" => $quantity,
+	});
+	return;
+    })->{quantity} = $quantity
+	or delete($fields->{cart}->{$item_name});
+    $self->verify_cart;
     return;
 }
 
@@ -225,18 +229,18 @@ sub verify_cart {
     my($fields) = $self->[$_IDI];
     return $self->verify_cart_is_empty
 	unless $fields->{cart} && %{$fields->{cart}};
+    my($cart) = {%{$fields->{cart}}};
     # Tables are named by their first column by default
     my($t) = _cart($self)->get_html_parser->get('Tables')
 	->unsafe_get('Remove');
-    Bivio::Die->die('cart is empty, expecting items: ', $fields->{cart})
+    Bivio::Die->die('cart is empty, expecting items: ', $cart)
 	unless $t;
     my($rows) = [@{$t->{rows}}];
     my($i) = 0;
     my($total) = 0;
-    foreach my $item (sort({$a->{name} cmp $b->{name}}
-	values(%{$fields->{cart}}))) {
+    foreach my $item (sort({$a->{name} cmp $b->{name}} values(%$cart))) {
 	my($r) = shift(@$rows);
-	Bivio::Die->die("too few rows ($i); missing items: ", $fields->{cart})
+	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
 	    unless $r;
 	Bivio::Die->die("missing item: ", $item)
 	    unless $r->[2] eq $item->{name};
@@ -248,7 +252,7 @@ sub verify_cart {
 	$total = $_A->add($total, $t);
     }
     continue {
-	delete($fields->{cart}->{$item->{name}});
+	delete($cart->{$item->{name}});
 	$i++;
     }
     Bivio::Die->die("too many rows (expected $i); extra items: ", $rows)
