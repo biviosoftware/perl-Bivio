@@ -204,6 +204,7 @@ use Bivio::Type;
 
 #=VARIABLES
 use vars ('$_TRACE');
+use Bivio::Type::String;
 Bivio::IO::Trace->register;
 my(%_QUERY_TO_FIELDS) = (
     'b' => 'begin_date',
@@ -222,6 +223,7 @@ my(%_ATTR_TO_CHAR) = map {
 # Separates elements in a multivalued primary key.
 # Tightly coupled with $Bivio::Biz::FormContext::_HASH_CHAR
 my($_SEPARATOR) = "\177";
+my($_SEPARATOR_AS_QUERY) = Bivio::Type::String->to_query("\177");
 
 =head1 FACTORIES
 
@@ -680,11 +682,10 @@ sub _format_uri_primary_key {
     my($is_array) = ref($pk) eq 'ARRAY';
     # NOTE: Nice to agree with PropertyModel::format_query
     for (my($i) = 0; $i < int(@$pk_cols); $i++) {
+	$res .= $_SEPARATOR_AS_QUERY if length($res);
 	$res .= $pk_cols->[$i]->{type}->to_query(
-		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}})
-		.$_SEPARATOR;
+		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}});
     }
-    chop($res);
     return $res;
 }
 
