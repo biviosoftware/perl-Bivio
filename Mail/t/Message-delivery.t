@@ -5,7 +5,7 @@
 #TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..\n"; }
+BEGIN { $| = 1; print "1..1\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Message;
@@ -14,6 +14,8 @@ print "ok 1\n";
 
 ######################### End of black magic.
 
+use Bivio::Test::Request;
+Bivio::Test::Request->get_current_or_new->setup_facade;
 use User::pwent ();
 my($user) = User::pwent::getpwuid($>);
 
@@ -29,14 +31,14 @@ EOF
 my($bm) = Bivio::Mail::Message->new(\$msg1);
 $bm->add_recipients($user->name);
 my($r) = $bm->get_recipients;
-$r->[0] eq User::pwent::getpwuid($>)->name || die;
+$r eq $user->name || die;
 $bm->enqueue_send;
 
 my($m2) = Bivio::Mail::Message->new;
 $m2->add_recipients($user->name);
 my($h) = $m2->get_head;
 $h->replace('Subject', "Hi!");
-$m2->get_entity->attach(Path => 'Mail/t/ms_y2k.jpg', Type => "image/jpeg", Encoding => "base64");
+$m2->get_entity->attach(Path => 'ms_y2k.jpg', Type => "image/jpeg", Encoding => "base64");
 $m2->send;
 
 my($msg) = <<'EOF';
@@ -57,7 +59,7 @@ Status: R
 12.
 EOF
 
-my($bm) = Bivio::Mail::Message->new(\$msg);
+($bm) = Bivio::Mail::Message->new(\$msg);
 $bm->set_headers_for_list_send('LIST-NAME', 'LIST_TITLE', 1, 1);
 $bm->add_recipients($user->name);
 $bm->enqueue_send;
