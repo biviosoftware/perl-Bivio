@@ -1158,6 +1158,7 @@ sub map_rows {
     $map_iterate_handler ||= sub {
 	return shift->get_shallow_copy;
     };
+    $self->reset_cursor;
     while ($self->next_row) {
 	push(@$res, $map_iterate_handler->($self));
     }
