@@ -256,61 +256,15 @@ sub delete {
 	# Delete by name?
 	if (defined($args->{name})
 		&& !(defined($args->{file_id}) && defined($args->{bytes}))) {
-	    # Get the name from FilePathList?
-	    unless ($args->{directory_id}) {
-		my($fpl) = $self->get_request->unsafe_get(
-			'Bivio::Biz::Model::FilePathList');
-		$self->throw_die('DIE', 'directory_id not set!') unless $fpl;
-		$args->{directory_id} = $fpl->set_cursor_to_target;
-	    }
-
-	    # Try to find the bytes and file_id
-	    my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
-	    	SELECT file_id, bytes
-		FROM file_t
-		WHERE realm_id = ?
-                AND volume = ?
-                AND directory_id = ?
-                AND name_sort = ?
-EOF
-		    [$args->{realm_id}, $args->{volume}->as_sql_param,
-			$args->{directory_id}, lc($args->{name})]);
-
-	    # Process result
-	    my($row) = $statement->fetchrow_arrayref();
-	    unless ($row) {
-		# NOT_FOUND means deleted
-		_trace('ignoring, not found: ', $args) if $_TRACE;
-                return 0;
-	    }
-	    $args->{file_id} = $row->[0];
-	    $args->{bytes} = $row->[1];
+	    return 0 unless _find_by_name($self, $args);
 	}
         elsif (!(defined($args->{bytes}) && defined($args->{is_directory}))) {
-	    Carp::croak('file_id: missing from load_args')
+	    $self->die('file_id: missing from load_args')
 			unless defined($args->{file_id});
-	    # Lookup missing bytes and/or is_directory attributes
-	    my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
-	    	SELECT bytes, is_directory
-		FROM file_t
-		WHERE realm_id = ?
-                AND volume = ?
-                AND file_id = ?
-EOF
-		    [$args->{realm_id}, $args->{volume}->as_sql_param,
-			$args->{file_id}]);
-	    # Process result
-	    my($row) = $statement->fetchrow_arrayref();
-	    unless ($row) {
-		# NOT_FOUND means deleted
-		_trace('ignoring, not found: ', $args) if $_TRACE;
-                return 0;
-	    }
-	    $args->{bytes} = $row->[0];
-	    $args->{is_directory} = $row->[1];
+	    return 0 unless _find_by_id($self, $args);
         }
 	foreach my $p (qw(is_directory file_id bytes)) {
-	    Carp::croak("$p: missing from load_args on File::delete")
+	    $self->die($p, ': missing from load_args on File::delete')
 			unless defined($args->{$p});
 	}
     }
@@ -320,74 +274,30 @@ EOF
     }
 
     # Can't delete the root
-    $self->throw_die('NOT_FOUND', {message => 'attempt to delete file root',
+    $self->throw_die('NOT_FOUND', {message => ,
 	volume => $args->{volume}->get_name,
 	file_id => $args->{file_id}})
 	    if $args->{file_id} eq $args->{volume}->get_root_directory_id(
 		    $args->{realm_id});
 
-    my(@files) = ();
+    my($files);
     my($kbytes) = 0;
     if ($args->{is_directory}) {
-	# Find all the files that are children of this node
-	# in depth-first order.
-	my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
-	    	SELECT file_id, bytes
-		FROM file_t
-		START WITH file_id = ?
-                    AND realm_id = ?
-                    AND volume = ?
-		CONNECT BY realm_id = ?
-                    AND volume = ?
-                    AND directory_id = PRIOR file_id
-		ORDER BY LEVEL DESC
-EOF
-		[$args->{file_id}, $args->{realm_id},
-                    $args->{volume}->as_sql_param, $args->{realm_id},
-                    $args->{volume}->as_sql_param]);
-
-	# Add in the files which this directory contains
-	my($row);
-	while ($row = $statement->fetchrow_arrayref()) {
-	    push(@files, $row->[0]);
-	    $kbytes += $self->to_kbytes($row->[1]);
-	}
+	($files, $kbytes) = _find_all_in_directory($self, $args);
     }
     else {
 	# Not a directory
-	push(@files, $args->{file_id});
+	$files = [$args->{file_id}];
 	$kbytes = $self->to_kbytes($args->{bytes});
     }
 
-    # Delete the rows we just found.  Apparently you can't call
-    # DELETE with a CONNECT BY.  Don't ask me why, I suppose she'll die. ;-)
-#TODO: Move this into SQL::Connection.  Should be able to iterate over a list
-    my($rows) = 0;
-    while (@files) {
-	my($params) = '?,' x (int(@files) > $_MAX_SQL_PARAMS
-		? $_MAX_SQL_PARAMS : int(@files));
-	chop($params);
-	# We set volume here in case there is something really weird going on,
-	# i.e. parallel deletes.
-	my($sth) = Bivio::SQL::Connection->execute(<<"EOF",
-	    DELETE
-	    FROM file_t
-	    WHERE realm_id = ?
-            AND volume = ?
-            AND file_id in ($params)
-EOF
-		[$args->{realm_id},
-		    $args->{volume}->as_sql_param(),
-		    splice(@files, 0, $_MAX_SQL_PARAMS)]);
-	$rows += $sth->rows;
-    }
-
+    my($deleted) = _delete_list($args, $files);
     # Update the directory with the correct uid and modified_date_time.
     $args->{user_id}
 	    = $self->get_request->get('auth_user')->get('realm_id');
     $args->{modified_date_time} = Bivio::Type::DateTime->now();
     _update_directory($self, $args, -$kbytes);
-    return $rows ? 1 : 0;
+    return $deleted;
 }
 
 =for html <a name="delete_all_in_volume"></a>
@@ -656,6 +566,46 @@ sub update {
 
 #=PRIVATE METHODS
 
+# _delete_list(hash_ref args, array_ref files) : boolean
+#
+# Delete the rows we just found.  Apparently you can't call
+# DELETE with a CONNECT BY.  Don't ask me why, I suppose she'll die. ;-)
+# Even if you do, there's a really weird bug which causes a constraint
+# violation when you try to delete a parent in the same statement as
+# a child.  If you re-execute the statement, it succeeds.  Oracle is
+# changing the internal state to make this happen.  Very strange....
+#
+# Returns true if deleted something.
+#
+sub _delete_list {
+    my($args, $files) = @_;
+    my($rows) = 0;
+    while (@$files) {
+	my(@params);
+	for (my($i) = $_MAX_SQL_PARAMS; $i > 0; $i--) {
+	    my($file) = shift(@$files);
+	    # This may not be the absolute end, just a "level" switch
+	    last unless defined($file);
+	    push(@params, $file);
+	}
+	# First time around, this will be false
+	next unless @params;
+
+	my($params) = join(',', map {'?'} @params);
+#	unshift(@params, $args->{realm_id}, $args->{volume}->as_sql_param());
+
+	# We set volume here in case there is something really weird going on,
+	# i.e. parallel deletes.
+	my($sth) = Bivio::SQL::Connection->execute("
+	    DELETE
+	    FROM file_t
+	    WHERE file_id in ($params)",
+		\@params);
+	$rows += $sth->rows;
+    }
+    return $rows ? 1 : 0;
+}
+
 # _extract_mime_filename(string aux_info) : string
 #
 # Returns the filename or name attribute from aux_info.
@@ -667,6 +617,107 @@ sub _extract_mime_filename {
     my($name) = $2;
     $name = Bivio::Type::FileName->get_tail($name);
     return $name;
+}
+
+# _find_all_in_directory(self, hash_ref args) : array
+#
+# Returns $files and $kbytes
+#
+sub _find_all_in_directory {
+    my($self, $args) = @_;
+    my($kbytes) = 0;
+    my($files) = [];
+    # Find all the files that are children of this node
+    # in depth-first order.
+    my($statement) = Bivio::SQL::Connection->execute('
+	    SELECT file_id, bytes, level
+	    FROM file_t
+	    START WITH file_id = ?
+		AND realm_id = ?
+		AND volume = ?
+	    CONNECT BY directory_id = PRIOR file_id
+	    ORDER BY LEVEL DESC',
+		[$args->{file_id}, $args->{realm_id},
+                    $args->{volume}->as_sql_param]);
+
+    # Add in the files which this directory contains.  We insert an
+    # undef, when "level" ($row->[2]) changes.  This fixes a problem
+    # we have with Oracle which doesn't seem to allow a delete of a
+    # directory and its children always.
+    my($prev_level, $row) = -1;
+    while ($row = $statement->fetchrow_arrayref()) {
+	push(@$files, undef) unless $row->[2] == $prev_level;
+	$prev_level = $row->[2];
+	push(@$files, $row->[0]);
+	$kbytes += $self->to_kbytes($row->[1]);
+    }
+    return ($files, $kbytes);
+}
+
+# _find_by_id(self, hash_ref args) : boolean
+#
+# Finds the files to delete by id.  Returns 0 if not found.
+#
+sub _find_by_id {
+    my($self, $args) = @_;
+    # Lookup missing bytes and/or is_directory attributes
+    my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
+	SELECT bytes, is_directory
+	FROM file_t
+	WHERE realm_id = ?
+	AND volume = ?
+	AND file_id = ?
+EOF
+	    [$args->{realm_id}, $args->{volume}->as_sql_param,
+		$args->{file_id}]);
+    # Process result
+    my($row) = $statement->fetchrow_arrayref();
+    unless ($row) {
+	# NOT_FOUND means deleted
+	_trace('ignoring, not found: ', $args) if $_TRACE;
+	return 0;
+    }
+    $args->{bytes} = $row->[0];
+    $args->{is_directory} = $row->[1];
+    return 1;
+}
+
+# _find_by_name(self, hash_ref args) : boolean
+#
+# Finds files to delete by name.  Returns false if file already deleted.
+#
+sub _find_by_name {
+    my($self, $args) = @_;
+    # Get the name from FilePathList?
+    unless ($args->{directory_id}) {
+	my($fpl) = $self->get_request->unsafe_get(
+		'Bivio::Biz::Model::FilePathList');
+	$self->throw_die('DIE', 'directory_id not set!') unless $fpl;
+	$args->{directory_id} = $fpl->set_cursor_to_target;
+    }
+
+    # Try to find the bytes and file_id
+    my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
+	SELECT file_id, bytes
+	FROM file_t
+	WHERE realm_id = ?
+	AND volume = ?
+	AND directory_id = ?
+	AND name_sort = ?
+EOF
+	    [$args->{realm_id}, $args->{volume}->as_sql_param,
+		$args->{directory_id}, lc($args->{name})]);
+
+    # Process result
+    my($row) = $statement->fetchrow_arrayref();
+    unless ($row) {
+	# NOT_FOUND means deleted
+	_trace('ignoring, not found: ', $args) if $_TRACE;
+	return 0;
+    }
+    $args->{file_id} = $row->[0];
+    $args->{bytes} = $row->[1];
+    return 1;
 }
 
 # _get_aux_info_from_param(Bivio::Biz::Model::File self) : string
