@@ -217,8 +217,8 @@ _compile([
     INVESTMENTS_COST => ['Investments (cost basis)'],
     MEMBER_CAPITAL_ACCOUNTS =>
 	['Member Capital Accounts (adjusted cost basis)'],
-    UNDISTRIBUTED_EARNINGS => ['Undistributed Earnings'],
-    UNREALIZED_GAINS => ['Unrealized Gains'],
+    UNALLOCATED_EARNINGS => ['Unallocated Earnings - (Losses)'],
+    UNREALIZED_GAINS => ['Unrealized (Gains)/Losses Disbursed'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
