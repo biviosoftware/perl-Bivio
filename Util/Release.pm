@@ -453,13 +453,13 @@ EOF
 	elsif ($line eq '+') {
 	    $res .= <<"EOF";
 {
-    perl -p -e 's#[^/]+##' $_FILES_LIST
+    perl -p -e 's#^[^/]+##' $_FILES_LIST
     echo /b_release_files.list
     echo /b_release_files.exclude
 } > $_EXCLUDE_LIST
 {
     # Protect against error exit
-    %{allfiles} | fgrep -v -f $_EXCLUDE_LIST
+    %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST
 } @{[$prefix ? qq{| sed -e 's#^#$prefix#' } : '']}
 EOF
 	}
