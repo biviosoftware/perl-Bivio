@@ -37,7 +37,6 @@ This module is policy neutral with respect to error handling.  It
 holds errors and it is the responsibility of the L<catch|"catch"> caller
 and C<handle_die> implementers to do something about the errors.
 
-
 =cut
 
 =head1 CONSTANTS
