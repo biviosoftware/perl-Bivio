@@ -4,52 +4,55 @@
 #
 
 view_parent('menu');
-view_put(header_title => 'Product Information');
-
-view_put(menu_content => Form('ItemForm', Grid([
-    [
-	String(['Model.Item', '->format_name'],	'page_heading'),
-	AmountCell({
-	    field => ['Model.Item', 'list_price'],
+view_put(
+    header_title => 'Product Information',
+    menu_content => Form('ItemForm',
+	Grid([[
+	    String(['Model.Item', '->format_name'], 'page_heading'),
+	    AmountCell({
+		field => ['Model.Item', 'list_price'],
+	    }),
+	    If(
+		['Model.Inventory', 'quantity'],
+		Join([
+		    AmountCell({
+			field => ['Model.Inventory', 'quantity'],
+			decimals => 0,
+		    }),
+		    String(' in stock'),
+		]),
+		# Else
+		String('Back Ordered', 'error'),
+	    ),
+	    ImageFormButton({
+		image => 'add_to_cart',
+		field => 'ok_button',
+		alt => 'Add Item to Your Shopping Cart',
+	    }),
+	], [
+	    Image(
+		['Model.Product', 'image_name'],
+		Join([
+		    ['Model.Item', '->format_name'],
+		    ': ',
+		    ['Model.Product', 'description']
+		]),
+	    ),
+	    String(['Model.Product', 'description'], undef, {
+		cell_colspan => 2,
+		cell_align => 'S',
+	    }),
+	]], {
+	    id => 'item',
+	    string_font => 'page_text',
+	    pad => 5,
 	}),
-	If(
-	    [['->get_request'], 'Model.Inventory', 'quantity'],
-	    Join([
-		AmountCell({
-		    field => ['Model.Inventory', 'quantity'],
-		    decimals => 0,
-		}),
-		String(' in stock'),
-	    ]),
-	    # Else
-	    String('Back Ordered', 'error'),
-	   ),
-	ImageFormButton({
-	    image => 'add_to_cart',
-	    field => 'ok_button',
-	    alt => 'Add Item to Your Shopping Cart',
-	}),
-    ], [
-	Image(['Model.Product', 'image_name'],
-	    Join([
-		['Model.Item', '->format_name'],
-		': ',
-		['Model.Product', 'description']
-	    ]),
-	   ),
-	String(['Model.Product', 'description'])->put(
-	    cell_colspan => 2,
-	    cell_align => 'S',
-	   ),
-    ],
-], {
-    string_font => 'page_text',
-    pad => 5,
-})));
+    ),
+);
 
 view_pre_execute(sub {
     my($req) = @_;
-    # load the item's product model
+    # load the item's product model and puts on the request (implicitly)
     $req->get('Model.Item')->get_model('Product');
     return;
 });
