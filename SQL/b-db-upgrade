@@ -243,25 +243,74 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_email_optout();
+    _upgrade_create_account_sync_table();
+    _upgrade_add_account_name_constraint();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_email_optout()
+# _upgrade_add_account_name_constraint()
 #
-# Add want_bulletin column, and restrict it to boolean values. 
+# Adds a unique constraint to realm account names.
 #
-sub _upgrade_email_optout {
-    print("Adding want_bulletin column to email_t (default 1).\n");
-    _add_column('email_t', 'want_bulletin', 'NUMBER(1)', '1');
-    print("Restricting to boolean values.\n");
+sub _upgrade_add_account_name_constraint {
+
+    print("adding account name uniqueness constraint\n");
+
     _do_sql('
-ALTER TABLE email_t modify want_bulletin NOT NULL
+CREATE UNIQUE INDEX realm_account_t9 ON realm_account_t (
+  realm_id,
+  name
+)
+  tablespace index_1m
+  pctfree 50 initrans 4 storage (freelists 8)
 /
-ALTER TABLE email_t
-  add constraint email_t6
-  check (want_bulletin between 0 and 1)
+');
+    return;
+}
+
+# _upgrade_create_account_sync_table()
+#
+# Creates the table and associated constraints for account_sync_t.
+#
+sub _upgrade_create_account_sync_table {
+
+    print("adding table account_sync_t and constraints\n");
+
+    _do_sql('
+CREATE TABLE account_sync_t (
+  realm_transaction_id NUMBER(18),
+  realm_id NUMBER(18),
+  sync_key VARCHAR2(100)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+/
+ALTER TABLE account_sync_t
+  add constraint account_sync_t1
+  primary key(realm_transaction_id)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
+/
+ALTER TABLE account_sync_t
+  add constraint account_sync_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE account_sync_t modify realm_id not null
+/
+ALTER TABLE account_sync_t modify sync_key not null
+/
+CREATE INDEX account_sync_t3 on account_sync_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX account_sync_t4 on account_sync_t (
+  sync_key
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
 /
 ');
     return;
