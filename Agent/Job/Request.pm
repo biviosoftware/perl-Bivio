@@ -64,7 +64,7 @@ sub new {
     my($proto, $params) = @_;
     my($start_time) = Bivio::Type::DateTime->gettimeofday();
 #TODO: Need to handle Facades!
-    my($self) = Bivio::Agent::Request::internal_new($proto, {
+    my($self) = $proto->internal_new({
 	# We set the params here, because we want to override values
 	%$params,
 	start_time => $start_time,

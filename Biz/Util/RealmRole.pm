@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::RealmRole;
 use strict;
@@ -42,14 +42,7 @@ C<Bivio::Biz::Util::RealmRole> manages the RealmRole table.
 
 =head2 USAGE : string
 
-Returns:
-
-    usage: b-realm-role [options] command [args...]
-    commands:
-	edit role operation ... -- changes the permissions for realm/role
-	list [role] -- lists permissions for this realm and role or all
-	list_all [realm_type] -- lists permissions for all realms of realm_type
-	set_same old new - copies permission old to new for ALL realms
+Returns usage.
 
 =cut
 
@@ -60,7 +53,9 @@ commands:
     edit role operation ... -- changes the permissions for realm/role
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
+    make_super_user -- gives current user super_user privileges
     set_same old new - copies permission old to new for ALL realms
+    unmake_super_user -- drops current user's super_user privileges
 EOF
 }
 
@@ -224,6 +219,25 @@ EOF
     return \$res;
 }
 
+=for html <a name="make_super_user"></a>
+
+=head2 make_super_user()
+
+Makes current user an super_user (administrator of general realm).
+
+=cut
+
+sub make_super_user {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::Biz::Model->new($req, 'RealmUser')->create({
+	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
+	user_id => $req->get('auth_user_id'),
+	honorific => Bivio::Type::Honorific->ADMINISTRATOR,
+    });
+    return;
+}
+
 =for html <a name="set_same"></a>
 
 =head2 set_same(string old, string new)
@@ -250,6 +264,25 @@ sub set_same {
 	$rr->update({permission_set => $s});
     }
     $rr->iterate_end($it);
+    return;
+}
+
+=for html <a name="unmake_super_user"></a>
+
+=head2 unmake_super_user()
+
+Drops current user as super_user.  See L<make_super_user|"make_super_user">.
+
+=cut
+
+sub unmake_super_user {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::Biz::Model->new($req, 'RealmUser')->unauth_delete({
+	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
+	user_id => $req->get('auth_user_id') || 0,
+	honorific => Bivio::Type::Honorific->ADMINISTRATOR,
+    });
     return;
 }
 
@@ -334,7 +367,7 @@ sub _roles {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

@@ -79,29 +79,21 @@ sub new {
 	if ($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
 	    =~ /((?:\d+\.){3}\d+)/;
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
-    my($self) = Bivio::Agent::Request::internal_new($proto, {
+    my($self) = $proto->internal_new({
 	start_time => $start_time,
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
-	is_secure => $ENV{HTTPS} || _is_https_port($r)
-	    ? 1 : 0,
+	is_secure => $ENV{HTTPS} || _is_https_port($r) ? 1 : 0,
     });
-    $self->put_durable(
-	    start_time => $self->get('start_time'),
-	    reply => $self->get('reply'),
-	    r => $self->get('r'),
-	    client_addr => $self->get('client_addr'),
-	    is_secure => $self->get('is_secure'),
-	   );
-
     Bivio::Type::UserAgent->put_on_request(
-	    $r->header_in('user-agent') || '', $self);
+	$r->header_in('user-agent') || '', $self);
 
-    # Cookie parsed first, so referral and log code works properly.
-    my($cookie) = Bivio::Agent::HTTP::Cookie->new($self, $r);
+    # Cookie parsed first, so log code works properly.
     # We must put the cookie now, because it may be used below.
-    $self->put_durable(cookie => $cookie);
+    # auth_user (may) is set by cookie.
+    $self->put_durable(cookie => Bivio::Agent::HTTP::Cookie->new($self, $r));
+    my($auth_user) = $self->unsafe_get('auth_user');
 
     # Task next, because may not be found or task may want
     # to clear 'auth_user_id'.
@@ -115,8 +107,6 @@ sub new {
 
     # Must re-escape the URI.
     $uri = Bivio::HTML->escape_uri($uri) if $uri;
-
-    my($auth_user) = Bivio::Auth::Support->get_auth_user($self);
 
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
@@ -132,11 +122,11 @@ sub new {
     delete($query->{auth_id}) if $query;
 
     $self->put_durable(
-	    uri => $uri,
-	    query => $query,
-	    path_info => $path_info,
-	    task_id => $task_id,
-	   );
+	uri => $uri,
+	query => $query,
+	path_info => $path_info,
+	task_id => $task_id,
+    );
     $self->internal_initialize($auth_realm, $auth_user);
     return $self;
 }

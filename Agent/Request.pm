@@ -259,17 +259,21 @@ Creates a request with initial I<attributes>.
 Subclasses must call L<internal_set_current|"internal_set_current">
 when the instance is sufficiently initialized.
 
+I<attributes> is put_durable.
+
 =cut
 
 sub internal_new {
-    my($proto, $hash) = @_;
-    my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
-    $self->put_durable(durable_keys => {durable_keys => 1});
-    $self->put_durable(request => $self,
-	    is_production => $_IS_PRODUCTION,
-	    txn_resources => [],
-	    can_secure => $_CAN_SECURE,
-	   );
+    my($proto, $attributes) = @_;
+    my($self) = $proto->SUPER::new({durable_keys => {durable_keys => 1}});
+    $self->put_durable(
+	# Initial keys 
+	%$attributes,
+	request => $self,
+	is_production => $_IS_PRODUCTION,
+	txn_resources => [],
+	can_secure => $_CAN_SECURE,
+    );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
     _trace($self) if $_TRACE;
@@ -947,6 +951,35 @@ sub is_production {
     return $_IS_PRODUCTION;
 }
 
+=for html <a name="is_substitute_user"></a>
+
+=head2 is_substitute_user() : boolean
+
+Returns true if the user is a substituted user.
+
+=cut
+
+sub is_substitute_user {
+    return shift->unsafe_get('super_user_id') ? 1 : 0;
+}
+
+=for html <a name="is_super_user"></a>
+
+=head2 is_super_user(string user_id) : boolean
+
+Returns true if I<user_id> is a super user.  If I<user_id> is undef,
+uses Request.auth_user_id.
+
+=cut
+
+sub is_super_user {
+    my($self, $user_id) = @_;
+    return Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
+	realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
+	user_id => $user_id || $self->get('auth_user_id'),
+    });
+}
+
 =for html <a name="push_txn_resource"></a>
 
 =head2 push_txn_resource(any resource)
@@ -974,7 +1007,7 @@ redirects.
 
 sub put_durable {
     my($self) = shift;
-    my($durable_keys) = $self->get_or_default('durable_keys', {});
+    my($durable_keys) = $self->get('durable_keys');
     for (my ($i) = 0; $i < int(@_); $i += 2) {
 	$durable_keys->{$_[$i]} = 1;
     }
@@ -1265,7 +1298,7 @@ sub _get_role {
 	    qw(auth_user user_realms));
 
     # If no user, then is always anonymous
-    return Bivio::Auth::Role::ANONYMOUS() unless $auth_user;
+    return Bivio::Auth::Role->ANONYMOUS unless $auth_user;
 
     # Not the current realm, but an authenticated realm
     return $user_realms->{$realm_id}->{'RealmUser.role'}

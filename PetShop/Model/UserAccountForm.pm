@@ -146,10 +146,6 @@ sub internal_initialize {
 	    'EntityAddress.country',
 	    'EntityPhone.phone',
 	    {
-		name => 'RealmOwner.name',
-		constraint => 'NONE',
-	    },
-	    {
 		name => 'RealmOwner.password',
 		constraint => 'NONE',
 	    },
@@ -176,14 +172,8 @@ sub validate {
 	$self->validate_not_null('User.last_name');
     }
 
-    if (_is_editing($self)) {
-	$self->internal_put_field('RealmOwner.name'
-		=> $self->get_request->get('auth_user')->get('name'));
-    }
-    else {
-	foreach my $field (qw(RealmOwner.name RealmOwner.password)) {
-	    $self->validate_not_null($field);
-	}
+    unless (_is_editing($self)) {
+	$self->validate_not_null('RealmOwner.password');
     }
     return;
 }
@@ -223,10 +213,11 @@ sub _create_user {
     my($req) = $self->get_request;
 
     my($user) = $self->new($req, 'User')->create(
-	    $self->get_model_properties('User'));
+	$self->get_model_properties('User'));
 
     my($realm) = $self->new($req, 'RealmOwner')->create({
 	%{$self->get_model_properties('RealmOwner')},
+        name => 'u' . $user->get('user_id'),
 	realm_id => $user->get('user_id'),
 	realm_type => Bivio::Auth::RealmType->USER,
 	password => Bivio::Type::Password->encrypt(
@@ -244,13 +235,9 @@ sub _create_user {
 	location => Bivio::Type::Location->HOME,
 	%{$self->get_model_properties('Email')},
     });
-
-    # log the user in
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $realm,
-    }) if $req->unsafe_get('cookie');
-
-    $req->set_user($realm);
+    });
     $req->set_realm($realm);
     _create_default_account($self);
     return;

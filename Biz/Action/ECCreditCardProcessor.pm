@@ -41,6 +41,7 @@ Technical details can be found in
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -263,7 +264,7 @@ sub _transact_form_data {
             '&x_Exp_Date='.$exp_date.
             '&x_Cust_ID='.$payment->get('realm_id').
             '&x_Invoice_Num='.$payment->get('ec_payment_id').
-	    '&x_Zip='.$cc_payment->get('card_zip').
+	    '&x_Zip='.Bivio::HTML->escape_uri($cc_payment->get('card_zip')).
             $test_request;
 }
 

@@ -43,18 +43,6 @@ without a database.  Always grants permissions to the user.
 
 =cut
 
-=for html <a name="get_auth_user"></a>
-
-=head2 get_auth_user() : Bivio::Biz::Model
-
-Returns C<undef>.  No auth user.
-
-=cut
-
-sub get_auth_user {
-    return undef;
-}
-
 =for html <a name="load_permissions"></a>
 
 =head2 load_permissions() : Bivio::Auth::PermissionSet

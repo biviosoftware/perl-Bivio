@@ -205,6 +205,10 @@ your browser has not submitted the file correctly; please try again
 
 file cannot be empty
 
+=item OFFLINE_USER
+
+operation not allowed for offline user
+
 =back
 
 =cut
@@ -448,7 +452,11 @@ sub get_delegate_info {
 	undef,
 	'file cannot be empty',
     ],
-];
+    OFFLINE_USER => [
+	44,
+	undef,
+	'operation not allowed for offline user',
+    ],
 }
 
 #=PRIVATE METHODS
