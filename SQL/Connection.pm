@@ -81,13 +81,13 @@ sub MAX_RETRIES {
 }
 
 #=IMPORTS
-use Bivio::Type::DateTime;
-use Bivio::HTML;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
+use Bivio::Type::DateTime;
 use DBD::Oracle qw(:ora_types);
 
 #=VARIABLES
