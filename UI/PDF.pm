@@ -1,4 +1,3 @@
-
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::PDF;
