@@ -135,7 +135,6 @@ use Bivio::UI::Align;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
-    Bivio::UI::HTML::Widget::Form->new();
 
 =cut
 
