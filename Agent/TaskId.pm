@@ -729,7 +729,7 @@ my(@_CFG) = (
         ADMIN_READ&MEMBER_READ
         ?/admin/invites:?/admin/invitations
         Bivio::Biz::Model::RealmInviteList->execute_load_all_with_query
-        Bivio::Biz::Model::ClubUserList->execute_load_all
+        Bivio::Biz::Model::ClubUserList->execute_load_all_active
         Bivio::UI::HTML::Club::InviteList
     )],
     # This technically doesn't have to be in your domain
@@ -1310,7 +1310,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         ?/admin/invite/offline_members
         Bivio::Biz::Action::NotDemoClub
-        Bivio::Biz::Model::UninvitedMemberList->execute_load_all
+        Bivio::Biz::Model::UninvitedMemberList->execute_load_all_active
         Bivio::Biz::Model::InviteMemberListForm
         Bivio::UI::HTML::Club::InviteMemberList
         next=CLUB_ADMIN_USER_LIST
@@ -2093,7 +2093,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
-        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all_active
         Bivio::Biz::Model::MemberInstrumentWithdrawalListForm
         Bivio::UI::HTML::Club::MemberInstrumentWithdrawalList
         next=CLUB_ACCOUNTING_MEMBER_LIST
@@ -2453,6 +2453,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditPreferences
         next=USER_ADMIN_PREFERENCES_EDIT
         help=change-preferences
+        require_context=0
     )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
@@ -2518,6 +2519,18 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Action::RealmAccountDelete
+    )],
+    # Name must have USER_ADMIN_PREFERENCES_EDIT.  See Widget::EditPreferences
+    [qw(
+        USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT
+        243
+        USER
+        ADMIN_WRITE
+        ?/admin/edit/preferences/internal
+        Bivio::Biz::Model::EditPreferencesForm
+        Bivio::UI::HTML::User::EditPreferences
+        next=USER_ADMIN_PREFERENCES_EDIT
+        help=change-preferences
     )],
 );
 
