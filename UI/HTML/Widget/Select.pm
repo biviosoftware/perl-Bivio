@@ -203,7 +203,7 @@ sub _load_items_from_list {
     my($list) = $source->get_widget_value($self->get('choices'));
     my($display_name) = $self->get('list_display_field');
     my($id_name) = $self->get('list_id_field');
- 
+
     # id, display pairs
     my(@items);
     while($list->next_row) {
