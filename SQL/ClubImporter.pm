@@ -30,13 +30,13 @@ member info, instrument info, and transactions.
 
 #=IMPORTS
 use Bivio::Agent::TestRequest;
-use Bivio::Biz::PropertyModel::AccountEntry;
-use Bivio::Biz::PropertyModel::ClubInstrument;
-use Bivio::Biz::PropertyModel::ClubInstrumentEntry;
-use Bivio::Biz::PropertyModel::ClubInstrumentValuation;
+use Bivio::Biz::PropertyModel::RealmInstrument;
+use Bivio::Biz::PropertyModel::RealmInstrumentEntry;
+use Bivio::Biz::PropertyModel::RealmInstrumentValuation;
 use Bivio::Biz::PropertyModel::Entry;
 use Bivio::Biz::PropertyModel::MemberEntry;
-use Bivio::Biz::PropertyModel::Transaction;
+use Bivio::Biz::PropertyModel::RealmAccountEntry;
+use Bivio::Biz::PropertyModel::RealmTransaction;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::EntryClass;
@@ -412,10 +412,10 @@ my($_INSTRUMENT_TRANSACTION_FORMAT) = {
 	    'id', 'int2',
 	    'dttm', 'date2',
 	    'transaction_type', 'int2',
-	    'shares', 'double8',
+	    'count', 'double8',
 	    'amount', 'double8',
 	    'remark', 'string30',
-	    'block', 'int2',
+	    'external_identifier', 'int2',
 	   ],
 };
 
@@ -503,7 +503,7 @@ sub import_members {
 =head2 import_instruments(hash attributes)
 
 Imports instrument information from easyware data files. Loads the
-club_instrument_t and club_instrument_valuation_t tables.
+realm_instrument_t and realm_instrument_valuation_t tables.
 
 Attributes:
 
@@ -516,7 +516,7 @@ Result:
    {
       club_id => <id>,            # the target club's id
       instrument_id_map => {      # easyware id to instrument id map
-         <easyware_id> => <club_instrument_id>,
+         <easyware_id> => <realm_instrument_id>,
          ...
          },
    }
@@ -531,8 +531,8 @@ sub import_instruments {
     my($valuations) = _parse_file($self, $_VALUATION_FORMAT);
 
     my($req) = Bivio::Agent::TestRequest->new({});
-    my($instrument) = Bivio::Biz::PropertyModel::ClubInstrument->new($req);
-    my($valuation) = Bivio::Biz::PropertyModel::ClubInstrumentValuation
+    my($instrument) = Bivio::Biz::PropertyModel::RealmInstrument->new($req);
+    my($valuation) = Bivio::Biz::PropertyModel::RealmInstrumentValuation
 	    ->new($req);
 
     # load the club instruments
@@ -542,21 +542,21 @@ sub import_instruments {
 	$instrument->create({
 	    instrument_id => _lookup_instrument($inst->{ticker_symbol})
 	    ->get('instrument_id'),
-	    club_id => $attributes->{club_id},
+	    realm_id => $attributes->{club_id},
 	    account_number => $inst->{account_number},
 	    average_cost_method => $inst->{average_cost_method},
 	    drp_plan => $inst->{drp_plan},
 	    remark => $inst->{remark},
 	});
 	$attributes->{instrument_id_map}->{$inst->{instrument_id}}
-	    = $instrument->get('club_instrument_id');
+	    = $instrument->get('realm_instrument_id');
     }
 
     # load instrument valuations
     my($val);
     foreach $val (@$valuations) {
 	$valuation->create({
-	    club_instrument_id => $attributes->{instrument_id_map}
+	    realm_instrument_id => $attributes->{instrument_id_map}
 	    ->{$val->{instrument_id}},
 	    dttm => $val->{dttm},
 	    price_per_share => $val->{price_per_share},
@@ -577,12 +577,13 @@ Attributes:
 
    {
       club_id => <id>,            # the target club's id
+      user_id => <id>             # user doing the import
       member_id_map => {          # easyware id to user id map
          <easyware_id> => <user_id>,
          ...
          },
       instrument_id_map => {      # easyware id to instrument id map
-         <easyware_id> => <club_instrument_id>,
+         <easyware_id> => <realm_instrument_id>,
          ...
          },
 #TODO: account names need to be constants defined somewhere
@@ -703,21 +704,22 @@ sub _compile_type_map {
     }
 }
 
-# _create_transaction(ID club_id, EntryClass class, date dttm) : Transaction
+# _create_transaction(ID club_id, ID user_id, EntryClass class, date dttm) : Transaction
 #
-# Creates a Bivio::Biz::PropertyModel::Transactions from the specified
+# Creates a Bivio::Biz::PropertyModel::RealmTransactions from the specified
 # data.
 
 sub _create_transaction {
-    my($club_id, $class, $dttm) = @_;
+    my($club_id, $user_id, $class, $dttm) = @_;
 
     my($req) = Bivio::Agent::TestRequest->new({});
-    my($transaction) = Bivio::Biz::PropertyModel::Transaction->new($req);
+    my($transaction) = Bivio::Biz::PropertyModel::RealmTransaction->new($req);
 
     $transaction->create({
-	club_id => $club_id,
+	realm_id => $club_id,
 	source_class => $class->as_int(),
 	dttm => $dttm,
+	user_id => $user_id
     });
 
     return $transaction;
@@ -911,7 +913,7 @@ sub _create_entry {
 	    $transaction->get_request());
 
     $entry->create({
-	transaction_id => $transaction->get('transaction_id'),
+	realm_transaction_id => $transaction->get('realm_transaction_id'),
 	class => $trans->{class}->as_int(),
 	entry_type => $_TYPE_MAP->{
 	    $trans->{transaction_type}}->[0]->as_int(),
@@ -933,24 +935,24 @@ sub _create_entry {
     }
     elsif ($trans->{class} == Bivio::Type::EntryClass->INSTRUMENT) {
 	my($instrument_entry) =
-		Bivio::Biz::PropertyModel::ClubInstrumentEntry->new(
+		Bivio::Biz::PropertyModel::RealmInstrumentEntry->new(
 			$transaction->get_request());
 	$instrument_entry->create({
 	    entry_id => $entry->get('entry_id'),
-	    club_instrument_id => $attributes->{instrument_id_map}->{
+	    realm_instrument_id => $attributes->{instrument_id_map}->{
 		$trans->{id}},
-	    shares => $trans->{shares},
-	    block => $trans->{block},
+	    count => $trans->{count},
+	    external_identifier => $trans->{external_identifier},
 	});
     }
     elsif ($trans->{class} == Bivio::Type::EntryClass->CASH) {
-	my($account_entry) = Bivio::Biz::PropertyModel::AccountEntry->new(
+	my($account_entry) = Bivio::Biz::PropertyModel::RealmAccountEntry->new(
 		$transaction->get_request());
 
 	my($account) = $trans->{account_type};
 	$account_entry->create({
 	    entry_id => $entry->get('entry_id'),
-	    account_id => $attributes->{accounts}->{
+	    realm_account_id => $attributes->{accounts}->{
 #TODO: use constants
 		$account == 0 ? 'bank'
 		: $account == 1 ? 'broker'
@@ -1082,7 +1084,7 @@ sub _process_transactions {
 
 	my($dttm) = $trans->{dttm};
 	my($transaction) = _create_transaction($attributes->{club_id},
-		$trans->{class}, $dttm);
+		$attributes->{user_id},	$trans->{class}, $dttm);
 
 	_create_entries($easyware_trans, $transaction, $trans->{id}, $dttm,
 		$trans->{transaction_type}, $attributes);
