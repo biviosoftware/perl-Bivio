@@ -155,18 +155,19 @@ sub get_field_descriptor {
     return &_get_property_info_value($self, $name, 1);
 }
 
-=for html <a name="get_fields_names"></a>
+=for html <a name="get_field_names"></a>
 
-=head2 get_fields_names() : array
+=head2 get_field_names() : array
 
 Returns an array of field names.
 
 =cut
 
-sub get_fields_names {
+sub get_field_names {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return \keys(%{$fields->{properties}});
+    my(@names) = keys(%{$fields->{properties}});
+    return \@names;
 }
 
 =for html <a name="internal_get_fields"></a>
