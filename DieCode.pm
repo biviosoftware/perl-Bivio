@@ -121,6 +121,10 @@ error reading or writing to the client.
 
 two or more people are trying to update your records simultaneously
 
+=item DB_ERROR: entity, class, error
+
+unexpected error while communicating with database
+
 =back
 
 =cut
@@ -225,6 +229,11 @@ __PACKAGE__->compile(
 	18,
 	undef,
 	'two or more people are trying to update your records simultaneously',
+    ],
+    DB_ERROR => [
+	19,
+	undef,
+	'unexpected error while communicating with database',
     ],
 );
 
