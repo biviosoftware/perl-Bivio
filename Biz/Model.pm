@@ -358,6 +358,22 @@ sub get_model {
     return $model;
 }
 
+=for html <a name="get_qualified"></a>
+
+=head2 get_qualified(string field) : any
+
+Returns the qualified field value if it exists or strips the model from
+I<field> and tries to get unqualified.
+
+=cut
+
+sub get_qualified {
+    my($self, $field) = @_;
+    return $self->has_keys($field) ? $self->get($field)
+	: $self->get(($field =~ /(?<=\.)(\w+)$/)[0]
+	    || $self->die($field, ': not a qualified name'));
+}
+
 =for html <a name="has_iterator"></a>
 
 =head2 has_iterator() : boolean
