@@ -28,6 +28,10 @@ C<Bivio::Delegate::SimpleTaskId> defines the standard tasks typically used by a
 site.  If you subclass this class, you need to define you tasks with numbers
 500 and above.
 
+If you want to replace a task here, use the same name and number, so that
+L<merge_task_info|"merge_task_info"> doesn't tried to create two tasks with the
+same name.
+
 =cut
 
 #=IMPORTS
