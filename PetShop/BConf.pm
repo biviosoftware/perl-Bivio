@@ -100,6 +100,9 @@ sub dev {
 		    http_host => "$host:$port",
 		    mail_host => $host,
 		},
+		'Bivio::UI::HTML::Widget::SourceCode' => {
+		    source_dir => "$pwd/src",
+		},
 		'Bivio::IO::Alert' => {
 		    want_time => 0,
 		},
