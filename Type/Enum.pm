@@ -38,7 +38,8 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 =cut
 
 #=IMPORTS
-# also uses Bivio::TypeError dynamically
+# also uses Bivio::TypeError dynamically.  Used by DieCode and
+# therefore Bivio::Die, so don't import Bivio::Die.
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 
@@ -86,10 +87,10 @@ Returns enum value for specified name in a case-insensitive manner.
 
 sub from_name {
     my($proto, $name) = @_;
-    die($name, ': is not a string') if ref($name);
+    Bivio::IO::Alert->bootstrap_die($name, ': is not a string') if ref($name);
     $name = uc($name);
     my($info) = _get_info($proto, $name);
-    Bivio::IO::Alert->die($name, ': is not the name of an ',
+    Bivio::IO::Alert->bootstrap_die($name, ': is not the name of an ',
 	    ref($proto) || $proto) unless $name eq $info->[3];
     return $info->[5];
 }
@@ -137,7 +138,7 @@ ASSERTS: I<name> is not a ref.
 
 sub unsafe_from_name {
     my($proto, $name) = @_;
-    Bivio::IO::Alert->die($name, ': is not a string') if ref($name);
+    Bivio::IO::Alert->bootstrap_die($name, ': is not a string') if ref($name);
     my($info) = _get_info($proto, uc($name), 1);
     return $info ? $info->[5] : undef;
 }
@@ -193,7 +194,7 @@ Performs the numeric comparison of the enum values.
 
 sub compare {
     my(undef, $left, $right) = @_;
-    Bivio::IO::Alert->die(ref($left), ' != ', ref($right),
+    Bivio::IO::Alert->bootstrap_die(ref($left), ' != ', ref($right),
 	    ': type mismatch') unless ref($left) eq ref($right);
     return $left->as_int <=> $right->as_int;
 }
@@ -242,8 +243,10 @@ Reference an Enum value with:
 
 sub compile {
     my($pkg, $args) = @_;
-    defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
-    Bivio::IO::Alert->die($pkg, ': first argument must be an array_ref')
+    Bivio::IO::Alert->bootstrap_die($pkg, ': already compiled')
+		if defined($_MAP{$pkg});
+    Bivio::IO::Alert->bootstrap_die($pkg,
+	    ': first argument must be an array_ref')
 		if ref($args) ne 'ARRAY';
     # Will warn if odd number of elements
     my($info) = {@$args};
@@ -254,7 +257,7 @@ sub compile {
 	# code simpler.  We know that all array_refs are uniquely named.
 	my(%found);
 	foreach my $k (@$args) {
-	    Bivio::IO::Alert->die($k, ': duplicate entry')
+	    Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
 			if $found{$k}++;
 	}
     }
@@ -270,9 +273,9 @@ sub compile {
     my($long_width) = 0;
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
-	Bivio::IO::Alert->die($pkg, '::', $name, ': is a reserved word')
+	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name, ': is a reserved word')
 		    if $pkg->can($name);
-	Bivio::IO::Alert->die($pkg, '::', $name,
+	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
 		': does not point to an array')
 		    unless ref($d) eq 'ARRAY';
 	unless (defined($d->[1])) {
@@ -286,12 +289,13 @@ sub compile {
 	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
 	# Remove aliases
 	my(@aliases) = splice(@$d, 3);
-	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid number "',
-		$d->[0], '"')
+	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
+		': invalid number "', $d->[0], '"')
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
 
 	# Enforce to our syntax (not any syntax)
-	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid enum name')
+	Bivio::IO::Alert->bootstrap_die($pkg, '::', $name,
+		': invalid enum name')
 		    unless __PACKAGE__->is_valid_name($name);
 
 	# Fill out declaration to reverse map number to name (index 3)
@@ -310,7 +314,8 @@ sub compile {
 	    $min = $max = $d;
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
-	Bivio::IO::Alert->die($pkg, '::', $d->[0], ': duplicate int value (',
+	Bivio::IO::Alert->bootstrap_die($pkg, '::', $d->[0],
+		': duplicate int value (',
 		$d->[3], ' and ', $info->{$d->[0]}->[3], ')')
 		    if defined($info->{$d->[0]});
 	$info->{$d->[0]} = $d;
@@ -319,7 +324,8 @@ sub compile {
 	$info->{uc($d->[2])} = $d unless defined($info->{uc($d->[2])});
 	# Map extra aliases
 	foreach my $alias (@aliases) {
-	    Bivio::IO::Alert->die($pkg, '::', $alias, ': duplicate alias')
+	    Bivio::IO::Alert->bootstrap_die($pkg, '::', $alias,
+		    ': duplicate alias')
 			if defined($info->{uc($alias)});
 	    $info->{uc($alias)} = $d;
 	}
@@ -332,11 +338,12 @@ sub compile {
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
     }
-    defined($min) || Bivio::IO::Alert->die($pkg, ': no values');
+    defined($min) || Bivio::IO::Alert->bootstrap_die($pkg, ': no values');
     if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
-            Bivio::IO::Alert->die($pkg, ': missing number (', $n, ') in enum')
+            Bivio::IO::Alert->bootstrap_die($pkg,
+                ': missing number (', $n, ') in enum')
 	        unless defined($info->{$n});
 	}
     }
@@ -401,7 +408,7 @@ Put I<self> on the request as its class.
 
 sub execute {
     my($self, $req) = @_;
-    die('not a reference') unless ref($self);
+    Bivio::IO::Alert->bootstrap_die('not a reference') unless ref($self);
     $req->put(ref($self) => $self);
     return 0;
 }
@@ -453,7 +460,7 @@ Return number of elements.
 =cut
 
 sub get_count {
-    die('abstract method');
+    Bivio::IO::Alert->bootstrap_die('abstract method');
 }
 
 =for html <a name="get_decimals"></a>
@@ -478,7 +485,7 @@ any particular order.
 =cut
 
 sub get_list {
-    die('abstract method');
+    Bivio::IO::Alert->bootstrap_die('abstract method');
 }
 
 =for html <a name="get_long_desc"></a>
@@ -544,6 +551,8 @@ and the rest of the arguments.
 
 sub get_widget_value {
     my($self, $method) = (shift, shift);
+    Bivio::IO::Alert->warn_deprecated('method must be in brackets')
+		if @_;
     # Delete leading -> for compatibility with "standard" get_widget_value
     $method =~ s/^\-\>//;
     my($value) = $self->$method();
@@ -559,7 +568,7 @@ Defines the maximum width of L<get_name|"get_name">.
 =cut
 
 sub get_width {
-    die('abstract method');
+    Bivio::IO::Alert->bootstrap_die('abstract method');
 }
 
 =for html <a name="get_width_long_desc"></a>
@@ -571,7 +580,7 @@ Defines the maximum width of L<get_long_desc|"get_long_desc">.
 =cut
 
 sub get_width_long_desc {
-    die('abstract method');
+    Bivio::IO::Alert->bootstrap_die('abstract method');
 }
 
 =for html <a name="get_width_short_desc"></a>
@@ -583,7 +592,7 @@ Defines the maximum width of L<get_short_desc|"get_short_desc">.
 =cut
 
 sub get_width_short_desc {
-    die('abstract method');
+    Bivio::IO::Alert->bootstrap_die('abstract method');
 }
 
 =for html <a name="is_continuous"></a>
@@ -697,7 +706,7 @@ sub _get_info {
     Carp::croak($self, ': not an enumerated type') unless defined($info);
     defined($ident) || ($ident = $self);
     return $info->{$ident} if defined($info->{$ident});
-    Bivio::IO::Alert->die($ident, ': no such ', ref($self) || $self)
+    Bivio::IO::Alert->bootstrap_die($ident, ': no such ', ref($self) || $self)
 		unless $dont_die;
     return undef;
 }
