@@ -82,7 +82,7 @@ sub parse {
 		    ', user-agent=', $r ? $r->header_in('user-agent') : undef,
 		   );
 	}
-	$string =~ Bivio::Util::unescape_uri($string);
+	$string = Bivio::Util::unescape_uri($string);
     }
 
     # Split on & and then =
