@@ -404,7 +404,7 @@ _compile(
 
     # Announcements
     CALLING_ALL_CLUBS => ['Calling All Clubs!'],
-    YAHOO_20000713 => ['Yahoo! Live Webcast'],
+    YAHOO_20000713 => ['Yahoo! Interview'],
     COMPUFEST_2000 => ['CompuFest 2000'],
     ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
     A_NEW_LOOK =>['A New Look'],
@@ -429,6 +429,8 @@ _compile(
     HELP_ACCOUNT_TRANSACTIONS => ['Account Transactions'],
     HELP_INVESTMENT_TRANSACTIONS => ['Investment Transactions'],
     HELP_MEMBER_TRANSACTIONS => ['Member Transactions'],
+    HELP_DELETING_TRANSACTIONS => ['Deleting Transactions'],
+    HELP_TAX_ALLOCATION_METHODS => ['Tax Allocation Methods'],
 );
 
 =head1 METHODS
