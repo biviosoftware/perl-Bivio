@@ -683,7 +683,7 @@ sub vs_highlight {
 
 =for html <a name="vs_href_goto"></a>
 
-=head2 href_goto(any uri) : array_ref
+=head2 vs_href_goto(any uri) : array_ref
 
 Widget value to create a goto link href for "offsite" links.
 I<uri> may be a string, task, or an array_ref (widget value).
@@ -906,6 +906,19 @@ sub vs_link_amazon {
     });
 }
 
+=for html <a name="vs_link_ameritrade"></a>
+
+=head2 static vs_link_ameritrade(any label) : Bivio::UI::Widget
+
+Returns a ameritrade ad link.
+
+=cut
+
+sub vs_link_ameritrade {
+    my($proto, $label) = @_;
+    return $proto->vs_link_goto($label, $proto->vs_uri_ameritrade);
+}
+
 =for html <a name="vs_link_ask_candis"></a>
 
 =head2 static vs_link_ask_candis() : Bivio::UI::HTML::Widget::Link
@@ -916,6 +929,19 @@ Returns a link to Trez Talk.
 
 sub vs_link_ask_candis {
     return shift->vs_link('Ask Candis', '/ask_candis');
+}
+
+=for html <a name="vs_link_buyandhold"></a>
+
+=head2 static vs_link_buyandhold(any label) : Bivio::UI::Widget
+
+Returns a buyandhold ad link.
+
+=cut
+
+sub vs_link_buyandhold {
+    my($proto, $label) = @_;
+    return $proto->vs_link_goto($label, $proto->vs_uri_buyandhold);
 }
 
 =for html <a name="vs_link_goto"></a>
@@ -1453,6 +1479,32 @@ sub vs_tour {
 	    $proto->vs_link('take the tour', 'TOUR'),
 	    $proto->vs_string(" which you'll find on the bivio home page.\n"),
     ]);
+}
+
+=for html <a name="vs_uri_ameritrade"></a>
+
+=head2 static vs_uri_ameritrade() : string
+
+Returns the href used for Ameritrade.
+
+=cut
+
+sub vs_uri_ameritrade {
+    return 'http://www.ameritrade.com/o.cgi?a=EWK&o=RJB&p=/html'
+	    .'/memberperks.fhtml';
+}
+
+=for html <a name="vs_uri_buyandhold"></a>
+
+=head2 vs_uri_buyandhold() : string
+
+Returns the BUYandHOLD ad link.
+
+=cut
+
+sub vs_uri_buyandhold {
+    return 'http://www.buyandhold.com/Buy?request=rr.refBy&ref=BIVIO'
+	    .'&dest=/bh/en/advert/closed/bivio/bivio.html';
 }
 
 =for html <a name="vs_whats_this"></a>
