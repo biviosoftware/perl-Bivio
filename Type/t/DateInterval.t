@@ -6,6 +6,7 @@ use Bivio::Test;
 use Bivio::Type::DateInterval;
 use Bivio::Type::Date;
 my($_D) = 'Bivio::Type::Date';
+my($unit) = 'Bivio::Type::DateInterval';
 Bivio::Test->new({
     compute_params => sub {
 	my($object, $method, $params) = @_;
@@ -20,17 +21,7 @@ Bivio::Test->new({
 	return $_D->from_literal_or_die($expected->[0]) eq $actual->[0];
     }
 })->unit([
-    Bivio::Type::DateInterval->NONE => [
-	inc => [
-	    ['1/1/1911'] => ['1/1/1911'],
-	    ['3/3/2000'] => ['3/3/2000'],
-	],
-	dec => [
-	    ['1/1/1911'] => ['1/1/1911'],
-	    ['3/3/2000'] => ['3/3/2000'],
-	],
-    ],
-    Bivio::Type::DateInterval->DAY => [
+    $unit->DAY => [
 	inc => [
 	    ['1/1/1911'] => ['1/2/1911'],
 	    ['1/31/2000'] => ['2/1/2000'],
@@ -42,7 +33,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    Bivio::Type::DateInterval->WEEK => [
+    $unit->WEEK => [
 	inc => [
 	    ['1/1/1911'] => ['1/8/1911'],
 	    ['12/31/2000'] => ['1/7/2001'],
@@ -54,7 +45,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    Bivio::Type::DateInterval->BEGINNING_OF_YEAR => [
+    $unit->BEGINNING_OF_YEAR => [
 	inc => [
 	    ['5/5/1999'] => ['1/1/2000'],
 	    ['1/1/1911'] => ['1/1/1912'],
@@ -66,7 +57,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
         ],
     ],
-    Bivio::Type::DateInterval->MONTH => [
+    $unit->MONTH => [
 	inc => [
 	    ['1/1/1911'] => ['2/1/1911'],
 	    ['1/31/2000'] => ['2/29/2000'],
@@ -79,7 +70,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    Bivio::Type::DateInterval->YEAR => [
+    $unit->YEAR => [
 	inc => [
 	    ['1/1/1911'] => ['1/1/1912'],
 	    ['2/29/2000'] => ['2/28/2001'],
@@ -92,7 +83,7 @@ Bivio::Test->new({
 	    [$_D->get_max] => ['12/31/2198'],
 	],
     ],
-    Bivio::Type::DateInterval->FISCAL_YEAR => [
+    $unit->FISCAL_YEAR => [
 	inc => [
 	    ['3/3/1911'] => ['1/1/1912'],
 	    ['1/1/1999'] => ['1/1/2000'],
