@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * added Bivio::Test::LanguageHTTP->verify_mail to read mail received.
+  * added email_user and mail_tries configuration values for
+    Bivio::Test::LanguageHTTP.
+
+  Revision 2.31  2004/09/15 20:50:01  dobbs
   * Bivio::Mail::Common->send() can now accept a string
   * Bivio::Test::Language::HTTP->verify_form() now correctly submits
     button values
