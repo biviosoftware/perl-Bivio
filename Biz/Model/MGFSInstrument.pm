@@ -105,12 +105,12 @@ sub from_mgfs {
 	my($data_type) = Bivio::Data::MGFS::DataType->from_mgfs(
 		substr($record, 4, 1));
 	if ($data_type == Bivio::Data::MGFS::DataType::STOCK()) {
-	    # skip companies, the names are shorter than the q files
-	    # but still need to process industries and composites,
-	    # they don't exists in q files
-	    return 1;
+	    $fields->{is_stock} = 1;
+	    $fields->{ignore_name} = 1;
 	}
-	$fields->{is_stock} = 0;
+	else {
+	    $fields->{is_stock} = 0;
+	}
     }
     return $self->SUPER::from_mgfs($record, $file);
 }
@@ -126,10 +126,10 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    indb01 => [0, 0],
-	    chgdb01 => [0, 1],
-	    qspvsd => [1, 1],
-	    qcpvsd => [1, 1],
+	    indb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+	    chgdb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_OR_UPDATE()],
+	    qspvsd => [1, Bivio::Biz::Model::MGFSBase::UPDATE_ONLY()],
+	    qcpvsd => [1, Bivio::Biz::Model::MGFSBase::UPDATE_ONLY()],
 	},
 	format => [
 	    {
@@ -160,14 +160,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_instrument_t',
 	columns => {
-	    mg_id => ['Bivio::Data::MGFS::Id',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-            instrument_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            symbol => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+	    mg_id => ['Bivio::Data::MGFS::Id', 'PRIMARY_KEY'],
+            instrument_id => ['PrimaryId', 'NOT_NULL'],
+            name => ['Line', 'NOT_NULL'],
+            symbol => ['Name', 'NOT_NULL'],
         },
     };
 }
@@ -182,10 +178,17 @@ Updates an MGFS Instrument, and its corresponding Instrument.
 
 sub update {
     my($self, $new_values) = @_;
+    my($fields) = $self->{$_PACKAGE};
     return if defined($new_values->{mg_id})
 	    && ($new_values->{mg_id} eq 'DATE');
     # workaround for unnamed MGFS data
     return if exists($new_values->{name}) && $new_values->{name} eq '';
+
+    # ignore the name when updating from CHGDB01
+    # the names are much better in the Q files
+    if ($fields->{ignore_name}) {
+	$new_values->{name} = $self->get('name');
+    }
 
     $new_values = _synchronize_instrument($self, $new_values, 1);
     $self->SUPER::update($new_values);
