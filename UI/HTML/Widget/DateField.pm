@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Widget::DateField;
 use strict;
 $Bivio::UI::HTML::Widget::DateField::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::DateField::VERSION;
 
 =head1 NAME
 
@@ -166,8 +167,9 @@ sub render {
 
     # If field in error, just return the value user entered
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field)
-	    .' value="';
+    $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' readonly' unless $form->is_field_editable($field);
+    $$buffer .= ' value="';
  SWITCH:
     {
 	if ($form->get_field_error($field)) {
