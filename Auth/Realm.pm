@@ -59,6 +59,8 @@ Named retrieved from realm owner.  Not defined for the general realm.
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
 use Bivio::Agent::TaskId;
+use Bivio::Auth::Realm::Club;
+use Bivio::Auth::Realm::User;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::Model::RealmOwner;
