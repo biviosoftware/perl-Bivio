@@ -80,7 +80,7 @@ Creates a mail message model from a L<Bivio::Mail::Message>.
 
 sub create {
     my($self, $msg, $mail_id, $date) = @_;
-    my($req) = $self->unsafe_get_request;
+    my($req) = $self->get_request;
     my($realm_owner) = $req->get('auth_realm')->get('owner');
     my($realm_id, $realm_name) = $realm_owner->get('realm_id', 'name');
 
@@ -178,7 +178,7 @@ Returns 1 if successful, 0 otherwise.
 
 sub delete {
     my($self) = shift;
-    my($req) = $self->unsafe_get_request;
+    my($req) = $self->get_request;
     my($properties) = $self->internal_get;
 
     # Is message part of a thread, but not the thread root?
@@ -299,8 +299,8 @@ sub cache_parts {
             $file->delete(file_id => $cache_file_id, volume => $volume);
         }
     }
-    my($cache_id) = _walk_attachment_tree($self, $entity,
-            $root_id, $user_id, $self->get('mail_id'));
+    my($cache_id) = _walk_attachment_tree($self, $entity, $root_id,
+            $user_id, $self->get('mail_id'), $self->get('is_public'));
     # Correct file_id in case the root directory was used temporarily
     $self->update({cache_file_id => $cache_id})
             if defined($properties->{cache_file_id});
@@ -366,6 +366,35 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="set_is_public"></a>
+
+=head2 set_is_public(boolean is_public)
+
+Sets the public bit in this message and all its CACHE files
+
+=cut
+
+sub set_is_public {
+    my($self, $is_public) = @_;
+    $self->update({is_public => $is_public});
+    my($cache_file_id) = $self->get('cache_file_id');
+    return unless defined($cache_file_id);
+    # Change is_public flag on all cache files for this message
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF',
+        UPDATE file_t
+        SET is_public = ?
+        WHERE file_id IN
+        (SELECT file_id FROM file_t
+            START WITH file_id = ?
+            CONNECT BY PRIOR file_id = directory_id
+            AND realm_id = ?
+            AND volume = ?)
+EOF
+                [$is_public, $cache_file_id,
+                    $self->get('realm_id'), $_CACHE_VOLUME->as_sql_param]);
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _strip_non_mime(string header) : string
@@ -383,7 +412,7 @@ sub _strip_non_mime {
     return $mime_header;
 }
 
-# _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id) : int
+# _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id, boolean is_public) : int
 #
 # Descend into the message parts:
 #  - create a directory for multipart attachments
@@ -394,8 +423,8 @@ sub _strip_non_mime {
 #TODO: This routine might need a clearer structure
 #
 sub _walk_attachment_tree {
-    my($self, $entity, $dir_id, $user_id, $mail_id) = @_;
-    my($req) = $self->unsafe_get_request;
+    my($self, $entity, $dir_id, $user_id, $mail_id, $is_public) = @_;
+    my($req) = $self->get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
 
     $entity->head->unfold;
@@ -412,6 +441,7 @@ sub _walk_attachment_tree {
             name => $mail_id,
             user_id => $user_id,
             aux_info => $aux_info,
+            is_public => $is_public,
             directory_id => $dir_id,
             volume => $_CACHE_VOLUME,
         });
@@ -441,7 +471,7 @@ sub _walk_attachment_tree {
             }
             # Pass $mail_id and $i separately, so a subpart can refer to its parent
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $mail_id . sprintf('%02x', $i));
+                    $mail_id . sprintf('%02x', $i), $is_public);
         }
     }
     else {
@@ -451,6 +481,7 @@ sub _walk_attachment_tree {
             name => $mail_id,
             user_id => $user_id,
             aux_info => $aux_info,
+            is_public => $is_public,
             content => \$content,
             directory_id => $dir_id,
             volume => $_CACHE_VOLUME,
