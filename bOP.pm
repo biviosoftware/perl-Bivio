@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Mail::Common->send() can now accept a string
+  * Bivio::Test::Language::HTTP->verify_form() now correctly submits
+    button values
+
+  Revision 2.30  2004/09/14 19:58:27  dobbs
+  * Bivio::Biz::Model->map_iterate can now use unauth_iterate_start
+  * Bivio::IO::Config->command_line_args returns the command line
+    arguments, which were stripped from @ARGV
+  * Bivio::Test::HTMLParser::Forms now ignores forms with duplicate
+    labels that are identical.  Fixes a bug in testing multi-paged lists
+  * Bivio::Test::HTMLParser::Tables->find_row now accepts a regular
     expression for column_value
   * Bivio::Test::Language::HTTP->find_table_row added
   * Bivio::Test::Util now passes command line arguments to piped_exec()
