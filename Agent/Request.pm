@@ -340,7 +340,7 @@ sub as_string {
 	    ' referer=', $r ? $r->header_in('Referer') : undef,
 	    ' uri=', $self->unsafe_get('uri'),
 	    ' query=', $self->unsafe_get('query'),
-	    ' form=', $self->unsafe_get('form'),
+	    ' form=', _form_for_warning($self),
 	   ).']';
 }
 
@@ -1133,7 +1133,7 @@ sub set_club_pref {
 
 =head2 set_realm(Bivio::Auth::Realm new_realm)
 
-=head2 set_realm(string new_realm)
+=head2 set_realm(string realm_id_or_name)
 
 Changes attributes to be authorized for I<new_realm>.  Also
 sets C<auth_role>.
@@ -1178,6 +1178,8 @@ sub set_realm {
 
 =head2 set_user(Bivio::Biz::Model::RealmOwner user)
 
+=head2 set_user(string user_id_or_name)
+
 B<Use
 L<Bivio::Biz::Model::LoginForm|Bivio::Biz::Model::LoginForm>
 to change users so the cookie gets updated.>
@@ -1198,6 +1200,9 @@ the cached I<user_realms> list.
 sub set_user {
     # dont_set_role is used internally, don't pass if outside this module.
     my($self, $user, $dont_set_role) = @_;
+    $user = Bivio::Biz::Model::RealmOwner->new($self)
+	    ->unauth_load_by_id_or_name_or_die($user, 'USER')
+		    unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
     _trace($user) if $_TRACE;
@@ -1290,6 +1295,19 @@ sub warn {
 }
 
 #=PRIVATE METHODS
+
+# _form_for_warning(self) : string
+#
+# Returns the form sans secret and password fields fields.
+#
+sub _form_for_warning {
+    my($self) = @_;
+    my($form) = $self->unsafe_get('form');
+    return undef unless $form;
+    my($form_model) = $self->unsafe_get('form_model');
+    return '<secure data>' if $form_model->get_info('has_secure_data');
+    return $form;
+}
 
 # _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
 #
