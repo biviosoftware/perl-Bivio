@@ -109,7 +109,7 @@ sub delta_months {
 
 =head2 static from_literal(string value) : array
 
-Makes sure is in mm/dd/yyyy format.
+Handles I<value> in mm/dd/yyyy or yyyymmdd or C<Bivio::Type::DateTime> format.
 
 =cut
 
@@ -120,9 +120,11 @@ sub from_literal {
     return _from_date_time($value, $1) if $value =~ /^\d+ (\d+)$/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
-    return (undef, Bivio::TypeError::DATE())
-	    unless $value =~ m!^(\d+)/(\d+)/(\d+)$!i;
-    return Bivio::Type::DateTime->date_from_parts($2, $1, $3);
+    return Bivio::Type::DateTime->date_from_parts($2, $1, $3)
+                if $value =~ m!^(\d+)/(\d+)/(\d+)$!i;
+    return Bivio::Type::DateTime->date_from_parts($3, $2, $1)
+                if $value =~ m!^(\d{4})(\d{2})(\d{2})$!i;
+    return (undef, Bivio::TypeError::DATE());
 }
 
 =for html <a name="from_unix"></a>
