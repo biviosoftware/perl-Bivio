@@ -32,8 +32,14 @@ C<Bivio::Biz::Model::ImportedMemberInviteForm> invite imported shadow members
 
 #=IMPORTS
 use Bivio::Type::FileVolume;
+use Bivio::Biz::Model::ClubInviteForm;
 use Bivio::Biz::Model::File;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmUser;
+use Bivio::Type::ClubUserTitle;
+use Bivio::TypeError;
 use Bivio::Type::Email;
+use Bivio::Type::FileVolume;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -106,6 +112,26 @@ sub execute_empty_start {
     return;
 }
 
+=for html <a name="execute_input_row"></a>
+
+=head2 execute_input_row()
+
+Sends an invite or merges each member which has an email.
+
+=cut
+
+sub execute_input_row {
+    my($self) = @_;
+    my($properties) = $self->internal_get;
+
+    my($email) = $properties->{invite_email};
+    if (defined($email)) {
+	_send_invite($self, $email,
+		$self->get_list_model->get_model('Email'));
+    }
+    return;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
@@ -123,12 +149,7 @@ sub internal_initialize {
 		name => 'invite_email',
 		in_list => 1,
 		constraint => 'NONE',
-#TODO: automatic error handling seems to be broken for email
-# the errors never show up in the for fields
-# when this is fixed, remove validate_row()
 		type => 'Bivio::Type::Email',
-#		type => 'Bivio::Type::Line',
-
 	    },
 	],
 	auth_id => 'RealmUser.realm_id',
@@ -167,10 +188,6 @@ sub validate_row {
     my($emails) = $fields->{emails};
     my($email) = $properties->{invite_email};
     if (defined($email)) {
-#	if (! Bivio::Type::Email->is_valid($email)) {
-#	    $self->internal_put_error('invite_email',
-#		    Bivio::TypeError::EMAIL());
-#	}
 	# check that all emails are unique in the list
 	if (exists($emails->{$email})) {
 	    $self->internal_put_error('invite_email',
@@ -203,13 +220,31 @@ sub validate_start {
 
 #=PRIVATE METHODS
 
-# _invite_user()
+# _send_invite(string email_address, Bivio::Biz::Model::Email shadow_email)
 #
 # Invites the specified shadow user with the specified email to join the
 # club.
 #
-sub _invite_user {
-    my($self) = @_;
+sub _send_invite {
+    my($self, $email_address, $shadow_email) = @_;
+
+    my($req) = $self->get_request;
+    my($club_id) = $req->get('auth_id');
+
+    # set a shadow email for the shadow user
+    # this will be reconciled during the invitation acceptance
+    # Bivio::Biz::Model::RealmInviteAcceptForm
+    $shadow_email->update({
+	email => $shadow_email->generate_shadow_email(
+		$email_address, $club_id)
+    });
+
+    Bivio::Biz::Model::ClubInviteForm->execute($req, {
+	title => Bivio::Type::ClubUserTitle::MEMBER(),
+	'RealmInvite.email' => $email_address,
+	'RealmInvite.realm_id' => $club_id,
+    });
+
     return;
 }
 
@@ -222,15 +257,33 @@ sub _get_existing_member_email {
     my($self, $email) = @_;
 
     my($req) = $self->get_request;
-    my($email_model) = Bivio::Biz::Model::Email->new($req);
-    # unauth load - it is outside this realm
-    if ($email_model->unauth_load(email => $email)) {
-	# see if a realm user exists for the realm_id
-	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-	return $realm_user->unsafe_load(user_id =>
-		$email_model->get('realm_id'));
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    my($mail_host) = $req->get('mail_host');
+
+    if ($email =~ /^(.+)\@$mail_host$/) {
+	# it is an existing bivio user
+	my($user_name) = $1;
+	my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+	if ($realm->unauth_load(name => $user_name)) {
+	    # see if they are a realm user
+	    return $realm_user->unsafe_load(user_id =>
+		    $realm->get('realm_id'))
+		    ? $realm_user
+		    : undef;
+	}
     }
-    return 0;
+    else {
+	my($email_model) = Bivio::Biz::Model::Email->new($req);
+	# unauth load - it is outside this realm
+	if ($email_model->unauth_load(email => $email)) {
+	    # see if a realm user exists for the realm_id
+	    return $realm_user->unsafe_load(user_id =>
+		    $email_model->get('realm_id'))
+		    ? $realm_user
+		    : undef;
+	}
+    }
+    return undef;
 }
 
 # _is_merged_member_email(string email) : boolean
