@@ -52,6 +52,7 @@ errors.  Feel free to add to the list in internal_initialize:
     smaller
     strike
     underline
+    style=descriptor
 
 Do not surround values to the right of the equals (=) with quotes.
 The string following size can be a number as long as a style sheet
@@ -314,7 +315,7 @@ sub _initialize {
 	if ($_TAG_MAP{$a}) {
 	    $attrs{'tag_'.$_TAG_MAP{$a}} = 1;
 	}
-	elsif ($a =~ /^(family|size|class|id)=(.*)/) {
+	elsif ($a =~ /^(family|size|class|id|style)=(.*)/) {
 	    # May be blank
 	    $attrs{$1} = $2;
 	}
@@ -344,7 +345,7 @@ sub _initialize_html {
     my($p, $s) = ('', '');
 
     # <FONT> attributes
-    foreach my $k (qw(family size color class id)) {
+    foreach my $k (qw(family size color class id style)) {
 	# We don't allow "0" either.  This allows us to override
 	# the default.
 	next unless $attrs{$k};
