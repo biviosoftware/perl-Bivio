@@ -56,7 +56,7 @@ Returns widget which renders this page.
 sub create_content {
     my($self) = @_;
     $self->put_heading('CLUB_ACCOUNTING_TAXES_SUBSCRIPTION');
-    return $_VS->vs_template(<<'EOF');
+    return $_VS->vs_template_as_string(<<'EOF', 'page_text');
 <p>
 You are currently registered for a
 vs_link('trial subscription', 'CLUB_ADMIN_EC_SUBSCRIPTION_INFO').
