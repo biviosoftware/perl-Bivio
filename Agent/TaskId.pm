@@ -3130,6 +3130,17 @@ my(@_CFG) = (
         Bivio::UI::HTML::Adm::QuoteList
         require_secure=1
     )],
+    [qw(
+        ADM_FIND_REALM_OWNER_LIST
+        274
+        GENERAL
+        ADMIN_WRITE
+        adm/lookup-new
+        Bivio::Biz::Model::AdmLookupForm
+        Bivio::UI::HTML::Adm::LookupList
+        next=HTTP_DOCUMENT
+        require_secure=1
+    )],
 );
 
 __PACKAGE__->compile([
