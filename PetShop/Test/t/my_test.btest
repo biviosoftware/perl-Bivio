@@ -2,13 +2,12 @@
 test_setup('PetShop');
 
 home_page();
-goto_link('Dogs');
-goto_link('Corgi');
-goto_link('Male Adult Corgi');
+follow_link('Dogs');
+follow_link('Corgi');
+follow_link('Male Adult Corgi');
 add_to_cart();
-goto_link('Reptiles');
-goto_link('Rattlesnake');
-goto_link('Venomless Rattlesnake');
+follow_link('Reptiles');
+follow_link('Rattlesnake');
+follow_link('Venomless Rattlesnake');
 add_to_cart();
-verify_cart('Male Adult Corgi');
-verify_cart('Venomless Rattlesnake');
+verify_cart();
