@@ -42,15 +42,18 @@ my(%_INFO) = ();
 
 =for html <a name="clear"></a>
 
-=head2 clear(string_ref vector, Bivio::Type::Enum bit)
+=head2 clear(string_ref vector, Bivio::Type::Enum bit, ...)
 
-clears I<bit> in I<vector>.
+Clears I<bit>(s) in I<vector>.
 
 =cut
 
 sub clear {
-    my(undef, $vector, $bit) = @_;
-    vec($$vector, $bit->as_int, 1) = 0;
+    shift;
+    my($vector) = shift;
+    foreach my $bit (@_) {
+	vec($$vector, $bit->as_int, 1) = 0;
+    }
     return;
 }
 
@@ -174,28 +177,35 @@ sub initialize {
 
 =for html <a name="is_set"></a>
 
-=head2 is_set(string_ref vector, Bivio::Type::Enum bit) : boolean
+=head2 is_set(string_ref vector, Bivio::Type::Enum bit, ...) : boolean
 
-Returns true if I<bit> is set in I<vector>.
+Returns true if I<bit>(s) are set in I<vector>.
 
 =cut
 
 sub is_set {
-    my(undef, $vector, $bit) = @_;
-    return vec($$vector, $bit->as_int, 1);
+    shift;
+    my($vector) = shift;
+    foreach my $bit (@_) {
+	return 0 unless vec($$vector, $bit->as_int, 1);
+    }
+    return 1;
 }
 
 =for html <a name="set"></a>
 
-=head2 set(string_ref vector, Bivio::Type::Enum bit)
+=head2 set(string_ref vector, Bivio::Type::Enum bit, ....)
 
-Sets I<bit> in I<vector>.
+Sets I<bit>(s) in I<vector>.
 
 =cut
 
 sub set {
-    my(undef, $vector, $bit) = @_;
-    vec($$vector, $bit->as_int, 1) = 1;
+    shift;
+    my($vector) = shift;
+    foreach my $bit (@_) {
+	vec($$vector, $bit->as_int, 1) = 1;
+    }
     return;
 }
 
