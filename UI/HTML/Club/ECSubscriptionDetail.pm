@@ -57,14 +57,14 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {};
 
     $fields->{content} = $self->join([
-        'TODO: This should be the service setup page!',
+#TODO:        'TODO: This should be the service setup page!',
         '<P>',
         Bivio::UI::HTML::Widget::Grid->new({
             values => [
                 [
                     $self->string('Subscription first started on: '),
                     $self->date_time(['Bivio::Biz::Model::ECSubscription',
-                        'start_date_time']),
+                        'start_date']),
                 ], [
                     $self->string('Subscription ends at: '),
                     $self->date_time(['Bivio::Biz::Model::ECSubscription',
