@@ -509,9 +509,8 @@ _compile([
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_RMIF => ['Rocky Mountain Investors Fair'],
     ANNOUNCE_EXPO => ['Miami Investment Expo'],
-    ANNOUNCE_ACCOUNTS => ['Multiple Accounts'],
+    ANNOUNCE_EQUAL_EXPENSES => ['Equally Allocated Expenses'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
