@@ -320,8 +320,9 @@ sub _audit_last_import_date {
 	$realm->unauth_load_or_die(realm_id => $realm_id);
 	$realm->get_request->set_realm(Bivio::Auth::Realm->new($realm));
 
-	# print a warning message for the logs
-	print(STDERR "WARNING: auditing realm_id $realm_id after import\n");
+	# print a message to the logs. Don't use warn, because we
+	# don't know how many of these messages we might get.
+	Bivio::IO::Alert->info('auditing ', $realm_id, ' after import');
 	$realm->audit_units($date);
     }
     return;
@@ -357,8 +358,8 @@ sub _resolve_symbol_clashes {
 	my($mg_id2, $date2) = @{$sth2->fetchrow_arrayref};
 	if ($date eq $date2) {
 #TODO: handle this case by counting quotes if necessary
-	    print(STDERR
-		   "WARNING: unhandled ticker clash mg_id($mg_id, $mg_id2)\n");
+	    Bivio::IO::Alert->warn('unhandled ticker clash mg_id(',
+		    $mg_id, ', ', $mg_id2, ')');
 	}
 	else {
 	    # change the ticker on the one with the older quote date
