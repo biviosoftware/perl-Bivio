@@ -139,8 +139,9 @@ sub handler {
     if (defined($die) && $die->get('code')
 	    # Keep in synch with Reply::die_to_http_code
 	    ne Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
-	my($u) = $r->user() || 'ANONYMOUS';
-	my($ip) = $r->connection->remote_ip || '0.0.0.0';
+	my($c) = $r->connection();
+	my($u) = $c && $c->user() || 'ANONYMOUS';
+	my($ip) = $c && $c->remote_ip || '0.0.0.0';
 	$r->log_reason($ip.' '.$u.' '.$die->as_string)
     }
 
