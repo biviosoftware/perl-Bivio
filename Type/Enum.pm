@@ -121,12 +121,15 @@ my(%_MAP);
 
 =head2 static from_any(any thing) : Bivio::Type::Enum
 
-Returns enum value for specified string, enum, or integer.
+Returns enum value for specified name, short description, long description,
+enum, or integer in a case-insensitive manner.
 
 =cut
 
 sub from_any {
-    return &_get_info(shift(@_), shift(@_))->[5];
+    my($proto, $thing) = @_;
+    ref($thing) || ($thing = uc($thing));
+    return &_get_info($proto, $thing)->[5];
 }
 
 =for html <a name="from_int"></a>
@@ -176,9 +179,13 @@ sub as_string {
 
 Hash of enum names pointing to array containing number, short
 description, and, long description.  If the long description
-is not supplied, the short description will be used.  If the
-short description is not supplied, the name will be downcased
+is not supplied or is C<undef>, the short description will be used.  If the
+short description is not supplied or is C<undef>, the name will be downcased
 and all underscores (_) will be replaced with space.
+
+The descriptions should be unique, but may match the other descriptions or
+names for a particular enum.  L<from_any|"from_any"> can map from descriptions
+to enums in a case-insensitive manner.
 
 =cut
 
@@ -198,18 +205,15 @@ sub compile {
 	Carp::croak("$name: is a reserved word") if $proto->can($name);
 	Carp::croak("$name: does not point to an array")
 		    unless ref($d) eq 'ARRAY';
-	if (int(@$d) == 1) {
+	unless (defined($d->[1])) {
 	    # Turn TEST_VIEW into Test View.
 	    my($n) = ucfirst(lc($name));
 	    $n =~ s/_(\w?)/ \u$1/g;
-	    push(@$d, $n, $n);
+	    $d->[1] = $n;
 	}
-	elsif (int(@$d) == 2) {
-	    push(@$d, $d->[1]);
-	}
-	elsif (int(@$d) != 3) {
-	    Carp::croak("$name: incorrect array length (should be 1 to 3)");
-	}
+	$d->[2] = $d->[1] unless defined($d->[2]);
+	Carp::croak("$name: incorrect array length (should be 1 to 3)")
+		    unless int(@$d) == 3;
 	Carp::croak("$name: invalid number \"$d->[0]\"")
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
 	Carp::croak("$name: invalid enum name")
@@ -234,6 +238,9 @@ sub compile {
 		$d->[3], ' and ', $info{$d->[0]}->[3], ')')
 		    if defined($info{$d->[0]});
 	$info{$d->[0]} = $d;
+	# Map descriptions only if not already mapped.
+	$info{uc($d->[1])} = $d unless defined($info{uc($d->[1])});
+	$info{uc($d->[2])} = $d unless defined($info{uc($d->[2])});
 	# Index 5: enum instance
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
@@ -351,6 +358,8 @@ and the rest of the arguments.
 
 sub get_widget_value {
     my($self, $method) = (shift, shift);
+    # Delete leading -> for compatibility with "standard" get_widget_value
+    $method =~ s/^\-\>//;
     my($value) = $self->$method();
     return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
 }
@@ -377,7 +386,10 @@ sub _get_info {
     my($self, $name, $field) = @_;
     my($info) = $_MAP{ref($self) || $self};
     Carp::croak($self, ': not an enumerated type') unless defined($info);
-    return $info->{defined($name) ? $name : $self};
+    defined($name) || ($name = $self);
+    Carp::croak($name, ': no such ', ref($self) || $self)
+		unless defined($info->{$name});
+    return $info->{$name};
 }
 
 =head1 COPYRIGHT

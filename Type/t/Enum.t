@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..7\n"; }
+BEGIN { $| = 1; print "1..20\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Enum;
@@ -113,11 +113,11 @@ foreach $i (0, 2) {
     $t2->$e()->as_string eq (ref($t2).'::'.$e) || last;
     $not_done--;
 }
-$t2->E_0->get_short_desc eq 'e 0' || ($not_done = -999999);
-$t2->E_0->get_long_desc eq 'e 0' || ($not_done = -999999);
-$t2->E_2->get_short_desc eq 'e two' || ($not_done = -999999);
-$t2->E_2->get_long_desc eq 'e two' || ($not_done = -999999);
 t(!$not_done);
+t($t2->E_0->get_short_desc eq 'E 0');
+t($t2->E_0->get_long_desc eq 'E 0');
+t($t2->E_2->get_short_desc eq 'e two');
+t($t2->E_2->get_long_desc eq 'e two');
 t(int(@{[$t1->LIST]}) == 3);
 
 my($t3) = Bivio::Type::Enum::T3->E123456789;
