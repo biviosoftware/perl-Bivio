@@ -33,13 +33,9 @@ a list of choices.
 
 =over 4
 
-=item field : string (required)
+=item auto_submit : boolean [0]
 
-Name of the form field.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form are we dealing with.
+Should a click submit the form?
 
 =item choices : Bivio::Type::Enum (required)
 
@@ -63,6 +59,18 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.
 
 Make the selection read-only
 
+=item enum_sort : string ['get_name']
+
+The comparison method for an enum.
+
+=item field : string (required)
+
+Name of the form field.
+
+=item form_model : array_ref (required, inherited, get_request)
+
+Which form are we dealing with.
+
 =item list_display_field : string (required if 'choices' is a list)
 
 Name of the list field used for display.
@@ -81,10 +89,6 @@ Should the UNKNOWN type be displayed?
 =item size : int [1]
 
 How many rows should be visible
-
-=item enum_sort : string ['get_name']
-
-The comparison method for an enum.
 
 =back
 
@@ -163,6 +167,7 @@ sub initialize {
     else {
 	Carp::croak(ref($choices), ': unknown choices type (not a set)');
     }
+    $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
     return;
 }
 
@@ -186,10 +191,12 @@ sub render {
 	$fields->{prefix} = '<select name=';
 	$fields->{initialized} = 1;
     }
+
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' size='.$self->get_or_default('size', 1);
     $$buffer .= ' disabled' if $self->get_or_default('disabled', 0);
+    $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
 
     my($items) = $fields->{list_source}
