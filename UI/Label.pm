@@ -135,6 +135,9 @@ _compile(
     TOTAL_EXPENSE => ['Total Expense'],
     NET_PROFIT => ['Net Profit/(Loss)'],
     ALLOCATION_METHOD => ['Allocation Method'],
+    TAX_FREE_INT => ['Federal Tax Free Interest',
+	    Bivio::Type::TaxCategory->FEDERAL_TAX_FREE_INTEREST->get_short_desc
+	   ],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
