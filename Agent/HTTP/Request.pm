@@ -29,6 +29,7 @@ parameters.
 use Apache::Constants;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::HTTP::CookieState;
+use Bivio::Agent::HTTP::Form;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
@@ -81,20 +82,16 @@ sub new {
 #TODO: Apache bug: ?bla&foo=1 will generate "odd number elements in hash"
 #      warning.
     my($query) = defined($qs) ? {$r->args} : undef;
-    my($form) = $r->method_number() eq Apache::Constants::M_POST()
-	    ? {$r->content()} : undef;
-    _trace($r->method, ': form=', $form, '; query=', $query) if $_TRACE;
+    _trace($r->method, ': query=', $query) if $_TRACE;
 
     # AUTH: Make sure the auth_id is NEVER set by the user.
     #       We are making a presumption about how the models work.
     #       However, it is reasonable to assume that there should never
     #       be a query or form field called "auth_id".
     delete($query->{auth_id}) if $query;
-    delete($form->{auth_id}) if $form;
 
     $self->put(
 	    uri => $uri,
-	    form => $form,
 	    query => $query,
 	    task_id => $task_id,
 	   );
@@ -183,17 +180,24 @@ sub format_http_toggling_secure {
     return ($is_secure ? 'http://' : 'https://').$host.$uri;
 }
 
-=for html <a name="format_stateless_uri"></a>
+=for html <a name="get_form"></a>
 
-=head2 format_stateless_uri(Bivio::Agent::TaskId task_id) : string
+=head2 get_form() : hash_ref
 
-Creates a URI relative to this host/port/realm without a query string.
+Returns form associated the request or C<undef> if no form.
+I<form_model> must be set.
 
 =cut
 
-sub format_stateless_uri {
-    my($self, $task_id) = @_;
-    return $self->format_uri($task_id, undef);
+sub get_form {
+    my($self) = @_;
+
+    # Parsed already or perhaps set via context
+    return $self->get('form') if $self->has_keys('form');
+
+    my($form) = Bivio::Agent::HTTP::Form->parse($self);
+    $self->put(form => $form);
+    return $form;
 }
 
 =for html <a name="server_redirect"></a>
