@@ -58,6 +58,7 @@ BEGIN {
 #=IMPORTS
 use Bivio::IO::Config;
 use Carp ();
+use Sys::Syslog ();
 
 #=VARIABLES
 # Normalize error messages
