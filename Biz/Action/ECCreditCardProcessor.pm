@@ -41,6 +41,7 @@ Technical details can be found in
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::Ext::LWPUserAgent;
 use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
@@ -53,12 +54,10 @@ use Bivio::Type::ECPaymentStatus;
 use Bivio::Type::PrimaryId;
 use Bivio::UI::Text;
 use HTTP::Request ();
-use LWP::UserAgent ();
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_USER_AGENT);
 my($_GW_LOGIN);
 my($_GW_PASSWORD);
 my($_GW_TEST_MODE);
@@ -86,7 +85,6 @@ sub check_transaction_batch {
     my($proto, $req) = @_;
 #TODO: Recode this to new interface
     return;
-    _setup_user_agent();
     my($hreq) = HTTP::Request->new(
 	POST => 'https://secure.authorize.net/Interface/minterface.dll?batchreport');
     $hreq->content_type('application/x-www-form-urlencoded');
@@ -94,7 +92,7 @@ sub check_transaction_batch {
             '&Action=DOWNLOAD&BATCHID=NULL');
     $hreq->referer(
 	'https://' . Bivio::UI::Facade->get_value('http_host', $req));
-    my($response) = $_USER_AGENT->request($hreq);
+    my($response) = Bivio::Ext::LWPUserAgent->new->request($hreq);
     my($payment) = Bivio::Biz::Model->new($req, 'ECPayment');
     foreach my $transaction (split(/\n/, $response->content)) {
         my(@fields) = split(/\t/, $transaction);
@@ -199,14 +197,13 @@ sub _process_payment {
     my($proto, $payment) = @_;
     return unless
 	$payment->get('method') == Bivio::Type::ECPaymentMethod->CREDIT_CARD;
-    _setup_user_agent();
     my($hreq) = HTTP::Request->new(
 	    POST => 'https://secure.authorize.net/gateway/transact.dll'
 	   );
     $hreq->content_type('application/x-www-form-urlencoded');
     $hreq->content(_transact_form_data($proto, $payment));
     _trace($hreq) if $_TRACE;
-    my($response) = $_USER_AGENT->request($hreq);
+    my($response) = Bivio::Ext::LWPUserAgent->new->request($hreq);
     my($response_string) = $response->as_string;
     _trace($response_string) if $_TRACE;
     Bivio::Die->die('request failed: ', $response_string)
@@ -220,24 +217,6 @@ sub _process_payment {
     return;
 }
 
-# _setup_user_agent()
-#
-# Create a LWP user agent. Read proxy configuration from environment
-# variable $http_proxy.
-#
-sub _setup_user_agent {
-    unless (defined($_USER_AGENT)) {
-        $_USER_AGENT = LWP::UserAgent->new;
-#TODO: This doesn't work
-#        $_USER_AGENT->env_proxy;
-	$_USER_AGENT->proxy(['http', 'https'], $ENV{http_proxy})
-		if $ENV{http_proxy};
-        Bivio::Die->die('Missing payment gateway login configuration')
-                    unless $_GW_LOGIN && $_GW_PASSWORD;
-    }
-    return;
-}
-
 # _transact_form_data(proto, Model.ECPayment payment) : string
 #
 # Prepare payment transaction form data for capturing the amount.
@@ -245,6 +224,8 @@ sub _setup_user_agent {
 #
 sub _transact_form_data {
     my($proto, $payment) = @_;
+    Bivio::Die->die('Missing payment gateway login configuration')
+            unless $_GW_LOGIN && $_GW_PASSWORD;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = Bivio::Type::Date->to_parts(
 	$cc_payment->get('card_expiration_date'));
