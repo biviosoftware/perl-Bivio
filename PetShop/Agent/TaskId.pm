@@ -247,6 +247,37 @@ sub get_delegate_info {
 	    ANYBODY
 	    View.source
 	)],
+	[qw(
+            MAIL_RECEIVE_DISPATCH
+            520
+	    GENERAL
+	    ANYBODY
+	    Model.MailReceiveDispatchForm
+            next=MAIL_RECEIVE_NOT_FOUND
+            NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+            NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+	)],
+	[qw(
+            MAIL_RECEIVE_NO_RESOURCES
+            521
+            GENERAL
+            ANYBODY
+            Action.MailReceiveStatus->execute_no_resources
+        )],
+	[qw(
+            MAIL_RECEIVE_NOT_FOUND
+            522
+            GENERAL
+            ANYBODY
+            Action.MailReceiveStatus->execute_not_found
+        )],
+	[qw(
+            MAIL_RECEIVE_IGNORE
+            523
+            USER
+            ANYBODY
+            Action.MailReceiveStatus->execute
+        )],
     ]);
 }
 

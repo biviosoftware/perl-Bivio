@@ -208,6 +208,8 @@ sub _task {
     $t->group(MISSING_COOKIES => 'pub/missing-cookies');
     $t->group(SOURCE => 'src');
     $t->group(ADM_SUBSTITUTE_USER => 'su');
+    $t->group(MAIL_RECEIVE_DISPATCH => 'mail-handler');
+    $t->group(MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore');
     return;
 }
 
@@ -274,6 +276,9 @@ sub _text {
     $t->group(Image_alt => [
 	bivio_power => 'Powered by bivio Inc.',
     ]);
+
+    # Misc Model support
+    $t->group('MailReceiveDispatchForm.uri_prefix' => 'mail-handler-');
     return;
 }
 
