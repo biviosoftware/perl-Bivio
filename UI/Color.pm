@@ -55,7 +55,7 @@ __PACKAGE__->compile(
 	'report_page_heading_bg',
     ],
     ERROR => [
-	0xFF0000,
+	0x990000,
     ],
     PAGE_TEXT => [
 	0x000000,
