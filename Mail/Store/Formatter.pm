@@ -41,6 +41,7 @@ Bivio::IO::Trace->register;
 
 my $_MIME_MAP = {
     'text/plain' => 'Bivio::Mail::Store::TextFormatter',
+    'text/html' => 'Bivio::Mail::Store::HTMLFormatter',
 };
 
 
