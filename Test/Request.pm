@@ -67,6 +67,7 @@ sub get_instance {
 	Bivio::Die->die(
 	    $_SELF, ': self not current request ', $_SELF->get_current,
         ) unless !$_SELF->get_current || $_SELF->get_current == $_SELF;
+        return $_SELF;
     }
     $_SELF = $proto->new({
 	auth_id => undef,
