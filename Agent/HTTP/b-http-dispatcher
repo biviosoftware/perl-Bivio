@@ -17,8 +17,10 @@ b-http-dispatcher [--config] [-n] [server-name]
 
 =head1 DESCRIPTION
 
-B<b-http-dispatcher> is used to run L<httpd|httpd> in single user mode
+B<b-http-dispatcher> is used to run C<httpd> in single user mode
 with a dynamically created configuration file.
+
+B<This is a bad example to copy.>
 
 Logs are written to stdout.
 
