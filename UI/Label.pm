@@ -449,7 +449,8 @@ _compile(
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_PERFORMANCE => ['Built for Speed'],
+    ANNOUNCE_FOOL => ['Foolish bivions'],
+    ANNOUNCE_EXPO => ['Investment Expo'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
