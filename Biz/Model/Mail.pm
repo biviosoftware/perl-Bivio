@@ -99,7 +99,8 @@ sub create {
     my($reply_to_email) = $msg->get_reply_to;
 
     my($subject) = $msg->get_head->get('subject');
-    chomp($subject);
+#TODO: There must be an easier way to handle the subject
+    chomp($subject) if defined($subject);
     $subject = '(no subject)' unless defined($subject) && length($subject);
     # Strip the name prefix out of the message, but leave the "Re:"
     $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
@@ -360,6 +361,7 @@ sub _strip_non_mime {
     foreach my $l (split(/\r?\n/, $header)) {
         $l =~ /^Content\-/i && ($mime_header .= $l . "\n");
     }
+    # Return minimal MIME information if none available
     $mime_header = "Content-Type: text/plain\n" unless length($mime_header);
     return $mime_header;
 }
@@ -420,7 +422,7 @@ sub _walk_attachment_tree {
             }
             # Pass $mail_id and $i separately, so a subpart can refer to its parent
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $mail_id . sprintf('%02X', $i));
+                    $mail_id . sprintf('%02x', $i));
         }
     }
     else {
@@ -465,7 +467,7 @@ sub _attach_to_thread {
         }
     }
     unless (exists($values->{thread_parent_id})) {
-        # Have message(s) with the same subject? Attach to root message
+        # Have message(s) with the same subject?
         my($sth) = Bivio::SQL::Connection->execute('
                 SELECT mail_id,is_thread_root,thread_root_id
                 FROM mail_t
