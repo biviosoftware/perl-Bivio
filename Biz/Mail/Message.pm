@@ -142,6 +142,9 @@ sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     my($body) = $new_values->{body};
     # not part of sql, remove it from values
     delete($new_values->{body});
@@ -180,7 +183,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds the message given the specified search parameters. Valid find keys
 are 'id'.
@@ -193,9 +196,9 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if (defined($fp->{id}) && $fp->{club}) {
+    if (defined($fp->get('id')) && $fp->get('club')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where id=? and club=?', $fp->{id}, $fp->{'club'});
+		'where id=? and club=?', $fp->get('id'), $fp->get('club'));
     }
 
     $self->get_status()->add_error(
@@ -329,7 +332,8 @@ $mail->create({
     body => \$body,
     });
 $mail->update({date => '5/6/1955'});
-$mail->find({id => $id, club => '7957448535598810'});
+$mail->find(Bivio::Biz::FindParams->new(
+        {id => $id, club => '7957448535598810'}));
 print($mail->get_body());
 #$Data::Dumper::Indent = 1;
 #print(Dumper($mail));

@@ -37,6 +37,7 @@ C<Bivio::Biz::UserEmail>
 #=IMPORTS
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::SqlSupport;
 use Bivio::Biz::User;
 use Bivio::IO::Trace;
@@ -95,6 +96,9 @@ this instance has the same values.
 sub create {
     my($self, $new_values) = @_;
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     if ($new_values->{'email'} =~ /^(\w)+@(\w)+(.(\w)+)*$/) {
 
 	$_SQL_SUPPORT->create($self, $self->internal_get_fields(),
@@ -125,7 +129,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'email'.
@@ -138,9 +142,9 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'email'}) {
+    if ($fp->get('email')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where email=?', $fp->{'email'});
+		'where email=?', $fp->get('email'));
     }
 
     $self->get_status()->add_error(
@@ -197,7 +201,7 @@ sub get_user {
     my($self) = @_;
 
     my($user) = Bivio::Biz::User->new();
-    $user->find({id => $self->get('user')});
+    $user->find(Bivio::Biz::FindParams->new({id => $self->get('user')}));
     return $user;
 }
 

@@ -66,7 +66,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params)
+=head2 find(FindParams fp)
 
 This is ignored because test model has no state.
 

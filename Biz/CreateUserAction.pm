@@ -37,6 +37,7 @@ C<Bivio::Biz::CreateUserAction>
 #=IMPORTS
 use Bivio::Biz::Club;
 use Bivio::Biz::ClubUser;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::UserDemographics;
 use Bivio::Biz::UserEmail;
 use Bivio::Biz::SqlConnection;
@@ -128,7 +129,8 @@ sub execute {
 
 	    #TODO: need cache of club, but where?
 	    my($club) = Bivio::Biz::Club->new();
-	    $club->find({name => $req->get_target_name()});
+	    $club->find(Bivio::Biz::FindParams->new(
+		    {name => $req->get_target_name()}));
 
 	    # not checking find result, should have succeeded or
 	    # it wouldn't be this far

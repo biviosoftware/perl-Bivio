@@ -67,7 +67,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Loads the list using the specified parameters. Query fields may be
 'index', ...
@@ -78,7 +78,7 @@ sub find {
     my($self, $fp) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $fields->{index} = $fp->{'index'} || 1;
+    $fields->{index} = $fp->get('index') || 1;
 }
 
 =for html <a name="get_column_count"></a>

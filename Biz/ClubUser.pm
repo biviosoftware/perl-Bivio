@@ -102,6 +102,9 @@ sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     return $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
 	    $new_values);
 }
@@ -124,7 +127,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
@@ -137,13 +140,14 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'club'} && $fp->{'user'}) {
+    if ($fp->get('club') && $fp->get('user')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where club=? and user_=?', $fp->{'club'}, $fp->{'user'});
+		'where club=? and user_=?', $fp->get('club'),
+		$fp->get('user'));
     }
 
     $self->get_status()->add_error(
-	    Bivio::Biz::Error->new("Club not found"));
+	    Bivio::Biz::Error->new("Club user not found"));
     return 0;
 }
 
@@ -158,7 +162,7 @@ Returns the user's full name.
 sub get_heading {
     my($self) = @_;
 
-    return 'User Club Information';
+    return 'Club User Information';
 }
 =for html <a name="get_title"></a>
 
@@ -170,7 +174,7 @@ Returns the user's full name.
 
 sub get_title {
     my($self) = @_;
-    return 'User Club Information';
+    return 'Club User Information';
 }
 
 =for html <a name="update"></a>

@@ -115,6 +115,9 @@ this instance has the same values.
 sub create {
     my($self, $new_values) = @_;
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     # because user and user-demographics are kept in the same database
     # table right now, create() really justs updates the already existing
     # record
@@ -149,7 +152,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds demographics given the specified search parameters. Valid parameters
 are 'user'.
@@ -159,11 +162,12 @@ are 'user'.
 sub find {
     my($self, $fp) = @_;
 
+    # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'user'}) {
+    if ($fp->get('user')) {
 	$_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where id=?', $fp->{'user'});
+		'where id=?', $fp->get('user'));
     }
     else {
 	$self->get_status()->add_error(

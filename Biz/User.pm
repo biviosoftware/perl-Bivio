@@ -45,9 +45,11 @@ use Bivio::Biz::Club;
 use Bivio::Biz::CreateUserAction;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::SqlSupport;
 use Bivio::Biz::UserDemographics;
 use Bivio::IO::Trace;
+use Bivio::Util;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -110,12 +112,16 @@ sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     if ($new_values->{'name'} =~ /^\w\w\w\w(\w)*$/) {
 
 	# make sure a club doesn't have the same name
 	my($club) = Bivio::Biz::Club->new();
 
-	if ($club->find({'name' => $new_values->{'name'}})) {
+	if ($club->find(Bivio::Biz::FindParams->new(
+		{'name' => $new_values->{'name'}}))) {
 	    $self->get_status()->add_error(
 		    Bivio::Biz::Error->new('already exists'));
 	}
@@ -148,7 +154,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
@@ -158,16 +164,19 @@ are 'id' or 'name'.
 sub find {
     my($self, $fp) = @_;
 
+    if (ref($fp) eq 'HASH') {
+	Bivio::Util::dump_stack();
+    }
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'id'}) {
+    if ($fp->get('id')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where id=?', $fp->{'id'});
+		'where id=?', $fp->get('id'));
     }
-    if ($fp->{'name'}) {
+    if ($fp->get('name')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where name=?',	$fp->{'name'});
+		'where name=?',	$fp->get('name'));
     }
 
     $self->get_status()->add_error(
@@ -206,7 +215,7 @@ sub get_demographics {
 
     #TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
-    $demo->find({'user' => $self->get('id')});
+    $demo->find(Bivio::Biz::FindParams->new({'user' => $self->get('id')}));
     return $demo;
 }
 

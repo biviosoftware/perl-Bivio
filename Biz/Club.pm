@@ -38,6 +38,7 @@ C<Bivio::Biz::Club>
 use Bivio::Biz::CreateClubAction;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::SqlSupport;
 use Bivio::Biz::User;
 use Bivio::IO::Trace;
@@ -107,12 +108,16 @@ sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
     if ($new_values->{'name'} =~ /^\w\w\w\w(\w)*$/) {
 
 	# make sure a user doesn't have the same name
 	my($user) = Bivio::Biz::User->new();
 
-	if ($user->find({'name' => $new_values->{'name'}})) {
+	if ($user->find(Bivio::Biz::FindParams->new(
+		{'name' => $new_values->{'name'}}))) {
 	    $self->get_status()->add_error(
 		    Bivio::Biz::Error->new('already exists'));
 	}
@@ -145,7 +150,7 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
@@ -158,13 +163,13 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->{'id'}) {
+    if ($fp->get('id')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where id=?', $fp->{'id'});
+		'where id=?', $fp->get('id'));
     }
-    if ($fp->{'name'}) {
+    if ($fp->get('name')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
-		'where name=?',	$fp->{'name'});
+		'where name=?',	$fp->get('name'));
     }
 
     $self->get_status()->add_error(

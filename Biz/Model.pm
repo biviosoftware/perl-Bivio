@@ -62,7 +62,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 abstract find(hash find_params) : boolean
+=head2 abstract find(FindParams fp) : boolean
 
 Loads the model using values from the specified search parameters.
 Returns 1 if successful, or 0 if no data was loaded.

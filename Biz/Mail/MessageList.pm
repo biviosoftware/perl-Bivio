@@ -31,12 +31,9 @@ C<Bivio::Biz::Mail::MessageList>
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
 use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::FindParams;
 use Bivio::Biz::Mail::Message;
 use Bivio::Biz::SqlListSupport;
 use Bivio::IO::Trace;
@@ -86,7 +83,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Loads the list given the specified search parameters.
 
@@ -99,63 +96,31 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    $fields->{index} = $fp->{index} || 0;
+    # default index to 0
+    $fields->{index} = $fp->get('index') || 0;
 
     #TODO: remove hard-coded 15s
-    if ($fp->{club}) {
-
-	my($order_by) = &_order_by($fp);
+    if ($fp->get('club')) {
 
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
-		'where club=?', $fp->{'club'});
+		'where club=?', $fp->get('club'));
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		$fields->{index}, 15, 'where club=?'.$order_by, $fp->{'club'});
+		$fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
+		$fp->get('club'));
     }
 
     # set the selected message
-    if (defined($fp->{id}) && $fp->{club}) {
+    if ($fp->has_keys('id', 'club')) {
 
 	my($message) = Bivio::Biz::Mail::Message->new();
-	$message->find({id => $fp->{id}, club => $fp->{club}});
-
-	$fields->{selected} = $message->get_status()->is_OK()
-		? $message : undef;
+	$fields->{selected} = $message->find($fp) ? $message : undef;
     }
     else {
 	$fields->{selected} = undef;
     }
 
-    $fp->{index} ||= 0;
-    $fields->{prev} = '';
-    $fields->{next} = '';
-    my($rows) = $self->internal_get_rows();
-    my($sort) = '';
-    if ($fp->{sorta}) {
-	$sort = ',sorta('.$fp->{sorta}.')';
-    }
-    elsif ($fp->{sortd}) {
-	$sort = ',sortd('.$fp->{sortd}.')';
-    }
-
-    #TODO: needs revisiting
-    for (my($i) = 0; $i < scalar(@$rows); $i++) {
-	my($row) = $rows->[$i];
-	my($index) = $i + $fp->{index} - 1;
-	$index = 0 if $index < 0;
-	# col 0, part 0
-	my($id) = $row->[0]->[0];
-
-	if (defined($fp->{id}) and $fp->{id} eq $id) {
-	    $fields->{prev} = $i > 0 ? $rows->[$i-1]->[0]->[0] : undef;
-	    $fields->{next} = $i < scalar(@$rows) - 1
-		    ? 'index('.($index == 0 ? $index : $index + 1)
-			    .'),id('.$rows->[$i+1]->[0]->[0].')'.$sort
-		    : undef;
-	}
-	#TODO: need to get the rest of the fp params into this
-	$row->[0]->[0] = 'index('.($index >= 0 ? $index : 0).'),id('
-		.$id.')'.$sort;
-    }
+    # iterate the rows, creating model references
+    &_create_model_references($self, $fp);
 
     return $self->get_status()->is_OK();
 }
@@ -178,7 +143,8 @@ sub get_heading {
 
 =head2 get_index() : int
 
-Returns the index of the first item into the result set.
+Overrides get_index() to returns the index of the first item into the
+result set.
 
 =cut
 
@@ -200,7 +166,7 @@ Returns the find-params for the next-to-the-selected message.
 sub get_next_message_id {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{next} || '';
+    return $fields->{next};
 }
 
 =for html <a name="get_prev_message_id"></a>
@@ -214,7 +180,7 @@ Returns the find-params for the previous-to-the-selected message.
 sub get_prev_message_id {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{prev} || '';
+    return $fields->{prev};
 }
 
 =for html <a name="get_selected_message"></a>
@@ -243,11 +209,7 @@ Returns the sorting key for the specified column index.
 sub get_sort_key {
     my($self, $col) = @_;
 
-#    return 'subject' if $col == 0;
-#    return 'from_name' if $col == 1;
-#    return 'dttm' if $col == 2;
-#    die("invalid column $col");
-    return ('subject','from_name', 'dttm')[$col];
+    return ('email_message.subject','from_name', 'dttm')[$col];
 }
 
 =for html <a name="get_title"></a>
@@ -286,6 +248,53 @@ sub get_result_set_size {
 
 #=PRIVATE METHODS
 
+# _create_model_references(FindParams fp)
+#
+# Creates model references for the first element in each ModelRef entry.
+
+sub _create_model_references {
+    my($self, $fp) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # iterate the results setting the first arg of the first
+    # element (a model ref) to an appropriate finder value
+
+    my($rows) = $self->internal_get_rows();
+    my($search_id) = defined($fp->get('id')) ? $fp->get('id') : -1;
+    my($search_index) = -1;
+    my($fp2) = $fp->clone();
+    $fp2->remove('club');
+
+    for (my($i) = 0; $i < scalar(@$rows); $i++) {
+	my($row) = $rows->[$i];
+	my($index) = $i + $fields->{index} - 1;
+	$index = 0 if $index < 0;
+
+	# col 0, part 0
+	my($id) = $row->[0]->[0];
+
+	if ($id eq $search_id) {
+	    $search_index = $i;
+	}
+	$fp2->put('id', $id);
+	$fp2->put('index', $index);
+	$row->[0]->[0] = $fp2->to_string();
+    }
+
+    # set the prev and next into the search list if appropriate
+    $fields->{prev} = '';
+    $fields->{next} = '';
+
+    if ($search_index != -1) {
+	if ($search_index > 0) {
+	    $fields->{prev} = $rows->[$search_index-1]->[0]->[0];
+	}
+	if ($search_index < scalar(@$rows)) {
+	    $fields->{next} = $rows->[$search_index+1]->[0]->[0];
+	}
+    }
+}
+
 # _get_date_range() : string
 #
 # Returns the range of dates shown in the list as a string.
@@ -299,33 +308,6 @@ sub _get_date_range {
 	    .$self->get_value_at($count - 1, 2);
 }
 
-# _order_by(hash fp) : string
-#
-# creates an 'order by' clause using values from the model find-params
-
-sub _order_by {
-    my($fp) = @_;
-
-    my($order_by) = '';
-    my($sort);
-
-    if ($fp->{sorta}) {
-	$sort = $fp->{sorta};
-	if ($sort eq 'subject' or $sort eq 'from_name'
-		or $sort eq 'dttm') {
-	    $order_by = ' order by email_message.'.$sort;
-	}
-    }
-    elsif ($fp->{sortd}) {
-	$sort = $fp->{sortd};
-	if ($sort eq 'subject' or $sort eq 'from_name'
-		or $sort eq 'dttm') {
-	    $order_by = ' order by email_message.'.$sort.' desc';
-	}
-    }
-    return $order_by;
-}
-
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
@@ -337,28 +319,3 @@ $Id$
 =cut
 
 1;
-
-=begin comment
-
-use Data::Dumper;
-
-$Data::Dumper::Indent = 1;
-Bivio::IO::Config->initialize({
-    'Bivio::Ext::DBI' => {
-	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
-	database => 'surf_test',
-	user => 'moeller',
-	password => 'bivio,ho'
-        },
-
-    'Bivio::IO::Trace' => {
-	'package_filter' => '/Bivio/'
-        },
-    });
-
-my($list) = Bivio::Biz::Mail::MessageList->new();
-$list->find({});
-
-print(Dumper($list));
-
-=cut

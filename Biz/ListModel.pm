@@ -113,6 +113,63 @@ sub get_column_heading {
     return $fields->{column_info}->[$col][0];
 }
 
+=for html <a name="get_index"></a>
+
+=head2 get_index() : int
+
+Returns the index of the first item into the result set. Subclasses should
+override this if they support paging result sets. By default, this method
+returns 0, which indicates the start of the list.
+
+=cut
+
+sub get_index {
+    return 0;
+}
+
+=for html <a name="get_order_by"></a>
+
+=head2 get_order_by(FindParams fp) : string
+
+Returns the 'order by' clause based on the sort argument in the FindParams.
+The sort param must be of the form: sort(a|d<col>). If the specified column
+doesn't support sorting, then '' is returned.
+
+=cut
+
+sub get_order_by {
+    my($self, $fp) = @_;
+
+    my($order_by) = '';
+    my($sort) = $fp->get('sort') || '';
+
+    # make sure it is in correct form and col is in range
+    if ($sort =~ /(a|d)(\d+)/ and $2 >= 0 and $2 < $self->get_column_count()) {
+	if ($self->get_sort_key($2)) {
+	    $order_by = ' order by '.$self->get_sort_key($2);
+	    $order_by .= ' desc' if $1 eq 'd';
+	}
+    }
+    return $order_by;
+}
+
+
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the total number of rows in the query. Subclasses should override
+this if they support paging result sets. By default, this method returns
+the row count, indicating that all records are displayed.
+
+=cut
+
+sub get_result_set_size {
+    my($self) = @_;
+
+    return $self->get_row_count();
+}
+
 =for html <a name="get_row_count"></a>
 
 =head2 get_row_count() : int
@@ -126,6 +183,21 @@ sub get_row_count {
     my($fields) = $self->{$_PACKAGE};
 
     return scalar(@{$fields->{rows}});
+}
+
+=for html <a name="get_sort_key"></a>
+
+=head2 get_sort_key(int col) : string
+
+Returns the sorting key for the specified column index. This method should
+be overridden by subclasses to support sorting a column. If a column
+doesn't support sorting, then undef whould be returned. By default, this
+method always returns undef.
+
+=cut
+
+sub get_sort_key {
+    return undef;
 }
 
 =for html <a name="get_value_at"></a>

@@ -79,7 +79,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(hash find_params) : boolean
+=head2 find(FindParams fp) : boolean
 
 Loads the list given the specified search parameters.
 
@@ -91,19 +91,18 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    #TODO: remove hard-coded 100s
+    if ($fp->get('club')) {
 
-    if ($fp->{'club'}) {
-	# club users
-	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 0, 100,
+	# default order to user name
+	my ($order_by) = $self->get_order_by($fp) || ' order by user_.name';
+
+	# club users, max 1000?
+	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 0, 1000,
 		'where club_user.club=? and club_user.user_=user_.id'
-		.' order by user_.name',
-		$fp->{'club'});
+		.$order_by, $fp->get('club'));
     }
-    else {
-	# all users
-	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
-    }
+
+    return 1;
 }
 
 =for html <a name="get_heading"></a>
@@ -116,6 +115,20 @@ Returns a suitable heading for the model.
 
 sub get_heading {
     return "User List";
+}
+
+=for html <a name="get_sort_key"></a>
+
+=head2 get_sort_key(int col) : string
+
+Returns the sorting key for the specified column index.
+
+=cut
+
+sub get_sort_key {
+    my($self, $col) = @_;
+
+    return ('name', 'first_name')[$col];
 }
 
 =for html <a name="get_title"></a>
