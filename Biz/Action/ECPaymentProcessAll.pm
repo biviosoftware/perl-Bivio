@@ -33,7 +33,7 @@ one payment at a time.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::ECPayment;
+use Bivio::Societas::Biz::Model::ECPayment;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -91,7 +91,7 @@ sub _process_all {
         $req->set_realm($payment->get('realm_id'));
         $task->execute($req);
     }
-    Bivio::Biz::Model::ECPayment->check_transaction_batch;
+    Bivio::Societas::Biz::Model::ECPayment->check_transaction_batch;
     return 0;
 }
 

@@ -150,7 +150,7 @@ Other Models can declare a method of the form:
 
     sub format_name {
 	my($self) = shift;
-	Bivio::Biz::Model::Address->format($self, 'RealmOwner.', @_);
+	Bivio::Societas::Biz::Model::Address->format($self, 'RealmOwner.', @_);
     }
 
 =cut

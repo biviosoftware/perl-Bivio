@@ -26,7 +26,7 @@ Bivio::Biz::Util::Mail->main(@ARGV);
 
 =head1 SEE ALSO
 
-Bivio::Biz::Model::Mail
+Bivio::Societas::Biz::Model::Mail
 
 =head1 COPYRIGHT
 

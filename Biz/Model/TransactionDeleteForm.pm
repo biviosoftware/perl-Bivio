@@ -36,9 +36,9 @@ use Bivio::IO::Trace;
 use Bivio::Auth::Role;
 use Bivio::Biz::Accounting::Audit;
 use Bivio::Biz::Accounting::InstrumentAudit;
-use Bivio::Biz::Model::Entry;
-use Bivio::Biz::Model::MemberEntry;
-use Bivio::Biz::Model::RealmInstrument;
+use Bivio::Societas::Biz::Model::Entry;
+use Bivio::Societas::Biz::Model::MemberEntry;
+use Bivio::Societas::Biz::Model::RealmInstrument;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Die;
 use Bivio::IO::Alert;
@@ -146,7 +146,7 @@ sub internal_initialize {
 
 #=PRIVATE METHODS
 
-# _check_exists() : Bivio::Biz::Model::Entry
+# _check_exists() : Bivio::Societas::Biz::Model::Entry
 #
 # Ensures that selected entry exists, if not, redirects to the cancel
 # task. This handles the case where the browser's back button is used
@@ -160,7 +160,7 @@ sub _check_exists {
     # if it isn't present, then log a warning and cancel out
 
     # loads the entry
-    my($entry) = Bivio::Biz::Model::Entry->new($req);
+    my($entry) = Bivio::Societas::Biz::Model::Entry->new($req);
     unless ($req->get('query') && exists($req->get('query')->{t})
 	    && $entry->unsafe_load(entry_id => $req->get('query')->{t})) {
 	Bivio::IO::Alert->warn("attempt to delete missing entry");
@@ -170,7 +170,7 @@ sub _check_exists {
     return $entry;
 }
 
-# _get_instruments(Bivio::Biz::Model::RealmTransaction txn) : Bivio::Biz::Model::RealmInstrument
+# _get_instruments(Bivio::Societas::Biz::Model::RealmTransaction txn) : Bivio::Societas::Biz::Model::RealmInstrument
 #
 # Returns the instruments associated with the transaction. Dies on failure.
 #
@@ -189,7 +189,7 @@ sub _get_instruments {
 	    ]);
     while (my $row = $sth->fetchrow_arrayref) {
 	my($id) = $row->[0];
-	push(@$result, Bivio::Biz::Model::RealmInstrument->new(
+	push(@$result, Bivio::Societas::Biz::Model::RealmInstrument->new(
 		$self->get_request)->load(realm_instrument_id => $id));
     }
     Bivio::Die->die("couldn't find instruments for transaction")
@@ -221,7 +221,7 @@ sub _post_delete {
     return;
 }
 
-# _pre_delete(Bivio::Biz::Model::RealmTransaction txn)
+# _pre_delete(Bivio::Societas::Biz::Model::RealmTransaction txn)
 #
 # Peforms and preparation prior to deleting the transaction.
 #
@@ -242,7 +242,7 @@ sub _pre_delete {
     return;
 }
 
-# _update_withdrawn_state(Bivio::Biz::Model::RealmTransaction txn)
+# _update_withdrawn_state(Bivio::Societas::Biz::Model::RealmTransaction txn)
 #
 # If the transaction is a full withdrawal, then the associated member
 # state is returned to 'member'.
@@ -273,7 +273,7 @@ sub _update_withdrawn_state {
 	_trace("pre delete, changing withdrawn to member state") if $_TRACE;
 
 	# set the target status to MEMBER if it is WITHDRAWN
-	my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req)
+	my($member_entry) = Bivio::Societas::Biz::Model::MemberEntry->new($req)
 		->load(entry_id => $entry_id);
 	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req)
 		->load(user_id => $member_entry->get('user_id'));

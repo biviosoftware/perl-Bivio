@@ -32,7 +32,7 @@ C<Bivio::Biz::Model::F1065ParametersForm> IRS 1065 parameters
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::Tax1065;
+use Bivio::Societas::Biz::Model::Tax1065;
 use Bivio::Biz::Model::TaxYearSubForm;
 use Bivio::SQL::Connection;
 use Bivio::Type::CountryCode;
@@ -76,7 +76,7 @@ Loads current settings.
 
 sub execute_empty_start {
     my($self) = @_;
-    my($tax) = Bivio::Biz::Model::Tax1065->new($self->get_request)
+    my($tax) = Bivio::Societas::Biz::Model::Tax1065->new($self->get_request)
 	    ->load_or_default(_get_end_date($self));
 
     # save the keys to related models in hidden fields
