@@ -380,6 +380,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
     # This needs to be a redirect, because we need the "directory" to
     # be correct so MESSAGE_PART works.
@@ -451,6 +452,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::ExistingInstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SELL
@@ -464,6 +466,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSell
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
         cancel=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
     [qw(
         JAPAN_SURVEY
@@ -553,6 +556,7 @@ my(@_CFG) = (
 	Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
 #61
     [qw(
@@ -746,6 +750,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentLookupList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentLookup
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_BUY
@@ -757,6 +762,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
     [qw(
 	SUBSTITUTE_USER
@@ -796,6 +802,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSellForm2
         Bivio::UI::HTML::Club::InstrumentSell2
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
@@ -808,6 +815,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
@@ -844,6 +852,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentIncomeForm
         Bivio::UI::HTML::Club::InstrumentIncome
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SPLIT
@@ -855,6 +864,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSplitForm
         Bivio::UI::HTML::Club::InstrumentSplit
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         REALM_INVITE_NOT_FOUND
@@ -1227,6 +1237,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultiplePayment
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
     # Order of lists is important.  RealmAccountList must be last
     [qw(
@@ -1241,6 +1252,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultipleFee
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
 #    [qw(
 #        TEST_JOB
@@ -1708,6 +1720,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentChargesForm
         Bivio::UI::HTML::Club::InstrumentCharges
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
@@ -1901,6 +1914,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
         Bivio::UI::HTML::Club::MemberWithdrawal
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_CONFIRM
@@ -1913,6 +1927,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberWithdrawalConfirmForm
         Bivio::UI::HTML::Club::MemberWithdrawalConfirm
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
     [qw(
         CLUB_ADMIN_MEMBER_DELETE
@@ -2055,6 +2070,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberInstrumentWithdrawalListForm
         Bivio::UI::HTML::Club::MemberInstrumentWithdrawalList
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LOT_LIST
@@ -2067,6 +2083,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInstrumentLotListForm
         Bivio::UI::HTML::Club::RealmInstrumentLotList
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST

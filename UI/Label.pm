@@ -405,6 +405,8 @@ _compile(
     HELP_VALUATION_DATE => ['Valuation Date'],
     HELP_UNIT_VALUE => ['Unit Value'],
     HELP_ACCOUNT_TRANSACTIONS => ['Account Transactions'],
+    HELP_INVESTMENT_TRANSACTIONS => ['Investment Transactions'],
+    HELP_MEMBER_TRANSACTIONS => ['Member Transactions'],
 );
 
 =head1 METHODS
