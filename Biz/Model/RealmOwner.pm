@@ -75,6 +75,25 @@ sub get_instruments_info {
     return $result;
 }
 
+=for html <a name="get_units"></a>
+
+=head2 get_units(Bivio::Type::DateTime date) : string
+
+Returns the total number of units purchased in the realm up to the specified
+date.
+
+=cut
+
+sub get_units {
+    my($self, $date) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute(
+	    'select sum(member_entry_t.units) from realm_transaction_t, entry_t, member_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = member_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_transaction_t.dttm <= TO_DATE(?, \'J SSSSS\')',
+	    [$self->get('realm_id'), $date]);
+
+    return $sth->fetchrow_arrayref()->[0] || '0';
+}
+
 =for html <a name="get_value"></a>
 
 =head2 get_value(Bivio::Type::DateTime date) : string
