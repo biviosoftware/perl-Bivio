@@ -76,12 +76,12 @@ sub execute_input {
 
     # need to convert date to display value, or next form will barf
     my($properties) = $self->internal_get;
+    my($date) = $properties->{'RealmTransaction.date_time'};
 #TODO: Need a better way of passing info in forms
     $self->get_request->get('form')->{'RealmTransaction.date_time'}
-	    = Bivio::Type::Date->to_literal(
-		    $properties->{'RealmTransaction.date_time'});
+	    = Bivio::Type::Date->to_literal($date);
 
-    _fill_lots_fifo($self);
+    _fill_lots_fifo($self, $date);
 
     # hacked redirect to page two
     $self->get_request->get('form')->{stay_on_page} = 1;
@@ -163,17 +163,19 @@ sub validate {
 
 #=PRIVATE METHODS
 
-# _fill_lots_fifo()
+# _fill_lots_fifo(string date)
 #
 # Loads the lot fields with values using first-in-first-out.
 #
 sub _fill_lots_fifo {
-    my($self) = @_;
+    my($self, $date) = @_;
     my($req) = $self->get_request;
     my($properties) = $self->internal_get;
     my($count) = $properties->{'RealmInstrumentEntry.count'};
 
     my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
+    $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
+	    => $date);
     $lot_list->load();
     my($lot_num) = 0;
 
