@@ -32,9 +32,12 @@ C<Bivio::Biz::Model::ActiveShadowMemberList> lists active shadow member
 
 #=IMPORTS
 use Bivio::Type::Location;
+use Bivio::Biz::Model::RealmOwner;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_SHADOW_PREFIX) = Bivio::Biz::Model::RealmOwner->SHADOW_PREFIX();
+my($_MEMBER_ROLES) = Bivio::Biz::Model::RealmUser->MEMBER_ROLES();
 
 =head1 METHODS
 
@@ -73,13 +76,16 @@ sub internal_initialize {
             Address.country
             Address.zip
             TaxId.tax_id
+            RealmUser.role
         )],
 	auth_id => [qw(RealmUser.realm_id)],
 	where => [
-#TODO: probably should have to quote the last one, problem in base class
-	    'RealmOwner.name', 'like', "'=%-1'",
+	    'RealmUser.role', 'IN',
+	    Bivio::Auth::RoleSet->to_sql_list(\$_MEMBER_ROLES),
 	    'AND',
-	    'email_t.location', '=', Bivio::Type::Location::HOME->as_int,
+	    'RealmOwner.name', 'LIKE', "'$_SHADOW_PREFIX%'",
+	    'AND',
+	    'email_t.location', '=', Bivio::Type::Location::HOME->as_sql_param,
 	],
     };
 }
