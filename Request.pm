@@ -51,7 +51,8 @@ sub process_email ($$$) {
 	'header' => $header,
     };
     &_process($proto, $self, $code) && return &Apache::Constants::OK;
-    my($caller) = (caller)[0] eq 'main' ? (caller)[1] : (caller)[0];
+    my($caller) = (caller)[0];
+    $caller eq 'main' && ($caller = (caller)[1]) =~ s!.*/!!;
     my($attach) = defined($header)
 	    ? [{'value_type' => 'text', 'value' => $header}] : undef;
     &Bivio::Mail::send(
