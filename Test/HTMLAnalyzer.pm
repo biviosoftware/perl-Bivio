@@ -337,7 +337,6 @@ Examples: get_uri('imagemenu', 'Communications', 'Mail')
           get_uri('buttons', 'logout')
 
 =cut
-#TODO: look at get_widget_value...test to see fields exist
 sub get_uri {
     my($self, $section, $target, $subtarget) = @_;
     my($fields) = $self->{$_PACKAGE};
