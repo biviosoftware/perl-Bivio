@@ -196,6 +196,8 @@ sub _copy {
 	    # skip if not present (not part of realm)
 	    next unless defined($properties->{$extra_field});
 	}
+	# remove the primary id so it gets created from a sequence in create()
+	delete($properties->{$table_base.'_id'});
 	$model->create($properties);
 
 	if (defined($source_id)) {
