@@ -299,6 +299,7 @@ _compile(\%_MAP, [
     ['ALLOCATE_EQUALLY', 'ExpenseInfo.allocate_equally']
         => 'Allocate Equally Among Members',
     'Tax1065.allocation_method' => 'Allocation Method',
+    'RealmInstrument.country' => 'Country Code',
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => 'Accounting Reports',
