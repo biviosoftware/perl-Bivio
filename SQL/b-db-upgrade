@@ -195,6 +195,43 @@ CREATE TABLE connect_survey_t (
   tablespace realm_data
 /
 EOF
+
+--
+-- connect_survey_t
+--
+ALTER TABLE connect_survey_t add primary key(realm_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE connect_survey_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE connect_survey_t modify experience not null
+/
+ALTER TABLE connect_survey_t t add check (experience between 0 and 3)
+/
+ALTER TABLE connect_survey_t modify contribution not null
+/
+ALTER TABLE connect_survey_t t add check (contribution between 0 and 3)
+/
+ALTER TABLE connect_survey_t modify age_range not null
+/
+ALTER TABLE connect_survey_t t add check (age_range between 0 and 4)
+/
+ALTER TABLE connect_survey_t modify vicinity not null
+/
+ALTER TABLE connect_survey_t t add check (vicinity between 0 and 4)
+/
+ALTER TABLE connect_survey_t modify risk not null
+/
+ALTER TABLE connect_survey_t t add check (risk between 0 and 4)
+/
+ALTER TABLE connect_survey_t modify outlook not null
+/
+ALTER TABLE connect_survey_t t add check (outlook between 0 and 4)
+/
+EOF
 }
 
 # _usage(array message)
