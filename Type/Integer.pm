@@ -135,11 +135,11 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;;
-    return (undef, Bivio::TypeError::INTEGER())
-	    unless $value =~ /^[-+]?\d+$/;
-#TODO: Not correct because $value may wrap and test would be invalid
+    return (undef, Bivio::TypeError->INTEGER)
+	unless $value =~ /^[-+]?\d+$/;
+    # Return as a string, so we avoid perl turning 0 into ''.
     return $proto->get_min <= $value && $proto->get_max >= $value
-	    ? int($value).'' : (undef, Bivio::TypeError::NUMBER_RANGE());
+	    ? int($value).'' : (undef, Bivio::TypeError->NUMBER_RANGE);
 }
 
 =for html <a name="get_decimals"></a>
