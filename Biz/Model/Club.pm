@@ -85,8 +85,7 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
 =head2 cascade_delete()
 
 Deletes the club, and all of its related transactions, membership records,
-files, and file server messages. Also deletes any shadow members which
-are a member of the club.
+and files. Also deletes any shadow members which are a member of the club.
 
 =cut
 
@@ -267,7 +266,7 @@ sub internal_initialize {
 
 =head2 rename(string new_name)
 
-Renames the club and file server directories to the new name.
+Renames the club to the new name.
 
 =cut
 
@@ -278,12 +277,9 @@ sub rename {
     $realm->unauth_load(realm_id => $self->get('club_id'))
 	    || die("couldn't load realm from club");
 
-#TODO: Catch file server error on rename, so doesn't look bad to user
-#      when we lose the race.
     # order is important here, because if the name is already taken
     # we will get a uniqeness constraint violation and a Form can
-    # generate the proper error message.  Once we've changed the
-    # database, we can be pretty sure the file name will change successfully.
+    # generate the proper error message.
     my($old_name) = $realm->get('name');
     $realm->update({name => $new_name});
     return;
