@@ -124,7 +124,6 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value}, return unless $fields->{is_first_render};
-    $fields->{is_first_render} = 0;
 
     my($form) = $source->get_widget_value(
 	    @{$self->ancestral_get('form_model')});
@@ -152,6 +151,8 @@ sub render {
     my($start) = length($$buffer);
     $self->SUPER::render($source, $buffer);
     $fields->{value} = substr($$buffer, $start);
+
+    $fields->{is_first_render} = 0;
     return;
 }
 
