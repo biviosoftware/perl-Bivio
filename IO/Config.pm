@@ -155,7 +155,7 @@ sub get {
     my($cfg) = $pkg_cfg->{&NAMED};
     my(@bad) = grep(defined($cfg->{$_}) && $cfg->{$_} eq &REQUIRED,
 	    keys(%$cfg));
-    @bad || return;
+    @bad || return $cfg;
     @bad = sort @bad;
     die("$pkg @bad: named config required");
 }
@@ -279,54 +279,72 @@ sub register {
 sub _get_pkg {
     my($pkg) = @_;
     $_CONFIGURED{$pkg} && return $_ACTUAL->{$pkg};
-    my($cfg) = ref($_ACTUAL->{$pkg}) ? $_ACTUAL->{$pkg} : {};
+    my($actual) = ref($_ACTUAL->{$pkg}) ? $_ACTUAL->{$pkg} : {};
     if ($_SPEC{$pkg}) {
 	# Set the defaults for the common configuration
 	my($spec) = $_SPEC{$pkg};
 	while (my($k, $v) = each(%$spec)) {
+	    # If it is required, then it is an error
+	    if (defined($v) && $v eq &REQUIRED) {
+		defined($actual->{$k}) && next;
+		die("$pkg $k: config parameter not defined");
+	    }
 	    # Have an actual value for specified config?
-	    exists($cfg->{$k}) && next;
+	    exists($actual->{$k}) && next;
 	    # Is the named spec?
 	    $k eq &NAMED && next;
-	    # If it is required, then it is an error
-	    $v eq &REQUIRED
-		    && die("$pkg $k: config parameter required");
 	    # Assign the default value
-	    $cfg->{$k} = $v;
-	    # Set the defaults for all named configuration
-	    if (defined($spec->{&NAMED})) {
-		my($named_spec) = $spec->{&NAMED};
-		# Fill in the cfg for the "undef" case of &get
-		my($undef_cfg) = {%$named_spec};
-		while (my($k, $v) = each(%$cfg)) {
-		    # Does a spec exist for this param?
-		    exists($spec->{$k}) && next;
-		    # Does a named spec exist?
-		    if (exists($named_spec->{$k})) {
-			# Override named default with actual config
-			$undef_cfg->{$k} = $v;
+	    $actual->{$k} = $v;
+	}
+	# Set the defaults for all named configuration
+	if (defined($spec->{&NAMED})) {
+	    my($named_spec) = $spec->{&NAMED};
+	    # Fill in the actual for the "undef" case of &get
+	    my($undef_cfg) = {%$named_spec};
+	    while (my($k, $v) = each(%$actual)) {
+		# Does a spec exist for this param?
+		exists($spec->{$k}) && next;
+		# Does a named spec exist for this param?
+		if (exists($named_spec->{$k})) {
+		    # Override named default with actual config
+		    $undef_cfg->{$k} = $v;
+		    next;
+		}
+		# Must be a named configuration section
+		my($named_actual) = $v;
+		ref($named_actual) || die("$pkg $k: invalid config parameter");
+		while (my($nk, $nv) = each(%$named_spec)) {
+		    # If it is required, then must be defined (not just exists)
+		    if (defined($nv) && $nv eq &REQUIRED) {
+			# Defined in named section?
+			defined($named_actual->{$nk}) && next;
+			# Defined in common section?
+			if (defined($actual->{$nk})) {
+			    $named_actual->{$nk} = $actual->{$nk};
+			    next;
+			}
+			die("$pkg $nk: named config parameter not defined");
+		    }
+		    else {
+			# Have an actual value for specified named config?
+			exists($named_actual->{$nk}) && next;
+		    }
+		    # Have an actual value in the common area?
+		    if (exists($actual->{$nk})) {
+			$named_actual->{$nk} = $actual->{$nk};
 			next;
 		    }
-		    # Must be a named configuration section
-		    ref($v) || die("$pkg $k: invalid config parameter");
-		    while (my($nk, $nv) = each(%$named_spec)) {
-			# Have an actual value for specified named config?
-			exists($v->{$nk}) && next;
-			# If it is required, then it is an error
-			$nv eq &REQUIRED && die(
-				"$pkg $nk: named config parameter required");
-			# Assign the default value
-			$v->{$nk} = $nv;
-		    }
+		    # Assign the default value (not found in either section)
+		    $named_actual->{$nk} = $nv;
 		}
-		# Overload the use of "NAMED" to mean undef named cfg
-		# in actual configuration.
-		$cfg->{&NAMED} = $undef_cfg;
 	    }
+	    # Overload the use of "NAMED" to mean undef named cfg
+	    # in actual configuration.
+	    $actual->{&NAMED} = $undef_cfg;
 	}
     }
     $_CONFIGURED{$pkg} = 1;
-    return $_ACTUAL->{$pkg} = $cfg;
+    return $_ACTUAL->{$pkg} = $actual;
 }
 
 =head1 ENVIRONMENT

@@ -60,11 +60,13 @@ my($_POINT_FILTER, $_PKG_FILTER);
 # This must be visible to the outside world.
 $Bivio::IO::Trace::_POINT_SUB = undef;
 my($_PKG_SUB) = \&_false;
-
 # Sub used for printing.  See &print.
 my($_PRINTER) = \&default_printer;
-
-Bivio::IO::Config->register(\&_configure);
+Bivio::IO::Config->register({
+    'filter' => undef,
+    'package_filter' => undef,
+    'printer' => \&default_printer,
+});
 
 =head1 METHODS
 
@@ -95,8 +97,7 @@ Initial L<printer|"printer">
 sub configure {
     my($class, $cfg) = @_;
     &set_filters(undef, $cfg->{filter}, $cfg->{package_filter});
-    &set_printer(undef, ref($cfg->{printer}) eq 'CODE'
-	    ? $cfg->{printer} : \&default_printer);
+    &set_printer(undef, $cfg->{printer});
 }
 
 =for html <a name="default_printer"></a>

@@ -49,7 +49,16 @@ my($_WANT_PID) = 0;
 # Normalize error messages
 $SIG{__DIE__} = \&_initial_die_handler;
 $SIG{__WARN__} = \&_warn_handler;
-Bivio::IO::Config->register();
+Bivio::IO::Config->register({
+    'intercept_die' => 0,
+    'intercept_warn' => 1,
+    'log_facility' => 'daemon',
+    'log_name' => $0,
+    'max_arg_length' => 128,
+    'want_stderr' => 0,
+    'syslog_socket' => 'unix',
+    'want_pid' => 0,
+});
 
 =head1 METHODS
 
@@ -119,26 +128,9 @@ If not writing to C<Sys::Syslog>, include the pid in the log messages.
 
 sub configure {
     my(undef, $cfg) = @_;
-    if ($cfg->{max_arg_length} && $cfg->{max_arg_length} > 0) {
-	$_MAX_ARG_LENGTH = $cfg->{max_arg_length};
-    }
-    else {
-	$_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
-    }
-    if ($cfg->{intercept_warn} || !exists($cfg->{intercept_warn})) {
-	$SIG{__WARN__} = \&_warn_handler;
-    }
-    else {
-	$SIG{__WARN__} eq \&_warn_handler
-		&& ($SIG{__WARN__} = '');
-    }
-    if ($cfg->{intercept_die}) {
-	$SIG{__DIE__} = \&_die_handler;
-    }
-    else {
-	$SIG{__DIE__} eq \&_die_handler
-		&& ($SIG{__DIE__} = '');
-    }
+    $_MAX_ARG_LENGTH = $cfg->{max_arg_length};
+    $SIG{__WARN__} = $cfg->{intercept_warn} ? \&_warn_handler : '';
+    $SIG{__DIE__} = $cfg->{intercept_die} ? \&_die_handler : '';
     if ($cfg->{want_stderr}) {
 	$_LOGGER = \&_log_stderr;
     }
@@ -150,9 +142,8 @@ sub configure {
 	$_LOGGER = \&_log_stderr;
     }
     else {
-	&Sys::Syslog::setlogsock($cfg->{syslog_socket} || 'unix');
-	&Sys::Syslog::openlog($cfg->{log_name} || $0, 'pid',
-		$cfg->{log_facility} || 'daemon');
+	&Sys::Syslog::setlogsock($cfg->{syslog_socket});
+	&Sys::Syslog::openlog($cfg->{log_name}, 'pid', $cfg->{log_facility});
 	$_LOGGER = \&_log_syslog;
     }
     $_WANT_PID = $cfg->{want_pid};
