@@ -157,7 +157,7 @@ Doesn't include begin and trailing anchors.
 =cut
 
 sub REGEX_ALERT {
-    return '(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)';
+    return '(\d{4})/(\d+)/(\d+) (\d+):(\d+):(\d+)';
 }
 
 =for html <a name="REGEX_CTIME"></a>
@@ -1097,7 +1097,7 @@ sub _adjust_to_local {
 #
 sub _from_alert {
     my($proto, $value, $res, $err) = @_;
-    my($mon, $d, $y, $h, $m, $s) = $value =~ /^$_REGEX_ALERT$/o;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /^$_REGEX_ALERT$/o;
     return 0 unless defined($s);
     ($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
     return 1;
@@ -1197,6 +1197,8 @@ sub _localtime {
 # Returns the timezone from the current request or returns undef.
 #
 sub _timezone {
+    return undef
+	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
     my($req) = Bivio::Agent::Request->get_current;
     return $req ? $req->unsafe_get('timezone') : undef;
 }
