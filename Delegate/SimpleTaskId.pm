@@ -24,7 +24,9 @@ use Bivio::Delegate;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::SimpleTaskId>
+C<Bivio::Delegate::SimpleTaskId> defines the standard tasks typically used by a
+site.  If you subclass this class, you need to define you tasks with numbers
+500 and above.
 
 =cut
 
