@@ -173,11 +173,11 @@ sub _get_section {
     while (<$fh_ref>) {
 	if (/$_SECTION_NAME_REGEX/) {
 	    ${$next_section_ref} = $1;
-	    last;
+	    return \$text;
 	}
 	$text .= $_;
     }
-    return(\$text);
+    Bivio::IO::Alert->die('unexpected end of file');
 }
 
 # _read_data() : 
