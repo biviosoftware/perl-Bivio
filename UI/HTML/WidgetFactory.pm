@@ -110,15 +110,19 @@ sub create {
 		$attrs);
     }
     else {
+#TODO: This is broken in the case of $attrs->{value} existing.  Hack for now
 	$widget = _create_display($proto, $field_name, $field_type, $attrs);
-
+	my(%attrs_copy) = %$attrs;
+	delete($attrs_copy{value});
 	# Wrap the resultant widget in a link?
 	my($wll) = $widget->unsafe_get('wf_list_link');
 	$widget = Bivio::UI::HTML::Widget::Link->new({
 	    href => ['->format_uri', Bivio::Biz::QueryType->from_any($wll)],
 	    value => $widget,
-	    %$attrs,
+	    %attrs_copy,
 	}) if $wll;
+	$widget = $proto->secure_data($widget)->put(%attrs_copy)
+		if $field_type->is_secure_data;
     }
     return $widget;
 }
@@ -136,6 +140,7 @@ sub _create_display {
     if ($field eq 'RealmOwner.name') {
 	return Bivio::UI::HTML::Widget::String->new({
 	    field => $field,
+#TODO: This is broken in the case of $attrs->{value} existing
 	    value => ['->format_name'],
 	    %$attrs,
 	});
@@ -179,6 +184,7 @@ sub _create_display {
 	    field => $field,
 	    mode => 'DATE',
 	    column_align => 'E',
+#TODO: This is broken in the case of $attrs->{value} existing
 	    value => [$field],
 	    %$attrs,
 	});
@@ -205,6 +211,7 @@ sub _create_display {
     # default type is string
     return Bivio::UI::HTML::Widget::String->new({
         field => $field,
+#TODO: This is broken in the case of $attrs->{value} existing
 	value => [$field],
 	string_font => 'table_cell',
 	%$attrs,
