@@ -92,6 +92,20 @@ sub execute {
     return 1;
 }
 
+=for html <a name="execute_favicon"></a>
+
+=head2 static execute_favicon(Bivio::Agent::Request req) : boolean
+
+Returns the file pointed to by I<Bivio::UI::Text.favicon_uri>.
+
+=cut
+
+sub execute_favicon {
+    my($proto, $req) = @_;
+    return $proto->execute(
+	$req, Bivio::UI::Text->get_value('favicon_uri', $req));
+}
+
 #=PRIVATE METHODS
 
 # _open(Bivio::Agent::Request req, string file_name, string_ref mime_type) : file_handle

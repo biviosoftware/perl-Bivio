@@ -144,6 +144,17 @@ sub get_delegate_info {
             Action.ClientRedirect->execute_next
             next=SITE_ROOT
 	)],
+	# To make this visible, add this to Task section of your facade:
+	#   $t->group(FAVICON_ICO => ['/favicon.ico']);
+        # and in the Text section:
+	#   $t->group(favicon_uri => '/i/favicon.ico');
+	[qw(
+            FAVICON_ICO
+            12
+            GENERAL
+            ANYBODY
+            Action.LocalFilePlain->execute_favicon
+        )],
 ];
 }
 
