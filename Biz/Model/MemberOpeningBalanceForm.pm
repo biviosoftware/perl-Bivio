@@ -65,7 +65,7 @@ sub execute_input {
     my($earnings) = Bivio::Type::Amount->round(
 	    $properties->{'earnings'} || 0, 2);
     my($units) = $properties->{'MemberEntry.units'};
-    my($user) = $req->get('Bivio::Biz::Model::RealmUser');
+    my($member) = $req->get('target_realm_owner');
 
     # create the transaction
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
@@ -80,7 +80,7 @@ sub execute_input {
     $member_entry->create_entry($transaction, {
 	entry_type => Bivio::Type::EntryType::MEMBER_OPENING_BALANCE(),
 	amount => $paid,
-	user_id => $user->get('user_id'),
+	user_id => $member->get('realm_id'),
 	units => $units,
 	# no valuation date
     });
@@ -90,7 +90,7 @@ sub execute_input {
 	    entry_type =>
 	    Bivio::Type::EntryType::MEMBER_OPENING_EARNINGS_DISTRIBUTION(),
 	    amount => $earnings,
-	    user_id => $user->get('user_id'),
+	    user_id => $member->get('realm_id'),
 	});
     }
     # need to update units after this date
@@ -109,6 +109,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
+	require_context => 1,
 	visible => [
 	    {
 		name => 'RealmTransaction.date_time',
