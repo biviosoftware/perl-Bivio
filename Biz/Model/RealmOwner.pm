@@ -38,6 +38,7 @@ use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmInstrument;
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
+use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
 use Bivio::Type::RealmName;
@@ -158,10 +159,10 @@ sub get_unit_value {
 
     Carp::croak('missing date parameter') unless $date;
 
-#TODO: use Math::BigInt
     my($units) = $self->get_units($date);
     return $units == 0 ? 0
-	    : $self->get_value($date) / $units;
+#	    : $self->get_value($date) / $units;
+	    : Bivio::Type::Amount->div($self->get_value($date), $units);
 }
 
 =for html <a name="get_units"></a>
@@ -206,12 +207,14 @@ sub get_value {
     my($instruments) = $self->get_instruments_info();
     my($inst);
     foreach $inst (@$instruments) {
-#TODO: use Math::BigInt
 	my($id) = $inst->[0];
 	my($price) = Bivio::Biz::Model::RealmInstrument
 		->get_share_price($id, $date);
-	$value += Bivio::Biz::Model::RealmInstrument
-		->get_number_of_shares($id, $date) * $price;
+#	$value += Bivio::Biz::Model::RealmInstrument
+#		->get_number_of_shares($id, $date) * $price;
+	$value = Bivio::Type::Amount->add($value,
+		Bivio::Type::Amount->mul(Bivio::Biz::Model::RealmInstrument
+		->get_number_of_shares($id, $date), $price));
     }
     return $value;
 }

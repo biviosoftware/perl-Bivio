@@ -34,6 +34,7 @@ methods while iterating through the source(s).
 =cut
 
 #=IMPORTS
+use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -87,7 +88,6 @@ sub get {
     foreach my $name (@keys) {
 	$self->put($name, _sum($fields->{source}, $name))
 		unless $self->has_keys($name);
-	
     }
     return $self->SUPER::get(@keys);
 }
@@ -160,8 +160,7 @@ sub _sum {
     foreach my $list (@$source) {
 	$list->reset_cursor;
 	while ($list->next_row) {
-#TODO: use Math::BigInt
-	    $result += scalar($list->get($name));
+	    $result = Bivio::Type::Amount->add($result, $list->get($name));
 	}
 	$list->reset_cursor;
     }
