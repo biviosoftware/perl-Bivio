@@ -37,11 +37,15 @@ to override this form.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::IO::Trace;
 use Bivio::Type::Honorific;
 use Bivio::Type::Location;
+use Bivio::Type::Name;
 use Bivio::Type::Password;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -62,7 +66,6 @@ sub execute_ok {
 	$self->get_request,
 	{realm_owner => ($self->internal_create_models)[0]});
     return;
-
 }
 
 =for html <a name="internal_create_models"></a>
@@ -83,10 +86,8 @@ the user is logged in at that point.
 sub internal_create_models {
     my($self) = @_;
     my($req) = $self->get_request;
-
-    my($user) = $self->new($req, 'User')->create({
-	last_name => $self->get('RealmOwner.display_name'),
-    });
+    my($user) = $self->new($req, 'User')->create(
+        _parse_names($self, $self->get('RealmOwner.display_name')));
     my($realm) = $self->new($req, 'RealmOwner')->create({
 	realm_id => $user->get('user_id'),
 	name =>	 $self->unsafe_get('RealmOwner.name')
@@ -168,6 +169,43 @@ sub validate {
 }
 
 #=PRIVATE SUBROUTINES
+
+# _parse_names(self, string display_name) : hash_ref
+#
+# Returns a hash_ref of first_name, middle_name, last_name parsed
+# from the display_name.
+#
+sub _parse_names {
+    my($self, $display_name) = @_;
+    my($first, $middle, @last) = split(' ', $display_name);
+
+    # split on spaces, last name gets all the extra words
+    my($last);
+    if (int(@last)) {
+        $last = join(' ', @last);
+    }
+    else {
+        $last = $middle;
+        $middle = undef;
+    }
+    my($result) = {
+        first_name => _trim($first),
+        middle_name => _trim($middle),
+        last_name => _trim($last),
+    };
+    _trace($result) if $_TRACE;
+    return $result;
+}
+
+# _trim(string value) : string
+#
+# Trims the field to the correct size.
+#
+sub _trim {
+    my($value) = @_;
+    return undef unless defined($value);
+    return substr($value, 0, Bivio::Type::Name->get_width);
+}
 
 =head1 COPYRIGHT
 
