@@ -15,6 +15,7 @@ Bivio::Biz::FieldDescriptor - A type descriptor for model properties.
 
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Biz::FieldDescriptor::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
@@ -38,7 +39,7 @@ Boolean type.
 =cut
 
 sub BOOLEAN {
-    return 0;
+    return 1;
 }
 
 =for html <a name="CURRENCY"></a>
@@ -137,6 +138,18 @@ sub NUMBER {
     return MODEL_REF() + 1;
 }
 
+=for html <a name="PASSWORD"></a>
+
+=head2 PASSWORD : int
+
+Password type.
+
+=cut
+
+sub PASSWORD {
+    return NUMBER() + 1;
+}
+
 =for html <a name="ROLE"></a>
 
 =head2 ROLE : int
@@ -146,7 +159,7 @@ Role type.
 =cut
 
 sub ROLE {
-    return NUMBER() + 1;
+    return PASSWORD() + 1;
 }
 
 =for html <a name="STRING"></a>
@@ -162,10 +175,12 @@ sub STRING {
 }
 
 #=IMPORTS
-use Bivio::UNIVERSAL;
+use Bivio::IO::Trace;
 use Carp();
 
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my(%_CACHE);
 
@@ -199,8 +214,9 @@ sub lookup {
     $type || Carp::croak("invalid type $type_name");
 
     my($cache_key) = $type;
-    $size && $cache_key.'_'.$size;
-    $decimal_digits && $cache_key.'_'.$decimal_digits;
+    $cache_key .= '_'.$size if $size;
+    $cache_key .= '_'.$decimal_digits if $decimal_digits;
+
     my($result) = $_CACHE{$cache_key};
 
     if (! $result) {
