@@ -411,6 +411,7 @@ _compile(\%_MAP, [
     REALM_CHOOSER => 'Select Site',
 
     # Tasks (sorted alphabetically)
+    ADM_ACCOUNT_SYNC => 'Synchronize Accounts',
     ADM_FIND_REALM_OWNER_LIST => 'Adm Lookup',
     ADM_REALM_NOTICE_LIST => 'Notices',
     ADM_MERGER_SPINOFF_CREATE => 'Create New Merger/Spin-off Information',
