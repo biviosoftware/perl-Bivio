@@ -73,7 +73,7 @@ serverURL[comment]=Remote server URL
 serverURL=https://www.rhns.redhat.com/XMLRPC
 
 pkgSkipList[comment]=A list of package names, optionally including wildcards, to skip
-pkgSkipList=;
+pkgSkipList=kernel*;
 
 adminAddress[comment]=List of e-mail addresses for update agent to communicate with when run in batch mode
 adminAddress=root@localhost;
