@@ -42,25 +42,30 @@ UserPreferences.
 
 #=IMPORTS
 use Bivio::Biz::Error;
-use Bivio::Biz::FindParams;
+use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlSupport;
 use Bivio::Biz::UserDemographics;
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::IO::Config->register({
-    model_name => Bivio::IO::Config->REQUIRED,
-    property_cfg => Bivio::IO::Config->REQUIRED,
 
-    table_name => Bivio::IO::Config->REQUIRED,
-    sql_field_map => Bivio::IO::Config->REQUIRED
-});
-my($_CLASS_CFG);
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new();
+my($_PROPERTY_INFO) = {
+    id => ['Internal ID',
+	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+    name => ['User ID',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
+    password => ['Password',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
+    };
+
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_', {
+    id => 'id',
+    name => 'name',
+    password => 'password'
+    });
 
 =head1 FACTORIES
 
@@ -77,10 +82,14 @@ load the model with values.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::Biz::PropertyModel::new($proto, $_CLASS_CFG);
+    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user',
+	    $_PROPERTY_INFO);
 
     $self->{$_PACKAGE} = {
     };
+
+    $_SQL_SUPPORT->initialize();
+
     return $self;
 }
 
@@ -88,26 +97,43 @@ sub new {
 
 =cut
 
-=for html <a name="configure"></a>
+=for html <a name="create"></a>
 
-=head2 static configure(hash cfg)
+=head2 create(hash new_values) : boolean
 
-See PropertyModel->new() and SqlSupport->set_model_config() for format.
+Creates a new model in the database with the specified value. After creation,
+this instance has the same values.
 
 =cut
 
-sub configure {
-    my(undef, $cfg) = @_;
+sub create {
+    my($self, $new_values) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
-    $_CLASS_CFG = $cfg;
-    $_SQL_SUPPORT->set_model_config($cfg);
+    return $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
+	    $new_values);
+}
+
+=for html <a name="delete"></a>
+
+=head2 delete() : boolean
+
+Deletes the current model from the database. Returns 1 if successful,
+0 otherwise.
+
+=cut
+
+sub delete {
+    my($self) = @_;
+
+    return $_SQL_SUPPORT->delete($self, 'where id=?', $self->get('id'));
 }
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams p) : boolean
+=head2 find(hash find_params) : boolean
 
-Finds the user given the specified search parameters. Valid find parameters
+Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
 
 =cut
@@ -115,21 +141,21 @@ are 'id' or 'name'.
 sub find {
     my($self, $fp) = @_;
 
+    # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->get_value('id')) {
-	$_SQL_SUPPORT->query($self, $self->internal_get_fields(),
-		'where id=?', $fp->get_value('id'));
+    if ($fp->{'id'}) {
+	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+		'where id=?', $fp->{'id'});
     }
-    elsif ($fp->get_value('name')) {
-	$_SQL_SUPPORT->query($self, $self->internal_get_fields(),
-		'where name=?',	$fp->get_value('name'));
+    if ($fp->{'name'}) {
+	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+		'where name=?',	$fp->{'name'});
     }
-    else {
-	$self->get_status()->add_error(
-		Bivio::Biz::Error->new("User not found"));
-    }
-    return $self->get_status()->is_OK();
+
+    $self->get_status()->add_error(
+	    Bivio::Biz::Error->new("User not found"));
+    return 0;
 }
 
 =for html <a name="get_demographics"></a>
@@ -145,7 +171,7 @@ sub get_demographics {
 
     #TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
-    $demo->find(Bivio::Biz::FindParams->new({'user' => $self->get('id')}));
+    $demo->find({'user' => $self->get('id')});
     return $demo;
 }
 
@@ -213,6 +239,24 @@ sub get_title {
     return $self->get_full_name();
 }
 
+=for html <a name="update"></a>
+
+=head2 update(hash new_values) : boolean
+
+Updates the current model's values.
+NOTE: find should be called prior to an update.
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+
+    #TODO: if 'id' is in new_values, make sure it is the same
+
+    return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
+	    $new_values, 'where id=?', $self->get('id'));
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
@@ -228,76 +272,41 @@ $Id$
 1;
 
 
-use Bivio::Biz::FieldDescriptor;
+#use Bivio::Biz::ListModel;
+use Bivio::Biz::UserList;
+use Bivio::Biz::SqlConnection;
 use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
 Bivio::IO::Config->initialize({
-    'Bivio::Biz::User' => {
-
-	# PropertyModel configuration
-	model_name => 'user',
-	property_cfg => {
-	    id => ['Internal ID',
-		    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	    name => ['User ID',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-	    password => ['Password',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
-	    },
-
-	# SQL configuration
-	table_name => 'user_',
-	sql_field_map => {
-	    id => 'id',
-	    name => 'name',
-	    password => 'password'
-	}
-    },
-    'Bivio::Biz::UserDemographics' => {
-
-	# PropertyModel configuration
-	model_name => 'demographics',
-	property_cfg => {
-	    user => ['Internal ID',
-		    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	    first_name => ['First Name',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
-	    middle_name => ['Middle Name',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
-	    last_name => ['Last Name',
-		    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
-	    gender => ['Gender',
-		    Bivio::Biz::FieldDescriptor->lookup('GENDER', 1)],
-	    age => ['Age',
-		    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 3)],
-	},
-
-	# SQL configuration
-	table_name => 'user_',
-	sql_field_map => {
-	    user => 'id',
-	    first_name => 'first_name',
-	    middle_name => 'middle_name',
-	    last_name => 'last_name',
-	    gender => 'gender',
-	    age => 'age'
-	}
-    },
     'Bivio::Ext::DBI' => {
 	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
 	database => 'surf_test',
 	user => 'moeller',
 	password => 'bivio,ho'
-        }
+        },
+
+    'Bivio::IO::Trace' => {
+	'package_filter' => '/Bivio/'
+        },
     });
 
-my($user) = Bivio::Biz::User->new();
-$user->find(Bivio::Biz::FindParams->new({id => 1}));
-#$user->find(Bivio::Biz::FindParams->new({name => 'paul'}));
-#$user->find(Bivio::Biz::FindParams->new());
-#print(Dumper(Bivio::Biz::User->new()));
-print(Dumper($user));
-my($demo) = $user->get_demographics();
-print(Dumper($demo));
+=pod
 
+my($user) = Bivio::Biz::User->new();
+$user->find({id => 1});
+#$user->find({name => 'paul'});
+my($demo) = $user->get_demographics();
+$user->update({'password', "QWERTY"});
+$user->find({id => 3});
+$user->delete();
+$user->create({id => 3, name => 'ted', password => 'RAZOR'});
+#print(Dumper($user));
+
+=cut
+
+my($list) = Bivio::Biz::UserList->new();
+$list->find({});
+print(Dumper($list));
+
+Bivio::Biz::SqlConnection->get_connection()->commit();

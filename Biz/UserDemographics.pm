@@ -26,7 +26,13 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::UserDemographics>
+C<Bivio::Biz::UserDemographics> are fields describing the current user.
+All of the fields are optional.
+    first_name
+    middle_name
+    last_name
+    gender
+    age
 
 =cut
 
@@ -37,22 +43,35 @@ C<Bivio::Biz::UserDemographics>
 #=IMPORTS
 use Bivio::Biz::Error;
 use Bivio::Biz::SqlSupport;
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::IO::Config->register({
-    model_name => Bivio::IO::Config->REQUIRED,
-    property_cfg => Bivio::IO::Config->REQUIRED,
+my($_PROPERTY_INFO) = {
+    user => ['Internal ID',
+	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+    first_name => ['First Name',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
+    middle_name => ['Middle Name',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
+    last_name => ['Last Name',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
+    gender => ['Gender',
+	    Bivio::Biz::FieldDescriptor->lookup('GENDER', 1)],
+    age => ['Age',
+	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 3)],
+    };
 
-    table_name => Bivio::IO::Config->REQUIRED,
-    sql_field_map => Bivio::IO::Config->REQUIRED
-});
-my($_CLASS_CFG);
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new();
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_', {
+    user => 'id',
+    first_name => 'first_name',
+    middle_name => 'middle_name',
+    last_name => 'last_name',
+    gender => 'gender',
+    age => 'age'
+    });
 
 =head1 FACTORIES
 
@@ -69,10 +88,14 @@ the model with values.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::Biz::PropertyModel::new($proto, $_CLASS_CFG);
+    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'demographics',
+	    $_PROPERTY_INFO);
 
     $self->{$_PACKAGE} = {
     };
+
+    $_SQL_SUPPORT->initialize();
+
     return $self;
 }
 
@@ -80,24 +103,9 @@ sub new {
 
 =cut
 
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-See PropertyModel->new() and SqlSupport->set_model_config() for format.
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-
-    $_CLASS_CFG = $cfg;
-    $_SQL_SUPPORT->set_model_config($cfg);
-}
-
 =for html <a name="find"></a>
 
-=head2 find(FindParams p) : boolean
+=head2 find(hash find_params) : boolean
 
 Finds demographics given the specified search parameters. Valid parameters
 are 'user'.
@@ -109,9 +117,9 @@ sub find {
 
     $self->get_status()->clear();
 
-    if ($fp->get_value('user')) {
-	$_SQL_SUPPORT->query($self, $self->internal_get_fields(),
-		'where id=?', $fp->get_value('user'));
+    if ($fp->{'user'}) {
+	$_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+		'where id=?', $fp->{'user'});
     }
     else {
 	$self->get_status()->add_error(
