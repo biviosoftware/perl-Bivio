@@ -60,7 +60,10 @@ sub emit_query_values {
 		my($t) = $self->get_field_info($_, 'type');
 		$t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v));
 		# might want to check for type=FormButton instead
-	    } grep({!($_ =~ /_button/)}
+	    } grep({
+		!($self->get_field_info($_, 'type')
+		    && $self->get_field_info($_, 'type')
+		        ->isa('Bivio::Type::FormButton'))}
 		@{$self->get_info('visible_field_names')})),
 	};
 }
