@@ -60,9 +60,6 @@ my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
 my($_UNKNOWN_ADDRESS);
 my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
 my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
-# The URL that's used in HTML message parts to replace "cid:<content-id>"
-# links. The actual content-id as appended to this constant string.
-my($_MAIL_CID_PART_URL) ='msg-part?t=';
 
 =head1 METHODS
 
@@ -309,7 +306,7 @@ sub cache_parts {
     my($volume) = $_CACHE_VOLUME;
     my($cache_id) = _walk_attachment_tree($self, $entity,
             $volume->get_root_directory_id($req->get('auth_id')),
-            $user_id, $self->get('mail_id'), undef);
+            $user_id, $self->get('mail_id'));
     return $cache_id;
 }
 
@@ -367,7 +364,7 @@ sub _strip_non_mime {
     return $mime_header;
 }
 
-# _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id, int index) : int
+# _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id) : int
 #
 # Descend into the message parts:
 #  - create a directory for multipart attachments
@@ -378,7 +375,7 @@ sub _strip_non_mime {
 #TODO: This routine might need a clearer structure
 #
 sub _walk_attachment_tree {
-    my($self, $entity, $dir_id, $user_id, $mail_id, $index) = @_;
+    my($self, $entity, $dir_id, $user_id, $mail_id) = @_;
     my($req) = $self->unsafe_get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
 
@@ -391,7 +388,6 @@ sub _walk_attachment_tree {
     # Special text/plain handling, it becomes multipart (text/plain and text/html)
     if (@parts || $ct eq 'message/rfc822') {
         # Has sub-parts, so create directory and descend
-        $mail_id .= '_' . $index if $index;
         $file->create({
             is_directory => 1,
             name => $mail_id,
@@ -424,19 +420,11 @@ sub _walk_attachment_tree {
             }
             # Pass $mail_id and $i separately, so a subpart can refer to its parent
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $mail_id, sprintf('%02X', $i));
+                    $mail_id . sprintf('%02X', $i));
         }
     }
     else {
-        # Append the given index or its content-id to the filename
-        if(my($cid) = $entity->head->get('Content-ID')) {
-            $cid =~ s/(^\s*<|>\s*$)//g;
-            $mail_id .= '_' . $cid;
-        } elsif ($index) {
-            $mail_id .= '_' . $index;
-        }
         my($content) = $entity->bodyhandle->as_string;
-        $content =~ s/("?)cid:([^\s">]+)/$1$_MAIL_CID_PART_URL$2/g if $ct eq 'text/html';
         $file->create({
             is_directory => 0,
             name => $mail_id,
