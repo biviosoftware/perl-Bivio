@@ -8,6 +8,10 @@ $Bivio::Type::BLOB::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::BLOB - binary large object type
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::BLOB;
