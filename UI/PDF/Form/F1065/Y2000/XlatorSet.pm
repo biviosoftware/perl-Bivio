@@ -432,6 +432,22 @@ my(@_XLATORS) = (
 		2
 	       ),
 	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-54',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'margin_interest',
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-55',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'margin_interest'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-56',
 		[
 		    'Bivio::Biz::Model::F1065Form',
