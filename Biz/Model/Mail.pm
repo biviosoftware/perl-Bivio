@@ -520,7 +520,8 @@ sub _attach_to_thread {
     # Shortcutting the procedure... only use newest message-id
 # TODO: Search for all message ids
     my($in_reply_to) = $msg->get_references;
-    _trace('Looking for in_reply-to ', $in_reply_to) if $in_reply_to && $_TRACE;
+    _trace('Looking for in_reply-to ', $in_reply_to)
+	    if $_TRACE && $in_reply_to;
     if ($in_reply_to) {
         # Have existing message with message_id = $in_reply_to?
         my($sth) = Bivio::SQL::Connection->execute('
