@@ -33,9 +33,11 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
-=item table_default_align : string
+=item Bivio::UI::HTML.table_default_align : string
 
-=item page_left_margin : int
+Default table alignment name.
+
+=item Bivio::UI::HTML.page_left_margin : int
 
 If greater than zero, expand to "95%".  Otherwise, "100%"?
 
