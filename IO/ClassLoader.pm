@@ -314,6 +314,20 @@ sub simple_require {
     return wantarray ? @pkg : $pkg[0];
 }
 
+=for html <a name="unsafe_simple_require"></a>
+
+=head2 static unsafe_simple_require(string package) : string
+
+Returns I<package> if it could be loaded.  Else, returns C<undef>.
+
+=cut
+
+sub unsafe_simple_require {
+    my($proto, $pkg) = @_;
+    my($die);
+    return $pkg && _require($pkg, \$die) ? $pkg : undef;
+}
+
 #=PRIVATE METHODS
 
 # _find_property_models(string classpath)
