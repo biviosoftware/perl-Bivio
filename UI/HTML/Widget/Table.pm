@@ -164,6 +164,10 @@ May be specified on the table or overriden by the cell.
 A separator will separate the headings from the cells.  The color will be
 C<table_separator>.
 
+=item id : string
+
+The html ID for the table.
+
 =item list_class : string (required)
 
 The class name of the list model to be rendered. The list_class is used
@@ -608,6 +612,8 @@ sub initialize {
     $prefix .= $self->get_or_default('border', 0);
     $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
+    $prefix .= ' id='.$self->get('id')
+	if $self->unsafe_get('id');
     $fields->{table_prefix} = $prefix;
 
     if ($self->unsafe_get('footer_row_widgets')) {
