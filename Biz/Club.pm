@@ -123,7 +123,7 @@ sub create {
     }
     else {
 	$self->get_status()->add_error(
-		Bivio::Biz::Error->new("invalid id"));
+		Bivio::Biz::Error->new('invalid club name'));
     }
     return $self->get_status()->is_OK();
 }
