@@ -155,6 +155,18 @@ sub home_page {
     return shift->goto_uri($_CFG->{home_page_uri});
 }
 
+=for html <a name="home_page_uri"></a>
+
+=head2 home_page_uri() : string
+
+Returns configured home page uri.  Used by other tests.
+
+=cut
+
+sub home_page_uri {
+    return $_CFG->{home_page_uri};
+}
+
 =for html <a name="submit_form"></a>
 
 =head2 submit_form(string submit_button, hash_ref form_fields)
@@ -336,6 +348,7 @@ sub _send_request {
     $fields->{response} = undef;
     $fields->{html_parser} = undef;
     while () {
+	$fields->{uri} = $request->uri->as_string;
 	$fields->{cookies}->add_cookie_header($request);
 	_log($self, 'req', $request);
 	$fields->{response} = $fields->{user_agent}->request($request);
@@ -347,13 +360,11 @@ sub _send_request {
 	my($uri) = $fields->{response}->as_string
 	    =~ /(?:^|\n)Location: (\S*)/si;
 	$request = HTTP::Request->new(GET => _fixup_uri($self, $uri));
-	$fields->{uri} = $fields->{response}->base;
     }
     Bivio::Die->die("uri request failed: ", $request->uri)
 	unless $fields->{response}->is_success;
 
     $fields->{cookies}->extract_cookies($fields->{response});
-    $fields->{uri} = $fields->{response}->base;
     $fields->{html_parser} =
 	Bivio::Test::HTMLParser->new($fields->{response}->content_ref)
         if $fields->{response}->content_type eq 'text/html';
