@@ -240,9 +240,8 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Club::MailDetail
     )],
-    # These two tasks must have the same "first part".  The string
-    # msg-part/*?t=NNN is encoded in the MAIL_CACHE generation code.
-    # Path info (/*) is ignored by MailPartDownload, because it isn't
+    # The string msg-part/*?t=NNN is encoded in the MAIL_CACHE generation
+    # code. Path info (/*) is ignored by MailPartDownload, because it isn't
     # a unique identifier.  It is there so attachments can be saved
     # to disk nicely.
     [qw(
@@ -251,9 +250,22 @@ my(@_CFG) = (
         CLUB
         MAIL_READ
         ?/msg-part/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Action::MailPartDownload
     )],
-#20
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_PART_SAVE
+        20
+        CLUB
+        DOCUMENT_WRITE
+        ?/msg-part-save
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
+	Bivio::Biz::Model::MailPartSaveForm
+	Bivio::UI::HTML::Club::MailPartSave
+        next=CLUB_COMMUNICATIONS_MAIL_DETAIL
+    )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21
@@ -994,12 +1006,12 @@ my(@_CFG) = (
         110
         CLUB
         DOCUMENT_WRITE
-        ?/file-delete/*:?/file_delete/*
+        ?/file-delete/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileDeleteForm
-        Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileDelete
 	next=CLUB_COMMUNICATIONS_FILE_READ
     )],
@@ -1943,8 +1955,20 @@ my(@_CFG) = (
         help=member-status-report
     )],
     [qw(
-        CLUB_MAIL_POST
+        USER_MAIL_POST
         197
+        USER
+        MAIL_WRITE&ANY_USER
+        ?/mail/post
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::MailPostForm
+        Bivio::Biz::Model::MailToList->execute_load_all
+        Bivio::UI::HTML::User::MailPost
+        next=HTTP_DOCUMENT
+    )],
+    [qw(
+        CLUB_MAIL_POST
+        198
         CLUB
         MAIL_WRITE&MAIL_READ
         ?/mail/post
@@ -1954,7 +1978,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailPost
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-#198
     [qw(
         CLUB_MAIL_REPLY
         199
