@@ -38,7 +38,7 @@ C<Bivio::Type::Email> simple syntax checking on email addresses.
 
 =head2 IGNORE_PREFIX : string
 
-Prefix we used to indicate ignored addresses.
+Prefix we used to indicate addresses which go into a black hole.
 
 =cut
 
@@ -101,6 +101,21 @@ sub from_literal {
     return (undef, Bivio::TypeError::EMAIL());
 }
 
+=for html <a name="is_ignore"></a>
+
+=head2 static is_ignore(string email) : boolean
+
+Returns true if is L<is_valid|"is_valid"> and does not
+begin with L<IGNORE_PREFIX|"IGNORE_PREFIX">.
+
+=cut
+
+sub is_ignore {
+    my($proto, $email) = @_;
+    return 1 unless $proto->is_valid($email);
+    return $email =~ /^$_IGNORE/ios ? 1 : 0;
+}
+
 =for html <a name="is_valid"></a>
 
 =head2 is_valid(string email) : boolean
@@ -112,8 +127,7 @@ values stored in the database which may be invalidated by support.
 
 sub is_valid {
     my($proto, $email) = @_;
-    return defined($email) && $email =~ /^$_822_ATOM_ONLY_ADDR$/os
-	    && $email !~ /^$_IGNORE/os ? 1 : 0;
+    return defined($email) && $email =~ /^$_822_ATOM_ONLY_ADDR$/os ? 1 : 0;
 }
 
 #=PRIVATE METHODS
