@@ -130,7 +130,7 @@ B<Always begins with C</> if defined.>  Unlike CGI, I<path_info> is
 not extracted from I<uri>.  I<path_info> is used to generate other
 URIs, not to recreate the existing one.
 
-B<It is not escaped.>  HTTP::Location and Biz::ListModel
+B<It is not escaped.>  UI::Task and Biz::ListModel
 will escape it before appending.
 
 =item query : hash_ref
@@ -253,7 +253,6 @@ Bivio::IO::Config->register({
 });
 my($_CURRENT);
 my($_GENERAL);
-my($_DEFAULT_HELP) = Bivio::Agent::Task->DEFAULT_HELP();
 
 =head1 FACTORIES
 
@@ -281,7 +280,7 @@ sub internal_new {
 	    is_production => $_IS_PRODUCTION,
 	    txn_resources => [],
 
-	    # These will be modified by Location::_setup_facade.
+#TODO: Remove these...
 	    http_host => $_HTTP_HOST,
 	    mail_host => $_MAIL_HOST,
 	    support_phone => $_SUPPORT_PHONE,
@@ -464,16 +463,10 @@ sub format_email {
 
 =for html <a name="format_help_uri"></a>
 
-=head2 format_help_uri() : string
+=head2 format_help_uri(any task_id) : string
 
-=head2 format_help_uri(string task_id) : string
-
-=head2 format_help_uri(array_ref task_id) : string
-
-=head2 format_help_uri(Bivio::Agent::TaskId task_id) : string
-
-Formats the uri for the current task or I<task_id>.  If the task
-doesn't have a help entry, defaults to help task.
+Formats the uri for I<task_id> (defaults to task_id on request).  If the task
+doesn't have a help entry, defaults to default help page.
 
 I<task_id> may be a widget value, string (the name), or
 a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
@@ -486,10 +479,7 @@ sub format_help_uri {
     $task_id = $task_id ? ref($task_id) ? $task_id
 	    : Bivio::Agent::TaskId->from_any($task_id)
 		    : $self->get('task_id');
-    return $self->format_uri(Bivio::Agent::TaskId::HELP(),
-	    undef, undef,
-	    Bivio::Agent::Task->get_by_id($task_id)->unsafe_get('help')
-	    || $_DEFAULT_HELP);
+    return Bivio::UI::Task->format_help_uri($task_id, $self);
 }
 
 =for html <a name="format_http"></a>
@@ -638,13 +628,14 @@ sub format_uri {
     # Allow path_info to be undef
     $path_info = $self->unsafe_get('path_info') unless int(@_) >= 5;
 
-    my($uri) = Bivio::Agent::HTTP::Location->format(
+    my($uri) = Bivio::UI::Task->format_uri(
 	    $task_id,
 	    defined($auth_realm) ? $auth_realm
 	    : $self->get_realm_for_task($task_id),
-	    $self,
 	    $path_info,
-	    $no_context);
+	    $no_context,
+	    $self,
+	   );
 
     # Yes, we don't want $query unless it is passed.
     $query = $self->get('query') unless int(@_) >= 3;
@@ -931,6 +922,7 @@ The second form is used by L<client_redirect|"client_redirect">.
 sub internal_server_redirect {
     my($self, $new_task, $new_realm, $new_query, $new_form, $new_path_info,
 	    $no_context) = @_;
+    Bivio::UI::Task->assert_defined_for_facade($new_task, $self);
 
     # Save the form context before switching realms
     my($fc) = Bivio::Biz::FormModel->get_context_from_request($self);
@@ -954,7 +946,7 @@ sub internal_server_redirect {
     # Now fill in the rest of the request context
     $self->put(uri =>
 	    # If there is no uri, use current one
-	    Bivio::Agent::HTTP::Location->task_has_uri($new_task)
+	    Bivio::UI::Task->has_uri($new_task)
 	    ? $self->format_uri($new_task, undef, $new_realm,
 		    $new_path_info, $no_context) : $self->get('uri'),
 	    query => $new_query,

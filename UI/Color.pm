@@ -123,7 +123,7 @@ sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless ($v =~ /^-?\d+$/) {
-	$self->bad_value($value, 'not an integer');
+	$self->initialization_error($value, 'not an integer');
 	# Mark as "no color"
 	$v = -1;
     }

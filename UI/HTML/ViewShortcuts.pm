@@ -540,8 +540,9 @@ sub vs_format_uri_static_site {
     return $req->format_uri(Bivio::Agent::TaskId::HTTP_DOCUMENT(),
 	    undef,
 	    '',
-	    Bivio::Agent::HTTP::Location->get_document_path_info($page),
-	    1),
+	    # path info must begin with a '/'
+	    '/'.$page,
+	    1);
 }
 
 =for html <a name="vs_heading"></a>
@@ -900,7 +901,9 @@ sub vs_link_help {
     Bivio::Die->die($label, ": label must be a string")
 	if !defined($label) || ref($label);
 
-    return $proto->vs_link($label, ['->format_help_uri', $task], $font)
+    return $proto->vs_link($label,
+	    [['->get_request'], '->format_help_uri', $task],
+	    $font)
 	    ->put(control => $proto->vs_html_value('want_help'));
 }
 
@@ -942,8 +945,14 @@ with a '/', but must include directory, e.g. "hm/services.html".
 
 sub vs_link_static_site {
     my($proto, $label, $page, $font) = @_;
-    return $proto->vs_link($label, $proto->vs_format_uri_static_site(
-	    Bivio::Agent::Request->get_current, $page),
+    return $proto->vs_link($label,
+	    [['->get_request'], '->format_uri',
+		Bivio::Agent::TaskId::HTTP_DOCUMENT(),
+		undef,
+		'',
+		# path info must begin with a '/'
+		'/'.$page,
+		1],
 	    $font);
 }
 
@@ -1116,7 +1125,7 @@ Returns a banner ad widget which fits in the page heading area.
 sub vs_page_heading_banner_ad {
     my($proto) = @_;
 #    return $proto->vs_link_static_site(
-#	    $proto->vs_image('promote_stop_small'), 'hm/account-sync')
+#	    $proto->vs_image('promote_stop_small'), 'hm/account-sync.html')
 #	    ->put(control => $proto->vs_html_value('want_ads'));
     return $proto->vs_link_goto(
 	$proto->vs_image('ad_mld_onyourown_230x33_4k_NL',
@@ -1418,13 +1427,10 @@ sub vs_whats_this {
 sub _link_help {
     my($proto, $task, $label) = @_;
     my($task_id) = Bivio::Agent::TaskId->unsafe_from_name($task);
-    my($path_info) = $task_id
-	    ? Bivio::Agent::Task->get_by_id($task_id)->get('help')
-	    : Bivio::Agent::HTTP::Location->get_help_path_info($task);
     return $proto->vs_link(
 	    $proto->vs_text($label),
-	    ['->format_uri', Bivio::Agent::TaskId::HELP(), undef,
-		undef, $path_info],
+	    $task_id ? [['->get_request'], '->format_help_uri', $task_id]
+	    	    : [['->get_request'], '->format_stateless_uri', 'HELP'],
 	    'help_hint')
 	    ->put(control => $proto->vs_html_value('want_help'));
 }

@@ -29,50 +29,9 @@ use Bivio::Type::Enum;
 C<Bivio::Agent::TaskId> defines all possible "tasks" within the Societas.  A
 structure of a task is defined in L<Bivio::Agent::TaskBivio::Agent::Task>.
 
-The syntax of the configuration table is defined as follows:
+The syntax of the configuration table is defined as follows.
 
-Always start enums at 1, so 0 can be reserved for UNKNOWN.
-DO NOT CHANGE the numbers in this list, the values may be
-stored in the database.
-
-URLs can be aliases, separated by a colon (:).  However, the first
-one is returned on get from task id.  See
-L<Bivio::Agent::HTTP::Location|Bivio::Agent::HTTP::Location>.
-
-URI components should use dashes (-), not underscores (_), to
-make the component more readable.  Underscores disappear when
-underlined.
-
-A URI which contains a '?', will have a realm owner name in that
-position.
-
-A URI which contains a trailing '*', may have path_info.  These
-URIs are severely restricted.  They cannot be set on the GENERAL
-realm. They must be exactly /?/I<component>. I<component> must be
-unique in the global URI space. All of these rules are checked in
-L<Bivio::Agent::HTTP::Location|Bivio::Agent::HTTP::Location>.
-
-Use '!' to mean "no uri".
-
-B<Make  the following paragraph true.  We should tag tasks this way so we
-have an idea of the tasks which need to be secure, but right
-now user decides.>
-
-LOGIN privileges mean something special.  It means the task
-must be executed from an encrypted context.  Only tasks which
-require the user to enter sensitive information, e.g. passwords,
-credit cards, should have LOGIN set.
-
-ACHTUNG: Any static top level URI names, must be in
-Bivio::Type::RealmName::_RESERVED list.  In general, avoid top
-level names, use C</pub/> names instead.
-
-C<TaskId>s are defined "OBJECT_VERB", so they sort nicely.  The list of
-tasks defined in this module is:
-
-=over 4
-
-=back
+#TODO: Need to describe format.
 
 =cut
 

@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
@@ -16,7 +16,7 @@ L<Bivio::Agent::Request>
 =cut
 
 use Bivio::Agent::Request;
-@Bivio::Agent::HTTP::Request::ISA = qw(Bivio::Agent::Request);
+@Bivio::Agent::HTTP::Request::ISA = ('Bivio::Agent::Request');
 
 =head1 DESCRIPTION
 
@@ -33,7 +33,6 @@ URI for the most part, so we do, too.]
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::HTTP::Form;
-use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Auth::RealmType;
@@ -44,7 +43,7 @@ use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
 use Bivio::Type::UserAgent;
-# needed for _is_hack_https_port()
+# needed for is_https_port()
 use Socket;
 
 #=VARIABLES
@@ -77,7 +76,7 @@ sub new {
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
-	is_secure => $ENV{HTTPS} || _is_hack_https_port($r)
+	is_secure => $ENV{HTTPS} || is_https_port($r)
 	? 1 : 0,
     });
 
@@ -89,12 +88,12 @@ sub new {
     # We must put the cookie now, because it may be used below.
     $self->put(cookie => $cookie);
 
-    # Location next, because may not be found or location may want
+    # Task next, because may not be found or task may want
     # to clear 'auth_user_id'.
     my($uri) = $r->uri;
     my($task_id, $auth_realm, $path_info);
     ($task_id, $auth_realm, $path_info, $uri)
-	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
+	    = Bivio::UI::Task->parse_uri($uri, $self);
 
     # We have a Facade, so Request is "pretty much initialized".
     $self->internal_set_current();
@@ -169,7 +168,7 @@ sub client_redirect {
 	$self->SUPER::server_redirect($new_task, $new_realm, $new_query,
 		$new_path_info)
 		if $new_task eq $self->get('task_id')
-		    || !Bivio::Agent::HTTP::Location->task_has_uri($new_task);
+		    || !Bivio::UI::Task->has_uri($new_task, $self);
 
 	$uri = $self->format_uri($new_task, $new_query,
 		defined($new_realm) ? $new_realm
@@ -213,7 +212,7 @@ sub client_redirect_if_not_secure {
 =head2 format_http_toggling_secure() : string
 
 Formats the uri for this request, but toggles secure mode.  This
-is a very special and only used in one location--thank goodness!
+is a very special and only used in one location.
 
 =cut
 
@@ -259,6 +258,18 @@ sub get_form {
     return $form;
 }
 
+# is_https_port(Apache r) : boolean
+#
+# Returns true if the local port is 81.  We are using this trick between
+# the front-end and the middle tier to indicate it is running in secure
+# mode.
+#
+sub is_https_port {
+    my($r) = @_;
+    my($port) = unpack_sockaddr_in($r->connection->local_addr());
+    return $port == 81 ? 1 : 0;
+}
+
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
@@ -287,7 +298,7 @@ sub server_redirect {
     die('too many args') if int(@_) > 4;
     my($new_uri, $new_query, $new_form, $new_path_info) = @_;
     my($new_task, $new_realm, $path_info_from_uri)
-	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
+	    = Bivio::UI::Task->parse_uri($new_uri, $self);
     # Replace path_info (if not set)
     $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
     $self->SUPER::server_redirect($new_task, $new_realm, $new_query,
@@ -316,14 +327,16 @@ B<DOES NOT RETURN.>
 sub server_redirect_in_handle_die {
     my($self, $die) = (shift, shift);
     # If the task is specified already, let super handle it.
-    $self->SUPER::server_redirect_in_handle_die($die, @_), return
-	    if ref($_[0]);
+    if (ref($_[0])) {
+	$self->SUPER::server_redirect_in_handle_die($die, @_);
+	return;
+    }
 
     # Need to parse out task and realm from uri
     die('too many args') if int(@_) > 4;
     my($new_uri, $new_query, $new_form, $new_path_info) = @_;
     my($new_task, $new_realm, $path_info_from_uri)
-	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
+	    = Bivio::UI::Task->parse_uri($new_uri, $self);
     # Replace path_info (if not set)
     $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
     $self->SUPER::server_redirect_in_handle_die($new_task, $new_realm,
@@ -366,18 +379,6 @@ sub _get_auth_user {
     return undef;
 }
 
-# _is_hack_https_port(Apache r) : boolean
-#
-# Returns true if the local port is 81.  We are using this hack between
-# the front-end and the middle tier to indicate it is running in secure
-# mode.
-#
-sub _is_hack_https_port {
-    my($r) = @_;
-    my($port) = unpack_sockaddr_in($r->connection->local_addr());
-    return $port == 81 ? 1 : 0;
-}
-
 =head1 SEE ALSO
 
 RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
@@ -386,7 +387,7 @@ RFC1808 (Relative URL)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

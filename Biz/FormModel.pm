@@ -310,7 +310,7 @@ sub execute_unwind {
 
 =head2 static format_context_as_query(Bivio::Agent::Request req, Bivio::Agent::TaskId uri_task) : string
 
-B<Only to be called by Bivio::Agent::HTTP::Location.>
+B<Only to be called by Bivio::UI::Task.>
 
 Calls L<get_context_from_request|"get_context_from_request"> and
 formats as a query string value with a '?' prefix.

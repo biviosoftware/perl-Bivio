@@ -46,7 +46,6 @@ sub MAX_SERVER_REDIRECTS {
 }
 
 #=IMPORTS
-use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::Request;
 use Bivio::Agent::Task;
 use Bivio::Die;
@@ -153,9 +152,6 @@ sub initialize {
     $_INITIALIZED = 1;
     # Need a current request for initialization
     Bivio::Agent::Request->get_current_or_new;
-
-    # Initialize URI map
-    Bivio::Agent::HTTP::Location->initialize;
 
     # Initialize all tasks and task items
     Bivio::Agent::Task->initialize;

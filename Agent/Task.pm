@@ -12,11 +12,6 @@ Bivio::Agent::Task - defines the tuple (id, @items)
 =head1 SYNOPSIS
 
     use Bivio::Agent::Task;
-    Bivio::Agent::Task->initialize();
-    Bivio::Agent::Task->new($id, @items);
-    $task->get('id');
-    $task->get('next');
-    $task->execute($req)
 
 =cut
 
@@ -96,24 +91,7 @@ Task must be in secure mode to function.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="DEFAULT_HELP"></a>
-
-=head2 DEFAULT_HELP : string
-
-This is the path_info for the default help file.
-
-=cut
-
-sub DEFAULT_HELP {
-    return '/index.html';
-}
-
 #=IMPORTS
-use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
@@ -136,6 +114,7 @@ my(%_REDIRECT_DIE_CODES) = (
     Bivio::DieCode::CLIENT_REDIRECT_TASK() => 1,
     Bivio::DieCode::SERVER_REDIRECT_TASK() => 1,
 );
+my($_REQUEST_LOADED);
 my(@_HANDLERS);
 
 =head1 FACTORIES
@@ -165,10 +144,6 @@ and I<action> are mapped as follows:
 
 The "Cancel" task of a form.  If not specified, defaults to
 the I<next> task.
-
-=item help
-
-The name of the help file for this task.
 
 =item next
 
@@ -216,11 +191,10 @@ sub new {
 	push(@executables, $i);
     }
     my($new_items) = _init_executables($attrs, \@executables);
-
     # Set form
     _init_form_attrs($attrs);
 
-    # Other defaults
+    # Defaults
     $attrs->{want_query} = 1 unless defined($attrs->{want_query});
     $attrs->{require_secure} = 0 unless defined($attrs->{require_secure});
 
@@ -321,7 +295,7 @@ Returns the task associated with the id.
 sub get_by_id {
     my(undef, $id) = @_;
     Bivio::Die->die($id, ": no task associated with id")
-	    unless $_ID_TO_TASK{$id};
+		unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
 
@@ -348,7 +322,10 @@ task id is sought.
 sub handle_die {
     my($proto, $die) = @_;
     my($die_code) = $die->get('code');
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
+    unless ($_REQUEST_LOADED) {
+	Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
+	$_REQUEST_LOADED = 1;
+    }
     if ($_REDIRECT_DIE_CODES{$die_code}) {
 	# commit redirects: current task is completed
 	_trace('commit: ', $die_code) if $_TRACE;
@@ -382,6 +359,11 @@ sub handle_die {
 	    _trace('not a mapped task: ', $die_code) if $_TRACE;
 	    return;
 	}
+	unless (Bivio::UI::Task->is_defined_for_facade($new_task_id, $req)) {
+	    _trace('error redirect not defined in facade: ', $new_task_id)
+		    if $_TRACE;
+	    return;
+	}
     }
 
     # Redirect to error redirect
@@ -400,16 +382,17 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 =cut
 
 sub initialize {
+    my($proto) = @_;
     return if $_INITIALIZED;
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     map {
-	my($id_name, undef, $realm_type, $perm_spec, undef, @items) = @$_;
+	my($id_name, undef, $realm_type, $perm_spec, @items) = @$_;
 	my($perm_set) = Bivio::Auth::PermissionSet->get_min;
 	foreach my $p (split(/\&/, $perm_spec)) {
 	    Bivio::Auth::PermissionSet->set(\$perm_set,
 		    Bivio::Auth::Permission->$p());
 	}
-	Bivio::Agent::Task->new(Bivio::Agent::TaskId->$id_name(),
+	$proto->new(Bivio::Agent::TaskId->$id_name(),
 		Bivio::Auth::RealmType->$realm_type(),
 		$perm_set, @items);
     } @$cfg;
@@ -555,10 +538,6 @@ sub _invoke_pre_execute_handlers {
 #
 sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
-
-    return _put_attr($attrs, 'help',
-	    Bivio::Agent::HTTP::Location->get_help_path_info($action))
-	    if $cause eq 'help';
 
     return _put_attr($attrs, $cause,
 	    Bivio::Type::Boolean->from_literal_or_die($action))

@@ -12,9 +12,6 @@ Bivio::Agent::Job::Dispatcher - run tasks
 =head1 SYNOPSIS
 
     use Bivio::Agent::Job::Dispatcher;
-    Bivio::Agent::Job::Dispatcher->enqueue($task, $attrs);
-    Bivio::Agent::Job::Dispatcher->execute_queue;
-    Bivio::Agent::Job::Dispatcher->queue_is_empty;
 
 =cut
 
@@ -111,6 +108,7 @@ sub enqueue {
     $params->{auth_id} = $req->get('auth_id');
     my($u) = $req->get('auth_user');
     $params->{auth_user_id} = $u ? $u->get('realm_id') : undef;
+    $params->{facade} = $req->unsafe_get('facade');
 
     # Enqueue and add as a txn resource (may end up calling handle_rollback
     # multiple times, but the routine is re-enterable).
