@@ -58,6 +58,7 @@ other.host
 		['etc/sysconfig/network-scripts/ifcfg-eth0',
 		    "NETMASK=255.255.255.240\nGATEWAY=1.2.3.99\n"],
 		['etc/hosts', "1.2.3.4\tany.host other.host\n"],
+		['etc/hosts', "127.0.0.1\tlocalhost.localdomain localhost\n"],
 		['etc/hosts', sub {${shift(@_)} !~ /99.*any.host/im}],
 	    ],
 	], [
