@@ -223,8 +223,8 @@ See L<handle_cleanup|"handle_cleanup"> for what subclasses should implement.
 =cut
 
 sub test_cleanup {
-    my($proto) = @_;
-    return ($_SELF_IN_EVAL || $proto)->handle_cleanup();
+    my($proto) = _args(@_);
+    return $proto->handle_cleanup;
 }
 
 =for html <a name="test_conformance"></a>
@@ -263,20 +263,24 @@ sub test_deviance {
 
 =for html <a name="test_log_output"></a>
 
-=head2 test_log_output(string file_name, string content)
+=head2 test_log_output(string file_name, string content) : string
 
-=head2 test_log_output(string file_name, string_ref content)
+=head2 test_log_output(string file_name, string_ref content) : string
 
-Writes output to a separate log file in I<test_log_prefix> directory.
+Writes output to a separate log file in I<test_log_prefix> directory.  Returns
+the file name that was written or undef if no file was written (no
+I<test_log_prefix>).
 
 =cut
 
 sub test_log_output {
-    my($self, $file_name, $content) = @_;
+    my(undef, $file_name, $content) = _args(@_);
+    my($self) = _assert_in_eval('test_log_output');
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
-    Bivio::IO::File->write($self->get('test_log_prefix') . "/$file_name",
-	ref($content) ? $content : \$content);
-    return;
+    return Bivio::IO::File->write(
+	$self->get('test_log_prefix') . "/$file_name",
+	ref($content) ? $content : \$content,
+    );
 }
 
 =for html <a name="test_run"></a>
@@ -357,7 +361,8 @@ sub test_setup {
 # are called from view files or templates, they are not given a $proto.
 #
 sub _args {
-    return defined($_[0]) && $_[0] eq __PACKAGE__ ? @_ : (__PACKAGE__, @_);
+    return defined($_[0]) && UNIVERSAL::isa(ref($_[0]) || $_[0], __PACKAGE__)
+	? @_ : (__PACKAGE__, @_);
 }
 
 # _assert_in_eval() : Bivio::Test::Language
