@@ -80,13 +80,13 @@ You would translate this to:
   URL
   ----------------------------------------------------------------------
   EOF
-           ->add_line(<<'EOF', \$id, \$date, \$privileges)
+           ->add_line(<<'EOF', [\$id, \$date, \$privileges])
   @<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<
   EOF
-           ->add_line(<<'EOF', \$email, \$full_name, \$login)
+           ->add_line(<<'EOF', [\$email, \$full_name, \$login])
   @<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<
   EOF
-           ->add_line(<<'EOF', \$invite_url);
+           ->add_line(<<'EOF', [\$invite_url]);
   @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   $invite_url
 
@@ -150,7 +150,7 @@ sub add_line {
     $args ||= [];
     my($fields) = $self->[$_IDI];
     Bivio::Die->die('all arguments must be references')
-		if grep(!ref($_), @$args);
+	if grep(!ref($_), @$args);
     _append_newline(\$format);
     push(@{$fields->{lines}}, {
 	format => $format,
