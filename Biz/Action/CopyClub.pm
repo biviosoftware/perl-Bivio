@@ -136,12 +136,7 @@ sub execute {
 
     # members and entries
     _copy($id_map, 'realm_user', {realm_id => $source_id},
-	    Bivio::Biz::Model::RealmUser->new($req),
-	    undef,
-	    {
-		role => Bivio::Auth::Role::MEMBER(),
-		honorific => Bivio::Type::Honorific::MEMBER(),
-	    });
+	    Bivio::Biz::Model::RealmUser->new($req));
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select user_id from realm_user_t where realm_id=?', [$source_id]);
     my($row);
