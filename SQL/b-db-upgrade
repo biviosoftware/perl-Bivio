@@ -188,7 +188,7 @@ sub _modify_column {
     my($table, $column, $type) = @_;
     _do_sql("
 ALTER TABLE $table $column $type
-");
+/");
     return;
 }
 
@@ -211,8 +211,17 @@ CREATE INDEX file_name_sort_i ON file_t (
 /
 ');
     _add_column('file_t', 'is_public', 'NUMBER(1)');
-    _modify_column('file_t', 'aux_info', 'VARCHAR(4000)');
+    _upgrade_part2();
+    return;
+}
 
+# _upgrade_part2()
+#
+# Because the upgrade failed in the middle on test, had to split in
+# two parts.
+#
+sub _upgrade_part2 {
+    _modify_column('file_t', 'aux_info', 'VARCHAR(4000)');
 
     # mail_t
     _do_sql('
@@ -300,7 +309,9 @@ ALTER TABLE mail_t
 ALTER TABLE mail_t modify bytes not null
 /
 ');
+    return;
 }
+
 
 # _usage(array message)
 #
