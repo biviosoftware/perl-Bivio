@@ -42,14 +42,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Biz::PropertyModel
+=head2 static new(string name) : Bivio::Biz::PropertyModel
 
-Creates a PropertyModel.
+Creates a PropertyModel with the specified name.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::Biz::Model::new(@_);
+    my($proto, $name) = @_;
+    my($self) = &Bivio::Biz::Model::new($proto, $name);
     return $self;
 }
 

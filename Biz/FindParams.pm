@@ -44,11 +44,10 @@ result size.
 =cut
 
 sub new {
-    my($self, $map, $max) = @_;
+    my($proto, $map) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	map => $map,
-	max => $max
+	map => $map
     };
     return $self;
 }
@@ -70,20 +69,6 @@ sub get_fields {
     my($fields) = $self->{$_PACKAGE};
     return keys(%{$fields->{map}});
 
-}
-
-=for html <a name="get_max_rows"></a>
-
-=head2 get_max_rows() : int
-
-Returns the maximum result size.
-
-=cut
-
-sub get_max_rows {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{max};
 }
 
 =for html <a name="get_value"></a>

@@ -50,8 +50,8 @@ Creates a testing model which exposes the specified actions.
 =cut
 
 sub new {
-    my($proto, $actions, $heading, $title) = @_;
-    my($self) = &Bivio::Biz::Model::new($proto);
+    my($proto, $name, $actions, $heading, $title) = @_;
+    my($self) = &Bivio::Biz::Model::new($proto, $name);
     $self->{$_PACKAGE} = {
 	heading => $heading,
 	title => $title,

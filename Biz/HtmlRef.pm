@@ -45,15 +45,15 @@ sub LINK {
     return 0;
 }
 
-=for html <a name="NAME"></a>
+=for html <a name="TEXT"></a>
 
-=head2 NAME : int
+=head2 TEXT : int
 
-The name index.
+The text index.
 
 =cut
 
-sub NAME {
+sub TEXT {
     return 1;
 }
 

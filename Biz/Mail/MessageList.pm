@@ -59,7 +59,7 @@ sub new {
 	actions => {
 #	    up => Bivio::Biz::UpAction->new(),
 #	    down => Bivio::Biz::DownAction->new(),
-	    compose => Bivio::Biz::Mail::ComposeAction->new()
+#	    compose => Bivio::Biz::Mail::ComposeAction->new()
 	}
     };
     return $self;
@@ -161,6 +161,30 @@ sub get_column_heading {
     return 'Date' if $col == 2;
 
     Carp::croak("invalid column $col");
+}
+
+=for html <a name="get_index"></a>
+
+=head2 get_index() : int
+
+Returns the index of the first item into the result set.
+
+=cut
+
+sub get_index {
+    die("not implemented");
+}
+
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the total number of rows in the query.
+
+=cut
+
+sub get_result_set_size {
+    die("not implemented");
 }
 
 =for html <a name="get_row_count"></a>

@@ -37,15 +37,16 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Biz::Model
+=head2 static new(string name) : Bivio::Biz::Model
 
-Creates a new model.
+Creates a new model with the specified class name.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
+    my($self, $name) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
+	name => $name,
 	status => Bivio::Biz::Status->new()
     };
     return $self;
@@ -104,6 +105,20 @@ Returns a suitable heading for the model.
 
 sub get_heading {
     die("abstract method");
+}
+
+=for html <a name="get_name"></a>
+
+=head2 get_name() : string
+
+Returns the model's name.
+
+=cut
+
+sub get_name {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{name};
 }
 
 =for html <a name="get_status"></a>

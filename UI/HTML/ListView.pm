@@ -2,6 +2,8 @@
 # $Id$
 package Bivio::UI::HTML::ListView;
 use strict;
+use Data::Dumper;
+use Bivio::UI::StringRenderer();
 $Bivio::UI::HTML::ListView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -42,14 +44,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::HTML::ListView
+=head2 static new(string name) : Bivio::UI::HTML::ListView
 
 Creates a ListView.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::View::new(@_);
+    my($proto, $name) = @_;
+    my($self) = &Bivio::UI::View::new($proto, $name);
     $self->{$_PACKAGE} = {
 	renderer => []
     };
@@ -74,10 +77,28 @@ sub install_renderers {
 
     #NOTE: may want to only do this if the model class has changed
     $fields->{renderer} = [];
-    for(my($i) = 0; $i < $model->get_column_count(); $i++ ) {
-	$fields->{renderer} = Bivio::UI::HTML::RendererCache->lookup(
-		$model->get_column_descriptor($i));
+    for(my($col) = 0; $col < $model->get_column_count(); $col++ ) {
+
+	$fields->{renderer}->[$col] = $self->lookup_renderer(
+		$model->get_column_descriptor($col));
     }
+}
+
+=for html <a name="lookup_renderer"></a>
+
+=head2 lookup_renderer(FieldDescriptor type) : Renderer
+
+Returns a field renderer for the specified type.
+
+=cut
+
+sub lookup_renderer {
+    my($self, $type) = @_;
+
+    #TODO: move this to another class
+
+    # for now always return a StringRenderer
+    return Bivio::UI::StringRenderer->new();
 }
 
 =for html <a name="render"></a>
@@ -94,8 +115,10 @@ sub render {
 
     $self->install_renderers($model);
 
+    #$req->log_error("\n\n".Dumper($fields)."\n\n");
+
     #TODO: hard-coded for now, need to configure it.
-    $req->print('table width="100%" border=0 cellpadding=5 cellspacing=0>');
+    $req->print('<table width="100%" border=0 cellpadding=5 cellspacing=0>');
     $self->render_heading($model, $req);
     $self->render_body($model, $req);
     $req->print('</table>');
@@ -174,7 +197,7 @@ sub render_body {
 	    #TODO: need a way to render td per type
 
 	    $req->print('<td align=left><small>');
-	    $self->{renderer}->[$col]->render(
+	    $fields->{renderer}->[$col]->render(
 		    $model->get_value_at($row, $col), $req);
 	    $req->print('</small></td>');
 	}
@@ -194,9 +217,9 @@ sub render_heading {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $req->print('tr bgcolor="#E0E0FF">');
+    $req->print('<tr bgcolor="#E0E0FF">');
     for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
-	$req->print('<<th align=left><font face="arial,helvetica,sans-serif">
+	$req->print('<th align=left><font face="arial,helvetica,sans-serif">
 <small>'.$model->get_column_heading($i).'</small></font></th>');
     }
 

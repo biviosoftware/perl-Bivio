@@ -2,6 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Presentation;
 use strict;
+use Bivio::UI::HTML::Link();
 use Bivio::UI::HTML::MenuRenderer();
 $Bivio::UI::HTML::Presentation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
@@ -44,7 +45,58 @@ in a menu. The format looks like:
 
 =cut
 
+=for html <a name="NAV_DOWN"></a>
+
+=head2 NAV_DOWN : string
+
+The name used to look up the 'down' navigation link from the active view.
+
+=cut
+
+sub NAV_DOWN {
+    return 'down';
+}
+
+=for html <a name="NAV_LEFT"></a>
+
+=head2 NAV_LEFT : string
+
+The name used to look up the 'left' navigation link from the active view.
+
+=cut
+
+sub NAV_LEFT {
+    return 'left';
+}
+
+=for html <a name="NAV_RIGHT"></a>
+
+=head2 NAV_RIGHT : string
+
+The name used to look up the 'right' navigation link from the active view.
+
+=cut
+
+sub NAV_RIGHT {
+    return 'right';
+}
+
+=for html <a name="NAV_UP"></a>
+
+=head2 NAV_UP : string
+
+The name used to look up the 'up' navigation link from the active view.
+
+=cut
+
+sub NAV_UP {
+    return 'up';
+}
+
 #=VARIABLES
+
+my($_EMPTY_LINK) = Bivio::UI::HTML::Link->new('empty',
+	Bivio::UI::HTML::Link::EMPTY_ICON(), '', '', '');
 
 =head1 FACTORIES
 
@@ -76,7 +128,7 @@ sub new {
 
 =for html <a name="render"></a>
 
-=head2 render(UNIVERSAL target, Request req)
+=head2 render(Model target, Request req)
 
 Renders a view with NavBar, ActionBar, and Menu.
 
@@ -97,7 +149,7 @@ sub render {
 
     $self->render_nav_bar($model, $req);
 
-    $req->print('<td width="1%" rowspan=2>
+    $req->print('</td><td width="1%" rowspan=2>
 <!-- SPACER -->&nbsp;</td>
 ');
 
@@ -109,7 +161,8 @@ sub render {
     $self->render_action_bar($model, $req);
 
     $req->print('</td></tr></table></td></tr>
-<tr><td valign="top"><!-- VIEW -->
+<tr><td valign=top><br>
+<!-- VIEW -->
 ');
 
     $self->get_active_view()->render($model, $req);
@@ -129,21 +182,34 @@ Renders a model's actions.
 sub render_action_bar {
     my($self, $model, $req) = @_;
 
-    $req->print('<table border=0 cellpadding=5 cellspacing=0 bgcolor="#E9E3C7">
-<tr><td align=center valign="top"><small>
-');
-
-    #TODO: get actions from model
-
-    for (my($i) = 1; $i <= 3; $i++) {
-	print('<p><a href="mailto:societas@bivio.com">
-<img src="/i/compose.gif" height=17 width=25 border=0
-alt="Compose a new message to the club"><br>Compose'.$i
-.'</a>');
+    # see if the active view implements LinkSupport
+    my($action_links) = undef;
+    if ($self->get_active_view()->can('get_action_links')) {
+	$action_links =  $self->get_active_view()->get_action_links(
+		$model, $req);
     }
 
-    $req->print('</small></td></tr></table>
+    if ($action_links && scalar(@$action_links)) {
+
+	$req->print('<table border=0 cellpadding=5 cellspacing=0
+bgcolor="#E9E3C7"><tr><td align=center valign="top"><small>
 ');
+
+	my($link);
+	foreach $link (@$action_links) {
+	    $req->print('<p>');
+	    $link->render($model, $req);
+	}
+
+#    for (my($i) = 1; $i <= 3; $i++) {
+#	print('<p><a href="mailto:societas@bivio.com">
+#<img src="/i/compose.gif" height=17 width=25 border=0
+#alt="Compose a new message to the club"><br>Compose'.$i
+#.'</a>');
+#    }
+
+	$req->print('</small></td></tr></table>');
+    }
 }
 
 =for html <a name="render_nav_bar"></a>
@@ -157,35 +223,65 @@ Draws the nav and menu bar.
 sub render_nav_bar {
     my($self, $model, $req) = @_;
 
-    $req->print('<table border=0 cellpadding=0 cellspacing=0>
-<tr><td width="1%"><img src="/i/scroll_up_ia.gif" height=31
-width=31 border=0 alt="Next page" vspace=5></td>
-<td width="1%"><img src="/i/scroll_up_ia.gif" height=31
-width=31 border=0 alt="Previous page" hspace=3></td>
-<td width="100%" valign=top align=center>
+#=pod
+
+    $req->print('<table border=0 cellpadding=0 cellspacing=0
+width="100%"><tr>');
+
+    my($nav_links) = undef;
+    # see if the active view implements LinkSupport
+    if ($self->get_active_view()->can('get_nav_links')) {
+	$nav_links = $self->get_active_view()->get_nav_links(
+		$model, $req);
+
+	$req->print('<td width="1%">');
+
+	my($link) = &_find_named_object(NAV_UP(), $nav_links)
+		|| $_EMPTY_LINK;
+        $link->render($model, $req);
+
+	$req->print('</td><td width="1%">');
+	$link = &_find_named_object(NAV_DOWN(), $nav_links)
+		|| $_EMPTY_LINK;
+	$link->render($model, $req);
+
+	$req->print('</td>');
+    }
+
+    $req->print('<td width="100%" valign=top align=center>
 <!-- VIEW MENU -->
 ');
 
-    if ($self->get_menu()) {
-	$self->get_menu()->set_selected($self->get_active_view()->get_name());
-	Bivio::UI::HTML::MenuRenderer->get_instance()->render(
-		$self->get_menu(), $req);
+    my($menu) = $self->get_menu();
+    if ($menu) {
+	$menu->set_selected($self->get_active_view()->get_name());
+	Bivio::UI::HTML::MenuRenderer->get_instance()->render($menu, $req);
     }
+    $req->print('</td>');
 
-    $req->print('</td>
-<td width="1%"><img src="/i/scroll_up_ia.gif" height=31
-width=31 border=0 alt="Next message" hspace=3></td>
-<td width="1%"><img src="/i/scroll_up_ia.gif" height=31
-width=31 border=0 alt="Previous message"></td>
-</tr></table></td>
-');
+    if ($nav_links) {
+
+	$req->print('<td width="1%">');
+
+	my($link) = &_find_named_object(NAV_LEFT(), $nav_links)
+		|| $_EMPTY_LINK;
+        $link->render($model, $req);
+
+	$req->print('</td><td width="1%">');
+	$link = &_find_named_object(NAV_RIGHT(), $nav_links)
+		|| $_EMPTY_LINK;
+	$link->render($model, $req);
+
+	$req->print('</td>');
+    }
+    $req->print('</tr></table>');
 }
 
 =for html <a name="render_title"></a>
 
 =head2 render_title(Model model, Request req)
 
-Draws the active view title.
+Draws the model's title.
 
 =cut
 
@@ -198,7 +294,7 @@ sub render_title {
 <font face="arial,helvetica,sans-serif">
 <big><strong>');
 
-    $req->print($model->get_title());
+    $req->print($model->get_title() || '&nbsp;');
 
     $req->print('</strong></big></font>
 </td></tr></table>
@@ -206,6 +302,21 @@ sub render_title {
 }
 
 #=PRIVATE METHODS
+
+# Finds the named object in an array of named things. Returns undef
+# if no object by that name is found.
+#
+sub _find_named_object {
+    my($name, $array) = @_;
+
+    my($item);
+    foreach $item (@$array) {
+	if ($item->get_name() eq $name) {
+	    return $item;
+	}
+    }
+    return undef;
+}
 
 =head1 COPYRIGHT
 
