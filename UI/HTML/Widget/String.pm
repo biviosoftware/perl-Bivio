@@ -35,7 +35,7 @@ C<Bivio::UI::HTML::Widget::String> draws a string with decoration.  Does no
 alignment (see L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>
 for layout issues).
 
-The string is html-escaped and newlines are converted to C<E<lt>br E<gt>>.
+The string is html-escaped and newlines are converted to C<E<lt>brE<gt>>.
 
 =head1 ATTRIBUTES
 
