@@ -255,6 +255,11 @@ middle name is too long
 
 last name is too long
 
+=item EMAIL_LOOP
+
+email address loops back to itself.  Must not be the same as your
+login name.
+
 =back
 
 =cut
@@ -551,6 +556,11 @@ __PACKAGE__->compile(
 	56,
 	undef,
 	'stock withdrawals are not yet supported',
+    ],
+    EMAIL_LOOP => [
+	57,
+	undef,
+	'email address loops back to itself; must not be the same as your login name',
     ],
 );
 
