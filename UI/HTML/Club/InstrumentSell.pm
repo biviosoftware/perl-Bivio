@@ -88,10 +88,7 @@ sub new {
 			    Bivio::UI::HTML::Widget::Date->new({
 				field => 'RealmTransaction.dttm',
 			    })),
-		    Bivio::UI::HTML::Widget::String->new({
-			value => '&nbsp;',
-			escape_text => 0,
-		    }),
+		    $blank_cell,
 		    _field('Account',
 			    Bivio::UI::HTML::Widget::Select->new({
 				field => 'RealmAccountEntry.realm_account_id',
@@ -104,7 +101,6 @@ sub new {
 		[
 		    Bivio::UI::HTML::Widget::String->new({
 			value => '&nbsp;',
-			escape_text => 0,
 		    }),
 		],
 		[
@@ -120,10 +116,7 @@ sub new {
 				field => 'commission',
 				size => 10,
 			    })),
-		    Bivio::UI::HTML::Widget::String->new({
-			value => '&nbsp;',
-			escape_text => 0,
-		    }),
+		    $blank_cell,
 		    _field('Service Fee',
 			    Bivio::UI::HTML::Widget::Currency->new({
 				field => 'admin_fee',
