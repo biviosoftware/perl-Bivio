@@ -79,6 +79,8 @@ tasks defined in this module is:
 
 #=VARIABLES
 my(@_CFG) = (
+#TODO: 9/13/00: Changed the last of the "_" URLs.  Should have done this
+#      earlier.  Remove the aliases some time in the future(?).
     # Task used by Bivio::ShellUtil
     [qw(
         SHELL_UTIL
@@ -900,7 +902,7 @@ my(@_CFG) = (
         94
         CLUB
         ANY_REALM_USER
-        ?/new_user
+        ?/new-user:?/new_user
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::Biz::Model::Email->execute_auth_user
         Bivio::UI::HTML::Club::UserNew
@@ -933,7 +935,7 @@ my(@_CFG) = (
         98
         USER
         DOCUMENT_READ
-        ?/new_connect
+        ?/new-connect:?/new_connect
         Bivio::Biz::Model::Email->execute_load
         Bivio::UI::HTML::User::New
     )],
@@ -1059,7 +1061,7 @@ my(@_CFG) = (
         113
         CLUB
         DOCUMENT_WRITE
-        ?/new_file_folder/*
+        ?/new-file-folder/*:?/new_file_folder/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
