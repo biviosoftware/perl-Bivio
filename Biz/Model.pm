@@ -26,8 +26,8 @@ use Bivio::Collection::Attributes;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Model> is more interface than implementation, it provides
-a common set of methods for L<Bivio::Biz::PropertyModel> and
-L<Bivio::Biz::ListModel>.
+a common set of methods for L<Bivio::Biz::PropertyModel>,
+L<Bivio::Biz::ListModel>, L<Bivio::Biz::FormModel>.
 
 =cut
 
@@ -50,6 +50,8 @@ my(%_CLASS_INFO);
 
 Returns the singleton for this class.
 
+May not be called on anonymous Models.
+
 =cut
 
 sub get_instance {
@@ -61,11 +63,11 @@ sub get_instance {
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Biz::PropertyModel
+=head2 static new() : Bivio::Biz::Model
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::PropertyModel
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model
 
-Creates a PropertyModel with the specified request.
+Creates a Model with the specified request, if supplied.
 
 A PropertyModel may only be loaded if I<req> is non-null.
 
@@ -76,12 +78,46 @@ sub new {
     my($class) = ref($proto) || $proto;
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
-    # Make a copy of the properties for this instance
+    # Make a copy of the properties for this instance.  properties
+    # is an array_ref for efficiency
     my($self) = Bivio::Collection::Attributes::new($proto,
 	    {@{$ci->{properties}}});
     $self->{$_PACKAGE} = {
 	class_info => $ci,
         request => $req,
+    };
+    return $self;
+}
+
+=for html <a name="new_anonymous"></a>
+
+=head2 static new_anonymous(hash_ref config) : Bivio::Biz::Model
+
+=head2 static new_anonymous(hash_ref config, Bivio::Agent::Request req) : Bivio::Biz::Model
+
+Creates an "anonymous" Model.  There are two modes: initialization
+and creation from existing.  To initialize, you must supply
+I<config>.  This will create the first anonymous instance.
+I<proto> must be a class name, not a reference.
+
+To create an instance from an existing instance, I<proto> must
+be an instance, not a class name.  I<config> is ignored.
+
+=cut
+
+sub new_anonymous {
+    my($proto, $config, $req) = @_;
+    my($ci) = ref($proto) ? $proto->{$_PACKAGE}->{class_info}
+	    : _initialize_class_info($proto, $config);
+    # Make a copy of the properties for this instance.  properties
+    # is an array_ref for efficiency.
+    my($self) = Bivio::Collection::Attributes::new($proto,
+	    {@{$ci->{properties}}});
+    $self->{$_PACKAGE} = {
+	class_info => $ci,
+	# Never save the request for first time anonymous classes
+        request => ref($proto) ? $req : undef,
+	anonymous => 1,
     };
     return $self;
 }
@@ -232,7 +268,7 @@ sub die {
     ref($attrs) eq 'HASH' || ($attrs = {message => $attrs});
     $attrs->{model} = $self;
     # Don't call get_request, because will blow up if not set.
-    $attrs->{request} = $self->{$_PACKAGE}->{request};
+    $attrs->{request} = $self->unsafe_get_request;
     Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
@@ -263,7 +299,7 @@ sub get_model {
     Carp::croak($name, ': no such model') unless defined($models->{$name});
     my($m) = $models->{$name};
     my($properties) = $self->internal_get;
-    my($req) = $self->get_request;
+    my($req) = $self->unsafe_get_request;
     # Always store the model.
     my($mi) = $fields->{models}->{$name} = $m->{instance}->new($req);
     my(@query) = ();
@@ -285,15 +321,17 @@ sub get_model {
 
 =for html <a name="get_request"></a>
 
-=head2 get_request() : Bivio::Agent::Request
+=head2 static get_request() : Bivio::Agent::Request
 
 Returns the request associated with this model.
+If not set, returns the current request.
+If neither set, throws an exception.
 
 =cut
 
 sub get_request {
     my($self) = @_;
-    my($req) = $self->{$_PACKAGE}->{request};
+    my($req) = $self->unsafe_get_request;
     Carp::croak($self, ": request not set") unless $req;
     return $req;
 }
@@ -350,6 +388,8 @@ sub internal_initialize {
 
 =head2 static abstract internal_initialize_sql_support() : Bivio::SQL::Support
 
+=head2 static abstract internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+
 B<FOR INTERNAL USE ONLY>.
 
 Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
@@ -375,25 +415,36 @@ sub put {
 
 =for html <a name="unsafe_get_request"></a>
 
-=head2 unsafe_get_request() : Bivio::Agent::Request
+=head2 static unsafe_get_request() : Bivio::Agent::Request
 
 Returns the request associated with this model (if defined).
+Otherwise, returns the current request, if any.
 
 =cut
 
 sub unsafe_get_request {
-    return shift->{$_PACKAGE}->{request};
+    my($self) = @_;
+    my($req);
+    $req = $self->{$_PACKAGE}->{request} if $self;
+    # DON'T SET the request for future calls, because this may
+    # be an anonymous model or a singleton.
+    return $req ? $req : Bivio::Agent::Request->get_current;
 }
 
 #=PRIVATE METHODS
 
-
+# _initialize_class_info(string class)
+# _initialize_class_info(string class, hash_ref config) : hash_ref
+#
+# Initializes from class or from config.  config is supplied for
+# anonymous models (currently, only ListModels).
+#
 sub _initialize_class_info {
-    my($class) = @_;
+    my($class, $config) = @_;
     # Have here for safety to avoid infinite recursion if called badly.
-    return if $_CLASS_INFO{$class};
-    my($sql_support) = $class->internal_initialize_sql_support;
-    my($ci) = $_CLASS_INFO{$class} = {
+    return if !$config && $_CLASS_INFO{$class};
+    my($sql_support) = $class->internal_initialize_sql_support($config);
+    my($ci) = {
 	sql_support => $sql_support,
 	as_string_fields => [@{$sql_support->get('primary_key_names')}],
 	# Is an array, because faster than a hash_ref for our purposes
@@ -405,7 +456,9 @@ sub _initialize_class_info {
     unshift(@{$ci->{as_string_fields}}, 'name')
 	    if $sql_support->has_columns('name')
 		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
+    return $ci if $config;
     # $_CLASS_INFO{$class} is sentinel to stop recursion
+    $_CLASS_INFO{$class} = $ci;
     $ci->{singleton} = $class->new;
     $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
     return;
