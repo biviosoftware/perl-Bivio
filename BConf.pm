@@ -167,6 +167,8 @@ sub merge_class_loader {
 		        ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 		    MailWidget =>
 		        ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+		    TextWidget =>
+		        ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		    TestLanguage => ['Bivio::Test::Language'],
 		    Model => ['Bivio::Biz::Model'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
