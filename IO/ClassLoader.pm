@@ -58,6 +58,7 @@ sub MAP_SEPARATOR {
 }
 
 #=IMPORTS
+use Carp ();
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::IO::Config;
@@ -65,6 +66,10 @@ use Bivio::IO::Config;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+# Bivio::Die can't be loaded at startup, but it can be loaded before
+# the first *_require.  We load it dynamically, because Bivio::Type
+# imports this class and Bivio::DieCode is a Type.
+my($_DIE_INITIALIZED);
 my($_PACKAGE) = __PACKAGE__;
 # map_class -> class name.  If map_class was loaded by handler, then
 # it is defined, but undef.  See is_loaded().
@@ -256,42 +261,66 @@ sub map_require {
 	return $res;
     }
 
-    my($last_real_error);
+    my($die);
     foreach my $path (@$map) {
 	return $_MAP_CLASS{$map_class} = $path.$class_name
-		if _require($path.$class_name);
-	_trace($@) if $_TRACE;
-	$last_real_error = $@
-		unless defined($last_real_error) && $@ =~ /Can't locate/i;
+		if _require($path.$class_name, \$die);
+	$die->throw unless $die->get('code') == Bivio::DieCode->NOT_FOUND;
+	_trace($die) if $_TRACE;
     }
-    Bivio::IO::Alert->die($map_class, ': ', defined($last_real_error)
-	    ? $last_real_error
-	    : 'no paths in map');
+    Bivio::IO::Alert->die($map_class, ': not found In class map ', $map_name);
     # DOES NOT RETURN
 }
 
-=for html <a name="require_property_models"></a>
+=for html <a name="map_require_all"></a>
 
-=head2 static require_property_models()
+=head2 static map_require_all(string map_name) : array_ref
 
-Loads all the property model packages, which exist in the I<model_classpath>
-directories.
+=head2 static map_require_all(string map_name, code_ref filter) : array_ref
+
+Discovers and loads all classes in I<map_name> by searching in
+C<@INC>.
+
+I<filter> is optional.  I<filter> is called with:
+
+    &$filter($class, $file_name)
+
+where I<class> is the fully qualified perl class name and I<file_name>
+is the absolute path name to the class.
+
+If I<filter> returns true, the class will be loaded with
+L<map_require|"map_require">.  Otherwise, no action is taken.
+See L<Bivio::Biz::Model|Bivio::Biz::Model> for an example.
+
+Returns the names of the classes loaded.
 
 =cut
 
-sub require_property_models {
-    my($proto) = @_;
-    return unless $_MODELS;
+sub map_require_all {
+    my($proto, $map_name, $filter) = @_;
+    my($map) = $_MAPS->{$map_name};
+    Bivio::IO::Alert->die($map_name, ': no such map') unless $map;
+    Bivio::IO::Alert->die($map, ': cannot load all classes in dynamic maps')
+	unless ref($map);
 
-    # make a copy and delete original to prevent reentrant calls
-    my(@models) = (@$_MODELS);
-    $_MODELS = undef;
-
-    $proto->simple_require('Bivio::Biz::Model');
-    foreach my $class (@models) {
-	Bivio::Biz::Model->get_instance($class);
+    # Outer loop is @$map, because this is how map_require works (@INC)
+    # is implicit when it calls require.
+    my(@res);
+    foreach my $m (@$map) {
+	my($pat) = $m;
+	$pat =~ s/::/\//g;
+	$pat .= '/*.pm';
+	foreach my $i (@INC) {
+	    foreach my $file (glob($i.'/'.$pat)) {
+		my($simple_class) = $file;
+		$simple_class =~ s!.*/|\.pm$!!g;
+#TODO: Loads classes twice if there is an overriden class later in the map.
+		next if $filter && !&$filter($map.'::'.$simple_class, $file);
+		push(@res, $proto->map_require($map_name, $simple_class))
+	    }
+	}
     }
-    return;
+    return \@res;
 }
 
 =for html <a name="simple_require"></a>
@@ -308,9 +337,10 @@ arguments.
 
 sub simple_require {
     my($proto, @pkg) = @_;
+    my($die);
     foreach my $pkg (@pkg) {
-	die('undefined package') unless $pkg;
-	_require($pkg) || die($@);
+	Bivio::IO::Alert->die('undefined package') unless $pkg;
+	$die->throw unless _require($pkg, \$die);
     }
     return wantarray ? @pkg : $pkg[0];
 }
@@ -352,14 +382,35 @@ sub _find_property_models {
     return;
 }
 
+# _init_die()
+#
+# Loads Bivio::Die dynamically.  Aborts on error.
+#
+sub _init_die {
+    # No recursion
+    return if $_DIE_INITIALIZED;
+    $_DIE_INITIALIZED = 1;
+    {
+	local($SIG{__DIE__}) = sub {
+	    my($msg) = @_;
+	    # We print the stack trace, because this is for sure a fatal error.
+	    Bivio::IO::Alert->print_literally($msg.Carp::longmess());
+	    return;
+	};
+	no strict 'refs';
+	eval('require Bivio::Die;') || die($@);
+    };
+    return;
+}
+
 # _init_map_handler(string map_name, string map_handler)
 #
 # Loads the class and ensures is valid.
 #
 sub _init_map_handler {
     my($map_name, $map_handler) = @_;
-    Bivio::IO::Alert->die($map_handler, ': class not found for map ',
-	    $map_name) unless _require($map_handler);
+    my($die);
+    $die->throw unless _require($map_handler, \$die);
     Bivio::IO::Alert->die($map_handler, ': must implement handle_map_require',
 	    ' for map ', $map_name)
 		unless $map_handler->can('handle_map_require');
@@ -422,31 +473,51 @@ sub _map_path_init {
     } @$paths];
 }
 
-# _require(string pkg) : string
+# _require(string pkg, ref die) : string
 #
 # Returns true if the package could be required.
 #
 sub _require {
-    my($pkg) = @_;
+    my($pkg, $die) = @_;
 
     # Is this class already loaded?
     return $pkg if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL')
 	    || $_SIMPLE_CLASS{$pkg};
 
+    _init_die() unless $_DIE_INITIALIZED;
+
+    Bivio::Die->die($pkg, ': invalid class name')
+		unless $pkg =~ /^(\w+::)*\w+$/;
     # Avoid problems with uses of $_ in $pkg
-    {
+    my($code) = q[
 	local($_);
-	# This avoids problems with Bivio::Die
-	local($SIG{__DIE__});
 
 	# require can't be in "strict refs" mode
 	no strict 'refs';
 
-	# Must be a "bareword" for require to do the '::' substitution
-	return undef unless eval("require $pkg");
-    };
+	my($file) = '].$pkg.q[.pm';
+	$file =~ s!::!/!g;
+	my($ok);
+	foreach my $i (@INC) {
+	    if (-r $i.'/'.$file) {
+		$ok = 1;
+		last;
+	    }
+	}
+        # Doesn't generate a stack trace
+	Bivio::Die->throw('NOT_FOUND',
+		message => "Can't locate $file in \@INC"
+		." (\@INC contains: @INC)")
+	    unless $ok;
+	# Must be a "bareword" for require so perl does '::' substitution
+	]."
+        require $pkg;";
+    # Using \$code keeps the stack trace clean
+    $$die = Bivio::Die->catch(\$code);
 #    Bivio::IO::Alert->die($pkg, ': not a Bivio::UNIVERSAL')
 #	    unless UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
+
+    return undef if $$die;
 
     _trace($pkg) if $_TRACE;
     $_SIMPLE_CLASS{$pkg}++;
