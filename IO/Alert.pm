@@ -325,7 +325,7 @@ sub info {
 
 =for html <a name="print_literally"></a>
 
-=head2 static print_literally(string msg)
+=head2 static print_literally(string msg, ...)
 
 Prints the values without doing argument interpretation.
 
@@ -334,8 +334,8 @@ B<Use sparingly.>  Much better to us L<warn|"warn"> and L<info|"info">.
 =cut
 
 sub print_literally {
-    my(undef, $msg) = @_;
-    &$_LOGGER('debug', $msg);
+    shift;
+    &$_LOGGER('debug', join('', @_));
     return;
 }
 
