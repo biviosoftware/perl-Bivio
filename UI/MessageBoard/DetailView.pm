@@ -190,6 +190,9 @@ sub render {
     my($self, $list, $req) = @_;
     my($message) = $list->get_selected_item();
     if ($message) {
+	my($from_person, $from_email) = $message->get('from_name', 'from_email');
+	my($url) = $from_email ? "<a href=mailto:\"$from_email\">$from_person</a>" : $from_person;
+	$req->get_reply->print('<H1>From: ' . $url . "</H1>");
 	$req->get_reply->print('<pre>'.${$message->get_body}.'</pre>');
     }
     else {
