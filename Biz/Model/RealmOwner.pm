@@ -38,7 +38,6 @@ and delete interface to the C<realm_owner_t> table.
 =cut
 
 #=IMPORTS
-# also uses Club, Email, User models
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Die;
@@ -50,10 +49,12 @@ use Bivio::Type::RealmName;
 #=VARIABLES
 
 #TODO: this needs to be configurable, maybe a method on RealmType?
-my(%_HOME_TASK_MAP) = (
-    Bivio::Auth::RealmType::CLUB() => Bivio::Agent::TaskId::CLUB_HOME(),
-    Bivio::Auth::RealmType::USER() => Bivio::Agent::TaskId::USER_HOME(),
-);
+my($_HOME_TASK_MAP) = {
+    map({
+        Bivio::Auth::RealmType->from_name($_) =>
+            Bivio::Agent::TaskId->from_name($_ . '_HOME'),
+    } (qw(CLUB USER))),
+};
 
 =head1 METHODS
 
@@ -72,9 +73,8 @@ sub create {
     my($self, $values) = @_;
     $values->{display_name} = $values->{name}
 	    unless defined($values->{display_name});
-    $values->{creation_date_time} = Bivio::Type::DateTime->now()
-	    unless defined($values->{creation_date_time});
-    $values->{password} = Bivio::Type::Password->INVALID()
+    $values->{creation_date_time} ||= Bivio::Type::DateTime->now;
+    $values->{password} = Bivio::Type::Password->INVALID
 	    unless defined($values->{password});
     return $self->SUPER::create($values);
 }
@@ -114,8 +114,8 @@ See L<format_name|"format_name"> for params.
 
 sub format_http {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return $model->get_request->format_http_prefix.$proto->format_uri(
-	   $model, $model_prefix);
+    return $model->get_request->format_http_prefix
+        . $proto->format_uri($model, $model_prefix);
 }
 
 =for html <a name="format_mailto"></a>
@@ -133,7 +133,7 @@ See L<format_name|"format_name"> for params.
 sub format_mailto {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $model->get_request->format_mailto($proto->format_email(
-	   $model, $model_prefix));
+        $model, $model_prefix));
 }
 
 =for html <a name="format_name"></a>
@@ -158,7 +158,7 @@ Other Models can declare a method of the form:
 sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return Bivio::Type::RealmName->to_string(
-	$model->get($model_prefix.'name'));
+        $model->get($model_prefix . 'name'));
 }
 
 =for html <a name="format_uri"></a>
@@ -176,12 +176,12 @@ See L<format_name|"format_name"> for params.
 sub format_uri {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($name) = $proto->format_name($model, $model_prefix);
-    Bivio::Die->die($model->get($model_prefix.'name'),
-	    ': must not be offline user') unless $name;
-    my($task) = $_HOME_TASK_MAP{$model->get($model_prefix.'realm_type')};
-    Bivio::Die->die($model->get($model_prefix.'name'), ', ',
-	    $model->get($model_prefix.'realm_type'),
-	    ': invalid realm type') unless $task;
+    Bivio::Die->die($model->get($model_prefix . 'name'),
+        ': must not be offline user') unless $name;
+    my($task) = $_HOME_TASK_MAP->{$model->get($model_prefix . 'realm_type')};
+    Bivio::Die->die($model->get($model_prefix . 'name'), ', ',
+        $model->get($model_prefix . 'realm_type'),
+        ': invalid realm type') unless $task;
     return $model->get_request->format_uri($task, undef, $name, undef);
 }
 
@@ -209,9 +209,9 @@ have special realm_ids.
 
 sub init_db {
     my($self) = @_;
+
     foreach my $rt (Bivio::Auth::RealmType->get_list) {
-	# 0 is UNKNOWN and is an invalid realm_id.
-	next if $rt->as_int == 0;
+	next if $rt->equals_by_name('UNKNOWN');
 	$self->create({
 	    name => lc($rt->get_name),
 	    realm_id => $rt->as_int,
@@ -277,7 +277,7 @@ sub is_auth_realm {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($auth_id) = $model->get_request->get('auth_id');
     return 0 unless $auth_id;
-    return $model->get($model_prefix.'realm_id') eq $auth_id ? 1 : 0;
+    return $model->get($model_prefix . 'realm_id') eq $auth_id ? 1 : 0;
 }
 
 =for html <a name="is_auth_user"></a>
@@ -294,8 +294,8 @@ sub is_auth_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($auth_user) = $model->get_request->get('auth_user');
     return 0 unless $auth_user;
-    return $model->get($model_prefix.'realm_id')
-	    eq $auth_user->get('realm_id') ? 1 : 0;
+    return $model->get($model_prefix . 'realm_id')
+        eq $auth_user->get('realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_default"></a>
@@ -312,8 +312,8 @@ user, club).
 sub is_default {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     # Default realms have ids same as their types as_int.
-    return $model->get($model_prefix.'realm_type')->as_int
-	eq $model->get($model_prefix.'realm_id') ? 1 : 0;
+    return $model->get($model_prefix . 'realm_type')->as_int
+	eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_name_eq_email"></a>
@@ -331,8 +331,8 @@ sub is_name_eq_email {
     return 0 unless defined($name) && defined($email);
     my($mail_host) = Bivio::UI::Facade->get_value('mail_host', $req);
 #TODO: ANY OTHER mail_host aliases?
-    return $email eq $name.'@'.$mail_host
-	    || $email eq $name.'@www.'.$mail_host;
+    return $email eq $name . '@' . $mail_host
+        || $email eq $name . '@www.' . $mail_host;
 }
 
 =for html <a name="is_offline_user"></a>
@@ -350,7 +350,7 @@ See L<format_name|"format_name"> for params.
 sub is_offline_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return Bivio::Type::RealmName->is_offline(
-	    $model->get($model_prefix.'name'));
+        $model->get($model_prefix . 'name'));
 }
 
 =for html <a name="unauth_load_by_email"></a>
@@ -387,26 +387,22 @@ Returns false.
 
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
-    my($req) = $self->get_request;
     # Emails are always lower case
     $email = lc($email);
-
     # Load the email.  Return the result of the next unauth_load, just in case
-    my($em) = Bivio::Biz::Model->new($req, 'Email');
-    return $self->unauth_load(@query, realm_id => $em->get('realm_id'))
-	    if $em->unauth_load(email => $email);
-
+    my($em) = $self->new_other('Email');
+    return $self->unauth_load({@query, realm_id => $em->get('realm_id')})
+        if $em->unauth_load({email => $email});
     return unless Bivio::IO::ClassLoader->simple_require(
         'Bivio::UI::Facade')->is_fully_initialized;
-
     # Strip off @mail_host and validate resulting name
-    my($mail_host) = '@'.Bivio::UI::Facade->get_value('mail_host', $req);
+    my($mail_host) = '@' . Bivio::UI::Facade->get_value('mail_host',
+        $self->get_request);
     return 0 unless $email =~ s/\Q$mail_host\E$//i;
     my($name) = Bivio::Type::RealmName->from_literal($email);
     return 0 unless defined($name);
-
     # Is it a valid user/club?
-    return $self->unauth_load(@query, name => $name);
+    return $self->unauth_load({@query, name => $name});
 }
 
 =for html <a name="unauth_load_by_email_id_or_name"></a>
@@ -421,10 +417,10 @@ Otherwise, tries to load by id or name.
 sub unauth_load_by_email_id_or_name {
     my($self, $email_id_or_name) = @_;
     return $self->unauth_load_by_email($email_id_or_name)
-	    if $email_id_or_name =~ /@/;
-    return $self->unauth_load(realm_id => $email_id_or_name)
-	    if $email_id_or_name =~ /^\d+$/;
-    return $self->unauth_load(name => lc($email_id_or_name));
+        if $email_id_or_name =~ /@/;
+    return $self->unauth_load({realm_id => $email_id_or_name})
+        if $email_id_or_name =~ /^\d+$/;
+    return $self->unauth_load({name => lc($email_id_or_name)});
 }
 
 =for html <a name="unauth_load_by_id_or_name_or_die"></a>
@@ -439,11 +435,12 @@ Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, furt
 
 sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
-    return $self->unauth_load_or_die(
-	    ($id_or_name =~ /^\d+$/ ? 'realm_id' : 'name') => lc($id_or_name),
-	    $realm_type
+    return $self->unauth_load_or_die({
+        ($id_or_name =~ /^\d+$/ ? 'realm_id' : 'name') => lc($id_or_name),
+        $realm_type
 	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
-	    : ());
+	    : (),
+    });
 }
 
 =for html <a name="unsafe_get_model"></a>
@@ -457,10 +454,11 @@ For backward compatibility.
 
 sub unsafe_get_model {
     my($self, $name) = @_;
+
     if ($name eq 'User' || $name eq 'Club') {
-	my($model) =  Bivio::Biz::Model->new($self->get_request, $name);
+	my($model) =  $self->new_other($name);
 	return $model->unauth_load(lc($name).'_id' => $self->get('realm_id'))
-		? $model : undef;
+            ? $model : undef;
     }
     return $self->SUPER::unsafe_get_model($name);
 }
