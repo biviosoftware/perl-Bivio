@@ -471,8 +471,7 @@ _compile([
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_FOOL => ['Foolish bivions'],
-    ANNOUNCE_EXPO => ['Investment Expo'],
+    ANNOUNCE_EDIT_EMAILS => ['Modifying Email Addresses'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
