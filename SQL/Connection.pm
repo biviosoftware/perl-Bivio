@@ -173,6 +173,21 @@ sub commit {
     return;
 }
 
+=for html <a name="disconnect"></a>
+
+=head2 disconnect()
+
+Disconnects from database.
+
+=cut
+
+sub disconnect {
+    _get_connection()->disconnect();
+    $_CONNECTION_PID = 0;
+    $_CONNECTION = undef;
+    return;
+}
+
 =for html <a name="execute"></a>
 
 =head2 execute(string sql)
@@ -396,7 +411,7 @@ sub _execute_helper {
     # Only need a commit if there has been data modification language
     # Tightly coupled with PropertySupport
     my($is_select) = $sql =~ /^\s*select/i
-	    && $sql !~ /for\s+update\s*$/i;
+	    && $sql !~ /\bfor\s+update\b/i;
     return if !$is_select && $_DB_IS_READ_ONLY;
     if ($has_blob) {
 	if ($is_select) {
