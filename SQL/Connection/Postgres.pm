@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::Connection::Postgres::VERSION;
 
 Bivio::SQL::Connection::Postgres - connection to a PostgreSQL database
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::Connection::Postgres;

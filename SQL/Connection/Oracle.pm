@@ -9,6 +9,10 @@ $_ = $Bivio::SQL::Connection::Oracle::VERSION;
 
 Bivio::SQL::Connection::Oracle - connection to an oracle database
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::SQL::Connection::Oracle;
