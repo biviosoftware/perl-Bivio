@@ -774,7 +774,7 @@ __PACKAGE__->compile(
 	undef,
 	'the start date may not be greater than the end date',
     ],
-    START_DATE_LESS_THAN_FIRST_VALUTAION_DATE => [
+    START_DATE_LESS_THAN_FIRST_VALUATION_DATE => [
 	99,
 	undef,
 	'the start date may not be less than the first valuation date',
@@ -808,6 +808,11 @@ __PACKAGE__->compile(
 	105,
 	undef,
 	'the ticker may not be the same as the investment source',
+    ],
+    CHARGES_MAY_NOT_EXCEED_DISTRIBUTION => [
+	106,
+	undef,
+	'the charges may not exceed the distribution amount',
     ],
 );
 
