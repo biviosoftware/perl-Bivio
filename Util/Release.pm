@@ -96,7 +96,7 @@ my($_START_DIR) = Bivio::IO::File->pwd;
 Bivio::IO::Config->register({
     cvs_rpm_spec_dir => 'pkgs',
     rpm_home_dir => '/home/dip/rpms',
-    rpm_host => 'http://locker.bivio.com:60000',
+    rpm_host => 'http://locker.bivio.com:60000/dip/rpms',
     rpm_user => 'httpd',
     tmp_dir => "/var/tmp/build-$$",
 });
@@ -344,7 +344,7 @@ sub list {
     Bivio::Die->die($uri, ": ", $reply->status_line)
 		unless $reply->is_success;
     for my $line (split("\n", $reply->content)) {
-	if ($line =~ /.+\">\s*(\S+\.rpm)<\/A>/) {
+	if ($line =~ /.+\">\s(\S+\.rpm)<\/A>/) {
 	    $output .= "$1\n";
 	}
     }
@@ -355,13 +355,14 @@ sub list {
 
 # _create_URI(string name) : string
 #
-# Returns a full URI for the specified file name. Prepends host
-# if not already specified.
+# Returns a full URI for the specified file name. Prepends host and/or
+# directory if not already specified.
 #
 sub _create_URI {
     my($name) = @_;
     return $name if $name =~ /^http/;
-    return $_RPM_HOST.'/'.$name;
+    return "$_RPM_HOST/$name" if $name =~ m:^/:;
+    return "$_RPM_HOST$_RPM_HOME_DIR/$name";
 }
 
 # _create_rpm_spec(string specin, string_ref output) : (string, string, string)
