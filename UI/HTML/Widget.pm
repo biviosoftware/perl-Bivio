@@ -638,7 +638,7 @@ sub href_goto {
 	     Bivio::Agent::TaskId::CLIENT_REDIRECT())
 	    .'?'
 	    .Bivio::Biz::Action::ClientRedirect->QUERY_TAG()
-	    .'='.Bivio::HTML->escape_query(qw($uri));
+	    .'='.Bivio::HTML->escape_query(qq($uri));
         }];
 EOF
 }
