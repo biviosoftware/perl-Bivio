@@ -29,6 +29,9 @@ methods of instances and classes which can C<handle_die>.  The
 C<handle_die> methods are called in LIFO order, i.e. the most recently
 called to current.
 
+C<handle_die> methods may change the die code, but they should not
+call L<die|"die"> or C<CORE::die>.  This will result in an error state.
+
 Classes do not register with this module.  Instead, the method
 L<catch|"catch"> which sets C<$SIG{__DIE__}> locally is used.
 This makes for clean interaction with L<Bivio::IO::Alert|Bivio::IO::Alert>,
@@ -37,6 +40,7 @@ which is the global C<$SIG{__DIE__}> registrant.
 This module is policy neutral with respect to error handling.  It
 holds errors and it is the responsibility of the L<catch|"catch"> caller
 and C<handle_die> implementers to do something about the errors.
+
 
 =cut
 
@@ -76,32 +80,13 @@ Bivio::IO::Config->register({
 
 Installs a local C<$SIG{__DIE__}> handler, calls I<sub>.
 If I<sub> succeeds without error, C<undef> is returned.
-Otherwise, a C<Bivio::Die> object is returned.  These my
+Otherwise, a C<Bivio::Die> object is returned.  These may
 be chained, i.e. if there is a C<die> within a C<die>,
 the first instance will be linked to the second and can
 be retrieved with L<get_next|"get_next">.
 
-The stack is unwound until this method is found.  Therefore, callers of
-L<catch|"catch"> must take care to appear in the call stack I<after> the call
-to L<catch|"catch">, e.g.
-
-    sub some_sub {
-	my($self) = @_;
-	my($die) = Bivio::Die->catch(sub {
-	     $self->actual_sub;
-	});
-	if ($die && !$die->is_destroyed) {
-	    ... error case ...
-	}
-    }
-    sub actual_sub {
-	my($self);
-	... do the normal work ...
-    }
-    sub handle_die {
-	my($self, $die) = @_;
-	... process die ..
-    }
+The stack is unwound until this method (catch) is found and then we unwind
+one more to allow the caller of catch to have a C<handle_die> routine.
 
 If a call to C<handle_die> results in a C<die>, a new die
 object will be created and chained on to the current die.
@@ -330,11 +315,19 @@ sub _handle_die {
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
-	while (do { { package DB; @a = caller($i++) } } ) {
+	my($stop) = -1;
+	# Iterate until just one routine after catch
+	while ($stop <= 0 && do { { package DB; @a = caller($i++) } } ) {
+	    # Only start incrementing stop when "catch" is seen
+	    $stop++ if $stop >= 0;
 	    my($sub, $has_args) = @a[3,4];
 	    # Only call if argument is to a public method in a module
 	    defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args || next;
-	    $sub eq "${_PACKAGE}::catch" && next;
+	    if ($sub eq "${_PACKAGE}::catch") {
+		# This gives us one more loop iteration
+		$stop++;
+		next;
+	    }
 	    my($proto) = $DB::args[0];
 	    UNIVERSAL::can($proto, 'handle_die') || next;
 	    # Don't call twice if in same "entry" into module
