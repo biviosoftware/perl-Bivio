@@ -59,14 +59,17 @@ sub USAGE {
 usage: b-linux-config [options] command [args...]
 commands:
     allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
+    add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
+    add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc.
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
+    delete_crontab_line user entry... -- delete entries from crontab
+    delete_sendmail_class_line filename line ... -- delete values trusted-users, relay-domains, etc.
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
-    sendmail_class_file filename host ... -- add values trusted-users, relay-domains, etc.
     rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console -- configure grub and init for serial port console
@@ -85,6 +88,20 @@ Bivio::IO::Config->register(my $_CFG = {
 =head1 METHODS
 
 =cut
+
+=for html <a name="add_crontab_line"></a>
+
+=head2 add_crontab_line(string user, string entry, ...) : string
+
+Add I<entry>s to this I<user>'s crontab.
+
+=cut
+
+sub add_crontab_line {
+    my($self, $user, @entry) = @_;
+    return _append_lines($self, "/var/spool/cron/$user", 'root', $user, 0600,
+	\@entry);
+}
 
 =for html <a name="add_group"></a>
 
@@ -111,6 +128,21 @@ sub add_group {
     return _exec($self, 'groupadd '
 	    . (defined($gid) ? "-g '$gid' " : '')
 	    . "'$gname'")
+}
+
+=for html <a name="add_sendmail_class_line"></a>
+
+=head2 static add_sendmail_class_line(string file, string value, ...)
+
+Adds I<value>s to class file (e.g. trusted-users),
+creating if it doesn't exist.
+
+=cut
+
+sub add_sendmail_class_line {
+    my($self, $file, @value) = @_;
+    return _append_lines($self, "/etc/mail/$file", 'root', 'mail', 0640,
+	\@value);
 }
 
 =for html <a name="add_user"></a>
@@ -247,6 +279,33 @@ sub disable_iptables_counters {
 	} qw(save restore));
 }
 
+=for html <a name="delete_crontab_line"></a>
+
+=head2 delete_crontab_line(string user, string entry, ...) : string
+
+Delete I<entry>s from this I<user>'s crontab.
+
+=cut
+
+sub delete_crontab_line {
+    my($self, $user, @entry) = @_;
+    return _delete_lines($self, "/var/spool/cron/$user", \@entry);
+}
+
+=for html <a name="delete_sendmail_class_line"></a>
+
+=head2 static delete_sendmail_class_line(string file, string line, ...)
+
+Deletes I<line>s to class file (e.g. trusted-users).
+
+
+=cut
+
+sub delete_sendmail_class_line {
+    my($self, $file, @line) = @_;
+    return _delete_lines($self, "/etc/mail/$file", \@line);
+}
+
 =for html <a name="disable_service"></a>
 
 =head2 disable_service(string service, ...) : string
@@ -365,24 +424,6 @@ sub rhn_up2date_param {
     } @{$self->group_args(2, \@args)});
 }
 
-=for html <a name="sendmail_class_file"></a>
-
-=head2 static sendmail_class_file(string file, string value, ...)
-
-Adds I<value>s to class file (e.g. trusted-users),
-creating if it doesn't exist.
-
-=cut
-
-sub sendmail_class_file {
-    my($self, $file, @value) = @_;
-    $file = "/etc/mail/$file";
-    return _add_file($self, $file, 'root', 'mail', 0640)
-	. _edit($self, $file, map {
-	    ['^', "$_\n", qr/^\Q$_\E$/m],
-	 } @value);
-}
-
 =for html <a name="serial_console"></a>
 
 =head2 serial_console() : string
@@ -394,7 +435,7 @@ inittab.   May be called repeatedly.
 
 sub serial_console {
     my($self) = @_;
-    return _edit($self, '/etc/securetty', ['^', "/dev/ttyS0\n"])
+    return _edit($self, '/etc/securetty', ['$', "/dev/ttyS0\n"])
 	. _edit($self, '/etc/inittab', ['(?<=getty tty6\n)',
 	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
         . _edit($self, '/etc/grub.conf',
@@ -443,6 +484,36 @@ sub _add_file {
     return "Created: $file\n";
 }
 
+# _append_lines(self, string file, string owner, string group, int perms, array_ref lines) : string
+#
+# Adds lines to file, creating if necessary.
+#
+sub _append_lines {
+    my($self, $file, $owner, $group, $perms, $lines) = @_;
+    return _add_file($self, $file, $owner, $group, $perms)
+	. _edit($self, $file, map {
+	    ['$', "$_\n", qr/^\Q$_\E$/m],
+	 } @$lines);
+}
+
+# _delete_lines(self, string file, array_ref lines) : string
+#
+# Removes lines to file.
+#TODO: Should it delete the file???
+#
+sub _delete_lines {
+    my($self, $file, $lines) = @_;
+    return _edit($self, $file,
+	[sub {
+	     my($data) = @_;
+	     my($got);
+	     foreach my $l (@$lines) {
+		 $$data =~ s/^\Q$l\E(\n|$)//mg and $got++;
+	     }
+	     return $got;
+	}]);
+}
+
 # _edit(self, string file, array_ref op)
 #
 # Inserts a value into a file.
@@ -454,11 +525,24 @@ sub _edit {
     my($got);
     foreach my $op (@op) {
 	my($where, $value, $search) = @$op;
+	if (ref($where) eq 'CODE') {
+	    $got++ if &$where($data);
+	    next;
+	}
 	$search = qr/\Q$value/s unless defined($search);
-	next if $$data =~ /$search/;
-	$where = qr/$where/s unless ref($where);
-	$$data =~ s/$where/ref($value) ? &$value() : $value/eg
-	    or Bivio::Die->die($file, ": didn't find /$where/\n");
+#TODO: Replace when perl bug is fixed.
+	my($x) = "$search";
+	next if $$data =~ /$x/;
+	if ($where eq '$') {
+	    # Special case for _append_lines
+	    Bivio::Die->die("$value: bad value") if ref($value);
+	    $$data .= $value;
+	}
+	else {
+	    $where = qr/$where/s unless ref($where);
+	    $$data =~ s/$where/ref($value) ? &$value() : $value/eg
+	        or Bivio::Die->die($file, ": didn't find /$where/\n");
+	}
 	$got++;
     }
     return '' unless $got;
