@@ -358,11 +358,16 @@ sub compute_params {
 Implements L<create_object|"create_object"> interface.  Calls
 L<new|"new"> on I<class_name> attribute.
 
+SPECIAL CASE: I<params> contains the a single value which is
+is name of the class, then the class name is returned and I<new>
+is not called.  This allows mixing static (class) and instance tests.
+
 =cut
 
 sub default_create_object {
     my($case, $params) = @_;
-    return $case->get('class_name')->new(@$params);
+    my($c) = $case->get('class_name');
+    return @$params == 1 && $params->[0] eq $c ? $c : $c->new(@$params);
 }
 
 =for html <a name="format_results"></a>

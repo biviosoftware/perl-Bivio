@@ -46,10 +46,7 @@ Bivio::Test->new({
 	    [] => Bivio::DieCode->DIE,
 	],
     ],
-    {
-	class_name => undef,
-	object => 'Bivio::Math::EMA',
-    } => [
+    'Bivio::Math::EMA' => [
 	new => [
 	    -1 => Bivio::DieCode->DIE,
 	    0 => Bivio::DieCode->DIE,
