@@ -36,6 +36,8 @@ C<Bivio::Type::CreditCardType> lists the currently supported credit card types.
 
 =item AMEX
 
+Not yet supported.
+
 =back
 
 =cut
@@ -55,9 +57,10 @@ __PACKAGE__->compile([
     MASTERCARD => [
         2,
     ],
-    AMEX => [
-        3,
-    ],
+#TODO: Waiting on Wells Fargo
+#    AMEX => [
+#        3,
+#    ],
 ]);
 
 =head1 METHODS
@@ -82,8 +85,9 @@ sub get_by_number {
             if ($len == 13 || $len == 16) && $number =~ /^4/;
     return Bivio::Type::CreditCardType::MASTERCARD()
             if $len == 16 && $number =~ /^5[1-5]/;
-    return Bivio::Type::CreditCardType::AMEX()
-            if $len == 15 && $number =~ /^3[47]/;
+#TODO: Waiting on Wells Fargo
+#    return Bivio::Type::CreditCardType::AMEX()
+#            if $len == 15 && $number =~ /^3[47]/;
     return Bivio::Type::CreditCardType::UNKNOWN();
 }
 
