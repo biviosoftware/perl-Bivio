@@ -20,7 +20,8 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Collection::Attributes> provides a useful wrapper around a hash of values.
+C<Bivio::Collection::Attributes> provides a useful wrapper around a
+hash of values.
 
 It can be subclassed to allow arbitrary named attributes
 without polluting a class's internal field name space.
@@ -39,6 +40,10 @@ use Bivio::IO::Trace;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_READ_ONLY_ERROR) = 'attempt to modify read-only instance';
+
+# Not likely to be an attribute. NOT CHECKED.
+my($_READ_ONLY_ATTR) = "$;";
 
 =head1 FACTORIES
 
@@ -123,6 +128,7 @@ Removes the named attribute(s) from the map.  They needn't exist.
 
 sub delete {
     my($fields) = shift->{$_PACKAGE};
+    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     map {delete($fields->{$_})} @_;
     return;
 }
@@ -136,8 +142,11 @@ Removes all the parameters.
 =cut
 
 sub delete_all {
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
     # This is probably the fastest way to remove all elements
-    shift->{$_PACKAGE} = {};
+    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    $self->{$_PACKAGE} = {};
     return;
 }
 
@@ -399,6 +408,7 @@ Modifying the hash will modify the attributes.
 sub internal_put {
     Carp::croak("protected method") unless caller(0)->isa(__PACKAGE__);
     my($self, $fields) = @_;
+    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->{$_PACKAGE} = $fields;
     return;
 }
@@ -425,11 +435,26 @@ Adds or replaces the named value(s).
 
 sub put {
     my($fields) = shift->{$_PACKAGE};
+    die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     int(@_) % 2 == 0 || Carp::croak("must be an even number of parameters");
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	$fields->{$k} = $v;
     }
+    return;
+}
+
+=for html <a name="set_read_only"></a>
+
+=head2 set_read_only()
+
+Delete, put, etc. cannot be called.
+
+=cut
+
+sub set_read_only {
+    my($fields) = shift->{$_PACKAGE};
+    $fields->{$_READ_ONLY_ATTR} = 1;
     return;
 }
 
