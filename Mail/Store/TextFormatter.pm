@@ -152,10 +152,31 @@ sub _parse_line {
     my $newline = ();
     my $res = '';
     foreach my $word (@words){
-	if($word =~ /(.*@[a-z]*[A-Z]*\.[a-z]*[A-Z]*)/){
+	$res = '';
+	my @chars = split(//, $word);
+	# sorry, Rob, but your algorithm didn't work...and didn't make
+	# much sense to me. It copied characters to $res IF AND ONLY IF
+	# they were in the map.
+
+	# I am sure there's a more lean way to do this, but for now
+	# it'll have to be a little ugly:
+	foreach my $x (@chars){
+	    my $chr = $_CHAR_MAP->{ord($x)};
+	    if($chr){$res .= $chr;}
+	    else {
+		if (ord($x) < 33 || ord($x) == 126){next;}
+		if(ord($x) > 32 && ord($x) < 127){
+		    $res .= $x;
+		}
+		else {
+		    $res .= '&#' . ord($x);
+		}
+	    }
+	}
+	$word = $res if(! $res eq(''));
+	if($word =~ /(\w*@\w*\.\w*)/){
 	    _trace('found email: ' , $word) if $_TRACE;
-	    my $str = $1;
-	    $word =~ s/$str/\<a HREF=mailto:$str\>$str\<\/a\>/;
+	    $word = "<HREF=MAILTO:$word>$word</a>";
 	}
 	elsif($word =~ /(http:\/\/.*)/){
 	    my $uri = $1;
@@ -167,16 +188,9 @@ sub _parse_line {
 	    my $uri = $1;
 	    my $suri = $1;
 	    $suri =~ s/\?/\\?/g;
-	    $word =~ s/$suri/\<a HREF=$uri\>$uri\<\/a\>/;
+	    $word =~ s/$suri/\<a HREF=http:\/\/$uri\>$uri\<\/a\>/;
 	}
-	$res = '';
-	my @chars = split(//, $word);#unpack("a*", $word);
-	foreach my $x (@chars){
-	    $res .= $_CHAR_MAP->{ord($x)} || next;
-	    next if ord($x) < 40 || ord($x) == 127;
-	    $res .= '&#'.ord($x).';', next if ord($x) > 127;
-	}
-	$word = $res if(! $res eq(''));
+	_trace('pushing word: ', $word) if $_TRACE;
 	push @$newline, $word;
 	$res = '';
     }
@@ -200,7 +214,7 @@ sub _parse_paragraph {
 	}
     }
     foreach my $line (@lines){
-	$line =~ s/\>/\<BR\>&gt;/g;
+#	$line =~ s/\>/\&gt;/g;
 	$$out .= "\n" . _parse_line($line);
     }
 }
@@ -215,7 +229,9 @@ sub _subparse {
     if(!$out){die('received <undef> for output stream!');}
     my @paragraphs = split("\n\n", $$str_ref);
     foreach my $s (@paragraphs){
+	$$out .= "\n<P ALIGN=LEFT>";
 	_parse_paragraph(\$s, $out);
+	$$out .= "</P>\n";
     }
     
 }
