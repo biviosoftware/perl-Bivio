@@ -142,7 +142,8 @@ sub delete_instruments_and_transactions {
             realm_account_entry_t
             entry_t
             realm_transaction_t
-            realm_instrument_t)) {
+            realm_instrument_t
+            member_allocation_t)) {
 
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
