@@ -62,11 +62,13 @@ sub nested_differences {
 	unless ref($left);
 
     if (ref($left) eq 'ARRAY') {
-	return _diff_res(
-	    $proto, scalar(@$left), scalar(@$right), $name . '->scalar()')
-	    unless @$left == @$right;
-	my($res) = undef;
-	for (my($i) = 0; $i <= $#$left; $i++) {
+	my($res) = @$left == @$right ? undef
+	    : ${_diff_res(
+		$proto, scalar(@$left), scalar(@$right), $name . '->scalar()')};
+	for (my($i) = 0;
+	    $i <= ($#$left > $#$right ? $#$left : $#$right);
+	    $i++
+	) {
 	    my($r) = $proto->nested_differences(
 		$left->[$i], $right->[$i], $name . "->[$i]");
 	    $res .= ($res ? "\n" : '') . $$r
@@ -216,9 +218,9 @@ sub to_string {
 sub _diff_res {
     my($proto, $left, $right, $name) = @_;
     my($res) = join(' != ', map({
-	my($v) = $proto->to_string($_, 1, 0);
-	chomp($$v);
-	$$v;
+	my($v) = $proto->to_short_string($_);
+	chomp($v);
+	$v;
     } $left, $right));
     $res .= " at $name"
 	if $name;
