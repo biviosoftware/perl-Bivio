@@ -217,6 +217,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 
 #=IMPORTS
 use Bivio::Agent::HTTP::Query;
+use Bivio::Agent::Task;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
@@ -814,18 +815,6 @@ sub get_realm_for_task {
     return _get_realm($self, $trt, $task_id);
 }
 
-=for html <a name="get_reply"></a>
-
-=head2 get_reply() : Bivio::Agent::Reply;
-
-DEPRECATED
-
-=cut
-
-sub get_reply {
-    return shift->get('reply');
-}
-
 =for html <a name="get_request"></a>
 
 =head2 static get_request() : Bivio::Agent::Request
@@ -940,6 +929,10 @@ sub internal_redirect_realm {
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
+
+		    # need to understand where this is being called
+		    Bivio::IO::Alert->info("no realm found for club task");
+
 #TODO: MOVE this out of here
 #      Eventually need specific list.
 		    # Club not found.  Try to redirect to DEMO_REDIRECT
@@ -1411,8 +1404,6 @@ sub _get_realm {
 	return $_GENERAL;
     }
     if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
-#TODO: Why don't we want to return the demo_club?
-	my($demo_suffix) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 	my($user_realms) = $self->get('user_realms');
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
@@ -1421,6 +1412,7 @@ sub _get_realm {
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 #TODO: Roles aren't necessarily ordered
 	    next unless  $rr > $role;
+#TODO: Why don't we want to return the demo_club?
 	    next if Bivio::Biz::Action::DemoClub->is_demo_club(
 		    $r->{'RealmOwner.name'});
 	    $realm_id = $r->{'RealmUser.realm_id'};
