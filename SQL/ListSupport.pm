@@ -255,7 +255,7 @@ sub new {
 	want_select => !defined($decl->{want_select}) || $decl->{want_select}
 	         ? 1 : 0,
     };
-    $proto->init_version($attrs, $decl);
+    $proto->init_common_attrs($attrs, $decl);
 
     # We add this to the declaration in the case that 
     if ($decl->{want_level_in_select}) {

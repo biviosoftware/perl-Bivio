@@ -344,6 +344,30 @@ sub init_column_classes {
     return $where;
 }
 
+=for html <a name="init_common_attrs"></a>
+
+=head2 static init_common_attrs(hash_ref attrs, hash_ref decl)
+
+B<INTERNAL USE ONLY>
+
+Validates C<version> in I<decl> is syntactically correct and
+sets in I<attrs>.
+
+Also initializes I<as_string_fields>.
+
+=cut
+
+sub init_common_attrs {
+    my($proto, $attrs, $decl) = @_;
+    Carp::croak("version: not declared or invalid (not positive integer)")
+		unless $decl->{version} && $decl->{version} =~ /^\d+$/;
+    $attrs->{version} = $decl->{version};
+#TODO: Validate the list
+    $attrs->{as_string_fields} = $decl->{as_string_fields}
+	if $decl->{as_string_fields};
+    return;
+}
+
 =for html <a name="init_model_primary_key_maps"></a>
 
 =head2 static init_model_primary_key_maps(hash_ref attrs)
@@ -399,25 +423,6 @@ sub init_type {
 	    : Bivio::Type->get_instance($type_cfg);
     $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
 	    $col->{type});
-    return;
-}
-
-=for html <a name="init_version"></a>
-
-=head2 static init_version(hash_ref attrs, hash_ref decl)
-
-B<INTERNAL USE ONLY>
-
-Validates C<version> in I<decl> is syntactically correct and
-sets in I<attrs>.
-
-=cut
-
-sub init_version {
-    my($proto, $attrs, $decl) = @_;
-    Carp::croak("version: not declared or invalid (not positive integer)")
-		unless $decl->{version} && $decl->{version} =~ /^\d+$/;
-    $attrs->{version} = $decl->{version};
     return;
 }
 

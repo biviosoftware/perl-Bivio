@@ -216,7 +216,7 @@ sub new {
 	require_context => $decl->{require_context} ? 1 : 0,
 	has_secure_data => 0,
     };
-    $proto->init_version($attrs, $decl);
+    $proto->init_common_attrs($attrs, $decl);
 
     # Modify the declarations to include the list model primary key
     _init_list_class($attrs, $decl);

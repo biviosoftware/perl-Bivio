@@ -117,7 +117,7 @@ sub new {
 	column_aliases => {},
 	has_blob => 0,
     };
-    $proto->init_version($attrs, $decl);
+    $proto->init_common_attrs($attrs, $decl);
     die("$attrs->{table_name}: invalid table name, must end in _t")
 	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
@@ -291,7 +291,7 @@ sub iterate_start {
     my($self, $die, $order_by, $query) = @_;
     my(@params);
     my($sql) = _prepare_select($self, $query, \@params);
-    $sql .= ' order by '.$order_by;
+    $sql =~ s/(\bwhere\s*)?$/ order by $order_by/i;
     my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	    $self->get('has_blob'));
     return $iterator;

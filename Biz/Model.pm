@@ -698,6 +698,20 @@ sub unsafe_get_request {
 
 #=PRIVATE METHODS
 
+# _as_string_fields(Bivio::SQL::Support sql_support) : array_ref
+#
+# Returns as_string_fields.
+#
+sub _as_string_fields {
+    my($sql_support) = @_;
+    return $sql_support->get('as_string_fields')
+	if $sql_support->has_keys('as_string_fields');
+    my($res) = [@{$sql_support->get('primary_key_names')}];
+    unshift(@$res, 'name')
+	if $sql_support->has_columns('name') && !grep($_ eq 'name', @$res);
+    return $res;
+}
+
 # _assert_class_name(string class)
 #
 # Ensures that the class conforms to the naming conventions.
@@ -770,16 +784,13 @@ sub _initialize_class_info {
     my($sql_support) = $class->internal_initialize_sql_support($config);
     my($ci) = {
 	sql_support => $sql_support,
-	as_string_fields => [@{$sql_support->get('primary_key_names')}],
+	as_string_fields => _as_string_fields($sql_support),
 	# Is an array, because faster than a hash_ref for our purposes
 	properties => [map {
 		($_, undef);
 	    } @{$sql_support->get('column_names')},
 	],
     };
-    unshift(@{$ci->{as_string_fields}}, 'name')
-	    if $sql_support->has_columns('name')
-		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
     return $ci if $config;
     # $_CLASS_INFO{$class} is sentinel to stop recursion
     $_CLASS_INFO{$class} = $ci;
