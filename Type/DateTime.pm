@@ -261,7 +261,7 @@ _initialize();
 
 Returns I<date_time> adjusted by I<days> (may be negative).
 
-Aborts on range error.
+Dies on range error.
 
 =cut
 

@@ -16,16 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Type::Integer;
-    Bivio::Type::Integer->new(min, max);
-
-    @MyInteger::ISA = ('Bivio::Type::Integer');
-    sub get_min {
-	return 10;
-    }
-
-    sub get_max {
-	return 20;
-    }
 
 =cut
 
@@ -110,7 +100,32 @@ sub compare {
 
 =head2 static from_literal(string value) : array
 
-Makes sure is a number and within min/max.
+Parses I<value> as a string.  Verifies I<value> is a number and within min/max
+of this Integer type.  Accepts any input and will not die as a result of
+invalid values, e.g. C<undef>.
+
+On success, returns an C<int>.
+
+Special case if passed C<undef>, which result in C<undef> being
+returned.
+
+On failure, returns the tuple (C<undef>, I<type_error>), where
+I<type_error> is one of the following L<Bivio::TypeError|Bivio::TypeError>
+values:
+
+=over 4
+
+=item INTEGER
+
+The syntax is not valid for an integer, i.e. doesn't match
+the regex /^[-+]?\d+$/.
+
+=item NUMBER_RANGE
+
+The syntax is correct, but the resultant integer is outside the bounds of
+this integer type.
+
+=back
 
 =cut
 
