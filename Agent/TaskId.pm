@@ -380,14 +380,15 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/account/detail
+        Bivio::Biz::Model::AccountSummaryList
         Bivio::UI::HTML::Club::AccountDetail
     )],
     [qw(
-        CLUB_ACCOUNTING_SINGLE_DEPOSIT
+        CLUB_ACCOUNTING_MEMBER_PAYMENT
         43
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
-        _/accounting/member/deposit
+        _/accounting/member/payment
         Bivio::Biz::Model::SingleDepositForm
         Bivio::Biz::Model::RealmAccountList
         Bivio::UI::HTML::Club::SingleDeposit
@@ -401,7 +402,6 @@ my(@_CFG) = (
         _/mail/msg
         Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageDetail
-
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INTEREST
@@ -556,6 +556,17 @@ my(@_CFG) = (
         demo
 	Bivio::Biz::Action::DemoClubRedirect
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_FEE
+        60
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        _/accounting/member/fee
+        Bivio::Biz::Model::SingleDepositForm
+        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::UI::HTML::Club::SingleDeposit
+        next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
 );
 
