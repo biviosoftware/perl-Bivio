@@ -126,14 +126,13 @@ sub format_mail {
 #
 sub _parse {
     my($in, $out) = @_;
-    my($font_color) = "CC0000";
 
-    #\r\n for the sake of RFC822 consistency. Kinda not necessary, since
+    #\n for the sake of RFC822 consistency. Kinda not necessary, since
     #we're formatting this for display in HTML, and it is no longer text/plain:
 
-    $$out .= "\r\n<!DOCTYPE HTML PUBLIC";
+    $$out .= "\n<!DOCTYPE HTML PUBLIC";
     $$out .= "\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
-    $$out .= "<HTML><HEAD></HEAD><BODY BGCOLOR=\"#CCCCCC\">";
+    $$out .= "<HTML><HEAD></HEAD><BODY>";
     my $s='';
     while(!$in->eof){
 	$s .= $in->getline();
