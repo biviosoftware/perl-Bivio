@@ -42,6 +42,7 @@ use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::User;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
 use Bivio::Type::Integer;
@@ -237,6 +238,28 @@ sub get_outgoing_emails {
     return @$result ? $result : undef;
 }
 
+=for html <a name="has_transactions"></a>
+
+=head2 has_transactions() : boolean
+
+Returns 1 if the club has any accounting transactions.
+
+=cut
+
+sub has_transactions {
+    my($self) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT COUNT(*)
+            FROM realm_transaction_t
+            WHERE realm_id=?",
+	    [$self->get('club_id')]);
+    my($found_transactions) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$found_transactions = $row->[0];
+    }
+    return $found_transactions > 0;
+}
 
 =for html <a name="internal_initialize"></a>
 
