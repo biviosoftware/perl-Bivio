@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Club::F1065Parameters;
 use strict;
 $Bivio::UI::HTML::Club::F1065Parameters::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Club::F1065Parameters::VERSION;
 
 =head1 NAME
 
@@ -31,6 +32,7 @@ C<Bivio::UI::HTML::Club::F1065Parameters> IRS 1065 parameters
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::Club::ReportPage;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -85,9 +87,8 @@ Schedule B 4. We recommend that you choose Consolidated Audit, so that the tax t
 EOF
     ],
     {
-	header => $_PACKAGE->join(<<'EOF')
-IRS 1065 tax fields. The default values should be suitable for most clubs.
-EOF
+	header => Bivio::UI::HTML::Club::ReportPage
+	->get_heading_with_one_date('page_heading'),
     });
 }
 
