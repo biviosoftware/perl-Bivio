@@ -313,7 +313,7 @@ sub _handle_image_attachments {
 	    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
 	    "img=".$1)."\"";
 	_trace('setting URI: ', $uri) if $_TRACE;
-	$$line =~ s/$sb/$uri/;
+	$$line =~ s/"cid:part.+"/$uri/;
 	_trace('calling the method again...');
 	_handle_image_attachments($line, $subpart_index, $fields);
     }
