@@ -354,7 +354,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/member/detail
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -380,7 +380,7 @@ my(@_CFG) = (
         _/accounting/member/deposit
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
-        next=CLUB_ACCOUNTING_SINGLE_DEPOSIT
+        next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
 );
 
