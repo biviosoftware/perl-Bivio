@@ -306,12 +306,15 @@ sub _fixup_uri {
 
 # _format_field(hash_ref field, string value) : string
 #
-# Formats the field as $name=$value&
+# Formats the field as $name=$value&.  If not defined($value), then
+# returns empty string.
 #
 sub _format_field {
     my($field, $value) = @_;
     Bivio::Die->die($value, ': invalid value for field ', $field->{name})
-	 if ref($value);
+	if ref($value);
+    return ''
+	unless defined($value);
     return defined($field->{name}) && length($field->{name})
 	? Bivio::HTML->escape_query($field->{name}) . '='
 	   . (defined($value) ? Bivio::HTML->escape_query($value) : '') . '&'
@@ -320,18 +323,27 @@ sub _format_field {
 
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : string
 #
-# Returns URL encoded form.
+# Returns URL encoded form.  Undefined fields are not submitted.
 #
 sub _format_form {
     my($form, $submit, $form_fields) = @_;
     my($res) = '';
-    while (my($k, $v) = each(%{$form->{hidden}})) {
-	$res .= _format_field($v, $v->{value});
-    }
+    my($match) = {};
+#TODO: Add hidden form field testing
     while (my($k, $v) = each(%$form_fields)) {
-	$res .= _format_field(_assert_form_field($form, 'visible', $k), $v);
+	my($f) = _assert_form_field($form, 'visible', $k);
+	$match->{$f}++;
+ 	$res .= _format_field($f, $v);
     }
-    $res .= _format_field(_assert_form_field($form, 'submit', $submit));
+    # Fill in hidden and defaults
+    foreach my $class (qw(hidden visible)) {
+	foreach my $v (values(%{$form->{$class}})) {
+	    $res .= _format_field($v, $v->{value})
+		unless $match->{$v};
+	}
+    }
+    # Needs to be some "true" value for our forms
+    $res .= _format_field(_assert_form_field($form, 'submit', $submit), '1');
     chop($res);
     return $res;
 }
