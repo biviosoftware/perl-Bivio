@@ -619,7 +619,7 @@ sub _initialize_class_info {
 		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
     return $ci if $config;
     # $_CLASS_INFO{$class} is sentinel to stop recursion
-    $_CLASS_INFO{$class} = $ci;
+    $_CLASS_INFO{$class} ||= $ci;
     $ci->{singleton} = $class->new;
     $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
     return;
