@@ -138,7 +138,8 @@ sub initialize {
     return if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
     $fields->{escape} = $self->get_or_default('escape_html', 1);
-    $fields->{hard_newlines} = $self->get_or_default('hard_newlines', 1);
+    $fields->{hard_newlines} = $self->get_or_default('hard_newlines',
+	    $fields->{escape});
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
     my($pad_right) = $self->get_or_default('pad_right', 0);
