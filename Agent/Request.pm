@@ -1169,26 +1169,14 @@ sub set_user {
 
 =head2 task_ok(Bivio::Agent::TaskId task_id) : boolean
 
-=head2 task_ok(Bivio::Agent::TaskId task_id, string realm_id) : boolean
+B<Deprecated>
 
 =cut
 
 sub task_ok {
-    my($self, $task_id, $realm_id) = @_;
-    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-    my($trt) = $task->get('realm_type');
-    my($realm, $role) = $self->get('auth_realm', 'auth_role');
-    my($art) = $realm->get('type');
-    # Normal case is for task and realm types to match, if not...
-    if (defined($realm_id)) {
-#TODO: Need to handle multiple realms, e.g. list of clubs to switch to
-	$self->throw_die("not yet implemented");
-    }
-    unless ($trt eq $art) {
-	$realm = _get_realm($self, $trt, $task_id);
-	return 0 unless $realm;
-    }
-    return $realm->can_user_execute_task($task, $self);
+    my($self, $task_id) = @_;
+    Bivio::IO::Alert->warn_deprecated('call can_user_execute_task() instead');
+    return $self->can_user_execute_task($task_id);
 }
 
 =for html <a name="throw_die"></a>
