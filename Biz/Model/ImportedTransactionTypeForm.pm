@@ -56,11 +56,9 @@ sub execute_empty {
     my($list) = $self->get_list_model;
     while ($list->next_row) {
 	my($type) = $list->get('Entry.entry_type');
-
-	next unless $type == $type->CASH_UNASSIGNED_CREDIT()
-		|| $type == $type->CASH_UNASSIGNED_DEBIT();
-
 	$self->internal_put_field(selected_row => $list->get_cursor);
+	$self->internal_put_field('total_amount' => $list->get(
+		'Entry.amount'));
 	last;
     }
     $self->copy_list_fields;
@@ -78,13 +76,40 @@ Creates a member deposit transaction with entries for member and account.
 
 sub execute_ok {
     my($self) = @_;
+    my($type) = $self->get('Entry.entry_type');
 
     # redirect to multiple payment/fee page if selected
+
+    $self->get_request->server_redirect(
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_PAYMENT())
+	    if $type == $type->MEMBER_MULTIPLE_PAYMENT;
+
+    $self->get_request->server_redirect(
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_FEE())
+	    if $type == $type-> MEMBER_MULTIPLE_PAYMENT_FEE;
 
     # otherwise go to the txn editor detail
 
     $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_IMPORT_REVIEW2());
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY2());
+
+    # DOES NOT RETURN
+}
+
+=for html <a name="execute_unwind"></a>
+
+=head2 execute_unwind()
+
+Redirects to the main account sync identification page.
+
+=cut
+
+sub execute_unwind {
+    my($self) = @_;
+
+    # needs to be here to reset the list state
+    $self->get_request->client_redirect(
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY());
 
     # DOES NOT RETURN
 }
@@ -104,7 +129,17 @@ sub internal_initialize {
 	version => 1,
 	visible => [qw(
             Entry.entry_type
-        ),
+        )],
+	hidden => [qw(
+            RealmTransaction.date_time
+            RealmTransaction.realm_transaction_id
+            AccountSync.sync_key
+            ),
+	    {
+		name => 'total_amount',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
 	],
     };
     return $self->merge_initialize_info(
