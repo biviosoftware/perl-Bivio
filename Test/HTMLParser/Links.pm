@@ -157,7 +157,8 @@ sub _link {
     my($fields) = $self->[$_IDI];
     my($base, $i) = $label;
     while ($self->get('elements')->{$label}) {
-	return if $self->get('elements')->{$label}->{href} eq $fields->{href};
+	return if $self->get('elements')->{$label}->{href}
+            eq ($fields->{href} || '');
 	$label = $base . '_' . ++$i;
     }
     $self->get('elements')->{$label} = {
