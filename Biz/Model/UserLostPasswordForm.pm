@@ -60,7 +60,7 @@ sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
     my($password) = int(rand(899999) + 100000);
-    $self->new($req, 'RealmOwner')->unauth_load_or_die({
+    $self->new_other('RealmOwner')->unauth_load_or_die({
         realm_id => _get_email($self)->get('realm_id')
     })->update({password => Bivio::Type::Password->encrypt($password)});
 
@@ -116,7 +116,7 @@ sub unsafe_get_realm_from_query {
     my($realm_id, $err) = Bivio::Type::PrimaryId->from_literal(
         $query->{$_REALM_ID_KEY});
     return undef unless $query->{$_PASSWORD_KEY} && $realm_id;
-    my($realm) = $proto->new($req, 'RealmOwner');
+    my($realm) = Bivio::Biz::Model->new($req, 'RealmOwner');
     return Bivio::Type::Password->is_equal(
         $realm->unauth_load_or_die({
             realm_id => $realm_id,
