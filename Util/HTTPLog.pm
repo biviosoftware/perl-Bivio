@@ -262,7 +262,7 @@ sub _initialize {
 	'::HomePage::execute:.*Both <FRAMESET> and <BODY> tags found',
 	'::HomePage::execute:.*Neither <FRAMESET> or <BODY> tags found',
         # AccountSync errors and warnings
-        '::AccountScraper::unhandled_rows',
+        '::AccountScraper::unhandled_row',
         '::InstrumentLookup::find',
         '::get_balance.* balance not available',
         '::Schwab::pre_parse_html',
