@@ -1,2 +1,3 @@
 Browser->login();
 Browser->submit('Select Site', {'Select Site' => 'Ask Candis'});
+Browser->verify_uri('candis');
