@@ -17,12 +17,12 @@ Bivio::Biz::Model::Address - interface to address_t SQL table
 
 =head1 EXTENDS
 
-L<Bivio::Biz::PropertyModel>
+L<Bivio::Biz::Model::AbstractLocation>
 
 =cut
 
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::Address::ISA = qw(Bivio::Biz::PropertyModel);
+use Bivio::Biz::Model::AbstractLocation;
+@Bivio::Biz::Model::Address::ISA = qw(Bivio::Biz::Model::AbstractLocation);
 
 =head1 DESCRIPTION
 
@@ -45,21 +45,6 @@ use Bivio::Type::PrimaryId;
 =head1 METHODS
 
 =cut
-
-=for html <a name="create"></a>
-
-=head2 create(hash_ref new_values)
-
-Sets I<location> if not set, then calls SUPER.
-
-=cut
-
-sub create {
-    my($self, $values) = @_;
-    $values->{location} = Bivio::Type::Location::HOME()
-	    unless $values->{location};
-    return $self->SUPER::create($values);
-}
 
 =for html <a name="format"></a>
 
@@ -135,20 +120,6 @@ sub internal_initialize {
         },
 	auth_id => 'realm_id',
     };
-}
-
-=for html <a name="unauth_load"></a>
-
-=head2 unauth_load(hash query) : boolean
-
-Sets I<location> if not set, then calls SUPER.
-
-=cut
-
-sub unauth_load {
-    my($self, %query) = @_;
-    $query{location} = Bivio::Type::Location::HOME() unless $query{location};
-    return $self->SUPER::unauth_load(%query);
 }
 
 #=PRIVATE METHODS

@@ -17,12 +17,12 @@ Bivio::Biz::Model::Email - interface to email_t SQL table
 
 =head1 EXTENDS
 
-L<Bivio::Biz::PropertyModel>
+L<Bivio::Biz::Model::AbstractLocation>
 
 =cut
 
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::Email::ISA = qw(Bivio::Biz::PropertyModel);
+use Bivio::Biz::Model::AbstractLocation;
+@Bivio::Biz::Model::Email::ISA = qw(Bivio::Biz::Model::AbstractLocation);
 
 =head1 DESCRIPTION
 
@@ -48,14 +48,12 @@ use Bivio::Type::Email;
 
 =head2 create(hash_ref new_values)
 
-Sets I<location> if not set, then calls SUPER.
+Sets I<want_bulletin> if not set, then calls SUPER.
 
 =cut
 
 sub create {
     my($self, $values) = @_;
-    $values->{location} = Bivio::Type::Location::HOME()
-	    unless $values->{location};
     $values->{want_bulletin} = 1
 	    unless defined($values->{want_bulletin});
     return $self->SUPER::create($values);
@@ -99,20 +97,6 @@ sub is_ignore {
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
     return Bivio::Type::Email->is_ignore($m->get($p.'email'));
-}
-
-=for html <a name="unauth_load"></a>
-
-=head2 unauth_load(hash query) : boolean
-
-Sets I<location> if not set, then calls SUPER.
-
-=cut
-
-sub unauth_load {
-    my($self, %query) = @_;
-    $query{location} = Bivio::Type::Location::HOME() unless $query{location};
-    return $self->SUPER::unauth_load(%query);
 }
 
 #=PRIVATE METHODS
