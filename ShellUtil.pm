@@ -820,18 +820,15 @@ sub setup {
     $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
     return unless Bivio::Ext::DBI->get_config($db)->{user} eq 'bivio';
 
-    $realm = _parse_realm_id($self, 'realm');
-    $user = _parse_realm_id($self, 'user');
+    # Create the request, then set the user (need the request to load models)
     $self->put(req => Bivio::Agent::Job::Request->new({
-	auth_id => $realm,
-	auth_user_id => $user,
+	auth_id => undef,
+	auth_user_id => undef,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
 	timezone => Bivio::Type::DateTime->get_local_timezone(),
     }));
-
-    # Must be after req is put on self (avoids infinite recursion).
-    # No user, but have a realm, so set a user.
-    $self->set_user_to_first_admin if $realm && !$user;
+    $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
+	    _parse_realm_id($self, 'user'));
     return;
 }
 
@@ -997,10 +994,11 @@ sub _parse_options {
 sub _parse_realm_id {
     my($self, $attr) = @_;
     my($realm) = $self->unsafe_get($attr);
-    return $realm unless defined($realm) && $realm !~ /^\d+$/;
+    return $realm unless defined($realm);
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model');
     my($ro) = Bivio::Biz::Model->get_instance('RealmOwner')->new();
-    $ro->unauth_load_or_die(name => $realm);
+    Bivio::Die->die($realm, ': no such ', $attr)
+		unless $ro->unauth_load_by_email_id_or_name($realm);
     return $ro->get('realm_id');
 }
 
