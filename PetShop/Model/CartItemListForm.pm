@@ -21,7 +21,7 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::PetShop::ListFormModel>
+L<Bivio::Biz::ListFormModel>
 
 =cut
 
