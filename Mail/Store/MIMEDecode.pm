@@ -162,7 +162,7 @@ sub parse_and_store {
 	    $msg->get_rfc822_io()), $file_name);
     my($rslt);
     $fields->{file_client}->set_keywords($file_name, $keywords, \$rslt)
-	    || die("set_keywords failed: \$rslt");
+	    || die("$file_name: set_keywords failed: \$rslt");
     _trace($file_name, ': total bytes written: ', $fields->{kbytes}, ' K')
 	    if $_TRACE;
     return;
@@ -193,6 +193,10 @@ sub _extract_mime {
 
 #TODO parse for keyword storage if MIME part content type is HTML
 #right now, we're only parsing for keywords MIME type "plain-text".
+    if ($ctype =~ /multipart\/alternative/i) {
+	_write_multipart_alternative($fields, $entity, $file_name, $type);
+	return;
+    }
     _write_entity_to_file($fields, $entity, $file_name, $type);
 
     my(@parts) = $entity->parts();
@@ -208,11 +212,13 @@ sub _extract_mime {
     my($i) = -1;
     my($subentity);
     for $subentity (@parts) {
+	$i++;
 #	_trace('getting part ', ++$i) if $_TRACE;
 #	_trace('subentity is valid') if $_TRACE && $subentity;
 	my($content_type) = Bivio::Type::MIMEType->from_content_type(
 		$subentity->head->get('content-type'));
-	if ($content_type == Bivio::Type::MIMEType::MESSAGE_RFC822()) {
+	if (defined($content_type) &&
+		$content_type == Bivio::Type::MIMEType::MESSAGE_RFC822()) {
 #TODO We need to do the same thing for message/digest
 #	    _trace('part', $i, ' is an rfc822 message.') if $_TRACE;
 	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
@@ -439,23 +445,62 @@ sub _write_entity_to_file {
     #changed this to be HTML because all our mail messages
     #are written to the file server in HTML form
     $msg_hdr =~ s/text\/plain/text\/html/;
-    die('header is undef') unless defined($msg_hdr) && length($msg_hdr);
+    die($file_name, ': header is undef')
+	    unless defined($msg_hdr) && length($msg_hdr);
     my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
-    if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN){
+    if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()){
 #	_trace('message is text/plain so formatting it...') if $_TRACE;
 	my($formatted_mail) = _format_body($entity);
 #	_trace('formatted mail: ', $$formatted_mail);
 	$msg_hdr .= $$formatted_mail if defined($$formatted_mail);
     }
     else{
-	$msg_hdr .= $$msg_body if ($$msg_body)
+	$msg_hdr .= "\n".$$msg_body if ($$msg_body)
     }
     $fields->{kbytes} += length($msg_hdr)/1024;
     $fields->{file_client}->create($file_name, \$msg_hdr)
-	    || die("write failed: $msg_hdr");
+	    || die("$file_name: write failed: $msg_hdr");
     $fields->{num_parts}++;
+    return;
+}
+
+# _write_multipart_alternative() : 
+#
+#
+#
+sub _write_multipart_alternative {
+    my($fields, $entity, $file_name, $type) = @_;
+    my(@parts) = $entity->parts();
+#    _trace('number of parts for this MIME part is ', int(@parts)) if $_TRACE;
+    unless (@parts) {
+#TODO: Weird case of not having anything	
+	_write_entity_to_file($fields, $entity, $file_name, $type);
+	return;
+    }
+#TODO: BTW, From the man page of MIME::Entity
+#           Note: for multipart messages, the preamble and
+#           epilogue are not considered parts.  If you need them,
+#           use the preamble() and epilogue() methods.
+    my($subentity);
+    my($any);
+    for $subentity (@parts) {
+	my($content_type) = $subentity->head->get('content-type');
+	if ($content_type =~ /text\/html/i) {
+	    _write_entity_to_file($fields, $subentity, $file_name,
+		    Bivio::Type::MIMEType::TEXT_HTML());
+	    return;
+	}
+	elsif (defined($any)) {
+	    $any = $subentity;
+	}
+    }
+#TODO: Shouldn't get here, but could be jpg, gif, etc.
+    my($content_type) = Bivio::Type::MIMEType->from_content_type(
+	    $any->head->get('content-type'));
+    _write_entity_to_file($fields, $any, $file_name,
+	    $content_type);
     return;
 }
 
