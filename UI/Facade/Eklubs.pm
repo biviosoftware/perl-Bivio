@@ -87,7 +87,7 @@ sub _footer {
 	    'ABOUT EKLUBS:http://www.eklubs.com/eklubs.htm',
 	    'SAFE & PRIVATE:http://www.eklubs.com/safe.htm',
 	    'REGISTER:/pub/register',
-	    'START A CLUBS:http://www.eklubs.com/start.htm',
+	    'START A CLUB:http://www.eklubs.com/start.htm',
 	   ) {
 	my($label, $task) = split(/:/, $t, 2);
 	push(@$links, $_W->link($label, $task, 'footer_menu'),
