@@ -320,9 +320,10 @@ sub _create_from_incoming {
     my($self, $bmi, $club) = @_;
     # Archive mail message first
     my($mbox) = $bmi->get_unix_mailbox;
-    my($id) = time;
+#TODO: Get id from sequence
+    my($id) = int(rand(999999)) + 1;
     # $dttm is always valid
-    my($dttm) = $bmi->get_dttm() || $id;
+    my($dttm) = $bmi->get_dttm() || time;
     my($mon, $year) = (gmtime($dttm))[4,5];
     $year < 1900 && ($year += 1900);
     $_FILE_CLIENT->append('/'. $club->get('id') . '/mbox/'

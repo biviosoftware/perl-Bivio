@@ -85,7 +85,7 @@ sub execute {
 	my($values) = &_create_field_map($user, $req);
 
 	#TODO: need to have the db assign the id as a sequence
-	$values->{'id'} = int(rand(9999999999999998)) + 1;
+	$values->{'id'} = int(rand(999999)) + 1;
 	$user->create($values);
 	if ($user->get_status()->is_OK()) {
 

@@ -72,7 +72,7 @@ sub execute {
 	my($values) = &_create_field_map($club, $req);
 
 	#TODO: need to have the db assign the id as a sequence
-	$values->{'id'} = int(rand(9999999999999998)) + 1;
+	$values->{'id'} = int(rand(999999)) + 1;
 	$values->{'bytes_in_use'} = 0;
 	$values->{'bytes_max'} = 8 * 1024 * 1024;
 	$club->create($values);
