@@ -137,11 +137,27 @@ Returns date with DEFAULT_TIME for now.
 
 sub now {
     my($unix_time) = time;
-    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY() + 0.5);
-    my($j) = int(($unix_time - $s - $_NOW_SLOP)
+    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY());
+    my($j) = int(($unix_time - $s)
 	    / Bivio::Type::DateTime::SECONDS_IN_DAY())
 	    + Bivio::Type::DateTime::UNIX_EPOCH_IN_JULIAN_DAYS();
     return $j.$_TIME_SUFFIX;
+}
+
+=for html <a name="to_literal"></a>
+
+=head2 to_literal(any value) : string
+
+Converts the date part which is acceptable to from_literal.  Never returns
+undef, always a string.
+
+=cut
+
+sub to_literal {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    my(undef, undef, undef, $d, $m, $y) = $proto->to_parts($value);
+    return sprintf('%02d/%02d/%04d', $m, $d, $y);
 }
 
 =for html <a name="to_sql_param"></a>
