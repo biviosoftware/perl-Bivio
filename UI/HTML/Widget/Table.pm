@@ -255,6 +255,10 @@ L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 See also I<heading_align>.
 
+=item column_bgcolor : any []
+
+Sets the cell background color.
+
 =item column_control : value
 
 A widget value which, if set, must be a true value to render the column.
@@ -778,6 +782,7 @@ If in_list is true, then empty strings will be rendered as '&nbsp;'.
 
 sub render_row {
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
+    my($req) = $self->get_request;
     $row_prefix ||= "\n<tr>";
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
@@ -790,6 +795,11 @@ sub render_row {
 	elsif ($cell->get_or_default('heading_width', 0)) {
 	    $$buffer .= ' width="'.$cell->get('heading_width').'"';
 	}
+	my($bg);
+	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
+	    if $class == Bivio::UI::TableRowClass->DATA
+		&& $cell->unsafe_render_attr(
+		    'column_bgcolor', $source, \$bg) && $bg;
 
         $$buffer .= '>';
 
