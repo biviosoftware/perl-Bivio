@@ -1,0 +1,107 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-db-adhoc - run queries and create simple reports
+
+=head1 SYNOPSIS
+
+b-db-adhoc [-report dir] query ...
+
+=head1 DESCRIPTION
+
+Runs all SQL query files given on the command-line and
+puts the result into the report directory.
+
+=cut
+
+#=IMPORTS
+use Bivio::Ext::DBI;
+
+#=VARIABLES
+my($report_dir) = '/home/httpd/reports/sql';
+
+main(@ARGV);
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+sub main {
+    my(@argv) = @_;
+    Bivio::IO::Config->initialize(\@argv);
+    my($arg, @q);
+    while ($arg = shift(@argv)) {
+        if ($arg eq '-report') {
+            $report_dir = shift(@argv) || usage("$arg: need a value");
+        } elsif ($arg =~ /^-/) {
+            usage("$arg: unknown argument");
+        } else {
+            push(@q, $arg);
+        }
+    }
+    _run(@q);
+}
+
+sub _run {
+    my(@sql) = @_;
+    my($cfg) = Bivio::Ext::DBI->get_config();
+    my($db_access) = "$cfg->{user}/$cfg->{password}\@$cfg->{database}";
+    my($query);
+    foreach $query (@sql) {
+        -f $query || (warn("$query: $!\n"), next);
+        my($out) = _create_result_wrapper($query);
+        system("echo \@$query | sqlplus -s $db_access >>$out");
+    }
+}
+
+sub _create_result_wrapper {
+    my($name) = @_;
+    $name =~ s!.*/!!;
+    $name =~ s!\.sql$!!;
+    my($out) = "$report_dir/$name.html";
+    open(OUT, ">$out") || (warn("$out: $!\n"), return undef);
+    print OUT <<"EOF";
+<html>
+<head>
+<title>$name</title>
+<body bgcolor="#FFFFFF">
+<h1>$name</h1>
+<B>Query results:</B>
+
+<PRE>
+EOF
+    close(OUT);
+    return $out;
+}
+
+# _usage(array message)
+#
+# Print a message and terminate
+sub _usage {
+    my($msg) = join('', @_);
+    print STDERR <<"EOF";
+$0: $msg
+usage: $0 [-report dir] query.sql ...
+EOF
+    exit(1);
+}
+
+=head1 SEE ALSO
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
