@@ -1,13 +1,13 @@
 # Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::PetShop::Action::Logout;
+package Bivio::Biz::Action::UserLogout;
 use strict;
-$Bivio::PetShop::Action::Logout::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Action::Logout::VERSION;
+$Bivio::Biz::Action::UserLogout::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Action::UserLogout::VERSION;
 
 =head1 NAME
 
-Bivio::PetShop::Action::Logout - logs the user out
+Bivio::Biz::Action::UserLogout - logs the user out
 
 =head1 RELEASE SCOPE
 
@@ -15,16 +15,16 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::PetShop::Action::Logout;
+    use Bivio::Biz::Action::UserLogout;
 
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::PetShop::Action::Logout::ISA = ('Bivio::UNIVERSAL');
+@Bivio::Biz::Action::UserLogout::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
-C<Bivio::PetShop::Action::Logout> clears the user on the request
+C<Bivio::Biz::Action::UserLogout> clears the user on the request
 and in the cookie.
 
 =cut
