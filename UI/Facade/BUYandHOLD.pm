@@ -243,8 +243,9 @@ __PACKAGE__->new({
 			Bivio::UI::HTML::Widget->join([
 			    '<a href="http://www.buyandhold.com/bh/en/'
 			    .'investmentclubs/index.html"><img src="'
-# .'http://www.buyandhold.com/bh/en/investmentclubs/images/invest_clubs.gif'
-			    .'/i/muri/invest_clubs.gif'
+			    .'http://www.buyandhold.com/bh/en/investmentclubs'
+			    .'/images/invest_clubs.gif'
+#			    .'/i/muri/invest_clubs.gif'
                             .'" width="156" height="18"'
 			    .'border="0"></a>'])->put(
 			    cell_colspan => 2,
@@ -261,7 +262,7 @@ __PACKAGE__->new({
 			),
 			Bivio::UI::HTML::Widget->link(
 			    Bivio::UI::HTML::Widget->image(
-				'bivio_88x31',
+				'bivio_powered',
 				'bivio - accounting, reports, taxes, and'
 				.' administration for your investment club',
 			    ),
