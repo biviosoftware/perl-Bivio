@@ -59,7 +59,9 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 
 A list of actions.  An action is the tuple (singleton instance,
 method name).  When the task is executed, the methods are
-called on the singletons.
+called on the singletons.  If the singleton is undefined,
+it means the method is a subroutine to be called without
+an instance.
 
 =item next
 
@@ -115,7 +117,9 @@ Creates a new task for I<id> with I<perm> and I<realm_type>.
 A task must not already be
 bound to the I<id>.   The rest of the arguments are
 items to be executed (in order) or mapped.  An executable item must be a
-class with an C<execute> method or of the form C<class-E<gt>method>.
+class with an C<execute> method, of the form C<class-E<gt>method>,
+or a C<CODE> reference, i.e. a C<sub> which takes a C<$req> as
+a parameter.
 
 A mapping item is of the form I<name>=I<action>, where I<name>
 and I<action> are mapped as follows:
@@ -167,6 +171,10 @@ sub new {
 	if ($i =~ /=/) {
 	    # Map item
 	    _parse_map_item($attrs, split(/=/, $i, 2));
+	    next;
+	}
+	if (ref($i) eq 'CODE') {
+	    push(@new_items, [undef, $i]);
 	    next;
 	}
 
@@ -235,7 +243,7 @@ sub execute {
     my($i);
     foreach $i (@{$attrs->{items}}) {
 	my($instance, $method) = @$i;
-	$instance->$method($req);
+	defined($instance) ? $instance->$method($req) : &$method($req);
     }
     _commit();
     $req->get('reply')->send($req);
