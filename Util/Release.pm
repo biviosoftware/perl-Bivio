@@ -32,52 +32,52 @@ use Bivio::ShellUtil;
 
 C<Bivio::Util::Release> Build and Release Management with b-release
 
-Configuration
+=head2 CONFIGURATION
 
-  Host configuration is controlled via the bivio.conf
+Host configuration is controlled via the C</etc/bivio.bconf>:
 
   cvs_rpm_spec_dir - cvs directory with rpm package specifications
-  rpm_host         - rpm repository host name/port
-  rpm_home_dir     - location of rpms on rpm_host
+  rpm_http_root    - rpm repository host name/port
+  rpm_home_dir     - location of rpms on rpm_http_root
 
-Build
+=head2 BUILD
 
-  In the common form, 'build' will create a new rpm file for the
-  package. The package's rpm spec file will be retrieved from cvs and
-  the package will be checked out of cvs, and assembled into an rpm
-  according to the spec file. By default the 'HEAD' or current version
-  will be used checked out from cvs unless the '-version' flag is
-  specified. The output from the command details the steps involved
-  and the output from the cvs and rpm utilities.
+In the common form, 'build' will create a new rpm file for the
+package. The package's rpm spec file will be retrieved from cvs and
+the package will be checked out of cvs, and assembled into an rpm
+according to the spec file. By default the 'HEAD' or current version
+will be used checked out from cvs unless the '-version' flag is
+specified. The output from the command details the steps involved
+and the output from the cvs and rpm utilities.
 
-  Example:
+Example:
 
     b-release build myproject
 
-  The commands executed would be (summarized):
+The commands executed would be (summarized):
 
     cvs checkout -f -r HEAD <cvs_rpm_spec_dir>/myproject.spec
     rpm -bb <cvs_rpm_spec_dir>/myproject.spec-build
     cp -p i386/myproject-HEAD-<date_time>.i386.rpm <rpm_home_dir>
     ln -s myproject-HEAD-<date_time>.i386.rpm myproject-HEAD.rpm
 
-  The myproject.spec-build file is created dynamically by
-  b-release.
+The myproject.spec-build file is created dynamically by
+b-release.
 
-Installation
+=head2 INSTALLATION
 
-  Installs the latest version of the package. The '-force' and
-  '-nodeps' can be used to control the rpm installation. The
-  '-version' flag determines the package version installed, the
-  default is 'HEAD'.
+Installs the latest version of the package. The '-force' and
+'-nodeps' can be used to control the rpm installation. The
+'-version' flag determines the package version installed, the
+default is 'HEAD'.
 
-  Example:
+Example:
 
     b-release install myproject
 
-  The commands executed would be:
+The commands executed would be:
 
-    rpm -Uvh <rpm_host><rpm_home_dir>/myproject-HEAD.rpm
+    rpm -Uvh <rpm_http_root><rpm_home_dir>/myproject-HEAD.rpm
 
 =cut
 
@@ -92,17 +92,19 @@ use LWP::UserAgent ();
 my($_PACKAGE) = __PACKAGE__;
 my($_CVS_RPM_SPEC_DIR);
 my($_RPM_HOME_DIR);
-my($_RPM_HOST);
+my($_RPM_HTTP_ROOT);
 my($_RPM_USER);
-my($_TMP_DIR);
+my($_TMP_DIR) = "/var/tmp/build-$$";
+#TODO: Not sure this is right.  Probably should be local to the
+#      method doing the create.
 my($_START_DIR) = Bivio::IO::File->pwd;
 
 Bivio::IO::Config->register({
-    cvs_rpm_spec_dir => 'pkgs',
-    rpm_home_dir => '/home/dip/rpms',
-    rpm_host => 'http://locker.bivio.com:60000/dip/rpms',
-    rpm_user => 'httpd',
-    tmp_dir => "/var/tmp/build-$$",
+    cvs_rpm_spec_dir => Bivio::IO::Config->REQUIRED,
+    rpm_home_dir => Bivio::IO::Config->REQUIRED,
+    rpm_http_root => Bivio::IO::Config->REQUIRED,
+    rpm_user => Bivio::IO::Config->REQUIRED,
+    tmp_dir => $_TMP_DIR,
 });
 
 =head1 METHODS
@@ -113,9 +115,23 @@ Bivio::IO::Config->register({
 
 =head2 OPTIONS : hash_ref
 
-	build_stage => ['String', 'b'],
-	nodeps => ['Boolean', 0],
-        version => ['String', 'HEAD'],
+=over 4
+
+=item build_stage : string [b]
+
+Value of C<-b> argument to C<rpm>.
+
+=item nodeps : boolean [0]
+
+Pass C<--nodeps> to C<rpm>
+
+=item version : string [HEAD]
+
+The suffix to the C<rpm> to install.  If you want a particular version,
+you would use this parameter.  Otherwise, you probably would use
+the default (C<HEAD>).
+
+=back
 
 =cut
 
@@ -242,15 +258,32 @@ sub build {
 
 =over 4
 
-=item cvs_rpm_spec_dir : string ['pkgs'],
+=item cvs_rpm_spec_dir : string (required)
 
-=item rpm_home_dir : string ['/home/dip/rpms'],
+The cvs directory which holds your package specifications, e.g.
 
-=item rpm_host : string ['http://locker.bivio.com:60000']
+    pkgs
 
-=item rpm_user : string ['httpd'],
+=item rpm_home_dir : string (required)
+
+The directory on the build server, where the rpms reside, e.g.
+
+    /home/b-release
+
+=item rpm_http_root : string (required)
+
+Where the packages reside in the http hierarchy, e.g.
+
+    http://build-server/b-release
+
+=item rpm_user : string (required)
+
+The user which owns the releases.  This is probably the same user which your
+http server is running as.
 
 =item tmp_dir : string ["/var/tmp/build-$$"]
+
+Where the builds take place.
 
 =back
 
@@ -258,10 +291,9 @@ sub build {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-
     $_CVS_RPM_SPEC_DIR = $cfg->{cvs_rpm_spec_dir};
     $_RPM_HOME_DIR = $cfg->{rpm_home_dir};
-    $_RPM_HOST = $cfg->{rpm_host};
+    $_RPM_HTTP_ROOT = $cfg->{rpm_http_root};
     $_RPM_USER = $cfg->{rpm_user};
     $_TMP_DIR = $cfg->{tmp_dir};
     return;
@@ -366,7 +398,7 @@ sub list {
 sub _create_URI {
     my($name) = @_;
     return $name if $name =~ /^http/;
-    return "$_RPM_HOST/$name";
+    return "$_RPM_HTTP_ROOT/$name";
 }
 
 # _create_rpm_spec(string specin, string_ref output) : (string, string, string)
