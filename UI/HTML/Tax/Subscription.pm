@@ -89,8 +89,8 @@ year. '),
 	' ',
 	$_VS->vs_link('subscribe now', 'CLUB_ADMIN_EC_SUBSCRIBE_TAX_SEASON'),
 	$_VS->vs_string('
-Special $19.95 Offer.  Want to use bivio during the tax season only?
-We are offering a special $19.95 subscription for the period January
+Special $19 Offer.  Want to use bivio during the tax season only?
+We are offering a special $19 subscription for the period January
 1st to April 15th 2002.  If your club disbanded during 2001, or you
 use bivio for its IRS tax features only, this offer is for you.'),
     ]);
