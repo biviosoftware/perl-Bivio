@@ -27,8 +27,7 @@ tried to send a version along with this, but IE doesn't seem to
 return multiple values.)
 The value is encrypted or url-encoded depending on the configuration.
 
-The contents of the tag-value is returned as a hash_ref.  It contains
-a "x" (expires) field which is managed by this module.
+The contents of the tag-value is returned as a hash_ref.
 
 Cookie fields are kept short as there is limited storage space on
 the client.  The following field names are currently in use:
@@ -56,10 +55,6 @@ L<Bivio::Biz::Action::Logout|Bivio::Biz::Action::Logout>.
 
 login id (realm_id) of the authenticated user.
 
-=item x
-
-the time the cookie expires in seconds
-
 =back
 
 You may I<sparingly> add other fields, but be sure to
@@ -78,17 +73,14 @@ use Crypt::CBC;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_USER_FIELD) = 'u';
-my($_EXPIRES_FIELD) = 'x';
 my($_REMOTE_IP_FIELD) = 'i';
 my($_DOMAIN) = undef;
 my($_CIPHER) = undef;
 my($_TAG) = 'D';
-my($_EXPIRE_SECONDS) = 3600;
 Bivio::IO::Config->register({
     domain => $_DOMAIN,
     tag => $_TAG,
     key => Bivio::IO::Config->REQUIRED,
-    expire_seconds => $_EXPIRE_SECONDS,
 });
 
 =head1 METHODS
@@ -105,11 +97,6 @@ Bivio::IO::Config->register({
 
 If defined, maps the cookie domain to be used in cookies.  Otherwise,
 cookies are not returned with a domain (normal for testing).
-
-=item expire_seconds : int [3600]
-
-How long before the cookie expires.  The cookie is re-invigorated on
-each request, so this is the maximum time between requests.
 
 =item key : string (required)
 
@@ -131,7 +118,6 @@ sub handle_config {
     Carp::croak("$cfg->{domain}: domain must have two dots in it")
 		unless !$cfg->{domain} || $cfg->{domain} =~ /\..*\./;
     $_DOMAIN = $cfg->{domain};
-    $_EXPIRE_SECONDS = $cfg->{expire_seconds};
     $_CIPHER = $cfg->{key} ? Crypt::CBC->new($cfg->{key}, 'IDEA') : undef;
     $_TAG = uc($cfg->{tag});
     return;
@@ -176,14 +162,8 @@ sub parse {
 		$state = Bivio::Agent::HTTP::CookieState::INVALID_CLIENT();
 		last;
 	    }
-	    unless ($data->{$_EXPIRES_FIELD}) {
-		$state = Bivio::Agent::HTTP::CookieState::NO_EXPIRES();
-		last;
-	    }
 	    # We try to get the user now, because we know basically
-	    # that everything in the cookie is ok.  It may be expired,
-	    # but if so, we'll set unauth_user on request so we need
-	    # a user to set to.
+	    # that everything in the cookie is ok.
 	    #
 	    # Note that the user field is not required, so it is not
 	    # error for it not to be set.
@@ -200,21 +180,11 @@ sub parse {
 		    last;
 		}
 	    }
-	    # Only expire the cookie if there is a user
-	    if (time > $data->{$_EXPIRES_FIELD} && $user) {
-		# Cookie expired, but store the wouldbe user in the
-		# request so LoginForm can fill it in later.
-		$req->put(unauth_user => $user);
-		$user = undef;
-		$state = Bivio::Agent::HTTP::CookieState::EXPIRED();
-		last;
-	    }
 	    $state = Bivio::Agent::HTTP::CookieState::OK();
 	}
 	$state = Bivio::Agent::HTTP::CookieState::NO_DATA() unless $data;
 	unless ($state == Bivio::Agent::HTTP::CookieState::OK()) {
-	    # If we get here, then there was something pretty wrong
-	    # except in the case of expires, but even then that should be rare.
+	    # If we get here, then there was something pretty wrong.
 	    warn($state->get_long_desc);
 	    $data = undef;
 	}
@@ -242,7 +212,6 @@ sub set {
     # Allows us to track users better (on non-secure portions of the site).
     my($s) = 'Path=/;';
     $s .= " Domain=$_DOMAIN;" if $_DOMAIN;
-    $cookie->{$_EXPIRES_FIELD} = time + $_EXPIRE_SECONDS;
     $cookie->{$_REMOTE_IP_FIELD} = $r->connection->remote_ip;
     my($user) = Bivio::Agent::Request->get_current->get('auth_user');
     # Ensure user is set to undef if not set
