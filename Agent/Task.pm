@@ -208,15 +208,14 @@ sub get_by_id {
 =head2 handle_die(Bivio::Die die)
 
 Something happened while executing a request, so we have to rollback
-and discard the mail queue unless is a REDIRECT_TASK.
+and discard the mail queue unless is a CLIENT_REDIRECT_TASK.
 
 =cut
 
 sub handle_die {
     my($proto, $die) = @_;
     my($die_code) = $die->get('code');
-    if ($die_code == Bivio::DieCode::REDIRECT_TASK()
-	    || $die_code == Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
+    if ($die_code == Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
 	# commit redirects: current task is completed
 	_commit();
     }
