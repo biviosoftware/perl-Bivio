@@ -475,6 +475,11 @@ sub get_delegate_info {
 	undef,
 	'invalid internet domain name',
     ],
+    INVALID_MESSAGE_BODY => [
+        47,
+        undef,
+        'message body must be plain text or HTML',
+    ],
 ];
 }
 
