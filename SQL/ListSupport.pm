@@ -83,7 +83,7 @@ sub new {
     # number of fields per column entry
     my($col_field_count) = [];
     my($n);
-    foreach (@$col_map) {
+    foreach $n (@$col_map) {
 	push(@$col_field_count, &_count_occurances($n, ',') + 1);
     }
 
@@ -208,13 +208,10 @@ sub initialize {
     # check if already initialized
     return if $fields->{select};
 
-    my($conn) =  Bivio::SQL::Connection->get_connection();
     my($sql) = 'select '.join(',', @{$fields->{col_map}})
 	    .' from '.$fields->{table_name};
 
-    &_trace($sql) if $_TRACE;
-
-    my($statement) = $conn->prepare($sql);
+    my($statement) = Bivio::SQL::Connection->execute($sql);
     my($names) = $statement->{NAME_lc};
     my($types) = $statement->{TYPE};
     $fields->{types} = $types;
