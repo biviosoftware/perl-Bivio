@@ -99,7 +99,7 @@ sub new {
 		    _field('Account',
 			    Bivio::UI::HTML::Widget::Select->new({
 				field => 'RealmAccountEntry.realm_account_id',
-				choices => 'account_list',
+				choices => ['account_list'],
 				list_display_field => 'RealmAccount.name',
 			      list_id_field => 'RealmAccount.realm_account_id',
 			    })),
