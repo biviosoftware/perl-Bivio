@@ -9,6 +9,10 @@ $_ = $Bivio::TypeError::VERSION;
 
 Bivio::TypeError - enum of errors in converting values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::TypeError;

@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::PropertyModel::VERSION;
 
 Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::PropertyModel;

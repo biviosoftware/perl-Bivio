@@ -9,6 +9,10 @@ $_ = $Bivio::Type::VERSION;
 
 Bivio::Type - base class for all types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type;

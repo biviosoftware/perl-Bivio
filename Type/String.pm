@@ -8,10 +8,13 @@ $Bivio::Type::String::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::String - base class for all string types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::String;
-    Bivio::Type::String->new();
 
 =cut
 
@@ -22,7 +25,7 @@ L<Bivio::Type>
 =cut
 
 use Bivio::Type;
-@Bivio::Type::String::ISA = qw(Bivio::Type);
+@Bivio::Type::String::ISA = ('Bivio::Type');
 
 =head1 DESCRIPTION
 

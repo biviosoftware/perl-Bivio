@@ -8,6 +8,10 @@ $Bivio::Biz::FormContext::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Biz::FormContext - initializes, parses, and stringifies FormModel context
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::FormContext;

@@ -9,6 +9,10 @@ $_ = $Bivio::ShellUtil::VERSION;
 
 Bivio::ShellUtil - base class for command line utilities
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::ShellUtil;

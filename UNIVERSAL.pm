@@ -8,6 +8,10 @@ $Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::UNIVERSAL - base class for all bivio classes
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UNIVERSAL;

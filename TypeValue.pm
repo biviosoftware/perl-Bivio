@@ -8,6 +8,10 @@ $Bivio::TypeValue::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::TypeValue - binds a type and a value
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::TypeValue;

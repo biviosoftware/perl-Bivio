@@ -8,6 +8,10 @@ $Bivio::Collection::SingletonMap::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 Bivio::Collection::SingletonMap - maps classes to singleton objects
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Collection::SingletonMap;

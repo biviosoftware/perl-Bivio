@@ -8,6 +8,10 @@ $Bivio::Type::EnumSet::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::EnumSet - describes a bit vector whose elements are an Enum
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::EnumSet;

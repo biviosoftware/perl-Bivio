@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Action::ClientRedirect::VERSION;
 
 Bivio::Biz::Action::ClientRedirect - client redirect to specific task or URI
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Action::ClientRedirect;

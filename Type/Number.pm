@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Number::VERSION;
 
 Bivio::Type::Number - base class for all number types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Number;

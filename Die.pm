@@ -9,6 +9,10 @@ $_ = $Bivio::Die::VERSION;
 
 Bivio::Die - manages exceptions with catch/die_handler and eval wrapper
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Die;

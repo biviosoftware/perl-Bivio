@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Enum::VERSION;
 
 Bivio::Type::Enum - base class for enumerated types
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Enum;

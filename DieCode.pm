@@ -9,6 +9,10 @@ $_ = $Bivio::DieCode::VERSION;
 
 Bivio::DieCode - generic error codes
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::DieCode;

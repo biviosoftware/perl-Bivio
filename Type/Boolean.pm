@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Boolean::VERSION;
 
 Bivio::Type::Boolean - formal numeric specification of the boolean type
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Boolean;

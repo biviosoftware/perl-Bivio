@@ -9,6 +9,10 @@ $_ = $Bivio::Collection::Attributes::VERSION;
 
 Bivio::Collection::Attributes - a collection of key/value pairs
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Collection::Attributes;

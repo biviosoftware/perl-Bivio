@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::ListFormModel::VERSION;
 
 Bivio::Biz::ListFormModel - a form with repeated properties
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::ListFormModel;

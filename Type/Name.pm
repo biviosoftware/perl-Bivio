@@ -8,6 +8,10 @@ $Bivio::Type::Name::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::Name - holds a simple name, login id, account number, etc.
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Name;

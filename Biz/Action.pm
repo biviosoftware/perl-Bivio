@@ -8,6 +8,14 @@ $Bivio::Biz::Action::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Biz::Action - An abstract model action.
 
+=head1 RELEASE SCOPE
+
+bOP
+
+=head1 SYNOPSIS
+
+    use Bivio::Biz::Action;
+
 =cut
 
 use Bivio::UNIVERSAL;

@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::ListModel::VERSION;
 
 Bivio::Biz::ListModel - an abstract model of an SQL query and result
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
    use Bivio::Biz::ListModel;

@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::VERSION;
 
 Bivio::Biz::Model - a business object
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model;

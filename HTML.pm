@@ -9,6 +9,10 @@ $_ = $Bivio::HTML::VERSION;
 
 Bivio::HTML - simple support routines for HTML, e.g. escape
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::HTML;

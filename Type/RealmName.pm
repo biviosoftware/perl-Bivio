@@ -9,6 +9,10 @@ $_ = $Bivio::Type::RealmName::VERSION;
 
 Bivio::Type::RealmName - realm owner name, e.g. club or user name
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::RealmName;

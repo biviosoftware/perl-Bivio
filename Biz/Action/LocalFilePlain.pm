@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Action::LocalFilePlain::VERSION;
 
 Bivio::Biz::Action::LocalFilePlain - retrieve documents from http root
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Action::LocalFilePlain;
