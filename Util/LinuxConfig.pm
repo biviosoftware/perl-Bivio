@@ -153,16 +153,11 @@ sub add_users_to_group {
     my($self, $group, @user) = @_;
     return _insert_text('/etc/group', map {
 	my($user) = $_;
-	my($code) = q{sub {
-            my($data) = @_;
-            return 0 if $$data =~ /^$group:.*[:,]$user(,|$)/m;
-            $$data =~ s{^($group:.*:)(.*)}
-                {$1 . (length($2) ? "$2,$user" : '$user')}xem
-                || Bivio::Die->die('$group: no such group');
-            return 1;
-        }};
-	$code =~ s/(\$(user|group))/$1/eeg;
-	[Bivio::Die->eval_or_die($code)];
+	[
+	    qr/^($group:.*:)(.*)/m,
+	    sub {$1 . (length($2) ? "$2,$user" : '$user')},
+	    qr/^$group:.*[:,]$user(,|$)/m,
+	];
     } @user);
 }
 
@@ -199,6 +194,25 @@ $hostname
 EOF
 	. _exec($self, "openssl x509 -req -days 10000 -in $f->{csr} "
 	    . "-signkey $f->{key} -out $f->{crt}");
+}
+
+=for html <a name="enable_xinetd_service"></a>
+
+=head2 enable_xinetd_service(string service, ...) : string
+
+Enables I<service>s in xinetd.
+
+=cut
+
+sub enable_xinetd_service {
+    my($self, @service) = @_;
+    return join('', map {
+	_insert_text("/etc/xinetd.d/$_", [
+	    qr/^\s*disable\s*=\s*yes\s*/m,
+	    "\tdisable\t= no",
+	    qr/^\s*disable\s*=\s*no\s*/m,
+	]);
+    } @service);
 }
 
 =for html <a name="handle_config"></a>
@@ -354,15 +368,12 @@ sub _insert_text {
     my($data) = Bivio::IO::File->read($file);
     my($got);
     foreach my $op (@op) {
-	my($where, $value) = @$op;
-	if (ref($where) eq 'CODE') {
-	    next unless &$where($data);
-	}
-	else {
-	    next if $$data =~ /\Q$value/s;
-	    $$data =~ s/$where/$value/sg
-	        or Bivio::Die->die($file, ": didn't find /", $where, "/\n");
-	}
+	my($where, $value, $search) = @$op;
+	$search = qr/\Q$value/s unless defined($search);
+	next if $$data =~ /$search/;
+	$where = qr/$where/s unless ref($where);
+	$$data =~ s/$where/ref($value) ? &$value() : $value/eg
+	    or Bivio::Die->die($file, ": didn't find /$where/\n");
 	$got++;
     }
     return '' unless $got;
