@@ -22,6 +22,7 @@ L<Bivio::Biz::ListModel>
 
 =cut
 
+use Bivio::Biz::ListModel;
 @Bivio::Biz::Mail::MessageList::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
@@ -34,8 +35,21 @@ C<Bivio::Biz::Mail::MessageList>
 
 =cut
 
+#=IMPORTS
+use Bivio::Biz::FieldDescriptor;
+use Bivio::Biz::SqlListSupport;
+use Bivio::IO::Trace;
+
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_COLUMN_INFO) = [
+	['Subject', Bivio::Biz::FieldDescriptor->lookup('MODEL_REF')],
+	['From', Bivio::Biz::FieldDescriptor->lookup('EMAIL_REF')],
+	['Date', Bivio::Biz::FieldDescriptor->lookup('DATE')]
+       ];
+
+my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('email_message',
+	['id,subject', 'from_name,from_email,subject', 'dttm']);
 
 =head1 FACTORIES
 
@@ -45,23 +59,16 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new() : Bivio::Biz::Mail::MessageList
 
-
+Creates a new message list model.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::Biz::ListModel::new(@_);
-    $self->{$_PACKAGE} = {
-	row_count => 0,
-	values => [],
+    my($proto) = @_;
+    my($self) = &Bivio::Biz::ListModel::new($proto, 'messagelist',
+	    $_COLUMN_INFO);
 
-	#TODO: store actions in static field
-	actions => {
-#	    up => Bivio::Biz::UpAction->new(),
-#	    down => Bivio::Biz::DownAction->new(),
-#	    compose => Bivio::Biz::Mail::ComposeAction->new()
-	}
-    };
+    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -71,150 +78,47 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams p) : boolean
+=head2 find(hash find_params) : boolean
 
-Loads the model using values from the specified FindParams.
-Returns 1 if successful, or 0 if no data was loaded.
+Loads the list given the specified search parameters.
 
 =cut
 
 sub find {
-    my($self, $params) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($self, $fp) = @_;
 
-    die("not implemented");
+    # clear the status from previous invocations
+    $self->get_status()->clear();
+
+    #TODO: remove hard-coded 100s
+
+    return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
 }
 
-=for html <a name="get_action"></a>
+=for html <a name="get_heading"></a>
 
-=head2 get_action(string name) : Action
+=head2 abstract get_heading() : string
 
-Returns the named action.
+Returns a suitable heading for the model.
 
 =cut
 
-sub get_action {
-    my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{actions}->{$name};
+sub get_heading {
+    #TODO: need better heading
+    return "Messages List";
 }
 
-=for html <a name="get_action_names"></a>
+=for html <a name="get_title"></a>
 
-=head2 get_action_names() : array
+=head2 abstract get_title() : string
 
-Returns an array of model actions names.
+Returns a suitable title of the model.
 
 =cut
 
-sub get_action_names {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return keys(%{$fields->{actions}});
-}
-
-=for html <a name="get_column_count"></a>
-
-=head2 get_column_count() : int
-
-Returns the number of columns in the list.
-
-=cut
-
-sub get_column_count {
-    return 3;
-}
-
-=for html <a name="get_column_descriptor"></a>
-
-=head2 get_column_descriptor(int col) : FieldDescriptor
-
-Returns the FieldDescriptor for the specified column.
-
-=cut
-
-sub get_column_descriptor {
-    my($self, $col);
-
-    return Bivio::Biz::FieldDescriptor::MODEL_REF() if $col == 0;
-    return Bivio::Biz::FieldDescriptor::EMAIL_REF() if $col == 1;
-    return Bivio::Biz::FieldDescriptor::DATE() if $col == 2;
-
-    Carp::croak("invalid column $col");
-}
-
-=for html <a name="get_column_heading"></a>
-
-=head2 get_column_heading(int col) : string
-
-Returns the column heading for the specified column.
-
-=cut
-
-sub get_column_heading {
-    my($self, $col);
-
-    return 'Subject' if $col == 0;
-    return 'From' if $col == 1;
-    return 'Date' if $col == 2;
-
-    Carp::croak("invalid column $col");
-}
-
-=for html <a name="get_index"></a>
-
-=head2 get_index() : int
-
-Returns the index of the first item into the result set.
-
-=cut
-
-sub get_index {
-    die("not implemented");
-}
-
-=for html <a name="get_result_set_size"></a>
-
-=head2 get_result_set_size() : int
-
-Returns the total number of rows in the query.
-
-=cut
-
-sub get_result_set_size {
-    die("not implemented");
-}
-
-=for html <a name="get_row_count"></a>
-
-=head2 get_row_count() : int
-
-Returns the number of rows in the result set.
-
-=cut
-
-sub get_row_count {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{row_count};
-}
-
-=for html <a name="get_value_at"></a>
-
-=head2 get_value_at(int row, int col) : scalar or CompoundField
-
-Returns the value at the specified row, col cooridate.
-
-=cut
-
-sub get_value_at {
-    my($self, $row, $col) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $col < $self->get_column_count() || Carp::croak("invalid col $col");
-    $row < $self->get_row_count() || Carp::croak("invalid row $row");
-    return $fields->{values}->[$row][$col];
+sub get_title {
+    #TODO: need better title
+    return "Message List";
 }
 
 #=PRIVATE METHODS
@@ -230,3 +134,29 @@ $Id$
 =cut
 
 1;
+
+=for comment
+
+use Data::Dumper;
+
+$Data::Dumper::Indent = 1;
+Bivio::IO::Config->initialize({
+    'Bivio::Ext::DBI' => {
+	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
+	database => 'surf_test',
+	user => 'moeller',
+	password => 'bivio,ho'
+        },
+
+    'Bivio::IO::Trace' => {
+	'package_filter' => '/Bivio/'
+        },
+    });
+
+my($list) = Bivio::Biz::Mail::MessageList->new();
+$list->find({});
+
+print(Dumper($list));
+
+
+=cut
