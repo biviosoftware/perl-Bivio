@@ -407,14 +407,15 @@ sub convert {
     # Re-initialize variables that need it for each conversion.
     $self->initialize();
 
-    if ($self->{make_links} && (-f $self->{default_link_dict})) {
-        push(@{$self->{links_dictionaries_aref}}, ($self->{default_link_dict}));
-    }
+# Don't lookup external dictionaries, using internal one (see top of file)
+#    if ($self->{make_links} && (-f $self->{default_link_dict})) {
+#        push(@{$self->{links_dictionaries_aref}}, ($self->{default_link_dict}));
+#    }
     $self->deal_with_options();
     if ($self->{make_links}) {
-        if (-f $self->{system_link_dict}) {
-            push(@{$self->{links_dictionaries_aref}},
-                    ($self->{system_link_dict}));
+#        if (-f $self->{system_link_dict}) {
+#            push(@{$self->{links_dictionaries_aref}},
+#                    ($self->{system_link_dict}));
         }
         $self->load_dictionary_links($inline_dict);
     }
