@@ -106,8 +106,8 @@ sub handle_commit {
     $dd->Deepcopy(1);
     my($perl) = $dd->Dumpxs();
 
-    # Create or update?  Create if was able to load (see _get_instance)
-    if ($self->get('realm_id')) {
+    # Create or update?  Update if was able to load (see _get_instance)
+    if ($self->unsafe_get('realm_id')) {
 	_trace_self($fields, 'updating ', $perl) if $_TRACE;
 	$self->update({perl => \$perl});
     }
