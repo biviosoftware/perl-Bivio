@@ -498,7 +498,7 @@ I<args> is modified.
 
 sub group_args {
     my($proto, $group_size, $args) = @_;
-    $proto->usage_error("arguments must come in $group_size-tupes")
+    $proto->usage_error("arguments must come in $group_size-tuples")
 	unless @$args % $group_size == 0;
     my($res) = [];
     push(@$res, [splice(@$args, 0, $group_size)])
