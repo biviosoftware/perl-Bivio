@@ -137,8 +137,8 @@ sub update {
     my($allocation_method) = $new_values->{allocation_method};
     if (defined($allocation_method)
 	    && $allocation_method != $self->get('allocation_method')) {
-	my($realm) = $self->get_request->get('auth_realm')->get('owner');
-	my($cache) = Bivio::Biz::Accounting::AllocationCache->new($realm);
+	my($cache) = Bivio::Biz::Accounting::AllocationCache->new(
+		$self->get_request);
 
 #TODO: need to track allocations by year, currently always using last year
 # that way, only have to invalid the current fiscal_end_date
