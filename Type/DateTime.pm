@@ -244,6 +244,7 @@ my(%_PART_NAMES) = (
 my($_REGEX_CTIME) = REGEX_CTIME();
 my($_REGEX_ALERT) = REGEX_ALERT();
 my($_LOCAL_TIMEZONE);
+my($_WINDOW_YEAR);
 _initialize();
 
 =head1 METHODS
@@ -947,6 +948,22 @@ sub time_from_parts {
     return $_DATE_PREFIX.(($hour * 60 + $min) * 60 + $sec);
 }
 
+=for html <a name="to_four_digit_year"></a>
+
+=head2 to_four_digit_year(int year) : int
+
+Returns a four digit year, if not already a four digit year.
+
+Date windowing adjusts twenty years ahead of this year.
+
+=cut
+
+sub to_four_digit_year {
+    my(undef, $year) = @_;
+    return $year >= 100 ? $year
+	    : $year + ($year > $_WINDOW_YEAR ? $1900 : $2000);
+}
+
 =for html <a name="to_local_string"></a>
 
 =head2 static to_local_string(string value) : string
@@ -1201,6 +1218,9 @@ sub _initialize {
     my($i) = 1;
     %_MONTH = map {(uc($_), $i++)} @_MONTH;
     _compute_local_timezone();
+
+    # Windowing year is always 20 years ahead of now.
+    $_WINDOW_YEAR = ((localtime)[5] + 20) % 100;
     return;
 }
 
