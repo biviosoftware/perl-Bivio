@@ -79,6 +79,7 @@ __PACKAGE__->compile(
 	'form_field_in_text',
 	'text_menu_font',
         'celebrity_box',
+	'description_label',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
