@@ -6,9 +6,8 @@ $_ = $Bivio::UI::HTML::Widget::SubtractionHandler::VERSION;
 
 =head1 NAME
 
-Bivio::UI::HTML::Widget::SubtractionHandler - takes two groups of fields,
-'add_fields' and 'sub_fields'. Adds the add_fields together, then subtracts all
-the sub_field values from the result.
+Bivio::UI::HTML::Widget::SubtractionHandler - takes a group of fields and an
+initial field. Subtracts the field values from the initial field value.
 
 =head1 RELEASE SCOPE
 
