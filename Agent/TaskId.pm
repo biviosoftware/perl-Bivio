@@ -98,7 +98,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/reports
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::UI::HTML::Club::ReportList
     )],
     [qw(
         CLUB_ADMIN_MEMBER_LIST
@@ -163,8 +163,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/reports/valuation
-	Bivio::Biz::ListModel::AccountValuationList
-	Bivio::Biz::ListModel::InstrumentValuationList
+	Bivio::Biz::Model::AccountValuationList
+	Bivio::Biz::Model::InstrumentValuationList
 	Bivio::UI::HTML::Club::ValuationReport
     )],
     [qw(
