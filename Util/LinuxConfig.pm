@@ -340,7 +340,7 @@ sub disable_service {
     my($res);
     foreach my $s (@service) {
 	next unless
-	    ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
+	    ${$self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1)}
 		=~ /^$s\s.*\bon\b/;
 	$res .= _exec($self, "chkconfig --del $s")
 	    . _exec($self, "/etc/rc.d/init.d/$s stop");
