@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-acct - accounting utilities
+
+=head1 SYNOPSIS
+
+b-acct [options] command [args]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Accounting::Util|Bivio::Biz::Accounting::Util>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Accounting::Util;
+
+#=VARIABLES
+
+Bivio::Biz::Accounting::Util->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
