@@ -51,6 +51,7 @@ Bivio::IO::Config->register({
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/lib/sendmail -U -oem -odb -i',
+    reroute_address => undef,
 });
 my($_QUEUE) = [];
 my($_CFG);
