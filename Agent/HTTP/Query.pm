@@ -94,8 +94,8 @@ sub parse {
 
 	# $v may not be defined.  This is a malformed query, but
 	# let's handle anyway.
-	push(@v, Bivio::HTML->unescape_uri($k),
-		defined($v) ? Bivio::HTML->unescape_uri($v) : undef);
+	push(@v, Bivio::HTML->unescape_query($k),
+		defined($v) ? Bivio::HTML->unescape_query($v) : undef);
     }
 
     # No valid elements?

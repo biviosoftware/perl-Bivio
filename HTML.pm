@@ -113,6 +113,20 @@ sub unescape {
     return HTML::Entities::decode(shift);
 }
 
+=for html <a name="unescape_query"></a>
+
+=head2 static unescape_query(string text) : string
+
+Removes "+" from the query.  This is not done by unescape_uri.
+
+=cut
+
+sub unescape_query {
+    my($proto, $value) = @_;
+    $value =~ s/\+/ /g;
+    return $proto->unescape_uri($value);
+}
+
 =for html <a name="unescape_uri"></a>
 
 =head2 static unescape_uri(string text) : string
