@@ -80,7 +80,6 @@ sub internal_initialize {
 	    product_id => ['Product.product_id', 'NOT_NULL'],
 	    list_price => ['Price', 'NONE'],
 	    unit_cost => ['Price', 'NONE'],
-	    supplier_id => ['Supplier.supplier_id', 'NONE'],
 	    status => ['ItemStatus', 'NONE'],
 	    attr1 => ['Line', 'NOT_NULL'],
 	    attr2 => ['Line', 'NONE'],
