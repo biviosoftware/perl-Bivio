@@ -1,0 +1,4 @@
+Browser->login();
+Browser->go_uri('/my-club-site/accounting/reports');
+#Browser->dump_this(Bivio::Test::BulletinBoard->get_current->get('response'));
+Browser->submit({'radio_0'=>'Investment Report'});
