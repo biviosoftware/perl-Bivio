@@ -39,7 +39,6 @@ method L<set_handler|"set_handler">.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
 use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::HTTP::Request;
@@ -47,6 +46,9 @@ use Bivio::Agent::TaskId;
 use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::Util;
+# Required in initialize
+# use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -125,6 +127,10 @@ sub handler {
 	    # Keep in synch with Reply::die_to_http_code
 	    if defined($die) && $die->get('code')
 		    ne Bivio::DieCode::CLIENT_REDIRECT_TASK();
+    Apache->push_handlers('PerlCleanupHandler', sub {
+	Bivio::Agent::Job::Dispatcher->execute_queue();
+	return Apache::Constants::OK();
+    }) unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
     return Bivio::Agent::HTTP::Reply->die_to_http_code($die, $r);
 }
 
@@ -132,17 +138,19 @@ sub handler {
 
 =head2 static initialize()
 
-Called on first request.
+Creates C<$_SELF> and initializes config.
 
 =cut
 
 sub initialize {
     my($proto) = @_;
     $_INITIALIZED && return;
+    $_INITIALIZED = 1;
     Bivio::IO::Config->initialize;
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
-    $_INITIALIZED = 1;
+    # Avoids import problems
+    Bivio::Util::my_require('Bivio::Agent::Job::Dispatcher');
     # clear db time
     Bivio::SQL::Connection->get_db_time;
     return;

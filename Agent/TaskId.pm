@@ -1382,6 +1382,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MultipleFee
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
+    [qw(
+        TEST_JOB
+        132
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/test_job
+        Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
+        Bivio::Biz::Action::TestJob
+        next=CLUB_HOME
+    )],
 );
 
 __PACKAGE__->compile(

@@ -118,9 +118,9 @@ Initialize Agent state.
 
 sub initialize {
     $_INITIALIZED && return;
+    $_INITIALIZED = 1;
     Bivio::Agent::HTTP::Location->initialize;
     Bivio::Agent::Task->initialize;
-    $_INITIALIZED = 1;
     return;
 }
 

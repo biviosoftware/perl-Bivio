@@ -6,22 +6,11 @@ $Bivio::Biz::Model::Lock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::Model::Lock - process lock
+Bivio::Biz::Model::Lock - mutual exclusion for an area of a realm
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::LockType;
-    use Bivio::Biz::Model::Lock;
-
-    my($lock) = Bivio::Type::Lock->new($req);
-    if ($lock->aquire(Bivio::Type::LockType::ACCOUNTING_IMPORT())) {
-        # locked
-
-        # ...
-
-        $lock->release(Bivio::Type::LockType::ACCOUNTING_IMPORT());
-        # unlocked
-    }
+    Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT;
 
 =cut
 
@@ -38,8 +27,11 @@ use Bivio::Biz::PropertyModel;
 
 C<Bivio::Biz::Model::Lock> process lock. Locks are intended to control
 access to a realm resource across processes. This implementation is simple -
-only one lock can exists for a (lock_type, realm_id) pair. The same
-process can't aquire the same lock twice (it is not a spin lock).
+only one lock can exists for a (type, realm_id) pair. The same
+process can't acquire the same lock twice (it is not a spin lock).
+
+There is no reply, so any task that tries to write a reply will
+fail with unknown attribute.
 
 =cut
 
@@ -52,61 +44,50 @@ use Bivio::Type::Boolean;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
-use Bivio::Type::LockType;
+use Bivio::Type::Lock;
 use Bivio::Type::PrimaryId;
+use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+_compile();
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="aquire"></a>
+=for html <a name="acquire"></a>
 
-=head2 aquire(Bivio::Type::LockType lock_type) : boolean
+=head2 acquire(Bivio::Type::Lock type)
 
-Attempts to aquire a lock for the specified task for the current realm.
-Returns 1 on success, 0 on failure.
+Attempts to acquire a lock for the specified task for the current realm.
+Throws an UPDATE_COLLISION exception if it cannot acquire the lock.
+
+You probably shouldn't be calling this method.  Locks should be acquired as a
+task item.  Put the execute_LOCK_TYPE before any actions or forms in your
+task item list, e.g.
+
+    Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
 
 =cut
 
-sub aquire {
-    my($self, $lock_type) = @_;
-
-    my($lock_values) = {
-	lock_type => $lock_type,
+sub acquire {
+    my($self, $type) = @_;
+    my($values) = {
+	type => $type,
 	realm_id => $self->get_request->get('auth_id'),
     };
 
-    # see if the current process already owns the lock
-    if ($self->unsafe_load(%$lock_values)) {
-	my($host, $process_id) = _get_host_and_process_id();
-	if ($host eq $self->get('host')
-		&& $process_id == $self->get('process_id')) {
-
-	    # can't let same process aquire the lock twice
-	    # it isn't a spin lock, so the first release
-	    # wouldn't do the right thing.
-	    Bivio::IO::Alert->warn("duplicate lock aquire attempted
-                    $host, $process_id");
-	}
-	return 0;
-    }
-
     # try to get the lock
-    my($die) = Bivio::Die->catch(sub {$self->create($lock_values)});
+    my($die) = Bivio::Die->catch(sub {$self->create($values)});
+    return unless $die;
 
-    if ($die) {
-	if ($die->get('code') == Bivio::DieCode::ALREADY_EXISTS()) {
-	    # someone already has it
-	    return 0;
-	}
-	# something else bad happened
-	$die->die();
-    }
-    # lock aquired
-    return 1;
+    # someone already has it or are we trying to acquire it again?
+    $self->die('UPDATE_COLLISION', $values)
+	    if $die->get('code') == Bivio::TypeError::EXISTS();
+
+    # something else bad happened
+    $die->die();
 }
 
 =for html <a name="create"></a>
@@ -126,13 +107,68 @@ sub create {
     # default creation date, host, process_id and sentinel if necessary
     $new_values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless exists($new_values->{creation_date_time});
-    my($host, $process_id) = _get_host_and_process_id();
-    $new_values->{host} = $host unless exists($new_values->{host});
-    $new_values->{process_id} = $process_id
-	    unless exists($new_values->{process_id});
+    $new_values->{host} = $self->get_request->get('this_host')
+	    unless exists($new_values->{host});
+    $new_values->{process_id} = $$ unless exists($new_values->{process_id});
     $new_values->{sentinel} = 1 unless exists($new_values->{sentinel});
 
     $self->SUPER::create($new_values);
+    return;
+}
+
+=for html <a name="delete"></a>
+
+=head2 delete()
+
+=head2 static delete(hash load_args) : boolean
+
+Deletes the current model from the database, ensuring I<host> and
+I<process_id> match if deleting I<self>.
+
+If I<load_args> are supplied, does no validation of I<host> and
+I<process_id>.
+
+=cut
+
+sub delete {
+    my($self) = shift;
+    # No validation, just delete what user specified
+    return $self->SUPER::delete(@_) if @_;
+
+    # Do the delete ourselves, because we must make sure host and
+    # process_id are the same as the lock.
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF',
+	DELETE FROM lock_t
+	WHERE type = ?
+        AND realm_id = ?
+	AND host = ?
+        AND process_id = ?
+EOF
+	[$self->get('type')->as_sql_param,
+		 $self->get(qw(realm_id host process_id))], $self);
+    my($rows) = $sth->rows;
+    $sth->finish();
+    return $rows ? 1 : 0;
+}
+
+=for html <a name="execute"></a>
+
+=head2 static execute(Bivio::Agent::Request req, Bivio::Type::Lock type)
+
+Acquires I<type> lock for for this realm.
+
+Usually, one uses the execute_LOCK_TYPE calls which are dynamically
+generated for each L<Bivio::Type::Lock|Bivio::Type::Lock>.
+
+=cut
+
+sub execute {
+    my($proto, $req, $type) = @_;
+    die('missing type parameter') unless ref($type);
+    my($self) = $proto->new($req);
+    $req->get(ref($self))->die('EXISTS', 'more than one lock on the request')
+	    if $req->unsafe_get(ref($self));
+    $self->acquire($type);
     return;
 }
 
@@ -149,18 +185,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'lock_t',
 	columns => {
-	    lock_type => ['Bivio::Type::LockType',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    host => ['Bivio::Type::Line',
-		    Bivio::SQL::Constraint::NOT_NULL()],
-	    process_id => ['Bivio::Type::Integer',
-		    Bivio::SQL::Constraint::NOT_NULL()],
-	    sentinel => ['Bivio::Type::Boolean',
-		    Bivio::SQL::Constraint::NOT_NULL()],
-	    creation_date_time => ['Bivio::Type::DateTime',
-		    Bivio::SQL::Constraint::NOT_NULL()],
+	    type => ['Lock', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+	    host => ['Line', 'NOT_NULL'],
+	    process_id => ['Integer', 'NOT_NULL'],
+	    sentinel => ['Boolean', 'NOT_NULL'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	},
 	auth_id => 'realm_id',
     };
@@ -168,56 +198,55 @@ sub internal_initialize {
 
 =for html <a name="release"></a>
 
-=head2 release(Bivio::Type::LockType lock_type)
+=head2 release()
 
-Release the lock of the specified type for the current realm.
+Releases this lock.  If lock isn't deleted, throw UPDATE_COLLISION.
+I<self> must be on the request.  It will be deleted from the request.
+
+You probably shouldn't be calling this method.  Locks are released by
+L<Bivio::Agent::Task|Bivio::Agent::Task>.
 
 =cut
 
 sub release {
-    my($self, $lock_type) = @_;
-    die("missing lock_type") unless defined($lock_type);
+    my($self) = @_;
 
-    my($lock_values) = {
-	lock_type => $lock_type,
-	realm_id => $self->get_request->get('auth_id'),
-    };
+    # NOTE: Bivio::Agent::Task::rollback knows that this method behaves this
+    # way.  Keep in synch.
 
-    my($host, $process_id) = _get_host_and_process_id();
+    # Ensure that we are deleting the lock on the request
+    my($req) = $self->get_request;
+    my($req_lock) = $req->unsafe_get(ref($self));
+    $self->die('DIE', 'no locks on request') unless $req_lock;
+    $self->die('DIE', {message => 'too many locks on the same request',
+	request_lock => $req_lock}) unless $req_lock == $self;
+    $req->delete(ref($self));
 
-    # see if the current process already owns the lock
-    if ($self->unsafe_load(%$lock_values)) {
-	if (($host eq $self->get('host'))
-		&& ($process_id == $self->get('process_id'))) {
+    # If it can't release the lock, blow up.
+    $self->die('UPDATE_COLLISION')
+	    unless $self->delete();
 
-	    # release it
-	    $self->delete();
-	}
-	else {
-	    # didn't own the lock!
-	    Bivio::IO::Alert->warn("attempt to release lock by non owner!
-                    $host != ".$self->get('host')."
-                    $process_id != ".$self->get('process_id'));
-	}
-    }
-    else {
-	# no lock!
-	Bivio::IO::Alert->warn("attempt to release non existent lock!
-                $host, $process_id");
-    }
     return;
 }
 
 #=PRIVATE METHODS
 
-# _get_host_and_process_id() : (string, int)
+# _compile()
 #
-# Returns the current host and process_id.
+# Compiles the execute_LOCK functions.
 #
-sub _get_host_and_process_id {
-    my($host) = `hostname`;
-    chop($host);
-    return ($host, $$);
+sub _compile {
+    foreach my $t (Bivio::Type::Lock->get_list) {
+	my($n) = $t->get_name;
+	eval(<<"EOF") || die($@);
+        sub execute_$n {
+	    my(undef, \$req) = \@_;
+            return __PACKAGE__->execute(\$req, Bivio::Type::Lock::$n());
+        }
+        1;
+EOF
+    }
+    return;
 }
 
 =head1 COPYRIGHT
