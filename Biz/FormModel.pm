@@ -777,6 +777,20 @@ sub internal_put_error {
     return;
 }
 
+=for html <a name="internal_put_field"></a>
+
+=head2 internal_put_field(string property, any value)
+
+Puts a value on a field.  No validation checking.
+
+=cut
+
+sub internal_put_field {
+    my($self, $property, $value) = @_;
+    $self->internal_get->{$property} = $value;
+    return;
+}
+
 =for html <a name="is_submit_ok"></a>
 
 =head2 is_submit_ok(string button_value, hash_ref form) : boolean

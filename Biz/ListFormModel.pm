@@ -373,6 +373,23 @@ sub internal_put_error {
     return;
 }
 
+=for html <a name="internal_put_field"></a>
+
+=head2 internal_put_field(string property, any value)
+
+Puts a value on a field.  No validation checking.
+
+=cut
+
+sub internal_put_field {
+    my($self, $property, $value) = @_;
+    my($n, $nr) = _names($self, $property);
+    my($properties) = $self->internal_get;
+    $properties->{$n} = $value if $n;
+    $properties->{$nr} = $value if $nr;
+    return;
+}
+
 =for html <a name="next_row"></a>
 
 =head2 next_row() : boolean
