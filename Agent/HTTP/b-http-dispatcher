@@ -51,6 +51,7 @@ L<Bivio::Agent::HTTP::Dispatcher|Bivio::Agent::HTTP::Dispatcher>.
 use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Cwd ();
+use Sys::Hostname;
 
 #=VARIABLES
 my($_APACHE_HOME) = '/usr/local/apache';
@@ -102,13 +103,13 @@ EOF
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
     my($pwd) = &Cwd::cwd();
-    my($host) = `hostname`;
+    my($hostname) = hostname;
     my($handler) = $cfg->{handler};
     my(@start_mode) = $background ? () : ('-X');
     my($bivio_conf) = $ENV{'BIVIO_CONF'}
 	    ? "PerlSetEnv BIVIO_CONF $ENV{'BIVIO_CONF'}" : '';
-    chop($host);
-    $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
+    my($hostip) = sprintf("%d.%d.%d.%d",
+            unpack('C4', (gethostbyname($hostname))[4]));
     local($_);
     my($conf) = $execute ? "httpd$$.conf" : "&STDOUT";
     open(OUT, ">$conf") || die("open $conf: $!");
@@ -217,7 +218,6 @@ __DATA__
 ResourceConfig /dev/null
 AccessConfig /dev/null
 
-ServerName <$host>
 Listen <$port>
 User <$user>
 Group <$group>
@@ -270,7 +270,27 @@ LockFile httpd.lock
     PerlHandler Apache::Status
 </Location>
 
-<VirtualHost _default_:<$port>>
+NameVirtualHost <$hostip>:<$port>
+
+<VirtualHost <$hostip>:<$port> 127.0.0.1:80>
+    ServerName <$hostname>
+    <LocationMatch "^/(index.html|[a-zA-Z0-9_\-]{2,}($|/))">
+        SetHandler perl-script
+        PerlHandler <$handler>
+    </LocationMatch>
+</VirtualHost>
+
+<VirtualHost <$hostip>:<$port>>
+    ServerName selftrade.<$hostname>
+    RewriteEngine On
+    RewriteLog rewrite.log
+    RewriteLogLevel 0
+
+    RewriteCond <$pwd>/html/i/selftrade/$1 -f
+    RewriteRule ^/i/(.+) /i/selftrade/$1  [NS,L]
+    RewriteRule ^/./ - [NS,L]
+    RewriteRule ^(.*) /selftrade$1 [NS,PT]
+
     <LocationMatch "^/(index.html|[a-zA-Z0-9_\-]{2,}($|/))">
         SetHandler perl-script
         PerlHandler <$handler>
