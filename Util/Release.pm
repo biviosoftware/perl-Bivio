@@ -548,7 +548,8 @@ sub _perl_make {
 	. '%define perl_make_install umask 022; make '
 	. join(' ', map {
 	     uc($_) . '=$RPM_BUILD_ROOT' . $Config::Config{$_};
-	} grep($_ =~ /^install(?!style)/ && $Config::Config{$_} =~ m!^/!,
+	} grep($_ =~ /^install(?!style)/
+	    && $Config::Config{$_} && $Config::Config{$_} =~ m!^/!,
 	    sort(keys(%Config::Config))))
 	.  ' POD2MAN=true pure_install && '
         . ' find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" '
