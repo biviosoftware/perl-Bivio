@@ -233,6 +233,10 @@ I<param> may be of the form I<idx1.idx2.idx3> which translates to:
 An error during evaluation causes program termination.  To set a
 value to undef, use the word C<undef>.
 
+B<initialize> also observes the lone B<--> convention, i.e.
+B<initialize> stops parsing command line arguments if a B<--> is
+encountered.
+
 HACK: Since it is fairly common, the option I<--TRACE> is translated
 to I<--Bivio::IO::Trace.package_filter> for brevity.
 
@@ -425,6 +429,8 @@ sub _process_argv {
     my($actual, $argv) = @_;
     for (my($i) = 0; $i < int(@$argv); $i++) {
 	my($a) = $argv->[$i];
+	# Lone '--' means we're done
+	$a =~ /^--$/s && last;
 	# HACK: Probably want to generalize(?)
 	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
 	# Matches our form?
