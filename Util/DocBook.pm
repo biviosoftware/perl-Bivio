@@ -368,6 +368,18 @@ sub _xml_to_html_parse_title {
     return _xml_to_html_parse(@_, $h);
 }
 
+# _xml_to_html_parse_trademark(hash_ref state, array_ref tree)
+#
+# Converts to <hN>, where N is based on the stack depth.
+# If in a figure, will center and bold.
+#
+sub _xml_to_html_parse_trademark {
+    my($state, $tree) = @_;
+    _xml_to_html_parse($state, $tree);
+    $state->{out} .= '&#153;';
+    return;
+}
+
 # _xml_to_html_parse_warning(hash_ref state, array_ref tree)
 #
 # Converts to <warning>.
