@@ -153,7 +153,6 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group([qw(
                     table_heading
 		    normal_table_heading
-                    filtrum_top_holdings_instrument_name
             )],
 		    ['color=table_heading', 'bold'],
 		   );
@@ -181,12 +180,12 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(task_list_heading => ['bold']);
 	    $fc->group(label_in_text => ['bold']);
 	    $fc->group(italic => ['italic']);
+	    $fc->group(filtrum_top_holdings_heading => ['larger', 'bold']);
 	    $fc->group([qw(
 		    file_tree_bytes
 		    list_action
 		    lookup_button
                     instrument_ticker_symbol
-                    filtrum_top_holdings_heading
             )],
 		   ['smaller']);
 	    $fc->group([qw(
