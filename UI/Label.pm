@@ -538,6 +538,11 @@ _compile([
     HELP_OFF_ALT => ['Get help using bivio'],
     REGISTER_R_OFF_ALT => ['Become a bivio user'],
     BIVIO_POWER_ALT => ['Powered by bivio'],
+
+    # Search
+    SEARCH_BUTTON => ['Search'],
+    SCORE_PERCENT => ['Score'],
+    DATE_TIME => ['Date'],
 ]);
 
 =head1 METHODS
