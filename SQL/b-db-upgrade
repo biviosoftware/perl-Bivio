@@ -220,7 +220,27 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_add_csi_index();
+    _upgrade_account_sync_index();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_account_sync_index()
+#
+# Replaces the account_sync_t primary key with an index.
+#
+sub _upgrade_account_sync_index {
+    print("replacing account_sync_t primary key with index\n");
+    _do_sql('
+ALTER TABLE account_sync_t DROP CONSTRAINT account_sync_t1
+/
+CREATE INDEX account_sync_t6 on account_sync_t (
+  realm_transaction_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+');
     return;
 }
 
