@@ -48,7 +48,7 @@ which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 Returns:
  usage: b-test [options] command [args...]
  commands:
-    accept tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 
 =cut
@@ -57,7 +57,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-test [options] command [args...]
 commands:
-    accept tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 EOF
 }
