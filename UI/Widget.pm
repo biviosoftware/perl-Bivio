@@ -12,7 +12,6 @@ Bivio::UI::Widget - a renderable object
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget;
-    Bivio::UI::Widget->new($attrs);
 
 =cut
 
@@ -44,7 +43,7 @@ attribute binding is the only action that occurs.
 parses the attributes into an internal format which may result in the
 creation of new widgets.  Attributes should not be modified by the
 caller after initialization unless they are explicitly labeled
-I<dynamic>. 
+I<dynamic>.
 
 =item render
 
