@@ -17,12 +17,12 @@ Bivio::Type::CreditCardNumber - a credit card number, TEST MODULE ONLY!
 
 =head1 EXTENDS
 
-L<Bivio::Type::Name>
+L<Bivio::Type::Secret>
 
 =cut
 
-use Bivio::Type::Name;
-@Bivio::Type::CreditCardNumber::ISA = ('Bivio::Type::Name');
+use Bivio::Type::Secret;
+@Bivio::Type::CreditCardNumber::ISA = ('Bivio::Type::Secret');
 
 =head1 DESCRIPTION
 
@@ -43,19 +43,37 @@ Bivio::IO::Trace->register;
 
 =for html <a name="from_literal"></a>
 
-=head2 from_literal(string value) : array
+=head2 static from_literal(string value) : array
 
 Returns C<undef> if the value is empty or does not pass the Luhn test
 
 =cut
 
 sub from_literal {
-    my($self, $value) = @_;
-    $value = $self->SUPER::from_literal($value);
+    my($proto, $value) = @_;
+    $value = $proto->SUPER::from_literal($value);
     return undef unless defined($value);
-    $value =~ s/\s+//g;
-    return $self->luhn_mod10($value) ? $value :
+
+#TODO: See doc about Secret::to_literal/to_html
+#    # The user theoretically didn't modify the value.
+#    return $value if $proto->value_is_blanked($value);
+
+    # Remove dashes and spaces to be friendly
+    $value =~ s/[-\s]+//g;
+    return $proto->luhn_mod10($value) ? $value :
             (undef, Bivio::TypeError::CREDITCARD_INVALID_NUMBER());
+}
+
+=for html <a name="get_width"></a>
+
+=head2 get_width() : int
+
+Returns the maximum width of a credit card.
+
+=cut
+
+sub get_width {
+    return 19;
 }
 
 =for html <a name="luhn_mod10"></a>
