@@ -271,7 +271,7 @@ sub initialize {
 	# environment variables or files in the current directory.
 	# /etc/bivio.conf is last resort if the file doesn't exist.
 	$file = $ENV{BIVIO_CONF} || 'bivio.conf';
-	unless (-f $file && $< != 0 && $not_setuid) {
+	unless (-f $file && $> != 0 && $not_setuid) {
 	    $file = '/etc/bivio.conf';
 	}
     }
