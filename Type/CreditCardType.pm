@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2002 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::CreditCardType;
 use strict;
@@ -36,8 +36,6 @@ C<Bivio::Type::CreditCardType> lists the currently supported credit card types.
 
 =item AMEX
 
-Not yet supported.
-
 =back
 
 =cut
@@ -72,7 +70,7 @@ __PACKAGE__->compile([
 
 =for html <a name="get_by_number"></a>
 
-=head2 get_by_number(string number) : Bivio::Type::CreditCard
+=head2 static get_by_number(string number) : Bivio::Type::CreditCard
 
 Given a card I<number>, return its type  Handles C<undef> as unknown.
 
@@ -80,25 +78,42 @@ Given a card I<number>, return its type  Handles C<undef> as unknown.
 
 sub get_by_number {
     my($proto, $number) = @_;
-    return Bivio::Type::CreditCardType::UNKNOWN() unless defined($number);
+    return Bivio::Type::CreditCardType->UNKNOWN unless defined($number);
     $number =~ s/\s+//g;
-    return Bivio::Type::CreditCardType::UNKNOWN()
-            if $number =~ /\D/;
+    return Bivio::Type::CreditCardType->UNKNOWN if $number =~ /\D/;
     my($len) = length($number);
-    return Bivio::Type::CreditCardType::VISA()
+    return Bivio::Type::CreditCardType->VISA
             if ($len == 13 || $len == 16) && $number =~ /^4/;
-    return Bivio::Type::CreditCardType::MASTERCARD()
+    return Bivio::Type::CreditCardType->MASTERCARD
             if $len == 16 && $number =~ /^5[1-5]/;
-    return Bivio::Type::CreditCardType::AMEX()
+    return Bivio::Type::CreditCardType->AMEX
             if $len == 15 && $number =~ /^3[47]/;
-    return Bivio::Type::CreditCardType::UNKNOWN();
+#    return Bivio::Type::CreditCardType->DISCOVER
+#            if $len == 15 && $number =~ /^6/;
+#    return Bivio::Type::CreditCardType->DINERS
+#            if $len == 15 && $number =~ /^3[068]/;
+#    return Bivio::Type::CreditCardType->JCB
+#            if $len == 15 && $number =~ /^35/;
+    return Bivio::Type::CreditCardType->UNKNOWN;
+}
+
+=for html <a name="is_supported_by_number"></a>
+
+=head2 static is_supported_by_number(string number) : boolean
+
+Returns true if CC is supported.
+
+=cut
+
+sub is_supported_by_number {
+    return shift->get_by_number(@_)->equals_by_name('UNKNOWN') ? 0 : 1;
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio Inc.  All rights reserved.
+Copyright (c) 2000-2002 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
