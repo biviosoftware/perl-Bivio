@@ -102,15 +102,15 @@ my($_FN) = JAVASCRIPT_FUNCTION_NAME();
 # Write once, run nowhere...  Date.getFullYear was not introduced
 # until JavaScript 1.2.  Date.getYear is totally broken.  Read
 # O'Reilly JavaScript book under Date.getYear.  
-$_FUNCS = <<"EOF";
+$_FUNCS = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 function dt(m,j,t,gmt){
     // Subtract off the Julian year
     var y=j-$_UNIX_EPOCH;
 
     // If we have a negative year, IE3.0 won't render it at all; use GMT
     if(y<0
-            &&navigator.appName.indexOf('Microsoft')
-            &&navigator.appVersion<4.0){
+            &&navigator.appName.indexOf('Microsoft')>=0
+            &&parseFloat(navigator.appVersion)<4.0){
         document.write(gmt);
         return;
     }
@@ -141,7 +141,6 @@ function dt_y(d){
     return y<1000?y+1900:y;
 }
 EOF
-Bivio::UI::HTML::Widget::JavaScript->strip(\$_FUNCS);
 
 =head1 FACTORIES
 
@@ -211,7 +210,7 @@ sub render {
 	    # Must not begin dates with 0 (netscape barfs, so have to
 	    # print as decimals
 	    "$_FN(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value),
-		    "'$gmt'").')',
+		    "'$gmt'").');',
 	    $gmt);
     return;
 }
