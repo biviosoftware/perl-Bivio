@@ -189,6 +189,9 @@ _compile(
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
 	'Member Tax Allocation Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE => ['Member Performance Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL => [
+	    'Member Performance Detail Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Member Report'],
     CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
