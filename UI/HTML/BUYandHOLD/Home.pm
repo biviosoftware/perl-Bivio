@@ -88,9 +88,9 @@ e.g. we meet on the third Thursday of every month. You do not need
 bylaws to operate your club.
 <p>
 US clubs must obtain an
-<a href="/hp/tax-id.html" target=_blank>Employer Identification Number</a>
+<a href="http://www.bivio.com/hp/tax-id.html" target=_blank>Employer Identification Number</a>
 (EIN). Fill out
-<a href="/mr/irs/fss4.pdf">Form SS-4</a> and mail it in to the IRS.
+<a href="http://www.bivio.com/mr/irs/fss4.pdf">Form SS-4</a> and mail it in to the IRS.
 <p>
 Some US states and counties request you register. Once your club is
 actually doing business, you may want to contact your Secretary of
@@ -106,10 +106,10 @@ You're now ready to open a <b>brokerage account</b> with
 <a href="/goto?x=http://www.buyandhold.com/Buy?request%3Drr.refBy%26ref%3DBIVIO">BUYandHOLD.com</a>.
 <p>
 Finally, all you need is <b>money to invest</b>. The
-<a href="/hp/valuation-date.html" target=_blank>Valuation Date</a>
+<a href="http://www.bivio.com/hp/valuation-date.html" target=_blank>Valuation Date</a>
 is usually set a few days before Member Payments are accepted.
 This way all members buy in at the same
-<a href="/hp/unit-value.html" target=_blank>Unit Value</a>.
+<a href="http://www.bivio.com/hp/unit-value.html" target=_blank>Unit Value</a>.
 <p>
 You are now ready to start investing together. The Web is a fabulous resource. Use it to find interesting leads and to research them.
 <p>
