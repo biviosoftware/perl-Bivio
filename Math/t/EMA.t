@@ -11,7 +11,7 @@ Bivio::Test->new({
 	# Round to 6 decimal places
 	return POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000
 	    == $expect->[0];
-    }
+    },
 })->unit([
     Bivio::Math::EMA->new(30) => [
     	compute => [
