@@ -494,9 +494,9 @@ sub format_help_uri {
 
 =for html <a name="format_http"></a>
 
-=head2 format_http(Bivio::Agent::TaskId task_id, hash_ref query, any auth_realm, boolean no_context) : string
+=head2 format_http(any task_id, hash_ref query, any auth_realm, boolean no_context) : string
 
-=head2 format_http(Bivio::Agent::TaskId task_id, string query, any auth_realm, boolean no_context) : string
+=head2 format_http(any task_id, string query, any auth_realm, boolean no_context) : string
 
 Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
 
@@ -584,7 +584,7 @@ sub format_mailto {
 
 =for html <a name="format_stateless_uri"></a>
 
-=head2 format_stateless_uri(Bivio::Agent::TaskId task_id) : string
+=head2 format_stateless_uri(any task_id) : string
 
 Creates a URI relative to this host/port/realm without a query string.
 
@@ -597,11 +597,11 @@ sub format_stateless_uri {
 
 =for html <a name="format_uri"></a>
 
-=head2 format_uri(Bivio::Agent::TaskId task_id, string query, any realm, string_path_info, boolean no_context) : string
+=head2 format_uri(any task_id, string query, any realm, string_path_info, boolean no_context) : string
 
-=head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, any realm, string path_info, boolean no_context) : string
+=head2 format_uri(any task_id, hash_ref query, any realm, string path_info, boolean no_context) : string
 
-Creates a URI relative to this host/port.
+Creates a URI relative to this host:port.
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
 If the task doesn't I<want_query>, will not append query string.
@@ -609,6 +609,8 @@ If the task does I<require_secure>, will prefix https: unless
 the page is already secure.
 If I<auth_realm> is C<undef>, request's realm will be used.
 If I<path_info> is C<undef>, request's path_info will be used.
+
+If any of the values is an array_ref, it will be evaluated as a widget_value.
 
 If the task doesn't have a uri, returns C<undef>.
 
@@ -624,7 +626,14 @@ sub format_uri {
 	    if ref($auth_realm) eq 'ARRAY';
     $path_info = $self->get_widget_value(@$path_info)
 	    if ref($path_info) eq 'ARRAY';
-    $task_id = $self->get('task_id') unless $task_id;
+    if ($task_id) {
+	$task_id = Bivio::Agent::TaskId->from_name($task_id)
+		unless ref($task_id) eq 'Bivio::Agent::TaskId';
+    }
+    else {
+	# Default
+	$task_id = $self->get('task_id');
+    }
 
     # Allow path_info to be undef
     $path_info = $self->unsafe_get('path_info') unless int(@_) >= 5;
