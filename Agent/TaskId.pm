@@ -980,7 +980,19 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_demo_club_action_forbidden
     )],
-#104-106
+#104-105
+    [qw(
+        CLUB_ADMIN_MEMBER_EMAIL_EDIT
+        106
+        CLUB
+        ADMIN_WRITE&MEMBER_WRITE
+        ?/admin/edit/member/email
+        Bivio::Biz::Model::ClubUserList->execute_load_this
+        Bivio::Biz::Action::TargetRealm->execute_this_real_member
+        Bivio::Biz::Model::EmailForm
+        Bivio::UI::HTML::Realm::EditEmail
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
     [qw(
         DEFAULT_ERROR_REDIRECT_FORBIDDEN
         107
