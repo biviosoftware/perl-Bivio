@@ -689,7 +689,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditComm
         next=USER_ADMIN_INFO
     )],
-<<<<<<< TaskId.pm
     [qw(
 	UNKNOWN_MAIL
 	74
