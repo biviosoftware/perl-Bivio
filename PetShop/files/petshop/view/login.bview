@@ -12,7 +12,7 @@ view_put(
 
 	Form('UserLoginForm', Grid([
 	    [
-		vs_form_field('UserLoginForm.RealmOwner.name'),
+		vs_form_field('UserLoginForm.login'),
 	    ], [
 		vs_form_field('UserLoginForm.RealmOwner.password'),
 	    ], [

@@ -248,6 +248,7 @@ sub _text {
     $t->group('Product.description' => 'Description');
     $t->group('Product.name' => 'Product Name');
     $t->group('Product.product_id' => 'Product ID');
+    $t->group('UserLoginForm.login' => 'Email');
     $t->group('RealmOwner.name' => 'User ID');
     $t->group('RealmOwner.password' => 'Password');
     $t->group(['User.first_name', 'Order.bill_to_first_name',
