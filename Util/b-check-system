@@ -201,7 +201,7 @@ sub check_messages {
 
             /locate module sound/ && next;
 
-            /dhcpd: (DHCPACK|DHCPREQUEST)/ && next;
+            /dhcpd: DHCP(ACK|REQUEST|DISCOVER|OFFER)/ && next;
 
             # END OF FILTERING KNOWN MESSAGES
             add_problem($level, $_);
