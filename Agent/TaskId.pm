@@ -51,7 +51,7 @@ my(@_CFG) = (
 	CLUB_MAIL_FORWARD
 	1
         CLUB
-        ANONYMOUS
+        MAIL_WRITE
         :
 	Bivio::Biz::Action::ForwardClubMail
     )],
@@ -59,23 +59,23 @@ my(@_CFG) = (
 	USER_MAIL_FORWARD
 	2
         USER
-        ANONYMOUS
+        MAIL_WRITE
         :
 	Bivio::Biz::Action::ForwardUserMail
     )],
     [qw(
 	HTTP_DOCUMENT
 	3
-        ANY_USER
-        USER
+        GENERAL
+        DOCUMENT_READ
         /
 	Bivio::Biz::Action::HTTPDocument
     )],
     [qw(
 	MY_CLUB_REDIRECT
 	4
-        ANY_USER
-        USER
+        GENERAL
+        DEBUG_ACTION
         my_club
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
@@ -83,8 +83,8 @@ my(@_CFG) = (
     [qw(
 	LOGIN
 	5
-        ANY_USER
-        USER
+        GENERAL
+        DOCUMENT_READ
         login
 	Bivio::Biz::Action::Login
     )],
@@ -92,7 +92,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_LIST
         9
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/accounts:_/accounts
         Bivio::Biz::Model::AccountSummaryList
         Bivio::UI::HTML::Club::AccountList
@@ -101,7 +101,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_HISTORY
         10
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/history
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -109,7 +109,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/investments:_/investments
         Bivio::Biz::Model::InstrumentSummaryList
         Bivio::UI::HTML::Club::InstrumentList
@@ -118,7 +118,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_LIST
         12
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/members
         Bivio::Biz::Model::MemberSummaryList
         Bivio::UI::HTML::Club::MemberList
@@ -127,7 +127,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_LIST
         13
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports
         Bivio::UI::HTML::Club::ReportList
     )],
@@ -135,7 +135,7 @@ my(@_CFG) = (
         CLUB_ADMIN_MEMBER_LIST
         14
         CLUB
-        MEMBER
+        MEMBER_READ
         _/admin/members
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserList
@@ -144,7 +144,7 @@ my(@_CFG) = (
         CLUB_ADMIN_PREFERENCE_LIST
         15
         CLUB
-        MEMBER
+        ADMIN_READ
         _/admin/preferences:_/preferences
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -153,16 +153,15 @@ my(@_CFG) = (
         CLUB_COMMUNICATIONS_MESSAGE_LIST
         16
         CLUB
-        MEMBER
+        MAIL_READ
         _:_/communications/mail:_/mail
-        Bivio::Biz::Model::MessageList
-        Bivio::UI::HTML::Club::MessageList
+        Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
         CLUB_COMMUNICATIONS_MOTION_LIST
         17
         CLUB
-        MEMBER
+        MOTION_READ
         _/communications/motions:_/motions
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -170,7 +169,7 @@ my(@_CFG) = (
         CLUB_COMMUNICATIONS_MEMBER_LIST
         18
         CLUB
-        MEMBER
+        MEMBER_READ
         _/communications/rolodex:_/rolodex
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -178,7 +177,7 @@ my(@_CFG) = (
         CLUB_LIBRARY_LIST
         19
         CLUB
-        MEMBER
+        DOCUMENT_READ
         _/library
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -186,7 +185,7 @@ my(@_CFG) = (
         CLUB_SSG
         20
         CLUB
-        MEMBER
+        FINANCIAL_DATA_READ
         _/research/ssg
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -194,7 +193,7 @@ my(@_CFG) = (
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/valuation
 	Bivio::Biz::Model::AccountValuationList
 	Bivio::Biz::Model::InstrumentValuationList
@@ -204,7 +203,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
         22
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/journal
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -212,7 +211,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
         23
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/transactions
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -220,7 +219,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
         24
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/investments
         Bivio::Biz::Model::InstrumentSummaryList
         Bivio::UI::HTML::Club::InstrumentSummaryReport
@@ -229,7 +228,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY
         25
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/investment-history
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -237,7 +236,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
         26
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/members
         Bivio::Biz::Model::MemberSummaryList
         Bivio::UI::HTML::Club::MemberSummaryReport
@@ -246,7 +245,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
         27
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/member-status
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -254,7 +253,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_VALUE
         28
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/member-value
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -262,7 +261,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_WITHDRAWAL_EARNINGS
         29
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/withdrawal-earnings
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -270,7 +269,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         30
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/accounts
         Bivio::Biz::Model::AccountSummaryList
         Bivio::UI::HTML::Club::AccountSummaryReport
@@ -279,7 +278,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_CASH_JOURNAL
         31
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/cash-journal
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -287,7 +286,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_CASH_CONTRIBUTIONS
         32
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/cash-contributions
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -295,7 +294,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_PETTY_CASH_CONTRIBUTIONS
         33
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/pettycash-contributions
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -303,7 +302,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_PETTY_CASH_JOURNAL
         34
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/pettycash-journal
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -311,7 +310,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_DISTRIBUTIONS
         35
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/distributions
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -319,7 +318,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INCOME_STATEMENT
         36
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/income-expense
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -327,15 +326,15 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
         37
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/reports/balance-sheet
         Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
         SETUP_USER
         38
-        ANY_USER
-        USER
+        GENERAL
+        DEBUG_ACTION
         setup/user
         Bivio::Biz::Model::UserForm
         Bivio::UI::HTML::Setup::User
@@ -346,14 +345,14 @@ my(@_CFG) = (
         CLUB_MAIL_COMPOSE
         39
         CLUB
-        MEMBER
+        MAIL_WRITE
         :
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_DETAIL
         40
         CLUB
-        MEMBER
+        ACCOUNTING_READ&MEMBER_READ
         _/accounting/member/detail
         Bivio::UI::HTML::Club::MemberDetail
     )],
@@ -361,7 +360,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_DETAIL
         41
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/investment/detail
         Bivio::UI::HTML::Club::Embargoed
     )],
@@ -369,16 +368,15 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_DETAIL
         42
         CLUB
-        MEMBER
+        ACCOUNTING_READ
         _/accounting/account/detail
         Bivio::UI::HTML::Club::AccountDetail
     )],
-#TODO: the list has to come after the form or server error - investigate
     [qw(
         CLUB_ACCOUNTING_SINGLE_DEPOSIT
         43
         CLUB
-        TREASURER
+        ACCOUNTING_WRITE&MEMBER_WRITE
         _/accounting/member/deposit
         Bivio::Biz::Model::SingleDepositForm
         Bivio::Biz::Model::RealmAccountList
@@ -389,15 +387,15 @@ my(@_CFG) = (
         CLUB_COMMUNICATIONS_MESSAGE_DETAIL
         44
         CLUB
-        MEMBER
-        _/communications/mail/mailmessage
-        Bivio::UI::HTML::Club::MessageDetail
+        MAIL_READ
+        _/communications/mail/message
+        Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INTEREST
         45
         CLUB
-        TREASURER
+        ACCOUNTING_WRITE
         _/accounting/account/interest
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -407,7 +405,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_DIVIDEND
         46
         CLUB
-        TREASURER
+        ACCOUNTING_WRITE
         _/accounting/account/dividend
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -417,7 +415,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_INCOME
         47
         CLUB
-        TREASURER
+        ACCOUNTING_WRITE
         _/accounting/account/income
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
@@ -427,7 +425,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_EXPENSE
         48
         CLUB
-        TREASURER
+        ACCOUNTING_WRITE
         _/accounting/account/expense
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction

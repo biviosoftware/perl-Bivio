@@ -29,19 +29,25 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::AnyMember;
-use Bivio::Auth::Realm::AnyUser;
 use Bivio::Auth::Realm::Club;
-use Bivio::Auth::Realm::Public;
+use Bivio::Auth::Realm::General;
 use Bivio::Auth::Realm::User;
 use Bivio::Auth::Realm;
+use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
+use Carp ();
 
 #=VARIABLES
 my($_INITIALIZED) = 0;
+# Key is uri, value is array indexed by RealmType->as_int, whose value
+# is a tuple: [task_id, uri]
 my(%_FROM_URI);
+# Key is task_id, value is alias to _FROM_URI value (for realm)
 my(%_FROM_TASK_ID);
+my($_DOCUMENT_TASK);
+my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
+my($_GENERAL);
 my($_DOCUMENT_ROOT) = undef;
 Bivio::IO::Config->register({
     document_root => undef,
@@ -61,11 +67,14 @@ Transforms I<task_id> and I<realm> (if needed) into a URI.
 
 sub format {
     my(undef, $task_id, $realm) = @_;
-    die($task_id->as_string, ': no such task')
+    Carp::croak($task_id->as_string, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
-    my($uri) = $_FROM_TASK_ID{$task_id}->[2];
-    # If the realm doesn't have an owner, then a bug and will crash.
-    $uri =~ s/_/$realm->get('owner_name')/eg;
+    my($uri) = $_FROM_TASK_ID{$task_id}->[1];
+    if ($uri =~ /_/) {
+	# If the realm doesn't have an owner, there's a bug somewhere
+	my($ro) = $realm->get('owner_name');
+	$uri =~ s/_/$ro/g;
+    }
     return '/' . $uri;
 }
 
@@ -104,40 +113,49 @@ Initializes %_FROM_URI using simplified syntax to allow easier configuration.
 
 sub initialize {
     $_INITIALIZED && return;
-    my(%static) = (
-	PUBLIC => Bivio::Auth::Realm::Public->new(),
-	ANY_USER => Bivio::Auth::Realm::AnyUser->new(),
-	ANY_MEMBER => Bivio::Auth::Realm::AnyMember->new(),
-    );
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
+    $_GENERAL = Bivio::Auth::Realm::General->new;
     map {
-	my($task_id_name, $realm_type, $uri_list) = @{$_}[0,2,4];
+	my($task_id_name, $realm_type_name, $uri_list) = @{$_}[0,2,4];
 	my($task_id) = Bivio::Agent::TaskId->$task_id_name();
 	# Test for all the realms we understand, explicitly.
-	my($realm) = $static{$realm_type};
-	unless ($realm) {
-	    die("$realm_type: unknown realm type")
-		    unless $realm_type =~ /^(CLUB|USER)$/;
-	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type));
+	my($is_general) = $realm_type_name eq 'GENERAL';
+	my($realm);
+	if ($is_general) {
+	    $realm = $_GENERAL;
 	}
+	elsif ($realm_type_name =~ /^(CLUB|USER)$/) {
+	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
+	}
+	else {
+	    die("$realm_type_name: unknown realm type");
+	}
+	my($rti) = $realm->get_type->as_int;
 	my($uri);
 	foreach $uri (split(/:/, $uri_list)) {
-	    die("$uri: uri already mapped") if $_FROM_URI{$uri};
-	    #TODO: Make a better mapping algorithm
-	        $_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri}
-			= [$realm, $task_id, $uri];
+	    die("$uri: must begin with '_'")
+		    unless $is_general || $uri =~ /^_(\/|$)/;
+	    if ($_FROM_URI{$uri}) {
+		die("$uri: uri already mapped") if $_FROM_URI{$uri}->[$rti];
+		$_FROM_URI{$uri} = [];
+	    }
+	    $_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri}->[$rti]
+		    = [$task_id, $uri];
 	}
     } @$cfg;
-    die('HTTP_DOCUMENT: task must be configured if document_root set')
-	    unless !defined($_DOCUMENT_ROOT)
-		    || $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()};
+    if (defined($_DOCUMENT_ROOT)) {
+	$_DOCUMENT_TASK
+		= $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()};
+	die('HTTP_DOCUMENT: task must be configured if document_root set')
+	    unless $_DOCUMENT_TASK;
+    }
     $_INITIALIZED = 1;
     return;
 }
 
 =for html <a name="parse"></a>
 
-=head2 static parse(string uri, Bivio::Agent::Request req) : (Bivio::Auth::Realm, Bivio::Agent::TaskId)
+=head2 static parse(string uri, Bivio::Agent::Request req) : array
 
 Parses I<uri> for the realm and task_id.
 
@@ -158,19 +176,20 @@ sub parse {
 	$_
     } split(/\/+/, $uri);
     $uri = join('/', @uri);
-#TODO: Need to be able to map '/'
-    # Realm without an owner
-    return @{$_FROM_URI{$uri}}[0,1] if defined($_FROM_URI{$uri});
+    # General realm is direct map, no underscores
+    return ($_GENERAL, $_FROM_URI{$uri}->[$_GENERAL_INT]->[0])
+	    if defined($_FROM_URI{$uri}->[$_GENERAL_INT]);
 
     # If document_root is set, look for the file directly.  If found,
     # go to HTTP_DOCUMENT task.
     if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
 	$req->put(http_document => $_DOCUMENT_ROOT . $uri);
-	return @{$_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}}[0,1];
+	return ($_GENERAL, $_DOCUMENT_TASK->[0]);
     }
 
     # If '/', then always not found
-    die("$uri: / not found") unless int(@uri);
+    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
+	    unless int(@uri);
 
     # Try to find the uri with the realm replaced by '_'.
     my($name) = shift(@uri);
@@ -179,20 +198,17 @@ sub parse {
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
 	    unless defined($_FROM_URI{$uri});
 
-    # Found the uri, but is this a valid, authorized realm?
-    my($class, $realm);
-#TODO: Only search the appropriate realm.  Need to do something about
-#      shared realm uris.
+    # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model::RealmOwner->new($req);
     $req->die(Bivio::DieCode::NOT_FOUND,
 	    {entity => $name, uri => $orig_uri, class => 'Bivio::Auth::Realm'})
 	    unless $o->unauth_load(name => $name);
-    $realm = Bivio::Auth::Realm->new($o);
-    my($realm_class, $task_id) = @{$_FROM_URI{$uri}};
-    $req->die(Bivio::DieCode::NOT_FOUND,
-	    {entity => $orig_uri, realm_class => $realm_class})
-	    unless $realm_class eq ref($realm);
-    return ($realm, $task_id);
+    my($realm) = Bivio::Auth::Realm->new($o);
+    my($rti) = $realm->get_type->as_int;
+    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+            realm_type => $realm->get_type->get_name})
+	    unless defined($_FROM_URI{$uri}->[$rti]);
+    return ($realm, $_FROM_URI{$uri}->[$rti]->[0]);
 }
 
 

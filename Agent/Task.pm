@@ -31,6 +31,10 @@ The following fields are returned by L<get|"get">:
 
 =over 4
 
+=item permission_set
+
+L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
+
 =item id
 
 L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
@@ -43,6 +47,10 @@ A list of classes which have an C<execute> method.
 
 The next task_id to go to in certain cases.  Not always
 defined.
+
+=item realm_type
+
+L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
 
 =back
 
@@ -68,25 +76,30 @@ my($_INITIALIZED);
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::TaskId id, any item1, ...) : Bivio::Agent::Task
+=head2 static new(Bivio::Agent::TaskId id, Bivio::Auth::RealmType realm_type, string perm, any item1, ...) : Bivio::Agent::Task
 
-Creates a new task for I<id>.  A task must not already be
+Creates a new task for I<id> with I<perm> and I<realm_type>.
+A task must not already be
 bound to the I<id>.   The rest of the arguments are
 items to be executed (in order).
 
 =cut
 
 sub new {
-    my($proto, $id, @items) = @_;
+    my($proto, $id, $realm_type, $perm, @items) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     die("id invalid") unless $id->isa('Bivio::Agent::TaskId');
+    die("realm_type invalid")
+	    unless $realm_type->isa('Bivio::Auth::RealmType');
     die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
     my($i, $next, @new_items);
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
     my($fields) = $self->{$_PACKAGE} = {
-	'id' => $id,
+	id => $id,
+	realm_type => $realm_type,
+	permission_set => $perm,
     };
     my($have_form) = 0;
     foreach $i (@items) {
@@ -95,7 +108,8 @@ sub new {
 	}
 	else {
 	    my($c) = Bivio::Collection::SingletonMap->get($i);
-	    Carp::croak($i, ": can't be executed") unless $c->can('execute');
+	    Carp::croak($i, ": can't be executed (missing execute method)")
+			unless $c->can('execute');
 	    $have_form++ if $c->isa('Bivio::Biz::FormModel');
 	    push(@new_items, $c);
 	}
@@ -119,7 +133,7 @@ sub new {
 
 Executes the task for the specified request.  Checks that the request is
 authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
-Calls C<reply->flush>.
+Calls C<reply-E<gt>flush>.
 
 B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
 the fact that L<handle_die|"handle_die"> is called to execute rollback.
@@ -131,7 +145,7 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
-    unless ($auth_realm->can_role_execute_task($auth_role, $fields->{id})) {
+    unless ($auth_realm->can_user_execute_task($self, $req)) {
 	my($auth_user) = $req->get('auth_user');
 	Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
 		{auth_user => $auth_user, entity => $auth_realm,
@@ -218,10 +232,15 @@ sub initialize {
     return if $_INITIALIZED;
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     map {
-	my(@items) = @$_;
-	my($id_name) = shift(@items);
-	splice(@items, 0, 4);
-	Bivio::Agent::Task->new(Bivio::Agent::TaskId->$id_name(), @items);
+	my($id_name, undef, $realm_type, $perm_spec, undef, @items) = @$_;
+	my($perm_set) = Bivio::Auth::PermissionSet->get_min;
+	foreach my $p (split(/\&/, $perm_spec)) {
+	    Bivio::Auth::PermissionSet->set(\$perm_set,
+		    Bivio::Auth::Permission->$p());
+	}
+	Bivio::Agent::Task->new(Bivio::Agent::TaskId->$id_name(),
+		Bivio::Auth::RealmType->$realm_type(),
+		$perm_set, @items);
     } @$cfg;
     $_INITIALIZED = 1;
     return;

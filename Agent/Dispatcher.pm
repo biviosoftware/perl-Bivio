@@ -77,31 +77,16 @@ Creates a request and returns a result.
 sub process_request {
     my($self, @protocol_args) = @_;
     Bivio::Agent::Request->clear_current;
-    my($die, $req, $task_id, $auth_role, $auth_realm, $auth_user);
+    my($die, $req, $task_id);
     my($max_tries) = 3;
  TRY: {
 	$die = Bivio::Die->catch(
 		sub {
-		    unless ($req) {
-			$req = $self->create_request(@protocol_args);
-			($auth_realm, $auth_user, $task_id)
-				= $req->get(qw(auth_realm auth_user task_id));
-			my($owner) = $auth_realm->unsafe_get('owner');
-			$req->put(auth_id => $owner->get('realm_id'))
-				if $owner;
-			$auth_role = $auth_realm->get_user_role(
-				$auth_user, $req);
-		    }
-		    elsif ($max_tries-- <= 0) {
-			die("too many dispatcher retries");
-		    }
-		    else {
-			# Re-get these values, they may have changed
-			($auth_realm, $auth_user, $auth_role) =
-				$req->get(qw(auth_realm auth_user auth_role));
-		    }
+		    die("too many dispatcher retries") if $max_tries-- < 0;
+		    $req = $self->create_request(@protocol_args) unless $req;
+		    $task_id = $req->get('task_id') unless $task_id;
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-		    $req->put(auth_role => $auth_role, task => $task);
+		    $req->put(task => $task);
 		    # Task checks authorization
 		    $task->execute($req);
 		});

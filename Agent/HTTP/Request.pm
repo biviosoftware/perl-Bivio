@@ -100,14 +100,12 @@ sub new {
     delete($form->{auth_id}) if $form;
 
     $self->put(
-	    # FindParams are always unique.
-	    auth_realm => $auth_realm,
-	    auth_user => $auth_user,
 	    form => $form,
 	    query => $query,
 	    query_string => $query_string,
 	    task_id => $task_id,
 	   );
+    $self->internal_initialize($auth_realm, $auth_user);
     return $self;
 }
 

@@ -34,11 +34,19 @@ The following realm types are defined:
 
 =item UNKNOWN
 
-unknown: realm has not been determined
+realm has not been determined
+
+=item GENERAL
+
+access to general areas (not club or user specific)
+
+=item USER
+
+access to a particular user
 
 =item CLUB
 
-club: realm is a club object.
+access to a particular club
 
 =cut
 
@@ -51,32 +59,22 @@ club: realm is a club object.
 __PACKAGE__->compile(
     'UNKNOWN' => [
     	0,
-	'unknown',
+	undef,
 	'realm has yet to be established',
     ],
-    'PUBLIC' => [
+    'GENERAL' => [
 	1,
-	'public',
-	'no access restrictions',
-    ],
-    'ANY_USER' => [
-	2,
-	'any user',
-	'access to user-only areas',
-    ],
-    'ANY_MEMBER' => [
-	3,
-	'any user',
-	'access to club member-only areas',
+	undef,
+	'access to general areas (not club or user specific)',
     ],
     'USER' => [
-	4,
-	'user',
+	2,
+	undef,
 	'access to a particular user',
     ],
     'CLUB' => [
-	5,
-	'club',
+	3,
+	undef,
 	'access to a particular club',
     ],
 );

@@ -28,6 +28,10 @@ The Attributes are defined:
 
 =over 4
 
+=time auth_id : string
+
+Value of C<auth_realm->get('id')>.
+
 =item auth_realm : Bivio::Auth::Realm
 
 The realm in which the request operates.
@@ -36,11 +40,6 @@ The realm in which the request operates.
 
 Role I<auth_user> is allowed to play in I<auth_realm>.
 Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
-
-=time auth_id : int
-
-Value of C<auth_realm->get('owner')->get('realm_id')>.
-Only valid if I<auth_realm> has an owner.
 
 =time auth_user : Bivio::Biz::Model::RealmOwner
 
@@ -109,10 +108,15 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Config;
+use Bivio::Agent::TaskId;
+use Bivio::Auth::Realm::General;
+use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
+use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
-use Carp ();
+use Bivio::IO::Config;
 use Bivio::Util;
+use Carp ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -124,6 +128,7 @@ Bivio::IO::Config->register({
     'http_host' =>  $_HTTP_HOST,
 });
 my($_CURRENT);
+my($_GENERAL);
 
 =head1 FACTORIES
 
@@ -213,9 +218,12 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_email {
     my($self, $email) = @_;
 #TODO: Properly quote the email name???
-#Cache this?  Will bomb if no auth_realm, owner, or name.
     $email = $self->get_widget_value(@$email) if ref($email);
-    $email = $self->get('auth_realm')->get('owner_name')
+    # Will bomb if no auth_realm.
+    my($auth_realm) = $self->get('auth_realm');
+    Carp::croak($auth_realm->get_type->as_string, ": can't format_email")
+		if $auth_realm->get_type eq Bivio::Auth::RealmType::GENERAL();
+    $email = $auth_realm->get('owner_name')
 	    unless defined($email);
     $email .= '@' . $self->get('mail_host')
 	    unless $email =~ /\@/;
@@ -288,6 +296,34 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 
 sub format_uri {
     CORE::die('abstract method');
+}
+
+=for html <a name="get_auth_role"></a>
+
+=head2 get_auth_role(Bivio::Auth::Realm realm) : Bivio::Auth::Role
+
+Returns auth role for I<realm>.
+
+=cut
+
+sub get_auth_role {
+    my($self, $realm) = @_;
+    my($realm_id) = $realm->get('id');
+    my($auth_id, $auth_user, $auth_role, $user_realms) = $self->unsafe_get(
+	    qw(auth_id auth_user auth_role user_realms));
+
+    # Normal case
+    return $auth_role if $auth_id eq $realm_id;
+
+    # If no user, then is always anonymous
+    return Bivio::Auth::Role::ANONYMOUS() unless $auth_user;
+
+    # Not the current realm, but an authenticated realm
+    return $user_realms->{$realm_id}->{'RealmUser.role'}
+	    if ref($user_realms->{$realm_id});
+
+    # User has no special privileges in realm other than any other user
+    return Bivio::Auth::Role::USER();
 }
 
 =for html <a name="get_current"></a>
@@ -377,6 +413,44 @@ sub handle_config {
     return;
 }
 
+=for html <a name="internal_initialize"></a>
+
+=head2 internal_initialize()
+
+Called by subclass after it has initialized all state.
+
+=cut
+
+sub internal_initialize {
+    my($self, $auth_realm, $auth_user) = @_;
+    my($auth_id) = $auth_realm->get('id');
+    my($user_realms);
+    if ($auth_user) {
+	# Load the UserRealmList.  For right now, the auth_id is this
+	# user since we don't have a realm.
+	my($user_id) = $auth_user->get('realm_id');
+	$self->put(auth_id => $user_id);
+	my($list) = Bivio::Biz::Model::UserRealmList->new($self);
+#TODO: What should this number for "large" lists?
+	$list->load({count => 1000});
+#TODO: This may be quite expensive if lots of realms(?)
+	$user_realms = $list->map_primary_key_to_rows;
+    }
+    else {
+	$user_realms = {};
+    }
+    # To bootstrap set_realm which calls get_auth_role, we set the
+    # auth_id to something that won't match any realm.
+    $self->put(
+	    auth_realm => $auth_realm,
+	    auth_user => $auth_user,
+	    user_realms => $user_realms,
+	    auth_id => 0,
+	   );
+    $self->set_realm($auth_realm);
+    return;
+}
+
 =for html <a name="redirect"></a>
 
 =head2 redirect(Bivio::Agent::TaskId new)
@@ -408,11 +482,9 @@ Changes attributes to be authorized for I<new_realm>.
 
 sub set_realm {
     my($self, $new_realm) = @_;
-    my($owner) = $new_realm->unsafe_get('owner');
-    my($auth_user) = $self->unsafe_get('auth_user');
     $self->put(auth_realm => $new_realm,
-	    auth_id => $owner ? $owner->get('realm_id') : undef,
-	    auth_role => $new_realm->get_user_role($auth_user, $self));
+	    auth_id => $new_realm->get('id'),
+	    auth_role => $self->get_auth_role($new_realm));
     return;
 }
 
@@ -420,17 +492,54 @@ sub set_realm {
 
 =head2 task_ok(Bivio::Agent::TaskId task_id) : boolean
 
-This is a shortcut for:
-
-    $self->get('auth_realm')->can_role_execute_task($self->get('auth_role'),
-    	    $task_id)
+=head2 task_ok(Bivio::Agent::TaskId task_id, string realm_id) : boolean
 
 =cut
 
 sub task_ok {
-    my($self, $task_id) = @_;
+    my($self, $task_id, $realm_id) = @_;
+    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    my($trt) = $task->get('realm_type');
     my($realm, $role) = $self->get('auth_realm', 'auth_role');
-    return $realm->can_role_execute_task($role, $task_id, $self);
+    my($art) = $realm->get_type;
+    # Normal case is for task and realm types to match, if not...
+    if (defined($realm_id)) {
+#TODO: Need to handle multiple realms, e.g. list of clubs to switch to
+	CORE::die("not yet implemented");
+    }
+    unless ($trt eq $art) {
+	# Find the appropriate realm
+	if ($trt eq Bivio::Auth::RealmType::GENERAL()) {
+	    $_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
+	    $realm = $_GENERAL;
+	}
+	elsif ($trt eq Bivio::Auth::RealmType::CLUB()) {
+#TODO: This is wrong; need to allow user to go to club, from user realm
+	    &_trace($task_id, ': for club realm, but no club specified');
+	    return 0;
+	}
+	elsif ($trt eq Bivio::Auth::RealmType::USER()) {
+#TODO: Should this look in the user realm list?  This might point
+#      to an arbitrary user?
+	    my($auth_user) = $self->get('auth_user');
+	    if ($auth_user) {
+		$realm = $self->unsafe_get('auth_user_realm');
+		unless ($realm) {
+		    $realm = Bivio::Auth::Realm::User->new($auth_user);
+		    $self->put(auth_user_realm => $realm);
+		}
+	    }
+	    else {
+		&_trace($task_id, ': for user realm, but no auth_user');
+		return 0;
+	    }
+	}
+	else {
+	    CORE::die($trt->as_string, ': unknown realm type for ',
+		    $task_id->as_string);
+	}
+    }
+    return $realm->can_user_execute_task($task, $self);
 }
 
 #=PRIVATE METHODS
