@@ -69,6 +69,10 @@ as a part of cookie processing.
 
 The type of the user agent for this request.
 
+=item can_secure : boolean
+
+Can this server function in secure mode?
+
 =item client_addr : string
 
 Client's network address if available.
@@ -243,12 +247,14 @@ my($_IS_PRODUCTION) = 0;
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
 my($_SUPPORT_PHONE);
 my($_SUPPORT_EMAIL);
+my($_CAN_SECURE);
 Bivio::IO::Config->register({
     mail_host =>  $_MAIL_HOST,
     http_host =>  $_HTTP_HOST,
     is_production => $_IS_PRODUCTION,
     support_phone => Bivio::IO::Config->REQUIRED,
     support_email => Bivio::IO::Config->REQUIRED,
+    can_secure => 1,
 });
 my($_CURRENT);
 my($_GENERAL);
@@ -292,6 +298,7 @@ sub internal_new {
 	    mail_host => $_MAIL_HOST,
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
+	    can_secure => $_CAN_SECURE,
 	   );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
@@ -501,27 +508,34 @@ Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
 If I<task_id>, I<query> or I<auth_realm> is an array_ref, will call
 L<get_widget_value|"get_widget_value"> with array value to get value.
 
+Handles I<require_secure> according to rules in L<format_uri|"format_uri">.
+
 =cut
 
 sub format_http {
     my($self) = shift;
     # Must be @_ so format_uri handles overloading properly
-    return $self->format_http_prefix.$self->format_uri(@_);
+    my($uri) = $self->format_uri(@_);
+    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix.$uri;
 }
 
 =for html <a name="format_http_prefix"></a>
 
-=head2 format_http_prefix() : string
+=head2 format_http_prefix(boolean require_secure) : string
 
 Returns the http or https prefix for this http_host.  Does not add
-trailing '/'
+trailing '/'.
+
+You should pass in the I<require_secure> value for the task you are
+rendering for.
 
 =cut
 
 sub format_http_prefix {
-    my($self) = @_;
+    my($self, $require_secure) = @_;
     # If is_secure is not set, default to non-secure
-    return ($self->unsafe_get('is_secure') ? 'https://' : 'http://')
+    return ($self->unsafe_get('is_secure') || $require_secure
+	    ? 'https://' : 'http://')
 	.$self->get('http_host');
 }
 
@@ -582,7 +596,9 @@ sub format_stateless_uri {
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
-if the task doesn't I<want_query>, will not append query string.
+If the task doesn't I<want_query>, will not append query string.
+If the task does I<require_secure>, will prefix https: unless
+the page is already secure.
 If I<auth_realm> is C<undef>, request's realm will be used.
 If I<path_info> is C<undef>, request's path_info will be used.
 
@@ -613,8 +629,12 @@ sub format_uri {
 
     # Yes, we don't want $query unless it is passed.
     $query = $self->get('query') unless int(@_) >= 3;
-    return $uri unless defined($query)
-	    && Bivio::Agent::Task ->get_by_id($task_id)->get('want_query');
+    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    $uri = $self->format_http_prefix(1).$uri
+	    if $task->get('require_secure') && !$self->unsafe_get('is_secure')
+		    && $self->get('can_secure');
+
+    return $uri unless defined($query) && $task->get('want_query');
     $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
 
     # The uri may have a query string already, if the form requires context.
@@ -827,25 +847,30 @@ Host name configuration. Override this to proxy to another host.
 
 =over 4
 
+=item can_secure : boolean [1]
+
+Only used for development systems (single server mode), which can't
+run in secure mode.
+
 =item http_host : string [`hostname` in dotted-decimal]
 
 Host to create absolute URIs.  May contain a port number.
-
-=item mail_host : string ["[$http_host]"]
-
-Host used to create mail_to URIs.
 
 =item is_production : boolean [false]
 
 Are we running in production mode?
 
-=item support_phone : string (required)
+=item mail_host : string ["[$http_host]"]
 
-Phone number to be displayed to get support.
+Host used to create mail_to URIs.
 
 =item support_email : string (required)
 
 email to be displayed to get support
+
+=item support_phone : string (required)
+
+Phone number to be displayed to get support.
 
 =back
 
@@ -858,6 +883,7 @@ sub handle_config {
     $_MAIL_HOST = $cfg->{mail_host};
     $_SUPPORT_PHONE = $cfg->{support_phone};
     $_SUPPORT_EMAIL = $cfg->{support_email};
+    $_CAN_SECURE = $cfg->{can_secure};
     return;
 }
 
