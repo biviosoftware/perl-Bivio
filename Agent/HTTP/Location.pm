@@ -121,7 +121,8 @@ sub format {
 
 #TODO: Tightly coupled with UI::HTML::Widget::Form.
     my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
-    $uri .= '?'.Bivio::Biz::FormModel->format_context_as_query($req) if $rc;
+    $uri .= Bivio::Biz::FormModel->format_context_as_query($req, $task_id)
+	    if $rc;
     return $uri;
 }
 
