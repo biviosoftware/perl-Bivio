@@ -192,7 +192,7 @@ The list of resources (objects) which have transaction handlers
 (handle_commit and handle_rollback).  The handlers are called before
 any commit or rollback.  Examples:
 L<Bivio::Biz::Model::Lock|Bivio::Biz::Model::Lock>
-and L<Bivio::Biz::Model::Preferences|Bivio::Biz::Model::Preferences>.
+and L<Bivio::Societas::Biz::Model::Preferences|Bivio::Societas::Biz::Model::Preferences>.
 
 Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
 
