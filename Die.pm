@@ -111,10 +111,8 @@ sub catch {
 	       ));
 	return;
     };
-    my($self) = eval {
-	ref($code) ? eval {&$code();} : eval($code);
-	1;
-    } ? undef : $_CURRENT_SELF;
+    my($self) = (ref($code) ? eval {&$code(); 1} : eval($code.'; 1'))
+	    ? undef : $_CURRENT_SELF;
     $_CURRENT_SELF = undef;
     $_IN_CATCH--;
     return $self;
