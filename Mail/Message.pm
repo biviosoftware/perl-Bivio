@@ -31,6 +31,7 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
 use Bivio::Mail::RFC822;
+use Bivio::Type::DateTime;
 use MIME::Parser;
 use Time::Local;
 
@@ -48,10 +49,8 @@ Bivio::IO::Config->register({
 my(@_QUEUE) = ();
 my(@_REMOVE_FOR_LIST_RESEND) = qw(
     approved
-    cc
     encoding
     errors-to flags
-    message-id
     priority
     received
     reply-to
@@ -110,20 +109,53 @@ work with an existing message.
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    my(undef, $rfc822) = @_;
-    defined($rfc822) && (ref($rfc822) || Bivio::IO::Alert->die('rfc822: not a string_ref'));
+    my(undef, $in) = @_;
     my($parser) = MIME::Parser->new(output_to_core => 'ALL');
     $self->{$_PACKAGE} = {
-	'time' => time,
-        'entity' => $parser->parse_data($rfc822),
-        'rfc822' => $rfc822,
+        'entity' => $parser->parse_data(defined($in) ? $in : ''),
+        'rfc822' => $in,
     };
+    # If a new message, do the boilerplate setup here
+    unless (defined($in)) {
+        $self->get_head->add('Date', Bivio::Type::DateTime->rfc822);
+        $self->get_head->add('Content-Type', 'text/plain');
+    }
     return $self;
 }
 
 =head1 METHODS
 
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Return the current message text (header & body) as string
+
 =cut
+
+sub as_string {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{entity}->as_string;
+}
+
+=for html <a name="create_message_id"></a>
+
+=head2 create_message_id(Bivio::Agent::Request req) :
+
+Create globally unique message id and add to header
+
+=cut
+
+sub create_message_id {
+    my($self, $req) = @_;
+    my($http_host) = sprintf('%02X%02X%02X%02X',
+            split(/\./, $req->unsafe_get('client_addr')));
+    my($now) = Bivio::Util::gettimeofday;
+    my($msg_id) = join('_', $http_host, @$now, $$);
+    $self->get_head->replace('Message-Id', $msg_id .'@'.$req->get('mail_host'));
+    return;
+}
 
 =for html <a name="enqueue_send"></a>
 
@@ -136,7 +168,8 @@ L<send_queued_messages|"send_queued_messages">.
 
 sub enqueue_send {
     my($self) = @_;
-    push(@_QUEUE, $self);
+    # Make sure the same message isn't added more than once
+    push(@_QUEUE, $self) unless grep($_ eq $self, @_QUEUE);
     return;
 }
 
@@ -145,6 +178,8 @@ sub enqueue_send {
 =head2 get_rfc822() : string_ref
 
 Returns the original message text as passed to new()
+Note: This might not represent the current message in case
+      it was modified after the creation.
 
 =cut
 
@@ -304,7 +339,6 @@ sub send {
 
 Removes the headers that are either to be replaced or are uninteresting on a
 resend.  This is used for mailing list resends, not simple alias forwarding.
-For example, Received:, To:, Cc:, and Message-Id: are removed.
 
 Sets From to I<list_name>-owner if C<From:> not already set.
 Inserts the I<list_name> in the C<Subject:> if I<list_in_subject>.
@@ -353,8 +387,9 @@ sub set_headers_for_list_send {
 
 =head2 set_from(string from)
 
-Sets the from envelope of this message to I<from>. Note, this is different
-from the I<From:> header setting which is what the recipients will see.
+Sets the FROM envelope address of this message to I<from>. This address
+will be used to set Return-Path: and is therefore the address to which
+bounces are sent.
 
 =cut
 
@@ -365,21 +400,21 @@ sub set_from {
     return;
 }
 
-=for html <a name="set_recipients"></a>
+=for html <a name="add_recipients"></a>
 
-=head2 set_recipients(string recipients)
+=head2 add_recipients(string recipients)
 
-=head2 set_recipients(array_ref recipients)
+=head2 add_recipients(array_ref recipients)
 
-Sets the recipients of this message to I<recipients>.  The recipients
+Add recipients of this message to I<recipients>.  The recipients
 are part of the "envelope" associated with the message.
 
 =cut
 
-sub set_recipients {
+sub add_recipients {
     my($self, $r) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{recipients} = ref($r) eq 'ARRAY' ? $r : [$r];
+    push(@{$fields->{recipients}}, ref($r) eq 'ARRAY' ? @$r : $r);
     return;
 }
 
@@ -388,15 +423,14 @@ sub set_recipients {
 =head2 get_recipients() : array
 
 Returns the "envelope" recipients that were set with
-L<set_recipients|"set_recipients">.
+L<add_recipients|"add_recipients">.
 
 =cut
 
 sub get_recipients {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($r) = $fields->{recipients};
-    return $r;
+    return @{$fields->{recipients}};
 }
 
 =for html <a name="get_reply_to"></a>
@@ -407,6 +441,8 @@ sub get_recipients {
 
 Return I<Reply-To:> email address and name or just email
 if not array context.
+
+Returns undef if Reply-To is not set or cannot be parsed.
 
 =cut
 
@@ -429,6 +465,7 @@ sub get_reply_to {
 =head2 get_from() : string addr
 
 Return (email, name) or just email if not array context.
+Returns undef if the From: cannot be parsed or is not available.
 
 =cut
 
@@ -441,8 +478,7 @@ sub get_from {
         &_trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
     } else {
-	Bivio::IO::Alert->warn('Missing From');
-	&_trace('no From') if $_TRACE;
+	Bivio::IO::Alert->warn('Missing From: header');
         return wantarray ? (undef, undef) : undef;
     }
 }
