@@ -250,130 +250,34 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_expand_db_constraints($req);
-    my($realm_ids) = _upgrade_fix_expense_taxes($req);
-    _upgrade_clear_2001_allocations($req, $realm_ids);
-    _upgrade_fix_five_year_gains($req);
+    _upgrade_recalculate_2001_gains($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_clear_2001_allocations(Bivio::Agent::Request req, array_ref realm_ids)
+# _upgrade_recalculate_2001_gains(Bivio::Agent::Request req)
 #
-# Clears 2001 allocations for clubs with 5YCG, charity, or margin interest.
+# Recaculates the gains for the 2001 year. Will add Five Year Capital
+# gains if appropriate.
 #
-sub _upgrade_clear_2001_allocations {
-    my($req, $realm_ids) = @_;
-    use Bivio::Biz::Accounting::AllocationCache;
-    print("clearing 2001 allocations for clubs with 5YCG, charity, "
-	."or margin interest\n");
-
-    my($date) = Bivio::Type::Date->from_literal_or_die('1/1/2001');
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT DISTINCT realm_id
-        FROM member_allocation_t
-        WHERE tax_category=?',
-	[Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->as_int]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	push(@$realm_ids, $row->[0]);
-    }
-
-    my($visited) = {};
-    foreach my $realm_id (@$realm_ids) {
-	next if $visited->{$realm_id};
-	$req->set_realm($realm_id);
-	print("\t", $req->get('auth_realm')->get('owner')->get('name'), "\n");
-	Bivio::Biz::Accounting::AllocationCache->new($req)->invalidate($date);
-	$visited->{$realm_id} = 1;
-    }
-    return;
-}
-
-# _upgrade_expand_db_constraints(Bivio::Agent::Request req)
-#
-# Drops and readds tax category constraints.
-#
-sub _upgrade_expand_db_constraints {
+sub _upgrade_recalculate_2001_gains {
     my($req) = @_;
-    print("expanding tax_category constraints\n");
-    _drop_constraints('entry_t', 'tax_category');
-    _drop_constraints('member_allocation_t', 'tax_category');
-    _do_sql('
-ALTER TABLE entry_t modify tax_category not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t9
-  check (tax_category between 1 and 15)
-/
-ALTER TABLE member_allocation_t modify tax_category not null
-/
-ALTER TABLE member_allocation_t
-  add constraint member_allocation_t5
-  check (tax_category between 1 and 15
-  or tax_category = 100)
-/
-');
-
-    return;
-}
-
-# _upgrade_fix_expense_taxes(Bivio::Agent::Request req) : array_ref
-#
-# Fixes tax category for charity and margin interest.
-# Returns the realms affected.
-#
-sub _upgrade_fix_expense_taxes {
-    my($req) = @_;
-    print("fixing tax category for charity and margin interest\n");
-    use Bivio::Societas::Biz::Model::ExpenseCategory;
-    use Bivio::Type::TaxCategory;
-
-    my($entry) = Bivio::Biz::Model->new($req, 'Entry');
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT expense_info_t.realm_id, expense_info_t.entry_id,
-            expense_category_t.name
-        FROM expense_info_t, expense_category_t
-        WHERE expense_info_t.expense_category_id
-            =expense_category_t.expense_category_id
-        AND expense_category_t.name IN (?,?,?,?)
-        ORDER BY expense_info_t.realm_id',
-	['Margin Interest', Bivio::Societas::Biz::Model::ExpenseCategory
-	    ->get_charitable_names]);
-    my($result) = {};
-
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($realm_id, $entry_id, $name) = @$row;
-	$req->set_realm($realm_id);
-	$entry->load({entry_id => $entry_id})->update({
-	    tax_category => ($name eq 'Margin Interest'
-		? Bivio::Type::TaxCategory->MARGIN_INTEREST
-		: Bivio::Type::TaxCategory->CHARITABLE_CONTRIBUTION),
-	});
-	$result->{$realm_id} = 1;
-    }
-    return [keys(%$result)];
-}
-
-# _upgrade_fix_five_year_gains(Bivio::Agent::Request req)
-#
-# Audits sales with 5-year gains. This will reclassify it as LTCG.
-#
-sub _upgrade_fix_five_year_gains {
-    my($req) = @_;
-    print("upgrading 5-year sale gains\n");
     use Bivio::Biz::Accounting::InstrumentAudit;
-
-    my($date) = Bivio::Type::Date->from_literal_or_die('1/1/2001');
     my($audit) = Bivio::Biz::Accounting::InstrumentAudit->new($req);
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT DISTINCT realm_id
-        FROM entry_t
-        WHERE tax_category=?',
-	[Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->as_int]);
+    my($date) = Bivio::Type::Date->from_literal_or_die('1/1/2001');
 
+    print("recalculating sale gains for 2001\n");
+
+    my($sth) = Bivio::SQL::Connection->execute('
+        SELECT realm_owner_t.name
+        FROM realm_owner_t, club_t
+        WHERE realm_owner_t.realm_id=club_t.club_id
+        ORDER BY realm_owner_t.name',
+	[]);
     while (my $row = $sth->fetchrow_arrayref) {
-	$req->set_realm($row->[0]);
-	print("\t", $req->get('auth_realm')->get('owner')->get('name'), "\n");
+	my($name) = $row->[0];
+	print("\t", $name, "\n");
+	$req->set_realm($name);
 	$audit->audit($date);
     }
     return;
