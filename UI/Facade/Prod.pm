@@ -246,8 +246,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(club_index_change_plus => ['size=x-small']);
 	    $fc->group(club_index_change_zero => ['size=x-small']);
 	    $fc->group(club_index_change_minus => ['size=x-small']);
-	    $fc->group(mail_home_list_cell => ['size=x-small']);
-	    $fc->group(mail_home_list_heading => ['size=x-small', 'bold']);
+	    $fc->group(mail_home_list_cell => ['size=xx-small']);
 	    return;
 	}
     },
@@ -280,6 +279,31 @@ my($_SELF) = __PACKAGE__->new({
 		$fc->group('mail_home_list_'.$r =>
 			$_W->load_and_new('MailHomeList', {realm_name => $r}));
 	    }
+
+	    # Home page widgets
+	    Bivio::IO::ClassLoader->simple_require(
+		    'Bivio::Biz::Util::Filtrum');
+	    $fc->group(filtrum_holdings => $_W->join([
+		[sub {${Bivio::Biz::Util::Filtrum->realm_file(
+			'holdings_file');}}],
+	    ]));
+	    $fc->group(club_index => $_W->join([
+		[sub {${Bivio::Biz::Util::Filtrum->realm_file(
+			'club_index_file')}}],
+	    ]));
+	    $fc->group(home_login => $_W->load_and_new('HomeLogin'));
+	    $fc->group(home_login_image =>
+		    $_W->load_and_new('HomeLoginImage'));
+	    $fc->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
+	    $fc->group(toggle_secure_widget => $_W->toggle_secure);
+	    $fc->group(register_button_widget => $_W->director(
+	    [sub {shift->get_request->get('user_state')
+			  == Bivio::Type::UserState::JUST_VISITOR() ? 1 : 0}],
+	    {
+		0 => '',
+		1 => $_W->link($_W->image('register', 'Sign up!'),
+		       'USER_CREATE'),
+	    }));
 	    return;
 	},
     },
