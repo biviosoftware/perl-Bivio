@@ -547,11 +547,13 @@ sub put {
 =head2 put_request(Bivio::Agent::Request req) : self
 
 Puts I<req> on I<self> and modifies other values appropriately.
+Sets the current request to I<req>.
 
 =cut
 
 sub put_request {
     my($self, $req) = @_;
+    $req->set_current;
     return $self->put(req => $req);
 }
 
@@ -625,9 +627,39 @@ sub result {
     return;
 }
 
+=for html <a name="set_realm_and_user"></a>
+
+=head2 static set_realm_and_user(any realm, any user)
+
+Sets the I<realm> and I<user> on L<get_request|"get_request">.
+If I<realm> is C<undef>, sets to General realm.
+If I<user> is C<undef> and not general realm, calls
+L<set_user_to_first_admin|"set_user_to_first_admin">.
+
+=cut
+
+sub set_realm_and_user {
+    my($self, $realm, $user) = @_;
+    $realm = Bivio::Auth::Realm::General->get_instance()
+	    unless defined($realm);
+    my($req) = $self->get_request;
+    $req->set_realm($realm);
+
+    if (defined($user)) {
+	$req->set_user($user);
+	return;
+    }
+
+    # $realm may be a string (name or id), so must get to check type
+    $self->set_user_to_first_admin
+	    unless $req->get('auth_realm')->get_type
+		    == Bivio::Auth::RealmType::GENERAL();
+    return;
+}
+
 =for html <a name="set_user_to_first_admin"></a>
 
-=head2 set_user_to_first_admin() : Bivio::Biz::Model::RealmOwner
+=head2 static set_user_to_first_admin() : Bivio::Biz::Model::RealmOwner
 
 Sets the user to first_admin on I<self> and I<req>.  Returns the
 first admin.
