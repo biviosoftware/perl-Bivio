@@ -38,18 +38,6 @@ which is stored in mail_t and file_t, volume MAIL & MAIL_CACHE
 
 =cut
 
-=for html <a name="_MAIL_CID_PART_URL"></a>
-
-=head2 _MAIL_CID_PART_URL : string
-
-The URL that's used in HTML message parts to replace "cid:<content-id>"
-links. The actual content-id as appended to this constant string.
-
-=cut
-
-sub MAIL_CID_PART_URL {
-    return 'msg-part?t=';
-}
 
 #=IMPORTS
 use MIME::Parser;
@@ -72,6 +60,9 @@ my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
 my($_UNKNOWN_ADDRESS);
 my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
 my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
+# The URL that's used in HTML message parts to replace "cid:<content-id>"
+# links. The actual content-id as appended to this constant string.
+my($_MAIL_CID_PART_URL) ='msg-part?t=';
 
 =head1 METHODS
 
@@ -169,8 +160,7 @@ sub create {
     my($rfc822_id, $bytes ) = $file->get('file_id', 'bytes');
 
     # Convert text parts to HTML and store all parts in cache
-    my($cache_id) = $self->unpack_and_cache($req, $msg->get_entity,
-            $user_id, $mail_id);
+    my($cache_id) = $self->cache_parts($req, $msg->get_entity, $user_id);
 
     $self->update({
         rfc822_file_id => $rfc822_id,
@@ -294,23 +284,32 @@ sub setup_club {
     return;
 }
 
-=for html <a name="unpack_and_cache"></a>
+=for html <a name="cache_parts"></a>
 
-=head2 unpack_and_cache(Request req, MIME::Entity e, int user_id, int mail_id) : int
+=head2 cache_parts(Bivio::Agent::Request req, MIME::Entity e, int user_id) : int
 
 Unpack all parts recursively, convert simple text into HTML and store all
 parts in cache. Returns the top-level directory id.
+Loads message from file_t in case a MIME entity is not provided.
 
 =cut
 
-sub unpack_and_cache {
-    my($self, $req, $entity, $user_id, $mail_id) = @_;
+sub cache_parts {
+    my($self, $req, $entity, $user_id) = @_;
 
-    # Convert and store attachments
+    unless( defined($entity) ) {
+        my($file) = Bivio::Biz::Model::File->new($req);
+        $file->load(
+                file_id => $self->get('rfc822_file_id'),
+                volume => $_MAIL_VOLUME,
+               );
+        $entity = MIME::Parser->new(output_to_core => 'ALL')
+                ->parse_data($file->get('content'));
+    }
     my($volume) = $_CACHE_VOLUME;
     my($cache_id) = _walk_attachment_tree($self, $entity,
             $volume->get_root_directory_id($req->get('auth_id')),
-            $user_id, $mail_id, undef);
+            $user_id, $self->get('mail_id'), undef);
     return $cache_id;
 }
 
@@ -437,6 +436,7 @@ sub _walk_attachment_tree {
             $mail_id .= '_' . $index;
         }
         my($content) = $entity->bodyhandle->as_string;
+        $content =~ s/("?)cid:([^\s">]+)/$1$_MAIL_CID_PART_URL$2/g if $ct eq 'text/html';
         $file->create({
             is_directory => 0,
             name => $mail_id,
