@@ -49,6 +49,12 @@ the color defaults to the browser default.
 
 =over 4
 
+=item background : string
+
+Name of the icon to use for the page background.
+
+=back
+
 =item body : Bivio::UI::Widget (required)
 
 How to render the C<BODY> tag contents.  Usually a
@@ -62,16 +68,40 @@ How to render the C<HEAD> tag contents.
 Usually a
 L<Bivio::UI::HTML::Widget::Title|Bivio::UI::HTML::Widget::Title>.
 
+=item page_alink_color : string
+
+Facade color for active links.
+
+=back
+
+=item page_bgcolor : string
+
+Facade color for the page background.
+
+=back
+
+=item page_link_color : string
+
+Facade color for links.
+
+=back
+
+=item page_text_color : string
+
+Facade color for text.
+
+=back
+
+=item page_vlink_color : string
+
+Facade color for visited links.
+
+=back
+
 =item style : Bivio::UI::Widget
 
 Renders an inline style in the header.  The widget
 must render the C<STYLE> or C<META> tags as appropriate.
-
-=item background : string
-
-Name of the icon to use for the page background.
-
-=back
 
 =head1 COMPONENT ATTRIBUTES
 
@@ -217,10 +247,12 @@ sub render {
 	if $req->get('Type.UserAgent')->equals_by_name('BROWSER');
     $$buffer .= '</head><body';
     # Always have a background color
-    $$buffer .= Bivio::UI::Color->format_html('page_bg', 'bgcolor', $req);
+    $$buffer .= Bivio::UI::Color->format_html(
+	$self->get_or_default('page_bgcolor', 'page_bg'), 'bgcolor', $req);
     foreach my $c ('text', 'link', 'alink', 'vlink') {
 	my($n) = 'page_'.$c;
-	$$buffer .= Bivio::UI::Color->format_html($n, $c, $req);
+	$$buffer .= Bivio::UI::Color->format_html(
+	    $self->get_or_default($n.'_color', $n), $c, $req);
     }
 
     # background image
