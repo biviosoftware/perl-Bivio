@@ -140,6 +140,37 @@ sub format_full_name {
     return $res;
 }
 
+=for html <a name="format_last_first_middle"></a>
+
+=head2 format_last_first_middle() : string
+
+=head2 static format_last_first_middle(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
+Return Last, First Middle.
+
+See L<format_name|"format_name"> for params.
+
+=cut
+
+sub format_last_first_middle {
+    my($self, $list_model, $model_prefix) = @_;
+    # Have at least on name or returns undef
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($ln, $fn, $mn) = $m->unsafe_get(
+	    $p.'last_name', $p.'first_name', $p.'middle_name');
+
+    # We shown the last_name as "-" if not set.
+    my($res) = undef;
+    $ln = '-' unless defined($ln);
+
+    return $ln unless defined($fn) || defined($mn);
+    $res = $ln.',';
+    $res .= ' '.$fn if defined($fn);
+    $res .= ' '.$mn if defined($mn);
+    return $res;
+}
+
 =for html <a name="generate_shadow_user_name"></a>
 
 =head2 static generate_shadow_user_name(string first_name, string last_name) : string
@@ -261,6 +292,7 @@ sub update {
     foreach my $n (qw(first_name middle_name last_name)) {
 	if (exists($new_values->{$n})) {
 	    if (defined($new_values->{$n}) && length($new_values->{$n})) {
+		$new_values->{$n.'_sort'} = lc($new_values->{$n});
 		$got_one++;
 		last;
 	    }
@@ -273,7 +305,7 @@ sub update {
     }
     $self->die('must have at least one of first, last, and middle names')
 	    unless $got_one;
-    return;
+    return $self->SUPER::update($new_values, @_);
 }
 
 #=PRIVATE METHODS
