@@ -339,6 +339,13 @@ my(@_XLATORS) = (
 		]
 	       ),
  	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f2-24',
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'nondeductible_expenses',
+		]
+	       ),
+ 	Bivio::UI::PDF::Form::MoneyXlator->new(
 		'f2-25',
 		[
 		    'Bivio::Biz::Model::F1065K1Form',

@@ -541,6 +541,22 @@ my(@_XLATORS) = (
 		2
 	       ),
 	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-99',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'nondeductible_expenses',
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-100',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'nondeductible_expenses'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-101',
 		[
 		    'Bivio::Biz::Model::F1065Form',
