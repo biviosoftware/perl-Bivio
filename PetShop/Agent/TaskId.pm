@@ -227,6 +227,13 @@ sub get_delegate_info {
 	    Action.ClientRedirect->execute_next
 	    next=MAIN
 	)],
+	[qw(
+            SOURCE
+            519
+	    GENERAL
+	    ANYBODY
+	    View.source
+	)],
     ]);
 }
 

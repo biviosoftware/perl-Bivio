@@ -206,6 +206,7 @@ sub _task {
     $t->group(USER_ACCOUNT_UPDATED => '?/account-updated');
     $t->group(ORDER_COMMIT => '?/commit-order');
     $t->group(MISSING_COOKIES => 'pub/missing-cookies');
+    $t->group(SOURCE => 'src');
     return;
 }
 
