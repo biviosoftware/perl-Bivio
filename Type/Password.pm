@@ -30,6 +30,23 @@ It should be handled with care, e.g. never displayed to user.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="INVALID"></a>
+
+=head2 INVALID : string
+
+Returns invalid password (save literally!).
+
+=cut
+
+sub INVALID {
+    return 'xx';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
@@ -41,6 +58,8 @@ my(@_SALT_CHARS) = (
     '0'..'9',
 );
 my($_SALT_INDEX_MAX) = int(@_SALT_CHARS) - 1;
+# All passwords are exactly the same length
+my($_VALID_LENGTH) = length(__PACKAGE__->encrypt('anything'));
 
 =head1 METHODS
 
@@ -97,7 +116,7 @@ sub from_literal {
 
 =for html <a name="is_password"></a>
 
-=head2 is_password() : boolean
+=head2 static is_password() : boolean
 
 Returns true.
 
@@ -105,6 +124,19 @@ Returns true.
 
 sub is_password {
     return 1;
+}
+
+=for html <a name="is_valid"></a>
+
+=head2 static is_valid(string value) : boolean
+
+Returns true if I<value> is valid.
+
+=cut
+
+sub is_valid {
+    my(undef, $value) = @_;
+    return $value && length($value) == $_VALID_LENGTH ? 1 : 0;
 }
 
 #=PRIVATE METHODS
