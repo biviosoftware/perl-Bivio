@@ -131,6 +131,10 @@ undefined, no striping will occur.
 If true, the table C<WIDTH> will be C<95%> or C<100%> depending
 on Bivio::UI::HTML.page_left_margin.
 
+=item footer_row_widgets : array_ref []
+
+Widgets which will be rendered as the last row in the table.
+
 =item heading_font : font [table_heading]
 
 Font to use for table headings.
@@ -436,6 +440,12 @@ sub initialize {
     $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
     $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
     $fields->{table_prefix} = $prefix;
+
+    if ($self->unsafe_get('footer_row_widgets')) {
+	foreach my $widget (@{$self->get('footer_row_widgets')}) {
+	    $self->initialize_child_widget($widget);
+	}
+    }
     return;
 }
 
@@ -549,6 +559,9 @@ sub render {
 	    }
 	}
     }
+
+    $self->render_row($self->get('footer_row_widgets'), $list, $buffer)
+	    if $self->unsafe_get('footer_row_widgets');
 
     # separator
     if ($self->unsafe_get('trailing_separator')) {
