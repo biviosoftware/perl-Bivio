@@ -261,7 +261,7 @@ OpenWin = this.open(page, "CtrlWindow",
           <td width="110" align="left" > 
             <table border="0" cellpadding="0" cellspacing="0" width="110" bgcolor="white" align="left">
               <tr> 
-                <td><!--#include virtual=/Cart--> <a href="http://www.buyandhold.com/bh/en/Buy?request=reg.newReg"><img height="17" width="109" src="http://www.buyandhold.com/bh/en/images/open_an_acc.gif" border="0" hspace="4"></a></td>
+                <td><!--#include virtual=/Cart--> <a href="http://www.buyandhold.com/Buy?request=reg.newReg"><img height="17" width="109" src="http://www.buyandhold.com/bh/en/images/open_an_acc.gif" border="0" hspace="4"></a></td>
               </tr>
               <tr> 
                 <td><img src="http://www.buyandhold.com/bh/en/images/spacer.gif" border="0" height="15" width="6" hspace="2"><a href="http://www.buyandhold.com/bh/en/tour/index.html"><font face="Arial,Helvetica,sans-serif" size="1"><b>Guided 
@@ -321,7 +321,7 @@ OpenWin = this.open(page, "CtrlWindow",
               </tr>
               <tr> 
                 <td valign="top"> 
-                  <form method="post" action="http://www.buyandhold.com/bh/en/search97cgi/s97_cgi">
+                  <form method="post" action="http://www.buyandhold.com/search97cgi/s97_cgi">
                     <table border="0" cellpadding="0" cellspacing="2" width="110">
                       <tr> 
                         <td width="110" align="left" valign="top"> 
