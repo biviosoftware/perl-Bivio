@@ -124,8 +124,6 @@ Returns printable string.
 
 sub to_literal {
     my($proto, $value) = @_;
-    $proto->internal_from_literal_warning
-        unless wantarray;
     return join(', ', $value ? @$value : ());
 }
 
