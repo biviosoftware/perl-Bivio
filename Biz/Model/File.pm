@@ -375,7 +375,7 @@ sub extract_mime_content_type {
     my($m) = $list_model || $self;
     my($aux_info) = $m->get($p.'aux_info');
 
-    return $1 if defined($aux_info)
+    return lc($1) if defined($aux_info)
 	    && $aux_info =~ /content-type:\s+([^;\s]+)/i;
 
     # Extract content type from the filename.  MIME::Type always
