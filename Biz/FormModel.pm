@@ -503,8 +503,8 @@ sub get_hidden_field_values {
     my($fields) = $self->[$_IDI];
     my($sql_support) = $self->internal_get_sql_support();
     my(@res);
-    push(@res, VERSION_FIELD() => $sql_support->get('version'));
-    push(@res, CONTEXT_FIELD() =>
+    push(@res, $self->VERSION_FIELD => $sql_support->get('version'));
+    push(@res, $self->CONTEXT_FIELD =>
 	$fields->{context}->as_literal($self->get_request),
     ) if $fields->{context};
     my($properties) = $self->internal_get();
@@ -576,7 +576,7 @@ Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
 
 sub handle_cookie_in {
     my($self, $cookie, $req) = @_;
-    my($v) = $cookie->unsafe_get(TIMEZONE_FIELD());
+    my($v) = $cookie->unsafe_get($self->TIMEZONE_FIELD);
     $req->put_durable(timezone => $v) if defined($v);
     return;
 }
@@ -699,8 +699,8 @@ sub internal_get_field_values {
     my($fields) = $self->[$_IDI];
     my($properties) = $self->internal_get;
     my($res) = {
-	VERSION_FIELD() => $self->get_info('version'),
-	TIMEZONE_FIELD() => $fields->{literals}->{TIMEZONE_FIELD()},
+	$self->VERSION_FIELD => $self->get_info('version'),
+	$self->TIMEZONE_FIELD => $fields->{literals}->{$self->TIMEZONE_FIELD},
     };
     foreach my $n (@{$self->internal_get_hidden_field_names},
 	   @{$self->internal_get_visible_field_names}) {
@@ -1129,21 +1129,21 @@ the field name explicitly, e.g. RealmOwner.name.1>.
 sub put_context_fields {
     my($self) = shift;
     # Allow zero fields (see _redirect)
-    die("must be an even number of parameters")
+    $self->die('must be an even number of parameters')
 	unless @_ % 2 == 0;
     my($fields) = $self->[$_IDI];
-    die('form does not require_context')
+    $self->die('form does not require_context')
 	unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->get('form_model');
-    die('context does not contain form_model')
+    $self->die('context does not contain form_model')
 	unless $model;
 
     my($mi) = $model->get_instance;
     # If there is no form, initialize
-    my($f) = $c->get('form');
-    $c->put(form => $f = {VERSION_FIELD() => $mi->get_info('version')})
-	unless $f;
+    my($f) = $c->get_if_exists_else_put(form => sub {
+	return {$self->VERSION_FIELD => $mi->get_info('version')};
+    });
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	my($fn) = $mi->get_field_name_for_html($k);
@@ -1510,7 +1510,7 @@ sub _parse_cols {
 	    unless ($self->get_field_info($n, 'is_file_field')) {
 		# Be friendly and let the guy set the content this way.
 		# We don't really know how browser handle things like this.
-		if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE()) {
+		if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE) {
 		    $self->internal_put_error($n, 'TOO_LONG');
 		    next;
 		}
@@ -1521,7 +1521,7 @@ sub _parse_cols {
 	}
 	# Make sure the simple field isn't too large
 	elsif (defined($form->{$fn})
-		&& length($form->{$fn}) > $self->MAX_FIELD_SIZE()) {
+		&& length($form->{$fn}) > $self->MAX_FIELD_SIZE) {
 	    $self->internal_put_error($n, 'TOO_LONG');
 	    next;
 	}
@@ -1609,13 +1609,13 @@ sub _parse_timezone {
 
     my($req) = $self->get_request;
     my($cookie) = $req->get('cookie');
-    my($old_v) = $cookie->unsafe_get(TIMEZONE_FIELD());
+    my($old_v) = $cookie->unsafe_get($self->TIMEZONE_FIELD);
 
     # No change, don't do any more work
     return if defined($old_v) && $old_v eq $v;
 
     # Set the new timezone
-    $cookie->put(TIMEZONE_FIELD() => $v);
+    $cookie->put($self->TIMEZONE_FIELD => $v);
     $req->put_durable(timezone => $v);
     return;
 }
@@ -1630,8 +1630,8 @@ sub _parse_version {
 	my($v) = Bivio::Type::Integer->from_literal($value);
 	return if (defined($v) && $v eq $sql_support->get('version'));
     }
-    $self->throw_die(Bivio::DieCode::VERSION_MISMATCH(),
-	    {field => VERSION_FIELD(),
+    $self->throw_die(Bivio::DieCode->VERSION_MISMATCH,
+	    {field => $self->VERSION_FIELD,
 		expected => $sql_support->get('version'),
 		actual => $value});
     return;
