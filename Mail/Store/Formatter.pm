@@ -41,7 +41,7 @@ Bivio::IO::Trace->register;
 
 my $_MIME_MAP = {
     'text/plain' => 'Bivio::Mail::Store::TextFormatter',
-    'text/html' => 'Bivio::Mail::Store::HTMLFormatter',
+#    'text/html' => 'Bivio::Mail::Store::HTMLFormatter',
 };
 
 
@@ -70,8 +70,8 @@ sub format_item {
     my($proto, $body) = @_;
     my($s);
     my($io) = IO::Scalar->new(\$s);
+    $io->print("\n");
     $body->print($io);
-    $io->print("\r\n");
     $io->close();
     return \$s;
 }
@@ -89,7 +89,6 @@ a scalar and return a reference to it.
 =cut
 
 sub from_entity {
-    print(STDERR "\n\nFROM_ENTITY.");
     my($proto, $entity) = @_;
     my($ctype) = $entity->head->get('content-type');
 #TODO this is a complete hack. If there is no MIME type (plain email)
