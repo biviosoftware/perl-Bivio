@@ -209,7 +209,7 @@ sub check_diskuse {
     my($max_cap_dflt) =	90;	# default fs capacity limit
     my(%max_cap_fs) = (		# custom limits for specific fs's
         '/usr',		90,	# key: regular expresssion
-        '/db\d',		95,
+        '/db\d+',	95,
         '/mnt',		99,
     );
     my($max_iused_dflt) =	90;	# default inode capacity limit
