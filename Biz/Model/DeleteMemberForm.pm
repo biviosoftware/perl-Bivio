@@ -55,7 +55,6 @@ sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
 
-    die("woops!");
     my($list) = $req->get('Bivio::Biz::Model::ClubUserList');
     $list->set_cursor(0);
     my($realm_user) = $list->get_model('RealmUser');
