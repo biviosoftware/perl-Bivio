@@ -47,7 +47,7 @@ more details.
 
 =for html <a name="UNDEF_CONFIG"></a>
 
-=head2 abstract UNDEF_CONFIG : any
+=head2 UNDEF_CONFIG : any
 
 The configuration to be used when a value can't be found.  A
 warning will be output and the value created by this configuration
@@ -55,14 +55,24 @@ will be returned.  The FacadeComponent should do something
 "reasonable" in all possible cases, because a Facade failure
 shouldn't cause an application failure, just a warning.
 
+Returns C<undef> by default.
+
 =cut
 
+sub UNDEF_CONFIG {
+    return undef;
+}
+
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::Die;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
+my($_DIE_ON_ERROR) = 0;
+Bivio::IO::Config->register({
+    die_on_error => $_DIE_ON_ERROR,
+});
 
 =head1 FACTORIES
 
@@ -91,7 +101,6 @@ sub new {
 	clone => $clone,
 	initialize => $initialize,
     };
-
     return $self if _init_from_parent($self);
 
     # Initialize undef value
@@ -142,17 +151,27 @@ sub assert_name {
     return;
 }
 
-=for html <a name="bad_value"></a>
+=for html <a name="delete_group"></a>
 
-=head2 bad_value(hash_ref value, string message, ...)
+=head2 delete_group(string name)
 
-Prints a warning based on arguments.
+Removes I<name> and its associated value and any other names in the group.
+If you want to save part of a group, use L<regroup|"regroup"> and
+then I<delete_group>.
+
+If I<name> is not found, does nothing.
 
 =cut
 
-sub bad_value {
-    my($self, $value) = (shift, shift);
-    Bivio::IO::Alert->warn($self, '.', $value, ': ', @_);
+sub delete_group {
+    my($self, $name) = @_;
+    _assert_writable($self);
+    my($map) = $self->{$_PACKAGE}->{map};
+    my($value) = $map->{$name};
+    return unless $value;
+    foreach my $n (@{$value->{names}}) {
+	delete($map->{$n});
+    }
     return;
 }
 
@@ -184,6 +203,24 @@ The normal "get" and "format" routines handle undefined values properly.
 
 sub exists {
     return defined(shift->{$_PACKAGE}->{map}->{lc(shift(@_))}) ? 1 : 0;
+}
+
+=for html <a name="get_error"></a>
+
+=head2 get_error(any name, string msg, ...) : any
+
+Prints a warning or dies (depending on I<die_on_error>) and returns the
+I<undef_value> for this component.
+
+If there is no I<msg>, will output "value not found" as the warning.
+
+=cut
+
+sub get_error {
+    my($self, $name, @msg) = @_;
+    push(@msg, ': value not found') unless @msg;
+    _error($self, '.', $name, ': ', @msg);
+    return $self->{$_PACKAGE}->{undef_value};
 }
 
 =for html <a name="get_facade"></a>
@@ -242,6 +279,29 @@ sub group {
     return;
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item die_on_error : boolean [0]
+
+If true, L<get_error|"get_error"> and
+L<initialization_error|"initialization_error"> will die
+on errors instead of just warning.  Use for debugging
+problems.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_DIE_ON_ERROR = $cfg->{die_on_error};
+    return;
+}
+
 =for html <a name="handle_register"></a>
 
 =head2 static abstract handle_register()
@@ -265,11 +325,30 @@ No more calls to L<group|"group">, etc. will
 be accepted after this call.  Subclasses may override to
 validate initialization is truly complete.
 
+Use this method to perform any I<cross value> initialization, e.g.
+initializing internal reverse maps or cross-reference checks.  Before
+this method is called, values may disappear after they are
+initialized (see L<delete_group|"delete_group">).
+
 =cut
 
 sub initialization_complete {
     my($fields) = shift->{$_PACKAGE};
     $fields->{read_only} = 1;
+    return;
+}
+
+=for html <a name="initialization_error"></a>
+
+=head2 initialization_error(hash_ref value, string message, ...)
+
+Prints a warning based on arguments.  May terminate.  See I<die_on_error>.
+
+=cut
+
+sub initialization_error {
+    my($self, $value) = (shift, shift);
+    _error($self, ' ', $value, ': ', @_);
     return;
 }
 
@@ -296,13 +375,31 @@ sub internal_get_all {
     return [values(%values)];
 }
 
+=for html <a name="internal_get_all_groups"></a>
+
+=head2 internal_get_all_groups() : array_ref
+
+Returns a B<copy> of the group values.  Should only be used in
+L<initialization_complete|"initialization_complete">.
+
+=cut
+
+sub internal_get_all_groups {
+    # Values have unique addresses (HASH(0xblabla)) so this trick works nicely
+    my(%res) = map {
+	($_, $_);
+    } values(%{shift->{$_PACKAGE}->{map}});
+    return [values(%res)];
+}
+
 =for html <a name="internal_get_self"></a>
 
 =head2 internal_get_self(Bivio::Collection::Attributes req_or_facade) : self
 
 Returns this Facade component by searching I<req_or_facade> or
-current request or just if called with self.  Blows up if it can't
-find self.
+current request or just if called with self.
+
+Dies if it can't find self.
 
 =cut
 
@@ -347,10 +444,8 @@ sub internal_get_value {
     my($fields) = $self->{$_PACKAGE};
 
     # Return undef_value if passed in undef.  Shouldn't happen...
-    unless (defined($name)) {
-	Bivio::IO::Alert->warn($self, ': passed undef');
-	return $fields->{undef_value};
-    }
+    return $self->get_error($self, ': passed undef as value to get')
+	    unless defined($name);
 
     # Look up case-sensitively
     my($map) = $fields->{map};
@@ -361,7 +456,7 @@ sub internal_get_value {
     return $map->{$name} if $map->{$name};
 
     # Add to the map as undef and return
-    return $map->{$name} = $self->internal_warn_not_found($name);
+    return $map->{$name} = $self->get_error($name);
 }
 
 =for html <a name="internal_initialize_value"></a>
@@ -400,21 +495,6 @@ I<name> is assumed to be already downcased.
 sub internal_unsafe_lc_get_value {
     my($self, $name) = @_;
     return $self->{$_PACKAGE}->{map}->{$name};
-}
-
-=for html <a name="internal_warn_not_found"></a>
-
-=head2 internal_warn_not_found(any name) : any
-
-Prints a warning and returns the I<undef_value> for this component.
-
-=cut
-
-sub internal_warn_not_found {
-    my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    Bivio::IO::Alert->warn($self, '.', $name, ': value not found');
-    return $fields->{undef_value};
 }
 
 =for html <a name="regroup"></a>
@@ -491,6 +571,17 @@ sub _assign {
     $self->die($name, 'duplicate name') if $map->{$name};
     $self->assert_name($name);
     $map->{$name} = $value;
+    return;
+}
+
+# _error(array msg)
+#
+# Prints a warning or dies, depending on die_on_error
+#
+sub _error {
+    my(@msg) = @_;
+    Bivio::Die->die(@msg) if $_DIE_ON_ERROR;
+    Bivio::IO::Alert->warn(@msg);
     return;
 }
 
