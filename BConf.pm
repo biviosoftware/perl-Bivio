@@ -273,6 +273,7 @@ sub merge_http_log {
 		    'HTTP::Query::_correct.*correcting query',
 		    'request aborted, rolling back',
 		    'Unable to parse address',
+                    'Connection reset by peer',
 		],
 	    },
 	    1,
