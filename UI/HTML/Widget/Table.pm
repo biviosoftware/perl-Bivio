@@ -226,8 +226,7 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    print(STDERR "\n\n$source\n\n".$fields->{source}->[0]."\n\n"
-	   .$source->get($fields->{source}->[0])."\n\n");
+
     $source = $source->get_widget_value(@{$fields->{source}});
 
     # Headings
