@@ -56,6 +56,7 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::Biz::Action;
 use Bivio::IO::Trace;
 
 #=VARIABLES
