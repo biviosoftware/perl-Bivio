@@ -121,6 +121,7 @@ sub PAGE_SIZE {
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Biz::Model::SummaryList;
 use Bivio::Biz::QueryType;
 use Bivio::SQL::ListSupport;
@@ -128,6 +129,8 @@ use Bivio::SQL::ListQuery;
 use Bivio::Util;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -550,13 +553,10 @@ Returns the summary list for this model.
 
 sub get_summary {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    _trace(ref($self)) if $_TRACE;
 
-    unless (defined($fields->{summary})) {
-	$fields->{summary} = Bivio::Biz::Model::SummaryList->new([$self]);
-    }
-    $fields->{summary}->reset_cursor;
-    return $fields->{summary};
+    # need to create a new one on each call to avoid circular reference
+    return Bivio::Biz::Model::SummaryList->new([$self]);
 }
 
 =for html <a name="has_next"></a>
