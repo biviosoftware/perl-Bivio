@@ -4,3 +4,4 @@ Login->execute();
 Imagemenu->go_section('Administration', 'my-club-site');
 Browser->submit({'Select Site' => 'Ask Candis'});
 Verify->uri('candis');
+Browser->dump_this();

@@ -1,4 +1,0 @@
-_trace("This test is a simple login test.\n") if $_TRACE;
-Login->execute('btfusery', 'foobar');
-# Can't verify by text, uri, or title because doesn't guarantee specific page.
-
