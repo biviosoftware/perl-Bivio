@@ -148,7 +148,11 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
 
     # Delete commas and dollar signs
-    $value =~ s/[,\$]//g;
+    $value =~ s/[,\$\)]//g;
+
+    # Replace parens with minus signs (remove dup minuses)
+    $value =~ s/\(/-/g;
+    $value =~ s/-+/-/g;
 
     my($parsed_value);
 
