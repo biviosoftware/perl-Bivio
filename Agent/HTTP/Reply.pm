@@ -27,6 +27,7 @@ output type will be 'text/html'.
 
 #=IMPORTS
 use Apache::Constants ();
+use Bivio::Agent::HTTP::Cookie;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
@@ -91,17 +92,19 @@ sub client_redirect {
     # return value when handling a form
     my($r) = $fields->{r};
     $r->header_out(Location => $uri);
+    Bivio::Agent::HTTP::Cookie->set($fields->{r});
     $r->status(302);
     $r->send_http_header;
     # make it look like apache's redirect
-    $r->print('<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+    $r->print(<<"EOF");
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
 <TITLE>302 Found</TITLE>
 </HEAD><BODY>
 <H1>Found</H1>
-The document has moved <A HREF="'.$uri.'">here</A>.<P>
+The document has moved <A HREF="$uri">here</A>.<P>
 </BODY></HTML>
-');
+EOF
     return;
 }
 
@@ -114,7 +117,7 @@ Sends the buffered reply data.
 =cut
 
 sub flush {
-    my($self,$str) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     my($size);
@@ -123,6 +126,8 @@ sub flush {
 	$fields->{header_sent} = 1;
 	$fields->{r}->header_out('Content-Length',
 		$size = -s $fields->{file_handle}) if $fields->{file_handle};
+	# We always set a cookie
+	Bivio::Agent::HTTP::Cookie->set($fields->{r});
 	$fields->{r}->content_type($self->get_output_type());
 	$fields->{r}->send_http_header;
     }
@@ -210,6 +215,7 @@ sub set_output_from_file {
 }
 
 #=PRIVATE METHODS
+
 
 =head1 COPYRIGHT
 

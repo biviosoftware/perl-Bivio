@@ -36,12 +36,12 @@ Value of C<auth_realm->get('id')>.
 
 The realm in which the request operates.
 
-=time auth_role : Bivio::Auth::Role
+=item auth_role : Bivio::Auth::Role
 
 Role I<auth_user> is allowed to play in I<auth_realm>.
 Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
-=time auth_user : Bivio::Biz::Model::RealmOwner
+=item auth_user : Bivio::Biz::Model::RealmOwner
 
 The user authenticated with the request.
 
@@ -59,6 +59,21 @@ Host name to be used in mailto URLs and such.
 =item message : Bivio::Mail::Incoming
 
 Mail message represented by this request.
+
+=item prev_form : hash_ref
+
+Will be set if there is a server redirect and the initial request
+had a form.  Will be overwritten with multiple redirects within same request.
+
+=item prev_query : hash_ref
+
+Will be set if there is a server redirect.  Contains the original
+hash_ref.  Will be overwritten with multiple redirects within same request.
+
+=item prev_uri : string
+
+Will be set if there is a server redirect.  Contains the original
+URI.  Will be overwritten with multiple redirects within same request.
 
 =item query : hash_ref
 
@@ -96,6 +111,12 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 Identifier used to find I<task>.
 
+=item unauth_user : Bivio::Biz::Model::RealmOwner
+
+The user in a the request which could had insufficient authentication
+information.  This typically is set if the cookie expires, but is
+otherwise correct.  Currently only used in C<LoginForm>.
+
 =item E<lt>ModuleE<gt> : Bivio::UNIVERSAL
 
 Maps I<E<lt>ModuleE<gt>> to an instance of that modules.  Actions
@@ -108,7 +129,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
@@ -117,6 +138,7 @@ use Bivio::Biz::Action::CreateDemoClub;
 use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use Bivio::Util;
 use Carp ();
 
@@ -177,16 +199,19 @@ sub clear_current {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query)
 
 Redirects the client to the location of the specified new_task. By default,
 this uses L<redirect|"redirect">, but subclasses (HTTP) should override this
 to force a hard redirect.
 
+B<DOES NOT RETURN>.
+
 =cut
 
 sub client_redirect {
-    return redirect(@_);
+    my($self) = shift;
+    return $self->server_redirect(@_);
 }
 
 =for html <a name="die"></a>
@@ -327,21 +352,11 @@ Returns auth role for I<realm>.
 sub get_auth_role {
     my($self, $realm) = @_;
     my($realm_id) = $realm->get('id');
-    my($auth_id, $auth_user, $auth_role, $user_realms) = $self->unsafe_get(
-	    qw(auth_id auth_user auth_role user_realms));
+    my($auth_id, $auth_role) = $self->unsafe_get(qw(auth_id auth_role));
 
-    # Normal case
-    return $auth_role if $auth_id eq $realm_id;
-
-    # If no user, then is always anonymous
-    return Bivio::Auth::Role::ANONYMOUS() unless $auth_user;
-
-    # Not the current realm, but an authenticated realm
-    return $user_realms->{$realm_id}->{'RealmUser.role'}
-	    if ref($user_realms->{$realm_id});
-
-    # User has no special privileges in realm other than any other user
-    return Bivio::Auth::Role::USER();
+    # Use (cached) value in $self if realm_id is the same.  Otherwise,
+    # go through entire lookup process.
+    return $auth_id eq $realm_id ? $auth_role : _get_role($self, $realm_id);
 }
 
 =for html <a name="get_current"></a>
@@ -505,12 +520,107 @@ Called by subclass after it has initialized all state.
 
 sub internal_initialize {
     my($self, $auth_realm, $auth_user) = @_;
-    my($auth_id) = $auth_realm->get('id');
+    # By default, set_user also sets auth_role.  The 1 turns this off.
+    $self->set_user($auth_user, 1);
+    $self->set_realm($auth_realm);
+    return;
+}
+
+=for html <a name="internal_server_redirect"></a>
+
+=head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
+
+Sets all values and saves I<prev_query>, etc.
+
+=cut
+
+sub internal_server_redirect {
+    my($self, $new_task, $new_realm, $new_query, $new_form) = @_;
+    # Keep the request's query for context on form OK and CANCEL.
+    my($form, $uri, $query) = $self->unsafe_get(qw(form uri query));
+    $self->internal_redirect_realm($new_task, $new_realm);
+    $self->put(uri => $self->format_uri($new_task, undef),
+	    query => $new_query,
+	    query_string => Bivio::Agent::HTTP::Query->format($new_query),
+	    form => $new_form,
+	    prev_form => $form,
+	    prev_uri => $uri,
+	    prev_query => $query);
+    return;
+}
+
+=for html <a name="server_redirect"></a>
+
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
+
+Server_redirect the current task to the new task.
+
+B<DOES NOT RETURN.>
+
+=cut
+
+sub server_redirect {
+    my($self, $new_task, $new_realm, $new_query, $new_form) = @_;
+    $self->internal_server_redirect($new_task, $new_realm,
+		$new_query, $new_form);
+    Bivio::Die->die(Bivio::DieCode::SERVER_REDIRECT_TASK(),
+	    {task_id => $new_task});
+    return;
+}
+
+=for html <a name="server_redirect_in_handle_die"></a>
+
+=head2 server_redirect_in_handle_die(Bivio::Die die, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
+
+Same as L<server_redirect|"server_redirect">, but puts the attributes
+on I<die> instead of executing L<Bivio::Die::die|Bivio::Die/"die">.
+
+=cut
+
+sub server_redirect_in_handle_die {
+    my($self, $die, $new_task, $new_realm, $new_query, $new_form) = @_;
+    $self->internal_server_redirect($new_task, $new_realm,
+	    $new_query, $new_form);
+    $die->get('attrs')->{task_id} = $new_task;
+    $die->put(code => Bivio::DieCode::SERVER_REDIRECT_TASK());
+    return;
+}
+
+=for html <a name="set_realm"></a>
+
+=head2 set_realm(Bivio::Auth::Realm new_realm)
+
+Changes attributes to be authorized for I<new_realm>.  Also
+sets C<auth_role>.
+
+=cut
+
+sub set_realm {
+    my($self, $new_realm) = @_;
+    my($realm_id) = $new_realm->get('id');
+    $self->put(auth_realm => $new_realm,
+	    auth_id => $realm_id,
+	    auth_role => _get_role($self, $realm_id));
+    return;
+}
+
+=for html <a name="set_user"></a>
+
+=head2 set_user(Bivio::Biz::Model::RealmOwner user)
+
+Sets I<user> to be C<auth_user>.  May be C<undef>.  Also caches
+user_realms.
+
+=cut
+
+sub set_user {
+    # dont_set_role is used internally, don't pass if outside this module.
+    my($self, $user, $dont_set_role) = @_;
     my($user_realms);
-    if ($auth_user) {
+    if ($user) {
 	# Load the UserRealmList.  For right now, the auth_id is this
 	# user since we don't have a realm.
-	my($user_id) = $auth_user->get('realm_id');
+	my($user_id) = $user->get('realm_id');
 	$self->put(auth_id => $user_id);
 	my($list) = Bivio::Biz::Model::UserRealmList->new($self);
 #TODO: What should this number for "large" lists?
@@ -521,50 +631,10 @@ sub internal_initialize {
     else {
 	$user_realms = {};
     }
-    # To bootstrap set_realm which calls get_auth_role, we set the
-    # auth_id to something that won't match any realm.
-    $self->put(
-	    auth_realm => $auth_realm,
-	    auth_user => $auth_user,
-	    user_realms => $user_realms,
-	    auth_id => 0,
-	   );
-    $self->set_realm($auth_realm);
-    return;
-}
-
-=for html <a name="redirect"></a>
-
-=head2 redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
-
-Redirect the current task to the new task.
-
-B<DOES NOT RETURN.>
-
-=cut
-
-sub redirect {
-    my($self, $new_task, $new_realm) = @_;
-    $self->internal_redirect_realm($new_task, $new_realm);
-    # keep the request's query for context on form OK and CANCEL
-    $self->put(uri => $self->format_uri($new_task));
-    Bivio::Die->die(Bivio::DieCode::REDIRECT_TASK(), {task_id => $new_task});
-    return;
-}
-
-=for html <a name="set_realm"></a>
-
-=head2 set_auth_realm(Bivio::Auth::Realm new_realm)
-
-Changes attributes to be authorized for I<new_realm>.
-
-=cut
-
-sub set_realm {
-    my($self, $new_realm) = @_;
-    $self->put(auth_realm => $new_realm,
-	    auth_id => $new_realm->get('id'),
-	    auth_role => $self->get_auth_role($new_realm));
+    $self->put(auth_user => $user, user_realms => $user_realms);
+    # Set the (cached) auth_role if requested (by default).
+    $self->put(auth_role => _get_role($self, $self->get('auth_id')))
+	    unless $dont_set_role;
     return;
 }
 
@@ -648,6 +718,26 @@ sub _get_realm {
     }
     CORE::die($realm_type->as_string, ': unknown realm type for ',
 	    $task_id->as_string);
+}
+
+# _get_role(Bivio::Agent::Request self, string realm_id) : Bivio::Auth::Role
+#
+# Does the work for get_auth_role().
+#
+sub _get_role {
+    my($self, $realm_id) = @_;
+    my($auth_user, $user_realms) = $self->unsafe_get(
+	    qw(auth_user user_realms));
+
+    # If no user, then is always anonymous
+    return Bivio::Auth::Role::ANONYMOUS() unless $auth_user;
+
+    # Not the current realm, but an authenticated realm
+    return $user_realms->{$realm_id}->{'RealmUser.role'}
+	    if ref($user_realms->{$realm_id});
+
+    # User has no special privileges in realm 
+    return Bivio::Auth::Role::USER();
 }
 
 =head1 COPYRIGHT
