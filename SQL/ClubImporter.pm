@@ -31,7 +31,9 @@ member info, instrument info, and transactions.
 #=IMPORTS
 use Bivio::Agent::TestRequest;
 use Bivio::Biz::PropertyModel::AccountEntry;
+use Bivio::Biz::PropertyModel::ClubInstrument;
 use Bivio::Biz::PropertyModel::ClubInstrumentEntry;
+use Bivio::Biz::PropertyModel::ClubInstrumentValuation;
 use Bivio::Biz::PropertyModel::Entry;
 use Bivio::Biz::PropertyModel::MemberEntry;
 use Bivio::Biz::PropertyModel::Transaction;
@@ -50,9 +52,11 @@ my($_PACKAGE) = __PACKAGE__;
 my($_DELETED_ID) = 1818584091;
 my($_INITIALIZED) = 0;
 
-# easyware transaction type --> [entry type, tax category, transaction id]
+# easyware transaction type --> [entry type, tax category, transaction id,
+#   <sign>]
 # the enums get compiled when an instance is first created.
 # a transaction id of 0 indicates a unary transaction.
+# if <sign> is '-' then the transaction amount will be negative
 
 my($_TYPE_MAP) = {
     # Expense
@@ -78,34 +82,34 @@ my($_TYPE_MAP) = {
 	    1],
 
     # Payment
-    10 => ['MEMBER_PAYMENT', 'NOT_TAXABLE',
+    10 => ['MEMBER_PAYMENT', 'TAX_BASIS',
 	    0],
     # Fee
-    11 => ['MEMBER_PAYMENT_FEE', 'NOT_TAXABLE',
+    11 => ['MEMBER_PAYMENT_FEE', 'TAX_BASIS',
 	    0],
     # PC Contr
     12 => ['MEMBER_PAYMENT', 'NOT_TAXABLE',
 	    0],
     # Withd-Cash
-    13 => ['MEMBER_WITHDRAWAL_FULL_CASH', 'NOT_TAXABLE',
-	    2],
+    13 => ['MEMBER_WITHDRAWAL_FULL_CASH', 'TAX_BASIS',
+	    2, '-'],
     # Withd-Stock
-    14 => ['MEMBER_WITHDRAWAL_FULL_STOCK', 'NOT_TAXABLE',
-	    2],
+    14 => ['MEMBER_WITHDRAWAL_FULL_STOCK', 'TAX_BASIS',
+	    2, '-'],
     # PWith-Cash
-    15 => ['MEMBER_WITHDRAWAL_PARTIAL_CASH', 'NOT_TAXABLE',
-	    2],
+    15 => ['MEMBER_WITHDRAWAL_PARTIAL_CASH', 'TAX_BASIS',
+	    2, '-'],
     # PWith-Stck
-    16 => ['MEMBER_WITHDRAWAL_PARTIAL_STOCK', 'NOT_TAXABLE',
-	    2],
+    16 => ['MEMBER_WITHDRAWAL_PARTIAL_STOCK', 'TAX_BASIS',
+	    2, '-'],
     # Withd Fee
-    17 => ['MEMBER_WITHDRAWAL_FEE', 'NOT_TAXABLE',
-	    2],
+    17 => ['MEMBER_WITHDRAWAL_FEE', 'TAX_BASIS',
+	    2, '-'],
     # BBal Invst
-    18 => ['MEMBER_OPENING_BALANCE', 'NOT_TAXABLE',
+    18 => ['MEMBER_OPENING_BALANCE', 'TAX_BASIS',
 	    0],
     # BBal Earns
-    19 => ['MEMBER_OPENING_EARNINGS_DISTRIBUTION', 'NOT_TAXABLE',
+    19 => ['MEMBER_OPENING_EARNINGS_DISTRIBUTION', 'TAX_BASIS',
 	    0],
     # Distr-Div
     20 => ['MEMBER_DISTRIBUTION', 'DIVIDEND',
@@ -163,20 +167,20 @@ my($_TYPE_MAP) = {
 	    2],
 
     # Buy
-    40 => ['INSTRUMENT_BUY', 'NOT_TAXABLE',
+    40 => ['INSTRUMENT_BUY', 'TAX_BASIS',
 	    4],
     # Comm-Buy
-    41 => ['INSTRUMENT_BUY_COMMISSION', 'NOT_TAXABLE',
+    41 => ['INSTRUMENT_BUY_COMMISSION', 'TAX_BASIS',
 	    4],
     # Fee-Buy
     42 => ['INSTRUMENT_BUY_FEE', 'MISC_EXPENSE',
 	    4],
     # Sell
-    43 => ['INSTRUMENT_SELL', 'NOT_TAXABLE',
-	    5],
+    43 => ['INSTRUMENT_SELL', 'TAX_BASIS',
+	    5, '-'],
     # Transfer
-    44 => ['INSTRUMENT_TRANSFER', 'NOT_TAXABLE',
-	    2],
+    44 => ['INSTRUMENT_TRANSFER', 'TAX_BASIS',
+	    2, '-'],
     # Stcg-Sell
     45 => ['INSTRUMENT_SELL', 'SHORT_TERM_CAPITAL_GAIN',
 	    5],
@@ -184,8 +188,8 @@ my($_TYPE_MAP) = {
     46 => ['INSTRUMENT_SELL', 'LONG_TERM_CAPITAL_GAIN',
 	    5],
     # Exp-Sell
-    47 => ['INSTRUMENT_SELL', 'NOT_TAXABLE',
-	    5],
+    47 => ['INSTRUMENT_SELL_COMMISSION_AND_FEE', 'NOT_TAXABLE',
+	    5, '-'],
     # Div-Cash
     48 => ['INSTRUMENT_DISTRIBUTION_CASH', 'DIVIDEND',
 	    0],
@@ -199,8 +203,8 @@ my($_TYPE_MAP) = {
     51 => ['INSTRUMENT_DISTRIBUTION_CASH', 'LONG_TERM_CAPITAL_GAIN',
 	    0],
     # RetCp-Cash
-    52 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE',
-	    0],
+    52 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'TAX_BASIS',
+	    0, '-'],
     # Div-Inv
     53 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'DIVIDEND',
 	    6],
@@ -214,7 +218,7 @@ my($_TYPE_MAP) = {
     56 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'LONG_TERM_CAPITAL_GAIN',
 	    9],
     # RetCp-Inv
-    57 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE',
+    57 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'TAX_BASIS',
 	    10],
     # Fee-DivInv
     58 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
@@ -232,7 +236,7 @@ my($_TYPE_MAP) = {
     62 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
 	    10],
     # Split
-    63 => ['INSTRUMENT_SPLIT', 'NOT_TAXABLE',
+    63 => ['INSTRUMENT_SPLIT', 'TAX_BASIS',
 	    12],
     # SpFr-Cost
     64 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'NOT_TAXABLE',
@@ -244,11 +248,11 @@ my($_TYPE_MAP) = {
     66 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN',
 	    12],
     # StkDiv-New
-    67 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE',
+    67 => ['INSTRUMENT_SPINOFF', 'TAX_BASIS',
 	    13],
     # StkDiv-Old
-    68 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE',
-	    13],
+    68 => ['INSTRUMENT_SPINOFF', 'TAX_BASIS',
+	    13, '-'],
     # SDFr-Cost
     69 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'NOT_TAXABLE',
 	    13],
@@ -259,10 +263,10 @@ my($_TYPE_MAP) = {
     71 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN',
 	    13],
     # Merger-Add
-    72 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE',
+    72 => ['INSTRUMENT_MERGER', 'TAX_BASIS',
 	    14],
     # Merger-Cls
-    73 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE',
+    73 => ['INSTRUMENT_MERGER', 'TAX_BASIS',
 	    14],
     # MrgFt-Cost
     74 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'NOT_TAXABLE',
@@ -278,10 +282,10 @@ my($_TYPE_MAP) = {
     77 => ['UNKNOWN', 'UNKNOWN',
 	    15],
     # Pd By Comp
-    78 => ['INSTRUMENT_DISTRIBUTION_CHARGES_PAID_BY_COMPANY', 'NOT_TAXABLE',
+    78 => ['INSTRUMENT_DISTRIBUTION_CHARGES_PAID_BY_COMPANY', 'TAX_BASIS',
 	    0],
     # Beg Bal
-    79 => ['INSTRUMENT_OPENING_BALANCE', 'NOT_TAXABLE',
+    79 => ['INSTRUMENT_OPENING_BALANCE', 'TAX_BASIS',
 	    0],
 #TODO: need to handle this case
     # Div-ForTax
@@ -289,19 +293,19 @@ my($_TYPE_MAP) = {
 	    15],
 
     # DivInvComm
-    92 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    92 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    6],
     # IntInvComm
-    93 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    93 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    7],
     # StcInvComm
-    94 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    94 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    8],
     # LtcInvComm
-    95 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    95 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    9],
     # RtCpIvComm
-    96 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    96 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    10],
     # Mtcg-Sell
     97 => ['INSTRUMENT_SELL', 'MEDIUM_TERM_CAPITAL_GAIN',
@@ -313,7 +317,7 @@ my($_TYPE_MAP) = {
     99 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'MEDIUM_TERM_CAPITAL_GAIN',
 	    11],
     # MtcInvComm
-    100 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+    100 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'TAX_BASIS',
 	    11],
     # Fee-MtcInv
     101 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
@@ -455,7 +459,7 @@ sub new {
 
 =for html <a name="import_members"></a>
 
-=head2 import_members(hash attributes) : hash
+=head2 import_members(hash attributes)
 
 Imports member information from the easyware data files. Loads the
 user_t, user_pref_t, user_email_t tables.
@@ -489,9 +493,9 @@ sub import_members {
     die("not implemented");
 }
 
-=for html <a name="import_securities"></a>
+=for html <a name="import_instruments"></a>
 
-=head2 import_instruments(hash attributes) : hash
+=head2 import_instruments(hash attributes)
 
 Imports instrument information from easyware data files. Loads the
 club_instrument_t and club_instrument_valuation_t tables.
@@ -514,11 +518,46 @@ Result:
 
 =cut
 
-sub import_securities {
+sub import_instruments {
     my($self, $attributes) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    die("not implemented");
+    my($instruments) = _parse_file($self, $_INSTRUMENT_FORMAT);
+    my($valuations) = _parse_file($self, $_VALUATION_FORMAT);
+
+    my($req) = Bivio::Agent::TestRequest->new({});
+    my($instrument) = Bivio::Biz::PropertyModel::ClubInstrument->new($req);
+    my($valuation) = Bivio::Biz::PropertyModel::ClubInstrumentValuation
+	    ->new($req);
+
+    # load the club instruments
+    $attributes->{instrument_id_map} = {};
+    my($inst);
+    foreach $inst (@$instruments) {
+	$instrument->create({
+	    instrument_id => _lookup_instrument($inst->{ticker_symbol})
+	    ->get('instrument_id'),
+	    club_id => $attributes->{club_id},
+	    account_number => $inst->{account_number},
+	    average_cost_method => $inst->{average_cost_method},
+	    drp_plan => $inst->{drp_plan},
+	    remark => $inst->{remark},
+	});
+	$attributes->{instrument_id_map}->{$inst->{instrument_id}}
+	    = $instrument->get('club_instrument_id');
+    }
+
+    # load instrument valuations
+    my($val);
+    foreach $val (@$valuations) {
+	$valuation->create({
+	    club_instrument_id => $attributes->{instrument_id_map}
+	    ->{$val->{instrument_id}},
+	    dttm => $val->{dttm},
+	    price_per_share => $val->{price_per_share},
+	});
+    }
+    return;
 }
 
 =for html <a name="import_transactions"></a>
@@ -560,23 +599,6 @@ sub import_transactions {
     my($instrument_trans) = _parse_file($self,
 	    $_INSTRUMENT_TRANSACTION_FORMAT);
     my($cash_trans) = _parse_file($self, $_CASH_TRANSACTION_FORMAT);
-
-=begin comment
-
-    $fields->{member_trans} = $member_trans;
-    $fields->{instrument_trans} = $instrument_trans;
-    $fields->{cash_trans} = $cash_trans;
-
-    _trace("processing transactions...");
-    _process_transactions($self, $attributes,
-	    Bivio::Type::EntryClass->MEMBER);
-    _process_transactions($self, $attributes,
-	    Bivio::Type::EntryClass->INSTRUMENT);
-    _process_transactions($self, $attributes,
-	    Bivio::Type::EntryClass->CASH);
-
-=cut
-
 
     my($easyware_trans) = [];
     map { $_->{class} = Bivio::Type::EntryClass->MEMBER;
@@ -684,12 +706,15 @@ sub _create_entries {
     foreach $trans (@$easyware_trans) {
 	next if (! defined($trans));
 
-	if ($trans->{dttm} == $dttm
-		&& ($trans->{transaction_type} == $transaction_type
-			|| _contains($set, $trans->{transaction_type}))) {
+	my($type) = $trans->{transaction_type};
 
-	    # special handling for source_id == 0, group deposit
-	    if ($trans->{id} == $source_id || $source_id == 0) {
+	if ($trans->{dttm} == $dttm && ($type == $transaction_type
+		|| _contains($set, $type))) {
+
+	    # group deposit and earning distributions
+	    if ($trans->{id} == $source_id
+		    || _is_deposit($type)
+		    || _is_earnings_distribution($type)) {
 
 		_create_entry($transaction, $trans, $attributes);
 
@@ -699,9 +724,41 @@ sub _create_entries {
 	    }
 	}
     }
-    die("Transaction not handled: $transaction_type\n") unless $handled;
+    $handled or die("Transaction not handled: $transaction_type\n");
 
     return;
+}
+
+# _is_deposit(int type) : boolean
+#
+# Returns true if the specified easyware transaction type is a member
+# deposit.
+
+sub _is_deposit {
+    my($type) = @_;
+
+    return $type == 10
+	    || $type == 11
+	    || $type == 12;
+}
+
+# _is_earnings_distribution(int type) : boolean
+#
+# Returns true if the specified easyware transaction type is a member
+# earnings distribution.
+
+sub _is_earnings_distribution {
+    my($type) = @_;
+
+    return $type == 20
+	    || $type == 21
+	    || $type == 22
+	    || $type == 23
+	    || $type == 24
+	    || $type == 25
+	    || $type == 26
+	    || $type == 27
+	    || $type == 36;
 }
 
 # _create_entry(Transaction transaction, hash_ref trans, hash_ref attributes)
@@ -711,6 +768,19 @@ sub _create_entries {
 
 sub _create_entry {
     my($transaction, $trans, $attributes) = @_;
+
+    my($sign) = $_TYPE_MAP->{$trans->{transaction_type}}->[3];
+    if (defined($sign) && $sign eq '-') {
+
+	if ($trans->{class} == Bivio::Type::EntryClass->MEMBER) {
+	    $trans->{amount} = - $trans->{amount};
+	    $trans->{units} = - $trans->{units};
+	}
+	elsif ($trans->{class} == Bivio::Type::EntryClass->INSTRUMENT) {
+	    $trans->{amount} = - $trans->{amount};
+	    $trans->{shares} = - $trans->{shares};
+	}
+    }
 
     my($entry) = Bivio::Biz::PropertyModel::Entry->new(
 	    $transaction->get_request());
@@ -767,6 +837,18 @@ sub _create_entry {
 	die("unhandled transaction entry");
     }
     return;
+}
+
+# _lookup_instrument(string symbol) : Instrument
+#
+# Returns the instrument with the specified ticker symbol
+
+sub _lookup_instrument {
+    my($symbol) = @_;
+    my($req) = Bivio::Agent::TestRequest->new({});
+    my($instrument) = Bivio::Biz::PropertyModel::Instrument->new($req);
+    $instrument->load(ticker_symbol => $symbol);
+    return $instrument;
 }
 
 # _parse_file(hash_ref format) : array_ref
