@@ -50,18 +50,21 @@ sub visit {
     my($proto, $board, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
+    $board->put(current_uri => $uri);  #change current_uri to uri?
 
-    # Store current location in the bulletin board
-    $board->put(current_uri => $uri);
+    my($response) = HTTPTools::http_href('URL', $uri);
 
-    my($response) = 'error';
-    #($response) = HTTPTools::http_href('URL', $uri);
-
-    #_trace("Page gotten (response) is:", $response, "\n") if $_TRACE;
-    #die ("Page hit did not succeed\n")
-	#    unless ($response->{HTTP_RESPONSE}->is_success);
-
-    $board->put(response => $response);
+    if (!defined $response) {
+	print("Failed to get response from server for $uri.\n");
+    }
+    elsif ($response->{HTTP_RESPONSE}->is_success) {
+	$board->put(response => $response);
+	print("Visiting page: " , ($board->get('response'))->{TITLE} , "\n");
+    }
+    else {
+	print("Error: Page did not load successfully.\n");
+      	_trace("Text gotten was: ", $response, "\n");
+    }
     return;
 }
 
