@@ -37,9 +37,9 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
 use Bivio::Type::Location;
 use Bivio::Type::PrimaryId;
+use Bivio::Biz::Model::LoginForm;
 
 #=VARIABLES
-my($_COOKIE_USER_FIELD) = Bivio::Agent::HTTP::Cookie->USER_FIELD();
 
 =head1 METHODS
 
@@ -72,8 +72,9 @@ Returns undef if realm can't be loaded or email address is invalid.
 sub get_email_from_cookie {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
-    return undef unless $self->unauth_load(
-	    realm_id => $req->get('cookie')->unsafe_get($_COOKIE_USER_FIELD));
+    my($id) = Bivio::Biz::Model::LoginForm->get_cookie_user($req);
+    return undef unless $id;
+    return undef unless $self->unauth_load(realm_id => $id);
     return $self->is_ignore ? undef : $self->get('email');
 }
 
