@@ -91,6 +91,7 @@ sub initialize {
 	    column_align => 'E',
 	    string_font => 'number_cell',
 	    pad_left => 1,
+	    column_nowrap => 1,
 	   );
     $fields->{initialized} = 1;
     $self->SUPER::initialize;
