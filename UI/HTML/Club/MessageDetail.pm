@@ -41,14 +41,15 @@ use Bivio::Biz::Model::MessageList;
 use Bivio::DieCode;
 use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Format::ReplySubject;
 use Bivio::UI::HTML::Widget::ActionBar;
+use Bivio::UI::HTML::Widget::DateTime;
+use Bivio::UI::HTML::Widget::Image;
+use Bivio::UI::HTML::Widget::Indirect;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
-use Bivio::UI::HTML::Widget::Image;
+use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::HTML::Widget::Indirect;
-use Bivio::UI::HTML::Widget::DateTime;
-use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -95,16 +96,13 @@ sub new {
 			    value => ['subject'],
 			}),
 			'<br>by ',
-			Bivio::UI::HTML::Widget::Link->new({
-			    href => ['->format_mailto',
-				['Bivio::Biz::Model::MailMessage',
-				    'from_email'],
-				['reply_subject'],
-			    ],
-			    value => Bivio::UI::HTML::Widget::String->new({
-				value => ['Bivio::Biz::Model::MailMessage',
+			Bivio::UI::HTML::Widget::MailTo->new({
+			    email => ['Bivio::Biz::Model::MailMessage',
+				'from_email'],
+			    subject => ['reply_subject'],
+			    value => ['Bivio::Biz::Model::MailMessage',
 				    'from_name'],
-			    }),
+			    value_invalid => 'N/A',
 			}),
 			' on ',
 			Bivio::UI::HTML::Widget::DateTime->new({

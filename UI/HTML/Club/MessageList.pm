@@ -39,6 +39,7 @@ use Bivio::Biz::Model::MessageList;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
+use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Table;
 use Bivio::UI::HTML::Widget::DateTime;
@@ -79,8 +80,8 @@ sub new {
 		    value => ['MailMessage.subject'],
 	        }),
 	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['MailMessage.from_name'],
+	    Bivio::UI::HTML::Widget::MailTo->new({
+		email => ['MailMessage.from_name'],
 		column_nowrap => 1,
 	    }),
             Bivio::UI::HTML::Widget::DateTime->new({
