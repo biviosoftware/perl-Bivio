@@ -30,6 +30,9 @@ C<Bivio::UI::HTML::Widget::ClearDot> displays the clear dot
 
 =head1 ATTRIBUTES
 
+A widget value of zero (0) will result in nothing being rendered,
+i.e. zero means "doesn't exist".
+
 =over 4
 
 =item height : int []
@@ -155,12 +158,19 @@ Render the clear dot.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($start) = length($$buffer);
     $$buffer .= $fields->{value};
     return if $fields->{is_constant};
 
     foreach my $f (qw(width height)) {
 	next unless ref($fields->{$f});
-	$$buffer .= ' '.$f.'='.$source->get_widget_value(@{$fields->{$f}});
+	my($v) = $source->get_widget_value(@{$fields->{$f}});
+	unless ($v) {
+	    # Zero width or height means that it shouldn't be drawn.
+	    substr($$buffer, $start) = '';
+	    return;
+	}
+	$$buffer .= ' '.$f.'='.$v;
     }
     $$buffer .= '>';
     return;
