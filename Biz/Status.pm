@@ -68,6 +68,20 @@ sub add_error {
     push(@{$fields->{errors}}, $error);
 }
 
+=for html <a name="clear"></a>
+
+=head2 clear()
+
+Removes all errors.
+
+=cut
+
+sub clear {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{errors} = [];
+}
+
 =for html <a name="get_errors"></a>
 
 =head2 get_errors() : array
