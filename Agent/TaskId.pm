@@ -1407,6 +1407,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::LegacyClubUpload
         next=CLUB_LEGACY_SECURITY_RECONCILIATION
         cancel=CLUB_ADMIN_TOOLS
+        require_secure=1
     )],
     [qw(
         CLUB_ADMIN_SHADOW_MEMBER_INVITE
@@ -1741,6 +1742,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::F1065Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99_F1065K1
@@ -1757,6 +1759,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::F1065K1Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065sk1::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99
@@ -2095,6 +2098,7 @@ my(@_CFG) = (
         ?/admin/clubexp.xml.zip
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_compressed
+        require_secure=1
     )],
     [qw(
         CLUB_ADMIN_EXPORT_PLAIN
@@ -2104,6 +2108,7 @@ my(@_CFG) = (
         ?/admin/clubexp.xml
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_plain
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
