@@ -143,6 +143,7 @@ Returns the UserDemographics associated with this user.
 sub get_demographics {
     my($self) = @_;
 
+    #TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
     $demo->find(Bivio::Biz::FindParams->new({'user' => $self->get('id')}));
     return $demo;
@@ -275,7 +276,7 @@ Bivio::IO::Config->initialize({
 	# SQL configuration
 	table_name => 'user_',
 	sql_field_map => {
-	    user => 'user',
+	    user => 'id',
 	    first_name => 'first_name',
 	    middle_name => 'middle_name',
 	    last_name => 'last_name',
