@@ -302,15 +302,18 @@ sub is_auth_user {
 
 =head2 is_default() : boolean
 
+=head2 static is_default(Bivio::Biz::Model model, string model_prefix) : boolean
+
 Returns true if the realm is one of the default realms (general,
 user, club).
 
 =cut
 
 sub is_default {
-    my($self) = @_;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     # Default realms have ids same as their types as_int.
-    return $self->get('realm_type')->as_int eq $self->get('realm_id') ? 1 : 0;
+    return $model->get($model_prefix.'realm_type')->as_int
+	eq $model->get($model_prefix.'realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_name_eq_email"></a>
