@@ -51,6 +51,7 @@ use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Task;
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 # This is here to avoid a bunch of error messages when societas
 # is started in stack_trace_warn.
@@ -87,7 +88,8 @@ sub new {
 
 =head2 process_request(array protocol_args) : undef or Bivio::Die
 
-Creates a request and returns a result.
+Creates a request and returns a result.  Resets the warn counter at
+the end of each request.
 
 =cut
 
@@ -132,6 +134,7 @@ sub process_request {
 	}
     }
     Bivio::Agent::Request->clear_current;
+    Bivio::IO::Alert->reset_warn_counter;
     return $die;
 }
 
