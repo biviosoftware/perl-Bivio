@@ -141,23 +141,31 @@ sub process_request {
 
 =for html <a name="initialize"></a>
 
-=head2 static initialize()
+=head2 static initialize(boolean partially)
 
 Initialize Agent state.
+
+I<partially> passes through to L<Bivio::Agent::Task|Bivio::Agent::Task>
+and L<Bivio::UI::Facade|Bivio::UI::Facade>.
+
+B<Only initialize partially in non-server environments.>
 
 =cut
 
 sub initialize {
+    my($proto, $partially) = @_;
     return if $_INITIALIZED;
+    # Only one try at this
     $_INITIALIZED = 1;
+
+    # Ensure we don't do something stupid.
+    Bivio::Die->die('partial init not allowed in mod_perl')
+		if $partially && exists($ENV{MOD_PERL});
+
     # Need a current request for initialization
     Bivio::Agent::Request->get_current_or_new;
-
-    # Initialize all tasks and task items
-    Bivio::Agent::Task->initialize;
-
-    # Initialize user interface support
-    Bivio::UI::Facade->initialize;
+    Bivio::Agent::Task->initialize($partially);
+    Bivio::UI::Facade->initialize($partially);
 
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;
     return;

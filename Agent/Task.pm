@@ -374,15 +374,19 @@ sub handle_die {
 
 =for html <a name="initialize"></a>
 
-=head2 initialize()
+=head2 initialize(boolean partially)
 
 Initializes task list from the configuration in
 L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
+I<partially> allows this module to initialize only part of the
+task state.  This is only used by L<Bivio::ShellUtil|Bivio::ShellUtil>
+to speed up command line initialization.  B<Never use in a server.>
+
 =cut
 
 sub initialize {
-    my($proto) = @_;
+    my($proto, $partially) = @_;
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
 
@@ -395,7 +399,7 @@ sub initialize {
 	}
 	$proto->new(Bivio::Agent::TaskId->$id_name(),
 		Bivio::Auth::RealmType->$realm_type(),
-		$perm_set, @items);
+		$perm_set, $partially ? () : @items);
     };
     return;
 }

@@ -322,19 +322,28 @@ sub handle_config {
 
 =for html <a name="initialize"></a>
 
-=head2 static initialize()
+=head2 static initialize(boolean partially)
 
 Initializes this module.  Must be called before use.
 Loads all Facades found in subdir of where this package was loaded.
 
+If I<partially>, only initializes the default facade.  B<Do not use
+in a server environment.>
+
 =cut
 
 sub initialize {
+    my($proto, $partially) = @_;
     return if $_INITIALIZED;
     # Prevent recursion.  Initialization isn't re-entrant
     $_INITIALIZED = 1;
 
-    Bivio::IO::ClassLoader->map_require_all('Facade');
+    if ($partially) {
+	Bivio::IO::ClassLoader->map_require('Facade', $_DEFAULT);
+    }
+    else {
+	Bivio::IO::ClassLoader->map_require_all('Facade');
+    }
 
     # Make sure the default facade is there and was properly initialized
     Bivio::Die->die($_DEFAULT,

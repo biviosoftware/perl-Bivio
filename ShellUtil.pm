@@ -490,14 +490,16 @@ sub get_request {
 Initializes the UI and sets up the default facade.  This takes some time,
 so classes should use this sparingly.
 
+B<This only initializes the default facade.  It does not setup tasks
+for execution.>
+
 =cut
 
 sub initialize_ui {
     my($self) = @_;
     $self->get_request;
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher');
-    Bivio::Agent::Dispatcher->initialize;
-#TODO: Allow the caller to setup the facade
+    Bivio::Agent::Dispatcher->initialize(1);
     Bivio::UI::Facade->setup_request(undef, $self->get_request);
     return;
 }
