@@ -64,6 +64,7 @@ _compile(
     CLUB_USER_TITLE => ['Privileges', undef, 'RealmUser.title'],
     CLUB_USER_CREATION_DATE_TIME => ['Joined', undef,
 	'RealmUser.creation_date_time'],
+    CLUB_START_DATE => ['Date Club Started', undef, 'Club.start_date'],
 
     # User labels
     USER_DISPLAY_NAME => ['Name', undef, 'RealmOwner.display_name'],
