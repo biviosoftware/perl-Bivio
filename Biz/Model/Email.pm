@@ -33,7 +33,6 @@ and delete interface to the C<email_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Model::LoginForm;
 use Bivio::Type::Email;
 
 #=VARIABLES
@@ -55,24 +54,6 @@ sub create {
     $values->{want_bulletin} = 1
 	    unless defined($values->{want_bulletin});
     return $self->SUPER::create($values);
-}
-
-=for html <a name="get_email_from_cookie"></a>
-
-=head2 static get_email_from_cookie(Bivio::Agent::Request req) : string
-
-Returns the email of the user in the cookie.
-Returns undef if realm can't be loaded or email address is invalid.
-
-=cut
-
-sub get_email_from_cookie {
-    my($proto, $req) = @_;
-    my($self) = $proto->new($req);
-    my($id) = Bivio::Biz::Model::LoginForm->get_cookie_user($req);
-    return undef unless $id;
-    return undef unless $self->unauth_load(realm_id => $id);
-    return $self->is_ignore ? undef : $self->get('email');
 }
 
 =for html <a name="internal_initialize"></a>
@@ -101,7 +82,7 @@ sub internal_initialize {
 
 =head2 is_ignore() : boolean
 
-=head2 static is_ignore(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_ignore(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Calls L<Bivio::Type::Email::is_ignore|Bivio::Type::Email/"is_ignore">
 on the email address.
@@ -109,10 +90,8 @@ on the email address.
 =cut
 
 sub is_ignore {
-    my($self, $list_model, $model_prefix) = @_;
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
-    return Bivio::Type::Email->is_ignore($m->get($p.'email'));
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    return Bivio::Type::Email->is_ignore($model->get($model_prefix.'email'));
 }
 
 #=PRIVATE METHODS
