@@ -129,9 +129,10 @@ EOF
     my($facades) = '';
     # TIGHT COUPLING with Bivio::UI::Facade
     foreach my $facade (@{_get_facade_uri_list()}) {
+        my($server) = $facade =~ /\./ ? $facade : $facade . '.' . $hostname;
 	$facades .= <<"EOF";
 	    <VirtualHost $hostip:$port>
-		ServerName $facade.$hostname
+		ServerName $server
 		RewriteEngine On
 		RewriteLog rewrite.log
 		RewriteLogLevel 0
