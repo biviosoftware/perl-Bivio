@@ -33,7 +33,7 @@ cd $ts
 
 # 
 echo dbs-admin
-/usr/local/bin/ssh ${DB_HOST} tar czf - /usr/local/oracle/product/8.1.5/dbs /usr/local/oracle/product/8.1.5/admin >$ts-dbs-admin.tgz
+/usr/local/bin/ssh ${DB_HOST} tar czf - /usr/local/oracle/product/8.1.5/dbs /usr/local/oracle/product/8.1.5/admin /usr/local/oracle/product/8.1.5/network/admin >$ts-dbs-admin.tgz
 
 if [ -d /usr/local/reqng ]; then
     echo reqng
