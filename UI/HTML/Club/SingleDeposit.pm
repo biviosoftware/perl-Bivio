@@ -170,6 +170,10 @@ sub execute {
     $req->put(show_valuation_date => $show_valuation_date);
     $account_list->load();
 
+    # set the account to broker
+    my($form) = $req->get('Bivio::Biz::Model::SingleDepositForm');
+    $form->set_account($account_list->get_default_broker_account);
+
     $req->put(page_heading => $heading.$owner->get('display_name'),
 	    page_subtopic => undef,
 	    page_content => $self,
