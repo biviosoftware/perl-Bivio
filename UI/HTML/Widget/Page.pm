@@ -163,12 +163,12 @@ sub handle_config {
 
 =head2 initialize()
 
-Initializes static inpageation.
+Initializes child widgets.
 
 =cut
 
 sub initialize {
-    my($self, $source) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{head};
 
