@@ -31,22 +31,9 @@ C<Bivio::UI::HTML::Club::AccountingImportReview> review imported txns
 =cut
 
 #=IMPORTS
-use Bivio::TypeValue;
-use Bivio::Type::EntryTypeSet;
-use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::HTML::Widget::ActionBar;
-use Bivio::UI::HTML::Widget::EditRowTable;
-use Bivio::UI::HTML::Widget::Enum;
-use Bivio::UI::HTML::Widget::Form;
-use Bivio::UI::HTML::Widget::StandardSubmit;
-
-use Bivio::Biz::Model::ImportedTransactionForm;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_ENTRY_CREDIT_SET) = Bivio::Type::EntryTypeSet::CREDIT();
-my($_ENTRY_CREDIT) = Bivio::TypeValue->new(
-	'Bivio::Type::EntryTypeSet', \$_ENTRY_CREDIT_SET);
 
 =head1 METHODS
 
@@ -65,32 +52,27 @@ sub create_content {
     my($fields) = $self->{$_PACKAGE} = {};
 
     # empty action bar, allows paging
-#    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
-#	values => [],
-#    });
-#    $fields->{action_bar}->initialize;
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
+	values => [],
+    });
+    $fields->{action_bar}->initialize;
 
-    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
-    my($edit_type_form) = Bivio::UI::HTML::Widget::Form->new({
-	form_class => 'Bivio::Biz::Model::ImportedTransactionTypeForm',
-	value => Bivio::UI::HTML::Widget::EditRowTable->new({
-	    list_class => 'ImportedTransactionList',
-	    columns => [
-		['Entry.entry_type', {
-		    column_edit_widget => $self->join(
-			    $wf->create(
-			      'ImportedTransactionTypeForm.Entry.entry_type', {
-				  column_selectable => 1,
-				  auto_submit => 1,
-				  choices => $_ENTRY_CREDIT,
-			      }),
-			    '<noscript>',
-			    $wf->create(
-				    'ImportedTransactionTypeForm.ok_button'),
-			    '</noscript>',
-			),
-		}],
+    $self->put_heading('CLUB_ACCOUNTING_SYNC_REVIEW');
+
+    return $self->join(
+	    $self->string('
+This page lists all transactions which have been successfully imported from your brokerage account.  Unclassified transactions can be reconciled using ',
+		    'page_text'),
+	    $self->link('AccountSync Identify Unassigned Transactions',
+		    'CLUB_ACCOUNTING_SYNC_IDENTIFY'),
+	    $self->string('.', 'page_text'),
+	    '<p>&nbsp',
+	    $self->table('ImportedTransactionList', [
 		'RealmTransaction.date_time',
+		['', {
+		    column_widget => Bivio::UI::HTML::Widget::TaxType->new({}),
+		    column_heading => 'Entry.entry_type',
+		}],
 		'Entry.amount',
 		['RealmTransaction.remark', {
 		    column_heading => 'description_heading',
@@ -100,41 +82,8 @@ sub create_content {
 		    ['edit', 'CLUB_ACCOUNTING_TRANSACTION_EDIT', undef,
 			['->can_edit']],
 		]),
-	    ],
-	}),
-    });
-
-    my($edit_txn_form) = Bivio::UI::HTML::Widget::Form->new({
-	form_class => 'Bivio::Biz::Model::ImportedTransactionForm',
-	value => Bivio::UI::HTML::Widget::EditRowTable->new({
-	    list_class => 'ImportedTransactionList',
-	    columns => [
-		['Entry.entry_type', {
-		    column_selectable => 1,
-		    wf_want_display => 1,
-		}],
-		'RealmTransaction.date_time',
-		['Entry.amount', {column_selectable => 1}],
-		['RealmTransaction.remark', {
-		    column_heading => 'description_heading',
-		    column_selectable => 1,
-		    column_edit_widget =>
-		    _create_description_widget($self),
-		}],
-		{
-		    column_heading => 'list_actions',
-		    column_widget => $self->blank_cell,
-		    column_edit_widget =>
-		    Bivio::UI::HTML::Widget::StandardSubmit->new({}),
-		},
-	    ],
-	}),
-    });
-
-    return $self->director(
-	    [['->get_request'],	'->unsafe_get',
-		'Bivio::Biz::Model::ImportedTransactionForm'],
-	    {}, $edit_txn_form, $edit_type_form);
+	    ]),
+	   );
 }
 
 =for html <a name="execute"></a>
@@ -159,40 +108,6 @@ sub execute {
 }
 
 #=PRIVATE METHODS
-
-# _create_description_widget() : Bivio::UI::HTML::Widget
-#
-# Returns the widget used to edit the selected row description.
-#
-sub _create_description_widget {
-    my($self) = @_;
-    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
-    my($type) = 'Bivio::Type::EntryType';
-
-    my($user_list) = $wf->create(
-	    'ImportedTransactionForm.MemberEntry.user_id', {
-		choices => ['Bivio::Biz::Model::RealmUserList'],
-		list_display_field => 'last_first_middle',
-		list_id_field => 'RealmUser.user_id',
-	    });
-    return $self->director(
-	    [[['->get_request'], 'Bivio::Biz::Model::ImportedTransactionForm',
-		'Entry.entry_type'], '->as_int'],
-	    {
-		$type->MEMBER_PAYMENT->as_int => $user_list,
-		$type->MEMBER_PAYMENT_FEE->as_int => $user_list,
-		$type->CASH_TRANSFER->as_int => $wf->create(
-		     'ImportedTransactionForm.target_account_id', {
-			 choices => ['Bivio::Biz::Model::RealmAccountList'],
-			 list_display_field => 'RealmAccount.name',
-			 list_id_field => 'RealmAccount.realm_account_id',
-		     }),
-	    },
-
-	    # default is remark field
-	    $wf->create('ImportedTransactionForm.RealmTransaction.remark'),
-	   );
-}
 
 =head1 COPYRIGHT
 
