@@ -51,6 +51,7 @@ my($_INITIALIZED) = 0;
 my(%_FROM_URI);
 # Key is task_id, value is alias to _FROM_URI value (for realm)
 my(%_FROM_TASK_ID);
+# TaskId of task which serves documents
 my($_DOCUMENT_TASK);
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_GENERAL);
@@ -277,7 +278,8 @@ sub initialize {
     # Make sure HTTP_DOCUMENT is defined if $_DOCUMENT_ROOT is defined
     if (defined($_DOCUMENT_ROOT)) {
 	$_DOCUMENT_TASK
-		= $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()};
+		= $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}
+			->{task};
 	die('HTTP_DOCUMENT: task must be configured if document_root set')
 	    unless $_DOCUMENT_TASK;
     }
@@ -325,7 +327,7 @@ sub parse {
     # If first uri doesn't match a RealmName, can't be one.
     if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
 	# Not a realm, but is it a document and is it found?
-	return ($_DOCUMENT_TASK->[0], $_GENERAL, $uri, '')
+	return ($_DOCUMENT_TASK, $_GENERAL, $uri, '')
 		if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
 
 	$req->die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
