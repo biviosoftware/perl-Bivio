@@ -27,7 +27,7 @@ C<Bivio::Biz::Action::CreateUser>
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::Model::Club;
-use Bivio::Biz::Model::ClubUser;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::User;
