@@ -174,10 +174,18 @@ Returns the current working directory.  dies if can't get pwd.
 =cut
 
 sub pwd {
-    my($pwd) = `pwd 2>&1`;
-    die('unable to get pwd') unless $? == 0;
+    # Need more than one exec argument, so it works with -T (taintchecks)
+    open(PWD, '-|') || exec('/bin/sh', '-c', '/bin/pwd');
+    my($pwd);
+    {
+        local($/) = undef;
+        $pwd = <PWD>;
+    }
+    die('unable to get pwd') unless close(PWD);
     chomp($pwd);
-    return $pwd;
+    # Return tainted value
+    $pwd =~ /(.+)/;
+    return $1;
 }
 
 =for html <a name="read"></a>
