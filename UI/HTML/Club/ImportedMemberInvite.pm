@@ -49,11 +49,28 @@ Returns content widget.
 
 sub create_content {
     my($self) = @_;
-
+    $self->put_heading('CLUB_LEGACY_INVITE');
     return $self->form('ImportedMemberInviteForm', [], [
 	'RealmOwner.display_name',
-	['invite_email', 'Email'],
+	['invite_email', 'Email', <<'EOF'],
+Fill in this field to bring your members on-line.  We will email
+the identified members an invitation to join your club on bivio.
+The message will identify you as the author of the invitation.
+You will receive a confirmation message each time a member
+accept an invitation.
+<p>
+If you leave this field blank, no invitation will be sent.
+You can come back to this page at any time.
+EOF
     ],
+    {
+	header => $self->join(<<'EOF'),
+This is the last part of the legacy import process.
+<p>
+Use this form to bring your off-line members to bivio.
+EOF
+	footer => $self->join('Send the invitations?'),
+    }
     );
 }
 
