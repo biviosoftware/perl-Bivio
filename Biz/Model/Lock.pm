@@ -40,6 +40,7 @@ process can't acquire the same lock twice.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::SQL::Connection;
 use Bivio::TypeError;
 
 #=VARIABLES
