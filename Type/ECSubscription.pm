@@ -41,6 +41,8 @@ a realm can be subscribed to. The current choices are:
 
 =item BASIC_SERVICE
 
+=item FREE_TRIAL
+
 =back
 
 =cut
@@ -70,6 +72,10 @@ __PACKAGE__->compile([
     BASIC_SERVICE => [
 	4,
 	'Basic Service',
+    ],
+    FREE_TRIAL => [
+	5,
+	'Free Trial',
     ],
 ]);
 
