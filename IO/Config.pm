@@ -220,7 +220,7 @@ If I<argv> is supplied and not running setuid or setgid (but may be
 running as root), extracts (i.e. deletes) arguments from the
 I<argv> of the form:
 
-    --Module.param=value
+    --(Module.)param=value
 
 and sets configuration of the form:
 
@@ -232,6 +232,8 @@ I<param> may be of the form I<idx1.idx2.idx3> which translates to:
 
 An error during evaluation causes program termination.  To set a
 value to undef, use the word C<undef>.
+
+Module defaults to C<main> if not supplied on the command line.
 
 B<initialize> also observes the lone B<--> convention, i.e.
 B<initialize> stops parsing command line arguments if a B<--> is
@@ -291,6 +293,7 @@ sub initialize {
     foreach $pkg (@_REGISTERED) {
 	&{\&{$pkg . '::configure'}}($pkg, &_get_pkg($pkg));
     }
+#TODO: Why doesn't return an error when @argv = () and no default config?
     return;
 }
 
@@ -437,7 +440,13 @@ sub _process_argv {
 	# HACK: Probably want to generalize(?)
 	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
 	# Matches our form?
-	(my($m, $p, $v) = $a =~ /^--([\w:]+)\.([.\w]+)=(.*)$/s) || next;
+	(my($m, $p, $v) = $a =~ /^--([\w:]+)(.[\w]+)*=(.*)$/s) || next;
+	# Need to default to package main?
+	# (Convention: packages begin with upper-case letter)
+	if ($m =~ /^[a-z0-9_]+$/ && $m ne 'main') {
+	    $p = defined($p) ? ($m . $p) : $m;
+	    $m = 'main';
+	}
 	$v eq 'undef' && ($v = undef);
 	# Ensure the hashes exist down the chain, starting at the module ($m)
 	# perl in Lispish
