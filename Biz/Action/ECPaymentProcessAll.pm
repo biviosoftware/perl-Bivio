@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::ECPaymentProcessAll;
 use strict;
@@ -8,6 +8,10 @@ $_ = $Bivio::Biz::Action::ECPaymentProcessAll::VERSION;
 =head1 NAME
 
 Bivio::Biz::Action::ECPaymentProcessAll - process all pending payments
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
@@ -102,7 +106,7 @@ sub _process_all {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Software Artisans, Inc.  All rights reserved.
 
 =head1 VERSION
 
