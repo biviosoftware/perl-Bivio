@@ -31,6 +31,7 @@ C<Bivio::UI::HTML::Format::Date>
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -56,10 +57,11 @@ sub get_widget_value {
     die("invalid year_digits $year_digits") if (defined($year_digits)
 	    && $year_digits != 2 && $year_digits != 4);
     $year_digits ||= 4;
-    my($sec, $min, $hour, $mday, $mon, $year) = localtime($time);
+    my($sec, $min, $hour, $mday, $mon, $year) =
+	    Bivio::Type::DateTime->to_parts($time);
     return $year_digits == 2
-	    ? sprintf('%02d/%02d/%02d', $mon + 1, $mday, $year =~ /(\d\d)$/)
-	    : sprintf('%02d/%02d/%04d', $mon + 1, $mday, $year + 1900);
+	    ? sprintf('%02d/%02d/%02d', $mon, $mday, $year =~ /(\d\d)$/)
+	    : sprintf('%02d/%02d/%04d', $mon, $mday, $year);
 }
 
 #=PRIVATE METHODS

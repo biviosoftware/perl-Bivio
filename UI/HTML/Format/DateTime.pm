@@ -32,6 +32,7 @@ a date/time string.  May consult user preferences.
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 
@@ -43,15 +44,17 @@ a date/time string.  May consult user preferences.
 
 =head2 static get_widget_value(int time) : string
 
-Formats a date time value as a string.
+Formats a date/time value as a string.  Handles both unix
+and DateTime formats.
 
 =cut
 
 sub get_widget_value {
     my(undef, $time) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = localtime($time);
+    my($sec, $min, $hour, $mday, $mon, $year)
+	    = Bivio::Type::DateTime::to_parts($time);
     return sprintf('%02d/%02d/%04d %02d:%02d:%02d',
-	    $mon + 1, $mday, $year + 1900, $hour, $min, $sec);
+	    $mon, $mday, $year, $hour, $min, $sec);
 }
 
 #=PRIVATE METHODS
