@@ -35,6 +35,7 @@ and delete interface to the C<realm_account_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Preferences;
 use Bivio::Die;
 use Bivio::SQL::Connection;
 use Bivio::Type::ClubPreference;
@@ -204,8 +205,8 @@ true if successfully, loaded, false otherwise.
 sub unsafe_load_default {
     my($self) = @_;
 
-    my($default_id) = $self->get_request->get_club_pref(
-	    Bivio::Type::ClubPreference::DEFAULT_ACCOUNT());
+    my($default_id) = Bivio::Biz::Model::Preferences->get_club_pref(
+	    $self->get_request, 'DEFAULT_ACCOUNT');
 
     return ($default_id && $self->unsafe_load(realm_account_id => $default_id))
 	    ? 1 : 0;

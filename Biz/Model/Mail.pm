@@ -30,9 +30,7 @@ use Bivio::Biz::PropertyModel;
 C<Bivio::Biz::Model::Mail> holds information about an email message
 which is stored in mail_t and file_t, volume MAIL & MAIL_CACHE
 
-
 =cut
-
 
 =head1 CONSTANTS
 
@@ -55,6 +53,7 @@ sub ATT_DELIMITER {
 use MIME::Head ();
 use MIME::Entity ();
 use MIME::Parser ();
+use Bivio::Biz::Model::Preferences;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
@@ -194,7 +193,8 @@ sub create {
 	reply_to_email => $reply_to_email,
 	subject => $subject,
 	subject_sort => $sortable_subject,
-        is_public => $req->get_club_pref('MAIL_POST_PUBLIC') ? 1 : 0,
+        is_public => Bivio::Biz::Model::Preferences->get_club_pref(
+		$req, 'MAIL_POST_PUBLIC') ? 1 : 0,
         num_replies => 0,
         bytes => 0,
     };
