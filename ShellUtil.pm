@@ -356,8 +356,11 @@ sub main {
 	    $cmd = shift(@argv);
 	    $res = $self->$cmd(@argv);
 	}
+	elsif (@argv) {
+	    $self->usage($argv[0], ': unknown command');
+	}
 	else {
-	    $self->usage('unknown or missing command');
+	    $self->usage('missing command');
 	}
 	return $res;
     });
