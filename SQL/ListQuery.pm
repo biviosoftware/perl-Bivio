@@ -415,7 +415,6 @@ of I<this_row> as the parent_id.  There is no page number.
 sub format_uri_for_this_child {
     my($self, $support, $this_row) = @_;
     my(%attrs) = %{$self->internal_get()};
-#TODO: Probably need a check that this is really a primary id
     $attrs{parent_id} = $this_row->{$support->get('primary_key_names')->[0]};
     $attrs{this} = undef;
     $attrs{page_number} = undef;
@@ -518,9 +517,6 @@ sub get_hidden_field_values {
     # Since this is a search, there is no page_number or this, but
     # there may be need to be a parent_id.
     my(@res) = ();
-#TODO: Should this be here?
-#    push(@res, 'p' => Bivio::Type::PrimaryId->to_literal($attrs->{parent_id}))
-#	    if $attrs->{parent_id};
     if ($ob) {
 	my($o);
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
@@ -642,9 +638,10 @@ sub _format_uri {
     $res .= 't='._format_uri_primary_key($attrs->{this}, $support).'&'
 	    if $attrs->{this};
 
-    # parent_id?  Must be a PrimaryId per the spec
-    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
-	    if $attrs->{parent_id};
+    # use parent_id if present
+    $res .= 'p='._get_parent_id_type($attrs, $support)->to_query(
+	    $attrs->{parent_id}).'&'
+		    if $attrs->{parent_id};
 
     # page_number?
     $res .= 'n='.Bivio::Type::Integer->to_query($attrs->{page_number}).'&'
@@ -699,6 +696,17 @@ sub _format_uri_primary_key {
 		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}});
     }
     return $res;
+}
+
+# _get_parent_id_type(hash_ref attrs, Bivio::SQL::Support support) : string
+#
+# Returns the type of the parent_id field.
+#
+sub _get_parent_id_type {
+    my($attrs, $support) = @_;
+    # use the list support first, otherwise default to first primary key
+    return $support->unsafe_get('parent_id_type')
+	    || $support->get('primary_key')->[0]->{type};
 }
 
 # _new(any proto, hash_ref attrs, Bivio::SQL::Support, ref die) : Bivio::SQL::ListQuery
@@ -866,7 +874,7 @@ sub _parse_parent_id {
     # Returns undef if no parent_id or bad parent id
     my($err);
     ($attrs->{parent_id}, $err)
-	    = Bivio::Type::PrimaryId->from_literal(
+	    = _get_parent_id_type($attrs, $support)->from_literal(
 		    $attrs->{'p'} || $attrs->{parent_id});
 
     # If the parent id is set and we aren't expecting it, will be ignored
