@@ -114,7 +114,7 @@ sub initialize {
 	$fields->{alt} = $alt;
     }
     elsif (defined($alt)) {
-	$fields->{prefix} .= ' alt="'.Bivio::HTML->escape($alt).'"';
+	$fields->{prefix} .= ' alt="'.Bivio::HTML->escape_attr_value($alt).'"';
     }
     $fields->{prefix} .= ' name="';
     return;
@@ -138,8 +138,10 @@ sub render {
 		    : 'submit';
 
     $$buffer .= $fields->{prefix}.$field.'"';
-    $$buffer .= ' alt="'.Bivio::HTML->escape(
-	    $source->get_widget_value(@{$fields->{alt}})).'"'
+    $$buffer .= ' alt="'
+	    .Bivio::HTML->escape_attr_value(
+		    $self->render_value('alt', $fields->{alt}, $source))
+	    .'"'
 		    if $fields->{alt};
     $$buffer .= ' src="'
 	    .Bivio::UI::Icon->get_value($fields->{image}, $req)->{uri}.'">';
