@@ -46,7 +46,6 @@ use Bivio::ShellUtil;
 use Socket ();
 
 #=VARIABLES
-my($_SELF);
 my($_MSG_QUEUE_ATTR) = __PACKAGE__ . '.msg_queue';
 
 =head1 FACTORIES
@@ -57,29 +56,14 @@ my($_MSG_QUEUE_ATTR) = __PACKAGE__ . '.msg_queue';
 
 =head2 static get_instance() : Bivio::Test::Request
 
-Returns an instance of self.
+Same as L<get_current_or_new|"get_current_or_new">.
+
+TODO: Probably should be deprecated.
 
 =cut
 
 sub get_instance {
-    my($proto) = @_;
-    if ($_SELF) {
-	Bivio::Die->die(
-	    $_SELF, ': self not current request ', $_SELF->get_current,
-        ) unless !$_SELF->get_current || $_SELF->get_current == $_SELF;
-        return $_SELF;
-    }
-    $_SELF = $proto->new({
-	auth_id => undef,
-	auth_user_id => undef,
-	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
-	timezone => Bivio::Type::DateTime->timezone,
-	is_secure => 0,
-    });
-    $_SELF->put(reply => Bivio::Test::Reply->new);
-    $_SELF->set_realm(undef);
-    $_SELF->set_user(undef);
-    return $_SELF;
+    return shift->get_current_or_new(@_);
 }
 
 =head1 METHODS
@@ -118,20 +102,6 @@ sub capture_mail {
     return $self;
 }
 
-=for html <a name="clear_current"></a>
-
-=head2 clear_current()
-
-Clears current and calls parent.
-
-=cut
-
-sub clear_current {
-    my($self) = shift;
-    $_SELF = undef;
-    return $self->SUPER::clear_current(@_);
-}
-
 =for html <a name="execute_task"></a>
 
 =head2 static execute_task(any task_id, hash_ref req_attrs) : array_ref
@@ -163,6 +133,35 @@ Nop.
 sub format_http_toggling_secure {
     my($self) = @_;
     return '';
+}
+
+=for html <a name="get_current_or_new"></a>
+
+=head2 static get_current_or_new() : Bivio::Agent::Request
+
+Returns
+L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current"> or a
+new instance of this class, which is set to current.
+
+=cut
+
+sub get_current_or_new {
+    my($proto) = @_;
+    my($self) = $proto->get_current;
+    return $self
+	if $self;
+    $self = $proto->new({
+	auth_id => undef,
+	auth_user_id => undef,
+	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
+	timezone => Bivio::Type::DateTime->timezone,
+	is_secure => 0,
+    })->put(
+	reply => Bivio::Test::Reply->new,
+    );
+    $self->set_realm(undef);
+    $self->set_user(undef);
+    return $self;
 }
 
 =for html <a name="get_form"></a>
