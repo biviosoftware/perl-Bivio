@@ -218,8 +218,8 @@ sub allow_any_sendmail_smtp {
 	    qr/DaemonPortOptions=Port=smtp,(?!Addr=127.0.0.1)/m],
 	map {
 	    my($option, $value) = split(/=/);
-	    [qr/^#?O\s+$option\s*=.*/m, "O $option=$value\n",
-	        qr/^\Q$option=$value\E$/m];
+	    [qr/^#?O\s+$option\s*=.*/m, "O $option=$value",
+	        qr/^\QO $option=$value\E$/m];
 	} 'PrivacyOptions=goaway,restrictmailq,restrictqrun',
 	    'SmtpGreetingMessage=$j',
 	    "MaxMessageSize=$max_message_size"
