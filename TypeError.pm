@@ -824,6 +824,11 @@ __PACKAGE__->compile(
 	undef,
 	'may be not be zero',
     ],
+    NO_FRACTION_SHARES_CREATED => [
+	109,
+	undef,
+	'no fraction shares were created',
+    ],
 );
 
 #=PRIVATE METHODS
