@@ -341,6 +341,9 @@ sub regroup {
 
 Sets I<value> for the group which contains I<name>.
 
+#TODO: Arg order is bad.  Conflicts with create_group which is also bad...
+ 
+
 =cut
 
 sub set_group_value {
