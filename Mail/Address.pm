@@ -150,6 +150,34 @@ sub parse {
     return (undef, undef);
 }
 
+=for html <a name="parse_list_strict"></a>
+
+=head2 static parse_list_strict(string list_string, array_ref error_list) : arrary_ref
+
+Parse a string into a list of email addresses. Only literal email
+addresses are allowed--RFC822 comments and extensions are not
+supported.
+
+Errors will be pushed onto error_list, if present.
+
+=cut
+
+sub parse_list_strict {
+    my($proto, $list_string, $error_list) = @_;
+    my($email_list) = [];
+
+    foreach my $email ($list_string =~ /([^\s,]+)/gs) {
+        my($parsed) = Bivio::Type::Email->from_literal($email);
+        if ($parsed) {
+            push(@$email_list, $parsed);
+        }
+	elsif (ref($error_list) eq 'ARRAY') {
+	    push(@$error_list, $email . ' is not a valid email address.');
+	}
+    }
+    return $email_list;
+}
+
 #=PRIVATE METHODS
 
 sub _clean_comment {
