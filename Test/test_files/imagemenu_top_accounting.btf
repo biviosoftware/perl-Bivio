@@ -1,2 +1,2 @@
-Login->execute();
-PageTools->click_imagemenu('Accounting');
+HTTP->login();
+HTTP->click_imagemenu('Accounting');
