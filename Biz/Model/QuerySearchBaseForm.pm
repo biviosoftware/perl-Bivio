@@ -59,7 +59,6 @@ sub emit_query_values {
 		my($dv) = $self->get_field_info($_, 'default_value');
 		my($t) = $self->get_field_info($_, 'type');
 		$t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v));
-		# might want to check for type=FormButton instead
 	    } grep({
 		!($self->get_field_info($_, 'type')
 		    && $self->get_field_info($_, 'type')
@@ -172,8 +171,8 @@ sub internal_pre_execute {
     map({
 	my($fn) = $self->get_field_name_for_html($_);
 	$self->load_default_value($_)
-	    unless exists($form->{$fn});
-	# might want to check for type=FormButton instead
+	    unless defined($self->unsafe_get($_));
+    # might want to check for type=FormButton instead
     } grep({!($_ =~ /_button/)}
 	@{$self->get_info('visible_field_names')}));
     return;
