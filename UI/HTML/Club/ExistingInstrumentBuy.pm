@@ -96,27 +96,12 @@ EOF
 	header => $self->join(
 	    "Use this form to record the purchase of additional shares of ",
 	    Bivio::UI::HTML::Widget::String->new({
-		value => ['name'],
+		value => ['Bivio::Biz::Model::RealmInstrument', '->get_name'],
 		string_font => 'label_in_text',
-	    })
+	    }),
+	    '.',
 	),
     });
-}
-
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req)
-
-Loads the page heading.
-
-=cut
-
-sub execute {
-    my($self, $req) = @_;
-    my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
-    $req->put(name => $realm_inst->get_name);
-    $self->SUPER::execute($req);
-    return;
 }
 
 #=PRIVATE METHODS
