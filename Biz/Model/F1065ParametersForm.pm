@@ -128,7 +128,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 1,
+	version => 2,
 	visible => [
 	    'Tax1065.partnership_type',
 #TODO: bug in form doesn't allow undef booleans as false

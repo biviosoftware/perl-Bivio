@@ -68,7 +68,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 1,
+	version => 2,
 	visible => [
             {
                name => 'show_inactive',

@@ -138,7 +138,7 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     return {
-	version => 1,
+	version => 2,
 	other => [
 	    {
 		name => 'business_activity',

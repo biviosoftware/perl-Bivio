@@ -74,7 +74,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 1,
+	version => 2,
     };
     return $self->merge_initialize_info(
 	    $self->SUPER::internal_initialize, $info);

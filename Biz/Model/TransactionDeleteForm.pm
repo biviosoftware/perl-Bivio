@@ -77,7 +77,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 1,
+	version => 2,
 	require_context => 1,
 	auth_id => ['RealmTransaction.realm_id', 'RealmOwner.realm_id'],
     };
