@@ -9,6 +9,10 @@ $_ = $Bivio::Type::Secret::VERSION;
 
 Bivio::Type::Secret - encrypted value in database, never displayed to user
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::Secret;
@@ -63,6 +67,46 @@ Bivio::IO::Config->register({
 
 =cut
 
+=for html <a name="decrypt_hex"></a>
+
+=head2 static decrypt_hex(string encoded_hex) : array
+
+Decrypts I<encoded_hex> and returns plain text.  If there is an
+error decrypting, returns C<undef>.  If I<encoded_hex> is C<undef>,
+returns C<undef>.
+
+=cut
+
+sub decrypt_hex {
+    my(undef, $encoded_hex) = @_;
+    return undef unless $encoded_hex;
+    _assert_cipher();
+
+    # Decrypt and make sure surrounded by magic and a time not before now
+    my($s) = $_CIPHER->decrypt_hex($encoded_hex);
+    return undef unless
+	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
+    return $s;
+}
+
+=for html <a name="encrypt_hex"></a>
+
+=head2 static encrypt_hex(string clear_text) : string
+
+Encrypts I<clear_text> and returns encoded data in hex string.
+If I<clear_text> is C<undef>, returns C<undef>.
+
+=cut
+
+sub encrypt_hex {
+    my($proto, $clear_text) = @_;
+    return undef unless defined($clear_text);
+
+    _assert_cipher();
+    # Surround with magic and trailing time and encrypt
+    return $_CIPHER->encrypt_hex($_MAGIC.$clear_text.$_MAGIC.time);
+}
+
 =for html <a name="from_sql_column"></a>
 
 =head2 static from_sql_column(string value) : string
@@ -73,18 +117,15 @@ the column from the database.
 =cut
 
 sub from_sql_column {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     return undef unless $value;
-    _assert_cipher();
 
-    # Decrypt and make sure surrounded by magic and a time not before now
-    my($s) = $_CIPHER->decrypt_hex($value);
+    my($s) = $proto->decrypt_hex($value);
     # There is a configuration error if we can't decrypt values from DB
     Bivio::Die->throw('CONFIG_ERROR',
 	    {entity => 'key', class => __PACKAGE__,
 	    message => 'unable to decrypt value'})
-		unless $s =~ s/^$_MAGIC//o
-			&& $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
+		unless defined($s);
     return $s;
 }
 
@@ -138,12 +179,8 @@ Return the string of I<value>.
 =cut
 
 sub to_sql_param {
-    my(undef, $value) = @_;
-    return undef unless defined($value);
-
-    _assert_cipher();
-    # Surround with magic and trailing time and encrypt
-    return $_CIPHER->encrypt_hex($_MAGIC.$value.$_MAGIC.time);
+    my($proto, $value) = @_;
+    return $proto->encrypt_hex($value);
 }
 
 #=PRIVATE METHODS
