@@ -63,7 +63,7 @@ sub execute {
     # load and copy the demo club
     my($name) = $realm->get('name').Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
     my($display_name) = $realm->get('display_name');
-    $realm->unauth_load(name => 'demo')
+    $realm->unauth_load(name => 'demo_club')
 	    || die("couldn't find demo realm");;
     $req->put(source => $realm);
     $req->put(target_name => $name);
