@@ -33,6 +33,7 @@ use Bivio::UI::Admin::UserView;
 use Bivio::UI::HTML::Page;
 use Bivio::UI::HTML::Presentation;
 use Bivio::UI::Menu;
+use Bivio::UI::MessageBoard::DetailView;
 use Bivio::UI::MessageBoard::MessageListView;
 use Bivio::UI::Setup::Admin;
 use Bivio::UI::Setup::Club;
@@ -63,6 +64,12 @@ sub init {
     $_INITIALIZED = 1;
 
     Bivio::IO::Config->initialize({
+	# message body file server
+	'Bivio::IPC::Client' => {
+	    'addr' => 'localhost',
+	    'port' => 9876
+	},
+
 	'Bivio::Ext::DBI' => {
 	    ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
 	    database => 'surf_test',
@@ -90,8 +97,7 @@ sub init {
     my($user_list) = Bivio::UI::Admin::UserListView->new();
     my($add_user) = Bivio::UI::Admin::UserView->new();
     my($message_list) = Bivio::UI::MessageBoard::MessageListView->new();
-    my($message_detail) = Bivio::UI::TestView->new("detail", "<i>Message</i>",
-	    $default_model);
+    my($message_detail) = Bivio::UI::MessageBoard::DetailView->new();
 
     my($admin) = Bivio::UI::HTML::Presentation->new([$user_list, $add_user]);
     my($messages) = Bivio::UI::HTML::Presentation->new([$message_list,
