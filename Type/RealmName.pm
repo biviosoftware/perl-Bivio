@@ -72,6 +72,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     ftp
     games
     gopher
+    goto
     guest
     halt
     help

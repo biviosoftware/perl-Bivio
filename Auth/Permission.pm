@@ -54,6 +54,7 @@ __PACKAGE__->compile(
     LOGIN => [14],
     MAIL_RECEIVE => [15],
     DOCUMENT_WRITE => [16],
+    ANY_USER => [17],
 );
 
 =head1 METHODS

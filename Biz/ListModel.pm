@@ -434,6 +434,25 @@ sub load {
     return;
 }
 
+=for html <a name="load_all"></a>
+
+=head2 load_all()
+
+Loads "all" the records in this realm.
+If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
+
+=cut
+
+sub load_all {
+    my($self) = @_;
+#TODO: What's the magic number?
+    $self->load({count => 200});
+    my($fields) = $self->{$_PACKAGE};
+    $self->die(Bivio::DieCode::TOO_MANY(), "more than 200 records")
+	    if $fields->{query}->get('has_next');
+    return;
+}
+
 =for html <a name="map_primary_key_to_rows"></a>
 
 =head2 map_primary_key_to_rows() : hash_ref

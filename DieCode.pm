@@ -101,6 +101,10 @@ might be due to an error on the server.
 redirects the user agent to the specified task. As with internal redirects,
 transactions, messages, etc. SHOULD NOT be rolled back.
 
+=item TOO_MANY 
+
+Too many records were returned.
+
 =back
 
 =cut
@@ -180,6 +184,11 @@ __PACKAGE__->compile(
 	13,
 	'client redirect task',
 	'direct user agent to new task',
+    ],
+    TOO_MANY => [
+	14,
+	'too many',
+	'the request returned too much data or too many records',
     ],
 );
 

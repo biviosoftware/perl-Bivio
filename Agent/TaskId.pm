@@ -116,7 +116,7 @@ my(@_CFG) = (
 	LOGOUT
 	8
         GENERAL
-        LOGIN
+        ANY_USER
         pub/logout
 	Bivio::Biz::Action::Logout
         next=LOGIN
@@ -365,7 +365,14 @@ my(@_CFG) = (
         _/accounting/reports/balance-sheet
         Bivio::UI::HTML::Club::Embargoed
     )],
-    #Missing: 38
+    [qw(
+	GENERAL_PRIVACY
+	38
+        GENERAL
+        DOCUMENT_READ
+        hm/privacy.html
+        Bivio::Biz::Action::HTTPDocument
+    )],
     # No actions, just a token for authentication action
     [qw(
         CLUB_MAIL_COMPOSE
@@ -796,8 +803,25 @@ my(@_CFG) = (
         cancel=HTTP_DOCUMENT
     )],
     [qw(
+	GENERAL_CONTACT
+	83
+        GENERAL
+        DOCUMENT_READ
+        hm/contact.html
+        Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
+	REALM_REDIRECT
+	84
+        GENERAL
+        ANY_USER
+        goto
+        Bivio::Biz::Action::RealmRedirect
+        next=USER_HOME
+    )],
+    [qw(
         CLUB_ACCOUNTING_INVESTMENT_SELL2
-        83
+        85
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/sell2

@@ -367,10 +367,11 @@ __DATA__
 #
 b-realm-role GENERAL ANONYMOUS - \
     +LOGIN \
+    +DOCUMENT_READ \
     +MAIL_WRITE
 b-realm-role GENERAL USER - \
     +ANONYMOUS \
-    +DOCUMENT_READ \
+    +ANY_USER \
     +MAIL_RECEIVE
 b-realm-role GENERAL GUEST - \
     +USER
@@ -387,7 +388,8 @@ b-realm-role USER ANONYMOUS - \
     +LOGIN \
     +MAIL_WRITE
 b-realm-role USER USER - \
-    +ANONYMOUS
+    +ANONYMOUS \
+    +ANY_USER
 b-realm-role USER GUEST - \
     +USER \
     +DOCUMENT_READ
@@ -404,7 +406,8 @@ b-realm-role CLUB ANONYMOUS - \
     +LOGIN \
     +MAIL_WRITE
 b-realm-role CLUB USER - \
-    +ANONYMOUS
+    +ANONYMOUS \
+    +ANY_USER
 b-realm-role CLUB GUEST - \
     +USER \
     +ADMIN_READ \

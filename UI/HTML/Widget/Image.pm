@@ -43,6 +43,8 @@ Literal text to use for C<ALT> attribute of C<IMG> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
+May be C<undef>.
+
 =item image_border : int [0] (inherited)
 
 Set to zero by default, so you rarely need to set this.
@@ -60,6 +62,10 @@ For "real" gifs, the dimensions are extracted from the file.
 Image to use for C<SRC> attribute of C<IMG> tag.  An "image" is
 a hash_ref as returned, e.g. as returned by
 L<Bivio::UI::Icon::get_widget_value|Bivio::UI::Icon/"get_widget_value">.
+
+=item src : hash_ref (required)
+
+Already been through lookup Icon.
 
 =item image_width : int [src's width] (inherited)
 
@@ -116,7 +122,7 @@ sub initialize {
     # Both must be defined
     my($src, $alt) = $self->get(qw(src alt));
     my($width, $height, $border) = $self->unsafe_get(
-	    qw(image_width image_height simple_border));
+	    qw(image_width image_height image_border));
     $border = 0 unless defined($border);
     Carp::croak('only one of width and height defined')
 		unless defined($width) == defined($height);
@@ -126,10 +132,15 @@ sub initialize {
     if (ref($alt)) {
 	$fields->{alt} = $alt;
     }
-    else {
+    elsif (defined($alt)) {
 	$p .= ' alt="'.Bivio::Util::escape_html($alt).'"';
     }
-    $p .= " width=$width height=$height" if defined($width);
+    # If width defined, then height defined.
+    if (defined($width)) {
+	# Allow for 0 in either dimension
+	$p .= " width=$width" if $width;
+	$p .= " height=$height" if $height;
+    }
     $p .= " border=$border";
     $fields->{prefix} = $p;
     $fields->{have_size} = defined($width);
@@ -175,7 +186,8 @@ sub render {
 	    $source->get_widget_value(@{$fields->{alt}})).'"'
 		    if $fields->{alt};
     if ($fields->{is_first_render}) {
-	my($src) = $source->get_widget_value(@{$fields->{src}});
+	my($src) = $fields->{src};
+	$src = $source->get_widget_value(@$src) unless ref($src) eq 'HASH';
 	my($img) = ' src="'.Bivio::Util::escape_html($src->{uri}).'"';
 	$img .= " width=$src->{width} height=$src->{height}"
 		if !$fields->{have_size} && defined($src->{width});

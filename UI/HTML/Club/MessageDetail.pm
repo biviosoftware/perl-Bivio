@@ -47,6 +47,7 @@ use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::Image;
 use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::Widget::Indirect;
 use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
@@ -85,7 +86,12 @@ sub new {
  	    });
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
-	    '<center>by ',
+	    '<center>',
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['page_heading'],
+		string_font => 'MESSAGE_SUBJECT',
+	    }),
+	    '<br>by ',
 	    Bivio::UI::HTML::Widget::Link->new({
 		href => ['->format_mailto',
 		    ['Bivio::Biz::Model::MailMessage', 'from_email'],

@@ -297,7 +297,7 @@ sub format_uri_for_this_page {
 
 Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
 
-Used in search forms.  The conversion to html is done by caller.
+Used in search and chooser forms.  The conversion to html is done by caller.
 
 =cut
 
@@ -309,8 +309,9 @@ sub get_hidden_field_values {
     # Since this is a search, there is no page_number or this, but
     # there may be need to be a parent_id.
     my(@res) = ('v' => $attrs->{version});
-    push(@res, 'p' => Bivio::Type::PrimaryId->to_literal($attrs->{parent_id}))
-	    if $attrs->{parent_id};
+#TODO: Should this be here?
+#    push(@res, 'p' => Bivio::Type::PrimaryId->to_literal($attrs->{parent_id}))
+#	    if $attrs->{parent_id};
     if ($ob) {
 	my($o);
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {

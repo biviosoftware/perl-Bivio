@@ -34,7 +34,11 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 The widget or its children should be a
 L<Bivio::UI::HTML::Widget::Submit|Bivio::UI::HTML::Widget::Submit>.
 
-No special pageatting is implemented.  For layout, use, e.g.
+The link, bg, and text colors are specified by the
+L<Bivio::UI::Color|Bivio::UI::Color> names:
+page_bg, page_text, page_link, page_vlink, and page_alink.
+page_bg must be defined, but the others may be undefined iwc
+the color defaults to the browser default.
 
 =head1 ATTRIBUTES
 
@@ -46,11 +50,6 @@ How to render the C<BODY> tag contents.  Usually a
 L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>
 or
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
-
-=item page_bgcolor : string [page_bg] (inherited)
-
-Value of C<BGCOLOR> attribute of C<BODY> tag.
-See L<Bivio::UI::Color|Bivio::UI::Color>.
 
 =item head : Bivio::UI::Widget (required)
 
@@ -127,12 +126,13 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{prefix};
     $fields->{middle} = '</head><body';
-    my($bg) = $self->ancestral_get('page_bgcolor', 'page_bg');
-    $fields->{middle} .= Bivio::UI::Color->as_html_bg($bg) if $bg;
-    $fields->{middle} .= ' text='.Bivio::UI::Color->as_html('page_text');
-    $fields->{middle} .= ' link='.Bivio::UI::Color->as_html('page_link');
-    $fields->{middle} .= ' alink='.Bivio::UI::Color->as_html('page_link');
-    $fields->{middle} .= ' vlink='.Bivio::UI::Color->as_html('page_vlink');
+    # Always have a background color
+    $fields->{middle} .= Bivio::UI::Color->as_html_bg('page_bg');
+    foreach my $c ('text', 'link', 'alink', 'vlink') {
+	my($n) = 'page_'.$c;
+	$fields->{middle} .= Bivio::UI::Color->as_html($c, $n)
+		if Bivio::UI::Color->unsafe_from_any($n);
+    }
     $fields->{middle} .= ">\n";
     my($v);
     foreach $v (($fields->{head}, $fields->{body})

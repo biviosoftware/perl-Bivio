@@ -80,9 +80,17 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
+=item cell_colspan : int [1]
+
+The value passed to C<COLSPAN> attribute of the C<TD> tag.
+
 =item cell_compact : boolean [false]
 
 If true, the cell will be C<WIDTH=1%>.
+
+=item cell_end : boolean [true]
+
+If false, will not put cell end tag C<E<lt>/TD E<gt>>
 
 =item cell_expand : boolean [false]
 
@@ -90,13 +98,21 @@ If true, the cell will consume any excess columns in its row.
 Excess columns are not the same as C<undef> columns which are
 blank place holders.
 
+=item cell_height : int []
+
+Sets the cell height explicitly.
+
 =item cell_nowrap : boolean [false]
 
 If true, the cell will not be wrapped.
 
-=item cell_rowspan : number [1]
+=item cell_rowspan : int [1]
 
 The value passed to C<ROWSPAN> attribute of the C<TD> tag.
+
+=item cell_width : int []
+
+Sets the cell width explicitly.
 
 =back
 
@@ -146,7 +162,6 @@ sub initialize {
     my($p) = '<table border=0';
     # We don't want to check parents
     my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
-    my($rowspan);
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
@@ -167,37 +182,46 @@ sub initialize {
 	my($c);
 	foreach $c (@cols) {
 	    my($p) = '<td';
+	    my($end) = 1;
 	    if (ref($c)) {
 		# May set attributes on itself
 		$c->put('parent', $self);
 		$c->initialize($self, $source);
-		my($align);
-		($bg, $expand, $align, $rowspan) = $c->unsafe_get(
-			qw(cell_bgcolor cell_expand cell_align cell_rowspan));
+		my($align, $width, $height, $colspan, $rowspan);
+		($bg, $expand, $align, $colspan, $rowspan, $width, $height)
+			= $c->unsafe_get(qw(cell_bgcolor cell_expand
+				cell_align cell_colspan cell_rowspan cell_width
+				cell_height));
 		if ($expand) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
-		    $p .= " colspan=$expand_cols";
+		    $p .= " colspan=$expand_cols" if $expand_cols > 1;
 		    $p .= ' width="100%"' if $expand;
 		    $expand_cols = 1;
 		}
+#TODO: Need better crosschecking
 		$p .= ' width="1%"' if $c->get_or_default('cell_compact', 0);
 		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
 		$p .= " rowspan=$rowspan" if $rowspan;
+		$p .= " colspan=$colspan" if $colspan;
 		$p .= ' nowrap' if $c->get_or_default('cell_nowrap', 0);
+#TODO: Should be a number or percent?
+		$p .= qq! width="$width"! if $width;
+		$p .= qq! height="$height"! if $height;
+		$end = $c->get_or_default('cell_end', 1);
 	    }
 	    elsif (!defined($c)) {
+		# Replace undef cells with something real. 
 		$c = '';
 	    }
 	    elsif ($c =~ /^\s+$/) {
 		$p .= ' width="1%"';
 		$c =~ s/\s/&nbsp;/g;
 	    }
-	    # Replace undef cells with something real.  Render
-	    # text strings literally.
-	    push(@$r, $p .'>', $c, "</td>\n");
+	    # Render scalars literally.
+	    push(@$r, $p .'>', $c, $end ? "</td>\n" : '');
 	}
     }
     $fields->{rows} = $rows;

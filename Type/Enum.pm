@@ -17,6 +17,9 @@ Bivio::Type::Enum - base class for enumerated types
             0,
             'short description',
             'long description',
+            'alias 1',
+            ...,
+            'alias N',
         },
     );
     __PACKAGE__->NAME;
@@ -196,11 +199,15 @@ Hash of enum names pointing to array containing number, short
 description, and, long description.  If the long description
 is not supplied or is C<undef>, the short description will be used.  If the
 short description is not supplied or is C<undef>, the name will be downcased
-and all underscores (_) will be replaced with space.
+and all underscores (_) will be replaced with space and the first letter
+of each word will be capitalized.
 
 The descriptions should be unique, but may match the other descriptions or
 names for a particular enum.  L<from_any|"from_any"> can map from descriptions
 to enums in a case-insensitive manner.
+
+As many aliases as you like may be provided.  However, duplicates
+will cause an error.
 
 =cut
 
@@ -227,8 +234,8 @@ sub compile {
 	    $d->[1] = $n;
 	}
 	$d->[2] = $d->[1] unless defined($d->[2]);
-	Carp::croak("$name: incorrect array length (should be 1 to 3)")
-		    unless int(@$d) == 3;
+	# Remove aliases
+	my(@aliases) = splice(@$d, 3);
 	Carp::croak("$name: invalid number \"$d->[0]\"")
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
 	Carp::croak("$name: invalid enum name")
@@ -256,6 +263,12 @@ sub compile {
 	# Map descriptions only if not already mapped.
 	$info{uc($d->[1])} = $d unless defined($info{uc($d->[1])});
 	$info{uc($d->[2])} = $d unless defined($info{uc($d->[2])});
+	# Map extra aliases
+	foreach my $alias (@aliases) {
+	    Carp::croak($alias, ': duplicate alias')
+			if defined($info{uc($alias)});
+	    $info{uc($alias)} = $d;
+	}
 	# Index 5: enum instance
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}

@@ -452,13 +452,13 @@ sub _load_this {
     if ($next) {
 	my($j) = 0;
 	$query->put(has_next => 1,
-		prev => [map {
+		next => [map {
 		    $_->from_sql_column($row->[$j++]);
 		} @$types]);
     }
 
     # Which page are we on?
-    $query->put(page_number => int(++$row_count % $count));
+    $query->put(page_number => int(--$row_count / $count));
     return $rows;
 }
 

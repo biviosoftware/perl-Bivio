@@ -73,21 +73,29 @@ use Bivio::UI::Color;
 my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
     PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
-    TABLE_HEADING => [$_SANS_SERIF, undef, 'small', 'strong'],
+    TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     NORMAL_TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
-    TABLE_CELL => [undef, undef, 'small'],
+    TABLE_CELL => [undef, undef],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'i'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
-    NUMBER_CELL => [undef, undef, 'tt'],
-    TABLE_ROW_TITLE => [undef, undef, 'small', 'strong'],
-    FORM_FIELD_LABEL => [undef, undef, 'small'],
-    FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i', 'small'],
-    REALM_NAME => [$_SANS_SERIF, 'realm_name', 'big'],
+    NUMBER_CELL => [undef, undef],
+    TABLE_ROW_TITLE => [undef, undef, 'strong'],
+    FORM_FIELD_LABEL => [undef, undef],
+    FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i'],
+    REALM_NAME => [$_SANS_SERIF, 'realm_name', 'strong'],
     USER_NAME => [$_SANS_SERIF, 'user_name', 'big'],
     FORM_SUBMIT => [$_SANS_SERIF, undef],
     SUBSTITUTE_USER => [$_SANS_SERIF, 'error', 'big', 'strong', 'blink'],
+    FOOTER_MENU => [$_SANS_SERIF, 'footer_menu'],
+    ACTION_BAR_STRING => [undef, undef, 'strong'],
+    ACTION_BUTTON => [undef, undef],
+    REPORT_PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
+    TEXT_MENU_NORMAL => [$_SANS_SERIF, 'text_menu_font',],
+    TEXT_MENU_SELECTED => [$_SANS_SERIF, 'text_menu_font', 'strong'],
+    DETAIL_CHOOSER => [$_SANS_SERIF, 'detail_chooser', 'strong'],
+    MESSAGE_SUBJECT => [$_SANS_SERIF, undef],
 ]);
 
 =head1 METHODS
@@ -105,7 +113,8 @@ Returns the font as prefix and suffix strings to surround the text with.
 =cut
 
 sub as_html {
-    return split(/$;/, Bivio::Type::Enum::from_any(@_)->get_long_desc);
+    # 2 forces exactly two fields (even if both are zero length)
+    return split(/$;/, Bivio::Type::Enum::from_any(@_)->get_long_desc, 2);
 }
 
 #=PRIVATE METHODS

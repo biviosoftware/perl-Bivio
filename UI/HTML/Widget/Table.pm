@@ -282,10 +282,10 @@ sub initialize {
     $fields->{leading_separator} = $self->get_or_default('leading_separator',
 	    1);
     $fields->{trailing_separator} = $self->get_or_default('trailing_separator',
-	    1);
+	    0);
     if ($fields->{leading_separator} || $fields->{trailing_separator}) {
 	$fields->{separator} = Bivio::UI::HTML::Widget::LineCell->new({
-	    height => 3,
+	    height => 1,
 	    color => 'table_separator',
 	});
 	$fields->{separator_row} = "<tr><td colspan=$num_columns>";

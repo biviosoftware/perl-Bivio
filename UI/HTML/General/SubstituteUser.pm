@@ -68,8 +68,7 @@ L<Bivio::UI::HTML::General::Page::execute|Bivio::UI::HTML::User::General/"execut
 
 sub execute {
     my($self, $req) = @_;
-    $req->put(page_heading => 'Substitute User',
-	    page_content => $self);
+    $req->put(page_topic => 'Substitute User', page_content => $self);
     Bivio::UI::HTML::General::Page->execute($req);
     return;
 }

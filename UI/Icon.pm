@@ -21,10 +21,13 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::UI::Icon> looks up icons by name.  Currently, the name is
-the root name of the file.  The C<.gif> is added on as well as
-the (configured) directory name.  The icon's size is read and
+the root name of the file.  The C<.gif> is added if there isn't a
+suffix.
+The (configured) directory name is prefixed.  The icon's size is read and
 a tuple (uri, size, width, is_constant) is returned as a
 C<hash_ref> from L<get_widget_value|"get_widget_value">.
+
+You must supply width and height for images which aren't GIFs.
 
 =cut
 
@@ -92,8 +95,10 @@ sub get_widget_value {
     my($name) = shift;
     # We cache both misses and hits.  But with misses, we only output
     # an error message once and keep on trying to read the file.
+    # Name gets ".gif" on end if not supplied
+    $name .= '.gif' unless $name =~ /\./;
     return $_CACHE{$name} if $_CACHE{$name} && $_CACHE{$name} != $_MISSING;
-    my($file) = $_DIR . $name . '.gif';
+    my($file) = $_DIR . $name;
     # Use only one handle to avoid leaks
     my($fh) = \*Bivio::UI::Icon::IN;
     my($res);
@@ -103,13 +108,15 @@ sub get_widget_value {
 	$res = $_MISSING;
     }
     else {
-	my($gif) =  GD::Image->newFromGif($fh);
-	$res = {uri => $_URI . $name . '.gif', is_constant => 1};
-	if (defined($gif)) {
-	    ($res->{width}, $res->{height}) = $gif->getBounds;
-	}
-	else {
-	    warn("$file: unable to determine size");
+	$res = {uri => $_URI . $name, is_constant => 1};
+	if ($name =~ /\.gif$/) {
+	    my($gif) =  GD::Image->newFromGif($fh);
+	    if (defined($gif)) {
+		($res->{width}, $res->{height}) = $gif->getBounds;
+	    }
+	    else {
+		warn("$file: unable to determine size");
+	    }
 	}
 	close($fh);
     }

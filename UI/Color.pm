@@ -32,6 +32,8 @@ color values are represented integers.  Therefore, no two colors
 are alike.  However, there can be three aliases (name, short
 description, and long description) for each color.
 
+If a color is negative, it is not displayed.
+
 The current color names are:
 
 =over 4
@@ -44,31 +46,32 @@ The current color names are:
 
 #=VARIABLES
 __PACKAGE__->compile(
+    NO_COLOR_TAG => [
+	-1,
+    ],
     PAGE_BG => [
 	0xFFFFFF,
+	'image_menu_separator',
+	'report_page_heading_bg',
     ],
-    HEADING_BG => [
-	0xFFFFBB,  # E0E0FF,
-    ],
-    USER_HEADING_BG => [
-	0x99CCCC,
-    ],
-#    TABLE_STRIPE_BG => [
-#	0xFFE8E8, # 0x99CCCC,
-#    ],
     ERROR => [
 	0xFF0000,
     ],
     PAGE_TEXT => [
 	0x000000,
+	'table_separator',
     ],
-    TEXT_TAB_BG => [
-	0x006666, # 0x999999,
+    STRIPE_ABOVE_MENU => [
+	0x009999,
+    ],
+    FOOTER_MENU => [
+	0x006666,
 	'page_vlink',
-	'USER_NAME',
-    ],
-    PAGE_LINK => [
-	0x000099,
+	'page_alink',
+	'user_name',
+	'line_above_menu',
+	'action_bar_border',
+	'detail_chooser',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
@@ -76,13 +79,19 @@ __PACKAGE__->compile(
     SUMMARY_LINE => [
 	0x66CC66,
     ],
-    ACTION_BAR => [
-	0xE9E3C7,
-	'table_separator',
-	'TABLE_STRIPE_BG',
+    TABLE_STRIPE_BG => [
+	0xCCCCCC,
     ],
     REALM_NAME => [
-	0xFF9900,
+	0xFF6633,
+    ],
+    TOP_MENU_BG => [
+	0xffcc33,
+	'action_bar_bg',
+	'text_menu_line',
+    ],
+    TEXT_MENU_FONT => [
+	0xCC9900,
     ],
 );
 
@@ -92,16 +101,18 @@ __PACKAGE__->compile(
 
 =for html <a name="as_html"></a>
 
-=head2 as_html() : string
+=head2 as_html(string attr) : string
 
-=head2 as_html(any thing) : string
+=head2 as_html(string attr, any thing) : string
 
-Returns the color as a raw "string" value (in quotes).
+Returns the color as an attribute=value string suitable for HTML.
 
 =cut
 
 sub as_html {
-    return sprintf('"#%06X"', Bivio::Type::Enum::from_any(@_)->as_int);
+    my($proto, $attr) = (shift, shift);
+    my($c) = Bivio::Type::Enum::from_any($proto, @_)->as_int;
+    return $c >= 0 ? sprintf(' %s="#%06X"', $attr, $c) : '';
 }
 
 =for html <a name="as_html_bg"></a>
@@ -115,8 +126,7 @@ Same as L<as_html|"as_html">, but generates C<BGCOLOR> attribute.
 =cut
 
 sub as_html_bg {
-    return sprintf(' bgcolor="#%06X"',
-	    Bivio::Type::Enum::from_any(@_)->as_int);
+    shift->as_html('bgcolor', @_);
 }
 
 =head2 as_html_fg() : string
@@ -128,7 +138,7 @@ Returns the color as a C<COLOR> attribute.
 =cut
 
 sub as_html_fg {
-    return sprintf(' color="#%06X"', Bivio::Type::Enum::from_any(@_)->as_int);
+    shift->as_html('color', @_);
 }
 
 =for html <a name="is_continuous"></a>
