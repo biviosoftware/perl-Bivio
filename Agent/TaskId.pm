@@ -2237,6 +2237,17 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSpinoff
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_REINVEST
+        228
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/investment/reinvest
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::InstrumentReinvestForm
+        Bivio::UI::HTML::Club::InstrumentReinvest
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
 );
 
 __PACKAGE__->compile(
