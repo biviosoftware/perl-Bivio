@@ -57,11 +57,14 @@ use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::UI::Facade;
-use BSD::Resource;
 
 #=VARIABLES
-# No core dumps please
-setrlimit(RLIMIT_CORE, 0, 0);
+Bivio::Die->eval(qq{
+	Bivio::IO::ClassLoader->simple_require('BSD::Resource');
+	# No core dumps please
+	setrlimit(RLIMIT_CORE, 0, 0);
+    }
+);
 my($_INITIALIZED);
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
