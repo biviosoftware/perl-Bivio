@@ -363,22 +363,22 @@ sub internal_initialize {
 
 =for html <a name="invalidate_email"></a>
 
-=head2 invalidate_email() : 
+=head2 invalidate_email()
 
-Invalidates user's e-mail address be prefixing it with "invalid:"
+Invalidates user's e-mail address be prefixing it with "invalid:".
+Checks to see if already invalidated.
 
 =cut
 
 sub invalidate_email {
     my($self) = @_;
     my($id) = $self->get('user_id');
-    my($email) = Bivio::Biz::Model::Email->new($self->get_request);
-    $email->unauth_load(realm_id => $id)
-	    || die("couldn't load email from user");
+    my($email) = Bivio::Biz::Model::Email->new($self->get_request)
+	    ->unauth_load_or_die(realm_id => $id);
     my($address) = $email->get('email');
     my($prefix) = Bivio::Type::Email::INVALID_PREFIX();
-    $email->update({email => $prefix . $address})
-            unless $address =~ /^\Q$prefix/;
+    $email->update({email => $prefix.$address})
+            unless $address =~ /^\Q$prefix/o;
     return;
 }
 
