@@ -67,6 +67,7 @@ __PACKAGE__->compile(
     STRIPE_ABOVE_MENU => [
 	0x009999,
 	'celebrity_disclaimer',
+	'tax_disclaimer',
     ],
     FOOTER_MENU => [
 	0x006666,
