@@ -49,9 +49,9 @@ Bivio::IO::Config->register({
 
 =cut
 
-=for html <a name="configure"></a>
+=for html <a name="handle_config"></a>
 
-=head2 static configure(hash cfg)
+=head2 static handle_config(hash cfg)
 
 =over 4
 
@@ -68,7 +68,7 @@ command line.  Arguments must be easily separated, i.e. no quoting.
 
 =cut
 
-sub configure {
+sub handle_config {
     my(undef, $cfg) = @_;
     $cfg->{errors_to} =~ /['\\]/
 	    && die("$cfg->{errors_to}: invalid errors_to");

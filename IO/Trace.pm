@@ -23,24 +23,26 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-B<Bivio::IO::Trace> is a module-level development and maintenance facility.  Trace
-points are free-form text dispersed throughout a module which may be enabled
-programmatically or via environment variables.
+B<Bivio::IO::Trace> is a module-level development and maintenance facility.
+Trace points are free-form text dispersed throughout a module which may be
+enabled programmatically or via environment variables.
 
-Tracing is enabled by modifying the L<filter|"filter"> which is a perl
+Tracing is enabled by modifying the L<get_filter|"get_filter"> which is a perl
 expression that has access to package, line, etc.  If the filter returns true,
-the trace point is printed using L<printer|"printer">, which by default prints
-via L<Bivio::IO::Alert::print|Bivio::IO::Alert/"print">.
-The L<filter|"filter"> is initialized by the environment
-variable C<BIVIO_TRACE>.
+the trace point is printed using L<get_printer|"get_printer">, which by default
+prints via L<Bivio::IO::Alert::print|Bivio::IO::Alert/"print">.  The
+L<get_filter|"get_filter"> is initialized by the environment variable
+C<BIVIO_TRACE>.
 
-As an optimization, there is a first level L<package_filter|"package_filter">
-which enables tracing at the package level.  For large applications, tracing
-will be speeded up greatly by using the L<package_filter|"package_filter"> only.
-The L<package_filter|"package_filter"> is initialized by the environment
-variable C<BIVIO_TRACE_PACKAGES>.  If L<package_filter|"package_filter"> is
-defined and L<filter|"filter"> is undefined,
-L<filter|"filter">  will be treated as always true.
+As an optimization, there is a first level
+L<get_package_filter|"get_package_filter"> which enables tracing at the package
+level.  For large applications, tracing will be speeded up greatly by using the
+L<get_package_filter|"get_package_filter"> only.  The
+L<get_package_filter|"get_package_filter"> is initialized by the environment
+variable C<BIVIO_TRACE_PACKAGES>.  If
+L<get_package_filter|"get_package_filter"> is defined and
+L<get_filter|"get_filter"> is undefined, L<get_filter|"get_filter"> will be
+treated as always true.
 
 =cut
 
@@ -73,34 +75,6 @@ Bivio::IO::Config->register({
 
 =cut
 
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-=over 4
-
-=item filter : string [undef]
-
-Initial L<filter|"filter">
-
-=item package_filter : string [undef]
-
-Initial L<package_filter|"package_filter">
-
-=item printer : code [default_printer]
-
-Initial L<printer|"printer">
-
-=back
-
-=cut
-
-sub configure {
-    my($class, $cfg) = @_;
-    &set_filters(undef, $cfg->{filter}, $cfg->{package_filter});
-    &set_printer(undef, $cfg->{printer});
-}
-
 =for html <a name="default_printer"></a>
 
 =head2 default_printer(string arg1, ...) : boolean
@@ -115,30 +89,71 @@ sub default_printer {
     return Bivio::IO::Alert->print('debug', $msg);
 }
 
-=for html <A name="filter"></A>
 
-=head2 static filter() : string
+=for html <A name="get_filter"></A>
+
+=head2 static get_filter() : string
 
 Returns the current trace filter, or C<undef> if tracing is off.
 To set, use L<set_filters|"set_filters">.
 
 =cut
 
-sub filter {
+sub get_filter {
     return $_POINT_FILTER;
 }
 
-=for html <a name="package_filter"></a>
+=for html <a name="get_package_filter"></a>
 
-=head2 static package_filter() : string
+=head2 static get_package_filter() : string
 
 Return the current package filter.
 To set, use L<set_filters|"set_filters">.
 
 =cut
 
-sub package_filter {
+sub get_package_filter {
     return $_PKG_FILTER;
+}
+
+=for html <a name="get_printer"></a>
+
+=head2 static get_printer() : sub
+
+Returns the current printer.  To see, see L<set_printer|"set_printer">.
+
+=cut
+
+sub get_printer {
+    return $_PRINTER;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item filter : string [undef]
+
+Initial L<get_filter|"get_filter">
+
+=item package_filter : string [undef]
+
+Initial L<get_package_filter|"get_package_filter">
+
+=item printer : code [default_printer]
+
+Initial L<get_printer|"get_printer">
+
+=back
+
+=cut
+
+sub handle_config {
+    my($class, $cfg) = @_;
+    &set_filters(undef, $cfg->{filter}, $cfg->{package_filter});
+    &set_printer(undef, $cfg->{printer});
 }
 
 =for html <a name="print"></a>
@@ -146,25 +161,13 @@ sub package_filter {
 =head2 static print(string pkg, string file, int line, string sub, array msg) : boolean
 
 Formats output with L<Bivio::IO::Alert::format|Bivio::IO::Alert/"format"> and
-writes the result using L<printer|"printer">, whose result is returned.
+writes the result using L<get_printer|"get_printer">, whose result is returned.
 
 =cut
 
 sub print {
     shift(@_);
     return &$_PRINTER(Bivio::IO::Alert->format(@_));
-}
-
-=for html <a name="printer"></a>
-
-=head2 static printer() : sub
-
-Returns the current printer.  To see, see L<set_printer|"set_printer">.
-
-=cut
-
-sub printer {
-    return $_PRINTER;
 }
 
 =for html <a name="register"></a>
@@ -215,8 +218,8 @@ sub register {
 
 =head2 static set_filters(string point_expr, string pkg_expr) : (string, string)
 
-Sets the L<filter|"filter"> to I<point_expr> which may be C<undef>
-and L<package_filter|"package_filter"> to I<pkg_expr> which may be C<undef>.
+Sets the L<get_filter|"get_filter"> to I<point_expr> which may be C<undef>
+and L<get_package_filter|"get_package_filter"> to I<pkg_expr> which may be C<undef>.
 Both expressions have full access to perl.
 
 I<point_expr> has access to the following variables:
@@ -255,7 +258,7 @@ the package filter to C<undef>.  This particular filter is optimized specially.
 By setting the package filter, you are controlling the values of
 C<&_trace> and C<$_TRACE> directly.  If a particular package
 matches the filter, then its C<$_TRACE> will be true and C<&_trace>
-will be configured to generate output if L<filter|"filter"> returns
+will be configured to generate output if L<get_filter|"get_filter"> returns
 true.
 
 The package filter has access to the following variable:
@@ -326,7 +329,7 @@ EOF
 Sets the routine which does the actual output.  By default, this is
 <default_printer|"default_printer">.
 
-To get the current value, call L<printer|"printer">.
+To get the current value, call L<get_printer|"get_printer">.
 
 Returns the previous printer.
 

@@ -149,26 +149,6 @@ sub create {
     return $ok;
 }
 
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-=over 4
-
-=item file_server : string (required)
-
-Where are the messages stored.
-
-=back
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
-    return;
-}
-
 =for html <a name="delete"></a>
 
 =head2 delete() : boolean
@@ -189,7 +169,27 @@ sub delete {
     die("not implemented");
 }
 
-=for html <a name="find"></a>
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item file_server : string (required)
+
+Where are the messages stored.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
+    return;
+}
+
+=for html <a name="load"></a>
 
 =head2 load(FindParams fp) : boolean
 

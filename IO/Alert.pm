@@ -75,9 +75,76 @@ Bivio::IO::Config->register({
 
 =cut
 
-=for html <a name="configure"></a>
+=for html <a name="die"></a>
 
-=head2 static configure(string class, hash cfg)
+=head2 static die(string arg1, ...) 
+
+Sends a warning message to the alert log and then calls C<CORE::die>
+with "\n".
+
+=cut
+
+sub die {
+    &warn(@_);
+    CORE::die("\n");
+}
+
+=for html <a name="eval_or_warn"></a>
+
+=head2 eval_or_warn(code sub) : result
+
+Calls I<sub> and if it throws an exception, prints a warning.
+Returns the result of the subroutine or undef.
+
+=cut
+
+sub eval_or_warn {
+    my(undef, $sub) = @_;
+    my($result);
+    eval {
+	$result = &$sub;
+	1;
+    } && return $result;
+    # If the warning was already output, the following operation has
+    # no effect.
+    my($msg) = $@;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    Bivio::IO::Alert->warn($msg);
+    return undef;
+}
+
+=for html <a name="format"></a>
+
+=head2 static format(string package, string file, int line, string sub, array msg) : string
+
+Formats I<pkg>, I<file>, I<line>, I<sub>, and I<msg> into a pretty printed
+string.  Care is taken to truncate long arguments to
+L<get_max_arg_length|"get_max_arg_length">.  If an element of I<msg> is an
+object which supports
+<Bivio::UNIVERSAL::to_string|Bivio::UNIVERSAL/"to_string">, C<to_string> will
+be called to convert the object to a string.
+
+=cut
+
+sub format {
+    return &_format(@_);
+}
+
+=for html <a name="get_max_arg_length"></a>
+
+=head2 get_max_arg_length() : int
+
+Maximum length of an argument to any of the printing methods.
+
+=cut
+
+sub get_max_arg_length {
+    return $_MAX_ARG_LENGTH;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(string class, hash cfg)
 
 =over 4
 
@@ -99,7 +166,7 @@ If writing to C<Sys::Syslog>, the facility to use.
 
 If writing to C<Sys::Syslog>, the name of the server.
 
-=item max_arg_length : int [256]
+=item max_arg_length : int [512]
 
 Maximum length of warning message components, i.e. arguments to
 L<die|"die"> and L<warn|"warn">.
@@ -147,7 +214,7 @@ If not writing to C<Sys::Syslog>, include the pid in the log messages.
 
 =cut
 
-sub configure {
+sub handle_config {
     my(undef, $cfg) = @_;
     $_MAX_ARG_LENGTH = $cfg->{max_arg_length};
     $_STACK_TRACE_DIE = $cfg->{stack_trace_die};
@@ -173,72 +240,6 @@ sub configure {
     }
     $_WANT_PID = $cfg->{want_pid};
     return;
-}
-
-=for html <a name="die"></a>
-
-=head2 static die(string arg1, ...) 
-
-Sends a warning message to the alert log and then calls C<CORE::die>
-with "\n".
-
-=cut
-
-sub die {
-    &warn(@_);
-    CORE::die("\n");
-}
-
-=for html <a name="eval_or_warn"></a>
-
-=head2 eval_or_warn(code sub) : result
-
-Calls I<sub> and if it throws an exception, prints a warning.
-Returns the result of the subroutine or undef.
-
-=cut
-
-sub eval_or_warn {
-    my(undef, $sub) = @_;
-    my($result);
-    eval {
-	$result = &$sub;
-	1;
-    } && return $result;
-    # If the warning was already output, the following operation has
-    # no effect.
-    my($msg) = $@;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os;
-    Bivio::IO::Alert->warn($msg);
-    return undef;
-}
-
-=for html <a name="format"></a>
-
-=head2 static format(string package, string file, int line, string sub, array msg) : string
-
-Formats I<pkg>, I<file>, I<line>, I<sub>, and I<msg> into a pretty printed
-string.  Care is taken to truncate long arguments to C<max_arg_length>.  If an
-element of I<msg> is an object which supports
-<Bivio::UNIVERSAL::to_string|Bivio::UNIVERSAL/"to_string">, C<to_string> will
-be called to convert the object to a string.
-
-=cut
-
-sub format {
-    return &_format(@_);
-}
-
-=for html <a name="max_arg_length"></a>
-
-=head2 max_arg_length() : int
-
-Maximum length of an argument to any of the printing methods.
-
-=cut
-
-sub max_arg_length {
-    return $_MAX_ARG_LENGTH;
 }
 
 =for html <a name="print"></a>

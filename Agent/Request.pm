@@ -72,26 +72,6 @@ sub new {
 
 =cut
 
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-Host name configuration. Override this to proxy to another host.
-
-=over 4
-
-=item host : string [`hostname`]
-
-=back
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-    $_HOST_NAME = $cfg->{host};
-    return;
-}
-
 =for html <a name="delete"></a>
 
 =head2 delete(string name)
@@ -207,6 +187,26 @@ sub get_target_name {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return $fields->{target};
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+Host name configuration. Override this to proxy to another host.
+
+=over 4
+
+=item host : string [`hostname`]
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_HOST_NAME = $cfg->{host};
+    return;
 }
 
 =for html <a name="put"></a>

@@ -119,7 +119,8 @@ sub symlink {
     -e $link || symlink($file, $link) || die("symlink($file, $link): $!");
 }
 
-sub configure {
+# We don't do dynamic reconfiguration
+sub handle_config {
 }
 
 sub _usage {

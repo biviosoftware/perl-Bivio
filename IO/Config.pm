@@ -14,7 +14,7 @@ Bivio::IO::Config - simple configuration using perl syntax
 
     use Bivio::IO::Config;
     Bivio::IO::Config->register();
-    sub configure {
+    sub handle_config {
 	my($class, $cfg) = @_;
 	$cfg->{param1} && ...;
     }
@@ -43,7 +43,7 @@ is a hash_ref of packages and hash_refs.  Each package's hash_ref contains
 configuration name/value tuples.
 
 Modules are dynamically configured in the order they are initialized.
-Each module defines a C<configure> method and
+Each module defines a C<handle_config> method and
 calls L<register|"register"> during initialization.
 When L<initialize|"initialize"> is called, the registrants are
 upcalled with their configuration.
@@ -291,7 +291,7 @@ sub initialize {
     # Call registrants in FIFO
     my($pkg);
     foreach $pkg (@_REGISTERED) {
-	&{\&{$pkg . '::configure'}}($pkg, &_get_pkg($pkg));
+	&{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
     }
 #TODO: Why doesn't return an error when @argv = () and no default config?
     return;
@@ -305,11 +305,11 @@ Calling package will be put in the list of packages to be configured.  A
 callback may happen immediately, if L<initialize|"initialize"> was called
 already.
 
-The calling package must define a C<configure> method which takes two
+The calling package must define a C<handle_config> method which takes two
 arguments, the class and the configuration as a hash.
 
 If I<spec> is supplied, the values will be filled in when
-L<get|"get"> is called or the values are upcalled to I<configure>.
+L<get|"get"> is called or the values are upcalled to I<handle_config>.
 
 A configuration I<spec> looks like:
 
@@ -350,11 +350,11 @@ All configuration names must be fully specified.
 sub register {
     my($proto, $spec) = @_;
     my($pkg) = caller;
-    defined(&{$pkg . '::configure'}) || Bivio::IO::Alert->die(
-	    "&$pkg\::configure not defined");
+    defined(&{$pkg . '::handle_config'}) || Bivio::IO::Alert->die(
+	    "&$pkg\::handle_config not defined");
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
-    $_INITIALIZED && &{\&{$pkg . '::configure'}}($pkg, &_get_pkg($pkg));
+    $_INITIALIZED && &{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
     return;
 }
 
@@ -440,12 +440,16 @@ sub _process_argv {
 	# HACK: Probably want to generalize(?)
 	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
 	# Matches our form?
-	(my($m, $p, $v) = $a =~ /^--([\w:]+)(.[\w]+)*=(.*)$/s) || next;
+	(my($m, $p, $v) = $a =~ /^--([\w:]+)(\.[\w]+)*=(.*)$/s) || next;
 	# Need to default to package main?
 	# (Convention: packages begin with upper-case letter)
 	if ($m =~ /^[a-z0-9_]+$/ && $m ne 'main') {
 	    $p = defined($p) ? ($m . $p) : $m;
 	    $m = 'main';
+	}
+	else {
+	    # Kill leading '.'
+	    substr($p, 0, 1) = '';
 	}
 	$v eq 'undef' && ($v = undef);
 	# Ensure the hashes exist down the chain, starting at the module ($m)

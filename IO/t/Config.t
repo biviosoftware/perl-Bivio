@@ -52,7 +52,7 @@ sub conf_get {
 }
 
 package Bivio::IO::Config::T1;
-sub configure {}
+sub handle_config {}
 Bivio::IO::Config->register({
     'p1' => Bivio::IO::Config->REQUIRED,
     'p2' => 'p2',

@@ -87,9 +87,9 @@ sub connect {
 
 =cut
 
-=for html <a name="configure"></a>
+=for html <a name="handle_config"></a>
 
-=head2 static configure(hash cfg)
+=head2 static handle_config(hash cfg)
 
 =over 4
 
@@ -99,7 +99,7 @@ sub connect {
 
 =cut
 
-sub configure {
+sub handle_config {
     my(undef, $cfg) = @_;
     $_ORACLE_HOME = $cfg->{ORACLE_HOME};
     return;
