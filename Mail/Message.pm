@@ -27,7 +27,7 @@ C<Bivio::Mail::Message>
 #=IMPORTS
 use Bivio::Die;
 use Bivio::HTML;
-use Bivio::Agent::Request;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
@@ -584,6 +584,7 @@ sub set_headers_for_list_send {
 	$head->delete($name);
     }
 #TODO: Should find way to pass in request object
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
     my($req) = Bivio::Agent::Request->get_current_or_new();
     my($sender) = $list_name . '-owner@' . $req->get('mail_host');
     $head->replace('Sender', $sender);
