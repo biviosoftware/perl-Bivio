@@ -82,12 +82,16 @@ __PACKAGE__->compile([
 
 =head2 is_browser() : boolean
 
-Returns true if this instance is a browser.
+=head2 static is_browser(Bivio::Agent::Request req) : boolean
+
+Returns true if I<self> or this package on I<req> is a browser.
 
 =cut
 
 sub is_browser {
-    return shift->get_name() =~ /^BROWSER/ ? 1 : 0;
+    my($self, $req) = @_;
+    $self = $req->get(ref($self) || $self) if $req;
+    return $self->get_name =~ /^BROWSER/ ? 1 : 0;
 }
 
 =for html <a name="put_on_request"></a>
@@ -101,11 +105,14 @@ and puts it on I<req>.
 
 sub put_on_request {
     my($proto, $ua, $req) = @_;
-    # MSIE is the only modern browser.  Will test with Netscape 6,
-    # once they get out of beta.
-    $req->put_durable((ref($proto) || $proto) =>
-	    $ua =~ /MSIE [5678]/io ? $proto->BROWSER
-	    : $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3);
+    # MSIE 5+ is the only modern browser.
+#TODO: Test with Netscape 6
+    my($self) = $ua =~ /\bMSIE (\d+)/ && $1 >= 5 ? $proto->BROWSER
+	: $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3;
+    $req->put_durable(
+	ref($self) => $self,
+	'Type.'.$self->simple_package_name,
+    );
     return;
 }
 
