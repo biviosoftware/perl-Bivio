@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Tax::Checklist;
 use strict;
 $Bivio::UI::HTML::Tax::Checklist::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Tax::Checklist::VERSION;
 
 =head1 NAME
 
@@ -34,12 +35,12 @@ C<Bivio::UI::HTML::Tax::Checklist> displays missing tax field
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Address;
-use Bivio::Type::Location;
-use Bivio::UI::PageType;
+use Bivio::UI::HTML::Tax::AttachmentPage;
+use Bivio::UI::HTML::Widget::MultiColumnedList;
 use Bivio::UI::HTML::Widget::ChecklistItem;
 use Bivio::UI::HTML::Widget::Grid;
-use Bivio::UI::HTML::Widget::Link;
-use Bivio::UI::HTML::Widget::MultiColumnedList;
+use Bivio::UI::PageType;
+use Bivio::Type::Location;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -59,11 +60,10 @@ Creates a tax 99 page contents.
 sub create_content {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE} = {};
-    $self->put(page_heading => 'Tax Checklist');
+    $self->put(page_heading => Bivio::UI::HTML::Club::ReportPage
+	    ->get_heading_with_one_date('page_heading'));
 
-    $fields->{large_club_warning} = Bivio::UI::HTML::Widget::Indirect->new({
-	value => 0,
-    });
+    $fields->{large_club_warning} = $self->indirect(0);
     $fields->{warning_message} = $self->join(
 	$self->string('Warning: ', 'warning'),
 	$self->string(<<'EOF'));
@@ -75,18 +75,9 @@ EOF
     $fields->{warning_message}->initialize;
 
     my($create_anyway) = $self->director(['task_id'], {
-	Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99_MISSING_FIELDS()
-	=> Bivio::UI::HTML::Widget::Link->new({
-	    href => ['->format_uri',
-		Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99_F1065(),
-		Bivio::Biz::Accounting::Tax::CHECK_OVERRIDE().'=1',
-	    ],
-	    value => $self->string(<<'EOF'),
-
-Create tax form with missing fields
-
-EOF
-	}),
+	Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAXES_MISSING_FIELDS()
+	=> $self->link('Create tax form with missing fields',
+		['pdf_1065_link']),
     },
     $self->join('&nbsp;'));
 
@@ -132,16 +123,14 @@ EOF
 			'All member tax IDs and addresses are set.'),
 		    unchecked_body => $self->join(
 			$self->string(<<'EOF'),
-The following members are missing their tax ID and/or address. Select the member to edit their personal information.
+The following members are missing their tax ID and/or address. Select the member to edit their personal information. If you do not specify a member's address and tax ID, then they must be filled in by hand on the generated tax forms.
 EOF
 			$self->join('<p>'),
 			Bivio::UI::HTML::Widget::MultiColumnedList->new({
 			    source => ['Bivio::Biz::Model::MemberTaxList'],
 			    columns => 3,
-			    widget => Bivio::UI::HTML::Widget::Link->new({
-				href => ['->format_uri_for_this'],
-				value => $self->string(['last_first_middle']),
-			    }),
+			    widget => $self->link(['last_first_middle'],
+				    ['->format_uri_for_this']),
 			}),
 		    ),
 		}),
@@ -158,15 +147,16 @@ Don't forget to sign and date the printed return and give each member a printed 
 EOF
 	    ],
 	    [
+		$self->join('&nbsp;'),
+	    ],
+	    [
 		$create_anyway,
 	    ],
 	    [
-		Bivio::UI::HTML::Widget::Link->new({
-		    href => ['->format_stateless_uri',
-			Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99(),
-		    ],
-		    value => $self->string('Return to the taxes page'),
-		}),
+		$self->join('&nbsp;'),
+	    ],
+	    [
+		Bivio::UI::HTML::Tax::AttachmentPage->get_tax_page_link(),
 	    ],
 	],
     });
@@ -184,13 +174,12 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($address) = Bivio::Biz::Model::Address->new($req);
-    $address->load(location => Bivio::Type::Location::HOME());
+    Bivio::Biz::Model::Address->new($req)->load(
+	    location => Bivio::Type::Location::HOME());
 
     $fields->{large_club_warning}->put(value =>
 	    Bivio::Biz::Accounting::Tax->meets_three_requirements(
 		    $req, $req->get('report_date'))
-
 	    ? 0 : $fields->{warning_message});
 
     my($list) = $req->get('Bivio::Biz::Model::MemberTaxList');
@@ -201,7 +190,9 @@ sub execute {
 	    list_model => $list,
 	    list_uri => $req->format_stateless_uri($req->get('task_id')),
 	    detail_uri => $req->format_stateless_uri(
-		    Bivio::Agent::TaskId::CLUB_ADMIN_USER_DETAIL())
+		    Bivio::Agent::TaskId::CLUB_ADMIN_USER_DETAIL()),
+	    pdf_1065_link => Bivio::UI::HTML::Club::Taxes
+	    ->format_club_1065_pdf_link($req, 1),
 	   );
     $self->SUPER::execute($req);
     return;
