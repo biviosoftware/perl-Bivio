@@ -597,17 +597,7 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
-    [qw(
-        CLUB_ACCOUNTING_ACCOUNT_INSTITUTION
-        49
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/account/institution
-        Bivio::Biz::Model::RealmAccountList->execute_load_all
-        Bivio::Biz::Model::AccountInstitutionForm
-        Bivio::UI::HTML::Club::AccountInstitution
-        next=CLUB_ACCOUNTING_ACCOUNT_LIST
-    )],
+#49
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SELL
         50
@@ -2950,8 +2940,16 @@ my(@_CFG) = (
         DOCUMENT_READ
         !
         Bivio::UI::HTML::ErrorPages->execute_password_request_not_found
-    )]
-    ,);
+    )],
+    [qw(
+        ACCOUNT_SYNC_PROCESS_ALL
+        256
+        GENERAL
+        DOCUMENT_READ
+        _job/account_sync_process_all
+        Bivio::Biz::Action::AccountSyncProcessAll
+    )],
+   );
 
 __PACKAGE__->compile([
     map {($_->[0], [$_->[1]])} @_CFG
