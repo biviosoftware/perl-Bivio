@@ -120,10 +120,10 @@ as long as it implements C<new>.  Here's an example at instantiation:
     Bivio::Test->new->({
         class_name => 'Bivio::Math::EMA',
 	check_return => sub {
-	    my($case, $return, $expect) = @_;
+	    my($case, $expect, $expect) = @_;
             # Round to 6 decimal places
 	    $case->actual_return(
-                [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000]);
+                [POSIX::floor($expect->[0] * 1000000 + 0.5) / 1000000]);
             return $expect;
 	},
     })->unit([
@@ -144,9 +144,9 @@ as in:
             class_name => 'Bivio::Math::EMA',
 	    object => 30,
             check_return => sub {
-                my($case, $return, $expect) = @_;
+                my($case, $expect, $expect) = @_;
                 $case->actual_return(
-                    [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
+                    [POSIX::floor($expect->[0] * 1000000 + 0.5) / 1000000];
                 return $expect;
 	    },
         } => [
@@ -242,6 +242,8 @@ my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
 =for html <a name="new"></a>
 
+=head2 static new(string class_name) : Bivio::Test
+
 =head2 static new(hash_ref options) : Bivio::Test
 
 Create a new test instance.  You can specify options here or at
@@ -252,8 +254,7 @@ See L<OPTIONS|"OPTIONS"> for more details.
 
 sub new {
     my($proto, $options) = @_;
-    _assert_options($options) if $options;
-    my($self) = Bivio::Collection::Attributes::new($proto, $options);
+    my($self) = $proto->SUPER::new(_assert_options($options));
     $self->[$_IDI] = {};
     return $self;
 }
@@ -289,9 +290,9 @@ sub check_die_code {
 
 =for html <a name="check_return"></a>
 
-=head2 callback check_return(Bivio::Test::Case case, array_ref return, array_ref expect) : boolean
+=head2 callback check_return(Bivio::Test::Case case, array_ref actual, array_ref expect) : boolean
 
-=head2 callback check_return(Bivio::Test::Case case, array_ref return, array_ref expect) : array_ref
+=head2 callback check_return(Bivio::Test::Case case, array_ref actual, array_ref expect) : array_ref
 
 This callback is defined as the code_ref either in the I<expect> location
 in a test case or as the I<check_return> group attribute.
@@ -299,11 +300,11 @@ in a test case or as the I<check_return> group attribute.
 Will be called only if the actual result is a return and I<expect> is an
 array_ref, i.e. not a L<Bivio::Die|Bivio::Die> or C<undef>.
 
-Returns 1 or 0 when it compares the I<return> to the I<expect> or
+Returns 1 or 0 when it compares the I<actual> to the I<expect> or
 some other criteria.   1 means pass.
 
 Returns an array_ref for the new value of I<case.expect>.  This module will
-then compare the I<expect> with I<return>.
+then compare the I<expect> with I<actual>.
 
 See L<Bivio::Test::Case::actual_return|Bivio::Test::Case/"actual_return">
 to see how to change the actual return value for comparisons.
@@ -435,13 +436,18 @@ sub _add_option {
     return 1;
 }
 
-# _assert_options(hash_ref options)
+# _assert_options(any options)
 #
 # Validates result_ok, compute_params, and printer options.
 #
 sub _assert_options {
     my($options) = @_;
-    die('options not a hash_ref') unless ref($options) eq 'HASH';
+    return {}
+	unless $options;
+    return {class_name => $options}
+	if !ref($options) && $options;
+    die('options not a hash_ref or class_name')
+	unless ref($options) eq 'HASH';
     my($o) = {%$options};
     foreach my $c (@_ALL_OPTIONS) {
 	next unless exists($o->{$c});
@@ -452,7 +458,7 @@ sub _assert_options {
     }
     _die('unknown option(s) passed to new: ', join(' ', sort(keys(%$o))))
 	if %$o;
-    return;
+    return $options;
 }
 
 # _compile(self, array_ref objects) : array_ref
@@ -588,9 +594,11 @@ sub _compile_object {
 	$state->{compute_object} = undef;
     }
     elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
-	_compile_die($state,
-	    'object is not a subclass of UNIVERSAL (forgot to "use"?) or CODE: ',
-	    $state->{object});
+	Bivio::IO::ClassLoader->unsafe_simple_require($state->{object})
+	    if $state->{object} && $state->{object} =~ /::/;
+	_compile_die($state, 'object is not a subclass of UNIVERSAL'
+	    . ' (forgot to "use"?) or CODE: ', $state->{object})
+	    unless UNIVERSAL::isa($state->{object}, 'UNIVERSAL');
     }
     _compile_assert_even($methods, $state);
     $state->{method_num} = 0;
@@ -763,12 +771,17 @@ sub _eval_object {
     }
     if (ref($object) eq 'ARRAY') {
 	my($code, $param) = @$object;
-#TODO: Wrap in exception?
-	Bivio::IO::ClassLoader->simple_require($case->get('class_name'))
-	    if $case->unsafe_get('class_name');
-	$case->put(compute_object => $code);
-	$fields->{_eval_object}->[$e] = $object
-	    = _eval_custom($case, 'compute_object', [$param], $err);
+	# Try to load: If it fails, then
+	if ($case->unsafe_get('class_name')
+	    && !Bivio::IO::ClassLoader->unsafe_simple_require(
+		$case->get('class_name'))) {
+	    $$err = 'unable to load package ' . $case->get('class_name');
+	}
+	else {
+	    $case->put(compute_object => $code);
+	    $fields->{_eval_object}->[$e] = $object
+		= _eval_custom($case, 'compute_object', [$param], $err);
+	}
 	return 0 if $$err;
     }
     $case->put(object => $object);
@@ -823,7 +836,7 @@ sub _eval_result {
 	return undef if ${Bivio::IO::Ref->to_string($result)} =~ /$x/;
     }
     if ($custom) {
-#TODO: Move off to seperate method
+#TODO: Move off to separate method
 	my($err);
 	my($res) = _eval_custom(
 	    $case, $custom, [$actual, $case->get('expect')], \$err);

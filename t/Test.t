@@ -201,8 +201,15 @@ t(
 	} => [
 	    ok => 88,
 	],
+	{
+	    class_name => 'No::Such::ClassName',
+	    object => 99,
+	} => [
+	    ok => 88,
+        ],
     ],
-    3,
+    4,
+    [4],
 );
 
 # t(hash_ref options, array_ref tests, int num_tests, array_ref not_ok)
