@@ -78,6 +78,10 @@ sub entry_field {
 	if ($fd->get_size() < 15) {
 	    $req->print(' size='.$fd->get_size());
 	}
+	elsif ($fd->get_size() > 40) {
+	    # 40 is pretty big for an entry field
+	    $req->print(' size=40');
+	}
 	$req->print('>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::BOOLEAN) {
@@ -118,9 +122,21 @@ sub entry_field {
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::ROLE) {
 	$req->print('<input type="radio" name="'.$field
-		.'" value="0"> Administrator<br><input type="radio" name="'
-		.$field.'value="1"> Member<br><input type="radio" name="'
-	       .$field.'value="2"> Guest<br>');
+		.'" value="0"');
+	if ($value && $value == 0) {
+	    $req->print(' checked');
+	}
+	$req->print('> Administrator<br><input type="radio" name="'
+		.$field.'" value="1"');
+	if ($value && $value == 1) {
+	    $req->print(' checked');
+	}
+	$req->print('> Member<br><input type="radio" name="'
+	       .$field.'" value="2"');
+	if ($value && $value == 2) {
+	    $req->print(' checked');
+	}
+	$req->print('> Guest<br>');
     }
     $req->print('</td></tr>');
 }
