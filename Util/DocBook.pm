@@ -269,6 +269,21 @@ sub _xml_to_html_parse_listitem {
     return _xml_to_html_parse(@_, $t);
 }
 
+# _xml_to_html_parse_literallayout(hash_ref state, array_ref tree) :
+#
+# Converts <literallayout>.  Converts whitespace and newlines.
+#
+sub _xml_to_html_parse_literallayout {
+    my($state, $tree) = @_;
+    $state->{out} .= "<p>\n";
+    my($res) = _xml_to_html_save_parse($state, $tree);
+    $res =~ s/\n/<br>\n/sg;
+    # Only replace multiple spaces with nbsp.
+    $res =~ s/ {2,}/length($1) . '&nbsp;'/seg;
+    $state->{out} .= $res."</p>\n";
+    return;
+}
+
 # _xml_to_html_parse_note(hash_ref state, array_ref tree)
 #
 # Converts to <note>.
