@@ -74,7 +74,7 @@ sub new {
 
 =head2 equals(UNIVERSAL that) : boolean
 
-Returns true if C<$self> is identical I<that>.
+Returns true if I<self> is identical I<that>.
 
 =cut
 
@@ -87,13 +87,13 @@ sub equals {
 
 =head2 as_string() : string
 
-Returns the string form of C<$self>.  By default, this is just C<$self>.
+Returns the string form of I<self>.  By default, this is just I<self>.
 
 =cut
 
 sub as_string {
     my($self) = @_;
-    # Ensure it is a string
+    # Ensure it is a string?
     return $self;
 }
 
