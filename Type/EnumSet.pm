@@ -59,7 +59,7 @@ sub clear {
     foreach my $bit (@$bits) {
 	vec($$vector, $bit->as_int, 1) = 0;
     }
-    return;
+    return $vector;
 }
 
 =for html <a name="from_literal"></a>
