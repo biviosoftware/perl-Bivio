@@ -100,8 +100,10 @@ sub execute_empty {
             member_instrument_cost_basis));
 
     # partial withdrawals can't have a positive realized_gain
-    if ($properties->{type} ==
+    if (($properties->{type} ==
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_STOCK
+	    || $properties->{type} ==
+	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
 	    && $math->compare($properties->{realized_gain}, 0) < 0) {
 	$properties->{realized_gain} = 0;
     }
