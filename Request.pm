@@ -11,13 +11,18 @@ use Bivio::Util;
 
 $Bivio::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+unless (defined($ENV{MOD_PERL})) {
+    # This is necessary to avoid a weird recursion with AUTOLOAD of
+    # Apache::Constants when not started from MOD_PERL (e.g. from MHonArc)
+    eval 'use Apache::FakeRequest ()';
+}
+
 BEGIN {
     use Bivio::Util;
     &Bivio::Util::compile_attribute_accessors(
     	[qw(club user path_info reply_sent)]);
     defined($ENV{BIVIO_REQUEST_DEBUG}) && ($SIG{__DIE__} = \&Carp::confess);
 }
-
 
 # execute $class $r $sub
 # Creates a new request and saves a copy of "$r" in "r"
@@ -27,18 +32,59 @@ sub process_http ($$$) {
 	'start_time' => &Bivio::Util::gettimeofday,
 	'r' => $r,
     };
+    &_process($proto, $self, $code) && return &Apache::Constants::OK;
+    $r->log_reason($@);
+    return $self->{result};
+}
+
+# execute $class $document_root $header $sub
+#
+#   Creates a new request and saves a copy of $document_root and the message
+#   $header in $self.
+sub process_email ($$$) {
+    my($proto, $document_root, $header, $code) = @_;
+    my($self) = {
+	'start_time' => &Bivio::Util::gettimeofday,
+	'document_root' => $document_root,
+	'header' => $header,
+    };
+    &_process($proto, $self, $code) && return &Apache::Constants::OK;
+    &Bivio::Mail::send(undef, 'postmaster',
+		       'ERROR: Bivio::Request::process_email', <<"EOF");
+Error while processing email message:
+    $@
+Apache result code: $self->{result}
+Header:
+$header
+EOF
+    return $self->{result};
+}
+
+# _process $proto $self $code -> success
+#
+#   Blesses $self with $proto and evals $code.  Incomplete transactions are
+#   aborted.  Queued messages are sent only on success.
+sub _process ($$$) {
+    my($proto, $self, $code) = @_;
     bless($self, ref($proto) || $proto);
     my($ok) = eval { &$code($self); 1;};
-    &Bivio::Data::check_txn($self);
-    $ok && return &Apache::Constants::OK;
-    chop($@);
-    if (defined($self->{result})) {
-	$r->log_reason($@);
-	return $self->{result};
+    unless ($ok) {
+	chop($@);
+	$self->{error} = @_;
+	unless (defined($self->{result})) {
+	    $self->{error} = 'unexpected exception: ' . $self->{error};
+	    $self->{result} = &Apache::Constants::SERVER_ERROR;
+	}
     }
-    # _terminate wasn't called; syntax or semantic error
-    $r->log_reason("unexpected exception: $@");
-    return &Apache::Constants::SERVER_ERROR;
+    my(@aborted) = &Bivio::Data::check_txn($self);
+    # Shouldn't be any aborted transactions if $ok
+    if (@aborted && $ok) {
+	$self->{error} = "transactions incomplete on termination: @aborted";
+	$self->{result} = &Apache::Constants::SERVER_ERROR;
+	$ok = 0;
+    }
+    $ok && &Bivio::Mail::send_queued_messages();
+    return $ok;
 }
 
 # Returns the Apache "r" record associated with this request
@@ -119,9 +165,9 @@ sub _terminate ($$@) {
 
 sub document_root {
     my($self) = shift;
-    defined($self->r) && return $self->r->document_root;
-# Need to specify this....
-    return undef;
+    defined($self->{r}) && return $self->r->document_root;
+    defined($self->{document_root}) && return $self->{document_root};
+    $self->server_error("unable to determine document root");
 }
 
 # elapsed_time $self -> $seconds
@@ -136,6 +182,26 @@ sub fields_posted ($) {
     $ct eq 'application/x-www-form-urlencoded'
 	|| $self->bad_request("invalid content type: \"$ct\"");
     return {$self->r->content};
+}
+
+# canonicalize_uri $self $abs_uri -> $canonical_uri
+#
+#   Makes the $abs_uri canonical wrt the server which is serving $self.
+#   $abs_uri must begin with a '/'.
+sub canonicalize_uri ($$) {
+    my($self, $uri) = @_;
+    return $self->_root_uri . $uri;
+}
+
+# _root_uri $self -> "http://server[:port]"
+#
+#   Returns the way this server can be accessed via http.
+sub _root_uri ($) {
+    my($self) = @_;
+#RJN: Can this be cached?  Do we care?
+    my($s) = $self->r->server;
+    return 'http://' . $s->server_hostname
+	. ($s->port == 80 ? '' : (':' . $s->port));
 }
 
 1;

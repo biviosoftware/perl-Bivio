@@ -26,7 +26,7 @@ sub ALL_KEYS { 2 }
 sub FILE { 3 }
 sub GIF_INFO { 4 }
 
-# The ending to $_Home; Must end in /
+# The ending to $_Home; Must end in /.  Directory relative to the document_root
 sub _REL_HOME { '/../data/' }
 
 my(@_TXN_FILES) = ();
@@ -71,6 +71,13 @@ sub lookup ($$$;$)
 	# Parse the mhonarc file which is "mostly" perl except for comments
 	# by mhonarc that aren't eliminable.  This trick is good enough
 	$absfile = &_home($br) . $file;
+	my($lock) = $absfile;
+	$lock =~ s,[^/]+$,.mhonarc.lck,;
+	my($retries) = 4;
+	while (-e $lock) {
+	    --$retries < 0 && $br->server_busy("mhonarc locked: $lock");
+	    select(undef, undef, undef, 5 * rand() + 0.01);  # wait 0-5 seconds
+	}
 	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
 	if (open($fh, $absfile)) {
 	    local($/) = undef;
@@ -82,7 +89,9 @@ sub lookup ($$$;$)
 	    $value =~ s/\<\!\-\-.*\-\-\>//g; 	    	    # keep line numbers
 	    close($fh);
 	    $value = eval $value;
-	    $dont_cache = $file =~ /msg\d+.html$/; 		    # see below
+#RJN: We don't cache any mail message information, because it can grow rapidly
+#	    $dont_cache = $file =~ /msg\d+.html$/; 		    # see below
+            $dont_cache = 0;
 	}
 	else {
 	    $@ = "open failed: $!"; 			   # save error message
@@ -157,6 +166,61 @@ sub lookup ($$$;$)
 	'type' => $type,
     };
     return $value;
+}
+
+sub begin_txn ($$) {
+    my($file, $proto_or_sub, $br) = @_;
+    my($retries) = 4;
+    until (@_TXN_FILES) {
+	unless (defined($_TXN_HANDLE)) {
+	    $_TXN_HANDLE = \*Bivio::Data::TXN;
+	    open($_TXN_HANDLE, '>' . &_home($br) . '.lock') || next;
+	}
+	flock($_TXN_HANDLE, &Fcntl::LOCK_EX) && last;
+    }
+    continue {
+	--$retries < 0 && $br->server_busy("can't begin transaction: $!");
+	select(undef, undef, undef, 5 * rand() + 0.01);  # wait 0-5 seconds
+    }
+    push(@_TXN_FILES, $file);		       # we hold the lock at this point
+    &invalidate_cache($file);
+#RJN: BUG: Need to reget club and user, because they are cached in $br!
+#     BUT we currently don't modify them in a txn, so ok for now.
+    my($res) = &lookup($file, $proto_or_sub, $br);
+    return $res;
+
+}
+
+sub end_txn {
+    my($br) = shift;
+    @_TXN_FILES || $br->server_error("no transaction");
+    my($file) = pop(@_TXN_FILES);
+    &_update($file, $br);
+    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
+}
+
+sub abort_txn {
+    my($br) = shift;
+    @_TXN_FILES || return;			      # no transaction to abort
+    my($file) = pop(@_TXN_FILES);
+    &invalidate_cache($file);
+    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
+}
+
+# check_txn -> @txn_files
+#
+#   Called by Bivio::Request only!  Aborts all pending transactions.
+#   Returns true if there were no pending transactions.
+sub check_txn {
+    my($br) = shift;
+    my(@res) = @_TXN_FILES;
+    &abort_txn($br) while (@_TXN_FILES);
+    return @res;
+}
+
+sub invalidate_cache {
+    my($file) = shift;
+    delete $_Cache->{$file};
 }
 
 sub _check_file_name ($$) {
@@ -239,55 +303,6 @@ sub _copy ($$$) {
 
 sub _home ($) {
     $_Home || ($_Home = shift->document_root . &_REL_HOME);
-}
-
-sub begin_txn ($$) {
-    my($file, $proto_or_sub, $br) = @_;
-    my($retries) = 4;
-    until (@_TXN_FILES) {
-	unless (defined($_TXN_HANDLE)) {
-	    $_TXN_HANDLE = \*Bivio::Data::TXN;
-	    open($_TXN_HANDLE, '>' . &_home($br) . '.lock') || next;
-	}
-	flock($_TXN_HANDLE, &Fcntl::LOCK_EX) && last;
-    }
-    continue {
-	++$retries > 3 && $br->server_busy("can't begin transaction: $!");
-	select(undef, undef, undef, rand() + 0.01);
-    }
-    push(@_TXN_FILES, $file);		       # we hold the lock at this point
-    &invalidate_cache($file);
-#RJN: BUG: Need to reget club and user, because they are cached in $br!
-    my($res) = &lookup($file, $proto_or_sub, $br);
-    return $res;
-
-}
-
-sub end_txn {
-    my($br) = shift;
-    @_TXN_FILES || $br->server_error("no transaction");
-    my($file) = pop(@_TXN_FILES);
-    &_update($file, $br);
-    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
-}
-
-sub abort_txn {
-    my($br) = shift;
-    @_TXN_FILES || return;			      # no transaction to abort
-    my($file) = pop(@_TXN_FILES);
-    &invalidate_cache($file);
-    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
-}
-
-# Called by Bivio::Request only!  Aborts all pending transactions.
-sub check_txn {
-    my($br) = shift;
-    &abort_txn($br) while (@_TXN_FILES);
-}
-
-sub invalidate_cache {
-    my($file) = shift;
-    delete $_Cache->{$file};
 }
 
 
