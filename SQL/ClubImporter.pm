@@ -332,11 +332,14 @@ my($_TYPE_MAP) = {
     101 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
 	    11, 0],
 
-#TODO: SDFr-Mtcg, MrgFr-Mtcg: trans (13, 14)
+#TODO: MrgFr-Mtcg: trans (14)
 
     # SpFr-Mtcg
     103 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'MEDIUM_TERM_CAPITAL_GAIN',
 	    12, 0],
+    # SDFr-Mtcg
+    104 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    13, 0],
 };
 
 # created for the set of transactions implicitly associated with easyware
@@ -420,7 +423,8 @@ sub INSTRUMENT_FORMAT {
 	    'average_cost_method', 'boolean2',
 	    'drp_plan', 'boolean2',
 	    'ticker_symbol', 'string8',
-	    'UNKNOWN', 'byte50',
+#	    'UNKNOWN', 'byte50',
+	    'UNKNOWN', 'byte51',
 	   ],
     };
 }
@@ -1237,7 +1241,8 @@ sub parse_file {
 
     my($reading) = 0;
 
-    eval {
+    my($die) = Bivio::Die->catch(
+    sub {
 	# advance to record start
 	_read_bytes(*IN, $format->{data_start});
 
@@ -1284,11 +1289,10 @@ sub parse_file {
 	    $reading = 0;
 	    push(@$result, $record);
 	}
-    };
+    });
     close(IN) or die("couldn't close $file_name");
 
     # check for exception during read
-#    die($@) unless ($@ =~ /^end of input/) && ! $reading;
     die($@) unless $_END_OF_INPUT && ! $reading;
 
     if ($_TRACE) {
