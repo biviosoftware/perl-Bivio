@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Visitor;
 use strict;
 $Bivio::Biz::Model::Visitor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Visitor::VERSION;
 
 =head1 NAME
 
@@ -31,6 +32,7 @@ C<Bivio::Biz::Model::Visitor> represents a non-user, i.e. a "unique" visitor.
 =cut
 
 #=IMPORTS
+use Bivio::SQL::Connection;
 use Bivio::Type::Name;
 
 #=VARIABLES
@@ -55,6 +57,40 @@ sub create {
     $values->{client_addr} = substr($values->{client_addr}, 0,
             $_CLIENT_ADDR_LENGTH) if defined($values->{client_addr});
     return $self->SUPER::create($values);
+}
+
+=for html <a name="delete_all"></a>
+
+=head2 static delete_all(hash_ref query) : int
+
+Overrides delete_all to null out fields, not delete them.
+
+=cut
+
+sub delete_all {
+    my($self, $query) = @_;
+
+    my($count) = 0;
+    if (exists($query->{user_id})) {
+	my($sth) = Bivio::SQL::Connection->execute('
+                UPDATE visitor_t
+                SET user_id = NULL
+                WHERE user_id=?',
+		[$query->{user_id}]);
+	$count += $sth->rows;
+	$sth->finish;
+    }
+
+    if (exists($query->{referer_realm_id})) {
+	my($sth) = Bivio::SQL::Connection->execute('
+                UPDATE visitor_t
+                SET referer_realm_id = NULL
+                WHERE referer_realm_id=?',
+		[$query->get('referer_realm_id')]);
+	$count += $sth->rows;
+	$sth->finish;
+    }
+    return $count;
 }
 
 =for html <a name="get_first_id_for_user"></a>
@@ -84,14 +120,16 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
+    # there are no references to User or RealmOwner tables
+    # the visitor record is preserved even after they are deleted
     return {
 	version => 1,
 	table_name => 'visitor_t',
 	columns => {
-            visitor_id => ['PrimaryId', 'PRIMARY_KEY'],
+            visitor_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 
 	    # Was this visitor converted to a user?
-	    user_id => ['PrimaryId', 'NONE'],
+	    user_id => ['User.user_id', 'NONE'],
 
 	    # Only store first part, because we don't want to blow up
 	    # cookie.  Data is saved in cookie before it is written to
