@@ -362,6 +362,7 @@ Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
 sub init_type {
     my(undef, $col, $type_cfg) = @_;
     $type_cfg = 'Bivio::Type::'.$type_cfg unless $type_cfg =~ /::/;
+    Bivio::Util::my_require($type_cfg);
     Carp::croak($type_cfg, ': not a Bivio::Type')
 		unless UNIVERSAL::isa($type_cfg, 'Bivio::Type');
     $col->{type} = $type_cfg;
