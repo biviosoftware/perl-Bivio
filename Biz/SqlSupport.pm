@@ -124,7 +124,7 @@ The database table name(s).
 
 The property name to sql column mapping. Format:
     {
-        property-name => column-name,
+        property-name => column-name(s),
         ...
     }
 
