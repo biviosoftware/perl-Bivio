@@ -102,7 +102,7 @@ my($_XML_TO_HTML_PROGRAM) = {
     map({(
 	$_ => sub {
 	    my($attr, $html, $clipboard) = @_;
-	    $$html .= "<h2>Footnotes</h2><ol>\n$clipboard->{footnotes}</ol>\n"
+	    $$html .= "<h3>Footnotes</h3><ol>\n$clipboard->{footnotes}</ol>\n"
 		if $clipboard->{footnotes};
 	    return "<html><body>$$html</body></html>";
 	},
@@ -166,8 +166,8 @@ my($_XML_TO_HTML_PROGRAM) = {
     'qandaset/para' => ['p', 'i'],
     quote => '"${_}"',
     'quote/quote' => q{'${_}'},
-    'sect1/title' => ['h2'],
-    'sect2/title' => ['h3'],
+    'sect1/title' => ['h3'],
+    'sect2/title' => ['h4'],
     sidebar => '<table width="95%" border="1" cellpadding="5" bgcolor="#CCCCCC">'
         . '<tr><td>${_}</td></tr></table>',
     'sidebar/title' => ['h3'],
