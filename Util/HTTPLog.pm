@@ -271,6 +271,7 @@ sub _initialize {
         '::Data::AccountScraper.* Bivio::DieCode::CLIENT_ERROR',
         '_process_sell: no lots owned',
         '_process_sell: can\'t process sale, oversold',
+        '::DIE: couldn\'t parse instrument name/symbol',
     );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
