@@ -39,6 +39,8 @@ offsets:
 
 =item QUARTER : 91 days
 
+=item YEAR : 365 days
+
 =back
 
 =cut
@@ -59,6 +61,9 @@ __PACKAGE__->compile([
     ],
     QUARTER => [
 	91,
+    ],
+    YEAR => [
+	365,
     ],
     # negative values are interpreted, not actual
     BEGINNING_OF_YEAR => [
