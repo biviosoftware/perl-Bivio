@@ -35,8 +35,11 @@ C<Bivio::Test::HTMLParser::Links> models the links on a page.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 
@@ -55,15 +58,8 @@ Parses cleaned html for links.
 sub new {
     my($proto, $parser) = @_;
     my($self) = $proto->SUPER::new;
-    my($fields) = $self->[$_IDI] = {
-	cleaner => $parser->get('Cleaner'),
-	links => {},
-    };
-    Bivio::Ext::HTMLParser->new($self)->parse($fields->{cleaner}->get('html'));
-    $self->internal_put($fields->{links});
-    # We only need the fields while parsing.  Avoids memory links (circ refs)
-    $self->[$_IDI] = undef;
-    return $self->set_read_only;
+    $self->[$_IDI] = {};
+    return $self;
 }
 
 =head1 METHODS
@@ -80,8 +76,7 @@ Dispatch to the _end_XXX routines.
 
 sub html_parser_end {
     my($self, $tag) = @_;
-    my($fields) = $self->[$_IDI];
-    return _end_a($fields) if $tag eq 'a';
+    return _end_a($self) if $tag eq 'a';
     return;
 }
 
@@ -97,7 +92,7 @@ sub html_parser_start {
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
     return _start_a($fields, $attr) if $tag eq 'a';
-    return _start_img($fields, $attr) if $tag eq 'img';
+    return _start_img($self, $attr) if $tag eq 'img';
     return;
 }
 
@@ -115,40 +110,43 @@ of text (like Forms), so we append until the end_a.
 sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
-    $text = $fields->{cleaner}->text($text);
+    $text = $self->get('cleaner')->text($text);
     $fields->{text} .= $text if $fields->{href};
     return;
 }
 
 #=PRIVATE METHODS
 
-# _end_a(hash_ref fields)
+# _end_a(self)
 #
 # No longer in a link.
 #
 sub _end_a {
-    my($fields) = @_;
-    _link($fields, $fields->{text}) if $fields->{text};
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    _link($self, $fields->{text}) if $fields->{text};
     $fields->{href} = undef;
     return;
 }
 
-# _link(hash_ref fields, string label, string alt)
+# _link(self, string label, string alt)
 #
 # Adds the link.  Creates unique name ($label_$i) if not unique.
 #
 sub _link {
-    my($fields, $label, $alt) = @_;
+    my($self, $label, $alt) = @_;
+    my($fields) = $self->[$_IDI];
     my($base, $i) = $label;
-    while ($fields->{links}->{$label}) {
-	return if $fields->{links}->{$label}->{href} eq $fields->{href};
+    while ($self->get('elements')->{$label}) {
+	return if $self->get('elements')->{$label}->{href} eq $fields->{href};
 	$label = $base . '_' . ++$i;
     }
-    $fields->{links}->{$label} = {
+    $self->get('elements')->{$label} = {
 	label => $label,
 	href => $fields->{href},
 	alt => $alt,
     };
+    _trace($label, '->', $fields->{href}) if $_TRACE;
     return;
 }
 
@@ -169,17 +167,18 @@ sub _start_a {
     return;
 }
 
-# _start_img(hash_ref fields, hash_ref attr)
+# _start_img(self, hash_ref attr)
 #
 # Adds a new link.
 #
 sub _start_img {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     return unless $fields->{href};
     Bivio::Die->die('missing src: ', $attr) unless $attr->{src};
     # Delete the gif/jpg suffix and any directory prefix
     $attr->{src} =~ s/(?:.*\/)?([^\/]+)\.\w+$/$1/;
-    _link($fields, $attr->{src}, $attr->{alt});
+    _link($self, $attr->{src}, $attr->{alt});
     return;
 }
 

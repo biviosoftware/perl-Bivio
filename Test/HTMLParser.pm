@@ -61,6 +61,33 @@ Bivio::IO::ClassLoader->map_require_all('TestHTMLParser');
 
 =cut
 
+=for html <a name="internal_new"></a>
+
+=head2 static internal_new(Bivio::Test::HTMLParser parser) : Bivio::Test::HTMLParser
+
+Calls parser subclass to parse cleaned html.  Subclass must implement
+L<Bivio::Ext::HTMLParser|Bivio::Ext::HTMLParser> interface.  Sets two
+attributes: I<cleaner> and I<elements>.  I<cleaner> is an instance of
+C<Cleaner>, and I<elements> is a hash which will be put as the attributes of
+I<self> when parsing is complete.
+
+=cut
+
+sub internal_new {
+    my($proto, $parser) = @_;
+    my($self) = $proto->new;
+    $self->internal_put({
+	cleaner => $parser->get('Cleaner'),
+	elements => {},
+    });
+
+    my($p) = Bivio::Ext::HTMLParser->new($self);
+    $p->ignore_elements(qw(script style));
+    $p->parse($self->get('cleaner')->get('html'));
+    $self->internal_put($self->get('elements'));
+    return $self->set_read_only;
+}
+
 =for html <a name="new"></a>
 
 =head2 static new(string_ref html) : Bivio::Test::HTMLParser
@@ -70,7 +97,7 @@ Bivio::IO::ClassLoader->map_require_all('TestHTMLParser');
 Parse I<html> using registered parser classes.
 
 If I<html> is undef or I<attrs> is passed, does nothing (pass through
-constructor for subclasses).
+L<internal_new|"internal_new"> for subclasses).
 
 =cut
 
@@ -82,7 +109,7 @@ sub new {
     my($html) = shift;
     my($self) = $proto->SUPER::new({html => $$html});
     foreach my $c (@_CLASSES) {
-	$self->put($c->simple_package_name => $c->new($self));
+	$self->put($c->simple_package_name => $c->internal_new($self));
     }
     return $self->set_read_only;
 }

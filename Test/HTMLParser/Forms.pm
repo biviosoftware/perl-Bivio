@@ -62,19 +62,8 @@ Parses cleaned html for forms.
 sub new {
     my($proto, $parser) = @_;
     my($self) = $proto->SUPER::new;
-    my($fields) = $self->[$_IDI] = {
-	cleaner => $parser->get('Cleaner'),
-	forms => {},
-    };
-
-    my($p) = Bivio::Ext::HTMLParser->new($self);
-    $p->ignore_elements(qw(script style));
-    $p->parse($fields->{cleaner}->get('html'));
-
-    $self->internal_put($fields->{forms});
-    # We only need the fields while parsing.  Avoids memory leaks (circ refs)
-    $self->[$_IDI] = undef;
-    return $self->set_read_only;
+    $self->[$_IDI] = {};
+    return $self;
 }
 
 =head1 METHODS
@@ -143,7 +132,7 @@ sub html_parser_end {
     my($fields) = $self->[$_IDI];
     return _end_th($fields) if $tag eq 'th';
     return _end_table($fields) if $tag eq 'table';
-    return _end_form($fields) if $tag eq 'form';
+    return _end_form($self) if $tag eq 'form';
     return _end_textarea($fields) if $tag eq 'textarea';
     return _end_select($fields) if $tag eq 'select';
     return _end_font($fields) if $tag eq 'font';
@@ -165,7 +154,7 @@ sub html_parser_start {
     return _start_tx($fields, $attr, $tag) if $tag =~ /^t(?:d|r|h|able)$/;
     return _start_form($fields, $attr) if $tag eq 'form';
     return _start_option($fields, $attr) if $tag eq 'option';
-    return _start_input($fields, $attr) if $attr->{type};
+    return _start_input($self, $attr) if $attr->{type};
     return _start_font($fields, $attr) if $tag eq 'font';
     return;
 }
@@ -186,7 +175,7 @@ column headers, etc.
 sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
-    $text = $fields->{cleaner}->text($text);
+    $text = $self->get('cleaner')->text($text);
     # We never label fields with blanks.  There are occassions where blanks
     # are upcalled just after the actual text.
     return unless length($text);
@@ -216,20 +205,21 @@ sub _end_font {
     return;
 }
 
-# _end_form(hash_ref fields)
+# _end_form(self)
 #
 # Ends the form and puts in $fields->{current}.
 #
 sub _end_form {
-    my($fields) = @_;
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
     Bivio::Die->die('unlabeled form field: ', $fields->{input},
 	' form: ', $fields->{current})
 	if $fields->{input};
     my($label) = $fields->{current}->{label};
     if (defined($label)) {
         Bivio::Die->die('duplicate form ', $label, ': ', $fields->{current})
-                if $fields->{forms}->{$label};
-        $fields->{forms}->{$label} = $fields->{current};
+                if $self->get('elements')->{$label};
+        $self->get('elements')->{$label} = $fields->{current};
     }
     _unwind_duplicates($fields);
     _trace($fields->{current}) if $_TRACE;
@@ -387,13 +377,14 @@ sub _label_radio {
     return;
 }
 
-# _label_submit(hash_ref fields, hash_ref attr)
+# _label_submit(self, hash_ref attr)
 #
 # Labels the submit fields.
 #
 sub _label_submit {
-    my($fields, $attr) = @_;
-    $attr->{label} = $fields->{cleaner}->text(
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
+    $attr->{label} = $self->get('cleaner')->text(
 	$attr->{src} ? _submit_label_clean($attr->{src})
 	: $attr->{value});
     $attr->{label} .= '_'.$attr->{index} if defined($attr->{index});
@@ -462,13 +453,14 @@ sub _start_form {
     return;
 }
 
-# _start_input(hash_ref fields, hash_ref attr)
+# _start_input(self, hash_ref attr)
 #
 # Starts a new field.   Certain fields have labels before.  Others
 # have labels after.  Some have labels as the column header.
 #
 sub _start_input {
-    my($fields, $attr) = @_;
+    my($self, $attr) = @_;
+    my($fields) = $self->[$_IDI];
     _trace($fields->{text}, ' ', $fields->{input}, ' ',
 	$fields->{prev_cell_text}, ' ', $attr)
 	if $_TRACE;
@@ -479,7 +471,7 @@ sub _start_input {
     # If a ListForm field, we grab the index from the header.
     $attr->{index} = $1 if $attr->{name} && $attr->{name} =~ /_(\d+)$/;
 
-    return _label_submit($fields, $attr) if $attr->{type} eq 'submit';
+    return _label_submit($self, $attr) if $attr->{type} eq 'submit';
 
     # visible field
     $fields->{input} = $attr;

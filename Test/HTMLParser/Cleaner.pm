@@ -55,6 +55,18 @@ __PACKAGE__->register;
 
 =cut
 
+=for html <a name="internal_new"></a>
+
+=head2 static internal_new(Bivio::Test::HTMLParser parser) : Bivio::Test::HTMLParser
+
+Calls L<new|"new">.
+
+=cut
+
+sub internal_new {
+    return shift->new(@_);
+}
+
 =for html <a name="new"></a>
 
 =head2 static new(Bivio::Test::HTMLParser parser) : Bivio::Test::HTMLParser::Cleaner
