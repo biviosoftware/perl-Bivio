@@ -492,6 +492,48 @@ sub internal_initialize {
     Bivio::Die->die(shift, ': abstract method');
 }
 
+=for html <a name="internal_initialize_local_fields"></a>
+
+=head2 static internal_initialize_local_fields(array_ref decls, any default_type, any default_constraint) : array_ref
+
+Provides positional shortcut for generating field declarations to pass return
+from L<internal_initialize|"internal_initialize">.  I<decls> is a array of
+arrays.  Each element is a field declaration that is a tuple of (name, type,
+constraint).  If type or constraint is undef, will be initialized with default
+values.  If both type or constraint is missing, element may be a string.
+I<default_type> and <default_constraint> must be defined if I<decls>
+requires default values.
+
+Example:
+
+    $self->internal_initialize_local_fields([
+        'first_name',
+        'middle_name',
+        'last_name',
+        [qw(gender Gender)],
+    ], 'Line', 'NOT_NULL');
+
+    $self->internal_initialize_local_fields([
+        ['count', 'Integer', 'NOT_NULL'],
+    ]);
+
+=cut
+
+sub internal_initialize_local_fields {
+    my($proto, $decls, $default_type, $default_constraint) = @_;
+    return [map({
+	$_ = [$_]
+	    unless ref($_);
+	{
+	    name => $_->[0],
+	    type => $_->[1] || $default_type
+		|| $proto->die('default_type must be defined'),
+	    constraint => $_->[2] || $default_constraint
+		|| $proto->die('default_constraint must be defined'),
+	};
+    } @$decls)];
+}
+
 =for html <a name="internal_iterate_next"></a>
 
 =head2 internal_iterate_next(hash_ref row, string converter) : array

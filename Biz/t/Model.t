@@ -10,6 +10,33 @@ my($_req) = Bivio::Test::Request->get_instance;
 my($_categories) = [];
 Bivio::Test->new('Bivio::Biz::Model')->unit([
     'Bivio::Biz::Model' => [
+	internal_initialize_local_fields => [
+	    map({
+		($_ => [[
+		    {
+			name => 'a',
+			type => 'String',
+			constraint => 'NONE',
+		    },
+		]]);
+	    }
+		[[[qw(a String NONE)]]],
+		[[['a', undef, 'NONE']], 'String'],
+		[[['a', 'String', undef]], undef, 'NONE'],
+		[['a'], qw(String NONE)],
+	    ),
+	    [[qw(a b)], qw(String NONE)] => [[
+		map({
+		    {
+			name => $_,
+			type => 'String',
+			constraint => 'NONE',
+		    };
+	        } qw(a b)),
+	    ]],
+	    [['a']] => Bivio::DieCode->DIE,
+	    [['a'], 'String'] => Bivio::DieCode->DIE,
+	],
 	new => [
 	    ['RealmOwner'] => qr/RealmOwner/,
 	    [$_req, 'RealmOwner'] => qr/RealmOwner/,
