@@ -220,8 +220,14 @@ sub import {
     _register($pkg);
     no strict;
     *{$pkg.'::_TRACE'} = \$trace_val;
-    *{$pkg.'::_trace'} = \&Bivio::IO::Trace::_trace
-	if $trace_val && !defined(&{$pkg.'::_trace'});
+    if (!defined(&{$pkg.'::_trace'})) {
+	if ($trace_val) {
+	    *{$pkg.'::_trace'} = \&Bivio::IO::Trace::_trace;
+	}
+	else {
+	    *{$pkg.'::_trace'} = \&Bivio::IO::Trace::_no_trace;
+	}
+    }
 }
 
 =for html <a name="register"></a>
@@ -428,6 +434,8 @@ sub _false {
 sub _true {
     return 1;
 }
+
+sub _no_trace {}
 
 =head1 BUGS
 
