@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Widget::AmountCell;
 use strict;
 $Bivio::UI::HTML::Widget::AmountCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::AmountCell::VERSION;
 
 =head1 NAME
 
@@ -93,13 +94,11 @@ sub initialize {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
-    my($field) = $self->get('field');
-    my($d) = $self->get_or_default('decimals', 2);
-    my($zero_as_blank) = $self->get_or_default('zero_as_blank', 0);
     $self->put(
-	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d, 1,
-		   $zero_as_blank],
-	    column_align => 'E',
+	    value => [$self->get('field'), 'Bivio::UI::HTML::Format::Amount',
+		$self->get_or_default('decimals', 2), 1,
+		$self->get_or_default('zero_as_blank', 0)],
+	    column_align => $self->get_or_default('column_align', 'E'),
 	    pad_left => 1,
 	    column_nowrap => 1,
 	   );
