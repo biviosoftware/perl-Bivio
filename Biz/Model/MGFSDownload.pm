@@ -35,7 +35,6 @@ C<Bivio::Biz::Model::MGFSDownload> records MGFS file download stats.
 =cut
 
 #=IMPORTS
-
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
