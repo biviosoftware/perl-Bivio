@@ -269,13 +269,7 @@ Initializes a new instance with these command line arguments.
 
 sub new {
     my($proto, $argv) = @_;
-    my($self) = Bivio::Collection::Attributes::new($proto);
-    $argv ||= [];
-    my($orig_argv) = [@$argv];
-    $self->[$_IDI] = {};
-    $self->internal_put(_parse_options($self, $argv));
-    $self->put(argv => $orig_argv);
-    return $self;
+    return _initialize($proto->SUPER::new, $argv);
 }
 
 =for html <a name="new_other"></a>
@@ -579,8 +573,10 @@ Global options precede the command and are set on the instance.
 sub main {
     my($proto, @argv) = @_;
     local($|) = 1;
-    my($self) = $proto->new(\@argv);
-    $self->[$_IDI]->{in_main} = 1;
+    my($self) = ref($proto) ? _initialize($proto, \@argv)
+	: $proto->new(\@argv);
+    my($fields) = $self->[$_IDI];
+    $fields->{in_main} = 1;
 
     if ($self->unsafe_get('db')) {
         # Setup DBI connection to access a probably non-default database
@@ -605,6 +601,7 @@ sub main {
 	}
 	return;
     });
+    $fields->{in_main} = 0;
 
     # Don't finish if setup never called.
     $self->finish($die ? 1 : 0) if $self->unsafe_get('req');;
@@ -877,7 +874,7 @@ sub set_user_to_any_online_admin {
 
 =head2 setup()
 
-Configures the environment for request.
+Configures the environment for request.  Does nothing if already setup.
 
 =cut
 
@@ -995,6 +992,22 @@ sub _compile_options {
 	delete($map->{$k}) unless $v;
     }
     return ($map, $opts);
+}
+
+# _initialize(self, array_ref argv) : self
+#
+# Initializes the instance with the appropriate params.
+#
+sub _initialize {
+    my($self, $argv) = @_;
+    $argv ||= [];
+    my($orig_argv) = [@$argv];
+    $self->[$_IDI] ||= {};
+    $self->put(
+	%{_parse_options($self, $argv)},
+	argv => $orig_argv,
+    );
+    return $self;
 }
 
 # _method_ok(Bivio::ShellUtil self, string method) : boolean
@@ -1171,15 +1184,12 @@ sub _setup_for_main {
         Bivio::Agent::TaskId
         Bivio::SQL::Connection
     });
-    $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
-
-    # Create the request, then set the user (need the request to load models)
+    my($p) = Bivio::SQL::Connection->set_dbi_name($db);
+    $fields->{prior_db} = $p unless $fields->{prior_db};
     $self->put_request(Bivio::Agent::Job::Request->new({
-	auth_id => undef,
-	auth_user_id => undef,
-	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
-	timezone => Bivio::Type::DateTime->timezone(),
-    }));
+	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
+	timezone => Bivio::Type::DateTime->timezone,
+    })) unless $self->unsafe_get('req');
     $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
 	_parse_realm_id($self, 'user'));
     return;
