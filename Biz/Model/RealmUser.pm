@@ -113,7 +113,6 @@ Sets I<creation_date_time> if not set, then calls SUPER.
 sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now();
-    $values->{title} = $values->{title}->as_sql_param if ref($values->{title});
     return $self->SUPER::create($values);
 }
 
@@ -204,19 +203,11 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_user_t',
 	columns => {
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            role => ['Bivio::Auth::Role',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    # This allows the convenience of growth.  It has shown over
-	    # time that we won't be adjusting this, so we may reload using
-	    # just the enum value.
-	    title => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-	    creation_date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NOT_NULL()],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            user_id => ['PrimaryId', 'PRIMARY_KEY'],
+            role => ['Bivio::Auth::Role', 'NOT_NULL'],
+	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
 #TODO: SECURITY: If user_id known, does that mean can get to all user's info?
@@ -317,22 +308,6 @@ sub is_member_or_withdrawn {
     $list_model ||= $self;
     return Bivio::Auth::RoleSet->is_set(\$_MEMBER_OR_WITHDRAWN_ROLES,
 	    $list_model->get($model_prefix.'role'));
-}
-
-=for html <a name="update"></a>
-
-=head2 update(hash_ref new_values)
-
-Updates the current model's values.  Transform title to string if
-not already.
-
-=cut
-
-sub update {
-    my($self, $new_values) = @_;
-    $new_values->{title} = $new_values->{title}->as_sql_param
-	    if ref($new_values->{title});
-    return $self->SUPER::update($new_values);
 }
 
 #=PRIVATE METHODS
