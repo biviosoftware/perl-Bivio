@@ -94,21 +94,21 @@ my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-7',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'business_activity'
 		]
 	       ),
    	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-8',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'principal_service'
 		]
 	       ),
    	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-9',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'business_code'
 		]
 	       ),
@@ -135,7 +135,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'return_type'
 		],
 		Bivio::Type::F1065Return::INITIAL_RETURN(),
@@ -149,7 +149,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'accounting_method'
 		],
 		Bivio::Type::F1065AccountingMethod::CASH(),
@@ -162,13 +162,13 @@ my(@_XLATORS) = (
   	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-16',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'number_of_k1s'
 		]
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'partnership_type'
 		],
 		Bivio::Type::F1065Partnership::GENERAL(),
@@ -184,7 +184,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'partner_is_partnership'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -194,7 +194,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'partnership_is_partner'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -204,7 +204,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'consolidated_audit'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -261,7 +261,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'three_requirements'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -271,7 +271,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_partners'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -281,7 +281,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'publicly_traded'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -291,7 +291,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'tax_shelter'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -301,7 +301,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_account'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -312,13 +312,13 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::StringXlator->new(
 		'f2-19',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_account_country'
 		]
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_trust'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -328,7 +328,7 @@ my(@_XLATORS) = (
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'transfer_of_interest'
 		],
 		Bivio::Type::Boolean::TRUE(),
@@ -339,14 +339,14 @@ my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-11',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'interest_income'
 		],
 		','),
  	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-12',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'interest_income'
 		],
 		2
@@ -354,7 +354,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-13',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'dividend_income'
 		],
 		','
@@ -362,7 +362,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-14',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'dividend_income'
 		],
 		2
@@ -370,7 +370,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-17',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_stcg'
 		],
 		','
@@ -378,7 +378,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-18',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_stcg'
 		],
 		2
@@ -386,7 +386,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-20',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_ltcg'
 		],
 		','
@@ -394,7 +394,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-21',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_ltcg'
 		],
 		2
@@ -402,7 +402,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-22',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'other_portfolio_income'
 		],
 		','
@@ -410,7 +410,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-23',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'other_portfolio_income'
 		],
 		2
@@ -418,7 +418,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-34',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'portfolio_deductions'
 		],
 		','
@@ -426,7 +426,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-35',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'portfolio_deductions'
 		],
 		2
@@ -434,7 +434,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-56',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'investment_income'
 		],
 		','
@@ -442,7 +442,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-57',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'investment_income'
 		],
 		2
@@ -450,7 +450,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-58',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'investment_expenses'
 		],
 		','
@@ -458,7 +458,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-59',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'investment_expenses'
 		],
 		2
@@ -466,21 +466,21 @@ my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f3-78',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_income_type'
 		]
 	       ),
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f3-79',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_income_country'
 		]
 	       ),
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-80',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_income'
 		],
 		','
@@ -488,14 +488,14 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-81',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_income'
 		],
 		2
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_tax_type'
 		],
 		Bivio::Type::F1065ForeignTax::PAID(),
@@ -506,7 +506,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-84',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_tax'
 		],
 		','
@@ -514,7 +514,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-85',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'foreign_tax'
 		],
 		2
@@ -522,7 +522,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-93',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'tax_exempt_interest'
 		],
 		','
@@ -530,7 +530,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-94',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'tax_exempt_interest'
 		],
 		2
@@ -538,7 +538,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-99',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'cash_distribution'
 		],
 		','
@@ -546,7 +546,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-100',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'cash_distribution'
 		],
 		2
@@ -554,7 +554,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-101',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'property_distribution'
 		],
 		','
@@ -562,7 +562,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f3-102',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'property_distribution'
 		],
 		2
@@ -570,7 +570,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f4-1',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_income'
 		],
 		','
@@ -578,7 +578,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::FracXlator->new(
 		'f4-2',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'net_income'
 		],
 		2
@@ -586,7 +586,7 @@ my(@_XLATORS) = (
 	Bivio::UI::PDF::Form::MoneyXlator->new(
 		'f4-4',
 		[
-		    'Bivio::Biz::Model::F1065Form',
+		    'Bivio::Biz::Model::F1065List',
 		    'income_general_individual',
 		],
 	       ),

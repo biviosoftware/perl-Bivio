@@ -233,7 +233,7 @@ sub _initialize {
 	    'Bivio::DieCode::CORRUPT_QUERY',
 	    'Bivio::Biz::FormContext::_parse_error',
 	    'HTTP::Query::_correct.*correcting query',
-	    'Bivio::Biz::Model::F1065Form::_calculate_income',
+	    'Bivio::Biz::Model::F1065List::_calculate_income',
 	    'Error in hidden value\(s\), refreshing',
 	    'request aborted, rolling back',
 	    'attempt to delete missing entry',

@@ -70,7 +70,7 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    $req->get('Bivio::Biz::Model::F1065K1Form')->set_cursor_or_die(0);
+    $req->get('Bivio::Biz::Model::F1065K1List')->set_cursor_or_die(0);
     return Bivio::UI::PDF::Form::F1065sk1::Y1999::Formf1065sk1->new()
 	    ->execute($req);
 }
