@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget;
 use strict;
 $Bivio::UI::HTML::Widget::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::VERSION;
 
 =head1 NAME
 
@@ -568,6 +569,34 @@ sub heading_with_inactive_form {
 	    ],
         ],
     });
+}
+
+=for html <a name="heading_with_search"></a>
+
+=head2 static heading_with_search(string label) : Bivio::UI::HTML::Widget
+
+=head2 static heading_with_search(Bivio::UI::HTML::Widget widget) : Bivio::UI::HTML::Widget
+
+Returns a widget which renders I<label> in page_heading font or
+I<widget> on left
+with a search box to the right.
+
+=cut
+
+sub heading_with_search {
+    my($proto, $widget) = @_;
+    return $proto->load_and_new('Grid', {
+        expand => 1,
+        values => [[
+            ref($widget) ? $widget : $proto->label($widget, 'page_heading'),
+	    $proto->load_and_new('Search', {
+		size => 20,
+		cell_align => 'SE',
+		cell_end_form => 1,
+	    }),
+        ]],
+    });
+    return;
 }
 
 =for html <a name="highlight"></a>
@@ -1198,7 +1227,7 @@ sub _use {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
