@@ -28,7 +28,7 @@ C<Bivio::Test::PageTools> contains all the methods invoked by the test scripts t
 use Bivio::IO::Trace;
 use Bivio::Test::BulletinBoard;
 use Bivio::Test::HTTPUtil;
-
+use Data::Dumper;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
@@ -42,7 +42,8 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
 
-Visits the page specified by url (which may be dynamically passed) and puts the response in the current BulletinBoard object.
+Visits the page specified by url (which may be dynamically passed) and puts the
+response and url in the current BulletinBoard object.
 
 =cut
 
@@ -50,26 +51,17 @@ sub visit {
     my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
+    my ($board) = Bivio::Test::BulletinBoard->get_current();
 
-    my($util) = (Bivio::Test::BulletinBoard->get_current)->get('HTTPUtil');
-    my($http_res) = $util->get_response($uri);
-    _trace("****Content = ". $http_res->content) if $_TRACE;
+    my($util) = ($board->get('HTTPUtil'));
+    #parsed response is actually an instance of HTML::Analyzer
+    my($parsed_res) = $util->get_response($uri);
+    $board->put(current_uri => $uri);
+    $board->put(response => $parsed_res);
+    _trace("\n*****Got page: " . $parsed_res->get_title() . "\n") if
+	    ($_TRACE && (defined $parsed_res->get_title)) ;
 
-    if (!defined $http_res) {
-	_trace("Failed to get HTTP Response from server for $uri.\n")
-		if $_TRACE;
-    }
-    elsif ($http_res->{HTTP_RESPONSE}->is_success) {
-	my ($board) = Bivio::Test::BulletinBoard->get_current();
-	$board->put(response => $http_res);
-	_trace("PageVisit Response is:\n*****\n*****" . $http_res->content)
-		if $_TRACE;
-    }
-    else {
-      	_trace("Error: Page did not load successfully.
-                \nText gotten was: ", $http_res, "\n");
-    }
-    return;
+    return $parsed_res;
 }
 
 #=PRIVATE METHODS
