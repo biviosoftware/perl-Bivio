@@ -87,6 +87,9 @@ sub concat_name_ticker_symbol {
     my($self, $name, $ticker_symbol) = @_;
     # Names always exist, but tickers may be missing
     return $name unless defined($ticker_symbol);
+
+    # don't show the -Dxxxx part for delisted instruments
+    $ticker_symbol =~ s/^(.*)-D\d+$/$1/;
     return $name.' ('.$ticker_symbol.')';
 }
 
