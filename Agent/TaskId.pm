@@ -2162,6 +2162,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/investment-performance
         Bivio::Biz::Model::Lock
+        Bivio::Type::UserPreference->execute_show_inactive_instruments
         Bivio::Biz::Model::DateSpanForm
         Bivio::Biz::Model::InstrumentPerformanceList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceReport
@@ -2176,7 +2177,7 @@ my(@_CFG) = (
         ?/accounting/reports/investment-performance-detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::InstrumentDateSpanForm
-        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
+        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
         Bivio::Biz::Model::InstrumentPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
@@ -2224,6 +2225,7 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-performance
         Bivio::Biz::Model::Lock
+        Bivio::Type::UserPreference->execute_show_inactive_members
         Bivio::Biz::Model::DateSpanForm
         Bivio::Biz::Model::MemberPerformanceList->execute_load_all_with_inactive_and_no_units
         Bivio::UI::HTML::Club::MemberPerformanceReport
