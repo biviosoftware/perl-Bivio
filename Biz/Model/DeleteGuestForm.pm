@@ -71,6 +71,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
+	require_context => 1,
     };
 }
 
