@@ -33,7 +33,11 @@ one payment at a time.
 =cut
 
 #=IMPORTS
-use Bivio::Societas::Biz::Model::ECPayment;
+use Bivio::Agent::Task;
+use Bivio::Agent::TaskId;
+use Bivio::Biz::Action::ECCreditCardProcessor;
+use Bivio::IO::Trace;
+use Bivio::Type::ECPaymentStatus;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -56,10 +60,11 @@ sub execute {
     my($self, $req) = @_;
 
     return _process_all($self, $req) if $req->unsafe_get('process_all');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
 
     # Setup job to call this method again
     Bivio::Agent::Job::Dispatcher->enqueue($req,
-            Bivio::Agent::TaskId::EC_PAYMENTS_PROCESS_ALL(),
+            Bivio::Agent::TaskId->EC_PAYMENTS_PROCESS_ALL,
             {process_all => 1});
     # Nothing returned to client
     my($buffer) = '';
@@ -69,7 +74,7 @@ sub execute {
 
 #=PRIVATE METHODS
 
-# _process_all(Bivio::Biz::Action::ECPaymentProcess self, Bivio::Agent::Request req) : boolean
+# _process_all(self, Bivio::Agent::Request req) : boolean
 #
 # Go through list of all payments which need to be processed.
 # For each payment, setup user and realm, then execute a separate
@@ -80,7 +85,7 @@ sub _process_all {
 
     # check batch before and after.  Sometimes there is an error downloading
     # the status, and we have accidentally resubmitted a payments.
-    Bivio::Societas::Biz::Model::ECPayment->check_transaction_batch($req);
+    Bivio::Biz::Action::ECCreditCardProcessor->check_transaction_batch($req);
     my($task) = Bivio::Agent::Task->get_by_id(
             Bivio::Agent::TaskId->CLUB_ADMIN_EC_PROCESS_PAYMENT);
     my($ecp) = Bivio::Biz::Model->new($req, 'ECPayment');
