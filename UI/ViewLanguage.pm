@@ -58,6 +58,7 @@ are a few other restrictions which are defined by I<view_put>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::File;
 use Bivio::IO::Trace;
 
 #=VARIABLES
