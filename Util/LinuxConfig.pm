@@ -34,6 +34,27 @@ C<Bivio::Util::LinuxConfig>
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="USAGE"></a>
+
+=head2 USAGE : string
+
+Returns usage.
+
+=cut
+
+sub USAGE {
+    return <<'EOF';
+usage: b-linux-config [options] command [args...]
+commands:
+    serial_console -- configure grub and init for serial port console
+EOF
+}
+
 #=IMPORTS
 use Bivio::IO::Config;
 
@@ -66,40 +87,70 @@ sub handle_config {
     return;
 }
 
-=for html <a name="make_serial_console"></a>
+=for html <a name="relay_domains"></a>
 
-=head2 make_serial_console()
+=head2 static relay_domains(string host, ...)
+
+Adds I<host>s to relay-domains file (creating if it doesn't exist).
+
+=cut
+
+sub relay_domains {
+    my(undef, @host) = @_;
+    my($f) = '/etc/mail/relay-domains';
+    return _add_file($f, 'root', 'mail', 0640)
+	. _insert_text($f, ['^', join("\n", @host) . "\n"]);
+}
+
+=for html <a name="serial_console"></a>
+
+=head2 serial_console() : string
 
 Makes a serial console on ttyS0.  Modifies grub.conf, securetty, and
 inittab.   May be called repeatedly.
 
 =cut
 
-sub make_serial_console {
+sub serial_console {
     my($self) = @_;
-    _insert('/etc/securetty', ['^', "/dev/ttyS0\n"]);
-    _insert('/etc/inittab', ['(?<=getty tty6\n)',
-	"S0:2345:respawn:/sbin/agetty ttyS0 38400\n"]);
-    _insert('/etc/grub.conf', ['(?<!\#)splashimage', '#splashimage'],
-	["(?=\n\tinitrd)", ' console=ttyS0,38400'],
-	["\ntimeout=10\n", <<'EOF']);
+    return _insert_text('/etc/securetty', ['^', "/dev/ttyS0\n"])
+	. _insert_text('/etc/inittab', ['(?<=getty tty6\n)',
+	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
+        . _insert_text('/etc/grub.conf',
+	    ['(?<!\#)splashimage', '#splashimage'],
+	    ["(?=\n\tinitrd)", ' console=ttyS0,38400'],
+	    ["\ntimeout=10\n", <<'EOF']);
 
 timeout=5
 serial --unit=0 --speed=38400
 terminal --timeout=1 serial
 EOF
-    return;
 }
 
 #=PRIVATE METHODS
 
-# _insert(string file, array_ref op)
+# _add_file(string file, string owner, string group, int perms)
+#
+# Creates the file if it doesn't exist.
+#
+sub _add_file {
+    my($file, $owner, $group, $perms) = @_;
+    $file = _prefix_file($file);
+    return '' if -e $file;
+    Bivio::IO::File->write($file, '');
+    Bivio::IO::File->chown_by_name($owner, $group, $file)
+	if $> == 0;
+    Bivio::IO::File->chmod($perms, $file);
+    return "$file: created\n";
+}
+
+# _insert_text(string file, array_ref op)
 #
 # Inserts a value into a file.
 #
-sub _insert {
+sub _insert_text {
     my($file, @op) = @_;
-    $file = "$_CFG->{root_prefix}$file" if $_CFG->{root_prefix};
+    $file = _prefix_file($file);
     my($data) = Bivio::IO::File->read($file);
     my($got);
     foreach my $op (@op) {
@@ -113,6 +164,15 @@ sub _insert {
     system("cp -a $file $file.bak");
     Bivio::IO::File->write($file, $data);
     return "$file: updated\n";
+}
+
+# _prefix_file(string file) : string
+#
+# Adds root_prefix to $file.
+#
+sub _prefix_file {
+    my($file) = @_;
+    return $_CFG->{root_prefix} ? "$_CFG->{root_prefix}$file" : $file;
 }
 
 =head1 COPYRIGHT
