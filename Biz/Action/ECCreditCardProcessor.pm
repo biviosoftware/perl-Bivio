@@ -113,13 +113,6 @@ sub check_transaction_batch {
         # Ignore payments we don't know about
         next unless $payment->unauth_load(ec_payment_id => $payment_id);
 
-        # Skip errors as they will be retried if not fatal
-        unless ($status =~ /^[12]$/) {
-            Bivio::IO::Alert->warn(
-		$payment_id, ': failed request; transaction data: ', \@fields);
-	    next;
-	}
-
 #TODO: Should the payment gateway status codes (1,2,3) be encapsulated?
         if ($status eq '1') {
             next if $payment->get('status')->is_approved;
@@ -134,6 +127,11 @@ sub check_transaction_batch {
                     $payment_id);
             _update_status($proto, $payment, $status);
         }
+	else {
+	    # Ignore errors as they will be retried
+            Bivio::IO::Alert->warn(
+		$payment_id, ': failed request; transaction data: ', \@fields);
+	}
     }
     return;
 }
