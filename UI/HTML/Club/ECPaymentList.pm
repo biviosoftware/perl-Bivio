@@ -57,7 +57,7 @@ sub new {
     $fields->{page_heading} = $self->heading(
 	    Bivio::UI::Label->get_simple('EC_PAYMENT_PAGE_HEADING'))
 	    ->put_and_initialize(parent => $self);
-    $fields->{action_bar} = $self->action_bar('club_post_message');
+    $fields->{action_bar} = $self->action_bar;
     $fields->{action_bar}->initialize;
 
     my($empty_message) = $self->string('No payments.',
@@ -150,8 +150,8 @@ sub execute {
                 Bivio::UI::Label->get_simple('EC_PAYMENT_PAGE_HEADING'),
 	    page_title_value => $fields->{page_heading},
 	    page_content => $fields->{content},
-#	    page_action_bar => $fields->{action_bar},
-	    page_type => Bivio::UI::PageType::LIST_ALL(),
+	    page_action_bar => $fields->{action_bar},
+	    page_type => Bivio::UI::PageType::LIST(),
 	    list_model => $list,
 	    list_uri => $req->format_stateless_uri($req->get('task_id')),
 	    detail_uri => $req->format_stateless_uri(
