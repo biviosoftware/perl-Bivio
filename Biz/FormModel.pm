@@ -442,17 +442,21 @@ sub _parse_cols {
 #
 sub _parse_submit {
     my($self, $value) = @_;
-    if (defined($value)) {
-	if ($value eq SUBMIT_CANCEL()) {
-	    my($req) = $self->get_request;
-	    $req->redirect($req->get('task')->get('cancel'));
-	    # Does not return
-	}
-	return if $value eq SUBMIT_OK()	|| $value eq SUBMIT_NEXT();
+
+    # default to OK, submit isn't passed when user presses 'enter'
+    $value ||= SUBMIT_OK();
+
+    if ($value eq SUBMIT_CANCEL()) {
+	my($req) = $self->get_request;
+	$req->redirect($req->get('task')->get('cancel'));
+	# Does not return
     }
+    return if $value eq SUBMIT_OK() || $value eq SUBMIT_NEXT();
+
     $self->die(Bivio::DieCode::CORRUPT_FORM(),
 	    {field => SUBMIT(),
-		expected => SUBMIT_OK().' or '.SUBMIT_CANCEL(),
+		expected => SUBMIT_OK().' or '.SUBMIT_CANCEL()
+		.' or '.SUBMIT_NEXT(),
 		actual => $value});
     return;
 }
