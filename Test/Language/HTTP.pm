@@ -304,6 +304,8 @@ Directory in which mail resides.  Set up your .procmailrc to have a rule:
     * ^TO_.*\+btest_
     btest-mail/.
 
+Make sure the permissions are 0600 on your .procmailrc.
+
 =item mail_tries : int [60]
 
 Maximum number of attempts to get mail.  Each try is about 1 second.
