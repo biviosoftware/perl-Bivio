@@ -90,7 +90,7 @@ sub create {
     my($self, $msg, $realm_owner, $club) = @_;
     unless ($realm_owner && $club) {
 	# use the super class create
-	$self->SUPER::create($self, $msg);
+	$self->SUPER::create($msg);
 	return;
     }
     # Archive mail message first
