@@ -46,16 +46,39 @@ my($_NUM_ATTACHMENTS) = 3;
 
 =cut
 
-=for html <a name="SUBMIT_OK"></a>
+=for html <a name="dispatch_action"></a>
 
-=head2 SUBMIT_OK() : 
+=head2 dispatch_action(Bivio::Agent::Request req, Bivio::Type::MailTo mailto)
 
-Returns OK button value.
+Based on where the mail goes to, execute the necessary
+actions.
+
+TODO: BAD: These actions really are part of tasks and copied here!
 
 =cut
 
-sub SUBMIT_OK {
-    return ' Send ';
+sub dispatch_action {
+    my($self, $req, $mailto) = @_;
+    $self->die('DIE', { message => 'undefined mailto value'})
+            unless defined($mailto);
+    _trace('mailto=', $mailto) if $_TRACE;
+    if( $mailto eq Bivio::Type::MailTo::CLUB() ) {
+        Bivio::Biz::Action::ClubMailBoard->execute($req);
+        Bivio::Biz::Action::ClubMailMembers->execute($req);
+    }
+    elsif( $mailto eq Bivio::Type::MailTo::MEMBERS() ) {
+        Bivio::Biz::Action::ClubMailMembers->execute($req);
+    }
+    elsif( $mailto eq Bivio::Type::MailTo::BOARD() ) {
+        Bivio::Biz::Action::ClubMailBoard->execute($req);
+    }
+    elsif( $mailto eq Bivio::Type::MailTo::ADMINISTRATOR() ) {
+        Bivio::Biz::Action::ClubMailAdmin->execute($req);
+    }
+    else {
+        $self->die(Bivio::DieCode::CORRUPT_QUERY(), { entity => $mailto,
+            message => 'unknown mailto value'});
+    }
 }
 
 =for html <a name="execute_input"></a>
@@ -77,7 +100,6 @@ sub execute_input {
     $req->put(mail => $msg);
     my($entity) = $msg->get_entity;
     my($header) = $msg->get_head;
-    my($body) = $msg->get_body;
 
     # Create a mail header and message body from the form input
     if (defined($user)) {
@@ -90,33 +112,16 @@ sub execute_input {
     $header->add('Subject', $self->get('subject'));
 
     # Write the mail body
-    my($body_out) = $body->open('w');
+    my($body_out) = $msg->get_body->open('w');
     $body_out->print(${$self->get('text')});
     $body_out->close;
 
     # Allow subclasses to modify header or body
     $self->internal_modify_mail($req, $msg);
+
+    $self->_process_attachments($entity);
     # Get header handle again, might have changed
     $header = $msg->get_head;
-
-    my($att, $att_name);
-    # Handle a number of attachments
-    foreach my $i (1..$_NUM_ATTACHMENTS) {
-        $att = $self->get('att'.$i);
-        defined($att) || next;
-        # Don't allow attachments for non-users
-        defined($user)
-                || $self->internal_put_error($att, Bivio::TypeError::EMAIL());
-
-        my($ct) = $att->{content_type} || 'application/octet-stream';
-        my($att_name) = $att->{filename}
-                || 'file'.$i.'.'.Bivio::MIME::Type->to_extension($ct);
-        my($content) = $att->{content};
-        my($encoding) = Bivio::MIME::Type->suggest_encoding($ct, $content);
-        # Attaching a part will convert message to multipart/mixed
-        $entity->attach(Type => $ct, Data => $$content,
-                Encoding => $encoding, Filename => $att_name);
-    }
 
     # Add message recipients based on the To: and Cc: form fields
     # Note: The fields were split and validated in validate()
@@ -145,17 +150,16 @@ sub execute_input {
 	return 0;
     }
 
-    # Posting via a selection
     my($realm) = $req->get('auth_realm');
     my($name) = $realm->get('owner_name');
     my($suffix) =  $to->get_long_desc;
     $name .= '-' . $suffix if $suffix;
     $header->add('To', $name);
     if ($realm->get('type') == Bivio::Auth::RealmType::PROXY()) {
-	_dispatch_proxy($req, $to);
-	return 0;
+        $self->_dispatch_proxy($req, $to);
+        return 0;
     }
-    Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
+    $self->dispatch_action($req, $to);
     return 0;
 }
 
@@ -223,6 +227,18 @@ No-op for base class
 sub internal_modify_mail {
     my($self) = @_;
     return 0;
+}
+
+=for html <a name="SUBMIT_OK"></a>
+
+=head2 SUBMIT_OK() : 
+
+Returns OK button value.
+
+=cut
+
+sub SUBMIT_OK {
+    return ' Send ';
 }
 
 =for html <a name="validate"></a>
@@ -299,7 +315,7 @@ sub validate {
 # proxy realm (really, ask_candis_publish).
 #
 sub _dispatch_proxy {
-    my($req, $to) = @_;
+    my($self, $req, $to) = @_;
 
     my($real_realm) = $req->get('auth_realm');
     my($fake_realm) = Bivio::Biz::Model::RealmOwner->new($req);
@@ -308,9 +324,32 @@ sub _dispatch_proxy {
     # (ask_candis, aka Ask Candis Inbox) to be loaded.
     $fake_realm->unauth_load_or_die(name => $real_realm->get('owner_name'));
     $req->set_realm(Bivio::Auth::Realm->new($fake_realm));
-            Bivio::Biz::Model::MailReceiveForm->dispatch($req, $to);
+    $self->dispatch_action($req, $to);
     $req->set_realm($real_realm);
     return;
+}
+
+# _process_attachments(MIME::Entity entity)
+#
+# Create message attachments if att? form fields exist
+# The content type is automatically changed to multipart/mixed
+#
+sub _process_attachments {
+    my($self, $entity) = @_;
+    my($att, $att_name);
+    foreach my $i (1..$_NUM_ATTACHMENTS) {
+        $att = $self->get('att'.$i);
+        defined($att) || next;
+        my($ct) = $att->{content_type} || 'application/octet-stream';
+        my($att_name) = $att->{filename}
+                || 'file'.$i.'.'.Bivio::MIME::Type->to_extension($ct);
+        my($content) = $att->{content};
+        my($encoding) = Bivio::MIME::Type->suggest_encoding($ct, $content);
+        # Attaching a part will convert message to multipart/mixed
+        $entity->attach(Type => $ct, Data => $$content,
+                Encoding => $encoding, Filename => $att_name);
+    }
+    return 0;
 }
 
 =head1 COPYRIGHT
