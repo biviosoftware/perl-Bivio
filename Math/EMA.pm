@@ -51,10 +51,8 @@ Creates a moving average with I<length> iterations.
 sub new {
     my($proto, $length) = @_;
     my($self) = $proto->SUPER::new;
-    $length = $_LENGTH_RANGE->from_literal_or_die($length);
     $self->[$_IDI] = {
-	length => $length,
-	alpha => 2.0 / ( $length + 1.0 ),
+	alpha => 2.0 / ($_LENGTH_RANGE->from_literal_or_die($length) + 1.0),
 	avg => undef,
     };
     return $self;
