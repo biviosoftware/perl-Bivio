@@ -566,10 +566,7 @@ sub heading {
     my($proto, $heading) = @_;
     # HotJava Bug: Replace the nbsp<br> with a <p> and hotjava renders
     # infinitely.
-    return $proto->join('&nbsp;<br>',
-	    $proto->string($heading, 'page_heading'),
-	    '<br>',
-	   );
+    return $proto->join([$proto->string($heading, 'page_heading'), '<br>']);
 }
 
 =for html <a name="heading_as_label"></a>
