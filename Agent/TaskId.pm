@@ -388,7 +388,7 @@ my(@_CFG) = (
         Bivio::Type::EntryType->execute_member_payment
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::SingleDepositForm
-        Bivio::UI::HTML::Club::SingleDeposit
+        Bivio::UI::HTML::Club::MemberPayment
         next=CLUB_ACCOUNTING_MEMBER_LIST
         help=member-transactions
     )],
@@ -561,7 +561,7 @@ my(@_CFG) = (
         Bivio::Type::EntryType->execute_member_payment_fee
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
 	Bivio::Biz::Model::SingleDepositForm
-        Bivio::UI::HTML::Club::SingleDeposit
+        Bivio::UI::HTML::Club::MemberFee
         next=CLUB_ACCOUNTING_MEMBER_LIST
         help=member-transactions
     )],
