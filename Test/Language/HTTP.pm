@@ -401,6 +401,35 @@ sub verify_options {
     return;
 }
 
+=for html <a name="verify_table"></a>
+
+=head2 verify_table(string table_name, array_ref expectations)
+
+Verify that table I<table_name> contains the expected rows given in
+I<expectations>.  I<expectations> should be an array_ref of array_refs -- kinda
+like a table.  The first row defines the column labels whose values will be
+verified.  The first column is used to uniquely identify the row.  The order of
+rows is not enforced and the order of columns do not need to match the order in
+the form (though the expected values do need to correspond to the expected
+column labels).
+
+
+=cut
+
+sub verify_table {
+    my($self, $table_name, $expect) = @_;
+    my($columns) = shift(@$expect);
+
+    foreach my $expect_row (@$expect) {
+	my $row = $self->_find_row($table_name, $columns->[0], $expect_row->[0]);
+	my($diff) = Bivio::IO::Ref->nested_differences(
+	    $expect_row,
+	    [map($row->{$_}->get('text'), @$columns)]);
+	Bivio::Die->die($diff) if defined($diff);
+    }
+    return;
+}
+
 =for html <a name="verify_text"></a>
 
 =head2 verify_text(string text)
