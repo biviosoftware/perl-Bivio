@@ -50,6 +50,11 @@ type.  C<undef> if no file fields.
 
 Names of I<file_fields> columns.
 
+=item has_secure_data : boolean
+
+One of the fields contains secure_data
+(L<Bivio::Type::is_secure_data|Bivio::Type/"is_secure_data">).
+
 =item hidden : array_ref
 
 List of columns which are to be sent to and returned from the user, unmodified.
@@ -205,7 +210,7 @@ sub new {
 	# Columns which have no corresponding property model field
 	local_columns => [],
 	require_context => $decl->{require_context} ? 1 : 0,
-	has_field_field => 0,
+	has_secure_data => 0,
     };
     $proto->init_version($attrs, $decl);
 
@@ -217,7 +222,7 @@ sub new {
     # Finish up by creating in_list_columns
     _init_list_columns($attrs, $decl);
 
-    return &Bivio::SQL::Support::new($proto, $attrs);
+    return Bivio::SQL::Support::new($proto, $attrs);
 }
 
 =head1 METHODS
@@ -294,6 +299,7 @@ sub _init_column_classes {
 	    $attrs->{file_fields} = [] unless $attrs->{file_fields};
 	    push(@{$attrs->{file_fields}}, $col);
 	}
+	$attrs->{has_secure_data} = 1 if $col->{type}->is_secure_data;
 
 	# Defaults to false and overwritten below
 	$col->{is_hidden} = 0;
