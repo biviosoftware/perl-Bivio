@@ -231,6 +231,11 @@ If I<param1> begins with C<-E<gt>>, C<$self-E<gt>$param1(@_)> will be called.
 If I<param1> I<can> C<get_widget_value>,
 C<$param-E<gt>get_widget_value(@_)> will be called.
 
+=item 2.3.
+
+If I<param1> is an array reference, then
+C<$self-E<gt>get_widget_value(@$param1)> will be called.
+
 =item 3.
 
 Otherwise, die will be called.
@@ -243,15 +248,20 @@ sub get_widget_value {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     my($param1) = shift;
+    my($value);
     # No such key, try to call the method on $param1
     unless (exists($fields->{$param1})) {
 	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
 	return $param1->get_widget_value(@_)
 		if UNIVERSAL::can($param1, 'get_widget_value');
-	Carp::croak("$param1: not found and can't get_widget_value");
+	Carp::croak("$param1: not found and can't get_widget_value")
+		    unless ref($param1) eq 'ARRAY';
+	$value = $self->get_widget_value(@$param1);
     }
-    # scalar or undef attribute
-    my($value) = $fields->{$param1};
+    else {
+	# scalar or undef attribute
+	$value = $fields->{$param1};
+    }
     unless (ref($value)) {
 	# fall through
     }
