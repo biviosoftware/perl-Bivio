@@ -2,8 +2,8 @@
 # $Id$
 package Bivio::Biz::Model::Mail;
 use strict;
-
 $Bivio::Biz::Model::Mail::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Mail::VERSION;
 
 =head1 NAME
 
@@ -130,7 +130,7 @@ sub create {
 	reply_to_email => $reply_to_email,
 	subject => $subject,
 	subject_sort => $sortable_subject,
-        is_public => 0,
+        is_public => $req->get_club_pref('MAIL_POST_PUBLIC') ? 1 : 0,
         is_thread_root => 0,
         bytes => 0,
         rfc822_file_id => undef,
@@ -207,7 +207,6 @@ sub delete {
                     AND thread_parent_id = ?',
                 [$properties->{thread_parent_id}, $req->get('auth_id'),
                     $mail_id]);
-#TODO: Check if any replies left, ie. if it's still a thread
     }
     elsif ($properties->{is_thread_root}) {
         # Deleting the root of a thread!
@@ -249,24 +248,33 @@ sub delete {
                     [$is_thread_root, $req->get('auth_id'), $new_root]);
         }
     }
-    else {
-        _trace('Message not part of a thread') if $_TRACE;
-    }
 
     # Need to delete the mail_t entry before deleting the files
     # because of the foreign key constraints
     return 0 unless $self->SUPER::delete(@_);
 
+    # Adjust thread root message in case there are no replies anymore
+    if (defined($properties->{thread_parent_id})
+            && $properties->{thread_parent_id} eq $properties->{thread_root_id}) {
+        my($sth) = Bivio::SQL::Connection->execute('
+                UPDATE mail_t
+                SET is_thread_root =
+                    (SELECT COUNT(DISTINCT thread_root_id)
+                     FROM mail_t
+                     WHERE realm_id = ? AND thread_root_id = ?
+                    )
+                WHERE realm_id = ?
+                    AND mail_id = ?',
+                [$req->get('auth_id'), $properties->{thread_root_id},
+                    $req->get('auth_id'), $properties->{thread_root_id}]);
+    }
+
     my($file) = Bivio::Biz::Model::File->new($req);
     if (defined($properties->{rfc822_file_id})) {
-        _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id})
-                if $_TRACE;
         $file->delete(file_id => $properties->{rfc822_file_id},
             volume => $_MAIL_VOLUME);
     }
     if (defined($properties->{cache_file_id})) {
-        _trace('Deleting cache file, id=', $properties->{cache_file_id})
-                if $_TRACE;
         $file->delete(file_id => $properties->{cache_file_id},
                 volume => $_CACHE_VOLUME);
     }
