@@ -192,7 +192,8 @@ sub client_redirect {
 		if defined($new_query) && length($new_query);
     }
     $self->get('reply')->client_redirect($self, $uri);
-    Bivio::Die->throw(Bivio::DieCode::CLIENT_REDIRECT_TASK());
+    Bivio::Die->throw_quietly(Bivio::DieCode->CLIENT_REDIRECT_TASK);
+    # DOES NOT RETURN
 }
 
 =for html <a name="client_redirect_if_not_secure"></a>
