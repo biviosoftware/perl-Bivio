@@ -75,6 +75,19 @@ EOF
 
 =cut
 
+=for html <a name="has_been_rendered"></a>
+
+=head2 has_been_rendered(any source, string module_tag) : boolean
+
+returns true if common code has been rendered.
+
+=cut
+
+sub has_been_rendered {
+    my(undef, $source, $module_tag) = @_;
+    return _tag($source->get_request, $module_tag) ? 0 : 1;
+}
+
 =for html <a name="render"></a>
 
 =head2 static render(any source, string_ref buffer, string module_tag, string common_code, string script, string no_script_html)
@@ -89,11 +102,10 @@ sub render {
     my(undef, $source, $buffer, $module_tag, $common_code,
 	    $script, $no_script_html) = @_;
     my($req) = $source->get_request;
-    my($tag) = 'javascript_'.$module_tag;
 
     # Render common code
     my($code);
-    unless ($req->unsafe_get($tag)) {
+    if (my $tag = _tag($req, $module_tag)) {
 	# Render "global" common code first
 	unless ($req->unsafe_get('javascript_jsv')) {
 	    # Always write here
@@ -139,6 +151,16 @@ sub strip {
 }
 
 #=PRIVATE METHODS
+
+# _tag(Bivio::Agent::Request req, string module_tag) : string
+#
+# returns the tag if it hasn't already been rendered
+#
+sub _tag {
+    my($req, $module_tag) = @_;
+    my($tag) = 'javascript_'.$module_tag;
+    return $req->unsafe_get($tag) ? undef : $tag;
+}
 
 =head1 COPYRIGHT
 
