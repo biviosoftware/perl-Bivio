@@ -11,7 +11,7 @@ Bivio::UI::HTML::ViewShortcuts - html helper routines
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
