@@ -45,7 +45,7 @@ Number of days for expiry.
 =cut
 
 sub EXPIRE_DAYS {
-    return 14;
+    return 28;
 }
 
 #=IMPORTS
