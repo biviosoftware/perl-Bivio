@@ -288,6 +288,21 @@ sub build_tar {
     });
 }
 
+=for html <a name="get_projects"></a>
+
+=head2 get_projects() : hash_ref
+
+Returns a map of root packages names and long names.
+    {
+	ieeesa => 'IEEESA, Inc.',
+    }
+
+=cut
+
+sub get_projects {
+    return {map({lc @$_[0], @$_[2]} @{$_CFG->{projects}})};
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
