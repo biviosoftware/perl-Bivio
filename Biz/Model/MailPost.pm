@@ -79,9 +79,14 @@ sub execute_input {
     my($header) = $msg->get_head;
     my($body) = $msg->get_body;
 
-    # Create a mail message from the form input
-    $header->add('From',
-            defined($user) ? $user->format_email : $self->get('from'));
+    # Create a mail header and message body from the form input
+    if (defined($user)) {
+        $header->add('From', $user->get('display_name')
+                .' <'. $user->format_email . '>');
+    }
+    else {
+        $header->add('From', $self->get('from'));
+    }
     $header->add('Subject', $self->get('subject'));
 
     # Write the mail body
@@ -210,8 +215,8 @@ sub internal_modify_mail {
 
 =head2 validate() : 
 
-Do extra validation on the Cc: field contents.
-Remember the array of Cc: addresses for use in execute_input
+Split and validate the To: and Cc: field contents.
+Remember the array of addresses for those fields.
 
 Make sure a non-user provides a reasonable From: address
 
@@ -223,25 +228,13 @@ sub validate {
     # No state maintained across validations
     my($fields) = $self->{$_PACKAGE} = {};
 
-    my($email, $v, @addr, $att);
-    foreach my $field ('to_any', 'cc') {
-        $v = $self->get($field);
-        next unless defined($v);
-        @addr = ();
-        foreach my $a (split(/[;,]+/, $v)) {
-            # Is it a valid address?
-            ($email) = Bivio::Mail::Address::parse($a);
-            next if defined($email) && push(@addr, $email);
-            $self->internal_put_error($field, Bivio::TypeError::EMAIL());
-            return 0;
-        }
-        # Save for use in execute_input()
-        $fields->{$field} = [@addr];
-    }
-
-    # Enforce limited interface for non-users
+    # Only allow limited fields for non-users
+    my($email, $att);
     unless (defined($req->get('auth_user'))) {
-        # Don't allow any attachments
+        # Don't allow Cc: or any attachments
+        $self->die('DIE', { entity => 'cc',
+            message => 'field not allowed as anonymous user'})
+                if defined($self->get('cc'));
         foreach my $i (1..$_NUM_ATTACHMENTS) {
             $att = $self->get('att'.$i);
             $self->die('DIE', { entity => $att,
@@ -260,6 +253,23 @@ sub validate {
             $self->internal_put_error('from', Bivio::TypeError::NULL());
         }
     }
+
+    # 'to_any' and 'cc' can contain list of ,-separated addresses
+    my($v, @addr);
+    foreach my $field ('to_any', 'cc') {
+        $v = $self->get($field);
+        next unless defined($v);
+        @addr = ();
+        foreach my $a (split(/[,]+/, $v)) {
+            # Is it a valid address?
+            ($email) = Bivio::Mail::Address::parse($a);
+            next if defined($email) && push(@addr, $email);
+            $self->internal_put_error($field, Bivio::TypeError::EMAIL());
+        }
+        # Save for use in execute_input()
+        $fields->{$field} = [@addr];
+    }
+
     return 0;
 }
 
