@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Biz::Model::InstrumentSpinoffList;
+package Bivio::Biz::Model::AdmInstrumentSpinoffList;
 use strict;
-$Bivio::Biz::Model::InstrumentSpinoffList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::InstrumentSpinoffList::VERSION;
+$Bivio::Biz::Model::AdmInstrumentSpinoffList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::AdmInstrumentSpinoffList::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::InstrumentSpinoffList - list of spin-off info
+Bivio::Biz::Model::AdmInstrumentSpinoffList - list of spin-off info
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::Model::InstrumentSpinoffList;
+    use Bivio::Biz::Model::AdmInstrumentSpinoffList;
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::ListModel>
 =cut
 
 use Bivio::Biz::ListModel;
-@Bivio::Biz::Model::InstrumentSpinoffList::ISA = ('Bivio::Biz::ListModel');
+@Bivio::Biz::Model::AdmInstrumentSpinoffList::ISA = ('Bivio::Biz::ListModel');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::InstrumentSpinoffList> list of spin-off info
+C<Bivio::Biz::Model::AdmInstrumentSpinoffList> list of spin-off info
 
 =cut
 

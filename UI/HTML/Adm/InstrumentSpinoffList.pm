@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::UI::HTML::Adm::InstrumentSpinoffs;
+package Bivio::UI::HTML::Adm::InstrumentSpinoffList;
 use strict;
-$Bivio::UI::HTML::Adm::InstrumentSpinoffs::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Adm::InstrumentSpinoffs::VERSION;
+$Bivio::UI::HTML::Adm::InstrumentSpinoffList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Adm::InstrumentSpinoffList::VERSION;
 
 =head1 NAME
 
-Bivio::UI::HTML::Adm::InstrumentSpinoffs - lists global spin-offs
+Bivio::UI::HTML::Adm::InstrumentSpinoffList - lists global spin-offs
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::HTML::Adm::InstrumentSpinoffs;
+    use Bivio::UI::HTML::Adm::InstrumentSpinoffList;
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::UI::HTML::DescriptivePage>
 =cut
 
 use Bivio::UI::HTML::DescriptivePage;
-@Bivio::UI::HTML::Adm::InstrumentSpinoffs::ISA = ('Bivio::UI::HTML::DescriptivePage');
+@Bivio::UI::HTML::Adm::InstrumentSpinoffList::ISA = ('Bivio::UI::HTML::DescriptivePage');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Adm::InstrumentSpinoffs> lists global spin-offs
+C<Bivio::UI::HTML::Adm::InstrumentSpinoffList> lists global spin-offs
 
 =cut
 
@@ -49,7 +49,6 @@ Returns the page content.
 
 sub create_content {
     my($self) = @_;
-
     $self->put_heading('ADM_SPINOFFS');
     $self->put(page_action_bar => []);
 
@@ -57,7 +56,7 @@ sub create_content {
 	    '<p>&nbsp;',
 	    $self->link('ADM_SPINOFF_CREATE'),
 	    '<p>&nbsp;',
-	    $self->table('InstrumentSpinoffList', [
+	    $self->table('AdmInstrumentSpinoffList', [
 		'InstrumentSpinoff.spinoff_date',
 		'source_name',
 		'new_name',

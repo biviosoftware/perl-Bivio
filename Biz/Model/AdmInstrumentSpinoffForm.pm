@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Biz::Model::InstrumentSpinoffInfoForm;
+package Bivio::Biz::Model::AdmInstrumentSpinoffForm;
 use strict;
-$Bivio::Biz::Model::InstrumentSpinoffInfoForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::InstrumentSpinoffInfoForm::VERSION;
+$Bivio::Biz::Model::AdmInstrumentSpinoffForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::AdmInstrumentSpinoffForm::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::InstrumentSpinoffInfoForm - create global spinoff info
+Bivio::Biz::Model::AdmInstrumentSpinoffForm - create global spinoff info
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::Model::InstrumentSpinoffInfoForm;
+    use Bivio::Biz::Model::AdmInstrumentSpinoffForm;
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::FormModel>
 =cut
 
 use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::InstrumentSpinoffInfoForm::ISA = ('Bivio::Biz::FormModel');
+@Bivio::Biz::Model::AdmInstrumentSpinoffForm::ISA = ('Bivio::Biz::FormModel');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::InstrumentSpinoffInfoForm> create global spinoff info
+C<Bivio::Biz::Model::AdmInstrumentSpinoffForm> create global spinoff info
 
 =cut
 

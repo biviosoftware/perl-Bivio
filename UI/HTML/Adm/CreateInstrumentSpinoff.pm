@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::UI::HTML::Adm::InstrumentSpinoffInfo;
+package Bivio::UI::HTML::Adm::CreateInstrumentSpinoff;
 use strict;
-$Bivio::UI::HTML::Adm::InstrumentSpinoffInfo::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Adm::InstrumentSpinoffInfo::VERSION;
+$Bivio::UI::HTML::Adm::CreateInstrumentSpinoff::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Adm::CreateInstrumentSpinoff::VERSION;
 
 =head1 NAME
 
-Bivio::UI::HTML::Adm::InstrumentSpinoffInfo - create global spinoff info
+Bivio::UI::HTML::Adm::CreateInstrumentSpinoff - create global spinoff info
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::HTML::Adm::InstrumentSpinoffInfo;
+    use Bivio::UI::HTML::Adm::CreateInstrumentSpinoff;
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::UI::HTML::DescriptivePage>
 =cut
 
 use Bivio::UI::HTML::DescriptivePage;
-@Bivio::UI::HTML::Adm::InstrumentSpinoffInfo::ISA = ('Bivio::UI::HTML::DescriptivePage');
+@Bivio::UI::HTML::Adm::CreateInstrumentSpinoff::ISA = ('Bivio::UI::HTML::DescriptivePage');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Adm::InstrumentSpinoffInfo> create global spinoff info
+C<Bivio::UI::HTML::Adm::CreateInstrumentSpinoff> create global spinoff info
 
 =cut
 
@@ -50,7 +50,7 @@ Returns the form content.
 sub create_content {
     my($self) = @_;
     $self->put_heading('ADM_SPINOFF_CREATE');
-    return $self->form('InstrumentSpinoffInfoForm', [
+    return $self->form('AdmInstrumentSpinoffForm', [
 	['InstrumentSpinoff.spinoff_date'],
 	['source_ticker_symbol'],
 	['new_ticker_symbol'],
