@@ -48,6 +48,10 @@ A list of classes which have an C<execute> method.
 The next task_id to go to in certain cases.  Not always
 defined.
 
+=item cancel
+
+The task_id to go to in other cases. Not required.
+
 =item realm_type
 
 L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
@@ -106,6 +110,9 @@ sub new {
 	if ($i =~ /^(next)=(\w+)$/) {
 	    $fields->{$1} = Bivio::Agent::TaskId->from_any($2);
 	}
+	elsif ($i =~ /^(cancel)=(\w+)$/) {
+	    $fields->{$1} = Bivio::Agent::TaskId->from_any($2);
+	}
 	else {
 	    my($c) = Bivio::Collection::SingletonMap->get($i);
 	    Carp::croak($i, ": can't be executed (missing execute method)")
@@ -114,8 +121,12 @@ sub new {
 	    push(@new_items, $c);
 	}
     }
-    Carp::croak($id->as_string, ": FormModels require \"next=\" item")
-		if $have_form && !$fields->{next};
+    if ($have_form) {
+	Carp::croak($id->as_string, ": FormModels require \"next=\" item")
+		    if !$fields->{next};
+	# default cancel to next unless present
+	$fields->{cancel} = $fields->{next} unless $fields->{cancel};
+    }
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
