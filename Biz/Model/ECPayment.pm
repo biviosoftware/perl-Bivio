@@ -246,7 +246,9 @@ sub process_payment {
 sub _setup_user_agent {
     unless (defined($_USER_AGENT)) {
         $_USER_AGENT = LWP::UserAgent->new;
-        $_USER_AGENT->env_proxy;
+#TODO: This doesn't work
+#        $_USER_AGENT->env_proxy;
+	$_USER_AGENT->proxy(['http', 'https'], $ENV{http_proxy});
         Bivio::Die->die('Missing payment gateway login configuration')
                     unless defined($_GW_LOGIN) and defined($_GW_PASSWORD);
     }
