@@ -226,6 +226,9 @@ sub to_literal {
     $value =~ s/^\+//;
     $value =~ s/^\./0./;
     $value =~ s/^-\./-0./;
+
+    # remove trailing 0s after decimal point
+    $value =~ s/^(.*\..+?)(0+)$/$1/;
     return $value;
 }
 
@@ -262,6 +265,8 @@ sub trunc {
 sub _math_op {
     my($op, $v, $v2, $decimals) = @_;
     die("invalid decimals $decimals") if $decimals < 0;
+    $v ||= 0;
+    $v2 ||= 0;
 
     # right pad with zeros, double for div
     $v = _pad_decimal($v, $op eq 'bdiv' ? $decimals * 2 : $decimals);
