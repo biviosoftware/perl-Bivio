@@ -332,7 +332,8 @@ exists, but is C<undef>.
 sub get_nested {
     my($self, @names) = @_;
     my($v) = $self->[$_IDI];
-    foreach my $name (@names) {
+    while (@names) {
+	my($name) = shift(@names);
 	if (ref($v) eq 'HASH') {
 	    if (exists($v->{$name})) {
 		$v = $v->{$name};
@@ -346,6 +347,9 @@ sub get_nested {
 		$v = $v->[$name];
 		next;
 	    }
+	}
+	elsif (ref($v) && UNIVERSAL::isa($v, __PACKAGE__)) {
+	    return $v->get_nested($name, @names);
 	}
 	else {
 	    _die($self, "can't index \"", $v, '" at name"',
@@ -482,16 +486,16 @@ sub put {
 
 =for html <a name="set_read_only"></a>
 
-=head2 set_read_only()
+=head2 set_read_only() : self
 
 Delete, put, etc. cannot be called.
 
 =cut
 
 sub set_read_only {
-    my($fields) = shift->[$_IDI];
-    $fields->{$_READ_ONLY_ATTR} = 1;
-    return;
+    my($self) = @_;
+    $self->[$_IDI]->{$_READ_ONLY_ATTR} = 1;
+    return $self;
 }
 
 =for html <a name="unsafe_get"></a>
