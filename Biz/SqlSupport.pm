@@ -28,6 +28,23 @@ C<Bivio::Biz::SqlSupport>
 
 =cut
 
+=for html <a name="DATE_FORMAT"></a>
+
+=head2 DATE_FORMAT : string
+
+Returns the date format for sql statements. MM/DD/YYYY
+
+=cut
+
+sub DATE_FORMAT {
+    return 'MM/DD/YYYY';
+}
+
+# SQL DATE type
+sub _SQL_DATE {
+    return 9;
+}
+
 #=IMPORTS
 use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
@@ -59,15 +76,16 @@ sql column name mapping, format:
 sub new {
     my($proto, $table_name, $field_map) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    my(@sql_columns) = values(%{$field_map});
+    my(@columns) = values(%{$field_map});
 
     $self->{$_PACKAGE} = {
 	table_name => $table_name,
-	select => 'select '.join(',', @sql_columns).' from '.$table_name.' ',
+	select => undef,
 	delete => 'delete from '.$table_name.' ',
-	insert => 'insert into '.$table_name.' ('.join(',', @sql_columns)
-	        .') values ('.'?,' x $#sql_columns.'?)',
-	field_map => $field_map
+	insert => undef,
+	field_map => $field_map,
+	columns => \@columns,
+	column_types => undef
     };
     return $self;
 }
@@ -87,7 +105,7 @@ Inserts a new record into to database and loads the model's properties.
 sub create {
     my($self, $model, $properties, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{insert};
@@ -127,7 +145,7 @@ and substitution values.
 sub delete {
     my($self, $model, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{delete}.$where_clause;
@@ -155,9 +173,36 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if (! $self->{column_types}) {
-	$self->{column_types} = &_get_column_types($self);
+    if (! $fields->{column_types}) {
+	$fields->{column_types} = &_get_column_types($self);
     }
+
+    my($columns) = $fields->{columns};
+    my($types) = $fields->{column_types};
+
+    # create the select and insert statements
+    my($select) = 'select ';
+    my($insert) = 'insert into '.$fields->{table_name}
+	    .' ('.join(',', @$columns).') values (';
+
+    foreach (@$columns) {
+	if ($types->{$_} == _SQL_DATE) {
+	    $select .= 'TO_CHAR('.$_.q{,'MM/DD/YYYY'),};
+	    $insert .= q{TO_DATE(?,'DD/MM/YYYY'),};
+	}
+	else {
+	    $select .= $_.',';
+	    $insert .= '?,';
+	}
+    }
+    # remove extra ','
+    chop($select);
+    chop($insert);
+
+    $select .= ' from '.$fields->{table_name}.' ';
+    $fields->{select} = $select;
+    $insert .= ')';
+    $fields->{insert} = $insert;
 }
 
 =for html <a name="find"></a>
@@ -172,7 +217,7 @@ and substitution values.
 sub find {
     my($self, $model, $properties, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
@@ -214,7 +259,7 @@ Updates the database fields for the specified model.
 sub update {
     my($self, $model, $properties, $new_values, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->{column_types} || Carp::croak("SqlSupport not initialized");
+    $fields->{column_types} || Carp::croak("SqlSupport not initialized");
 
     my($sql) = &_create_update_statement($self, $properties, $new_values,
 	    $where_clause);
@@ -269,8 +314,15 @@ sub _create_update_statement {
 
 	if (defined($old) != defined($new) || ($old && $new && $old ne $new)) {
 	    my($col_name) = $field_map->{$name};
-	    $cols .= $col_name.'='
-		    .$conn->quote($new, $column_types->{$col_name}).',';
+	    my($type) = $column_types->{$col_name};
+	    $cols .= $col_name.'=';
+
+	    if ($type == _SQL_DATE()) {
+		$cols .= q{TO_DATE('}.$new.q{','DD/MM/YYYY'),};
+	    }
+	    else {
+		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
+	    }
 	}
     }
 
@@ -280,11 +332,6 @@ sub _create_update_statement {
     # remove the extra ',' from cols
     chop($cols);
     return 'update '.$fields->{table_name}.' set '.$cols.' '.$where_clause;
-}
-
-sub _equals {
-    my($val, $val2);
-    return $val ne $val2;
 }
 
 # _get_column_types(string table_name, array fields) : hash
@@ -297,7 +344,8 @@ sub _get_column_types {
     my($fields) = $self->{$_PACKAGE};
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
-    my($sql) = $fields->{select};
+    my($sql) = 'select '.join(',', @{$fields->{columns}})
+	    .' from '.$fields->{table_name};
 
     &_trace($sql) if $_TRACE;
 
