@@ -55,6 +55,23 @@ sub format_name {
             $self, 'RealmOwner.', @_);
 }
 
+=for html <a name="format_uri_hack"></a>
+
+=head2 format_uri_hack() : string
+
+#TODO: This is a HACK!!!  But need to have detail uri formatted for each realm.
+
+=cut
+
+sub format_uri_hack {
+    my($self) = @_;
+    return $req->format_uri(
+	    Bivio::Agent::TaskId::ADM_EC_SUBSCRIPTION_EDIT(), {
+		p => $self->get('ec_payment_id'),
+		realm => $self->get('RealmOwner.name'),
+	    });
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
