@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::String->compare treats undef same as '' (SQL like)
+  * Bivio::Type::Enum->compare assumes undef and undef are equal, which
+    is how SQL treats NULL in an order by
 
   Revision 2.0  2003/12/22 20:18:24  nagler
   Societas move
