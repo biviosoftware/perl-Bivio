@@ -6,14 +6,21 @@ use Bivio::Type::Time;
 # Tests
 Bivio::Test->unit([
     'Bivio::Type::Time' => [
-#	from_literal => [
-#	    ['1:1:1'] => [make_time((1 * 60 + 1) * 60 + 1)],
-#	    ['24:0:0'] => [make_time(0)],
-#	    ['12:59:0 p.m.'] => [make_time((12 * 60 + 59) * 60 + 0)],
-#	    ['12:59:0  a'] => [make_time((0 * 60 + 59) * 60 + 0)],
-#	    ['1:0:0  a'] => [make_time((1 * 60 + 0) * 60 + 0)],
-#	    ['1:0:1  p'] => [make_time((13 * 60 + 0) * 60 + 1)],
-#	],
+	{
+	    method => 'from_literal',
+		result_ok => sub {
+		    my($proto, $method, $params, $expect, $actual) = @_;
+		    return $actual
+			eq Bivio::Type::DateTime->DEFAULT_DATE.' '.$expect;
+		},
+	} => [
+	    ['1:1:1'] => ['2378497 3661'],
+	    ['24:0:0'] => ['2378497 0'],
+	    ['12:59:0 p.m.'] => ['2378497 46740'],
+	    ['12:59:0  a'] => ['2378497 3540'],
+	    ['1:0:0  a'] => ['2378497 3600'],
+	    ['1:0:1  p'] => ['2378497 46801'],
+	],
 	from_literal => [
 	    [undef] => [undef],
 	    ['24:0:0 x'] => [undef, Bivio::TypeError->TIME],
