@@ -1106,8 +1106,81 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditProfileDone
     )],
     [qw(
-        CLUB_ACCOUNTING_MEMBER_OPENING_BALANCE
+        CLUB_COMMUNICATIONS_FILE_TREE
         109
+        CLUB
+        DOCUMENT_READ
+        %/files
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileTreeList
+        Bivio::UI::HTML::Widget::FilePageHeading
+        Bivio::UI::HTML::Club::FileTree
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_DELETE
+        110
+        CLUB
+        DOCUMENT_WRITE
+        %/files/delete
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileDeleteForm
+        Bivio::UI::HTML::Widget::FilePageHeading
+        Bivio::UI::HTML::Club::FileDelete
+	next=CLUB_COMMUNICATIONS_FILE_TREE
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_UPLOAD
+        111
+        CLUB
+        DOCUMENT_WRITE
+        %/files/upload
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileUploadForm
+        Bivio::UI::HTML::Widget::FilePageHeading
+        Bivio::UI::HTML::Club::FileUpload
+	next=CLUB_COMMUNICATIONS_FILE_TREE
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_DOWNLOAD
+        112
+        CLUB
+        DOCUMENT_READ
+        %/files/download
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Action::FileDownload
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_REPLACE
+        113
+        CLUB
+        DOCUMENT_WRITE
+        %/files/replace
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileUploadForm
+        Bivio::UI::HTML::Widget::FilePageHeading
+        Bivio::UI::HTML::Club::FileReplace
+	next=CLUB_COMMUNICATIONS_FILE_TREE
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_CREATE_DIRECTORY
+        114
+        CLUB
+        DOCUMENT_WRITE
+        %/files/new_folder
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::CreateDirectoryForm
+        Bivio::UI::HTML::Widget::FilePageHeading
+        Bivio::UI::HTML::Club::CreateDirectory
+	next=CLUB_COMMUNICATIONS_FILE_TREE
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_OPENING_BALANCE
+        115
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/openbal
@@ -1118,7 +1191,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_OPENING_BALANCE
-        110
+        116
         CLUB
         ACCOUNTING_WRITE
         %/accounting/investment/openbal
@@ -1128,7 +1201,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_OPENING_BALANCE
-        111
+        117
         CLUB
         ACCOUNTING_WRITE
         %/accounting/account/openbal
@@ -1138,7 +1211,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSFER
-        112
+        118
         CLUB
         ACCOUNTING_WRITE
         %/accounting/account/transfer
