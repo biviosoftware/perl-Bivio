@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::TaskInfo::VERSION;
 
 Bivio::UI::HTML::Widget::TaskInfo - displays the current task information
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::TaskInfo;
