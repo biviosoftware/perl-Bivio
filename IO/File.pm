@@ -59,22 +59,31 @@ sub mkdir_p {
 
 =head2 static read(string file_name) : string_ref
 
+=head2 static read(string file_name, glob_ref file) : string_ref
+
 Returns the contents of the file.  If the file name is '-',
-input is read from STDIN.
+input is read from STDIN (new handle)
+
+If I<file> is supplied, must be a glob_ref to an open file and
+file_name must be supplied.
 
 =cut
 
 sub read {
-    my(undef, $file_name) = @_;
+    my(undef, $file_name, $file) = @_;
     my($op) = 'open';
  TRY: {
-	open(IN, $file_name eq '-' ? '-' : '< '.$file_name) || last TRY;
+	unless ($file) {
+	    $file = \*Bivio::IO::File::IN;
+	    open($file, $file_name eq '-' ? '-' : '< '.$file_name) || last TRY;
+	}
 	$op = 'read';
 	my($offset, $read, $buf) = (0, 0, '');
-	$offset += $read while $read = CORE::read(IN, $buf, 0x1000, $offset);
+	$offset += $read
+		while $read = CORE::read($file, $buf, 0x1000, $offset);
 	defined($read) || last TRY;
 	$op = 'close';
-        close(IN) || last TRY;
+        close($file) || last TRY;
 	_trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
 	return \$buf;
     }
