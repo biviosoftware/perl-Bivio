@@ -78,10 +78,43 @@ __PACKAGE__->compile([
 	'Free Trial',
     ],
 ]);
+# Tells us whether we can upgrade to the new value.  UNKNOWN is
+# not upgradeable.
+my(%_UPGRADE_INDEX);
+{
+    my($i) = 0;
+    %_UPGRADE_INDEX = map {
+	(__PACKAGE__->$_, $i++);
+    } qw(
+	FREE_TRIAL
+	PREMIUM_SUPPORT
+	BASIC_SERVICE
+	ACCOUNT_SYNC
+	ACCOUNT_KEEPER
+    );
+};
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="upgrade_allowed"></a>
+
+=head2 upgrade_allowed(Bivio::Type::ECSubscription new) : boolean
+
+Returns true if I<self> can be upgraded to I<new>.
+
+=cut
+
+sub upgrade_allowed {
+    my($self, $new) = @_;
+    my($old) = $_UPGRADE_INDEX{$self};
+    # This might happen if there was no old
+    return 0 unless defined($old);
+    $new = $_UPGRADE_INDEX{$new};
+    return 0 unless defined($new);
+    return $new > $old;
+}
 
 #=PRIVATE METHODS
 
