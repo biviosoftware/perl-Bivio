@@ -26,14 +26,14 @@ use Bivio::Type;
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::Number> is the base class for all number types.
+C<Bivio::Type::Number> is the abstract base class for all number types.
 It provides arbitrary precision arithmetic for like-based numbers.
 
 =cut
 
 #=IMPORTS
-# intesting circular import if you uncomment this, 'use Bivio::Enum' instead
-#use Bivio::TypeError;
+# also uses Bivio::TypeError dynamically
+use Bivio::IO::ClassLoader;
 use Math::BigInt ();
 
 #=VARIABLES
@@ -178,6 +178,7 @@ sub from_literal {
 	$parsed_value = $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
     }
 
+    Bivio::IO::ClassLoader->simple_require('Bivio::TypeError');
     # not a number
     return (undef, Bivio::TypeError::NUMBER())
 	    unless defined($parsed_value);
@@ -188,6 +189,18 @@ sub from_literal {
 		    && $proto->compare($parsed_value, $proto->get_max) <= 0;
 
     return (undef, Bivio::TypeError::NUMBER_RANGE());
+}
+
+=for html <a name="get_decimals"></a>
+
+=head2 get_decimals() : int
+
+Abstract method to be defined by subclasses.
+
+=cut
+
+sub get_decimals {
+    die("abstract method");
 }
 
 =for html <a name="mul"></a>
