@@ -644,8 +644,15 @@ sub _parse_date {
 
     my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
     my($mday, $mon, $year, $hour, $min, $sec, $tz) = /$DATE_TIME/os;
-    (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef)
-            unless defined($mday);
+    unless (defined($mday)) {
+        my($DATE_TIME2) = Bivio::Mail::RFC822->DATE_TIME2;
+        ($mday, $mon, $year, $hour, $min, $sec, $tz) = /$DATE_TIME2/os;
+        # Assume GMT if timezone field is missing
+        $tz = '0' unless $tz;
+        (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef)
+                unless defined($mday);
+    }
+
     $mon = uc($mon);
     # Seconds is an optional field
     $sec = 0 unless defined($sec);
