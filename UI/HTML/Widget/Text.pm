@@ -35,6 +35,13 @@ will render as a C<TYPE=PASSWORD>.
 
 =over 4
 
+=item event_handler : Bivio::UI::HTML::Widget []
+
+If set, this widget will be initialized as a child and must
+support a method C<get_html_field_attributes> which returns a
+string to be inserted in this fields declaration.
+I<event_handler> will be rendered before this field.
+
 =item field : string (required)
 
 Name of the form field.
@@ -96,6 +103,13 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{size}) = $self->get('field', 'size');
+
+    # Initialize handler, if any
+    $fields->{handler} = $self->unsafe_get('event_handler');
+    if ($fields->{handler}) {
+	$fields->{handler}->put(parent => $self);
+	$fields->{handler}->initialize;
+    }
     return;
 }
 
@@ -120,8 +134,11 @@ sub render {
 		.' type='
 		.($type->isa('Bivio::Type::Password') ? 'password' : 'text')
 		.' size='.$fields->{size}.' maxlength='.$type->get_width();
+	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes
+		if $fields->{handler};
 	$fields->{initialized} = 1;
     }
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
     $$buffer .= $fields->{prefix};
     $$buffer .= ' value="'.$form->get_field_as_html($field).'">';
     return;
