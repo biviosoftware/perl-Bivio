@@ -69,7 +69,7 @@ Browser->submit({
 Verify->title('Invites');
 Verify->text('Guest');
  
-Browser->click('invite_member_a');
+Browser->click('bring_online_a');
 Verify->title('Bring Members Online');
 Verify->text('bring your offline');
  

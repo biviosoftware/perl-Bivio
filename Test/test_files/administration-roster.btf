@@ -84,7 +84,7 @@ Browser->submit({
 Verify->title('Roster');
 Verify->text('Billy the Offline Test');
  
-Browser->click('invite_member_a');
+Browser->click('bring_online_a');
 Verify->title('Bring Members Online');
 Verify->text('bring your offline');
  
