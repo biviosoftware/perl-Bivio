@@ -109,15 +109,15 @@ EOF
     $fields->{suffix} = <<'EOF';
 </body></html>
 EOF
-    $self->put('child', Bivio::UI::HTML::Widget::Form->new({
-	parent => $self,
-	action => Bivio::Agent::HTTP::Request->format_uri(
-		Bivio::Agent::TaskId::TEST_VIEW(),
-		undef,
-		undef),
-	value => Bivio::UI::HTML::Widget::Submit->new(),
-    }));
-    $self->get('child')->initialize;
+#    $self->put('child', Bivio::UI::HTML::Widget::Form->new({
+#	parent => $self,
+#	action => Bivio::Agent::HTTP::Request->format_uri(
+#		Bivio::Agent::TaskId::TEST_VIEW(),
+#		undef,
+#		undef),
+#	value => Bivio::UI::HTML::Widget::Submit->new(),
+#    }));
+#    $self->get('child')->initialize;
     return;
 }
 
