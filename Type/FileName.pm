@@ -39,6 +39,19 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="add_trailing_slash"></a>
+
+=head2 static add_trailing_slash(string path) : string
+
+Adds a trailing slash (/) unless one is already there.
+
+=cut
+
+sub add_trailing_slash {
+    my(undef, $path) = @_;
+    return $path =~ m,/$, ? $path : $path.'/';
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
