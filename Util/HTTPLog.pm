@@ -137,6 +137,7 @@ sub parse_errors {
     my($error_countdown) = $_CFG->{error_count_for_page};
     my($date, $record, $in_interval);
     my($last_error) = Bivio::Type::DateTime->get_min;
+    my(%error_times);
  RECORD: while (_parse_record($self, \$record, \$date)) {
 	unless ($in_interval) {
 	    next RECORD
@@ -147,11 +148,19 @@ sub parse_errors {
 	    _trace('ignoring: ', $1) if $_TRACE;
 	    next RECORD;
 	}
-	# Critical already avoids dups, so put before time check.
-	# errors.
+	# Critical already avoids dups, so put before time check after.
 	if ($record =~ /($_CRITICAL_REGEX)/o) {
 	    _pager_report($self, $1);
 	    $record =~ s/^/***CRITICAL*** /;
+	}
+	if ($record =~ /($_ERROR_REGEX)/o) {
+	    # Certain error messages don't pass the $_ERROR_REGEX on the first
+	    # output.  die message comes out first and it's what we want in the
+	    # email.  However, we need to count the error regex on the second
+	    # message.  This code does this correctly.  We don't recount
+	    # ERROR_REGEXs output at the same time.
+	    _pager_report($self, $1)
+		    if !$error_times{$date}++ && --$error_countdown == 0;
 	}
 	# Avoid duplicate error messages by checking $last_error
 	if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
@@ -159,9 +168,6 @@ sub parse_errors {
 	    next RECORD;
 	}
 	$last_error = $date;
-	if ($record =~ /($_ERROR_REGEX)/o) {
-	    _pager_report($self, $1) if --$error_countdown == 0;
-	}
 	# Never send more than 256 bytes (three lines) in a record via email
 	_report($self, substr($record, 0, 256));
     }
