@@ -161,6 +161,11 @@ __PACKAGE__->compile(
 	undef,
 	'next form page',
     ],
+    YEAR_DIGITS => [
+	25,
+	undef,
+	'four digit year required (mm/dd/yyyy)',
+    ],
 );
 
 #=PRIVATE METHODS
