@@ -239,10 +239,19 @@ sub get_standard_footer {
 		' ',
 	    ],
 	    [
-		$proto->get_standard_copyright->put(
-		    cell_align => 'right',
+		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_expand => 1,
-		),
+		    values => [[
+			$_W->link_static_site(
+				$_W->image('truste_mark', 'TRUSTe'),
+				'hm/private.html')->put(
+					cell_align => 'n',
+					cell_expand => 1),
+			$proto->get_standard_copyright->put(
+				cell_align => 'right',
+				cell_nowrap => 1),
+		    ]],
+		}),
 	    ],
 	],
     });
