@@ -60,8 +60,50 @@ sub execute_ok {
     my($self) = @_;
     Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
 	$self->get_request,
-	{realm_owner => _create_models($self)});
+	{realm_owner => $self->internal_create_models});
     return;
+
+}
+
+=for html <a name="internal_create_models"></a>
+
+=head2 internal_create_models() : Model.RealmOwner
+
+Creates User, RealmOwner, Email and RealmUser models.
+Returns the RealmOwner of the user created.
+
+The only difference between this method and execute_ok is that
+the user is logged in at that point.
+
+=cut
+
+sub internal_create_models {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+    my($user) = $self->new($req, 'User')->create({
+	last_name => $self->get('RealmOwner.display_name'),
+    });
+    my($realm) = $self->new($req, 'RealmOwner')->create({
+	realm_id => $user->get('user_id'),
+	name => 'u' . $user->get('user_id'),
+	realm_type => Bivio::Auth::RealmType->USER,
+	password => Bivio::Type::Password->encrypt(
+	    $self->get('RealmOwner.password')),
+	display_name => $self->get('RealmOwner.display_name'),
+    });
+    $self->new($req, 'Email')->create({
+	realm_id => $user->get('user_id'),
+	email => $self->get('Email.email'),
+	location => Bivio::Type::Location->HOME,
+	want_bulletin => 0,
+    });
+    $self->new($req, 'RealmUser')->create({
+	realm_id => $user->get('user_id'),
+	user_id => $user->get('user_id'),
+	honorific => Bivio::Type::Honorific->SELF,
+    });
+    return $realm;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -110,39 +152,6 @@ sub validate {
 }
 
 #=PRIVATE SUBROUTINES
-
-# _create_models(self) : Model.RealmOwner
-#
-# Creates User, RealmOwner, Email and RealmUser models.
-#
-sub _create_models {
-    my($self) = @_;
-    my($req) = $self->get_request;
-
-    my($user) = $self->new($req, 'User')->create({
-	last_name => $self->get('RealmOwner.display_name'),
-    });
-    my($realm) = $self->new($req, 'RealmOwner')->create({
-	realm_id => $user->get('user_id'),
-	name => 'u' . $user->get('user_id'),
-	realm_type => Bivio::Auth::RealmType->USER,
-	password => Bivio::Type::Password->encrypt(
-	    $self->get('RealmOwner.password')),
-	display_name => $self->get('RealmOwner.display_name'),
-    });
-    $self->new($req, 'Email')->create({
-	realm_id => $user->get('user_id'),
-	email => $self->get('Email.email'),
-	location => Bivio::Type::Location->HOME,
-	want_bulletin => 0,
-    });
-    $self->new($req, 'RealmUser')->create({
-	realm_id => $user->get('user_id'),
-	user_id => $user->get('user_id'),
-	honorific => Bivio::Type::Honorific->SELF,
-    });
-    return $realm;
-}
 
 =head1 COPYRIGHT
 
