@@ -66,7 +66,7 @@ sub init {
     Bivio::IO::Config->initialize({
 	# message body file server
 	'Bivio::IPC::Client' => {
-	    'addr' => 'localhost',
+	    'addr' => 'surf',
 	    'port' => 9876
 	},
 
