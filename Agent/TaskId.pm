@@ -1974,7 +1974,7 @@ my(@_CFG) = (
         194
         CLUB
 	ACCOUNTING_WRITE&ADMIN_WRITE&MEMBER_WRITE
-        ?/admin/clubexp.xml.gz
+        ?/admin/clubexp.xml.zip
         Bivio::Biz::Model::Lock
         Bivio::UI::XML::ClubExport->execute_compressed
     )],
