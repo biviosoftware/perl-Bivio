@@ -74,10 +74,10 @@ separated.
 sub new {
     my($proto, $r) = @_;
     my($start_time) = Bivio::Type::DateTime->gettimeofday();
-    # Set remote IP address if passed through Via: header
-    my($via) = $r->header_in('via');
-    $r->connection->remote_ip($via)
-            if defined($via) && $via =~ /^(\d+\.){3}\d+$/;
+    # Set remote IP address if passed through by mod_proxy (RH6.2 and RH7.2)
+    $r->connection->remote_ip($1)
+	if ($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
+	    =~ /(?:(\d+\.){3}\d+)/;
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = Bivio::Agent::Request::internal_new($proto, {
 	start_time => $start_time,
