@@ -59,6 +59,10 @@ Time component unmodified.
 
 4/15.
 
+=item THREE_MONTHS
+
+Three months.  (not a quarter).
+
 =back
 
 =cut
@@ -94,6 +98,9 @@ __PACKAGE__->compile([
     ],
     IRS_TAX_SEASON => [
 	-5,
+    ],
+    THREE_MONTHS => [
+	-6,
     ],
 ]);
 
@@ -215,6 +222,15 @@ sub _dec_month {
 	$mday, $mon, $year);
 }
 
+# _dec_three_months(string date_time) : string
+#
+# Decrement three months.
+#
+sub _dec_three_months {
+    my($date_time) = @_;
+    return $_DT->add_months($date_time, -3);
+}
+
 # _dec_year(string date_time) : string
 #
 # Goes to same date/time in previous year.  Goes to month of year if outside
@@ -282,6 +298,15 @@ sub _inc_month {
     $mon = $mon == 12 ? ($year++, 1) : $mon + 1;
     return _from_parts_with_mday_correction($sec, $min, $hour,
 	$mday, $mon, $year);
+}
+
+# _inc_three_months(string date_time) : string
+#
+# Increments by three months.
+#
+sub _inc_three_months {
+    my($date_time) = @_;
+    return $_DT->add_months($date_time, 3);
 }
 
 # _inc_to_end_beginning_of_year(self, string start_date) : string
