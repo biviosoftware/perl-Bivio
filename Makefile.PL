@@ -19,4 +19,5 @@ WriteMakefile(
     'VERSION' => '0.1',
     'PL_FILES' => {},   			  # We don't want any installed
     'EXE_FILES' => \@exe_files,
+    'PMLIBDIRS' => ['.'],
 );
