@@ -151,14 +151,16 @@ sub _escape {
     return Bivio::Util::escape_html($text);
 }
 
+# _link(any source, string task) : string
 # _link(any source, string task, string text) : string
 #
 # Returns an href for the string.  See NO_VALUATION_FOR_DATE for
-# an example usage.
+# an example usage.  If text is not supplied, will use task's label.
 #
 sub _link {
     my($source, $task, $text) = @_;
     $task = Bivio::Agent::TaskId->$task();
+    $text = Bivio::UI::Label->get_simple($task->get_name) unless $text;
     return '<a href="'
 	    .Bivio::Util::escape_html($source->format_stateless_uri($task))
 	    .'">'.Bivio::Util::escape_html($text).'</a>';
@@ -309,4 +311,12 @@ EXISTS
 A folder or file by the name "${value}" already exists.  Please
 select another name or delete the named file or folder before
 continuing.
+%%
+
+
+ACCOUNTING_IMPORT_IN_FILES
+The Files area is not used to Import Club Accounting.  You should
+use @{[_link($source, 'CLUB_LEGACY_UPLOAD')]} located under
+Administration &gt; Tools.  If you don't understand this message,
+please contact @{[_support()]}.
 %%

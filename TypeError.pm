@@ -720,6 +720,11 @@ __PACKAGE__->compile(
 	undef,
 	"A withdrawn member may not be removed from the club.",
     ],
+    ACCOUNTING_IMPORT_IN_FILES => [
+	89,
+	undef,
+	"Use the Accounting Import function to import.",
+    ],
 );
 
 #=PRIVATE METHODS
