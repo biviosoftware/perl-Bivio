@@ -1,0 +1,75 @@
+Login->execute();
+Imagemenu->go_section('Administration', 'my-club-site');
+Verify->title('Roster');
+Verify->text('Club Roster');
+
+Browser->click('Info');
+Verify->title('Information');
+Verify->text('click on a field name');
+
+#### Info-address
+
+Browser->click('Address');
+Verify->title('Change Address');
+Verify->text('Street1:');
+
+Browser->submit({
+     'Street1:' => '8989 Test St.',
+     'Street2:' => '',
+     'City:' => 'Boulder',
+     'State:' => 'CO',
+     'Zip:' => '80310',
+     'Country:' => 'US',
+     }, 'OK');
+Verify->title('Information');
+Verify->text('click on a field name');
+
+#### Info-clubid
+
+Browser->click('Club ID');
+Verify->title('Change Club ID and/or Name');
+Verify->text('Full Name:');
+
+Browser->submit({
+     'Full Name:' => 'schellj_club_test',
+     'Club ID:' => 'schellj_club_test',
+     }, 'OK');
+Verify->title('Information');
+Verify->text('click on a field name');
+
+#### Info-name
+
+Browser->click('Name');
+Verify->title('Change Club ID and/or Name');
+Verify->text('Full Name:');
+
+Browser->submit({
+     'Full Name:' => 'schellj_club_test',
+     'Club ID:' => 'schellj_club_test',
+     }, 'OK');
+Verify->title('Information');
+Verify->text('click on a field name');
+
+#### Info-phone
+
+Browser->click('Phone');
+Verify->title('Change Phone');
+Verify->text('Phone:');
+
+Browser->submit({
+     'Phone:' => '303-303-3030',
+     }, 'OK');
+Verify->title('Information');
+Verify->text('click on a field name');
+
+#### Info-taxid
+
+Browser->click('Tax ID');
+Verify->title('Change Tax ID');
+Verify->text('Tax ID:');
+
+Browser->submit({
+     'Tax ID:' => '12-4567890',
+     }, 'OK');
+Verify->title('Information');
+Verify->text('click on a field name');
