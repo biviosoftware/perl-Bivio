@@ -97,7 +97,7 @@ my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 my($_DEMO_THRESHOLD) = Bivio::Type::RealmName->get_width
 	- length($_DEMO_SUFFIX);
 my($_SHADOW_PREFIX) = SHADOW_PREFIX();
-my($math) = 'Bivio::Type::Amount';
+my($_M) = 'Bivio::Type::Amount';
 my(%_HOME_TASK_MAP) = (
     Bivio::Auth::RealmType::CLUB() => Bivio::Agent::TaskId::CLUB_HOME(),
     Bivio::Auth::RealmType::USER() => Bivio::Agent::TaskId::USER_HOME(),
@@ -443,7 +443,7 @@ EOF
 	}
 
 	if ($basis) {
-	    $pair->[0] = $math->add($pair->[0], $cost);
+	    $pair->[0] = $_M->add($pair->[0], $cost);
 	}
 	elsif ($tax == Bivio::Type::TaxCategory->NOT_TAXABLE->as_int()
 #TODO: ugh - consider consolidating SHARES_AS_CASH types
@@ -457,17 +457,17 @@ EOF
 #		    || $type == Bivio::Type::EntryType
 #			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())
 	       )) {
-	    $pair->[0] = $math->add($pair->[0], $cost);
+	    $pair->[0] = $_M->add($pair->[0], $cost);
 	}
 
 	if ($basis) {
-	    $pair->[1] = $math->add($pair->[1], $count);
+	    $pair->[1] = $_M->add($pair->[1], $count);
 	}
     }
     foreach my $id (keys(%$result)) {
 	my($total_cost, $total_count) = @{$result->{$id}};
 	$result->{$id} = $total_count == 0 ? 0
-	    : $math->div($total_cost, $total_count);
+	    : $_M->div($total_cost, $total_count);
     }
     return $result;
 }

@@ -63,7 +63,7 @@ use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($math) = 'Bivio::Type::Amount';
+my($_M) = 'Bivio::Type::Amount';
 
 # maps field names to default account names
 my($_ACCOUNT_FIELD_MAP) = {
@@ -108,7 +108,7 @@ sub execute_empty {
 	my($name, $amount, $date) = $list->get(
 		qw(RealmAccount.name Entry.amount RealmTransaction.date_time));
 	$name = $_ACCOUNT_NAME_MAP->{$name};
-	$properties->{$name} = $math->add(
+	$properties->{$name} = $_M->add(
 		$properties->{$name} || 0, $amount || 0);
 	my($last_date) = $properties->{'RealmTransaction.date_time'};
 	if (defined($last_date)

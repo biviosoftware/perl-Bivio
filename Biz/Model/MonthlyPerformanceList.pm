@@ -40,7 +40,7 @@ use Bivio::Type::IRR;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($math) = 'Bivio::Type::Amount';
+my($_M) = 'Bivio::Type::Amount';
 
 =head1 METHODS
 
@@ -171,7 +171,7 @@ sub internal_load_rows {
 	quantity => $count,
     });
     push(@$irr_dates, $start_date);
-    push(@$irr_amounts, $math->neg($value));
+    push(@$irr_amounts, $_M->neg($value));
 
     # group deposits and withdrawals by month
     my($deposits) = [0, 0, 0];
@@ -193,12 +193,12 @@ sub internal_load_rows {
 	    $current_month = $month;
 	}
 
-	$amount = $math->neg($amount);
-	my($array) = ($math->compare($amount, 0) > 0)
+	$amount = $_M->neg($amount);
+	my($array) = ($_M->compare($amount, 0) > 0)
 		? $deposits : $withdrawals;
 	$array->[0]++;
-	$array->[1] = $math->add($array->[1], $amount);
-	$array->[2] = $math->add($array->[2],
+	$array->[1] = $_M->add($array->[1], $amount);
+	$array->[2] = $_M->add($array->[2],
 	       $self->internal_get_count($row));
     }
     $cash_flow->iterate_end($it);
