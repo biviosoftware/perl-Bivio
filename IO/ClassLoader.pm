@@ -152,6 +152,30 @@ sub map_require {
     # DOES NOT RETURN
 }
 
+=for html <a name="require_property_models"></a>
+
+=head2 static require_property_models()
+
+Loads all the property model packages, which exist in the I<model_classpath>
+directories.
+
+=cut
+
+sub require_property_models {
+    my($proto) = @_;
+    return unless $_MODELS;
+
+    # make a copy and delete original to prevent reentrant calls
+    my(@models) = (@$_MODELS);
+    $_MODELS = undef;
+
+    $proto->simple_require('Bivio::Biz::Model');
+    foreach my $class (@models) {
+	Bivio::Biz::Model->get_instance($class);
+    }
+    return;
+}
+
 =for html <a name="simple_require"></a>
 
 =head2 static simple_require(string package, ...)
@@ -163,11 +187,6 @@ I<package> must be a fully-qualified perl package name.
 
 sub simple_require {
     my($proto, @pkg) = @_;
-
-#TODO: totally hacked in, need a good way to know when to load models
-    _load_property_models($proto)
-	    if $_MODELS && $pkg[0] =~ /Bivio::Biz::Model/;
-
     foreach my $pkg (@pkg) {
 	die('undefined package') unless $pkg;
 	_require($pkg) || die($@);
@@ -179,7 +198,7 @@ sub simple_require {
 # _find_property_models(string classpath)
 #
 # Finds the full name of the property models. Used later by
-# _load_property_models().
+# I<require_property_models>.
 #
 sub _find_property_models {
     my($classpath) = @_;
@@ -207,24 +226,6 @@ sub _find_property_models {
 
 	    push(@$_MODELS, $package.'::'.$class);
 	}
-    }
-    return;
-}
-
-# _load_property_models(array_ref classpath)
-#
-# Loads the property models from the specified path.
-#
-sub _load_property_models {
-    my($proto) = @_;
-
-    # make a copy and delete original to prevent reentrant calls
-    my(@models) = (@$_MODELS);
-    $_MODELS = undef;
-
-    $proto->simple_require('Bivio::Biz::Model');
-    foreach my $class (@models) {
-	Bivio::Biz::Model->get_instance($class);
     }
     return;
 }
