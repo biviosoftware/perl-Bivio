@@ -149,7 +149,7 @@ Returns the index into the instance data.  Usage:
 sub instance_data_index {
     my($pkg) = @_;
     # Some sanity checks, since we don't access this often
-    die('must call statically form package body')
+    die('must call statically from package body')
 	unless $pkg eq (caller)[0];
     # This class doesn't have any instance data.
     return @{$pkg->inheritance_ancestor_list} - 1;
