@@ -298,9 +298,9 @@ sub _new {
     my($proto, $type, $size, $decimal_digits) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	type => $type,
-	size => $size,
-	decimal_digits => $decimal_digits
+	'type' => $type,
+	'size' => $size,
+	'decimal_digits' => $decimal_digits
     };
     return $self;
 }

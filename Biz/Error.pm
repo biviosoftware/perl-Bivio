@@ -36,7 +36,7 @@ sub new {
     my($proto, $message) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	message => $message
+	'message' => $message
     };
     return $self;
 }

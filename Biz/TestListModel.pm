@@ -55,8 +55,8 @@ Creates a new testing ListModel.
 sub new {
     my($self) = &Bivio::Biz::ListModel::new(@_);
     $self->{$_PACKAGE} = {
-	row_count => 0,
-	index => 1
+	'row_count' => 0,
+	'index' => 1
     };
     return $self;
 }
@@ -79,6 +79,7 @@ sub find {
     my($fields) = $self->{$_PACKAGE};
 
     $fields->{index} = $fp->get('index') || 1;
+    return 1;
 }
 
 =for html <a name="get_column_count"></a>

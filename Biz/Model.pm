@@ -13,13 +13,13 @@ Bivio::Biz::Model - a business object
     my($model) = ...;
 
     # load a model with data
-    $model->find(Bivio::Biz::FindParams->new({id => 100}));
+    $model->find(Bivio::Biz::FindParams->new({'id' => 100}));
 
     # execute an action
     $model->get_action('<action-name>')->execute($model, $req);
 
     # check for errors
-    if (! $model->get_status()->is_OK()) {
+    if (! $model->get_status()->is_ok()) {
         foreach (@{$model->get_status()->get_errors())) {
             print($_.get_message());
         }
@@ -34,7 +34,7 @@ use Bivio::UNIVERSAL;
 
 C<Bivio::Biz::Model> is more interface than implementation, it provides
 a common set of methods for L<Bivio::Biz::PropertyModel> and
-L<Bivio::Biz::PropertyModel>. Models provide methods to access display
+L<Bivio::Biz::ListModel>. Models provide methods to access display
 heading and titles as well as lookup for L<Bivio::Biz::Action>s. During
 action invocation, a model may be set into an error state. Check for
 errors using the L<Bivio::Biz::Status> instance returned from
@@ -65,8 +65,8 @@ sub new {
     my($proto, $name) = @_;
     my($self) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
-	name => $name,
-	status => Bivio::Biz::Status->new()
+	'name' => $name,
+	'status' => Bivio::Biz::Status->new()
     };
     return $self;
 }

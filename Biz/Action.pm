@@ -56,10 +56,10 @@ sub new {
     my($proto, $name, $display_name, $description, $icon) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-	name => $name,
-	display_name => $display_name,
-	description => $description,
-	icon => $icon
+	'name' => $name,
+	'display_name' => $display_name,
+	'description' => $description,
+	'icon' => $icon
     };
     return $self;
 }

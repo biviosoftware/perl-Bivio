@@ -12,14 +12,14 @@ Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
     my($model) = ...;
 
-    if ($model->find(Bivio::Biz::FindParams->new({id => 500}))) {
+    if ($model->find(Bivio::Biz::FindParams->new({'id' => 500}))) {
         for (@{$model->get_field_names()}) {
             print($_.' = '.$model->get($_)."\n");
         }
     }
 
     for (0..100) {
-        $model->create({id => $_, foo => 'xxx'});
+        $model->create({'id' => $_, 'foo' => 'xxx'});
     }
 
 =cut
@@ -66,17 +66,17 @@ my($_PACKAGE) = __PACKAGE__;
 Creates a PropertyModel with the specified name and property information.
 property_info should have the format:
     {
-        property-name => ['caption', field-descriptor]
+        'property-name' => ['caption', field-descriptor]
         ...
     }
 
     ex.
     {
-	id => ['Internal ID',
+	'id' => ['Internal ID',
 	      Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	name => ['User ID',
+	'name' => ['User ID',
 	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-	password => ['Password',
+	'password' => ['Password',
 	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
     }
 
@@ -90,8 +90,8 @@ sub new {
 	$properties->{$_} = undef;
     }
     $self->{$_PACKAGE} = {
-	property_info => $property_info,
-	properties => $properties
+	'property_info' => $property_info,
+	'properties' => $properties
     };
     return $self;
 }
