@@ -628,6 +628,7 @@ column labels).
 sub verify_table {
     my($self, $table_name, $expect) = @_;
     my($columns) = shift(@$expect);
+    Bivio::Die->die('missing rows values') unless int(@$expect);
 
     foreach my $expect_row (@$expect) {
 	my($row) = _find_row($self, $table_name, $columns->[0],
