@@ -36,7 +36,6 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::SQL::Constraint;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -46,19 +45,25 @@ use Bivio::SQL::Support;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('realm_user_t', {
-        realm_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        user_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        role => ['Bivio::Auth::Role',
-		Bivio::SQL::Constraint::NOT_NULL()],
-    });
+    return {
+	version => 1,
+	table_name => 'realm_user_t',
+	columns => {
+            realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            user_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            role => ['Bivio::Auth::Role',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

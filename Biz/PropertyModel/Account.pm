@@ -39,7 +39,6 @@ use Bivio::Type::Boolean;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -49,29 +48,35 @@ use Bivio::SQL::Support;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('account_t', {
-        account_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        club_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        name => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        tax_free => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        in_valuation => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        institution_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NONE()],
-        account_number => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        external_password => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-    });
+    return {
+	version => 1,
+	table_name => 'account_t',
+	columns => {
+            account_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            club_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            name => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            tax_free => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            in_valuation => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            institution_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NONE()],
+            account_number => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            external_password => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

@@ -39,7 +39,6 @@ use Bivio::Type::Enum;
 use Bivio::Type::Gender;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -75,26 +74,32 @@ sub get_email_addresses {
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('user_t', {
-        user_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        first_name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        middle_name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        last_name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        age => ['Bivio::Type::Integer',
-		Bivio::SQL::Constraint::NONE()],
-
-    });
+    return {
+	version => 1,
+	table_name => 'user_t',
+	columns => {
+            user_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            first_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            middle_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            last_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            gender => ['Bivio::Type::Gender',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            age => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NONE()],
+    
+        },
+    };
 }
 
 #=PRIVATE METHODS

@@ -36,7 +36,6 @@ and delete interface to the C<realm_owner_t> table.
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::SQL::Constraint;
-use Bivio::SQL::Support;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 
@@ -48,21 +47,27 @@ use Bivio::Type::PrimaryId;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('realm_owner_t', {
-        name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        password => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        realm_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
-        realm_type => ['Bivio::Auth::RealmType',
-		Bivio::SQL::Constraint::NOT_NULL()],
-    });
+    return {
+	version => 1,
+	table_name => 'realm_owner_t',
+	columns => {
+            name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            password => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
+            realm_type => ['Bivio::Auth::RealmType',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

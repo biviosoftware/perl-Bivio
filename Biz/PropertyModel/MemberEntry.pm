@@ -37,7 +37,6 @@ and delete interface to the C<member_entry_t> table.
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -47,19 +46,25 @@ use Bivio::SQL::Support;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('member_entry_t', {
-        entry_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        user_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        units => ['Bivio::Type::Amount',
-		Bivio::SQL::Constraint::NOT_NULL()],
-    });
+    return {
+	version => 1,
+	table_name => 'member_entry_t',
+	columns => {
+            entry_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            user_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            units => ['Bivio::Type::Amount',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

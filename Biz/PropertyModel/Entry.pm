@@ -41,7 +41,6 @@ use Bivio::Type::EntryType;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::TaxCategory;
 use Bivio::Type::Text;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -51,29 +50,35 @@ use Bivio::SQL::Support;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('entry_t', {
-        entry_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        transaction_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        class => ['Bivio::Type::EntryClass',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        entry_type => ['Bivio::Type::EntryType',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        tax_category => ['Bivio::Type::TaxCategory',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	tax_basis => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        amount => ['Bivio::Type::Amount',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        remark => ['Bivio::Type::Text',
-		Bivio::SQL::Constraint::NONE()],
-    });
+    return {
+	version => 1,
+	table_name => 'entry_t',
+	columns => {
+            entry_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            transaction_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            class => ['Bivio::Type::EntryClass',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            entry_type => ['Bivio::Type::EntryType',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            tax_category => ['Bivio::Type::TaxCategory',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+	    tax_basis => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            amount => ['Bivio::Type::Amount',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            remark => ['Bivio::Type::Text',
+    		Bivio::SQL::Constraint::NONE()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

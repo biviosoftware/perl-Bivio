@@ -39,7 +39,6 @@ use Bivio::Type::InstrumentType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
 
 #=VARIABLES
 
@@ -49,25 +48,31 @@ use Bivio::SQL::Support;
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('instrument_t', {
-        instrument_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        name => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        ticker_symbol => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        exchange_name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-        instrument_type => ['Bivio::Type::InstrumentType',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        fed_tax_free => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-    });
+    return {
+	version => 1,
+	table_name => 'instrument_t',
+	columns => {
+            instrument_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            name => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            ticker_symbol => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            exchange_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            instrument_type => ['Bivio::Type::InstrumentType',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            fed_tax_free => ['Bivio::Type::Boolean',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 #=PRIVATE METHODS

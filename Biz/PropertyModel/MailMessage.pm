@@ -39,7 +39,6 @@ use Bivio::File::Client;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
-use Bivio::SQL::Support;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
@@ -207,38 +206,43 @@ sub get_body {
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : Bivio::SQL::Support
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('mail_message_t', {
-        mail_message_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        club_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::NONE()],
-        rfc822_id => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
-        dttm => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        from_name => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        from_name_sort => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        from_email => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        reply_to_email => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NONE()],
-        subject => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        subject_sort => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        kbytes => ['Bivio::Type::Integer',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        parts => ['Bivio::Type::Integer',
-		Bivio::SQL::Constraint::NOT_NULL()],
-
-    });
+    return {
+	version => 1,
+	table_name => 'mail_message_t',
+	columns => {
+            mail_message_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            club_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NONE()],
+            rfc822_id => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
+            dttm => ['Bivio::Type::DateTime',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            from_name => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            from_name_sort => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            from_email => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            reply_to_email => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NONE()],
+            subject => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            subject_sort => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            kbytes => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            parts => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 =for html <a name="setup_club"></a>

@@ -35,7 +35,6 @@ and delete interface to the C<club_t> table.
 
 #=IMPORTS
 use Bivio::SQL::Constraint;
-use Bivio::SQL::Support;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::MailMode;
@@ -112,21 +111,27 @@ sub get_outgoing_emails {
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
 sub internal_initialize {
-    return Bivio::SQL::Support->new('club_t', {
-        club_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-        full_name => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        kbytes_in_use => ['Bivio::Type::Integer',
-		Bivio::SQL::Constraint::NOT_NULL()],
-        max_storage_kbytes => ['Bivio::Type::Integer',
-		Bivio::SQL::Constraint::NOT_NULL()],
-    });
+    return {
+	version => 1,
+	table_name => 'club_t',
+	columns => {
+            club_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            full_name => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            kbytes_in_use => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            max_storage_kbytes => ['Bivio::Type::Integer',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+        },
+    };
 }
 
 #=PRIVATE METHODS
