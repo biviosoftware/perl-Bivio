@@ -244,6 +244,7 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_create_ec_tables();
+    _upgrade_fix_mgfs_industry_error();
     print("\n*** done ***\n");
     return;
 }
@@ -258,6 +259,19 @@ sub _upgrade_create_ec_tables {
 alter table ec_payment_t add transaction_id varchar2(30)
 /
 ');
+    return;
+}
+
+# _upgrade_fix_mgfs_industry_error()
+#
+# Fixes RHI import problem by inserting a new "unknown" sp industry code.
+#
+sub _upgrade_fix_mgfs_industry_error {
+
+    _do_sql("
+insert into mgfs_sp_industry_t (code, name) values ('513', 'unknown')
+/
+");
     return;
 }
 
