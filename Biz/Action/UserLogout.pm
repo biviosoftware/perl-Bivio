@@ -47,8 +47,8 @@ Calls the I<Model.LoginForm> to clear the user.
 
 sub execute {
     my(undef, $req) = @_;
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req,
-	    {realm_owner => undef});
+    Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
+	$req, {realm_owner => undef});
     return 0;
 }
 
