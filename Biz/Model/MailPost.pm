@@ -115,7 +115,7 @@ sub execute_input {
         my($encoding) = Bivio::MIME::Type->suggest_encoding($ct, $content);
         # Attaching a part will convert message to multipart/mixed
         $entity->attach(Type => $ct, Data => $$content,
-                Encoding => $encoding, Name => $att_name);
+                Encoding => $encoding, Filename => $att_name);
     }
 
     # Add message recipients based on the To: and Cc: form fields
