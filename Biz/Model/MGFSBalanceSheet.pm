@@ -56,8 +56,8 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    indb03 => [0, 0],
-	    indb04 => [0, 0],
+	    indb03 => [0, 1],
+	    indb04 => [0, 1],
 	    chgdb03 => [0, 1],
 	    chgdb04 => [0, 1],
 	},
@@ -104,6 +104,7 @@ sub internal_get_mgfs_import_format {
 		common_shares_outstanding => ['MILLIONS', 814, 10],
 		preferred_shares => ['MILLIONS', 824, 10],
 		ordinary_shares => ['MILLIONS', 834, 10],
+		shares_outstanding_cco => ['MILLIONS', 844, 10],
 		treasury_shares => ['MILLIONS', 854, 10],
 	    }
 	],
@@ -203,6 +204,8 @@ sub internal_initialize {
 	    preferred_shares => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
 	    ordinary_shares => ['Bivio::Data::MGFS::Amount',
+		    Bivio::SQL::Constraint::NONE()],
+	    shares_outstanding_cco => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
 	    treasury_shares => ['Bivio::Data::MGFS::Amount',
 		    Bivio::SQL::Constraint::NONE()],
