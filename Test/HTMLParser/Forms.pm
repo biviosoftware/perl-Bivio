@@ -250,6 +250,7 @@ sub _end_th {
     my($fields) = @_;
     # There's a weird case where {text} will be the empty string,
     # but that's ok in this case.
+    $fields->{text} ||= ' ';
     push(@{$fields->{headers}}, _text($fields));
     _trace('push header ', $fields->{headers}->[$#{$fields->{headers}}])
 	if $_TRACE;
