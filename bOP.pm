@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * ShellUtil - reap children in start loop
+  * Bivio::Test::Language::HTTP now handles file fields
+  * added YesNo widget
+
+  Revision 1.83  2003/10/16 02:15:53  nagler
+  * Bivio::ShellUtil->run_daemon runs a series of commands in
+    subprocesses with configured params such as daemon_max_children
+    and daemon_sleep_after_start
+  * Bivio::Util::SQL->vacuum_db_continuously runs postgres vacuumdb as
+    as daemon process
+  * Bivio::IO::ClassLoader no longer prints stack traces
   * Bivio::Test::Language::HTTP->verify_form validates form field values
   * Bivio::Test::Request->get_instance allows current to be cleared
   * Bivio::UI::HTML::Widget::YesNo creates Yes/No fields for a value
