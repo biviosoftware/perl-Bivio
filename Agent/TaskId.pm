@@ -474,6 +474,50 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentValuation
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT_PARAMS
+	52
+        CLUB
+        ACCOUNTING_READ
+        _/accounting/reports/valuation/date
+        Bivio::Biz::Model::ReportDateForm
+        Bivio::UI::HTML::Club::ReportDate
+        next=CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
+        cancel=CLUB_ACCOUNTING_REPORT_LIST
+    )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY_PARAMS
+	53
+        CLUB
+        ACCOUNTING_READ
+        _/accounting/reports/investments/date
+        Bivio::Biz::Model::ReportDateForm
+        Bivio::UI::HTML::Club::ReportDate
+        next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
+        cancel=CLUB_ACCOUNTING_REPORT_LIST
+    )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY_PARAMS
+	54
+        CLUB
+        ACCOUNTING_READ
+        _/accounting/reports/members/date
+        Bivio::Biz::Model::ReportDateForm
+        Bivio::UI::HTML::Club::ReportDate
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
+        cancel=CLUB_ACCOUNTING_REPORT_LIST
+    )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY_PARAMS
+	55
+        CLUB
+        ACCOUNTING_READ
+        _/accounting/reports/accounts/date
+        Bivio::Biz::Model::ReportDateForm
+        Bivio::UI::HTML::Club::ReportDate
+        next=CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
+        cancel=CLUB_ACCOUNTING_REPORT_LIST
+    )],
 );
 
 __PACKAGE__->compile(
