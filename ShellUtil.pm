@@ -1368,10 +1368,13 @@ sub _reap_daemon_children {
     my($children, $stopped) = @_;
     while (1) {
 	if ($stopped > 0) {
-	    _trace('stopped: ', $stopped, ' ', $children->{$stopped})
-		if $_TRACE;
-	    Bivio::IO::Alert->warn($stopped, ': unknown pid')
-		unless delete($children->{$stopped});
+	    if (my $args = delete($children->{$stopped})) {
+		Bivio::IO::Alert->info('Starting: pid=', $stopped, ' args=',
+		    join(' ', @$args[2 .. $#$args]));
+	    }
+	    else {
+		Bivio::IO::Alert->warn($stopped, ': unknown pid');
+	    }
 	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
 	last unless $stopped > 0;
