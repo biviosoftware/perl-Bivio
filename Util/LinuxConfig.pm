@@ -368,9 +368,10 @@ sub disable_service {
 	my($chk) = $self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1);
 	# Look for a line like: $s 0 or $s on...
 	next unless $$chk =~ /^\Q$s\E\s+\w/ && $$chk =~ /^\Q$s\E\s.*\bon\b/;
+	# xinetd services don't respond to --del
 	$res .= -x "/etc/rc.d/init.d/$s"
 	    ? _exec($self, "chkconfig --del $s")
-		. _exec($self, "/etc/rc.d/init.d/$s stop")
+		. _exec($self, "/etc/rc.d/init.d/$s stop", 1)
 	    : _exec($self, "chkconfig $s off");
     }
     return $res;
@@ -602,17 +603,17 @@ sub _edit {
     return "Updated: $file\n";
 }
 
-# _exec(self, string command, string $in) : string
+# _exec(self, string command, string in, boolean ignore_exit_code) : string
 #
 # Execute obeying noexecute.
 #
 sub _exec {
-    my($self, $cmd, $in) = @_;
+    my($self, $cmd, $in, $ignore_exit_code) = @_;
     $in ||= '';
     $cmd .= ' 2>&1';
     return "Would have executed: $cmd\n"
 	if $self->unsafe_get('noexecute');
-    return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
+    return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in, $ignore_exit_code)};
 }
 
 # _mkdir(self, string dir, int perms) : string
