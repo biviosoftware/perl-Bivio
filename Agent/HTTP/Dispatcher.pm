@@ -33,16 +33,10 @@ use Bivio::Agent::Dispatcher;
 
 C<Bivio::Agent::HTTP::Dispatcher> is an L<Apache> L<mod_perl|mod_perl>
 handler.  It creates a single instance of itself on the first request.
+For testing, a subclass can register itself as the singleton using the
+method L<set_handler|"set_handler">.
 
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-sub _DEFAULT_CONTROLLER_NAME {
-    return 'messages';
-}
 
 #=IMPORTS
 use Bivio::Agent::Dispatcher;
@@ -78,13 +72,13 @@ my($_SELF);
 
 =head2 static new() : Bivio::Agent::HTTP::Dispatcher
 
-Creates a new dispatcher.
+Creates a new dispatcher and initializes the site.
 
 =cut
 
 sub new {
     my($self) = &Bivio::Agent::Dispatcher::new(@_);
-    $self->_initialize();
+    $self->create_site();
     return $self;
 }
 
@@ -92,43 +86,17 @@ sub new {
 
 =cut
 
-=for html <a name="handler"></a>
+=for html <a name="create_site"></a>
 
-=head2 static handler(Apache::Request r) : int
+=head2 create_site()
 
-Handler called by L<mod_perl|mod_perl>, creates a
-L<Bivio::Agent::HTTP::Request|Bivio::Agent::HTTP::Request>
-which wraps
-L<Apache::Request|Apache::Request>.
-Then it invokes the appropriate
-L<Bivio::Agent::Controller|Bivio::Agent::Controller> 
-to handle the request.
-
-Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
+Creates the views and controllers which make up the site. This is called
+from the constructor - subclasses will want to override this to create
+a site different from the default.
 
 =cut
 
-sub handler {
-    my($r) = @_;
-    my($return_code);
-    eval {
-	defined($_SELF) || ($_SELF = $_PACKAGE->new());
-	my($request) = Bivio::Agent::HTTP::Request->new($r,
-		_DEFAULT_CONTROLLER_NAME());
-	$_SELF->process_request($request);
-	$return_code = $request->get_http_return_code();
-	1;
-    };
-    unless (defined($return_code)) {
-	warn($@);
-	$return_code = Apache::Constants::SERVER_ERROR;
-    }
-    return $return_code;
-}
-
-#=PRIVATE METHODS
-
-sub _initialize {
+sub create_site {
     my($self) = @_;
     defined($_SELF) || Bivio::IO::Config->initialize();
     my($default_model) = Bivio::Biz::TestModel->new("test", {}, "T", "t");
@@ -173,6 +141,107 @@ sub _initialize {
     $self->register_controller('messages', $message_controller);
     return;
 }
+
+=for html <a name="get_default_controller_name"></a>
+
+=head2 get_default_controller_name() : string.
+
+Returns the name of the default controller to use if none is specified
+in the URL. Subclasses should override this if they provide a site
+different from the default.
+
+=cut
+
+sub get_default_controller_name {
+    return 'messages';
+}
+
+=for html <a name="handler"></a>
+
+=head2 static handler(Apache::Request r) : int
+
+Handler called by L<mod_perl|mod_perl>, creates a
+L<Bivio::Agent::HTTP::Request|Bivio::Agent::HTTP::Request>
+which wraps L<Apache::Request|Apache::Request>.
+Then it invokes the appropriate
+L<Bivio::Agent::Controller|Bivio::Agent::Controller>
+to handle the request.
+
+Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
+
+=cut
+
+sub handler {
+    my($r) = @_;
+    my($return_code);
+    eval {
+	defined($_SELF) || ($_SELF = $_PACKAGE->new());
+	my($request) = Bivio::Agent::HTTP::Request->new($r,
+		$_SELF->get_default_controller_name());
+	$_SELF->process_request($request);
+	$return_code = $request->get_http_return_code();
+	1;
+    };
+    unless (defined($return_code)) {
+	warn($@);
+	$return_code = Apache::Constants::SERVER_ERROR;
+    }
+    return $return_code;
+}
+
+=for html <a name="set_handler"></a>
+
+=head2 static set_handler(Bivio::Agent::HTTP::Dispatcher dispatcher)
+
+Overrides the default handler with the specified instance. This is useful
+for testing small parts of the system.
+
+A subclass for testing could look like this:
+
+    package MyTestDispatcher;
+
+    @MyTestDispatcher::ISA = qw(Bivio::Agent::HTTP::Dispatcher);
+
+    my($_INITIALIZED) = 0;
+
+    sub handler {
+	my($r) = @_;
+
+	if (! $_INITIALIZED) {
+	    Bivio::Agent::HTTP::Dispatcher->set_handler(__PACKAGE__->new());
+	    $_INITIALIZED = 1;
+	}
+	# handle the request in the base class (not -> notation)
+	return Bivio::Agent::HTTP::Dispatcher::handler($r);
+    }
+
+    sub create_site {
+	my($self) = @_;
+
+	Bivio::IO::Config->initialize();
+	#site creation here includeing controller registration
+    }
+
+    sub get_default_controller_name {
+	my($self) = @_;
+
+	# return the name of the default testing controller
+    }
+
+Be sure that the subclass name is the entry in the httpd.conf so that it
+can get the requests first.
+    PerlModule MyDispatcher
+    PerlHandler MyDispatcher
+
+=cut
+
+sub set_handler {
+    my(undef, $dispatcher) = @_;
+    $_SELF = $dispatcher;
+    return;
+}
+
+#=PRIVATE METHODS
 
 =head1 SEE ALSO
 
