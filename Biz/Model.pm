@@ -425,7 +425,7 @@ Otherwise, returns the current request, if any.
 sub unsafe_get_request {
     my($self) = @_;
     my($req);
-    $req = $self->{$_PACKAGE}->{request} if $self;
+    $req = $self->{$_PACKAGE}->{request} if ref($self);
     # DON'T SET the request for future calls, because this may
     # be an anonymous model or a singleton.
     return $req ? $req : Bivio::Agent::Request->get_current;
