@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..18\n"; }
+BEGIN { $| = 1; print "1..22\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::SQL::ListSupport;
@@ -255,3 +255,25 @@ t(int(@$local_columns), 1);
 t($local_columns->[0]->{name}, 'local_field');
 t($local_columns->[0]->{type}, 'Bivio::Type::Integer');
 t($local_columns->[0]->{constraint}, Bivio::SQL::Constraint::NONE());
+
+# Check loading "this"
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 1,
+    t => $now."\177".0,
+}, $support);
+$rows = $support->load($query);
+t(int(@$rows), 1);
+t($rows->[0]->{'TListT1.name'}, 'name00');
+t($rows->[0]->{'TListT1.toggle'}, 0);
+
+# Check missing "this"
+$query = Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 1,
+    t => ($now + 10000)."\177".0,
+}, $support);
+$rows = $support->load($query);
+t(int(@$rows), 0);
+
+
