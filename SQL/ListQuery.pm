@@ -428,6 +428,23 @@ sub format_uri_for_this_page {
     return _format_uri(\%attrs, $support);
 }
 
+=for html <a name="format_uri_for_this_as_parent"></a>
+
+=head2 static format_uri_for_this_as_parent(Bivio::SQL::Support sql_support) : string
+
+Generates the query string (URL-encoded) for this query's I<this> as
+a parent query (p=)
+
+=cut
+
+sub format_uri_for_this_as_parent {
+    my($self, $support, $this_row) = @_;
+    my($res) = $self->format_uri_for_this($support, $this_row);
+#TODO: Wow is this a hack!
+    $res =~ s/\bt=/p=/;
+    return $res;
+}
+
 =for html <a name="format_uri_for_this_parent"></a>
 
 =head2 format_uri_for_this_parent(Bivio::SQL::Support sql_support) : string
