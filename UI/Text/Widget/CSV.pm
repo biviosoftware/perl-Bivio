@@ -11,7 +11,7 @@ Bivio::UI::Text::Widget::CSV - creates a CSV from a ListModel
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
