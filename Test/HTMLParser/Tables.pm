@@ -119,24 +119,32 @@ sub do_rows_callback {
 
 =head2 find_row(string column_name, string column_value) : hash_ref
 
-Return the hash_ref of the the row where the value in column column_name
-matches column_value. Return undef if now matching row is found.
+=head2 find_row(string table_name, string column_name, string column_value) : hash_ref
+
+Return the hash_ref of the the row where the value in I<column_name>
+matches I<column_value>.  Dies if row not found.
+
+If I<table_name> not supplied, calls L<get_by_headings|"get_by_headings"> with
+I<column_name> for table.
 
 =cut
 
 sub find_row {
-    my($self, $column_name, $column_value) = @_;
-
-    my($found_row, $found_index);
-    $self->do_rows($column_name,
+    my($self) = shift;
+    my($table_name) = @_ > 2 ? shift
+	: $self->get_by_headings($_[0])->{headings}->[0]->get('text');
+    my($column_name, $column_value) = @_;
+    my($found_row);
+    $self->do_rows($table_name,
 	sub {
 	    my($row, $index) = @_;
-	    if ($row->{$column_name}->get('text') eq $column_value) {
-		$found_row = $row;
-	    }
-	    return !defined($found_row);
+	    return 1
+		unless $row->{$column_name}->get('text') eq $column_value;
+	    $found_row = $row;
+	    return 0;
 	});
-    return $found_row;
+    return $found_row || Bivio::Die->die(
+	$column_value, ': not found in column "', $column_name, '"');
 }
 
 =for html <a name="get_by_headings"></a>
