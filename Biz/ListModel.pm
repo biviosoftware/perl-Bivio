@@ -24,7 +24,9 @@ use Bivio::Biz::Model;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::ListModel> is used to describe queries which return multiple
-rows.  This class is always subclassed.
+rows.  This class is typically subclassed.  However, you can create
+anonymous ListModels by calling
+L<new_anonymous|Bivio::Biz::PropertyModel/"new_anonymous">.
 
 =cut
 
@@ -33,13 +35,26 @@ rows.  This class is always subclassed.
 
 =cut
 
+=for html <a name="NOT_FOUND_IF_EMPTY"></a>
+
+=head2 NOT_FOUND_IF_EMPTY : boolean
+
+Returning true causes load to blow up if no rows are returned.
+Default is false.
+
+=cut
+
+sub NOT_FOUND_IF_EMPTY {
+    return 0;
+}
+
 =for html <a name="PAGE_SIZE"></a>
 
 =head2 PAGE_SIZE : int
 
 Default page size for display.
 
-May be overridden.
+May be overridden, but probably want L<load_all|"load_all">.
 
 =cut
 
@@ -55,7 +70,6 @@ use Bivio::Biz::QueryType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
 
 =head1 FACTORIES
 
@@ -82,6 +96,19 @@ sub new {
 
 =cut
 
+=for html <a name="LAST_ROW"></a>
+
+=head2 LAST_ROW() : int
+
+Returns a constant which means the "last_row".
+
+=cut
+
+sub LAST_ROW {
+    # Something that isn't likely to be hit by subtracting around zero.
+    return -999999;
+}
+
 =for html <a name="execute"></a>
 
 =head2 static execute(Bivio::Agent::Request req)
@@ -92,9 +119,7 @@ Loads a new instance of this model using the request.
 
 sub execute {
     my($proto, $req) = @_;
-    my($query) = $req->unsafe_get('query');
-    # Pass a copy of the query, because it is trashed by ListQuery.
-    $proto->new($req)->load($query ? {%$query} : {});
+    $proto->new($req)->load_from_request();
     return;
 }
 
@@ -363,14 +388,21 @@ sub internal_get_rows {
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
 
+=head2 static internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+
 Returns the L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>
 for this class.  Calls L<internal_initialize|"internal_initialize">
 to get the hash_ref to initialize the sql support instance.
 
+You can create anonymous list model.  Simply supply the configuration
+that is returned by C<internal_initialize> to new_anonymous.
+
 =cut
 
 sub internal_initialize_sql_support {
-    return Bivio::SQL::ListSupport->new(shift->internal_initialize);
+    my($proto, $config) = @_;
+    return Bivio::SQL::ListSupport->new(
+	    $config || $proto->internal_initialize);
 }
 
 =for html <a name="internal_load"></a>
@@ -395,24 +427,39 @@ sub internal_load {
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
-    $self->get_request->put(ref($self) => $self, list_model => $self);
+    $self->die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
+    my($req) = $self->unsafe_get_request;
+    $req->put(ref($self) => $self, list_model => $self) if $req;
     return;
 }
 
-=for html <a name="internal_search"></a>
+=for html <a name="internal_pre_load"></a>
 
-=head2 internal_search(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
+=head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
 
 Returns the where clause and params associated as the result of a
-"search".
+"search" or other "pre_load".
 
 =cut
 
-sub internal_search {
+sub internal_pre_load {
     # Returns empty where when user passes in search string and
     # search string is not supported.
 #TODO: throw corrupt_query?
     return '';
+}
+
+=for html <a name="internal_load_rows"></a>
+
+=head2 internal_load_rows(Bivio::SQL::ListQuery query, string where, array_ref params, Bivio::SQL::ListSupport sql_support) : array_ref
+
+May be overriden.  Must return the rows loaded.
+
+=cut
+
+sub internal_load_rows {
+    my($self, $query, $where, $params, $sql_support) = @_;
+    return $sql_support->load($query, $where, $params, $self);
 }
 
 =for html <a name="load"></a>
@@ -437,24 +484,21 @@ If the load is successful, saves the model in the request.
 
 sub load {
     my($self, $query) = @_;
-    # Clear out old query
-    my($auth_id) = $self->get_request->get('auth_id');
-    my($sql_support) = $self->internal_get_sql_support;
+
+    # May be called without args
     $query = {} unless defined($query);
+
+    my($auth_id) = $self->get_request->get('auth_id');
     if (ref($query) eq 'HASH') {
+	my($sql_support) = $self->internal_get_sql_support;
 	$query->{auth_id} = $auth_id;
 	# Let user override page count
-	$query->{count} = $self->PAGE_SIZE() unless $query->{count};
 	$query = Bivio::SQL::ListQuery->new($query, $sql_support, $self);
     }
     else {
 	$query->put('auth_id' => $auth_id);
     }
-    my($where, $params) = ('', []);
-    $where = ' and '.$self->internal_search($query, $sql_support, $params)
-	    if defined($query->unsafe_get('search'));
-    $self->internal_load($sql_support->load($query, $where, $params,
-	    $self), $query);
+    $self->unauth_load($query);
     return;
 }
 
@@ -474,6 +518,22 @@ sub load_all {
     my($fields) = $self->{$_PACKAGE};
     $self->die(Bivio::DieCode::TOO_MANY(), "more than 200 records")
 	    if $fields->{query}->get('has_next');
+    return;
+}
+
+=for html <a name="load_from_request"></a>
+
+=head2 load_from_request()
+
+Executes the load from the query string in the request.
+
+=cut
+
+sub load_from_request {
+    my($self) = @_;
+    my($query) = $self->get_request->unsafe_get('query');
+    # Pass a copy of the query, because it is trashed by ListQuery.
+    $self->load($query ? {%$query} : {});
     return;
 }
 
@@ -520,6 +580,32 @@ sub next_row {
     return 1;
 }
 
+=for html <a name="prev_row"></a>
+
+=head2 prev_row() : boolean
+
+Backs up the cursor to the previous row and sets the properties
+to the new row's values.  If we are at the start, returns
+false.
+
+B<Only returns false ONCE.  After that calls die.>
+
+=cut
+
+sub prev_row {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('no cursor') unless defined($fields->{cursor});
+    $self->internal_clear_model_cache;
+    if (--$fields->{cursor} < 0) {
+	$fields->{cursor} = undef;
+	$self->internal_put($fields->{empty_properties});
+	return 0;
+    }
+    $self->internal_put($fields->{rows}->[$fields->{cursor}]);
+    return 1;
+}
+
 =for html <a name="reset_cursor"></a>
 
 =head2 reset_cursor()
@@ -545,6 +631,8 @@ just after last row.  Other indices cause termination.
 Particularly useful for "this" queries.  Can check if
 "this" loaded by calling C<set_cursor(0)>.
 
+I<index> may also be L<LAST_ROW|"LAST_ROW">.
+
 =cut
 
 sub set_cursor {
@@ -553,6 +641,10 @@ sub set_cursor {
     Carp::croak('not loaded') unless $fields->{rows};
     $self->internal_clear_model_cache;
     my($n) = int(@{$fields->{rows}});
+    if ($index == $self->LAST_ROW) {
+	$index = $n - 1;
+	# Fall through to handle empty list case.
+    }
     if ($index >= $n) {
 	Carp::croak("$index: invalid index") if $index > $n;
 	$fields->{cursor} = undef;
@@ -562,6 +654,46 @@ sub set_cursor {
     Carp::croak("$index: invalid index") if $index < 0;
     $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
     return 1;
+}
+
+=for html <a name="unauth_load"></a>
+
+=head2 unauth_load(hash_ref attrs)
+
+=head2 unauth_load(Bivio::SQL::ListQuery query)
+
+Loads the model without forcing I<auth_id>.
+
+I<attrs> is not the same as I<query> of L<load|"load">.  I<attrs> is
+passed to
+L<Bivio::SQL::ListQuery::unauth_new|Bivio::SQL::ListQuery/"unauth_new">,
+while I<query> is L<Bivio::SQL::ListQuery::new|Bivio::SQL::ListQuery/"new">.
+B<Use the full names of ListQuery attributes.>
+
+I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if not already
+set.
+
+=cut
+
+sub unauth_load {
+    my($self, $query) = @_;
+    my($sql_support) = $self->internal_get_sql_support;
+
+    # Convert to listQuery
+    $query = Bivio::SQL::ListQuery->unauth_new($query, $self, $sql_support)
+	    if ref($query) eq 'HASH';
+
+    # Add in count if not there
+    $query->put(count => $self->PAGE_SIZE()) unless $query->has_keys('count');
+
+    # Let the subclass add specializations to the query.
+    my($params) = [];
+    my($where) = $self->internal_pre_load($query, $sql_support, $params);
+    $where = ' and '.$where if $where;
+    $self->internal_load(
+	    $self->internal_load_rows($query, $where, $params, $sql_support),
+	    $query);
+    return;
 }
 
 #=PRIVATE METHODS
