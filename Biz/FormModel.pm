@@ -265,7 +265,9 @@ sub execute {
     }
 
     # Only save "generically" if not executed explicitly.
-    # sub-forms shouldn't be put on as THE form_model
+    # sub-forms shouldn't be put on as THE form_model.  Should appear
+    # before $req->get_form for security reasons (see
+    # Bivio::Agent::Request->as_string).
     $req->put(form_model => $self);
 
     my($input) = $req->get_form();
@@ -616,12 +618,8 @@ sub get_hidden_field_values {
 	    if $fields->{context};
     my($properties) = $self->internal_get();
     foreach my $n (@{$self->internal_get_hidden_field_names}) {
-	my($fn) = $self->get_field_name_for_html($n);
-	my($v) = defined($properties->{$n})
-		? $self->get_field_info($n, 'type')
-			->to_literal($properties->{$n})
-		: _get_literal($fields, $fn);
-	push(@res, $fn, $v);
+	push(@res, $self->get_field_name_for_html($n),
+		$self->get_field_as_literal($n));
     }
     return \@res;
 }
@@ -734,6 +732,21 @@ sub internal_clear_error {
     return;
 }
 
+=for html <a name="internal_clear_literal"></a>
+
+=head2 internal_clear_literal(string property)
+
+Clears I<property>'s literal value.
+
+=cut
+
+sub internal_clear_literal {
+    my($self, $property) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    _put_literal($fields, $self->get_field_name_for_html($property), '');
+    return;
+}
+
 =for html <a name="internal_field_constraint_error"></a>
 
 =head2 internal_field_constraint_error(string property, Bivio::TypeError error)
@@ -767,12 +780,8 @@ sub internal_get_field_values {
     };
     foreach my $n (@{$self->internal_get_hidden_field_names},
 	   @{$self->internal_get_visible_field_names}) {
-	my($fn) = $self->get_field_name_for_html($n);
-	my($v) = defined($properties->{$n})
-		? $self->get_field_info($n, 'type')
-			->to_literal($properties->{$n})
-		: _get_literal($fields, $fn);
-	$res->{$fn} = $v;
+	$res->{$self->get_field_name_for_html($n)}
+		= $self->get_field_as_literal($n);
     }
     return $res;
 }
@@ -1018,6 +1027,7 @@ sub put_context_fields {
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	my($fn) = $mi->get_field_name_for_html($k);
+#TODO: CreditCardNumber isn't going to work here.
 	# Convert with to_literal--context->{form} is in raw form
 	$f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
     }
@@ -1270,7 +1280,7 @@ sub _get_literal {
     return $value unless ref($value);
 
     # If a complex form field has a filename, return it.  Otherwise,
-    # return nothing.  We never returnn the "content" back to the user
+    # return nothing.  We never return the "content" back to the user
     # with FileFields.
     return defined($value->{filename}) ? $value->{filename} : '';
 }
@@ -1503,6 +1513,21 @@ sub _put_file_field_reset_errors {
 	$self->internal_put_error($n,
 		Bivio::TypeError::FILE_FIELD_RESET_FOR_SECURITY())
     }
+    return;
+}
+
+# _put_literal(hash_ref fields, string form_name, string value)
+#
+# Modifies the literal value of the named form field.  In the event
+# of a file field, sets filename.
+#
+sub _put_literal {
+    my($fields, $form_name, $value) = @_;
+    # If a complex form field has a filename, set it and clear content.
+    # We never return the "content" back to the user with FileFields.
+    $fields->{literals}->{$form_name}
+	    = ref($fields->{literals}->{$form_name})
+		    ? {filename => $value} : $value;
     return;
 }
 
