@@ -115,6 +115,20 @@ sub execute {
     return;
 }
 
+=for html <a name="execute_auth_realm"></a>
+
+=head2 static execute_load(Bivio::Agent::Request req)
+
+Loads this model using no params except auth_id.
+
+=cut
+
+sub execute_load {
+    my($proto, $req) = @_;
+    $proto->new($req)->load();
+    return;
+}
+
 =for html <a name="format_query"></a>
 
 =head2 format_query() : string
