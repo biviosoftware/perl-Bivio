@@ -67,8 +67,8 @@ sub add_to_cart {
 	my($i) = -1;
 	foreach my $row (@$rows) {
 	    $i++;
-	    next unless $row->[1] eq $item_name;
-	    $price = $row->[2];
+	    next unless $row->[1]->get('text') eq $item_name;
+	    $price = $row->[2]->get('text');
 	    $button .= "_$i";
 	    last;
 	}
@@ -78,8 +78,8 @@ sub add_to_cart {
     else {
 	my($row) = $self->get_html_parser
 	    ->get_nested('Tables', 'item', 'rows', 0);
-	$item_name = $row->[0];
-	$price = $row->[1];
+	$item_name = $row->[0]->get('text');
+	$price = $row->[1]->get('text');
     }
     $self->submit_form($button => {});
     (($fields->{cart} ||= {})->{$item_name} ||= {
@@ -242,12 +242,14 @@ sub verify_cart {
 	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
 	    unless $r;
 	Bivio::Die->die("missing item: ", $item)
-	    unless $r->[2] eq $item->{name};
-	Bivio::Die->die("incorrect quantity ($r->[5]) for: ", $item)
-	    unless $r->[5] == $item->{quantity};
+	    unless $r->[2]->get('text') eq $item->{name};
+	Bivio::Die->die("incorrect quantity (",
+            $r->[5]->get('text'), ") for: ", $item)
+	    unless $r->[5]->get('text') == $item->{quantity};
 	my($t) = $_A->mul($item->{quantity}, $item->{price});
-	Bivio::Die->die("incorrect total cost ($r->[6]) for: ", $item)
-	    unless $_A->compare($r->[6], $t) == 0;
+	Bivio::Die->die("incorrect total cost (",
+            $r->[6]->get('text'), ") for: ", $item)
+	    unless $_A->compare($r->[6]->get('text'), $t) == 0;
 	$total = $_A->add($total, $t);
     }
     continue {
@@ -255,9 +257,9 @@ sub verify_cart {
 	$i++;
     }
     Bivio::Die->die("too many rows (expected $i); extra items: ", $rows)
-	if @$rows != 1 || $rows->[0]->[1] ne 'Total:';
+	if @$rows != 1 || $rows->[0]->[1]->get('text') ne 'Total:';
     Bivio::Die->die("incorrect total ($rows->[0]->[6]), expected ", $total)
-	unless $_A->compare($rows->[0]->[6], $total) == 0;
+	unless $_A->compare($rows->[0]->[6]->get('text'), $total) == 0;
     return;
 }
 
@@ -302,7 +304,7 @@ sub _find_in_cart {
     my($i) = -1;
     foreach my $row (@{$t->{rows}}) {
 	$i++;
-	next unless $row->[2] eq $item_name;
+	next unless $row->[2]->get('text') eq $item_name;
 	$op->($i);
 	die('no items in internal cart')
 	    unless $fields->{cart} && %{$fields->{cart}};
