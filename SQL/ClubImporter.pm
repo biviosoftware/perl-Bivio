@@ -31,7 +31,7 @@ member info, instrument info, and transactions.
 #=IMPORTS
 use Bivio::Agent::TestRequest;
 use Bivio::Biz::PropertyModel::AccountEntry;
-use Bivio::Biz::PropertyModel::InstrumentEntry;
+use Bivio::Biz::PropertyModel::ClubInstrumentEntry;
 use Bivio::Biz::PropertyModel::Entry;
 use Bivio::Biz::PropertyModel::MemberEntry;
 use Bivio::Biz::PropertyModel::Transaction;
@@ -737,11 +737,11 @@ sub _create_entry {
     }
     elsif ($trans->{class} == Bivio::Type::EntryClass->INSTRUMENT) {
 	my($instrument_entry) =
-		Bivio::Biz::PropertyModel::InstrumentEntry->new(
+		Bivio::Biz::PropertyModel::ClubInstrumentEntry->new(
 			$transaction->get_request());
 	$instrument_entry->create({
 	    entry_id => $entry->get('entry_id'),
-	    instrument_id => $attributes->{instrument_id_map}->{
+	    club_instrument_id => $attributes->{instrument_id_map}->{
 		$trans->{id}},
 	    shares => $trans->{shares},
 	    block => $trans->{block},
