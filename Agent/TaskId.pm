@@ -2184,15 +2184,6 @@ my(@_CFG) = (
         Bivio::Biz::Action::PublicRealm
         Bivio::UI::HTML::Club::Home
     )],
-#    [qw(
-#        ALL_PUBLIC_CLUBS
-#        213
-#        GENERAL
-#        LOGIN
-#        pub/clubs
-#        Bivio::Biz::Model::AllClubList->execute_load_all
-#        Bivio::UI::HTML::General::AllClubs
-#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
         214
@@ -2235,6 +2226,30 @@ my(@_CFG) = (
         Bivio::Biz::Action::PublicRealm
         Bivio::UI::HTML::Common::HomePage->execute_frame
     )],
+    [qw(
+        PUBLIC_CLUBS
+        218
+        GENERAL
+        DOCUMENT_READ
+        pub/clubs
+        Bivio::Biz::Model::PublicClubList->execute_load_all
+        Bivio::UI::HTML::General::PublicClubs
+    )],
+#    [qw(
+#        CLUB_COMMUNICATIONS_FILE_RENAME
+#        219
+#        CLUB
+#        DOCUMENT_WRITE
+#        ?/file_rename/*
+#        Bivio::Biz::Action::PublicRealm
+#        Bivio::Type::FileVolume->execute_file
+#        Bivio::Biz::Model::FilePathList
+#        Bivio::Biz::Model::FileDirectoryList->execute_load_all
+#        Bivio::Biz::Model::FileRenameForm
+#        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
+#        Bivio::UI::HTML::Club::FileRename
+#	 next=CLUB_COMMUNICATIONS_FILE_READ
+#    )],
 );
 
 __PACKAGE__->compile(
