@@ -33,8 +33,11 @@ without polluting a class's internal field name space.
 
 #=IMPORTS
 use Carp ();
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -135,6 +138,28 @@ Removes all the parameters.
 sub delete_all {
     # This is probably the fastest way to remove all elements
     shift->{$_PACKAGE} = {};
+    return;
+}
+
+=for html <a name="dump"></a>
+
+=head2 dump()
+
+For debugging, dumps the current state to trace output. One level only.
+
+=cut
+
+sub dump {
+    my($self) = @_;
+
+    if ($_TRACE) {
+	my($dump) = "\n";
+	foreach my $k (@{$self->get_keys}) {
+	    my($value) = $self->get($k);
+	    $dump .= "\t$k => ".(defined($value) ? $value : 'undef')."\n";
+	}
+	&_trace($dump);
+    }
     return;
 }
 
