@@ -31,6 +31,7 @@ C<Bivio::Biz::SqlListSupport>
 #=IMPORTS
 use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
+use Data::Dumper;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -80,7 +81,9 @@ sub find {
     my($fields) = $self->{$_PACKAGE};
 
     # clear the result set
-    $#{@$rows} = 0;
+#    $#{@$rows} = 0;
+    0 while (pop(@$rows));
+
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
@@ -100,8 +103,8 @@ sub find {
 	    last;
 	}
     }
-
     $statement->finish();
+
     return $model->get_status()->is_OK();
 }
 
