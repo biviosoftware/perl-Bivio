@@ -155,7 +155,7 @@ I<table_name> using
 L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.  If I<table_name> is undef, uses I<find_heading>.
 
 Then clicks on I<link_name> in column I<link_heading>.  I<link_heading>
-defaults to I<find_heading>.  If I<link_name> is C<undef>, expects one an only
+defaults to I<find_heading>.  If I<link_name> is C<undef>, expects one and only
 one link, and clicks on that.
 
 =cut
@@ -166,8 +166,9 @@ sub follow_link_in_table {
     my($find_heading, $find_value, $link_heading, $link_name) = @_;
     $table_name = $find_heading
 	unless defined($table_name);
-    my($row) = _assert_html($self)->get('Tables')->find_row(
-	$table_name, $find_heading, $find_value);
+    my($row) = _find_row($self, $table_name, $find_heading, $find_value);
+	#_assert_html($self)->get('Tables')->find_row(
+	#$table_name, $find_heading, $find_value);
     $link_heading = $find_heading
 	unless defined($link_heading);
     Bivio::Die->die(
@@ -431,6 +432,17 @@ sub _create_form_request {
             Content_Type => 'form-data',
             Content => $form)
         : HTTP::Request::Common::POST($uri, $form);
+}
+
+# _find_row(string table_name, string find_heading, string find_value) : hashref
+#
+# Returns the hashref for row identified by I<table_name>, <I>find_heading
+# and <I>find_value.
+#
+sub _find_row {
+    my($self, $table_name, $find_heading, $find_value) = @_;
+    return _assert_html($self)->get('Tables')->find_row(
+	$table_name, $find_heading, $find_value);
 }
 
 # _fixup_uri(self, string uri) : string
