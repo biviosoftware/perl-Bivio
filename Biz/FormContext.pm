@@ -226,7 +226,7 @@ sub to_literal {
     my($proto, $req, $context) = @_;
     my($res) = '';
 
-    _trace('incoming: ', $context) if $_TRACE;
+    _trace($context) if $_TRACE;
 
     # The order is the same as @_CHARS.  nice for debugging
     _format_task(\$res, $context, 'unwind_task');
