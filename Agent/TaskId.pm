@@ -1585,6 +1585,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/valuation/prices
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::LocalPriceList->execute_load_all
         Bivio::Biz::Model::LocalPricesForm
         Bivio::UI::HTML::Club::LocalPrices
@@ -1597,6 +1598,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/valuation/new
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::LocalPriceList->execute_load_all
         Bivio::Biz::Model::LocalPricesForm
         Bivio::UI::HTML::Club::LocalPrices
