@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.59  2005/03/18 23:48:27  moeller
+  * Bivio::Type::ECCreditCardType add support for discover
+
+  Revision 2.58  2005/03/14 20:23:18  moeller
+  * Bivio::Agent::Task allow modules with AUTOLOAD to have any 'execute_'
+    method called
   * Bivio::UI::HTML::Format::Amount returns blank if zero_as_blank and
     rounded amount is zero
   * Bivio::UI::HTML::Widget::FormFieldLabel corrected &nbsp;
