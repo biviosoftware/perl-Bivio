@@ -55,16 +55,16 @@ L<from_literal|"from_literal">.
 
 Returns C<undef> if the line is empty.
 Leading and trailing blanks are trimmed.
+Length is checked.
 
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    return undef unless defined($value);
-    # Leave middle spaces in case a "display" or file name.
-    $value =~ s/^\s+|\s+$//g;
-    return undef unless length($value);
-    return $value;
+    my($proto, $value) = @_;
+    # Leave middle spaces in case a "display" name.
+    $value =~ s/^\s+|\s+$//g
+	if defined($value);
+    return $proto->SUPER::from_literal($value);
 }
 
 =for html <a name="get_width"></a>

@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::Type::String>
+L<Bivio::Type::Line>
 
 =cut
 
-use Bivio::Type::String;
-@Bivio::Type::Name::ISA = ('Bivio::Type::String');
+use Bivio::Type::Line;
+@Bivio::Type::Name::ISA = ('Bivio::Type::Line');
 
 =head1 DESCRIPTION
 
@@ -43,24 +43,6 @@ a compound name, use L<Bivio::Type::Line|Bivio::Type::Line>.
 =head1 METHODS
 
 =cut
-
-=for html <a name="from_literal"></a>
-
-=head2 static from_literal(string value) : any
-
-Returns C<undef> if the name is empty.
-Leading and trailing blanks are trimmed.
-
-=cut
-
-sub from_literal {
-    my(undef, $value) = @_;
-    return undef unless defined($value);
-    # Leave middle spaces in case a "display" name.
-    $value =~ s/^\s+|\s+$//g;
-    return undef unless length($value);
-    return $value;
-}
 
 =for html <a name="get_width"></a>
 

@@ -56,13 +56,11 @@ Leading and trailing blanks are trimmed.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    return undef unless defined($value);
-    # Leave middle spaces in case a "display" name.
-    $value =~ s/^\s+|\s+$//g;
-    return undef unless length($value);
-    return (undef, Bivio::TypeError::COUNTRY())
-	    unless $value =~ /^[a-z]{2}$/i;
+    my($value, $err) = shift->SUPER::from_literal(@_);
+    return ($value, $err)
+	unless defined($value);
+    return (undef, Bivio::TypeError->COUNTRY)
+	unless $value =~ /^[a-z]{2}$/i;
     return uc($value);
 }
 

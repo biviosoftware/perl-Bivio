@@ -26,7 +26,7 @@ L<Bivio::Type::String>
 =cut
 
 use Bivio::Type::String;
-@Bivio::Type::Text::ISA = qw(Bivio::Type::String);
+@Bivio::Type::Text::ISA = ('Bivio::Type::String');
 
 =head1 DESCRIPTION
 
@@ -44,24 +44,6 @@ use Bivio::TypeError;
 =head1 METHODS
 
 =cut
-
-=for html <a name="from_literal"></a>
-
-=head2 static from_literal(string value) : any
-
-Returns C<undef> if the string is empty.
-Remarks are special, because you can't limit the size of
-a text area.
-
-=cut
-
-sub from_literal {
-    my($proto, $value) = @_;
-    return undef unless defined($value) && length($value);
-    return (undef, Bivio::TypeError::TEXT_TOO_LONG())
-	    if length($value) > $proto->get_width;
-    return $value;
-}
 
 =for html <a name="get_width"></a>
 

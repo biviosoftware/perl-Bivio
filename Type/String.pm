@@ -63,14 +63,30 @@ sub compare {
 
 =head2 static from_literal(string value) : any
 
-Returns C<undef> if the string is empty.
+Returns C<undef> if the string is empty.  Returns
+TOO_LONG if I<value>'s length exceeds L<get_width|"get_width">.
 
 =cut
 
 sub from_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value) && length($value);
+    return undef
+	unless defined($value) && length($value);
+    return (undef, Bivio::TypeError->TOO_LONG)
+	if length($value) > $proto->get_width;
     return $value;
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static get_width() : int
+
+Returns max 32-bit int.  When Perl goes 64 bit, this number may increase.
+
+=cut
+
+sub get_width {
+    return 0x7fffffff;
 }
 
 =for html <a name="wrap_lines"></a>
