@@ -122,8 +122,7 @@ sub catch {
 
 =head2 as_string() : string
 
-Returns Die object and all its subsequent errors as a string ending
-in "\n".
+Returns Die object and all its subsequent errors as a string.
 
 =cut
 
@@ -145,6 +144,7 @@ sub as_string {
 		pop(@$m);
 	    }
 	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef, $m);
+	    chop;
 	    return 1;
 	} || ($res .= 'ERROR: ' . $curr . "\n");
     }
@@ -337,7 +337,7 @@ sub throw {
     }
     $code = _check_code($code, $attrs);
     my($self) = _new($proto, $code, $attrs, $package, $line);
-    CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
+    CORE::die($_IN_CATCH ? "$self\n" : ($self->as_string."\n"));
 }
 
 =for html <a name="throw_die"></a>
@@ -393,7 +393,7 @@ sub _handle_die {
 	my($self) = @_;
 	if ($_STACK_TRACE_ERROR) {
 	    my($attrs) = $self->get('attrs');
-	    print STDERR Carp::longmess($self->as_string)
+	    print STDERR Carp::longmess($self->as_string."\n")
 		    if $attrs->{program_error};
 	}
 	my($i) = 0;
