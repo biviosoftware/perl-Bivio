@@ -59,17 +59,13 @@ non-member: limited privileges
 
 member: normal privileges
 
-=item TREASURER
+=item ACCOUNTANT
 
-treasurer: normal and financial transaction privileges
-
-=item PRESIDENT
-
-president: normal, financial, and executive privileges
+accountant: normal and financial transaction privileges
 
 =item ADMINISTRATOR
 
-administrator: normal, financial, excecutive, and grant privileges
+administrator: all privileges
 
 =back
 
@@ -113,20 +109,15 @@ __PACKAGE__->compile(
 	'Member',
 	'normal participant in realm',
     ],
-    'TREASURER' => [
+    'ACCOUNTANT' => [
     	5,
-	'Treasurer',
+	'Accountant',
 	'normal and financial transaction privileges',
     ],
-    'PRESIDENT' => [
-    	6,
-	'President',
-	'normal, financial, and executive privileges',
-    ],
     'ADMINISTRATOR' => [
-    	7,
+    	6,
 	'Administrator',
-	'normal, financial, excecutive, and grant privileges',
+	'all privileges',
     ],
 );
 

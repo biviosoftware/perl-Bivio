@@ -370,15 +370,14 @@ b-realm-role GENERAL ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role GENERAL USER - \
     +ANONYMOUS \
-    +DOCUMENT_READ
+    +DOCUMENT_READ \
+    +MAIL_RECEIVE
 b-realm-role GENERAL GUEST - \
     +USER
 b-realm-role GENERAL MEMBER - \
     +GUEST
-b-realm-role GENERAL TREASURER - \
+b-realm-role GENERAL ACCOUNTANT - \
     +MEMBER
-b-realm-role GENERAL PRESIDENT - \
-    +TREASURER
 b-realm-role GENERAL ADMINISTRATOR +
 
 #
@@ -394,10 +393,8 @@ b-realm-role USER GUEST - \
     +DOCUMENT_READ
 b-realm-role USER MEMBER - \
     +GUEST
-b-realm-role USER TREASURER - \
+b-realm-role USER ACCOUNTANT - \
     +MEMBER
-b-realm-role USER PRESIDENT - \
-    +TREASURER
 b-realm-role USER ADMINISTRATOR +
 
 #
@@ -413,17 +410,16 @@ b-realm-role CLUB GUEST - \
     +ACCOUNTING_READ \
     +DOCUMENT_READ \
     +MOTION_READ
+#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role CLUB MEMBER - \
     +GUEST \
     +ADMIN_READ \
     +FINANCIAL_DATA_READ \
     +MAIL_READ \
+    +MAIL_RECEIVE \
     +MEMBER_READ
-b-realm-role CLUB TREASURER - \
+b-realm-role CLUB ACCOUNTANT - \
     +MEMBER \
     +ACCOUNTING_WRITE \
     +MEMBER_WRITE
-b-realm-role CLUB PRESIDENT - \
-    +TREASURER \
-    +ADMIN_WRITE
 b-realm-role CLUB ADMINISTRATOR +
