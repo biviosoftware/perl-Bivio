@@ -106,7 +106,8 @@ sub catch {
 	my($msg) = @_;
 	$_STACK_TRACE && print STDERR Carp::longmess($msg);
 	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
-		{message => $msg, program_error => 1}, caller));
+		{message => $msg eq "\n" ? Bivio::IO::Alert->get_last_warning
+		    : $msg, program_error => 1}, caller));
     };
     my($self) = eval {
 	&$sub();
