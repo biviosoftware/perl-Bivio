@@ -36,6 +36,13 @@ Bivio::Test->unit([
 		 'Password:', 'type'] => ['password'],
 	 ],
      ], [
+	 'petshop-login-error' => [
+	     ['Forms', 'User ID:', 'visible',
+		 'User ID:', 'error'] => ['not found'],
+	     ['Forms', 'User ID:', 'visible',
+		 'Password:', 'type'] => ['password'],
+	 ],
+     ], [
 	 'petshop-corgi' => [
 	     ['Forms', 'add_to_cart_0', 'submit',
 		 'add_to_cart_0', 'name'] => ['f2_0'],
@@ -44,6 +51,11 @@ Bivio::Test->unit([
 	 'petshop-cart' => [
 	     ['Forms', 'remove_0', 'visible', 'Quantity_0',
 		 'value'] => ['1'],
+	 ],
+     ], [
+	 'petshop-cart-error' => [
+	     ['Forms', 'remove_0', 'visible', 'Quantity_0',
+		 'error'] => ['expecting a number without a decimal point'],
 	 ],
      ],
 ]);
