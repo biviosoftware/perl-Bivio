@@ -48,14 +48,25 @@ Forwards the email to the owner of the auth_realm.
 
 sub execute {
     my(undef, $req) = @_;
+
+    # Load the user and get the msg
     my($user_id) = $req->get('auth_id');
     my($user) = Bivio::Biz::Model::User->new($req);
     $user->load(user_id => $user_id);
+
     my($msg) = $req->get('message');
-    &_trace($req->get('auth_realm')->get('owner'),
-	    ': ', $msg->get_message_id) if $_TRACE;
-    (my($addrs) = $user->get_email_addresses()) || return;
-    $msg->set_recipients($addrs);
+    _trace($req->unsafe_get('auth_realm'), ': ', $msg->get_message_id)
+	    if $_TRACE;
+
+    # Get the outgoing address(es)
+    my($emails) = $user->get_outgoing_emails();
+
+    # Bounce mail if couldn't find a valid email
+    $req->die('NOT_FOUND', 'email marked as invalid')
+	    unless $emails;
+
+    # Forward the message
+    $msg->set_recipients($emails);
     $msg->enqueue_send;
     return;
 }

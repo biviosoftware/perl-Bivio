@@ -75,8 +75,21 @@ Sends the mail to the club members.
 
 sub send {
     my(undef, $realm_owner, $club, $msg) = @_;
+
+    my($req) = $realm_owner->get_request;
+    _trace($req->unsafe_get('auth_realm'), ': ', $msg->get_message_id)
+	    if $_TRACE;
+
+    # Get the outgoing addresses
+    my($emails) = $club->get_outgoing_emails();
+
+    # Bounce mail if couldn't find a valid email
+    $req->die('NOT_FOUND', 'alls emails marked as invalid')
+	    unless $emails;
+
+    # Forward the message
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
-    $out_msg->set_recipients($club->get_outgoing_emails());
+    $out_msg->set_recipients($emails);
     my($display_name) = $realm_owner->get('display_name');
     $out_msg->set_headers_for_list_send($realm_owner->get('name'),
 	    $display_name, 1, 1);
