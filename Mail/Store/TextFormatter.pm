@@ -149,6 +149,7 @@ sub _parse {
 #
 sub _parse_line {
     my $line = shift;
+    _trace('parse_line is handling: ' , $line) if $_TRACE;
     my @words = split(" ", $line);
     my $len = @words;
     return "" unless ($len > 0);
@@ -167,8 +168,11 @@ sub _parse_line {
 	    }
 	}
 	$word = $res if(! $res eq(''));
-	if($word =~ /(\w*@\w*\.\w*)/){
-	    $word = "<HREF=MAILTO:$word>$word</a>";
+	_trace('word to parse: ' , $word) if $_TRACE;
+	if($word =~ /\w*@\w*\.\w*/){
+#	if($word =~ /\w*@[a-z]*/){
+	    $word = "<a HREF=MAILTO:$word>$word</a>";
+	    _trace('found a mailto: ', $word) if $_TRACE;
 	}
 	elsif($word =~ /(http:\/\/.*)/){
 	    my $uri = $1;
