@@ -1010,6 +1010,39 @@ sub put_context_fields {
     return;
 }
 
+=for html <a name="unsafe_get_context"></a>
+
+=head2 unsafe_get_context(string attr) : any
+
+Returns the attribute from the context.  If not in context,
+returns C<undef>.
+
+Valid attributes are:
+
+=over 4
+
+=item unwind_task : Bivio::Agent::TaskId
+
+=item cancel_task : Bivio::Agent::TaskId
+
+=back
+
+=cut
+
+sub unsafe_get_context {
+    my($self, $attr) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Nothing in context or form doesn't support context
+    return undef unless $fields->{context};
+
+    # Very strict, because we don't want the caller to modify the context.
+    $self->die('DIE', {message => 'invalid context attribute',
+	entity => $attr})
+	    unless $attr =~ /_task$/ && exists($fields->{context}->{$attr});
+    return $fields->{context}->{$attr};
+}
+
 =for html <a name="unsafe_get_context_field"></a>
 
 =head2 unsafe_get_context_field(string name) : array
