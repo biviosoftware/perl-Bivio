@@ -435,6 +435,7 @@ sub _compile_assert_even {
 sub _compile_case {
     my($state, $tests, $params, $expect) = @_;
     $state->{case_num}++;
+    $params = [$params] if defined($params) && !ref($params);
     _compile_die($state, 'params must be array_ref or CODE')
 	unless ref($params) =~ /^(ARRAY|CODE)$/;
     push(@$tests, my $case = Bivio::Test::Case->new({
@@ -580,7 +581,7 @@ sub _eval {
     foreach my $case (@$tests) {
 	$c++;
 	my($result);
-	$case->put(params => _eval_params($case, [], \$err));
+	$case->put(params => _eval_params($case, \$err));
 	next if $err;
 	my($die) = Bivio::Die->catch(sub {
 	    my($method) = $case->get('method');
@@ -597,7 +598,9 @@ sub _eval {
 	    $case->put(return => $result);
 	    $err = _eval_result($case, $result);
 	}
-	# else ignore result
+	else {
+	    _trace('ignoring result') if $_TRACE;
+	}
     }
     continue {
 	$print->(!$err
@@ -694,6 +697,7 @@ sub _eval_result {
 	my($err);
 	my($res) = _eval_custom(
 	    $case, $custom, [$actual, $case->get('expect')], \$err);
+	_trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
 	return $err if $err;
 	if (ref($res)) {
 	    # New value for return or die, save and compare
