@@ -155,6 +155,7 @@ use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Type::RealmName;
 use Bivio::Util;
 use Carp ();
 
@@ -204,6 +205,22 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="can_user_execute_task"></a>
+
+=head2 can_user_execute_task(Bivio::Agent::TaskId task) : boolean
+
+Convenience routine which executes
+L<Bivio::Auth::Realm::can_user_execute_task|Bivio::Auth::Realm/"can_user_execute_task">
+for the current I<auth_realm> and current I<auth_user>.
+
+=cut
+
+sub can_user_execute_task {
+    my($self, $task) = @_;
+    return $self->get('auth_realm')->can_user_execute_task(
+	    Bivio::Agent::Task->get_by_id($task), $self);
+}
 
 =for html <a name="clear_current"></a>
 
@@ -742,7 +759,7 @@ sub _get_realm {
     }
     if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
 #TODO: Why don't we want to return the demo_club?
-	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::NAME_SUFFIX();
+	my($demo_suffix) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 	my($user_realms) = $self->get('user_realms');
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
