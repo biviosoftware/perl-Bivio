@@ -57,15 +57,17 @@ Returns the total amount of the cart purchase.
 sub get_total {
     my($self) = @_;
     my($amount) = 0;
-    my($list) = $self->new_other('CartItemList')->load_all;
-
-    while ($list->next_row) {
-	$amount = Bivio::PetShop::Type::Price->add($amount,
-		$list->get('total_cost'));
-    }
+    $self->new_other('CartItemList')->load_all->map_rows(
+	sub {
+	    $amount = Bivio::PetShop::Type::Price->add(
+		$amount,
+		shift->get('total_cost'),
+	    );
+	    return;
+	},
+    );
     return $amount;
 }
-
 
 =for html <a name="handle_cookie_in"></a>
 
