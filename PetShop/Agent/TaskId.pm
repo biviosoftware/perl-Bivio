@@ -75,12 +75,14 @@ sub get_delegate_info {
 	    View.products
 	)],
 	[qw(
-	    PRODUCT_SEARCH
+	    ITEM_SEARCH
 	    501
 	    GENERAL
 	    ANYBODY
-	    Model.ProductSearchList->execute_load_page
+	    Model.ItemSearchList->execute_load_page
+            Model.ItemSearchListForm
 	    View.search
+            next=CART
 	)],
 	[qw(
 	    ITEMS
