@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmOwner;
 use strict;
 $Bivio::Biz::Model::RealmOwner::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmOwner::VERSION;
 
 =head1 NAME
 
@@ -540,9 +541,9 @@ sub get_share_price_and_date {
 
     # valuation algorithm:
     #   if realm_instrument_valuation_t exists for the date, use it
-    #   if not in MGFS use local (realm_instrument_valuation_t).
+    #   if not in global quotes use local (realm_instrument_valuation_t).
     #   otherwise get most recent value from realm_instrument_valuation_t
-    #    or mgfs_daily_quote_t
+    #    or instrument_valuation_t
 
     # look on exactly that date, allows a local override
     my($sth) = Bivio::SQL::Connection->execute("
@@ -563,12 +564,11 @@ sub get_share_price_and_date {
 
 	$sth = Bivio::SQL::Connection->execute("
 	        SELECT realm_instrument_t.realm_instrument_id,
-	    	    mgfs_daily_quote_t.close
-	        FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
+                    instrument_valuation_t.closing_price
+	        FROM realm_instrument_t, instrument_valuation_t
 	        WHERE realm_instrument_t.instrument_id
-            	    =mgfs_instrument_t.instrument_id
-                AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
-                AND mgfs_daily_quote_t.date_time=$_SQL_DATE_VALUE
+            	    =instrument_valuation_t.instrument_id
+                AND instrument_valuation_t.closing_date=$_SQL_DATE_VALUE
                 AND realm_instrument_t.realm_id=?",
 		[$search_date, $self->get('realm_id')]);
 
@@ -590,33 +590,32 @@ sub get_share_price_and_date {
 
     $sth = Bivio::SQL::Connection->execute('
             SELECT realm_instrument_t.realm_instrument_id,
-                mgfs_instrument_t.mg_id
-            FROM realm_instrument_t, mgfs_instrument_t
-            WHERE realm_instrument_t.instrument_id
-                =mgfs_instrument_t.instrument_id (+)
-            AND realm_instrument_t.realm_id=?',
+                realm_instrument_t.instrument_id
+            FROM realm_instrument_t
+            WHERE realm_instrument_t.realm_id=?',
 	    [$self->get('realm_id')]);
 
     while (my $row = $sth->fetchrow_arrayref) {
-	my($id, $mg_id) = @$row;
+	my($id, $inst_id) = @$row;
 
 	next if exists($result->{$id});
 
-	if (defined($mg_id)) {
+	if (defined($inst_id)) {
 	    # find the max global date
 	    my($d) = Bivio::Type::DateTime->from_sql_value(
-		    'mgfs_daily_quote_t.date_time');
+		    'instrument_valuation_t.closing_date');
 	    my($sth2) = Bivio::SQL::Connection->execute("
-                    SELECT mgfs_daily_quote_t.close,
+                    SELECT instrument_valuation_t.closing_price,
                     $d
-                    FROM mgfs_daily_quote_t
-                    WHERE mgfs_daily_quote_t.mg_id=?
-                    AND mgfs_daily_quote_t.date_time=(
-                        SELECT MAX(mgfs_daily_quote_t.date_time)
-                        FROM mgfs_daily_quote_t
-                        WHERE mgfs_daily_quote_t.mg_id=?
-                        AND mgfs_daily_quote_t.date_time <= $_SQL_DATE_VALUE)",
-		    [$mg_id, $mg_id, $date]);
+                    FROM instrument_valuation_t
+                    WHERE instrument_valuation_t.instrument_id=?
+                    AND instrument_valuation_t.closing_date=(
+                        SELECT MAX(instrument_valuation_t.closing_date)
+                        FROM instrument_valuation_t
+                        WHERE instrument_valuation_t.instrument_id=?
+                        AND instrument_valuation_t.closing_date
+                            <= $_SQL_DATE_VALUE)",
+		    [$inst_id, $inst_id, $date]);
 	    my($row2);
 	    while (my $row2 = $sth2->fetchrow_arrayref) {
 		my($value, $val_date) = @$row2;
