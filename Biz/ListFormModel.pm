@@ -481,7 +481,7 @@ sub validate {
 #TODO: Should this be "is_equal"?  This is probably "good enough".
 #      It will slow it down a lot to make a method call for each
 #      row/attribute.  "eq" works in all cases and probably in future.
-	    _collision('mismatch')
+	    _collision($self, 'mismatch', $row)
 		    unless $properties->{$nr} eq $lm->get($n);
 	}
     }
@@ -571,7 +571,7 @@ sub _clear_row {
 sub _collision {
     my($self, $msg, $row) = @_;
     $self->die('UPDATE_COLLISION', {
-	message => $msg.' row #'.$row.' in FormModel',
+	message => $msg.' row #'.$row.' in ListFormModel',
 	list_model => ref($self->get_list_model),
 	list_attrs => $self->get_list_model->internal_get,
     });
