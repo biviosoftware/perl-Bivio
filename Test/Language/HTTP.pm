@@ -271,8 +271,7 @@ Returns the uri for the current page.  Blows up if no current uri.
 =cut
 
 sub get_uri {
-    return shift->[$_IDI]->{uri}
-	|| Bivio::Die->die('no current uri');
+    return shift->unsafe_get_uri || Bivio::Die->die('no current uri');
 }
 
 =for html <a name="go_back"></a>
@@ -466,6 +465,34 @@ sub submit_from_table {
     _trace("row = ", $row) if $_TRACE;
     $self->submit_form($submit_name . '_' . $row->{_row_index} => $form_values);
     return;
+}
+
+=for html <a name="text_exists"></a>
+
+=head2 text_exists(any pattern) : boolean
+
+If I<pattern> exists in response (must be text/html), then return true,
+else false.
+
+Only works on HTML pages.
+
+=cut
+
+sub text_exists {
+    my($self, $pattern) = @_;
+    return $self->get_content =~ /$pattern/s ? 1 : 0;
+}
+
+=for html <a name="unsafe_get_uri"></a>
+
+=head2 unsafe_get_uri() : string
+
+Gets current uri or returns undef.
+
+=cut
+
+sub unsafe_get_uri {
+    return shift->[$_IDI]->{uri};
 }
 
 =for html <a name="verify_form"></a>
