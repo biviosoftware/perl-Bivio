@@ -84,6 +84,7 @@ See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
 
 sub create_db {
     my($self) = @_;
+    $self->setup;
     foreach my $file (@{_ddl_files($self)}){
 	# Set up new file so read_input returns new value each time
 	$self->print('Executing ', $file, "\n");
