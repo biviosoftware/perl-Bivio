@@ -135,8 +135,7 @@ sub validate {
     my($self) = @_;
     my($properties) = $self->internal_get;
 
-#TODO: need to make the name parsing reusable
-    Bivio::Biz::Model::CreateUserForm::_parse_display_name($self, $properties);
+    Bivio::Biz::Model::CreateUserForm->parse_display_name($self, $properties);
 
     if (defined($properties->{'RealmInvite.email'})) {
 	my($req) = $self->get_request;
