@@ -175,8 +175,8 @@ sub validate {
     $self->validate_greater_than_zero('MemberEntry.units');
 
     # check that the year is not over the fiscal boundary
-    if (Bivio::Type::Date->compare(
-	    $self->get('RealmTransaction.date_time'),
+    my($date) = $self->get('RealmTransaction.date_time');
+    if ($date && Bivio::Type::Date->compare($date,
 	    Bivio::Biz::Accounting::Tax->get_this_fiscal_year) > 0) {
 
 	$self->internal_put_error('RealmTransaction.date_time',
