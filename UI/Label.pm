@@ -837,7 +837,8 @@ EOF
     'ECPayment.credit_card_expiration_date' => 'Card Expiration Date',
     ECPAYMENT_ACTION => 'Actions',
     ECSUBSCRIPTION_ACTION => 'Actions',
-    ECSUBSCRIPTION_SUBSCRIPTION_TYPE => 'Service Name',
+    ['ECSUBSCRIPTION_SUBSCRIPTION_TYPE', 'ECSubscription.subscription_type']
+        => 'Service Name',
     ['ECSUBSCRIPTION_START_DATE', 'ECSubscription.start_date']
         => 'Started on',
     ['ECSUBSCRIPTION_END_DATE', 'ECSubscription.end_date']
