@@ -151,7 +151,7 @@ EOF
 =>
 {
     'content_type' => undef,
-    'from_name' => '',
+    'from_name' => undef,
     'from_email' => 'moeller@[209.181.76.152]',
     'reply_to_email' => undef,
     'subject' => 'hello',
@@ -269,7 +269,6 @@ Status:
 X-Mozilla-Status: 8001
 X-Mozilla-Status2: 00000000
 X-UIDL: 38a24a7e000008f9
-
 
 --------------667D5053A61BE4F5D5795573
 Content-Type: text/plain; charset=us-ascii
