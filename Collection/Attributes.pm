@@ -94,10 +94,9 @@ sub new {
 
 =head2 ancestral_get(string name, any default) : any
 
-Returns the named attribute if found and defined.  If not found or not defined,
-checks I<parent>'s attributes (recursively).  If none of the ancestors have the
-attribute or isn't defined, dies if I<default> not supplied or returns
-default.
+Returns the named attribute if found.  If not found, checks I<parent>'s
+attributes (recursively).  If none of the ancestors have the attribute, dies if
+I<default> not supplied or returns default.
 
 =cut
 
@@ -105,7 +104,8 @@ sub ancestral_get {
     my($self, $name, $default) = @_;
     my($fields) = $self->[$_IDI];
     while (1) {
-	return $fields->{$name} if defined($fields->{$name});
+	return $fields->{$name}
+	    if exists($fields->{$name});
 	last unless defined($fields->{parent});
 	$fields = $fields->{parent}->[$_IDI];
     }
