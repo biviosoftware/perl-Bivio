@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ClearDot;
 use strict;
 $Bivio::UI::HTML::Widget::ClearDot::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::ClearDot::VERSION;
 
 =head1 NAME
 
@@ -87,7 +88,7 @@ Creates a new ClearDot widget using I<attributes>.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(_new_args(@_));
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -204,7 +205,7 @@ sub _new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
