@@ -65,14 +65,15 @@ Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
        p3 => Bivio::IO::Config->REQUIRED,
        p4 => undef,
-       p5 => 39
+       p5 => 39,
+       p6 => 'p6',
     },
 });
 
 my($c) = main::conf_get(undef);
 main::dev_get('hello');
 my($k);
-foreach $k (qw(p3 p4 p5)) {
+foreach $k (qw(p3 p4 p5 p6)) {
     die("missing named $k") unless exists($c->{$k});
     die("bad $k, $c->{$k}") unless $c->{$k} eq $k;
 }
@@ -89,7 +90,7 @@ foreach $k (qw(p3 p4)) {
     die("missing named $k") unless exists($c->{$k});
     die("bad $k, $c->{$k}") unless $c->{$k} eq 'g'.$k;
 }
-foreach $k (qw(p5)) {
+foreach $k (qw(p5 p6)) {
     die("missing named $k") unless exists($c->{$k});
     die("bad $k, $c->{$k}") unless $c->{$k} eq $k;
 }
