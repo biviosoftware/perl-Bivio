@@ -237,8 +237,46 @@ sub add_days {
 		if FIRST_DATE_IN_JULIAN_DAYS() <= $j
 			&& $j < LAST_DATE_IN_JULIAN_DAYS();
     }
-    Bivio::IO::Alert->die('add_days range_error: ', $date_time, ' + ', $days);
+    Bivio::IO::Alert->die('range_error: ', $date_time, ' + ', $days);
     # DOES NOT RETURN
+}
+
+=for html <a name="add_seconds"></a>
+
+=head2 static add_seconds(string date_time, int seconds) : string
+
+Returns I<date_time> adjusted by I<seconds> (may be negative).
+
+Aborts on range error.
+
+=cut
+
+sub add_seconds {
+    my($proto, $date_time, $seconds) = @_;
+
+    # Compute the adjustment in seconds and days
+    my($abs) = abs($seconds);
+    my($sign) = $seconds < 0 ? -1 : 1;
+    my($secs) = $abs % SECONDS_IN_DAY();
+    my($days) = $sign * int(($abs - $secs) / SECONDS_IN_DAY() + 0.5);
+    $secs *= $sign;
+
+    # Adjust for the seconds component
+    my($j, $s) = split(' ', $date_time);
+    $s += $secs;
+
+    # Compute wrap, if any
+    if ($s < 0) {
+	$days--;
+	$s += SECONDS_IN_DAY();
+    }
+    elsif ($s >= SECONDS_IN_DAY()) {
+	$days++;
+	$s -= SECONDS_IN_DAY();
+    }
+
+    # Adjust the days component (also checks range)
+    return $proto->add_days($j.' '.$s, $days);
 }
 
 =for html <a name="can_be_negative"></a>
@@ -423,11 +461,7 @@ for the shift in daylight savings time.
 sub get_local_timezone {
     my($proto) = @_;
     my($now) = time();
-    my($sec, $min, $hour, $mday, $mon, $year) = _localtime($now);
-    ++$mon;
-    $year += 1900;
-    my($local, $err) = $proto->from_parts(
-	    $sec, $min, $hour, $mday, $mon, $year);
+    my($local, $err) = $proto->from_parts(_localtime($now));
     Bivio::Die->die('DIE', {
 	message => 'unable to convert localtime',
 	type_error => $err,
@@ -592,19 +626,23 @@ sub from_unix {
     return $j . ' ' . $s;
 }
 
-=for html <a name="localtime_as_file_name"></a>
+=for html <a name="local_now_as_file_name"></a>
 
-=head2 localtime_as_file_name() : string
+=head2 static local_now_as_file_name() : string
 
-Returns the current time in localtime as a file name.
+Returns the file name for I<now> adjusted by the I<timezone> in the
+current request.  If no request, just like now_as_file_name.
+
+See also L<now_as_filename|"now_as_filename">.
 
 =cut
 
-sub localtime_as_file_name {
+sub local_now_as_file_name {
     my($proto) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year) = _localtime(time);
-    return sprintf('%04d%02d%02d%02d%02d%02d', $year, $mon, $mday,
-	    $hour, $min, $sec);
+    my($now) = $proto->now;
+    my($tz) = _timezone();
+    $proto->add_seconds($now, -$tz) if $tz;
+    return $proto->to_file_name($now);
 }
 
 =for html <a name="max"></a>
@@ -710,10 +748,9 @@ time zone.
 =cut
 
 sub set_local_end_of_day {
-    my(undef, $date_time) = @_;
+    my($proto, $date_time) = @_;
     my($date, $time) = split(' ', $date_time);
-    my($req) = Bivio::Agent::Request->get_current;
-    my($tz) = $req->unsafe_get('timezone');
+    my($tz) = _timezone();
 
     return $date.' '.$_END_OF_DAY unless defined($tz);
     # The timezone is really a timezone offset for now.  This will
@@ -1023,6 +1060,15 @@ sub _localtime {
     $mon++;
     $year += 1900;
     return ($sec, $min, $hour, $mday, $mon, $year);
+}
+
+# _timezone() : int
+#
+# Returns the timezone from the current request or returns undef.
+#
+sub _timezone {
+    my($req) = Bivio::Agent::Request->get_current;
+    return $req->unsafe_get('timezone');
 }
 
 =head1 COPYRIGHT
