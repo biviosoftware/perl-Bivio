@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    added support for Bivio::UI::Widget::MIMEEntity
+  * Bivio::UI::Widget::MIMEEntity constructs MIME 1.0 entities from a
+    list of widgets
+
+  Revision 1.62  2003/05/08 21:48:22  moeller
+  added explicit length checking on posted form data
+  don't set cookie domain unless $_CFG->{domain}
   allow SimpleWidgetFactory to be subclassed
   added warnings when from_literal() is called in scalar context
   Checkbox now has an event_handler
