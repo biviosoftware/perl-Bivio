@@ -11,9 +11,15 @@ Bivio::Mail::Incoming - parses an incoming mail message
 =head1 SYNOPSIS
 
     use Bivio::Mail::Incoming;
-    Bivio::Mail::Incoming->new($rfc822_ref);
+    my($bim) = Bivio::Mail::Incoming->new($rfc822_ref);
     Bivio::Mail::Incoming->uninitialize();
     Bivio::Mail::Incoming->initialize($rfc822_ref);
+    $bim->get_from();
+    $bim->get_reply_to();
+    $bim->get_subject();
+    $bim->get_message_id();
+    $bim->get_dttm();
+    $bim->get_recv_dttm();
 
 =cut
 
@@ -71,11 +77,11 @@ my($_822_MAILBOX) = "(?:$_822_ADDR_SPEC|$_822_PHRASE\s+$_822_ROUTE_ADDR)";
 my($_822_GROUP) = "$_822_PHRASE:(?:$_822_MAILBOX(?:,$_822_MAILBOX)*;";
 my($_822_ADDRESS) = "(?:$_822_MAILBOX|$_822_GROUP)";
 my($_822_DAY) = "[a-zA-Z]{3}";
-my($_822_DATE) = "(\d\d?)\s*([a-zA-Z]{3})\s*(\d{2,4})";
+my($_822_DATE) = '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
 # Be flexible with times, as I have seen 17:9:12
-my($_822_TIME) = "(\d\d?):(\d\d?):(\d\d?)\s*([-+\w]{1,5})";
-my($_822_DATE_TIME) = "(?:$_822_DAY\s*,)?\s*$_822_DATE\s*$_822_TIME";
-my(%_822_MONTHS) = {
+my($_822_TIME) = '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s*([-+\\w]{1,5})';
+my($_822_DATE_TIME) = "(?:$_822_DAY\s*,)?\\s*$_822_DATE\\s*$_822_TIME";
+my(%_822_MONTHS) = (
     'JAN' => 0,
     'FEB' => 1,
     'MAR' => 2,
@@ -88,13 +94,13 @@ my(%_822_MONTHS) = {
     'OCT' => 9,
     'NOV' => 10,
     'DEC' => 11,
-};
+);
 my(%_822_TIME_ZONES) = (
     'UT' => 0,
     'GMT' => 0,
     'Z' => 0,
     'EST' => -500,
-    'EDT' => -400,
+    'EDT' => -400,
     'CST' => -600,
     'CDT' => -700,
     'MST' => -700,
@@ -186,37 +192,29 @@ Returns the date specified by the message
 sub get_dttm {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return;
+    exists($fields->{dttm}) && return $fields->{dttm};
+    my($date) = &_get_field($fields, 'date:');
+    unless (defined($date)) {
+	warn("no Date");
+	&_trace('no Date') if $_TRACE;
+	return $fields->{dttm} = undef;
+    }
+    $fields->{dttm} = &_parse_date($date);
+    &_trace($date, ' -> ', $fields->{dttm}) if $_TRACE;
+    return $fields->{dttm};
 }
 
-=for html <a name="get_errors_to"></a>
+=for html <a name="get_from"></a>
 
-=head2 get_errors_to() : string
+=head2 get_from() : (string addr, string name)
 
-Returns the sender of the message, i.e. where errors should be sent to.
+=head2 get_from() : string addr
+
+Return <I>From:</I> email address and name or just email if not array context.
 
 =cut
 
-sub get_errors_to {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-#            o   The "Sender" field mailbox should be sent  notices  of
-#                any  problems in transport or delivery of the original
-#                messages.  If there is no  "Sender"  field,  then  the
-#                "From" field mailbox should be used.
-
-    return;
-}
-
-=for html <a name="get_from_email"></a>
-
-=head2 get_from_email() : string
-
-Return the email address of the message.
-
-=cut
-
-sub get_from_email {
+sub get_from {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     exists($fields->{from_email}) && return $fields->{from_email};
@@ -225,12 +223,17 @@ sub get_from_email {
     my($from) = &_get_field($fields, 'from:')
 	    || &_get_field($fields, 'apparently-from:');
     unless (defined($from)) {
-	warn("no from in message");
+	warn("no From");
+	&_trace('no From') if $_TRACE;
+	$fields->{from_email} = undef;
 	$fields->{from_name} = undef;
-	return $fields->{from_email} = undef;
+	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{from_email}, $fields->{from_name}) = &_parse_addr($from);
-    return $fields->{from_email};
+    &_trace($from, ' -> (', $fields->{from_email}, ',',
+	   $fields->{from_name}, ')') if $_TRACE;
+    return wantarray ? ($fields->{from_email}, $fields->{from_name})
+	    : $fields->{from_email};
 }
 
 =for html <a name="get_message_id"></a>
@@ -245,15 +248,18 @@ sub get_message_id {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     exists($fields->{message_id}) && return $fields->{message_id};
-    my($id) = &_get_field($fields, 'message_id');
+    my($id) = &_get_field($fields, 'message-id:');
     unless (defined($id)) {
 	warn("no message-id");
+	&_trace('no Message-Id') if $_TRACE;
 	return $fields->{message_id} = undef;
     }
 #RJN: Should really parse this, but I mean RIIILLY....
-    $id =~ s/^\s+//;
-    $id =~ s/\s+$//;
-    return $fields->{message_id} = $id;
+    $id =~ s!^\s+!!s;
+    $id =~ s!\s+$!!s;
+    $fields->{message_id} = $id;
+    &_trace($fields->{message_id}) if $_TRACE;
+    return $id;
 }
 
 =for html <a name="get_recv_dttm"></a>
@@ -270,25 +276,59 @@ sub get_recv_dttm {
     return $fields->{recv_dttm};
 }
 
-=for html <a name="get_reply_to_email"></a>
+=for html <a name="get_reply_to"></a>
 
-=head2 get_reply_to_email() : string
+=head2 get_reply_to() : (string addr, string name)
 
-Returns the reply-to.  May be undef if no reply-to.
+=head2 get_reply_to() : string addr
+
+Return I<Reply-To:> email address and name or just email
+if not array context.
 
 =cut
 
-sub get_reply_to_email {
+sub get_reply_to {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     exists($fields->{reply_to}) && return $fields->{reply_to};
     my($reply_to) = &_get_field($fields, 'reply-to:');
     unless (defined($reply_to)) {
-	return $fields->{reply_to_email} = undef;
+	&_trace('no Reply-To') if $_TRACE;
+	$fields->{reply_to_email} = undef;
+	$fields->{reply_to_name} = undef;
+	return wantarray ? (undef, undef) : undef;
     }
     ($fields->{reply_to_email}, $fields->{reply_to_name})
 	    = &_parse_addr($reply_to);
-    return $fields->{reply_to_email};
+    &_trace($reply_to, ' -> (', $fields->{reply_to_email}, ',',
+	   $fields->{reply_to_name}, ')') if $_TRACE;
+    return wantarray ? ($fields->{reply_to_email}, $fields->{reply_to_name})
+	    : $fields->{reply_to_email};
+}
+
+=for html <a name="get_subject"></a>
+
+=head2 get_subject() : string
+
+Returns I<Subject>
+
+
+=cut
+
+sub get_subject {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    exists($fields->{subject}) && return $fields->{subject};
+    my($subject) = &_get_field($fields, 'subject:');
+    unless (defined($subject)) {
+	&_trace('no Subject') if $_TRACE;
+	return $fields->{subject} = undef;
+    }
+    $subject =~ s/^\s+//s;
+    $subject =~ s/\s+$//s;
+    $fields->{subject} = $subject;
+    &_trace($fields->{subject}) if $_TRACE;
+    return $subject;
 }
 
 =for html <a name="uninitialize"></a>
@@ -356,17 +396,17 @@ sub initialize {
 
 sub _clean_comment {
     local($_) = @_;
-    s/^\(// || die("not a comment");
+    s/^\(//s || die("not a comment: $_");
     chop;
-    s/\\(.)/$1/g;
+    s/\\(.)/$1/gs;
     return $_;
 }
 
 sub _clean_quoted_string {
     local($_) = @_;
-    s/^"// || die("not a quoted string");
+    s/^"//s || die("not a quoted string: $_");
     chop;
-    s/\\(.)/$1/g;
+    s/\\(.)/$1/gs;
     return $_;
 }
 
@@ -375,7 +415,10 @@ sub _get_field {
     my($fields, $name) = @_;
     # May be that the field is undefined.
     unless (exists($fields->{$name})) {
-	($fields->{$name}) = $fields->{header} =~ /^$name\s*(.*)/im;
+	# Must not be \s, because maps to newline.  If the field is
+	# empty, will grab next field (line).
+	# CPERL-BUG: (?: |\t) is necessary because $name[ \t] would be bad
+	($fields->{$name}) = $fields->{header} =~ /^$name(?: |\t)*(.*)/im;
     }
     return $fields->{$name};
 }
@@ -421,23 +464,24 @@ sub _get_field {
 # addresses, only grabs the first one.
 sub _parse_addr {
     local($_) = @_;
-    s/^\s+//;
+    s/^\s+//s;
     my($n, $a);
     # Cases are optimized by their statistical counts.
     # Joe Bob <joe@bob.com>
-    if (($n, $a) = /^($_822_ATOM_ONLY_PHRASE)\s*\<($_822_ATOM_ONLY_ADDR)\>/o) {
+    if (($n, $a)
+	    = /^($_822_ATOM_ONLY_PHRASE)\s*\<($_822_ATOM_ONLY_ADDR)\>/os) {
 	return ($a, $n);
     }
     # "Joe Bob" <joe@bob.com>
-    if (($n, $a) = /^$_822_QUOTED_STRING\s*\<($_822_ATOM_ONLY_ADDR)\>/o) {
+    if (($n, $a) = /^($_822_QUOTED_STRING)\s*\<($_822_ATOM_ONLY_ADDR)\>/os) {
 	return ($a, &_clean_quoted_string($n));
     }
     # joe@bob.com -- grab first addr, not allowing comment
-    if (($n, $a) = /^($_822_ATOM_ONLY_PHRASE)\s*(?:,|$)/o) {
-	return ($a, $n);
+    if (($a) = m!^($_822_ATOM_ONLY_ADDR)\s*(?:,|$)!os) {
+	return ($a, undef);
     }
     # joe@bob.com (Joe Bob)
-    if (($a, $n) = /^($_822_ATOM_ONLY_ADDR)\s*$_822_NOT_NESTED_COMMENT/o) {
+    if (($a, $n) = m!^($_822_ATOM_ONLY_ADDR)\s*$_822_NOT_NESTED_COMMENT!o) {
 	return ($a, &_clean_comment($n));
     }
     &_parse_complex_addr($_);
@@ -451,8 +495,8 @@ sub _parse_complex_addr {
 
 sub _parse_date {
     local($_) = @_;
-    my($mday, $mon, $year, $hour, $min, $sec, $tz) = /^$_822_DATE_TIME/o;
-    defined($mday) || return &_parse_complex_addr($_);
+    my($mday, $mon, $year, $hour, $min, $sec, $tz) = /^$_822_DATE_TIME/os;
+    defined($mday) || return &_parse_complex_date($_);
     $mon = uc($mon);
     if (defined($_822_MONTHS{$mon})) {
 	$mon = $_822_MONTHS{$mon};
@@ -461,17 +505,16 @@ sub _parse_date {
 	warn("month \"$mon\" unknown in date \"$_\"");
 	$mon = 0;
     }
-    $tz = uc($mon);
+    $tz = uc($tz);
     if (defined($_822_TIME_ZONES{$tz})) {
 	$tz = $_822_TIME_ZONES{$tz};
     }
     my($dttm) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
-    if ($tz =~ /^(-|+?)(\d\d?)(\d\d)/) {
-	$dttm = ($1 eq '-' ? +1 : -1) * ($2 * 60 + $3);
+    if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
+	$dttm -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
     } else {
 	warn("timezone \"$tz\" unknown in date \"$_\"");
     }
-    &_trace($_, ' -> ', $dttm) if $_TRACE;
     return $dttm;
 }
 
