@@ -156,14 +156,16 @@ sub attach {
     my($self, $content, $type, $name, $binary) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    Bivio::MIME::Type->to_extension($type)
-            || Carp::croak("$type: not a valid type");
+#TODO: We can't keep this list perfectly up to date.
+#    Bivio::MIME::Type->to_extension($type)
+#            || Carp::croak("$type: not a valid type");
     defined($binary) || ($binary = 0);
     my($part) = { content => $content, type => $type, binary => $binary };
     if (defined($name)) {
-        my($from_suffix) = Bivio::MIME::Type->from_extension($name);
-        $from_suffix eq $type
-            || Carp::croak("$name: suffix does not match type");
+#TODO: We can't keep this list perfectly up to date.
+#        my($from_suffix) = Bivio::MIME::Type->from_extension($name);
+#        $from_suffix eq $type
+#            || Carp::croak("$name: suffix does not match type");
         $part->{name} = $name;
     }
     push(@{$fields->{parts}}, $part);
@@ -376,13 +378,12 @@ sub as_string {
         defined($fields->{body}) &&
                 Bivio::IO::Alert->warn("ignoring body, have attachments");
         _encapsulate_parts(\$res, $fields->{content_type}, $fields->{parts});
-    } else {
-        if (defined($fields->{body})) {
-            defined($fields->{content_type})
-                    && ($res .= "Content-Type: $fields->{content_type}\n");
-            $res .= "\n" . (ref($fields->{body}) ?
-                    ${$fields->{body}} : $fields->{body});
-        }
+    }
+    elsif (defined($fields->{body})) {
+	defined($fields->{content_type})
+		&& ($res .= "Content-Type: $fields->{content_type}\n");
+	$res .= "\n" . (ref($fields->{body}) ?
+		${$fields->{body}} : $fields->{body});
     }
     return $res;
 }
@@ -412,7 +413,8 @@ EOF
         if ($p->{type} =~ m!^text/! && !$p->{binary}) {
             $$buf .= "\nContent-Transfer-Encoding: 7bit\n\n";
             $$buf .= ${$p->{content}} . "\n\n";
-        } else {
+        }
+	else {
             $$buf .= "\nContent-Transfer-Encoding: base64\n\n";
             $$buf .= MIME::Base64::encode(${$p->{content}});
         }
