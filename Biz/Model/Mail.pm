@@ -85,7 +85,8 @@ sub create {
     my($realm_id, $realm_name) = $realm_owner->get('realm_id', 'name');
 
     # Use $date if Date: field can't be parsed (now as last resort)
-    my($date_time) = $msg->get_date_time() || $date || time;
+    my($date_time) = $msg->get_date_time();
+    $date_time = $date || time unless defined($date_time);
     my($from_email, $from_name) = $msg->get_from;
     unless (defined($from_email)) {
 	$_UNKNOWN_ADDRESS = $req->format_email(
