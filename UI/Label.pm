@@ -190,6 +190,8 @@ _compile(
     CLUB_LEGACY_SECURITY_RECONCILIATION => ['Identify Listed Investments'],
     CLUB_LEGACY_UPLOAD => ['Import NAIC Club Accounting(tm)'],
     CLUB_MAIL_DELETE => ['Mail Delete'],
+    CLUB_MAIL_POST => ['Compose Message'],
+    CLUB_MAIL_FORWARD => ['Forward Message'],
     CLUB_OPEN_BALANCE => ['Edit Opening Balances'],
     GENERAL_PRIVACY => ['Safe and Private'],
     HELP => ['Help'],
