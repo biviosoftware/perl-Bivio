@@ -6,6 +6,7 @@ use strict;
 
 my($prog);
 ($prog = $0) =~ s,.*/,,;
+$|++;
 
 require 'timelocal.pl';
 
@@ -221,7 +222,7 @@ sub check_diskuse {
     my($cmd) = 'df -k -t ext2';
     my(@out) = `$cmd`;
     my($err);
-    $? && (warn("problem executing '$cmd'"), $err = 1);
+    $? && (print("problem executing '$cmd'"), $err = 1);
     foreach (@out) {
         # Filesystem            kbytes    used   avail capacity  Mounted on
         # /dev/sd0a               7255    3764    2765    58%    /
@@ -233,7 +234,7 @@ sub check_diskuse {
             $mount =~ m!^$_$! && ($max_cap = $max_cap_fs{$_}, last);
         }
         if ($cap > $max_cap) {
-            warn("WARNING: $mount ($dev) is over $max_cap% full ($cap%)\n");
+            print("WARNING: $mount ($dev) is over $max_cap% full ($cap%)\n");
             $err = 1;
         }
     }
@@ -241,7 +242,7 @@ sub check_diskuse {
     # Check inode use
     $cmd = 'df -i -t ext2';
     @out = `$cmd`;
-    $? && (warn("problem executing '$cmd'"), $err = 1);
+    $? && (print("problem executing '$cmd'"), $err = 1);
     foreach (@out) {
         # Filesystem            Inodes   IUsed   IFree IUse% Mounted on
         # /dev/sda6            1660928   54301 1606627    3% /home
@@ -251,7 +252,7 @@ sub check_diskuse {
         my($max_iused) = (defined $max_iused_fs{$mount}
                       ? $max_iused_fs{$mount} : $max_iused_dflt);
         if ($iused > $max_iused) {
-            warn("WARNING: $mount ($dev) inodes are over $max_iused% used ($iused%)\n");
+            print("WARNING: $mount ($dev) inodes over $max_iused% used ($iused%)\n");
             $err = 1;
         }
     }
@@ -268,9 +269,18 @@ sub check_raid {
     my($mdfile) = '/proc/mdstat';
     if (open(F, $mdfile)) {
         while(<F>) {
-            /^md\d+.+_/ && warn("WARNING: $mdfile: $_");
+            /^md\d+.+_/ && print("WARNING: $mdfile: $_");
         }
         close(F);
+    }
+    $mylex_status = '/proc/rd/status';
+    if (open(F, $mylex_status )) {
+        $status = <F>;
+        close(F);
+        if ($status !~ /^OK/) {
+            print("WARNING: $mylex_status: $status");
+            system("grep Critical /proc/rd/*/current_status");
+        }
     }
 }
 
