@@ -827,8 +827,9 @@ sub _parse_page_number {
 sub _parse_parent_id {
     my($attrs, $support, $die) = @_;
 
-    # Returns undef if no parent_id
-    $attrs->{parent_id} = Bivio::Type::PrimaryId->from_literal($attrs->{'p'});
+    # Returns undef if no parent_id or bad parent id
+    ($attrs->{parent_id})
+	    = Bivio::Type::PrimaryId->from_literal($attrs->{'p'});
 
     # If the parent id is set and we aren't expecting it, will be ignored
     return if $attrs->{parent_id};
