@@ -124,7 +124,7 @@ sub new {
     unless (defined($in)) {
         $self->get_head->add('Date', Bivio::Type::DateTime->rfc822);
         $self->get_head->add('Content-Type', 'text/plain');
-        $self->get_head->add('MIME-Version', '1');
+        $self->get_head->add('MIME-Version', '1.0');
     }
     return $self;
 }
