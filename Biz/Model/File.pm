@@ -608,8 +608,7 @@ sub _update_directory {
 		volume => $properties->{volume},
 		is_directory => 1);
 	$dir->update({modified_date_time => $properties->{modified_date_time},
-	    user_id => $properties->{user_id}},
-		1);
+	    user_id => $properties->{user_id}});
     }
     _update_quota($self, $properties, $kbytes)
 	    if $kbytes && $properties->{volume}->in_quota;
