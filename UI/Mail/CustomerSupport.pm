@@ -54,11 +54,14 @@ sub enqueue_message {
     $msg->set_header('From', $_FROM);
     $msg->set_header('To', $recipient);
     $msg->set_header('Subject', $subject);
+#TODO: Put a break in here, because the mail TextFormatter doesn't get it
     $body .= <<"EOF";
 
 Thank you for using bivio,
+
 Your Customer Support Team
 ________________________________________________________________
+
 If you believe you have received this message in error, please
 reply to this message or call $_PHONE and we will remove
 your email address from our database.  We apologize for any
