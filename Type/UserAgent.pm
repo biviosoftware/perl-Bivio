@@ -111,7 +111,7 @@ sub put_on_request {
 	: $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3;
     $req->put_durable(
 	ref($self) => $self,
-	'Type.'.$self->simple_package_name,
+	'Type.'.$self->simple_package_name => $self,
     );
     return;
 }
