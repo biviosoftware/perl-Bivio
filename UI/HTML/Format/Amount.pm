@@ -84,6 +84,7 @@ sub get_widget_value {
     }
     else {
 	$num = $amount;
+        $num =~ s/^[+-]//;
     }
 
     # put ',' in the number
