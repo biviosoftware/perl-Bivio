@@ -253,6 +253,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
 		    'mod_ssl: SSL handshake interrupted by system',
 		    'Invalid method in request',
+		    'Facade::setup_request:.*: unknown facade uri',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
