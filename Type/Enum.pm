@@ -31,6 +31,7 @@ Bivio::Type::Enum - base class for enumerated types
     __PACKAGE__->from_any('NAME');
     __PACKAGE__->from_any(0);
     __PACKAGE__->from_any(__PACKAGE__->from_int(0));
+    __PACKAGE__->execute_NAME;
 
 =cut
 
@@ -149,7 +150,7 @@ sub unsafe_from_any {
 
 =for html <a name="execute"></a>
 
-=head2 execute(Bivio::Agent::Request req)
+=head2 execute(Bivio::Agent::Request req) : boolean
 
 Put I<self> on the request as its class.
 
@@ -159,7 +160,7 @@ sub execute {
     my($self, $req) = @_;
     Carp::croak('not a reference') unless ref($self);
     $req->put(ref($self) => $self);
-    return;
+    return 0;
 }
 
 =for html <a name="get_count"></a>

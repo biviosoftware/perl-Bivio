@@ -63,7 +63,7 @@ sub get_instance {
 
 =for html <a name="execute"></a>
 
-=head2 abstract execute(Bivio::Biz::Request req)
+=head2 abstract execute(Bivio::Biz::Request req) : boolean
 
 Call this method to perform the action on I<req>.  The form and
 query associated with the request will be used to find the models

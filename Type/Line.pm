@@ -56,7 +56,7 @@ Leading and trailing blanks are trimmed.
 sub from_literal {
     my(undef, $value) = @_;
     return undef unless defined($value);
-    # Leave middle spaces in case a "display" name.
+    # Leave middle spaces in case a "display" or file name.
     $value =~ s/^\s+|\s+$//g;
     return undef unless length($value);
     return $value;

@@ -228,9 +228,9 @@ sub clear_errors {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request)
+=head2 static execute(Bivio::Agent::Request) : boolean
 
-=head2 static execute(Bivio::Agent::Request, hash_ref values)
+=head2 static execute(Bivio::Agent::Request, hash_ref values) : boolean
 
 There are two modes:
 
@@ -269,7 +269,7 @@ sub execute {
 	$fields->{literals} = {};
 	_initialize_context($self, $req);
 	$self->execute_input();
-	return unless $fields->{errors};
+	return 0 unless $fields->{errors};
 	Carp::croak($self->as_string, ": called with invalid values");
     }
 
@@ -296,7 +296,7 @@ sub execute {
 	$fields->{literals} = {};
 	_initialize_context($self, $req) unless $fields->{context};
 	$self->execute_empty;
-	return;
+	return 0;
     }
 
     # User submitted a form, parse, validate, and execute
@@ -305,7 +305,7 @@ sub execute {
     $fields->{literals} = $input;
 
     # Don't rollback, because unwind doesn't necessarily mean failure
-    return unless _parse($self, $input);
+    return 0 unless _parse($self, $input);
 
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
@@ -334,7 +334,7 @@ sub execute {
     # Some type of error, rollback and fall through to the next
     # task items.
     Bivio::Agent::Task->rollback;
-    return;
+    return 0;
 }
 
 
@@ -436,6 +436,7 @@ sub get_context_from_request {
 	form => $form,
 	form_context => $context,
 	query => $req->unsafe_get('query'),
+	path_info => $req->unsafe_get('path_info'),
 	unwind_uri => $req->unsafe_get('uri'),
     };
     my($cancel) = $req->get('task')->unsafe_get('cancel');
@@ -1105,6 +1106,7 @@ sub _initialize_context {
 	    unwind_uri => $req->format_stateless_uri($task->get('next')),
 	    cancel_uri => $req->format_stateless_uri($task->get('cancel')),
 	    query => undef,
+	    path_info => undef,
 	    # Only create a form if there is a form_model on next task
 	    form => undef,
 	    form_context => undef,
@@ -1372,7 +1374,8 @@ sub _redirect {
 		'?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
 	# better.
-	$req->client_redirect($c->{unwind_uri}, $c->{'query'});
+	$req->client_redirect($c->{unwind_uri}, $c->{'query'},
+		$c->{'path_info'});
 	# DOES NOT RETURN
     }
 
@@ -1397,7 +1400,7 @@ sub _redirect {
     # Redirect calls us back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_uri},
 	    '?', $c->{query}) if $_TRACE;
-    $req->server_redirect($c->{unwind_uri}, $c->{query}, $f);
+    $req->server_redirect($c->{unwind_uri}, $c->{query}, $f, $c->{path_info});
     # DOES NOT RETURN
 }
 

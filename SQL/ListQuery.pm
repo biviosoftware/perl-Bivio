@@ -339,6 +339,26 @@ sub format_uri_for_this_parent {
     return $res;
 }
 
+=for html <a name="format_uri_for_this_path"></a>
+
+=head2 static format_uri_for_this_path(Bivio::SQL::Support support, hash_ref this_row) : string
+
+Generates the query string (URL-encoded) for this detail, but doesn't
+include "this".
+
+May be called statically iwc the version is pulled from support.
+
+=cut
+
+sub format_uri_for_this_path {
+    my($self, $support, $this_row) = @_;
+    my(%attrs) = ref($self) ? %{$self->internal_get()} :
+	    (version => $support->get('version'));
+    $attrs{this} = undef;
+    $attrs{page_number} = undef;
+    return _format_uri(\%attrs, $support);
+}
+
 =for html <a name="get_hidden_field_values"></a>
 
 =head2 get_hidden_field_values(Bivio::SQL::Support sql_support) : array_ref

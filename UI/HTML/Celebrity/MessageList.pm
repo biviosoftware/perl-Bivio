@@ -115,7 +115,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 execute()
+=head2 execute() : boolean
 
 
 =cut
@@ -147,8 +147,7 @@ sub execute {
 		    Bivio::Agent::TaskId::CELEBRITY_MESSAGE_DETAIL(),
 		    undef)
 	   );
-    Bivio::UI::HTML::Celebrity::Page->execute($req);
-    return;
+    return Bivio::UI::HTML::Celebrity::Page->execute($req);
 
 }
 

@@ -167,7 +167,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request req)
+=head2 static execute(Bivio::Agent::Request req) : boolean
 
 Looks up celebrity's realm name in page map.
 
@@ -188,8 +188,7 @@ sub execute {
 	    page_heading => '',
 	    page_type => $page_type,
 	    tool_bar_nav => $_NAV_BAR_MAP->{$page_type});
-    $_MAP->{$owner_name}->SUPER::execute($req);
-    return;
+    return $_MAP->{$owner_name}->SUPER::execute($req);
 }
 
 =for html <a name="internal_menu_cfg"></a>

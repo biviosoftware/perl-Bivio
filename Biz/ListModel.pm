@@ -145,7 +145,7 @@ sub new_anonymous {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request req)
+=head2 static execute(Bivio::Agent::Request req) : boolean
 
 Loads a new instance of this model using the request.
 
@@ -154,7 +154,7 @@ Loads a new instance of this model using the request.
 sub execute {
     my($proto, $req) = @_;
     $proto->new($req)->load_from_request();
-    return;
+    return 0;
 }
 
 =for html <a name="execute_load_all"></a>
@@ -168,7 +168,7 @@ Loads "all" records of this model.
 sub execute_load_all {
     my($proto, $req) = @_;
     $proto->new($req)->load_all();
-    return;
+    return 0;
 }
 
 =for html <a name="execute_load_page"></a>
@@ -183,7 +183,7 @@ sub execute_load_page {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     $self->load({count => $self->PAGE_SIZE});
-    return;
+    return 0;
 }
 
 =for html <a name="format_query"></a>
@@ -192,7 +192,8 @@ sub execute_load_page {
 
 =head2 format_query(string type) : string
 
-Just the query part of L<format_uri|"format_uri">.
+Just the query part of L<format_uri|"format_uri">.  May return undef
+if this QueryType doesn't have a query (e.g. I<THIS_PATH_NO_QUERY>).
 
 =cut
 
@@ -203,10 +204,14 @@ sub format_query {
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
+    # Get the query using the method defined in QueryType
+    my($method) = $type->get_short_desc;
+    return undef unless $method;
+
     # Determine if need to pass in current row
     my($arg);
 
-    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST/) {
+    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|THIS_PATH/) {
 	my($c) = $fields->{cursor};
 	Carp::croak('no cursor') unless defined($c) && $c >= 0;
 	$arg = $self->internal_get();
@@ -215,8 +220,6 @@ sub format_query {
 	Carp::croak('not loaded') unless $fields->{rows};
     }
 
-    # Get the query using the method defined in QueryType
-    my($method) = $type->get_short_desc;
 #TODO: may not be the right place to escape the uri
     return Bivio::Util::escape_uri($fields->{query}->$method(
 	    $self->internal_get_sql_support(), $arg));
@@ -236,6 +239,11 @@ Returns the formatted uri for I<type> based on the existing query
 bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
 or I<list_uri> depending on the type.
 
+If the type is I<THIS_PATH>, the list must have a I<path_info> attribute
+which doesn't begin with a leading slash.  See
+L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>
+for an example.
+
 =cut
 
 sub format_uri {
@@ -245,10 +253,16 @@ sub format_uri {
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
-    my($query) = $self->format_query($type);
-
     # Need to get the list_uri or detail_uri from the request?
     $uri ||= $self->get_request->get($type->get_long_desc);
+
+    if ($type->get_name =~ /THIS_PATH/) {
+	my($pi) = $self->get('path_info');
+	$uri .= '/'.$pi if length($pi);
+    }
+    my($query) = $self->format_query($type);
+
+    return $uri unless $query;
 
     # Push the query on the front of the form context.
     $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
@@ -834,7 +848,7 @@ sub _assert_all {
 }
 
 =head1 COPYRIGHT
-v
+
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION

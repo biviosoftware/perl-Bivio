@@ -72,7 +72,7 @@ sub new {
 	is_secure => $ENV{HTTPS} ? 1 : 0,
     });
     my($uri) = $r->uri;
-    my($task_id, $auth_realm)
+    my($task_id, $auth_realm, $path_info)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
     my($auth_user) = Bivio::Agent::HTTP::Cookie->parse($self, $r);
 #TODO: Make secure.  Need to watch for large queries and forms here.
@@ -82,7 +82,8 @@ sub new {
 #TODO: Apache bug: ?bla&foo=1 will generate "odd number elements in hash"
 #      warning.
     my($query) = defined($qs) ? {$r->args} : undef;
-    _trace($r->method, ': query=', $query) if $_TRACE;
+    _trace($r->method, ': query=', $query, '; path_info=', $path_info)
+	    if $_TRACE;
 
     # AUTH: Make sure the auth_id is NEVER set by the user.
     #       We are making a presumption about how the models work.
@@ -93,6 +94,7 @@ sub new {
     $self->put(
 	    uri => $uri,
 	    query => $query,
+	    path_info => $path_info,
 	    task_id => $task_id,
 	   );
     $self->internal_initialize($auth_realm, $auth_user);
@@ -105,9 +107,9 @@ sub new {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(string new_uri, hash_ref new_query)
+=head2 client_redirect(string new_uri, hash_ref new_query, string new_path_info)
 
-=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query)
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info)
 
 Client side redirect to the new task within the new realm.  If I<new_task>
 is the same as the current task, does an server_redirect.  Otherwise,
@@ -123,22 +125,25 @@ sub client_redirect {
     # when redirecting to same uri.
     my($uri);
     if (ref($_[0])) {
-	my($new_task, $new_realm, $new_query) = @_;
+	my($new_task, $new_realm, $new_query, $new_path_info) = @_;
 
 	# use previous query if not specifed, maintains state across pages
 	$new_query ||= $self->get('query');
+	$new_path_info ||= $self->unsafe_get('path_info');
 
 	# server_redirect if same task or if task doesn't have a uri
-	$self->SUPER::server_redirect($new_task, $new_realm, $new_query)
+	$self->SUPER::server_redirect($new_task, $new_realm, $new_query,
+		$new_path_info)
 		if $new_task eq $self->get('task_id')
 		    || !Bivio::Agent::HTTP::Location->task_has_uri($new_task);
 
 	$self->internal_redirect_realm($new_task, $new_realm);
-	$uri = $self->format_uri($new_task, $new_query);
-
+	$uri = $self->format_uri($new_task, $new_query, $new_realm,
+		$new_path_info);
     }
     else {
-	my($new_uri, $new_query) = @_;
+	my($new_uri, $new_query, $new_path_info) = @_;
+	$new_uri .= $new_path_info if $new_path_info;
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
@@ -202,14 +207,14 @@ sub get_form {
 
 =for html <a name="server_redirect"></a>
 
-=head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form)
+=head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
 
-=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
 
 Server-side (aka internal) redirect to the new task within the new realm.
 
-If I<new_uri> supplied, parses out the task and realm from the uri
-and then calls C<SUPER::redirect>.
+If I<new_uri> supplied, parses out the task, realm, and new_path_info
+from the uri and then calls C<SUPER::redirect>.
 
 B<DOES NOT RETURN.>
 
@@ -222,16 +227,19 @@ sub server_redirect {
 
     # Need to parse out task from uri
     my($new_uri) = shift;
-    my($new_task, $new_realm) = Bivio::Agent::HTTP::Location->parse(
-	    $self, $new_uri);
+    die('too many args') if int(@_) > 3;
+    my($new_task, $new_realm, $new_path_info)
+	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
+    # Replace path_info (if not set)
+    $_->[2] ||= $new_path_info;
     $self->SUPER::server_redirect($new_task, $new_realm, @_);
 }
 
 =for html <a name="server_redirect_in_handle_die"></a>
 
-=head2 server_redirect_in_handle_die(string new_uri, hash_ref new_query, hash_ref new_form)
+=head2 server_redirect_in_handle_die(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
 
-=head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form)
+=head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
 
 Server-side (aka internal) redirect to the new task within the new realm.
 
@@ -250,8 +258,11 @@ sub server_redirect_in_handle_die {
 
     # Need to parse out task from uri
     my($new_uri) = shift;
-    my($new_task, $new_realm) = Bivio::Agent::HTTP::Location->parse(
-	    $self, $new_uri);
+    die('too many args') if int(@_) > 3;
+    my($new_task, $new_realm, $new_path_info)
+	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
+    # Replace new_path_info (if not set)
+    $_->[2] ||= $new_path_info;
     $self->SUPER::server_redirect_in_handle_die($die, $new_task,
 	    $new_realm, @_);
     return;

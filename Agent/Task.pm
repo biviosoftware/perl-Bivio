@@ -225,6 +225,8 @@ Executes the task for the specified request.  Checks that the request is
 authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
 Calls C<reply-E<gt>send>.
 
+If I<execute> returns true, stops item execution.
+
 B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
 the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
@@ -244,7 +246,8 @@ sub execute {
     my($i);
     foreach $i (@{$attrs->{items}}) {
 	my($instance, $method) = @$i;
-	defined($instance) ? $instance->$method($req) : &$method($req);
+	# Don't continue if returns true.
+	last if defined($instance) ? $instance->$method($req) : &$method($req);
     }
     _commit($req);
     $req->get('reply')->send($req);

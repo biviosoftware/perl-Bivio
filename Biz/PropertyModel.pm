@@ -116,7 +116,7 @@ sub delete {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request req)
+=head2 static execute(Bivio::Agent::Request req) : boolean
 
 Loads a new instance of this module using the request.
 
@@ -125,12 +125,12 @@ Loads a new instance of this module using the request.
 sub execute {
     my($proto, $req) = @_;
     $proto->new($req)->load_from_request();
-    return;
+    return 0;
 }
 
 =for html <a name="execute_auth_user"></a>
 
-=head2 static execute_auth_user(Bivio::Agent::Request req)
+=head2 static execute_auth_user(Bivio::Agent::Request req) : boolean
 
 Loads this auth user's data as if realm_id.
 
@@ -142,12 +142,12 @@ sub execute_auth_user {
     Bivio::IO::Alert->die('no auth_user') unless $user;
     my($self) = $proto->new($req);
     $self->unauth_load(realm_id => $user->get('realm_id'));
-    return;
+    return 0;
 }
 
 =for html <a name="execute_auth_realm"></a>
 
-=head2 static execute_load(Bivio::Agent::Request req)
+=head2 static execute_load(Bivio::Agent::Request req) : boolean
 
 Loads this model using no params except auth_id.
 
@@ -156,7 +156,7 @@ Loads this model using no params except auth_id.
 sub execute_load {
     my($proto, $req) = @_;
     $proto->new($req)->load();
-    return;
+    return 0;
 }
 
 =for html <a name="format_query"></a>

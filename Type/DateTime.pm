@@ -560,6 +560,22 @@ sub to_string {
 	    $hour, $min, $sec);
 }
 
+=for html <a name="to_unix"></a>
+
+=head2 to_unix(string date_time) : int
+
+Returns unix time or blows up if before epoch.
+
+=cut
+
+sub to_unix {
+    my(undef, $date_time) = @_;
+    my($date, $time) = split(/\s+/, $date_time);
+    die($date, ': date before unix epoch')
+	    if $date < UNIX_EPOCH_IN_JULIAN_DAYS();
+    return ($date - UNIX_EPOCH_IN_JULIAN_DAYS()) * SECONDS_IN_DAY() + $time;
+}
+
 #=PRIVATE METHODS
 
 # _initialize()

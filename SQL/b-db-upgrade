@@ -188,6 +188,48 @@ sub _upgrade {
 		    Bivio::Type::EntryClass::INSTRUMENT->as_int,
 	    ]);
 
+    _upgrade_files();
+    return;
+}
+
+# _upgrade_files()
+#
+#
+#
+sub _upgrade_files {
+    use Bivio::Biz::Model::RealmAdminList;
+    use Bivio::Biz::Model::RealmOwner;
+
+    my($sth) = _do('select realm_id, file_id, name from file_t');
+    my(@files);
+    my(%realms);
+    while (my $row = $sth->fetchrow_arrayref()) {
+	next unless $row->[2] =~ s![\\/:*?"<>|]!-!g;
+	push(@files, {
+	    file_id => $row->[1],
+	    name => $row->[2],
+	});
+	$realms{$row->[0]}++;
+    }
+    $sth->finish;
+
+    foreach my $file (@files) {
+	my($name) = $file->{name};
+	print STDERR $file->{name}, "\n";
+	$sth = Bivio::SQL::Connection->execute('
+            UPDATE file_t
+            SET name = ?
+            WHERE file_id = ?', [$file->{name}, $file->{file_id}]);
+    }
+
+    my($admins) = Bivio::Biz::Model::RealmAdminList->new();
+    my($realm) = Bivio::Biz::Model::RealmOwner->new();
+    foreach my $realm_id (keys(%realms)) {
+	$realm->unauth_load_or_die(realm_id => $realm_id);
+	$admins->unauth_load_all({auth_id => $realm_id});
+	print join(' ', $realms{$realm_id}, $realm_id,
+		$realm->get('name'), $admins->get_outgoing_emails());
+    }
     return;
 }
 

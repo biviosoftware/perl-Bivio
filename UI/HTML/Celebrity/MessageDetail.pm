@@ -81,7 +81,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 execute()
+=head2 execute() : boolean
 
 
 =cut
@@ -112,9 +112,7 @@ sub execute {
 	    detail_uri => $req->format_uri($req->get('task_id'), undef),
 	    reply_subject => $reply_subject,
 	   );
-    Bivio::UI::HTML::Celebrity::Page->execute($req);
-    return;
-
+    return Bivio::UI::HTML::Celebrity::Page->execute($req);
 }
 
 #=PRIVATE METHODS

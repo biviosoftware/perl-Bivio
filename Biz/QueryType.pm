@@ -60,6 +60,16 @@ C<format_uri_for_this_page>
 
 C<format_uri_for_this_child>
 
+=item THIS_PATH
+
+Calls C<format_uri_for_this_path>.  The list must have a
+I<path_info> attribute.
+
+=item THIS_PATH_NO_QUERY
+
+The list must have a I<path_info> attribute, but doesn't include
+the query string.
+
 =back
 
 =cut
@@ -77,6 +87,8 @@ __PACKAGE__->compile(
     THIS_LIST => [6, 'format_uri_for_this_page', 'list_uri'],
     THIS_CHILD_LIST => [7, 'format_uri_for_this_child', 'detail_uri'],
     THIS_PARENT => [8, 'format_uri_for_this_parent', 'parent_uri'],
+    THIS_PATH => [9, 'format_uri_for_this_path', 'detail_uri'],
+    THIS_PATH_NO_QUERY => [10, '', 'detail_uri'],
 );
 
 =head1 METHODS
