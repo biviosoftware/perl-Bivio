@@ -80,6 +80,24 @@ sub initialize {
     return $self->SUPER::initialize(@_);
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 internal_new_args(any arg, ...) : hash_ref
+
+Converts positional to hash notation.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $field, $attributes) = @_;
+    return '"field" attribute must be defined'
+	unless defined($field);
+    return {
+	field => $field,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 #=PRIVATE SUBROUTINES
 
 =head1 COPYRIGHT
