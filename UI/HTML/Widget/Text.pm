@@ -68,10 +68,6 @@ This is to prevent unnecessary transient state.
 
 The second form may be deprecated, so try to avoid it.
 
-=item is_read_only : boolean [!is_field_editable()]
-
-Disallow editing in this text field.
-
 =item size : int (required)
 
 How wide is the field represented.  (maxlength comes from the
@@ -150,16 +146,7 @@ sub initialize {
 
     # Initialize handler, if any
     $fields->{handler} = $self->unsafe_get('event_handler');
-    my($h) = $fields->{handler};
-    if (ref($h) eq 'ARRAY'){
-	print(STDERR "\n\nhandler is an array reference");
-	foreach my $handler (@$h) {
-	    print(STDERR "\n\thandler is: " . $handler . "\n");
-	    $handler->put(parent => $self);
-	    $handler->initialize;
-	}
-    }
-    elsif ($fields->{handler}) {
+    if ($fields->{handler}) {
 	$fields->{handler}->put(parent => $self);
 	$fields->{handler}->initialize;
     }
@@ -205,19 +192,9 @@ sub render {
     # Name
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
-    if (ref($fields->{handler}) eq 'ARRAY') {
-	my($handlers) = $fields->{handler};
-	foreach my $handler (@$handlers) {
-	$$buffer .= ' '.$handler->get_html_field_attributes(
-	    $field, $source);
-	}
-    }
-    else {
-	$$buffer .= ' '. $fields->{handler}->get_html_field_attributes(
-	    $field, $source) if $fields->{handler};
-    }
-    $$buffer .= ' disabled'
-	if $self->get_or_default('is_read_only', !$form->is_field_editable($field));
+    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
+	$field, $source) if $fields->{handler};
+    $$buffer .= ' readonly' unless $form->is_field_editable($field);
 
     # Format if provided
     my($v);
@@ -238,15 +215,7 @@ sub render {
 
     # Handler is rendered after, because it probably needs to reference the
     # field.
-    if(ref($fields->{handler}) eq 'ARRAY') {
-	my($handlers) = $fields->{handler};
-	foreach my $h (@$handlers) {
-	    $h->render($source, $buffer);
-	}
-    }
-    else {
-	$fields->{handler}->render($source, $buffer) if $fields->{handler};
-    }
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
     return;
 }
 
