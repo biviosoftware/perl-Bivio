@@ -979,7 +979,7 @@ my(@_CFG) = (
 	84
         GENERAL
         DOCUMENT_READ
-        goto
+        goto/*
         Bivio::Biz::Action::ClientRedirect->execute_query
         next=MY_SITE
     )],
