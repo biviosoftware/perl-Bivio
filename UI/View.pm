@@ -435,7 +435,7 @@ sub _get_instance {
 	    ? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
 	    : $_CURRENT_FACADE;
     my($view_file_name) = $facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->VIEW, $view_name);
+	    Bivio::UI::LocalFileType->VIEW, $view_name).$_SUFFIX;
 
     # In the cache and up to date?  We use the cache as a recursion
     # sentinel
@@ -454,6 +454,7 @@ sub _get_instance {
 
     my($self) = $proto->new({
 	view_name => $view_name,
+	view_file_name => $view_file_name,
     });
 
     # Set global state. We use the cache as a recursion sentinel, too.
