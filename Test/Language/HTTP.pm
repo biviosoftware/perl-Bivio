@@ -379,7 +379,8 @@ sub verify_form {
     foreach my $field (keys(%$form_fields)) {
 	my($control) = $visibles->{$field};
 	Bivio::Die->die($control->{type}, ' ', $field,
-	    ' unexpected setting of "', $form_fields->{$field}, '"',
+	    ' expected != actual: "', $form_fields->{$field},
+	    '" != "', $control->{value}, '"',
         ) unless
 	    $control->{type} eq 'checkbox'
 		? ($control->{checked}
@@ -671,7 +672,8 @@ sub _format_form {
 	}
     }
     # Needs to be some "true" value for our forms
-    push(@$result, _assert_form_field($form, 'submit', $submit)->{name}, '1');
+    my($button) = _assert_form_field($form, 'submit', $submit);
+    push(@$result, $button->{name}, $button->{value} || '1');
     return $result;
 }
 
