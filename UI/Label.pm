@@ -278,7 +278,7 @@ _compile(
     SHARE_PRICE_HEADING => ["Price per\nShare"],
     TOTAL_VALUE_HEADING => ["Market\nValue"],
     UNREALIZED_GAIN_HEADING => ["Unrealized\nGain/(Loss)"],
-    PERCENT_OF_TOTAL_HEADING => ["Percent\nofTotal"],
+    PERCENT_OF_TOTAL_HEADING => ["Percent\nof Total"],
     CASH_ACCOUNT_HEADING => ['Cash Account'],
     REALMTRANSACTION_DATE_TIME_HEADING => ['Date'],
     REALMTRANSACTION_REMARK_HEADING => ['Remark'],
@@ -303,6 +303,9 @@ _compile(
     REALMINSTRUMENTENTRY_ACQUISITION_DATE_HEADING => ["Acquisition\nDate"],
     MARKET_VALUE_HEADING => ["Market\nValue"],
     MEMBER_COST_BASIS_HEADING => ["Member's Adj.\nCost Basis"],
+    AVERAGE_ANNUAL_RETURN_HEADING => ["Average\nAnnual Return"],
+    AMOUNT_INVESTED_HEADING => ['Investments'],
+    AMOUNT_RETURNED_HEADING => ['Returns'],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
