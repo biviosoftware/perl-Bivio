@@ -193,7 +193,7 @@ sub _init_demo_products {
 	    'K9-BD-01:DOGS:Corgi:corgi:Friendly dog from Wales',
 	    'K9-PO-02:DOGS:Poodle:poodle:Cute dog from France',
 	    'K9-DL-01:DOGS:Dalmation:dalmation:Great dog for a Fire Station',
-	    'K9-RT-01:DOGS:German Shepard:shepard:Great family dog',
+	    'K9-RT-01:DOGS:German Shepherd:shepherd:Great family dog',
 	    'K9-RT-02:DOGS:Labrador Retriever:lab:Great hunting dog',
 	    'RP-SN-01:REPTILES:Rattlesnake:rattlesnake:Doubles as a watch dog',
 	    'RP-LI-02:REPTILES:Iguana:iguana:Friendly green friend',
