@@ -371,14 +371,20 @@ sub execute {
 	_put_file_field_reset_errors($self);
     }
     else {
-	# Try to catch and apply type errors thrown
+	# Catch errors and rethrow unless we can process
 	my($res);
 	my($die) = Bivio::Die->catch(sub {$res = $self->execute_input();});
 	if ($die) {
-	    # If not TypeError, just rethrow
-	    $die->die() unless $die->get('code')->isa('Bivio::TypeError');
+	    if ($die->get('code')->isa('Bivio::TypeError')) {
+		# Type errors are "normal"
+		_apply_type_error($self, $die);
+	    }
+	    else {
+		$die->die();
+		# DOES NOT RETURN
+	    }
+
 	    # Can we find the fields in the Form?
-	    _apply_type_error($self, $die);
 	}
 
 	# If execute_input returns true, just get out.  The task will
@@ -1393,8 +1399,10 @@ sub _parse_cols {
 
 	# Error in field.  Save the original value.
 	if ($is_hidden) {
-	    $self->die(Bivio::DieCode::CORRUPT_FORM(),
+	    Bivio::IO::Alert->warn('Error in hidden value(s), refreshing: ',
 		    {field => $n, actual => $form->{$fn}, error => $err});
+	    _redirect_same($self);
+	    # DOES NOT RETURN
 	}
 	else {
 	    $self->internal_put_error($n, $err);
@@ -1599,6 +1607,22 @@ sub _redirect {
 	    '?', $c->{query}) if $_TRACE;
     $req->server_redirect($c->{unwind_task}, $c->{realm},
 	    $c->{query}, $f, $c->{path_info});
+    # DOES NOT RETURN
+}
+
+# _redirect_same(Bivio::Biz::FormModel self)
+#
+# Redirects to "this" task, because we've encountered a caching
+# problem.
+#
+sub _redirect_same {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    # The form was corrupt.  Throw away the context and
+    # the form and redirect back to this task.
+    $req->server_redirect($req->get('task_id'),
+	    undef, $req->get('query'), undef,
+	    $req->get('path_info'));
     # DOES NOT RETURN
 }
 
