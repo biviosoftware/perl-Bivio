@@ -969,6 +969,11 @@ __PACKAGE__->compile([
 	undef,
 	'Must have one shadow member and one regular member'
     ],
+    ACTIVE_USER_DELETE => [
+	139,
+	undef,
+	'The current user is a member of a club(s)',
+    ],
 ]);
 
 #=PRIVATE METHODS
