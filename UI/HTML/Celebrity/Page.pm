@@ -246,7 +246,7 @@ A telecom industry veteran, the mother of two says her only regret in life
 is not having joined a club sooner.  Though enthusiastic about her clubs,
 she's willing to take the bad with the good.  "We've committed just about
 every investment mistake there is," she says, "but we've learned from them,
-2and so our experience has been overwhelmingly positive."
+and so our experience has been overwhelmingly positive."
 EOF
 	   );
     return;
