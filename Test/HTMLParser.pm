@@ -472,6 +472,15 @@ sub _parse_input_radio {
     return;
 }
 
+# _parse_input_reset(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
+#
+# Ignore <input type="reset"> tags.
+#
+sub _parse_input_reset {
+    my($self, $attr, $origtext) = @_;
+    return;
+}
+
 # _parse_input_submit(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
 #
 # Redirect to the method that handles <input type="submit"...>
