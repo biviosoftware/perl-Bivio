@@ -57,6 +57,35 @@ sub chdir {
     return $directory;
 }
 
+=for html <a name="ls"></a>
+
+=head2 static ls(string directory) : array_ref
+
+Returns list of files in I<directory> (only regular files,
+no directories or specials)
+
+=cut
+
+sub ls {
+    my(undef, $directory) = @_;
+    $directory = '.' unless defined($directory);
+    my($op) = 'opendir';
+ TRY: {
+        my($file) = \*Bivio::IO::File::IN;
+        opendir($file, $directory) || last TRY;
+        my(@files) = grep(-f, readdir($file));
+	$op = 'closedir';
+        closedir($file) || last TRY;
+        return \@files;
+    }
+    Bivio::Die->throw_die('IO_ERROR', {
+	message => "$!",
+	operation => $op,
+	entity => $directory,
+    });
+    # DOES NOT RETURN
+}
+
 =for html <a name="mkdir_p"></a>
 
 =head2 static mkdir_p(string path) : string
