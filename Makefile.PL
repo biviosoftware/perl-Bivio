@@ -18,14 +18,13 @@ my(@_TESTS) = ();
 # I<build> may be one of the following:
 #
 #   * all - all modules, programs, and tests
-#   * bOPcore - bOP core modules
 #
 sub main {
     my($build) = @_;
     $build ||= 'all';
 
     die("usage: perl -w Makefile.PL [<build>]\n")
-	    unless $build eq 'all' || $build eq 'bOPcore';
+	    unless $build eq 'all';
 
     my($method) = "_build_$build";
     __PACKAGE__->$method();
@@ -68,46 +67,6 @@ sub _build_all {
     File::Find::find(\&_find, '.');
     print STDERR "Found the following programs:\n    ",
 	    join("\n    ", @_PROGRAMS), "\n";
-    return;
-}
-
-# _build_bOPcore()
-#
-# Builds list of bOP core modules.
-#
-sub _build_bOPcore {
-
-    my($core_modules) = <<'EOF';
-Bivio::Collection::Attributes
-Bivio::Collection::SingletonMap
-Bivio::Die
-Bivio::DieCode
-Bivio::HTML
-Bivio::IO::Alert
-Bivio::IO::ClassLoader
-Bivio::IO::Config
-Bivio::IO::File
-Bivio::IO::Format
-Bivio::IO::TTY
-Bivio::IO::Trace
-Bivio::ShellUtil
-Bivio::Type
-Bivio::TypeValue
-Bivio::TypeError
-Bivio::Type::Array
-Bivio::Type::DateTime
-Bivio::Type::Enum
-Bivio::Type::Number
-Bivio::UNIVERSAL
-Bivio::Util::Release
-EOF
-
-    foreach my $file (split("\n", $core_modules)) {
-	$file =~ s/Bivio\:\://;
-	$file =~ s,\:\:,/,;
-	$file .= '.pm';
-	$_MODULES{$file} = '$(INST_LIBDIR)/'.$file;
-    }
     return;
 }
 
