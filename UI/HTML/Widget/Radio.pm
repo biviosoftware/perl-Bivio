@@ -139,7 +139,8 @@ sub render {
     $$buffer .= $fields->{prefix}
 	    .$form->get_field_name_for_html($field)
 #TODO: is_equal?
-	    .($value eq $form->get($field) ? ' checked' : '')
+	    .(defined($form->get($field))
+		    && $value eq $form->get($field) ? ' checked' : '')
 	    .$fields->{suffix}
 	    .$p.Bivio::HTML->escape($self->get('label')).$s;
     return;
