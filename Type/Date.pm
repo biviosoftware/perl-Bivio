@@ -36,7 +36,7 @@ julian days and seconds on that day ('J SSSSS').
 
 #=VARIABLES
 my($_TIME_SUFFIX) = ' '.Bivio::Type::DateTime::DEFAULT_TIME();
-my($_MIN) = Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS().$_TIME_SUFFIX;
+my($_MIN) = Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS().$_TIME_SUFFIX;
 my($_MAX) = Bivio::Type::DateTime::LAST_DATE_IN_JULIAN_DAYS().$_TIME_SUFFIX;
 #TODO: Assumes we are in the US.
 my($_NOW_SLOP) = 9 * 60 * 60;

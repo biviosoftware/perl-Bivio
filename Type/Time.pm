@@ -28,7 +28,7 @@ use Bivio::Type::DateTime;
 C<Bivio::Type::Time> describes a time value which cannot have
 does not have a date component.  C<Time> is stored in the
 database as an SQL C<DATE> whose calendar component is
-L<Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS|Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS>.
+L<Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS|Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS>.
 In perl, a date is represented as
 julian days and seconds on that day ('J SSSSS').
 
@@ -37,7 +37,7 @@ julian days and seconds on that day ('J SSSSS').
 #=IMPORTS
 
 #=VARIABLES
-my($_DATE_PREFIX) = Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS().' ';
+my($_DATE_PREFIX) = Bivio::Type::DateTime::FIRST_DATE_IN_JULIAN_DAYS().' ';
 my($_MAX) = $_DATE_PREFIX.(Bivio::Type::DateTime::SECONDS_IN_DAY()-1);
 
 =head1 METHODS
