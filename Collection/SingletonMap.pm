@@ -59,15 +59,16 @@ If the singleton doesn't exist, tries to "put" it.
 =cut
 
 sub get {
-    my($proto) = shift;
+    my($proto, @classes) = @_;
     my($class) = ref($proto) || $proto;
     $_MAP{$class} = {} unless $_MAP{$class};
     my($map) = $_MAP{$class};
-    @_ || Carp::croak('must supply at least one class argument');
-    my(@res) = map {
-	$proto->put($_) unless exists($map->{$_});
-	$map->{$_};
-    } @_;
+    @classes || Carp::croak('must supply at least one class argument');
+    my(@res);
+    foreach my $x (@classes) {
+	$proto->put($x) unless exists($map->{$x});
+	push(@res, $map->{$x});
+    }
     return @res if wantarray;
     die('get not called in array context and more than one return result')
 	    unless int(@res) == 1;

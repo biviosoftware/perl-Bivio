@@ -48,6 +48,10 @@ I<package> must be a fully-qualified perl package name.
 sub simple_require {
     my(undef, @pkg) = @_;
     my($pkg);
+
+    # Avoid problems with uses of $_ in caller
+    local($_);
+
     foreach $pkg (@pkg) {
 	die('undefined package') unless $pkg;
 	no strict 'refs';
