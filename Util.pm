@@ -238,8 +238,8 @@ sub bsearch_numeric {
 # input may be undef.
 sub shell {
     my($command, $input) = @_;
-    my($in) = ref($input) ? $input : defined($input) ? \$input
-	    : (\$input, $input = '');
+    my($in) = ref($input) ? $input : \$input;
+    $$in = '' unless defined($$in);
     my($pid) = open(IN, "-|");
     defined($pid) || die("fork: $!");
     unless ($pid) {
