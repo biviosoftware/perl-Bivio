@@ -71,6 +71,24 @@ my($_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->REALM_INVITE_FIELD;
 
 =cut
 
+=for html <a name="cascade_delete"></a>
+
+=head2 static cascade_delete(Bivio::Biz::Model::RealmOwner realm)
+
+Delete all invites for this realm.
+
+=cut
+
+sub cascade_delete {
+    my(undef, $realm) = @_;
+    my($id) = $realm->get('realm_id');
+    Bivio::SQL::Connection->execute('
+            DELETE FROM realm_invite_t
+            WHERE realm_id=?',
+	    [$id]);
+    return;
+}
+
 =for html <a name="check_accept"></a>
 
 =head2 static check_accept(Bivio::Agent::Request req)
@@ -101,7 +119,7 @@ sub create {
     $values->{creation_date_time} = Bivio::Type::DateTime->now()
 	    unless $values->{creation_date_time};
 
-    # Save the use who initiated the invite
+    # Save the user who initiated the invite
     $values->{user_id}
 	    = $self->get_request->get('auth_user')->get('realm_id')
 		    unless defined($values->{user_id});
@@ -209,22 +227,16 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_invite_t',
 	columns => {
-            realm_invite_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            email => ['Bivio::Type::Email',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            role => ['Bivio::Auth::Role',
-    		Bivio::SQL::Constraint::NOT_ZERO_ENUM()],
-	    title => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_ZERO_ENUM()],
-	    creation_date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NOT_NULL()],
-            message => ['Bivio::Type::Text',
-    		Bivio::SQL::Constraint::NONE()],
+            realm_invite_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            user_id => ['PrimaryId', 'NOT_NULL'],
+	    # Will be null if just a "guest"
+	    realm_user_id => ['PrimaryId', 'NONE'],
+            email => ['Email', 'NOT_NULL'],
+            role => ['Bivio::Auth::Role', 'NOT_ZERO_ENUM'],
+	    title => ['Name', 'NOT_ZERO_ENUM'],
+	    creation_date_time => ['DateTime', 'NOT_NULL'],
+            message => ['Text', 'NONE'],
 	    # unique(realm_id, email)
         },
 	auth_id => [qw(realm_id RealmOwner_1.realm_id)],
