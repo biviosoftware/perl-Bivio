@@ -446,11 +446,11 @@ sub get_context_from_request {
     foreach my $c (qw(form query form_context)) {
 	$res->{$c} = $req->unsafe_get($c);
     }
-    $res->{next} = $req->unsafe_get('uri');
+    $res->{unwind_uri} = $req->unsafe_get('uri');
     my($cancel) = $req->get('task')->unsafe_get('cancel');
 #TODO: Tight coupling to avoid recursion
-    $res->{cancel} = Bivio::Agent::HTTP::Location->format($cancel,
-	   $req->get('auth_realm'), $req, 1) if $cancel;
+    $res->{cancel_uri} = Bivio::Agent::HTTP::Location->format($cancel,
+	    $req->get('auth_realm'), $req, 1) if $cancel;
     $res->{form_model} = ref($model);
 
     # Fix up file fields if any
@@ -866,8 +866,9 @@ the field name explicitly, e.g. RealmOwner.name.1>.
 
 sub put_context_fields {
     my($self) = shift;
+    # Allow zero fields (see _redirect)
     Carp::croak("must be an even number of parameters")
-		unless int(@_) && int(@_) % 2 == 0;
+		unless int(@_) % 2 == 0;
     my($fields) = $self->{$_PACKAGE};
     Carp::croak('form does not require_context') unless $fields->{context};
     my($c) = $fields->{context};
@@ -1059,8 +1060,8 @@ sub _initialize_context {
 	my($task) = $req->get('task');
 	$c = {
 	    form_model => undef,
-	    next => $req->format_stateless_uri($task->get('next')),
-	    cancel => $req->format_stateless_uri($task->get('cancel')),
+	    unwind_uri => $req->format_stateless_uri($task->get('next')),
+	    cancel_uri => $req->format_stateless_uri($task->get('cancel')),
 	    query => undef,
 	    # Only create a form if there is a form_model on next task
 	    form => undef,
@@ -1315,15 +1316,21 @@ sub _redirect {
 	    unless $fields->{context};
 
     my($c) = $fields->{context};
-    my($f) = $c->{form};
-    unless ($f) {
-	# There may not be a next
-	$c->{$which} ||= $c->{next};
-	_trace('no form, client_redirect: ', $c->{$which},
+    unless ($c->{form}) {
+	if ($which eq 'cancel' && $c->{cancel_uri}) {
+	    _trace('no form, client_redirect: ', $c->{cancel_uri}) if $_TRACE;
+	    # If there is no form, redirect to client so looks
+	    # better.
+	    $req->client_redirect($c->{cancel_uri});
+	    # DOES NOT RETURN
+	}
+
+	# Next or cancel (not form)
+	_trace('no form, client_redirect: ', $c->{unwind_uri},
 		'?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
 	# better.
-	$req->client_redirect($c->{$which}, $c->{'query'});
+	$req->client_redirect($c->{unwind_uri}, $c->{'query'});
 	# DOES NOT RETURN
     }
 
@@ -1332,6 +1339,9 @@ sub _redirect {
     # Indicate to the next form that this is a SUBMIT_UNWIND
     # Make sure you use that form's SUBMIT_UNWIND button.
     # In the cancel case, we chain the cancels.
+
+    # Initializes context
+    my($f) = $c->{form};
     $f->{$c->{form_model}->SUBMIT} = $which eq 'cancel'
 	    ? $c->{form_model}->SUBMIT_CANCEL
 	    : $c->{form_model}->SUBMIT_UNWIND;
@@ -1343,9 +1353,9 @@ sub _redirect {
     $fields->{redirecting} = 1;
 
     # Redirect calls us back in get_context_from_request
-    _trace('have form, server_redirect: ', $c->{next},
+    _trace('have form, server_redirect: ', $c->{unwind_uri},
 	    '?', $c->{query}) if $_TRACE;
-    $req->server_redirect($c->{next}, $c->{query}, $f);
+    $req->server_redirect($c->{unwind_uri}, $c->{query}, $f);
     # DOES NOT RETURN
 }
 
