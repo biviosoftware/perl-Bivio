@@ -622,6 +622,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::CreateUserForm
         Bivio::UI::HTML::General::CreateUser
         next=USER_HOME
+        cancel=HTTP_DOCUMENT
     )],
     # Default page for users, see MY_BIVIO_REDIRECT
     [qw(
