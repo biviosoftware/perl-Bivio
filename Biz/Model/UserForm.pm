@@ -37,6 +37,7 @@ C<Bivio::Biz::Model::UserForm>
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::Type::Password;
+use Bivio::Type::Email;
 use Bivio::SQL::Constraint;
 
 #=VARIABLES
@@ -68,14 +69,19 @@ sub create {
 
     # Get again, so we have user id included
     $values = $self->get_model_properties('RealmOwner');
+    $values->{password} = Bivio::Type::Password->encrypt($values->{password});
     $model = $self->get_model('RealmOwner');
     $values->{realm_type} = Bivio::Auth::RealmType::USER();
     $model->create($values);
 
+    # Only create UserEmail if an email address was given
     $values = $self->get_model_properties('UserEmail');
-    $model = $self->get_model('UserEmail');
-    $model->create($values);
+    if (defined($values->{email})) {
+	$model = $self->get_model('UserEmail');
+	$model->create($values);
+    };
 
+    # Always set user as admin of own realm
     $model = Bivio::Biz::Model::RealmUser->new($self->get_request);
     $model->create({
 	'realm_id' => $values->{user_id},
@@ -96,24 +102,34 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	visible => [qw(
-	    RealmOwner.name
-            RealmOwner.password
-	    User.first_name
-	    User.middle_name
-	    User.last_name
-	    UserEmail.email
-	    User.gender
-	    User.age
-	),
+	visible => [
+	    'RealmOwner.name',
+            'RealmOwner.password',
 	    {
 		name => 'confirm_password',
 		type => 'Bivio::Type::Password',
 		constraint => Bivio::SQL::Constraint::NOT_NULL(),
 	    },
+	    'User.first_name',
+	    'User.middle_name',
+	    'User.last_name',
+	    {
+		name => 'UserEmail.email',
+		constraint => Bivio::SQL::Constraint::NONE(),
+	    },
+	    'User.gender',
+	    'User.birth_date',
+	    'User.street1',
+	    'User.street2',
+	    'User.city',
+	    'User.state',
+	    'User.zip',
+	    'User.country',
+	    'User.phone',
+	    'User.fax',
 	],
 	auth_id =>
-	    [qw(User.user_id RealmOwner.realm_id UserEmail.user_id)],
+	    ['User.user_id', 'RealmOwner.realm_id', 'UserEmail.user_id'],
 	primary_key => [
 	    'User.user_id',
 	],
@@ -133,6 +149,8 @@ Any errors are "put" on the form and the operation is aborted.
 sub update {
     my($self) = @_;
     my($properties) = $self->internal_get;
+    die('not implemented properly');
+#TODO: fix password code
     my($realm_owner) = $self->get_model_properties('RealmOwner');
     my($values) = $self->get_model_properties('User');
     _set_display_name($values, $realm_owner);
@@ -142,6 +160,7 @@ sub update {
     $model = $self->get_model('RealmOwner');
     $model->update($realm_owner);
 
+#TODO: Fix email
     $values = $self->get_model_properties('UserEmail');
     $model = $self->get_model('UserEmail');
     $model->update($values);
