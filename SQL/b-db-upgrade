@@ -43,6 +43,7 @@ use Bivio::Type::DateTime;
 
 
 #=VARIABLES
+$| = 1;
 
 sub main {
     my(@argv) = @_;
