@@ -180,7 +180,7 @@ sub _generate_account_remark {
             AND entry_t.entry_id = realm_account_entry_t.entry_id
             AND realm_account_entry_t.realm_account_id
                 = realm_account_t.realm_account_id
-            AND realm_account_entry_t.realm_id=?',
+            AND realm_account_t.realm_id=?',
 	    [$entry_id, $self->get('realm_id')]);
     }
     else {
@@ -191,7 +191,7 @@ sub _generate_account_remark {
             AND entry_t.entry_id = realm_account_entry_t.entry_id
             AND realm_account_entry_t.realm_account_id
                 = realm_account_t.realm_account_id
-            AND realm_account_entry_t.realm_id=?',
+            AND realm_account_t.realm_id=?',
 	    [$self->get('realm_transaction_id', 'realm_id')]);
     }
     my($result);
@@ -226,7 +226,7 @@ sub _generate_instrument_remark {
                 = realm_instrument_t.realm_instrument_id
             AND realm_instrument_t.instrument_id
                 = instrument_t.instrument_id
-            AND realm_instrument_entry_t.realm_id=?',
+            AND realm_instrument_t.realm_id=?',
 	    [$entry_id, $self->get('realm_id')]);
     }
     else {
@@ -240,7 +240,7 @@ sub _generate_instrument_remark {
                 = realm_instrument_t.realm_instrument_id
             AND realm_instrument_t.instrument_id
                 = instrument_t.instrument_id
-            AND realm_instrument_entry_t.realm_id=?',
+            AND realm_instrument_t.realm_id=?',
 	    [$self->get('realm_transaction_id', 'realm_id')]);
     }
 
