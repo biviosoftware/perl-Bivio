@@ -348,6 +348,21 @@ sub from_parts {
     return (split(' ', $date))[0].' '.(split(' ', $time))[1];
 }
 
+=for html <a name="get_last_day_in_month"></a>
+
+=head2 get_last_day_in_month(int mon, int year) : int
+
+Given I<year> and I<month>, return the last day in that month
+
+=cut
+
+sub get_last_day_in_month {
+    my($proto, $mon, $year) = @_;
+    my($ly) = $_IS_LEAP_YEAR[$year - Bivio::Type::DateTime::FIRST_YEAR()];
+    $mon--;
+    return $_MONTH_DAYS[$ly]->[$mon];
+}
+
 =for html <a name="get_local_timezone"></a>
 
 =head2 static get_local_timezone() : int
