@@ -255,7 +255,8 @@ club.  Put the cookie field back in this weird case.
 sub delete_cookie {
     my($self) = @_;
     my($cookie) = $self->get_request->get('cookie');
-    my($c) = $cookie->delete($_COOKIE_FIELD);
+    my($c) = $cookie->unsafe_get($_COOKIE_FIELD);
+    $cookie->delete($_COOKIE_FIELD);
 
     return unless defined($c);
 
