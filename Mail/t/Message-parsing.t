@@ -5,7 +5,7 @@
 #TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..9\n"; }
+BEGIN { $| = 1; print "1..16\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Message;
@@ -151,7 +151,7 @@ EOF
 =>
 {
     'content_type' => undef,
-    'from_name' => '',
+    'from_name' => undef,
     'from_email' => 'moeller@[209.181.76.152]',
     'reply_to_email' => undef,
     'subject' => 'hello',
