@@ -39,6 +39,7 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::Biz::Model::MemberEntry;
 use Bivio::Die;
 use Bivio::SQL::Connection;
 use Bivio::Type::RealmName;
@@ -117,46 +118,22 @@ sub MEMBER_ROLES {
 
 =head2 can_auth_user_edit() : boolean
 
-=head2 static can_auth_user_edit(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static can_auth_user_edit(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Return if the request's auth_user can edit the RealmUser.
 
 =cut
 
 sub can_auth_user_edit {
-    my($self) = shift;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     # Always can edit self
-    return 1 if $self->is_auth_user(@_);
+    return 1 if $proto->is_auth_user($model, $model_prefix);
     # Can't edit if guest
-    return 0 if $self->is_guest(@_);
+    return 0 if $proto->is_guest($model, $model_prefix);
     # Can only edit if can execute NAME_EDIT task.
-    my($model) = shift() || $self;
     return $model->get_request->can_user_execute_task(
 	    Bivio::Agent::TaskId::CLUB_ADMIN_MEMBER_NAME_EDIT());
 }
-
-=for html <a name="cascade_delete"></a>
-
-=head2 cascade_delete()
-
-Deletes the user from the realm including any invites.
-Does not delete transactions or tax tables in the realm.
-
-sub cascade_delete {
-    my($self) = @_;
-    my($realm_id, $user_id) = $self->get('realm_id', 'user_id');
-
-    # need a group delete
-    # could have > 1 invite in the same realm
-    Bivio::SQL::Connection->execute('
-            DELETE FROM realm_invite_t
-            WHERE realm_user_id=?
-            AND realm_id=?',
-	    [$user_id, $realm_id]);
-    return $self->delete();
-}
-
-=cut
 
 =for html <a name="change_ownership"></a>
 
@@ -178,8 +155,8 @@ sub change_ownership {
 
     if ($include_entries) {
 	Bivio::Die->die('change_ownership target has member entries')
-	        if $self->new($req)->load(user_id => $user_id)
-			->has_transactions;
+		    if (Bivio::Biz::Model::MemberEntry->has_transactions(
+			    $self->new($req)->load(user_id => $user_id)));
 
 	# replace the entry, k-1 and allocation info
 	foreach my $table (qw(member_entry_t tax_k1_t member_allocation_t)) {
@@ -273,24 +250,6 @@ sub execute_auth_user {
     return;
 }
 
-=for html <a name="has_transactions"></a>
-
-=head2 has_transactions() : boolean
-
-=head2 static has_transactions(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
-
-Returns 1 if the user has accounting transactions within the realm.
-
-=cut
-
-sub has_transactions {
-    return _cache_in_request(@_,
-	    'SELECT COUNT(*)
-            FROM member_entry_t
-            WHERE realm_id=?
-            AND user_id=?');
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -325,7 +284,7 @@ sub internal_initialize {
 
 =head2 is_auth_user() : boolean
 
-=head2 static is_auth_user(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_auth_user(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if the current row is the request's auth_user.
 
@@ -333,12 +292,10 @@ Returns true if the current row is the request's auth_user.
 =cut
 
 sub is_auth_user {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
-    my($auth_user) = $list_model->get_request->get('auth_user');
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($auth_user) = $model->get_request->get('auth_user');
     return 0 unless $auth_user;
-    return $list_model->get($model_prefix.'user_id')
+    return $model->get($model_prefix.'user_id')
 	    eq $auth_user->get('realm_id') ? 1 : 0;
 }
 
@@ -346,11 +303,11 @@ sub is_auth_user {
 
 =head2 is_guest() : boolean
 
-=head2 static is_guest(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_guest(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if the user is a GUEST.
 
-In the second form, I<list_model> is used to get the values, not I<self>.
+In the second form, I<model> is used to get the values, not I<self>.
 List Models can declare a method of the form:
 
     sub is_guest {
@@ -361,10 +318,8 @@ List Models can declare a method of the form:
 =cut
 
 sub is_guest {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
-    return $list_model->get($model_prefix.'role') ==
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    return $model->get($model_prefix.'role') ==
 	    Bivio::Auth::Role::GUEST() ? 1 : 0;
 }
 
@@ -372,12 +327,12 @@ sub is_guest {
 
 =head2 is_member() : boolean
 
-=head2 static is_member(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_member(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if the user is a member or above, i.e. I<role> must
 be MEMBER, ACCOUNT, or ADMINISTRATOR.
 
-In the second form, I<list_model> is used to get the values, not I<self>.
+In the second form, I<model> is used to get the values, not I<self>.
 List Models can declare a method of the form:
 
     sub is_member {
@@ -388,36 +343,32 @@ List Models can declare a method of the form:
 =cut
 
 sub is_member {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return Bivio::Auth::RoleSet->is_set(\$_MEMBER_ROLES,
-	    $list_model->get($model_prefix.'role'));
+	    $model->get($model_prefix.'role'));
 }
 
 =for html <a name="is_member_or_guest"></a>
 
 =head2 is_member_or_guest() : boolean
 
-=head2 static is_member_or_guest(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_member_or_guest(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Is this a member, accountant, admin, or a guest?
 
 =cut
 
 sub is_member_or_guest {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_ROLES,
-	    $list_model->get($model_prefix.'role'));
+	    $model->get($model_prefix.'role'));
 }
 
 =for html <a name="is_member_or_withdrawn"></a>
 
 =head2 is_member_or_withdrawn() : boolean
 
-=head2 static is_member_or_withdrawn(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_member_or_withdrawn(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if the user is a member or above, i.e. I<role> must
 be WITHDRAWN, MEMBER, ACCOUNT, or ADMINISTRATOR.
@@ -425,32 +376,29 @@ be WITHDRAWN, MEMBER, ACCOUNT, or ADMINISTRATOR.
 =cut
 
 sub is_member_or_withdrawn {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return Bivio::Auth::RoleSet->is_set(\$_MEMBER_OR_WITHDRAWN_ROLES,
-	    $list_model->get($model_prefix.'role'));
+	    $model->get($model_prefix.'role'));
 }
 
 =for html <a name="is_sole_admin"></a>
 
 =head2 is_sole_admin() : boolean
 
-=head2 static is_sole_admin(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+=head2 static is_sole_admin(Bivio::Biz::Model model, string model_prefix) : boolean
 
 Returns true if this is the only online ADMINISTRATOR left in the realm.
 
 =cut
 
 sub is_sole_admin {
-    my($self, $list_model, $model_prefix) = @_;
-    $model_prefix ||= '';
-    $list_model ||= $self;
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     # Check to see if an admin at all.  This avoids a db query for most
     # realm users.
-    return 0 unless $list_model->get($model_prefix.'role')
+    return 0 unless $model->get($model_prefix.'role')
 	    == Bivio::Auth::Role::ADMINISTRATOR();
-    return _cache_in_request(@_, $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
+    return _cache_in_request($proto, $model, $model_prefix,
+	    $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
 }
 
 =for html <a name="is_super_user"></a>
@@ -546,21 +494,15 @@ sub unauth_load_user_or_die {
 
 #=PRIVATE METHODS
 
-# _cache_in_request(self, string query) : boolean
-# _cache_in_request(proto, Bivio::Biz::Model list_model, string model_prefix, string query) : boolean
+# _cache_in_request(proto, Bivio::Biz::Model model, string model_prefix, string query) : boolean
 #
 # Computes the boolean $query, unless it already is on the request.
 # Must accept a [realm, user] as params.
 #
 sub _cache_in_request {
-    my($self, $list_model, $model_prefix, $query) = @_;
-    unless ($query) {
-	$query = $list_model;
-	$model_prefix = '';
-	$list_model = $self;
-    }
-    my($req) = $list_model->get_request;
-    my($realm, $user) = $list_model->get(
+    my($proto, $model, $model_prefix, $query) = @_;
+    my($req) = $model->get_request;
+    my($realm, $user) = $model->get(
 	    $model_prefix.'realm_id', $model_prefix.'user_id');
     return $req->get_if_exists_else_put(
 	    (caller(1))[3].$realm.'-'.$user =>
