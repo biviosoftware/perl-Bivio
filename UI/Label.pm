@@ -326,6 +326,11 @@ _compile(
 
     # Misc. Features
     NEW_HARDWARE => ['New Computers'],
+
+    # Announcements
+    CALLING_ALL_CLUBS => ['Calling All Clubs!'],
+    CNN_20000622 => ["Meet bivio's CEO"],
+    COMPUFEST_2000 => ["CompuFest 2000"],
 );
 
 =head1 METHODS
