@@ -123,7 +123,6 @@ _compile(\%_MAP, [
     REFRESH_BUTTON => 'Refresh',
     REGISTER_BUTTON => 'Register',
     SEND_BUTTON => ' Send ',
-    SEND_SUPPORT_BUTTON => ' Send To Customer Support ',
     TICKER_BUTTON => 'Ticker',
     ['UNLISTED_BUTTON', 'new_unlisted', 'new_unlisted_button']
         => 'New Unlisted',
@@ -499,6 +498,8 @@ _compile(\%_MAP, [
 	'' => 'Import NAIC Club Accounting(tm)',
 	help_topic => 'Importing NAIC Club Accounting(tm)',
     ],
+    CLUB_LEGACY_UPLOAD_INSECURE => 'Import NAIC Club Accounting(tm)',
+    CLUB_LEGACY_UPLOAD_INSECURE_ACK => 'Acknowledge Insecure Club Import',
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
@@ -543,7 +544,6 @@ _compile(\%_MAP, [
     ['FILE_IS_PUBLIC', 'File.is_public', 'MAIL_IS_PUBLIC', 'Mail.is_public']
         => 'Public',
     MAIL_IS_PUBLIC_ALT => 'Message is publicly viewable',
-    MAIL_SUPPORT => 'Customer Support',
 
     # FILES
     FILE_NAME => 'Name',
