@@ -578,7 +578,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         _/mail/image
-        Bivio::UI::HTML::Club::MessageAttachment
+        Bivio::UI::HTML::Club::ImageAttachment
     )],
 
        );
