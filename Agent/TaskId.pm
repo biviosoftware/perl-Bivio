@@ -1977,7 +1977,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::ForeignIncomeList->execute_load_all
         Bivio::Biz::Model::F1065Form->execute_load_all
-	Bivio::UI::PDF::Form::F1065::YearSelector
+	Bivio::UI::PDF::F1065->execute
         next=CLUB_ACCOUNTING_TAXES_F1065
         require_secure=1
     )],
