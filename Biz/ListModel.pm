@@ -155,6 +155,18 @@ sub new_anonymous {
 
 =cut
 
+=for html <a name="can_next_row"></a>
+
+=head2 can_next_row() : boolean
+
+Returns true if next_row can be called.
+
+=cut
+
+sub can_next_row {
+    return defined(shift->{$_PACKAGE}->{cursor}) ? 1 : 0;
+}
+
 =for html <a name="execute"></a>
 
 =head2 static execute(Bivio::Agent::Request req) : boolean
@@ -223,7 +235,7 @@ sub format_query {
     # Determine if need to pass in current row
     my($arg);
 
-    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|THIS_PATH/) {
+    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|PATH/) {
 	my($c) = $fields->{cursor};
 	Carp::croak('no cursor') unless defined($c) && $c >= 0;
 	$arg = $self->internal_get();
@@ -268,8 +280,12 @@ sub format_uri {
     # Need to get the list_uri or detail_uri from the request?
     $uri ||= $self->get_request->get($type->get_long_desc);
 
-    if ($type->get_name =~ /THIS_PATH/) {
+    if ($type->get_name =~ /PATH/) {
+	my($c) = $fields->{cursor};
+	die('no cursor') unless defined($c) && $c >= 0;
 	my($pi) = $self->get('path_info');
+	Bivio::IO::Alert->die('row ', $c, ': no path_info at cursor')
+		    unless defined($pi);
 	$uri .= '/'.$pi if length($pi);
     }
     my($query) = $self->format_query($type);
@@ -710,6 +726,20 @@ sub next_row {
     return 1;
 }
 
+=for html <a name="next_row_or_die"></a>
+
+=head2 next_row_or_die()
+
+Terminates unless L<next_row|"next_row"> succeeds.
+
+=cut
+
+sub next_row_or_die {
+    my($self) = shift;
+    $self->die('expecting next row') unless $self->next_row(@_);
+    return;
+}
+
 =for html <a name="parse_query"></a>
 
 =head2 parse_query() : Bivio::SQL::ListQuery
@@ -832,6 +862,22 @@ sub set_cursor {
     Carp::croak("$index: invalid index") if $index < 0;
     $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
     return 1;
+}
+
+=for html <a name="set_cursor_or_not_found"></a>
+
+=head2 set_cursor_or_not_found(int index)
+
+Calls L<set_cursor|"set_cursor"> and dies with NOT_FOUND
+if it returns false.
+
+=cut
+
+sub set_cursor_or_not_found {
+    my($self) = shift;
+    return if $self->set_cursor(@_);
+    $self->die('NOT_FOUND', {message => 'no such row',
+	entity => $_[0]});
 }
 
 =for html <a name="unauth_load"></a>
