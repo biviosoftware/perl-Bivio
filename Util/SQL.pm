@@ -57,6 +57,8 @@ commands:
     drop_and_run -- calls drop then run
     export_db file -- exports database (only works for pg right now)
     import_db file -- imports database (ditto)
+    import_tables_only file -- imports tables and sequences only
+    reinitialize_constraints -- creates constraints
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
@@ -213,6 +215,54 @@ sub export_db {
     return "Exported $db->{database} to $f\n";
 }
 
+
+=for html <a name="import_db"></a>
+
+=head2 import_db(string backup_file) : string
+
+Restores the database from file.
+
+=cut
+
+sub import_db {
+    my($self, $backup_file) = @_;
+    my($db) = _assert_postgres($self);
+    $self->import_tables_only($backup_file);
+    $self->reinitialize_constraints;
+    return $self->reinitialize_sequences;
+}
+
+=for html <a name="import_tables_only"></a>
+
+=head2 import_tables_only(string backup_file)
+
+Drops database, readds it and then imports data only from a backup file.
+
+=cut
+
+sub import_tables_only {
+    my($self, $backup_file) = @_;
+    $self->usage_error('missing file') unless $backup_file;
+    my($db) = _assert_postgres($self);
+    $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
+    $self->piped_exec("dropdb --username '$db->{user}' '$db->{database}'",
+        '', 1);
+    $self->piped_exec("createdb --username '$db->{user}' '$db->{database}'");
+
+    foreach my $file (@{_ddl_files($self)}) {
+        next if $file =~ /constraints/;
+	$self->put(input => $file)->run;
+    }
+    # need to commit so pg_restore can access the tables
+    Bivio::SQL::Connection->commit;
+
+    $self->piped_exec("pg_restore --username='$db->{user}'"
+	. " --dbname='$db->{database}' --data-only '$backup_file'");
+
+    Bivio::SQL::Connection->ping_connection;
+    return;
+}
+
 =for html <a name="init_realm_role"></a>
 
 =head2 init_realm_role()
@@ -238,26 +288,6 @@ sub init_realm_role {
     return;
 }
 
-=for html <a name="import_db"></a>
-
-=head2 import_db(string file) : string
-
-Restores the database from file.
-
-=cut
-
-sub import_db {
-    my($self, $file) = @_;
-    $self->usage_error('missing file') unless $file;
-    my($db) = _assert_postgres($self);
-    $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
-    $self->piped_exec("dropdb --username $db->{user} $db->{database}", '', 1);
-    $self->piped_exec("createdb --username $db->{user} $db->{database}");
-    $self->piped_exec("pg_restore --format=c --username $db->{user}"
-	. " --dbname=$db->{database} < $file");
-    return "Imported $file into $db->{database}\n";
-}
-
 =for html <a name="realm_role_config"></a>
 
 =head2 realm_role_config() : array_ref
@@ -276,6 +306,24 @@ sub realm_role_config {
 	close(DATA);
     }
     return $_REALM_ROLE_CONFIG;
+}
+
+=for html <a name="reinitialize_constraints"></a>
+
+=head2 reinitialize_constraints()
+
+Adds constraints and reinitializes sequences.
+
+=cut
+
+sub reinitialize_constraints {
+    my($self) = @_;
+
+    foreach my $file (@{_ddl_files($self)}) {
+        next unless $file =~ /constraints/;
+  	$self->put(input => $file)->run;
+    }
+    return;
 }
 
 =for html <a name="reinitialize_sequences"></a>
