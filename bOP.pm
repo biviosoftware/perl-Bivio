@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::DateTimeMode->FULL_MONTH_AND_YEAR_UC and widget support added
+  * Bivio::UI::HTML::Widget::FormField wraps label in String widget
+  * Bivio::Util::LinuxConfig->add_user checks uid correctly
 
   Revision 1.34  2002/12/10 04:49:50  nagler
   * AdmSubstituteUserForm clears query before redirect
