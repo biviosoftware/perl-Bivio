@@ -918,14 +918,12 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/edit/member/privileges
         Bivio::Biz::Model::ClubUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_real_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::ClubMemberTitleForm
         Bivio::UI::HTML::Club::EditMemberTitle
         next=CLUB_ADMIN_USER_DETAIL
         help=changing-privileges
     )],
-#TODO: not implemented
-#        Bivio::Biz::Action::TargetRealm->execute_this_real_member
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LOOKUP
         80
