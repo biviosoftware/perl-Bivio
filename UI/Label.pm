@@ -445,7 +445,7 @@ _compile([
     SALE_GAIN_DR_HEADING => ["Investment\nSale Gain"],
     UNREALIZED_GAIN_DR_HEADING => ["Unrealized\nGain"],
     FILTRUM_TOP_HOLDINGS_INSTRUMENT_NAME => ["Top Club Holdings"],
-    PERCENT_CLUBS => ["\% Clubs\nWhich Own"],
+    PERCENT_REALMS => ["\% Clubs\nWhich Own"],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
