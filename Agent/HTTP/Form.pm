@@ -157,9 +157,8 @@ sub _parse {
 	    # Convert to simple field for ease of checking in FormModel
 	    $form->{$field->{name}} = $$content;
 	}
-
-        Bivio::IO::Alert->warn('buffer length < 2, buf="', $buf, '"')
-                    if (length($buf) < 2);
+        _read($r, \$buf, \$len, 0x10000, $req)
+                if $len && (length($buf) < 2);
 
 	# Parse the trailing \r\n
 	next if $buf =~ s/^\r\n//;
@@ -167,12 +166,6 @@ sub _parse {
 	# Parse the closing boundary
 	last if $buf =~ s/^--//;
 
-        # Add more info re the corrupt form problem
-        Bivio::IO::Alert->warn('Form contents so far=', $form);
-        Bivio::IO::Alert->warn('Last field=', $field);
-        Bivio::IO::Alert->warn('Last field content=', $$content);
-        Bivio::IO::Alert->warn('Remaining buffer length=', length($buf));
-        Bivio::IO::Alert->warn('Remaining buffer="', $buf, '"');
 	$req->throw_die('CORRUPT_FORM',
 		{message => 'invalid encapsulation or closing boundary',
 		    entity => substr($buf, 0, 20)});
@@ -220,11 +213,9 @@ sub _parse_content {
 	# likely to be a file.
  	$req->throw_die('CORRUPT_FORM', 'Attempt to read past Content-Length')
                 unless $$len;
-	my($j) = $$len < 0x10000 ? $$len : 0x10000;
 
 	# read appends to buffer
-	_read($r, \$value, $j, $req);
-	$$len -= $j;
+	_read($r, \$value, $len, 0x10000, $req);
     }
     return;
 }
@@ -349,11 +340,7 @@ sub _parse_header_line {
  	$req->throw_die('CORRUPT_FORM', 'Attempt to read past Content-Length')
                 unless $$len;
 	# 1000 bytes should hit the header and then some
-	my($i) = $$len < 0x400 ? $$len : 0x400;
-
-	# Read appends to buffer
-	_read($r, $buf, $i, $req);
-	$$len -= $i;
+	_read($r, $buf, $len, 0x400, $req);
 
 	# Got something, adjust values and see if we have a line
 	if ($$buf =~ s/^(.*)\r\n//) {
@@ -364,16 +351,18 @@ sub _parse_header_line {
     $req->throw_die('CORRUPT_FORM', 'header too long');
 }
 
-# _read(Apache r, string_ref buf, int len, Bivio::Agent::Request req)
+# _read(Apache r, string_ref buf, int_ref len, int read_max, Bivio::Agent::Request req)
 #
 # Reads or dies
 #
 sub _read {
-    my($r, $buf, $len, $req) = @_;
-    _trace('_read_len=', $len) if $_TRACE;
-    $r->read($$buf, $len) || $req->throw_die('CLIENT_ERROR', 'read error');
+    my($r, $buf, $len, $read_max, $req) = @_;
+    my($read_bytes) = $$len < $read_max ? $$len : $read_max;
+    $r->read($$buf, $read_bytes)
+            || $req->throw_die('CLIENT_ERROR', 'read error');
     $req->throw_die('CLIENT_ERROR', 'buffer undefined after read')
 	    unless defined($$buf);
+    $$len -= $read_bytes;
 }
 
 =head1 SEE ALSO
