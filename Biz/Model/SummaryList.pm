@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::SummaryList;
 use strict;
 $Bivio::Biz::Model::SummaryList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::SummaryList::VERSION;
 
 =head1 NAME
 
@@ -34,7 +35,6 @@ methods while iterating through the source(s).
 =cut
 
 #=IMPORTS
-use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -201,9 +201,10 @@ sub _sum {
 
     my($result) = 0;
     foreach my $list (@$source) {
+	my($type) = $list->get_field_type($name);
 	$list->reset_cursor;
 	while ($list->next_row) {
-	    $result = Bivio::Type::Amount->add($result, $list->get($name));
+	    $result = $type->add($result, $list->get($name));
 	}
 	$list->reset_cursor;
     }
