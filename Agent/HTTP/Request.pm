@@ -193,6 +193,20 @@ sub put_arg {
     $args{$name} = $value;
 }
 
+=for html <a name="set_view_name"></a>
+
+=head2 set_view_name(string name)
+
+Redirects the requests view to the specified one.
+
+=cut
+
+sub set_view_name {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{view_name} = $name;
+}
+
 #=PRIVATE METHODS
 
 # _parse_request(string uri) : (string, string, view)
