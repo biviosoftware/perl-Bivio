@@ -54,13 +54,39 @@ Visits page associated with the url for the named button.
 =cut
 
 sub click_button {
-    my($proto, $label) = @_;
-    my($parsed_res) = Bivio::Test::BulletinBoard->get_current->get('response');
+    my($proto, $target) = @_;
+    my($board) = Bivio::Test::BulletinBoard->get_current();
+    my($parsed_res) = $board->get('response');
     die ("Must visit a page before clicking on a button.")
 	    unless (defined $parsed_res);
-    my($uri_to_visit) = $parsed_res->get_button_uri($label);
-    _trace("Uri for button: $uri_to_visit") if $_TRACE;
-    $proto->visit($_BASE_URI.$uri_to_visit);
+    my($uri_to_request) = $parsed_res->get_uri('buttons', $target);
+    _trace("Uri for button: $uri_to_request") if $_TRACE;
+    $board->get('HTTPUtil')->http_href($_BASE_URI.$uri_to_request);
+    return;
+}
+
+=for html <a name="click_imagemenu"></a>
+
+=head2 click_imagemenu(string target, optional string subtarget)
+
+Visits page associated with the url for the target portion of the imagemenu.
+The optional argument subtitle is used for accessing the expanded part of the
+imagemenu.
+
+=cut
+#TODO: subtarget won't be optional until the other parts of imagemenu are there
+sub click_imagemenu {
+    my($proto, $target, $subtarget) = @_;
+    my($board) = Bivio::Test::BulletinBoard->get_current();
+    my($parsed_res) = $board->get('response');
+    die ("Must visit a page before clicking on imagemenu.")
+	    unless (defined $parsed_res);
+
+    my($uri_to_request) = $parsed_res->get_uri(
+	    'imagemenu', $target, $subtarget);
+    _trace("Uri for imagemenu: $uri_to_request") if $_TRACE;
+
+    $board->get('HTTPUtil')->http_href($_BASE_URI.$uri_to_request);
     return;
 }
 
@@ -110,8 +136,9 @@ sub handle_config {
 
 =head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
 
-Visits the page specified by url (which may be dynamically passed) and puts the
-response and url in the current BulletinBoard object.
+Visits the page specified by uri and puts the response and uri in the current
+BulletinBoard object.  The uri may be the path beyond a base uri which will be
+substituted in.
 
 =cut
 
@@ -119,6 +146,10 @@ sub visit {
     my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
+    unless ($uri =~ /http:/) {
+	$uri =~ s/(.*)/$_BASE_URI$1/;
+	_trace("Full uri is: $uri") if $_TRACE;
+    }
     Bivio::Test::BulletinBoard->get_current->get('HTTPUtil')->http_href(
 	    $uri);
     return;
