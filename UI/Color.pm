@@ -74,6 +74,7 @@ __PACKAGE__->compile(
 	'detail_chooser',
 	'page_heading',
 	'form_field_in_text',
+	'text_menu_font',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,
@@ -94,9 +95,9 @@ __PACKAGE__->compile(
 	'action_bar_bg',
 	'text_menu_line',
     ],
-    TEXT_MENU_FONT => [
-	0xCC9900,
-    ],
+#    TEXT_MENU_FONT => [
+#	0xCC9900,
+#    ],
 );
 
 =head1 METHODS
