@@ -85,13 +85,13 @@ sub internal_initialize {
 
 =head2 validate()
 
-We force an error so that FormModel doesn't redirect to "next".
+Keep the form on the same page, doesn't redirect to "next".
 
 =cut
 
 sub validate {
     my($self) = @_;
-    $self->internal_put_error(undef, Bivio::TypeError::UNKNOWN());
+    $self->internal_stay_on_page;
     return;
 }
 
