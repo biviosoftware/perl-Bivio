@@ -79,10 +79,12 @@ sub cascade_delete {
     }
 
     # delete entries
-    Bivio::SQL::Connection->execute('
-            DELETE FROM entry_T
-            WHERE realm_transaction_id=?',
-	    [$id]);
+    foreach my $table (qw)entry_t account_sync_t)) {
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE realm_transaction_id=?',
+		[$id]);
+    }
 
     # delete the transaction
     $self->delete();
