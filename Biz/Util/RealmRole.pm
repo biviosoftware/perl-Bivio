@@ -366,6 +366,7 @@ __DATA__
 # GENERAL Permissions
 #
 b-realm-role GENERAL ANONYMOUS - \
+    +LOGIN \
     +MAIL_WRITE
 b-realm-role GENERAL USER - \
     +ANONYMOUS \
@@ -384,6 +385,7 @@ b-realm-role GENERAL ADMINISTRATOR +
 # USER Permissions
 #
 b-realm-role USER ANONYMOUS - \
+    +LOGIN \
     +MAIL_WRITE
 b-realm-role USER USER - \
     +ANONYMOUS
@@ -402,6 +404,7 @@ b-realm-role USER ADMINISTRATOR +
 # CLUB Permissions
 #
 b-realm-role CLUB ANONYMOUS - \
+    +LOGIN \
     +MAIL_WRITE
 b-realm-role CLUB USER - \
     +ANONYMOUS
