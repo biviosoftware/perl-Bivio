@@ -180,11 +180,4 @@ $Id$
 
 =cut
 
-
-# for testing
-#use Bivio::Agent::HTTP::TestController();
-#Bivio::Agent::HTTP::TestController->create_test_site();
-
-# site initialization - should be from config file
-
 1;
