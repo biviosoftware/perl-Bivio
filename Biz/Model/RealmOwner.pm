@@ -396,6 +396,9 @@ sub unauth_load_by_email {
     return $self->unauth_load(@query, realm_id => $em->get('realm_id'))
 	    if $em->unauth_load(email => $email);
 
+    # not continuing if job request, to avoid a missing facade with ShellUtil
+    return 0 if $req->isa('Bivio::Agent::Job::Request');
+
     # Strip off @mail_host and validate resulting name
     my($mail_host) = '@'.Bivio::UI::Text->get_value('mail_host', $req);
     return 0 unless $email =~ s/\Q$mail_host\E$//i;
