@@ -81,7 +81,7 @@ __PACKAGE__->compile(
     EXISTS => [
 	9,
 	undef,
-	'name already exists',
+	'already exists',
     ],
     MONTH => [
 	10,
@@ -198,7 +198,7 @@ __PACKAGE__->compile(
     EMAIL => [
 	32,
 	undef,
-	'invalid email address',
+	'invalid email address; should be of the form mary@aol.com',
     ],
     EMAIL_DOMAIN_LITERAL => [
 	33,
@@ -214,6 +214,31 @@ __PACKAGE__->compile(
 	35,
 	undef,
 	'invalid phone number',
+    ],
+    DEMO_CLUB_SUFFIX => [
+	36,
+	undef,
+	'name may not end in _demo_club',
+    ],
+    UNSPECIFIED => [
+	37,
+	undef,
+	'field may not be unspecified',
+    ],
+    ALREADY_INVITED => [
+	38,
+	undef,
+	'an invitation was already extended to this person',
+    ],
+    CLUB_USER_ROLE => [
+	39,
+	undef,
+	'can only be Guest, Member, Accountant, or Administrator',
+    ],
+    LAST_CLUB_ADMIN => [
+	40,
+	undef,
+	'there must be at least one Administrator in a club',
     ],
 );
 
