@@ -56,8 +56,9 @@ my($_DOCUMENT_TASK);
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_GENERAL);
 my($_DOCUMENT_ROOT) = undef;
+my($_HELP_ROOT) = undef;
 Bivio::IO::Config->register({
-    document_root => undef,
+    document_root => Bivio::IO::Config->REQUIRED,
 });
 
 =head1 METHODS
@@ -133,7 +134,21 @@ Returns the document root.
 =cut
 
 sub get_document_root {
+    die(__PACKAGE__, 'not initialized') unless $_DOCUMENT_ROOT;
     return $_DOCUMENT_ROOT;
+}
+
+=for html <a name="get_help_root"></a>
+
+=head2 get_help_root() : string
+
+Returns the help system root.
+
+=cut
+
+sub get_help_root {
+    die(__PACKAGE__, 'not initialized') unless $_HELP_ROOT;
+    return $_HELP_ROOT;
 }
 
 =for html <a name="handle_config"></a>
@@ -142,7 +157,7 @@ sub get_document_root {
 
 =over 4
 
-=item document_root : string [undef]
+=item document_root : string (required)
 
 If defined, URIs not found by the normal mechanism will be sought
 for in this directory.  The realm is specified by
@@ -155,7 +170,6 @@ C<HTTP_DOCUMENT> task.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_DOCUMENT_ROOT = $cfg->{document_root};
-    return unless defined($_DOCUMENT_ROOT);
     die("$_DOCUMENT_ROOT: not a directory") unless -d $_DOCUMENT_ROOT;
     $_DOCUMENT_ROOT =~ s!([^/])$!$1/!;
     return;
@@ -274,14 +288,16 @@ sub initialize {
 		unless $got_one;
     }
 
-    # Make sure HTTP_DOCUMENT is defined if $_DOCUMENT_ROOT is defined
-    if (defined($_DOCUMENT_ROOT)) {
-	$_DOCUMENT_TASK
-		= $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}
-			->{task};
-	die('HTTP_DOCUMENT: task must be configured if document_root set')
-	    unless $_DOCUMENT_TASK;
-    }
+    # Make sure HTTP_DOCUMENT is defined
+    $_DOCUMENT_TASK = $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}
+	    ->{task};
+    die('HTTP_DOCUMENT: task must be configured') unless $_DOCUMENT_TASK;
+
+    # Configure HELP_ROOT
+    my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
+    die('HELP: task not configured') unless $help;
+    $_HELP_ROOT = $_DOCUMENT_ROOT.$help->{uri};
+    die("HELP_ROOT: $_HELP_ROOT: not a directory") unless -d $_HELP_ROOT;
 
     # Make sure all URIs don't collide with path_info uris
     foreach my $piu (keys(%path_info_uri)) {
