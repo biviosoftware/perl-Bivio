@@ -100,7 +100,7 @@ __PACKAGE__->compile(
     'W' => [
 	7,
 	'west',
-	'',
+	' align=left',
     ],
     'NW' => [
 	8,
@@ -115,7 +115,7 @@ __PACKAGE__->compile(
     LEFT => [
 	10,
 	undef,
-	'',
+	' align=left',
     ],
     RIGHT => [
 	11,
