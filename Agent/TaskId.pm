@@ -397,7 +397,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ
         ?/admin/payments
-        Bivio::Biz::Model::ECPaymentList->execute_load_all_with_query
+        Bivio::Biz::Model::ECPaymentList->execute_load_page
         Bivio::UI::HTML::Club::ECPaymentList
         next=CLUB_ADMIN_PAYMENTS
     )],
