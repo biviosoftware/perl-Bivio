@@ -105,7 +105,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/members
-	Bivio::UI::Admin::UserListView
+	Bivio::Biz::ListModel::ClubUser
+	Bivio::UI::HTML::Club::UserList
     )],
     [qw(
 	SETUP_USER_CREATE
