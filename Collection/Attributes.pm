@@ -260,6 +260,18 @@ sub get_or_default {
     return exists($fields->{$name}) ? $fields->{$name} : $default;
 }
 
+=for html <a name="get_shallow_copy"></a>
+
+=head2 get_shallow_copy() : hash_ref
+
+Return a shallow copy of the attributes.
+
+=cut
+
+sub get_shallow_copy {
+    return {%{shift->{$_PACKAGE}}};
+}
+
 =for html <a name="get_widget_value"></a>
 
 =head2 get_widget_value(string param1, ...) : string
@@ -337,6 +349,7 @@ sub get_widget_value {
     else {
 	# No such key, try to call the method on $param1
 	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
+
 	if (UNIVERSAL::can($param1, 'get_widget_value')) {
 	    # Have to have params to call get_widget_value
 	    return $param1->get_widget_value(@_) if @_;
