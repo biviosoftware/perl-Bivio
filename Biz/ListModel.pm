@@ -285,9 +285,7 @@ sub format_query {
 	Carp::croak('not loaded') unless $fields->{rows};
     }
 
-#TODO: may not be the right place to escape the uri
-    return Bivio::Util::escape_uri($fields->{query}->$method(
-	    $self->internal_get_sql_support(), $arg));
+    return $fields->{query}->$method($self->internal_get_sql_support(), $arg);
 }
 
 =for html <a name="format_uri"></a>
