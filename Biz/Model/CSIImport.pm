@@ -62,21 +62,27 @@ sub internal_initialize {
 
 =head2 processRecord(string date, string type, array_ref fields) : boolean
 
-Process records
-
-TODO: Do something with it.
+Process various non-essential records
 
 =cut
 
 sub processRecord {
     my($self, $date, $type, $fields) = @_;
+    if (ref($type) eq 'ARRAY') {
+        # Is an error correction record
+        $type = $type->[0];
+    }
     if ($type eq Bivio::Data::CSI::RecordType::FILE_HEADER_TRAILER()) {
+        # no-op
     }
     elsif ($type eq Bivio::Data::CSI::RecordType::TEXT_MESSAGE()) {
+        Bivio::IO::Alert->warn(join(',', @$fields));
     }
     elsif ($type eq Bivio::Data::CSI::RecordType::STOCK_EXCHANGE_STATISTICS()) {
+        # no-op
     }
     elsif ($type eq Bivio::Data::CSI::RecordType::MOST_ACTIVE_STOCKS()) {
+        # no-op
     }
     else {
         Bivio::Die->die('Cannot process record type: ',
@@ -88,7 +94,7 @@ sub processRecord {
 
 # _initialize()
 #
-#
+# Register record types
 #
 sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,
