@@ -34,6 +34,8 @@ and delete interface to the C<user_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Enum;
 use Bivio::Type::Gender;
@@ -47,6 +49,34 @@ use Bivio::Type::Location;
 =head1 METHODS
 
 =cut
+
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes this user and all its related realm information. This will not
+delete club RealmUser data, and if it exists then this method will die.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+
+    my($id) = $self->get('user_id');
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    $realm->unauth_load(realm_id => $id)
+	    || die("couldn't load realm from club");
+    # delete this user's RealmUser
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($self->get_request);
+    $realm_user->unauth_load(realm_id => $id, user_id => $id)
+	    || die("couldn't find user's RealmUser");
+    $realm_user->delete();
+    $self->delete();
+
+    # delete realm specified data (email, address, ...)
+    $realm->cascade_delete();
+    return;
+}
 
 =for html <a name="create"></a>
 
