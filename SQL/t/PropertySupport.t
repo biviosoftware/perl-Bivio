@@ -42,18 +42,19 @@ eval {
 eval {
     Bivio::SQL::Connection->execute("drop sequence $_SEQUENCE");
 };
+Bivio::SQL::Connection->commit;
 Bivio::SQL::Connection->execute(<<"EOF");
 create table $_TABLE (
-    $_ID NUMBER(18) primary key,
+    $_ID NUMERIC(18) primary key,
     name VARCHAR(30),
     line VARCHAR(100),
     text VARCHAR(500),
-    amount NUMBER(20,7),
-    boolean NUMBER(1) CHECK (boolean BETWEEN 0 AND 1) NOT NULL,
+    amount NUMERIC(20,7),
+    boolean NUMERIC(1) CHECK (boolean BETWEEN 0 AND 1) NOT NULL,
     date_time DATE,
     dt DATE,
     tm DATE,
-    gender NUMBER(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL
+    gender NUMERIC(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL
 )
 EOF
 Bivio::SQL::Connection->execute(<<"EOF");
