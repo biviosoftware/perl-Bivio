@@ -60,12 +60,13 @@ Bivio::Test->unit([
 	    'select count(*), (select sum(f1) from t_leftjoin_t4
 			       where t_leftjoin_t4.f2 > 1) as f3
 	     from t_leftjoin_t1, t_leftjoin_t2
-	     where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3,5]],
-	     'select count(*),
+	     where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3, 5]],
+	    'select t_leftjoin_t1.f1,
 		   (select sum(t_leftjoin_t3.f2) from t_leftjoin_t3
 		    where t_leftjoin_t3.f1=t_leftjoin_t1.f1) as f3
 	      from t_leftjoin_t1, t_leftjoin_t2
-	      where t_leftjoin_t1.f1=t_leftjoin_t2.f1(+)' => [[3,3]],
+	      where t_leftjoin_t1.f1=t_leftjoin_t2.f1(+)
+              order by t_leftjoin_t1.f1 asc' => [[1, undef]],
        ],
     ],
 ]);
