@@ -274,7 +274,7 @@ sub delete {
     }
 
     # Can't delete the root
-    $self->throw_die('NOT_FOUND', {message => ,
+    $self->throw_die('NOT_FOUND', {message => 'tried to delete root',
 	volume => $args->{volume}->get_name,
 	file_id => $args->{file_id}})
 	    if $args->{file_id} eq $args->{volume}->get_root_directory_id(
@@ -391,7 +391,7 @@ sub extract_mime_content_type {
 =head2 static extract_mime_filename(Bivio::Biz::ListModel list_model, string model_prefix) : string
 
 Treats aux_info field as a MIME header to find the (file)name specified.
-Strips a leading path. Returns first occurence if found. If not, it
+
 will create a name "download.<ext>" where <ext> matches the content-type.
 
 Sample "aux_info" entries:
