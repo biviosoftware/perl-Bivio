@@ -33,6 +33,10 @@ which registered for that request.
 
 =cut
 
+sub _DEFAULT_HTTP_CONTROLLER_NAME {
+    return 'human';
+}
+
 #=VARIABLES
 
 # The controller implementations array lookup, keyed by name.
@@ -56,7 +60,8 @@ the request.
 sub handler {
     my($r) = @_;
 
-    my($request) = Bivio::Agent::HTTP::Request->new($r);
+    my($request) = Bivio::Agent::HTTP::Request->new($r,
+	   _DEFAULT_HTTP_CONTROLLER_NAME());
 
     _process_request($request);
 #    eval '_process_request($request);' || die($@);
