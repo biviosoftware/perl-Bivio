@@ -53,12 +53,16 @@ __PACKAGE__->compile([
     ],
     VISA => [
         1,
+	'Visa',
     ],
     MASTERCARD => [
         2,
+	'MasterCard',
     ],
     AMEX => [
         3,
+	'Amex',
+	'American Express',
     ],
 ]);
 
