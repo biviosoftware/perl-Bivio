@@ -1373,9 +1373,9 @@ sub _redirect {
 	_trace('no form, client_redirect: ', $c->{unwind_uri},
 		'?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
-	# better.
-	$req->client_redirect($c->{unwind_uri}, $c->{'query'},
-		$c->{'path_info'});
+	# better.  We don't add in path_info, because it is already on
+	# the URI.
+	$req->client_redirect($c->{unwind_uri}, $c->{'query'});
 	# DOES NOT RETURN
     }
 
