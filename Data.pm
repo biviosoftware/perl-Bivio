@@ -38,10 +38,10 @@ sub lookup ($$$)
     # the (_REL_HOME) tree.  A user could type "foo/../../../anyfile" to
     # screw up this package...
     length($file) > &MAX_FILE_LENGTH &&
-	$br->declined(substr($file, 0, &MAX_FILE_LENGTH),
+	$br->not_found(substr($file, 0, &MAX_FILE_LENGTH),
 		      '...: file too long (', length($file), ' chars)');
     $file =~ m<[^\w/]> &&
-	$br->declined($file, ': file contains invalid characters');
+	$br->not_found($file, ': file contains invalid characters');
     defined($_Home) || ($_Home = $br->r->document_root . &_REL_HOME);
     my($absfile) = $_Home . $file . '.pl';
     local($SIG{__WARN__}) = sub { die @_ }; 		# perl be quiet, please
