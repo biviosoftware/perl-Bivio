@@ -573,16 +573,10 @@ sub _setup_facade {
     return if $facade->get('is_default');
 
     # Not the default facade
-    my($http_host, $mail_host, $support_email)
-	    = $req->get(qw(http_host mail_host support_email));
+    my($http_host) = $req->get(qw(http_host));
     my($uri) = $facade->get('uri');
     $http_host =~ s/^(?:www\.)?/$uri./;
-    $mail_host =~ s/^(?:www\.)?/$uri./;
-    # Won't replace if $support_email has no host iwc it will be
-    # set to $mail_host.
-    $support_email =~ s/\@(?:www\.)?/\@$uri./;
-    $req->put(http_host => $http_host, mail_host => $mail_host,
-	    support_email => $support_email);
+    $req->put(http_host => $http_host);
     return;
 }
 
