@@ -451,7 +451,6 @@ sub _parse_order_by {
     }
     # Add in order_by values not explicitly listed.
     foreach my $ob (@$order_by) {
-print STDERR $ob, ' ', $columns->{$ob}->{sort_order}, "\n";
 	push(@$res, $ob, $columns->{$ob}->{sort_order})
 		unless grep($_ eq $ob, @$res);
     }
