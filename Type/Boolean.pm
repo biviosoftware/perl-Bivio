@@ -177,6 +177,19 @@ sub to_sql_param {
     return !defined($v) ? undef : $v ? '1' : '0';
 }
 
+=for html <a name="to_xml"></a>
+
+=head2 to_xml(string value) : string
+
+Returns true or false.
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return !defined($value) ? '' : $value ? 'true' : 'false';
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

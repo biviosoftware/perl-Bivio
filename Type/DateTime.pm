@@ -633,6 +633,20 @@ sub to_unix {
     return ($date - UNIX_EPOCH_IN_JULIAN_DAYS()) * SECONDS_IN_DAY() + $time;
 }
 
+=for html <a name="to_xml"></a>
+
+=head2 static to_xml(string value) : string
+
+Converts to a string and escapes for XML.
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    return Bivio::Util::escape_html($proto->to_string($value));
+}
+
 #=PRIVATE METHODS
 
 # _initialize()
