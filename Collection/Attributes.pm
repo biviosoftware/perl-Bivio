@@ -277,7 +277,7 @@ sub get_widget_value {
 		$value = $self->get_widget_value(@$param1);
 	    }
 	    elsif (ref($param1) eq 'CODE') {
-		$value = &$value($self);
+		$value = &$param1($self);
 	    }
 	    else {
 		Carp::croak("$param1: not found and can't get_widget_value");
