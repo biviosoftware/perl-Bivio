@@ -193,6 +193,28 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="is_account_keeper"></a>
+
+=head2 is_account_keeper() : boolean
+
+Returns true if the current account is an active AccountKeeper customer.
+
+=cut
+
+sub is_account_keeper {
+    my($self) = @_;
+    my($subscriptions) = Bivio::Biz::Model->new($self->get_request,
+	    'ECSubscriptionList')->load_all;
+
+    while ($subscriptions->next_row) {
+	next unless $subscriptions->get('ECSubscription.subscription_type')
+		== Bivio::Type::ECSubscription->ACCOUNT_KEEPER;
+	return 1
+		if $subscriptions->get_model('ECSubscription')->is_running;
+    }
+    return 0;
+}
+
 =for html <a name="unsafe_load_default"></a>
 
 =head2 unsafe_load_default() : boolean
