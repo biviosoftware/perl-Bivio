@@ -222,9 +222,15 @@ sub rename {
     $realm->unauth_load(realm_id => $self->get('club_id'))
 	    || die("couldn't load realm from club");
 
-    # order is important here
-    Bivio::Biz::Model::MailMessage->rename_club($realm, $new_name);
+#TODO: Catch file server error on rename, so doesn't look bad to user
+#      when we lose the race.
+    # order is important here, because if the name is already taken
+    # we will get a uniqeness constraint violation and a Form can
+    # generate the proper error message.  Once we've changed the
+    # database, we can be pretty sure the file name will change successfully.
+    my($old_name) = $realm->get('name');
     $realm->update({name => $new_name});
+    Bivio::Biz::Model::MailMessage->rename_club($old_name, $new_name);
     return;
 }
 

@@ -325,17 +325,17 @@ sub make_mime_uri {
 
 =for html <a name="rename_club"></a>
 
-=head2 rename_club(Bivio::Biz::Model::RealmOwner club, string new_name)
+=head2 rename_club(string old_name, string new_name)
 
-Renames the yet-to-be-reanmed club's file server directory to the new name.
-See L<Bivio::Biz::Model::Club::rename|Bivio::Biz::Model::Club/"rename">.
+B<ONLY TO BE CALLED BY
+L<Bivio::Biz::Model::Club::rename|Bivio::Biz::Model::Club/"rename">.>
 
 =cut
 
 sub rename_club {
-    my($self, $club, $new_name) = @_;
+    my($self, $old_name, $new_name) = @_;
     my($res);
-    my($s, $d) = ($club->get('name'), $new_name);
+    my($s, $d) = ($old_name, $new_name);
     $_FILE_CLIENT->rename($s, $d, \$res) || die("copy $s $d: $res");
     return;
 }
