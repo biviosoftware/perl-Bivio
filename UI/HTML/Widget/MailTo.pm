@@ -60,6 +60,10 @@ Text to use for subject of mailto.
 
 Used to render value.
 
+=item want_link : boolean [1]
+
+By default, render as a link.  Otherwis, just render the email address.
+
 =back
 
 =cut
@@ -144,6 +148,7 @@ sub initialize {
 	});
 	$fields->{value_invalid}->initialize;
     }
+    $fields->{want_link} = $self->get_or_default('want_link', 1);
     return;
 }
 
@@ -179,12 +184,16 @@ sub render {
 	    $fields->{value_widget}->render($source, $buffer);
 	}
     }
-    else {
+    elsif ($fields->{want_link}) {
 	# Not ignored email
 	$$buffer .= '<a href="'
 		.$req->format_mailto($email, $fields->{subject}).'">';
 	$fields->{value_widget}->render($source, $buffer);
 	$$buffer .= '</a>';
+    }
+    else {
+	# Don't render the link
+	$fields->{value_widget}->render($source, $buffer);
     }
     return;
 }
