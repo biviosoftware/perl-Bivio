@@ -535,6 +535,9 @@ sub initialize_standard_support {
     $self->group(filtrum_holdings => $_W->join([
 	[sub {${Bivio::Biz::Util::Filtrum->realm_file('holdings_file')}}],
     ]));
+    $self->group(club_index => $_W->join([
+	[sub {${Bivio::Biz::Util::Filtrum->realm_file('club_index_file')}}],
+    ]));
     $self->group(home_login => $_W->load_and_new('HomeLogin'));
     $self->group(home_login_image => $_W->load_and_new('HomeLoginImage'));
     $self->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
