@@ -210,34 +210,52 @@ sub new {
 
 =head2 load(Bivio::SQL::ListQuery query, ref die) : array_ref
 
+=head2 load(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : array_ref
+
 Loads the specified rows with data using the parameterized where_clause
 and substitution values. At most the specified max rows will be loaded.
 Data will be loaded starting at the specified index into the result set.
 
+If I<where> is supplied, it will be added to the internally generated
+select with I<params>.
+
 =cut
 
 sub load {
-    my($self, $query, $die) = @_;
+    my($self, $query, $where, $params, $die);
+    if (int(@_) > 3) {
+	($self, $query, $where, $params, $die) = @_;
+    }
+    else {
+	($self, $query, $die) = @_;
+    }
+    my($select) = $self->unsafe_get('select');
     # If no select such just return an empty list.
-    return $self->has_keys('select') ? _load_list($self, $query, $die) : [];
+    return [] unless $select;
+    my($fob_start);
+    $select .= $where if $where;
+    my($statement) = _execute_select($self, $query, $select,
+	    $params || [], \$fob_start);
+    return _load_list($self, $query, $statement, $fob_start, $die);
 }
 
 #=PRIVATE METHODS
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, scalar_ref fob_start) : DBI::Statement
+# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string select, array_ref params, scalar_ref fob_start) : DBI::Statement
 #
 # Create and execute the select statement based on query and auth_id.
+# Assumes select takes an "auth_id" as the first element, so unshifts
+# onto "params" instead of pushing.
 #
 sub _execute_select {
-    my($self, $query, $fob_start) = @_;
+    my($self, $query, $select, $params, $fob_start) = @_;
     my($attrs) = $self->internal_get;
     my($auth_id) =  $query->get('auth_id');
-    my(@params) = Bivio::Type::PrimaryId->to_sql_param($auth_id);
-    my($select) = $attrs->{select};
+    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($auth_id));
     $$fob_start = @{$attrs->{order_by}}
-	    ? _format_select_order_by($attrs, $query, \$select, \@params)
+	    ? _format_select_order_by($attrs, $query, \$select, $params)
 		    : undef;
-    return Bivio::SQL::Connection->execute($select, \@params);
+    return Bivio::SQL::Connection->execute($select, $params);
 }
 
 # _format_select_order_by(hash_ref attrs, Bivio::SQL::ListQuery query, string_ref select, array_ref params) : any
@@ -409,7 +427,7 @@ sub _init_column_lists {
     return;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, ref die) : array_ref
+# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, any fob_start, ref die) : array_ref
 #
 # Load a list from a list query.  The complexity is caused by trying to pick up
 # where we left off.  Rows can disappear so it is insufficient to simply search
@@ -417,14 +435,12 @@ sub _init_column_lists {
 # first order_by value.  The first order by value is set by ListQuery to limit
 # the result set to the just_prior->fob_value.
 #
-# Searching for this is similar to just_prior, but we return the one row
+# Searching for "this" is similar to just_prior, but we return the one row
 # containing this.
 #
 sub _load_list {
-    my($self, $query, $die) = @_;
+    my($self, $query, $statement, $fob_start, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($fob_start);
-    my($statement) = _execute_select($self, $query, \$fob_start);
     my($auth_id, $count, $is_forward, $just_prior, $order_by, $this)
 	    = $query->get(
 		    qw(auth_id count is_forward just_prior order_by this));
