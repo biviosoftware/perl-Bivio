@@ -219,76 +219,63 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_add_csi_index();
-    _upgrade_account_sync_index();
-    _upgrade_mail_t();
+    _upgrade_no_admins();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_account_sync_index()
+# _upgrade_no_admins()
 #
-# Replaces the account_sync_t primary key with an index.
+# Find clubs without admins and make the oldest non-shadow an admin.
 #
-sub _upgrade_account_sync_index {
-    print("replacing account_sync_t primary key with index\n");
-    _do_sql('
-ALTER TABLE account_sync_t DROP CONSTRAINT account_sync_t1
+sub _upgrade_no_admins {
+    my($sth) = _do_sql("
+SELECT realm_id
+  FROM realm_owner_t r1
+  WHERE r1.realm_type = 3
+  AND r1.realm_id > 3
+  AND NOT EXISTS (
+    SELECT realm_user_t.realm_id
+    FROM realm_user_t, realm_owner_t
+    WHERE role = 7
+    AND realm_user_t.user_id = realm_owner_t.realm_id
+    AND realm_owner_t.name NOT LIKE '=%'
+    AND realm_user_t.realm_id = r1.realm_id
+  )
+  ORDER BY realm_id
 /
-CREATE INDEX account_sync_t6 on account_sync_t (
-  realm_transaction_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-');
-    return;
-}
-
-# _upgrade_add_csi_index()
-#
-# Adds the csi_instrument_t.instrument_id index.
-#
-sub _upgrade_add_csi_index {
-    print("creating index csi_instrument_t4\n");
-    _do_sql('
-CREATE UNIQUE INDEX csi_instrument_t4 on csi_instrument_t (
-  instrument_id
-)
-  tablespace index_1m
-  pctfree 10 initrans 2 storage (freelists 1)
-/
-');
-    return;
-}
-
-# _upgrade_mail_t()
-#
-# Replace is_thread_root with num_replies column
-#
-sub _upgrade_mail_t {
-    print("updating mail_t\n");
-    _do_sql('
-alter table mail_t drop (is_thread_root) cascade constraints
-/
-alter table mail_t add num_replies number(9)
-/
-update mail_t set num_replies=0
-/
-alter table mail_t modify num_replies not null
-/
-');
-    return;
-}
-
-# _upgrade_rethread_mail()
-#
-# Rethread all mail messages
-#
-sub _upgrade_rethread_mail {
-    print("rethreading mail_t\n");
-    use Bivio::Biz::Util::Mail;
-    Bivio::Biz::Util::Mail->main('rethread_all');
+");
+    my(@realms);
+    while (my $row = $sth->fetchrow_arrayref) {
+	push(@realms, $row->[0]);
+    }
+    print("Found ", int(@realms), " realms\n");
+    foreach my $realm_id (@realms) {
+	$sth = Bivio::SQL::Connection->execute("
+SELECT user_id
+FROM realm_user_t, realm_owner_t
+WHERE realm_user_t.realm_id = ?
+AND realm_user_t.user_id = realm_owner_t.realm_id
+AND realm_owner_t.name NOT LIKE '=%'
+ORDER BY role desc, realm_user_t.creation_date_time asc
+",
+	       [$realm_id]);
+	# Find the highest role, oldest user
+	my($row) = $sth->fetchrow_arrayref;
+	unless ($row) {
+	    print("ERROR: no real users ", $realm_id, "\n");
+	    next;
+	}
+	my($user_id) = $row->[0];
+	print("Fixed $realm_id: $user_id\n");
+	Bivio::SQL::Connection->execute('
+UPDATE realm_user_t
+SET honorific = 5, role = 7
+WHERE realm_id = ?
+AND user_id = ?
+',
+		[$realm_id, $user_id]);
+    }
     return;
 }
 
