@@ -47,16 +47,25 @@ my($_FULL_PAD) = '.' . ('0' x $_DECIMAL_MAX);
 
 =for html <a name="get_widget_value"></a>
 
-=head2 static get_widget_value(string amount, $round) : string
+=head2 static get_widget_value(string amount) : string
+
+=head2 static get_widget_value(string amount, int round) : string
 
 Formats a numeric amount to the specified number of decimal digits.
 L<Bivio::Type::Number|Bivio::Type::Number> is used to check whether
 the amount is a valid number.
 
+Default I<round> is two (2).
+
+Returns the empty string if I<amount> is not defined.
+
 =cut
 
 sub get_widget_value {
     my(undef, $amount, $round) = @_;
+
+    return '' unless defined($amount);
+    $round = 2 unless defined($round);
 
     $amount = Bivio::Type::Amount->round($amount, $round);
     my($negative) = $amount =~ /^[-]/;
