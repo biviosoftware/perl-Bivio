@@ -451,20 +451,7 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
         help=account-transactions
     )],
-    [qw(
-        CLUB_ACCOUNTING_INVESTMENT_DETAIL_BUY
-        49
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/investment/detail/buy
-        Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
-        Bivio::Biz::Model::InstrumentBuyForm
-        Bivio::UI::HTML::Club::ExistingInstrumentBuy
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
-        help=investment-transactions
-    )],
+# 49
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SELL
         50
@@ -472,11 +459,10 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/sell
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSaleForm
         Bivio::UI::HTML::Club::InstrumentSale
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -824,7 +810,6 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/investment/delete
-        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -837,7 +822,6 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/delete
-        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_MEMBER_LIST
@@ -849,7 +833,6 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/delete
-        Bivio::Biz::Model::Entry
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
@@ -861,11 +844,10 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/investment/income
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentIncomeForm
         Bivio::UI::HTML::Club::InstrumentIncome
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -875,11 +857,10 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/split
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSplitForm
         Bivio::UI::HTML::Club::InstrumentSplit
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -1713,10 +1694,9 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/charges-paid:?/accounting/investment/charges_paid
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::InstrumentChargesForm
         Bivio::UI::HTML::Club::InstrumentCharges
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -2298,11 +2278,10 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/merger
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentMergerForm
         Bivio::UI::HTML::Club::InstrumentMerger
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -2312,11 +2291,10 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/spin-off
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSpinoffForm
         Bivio::UI::HTML::Club::InstrumentSpinoff
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
@@ -2326,10 +2304,9 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/reinvest
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::InstrumentReinvestForm
         Bivio::UI::HTML::Club::InstrumentReinvest
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
     )],
     [qw(
