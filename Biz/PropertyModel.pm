@@ -193,11 +193,14 @@ sub delete {
     $self = $self->new() unless ref($self);
     return $self->internal_get_sql_support->delete(
 	    _add_auth_id($self, $query), $self);
+#TODO: Need to test this thoroughly
+#    _unload($self, 1);
+#    return $res;
 }
 
 =for html <a name="delete_all"></a>
 
-=head2 static delete_all(hash_ref query) : int
+=head2 delete_all(hash_ref query) : int
 
 Deletes all the models of this type with the specified (possibly
 partial key) query. Returns the number of models deleted.
