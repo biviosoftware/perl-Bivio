@@ -2005,6 +2005,7 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?/reply
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::Biz::Model::MailReplyForm
@@ -2018,6 +2019,7 @@ my(@_CFG) = (
         CLUB
         MAIL_FORWARD
         ?/mail/forward
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailForwardForm
         Bivio::UI::HTML::Club::MailForward
@@ -2029,6 +2031,7 @@ my(@_CFG) = (
         PROXY
         MAIL_FORWARD
         pub/?/forward
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailForwardForm
         Bivio::UI::HTML::Club::MailForward
