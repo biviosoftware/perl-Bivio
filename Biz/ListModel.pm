@@ -376,15 +376,15 @@ sub format_query {
 
 =for html <a name="format_uri"></a>
 
-=head2 format_uri(any type, string uri) : string
-
-=head2 format_uri(string type, hash_ref query_args) : string
-
-=head2 format_uri(string type, Bivio::Agent::TaskId task) : string
+=head2 format_uri(any type, any uri_or_task, hash_ref query_args) : string
 
 Returns the formatted uri for I<type> based on the existing query
-bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
-or I<list_uri> depending on the type.
+bound to this model.  If I<uri_or_task> is not supplied,
+uses current request's I<task_id>.
+
+If I<uri_or_task> is a valid enum name or is an actual TaskId instance,
+I<uri_or_task> will be treated as a task.  Otherwise, I<uri_or_task> will be
+treated as a uri.
 
 If I<query_args> are provided, they'll be added to the query.
 
@@ -393,29 +393,15 @@ which doesn't begin with a leading slash and is already URI-escaped.
 See L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>
 for an example.
 
+B<DEPRECATED USAGE:> If I<uri_or_task> is not supplied, gets
+I<detail_uri> or I<list_uri> from the request.  See
+L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>.
+
 =cut
 
 sub format_uri {
-    my($self, $type, $uri) = @_;
+    my($self, $type, $uri, $query_args, $req) = _format_uri_args(@_);
     my($fields) = $self->{$_PACKAGE};
-    my($req) = $self->get_request;
-
-    # Convert to enum unless already converted
-    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
-
-    my($query_args);
-    if (ref($uri) eq 'HASH') {
-        $query_args = $uri;
-        $uri = undef;
-    }
-    elsif (ref($uri) eq 'Bivio::Agent::TaskId') {
-	$uri = $req->format_stateless_uri($uri);
-    }
-
-    # Need to get the list_uri or detail_uri from the request?
-    # If specific uri not found, use current task.
-    $uri ||= $req->unsafe_get($type->get_uri_attr) ||
-	    $req->format_stateless_uri($req->get('task_id'));
 
     if ($type->get_name =~ /PATH/) {
 	my($c) = $fields->{cursor};
@@ -497,16 +483,16 @@ sub format_uri_for_prev_page {
 
 =for html <a name="format_uri_for_sort"></a>
 
-=head2 format_uri_for_sort(array_ref order_fields, boolean direction) : string
+=head2 format_uri_for_sort(any uri_or_task, array_ref order_fields, boolean direction) : string
 
-Format the URI for THIS_LIST to sort by the fields
+Format I<uri_or_task> for I<THIS_LIST> to sort by the fields
 I<order_fields> and order by I<direction>.
 If I<direction> is undefined, uses the first field's default sort order.
 
 =cut
 
 sub format_uri_for_sort {
-    my($self, $order_fields, $direction) = @_;
+    my($self, $uri_or_task, $order_fields, $direction) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     my($main_field) = $order_fields->[0];
@@ -517,7 +503,8 @@ sub format_uri_for_sort {
     foreach my $field (@$order_fields) {
         push(@order_by, $field, $main_order);
     }
-    return $self->format_uri('THIS_LIST', {order_by => \@order_by});
+    return $self->format_uri('THIS_LIST',
+	    $uri_or_task, {order_by => \@order_by});
 }
 
 =for html <a name="format_uri_for_this"></a>
@@ -1364,6 +1351,46 @@ sub _assert_all {
 	    .$self->LOAD_ALL_SIZE.' records')
 	    if $fields->{query}->get('has_next');
     return;
+}
+
+# _format_uri_args(self, any type, any uri, hash_ref query_args) : array
+#
+# Returns ($self, $type, $uri, $query_args, $req) from the arguments.
+# 
+#
+sub _format_uri_args {
+    my($self, $type, $uri, $query_args) = @_;
+    my($req) = $self->get_request;
+
+    # Convert to enum unless already converted
+    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
+
+#TODO: Remove once tested to not be in use any more
+    $self->die('query_args must be third arg')
+	    if ref($uri) eq 'HASH';
+
+    Bivio::Die->die('query_args ', $query_args, ' not allowed for ', $type)
+	    if $query_args && $type != Bivio::Biz::QueryType->THIS_LIST;
+
+    if (defined($uri)) {
+	unless (ref($uri)) {
+	    $uri = Bivio::Agent::TaskId->$uri()
+		    if Bivio::Agent::TaskId->is_valid_name($uri);
+	}
+	if (ref($uri)) {
+	    $self->die('unknown type for uri_or_task: ', $uri)
+		    unless ref($uri) eq 'Bivio::Agent::TaskId';
+	    $uri = $req->format_stateless_uri($uri);
+	}
+    }
+    else {
+	# Need to get the list_uri or detail_uri from the request?
+	# If specific uri not found, use current task.
+#TODO: DEPRECATED usage if there is a detail_uri or list_uri.
+	$uri = $req->unsafe_get($type->get_uri_attr) ||
+		$req->format_stateless_uri($req->get('task_id'));
+    }
+    return ($self, $type, $uri, $query_args, $req);
 }
 
 # _load_this(self, Bivio::SQL::ListQuery query)
