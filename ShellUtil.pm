@@ -602,9 +602,9 @@ child must be designed to be robust.
 
 sub lock_action {
     my(undef, $op, $name) = @_;
-    return _deprecated_lock_action(@_)
+    return _deprecated_lock_action($op || (caller(1))[3])
 	unless ref($op) eq 'CODE';
-    my($lock_dir, $lock_pid) = _lock_files($name);
+    my($lock_dir, $lock_pid) = _lock_files($name || (caller(1))[3]);
     for my $retry (1, 0) {
 	last if mkdir($lock_dir, 0700);
 	unless ($retry) {
@@ -1093,7 +1093,6 @@ sub _compile_options {
 #
 sub _deprecated_lock_action {
     my(undef, $action) = @_;
-    $action ||= (caller(1))[3];
     my($dir) = "/tmp/$action.lockdir";
     return _lock_warning($dir)
 	unless mkdir($dir, 0700);
@@ -1134,7 +1133,6 @@ sub _initialize {
 #
 sub _lock_files {
     my($name) = @_;
-    $name ||= (caller(1))[3];
     $name =~ s/::/./g;
     my($d) = '/tmp/' . $name . '.lockdir';
     return ($d, "$d/pid");
