@@ -295,7 +295,13 @@ and we will try to import your data.
 AddMemberListForm
 RealmOwner.display_name
 EXISTS
-This person is already a member of your club.
+This person is already belongs to your club.
+%%
+AddMemberListForm InviteGuestListForm InviteMemberListForm
+RealmInvite.email
+EXISTS
+This person already belongs to your club or
+has already been extended an invite.
 %%
 CreateDirectoryForm
 File.name_sort
