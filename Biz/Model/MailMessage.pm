@@ -484,7 +484,7 @@ sub _get_mime_part_info {
     $body =~ /(Content-Type: *)(\w*\/\w*)/;
     my $type = $2;
     $body =~ /(X-BivioNumParts: *)(\d+)/;
-    my $numparts = $2;
+    my $numparts = defined($2) ? $2 : 0;
     return {
 	type => $type,
 	numparts => $numparts,
