@@ -130,7 +130,6 @@ use Bivio::UI::LocalFileType;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_INITIALIZED) = 0;
 # Map of facade classes to instances
 my(%_CLASS_MAP);
@@ -675,7 +674,7 @@ sub _load {
 #
 sub _setup_request {
     my($self, $req) = @_;
-    $req->put_durable($_PACKAGE => $self);
+    $req->put_durable(__PACKAGE__, $self);
     _trace($self) if $_TRACE;
     return $self;
 }

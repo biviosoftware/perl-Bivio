@@ -258,7 +258,6 @@ use Bivio::UI::ViewLanguage;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_SUFFIX) = __PACKAGE__->SUFFIX;
 my($_CURRENT);
 # Only used during compiles
@@ -319,7 +318,7 @@ sub execute {
     # Used by the view values
     my($prev_current) = $_CURRENT;
     $_CURRENT = $self;
-    $req->put($_PACKAGE => $self);
+    $req->put(__PACKAGE__, $self);
 
     # Execute user defined code
     my($die) = Bivio::Die->catch(sub {
@@ -329,10 +328,10 @@ sub execute {
     });
 
     if ($prev_current) {
-	$req->put($_PACKAGE => $prev_current);
+	$req->put(__PACKAGE__, $prev_current);
     }
     else {
-	$req->delete($_PACKAGE);
+	$req->delete(__PACKAGE__);
     }
     $_CURRENT = $prev_current;
     if ($die) {
