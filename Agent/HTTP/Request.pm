@@ -192,10 +192,10 @@ sub client_redirect {
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
-	if (ref($new_query)) {
-	    my($query) = Bivio::Agent::HTTP::Query->format($new_query);
-	    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query);
-	}
+	$new_query = Bivio::Agent::HTTP::Query->format($new_query)
+		if ref($new_query);
+	$uri =~ s/\?/\?$new_query&/ || ($uri .= '?'.$new_query)
+		if defined($new_query) && length($new_query);
     }
     $self->get('reply')->client_redirect($self, $uri);
     Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
