@@ -59,7 +59,7 @@ May be overridden.
 =cut
 
 sub LOAD_ALL_SIZE {
-    return 250;
+    return 500;
 }
 
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
