@@ -57,10 +57,9 @@ __PACKAGE__->compile([
     MASTERCARD => [
         2,
     ],
-#TODO: Waiting on Wells Fargo
-#    AMEX => [
-#        3,
-#    ],
+    AMEX => [
+        3,
+    ],
 ]);
 
 =head1 METHODS
