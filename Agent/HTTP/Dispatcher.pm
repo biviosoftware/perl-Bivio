@@ -46,6 +46,7 @@ use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Die;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -139,6 +140,8 @@ sub initialize {
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
     $_INITIALIZED = 1;
+    # clear db time
+    Bivio::SQL::Connection->get_db_time;
     return;
 }
 
