@@ -45,6 +45,7 @@ use Bivio::IO::Trace;
 #use Bivio::Biz::Action::Logout;
 use Bivio::Type::UserAgent;
 use Bivio::Util;
+use Socket;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -72,7 +73,8 @@ sub new {
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
-	is_secure => $ENV{HTTPS} ? 1 : 0,
+	is_secure => $ENV{HTTPS} || _is_hack_https_port($r)
+	? 1 : 0,
     });
     Bivio::Type::UserAgent->execute_browser($self);
 
@@ -306,6 +308,18 @@ sub server_redirect_in_handle_die {
 
 
 #=PRIVATE METHODS
+
+# _is_hack_https_port(Apache r) : boolean
+#
+# Returns true if the local port is 81.  We are using this hack between
+# the front-end and the middle tier to indicate it is running in secure
+# mode.
+#
+sub _is_hack_https_port {
+    my($r) = @_;
+    my($port) = unpack_sockaddr_in($r->connection->local_addr());
+    return $port == 81 ? 1 : 0;
+}
 
 =head1 SEE ALSO
 
