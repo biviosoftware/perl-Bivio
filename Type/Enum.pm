@@ -3,6 +3,7 @@
 package Bivio::Type::Enum;
 use strict;
 $Bivio::Type::Enum::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Enum::VERSION;
 
 =head1 NAME
 
@@ -16,7 +17,7 @@ Bivio::Type::Enum - base class for enumerated types
 
 =head1 EXTENDS
 
-L<Bivio::Type>
+L<Bivio::Type::Number>
 
 =cut
 
@@ -37,10 +38,9 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 =cut
 
 #=IMPORTS
-# Don't import "die".
+# also uses Bivio::TypeError dynamically
 use Bivio::IO::Alert;
-#Avoid circular reference and pray east someone is using TypeError.
-#use Bivio::TypeError;
+use Bivio::IO::ClassLoader;
 
 #=VARIABLES
 my(%_MAP);
@@ -425,6 +425,7 @@ sub from_literal {
 	$info = _get_info($proto, $value = uc($value), 1);
 	$info = undef if $info && $info->[3] ne $value;
     }
+    Bivio::IO::ClassLoader->simple_require('Bivio::TypeError');
     return (undef, Bivio::TypeError::NOT_FOUND()) unless $info;
     return $info->[5];
 }
