@@ -39,6 +39,10 @@ string can be mapped to one or more tasks.
 
 =over 4
 
+=item link_target : string [] (inherited)
+
+The value to be passed to the C<TARGET> attribute of C<A> tag.
+
 =item text_tab_color : string [text_tab_bg] (inherited)
 
 Color of the frame around the tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
@@ -136,6 +140,7 @@ sub initialize {
     return if $fields->{items};
     my($o) = $self->get('orient');
     my($values) = $self->get('values');
+    $fields->{link_prefix} = '<a'.$self->link_target_as_html.' href="';
     my($th) = $self->ancestral_get('text_tab_height', 1);
     my($tc) = $self->ancestral_get('text_tab_color', 'text_tab_bg');
     $tc = Bivio::UI::Color->as_html_bg($tc) if $tc;
@@ -208,7 +213,7 @@ sub render {
 #      which role the user plays in other realms.
 	next unless $req->task_ok($t);
 	# don't keep the query across menu items
-	my($link) = '<a href="'.$req->format_stateless_uri($t)
+	my($link) = $fields->{link_prefix}.$req->format_stateless_uri($t)
 		.'">'.$item->[0].'</a>';
         if ($t == $this_task) {
             $labels .= $fields->{highlight_prefix}

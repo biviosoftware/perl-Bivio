@@ -78,6 +78,10 @@ Name of the form which can be used within JavaScript.  Set dynamically
 to C<fn>I<NNN> where I<NNN> is globally assigned starting at 1.
 The value is set on the I<self>, so it can be used by fields.
 
+=item link_target : string [] (inherited)
+
+The value to be passed to the C<TARGET> attribute of C<A> tag.
+
 =item value : Bivio::UI::Widget (required)
 
 How to render the form.  Usually a
@@ -168,7 +172,7 @@ sub initialize {
     # Initialize prefix
     my($p) = '<form method=';
     $p .= $self->ancestral_get('form_method', 'POST');
-    $p .= ' name="'.$name.'"';
+    $p .= $self->link_target_as_html().' name="'.$name.'"';
     my($action) = $self->unsafe_get('action');
     $p .= ' action="';
     if (ref($action)) {

@@ -51,6 +51,10 @@ to get string to use (see below).
 
 Literal text to use for C<HREF> attribute of C<A> tag.
 
+=item link_target : string [] (inherited)
+
+The value to be passed to the C<TARGET> attribute of C<A> tag.
+
 =item name : string []
 
 Anchor name.
@@ -113,7 +117,7 @@ sub initialize {
     # Both must be defined
     my($href);
     ($fields->{value}, $href) = $self->get('value', 'href');
-    my($p, $s) = ('<a', '');
+    my($p, $s) = ('<a'.$self->link_target_as_html, '');
     my($n) = $self->get_or_default('name', 0);
     $p .= ' name="'.Bivio::Util::escape_html($n).'"' if $n;
     if (ref($href)) {

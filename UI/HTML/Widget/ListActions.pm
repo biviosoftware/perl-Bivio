@@ -32,6 +32,10 @@ C<Bivio::UI::HTML::Widget::ListActions>
 
 =over 4
 
+=item link_target : string [] (inherited)
+
+The value to be passed to the C<TARGET> attribute of C<A> tag.
+
 =item values : array_ref (required)
 
 An array_ref of array_refs where the order is the order of the
@@ -50,7 +54,7 @@ or a widget value which produces a URI.
 The fourth optional element is a control.  If the control returns
 true, the action is rendered.
 
-Links will be rendered in the ListAction font.
+Links will be rendered in the C<list_action> font.
 
 =back
 
@@ -99,9 +103,10 @@ sub initialize {
     return if exists($fields->{values});
     my($p, $s) = Bivio::UI::Font->as_html('list_action');
     $fields->{values} = [];
+    my($target) = $self->link_target_as_html;
     foreach my $v (@{$self->get('values')}) {
 	push(@{$fields->{values}}, {
-	    prefix => '<a href="',
+	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
 	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>",
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
