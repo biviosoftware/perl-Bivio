@@ -640,6 +640,11 @@ __PACKAGE__->compile(
 	undef,
 	'this value clashes with a ticker symbol in the bivio database',
     ],
+    VALUATION_DATE_EXCEED_TRANSACTION_DATE => [
+	73,
+	undef,
+	'the valuation date may not exceed the transaction date',
+    ],
 );
 
 #=PRIVATE METHODS
