@@ -27,7 +27,9 @@ use Bivio::UI::HTML::Widget::Director;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::FormFieldLabel> displays a string in
-error or regular font.
+C<form_field_label>
+or C<form_field_error_label> fonts.
+
 
 =head1 ATTRIBUTES
 
@@ -98,11 +100,12 @@ sub initialize {
 	values => {},
 	default_value => Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
-	    string_font => 'error',
+	    string_font => 'form_field_error_label',
 	    parent => $self,
 	}),
 	undef_value =>  Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
+	    string_font => 'form_field_label',
 	    parent => $self,
 	}),
     );

@@ -69,6 +69,8 @@ _compile([
     TIME => [$_SANS_SERIF, undef, 'small'],
     NUMBER_CELL => [undef, undef, 'tt'],
     TABLE_ROW_TITLE => [undef, undef, 'small', 'strong'],
+    FORM_FIELD_LABEL => [undef, undef, 'small'],
+    FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i', 'small'],
 ]);
 
 =head1 METHODS
