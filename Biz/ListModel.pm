@@ -171,6 +171,21 @@ sub execute_load_all {
     return;
 }
 
+=for html <a name="execute_load_page"></a>
+
+=head2 execute_load_page(Bivio::Agent::Request req)
+
+Loads exactly a page.
+
+=cut
+
+sub execute_load_page {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $self->load({count => $self->PAGE_SIZE});
+    return;
+}
+
 =for html <a name="format_query"></a>
 
 =head2 format_query(Bivio::Biz::QueryType type) : string
@@ -336,6 +351,19 @@ B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 sub format_uri_for_this_page {
     return shift->format_uri(Bivio::Biz::QueryType::THIS_LIST(), @_);
+}
+
+=for html <a name="get_cursor"></a>
+
+=head2 get_cursor() : int
+
+Returns the position.  Returns -1 before the list is read and
+undef after the list is read.
+
+=cut
+
+sub get_cursor {
+    return shift->{$_PACKAGE}->{cursor};
 }
 
 =for html <a name="get_hidden_field_values"></a>
@@ -512,6 +540,26 @@ May be overriden.  Must return the rows loaded.
 sub internal_load_rows {
     my($self, $query, $where, $params, $sql_support) = @_;
     return $sql_support->load($query, $where, $params, $self);
+}
+
+=for html <a name="internal_set_cursor"></a>
+
+=head2 internal_set_cursor(int cursor) 
+
+Sets cursor as returned by L<get_cursor|"get_cursor">.
+
+=cut
+
+sub internal_set_cursor {
+    my($self, $cursor) = @_;
+    $cursor = $self->LAST_ROW unless defined($cursor);
+    if ($cursor < 0) {
+	$self->reset_cursor;
+    }
+    else {
+	$self->set_cursor($cursor);
+    }
+    return;
 }
 
 =for html <a name="load"></a>
