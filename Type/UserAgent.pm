@@ -90,6 +90,26 @@ sub execute {
     return shift->SUPER::execute(@_, @_ == 1 ? (1) : ());
 }
 
+=for html <a name="from_header"></a>
+
+=head2 static from_header(string http_user_agent) : self
+
+Figures out the type of user agent from the I<http_user_agent> string.
+Always returns a valid browser.
+
+=cut
+
+sub from_header {
+    my($proto, $ua, $req) = @_;
+    # MSIE 5+ and Mozilla/5+ are the only modern browsers
+    return ref($ua) ?
+	UNIVERSAL::isa($ua, __PACKAGE__) ? $ua
+	: Bivio::Die->die($ua, ': invalid argument')
+	: $ua =~ /\bMSIE (\d+)/ && $1 >= 5 ? $proto->BROWSER
+        : $ua =~ /Mozilla\/(\d+)/ && $1 >= 5 ? $proto->BROWSER
+	: $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3;
+}
+
 =for html <a name="is_browser"></a>
 
 =head2 is_browser() : boolean
@@ -104,28 +124,6 @@ sub is_browser {
     my($self, $req) = @_;
     $self = $req->get(ref($self) || $self) if $req;
     return $self->get_name =~ /^BROWSER/ ? 1 : 0;
-}
-
-=for html <a name="put_on_request"></a>
-
-=head2 static put_on_request(string http_user_agent, Bivio::Collection::Attributes req)
-
-Figures out the type of user agent from the I<http_user_agent> string
-and puts it on I<req>.
-
-=cut
-
-sub put_on_request {
-    my($proto, $ua, $req) = @_;
-    # MSIE 5+ and Mozilla/5+ are the only modern browsers
-    my($self) = ref($ua) ?
-	UNIVERSAL::isa($ua, __PACKAGE__) ? $ua
-	: Bivio::Die->die($ua, ': invalid argument')
-	: $ua =~ /\bMSIE (\d+)/ && $1 >= 5 ? $proto->BROWSER
-        : $ua =~ /Mozilla\/(\d+)/ && $1 >= 5 ? $proto->BROWSER
-	: $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3;
-    $self->execute($req, 1);
-    return;
 }
 
 #=PRIVATE METHODS
