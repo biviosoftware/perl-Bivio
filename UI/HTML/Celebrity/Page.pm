@@ -239,8 +239,8 @@ Feel free to ask Candis King your nuts-and-bolts questions about bivio,
 investing, and the investment club experience.
 <p>
 Well known in club circles, Candis has traveled the US teaching investment
-classes, and is a frequent writer for publications ranging from Motley Fool
-to the Armchair Millionaire.
+classes, and is a frequent writer for publications ranging from the
+Motley Fool to the Armchair Millionaire.
 <p>
 A telecom industry veteran, the mother of two says her only regret in life
 is not having joined a club sooner.  Though enthusiastic about her clubs,
