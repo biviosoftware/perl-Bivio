@@ -34,7 +34,7 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 =over 4
 
-=item value : Bivio::UI::HTML::Widget (required)
+=item value : Bivio::UI::HTML::Widget (required,dynamic)
 
 Accessed dynamically.  If the dynamic value is false, nothing is rendered.
 
