@@ -245,14 +245,13 @@ sub die {
     $line ||= (caller)[2];
     if (defined($code)) {
 	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
-	    my($c) = Bivio::DieCode->from_any($code);
-	    if (defined($c)) {
+	    unless (eval {
+		my($c) = Bivio::DieCode->from_any($code);
 		$code = $c;
-	    }
-	    else {
+	    }) {
 		$attrs = {code => $code, attrs => $attrs};
 		$code = Bivio::DieCode::INVALID_DIE_CODE();
-	    }
+	    };
 	}
     }
     else {
