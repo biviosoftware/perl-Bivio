@@ -58,7 +58,8 @@ my(%_MAP);
 #   * A list of tuples is an array_ref: (name1, value1), (name2, value2), ...
 #   * A name can be a string or an array_ref (a list of names that match)
 #   * A value can be string or a list of tuples.
-#   * A list of tuples must have a default value (name is '').
+#   * A list of tuples must have a default value (name is '') or
+#     a single qualifier at that level.
 #
 # We use array_refs here, because we can then check duplicates.
 #
@@ -393,6 +394,7 @@ _compile(\%_MAP, [
     REALM_CHOOSER => 'Select Site',
 
     # Tasks (sorted alphabetically)
+    ADM_REALM_NOTICE_LIST => 'Notices',
     CLUB_ACCOUNTING_ACCOUNT_DETAIL => 'Account Detail',
     CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => 'Account Dividend',
     CLUB_ACCOUNTING_ACCOUNT_EXPENSE => 'Account Expense',
@@ -550,7 +552,7 @@ _compile(\%_MAP, [
 
     # Table Headings
     ['NAME_HEADING', 'realmowner_name_heading', 'last_first_middle_heading', 'realmaccount_name_heading', 'realmowner_display_name_heading', 'realminstrument_name_heading']
-        => 'Name',
+        => [['', 'table_heading'] => 'Name'],
     ['DIVIDEND_HEADING', 'dividend'] => 'Dividend',
     ['INTEREST_HEADING', 'interest'] => 'Interest',
     TAX_FREE_INT_HEADING => "Tax Free\nInterest",
@@ -634,6 +636,13 @@ Value',
     STOCK_WITHDRAWAL_VALUE_HEADING => "Stock\nWithdrawal\nValue",
     NON_DEDUCTIBLE_EXPENSE_HEADING => "Non-Deductible\nExpense",
     EARNINGS_HEADING => "Earnings\nAllocated",
+    'RealmOwner.realm_type' => [table_heading => 'Realm Type'],
+    'RealmNotice.creation_date_time' => [table_heading => 'Date'],
+    'RealmNotice.at_least_role' => [table_heading => 'At Least Role'],
+    'RealmNotice.realm_notice_type' => [table_heading => 'Notice Type'],
+    'template_as_string' => [table_heading => 'Parameters'],
+    ad_hoc_text => 'Message (no html)',
+    email_id_or_name => 'Email, Id, or Name',
 
     # Page headings
     MAIL_LIST_PAGE_HEADING => 'Mail Message Board',
@@ -816,6 +825,27 @@ sub get_widget_value {
     return shift->get_simple(@_);
 }
 
+=for html <a name="unsafe_get_exactly"></a>
+
+=head2 unsafe_get_exactly(string name, string qualifier, ...) : string
+
+All the qualifiers much match exactly and evaluate to a label.  Defaults are
+not used.
+
+Returns C<undef> in label undefined.
+
+=cut
+
+sub unsafe_get_exactly {
+    my(undef, @qualifier) = @_;
+    my($res) = \%_MAP;
+    foreach my $q (map {lc($_)} @qualifier) {
+	return undef unless ref($res);
+	$res = $res->{$q};
+    }
+    return ref($res) ? undef : $res;
+}
+
 =for html <a name="unsafe_get_simple"></a>
 
 =head2 unsafe_get_simple(string name) : string
@@ -868,7 +898,9 @@ sub _map {
 		    unless ref($value) eq 'ARRAY';
 	# Explode the map
 	$value = _compile({}, $value);
-	Bivio::Die->die($name, '=>', $value, ': missing default')
+	($value->{''}) = values(%$value) if int(values(%$value)) == 1;
+	Bivio::Die->die($name, '=>', $value,
+		': missing default and more than one value')
 		    unless defined($value->{''});
     }
     $name = [$name] unless ref($name);
@@ -877,6 +909,8 @@ sub _map {
     foreach my $n (@$name) {
 	Bivio::Die->die($n, '=>', $value, ': not expecting a ref')
 		    if ref($n);
+	Bivio::Die->die($n, '=>', $value, ': may not evaluate to false')
+		    unless $value;
 	$map->{lc($n)} = $value;
     }
     return;
