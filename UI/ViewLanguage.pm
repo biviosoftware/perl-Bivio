@@ -350,6 +350,8 @@ sub _args {
 sub _assert_in_eval {
     my($op) = @_;
     return $_VIEW_IN_EVAL if $_VIEW_IN_EVAL;
+    return Bivio::UI::View->unsafe_get_current
+	if Bivio::UI::View->unsafe_get_current;
     $op ||= 'eval';
     $op =~ s/.*:://;
     Bivio::Die->die($op, ': operation only allowed in views');
