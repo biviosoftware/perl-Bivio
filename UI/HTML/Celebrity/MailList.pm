@@ -87,7 +87,7 @@ sub new {
     $fields->{content}->initialize;
     $fields->{tool_bar} = Bivio::UI::HTML::Widget::ToolBar->new({
 	values => Bivio::UI::HTML::ActionButtons->get_list(
-		'celebrity_compose_message'),
+		'celebrity_post_message'),
     });
     $fields->{tool_bar}->initialize;
 
