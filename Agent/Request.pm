@@ -158,7 +158,6 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Biz::Action::CreateDemoClub;
 use Bivio::Biz::Model::UserRealmList;
 use Bivio::Biz::FormModel;
 use Bivio::Die;
@@ -704,11 +703,15 @@ sub set_realm {
 Sets I<user> to be C<auth_user>.  May be C<undef>.  Also caches
 user_realms.
 
+B<Call this if you create/delete realms.>  It will refresh
+the cached I<user_realms> list.
+
 =cut
 
 sub set_user {
     # dont_set_role is used internally, don't pass if outside this module.
     my($self, $user, $dont_set_role) = @_;
+    # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
     if ($user) {
 	# Load the UserRealmList.  For right now, the auth_id is this
