@@ -1008,8 +1008,8 @@ sub process {
 	    }
 	    _trace($msg);
 	}
-	Bivio::Die->die($self->as_string,
-		": called with invalid values");
+	Bivio::Die->die($self->as_string, ': called with invalid values, ',
+	    $self->get_errors);
 	# DOES NOT RETURN
     }
 
