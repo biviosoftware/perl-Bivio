@@ -1,4 +1,6 @@
 <chapter>
 <title>Simple Chapter</title>
+<simplesect>
 <para>Some Text</para>
+</simplesect>
 </chapter>
