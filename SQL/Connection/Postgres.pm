@@ -244,7 +244,8 @@ EOF
 	# Found the constraint?
 	if ($table) {
 	    # Save the state for the die message
-	    $attrs->{columns} = $cols, $attrs->{table} = $table;
+	    $attrs->{columns} = $cols;
+            $attrs->{table} = $table;
 	    _trace($constraint, ': found ', $table, '.', $cols)
 		    if $_TRACE;
 	    if (7 == $attrs->{dbi_err}) {
