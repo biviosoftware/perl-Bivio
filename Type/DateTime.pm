@@ -284,17 +284,17 @@ sub diff_seconds {
     return ($lj - $rj) * SECONDS_IN_DAY() + $ls - $rs;
 }
 
-=for html <a name="end_of_today"></a>
+=for html <a name="local_end_of_today"></a>
 
-=head2 end_of_today() : string
+=head2 local_end_of_today() : string
 
 Returns the date/time for the last second in the user's "today".
 Used to generate reports that includes the "end of business".
 
 =cut
 
-sub end_of_today {
-    return Bivio::Type::DateTime->set_end_of_day(Bivio::Type::DateTime->now);
+sub local_end_of_today {
+    return Bivio::Type::DateTime->set_local_end_of_day(Bivio::Type::DateTime->now);
 }
 
 =for html <a name="from_unix"></a>
@@ -326,16 +326,16 @@ sub now {
     return from_unix(__PACKAGE__, time);
 }
 
-=for html <a name="set_end_of_day"></a>
+=for html <a name="set_local_end_of_day"></a>
 
-=head2 set_end_of_day(string date_time) : string
+=head2 set_local_end_of_day(string date_time) : string
 
 Sets the time component of the date/time to 23:59:59 in the user's
 time zone.
 
 =cut
 
-sub set_end_of_day {
+sub set_local_end_of_day {
     my(undef, $date_time) = @_;
     my($date, $time) = split(' ', $date_time);
     my($req) = Bivio::Agent::Request->get_current;
