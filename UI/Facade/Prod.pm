@@ -220,6 +220,7 @@ my($_SELF) = __PACKAGE__->new({
             )],
 		   []);
 	    $fc->group(home_login_field_label => ['size=1']);
+	    $fc->group(home_date => ['size=5']);
 	    return;
 	}
     },
