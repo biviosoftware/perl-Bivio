@@ -37,6 +37,7 @@ use Bivio::Type::Date;
 #=VARIABLES
 __PACKAGE__->compile([
     # Configuration: NAME => [num_days, display name],
+    YEAR_0 => [0, '0 Years'],
     YEAR_1 => [1, '1 Year'],
     YEAR_2 => [2, '2 Years'],
     YEAR_3 => [3, '3 Years'],
