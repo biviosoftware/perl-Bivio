@@ -107,6 +107,24 @@ sub execute {
     return;
 }
 
+=for html <a name="execute_general"></a>
+
+=head2 static execute_general(Bivio::Agent::Request req)
+
+Acquires lock on the GENERAL realm, used for locking access on entire
+database so use sparingly.
+
+=cut
+
+sub execute_general {
+    my($proto, $req) = @_;
+    my($old_realm) = $req->get('auth_realm');
+    $req->set_realm(Bivio::Auth::Realm::General->get_instance);
+    $proto->new($req)->acquire;
+    $req->set_realm($old_realm);
+    return;
+}
+
 =for html <a name="execute_if_not_acquired"></a>
 
 =head2 static execute_if_not_acquired(Bivio::Agent::Request req)
