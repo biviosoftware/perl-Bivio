@@ -128,6 +128,12 @@ specified date.
 sub audit_units {
     my($self, $date) = @_;
     $date = Bivio::Type::Date->to_local_date($date);
+
+#TODO: the whole caching scheme is really messed up wrt get_unit_value
+# this needs to be reworked
+    # clear any cached values
+    $self->{$_PACKAGE} = {};
+
     my($req) = $self->get_request;
     my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
     my($entries) = Bivio::Biz::Model::MemberEntryList->new($req);
@@ -251,7 +257,6 @@ Formats demo club name for this user.
 
 sub format_demo_club_name {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
     my($n) = $self->get('name');
 
     # This is a legitimate realm name, but users can't enter it because
