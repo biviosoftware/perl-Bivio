@@ -18,6 +18,7 @@ my $_Home = undef;
 sub PERL { 0 }							      # default
 sub MHONARC { 1 }
 sub ALL_KEYS { 2 }
+sub FILE { 3 }
 
 # The ending to $_Home; Must end in /
 sub _REL_HOME { '/../data/' }
@@ -51,14 +52,7 @@ sub lookup ($$$;$)
     local($SIG{__WARN__}) = sub { die @_ };		# perl be quiet, please
     my($absfile, $value, $dont_cache);
     if (!defined($type) || $type == &PERL) {
-	# Check length and chars to avoid accesses to files located outside
-	# the (_REL_HOME) tree.  A user could type "foo/../../../anyfile" to
-	# screw up this package...
-	length($file) > &MAX_FILE_LENGTH &&
-	    $br->not_found(substr($file, 0, &MAX_FILE_LENGTH),
-		      '...: file name too long (', length($file), ' chars)');
-	$file =~ m<[^\w/]> &&
-	    $br->not_found($file, ': file name contains invalid characters');
+	&_check_file_name($br, $file);
 	$absfile = &_home($br) . $file . '.pl';
 	$value = do $absfile;
     }
@@ -66,7 +60,7 @@ sub lookup ($$$;$)
 	# Parse the mhonarc file which is "mostly" perl except for comments
 	# by mhonarc that aren't eliminable.  This trick is good enough
 	$absfile = &_home($br) . $file;
-	my($fh) = \*Bivio::Data::IN;
+	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
 	if (open($fh, $absfile)) {
 	    local($/) = undef;
 	    local($_);		    # used as scratch variable by mhonarc files
@@ -88,6 +82,15 @@ sub lookup ($$$;$)
 	-d $absfile ?
 	    ($value = [map {s/.pl$//; s,.*/,,; $_} (<$absfile/*.pl>)])
 	    : ($@ = 'not a directory')
+    }
+    elsif ($type == &FILE) {
+	# Return the file descriptor
+	&_check_file_name($br, $file);
+	$absfile = &_home($br) . $file;
+	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
+	open($fh, $absfile) && return $fh;
+	-e $absfile || $br->not_found($absfile);
+	$@ = "open failed: $!";
     }
     else {
 	$br->server_error("$type: unknown type")
@@ -118,6 +121,18 @@ sub lookup ($$$;$)
 	'value' => $value,
     };
     return $value;
+}
+
+sub _check_file_name ($$) {
+    my($br, $file) = @_;
+    # Check length and chars to avoid accesses to files located outside
+    # the (_REL_HOME) tree.  A user could type "foo/../../../anyfile" to
+    # screw up this package...
+    length($file) > &MAX_FILE_LENGTH &&
+	$br->not_found(substr($file, 0, &MAX_FILE_LENGTH),
+		    '...: file name too long (', length($file), ' chars)');
+    $file =~ m<\.\.> &&
+	$br->not_found($file, ': file name contains invalid characters');
 }
 
 sub _home ($) {

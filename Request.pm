@@ -13,7 +13,8 @@ $Bivio::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 BEGIN {
     use Bivio::Util;
-    &Bivio::Util::compile_attribute_accessors([qw(club user path_info)]);
+    &Bivio::Util::compile_attribute_accessors(
+    	[qw(club user path_info reply_sent)]);
     defined($ENV{BIVIO_REQUEST_DEBUG}) && ($SIG{__DIE__} = \&Carp::confess);
 }
 
