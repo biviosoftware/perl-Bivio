@@ -196,7 +196,9 @@ sub check_messages {
 
             /FaxGetty\[\d+\]: / && next;
 
-	    # END OF FILTERING KNOWN MESSAGES
+            /locate module sound/ && next;
+
+            # END OF FILTERING KNOWN MESSAGES
             add_problem($level, $_);
         }
         close(LOGFILE);
