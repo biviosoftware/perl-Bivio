@@ -251,7 +251,7 @@ a widget value or an integer.
 =cut
 
 sub clear_dot {
-    my(undef, $width, $height) = shift;
+    my(undef, $width, $height) = @_;
     _use('ClearDot');
     return Bivio::UI::HTML::Widget::ClearDot->new({
 	defined($width) ? (width => $width) : (),
