@@ -65,6 +65,7 @@ any offline members which are a member of the club.
 
 sub cascade_delete {
     my($self) = @_;
+#TODO: This needs to be moved out to simplify for the "normal" case
     my($realm) = Bivio::Biz::Model->new($self->get_request, 'RealmOwner')
 	    ->unauth_load_or_die(realm_id => $self->get('club_id'));
 
