@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Search Use Model.SearchList to be more
+    general than specific class name
+  * Bivio::Util::Release added get_projects helper function
+
+  Revision 2.40  2004/10/28 20:19:13  moeller
+  * Bivio::BConf HTTPLog conf ignores /favicon.ico access
+  * Bivio::Biz::ListModel->format_uri_for_sort() now resets page to first
+  * Bivio::Test::HTMLParser::Forms empty textarea now has value '', not undef,
+    remove duplicates, but leave duplicate labels
+  * Bivio::Test::Language::HTTP updated doc,
     verify_link() fixed, and pattern arg is optional for old tests
   * Bivio::Type::DateInterval added IRS_TAX_SEASON
   * Bivio::Util::Release first pass at custom up2date-like management
