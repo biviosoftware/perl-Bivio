@@ -49,6 +49,25 @@ Returns the form.
 =cut
 
 sub create_content {
+    my($self) = @_;
+    $self->put(
+	    page_subtopic => 'Opening Balance',
+	    page_heading => $self->heading($self->join(
+#TODO: Change string_font to not be ancestral_get.
+		    # Use a string here, because we don't know
+		    # if the labels need escaping.
+		    # Use "0" for font to avoid ancestral_get
+		    # of font in String.  Already set in heading.
+		    $self->string(
+			    'Opening Balance for ',
+			    0,
+			   ),
+		    $self->string(
+			    ['target_realm_owner', 'display_name'],
+			    0,
+			   ),
+	    )),
+    );
     my($form) = Bivio::UI::HTML::DescriptivePageForm->new({
 	form_class => 'Bivio::Biz::Model::MemberOpeningBalanceForm',
 	header => $_PACKAGE->join(<<'EOF')
