@@ -79,8 +79,16 @@ tasks defined in this module is:
 
 #=VARIABLES
 my(@_CFG) = (
+    # Task used by Bivio::ShellUtil
+    [qw(
+        SHELL_UTIL
+        1
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::Biz::Action::HTTPDocument
+    )],
 #2
-    # This is the home page task.
     [qw(
 	HTTP_DOCUMENT
 	3
@@ -312,6 +320,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
     )],
+#27-29
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         30
@@ -324,6 +333,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountSummaryReport
         help=account-report
     )],
+#31-37
     [qw(
 	GENERAL_PRIVACY
 	38
