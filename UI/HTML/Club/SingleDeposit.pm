@@ -48,6 +48,7 @@ use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_FIELDS) = [];
 
 
 =head1 FACTORIES
@@ -85,46 +86,34 @@ sub new {
 		    }),
 		],
 		[
-		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			label => 'Date',
-			field => 'RealmTransaction.dttm',
-		    }),
-		    Bivio::UI::HTML::Widget::Text->new({
-			field => 'RealmTransaction.dttm',
-			size => 10,
-		    }),
+		    _field('Date',
+			    Bivio::UI::HTML::Widget::Text->new({
+				field => 'RealmTransaction.dttm',
+				size => 10,
+			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			label => 'Type',
-			field => 'type',
-		    }),
-		    Bivio::UI::HTML::Widget::Select->new({
-			field => 'type',
-			choices => 'Bivio::Type::DepositType',
-		    }),
+		    _field('Type',
+			    Bivio::UI::HTML::Widget::Select->new({
+				field => 'type',
+				choices => 'Bivio::Type::DepositType',
+			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			label => 'Account',
-			field => 'account',
-		    }),
-		    Bivio::UI::HTML::Widget::Select->new({
-			field => 'account',
-			choices => 'Bivio::Biz::Model::RealmAccountList',
-			list_display_field => 'RealmAccount.name',
-			list_id_field => 'RealmAccount.realm_account_id',
-		    }),
+		    _field('Account',
+			    Bivio::UI::HTML::Widget::Select->new({
+				field => 'RealmAccountEntry.realm_account_id',
+			      choices => 'Bivio::Biz::Model::RealmAccountList',
+				list_display_field => 'RealmAccount.name',
+			      list_id_field => 'RealmAccount.realm_account_id',
+			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			label => 'Amount',
-			field => 'Entry.amount',
-		    }),
-		    Bivio::UI::HTML::Widget::Text->new({
-			field => 'Entry.amount',
-			size => 10,
-		    }),
+		    _field('Amount',
+			    Bivio::UI::HTML::Widget::Text->new({
+				field => 'Entry.amount',
+				size => 10,
+			    })),
 		],
 		[
 		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
@@ -188,23 +177,20 @@ sub execute {
 	    my($errors) = $form->get_errors;
 
 	    my(@errors);
-#	    foreach my $f (@{$fields->{fields}}) {
-#		my($n) = $f->[0];
-#		next unless defined($errors->{$n});
-#		push(@errors, Bivio::Util::escape_html(
-#			$f->[1].': '.$errors->{$n}->get_long_desc));
-#	    }
-	    foreach my $k (keys(%$errors)) {
+	    foreach my $f (@$_FIELDS) {
+		my($n) = $f->[0];
+		next unless defined($errors->{$n});
 		push(@errors, Bivio::Util::escape_html(
-			$errors->{$k}->get_long_desc));
+			$f->[1].': '.$errors->{$n}->get_long_desc));
 	    }
+
 	    my($p, $s) = Bivio::UI::Font->as_html('error');
 	    $req->put(page_error =>
 		    "<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
 		    .join("</td></tr>\n<tr><td><li>",
 			    "${p}Please correct the following errors:$s",
 			    @errors)
-		    ."</td></tr></table>\n");
+		    ."</td></tr></table>\n<hr>");
 	}
 	Bivio::UI::HTML::Club::Page->execute($req);
 	return;
@@ -213,6 +199,22 @@ sub execute {
 }
 
 #=PRIVATE METHODS
+
+# _field(string caption, Widget widget) : (FormFieldLabel, Widget)
+#
+# Returns a (label, widget) pair for the specified caption and widget.
+#
+sub _field {
+    my($caption, $widget) = @_;
+
+    my($label) = Bivio::UI::HTML::Widget::FormFieldLabel->new({
+	label => $caption,
+	field => $widget->get('field'),
+    });
+
+    push(@$_FIELDS, [$label->get('field'), $caption]);
+    return ($label, $widget);
+}
 
 =head1 COPYRIGHT
 
