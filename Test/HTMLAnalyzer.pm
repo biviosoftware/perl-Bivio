@@ -78,10 +78,20 @@ sub new {
     _find_button_my_site($self, $p);
 
     _find_imagemenu($self, $p);
-    _find_loginmenu($self, $p);
+    _find_login($self, $p);
     _find_preferences($self, $p);
     _find_realm_chooser($self, $p);
+    _find_tos($self, $p);
 
+    # any unidentified table must be the 'main' table.
+    for (my($i) = 0; $i < scalar(@{$p->{tables}}); $i++) {
+	unless (defined ($p->{tables}[$i]->{identification})) {
+	    Bivio::Die->die ("ambiguous 'main' table\n")
+			if (defined ($fields->{main}));
+	    $p->{tables}[$i]->{identification} = 'Main';
+	    $fields->{main} = $p->{tables}[$i];
+	}
+    }
     
     return $self;
 }
@@ -89,6 +99,41 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="find_row_by_content"></a>
+
+=head2 find_row_by_content(Bivio::HTML::HTMLAnalyzer self, string pattern) :
+
+Find the first row in the main table which contains the specified
+pattern in either the 'links' or 'text' array.
+
+=cut
+
+sub find_row_by_content {
+    my($self, $pattern) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return undef unless (defined ($fields->{main})
+	    && defined ($fields->{main}->{rows}));
+
+    my($q) = $fields->{main}->{rows};
+    for (my($i) = 0; $i < scalar(@{$q}); $i++) {
+	if (defined (@{$q}[$i]->{links})) {
+	    my(@keys) = keys(%{@{$q}[$i]->{links}});
+	    for (my($j) = 0; $j < scalar(@keys); $j++) {
+		return @{$q}[$i] if (@keys[$j] =~ $pattern);
+	    }
+	}
+
+	if (defined (@{$q}[$i]->{text})) {
+	    for (my($j) = 0; $j < scalar(@{@{$q}[$i]->{text}}); $j++) {
+		return @{$q}[$i] if (@{$q}[$i]->{text}->[$j] =~ $pattern);
+	    }
+	}
+    }
+    
+    return undef;
+}
 
 #=PRIVATE METHODS
 
@@ -150,39 +195,47 @@ sub _find_imagemenu {
     my($fields) = $self->{$_PACKAGE};
 
     for (my($i) = 0; $i < scalar(@{$p->{tables}}); $i++) {
-	if (exists (@{$p->{tables}}[$i]->{links}->{Roster})) {
+	if (exists ($p->{tables}[$i]->{links}->{Roster})) {
 	    $fields->{imagemenu} = {} unless defined ($fields->{imagemenu});
-	    $fields->{imagemenu}->{administration} = @{$p->{tables}}[$i];
+	    $fields->{imagemenu}->{administration} = $p->{tables}[$i];
+	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	}
-	elsif (exists (@{$p->{tables}}[$i]->{links}->{Taxes})) {
+	elsif (exists ($p->{tables}[$i]->{links}->{Taxes})) {
 	    $fields->{imagemenu} = {} unless defined ($fields->{imagemenu});
-	    $fields->{imagemenu}->{accounting} = @{$p->{tables}}[$i];
+	    $fields->{imagemenu}->{accounting} = $p->{tables}[$i];
+	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	}
-	elsif (exists (@{$p->{tables}}[$i]->{links}->{Mail})) {
+	elsif (exists ($p->{tables}[$i]->{links}->{Mail})) {
 	    $fields->{imagemenu} = {} unless defined ($fields->{imagemenu});
-	    $fields->{imagemenu}->{accounting} = @{$p->{tables}}[$i];
+	    $fields->{imagemenu}->{accounting} = $p->{tables}[$i];
+	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	}
     }
     
     return;
 }
 
-# _find_loginmenu(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
+# _find_login(Bivio::HTML::Analyzer self, Bivio::HTML::Parser p) : 
 #
 # Identify the login menu on the HTML page, if any.
-# It is stored under fields->{loginmenu}.
+# It is stored under fields->{login}.
 #
-sub _find_loginmenu {
+sub _find_login {
     my($self, $p) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my(@f) = values(%{$p->{forms}});
-    for (my($i) = 0; $i < scalar(@f); $i++) {
-	if (exists($f[$i]->{submit}->{Login})) {
- 	    $fields->{loginmenu} = $f[$i];
+#    my(@f) = values(%{$p->{forms}});
+#    for (my($i) = 0; $i < scalar(@f); $i++) {
+#	if (exists($f[$i]->{submit}->{Login})) {
+# 	    $fields->{loginmenu} = $f[$i];
+#	}
+#    }
+    for (my($i) = 0; $i < scalar(@{$p->{tables}}); $i++) {
+	if (exists ($p->{tables}[$i]->{links}->{'Login'})) {
+	    $p->{tables}[$i]->{identification} = 'Login';
+	    $fields->{login} = $p->{tables}[$i];
 	}
     }
-
     return;
 }
 
@@ -221,6 +274,24 @@ sub _find_realm_chooser {
 	}
     }
 
+    return;
+}
+
+# _find_tos(Bivio::Test::HTMLAnalyzer self, Bivio::Test::HTMLParser p) : 
+#
+# Identify the "terms of condition" form/table on the HTML page, if any.
+# It is stored under fields->{tos}
+#
+sub _find_tos {
+    my($self, $p) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    for (my($i) = 0; $i < scalar(@{$p->{tables}}); $i++) {
+	if (exists ($p->{tables}[$i]->{links}->{'Terms of Service'})) {
+	    $p->{tables}[$i]->{identification} = 'Terms of Service';
+	    $fields->{tos} = $p->{tables}[$i];
+	}
+    }
     return;
 }
 
