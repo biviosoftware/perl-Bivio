@@ -179,6 +179,7 @@ _compile(
     WITHDRAWAL_REALIZED_GAIN => ["Gain/(Loss) Realized on Withdrawal (B)-(A)"],
     BASIS_AFTER_WITHDRAWAL => ["Member's Basis After Withdrawal"],
     RETURN_SINCE => ['Return Since'],
+    PREPARATION_DATE => ['Report Preparation Date'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
