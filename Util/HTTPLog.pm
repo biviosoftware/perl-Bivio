@@ -261,6 +261,7 @@ sub _initialize {
 	    'Bivio::DieCode::DIE',
 	    'Bivio::DieCode::CONFIG_ERROR',
 	    'Connection refused: proxy connect to .* port .* failed',
+	    'exit signal Segmentation fault (11)',
 	   );
     # Value is sent to pager
     $_CRITICAL_REGEX = join('|',
