@@ -91,7 +91,7 @@ sub wrap_lines {
     my($indent) = 0;
     foreach my $line (@lines) {
         $line =~ s/\s+$//;
-        while (length($line) > $width) {
+        while (defined($line) && length($line) > $width) {
             _wrap_line($formatted, \$line, $indent, $width);
         }
         push(@$formatted, $line) if defined($line);
