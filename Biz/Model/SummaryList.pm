@@ -43,7 +43,6 @@ methods while iterating through the source(s).
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-
 =head1 FACTORIES
 
 =cut
@@ -89,10 +88,10 @@ named column.
 sub get {
     my($self, @keys) = @_;
     my($fields) = $self->[$_IDI];
-    my(@result) = ();
+
     foreach my $name (@keys) {
 	$self->put($name, _sum($fields->{source}, $name))
-		unless $self->has_keys($name);
+            unless $self->has_keys($name);
     }
     return $self->SUPER::get(@keys);
 }
@@ -107,12 +106,9 @@ undef after the list is read.
 =cut
 
 sub get_cursor {
-    my($self) = shift;
+    my($self) = @_;
     my($fields) = $self->[$_IDI];
-    if ($fields->{loaded}) {
-	return -1;
-    }
-    return 0;
+    return $fields->{loaded} ? -1 : 0;
 }
 
 =for html <a name="get_list_model"></a>
@@ -124,7 +120,8 @@ Returns itself, the list model.
 =cut
 
 sub get_list_model {
-    return shift;
+    my($self) = @_;
+    return $self;
 }
 
 =for html <a name="get_request"></a>
@@ -136,7 +133,9 @@ Returns the request associated with this list.
 =cut
 
 sub get_request {
-    return shift->[$_IDI]->{request};
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return $fields->{request};
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -160,7 +159,9 @@ Returns the (first) source list model for this SummaryList.
 =cut
 
 sub get_source_list_model {
-    return shift->[$_IDI]->{source}->[0];
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return $fields->{source}->[0];
 }
 
 =for html <a name="get_widget_value"></a>
@@ -193,7 +194,8 @@ Summary lists return only one row.
 sub next_row {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    Carp::croak('no cursor') unless defined($fields->{loaded});
+    Bivio::Die->die('no cursor')unless defined($fields->{loaded});
+
     if ($fields->{loaded}) {
 	$fields->{loaded} = 0;
 	return 1;
@@ -226,13 +228,15 @@ sub reset_cursor {
 #
 sub _sum {
     my($source, $name) = @_;
-
     my($result) = 0;
+
     foreach my $list (@$source) {
-	my($type) = $list->get_field_type($name);
 	$list->reset_cursor;
+
 	while ($list->next_row) {
-	    $result = $type->add($result, $list->get($name));
+            next unless $list->get($name);
+	    $result = $list->get_field_type($name)->add(
+                $result, $list->get($name));
 	}
 	$list->reset_cursor;
     }
