@@ -91,7 +91,6 @@ sub get_cost_per_share {
 			->INSTRUMENT_SPINOFF_SHARES_AS_CASH->as_int()
 		    || $type == Bivio::Type::EntryType
 			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())) {
-	    print(STDERR "\n\ncost = $cost\n\n");
 	    $total_cost += $cost;
 	}
 	if ($basis) {
