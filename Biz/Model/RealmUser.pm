@@ -160,7 +160,8 @@ sub get_any_online_admin {
     while ($self->iterate_next_and_load($it)) {
 	my($admin) = $self->get('user_id');
 	return $ro
-	    unless $ro->unauth_load_or_die({realm_id => $admin})->is_offline;
+	    unless $ro->unauth_load_or_die({realm_id => $admin})
+		    ->is_offline_user;
     }
     $self->throw_die('DIE', {
 	message => 'no admins found',
