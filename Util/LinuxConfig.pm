@@ -445,18 +445,24 @@ Renames rpmnew files to actual file.
 
 Usage is typically:
 
-    b-linux-config -noexecute rename_rpmnew all
+    b-linux-config rename_rpmnew all
 
 Returns list of actions.  "all" is the following:
 
     find /etc /var /usr -name \*.rpmnew
 
+You can also say:
+
+    b-linux-config rename_rpmnew /etc
+
 =cut
 
 sub rename_rpmnew {
     my($self, @rpmnew_file) = @_;
-    @rpmnew_file = `find /etc /var /usr -name '*.rpmnew'`
+    @rpmnew_file = ('/etc', '/var', '/usr')
 	if "@rpmnew_file" eq 'all';
+    chomp(@rpmnew_file = `find @rpmnew_file -name '*.rpmnew'`)
+	unless grep(/\.rpmnew$/, @rpmnew_file);
     my($res) = '';
     foreach my $n (map {_prefix_file($_)} @rpmnew_file) {
 	my($f) = $n;
