@@ -57,9 +57,9 @@ my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_MAX_WIDTH) = Bivio::Type::Line->get_width;
-my($_UNKNOWN_ADDRESS);
 my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
 my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
+my($_ATT_DELIMITER) = '-';
 
 =head1 METHODS
 
@@ -487,7 +487,7 @@ sub _walk_attachment_tree {
             }
             # Create a new base name by adding a suffix to the existing name
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $name . sprintf('_%02x', $i), $is_public);
+                    $name . sprintf($_ATT_DELIMITER.'%02x', $i), $is_public);
         }
     }
     else {
