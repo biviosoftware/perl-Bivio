@@ -226,9 +226,11 @@ sub _end_form {
 	' form: ', $fields->{current})
 	if $fields->{input};
     my($label) = $fields->{current}->{label};
-    Bivio::Die->die('duplicate form ', $label, ': ', $fields->{current})
-	    if $fields->{forms}->{$label};
-    $fields->{forms}->{$label} = $fields->{current};
+    if (defined($label)) {
+        Bivio::Die->die('duplicate form ', $label, ': ', $fields->{current})
+                if $fields->{forms}->{$label};
+        $fields->{forms}->{$label} = $fields->{current};
+    }
     _unwind_duplicates($fields);
     _trace($fields->{current}) if $_TRACE;
     $fields->{current} = undef;
