@@ -99,8 +99,8 @@ sub create {
     my($reply_to_email) = $msg->get_reply_to;
 
     my($subject) = $msg->get_head->get('subject');
-    $subject = '(no subject)' unless defined($subject);
     chomp($subject);
+    $subject = '(no subject)' unless defined($subject) && length($subject);
     # Strip the name prefix out of the message, but leave the "Re:"
     $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
     $subject = substr($subject, 0, $_MAX_SUBJECT);
