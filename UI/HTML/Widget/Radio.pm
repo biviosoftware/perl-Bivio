@@ -69,10 +69,8 @@ Value of button.
 #=IMPORTS
 use Bivio::HTML;
 use Bivio::UI::Font;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

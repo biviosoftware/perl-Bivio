@@ -46,8 +46,7 @@ space without having to change the numbering scheme, or all tables.
 The decision on the number
 of digits for the site and the number of digits for the type has yet to be
 made.  Since we have only one site and many types, the lowest digits identify
-the type.  See F<sql/societas/create_sequences.sql> for a more complete
-discussion.
+the type.  See F<create_sequences.sql> for a more complete discussion.
 
 Late breaking news.... The fifth digit is now a tag to allow us to
 load static info, e.g. FileVolume index.

@@ -42,10 +42,8 @@ client.
 #=IMPORTS
 use Bivio::Biz::FormModel;
 use Bivio::UI::HTML::Widget::JavaScript;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_FIELD) = Bivio::Biz::FormModel->TIMEZONE_FIELD;
 my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");

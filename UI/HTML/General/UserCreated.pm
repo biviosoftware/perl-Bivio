@@ -53,10 +53,10 @@ use Bivio::Societas::Biz::Model::RealmInvite;
 use Bivio::UI::Widget::Director;
 use Bivio::Auth::RealmType;
 use Bivio::UI::HTML::Widget::Link;
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 =head1 METHODS
 

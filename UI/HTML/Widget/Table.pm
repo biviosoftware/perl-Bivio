@@ -16,7 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Table;
-    Bivio::UI::HTML::Widget::Table->new($attrs);
 
 =cut
 
@@ -593,12 +592,8 @@ sub render {
 
     # Row counting
     my($list_size) = $_INFINITY_ROWS;
-    if ($self->get_or_default('repeat_headings', 0)
-	    && Bivio::IO::ClassLoader->is_loaded(
-		    'Bivio::Societas::Biz::Model::Preferences')) {
-	$list_size = Bivio::Societas::Biz::Model::Preferences->get_user_pref(
-		$req, 'PAGE_SIZE');
-    }
+    Bivio::Auth::Support->unsafe_get_user_pref('page_size', $req, \$list_size)
+		if $self->get_or_default('repeat_headings', 0);
     my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');
     $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;

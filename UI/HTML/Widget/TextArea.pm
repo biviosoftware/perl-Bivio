@@ -66,10 +66,8 @@ The text wrapping mode.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

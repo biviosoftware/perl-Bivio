@@ -74,10 +74,8 @@ By default, render as a link.  Otherwis, just render the email address.
 
 #=IMPORTS
 use Bivio::Type::Email;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

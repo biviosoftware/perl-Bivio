@@ -111,10 +111,8 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::UI::Icon;
 use Carp ();
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

@@ -28,6 +28,27 @@ C<Bivio::UI::HTML::FormErrors> maps form errors to strings.  The
 mapping is by FormModel with defaults.  If not found, calls
 C<get_long_desc> on the L<Bivio::TypeError|Bivio::TypeError>.
 
+The syntax of the delegate info is:
+
+    Forms
+    Fields
+    TypeErrors
+    Text
+    %%
+
+Forms may be blank iwc the text applies to every form with that field,
+by default.
+
+Fields may be blank iwc the text applies to all fields.
+
+Double quotes in Text are escaped.  Text must be valid html use
+the utilities (_escape and _link) where appropriate.
+
+The result is eval'd when an error occurs.  Valid variables during eval are:
+$unsafe_value (not truncated, escaped), $value (truncated, escaped), $source,
+$form, $field, $label (escaped), $error, plus anything in @{[]}.
+See to_html.
+
 =cut
 
 #=IMPORTS
@@ -201,25 +222,3 @@ $Id$
 =cut
 
 1;
-
-# Syntax:
-#    Forms
-#    Fields
-#    TypeErrors
-#    Text
-#    %%
-#
-# Forms may be blank iwc the text applies to every form with that field,
-# by default.
-#
-# Fields may be blank iwc the text applies to all fields.
-#
-# Double quotes in Text are escaped.  Text must be valid html use
-# the utilities (_escape and _link) where appropriate.
-#
-# The result is eval'd when an error occurs.  Valid variables during eval are:
-# $unsafe_value (not truncated, escaped), $value (truncated, escaped), $source,
-# $form, $field, $label (escaped), $error, plus anything in @{[]}.
-#
-# See to_html.
-#

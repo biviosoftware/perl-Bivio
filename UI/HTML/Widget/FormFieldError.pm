@@ -55,10 +55,8 @@ The label used for the error.
 #=IMPORTS
 use Bivio::UI::Font;
 use Bivio::UI::HTML::FormErrors;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

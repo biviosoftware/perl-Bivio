@@ -43,27 +43,12 @@ use Bivio::Auth::RoleSet;
 use Bivio::Biz::Accounting::Ratio;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
-use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::Amount;
 use Bivio::Type::DateTime;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_COUNT_ALL_WHERE_CLAUSE) =
-        "name NOT LIKE '%"
-	.Bivio::Type::RealmName->DEMO_CLUB
-	."'
-        AND name NOT LIKE '%"
-	.Bivio::Type::RealmName->TEST_SUFFIX
-	."'
-        AND realm_type = "
-        .Bivio::Auth::RealmType::CLUB()->as_sql_param;
-my($_MEMBER_ROLES) = Bivio::Biz::Model::RealmUser::MEMBER_ROLES();
-$_MEMBER_ROLES = Bivio::Auth::RoleSet->to_sql_list(\$_MEMBER_ROLES);
-my($_COUNT_ALL_MEMBERS_RATIO);
 
 =head1 METHODS
 
@@ -92,42 +77,6 @@ sub cascade_delete {
     return;
 }
 
-=for html <a name="count_all"></a>
-
-=head2 static count_all(Bivio::Agent::Request req) : int
-
-Returns the total number of clubs.
-
-=cut
-
-sub count_all {
-    my($proto, $req) = @_;
-    return Bivio::SQL::Connection->execute_one_row(
-	    "SELECT count(*)
-            FROM realm_owner_t
-            WHERE ".$_COUNT_ALL_WHERE_CLAUSE)->[0]
-}
-
-=for html <a name="count_all_members"></a>
-
-=head2 static count_all_members(Bivio::Agent::Request req) : Bivio::Type::Amount
-
-Returns the total number of members of L<count_all|"count_all"> clubs.
-
-=cut
-
-sub count_all_members {
-    my($proto, $req) = @_;
-    _compute_count_all_members_ratio()
-	    unless defined($_COUNT_ALL_MEMBERS_RATIO);
-    return Bivio::Type::Amount->round(
-	    $_COUNT_ALL_MEMBERS_RATIO->multiply(
-		    Bivio::SQL::Connection->execute_one_row(
-			    "SELECT count(user_id)
-                            FROM realm_user_t")->[0]),
-	    0);
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -149,25 +98,6 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
-
-# _compute_count_all_members_ratio()
-#
-# This value is computed once at server startup.
-#
-sub _compute_count_all_members_ratio {
-    $_COUNT_ALL_MEMBERS_RATIO = Bivio::Biz::Accounting::Ratio->new(
-	    Bivio::SQL::Connection->execute_one_row(
-		"SELECT count(DISTINCT user_id)
-                FROM realm_user_t, realm_owner_t
-                WHERE role IN $_MEMBER_ROLES
-                AND realm_user_t.realm_id = realm_owner_t.realm_id
-                AND $_COUNT_ALL_WHERE_CLAUSE")->[0],
-	    Bivio::SQL::Connection->execute_one_row(
-	        "SELECT count(user_id)
-                FROM realm_user_t")->[0]);
-    _trace($_COUNT_ALL_MEMBERS_RATIO) if $_TRACE;
-    return;
-}
 
 =head1 COPYRIGHT
 

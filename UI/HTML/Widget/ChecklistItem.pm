@@ -69,10 +69,8 @@ The body to display when the widget isn't checked.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

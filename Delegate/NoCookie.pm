@@ -24,7 +24,8 @@ use Bivio::Collection::Attributes;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::NoCookie>
+C<Bivio::Delegate::NoCookie> is a placeholder for
+L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>.
 
 =cut
 

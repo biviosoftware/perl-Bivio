@@ -56,13 +56,9 @@ renders nothing.  May be a widget value, widget, etc.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_PACKAGE) = __PACKAGE__;
-
 
 =head1 FACTORIES
 

@@ -15,7 +15,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::File;
-    Bivio::UI::HTML::Widget::File->new();
 
 =cut
 
@@ -53,10 +52,8 @@ How wide is the field represented.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

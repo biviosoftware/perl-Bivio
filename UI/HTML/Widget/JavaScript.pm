@@ -53,10 +53,8 @@ sub VERSION_VAR {
 }
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_VV) = VERSION_VAR();
 my($_JSV) = <<"EOF";

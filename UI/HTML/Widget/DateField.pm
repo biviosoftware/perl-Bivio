@@ -67,10 +67,8 @@ use Bivio::Type::DateTime;
 use Bivio::Type::Date;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::Format::DateTime;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;

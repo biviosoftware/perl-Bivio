@@ -34,10 +34,10 @@ TODO: Want to allow modification of credit card info iff state
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);

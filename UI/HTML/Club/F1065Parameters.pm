@@ -33,10 +33,10 @@ C<Bivio::UI::HTML::Club::F1065Parameters> IRS 1065 parameters
 
 #=IMPORTS
 use Bivio::UI::HTML::Club::ReportPage;
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

@@ -119,10 +119,8 @@ How many rows should be visible
 use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::Type::Enum;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;

@@ -1439,7 +1439,7 @@ sub _new {
 # B<Use the full names of ListQuery attributes.>
 #
 # I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if defined,
-# or the user preference for page_size.
+# or the user preference for page_size.  Otherwise, PageSize->get_default.
 #
 # Returns count of rows loaded.
 #
@@ -1455,15 +1455,14 @@ sub _unauth_load {
 
     # Add in count if not there
     unless ($query->has_keys('count')) {
-	my($count);
+	my($count) = Bivio::Type::PageSize->get_default;
 	if ($self->can('PAGE_SIZE')) {
 	    $count = $self->PAGE_SIZE();
 	}
 	# only check preferences if that model is present
-	elsif (Bivio::IO::ClassLoader->is_loaded(
-		'Bivio::Societas::Biz::Model::Preferences')) {
-	    $count = Bivio::Societas::Biz::Model::Preferences->get_user_pref(
-		    $self->get_request, 'PAGE_SIZE');
+	else {
+	    Bivio::Auth::Support->unsafe_get_user_pref(
+		     'PAGE_SIZE', $self->get_request, \$count);
 	}
 	$query->put(count => $count);
     }

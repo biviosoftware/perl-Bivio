@@ -74,6 +74,7 @@ use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
+use Bivio::Auth::Support;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -91,7 +92,6 @@ my(%_CLASS_TO_TYPE) = map {
 } Bivio::Auth::RealmType->get_list;
 my(%_TYPE_TO_CLASS) = reverse(%_CLASS_TO_TYPE);
 # Maps realm types to permission sets
-my(%_DEFAULT_PERMISSIONS);
 my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 
@@ -201,27 +201,14 @@ sub can_user_execute_task {
 	return 0;
     }
 
-
-    # Load the realm_role permissions
+    # Load the permissions and cache
     my($fields) = $self->{$_PACKAGE};
-    my($privileges);
-    $privileges = _load_permissions($self, $auth_role, $req)
-	    unless defined($privileges = $fields->{$auth_role});
+    $fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
+	    $self, $auth_role, $req)
+	    unless defined($fields->{$auth_role});
 
-    # Does this role have all the required permission?
-    return 1 if ($privileges & $required) eq $required;
-
-    # Handle special SUPER_USER_TRANSIENT
-    if ($req->unsafe_get('super_user_id')) {
-	Bivio::Auth::PermissionSet->set(\$privileges,
-		Bivio::Auth::Permission::SUPER_USER_TRANSIENT());
-	_trace('super user: ', $privileges) if $_TRACE;
-	return 1 if ($privileges & $required) eq $required;
-    }
-
-    # Failure
-    _trace($task->get('id'), ': insufficient privileges') if $_TRACE;
-    return 0;
+    return Bivio::Auth::Support->task_permission_ok(
+	    $fields->{$auth_role}, $required, $req);
 }
 
 =for html <a name="format_email"></a>
@@ -348,63 +335,6 @@ sub _initialize {
 	Bivio::IO::ClassLoader->simple_require($rc);
     }
     return;
-}
-
-# _load_default_permissions(int rti, Bivio::Agent::Request rti)
-#
-# Loads default permissions for this rti (RealmType->as_int)
-#
-sub _load_default_permissions {
-    my($rti, $req) = @_;
-    # Copy the default (if loaded) and return
-    my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
-    # Load and save the defaults
-    my($dp) = $_DEFAULT_PERMISSIONS{$rti} = {};
-    my($it) = $rr->unauth_iterate_start('role', {realm_id => $rti});
-    my(%row);
-    while ($rr->iterate_next($it, \%row)) {
-	$dp->{$row{role}} = $row{permission_set};
-    }
-    return;
-}
-
-# _load_permissions(self, Bivio::Auth::Role role, Bivio::Agent::Request req) : Bivio::Auth::PermissionSet
-#
-# Load the permissions for this realm/role.  In the case of GENERAL,
-# we load the default permissions.
-#
-# Returns permissions for realm/role.
-#
-sub _load_permissions {
-    my($self, $role, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($owner) = $self->unsafe_get('owner');
-    if ($owner) {
-	my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
-	# Try to load for just this role explicitly and cache.
-	return $fields->{$role} = $rr->get('permission_set')
-		if $rr->unauth_load(
-			realm_id => $self->get('id'), role => $role);
-    }
-
-    my($rti) = $self->get('type')->as_int;
-    _load_default_permissions($rti, $req) unless $_DEFAULT_PERMISSIONS{$rti};
-
-    if ($owner) {
-	# Copy just this role's permission if there is an owner
-	$fields->{$role} = $_DEFAULT_PERMISSIONS{$rti}->{$role};
-    }
-    else {
-	# Copy all the permissions if there isn't an owner
-	while (my($k, $v) = each(%{$_DEFAULT_PERMISSIONS{$rti}})) {
-	    $fields->{$k} = $v;
-	}
-    }
-
-    # Return the permission, but make sure it exists
-    Bivio::Die->die($self, ': unable to load default permissions for ', $role)
-		unless defined($fields->{$role});
-    return $fields->{$role};
 }
 
 =head1 COPYRIGHT

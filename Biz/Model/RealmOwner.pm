@@ -18,7 +18,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::RealmOwner;
-    Bivio::Biz::Model::RealmOwner->new($req);
 
 =cut
 
@@ -152,7 +151,7 @@ Other Models can declare a method of the form:
 
     sub format_name {
 	my($self) = shift;
-	Bivio::Societas::Biz::Model::Address->format($self, 'RealmOwner.', @_);
+	Bivio::Biz::Model::RealmOwner->format($self, 'RealmOwner.', @_);
     }
 
 =cut

@@ -65,10 +65,8 @@ L<get_widget_value|"get_widget_value"> on the rendering source.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

@@ -73,11 +73,13 @@ sub from_literal {
     my($self, $value, $line_width) = @_;
 
     # careful to see if Preferences model is present before accessing
-    if (defined($value) && Bivio::IO::ClassLoader->is_loaded(
-	    'Bivio::Societas::Biz::Model::Preferences')
-	    && Bivio::Societas::Biz::Model::Preferences->get_user_pref(
+    my($pref);
+    if (defined($value)
+	    && Bivio::Auth::Support->unsafe_get_user_pref(
+		    'TEXTAREA_WRAP_LINES',
 		    Bivio::Agent::Request->get_current,
-		    'TEXTAREA_WRAP_LINES')) {
+		    \$pref)
+	    && $pref) {
 	return $self->wrap_lines($value, $line_width || $self->LINE_WIDTH);
     }
     return $self->SUPER::from_literal($value);

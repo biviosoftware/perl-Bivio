@@ -9,10 +9,13 @@ $_ = $Bivio::UI::HTML::Widget::PercentCell::VERSION;
 
 Bivio::UI::HTML::Widget::PercentCell - formats a cell with a number
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::PercentCell;
-    Bivio::UI::HTML::Widget::PercentCell->new($attrs);
 
 =cut
 
@@ -48,10 +51,8 @@ Name of the field to render.
 
 #=IMPORTS
 use Bivio::UI::HTML::Format::Printf;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

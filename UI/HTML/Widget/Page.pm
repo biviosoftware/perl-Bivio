@@ -90,10 +90,8 @@ Color of links.
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::IO::Config;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;

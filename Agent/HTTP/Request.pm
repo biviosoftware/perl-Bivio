@@ -44,7 +44,7 @@ use Bivio::Agent::HTTP::Form;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Auth::RealmType;
-use Bivio::Biz::Model::RealmOwner;
+use Bivio::Auth::Support;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::HTML;
@@ -116,7 +116,7 @@ sub new {
     # Must re-escape the URI.
     $uri = Bivio::HTML->escape_uri($uri) if $uri;
 
-    my($auth_user) = _get_auth_user($self);
+    my($auth_user) = Bivio::Auth::Support->get_auth_user($self);
 
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
@@ -376,7 +376,7 @@ sub _get_auth_user {
     return undef unless $auth_user_id;
 
     # Make sure user loads and has a valid password (can login)
-    my($auth_user) = Bivio::Biz::Model::RealmOwner->new($self);
+    my($auth_user) = Bivio::Biz::Model->new($self, 'RealmOwner');
     if ($auth_user->unauth_load(realm_id => $auth_user_id,
 	    realm_type => Bivio::Auth::RealmType::USER())) {
 	return $auth_user if $auth_user->has_valid_password();

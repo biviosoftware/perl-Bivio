@@ -31,10 +31,10 @@ C<Bivio::UI::HTML::User::EditUserName> allows user to update name.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 
 =head1 METHODS

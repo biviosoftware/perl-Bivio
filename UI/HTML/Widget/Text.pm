@@ -81,10 +81,8 @@ field's type.)
 use Bivio::HTML;
 use Bivio::UI::HTML::Format;
 use Bivio::Type::Password;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 my(@_ATTRS) = qw(

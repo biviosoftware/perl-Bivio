@@ -7,7 +7,7 @@ $_ = $Bivio::Agent::TaskId::VERSION;
 
 =head1 NAME
 
-Bivio::Agent::TaskId - enum of identifying all Societas tasks
+Bivio::Agent::TaskId - enum of identifying all tasks in a bOP site
 
 =head1 RELEASE SCOPE
 
@@ -30,7 +30,7 @@ use Bivio::Type::Enum;
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::TaskId> defines all possible "tasks" within the Societas.  A
+C<Bivio::Agent::TaskId> defines all possible "tasks" within bOP site.  A
 structure of a task is defined in L<Bivio::Agent::TaskBivio::Agent::Task>.
 
 The syntax of the configuration table is defined as follows.

@@ -63,10 +63,8 @@ If C<BROWSER_HTML3> (read Netscape), will render a partial style sheet.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 my($_TAGS) = join(',', qw(

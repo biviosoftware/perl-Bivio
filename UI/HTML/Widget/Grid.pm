@@ -161,10 +161,8 @@ on any cell in the row.
 
 #=IMPORTS
 use Bivio::UI::Align;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_PACKAGE) = __PACKAGE__;
 my($_SPACER) = '&nbsp;' x 3;
 

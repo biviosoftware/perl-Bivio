@@ -65,10 +65,8 @@ The (constant) width of the dot.
 #=IMPORTS
 use Bivio::UI::Align;
 use Bivio::UI::Icon;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

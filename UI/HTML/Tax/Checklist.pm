@@ -41,10 +41,10 @@ use Bivio::UI::HTML::Widget::ChecklistItem;
 use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::PageType;
 use Bivio::Type::Location;
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 

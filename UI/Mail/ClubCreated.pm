@@ -27,10 +27,10 @@ C<Bivio::UI::Mail::ClubCreated>
 #=IMPORTS
 use Bivio::UI::Mail::SupportAuthor;
 use Bivio::UI::Widget;
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 
 =head1 METHODS

@@ -56,10 +56,8 @@ Used to separate values in title.
 
 #=IMPORTS
 use Bivio::HTML;
-use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_PACKAGE) = __PACKAGE__;
 my($_DEFAULT_SEPARATOR) = ' - ';
