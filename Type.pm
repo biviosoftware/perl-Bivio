@@ -24,7 +24,7 @@ C<Bivio::Type> base class of all types.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
+use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 
@@ -160,7 +160,7 @@ sub get_instance {
 	$type = 'Bivio::Type::'.$type unless $type =~ /::/;
 	Bivio::IO::ClassLoader->simple_require($type);
     }
-    Bivio::Die->die($type, ': not a Bivio::Type')
+    Bivio::IO::Alert->die($type, ': not a Bivio::Type')
 		unless UNIVERSAL::isa($type, 'Bivio::Type');
     return $type;
 }

@@ -37,7 +37,8 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
+# Don't import "die".
+use Bivio::IO::Alert;
 #Avoid circular reference and pray east someone is using TypeError.
 #use Bivio::TypeError;
 
@@ -88,7 +89,7 @@ sub from_name {
     die($name, ': is not a string') if ref($name);
     $name = uc($name);
     my($info) = _get_info($proto, $name);
-    Bivio::Die->die($name, ': is not the name of an ',
+    Bivio::IO::Alert->die($name, ': is not the name of an ',
 	    ref($proto) || $proto) unless $name eq $info->[3];
     return $info->[5];
 }
@@ -136,7 +137,7 @@ ASSERTS: I<name> is not a ref.
 
 sub unsafe_from_name {
     my($proto, $name) = @_;
-    Bivio::Die->die($name, ': is not a string') if ref($name);
+    Bivio::IO::Alert->die($name, ': is not a string') if ref($name);
     my($info) = _get_info($proto, uc($name), 1);
     return $info ? $info->[5] : undef;
 }
@@ -326,7 +327,7 @@ Reference an Enum value with:
 sub compile {
     my($pkg) = shift;
     my(%info) = @_;
-    defined($_MAP{$pkg}) && Bivio::Die->die($pkg, ': already compiled');
+    defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
 
     # Check for dup keys, because the hash has lost them.
     if (int(@_)/2 != int(keys(%info))) {
@@ -334,7 +335,7 @@ sub compile {
 	# the code simpler.  We know that all array_refs are uniquely named.
 	my(%found);
 	foreach my $k (@_) {
-	    Bivio::Die->die($k, ': duplicate entry')
+	    Bivio::IO::Alert->die($k, ': duplicate entry')
 			if $found{$k}++;
 	}
     }
@@ -350,9 +351,9 @@ sub compile {
     my($long_width) = 0;
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
-	Bivio::Die->die($pkg, '::', $name, ': is a reserved word')
+	Bivio::IO::Alert->die($pkg, '::', $name, ': is a reserved word')
 		    if $pkg->can($name);
-	Bivio::Die->die($pkg, '::', $name,
+	Bivio::IO::Alert->die($pkg, '::', $name,
 		': does not point to an array')
 		    unless ref($d) eq 'ARRAY';
 	unless (defined($d->[1])) {
@@ -366,10 +367,10 @@ sub compile {
 	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
 	# Remove aliases
 	my(@aliases) = splice(@$d, 3);
-	Bivio::Die->die($pkg, '::', $name, ': invalid number "',
+	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid number "',
 		$d->[0], '"')
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
-	Bivio::Die->die($pkg, '::', $name, ': invalid enum name')
+	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid enum name')
 		    unless $name =~ /^[A-Z][A-Z0-9_]*$/;
 	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
@@ -387,7 +388,7 @@ sub compile {
 	    $min = $max = $d;
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
-	Bivio::Die->die($pkg, '::', $d->[0], ': duplicate int value (',
+	Bivio::IO::Alert->die($pkg, '::', $d->[0], ': duplicate int value (',
 		$d->[3], ' and ', $info{$d->[0]}->[3], ')')
 		    if defined($info{$d->[0]});
 	$info{$d->[0]} = $d;
@@ -396,7 +397,7 @@ sub compile {
 	$info{uc($d->[2])} = $d unless defined($info{uc($d->[2])});
 	# Map extra aliases
 	foreach my $alias (@aliases) {
-	    Bivio::Die->die($pkg, '::', $alias, ': duplicate alias')
+	    Bivio::IO::Alert->die($pkg, '::', $alias, ': duplicate alias')
 			if defined($info{uc($alias)});
 	    $info{uc($alias)} = $d;
 	}
@@ -409,11 +410,11 @@ sub compile {
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
     }
-    defined($min) || Bivio::Die->die($pkg, ': no values');
+    defined($min) || Bivio::IO::Alert->die($pkg, ': no values');
     if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
-            Bivio::Die->die($pkg, ': missing number (', $n, ') in enum')
+            Bivio::IO::Alert->die($pkg, ': missing number (', $n, ') in enum')
 	        unless defined($info{$n});
 	}
     }
@@ -634,7 +635,7 @@ sub _get_info {
     Carp::croak($self, ': not an enumerated type') unless defined($info);
     defined($ident) || ($ident = $self);
     return $info->{$ident} if defined($info->{$ident});
-    Bivio::Die->die($ident, ': no such ', ref($self) || $self)
+    Bivio::IO::Alert->die($ident, ': no such ', ref($self) || $self)
 		unless $dont_die;
     return undef;
 }
