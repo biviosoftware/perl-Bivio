@@ -150,7 +150,7 @@ use Bivio::SQL::FormSupport;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::Agent::HTTP::Cookie->register($_PACKAGE);
+Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
 =head1 FACTORIES
 
