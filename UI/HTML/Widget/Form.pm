@@ -214,7 +214,7 @@ sub render {
 #TODO: Tightly Coupled with FormModel & Location.  Do not propagate form
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
-	$action =~ s/[&?]fc=\w+//;
+	$action =~ s/[&?]fc=[^&=]+//;
 	$$buffer .= $action;
     }
 
