@@ -909,6 +909,7 @@ sub _unload {
     my($self) = @_;
     $self->internal_clear_model_cache;
     $self->internal_put({});
+    $self->delete_from_request;
     return 0;
 }
 
