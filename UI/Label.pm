@@ -500,6 +500,7 @@ _compile(\%_MAP, [
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
+    CLUB_MEMBER_TAKE_OFFLINE => 'Take Member Offline',
     CLUB_OPEN_BALANCE => [
 	'' => 'Edit Opening Balances',
 	help_topic => 'Editing Opening Balances',
@@ -515,6 +516,7 @@ _compile(\%_MAP, [
     HELP => 'Help',
     HTTP_DOCUMENT => 'Home Page',
     LOGOUT => 'Logout',
+    MEMBER_OFFLINE_CONFIRMATION => 'Offline Confirmation',
     MY_CLUB_SITE => 'My Club Site',
     ['USER_ADMIN_PREFERENCES_EDIT', 'USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT']
         => 'Change User Preferences',
