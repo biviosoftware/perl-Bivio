@@ -1978,6 +1978,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::MemberStatusDateForm
         Bivio::Biz::Model::MemberStatusList->execute_load_all
         Bivio::UI::HTML::Club::MemberStatusReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
