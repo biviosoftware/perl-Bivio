@@ -286,6 +286,25 @@ sub rename_rpmnew {
     return $res;
 }
 
+=for html <a name="rhn_up2date_param"></a>
+
+=head2 rhn_up2date_param(string param, string value, ...) : string
+
+Set I<param> to I<value> in up2date config.  Knows how to replace only
+those parameters which already exist in the file.
+
+Very prelim.  See test for example in use.
+
+=cut
+
+sub rhn_up2date_param {
+    my($self, @args) = @_;
+    return _insert_text('/etc/sysconfig/rhn/up2date', map {
+	my($param, $value) = @$_;
+	[qr/\n$param\s*=\s*[^;]+;/m, "\n$param=$value;"],
+    } @{$self->group_args(2, \@args)});
+}
+
 =for html <a name="serial_console"></a>
 
 =head2 serial_console() : string

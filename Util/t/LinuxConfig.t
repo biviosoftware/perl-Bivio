@@ -38,7 +38,7 @@ Bivio::Test->unit([
 		[@$args] => [],
 	    ]);
 	} [
-	    serial_console => [], [
+	    'serial_console', [] => [
 		['etc/securetty', '/dev/ttyS0'],
 		['etc/inittab', 'getty\s+ttyS0'],
 		['etc/grub.conf', '#splash'],
@@ -46,26 +46,32 @@ Bivio::Test->unit([
 		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
-	    relay_domains => ['10.1.1.1'], [
+	    'relay_domains', ['10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
 	    ],
 	], [
-	    sshd_param =>
-	    ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'], [
+	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no"],
 		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes"],
 	    ],
 	], [
-	    create_ssl_crt =>
-		[qw(US Colorado Boulder LinuxCrazyMan www.linuxcrazy.man)], [
+	    'create_ssl_crt', [qw(US Colorado Boulder LinuxCrazyMan www.linuxcrazy.man)] => [
 		['ssl.key/www.linuxcrazy.man.key', '--END RSA PRIVATE KEY'],
 		['ssl.crt/www.linuxcrazy.man.crt', '--END CERTIFICATE--'],
 		['ssl.csr/www.linuxcrazy.man.csr', '--END CERTIFICATE REQ'],
 	    ],
 	], [
-	    add_users_to_group =>
-		[qw(root root larry)], [
+	    'add_users_to_group', [qw(root root larry)] => [
 		['etc/group', 'larry'],
+	    ],
+	], [
+            'rhn_up2date_param', ['pkgSkipList', ''] => [
+		['etc/sysconfig/rhn/up2date', 'pkgSkipList=;'],
+	    ],
+        ], [
+	    'enable_xinetd_service', [qw(pop3s imaps)] => [
+		['etc/xinetd.d/pop3s', 'disable.*=.*no'],
+		['etc/xinetd.d/imaps', 'disable.*=.*no'],
 	    ],
 	]),
 	rename_rpmnew => [
