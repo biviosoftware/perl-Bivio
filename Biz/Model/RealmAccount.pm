@@ -115,7 +115,7 @@ sub get_value {
     Carp::croak('missing date parameter') unless $date;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(entry_t.amount) from realm_transaction_t, entry_t, realm_account_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_account_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_account_entry_t.realm_account_id=? and realm_transaction_t.dttm <= '
+	    'select sum(entry_t.amount) from realm_transaction_t, entry_t, realm_account_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_account_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_account_entry_t.realm_account_id=? and realm_transaction_t.date_time <= '
 	    .Bivio::Type::Date->to_sql_value('?'),
 	    [$self->get_request->get('auth_id'),
 		    $self->get('realm_account_id'),
@@ -159,6 +159,30 @@ sub internal_initialize {
 #	    [qw(realm_id RealmOwner.realm_id)],
 #	],
     };
+}
+
+=for html <a name="create_initial"></a>
+
+=head2 create_initial(Bivio::Biz::Model::RealmOwner realm)
+
+Create the initial accounts (BANK, BROKER, SUSPENSE, and PETTY_CASH)
+for a realm.
+
+=cut
+
+sub create_initial {
+    my($self, $realm) = @_;
+    my($realm_id) = $realm->get('realm_id');
+
+    foreach my $n (BANK(), BROKER(), SUSPENSE(), PETTY_CASH()) {
+	$self->create({
+	    realm_id => $realm_id,
+	    name => $n,
+	    tax_free => 0,
+	    in_valuation => $n ne PETTY_CASH() ? 1 : 0,
+	});
+    }
+    return;
 }
 
 #=PRIVATE METHODS
