@@ -279,6 +279,7 @@ sub _initialize {
         '::DIE: couldn\'t parse instrument name/symbol',
         '::get_balance.* balance parse failed',
         'ETRADE::.*unknown SX entry:',
+        'CSFB::get_balance:.*money market parse failed',
     );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
