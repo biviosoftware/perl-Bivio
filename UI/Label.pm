@@ -185,6 +185,7 @@ _compile(
     CALCULATE_BUTTON => ['Calculate'],
     PARENT_PRICE => ['Parent Price/Share'],
     CHILD_PRICE => ['Child Price/Share'],
+    FRACTIONAL_SHARE_CASH => ['Cash Received'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
