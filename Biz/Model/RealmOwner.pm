@@ -241,7 +241,7 @@ sub get_number_of_shares {
     return $result;
 }
 
-=for html <a name="get_share_price"></a>
+=for html <a name="get_share_price_and_date"></a>
 
 =head2 static get_share_price_and_date(string date) : hash_ref
 
@@ -261,28 +261,37 @@ sub get_share_price_and_date {
 
     # search last 8 days
     my($j, undef) = $search_date =~ /^(.*)\s(.*)$/;
-    my(@dates) = ();
+    my($dates) = '';
     for (1..8) {
-	push(@dates, Bivio::Type::Date->to_sql_param($j--.' '
-	       .Bivio::Type::DateTime::DEFAULT_TIME()));
+	$dates .= Bivio::Type::Date->to_sql_value(
+		"'".Bivio::Type::Date->to_sql_param($j--.' '
+			.Bivio::Type::DateTime::DEFAULT_TIME())."'").',';
     }
-    my($dp) = Bivio::Type::Date->to_sql_value('?').',';
-    my($dates_param) = $dp x int(@dates);
-    chop($dates_param);
+    chop($dates);
 
     # valuation algorithm:
     #   if not in MGFS use local (realm_instrument_valuation_t).
     #   if date < club-switch-over-date use local (TODO)
 
     my($id, $value, $date);
+
+    my($d) = Bivio::Type::Date->from_sql_value('mgfs_daily_quote_t.date_time');
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_t.realm_instrument_id, mgfs_daily_quote_t.close, '
-	    .Bivio::Type::Date->from_sql_value(
-		    'mgfs_daily_quote_t.date_time')
-	    .' from realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t where realm_instrument_t.realm_instrument_id in (select realm_instrument_t.realm_instrument_id from realm_instrument_t where realm_instrument_t.realm_id=?) and realm_instrument_t.instrument_id=mgfs_instrument_t.instrument_id and mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id and mgfs_daily_quote_t.date_time in ('
-	    .$dates_param
-	    .') order by mgfs_daily_quote_t.date_time desc',
-	    [$self->get('realm_id'), @dates]);
+            <<"EOF", [$self->get('realm_id')]);
+            SELECT realm_instrument_t.realm_instrument_id,
+                mgfs_daily_quote_t.close, $d
+            FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
+            WHERE realm_instrument_t.realm_instrument_id in (
+                    SELECT realm_instrument_t.realm_instrument_id
+                    FROM realm_instrument_t
+                    WHERE realm_instrument_t.realm_id=?
+                    )
+            AND realm_instrument_t.instrument_id
+                =mgfs_instrument_t.instrument_id
+            AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
+            AND mgfs_daily_quote_t.date_time in ($dates)
+            ORDER BY mgfs_daily_quote_t.date_time DESC
+EOF
 
     my($row);
     while ($row = $sth->fetchrow_arrayref()) {
