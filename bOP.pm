@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application. 
+cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Fixed login and add to cart problems
+  * Improved README demo instructions and added two more FAQs
+  * Bivio::Util::Release more flexible and added support for perl
+
+  Revision 1.11  2002/04/30 18:18:29  nagler
+  * Runs better on Win32 (changes to Bivio::IO::File,
+    Bivio::Type::DateTime, and Bivio::Agent::Dispatcher)
+  * Mail is now a txn_resource in Bivio::Agent::Task
+  * Bivio::Biz::ListModel->internal_load allows empty query
+  * Bivio::Biz::Model->merge_initialize_info supports PropertyModel
+  * Bivio::UI::HTML::Widget enhancements (Grid, MailTo, Page, Radio,
     RadioGrid, Select, Table)
   * Bivio::Util::Release->build can be run as any user, %{cvs} quieter
   * Bivio::XML::DocBook->count_words added and to_html enhanced.
