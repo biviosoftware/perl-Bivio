@@ -277,9 +277,12 @@ sub initialize {
     }
     if (defined($file)) {
 	my($actual) = do $file;
-	ref($actual) eq 'HASH' || Bivio::IO::Alert->die(
+	unless (ref($actual) eq 'HASH') {
+	    -e $file && Bivio::IO::Alert->die(
 		"$file: config parse failed: ",
 		$@ ? $@ : "empty or not a hash_ref");
+	    $actual = {};
+	}
 	$_ACTUAL = $actual;
     }
     $not_setuid && ref($argv) eq 'ARRAY' && &_process_argv($_ACTUAL, $argv);
