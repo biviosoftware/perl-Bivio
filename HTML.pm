@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::HTML;
 use strict;
 $Bivio::HTML::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::HTML::VERSION;
 
 =head1 NAME
 
@@ -37,12 +38,26 @@ BEGIN {
 	    # Use Apache::Util because it is faster
 	    use Apache ();
 	    use Apache::Util ();
-	    sub escape { shift; return Apache::Util::escape_html(shift) }
-	    sub escape_uri {
-		shift;
-		return _extra_escape_uri(Apache::Util::escape_uri(shift));
+            # Protect Apache; SEGVs if not defined
+	    sub escape {
+		my(undef, $value) = @_;
+		return Apache::Util::escape_html($value) if defined($value);
+		Bivio::IO::Alert->warn("use of undefined value");
+		return "";
 	    }
-	    sub unescape_uri { shift; return Apache::unescape_url(shift) }
+	    sub escape_uri {
+		my(undef, $value) = @_;
+		return _extra_escape_uri(Apache::Util::escape_uri($value))
+			if defined($value);
+		Bivio::IO::Alert->warn("use of undefined value");
+		return "";
+	    }
+	    sub unescape_uri {
+		my(undef, $value) = @_;
+		return Apache::unescape_url($value) if defined($value);
+		Bivio::IO::Alert->warn("use of undefined value");
+		return "";
+	    }
 	    1;
 	' || die($@);
     }
@@ -156,7 +171,7 @@ sub _extra_escape_uri {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
