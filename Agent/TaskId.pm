@@ -869,7 +869,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         _/accounting/investment/sell2
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmInstrumentLotList
+        Bivio::Biz::Model::RealmInstrumentLotList->execute_load_all
         Bivio::Biz::Model::InstrumentSellForm2
         Bivio::UI::HTML::Club::InstrumentSell2
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
