@@ -185,6 +185,7 @@ sub render {
 # Loads items from the enum choices attribute. Enum values are static
 # so this is called during initialize.
 #
+#TODO: MERGE WITH RadioGrid
 sub _load_items_from_enum {
     my($self, $enum) = @_;
     return _load_items_from_enum_list($self, [$enum->get_list]);
