@@ -117,6 +117,24 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 internal_new_args(string field) : any
+
+=head2 internal_new_args(string field, hash_ref attributes) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my($proto, $field, $attributes) = @_;
+    return {
+	field => $field,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, Text_ref buffer)
