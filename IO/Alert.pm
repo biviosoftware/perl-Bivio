@@ -289,14 +289,9 @@ sub handle_config {
     elsif (exists $ENV{MOD_PERL}) {
 	$_LOGGER = \&_log_apache;
     }
-    elsif (-t STDERR) {
+    else {
 	# Apache overrides default stderr, so gets reason
 	$_LOGGER = \&_log_stderr;
-    }
-    else {
-	&Sys::Syslog::setlogsock($cfg->{syslog_socket});
-	&Sys::Syslog::openlog($cfg->{log_name}, 'pid', $cfg->{log_facility});
-	$_LOGGER = \&_log_syslog;
     }
     $_WANT_PID = $cfg->{want_pid};
     $_WANT_TIME = $cfg->{want_time};
