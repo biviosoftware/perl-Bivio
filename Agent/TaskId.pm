@@ -117,6 +117,7 @@ my(@_CFG) = (
         pub/logout
 	Bivio::Biz::Action::Logout
         next=LOGIN
+        cancel=USER_HOME
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
@@ -770,6 +771,17 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
+    [qw(
+	SUBSTITUTE_USER
+	82
+        GENERAL
+        ADMIN_WRITE
+        pub/su
+	Bivio::Biz::Model::SubstituteUserForm
+	Bivio::UI::HTML::General::SubstituteUser
+        next=USER_HOME
+        cancel=HTTP_DOCUMENT
     )],
        );
 

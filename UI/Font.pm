@@ -58,6 +58,8 @@ The current font names are:
 
 =item FORM_SUBMIT
 
+=item SUBSTITUTE_USER
+
 =back
 
 =cut
@@ -85,6 +87,7 @@ _compile([
     REALM_NAME => [$_SANS_SERIF, 'realm_name', 'big'],
     USER_NAME => [$_SANS_SERIF, 'user_name', 'big'],
     FORM_SUBMIT => [$_SANS_SERIF, undef],
+    SUBSTITUTE_USER => [$_SANS_SERIF, 'error', 'big', 'strong', 'blink'],
 ]);
 
 =head1 METHODS
