@@ -37,6 +37,7 @@ use Bivio::IO::Config;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::DieCode;
+use Bivio::IO::Trace;
 use Bivio::File::Client;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
@@ -49,6 +50,8 @@ my($_FILE_CLIENT);
 Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
 });
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 
 =head1 FACTORIES
@@ -66,9 +69,6 @@ Bivio::IO::Config->register({
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-#    $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
-#	value => ['body'],
-#	});
     $fields ->{content} = Bivio::UI::HTML::Widget::Indirect->new({
  	      value => 0,
 	      cell_rowspan => 1,
@@ -105,23 +105,45 @@ sub execute {
 	$filename = '/'.$club_name.'/messages/html/'.$attachment_id;
 	die("couldn't get mime  body for $attachment_id. Error: $body")
 	    unless $_FILE_CLIENT->get($filename, \$body);
-
-	my $ctypestr = _content_type(\$body);
-	if($ctypestr =~ 'text/plain'){$esc = 1;}
-	#everything we get from the file server should be text/html
-	if($ctypestr =~ 'text/html'){$esc = 0;}
-	if($ctypestr =~ "image/"){
-	    $esc = 0;
-	    $s = "\n<IMG SRC=".$req->format_uri(
-		Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
-		"img=".$attachment_id).">";
+	my($numparts) = _numparts(\$body);
+	if($numparts eq(0)){
+	    _trace('there are zero numparts for this MIME part') if $_TRACE;
+	    my $ctypestr = _content_type(\$body);
+	    if($ctypestr =~ 'text/plain'){$esc = 1;}
+	    #everything we get from the file server should be text/html
+	    if($ctypestr =~ 'text/html'){$esc = 0;}
+	    if($ctypestr =~ "image/"){
+		$esc = 0;
+		$s = "\n<IMG SRC=".$req->format_uri(
+		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
+		    "img=".$attachment_id).">";
+	    }
+	    my($str) = Bivio::UI::HTML::Widget::String->new({
+		    value => $s,
+		    escape_text => $esc
+		});
+	    $fields->{content}->put(value => $str);
+	    $str->initialize();
 	}
-	my($str) = Bivio::UI::HTML::Widget::String->new({
-		value => $s,
-	        escape_text => $esc
-	    });
-	$fields->{content}->put(value => $str);
-	$str->initialize();
+	else{
+	    my(@urls);
+	    for(my $i = 0; $i < $numparts; $i++){
+		my($attachment) = $filename."_$i";
+		push(@urls,
+			Bivio::UI::HTML::Widget::Link->new({
+			    href  => $req->format_uri(
+				    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT(),
+				    "att=".$attachment),
+			    value => Bivio::UI::HTML::Widget::String->new({
+				value => 'Attachment '.$i}),
+			    }));
+		push(@urls, "<BR>");
+	    }
+	    my($mime_urls) = Bivio::UI::HTML::Widget::Join->new({
+		values => \@urls});
+	    $mime_urls->initialize;
+	    $fields->{content}->put(value => $mime_urls);
+	}
     }
     $req->put(
 	    page_subtopic => "", 
@@ -169,16 +191,25 @@ sub _content_type {
     return $ctypestr;
 }
 
-# _numparts() : 
+# _numparts(scalar_ref) : int
 #
-#
+# Returns the number of sub-parts for this MIME part.
 #
 sub _numparts {
     my($body) = @_;
+    _trace('extracting numparts.') if $_TRACE;
     my($i) = index($$body, 'X-BivioNumParts: ');
-    my($s) = substr($$body, $i);
+    _trace('index of X-BivioNumParts: ', $i);
+    if($i == -1){
+	_trace('X-BivioNumParts was not found in this part') if $_TRACE;
+	return 0;
+    }
+    my($s) = substr($$body, $i, 255);
     $i = index($s, "\n");
-    $s = substr($s, $i);
+#TODO don't use hard coded values for offset. In fact, should probably use
+# just a regular expression.
+    $s = substr($s, 17, $i-17);
+    _trace('number of MIME parts for this part: ', $s);
     return $s;
 }
 
