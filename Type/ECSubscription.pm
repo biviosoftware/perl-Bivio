@@ -39,6 +39,8 @@ a realm can be subscribed to. The current choices are:
 
 =item ACCOUNT_KEEPER
 
+=item BASIC_SERVICE
+
 =back
 
 =cut
@@ -64,6 +66,10 @@ __PACKAGE__->compile([
     ACCOUNT_KEEPER => [
 	3,
         'AccountKeeper',
+    ],
+    BASIC_SERVICE => [
+	4,
+	'Basic Service',
     ],
 ]);
 
