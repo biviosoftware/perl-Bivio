@@ -35,8 +35,8 @@ and literal text (no escaping).
 
 =item values : array_ref (required)
 
-The widgets and text which will be rendered as a part of the sequence.
-The rendered values are unmodified.  If all the values are constant,
+The widgets, text, and widget_values which will be rendered as a part of the
+sequence.  The rendered values are unmodified.  If all the values are constant,
 the result of this widget will be constant.
 
 =back
@@ -86,7 +86,7 @@ sub initialize {
     $fields->{is_first_render} = 1;
     my($v);
     foreach $v (@{$fields->{values}}) {
-	next unless ref($v);
+	next unless ref($v) && ref($v) ne 'ARRAY';
 	$v->put(parent => $self);
 	$v->initialize;
     }
@@ -125,12 +125,18 @@ sub render {
 	for (my($i) = 0; $i < int(@{$fields->{values}}); $i++) {
 	    my($v) = $fields->{values}->[$i];
 	    if (ref($v)) {
-		my($s) = '';
-		$v->render($source, \$s);
-		# Optimize case when some widgets are constant
-		$v->is_constant ? ($fields->{values}->[$i] = $s)
-			: ($fields->{is_constant} = 0);
-		$buf .= $s;
+		if (ref($v) eq 'ARRAY') {
+		    $fields->{is_constant} = 0;
+		    $buf .= $source->get_widget_value(@$v);
+		}
+		else {
+		    my($s) = '';
+		    $v->render($source, \$s);
+		    # Optimize case when some widgets are constant
+		    $v->is_constant ? ($fields->{values}->[$i] = $s)
+			    : ($fields->{is_constant} = 0);
+		    $buf .= $s;
+		}
 	    }
 	    else {
 		$buf .= $v;
@@ -146,7 +152,9 @@ sub render {
     else {
 	my($v);
 	foreach $v (@{$fields->{values}}) {
-	    ref($v) ? $v->render($source, $buffer) : ($$buffer .= $v);
+	    ref($v) eq 'ARRAY' ? ($$buffer .= $source->get_widget_value(@$v))
+		    : ref($v) ? $v->render($source, $buffer)
+			    : ($$buffer .= $v);
 	}
     }
     return;
