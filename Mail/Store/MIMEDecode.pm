@@ -219,9 +219,8 @@ sub _extract_mime {
 	    return unless $root_entity;
 	    _extract_mime($fields, $root_entity, $file_name."_$i");
 	}
-	elsif ($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()) {
-	    _trace('part content type is text/plain.'
-		    .' calling _extract_mime on it') if $_TRACE;
+	else { #if ($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()) {
+	    _trace('calling _extract_mime on this part: ', $i) if $_TRACE;
 	    _extract_mime($fields, $subentity, $file_name."_$i");
 	}
 	_trace('done with part ', $i) if $_TRACE;
@@ -266,7 +265,7 @@ sub _extract_mime_header {
     $entity->head->print($file);
     my(@parts) = $entity->parts();
     _trace('>>>>adding custom header field X-BivioNumParts:', int(@parts)) if $_TRACE;
-    $file->print('X-BivioNumParts: ', int(@parts));
+    $file->print('X-BivioNumParts: ', int(@parts)."\n");
     $file->close();
     return $s;
 }
@@ -297,7 +296,6 @@ sub _parse_keywords {
     $str =~ s/\"//g;
     $str =~ s/[\.\;\:\"\']//g;
     foreach $w (split(/\s+/, $str)) {
-	_trace('keyword: ', $w);
 	$keywords->{$w}++;
     }
     return;
@@ -315,7 +313,6 @@ sub _parse_mime {
     _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
     if($content_type == Bivio::Type::MIMEType->TEXT_PLAIN
 	    ||  $content_type == Bivio::Type::MIMEType->TEXT_HTML){
-	_trace('content type TEXT_PLAIN or TEXT_HTML. Parsing for keywords') if $_TRACE;
         my($file) = IO::Scalar->new(_extract_mime_body_decoded(
 		$fields, $entity));
 	while (!$file->eof) {
@@ -392,6 +389,9 @@ sub _write_entity_to_file {
     #extract the header and body, and shove them into a string.
     #probably I should re-use a scalar ref or an IO handle for both of these.
     my($msg_hdr) = _extract_mime_header($fields, $entity);
+    #changed this to be HTML because all our mail messages
+    #are written to the file server in HTML form
+    $msg_hdr =~ s/text\/plain/text\/html/;
     die('header is undef') unless defined($msg_hdr) && length($msg_hdr);
     my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
@@ -403,12 +403,9 @@ sub _write_entity_to_file {
 	$msg_hdr .= $$formatted_mail if defined($$formatted_mail);
     }
     else{
-	$msg_hdr .= $$msg_body;
+	$msg_hdr .= $$msg_body if ($$msg_body)
     }
     $fields->{kbytes} += length($msg_hdr)/1024;
-    _trace('kbytes: ', $fields->{kbytes}) if $_TRACE;
-    _trace('writing: ', $msg_hdr) if $_TRACE;
-    _trace('file: ', $file_name) if $_TRACE;
     $fields->{file_client}->create($file_name, \$msg_hdr)
 	    || die("write failed: $msg_hdr");
     $fields->{num_parts}++;
