@@ -311,6 +311,11 @@ sub init_column_classes {
 	# auth_id, parent_id, and date always need to be wrapped.  They
 	# single entity.
 	$list = [$list] if $class =~ /^date$|_id$/;
+	Bivio::Die->die(
+	    'Model attribute ',
+	    $class,
+	    ' is not an ARRAY. Did you forget to use square brackets?')
+	unless ref($list) eq 'ARRAY';
 	foreach my $decl (@$list) {
 	    my(@aliases, $first, $col);
 	    if (ref($decl) eq 'HASH') {
@@ -361,9 +366,14 @@ Also initializes I<as_string_fields>.
 sub init_common_attrs {
     my($proto, $attrs, $decl) = @_;
     Bivio::Die->die(
+	$decl->{class},
+	' does not have a declared version--did you forget to ',
+	'declare version in internal_initialize?')
+    unless $decl->{version};
+    Bivio::Die->die(
 	$decl->{version},
 	': version not declared or invalid (not positive integer)'
-    ) unless $decl->{version} && $decl->{version} =~ /^\d+$/;
+    ) unless $decl->{version} =~ /^\d+$/;
     $attrs->{version} = $decl->{version};
 #TODO: Validate the list
     $attrs->{as_string_fields} = $decl->{as_string_fields}
