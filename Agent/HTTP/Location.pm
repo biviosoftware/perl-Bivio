@@ -27,6 +27,7 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::Club;
@@ -39,6 +40,8 @@ use Bivio::DieCode;
 use Carp ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_INITIALIZED) = 0;
 # Key is uri, value is array indexed by RealmType->as_int, whose value
 # is a tuple: [task_id, uri]
@@ -149,7 +152,11 @@ sub initialize {
 	    die("$uri: must begin with '_'")
 		    unless $is_general || $uri =~ /^_(\/|$)/;
 	    if ($_FROM_URI{$uri}) {
-		die("$uri: uri already mapped") if $_FROM_URI{$uri}->[$rti];
+		die("$uri $realm_type_name: uri already mapped to ",
+		       $_FROM_URI{$uri}->[$rti]->[0]->get_name)
+			if $_FROM_URI{$uri}->[$rti];
+	    }
+	    else {
 		$_FROM_URI{$uri} = [];
 	    }
 	    $_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri}->[$rti]
