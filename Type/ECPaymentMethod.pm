@@ -33,7 +33,7 @@ The current choices are:
 
 =item CREDIT_CARD
 
-=item CHECK
+=item BANK_CHECK
 
 =item NO_PAYMENT
 
