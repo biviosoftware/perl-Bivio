@@ -37,12 +37,11 @@ adds to the complexity.
 Since contexts can be nested, they can be long.  The stringified version is
 "compact".  The structure is:
 
-   <char><munged-base64> "!" <char><munged-base64> ...
+   <char><http-base64> "!" <char><http-base64> ...
 
-The munged-base64 encoding may contain a serialized hash, realm name, or
-nested context.  We call it munged-base64, because '=' is replaced with
-'_'.  Equals (=) is a lousy character for uris and forms, so we use
-an extra level of substitution.
+The http-base64 encoding may contain a serialized hash, realm name, or
+nested context.  See L<Bivio::MIME::Base64|Bivio::MIME::Base64> for
+a description of http-base64.
 
 =head1 ATTRIBUTES
 
@@ -91,7 +90,7 @@ Is always defined.
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use MIME::Base64 ();
+use Bivio::MIME::Base64;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -118,9 +117,6 @@ my($_SEPARATOR) = '!';
 my($_HASH_CHAR) = "\01";
 # Character which precedes a proxy realm.
 my($_PROXY_CHAR) = '-';
-# Base64 uses '=' for a fill character which doesn't work well in
-# query strings so we substistute something else
-my($_EQUALS_SUBSTITUTE) = '_';
 
 =head1 METHODS
 
@@ -185,10 +181,7 @@ sub from_literal {
 	}
 
 	$which = $_CHAR_TO_KEY{$which};
-#TODO: Need to catch decode errors.  MIME::Base64 outputs warnings, but
-#      silently succeeds.
-	$enc =~ s/$_EQUALS_SUBSTITUTE/=/og;
-	$c->{$which} = MIME::Base64::decode($enc);
+	$c->{$which} = Bivio::MIME::Base64->http_decode($enc);
     }
 
     # Parse the decoded fields and validate. unwind_task must be checked first,
@@ -303,9 +296,8 @@ sub _format_string {
     my($res, $which, $value) = @_;
     return unless defined($value) && length($value);
 
-    my($v) = MIME::Base64::encode($value, '');
-    $v =~ s/=/$_EQUALS_SUBSTITUTE/og;
-    $$res .= $_KEY_TO_CHAR{$which}.$v.$_SEPARATOR;
+    $$res .= $_KEY_TO_CHAR{$which}
+	    .Bivio::MIME::Base64->http_encode($value).$_SEPARATOR;
     return;
 }
 
