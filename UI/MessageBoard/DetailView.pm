@@ -45,13 +45,17 @@ use Bivio::UI::HTML::Presentation;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_BACK_LINK) = Bivio::UI::HTML::Link->new(
+	Bivio::UI::HTML::Presentation::NAV_BACK(),
+	Bivio::UI::HTML::Link::BACK_ICON(),
+	'', '', 'Back to the message list');
 my($_PREV_LINK) = Bivio::UI::HTML::Link->new(
 	Bivio::UI::HTML::Presentation::NAV_LEFT(),
 	'', '', '', '');
 my($_NEXT_LINK) = Bivio::UI::HTML::Link->new(
 	Bivio::UI::HTML::Presentation::NAV_RIGHT(),
 	'', '', '', '');
-my($_NAV_LINKS) = [$_PREV_LINK, $_NEXT_LINK];
+my($_NAV_LINKS) = [$_BACK_LINK, $_PREV_LINK, $_NEXT_LINK];
 my($_COMPOSE_LINK) = Bivio::UI::HTML::Link->new('compose',
 	'"/i/compose.gif" border=0',
 	'mailto:bogus@localhost', 'Compose',
@@ -145,7 +149,8 @@ sub get_nav_links {
     if ($prev) {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_ICON());
 	$_PREV_LINK->set_description('Previous message');
-	$_PREV_LINK->set_url(&_make_path($self, $req).'?mf='.$prev);
+	$_PREV_LINK->set_url(&_make_path($self->get_name(), $req)
+		.'?mf='.$prev);
     }
     else {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_IA_ICON());
@@ -157,13 +162,24 @@ sub get_nav_links {
     if ($next) {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_ICON());
 	$_NEXT_LINK->set_description('Next message');
-	$_NEXT_LINK->set_url(&_make_path($self, $req).'?mf='.$next);
+	$_NEXT_LINK->set_url(&_make_path($self->get_name(), $req)
+		.'?mf='.$next);
     }
     else {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_IA_ICON());
 	$_NEXT_LINK->set_description('No more messages');
 	$_NEXT_LINK->set_url('');
     }
+
+    my($finder) = $req->get_arg('mf');
+    # strip out the id(xxx)
+    $finder =~ s/,id\(\d+\)//;
+    # increment the index(xxx)
+    $finder =~ s/index\((\d+)\)/'index('.($1 + 1).')'/e;
+
+    my($back_url) = &_make_path('list', $req).'?mf='.$finder;
+
+    $_BACK_LINK->set_url($back_url);
 
     return $_NAV_LINKS;
 }
@@ -191,16 +207,16 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _make_path(View view, Request req) : string
+# _make_path(string view_name, Request req) : string
 #
 # Creates a path string to the specified view using the current club,
 # and controller from the request.
 
 sub _make_path {
-    my($view, $req) = @_;
+    my($view_name, $req) = @_;
 
     return '/'.$req->get_target_name().'/'.$req->get_controller_name()
-	    .'/'.$view->get_name();
+	    .'/'.$view_name;
 }
 
 =head1 COPYRIGHT
