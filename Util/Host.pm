@@ -70,6 +70,9 @@ use Socket ();
 Does not return if successful.  If B<noexecute> is set, outputs what
 it would do.
 
+Enclose command as a single string if you want shell interpretation
+(normal Perl exec rules).
+
 Tries to bind to the address to a UDP socket.  You must have privs to open
 "any" socket.
 
