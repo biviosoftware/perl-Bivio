@@ -953,6 +953,7 @@ my(@_CFG) = (
         USER
         DOCUMENT_READ
         _/new
+        Bivio::Biz::Model::Email->execute_load
         Bivio::UI::HTML::User::New
     )],
     [qw(
@@ -1001,6 +1002,7 @@ my(@_CFG) = (
         USER
         DOCUMENT_READ
         _/new_connect
+        Bivio::Biz::Model::Email->execute_load
         Bivio::UI::HTML::User::New
     )],
     [qw(
