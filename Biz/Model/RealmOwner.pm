@@ -130,6 +130,7 @@ sub audit_units {
     while ($entries->next_row) {
 	my($val_date) = $entries->get('MemberEntry.valuation_date');
 	next unless defined($val_date);
+	next unless $entries->get('Entry.tax_basis');
 
 	my($type) = $entries->get('Entry.entry_type');
 	next unless ($type == Bivio::Type::EntryType::MEMBER_PAYMENT()
@@ -806,6 +807,10 @@ sub _get_unit_value {
     my($value) = $self->get_value($date);
 
     unless ($include_todays_member_entries) {
+
+#TODO: something fishy here, doesn't seem right
+#      needs to be revisited, probably problems with distributions
+
 	# get the member unit and amount for the day
 	# then subtract it from the previous totals
 	my($query) = <<"EOF";
@@ -815,6 +820,7 @@ sub _get_unit_value {
 	    WHERE realm_transaction_t.realm_transaction_id
 	        =entry_t.realm_transaction_id
 	    AND entry_t.entry_id = member_entry_t.entry_id
+            AND entry_t.tax_basis = 1
  	    AND realm_transaction_t.realm_id=?
 	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
 EOF
