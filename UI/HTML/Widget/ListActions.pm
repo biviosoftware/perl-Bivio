@@ -158,7 +158,7 @@ sub render {
 	next if $v2->{control}
 		&& !$source->get_widget_value(@{$v2->{control}});
 	$$buffer .= $sep.$v2->{prefix}.
-		Bivio::HTML->escape($v2->{format_uri}
+		($v2->{format_uri}
 			? $source->get_widget_value(@{$v2->{format_uri}})
 			: $source->format_uri($v2->{method}, $v->{uri}))
 		.'">'.$p.$v2->{label}.$s."</a>";
