@@ -212,9 +212,17 @@ _compile([
     EASY_ACTIONS => ['Shortcuts'],
     INVESTMENT => ['Investment'],
     MEMBER => ['Member'],
+    TOTAL_ASSETS => ['Total Assets'],
+    TOTAL_LIABILITIES => ['Total Liabilities'],
+    INVESTMENTS_COST => ['Investments (cost basis)'],
+    MEMBER_CAPITAL_ACCOUNTS =>
+	['Member Capital Accounts (adjusted cost basis)'],
+    UNDISTRIBUTED_EARNINGS => ['Undistributed Earnings'],
+    UNREALIZED_GAINS => ['Unrealized Gains'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
+    CLUB_ACCOUNTING_REPORT_BALANCE_SHEET => ['Balance Sheet Report'],
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
     CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE => [
 	    'Performance Comparison Report'],
