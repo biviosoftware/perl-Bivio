@@ -59,6 +59,7 @@ sub dev {
     my($proto, $http_port, $overrides) = @_;
 
     my($pwd) = Cwd::getcwd();
+#TODO: local_file_root is wrong.  Base on $INC{ref($proto)}
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     return _validate_config(_merge(
