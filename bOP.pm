@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    allows SELECT DISTINCT queries for ListModels.
+  * Bivio::UI::HTML::Widget::FormButton accepts positional arguments, e.g.
+    FormButton('ok_button');
+
+  Revision 1.69  2003/06/25 23:50:33  nagler
+  * Bivio::IO::Log reads/writes (compressed) log files
+  * Bivio::Biz::Action::ECCreditCardProcessor uses Bivio::Ext::LWPUserAgent
+  * Bivio::Ext::LWPUserAgent supports a configurable timeout
+  * Bivio::IO::File->read/write/append allows glob_refs and IO::File
+    objects to be passed. Also refactored to share much more code.
+  * Bivio::SQL::Connection::Postgres handles multiple table/column left joins
+  * Bivio::SQL::ListSupport.from allows you to override the generated
+    FROM clause.  Use sparingly.
+  * Bivio::Test::HTMLParser had a variety of bug fixes and refactorings
+  * Bivio::Test::HTMLParser::Tables->do_rows accepts a closure to iterate
+    all rows.  Also find_row() for finding a specific row.
+  * Bivio::Test::Language::HTTP->do_table_rows is shortcut for above
+  * Bivio::Test::Language::HTTP->get_uri returns the uri for current page
+  * Bivio::Test::Language::HTTP->home_page accepts a facade_uri argument
+  * Bivio::Test::Language prints script name and line number on errors
+  * Bivio::UI::Mail::Widget::Message.log_file uses Bivio::IO::Log to
+    write a log of a message.
+  * Bivio::UI::Widget->unsafe_render_value will convert a reference to
+    a string
   * Bivio::Util::Release supports rpm proxy like LWP ($ENV{http_proxy})
   * Bivio::UI::Widget::Director.control can be a nested widget value
     (uses render_attr)
