@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  b-sendmail now receives domain
+  mozilla considered a modern browser
+  FormField fixup
+
+  Revision 1.72  2003/07/10 21:16:59  nagler
+  * Bivio::UI::HTML::Widget::Select quotes option values (handles empty
     string case)
   * Bivio::Agent::Request->internal_server_redirect handles
     ListQuery.attr format for queries
