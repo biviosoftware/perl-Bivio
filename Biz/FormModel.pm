@@ -129,6 +129,11 @@ which was redirected initially to another form.
 
 B<DO NOT USE THIS VALUE FOR SUBMIT LABELS.>
 
+If you want to treate C<SUBMIT_UNWIND> as
+L<SUBMIT_OK|"SUBMIT_OK">, override in subclass
+and return C<SUBMIT_OK>'s value.  This method always checks
+C<SUBMIT_OK> before C<SUBMIT_UNWIND>.
+
 =cut
 
 sub SUBMIT_UNWIND {
@@ -285,22 +290,22 @@ sub execute {
 		$req->client_redirect($req->get('task')->get('next'))
 			unless $fields->{context};
 
-		my($f) = $fields->{context}->{form};
+		my($c) = $fields->{context};
+		my($f) = $c->{form};
 		unless ($f) {
-		    _trace('no form, client_redirect: ',
-			    $fields->{context}->{uri},
-			    '?', $fields->{context}->{query}) if $_TRACE;
+		    _trace('no form, client_redirect: ', $c->{uri},
+			    '?', $c->{query}) if $_TRACE;
 		    # If there is no form, redirect to client so looks
 		    # better.
-		    $req->client_redirect(
-			    @{$fields->{context}}{qw(uri query)});
+		    $req->client_redirect(@{$c}{qw(uri query)});
 		    # DOES NOT RETURN
 		}
 
 		# Do an server redirect to context, because can't do
 		# client redirect (no way to pass form state (reasonably)).
 		# Indicate to the next form that this is a SUBMIT_UNWIND
-		$f->{$self->SUBMIT} = $self->SUBMIT_UNWIND;
+		# Make sure you use that form's SUBMIT_UNWIND button.
+		$f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
 
 		# Ensure this form_model is seen as the redirect model
 		# by get_context_from_request and set a flag so it
@@ -309,16 +314,15 @@ sub execute {
 		$fields->{redirecting} = 1;
 
 		# Redirect calls us back in get_context_from_request
-		_trace('have form, server_redirect: ',
-			$fields->{context}->{uri},
-			'?', $fields->{context}->{query}) if $_TRACE;
-		$req->server_redirect(
-			@{$fields->{context}}{qw(uri query)}, $f);
+		_trace('have form, server_redirect: ', $c->{uri},
+			'?', $c->{query}) if $_TRACE;
+		$req->server_redirect(@{$c}{qw(uri query)}, $f);
 		# DOES NOT RETURN
 	    }
 	}
     }
-    # Some type of error, rollback and put self so can render form again
+    # Some type of error, rollback and fall through to the next
+    # task items.
     Bivio::Agent::Task->rollback;
     return;
 }
@@ -914,11 +918,13 @@ sub _parse_context {
 # If the button is Cancel, will redirect immediately.  If the button
 # is "OK", returns true.  If the button is SUBMIT_UNWIND, returns false.
 #
+#
 sub _parse_submit {
     my($self, $form) = @_;
     my($value) = $form->{$self->SUBMIT};
 
     # Is the button an OK?
+    # If SUBMIT_UNWIND is the same as SUBMIT_OK, will act as OK.
     return 1 if $self->is_submit_ok($value, $form);
 
     # It wasn't an ok, if SUBMIT_UNWIND, then don't parse the form.
