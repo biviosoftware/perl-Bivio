@@ -85,7 +85,7 @@ If no instance, returns undef.
 
 sub ok {
     my($self) = shift;
-    return @_ if int(@_) >= 1;
+    return @_ if @_ >= 1;
     return ref($self) ? $self->[$_IDI]->{default_return} : undef;
 }
 
