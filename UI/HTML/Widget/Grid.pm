@@ -75,6 +75,10 @@ If true, the cell will consume any excess columns in its row.
 Excess columns are not the same as C<undef> columns which are
 blank place holders.
 
+=item cell_rowspan : number [1]
+
+The value passed to C<ROWSPAN> attribute of the C<TD> tag.
+
 =back
 
 =cut
@@ -124,6 +128,7 @@ sub initialize {
     my($p) = '<table border=0 cellspacing=0 cellpadding=';
     # We don't want to check parents
     my($expand, $bg) = $self->unsafe_get(qw(expand bgcolor));
+    my($rowspan);
     $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
     $p .= ' width="100%"' if $expand;
     $p .= Bivio::UI::Color->as_html($bg) if $bg;
@@ -144,8 +149,8 @@ sub initialize {
 	    my($p) = '<td';
 	    if (ref($c)) {
 		my($align);
-		($bg, $expand, $align) = $c->unsafe_get(qw(
-                        cell_bgcolor cell_expand cell_align));
+		($bg, $expand, $align, $rowspan) = $c->unsafe_get(qw(
+                        cell_bgcolor cell_expand cell_align cell_rowspan));
 		if ($expand) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -156,6 +161,7 @@ sub initialize {
 		}
 		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
+		$p .= " rowspan=$rowspan" if $rowspan;
 		$c->put('parent', $self);
 		$c->initialize($self, $source);
 	    }
