@@ -249,79 +249,53 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_ec();
-    _upgrade_perms();
+    _upgrade_celeb_bios();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_ec()
+# _upgrade_celeb_bios()
 #
 # status
 #
-sub _upgrade_ec {
-    print("Upgrading constraints on ec_payment_t\n");
-    _drop_constraints('ec_payment_t', 'status');
-    _do_sql('
-ALTER TABLE ec_payment_t modify status not null
-/
-ALTER TABLE ec_payment_t
-  add constraint ec_payment_t8
-  check (status between 0 and 9)
-/
-');
-    return;
-}
-
-# _upgrade_perms()
-#
-# Update permissions.
-#
-sub _upgrade_perms {
-    use Bivio::Biz::Util::RealmRole;
-    my($rru) = Bivio::Biz::Util::RealmRole->new();
-    my($req) = $rru->get_request;
-
-    print("Upgrading permissions for club_cafe\n");
-    $req->set_realm('club_cafe');
-    _init_realm_role($rru, <<'EOF');
-b-realm-role -r club_cafe edit ANONYMOUS - \
-    +DOCUMENT_READ \
-    +LOGIN \
-    +MAIL_READ
-b-realm-role -r club_cafe edit USER - \
-    +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_POST
-b-realm-role -r club_cafe edit WITHDRAWN - \
-    +USER
-b-realm-role -r club_cafe edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER \
-    +MAIL_FORWARD
-b-realm-role -r club_cafe edit MEMBER - \
-    +GUEST \
-    +MAIL_RECEIVE
-b-realm-role -r club_cafe edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE
-b-realm-role -r club_cafe edit ADMINISTRATOR - \
-    +ACCOUNTANT
+sub _upgrade_celeb_bios {
+    print("upgrading profile bio's\n");
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    Bivio::Biz::Model->new($req, 'RealmDecor')
+		->unauth_load_or_die(realm_id =>
+			Bivio::Biz::Model->new($req, 'RealmOwner')
+			->unauth_load_or_die(name => 'take_stock')
+			->get('realm_id'))
+		->update({
+	profile_bio => <<'EOF',
+Ellis Traub has a mission to help you discover how easy it is to produce
+as good a portfolio as your professional friends - or better.
+<br>&nbsp;<br>
+Ellis' columns:
+<br>&nbsp;<br>
+<a href="/hm/take-stock.html">Worthy Mission and Some Staunch Allies</a>
+<br>&nbsp;<br>
+<a href="/hm/take-stock-010331.html">There's No Time Like the Present.
+Let the Good Times Roll!</a>
+<br>&nbsp;<br>
+Father of Technamental Analysis, author of the book "Take Stock" and
+chairman of <a href="/goto?x=http://www.investware.com">InvestWare</a>,
+Ellis Traub is also well known as the creator of NAIC's official
+software, the Investor's Toolkit.
 EOF
+		});
+
+    # Change all <p> to <br>&nbsp;<br>, because fonts don't cross <p> in IE
+    foreach my $celeb (qw(club_cafe trez_talk ask_candis)) {
+	my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
+	next unless $decor->unauth_load(realm_id =>
+		Bivio::Biz::Model->new($req, 'RealmOwner')
+		->unauth_load_or_die(name => $celeb)
+		->get('realm_id'));
+	my($bio) = $decor->get('profile_bio');
+	$bio =~ s/<p>/<br>&nbsp;<br>/g;
+	$decor->update({profile_bio => $bio});
+    }
     return;
 }
 
