@@ -234,6 +234,9 @@ use strict;
 	http_host => '<$host>:<$http_port>',
 	mail_host => '[<$host>]',
     },
+    'Bivio::Agent::HTTP::Location' => {
+	document_root => '<$pwd>/html',
+    },
     'Bivio::Biz::Model::MailMessage' => {
 	file_server => 'file',
     },
