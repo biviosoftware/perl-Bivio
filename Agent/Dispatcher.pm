@@ -78,15 +78,16 @@ sub process_request {
     my($self, @protocol_args) = @_;
     Bivio::Agent::Request->clear_current;
     my($die, $req, $task_id);
-    my($max_tries) = 4;
+    my($try) = 0;
  TRY: {
 	$die = Bivio::Die->catch(
 		sub {
-		    die("too many dispatcher retries") if $max_tries-- < 0;
+		    die("too many dispatcher retries") if ++$try > 4;
 		    $req = $self->create_request(@protocol_args) unless $req;
 		    $task_id = $req->get('task_id') unless $task_id;
+		    _trace('Executing: ', $task_id) if $_TRACE;
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-		    $req->put(task => $task);
+		    $req->put(task => $task, redirect_count => $try - 1);
 #TODO: This is a hack.  Really should clear out all models.
 		    $req->delete(qw(list_model form_model));
 		    # Task checks authorization
@@ -97,7 +98,9 @@ sub process_request {
 	    my($attrs) = $die->get('attrs');
 	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
 		    if $_TRACE;
+#TODO: Make this a method in Request
 	    $req->put(task_id => ($task_id = $attrs->{task_id}));
+	    $req->internal_redirect_realm($task_id);
 	    redo TRY;
 	}
     }
