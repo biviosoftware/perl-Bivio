@@ -66,7 +66,7 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             source_class => ['Bivio::Type::EntryClass',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            dttm => ['Bivio::Type::DateTime',
+            date_time => ['Bivio::Type::DateTime',
     		Bivio::SQL::Constraint::NOT_NULL()],
             user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],

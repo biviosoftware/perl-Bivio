@@ -51,8 +51,8 @@ sub new {
 
 #TODO: rework when defaults available
     my($properties) = $self->internal_get;
-    # default dttm to now
-    $properties->{'RealmInstrumentValuation.dttm'} =
+    # default date_time to now
+    $properties->{'RealmInstrumentValuation.date_time'} =
 	    Bivio::UI::HTML::Format::Date->get_widget_value(
 		    Bivio::Type::Date->now());
 
@@ -109,7 +109,7 @@ sub internal_initialize {
 	version => 1,
 	visible => [
 	    {
-		name => 'RealmInstrumentValuation.dttm',
+		name => 'RealmInstrumentValuation.date_time',
 		type => 'Bivio::Type::Date',
 		constraint => Bivio::SQL::Constraint::NOT_NULL(),
 	    },

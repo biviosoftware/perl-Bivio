@@ -95,7 +95,7 @@ sub new {
 		[
 		    _field('Valuation Date',
 			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmInstrumentValuation.dttm',
+				field => 'RealmInstrumentValuation.date_time',
 			    })),
 		],
 		[
@@ -134,7 +134,7 @@ sub new {
 		[
 		    _field('Valuation Date',
 			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmInstrumentValuation.dttm',
+				field => 'RealmInstrumentValuation.date_time',
 			    })),
 		],
 		[
@@ -173,7 +173,7 @@ sub execute {
     my($form) = $req->get('form_model');
     my($page) = $form->get('page');
     if ($page == 2) {
-	$req->put('date', $form->get('RealmInstrumentValuation.dttm'));
+	$req->put('date', $form->get('RealmInstrumentValuation.date_time'));
     }
     $req->put('page', $page);
     $req->put(page_heading => 'Investment Valuation ('.$page.'/2)',

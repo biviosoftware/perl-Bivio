@@ -55,7 +55,7 @@ sub internal_initialize {
     return {
        version => 1,
        order_by => [qw(
-                      MailMessage.dttm
+                      MailMessage.date_time
 		      MailMessage.subject_sort
 		      MailMessage.from_name_sort
                       )],

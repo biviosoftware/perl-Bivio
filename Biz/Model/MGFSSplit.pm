@@ -57,7 +57,7 @@ sub internal_initialize {
 	columns => {
 	    mg_id => ['Bivio::Data::MGFS::Id',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    dttm => ['Bivio::Data::MGFS::Date',
+	    date_time => ['Bivio::Data::MGFS::Date',
 		    Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    factor => ['Bivio::Type::Amount',
 		    Bivio::SQL::Constraint::NOT_NULL()],

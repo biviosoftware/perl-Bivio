@@ -96,7 +96,7 @@ sub new {
 		}),
 	    }),
 	    ' on ',
-	    ['Bivio::Biz::Model::MailMessage', 'dttm',
+	    ['Bivio::Biz::Model::MailMessage', 'date_time',
 		'Bivio::UI::HTML::Format::DateTime'],
 	    ' GMT</center><p>',
 	    ['Bivio::Biz::Model::MailMessage', '->get_body'],

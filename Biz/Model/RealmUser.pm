@@ -36,13 +36,36 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::SQL::Constraint;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::Name;
 use Bivio::Auth::Role;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Sets I<creation_date_time> and I<title> if not set, then calls SUPER.
+
+=cut
+
+sub create {
+    my($self, $values) = @_;
+    $values->{creation_date_time} = Bivio::Type::DateTime->now()
+	    unless $values->{creation_date_time};
+    unless (defined($values->{title})) {
+	# Set the title to Self if the realm and user are the same,
+	# else set to the description of the role
+	$values->{title} = $values->{realm_id} eq $values->{user_id}
+		? 'Self' : $values->{role}->get_short_desc;
+    }
+    return $self->SUPER::create($values);
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -63,11 +86,17 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             role => ['Bivio::Auth::Role',
     		Bivio::SQL::Constraint::NOT_NULL()],
+	    title => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+	    creation_date_time => ['Bivio::Type::DateTime',
+		Bivio::SQL::Constraint::NOT_NULL()],
         },
 	auth_id => 'realm_id',
 #TODO: SECURITY: If user_id known, does that mean can get to all user's info?
 	other => [
+	    # User_1 is the owner, if the realm_type is a user.
 	    [qw(realm_id Club.club_id User_1.user_id)],
+	    # User_2 is the the "realm_user"
 	    [qw(user_id User_2.user_id)],
 	],
     };

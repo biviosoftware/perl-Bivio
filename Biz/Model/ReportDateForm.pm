@@ -51,7 +51,7 @@ sub new {
     my($self) = &Bivio::Biz::FormModel::new(@_);
     $self->{$_PACKAGE} = {};
 
-    # default dttm to now
+    # default date_time to now
     $self->internal_get->{'report_date'} =
 	    Bivio::UI::HTML::Format::Date->get_widget_value(
 		    Bivio::Type::Date->now());

@@ -81,7 +81,7 @@ sub new {
 		value => ['MailMessage.from_name'],
 		column_nowrap => 1,
 	    }),
-            ['MailMessage.dttm',
+            ['MailMessage.date_time',
 		   'Bivio::UI::HTML::Format::Date', 2],
 	],
 	});

@@ -76,7 +76,7 @@ sub internal_initialize {
     	    Bivio::SQL::Constraint::NONE()],
     	boolean => ['Bivio::Type::Boolean',
     	    Bivio::SQL::Constraint::NOT_NULL()],
-    	dttm => ['Bivio::Type::DateTime',
+    	date_time => ['Bivio::Type::DateTime',
     	    Bivio::SQL::Constraint::NOT_NULL()],
     	dt => ['Bivio::Type::Date',
     	    Bivio::SQL::Constraint::NONE()],
