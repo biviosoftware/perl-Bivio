@@ -186,7 +186,7 @@ sub format {
 
 =for html <a name="format_realmless"></a>
 
-=head2 static format_realmless(Bivio::Agent::TaskId task_id) : string
+=head2 static format_realmless(Bivio::Agent::TaskId task_id, string path_info) : string
 
 Formats a stateless, realmless URI.  It uses my-club-site or
 my-site for the realm in the URI.
@@ -196,14 +196,14 @@ This is an experimental method.
 =cut
 
 sub format_realmless {
-    my($proto, $task_id) = @_;
+    my($proto, $task_id, $path_info) = @_;
     Bivio::Die->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     return $proto->format(
 	    $task_id,
 	    $_PLACEHOLDER{$_FROM_TASK_ID{$task_id}->{realm_type}},
 	    undef,
-	    undef,
+	    $path_info,
 	    1);
 }
 
