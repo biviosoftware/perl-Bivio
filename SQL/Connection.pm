@@ -184,7 +184,7 @@ sub disconnect {
 	    unless ref($self);
     my($fields) = $self->[$_IDI];
     _get_connection($self)->disconnect();
-    $fields->{connection_pid} = undef;
+    $fields->{connection_pid} = 0;
     $fields->{connection} = undef;
     return;
 }
@@ -549,6 +549,23 @@ sub next_primary_id {
 	    unless ref($self);
     Bivio::Die->die('abstract method');
     # DOES NOT RETURN
+}
+
+=for html <a name="ping_connection"></a>
+
+=head2 ping_connection() : self
+
+Ensures the connection is valid.
+
+=cut
+
+sub ping_connection {
+    my($self) = @_;
+    return _get_instance($self)->ping_connection
+        unless ref($self);
+    my($fields) = $self->[$_IDI];
+    $fields->{need_ping} = 1;
+    return _get_connection($self);
 }
 
 =for html <a name="rollback"></a>
