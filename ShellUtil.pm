@@ -1087,12 +1087,12 @@ sub _compile_options {
     return ($map, $opts);
 }
 
-# _deprecated_lock_action(proto, string action) : boolean
+# _deprecated_lock_action(string action) : boolean
 #
 # Implements deprecated form of lock_action.
 #
 sub _deprecated_lock_action {
-    my(undef, $action) = @_;
+    my($action) = @_;
     my($dir) = "/tmp/$action.lockdir";
     return _lock_warning($dir)
 	unless mkdir($dir, 0700);
