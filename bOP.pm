@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    won't output any string or extra newline.
+  * Bivio::Util::SQL->run_command appends commit or rollback to
+    SQL command before executing (depends on -noexecute value).
+
+  Revision 1.54  2003/03/28 12:24:47  nagler
   * Bivio::HTML::Scraper->unescape_html replaces ISO-8859-1 non-breaking spaces
     (\240) with ordinary spaces (\40).
   * Bivio::BConf->merge_http_log ignores more errors unless count reached.
