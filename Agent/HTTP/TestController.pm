@@ -2,14 +2,17 @@
 # $Id$
 package Bivio::Agent::HTTP::TestController;
 use strict;
+use Data::Dumper;
 use Bivio::Agent::Controller();
-#use Bivio::Agent::Dispatcher();
 use Bivio::Agent::Request();
 use Bivio::UI::Menu();
 use Bivio::UI::TestView();
+#use Bivio::UI::HTML::ListView();
 use Bivio::UI::HTML::Presentation();
 use Bivio::UI::HTML::Page();
+use Bivio::Biz::TestListModel();
 use Bivio::Biz::TestModel();
+use Bivio::UI::HTML::TestMathView();
 
 $Bivio::Agent::HTTP::TestController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
@@ -95,6 +98,7 @@ Exercises a simple page.
 
 sub handle_request {
     my($self, $req) = @_;
+
     my($fields) = $self->{$_PACKAGE};
 
     if ($_PAGE == 0) {
@@ -107,7 +111,14 @@ sub handle_request {
     my($view) = $self->get_view($req->get_view_name());
 
     if (defined($view)) {
-	my($model) = Bivio::Biz::TestModel->new({}, "T", "t");
+
+	# for now use the default model
+	my($model) = $view->get_default_model();
+
+#	#HACK
+#	$model ||= Bivio::Biz::TestListModel->new();
+
+	$model->find($req->get_model_args());
 	$view->activate()->render($model, $req);
 	$req->set_state(Bivio::Agent::Request::OK);
     }
@@ -134,8 +145,11 @@ sub _test {
     $req->print("<html><body>");
     $req->print("target = ".$req->get_target_name()."<br>");
     $req->print("controller = ".$req->get_controller_name()."<br>");
-    $req->print("view = ".$req->get_view_name()."<br>");
     $req->print("user = ".$req->get_user_name()."<br>");
+    $req->print("view = ".$req->get_view_name()."<br>");
+    $req->print("model = ".$req->get_model_name()."<br>");
+    $req->print("action = ".$req->get_action_name()."<br>");
+    $req->print("<pre>finder =".Dumper($req->get_model_args())."</pre><br>");
     $req->print("<p>\n");
 
     $req->print("</body></html>");
@@ -145,26 +159,33 @@ sub _test {
 # Creates the animal friendly page.
 #
 sub _create_page {
+    my($default_model) = Bivio::Biz::TestModel->new("test", {}, "T", "t");
+    my($default_list_model) = Bivio::Biz::TestListModel->new();
+
     my($paul_view) = Bivio::UI::TestView->new("paul",
-	'<img src="/i/test/paul.jpg">');
+	'<img src="/i/test/paul.jpg">', $default_model);
 
     my($ellen_view) = Bivio::UI::TestView->new("ellen",
-	'<img src="/i/test/ellen.jpg">');
+	'<img src="/i/test/ellen.jpg">', $default_model);
 
     my($electra_view) = Bivio::UI::TestView->new("electra",
-	'<img src="/i/test/electra.jpg">');
+	'<img src="/i/test/electra.jpg">', $default_model);
 
     my($orestes_view) = Bivio::UI::TestView->new("orestes",
-	'<img src="/i/test/orestes.jpg">');
+	'<img src="/i/test/orestes.jpg">', $default_model);
 
     my($ole_view) = Bivio::UI::TestView->new("ole",
-	'<img src="/i/test/ole.jpg">');
+	'<img src="/i/test/ole.jpg">', $default_list_model);
+
+#    my($list_view) = Bivio::UI::HTML::ListView->new("list");
+    my($math_view) = Bivio::UI::HTML::TestMathView->new("math");
 
     my($human_menu) = Bivio::UI::Menu->new(0,
 	    [$paul_view->get_name(), "Paul Moeller",
-	     $ellen_view->get_name(), "Ellen Moeller"]);
+	     $ellen_view->get_name(), "Ellen Moeller",
+	     $math_view->get_name(), "Math View"]);
     my($human) = Bivio::UI::HTML::Presentation->new(
-	    [$paul_view, $ellen_view], $human_menu);
+	    [$paul_view, $ellen_view, $math_view], $human_menu);
 
     my($cat_menu) = Bivio::UI::Menu->new(0,
 	    [$electra_view->get_name(), "Electra",
@@ -186,7 +207,7 @@ sub _create_page {
     $_PAGE = $page;
 
     my($human_controller) = Bivio::Agent::HTTP::TestController->new(
-	    [$paul_view, $ellen_view], $ellen_view);
+	    [$paul_view, $ellen_view, $math_view], $ellen_view);
     Bivio::Agent::Dispatcher::register_controller('human', $human_controller);
 
     my($dog_controller) = Bivio::Agent::HTTP::TestController->new(
