@@ -38,8 +38,8 @@ use Bivio::UI::Facade::AllWomenInvest::Home;
 my($_W) = 'Bivio::UI::HTML::Widget';
 __PACKAGE__->new({
     clone => 'Prod',
-    is_production => 0,
-    uri => 'bumpliz',
+    is_production => 1,
+    uri => 'allwomeninvest',
     'Bivio::UI::Font' => {
 	initialize => sub {
 	    my($fc) = @_;
