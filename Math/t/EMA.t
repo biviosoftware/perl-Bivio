@@ -8,7 +8,7 @@ use POSIX ();
 Bivio::Test->new({
     check_return => sub {
 	my($case, $return, $expect) = @_;
-	# Round to 6 decimal places
+	# Round return to 6 decimal places, and let Bivio::Test do the compare
 	$case->actual_return(
 	    [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000]);
 	return $expect;
@@ -39,6 +39,18 @@ Bivio::Test->new({
 	    [2] => [1.999999],
 	    [2] => [2.000000],
 	    [2] => [2.000000],
+	],
+    ],
+    'Bivio::Math::EMA' => [
+	new => [
+	    [-1] => Bivio::DieCode->DIE,
+	    [0] => Bivio::DieCode->DIE,
+	    [3.5] => Bivio::DieCode->DIE,
+	],
+    ],
+    Bivio::Math::EMA->new(30) => [
+	value => [
+	    [] => Bivio::DieCode->DIE,
 	],
     ],
 ]);

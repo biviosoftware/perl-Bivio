@@ -50,12 +50,12 @@ Creates a moving average with I<length> iterations.
 
 sub new {
     my($proto, $length) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new;
     $length = $_LENGTH_RANGE->from_literal_or_die($length);
     $self->[$_IDI] = {
 	length => $length,
 	alpha => 2.0 / ( $length + 1.0 ),
-	average => undef,
+	avg => undef,
     };
     return $self;
 }
@@ -75,9 +75,26 @@ Adds I<value> to moving average and returns new average.
 sub compute {
     my($self, $value) = @_;
     my($fields) = $self->[$_IDI];
-    return $fields->{average} = $value unless defined($fields->{average});
-    return $fields->{average}
-	+= $fields->{alpha} * ($value - $fields->{average});
+    return $fields->{avg} += defined($fields->{avg})
+	? $fields->{alpha} * ($value - $fields->{avg})
+	: $value;
+}
+
+=for html <a name="value"></a>
+
+=head2 value() : float
+
+Returns the current value.
+
+Dies if L<compute|"compute"> hasn't been called.
+
+=cut
+
+sub value {
+    my($res) = shift->[$_IDI]->{avg};
+    die('not defined; must call compute at least once')
+	unless defined($res);
+    return $res;
 }
 
 #=PRIVATE METHODS
