@@ -175,7 +175,6 @@ my(@_CFG) = (
         help=account-summary
         want_query=0
     )],
-#10
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
@@ -1113,6 +1112,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         ?/admin/edit/configuration
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::ClubPreferencesForm
         Bivio::UI::HTML::Club::EditPreferences
         next=CLUB_ADMIN_TOOLS
@@ -2313,7 +2313,7 @@ my(@_CFG) = (
         USER_MAIL_POST
         197
         USER
-        MAIL_WRITE&ANY_USER
+        MAIL_POST&ANY_USER
         ?/mail/post
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailPostForm
@@ -2325,7 +2325,7 @@ my(@_CFG) = (
         CLUB_MAIL_POST
         198
         CLUB
-        MAIL_WRITE&MAIL_READ
+        MAIL_POST&MAIL_READ
         ?/mail/post
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailPostForm
@@ -2338,7 +2338,7 @@ my(@_CFG) = (
         CLUB_MAIL_REPLY
         199
         CLUB
-        MAIL_WRITE&MAIL_READ
+        MAIL_POST&MAIL_READ
         ?/mail/reply
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
