@@ -69,6 +69,45 @@ sub new {
 
 =cut
 
+=for html <a name="do_rows"></a>
+
+=head2 do_rows(string table_name, code_ref do_rows_callback)
+
+Iterates over the rows over I<table_name>, calling
+L<do_rows_callback|"do_rows_callback"> for each row.
+
+=cut
+
+sub do_rows {
+    my($self, $table_name, $do_rows_callback) = @_;
+    my($index) = -1;
+    my($t) = $self->get($table_name);
+    foreach my $row (@{$t->{rows}}) {
+	my($i) = -1;
+        last unless $do_rows_callback->(
+	    {map({($_ => $row->[++$i]);} @{$t->{headings}})},
+	    ++$index,
+	);
+    }
+    return;
+}
+
+=for html <a name="do_rows_callback"></a>
+
+=head2 callback do_rows_callback(hash_ref row, int index) : boolean
+
+Called by L<do_rows|"do_rows"> for each I<row>, which is a map of
+column to cell value.  I<row> may be used destructively by.
+I<index> is the row number, starting at 0.
+
+Returns true to continue iterating, or false if the iteration should exit.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub do_rows_callback {
+}
+
 =for html <a name="get_by_headings"></a>
 
 =head2 get_by_headings(string name, ...) : hash_ref
