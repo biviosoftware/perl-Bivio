@@ -420,6 +420,7 @@ b-realm-role CLUB GUEST - \
 #TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role CLUB MEMBER - \
     +GUEST \
+    +DOCUMENT_WRITE \
     +MAIL_RECEIVE
 b-realm-role CLUB ACCOUNTANT - \
     +MEMBER \
@@ -473,6 +474,7 @@ b-realm-role ask_candis_publish GUEST - \
 #TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role ask_candis_publish MEMBER - \
     +GUEST \
+    +DOCUMENT_WRITE \
     +MAIL_RECEIVE \
     +MAIL_WRITE
 b-realm-role ask_candis_publish ACCOUNTANT - \
