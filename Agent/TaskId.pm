@@ -641,7 +641,8 @@ my(@_CFG) = (
         ?
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Action::PublicRedirect
+        Bivio::Biz::Model::FileHomePageList->execute_load_all
+        Bivio::Biz::Action::HomePageRedirect
         Bivio::UI::HTML::Club::Home
     )],
     [qw(
