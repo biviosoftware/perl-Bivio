@@ -72,6 +72,8 @@ sub execute_ok {
 Creates User, RealmOwner, Email and RealmUser models.
 Returns the RealmOwner of the user created.
 
+Sets the password to INVALID if does not exist.
+
 The only difference between this method and execute_ok is that
 the user is logged in at that point.
 
@@ -89,8 +91,10 @@ sub internal_create_models {
 	name =>	 $self->unsafe_get('RealmOwner.name')
 	    || 'u' . $user->get('user_id'),
 	realm_type => Bivio::Auth::RealmType->USER,
-	password => Bivio::Type::Password->encrypt(
-	    $self->get('RealmOwner.password')),
+	password => $self->has_keys('RealmOwner.password')
+	    ? Bivio::Type::Password->encrypt(
+	        $self->get('RealmOwner.password'))
+	    : Bivio::Type::Password->INVALID,
 	display_name => $self->get('RealmOwner.display_name'),
     });
     $self->new($req, 'Email')->create({
