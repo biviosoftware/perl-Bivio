@@ -76,24 +76,24 @@ sub new {
     my($target, $controller, $view) = _parse_request($r->uri());
     $controller ||= $default_controller_name;
 
-    my(%args) = $r->args;
+    my($args) = {$r->args};
 
     # this will clobber the query args if present
     if ($r->method_number() eq Apache::Constants::M_POST()) {
-	&_add_posted_args($r, \%args);
+	&_add_posted_args($r, $args);
     }
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	    $start_time);
     $self->{$_PACKAGE} = {
 #        'r' => $r,
 	'view_name' => $view,
-	'args' => \%args,
-	'model_args' => Bivio::Biz::FindParams->from_string($args{mf} || ''),
+	'args' => $args,
+	'model_args' => Bivio::Biz::FindParams->from_string($args->{mf} || ''),
 	'reply' => Bivio::Agent::HTTP::Reply->new($r)
     };
 
     # not available except through get_model_args()
-    delete($args{mf});
+    delete($args->{mf});
 
     # put the user and password into the context, if present
     my($ret, $password) = $r->get_basic_auth_pw();
