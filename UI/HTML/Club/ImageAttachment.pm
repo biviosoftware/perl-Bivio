@@ -107,7 +107,6 @@ sub execute {
 	_trace('output type: ', 'image/', $subtype) if $_TRACE;
 	$req->get('reply')->set_output_type("image/".$subtype);
 	$req->get('reply')->print($stream);
-	$req->get('reply')->flush();
     }
     return;
 }
