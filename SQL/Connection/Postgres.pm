@@ -90,7 +90,7 @@ sub internal_fixup_sql {
 	if $sql =~ /\(\+\)/;
 
     $sql = _fixup_select_count($sql)
-	if $sql =~ /\bSELECT\s+COUNT\(\*\)\s+FROM\s/is;
+	if $sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is;
 
     return $sql;
 }
@@ -143,6 +143,8 @@ sub internal_get_retry_sleep {
     my($self, $error, $message) = @_;
     # retry in 15 seconds if database is gone. may have rebooted database
     return 15 if $error == -1 && $message =~ /backend closed the channel/;
+    return 1 if $error == -1
+        && $message =~ /server closed the connection unexpectedly/;
     return undef;
 }
 
