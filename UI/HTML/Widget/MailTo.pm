@@ -85,7 +85,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new(any email, any value, any subject) : Bivio::UI::HTML::Widget::MailTo
+=head2 static new(any email, any value, any subject, hash_ref attrs) : Bivio::UI::HTML::Widget::MailTo
 
 Create an MailTo widget using I<email>, I<value>, and I<subject>.
 I<email> is the only required attribute.
@@ -216,12 +216,13 @@ sub render {
 # Returns arguments to be passed to Attributes::new.
 #
 sub _new_args {
-    my($proto, $email, $value, $subject) = @_;
+    my($proto, $email, $value, $subject, $attrs) = @_;
     return ($proto, $email) if ref($email) eq 'HASH' || int(@_) == 1;
     return ($proto, {
 	email => $email,
 	value => $value,
 	subject => $subject,
+	$attrs ? %$attrs : (),
     }) if defined($email);
     $proto->die(undef, undef, 'invalid arguments to new');
     # DOES NOT RETURN
