@@ -59,6 +59,9 @@ my($_DEFAULT_CONFIG) = Bivio::BConf->merge({
 	http_host => 'petshop.bivio.net',
 	mail_host => 'bivio.net',
     },
+    'Bivio::UI::HTML::Widget::SourceCode' => {
+	source_dir => '/home/httpd/files/src',
+    },
 });
 
 =head1 METHODS
