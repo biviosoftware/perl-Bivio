@@ -176,7 +176,7 @@ See L<Bivio::UI::ViewLanguage::view_class_map|Bivio::UI::ViewLanguage/"view_clas
 =item view_name : string (computed)
 
 The name of this view.  Every view has a name.  The name may does not contain
-the L<SUFFIX|"SUFFIX"> (C<.bopview>) or the ClassLoader qualifier (C<View#>).
+the L<SUFFIX|"SUFFIX"> (C<.bview>) or the ClassLoader qualifier (C<View#>).
 View names are otherwise just relative file names (no '.' or '..' are allowed).
 
 View names are globally unique to an application invocation.  They are used to
@@ -196,7 +196,6 @@ to view programs.  These functions always C<vs_>.
 
 See L<Bivio::UI::ViewLanguage::view_shortcuts|Bivio::UI::ViewLanguage/"view_shortcuts">.
 
-
 =back
 
 =cut
@@ -210,12 +209,12 @@ See L<Bivio::UI::ViewLanguage::view_shortcuts|Bivio::UI::ViewLanguage/"view_shor
 
 =head2 SUFFIX : string
 
-Returns C<.bopview>, the suffix for view files.
+Returns C<.bview>, the suffix for view files.
 
 =cut
 
 sub SUFFIX {
-    return '.bopview';
+    return '.bview';
 }
 
 #=IMPORTS
@@ -234,6 +233,7 @@ my($_SUFFIX) = __PACKAGE__->SUFFIX;
 my($_SEP) = Bivio::IO::ClassLoader->MAP_SEPARATOR;
 # All elements have a trailing '/'
 my($_LOAD_PATH) = undef;
+my($_CURRENT);
 my(%_CACHE);
 Bivio::IO::Config->register({
     load_path => Bivio::IO::Config->REQUIRED,
@@ -280,9 +280,11 @@ sub get_instance {
     }
 
     # Avoid recursion
-    $_CACHE{$view_name} = -1;
+    my($prev_current) = $_CURRENT;
+    $_CURRENT = $_CACHE{$view_name} = -1;
 
     my($die) = Bivio::UI::ViewLanguage->eval($self);
+    $_CURRENT = $prev_current;
     return $_CACHE{$view_name} = $self unless $die;
 
     delete($_CACHE{$view_name});
@@ -310,21 +312,19 @@ sub as_string {
 
 =for html <a name="compile_die"></a>
 
-=head2 compile_die(string msg) : string
+=head2 compile_die(string msg, ...) : string
 
-Calls throw_die with appropriate params.
-
-B<Only useful for ViewCompiler.>
+Dies with appropriate params.
 
 =cut
 
 sub compile_die {
-    my($view_name, $msg) = @_;
-    my($attrs) = {};
-    $attrs->{message} = $msg;
-    $attrs->{entity} = $view_name;
-    $attrs->{program_error} = 1;
-    Bivio::Die->throw('DIE', $attrs);
+    my($view_name, @msg) = @_;
+    Bivio::Die->throw('DIE', {
+	message => Bivio::IO::Alert->format_args(@msg),
+	entity => $view_name,
+	program_error => 1,
+    });
     # DOES NOT RETURN
 }
 
@@ -342,16 +342,26 @@ sub execute {
     my($self, $req) = @_;
     Bivio::Die->die($self, ': view is not terminal, contains undef values')
 		unless $self->get('view_is_executable');
-    # Used by the view values
-    $req->put($_PACKAGE => $self);
-    my($buffer) = '';
-    my($reply) = $req->get('reply');
     _trace($self) if $_TRACE;
-    my($main) = $self->ancestral_get('view_main');
-    $main->render($req, \$buffer);
-    $reply->set_output_type($main->get_content_type($req));
-    $reply->set_output(\$buffer);
-    $req->delete($_PACKAGE);
+    # Used by the view values
+    my($prev_current) = $_CURRENT;
+    $_CURRENT = $self;
+    $req->put($_PACKAGE => $self);
+    my($die) = Bivio::Die->catch(sub {
+	    $self->ancestral_get('view_main')->execute($req);
+    });
+    if ($prev_current) {
+	$req->put($_PACKAGE => $prev_current);
+    }
+    else {
+	$req->delete($_PACKAGE);
+    }
+    $_CURRENT = $prev_current;
+    if ($die) {
+	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
+	$die->throw;
+	# DOES NOT RETURN
+    }
     return 0;
 }
 
@@ -363,7 +373,7 @@ sub execute {
 
 =item load_path : array_ref (required)
 
-A list of absolute directories which contain the I<bopview> files.  All dirs
+A list of absolute directories which contain the I<bview> files.  All dirs
 must exist at config time.
 
 =back
@@ -393,6 +403,20 @@ Loads I<class_name> with L<get_instance|"get_instance">.
 sub handle_map_require {
     my($proto, $map_name, $class_name, $map_class) = @_;
     return $proto->get_instance($class_name);
+}
+
+=for html <a name="unsafe_get_current"></a>
+
+=head2 static unsafe_get_current() : Bivio::UI::View
+
+Gets the view being rendered or evaled.  May return C<undef>.
+
+B<Use for debugging only.>
+
+=cut
+
+sub unsafe_get_current {
+    return $_CURRENT;
 }
 
 #=PRIVATE METHODS
