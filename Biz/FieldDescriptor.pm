@@ -175,26 +175,36 @@ my(%_CACHE);
 
 =for html <a name="lookup"></a>
 
-=head2 static lookup(string type_name, float length) : FieldDescriptor
+=head2 static lookup(string type_name) : FieldDescriptor
 
-Returns a new or cached FieldDescriptor with the specified type
-and length. type_name should be the string form of one of the type
-constants above.
+Returns a new or cached FieldDescriptor with the specified type.
+
+=head2 static lookup(string type_name, int size) : FieldDescriptor
+
+Returns a new or cached FieldDescriptor with the specified type and
+field size
+
+=head2 static lookup(string type_name, int size, int decimal_digits) : FieldDescriptor
+
+Returns a new or cached FieldDescriptor with the specified type, field size,
+and decimal digits.
 
 =cut
 
 sub lookup {
-    my($proto, $type_name, $length) = @_;
+    my($proto, $type_name, $size, $decimal_digits) = @_;
 
-    #lookup name constant, makes config look nicer
+    #lookup name constant, makes code look nicer
     my($type) = eval("$type_name()");
     $type || Carp::croak("invalid type $type_name");
 
-    my($cache_key) = $type.'_'.$length;
+    my($cache_key) = $type;
+    $size && $cache_key.'_'.$size;
+    $decimal_digits && $cache_key.'_'.$decimal_digits;
     my($result) = $_CACHE{$cache_key};
 
     if (! $result) {
-	$result = &_new($proto, $type, $length);
+	$result = &_new($proto, $type, $size, $decimal_digits);
 	$_CACHE{$cache_key} = $result;
     }
     return $result;
@@ -204,20 +214,34 @@ sub lookup {
 
 =cut
 
-=for html <a name="get_length"></a>
+=for html <a name="get_decimal_digits"></a>
 
-=head2 get_length() : float
+=head2 get_decimal_digits() : int
 
-Returns the maximum length of the field. For integer types, this is
-always a whole number. For floating point types, the decimal indicates
-the number of digits after the point - ex. 15.2 has 2 decimal places.
+Returns the number of decimal digits the data type uses. This value is
+undefined for non numeric types.
 
 =cut
 
-sub get_length {
+sub get_decimal_digits {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{length};
+    return $fields->{decimal_digits};
+}
+
+=for html <a name="get_size"></a>
+
+=head2 get_size() : int
+
+Returns the field size of the data type. This value is undefined for
+compound types.
+
+=cut
+
+sub get_size {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{size};
 }
 
 =for html <a name="getype"></a>
@@ -237,18 +261,18 @@ sub get_type {
 
 #=PRIVATE METHODS
 
-# static _new(int type, string name, float length) : Bivio::Biz::FieldDescriptor
+# static _new(int type, int size, int decimal_digits) : Bivio::Biz::FieldDescriptor
 #
-# Creates a new FieldDescriptor with the specified type and length. A
-# negative length indicates that the field is compound, or the length
-# is unknown.
+# Creates a new FieldDescriptor with the specified type, and optional
+# size and decimal digits.
 
 sub _new {
-    my($proto, $type, $length) = @_;
+    my($proto, $type, $size, $decimal_digits) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
 	type => $type,
-	length => $length
+	size => $size,
+	decimal_digits => $decimal_digits
     };
     return $self;
 }
