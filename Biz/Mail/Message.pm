@@ -165,6 +165,21 @@ sub delete {
     die("not implemented");
 }
 
+=for html <a name="get_from_email"></a>
+
+=head2 get_from_email() : string
+
+Returns the email of the sender.
+
+=cut
+
+sub get_from_email {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{'from_email'};
+
+}
+
 =for html <a name="get_from_name"></a>
 
 =head2 get_from_name() : string
