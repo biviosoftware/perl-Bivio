@@ -50,13 +50,15 @@ use Text::Tabs;
 
 =head2 static compare(string left, string right) : int
 
-Returns the string comparison (cmp) of I<left> to I<right>.
+Returns the string comparison (cmp) of I<left> to I<right>.  C<undef> is the
+same as the empty string.
 
 =cut
 
 sub compare {
     my(undef, $left, $right) = @_;
-    return $left cmp $right;
+    return (defined($left) ? $left : '')
+	cmp (defined($right) ? $right : '');
 }
 
 =for html <a name="from_literal"></a>
