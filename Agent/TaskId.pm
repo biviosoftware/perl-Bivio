@@ -1817,6 +1817,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/taxes
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearForm
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
