@@ -377,8 +377,14 @@ sub invalidate_email {
 	    ->unauth_load_or_die(realm_id => $id);
     my($address) = $email->get('email');
     my($prefix) = Bivio::Type::Email::INVALID_PREFIX();
-    $email->update({email => $prefix.$address})
-            unless $address =~ /^\Q$prefix/o;
+    # Already invalidated?
+    return if $address =~ /^\Q$prefix/o;
+
+    # Nope, need to invalidate and create notice
+    $email->update({email => $prefix.$address});
+    Bivio::Biz::Model->new($self->get_request, 'RealmNotice')
+		->unauth_create_unless_type_exists(
+			$id, 'EMAIL_INVALID', undef);
     return;
 }
 
