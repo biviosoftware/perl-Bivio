@@ -55,6 +55,8 @@ Creates the instrument entry, and transaction entry for the specified
 transaction, using the values from the specified properties hash. Dies
 on failure.
 
+Defaults tax_basis, count, and external_identifer to 0 unless specified.
+
 =cut
 
 sub create_entry {
@@ -63,6 +65,12 @@ sub create_entry {
     $properties->{class} = Bivio::Type::EntryClass::INSTRUMENT();
     ($properties->{realm_id}, $properties->{realm_transaction_id})
 	    = $trans->get('realm_id', 'realm_transaction_id');
+
+    # defaults
+    $properties->{tax_basis} = 0 unless defined($properties->{tax_basis});
+    $properties->{count} = 0 unless defined($properties->{count});
+    $properties->{external_identifier} = 0
+	    unless defined($properties->{external_identifier});
 
     my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
     $entry->create($properties);
