@@ -35,9 +35,16 @@ and delete interface to the C<realm_user_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
+use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::Die;
+use Bivio::SQL::Connection;
 use Bivio::Type::RealmName;
+use Bivio::Type::DateTime;
+use Bivio::Type::Location;
+
 # Circular import
 # use Bivio::Data::EW::ClubImporter;
 
@@ -71,7 +78,7 @@ my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
 	    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
 	    AND realm_user_t.user_id = realm_owner_t.realm_id
 	    AND realm_owner_t.name NOT LIKE '"
-	    .Bivio::Type::RealmName::SHADOW_PREFIX()."\%'";
+	    .Bivio::Type::RealmName::OFFLINE_PREFIX()."\%'";
 
 =head1 CONSTANTS
 
@@ -135,8 +142,6 @@ sub can_auth_user_edit {
 Deletes the user from the realm including any invites.
 Does not delete transactions or tax tables in the realm.
 
-=cut
-
 sub cascade_delete {
     my($self) = @_;
     my($realm_id, $user_id) = $self->get('realm_id', 'user_id');
@@ -150,6 +155,8 @@ sub cascade_delete {
 	    [$user_id, $realm_id]);
     return $self->delete();
 }
+
+=cut
 
 =for html <a name="change_ownership"></a>
 
@@ -297,9 +304,9 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_user_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-            user_id => ['PrimaryId', 'PRIMARY_KEY'],
-            role => ['Bivio::Auth::Role', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+            user_id => ['User.user_id', 'PRIMARY_KEY'],
+            role => ['RealmRole.role', 'NOT_NULL'],
 	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
@@ -446,6 +453,21 @@ sub is_sole_admin {
     return _cache_in_request(@_, $_IS_SOLE_ADMIN_QUERY) ? 0 : 1;
 }
 
+=for html <a name="is_super_user"></a>
+
+=head2 static is_super_user(string user_id) : boolean
+
+Returns true if the user is a super user.
+
+=cut
+
+sub is_super_user {
+    my($proto, $user_id) = @_;
+    return $proto->new()->unauth_load(
+	    realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
+	    user_id => $user_id);
+}
+
 =for html <a name="take_offline"></a>
 
 =head2 take_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
@@ -470,7 +492,7 @@ sub take_offline {
 	    unless $any_user_ok || $self->is_member;
 
     # create an off-line copy and move all associated records
-    my($user) = Bivio::Biz::Model::User->new($req)
+    my($user) = Bivio::Biz::Model->new($req, 'User')
 	    ->unauth_load_or_die(user_id => $self->get('user_id'));
     my($address) = Bivio::Biz::Model->new($req, 'Address')
 	    ->unauth_load_or_die(
