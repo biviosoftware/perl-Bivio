@@ -600,9 +600,10 @@ sub unsafe_render_value {
     if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
 	$value->render($source, $buffer);
     }
-    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
-	$$buffer .= $value->as_string;
-    }
+# removed until all director widgets are fixed up
+#    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
+#	$$buffer .= $value->as_string;
+#    }
     else {
         Bivio::IO::Alert->warn('rendering ref as string: ', $value)
                 if ref($value);
