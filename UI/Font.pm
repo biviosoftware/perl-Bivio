@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Font;
 use strict;
 $Bivio::UI::Font::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Font::VERSION;
 
 =head1 NAME
 
@@ -371,7 +372,7 @@ sub _initialize_html_with_style {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

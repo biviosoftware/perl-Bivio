@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::FacadeComponent;
 use strict;
 $Bivio::UI::FacadeComponent::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::FacadeComponent::VERSION;
 
 =head1 NAME
 
@@ -421,7 +422,7 @@ sub _init_from_clone {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

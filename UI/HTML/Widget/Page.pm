@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
 $Bivio::UI::HTML::Widget::Page::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::Page::VERSION;
 
 =head1 NAME
 
@@ -196,7 +197,7 @@ sub render {
     if ($_SHOW_TIME || $_TRACE) {
         # Output timing info
         my($times) = sprintf('total=%.3fs; db=%.3fs',
-                Bivio::Agent::Request->get_current->elapsed_time,
+                $req->get_current->elapsed_time,
                 Bivio::SQL::Connection->get_db_time);
         $$buffer .= "\n<!-- " . $times . " -->\n" if $_SHOW_TIME;
         _trace($times) if $_TRACE;
@@ -210,7 +211,7 @@ sub render {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
