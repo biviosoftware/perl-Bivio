@@ -155,11 +155,16 @@ sub new {
 =head2 create(hash_ref new_values)
 
 Creates an MGFS Daily Quote. Does price unsplitting.
+Does nothing for all 0 values.
 
 =cut
 
 sub create {
     my($self, $new_values) = @_;
+    return if $new_values->{close} == 0
+	    && $new_values->{low} == 0
+		    && $new_values->{high} == 0
+			    && $new_values->{volume} == 0;
     $self->SUPER::create(_unsplit($new_values));
     return;
 }
@@ -182,6 +187,12 @@ sub from_mgfs {
 	$self->SUPER::from_mgfs($record, $file);
 	return;
     }
+
+    # workaround for unnamed MGFS data, ignore quotes for unnamed instruments
+    my($name) = substr($record, 12, 80);
+    # trim spaces
+    $name =~ s/\s+$//;
+    return if $name eq '';
 
     # date records store the array in a local var
     my($record_id) = substr($record, 4, 8);
@@ -227,7 +238,8 @@ sub from_mgfs {
 	    $values->{close} = $closes[$i];
 	    $values->{volume} = $volumes[$i];
 
-	    my($die) = $self->try_to_update_or_create($values, 1);
+	    # update_flag of 2, meaning don't replace, create only if not there
+	    my($die) = $self->try_to_update_or_create($values, 2);
 	    if ($die) {
 		$self->write_reject_record($die, $record);
 		last;
@@ -248,8 +260,9 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    qspvsd => [0, 0],
-	    qcpvsd => [0, 1],
+	    # new update_flag 2, won't change existing records
+	    qspvsd => [0, 2],
+	    qcpvsd => [0, 2],
 	    indb02 => [1, 1],
 	    chgdb02 => [1, 1],
 	},
