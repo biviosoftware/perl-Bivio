@@ -219,6 +219,7 @@ ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
 /
 ');
     _upgrade_mail_message_t();
+    _upgrade_user_title();
     return;
 }
 
@@ -230,6 +231,56 @@ sub _upgrade_mail_message_t {
     # We do this so we can delete clubs, without deleting mail_message_t
     # entries.
     _drop_constraints('mail_message_t', 'club_id');
+    return;
+}
+
+# _upgrade_user_title()
+#
+# Moves user's title to the new enum field 'honorific' for realm_user_t
+# and realm_invite_t.
+#
+sub _upgrade_user_title {
+    # maps title to honorific int
+    my($honors) = {};
+    for (my($i) = 0; $i < Bivio::Type::Honorific->get_count; $i++) {
+	my($value) = Bivio::Type::Honorific->from_int($i);
+	$honors->{lc($value->get_short_desc)} = $value->as_int;
+    }
+
+    # drop constraints for title
+    # add honorific
+    # migrate title to honorific
+    # add constraints to honorific
+    foreach my $table (qw(realm_invite_t realm_user_t)) {
+	_drop_constraints($table, 'title');
+
+	_do_sql("
+ALTER TABLE $table
+    ADD honorific NUMBER(2)
+/
+");
+	my($sth) = Bivio::SQL::Connection->execute("
+                SELECT realm_id, user_id, LOWER(title)
+                FROM $table");
+	while (my $row = $sth->fetchrow_arrayref) {
+	    my($realm_id, $user_id, $title) = @$row;
+	    my($honorific) = $honors->{$title}
+		    || die("unknown title $title");
+	    Bivio::SQL::Connection->execute("
+                    UPDATE $table
+                    SET title=?, honorific=?
+                    WHERE realm_id=?
+                    AND user_id=?",
+		    [undef, $honorific, $realm_id, $user_id]);
+	}
+
+	_do_sql("
+ALTER TABLE $table add check (honorific between 1 and 9)
+/
+ALTER TABLE $table modify honorific not null
+/
+");
+    }
     return;
 }
 
