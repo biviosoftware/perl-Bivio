@@ -50,6 +50,7 @@ sub enqueue_message {
 	$_PHONE = $req->get('support_phone');
 	$_FROM = 'bivio Customer Support <'.$req->get('support_email').'>';
     }
+    $msg->set_envelope_from($req->get('support_email'));
     $msg->set_recipients($recipient);
     $msg->set_header('From', $_FROM);
     $msg->set_header('To', $recipient);
