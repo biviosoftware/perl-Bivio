@@ -402,6 +402,19 @@ sub compile_with_numbers {
     } @$names]);
 }
 
+=for html <a name="equals_by_name"></a>
+
+=head2 equals_by_name(string name) : boolean
+
+Returns true if I<name> is self's name.  Blows up if I<name> is invalid.
+
+=cut
+
+sub equals_by_name {
+    my($self, $name) = @_;
+    return $self == $self->from_name($name);
+}
+
 =for html <a name="execute"></a>
 
 =head2 execute(Bivio::Agent::Request req) : boolean
