@@ -24,6 +24,10 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+# 	'ballot-pool-membership' => [
+# 	    ['Forms', 'AES/GA', 'visible',
+# 		 'AES/GA', 'type'] => [ 'checkbox' ],
+# 	],
 	'ieeesa-ballot-invitation-request-step-2' => [
 	    ['Forms', 'AES/GA', 'visible',
 		 'AES/GA', 'type'] => [ 'checkbox' ],
