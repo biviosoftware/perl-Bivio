@@ -167,10 +167,12 @@ sub create_initial {
     my($realm_id) = $realm->get('realm_id');
 
     # CReate the quota
+    Bivio::IO::ClassLoader->simple_require(
+	    'Bivio::Biz::Action::DemoClub');
     my($fq) = Bivio::Biz::Model::FileQuota->new($req);
     $fq->create({
 	realm_id => $realm_id,
-	max_kbytes => $realm->is_demo_club()
+	max_kbytes => Bivio::Biz::Action::DemoClub->is_demo_club($realm)
 	? $fq->DEFAULT_MAX_KBYTES_FOR_DEMO_CLUB() : $fq->DEFAULT_MAX_KBYTES(),
     });
 
