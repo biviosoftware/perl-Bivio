@@ -98,7 +98,7 @@ Updates /etc/bashrc to search /etc/bashrc.d.
 
 sub add_bashrc_d {
     my($self) = @_;
-    return _edit($self, '/etc/bashrc', ['$', <<'EOF']);
+    return _edit($self, '/etc/bashrc', ['$', <<'EOF', qr#/etc/bashrc.d/#]);
 
 # Load local bashrcs
 for i in /etc/bashrc.d/*.sh ; do
