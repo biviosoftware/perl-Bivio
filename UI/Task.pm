@@ -289,9 +289,11 @@ sub format_uri {
 # if no context added.
     # URI contains a question mark
     if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
-	return _get_error($self, $task_name,
-		'uri requires but realm not defined')
-			unless defined($realm);
+	$realm = $self->[$_IDI]->{realmless_uri}->{$info->{realm_type}}
+	    || return _get_error($self, $task_name,
+		'uri requires a realm but not defined nor is there a'
+		. ' realmless_uri configured for ', $info->{realm_type})
+	    unless defined($realm);
 	my($ro);
 	if (ref($realm)) {
 	    # If the realm doesn't have an owner, there's a bug somewhere
@@ -414,12 +416,11 @@ sub initialization_complete {
     # Map default placeholders for these realms.  See format_realmless_uri().
     $fields->{realmless_uri} = {
 	# You can't format realmless unless these tasks exist.
-#TODO: make my_club_site and my_site configurable
-	Bivio::Auth::RealmType::CLUB()
-		=> $self->internal_get_value('my_club_site')->{uri},
-	Bivio::Auth::RealmType::USER()
-	        => $self->internal_get_value('my_site')->{uri},
-	Bivio::Auth::RealmType::GENERAL() => undef,
+	Bivio::Auth::RealmType->CLUB
+	    => $self->internal_get_value('my_club_site')->{uri},
+	Bivio::Auth::RealmType->USER
+	    => $self->internal_get_value('my_site')->{uri},
+	Bivio::Auth::RealmType->GENERAL => undef,
     };
 
     $self->SUPER::initialization_complete();
