@@ -65,15 +65,44 @@ string not defined.
 
 sub parse {
     my(undef, $string) = @_;
-    # Nothing
+
+    # Empty?
     return undef unless defined($string);
 
-    my(@v);
-    foreach my $v (split(/[=&]/, $string)) {
-	push(@v, Bivio::Util::unescape_uri($v));
+    # Some search engines escape the query string incorrectly.
+    #   /pub/trez_talk/msg?v=1%26t=332800003%26o=0d1a2a
+    if ($string =~ /^(?:v=1%26|v%3d1)/i) {
+	my($req) = Bivio::Agent::Request->get_current;
+	if ($req) {
+	    my($r) = $req->get('r');
+	    Bivio::IO::Alert->warn('correcting query=', $string,
+		    ', uri=', $req->unsafe_get('uri'),
+		    ', referer=', $r ? $r->header_in('referer') : undef,
+		    ', client_addr=', $req->unsafe_get('client_addr'),
+		    ', user-agent=', $r ? $r->header_in('user-agent') : undef,
+		   );
+	}
+	$string =~ Bivio::Util::unescape_uri($string);
     }
+
+    # Split on & and then =
+    my(@v);
+    foreach my $item (split(/&/, $string)) {
+	# While it isn't usual to have a query value with = literally,
+	# it can happen and therefore we have the "2".
+	my($k, $v) = split(/=/, $item, 2);
+
+	# Avoid the lone "&=" case.  Totally mangled query element.
+	next unless defined($k) && length($k);
+
+	# $v may not be defined.  This is a malformed query, but
+	# let's handle anyway.
+	push(@v, Bivio::Util::unescape_uri($k),
+		defined($v) ? Bivio::Util::unescape_uri($v) : undef);
+    }
+
+    # No valid elements?
     return undef unless @v;
-    push(@v, '') if int(@v) % 2;
 
     # Return the hash
     return {@v};
