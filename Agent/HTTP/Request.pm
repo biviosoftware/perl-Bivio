@@ -130,6 +130,13 @@ B<DOES NOT RETURN.>
 sub client_redirect {
     my($self, $new_task, $new_realm) = @_;
 
+    # do internal redirect if task is the same, avoids browser behavior
+    # when redirecting to current url
+    if ($new_task eq $self->get('task_id')) {
+	$self->redirect($new_task, $new_realm);
+	return;
+    }
+
 #TODO: need a better way to determine whether to use https
     my($host) = $self->SUPER::get_http_host;
     my($uri);
