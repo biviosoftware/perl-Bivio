@@ -62,7 +62,7 @@ sub create {
     my($self) = @_;
     my($properties) = $self->internal_get;
 
-    my($club) = $self->get_model('Realmowner_1');
+    my($club) = $self->get_model('RealmOwner_1');
     my($user) = $self->get_model('RealmOwner_2');
 
     # Create RealmUser
