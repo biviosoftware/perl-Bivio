@@ -140,8 +140,8 @@ sub client_redirect {
 	$uri = 'https://'.$host;
     }
 
-    $self->SUPER::internal_redirect_realm($new_task, $new_realm);
-    $uri .= $self->format_uri($new_task, undef);
+    $self->internal_redirect_realm($new_task, $new_realm);
+    $uri .= $self->format_uri($new_task);
     $self->get('reply')->client_redirect($uri);
 
     Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
@@ -174,7 +174,8 @@ sub format_uri {
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, int(@_) >= 4 ? $auth_realm : $self->get('auth_realm'));
 #TODO: Is this right?
-#    $query = $self->get('query_string') unless int(@_) >= 3;
+#PJM: I think so
+    $query = $self->get('query_string') unless int(@_) >= 3;
     return $uri unless defined($query);
     return $uri.'?'.$query unless ref($query);
 #TODO: Map query strings to brief names
