@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,39 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.23  2004/06/10 23:07:12  moeller
+  * Bivio::IO::Trace fixed undefined _trace() if package filter is off
+
+  Revision 2.22  2004/06/10 22:32:40  moeller
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    Allow checkboxes to be defaulted to checked.
+  * Bivio::Delegate::SimpleRealmName
+    allow subclasses to parse realm name, added internal_is_realm_name()
+  * Bivio::HTML
+    escape_uri doesn't escape '/', because that's the way it works.
+    The new URI::Escape escapes '/', and that breaks assumptions.
+  * Bivio::IO::Trace
+    Improved import/register,
+    no longer need to call register() or use vars ('$_TRACE');
+  * Bivio::SQL::Connection::Postgres
+    now correctly parses Postgres 7.4.1 constraint violation error messages
+  * Bivio::SQL::Support
+    improved error messages
+  * Bivio::Test::Language::HTTP
+    set the "user agent" HTTP to the script name when sending requests.
+    includes the script line number in the user-agent portion of the
+      HTTP request.
+    Added a reload_page() method.  Indended to be used after
+      a deviance test to clear errors so that conformance
+      tests can be resumed
+  * Bivio::Test::Language
+    Change to output to deviance output
+  * Bivio::Type::ECCreditCardExpYear
+    now determines credit card date window dynamically
+  * Bivio::Type::Number
+    now uses Math::BigInt because this is used by FixedPrecision but not imported
+  * Bivio::UI::Task
     calls RealmName->from_literal() to see if uri is in a realm
   * Bivio::UNIVERSAL
     added package_version
