@@ -133,10 +133,37 @@ I<right> is the lesser value.
 
 =back
 
+Treats C<undef> as "least" or equal if both I<left> or I<right>.  Subclasses
+call this way:
+
+    return shift->SUPER::compare(@_)
+	unless defined($left) && defined($right);
+
 =cut
 
-$_ = <<'}'; # emacs
 sub compare {
+    my($proto, $left, $right) = @_;
+    return 0
+	unless defined($left) || defined($right);
+    return -1
+	unless defined($left);
+    return 1
+	unless defined($right);
+    return shift->compare_defined(@_);
+}
+
+=for html <a name="compare_defined"></a>
+
+=head2 static compare_defined(any left, any right) : int
+
+Called by L<compare|"compare"> when both values are defined.  Compares the
+values using C<cmp>.  Results are undefined if either argument is undefined.
+
+=cut
+
+sub compare_defined {
+    my($proto, $left, $right) = @_;
+    return $left cmp $right;
 }
 
 =for html <a name="from_literal"></a>
@@ -326,16 +353,12 @@ sub internal_from_literal_warning {
 
 =head2 static is_equal(any left, any right) : boolean
 
-Are the two values equal?  Uses "eq" comparison if compare is not available
+Are the two values equal?  Uses "eq" comparison if compare is not available.
 
 =cut
 
 sub is_equal {
-    my($proto, $left, $right) = @_;
-    return shift->compare(@_) ? 1 : 0
-	if $proto->can('compare');
-    return defined($left) == defined($right)
-	&& (!defined($right) || $left eq $right) ? 1 : 0;
+    return shift->compare(@_) == 0 ? 1 : 0;
 }
 
 =for html <a name="is_password"></a>
