@@ -82,12 +82,38 @@ sub execute_ok {
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
-    _login($self,
-	$parser->head->get('from')
-        || $parser->head->get('apparently-from'));
+    $self->internal_put_field(task_id => _task($self, $op));
+    $self->internal_put_field(from_email =>
+	_from_email($parser->head->get('from')
+	    || $parser->head->get('apparently-from')));
+    _trace($self->get('from_email'), ' ', $self->get('task_id')) if $_TRACE;
+    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
+	login => $self->internal_get_login,
+    });
     # Should not return, but always put in a return just in case
-    $req->server_redirect(_task($self, $op));
+    $req->server_redirect($self->get('task_id'));
     return;
+}
+
+=for html <a name="internal_get_login"></a>
+
+=head2 internal_get_login() : string
+
+Returns the value to be passed to I<UserLoginForm.login> before the server
+redirect in L<execute_ok|"execute_ok">.  All other fields are initialized at
+time of call.  May return C<undef> (no login).
+
+=cut
+
+sub internal_get_login {
+    my($self) = @_;
+    # We must load the email explicitly, because we won't want the
+    # general check in UserLoginForm which strips the domain and
+    # checks the login.  Also, we need to handle the case where
+    # the user doesn't exist.
+    my($email) = Bivio::Biz::Model->new($self->get_request, 'Email');
+    return $email->unauth_load({email => $self->get('from_email')})
+	    ? $email->get('realm_id') : undef;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -109,6 +135,11 @@ sub internal_initialize {
 		# User we authenticated (or not)
 		name => 'from_email',
 		type => 'Email',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'task_id',
+		type => 'Bivio::Agent::TaskId',
 		constraint => 'NONE',
 	    },
 	],
@@ -140,27 +171,14 @@ sub parse_recipient {
 
 #=PRIVATE SUBROUTINES
 
-# _login(self, string from)
+# _from_email(string from)
 #
-# Asserts user and role.
+# Parses from_email
 #
-sub _login {
-    my($self, $from) = @_;
-    my($req) = $self->get_request;
-    _trace('from: ', $from) if $_TRACE;
+sub _from_email {
+    my($from) = @_;
     ($from) = $from && Bivio::Mail::Address->parse($from);
-    $self->internal_put_field(from_email => $from && lc($from));
-    _trace('from_email: ', $self->get('from_email')) if $_TRACE;
-    # We must load the email explicitly, because we won't want the
-    # general check in UserLoginForm which strips the domain and
-    # checks the login.  Also, we need to handle the case where
-    # the user doesn't exist.
-    my($email) = Bivio::Biz::Model->new($req, 'Email');
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
-	login => $email->unauth_load({email => $self->get('from_email')})
-	    ? $email->get('realm_id') : undef,
-    });
-    return;
+    return $from && lc($from);
 }
 
 # _set_realm(self, string name)
