@@ -88,7 +88,7 @@ Sets I<gender> if not set, then calls SUPER.
 
 sub create {
     my($self, $values) = @_;
-    $values->{gender} = Bivio::Type::Gender::UNKNOWN();
+    $values->{gender} ||= Bivio::Type::Gender::UNKNOWN();
     return $self->SUPER::create($values);
 }
 
