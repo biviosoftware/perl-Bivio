@@ -1680,7 +1680,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
         174
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/allocations
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
@@ -1856,7 +1856,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
         190
         CLUB
-        ACCOUNTING_READ&MEMBER_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/withdrawal
         Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
@@ -1869,7 +1869,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_CONFIRM
         191
         CLUB
-        ACCOUNTING_READ&MEMBER_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/withdrawal/confirm
         Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
@@ -1889,44 +1889,34 @@ my(@_CFG) = (
         next=CLUB_ADMIN_USER_LIST
     )],
     [qw(
-        CLUB_ACCOUNTING_EXPORT_CLUB_DATA
+        CLUB_ADMIN_EXPORT
         193
         CLUB
-	ACCOUNTING_READ
-        ?/accounting/export_club_data
-	Bivio::UI::HTML::Club::ExportClubData
-        next=CLUB_ADMIN_TOOLS
+	ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+        ?/admin/export
+	Bivio::UI::HTML::Club::Export
     )],
     [qw(
-        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_ZIP
+        CLUB_ADMIN_EXPORT_COMPRESSED
         194
         CLUB
-        ACCOUNTING_READ
-        ?/bivio-acct.zip/*
-        Bivio::UI::XML::ClubData->zip
-        next=CLUB_ADMIN_TOOLS
+	ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+        ?/admin/clubexp.xml.gz
+        Bivio::Biz::Model::Lock
+        Bivio::UI::XML::ClubExport->execute_compressed
     )],
     [qw(
-        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_UNCOMPRESSED
+        CLUB_ADMIN_EXPORT_PLAIN
         195
         CLUB
-        ACCOUNTING_READ
-        ?/bivio-acct.xml/*
-        Bivio::UI::XML::ClubData->uncompressed
-        next=CLUB_ADMIN_TOOLS
-    )],
-    [qw(
-        CLUB_ACCOUNTING_EXPORT_CLUB_DATA_GZ
-        196
-        CLUB
-        ACCOUNTING_READ
-        ?/bivio-acct.xml.gz/*
-        Bivio::UI::XML::ClubData->gz
-        next=CLUB_ADMIN_TOOLS
+	ACCOUNTING_READ&ADMIN_READ&MEMBER_READ
+        ?/admin/clubexp.xml
+        Bivio::Biz::Model::Lock
+        Bivio::UI::XML::ClubExport->execute_plain
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
-        197
+        196
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member_status
