@@ -36,6 +36,7 @@ C<Bivio::UI::HTML::Widget::TaskInfo>
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Collection::SingletonMap;
 use Bivio::Die;
 use Bivio::UI::HTML::Widget::SourceCode;
 
@@ -115,7 +116,7 @@ EOF
 	    $$buffer .= "\n";
 	}
 	else {
-	    $$buffer .= "$name\n";
+	    $$buffer .= $name."\n";
 	}
     }
     $$buffer .= "</pre>\n";
@@ -132,15 +133,16 @@ EOF
 sub _get_item_parts {
     my($item) = @_;
 
-    my($method) = '';
-    if ($item !~ /^View\./ && $item =~ s/(-.*)$//) {
-	$method = $1;
-    }
     my($name) = $item;
-    my($module) = $item;
+    my($module) = '';
+    my($method) = '';
 
-    if ($module =~ s/^Model\.//) {
-	$module = ref(Bivio::Biz::Model->get_instance($module));
+    # strongly coupled with Task code
+    unless ($name =~ /=/ || $name =~ /^View\./) {
+	if ($name =~ s/(->.*)$//) {
+	    $method = $1;
+	}
+	$module = ref(Bivio::Collection::SingletonMap->get($name));
     }
     return ($name, $module, $method);
 }
