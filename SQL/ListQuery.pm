@@ -103,7 +103,6 @@ use Bivio::Die;
 use Bivio::DieCode;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my(%_QUERY_TO_FIELDS) = (
     'a' => 'action',
     'b' => 'begin',
@@ -292,8 +291,7 @@ sub _parse_order_by {
     }
     # Add in order_by values not explicitly listed.  The default
     # is ascending.
-    my($ob);
-    foreach $ob (@$order_by) {
+    foreach my $ob (@$order_by) {
 	push(@$res, $ob, 1) unless grep($_ eq $ob, @$res);
     }
     return;
@@ -318,8 +316,7 @@ sub _parse_pk {
     my($value) = $attrs->{$tag};
     $attrs->{$name} = undef, return unless defined($value);
     my($res) = $attrs->{$name} = [];
-    my($t);
-    foreach $t (@{$support->get('primary_key_types')}) {
+    foreach my $t (@{$support->get('primary_key_types')}) {
 	_die(Bivio::DieCode::INVALID_QUERY(),
 		"incomplete $name", $attrs->{$tag})
 		unless $value =~ s/^([^\177]+)\177?//;
