@@ -8,7 +8,7 @@ use strict;
 
 use HTML::Entities ();
 use Carp ();
-$^O !~ /win32/i && require 'syscall.ph';
+$^O !~ /win32/i && CORE::require 'syscall.ph';
 
 BEGIN {
     # Create routines dynamically
@@ -183,7 +183,7 @@ sub require {
 	my($c) = $_;
 	$c =~ s!::!/!g;
 #TODO: Why doesn't perl let me use "use"?
-	require $c . '.pm';
+	CORE::require $c . '.pm';
     } @_;
 }
 
