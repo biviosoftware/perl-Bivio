@@ -368,9 +368,10 @@ sub compile {
 	    $info{uc($alias)} = $d;
 	}
 	# Index 5: enum instance
+	my($ln) = lc($name);
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
-            sub execute_$name {shift; return ${pkg}::${name}()->execute(\@_)};
+            sub execute_$ln {shift; return ${pkg}::${name}()->execute(\@_)};
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
