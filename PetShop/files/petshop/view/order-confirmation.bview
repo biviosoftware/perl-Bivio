@@ -6,12 +6,13 @@
 view_parent('menu');
 view_put(header_title => 'Confirm Shipping Data');
 
-# Returns a widget value which looks up the specified OrderForm
-# field in the OrderConfirmationForm's context.
+# Looks up the specified OrderForm field in the OrderConfirmationForm's
+# context.
 my($order_field) = sub {
-    my($field) = @_;
-    return ['Model.OrderConfirmationForm', '->unsafe_get_context_field',
-	$field];
+    my($req, $field) = @_;
+    my($value) = $req->get('Model.OrderConfirmationForm')
+        ->unsafe_get_context_field($field);
+    return $value;
 };
 
 # Returns a widget which render the specified address fields.
@@ -19,24 +20,23 @@ my($address_widget) = sub {
     my($name_prefix, $address) = @_;
 
     return Join([
-	String(&$order_field('Order.'.$name_prefix.'_first_name')),
+	String([$order_field, 'Order.'.$name_prefix.'_first_name']),
 	' ',
-	String(&$order_field('Order.'.$name_prefix.'_last_name')),
+	String([$order_field, 'Order.'.$name_prefix.'_last_name']),
 	'<br>',
-	String(&$order_field('EntityAddress_'.$address.'.addr1')),
+	String([$order_field, 'EntityAddress_'.$address.'.addr1']),
 	'<br>',
-	If(&$order_field('EntityAddress_'.$address.'.addr2'),
+	If([$order_field, 'EntityAddress_'.$address.'.addr2'],
 	    Join([
-		String(&$order_field('EntityAddress_'.$address.'.addr2')),
+		String([$order_field, 'EntityAddress_'.$address.'.addr2']),
 		'<br>',
 	    ]),
-	    Join([''])
 	),
-	String(&$order_field('EntityAddress_'.$address.'.city')),
+	String([$order_field, 'EntityAddress_'.$address.'.city']),
 	', ',
-	String(&$order_field('EntityAddress_'.$address.'.state')),
+	String([$order_field, 'EntityAddress_'.$address.'.state']),
 	vs_blank_cell(2),
-	String(&$order_field('EntityAddress_'.$address.'.zip')),
+	String([$order_field, 'EntityAddress_'.$address.'.zip']),
 	'<p>',
     ]);
 };
