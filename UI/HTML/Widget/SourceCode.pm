@@ -181,7 +181,7 @@ sub render {
     Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
 		unless -e $file;
 
-    my($lines) = [`cat $file | perl2html -c -t $package`];
+    my($lines) = [`cat $file | /usr/local/bin/perl2html -c -t $package`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package);
 
