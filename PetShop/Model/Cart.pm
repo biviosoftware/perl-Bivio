@@ -40,8 +40,7 @@ use Bivio::PetShop::Type::Price;
 use Bivio::Type::Date;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-Bivio::Agent::HTTP::Cookie->register($_PACKAGE);
+Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
 =head1 METHODS
 

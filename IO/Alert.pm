@@ -56,14 +56,13 @@ entry.
 =cut
 
 #=VARIABLES
-my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER, $_LOG_FILE,
+my($_PERL_MSG_AT_LINE, $_LOGGER, $_LOG_FILE,
 	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
         $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,
 	$_MAX_WARNINGS, $_WARN_COUNTER);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
-    $_PACKAGE = __PACKAGE__;
     $_LOGGER = \&_log_stderr;
     $_DEFAULT_MAX_ARG_LENGTH = 2048;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;

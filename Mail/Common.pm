@@ -48,7 +48,7 @@ my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
 my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_PKG) = __PACKAGE__;
 Bivio::IO::Config->register({
     'errors_to' => $_ERRORS_TO,
     'sendmail' => $_SENDMAIL,
@@ -201,7 +201,7 @@ sub send {
 To: $_ERRORS_TO
 Subject: ERROR: unable to send mail
 Sender: "$0" <$u>
-X-Pert-Module: $_PACKAGE
+X-Pert-Module: $_PKG
 
 Error while trying to message to $recipients:
     $err
