@@ -253,6 +253,7 @@ sub _initialize {
 	    'HTTP::Form::_parse_header:\d+ unexpected field',
 	    '::warn:\d+ not importing data - transactions already exist',
 	    '::warn:\d+ Message very similar to (?:earlier one|parent)',
+            '::warn:\d+ blocking mail with executable content',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
