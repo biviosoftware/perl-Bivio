@@ -538,6 +538,12 @@ sub _parse {
     foreach my $f (split(/\s*[;,]\s*/, $cookie)) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
 
+	# We ignore all other parts of the cookie
+	unless (defined($k) && defined($v)) {
+	    _trace($k, ': ignoring hacked element') if $_TRACE;
+	    next;
+	}
+
 	if ($k =~ /\$/) {
 	    _trace($k, ': ignoring attribute') if $_TRACE;
 	    next;
