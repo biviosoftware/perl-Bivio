@@ -33,6 +33,7 @@ demo clubs.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
 use Bivio::Biz::Model::Address;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
@@ -40,7 +41,6 @@ use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::Phone;
-use Bivio::Biz::Model::TaxId;
 use Bivio::Biz::Model::RealmAccount;
 use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmInstrument;
@@ -48,7 +48,9 @@ use Bivio::Biz::Model::RealmInstrumentEntry;
 use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Biz::Model::TaxId;
 use Bivio::SQL::Connection;
+use Bivio::Type::ClubUserTitle;
 
 #=VARIABLES
 
@@ -141,7 +143,12 @@ sub execute {
 
     # members and entries
     _copy($id_map, 'realm_user', {realm_id => $source_id},
-	    Bivio::Biz::Model::RealmUser->new($req));
+	    Bivio::Biz::Model::RealmUser->new($req),
+	    undef,
+	    {
+		role => Bivio::Auth::Role::MEMBER(),
+		title => Bivio::Type::ClubUserTitle::MEMBER(),
+	    });
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select user_id from realm_user_t where realm_id=?', [$source_id]);
     my($row);
@@ -158,15 +165,18 @@ sub execute {
 
 #=PRIVATE METHODS
 
-# _copy(hash_ref id_map, string table_base, hash_ref key_map, Bivio::Biz::PropertyModel model, string extra_field) : array_ref
+# _copy(hash_ref id_map, string table_base, hash_ref key_map, Bivio::Biz::PropertyModel model, string extra_field, hash_ref fixed_values) : array_ref
 #
 # Copies all the entries with the parent keys of the 'key_map' to a
 # new Model. Returns a set of ids for the source models.
 #
-# Special case: realm_user.creation_date_time is set to "now" and
+# Special case: realm_user.creation_date_time is set to "now" 
+#
+# fixed_values are forced on the new copy.
 #
 sub _copy {
-    my($id_map, $table_base, $key_map, $model, $extra_field) = @_;
+    my($id_map, $table_base, $key_map, $model, $extra_field, $fixed_values)
+	    = @_;
 
     my($select) = 'select ';
     my($fields) = $model->get_keys;
@@ -188,7 +198,7 @@ sub _copy {
 	for (my($i) = 0; $i < int(@$fields); $i++ ) {
 	    $properties->{$fields->[$i]} = $row->[$i];
 	}
-	# Can't have "now" be before club creation date
+	# Can't have "now" be before clu bcreation date
 	$properties->{creation_date_time} = $now if $now;
 
 	my($source_id) = $properties->{$table_base."_id"};
@@ -207,6 +217,14 @@ sub _copy {
 	    # skip if not present (not part of realm)
 	    next unless defined($properties->{$extra_field});
 	}
+
+	# Set fixed value, if any
+	if ($fixed_values) {
+	    foreach my $k (keys(%$fixed_values)) {
+		$properties->{$k} = $fixed_values->{$k};
+	    }
+	}
+
 	# remove the primary id so it gets created from a sequence in create()
 	delete($properties->{$table_base.'_id'});
 	$model->create($properties);
