@@ -46,48 +46,36 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name) : Bivio::Biz::PropertyModel
+=head2 static new(string name, hash property_info) : Bivio::Biz::PropertyModel
 
-Creates a PropertyModel with the specified class configuration.
-
-=over 4
-
-=item model_name : string
-
-The lookup name of the model.
-
-=item property_cfg : hash
-
-A hash of property attributes. Format:
+Creates a PropertyModel with the specified name and property information.
+property_info should have the format:
     {
         property-name => ['caption', field-descriptor]
         ...
     }
 
     ex.
-	property_cfg => {
+	{
 	    id => ['Internal ID',
 		    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
 	    name => ['User ID',
 		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
 	    password => ['Password',
 		    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
-	    }
+	}
 
 =cut
 
 sub new {
-    my($proto, $class_cfg) = @_;
-    $class_cfg || Carp::croak("missing class configuration");
-    my($self) = &Bivio::Biz::Model::new($proto, $class_cfg->{model_name});
-
-    my($property_cfg) = $class_cfg->{property_cfg};
+    my($proto, $name, $property_info) = @_;
+    my($self) = &Bivio::Biz::Model::new($proto, $name);
     my($properties) = {};
-    foreach (keys(%{$property_cfg})) {
+    foreach (keys(%{$property_info})) {
 	$properties->{$_} = undef;
     }
     $self->{$_PACKAGE} = {
-	class_cfg => $class_cfg,
+	property_info => $property_info,
 	properties => $properties
     };
     return $self;
@@ -96,6 +84,32 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 abstract create(hash new_values) : boolean
+
+Creates a new model in the database with the specified value. After creation,
+this instance has the same values. Returns 1 if successful, 0 otherwise.
+
+=cut
+
+sub create {
+    die("abstract method");
+}
+
+=for html <a name="delete"></a>
+
+=head2 abstract delete() : boolean
+
+Deletes the current model from the database. Returns 1 if successful,
+0 otherwise.
+
+=cut
+
+sub delete {
+    die("abstract method");
+}
 
 =for html <a name="get"></a>
 
@@ -125,7 +139,7 @@ Returns the caption for the named field.
 
 sub get_field_caption {
     my($self, $name) = @_;
-    return &_get_property_cfg_value($self, $name, 0);
+    return &_get_property_info_value($self, $name, 0);
 }
 
 =for html <a name="get_field_descriptor"></a>
@@ -138,7 +152,7 @@ Returns the descriptor for the named field.
 
 sub get_field_descriptor {
     my($self, $name) = @_;
-    return &_get_property_cfg_value($self, $name, 1);
+    return &_get_property_info_value($self, $name, 1);
 }
 
 =for html <a name="get_fields_names"></a>
@@ -172,19 +186,31 @@ sub internal_get_fields {
     return $fields->{properties};
 }
 
+=for html <a name="update"></a>
+
+=head2 abstract update(hash new_values) : boolean
+
+Updates the current model's values. Returns 1 if successful 0 otherwise.
+
+=cut
+
+sub update {
+    die("abstract method");
+}
+
 #=PRIVATE METHODS
 
-# _get_property_cfg_value(string name, int index) : any
+# _get_property_info_value(string name, int index) : any
 #
 # Returns the value at the specified index of the named property's
 # configuration
 #
-sub _get_property_cfg_value {
+sub _get_property_info_value {
     my($self, $name, $index) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($property_cfg) = $fields->{class_cfg}->{property_cfg}->{$name};
-    $property_cfg || die("unknown property $name");
-    return $property_cfg->[$index];
+    my($property_info) = $fields->{property_info}->{$name};
+    $property_info || die("unknown property $name");
+    return $property_info->[$index];
 }
 
 =head1 COPYRIGHT
