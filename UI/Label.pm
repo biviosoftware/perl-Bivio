@@ -608,9 +608,7 @@ Value',
     CREATE_USER_DISPLAY_NAME_IN_TEXT => 'Describe yourself',
     CREATE_USER_DISPLAY_NAME => 'Your Name',
     CREATE_USER_NAME_IN_TEXT => 'Pick your own User ID and Password',
-
-    # Misc. Features
-    NEW_HARDWARE => 'New Computers',
+    SECURE_MODE_LINK => 'Switch to secure mode',
 
     # Announcements
     ANNOUNCE_ZACKS => 'Zacks Research',
@@ -641,6 +639,7 @@ Value',
     HELP_PRICE_DATABASE => 'Price Database',
     HELP_EXPENSE_ALLOCATION_METHODS => 'Expense Allocation Methods',
     HELP_SUSPENSE_ACCOUNT => 'Suspense Account',
+    HELP_SECURE_DATA => 'Secure Data Fields',
 
     # Help links
     WHATS_THIS => "[what's this?]",

@@ -305,6 +305,20 @@ sub is_password {
     return 0;
 }
 
+=for html <a name="is_secure_data"></a>
+
+=head2 is_secure_data() : boolean
+
+Requires that the field be displayed only in secure environments.
+
+Returns false by default.
+
+=cut
+
+sub is_secure_data {
+    return 0;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 static to_html(any value) : string
