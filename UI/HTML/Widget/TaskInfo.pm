@@ -94,8 +94,8 @@ sub render {
 
     $$buffer .= <<"EOF";
 <pre>
-<b><font size=+1>Control Logic for This Page</font></b>
-<font size=-1>(click on link to see the source code)</font>
+<b><font size="+1">Control Logic for This Page</font></b>
+<font size="-1">(click on link to see the source code)</font>
 Name:         $name
 Realm:        $realm
 Permissions:  $perm
