@@ -35,6 +35,7 @@ use Bivio::Biz::Accounting::ClubOwnership;
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::F1065Form;
 use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::Tax1065;
 use Bivio::Biz::Model::TaxK1;
 use Bivio::Collection::Attributes;
 use Bivio::SQL::Connection;
@@ -130,9 +131,7 @@ sub execute_empty {
 	my($address) = Bivio::Biz::Model::Address->new($req);
 	$address->unauth_load_or_die(realm_id => $user_id,
 		location => Bivio::Type::Location::HOME());
-	$taxk1->create_default($user_id, $date,
-		Bivio::Type::F1065IRSCenter->get_irs_center(
-			$address->get('state', 'zip')));
+	$taxk1->create_default($user_id, $date);
     }
 
     my($allocations) = _get_user_allocations($self, $user, $date);
@@ -140,9 +139,9 @@ sub execute_empty {
     $properties->{partner_type} = $taxk1->get('partner_type');
     $properties->{entity_type} = $taxk1->get('entity_type');
     $properties->{foreign} = $taxk1->get('foreign_partner');
-    $properties->{irs_center} = $taxk1->get('irs_center');
     $properties->{percentage_start} = _get_percentage($self, $user, $date, 1);
     $properties->{percentage_end} = _get_percentage($self, $user, $date, 0);
+    $properties->{irs_center} = _get_irs_center($self, $taxk1);
     $properties->{return_type} = _get_return_type($self, $user, $date);
 
     $properties->{interest_income} = $allocations->get_or_default(
@@ -224,7 +223,7 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'irs_center',
-		type => 'Bivio::Type::F1065IRSCenter',
+		type => 'F1065IRSCenter',
 		constraint => 'NONE',
 	    },
 	    {
@@ -408,6 +407,20 @@ sub _get_foreign_income {
     # in proportion to the foreign_tax percentage
     return Bivio::Type::Amount->mul($total_foreign_income,
 	    Bivio::Type::Amount->div($foreign_tax, $total_foreign_tax));
+}
+
+# _get_irs_center(Bivio::Biz::Model::TaxK1 taxk1) : Bivio::Type::F1065IRSCenter
+#
+# Returns the IRS center of the partnership.
+#
+sub _get_irs_center {
+    my($self, $taxk1) = @_;
+    my($date) = $taxk1->get('fiscal_end_date');
+    my($tax1065) = Bivio::Biz::Model::Tax1065->new($self->get_request);
+    unless ($tax1065->unsafe_load(fiscal_end_date => $date)) {
+	$tax1065->create_default($date);
+    }
+    return $tax1065->get('irs_center');
 }
 
 # _get_percentage(Bivio::Biz::Model::RealmOwner user, string date, boolean start) : string
