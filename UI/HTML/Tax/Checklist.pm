@@ -85,13 +85,6 @@ EOF
 
     $fields->{over_100_members_warning}->initialize;
 
-    my($create_anyway) = $self->director(['task_id'], {
-	Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAXES_MISSING_FIELDS()
-	=> $self->link('Create tax form with missing fields',
-		['pdf_1065_link']),
-    },
-    $self->join('&nbsp;'));
-
     return Bivio::UI::HTML::Widget::Grid->new({
 	values => [
 	    [
@@ -164,7 +157,12 @@ EOF
 		$self->join('&nbsp;'),
 	    ],
 	    [
-		$create_anyway,
+		$self->director(['task_id'], {
+		    Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAXES_MISSING_FIELDS()
+		    => Bivio::UI::HTML::Club::Taxes->link_club_1065_pdf(
+			    'Create tax form with missing fields', 1),
+		},
+			$self->join('&nbsp;')),
 	    ],
 	    [
 		$self->join('&nbsp;'),
@@ -210,8 +208,6 @@ sub execute {
 	    list_uri => $req->format_stateless_uri($req->get('task_id')),
 	    detail_uri => $req->format_stateless_uri(
 		    Bivio::Agent::TaskId::CLUB_ADMIN_USER_DETAIL()),
-	    pdf_1065_link => Bivio::UI::HTML::Club::Taxes
-	    ->format_club_1065_pdf_link($req, 1),
 	   );
     $self->SUPER::execute($req);
     return;
