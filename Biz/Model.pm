@@ -357,7 +357,7 @@ If neither set, throws an exception.
 sub get_request {
     my($self) = @_;
     my($req) = $self->unsafe_get_request;
-    Carp::croak($self, ": request not set") unless $req;
+    Bivio::Die->die($self, ": request not set") unless $req;
     return $req;
 }
 
