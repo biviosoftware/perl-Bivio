@@ -96,7 +96,7 @@ sub to_html {
 sub _to_html {
     my($tree) = @_;
     my($res) = '';
-    $res .= _to_html_node((shift(@$tree)), shift(@$tree)) while @$tree;
+    $res .= _to_html_node(shift(@$tree), shift(@$tree)) while @$tree;
     return \$res;
 }
 
