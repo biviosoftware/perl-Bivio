@@ -94,6 +94,11 @@ use C<exists> or C<defined>.
 
 This value is initialized by FormModel, not by Request.
 
+=item initial_uri : string
+
+URI which came in with the request (sans facade, but including
+path_info).
+
 =item is_production : boolean
 
 Are we running in production mode?
