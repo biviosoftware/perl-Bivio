@@ -40,21 +40,6 @@ my($_ENTRY_KEY) = 'ek';
 
 =cut
 
-=for html <a name="execute_cancel"></a>
-
-=head2 execute_cancel()
-
-
-=cut
-
-sub execute_cancel {
-    my($self) = @_;
-
-    # hack to remove special query key
-    delete($self->get_request->get('query')->{$_ENTRY_KEY});
-    return;
-}
-
 =for html <a name="execute_empty"></a>
 
 =head2 execute_empty()
@@ -97,6 +82,22 @@ sub execute_input {
 
     # delete the related transaction and all its entries
     $entry->get_model('RealmTransaction')->cascade_delete;
+
+    # hack to remove special query key
+    delete($self->get_request->get('query')->{$_ENTRY_KEY});
+    return;
+}
+
+=for html <a name="execute_other"></a>
+
+=head2 execute_other(string button)
+
+Called for cancel.
+
+=cut
+
+sub execute_other {
+    my($self) = @_;
 
     # hack to remove special query key
     delete($self->get_request->get('query')->{$_ENTRY_KEY});
