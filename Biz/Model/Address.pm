@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Address;
 use strict;
 $Bivio::Biz::Model::Address::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Address::VERSION;
 
 =head1 NAME
 
@@ -32,13 +33,6 @@ and delete interface to the C<address_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::Country;
-use Bivio::Type::Enum;
-use Bivio::Type::Line;
-use Bivio::Type::Location;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -101,22 +95,14 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'address_t',
 	columns => {
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    location => ['Bivio::Type::Location',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    street1 => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NONE()],
-	    street2 => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NONE()],
-	    city => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    state => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    zip => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    country => ['Bivio::Type::Country',
-    		Bivio::SQL::Constraint::NONE()],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+	    location => ['Location', 'PRIMARY_KEY'],
+	    street1 => ['Line', 'NONE'],
+	    street2 => ['Line', 'NONE'],
+	    city => ['Name', 'NONE'],
+	    state => ['Name', 'NONE'],
+	    zip => ['Name', 'NONE'],
+	    country => ['Country', 'NONE'],
         },
 	auth_id => 'realm_id',
     };
