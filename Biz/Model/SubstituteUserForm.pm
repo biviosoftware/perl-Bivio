@@ -28,7 +28,7 @@ use Bivio::Biz::FormModel;
 
 C<Bivio::Biz::Model::SubstituteUserForm> allows a general admin to
 become another user. 
-Sets the special cookie value (L<COOKIE_FIELD|"COOKIE_FIELD">)
+Sets the special cookie value
 so we know the we are operating in super-user mode.
 
 =cut
@@ -36,18 +36,6 @@ so we know the we are operating in super-user mode.
 =head1 CONSTANTS
 
 =cut
-
-=for html <a name="COOKIE_FIELD"></a>
-
-=head2 COOKIE_FIELD : string
-
-Name of the field in our cookie
-
-=cut
-
-sub COOKIE_FIELD {
-    return 'su';
-}
 
 =for html <a name="SUBMIT_OK"></a>
 
@@ -74,6 +62,7 @@ sub SUBMIT_CANCEL {
 }
 
 #=IMPORTS
+use Bivio::Agent::HTTP::Cookie;
 use Bivio::Auth::RealmType;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Hash;
@@ -81,6 +70,7 @@ use Bivio::Type::Text;
 use Bivio::TypeError;
 
 #=VARIABLES
+my($_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =head1 METHODS
 
@@ -104,11 +94,12 @@ sub execute_input {
 		Bivio::TypeError::NOT_FOUND());
 	return;
     }
-    my($cookie) = $req->unsafe_get('cookie');
-    $req->put(cookie => ($cookie = {})) unless $cookie;
-    unless (defined($cookie->{COOKIE_FIELD()})) {
-	$cookie->{COOKIE_FIELD()} = $req->get('auth_user')->get('realm_id');
-    }
+
+    # Only set the user if not already su'd
+    Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
+	    $req->get('auth_user')->get('realm_id'))
+		unless defined(Bivio::Agent::HTTP::Cookie->unsafe_get_field(
+			$req, $_COOKIE_FIELD));
     # Will set the user and role for this realm
     $req->set_user($owner);
     return;
