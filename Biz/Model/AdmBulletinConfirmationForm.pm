@@ -54,6 +54,8 @@ sub execute_ok {
     my($self) = @_;
     $self->put_context_fields(confirmed_bulletin => 1)
         if $self->unsafe_get('ok_button');
+    $self->put_context_fields(test_mode => $self->unsafe_get('test_button')
+       ? 1 : 0);
     return;
 }
 
@@ -71,6 +73,11 @@ sub internal_initialize {
 	require_context => 1,
 	version => 1,
         visible => [
+            {
+                name => 'test_button',
+                type => 'OKButton',
+                constraint => 'NONE',
+            },
             {
                 name => 'edit_button',
                 type => 'OKButton',
