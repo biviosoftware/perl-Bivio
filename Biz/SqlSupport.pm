@@ -12,13 +12,11 @@ Bivio::Biz::SqlSupport - sql support for Models
 
     package MyModel;
 
-    my($support) = Bivio::Biz::SqlSupport->new('user_', {
-        id => 'id',
-        name => 'name',
-        password => 'password'
-        });
+    my($support) = Bivio::Biz::SqlSupport->new('user_',
+        ('id', 'name', 'password'));
+
     $support->create($self, $self->internal_get_fields(),
-        {id => 100, foo => 'xxx'});
+        {'id' => 100, 'name' => 'foo'});
 
 =cut
 
@@ -78,6 +76,18 @@ sub SQL_DATE_TYPE {
     return 9;
 }
 
+=for html <a name="SQL_NUMERIC_TYPE"></a>
+
+=head2 SQL_NUMERIC_TYPE : int
+
+Returns the internal oracle sql numeric id.
+
+=cut
+
+sub SQL_NUMERIC_TYPE {
+    return 3;
+}
+
 =for html <a name="UNIX_EPOCH_IN_JULIAN_DAYS"></a>
 
 =head2 UNIX_EPOCH_IN_JULIAN_DAYS : int
@@ -94,7 +104,7 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 use Bivio::Biz::SqlConnection;
 use Bivio::IO::Trace;
 use Bivio::Util;
-use Carp();
+use Carp ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -107,30 +117,24 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string table_name, hash field_map) : Bivio::Biz::SqlSupport
+=head2 static new(string table_name, string column, ...) : Bivio::Biz::SqlSupport
 
-Creates a SQL support instance. field_map should be a model property to
-sql column name mapping, format:
-    {
-        property-name => column-name(s),
-        ...
-    }
+Creates a SQL support instance. columns should be a list of sql column
+names which correspond to the same named model property.
 
 =cut
 
 sub new {
-    my($proto, $table_name, $field_map) = @_;
+    my($proto, $table_name, @columns) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    my(@columns) = values(%{$field_map});
 
     $self->{$_PACKAGE} = {
-	table_name => $table_name,
-	select => undef,
-	delete => 'delete from '.$table_name.' ',
-	insert => undef,
-	field_map => $field_map,
-	columns => \@columns,
-	column_types => undef
+	'table_name' => $table_name,
+	'select' => undef,
+	'delete' => 'delete from '.$table_name.' ',
+	'insert' => undef,
+	'columns' => \@columns,
+	'column_types' => undef,
     };
     return $self;
 }
@@ -158,14 +162,14 @@ sub create {
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{insert};
 
-    my($field_map) = $fields->{field_map};
-    my(@values);
+    my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
-    # Note: it's ok to use keys() here, because field_map is static
-    # and perl guarantees the order if you don't touch the hash.
-    foreach (keys(%$field_map)) {
-	push(@values, $types->{$field_map->{$_}} == SQL_DATE_TYPE()
-		? $self->from_time($new_values->{$_}) : $new_values->{$_});
+    my(@values);
+
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+	my($col) = $columns->[$i];
+	push(@values, $types->[$i] == SQL_DATE_TYPE()
+		? $self->from_time($new_values->{$col}) : $new_values->{$col});
     }
 
     &_trace_sql($sql, @values) if $_TRACE;
@@ -176,7 +180,7 @@ sub create {
     Bivio::Biz::SqlConnection->execute($statement, $model, @values);
     $statement->finish();
 
-    if ($model->get_status()->is_OK()) {
+    if ($model->get_status()->is_ok()) {
 	# update all the model properties, undefined fields as well
 	foreach (keys(%$properties)) {
 	    $properties->{$_} = $new_values->{$_};
@@ -187,7 +191,7 @@ sub create {
 	Bivio::Biz::SqlConnection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_OK();
+    return $model->get_status()->is_ok();
 }
 
 =for html <a name="delete"></a>
@@ -221,7 +225,7 @@ sub delete {
 	Bivio::Biz::SqlConnection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_OK();
+    return $model->get_status()->is_ok();
 }
 
 =for html <a name="from_time"></a>
@@ -264,25 +268,25 @@ sub initialize {
 
     my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
-    my($is_date) = $fields->{column_is_date} = [];
 
     # create the select and insert statements
     my($select) = 'select ';
     my($insert) = 'insert into '.$fields->{table_name}
 	    .' ('.join(',', @$columns).') values (';
 
-    my($i) = 0;
-    foreach (@$columns) {
-	if ($is_date->[$i] = ($types->{$_} == SQL_DATE_TYPE())) {
-	    $select .= qq{TO_CHAR($_,'}.DATE_FORMAT().q{'),};
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+	my($col) = $columns->[$i];
+
+	if ($types->[$i] == SQL_DATE_TYPE()) {
+	    $select .= qq{TO_CHAR($col,'}.DATE_FORMAT().q{'),};
 	    $insert .= q{TO_DATE(?,'}.DATE_FORMAT().q{'),};
 	}
 	else {
-	    $select .= $_.',';
+	    $select .= $col.',';
 	    $insert .= '?,';
 	}
-	$i++;
     }
+
     # remove extra ','
     chop($select);
     chop($insert);
@@ -291,6 +295,7 @@ sub initialize {
     $fields->{select} = $select;
     $insert .= ')';
     $fields->{insert} = $insert;
+    return;
 }
 
 =for html <a name="find"></a>
@@ -320,18 +325,20 @@ sub find {
     my($row) = $statement->fetchrow_arrayref();
 
     if ($row) {
-	my(@fields) = keys(%{$fields->{field_map}});
-	my($is_date) = $fields->{column_is_date};
-	for (my($i) = 0; $i < scalar(@fields); $i++) {
-	    $properties->{$fields[$i]} = $is_date->[$i]
+	my($columns) = $fields->{columns};
+	my($types) = $fields->{column_types};
+
+	for (my($i) = 0; $i < int(@$columns); $i++) {
+	    my($col) = $columns->[$i];
+	    $properties->{$col} = $types->[$i] == SQL_DATE_TYPE()
 		    ? $self->to_time($row->[$i]) : $row->[$i];
 	}
 
-	#TODO: die if > 1 row returned.
+#TODO: die if > 1 row returned.
     }
     else {
 
-	#TODO: need a better error than this
+#TODO: need a better error than this
 
 	$model->get_status()->add_error(
 		Bivio::Biz::Error->new("Not Found"));
@@ -341,7 +348,7 @@ sub find {
 	Bivio::Biz::SqlConnection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_OK();
+    return $model->get_status()->is_ok();
 }
 
 =for html <a name="to_time"></a>
@@ -397,7 +404,7 @@ sub update {
 
     $statement->finish();
 
-    if ($model->get_status()->is_OK()) {
+    if ($model->get_status()->is_ok()) {
 	# update the model properties
 	foreach (keys(%$new_values)) {
 	    $properties->{$_} = $new_values->{$_};
@@ -407,7 +414,7 @@ sub update {
 	Bivio::Biz::SqlConnection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_OK();
+    return $model->get_status()->is_ok();
 }
 
 #=PRIVATE METHODS
@@ -420,51 +427,67 @@ sub update {
 sub _create_update_statement {
     my($self, $old_values, $new_values, $where_clause) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($field_map) = $fields->{field_map};
+    my($columns) = $fields->{columns};
     my($column_types) = $fields->{column_types};
 
     # used for quote()
-#    my($conn) =  Bivio::Biz::SqlConnection->get_connection();
+    my($conn) =  Bivio::Biz::SqlConnection->get_connection();
 
-    my($cols);
-    my($name);
-    foreach $name (keys(%$new_values)) {
-	my($old) = $old_values->{$name};
-	my($new) = $new_values->{$name};
+    my($set);
 
-	# lots of extra comparison to avoid undef warning
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+	my($col) = $columns->[$i];
+	my($old) = $old_values->{$col};
+	my($new) = $new_values->{$col};
 
-	if (defined($old) != defined($new) || ($old && $new && $old ne $new)) {
-	    my($col_name) = $field_map->{$name};
-	    my($type) = $column_types->{$col_name};
-	    $cols .= $col_name.'=';
+	if (! &_equals($old, $new)) {
+	    $set .= $col.'=';
+	    my($type) = $column_types->[$i];
 
-	    if ($type == SQL_DATE_TYPE() && defined($new)) {
-		$cols .=  "TO_DATE('" . $self->from_time($new)
+	    if (! defined($new)) {
+		$set .= 'NULL,';
+	    }
+	    elsif ($type == SQL_DATE_TYPE()) {
+		$set .=  "TO_DATE('" . $self->from_time($new)
 			. "','" . DATE_FORMAT() . "'),";
 	    }
-	    else {
-#		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
+	    elsif ($type == SQL_NUMERIC_TYPE()) {
+#TODO: need a policy for validating numerics
 
-		# just quote everything - avoid numeric '' problem
-#TODO: Do we need to escape quotes?
-		$cols .= qq{'$new',};
+		# hack - replaces an unsafe bogus value with a safe bogus value
+		$new =~ s/'/x/;
+		$set .= qq{'$new',};
+	    }
+	    else {
+		$set .= $conn->quote($new, $column_types->[$i]).',';
 	    }
 	}
     }
 
     # check if any changes required
-    $cols || return '';
+    $set || return '';
 
-    # remove the extra ',' from cols
-    chop($cols);
-    return 'update '.$fields->{table_name}.' set '.$cols.' '.$where_clause;
+    # remove the extra ',' from set
+    chop($set);
+    return 'update '.$fields->{table_name}.' set '.$set.' '.$where_clause;
 }
 
-# _get_column_types(string table_name, array fields) : hash
+# _equals(scalar v, scalar v2) : boolean
 #
-# Gets metadata for the columns and adds the type info to a hash. The
-# result is keyed by column.
+# Returns true if v is exactly the same as v2
+
+sub _equals {
+    my($v, $v2) = @_;
+
+    return 0 if (defined($v) != defined($v2));
+    return 1 if ! defined($v);  # both undefined
+
+    return $v eq $v2;
+}
+
+# _get_column_types(string table_name, array fields) : array
+#
+# Gets metadata for the columns and adds the type info to an array.
 
 sub _get_column_types {
     my($self) = @_;
@@ -477,14 +500,11 @@ sub _get_column_types {
     &_trace($sql) if $_TRACE;
 
     my($statement) = $conn->prepare($sql);
-
-    my($names) = $statement->{NAME_lc};
     my($types) = $statement->{TYPE};
+    my($column_types) = [];
 
-    my($column_types) = {};
-
-    for (my($i) = 0; $i < scalar(@$names); $i++) {
-	$column_types->{$names->[$i]} = $types->[$i];
+    for (my($i) = 0; $i < int(@$types); $i++) {
+	$column_types->[$i] = $types->[$i];
     }
 
     $statement->finish();
@@ -499,7 +519,7 @@ sub _trace_sql {
     my($sql, @values) = @_;
 
     $sql .= ' (';
-    for (my($i) = 0; $i < scalar(@values); $i++) {
+    for (my($i) = 0; $i < int(@values); $i++) {
 	$sql .= defined($values[$i]) ? $values[$i] : 'undef';
 	$sql .= ',';
     }
@@ -507,6 +527,7 @@ sub _trace_sql {
     $sql .= ')';
 
     &_trace($sql);
+    return;
 }
 
 =head1 COPYRIGHT
