@@ -502,11 +502,11 @@ sub _connect_to_parent {
         my($parent_msg) = Bivio::Mail::Message->new($file->get('content'));
         my($diff) = Bivio::Type::DateTime->diff_seconds(
                 $self->get('date_time'), $parent->get('date_time'));
-        if ($msg->get_body->as_string eq $parent_msg->get_body->as_string &&
-               abs($diff) < $_ONE_HOUR_SECONDS) {
+        if ($msg->get_entity->stringify_body eq
+                $parent_msg->get_entity->stringify_body &&
+                abs($diff) < $_ONE_HOUR_SECONDS) {
             # Very likely a mail loop
-            Bivio::IO::Alert->warn('Mail msg ', $self->get('mail_id'),
-                    ' very similar to parent, maybe a loop?');
+            $req->warn('Message very similar to parent, maybe a loop?');
             $req->put('mail_in_loop', 1);
         }
     }
