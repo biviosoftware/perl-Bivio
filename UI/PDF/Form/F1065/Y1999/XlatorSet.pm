@@ -587,16 +587,7 @@ my(@_XLATORS) = (
 		'f4-4',
 		[
 		    'Bivio::Biz::Model::F1065Form',
-		    'active_income'
-		],
-		',',
-		2
-	       ),
-	Bivio::UI::PDF::Form::MoneyXlator->new(
-		'f4-5',
-		[
-		    'Bivio::Biz::Model::F1065Form',
-		    'passive_income'
+		    'income_general_individual',
 		],
 		',',
 		2
