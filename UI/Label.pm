@@ -70,7 +70,8 @@ _compile(
 
     # User labels
     USER_DISPLAY_NAME => ['Name', undef, 'RealmOwner.display_name'],
-    USER_NAME => ['User ID or Email', undef, 'name_or_email'],
+    USER_NAME => ['User ID', undef],
+    NAME_OR_EMAIL => ['User ID or Email'],
     USER_FIRST_NAME => ['First Name', undef, 'User.first_name'],
     USER_MIDDLE_NAME => ['Middle Name', undef, 'User.middle_name'],
     USER_LAST_NAME => ['Last Name', undef, 'User.last_name'],
