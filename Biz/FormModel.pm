@@ -952,7 +952,7 @@ sub internal_redirect_next {
 =head2 internal_stay_on_page()
 
 Directs the form to remain on the current page regardless of the error state.
-No changes are committed to the database. This is useful for non-submit
+Any changes are committed to the database. This is useful for non-submit
 buttons which need to perform calculations on the current data.
 
 =cut
@@ -1166,7 +1166,7 @@ sub validate_and_execute_ok {
     # task items.
     my($req) = $self->get_request;
     $req->warn('form_errors=', $fields->{errors}) if $fields->{errors};
-    Bivio::Agent::Task->rollback($req);
+    Bivio::Agent::Task->rollback($req) unless $fields->{stay_on_page};
     return 0;
 }
 
