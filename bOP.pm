@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Text.is_read_only allows override of
+    is_field_editable().
+  * Bivio::DocBook::XML various formatting and functional programming changes
+
+  Revision 1.37  2003/01/07 12:59:40  nagler
+  * Improved workflow of PetShop check out
+  * Cleaned up some of the view implementations in PetShop
+  * Bivio::IO::File->rm_rf added
+  * Bivio::PetShop::Test::PetShop expanded tests
+  * Bivio::Test::HTMLParser::Forms defaults values for <select> and
+  * <radio>
+  * Bivio::Test::Language::HTTP->visit_uri replaces goto_uri
+  * Bivio::Test::Language::HTTP->follow_link replaces goto_link
+  * Bivio::Test::Language::HTTP->submit_form defaults values from parsed
+  * form
+  * Bivio::Test::Language->test_deviance added
+  * Bivio::Test::Language log files are written to subdirectory
+  * Bivio::Type::DateInterval->THREE_MONTHS added
+  * Bivio::Type::ECCreditCardExpYear starts at 2003
+  * Bivio::UI::HTML::ViewShortcuts->vs_escape_html added
   * Bivio::UI::HTML::Widget::Grid.id attribute added
   * Bivio::UI::Task->format_uri defaults to realmless_uri if realm not
     supplied, but is required
