@@ -54,7 +54,7 @@ usage: b-docbook [options] command [args...]
 commands:
     to_html file.xml -- converts input xml to output html
     count_words file.xml -- returns number of words in XML file
-    to_pdf <dir> file.pdf [test] -- converts xpip chapters from dir to file.pdf
+    to_pdf <dir> <a4|letter> file.pdf [test] -- converts xpip chapters from dir to file.pdf
 EOF
 }
 
@@ -560,9 +560,9 @@ sub to_html {
 
 =for html <a name="to_pdf"></a>
 
-=head2 to_pdf(string input_dir, string output_pdf)
+=head2 to_pdf(string input_dir, string paper_size, string output_pdf)
 
-=head2 to_pdf(string input_dir, string output_pdf, string $mode)
+=head2 to_pdf(string input_dir, string paper_size, string output_pdf, string $mode)
 
 Converts the xpip xml chapters to a single book-style pdf.  If
 $mode eq "test" then the program will output the resulting
@@ -571,18 +571,22 @@ tex file.
 =cut
 
 sub to_pdf {
-    my($self, $input_dir, $output_pdf, $mode) = @_;
+    my($self, $input_dir, $paper_size, $output_pdf, $mode) = @_;
+    print "usage: perl -w xpip2pdf.PL <input_dir> <a4|letter> <name>.pdf\n"
+	unless defined($input_dir) && defined($paper_size) && ($output_pdf);
+    return unless defined($input_dir) && defined($paper_size) && ($output_pdf);
+    if ($output_pdf !~ /\.pdf/ ||
+	($paper_size ne "letter" && $paper_size ne "a4")) {
+	print "usage: perl -w xpip2pdf.PL <input_dir> <a4|letter> <name>.pdf\n";
+	return;
+    }
     my($output_root) = $output_pdf;
     $output_root =~ s/\.pdf//;
     my($output_tex) = $output_root . '.tex';
     my($output_idx) = $output_root . '.idx';
     $dir = $input_dir;
-    if ($output_pdf !~ /\.pdf/) {
-	print "usage: perl -w xpip2pdf.PL <input_dir> <name>.pdf\n";
-	return;
-    }
 
-    _start_tex();
+    _start_tex($paper_size);
 
     my($full_path);
     foreach my $xml_file (@_CHAPTERS) {
@@ -598,12 +602,18 @@ sub to_pdf {
     print $tex if defined($mode) && $mode eq "test";
 
     Bivio::IO::File->write($output_tex, $tex);
-    Bivio::Die->die("PDF Write failed, check $output_root.log for details")
-	    unless system("pdflatex -interaction nonstopmode $output_tex > $output_root.log") >= 0;
+    system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
+    system("makeindex -q $output_root");
     # LaTeX must be run twice to process table of contents and index
-    Bivio::Die->die("PDF Write failed, check $output_root.log for details")
-	    unless system("pdflatex -interaction nonstopmode $output_tex > $output_root.log") >= 0;
+    my($result) = system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
+    foreach my $ext (qw(aux idx ilg ind log out tex toc)) {
+	system("rm $output_root.$ext") unless $result < 0;
+    }
+    print "PDF Generation failed, check $output_root.log for details\n"
+	if $result < 0;
     print "$output_pdf Created\n";
+
+    return;
 }
 
 #=PRIVATE METHODS
@@ -645,7 +655,7 @@ sub _count_words {
 # Adds necessary information to end of tex string
 #
 sub _end_tex {
-    $tex .= '\backmatter\n';
+    $tex .= '\backmatter' . "\n";
     $tex .= '\printindex' . "\n";
     $tex .= '\end{document}' . "\n";
 }
@@ -807,12 +817,16 @@ sub _process_xml_file {
     }
 }
 
-# _start_tex()
+# _start_tex(string paper_size)
 #
 # Adds necessary information to beginning of tex string
 #
 sub _start_tex {
-    $tex .= '\documentclass[11pt]{book}' . "\n";
+    my($paper_size) = @_;
+    $tex .= '\documentclass[11pt';
+    $tex .= ',letterpaper' if $paper_size eq "letter";
+    $tex .= ',a4paper' if $paper_size eq "a4";
+    $tex .= ',makeidx]{book}' . "\n";
     $tex .= '\usepackage{color}' . "\n";
     $tex .= '\usepackage{graphicx}' . "\n";
     $tex .= '\usepackage{alltt}' . "\n";
@@ -822,17 +836,18 @@ sub _start_tex {
 pdffitwindow=true,pdfcenterwindow=true]{hyperref}' . "\n";
     $tex .= '\pagestyle{fancy}' . "\n";
     $tex .= '\fancyhf{}' . "\n";
-    $tex .= '\documentstyle{makeidx}' . "\n";
     $tex .= '\makeindex' . "\n";
     $tex .= '\renewcommand{\headrulewidth}{0}' . "\n";
     $tex .= '\renewcommand{\footrulewidth}{0}' . "\n";
-    $tex .= '\lfoot{Copyright~\copyright~2004 \newline All rights reserved}' . "\n";
-    $tex .= '\rfoot{Robert Nagler \newline nagler@extremeperl.org}' . "\n";
+    $tex .= '\lfoot{Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}' . "\n";
+    $tex .= '\rfoot{\thepage}' . "\n";
     $tex .= '\begin{document}' . "\n";
     $tex .= '\frontmatter';
-    $tex .= '\title{Extreme Programming in Perl}';
-    $tex .= '\author{Robert Nagler}';
-    $tex .= '\maketitle';
+    $tex .= '\title{Extreme Programming in Perl}' . "\n";
+    $tex .= '\author{Robert Nagler}' . "\n";
+    # Why doesn't this center?????
+    $tex .= '\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}' . "\n";
+    $tex .= '\maketitle' . "\n";
     $tex .= '\thispagestyle{empty}' . "\n";
 }
 
