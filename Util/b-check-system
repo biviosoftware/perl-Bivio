@@ -145,6 +145,7 @@ sub check_messages {
             /xntpd\[\d+\]: read drift of/ && next;
             /xntpd\[\d+\]: tickadj =/ && next;
             /xntpd\[\d+\]: kernel pll status/ && next;
+            /xntpd\[\d+\]: .*Connection refused/ && next;
 
             /popper\[\d+\]: \(.+\) (Servicing|Ending) request from / && next;
             /popper\[\d+\]: .+ -ERR Unknown command: "(xsender|auth)"/ && next;
