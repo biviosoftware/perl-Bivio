@@ -250,26 +250,30 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_renewal_column($req);
+    _upgrade_entry_type_constraints($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_renewal_column(Bivio::Agent::Request req)
+# _upgrade_entry_type_constraints(Bivio::Agent::Request req)
 #
-# Adds the ec_subscription_t.renewal_state.
+# Upgrades entry_t.entry_type constraints.
 #
-sub _upgrade_add_renewal_column {
+sub _upgrade_entry_type_constraints {
     my($req) = @_;
-    _add_column('ec_subscription_t', 'renewal_state', 'NUMBER(2)', 1);
-    _do_sql("
-ALTER TABLE ec_subscription_t modify renewal_state not null
+    _drop_constraints('entry_t', 'entry_type');
+    _do_sql(<<'EOF');
+ALTER TABLE entry_t modify entry_type not null
 /
-ALTER TABLE ec_subscription_t
-  add constraint ec_subscription_t4
-  check (renewal_state between 1 and 4)
+ALTER TABLE entry_t
+  add constraint entry_t7
+  check (entry_type between 1 and 9
+  or entry_type between 100 and 113
+  or entry_type=117
+  or entry_type between 200 and 221
+  or entry_type BETWEEN 223 AND 224)
 /
-");
+EOF
     return;
 }
 
