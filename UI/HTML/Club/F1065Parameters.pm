@@ -51,6 +51,44 @@ Returns the form.
 
 sub create_content {
     my($self) = @_;
+    return $self->director(['show_countries'], {
+	0 => _create_form($self, 0),
+	1 => _create_form($self, 1),
+    });
+}
+
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req)
+
+Renders the page.
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+
+    $req->put(
+    	    # don't show preferences, messes up the target_realm_owner
+	    want_preferences_render => 0,
+	    show_countries => $req->get(
+		    'Bivio::Biz::Model::ForeignTaxCountryList')
+	    ->get_result_set_size() > 0 ? 1 : 0,
+	   );
+
+    $self->SUPER::execute($req);
+    return;
+}
+
+#=PRIVATE METHODS
+
+# _create_form(boolean show_countries) : Bivio::UI::HTML::Widget
+#
+# Returns the form, which optional shows the foreign country list.
+#
+sub _create_form {
+    my($self, $show_countries) = @_;
+
     return $self->form('F1065ParametersForm', [
 	['TaxId.tax_id', undef, <<'EOF', '12-3456789'],
 Partnership's identifying number
@@ -84,42 +122,20 @@ EOF
 Schedule B 4. We recommend that you choose Consolidated Audit, so that the tax treatment of partnership items is determined at the partnership level, rather than in a separate proceeding.
 EOF
     ],
+	    $show_countries ? (
     [
 	'RealmInstrument.name',
-	['country_code', undef, <<'EOF'],
+	['country_code', undef, <<'EOF',],
+
 Select the country for any investment which received foreing taxes.
 EOF
     ],
+		   ) : (),
     {
 	header => Bivio::UI::HTML::Club::ReportPage
 	->get_heading_with_one_date('page_heading'),
-	empty_list_widget => $self->string(<<'EOF'),
- *** No foreign tax reporting required. ***
-EOF
     });
 }
-
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req)
-
-Renders the page.
-
-=cut
-
-sub execute {
-    my($self, $req) = @_;
-
-    $req->put(
-    	    # don't show preferences, messes up the target_realm_owner
-	    want_preferences_render => 0,
-	   );
-
-    $self->SUPER::execute($req);
-    return;
-}
-
-#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
