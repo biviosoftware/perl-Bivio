@@ -101,6 +101,24 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $value, $font, $attributes) = @_;
+    return '"value" attribute must be defined' unless defined($value);
+    return {
+	value => $value,
+	(defined($font) ? (string_font => $font) : ()),
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, Bivio::UI::PDF pdf)

@@ -126,6 +126,23 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $sections, $attributes) = @_;
+    return '"sections" attribute must be defined' unless defined($sections);
+    return {
+        sections => $sections,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="new_page"></a>
 
 =head2 new_page(Bivio::UI::PDF pdf)
@@ -139,8 +156,8 @@ sub new_page {
     my($page_size) = $_PAGE_SIZE->{$self->get('page_size')};
     $pdf->begin_page(@$page_size);
 
-    $pdf->rect(@{$self->get('location')}, @{$self->get('size')});
-    $pdf->stroke;
+#    $pdf->rect(@{$self->get('location')}, @{$self->get('size')});
+#    $pdf->stroke;
 
 #TODO: render page header and footer
     # set the text baseline to the top of the page
