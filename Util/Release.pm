@@ -380,7 +380,7 @@ sub _create_rpm_spec {
     _system("cvs checkout -f -r $version $specin", $output);
     my($base_spec) = _read_all("<$specin");
     my($release) = _search('release', $base_spec) || _get_date_format();
-    $version = _search('version', $base_spec) || $version;
+#    $version = _search('version', $base_spec) || $version;
 
     my($specout) = "$specin-build";
     open(SPECOUT, ">$specout") || Bivio::Die->die("$specout: $!");
