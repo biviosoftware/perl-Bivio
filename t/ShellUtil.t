@@ -71,9 +71,9 @@ Bivio::Test->unit([
     'Bivio::t::ShellUtil::T1' => [
 	main => [
 	    t1 => [],
-	    rd1 => [],
+	    # If these tests are failing, check ShellUtil/mylog.log
+	    rd1 => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
+	    ['rd1', 'rd2'] => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
 	],
-	# If this test is failing, check ShellUtil/mylog.log
-	read_log => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
     ],
 ]);

@@ -260,6 +260,8 @@ Bivio::IO::Config->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
 	daemon_max_children => 1,
 	daemon_sleep_after_start => 60,
+	daemon_sleep_after_reap => 0,
+#	daemon_max_child_seconds => 0,
 	daemon_log_file => Bivio::IO::Config->REQUIRED,
     },
 });
@@ -546,6 +548,15 @@ Number of children for the worker.  This creates a single queue.
 
 Sleep after starts and before retries.
 
+=item daemon_sleep_after_reap : int [0] (named)
+
+If 0, then L<run_daemon|"run_daemon"> calls C<wait> and blocks forever
+until any children exit.  This is normal behavior.
+
+If greater than 0, then childred are reaped by polling C<waitpid> with
+C<POSIX::WNOHANG>.  After all children are reaped, the reaper (run_daemon)
+sleeps for I<daemon_sleep_after_reap> before doing anything else.
+
 =item lock_directory : string [/tmp]
 
 Where L<lock_action|"lock_action"> directories are created.  Must be absolute,
@@ -716,7 +727,7 @@ sub lock_realm {
 
 =for html <a name="main"></a>
 
-=head2 static main(array argv)
+=head2 static main(array argv) : string_ref
 
 Parses its arguments.  If I<argv[0]> contains is a valid public
 method (definition: begins with a letter), will call it.
@@ -724,6 +735,9 @@ The rest of the arguments are passed verbatim
 to this method.  If an error occurs, L<usage|"usage"> is called.
 
 Global options precede the command and are set on the instance.
+
+Returns the result as a string_ref if there is a result and wantarray is true.
+This backward compatible feature was added to ease testing.
 
 =cut
 
@@ -775,7 +789,8 @@ sub main {
 	$die->throw();
 	# DOES NOT RETURN
     }
-    $self->result($cmd, $res);
+    return $res
+	if $res = $self->result($cmd, $res) and wantarray;
     return;
 }
 
@@ -958,25 +973,26 @@ sub ref_to_string {
 
 =for html <a name="result"></a>
 
-=head2 result(string cmd, string_ref res)
+=head2 result(string cmd, string_ref res) : string_ref
 
-=head2 result(string cmd, string res)
+=head2 result(string cmd, string res) : string_ref
 
 Processes I<res> by sending via I<email> and writing to I<output>
-or printing to STDOUT.
+or printing to STDOUT.  Returns a reference to result or undef.
 
 =cut
 
 sub result {
     my($self, $cmd, $res) = @_;
     $res = _result_ref($self, $res);
-    return unless $res;
+    return undef
+	unless $res;
 
     # If we write email or output, then don't write to STDOUT.
-    return if _result_email($self, $cmd, $res)
-	    + _result_output($self, $cmd, $res);
-    print STDOUT $$res;
-    return;
+    print(STDOUT $$res)
+	unless _result_email($self, $cmd, $res)
+	+ _result_output($self, $cmd, $res);
+    return $res;
 }
 
 =for html <a name="run_daemon"></a>
@@ -1005,9 +1021,9 @@ sub run_daemon {
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
 	    my($args) = $next_command->();
 	    last unless $args;
-	    _reap_daemon_children($children, 0);
+	    _reap_daemon_children($children, 0, 0);
 	    if (grep(
-		Bivio::IO::Ref->nested_equals($args, $_),
+		Bivio::IO::Ref->nested_equals($args, $_->{args}),
 		values(%$children),
 	    )) {
 		_trace('already running: ', $args) if $_TRACE;
@@ -1016,12 +1032,20 @@ sub run_daemon {
 		last if --$max_duplicates <= 0;
 	    }
 	    else {
-		$children->{_start_daemon_child($self, $args, $cfg)} = $args;
+		$children->{_start_daemon_child($self, $args, $cfg)} = {
+		    args => $args,
+		    started => time,
+		};
 		sleep($cfg->{daemon_sleep_after_start});
 	    }
 	}
 	return unless %$children;
-	_reap_daemon_children($children, wait);
+	_reap_daemon_children(
+	    $children,
+	    $cfg->{daemon_sleep_after_reap} > 0
+	        ? (0, $cfg->{daemon_sleep_after_reap})
+	        : (wait, 0)
+	);
     }
     return;
 }
@@ -1368,17 +1392,17 @@ sub _process_exists {
     return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
 }
 
-# _reap_daemon_children(hash_ref children, int stopped)
+# _reap_daemon_children(hash_ref children, int stopped, int sleep)
 #
 # Reap children without blocking
 #
 sub _reap_daemon_children {
-    my($children, $stopped) = @_;
+    my($children, $stopped, $sleep) = @_;
     while (1) {
 	if ($stopped > 0) {
-	    if (my $args = delete($children->{$stopped})) {
+	    if (my $child = delete($children->{$stopped})) {
 		Bivio::IO::Alert->info('Stopped: pid=', $stopped, ' args=',
-		    join(' ', @$args[2 .. $#$args]));
+		    join(' ', splice(@{$child->{args}}, 2)));
 	    }
 	    else {
 		Bivio::IO::Alert->warn($stopped, ': unknown pid');
@@ -1386,6 +1410,8 @@ sub _reap_daemon_children {
 	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
 	last unless $stopped > 0;
+	sleep($sleep)
+	    if $sleep;
     }
     return;
 }

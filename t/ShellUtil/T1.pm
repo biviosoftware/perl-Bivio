@@ -65,12 +65,15 @@ Bivio::IO::Config->introduce_values({
 	directory => Bivio::IO::File->pwd,
     },
     'Bivio::ShellUtil' => {
-	rd1 => {
-#TODO: due to a bug in introduce_values, all config must be set here
-	    daemon_log_file => $_LOG,
-	    daemon_max_children => 2,
-	    daemon_sleep_after_start => 1,
-	},
+	map({(
+	    $_ => {
+    #TODO: due to a bug in introduce_values, all config must be set here
+		daemon_log_file => $_LOG,
+		daemon_max_children => 2,
+		daemon_sleep_after_start => 1,
+		daemon_sleep_after_reap => $_ eq 'rd1' ? 0 : 1,
+	    },
+	)} qw(rd1 rd2)),
     },
 });
 
@@ -80,14 +83,14 @@ Bivio::IO::Config->introduce_values({
 
 =for html <a name="rd1"></a>
 
-=head2 rd1(string arg)
+=head2 rd1(string cfg_name)
 
 Writes a message to a log file.
 
 =cut
 
 sub rd1 {
-    my($self, $arg) = @_;
+    my($self, $cfg_name) = @_;
     my($count) = 0;
     unlink(Bivio::IO::Log->file_name($_LOG));
     $self->run_daemon(
@@ -99,9 +102,9 @@ sub rd1 {
 		[__PACKAGE__, 'rd1a', $count],
 	    ]->[$count++ % 2];
 	},
-	'rd1',
+	$cfg_name || 'rd1',
     );
-    return;
+    return $self->read_log;
 }
 
 =for html <a name="rd1a"></a>
