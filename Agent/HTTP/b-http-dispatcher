@@ -311,10 +311,12 @@ PerlFreshRestart off
 <$bconf>
 <$perl_module>
 #RJN: This doesn't work for some reason
+PassEnv HOME
 PassEnv ORACLE_HOME
 PassEnv DBI_USER
 PassEnv DBI_PASS
 PassEnv ORACLE_SID
+PerlPassEnv HOME
 PerlPassEnv ORACLE_HOME
 PerlPassEnv DBI_USER
 PerlPassEnv DBI_PASS
