@@ -62,17 +62,22 @@ commands:
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
+    upgrade_db -- upgrade the database
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
 EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_REALM_ROLE_CONFIG);
+Bivio::IO::Config->register(my $_CFG = {
+    export_db_on_upgrade => 1,
+});
 
 =head1 METHODS
 
@@ -223,6 +228,28 @@ sub export_db {
     return "Exported $db->{database} to $f\n";
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item export_db_on_upgrade : boolean [1]
+
+Call L<export_db|"export_db"> before upgrading database.  You need to
+set this to false if you are using Oracle as L<export_db|"export_db"> doesn't
+support Oracle at this time.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 
 =for html <a name="import_db"></a>
 
@@ -290,6 +317,18 @@ sub init_realm_role {
         $cmd = '';
     }
     return;
+}
+
+=for html <a name="internal_upgrade_db"></a>
+
+=head2 abstract internal_upgrade_db() 
+
+Subclass should implement.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub internal_upgrade_db {
 }
 
 =for html <a name="realm_role_config"></a>
@@ -410,6 +449,39 @@ sub run_command {
 	(ref($commands) ? $$commands : $commands)
 	. ($self->unsafe_get('noexecute') ? "\n;rollback;\n" : "\n;commit;\n"),
     );
+}
+
+=for html <a name="upgrade_db"></a>
+
+=head2 upgrade_db()
+
+Handles common setup for database upgrades.  Calls internal_upgrade_db.
+
+=cut
+
+sub upgrade_db {
+    my($self) = @_;
+    my($req) = $self->get_request();
+
+    # want to avoid accidentally running this script
+    $self->are_you_sure('Upgrade the database?');
+
+    # Must be first, because pg_dump closes all db connections.
+    AssuranceSys::Util::SQL->main('export_db')
+	if $_CFG->{export_db_on_upgrade};
+
+    my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
+    $self->usage_error($self->package_version(), ': already ran.')
+	if $upgrade->unauth_load({version => $self->package_version});
+
+    $self->internal_upgrade_db();
+
+    $upgrade->create({
+	version => $self->package_version,
+	run_date_time => Bivio::Type::DateTime->now
+    });
+
+    return;
 }
 
 =for html <a name="vacuum_db"></a>
