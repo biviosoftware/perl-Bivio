@@ -4,7 +4,17 @@ test_setup('PetShop');
 home_page();
 login_as('demo', 'password');
 login_as('DEMO', 'password');
-test_deviance();
+login_as('demo@bivio.biz', 'password');
+login_as('Demo@Bivio.Biz', 'password');
+
+test_deviance('does not match');
 login_as('demo', 'PASSWORD');
+
+test_deviance('must supply a value');
 login_as('demo', '');
-login_as('nosuchuser', '');
+login_as('', 'password');
+
+test_deviance('not found');
+login_as('notuser', 'password');
+login_as("demo'||'", 'password');
+login_as('demo%', 'password');
