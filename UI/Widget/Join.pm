@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::Join;
 use strict;
 $Bivio::UI::Widget::Join::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Widget::Join::VERSION;
 
 =head1 NAME
 
@@ -105,14 +106,14 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     foreach my $v (@{$fields->{values}}) {
-	$v = $source->get_widget_value(@$v) if ref($v) eq 'ARRAY';
-	if (UNIVERSAL::isa($v, 'Bivio::UI::Widget')) {
-	    $v->render($source, $buffer);
+	my($v2) = ref($v) eq 'ARRAY' ? $source->get_widget_value(@$v) : $v;
+	if (UNIVERSAL::isa($v2, 'Bivio::UI::Widget')) {
+	    $v2->render($source, $buffer);
 	    next;
 	}
-	Bivio::Die->die($v, ': join value is unexpected reference')
-		    if ref($v);
-	$$buffer .= $v;
+	Bivio::Die->die($v2, ': join value is unexpected reference')
+		    if ref($v2);
+	$$buffer .= $v2;
     }
     return;
 }
@@ -134,7 +135,7 @@ sub _new_args {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
