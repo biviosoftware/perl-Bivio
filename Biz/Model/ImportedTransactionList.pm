@@ -33,9 +33,33 @@ C<Bivio::Biz::Model::ImportedTransactionList> imported account sync txns
 #=IMPORTS
 use Bivio::Biz::Action::EditTransaction;
 use Bivio::Biz::Model::RealmTransaction;
+use Bivio::Type::EntryType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_REVIEW_KEY) = $_PACKAGE.'-review';
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request) : Bivio::Biz::Model::ImportedTransactionList
+
+Creates a new imported transaction list.
+
+=cut
+
+sub new {
+    my($proto, $req) = @_;
+    my($self) = Bivio::Biz::ListModel::new(@_);
+    $self->{$_PACKAGE} = {
+	review => ($req && $req->unsafe_get($_REVIEW_KEY))
+	? $req->get($_REVIEW_KEY) : undef,
+    };
+    return $self;
+}
 
 =head1 METHODS
 
@@ -53,6 +77,34 @@ sub can_edit {
     my($self) = @_;
     return Bivio::Biz::Action::EditTransaction->can_edit(
 	    $self->get('Entry.entry_type'));
+}
+
+=for html <a name="execute_load_all_unassigned"></a>
+
+=head2 execute_load_all_unassigned(Bivio::Agent::Request) : boolean
+
+Only loads transactions which have not been identified.
+
+=cut
+
+sub execute_load_all_unassigned {
+    my($proto, $req) = @_;
+    $req->put($_REVIEW_KEY => 'unassigned');
+    return $proto->execute_load_all_with_query($req);
+}
+
+=for html <a name="execute_load_review_page"></a>
+
+=head2 static execute_load_review_page(Bivio::Agent::Request req) : boolean
+
+Only loads transactions which have been identified.
+
+=cut
+
+sub execute_load_review_page {
+    my($proto, $req) = @_;
+    $req->put($_REVIEW_KEY => 'identified');
+    return $proto->execute_load_page($req);
 }
 
 =for html <a name="internal_initialize"></a>
@@ -82,6 +134,7 @@ sub internal_initialize {
             Entry.amount
             Entry.class
             Entry.entry_type
+            Entry.tax_category
             AccountSync.sync_key
             RealmAccount.realm_account_id
 	    ),
@@ -102,7 +155,7 @@ sub internal_initialize {
 
 =for html <a name="internal_post_load_row"></a>
 
-=head2 abstract internal_post_load_row(hash_ref row)
+=head2 internal_post_load_row(hash_ref row)
 
 Generates a remark for the row.
 
@@ -122,6 +175,32 @@ sub internal_post_load_row {
     return;
 }
 
+=for html <a name="internal_pre_load"></a>
+
+=head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
+
+Creates 'where' which gets entries after a specified valuation date,
+ordered by valuation date.
+
+=cut
+
+sub internal_pre_load {
+    my($self, $query, $support, $params) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # show all if no review type specified
+    return '' unless $fields->{review};
+
+    # either show only unassigned or everything except unassigned
+    my($unassigned_types) = Bivio::Type::EntryType->get_unassigned_types;
+    push(@$params, map {$_ = $_->as_int} @$unassigned_types);
+
+    my($where) = 'entry_t.entry_type '
+	    .($fields->{review} eq 'identified' ? 'NOT ' : '')
+		    .'IN ('.('?,' x int(@$unassigned_types));
+    chop($where);
+    return $where.')';
+}
 
 #=PRIVATE METHODS
 
