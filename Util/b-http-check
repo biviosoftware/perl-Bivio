@@ -110,6 +110,7 @@ sub _check_error_log {
     local($_);
     while ($_ = $fh->getline) {
         chomp;
+        /^\s*$/ && next;
         # Find first message within the given time interval
         unless ($in_interval) {
             # [Tue Jul 25 23:59:02 2000]
@@ -127,18 +128,28 @@ sub _check_error_log {
         $in_interval || next;
 
         # Skip non-warnings
-        (/Server configured -- resuming normal operations/ ||
-                /Restart successful/ ||
-                /httpd: caught SIGTERM, shutting down/ ||
-                /SIGHUP received.  Attempting to restart/ ||
-                /\[(info|notice)\]/ ||
-                /child process \d+ still did not exit/ ||
-                /created shared memory segment/ ||
-                /read request (line|headers) timed out for/ ||
-                /(read|send) timed out for (.+)/) && next;
+        (/Server configured -- resuming normal operations/
+                || /Restart successful/
+                || /httpd: caught SIGTERM, shutting down/
+                || /SIGHUP received.  Attempting to restart/
+                || /\[(info|notice)\]/
+                || /child process \d+ still did not exit/
+                || /created shared memory segment/
+                || /read request (line|headers) timed out for/
+                || /(read|send) timed out for (.+)/
+               ) && next;
         # Skip regular Bivio messages
         (/Bivio::Agent::Job::Dispatcher:.*JOB_(START|END)/
                 || /Bivio::SQL::Connection::_get_connection.*reconnecting/
+                || /OpenSSL: error/
+                || /SSL handshake failed/
+                || /SSL error on reading data/
+                || /_vti_inf.html/
+                || /_vti_rpc/
+                || /invalid persistent cookie/
+                || /visitor invalid, deleting from cookie/
+                || /Unable to parse address/
+                || /and logging as new user/
                ) && next;
 
         _report($_);
