@@ -535,16 +535,6 @@ sub get_share_price_and_date {
 
     my($result) = {};
 
-    # search last 8 days
-    my($j, undef) = $date =~ /^(.*)\s(.*)$/;
-    my($dates) = '';
-    for (1..8) {
-	$dates .= Bivio::Type::DateTime->to_sql_value(
-		"'".Bivio::Type::DateTime->to_sql_param($j--.' '
-			.Bivio::Type::DateTime::DEFAULT_TIME())."'").',';
-    }
-    chop($dates);
-
     # valuation algorithm:
     #   if realm_instrument_valuation_t exists for the date, use it
     #   if not in MGFS use local (realm_instrument_valuation_t).
@@ -564,28 +554,36 @@ sub get_share_price_and_date {
 	$result->{$id} = [$value, $date, 1];
     }
 
-    my($d) = Bivio::Type::DateTime->from_sql_value(
-	    'mgfs_daily_quote_t.date_time');
-    $sth = Bivio::SQL::Connection->execute(
-	    <<"EOF", [$self->get('realm_id')]);
-	    SELECT realm_instrument_t.realm_instrument_id,
-	    	mgfs_daily_quote_t.close, $d
-	    FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
-	    WHERE realm_instrument_t.realm_id =?
-	    AND realm_instrument_t.instrument_id
-            	=mgfs_instrument_t.instrument_id
-            AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
-            AND mgfs_daily_quote_t.date_time in ($dates)
-            ORDER BY mgfs_daily_quote_t.date_time DESC
-EOF
+    # search last 8 days
+    my($j, undef) = $date =~ /^(.*)\s(.*)$/;
+    for (1..8) {
+	my($search_date) = $j--.' '.Bivio::Type::DateTime::DEFAULT_TIME();
 
-    while (my $row = $sth->fetchrow_arrayref) {
-	($id, $value, $val_date) = @$row;
-	$val_date = Bivio::Type::DateTime->from_sql_column($val_date);
+	my($d) = Bivio::Type::DateTime->from_sql_value(
+		'mgfs_daily_quote_t.date_time');
+	$sth = Bivio::SQL::Connection->execute("
+	        SELECT realm_instrument_t.realm_instrument_id,
+	    	    mgfs_daily_quote_t.close, $d
+	        FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
+	        WHERE realm_instrument_t.instrument_id
+            	    =mgfs_instrument_t.instrument_id
+                AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
+                AND mgfs_daily_quote_t.date_time=$_SQL_DATE_VALUE
+                AND realm_instrument_t.realm_id =?
+                ORDER BY mgfs_daily_quote_t.date_time DESC",
+		[$search_date, $self->get('realm_id')]);
 
-	unless (exists($result->{$id})) {
-	    $result->{$id} = [$value, $val_date, 0];
+	my($found_quote) = 0;
+	while (my $row = $sth->fetchrow_arrayref) {
+	    ($id, $value, $val_date) = @$row;
+	    $val_date = Bivio::Type::DateTime->from_sql_column($val_date);
+
+	    unless (exists($result->{$id})) {
+		$result->{$id} = [$value, $val_date, 0];
+	    }
+	    $found_quote = 1;
 	}
+	last if $found_quote;
     }
 
     # make sure that valuations exists for every realm instrument
@@ -603,20 +601,18 @@ EOF
 
 	next if exists($result->{$id});
 
-	$d = Bivio::Type::DateTime->from_sql_value(
+	my($d) = Bivio::Type::DateTime->from_sql_value(
 		'realm_instrument_valuation_t.date_time');
-	$d = <<"EOF";
-	    SELECT realm_instrument_valuation_t.price_per_share,
-	    $d
-	    FROM realm_instrument_valuation_t
-	    WHERE realm_instrument_valuation_t.realm_id=?
-            AND realm_instrument_valuation_t.realm_instrument_id=?
-            AND realm_instrument_valuation_t.date_time <= $_SQL_DATE_VALUE
-	    ORDER BY realm_instrument_valuation_t.date_time DESC
-EOF
-	my($sth2) = Bivio::SQL::Connection->execute($d,
-		[$self->get('realm_id'), $id,
-			Bivio::Type::DateTime->to_sql_param($date)]);
+	my($sth2) = Bivio::SQL::Connection->execute("
+	        SELECT realm_instrument_valuation_t.price_per_share,
+	        $d
+	        FROM realm_instrument_valuation_t
+	        WHERE realm_instrument_valuation_t.realm_instrument_id=?
+                AND realm_instrument_valuation_t.date_time <= $_SQL_DATE_VALUE
+                AND realm_instrument_valuation_t.realm_id=?
+	        ORDER BY realm_instrument_valuation_t.date_time DESC",
+		[$id, Bivio::Type::DateTime->to_sql_param($date),
+		       $self->get('realm_id')]);
 
 	my($row2);
 	if ($row2 = $sth2->fetchrow_arrayref()) {
