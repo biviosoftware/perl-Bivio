@@ -137,36 +137,142 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    # drops the foreign key reference and the NOT NULL
-    _drop_constraints('realm_instrument_t', 'instrument_id');
 
-    # add the foreign key reference back in
-    _do('ALTER TABLE realm_instrument_t
-            add foreign key (instrument_id)
-            references instrument_t(instrument_id)
-            /');
-    _upgrade_survey();
-    return;
-}
-
-# _upgrade_survey
-#
-# Change the survey types
-sub _upgrade_survey {
-    # AgeRange has changed
-    _drop_constraints('connect_survey_t', 'age_range');
-
-    # Map the values and install new constraints
-    _do(<<'EOF');
-update connect_survey_t set age_range = 2 where age_range = 3
-/
-update connect_survey_t set age_range = 3 where age_range = 4
-/
-ALTER TABLE connect_survey_t modify age_range not null
-/
-ALTER TABLE connect_survey_t add check (age_range between 0 and 3)
+    # Make sure tablespace exists before doing anything
+    my($statement) = _do(<<'EOF');
+SELECT DISTINCT tablespace_name
+  FROM user_tablespaces
+  WHERE tablespace_name = 'REALM_LOB'
 /
 EOF
+    die('Need to create realm_lob tablespace')
+	    unless $statement->fetchrow_arrayref;
+
+    # Create file_t and file_quota_t
+    _do(<<'EOF');
+CREATE TABLE file_quota_t (
+  realm_id NUMBER(18),
+  kbytes NUMBER(9),
+  max_kbytes NUMBER(9)
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+/
+
+CREATE TABLE file_t (
+  file_id NUMBER(18),
+  realm_id NUMBER(18),
+  volume NUMBER(2),
+  directory_id NUMBER(18),
+  name VARCHAR2(100),
+  user_id NUMBER(18),
+  modified_date_time DATE,
+  bytes NUMBER(9),
+  is_directory NUMBER(1),
+  source_name VARCHAR2(500),
+  content_type VARCHAR2(500),
+  content BLOB
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+  lob (content) store as
+  (tablespace realm_lob storage
+  (initial 100m next 100m pctincrease 0)
+  chunk 8k pctversion 10 nocache logging)
+/
+
+--
+-- file_volume_t
+--
+ALTER TABLE file_volume_t add primary key(realm_id, type)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE file_volume_t modify type not null
+/
+ALTER TABLE file_volume_t add check (type between 1 and 4)
+/
+ALTER TABLE file_volume_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE file_volume_t modify realm_id not null
+/
+ALTER TABLE file_volume_t modify kbytes not null
+/
+ALTER TABLE file_volume_t add check (kbytes >= 0)
+/
+ALTER TABLE file_volume_t modify files not null
+/
+ALTER TABLE file_volume_t add check (files >= 0)
+/
+ALTER TABLE file_volume_t modify in_quota not null
+/
+ALTER TABLE file_volume_t add check (in_quota BETWEEN 0 AND 1)
+/
+
+--
+-- file_t
+--
+ALTER TABLE file_t add primary key(file_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE file_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE file_t modify realm_id not null
+/
+ALTER TABLE file_t
+  add foreign key (directory_id)
+    references file_t(file_id)
+/
+ALTER TABLE file_t modify volume not null
+/
+ALTER TABLE file_t
+  add foreign key (realm_id, volume)
+    references file_volume_t(realm_id, type)
+/
+ALTER TABLE file_t add check (volume between 1 and 5)
+/
+ALTER TABLE file_t
+  add foreign key (user_id)
+    references user_t(user_id)
+/
+ALTER TABLE file_t modify modified_date_time not null
+/
+ALTER TABLE file_t modify name not null
+/
+ALTER TABLE file_t modify bytes not null
+/
+ALTER TABLE file_t add check (bytes >= 0)
+/
+ALTER TABLE file_t modify is_directory not null
+/
+ALTER TABLE file_t add check (is_directory BETWEEN 0 AND 1)
+/
+ALTER TABLE file_t add unique(directory_id, name)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+
+CREATE INDEX file_directory_i ON file_t (
+  directory_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+
+CREATE INDEX file_realm_volume_i ON file_t (
+  realm_id,
+  volume
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+EOF
+    return;
 }
 
 # _usage(array message)
