@@ -5,27 +5,31 @@ use strict;
 
 =head1 NAME
 
-b-ec - calls Bivio::Biz::Util::EC
+s-realm-role - calls Bivio::Biz::Util::RealmRole
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
-b-ec [options] command [args...]
+s-realm-role [options] command [args...]
 
 =head1 DESCRIPTION
 
-See L<Bivio::Biz::Util::EC|Bivio::Biz::Util::EC>
+See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Util::EC;
+use Bivio::Biz::Util::RealmRole;
 
 #=VARIABLES
-Bivio::Biz::Util::EC->main(@ARGV);
+Bivio::Biz::Util::RealmRole->main(@ARGV);
 
 =head1 SEE ALSO
 
-Bivio::Biz::Util::EC
+Bivio::Biz::Util::RealmRole
 
 =head1 COPYRIGHT
 

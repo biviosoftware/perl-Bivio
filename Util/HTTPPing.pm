@@ -40,7 +40,7 @@ C<Bivio::Util::HTTPPing> pings a HTTP is running.
 
 Returns:
 
-  usage: b-http-ping [options] command [args...]
+  usage: s-http-ping [options] command [args...]
   commands:
     page url ... -- request url(s)
     process_status -- check load avg and process status
@@ -49,7 +49,7 @@ Returns:
 
 sub USAGE {
     return <<'EOF';
-usage: b-http-ping [options] command [args...]
+usage: s-http-ping [options] command [args...]
 commands:
     page url ... -- request url(s)
     process_status -- check load avg and process status
