@@ -103,6 +103,7 @@ sub execute_input {
 
     # Create a mail header and message body from the form input
     if (defined($user)) {
+#TODO: Should move into Mail::Message
         $header->add('From', $user->get('display_name')
                 .' <'. $user->format_email . '>');
     }
