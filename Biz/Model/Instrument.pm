@@ -47,6 +47,20 @@ use Bivio::Type::PrimaryId;
 
 =cut
 
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Sets I<fed_tax_free> if not set, then calls SUPER.
+
+=cut
+
+sub create {
+    my($self, $values) = @_;
+    $values->{fed_tax_free} = 0 unless defined($values->{fed_tax_free});
+    return $self->SUPER::create($values);
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
