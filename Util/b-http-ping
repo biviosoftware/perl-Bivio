@@ -1,0 +1,42 @@
+#!perl -w
+# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-http-ping - calls Bivio::Util::HTTPPing
+
+=head1 SYNOPSIS
+
+b-http-ping [options] command [args...]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Util::HTTPPing|Bivio::Util::HTTPPing>
+
+=cut
+
+#=IMPORTS
+use Bivio::Util::HTTPPing;
+
+#=VARIABLES
+Bivio::Util::HTTPPing->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Util::HTTPPing
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
