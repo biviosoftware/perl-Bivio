@@ -256,7 +256,7 @@ sub get_body {
     $self->die(Bivio::DieCode::DIE(),
 	    message => 'should not have gotten here')
 	    unless $club_id eq $req->get('auth_id');
-    my($club_name) = $req->get('auth_realm')->get('owner_name');
+    my($club_name) = $req->get('auth_realm')->format_file;
     my($filename) = '/'.$club_name.'/messages/html/'.$msg_id;
     die("couldn't get mail body: $body")
 	    unless$_FILE_CLIENT->get($filename, \$body);

@@ -50,25 +50,23 @@ clubs and users.  General does not have an owner.
 =item owner_name : string
 
 Named retrieved from realm owner.  Not defined for the general realm.
+Always use this value and owner-E<gt>get('name').  Proxy realms
+override this value.
 
 =item type : Bivio::Auth::RealmType
+
+Type of this realm.
 
 =back
 
 =cut
 
 #=IMPORTS
-use Bivio::Agent::Request;
-use Bivio::Agent::TaskId;
+#Avoid circular import: See code in _initialize
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
-use Bivio::Auth::Realm::Club;
-use Bivio::Auth::Realm::User;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Biz::Model::RealmOwner;
-use Bivio::Biz::Model::RealmRole;
-use Bivio::Biz::Model::RealmUser;
 use Bivio::IO::Trace;
 use Carp ();
 
@@ -86,6 +84,7 @@ my(%_CLASS_TO_TYPE) = map {
     ("Bivio::Auth::Realm::$class", $_);
 } Bivio::Auth::RealmType->get_list;
 my(%_TYPE_TO_CLASS) = reverse(%_CLASS_TO_TYPE);
+# Maps realm types to permission sets
 my(%_DEFAULT_PERMISSION_SET) = ();
 
 =head1 FACTORIES
@@ -126,28 +125,38 @@ sub new {
 		if $realm_type == Bivio::Auth::RealmType::USER();
 	Carp::croak($realm_type->as_string, ": unknown realm type");
     }
-    my($class) = ref($proto) || $proto;
+
+    # Instantiate and initialize with/out owner
     my($self) = &Bivio::Collection::Attributes::new($proto);
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
-	$self->{$_PACKAGE} = $_DEFAULT_PERMISSION_SET{$class};
-	$self->put(id => $self->get_type->as_int,
-	       type => $_CLASS_TO_TYPE{ref($self)});
+	my($type) = $_CLASS_TO_TYPE{ref($self)};
+	$self->{$_PACKAGE} = $_DEFAULT_PERMISSION_SET{$type};
+	$self->put(id => $type->as_int, type => $type);
 	return $self;
     }
-    $self->{$_PACKAGE} = {
-	default_permission_set => $_DEFAULT_PERMISSION_SET{$class},
-    };
-    Carp::croak('not a Model::RealmOwner') unless UNIVERSAL::isa($owner,
-	    'Bivio::Biz::Model::RealmOwner');
+
+    # Have owner.  Permissions may be general if PROXY
+    my($type) = $owner->get('realm_type');
+    if ($type eq Bivio::Auth::RealmType::PROXY()) {
+	$self->{$_PACKAGE} =$_DEFAULT_PERMISSION_SET{$type};
+	# Proxy realms don't have real RealmOwners
+    }
+    else {
+	$self->{$_PACKAGE} = {
+		default_permission_set => $_DEFAULT_PERMISSION_SET{$type},
+	};
+	Carp::croak('not a Model::RealmOwner') unless UNIVERSAL::isa($owner,
+		'Bivio::Biz::Model::RealmOwner');
+    }
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');
     Carp::croak('owner must have valid id (must be loaded)')
 		unless $id;
     $self->put(owner => $owner, id => $id,
 	    owner_name => $owner->get('name'),
-	    type => $_CLASS_TO_TYPE{ref($self)});
+	    type => $type);
     return $self;
 }
 
@@ -184,10 +193,11 @@ sub can_user_execute_task {
     my($realm_type, $required) = $task->get('realm_type', 'permission_set');
 
     # Is the task defined in the right realm?
-    unless ($self->get_type() eq $realm_type) {
-	&_trace($task->get('id'), ': no such task in ', $self->get_type);
+    unless ($self->get('type') eq $realm_type) {
+	&_trace($task->get('id'), ': no such task in ', $self->get('type'));
 	return 0;
     }
+
 
     # Load the realm_role permissions
     my($fields) = $self->{$_PACKAGE};
@@ -210,20 +220,86 @@ sub can_user_execute_task {
     return 1;
 }
 
+=for html <a name="format_email"></a>
+
+=head2 format_email() : string
+
+How to mail to this realm.  Only works for realms with owners.
+
+=cut
+
+sub format_email {
+    my($self) = @_;
+    # This is more than caching. It allows Proxy to override this value.
+    my($email) = $self->unsafe_get('_email');
+    return $email if $email;
+
+    # Not a Proxy, just compute and cache (since we are checking anyway)
+    $email = $self->get('owner_name').'@'
+	    .$self->get('owner')->get_request->get('mail_host');
+    $self->put(_email => $email);
+    return $email;
+}
+
+=for html <a name="format_file"></a>
+
+=head2 format_file() : string
+
+Returns the root of the file server.
+
+=cut
+
+sub format_file {
+    my($self) = @_;
+    # This is more than caching. It allows Proxy to override this value.
+    my($file) = $self->unsafe_get('_file');
+    return $file if $file;
+
+    # Not a Proxy, just compute and cache (since we are checking anyway)
+    $file = $self->get('owner_name');
+    $self->put(_file => $file);
+    return $file;
+}
+
+=for html <a name="format_uri"></a>
+
+=head2 format_uri() : string
+
+Returns the "home" of this realm, i.e. just its name.
+Only works for realms with owners.
+
+=cut
+
+sub format_uri {
+    my($self) = @_;
+    # This is more than caching. It allows Proxy to override this value.
+    my($uri) = $self->unsafe_get('_uri');
+    return $uri if $uri;
+
+    # Not a Proxy, just compute and cache (since we are checking anyway)
+    $uri = '/'.$self->get('owner_name');
+    $self->put(_uri => $uri);
+    return $uri;
+}
+
 =for html <a name="get_type"></a>
 
 =head2 static get_type() : Bivio::Auth::RealmType
 
 Returns the RealmType for this realm.
 
+B<DEPRECATED>.
+
 =cut
 
 sub get_type {
     my($proto) = @_;
-    my($class) = ref($proto) || $proto;
-    Carp::croak("$class: unknown realm class")
-	    unless exists($_CLASS_TO_TYPE{$class});
-    return $_CLASS_TO_TYPE{$class};
+    # Get the type from the instance itself (Proxy perhaps) otherwise
+    # just from class.
+    return $proto->get('type') if ref($proto);
+    Carp::croak("$proto: unknown realm class")
+	    unless exists($_CLASS_TO_TYPE{$proto});
+    return $_CLASS_TO_TYPE{$proto};
 }
 
 #=PRIVATE METHODS
@@ -234,15 +310,26 @@ sub get_type {
 #
 sub _initialize {
     $_INITIALIZED && return;
+    # Avoid circular import
+    Bivio::Util::my_require('Bivio::Biz::Model::RealmOwner');
+    Bivio::Util::my_require('Bivio::Biz::Model::RealmRole');
+
     my($rr) = Bivio::Biz::Model::RealmRole->new();
     my(@roles) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
 	    Bivio::Auth::Role->get_list);
 #DBCACHE: realm_role_t
-    foreach my $t ('GENERAL', 'USER', 'CLUB') {
+    foreach my $t ('GENERAL', 'USER', 'CLUB', 'PROXY') {
 	my($rt) = Bivio::Auth::RealmType->$t();
 	my($rti) = $rt->as_int;
 	my($rc) = $_TYPE_TO_CLASS{$rt};
-	my($dp) = $_DEFAULT_PERMISSION_SET{$rc} = {};
+	Bivio::Util::my_require($rc);
+#TODO: Should this be in the database?  ALways the same as General.
+	if ($rt->get_name eq 'PROXY') {
+	    $_DEFAULT_PERMISSION_SET{$rt} = $_DEFAULT_PERMISSION_SET{
+		Bivio::Auth::RealmType::GENERAL()};
+	    next;
+	}
+	my($dp) = $_DEFAULT_PERMISSION_SET{$rt} = {};
 	foreach my $r (@roles) {
 	    die($rt->as_string, ': unable to load default permissions for ',
 		    $r->as_string)
