@@ -336,7 +336,7 @@ sub print {
 
 =for html <a name="unit"></a>
 
-=head2 static unit(array_ref tests)
+=head2 static unit(array_ref tests) : self
 
 Evaluates I<tests> which are defined as tuples of tuples of tuples.
 see L<DESCRIPTION|"DESCRIPTION"> for the syntax.
@@ -352,7 +352,7 @@ sub unit {
     # Instantiate first, if called statically.
     return $self->new->unit($tests) unless ref($self);
     _eval($self, _compile($self, $tests));
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
