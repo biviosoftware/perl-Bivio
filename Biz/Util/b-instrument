@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-instrument - command line utilities for instruments
+
+=head1 SYNOPSIS
+
+b-instrument
+
+=head1 DESCRIPTION
+
+B<b-instrument> command line utilities for instruments
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::Instrument;
+
+#=VARIABLES
+
+Bivio::Biz::Util::Instrument->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 bivio, Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
