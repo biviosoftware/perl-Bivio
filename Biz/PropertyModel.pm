@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::PropertyModel;
 use strict;
@@ -90,30 +90,45 @@ sub create {
     return $self;
 }
 
-=for html <a name="create_or_update"></a>
+=for html <a name="create_or_unauth_update"></a>
 
-=head2 create_or_update(hash_ref new_values) : Bivio::Biz::PropertyModel
+=head2 create_or_unauth_update(hash_ref new_values) : self
 
 Tries to load the model based on its primary key values.
 If the load is successful, the model will be updated with
 the new values. Otherwise, a new model is created.
 
-Returns I<self>.
+Calls L<unauth_load|"unauth_load">.
+
+See also L<create_or_update|"create_or_update">.
+
+=cut
+
+sub create_or_unauth_update {
+    my($self, $new_values) = @_;
+    my($pk_values) = _get_primary_keys($self, $new_values);
+    return $pk_values && $self->unauth_load(%$pk_values)
+	    ? $self->update($new_values) : $self->create($new_values);
+}
+
+=for html <a name="create_or_update"></a>
+
+=head2 create_or_update(hash_ref new_values) : self
+
+Tries to load the model based on its primary key values.
+If the load is successful, the model will be updated with
+the new values. Otherwise, a new model is created.
+
+Calls L<unsafe_load|"unsafe_load">.
+
+See also L<create_or_unauth_update|"create_or_unauth_update">.
 
 =cut
 
 sub create_or_update {
     my($self, $new_values) = @_;
-    my(%pk_values);
-    my($have_keys) = 1;
-    foreach my $pk (@{$self->get_info('primary_key_names')}) {
-        unless (exists($new_values->{$pk})) {
-            $have_keys = 0;
-            last;
-        }
-        $pk_values{$pk} = $new_values->{$pk};
-    }
-    return $have_keys && $self->unsafe_load(%pk_values)
+    my($pk_values) = _get_primary_keys($self, $new_values);
+    return $pk_values && $self->unsafe_load(%$pk_values)
         ? $self->update($new_values) : $self->create($new_values);
 }
 
@@ -488,6 +503,26 @@ sub update {
 
 #=PRIVATE METHODS
 
+# _get_primary_keys(self, hash_ref new_values) : hash_ref
+#
+# If new_values contains all primary keys, returns a copy as a hash_ref.
+# Else returns undef.
+#
+sub _get_primary_keys {
+    my($self, $new_values) = @_;
+    my(%pk_values);
+    my($have_keys) = 1;
+    foreach my $pk (@{$self->get_info('primary_key_names')}) {
+        unless (exists($new_values->{$pk})) {
+            $have_keys = 0;
+	    _trace($pk, ': missing primary key') if $_TRACE;
+            last;
+        }
+        $pk_values{$pk} = $new_values->{$pk};
+    }
+    return $have_keys ? \%pk_values : undef;
+}
+
 # _load(Bivio::Biz::PropertyModel self, hash_ref values) : boolean
 #
 # Initializes the self with values and returns 1.
@@ -504,7 +539,7 @@ sub _load {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
