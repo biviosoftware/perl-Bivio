@@ -48,6 +48,7 @@ use Bivio::Type::PrimaryId;
 use IO::Scalar;
 use MIME::Parser;
 use Bivio::Mail::Store::MIMEDecode;
+
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -55,6 +56,7 @@ my($_SQL_SUPPORT);
 Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
 });
+my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
 
 my($_FILE_CLIENT);
 
@@ -91,9 +93,13 @@ sub create {
     my($reply_to_email) = $msg->get_reply_to;
     my($body) = $msg->get_body;
     my($subject) = $msg->get_subject;
+
+    # Strip the club name prefix out of the message, but leave the "Re:"
+    $subject =~ s/^\s*((?:re:)?\s*)$club_name:\s*/$1/i;
 #TODO: Should we allow NULL for subject?  Makes code elsewhere complicated,
 #      but would be more true to what is actually going on.
-    $subject = '(no subject)' unless $subject;
+    $subject = defined($subject) && $subject !~ /^\s*$/s
+	    ? substr($subject, 0, $_MAX_SUBJECT) : '(no subject)';
 
     my($values) = {
 	club_id => $club_id,
@@ -585,11 +591,10 @@ sub _sortable_subject {
     my($subject, $clubname) = @_;
     my($reply_marker) = '';
     $subject = lc($subject);
-    $subject =~ s/^\s*$clubname://;
     # Replies should come after the original message.  Strip
     # an "Re:" and put a tilde (~) on the end so will sort after
     # original subject.
-    $subject =~ s/^\s*re:\s*(?:$clubname:)?// && ($reply_marker = '~');
+    $subject =~ s/^\s*re:\s*// && ($reply_marker = '~');
     # Strip all non-alphanumerics
 #TODO: should we be stripping spaces?
     $subject =~ s/[^a-z0-9]//g;
