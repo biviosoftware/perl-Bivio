@@ -32,6 +32,10 @@ C<Bivio::UI::HTML::Widget::DateField> is a date field for forms.
 
 =over 4
 
+=item allow_undef : boolean [false]
+
+Allow undef for field, i.e. don't fill in with now.
+
 =item field : string (required)
 
 Name of the form field.
@@ -95,6 +99,7 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
+    $fields->{allow_undef} = $self->get_or_default('allow_undef', 0);
     return;
 }
 
@@ -124,9 +129,22 @@ sub render {
 	$fields->{initialized} = 1;
     }
 
-    # Default is now
+    # If field in error, just return the value user entered
+    if ($form->get_field_error($field)) {
+	$$buffer .= $fields->{prefix}.$form->get_field_as_html($field)
+		.$fields->{suffix};
+	return;
+    }
+
+    # Default is now unless allow_undef set
     my($value) = $form->get($field);
-    $value = Bivio::Type::DateTime->now unless defined($value);
+    unless (defined($value)) {
+	if ($fields->{allow_undef}) {
+	    $$buffer .= $fields->{prefix}.$fields->{suffix};
+	    return;
+	}
+	$value = Bivio::Type::DateTime->now;
+    }
 
     # What to render if javascript not available.  Must be acceptable
     # to Date::from_literal.
