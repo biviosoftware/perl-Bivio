@@ -1369,7 +1369,7 @@ sub _reap_daemon_children {
     while (1) {
 	if ($stopped > 0) {
 	    if (my $args = delete($children->{$stopped})) {
-		Bivio::IO::Alert->info('Starting: pid=', $stopped, ' args=',
+		Bivio::IO::Alert->info('Stopped: pid=', $stopped, ' args=',
 		    join(' ', @$args[2 .. $#$args]));
 	    }
 	    else {
