@@ -73,60 +73,62 @@ All local fields.
 
 sub internal_initialize {
 
+    my($tax) = 'Bivio::Type::TaxCategory';
     return {
 	version => 1,
 	other => [
+	    {
+		name => 'user_id',
+		type => 'PrimaryId',
+		constraint => 'NONE',
+	    },
 	    {
 		name => 'name',
 		type => 'Line',
 		constraint => 'NONE',
 	    },
 	    {
-	        name => Bivio::Type::TaxCategory->DIVIDEND->get_short_desc,
+	        name => $tax->DIVIDEND->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name => Bivio::Type::TaxCategory->INTEREST->get_short_desc,
+	        name => $tax->INTEREST->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name =>
-	   Bivio::Type::TaxCategory->FEDERAL_TAX_FREE_INTEREST->get_short_desc,
+	        name => $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name =>
-	     Bivio::Type::TaxCategory->SHORT_TERM_CAPITAL_GAIN->get_short_desc,
+	        name => $tax->SHORT_TERM_CAPITAL_GAIN->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name =>
-	    Bivio::Type::TaxCategory->MEDIUM_TERM_CAPITAL_GAIN->get_short_desc,
+	        name => $tax->MEDIUM_TERM_CAPITAL_GAIN->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name =>
-	      Bivio::Type::TaxCategory->LONG_TERM_CAPITAL_GAIN->get_short_desc,
+	        name => $tax->LONG_TERM_CAPITAL_GAIN->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name => Bivio::Type::TaxCategory->FOREIGN_TAX->get_short_desc,
+	        name => $tax->FOREIGN_TAX->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name => Bivio::Type::TaxCategory->MISC_INCOME->get_short_desc,
+	        name => $tax->MISC_INCOME->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
 	    {
-	        name => Bivio::Type::TaxCategory->MISC_EXPENSE->get_short_desc,
+	        name => $tax->MISC_EXPENSE->get_short_desc,
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },

@@ -126,6 +126,7 @@ sub _create_row {
     $user->unauth_load(user_id => $user_id) || die("no user $user_id");
 
     my($row) = {
+	user_id => $user_id,
 	name => $user->format_last_first_middle.' ('
 	.Bivio::Type::Date->to_literal($date).')',
 	net_profit => 0,
