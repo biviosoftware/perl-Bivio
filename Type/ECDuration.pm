@@ -1,17 +1,17 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Type::SubscriptionDuration;
+package Bivio::Type::ECDuration;
 use strict;
-$Bivio::Type::SubscriptionDuration::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::SubscriptionDuration::VERSION;
+$Bivio::Type::ECDuration::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::ECDuration::VERSION;
 
 =head1 NAME
 
-Bivio::Type::SubscriptionDuration - how many years a subscription is for
+Bivio::Type::ECDuration - how many years a subscription is for
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::SubscriptionDuration;
+    use Bivio::Type::ECDuration;
 
 =cut
 
@@ -22,12 +22,12 @@ L<Bivio::Type::Enum>
 =cut
 
 use Bivio::Type::Enum;
-@Bivio::Type::SubscriptionDuration::ISA = ('Bivio::Type::Enum');
+@Bivio::Type::ECDuration::ISA = ('Bivio::Type::Enum');
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::SubscriptionDuration> is the number of years a premium services
-subscription should last for.  Used in calculating the end date.
+C<Bivio::Type::ECDuration> is the number of years a premium services
+subscription or payment should last for.  Used in calculating the end date.
 
 =cut
 

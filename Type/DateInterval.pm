@@ -197,13 +197,11 @@ sub _inc_beginning_of_year {
 
 # _inc_fiscal_year(string date_time) : string
 #
-# For now just increments by a year because will be incrementing from
-# a fiscal year end date (calls _inc_year ).  Only exists because method
-# call name is constructed dynamically from the type name.
+# Same as calling _inc_beginning_of_year, but has fiscal year name.
 #
 sub _inc_fiscal_year {
     my($date_time) = @_;
-    return _inc_year($date_time);
+    return _inc_beginning_of_year($date_time);
 }
 
 # _inc_month(string date_time) : string
