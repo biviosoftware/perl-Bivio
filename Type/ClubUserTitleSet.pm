@@ -67,6 +67,18 @@ __PACKAGE__->set(\$_MEMBERS,
 
 =cut
 
+=for html <a name="get_enum_type"></a>
+
+=head2 get_enum_type() : Bivio::Type::Enum
+
+Returns L<Bivio::Type::ClubUserTitle|Bivio::Type::ClubUserTitle>.
+
+=cut
+
+sub get_enum_type {
+    return 'Bivio::Type::ClubUserTitle';
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
