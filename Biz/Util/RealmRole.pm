@@ -283,6 +283,7 @@ same realm/role combination.  It can be used to adjust existing permissions.
 
 sub set_same {
     my($proto, $new, $like) = @_;
+    _usage('set_same: missing args') unless defined($new) && defined($like);
     my($new_int) = Bivio::Auth::Permission->from_name($new)->as_int;
     my($like_int) = Bivio::Auth::Permission->from_name($like)->as_int;
     my($rr) = Bivio::Biz::Model::RealmRole->new(
