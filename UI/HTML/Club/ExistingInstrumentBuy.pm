@@ -72,10 +72,9 @@ EOF
 			list_id_field => 'RealmAccount.realm_account_id',
 		    }
 	    ],
-	    ['Entry.amount', 'Total Cost', <<'EOF'],
-Enter the total cost of the purchase excluding commission and fees,
-which are entered below.  The per share price will be computed
-from this value.
+	    ['Entry.amount', 'Principal', <<'EOF'],
+Enter the total cost. Do not include the commission or fees which are entered
+below.
 EOF
 	    ['RealmInstrumentEntry.count', undef, <<'EOF'],
 Enter the number of shares or bonds purchased.
