@@ -19,7 +19,6 @@ Bivio::Mail::Incoming - parses an incoming mail message
     $bim->get_subject();
     $bim->get_message_id();
     $bim->get_dttm();
-    $bim->get_recv_dttm();
 
 =cut
 
@@ -142,7 +141,10 @@ my(%_822_TIME_ZONES) = (
 
 =head2 static new(string_ref rfc822) : Bivio::Mail::Incoming
 
+=head2 static new(string_ref rfc822, int offset) : Bivio::Mail::Incoming
+
 Create an instance and L<initialize|"initialize"> with I<rfc822>.
+Default I<offset> is 0.
 
 Note: the reference to I<rfc822> will be retained, so do not modify this value
 until L<uninitialize|"uninitialize"> has been called or the object is
@@ -152,8 +154,8 @@ destroyed.
 
 sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
-    my(undef, $rfc822) = @_;
-    $self->initialize($rfc822);
+    my(undef, $rfc822, $offset) = @_;
+    $self->initialize($rfc822, $offset);
     return $self;
 }
 
@@ -161,11 +163,11 @@ sub new {
 
 =cut
 
-=for html <a name="get_body_ref"></a>
+=for html <a name="get_body"></a>
 
-=head2 get_body_ref() : string
+=head2 get_body() : string
 
-=head2 get_body_ref(string_ref body)
+=head2 get_body(string_ref body)
 
 Returns the body of the message or puts a copy in I<body>.
 
@@ -262,20 +264,6 @@ sub get_message_id {
     return $id;
 }
 
-=for html <a name="get_recv_dttm"></a>
-
-=head2 get_recv_dttm() : time
-
-Returns the time the message was initialized.
-
-=cut
-
-sub get_recv_dttm {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{recv_dttm};
-}
-
 =for html <a name="get_reply_to"></a>
 
 =head2 get_reply_to() : (string addr, string name)
@@ -349,6 +337,8 @@ sub uninitialize {
 
 =head2 initialize(string_ref $rfc822)
 
+=head2 initialize(string_ref $rfc822, int offset)
+
 Initializes the object with the reference supplied.
 
 Note: the reference to I<rfc822> will be retained, so do not modify this value
@@ -358,20 +348,22 @@ destroyed.
 =cut
 
 sub initialize {
-    my($self, $rfc822) = @_;
+    my($self, $rfc822, $offset) = @_;
 # RJN: Turns out this is about the fastest way, since any way you
 # clear a hash is expensive.  This is likely to generate more
 # memory churn, but the objects are small..
-    my($i) = index($$rfc822, "\n\n");
+    $offset ||= 0;
+    my($i) = index($$rfc822, "\n\n", $offset);
     my($h);
     if ($i >= 0) {
-	$h = substr($$rfc822, 0, $i);
+	$i -= $offset;
+	$h = substr($$rfc822, $offset, $i);
 	# Account for \n\n
-	$i += 2;
+	$i += 2 + $offset;
     }
     else {
-	$h = $$rfc822;
-	$i = length($$rfc822);
+	$i = length($$rfc822) - $offset;
+	$h = substr($$rfc822, $offset, $i);
     }
     # unfold all headers in advance.  Makes other code simpler.
     #
@@ -379,7 +371,8 @@ sub initialize {
     # followed by a LWSP-char as equivalent to the LWSP-char.
     # Can't use \s, because isn't locale specific.
     # RJN: Not handling quoted CRLF sequences which appear to be legitimate.
-    #      The effect will be to lose quoted LF and replace it with a space.
+    #      The effect will be to lose quoted LF and replace it with a
+    #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
     $self->{$_PACKAGE} = {
 	'rfc822' => $rfc822,
@@ -387,7 +380,6 @@ sub initialize {
 	'body_offset' => $i,
 	# Must include the \n\n
 	'header' => $h,
-	'recv_dttm' => time,
     };
     return;
 }
