@@ -149,11 +149,12 @@ sub execute_input {
 	return 0;
     }
 
+    # Create the To: address, possibly with a -owner, -board, etc. suffix
     my($realm) = $req->get('auth_realm');
     my($name) = $realm->get('owner_name');
     my($suffix) =  $to->get_long_desc;
     $name .= '-' . $suffix if $suffix;
-    $header->add('To', $name);
+    $header->add('To', $name . '@' . $req->get('mail_host'));
     if ($realm->get('type') == Bivio::Auth::RealmType::PROXY()) {
         $self->_dispatch_proxy($req, $to);
         return 0;
