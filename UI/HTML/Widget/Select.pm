@@ -102,12 +102,18 @@ Which form are we dealing with.
 
 Name of the list field used for display.
 
-=item list_id_field : string (required if 'choices' is a list)
+=item list_display_field : array_ref (required if 'choices' is a list)
+
+Widget value for the list display.
+
+=item list_display_field : Bivio::UI::Widget (required if 'choices' is a list)
+
+Widget for the list display.
+
+=item list_id_field : string
 
 Name of the list field used as the item id.
-
-TODO: this attribute shouldn't exist - it should use the primary key
-      fields of the list model.
+Defaults to the list primary key.
 
 =item list_item_control : string []
 
@@ -220,6 +226,14 @@ sub initialize {
 	$fields->{handler}->put(parent => $self)->initialize;
     }
 
+    my($list_display) = $self->unsafe_get('list_display_field');
+    if ($list_display) {
+        unless (ref($list_display)) {
+            $self->put(list_display_field =>
+                ['->get_as', $list_display, 'to_html']);
+        }
+        $self->initialize_attr('list_display_field');
+    }
     return;
 }
 
@@ -418,9 +432,16 @@ sub _load_items_from_integer_array {
 #
 sub _load_items_from_list {
     my($self, $list) = @_;
-    my($display_name) = $self->get('list_display_field');
+
+    unless ($self->unsafe_get('list_id_field')) {
+        my($keys) = $list->get_info('primary_key_names');
+        Bivio::Die->die(
+            "can't default list_id_field with multiple primary keys: ",
+            $list) if int(@$keys) > 1;
+        # default to first primary key field
+        $self->put(list_id_field => $keys->[0]);
+    }
     my($id_name) = $self->get('list_id_field');
-    my($display_type) = $list->get_field_info($display_name, 'type');
     my($id_type) = $list->get_field_info($id_name, 'type');
     my($control) = $self->unsafe_get('list_item_control');
 
@@ -432,9 +453,8 @@ sub _load_items_from_list {
 	if ($control) {
 	    next unless $list->get($control);
 	}
-
 	push(@items, $id_type->to_html($list->get($id_name)),
-		$display_type->to_html($list->get($display_name)));
+            ${$self->render_attr('list_display_field', $list)});
     }
 
     # reset the list cursor for the next guy
