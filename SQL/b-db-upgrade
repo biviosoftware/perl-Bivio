@@ -248,6 +248,19 @@ sub _upgrade {
     use Bivio::Biz::Model::RealmOwner;
     use Bivio::Data::EW::ClubImporter;
 
+    _upgrade_alter_tables();
+
+    _upgrade_expenses($req);
+
+    print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_alter_tables()
+#
+# Adds and alters existings tables
+#
+sub _upgrade_alter_tables {
     # create expense_category_t and expense_info_t
     print("adding expense_category_t and expense_info_t\n");
     _do_sql('
@@ -351,7 +364,15 @@ ALTER TABLE member_allocation_t
   or tax_category = 100)
 /
 ');
+    return;
+}
 
+# _upgrade_expenses(Bivio::Agent::Request req)
+#
+# Creates default expense categories and expense info values.
+#
+sub _upgrade_expenses {
+    my($req) = @_;
     # create default expense categories
     # classify existing expenses
     print("creating default expense categories and existing expense info\n");
@@ -370,8 +391,6 @@ ALTER TABLE member_allocation_t
 	Bivio::Biz::Model::ExpenseCategory->new($req)->create_initial;
 	Bivio::Data::EW::ClubImporter->default_expense_categories($req);
     }
-
-    print("\n*** done ***\n");
     return;
 }
 
