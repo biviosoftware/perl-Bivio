@@ -244,6 +244,11 @@ __PACKAGE__->compile(
 	undef,
 	'avoid a mail loop',
     ],
+    UNEXPECTED_EOF => [
+	21,
+	undef,
+	'unexpected end of file',
+    ],
 );
 
 =head1 METHODS
