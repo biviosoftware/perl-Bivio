@@ -74,7 +74,7 @@ sub new {
 
 =head2 initialize()
 
-Initializes static inJoination.
+Initializes widget state.
 
 =cut
 
@@ -84,6 +84,7 @@ sub initialize {
     return if $fields->{values};
     $fields->{values} = $self->get('values');
     $fields->{is_first_render} = 1;
+    $fields->{is_constant} = 0;
     my($v);
     foreach $v (@{$fields->{values}}) {
 	next unless ref($v) && ref($v) ne 'ARRAY';
@@ -132,13 +133,9 @@ sub render {
 		else {
 		    my($s) = '';
 		    $v->render($source, \$s);
-#TODO: there is a bug hidden in this somewhere
-# reproduced by starting server, viewing valuation report (ReportPage)
-# then going to account list (Page)
-# 		    # Optimize case when some widgets are constant
-#		    $v->is_constant ? ($fields->{values}->[$i] = $s)
-#			    : ($fields->{is_constant} = 0);
-		    $fields->{is_constant} = 0;
+ 		    # Optimize case when some widgets are constant
+		    $v->is_constant ? ($fields->{values}->[$i] = $s)
+			    : ($fields->{is_constant} = 0);
 		    $buf .= $s;
 		}
 	    }

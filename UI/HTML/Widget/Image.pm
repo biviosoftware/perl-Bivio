@@ -136,6 +136,8 @@ sub initialize {
     # Source is always requested.  If it is a constant, Bivio::UI::Icon
     # will say so and we'll end up returning a single constant string.
     $fields->{src} = $src;
+    $fields->{is_first_render} = 1;
+    $fields->{is_constant} = 0;
     return;
 }
 
@@ -172,7 +174,7 @@ sub render {
     $$buffer .= ' alt="'.Bivio::Util::escape_html(
 	    $source->get_widget_value(@{$fields->{alt}})).'"'
 		    if $fields->{alt};
-    if ($fields->{src}) {
+    if ($fields->{is_first_render}) {
 	my($src) = $source->get_widget_value(@{$fields->{src}});
 	my($img) = ' src="'.Bivio::Util::escape_html($src->{uri}).'"';
 	$img .= " width=$src->{width} height=$src->{height}"
