@@ -1086,7 +1086,7 @@ sub set_realm {
     $new_realm = defined($new_realm)
 	? Bivio::Auth::Realm->new($new_realm, $self)
 	: $_GENERAL
-	unless UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
+	unless $new_realm && UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
     $self->put_durable(
