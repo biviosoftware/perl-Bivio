@@ -30,6 +30,7 @@ C<Bivio::Biz::SqlConnection>
 
 #=IMPORTS
 use Bivio::Biz::Error;
+use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -64,13 +65,17 @@ sub execute {
 	my($msg);
 
 	#TODO: add more application error processing here
+
 	$msg = 'already exists' if $err == 1;
+	$msg = 'required value missing' if $err == 1400;
+	$msg = 'invalid number' if $err == 1722;
 
 	if ($msg) {
+	    &_trace($statement->errstr);
 	    $model->get_status()->add_error(Bivio::Biz::Error->new($msg));
 	}
 	else {
-	    # not handled
+	    # error not handled
 	    die $@;
 	}
     }
