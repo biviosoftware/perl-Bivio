@@ -29,7 +29,7 @@ bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
-We'll be writing more here later.  Please visit
+We'll be writing more here later.  Please visit 
 http://www.bivio.biz for more info.
 
 =cut
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Moved Model.UserLoginForm, Action.UserLogout, Delegate.PersistentCookie from
+  PetShop.
+  Bug fixes.
+
   Revision 1.5  2001/12/12 03:27:46  nagler
   Added more packages (Types and HTMLWidgets)
   Various bug fixes
