@@ -2830,6 +2830,21 @@ my(@_CFG) = (
 #        Bivio::Biz::Model::RealmUser->execute_auth_user
 #        Bivio::UI::HTML::Club::Age
 #    )],
+    # All tax views are ACCOUNTING_WRITE so only the accountant can access
+    [qw(
+        CLUB_ACCOUNTING_TAXES_SCHEDULE_D_PDF
+        249
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/taxes/schedule-d.pdf
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Type::ScheduleDParams->execute_hide_distributions
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::Biz::Model::ScheduleDList->execute_load_all
+        Bivio::UI::PDF::ScheduleD
+        next=CLUB_ACCOUNTING_TAXES_SCHEDULE_D_PDF
+    )],
 );
 
 __PACKAGE__->compile([
