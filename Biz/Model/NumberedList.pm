@@ -8,6 +8,10 @@ $Bivio::Biz::Model::NumberedList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 Bivio::Biz::Model::NumberedList - for list forms which want to display blank fields
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::NumberedList;
