@@ -265,6 +265,8 @@ sub test_deviance {
 
 =head2 test_log_output(string file_name, string content)
 
+=head2 test_log_output(string file_name, string_ref content)
+
 Writes output to a separate log file in I<test_log_prefix> directory.
 
 =cut
@@ -273,7 +275,7 @@ sub test_log_output {
     my($self, $file_name, $content) = @_;
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
     Bivio::IO::File->write($self->get('test_log_prefix') . "/$file_name",
-	\$content);
+	ref($content) ? $content : \$content);
     return;
 }
 
