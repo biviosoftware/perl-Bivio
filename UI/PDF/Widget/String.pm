@@ -138,6 +138,10 @@ sub render {
     Bivio::UI::PDFFont->set_font($font, $req, $pdf);
 
     my($text) = ${$self->render_attr('value', $source)};
+    unless ($self->get_render_mode($req)) {
+        $self->save_text_width($req, $pdf, $text);
+        return;
+    }
 
     if ($fields->{box}) {
         $fields->{box}->render_in_box($text, $pdf);
