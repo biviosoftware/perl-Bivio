@@ -29,265 +29,165 @@ C<Bivio::Biz::FieldDescriptor>
 
 =cut
 
-=for html <a name="BOOLEAN_T"></a>
+=for html <a name="BOOLEAN"></a>
 
-=head2 BOOLEAN_T : int
+=head2 BOOLEAN : int
 
 Boolean type.
 
 =cut
 
-sub BOOLEAN_T {
+sub BOOLEAN {
     return 0;
 }
 
-=for html <a name="CURRENCY_T"></a>
+=for html <a name="CURRENCY"></a>
 
-=head2 CURRENCY_T : string
+=head2 CURRENCY : string
 
 Currency type.
 
 =cut
 
-sub CURRENCY_T {
-    return BOOLEAN_T + 1;
+sub CURRENCY {
+    return BOOLEAN + 1;
 }
 
-=for html <a name="DATE_T"></a>
+=for html <a name="DATE"></a>
 
-=head2 DATE_T : int
+=head2 DATE : int
 
 Date type.
 
 =cut
 
-sub DATE_T {
-    return CURRENCY_T() + 1;
+sub DATE {
+    return CURRENCY() + 1;
 }
 
-=for html <a name="EMAIL_REF_T"></a>
+=for html <a name="EMAIL_REF"></a>
 
-=head2 EMAIL_REF_T : int
+=head2 EMAIL_REF : int
 
 An email reference compound type.
 
 =cut
 
-sub EMAIL_REF_T {
-    return DATE_T() + 1;
+sub EMAIL_REF {
+    return DATE() + 1;
 }
 
-=for html <a name="EMAIL_T"></a>
+=for html <a name="EMAIL"></a>
 
-=head2 EMAIL_T : int
+=head2 EMAIL : int
 
 Email address type.
 
 =cut
 
-sub EMAIL_T {
-    return EMAIL_REF_T() + 1;
+sub EMAIL {
+    return EMAIL_REF() + 1;
 }
 
-=for html <a name="GENDER_T"></a>
+=for html <a name="GENDER"></a>
 
-=head2 GENDER_T : int
+=head2 GENDER : int
 
 Gender type.
 
 =cut
 
-sub GENDER_T {
-    return EMAIL_T() + 1;
+sub GENDER {
+    return EMAIL() + 1;
 }
 
-=for html <a name="HTML_REF_T"></a>
+=for html <a name="HTML_REF"></a>
 
-=head2 HTML_REF_T : int
+=head2 HTML_REF : int
 
 An HTML reference compound type.
 
 =cut
 
-sub HTML_REF_T {
-    return GENDER_T() + 1;
+sub HTML_REF {
+    return GENDER() + 1;
 }
 
-=for html <a name="MODEL_REF_T"></a>
+=for html <a name="MODEL_REF"></a>
 
-=head2 MODEL_REF_T : int
+=head2 MODEL_REF : int
 
 A model reference compound type.
 
 =cut
 
-sub MODEL_REF_T {
-    return HTML_REF_T() + 1;
+sub MODEL_REF {
+    return HTML_REF() + 1;
 }
 
-=for html <a name="NUMBER_T"></a>
+=for html <a name="NUMBER"></a>
 
-=head2 NUMBER_T : int
+=head2 NUMBER : int
 
 Numeric type.
 
 =cut
 
-sub NUMBER_T {
-    return MODEL_REF_T() + 1;
+sub NUMBER {
+    return MODEL_REF() + 1;
 }
 
-=for html <a name="ROLE_T"></a>
+=for html <a name="ROLE"></a>
 
-=head2 ROLE_T : int
+=head2 ROLE : int
 
 Role type.
 
 =cut
 
-sub ROLE_T {
-    return NUMBER_T() + 1;
+sub ROLE {
+    return NUMBER() + 1;
 }
 
-=for html <a name="STRING_T"></a>
+=for html <a name="STRING"></a>
 
-=head2 STRING_T : int
+=head2 STRING : int
 
 String type.
 
 =cut
 
-sub STRING_T {
-    return ROLE_T() + 1;
+sub STRING {
+    return ROLE() + 1;
 }
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
-my($_BOOLEAN) = Bivio::Biz::FieldDescriptor->new(BOOLEAN_T(), 1);
-my($_DATE) = Bivio::Biz::FieldDescriptor->new(DATE_T(), 10);
-my($_EMAIL) = Bivio::Biz::FieldDescriptor->new(EMAIL_T(), 255);
-my($_EMAIL_REF) = Bivio::Biz::FieldDescriptor->new(EMAIL_REF_T(), -1);
-my($_GENDER) = Bivio::Biz::FieldDescriptor->new(GENDER_T(), 1);
-my($_HTML_REF) = Bivio::Biz::FieldDescriptor->new(HTML_REF_T(), -1);
-my($_MODEL_REF) = Bivio::Biz::FieldDescriptor->new(MODEL_REF_T(), -1);
-my($_NUMBER3) = Bivio::Biz::FieldDescriptor->new(NUMBER_T(), 3);
-my($_NUMBER4) = Bivio::Biz::FieldDescriptor->new(NUMBER_T(), 4);
-my($_NUMBER16) = Bivio::Biz::FieldDescriptor->new(NUMBER_T(), 16);
-my($_ROLE) = Bivio::Biz::FieldDescriptor->new(ROLE_T(), 2);
-my($_STRING32) = Bivio::Biz::FieldDescriptor->new(STRING_T(), 32);
-my($_STRING64) = Bivio::Biz::FieldDescriptor->new(STRING_T(), 64);
-my($_STRING128) = Bivio::Biz::FieldDescriptor->new(STRING_T(), 128);
-my($_STRING256) = Bivio::Biz::FieldDescriptor->new(STRING_T(), 256);
-my($_STRING1024) = Bivio::Biz::FieldDescriptor->new(STRING_T(), 1024);
-
-=head1 INSTANCES
-
-BOOLEAN
-DATE
-EMAIL
-EMAIL_REF
-GENDER
-HTML_REF
-MODEL_REF
-NUMBER3
-NUMBER4
-NUMBER16
-ROLE
-STRING32
-STRING64
-STRING128
-STRING256
-STRING1024
-
-=cut
-
-sub BOOLEAN {
-    return $_BOOLEAN;
-}
-
-sub DATE {
-    return $_DATE;
-}
-
-sub EMAIL {
-    return $_EMAIL;
-}
-
-sub EMAIL_REF {
-    return $_EMAIL_REF;
-}
-
-sub GENDER {
-    return $_GENDER;
-}
-
-sub HTML_REF {
-    return $_HTML_REF;
-}
-
-sub MODEL_REF {
-    return $_MODEL_REF;
-}
-
-sub NUMBER3 {
-    return $_NUMBER3;
-}
-
-sub NUMBER4 {
-    return $_NUMBER4;
-}
-
-sub NUMBER16 {
-    return $_NUMBER16;
-}
-
-sub ROLE {
-    return $_ROLE;
-}
-
-sub STRING32 {
-    return $_STRING32;
-}
-
-sub STRING64 {
-    return $_STRING64;
-}
-
-sub STRING128 {
-    return $_STRING128;
-}
-
-sub STRING256 {
-    return $_STRING256;
-}
-
-sub STRING1024 {
-    return $_STRING1024;
-}
-
+my(%_CACHE);
 
 =head1 FACTORIES
 
 =cut
 
-=for html <a name="new"></a>
+=for html <a name="lookup"></a>
 
-=head2 static new(int type, string name, float length) : Bivio::Biz::FieldDescriptor
+=head2 static lookup(int type, float length) : FieldDescriptor
 
-Creates a new FieldDescriptor with the specified type and length. A negative
-length indicates that the field is compound, or the length is unknown.
+Returns a new or cached FieldDescriptor with the specified type
+and length.
 
 =cut
 
-sub new {
+sub lookup {
     my($proto, $type, $length) = @_;
-    my($self) = &Bivio::UNIVERSAL::new($proto);
-    $self->{$_PACKAGE} = {
-	type => $type,
-	length => $length
-    };
-    return $self;
+    my($cache_key) = $type.'_'.$length;
+    my($result) = $_CACHE{$cache_key};
+
+    if (! $result) {
+	$result = &_new($proto, $type, $length);
+	$_CACHE{$cache_key} = $result;
+    }
+    return $result;
 }
 
 =head1 METHODS
@@ -310,9 +210,9 @@ sub get_length {
     return $fields->{length};
 }
 
-=for html <a name="get_type"></a>
+=for html <a name="getype"></a>
 
-=head2 get_type() : int
+=head2 getype() : int
 
 Returns the field type. See the constants section for possible
 values.
@@ -326,6 +226,22 @@ sub get_type {
 }
 
 #=PRIVATE METHODS
+
+# static _new(int type, string name, float length) : Bivio::Biz::FieldDescriptor
+#
+# Creates a new FieldDescriptor with the specified type and length. A
+# negative length indicates that the field is compound, or the length
+# is unknown.
+
+sub _new {
+    my($proto, $type, $length) = @_;
+    my($self) = &Bivio::UNIVERSAL::new($proto);
+    $self->{$_PACKAGE} = {
+	type => $type,
+	length => $length
+    };
+    return $self;
+}
 
 =head1 COPYRIGHT
 

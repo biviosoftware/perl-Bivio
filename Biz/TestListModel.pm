@@ -100,7 +100,8 @@ Returns the field descriptor for the specified column.
 =cut
 
 sub get_column_descriptor {
-    return Bivio::Biz::FieldDescriptor::NUMBER16();
+    return Bivio::Biz::FieldDescriptor->lookup(
+	    Bivio::Biz::FieldDescriptor::NUMBER(), 16);
 }
 
 =for html <a name="get_column_heading"></a>
