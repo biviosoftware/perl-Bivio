@@ -202,18 +202,6 @@ sub delete {
     die('not supported');
 }
 
-=for html <a name="delete_all"></a>
-
-=head2 delete_all()
-
-Not supported.
-
-=cut
-
-sub delete_all {
-    die('not supported');
-}
-
 =for html <a name="die"></a>
 
 =head2 die(string arg1, ...)
