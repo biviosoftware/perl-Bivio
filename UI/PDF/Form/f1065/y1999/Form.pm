@@ -1,9 +1,9 @@
 # This file was built by buildFormModule.pl
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
-# $Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
+# $Id: Form.pm,v 1.1 2000/03/20 06:21:13 yates Exp $
 package Bivio::UI::PDF::Form::f1065::y1999::Form;
 use strict;
-$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.2 $ =~ /\d+/g);
+$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.1 $ =~ /\d+/g);
 
 =head1 NAME
 
@@ -52,8 +52,8 @@ my($_FIELD_DICTIONARY_REF);
 # Key = object number
 # Value = reference to corresponding indirect object.
 my($_OBJ_DICTIONARY_REF);
-
 my($_INITIALIZED) = 0;
+__PACKAGE__->initialize();
 
 =head1 FACTORIES
 
@@ -147,26 +147,12 @@ sub get_xlator_set_ref {
 
 sub initialize {
     my($proto) = @_;
+    return if $_INITIALIZED;
     ($_BASE_UPDATE_REF, $_XLATOR_SET_REF, $_FIELD_DICTIONARY_REF,
 	   $_OBJ_DICTIONARY_REF)
 	    = $proto->_read_data(\*DATA);
-
     $_INITIALIZED = 1;
-
     return;
-}
-
-=for html <a name="initialized"></a>
-
-=head2 initialized() : 
-
-
-
-=cut
-
-sub initialized {
-    my($proto) = @_;
-    return($_INITIALIZED);
 }
 
 #=PRIVATE METHODS
@@ -177,7 +163,7 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
 
-$Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
+$Id: Form.pm,v 1.1 2000/03/20 06:21:13 yates Exp $
 
 =cut
 
