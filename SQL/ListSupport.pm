@@ -550,7 +550,7 @@ sub _load_list {
 	    # Go back to last page.  Have to restart the select.
 	    $query->put(page_number => $page_number = int(--$i/$count));
 	    _trace('last page=', $page_number, ', retrying') if $_TRACE;
-	    $statement = Bivio::SQL::Connection->execute($$select, $params);
+	    $statement = Bivio::SQL::Connection->execute($select, $params);
 	    redo FIND_START;
 	}
     }
