@@ -39,6 +39,8 @@ The widgets, text, and widget_values which will be rendered as a part of the
 sequence.  The rendered values are unmodified.  If all the values are constant,
 the result of this widget will be constant.
 
+Widget_values can return widgets.
+
 =back
 
 =cut
@@ -128,7 +130,14 @@ sub render {
 	    if (ref($v)) {
 		if (ref($v) eq 'ARRAY') {
 		    $is_constant = 0;
-		    $buf .= $source->get_widget_value(@$v);
+		    $v = $source->get_widget_value(@$v);
+		    if (ref($v)) {
+			# Result of widget_value is a widget
+			$v->render($source, \$buf);
+		    }
+		    else {
+			$buf .= $v;
+		    }
 		}
 		else {
 		    my($s) = '';
