@@ -541,6 +541,7 @@ sub _new {
     _trace($self) if $_TRACE;
     # After trace, so not too verbose
     $self->put(stack => $stack);
+    _print_stack($self) if $_STACK_TRACE;
     return $self;
 }
 
@@ -560,9 +561,7 @@ sub _new_from_core_die {
 	}
     }
 
-    my($self) = _new($proto, $code, $attrs, $package, $file, $line, $stack);
-    _print_stack($self) if $_STACK_TRACE;
-    return $self;
+    return _new($proto, $code, $attrs, $package, $file, $line, $stack);
 }
 
 # _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
