@@ -36,11 +36,11 @@ C<Bivio::UI::PDF::Widget::String>
 
 =over 4
 
-=item font : string (required)
+=item string_font : string (required)
 
 The font resource name.
 
-=item font : array_ref (required)
+=item string_font : array_ref (required)
 
 The widget value font resource name.
 
