@@ -27,10 +27,13 @@ C<get_long_desc> on the L<Bivio::TypeError|Bivio::TypeError>.
 =cut
 
 #=IMPORTS
-use Bivio::HTML;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
-use Bivio::Die;
+use Bivio::HTML;
+use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
+use Bivio::TypeError;
+use Bivio::UI::Text;
 
 #=VARIABLES
 # form_class->field->error returns a scalar ref
@@ -96,26 +99,29 @@ sub to_html {
 
 # _compile() : hash_ref
 #
-# Compiles __DATA__ into a hash map.
+# Compiles the FormError delegate info.
 #
 sub _compile {
     my($map) = {};
-    until (eof(DATA)) {
 
+    my($data) = Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__);
+    my(@lines) = split("\n", $$data);
+
+    while (int(@lines)) {
 	# Read the forms, fields, and errors lists
 	my(@forms, @fields, @errors);
 	foreach my $v (\@forms, \@fields, \@errors) {
-	    @$v = split(' ', scalar(<DATA>));
+	    @$v = split(' ', shift(@lines));
 	    @$v = ('') unless @$v;
-	    die('unexpected eof') if eof(DATA);
+	    die('unexpected eof') unless int(@lines);
 	}
-	die("__DATA__, line $.: no errors") if "@errors" eq "";
+	die('no errors defined') if "@errors" eq "";
 
 	# Read in the text till %%
 	my($text) = '';
 	while (1) {
-	    die('unexpected eof') if eof(DATA);
-	    my($line) = scalar(<DATA>);
+	    die('unexpected eof') unless int(@lines);
+	    my($line) = shift(@lines);
 	    last if $line =~ /^%%/;
 	    $text .= $line;
 	}
@@ -137,7 +143,6 @@ sub _compile {
 	    }
 	}
     }
-    close(DATA);
     return $map;
 }
 
@@ -214,126 +219,3 @@ $Id$
 #
 # See to_html.
 #
-
-__DATA__
-CreateUserForm
-Email.email
-EXISTS
-Another user has registered with this $label. If you share an email with
-someone, you must also share your bivio account.
-%%
-CreateUserForm
-RealmOwner.name
-EXISTS
-Another user has registered with this $label.  You may need to add a qualifier
-such as your zipcode, e.g. ${value}$$.
-%%
-
-
-NULL
-You must supply a value for $label.
-%%
-LoginForm
-RealmOwner.password
-PASSWORD_MISMATCH
-The password you entered does not match the value stored
-in our database.
-Please remember that passwords are case-sensitive, i.e.
-"HELLO" is not the same as "hello".
-%%
-FileUploadForm
-source
-EMPTY
-The file uploaded is empty.  This may be because it doesn't
-exist or because it is really empty.  Select another
-file.  If you really want to create an empty file,
-click "OK" now (you need not supply a value for this field).
-%%
-FileUploadForm
-File.name_sort
-EXISTS
-The name you selected already exists in the folder you have
-selected.  If you really want to replace this file, you
-may do so by clicking "OK" after (reselecting File above).
-%%
-FileUploadForm
-source
-NOT_FOUND
-The file "$value" was not found.  To ensure the file exists,
-you may want to use the Browse button.  Please select another
-file and click OK.
-%%
-
-
-FILE_FIELD_RESET_FOR_SECURITY
-Your browser has reset this file field for security reasons.
-The value sent to us was: $unsafe_value
-%%
-
-
-NO_VALUATION_FOR_DATE
-The date selected cannot be used, because your portfolio is missing
-valuations for unlisted investments.  Either change the date to a day
-when all unlisted investments have been valued or
-@{[_link($source, 'CLUB_ACCOUNTING_LOCAL_VALUE',
-'enter valuations for the date below using this link')]}.
-%%
-
-
-NAME_LIKE_FUND
-The name you entered seems to be a club name.
-First you register yourself with bivio.  The next step
-is to create your own private club space on bivio.
-%%
-
-
-INCORRECT_EXPORT_FILE_NAME
-The file you upload must be named NCADATA.DAT.  We only support
-imports from NAIC Club Accounting software.  If you are trying to
-upload another format, please email the file to customer support
-and we will try to import your data.
-%%
-AddMemberListForm
-RealmOwner.display_name
-EXISTS
-This person is already belongs to your club.
-%%
-AddMemberListForm InviteGuestListForm InviteMemberListForm ResendInviteForm
-RealmInvite.email
-EXISTS
-This person already belongs to your club or
-has already been extended an invite.
-%%
-CreateDirectoryForm
-File.name_sort
-EXISTS
-A folder or file by the name "${value}" already exists.  Please
-select another name or delete the named file or folder before
-continuing.
-%%
-
-
-ACCOUNTING_IMPORT_IN_FILES
-The Files area is not used to Import Club Accounting.  You should
-use @{[_link($source, 'CLUB_LEGACY_UPLOAD')]} located under
-Administration &gt; Tools.  If you don't understand this message,
-please contact customer support.
-%%
-
-
-TRANSACTION_PRIOR_TO_MEMBER_DEPOSIT
-You cannot enter this transaction because no one in your club has
-made any payments prior to the transaction date.
-@{[_link($source, 'CLUB_ACCOUNTING_PAYMENT',
-'Enter member payments using this link')]}.
-%%
-AccountTransactionForm
-ExpenseCategory.expense_category_id
-PRIMARY_ID
-You must select an expense category.
-%%
-RealmAccountForm
-RealmAccount.name
-EXISTS
-An account already exists with that name.
-%%
