@@ -34,6 +34,7 @@ while ($arg = shift) {
 
 check_diskuse();
 check_raid();
+verify_pkgs();
 # Can't check mail queue easily as the cron job always
 # has a pending request...
 # check_mailq();
@@ -270,6 +271,12 @@ sub check_mailq {
     # Just send pending queue for now, will filter once we know better
     my(@q) = `mailq -v| grep -v 'Mail queue is empty'`;
     @q && print "PENDING MAIL QUEUE:\n@q";
+}
+
+sub verify_pkgs {
+# TODO: Should have a way to list all local packages
+    my(@out) = `rpm -y societas html`;
+    @out && print "PACKAGE MODIFICATIONS:\n@out";
 }
 
 sub usage {
