@@ -98,7 +98,12 @@ A value in I<rows> looks like:
     [
        'label',
        'task',
-       $value
+       $value,
+       # Arbitrary attributes
+       {
+           control => ['link_control'],
+           whats_this => 'privileges',
+       }
     ],
 
 If I<task> is true, I<label> will be wrapped in a link.
@@ -135,10 +140,12 @@ sub action_grid {
 	# Label
 	$label = $proto->string(
 		Bivio::UI::Label->get_simple($label));
+	$attrs ||= {};
 	$label = Bivio::UI::HTML::Widget::Link->new({
 	    href => ref($task) eq 'ARRAY' ? $task
             : ['->format_uri', Bivio::Agent::TaskId->from_any($task)],
-	    value => $label
+	    value => $label,
+	    %$attrs,
 	}) if $task;
 	$label->put(cell_align => 'ne');
 
