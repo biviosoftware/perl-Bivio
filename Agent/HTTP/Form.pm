@@ -46,7 +46,7 @@ Bivio::IO::Trace->register;
 my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
 # This is the same as Mail::RFC822::QUOTED_STRING, except
 # we parse out the surrounding quotes.
-my($_QUOTED_STRING) = '"((?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
+#my($_QUOTED_STRING) = '"((?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
 
 =head1 METHODS
 
@@ -261,8 +261,25 @@ sub _parse_header {
 	    # Parse each of the keywords
 	    while ($h =~ s/^;\s*$_TOKEN\s*=\s*//i) {
 		my($attr) = lc($1);
-		if ($h =~ s/^$_QUOTED_STRING\s*//o || $h =~ s/^$_TOKEN\s*//o) {
-		    $field->{$attr} = $1;
+
+		# According to RFC822 all quotes and backslashes must be
+		# escaped (quoted-pair) and other characters can be to.
+		# The following handles what IE and NS do: they don't
+		# escape, so values come through like filename="y".txt"
+		# (the quote after the y should be escaped). We only
+		# unescape backslash and quote, because the browsers pass
+		# \ without escaping and therefore we can't just do
+		# s/\\(.)/$1/g;
+
+		if ($h =~ s/^\"(.+?)\"\s*;\s*/;/o
+			|| $h =~ s/^\"(.+)\"\s*$//o
+			|| $h =~ s/^$_TOKEN\s*//o) {
+		    my($value) = $1;
+
+		    # replace \\ with \ and \" with "
+		    $value =~ s/\\\\/\\/g;
+		    $value =~ s/\\\"/\"/g;
+		    $field->{$attr} = $value;
 		}
 		else {
 		    $req->die('CORRUPT_FORM',
