@@ -118,7 +118,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/members
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::MemberSummaryList
+        Bivio::UI::HTML::Club::MemberList
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_LIST
@@ -344,7 +345,15 @@ my(@_CFG) = (
         CLUB
         MEMBER
         :
-    )]
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_DETAIL
+        40
+        CLUB
+        MEMBER
+        _/accounting/member/detail
+        Bivio::UI::HTML::Club::Embargoed
+    )],
 );
 
 __PACKAGE__->compile(
