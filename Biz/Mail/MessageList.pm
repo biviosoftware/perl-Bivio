@@ -197,7 +197,7 @@ $Id$
 
 1;
 
-=for comment
+=begin comment
 
 use Data::Dumper;
 
@@ -219,6 +219,5 @@ my($list) = Bivio::Biz::Mail::MessageList->new();
 $list->find({});
 
 print(Dumper($list));
-
 
 =cut

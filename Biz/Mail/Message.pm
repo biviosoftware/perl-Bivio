@@ -234,7 +234,7 @@ $Id$
 
 1;
 
-=for comment
+=begin comment
 
 use Data::Dumper;
 
@@ -276,3 +276,4 @@ print(Dumper($mail));
 Bivio::Biz::SqlConnection->get_connection()->commit();
 
 =cut
+
