@@ -93,8 +93,10 @@ sub put {
     my($c);
     foreach $c (@classes) {
 	next if $map->{$c};
-	Bivio::IO::ClassLoader->simple_require($c);
-	$map->{$c} = $c->can('get_instance') ? $c->get_instance : $c->new;
+	my($res) = Bivio::IO::ClassLoader->map_require($c);
+#TODO: Remove caching?
+	$map->{$c} = ref($res) ? $res
+		: $res->can('get_instance') ? $res->get_instance : $res->new;
     }
     return;
 }
