@@ -60,6 +60,24 @@ my($_FILE_CLIENT);
 
 =cut
 
+=for html <a name="copy_club"></a>
+
+=head2 copy_club(Bivio::Biz::Model::RealmOwner source, Bivio::Biz::Model::RealmOwner dest)
+
+Copies an I<source> club's files to I<dest> club.  I<dest> club must
+not exist.
+
+=cut
+
+sub copy_club {
+    my($self, $source, $dest) = @_;
+    my($res);
+    my($s) = $source->get('name');
+    my($d) = $dest->get('name');
+    $_FILE_CLIENT->copy($s, $d, \$res) || die("copy $s $d: $res");
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::Model::RealmOwner realm_owner, Bivio::Biz::Model::Club club)
