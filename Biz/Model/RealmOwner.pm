@@ -788,6 +788,25 @@ sub unauth_load_by_email {
     return $self->unauth_load(@query, name => $name);
 }
 
+=for html <a name="unauth_load_by_id_or_name_or_die"></a>
+
+=head2 unauth_load_by_id_or_name_or_die(string id_or_name) : Bivio::Biz::Model::RealmOwner
+
+=head2 unauth_load_by_id_or_name_or_die(string id_or_name, any realm_type) : Bivio::Biz::Model::RealmOwner
+
+Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
+
+=cut
+
+sub unauth_load_by_id_or_name_or_die {
+    my($self, $id_or_name, $realm_type) = @_;
+    return $self->unauth_load_or_die(
+	    ($id_or_name =~ /^\d+$/ ? 'realm_id' : 'name') => $id_or_name,
+	    $realm_type
+	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
+	    : ());
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
