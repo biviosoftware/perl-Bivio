@@ -52,6 +52,11 @@ The value to be passed to the C<TARGET> attribute of C<A> tag.
 
 How wide is the field represented.
 
+=item search_use_this_task : boolean [0] (inherited)
+
+Task to use for searching.  By default, searches CLUB_SEARCH
+and GENERAL_SEARCH.
+
 =back
 
 =cut
@@ -94,13 +99,16 @@ sub render {
     my($fp, $fs) = Bivio::UI::Font->format_html('search_field', $req);
     my($bp, $bs) = Bivio::UI::Font->format_html('form_submit', $req);
     # search list might not be loaded
+#TODO: Make this more general so can be using any search list
     my($list) = $req->unsafe_get('Bivio::Biz::Model::SearchList');
     $$buffer .= '<form method=get action="'
 	    .$req->format_stateless_uri(
-		    $req->get('auth_realm')->get('type')
-		        == Bivio::Auth::RealmType::CLUB()
-		    ? Bivio::Agent::TaskId::CLUB_SEARCH()
-		    : Bivio::Agent::TaskId::GENERAL_SEARCH())
+		    $self->ancestral_get('search_use_this_task', 0)
+		    ? undef
+		    : $req->get('auth_realm')->get('type')
+		        == Bivio::Auth::RealmType->CLUB
+		        ? Bivio::Agent::TaskId->CLUB_SEARCH
+		        : Bivio::Agent::TaskId->GENERAL_SEARCH)
             .'"'
 	    .$_VS->vs_link_target_as_html($self).'>'
 	    .$fp.'<input type=text size='.$self->get('size')
