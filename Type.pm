@@ -15,8 +15,14 @@ Bivio::Type - base class for all types
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Type::ISA = qw(Bivio::UNIVERSAL);
+=head1 EXTENDS
+
+L<Bivio::UI::WidgetValueSource>
+
+=cut
+
+use Bivio::UI::WidgetValueSource;
+@Bivio::Type::ISA = ('Bivio::UI::WidgetValueSource');
 
 =head1 DESCRIPTION
 
@@ -31,6 +37,33 @@ use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 
 #=VARIABLES
+
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance(any type) : Bivio::Type
+
+Returns an instance of I<type>.  I<type> may be just the simple name or a fully
+qualified class name.  It will be loaded with
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> using the I<Type> map.
+
+The "instance" returned may a fully-qualified class, since instances and
+classes are equivalent in perl.
+
+=cut
+
+sub get_instance {
+    my($self, $type) = @_;
+    $type = Bivio::IO::ClassLoader->map_require('Type', $type)
+	    unless ref($type);
+    Bivio::IO::Alert->bootstrap_die($type, ': not a Bivio::Type')
+		unless UNIVERSAL::isa($type, 'Bivio::Type');
+    return $type;
+}
 
 =head1 METHODS
 
@@ -201,24 +234,6 @@ Number of digits to the right of the decimal point.
 
 sub get_decimals {
     return undef;
-}
-
-=for html <a name="get_instance"></a>
-
-=head2 static get_instance(any type) : Bivio::Type
-
-Returns an instance for I<type>.  This may be a class name.
-Will look up names in C<Bivio::Type::> if I<type> is not a reference.
-
-=cut
-
-sub get_instance {
-    my($self, $type) = @_;
-    $type = Bivio::IO::ClassLoader->map_require('Type', $type)
-	    unless ref($type);
-    Bivio::IO::Alert->die($type, ': not a Bivio::Type')
-		unless UNIVERSAL::isa($type, 'Bivio::Type');
-    return $type;
 }
 
 =for html <a name="get_max"></a>
