@@ -57,6 +57,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     adm
     admin
     administrator
+    adventor
     advoco
     amanda
     amicus
@@ -70,6 +71,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     dump
     dumper
     email
+    endo
     ftp
     games
     gopher
