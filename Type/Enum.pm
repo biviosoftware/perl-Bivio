@@ -674,7 +674,8 @@ Return the integer representation of I<value>
 
 sub to_literal {
     my($proto, $value) = @_;
-    return undef unless defined($value);
+    return shift->SUPER::to_literal(@_)
+	unless defined($value);
     return _get_info($proto, $value)->[0];
 }
 

@@ -81,7 +81,7 @@ B<Avoid use of this routine as the results may be large.>
 
 sub to_literal {
     my($proto, $value) = @_;
-    return ref($value) ? $$value : '';
+    return ref($value) && defined($$value) ? $$value : '';
 }
 
 =for html <a name="to_query"></a>

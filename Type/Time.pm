@@ -152,7 +152,8 @@ undef, always a string.
 
 sub to_literal {
     my($proto, $value) = @_;
-    return '' unless defined($value);
+    return $proto->SUPER::to_literal(@_)
+	unless defined($value);
     my($s, $m, $h) = $proto->to_parts($value);
     return sprintf('%02d:%02d:%02d', $h, $m, $s);
 }

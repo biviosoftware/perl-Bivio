@@ -324,7 +324,8 @@ Converts from internal form to a literal string value.
 
 sub to_literal {
     my(undef, $value) = @_;
-    return undef unless defined($value);
+    return shift->SUPER::to_literal(@_)
+	unless defined($value);
 
     # remove leading '+', replace '.1', '-.1' with '0.1', '-0.1' respectively
     $value =~ s/^\+//;

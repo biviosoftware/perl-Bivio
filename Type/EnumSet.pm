@@ -231,6 +231,9 @@ Same as L<to_sql_param|"to_sql_param">.
 =cut
 
 sub to_literal {
+    my(undef, $value) = @_;
+    return shift->SUPER::to_literal(@_)
+	unless defined($value);
     return shift->to_sql_param(@_);
 }
 
