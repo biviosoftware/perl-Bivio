@@ -72,7 +72,7 @@ use Bivio::UI::Color;
 #=VARIABLES
 # Format:
 #   name => [face, color, size/style(s)]
-my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
+my($_SANS_SERIF) = 'verdana,arial,sans-serif';
 _compile([
     PAGE_HEADING => [$_SANS_SERIF, 'page_heading', 'strong'],
     TASK_LIST_HEADING => [undef, 'task_list_heading', 'strong'],
