@@ -402,9 +402,19 @@ sub _format_field {
 	if ref($value);
     return ''
 	unless defined($value);
+    if ($field->{options}) {
+	# Radio or Select: Allows the user to set value directly instead
+	# of matching label
+	foreach my $k (keys(%{$field->{options}})) {
+	    next unless $k eq $value;
+	    $value = $field->{options}->{$k}->{value};
+	    _trace($k, ': mapped to ', $value) if $_TRACE;
+	    last;
+	}
+    }
     return defined($field->{name}) && length($field->{name})
 	? Bivio::HTML->escape_query($field->{name}) . '='
-	   . (defined($value) ? Bivio::HTML->escape_query($value) : '') . '&'
+	   . Bivio::HTML->escape_query($value) . '&'
         : '';
 }
 
