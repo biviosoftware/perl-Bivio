@@ -191,3 +191,11 @@ such as your zipcode, e.g. ${value}12345.
 NULL
 You must supply a value for $label.
 %%
+LoginForm
+RealmOwner.password
+PASSWORD_MISMATCH
+The password you entered does not match the value stored
+in our database.
+Please remember that passwords are case-sensitive, i.e.
+"HELLO" is not the same as "hello".
+%%
