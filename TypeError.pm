@@ -849,6 +849,11 @@ __PACKAGE__->compile(
 	undef,
 	'the user has already withdrawn from the club',
     ],
+    ILLEGAL_FOREIGN_TAX_DISTRIBUTION => [
+	114,
+	undef,
+	'foreign taxes may only be associated with dividend distributions',
+    ],
 );
 
 #=PRIVATE METHODS
