@@ -433,24 +433,32 @@ sub initialize {
 
 =head2 static prepare_to_render(Bivio::Agent::Request req)
 
+=head2 static prepare_to_render(Bivio::Agent::Request req, Bivio::UI::FacadeChildType child_type)
+
 Called before rendering to lookup the user preference
-I<facade_child_type> and set on the request.
+I<facade_child_type> if not passed and set on the request.
 
 =cut
 
 sub prepare_to_render {
-    my(undef, $req) = @_;
+    my(undef, $req, $type) = @_;
     my($self) = $req->get('facade');
     my($children) = $self->unsafe_get('children');
 
     # No children?  If already a child, then got an error during
     # rendering or server_redirect(?) and we should just stay in the
     # same facade.
-    return unless $children && %$children;
+    unless ($children && %$children) {
+	_trace($self, ': no children') if $_TRACE;
+	return;
+    }
 
-    # No child of this type (could be default case)?
-    my($type) = $req->get_user_pref('facade_child_type');
-    return unless $children->{$type};
+    # If there is no child of this type, default case
+    $type ||= $req->get_user_pref('facade_child_type');
+    unless ($children->{$type}) {
+	_trace($self, ': ', $type, ': no such child') if $_TRACE;
+	return;
+    }
 
     _setup_request($children->{$type}, $req);
     return;
