@@ -54,7 +54,7 @@ my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
 
 =for html <a name="parse"></a>
 
-=head2 parse(Bivio::Agent::Request req)
+=head2 parse(Bivio::Agent::Request req) : hash_ref
 
 Parses the input form.  Handles file fields.
 
@@ -78,7 +78,11 @@ sub parse {
 	    # here if the data isn't properly formatted.  Returns a
 	    # odd number of elements in the hash.  Could fix it, but
 	    # no sense slinging the data around.
-	    return {$r->content()};
+            my($form) = {$r->content()};
+            $req->throw_die('CLIENT_ERROR',
+                    'client interrupt or timeout while reading form-data')
+                    if $r->connection->aborted();
+            return $form;
 	}
 	elsif ($ct =~ /^\s*multipart\/form-data/i) {
 	    return _parse($req, $r);
