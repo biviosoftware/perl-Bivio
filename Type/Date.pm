@@ -204,6 +204,21 @@ sub to_literal {
     return sprintf('%02d/%02d/%04d', $m, $d, $y);
 }
 
+=for html <a name="to_local_date"></a>
+
+=head2 to_local_date(string date_time) : string
+
+Converts a date time to the appropriate date boundary.
+
+=cut
+
+sub to_local_date {
+    my(undef, $date_time) = @_;
+    my($date, undef) = split(' ', $date_time);
+#TODO: need to figure out which date using locale
+    return $date.' '.Bivio::Type::DateTime::DEFAULT_TIME();
+}
+
 =for html <a name="to_sql_param"></a>
 
 =head2 to_sql_param(string param_value) : string
