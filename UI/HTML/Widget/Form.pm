@@ -47,6 +47,10 @@ the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
+=item action : Bivio::Agent::TaskId [$req->format_uri]
+
+Task to format_stateless_uri.
+
 =item action : array_ref [$req->format_uri]
 
 Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
@@ -54,9 +58,16 @@ used as the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
-=item end_tag : boolean [1]
+=item cell_end_form : boolean [0]
 
-Renders the C<FORM> end tag if true.
+Same value as L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
+Used to set default for I<end_tag>.
+
+=item end_tag : boolean [see below]
+
+Renders the C<FORM> end tag if true.  Default is true unless
+I<cell_end_form> is true iwc is set to false.  See
+L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
 =item form_class : Bivio::Biz::FormModel (inherited, get_request)
 
@@ -176,6 +187,7 @@ sub initialize {
     my($action) = $self->unsafe_get('action');
     $p .= ' action="';
     if (ref($action)) {
+	# Task or widget value
 	$fields->{action} = $action;
     }
     elsif (defined($action)) {
@@ -185,7 +197,9 @@ sub initialize {
 	$fields->{action} = 1;
     }
     $fields->{prefix} = $p;
-    $fields->{end_tag} = $self->get_or_default('end_tag', 1);
+    $fields->{end_tag} = $self->get_or_default('end_tag',
+	    $self->get_or_default('cell_end_form', 0)
+	    ? 0 : 1);
 
     # Initialize renderer
     $fields->{value} = $self->get('value');
@@ -214,10 +228,12 @@ sub render {
     # Action (if not static)
     my($action) = $fields->{action};
     if ($action) {
-	# If there is an action, get it.  Otherwise, the action is
-	# this current task's action.
-	$action = ref($action)
-		? $source->get_widget_value(@$action) : $req->format_uri();
+	# If there is an action, get it or format the task.
+	# Otherwise, the action is this current task's action.
+	$action = ref($action) eq 'ARRAY'
+		? $source->get_widget_value(@$action)
+			: ref($action) ? $req->format_stateless_uri($action)
+				: $req->format_uri();
 #TODO: Tightly Coupled with FormModel & Location.  Do not propagate form
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
