@@ -416,7 +416,8 @@ sub _compile_assert_even {
 sub _compile_case {
     my($state, $tests, $params, $expect) = @_;
     $state->{case_num}++;
-    _compile_assert_array($params, $state);
+    _compile_die($state, 'params must be array_ref or CODE')
+	unless ref($params) =~ /^(ARRAY|CODE)$/;
     _compile_die($state, "expected result must be undef, array_ref, "
 	." CODE, or Bivio::DieCode")
 	unless !defined($expect) || ref($expect)
@@ -559,8 +560,7 @@ sub _eval {
     foreach my $test (@$tests) {
 	$c++;
 	my($actual);
-	$test->{params} = _eval_custom($test, 'compute_params', [], \$err)
-	    if $test->{compute_params};
+	$test->{params} = _eval_params($test, [], \$err);
 	next if $err;
 	my($die) = Bivio::Die->catch(sub {
 	    my($method) = $test->{method};
@@ -606,7 +606,7 @@ sub _eval_custom {
 	$$err = "Error in custom $which: ".$die->as_string;
 	return undef;
     }
-    if ($which eq 'compute_params' && defined($res)
+    if ($which =~ /params/ && defined($res)
 	&& !(ref($res) || ref($res) eq 'ARRAY'
 	    || UNIVERSAL::isa($res, 'Bivio::DieCode'))) {
 	$$err = 'custom compute_params did not return an array_ref: '
@@ -655,6 +655,19 @@ sub _eval_equal {
 
     # CODE, GLOB, Regex, and blessed references should always be equal exactly
     return $expect eq $actual ? 1 : 0;
+}
+
+# _eval_params(hash_ref test, string_ref err) : array_ref
+#
+# Returns params.
+#
+sub _eval_params {
+    my($test, $err) = @_;
+    return _eval_custom($test, 'params', [], $err)
+	if ref($test->{params}) eq 'CODE';
+    return _eval_custom($test, 'compute_params', [], $err)
+	if $test->{compute_params};
+    return $test->{params};
 }
 
 # _eval_result(hash_ref test, any actual) : string
