@@ -74,11 +74,12 @@ sub parse {
     my($ct) = $r->header_in('Content-Type');
     if (defined($ct)) {
 	if ($ct =~ /^\s*application\/x-www-form-urlencoded/i) {
-	    # Let Apache do the parsing for us.  There is a bug
-	    # here if the data isn't properly formatted.  Returns a
-	    # odd number of elements in the hash.  Could fix it, but
-	    # no sense slinging the data around.
-            my($form) = {$r->content()};
+	    # Let Apache do the parsing for us.  We protect against
+	    # "Odd number of elements" in form here.  The push fixes
+	    # that problem.  Users sometimes hack forms.
+	    my(@form) = $r->content();
+	    push(@form, '') if int(@form) % 2;
+            my($form) = {@form};
             $req->throw_die('CLIENT_ERROR',
                     'client interrupt or timeout while reading form-data')
                     if $r->connection->aborted();
