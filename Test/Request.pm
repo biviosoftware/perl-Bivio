@@ -132,6 +132,7 @@ any messages queued by the request.
 
 sub execute_task {
     my($self) = shift->initialize_fully(@_);
+    $self->capture_mail;
     $self->get('task')->execute($self);
     my($o) = $self->get('reply')->get_output;
     return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
