@@ -384,6 +384,7 @@ sub clear_nondurable_state {
     my($self) = @_;
     # This is a hack for now
     $self->delete(grep(/Bivio::Biz::/, @{$self->get_keys}));
+    $self->delete(grep(/Bivio::Societas::Biz::/, @{$self->get_keys}));
     return;
 }
 
