@@ -213,8 +213,11 @@ _compile(
     CLUB_ADMIN_MEMBER_DELETE => ['Member Delete'],
     CLUB_ADMIN_TOOLS => ['Administrative Tools'],
     CLUB_ADMIN_USER_LIST => ['Roster'],
+    CLUB_ADMIN_PUBLIC => ['Allow Public Access'],
+    CLUB_ADMIN_PRIVATE => ['Close Public Access'],
     CLUB_COMMUNICATIONS_FILE_READ => ['Files'],
     CLUB_COMMUNICATIONS_MESSAGE_LIST => ['Mail'],
+    CLUB_COMMUNICATIONS_MAIL_LIST => ['Mail'],
     CLUB_CREATE => ['Create Club Site'],
     CLUB_HOME => ['Club Site'],
     CLUB_ADMIN_SHADOW_MEMBER_INVITE => ['Bring Members Online'],
@@ -233,11 +236,25 @@ _compile(
 
     # MAIL
     MAIL_FROM => ['From'],
+    MAIL_FROM_NAME => ['From'],
     MAIL_TO => ['To'],
     MAIL_CC => ['Cc'],
     MAIL_SUBJECT => ['Subject'],
+    MAIL_DATE => ['Date'],
+    MAIL_DATE_TIME => ['Date'],
     MAIL_TEXT => ['Text'],
     MAIL_ATT => ['Attach'],
+    MAIL_BYTES => ['Size'],
+    MAIL_DELETE => ['Delete'],
+    MAIL_IS_PUBLIC => ['Public', undef, 'Mail.is_public'],
+    MAIL_APPLY => ['Apply Changes'],
+
+    # FILES
+    FILE_NAME => ['Name'],
+    FILE_OWNER => ['Owner'],
+    FILE_LAST_MODIFIED => ['Last Modified'],
+    FILE_ACTION => ['Action'],
+    FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
@@ -353,6 +370,22 @@ You can use any part of the label to do the lookup.
 sub get_simple {
     my($proto, $value) = @_;
     return $proto->from_any($value)->get_short_desc;
+}
+
+=for html <a name="unsafe_get_simple"></a>
+
+=head2 unsafe_get_simple(any value) : string
+
+Returns the "simple" name we use for this label.
+You can use any part of the label to do the lookup.
+Returns undef if label not found.
+
+=cut
+
+sub unsafe_get_simple {
+    my($proto, $value) = @_;
+    my($label) = $proto->unsafe_from_any($value);
+    return defined($label) ? $label->get_short_desc : undef;
 }
 
 #=PRIVATE METHODS
