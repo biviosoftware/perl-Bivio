@@ -124,7 +124,7 @@ sub main {
     if ($execute) {
         -f 'httpd.pid' && (kill('TERM', `cat httpd.pid`), sleep(5));
 	CORE::system(
-	    'rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
+	    'rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem modules');
 	&symlink('.', 'logs');
 	# Need for RH7.1, can ignore otherwise
 	&symlink('/etc/httpd/modules', 'modules');
