@@ -25,7 +25,13 @@ L<MIME::Parser>
 
 =cut
 
-use MIME::Parser ();
+# This avoids warning messages when MIME::Parser initializes.
+# The related Mail::Field class doesn't initialize nicely, and issues
+# warnings which shouldn't be caught by Bivio::IO::Alert.
+eval q{{
+   local($SIG{__WARN__});
+   use MIME::Parser ();
+}};
 @Bivio::Ext::MIMEParser::ISA = ('MIME::Parser');
 
 =head1 DESCRIPTION

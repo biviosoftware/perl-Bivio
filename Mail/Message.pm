@@ -38,7 +38,7 @@ use Bivio::IO::Trace;
 use Bivio::Mail::Address;
 use Bivio::Mail::RFC822;
 use Bivio::Type::DateTime;
-use MIME::Parser ();
+use Bivio::Ext::MIMEParser;
 use Time::Local ();
 
 #=VARIABLES
