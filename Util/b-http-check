@@ -114,7 +114,7 @@ sub _check_error_log {
         # Find first message within the given time interval
         unless ($in_interval) {
             # [Tue Jul 25 23:59:02 2000]
-            /^\[\w+ (\w+) (\d+) (\d+):(\d+):(\d+) (\d+)\]/ &&
+            /^\[\w+ (\w+)\s+(\d+) (\d+):(\d+):(\d+) (\d+)\]/ &&
                     (($mon, $d, $h, $m, $s, $y) =
                             ($_MONTH{$1}, $2, $3, $4, $5, $6));
             # 2000/07/25 23:59:12 or [29441]2000/07/25 23:59:12
