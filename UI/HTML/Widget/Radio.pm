@@ -124,21 +124,24 @@ sub render {
     # first render initialization
     unless ($fields->{initialized}) {
 	$fields->{initialized} = 1;
-	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
+#	my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'
 		.$value->to_html($value)
 		."\""
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
-		.">&nbsp;"
-		.$p. Bivio::HTML->escape($self->get('label')).$s;
+		.">&nbsp;";
+#		.$p. Bivio::HTML->escape($self->get('label')).$s;
     }
+
+    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
 
     $$buffer .= $fields->{prefix}
 	    .$form->get_field_name_for_html($field)
 #TODO: is_equal?
 	    .($value eq $form->get($field) ? ' checked' : '')
-	    .$fields->{suffix};
+	    .$fields->{suffix}
+	    .$p.Bivio::HTML->escape($self->get('label')).$s;
     return;
 }
 
