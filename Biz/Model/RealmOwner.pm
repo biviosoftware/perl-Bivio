@@ -76,6 +76,22 @@ sub get_instruments_info {
     return $result;
 }
 
+=for html <a name="get_unit_value"></a>
+
+=head2 get_unit_value(Bivio::Type::DateTime  date) : string
+
+Returns the unit value for the realm on the specified date.
+
+=cut
+
+sub get_unit_value {
+    my($self, $date) = @_;
+
+#TODO: use Math::BigInt
+    my($units) = $self->get_units($date);
+    return $units > 0 ? ($self->get_value($date) / $units) : 0;
+}
+
 =for html <a name="get_units"></a>
 
 =head2 get_units(Bivio::Type::DateTime date) : string
@@ -107,6 +123,7 @@ Returns the realm's value on the specified date.
 sub get_value {
     my($self, $date) = @_;
 
+#TODO: investigating caching this value in the request
     my($value) = $self->get_tax_basis(Bivio::Type::EntryClass->CASH, $date);
 
     my($instruments) = $self->get_instruments_info();
