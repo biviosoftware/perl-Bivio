@@ -1236,12 +1236,20 @@ sub warn {
 #
 sub _form_for_warning {
     my($self) = @_;
-    my($form) = $self->unsafe_get('form');
-    return undef unless $form;
-    my($form_model) = $self->unsafe_get('form_model');
-    return '<secure data>' if $form_model
-	    && $form_model->get_info('has_secure_data');
-    return $form;
+    my($form, $form_model) = $self->unsafe_get(qw(form form_model));
+    return $form unless $form && $form_model
+        && $form_model->get_info('has_secure_data');
+    my($result) = {%$form};
+
+    foreach my $field (@{$form_model->get_keys}) {
+        next unless $form_model->has_fields($field);
+        next unless $form_model->get_field_type($field)->is_secure_data;
+        # hide the secure data from the logs if defined
+        my($html_name) = $form_model->get_field_name_for_html($field);
+        $result->{$html_name} = '<secure data>'
+            if defined($result->{$html_name});
+    }
+    return $result;
 }
 
 # _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
