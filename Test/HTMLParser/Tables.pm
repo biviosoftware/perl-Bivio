@@ -108,6 +108,29 @@ $_ = <<'}'; # emacs
 sub do_rows_callback {
 }
 
+=for html <a name="find_row"></a>
+
+=head2 find_row(string column_name, string column_value) : int
+
+Return the index of the the row where the value in column column_name matches
+column_value. Return undef if now matching row is found.
+
+=cut
+
+sub find_row {
+    my($self, $column_name, $column_value) = @_;
+
+    my($found_row);
+    $self->do_rows($column_name,
+	sub {
+	    my($row, $index) = @_;
+	    $found_row = $row
+		if $row->{$column_name} eq $column_value;
+	    return !defined($found_row);
+	});
+    return $found_row;
+}
+
 =for html <a name="get_by_headings"></a>
 
 =head2 get_by_headings(string name, ...) : hash_ref
