@@ -41,7 +41,7 @@ use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_REALM_ID_KEY) = 't';
-my($_PASSWORD_KEY) = 'p';
+my($_PASSWORD_KEY) = 'x';
 
 =head1 METHODS
 
