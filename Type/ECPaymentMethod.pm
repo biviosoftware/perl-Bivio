@@ -49,7 +49,7 @@ __PACKAGE__->compile([
 	1,
         'Credit Card',
     ],
-    CHECK => [
+    BANK_CHECK => [
 	2,
         'Check',
     ],
