@@ -35,13 +35,35 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 
 =over 4
 
+=item auth_id : array_ref (required)
+
+A field or field identity which must be equal to
+request's I<auth_id> attribute.
+
 =item hidden : array_ref
 
 List of columns which are to be sent to and returned from the user, unmodified.
 
+=item other : array_ref
+
+A list of fields and field identities.  These are not output
+with the form.  They are used for internal communication between
+the form and the UI.
+
+=item primary_key : array_ref (required)
+
+The list of fields and field identities that uniquely identifies a
+form.
+
 =item require_context : boolean
 
 True if the form expects to have context when operating.
+
+=item version : int
+
+The version of this particular combination of fields.  It will be
+set in all outgoing forms.  It should be changed whenever the
+declaration changes.  It is used to reject an out-of-date form.
 
 =item visible : array_ref
 
@@ -109,32 +131,6 @@ property model field with this field.
 
 The types of the property fields will be extracted from the property
 models corresponding to the table names unless overridden
-
-The categories:
-
-=over 4
-
-=item auth_id : array_ref (required)
-
-A field or field identity which must be equal to
-request's I<auth_id> attribute.
-
-=item other : array_ref
-
-A list of fields and field identities.
-
-=item primary_key : array_ref (required)
-
-The list of fields and field identities that uniquely identifies a
-form.
-
-=item version : int
-
-The version of this particular combination of fields.  It will be
-set in all outgoing forms.  It should be changed whenever the
-declaration changes.  It is used to reject an out-of-date form.
-
-=back
 
 =cut
 
