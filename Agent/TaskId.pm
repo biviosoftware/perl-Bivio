@@ -474,6 +474,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/detail/buy
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmValuationAccountList
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -484,10 +486,12 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/sell
-        Bivio::Biz::Model::InstrumentSellForm
+        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::InstrumentSellForm
         Bivio::UI::HTML::Club::InstrumentSell
-        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+        next=CLUB_ACCOUNTING_INVESTMENT_SELL2
+        cancel=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_VALUATION
@@ -775,6 +779,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/buy
+        Bivio::Biz::Model::RealmValuationAccountList
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -789,6 +794,18 @@ my(@_CFG) = (
 	Bivio::UI::HTML::General::SubstituteUser
         next=USER_HOME
         cancel=HTTP_DOCUMENT
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_SELL2
+        83
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/sell2
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrumentLotList
+        Bivio::Biz::Model::InstrumentSellForm2
+        Bivio::UI::HTML::Club::InstrumentSell2
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
        );
 
