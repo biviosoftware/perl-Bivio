@@ -33,7 +33,7 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
-=item align : string [CENTER]
+=item align : string []
 
 How to align the table.  The allowed (case
 insensitive) values are defined in
@@ -297,9 +297,10 @@ sub initialize {
 	$fields->{empty_list_widget}->initialize;
     }
 
-    $fields->{table_prefix} = "\n<table border=0 cellspacing=0 cellpadding=5 "
-	    ."align=".Bivio::UI::Align->as_html(
-		    $self->get_or_default('align', 'center')).'>';
+    my($prefix) = "\n<table border=0 cellspacing=0 cellpadding=5";
+    $prefix .= Bivio::UI::Align->as_html($self->get('align'))
+	    if $self->has_keys('align');
+    $fields->{table_prefix} = $prefix.'>';
     return;
 }
 
