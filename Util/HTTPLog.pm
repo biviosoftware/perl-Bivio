@@ -249,7 +249,7 @@ sub _initialize {
 	    'HTTP::Form::parse.*unknown form Content-Type: <undef>',
 	    "::warn:.*income statement doesn't match schedule d",
 	    '::warn:\d+ large audit, \d+ entries',
-	    'Util::daily:\d+ Created /home/account_sync',
+	    'Util::daily:\d+ Creat(?:ed|ing) /home/account_sync',
 	    '::UPDATE_COLLISION: list_attrs=>',
 	   );
     # Value is sent to the pager if error_count is exceeded
