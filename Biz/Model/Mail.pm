@@ -406,13 +406,14 @@ sub _walk_attachment_tree {
             # Re-parse this part as a separate mail message
             my($content) = $entity->bodyhandle->as_string;
             my($msg) = Bivio::Mail::Message->new(\$content);
-            $msg->get_entity->head->unfold;
+            $entity = $msg->get_entity;
+            $entity->head->unfold;
             # Handle the header as a separate part
             my($header) = MIME::Entity->build(Type => 'message/header',
-                    Data => $msg->get_entity->header_as_string);
+                    Data => $entity->header_as_string);
             # Replace original header because we stored it separately already
-            $msg->get_entity->head(MIME::Head->new());
-            $msg->get_entity->head->replace('Content-Type', $msg->get_entity->mime_type);
+            $entity->head(MIME::Head->new());
+            $entity->head->replace('Content-Type', $entity->mime_type);
             @parts = ( $header, $msg->get_entity);
         }
         my($i);
@@ -431,6 +432,8 @@ sub _walk_attachment_tree {
         if( Bivio::MIME::TextToHTML->can_convert($ct) ) {
             my($tohtml) = Bivio::MIME::TextToHTML->new;
             $tohtml->convert($entity, $self->MAIL_CID_PART_URL);
+            # Reload content-type now that we might have converted the format
+            $ct = $entity->mime_type;
         }
         # Append the given index or its content-id to the filename
         if(my($cid) = $entity->head->get('Content-ID')) {
