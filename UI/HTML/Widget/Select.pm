@@ -45,10 +45,16 @@ Which form are we dealing with.
 
 List of choices will be constructed from the Enum's values.
 
-=item choices : string (required)
+=item choices : Bivio::TypeValue (required)
 
-Name of the Bivio::Biz::ListModel returned from source->get_widget_value().
-The values are looked up dynamically during render.
+List of choices will be constructed from a
+L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
+L<Bivio::Type::EnumSet|Bivio::Type::EnumSet>.
+
+=item choices : array_ref (required)
+
+Widget value which returns
+L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.
 
 =item list_display_field : string (required if 'choices' is a list)
 
@@ -111,13 +117,23 @@ sub initialize {
     $fields->{field} = $self->get('field');
 
     my($choices) = $self->get('choices');
-    if ($choices->isa('Bivio::Type::Enum')) {
+    $fields->{list_source} = undef;
+    if (UNIVERSAL::isa($choices, 'Bivio::Type::Enum')) {
 	_load_items_from_enum($self, $choices);
-	$fields->{list_source} = 0;
+    }
+    elsif (!ref($choices)) {
+	Carp::croak($choices, ': unknown choices type');
+    }
+    elsif (ref($choices) eq 'ARRAY') {
+	# load it dynamically during render
+	$fields->{list_source} = $choices;
+    }
+    elsif ($choices->isa('Bivio::TypeValue')
+	   && $choices->get('type')->isa('Bivio::Type::EnumSet')) {
+	_load_items_from_enum_set($self, $choices);
     }
     else {
-	$fields->{list_source} = 1;
-	# load it dynamically during render
+	Carp::croak(ref($choices), ': unknown choices type');
     }
     return;
 }
@@ -164,21 +180,32 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _load_items_from_enum(Bivio::Type::Enum enum)
+# _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum enum)
 #
 # Loads items from the enum choices attribute. Enum values are static
 # so this is called during initialize.
 #
 sub _load_items_from_enum {
     my($self, $enum) = @_;
+    return _load_items_from_enum_list($self, [$enum->get_list]);
+}
+
+# _load_items_from_enum_list(Bivio::UI::HTML::Widget::Select self, array_ref list)
+#
+# Creates "items" from "list" of enum values.  Helper to _load_items_from_enum
+# and _load_items_from_enum_set.
+#
+sub _load_items_from_enum_list {
+    my($self, $list) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # Sort
     my(@values) = sort {
 	# Always put "0" (unknown) first.
 	return -1 if $a->as_int == 0;
 	return 1 if $b->as_int == 0;
 	$a->get_name cmp $b->get_name
-    } $enum->get_list;
+    } @$list;
 
     # id, display pairs
     my(@items);
@@ -186,12 +213,27 @@ sub _load_items_from_enum {
 	push(@items, $item->as_int,
 		Bivio::Util::escape_html($item->get_short_desc));
     }
-    $fields->{items} = \@items;
 
+    # Result
+    $fields->{items} = \@items;
     return;
 }
 
-# _load_items_from_list(any source)
+# _load_items_from_enum_set(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+#
+# Loads items from the enum set choices attribute. EnumSet values are static
+# so this is called during initialize.
+#
+sub _load_items_from_enum_set {
+    my($self, $choices) = @_;
+    my($type, $value) = $choices->get('type', 'value');
+    my(@choices) = map {
+	$type->is_set($value, $_) ? ($_) : ();
+    } $type->get_enum_type->get_list;
+    return _load_items_from_enum_list($self, \@choices);
+}
+
+# _load_items_from_list(Bivio::UI::HTML::Widget::Select self, any source)
 #
 # Loads items from the list choices attribute. List values are
 # dynamic so this is called during render.
@@ -200,7 +242,7 @@ sub _load_items_from_list {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($list) = $source->get_widget_value($self->get('choices'));
+    my($list) = $source->get_widget_value(@{$fields->{list_source}});
     my($display_name) = $self->get('list_display_field');
     my($id_name) = $self->get('list_id_field');
 
