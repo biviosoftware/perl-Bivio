@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Widget::PercentCell;
 use strict;
 $Bivio::UI::HTML::Widget::PercentCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::PercentCell::VERSION;
 
 =head1 NAME
 
@@ -98,6 +99,25 @@ sub initialize {
 	    unless defined($self->unsafe_get('string_font'));
     $fields->{initialized} = 1;
     return $self->SUPER::initialize(@_);
+}
+
+=for html <a name="render"></a>
+
+=head2 render(any source, string_ref buffer)
+
+Draws the percent on the buffer.
+
+=cut
+
+sub render {
+    my($self, $source, $buffer) = @_;
+
+    # avoid rendering sign with "-0.0%"
+    my($str) = '';
+    $self->SUPER::render($source, \$str);
+    $str =~ s/\-(0\.0+\%)/$1/;
+    $$buffer .= $str;
+    return;
 }
 
 #=PRIVATE METHODS
