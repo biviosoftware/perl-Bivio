@@ -152,7 +152,6 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
     )],
@@ -171,7 +170,6 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/investments:?/investments
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
@@ -184,7 +182,6 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/members
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
