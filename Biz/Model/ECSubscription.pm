@@ -41,7 +41,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-for html <a name="internal_initialize"></a>
+=for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
 
