@@ -43,7 +43,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 execute_empty() : boolean
 
-Ensures that the Entry exists.
+Loads the entry when entering the form for the first time.
 
 =cut
 
@@ -63,7 +63,6 @@ Deletes the selected entry, its transactions and all its entries.
 
 sub execute_ok {
     my($self) = @_;
-
     my($entry) = _check_exists($self);
 
     # delete the related transaction and all its entries
@@ -75,6 +74,20 @@ sub execute_ok {
     # need to update units after this date
     $self->get_request->get('auth_realm')->get('owner')->audit_units($date);
 
+    return;
+}
+
+=for html <a name="execute_unwind"></a>
+
+=head2 execute_unwind()
+
+Loads the entry when returning from another form (like preferences).
+
+=cut
+
+sub execute_unwind {
+    my($self) = @_;
+    _check_exists($self);
     return;
 }
 
