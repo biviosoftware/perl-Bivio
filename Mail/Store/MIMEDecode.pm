@@ -83,6 +83,7 @@ sub new {
 	keywords => {},
 	io_scalar => IO::Scalar->new(),
 	file_client => $file_client,
+	multi_line_flag => 0,
     };
     return $self;
 }
@@ -190,7 +191,7 @@ sub _extract_mime {
     for $subentity (@parts) {
 	_trace('getting part ', ++$i) if $_TRACE;
 	_trace('subentity is valid') if $_TRACE && $subentity;
-	$content_type = Bivio::Type::MIMEType->from_content_type(
+	my($content_type) = Bivio::Type::MIMEType->from_content_type(
 		$subentity->head->get('content-type'));
 #TODO: BTW, 'eq' is a binary operator, not a method.  eq(bla) is not 
 #      appropriate syntax.
@@ -288,7 +289,7 @@ sub _parse_mime {
 		$fields, $entity));
 	while (!$file->eof) {
 	    my($line) = $file->getline();
-	    _parse_msg_line($line, $fields->{keywords});
+	    _parse_msg_line($line, $fields);
 	}
     }
     return;
@@ -299,7 +300,9 @@ sub _parse_mime {
 # Called for each line of a MIME part that is text/plain.
 #
 sub _parse_msg_line {
-    my($str, $keywords) = @_;
+    my($str, $fields) = @_;
+    my($keywords) = $fields->{keywords};
+    my($multiline) = $fields->{multi_line_flag};
     unless (length($str)) {
 	_trace('line is zero length, ignoring') if $_TRACE;
 	return;
@@ -309,13 +312,23 @@ sub _parse_msg_line {
     $str = lc($str);
     $str =~ s/\&[a-z]//g;
     $str =~ s/\<.*\>//g;
-    $str =~ s/[.]\s//g;
-    $str =~ s/[!#%^&*,();:\t\[\]]//g;
-    # Strip leading spaces so split works nicely.
-    $str =~ s/^\s+//;
-    my($w);
-    foreach $w (split(/\s+/, $str)) {
-	$keywords->{$w}++;
+    #stripped out <...> tags. If there's a lone '<' we
+    #are likely starting a multiline tag
+    if ($str =~ s/\<[a-z][A-Z]*/g) { #begin HTML tag
+	$multiline = 1;
+    }
+    if ($str =~ s/.*\>//g ) {
+	$multiline = 0;
+    }
+    if(!$multiline){
+	$str =~ s/[.]\s//g;
+	$str =~ s/[!#%^&*,();:\t\[\]]//g;
+	# Strip leading spaces so split works nicely.
+	$str =~ s/^\s+//;
+	my($w);
+	foreach $w (split(/\s+/, $str)) {
+	    $keywords->{$w}++;
+	}
     }
     return;
 }
@@ -336,7 +349,7 @@ sub _write_entity_to_file {
     my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
-    $msg_hdr .= $$msg_body if $$msg_body;
+    $msg_hdr .= $$msg_body if defined($$msg_body);
     $fields->{kbytes} += length($msg_hdr)/1024;
     _trace('kbytes: ', $fields->{kbytes}) if $_TRACE;
     $fields->{file_client}->create($file_name, \$msg_hdr)
