@@ -16,8 +16,14 @@ Bivio::Biz::Action::PublicRealm - sets realm_is_public attribute on the request
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::Action::PublicRealm::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Biz::Action>
+
+=cut
+
+use Bivio::Biz::Action;
+@Bivio::Biz::Action::PublicRealm::ISA = ('Bivio::Biz::Action');
 
 =head1 DESCRIPTION
 

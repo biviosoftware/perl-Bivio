@@ -19,8 +19,14 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::Action::UserLogout::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Biz::Action>
+
+=cut
+
+use Bivio::Biz::Action;
+@Bivio::Biz::Action::UserLogout::ISA = ('Bivio::Biz::Action');
 
 =head1 DESCRIPTION
 
