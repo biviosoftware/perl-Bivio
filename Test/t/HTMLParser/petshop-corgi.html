@@ -1,0 +1,78 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html><head>
+<title>Product Category</title>
+</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">
+<table border=0 cellpadding=0 cellspacing=0 width="100%" bgcolor="#EDE4B5"><tr>
+<td><a target="_top" href="/pub"><img border=0 alt="" src="/i/banner2.gif" width=276 height=72></a></td>
+<td><br><form method=get action="/pub/search"><font face="arial,sans-serif"><input type=text size=14 name=s></font> <input type=image border=0 alt="Search" src="/i/search.gif"></form></td>
+<td align=right nowrap><a target="_top" href="/my/cart"><font face="arial,sans-serif"><small>Cart</small></font></a> | <a target="_top" href="/pub/login?fc=aNTAy!bNTA0!dcAFLOS1CRC0wMQ__"><font face="arial,sans-serif"><small>Sign-in</small></font></a> <br>&nbsp;<br><a target="_top" href="http://www.bivio.biz"><img valign=bottom align=right border=0 alt="Powered by bivio Inc." src="/i/bivio_power.gif" width=118 height=22></a></td>
+</tr></table><table border=0 cellpadding=0 cellspacing=0 width="100%"><tr>
+<td><table border=0 cellpadding=4 cellspacing=0 width="100%"><tr>
+<td align=center><a target="_top" href="/pub/products?p=FISH"><font face="arial,sans-serif" color="#111199"><b>Fish</b></font></a> | <a target="_top" href="/pub/products?p=DOGS"><font face="arial,sans-serif" color="#111199"><b>Dogs</b></font></a> | <a target="_top" href="/pub/products?p=REPTILES"><font face="arial,sans-serif" color="#111199"><b>Reptiles</b></font></a> | <a target="_top" href="/pub/products?p=CATS"><font face="arial,sans-serif" color="#111199"><b>Cats</b></font></a> | <a target="_top" href="/pub/products?p=BIRDS"><font face="arial,sans-serif" color="#111199"><b>Birds</b></font></a></td>
+</tr><tr>
+<td><font face="arial,sans-serif" color="#111199"><b>Corgi</b></font></td>
+</tr></table><form method=POST target="_top" name="fn0" action="/items?p=K9-BD-01">
+<script language="JavaScript">
+<!--
+var jsv=1.0;
+// -->
+</script>
+<script language="JavaScript1.2">
+<!--
+jsv=1.2;
+// -->
+</script>
+<script language="JavaScript">
+<!--
+function tzf(){
+if(navigator.appName.indexOf('Netscape')>=0
+&&parseFloat(navigator.appVersion)<4.0)
+return;
+var d=new Date();
+var o=d.getTimezoneOffset();
+document.write('<input name=tz type=hidden value="'+o+'">');
+}
+tzf();
+// -->
+</script><input type=hidden name=v value="1">
+<input type=hidden name=f3_1 value="EST-7">
+<input type=hidden name=f3_0 value="EST-6">
+
+<table border=0 cellspacing=2 cellpadding=2 align=left>
+<tr>
+<td valign=bottom align=center nowrap><a target="_top" href="/items?p=K9-BD-01&n=1&o=0d"><font face="arial,sans-serif"><b>Item ID</b></font></a> <img valign=bottom alt="This column sorted in ascending order" border=0 src="/i/sort_down.gif" width=10 height=8></td>
+<td valign=bottom align=center nowrap><font face="arial,sans-serif"><b>Item Name</b></font></td>
+<td valign=bottom align=center nowrap><font face="arial,sans-serif"><b>Item Price</b></font></td>
+<td valign=bottom align=center nowrap><font face="arial,sans-serif"><b>Add to Cart</b></font></td>
+</tr>
+<tr><td colspan=4><table width="100%" cellspacing=0 cellpadding=0 border=0>
+<tr bgcolor="#000000"><td><img src="/i/dot.gif" border=0 width=1 height=1></td></tr></table></td>
+</tr>
+<tr bgcolor="#D5EEFF">
+<td align=left><font face="arial,sans-serif">EST-6</font></td>
+<td align=left><a target="_top" href="/pub/item-detail?p=EST-6"><font face="arial,sans-serif">Male Adult Corgi</font></a></td>
+<td align=right nowrap><font face="arial,sans-serif">&nbsp; 18.50 </font></td>
+<td align=left><input type=image border=0 alt="Add Item to Your Shopping Cart" name="f2_0" src="/i/add_to_cart.gif"></td>
+</tr>
+<tr bgcolor="#F0F9FF">
+<td align=left><font face="arial,sans-serif">EST-7</font></td>
+<td align=left><a target="_top" href="/pub/item-detail?p=EST-7"><font face="arial,sans-serif">Female Puppy Corgi</font></a></td>
+<td align=right nowrap><font face="arial,sans-serif">&nbsp; 18.50 </font></td>
+<td align=left><input type=image border=0 alt="Add Item to Your Shopping Cart" name="f2_1" src="/i/add_to_cart.gif"></td>
+</tr>
+</table></form></td>
+</tr></table><p><hr><pre>
+<b><font size="+1">Control Logic for This Page</font></b>
+<font size="-1">(click on link to see the source code)</font>
+Name:         ITEMS
+Realm:        GENERAL
+Permissions:  ANYBODY
+<a href="/src?s=Bivio::PetShop::Model::ItemList">Model.ItemList</a>->execute_load_all_with_query
+<a href="/src?s=Bivio::PetShop::Model::ItemListForm">Model.ItemListForm</a>
+<a href="/src?s=View.items">View.items</a>
+next=CART
+MISSING_COOKIES=MISSING_COOKIES
+</pre>
+
+
+</body></html>

@@ -1,0 +1,66 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html><head>
+<title>Sign In</title>
+</head><body bgcolor="#FFFFFF" text="#000000" link="#330099" alink="#330099" vlink="#330099">
+<table border=0 cellpadding=0 cellspacing=0 width="100%" bgcolor="#EDE4B5"><tr>
+<td><a target="_top" href="/pub"><img border=0 alt="" src="/i/banner2.gif" width=276 height=72></a></td>
+<td><br><form method=get action="/pub/search"><font face="arial,sans-serif"><input type=text size=14 name=s></font> <input type=image border=0 alt="Search" src="/i/search.gif"></form></td>
+<td align=right nowrap><a target="_top" href="/my/cart"><font face="arial,sans-serif"><small>Cart</small></font></a> | <a target="_top" href="/pub/login"><font face="arial,sans-serif"><small>Sign-in</small></font></a> <br>&nbsp;<br><a target="_top" href="http://www.bivio.biz"><img valign=bottom align=right border=0 alt="Powered by bivio Inc." src="/i/bivio_power.gif" width=118 height=22></a></td>
+</tr></table><table border=0 cellpadding=0 cellspacing=0 width="100%"><tr>
+<td><table border=0 cellpadding=4 cellspacing=0 width="100%"><tr>
+<td align=center><a target="_top" href="/pub/products?p=FISH"><font face="arial,sans-serif" color="#111199"><b>Fish</b></font></a> | <a target="_top" href="/pub/products?p=DOGS"><font face="arial,sans-serif" color="#111199"><b>Dogs</b></font></a> | <a target="_top" href="/pub/products?p=REPTILES"><font face="arial,sans-serif" color="#111199"><b>Reptiles</b></font></a> | <a target="_top" href="/pub/products?p=CATS"><font face="arial,sans-serif" color="#111199"><b>Cats</b></font></a> | <a target="_top" href="/pub/products?p=BIRDS"><font face="arial,sans-serif" color="#111199"><b>Birds</b></font></a></td>
+</tr></table><br><font face="arial,sans-serif" color="#111199"><b>Please sign into the bOP Pet Shop Demo</b></font><br><br><br><br><form method=POST target="_top" name="fn0" action="/pub/login">
+<script language="JavaScript">
+<!--
+var jsv=1.0;
+// -->
+</script>
+<script language="JavaScript1.2">
+<!--
+jsv=1.2;
+// -->
+</script>
+<script language="JavaScript">
+<!--
+function tzf(){
+if(navigator.appName.indexOf('Netscape')>=0
+&&parseFloat(navigator.appVersion)<4.0)
+return;
+var d=new Date();
+var o=d.getTimezoneOffset();
+document.write('<input name=tz type=hidden value="'+o+'">');
+}
+tzf();
+// -->
+</script><input type=hidden name=v value="2">
+<input type=hidden name=c value="aNTA0">
+<table border=0 cellpadding=2 cellspacing=0 align=left><tr>
+<td><font face="arial,sans-serif"><font face="arial,sans-serif">User ID</font>: </font></td>
+<td><font face="arial,sans-serif"><input type=text size=15 maxlength=30 name=f2 value=""></font></td>
+</tr><tr>
+<td><font face="arial,sans-serif"><font face="arial,sans-serif">Password</font>: </font></td>
+<td><font face="arial,sans-serif"><input type=password size=15 maxlength=30 name=f3 value=""></font></td>
+</tr><tr>
+<td>&nbsp;</td>
+<td colspan=2><input type=image border=0 alt="Submit" name="f0" src="/i/submit.gif"></td>
+</tr><tr>
+<td>&nbsp;</td>
+</tr><tr>
+<td>&nbsp;</td>
+<td><a target="_top" href="/my/create-account"><font face="arial,sans-serif">New User</font></a></td>
+</tr></table></form></td>
+</tr></table><p><hr><pre>
+<b><font size="+1">Control Logic for This Page</font></b>
+<font size="-1">(click on link to see the source code)</font>
+Name:         LOGIN
+Realm:        GENERAL
+Permissions:  ANYBODY
+<a href="/src?s=Bivio::PetShop::Action::UserLogout">Action.UserLogout</a>
+<a href="/src?s=Bivio::Biz::Model::UserLoginForm">Model.UserLoginForm</a>
+<a href="/src?s=View.login">View.login</a>
+next=CART
+MISSING_COOKIES=MISSING_COOKIES
+</pre>
+
+
+</body></html>
