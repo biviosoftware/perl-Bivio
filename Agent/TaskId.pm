@@ -447,7 +447,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/payment
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
@@ -627,7 +627,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/fee
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
@@ -1294,7 +1294,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
-        next=CLUB_ADMIN_USER_DETAIL
+        next=USER_ADMIN_INFO
     )],
     [qw(
         CLUB_ADMIN_TAX_ID_EDIT
