@@ -414,8 +414,7 @@ BuildRoot: $build_root
 EOF
 	    next;
 	}
-	print(SPECOUT $line)
-		unless $line =~ /^release: /i || $line =~ /^version: /i;
+	print(SPECOUT $line) unless $line =~ /^release: /i;
     }
     close(SPECOUT);
 
