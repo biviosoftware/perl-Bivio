@@ -17,12 +17,12 @@ Bivio::UI::HTML::ViewShortcuts - html helper routines
 
 =head1 EXTENDS
 
-L<Bivio::UI::ViewShortcutsBase>
+L<Bivio::UI::ViewShortcuts>
 
 =cut
 
-use Bivio::UI::ViewShortcutsBase;
-@Bivio::UI::HTML::ViewShortcuts::ISA = qw(Bivio::UI::ViewShortcutsBase);
+use Bivio::UI::ViewShortcuts;
+@Bivio::UI::HTML::ViewShortcuts::ISA = qw(Bivio::UI::ViewShortcuts);
 
 =head1 DESCRIPTION
 
@@ -44,7 +44,6 @@ use Bivio::HTML;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::File;
 use Bivio::UI::HTML::Format::Link;
-use Bivio::UI::Label;
 #NOTE: Do not import any widgets here, use _use().
 
 #=VARIABLES
@@ -103,7 +102,7 @@ If I<value> is an array_ref, the syntax is:
 
 The values will be aligned properly for a 2x2 grid where
 the I<label> appears on the left.  The label is looked up
-using L<Bivio::UI::Label|Bivio::UI::Label>.
+using L<Bivio::UI::Text|Bivio::UI::Text>.
 
 If I<model_name> begins with a capital letter and consists
 of alphanumerics (no underscores),
@@ -119,8 +118,7 @@ sub vs_action_grid {
     foreach my $v (@$values) {
 	my($label, $task, $value, $attrs) = @$v;
 	# Label
-	$label = $proto->vs_string(
-		Bivio::UI::Label->get_simple($label));
+	$label = $proto->vs_string($proto->vs_text($label));
 	$attrs ||= {};
 	$label = Bivio::UI::HTML::Widget::Link->new({
 	    href => ref($task) eq 'ARRAY' ? $task
@@ -282,10 +280,9 @@ sub vs_checkmark {
     my($proto, $field) = @_;
     my($alt) = $field;
     $alt =~ s/\./_/;
-    $alt = Bivio::UI::Label->get_simple($alt.'_ALT');
     return $proto->vs_director([$field], {
 	0 => '',
-	1 => $proto->vs_image('check_on', $alt),
+	1 => $proto->vs_new('Image', 'check_on', $alt),
     });
 }
 
@@ -336,7 +333,8 @@ HTML's club_or_fund attribute.
 =cut
 
 sub vs_club_or_fund {
-    return shift->vs_html_string('club_or_fund');
+    my($proto) = @_;
+    return $proto->vs_string($proto->vs_text('club_or_fund'));
 }
 
 =for html <a name="vs_date_time"></a>
@@ -376,8 +374,10 @@ sub vs_description {
     my($proto, $label, $body) = @_;
     return $proto->vs_join(['&nbsp;<br>',
 	    defined($label)
-	    ? ($proto->vs_string(Bivio::UI::Label->get_simple($label).'.',
-		    'description_label'), ' ')
+	    ? ($proto->vs_string(
+		    $proto->vs_join([$proto->vs_text($label), '.']),
+		    'description_label')->put(escape_html => 1),
+		    ' ')
 	    : (),
 	    ref($body) eq 'ARRAY' ? @$body : $body,
 	    '<br>']);
@@ -519,7 +519,7 @@ sub vs_form {
 =head2 static vs_form_button(string field, string label) : Bivio::UI::HTML::Widget::FormButton
 
 Creates a form button widget for the specified, fully qualified field name.
-The button label may be overridden by supplying the Bivio::UI::Label value.
+The button label may be overridden by supplying the Bivio::UI::Text value.
 
 =cut
 
@@ -542,20 +542,6 @@ sub vs_format_uri_static_site {
 	    '',
 	    Bivio::Agent::HTTP::Location->get_document_path_info($page),
 	    1),
-}
-
-=for html <a name="vs_get_label"></a>
-
-=head2 static vs_get_label(string name, ....) : string
-
-Looks up label with
-L<Bivio::UI::Label::get_simple|Bivio::UI::Label/"get_simple">.
-
-=cut
-
-sub vs_get_label {
-    shift;
-    return Bivio::UI::Label->get_simple(@_);
 }
 
 =for html <a name="vs_heading"></a>
@@ -587,9 +573,8 @@ will use the task_id (dynamically).
 sub vs_heading_as_label {
     my($proto, $label) = @_;
     return $proto->vs_heading(
-	    defined($label) ? Bivio::UI::Label->get_simple($label)
-	    : [sub {Bivio::UI::Label->get_simple(shift->get('task_id')
-		    ->get_name)}]);
+	    $proto->vs_text(defined($label) ? $label
+		    : ['task_id', '->get_name']));
 }
 
 =for html <a name="vs_heading_with_search"></a>
@@ -705,12 +690,9 @@ I<attrs> are applied to the Image Widget.
 sub vs_image {
     my($proto, $icon, $alt, $attrs) = @_;
     _use('Image');
-    $alt = Bivio::UI::Label->unsafe_get_simple($icon, 'image_alt')
-	    || Bivio::UI::Label->unsafe_get_simple($icon.'alt')
-	    unless defined($alt) || ref($icon);
     return Bivio::UI::HTML::Widget::Image->new({
 	src => $icon,
-	alt => $alt,
+	(defined($alt) || ref($icon) ? (alt => $alt) : (alt_text => $icon)),
 	$attrs ? %$attrs : (),
     });
 }
@@ -766,16 +748,14 @@ sub vs_join {
 
 =head2 static vs_label(array_ref label, string font) : Bivio::UI::HTML::Widget::String
 
-Looks up I<label>--dereferencing the array_ref if necessary.  Uses
-C<label_in_text> if I<font> is not supplied.  Does not set I<string_font> if
-I<font> is C<undef>.
+B<DEPRECATED.  Use L<vs_text|"vs_text"> in a L<vs_string|"vs_string">.>
 
 =cut
 
 sub vs_label {
     my($proto, $label, $font) = @_;
-    return $proto->vs_string(Bivio::UI::Label->get_simple(
-	    ref($label) ? @$label : $label),
+    return $proto->vs_string(
+	    $proto->vs_text(ref($label) ? @$label : $label),
 	    defined($font) ? $font : 'label_in_text');
 }
 
@@ -830,7 +810,7 @@ sub vs_link {
     if (int(@_) <= 2) {
 	$control = $label;
 	$widget_value = $label;
-	$label = Bivio::UI::Label->get_simple($widget_value);
+	$label = $proto->vs_text($widget_value);
     }
     unless (UNIVERSAL::isa($label, 'Bivio::UI::Widget')) {
 	$label = $proto->vs_string($label);
@@ -1229,7 +1209,7 @@ sub vs_simple_form {
 =head2 static vs_simple_form_field(string field, string label) : Bivio::UI::HTML::Widget::FormButton
 
 Creates a form button widget for the specified, fully qualified field name.
-The label (if any) may be overridden by supplying the Bivio::UI::Label value.
+The label (if any) may be overridden by supplying the Bivio::UI::Text value.
 
 =cut
 
@@ -1237,13 +1217,9 @@ sub vs_simple_form_field {
     my($proto, $field, $label) = @_;
     _use('Bivio::UI::HTML::WidgetFactory');
 
-    if ($label) {
-	$label = Bivio::UI::Label->get_simple($label) unless ref($label);
-	return Bivio::UI::HTML::WidgetFactory->create($field, {
-	    label => $label,
-	});
-    }
-
+    return Bivio::UI::HTML::WidgetFactory->create($field, {
+	label => ref($label) ? $label : $proto->vs_text($label),
+    }) if $label;
     return Bivio::UI::HTML::WidgetFactory->create($field);
 }
 
@@ -1256,7 +1232,8 @@ Returns a widget containing the site name.
 =cut
 
 sub vs_site_name {
-    return shift->vs_html_string('site_name');
+    my($proto) = @_;
+    return $proto->vs_string($proto->vs_text('site_name'));
 }
 
 =for html <a name="vs_string"></a>
@@ -1272,11 +1249,7 @@ Use C<0> (zero) to set "no font".  Will not set font, if C<undef>.
 
 sub vs_string {
     my($proto, $value, $font) = @_;
-    return $proto->vs_new('String', {
-	value => $value,
-	# Allow caller to set font to undef
-	defined($font) ? (string_font => $font) : (),
-    });
+    return $proto->vs_new('String', $value, $font);
 }
 
 =for html <a name="vs_support_email"></a>
@@ -1354,7 +1327,7 @@ sub vs_task_list {
 
 =head2 static vs_template(string_ref value) : Bivio::UI::Widget
 
-Returns an instance of a Template widget configured with I<value>.
+B<DEPRECATED.  Use L<Bivio::UI::Widget::Prose|Bivio::UI::Widget::Prose>.>
 
 =cut
 
@@ -1370,9 +1343,7 @@ sub vs_template {
 
 =head2 static vs_template_as_string(string_ref value, string font) : Bivio::UI::Widget
 
-Wraps a L<template|"template"> in a string.
-
-If I<font> not supplied, defaults to I<page_text>.
+B<DEPRECATED.  Use L<Bivio::UI::Widget::Prose|Bivio::UI::Widget::Prose>.>
 
 =cut
 
@@ -1451,7 +1422,7 @@ sub _link_help {
 	    ? Bivio::Agent::Task->get_by_id($task_id)->get('help')
 	    : Bivio::Agent::HTTP::Location->get_help_path_info($task);
     return $proto->vs_link(
-	    Bivio::UI::Label->get_simple($label),
+	    $proto->vs_text($label),
 	    ['->format_uri', Bivio::Agent::TaskId::HELP(), undef,
 		undef, $path_info],
 	    'help_hint')
