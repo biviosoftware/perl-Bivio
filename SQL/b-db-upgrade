@@ -243,106 +243,135 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    my($dba) = $req->is_production ? 'prod_dba' : 'test_dba';
-    my($prior_db) = Bivio::SQL::Connection->set_dbi_name($dba);
+    use Bivio::Auth::Realm;
+    use Bivio::Biz::Model::ExpenseCategory;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Data::EW::ClubImporter;
 
-    _do_sql(<<'EOF');
-CREATE TABLESPACE ctxapp
-  datafile '/db/2/4/ctxapp_01.dbf' size 513M reuse
-  default storage (initial 1m next 1m pctincrease 0
-      minextents 1 maxextents 500)
-  online
+    # create expense_category_t and expense_info_t
+    print("adding expense_category_t and expense_info_t\n");
+    _do_sql('
+CREATE TABLE expense_category_t (
+  expense_category_id NUMBER(18),
+  realm_id NUMBER(18),
+  name VARCHAR2(100),
+  deductible NUMBER(1),
+  parent_category_id NUMBER(18)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
 /
-EOF
-    my($ora_home) = Bivio::Ext::DBI->get_config($dba)->{oracle_home};
-    my($res) = _sqlplus('internal', <<"EOF");
-\@$ora_home/ctx/admin/dr0csys ctxsys ctxapp temp
-EOF
-    print $$res;
-    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
-\@$ora_home/ctx/admin/dr0inst $ora_home/ctx/lib/libctxx8.so
-EOF
-    print $$res;
-    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
-\@$ora_home/ctx/admin/defaults/drdefus
-EOF
-    print $$res;
-    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
-exec Ctx_Adm.set_parameter('log_directory', '/var/log/oracle')
-EOF
-    print $$res;
-    _do_sql(<<'EOF');
-grant ctxapp to bivio
+ALTER TABLE expense_category_t
+  add constraint expense_category_t1
+  primary key(expense_category_id)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
-EOF
+ALTER TABLE expense_category_t
+  add constraint expense_category_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE expense_category_t
+  add constraint expense_category_t3
+  foreign key (parent_category_id)
+  references expense_category_t(expense_category_id)
+/
+ALTER TABLE expense_category_t modify realm_id not null
+/
+ALTER TABLE expense_category_t modify name not null
+/
+ALTER TABLE expense_category_t modify deductible not null
+/
+ALTER TABLE expense_category_t
+  add constraint expense_category_t4
+  check (deductible between 0 and 1)
+/
+CREATE sequence expense_category_s
+  minvalue 100013 maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
+/
+');
 
-    # Back to bivio/bivio
-    Bivio::SQL::Connection->set_dbi_name($prior_db);
-    _do_sql(<<'EOF');
-BEGIN ctx_ddl.create_preference('im_storage', 'BASIC_STORAGE'); END;
+    _do_sql('
+CREATE TABLE expense_info_t (
+  entry_id NUMBER(18),
+  expense_category_id NUMBER(18),
+  realm_id NUMBER(18),
+  allocate_equally NUMBER(1)
+)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t
+  add constraint expense_info_t1
+  primary key(entry_id)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'K_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t
+  add constraint expense_info_t2
+  foreign key (entry_id)
+  references entry_t(entry_id)
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'R_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t
+  add constraint expense_info_t3
+  foreign key (expense_category_id)
+  references expense_category_t(expense_category_id)
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'N_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t
+  add constraint expense_info_t4
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t modify expense_category_id not null
 /
-BEGIN ctx_ddl.set_attribute('im_storage', 'P_TABLE_CLAUSE', 'tablespace index_64m'); END;
+ALTER TABLE expense_info_t modify realm_id not null
 /
-BEGIN ctx_ddl.create_preference('im_filter', 'USER_FILTER'); END;
+ALTER TABLE expense_info_t modify allocate_equally not null
 /
-BEGIN ctx_ddl.set_attribute('im_filter', 'COMMAND', 'b-content-filter'); END;
+ALTER TABLE expense_info_t
+  add constraint expense_info_t5
+  check (allocate_equally between 0 and 1)
 /
-CREATE INDEX file_t15 on file_t(content) indextype is ctxsys.context
-    parameters ('storage im_storage filter im_filter nopopulate')
-/
-EOF
+');
 
-    _upgrade_volume4_names();
-
-    print("\nRESTART DATABASE TO COMPLETE THE UPGRADE\n");
-    #print("\n*** done ***\n");
-    return;
-}
-
-# _upgrade_volume4_names()
-#
-# Fix file names in volume 4 (MAIL_CACHE)
-#
-sub _upgrade_volume4_names {
-    my($req) = @_;
-
-    my($delim) = '-';
-    my($sth) = _do_sql(<<'EOF');
-SELECT file_id, name from file_t WHERE volume = 4
+    # alter tax_category constraints
+    print("altering tax_category constraints entry_t, member_allocation_t\n");
+    _do_sql('
+ALTER TABLE entry_t DROP constraint ENTRY_T9
 /
-EOF
+ALTER TABLE member_allocation_t DROP constraint MEMBER_ALLOCATION_T5
+/
+ALTER TABLE entry_t
+  add constraint entry_t9
+  check (tax_category between 1 and 11)
+/
+ALTER TABLE member_allocation_t
+  add constraint member_allocation_t5
+  check (tax_category between 1 and 11
+  or tax_category = 100)
+/
+');
+
+    # create default expense categories
+    # classify existing expenses
+    print("creating default expense categories and existing expense info\n");
+    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by name',
+	    []);
     while (my $row = $sth->fetchrow_arrayref) {
-        my($file_id, $name) = @$row;
-        next if $name =~ /^MAIL_CACHE/;
-        # skip if basename or conversion done already
-        next if $name =~ /00003$/ || $name =~ /\-/;
-        my($base, $suffix) = $name =~ /^(.+00003)(.+)$/;
-        die("$name: does not match pattern") unless defined($base);
-        my($fixed_name) = $base;
-        if ($suffix =~ /_/) {
-            $suffix =~ s/_/-/g;
-            $fixed_name .= $suffix;
-        }
-        else {
-            while ($suffix =~ s/^(..)//) {
-                $fixed_name .= $delim . $1;
-            }
-        }
-        print("$name => $fixed_name\n");
-        my($sth2) = Bivio::SQL::Connection->execute('
-UPDATE file_t SET name = ? WHERE file_id = ? AND volume = 4',
-                [$fixed_name, $file_id]);
+	my($realm_id, $name) = @$row;
+	print("\t$name\n");
+	$realm_owner->unauth_load(realm_id => $realm_id);
+	$req->set_realm(Bivio::Auth::Realm->new($realm_owner));
+	Bivio::Biz::Model::ExpenseCategory->new($req)->create_initial;
+	Bivio::Data::EW::ClubImporter->default_expense_categories($req);
     }
+
+    print("\n*** done ***\n");
     return;
 }
 
