@@ -142,7 +142,7 @@ sub execute {
 	my($value) = '';
 	if ($self->unsafe_render_attr($header, $req, \$value)) {
 	    $msg->set_header(ucfirst($header), $value);
-	    push(@recips, $value);
+	    push(@recips, $value) unless $header eq 'subject';
 	}
     }
     $msg->set_recipients(
