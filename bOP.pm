@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Select fixed doc
+  * Bivio::Biz::ListModel fixed previous check-in, _format_uri_args()
+    only dies if uri is ref and not a Bivio::Agent::TaskId
+
+  Revision 2.37  2004/10/13 21:08:43  moeller
+  * Bivio::Biz::ListModel _format_uri_args() fixed to allow task name
+  * Bivio::Biz::Model::RealmOwner, Bivio::Biz::Model::Club
+    code format and minor refactoring
   * UserLostPasswordForm, UserPasswordForm self->new() changed to
     self->new_other()
   * PetShop models, self->new() change to self->new_other()
