@@ -86,6 +86,11 @@ Bivio::Test->unit([
 		['etc/sendmail.cf', "O DaemonPortOptions=Port=smtp, Name=MTA"],
 	    ],
 	], [
+	    'add_sendmail_http_agent', ['localhost:80/my_uri'] => [
+		['etc/sendmail.cf', 'localhost:80/my_uri'],
+ 		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
+	    ],
+	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
 		['etc/ssh/sshd_config', "\nPermitRootLogin no(?!yes)"],
 		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes(?!no)"],

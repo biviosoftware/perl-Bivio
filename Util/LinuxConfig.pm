@@ -61,6 +61,7 @@ commands:
     add_crontab_line user entry... -- add entries to crontab
     add_group group[:gid] -- add a group
     add_sendmail_class_line filename line ... -- add values trusted-users, relay-domains, etc.
+    add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
@@ -166,6 +167,28 @@ sub add_sendmail_class_line {
     my($self, $file, @value) = @_;
     return _append_lines($self, "/etc/mail/$file", 'root', 'mail', 0640,
 	\@value);
+}
+
+=for html <a name="add_sendmail_http_agent"></a>
+
+=head2 add_sendmail_http_agent(string uri) : string
+
+Sets up C<b-sendmail-http> agent interface in sendmail.cf.
+
+=cut
+
+sub add_sendmail_http_agent {
+    my($self, $uri) = @_;
+    return _edit($self, '/etc/sendmail.cf',
+	[qr/\$#local \$: \$1/, '$#bsendmailhttp $: $1'],
+	# We don't set "w", sendmail-http does it itself
+	['$', <<"EOF", qr/\nMbsendmailhttp/],
+Mbsendmailhttp,	P=/usr/local/bin/b-sendmail-http,
+	F=9:|/\@ADFhlMnsPqS,
+	S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
+	A=b-sendmail-http \${client_addr} \$u $uri /usr/bin/procmail -t -Y -a \$h -d \$u
+EOF
+    );
 }
 
 =for html <a name="add_user"></a>
