@@ -103,7 +103,7 @@ _compile([
     TAX_DISCLAIMER => [$_SANS_SERIF, 'tax_disclaimer', 'i'],
     ACTION_BAR_STRING => [undef, undef, 'strong'],
     ACTION_BUTTON => [undef, undef],
-    REPORT_PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
+    REPORT_PAGE_HEADING => [$_SANS_SERIF, 'page_heading', 'big', 'strong'],
     TEXT_MENU_NORMAL => [$_SANS_SERIF, 'text_menu_font',],
     TEXT_MENU_SELECTED => [$_SANS_SERIF, 'text_menu_font', 'strong'],
     DETAIL_CHOOSER => [$_SANS_SERIF, 'detail_chooser', 'strong'],
