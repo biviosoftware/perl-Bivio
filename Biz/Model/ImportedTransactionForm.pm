@@ -49,6 +49,37 @@ my($_M) = 'Bivio::Type::Amount';
 
 =cut
 
+=for html <a name="create_excess_transaction"></a>
+
+=head2 static create_excess_transaction(Bivio::Agent::Request req, string old_txn_id, string amount)
+
+Update the original transaction which keeps the excess between the
+previous amount and the new amount.
+
+=cut
+
+sub create_excess_transaction {
+    my($proto, $req, $old_txn_id, $amount) = @_;
+    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req)
+	    ->load(realm_transaction_id => $old_txn_id);
+    my($entry) = Bivio::Biz::Model::Entry->new($req)
+	    ->load(realm_transaction_id =>
+		    $txn->get('realm_transaction_id'),
+		    class => Bivio::Type::EntryClass::CASH());
+
+    my($remainder) = $_M->sub($entry->get('amount'), $amount);
+
+    if ($_M->compare($remainder, 0) > 0) {
+	# save any excess
+	$entry->update({amount => $remainder});
+    }
+    else {
+	# otherwise delete the old transaction
+	$txn->cascade_delete;
+    }
+    return;
+}
+
 =for html <a name="execute_empty"></a>
 
 =head2 execute_empty()
@@ -72,6 +103,8 @@ sub execute_empty {
 
     $self->internal_put_field('Entry.entry_type' =>
 	    $type_form->get('Entry.entry_type'));
+    $self->internal_put_field('MemberEntry.valuation_date' =>
+	    $self->get('RealmTransaction.date_time'));
     return;
 }
 
@@ -105,10 +138,14 @@ sub execute_ok {
     return if $self->in_error;
 
     # tag new transaction with account synch key
-    _tag_sync_key($self);
+    $self->tag_transaction($self->get_request,
+	    $self->get_list_field('AccountSync.sync_key'));
 
     # and create new transaction for any excess
-    _create_excess_transaction($self);
+    $self->create_excess_transaction(
+	    $self->get_request,
+	    $self->get_list_field('RealmTransaction.realm_transaction_id'),
+	    $self->get('Entry.amount'));
 
     return;
 }
@@ -128,6 +165,7 @@ sub internal_initialize {
 	version => 1,
 	visible => [qw(
             Entry.amount
+	    MemberEntry.valuation_date
         ),
 	{
             name => 'RealmTransaction.remark',
@@ -153,6 +191,28 @@ sub internal_initialize {
 	    $self->SUPER::internal_initialize, $info);
 }
 
+=for html <a name="tag_transaction"></a>
+
+=head2 static tag_transaction(Bivio::Agent::Request req, string sync_key)
+
+Tags the current transaction (on the request) with the specified
+sync_key.
+
+=cut
+
+sub tag_transaction {
+    my($proto, $req, $sync_key) = @_;
+
+    Bivio::Biz::Model::AccountSync->new($req)->create({
+	realm_transaction_id => $req->get(
+		'Bivio::Biz::Model::RealmTransaction')->get(
+			'realm_transaction_id'),
+	realm_id => $req->get('auth_id'),
+	sync_key => $sync_key,
+    });
+    return;
+}
+
 =for html <a name="validate"></a>
 
 =head2 validate()
@@ -170,36 +230,6 @@ sub validate {
 }
 
 #=PRIVATE METHODS
-
-# _create_excess_transaction()
-#
-# Creates a new transaction, if the amount didn't comsume the entire
-# amount.
-#
-sub _create_excess_transaction {
-    my($self) = @_;
-    my($txn) = Bivio::Biz::Model::RealmTransaction->new($self->get_request)
-	    ->load(realm_transaction_id =>
-		    $self->get_list_field(
-			    'RealmTransaction.realm_transaction_id'));
-    my($entry) = Bivio::Biz::Model::Entry->new($self->get_request)
-	    ->load(realm_transaction_id =>
-		    $txn->get('realm_transaction_id'),
-		    class => Bivio::Type::EntryClass::CASH());
-
-    my($remainder) = $_M->sub($entry->get('amount'),
-	    $self->get('Entry.amount'));
-
-    if ($_M->compare($remainder, 0) > 0) {
-	# save any excess
-	$entry->update({amount => $remainder});
-    }
-    else {
-	# otherwise delete the old transaction
-	$txn->cascade_delete;
-    }
-    return;
-}
 
 # _execute_income()
 #
@@ -230,12 +260,23 @@ sub _execute_payment {
 
     my($values) = {
 	%{$self->internal_get},
-#TODO: need a way to allow the user to specify this
-	'MemberEntry.valuation_date' => $self->get(
-		'RealmTransaction.date_time'),
 	'RealmAccountEntry.realm_account_id' => $self->get(
 		'RealmAccount.realm_account_id'),
     };
+
+    if ($self->get('Entry.entry_type')
+	    == Bivio::Type::EntryType::MEMBER_PAYMENT()) {
+#TODO: copy and pasted from SingleDepositForm
+	$self->validate_not_null('MemberEntry.valuation_date');
+	my($tran_date, $val_date) = $self->get('RealmTransaction.date_time',
+		'MemberEntry.valuation_date');
+	if ($val_date && $tran_date
+		&& Bivio::Type::Date->compare($val_date, $tran_date) > 0) {
+	    $self->internal_put_error('MemberEntry.valuation_date',
+		  Bivio::TypeError::VALUATION_DATE_EXCEED_TRANSACTION_DATE());
+	}
+	return if $self->in_error;
+    }
 
 #TODO: need a better way to do this
     # load the target realm owner
@@ -243,7 +284,7 @@ sub _execute_payment {
     $realm->unauth_load_or_die(realm_id => $self->get('MemberEntry.user_id'));
     # make sure they are in the club
     my($user_list) = $self->get_request->get(
-	    'Bivio::Biz::Model::RealmUserList');
+	    'Bivio::Biz::Model::AllMemberList');
     $user_list->reset_cursor;
     while ($user_list->next_row) {
 	next unless $user_list->get('RealmUser.user_id')
@@ -281,31 +322,6 @@ sub _execute_transfer {
     }
     Bivio::Biz::Model::AccountTransferForm->execute($self->get_request,
 	    $values);
-    return;
-}
-
-# _get_selected_transaction() : Bivio::Biz::Model::RealmTransaction
-#
-# Returns the transaction currently being edited.
-#
-sub _get_selected_transaction {
-    my($self) = @_;
-    return $self->get_request->get('Bivio::Biz::Model::RealmTransaction');
-}
-
-# _tag_sync_key()
-#
-# Tags the current transaction with the selected account sync key.
-#
-sub _tag_sync_key {
-    my($self) = @_;
-
-    Bivio::Biz::Model::AccountSync->new($self->get_request)->create({
-	realm_transaction_id => _get_selected_transaction($self)->get(
-		'realm_transaction_id'),
-	realm_id => $self->get_request->get('auth_id'),
-	sync_key => $self->get_list_field('AccountSync.sync_key'),
-    });
     return;
 }
 
