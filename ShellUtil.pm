@@ -97,10 +97,6 @@ Name of the program sans suffix and directory.
 
 Name of the file to write the output to.
 
-=item quiet : boolean [0]
-
-B<DEPRECATED: Use Trace instead.>
-
 =item realm : string [undef]
 
 The auth realm in which we are operating.
@@ -143,6 +139,7 @@ Called by L<usage|"usage"> and returns the string:
 	  -email - who to mail the results to (may be a comma separated list)
           -force - don't ask "are you sure?"
           -input - a file to read from ("-" is STDIN)
+          -live - don't die on errors (used in weird circumstances)
           -noexecute - don't commit
           -output - a file to write the output to ("-" is STDOUT)
 	  -realm - realm_id or realm name
@@ -153,14 +150,15 @@ Called by L<usage|"usage"> and returns the string:
 sub OPTIONS_USAGE {
     return <<'EOF';
 options:
-        -db - name of database connection
-        -email - who to mail the results to (may be a comma separated list)
-        -force - don't ask "are you sure?"
-        -input - a file to read from ("-" is STDIN)
-        -noexecute - don't commit
-        -output - a file to write the output to ("-" is STDOUT)
-        -realm - realm_id or realm name
-        -user - user_id or user name
+    -db - name of database connection
+    -email - who to mail the results to (may be a comma separated list)
+    -force - don't ask "are you sure?"
+    -input - a file to read from ("-" is STDIN)
+    -live - don't die on errors (used in weird circumstances)
+    -noexecute - don't commit
+    -output - a file to write the output to ("-" is STDOUT)
+    -realm - realm_id or realm name
+    -user - user_id or user name
 EOF
 }
 
@@ -175,11 +173,11 @@ The default values are:
 	db => ['Name', undef],
 	email => ['Text', undef],
 	force => ['Boolean', 0],
+	input => ['Line', '-'],
+	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
-	quiet => ['Boolean', 0],  # DEPRECATED, use Trace instead
 	realm => ['Name', undef],
 	user => ['Name', undef],
-        input => ['Line', '-'],
         output => ['Line', undef],
     }
 
@@ -204,8 +202,8 @@ sub OPTIONS {
 	email => ['Text', undef],
 	force => ['Boolean', 0],
 	input => ['Line', '-'],
+	live => ['Boolean', 0],
 	noexecute => ['Boolean', 0],
-	quiet => ['Boolean', 0],
 	realm => ['Name', undef],
 	user => ['Name', undef],
         output => ['Line', undef],
@@ -539,6 +537,10 @@ sub main {
 	$self->put(result_type => undef,
 		result_subject => 'ERROR from: '.$self->command_line);
 	_result_email($self, $cmd, $die->as_string);
+	if ($self->unsafe_get('live')) {
+	    Bivio::IO::Alert->warn($die);
+	    return;
+	}
 	$die->throw();
 	# DOES NOT RETURN
     }
@@ -973,10 +975,10 @@ sub _result_email {
     my($msg) = Bivio::Mail::Outgoing->new();
     my($name, $type, $subject) = $self->unsafe_get(
 	    qw(result_name result_type result_subject));
-    $name ||= $cmd;
     $msg->set_recipients($email);
-    $msg->set_header('Subject', $subject
-	    || $name || 'Output from: '.$self->command_line());
+    $msg->set_header('Subject',
+	    $subject || $name || 'Output from: '.$self->command_line());
+    $name ||= $cmd;
     $msg->set_header('To', $email);
     if ($type) {
 	$msg->set_content_type('multipart/mixed');
