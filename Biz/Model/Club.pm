@@ -103,7 +103,8 @@ sub cascade_delete {
     Bivio::Biz::Model::File->cascade_delete($realm);
 
     # Delete all accounting
-    $self->delete_transactions_instruments_shadow_users();
+    $self->delete_instruments_and_transactions;
+    $self->delete_shadow_users;
 
     # Delete all from tables which are used by accounting and
     # aren't deleted by above.
@@ -228,21 +229,6 @@ sub delete_shadow_users {
 	$user->cascade_delete;
     }
     $list->iterate_end($it);
-    return;
-}
-
-=for html <a name="delete_transactions_instruments_shadow_users"></a>
-
-=head2 delete_transactions_instruments_shadow_users()
-
-Deletes transactions, instruments, and shadow users.
-
-=cut
-
-sub delete_transactions_instruments_shadow_users {
-    my($self) = @_;
-    $self->delete_instruments_and_transactions;
-    $self->delete_shadow_users;
     return;
 }
 
