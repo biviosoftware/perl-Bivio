@@ -11,14 +11,16 @@ Bivio::UI::MessageBoard::DetailView - a message detail view
 =head1 SYNOPSIS
 
     use Bivio::UI::MessageBoard::DetailView;
-    Bivio::UI::MessageBoard::DetailView->new();
+    my($list) = Bivio::Biz::Mail::MessageList->new();
+    $list->find(Bivio::Biz::FindParams->new({club => 100, id => 20});
+    my($view) = Bivio::UI::MessageBoard::DetailView->new();
+    $view->render($list, $req);
 
 =cut
 
 =head1 EXTENDS
 
-L<Bivio::UI::View> shows the body of a message with links to next and
-previous messages.
+L<Bivio::UI::View>
 
 =cut
 
@@ -27,11 +29,9 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::MessageBoard::DetailView>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::MessageBoard::DetailView> shows the body of a message with links
+to next and previous messages. It uses a MessageList model because it needs
+to know the next/prev links and provide a way back to the original list.
 
 =cut
 
@@ -93,7 +93,9 @@ sub new {
 
 =head2 get_action_links(Model model, Request req)
 
-Returns the compose action link.
+Returns the compose action link. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
 
 =cut
 
@@ -103,7 +105,7 @@ sub get_action_links {
     # set the mailto subject on the reply
     my($message) = $list->get_selected_message();
     if ($message) {
-	my($url) = 'mailto:bogus@localhost?subject=';
+	my($url) = 'mailto:'.$message->get('from_email').'?subject=';
 	my($subject) = $message->get('subject');
 
 	if ($subject =~ /^Re:/i) {
@@ -138,7 +140,9 @@ sub get_default_model {
 
 =head2 get_nav_links(Model model, Request req) : array
 
-Returns the prev and next nav links.
+Returns the prev and next nav links. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
 
 =cut
 
@@ -149,8 +153,7 @@ sub get_nav_links {
     if ($prev) {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_ICON());
 	$_PREV_LINK->set_description('Previous message');
-	$_PREV_LINK->set_url(&_make_path($self->get_name(), $req)
-		.'?'.$prev);
+	$_PREV_LINK->set_url($req->make_path().'?'.$prev);
     }
     else {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_IA_ICON());
@@ -162,8 +165,7 @@ sub get_nav_links {
     if ($next) {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_ICON());
 	$_NEXT_LINK->set_description('Next message');
-	$_NEXT_LINK->set_url(&_make_path($self->get_name(), $req)
-		.'?'.$next);
+	$_NEXT_LINK->set_url($req->make_path().'?'.$next);
     }
     else {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_IA_ICON());
@@ -171,13 +173,14 @@ sub get_nav_links {
 	$_NEXT_LINK->set_url('');
     }
 
-    #TODO: don't show if no index specified, fix 0,1 bug
+    #TODO: don't show back if invalid index specified, fix 0,1 bug
 
     my($fp) = $req->get_model_args()->clone();
     $fp->remove('id');
     $fp->put('index', $fp->get('index') + 1) if $fp->get('index');
+    $fp->remove('club');
 
-    my($back_url) = &_make_path('list', $req).'?'.$fp->to_string();
+    my($back_url) = $req->make_path('list').'?'.$fp->to_string();
 
     $_BACK_LINK->set_url($back_url);
 
@@ -208,18 +211,6 @@ sub render {
 }
 
 #=PRIVATE METHODS
-
-# _make_path(string view_name, Request req) : string
-#
-# Creates a path string to the specified view using the current club,
-# and controller from the request.
-
-sub _make_path {
-    my($view_name, $req) = @_;
-
-    return '/'.$req->get_target_name().'/'.$req->get_controller_name()
-	    .'/'.$view_name;
-}
 
 =head1 COPYRIGHT
 

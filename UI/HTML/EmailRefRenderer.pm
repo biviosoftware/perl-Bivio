@@ -67,7 +67,7 @@ sub new {
 
 =for html <a name="render"></a>
 
-=head2 render(array email, Request req)
+=head2 render(array email_ref, Request req)
 
 Draws an email link for (name, email, subject).
 

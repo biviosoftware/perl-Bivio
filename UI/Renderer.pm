@@ -15,8 +15,7 @@ Bivio::UI::Renderer - abstract renderer
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Renderer>
-Parent interface of all output renderers.
+C<Bivio::UI::Renderer> is the parent interface of all output renderers.
 
 =cut
 
@@ -38,7 +37,8 @@ sub new {
 
 =head2 abstract render(ANY target, Request req)
 
-Renders the target onto the Request's print stream.
+Renders the target onto the Request's print stream. The 'target' parameter
+may be a scalar, reference or array type.
 
 =cut
 

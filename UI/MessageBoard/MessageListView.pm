@@ -11,7 +11,10 @@ Bivio::UI::MessageBoard::MessageListView - a list of messages
 =head1 SYNOPSIS
 
     use Bivio::UI::MessageBoard::MessageListView;
-    Bivio::UI::MessageBoard::MessageListView->new();
+    my($list) = Bivio::Biz::Mail::MessageList->new();
+    $list->find(Bivio::Biz::FindParams->new({club => 100});
+    my($view) = Bivio::UI::MessageBoard::MessageListView->new();
+    $view->render($list, $req);
 
 =cut
 
@@ -26,11 +29,8 @@ use Bivio::UI::HTML::ListView;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::MessageBoard::MessageListView>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::MessageBoard::MessageListView> renders the
+L<Bivio::Biz::Mail::MessageList> model.
 
 =cut
 
@@ -76,6 +76,11 @@ sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::HTML::ListView::new($proto, 'list');
     $self->{$_PACKAGE} = {};
+
+    # use a model ref renderer to the 'detail' view for the first col
+    $self->set_column_renderer(0, Bivio::UI::HTML::ListCellRenderer->new(
+		Bivio::UI::HTML::ModelRefRenderer->new('detail')));
+
     return $self;
 }
 
@@ -87,7 +92,9 @@ sub new {
 
 =head2 get_action_links(Model model, Request req)
 
-Returns the compose action link.
+Returns the compose action link. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
 
 =cut
 
@@ -99,7 +106,7 @@ sub get_action_links {
 
 =head2 get_default_model() : Model
 
-Returns the default model ready for rendering.
+Returns a L<Bivio::Biz::Mail::MessageList> instance.
 
 =cut
 
@@ -108,32 +115,13 @@ sub get_default_model {
     return Bivio::Biz::Mail::MessageList->new();
 }
 
-=for html <a name="get_default_renderer"></a>
-
-=head2 get_default_renderer(FieldDescriptor type) : ListCellRenderer
-
-Returns a default renderer for the specified field type.
-
-=cut
-
-sub get_default_renderer {
-    my($self, $type) = @_;
-
-    if ($type->get_type() == Bivio::Biz::FieldDescriptor::MODEL_REF()) {
-
-	return Bivio::UI::HTML::ListCellRenderer->new(
-		Bivio::UI::HTML::ModelRefRenderer->new('detail'));
-    }
-
-    # let super class handle it
-    return &Bivio::UI::HTML::ListView::get_default_renderer($self, $type);
-}
-
 =for html <a name="get_nav_links"></a>
 
 =head2 get_nav_links(Model model, Request req) : array
 
-Returns the up and down nav links.
+Returns the up and down nav links. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
 
 =cut
 
@@ -161,7 +149,7 @@ sub get_nav_links {
     if ($next_items > 0) {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_ICON());
 	$_DOWN_LINK->set_description("Next $next_items messages");
-	$_DOWN_LINK->set_url(&_make_path($self, $req)
+	$_DOWN_LINK->set_url($req->make_path()
 		.&_index($index + $page_size, $req));
     }
     else {
@@ -184,7 +172,7 @@ sub get_nav_links {
     if ($prev_items > 0) {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_ICON());
 	$_UP_LINK->set_description("Previous $prev_items messages");
-	$_UP_LINK->set_url(&_make_path($self, $req)
+	$_UP_LINK->set_url($req->make_path()
 		.&_index($index - $prev_items, $req));
     }
     else {
@@ -200,26 +188,16 @@ sub get_nav_links {
 
 # _index(int index, Request req) : string
 #
-# Returns the finder params with the specified index.
+# Returns the finder params with the specified index. It is careful not to
+# clobber existing finder params.
 
 sub _index {
     my($index, $req) = @_;
 
     my($fp) = $req->get_model_args()->clone();
     $fp->put('index', $index);
+    $fp->remove('club');
     return '?'.$fp->to_string();
-}
-
-# _make_path(View view, Request req) : string
-#
-# Creates a path string to the specified view using the current club,
-# and controller from the request.
-
-sub _make_path {
-    my($view, $req) = @_;
-
-    return '/'.$req->get_target_name().'/'.$req->get_controller_name()
-	    .'/'.$view->get_name();
 }
 
 =head1 COPYRIGHT

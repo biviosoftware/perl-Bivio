@@ -8,13 +8,6 @@ $Bivio::UI::Setup::Admin::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::Setup::Admin - initial administrator setup view
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Setup::Admin;
-    Bivio::UI::Setup::Admin->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -26,11 +19,7 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Setup::Admin>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Setup::Admin> shows an admin creation screen.
 
 =cut
 
@@ -59,7 +48,6 @@ Creates a administrator user creation view.
 sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::View::new($proto, 'admin');
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -83,7 +71,7 @@ sub get_default_model {
 
 =head2 render(User user, Request req)
 
-Creates a form for editing the specified model.
+Creates a form for editing the club administrator's User model.
 
 =cut
 
@@ -91,14 +79,17 @@ sub render {
     my($self, $user, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # used for type information only
     my($demographics) = Bivio::Biz::UserDemographics->new();
     my($email) = Bivio::Biz::UserEmail->new();
 
     $req->print('<table border=0><tr><td>');
     $req->print('<table border=0 cellpadding=0 cellspacing=0>');
 
-    $req->print('First, let\'s get some information about the club
-administrator. Required fields are indicated with a *.<p>');
+    $req->print('First, let\'s get some information about the club '
+	    .'administrator. Required fields are indicated with a *.<p>');
+
+    # print any errors if present
 
     if (! $user->get_status()->is_OK() ) {
 	$req->print('<font color="#FF0000">');
@@ -109,11 +100,13 @@ administrator. Required fields are indicated with a *.<p>');
 	$req->print('</font>');
     }
 
-    $req->print('<form action='.'/'.$req->get_target_name().'/'
-	    .$req->get_controller_name().'/'.$self->get_name().'>');
+    $req->print('<form action='.$req->make_path().'>');
 
     $req->print('<input type="hidden" name="ma" value=add>');
     $req->print('<tr><td rowspan=100 width=15></td></tr>');
+
+    # render all the entry fields - values are from the model or
+    # the request.
 
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'password', $req, 1);

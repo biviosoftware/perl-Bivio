@@ -11,7 +11,12 @@ Bivio::UI::HTML::ListCellRenderer - a list cell renderer
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ListCellRenderer;
-    Bivio::UI::HTML::ListCellRenderer->new();
+
+    my($type) = Bivio::Biz::FieldDescriptor->lookup('DATE')],
+    my($renderer) = Bivio::UI::HTML::FieldUtil->get_renderer($type);
+    my($cell) = Bivio::UI::HTML::ListCellRenderer->new($renderer,
+            'nowrap width="1%" align=right');
+    $cell->render('1/20/1990', $req);
 
 =cut
 
@@ -31,12 +36,7 @@ element.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES

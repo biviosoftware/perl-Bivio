@@ -11,7 +11,9 @@ Bivio::UI::HTML::FieldUtil - utility class for model field rendering
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::FieldUtil;
-    Bivio::UI::HTML::FieldUtil->new();
+    my($req) = Bivio::Agent::TestRequest->new('club');
+    my($type) = Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+    Bivio::UI::HTML::FieldUtil->get_renderer($type)->render('123', $req);
 
 =cut
 
@@ -20,22 +22,24 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::FieldUtil>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::HTML::FieldUtil> contains utility methods for looking up
+field renderers and form entry field rendering.
 
 =cut
 
 #=IMPORTS
 use Bivio::Biz::FieldDescriptor;
 use Bivio::IO::Trace;
+use Bivio::UI::DateRenderer;
+use Bivio::UI::StringRenderer;
+use Bivio::UI::HTML::EmailRefRenderer;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_RENDERER_CACHE);
+my($_DEFAULT_RENDERER) = Bivio::UI::StringRenderer->new();
 
 =head1 METHODS
 
@@ -43,9 +47,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="entry_field"></a>
 
-=head2 entry_field(PropertyModel model, string field, Request req, boolean reauired)
+=head2 static entry_field(PropertyModel model, string field, Request req, boolean required)
 
-=head2 entry_field(PropertyModel model, string field, Request req)
+=head2 static entry_field(PropertyModel model, string field, Request req)
 
 Draws the specified input field onto the request in a two column row
 of a table. The table should be rendered before calling this method.
@@ -139,6 +143,31 @@ sub entry_field {
 	$req->print('> Guest<br>');
     }
     $req->print('</td></tr>');
+}
+
+=for html <a name="get_renderer"></a>
+
+=head2 static get_renderer(FieldDescriptor descriptor) : Renderer
+
+Looks up and returns an appropriate field renderer for the specified data
+type.
+
+=cut
+
+sub get_renderer {
+    my(undef, $descriptor) = @_;
+
+    # lazy instantiation of renderer cache
+    if (! $_RENDERER_CACHE) {
+	$_RENDERER_CACHE = {
+	    Bivio::Biz::FieldDescriptor::DATE(),
+	        Bivio::UI::DateRenderer->new(),
+	    Bivio::Biz::FieldDescriptor::EMAIL_REF(),
+	        Bivio::UI::HTML::EmailRefRenderer->new()
+	    };
+    }
+
+    return $_RENDERER_CACHE->{$descriptor->get_type()} || $_DEFAULT_RENDERER;
 }
 
 #=PRIVATE METHODS

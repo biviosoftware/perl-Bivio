@@ -8,13 +8,6 @@ $Bivio::UI::HTML::TestMathView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/
 
 Bivio::UI::HTML::TestMathView - a view with a multiplication table model
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::TestMathView;
-    Bivio::UI::HTML::TestMathView->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -35,18 +28,13 @@ C<Bivio::UI::HTML::TestMathView>
 =cut
 
 #=IMPORTS
-#use Bivio::IO::Config;
-#use Bivio::IO::Trace;
-use Bivio::UI::HTML::ListView();
-use Bivio::Biz::TestListModel();
-use Bivio::UI::HTML::Link();
-use Bivio::UI::HTML::Presentation();
+use Bivio::UI::HTML::ListView;
+use Bivio::Biz::TestListModel;
+use Bivio::UI::HTML::Link;
+use Bivio::UI::HTML::Presentation;
 
 #=VARIABLES
-#use vars ($_TRACE);
-#Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-#Bivio::IO::Config->register;
 my($_LIST_VIEW) = Bivio::UI::HTML::ListView->new('');
 my($_UP_LINK) = Bivio::UI::HTML::Link->new(
 	Bivio::UI::HTML::Presentation::NAV_UP(),
@@ -83,23 +71,6 @@ sub new {
 =head1 METHODS
 
 =cut
-
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-=over 4
-
-=item name : type [default]
-
-=back
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-    return;
-}
 
 =for html <a name="get_action_links"></a>
 

@@ -8,13 +8,6 @@ $Bivio::UI::Setup::Finish::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::Setup::Finish - setup finish view
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Setup::Finish;
-    Bivio::UI::Setup::Finish->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -26,11 +19,7 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Setup::Finish>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Setup::Finish> a congratulatory view of club creation.
 
 =cut
 
@@ -82,7 +71,7 @@ sub get_default_model {
 
 =head2 render(User user, Request req)
 
-Creates a form for editing the specified model.
+Shows the congratulatory view.
 
 =cut
 
@@ -92,12 +81,13 @@ sub render {
 
     $req->print('<table border=0><tr><td>');
 
-    $req->print('<form action='.'/'.$req->get_arg('club').'/admin>');
+    $req->print('<form action=/'.$req->get_arg('club').'/admin>');
 
-    $req->print('Congratulations, club setup is completed. After
-pressing "next", enter your user name and password and you will be
-directed to the club user list screen. From there you can add additional
-club members.<p><img src="/i/test/painted.gif">');
+    $req->print('Congratulations, club setup is completed. After '
+	    .'pressing "next", enter your user name and password and you '
+	    .'will be directed to the club user list screen. From there '
+	    .'you can add additional club members.<p>'
+	    .'<img src="/i/test/painted.gif">');
     $req->print('<p><input type="submit" value="Next">');
 
     $req->print('</form></td></tr></table>');

@@ -8,13 +8,6 @@ $Bivio::UI::Admin::UserView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::Admin::UserView - a user editing view
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Admin::UserView;
-    Bivio::UI::Admin::UserView->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -26,11 +19,7 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Admin::UserView>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::User> model.
 
 =cut
 
@@ -40,7 +29,6 @@ use Bivio::Biz::User;
 use Bivio::Biz::UserDemographics;
 use Bivio::IO::Trace;
 use Bivio::UI::HTML::FieldUtil;
-use Data::Dumper;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -62,7 +50,6 @@ Creates a user editing view.
 sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::View::new($proto, 'user');
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -86,7 +73,7 @@ sub get_default_model {
 
 =head2 render(User user, Request req)
 
-Creates a form for editing the specified model.
+Creates a form for editing the L<Bivio::Biz::User> model.
 
 =cut
 
@@ -115,8 +102,7 @@ indicated with a *.<p>');
 	$req->print('</font>');
     }
 
-    $req->print('<form action='.'/'.$req->get_target_name().'/'
-	    .$req->get_controller_name().'/'.$self->get_name().'>');
+    $req->print('<form action='.$req->make_path().'>');
 
     $req->print('<input type="hidden" name="ma" value='.$action.'>');
     $req->print('<tr><td rowspan=100 width=15></td></tr>');

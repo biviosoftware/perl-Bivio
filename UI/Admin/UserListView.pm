@@ -8,13 +8,6 @@ $Bivio::UI::Admin::UserListView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+
 
 Bivio::UI::Admin::UserListView - a list of users
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Admin::UserListView;
-    Bivio::UI::Admin::UserListView->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::HTML::ListView>
@@ -26,11 +19,9 @@ use Bivio::UI::HTML::ListView;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Admin::UserListView>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Admin::UserListView> is a view for the
+L<Bivio::Biz::UserList> model showing all the members of a club. It exports
+one action link to add a new user.
 
 =cut
 
@@ -63,7 +54,6 @@ Creates a user list view.
 sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::HTML::ListView::new($proto, 'users');
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -75,15 +65,16 @@ sub new {
 
 =head2 get_action_links(Model model, Request req)
 
-Returns the add-user link.
+Returns the add-user link. This is part of the
+L<Bivio::UI::HTML::LinkSupport> interface and is used by the parent
+presentation when rendering.
 
 =cut
 
 sub get_action_links {
     my($self, $model, $req) = @_;
 
-    $_ADD_LINK->set_url('/'.$req->get_target_name().'/'
-	    .$req->get_controller_name().'/user');
+    $_ADD_LINK->set_url($req->make_path('user'));
 
     return $_ACTION_LINKS;
 }

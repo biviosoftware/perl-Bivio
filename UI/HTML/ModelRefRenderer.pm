@@ -11,7 +11,9 @@ Bivio::UI::HTML::ModelRefRenderer - renders MODEL_REF types
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ModelRefRenderer;
-    Bivio::UI::HTML::ModelRefRenderer->new();
+    my($fp) = Bivio::Biz::FindParams->new({id => 120});
+    my($mr) = Bivio::UI::HTML::ModelRefRenderer->new();
+    $mr->render([$fp->to_string(), 'To be or not to be...'], $req);
 
 =cut
 
@@ -26,7 +28,8 @@ use Bivio::UI::Renderer;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::ModelRefRenderer>
+C<Bivio::UI::HTML::ModelRefRenderer> is a model reference (id, text)
+renderer.
 
 =cut
 
@@ -48,17 +51,30 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
+=head2 static new() : Bivio::UI::HTML::ModelRefRenderer
+
+Creates a new model reference renderer. The controller and view names
+will be taken from the request at the time of rendering.
+
 =head2 static new(string view_name) : Bivio::UI::HTML::ModelRefRenderer
 
-Creates a new model reference renderer.
+Creates a new model reference renderer. The controller name will be taken
+from the request at the time of rendering. The view will be the specified
+value.
+
+=head2 static new(string view_name, string controller_name) : Bivio::UI::HTML::ModelRefRenderer
+
+Creates a new model reference renderer which will use the specified view
+and controller names during rendering.
 
 =cut
 
 sub new {
-    my($proto, $view_name) = @_;
+    my($proto, $view_name, $controller_name) = @_;
     my($self) = &Bivio::UI::Renderer::new($proto);
     $self->{$_PACKAGE} = {
-	view_name => $view_name
+	view_name => $view_name,
+	controller_name => $controller_name
     };
     return $self;
 }
@@ -71,7 +87,7 @@ sub new {
 
 =head2 render(array model_ref, Request req)
 
-Draws the model ref onto the request's output stream.
+Draws the model ref (id, text) onto the request's output stream.
 
 =cut
 
@@ -79,16 +95,13 @@ sub render {
     my($self, $model_ref, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    #HACK: must do this better
     my($id) = $model_ref->[0];
     my($text) = $model_ref->[1];
 
-    # <a href="/naic/messages/04697">Re: YahooClubs</a>
+    # view_name or controller_name fields may be null
 
-    $req->print('<a href="/'.$req->get_target_name()
-	    .'/'.$req->get_controller_name()
-	    .'/'.$fields->{view_name}
-	    .'/?'.$id.'">'.$text.'</a>');
+    $req->print('<a href="'.$req->make_path($fields->{view_name},
+	    $fields->{controller_name}).'?'.$id.'">'.$text.'</a>');
 }
 
 #=PRIVATE METHODS

@@ -8,13 +8,6 @@ $Bivio::UI::HTML::Link::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::HTML::Link - a fancy iconic url link
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Link;
-    Bivio::UI::HTML::Link->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::Renderer>
@@ -26,7 +19,7 @@ use Bivio::UI::Renderer;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Link>
+C<Bivio::UI::HTML::Link> is a renderer for link icons on views.
 
 =cut
 

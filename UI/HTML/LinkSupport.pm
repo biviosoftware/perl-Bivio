@@ -8,11 +8,6 @@ $Bivio::UI::HTML::LinkSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g
 
 Bivio::UI::HTML::LinkSupport - An "interface" for link access
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::LinkSupport;
-    Bivio::UI::HTML::LinkSupport->new();
-
 =cut
 
 use Bivio::UNIVERSAL;
@@ -27,58 +22,14 @@ interface using UNIVERSAL::can().
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
 
 #=VARIABLES
-use vars ($_TRACE);
-Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::IO::Config->register;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::LinkSupport
-
-
-
-=cut
-
-sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {};
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-=over 4
-
-=item name : type [default]
-
-=back
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-    return;
-}
 
 =for html <a name="get_action_links"></a>
 

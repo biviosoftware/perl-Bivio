@@ -8,13 +8,6 @@ $Bivio::UI::Setup::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::Setup::Club - club creation view
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Setup::Club;
-    Bivio::UI::Setup::Club->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -26,11 +19,7 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Setup::Club>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Setup::Club> is a club creation view.
 
 =cut
 
@@ -59,7 +48,6 @@ Creates a club creation view.
 sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::View::new($proto, 'info');
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -71,7 +59,7 @@ sub new {
 
 =head2 get_default_model() : Model
 
-Returns an instance of the User model.
+Returns an instance of the Club model.
 
 =cut
 
@@ -83,7 +71,7 @@ sub get_default_model {
 
 =head2 render(User user, Request req)
 
-Creates a form for editing the specified model.
+Creates a form for editing the specified Club model.
 
 =cut
 
@@ -94,8 +82,8 @@ sub render {
     $req->print('<table border=0><tr><td>');
     $req->print('<table border=0 cellpadding=0 cellspacing=0>');
 
-    $req->print('Now enter a short name for the club identifier, and a
-descriptive name for the full name.<p>');
+    $req->print('Now enter a short name for the club identifier, and a '
+	    .'descriptive name for the full name.<p>');
 
     if (! $club->get_status()->is_OK() ) {
 	$req->print('<font color="#FF0000">');
@@ -106,8 +94,7 @@ descriptive name for the full name.<p>');
 	$req->print('</font>');
     }
 
-    $req->print('<form action='.'/'.$req->get_target_name().'/'
-	    .$req->get_controller_name().'/'.$self->get_name().'>');
+    $req->print('<form action='.$req->make_path().'>');
 
     $req->print('<input type="hidden" name="ma" value=add>');
     $req->print('<input type="hidden" name="admin" value='
@@ -116,6 +103,8 @@ descriptive name for the full name.<p>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'full_name', $req, 1);
+
+    # could add club preferences here...
 
     $req->print('<tr><td>&nbsp;</td></tr>');
     $req->print('<tr><td>'

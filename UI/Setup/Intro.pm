@@ -8,13 +8,6 @@ $Bivio::UI::Setup::Intro::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::UI::Setup::Intro - a setup introduction view
 
-=head1 SYNOPSIS
-
-    use Bivio::UI::Setup::Intro;
-    Bivio::UI::Setup::Intro->new();
-
-=cut
-
 =head1 EXTENDS
 
 L<Bivio::UI::View>
@@ -26,11 +19,7 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Setup::Intro>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Setup::Intro> draws an introductory club setup view.
 
 =cut
 
@@ -57,7 +46,6 @@ Creates a setup introduction view.
 sub new {
     my($proto) = @_;
     my($self) = &Bivio::UI::View::new($proto, 'intro');
-    $self->{$_PACKAGE} = {};
     return $self;
 }
 
@@ -69,7 +57,7 @@ sub new {
 
 =head2 get_default_model() : UserList
 
-Returns an a dummy model.
+Returns a dummy model.
 
 =cut
 
@@ -82,7 +70,7 @@ sub get_default_model {
 
 =head2 render(User user, Request req)
 
-Creates a form for editing the specified model.
+Draws an introductary club setup view.
 
 =cut
 
@@ -92,8 +80,7 @@ sub render {
 
     $req->print('<table border=0><tr><td>');
 
-    $req->print('<form action='.'/'.$req->get_target_name().'/'
-	    .$req->get_controller_name().'/admin>');
+    $req->print('<form action='.$req->make_path('admin'));
 
     $req->print('Welcome to club setup.');
     $req->print('<p><input type="submit" value="Next">');

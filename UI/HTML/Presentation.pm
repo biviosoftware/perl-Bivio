@@ -11,7 +11,10 @@ Bivio::UI::HTML::Presentation - A view arranger with NavBar and ActionBar.
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Presentation;
-    Bivio::UI::HTML::Presentation->new();
+    my($model) = Bivio::Biz::TestModel->new('test2', {}, 'title', 'heading');
+    my($view) = Bivio::UI::TestView->new('test', '<i>a test view</i>', $model);
+    my($page) = Bivio::UI::HTML::Presentation->new([view]);
+    $view->activate()->render($model, $req);
 
 =cut
 
@@ -27,16 +30,24 @@ use Bivio::UI::MultiView;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Presentation> is a multi part view renderer. It renders
-one active view, its title and its action bar. Other view names are drawn
+one active view and its action bar. Other sub view names are drawn
 in a menu. The format looks like:
 
  +-------+
- |       | view-title
+ |       | model-title
  +----++-+
  |    || | navbar   actionbar
  +----+| |
  |    || | active-view
  +----++-+
+
+The title bar is rendered using the L<Bivio::Biz::Model/"get_title"> of
+L<Bivio::Biz::Model>.
+
+Navbar items are looked up using the NAV constants defined below. Views
+which wish to export navigation links should use these names of the
+L<Bivio::UI::HTML::LinkSupport> interface. Action links are rendered
+in a similar way.
 
 =cut
 
@@ -109,6 +120,7 @@ use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::MenuRenderer;
 
 #=VARIABLES
+my($_MENU_RENDERER) = Bivio::UI::HTML::MenuRenderer->new();
 
 my($_EMPTY_LINK) = Bivio::UI::HTML::Link->new('empty',
 	Bivio::UI::HTML::Link::EMPTY_ICON(), '', '', '');
@@ -152,45 +164,41 @@ Renders a view with NavBar, ActionBar, and Menu.
 sub render {
     my($self, $model, $req) = @_;
 
-    $req->print('<table border=0 cellpadding=0 cellspacing=0 width="100%">
-<tr><td colspan=3><!-- TITLE -->
-');
+    $req->print('<table border=0 cellpadding=0 cellspacing=0 width="100%">'
+	    .'<tr><td colspan=3>'
+	    ."\n<!-- TITLE -->");
 
     $self->render_title($model, $req);
 
-    $req->print('</td></tr>
-<tr><td valign=top><!-- NAV BAR -->
-');
+    $req->print('</td></tr><tr><td valign=top>'
+	    ."\n<!-- NAV BAR -->");
 
     $self->render_nav_bar($model, $req);
 
-    $req->print('</td><td width="1%" rowspan=2>
-<!-- SPACER -->&nbsp;</td>
-');
+    $req->print('</td><td width="1%" rowspan=2>'
+	    ."\n<!-- SPACER -->&nbsp;</td>");
 
-    $req->print('<td width="1%" rowspan=2 valign="top">
-<table border=0 cellpadding=0 cellspacing=0>
-<tr><td><!-- VIEW ACTIONS -->
-');
+    $req->print('<td width="1%" rowspan=2 valign="top">'
+	    .'<table border=0 cellpadding=0 cellspacing=0>'
+	    ."<tr><td>\n<!-- VIEW ACTIONS -->");
 
     $self->render_action_bar($model, $req);
 
-    $req->print('</td></tr></table></td></tr>
-<tr><td valign=top><br>
-<!-- VIEW -->
-');
+    $req->print('</td></tr></table></td></tr>'
+	    .'<tr><td valign=top><br>'
+	    ."\n<!-- PRESENTATION VIEW -->");
 
     $self->get_active_view()->render($model, $req);
 
-    $req->print('</td></tr></table>
-');
+    $req->print('</td></tr></table>');
 }
 
 =for html <a name="render_action_bar"></a>
 
 =head2 render_action_bar(Model model, Request req)
 
-Renders a model's actions.
+Renders a model's actions. Action links are accessed through the active
+view L<Bivio::UI::HTML::LinkSupport/"get_action_links"> method.
 
 =cut
 
@@ -206,23 +214,15 @@ sub render_action_bar {
 
     if ($action_links && scalar(@$action_links)) {
 
-	$req->print('<table border=0 cellpadding=5 cellspacing=0
-bgcolor="#E9E3C7"><tr><td align=center valign="top"><small>
-');
+	$req->print('<table border=0 cellpadding=5 cellspacing=0'
+		.' bgcolor="#E9E3C7"><tr>'
+		.'<td align=center valign="top"><small>');
 
 	my($link);
 	foreach $link (@$action_links) {
 	    $req->print('<p>');
 	    $link->render($model, $req);
 	}
-
-#    for (my($i) = 1; $i <= 3; $i++) {
-#	print('<p><a href="mailto:societas@bivio.com">
-#<img src="/i/compose.gif" height=17 width=25 border=0
-#alt="Compose a new message to the club"><br>Compose'.$i
-#.'</a>');
-#    }
-
 	$req->print('</small></td></tr></table>');
     }
 }
@@ -231,17 +231,17 @@ bgcolor="#E9E3C7"><tr><td align=center valign="top"><small>
 
 =head2 render_nav_bar(Model model, Request req)
 
-Draws the nav and menu bar.
+Draws the nav and menu bar. Navigation links (arrows) are accesses
+through the active view L<Bivio::UI::HTML::LinkSupport/"get_nav_links">
+method.
 
 =cut
 
 sub render_nav_bar {
     my($self, $model, $req) = @_;
 
-#=pod
-
-    $req->print('<table border=0 cellpadding=0 cellspacing=0
-width="100%"><tr>');
+    $req->print('<table border=0 cellpadding=0 cellspacing=0'
+	    .' width="100%"><tr>');
 
     my($nav_links) = undef;
     # see if the active view implements LinkSupport
@@ -268,14 +268,13 @@ width="100%"><tr>');
 	$req->print('</td>');
     }
 
-    $req->print('<td width="100%" valign=top align=center>
-<!-- VIEW MENU -->
-');
+    $req->print('<td width="100%" valign=top align=center>'
+	    ."\n<!-- VIEW MENU -->");
 
     my($menu) = $self->get_menu();
     if ($menu) {
 	$menu->set_selected($self->get_active_view()->get_name());
-	Bivio::UI::HTML::MenuRenderer->get_instance()->render($menu, $req);
+	$_MENU_RENDERER->render($menu, $req);
     }
     $req->print('</td>');
 
@@ -301,31 +300,32 @@ width="100%"><tr>');
 
 =head2 render_title(Model model, Request req)
 
-Draws the model's title.
+Draws the model's title. The title is determined using the
+L<Bivio::Biz::Model/"get_title"> method of L<BIvio::Biz::Model>.
 
 =cut
 
 sub render_title {
     my($self, $model, $req) = @_;
 
-    $req->print('<table border=0 cellpadding=5 cellspacing=0 width="100%">
-<tr bgcolor="#E0E0FF">
-<td width="100%" colspan=2>
-<font face="arial,helvetica,sans-serif">
-<big><strong>');
+    $req->print('<table border=0 cellpadding=5 cellspacing=0 width="100%">'
+	    .'<tr bgcolor="#E0E0FF">'
+	    .'<td width="100%" colspan=2>'
+	    .'<font face="arial,helvetica,sans-serif">'
+	    .'<big><strong>');
 
     $req->print($model->get_title() || '&nbsp;');
 
-    $req->print('</strong></big></font>
-</td></tr></table>
-');
+    $req->print('</strong></big></font></td></tr></table>');
 }
 
 #=PRIVATE METHODS
 
+# _find_named_object(array a) : ref
+#
 # Finds the named object in an array of named things. Returns undef
 # if no object by that name is found.
-#
+
 sub _find_named_object {
     my($name, $array) = @_;
 
