@@ -965,7 +965,7 @@ sub _parse_query {
 #
 sub _query_err {
     my($self, $msg) = @_;
-    $self->get_request->warn($self, '->unsafe_load_this_from_request: ', $msg);
+    $self->get_request->warn($self, ' query error: ', $msg);
     return undef;
 }
 
