@@ -51,6 +51,53 @@ use Bivio::Type::Password;
 
 =cut
 
+=for html <a name="format_email"></a>
+
+=head2 format_email() : string
+
+Returns fully-qualified email address for this realm.
+
+=cut
+
+sub format_email {
+    my($self) = @_;
+#TODO: Need to modify Request to handle this case.
+    return $self->get('name').'@'.$self->get_request->get('mail_host')
+}
+
+=for html <a name="format_http"></a>
+
+=head2 format_http() : string
+
+Returns the absolute URL (with http) to access (the root of) this realm.
+
+HACK!
+
+=cut
+
+sub format_http {
+    my($self) = @_;
+#TODO: This is a total hack.   Need to know the "root" task
+    return 'https://'.$self->get_request->get('http_host')
+	    .'/'.$self->get('name');
+}
+
+=for html <a name="format_uri"></a>
+
+=head2 format_uri() : string
+
+Returns the URI to access (the root of) this realm.
+
+HACK!
+
+=cut
+
+sub format_uri {
+    my($self) = @_;
+#TODO: This is a total hack.   Need to know the "root" task
+    return '/'.$self->get('name');
+}
+
 =for html <a name="get_instruments_info"></a>
 
 =head2 get_instruments_info() : array_ref
