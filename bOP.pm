@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.34  2002/12/10 04:49:50  nagler
+  * AdmSubstituteUserForm clears query before redirect
+
+  Revision 1.33  2002/12/06 23:47:09  nagler
+  * Bivio::UI::Mail::Widget::Message allows you to set arbitrary headers
+  * Bivio::UI::PDF::* solidifying, but still experimental
+  * Bivio::UI::HTML::FormErrors supports _mail_to links
+  * Bivio::Test::Request->execute_task captures mail and sets JobBase sentinel
   * Bivio::Test::Request->capture_mail provides messages committed in a ShellUtil
   * Bivio::Biz::Action::JobBase->set_sentinel added (supports b-test task)
   * Bivio::UI::Facade->is_fully_initialized bug fix
