@@ -73,7 +73,7 @@ _compile(\%_MAP, [
     ['EMAIL', 'Email.email', 'RealmInvite.email']
         => 'Email',
     ['Email.want_bulletin']
-        => 'Receive monthly updates on bivio features and service.',
+        => 'Receive monthly updates on bivio features and services.',
     ['PASSWORD', 'RealmOwner.password', 'RealmAccount.external_password']
         => 'Password',
     OLD_PASSWORD => 'Current Password',
