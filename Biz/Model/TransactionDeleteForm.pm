@@ -39,6 +39,20 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty() : boolean
+
+Ensures that the Entry exists.
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    _check_exists($self);
+    return;
+}
+
 =for html <a name="execute_ok"></a>
 
 =head2 execute_ok()
@@ -49,10 +63,8 @@ Deletes the selected entry, its transactions and all its entries.
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
 
-    # loads the entry
-    my($entry) = $req->get('Bivio::Biz::Model::Entry');
+    my($entry) = _check_exists($self);
 
     # delete the related transaction and all its entries
     my($txn) = $entry->get_model('RealmTransaction');
@@ -61,7 +73,7 @@ sub execute_ok {
     $txn->cascade_delete;
 
     # need to update units after this date
-    $req->get('auth_realm')->get('owner')->audit_units($date);
+    $self->get_request->get('auth_realm')->get('owner')->audit_units($date);
 
     return;
 }
@@ -86,6 +98,30 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _check_exists() : Bivio::Biz::Model::Entry
+#
+# Ensures that selected entry exists, if not, redirects to the cancel
+# task. This handles the case where the browser's back button is used
+# to return to a previously deleted item.
+#
+sub _check_exists {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+    # try to load the entry from the query
+    # if it isn't present, then log a warning and cancel out
+
+    # loads the entry
+    my($entry) = Bivio::Biz::Model::Entry->new($req);
+    unless ($req->get('query') && exists($req->get('query')->{t})
+	    && $entry->unsafe_load(entry_id => $req->get('query')->{t})) {
+	Bivio::IO::Alert->warn("attempt to delete missing entry");
+	$self->execute_cancel;
+	# DOES NOT RETURN
+    }
+    return $entry;
+}
 
 =head1 COPYRIGHT
 
