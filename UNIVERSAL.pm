@@ -115,7 +115,7 @@ sub simple_package_name {
 
 =head1 SEE ALSO
 
-L<UNIVERSAL>
+C<UNIVERSAL>
 
 =head1 COPYRIGHT
 

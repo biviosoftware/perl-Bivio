@@ -59,7 +59,7 @@ reset.  It is never sent to the client.
 RealmInvite field.  The user has clicked on a URI which contains
 a valid realm invite.
 
-=time rr [persistent]
+=item rr [persistent]
 
 Referer realm_id.  Only set temporarily.  See the code in
 L<Bivio::Biz::Action::Referral|Bivio::Biz::Action::Referral>.

@@ -392,7 +392,7 @@ Returns false if not found.  Dies on all other errors.
 Subclasses shouldn't override this method.
 
 B<This method will be dynamically overridden.  See
-L<internal_initialize_sql_support|"internal_initialize_sql_support">.
+L<internal_initialize_sql_support|"internal_initialize_sql_support">>.
 
 =cut
 

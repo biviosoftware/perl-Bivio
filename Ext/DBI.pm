@@ -18,7 +18,7 @@ Bivio::Ext::DBI - configuration wrapper around DBI
 
 =head1 EXTENDS
 
-L<DBI>
+C<DBI>
 
 =cut
 
@@ -27,7 +27,7 @@ use DBI;
 
 =head1 DESCRIPTION
 
-C<Bivio::Ext::DBI> is a simple wrapper around the standard L<DBI>.  Instead of
+C<Bivio::Ext::DBI> is a simple wrapper around the standard C<DBI>.  Instead of
 specifying the configuration explicitly, the caller specifies a configuration
 name which is used to connect to.
 
