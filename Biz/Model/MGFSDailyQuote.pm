@@ -237,8 +237,9 @@ sub from_mgfs {
 	    $values->{close} = $closes[$i];
 	    $values->{volume} = $volumes[$i];
 
-	    # update_flag of 2, meaning don't replace, create only if not there
-	    my($die) = $self->try_to_update_or_create($values, 2);
+	    # don't replace, create only if not there
+	    my($die) = $self->try_to_update_or_create($values,
+		   Bivio::Biz::Model::MGFSBase::CREATE_ONLY());
 	    if ($die) {
 		$self->write_reject_record($die, $record);
 		return 0;
