@@ -511,7 +511,7 @@ _compile(\%_MAP, [
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
-    CLUB_MEMBER_TAKE_OFFLINE => 'Take Member Offline',
+    CLUB_ADMIN_MEMBER_TAKE_OFFLINE => 'Take Member Offline',
     CLUB_OPEN_BALANCE => [
 	'' => 'Edit Opening Balances',
 	help_topic => 'Editing Opening Balances',
