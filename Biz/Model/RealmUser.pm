@@ -142,6 +142,33 @@ sub execute_auth_user {
     return;
 }
 
+=for html <a name="get_any_online_admin"></a>
+
+=head2 get_any_online_admin() : Bivio::Biz::Model
+
+Returns I<Model.RealmOwner> for any online Administrator for
+I<Request.auth_realm>.  Dies if none (shouldn't be the case).
+
+=cut
+
+sub get_any_online_admin {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($it) = $self->iterate_start(
+	    'user_id', {role => Bivio::Auth::Role->ADMINISTRATOR});
+    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
+    while ($self->iterate_next_and_load($it)) {
+	my($admin) = $self->get('user_id');
+	return $ro
+	    unless $ro->unauth_load_or_die({realm_id => $admin})->is_offline;
+    }
+    $self->throw_die('DIE', {
+	message => 'no admins found',
+	entity => $req->unsafe_get('auth_realm'),
+    });
+    # DOES NOT RETURN
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
