@@ -344,7 +344,8 @@ my($_SPINOFF) = {};
 
 # easyware data formats
 
-my($_MEMBER_FORMAT) = {
+sub MEMBER_FORMAT {
+    return {
     file_name => 'member.dt',
     data_start => 1274,
     fields => [
@@ -363,9 +364,11 @@ my($_MEMBER_FORMAT) = {
 	    'active', 'boolean2',
 	    'UNKNOWN-2', 'byte60',
 	   ],
-};
+   };
+}
 
-my($_MEMBER_TRANSACTION_FORMAT) = {
+sub MEMBER_TRANSACTION_FORMAT {
+    return {
     file_name => 'memtrans.dt',
     data_start => 1274,
     fields => [
@@ -376,9 +379,11 @@ my($_MEMBER_TRANSACTION_FORMAT) = {
 	    'units', 'double8',
 	    'remark', 'string30',
 	   ],
-};
+    };
+    }
 
-my($_CASH_TRANSACTION_FORMAT) = {
+sub CASH_TRANSACTION_FORMAT {
+    return {
     file_name => 'cash.dt',
     data_start => 1274,
     fields => [
@@ -390,9 +395,11 @@ my($_CASH_TRANSACTION_FORMAT) = {
 	    'remark', 'string31',
 	    'UNKNOWN', 'byte1',
 	   ],
-};
+    };
+}
 
-my($_INSTRUMENT_FORMAT) = {
+sub INSTRUMENT_FORMAT {
+    return {
     file_name => 'secname.dt',
     data_start => 1274,
     fields => [
@@ -408,9 +415,11 @@ my($_INSTRUMENT_FORMAT) = {
 	    'ticker_symbol', 'string8',
 	    'UNKNOWN', 'byte50',
 	   ],
-};
+    };
+}
 
-my($_INSTRUMENT_TRANSACTION_FORMAT) = {
+sub INSTRUMENT_TRANSACTION_FORMAT {
+    return {
     file_name => 'security.dt',
     data_start => 1274,
     fields => [
@@ -422,9 +431,11 @@ my($_INSTRUMENT_TRANSACTION_FORMAT) = {
 	    'remark', 'string30',
 	    'external_identifier', 'int2',
 	   ],
-};
+    };
+}
 
-my($_VALUATION_FORMAT) = {
+sub VALUATION_FORMAT {
+    return {
     file_name => 'valuatn.dt',
     data_start => 1274,
     fields => [
@@ -432,7 +443,8 @@ my($_VALUATION_FORMAT) = {
 	    'instrument_id', 'int2',
 	    'price_per_share', 'double8',
 	   ],
-};
+    };
+}
 
 =head1 FACTORIES
 
@@ -532,20 +544,17 @@ sub import_instruments {
     my($self, $attributes) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($instruments) = _parse_file($self, $_INSTRUMENT_FORMAT);
-    my($valuations) = _parse_file($self, $_VALUATION_FORMAT);
+    my($instruments) = $self->parse_file(INSTRUMENT_FORMAT());
 
     my($req) = Bivio::Agent::TestRequest->new({});
     my($instrument) = Bivio::Biz::Model::RealmInstrument->new($req);
-    my($valuation) = Bivio::Biz::Model::RealmInstrumentValuation
-	    ->new($req);
 
     # load the club instruments
     $attributes->{instrument_id_map} = {};
     my($inst);
     foreach $inst (@$instruments) {
 	$instrument->create({
-	    instrument_id => _lookup_instrument($inst->{ticker_symbol})
+	    instrument_id => $self->lookup_instrument($inst->{ticker_symbol})
 	    ->get('instrument_id'),
 	    realm_id => $attributes->{club_id},
 	    account_number => $inst->{account_number},
@@ -556,6 +565,26 @@ sub import_instruments {
 	$attributes->{instrument_id_map}->{$inst->{instrument_id}}
 	    = $instrument->get('realm_instrument_id');
     }
+
+    $self->import_valuations($attributes);
+}
+
+=for html <a name="import_instruments"></a>
+
+=head2 import_instruments(hash attributes)
+
+Imports instrument valuations from easyware data files.
+Call by default from import_instruments()
+
+=cut
+
+sub import_valuations {
+    my($self, $attributes) = @_;
+
+    my($valuations) = $self->parse_file(VALUATION_FORMAT());
+    my($req) = Bivio::Agent::TestRequest->new({});
+    my($valuation) = Bivio::Biz::Model::RealmInstrumentValuation
+	    ->new($req);
 
     # load instrument valuations
     my($val);
@@ -606,10 +635,10 @@ sub import_transactions {
     my($self, $attributes) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($member_trans) = _parse_file($self, $_MEMBER_TRANSACTION_FORMAT);
-    my($instrument_trans) = _parse_file($self,
-	    $_INSTRUMENT_TRANSACTION_FORMAT);
-    my($cash_trans) = _parse_file($self, $_CASH_TRANSACTION_FORMAT);
+    my($member_trans) = $self->parse_file(MEMBER_TRANSACTION_FORMAT());
+    my($instrument_trans) = $self->parse_file(
+	    INSTRUMENT_TRANSACTION_FORMAT());
+    my($cash_trans) = $self->parse_file(CASH_TRANSACTION_FORMAT());
 
     my($easyware_trans) = [];
     map { $_->{class} = Bivio::Type::EntryClass->MEMBER;
@@ -636,7 +665,7 @@ sub import_transactions {
 sub _link_spinoffs {
     my($self, $instrument_trans) = @_;
 
-    my($instruments) = _parse_file($self, $_INSTRUMENT_FORMAT);
+    my($instruments) = $self->parse_file(INSTRUMENT_FORMAT());
 
     my($trans);
     foreach $trans (@$instrument_trans) {
@@ -973,23 +1002,24 @@ sub _create_entry {
     return;
 }
 
-# _lookup_instrument(string symbol) : Instrument
+# lookup_instrument(string symbol) : Instrument
 #
 # Returns the instrument with the specified ticker symbol
 
-sub _lookup_instrument {
-    my($symbol) = @_;
+sub lookup_instrument {
+    my($self, $symbol) = @_;
     my($req) = Bivio::Agent::TestRequest->new({});
     my($instrument) = Bivio::Biz::Model::Instrument->new($req);
-    $instrument->load(ticker_symbol => $symbol);
+    $instrument->unauth_load(ticker_symbol => $symbol)
+	    || die("no instrument found for $symbol");
     return $instrument;
 }
 
-# _parse_file(hash_ref format) : array_ref
+# parse_file(hash_ref format) : array_ref
 #
 # Parses the file and returns an array of hashed records.
 
-sub _parse_file {
+sub parse_file {
     my($self, $format) = @_;
     my($result) = [];
 
