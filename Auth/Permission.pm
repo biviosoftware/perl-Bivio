@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Permission;
 use strict;
@@ -7,7 +7,7 @@ $_ = $Bivio::Auth::Permission::VERSION;
 
 =head1 NAME
 
-Bivio::Auth::Permission - used to define task access requirements
+Bivio::Auth::Permission - used to define access requirements for tasks
 
 =head1 RELEASE SCOPE
 
@@ -32,13 +32,25 @@ use Bivio::Type::Enum;
 
 C<Bivio::Auth::Permission> is used to specify a task's access
 permissions.  See L<Bivio::Agent::Task|Bivio::Agent::Task> for
-how the permissions are defined.
+how the permissions are used.
 
-NOTE: When you add a new permission, you must update the
-      corresponding table (realm_role_t) in the database.
-      Use b-realm-role for this.
 
-Permissions which end in "_TRANSIENT" are not stored in the database.
+See L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> and
+L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
+for how you define permissions on tasks.
+
+See L<Bivio::Agent::Task|Bivio::Agent::Task> and
+L<Bivio::Delegate::SimpleAuthSupport|Bivio::Delegate::SimpleAuthSupport>
+for how permissions on checked.
+
+See L<Bivio::Biz::Model::RealmRole|Bivio::Biz::Model::RealmRole>
+and L<Bivio::Agent::Request|Bivio::Agent::Request> for how users
+are assigned roles in realms.  This table must be configured if
+you want to use permissions.
+
+You can avoid the use of permissions by delegating
+L<Bivio::Auth::Support|Bivio::Auth::Support> to
+L<Bivio::Delegate::NoDbAuthSupport|Bivio::Delegate::NoDbAuthSupport>.
 
 =cut
 
@@ -56,7 +68,8 @@ __PACKAGE__->compile(
 
 =head2 static is_continuous() : false
 
-Task Ids aren't continuous.  Tasks can go away.
+Permissions aren't continuous, because they may go away or have
+gaps across delegate aggregations.
 
 =cut
 
@@ -68,7 +81,7 @@ sub is_continuous {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
