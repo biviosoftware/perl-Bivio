@@ -124,7 +124,7 @@ sub create {
     my($self, $values) = @_;
     my($req) = $self->get_request;
 
-    $self->die("directory can't have content!")
+    $self->throw_die("directory can't have content!")
 	    if $values->{is_directory} && $values->{content};
 
     # create_initial sets file_id, so this check will be skipped.  Others
@@ -132,10 +132,10 @@ sub create {
     if (!$values->{directory_id} && !$values->{file_id}) {
 	my($fpl) = $self->get_request->unsafe_get(
 		'Bivio::Biz::Model::FilePathList');
-	$self->die('DIE', 'directory_id not set!') unless $fpl;
+	$self->throw_die('DIE', 'directory_id not set!') unless $fpl;
 	$values->{directory_id} = $fpl->set_cursor_to_target;
 	unless ($fpl->get('File.is_directory')) {
-	    $self->die('DIE', 'no directories in file path list!')
+	    $self->throw_die('DIE', 'no directories in file path list!')
 		    unless $values->{directory_id}
 			    = $fpl->get('File.directory_id');
 	}
@@ -253,7 +253,7 @@ sub delete {
 	    unless ($args->{directory_id}) {
 		my($fpl) = $self->get_request->unsafe_get(
 			'Bivio::Biz::Model::FilePathList');
-		$self->die('DIE', 'directory_id not set!') unless $fpl;
+		$self->throw_die('DIE', 'directory_id not set!') unless $fpl;
 		$args->{directory_id} = $fpl->set_cursor_to_target;
 	    }
 
@@ -313,7 +313,7 @@ EOF
     }
 
     # Can't delete the root
-    $self->die('NOT_FOUND', {message => 'attempt to delete file root',
+    $self->throw_die('NOT_FOUND', {message => 'attempt to delete file root',
 	volume => $args->{volume}->get_name,
 	file_id => $args->{file_id}})
 	    if $args->{file_id} eq $args->{volume}->get_root_directory_id(
@@ -556,7 +556,7 @@ sub update {
 #	    $self->get_request->get('auth_user')->get('realm_id')
 #	    unless $new_values->{user_id};
 #    foreach my $k (qw(bytes is_directory directory_id)) {
-#	$self->die('DIE', "can't set $k in update")
+#	$self->throw_die('DIE', "can't set $k in update")
 #		if exists($new_values->{$k});
 #    }
 #    if (exists($new_values->{content})) {

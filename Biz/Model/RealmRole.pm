@@ -61,7 +61,7 @@ sub add_permissions {
     my($ps, $role);
     foreach $role (@$roles) {
         # Load current permission set and add new ones
-        $self->die('NOT_FOUND',
+        $self->throw_die('NOT_FOUND',
                 { message => 'failed to load permission set', entity => $role})
                 unless $self->unauth_load(realm_id => $realm_id, role => $role);
         $ps = $self->get('permission_set');
@@ -89,7 +89,7 @@ sub remove_permissions {
     my($realm_id) = $realm->get('id');
     my($ps, $role);
     foreach $role (@$roles) {
-        $self->die('NOT_FOUND', { message => 'missing role entry',
+        $self->throw_die('NOT_FOUND', { message => 'missing role entry',
             role => $role, entity => $realm_id})
                 unless $self->unauth_load(realm_id => $realm_id, role => $role);
         $ps = $self->get('permission_set') & ~$permissions;
@@ -131,7 +131,7 @@ sub internal_initialize {
 sub _clone_realm {
     my($self, $existing, $new) = @_;
 
-    $self->die('DIE', { message => 'realm types do not match'})
+    $self->throw_die('DIE', { message => 'realm types do not match'})
             unless $existing eq $new->get('type');
 
     my($existing_id) = $existing->as_int;

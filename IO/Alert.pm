@@ -85,7 +85,7 @@ Bivio::IO::Config->register({
 
 =for html <a name="die"></a>
 
-=head2 static die(string arg1, ...) 
+=head2 static die(string arg1, ...)
 
 Sends a warning message to the alert log and then calls C<CORE::die>
 with "\n".

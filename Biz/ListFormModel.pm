@@ -655,7 +655,7 @@ sub _clear_row {
 #
 sub _collision {
     my($self, $msg, $row) = @_;
-    $self->die('UPDATE_COLLISION', {
+    $self->throw_die('UPDATE_COLLISION', {
 	message => $msg.' row #'.$row.' in ListFormModel',
 	list_model => ref($self->get_list_model),
 	list_attrs => $self->get_list_model->internal_get,

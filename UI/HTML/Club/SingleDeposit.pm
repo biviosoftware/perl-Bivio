@@ -158,7 +158,7 @@ sub execute {
 	$show_valuation_date = 0;
     }
     else {
-	$req->die('DIE', {message => 'unhandled entry_type',
+	$req->throw_die('DIE', {message => 'unhandled entry_type',
 	    entity => $entry_type});
     }
     $req->put(show_valuation_date => $show_valuation_date);

@@ -94,10 +94,10 @@ NOT NORMALLY USED.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::Type::DateTime;
 use Bivio::HTML;
-use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
@@ -155,10 +155,10 @@ sub get_column_info {
     my($name, $attr) = @_;
     my($col) = $columns->{$name};
 
-    Bivio::IO::Alert->die($name, ': no such column') unless $col;
+    Bivio::Die->die($name, ': no such column') unless $col;
     return $col unless defined($attr);
 
-    Bivio::IO::Alert->die($name, '.', $attr, ': no such attribute')
+    Bivio::Die->die($name, '.', $attr, ': no such attribute')
 		unless exists($col->{$attr});
     return $col->{$attr};
 }
@@ -234,7 +234,7 @@ sub init_column {
     my($col);
     unless ($col = $columns->{$qual_col}) {
 	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
-	Bivio::IO::Alert->die($qual_col, ': invalid qualified column name')
+	Bivio::Die->die($qual_col, ': invalid qualified column name')
 		    unless $qual_model && $column;
 	my($model);
 	unless ($model = $attrs->{models}->{$qual_model}) {

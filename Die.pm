@@ -11,10 +11,6 @@ Bivio::Die - dispatch die_handler in modules on stack
 =head1 SYNOPSIS
 
     use Bivio::Die;
-    Bivio::Die->catch(sub {});
-    sub handle_die {
-	my($proto, $die) = @_;
-    }
 
 =cut
 
@@ -200,16 +196,31 @@ sub destroy {
 
 =for html <a name="die"></a>
 
-=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static die(string arg1, ...)
 
-=head2 die()
+Wrapper for L<Bivio::IO::Alert::die|Bivio::IO::Alert/"die">.
+The routine ends up calling C<CORE::die> with clean arguments, e.g.
+handling excessively long arguments and C<undef>.
+
+=cut
+
+sub die {
+    shift;
+    return Bivio::IO::Alert->die(@_);
+}
+
+=for html <a name="throw"></a>
+
+=head2 static throw(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+=head2 throw()
 
 Any of the parameters may be undef. Package and line will be filled in by this
 module.  If you'd like to implement a module specific die, you might:
 
-    sub die {
+    sub throw_die {
 	my($self, $code, $msg) = @_;
-	Bivio::Die->die(My::Package::DieCode->from_any($code),
+	Bivio::Die->throw(My::Package::DieCode->from_any($code),
 		{msg => $msg, object => $self}, caller);
     }
 
@@ -230,7 +241,7 @@ In the second form, I<self> is "rethrown".
 
 =cut
 
-sub die {
+sub throw {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     if (ref($proto)) {
 	# Rethrow of an existing die.  If inside a catch, must
@@ -280,14 +291,14 @@ sub eval {
 
 =item stack_trace : boolean [false]
 
-If true, will print a stack trace on L<die|"die">.
+If true, will print a stack trace on L<throw|"throw">.
 
 =item stack_trace_error : boolean [false]
 
-If true, will print a stack trace on a L<die|"die"> which contains a
+If true, will print a stack trace on a L<throw|"throw"> which contains a
 I<program_error> attribute which evaluates to I<true>.  I<program_error> is
 set automatically for C<CORE::die> calls and other internal errors in
-handling L<die|"die"> calls, e.g. die within die.
+handling L<throw|"throw"> calls, e.g. die within die.
 
 =back
 

@@ -26,7 +26,7 @@ BNF syntax in RFC 822.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Alert;
+use Bivio::Die;
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
@@ -133,7 +133,7 @@ sub parse {
 	    return (&_clean_route_addr($a), $n);
 	}
 #TODO: error or assert_fail
-	Bivio::IO::Alert->die('regexps incorrect, cannot parse: ', $_);
+	Bivio::Die->die('regexps incorrect, cannot parse: ', $_);
     }
     Bivio::IO::Alert->warn('Unable to parse address: ', $_);
     return (undef, undef);

@@ -90,7 +90,7 @@ sub create {
 
     # Need to have a From address to continue
     my($from_email, $from_name) = $msg->get_from;
-    $self->die('DIE', {message => 'missing or bad From: address'})
+    $self->throw_die('DIE', {message => 'missing or bad From: address'})
                 unless defined($from_email);
     Bivio::Type::Email->invalidate(\$from_email)
                 if length($from_email) > $_MAX_WIDTH;
@@ -337,7 +337,7 @@ sub get_rfc822_file {
     my($properties) = $self->internal_get;
 
     my($file_id) = $properties->{rfc822_file_id};
-    $self->die('NOT_FOUND', 'mail has no RFC822 file')
+    $self->throw_die('NOT_FOUND', 'mail has no RFC822 file')
             unless defined($file_id);
 
     my($file) = Bivio::Biz::Model::File->new($req);

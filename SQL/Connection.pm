@@ -85,7 +85,6 @@ use Bivio::HTML;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
-use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 use DBD::Oracle qw(:ora_types);
@@ -286,7 +285,7 @@ sub execute {
 
     # Throw exception
     $die ||= 'Bivio::Die';
-    $die->die($die_code, $attrs, caller);
+    $die->throw_die($die_code, $attrs, caller);
     # DOES NOT RETURN
 }
 

@@ -61,7 +61,7 @@ If zero (0), renders nothing.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Alert;
+use Bivio::Die;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -145,7 +145,7 @@ sub render {
 		if $fields->{undef_value};
 	return;
     }
-    Bivio::IO::Alert->die($fields->{control},
+    Bivio::Die->die($fields->{control},
 	    ': invalid control value: ', $ctl);
 }
 

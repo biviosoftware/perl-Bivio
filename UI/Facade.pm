@@ -134,6 +134,7 @@ used.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 use Bivio::IO::Config;
@@ -201,7 +202,7 @@ sub new {
     my($proto, $config) = @_;
     my($self) = Bivio::Collection::Attributes::new($proto);
     my($class) = ref($self);
-    Bivio::IO::Alert->die($class, ': duplicate initialization')
+    Bivio::Die->die($class, ': duplicate initialization')
 		if $_CLASS_MAP{$class};
     # Not yet initialized, but avoid infinite recursion in the
     # event of self-referential configuration.
@@ -216,7 +217,7 @@ sub new {
     }
 
     # Make sure clone is specified and loaded
-    Bivio::IO::Alert->die($class, ': missing clone attribute')
+    Bivio::Die->die($class, ': missing clone attribute')
 		unless exists($config->{clone});
     my($clone) = $config->{clone} ? _load($config->{clone}) : undef;
     delete($config->{clone});
@@ -228,7 +229,7 @@ sub new {
 	$uri =~ s/.*:://;
     }
     delete($config->{uri});
-    Bivio::IO::Alert->die($uri, ': duplicate uri for ', $class, ' and ',
+    Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
 	    ref($_URI_MAP{$uri}))
 		if $_URI_MAP{$uri};
     _trace($class, ': uri=', $uri) if $_TRACE;
@@ -281,7 +282,7 @@ sub new_child {
 	parent => $parent,
     });
 
-    Bivio::IO::Alert->die($self, ': duplicate child type initialization')
+    Bivio::Die->die($self, ': duplicate child type initialization')
 		if $children->{$type};
 
     # This is actually very inefficient, because we copy the entire
@@ -411,14 +412,14 @@ sub initialize {
     Bivio::IO::ClassLoader->simple_require(@classes);
 
     # Make sure the default facade is there and was properly initialized
-    Bivio::IO::Alert->die($_DEFAULT,
+    Bivio::Die->die($_DEFAULT,
 	    ': unable to find or load default Facade')
 		unless ref($_CLASS_MAP{$_DEFAULT});
 
     # Make sure we loaded all components for all Facades
     foreach my $f (values(%_CLASS_MAP)) {
 	foreach my $c (@_COMPONENTS) {
-	    Bivio::IO::Alert->die($f, ': ', $c, ': failed to load component')
+	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
 			unless $f->get($c);
 	}
     }
@@ -472,9 +473,9 @@ sub register {
 		if $required_components;
 
     # Assert that this component is kosher.
-    Bivio::IO::Alert->die($component_class, ': is not a FacadeComponent')
+    Bivio::Die->die($component_class, ': is not a FacadeComponent')
 		unless $component_class->isa('Bivio::UI::FacadeComponent');
-    Bivio::IO::Alert->die($component_class, ': already registered')
+    Bivio::Die->die($component_class, ': already registered')
 		if grep($_ eq $component_class, @_COMPONENTS);
 
     # Register this component
@@ -549,7 +550,7 @@ sub _initialize {
 	$cc = $cc->get($c) if $cc;
 
 	# Must have a clone or initialize (all components MUST be exist)
-	Bivio::IO::Alert->die($self, ': ', $c,
+	Bivio::Die->die($self, ': ', $c,
 		': missing component clone or initialize attributes')
 		    unless $cc || $cfg->{initialize};
 
@@ -559,7 +560,7 @@ sub _initialize {
     }
 
     # Make sure everything in $config is valid.
-    Bivio::IO::Alert->die($self, ': unknown config (modules not ',
+    Bivio::Die->die($self, ': unknown config (modules not ',
 	    ' FacadeComponents(?): ', $config) if %$config;
 
     # No more modifications allowed
@@ -575,9 +576,9 @@ sub _load {
     my($clone) = @_;
     $clone = __PACKAGE__.'::'.$clone unless $clone =~ /::/;
     Bivio::IO::ClassLoader->simple_require($clone);
-    Bivio::IO::Alert->die($clone, ': not a Bivio::UI::Facade')
+    Bivio::Die->die($clone, ': not a Bivio::UI::Facade')
 		unless UNIVERSAL::isa($clone, 'Bivio::UI::Facade');
-    Bivio::IO::Alert->die($clone, ": did not call this module's new "
+    Bivio::Die->die($clone, ": did not call this module's new "
 	    ." (non-production Facade?") unless ref($_CLASS_MAP{$clone});
     return $_CLASS_MAP{$clone};
 }

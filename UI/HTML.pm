@@ -53,6 +53,7 @@ sub UNDEF_CONFIG {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::UI::Facade;
 
 #=VARIABLES
@@ -464,7 +465,7 @@ sub get_value {
 
     # Lookup name
     my($v) = $proto->internal_get_value($name, $req);
-    Bivio::IO::Alert->die('unable to find: ', $name) unless $v;
+    Bivio::Die->die('unable to find: ', $name) unless $v;
 
     return $v->{value};
 }
@@ -484,7 +485,7 @@ sub initialization_complete {
     	    header_height logo_icon site_name home_alt_text)) {
 	push(@bad, $n) unless defined($self->get_value($n));
     }
-    Bivio::IO::Alert->die($self, ': missing names: ', \@bad)
+    Bivio::Die->die($self, ': missing names: ', \@bad)
 		if @bad;
     $self->SUPER::initialization_complete();
     return;
@@ -584,12 +585,12 @@ sub widget_from_template {
 
 		# Make sure name exists
 		my($w) = $self->get_value($name);
-		Bivio::IO::Alert->die($self, ': <$', $name, '> not defined'
+		Bivio::Die->die($self, ': <$', $name, '> not defined'
 			.', on line ', $line_num)
 			    unless defined($w);
 
 		# Make sure name is a widget
-		Bivio::IO::Alert->die($self, ': <$', $name, '>: value ', $w,
+		Bivio::Die->die($self, ': <$', $name, '>: value ', $w,
 			' not a Bivio::UI::HTML::Widget, on line ', $line_num)
 			    unless UNIVERSAL::isa($w,
 				    'Bivio::UI::HTML::Widget');

@@ -554,7 +554,7 @@ sub _die {
     $attrs->{class} =  'Bivio::SQL::ListQuery';
     $attrs->{entity} = $value;
     $die ||= 'Bivio::Die';
-    $die->die($code, $attrs, caller);
+    $die->throw_die($code, $attrs, caller);
 }
 
 # _format_uri(hash_ref attrs, Bivio::SQL::Support support) : string

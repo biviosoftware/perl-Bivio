@@ -33,8 +33,8 @@ without polluting a class's internal field name space.
 =cut
 
 #=IMPORTS
-use Carp ();
 use Bivio::IO::Trace;
+# DON'T use Bivio::Die, because Die extends this module
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -99,7 +99,7 @@ sub ancestral_get {
 	$fields = $fields->{parent}->{$_PACKAGE};
     }
     return $default if int(@_) > 2;
-    Carp::croak("$name: ancestral attribute not found");
+    Bivio::IO::Alert->die($name, ': ancestral attribute not found');
 }
 
 =for html <a name="clone"></a>
@@ -201,13 +201,36 @@ L<has_keys|"has_keys"> to test for existence.
 sub get {
     my($fields) = shift(@_)->{$_PACKAGE};
     my(@res) = map {
-	Carp::croak("$_: attribute doesn't exist")
+	Bivio::IO::Alert->die($_, ": attribute doesn't exist")
 		unless exists($fields->{$_});
 	$fields->{$_};
     } @_;
     return @res if wantarray;
     die('get not called in array context') unless int(@res) == 1;
     return $res[0];
+}
+
+=for html <a name="get_by_regexp"></a>
+
+=head2 get_by_regexp(string pattern) : string
+
+Returns a single value by regular expression.  If not found, throws die.
+
+=cut
+
+sub get_by_regexp {
+    my($self, $pattern) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($match);
+    foreach my $k (keys(%$fields)) {
+	next unless $k =~ /$pattern/;
+	Bivio::IO::Alert->die($pattern, ': pattern matches more than one key',
+		' (', $k, ' and ', $match, ')')
+		    if $match;
+	$match = $k;
+    }
+    Bivio::IO::Alert->die($pattern, ': pattern not found') unless $match;
+    return $fields->{$match};
 }
 
 =for html <a name="get_keys"></a>
@@ -245,13 +268,6 @@ Returns a value to the widget.  The return value is determined as follows:
 
 =over 4
 
-=item 1.
-
-I<param1> is a valid attribute or I<param1> is a attribute pattern
-(begins and ends with slash "/").  If it is an attribute pattern,
-it will be matched against I<all> keys.  One and only one match
-may be found.  Otherwise, it is an error.
-
 =over 4
 
 =item 1.1.
@@ -285,20 +301,15 @@ If I<param1> begins with C<-E<gt>>, C<$self-E<gt>$param1(@_)> will be called.
 
 =item 2.2.
 
-If I<param1> begins with C<++> and once deleted I<param1> is an attribute,
-the attribute will be (pre-)incremented, stored (put), and returned.
-
-=item 2.3.
-
 If I<param1> I<can> C<get_widget_value>,
 C<$param-E<gt>get_widget_value(@_)> will be called.
 
-=item 2.4.
+=item 2.3.
 
 If I<param1> is an unblessed array reference, then
 C<$self-E<gt>get_widget_value(@$param1)> will be called.
 
-=item 2.5.
+=item 2.4.
 
 If I<param1> is an unblessed code reference, then
 C<&$param1($self)> will be called.
@@ -323,19 +334,6 @@ sub get_widget_value {
 	# Plain old attribute, may be undef
 	$value = $fields->{$param1};
     }
-    elsif ($param1 =~ m!^/(.+)/$!) {
-	# Attribute pattern
-	my($pat) = $1;
-	my($match);
-	foreach my $k (keys(%$fields)) {
-	    next unless $k =~ /$pat/;
-	    Carp::croak("$param1: matches more than one key ($k and $match)")
-			if $match;
-	    $match = $k;
-	}
-	Carp::croak("$param1: pattern not found") unless $match;
-	$value = $fields->{$match};
-    }
     else {
 	# No such key, try to call the method on $param1
 	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
@@ -351,25 +349,15 @@ sub get_widget_value {
 	    Bivio::IO::Alert->die($param1, ': not found in source ', $self);
 	}
 
-	if ($param1 =~ s/^\+\+//) {
-	    # Auto increment?
-	    Carp::croak("++${param1}: not found")
-			unless exists($fields->{$param1});
-	    $value = $fields->{$param1} + 1;
-	    # Call "put", because value is being modified and a subclass
-	    # may have overriden.
-	    $self->put($param1 => $value);
+	if (ref($param1) eq 'ARRAY') {
+	    $value = $self->get_widget_value(@$param1);
+	}
+	elsif (ref($param1) eq 'CODE') {
+	    $value = &$param1($self);
 	}
 	else {
-	    if (ref($param1) eq 'ARRAY') {
-		$value = $self->get_widget_value(@$param1);
-	    }
-	    elsif (ref($param1) eq 'CODE') {
-		$value = &$param1($self);
-	    }
-	    else {
-		Carp::croak("$param1: not found and can't get_widget_value");
-	    }
+	    Bivio::IO::Alert->die($param1,
+		    ": not found and can't get_widget_value");
 	}
     }
 
@@ -388,24 +376,25 @@ sub get_widget_value {
     else {
 	# value is a hash or array ref
 	my($param2) = shift;
-	Carp::croak("$param1: is a ref, but not passed second param")
+	Bivio::IO::Alert->die($param1,
+		': is a ref, but not passed second param')
 		    unless defined($param2);
 	$param2 = $self->get_widget_value(@$param2) if ref($param2) eq 'ARRAY';
 	if (ref($value) eq 'HASH') {
 	    # key must exist
-	    Carp::croak("$param1\->{$param2}: does not exist")
+	    Bivio::IO::Alert->die($param1, '->{', $param2, '}: does not exist')
 			unless exists($value->{$param2});
 	    $value = $value->{$param2};
 	}
 	elsif (ref($value) eq 'ARRAY') {
 	    # index must exist (and be a number)
-	    Carp::croak("$param1\->[$param2]: does not exist")
-		unless $param2 <= $#{$value};
+	    Bivio::IO::Alert->die($param1, '->[', $param2, ']: does not exist')
+			unless $param2 <= $#{$value};
 	    $value = $value->[$param2];
 	}
 	else {
-	    Carp::croak("$param1: unsupported reference type: "
-		    . ref($value));
+	    Bivio::IO::Alert->die($param1, ': unsupported reference type: ',
+		    ref($value));
 	}
     }
 
@@ -414,7 +403,7 @@ sub get_widget_value {
     $param1 = shift(@_);
     return $param1->get_widget_value($value, @_)
 	    if UNIVERSAL::can($param1, 'get_widget_value');
-    Carp::croak("$param1: can't get_widget_value (not a formatter)");
+    Bivio::IO::Alert->die("$param1: can't get_widget_value (not a formatter)");
 }
 
 =for html <a name="has_keys"></a>
@@ -443,7 +432,7 @@ Modifying the hash will modify the attributes.
 =cut
 
 sub internal_get {
-    Carp::croak("protected method") unless caller(0)->isa(__PACKAGE__);
+    die("protected method") unless caller(0)->isa(__PACKAGE__);
     return shift->{$_PACKAGE};
 }
 
@@ -460,7 +449,7 @@ Modifying the hash will modify the attributes.
 =cut
 
 sub internal_put {
-    Carp::croak("protected method") unless caller(0)->isa(__PACKAGE__);
+    die("protected method") unless caller(0)->isa(__PACKAGE__);
     my($self, $fields) = @_;
     die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->{$_PACKAGE} = $fields;
@@ -493,7 +482,7 @@ sub put {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     die($_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    int(@_) % 2 == 0 || Carp::croak("must be an even number of parameters");
+    int(@_) % 2 == 0 || die("must be an even number of parameters");
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	$fields->{$k} = $v;

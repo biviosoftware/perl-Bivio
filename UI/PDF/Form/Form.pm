@@ -43,9 +43,9 @@ sub SECTION_NAME_REGEX {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
-use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::UI::PDF::BuiltUpdate;
 use Bivio::UI::PDF::OpaqueUpdate;
@@ -275,7 +275,7 @@ die("undef text_ref") if ! defined($text_ref);
 	    $xlator_set_ref = ${$text_ref}->new();
 	}
 	else {
-	    Bivio::IO::Alert->die($last_section, ": bad section name\n");
+	    Bivio::Die->die($last_section, ": bad section name\n");
 	}
     }
     # Close, so warnings don't always say "at chunk 9993813 of <DATA>"
@@ -307,7 +307,7 @@ sub _get_section {
 	$text .= $_;
     }
     _trace("Text is \"", $text, "\"") if $_TRACE;
-    Bivio::IO::Alert->die('unexpected end of file');
+    Bivio::Die->die('unexpected end of file');
 }
 
 =head1 COPYRIGHT

@@ -34,6 +34,7 @@ Provides many utility routines to help create widgets.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 #NOTE: Do not import any widgets here, use _use().
@@ -44,7 +45,6 @@ use Bivio::HTML;
 use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
-use Bivio::IO::Alert;
 use Bivio::UI::Label;
 
 #=VARIABLES
@@ -756,7 +756,7 @@ for a description of I<task>'s values.
 
 sub link_help {
     my($self, $label, $task) = @_;
-    Bivio::IO::Alert->die($label, ": label must be a string")
+    Bivio::Die->die($label, ": label must be a string")
 	if !defined($label) || ref($label);
 
     return shift->link($label, ['->format_help_uri', $task]);
@@ -829,7 +829,7 @@ Generates a L<link|"link"> with a trademark symbol at the end.
 
 sub link_tm {
     my($proto, $label, $arg, $font) = @_;
-    Bivio::IO::Alert->die($label, ": label must be a string")
+    Bivio::Die->die($label, ": label must be a string")
 	if !defined($label) || ref($label);
 
     # Must be in a join, because we are pre-escaping the string

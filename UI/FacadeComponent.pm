@@ -57,6 +57,7 @@ shouldn't cause an application failure, just a warning.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -79,7 +80,7 @@ and then I<initialize> is called, if supplied.
 sub new {
     my($proto, $facade, $clone, $initialize) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
-    Bivio::IO::Alert->die($facade, ': missing or invalid facade')
+    Bivio::Die->die($facade, ': missing or invalid facade')
 		unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
 
     # Set up our state
@@ -343,7 +344,7 @@ sub regroup {
 
     # Delete the names from the map
     foreach my $name (@$names) {
-	Bivio::IO::Alert->die($self, '->', $name, ': name not found')
+	Bivio::Die->die($self, '->', $name, ': name not found')
 		unless $map->{$name};
 	delete($map->{$name});
     }
@@ -367,7 +368,7 @@ sub value {
     my($self, $name, $value) = @_;
     _assert_writable($self);
     my($map) = $self->{$_PACKAGE}->{map};
-    Bivio::IO::Alert->die($self, '->', $name, ': group not found')
+    Bivio::Die->die($self, '->', $name, ': group not found')
 		unless $map->{$name};
 
     # Clear out old state and reinitialize
@@ -385,7 +386,7 @@ sub value {
 #
 sub _assert_writable {
     my($self) = @_;
-    Bivio::IO::Alert->die($self, ': attempt to modify after initialization')
+    Bivio::Die->die($self, ': attempt to modify after initialization')
 		if $self->{$_PACKAGE}->{read_only};
     return;
 }
@@ -397,9 +398,9 @@ sub _assert_writable {
 sub _assign {
     my($self, $map, $name, $value) = @_;
     $name = lc($name);
-    Bivio::IO::Alert->die($self, '->', $name, ': duplicate name')
+    Bivio::Die->die($self, '->', $name, ': duplicate name')
 		if $map->{$name};
-    Bivio::IO::Alert->die($self, '->', $name, ': invalid name syntax')
+    Bivio::Die->die($self, '->', $name, ': invalid name syntax')
 		unless $name =~ /^\w+$/;
     $map->{$name} = $value;
     return;

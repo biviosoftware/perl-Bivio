@@ -222,7 +222,7 @@ sub _get_instance {
 	my($perl) = $self->get('perl');
 	local($SIG{__DIE__});
 	$values = Bivio::Die->eval($$perl);
-	$self->die('DIE', {message => 'eval of perl failed',
+	$self->throw_die('DIE', {message => 'eval of perl failed',
 	    field => 'perl', realm_id => $realm_id,
 	    entity => $perl,
 	    error => defined($values) ? 'not an array ref' : $@,

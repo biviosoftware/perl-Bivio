@@ -139,7 +139,7 @@ Loads this auth user's data as if realm_id.
 sub execute_auth_user {
     my($proto, $req) = @_;
     my($user) = $req->get('auth_user');
-    Bivio::IO::Alert->die('no auth_user') unless $user;
+    Bivio::Die->die('no auth_user') unless $user;
     my($self) = $proto->new($req);
     $self->unauth_load(realm_id => $user->get('realm_id'));
     return 0;
@@ -212,7 +212,7 @@ I<query> is the same as in L<load|"load">.
 sub iterate_start {
     my($self, $order_by, $query) = @_;
     my($auth_id) = $self->get_request->get('auth_id');
-    $self->die('DIE', 'no auth_id') unless $auth_id;
+    $self->throw_die('DIE', 'no auth_id') unless $auth_id;
     my($support) = $self->internal_get_sql_support;
     $query ||= {};
     $query->{$support->get('auth_id')->{name}} = $auth_id;
@@ -256,7 +256,7 @@ Subclasses shouldn't override this method.
 sub load {
     my($self) = shift;
     $self->unsafe_load(@_) && return;
-    $self->die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
+    $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
 }
 
 =for html <a name="load_from_request"></a>
@@ -282,7 +282,7 @@ sub load_from_request {
 		%$q,
 		auth_id => $req->get('auth_id'),
 		count => 1}, $support, $self)
-		    : $self->die(Bivio::DieCode::CORRUPT_QUERY(),
+		    : $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
 			    'missing query');
 
     # Use this if available, else parent_id
@@ -290,7 +290,7 @@ sub load_from_request {
     my($pk_cols) = $support->get('primary_key');
     unless ($this) {
 	# parent_id has some restrictions, check them
-	$self->die(Bivio::DieCode::CORRUPT_QUERY(), 'missing this')
+	$self->throw_die(Bivio::DieCode::CORRUPT_QUERY(), 'missing this')
 	       unless $parent_id;
 #TODO: Need to make this work more cleanly
 	my($i) = int(@$pk_cols);
@@ -323,7 +323,7 @@ sub load_from_request {
     my(@query) = ();
     my($i) = 0;
     foreach my $col (@$pk_cols) {
-	$self->die(Bivio::DieCode::CORRUPT_QUERY(),
+	$self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
 		{column => $col->{name}, , error => 'NULL'})
 		unless defined($this->[$i]);
 	push(@query, $col->{name}, $this->[$i++]);
@@ -399,7 +399,7 @@ exception if the load fails.
 sub unauth_load_or_die {
     my($self) = shift;
     return if $self->unauth_load(@_);
-    $self->die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
+    $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
 }
 
 =for html <a name="unsafe_load"></a>

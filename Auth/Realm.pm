@@ -61,6 +61,7 @@ Type of this realm.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 #Avoid circular import: See code in _initialize
@@ -114,10 +115,10 @@ sub new {
     if ($proto eq __PACKAGE__) {
 	Carp::croak("no owner") unless $owner;
 	unless (ref($owner)) {
-	    Bivio::IO::Alert->die('cannot create model without request')
+	    Bivio::Die->die('cannot create model without request')
 			unless ref($req);
 	    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-	    Bivio::IO::Alert->die($owner, ': realm_id not found')
+	    Bivio::Die->die($owner, ': realm_id not found')
 			unless $o->unauth_load(($owner =~ /^\d+$/
 				? 'realm_id' : 'name') => $owner);
 	    $owner = $o;
@@ -127,7 +128,7 @@ sub new {
 		if $realm_type == Bivio::Auth::RealmType::CLUB();
 	return Bivio::Auth::Realm::User->new($owner)
 		if $realm_type == Bivio::Auth::RealmType::USER();
-	Bivio::IO::Alert->die($realm_type, ": unknown realm type");
+	Bivio::Die->die($realm_type, ": unknown realm type");
     }
 
     # Instantiate and initialize with/out owner

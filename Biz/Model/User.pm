@@ -163,7 +163,7 @@ sub create {
 	    $values->{$field.'_sort'} = undef;
 	}
     }
-    $self->die('must have at least one of first, last, and middle names')
+    $self->throw_die('must have at least one of first, last, and middle names')
 	    unless $got_one;
     return $self->SUPER::create($values, @_);
 }
@@ -393,7 +393,7 @@ sub update {
 	    $got_one++;
 	}
     }
-    $self->die('must have at least one of first, last, and middle names')
+    $self->throw_die('must have at least one of first, last, and middle names')
 	    unless $got_one;
     return $self->SUPER::update($new_values, @_);
 }

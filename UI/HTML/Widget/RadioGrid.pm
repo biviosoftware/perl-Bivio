@@ -59,6 +59,7 @@ Should the a click submit the form?
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Type::Enum;
 use Bivio::UI::HTML::Widget::Radio;
@@ -83,7 +84,7 @@ sub new {
     my($choices) = $self->get('choices');
 
     # Only allow Enum right now
-    Bivio::IO::Alert->die($choices, ': not supported choices')
+    Bivio::Die->die($choices, ': not supported choices')
 		unless UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
 
     # Convert to Radio

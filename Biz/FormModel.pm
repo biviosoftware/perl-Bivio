@@ -197,6 +197,7 @@ sub VERSION_FIELD {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::Task;
@@ -301,7 +302,7 @@ sub execute {
 	# should blow up.
 	return 1 if $self->execute_input();
 	return 0 unless $fields->{errors};
-	Bivio::IO::Alert->die($self->as_string,
+	Bivio::Die->die($self->as_string,
 		": called with invalid values");
 	# DOES NOT RETURN
     }
@@ -380,7 +381,7 @@ sub execute {
 		_apply_type_error($self, $die);
 	    }
 	    else {
-		$die->die();
+		$die->throw_die();
 		# DOES NOT RETURN
 	    }
 
@@ -1110,7 +1111,7 @@ sub unsafe_get_context {
     return undef unless $fields->{context};
 
     # Very strict, because we don't want the caller to modify the context.
-    $self->die('DIE', {message => 'invalid context attribute',
+    $self->throw_die('DIE', {message => 'invalid context attribute',
 	entity => $attr})
 	    unless $attr =~ /_task$/ && exists($fields->{context}->{$attr});
     return $fields->{context}->{$attr};
@@ -1236,7 +1237,7 @@ sub _apply_type_error {
     my($self, $die) = @_;
     my($err, $attrs) = $die->get('code', 'attrs');
     my($table, $columns) = @{$attrs}{'table','columns'};
-    $die->die() unless defined($table);
+    $die->throw_die() unless defined($table);
     my($sql_support) = $self->internal_get_sql_support();
     my($models) = $sql_support->get('models');
     my($got_one) = 0;
@@ -1252,7 +1253,7 @@ sub _apply_type_error {
 	    }
 	}
     }
-    $die->die() unless $got_one;
+    $die->throw_die() unless $got_one;
     return;
 }
 
@@ -1516,7 +1517,7 @@ sub _parse_version {
 	my($v) = Bivio::Type::Integer->from_literal($value);
 	return if (defined($v) && $v eq $sql_support->get('version'));
     }
-    $self->die(Bivio::DieCode::VERSION_MISMATCH(),
+    $self->throw_die(Bivio::DieCode::VERSION_MISMATCH(),
 	    {field => VERSION_FIELD(),
 		expected => $sql_support->get('version'),
 		actual => $value});

@@ -81,8 +81,8 @@ must generate proper html.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
-use Bivio::IO::Alert;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Format;
 
@@ -223,7 +223,7 @@ sub _format {
 	$value = $format->get_widget_value($value);
 	return $value if $format->result_is_html;
     }
-    Bivio::IO::Alert->die('got ref where scalar expected: ', $value)
+    Bivio::Die->die('got ref where scalar expected: ', $value)
 		if ref($value);
     $value = Bivio::HTML->escape($value);
     $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;

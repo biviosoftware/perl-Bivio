@@ -32,6 +32,7 @@ L<Bivio::Biz::ListModel>, L<Bivio::Biz::FormModel>.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 use Bivio::IO::Trace;
@@ -279,11 +280,11 @@ sub get_info {
     return shift->{$_PACKAGE}->{class_info}->{sql_support}->get(shift);
 }
 
-=for html <a name="die"></a>
+=for html <a name="throw_die"></a>
 
-=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
-=head2 static die(Bivio::Type::Enum code, string message, string package, string file, int line)
+=head2 static throw_die(Bivio::Type::Enum code, string message, string package, string file, int line)
 
 Terminate the I<model> as entity and request in I<attrs> with a specific code.
 
@@ -291,7 +292,7 @@ I<package>, I<file>, and I<line> need not be defined
 
 =cut
 
-sub die {
+sub throw_die {
     my($self, $code, $attrs, $package, $file, $line) = @_;
     $package ||= (caller)[0];
     $file ||= (caller)[1];
@@ -301,7 +302,7 @@ sub die {
     $attrs->{model} = $self;
     # Don't call get_request, because will blow up if not set.
     $attrs->{request} = $self->unsafe_get_request;
-    Bivio::Die->die($code, $attrs, $package, $file, $line);
+    Bivio::Die->throw($code, $attrs, $package, $file, $line);
 }
 
 =for html <a name="get_model"></a>
@@ -426,7 +427,7 @@ or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
 =cut
 
 sub internal_initialize {
-    Bivio::IO::Alert->die(shift, ': abstract method');
+    Bivio::Die->die(shift, ': abstract method');
 }
 
 =for html <a name="internal_initialize_sql_support"></a>
@@ -443,7 +444,7 @@ for this model.
 =cut
 
 sub internal_initialize_sql_support {
-    Bivio::IO::Alert->die(shift, ': abstract method');
+    Bivio::Die->die(shift, ': abstract method');
 }
 
 =for html <a name="iterate_end"></a>

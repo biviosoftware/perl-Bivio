@@ -32,6 +32,7 @@ loads a new auth_realm every time.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Type::DateTime;
 use Bivio::HTML;
 use Bivio::Agent::Reply;
@@ -85,7 +86,7 @@ sub new {
     if ($params->{auth_user_id}) {
 	$auth_user = Bivio::Biz::Model::RealmOwner->new($self);
 	$auth_user->unauth_load(realm_id => $params->{auth_user_id})
-		|| Bivio::IO::Alert->die('unable to load user=',
+		|| Bivio::Die->die('unable to load user=',
 			$params->{auth_user_id});
     }
     $self->internal_initialize($realm, $auth_user);

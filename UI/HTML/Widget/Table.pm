@@ -247,6 +247,7 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 
 use Bivio::Biz::Model;
 use Bivio::UI::Align;
@@ -605,7 +606,7 @@ sub _get_heading {
     });
     if (defined($sort_fields) && @$sort_fields) {
         # Restriction: Main sort field must be identical to column field
-        Bivio::IO::Alert->die($sort_fields->[0], ' ne ', $col,
+        Bivio::Die->die($sort_fields->[0], ' ne ', $col,
                 ': sort field must be identical to column field')
                     unless $sort_fields->[0] eq $col;
         $heading = $self->director([

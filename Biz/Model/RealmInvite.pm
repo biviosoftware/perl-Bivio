@@ -275,11 +275,11 @@ sub execute_accept {
 	my($id) = $lq->unsafe_get('this');
 
 	# User hacked the query?
-	$self->die(Bivio::DieCode::CORRUPT_QUERY(),
+	$self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
 		'missing or incorrect this') unless $id && $id->[0];
 
 	# If it didn't load, just like cookie not found
-	$self->die(Bivio::DieCode::NOT_FOUND(),
+	$self->throw_die(Bivio::DieCode::NOT_FOUND(),
 		'invite not found in db from query')
 		unless $self->unauth_load(realm_invite_id => $id->[0]);
 
@@ -288,7 +288,7 @@ sub execute_accept {
 	my($expected) = $self->get_auth_code();
 	_trace('actual=', $actual, '; expected=', $expected) if $_TRACE;
 	if (defined($actual) && length($actual)) {
-	    $self->die(Bivio::DieCode::NOT_FOUND(),
+	    $self->throw_die(Bivio::DieCode::NOT_FOUND(),
 		    {actual => $actual, expected => $expected,
 			message => 'auth_code field mismatch'})
 		    unless $actual eq $expected;
@@ -303,9 +303,9 @@ sub execute_accept {
 	# If there is a valid cookie, try to load it
 	$self = _check_cookie($proto, $req);
 #TODO: Make these two cases distinct?
-	$req->die(Bivio::DieCode::NOT_FOUND(),
+	$req->throw_die(Bivio::DieCode::NOT_FOUND(),
 		entity => $self, model => $proto) unless $self;
-	$req->die(Bivio::DieCode::NOT_FOUND(),
+	$req->throw_die(Bivio::DieCode::NOT_FOUND(),
 		entity => $self, model => $proto) unless ref($self);
     }
 

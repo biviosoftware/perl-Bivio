@@ -32,7 +32,6 @@ C<Bivio::Type::Secret> to encrypt a string.  It uses IDEA encryption.
 #=IMPORTS
 use Bivio::TypeError;
 use Bivio::Die;
-use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Crypt::CBC;
 
@@ -81,7 +80,7 @@ the column from the database.
 
 sub from_sql_column {
     my($value, $error) = shift->from_literal(@_);
-    Bivio::Die->die($error, {entity => $_[0]}) if $error;
+    Bivio::Die->throw($error, {entity => $_[0]}) if $error;
     return $value;
 }
 

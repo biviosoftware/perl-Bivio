@@ -63,7 +63,7 @@ sub execute {
     $club->load(club_id => $realm_owner->get('realm_id'));
 
     my($emails) = $club->get_outgoing_emails;
-    $req->die('NOT_FOUND', 'alls emails marked as invalid')
+    $req->throw_die('NOT_FOUND', 'alls emails marked as invalid')
             unless $emails;
     $msg->add_recipients($emails);
 

@@ -76,6 +76,7 @@ sub SHADOW_WITHDRAWN_SUFFIX {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Accounting::Audit;
@@ -352,10 +353,10 @@ sub format_uri {
     my($m) = $list_model || $proto;
     my($p) = $model_prefix || '';
     my($name) = $proto->format_name(@_);
-    Bivio::IO::Alert->die($m->get($p.'name'),
+    Bivio::Die->die($m->get($p.'name'),
 	    ': must not be shadow user') unless $name;
     my($t) = $_HOME_TASK_MAP{$m->get($p.'realm_type')};
-    Bivio::IO::Alert->die($m->get($p.'name'), ', ',
+    Bivio::Die->die($m->get($p.'name'), ', ',
 	    $m->get($p.'realm_type'), ': invalid realm type') unless $t;
     return $m->get_request->format_uri($t, undef, $name, undef);
 }

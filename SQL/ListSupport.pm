@@ -301,7 +301,7 @@ sub _execute_select {
     my($attrs) = $self->internal_get;
 
     my($select) = $self->unsafe_get('select');
-    $die->die('DIE', 'must support select') unless $select;
+    $die->throw_die('DIE', 'must support select') unless $select;
 
     _prepare_where($self, $query, \$where, $params);
 

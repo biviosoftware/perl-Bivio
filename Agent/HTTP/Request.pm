@@ -200,7 +200,7 @@ sub client_redirect {
 		if defined($new_query) && length($new_query);
     }
     $self->get('reply')->client_redirect($self, $uri);
-    Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
+    Bivio::Die->throw(Bivio::DieCode::CLIENT_REDIRECT_TASK());
 }
 
 =for html <a name="format_http_toggling_secure"></a>

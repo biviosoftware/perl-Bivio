@@ -28,7 +28,6 @@ output type will be 'text/html'.
 #=IMPORTS
 use Bivio::Ext::ApacheConstants;
 use Bivio::Die;
-use Bivio::IO::Alert;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
@@ -252,7 +251,7 @@ sub set_http_status {
     my($fields) = $self->{$_PACKAGE};
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
-    Bivio::IO::Alert->die($status, ': unknown HTTP status')
+    Bivio::Die->die($status, ': unknown HTTP status')
 		unless defined($status) && $status =~ /^\d+$/
 			&& 100 <= $status && $status < 600;
     $fields->{status} = $status;

@@ -25,9 +25,9 @@ C<Bivio::Mail::Message>
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Agent::Request;
-use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
@@ -117,7 +117,7 @@ sub new {
         'entity' => $parser->parse_data(defined($in) ? $in : ''),
         'rfc822' => $in,
     };
-    Bivio::IO::Alert->die('MIME parser failed to parse message')
+    Bivio::Die->die('MIME parser failed to parse message')
                 unless defined($self->{$_PACKAGE}->{entity});
 
     # If a new message, do the boilerplate setup here
@@ -479,12 +479,12 @@ sub send {
     my($fh) = \*Bivio::Mail::Message::OUT;
     my($pid) = open($fh, '|-');
     unless (defined($pid)) {
-	Bivio::Die->die(Bivio::DieCode::NO_RESOURCES(), "open('|-') failed: $!");
+	Bivio::Die->throw(Bivio::DieCode::NO_RESOURCES(), "open('|-') failed: $!");
     }
     if ($pid) { # parent
         print $fh $fields->{entity}->as_string;
         close($fh);
-        $? == 0 || Bivio::Die->die(Bivio::DieCode::IO_ERROR(),
+        $? == 0 || Bivio::Die->throw(Bivio::DieCode::IO_ERROR(),
                 "close(): status non-zero ($?)");
     }
     else { # child

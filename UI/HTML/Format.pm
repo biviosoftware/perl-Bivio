@@ -40,9 +40,9 @@ see things, e.g. date/time format.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
-use Bivio::IO::Alert;
 
 #=VARIABLES
 
@@ -73,10 +73,10 @@ sub get_instance {
     }
     else {
 	$class = ref($proto) || $proto;
-	Bivio::IO::Alert->die('invalid class; cannot be ', __PACKAGE__)
+	Bivio::Die->die('invalid class; cannot be ', __PACKAGE__)
 		    if $class eq __PACKAGE__;
     }
-    Bivio::IO::Alert->die($class, ': not a ', __PACKAGE__)
+    Bivio::Die->die($class, ': not a ', __PACKAGE__)
 		unless UNIVERSAL::isa($class, __PACKAGE__);
     return $class;
 }

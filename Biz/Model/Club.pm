@@ -203,7 +203,7 @@ sub delete_member_by_name {
     my(%row);
     my($has_txn) = $txn_list->iterate_next($it, \%row);
     $txn_list->iterate_end($it);
-    $user->die('user has transactions') if $has_txn;
+    $user->throw_die('user has transactions') if $has_txn;
 
 #TODO: Need to check for owner of Files and admin of Transactions
 

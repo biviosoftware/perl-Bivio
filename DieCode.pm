@@ -57,7 +57,7 @@ catch called within die: Bivio::Die::catch was called within a call to die
 
 =item INVALID_DIE_CODE: code, attrs, program_error
 
-invalid die code: code passed to Bivio::Die->die is not an Bivio::Type::Enum.
+invalid die code: code passed to Bivio::Die->throw is not an Bivio::Type::Enum.
 I<code> is the invalid code and I<attrs> are the original attributes.
 
 =item DIE: message, program_error
@@ -167,7 +167,7 @@ __PACKAGE__->compile(
     INVALID_DIE_CODE => [
     	5,
 	'invalid die code',
-	'code passed to Bivio::Die->die is not an Bivio::Type::Enum',
+	'code passed to Bivio::Die->throw is not an Bivio::Type::Enum',
     ],
     DIE => [
     	6,
@@ -255,7 +255,7 @@ __PACKAGE__->compile(
 
 =cut
 
-=for html <a name="die"></a>
+=for html <a name="throw_die"></a>
 
 =head2 die(hash_ref attrs)
 
@@ -265,10 +265,10 @@ Dies in caller with this die code.
 
 =cut
 
-sub die {
+sub throw_die {
     my($self, $attrs) = @_;
     $attrs = {message => $attrs} unless ref($attrs) eq 'HASH';
-    Bivio::Die->die($self, $attrs, caller);
+    Bivio::Die->throw($self, $attrs, caller);
 }
 
 #=PRIVATE METHODS

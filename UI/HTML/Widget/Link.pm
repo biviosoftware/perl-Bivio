@@ -73,6 +73,7 @@ The value between the C<A> tags aka the label.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Carp ();
 
@@ -144,7 +145,7 @@ sub initialize {
 	    $fields->{off_value}->initialize;
 	}
 	elsif ($fields->{off_value}) {
-	    Bivio::IO::Alert->die($fields->{off_value}, ': invalid off value');
+	    Bivio::Die->die($fields->{off_value}, ': invalid off value');
 	}
 	elsif (!defined($fields->{off_value})) {
 	    $fields->{off_value} = $fields->{value};

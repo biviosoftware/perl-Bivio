@@ -48,6 +48,7 @@ sub REALM_PLACEHOLDER {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
@@ -120,18 +121,18 @@ B<path_info is not escaped>
 
 sub format {
     my(undef, $task_id, $realm, $req, $no_context, $path_info) = @_;
-    Bivio::IO::Alert->die($task_id, ': no such task')
+    Bivio::Die->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($info) = $_FROM_TASK_ID{$task_id};
     my($uri) = $info->{uri};
-    Bivio::IO::Alert->die($task_id, ': task has no uri')
+    Bivio::Die->die($task_id, ': task has no uri')
 	    unless defined($uri);
 
 #TODO: Add in the form context with \& at the end which turns into nothing
 # if no context added.
     # URI contains a question mark
     if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
-	Bivio::IO::Alert->die('uri requires but realm not defined')
+	Bivio::Die->die('uri requires but realm not defined')
 		    unless defined($realm);
 	my($ro);
 	if (ref($realm)) {
@@ -140,7 +141,7 @@ sub format {
 	}
 	else {
 	    # We're a little strict here, since we added this overload later
-	    Bivio::IO::Alert->die($realm, ': not a simple realm name')
+	    Bivio::Die->die($realm, ': not a simple realm name')
 			unless $realm =~ /^\w+$/;
 	    $ro = $realm;
 	}
@@ -155,9 +156,9 @@ sub format {
     # path_info must begin with a '/' if it is set.
     if ($info->{has_path_info}) {
 	if ($path_info) {
-	    Bivio::IO::Alert->die($task_id, '(', $uri, '): missing path_info')
+	    Bivio::Die->die($task_id, '(', $uri, '): missing path_info')
 			unless $path_info;
-	    Bivio::IO::Alert->die($task_id, '(', $uri,
+	    Bivio::Die->die($task_id, '(', $uri,
 		    '): path_info must begin with slash (', $path_info, ')')
 			unless $path_info =~ /^\//;
 	    $uri .= Bivio::HTML->escape_uri($path_info);
@@ -165,7 +166,7 @@ sub format {
     }
     else {
 #TODO: This assertion check doesn't work
-#	Bivio::IO::Alert->die($task_id, '(', $uri,
+#	Bivio::Die->die($task_id, '(', $uri,
 #		'): does not require path_info (', $path_info, ')')
 #		    if $path_info;
     }
@@ -392,7 +393,7 @@ sub parse {
 
     # Question mark is a special character
     my(@uri) = map {
-	$req->die(Bivio::DieCode::NOT_FOUND,
+	$req->throw_die(Bivio::DieCode::NOT_FOUND,
 		{entity => $orig_uri, message => 'contains special char'})
 		if $_ eq REALM_PLACEHOLDER();
 	$_;
@@ -418,7 +419,7 @@ sub parse {
                 $orig_uri) if $info->{has_path_info};
 
 	# The URI doesn't accept path_info, so not found.
-	$req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+	$req->throw_die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
 	    orig_uri => $orig_uri,
 	    uri => $uri,
 	    message => 'no such general URI (not a path_info uri)'});
@@ -439,7 +440,7 @@ sub parse {
 	}
 
 	# Not found
-	$req->die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
+	$req->throw_die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
 	    entity => $_DOCUMENT_ROOT.$uri,
 	    message => 'no such document'});
     }
@@ -456,7 +457,7 @@ sub parse {
 
     # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-    $req->die(Bivio::DieCode::NOT_FOUND,
+    $req->throw_die(Bivio::DieCode::NOT_FOUND,
             {entity => $name, uri => $orig_uri,
                 class => 'Bivio::Auth::Realm',
                 message => 'no such realm'})
@@ -483,7 +484,7 @@ sub parse {
 			    && $info->{has_path_info};
 
     # Well, really not found
-    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
+    $req->throw_die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
 	realm_type => $realm->get('type')->get_name,
 	orig_uri => $orig_uri,
 	uri => $uri,
@@ -500,7 +501,7 @@ Does the task have a uri?
 
 sub task_has_uri {
     my(undef, $task_id) = @_;
-    Bivio::IO::Alert->die($task_id, ': no such task')
+    Bivio::Die->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     return defined($_FROM_TASK_ID{$task_id}->{uri}) ? 1 : 0;
 }

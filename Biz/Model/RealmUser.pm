@@ -34,9 +34,9 @@ and delete interface to the C<realm_user_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
-use Bivio::IO::Alert;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 
@@ -234,7 +234,7 @@ Loads this realm for this auth user.
 sub execute_auth_user {
     my($proto, $req) = @_;
     my($user) = $req->get('auth_user');
-    Bivio::IO::Alert->die('no auth_user') unless $user;
+    Bivio::Die->die('no auth_user') unless $user;
     my($self) = $proto->new($req);
     $self->load(user_id => $user->get('realm_id'));
     return;

@@ -358,15 +358,15 @@ sub client_redirect {
     return $self->server_redirect(@_);
 }
 
-=for html <a name="die"></a>
+=for html <a name="throw_die"></a>
 
-=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
 Terminate the request with a specific code.
 
 =cut
 
-sub die {
+sub throw_die {
     my($self, $code, $attrs, $package, $file, $line) = @_;
     $package ||= (caller)[0];
     $file ||= (caller)[1];
@@ -384,7 +384,7 @@ sub die {
     $attrs->{task} = ref($task) ? $task->get_name : undef;
     $attrs->{user} = ref($user) ? $user->as_string : undef;
 
-    Bivio::Die->die($code, $attrs, $package, $file, $line);
+    Bivio::Die->throw($code, $attrs, $package, $file, $line);
 }
 
 =for html <a name="elapsed_time"></a>
@@ -861,7 +861,7 @@ sub internal_redirect_realm {
 #TODO: Total hack.  This stuff needs a good going over...
 		    $self->client_redirect('/demo_club')
 			    unless defined($auth_user);
-		    Bivio::IO::Alert->die(
+		    Bivio::Die->die(
 			    'misconfiguration of DEMO_REDIRECT task')
 				if Bivio::Agent::TaskId::DEMO_REDIRECT()
 					eq $new_task;
@@ -965,7 +965,7 @@ Called by subclasses when Request initialized.  Returns self.
 
 sub internal_set_current {
     my($self) = @_;
-    Bivio::IO::Alert->die($self, ': must be reference')
+    Bivio::Die->die($self, ': must be reference')
 		unless ref($self);
     return $_CURRENT = $self;
 }
@@ -1016,7 +1016,7 @@ sub server_redirect {
     $self->internal_server_redirect($new_task, @_);
     # clear db time
     Bivio::SQL::Connection->get_db_time;
-    Bivio::Die->die(Bivio::DieCode::SERVER_REDIRECT_TASK(),
+    Bivio::Die->throw(Bivio::DieCode::SERVER_REDIRECT_TASK(),
 	    {task_id => $new_task});
     return;
 }
@@ -1146,7 +1146,7 @@ sub set_user {
     else {
 	$user_realms = {};
     }
-    Bivio::IO::Alert->die($user, ': not a RealmOwner')
+    Bivio::Die->die($user, ': not a RealmOwner')
 	    if defined($user) && !$user->isa('Bivio::Biz::Model::RealmOwner');
     $self->put(auth_user => $user,
 	    auth_user_id => $user ? $user->get('realm_id') : undef,
@@ -1200,7 +1200,7 @@ sub task_ok {
     # Normal case is for task and realm types to match, if not...
     if (defined($realm_id)) {
 #TODO: Need to handle multiple realms, e.g. list of clubs to switch to
-	$self->die("not yet implemented");
+	$self->throw_die("not yet implemented");
     }
     unless ($trt eq $art) {
 	$realm = _get_realm($self, $trt, $task_id);

@@ -102,7 +102,7 @@ sub DEFAULT_HELP {
 }
 
 #=IMPORTS
-use Bivio::IO::Alert;
+use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 use Bivio::Collection::SingletonMap;
@@ -207,11 +207,11 @@ sub new {
 	my($class, $method) = split(/->/, $i, 2);
 	my($c) = Bivio::Collection::SingletonMap->get($class);
 	$method ||= 'execute';
-	Bivio::IO::Alert->die($i,
+	Bivio::Die->die($i,
 		": can't be executed (missing $method method)")
 		    unless $c->can($method);
 	if ($c->isa('Bivio::Biz::FormModel')) {
-	    Bivio::IO::Alert->die($id->as_string, ': too many form models')
+	    Bivio::Die->die($id->as_string, ': too many form models')
 			if $attrs->{form_model};
 	    $attrs->{form_model} = $class;
 	}
@@ -266,7 +266,7 @@ sub execute {
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
 	my($auth_user) = $req->get('auth_user');
-	Bivio::Die->die('FORBIDDEN',
+	Bivio::Die->throw('FORBIDDEN',
 		{auth_user => $auth_user, entity => $auth_realm,
 		    auth_role => $auth_role, operation => $attrs->{id}})
 		    if $auth_user;
@@ -294,7 +294,7 @@ Returns the task associated with the id.
 
 sub get_by_id {
     my(undef, $id) = @_;
-    Bivio::IO::Alert->die($id, ": no task associated with id")
+    Bivio::Die->die($id, ": no task associated with id")
 	    unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
@@ -457,11 +457,11 @@ sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
 
     if ($cause eq 'help') {
-	Bivio::IO::Alert->die($attrs->{id}, ': invalid help=', $action)
+	Bivio::Die->die($attrs->{id}, ': invalid help=', $action)
 		unless $action =~ /^[\w-]+$/;
 #TODO: This presumes a lot.  Too much?
 	$attrs->{help} = '/'.$action.'.html';
-	Bivio::IO::Alert->die($attrs->{id}, ': help file not found: ',
+	Bivio::Die->die($attrs->{id}, ': help file not found: ',
 		$attrs->{help}) unless
 			-r Bivio::Agent::HTTP::Location->get_help_root()
 				.$attrs->{help};
@@ -481,7 +481,7 @@ sub _parse_map_item {
     if ($cause =~ /(.+)::(.+)/) {
 	# Fully specified enum
 	my($class, $method) = ($1, $2);
-	Bivio::IO::Alert->die($cause, ': not an enum (', $attrs->{id}, ')')
+	Bivio::Die->die($cause, ': not an enum (', $attrs->{id}, ')')
 		    unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
 	$cause = $class->from_name($method);
     }

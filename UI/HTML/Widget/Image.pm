@@ -91,6 +91,7 @@ VSPACE attribute value.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::HTML;
 use Bivio::UI::Icon;
 use Carp ();
@@ -200,7 +201,7 @@ sub render {
     $src = $source->get_widget_value(@$src) if ref($src) eq 'ARRAY';
 
     # Must return a string (used to return a hash)
-    Bivio::IO::Alert->die($fields->{src}, ' return a ref: ', $src)
+    Bivio::Die->die($fields->{src}, ' return a ref: ', $src)
 		if ref($src);
 
     unless ($fields->{have_size}) {

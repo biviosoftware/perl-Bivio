@@ -106,6 +106,7 @@ sub NOT_FOUND_IF_EMPTY {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::Biz::Model::SummaryList;
 use Bivio::Biz::QueryType;
@@ -260,7 +261,7 @@ sub execute_load_page {
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request();
     $query->put(want_page_count => 1);
-    $self->die('CORRUPT_QUERY', {message => 'unexpected this',
+    $self->throw_die('CORRUPT_QUERY', {message => 'unexpected this',
 	query => $req->unsafe_get('query')})
 	    if $query->unsafe_get('this');
     $self->load_page($query);
@@ -279,7 +280,7 @@ sub execute_load_this {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request();
-    $self->die('CORRUPT_QUERY', {message => 'missing this',
+    $self->throw_die('CORRUPT_QUERY', {message => 'missing this',
 	query => $req->unsafe_get('query')})
 	    unless $query->unsafe_get('this');
     $self->load_this($query);
@@ -375,7 +376,7 @@ sub format_uri {
 	my($c) = $fields->{cursor};
 	die('no cursor') unless defined($c) && $c >= 0;
 	my($pi) = $self->get('path_info');
-	Bivio::IO::Alert->die('row ', $c, ': no path_info at cursor')
+	Bivio::Die->die('row ', $c, ': no path_info at cursor')
 		    unless defined($pi);
 	$uri .= '/'.$pi if length($pi);
     }
@@ -721,7 +722,7 @@ sub internal_load {
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
-    $self->die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
+    $self->throw_die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
     my($req) = $self->unsafe_get_request;
     $req->put(ref($self) => $self, list_model => $self) if $req;
 
@@ -893,7 +894,7 @@ for semantics of row fixups.
 
 sub iterate_start {
     my($self, $query) = @_;
-    $self->die('DIE', 'iteration not supported') unless $self->can_iterate;
+    $self->throw_die('DIE', 'iteration not supported') unless $self->can_iterate;
 
     $query = $self->parse_query($query);
     my($sql_support) = $self->internal_get_sql_support;
@@ -956,7 +957,7 @@ sub load_page {
     $query = $self->parse_query($query);
 
     # Must NOT specify a "this" else programming error.
-    $self->die('DIE', {message => 'unexpected this',
+    $self->throw_die('DIE', {message => 'unexpected this',
 	query => $query}) if $query->unsafe_get('this');
 
     _unauth_load($self, $query);
@@ -990,16 +991,16 @@ sub load_this {
     $query = $self->parse_query($query);
 
     # Must specify a "this" else programming error.
-    $self->die('DIE', {message => 'missing this',
+    $self->throw_die('DIE', {message => 'missing this',
 	query => $query}) unless $query->unsafe_get('this');
 
     my($count) = _unauth_load($self, $query);
     return if $count == 1;
 
-    $self->die('NOT_FOUND', {message => 'this not found',
+    $self->throw_die('NOT_FOUND', {message => 'this not found',
 	query => $query}) unless $count;
 
-    $self->die('TOO_MANY', {message => 'expecting just one this',
+    $self->throw_die('TOO_MANY', {message => 'expecting just one this',
 	query => $query});
     # DOES NOT RETURN
 }
@@ -1057,7 +1058,7 @@ Terminates unless L<next_row|"next_row"> succeeds.
 
 sub next_row_or_die {
     my($self) = shift;
-    $self->die('expecting next row') unless $self->next_row(@_);
+    $self->throw_die('expecting next row') unless $self->next_row(@_);
     return;
 }
 
@@ -1201,7 +1202,7 @@ if it returns false.
 sub set_cursor_or_die {
     my($self) = shift;
     return if $self->set_cursor(@_);
-    $self->die('DIE', {message => 'no such row', entity => $_[0]});
+    $self->throw_die('DIE', {message => 'no such row', entity => $_[0]});
 }
 
 =for html <a name="set_cursor_or_not_found"></a>
@@ -1216,7 +1217,7 @@ if it returns false.
 sub set_cursor_or_not_found {
     my($self) = shift;
     return if $self->set_cursor(@_);
-    $self->die('NOT_FOUND', {message => 'no such row',
+    $self->throw_die('NOT_FOUND', {message => 'no such row',
 	entity => $_[0]});
 }
 
@@ -1254,7 +1255,7 @@ sub unauth_load_all {
 sub _assert_all {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->die(Bivio::DieCode::TOO_MANY(), 'more than '
+    $self->throw_die(Bivio::DieCode::TOO_MANY(), 'more than '
 	    .$self->LOAD_ALL_SIZE.' records')
 	    if $fields->{query}->get('has_next');
     return;

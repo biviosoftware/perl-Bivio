@@ -35,7 +35,6 @@ process can't acquire the same lock twice.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
-use Bivio::IO::Alert;
 use Bivio::TypeError;
 
 #=VARIABLES
@@ -69,11 +68,11 @@ sub acquire {
     return unless $die;
 
     # someone already has it or are we trying to acquire it again?
-    $self->die('UPDATE_COLLISION', $values)
+    $self->throw_die('UPDATE_COLLISION', $values)
 	    if $die->get('code') == Bivio::TypeError::EXISTS();
 
     # something else bad happened
-    $die->die();
+    $die->throw_die();
 }
 
 =for html <a name="execute"></a>
@@ -164,13 +163,13 @@ sub release {
     # Ensure that we are delete the lock on the request first before errors
     my($req) = $self->get_request;
     my($req_lock) = $req->unsafe_get(ref($self));
-    $self->die('DIE', 'no locks on request') unless $req_lock;
-    $self->die('DIE', {message => 'too many locks on the same request',
+    $self->throw_die('DIE', 'no locks on request') unless $req_lock;
+    $self->throw_die('DIE', {message => 'too many locks on the same request',
 	request_lock => $req_lock}) unless $req_lock == $self;
     $req->delete(ref($self));
 
     # If it can't release the lock, blow up.
-    $self->die('UPDATE_COLLISION')
+    $self->throw_die('UPDATE_COLLISION')
 	    unless $self->delete();
 
     return;

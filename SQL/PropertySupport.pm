@@ -58,6 +58,7 @@ WHERE.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Type::DateTime;
 use Bivio::HTML;
 use Bivio::SQL::Connection;
@@ -212,7 +213,7 @@ sub create {
     if ($pid) {
 	if ($new_values->{$pid}) {
 #TODO: Need an assertion check about not using sequences....
-#	    $die->die('DIE', {message =>
+#	    $die->throw_die('DIE', {message =>
 #		'special primary_id greater than min primary id',
 #		field => $pid, value => $new_values->{$pid}})
 #		    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
@@ -252,7 +253,7 @@ sub delete {
     my(@params) = map {
         unless (exists($values->{$_})) {
             $die ||= 'Bivio::Die';
-            $die->die('DIE', {
+            $die->throw_die('DIE', {
                 message => 'missing primary key value for delete',
                 entity => $self,
                 column => $_});
@@ -435,7 +436,7 @@ sub _prepare_select {
     if ($query) {
 	$sql .=' where '.join(' and ', map {
 	    my($column) = $columns->{$_};
-	    Bivio::IO::Alert->die('invalid field name: ', $_) unless $column;
+	    Bivio::Die->die('invalid field name: ', $_) unless $column;
 	    push(@$params, $column->{type}->to_sql_param($query->{$_}));
 	    $_.'='.$column->{sql_pos_param};
 	    # Use a sort to force order which (may) help Oracle's cache.

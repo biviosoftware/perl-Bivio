@@ -54,8 +54,8 @@ Honors always map to a role.  See L<get_role|"get_role">.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Auth::Role;
-use Bivio::IO::Alert;
 
 #=VARIABLES
 __PACKAGE__->compile(
@@ -122,7 +122,7 @@ Returns the role for this honor.
 
 sub get_role {
     my($self) = @_;
-    Bivio::IO::Alert->die($self, ': not a Honorific')
+    Bivio::Die->die($self, ': not a Honorific')
 		unless $_ROLE_MAP{$self};
     return $_ROLE_MAP{$self};
 }

@@ -36,6 +36,7 @@ not queue new jobs during L<execute_queue|"execute_queue">.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Agent::Job::Request;
 
 #=VARIABLES
@@ -91,12 +92,12 @@ May not be called during L<execute_queue|"execute_queue">.
 
 sub enqueue {
     my($self, $req, $task_id, $params) = @_;
-    Bivio::IO::Alert->die('not allowed to call enqueue in execute_queue')
+    Bivio::Die->die('not allowed to call enqueue in execute_queue')
 		if $_IN_EXECUTE;
 
     # No models please
     while (my($k, $v) = each(%$params)) {
-	Bivio::IO::Alert->die('models may not be queued: ', $k, '=', $v)
+	Bivio::Die->die('models may not be queued: ', $k, '=', $v)
 		    if UNIVERSAL::isa($v, 'Bivio::Biz::Model');
     }
 

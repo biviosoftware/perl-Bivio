@@ -102,7 +102,7 @@ sub _parse {
 #TODO: This may not be correct although it should be.
     my($len) = $r->header_in('Content-Length');
     if ($len) {
-	$req->die('CORRUPT_FORM',
+	$req->throw_die('CORRUPT_FORM',
 		{message => 'negative Content-Length', entity => $len})
 		if $len < 0;
     }
@@ -129,7 +129,7 @@ sub _parse {
 	    last;
 	}
     }
-    $req->die('CORRUPT_FORM', 'no starting boundary line')
+    $req->throw_die('CORRUPT_FORM', 'no starting boundary line')
 	    unless ($boundary);
 
     # Loop over the fields.
@@ -163,13 +163,13 @@ sub _parse {
 	# Parse the closing boundary
 	last if $buf =~ s/^--//;
 
-	$req->die('CORRUPT_FORM',
+	$req->throw_die('CORRUPT_FORM',
 		{message => 'invalid encapsulation or closing boundary',
 		    entity => substr($buf, 0, 20)});
     }
 #TODO: I believe that Apache does this for us with the whole request
     $r->kill_timeout();
-    $req->die('CLIENT_ERROR',
+    $req->throw_die('CLIENT_ERROR',
 	    'client interrupt or timeout while reading form-data')
 	    if $r->connection->aborted();
 
@@ -235,11 +235,11 @@ sub _parse_header {
     while (1) {
 	unless (_parse_header_line($req, $r, $buf, $len, \$line)) {
 	    return undef unless @header;
-	    $req->die('CORRUPT_FORM', 'header without a body');
+	    $req->throw_die('CORRUPT_FORM', 'header without a body');
 	}
 	last unless length($line);
 	if ($line =~ s/^\s+/ /) {
-	    $req->die('CORRUPT_FORM', 'leading white space in header')
+	    $req->throw_die('CORRUPT_FORM', 'leading white space in header')
 		    unless @header;
 	    $header[0] .= $line;
 	}
@@ -255,7 +255,7 @@ sub _parse_header {
 	my($h) = pop(@header);
 	if ($h =~ s/^Content-Disposition:\s*//i) {
 	    # Must be included always
-	    $req->die('CORRUPT_FORM', {'Content-Disposition' => $h})
+	    $req->throw_die('CORRUPT_FORM', {'Content-Disposition' => $h})
 		    unless $h =~ s/^form-data\s*//;
 
 	    # Parse each of the keywords
@@ -282,7 +282,7 @@ sub _parse_header {
 		    $field->{$attr} = $value;
 		}
 		else {
-		    $req->die('CORRUPT_FORM',
+		    $req->throw_die('CORRUPT_FORM',
 			    {'Content-Disposition' => "$attr=$h",
 				message => 'invalid attribute syntax'});
 		}
@@ -303,7 +303,7 @@ sub _parse_header {
 	elsif ($h =~ s/^Content-Transfer-Encoding:\s*//i) {
 	    # Really shouldn't get here, but just in case, so we
 	    # don't corrupt user data.
-	    $req->die('CORRUPT_FORM',
+	    $req->throw_die('CORRUPT_FORM',
 		    {message => 'invalid encoding must be 8bit or binary',
 			'Content-Transfer-Encoding' => $h})
 		    unless $h =~ /^(?:8bit|binary)\b/i;
@@ -314,7 +314,7 @@ sub _parse_header {
 	}
     }
 
-    $req->die('CORRUPT_FORM', {message => 'field missing "name" attribute',
+    $req->throw_die('CORRUPT_FORM', {message => 'field missing "name" attribute',
 	field => $field})
 	    unless defined($field->{name});
     return $field;
@@ -351,7 +351,7 @@ sub _parse_header_line {
 	    return 1;
 	}
     }
-    $req->die('CORRUPT_FORM', 'header too long');
+    $req->throw_die('CORRUPT_FORM', 'header too long');
 }
 
 # _read(Apache r, string_ref buf, int len, Bivio::Agent::Request req)
@@ -363,8 +363,8 @@ sub _read {
     $r->soft_timeout('Bivio::Agent::HTTP::Form::_read');
     # NOTE: Doesn't actually do a "soft" timeout.  Sets a hard
     # timeout.
-    $r->read($$buf, $len) || $req->die('CLIENT_ERROR', 'read error');
-    $req->die('CLIENT_ERROR', 'buffer undefined after read')
+    $r->read($$buf, $len) || $req->throw_die('CLIENT_ERROR', 'read error');
+    $req->throw_die('CLIENT_ERROR', 'buffer undefined after read')
 	    unless defined($$buf);
     $r->reset_timeout;
 }

@@ -49,6 +49,7 @@ If true, will force a widget to a be a select, if it can.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Biz::Model;
 use Bivio::UI::HTML::Widget::AmountCell;
 use Bivio::UI::HTML::Widget::Checkbox;
@@ -413,7 +414,7 @@ sub _create_edit {
 	# because it is used in the EditPreferencesForm which
 	# ignores all errors.  We try to make preferences be
 	# always 'correct'.
-	Bivio::IO::Alert->die($type, ': range changed')
+	Bivio::Die->die($type, ': range changed')
 		if $type->get_min != 5 || $type->get_max != 500;
 	return Bivio::UI::HTML::Widget::Select->new({
 	    field => $field,
@@ -431,7 +432,7 @@ sub _create_edit {
 	});
     }
 
-    Bivio::IO::Alert->die($type, ': unsupported type');
+    Bivio::Die->die($type, ': unsupported type');
 }
 
 # _default_size(any type) : int
@@ -453,7 +454,7 @@ sub _get_model_and_field_type {
 
     # parse out the model (everything up to the first ".") and field names
     my($model_name, $field_name) = $field =~ /^([^\.]+)\.(.+)$/;
-    Bivio::IO::Alert->die($field, ": couldn't parse")
+    Bivio::Die->die($field, ": couldn't parse")
                 unless defined($model_name) && defined($field_name);
 
     my($model) = Bivio::Biz::Model->get_instance($model_name);
