@@ -55,6 +55,7 @@ Bivio::Test->unit([
 		['etc/sysconfig/network-scripts/ifcfg-eth0',
 		    "NETMASK=255.255.255.240\nGATEWAY=1.2.3.99\n"],
 		['etc/hosts', "any.host\t1.2.3.4\n"],
+		['etc/hosts', sub {${shift(@_)} !~ /any.host.*99/im}],
 	    ],
 	], [
             'resolv_conf', [qw(my.dom 1.2.3.4 1.2.3.5)] => [

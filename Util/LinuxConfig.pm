@@ -479,9 +479,14 @@ IPADDR=$ip
 NETMASK=$mask
 GATEWAY=$gateway
 EOF
+		 return 1;
 	     }],
-	) . $self->append_lines('/etc/hosts', 'root', 'root', 0644,
-	    "$hostname\t$ip");
+	) . _edit($self, '/etc/hosts',
+	    [sub {
+		 ${shift(@_)} =~ s/^$hostname\s.*//im;
+	    }],
+	    ['$', "$hostname\t$ip\n"],
+	);
 }
 
 =for html <a name="resolv_conf"></a>
@@ -506,6 +511,7 @@ sub resolv_conf {
 search $domain
 domain $domain@{[join('', map("\nnameserver $_", @nameserver))]}
 EOF
+	     return 1;
 	 }]);
 }
 
