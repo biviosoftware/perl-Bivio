@@ -108,7 +108,7 @@ sub enqueue {
     $params->{auth_id} = $req->get('auth_id');
     my($u) = $req->get('auth_user');
     $params->{auth_user_id} = $u ? $u->get('realm_id') : undef;
-    $params->{facade} = $req->unsafe_get('facade');
+    $params->{facade} = $req->unsafe_get('Bivio::UI::Facade');
 
     # Enqueue and add as a txn resource (may end up calling handle_rollback
     # multiple times, but the routine is re-enterable).
