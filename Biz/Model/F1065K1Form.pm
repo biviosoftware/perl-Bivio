@@ -32,6 +32,7 @@ C<Bivio::Biz::Model::F1065K1Form> IRS 1065 K-1 fields
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Biz::Accounting::ClubOwnership;
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::F1065Form;
@@ -50,6 +51,8 @@ use Bivio::Type::F1065Return;
 use Bivio::Type::F1065Partner;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 my($_M) = 'Bivio::Type::Amount';
@@ -154,6 +157,11 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'margin_interest',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'investment_income',
 		type => 'Amount',
 		constraint => 'NONE',
@@ -252,6 +260,7 @@ Returns a single row with calculated values.
    4e(2)  F1065K1Form.net_ltcg
    4f     F1065K1Form.other_portfolio_income
   10      F1065K1Form.portfolio_deductions
+  14a     F1065Form.margin_interest
   14b(1)  F1065K1Form.investment_income
   14b(2)  F1065K1Form.investment_expenses
   17a     F1065K1Form.foreign_income_type
@@ -302,9 +311,6 @@ sub internal_load_rows {
 		$tax->LONG_TERM_CAPITAL_GAIN->get_short_desc, 0),
 	other_portfolio_income => $allocations->get_or_default(
 		$tax->MISC_INCOME->get_short_desc, 0),
-	portfolio_deductions => $_M->neg(
-		$allocations->get_or_default(
-			$tax->MISC_EXPENSE->get_short_desc, 0)),
 	foreign_tax => $_M->neg($allocations->get_or_default(
 		$tax->FOREIGN_TAX->get_short_desc, 0)),
 	foreign_income_country => '',
@@ -315,6 +321,8 @@ sub internal_load_rows {
 		$date),
 	draft => $tax1065->get('draft'),
     };
+
+    _get_expenses($self, $properties, $allocations, $user, $date);
 
     $properties = {
 	%$properties,
@@ -381,6 +389,82 @@ sub _get_cash_withdrawal_amount {
     return $amount;
 }
 
+# _get_equally_allocated_margin_interest(Bivio::Biz::Model::RealmOwner user, string date) : string
+#
+# Returns the amount of equally allocated margin interest assigned to the
+# user.
+#
+sub _get_equally_allocated_margin_interest {
+    my($self, $user, $date) = @_;
+
+    my($amount) = 0;
+
+    # get tax year start
+    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
+	    $date);
+
+    # get the equally allocated margin interest for the user
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT -SUM(me.amount)
+            FROM realm_transaction_t, entry_t ae, entry_t me,
+                member_entry_t, expense_info_t, expense_category_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =ae.realm_transaction_id
+            AND realm_transaction_t.realm_transaction_id
+               =me.realm_transaction_id
+            AND ae.entry_id=expense_info_t.entry_id
+            AND expense_info_t.expense_category_id
+               =expense_category_t.expense_category_id
+            AND expense_category_t.name='Margin Interest'
+            AND me.entry_id=member_entry_t.entry_id
+            AND member_entry_t.user_id=?
+            AND realm_transaction_t.date_time BETWEEN
+                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+            AND realm_transaction_t.realm_id=?",
+	    [$user->get('realm_id'), $start_date, $date,
+		$self->get_request->get('auth_id')]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	$amount = $row->[0] || 0;
+    }
+    return $amount;
+}
+
+# _get_expenses(hash_ref properties, Bivio::Biz::Model::MemberAllocationList allocations, Bivio::Biz::Model::RealmOwner user, string date)
+#
+# Fills the margin_interest and portfolio_deductions fields.
+#
+sub _get_expenses {
+    my($self, $properties, $allocations, $user, $date) = @_;
+
+    my($total_expenses) = $_M->neg(_get_total_income_field($self,
+	    Bivio::Type::TaxCategory::MISC_EXPENSE()));
+
+    my($user_expenses) = $_M->neg($allocations->get_or_default(
+	    Bivio::Type::TaxCategory->MISC_EXPENSE->get_short_desc, 0));
+
+    my($total_normal_margin, $total_equal_margin) =
+	    Bivio::Biz::Model::F1065Form->get_margin_interest(
+		    $self->get_request, $date);
+
+    my($user_margin) = _get_equally_allocated_margin_interest($self,
+	    $user, $date);
+
+    _trace($total_expenses, $user_expenses, $total_normal_margin,
+	    $total_equal_margin, $user_margin);
+
+    # apportion the normal margin according to other expense ratio
+    if ($total_normal_margin != 0 && $total_expenses != 0) {
+	$user_margin = $_M->add($user_margin,
+		$_M->div($_M->mul($user_expenses, $total_normal_margin),
+			$total_expenses));
+    }
+    $properties->{portfolio_deductions} = $_M->sub($user_expenses,
+	    $user_margin);
+    $properties->{margin_interest} = $user_margin;
+    return;
+}
+
 # _get_foreign_income(string foreign_tax, string date) : string
 #
 # Returns the amount of foreign income allocated to the user.
@@ -394,12 +478,8 @@ sub _get_foreign_income {
     my($total_foreign_income) = Bivio::Biz::Model::F1065Form
 	    ->get_foreign_income($self->get_request, $date);
 
-    my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
-    $income->reset_cursor;
-    $income->next_row || die("couldn't load income/expense list");
-
-    my($tax) = 'Bivio::Type::TaxCategory';
-    my($total_foreign_tax) = $income->get($tax->FOREIGN_TAX->get_short_desc);
+    my($total_foreign_tax) = _get_total_income_field($self,
+	    Bivio::Type::TaxCategory::FOREIGN_TAX());
 
     # return the percentage of the total foreign income
     # in proportion to the foreign_tax percentage
@@ -505,6 +585,20 @@ sub _get_stock_withdrawal_amount {
 	$amount = $row->[0] || 0;
     }
     return $amount;
+}
+
+# _get_total_income_field(Bivio::Type::TaxCategory tax) : string
+#
+# Returns the total taxable value for the specified category.
+#
+sub _get_total_income_field {
+    my($self, $tax) = @_;
+
+    my($income) = $self->get_request->get(
+	    'Bivio::Biz::Model::IncomeAndExpenseList');
+    $income->set_cursor_or_die(0);
+
+    return $income->get($tax->get_short_desc);
 }
 
 # _get_user_allocations(Bivio::Biz::Model::RealmOwner user) : Bivio::Collection::Attributes
