@@ -33,6 +33,7 @@ L<Bivio::Biz::ListModel>, L<Bivio::Biz::FormModel>.
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -205,6 +206,19 @@ Not supported.
 
 sub delete_all {
     die('not supported');
+}
+
+=for html <a name="get_as"></a>
+
+=head2 get_as(string field, string converter)
+
+Returns I<field> using the I<converter> (to_xml, to_string).
+
+=cut
+
+sub get_as {
+    my($self, $field, $format) = @_;
+    return $self->get_field_info($field, 'type')->$format($self->get($field));
 }
 
 =for html <a name="get_field_constraint"></a>
@@ -411,7 +425,7 @@ or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
 =cut
 
 sub internal_initialize {
-    Carp::croak('abstract method');
+    Bivio::IO::Alert->die(shift, ': abstract method');
 }
 
 =for html <a name="internal_initialize_sql_support"></a>
@@ -428,7 +442,40 @@ for this model.
 =cut
 
 sub internal_initialize_sql_support {
-    Carp::croak('abstract method');
+    Bivio::IO::Alert->die(shift, ': abstract method');
+}
+
+=for html <a name="iterate_end"></a>
+
+=head2 iterate_end(ref iterator)
+
+Terminates the iterator.  See L<iterate_start|"iterate_start">.
+
+=cut
+
+sub iterate_end {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_end(@_);
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_next(@_);
 }
 
 =for html <a name="put"></a>
