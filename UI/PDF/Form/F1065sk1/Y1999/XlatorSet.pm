@@ -310,7 +310,7 @@ my(@_XLATORS) = (
 		'f2-15',
 		[
 		    'Bivio::Biz::Model::F1065K1Form',
-		    'foreign_income_country'
+		    'foreign_income'
 		]
 	       ),
  	Bivio::UI::PDF::Form::RadioBtnXlator->new(
