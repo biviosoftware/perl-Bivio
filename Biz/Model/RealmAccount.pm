@@ -131,6 +131,19 @@ sub get_value {
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
 
+=for html <a name="in_valuation"></a>
+
+=head2 in_valuation() : boolean
+
+Returns true is the current account is in the club's valuation.
+
+=cut
+
+sub in_valuation {
+    my($self) = @_;
+    return $self->get('in_valuation');
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
