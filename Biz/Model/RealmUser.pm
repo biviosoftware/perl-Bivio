@@ -122,10 +122,10 @@ sub internal_initialize {
 	auth_id => 'realm_id',
 #TODO: SECURITY: If user_id known, does that mean can get to all user's info?
 	other => [
-	    # User_1 is the owner, if the realm_type is a user.
-	    [qw(realm_id Club.club_id User_1.user_id)],
+	    # User_1 is the realm, if the realm_type is a user.
+	    [qw(realm_id Club.club_id User_1.user_id RealmOwner_1.realm_id)],
 	    # User_2 is the the "realm_user"
-	    [qw(user_id User_2.user_id)],
+	    [qw(user_id User_2.user_id  RealmOwner_2.realm_id)],
 	],
     };
 }

@@ -87,6 +87,25 @@ sub can_be_zero {
     return 0;
 }
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : string
+
+Make sure is at least 6 digits long with no leading zeroes.
+
+=cut
+
+sub from_literal {
+    my(undef, $value) = @_;
+    return undef unless defined($value) && $value =~ /\S/;
+    # Get rid of all blanks to be nice to user
+    $value =~ s/\s+//g;
+    # Must be at least six digits with no leading zeroes
+    $value =~ s/^0+//g;
+    return $value if $value =~ /^\d{6,}$/;
+    return (undef, Bivio::TypeError::NUMBER());
+}
+
 =for html <a name="get_decimals"></a>
 
 =head2 static get_decimals : int
@@ -145,6 +164,48 @@ Returns 18.
 
 sub get_width {
     return 18;
+}
+
+=for html <a name="to_html"></a>
+
+=head2 to_html(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, returns as is--always valid html.
+
+=cut
+
+sub to_html {
+    my($self, $value) = @_;
+    return defined($value) ? $value : '';
+}
+
+=for html <a name="to_literal"></a>
+
+=head2 to_literal(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, returns as is--always valid literal.
+
+=cut
+
+sub to_literal {
+    my($self, $value) = @_;
+    return defined($value) ? $value : '';
+}
+
+=for html <a name="to_uri"></a>
+
+=head2 to_uri(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, returns as is--always valid uri.
+
+=cut
+
+sub to_uri {
+    my($self, $value) = @_;
+    return defined($value) ? $value : '';
 }
 
 #=PRIVATE METHODS

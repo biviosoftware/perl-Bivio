@@ -45,40 +45,30 @@ Use L<get|"get"> to ensure there are no spelling errors in your code.
 
 The auth_id extracted from the request.
 
-=item begin : hash_ref
+=item count : int
 
-Column names are keys.  The value limits the query to all rows
-whose named column is B<greater> than or equal to
-the value of this attribute.
-
-=item end : hash_ref
-
-Column names are keys.  The value limits the query to all rows
-whose named column is B<less> than or equal to
-the value of this attribute.
-
-=item first_order_by : any
-
-The value limits the query to the value of the first order_by field
-of the just_prior.
+Number of lines on a page.  Not passed in the query, set by the
+caller of L<new|"new">.
 
 =item has_next : boolean
 
 If there are unreturned items as a result of this query, is true.
 This value may be invalid until the query is executed by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
+Initialized to false.
 
 =item has_prev : boolean
 
 Are there items prior to this query?
 This value may be invalid until the query is executed by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
+Initialized to false.
 
-=item is_forward : boolean
+=item next : array_ref
 
-The query generates a list in the "forward" order, i.e. it is for
-next page or next item.  If the query is not C<is_forward>, then
-the cutoff value will be the C<end> of the first C<order_by>.
+=item next : int
+
+primary key or page name of next item or page, respectively.
 
 =item order_by : array_ref
 
@@ -87,18 +77,22 @@ from model's order_by names.  Even indexed elements are the name
 and odd elements are true if ascending and false if descending.
 It is an array_ref to preserve the order specified by the user.
 
-=item just_prior : array_ref
+=item page_number : int
 
-=item just_prior : hash_ref
+Page number on which I<this> is on or the page we are viewing.
+Incoming is ignored if I<this>, because is set by
+L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 
-The primary key values for the previous element in the list relative to
-I<is_forward>.  In combination with I<begin> and I<end> entries, this attribute
-is used to ensure the result set begins at the place just after the prior
-query.
+=item parent_id : string
 
-After the query is executed (via ListSupport), I<just_prior> becomes the
-hash_ref of the row just before the first row in the list in ascending order
-(i.e. disregards value of I<is_forward>).
+Primary id of parent list.  It is used to further qualify a
+list of lists.
+
+=item next : array_ref
+
+=item next : int
+
+primary key or page name of previous item or page, respectively.
 
 =item search : string
 
@@ -117,23 +111,23 @@ find this primary key.  There should only be one row returned.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::Type::DateTime;
+use Bivio::Type::Integer;
+use Bivio::Type::PrimaryId;
 use Bivio::Util;
 
 #=VARIABLES
 my(%_QUERY_TO_FIELDS) = (
-    'a' => 'action',
-    'b' => 'begin',
-    'e' => 'end',
-    'f' => 'first_order_by',
-    'j' => 'just_prior',
+    'n' => 'page_number',
     'o' => 'order_by',
+    'p' => 'parent_id',
     's' => 'search',
     't' => 'this',
     'v' => 'version',
 );
-# Always check version first and first_order_by last.
-my(@_QUERY) = ('version', grep($_ ne 'version' && $_ ne 'first_order_by',
-	sort(values(%_QUERY_TO_FIELDS))), 'first_order_by');
+# Always check version first
+my(@_QUERY) = ('version', grep($_ ne 'version',
+	sort(values(%_QUERY_TO_FIELDS))));
 
 =head1 FACTORIES
 
@@ -141,11 +135,10 @@ my(@_QUERY) = ('version', grep($_ ne 'version' && $_ ne 'first_order_by',
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref query, Bivio::SQL::ListSupport support) : Bivio::SQL::ListQuery
+=head2 static new(hash_ref query, Bivio::SQL::Support support) : Bivio::SQL::ListQuery
 
-Creates a new ListSupport.  I<auth_id> and I<count> must be set in
-I<query>.  I<count> is the default page size to use if the action is
-not next_item or prev_item.
+Creates a new Support.  I<auth_id> and I<count> must be set in
+I<query>.  I<count> is the default page size to use.
 
 B<I<query> will be subsumed by this module.  Do not use it again.>
 
@@ -158,19 +151,11 @@ sub new {
     my($k);
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
-#TODO: Deal with "this" and action equal "page", because this will
-#      screw up the query.
     foreach $k (@_QUERY) {
 	&{\&{'_parse_'.$k}}($attrs, $support);
     }
-    if ($attrs->{is_forward}) {
-	$attrs->{has_prev} = $attrs->{just_prior} ? 1 : 0;
-	$attrs->{has_next} = undef;
-    }
-    else {
-	$attrs->{has_prev} = undef;
-	$attrs->{has_next} = $attrs->{just_prior} ? 1 : 0;
-    }
+    # Reset attrs that are set by Support
+    @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
     my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
     return $self;
 }
@@ -181,95 +166,135 @@ sub new {
 
 =for html <a name="format_uri_for_next"></a>
 
-=head2 format_uri_for_next(hash_ref this_row, Bivio::SQL::ListSupport support) : string
+=head2 format_uri_for_next(Bivio::SQL::Support support) : string
 
-Generates the query string (URL-encoded) for the action being
-next detail after I<this_row>.
+Generates the query string (URL-encoded) for I<next> this.
 
 =cut
 
 sub format_uri_for_next {
-    my($self, $this_row, $support) = @_;
+    my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
-    $attrs{action} = 'n';
-    $attrs{just_prior} = $this_row;
+    $attrs{this} = $attrs{next};
+    $attrs{page_number} = undef;
     return _format_uri(\%attrs, $support);
 }
 
 =for html <a name="format_uri_for_next_page"></a>
 
-=head2 format_uri_for_next_page(hash_ref just_prior_row, Bivio::SQL::ListSupport support) : string
+=head2 format_uri_for_next_page(Bivio::SQL::Support support) : string
 
-Generates the query string (URL-encoded) for the action being
-next page after I<just_prior_row>.
+Generates the query string (URL-encoded) for next page.
 
 =cut
 
 sub format_uri_for_next_page {
-    my($self, $just_prior_row, $support) = @_;
+    my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
-    $attrs{action} = 'N';
-    $attrs{just_prior} = $just_prior_row;
+    $attrs{this} = undef;
+    $attrs{page_number} = $attrs{next};
     return _format_uri(\%attrs, $support);
 }
 
 =for html <a name="format_uri_for_prev"></a>
 
-=head2 format_uri_for_prev(hash_ref this_row, Bivio::SQL::ListSupport support) : string
+=head2 format_uri_for_prev(Bivio::SQL::Support support) : string
 
-Generates the query string (URL-encoded) for the action being
-prev detail just before I<this_row>.
+Generates the query string (URL-encoded) for I<prev> this.
 
 =cut
 
 sub format_uri_for_prev {
-    my($self, $this_row, $support) = @_;
+    my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
-    $attrs{action} = 'p';
-    $attrs{just_prior} = $this_row;
+    $attrs{this} = $attrs{prev};
+    $attrs{page_number} = undef;
     return _format_uri(\%attrs, $support);
 }
 
 =for html <a name="format_uri_for_prev_page"></a>
 
-=head2 format_uri_for_prev_page(hash_ref just_prior_row, Bivio::SQL::ListSupport support) : string
+=head2 format_uri_for_prev_page(Bivio::SQL::Support support) : string
 
-Generates the query string (URL-encoded) for the action being
-prev page prior to I<just_prior_row>.
+Generates the query string (URL-encoded) for prev page.
 
 =cut
 
 sub format_uri_for_prev_page {
-    my($self, $just_prior_row, $support) = @_;
+    my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
-    $attrs{action} = 'P';
-    $attrs{just_prior} = $just_prior_row;
+    $attrs{this} = undef;
+    $attrs{page_number} = $attrs{prev};
     return _format_uri(\%attrs, $support);
 }
 
 =for html <a name="format_uri_for_this"></a>
 
-=head2 format_uri_for_this(hash_ref this_row, hash_ref just_prior_row, Bivio::SQL::ListSupport support) : string
+=head2 static format_uri_for_this(hash_ref this_row, Bivio::SQL::Support support) : string
 
 Generates the query string (URL-encoded) for the primary key
 of I<this_row> using the current query parameters.
 
+May be called statically iwc the version is pulled from support.
+
 =cut
 
 sub format_uri_for_this {
-    my($self, $this_row, $just_prior_row, $support) = @_;
-    my(%attrs) = %{$self->internal_get()};
-    $attrs{action} = 't';
+    my($self, $this_row, $support) = @_;
+    my(%attrs) = $self ? %{$self->internal_get()} :
+	    {version => $support->get('version')};
     $attrs{this} = $this_row;
-    $attrs{just_prior} = $just_prior_row;
+    $attrs{page_number} = undef;
+    return _format_uri(\%attrs, $support);
+}
+
+=for html <a name="format_uri_for_this_child"></a>
+
+=head2 format_uri_for_this_child(hash_ref this_row, Bivio::SQL::Support support) : string
+
+Generates the query string (URL-encoded) for the primary key
+of I<this_row> as the parent_id.  There is no page number.
+
+=cut
+
+sub format_uri_for_this_child {
+    my($self, $this_row, $support) = @_;
+    my(%attrs) = %{$self->internal_get()};
+#TODO: Probably need a check that this is really a primary id
+#TODO: Version in query is incorrect here.  Should be for child...
+    $attrs{parent_id} = $this_row->{$support->get('primary_key_names')->[0]};
+    $attrs{this} = undef;
+    $attrs{page_number} = undef;
+    # At this point, we lose context.  The query is "owned" relative to
+    # the child, so the order by goes away
+    $attrs{order_by} = undef;
+    $attrs{search} = undef;
+    return _format_uri(\%attrs, $support);
+}
+
+=for html <a name="format_uri_for_this_page"></a>
+
+=head2 format_uri_for_this_page(Bivio::SQL::Support support) : string
+
+Generates the query string (URL-encoded) for this page.
+
+=cut
+
+sub format_uri_for_this_page {
+    my($self, $support) = @_;
+    my(%attrs) = %{$self->internal_get()};
+    $attrs{this} = undef;
+    $attrs{page_number} = $attrs{page_number};
     return _format_uri(\%attrs, $support);
 }
 
 =for html <a name="get_hidden_field_values"></a>
 
-=head2 get_hidden_field_values(Bivio::SQL::ListSupport sql_support) : array_ref
+=head2 get_hidden_field_values(Bivio::SQL::Support sql_support) : array_ref
 
 Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
+
+Used in search forms.  The conversion to html is done by caller.
 
 =cut
 
@@ -278,16 +303,20 @@ sub get_hidden_field_values {
     my($attrs) = $self->internal_get();
     my($columns) = $support->get('columns');
     my($ob) = $attrs->{order_by};
-    my($res) = ['v', $attrs->{version}, 'a', 'N'];
+    # Since this is a search, there is no page_number or this, but
+    # there may be need to be a parent_id.
+    my(@res) = ('v' => $attrs->{version});
+    push(@res, 'p' => Bivio::Type::PrimaryId->to_literal($attrs->{parent_id}))
+	    if $attrs->{parent_id};
     if ($ob) {
 	my($o);
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
 	    $o .= $columns->{$ob->[$i]}->{order_by_index}
 		    . ($ob->[$i+1] ? 'a' : 'd');
 	}
-	push(@$res, 'o', $o);
+	push(@res, 'o' => $o);
     }
-    return $res;
+    return \@res;
 }
 
 =for html <a name="get_search_as_html"></a>
@@ -304,6 +333,25 @@ sub get_search_as_html {
     return defined($search) ? Bivio::Util::escape_html($search) : '';
 }
 
+=for html <a name="get_sort_order_for_type"></a>
+
+=head2 static get_sort_order_for_type(Bivio::Type type) : boolean
+
+Returns the default sort order for the type.
+
+=cut
+
+sub get_sort_order_for_type {
+    my(undef, $type) = @_;
+    # Dates and Primary ids are reverse sorted by default.  PrimaryIds
+    # are used in entry/transaction lists to allow predictive ordering of
+    # entries entered at the same time (a transaction is composed of several
+    # entries).
+    return (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')
+	    || UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId'))
+		    ? 0 : 1,
+}
+
 #=PRIVATE METHODS
 
 # _die(Bivio::Type::Enum code, string message, string value)
@@ -316,7 +364,7 @@ sub _die {
 	class => 'Bivio::SQL::ListQuery', message => $msg}, caller);
 }
 
-# _format_uri(hash_ref attrs, Bivio::SQL::ListSupport support) : string
+# _format_uri(hash_ref attrs, Bivio::SQL::Support support) : string
 #
 # Formats the uri for the configuration parameters specified.
 #
@@ -324,56 +372,26 @@ sub _format_uri {
     my($attrs, $support) = @_;
     my($res) = 'v='.$attrs->{version};
     my($columns) = $support->get('columns');
-    my($ob) = $attrs->{order_by};
 
-    # action: this or just_prior?
-    if ($attrs->{action} eq 't') {
-	$res .= '&a=t&t='._format_uri_primary_key($attrs->{this}, $support);
-    }
-    elsif ($attrs->{action}) {
-	$res .= '&a='.$attrs->{action};
-    }
-    my($just_prior) = $attrs->{just_prior};
-    if ($just_prior) {
-	$res .= '&j='._format_uri_primary_key($just_prior, $support);
-#TODO: Is there always an order_by if there is a just_prior?
-	# If there is an order by, put in just_prior's order_by value as
-	# first_order_by (f).
-	if ($ob) {
-	    # If just_prior is a hash, then it was passed in via
-	    # one of the "format" calls.  Otherwise, we try to use
-	    # the existing first_order_by because it matches the existing
-	    # just_prior.  Actually, we have a corrupt query if we didn't
-	    # get a first_order_by, but be lax here.
-	    if (ref($just_prior) eq 'HASH'
-		    || defined($attrs->{first_order_by})) {
-		my($fob_col) = $columns->{$ob->[0]};
-		$res .= '&f='.$fob_col->{type}->to_uri(
-			ref($just_prior) eq 'HASH'
-			? $just_prior->{$fob_col->{name}}
-			: $attrs->{first_order_by});
-	    }
-	}
-    }
+    # this?
+    $res .= '&t='._format_uri_primary_key($attrs->{this}, $support)
+	    if $attrs->{this};
+
+    # parent_id?
+    $res .= '&p='.Bivio::Type::PrimaryId->to_uri($attrs->{parent_id})
+	    if $attrs->{parent_id};
+
+    # page_number?
+    $res .= '&n='.Bivio::Type::Integer->to_uri($attrs->{page_number})
+	    if defined($attrs->{page_number});
 
     # order_by
-    if ($ob) {
+    if ($attrs->{order_by}) {
+	my($ob) = $attrs->{order_by};
 	$res .= '&o=';
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
 	    $res .= $columns->{$ob->[$i]}->{order_by_index}
 		    . ($ob->[$i+1] ? 'a' : 'd');
-	}
-    }
-
-    # begin and end
-    foreach my $limit ('begin', 'end') {
-	next unless $attrs->{$limit};
-	my($limit_values) = $attrs->{$limit};
-	my($prefix) = substr($limit, 0, 1);
-	foreach my $k (keys(%$limit_values)) {
-	    my($col) = $columns->{$k};
-	    $res .= '&'.$prefix.$col->{order_by_index}.'='
-		    .$col->{type}->to_uri($limit_values->{$k});
 	}
     }
 
@@ -383,8 +401,8 @@ sub _format_uri {
     return $res;
 }
 
-# _format_uri_primary_key(array_ref pk, Bivio::SQL::ListSupport support) : string
-# _format_uri_primary_key(hash_ref pk, Bivio::SQL::ListSupport support) : string
+# _format_uri_primary_key(array_ref pk, Bivio::SQL::Support support) : string
+# _format_uri_primary_key(hash_ref pk, Bivio::SQL::Support support) : string
 #
 # Returns primary key formatted for a uri.
 #
@@ -402,110 +420,11 @@ sub _format_uri_primary_key {
     return $res;
 }
 
-# _parse_action(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_order_by(hash_ref attrs, Bivio::SQL::Support support)
 #
-# The action is either forward or back and the size.
-#
-sub _parse_action {
-    my($attrs, $support) = @_;
-    my($value) = $attrs->{a};
-    if (defined($value)) {
-	if ($value eq 'n' || $value eq 't') {
-	    $attrs->{is_forward} = 1;
-	    $attrs->{count} = 1;
-	    return;
-	}
-	elsif ($value eq 'N') {
-	    $attrs->{is_forward} = 1;
-	    return;
-	}
-	elsif ($value eq 'p') {
-	    $attrs->{is_forward} = 0;
-	    $attrs->{count} = 1;
-	    return;
-	}
-	elsif ($value eq 'P') {
-	    $attrs->{is_forward} = 0;
-	    return;
-	}
-	else {
-	    _die(Bivio::DieCode::CORRUPT_QUERY(), 'invalid action', $value);
-#TODO: Should we fall through to default?
-	}
-    }
-    # Default
-    $attrs->{is_forward} = 1;
-    # Always get a page.  Can't be wrong to get too much.
-    return;
-}
-
-# _parse_begin(hash_ref attrs, Bivio::SQL::ListSupport support)
-#
-# Limit the query to some begin value in the order_by.
-#
-sub _parse_begin {
-    _parse_limit(@_, 'b', 'begin');
-    return;
-}
-
-# _parse_end(hash_ref attrs, Bivio::SQL::ListSupport support)
-#
-# Limit the query to some end value in the order_by.
-#
-sub _parse_end {
-    _parse_limit(@_, 'e', 'end');
-    return;
-}
-
-# _parse_first_order_by(hash_ref attrs, Bivio::SQL::ListSupport support)
-#
-# Parses the first order by value.  order_by must already be parsed.
-#
-sub _parse_first_order_by {
-    my($attrs, $support) = @_;
-    my($name) = $attrs->{order_by}->[0];
-    $attrs->{first_order_by} = undef;
-    return unless defined($name);
-    my($literal) = $attrs->{'f'};
-    return unless defined($literal);
-    my($value) = $support->get_column_type($name)->from_literal($literal);
-    _die(Bivio::DieCode::CORRUPT_QUERY(), "invalid first_order_by", $literal)
-	    unless defined($value);
-    $attrs->{first_order_by} = $value;
-    return;
-}
-
-# _parse_limit(hash_ref attrs, Bivio::SQL::ListSupport support, char tag, string name)
-#
-# The "limit" values are defined as follows:
-#	tN=V
-# Where "N" is the order_by, "t" is tag, and "V" is value.
-#
-# The converted value is set in a hash_ref of ($column, $value).
-#
-sub _parse_limit {
-    my($attrs, $support, $tag, $name) = @_;
-    my($order_by) = $support->get('order_by_names');
-    my($res, $literal);
-    my($i) = int(@$order_by);
-    while (--$i >= 0) {
-	next unless defined($literal = $attrs->{$tag.$i});
-	my($c) = $order_by->[$i];
-	my($v) = $support->get_column_type($c)->from_literal($literal);
-	_die(Bivio::DieCode::CORRUPT_QUERY(), "invalid limit $c", $literal)
-		unless defined($v);
-	$res = {} unless $res;
-	$res->{$c} = $v;
-    }
-    $attrs->{$name} = $res;
-    return;
-}
-
-# _parse_order_by(hash_ref attrs, Bivio::SQL::ListSupport support)
-#
-# Creates a hash of order_by values.  The default is the order returned
-# from the list model and sort ascending.  The value is a list of
-# numbers followed by letters ('a' or 'd'), e.g. 1a3d.
+# Creates a hash of order_by values.  The default is the order returned from
+# the model.  The value is a list of numbers followed by letters ('a' or 'd'),
+# e.g. 1a3d.
 #
 # The "order_by" attributes is defined as a array_ref (which can be turned
 # into a hash) of column name followed by either true (ascending)
@@ -515,7 +434,9 @@ sub _parse_order_by {
     my($attrs, $support) = @_;
     my($value) = $attrs->{o} || '';
     my($res) = $attrs->{order_by} = [];
-    my($order_by) = $support->get('order_by_names');
+    my($order_by, $columns) = $support->unsafe_get(
+	    'order_by_names', 'columns');
+    return unless $order_by;
     while (length($value)) {
 	_die(Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
 		$attrs->{o}) unless $value =~ s/^(\d+)([ad])//;
@@ -524,27 +445,55 @@ sub _parse_order_by {
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a');
     }
-    # Add in order_by values not explicitly listed.  The default
-    # is ascending.
+    # Add in order_by values not explicitly listed.
     foreach my $ob (@$order_by) {
-	push(@$res, $ob, 1) unless grep($_ eq $ob, @$res);
+print STDERR $ob, ' ', $columns->{$ob}->{sort_order}, "\n";
+	push(@$res, $ob, $columns->{$ob}->{sort_order})
+		unless grep($_ eq $ob, @$res);
     }
     return;
 }
 
-# _parse_just_prior(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_page_number(hash_ref attrs, Bivio::SQL::Support support)
 #
-# The previous value's primary key.
+# If not set or invalid, will be set to zero.
 #
-sub _parse_just_prior {
-    _parse_pk(@_, 'j', 'just_prior');
+sub _parse_page_number {
+    my($attrs, $support) = @_;
+
+    # Returns undef if no page number
+    $attrs->{page_number} = Bivio::Type::Integer->from_literal($attrs->{'n'});
+
+    # Set page_number to 0 by default
+    $attrs->{page_number} = 0
+	    unless defined($attrs->{page_number})
+		    && $attrs->{page_number} >= 0;
     return;
 }
 
-# _parse_pk(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_parent_id(hash_ref attrs, Bivio::SQL::Support support)
+#
+# The 'this' value's parent_id.  If not set, will be undef
+#
+sub _parse_parent_id {
+    my($attrs, $support) = @_;
+
+    # Returns undef if no parent_id
+    $attrs->{parent_id} = Bivio::Type::PrimaryId->from_literal($attrs->{'p'});
+
+    # If the parent id is set and we aren't expecting it, will be ignored
+    return if $attrs->{parent_id};
+
+    # Otherwise, are we expecting a parent id?
+    _die(Bivio::DieCode::CORRUPT_QUERY(), 'missing parent_id', 'parent_id')
+	    if $support->unsafe_get('parent_id');
+    return;
+}
+
+# _parse_pk(hash_ref attrs, Bivio::SQL::Support support)
 #
 # Parse the primary key.  The \177 is a special character
-# that is unlikely to appear in strings.
+# that is unlikely to appear in primary keys.
 #
 sub _parse_pk {
     my($attrs, $support, $tag, $name) = @_;
@@ -563,7 +512,7 @@ sub _parse_pk {
     return;
 }
 
-# _parse_search(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_search(hash_ref attrs, Bivio::SQL::Support support)
 #
 # Parse the search string.  Make sure it doesn't have blanks.
 #
@@ -578,7 +527,7 @@ sub _parse_search {
     return;
 }
 
-# _parse_this(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_this(hash_ref attrs, Bivio::SQL::Support support)
 #
 # The this value's primary key.
 #
@@ -587,7 +536,7 @@ sub _parse_this {
     return;
 }
 
-# _parse_version(hash_ref attrs, Bivio::SQL::ListSupport support)
+# _parse_version(hash_ref attrs, Bivio::SQL::Support support)
 #
 # The version must either be undef or match the model.  If it doesn't
 # match the model, throw a version exception.

@@ -120,6 +120,7 @@ use Carp();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
 
 =head1 FACTORIES
 
@@ -162,10 +163,17 @@ A list of fields and field identities that have no ordering.
 A list of fields and field identities that can be used to sort
 the result.  order_by values must not be null.
 
+=item parent_id : array_ref
+
+=item parent_id : string
+
+A field or field identity which further qualifies a query.
+Used when a list "this" points to another list, e.g.
+InstrumentSummaryList leads the user to InstrumentTransactionList.
+
 =item primary_key : array_ref (required)
 
-The list of fields and field identities that uniquely identifies a
-row.
+The list of fields and field that uniquely identifies a row.
 
 =item version : int
 
@@ -208,106 +216,63 @@ sub new {
 
 =for html <a name="load"></a>
 
-=head2 load(Bivio::SQL::ListQuery query, ref die) : array_ref
-
 =head2 load(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : array_ref
 
 Loads the specified rows with data using the parameterized where_clause
 and substitution values. At most the specified max rows will be loaded.
 Data will be loaded starting at the specified index into the result set.
 
-If I<where> is supplied, it will be added to the internally generated
-select with I<params>.
+I<where> is added to the internally generated select with I<params>.
 
 =cut
 
 sub load {
-    my($self, $query, $where, $params, $die);
-    if (int(@_) > 3) {
-	($self, $query, $where, $params, $die) = @_;
-    }
-    else {
-	($self, $query, $die) = @_;
-    }
+    my($self, $query, $where, $params, $die) = @_;
     my($select) = $self->unsafe_get('select');
-    # If no select such just return an empty list.
+    # If no select such just return an empty list.  Only local fields.
     return [] unless $select;
-    my($fob_start);
-    $select .= $where if $where;
-    my($statement) = _execute_select($self, $query, $select,
-	    $params || [], \$fob_start);
-    return _load_list($self, $query, $statement, $fob_start, $die);
+    $select .= $where;
+    my($statement) = _execute_select($self, $query, $select, $params, $die);
+    return $query->get('this')
+	    ? _load_this($self, $query, $statement, $die)
+		    : _load_list($self, $query, $statement, $die);
 }
 
 #=PRIVATE METHODS
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string select, array_ref params, scalar_ref fob_start) : DBI::Statement
+# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string select, array_ref params) : DBI::Statement
 #
-# Create and execute the select statement based on query and auth_id.
-# Assumes select takes an "auth_id" as the first element, so unshifts
-# onto "params" instead of pushing.
+# Create and execute the select statement based on query, auth_id, and
+# parent_id.  Assumes select takes an "auth_id" as the first element and
+# "parent_id" as second element (if defined), so unshifts onto "params" instead
+# of pushing.
 #
 sub _execute_select {
-    my($self, $query, $select, $params, $fob_start) = @_;
+    my($self, $query, $select, $params, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($auth_id) =  $query->get('auth_id');
+
+    # Insert parent_id and auth_id
+    my($auth_id, $parent_id, $qob) =  $query->get('auth_id', 'parent_id',
+	   'order_by');
+    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
+	    if $attrs->{parent_id};
     unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($auth_id));
-    $$fob_start = @{$attrs->{order_by}}
-	    ? _format_select_order_by($attrs, $query, \$select, $params)
-		    : undef;
+
+    # Formats order_by clause if there are order_by columns
+    if (@{$attrs->{order_by}}) {
+	my($columns) = $attrs->{columns};
+	$select .= ' order by';
+	for (my($i) = 0; $i < int(@$qob); $i += 2) {
+	    # Append to order_by (name, order)
+	    $select .= ' '.$columns->{$qob->[$i]}->{sql_name}
+		    .($qob->[$i+1] ? ',' : ' desc,');
+	}
+	# Remove trailing comma
+	chop($select);
+    }
+
+    # Execute the query
     return Bivio::SQL::Connection->execute($select, $params);
-}
-
-# _format_select_order_by(hash_ref attrs, Bivio::SQL::ListQuery query, string_ref select, array_ref params) : any
-#
-# Formats the order_by constraints and order_by clause.
-# Returns the first order by value we should encounter.
-#
-sub _format_select_order_by {
-    my($attrs, $query, $select, $params) = @_;
-    # Format constraints
-    my($begin, $end, $is_forward, $qob, $fob)
-	    = $query->get(qw(begin end is_forward order_by first_order_by));
-    my($compare, $limit) = '>=';
-    my($columns) = $attrs->{columns};
-#TODO: strip out proper limit
-    if (defined($fob)) {
-	# Override limit in query (if there), but always make a copy first!
-	if ($is_forward) {
-	    $begin = $begin ? {%$begin} : {};
-	    $begin->{$qob->[0]} = $fob;
-	}
-	else {
-	    $end = $end ? {%$end} : {};
-	    $end->{$qob->[0]} = $fob;
-	}
-    }
-    foreach $limit ($begin, $end) {
-	next unless $limit;
-	my($k);
-	foreach $k (sort(keys(%$limit))) {
-	    my($col) = $columns->{$k};
-	    $$select .= $col->{$compare};
-	    push(@$params, $col->{type}->to_sql_param($limit->{$k}));
-	}
-    }
-    continue {
-	$compare = '<=';
-    }
-    $$select .= ' order by';
-    my($asc, $desc) = $is_forward ? (',', ' desc,') : (' desc,', ',');
-    for (my($i) = 0; $i < int(@$qob); $i += 2) {
-	# Append the order_by with appropriate
-	$$select .= ' '.$columns->{$qob->[$i]}->{sql_name}
-		.($qob->[$i+1] ? $asc : $desc);
-    }
-    # Remove trailing comma
-    chop($$select);
-
-    # Return "order by" value expected in the first row returned.
-    my($which) = $is_forward ? $begin : $end;
-    return $which && defined($which->{$qob->[0]}) ? $which->{$qob->[0]}
-	    : undef;
 }
 
 # _init_column_classes(hash_ref attrs, hash_ref decl) : string
@@ -318,7 +283,7 @@ sub _format_select_order_by {
 sub _init_column_classes {
     my($attrs, $decl) = @_;
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	    [qw(auth_id primary_key order_by other)]);
+	    [qw(auth_id parent_id primary_key order_by other)]);
 
     if ($decl->{where}) {
 	$where .= ' and';
@@ -338,6 +303,17 @@ sub _init_column_classes {
     Carp::croak('no auth_id or too many auth_id fields')
 		unless int(@{$attrs->{auth_id}}) == 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
+
+    # parent_id at most one column.  Turn into that column.
+    if (int(@{$attrs->{parent_id}}) >= 1) {
+	Carp::croak('too many parent_id fields')
+		    if int(@{$attrs->{parent_id}}) > 1;
+	$attrs->{parent_id} = $attrs->{parent_id}->[0];
+    }
+    else {
+	# Allow caller to call 'get'
+	$attrs->{parent_id} = undef;
+    }
 
     # primary_key must be at least one column if there are models.
     Carp::croak('no primary_key fields')
@@ -391,13 +367,15 @@ sub _init_column_lists {
     # Nothing to select
     return unless defined($where);
 
-    # Order select columns alphabetically, ignoring primary_key and auth_id
+    # Order select columns alphabetically, ignoring primary_key, primary_id
+    # and auth_id
     my(%ignore) = map {
 	($_->{name}, 1),
     } (@{$attrs->{primary_key}}, $attrs->{auth_id},
+	    $attrs->{parent_id} ? ($attrs->{parent_id}) : (),
 	    @{$attrs->{local_columns}});
     $attrs->{select_columns} = [
-	# Everything but primary_keys and auth_id are in column_names
+	# Everything but primary_keys, parent_id, auth_id are in column_names
 	sort {$a->{name} cmp $b->{name}} (grep(!defined($ignore{$_->{name}}),
 		values(%{$attrs->{columns}}))),
     ];
@@ -411,8 +389,10 @@ sub _init_column_lists {
 	$_->{type}->from_sql_value($_->{sql_name});
     } @{$attrs->{select_columns}};
 
-    # Create select from all columns and include auth_id constraint
-    # in where
+    # Create select from all columns and include auth_id and
+    # parent_id constraints (if defined) in where.
+    $where = ' and '.$attrs->{parent_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
+	    .$where if $attrs->{parent_id};
     $attrs->{select} = 'select '.join(',', @select_sql_names)
 	    .' from '.join(',',
 		    map {
@@ -422,153 +402,121 @@ sub _init_column_lists {
 		    } sort(values(%{$attrs->{models}})))
 	    .' where '
 	    .$attrs->{auth_id}->{sql_name}
-	    .'='.Bivio::Type::PrimaryId->to_sql_value('?')
+	    .'='.$_PRIMARY_ID_SQL_VALUE
 	    .$where;
     return;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, any fob_start, ref die) : array_ref
+# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, any fob_start, ref die) : array_ref
 #
-# Load a list from a list query.  The complexity is caused by trying to pick up
-# where we left off.  Rows can disappear so it is insufficient to simply search
-# for the last primary key (just_prior).  We also watch for a change in the
-# first order_by value.  The first order by value is set by ListQuery to limit
-# the result set to the just_prior->fob_value.
+# Load "this" from statement.  We search serially through all records.
+# There doesn't appear to be a better way to do this, because we need
+# to know "prev".  Eventually, this will have to be PL/SQL.
 #
-# Searching for "this" is similar to just_prior, but we return the one row
-# containing this.
+sub _load_this {
+    my($self, $query, $statement, $fob_start, $die) = @_;
+    my($attrs) = $self->internal_get;
+    my($auth_id, $count, $parent_id, $this)
+	    = $query->get(qw(auth_id count parent_id this));
+    _trace('looking for this ', $attrs->{primary_key_names}, ' = ', $this)
+	    if $_TRACE;
+    my($types) = $attrs->{primary_key_types};
+    my($prev, $row);
+    my($row_count) = 0;
+    for (;;) {
+	return [] unless $row = $statement->fetchrow_arrayref;
+	$row_count++;
+
+	# Convert the entire primary key and save in $prev if no match
+	my($j) = 0;
+	my($match) = 1;
+	my(@prev) = map {
+	    my($v) = $_->from_sql_column($row->[$j]);
+	    $match &&= $this->[$j] eq $v;
+	    $j++;
+	    $v;
+	} @$types;
+	last if $match;
+	$prev = \@prev;
+    }
+
+    # Found it, copy all columns of this
+    _trace('found this at row #', $row_count) if $_TRACE;
+    my($i) = 0;
+    my($rows) = [{
+	(map {
+	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+	} @{$attrs->{select_columns}}),
+	# Add in auth_id to every row as constant for convenience
+	$attrs->{auth_id}->{name} => $auth_id,
+	$attrs->{parent_id} ? ($attrs->{parent_id}->{name} => $parent_id) : (),
+    }];
+
+    # Set prev if defined
+    $query->put(prev => $prev, has_prev => 1) if $prev;
+
+    # Set next if more rows
+    my($next) = $statement->fetchrow_arrayref;
+    if ($next) {
+	my($j) = 0;
+	$query->put(has_next => 1,
+		prev => [map {
+		    $_->from_sql_column($row->[$j++]);
+		} @$types]);
+    }
+
+    # Which page are we on?
+    $query->put(page_number => int(++$row_count % $count));
+    return $rows;
+}
+
+# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, ref die) : array_ref
+#
+# Search the list until we find our page_number and then return count rows.
 #
 sub _load_list {
     my($self, $query, $statement, $fob_start, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($auth_id, $count, $is_forward, $just_prior, $order_by, $this)
-	    = $query->get(
-		    qw(auth_id count is_forward just_prior order_by this));
-    my($sentinel) = $this || $just_prior;
-    my($started) = !$sentinel;
-    my($fob_index, $fob_type);
-    if (defined($fob_start) && $just_prior && !$this) {
-	my($fob_col) = $attrs->{columns}->{$order_by->[0]};
-	$fob_index = $fob_col->{select_index};
-	$fob_type = $fob_col->{type};
-	_trace('looking for fob_start (', $fob_col->{name},
-		') = ', $fob_start) if $_TRACE;
+    my($auth_id, $count, $page_number, $parent_id, $this)
+	    = $query->get(qw(auth_id count page_number parent_id this));
+
+    # Set prev first
+    $query->put(has_prev => 1, prev => $page_number - 1) if $page_number > 0;
+
+    # Find the page
+    for (my($start) = $page_number * $count; $start > 0; $start--) {
+	return [] unless $statement->fetchrow_arrayref;
     }
-    else {
-	$fob_start = undef;
-    }
-    _trace('looking for ', $this ? 'this ' : 'just prior ',
-	    $attrs->{primary_key_names}, ' = ', $sentinel)
-	    if $_TRACE && $sentinel;
+
+    # Avoid pointer chasing in loop
     my($auth_id_name) = $attrs->{auth_id}->{name};
+    my($parent_id_name) = $attrs->{parent_id} ? $attrs->{parent_id}->{name}
+	    : undef;
     my($select_columns) = $attrs->{select_columns};
-    my($rows) = [];
-    my($row);
-    # See note about $has_more at the end of this loop
-    my($has_more) = 1;
-    my($new_just_prior);
-    my($start_time) = Bivio::Util::gettimeofday();
-    my($row_count) = 0;
- ROW: while (($row = $statement->fetchrow_arrayref) || ($has_more = 0)) {
-	$row_count++;
-	unless ($started) {
-#TODO: This is ugly, but need to make a copy.  fetchrow_arrayref is
-#      returns the same array_ref each time.
-	    # If this row matches just_prior primary key or if the first
-	    # order_by value has changed, start saving rows.
-	    my($j, $s) = 0;
-	    foreach $s (@$sentinel) {
-		# If the primary key field compares with the returned value,
-		# keep iterating.  Else, check fob.
-		next if $s eq $select_columns->[$j]->{type}->from_sql_column(
-			$row->[$j]);
-		_trace('sentinel missed on ', $select_columns->[$j]->{name})
-			if $_TRACE;
 
-		# Primary key doesn't compare.  If $fob_start isn't defined,
-		# go on to next row.  This will happen for "this" searches
-		# or if someone hacked a just_prior query.
-		unless (defined($fob_start)) {
-		    $new_just_prior = [@$row];
-		    next ROW;
-		}
+    # Save the rows from the page
+    my(@rows, $row);
+    while ($count-- > 0) {
+	# If no more, return what there is
+	return \@rows unless $row = $statement->fetchrow_arrayref;
 
-		# If fob for this row is same as $fob_start, keep going.
-		my($fob) = $fob_type->from_sql_column($row->[$fob_index]);
-		_trace('fob_start compare to ', $fob) if $_TRACE;
-		if (defined($fob) && $fob_start eq $fob) {
-		    $new_just_prior = [@$row];
-		    next ROW;
-		}
-#TODO: May want to "go back to" the beginning and process all rows.
-#      If we miss the just_prior, do we want an error message?
-
-#TODO: This is "pretty accurate", but is it good enough for the long term?
-		# Missed just_prior (was deleted?), just start here.
-		$started = 1;
-		last;
-	    }
-	    continue {
-		$j++;
-	    }
-	    _trace($started ? 'passed fob_start' : 'found sentinel',
-		   ' at row #', $row_count) if $_TRACE;
-	    # Start with this row if $fob is different, else just_prior
-	    # primary key found so start with next.  If this found,
-	    # start here (this).
-	    unless ($started++ || $this) {
-		$new_just_prior = [@$row];
-		next ROW;
-	    }
-
-	    # Don't have a new just_prior.  We'll use the old one
-	    # (later) if it exists.
-	    $new_just_prior = undef if $row_count <= 1;
-	}
-	# Save rows until $count reaches zero
 	my($i) = 0;
-	push(@$rows, {
+	push(@rows, {
 	    (map {
 		($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
 	    } @$select_columns),
-	    # Add in auth_id to every row as constant for convenience
+	    # Add in auth_id and parent_id to every row for convenience
 	    $auth_id_name => $auth_id,
+	    $parent_id_name ? ($parent_id_name => $parent_id) : (),
 	});
-	last ROW if --$count <= 0;
     }
-    # Can't simply test $s->fetchrow_arrayref to see if there is more,
-    # because this will blow up if we already fetched the last row
-    # and were told that, i.e. if while loop exited naturally.
-    # In this case, $has_more will be false and won't call fetchrow
-    my($just_after) = $has_more ? $statement->fetchrow_arrayref : undef;
-    if ($is_forward) {
-	$query->put(has_next => $just_after ? 1 : 0);
-    }
-    else {
-	$query->put(has_prev => $just_after ? 1 : 0);
-	$new_just_prior = $just_after;
-	# Reverse the rows so ListModel doesn't need to concern itself
-	# with is_forward.
-	@$rows = reverse(@$rows) unless int(@$rows) <= 1;
-    }
-    if ($new_just_prior) {
-	my($i) = 0;
-	$query->put(
-		just_prior => {
-		    (map {
-			($_->{name}, $_->{type}->from_sql_column(
-				$new_just_prior->[$i++]));
-		    } @$select_columns),
-		    $auth_id_name => $auth_id
-		},
-		# first_order_by is invalid, because we have new just_prior
-		first_order_by => undef,
-	       );
-    }
-    else {
-	$query->put(just_prior => undef);
-    }
-    return $rows;
+
+    # Is there a next?
+    $query->put(has_next => 1, next => $page_number + 1) 
+	    if $statement->fetchrow_arrayref;
+
+    # Return the page
+    return \@rows;
 }
 
 =head1 COPYRIGHT

@@ -51,9 +51,9 @@ List of the columns.
 List of primary key column names, which uniquely identify a row
 or value.
 
-=item primary_key_types : array_ref
+=item primary_key : array_ref
 
-List of primary key types in the order of I<primary_key_names>.
+List of primary key columns in the order of I<primary_key_names>.
 
 =item version : int
 
@@ -64,6 +64,7 @@ Version of this support declaration.
 =cut
 
 #=IMPORTS
+use Bivio::SQL::ListQuery;
 use Carp ();
 
 #=VARIABLES
@@ -199,6 +200,8 @@ sub init_column {
 	    # Bivio::SQL::Support attributes
 	    name => $qual_col,
 	    type => $type,
+	    sort_order => Bivio::SQL::ListQuery->get_sort_order_for_type(
+		    $type),
 	    constraint => $model->{instance}->get_field_constraint($column),
 
 	    # Other attributes
@@ -230,8 +233,8 @@ sub init_column_classes {
 	$attrs->{$class} = [];
 	my($list) = $decl->{$class};
 	next unless $list;
-	# auth_id is only one that is syntactically different
-	$list = [$list] if $class eq 'auth_id';
+	# *_id classes (auth_id and parent_id) are syntactically different
+	$list = [$list] if $class =~ /_id$/;
 	foreach my $decl (@$list) {
 	    my(@aliases, $first, $col);
 	    if (ref($decl) eq 'HASH') {
@@ -350,6 +353,8 @@ sub _init_column_from_hash {
 	Carp::croak($decl->{type}, ': not a Bivio::Type')
 		    unless UNIVERSAL::isa($decl->{type}, 'Bivio::Type');
 	$col->{type} = $decl->{type};
+	$col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
+		$decl->{type});
     }
     if ($decl->{constraint}) {
 	Carp::croak($decl->{constraint}, ': not a Bivio::SQL::Constraint')

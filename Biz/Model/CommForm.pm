@@ -104,10 +104,10 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	visible => [qw(
-	    Phone.phone
-	    Email.email
-	)],
+	visible => [
+	    'Phone.phone',
+	    'Email.email',
+	],
 	auth_id => [
 	    'Phone.realm_id', 'Email.realm_id',
 	],

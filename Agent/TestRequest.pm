@@ -66,15 +66,15 @@ sub new {
 
 =cut
 
-=for html <a name="flush"></a>
+=for html <a name="send"></a>
 
-=head2 flush()
+=head2 send()
 
 Reply method. NOP
 
 =cut
 
-sub flush {
+sub send {
     return;
 }
 

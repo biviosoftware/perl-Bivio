@@ -187,12 +187,8 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
 
     # get the selected user and load them
-    my($list) = $req->get('Bivio::Biz::Model::MemberSummaryList');
-    $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
-    # Make sure we are on the first entry
-    $list->reset_cursor;
-    $list->next_row;
-    my($owner) = $list->get_model('RealmOwner');
+    my($owner) = $req->get('Bivio::Biz::Model::RealmUser')
+	    ->get_model('RealmOwner_2');
 
     my($task_id) = $req->get('task_id');
     my($heading, $account_list, $show_valuation_date);

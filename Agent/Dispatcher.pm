@@ -87,6 +87,8 @@ sub process_request {
 		    $task_id = $req->get('task_id') unless $task_id;
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
 		    $req->put(task => $task);
+#TODO: This is a hack.  Really should clear out all models.
+		    $req->delete(qw(list_model form_model));
 		    # Task checks authorization
 		    $task->execute($req);
 		});

@@ -377,7 +377,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/member/detail
-        Bivio::Biz::Model::MemberSummaryList
+        Bivio::Biz::Model::MemberTransactionList
+        Bivio::Biz::Model::RealmUser
         Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
@@ -386,6 +387,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investment/detail
+        Bivio::Biz::Model::InstrumentTransactionList
+        Bivio::Biz::Model::RealmInstrument
         Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
@@ -394,7 +397,8 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/account/detail
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::AccountTransactionList
+        Bivio::Biz::Model::RealmAccount
         Bivio::UI::HTML::Club::AccountDetail
     )],
     [qw(
@@ -403,7 +407,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         _/accounting/member/payment
-        Bivio::Biz::Model::MemberSummaryList
+        Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
@@ -423,7 +427,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/interest
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -434,7 +438,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/dividend
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -445,7 +449,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/income
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -456,7 +460,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/expense
-        Bivio::Biz::Model::AccountSummaryList
+        Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -562,7 +566,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         _/accounting/member/fee
-        Bivio::Biz::Model::MemberSummaryList
+        Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL

@@ -96,6 +96,8 @@ sub new {
 	    # Bivio::SQL::Support attributes
 	    name => $n,
 	    type => $cfg->[0],
+	    sort_order => Bivio::SQL::ListQuery->get_sort_order_for_type(
+		    $cfg->[0]),
 	    constraint => $cfg->[1],
 	    sql_name => $n,
 

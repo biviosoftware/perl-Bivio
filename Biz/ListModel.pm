@@ -39,6 +39,8 @@ rows.  This class is always subclassed.
 
 Default page size for display.
 
+May be overridden.
+
 =cut
 
 sub PAGE_SIZE {
@@ -111,9 +113,7 @@ sub format_uri_for_next {
     Carp::croak('no cursor') unless defined($c) && $c >= 0;
     my($sql_support) = $self->internal_get_sql_support();
     return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_next(
-		    $self->internal_get(),
-		    $sql_support);
+	    .'?'.$fields->{query}->format_uri_for_next($sql_support);
 }
 
 =for html <a name="format_uri_for_next_page"></a>
@@ -132,7 +132,7 @@ sub format_uri_for_next_page {
     my($sql_support) = $self->internal_get_sql_support();
     my($row) = $fields->{rows}->[$#{$fields->{rows}}];
     return $self->get_request->get('list_uri').'?'
-	    .$fields->{query}->format_uri_for_next_page($row, $sql_support);
+	    .$fields->{query}->format_uri_for_next_page($sql_support);
 }
 
 =for html <a name="format_uri_for_prev"></a>
@@ -151,9 +151,7 @@ sub format_uri_for_prev {
     Carp::croak('no cursor') unless defined($c) && $c >= 0;
     my($sql_support) = $self->internal_get_sql_support();
     return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_prev(
-		    $self->internal_get(),
-		    $sql_support);
+	    .'?'.$fields->{query}->format_uri_for_prev($sql_support);
 }
 
 =for html <a name="format_uri_for_prev_page"></a>
@@ -172,7 +170,7 @@ sub format_uri_for_prev_page {
     my($sql_support) = $self->internal_get_sql_support();
     my($row) = $fields->{rows}->[0];
     return $self->get_request->get('list_uri').'?'
-	    .$fields->{query}->format_uri_for_prev_page($row, $sql_support);
+	    .$fields->{query}->format_uri_for_prev_page($sql_support);
 }
 
 =for html <a name="format_uri_for_this"></a>
@@ -192,33 +190,48 @@ sub format_uri_for_this {
     my($sql_support) = $self->internal_get_sql_support();
     return $self->get_request->get('detail_uri')
 	    .'?'.$fields->{query}->format_uri_for_this(
-		    $self->internal_get(),
-		    --$c >= 0 ? $fields->{rows}->[$c] :
-		    $fields->{query}->get('just_prior'),
-		    $sql_support);
+		    $self->internal_get(), $sql_support);
 }
 
-=for html <a name="format_uri_for_this_list"></a>
+=for html <a name="format_uri_for_this_child"></a>
 
-=head2 format_uri_for_this_list() : string
+=head2 format_uri_for_this_child() : string
 
-Returns the formated uri for a list starting at this row.  The request bound to
-this list model must have a I<list_uri> attribute not including the query
-string.
+Returns the formated uri for this row which is a child list.  The primary key
+of such this list must be a single primary id.  The request bound to this list
+model must have a I<detail_uri> attribute not including the query string.
 
 =cut
 
-sub format_uri_for_this_list {
+sub format_uri_for_this_child {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($c) = $fields->{cursor};
+    Carp::croak('no cursor') unless defined($c) && $c >= 0;
+    my($sql_support) = $self->internal_get_sql_support();
+    return $self->get_request->get('detail_uri')
+	    .'?'.$fields->{query}->format_uri_for_this_child(
+		    $self->internal_get(), $sql_support);
+}
+
+=for html <a name="format_uri_for_this_page"></a>
+
+=head2 format_uri_for_this_page() : string
+
+Returns the formated uri for the page which contains I<this>.  The request
+bound to this list model must have a I<list_uri> attribute not including the
+query string.
+
+=cut
+
+sub format_uri_for_this_page {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($c) = $fields->{cursor};
     Carp::croak('no cursor') unless defined($c) && $c >= 0;
     my($sql_support) = $self->internal_get_sql_support();
     return $self->get_request->get('list_uri')
-	    .'?'.$fields->{query}->format_uri_for_next_page(
-		    --$c >= 0 ? $fields->{rows}->[$c] :
-		    $fields->{query}->get('just_prior'),
-		    $sql_support);
+	    .'?'.$fields->{query}->format_uri_for_this_page($sql_support);
 }
 
 =for html <a name="get_hidden_field_values"></a>
@@ -237,6 +250,20 @@ sub get_hidden_field_values {
     my($fields) = $self->{$_PACKAGE};
     return $fields->{query}->get_hidden_field_values(
 	    $self->internal_get_sql_support());
+}
+
+=for html <a name="get_query"></a>
+
+=head2 get_query() : Bivio::SQL::ListQuery
+
+Returns the
+L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+associated with this list model.
+
+=cut
+
+sub get_query {
+    return shift->{$_PACKAGE}->{query};
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -344,8 +371,24 @@ sub internal_load {
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
-    $self->get_request->put(ref($self) => $self);
+    $self->get_request->put(ref($self) => $self, list_model => $self);
     return;
+}
+
+=for html <a name="internal_search"></a>
+
+=head2 internal_search(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
+
+Returns the where clause and params associated as the result of a
+"search".
+
+=cut
+
+sub internal_search {
+    # Returns empty where when user passes in search string and
+    # search string is not supported.
+#TODO: throw corrupt_query?
+    return '';
 }
 
 =for html <a name="load"></a>
@@ -377,16 +420,17 @@ sub load {
     if (ref($query) eq 'HASH') {
 	$query->{auth_id} = $auth_id;
 	# Let user override page count
-	$query->{count} = PAGE_SIZE() unless $query->{count};
+	$query->{count} = $self->PAGE_SIZE() unless $query->{count};
 	$query = Bivio::SQL::ListQuery->new($query, $sql_support);
     }
     else {
 	$query->put('auth_id' => $auth_id);
     }
-    my($where, $params);
-    $where = $self->internal_search($query, $sql_support, $params = [])
+    my($where, $params) = ('', []);
+    $where = $self->internal_search($query, $sql_support, $params)
 	    if defined($query->{search});
-    $self->internal_load($sql_support->load($query, $self), $query);
+    $self->internal_load($sql_support->load($query, $where, $params,
+	    $self), $query);
     return;
 }
 

@@ -70,21 +70,6 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="internal_load"></a>
-
-=head2 internal_load() : 
-
-
-
-=cut
-
-sub internal_load {
-    _trace('internal_load called.') if $_TRACE;
-    my($self, $rows, $query) = @_;
-    $self->SUPER::internal_load($rows, $query);
-    return;
-}
-
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

@@ -48,6 +48,26 @@ use Bivio::Type::Password;
 use Bivio::Type::DateTime;
 
 #=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+my($_SQL_DATE_VALUE) = Bivio::Type::Date->to_sql_value('?');
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::AccountSummaryList
+
+Creates a RealmOwner.
+
+=cut
+
+sub new {
+    my($self) = &Bivio::Biz::PropertyModel::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
 
 =head1 METHODS
 
@@ -130,14 +150,21 @@ Returns an array of realm instrument records (id, name, symbol).
 
 sub get_instruments_info {
     my($self) = @_;
-
-    my($key) = ref($self).'get_instruments_info';
-    my($cache) = $self->get_request->unsafe_get($key);
+    my($fields) = $self->{$_PACKAGE};
+    my($cache) = $fields->{get_instruments_info};
     return $cache if $cache;
 
 #TODO: make this a ListModel
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_t.realm_instrument_id, instrument_t.name, instrument_t.ticker_symbol from realm_instrument_t, instrument_t where realm_instrument_t.instrument_id = instrument_t.instrument_id and realm_id=? order by instrument_t.name',
+    my($query) = <<'EOF';
+	SELECT realm_instrument_t.realm_instrument_id,
+	    instrument_t.name,
+	    instrument_t.ticker_symbol
+	FROM realm_instrument_t, instrument_t
+        WHERE realm_instrument_t.instrument_id = instrument_t.instrument_id
+	AND realm_id=?
+	ORDER BY instrument_t.name
+EOF
+    my($sth) = Bivio::SQL::Connection->execute($query,
 	    [$self->get('realm_id')]);
 
     my($result) = [];
@@ -147,7 +174,7 @@ sub get_instruments_info {
 	my($id, $name, $symbol) = @$row;
 	push(@$result, [$id, $name, $symbol]);
     }
-    $self->get_request->put($key => $result);
+    $fields->{get_instruments_info} = $result;
     return $result;
 }
 
@@ -167,9 +194,21 @@ sub get_cost_per_share {
 #      very clumsy with cost basis of fractional shares
 #      need to separate shares returned (ignored)
 #      from the value of the returned shares (affects total_cost)
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_entry_t.realm_instrument_id, entry_t.amount, realm_instrument_entry_t.count, entry_t.entry_type, entry_t.tax_basis, entry_t.tax_category from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and realm_instrument_entry_t.realm_instrument_id in (select realm_instrument_id from realm_instrument_t where realm_id=?) and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
+    my($query) = <<"EOF";
+	SELECT realm_instrument_entry_t.realm_instrument_id,
+	    entry_t.amount,
+	    realm_instrument_entry_t.count,
+	    entry_t.entry_type,
+	    entry_t.tax_basis,
+	    entry_t.tax_category
+	FROM realm_transaction_t, entry_t, realm_instrument_entry_t
+	WHERE realm_transaction_t.realm_transaction_id
+	    = entry_t.realm_transaction_id
+	AND entry_t.entry_id = realm_instrument_entry_t.entry_id
+	AND realm_instrument_entry_t.realm_id = ?
+	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
+EOF
+    my($sth) = Bivio::SQL::Connection->execute($query,
 	   [$self->get('realm_id'),
 		   Bivio::Type::Date->to_sql_param($date)]);
 
@@ -218,17 +257,28 @@ specified date. Returns a hash of realm_instrument_id => count.
 
 sub get_number_of_shares {
     my($self, $date) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
-    my($key) = ref($self).'get_number_of_shares';
-    my($cache) = $self->get_request->unsafe_get($key);
+    my($cache) = $fields->{get_number_of_shares};
     return $cache if $cache;
 
     # note: doesn't include fractional shares paid in cash (not tax basis)
-
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_entry_t.realm_instrument_id, sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id in (select realm_instrument_id from realm_instrument_t where realm_id=?) and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?')
-	    .' group by realm_instrument_entry_t.realm_instrument_id',
+    my($query) = <<"EOF";
+	SELECT realm_instrument_entry_t.realm_instrument_id,
+	    sum(realm_instrument_entry_t.count)
+	FROM realm_transaction_t,
+	    entry_t,
+	    realm_instrument_entry_t
+	WHERE
+	    realm_instrument_entry_t.realm_id = ?
+	    AND realm_transaction_t.realm_transaction_id
+		    = entry_t.realm_transaction_id
+	    AND entry_t.entry_id = realm_instrument_entry_t.entry_id
+	    AND entry_t.tax_basis = 1
+	    AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
+	GROUP BY realm_instrument_entry_t.realm_instrument_id
+EOF
+    my($sth) = Bivio::SQL::Connection->execute($query,
 	   [$self->get('realm_id'), Bivio::Type::Date->to_sql_param($date)]);
 
     my($result) = {};
@@ -237,7 +287,7 @@ sub get_number_of_shares {
 	my($id, $count) = @$row;
 	$result->{$id} = $count;
     }
-    $self->get_request->put($key => $result);
+    $fields->{get_number_of_shares} = $result;
     return $result;
 }
 
@@ -252,9 +302,8 @@ the RealmInstruments on the specified date.
 
 sub get_share_price_and_date {
     my($self, $search_date) = @_;
-
-    my($key) = ref($self).'get_share_price_and_date';
-    my($cache) = $self->get_request->unsafe_get($key);
+    my($fields) = $self->{$_PACKAGE};
+    my($cache) = $fields->{get_share_price_and_date};
     return $cache if $cache;
 
     my($result) = {};
@@ -274,25 +323,19 @@ sub get_share_price_and_date {
     #   if date < club-switch-over-date use local (TODO)
 
     my($id, $value, $date);
-
     my($d) = Bivio::Type::Date->from_sql_value('mgfs_daily_quote_t.date_time');
     my($sth) = Bivio::SQL::Connection->execute(
-            <<"EOF", [$self->get('realm_id')]);
-            SELECT realm_instrument_t.realm_instrument_id,
-                mgfs_daily_quote_t.close, $d
-            FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
-            WHERE realm_instrument_t.realm_instrument_id in (
-                    SELECT realm_instrument_t.realm_instrument_id
-                    FROM realm_instrument_t
-                    WHERE realm_instrument_t.realm_id=?
-                    )
-            AND realm_instrument_t.instrument_id
-                =mgfs_instrument_t.instrument_id
+	    <<"EOF", [$self->get('realm_id')]);
+	    SELECT realm_instrument_t.realm_instrument_id,
+	    	mgfs_daily_quote_t.close, $d
+	    FROM realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t
+	    WHERE realm_instrument_t.realm_id =?
+	    AND realm_instrument_t.instrument_id
+            	=mgfs_instrument_t.instrument_id
             AND mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id
             AND mgfs_daily_quote_t.date_time in ($dates)
             ORDER BY mgfs_daily_quote_t.date_time DESC
 EOF
-
     my($row);
     while ($row = $sth->fetchrow_arrayref()) {
 	($id, $value, $date) = @$row;
@@ -308,16 +351,21 @@ EOF
     my($six_months_ago) = Bivio::Type::Date->to_sql_param(($j - 180).' '
 	       .Bivio::Type::DateTime::DEFAULT_TIME());
 
+    $d = Bivio::Type::Date->from_sql_value(
+	    'realm_instrument_valuation_t.date_time');
+    my($d2) = Bivio::Type::Date->to_sql_value('?');
+    $d = <<"EOF";
+	    SELECT realm_instrument_valuation_t.realm_instrument_id,
+	    realm_instrument_valuation_t.price_per_share,
+	    $d
+	    FROM realm_instrument_valuation_t
+	    WHERE realm_instrument_valuation_t.realm_id=?
+            AND realm_instrument_valuation_t.date_time between $d2 and $d2
+	    ORDER BY realm_instrument_valuation_t.date_time DESC
+EOF
     $sth = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_valuation_t.realm_instrument_id, realm_instrument_valuation_t.price_per_share, '
-	    .Bivio::Type::Date->from_sql_value(
-			'realm_instrument_valuation_t.date_time')
-	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_id=? and realm_instrument_valuation_t.date_time between '
-	    .Bivio::Type::Date->to_sql_value('?').' and '
-	    .Bivio::Type::Date->to_sql_value('?')
-	    .' order by realm_instrument_valuation_t.date_time desc',
-	    [$self->get('realm_id'), $six_months_ago,
-		    Bivio::Type::Date->to_sql_param($search_date)]);
+	    $d, [$self->get('realm_id'), $six_months_ago,
+		Bivio::Type::Date->to_sql_param($search_date)]);
 
     while ($row = $sth->fetchrow_arrayref()) {
 	($id, $value, $date) = @$row;
@@ -329,7 +377,7 @@ EOF
 	}
     }
 
-    $self->get_request->put($key => $result);
+    $fields->{get_share_price_and_date} = $result;
     return $result;
 }
 
@@ -360,19 +408,25 @@ date.
 
 sub get_units {
     my($self, $date) = @_;
-
-    my($key) = ref($self).'get_units';
-    my($cache) = $self->get_request->unsafe_get($key);
+    my($fields) = $self->{$_PACKAGE};
+    my($cache) = $fields->{get_units};
     return $cache if $cache;
 
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(member_entry_t.units) from realm_transaction_t, entry_t, member_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = member_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
+    my($query) = <<"EOF";
+	SELECT SUM(member_entry_t.units)
+	FROM realm_transaction_t, entry_t, member_entry_t
+	WHERE realm_transaction_t.realm_transaction_id
+	    =entry_t.realm_transaction_id
+	AND entry_t.entry_id = member_entry_t.entry_id
+ 	AND realm_transaction_t.realm_id=?
+	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
+EOF
+    my($sth) = Bivio::SQL::Connection->execute($query,
 	    [$self->get('realm_id'),
 		    Bivio::Type::Date->to_sql_param($date)]);
 
     my($units) = $sth->fetchrow_arrayref()->[0] || '0';
-    $self->get_request->put($key => $units);
+    $fields->{get_units} = $units;
     return $units;
 }
 
@@ -386,9 +440,8 @@ Returns the realm's value on the specified date.
 
 sub get_value {
     my($self, $date) = @_;
-
-    my($key) = ref($self).'get_value';
-    my($cache) = $self->get_request->unsafe_get($key);
+    my($fields) = $self->{$_PACKAGE};
+    my($cache) = $fields->{get_value};
     return $cache if $cache;
 
     my($value) = $self->get_tax_basis(Bivio::Type::EntryClass->CASH, $date);
@@ -403,7 +456,7 @@ sub get_value {
 	$value = Bivio::Type::Amount->add($value,
 		Bivio::Type::Amount->mul($shares->{$id} || 0, $price));
     }
-    $self->get_request->put($key => $value);
+    $fields->{get_value} = $value;
     return $value;
 }
 
@@ -419,9 +472,17 @@ date.
 sub get_tax_basis {
     my($self, $class, $date) = @_;
 
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(entry_t.amount) from realm_transaction_t, entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.tax_basis = 1 and realm_transaction_t.realm_id=? and entry_t.class=? and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
+    my($query) = <<"EOF";
+	SELECT sum(entry_t.amount)
+	FROM realm_transaction_t, entry_t
+	WHERE realm_transaction_t.realm_transaction_id
+		= entry_t.realm_transaction_id
+	AND entry_t.tax_basis = 1
+	AND realm_transaction_t.realm_id=?
+	AND entry_t.class=?
+	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
+EOF
+    my($sth) = Bivio::SQL::Connection->execute($query,
 	   [$self->get('realm_id'), $class->as_int(),
 		   Bivio::Type::Date->to_sql_param($date)]);
     return $sth->fetchrow_arrayref()->[0] || '0.00';
