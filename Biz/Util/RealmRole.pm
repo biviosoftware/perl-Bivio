@@ -452,3 +452,32 @@ b-realm-role demo_club ACCOUNTANT - \
     +MEMBER
 b-realm-role demo_club ADMINISTRATOR - \
     +ACCOUNTANT
+
+#
+# ask_candis_publish Permissions (same as club except for MAIL_WRITE)
+#
+b-realm-role CLUB ANONYMOUS - \
+    +LOGIN
+b-realm-role CLUB USER - \
+    +ANONYMOUS \
+    +ANY_USER
+b-realm-role CLUB GUEST - \
+    +USER \
+    +ADMIN_READ \
+    +ACCOUNTING_READ \
+    +DOCUMENT_READ \
+    +FINANCIAL_DATA_READ \
+    +MAIL_READ \
+    +MEMBER_READ \
+    +MOTION_READ
+#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
+b-realm-role CLUB MEMBER - \
+    +GUEST \
+    +MAIL_RECEIVE \
+    +MAIL_WRITE
+b-realm-role CLUB ACCOUNTANT - \
+    +MEMBER \
+    +ACCOUNTING_WRITE \
+    +MEMBER_WRITE
+b-realm-role CLUB ADMINISTRATOR +
+
