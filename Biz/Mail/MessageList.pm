@@ -68,7 +68,10 @@ sub new {
     my($self) = &Bivio::Biz::ListModel::new($proto, 'messagelist',
 	    $_COLUMN_INFO);
 
-    $self->{$_PACKAGE} = {};
+    $self->{$_PACKAGE} = {
+	index => 0,
+	size => 0
+	};
     return $self;
 }
 
@@ -91,16 +94,19 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    #TODO: remove hard-coded 20s
-    if ($fp->{'club'}) {
+    $fields->{index} = $fp->{index} || 0;
+
+    #TODO: remove hard-coded 15s
+    if ($fp->{club}) {
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
 		'where club=?', $fp->{'club'});
 	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
-		20, 'where club=?', $fp->{'club'});
+		$fields->{index}, 15, 'where club=?', $fp->{'club'});
     }
     else {
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self, '');
-	$_SQL_SUPPORT->find($self, $self->internal_get_rows(), 20, '');
+	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
+		$fields->{index}, 15, '');
     }
     return $self->get_status()->is_OK();
 }
