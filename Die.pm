@@ -324,7 +324,7 @@ sub throw {
 	_handle_die($proto);
 	# _handle_die returns, but user called die.  So need to
 	# throw a bogus exception.
-	CORE::die("\n");
+	CORE::die($proto->as_string);
     }
     $package ||= (caller)[0];
     $file ||= (caller)[1];
