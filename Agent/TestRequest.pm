@@ -62,7 +62,7 @@ sub new {
 	    $user, Bivio::Util::gettimeofday());
     $args ||= {};
     $self->{$_PACKAGE} = {
-	args => $args
+	'args' => $args
     };
     return $self;
 }
@@ -96,6 +96,7 @@ Writes the value to STDOUT.
 sub print {
     my($self, $str) = @_;
     print(STDOUT $str);
+    return;
 }
 
 =for html <a name="put_arg"></a>
@@ -110,6 +111,7 @@ sub put_arg {
     my($self, $name, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{args}->{$name} = $value;
+    return;
 }
 
 #=PRIVATE METHODS

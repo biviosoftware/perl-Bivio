@@ -113,12 +113,12 @@ sub new {
     my($proto, $target_name, $controller_name, $user, $start_time) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
-        target => $target_name,
-        controller => $controller_name,
-        user => $user,
-        reply_type => '',
-        state => NOT_HANDLED,
-	start_time => $start_time
+        'target' => $target_name,
+        'controller' => $controller_name,
+        'user' => $user,
+        'reply_type' => '',
+        'state' => NOT_HANDLED,
+	'start_time' => $start_time
     };
     return $self;
 }
@@ -262,6 +262,7 @@ sub set_reply_type {
     my($self, $type) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{reply_type} = $type;
+    return;
 }
 
 =for html <a name="set_state"></a>
@@ -277,6 +278,7 @@ sub set_state {
     my($self, $state) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{state} = $state;
+    return;
 }
 
 #=PRIVATE METHODS
