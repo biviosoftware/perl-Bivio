@@ -204,14 +204,18 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
+    my($req) = $source->get_request;
     $$buffer .=
 	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
     $fields->{style}->render($source, $buffer) if $fields->{style};
-    $$buffer .= "\n<meta name=MSSmartTagsPreventParsing content=TRUE>\n"
-	.'<meta http-equiv=pragma content="no-cache"></head><body';
-    my($req) = $source->get_request;
+    # This is a check for Internet Explorer.  Netscape is BROWSER_HTML4.
+    # IE caches too much.
+    $$buffer .= "<meta name=MSSmartTagsPreventParsing content=TRUE>\n"
+	.'<meta http-equiv=pragma content="no-cache">'."\n"
+	if $req->get('Type.UserAgent')->equals_by_name('BROWSER');
+    $$buffer .= '</head><body';
     # Always have a background color
     $$buffer .= Bivio::UI::Color->format_html('page_bg', 'bgcolor', $req);
     foreach my $c ('text', 'link', 'alink', 'vlink') {
