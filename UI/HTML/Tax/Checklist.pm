@@ -186,7 +186,7 @@ sub execute {
 
     $req->put(
 	    all_valid_members => $list->get_result_set_size == 0,
-	    page_type => Bivio::UI::PageType::LIST(),
+	    page_type => Bivio::UI::PageType::LIST_ALL(),
 	    list_model => $list,
 	    list_uri => $req->format_stateless_uri($req->get('task_id')),
 	    detail_uri => $req->format_stateless_uri(
