@@ -117,7 +117,7 @@ used.
 
 =item bumpliz :
 
-=item ollon :
+=item ollon : InvestmentExpo
 
 =item stange :
 
