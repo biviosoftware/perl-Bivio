@@ -48,13 +48,12 @@ sub REALM_PLACEHOLDER {
 }
 
 #=IMPORTS
+# Avoid anything that might access the db here.  Add it in
+# (if need be) in initialize() explicitly.
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::General;
-use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
-use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -80,6 +79,8 @@ Bivio::IO::Config->register({
 });
 my($_REALM_PLACEHOLDER_PAT) = REALM_PLACEHOLDER();
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
+# Map of realm types to default realm placeholders
+my(%_PLACEHOLDER);
 
 =head1 METHODS
 
@@ -141,8 +142,8 @@ sub format {
 	}
 	else {
 	    # We're a little strict here, since we added this overload later
-	    Bivio::Die->die($realm, ': not a simple realm name')
-			unless $realm =~ /^\w+$/;
+	    Bivio::Die->die($realm, ': not a simple realm name or placeholder')
+			unless $realm =~ /^[-\w]+$/;
 	    $ro = $realm;
 	}
 	# Replace everything leading up to placeholder with the uri prefix
@@ -179,6 +180,29 @@ sub format {
     $uri .= Bivio::Biz::FormModel->format_context_as_query($req, $task_id)
 	    if $rc;
     return $uri;
+}
+
+=for html <a name="format_realmless"></a>
+
+=head2 static format_realmless(Bivio::Agent::TaskId task_id) : string
+
+Formats a stateless, realmless URI.  It uses my-club-site or
+my-site for the realm in the URI.
+
+This is an experimental method.
+
+=cut
+
+sub format_realmless {
+    my($proto, $task_id) = @_;
+    Bivio::Die->die($task_id, ': no such task')
+	    unless $_FROM_TASK_ID{$task_id};
+    return $proto->format(
+	    $task_id,
+	    $_PLACEHOLDER{$_FROM_TASK_ID{$task_id}->{realm_type}},
+	    undef,
+	    1,
+	    undef);
 }
 
 =for html <a name="get_document_root"></a>
@@ -238,12 +262,52 @@ sub handle_config {
 Initialize from syntax as defined in TaskId.  We take special care to
 enforce all the syntax rules at compile time.
 
+Simple utilities can probably use L<initialize_map|"initialize_map">
+instead of this routine.
+
 =cut
 
 sub initialize {
-    $_INITIALIZED && return;
-    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
+    return if $_INITIALIZED;
+    $_INITIALIZED = 1;
+
+    my($proto) = @_;
+    $proto->initialize_map;
+
+    # The following tasks require IO::Config and the database.
+    Bivio::IO::ClassLoader->simple_require(qw(
+         Bivio::Auth::Realm::General
+         Bivio::Auth::Realm
+    ));
+
     $_GENERAL = Bivio::Auth::Realm::General->new;
+
+    # Make sure HTTP_DOCUMENT is defined
+    $_DOCUMENT_TASK = $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}
+	    ->{task};
+    die('HTTP_DOCUMENT: task must be configured') unless $_DOCUMENT_TASK;
+
+    # Configure HELP_ROOT
+    my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
+    die('HELP: task not configured') unless $help;
+    $_HELP_ROOT = $_DOCUMENT_ROOT.$help->{uri};
+    die("HELP_ROOT: $_HELP_ROOT: not a directory") unless -d $_HELP_ROOT;
+
+    return;
+}
+
+=for html <a name="initialize_map"></a>
+
+=head2 initialize_map()
+
+This is a partial initialization of the parts of this module which
+don't require the database.  It is here to support simple utilities.
+
+=cut
+
+sub initialize_map {
+    return if %_FROM_URI;
+    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     my(%path_info_uri);
     foreach my $c (@$cfg) {
 	my($task_id_name, $realm_type_name, $uri_list) = @{$c}[0,2,4];
@@ -251,21 +315,8 @@ sub initialize {
 
 #TODO: Shouldn't know that GENERAL is a special realm(?)
 	# Test for all the realms we understand, explicitly.
-	my($is_general) = $realm_type_name eq 'GENERAL';
-	my($realm);
-	if ($is_general) {
-	    $realm = $_GENERAL;
-	}
-
-#TODO: Shouldn't have to do this mapping here.  Should be in RealmType.
-	elsif ($realm_type_name =~ /^(CLUB|USER)$/) {
-	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
-	}
-	else {
-	    die("$task_id_name: $realm_type_name: unknown realm type");
-	}
-
-	my($rti) = $realm->get_type->as_int;
+	my($realm_type) = Bivio::Auth::RealmType->$realm_type_name();
+	my($rti) = $realm_type->as_int;
 	my($uri);
 
 	# Make sure we have at least one URI (use '!' if you don't want a uri)
@@ -290,7 +341,7 @@ sub initialize {
 
 		# Is the URI valid?
 		my($path_info_count) = undef;
-		if ($is_general) {
+		if ($realm_type == Bivio::Auth::RealmType::GENERAL()) {
 		    $path_info_count = 1;
 		}
 		else {
@@ -325,6 +376,7 @@ sub initialize {
 	    my($info) = {
 		task => $task_id,
 		uri => $uri,
+		realm_type => $realm_type,
 		has_path_info => $has_path_info ? 1 : 0,
 	    };
 	    $_FROM_URI{$uri}->[$rti] = $info if defined($uri);
@@ -335,17 +387,6 @@ sub initialize {
 		unless $got_one;
     }
 
-    # Make sure HTTP_DOCUMENT is defined
-    $_DOCUMENT_TASK = $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}
-	    ->{task};
-    die('HTTP_DOCUMENT: task must be configured') unless $_DOCUMENT_TASK;
-
-    # Configure HELP_ROOT
-    my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
-    die('HELP: task not configured') unless $help;
-    $_HELP_ROOT = $_DOCUMENT_ROOT.$help->{uri};
-    die("HELP_ROOT: $_HELP_ROOT: not a directory") unless -d $_HELP_ROOT;
-
     # Make sure all URIs don't collide with path_info uris
     foreach my $piu (keys(%path_info_uri)) {
 	foreach my $uri (keys(%_FROM_URI)) {
@@ -354,7 +395,15 @@ sub initialize {
 	}
     }
 
-    $_INITIALIZED = 1;
+#TODO: Is this a hack?
+    # Map default placeholders for these realms.  See format_realmless().
+    $_PLACEHOLDER{Bivio::Auth::RealmType::CLUB()}
+	    = $_FROM_TASK_ID{Bivio::Agent::TaskId::MY_CLUB_SITE()}
+	    ->{uri};
+    $_PLACEHOLDER{Bivio::Auth::RealmType::USER()}
+	    = $_FROM_TASK_ID{Bivio::Agent::TaskId::MY_SITE()}
+	    ->{uri};
+    $_PLACEHOLDER{Bivio::Auth::RealmType::GENERAL()} = undef;
     return;
 }
 
