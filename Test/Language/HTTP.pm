@@ -876,8 +876,9 @@ sub _log {
 sub _send_request {
     my($self, $request) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{user_agent}->agent($self->get('test_script') . ':'
-        . _get_script_line($self));
+    $fields->{user_agent}->agent('Mozilla/4.0 (compatible; '
+	. $self->get('test_script') . ':' . _get_script_line($self)
+	. ')');
     my($redirect_count) = 0;
     $fields->{response} = undef;
     $fields->{html_parser} = undef;
