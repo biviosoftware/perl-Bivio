@@ -2990,6 +2990,8 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/adjustment
         Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::RealmUserList->execute_load_this
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::MemberAdjustmentForm
         Bivio::UI::HTML::Club::MemberAdjustment
         next=CLUB_ACCOUNTING_MEMBER_LIST
@@ -3013,6 +3015,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/adjustment
         Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::InstrumentAdjustmentForm
         Bivio::UI::HTML::Club::InstrumentAdjustment
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
