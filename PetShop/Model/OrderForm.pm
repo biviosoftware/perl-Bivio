@@ -67,15 +67,15 @@ sub execute_empty {
     $self->internal_put_field(ship_to_billing_address => 1);
 
     # name
-    my($user) = Bivio::Biz::Model->new($req, 'User')->load;
+    my($user) = $self->new($req, 'User')->load;
     $self->internal_put_field('Order.bill_to_first_name'
 	    => $user->get('first_name'));
     $self->internal_put_field('Order.bill_to_last_name'
 	    => $user->get('last_name'));
 
     # address
-    my($account) = Bivio::Biz::Model->new($req, 'UserAccount')->load;
-    my($address) = Bivio::Biz::Model->new($req, 'EntityAddress')->load({
+    my($account) = $self->new($req, 'UserAccount')->load;
+    my($address) = $self->new($req, 'EntityAddress')->load({
 	entity_id => $account->get('entity_id'),
 	location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
     });
@@ -86,8 +86,7 @@ sub execute_empty {
 
     # phone
     $self->internal_put_field('EntityPhone_1.phone'
-	    => Bivio::Biz::Model->new($req, 'EntityPhone')
-	    ->load({
+	    => $self->new($req, 'EntityPhone')->load({
 		entity_id => $account->get('entity_id'),
 		location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
 	    })->get('phone'));
@@ -280,8 +279,7 @@ sub _copy_billing_info {
 sub _decrease_inventory {
     my($self) = @_;
 
-    my($list) = Bivio::Biz::Model->new($self->get_request, 'CartItemList')
-	    ->load_all;
+    my($list) = $self->new($self->get_request, 'CartItemList')->load_all;
     while ($list->next_row) {
 	my($inventory) = $list->get_model('Inventory');
 	$inventory->update({
@@ -304,7 +302,7 @@ sub _get_bonus_miles {
     my($self, $amount) = @_;
     my($miles) = $amount >= 100 ? 1000 : 500;
 
-    if (Bivio::Biz::Model->new($self->get_request, 'UserAccount')->load->get(
+    if ($self->new($self->get_request, 'UserAccount')->load->get(
 	    'status') == Bivio::PetShop::Type::UserStatus->GOLD_CUSTOMER) {
 	$miles += 1000;
     }
@@ -333,14 +331,12 @@ sub _save_order {
     my($self) = @_;
     my($req) = $self->get_request;
 
-    my($cart) = Bivio::Biz::Model->new($req, 'Cart')->load({
-	cart_id => $req->get('cart_id'),
-    });
+    my($cart) = $self->new($req, 'Cart')->load_from_cookie;
     my($total) = $cart->get_total;
 
     # create the entity and order
-    my($order) = Bivio::Biz::Model->new($req, 'Order')->create({
-	order_id => Bivio::Biz::Model->new($req, 'Entity')->create({})
+    my($order) = $self->new($req, 'Order')->create({
+	order_id => $self->new($req, 'Entity')->create({})
 	    ->get('entity_id'),
 	user_id => $req->get('auth_user_id'),
 	cart_id => $cart->get('cart_id'),
@@ -354,14 +350,14 @@ sub _save_order {
 
     # create the entity address/phone for billing/shipping
     foreach my $location (qw(BILL_TO SHIP_TO)) {
-	Bivio::Biz::Model->new($req, 'EntityAddress')->create({
+	$self->new($req, 'EntityAddress')->create({
 	    entity_id => $order->get('order_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->$location(),
 	    %{$self->get_model_properties('EntityAddress_'
 		    .($location eq 'BILL_TO' ? 1 : 2))},
 	});
 
-	Bivio::Biz::Model->new($req, 'EntityPhone')->create({
+	$self->new($req, 'EntityPhone')->create({
 	    entity_id => $order->get('order_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->$location(),
 	    %{$self->get_model_properties('EntityPhone_'
@@ -370,7 +366,7 @@ sub _save_order {
     }
 
     # create the order status
-    Bivio::Biz::Model->new($req, 'OrderStatus')->create({
+    $self->new($req, 'OrderStatus')->create({
 	order_id => $order->get('order_id'),
 	user_id => $req->get('auth_user_id'),
 	time_stamp => $order->get('order_date'),
