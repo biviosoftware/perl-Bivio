@@ -258,7 +258,7 @@ last name is too long
 
 =item EMAIL_LOOP
 
-email address loops back to itself.  Must not be the same as your
+email address loops back to itself.  Must not be the same as the
 login name.
 
 =item INVALID_EXPORT_FILE_FORMAT
@@ -566,7 +566,7 @@ __PACKAGE__->compile([
     EMAIL_LOOP => [
 	57,
 	undef,
-	'email address loops back to itself; must not be the same as your login name',
+	'email address loops back to itself; must not be the same as the login name',
     ],
     REFERENTIAL_CONSTRAINT => [
 	58,
