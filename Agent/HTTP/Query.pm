@@ -79,8 +79,8 @@ sub parse {
 
     # Some search engines don't unescape_html when parsing the page
     #   /pub/trez_talk/msg?v=1&amp;t=292100003&amp;o=0d1a2a
-    $string = _correct('unescape_html', $string)
-	    if $string =~ /&amp;\w=/;
+#    $string = _correct('unescape', $string)
+#	    if $string =~ /&amp;\w=/;
 
     # Split on & and then =
     my(@v);
