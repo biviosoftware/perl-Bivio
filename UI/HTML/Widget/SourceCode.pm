@@ -285,9 +285,12 @@ sub _reformat_pod {
 	    $pod = $2;
 	    $doc = $3;
         }
-
 	next unless $in_pod;
 
+	if ($pod && $doc && $pod eq '=for' && $doc =~ s/^html\s//) {
+	    substr($line, 0, 0) = $doc;
+	    next;
+	}
 	$line = _unescape_pod($line);
 
 	unless ($pod) {
