@@ -100,7 +100,8 @@ sub execute_input {
 
     # overwrite any club files/transactions user ids with current user id
     my($realm_user) = $list->get_model('RealmUser');
-    $realm_user->change_ownership($req->get('auth_user')->get('realm_id'));
+    # don't transfer the member's k-1
+    $realm_user->change_ownership($req->get('auth_user')->get('realm_id'), 0);
     $realm_user->cascade_delete();
 
     # if the user is a shadow user, then delete the user as well
