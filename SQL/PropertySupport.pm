@@ -274,7 +274,10 @@ sub unsafe_load {
     Bivio::SQL::Connection->increment_db_time($start_time);
     my($values);
     if ($row) {
-	$statement->finish, die('too many rows returned') if $too_many;
+	if ($too_many) {
+	    $statement->finish;
+	    $die->die('too many rows returned');
+	}
 	my($columns) = $attrs->{columns};
 	my($i) = 0;
 	$values = {map {
