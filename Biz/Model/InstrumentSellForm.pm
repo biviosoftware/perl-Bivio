@@ -59,8 +59,7 @@ sub execute_empty {
     my($properties) = $self->internal_get;
     # default account to Broker
     $properties->{'RealmAccountEntry.realm_account_id'} =
-	    $self->get_request->get(
-		    'Bivio::Biz::Model::RealmValuationAccountList')
+	    $self->get_request->get('Bivio::Biz::Model::RealmAccountList')
 		    ->get_default_broker_account();
     return;
 }
