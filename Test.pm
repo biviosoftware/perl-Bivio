@@ -699,7 +699,7 @@ sub _summarize {
 sub _summarize_scalar {
     my($v) = @_;
     return 'undef' unless defined($v);
-    return length($v) > 20 ? substr($v, 0, 20).'...' : $v;
+    return length($v) > 30 ? substr($v, 0, 30).'...' : $v;
 }
 
 # _test_sig(hash_ref test) : string
