@@ -518,14 +518,24 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditPassword
         next=CLUB_ADMIN_USER_DETAIL
     )],
-#58
     [qw(
 	DEMO_REDIRECT
-	59
+	58
         GENERAL
         DOCUMENT_READ
         demo
-	Bivio::Biz::Action::DemoClubRedirect
+	Bivio::Biz::Action::DemoClubRedirect->execute_if_anonymous
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=USER_DEMO_CLUB_REDIRECT
+    )],
+    [qw(
+	USER_DEMO_CLUB_REDIRECT
+	59
+        USER
+        DOCUMENT_READ
+        ?/demo
+        Bivio::Biz::Model::Lock
+	Bivio::Biz::Action::DemoClubRedirect->execute_user
         next=CLUB_INTRO
     )],
     [qw(
