@@ -925,6 +925,21 @@ __PACKAGE__->compile([
 	undef,
 	'The club must have at least one general partner',
     ],
+    TIME_COMPONENT_OF_DATE => [
+	129,
+	undef,
+	'time component not valid for date value',
+    ],
+    TIME_RANGE => [
+	130,
+	undef,
+	'seconds outside of the maximum for a time',
+    ],
+    DATE_RANGE => [
+	131,
+	undef,
+	'days outside of the maximum for a date',
+    ],
 ]);
 
 #=PRIVATE METHODS
