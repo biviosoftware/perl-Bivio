@@ -152,10 +152,10 @@ sub execute {
     $reply->set_output($text_ref);
 
 #TODO:  Temporary hack.
-    open(OUT, '>/home/yates/junk/Form.pdf')
-	    or die("Can't open PDF output file.\n");
-    print(OUT ${$text_ref});
-    close(OUT);
+#    open(OUT, '>/home/yates/junk/Form.pdf')
+#	    or die("Can't open PDF output file.\n");
+#    print(OUT ${$text_ref});
+#    close(OUT);
 
     return;
 }
