@@ -31,6 +31,7 @@ It provides links to MIME parts (such as attached GIF, JPEG files).
 
 This module knows about the different MIME parts that are attached to
 a mail message, and will draw apropriate icons for links to them.
+
 =cut
 
 #=IMPORTS
