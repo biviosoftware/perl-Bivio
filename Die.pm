@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Die;
 use strict;
-$Bivio::Die::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Die::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::Die::VERSION;
 
 =head1 NAME

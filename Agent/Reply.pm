@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Agent::Reply;
 use strict;
-$Bivio::Agent::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::Agent::Reply::VERSION;
 
 =head1 NAME
