@@ -98,6 +98,7 @@ sub get_widget_value {
     }
 
     my($result) = ($round > 0 && defined($dec)) ? ($num.'.'.$dec) : $num;
+    return ' ' if $zero_as_blank && $result =~ /^0(\.0+)?$/;
 
 #TODO: really want &nbsp; around positive values.  Add result_is_html()
     return $negative ? '('.$result.')' : ' '.$result.' ' if $want_parens;
