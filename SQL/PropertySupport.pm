@@ -354,7 +354,11 @@ sub unsafe_load {
     if ($row) {
 	if ($too_many) {
 	    $statement->finish;
-	    $die->die('too many rows returned');
+	    $die->throw_die('TOO_MANY', {
+		message => 'too many rows returned',
+		sql => $sql,
+		params => \@params,
+	    });
 	}
 	my($columns) = $attrs->{columns};
 	my($i) = 0;
