@@ -63,6 +63,7 @@ audited after this operation.
 
 sub cascade_delete {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($id) = $self->get('realm_transaction_id');
 
     # delete member, instrument, and account entries
@@ -72,18 +73,27 @@ sub cascade_delete {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
                 WHERE entry_id IN (
-                SELECT entry_id FROM entry_t
-                WHERE realm_transaction_id=?)',
-		[$id]);
+                    SELECT entry_id FROM entry_t
+                    WHERE realm_transaction_id=?
+                    AND realm_id=?)',
+		[$id, $req->get('auth_id')]);
     }
 
     # delete entries
-    foreach my $table (qw)entry_t account_sync_t)) {
-	Bivio::SQL::Connection->execute('
-                DELETE FROM '.$table.'
-                WHERE realm_transaction_id=?',
-		[$id]);
-    }
+    Bivio::SQL::Connection->execute('
+            DELETE FROM entry_t
+            WHERE realm_transaction_id=?
+            AND realm_id=?',
+	    [$id, $req->get('auth_id')]);
+
+    # unhook account sync entries
+    Bivio::SQL::Connection->execute('
+            UPDATE account_sync_t
+            SET realm_transaction_id=?
+            WHERE realm_transaction_id=?
+            AND realm_id=?',
+	    [undef, $id, $req->get('auth_id')]);
+
     # delete the transaction
     $self->delete();
     return;
