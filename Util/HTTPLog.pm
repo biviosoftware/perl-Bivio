@@ -269,7 +269,7 @@ sub _initialize {
 sub _pager_report {
     my($self, @args) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($msg) = Bivio::IO::Alert->format_args(@args)."\n";
+    my($msg) = Bivio::IO::Alert->format_args(@args);
     $fields->{res} = "CRITICAL ERRORS\n".$fields->{res}
 	    unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
@@ -367,7 +367,6 @@ sub _report {
     my($self, @args) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{res} .= Bivio::IO::Alert->format_args(@args);
-    $fields->{res} .= "\n" unless substr($fields->{res}, -1) eq "\n";
     return;
 }
 
