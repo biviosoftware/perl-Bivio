@@ -102,6 +102,18 @@ use Bivio::IO::Log;
 
 =cut
 
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::UI::Mail::Widget::Message
+
+Create a widget.
+
+=cut
+
+sub new {
+    return shift->SUPER::new(@_);
+}
+
 =head1 METHODS
 
 =cut
