@@ -391,6 +391,9 @@ sub _create_sell_entry {
     return;
 }
 
+
+#TODO: deprecated, use Bivio::Biz::AcountingTax::get_gain_type()
+
 # _determine_gain_type(string purchase_date, string sell_date) : Bivio::Type::TaxCategory
 #
 # Returns the appropriate tax type for the instrument held between the two
