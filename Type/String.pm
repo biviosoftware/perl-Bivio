@@ -112,7 +112,7 @@ sub wrap_lines {
 sub _wrap_line {
     my($formatted, $line, $indent, $width) = @_;
 
-    $$line =~ /(^\s*(|\S)\s+)/;
+    $$line =~ /(^\s*(|[\-\*])\s+)/;
     $indent = defined($1) ? substr($1, 0, $width) : '';
     my($white_pos) = rindex($$line, ' ', $width);
     $white_pos = index($$line, ' ', $width) if $white_pos < length($indent);
