@@ -46,6 +46,13 @@ with leading space.
 
 See L<Bivio::UI::Widget::ControlBase|Bivio::UI::Widget::ControlBase>.
 
+=item event_handler : Bivio::UI::Widget []
+
+If set, this widget will be initialized as a child and must
+support a method C<get_html_field_attributes> which returns a
+string to be inserted in this fields declaration.
+I<event_handler> will be rendered before this field.
+
 =item href : any (required)
 
 Value to use for C<HREF> attribute of C<A> tag.  If I<href> is a valid
@@ -133,9 +140,14 @@ sub control_on_render {
 	    $source->get_widget_value(@{$fields->{href}}))
 	. '"'
 	    if $fields->{href};
+    my($handler) = $self->unsafe_get('event_handler');
+    $$buffer .= $handler->get_html_field_attributes(undef, $source)
+	if $handler;
     $$buffer .= '>';
     $self->render_value('value', $fields->{value}, $source, $buffer);
     $$buffer .= '</a>';
+    $handler->render($source, $buffer)
+	if $handler;
     return;
 }
 
@@ -160,6 +172,7 @@ sub initialize {
     my($a) = $self->unsafe_get('attributes');
     $p .= $a if $a;
 
+    $self->unsafe_initialize_attr('event_handler');
     $fields->{value} = $self->initialize_attr('value');
     $fields->{value} = $_VS->vs_new(
 	    'String', $fields->{value},
