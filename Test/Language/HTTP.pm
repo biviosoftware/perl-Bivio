@@ -123,6 +123,8 @@ sub follow_link {
 
 =for html <a name="follow_link_in_table"></a>
 
+=head2 follow_link_in_table(string find_heading, string find_value)
+
 =head2 follow_link_in_table(string table_name, string find_heading, string find_value, string link_heading, string link_name)
 
 Finds the row identified by I<find_value> in column I<find_heading> of
@@ -136,8 +138,9 @@ one link, and clicks on that.
 =cut
 
 sub follow_link_in_table {
-    my($self, $table_name, $find_heading, $find_value,
-	$link_heading, $link_name) = @_;
+    my($self) = shift;
+    my($table_name) = @_ > 2 ? shift : $_[0];
+    my($find_heading, $find_value, $link_heading, $link_name) = @_;
     $table_name = $find_heading
 	unless defined($table_name);
     my($row) = _assert_html($self)->get('Tables')->find_row(
