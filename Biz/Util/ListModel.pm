@@ -43,7 +43,7 @@ Returns:
 
     usage: b-list-model [options] command [args...]
     commands:
-	   csv model [database [email]]
+	   csv model [query [columns]]
 
 =cut
 
@@ -51,7 +51,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-list-model [options] command [args...]
 commands:
-       csv model [database [email]]
+	csv model [query [columns]]
 EOF
 }
 
@@ -80,7 +80,7 @@ one is written.  The others are just loaded.
 
 sub csv {
     my($self, $models, $query, $columns) = @_;
-    $self->usage('incorrect arguments') unless int(@_) >= 2;
+    $self->usage('too few arguments') unless int(@_) >= 2;
     my($model) = $models;
     unless (ref($model)) {
 	foreach my $model_name (split(/[,\s]+/, $models)) {
