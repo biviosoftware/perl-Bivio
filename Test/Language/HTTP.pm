@@ -216,16 +216,16 @@ sub follow_link_in_table {
     return $self->visit_uri($links->get($k->[0])->{href});
 }
 
-=for html <a name="generate_email"></a>
+=for html <a name="generate_local_email"></a>
 
-=head2 generate_email(string suffix) : string
+=head2 generate_local_email(string suffix) : string
 
 Returns an email address based on I<email_user> and I<suffix> (a random number
 by default).
 
 =cut
 
-sub generate_email {
+sub generate_local_email {
     my(undef, $suffix) = @_;
     return $_CFG->{email_user}
 	. $_CFG->{email_tag}
@@ -282,7 +282,7 @@ sub get_uri {
 =item email_tag : string [+btest_]
 
 What to include between the I<email_user> and I<suffix> in
-L<generate_email|"generate_email">.
+L<generate_local_email|"generate_local_email">.
 
 =item email_user : string [$ENV{LOGNAME}]
 
@@ -290,7 +290,7 @@ Base user name to use in email.  Emails will go to:
 
     email_user+btest_suffix
 
-Where suffix is supplied to L<generate_email|"generate_email">.
+Where suffix is supplied to L<generate_local_email|"generate_local_email">.
 
 =item home_page_uri : string (required)
 
@@ -498,10 +498,10 @@ sub verify_link {
 
 =for html <a name="verify_mail"></a>
 
-=head2 verify_mail(string recipient_email, string body_regex)
+=head2 verify_mail(any recipient_email, any body_regex)
 
 Get the last messages received for I<recipient_email> (see
-L<generate_email|"generate_email">) and verify that
+L<generate_local_email|"generate_local_email">) and verify that
 I<body_regex> matches.  Deletes the message on a match.
 
 Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
@@ -516,10 +516,12 @@ sub verify_mail {
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($email_match);
+    $email = qr{\Q$email}
+	unless ref($email);
     for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
 	if (my(@found) = map({
 	    my($msg) = Bivio::IO::File->read($_);
-	    ($email_match = $$msg =~ /^(?:to|cc):.*\b\Q$email/mi)
+	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
 	        && $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
 	    } _grep_mail_dir(
