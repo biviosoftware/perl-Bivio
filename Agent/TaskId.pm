@@ -144,7 +144,6 @@ my(@_CFG) = (
 	Bivio::Biz::Action::Logout
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=HTTP_DOCUMENT
-        cancel=SUBSTITUTE_USER
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
