@@ -146,11 +146,6 @@ sub render {
     # Begin
     $$buffer .= "<style>\n<!--\n";
 
-    # Hover
-    my($hover) = Bivio::UI::Color->format_html('page_link_hover', 'color:',
-	    $req);
-    $$buffer .= 'a:hover { '.$hover." }\n" if $hover;
-
     # Font
     my($font) = Bivio::UI::Font->get_attrs('default', $req);
     if ($font) {
@@ -161,6 +156,11 @@ sub render {
 		if $font->{size};
 	$$buffer .= " }\n";
     }
+
+    # Hover (overrides font)
+    my($hover) = Bivio::UI::Color->format_html('page_link_hover', 'color:',
+	    $req);
+    $$buffer .= 'a:hover { '.$hover." }\n" if $hover;
 
     # End
     $$buffer .= "-->\n</style>\n";
