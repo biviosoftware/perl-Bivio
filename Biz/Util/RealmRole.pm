@@ -15,6 +15,7 @@ Bivio::Biz::Util::RealmRole - manipulate realm_role_t database table
     Bivio::Biz::Util::RealmRole->init_defaults();
     Bivio::Biz::Util::RealmRole->edit($realm, $role, @operations);
     Bivio::Biz::Util::RealmRole->list($realm, $role);
+    Bivio::Biz::Util::RealmRole->set_same($new, $like);
     Bivio::Biz::Util::RealmRole->main(@ARGV);
 
 =cut
@@ -26,7 +27,7 @@ use Bivio::UNIVERSAL;
 
 C<Bivio::Biz::Util::RealmRole>'s L<main|"main">
 is used to manipulate the C<realm_role_t> in the
-database.  There are three modes: list, edit, and B<-init>.
+database.
 
 In list mode, a realm with an optional role is specified and the
 permissions that are set are listed.  The output can be used as
@@ -49,15 +50,6 @@ C<+> sets all permissions.
 =head1 OPTIONS
 
 =over 4
-
-=item B<-init>
-
-Initialize the database with the default permissions, demo club,
-and celebrity realms.
-
-=item B<-init_defaults>
-
-Initialize the database with the default permissions only.
 
 =item B<-n>
 
@@ -89,7 +81,7 @@ my(@_DATA);
 
 =for html <a name="edit"></a>
 
-=head2 edit(string realm_name, string role_name, string operation, ...)
+=head2 static edit(string realm_name, string role_name, string operation, ...)
 
 Updates the databes for I<realm_name> and I<role_name>.  I<operation>
 begins with C<+> or C<-> and may have an I<operand> which is either
@@ -147,7 +139,7 @@ sub edit {
 
 =for html <a name="init"></a>
 
-=head2 init()
+=head2 static init()
 
 Initializes the defaults, demo_club, etc.
 
@@ -161,7 +153,7 @@ sub init {
 
 =for html <a name="init_defaults"></a>
 
-=head2 init_defaults()
+=head2 static init_defaults()
 
 Initializes the default roles for the three realm types only.
 
@@ -175,7 +167,7 @@ sub init_defaults {
 
 =for html <a name="list"></a>
 
-=head2 list(string realm_name, string role_name)
+=head2 static list(string realm_name, string role_name)
 
 Print the permission sets so they can be used as input to this program.
 If I<realm_name> is C<undef>, gets all realms.
@@ -246,33 +238,16 @@ EOF
 
 =for html <a name="main"></a>
 
-=head2 main(array argv) : int
+=head2 static main(array argv) : int
 
-Parses its arguments.  If I<argv> contains:
+Parses its arguments.  If I<argv> contains is a valid method, will call it.
 
-=over 4
-
-=item C<-init>
-
-calls L<init|"init">
-
-=item two or fewer arguments
-
-calls L<list|"list">
-
-=item three or more arguments
-
-calls L<edit|"edit">
-
-=back
-
-Calls L<Bivio::SQL::Connection::commit|Bivio::SQL::Connection/"commit">
-if either L<init|"init"> or L<edit|"edit"> is called.
+Calls L<Bivio::SQL::Connection::commit|Bivio::SQL::Connection/"commit">.
 
 =cut
 
 sub main {
-    my(undef, @argv) = @_;
+    my($proto, @argv) = @_;
     Bivio::IO::Config->initialize(\@argv);
     Bivio::Agent::Request->get_current_or_new;
 
@@ -281,20 +256,44 @@ sub main {
     $execute = 0, shift(@argv) if @argv && $argv[0] eq '-n';
 
     # Parse operation
-    if (int(@argv) && $argv[0] eq '-init') {
-	init(undef);
-    }
-    elsif (int(@argv) && $argv[0] eq '-init_defaults') {
-	init_defaults(undef);
-    }
-    elsif (int(@argv) <= 2) {
-	list(undef, @argv);
-	return;
+    # Execute method by name.  This will execute "main" if called that
+    # way, but it is harmless to call main that way....
+    if (@argv && $argv[0] =~ /^(\w+)$/ && $proto->can($1)) {
+	shift(@argv);
+	$proto->$1(@argv);
     }
     else {
-	edit(undef, @argv);
+	_usage('unknown command');
     }
     $execute && Bivio::SQL::Connection->commit();
+    return;
+}
+
+=for html <a name="set_same"></a>
+
+=head2 static set_same(string new, string like)
+
+Sets I<new> permission to same value as I<like> permission.  This is used
+to add new permissions to the permission_set of all realms and roles
+in the database.  The I<like> permission is a model for the I<new>
+permission.  If the I<like> permission is set, the I<new> permission for the
+same realm/role combination.  It can be used to adjust existing permissions.
+
+=cut
+
+sub set_same {
+    my($proto, $new, $like) = @_;
+    my($new_int) = Bivio::Auth::Permission->from_name($new)->as_int;
+    my($like_int) = Bivio::Auth::Permission->from_name($like)->as_int;
+    my($rr) = Bivio::Biz::Model::RealmRole->new(
+	    Bivio::Agent::Request->get_current_or_new);
+    my($it) = $rr->unauth_iterate_start('realm_id, role');
+    while ($rr->iterate_next_and_load($it)) {
+	my($s) = $rr->get('permission_set');
+	vec($s, $new_int, 1) = vec($s, $like_int, 1);
+	$rr->update({permission_set => $s});
+    }
+    $rr->iterate_end($it);
     return;
 }
 
@@ -397,9 +396,11 @@ sub _init {
 sub _usage {
     Bivio::DieCode::DIE()->die(<<"EOF");
 b-realm-role: @{[join('', @_)]}
-usage: b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
-       b-realm-role -init
-       b-realm-role -init_defaults
+usage: b-realm-role [-n] edit realm role (+|-)(permission|role)...
+       b-realm-role list [realm [role]]
+       b-realm-role [-n] init
+       b-realm-role [-n] init_defaults
+       b-realm-role [-n] set_same new_permission like_permission
 EOF
 }
 
