@@ -133,7 +133,7 @@ Deprecated, use Bivio::Biz::Accounting::Audit->new()->audit_units($date)
 
 sub audit_units {
     my($self, $date) = @_;
-    Bivio::Biz::Accounting::Audit->new()->audit_units($date);
+    Bivio::Biz::Accounting::Audit->new($self->get_request)->audit_units($date);
     return;
 }
 
