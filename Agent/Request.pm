@@ -348,6 +348,8 @@ sub as_string {
 
 =head2 can_user_execute_task(Bivio::Agent::TaskId task) : boolean
 
+=head2 can_user_execute_task(string task_name) : boolean
+
 Convenience routine which executes
 L<Bivio::Auth::Realm::can_user_execute_task|Bivio::Auth::Realm/"can_user_execute_task">
 for the I<auth_realm> or one that matches the realm_type of the task
@@ -357,6 +359,7 @@ and current I<auth_user>.
 
 sub can_user_execute_task {
     my($self, $task) = @_;
+    $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
 
     # If we can't get a realm, than can execute task
     my($realm) = $self->get_realm_for_task($task);
