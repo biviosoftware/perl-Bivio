@@ -62,4 +62,19 @@ Bivio::Test->unit([
 	    ['/etc/logrotate.conf.rpmnew'] => [''],
         ],
     ],
+    Bivio::Util::LinuxConfig->new(['-noexecute']) => [
+	add_user => [
+	    ['notuuu'] => ["Would have executed: useradd -m 'notuuu'\n"],
+	    ['notuuu', '', '/bin/false'] => [
+		"Would have executed: useradd -m -s '/bin/false' 'notuuu'\n"],
+	    ['notuuu:99'] => [
+		"Would have executed: useradd -m -u '99' 'notuuu'\n"],
+	    ['notuuu:99', 'notggg'] => [
+		"Would have executed: groupadd 'notggg'\n"
+		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu'\n"],
+	    ['notuuu:99', 'notggg:777'] => [
+		"Would have executed: groupadd -g '777' 'notggg'\n"
+		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu'\n"],
+        ],
+    ],
 ]);

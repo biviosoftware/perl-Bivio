@@ -77,6 +77,76 @@ Bivio::IO::Config->register(my $_CFG = {
 
 =cut
 
+=for html <a name="add_group"></a>
+
+=head2 add_group(string group) : string
+
+If you want a specific gid, append it with a colon, e.g.
+
+   add_group support:498
+
+Returns string if it created the group.  Does nothing if group exists.
+
+=cut
+
+sub add_group {
+    my($self, $group) = @_;
+    $self->usage_error('must supply a group') unless $group;
+    my($gname, $gid) = split(/:/, $group);
+    my($real) = (getgrnam($gname))[2];
+    if (defined($real)) {
+	Bivio::Die->die("$gname: expected gid ($gid) but got ($real)")
+	    if defined($gid);
+	return '';
+    }
+    my($cmd) = 'groupadd '
+	    . (defined($gid) ? "-g '$gid' " : '')
+	    . "'$gname'";
+    return "Would have executed: $cmd\n"
+	if $self->unsafe_get('noexecute');
+    $self->piped_exec($cmd);
+    return "Created group: $group\n";
+}
+
+=for html <a name="add_user"></a>
+
+=head2 add_user(string user, string group, string shell) : string
+
+Adds I<user> with optional I<group> and I<shell>.  Set I<group> is '', if you
+want to set I<shell>.  User isn't added if it exists.
+
+If you want a specific uid or gid, append it with a colon, e.g.
+
+   add_user support:498 support:498
+
+=cut
+
+sub add_user {
+    my($self, $user, $group, $shell) = @_;
+    $self->usage_error('must at least supply a user') unless $user;
+    my($res) = '';
+    if ($group) {
+	$res .= $self->add_group($group);
+	$group =~ s/:.*//;
+    }
+    my($uname, $uid) = split(/:/, $user);
+    my($real) = (getpwnam($uname))[3];
+    if (defined($real)) {
+	Bivio::Die->die("$uname: expected uid ($uid) but got ($real)")
+	    if defined($uid);
+	return '';
+    }
+    my($cmd) = 'useradd -m '
+	    . (defined($uid) ? "-u '$uid' " : '')
+	    . ($group ? "-g '$group' " : '')
+	    . ($shell ? "-s '$shell' " : '')
+	    . "'$uname'";
+    return $res . "Would have executed: $cmd\n"
+	if $self->unsafe_get('noexecute');
+    $self->piped_exec($cmd);
+    return $res . "Created user: $user\n";
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
