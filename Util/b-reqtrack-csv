@@ -1,0 +1,113 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-reqtrack-csv - creates a comma-separated version of request track active
+
+=head1 SYNOPSIS
+
+b-reqtrack-csv [-mail addr]
+
+=head1 DESCRIPTION
+
+B<b-reqtrack-csv> creates a C<.csv> file from the request track active
+list.
+
+=cut
+
+#=IMPORTS
+use Bivio::IO::Config;
+#TODO: Use Bivio::Mail::Outgoing;
+use Bivio::Mail;
+
+#=VARIABLES
+my($_DIR) = '/usr/local/reqng/active';
+my(@_FIELDS) = (qw(
+    Number
+    Owner
+    Areas
+    Priority
+    User
+    Date
+    Subject
+));
+
+sub main {
+    my(@argv) = @_;
+    my($mail);
+    while (@argv) {
+	my($a) = shift(@argv);
+	$a =~ /^-(m|mail)$/ && ($mail = shift(@argv), next);
+	$a =~ /^-/ && _usage("unknown option \"$a\"");
+	$_DIR = $a;
+    }
+    my($buffer) = "\"".join('","', @_FIELDS)."\"\n";
+    Bivio::IO::Config->initialize(\@argv);
+    local($_);
+    foreach my $f (<$_DIR/*>) {
+	open(IN, $f) || die("$f: $!");
+	my(%hdr);
+	while (<IN>) {
+	    /^X-Request-(\w+):\s*(.*)/ && ($hdr{$1} = defined($2) ? $2 : '');
+	    /^Subject:\s*.*\]\s*(.*)/ && ($hdr{Subject} = $1) =~ s/"/'/g;
+	    /^$/ && last;
+	}
+	next if $hdr{Merged};
+	my($z) = $hdr{Date} =~ /\((\d+)/;
+	my(undef, undef, undef, $d, $m, $y) = localtime($z);
+	$hdr{Date} = sprintf('%02d/%02d/%02d', $m, $d, $y);
+	$buffer .= "\"".join('","', map {$hdr{$_}} @_FIELDS)."\"\n";
+    }
+    my(undef, undef, undef, $d, $m, $y) = localtime(time);
+    my($date) = sprintf('%02d/%02d/%02d', $m, $d, $y);
+    my($title) = "ReqTrack Active List ($date)";
+    if ($mail) {
+	my($name) = sprintf('reqtrack-%04d%02d%02d.csv', $y + 1900, $m, $d);
+	Bivio::Mail::send(undef, $mail, "$title", '', [], [{
+	    content_type => 'application/x-unknown-content-type-Excel.CSV',
+	    name => $name,
+	    value => $buffer,
+	    value_type => 'binary',
+	}]);
+	print "Sent ", $title, " to ", $mail, "\n";
+    }
+    else {
+	print $title, "\n\n", $buffer;
+    }
+    return 1;
+}
+
+#=PRIVATE METHODS
+
+sub _usage (@) {
+    $SIG{__DIE__} = '';
+    die <<"EOF";
+b-reqtrack-csv: @{[join('', @_)]}
+usage: b-reqtrack-csv [-mail address] [dir]
+EOF
+}
+
+#=END
+
+main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
