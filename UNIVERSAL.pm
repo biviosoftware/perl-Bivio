@@ -114,8 +114,8 @@ sub package_name {
 
 =head2 static simple_package_name() : string
 
-Returns the package name sans directory prefixes, i.e. the simple package
-name of this class is C<UNIVERSAL>.
+Returns the package name sans directory prefixes, e.g. the simple package
+name for this class is C<UNIVERSAL>.
 
 =cut
 
