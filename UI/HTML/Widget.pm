@@ -488,27 +488,17 @@ sub form {
 
 =for html <a name="form_button"></a>
 
-=head2 static form_button(string field) : Bivio::UI::HTML::Widget::FormButton
+=head2 static form_button(string field) : Bivio::UI::HTML::Widget::FormButtonn
 
 =head2 static form_button(string field, string label) : Bivio::UI::HTML::Widget::FormButton
 
 Creates a form button widget for the specified, fully qualified field name.
-The button label may be overridden by supplying the Bivio::UI::Lable value.
+The button label may be overridden by supplying the Bivio::UI::Label value.
 
 =cut
 
 sub form_button {
-    my($proto, $field, $label) = @_;
-    _use('Bivio::UI::HTML::WidgetFactory');
-
-    if ($label) {
-	$label = Bivio::UI::Label->get_simple($label) unless ref($label);
-	return Bivio::UI::HTML::WidgetFactory->create($field, {
-	    label => $label,
-	});
-    }
-
-    return Bivio::UI::HTML::WidgetFactory->create($field);
+    return shift->simple_form_field(@_);
 }
 
 =for html <a name="heading"></a>
@@ -1050,6 +1040,31 @@ sub simple_form {
         form_class => ref(Bivio::Biz::Model->get_instance($class)),
         value => $widget,
     });
+}
+
+=for html <a name="simple_form_field"></a>
+
+=head2 static simple_form_field(string field) : Bivio::UI::HTML::Widget::FormButtonn
+
+=head2 static simple_form_field(string field, string label) : Bivio::UI::HTML::Widget::FormButton
+
+Creates a form button widget for the specified, fully qualified field name.
+The label (if any) may be overridden by supplying the Bivio::UI::Label value.
+
+=cut
+
+sub simple_form_field {
+    my($proto, $field, $label) = @_;
+    _use('Bivio::UI::HTML::WidgetFactory');
+
+    if ($label) {
+	$label = Bivio::UI::Label->get_simple($label) unless ref($label);
+	return Bivio::UI::HTML::WidgetFactory->create($field, {
+	    label => $label,
+	});
+    }
+
+    return Bivio::UI::HTML::WidgetFactory->create($field);
 }
 
 =for html <a name="string"></a>
