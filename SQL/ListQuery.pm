@@ -664,12 +664,12 @@ sub _format_uri {
     $res .= 's='.Bivio::Type::String->to_query($attrs->{search}).'&'
 	    if defined($attrs->{search});
 
-    # begin_date
-    $res .= 'b='.Bivio::Type::Date->to_query($attrs->{begin_date}).'&'
+    # begin_date (may be a DateTime)
+    $res .= 'b='.Bivio::Type::DateTime->to_query($attrs->{begin_date}).'&'
 	    if defined($attrs->{begin_date});
 
-    # date
-    $res .= 'd='.Bivio::Type::Date->to_query($attrs->{date}).'&'
+    # date (may be a DateTime)
+    $res .= 'd='.Bivio::Type::DateTime->to_query($attrs->{date}).'&'
 	    if defined($attrs->{date});
 
     # interval
@@ -776,12 +776,15 @@ sub _parse_date_value {
 	    ? Bivio::Type::DateTime->local_end_of_today : undef
 		    unless $literal;
 
+    # Try a date first, because that's the common case
     my($value, $e) = Bivio::Type::Date->from_literal($literal);
+    ($value, $e) = Bivio::Type::DateTime->from_literal($literal)
+	unless $value;
     _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
 	message => 'invalid date',
 	type_error => $e,
     },
-	    $literal) unless $value;
+	$literal) unless $value;
     return $value;
 }
 
