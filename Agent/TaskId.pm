@@ -91,7 +91,15 @@ my(@_CFG) = (
         !
         Bivio::Biz::Action::HTTPDocument
     )],
-#2
+#    [qw(
+#        TEST_JOB
+#        2
+#        CLUB
+#        ACCOUNTING_WRITE&MEMBER_WRITE
+#        ?/test_job
+#        Bivio::Biz::Model::Lock
+#        Bivio::Biz::Action::TestJob
+#    )],
     # This is the DOCUMENT_TASK.  See Bivio::HTTP::Agent::Location
     [qw(
 	HTTP_DOCUMENT
@@ -711,7 +719,16 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_MEMBER_LIST
         help=member-transactions
     )],
-#61
+    [qw(
+        MAIL_SUPPORT
+        61
+        GENERAL
+        DOCUMENT_READ
+        pub/mail-support
+        Bivio::Biz::Model::MailSupportForm
+        Bivio::UI::HTML::General::MailSupport
+        next=HTTP_DOCUMENT
+    )],
     [qw(
         JAPAN_SURVEY_TEXT
         62
@@ -1300,6 +1317,19 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_file_read_not_found
     )],
+#116
+    [qw(
+        CLUB_LEGACY_UPLOAD_INSECURE_ACK
+        117
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        ?/accounting/insecure-import-ack
+        Bivio::Biz::Action::NotDemoClub
+        Bivio::UI::HTML::Club::LegacyClubUploadInsecureAck
+        next=CLUB_LEGACY_UPLOAD_INSECURE
+        cancel=CLUB_ADMIN_TOOLS
+        help=importing-naic-club-accounting
+    )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSFER
         118
@@ -1467,22 +1497,14 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_MEMBER_LIST
         help=member-transactions
     )],
-#    [qw(
-#        TEST_JOB
-#        132
-#        CLUB
-#        ACCOUNTING_WRITE&MEMBER_WRITE
-#        ?/test_job
-#        Bivio::Biz::Model::Lock
-#        Bivio::Biz::Action::TestJob
-#    )],
     [qw(
         CLUB_LEGACY_UPLOAD
-        133
+        132
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         ?/accounting/import
         Bivio::Biz::Action::NotDemoClub
+        Bivio::Biz::Action::ImportMacRedirect
         Bivio::Biz::Model::Club->execute_load
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::LegacyClubUploadForm
@@ -1490,6 +1512,21 @@ my(@_CFG) = (
         next=CLUB_LEGACY_SECURITY_RECONCILIATION
         cancel=CLUB_ADMIN_TOOLS
         require_secure=1
+        help=importing-naic-club-accounting
+    )],
+    [qw(
+        CLUB_LEGACY_UPLOAD_INSECURE
+        133
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
+        ?/accounting/insecure-import
+        Bivio::Biz::Action::NotDemoClub
+        Bivio::Biz::Model::Club->execute_load
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::LegacyClubUploadForm
+        Bivio::UI::HTML::Club::LegacyClubUpload
+        next=CLUB_LEGACY_SECURITY_RECONCILIATION
+        cancel=CLUB_ADMIN_TOOLS
         help=importing-naic-club-accounting
     )],
     [qw(
