@@ -496,9 +496,9 @@ sub verify_link {
     return;
 }
 
-=for html <a name="verify_mail"></a>
+=for html <a name="verify_local_mail"></a>
 
-=head2 verify_mail(any recipient_email, any body_regex)
+=head2 verify_local_mail(any recipient_email, any body_regex) : string_ref
 
 Get the last messages received for I<recipient_email> (see
 L<generate_local_email|"generate_local_email">) and verify that
@@ -507,9 +507,11 @@ I<body_regex> matches.  Deletes the message on a match.
 Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
 only complete if both I<recipient_email> and I<body_regex> match.
 
+Returns a string_ref of the message.
+
 =cut
 
-sub verify_mail {
+sub verify_local_mail {
     my($self, $email, $body_regex) = @_;
     my($seen) = {};
     Bivio::Die->die($_CFG->{mail_dir},
@@ -519,8 +521,9 @@ sub verify_mail {
     $email = qr{\Q$email}
 	unless ref($email);
     for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
+	my($msg) = undef;
 	if (my(@found) = map({
-	    my($msg) = Bivio::IO::File->read($_);
+	    $msg = Bivio::IO::File->read($_);
 	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
 	        && $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
@@ -535,7 +538,7 @@ sub verify_mail {
 	        if @found > 1;
 	    unlink($found[0]->[0]);
 	    _log($self, 'msg', $found[0]->[1]);
-	    return;
+	    return $msg;
 	}
     }
     Bivio::Die->die(
