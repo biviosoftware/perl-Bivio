@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Language::HTTP::_fixup_uri calls URI to make absolute
+    (expands possibilities, and does right thing directory relative
+    uris)
+
+  Revision 2.54  2005/02/24 23:00:30  moeller
+  * Bivio::Agent::Task doesn't issue warning for FORBIDDEN when there is
+    no auth user. A redirect to the LOGIN task will happen
+    automatically.
+  * Bivio::BConf remove unnecessary value in default http_log config,
+    [notice] happens on any signal, don't ignore in general,
+  * Bivio::Biz::ListModel added do_rows()
+  * Bivio::Biz::Model added do_iterate()
+  * Bivio::Mail::Common added hooks to process outgoing mail
+  * Bivio::Mail::Outgoing added hooks to process outgoing mail
+  * Bivio::Type::DateTime get_part accepts upper case part name (second test),
+    get_part refactored
   * Bivio::Type::EnumSet improved error msg,
     clear wasn't return $vector
   * Bivio::Type::Number catches divide by undef
