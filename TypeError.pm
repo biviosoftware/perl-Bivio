@@ -131,9 +131,10 @@ __PACKAGE__->compile(
     REALM_NAME => [
 	19,
 	undef,
-	'invalid name syntax; must begin with a letter,'
-	. ' contain letters, numbers, and underscores,'
-	. ' and be at least three characters',
+	'The name you create must begin with a letter and only contain'
+	.' letters, numbers, and underscores, and be at least'
+	.' three characters long. Once created, you will be able to'
+	.' send mail to thename@bivio.com.',
     ],
     GREATER_THAN_ZERO => [
 	20,
