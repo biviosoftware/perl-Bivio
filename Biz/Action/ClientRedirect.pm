@@ -125,6 +125,22 @@ sub execute_cancel {
     # DOES NOT RETURN
 }
 
+=for html <a name="execute_home_page_if_site_root"></a>
+
+=head2 execute_home_page_if_site_root(Bivio::Agent::Request req) : boolean
+
+Redirects to I<Text.home_page_uri> if the I<$req.uri> is '/' or the empty
+string.  Otherwise,
+
+=cut
+
+sub execute_home_page_if_site_root {
+    my(undef, $req) = @_;
+    $req->client_redirect(Bivio::UI::Text->get_value('home_page_uri', $req))
+	    if $req->get('uri') =~ m!^/?$!;
+    return 0;
+}
+
 =for html <a name="execute_next"></a>
 
 =head2 execute_next(Bivio::Agent::Request req)
