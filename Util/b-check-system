@@ -147,7 +147,7 @@ sub check_messages {
             /popper\[\d+\]: .+ -ERR POP EOF received"/ && next;
             /ipop3d\[\d+\]: (Auth|Logout|Login|Autologout) user( |=)\S+ host( |=)\S+/ && next;
             /ipop3d\[\d+\]: connect from/ && next;
-            /ipop3d\[\d+\]: port 110 service init from/ && next;
+            /ipop3d\[\d+\]: (port 110|pop3) service init from/ && next;
             /ipop3d\[\d+\]: Moved \d+ bytes of new mail/ && next;
 
             /imapd\[\d+\]: (Autologout|Logout|Login) user( |=)\S+/ && next;
