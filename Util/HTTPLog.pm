@@ -274,6 +274,7 @@ sub _initialize {
         '_process_sell: can\'t process sale, oversold',
         '::DIE: couldn\'t parse instrument name/symbol',
         '::get_balance.* balance parse failed',
+        'ETRADE::.*unknown SX entry:',
     );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
