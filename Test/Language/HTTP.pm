@@ -36,6 +36,7 @@ C<Bivio::Test::Language::HTTP> contains support for HTTP tests.
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Bivio::IO::Ref;
 use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Trace;
@@ -76,6 +77,21 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="debug_print"></a>
+
+=head2 debug_print(string what)
+
+Prints 'Forms' or 'Links' to STDOUT.
+
+=cut
+
+sub debug_print {
+    my($self, $what) = @_;
+    print(STDOUT ${Bivio::IO::Ref->to_string(
+	_assert_html($self)->get($what)->get_shallow_copy)});
+    return;
+}
 
 =for html <a name="goto_link"></a>
 
@@ -155,11 +171,11 @@ sub submit_form {
     my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields), $submit_button);
-    my($request) = HTTP::Request->new(uc($form->{method})
-	=> _fixup_uri($self, $form->{action}));
-    $request->content_type('application/x-www-form-urlencoded');
-    $request->content(_format_form($form, $submit_button, $form_fields));
-    _send_request($self, $request);
+    _send_request($self,
+	_create_form_request(
+	    $self, uc($form->{method}),
+	    _fixup_uri($self, $form->{action}),
+	_format_form($form, $submit_button, $form_fields)));
     _assert_form_response($self);
     return;
 }
@@ -228,6 +244,23 @@ sub _assert_response {
     return $fields->{response} || Bivio::Die->die('no valid response');
 }
 
+# _create_form_request(self, string method, string uri, string form) : HTTP::Request
+#
+# Creates appropriate form request based on method (uc).
+#
+sub _create_form_request {
+    my($self, $method, $uri, $form) = @_;
+    if ($method eq 'GET') {
+	# trim any query which might be there
+	$uri =~ s/\?.*//;
+	return HTTP::Request->new(GET => "$uri?$form");
+    }
+    my($request) = HTTP::Request->new($method => $uri);
+    $request->content_type('application/x-www-form-urlencoded');
+    $request->content($form);
+    return $request;
+}
+
 # _fixup_uri(self, string uri) : string
 #
 # Add in the current URI prefix if not present.
@@ -253,8 +286,10 @@ sub _format_field {
     my($field, $value) = @_;
     Bivio::Die->die($value, ': invalid value for field ', $field->{name})
 	 if ref($value);
-    return Bivio::HTML->escape_query($field->{name}) . '='
-	   . (defined($value) ? Bivio::HTML->escape_query($value) : '') . '&';
+    return defined($field->{name}) && length($field->{name})
+	? Bivio::HTML->escape_query($field->{name}) . '='
+	   . (defined($value) ? Bivio::HTML->escape_query($value) : '') . '&'
+        : '';
 }
 
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : string

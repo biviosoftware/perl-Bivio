@@ -46,6 +46,13 @@ submit_form(submit => {
 });
 home_page();
 goto_link('MyAccount');
+submit_form(search => {
+});
+submit_form(search => {
+    _anon => 'dogs',
+});
+verify_text('Fire Station');
+debug_print('Forms');
 EOF
 	],
     ],
