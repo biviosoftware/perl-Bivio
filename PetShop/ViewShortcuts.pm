@@ -1,13 +1,13 @@
 # Copyright (c) 2001 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::PetShop::UI::ViewShortcuts;
+package Bivio::PetShop::ViewShortcuts;
 use strict;
-$Bivio::PetShop::UI::ViewShortcuts::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::UI::ViewShortcuts::VERSION;
+$Bivio::PetShop::ViewShortcuts::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::PetShop::ViewShortcuts::VERSION;
 
 =head1 NAME
 
-Bivio::PetShop::UI::ViewShortcuts - view convenience methods
+Bivio::PetShop::ViewShortcuts - view convenience methods
 
 =head1 RELEASE SCOPE
 
@@ -15,7 +15,7 @@ bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::PetShop::UI::ViewShortcuts;
+    use Bivio::PetShop::ViewShortcuts;
 
 =cut
 
@@ -26,11 +26,11 @@ L<Bivio::UI::HTML::ViewShortcuts>
 =cut
 
 use Bivio::UI::HTML::ViewShortcuts;
-@Bivio::PetShop::UI::ViewShortcuts::ISA = ('Bivio::UI::HTML::ViewShortcuts');
+@Bivio::PetShop::ViewShortcuts::ISA = ('Bivio::UI::HTML::ViewShortcuts');
 
 =head1 DESCRIPTION
 
-C<Bivio::PetShop::UI::ViewShortcuts>
+C<Bivio::PetShop::ViewShortcuts>
 
 =cut
 
@@ -48,6 +48,8 @@ use Bivio::UI::HTML::Widget::FormField;
 
 =for html <a name="vs_address_fields"></a>
 
+=head2 static vs_address_fields(string form_name) : array
+
 =head2 static vs_address_fields(string form_name, string address_suffix) : array
 
 Returns the address fields.
@@ -56,30 +58,28 @@ Returns the address fields.
 
 sub vs_address_fields {
     my($proto, $form_name, $address_suffix) = @_;
-
-    my($address) = $form_name.'.EntityAddress'.$address_suffix;
+    my($address) = $form_name . '.Address' . ($address_suffix || '');
 
     # state/zip are shown on one line
     my($state_zip) = [
-	$proto->vs_form_field($address.'.state'),
+	$proto->vs_form_field($address . '.state'),
 	$proto->vs_blank_cell(3),
-	$proto->vs_form_field($address.'.zip'),
+	$proto->vs_form_field($address . '.zip'),
     ];
     $state_zip = [$state_zip->[0],
 	$proto->vs_new('Grid', [
 	    [(@$state_zip)[1..4]],
 	]),
     ];
-
     return (
-	[$proto->vs_form_field($address.'.addr1')],
+	[$proto->vs_form_field($address . '.street1')],
 	[$proto->vs_blank_cell,
-	    $proto->vs_new('FormField', $address.'.addr2')],
-	[$proto->vs_form_field($address.'.city')],
+	    $proto->vs_new('FormField', $address.'.street2')],
+	[$proto->vs_form_field($address . '.city')],
 	$state_zip,
-	[$proto->vs_form_field($address.'.country')],
+	[$proto->vs_form_field($address . '.country')],
 	[$proto->vs_form_field(
-	    $form_name.'.EntityPhone'.$address_suffix.'.phone')],
+	    $form_name . '.Phone' . ($address_suffix || '') . '.phone')],
        );
 }
 
