@@ -243,72 +243,28 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_secrets();
+    _upgrade_permissions();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_secrets()
+# _upgrade_permissions()
 #
-# Make tax_id and account_number into secrets.
+# Add ACCOUNT_READ and INVESTMENT_READ like ACCOUNTING_READ
 #
-sub _upgrade_secrets {
+sub _upgrade_permissions {
+    print("Upgrading permissions\n");
+    use Bivio::Biz::Util::RealmRole;
+    my($rr) = Bivio::Biz::Util::RealmRole->new;
+    $rr->set_same('ACCOUNTING_READ', 'ACCOUNT_READ');
+    $rr->set_same('ACCOUNTING_READ', 'INVESTMENT_READ');
 
-    # Make sure RealmAccount doesn't have any numbers or passwords
-    print("Deleting account_numbers and passwords from realm_account_t\n");
-    _do_sql('
-update realm_account_t set account_number = null
-    where account_number is not null
-/
-update realm_account_t set external_password = null
-    where external_password is not null
-/
-');
-
-    # Update the tax id.
-    use Bivio::Type::USTaxId;
-    print("Cleaning and encrypting all taxids\n");
-    _modify_column('tax_id_t', 'tax_id', 'VARCHAR(4000)');
-
-    # Cleans up tax ids.  Same code as in ClubImporter.
-    sub _parse_tax_id {
-	my($tax_id, $realm) = @_;
-	return undef unless defined($tax_id);
-	my($t) = $tax_id;
-
-	# Remove some obvious junk characters
-	$t =~ s/[\s-\/\.]//g;
-	return undef unless length($t);
-
-	# Fill out with leading 0s if necessary;
-	return sprintf('%09d', $t) if $t =~ /^\d{1,9}$/;
-
-	# Just try to clean up as best we can and output a warning
-	$t =~ s/\D//g;
-	if ($t =~ /\d/) {
-	    $t = substr($t, 0, 9) if length($t) > 9;
-	    $t = sprintf('%09d', $t);
-	}
-	else {
-	    $t = undef;
-	}
-	Bivio::IO::Alert->warn($tax_id, ' changed to ', $t, ' for ', $realm);
-	return $t;
-    }
-
-    # Find all non-null tax ids
-    my($s1) = _do_sql('
-select realm_id, tax_id from tax_id_t where tax_id is not null
-/
-');
-    while (my $row = $s1->fetchrow_arrayref) {
-	# Clean up, encrypt, and store
-	Bivio::SQL::Connection->execute(
-		'update tax_id_t set tax_id = ? where realm_id = ?',
-		[Bivio::Type::USTaxId->to_sql_param(
-			_parse_tax_id($row->[1], $row->[0])),
-			$row->[0]]);
-    }
+    print("Setting permissions for club_index\n");
+    $rr->set_realm_and_user('club_index');
+    $rr->edit('anonymous', '+accounting_read', '+investment_read',
+	    '+account_read');
+    $rr->edit('user', '+accounting_read', '+investment_read',
+	    '+account_read');
     return;
 }
 
