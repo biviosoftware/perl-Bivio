@@ -357,7 +357,7 @@ sub format_uri {
     my($t) = $_HOME_TASK_MAP{$m->get($p.'realm_type')};
     Bivio::IO::Alert->die($m->get($p.'name'), ', ',
 	    $m->get($p.'realm_type'), ': invalid realm type') unless $t;
-    return $m->get_request->format_uri($t, $name, undef, undef);
+    return $m->get_request->format_uri($t, undef, $name, undef);
 }
 
 =for html <a name="get_instruments_info"></a>
