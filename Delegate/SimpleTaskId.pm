@@ -178,6 +178,8 @@ sub get_delegate_info {
             ANYBODY
             Action.Forbidden
         )],
+        # Add this to the Task section of your facade:
+        #   $t->group(ROBOTS_TXT => '/robots.txt');
 	[qw(
             ROBOTS_TXT
             15
