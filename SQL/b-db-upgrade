@@ -39,6 +39,7 @@ use Bivio::Collection::Attributes;
 use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
+use Bivio::Type::Honorific;
 
 
 
