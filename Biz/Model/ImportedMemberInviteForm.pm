@@ -34,6 +34,7 @@ C<Bivio::Biz::Model::ImportedMemberInviteForm> invite imported shadow members
 use Bivio::Type::FileVolume;
 use Bivio::Biz::Model::ClubInviteForm;
 use Bivio::Biz::Model::File;
+use Bivio::Biz::Model::LegacyClubUploadForm;
 use Bivio::Biz::Model::RealmInvite;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
@@ -105,7 +106,8 @@ sub execute_empty_start {
 
     # get the most recent export info file, save member info in fields
     my($file) = Bivio::Biz::Model::File->new($self->get_request);
-    if ($file->unsafe_load(name => 'export_info.txt',
+    if ($file->unsafe_load(
+	    name => Bivio::Biz::Model::LegacyClubUploadForm::EXPORT_INFO(),
 	    volume => Bivio::Type::FileVolume::EW_IMPORT())) {
 
 	my($info) = eval(${$file->get('content')});
