@@ -1,0 +1,18 @@
+# Doesn't guarantee a unique club id, but likely...
+my($club_id) = 'btf_'. int(rand 100000).'_test';
+  
+Login->execute();
+Imagemenu->go_section('Clubs', 'my-site');
+Verify->uri('clubs');
+Browser->click('create_club_a');
+Verify->title('Create Club Site');
+#Can't verify this uri right now...style change acting oddly
+#Verify->uri('create-club');
+Browser->submit({
+     'Club Name:' => 'Testsuite club '.$club_id,
+     'Club ID:' => $club_id,
+     }, 'Create');
+#Verify->uri('new');
+Verify->title('Congratulations');
+Manager->delete_club($club_id);
+     
