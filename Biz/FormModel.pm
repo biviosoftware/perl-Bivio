@@ -790,7 +790,9 @@ to get the hash_ref to initialize the sql support instance.
 sub internal_initialize_sql_support {
     my($proto, $config) = @_;
     die('cannot create anonymous PropertyModels') if $config;
-    return Bivio::SQL::FormSupport->new($proto->internal_initialize);
+    $config = $proto->internal_initialize;
+    $config->{class} = ref($proto) || $proto;
+    return Bivio::SQL::FormSupport->new($config);
 }
 
 =for html <a name="internal_post_execute"></a>
