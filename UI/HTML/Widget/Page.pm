@@ -209,7 +209,7 @@ sub render {
 	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
     $fields->{style}->render($source, $buffer) if $fields->{style};
-    $$buffer .= "\n<meta name=MSSmartTagsPreventParsing content=true>\n"
+    $$buffer .= "\n<meta name=MSSmartTagsPreventParsing content=TRUE>\n"
 	.'<meta http-equiv=pragma content="no-cache"></head><body';
     my($req) = $source->get_request;
     # Always have a background color
