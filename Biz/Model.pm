@@ -358,6 +358,20 @@ sub get_model {
     return $model;
 }
 
+=for html <a name="has_iterator"></a>
+
+=head2 has_iterator() : boolean
+
+Returns true if there is an iterator started on this model.
+
+=cut
+
+sub has_iterator {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return $fields->{iterator} ? 1 : 0;
+}
+
 =for html <a name="internal_get_iterator"></a>
 
 =head2 internal_get_iterator() : DBI::st
@@ -574,8 +588,8 @@ sub iterate_end {
        $it || $self->internal_get_iterator);
     # Deprecated form passes in an iterator, which can only clear
     # if the caller hasn't "changed" iterators.
-    $fields->{iterator} = undef
-	if !$it || $fields->{iterator} && $it == $fields->{iterator};
+    $fields->{iterator} = undef	
+if !$it || $fields->{iterator} && $it == $fields->{iterator};
     return;
 }
 
