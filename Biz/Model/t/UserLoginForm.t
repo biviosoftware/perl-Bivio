@@ -1,13 +1,10 @@
 # $Id$
 # Copyright (c) 2002 bivio Software Artisans, Inc.  All rights reserved.
 #
-# Only works for petshop (needs demo and root) users
-#
 use strict;
 use Bivio::Biz::Model::UserLoginForm;
-use Bivio::Test;
-use Bivio::Test::Request;
-my($_req) = Bivio::Test::Request->initialize_fully->setup_http;
+use Bivio::PetShop::Test::Request;
+my($_req) = Bivio::PetShop::Test::Request->initialize_fully->setup_http;
 my($_compute_params) = sub {
     my($case, $params) = @_;
     my($realm) = $params->[0] ? Bivio::Biz::Model->new($_req, 'RealmOwner')
