@@ -610,6 +610,30 @@ sub verify_options {
     return;
 }
 
+=for html <a name="verify_pdf"></a>
+
+=head2 verify_pdf(string text)
+
+Converts the current response from pdf to text (with I<pdftotext>) and
+validates that I<text> is contained therein.  I<text> is not escaped
+in the regular expression.
+
+=cut
+
+sub verify_pdf {
+    my($self, $text) = @_;
+    my($ct) = _assert_response($self)->content_type;
+    Bivio::Die->die($ct, ': response not application/pdf')
+	unless $ct eq 'application/pdf';
+    my($f) = _log($self, 'pdf', $self->get_content);
+    system("pdftotext '$f'") == 0
+	or Bivio::Die->die($f, ': unable to convert pdf to text');
+    $f =~ s/pdf$/txt/;
+    Bivio::Die->die($text, ': text not found in response ', $f)
+	unless ${Bivio::IO::File->read($f)} =~ /$text/s;
+    return;
+}
+
 =for html <a name="verify_table"></a>
 
 =head2 verify_table(string table_name, array_ref expectations)
@@ -877,18 +901,17 @@ sub _grep_mail_dir {
 	glob("$_CFG->{mail_dir}/*"));
 }
 
-# _log(self, string type, any msg)
+# _log(self, string type, any msg) : string
 #
 # Writes the HTTP message to a file with a nice suffix.  Preserves file
-# ordering.
+# ordering, returns the file.
 #
 sub _log {
     my($self, $type, $msg) = @_;
     my($fields) = $self->[$_IDI];
-    $self->test_log_output(
+    return $self->test_log_output(
 	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
 	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
-    return;
 }
 
 # _send_request(self, HTTP::Request request)
