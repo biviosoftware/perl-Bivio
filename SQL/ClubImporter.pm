@@ -805,6 +805,9 @@ sub _link_spinoffs {
 	    $parent_name || die("couldn't link spinoff: ".$trans->{remark});
 	    my($parent_id) = _find_name_like($instruments, $parent_name);
 
+#TODO: if this fails, then need to just link spinoffs on same date
+	    next unless defined($parent_id);
+
 	    if ($_SPINOFF->{$trans->{date_time}}) {
 		push(@{$_SPINOFF->{$trans->{date_time}}}, $id, $parent_id);
 	    }
@@ -826,13 +829,17 @@ sub _link_spinoffs {
 sub _find_name_like {
     my($instruments, $name) = @_;
 
+#    print(STDERR "\nlooking for $name\n");
     my($inst);
     foreach $inst (@$instruments) {
-	if ($inst->{instrument_name} =~ /^$name/x) {
+#	print(STDERR "\t".$inst->{instrument_name}."\n");
+	if ($inst->{instrument_name} =~ /^$name/) {
 	    return $inst->{instrument_id};
 	}
     }
-    die("couldn't find instrument like name: $name");
+#    die("couldn't find instrument like name: $name");
+    warn("couldn't find instrument like name: $name");
+    return undef;
 }
 
 # _contains(array_ref a, scalar value) : boolean
@@ -1051,6 +1058,7 @@ sub _is_related_spinoff {
 	    || $type == 71) {
 
 	my($list) = $_SPINOFF->{$date_time};
+	return 0 unless $list;
 
 	for (my($i) = 0; $i < int(@$list); $i += 2) {
 	    if ($id == $list->[$i] && $source_id == $list->[$i + 1]) {
@@ -1171,6 +1179,8 @@ sub _create_entry {
 
 sub lookup_instrument {
     my($self, $symbol) = @_;
+
+#    print(STDERR "\nlookuping up '$symbol'\n");
     my($req) = Bivio::Agent::TestRequest->new({});
     my($instrument) = Bivio::Biz::Model::Instrument->new($req);
     $instrument->unauth_load(ticker_symbol => $symbol)
