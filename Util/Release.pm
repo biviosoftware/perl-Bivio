@@ -203,6 +203,7 @@ commands:
     create_stream [rpm ...] -- generate a stream for this host or rpms
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
+    install_stream stream_name -- installs all rpms in a stream
     install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
@@ -518,6 +519,19 @@ sub install_facades {
     });
 }
 
+=for html <a name="install_stream"></a>
+
+=head2 install_stream(string stream_name)
+
+Installs the entire stream.
+
+=cut
+
+sub install_stream {
+    my($self) = @_;
+    return $self->install(@{_get_update_list(1, @_)});
+}
+
 =for html <a name="install_tar"></a>
 
 =head2 install_tar(string project, ...) : string
@@ -623,7 +637,7 @@ Lists packages in I<stream> that have updates.
 =cut
 
 sub list_updates {
-    return join('', map("$_\n", @{_get_update_list(@_)}));
+    return join('', map("$_\n", @{_get_update_list(0, @_)}));
 }
 
 =for html <a name="update"></a>
@@ -637,7 +651,7 @@ packages if they aren't already on the current host.
 
 sub update {
     my($self) = @_;
-    return $self->install(@{_get_update_list(@_)});
+    return $self->install(@{_get_update_list(0, @_)});
 }
 
 #=PRIVATE METHODS
@@ -993,12 +1007,12 @@ sub _get_rpm_arch {
     return 'i386';
 }
 
-# _get_update_list(string stream) : array_ref
+# _get_update_list(boolean intall, self, string stream) : array_ref
 #
 # Returns a list of packages that exist on this machine and need updating.
 #
 sub _get_update_list {
-    my($self, $stream) = @_;
+    my($install, $self, $stream) = @_;
     $self->usage_error("no stream specified.")
 	unless $stream;
     my($local_rpms) = {
@@ -1012,7 +1026,8 @@ sub _get_update_list {
     return [
 	map({
 	    my($base, $version, $rpm) = split(/\s+/, $_);
-	    !$local_rpms->{"$base $version"} && $local_rpms->{$base}
+	    !$local_rpms->{"$base $version"}
+	        && ($install || $local_rpms->{$base})
 	        ? $rpm : ();
 	} split(/\n/, ${_http_get("$stream-rpms.txt")})),
     ];
