@@ -47,10 +47,8 @@ use Bivio::Biz::Model::User;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
-#TODO: Need to fix this so looks at all roles and checks MAIL_RECEIVE
 #TODO: Need Location policy.  Probably need a field added to table.
 #      which says where people want email sent from bivio.
-my($_ROLES) = Bivio::Biz::Model::RealmUser->MEMBER_ROLES();
 my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
     version => 1,
     other => [
@@ -60,11 +58,6 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
     auth_id => [qw(RealmUser.realm_id)],
     primary_key => [
 	['RealmUser.user_id', 'Email.realm_id'],
-    ],
-    where => [
-	'RealmUser.role',
-	'IN',
-	Bivio::Auth::RoleSet->to_sql_list(\$_ROLES),
     ],
 });
 
@@ -271,18 +264,26 @@ sub delete_shadow_users {
 
 =for html <a name="get_outgoing_emails"></a>
 
-=head2 get_outgoing_emails() : array
+=head2 get_outgoing_emails() : array_ref
 
-Returns an array of email addresses (string) for all members of the club.
-If an error occurs during processing, then undef is returned.
+Returns an array of email addresses (string) for all members of the club
+that have the MAIL_RECEIVE permission set for their role.
 
 =cut
 
 sub get_outgoing_emails {
     my($self) = @_;
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    $realm->unauth_load_or_die(realm_id => $self->get('club_id'));
+    # Get roles which are permitted to receive mail
+    my($roles) = Bivio::Biz::Model::RealmRole->new($self->get_request)
+            ->get_roles_for_permission($realm,
+                    Bivio::Auth::Permission::MAIL_RECEIVE());
     $_EMAIL_LIST->unauth_load_all({auth_id => $self->get('club_id')});
     my($result) = [];
     while ($_EMAIL_LIST->next_row) {
+        next unless Bivio::Auth::RoleSet->is_set(\$roles,
+                $_EMAIL_LIST->get('RealmUser.role'));
 	my($e) = $_EMAIL_LIST->get('Email.email');
 	push(@$result, $e) if Bivio::Type::Email->is_valid($e);
     }
