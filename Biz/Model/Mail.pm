@@ -94,6 +94,7 @@ sub create {
     my($self, $msg, $mail_id, $date) = @_;
     my($req) = $self->unsafe_get_request;
     my($realm_owner) = $req->get('auth_realm')->get('owner');
+    my($realm_id, $realm_name) = $realm_owner->get('realm_id', 'name');
 
     # Use $date if Date: field can't be parsed (now as last resort)
     my($date_time) = $msg->get_date_time() || $date || time;
@@ -110,12 +111,11 @@ sub create {
     my($reply_to_email) = $msg->get_reply_to;
 
     my($subject) = $msg->get_head->get('subject');
+    $subject = '(no subject)' unless defined($subject);
     chomp($subject);
-    my($realm_id, $realm_name) = $realm_owner->get('realm_id', 'name');
     # Strip the name prefix out of the message, but leave the "Re:"
     $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
-    $subject = defined($subject) && $subject !~ /^\s*$/s
-	    ? substr($subject, 0, $_MAX_SUBJECT) : '(no subject)';
+    $subject = substr($subject, 0, $_MAX_SUBJECT);
     my($sortable_subject) = _sortable_subject($subject, $realm_name);
 
     my($values) = {
@@ -130,6 +130,9 @@ sub create {
 	subject_sort => $sortable_subject,
         is_public => 0,
         is_thread_root => 0,
+        bytes => 0,
+        rfc822_file_id => 0,
+        cache_file_id => 0,
     };
     # Provide mail_id if it was passed on
     $values->{mail_id} = $mail_id if defined($mail_id);
@@ -340,7 +343,7 @@ sub internal_initialize {
             thread_parent_id => ['PrimaryId', 'NONE'],
             rfc822_file_id => ['PrimaryId', 'NOT_NULL'],
             cache_file_id => ['PrimaryId', 'NOT_NULL'],
-            bytes => ['Integer', 'NONE'],
+            bytes => ['Integer', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
 	other => [
@@ -350,6 +353,20 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _strip_non_mime(string header) : string
+#
+# Strip all non-MIME headers, returning only Content-* headers
+#
+sub _strip_non_mime {
+    my($header) = @_;
+    my($mime_header) = '';
+    foreach my $l (split(/\r?\n/, $header)) {
+        $l =~ /^Content\-/i && ($mime_header .= $l . "\n");
+    }
+    $mime_header = "Content-Type: text/plain\n" unless length($mime_header);
+    return $mime_header;
+}
 
 # _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id, int index) : int
 #
@@ -368,23 +385,19 @@ sub _walk_attachment_tree {
 
     $entity->head->unfold;
     my($ct) = $entity->mime_type;
+    my($aux_info) = _strip_non_mime($entity->header_as_string);
     my(@parts) = $entity->parts;
 
     # Special message/rfc822 handling, it becomes multipart (header and rest)
     # Special text/plain handling, it becomes multipart (text/plain and text/html)
-    if (@parts || $ct eq 'message/rfc822' || $ct eq 'text/plain' ) {
-        if( $ct eq 'text/plain' ) {
-            $ct = 'x-bivio/alternative';
-            $entity->head(MIME::Head->new());
-            $entity->head->replace('Content-Type', $ct);
-        }
+    if (@parts || $ct eq 'message/rfc822') {
         # Has sub-parts, so create directory and descend
         $mail_id .= '_' . $index if $index;
         $file->create({
             is_directory => 1,
             name => $mail_id,
             user_id => $user_id,
-            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
+            aux_info => $aux_info,
             directory_id => $dir_id,
             volume => $_CACHE_VOLUME,
         });
@@ -396,19 +409,12 @@ sub _walk_attachment_tree {
             $entity = $msg->get_entity;
             $entity->head->unfold;
             # Handle the header as a separate part
-            # Note: message/header is not an official type, we use it internally only
-            my($header) = MIME::Entity->build(Type => 'message/header',
+            my($header) = MIME::Entity->build(Type => 'text/rfc822-headers',
                     Data => $entity->header_as_string);
             # Replace original header because we stored it separately already
             $entity->head(MIME::Head->new());
             $entity->head->replace('Content-Type', $entity->mime_type);
             @parts = ( $header, $msg->get_entity);
-        }
-        elsif( $ct eq 'x-bivio/alternative' ) {
-            my($clone) = MIME::Entity->build(Type => 'text/keep-plain',
-                    Data => $entity->body_as_string);
-            $entity->head->replace('Content-Type', 'text/make-html');
-            @parts = ( $entity, $clone);
         }
         my($i);
         for $i (0..$#parts) {
@@ -423,12 +429,6 @@ sub _walk_attachment_tree {
         }
     }
     else {
-        if( Bivio::MIME::TextToHTML->can_convert($ct) ) {
-            my($tohtml) = Bivio::MIME::TextToHTML->new;
-            $tohtml->convert($entity, $self->MAIL_CID_PART_URL);
-            # Reload content-type now that we might have converted the format
-            $ct = $entity->mime_type;
-        }
         # Append the given index or its content-id to the filename
         if(my($cid) = $entity->head->get('Content-ID')) {
             $cid =~ s/(^\s*<|>\s*$)//g;
@@ -442,7 +442,7 @@ sub _walk_attachment_tree {
             name => $mail_id,
             user_id => $user_id,
             # Store complete header only for sub-parts, not for single-part messages
-            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
+            aux_info => $aux_info,
             content => \$content,
             directory_id => $dir_id,
             volume => $_CACHE_VOLUME,
@@ -482,9 +482,9 @@ sub _attach_to_thread {
                 SELECT mail_id,is_thread_root,thread_root_id
                 FROM mail_t
                 WHERE subject_sort = ? AND thread_root_id = NULL
-                ORDER BY date_time DESC',
+                ORDER BY date_time ASC',
                 [$values->{subject_sort}]);
-        # Attach to youngest message
+        # Attach to oldest message
         my($row) = $sth->fetchrow_arrayref;
         if( defined($row) ) {
             _trace('Found parent via Subject') if $_TRACE;
@@ -513,7 +513,7 @@ sub _attach_to_parent {
         Bivio::SQL::Connection->execute('
                         UPDATE mail_t
                         SET is_thread_root = 1
-                        WHERE message_id=?',
+                        WHERE mail_id=?',
                 [$row->[0]]);
     }
     return;
