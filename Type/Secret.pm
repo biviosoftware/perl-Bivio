@@ -80,14 +80,7 @@ returns C<undef>.
 
 sub decrypt_hex {
     my(undef, $encoded_hex) = @_;
-    return undef unless $encoded_hex;
-    _assert_cipher();
-
-    # Decrypt and make sure surrounded by magic and a time not before now
-    my($s) = $_CIPHER->decrypt_hex($encoded_hex);
-    return undef unless
-	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
-    return $s;
+    return _decrypt($encoded_hex, 1);
 }
 
 
@@ -102,9 +95,7 @@ L<Bivio::MIME::Base64|Bivio::MIME::Base64>.
 
 sub decrypt_http_base64 {
     my($proto, $encoded_http_base64) = @_;
-    return undef unless defined($encoded_http_base64);
-    return $proto->decrypt_hex(unpack('H*',
-	    Bivio::MIME::Base64->http_decode($encoded_http_base64)));
+    return _decrypt($encoded_http_base64, 0);
 }
 
 =for html <a name="encrypt_hex"></a>
@@ -118,11 +109,7 @@ If I<clear_text> is C<undef>, returns C<undef>.
 
 sub encrypt_hex {
     my($proto, $clear_text) = @_;
-    return undef unless defined($clear_text);
-
-    _assert_cipher();
-    # Surround with magic and trailing time and encrypt
-    return $_CIPHER->encrypt_hex($_MAGIC.$clear_text.$_MAGIC.time);
+    return _encrypt($clear_text, 1);
 }
 
 =for html <a name="encrypt_http_base64"></a>
@@ -136,9 +123,7 @@ L<Bivio::MIME::Base64|Bivio::MIME::Base64>.
 
 sub encrypt_http_base64 {
     my($proto, $clear_text) = @_;
-    return undef unless defined($clear_text);
-    return Bivio::MIME::Base64->http_encode(
-	pack('H*', $proto->encrypt_hex($clear_text)));
+    return _encrypt($clear_text, 0);
 }
 
 =for html <a name="from_sql_column"></a>
@@ -231,6 +216,23 @@ sub _assert_cipher {
     # DOES NOT RETURN
 }
 
+# _decrypt(string encoded, boolean is_hex) : string
+#
+# Decrypts $encoded based on $is_hex.
+#
+sub _decrypt {
+    my($encoded, $is_hex) = @_;
+    return undef unless defined($encoded);
+    _assert_cipher();
+
+    # Decrypt and make sure surrounded by magic and a time not before now
+    my($s) = $is_hex ? $_CIPHER->decrypt_hex($encoded)
+	: $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($encoded));
+    return undef unless
+	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
+    return $s;
+}
+
 # _decrypt_key(string key_in) : string
 #
 # Returns the key or undef.
@@ -256,6 +258,20 @@ sub _decrypt_key {
     Bivio::IO::Alert->warn('unable to decrypt key in config: ', $@)
 		if $@;
     return $key_out;
+}
+
+# _encrypt(string clear_text, boolean is_hex) : string
+#
+# Encrypts $clear_text based on $is_hex.
+#
+sub _encrypt {
+    my($clear_text, $is_hex) = @_;
+    return undef unless defined($clear_text);
+    _assert_cipher();
+    # Surround with magic and trailing time and encrypt
+    my($v) = $_MAGIC . $clear_text . $_MAGIC . time;
+    return $is_hex ? $_CIPHER->encrypt_hex($v)
+        : Bivio::MIME::Base64->http_encode($_CIPHER->encrypt($v));
 }
 
 # _init_cipher() : boolean
