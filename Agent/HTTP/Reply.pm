@@ -111,6 +111,7 @@ sub die_to_http_code {
     my(undef, $die) = @_;
     return Apache::Constants::OK() unless defined($die);
     $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
+    return Apache::Constants::OK() unless defined($die);
     unless (%_DIE_TO_HTTP_CODE) {
 	%_DIE_TO_HTTP_CODE = (
 	    Bivio::DieCode::AUTH_REQUIRED()
