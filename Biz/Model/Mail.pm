@@ -96,14 +96,8 @@ sub create {
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
 
-    my($subject) = $msg->get_head->get('subject');
-#TODO: There must be an easier way to handle the subject
-    chomp($subject) if defined($subject);
-    $subject = '(no subject)' unless defined($subject) && length($subject);
-    # Strip the name prefix out of the message, but leave the "Re:"
-    $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
-    $subject = substr($subject, 0, $_MAX_SUBJECT);
-    my($sortable_subject) = _sortable_subject($subject, $realm_name);
+    my($subject, $sortable_subject) =
+            _sortable_subject($msg->get_head->get('subject'), $realm_name);
 
     my($values) = {
 	realm_id => $realm_id,
@@ -265,6 +259,8 @@ sub cache_parts {
     my($volume) = $_CACHE_VOLUME;
     my($root_id) = $volume->get_root_directory_id($req->get('auth_id'));
     unless( defined($entity) ) {
+
+        # RE-parse and RE-cache a message
         my($file) = Bivio::Biz::Model::File->new($req);
         $file->load(
                 file_id => $self->get('rfc822_file_id'),
@@ -273,14 +269,24 @@ sub cache_parts {
         # Parse message
         $entity = MIME::Parser->new(output_to_core => 'ALL')
                 ->parse_data($file->get('content'));
+
+        # Allow updating the subject which possibly changed
+        my($realm_name) = $req->get('auth_realm')->get('owner')->get('name');
+        my($subject, $sortable_subject) =
+                _sortable_subject($entity->head->get('subject'), $realm_name);
+        $self->update({
+            subject => $subject,
+            subject_sort => $sortable_subject,
+            bytes => $file->get('bytes'),
+        });
+
         # Delete cache files
         my($cache_file_id) = $properties->{cache_file_id};
         if (defined($cache_file_id)) {
             # Use the root directory as a temporary file_id to keep
-            # the constraint
+            # the constraint happy
             $self->update({cache_file_id => $root_id});
             $file->delete(file_id => $cache_file_id, volume => $volume);
-            _trace('Deleted cache parts');
         }
     }
     my($cache_id) = _walk_attachment_tree($self, $entity,
@@ -511,20 +517,27 @@ sub _attach_to_parent {
     return;
 }
 
-# _sortable_subject(string subject) : string
+# _sortable_subject(string subject, string realm_name) : string
 #
 # Returns a stripped, lowercase version of the subject line for
 # storing in the "subject_sort" field which is used by the database
 # to sort subjects. Must ensure to not return an empty string.
 #
 sub _sortable_subject {
-    my($subject) = @_;
-    $subject = lc($subject);
-    $subject =~ s/^\s*re:\s*//;
-    $subject =~ s/\s+//g;
+    my($subject, $realm_name) = @_;
+
+    chomp($subject) if defined($subject);
+    $subject = '(no subject)' unless defined($subject) && length($subject);
+    # Strip the name prefix out of the message, but leave the "Re:"
+    $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
+    $subject = substr($subject, 0, $_MAX_SUBJECT);
+
+    my($sortable) = lc($subject);
+    $sortable =~ s/^\s*re:\s*//;
+    $sortable =~ s/\s+//g;
     # Handle case of empty subject
-    $subject = '.' unless length($subject);
-    return $subject;
+    $sortable = '.' unless length($sortable);
+    return ($subject, $sortable);
 }
 
 =head1 COPYRIGHT
