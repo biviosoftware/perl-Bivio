@@ -441,8 +441,8 @@ sub load {
 	$query->put('auth_id' => $auth_id);
     }
     my($where, $params) = ('', []);
-    $where = $self->internal_search($query, $sql_support, $params)
-	    if defined($query->{search});
+    $where = ' and '.$self->internal_search($query, $sql_support, $params)
+	    if defined($query->unsafe_get('search'));
     $self->internal_load($sql_support->load($query, $where, $params,
 	    $self), $query);
     return;
