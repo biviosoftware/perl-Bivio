@@ -70,14 +70,14 @@ sub execute {
 	realm_type => Bivio::Auth::RealmType::CLUB()});
 
     # Create the first club user, the auth_user as administrator
-    $req->get('form')->{role} = Bivio::Auth::Role::ADMINISTRATOR->as_int;
+    $req->get('form')->{role} = 'ADMINISTRATOR';
     my($user_id) = $req->get('auth_user')->get('realm_id');
-    my($user) = Bivio::Biz::PropertyModel::User->new();
+    my($user) = Bivio::Biz::PropertyModel::User->new($req);
     # Needed so CreateClubUser sees this user. 
 #TODO: want $realm_owner->get_user(?), so we don't have to unauth_load here.
     $user->unauth_load(user_id => $user_id);
 #TODO: This is indeed ugly...
-    $req->put('auth_id') = $club_id;
+    $req->put('auth_id', $club_id);
 #TODO: CreateClubUser can be a Task item, move out of here.
     Bivio::Biz::Action::CreateClubUser->execute($req);
 
