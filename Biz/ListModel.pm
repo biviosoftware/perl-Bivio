@@ -1134,6 +1134,36 @@ sub map_primary_key_to_rows {
 	    @{$self->internal_get_rows}};
 }
 
+=for html <a name="map_rows"></a>
+
+=head2 map_rows(code_ref map_iterate_handler) : array_ref
+
+Like L<Bivio::Biz::Model::map_iterate|Bivio::Biz::Model/"map_iterate">, but
+operates on rows of the table.  Calls L<next_row|"next_row"> until it returns
+false.  It does not call L<reset_cursor|"reset_cursor"> first.  Typical usage:
+
+    my($rows) = Bivio::Biz::Model->new($req, 'MyList')->load_all->map_rows;
+
+Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
+as an array_ref.
+
+If I<map_iterate_handler> is C<undef>, the default handler simply returns all
+the rows.
+
+=cut
+
+sub map_rows {
+    my($self, $map_iterate_handler) = @_;
+    my($res) = [];
+    $map_iterate_handler ||= sub {
+	return shift->get_shallow_copy;
+    };
+    while ($self->next_row) {
+	push(@$res, $map_iterate_handler->($self));
+    }
+    return $res;
+}
+
 =for html <a name="next_row"></a>
 
 =head2 next_row() : boolean
