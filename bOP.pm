@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.20  2002/07/26 21:58:48  nagler
+  * Bivio::Delegate::PersistentCookie needs to use $r
+
+  Revision 1.19  2002/07/26 17:53:29  nagler
+  * Fixed remote_ip computation in Bivio::Agent::Request when req via proxy
+  * Bivio::BConf->dev/merge_overrides receives host, user, http_port
+  * Bivio::BConf->merge_dir read /etc/bconf.d/*.bconf for config
+  * Bivio::Delegate::PersistentCookie doesn't send cookie if in another domain
+  * --Bivio::IO::Config.trace=1 will produce a config dump at program start
+  * Bivio::IO::Config->introduce_values now calls handle_config
+  * Bivio::IO::File->chmod & chown_by_name added
+  * Bivio::ShellUtil->group_args added
+  * Bivio::Test::Language::HTTP->debug_print added; fixed a few bugs
+  * Bivio::Test allows custom result_ok on individual test cases
+  * Bivio::UI::HTML::Widget::DateTime supports FULL_MONTH_DAY_AND_YEAR_UC
+  * Bivio::UI::HTML::ViewShortcuts->vs_blank_cell accepts count for spaces
+  * Bivio::Util::Release: added _b_release_files() to spec files
   * Bivio::Util::Release->list_installed allows you to grep custom built pkgs
   * Bivio::Util::SQL->export/import_db added (Postgres only)
   * Bivio::XML::Docbook supports literallayout
