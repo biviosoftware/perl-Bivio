@@ -37,7 +37,7 @@ Here is a an example iteration:
 
 You can also:
 
-   $list->set_cursor(0);
+   $list->set_cursor_or_not_found(0);
    print $list->get('my_attr'), "\n";
 
 =cut
