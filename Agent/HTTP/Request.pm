@@ -39,6 +39,10 @@ have default views).
 The 'mf' argument is converted into a Bivio::Biz::FindParams and is available
 using the L<"get_model_args">.
 
+If the connection is using authentication and a Bivio::Biz::User exists
+for the login, then 'user' and 'password' entries will be put into the
+Request's context (a Bivio::Biz::User and string respectively).
+
 =cut
 
 #=IMPORTS
@@ -69,8 +73,6 @@ sub new {
 
     my($start_time) = Bivio::Util::gettimeofday();
 
-    # this is required for the connection->user to work!?
-    my($ret, $password) = $r->get_basic_auth_pw();
     my($target, $controller, $view) = _parse_request($r->uri());
     $controller ||= $default_controller_name;
 
@@ -81,17 +83,29 @@ sub new {
 	&_add_posted_args($r, \%args);
     }
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	    &_find_user($r->connection->user), $start_time);
+	    $start_time);
     $self->{$_PACKAGE} = {
 #        'r' => $r,
 	'view_name' => $view,
 	'args' => \%args,
-	'password' => $password,
 	'model_args' => Bivio::Biz::FindParams->from_string($args{mf} || ''),
 	'reply' => Bivio::Agent::HTTP::Reply->new($r)
     };
+
+    # not available except through get_model_args()
     delete($args{mf});
 
+    # put the user and password into the context, if present
+    my($ret, $password) = $r->get_basic_auth_pw();
+
+    if ($ret == Apache::Constants::OK) {
+	my($user) = &_find_user($r->connection->user);
+
+	if ($user) {
+	    $self->put('user', $user);
+	    $self->put('password', $password);
+	}
+    }
     return $self;
 }
 
@@ -159,20 +173,6 @@ sub get_reply {
     my($fields) = $self->{$_PACKAGE};
 
     return $fields->{reply};
-}
-
-=for html <a name="get_password"></a>
-
-=head2 get_password() : string
-
-Returns the password from user authentication.
-
-=cut
-
-sub get_password {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{password};
 }
 
 =for html <a name="get_view_name"></a>
@@ -293,7 +293,7 @@ sub _find_user {
     return undef if ! $name;
 
     my($user) = Bivio::Biz::User->new();
-    return $user->find(Bivio::Biz::FindParams->new({'name' => $name}))
+    return $user->load(Bivio::Biz::FindParams->new({'name' => $name}))
 	    ? $user : undef;
 }
 
