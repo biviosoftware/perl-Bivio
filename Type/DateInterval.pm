@@ -60,6 +60,10 @@ __PACKAGE__->compile([
     QUARTER => [
 	91,
     ],
+    # negative values are interpreted, not actual
+    BEGINNING_OF_YEAR => [
+	-1,
+    ],
 ]);
 
 =head1 METHODS
@@ -76,7 +80,13 @@ Returns I<date_time> decremented by this DateInterval.
 
 sub dec {
     my($self, $date_time) = @_;
-    return Bivio::Type::DateTime->add_days($date_time, -$self->as_int);
+    return Bivio::Type::DateTime->add_days($date_time, -$self->as_int)
+	    if $self->as_int >= 0;
+    if ($self == $self->BEGINNING_OF_YEAR) {
+	my($year) = (Bivio::Type::DateTime->to_parts($date_time))[5];
+	return Bivio::Type::DateTime->date_from_parts(1, 1, $year);
+    }
+    die('unknown type: ', $self->get_name);
 }
 
 =for html <a name="inc"></a>
@@ -89,7 +99,13 @@ Returns I<date_time> incremented by this DateInterval.
 
 sub inc {
     my($self, $date_time) = @_;
-    return Bivio::Type::DateTime->add_days($date_time, $self->as_int);
+    return Bivio::Type::DateTime->add_days($date_time, $self->as_int)
+	    if $self->as_int >= 0;
+    if ($self == $self->BEGINNING_OF_YEAR) {
+	my($year) = (Bivio::Type::DateTime->to_parts($date_time))[5];
+	return Bivio::Type::DateTime->date_from_parts(1, 1, $year + 1);
+    }
+    die('unknown type: ', $self->get_name);
 }
 
 =for html <a name="is_continuous"></a>
