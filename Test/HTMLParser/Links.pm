@@ -135,14 +135,15 @@ sub _end_a {
 
 # _link(hash_ref fields, string label, string alt)
 #
-# Adds the link.  Creates array_ref if not unique.
+# Adds the link.  Creates unique name ($label_$i) if not unique.
 #
 sub _link {
     my($fields, $label, $alt) = @_;
-    Bivio::Die->die($label, ': duplicate label, href differs ',
-	$fields->{href})
-        if $fields->{links}->{$label}
-	    && $fields->{links}->{$label}->{href} ne $fields->{href};
+    my($base, $i) = $label;
+    while ($fields->{links}->{$label}) {
+	return if $fields->{links}->{$label}->{href} eq $fields->{href};
+	$label = $base . '_' . ++$i;
+    }
     $fields->{links}->{$label} = {
 	label => $label,
 	href => $fields->{href},
