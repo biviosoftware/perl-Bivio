@@ -331,7 +331,6 @@ sub test_setup {
     _die($proto, 'called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
     my($subclass) = Bivio::IO::ClassLoader->map_require(
 	'TestLanguage', $map_class);
-    print STDERR $subclass, "\n";
     _die($proto, "$subclass is not a ", __PACKAGE__, ' class')
 	unless $subclass->isa(__PACKAGE__);
     _trace($subclass, ' setup with ', \@setup_args) if $_TRACE;
