@@ -660,17 +660,27 @@ sub _unwind_duplicates {
     foreach my $class (qw(visible hidden submit)) {
 	my($c) = $fields->{current}->{$class};
 	foreach my $k (keys(%$c)) {
-	    my($duplicates) = $c->{$k};
-	    if (@$duplicates == 1) {
-		$c->{$k} = $duplicates->[0];
+	    my($found) = $c->{$k};
+	    my($unique) = [];
+	    if (@$found == 1) {
+		$c->{$k} = $found->[0];
 		next;
 	    }
 	    my($i) = 0;
-	    foreach my $v (@$duplicates) {
+	    # If all values are identical, we leave #NNN values and
+	    # copy a simple one.
+	    if (grep(Bivio::IO::Ref->nested_equals($found->[0], $_), @$found)
+		== @$found) {
+		_trace('all duplicates ', $k) if $_TRACE;
+		$c->{$k} = {%{$found->[0]}, label => $k};
+	    }
+	    else {
+		delete($c->{$k});
+	    }
+	    foreach my $v (@$found) {
 		$c->{$v->{label} = $k . '#' . $i++} = $v;
 		_trace('relabeled ', $v) if $_TRACE;
 	    }
-	    delete($c->{$k});
 	}
     }
     return;

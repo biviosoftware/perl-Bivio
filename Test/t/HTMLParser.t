@@ -24,6 +24,13 @@ Bivio::Test->new({
 	    get_nested => $_->[1],
         ];
     } [
+	'service-price' => [
+	    ['Forms', 'Recalculate Price'] => undef,
+	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price'] => undef,
+	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price#0'] => undef,
+	    ['Forms', 'Recalculate Price', 'submit', 'Recalculate Price#1'] => undef,
+	],
+    ], [
  	'ballot-pool-membership' => [
  	    ['Forms', 'Enrolled_0', 'visible',
  		 'Enrolled_0', 'checked' ] => [ 1 ],
