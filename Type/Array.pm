@@ -158,6 +158,18 @@ sub to_sql_param {
     } @$param_value) : undef;
 }
 
+=for html <a name="to_sql_param_list"></a>
+
+=head2 to_sql_param_list(array_ref values) : array_ref
+
+Not implemented.
+
+=cut
+
+sub to_sql_param_list {
+    die('not implemented');
+}
+
 =for html <a name="to_uri"></a>
 
 =head2 static to_uri(any value) : string
