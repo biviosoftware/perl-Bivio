@@ -51,7 +51,6 @@ sub OFFLINE_PREFIX {
 }
 
 #=IMPORTS
-use Bivio::HTML;
 use Bivio::TypeError;
 
 #=VARIABLES
@@ -75,16 +74,29 @@ if the syntax check fails.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     return undef unless defined($value);
     # Leave middle spaces, because user can't have them
     $value =~ s/^\s+|\s+$//g;
     return undef unless length($value);
     $value = lc($value);
-    # Must begin with a letter and be at least three chars
-    return (undef, Bivio::TypeError::REALM_NAME())
-	    unless $value =~ /^[a-z][a-z0-9_]{2,}$/;
+    return (undef, Bivio::TypeError->REALM_NAME)
+        unless $proto->internal_is_realm_name($value);
     return $value;
+}
+
+=for html <a name="internal_is_realm_name"></a>
+
+=head2 static internal_is_realm_name(string name) : boolean
+
+Returns true if the name is allowed. May be overridden by subclasses.
+Must begin with a letter and be at least three chars
+
+=cut
+
+sub internal_is_realm_name {
+    my($proto, $value) = @_;
+    return $value =~ /^[a-z][a-z0-9_]{2,}$/ ? 1 : 0;
 }
 
 =for html <a name="is_offline"></a>
