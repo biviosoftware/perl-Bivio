@@ -1,20 +1,23 @@
-#!/usr/bin/perl -w
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+#!perl -w
+# Copyright (c) 2002 bivio Inc.  All Rights Reserved.
 # $Id$
 use strict;
 
 =head1 NAME
 
-b-testsuite - call Bivio::Test::Engine to run site tests
+b-testsuite - calls Bivio::Test::Engine
+
+=head1 RELEASE SCOPE
+
+Societas
 
 =head1 SYNOPSIS
 
-b-testsuite
-b-testsuite [test name]
+b-testsuite [options] command [args...]
 
 =head1 DESCRIPTION
 
-see L<Bivio::Test::Engine>
+See L<Bivio::Test::Engine|Bivio::Test::Engine>
 
 =cut
 
@@ -22,15 +25,15 @@ see L<Bivio::Test::Engine>
 use Bivio::Test::Engine;
 
 #=VARIABLES
-
-my($engine) = Bivio::Test::Engine->new();
-$engine->main(@ARGV);
+Bivio::Test::Engine->main(@ARGV);
 
 =head1 SEE ALSO
 
+Bivio::Test::Engine
+
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Bivio Inc.  All rights reserved.
+Copyright (c) 2002 bivio Inc.  All Rights Reserved.
 
 =head1 VERSION
 
