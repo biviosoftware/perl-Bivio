@@ -313,6 +313,19 @@ sub clear_dot_as_html {
     return Bivio::UI::HTML::Widget::ClearDot->as_html(@_);
 }
 
+=for html <a name="club_or_fund"></a>
+
+=head2 club_or_fund() : Bivio::UI::HTML::Widget
+
+Returns a widget with the "club" or "fund" terminology.  Uses
+HTML's club_or_fund attribute.
+
+=cut
+
+sub club_or_fund {
+    return shift->html_string('club_or_fund');
+}
+
 =for html <a name="date_time"></a>
 
 =head2 static date_time(any value) : Bivio::UI::HTML::Widget::DateTime
@@ -641,6 +654,35 @@ sub href_goto {
 		unless $uri =~ m!^\w+://!;
     return ref($uri) ? [$uri, 'Bivio::UI::HTML::Format::Link']
 	    : ['Bivio::UI::HTML::Format::Link', $uri];
+}
+
+=for html <a name="html_string"></a>
+
+=head2 html_string(string attr) : Bivio::UI::HTML::Widget
+
+Returns a widget which renders L<html_value|"html_value"> as a string
+(no font).
+
+=cut
+
+sub html_string {
+    my($proto, $attr) = @_;
+    # Parent widget will wrap font in a font.
+    return $proto->string($proto->html_value($attr), 0);
+}
+
+=for html <a name="html_value"></a>
+
+=head2 static html_value(string attr) : array_ref
+
+Returns a call to L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">
+as an array ref.
+
+=cut
+
+sub html_value {
+    my($proto, $attr) = @_;
+    return [['->get_request'], 'Bivio::UI::HTML', '->get_value', $attr];
 }
 
 =for html <a name="image"></a>
@@ -1056,6 +1098,18 @@ sub mailto {
     return $x;
 }
 
+=for html <a name="noop"></a>
+
+=head2 noop() : Bivio::UI::HTML::Widget
+
+Returns an empty join widget.
+
+=cut
+
+sub noop {
+    return shift->join('');
+}
+
 =for html <a name="page_text"></a>
 
 =head2 static page_text(array_ref values) : Bivio::UI::HTML::Widget::String
@@ -1158,6 +1212,18 @@ sub simple_form_field {
     return Bivio::UI::HTML::WidgetFactory->create($field);
 }
 
+=for html <a name="site_name"></a>
+
+=head2 static site_name() : string
+
+Returns a widget containing the site name.
+
+=cut
+
+sub site_name {
+    return shift->html_string('site_name');
+}
+
 =for html <a name="string"></a>
 
 =head2 static string(any value) : Bivio::UI::Widget::String
@@ -1225,25 +1291,36 @@ sub task_list {
 
 =for html <a name="template"></a>
 
-=head2 static template(string value, string font) : Bivio::UI::HTML::Template
+=head2 static template(string value) : Bivio::UI::HTML::Widget
 
-=head2 static template(string_ref value, string font) : Bivio::UI::HTML::Template
+=head2 static template(string_ref value) : Bivio::UI::HTML::Widget
 
 Returns an instance of a Template widget configured with I<value>.
-
-If I<font> not supplied, defaults to I<page_text>.
 
 =cut
 
 sub template {
     my($proto, $value, $font) = @_;
-    _use('Template');
-    return $proto->string(
-	    Bivio::UI::HTML::Widget::Template->new({
-		value => $value,
-	    }),
-	    defined($font) ? $font : 'page_text',
-    );
+    die('font is deprecated usage') if defined($font);
+    return $proto->load_and_new('Template', {value => $value});
+}
+
+=for html <a name="template_as_string"></a>
+
+=head2 static template_as_string(string value, string font) : Bivio::UI::HTML::Widget
+
+=head2 static template_as_string(string_ref value, string font) : Bivio::UI::HTML::Widget
+
+Wraps a L<template|"template"> in a string.
+
+If I<font> not supplied, defaults to I<page_text>.
+
+=cut
+
+sub template_as_string {
+    my($proto, $value, $font) = @_;
+    return $proto->string($proto->template($value),
+	    defined($font) ? $font : 'page_text');
 }
 
 =for html <a name="toggle_secure"></a>
