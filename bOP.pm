@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  based on the metadata in ListModel.
+  Bivio::Type::Array->from_literal returns undef if the value passed in
+  is not defined.
 
   Revision 2.7  2004/02/20 17:36:31  moeller
   * fixed bugs in Bivio::UI::Mail::Widget::Message recipient handling
