@@ -300,6 +300,7 @@ sub test_run {
     _trace($die) if $_TRACE;
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
     $_SELF_IN_EVAL = undef;
+    _find_line_number($die) if $die;
     _trace($script, ' ', $die) if $die && $_TRACE;
     return $die;
 }
@@ -386,6 +387,18 @@ sub _die {
     Bivio::Die->die(ref($self) ? $self->get('test_script')
 	: __PACKAGE__, @msg);
     # DOES NOT RETURN
+}
+
+# _find_line_number()
+#
+# Find the line number of error in the test script.
+#
+sub _find_line_number {
+    my($die) = @_;
+    return unless my($stack) = $die->get('stack');
+    my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+eval 'package Bivio::Test::Language; use strict;/s;
+    substr($die->get('attrs')->{message}, 0, 0) = "test line $line: ";
+    return;
 }
 
 # _log_prefix(string script_name) : string
