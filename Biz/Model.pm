@@ -102,7 +102,7 @@ sub as_string {
     return ref($self) . '(' . join(',', map {
 	return ref($self) unless defined($_);
 	$_;
-    } $self->get(@{$ci->{as_string_fields}})) . ')';
+    } $self->unsafe_get(@{$ci->{as_string_fields}})) . ')';
 }
 
 =for html <a name="assert_not_singleton"></a>
