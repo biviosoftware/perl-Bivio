@@ -83,11 +83,9 @@ sub new {
 =cut
 
 sub get_html_field_attributes {
-    print(STDERR "\nget_html_field_attributes");
     my($self, $field_name, $source) = @_;
     my($fields) = $self->[$_IDI];
     my($field_namefound) = $self->ancestral_get('field');
-    print(STDERR "\nfield name: $field_namefound");
     return ' onBlur="'. $self->_function_name($fields, $source) . '(this)"';
 }
 
@@ -149,7 +147,6 @@ sub render {
 	$self->unsafe_render_value($name++, $v, $source, $buffer);
     }
     my($functions) = _function_names($fields, $source);
-    print(STDERR "\nrender");
     Bivio::UI::HTML::Widget::JavaScript->render(
 	$source, $buffer, $self->_function_name($fields, $source),
 	"function @{[$self->_function_name($fields, $source)]}(field) {$functions}");
@@ -164,11 +161,9 @@ sub render {
 #
 #
 sub _function_name {
-    print(STDERR "\n_function_name");
     my($self, $fields, $source) = @_;
     my($form_name) = $self->ancestral_get('form_name');
     my($field_name) = $self->ancestral_get('field');
-    print(STDERR "\nancestral_get returns form: $form_name and field: $field_name");
     return 'jh_multmath' . $form_name . '_' . $source->get_field_name_for_html($field_name);
 }
 
