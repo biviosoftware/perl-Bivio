@@ -21,12 +21,12 @@ bOP
 
 =head1 EXTENDS
 
-L<Bivio::UI::ViewShortcutsBase>
+L<Bivio::UI::HTML::ViewShortcuts>
 
 =cut
 
-use Bivio::UI::ViewShortcutsBase;
-@Bivio::PetShop::UI::ViewShortcuts::ISA = ('Bivio::UI::ViewShortcutsBase');
+use Bivio::UI::HTML::ViewShortcuts;
+@Bivio::PetShop::UI::ViewShortcuts::ISA = ('Bivio::UI::HTML::ViewShortcuts');
 
 =head1 DESCRIPTION
 
