@@ -35,8 +35,7 @@ Syntax is rigid, but the commands die if anything is out of the
 ordinary.
 
 TODO:
-   bashrc_d
-   sendmail_cf
+   sendmail_cf b-sendmail-http
    see files in LinuxConfig dir
 
 =cut
@@ -88,6 +87,29 @@ Bivio::IO::Config->register(my $_CFG = {
 =head1 METHODS
 
 =cut
+
+=for html <a name="add_bashrc_d"></a>
+
+=head2 add_bashrc_d() : string
+
+Updates /etc/bashrc to search /etc/bashrc.d.
+
+=cut
+
+sub add_bashrc_d {
+    my($self) = @_;
+    return _edit($self, '/etc/bashrc', ['$', <<'EOF']);
+
+# Load local bashrcs
+for i in /etc/bashrc.d/*.sh ; do
+    if [ -r $i ]; then
+        . $i
+    fi
+done
+
+unset i
+EOF
+}
 
 =for html <a name="add_crontab_line"></a>
 
