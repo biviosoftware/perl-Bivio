@@ -491,7 +491,6 @@ b-realm-role CLUB ADMINISTRATOR +
 #
 b-realm-role demo_club ANONYMOUS - \
     +LOGIN \
-    +MAIL_WRITE \
     +ANY_USER \
     +ADMIN_READ \
     +ACCOUNTING_READ \
