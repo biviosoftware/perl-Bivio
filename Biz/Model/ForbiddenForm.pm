@@ -32,6 +32,16 @@ use Bivio::Biz::FormModel;
 
 C<Bivio::Biz::Model::ForbiddenForm>
 
+=head1 TASK ATTRIBUTES
+
+=over 4
+
+=head1 require_explicit_su : boolean
+
+If true for executing task, will not try to auto-logout super users.
+
+=back
+
 =cut
 
 #=IMPORTS
@@ -60,6 +70,8 @@ sub execute_empty {
 	unless $agent->is_browser;
     $req->server_redirect($req->get_nested('task', 'login_task'))
 	unless $auth_user;
+    return 'next'
+	if $req->get('task')->unsafe_get('require_explicit_su');
     my($c) = $self->unsafe_get_context;
     my($task) = $c->get('unwind_task');
     $req->set_realm($c->get('realm'));
