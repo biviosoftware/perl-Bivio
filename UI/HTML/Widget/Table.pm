@@ -186,6 +186,11 @@ size preference for the current user.
 Groups the column coloring based on the changes in the specified field.
 For example, transaction entries can be grouped by transaction id.
 
+=item row_bgcolor : array_ref []
+
+Widget value which returns row color.  If returns undef, uses default
+colors (even_row_bgcolor or odd_row_bgcolor).
+
 =item show_headings : boolean [true]
 
 If true, then the column headings are rendered.
@@ -719,7 +724,8 @@ sub render {
 			&& $prev_value != $grouping_value;
 
 	$self->render_row($state->{cells}, $list, $buffer,
-	    $is_even_row ? $state->{even_row} : $state->{odd_row},
+	    _row_prefix($state,
+		$is_even_row ? $state->{even_row} : $state->{odd_row}),
 	    Bivio::UI::TableRowClass->DATA);
 
 	if (defined($grouping_field)) {
@@ -1037,6 +1043,23 @@ sub _render_trailer {
 
     ${$state->{buffer}} .= "\n</table>" if $self->get_or_default('end_tag', 1);
     return;
+}
+
+# _row_prefix(hash_ref state, string row_prefix) : string
+#
+# Returns row prefix
+#
+sub _row_prefix {
+    my($state, $row_prefix) = @_;
+    my($b) = '';
+    return $row_prefix
+	unless $state->{self}->unsafe_render_attr(
+	    'row_bgcolor', $state->{list}, \$b)
+	    && length($b);
+    $row_prefix =~ s/ bgcolor[^> ]+//;
+    $row_prefix =~ s{(?<=\<tr)}{
+         Bivio::UI::Color->format_html($b, 'bgcolor', $state->{req})}xe;
+    return $row_prefix;
 }
 
 =head1 COPYRIGHT
