@@ -79,6 +79,9 @@ __PACKAGE__->compile([
     YEAR => [
 	-3,
     ],
+    FISCAL_YEAR => [
+	-4,
+    ],
 ]);
 
 =head1 METHODS
@@ -190,6 +193,17 @@ sub _inc_beginning_of_year {
 	    = Bivio::Type::DateTime->to_parts($date_time);
     return Bivio::Type::DateTime->from_parts_or_die($sec, $min, $hour,
 	    $mday, $mon, 1 + $year);
+}
+
+# _inc_fiscal_year(string date_time) : string
+#
+# For now just increments by a year because will be incrementing from
+# a fiscal year end date (calls _inc_year ).  Only exists because method
+# call name is constructed dynamically from the type name.
+#
+sub _inc_fiscal_year {
+    my($date_time) = @_;
+    return _inc_year($date_time);
 }
 
 # _inc_month(string date_time) : string
