@@ -149,11 +149,8 @@ sub parse_errors {
 	    _pager_report($self, 'ERROR COUNT EXCEEDED')
 		    if $error_countdown-- == 0;
 	}
-	if ($record =~ /(.*Use of uninitialized value)/) {
-	    _report($self, $1);
-	    next RECORD;
-	}
-	_report($self, $record);
+	# Never send more than 256 bytes (three lines) in a record via email
+	_report($self, substr($record, 0, 256));
     }
     return _parse_errors_complete($self);
 }
