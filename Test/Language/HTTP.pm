@@ -374,6 +374,22 @@ sub verify_text {
     return;
 }
 
+=for html <a name="verify_uri"></a>
+
+=head2 verify_uri(string uri)
+
+Verifies that the current uri is the provided uri.
+
+=cut
+
+sub verify_uri {
+    my($self, $uri) = @_;
+    my($current_uri) = $self->[$_IDI]->{uri};
+    Bivio::Die->die('Current uri is ', $current_uri, ', not ', $uri)
+	unless $current_uri eq $uri;
+    return;
+}
+
 =for html <a name="visit_uri"></a>
 
 =head2 visit_uri(string uri)
