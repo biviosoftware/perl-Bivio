@@ -43,16 +43,13 @@ C<Bivio::Util::CSV> manipulates csv files.
 
 =head2 USAGE : string
 
-  usage: B-csv [options] command [args...]
-  commands:
-      colrm start [end] -- removes columns like colrm command
-
+See below
 
 =cut
 
 sub USAGE {
     return <<'EOF';
-usage: B-csv [options] command [args...]
+usage: b-csv [options] command [args...]
 commands:
     colrm start [end] -- removes columns like colrm command
 EOF
