@@ -143,14 +143,14 @@ sub parse_errors {
 		    if Bivio::Type::DateTime->compare($start, $date) >= 0;
 	    $in_interval = 1;
 	}
-	if ($record =~ /$_IGNORE_REGEX/o) {
-	    _trace('ignoring: ', $&) if $_TRACE;
+	if ($record =~ /($_IGNORE_REGEX)/o) {
+	    _trace('ignoring: ', $1) if $_TRACE;
 	    next RECORD;
 	}
 	# Critical already avoids dups, so put before time check.
 	# errors.
-	if ($record =~ /$_CRITICAL_REGEX/o) {
-	    _pager_report($self, $&);
+	if ($record =~ /($_CRITICAL_REGEX)/o) {
+	    _pager_report($self, $1);
 	    $record =~ s/^/***CRITICAL*** /;
 	}
 	# Avoid duplicate error messages by checking $last_error
@@ -159,8 +159,8 @@ sub parse_errors {
 	    next RECORD;
 	}
 	$last_error = $date;
-	if ($record =~ /$_ERROR_REGEX/) {
-	    _pager_report($self, $&) if --$error_countdown == 0;
+	if ($record =~ /($_ERROR_REGEX)/o) {
+	    _pager_report($self, $1) if --$error_countdown == 0;
 	}
 	# Never send more than 256 bytes (three lines) in a record via email
 	_report($self, substr($record, 0, 256));
@@ -232,8 +232,8 @@ sub _initialize {
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
-	    'Bivio::Die::DIE',
-	    'Bivio::Die::CONFIG_ERROR',
+	    'Bivio::DieCode::DIE',
+	    'Bivio::DieCode::CONFIG_ERROR',
 	    );
     # Value is sent to pager
     $_CRITICAL_REGEX = join('|',
@@ -250,9 +250,10 @@ sub _pager_report {
     my($self, @args) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($msg) = Bivio::IO::Alert->format_args(@args)."\n";
-    $fields->{res} = $msg.$fields->{res};
+    $fields->{res} = "CRITICAL ERRORS\n".$fields->{res}
+	    unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
-    push(@{$fields->{pager_res}}, $msg) if !$last && $last ne $msg;
+    push(@{$fields->{pager_res}}, $msg) if !$last || $last ne $msg;
     return;
 }
 
@@ -266,8 +267,8 @@ sub _parse_errors_complete {
     my($fields) = $self->{$_PACKAGE};
     $fields->{fh}->close;
     my($pr) = join('', @{$fields->{pager_res}});
-    $self->email($_CFG->{pager_email}, 'critical http errors', \$pr)
-	    if $pr && $fields->{page_email};
+    $self->email_message($_CFG->{pager_email}, 'critical http errors', \$pr)
+	    if $pr && $_CFG->{pager_email};
     return \$fields->{res};
 }
 
