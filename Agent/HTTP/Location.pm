@@ -30,6 +30,23 @@ so we should try to be as simple as possible until we know otherwise.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="REALM_PLACEHOLDER"></a>
+
+=head2 REALM_PLACEHOLDER : string
+
+Returns the placeholder for the realm in a URI configuration.
+
+=cut
+
+sub REALM_PLACEHOLDER {
+    return '?';
+}
+
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
@@ -60,10 +77,33 @@ my($_HELP_ROOT) = undef;
 Bivio::IO::Config->register({
     document_root => Bivio::IO::Config->REQUIRED,
 });
+my($_REALM_PLACEHOLDER_PAT) = REALM_PLACEHOLDER();
+$_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="find_task"></a>
+
+=head2 static find_task(string uri, Bivio::Auth::RealmType realm_type) : Bivio::Agent::TaskId
+
+B<This is experimental.  Don't use widely just yet.>
+
+Returns the TaskId for task identified by I<uri> and I<realm_type>.  Returns
+C<undef> if no task is found.  Tasks with path_info should not include the
+trailing "/*".
+
+=cut
+
+sub find_task {
+    my(undef, $uri, $realm_type) = @_;
+    my($info) = $_FROM_URI{$uri};
+    return undef unless $info;
+    $info = $info->[$realm_type->as_int];
+#TODO: Could really do what code in parse does.
+    return $info ? $info->{task} : undef;
+}
 
 =for html <a name="format"></a>
 
@@ -89,8 +129,8 @@ sub format {
 
 #TODO: Add in the form context with \& at the end which turns into nothing
 # if no context added.
-    # URI contains a lone
-    if ($uri =~ /\?/) {
+    # URI contains a question mark
+    if ($uri =~ /$_REALM_PLACEHOLDER_PAT/o) {
 	Bivio::IO::Alert->die('uri requires but realm not defined')
 		    unless defined($realm);
 	my($ro);
@@ -104,8 +144,8 @@ sub format {
 			unless $realm =~ /^\w+$/;
 	    $ro = $realm;
 	}
-	# Replace everything leading up to the ? with the uri prefix
-	$uri =~ s/.*\?/$ro/g;
+	# Replace everything leading up to placeholder with the uri prefix
+	$uri =~ s/.*$_REALM_PLACEHOLDER_PAT/$ro/og;
     }
     $uri = '/'.$uri unless $uri =~ /^\//;
 
@@ -204,7 +244,7 @@ sub initialize {
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     $_GENERAL = Bivio::Auth::Realm::General->new;
     my($_PROXY_PREFIX) = Bivio::Auth::Realm::Proxy::FIRST_URI_COMPONENT()
-	    .'/\?';
+	    .'/'.$_REALM_PLACEHOLDER_PAT;
     my(%path_info_uri);
     foreach my $c (@$cfg) {
 	my($task_id_name, $realm_type_name, $uri_list) = @{$c}[0,2,4];
@@ -263,8 +303,10 @@ sub initialize {
 			$path_info_count = 3;
 		    }
 		    else {
-			die("$task_id_name: $uri: must begin with '?'")
-				unless $uri =~ m!^\?(?:\/|$)!;
+			die("$task_id_name: $uri: must begin with '"
+				.REALM_PLACEHOLDER()."'")
+				unless $uri
+					=~ m!^$_REALM_PLACEHOLDER_PAT(?:\/|$)!;
 			$path_info_count = 2;
 		    }
 		}
@@ -351,7 +393,7 @@ sub parse {
     my(@uri) = map {
 	$req->die(Bivio::DieCode::NOT_FOUND,
 		{entity => $orig_uri, message => 'contains special char'})
-		if $_ eq '?';
+		if $_ eq REALM_PLACEHOLDER();
 	$_;
     } split(/\/+/, $uri);
 
@@ -400,7 +442,7 @@ sub parse {
 	    message => 'no such document'});
     }
 
-    # Try to find the uri with the realm replaced by '?'
+    # Try to find the uri with the realm replaced by placeholder
     # Replace realm with underscore.  This is ugly, but good enough for now.
     my($realm);
     # Up to which component is checked for path_info URI
@@ -414,7 +456,7 @@ sub parse {
 	# 	   same URIs.
 	# Be friendly, by downcasing
 	my($name) = lc($uri[1]);
-	$uri[1] = '?';
+	$uri[1] = REALM_PLACEHOLDER();
 
 	# Blows up if not found.
 	$realm = Bivio::Auth::Realm::Proxy->from_name($name);
@@ -428,7 +470,7 @@ sub parse {
 	#
 	# Be friendly, by downcasing
 	my($name) = lc($uri[0]);
-	$uri[0] = '?';
+	$uri[0] = REALM_PLACEHOLDER();
 
 	# Is this a valid, authorized realm with a task for this uri?
 	my($o) = Bivio::Biz::Model::RealmOwner->new($req);
