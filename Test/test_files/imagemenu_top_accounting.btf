@@ -1,3 +1,0 @@
-Login->execute();
-Browser->go_uri('/my-club-site');
-Browser->click('Accounting');

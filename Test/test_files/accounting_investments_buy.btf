@@ -1,0 +1,20 @@
+Login->execute();
+Imagemenu->go_section('Accounting', 'my-club-site');
+
+# default for accounting is investments, so don't need to click.
+Browser->click('buy_a');
+Verify->title('Record Purchase');
+
+Browser->submit({
+     'Ticker:' => 'IBM',
+     'Transaction Date:' => '11/20/1998',
+     'Account:' => 'Broker',
+     'Principal:' => '100.00',
+     'Shares:' => '5',
+     'Comission:' => '1',
+     'Service Fee:' => '0',
+     'Remark:' => 'Test purchase.',
+     }, 'OK');
+Verify->title('Investments');
+Verify->text('IBM');
+     

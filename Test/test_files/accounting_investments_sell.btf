@@ -1,0 +1,17 @@
+Login->execute();
+Imagemenu->go_section('Accounting', 'my-club-site');
+# default is investments, so don't need to choose it.
+
+Browser->click('sell_a');
+Verify->title('Record Sale');
+Browser->submit({
+     'Ticker:' => 'IBM',
+     'Transaction Date:' => '11/20/1999',
+     'Account:' => 'Broker',
+     'Gross Amount:' => '300',
+     'Shares:' => '3',
+     'Commission:' => '10.00',
+     'Remark:' => 'Test sale',
+     }, 'OK');
+Verify->title('Investments');
+     

@@ -1,5 +1,4 @@
 _trace("This test is a simple login test.\n") if $_TRACE;
 Login->execute('btfusery', 'foobar');
-Verify->title('btf');
-#Browser->dump_this(Bivio::Test::BulletinBoard->get_current());
-Login->execute(); #TODO replace with logout once index.html exists
+# Can't verify by text, uri, or title because doesn't guarantee specific page.
+

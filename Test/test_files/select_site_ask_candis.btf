@@ -1,4 +1,6 @@
 Login->execute();
-Browser->go_uri('/my-club-site');
+# Section visited is irrelevant, but this allows switching to cached page
+# while ensuring realm is my-club-site.
+Imagemenu->go_section('Administration', 'my-club-site');
 Browser->submit({'Select Site' => 'Ask Candis'});
 Verify->uri('candis');
