@@ -137,52 +137,16 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    _do(<<'EOF');
---
--- Create tax table
---
-CREATE TABLE tax_id_t (
-  realm_id NUMBER(18),
-  tax_id VARCHAR2(30)
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
-/
-ALTER TABLE tax_id_t modify realm_id not null
-/
-ALTER TABLE tax_id_t 
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE tax_id_t add primary key(realm_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
 
---
--- Insert rows into all tax tables
---
-INSERT INTO tax_id_t (realm_id)
-  SELECT realm_id
-  FROM realm_owner_t
-  WHERE realm_id > 10
-/
---
--- Add Address and Phone to all Clubs
---
-INSERT INTO address_t (realm_id, location)
-  SELECT realm_id, 1
-  FROM realm_owner_t
-  WHERE realm_id > 10
-    AND realm_type = 3
-/
-INSERT INTO phone_t (realm_id, location)
-  SELECT realm_id, 1
-  FROM realm_owner_t
-  WHERE realm_id > 10
-    AND realm_type = 3
-/
-EOF
+    # delete any instruments for which there are no corresponding MGFS entry
+    _do('
+            DELETE from instrument_t
+            WHERE NOT EXISTS (
+                SELECT mg_id
+                FROM mgfs_instrument_t
+                WHERE instrument_id=instrument_t.instrument_id)
+/');
+
     return;
 }
 
