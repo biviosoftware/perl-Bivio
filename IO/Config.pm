@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Config;
 use strict;
@@ -291,7 +291,7 @@ sub introduce_values {
 
 =for html <a name="merge"></a>
 
-=head2 static merge(hash_ref custom, hash_ref defaults) : hash_ref
+=head2 static merge(hash_ref custom, hash_ref defaults, boolean merge_arrays) : hash_ref
 
 Creates a new hash_ref by copying I<custom> values int a I<default>
 configuration.  Most applications have a common set of configuration which they
@@ -356,22 +356,49 @@ configuration, which will be overridden by the custom configuration above:
 	});
     }
 
+If I<merge_arrays> is true, then arrays in I<defaults> will be with
+arrays in I<custom>.  Most commonly used for maps, e.g.,
+
+    merge({
+	maps => {
+	    Model => ['OurSite:Model'],
+	    },
+	},
+    }, {
+	maps => {
+	    Model => ['Bivio::Biz::Model'],
+	    },
+	},
+    },
+        1,
+    );
+
+yields:
+
+    {
+	maps => {
+	    Model => ['OurSite:Model', 'Bivio::Biz::Model'],
+        },
+    };
+
 =cut
 
 sub merge {
-    my($proto, $custom, $defaults) = @_;
-
+    my($proto, $custom, $defaults, $merge_arrays) = @_;
     # Make a copy, so we don't modify original values in defaults
     my($result) = {%$defaults};
     while (my($key, $value) = each(%$custom)) {
-	# Recurse if custom and default are both hashes
-	$result->{$key} = ref($result->{$key}) eq 'HASH'
-		&& ref($value) eq 'HASH'
-		? $proto->merge($value, $result->{$key})
-		: $value;
+	$result->{$key} = ref($result->{$key}) eq ref($value)
+	    ? ref($value) eq 'HASH'
+		? $proto->merge($value, $result->{$key}, $merge_arrays)
+		: ref($value) eq 'ARRAY' && $merge_arrays
+		    ? [@$value, @{$result->{$key}}]
+		    : $value
+	    : $value;
     }
     return $result;
 }
+
 
 =for html <a name="register"></a>
 
@@ -612,7 +639,7 @@ sub _process_argv {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2003 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
