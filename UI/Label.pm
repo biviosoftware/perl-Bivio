@@ -214,6 +214,9 @@ _compile(\%_MAP, [
     ['LONG_TERM_CAPITAL_GAIN',
         Bivio::Type::TaxCategory->LONG_TERM_CAPITAL_GAIN->get_short_desc]
         => 'Long-Term Capital Gains',
+    ['FIVE_YEAR_CAPITAL_GAIN',
+        Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->get_short_desc]
+        => 'Five Year Capital Gains',
     ['MISC_INCOME',
         Bivio::Type::TaxCategory->MISC_INCOME->get_short_desc]
         => 'Miscellaneous Income',
@@ -531,6 +534,7 @@ _compile(\%_MAP, [
     STCG_HEADING => "Short-Term\nCapital Gains",
     MTCG_HEADING => "Medium-Term\nCapital Gains",
     LTCG_HEADING => "Long-Term\nCapital Gains",
+    '5YCG_HEADING' => "Five Year\nCapital Gains",
     FOREIGN_TAX_HEADING => "Foreign\nTax",
     MISC_INCOME_HEADING => "Misc.\nIncome",
     MISC_EXPENSE_HEADING => "Misc.\nExpense",
