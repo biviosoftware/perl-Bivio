@@ -244,10 +244,11 @@ sub button {
 	# Create the button for simpler modes
 	$task = Bivio::Agent::TaskId->from_any($task);
 	my($res) = [
-	    $proto->indent(Bivio::UI::HTML::Widget::TaskButton->new({
-		value => $task,
-		label => ref($name) ? undef : $name,
-	    }))];
+	    $proto->string($proto->join(
+		    $proto->indent(Bivio::UI::HTML::Widget::TaskButton->new({
+			value => $task,
+			label => ref($name) ? undef : $name,
+		    }))))];
 	return @$res unless $description;
 
 	# Have a description, so may have control
@@ -1419,12 +1420,11 @@ Part explaining you should take the tour.  Begins with a C<P>.
 
 sub tour {
     my($proto) = @_;
-    return (<<'EOF',
-<p>
-If you have not done so already, we encourage you to
-EOF
+    return ('<p>',
+	    $proto->string('If you have not done so already,'
+		    .' we encourage you to '),
 	    $proto->link('take the tour', 'TOUR'),
-	    " which you'll find on the bivio home page.<br>\n",
+	    $proto->string(" which you'll find on the bivio home page.\n"),
     );
 }
 
