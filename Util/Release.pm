@@ -306,7 +306,7 @@ sub install {
 	$package .= '-'.$self->get('version').'.rpm'
 		unless $package =~ /\.rpm$/;
         my($uri) = _create_URI($package);
-	my($command) = "rpm -Uvh $rpm_opt $uri\n";
+	my($command) = "rpm -Uvh $rpm_opt $uri";
 	if ($self->get('noexecute')) {
 	    $output .= "Would run: $command\n";
 	    next;
