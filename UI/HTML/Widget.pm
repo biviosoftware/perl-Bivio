@@ -156,6 +156,18 @@ sub action_grid {
     });
 }
 
+=for html <a name="blank_cell"></a>
+
+=head2 static blank_cell() : Bivio::UI::HTML::Widget
+
+Returns a cell which renders a blank.  Makes the code clearer to use.
+
+=cut
+
+sub blank_cell {
+    return shift->join(' ');
+}
+
 =for html <a name="button"></a>
 
 =head2 static button() : array
