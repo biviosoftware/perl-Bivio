@@ -374,6 +374,36 @@ sub get_qualified {
 	    || $self->die($field, ': not a qualified name'));
 }
 
+=for html <a name="get_request"></a>
+
+=head2 static get_request() : Bivio::Agent::Request
+
+Returns the request associated with this model.
+If not set, returns the current request.
+If neither set, throws an exception.
+
+=cut
+
+sub get_request {
+    my($self) = @_;
+    my($req) = $self->unsafe_get_request;
+    Bivio::Die->die($self, ": request not set") unless $req;
+    return $req;
+}
+
+=for html <a name="has_fields"></a>
+
+=head2 has_fields(string name, ...) : boolean
+
+Does the model have these fields?
+
+=cut
+
+sub has_fields {
+    return shift->[$_IDI]->{class_info}->{sql_support}
+	    ->has_columns(@_);
+}
+
 =for html <a name="has_iterator"></a>
 
 =head2 has_iterator() : boolean
@@ -388,6 +418,22 @@ sub has_iterator {
     return $fields->{iterator} ? 1 : 0;
 }
 
+=for html <a name="internal_clear_model_cache"></a>
+
+=head2 internal_clear_model_cache()
+
+Called to clear the cache of models.  Necessary
+when a reload occurs.
+
+=cut
+
+sub internal_clear_model_cache {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    delete($fields->{models});
+    return;
+}
+
 =for html <a name="internal_get_iterator"></a>
 
 =head2 internal_get_iterator() : DBI::st
@@ -399,6 +445,38 @@ Returns the iterator.
 sub internal_get_iterator {
     my($self) = @_;
     return $self->[$_IDI]->{iterator} || $self->die('iteration not started');
+}
+
+=for html <a name="internal_get_sql_support"></a>
+
+=head2 internal_get_sql_support() : Bivio::SQL::Support
+
+Returns L<Bivio::SQL::Support|Bivio::SQL::Support> for this instance
+only if this is not the singleton.  If it is the singleton, dies.
+
+=cut
+
+sub internal_get_sql_support {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->assert_not_singleton if $fields->{is_singleton};
+    return $fields->{class_info}->{sql_support};
+}
+
+=for html <a name="internal_initialize"></a>
+
+=head2 static abstract internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY.>
+
+Returns an has_ref describing the model suitable for passing
+to L<Bivio::SQL::PropertySupport::new|Bivio::SQL::PropertySupport/"new">
+or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
+
+=cut
+
+sub internal_initialize {
+    Bivio::Die->die(shift, ': abstract method');
 }
 
 =for html <a name="internal_iterate_next"></a>
@@ -434,6 +512,179 @@ Sets the iterator and returns its argument.
 sub internal_put_iterator {
     my($self, $it) = @_;
     return $self->[$_IDI]->{iterator} = $it;
+}
+
+=for html <a name="internal_initialize_sql_support"></a>
+
+=head2 static abstract internal_initialize_sql_support() : Bivio::SQL::Support
+
+=head2 static abstract internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
+
+B<FOR INTERNAL USE ONLY>.
+
+Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
+for this model.
+
+=cut
+
+sub internal_initialize_sql_support {
+    Bivio::Die->die(shift, ': abstract method');
+}
+
+=for html <a name="iterate_end"></a>
+
+=head2 iterate_end()
+
+Terminates the iterator.  See L<iterate_start|"iterate_start">.
+Does not modify model state, i.e. if loaded, stays loaded.
+
+B<Deprecated form accepts an iterator as the first argument.>
+
+=cut
+
+sub iterate_end {
+    my($self, $it) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->internal_get_sql_support->iterate_end(
+       $it || $self->internal_get_iterator);
+    # Deprecated form passes in an iterator, which can only clear
+    # if the caller hasn't "changed" iterators.
+    $fields->{iterator} = undef
+	if !$it || $fields->{iterator} && $it == $fields->{iterator};
+    return;
+}
+
+=for html <a name="iterate_map"></a>
+
+=head2 iterate_map(code_ref iterate_map_handler, any other_args, ...) : array_ref
+
+Calls L<iterate_start|"iterate_start"> to start the iteration with
+I<iterate_args>.
+For each row, calls L<iterate_next_and_load|"iterate_next_and_load">
+followed by L<iterate_map_handler|"iterate_map_handler">.
+Terminates the iteration with L<iterate_end|"iterate_end">.
+
+Returns the aggregated result of L<iterate_map_handler|"iterate_map_handler">
+as an array_ref.
+
+If I<iterate_map_handler> is C<undef>, the default handler simply returns all
+the rows.
+
+=cut
+
+sub iterate_map {
+    my($self, $iterate_map_handler) = (shift, shift);
+    my($res) = [];
+    $self->iterate_start(@_);
+    $iterate_map_handler ||= sub {
+	return $self->get_shallow_copy;
+    };
+    while ($self->iterate_next_and_load) {
+	push(@$res, $iterate_map_handler->());
+    }
+    $self->iterate_end;
+    return $res;
+}
+
+=for html <a name="iterate_map_handler"></a>
+
+=head2 abstract iterate_map_handler() : boolean
+
+Called by L<iterate_map|"iterate_map"> for each row of the iteration.  Returns
+value(s) which are pushed onto the resultant map by
+L<iterate_map|"iterate_map">.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub iterate_map_handler {
+}
+
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(hash_ref row) : boolean
+
+=head2 iterate_next(hash_ref row, string converter) : boolean
+
+I<row> is the resultant values by field name.
+I<converter> is optional and is the name of a
+L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
+
+Returns false if there is no next.
+
+B<Deprecated form accepts an iterator as the first argument.>
+
+=cut
+
+sub iterate_next {
+    return shift->internal_iterate_next(@_) ? 1 : 0;
+}
+
+=for html <a name="iterate_next_and_load"></a>
+
+=head2 abstract iterate_next_and_load() : boolean
+
+Calls L<iterate_next|"iterate_next"> and loads the returned row
+in the model, so the normal model queries work.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub iterate_next_and_load {
+}
+
+=for html <a name="merge_initialize_info"></a>
+
+=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
+
+Merges two model field definitions (I<child> into I<parent>) into a new
+hash_ref.
+
+=cut
+
+sub merge_initialize_info {
+    my($proto, $parent, $child) = @_;
+
+    my($res) = {};
+    foreach my $info ($parent, $child) {
+	foreach my $key (keys(%$info)) {
+	    unless (exists($res->{$key})) {
+		$res->{$key} = $info->{$key};
+		next;
+	    }
+	    my($value) = $res->{$key};
+	    $proto->die('unexpected key value: ', $key, ' => ', $value)
+		unless ref($value) eq ref($info->{$key});
+	    unless (ref($value)) {
+		# Scalar (version)
+		$res->{$key} = $info->{$key};
+		next;
+	    }
+	    if (ref($value) eq 'ARRAY') {
+		push(@$value, @{$info->{$key}});
+		next;
+	    }
+	    # PropertyModel columns is a hash
+	    foreach my $subkey (keys(%{$info->{$key}})) {
+		$proto->die("duplicate $key key: ", $subkey)
+		    if exists($value->{$subkey});
+		$value->{$subkey} = $info->{$key}->{$subkey};
+	    }
+	}
+    }
+    return $res;
+}
+
+=for html <a name="put"></a>
+
+=head2 put()
+
+Not supported.
+
+=cut
+
+sub put {
+    CORE::die('put: not supported');
 }
 
 =for html <a name="put_on_request"></a>
@@ -489,198 +740,6 @@ sub throw_die {
     $attrs->{model} = $self;
     Bivio::Die->throw($code, $attrs, $package, $file, $line);
     # DOES NOT RETURN
-}
-
-=for html <a name="get_request"></a>
-
-=head2 static get_request() : Bivio::Agent::Request
-
-Returns the request associated with this model.
-If not set, returns the current request.
-If neither set, throws an exception.
-
-=cut
-
-sub get_request {
-    my($self) = @_;
-    my($req) = $self->unsafe_get_request;
-    Bivio::Die->die($self, ": request not set") unless $req;
-    return $req;
-}
-
-=for html <a name="has_fields"></a>
-
-=head2 has_fields(string name, ...) : boolean
-
-Does the model have these fields?
-
-=cut
-
-sub has_fields {
-    return shift->[$_IDI]->{class_info}->{sql_support}
-	    ->has_columns(@_);
-}
-
-=for html <a name="internal_clear_model_cache"></a>
-
-=head2 internal_clear_model_cache()
-
-Called to clear the cache of models.  Necessary
-when a reload occurs.
-
-=cut
-
-sub internal_clear_model_cache {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    delete($fields->{models});
-    return;
-}
-
-=for html <a name="internal_get_sql_support"></a>
-
-=head2 internal_get_sql_support() : Bivio::SQL::Support
-
-Returns L<Bivio::SQL::Support|Bivio::SQL::Support> for this instance
-only if this is not the singleton.  If it is the singleton, dies.
-
-=cut
-
-sub internal_get_sql_support {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    $self->assert_not_singleton if $fields->{is_singleton};
-    return $fields->{class_info}->{sql_support};
-}
-
-=for html <a name="internal_initialize"></a>
-
-=head2 static abstract internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY.>
-
-Returns an has_ref describing the model suitable for passing
-to L<Bivio::SQL::PropertySupport::new|Bivio::SQL::PropertySupport/"new">
-or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
-
-=cut
-
-sub internal_initialize {
-    Bivio::Die->die(shift, ': abstract method');
-}
-
-=for html <a name="internal_initialize_sql_support"></a>
-
-=head2 static abstract internal_initialize_sql_support() : Bivio::SQL::Support
-
-=head2 static abstract internal_initialize_sql_support(hash_ref config) : Bivio::SQL::Support
-
-B<FOR INTERNAL USE ONLY>.
-
-Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
-for this model.
-
-=cut
-
-sub internal_initialize_sql_support {
-    Bivio::Die->die(shift, ': abstract method');
-}
-
-=for html <a name="iterate_end"></a>
-
-=head2 iterate_end()
-
-Terminates the iterator.  See L<iterate_start|"iterate_start">.
-Does not modify model state, i.e. if loaded, stays loaded.
-
-B<Deprecated form accepts an iterator as the first argument.>
-
-=cut
-
-sub iterate_end {
-    my($self, $it) = @_;
-    my($fields) = $self->[$_IDI];
-    $self->internal_get_sql_support->iterate_end(
-       $it || $self->internal_get_iterator);
-    # Deprecated form passes in an iterator, which can only clear
-    # if the caller hasn't "changed" iterators.
-    $fields->{iterator} = undef	
-if !$it || $fields->{iterator} && $it == $fields->{iterator};
-    return;
-}
-
-=for html <a name="iterate_next"></a>
-
-=head2 iterate_next(hash_ref row) : boolean
-
-=head2 iterate_next(hash_ref row, string converter) : boolean
-
-I<row> is the resultant values by field name.
-I<converter> is optional and is the name of a
-L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
-
-Returns false if there is no next.
-
-B<Deprecated form accepts an iterator as the first argument.>
-
-=cut
-
-sub iterate_next {
-    return shift->internal_iterate_next(@_) ? 1 : 0;
-}
-
-=for html <a name="merge_initialize_info"></a>
-
-=head2 static merge_initialize_info(hash_ref parent, hash_ref child) : hash_ref
-
-Merges two model field definitions (I<child> into I<parent>) into a new
-hash_ref.
-
-=cut
-
-sub merge_initialize_info {
-    my($proto, $parent, $child) = @_;
-
-    my($res) = {};
-    foreach my $info ($parent, $child) {
-	foreach my $key (keys(%$info)) {
-	    unless (exists($res->{$key})) {
-		$res->{$key} = $info->{$key};
-		next;
-	    }
-	    my($value) = $res->{$key};
-	    $proto->die('unexpected key value: ', $key, ' => ', $value)
-		unless ref($value) eq ref($info->{$key});
-	    unless (ref($value)) {
-		# Scalar (version)
-		$res->{$key} = $info->{$key};
-		next;
-	    }
-	    if (ref($value) eq 'ARRAY') {
-		push(@$value, @{$info->{$key}});
-		next;
-	    }
-	    # PropertyModel columns is a hash
-	    foreach my $subkey (keys(%{$info->{$key}})) {
-		$proto->die("duplicate $key key: ", $subkey)
-		    if exists($value->{$subkey});
-		$value->{$subkey} = $info->{$key}->{$subkey};
-	    }
-	}
-    }
-    return $res;
-}
-
-=for html <a name="put"></a>
-
-=head2 put()
-
-Not supported.
-
-=cut
-
-sub put {
-    CORE::die('put: not supported');
 }
 
 =for html <a name="unsafe_get_model"></a>
