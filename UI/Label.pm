@@ -208,7 +208,7 @@ _compile(
     PAYMENT => ['Payment'],
     SOURCE_ACCOUNT_ID => ['Source Account'],
     TARGET_ACCOUNT_ID => ['Target Account'],
-    EASY_ACTIONS => ['Easy Actions'],
+    EASY_ACTIONS => ['Shortcuts'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
