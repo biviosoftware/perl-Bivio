@@ -326,6 +326,7 @@ b-realm-role -r GENERAL -u user edit WITHDRAWN - \
 b-realm-role -r GENERAL -u user edit GUEST - \
     +WITHDRAWN
 b-realm-role -r GENERAL -u user edit MEMBER - \
+    +GUEST \
     +DATA_WRITE
 b-realm-role -r GENERAL -u user edit ACCOUNTANT - \
     +MEMBER
