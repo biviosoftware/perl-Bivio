@@ -547,6 +547,11 @@ __PACKAGE__->compile(
 	undef,
 	'last name is too long',
     ],
+    STOCK_WITHDRAWAL_NOT_SUPPORTED => [
+	56,
+	undef,
+	'stock withdrawals are not yet supported',
+    ],
 );
 
 #=PRIVATE METHODS
