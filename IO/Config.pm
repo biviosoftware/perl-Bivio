@@ -3,6 +3,7 @@
 package Bivio::IO::Config;
 use strict;
 $Bivio::IO::Config::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::IO::Config::VERSION;
 
 =head1 NAME
 
@@ -410,7 +411,7 @@ sub _initialize {
     }
     if (defined($file)) {
 #TODO: Should probably die if not readable?
-        warn("$file: not readable\n") unless -r $file;
+        warn("$file: not readable\n") unless -e $file && -r _;
 	my($actual) = do($file);
 	unless (ref($actual) eq 'HASH') {
 	    -e $file && die("$file: config parse failed: ",
