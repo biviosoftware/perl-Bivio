@@ -58,8 +58,10 @@ Widget value which returns the formatter to format the field
 if it is not in error.  May return C<undef> iwc no formatting
 will done.
 
-The formatter must format the field's value, not the html.
-The html will be escaped.
+Only in the first case will the formatter be dymically loaded.
+This is to prevent unnecessary transient state.
+
+The second form may be deprecated, so try to avoid it.
 
 =item size : int (required)
 
@@ -72,10 +74,18 @@ field's type.)
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::UI::HTML::Format;
 use Bivio::Type::Password;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my(@_ATTRS) = qw(
+    event_handler
+    field
+    form_model
+    format
+    size
+);
 
 =head1 FACTORIES
 
@@ -98,6 +108,19 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="accepts_attribute"></a>
+
+=head2 static accepts_attribute(string attr) : boolean
+
+Does the widget accept this attribute?
+
+=cut
+
+sub accepts_attribute {
+    my(undef, $attr) = @_;
+    return grep($_ eq $attr, @_ATTRS);
+}
 
 =for html <a name="initialize"></a>
 
@@ -123,6 +146,9 @@ sub initialize {
     }
 
     $fields->{format} = $self->unsafe_get('format');
+    $fields->{format}
+	    = Bivio::UI::HTML::Format->get_instance($fields->{format})
+		    if defined($fields->{format}) && !ref($fields->{format});
     return;
 }
 
@@ -143,17 +169,17 @@ sub render {
 
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<input name='
-		.$form->get_field_name_for_html($field)
-		.' type='
+	$fields->{prefix} = '<input type='
 		.($type->isa('Bivio::Type::Password') ? 'password' : 'text')
 		.' size='.$fields->{size}.' maxlength='.$type->get_width();
-	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes
-		if $fields->{handler};
+	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
+		$field) if $fields->{handler};
+	$fields->{prefix} .= ' name=';
 	$fields->{initialized} = 1;
     }
-    $fields->{handler}->render($source, $buffer) if $fields->{handler};
-    $$buffer .= $fields->{prefix};
+
+    # Name
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
 
     # Format if provided
     my($v);
@@ -164,12 +190,17 @@ sub render {
 	if ($f) {
 	    $v = $f->get_widget_value($form->get($field));
 	    # Formatter must always return a defined value
-	    $v = Bivio::Util::escape_html($v);
+	    $v = Bivio::Util::escape_html($v) unless $f->result_is_html;
 	}
     }
     $v = $form->get_field_as_html($field) unless defined($v);
 
+    # Value
     $$buffer .= ' value="'.$v.'">';
+
+    # Handler is rendered after, because it probably needs to reference the
+    # field.
+    $fields->{handler}->render($source, $buffer) if $fields->{handler};
     return;
 }
 
