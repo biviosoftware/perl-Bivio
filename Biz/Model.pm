@@ -11,9 +11,7 @@ Bivio::Biz::Model - a business object
 
 =head1 SYNOPSIS
 
-    my($model) = ...;
-    # load a model with data
-    $model->load(id => 100);
+    use Bivio::Biz::Model;
 
 =head1 EXTENDS
 
@@ -43,6 +41,7 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my(%_CLASS_INFO);
+my($_LOADED_ALL_PROPERTY_MODELS);
 
 =head1 FACTORIES
 
@@ -573,6 +572,23 @@ sub unsafe_get_request {
 
 #=PRIVATE METHODS
 
+# _assert_class_name(string class)
+#
+# Ensures that the class conforms to the naming conventions.
+#
+sub _assert_class_name {
+    my($class) = @_;
+    Bivio::Die->die($class, ': is a base class; it cannot be initialized'
+	    .' as a model')
+		if $class =~ /Base$/;
+    my($super) = 'Bivio::Biz::'
+	    .($class =~ /(ListForm|Form|List)$/ ? $1 : 'Property')
+	    .'Model';
+    Bivio::Die->die($class, ': must be a ', $super)
+	    unless UNIVERSAL::isa($class, $super);
+    return;
+}
+
 # _initialize_class_info(string class)
 # _initialize_class_info(string class, hash_ref config) : hash_ref
 #
@@ -581,10 +597,12 @@ sub unsafe_get_request {
 #
 sub _initialize_class_info {
     my($class, $config) = @_;
-    Bivio::IO::ClassLoader->require_property_models;
 
     # Have here for safety to avoid infinite recursion if called badly.
     return if !$config && $_CLASS_INFO{$class};
+
+    _load_all_property_models();
+    _assert_class_name($class) unless $config;
 
     my($sql_support) = $class->internal_initialize_sql_support($config);
     my($ci) = {
@@ -604,6 +622,28 @@ sub _initialize_class_info {
     $_CLASS_INFO{$class} = $ci;
     $ci->{singleton} = $class->new;
     $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
+    return;
+}
+
+# _load_all_property_models()
+#
+# Loads the property models, if not already loaded.
+#
+sub _load_all_property_models {
+    return if $_LOADED_ALL_PROPERTY_MODELS;
+    # Avoid recursion and don't want redo in any event
+    $_LOADED_ALL_PROPERTY_MODELS = 1;
+    my($models) = Bivio::IO::ClassLoader->map_require_all('Model',
+	    sub {
+		my($class, $file) = @_;
+		# We don't load classes which end in List, Form, or Base.
+		return $class =~ /(Form|List|Base)$/ ? 0 : 1;
+	    });
+
+    # Force class initialization
+    foreach my $class (@$models) {
+	$class->get_instance;
+    }
     return;
 }
 
