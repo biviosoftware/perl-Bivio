@@ -287,7 +287,6 @@ my(@_XLATORS) = (
 		],
 	       ),
  	Bivio::UI::PDF::Form::MoneyXlator->new(
-#		'f2-2',
 		'f2-2a',
 		[
 		    'Bivio::Biz::Model::F1065K1Form',
@@ -295,51 +294,43 @@ my(@_XLATORS) = (
 		]
 	       ),
  	Bivio::UI::PDF::Form::MoneyXlator->new(
-#		'f2-3',
 		'f2-3a',
 		[
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'investment_expenses'
 		]
 	       ),
-# 	Bivio::UI::PDF::Form::StringXlator->new(
-#		'f2-13',
-#		[
-#		    'Bivio::Biz::Model::F1065K1Form',
-#		    'foreign_income_type'
-#		]
-#	       ),
-# 	Bivio::UI::PDF::Form::StringXlator->new(
-#		'f2-14',
-#		[
-#		    'Bivio::Biz::Model::F1065K1Form',
-#		    'foreign_income_country'
-#		]
-#	       ),
-# 	Bivio::UI::PDF::Form::MoneyXlator->new(
-#		'f2-15',
-#		[
-#		    'Bivio::Biz::Model::F1065K1Form',
-#		    'foreign_income'
-#		]
-#	       ),
-# 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
-#		[
-#		    'Bivio::Biz::Model::F1065K1Form',
-#		    'foreign_tax_type'
-#		],
-#		Bivio::Type::F1065ForeignTax::PAID(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-1', 'On'),
-#		Bivio::Type::F1065ForeignTax::ACCRUED(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-2', 'On')
-#	       ),
-# 	Bivio::UI::PDF::Form::MoneyXlator->new(
-#		'f2-17',
-#		[
-#		    'Bivio::Biz::Model::F1065K1Form',
-#		    'foreign_tax'
-#		]
-#	       ),
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f2-14',
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'foreign_income_country'
+		]
+	       ),
+ 	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f2-8',
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'foreign_income'
+		]
+	       ),
+ 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'foreign_tax_type'
+		],
+		Bivio::Type::F1065ForeignTax::PAID(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-1', 'On'),
+		Bivio::Type::F1065ForeignTax::ACCRUED(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-2', 'On')
+	       ),
+ 	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f2-18',
+		[
+		    'Bivio::Biz::Model::F1065K1Form',
+		    'foreign_tax'
+		]
+	       ),
  	Bivio::UI::PDF::Form::MoneyXlator->new(
 		'f2-22',
 		[
