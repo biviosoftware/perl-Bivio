@@ -241,8 +241,13 @@ C<$param-E<gt>get_widget_value(@_)> will be called.
 
 =item 2.4.
 
-If I<param1> is an array reference, then
+If I<param1> is an unblessed array reference, then
 C<$self-E<gt>get_widget_value(@$param1)> will be called.
+
+=item 2.5.
+
+If I<param1> is an unblessed code reference, then
+C<&$param1($self)> will be called.
 
 =item 3.
 
@@ -268,9 +273,15 @@ sub get_widget_value {
 	    $value = ++$fields->{$param1};
 	}
 	else {
-	    Carp::croak("$param1: not found and can't get_widget_value")
-			unless ref($param1) eq 'ARRAY';
-	    $value = $self->get_widget_value(@$param1);
+	    if (ref($param1) eq 'ARRAY') {
+		$value = $self->get_widget_value(@$param1);
+	    }
+	    elsif (ref($param1) eq 'CODE') {
+		$value = &$value($self);
+	    }
+	    else {
+		Carp::croak("$param1: not found and can't get_widget_value");
+	    }
 	}
     }
     else {
