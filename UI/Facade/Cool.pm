@@ -35,6 +35,7 @@ C<Bivio::UI::Facade::Cool>
 #=VARIABLES
 __PACKAGE__->new({
     clone => 'Prod',
+    uri => 'x1',
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($comp) = @_;

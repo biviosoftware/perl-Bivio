@@ -155,14 +155,23 @@ sub new {
 	return undef;
     }
 
-    my($uri) = lc($class);
-    $uri =~ s/.*:://;
-
     # Make sure clone is specified and loaded
     Bivio::IO::Alert->die($class, ': missing clone attribute')
 		unless exists($config->{clone});
     my($clone) = $config->{clone} ? _load($config->{clone}) : undef;
     delete($config->{clone});
+
+    # Check the uri after the clone is loaded.
+    my($uri) = lc($config->{uri});
+    unless ($uri) {
+	$uri = lc($class);
+	$uri =~ s/.*:://;
+    }
+    delete($config->{uri});
+    Bivio::IO::Alert->die($uri, ': duplicate uri for ', $class, ' and ',
+	    ref($_URI_MAP{$uri}))
+		if $_URI_MAP{$uri};
+    _trace($class, ': uri=', $uri) if $_TRACE;
 
     # Initialize this instance's attributes
     $self->internal_put({
