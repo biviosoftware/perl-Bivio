@@ -87,14 +87,11 @@ sub create {
     # Use $date if Date: field can't be parsed (now as last resort)
     my($date_time) = $msg->get_date_time();
     $date_time = $date || time unless defined($date_time);
+
+    # Need to have a From address to continue
     my($from_email, $from_name) = $msg->get_from;
-    unless (defined($from_email)) {
-	$_UNKNOWN_ADDRESS = $req->format_email(
-		Bivio::Type::Email->IGNORE_PREFIX.'unknown')
-		unless $_UNKNOWN_ADDRESS;
-	$from_email = $_UNKNOWN_ADDRESS;
-        Bivio::IO::Alert->warn("Assigning 'unknown' from_email");
-    }
+    $self->die('NOT_FOUND', {message => 'missing or bad From: address'})
+                unless defined($from_email);
 
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
@@ -149,11 +146,11 @@ sub create {
         is_directory => 0,
         user_id => $user_id,
         name => $mail_id,
-        content => $msg->get_rfc822,
+        content => $msg->get_rfc822 || \$msg->as_string,
         directory_id => $volume->get_root_directory_id($req->get('auth_id')),
         volume => $volume,
     });
-    my($rfc822_id, $bytes ) = $file->get('file_id', 'bytes');
+    my($rfc822_id, $bytes) = $file->get('file_id', 'bytes');
 
     # Convert text parts to HTML and store all parts in cache
     my($cache_id) = $self->cache_parts($req, $msg->get_entity, $user_id);
@@ -236,21 +233,14 @@ sub delete {
     if( defined($properties->{rfc822_file_id}) ) {
         _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id})
                 if $_TRACE;
-        # Not clear why have to load it to delete it??
-        $file->load(
-                file_id => $properties->{rfc822_file_id},
-                volume => $_MAIL_VOLUME,
-               );
-        $file->delete;
+        $file->delete(file_id => $properties->{rfc822_file_id},
+            volume => $_MAIL_VOLUME);
     }
     if( defined($properties->{cache_file_id}) ) {
         _trace('Deleting cache file, id=', $properties->{cache_file_id})
                 if $_TRACE;
-        $file->load(
-                file_id => $properties->{cache_file_id},
-                volume => $_CACHE_VOLUME,
-               );
-        $file->delete;
+        $file->delete(file_id => $properties->{cache_file_id},
+                volume => $_CACHE_VOLUME);
     }
     return 1;
 }
@@ -282,6 +272,27 @@ sub cache_parts {
             $volume->get_root_directory_id($req->get('auth_id')),
             $user_id, $self->get('mail_id'));
     return $cache_id;
+}
+
+=for html <a name="get_rfc822_file"></a>
+
+=head2 get_rfc822_file(Bivio::Agent::Request) : Bivio::Biz::Model::File
+
+Return file with message' raw RFC822 contents
+
+=cut
+
+sub get_rfc822_file {
+    my($self, $req) = @_;
+    my($properties) = $self->internal_get;
+
+    my($file_id) = $properties->{rfc822_file_id};
+    $self->die('NOT_FOUND', 'mail has no RFC822 file')
+            unless defined($file_id);
+
+    my($file) = Bivio::Biz::Model::File->new($req);
+    $file->load(file_id => $file_id, volume => $_MAIL_VOLUME);
+    return $file;
 }
 
 =for html <a name="internal_initialize"></a>
