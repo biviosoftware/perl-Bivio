@@ -629,11 +629,11 @@ sub piped_exec {
 	print OUT $$in;
 	close(OUT);
 	# If there is a signal, return 99.  Otherwise, return exit code.
-	CORE::exit($? ? ($? >> 8) ? ($ >> 8) : 99 :  0);
+	CORE::exit($? ? ($? >> 8) ? ($? >> 8) : 99 :  0);
     }
     local($/) = undef;
     my($res) = <IN>;
-    $res ||= '';
+    $res .= '';
     _trace($command, " -> ", $res) if $_TRACE;
     unless (close(IN)) {
 	Bivio::Die->throw_die('DIE', {
