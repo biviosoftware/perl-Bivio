@@ -37,9 +37,6 @@ use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_DECIMAL_MAX) = 7;
-my($_FULL_PAD) = '.' . ('0' x $_DECIMAL_MAX);
-
 
 =head1 METHODS
 
@@ -49,7 +46,7 @@ my($_FULL_PAD) = '.' . ('0' x $_DECIMAL_MAX);
 
 =head2 static get_widget_value(string amount) : string
 
-=head2 static get_widget_value(string amount, int round, boolean want_parens) : string
+=head2 static get_widget_value(string amount, int round, boolean want_parens, boolean zero_as_blank) : string
 
 Formats a numeric amount to the specified number of decimal digits.
 L<Bivio::Type::Number|Bivio::Type::Number> is used to check whether
@@ -62,12 +59,15 @@ Returns the empty string if I<amount> is not defined.
 If I<want_parens>, negative numbers will be displayed with parenthesis
 and positive numbers will be bracketed in spaces.
 
+if I<zero_as_blank>, 0 will be rendered as ' '.
+
 =cut
 
 sub get_widget_value {
-    my(undef, $amount, $round, $want_parens) = @_;
+    my(undef, $amount, $round, $want_parens, $zero_as_blank) = @_;
 
     return '' unless defined($amount);
+    return ' ' if $zero_as_blank && $amount == 0;
     $round = 2 unless defined($round);
 
     $amount = Bivio::Type::Amount->round($amount, $round);
