@@ -254,6 +254,8 @@ error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
 
 sub date_from_parts {
     my(undef, $mday, $mon, $year) = @_;
+    return (undef, Bivio::TypeError::YEAR_DIGITS())
+	    if $year < 100;
     return (undef, Bivio::TypeError::YEAR_RANGE())
 	    unless FIRST_YEAR() <= $year && $year <= LAST_YEAR();
     return (undef, Bivio::TypeError::MONTH()) unless 1 <= $mon && $mon <= 12;
