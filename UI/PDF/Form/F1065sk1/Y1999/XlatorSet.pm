@@ -177,7 +177,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_start'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::FloatXlator->new(
 		'f1-11',
@@ -185,7 +185,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_end'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::FloatXlator->new(
 		'f1-12',
@@ -193,7 +193,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_start'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::FloatXlator->new(
 		'f1-13',
@@ -201,7 +201,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_end'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::FloatXlator->new(
 		'f1-14',
@@ -209,7 +209,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_start'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::FloatXlator->new(
 		'f1-15',
@@ -217,7 +217,7 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065K1Form',
 		    'percentage_end'
 		],
-		',', 2
+		',', 2, 1
 	       ),
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f1-15a',
