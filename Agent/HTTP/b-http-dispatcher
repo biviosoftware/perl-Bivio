@@ -79,7 +79,7 @@ sub main {
     if ($execute) {
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
 	system('cvs checkout html; cd html/societas; make INSTALLDIR=../')
-		unless -d 'html/index.html';
+		unless -f 'html/index.html';
 	&symlink("$_APACHE_HOME/libexec", 'libexec');
 	&symlink('.', 'logs');
     }
