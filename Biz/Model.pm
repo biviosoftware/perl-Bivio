@@ -469,7 +469,7 @@ sub internal_get_sql_support {
 
 B<FOR INTERNAL USE ONLY.>
 
-Returns an has_ref describing the model suitable for passing
+Returns an hash_ref describing the model suitable for passing
 to L<Bivio::SQL::PropertySupport::new|Bivio::SQL::PropertySupport/"new">
 or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
 
