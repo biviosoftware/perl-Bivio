@@ -9,18 +9,15 @@ b-societas-start - start all the servers for Societas
 
 =head1 SYNOPSIS
 
-b-societas-start [-xterm] [-tmp] [-n] [-port http] file-root
+b-societas-start [-xterm] [-tmp] [-n] [-port http]
 
 =head1 DESCRIPTION
 
 B<b-societas-start> starts the necessary servers to serve societas.
 
-The directory <file-root> must contain the files to be served
-by L<b-file-server>.
-
 The command will output the root URL being served by
-L<b-http-dispatcher> and how to invoke L<b-sendmail-agent>
-to pass mail to L<b-mail-dispatcher>.
+L<b-http-dispatcher>.
+
 
 =head1 OPTIONS
 
@@ -65,7 +62,6 @@ sub main {
     Bivio::IO::Config->initialize(\@argv);
     my($cmd_fmt) = '"$prog_file $arg"';
     my($tmp);
-    my($file_root);
     my($execute) = 1;
     local($_);
     my($http_port) = 10000 + $> * 10;
@@ -76,14 +72,9 @@ sub main {
 	/^-t(mp)?$/ && ($tmp = "/tmp/societas$$", next);
 	/^-p(ort)?$/ && ($http_port = shift(@argv), next);
 	/^-n/ && ($execute = 0, next);
-	/^-/ && &_usage("unknown option \"$_\"");
-	defined($file_root) && &_usage('too many arguments');
-	$file_root = $_;
+	&_usage("unknown option \"$_\"");
     }
-    defined($file_root) && -d $file_root
-	    || &_usage('file server root must be supplied');
     my($pwd) = &Cwd::cwd();
-    $file_root =~ s!^([^/])!$pwd/$1!;
     if ($tmp) {
 	if ($execute) {
 	    mkdir($tmp, 0755) || die("mkdir $tmp: $!");
@@ -101,17 +92,15 @@ sub main {
 	$execute && $tmp && chdir('/') && system("rm -rf $tmp");
 	exit(1);
     };
-    $tmp || system('rm -f bivio[0-9]*.conf bmd[0-9]*');
+    $tmp || system('rm -f bivio[0-9]*.conf');
     my($conf) = $tmp ? "$tmp/bivio.conf" : "$pwd/bivio$$.conf";
     $ENV{'BIVIO_CONF'} = $conf;
-    my($file_port) = ($tmp || $pwd) . "/bfs";
-    my($mail_port) = ($tmp || $pwd) . "/bmd";
     my($host) = `hostname`;
     chop($host);
     $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
     my($user) = getpwuid($>) || $>;
     print STDERR "http://$host:$http_port\n",
-	    "b-sendmail-agent $user $mail_port x x < msg\n";
+	    "b-sendmail-http 127.0.0.1 $user $host:$http_port x x < msg\n";
     unless ($execute) {
 	print STDOUT "Would export BIVIO_CONF=$conf\n";
 	$conf = '&STDOUT';
@@ -126,9 +115,7 @@ sub main {
     }
     close(OUT) || die("close $conf: $!");
     close(DATA);
-    foreach $server (qw(Bivio/File/b-file-server:file
-                   Bivio/Agent/Mail/b-mail-dispatcher:mail
-                   Bivio/Agent/HTTP/b-http-dispatcher:http)) {
+    foreach $server (qw(Bivio/Agent/HTTP/b-http-dispatcher:http)) {
 	my($prog_file, $prog, $arg) = $server =~ m!(.+/(.+)):(\w+)!;
 	if ($execute) {
 	    my($pid) = fork;
@@ -164,7 +151,7 @@ sub _usage {
     my($msg) = join('', @_);
     print STDERR <<"EOF";
 $0: $msg
-usage: $0 [-tmp] [-xterm] [-n] [-port http] file-root
+usage: $0 [-tmp] [-xterm] [-n] [-port http]
 EOF
     exit(1);
 }
@@ -189,25 +176,13 @@ The B<-xterm> options will create three windows.  The following
 example configures the windows to be on the right hand side,
 stacked one on top of the other.  The fonts are small.
 
-    b-file-server*geometry: 80x22-0+0
-    b-mail-dispatcher*geometry: 80x22-0+250
     b-http-dispatcher*geometry: 80x22-0+500
-    b-file-server*font: *-courier-medium-r-normal--10-*-iso8859-1
-    b-mail-dispatcher*font: *-courier-medium-r-normal--10-*-iso8859-1
     b-http-dispatcher*font: *-courier-medium-r-normal--10-*-iso8859-1
 
 
 =head1 FILES
 
 =over 4
-
-=item $PERLLIB/Bivio/File/b-file-server
-
-File server to be used if it exists and is readable.
-
-=item $PERLLIB/Bivio/Agent/Mail/b-mail-dispatcher
-
-Mail dispatcher to be used if it exists and is readable.
 
 =item $PERLLIB/Bivio/Agent/HTTP/b-http-dispatcher
 
@@ -217,7 +192,7 @@ HTTP dispatcher to be used if it exists and is readable.
 
 =head1 SEE ALSO
 
-Bivio::IO::Config, b-mail-dispatcher, b-file-server, b-http-dispatcher
+Bivio::IO::Config, b-http-dispatcher
 
 =head1 COPYRIGHT
 
@@ -250,24 +225,6 @@ use strict;
     'Bivio::Agent::HTTP::Location' => {
 	document_root => '<$pwd>/html',
     },
-    'Bivio::UI::HTML::Club::ImageAttachment' => {
-	file_server => 'file',
-    },
-    'Bivio::UI::HTML::Club::MessageAttachment' => {
-	file_server => 'file',
-    },
-    'Bivio::Biz::Model::MailMessage' => {
-	file_server => 'file',
-    },
-    'Bivio::Biz::Mime::MimeParse' => {
-	file_server => 'file',
-    },
-    'Bivio::Mail::Store::MIMEDecode' => {
-	file_server => 'file',
-    },
-    'Bivio::Biz::Model::MailMessage' => {
-	file_server => 'file',
-    },
     'Bivio::Die' => {
 	stack_trace_error => 1,
     },
@@ -276,11 +233,6 @@ use strict;
 	database => '<$ENV{ORACLE_SID}>',
 	user => '<$ENV{DBI_USER}>',
 	password => '<$ENV{DBI_PASS}>',
-    },
-    'Bivio::File::Server' => {
-	file => {
-	    root => '<$file_root>',
-	},
     },
     'Bivio::IO::Alert' => {
 # Doesn't work with Bivio::Die in the way
@@ -294,27 +246,6 @@ use strict;
     },
     'Bivio::IO::Trace' => {
 	'package_filter' => '/Bivio/',
-    },
-    'Bivio::IPC::Client' => {
-	file => {
-	    proto => 'unix',
-	    port => '<$file_port>',
-	},
-	mail => {
-	    proto => 'unix',
-	    port => '<$mail_port>',
-	},
-    },
-    'Bivio::IPC::Server' => {
-	file => {
-	    proto => 'unix',
-	    port => '<$file_port>',
-	},
-	mail => {
-	    proto => 'unix',
-	    port => '<$mail_port>',
-	    file_mode => 0777,
-	},
     },
     'Bivio::Type::Secret' => {
 	key => 'my other secret',
