@@ -26,7 +26,9 @@ use Bivio::UI::HTML::DescriptivePage;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Club::MemberTakeOffline>
+C<Bivio::UI::HTML::Club::MemberTakeOffline> Displays an 'are you sure' message
+for taking a club member offline from the club.  If an admin is removing a
+member, it displays member info.  Otherwise, it gives a 'yourself' message.
 
 =cut
 
