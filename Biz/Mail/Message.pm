@@ -26,21 +26,8 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Mail::Message>
-
-CREATE TABLE email_message
-  (
-  id NUMBER(16) primary key,
-  dttm DATE NOT NULL,
-  from_name VARCHAR(64) NOT NULL,
-  from_email VARCHAR(256) NOT NULL,
-  -- from_user is optional, because we may allow external contributions
-  -- An invalid primary key is 0.
-  from_user NUMBER(16) NOT NULL,
-  subject VARCHAR(256) NOT NULL,
-  synopsis VARCHAR(256) NOT NULL
-  );
-
+C<Bivio::Biz::Mail::Message> holds information about an email message,
+the body of which is stored in the file server.
 
 =cut
 
@@ -61,7 +48,13 @@ my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
     id => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+    ok => ['OK',
+	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)],
+    rfc822_id => ['RFC822 ID',
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
     date => ['Date',
+	    Bivio::Biz::FieldDescriptor->lookup('DATE')],
+    receive_date => ['Receive Date',
 	    Bivio::Biz::FieldDescriptor->lookup('DATE')],
     from_name => ['From',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
@@ -72,17 +65,23 @@ my($_PROPERTY_INFO) = {
     subject => ['Subject',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
     synopsis => ['Synopsis',
-	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)]
+	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
+    bytes => ['Number of Bytes',
+	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)]
     };
 
 my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message', {
     id => 'id',
+    ok => 'ok',
+    rfc822_id => 'rfc822_id',
     date => 'dttm',
+    receive_date => 'recv_dttm',
     from_name => 'from_name',
     from_email => 'from_email',
     from_user => 'from_user',
     subject => 'subject',
-    synopsis => 'synopsis'
+    synopsis => 'synopsis',
+    bytes => 'bytes'
     });
 
 
@@ -153,7 +152,7 @@ sub delete {
 
 =head2 find(hash find_params) : boolean
 
-Finds the user given the specified search parameters. Valid find keys
+Finds the message given the specified search parameters. Valid find keys
 are 'id'.
 
 =cut
@@ -170,7 +169,7 @@ sub find {
     }
 
     $self->get_status()->add_error(
-	    Bivio::Biz::Error->new("User not found"));
+	    Bivio::Biz::Error->new("Message not found"));
     return 0;
 }
 
@@ -232,8 +231,9 @@ $Id$
 
 1;
 
-
 =pod
+
+use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
 Bivio::IO::Config->initialize({
@@ -250,10 +250,24 @@ Bivio::IO::Config->initialize({
     });
 
 my($mail) = Bivio::Biz::Mail::Message->new();
-$mail->create({id => 1, from_name => 'moeller',
-    from_email => 'moeller@bivio.com', date => '01/01/1990',
-    from_user => 0, subject => 'test subject',
-    synopsis => 'the quick brown fox jumps over the lazy dog'});
+$mail->find({id => 10});
+$mail->delete();
+$mail->create({
+    id => 10,
+    ok => 1,
+    rfc822_id => 'a1',
+    date => '6/7/1995',
+    receive_date => '8/9/1996',
+    from_name => 'moeller',
+    from_email => 'moeller@bivio.com',
+    from_user => 0,
+    subject => 'test subject',
+    synopsis => 'the quick brown fox jumps over the lazy dog',
+    bytes => 150
+    });
+$mail->update({date => '5/6/1955'});
+$Data::Dumper::Indent = 1;
+print(Dumper($mail));
 
 Bivio::Biz::SqlConnection->get_connection()->commit();
 
