@@ -1,7 +1,7 @@
 # $Id$
 
 view_class_map('HTMLWidget');
-view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
+view_shortcuts('Bivio::PetShop::ViewShortcuts');
 
 my($source_name) = sub {
     my($source) = @_;
