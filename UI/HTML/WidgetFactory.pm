@@ -32,13 +32,21 @@ C<Bivio::UI::HTML::WidgetFactory> creates widgets for model fields.
 
 =over 4
 
-=item wf_list_link : string []
+=item wf_class : string []
 
-Set to a L<Bivio::Biz::QueryType|Bivio::Biz::QueryType> and
+Name of the widget class to use.  Overrides dynamic lookups.
+
+=item wf_list_link : hash_ref []
+
+Must contain a I<query> attribute which is a
+L<Bivio::Biz::QueryType|Bivio::Biz::QueryType> and
 the widget will be wrapped in a link whose I<href> is
 a call to
 L<Bivio::Biz::ListModel::format_uri|Bivio::Biz::ListModel/"format_uri">
 with I<wf_list_link> as the query type.
+
+The rest of the attributes are passed to the link directly, e.g. control.
+I<control_off_value> is set to be the widget (i.e. the name).
 
 =item wf_want_display : boolean []
 
@@ -122,9 +130,11 @@ sub create {
 	# Wrap the resultant widget in a link?
 	my($wll) = $widget->unsafe_get('wf_list_link');
 	$widget = Bivio::UI::HTML::Widget::Link->new({
-	    href => ['->format_uri', Bivio::Biz::QueryType->from_any($wll)],
+	    href => ['->format_uri',
+		Bivio::Biz::QueryType->from_any($wll->{query})],
 	    value => $widget,
-	    %attrs_copy,
+	    control_off_value => $widget,
+	    %$wll,
 	}) if $wll;
 	$widget = $proto->secure_data($widget)->put(%attrs_copy)
 		if $field_type->is_secure_data;
@@ -140,6 +150,13 @@ sub create {
 #
 sub _create_display {
     my($proto, $field, $type, $attrs) = @_;
+
+    if ($attrs->{wf_class}) {
+	return $proto->load_and_new($attrs->{wf_class}, {
+	    field => $field,
+	    %$attrs,
+	});
+    }
 
 #TODO: should check if the list class "can()" format_name()
     if ($field eq 'RealmOwner.name') {
@@ -229,6 +246,13 @@ sub _create_display {
 #
 sub _create_edit {
     my($proto, $model, $field, $type, $attrs) = @_;
+
+    if ($attrs->{wf_class}) {
+	return $proto->load_and_new($attrs->{wf_class}, {
+	    field => $field,
+	    %$attrs,
+	});
+    }
 
     if ($field eq 'Instrument.ticker_symbol') {
 
