@@ -3,7 +3,6 @@
 package Bivio::UI::HTML::Widget::Search;
 use strict;
 $Bivio::UI::HTML::Widget::Search::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-#RJN: PLease update your emacs.local.
 $_ = $Bivio::UI::HTML::Widget::Search::VERSION;
 
 =head1 NAME
@@ -54,9 +53,6 @@ How wide is the field represented.
 =cut
 
 #=IMPORTS
-#RJN: Removed the imports.  Just creates a maintenance burden.
-#     IF it compiles cleanly with perl -w Search.pm, then don't need
-#     the imports.
 
 #=VARIABLES
 
@@ -90,35 +86,18 @@ sub render {
     my($req) = $source->get_request;
     my($fp, $fs) = Bivio::UI::Font->format_html('search_field', $req);
     my($bp, $bs) = Bivio::UI::Font->format_html('form_submit', $req);
-#RJN: Deleted list_model, because it is inappropriate.  There is only
-#RJN: one search list.  ancestral_get was inappropriate, too.  Should only
-#RJN: be used in clear circumstances.  Removed initialize, because to
-#RJN: make fully dynamic.  This has been my problem.  I want to pre-optimize. 
     # search list might not be loaded
     my($list) = $req->unsafe_get('Bivio::Biz::Model::SearchList');
-#RJN: '.' doesn't have spaces around it.  I adopted Paul's style
-#RJN: Don't repeat the assignment.  Assign one long string to $$buffer.
     $$buffer .= '<form method=get action="'
-#RJN: Don't assume the auth_id is the GENERAL->as_int.  This assumption
-#RJN: shouldn't be spread around.  That's what the 'type" on the realm is for.
-#RJN: Avoid the if, use ?:, It may look ugly, but it is less of a maint burden.
-#RJN: Note the switch of the test to == CLUB.  If the name of the task is
-#RJN: CLUB, then you it shouldn't be the "other" case.  If the user is in
-#RJN: RealmType::USER, then make it a general search until we can search the
-#RJN: user's realm.
 	    .$req->format_stateless_uri(
 		    $req->get('auth_realm')->get('type')
 		        == Bivio::Auth::RealmType::CLUB()
 		    ? Bivio::Agent::TaskId::CLUB_SEARCH()
 		    : Bivio::Agent::TaskId::GENERAL_SEARCH())
             .'"'
-#RJN: All links should have this.  (See Widget::Form)
 	    .$self->link_target_as_html().'>'
 	    .$fp.'<input type=text size='.$self->get('size')
-#RJN: #TODO: should be flush left
-#TODO: We don't have a type for the query 'search' field, or do we?
-#RJN: This would normally be part of the form model.  It is
-#RJN:  ok to use Line here until we understand the problem better.
+#TODO: should be flush left
             .' maxlength='.Bivio::Type::Line->get_width()
 	    .' name='.Bivio::SQL::ListQuery->to_char('search')
             .' value="'
@@ -127,7 +106,6 @@ sub render {
 		    : '')
 	    .'">'.$fs
             .$bp.'<input type=submit value="'
-#RJN: Use labels as much as possible
 	    .Bivio::UI::Label->get_simple('search_button')
             .'">'.$bs
 	    .($self->get_or_default('cell_end_form', 0) ? '' : '</form>');
