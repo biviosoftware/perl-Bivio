@@ -38,6 +38,7 @@ use Bivio::Biz::Model::InstrumentLookupForm;
 use Bivio::Biz::Model::InstrumentLookupList;
 use Bivio::Biz::Model::RealmInstrument;
 use Bivio::Biz::Model::RealmInstrumentEntry;
+use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
@@ -114,6 +115,14 @@ sub execute_input {
 	# use the transaction id to identify this block
 	external_identifier => $transaction->get('realm_transaction_id'),
     });
+
+    # create a valuation entry for the instrument
+    Bivio::Biz::Model::RealmInstrumentValuation->create_or_update(
+	    $realm_inst->get('realm_instrument_id'),
+	    $properties->{'RealmTransaction.date_time'},
+	    Bivio::Type::Amount->div($properties->{'paid'},
+		    $properties->{'RealmInstrumentEntry.count'}));
+
     # need to update units after this date
     $realm->audit_units($properties->{'RealmTransaction.date_time'});
     return;
@@ -134,6 +143,12 @@ sub execute_other {
     $self->get_request->server_redirect(
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_INVESTMENT_LOOKUP())
       if ($button eq Bivio::Biz::Model::InstrumentLookupForm::SYMBOL_LOOKUP());
+
+    # redirect to the local instrument form
+    $self->get_request->server_redirect(
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_LOCAL_INSTRUMENT())
+	    if $button
+		    eq Bivio::Biz::Model::LocalInstrumentForm::NEW_UNLISTED();
 
     return;
 }
