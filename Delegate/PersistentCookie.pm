@@ -193,8 +193,10 @@ sub header_out {
     # Only set if modified and a browser.
     return 0 unless $fields->{$_MODIFIED_FIELD}
 	&& $req->get('Type.UserAgent')->is_browser;
-    my($domain) = Bivio::UI::Facade->get_from_request_or_self($req)
-        ->unsafe_get('cookie_domain') || $_CFG->{domain};
+    my($domain) = $_CFG->{domain}
+        ? Bivio::UI::Facade->get_from_request_or_self($req)
+            ->unsafe_get('cookie_domain') || $_CFG->{domain}
+        : undef;
     # don't send header unless we are in the correct server
     return 0 if $domain
 	&& $r->server->server_hostname !~ /\Q$domain\E$/i;
