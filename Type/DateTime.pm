@@ -885,7 +885,7 @@ time zone.
 sub set_local_end_of_day {
     my($proto, $date_time) = @_;
     my($date, $time) = split(' ', $date_time);
-    my($tz) = _timezone();
+    my($tz) = $proto->_timezone;
 
     return $date.' '.$_END_OF_DAY unless defined($tz);
     # The timezone is really a timezone offset for now.  This will
@@ -999,6 +999,24 @@ Returns 13.
 
 sub get_width {
     return 13;
+}
+
+=for html <a name="timezone"></a>
+
+=head2 static timezone() : int
+
+Returns the current timezone (in minutes from UTC) from I<Request.timezone> or
+the value of L<get_local_timezone|"get_local_timezone">, if no request or not
+set.
+
+=cut
+
+sub timezone {
+    return $_LOCAL_TIMEZONE
+	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
+    # We can't return something other than undef.
+    my($req) = Bivio::Agent::Request->get_current;
+    return $req ? $req->unsafe_get('timezone') : $_LOCAL_TIMEZONE;
 }
 
 =for html <a name="to_file_name"></a>
@@ -1184,7 +1202,7 @@ sub to_xml {
 #
 sub _adjust_from_local {
     my($value) = @_;
-    my($tz) = _timezone();
+    my($tz) = __PACKAGE__->timezone;
     return $tz ? __PACKAGE__->add_seconds($value, $tz * 60) : $value;
 }
 
@@ -1194,7 +1212,7 @@ sub _adjust_from_local {
 #
 sub _adjust_to_local {
     my($value) = @_;
-    my($tz) = _timezone();
+    my($tz) = __PACKAGE__->timezone;
     return $tz ? __PACKAGE__->add_seconds($value, -$tz * 60) : $value;
 }
 
@@ -1319,18 +1337,6 @@ sub _localtime {
     $mon++;
     $year += 1900;
     return ($sec, $min, $hour, $mday, $mon, $year);
-}
-
-# _timezone() : int
-#
-# Returns the timezone from the current request or returns undef.
-#
-sub _timezone {
-    return $_LOCAL_TIMEZONE
-	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
-    # We can't return something other than undef.
-    my($req) = Bivio::Agent::Request->get_current;
-    return $req ? $req->unsafe_get('timezone') : $_LOCAL_TIMEZONE;
 }
 
 # _to_string(proto, string value, string timezone) : string
