@@ -98,7 +98,6 @@ sub internal_initialize {
             ECCheckPayment.institution
             ECCreditCardPayment.processor_response
             ECCreditCardPayment.processor_transaction_number
-            ECCreditCardPayment.card_number
             ECCreditCardPayment.card_expiration_date
             ECCreditCardPayment.card_name
             ECCreditCardPayment.card_zip
