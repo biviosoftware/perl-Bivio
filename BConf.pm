@@ -87,6 +87,10 @@ my($_DEFAULT_CONFIG) = {
     'Bivio::Type::Secret' => {
 	key => 'alphabet soup',
     },
+    'Bivio::UI::Text' => {
+	http_host => 'localhost',
+	mail_host => 'localhost',
+    },
     main => {
 	http => {
 	    port => '80',
