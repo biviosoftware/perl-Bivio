@@ -60,14 +60,14 @@ sub create_content {
     my($entry_table) = $self->table(
 	'EntryList',
 	[
-	    {
-		field => 'remark',
-		column_heading => 'CATEGORY_HEADING',
-	    },
 	    ['', {
 		column_widget => Bivio::UI::HTML::Widget::TaxType->new({}),
 		column_heading => 'Entry.entry_type',
 	    }],
+	    {
+		field => 'remark',
+		column_heading => 'CATEGORY_HEADING',
+	    },
 	    'Entry.amount',
 	],
     );
