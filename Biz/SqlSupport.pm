@@ -40,8 +40,15 @@ sub DATE_FORMAT {
     return 'MM/DD/YYYY';
 }
 
-# SQL DATE type
-sub _SQL_DATE {
+=for html <a name="SQL_DATE_TYPE"></a>
+
+=head2 SQL_DATE_TYPE : int
+
+Returns the internal oracle sql date id.
+
+=cut
+
+sub SQL_DATE_TYPE {
     return 9;
 }
 
@@ -173,9 +180,10 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if (! $fields->{column_types}) {
-	$fields->{column_types} = &_get_column_types($self);
-    }
+    # check if already initialized
+    return if $fields->{column_types};
+
+    $fields->{column_types} = &_get_column_types($self);
 
     my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
@@ -186,9 +194,9 @@ sub initialize {
 	    .' ('.join(',', @$columns).') values (';
 
     foreach (@$columns) {
-	if ($types->{$_} == _SQL_DATE) {
-	    $select .= 'TO_CHAR('.$_.q{,'MM/DD/YYYY'),};
-	    $insert .= q{TO_DATE(?,'DD/MM/YYYY'),};
+	if ($types->{$_} == SQL_DATE_TYPE()) {
+	    $select .= qq{TO_CHAR($_,'}.DATE_FORMAT().q{'),};
+	    $insert .= q{TO_DATE(?,'}.DATE_FORMAT().q{'),};
 	}
 	else {
 	    $select .= $_.',';
@@ -317,8 +325,8 @@ sub _create_update_statement {
 	    my($type) = $column_types->{$col_name};
 	    $cols .= $col_name.'=';
 
-	    if ($type == _SQL_DATE()) {
-		$cols .= q{TO_DATE('}.$new.q{','DD/MM/YYYY'),};
+	    if ($type == SQL_DATE_TYPE()) {
+		$cols .= qq{TO_DATE('$new','}.DATE_FORMAT().q{'),};
 	    }
 	    else {
 #		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
