@@ -95,7 +95,8 @@ sub execute {
     my($ids) = _copy($id_map, 'realm_transaction', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmTransaction->new($req));
     foreach my $id (@$ids) {
-	_copy($id_map, 'entry', {realm_transaction_id => $id},
+	_copy($id_map, 'entry', {realm_transaction_id => $id,
+	    realm_id => $source_id},
 		Bivio::Biz::Model::Entry->new($req));
     }
 
@@ -104,10 +105,10 @@ sub execute {
 	    Bivio::Biz::Model::RealmInstrument->new($req));
     foreach my $id (@$ids) {
 	_copy($id_map, 'realm_instrument_valuation',
-		{realm_instrument_id => $id},
+		{realm_instrument_id => $id, realm_id => $source_id},
 		Bivio::Biz::Model::RealmInstrumentValuation->new($req));
 	_copy($id_map, 'realm_instrument_entry',
-		{realm_instrument_id => $id},
+		{realm_instrument_id => $id, realm_id => $source_id},
 		Bivio::Biz::Model::RealmInstrumentEntry->new($req),
 		'entry_id');
     }
@@ -116,7 +117,8 @@ sub execute {
     $ids = _copy($id_map, 'realm_account', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmAccount->new($req));
     foreach my $id (@$ids) {
-	_copy($id_map, 'realm_account_entry', {realm_account_id => $id},
+	_copy($id_map, 'realm_account_entry', {realm_account_id => $id,
+	    realm_id => $source_id},
 		Bivio::Biz::Model::RealmAccountEntry->new($req),
 		'entry_id');
     }
@@ -131,7 +133,8 @@ sub execute {
 	my($user_id) = $row->[0];
 	# users map to themselves, they are not copied
 	$id_map->{$user_id} = $user_id;
-	_copy($id_map, 'member_entry', {user_id => $user_id},
+	_copy($id_map, 'member_entry', {user_id => $user_id,
+	    realm_id => $source_id},
 		Bivio::Biz::Model::MemberEntry->new($req), 'entry_id');
     }
     return;
@@ -158,7 +161,7 @@ sub _copy {
     chop($select);
     my(@keys) = keys(%$key_map);
     my(@values) = values(%$key_map);
-    $select .= ' from '.$table_base.'_t where '.join('=? and', @keys).'=?';
+    $select .= ' from '.$table_base.'_t where '.join('=? and ', @keys).'=?';
     my($sth) = Bivio::SQL::Connection->execute($select, \@values);
     my($result) = [];
     my($row);
