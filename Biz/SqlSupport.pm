@@ -302,7 +302,7 @@ sub _create_update_statement {
     my($column_types) = $fields->{column_types};
 
     # used for quote()
-    my($conn) =  Bivio::Biz::SqlConnection->get_connection();
+#    my($conn) =  Bivio::Biz::SqlConnection->get_connection();
 
     my($cols);
     my($name);
@@ -321,7 +321,10 @@ sub _create_update_statement {
 		$cols .= q{TO_DATE('}.$new.q{','DD/MM/YYYY'),};
 	    }
 	    else {
-		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
+#		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
+
+		# just quote everything - avoid numeric '' problem
+		$cols .= qq{'$new',};
 	    }
 	}
     }
