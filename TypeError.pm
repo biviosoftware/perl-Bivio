@@ -860,6 +860,11 @@ __PACKAGE__->compile([
 	undef,
 	'end date must be within the same year as the start date',
     ],
+    INVALID_DEDUCTIBLE_EXPENSE_ACCOUNT => [
+	116,
+	undef,
+	"the selected account doesn't support deductible expenses",
+    ],
 ]);
 
 #=PRIVATE METHODS
