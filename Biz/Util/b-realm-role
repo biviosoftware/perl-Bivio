@@ -9,9 +9,11 @@ b-realm-role - manipulate realm_role_t database table
 
 =head1 SYNOPSIS
 
-  b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
-  b-realm-role [-n] -init
-  b-realm-role [-n] -init_defaults
+  b-realm-role [-n] edit realm role (+|-)(permission|role)...
+  b-realm-role list [realm [role]]
+  b-realm-role [-n] init
+  b-realm-role [-n] init_defaults
+  b-realm-role [-n] set_same new_permission like_permission
 
 =head1 DESCRIPTION
 
