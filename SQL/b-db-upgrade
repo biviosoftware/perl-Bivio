@@ -137,174 +137,138 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    #
-    # Make sure tablespace exists before doing anything
-    #
-    my($statement) = _do(<<'EOF');
-SELECT DISTINCT tablespace_name
-  FROM user_tablespaces
-  WHERE tablespace_name = 'REALM_LOB'
-/
-EOF
-    die('Need to create realm_lob tablespace')
-	    unless $statement->fetchrow_arrayref;
 
-    #
-    # Update RealmRole table
-    #
-    use Bivio::Biz::Util::RealmRole;
-    Bivio::Biz::Util::RealmRole->init();
+    use Bivio::Agent::Request;
+    use Bivio::Biz::Model::RealmTransaction;
 
-    #
-    # We load realms here BEFORE creating tables, so we can
-    # rerun if there are bugs.  NEVER HAPPEN!
-    #
-    use Bivio::Biz::Model::RealmOwnerList;
-    my($realms) = Bivio::Biz::Model::RealmOwnerList->new();
-    $realms->unauth_load({
-	realm_type => Bivio::Auth::RealmType::CLUB(),
-	count => Bivio::Type::Integer->get_max,
-    });
-    die('unable to find more than ten clubs')
-	    unless $realms->get_result_set_size > 10;
+    my($tran) = Bivio::Biz::Model::RealmTransaction->new(
+	    Bivio::Agent::Request->new());
 
-    #
-    # Create file_t and file_quota_t
-    #
-    _do(<<'EOF');
-CREATE TABLE file_quota_t (
-  realm_id NUMBER(18),
-  kbytes NUMBER(9),
-  max_kbytes NUMBER(9)
+    # remove all instrument_t which aren't companies
+    my($sth) = _do('
+            SELECT instrument_t.instrument_id, mgfs_instrument_t.mg_id
+            FROM mgfs_fundamental_t, mgfs_instrument_t, instrument_t
+            WHERE mgfs_fundamental_t.mg_id=mgfs_instrument_t.mg_id
+            AND mgfs_instrument_t.instrument_id=instrument_t.instrument_id
+            AND mgfs_fundamental_t.data_type != 2
+            /');
+    my($row);
+    while ($row = $sth->fetchrow_arrayref) {
+	my($instrument_id, $mg_id) = @$row;
+	Bivio::SQL::Connection->execute('
+                UPDATE mgfs_instrument_t
+                SET instrument_id=NULL, symbol=?
+                WHERE mg_id=?',
+		[$mg_id, $mg_id]);
+
+	# extra work to get rid of any transactions on bad instruments
+	# NOTE: doesn't affect production system, no bad data currently
+	#       no realm instruments for bad instruments have been created
+	my($sth2) = Bivio::SQL::Connection->execute('
+                SELECT DISTINCT entry_t.realm_transaction_id
+                FROM entry_t, realm_instrument_entry_t, realm_instrument_t
+                WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
+                AND realm_instrument_entry_t.realm_instrument_id
+                    = realm_instrument_t.realm_instrument_id
+                AND realm_instrument_t.instrument_id=?',
+		[$instrument_id]);
+	my($row2);
+	while ($row2 = $sth2->fetchrow_arrayref) {
+	    my($id) = $row->[0];
+	    $tran->unauth_load(realm_transaction_id => $id)
+		    || die("couldn't find transaction $id");
+	    $tran->cascade_delete();
+	}
+
+	# delete valuations for bad instruments
+	Bivio::SQL::Connection->execute('
+                DELETE from realm_instrument_valuation_t
+                WHERE realm_instrument_id in (
+                    SELECT realm_instrument_id
+                    FROM realm_instrument_t
+                    WHERE instrument_id=?)',
+		    [$instrument_id]);
+
+	# delete realm instruments and instruments for bad data
+	foreach my $table ('realm_instrument_t', 'instrument_t') {
+	    Bivio::SQL::Connection->execute("
+                    DELETE from $table
+                    WHERE instrument_id=?",
+		    [$instrument_id]);
+	}
+    }
+
+    # remove duplicate tickers (EGGS, HON, PTV)
+    # these are best guesses
+    foreach my $mg_id (qw(00023966 00000876 00001802)) {
+	foreach my $table (qw(
+                MGFS_SPLIT_T
+                MGFS_COMPANY_BOARD_T
+                MGFS_COMPANY_SEGMENT_T
+                MGFS_COMPANY_T
+                MGFS_BALANCE_SHEET_T
+                MGFS_CASH_FLOW_T
+                MGFS_INCOME_STATEMENT_T
+                MGFS_DAILY_QUOTE_T
+                MGFS_FUNDAMENTAL_T
+                MGFS_INSTRUMENT_T
+                )) {
+	    Bivio::SQL::Connection->execute("
+                    DELETE from $table
+                    WHERE mg_id=?",
+		    [$mg_id]);
+	}
+	Bivio::SQL::Connection->execute('
+                DELETE from instrument_t
+                WHERE instrument_id in (
+                    SELECT instrument_id
+                    FROM mgfs_instrument_t
+                    WHERE mg_id=?)',
+		[$mg_id]);
+    }
+
+    # add shares_outstanding_cco to mgfs_balance_sheet_t
+    Bivio::SQL::Connection->execute('
+            ALTER TABLE mgfs_balance_sheet_t
+            ADD shares_outstanding_cco NUMBER(20,3)');
+
+    # create the mgfs download table, it records stats
+    _do('
+CREATE TABLE mgfs_download_t (
+  file_name VARCHAR2(30),
+  file_date DATE,
+  file_size NUMBER(20,7),
+  download_date DATE
 )
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
+storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+tablespace mgfs_data
 /
+');
 
-CREATE TABLE file_t (
-  file_id NUMBER(18),
-  realm_id NUMBER(18),
-  volume NUMBER(2),
-  directory_id NUMBER(18),
-  name VARCHAR2(100),
-  name_sort VARCHAR2(100),
-  user_id NUMBER(18),
-  modified_date_time DATE,
-  bytes NUMBER(9),
-  is_directory NUMBER(1),
-  aux_info VARCHAR2(500),
-  content BLOB
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
-  lob (content) store as
-  (tablespace realm_lob storage
-  (initial 100m next 100m pctincrease 0)
-  chunk 2k pctversion 10 nocache logging)
+    _do('
+ALTER TABLE mgfs_download_t modify download_date not null
 /
-
---
--- file_quota_t
---
-ALTER TABLE file_quota_t add primary key(realm_id)
-  using index tablespace realm_indx
+ALTER TABLE mgfs_download_t add primary key (file_name, file_date, file_size)
+  using index tablespace mgfs_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
-ALTER TABLE file_quota_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE file_quota_t modify realm_id not null
-/
-ALTER TABLE file_quota_t modify kbytes not null
-/
-ALTER TABLE file_quota_t add check (kbytes >= 0)
-/
-ALTER TABLE file_quota_t modify max_kbytes not null
-/
-ALTER TABLE file_quota_t add check (kbytes <= max_kbytes)
-/
+');
 
---
--- file_t
---
-ALTER TABLE file_t add primary key(file_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE file_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE file_t modify realm_id not null
-/
-ALTER TABLE file_t
-  add foreign key (directory_id)
-    references file_t(file_id)
-/
-ALTER TABLE file_t modify volume not null
-/
-ALTER TABLE file_t add check (volume = 1)
-/
-ALTER TABLE file_t
-  add foreign key (user_id)
-    references user_t(user_id)
-/
-ALTER TABLE file_t modify modified_date_time not null
-/
-ALTER TABLE file_t modify name not null
-/
-ALTER TABLE file_t modify name_sort not null
-/
-ALTER TABLE file_t modify bytes not null
-/
-ALTER TABLE file_t add check (bytes >= 0)
-/
-ALTER TABLE file_t modify is_directory not null
-/
-ALTER TABLE file_t add check (is_directory BETWEEN 0 AND 1)
-/
-ALTER TABLE file_t add unique(directory_id, name_sort)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-
-CREATE INDEX file_directory_i ON file_t (
-  directory_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
-CREATE INDEX file_realm_volume_i ON file_t (
-  realm_id,
-  volume
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
-CREATE sequence file_s
-  minvalue 100011 maxvalue 999999999999999999
-  nocycle cache 10 increment BY 100000
-/
-EOF
-
-    #
-    # Create the file systems
-    #
-    use Bivio::Biz::Model::File;
-    use Bivio::Biz::Model::RealmOwner;
-    my($realm) = Bivio::Biz::Model::RealmOwner->new();
-    my($realm_id) = '';
-    while ($realms->next_row) {
-	# May have multiple administrators
-	next if $realm_id eq $realms->get('RealmOwner.realm_id');
-	$realm_id = $realms->get('RealmOwner.realm_id');
-	die('failed to load realm ', $realm_id)
-		unless $realm->unauth_load(realm_id => $realm_id);
-	Bivio::Biz::Model::File->create_initial($realm,
-		$realms->get('RealmUser.user_id'));
+    # delete quotes with all 0 values
+    # represents the lack of data in an MGFS record, shouldn't be in db
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT DISTINCT mg_id
+            FROM mgfs_daily_quote_t
+            WHERE close=0 AND high=0 AND low=0 AND volume=0',
+	    []);
+    while ($row = $sth->fetchrow_arrayref) {
+	my($mg_id) = $row->[0];
+	Bivio::SQL::Connection->execute('
+                DELETE FROM mgfs_daily_quote_t
+                WHERE mg_id=?
+                AND close=0 AND high=0 AND low=0 AND volume=0',
+		[$mg_id]);
+	Bivio::SQL::Connection->commit;
     }
 
     return;
