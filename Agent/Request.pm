@@ -339,8 +339,16 @@ sub format_mailto {
     my($res) = 'mailto:'
 	    . Apache::Util::escape_uri($self->format_email($email));
     $subject = $self->get_widget_value(@$subject) if ref($subject);
-    $res .= '?subject=' . Apache::Util::escape_uri($subject)
-	    if defined($subject);
+    if (defined($subject)) {
+	# This is a bug.  Currently Outlook doesn't understand
+	# escaped URIs in mailtos.  We should be escap_uri'ing the subject.
+	# Make sure there are no quotes, percents, or backslashes, though.
+	# Percent must be first
+	$subject =~ s/%/%22/g;
+	$subject =~ s/"/%22/g;
+	$subject =~ s/\\/%5C/g;
+	$res .= '?subject=' . $subject;
+    }
     return $res;
 }
 
