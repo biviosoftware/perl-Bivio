@@ -5,11 +5,15 @@ use strict;
 
 =head1 NAME
 
-b-db-util - general database queries
+b-db-util - standard queries and dba operations
 
 =head1 SYNOPSIS
 
-  b-db-util options...
+  b-db-util count_rows
+  b-db-util remote_sqlplus host db_login actions
+  b-db-util copy_logs_to_standby
+  b-db-util recover_standby
+  b-db-util sql2csv file.sql [database [email]]
 
 =head1 DESCRIPTION
 
