@@ -59,22 +59,6 @@ sub create {
     return $self->SUPER::create($values);
 }
 
-=for html <a name="generate_shadow_email"></a>
-
-=head2 static generate_shadow_email(string email, string realm_id) : string
-
-Returns a shadow email address for the specified email / realm_id combo.
-
-=cut
-
-sub generate_shadow_email {
-    my(undef, $email, $realm_id) = @_;
-    # Colon (':') causes the email address to be invalid.  The realm_id is an
-    # integer and won't make email address invalid.  Must be invalid,
-    # so User/Club->get_outgoing_emails won't return these addresses.
-    return $email.':'.$realm_id;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
