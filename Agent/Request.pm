@@ -9,6 +9,10 @@ $Bivio::Agent::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Agent::Request - Abstract request wrapper
 
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
 =cut
 
 use Bivio::Collection::Attributes;
@@ -143,7 +147,7 @@ sub new {
 
 =for html <a name="clear_current"></a>
 
-=head2 clear_current()
+=head2 static clear_current()
 
 Clears the state of the current request.  See L<get_current|"get_current">.
 
