@@ -216,8 +216,17 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _upgrade {
 
-    print("Run _upgrade_index_[1-4] separately\n");
+    _upgrade_indexes();
     print("\n*** done ***\n");
+    return;
+}
+
+sub _upgrade_indexes {
+    print("Converting BITMAP indexes to regular ones\n");
+    _upgrade_index_1();
+    _upgrade_index_2();
+    _upgrade_index_3();
+    _upgrade_index_4();
     return;
 }
 
@@ -234,6 +243,7 @@ sub _upgrade_index_1 {
 /
 EOF
            );
+    return;
 }
 
 sub _upgrade_index_2 {
@@ -249,6 +259,7 @@ sub _upgrade_index_2 {
 /
 EOF
            );
+    return;
 }
 
 sub _upgrade_index_3 {
@@ -264,6 +275,7 @@ sub _upgrade_index_3 {
 /
 EOF
            );
+    return;
 }
 
 sub _upgrade_index_4 {
@@ -279,6 +291,7 @@ sub _upgrade_index_4 {
 /
 EOF
            );
+    return;
 }
 
 # _usage(array message)
