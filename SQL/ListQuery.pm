@@ -62,7 +62,7 @@ will be parsed as a date.
 Will be set to DateTime-E<gt>local_end_of_today if C<undef>
 and support has I<want_date> set.
 
-=item internal : Bivio::Type::DateInterval
+=item interval : Bivio::Type::DateInterval
 
 A L<Bivio::Type::DateInterval|Bivio::Type::DateInterval>.  Does not default.
 You can pass C<interval> in the query string and it will be parsed
@@ -84,6 +84,10 @@ Are there items prior to this query?
 This value may be invalid until the query is executed by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 Initialized to false.
+
+=item list_support : Bivio::SQL::ListSupport
+
+Support instance used to create this query.
 
 =item next : array_ref
 
@@ -216,7 +220,7 @@ sub new {
     foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
-    return _new($proto, $attrs);
+    return _new($proto, $attrs, $support);
 }
 
 =for html <a name="unauth_new"></a>
@@ -237,7 +241,7 @@ sub unauth_new {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
 		unless exists($attrs->{$k});
     }
-    return _new($proto, $attrs);
+    return _new($proto, $attrs, $support);
 }
 
 =head1 METHODS
@@ -651,15 +655,15 @@ sub _format_uri_primary_key {
     return $res;
 }
 
-# _new(any proto, hash_ref attrs) : Bivio::SQL::ListQuery
+# _new(any proto, hash_ref attrs, Bivio::SQL::Support) : Bivio::SQL::ListQuery
 #
 # Initializes default attrs and instantiates.
 #
 sub _new {
-    my($proto, $attrs) = @_;
+    my($proto, $attrs, $support) = @_;
     # Reset attrs that are set by Support
-    @{$attrs}{'has_prev', 'has_next', 'prev', 'next', 'prev_page', 'next_page'
-	  } = (0, 0, undef, undef, undef, undef);
+    @{$attrs}{qw(has_prev has_next prev next prev_page next_page list_support)}
+	   = (0, 0, undef, undef, undef, undef, $support);
     return Bivio::Collection::Attributes::new($proto, $attrs);
 }
 
@@ -714,7 +718,10 @@ sub _parse_interval {
     }
 
     # Empty?
-    return undef unless defined($literal) && length($literal);
+    unless (defined($literal) && length($literal)) {
+	$attrs->{interval} = undef;
+	return;
+    }
 
     # Parse
     my($value, $e) = Bivio::Type::DateInterval->unsafe_from_any($literal);
