@@ -54,7 +54,6 @@ use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::UI::Facade;
-use Bivio::UI::HTML::Page;
 use BSD::Resource;
 
 #=VARIABLES
@@ -163,7 +162,6 @@ sub initialize {
 
     # Initialize user interface support
     Bivio::UI::Facade->initialize;
-    Bivio::UI::HTML::Page->initialize;
 
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;
     return;
