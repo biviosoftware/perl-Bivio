@@ -187,7 +187,7 @@ sub _fix_mgfs_names {
 sub _modify_column {
     my($table, $column, $type) = @_;
     _do_sql("
-ALTER TABLE $table $column $type
+ALTER TABLE $table MODIFY $column $type
 /");
     return;
 }
