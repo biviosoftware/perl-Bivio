@@ -45,6 +45,10 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 The user authenticated with the request.
 
+=item client_addr : string
+
+Client's network address if available.
+
 =item cookie : hash_ref
 
 This is the cookie that came in the HTTP header.  It may be
@@ -126,6 +130,10 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 =item task_id : Bivio::Agent::TaskId
 
 Identifier used to find I<task>.
+
+=item timezone : string
+
+The user's timezone (if available).
 
 =item unauth_user : Bivio::Biz::Model::RealmOwner
 
