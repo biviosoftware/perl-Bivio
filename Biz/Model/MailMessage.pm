@@ -260,9 +260,8 @@ sub get_body {
     my($filename) = '/'.$club_name.'/messages/html/'.$msg_id;
     die("couldn't get mail body: $body")
 	    unless$_FILE_CLIENT->get($filename, \$body);
-#TODO: This needs to be fixed to search for header separator(?)
-    my($i) = index($body, '<!DOCTYPE');
-    return $i == -1 ? '' : substr($body, $i);
+    my($i) = index($body, "\n\n");
+    return $i == -1 ? '' : substr($body, $i + 2);
 }
 
 =for html <a name="internal_initialize"></a>
