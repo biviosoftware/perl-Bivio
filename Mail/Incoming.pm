@@ -19,7 +19,7 @@ Bivio::Mail::Incoming - parses an incoming mail message
     $bim->get_reply_to();
     $bim->get_subject();
     $bim->get_message_id();
-    $bim->get_dttm();
+    $bim->get_date_time();
 
 =cut
 
@@ -189,29 +189,29 @@ sub get_body {
     return substr(${$fields->{rfc822}}, $fields->{body_offset});
 }
 
-=for html <a name="get_dttm"></a>
+=for html <a name="get_date_time"></a>
 
-=head2 get_dttm() : time
+=head2 get_date_time() : time
 
 Returns the date specified by the message
 
 =cut
 
-sub get_dttm {
+sub get_date_time {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    exists($fields->{dttm}) && return $fields->{dttm};
+    exists($fields->{date_time}) && return $fields->{date_time};
     my($date) = &_get_field($fields, 'date:');
 #TODO: If no Date: or bad Date: search Received: for valid dates
 #hello
     unless (defined($date)) {
 	warn("no Date");
 	&_trace('no Date') if $_TRACE;
-	return $fields->{dttm} = undef;
+	return $fields->{date_time} = undef;
     }
-    $fields->{dttm} = &_parse_date($date);
-    &_trace($date, ' -> ', $fields->{dttm}) if $_TRACE;
-    return $fields->{dttm};
+    $fields->{date_time} = &_parse_date($date);
+    &_trace($date, ' -> ', $fields->{date_time}) if $_TRACE;
+    return $fields->{date_time};
 }
 
 =for html <a name="get_from"></a>
@@ -666,13 +666,13 @@ sub _parse_date {
     if (defined($_822_TIME_ZONES{$tz})) {
 	$tz = $_822_TIME_ZONES{$tz};
     }
-    my($dttm) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
+    my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
     if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
-	$dttm -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
+	$date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
     } else {
 	warn("timezone \"$tz\" unknown in date \"$_\"");
     }
-    return $dttm;
+    return $date_time;
 }
 
 # strips out comments

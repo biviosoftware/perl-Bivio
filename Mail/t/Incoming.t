@@ -47,7 +47,7 @@ EOF
     'from_email' => 'ASFields@aol.com',
     'reply_to_email' => 'i-club-list@lists.better-investing.org',
     'subject' => 'NAIC: re: disney',
-    'dttm' => 930813677,
+    'date_time' => 930813677,
 },
 <<'EOF'
 From owner-naic@bivio.com  Thu Jul  1 07:43:10 1999
@@ -84,7 +84,7 @@ EOF
     'from_email' => 'dan_hess@prodigy.net',
     'reply_to_email' => 'i-club-list@lists.better-investing.org',
     'subject' => undef,
-    'dttm' => 930836015,
+    'date_time' => 930836015,
 },
 <<'EOF'
 From owner-naic@bivio.com  Thu Jul  1 09:20:07 1999
@@ -134,7 +134,7 @@ EOF
     'from_email' => 'dbeeman@thegrid.net',
     'reply_to_email' => 'i-club-list@lists.better-investing.org',
     'subject' => '',
-    'dttm' => 930841505,
+    'date_time' => 930841505,
 },
 <<'EOF'
 From moeller@[209.181.76.152]  Fri Jul 23 15:11:23 1999
@@ -161,7 +161,7 @@ EOF
     'from_email' => 'moeller@[209.181.76.152]',
     'reply_to_email' => undef,
     'subject' => 'hello',
-    'dttm' => 932764367,
+    'date_time' => 932764367,
 },
 );
 
@@ -175,7 +175,7 @@ while (($msg, $fields) = each(%_MSGS)) {
     &assert_eq('from_name',  $n) || next;
     &assert_eq('reply_to_email', $bmi->get_reply_to) || next;
     &assert_eq('subject', $bmi->get_subject) || next;
-    &assert_eq('dttm', $bmi->get_dttm) || next;
+    &assert_eq('date_time', $bmi->get_date_time) || next;
     (undef, $fields->{body}) = split(/\n\n/, $msg, 2);
     &assert_eq('body', $bmi->get_body) || next;
     print "ok $test\n";

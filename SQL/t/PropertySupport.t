@@ -51,7 +51,7 @@ create table $_TABLE (
     text VARCHAR(500),
     amount NUMBER(20,7),
     boolean NUMBER(1) CHECK (boolean BETWEEN 0 AND 1) NOT NULL,
-    dttm DATE,
+    date_time DATE,
     dt DATE,
     tm DATE,
     gender NUMBER(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL
@@ -77,7 +77,7 @@ my($support) = Bivio::SQL::PropertySupport->new({
 		Bivio::SQL::Constraint::NONE()],
 	boolean => ['Bivio::Type::Boolean',
 		Bivio::SQL::Constraint::NOT_NULL()],
-	dttm => ['Bivio::Type::DateTime',
+	date_time => ['Bivio::Type::DateTime',
 		Bivio::SQL::Constraint::NONE()],
 	dt => ['Bivio::Type::Date',
 		Bivio::SQL::Constraint::NONE()],
@@ -96,12 +96,12 @@ t(defined($load));
 t(!defined($load->{name}) && !defined($load->{line})
 	&& !defined($load->{text}) && !defined($load->{amount}));
 t($load->{boolean} == 0);
-t(!defined($load->{dttm}));
+t(!defined($load->{date_time}));
 t(!defined($load->{tm}));
 t(!defined($load->{dt}));
 t($load->{gender} == Bivio::Type::Gender::FEMALE);
 t($values->{$_ID} eq $_MIN_ID);
-$values->{dttm} = time;
+$values->{date_time} = time;
 my($time) = time;
 $support->update($load, {
     name => 'name',
@@ -109,7 +109,7 @@ $support->update($load, {
     text => 'text',
     amount => '20.7',
     boolean => 99,
-    dttm => $time,
+    date_time => $time,
     dt => int($time / 86400) * 86400,
     tm => 60 * 60,
     gender => Bivio::Type::Gender::MALE(),
@@ -120,7 +120,7 @@ t(defined($load));
 t($load->{name} eq 'name' && $load->{line} eq 'line'
 	&& $load->{text} eq 'text' && $load->{amount} eq '20.7');
 t($load->{boolean} == 1);
-t($load->{dttm} == $time);
+t($load->{date_time} == $time);
 t($load->{tm} == 3600);
 t($load->{dt} == int($time / 86400) * 86400);
 t($load->{gender} == Bivio::Type::Gender::MALE);

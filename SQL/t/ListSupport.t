@@ -41,7 +41,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 't_list1_t',
 	columns => {
-	    dttm => ['Bivio::Type::DateTime',
+	    date_time => ['Bivio::Type::DateTime',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    toggle => ['Bivio::Type::Boolean',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
@@ -64,7 +64,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 't_list2_t',
 	columns => {
-	    dttm => ['Bivio::Type::DateTime',
+	    date_time => ['Bivio::Type::DateTime',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    toggle => ['Bivio::Type::Boolean',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
@@ -99,24 +99,24 @@ foreach $m ('TListT1', 'TListT2') {
     };
     Bivio::SQL::Connection->execute(<<"EOF");
 	create table $table (
-	    dttm DATE,
+	    date_time DATE,
             toggle NUMBER(1) check (toggle between 0 and 1) not null,
 	    auth_id NUMBER(18) not null,
 	    name VARCHAR(30) not null,
             value VARCHAR(30),
 	    gender NUMBER(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL,
-            primary key(dttm, toggle)
+            primary key(date_time, toggle)
 	)
 EOF
     my($gender, $name, $auth_id);
-    my($dttm) = $now;
+    my($date_time) = $now;
     my($model) = $pkg->new($req);
     my($toggle) = 1;
     foreach $auth_id (1..2) {
 	foreach $name ('name00'..'name09') {
 	    foreach $gender ('FEMALE', 'MALE') {
 		$model->create({
-		    dttm => $dttm++,
+		    date_time => $date_time++,
 		    toggle => ($toggle = !$toggle),
 		    auth_id => $auth_id,
 		    name => $name,
@@ -142,7 +142,7 @@ my($support) = Bivio::SQL::ListSupport->new({
 	[qw(TListT1.gender TListT2.gender)],
     ],
     primary_key => [
-	'TListT1.dttm',
+	'TListT1.date_time',
 	'TListT1.toggle',
     ],
     auth_id => [qw(TListT1.auth_id TListT2.auth_id)],
@@ -156,7 +156,7 @@ my($query) = Bivio::SQL::ListQuery->new({
 my($rows) = $support->load($query);
 t(int(@$rows), 5);
 # Make sure both primary keys are returned, even though we only listed one.
-t($rows->[0]->{'TListT1.dttm'}, $rows->[0]->{'TListT2.dttm'});
+t($rows->[0]->{'TListT1.date_time'}, $rows->[0]->{'TListT2.date_time'});
 
 # Check all rows returned
 $query = Bivio::SQL::ListQuery->new({
@@ -236,7 +236,7 @@ $query = Bivio::SQL::ListQuery->new({
 }, $support);
 $rows = $support->load($query);
 # Should begin after first the first name.
-t($rows->[0]->{'TListT1.dttm'}, $now + 1);
+t($rows->[0]->{'TListT1.date_time'}, $now + 1);
 # DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
 
 # Check missed just prior

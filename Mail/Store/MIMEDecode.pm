@@ -154,7 +154,7 @@ sub parse_and_store {
     _parse_keywords($msg->get_subject(), $keywords);
     my $s = $msg->get_reply_to();
     _parse_keywords($s, $keywords);
-    _parse_keywords($msg->get_dttm(), $keywords);
+    _parse_keywords($msg->get_date_time(), $keywords);
 
     _trace('extracting MIME attachments for mail message. File: ',
 	    $file_name) if $_TRACE;

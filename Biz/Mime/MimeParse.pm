@@ -180,7 +180,7 @@ sub parse {
     #to store keywords For Subject, To, Date, and From fields
     _parse_keywords($msg->get_subject(), $keywords);
     _parse_keywords($msg->get_reply_to(), $keywords);
-    _parse_keywords($msg->get_dttm(), $keywords);
+    _parse_keywords($msg->get_date_time(), $keywords);
     # now extract all the MIME attachments
 #TODO: Break lines at less than 80 chars.  It may seem archane, but
 #   you break them somewhere so might as well be the same for everyone.
