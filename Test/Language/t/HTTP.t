@@ -54,7 +54,7 @@ END
 };
 \$m->();
 my(\$mail) = verify_local_mail(\$e1, 'You have mail');
-\$\$mail =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
+\$mail =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
     or die('bad return value from verify_local_mail()');
 test_deviance(qr/No mail for /);
 verify_local_mail(\$e1, 'You have mail');
@@ -77,9 +77,9 @@ verify_local_mail(\$e1, 'You have mail');
 test_deviance(qr/wrong number of messages matched/);
 verify_local_mail(\$e1, 'You have mail');
 test_conformance();
-foreach (verify_local_mail(\$e1, 'You have mail', 2)) {
-    \$\$_ =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
-        or die('bad return value from verify_local_mail()');
+foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
+    \$m =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
+        or Bivio::Die->die(\$m, ': bad return value from verify_local_mail()');
 }
 
 EOF

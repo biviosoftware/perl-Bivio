@@ -550,9 +550,9 @@ sub verify_link {
 
 =for html <a name="verify_local_mail"></a>
 
-=head2 verify_local_mail(any recipient_email, any body_regex) : string_ref
+=head2 verify_local_mail(any recipient_email, any body_regex) : string
 
-=head2 verify_local_mail(any recipient_email, any body_regex, int count) : array of string_ref
+=head2 verify_local_mail(any recipient_email, any body_regex, int count) : array or string
 
 Get the last messages received for I<recipient_email> (see
 L<generate_local_email|"generate_local_email">) and verify that
@@ -562,7 +562,7 @@ Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
 only complete if both I<recipient_email> and I<body_regex> match.
 
 I<count> defaults to 1.  An exception is thrown if the number of messages found
-is not equal to I<count>.  Returns and array with I<count> string_refs of the
+is not equal to I<count>.  Returns and array with I<count> strings of the
 messages found.
 
 =cut
@@ -599,8 +599,8 @@ sub verify_local_mail {
 		_log($self, 'msg', $_->[1]);
 	    }
 	    return wantarray
-		? map($_->[1], @found)
-		: $found[0]->[1];
+		? map(${$_->[1]}, @found)
+		: ${$found[0]->[1]};
 	}
     }
     Bivio::Die->die(
@@ -728,9 +728,9 @@ sub verify_title {
 
 =for html <a name="verify_uri"></a>
 
-=head2 verify_uri(string uri)
+=head2 verify_uri(regexp uri)
 
-Verifies that the current uri (not including http://.../) is the provided uri.
+Verifies that the current uri (not including http://.../) matches I<uri>.
 
 =cut
 
@@ -841,15 +841,11 @@ sub _find_row {
 #
 sub _fixup_uri {
     my($self, $uri) = @_;
-    my($fields) = $self->[$_IDI];
-
-    unless ($uri =~ m,://,) {
-	Bivio::Die->die("couldn't find http prefix: ", $fields->{uri})
-		unless $fields->{uri} =~ m,^([^/]+//[^/]+)/?,;
-	my($prefix) = $1;
-	$uri = $prefix.$uri;
-    }
-    return $uri;
+    my($u) = URI->new($uri);
+    return defined($u->scheme) ? $uri : $u->abs(
+	$self->[$_IDI]->{uri}
+	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
+    )->as_string;
 }
 
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : array_ref
