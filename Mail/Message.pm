@@ -171,10 +171,10 @@ Create globally unique message id and add to header
 
 sub create_message_id {
     my($self, $req) = @_;
-    my($http_host) = sprintf('%02X%02X%02X%02X',
+    my($http_addr) = sprintf('%02X%02X%02X%02X',
             split(/\./, $req->unsafe_get('client_addr')));
     my($now) = Bivio::Util::gettimeofday;
-    my($msg_id) = join('_', $http_host, @$now, $$);
+    my($msg_id) = join('_', $http_addr, @$now, $$);
     $self->get_head->replace('Message-Id',
             '<'.$msg_id .'@'.$req->get('mail_host').'>');
     return;
