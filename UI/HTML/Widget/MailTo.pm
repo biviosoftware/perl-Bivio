@@ -56,7 +56,7 @@ What to display if the value is invalid.
 
 Text to use for subject of mailto.
 
-=item string_font : any []
+=item string_font : any [mailto]
 
 Used to render value.
 
@@ -132,7 +132,7 @@ sub initialize {
     }
 
     # Make the value into a widget
-    my($string_font) = $self->unsafe_get('string_font');
+    my($string_font) = $self->get_or_default('string_font', 'mailto');
     $fields->{value_widget} = Bivio::UI::HTML::Widget::String->new({
 	value => $fields->{value},
 	parent => $self,
