@@ -524,9 +524,8 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/payment
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Type::EntryType->execute_member_payment
+        Bivio::Biz::Model::MemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::MemberPayment
@@ -702,9 +701,8 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/fee
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Type::EntryType->execute_member_payment_fee
+        Bivio::Biz::Model::MemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
 	Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::MemberFee
