@@ -242,6 +242,8 @@ Bivio::IO::Config->register({
 });
 my($_CURRENT);
 my($_GENERAL) = Bivio::Auth::Realm::General->get_instance;
+my($_URI_ARG_LIST) = [qw(task_id query realm path_info no_context anchor)];
+my($_URI_ARG_MAP) = {map(($_ => 1), @$_URI_ARG_LIST)};
 
 =head1 FACTORIES
 
@@ -472,9 +474,7 @@ sub format_help_uri {
 
 =for html <a name="format_http"></a>
 
-=head2 format_http(any task_id, hash_ref query, any auth_realm, boolean no_context) : string
-
-=head2 format_http(any task_id, string query, any auth_realm, boolean no_context) : string
+=head2 format_http(...) : string
 
 Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
 
@@ -491,10 +491,9 @@ sub format_http {
 
 =for html <a name="format_http_insecure"></a>
 
-=head2 format_http_insecure(Bivio::Agent::TaskId task_id, hash_ref query, any auth_realm, boolean no_context) : string
+=head2 format_http_insecure(...) : string
 
-=head2 format_http_insecure(Bivio::Agent::TaskId task_id, string query, any auth_realm, boolean no_context) : string
-
+Creates an http URI.  Forces http not https.  See L<format_uri|"format_uri"> for argument descriptions.
 
 =cut
 
@@ -568,17 +567,17 @@ sub format_stateless_uri {
 
 =for html <a name="format_uri"></a>
 
-=head2 format_uri(any task_id, string query, any realm, string_path_info, boolean no_context) : string
+=head2 format_uri(any task_id, any query, any realm, string_path_info, boolean no_context, string anchor) : string
 
-=head2 format_uri(any task_id, hash_ref query, any realm, string path_info, boolean no_context) : string
+=head2 format_uri(hash_ref named) : string
 
-Creates a URI relative to this host:port.
+Creates a URI relative to this host:port
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
 If the task doesn't I<want_query>, will not append query string.
 If the task does I<require_secure>, will prefix https: unless
 the page is already secure.
-If I<auth_realm> is C<undef>, request's realm will be used.
+If I<realm> is C<undef>, request's realm will be used.
 If I<path_info> is C<undef>, request's path_info will be used.
 
 If any of the values is an array_ref, it will be evaluated as a widget_value.
@@ -587,45 +586,67 @@ If the task doesn't have a uri, returns C<undef>.
 
 I<no_context> allows the caller to not allow FormContext.
 
+In the second form, I<named> is a hash_ref containing the parameters as named
+above (query, task_id, etc.) with the same semantics as described above.
+
 =cut
 
 sub format_uri {
-    my($self, $task_id, $query, $auth_realm, $path_info, $no_context) = @_;
-    if ($task_id) {
-	$task_id = Bivio::Agent::TaskId->from_name($task_id)
-		unless ref($task_id) eq 'Bivio::Agent::TaskId';
+    my($self) = shift;
+    my($named) = @_;
+    if (ref($named) eq 'HASH') {
+	Bivio::Die->die('Too many parameters: ', \@_)
+	    unless @_ == 1;
+	Bivio::Die->die('contains unknown parameters: ', $named)
+	    if grep(!$_URI_ARG_MAP->{$_}, keys(%$named));
+    }
+    else {
+	my(@x) = @$_URI_ARG_LIST;
+	$named = {map((shift(@x) => $_), @_)};
+    }
+
+    if ($named->{task_id}) {
+	$named->{task_id} = Bivio::Agent::TaskId->from_name($named->{task_id})
+		unless ref($named->{task_id}) eq 'Bivio::Agent::TaskId';
     }
     else {
 	# Default
-	$task_id = $self->get('task_id');
+	$named->{task_id} = $self->get('task_id');
     }
+    foreach my $x (qw(path_info query)) {
+	$named->{$x} = $self->unsafe_get($x)
+	    unless exists($named->{$x});
+    }
+    $named->{realm} = $self->get_realm_for_task($named->{task_id})
+	unless defined($named->{realm});
 
     # Allow path_info to be undef
-    $path_info = $self->unsafe_get('path_info') unless int(@_) >= 5;
-
     my($uri) = Bivio::UI::Task->format_uri(
-	    $task_id,
-	    defined($auth_realm) ? $auth_realm
-	    : $self->get_realm_for_task($task_id),
-	    $path_info,
-	    $no_context,
-	    $self,
-	   );
+	$named->{task_id},
+	$named->{realm},
+	$named->{path_info},
+	$named->{no_context},
+	$self,
+    );
 
-    # Yes, we don't want $query unless it is passed.
-    $query = $self->get('query') unless int(@_) >= 3;
-    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    # Yes, we don't want $named->{query} unless it is passed.
+    my($task) = Bivio::Agent::Task->get_by_id($named->{task_id});
     $uri = $self->format_http_prefix(1).$uri
-	    if $task->get('require_secure') && !$self->unsafe_get('is_secure')
-		    && $self->get('can_secure');
+	if $task->get('require_secure') && !$self->unsafe_get('is_secure')
+	    && $self->get('can_secure');
 
-    return $uri unless defined($query) && $task->get('want_query');
-    $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
+    $uri =~ s/\?/\#$named->{anchor}?/ || ($uri .= '#'.$named->{anchor})
+	if defined($named->{anchor}) && length($named->{anchor});
+
+    return $uri
+	unless defined($named->{query}) && $task->get('want_query');
+    $named->{query} = Bivio::Agent::HTTP::Query->format($named->{query})
+	if ref($named->{query});
 
     # The uri may have a query string already, if the form requires context.
     # Put the $query first, since the context is long and ugly
-    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query)
-	    if length($query);
+    $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
+	    if length($named->{query});
     return $uri;
 }
 
