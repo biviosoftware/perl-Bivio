@@ -46,6 +46,11 @@ displays the time only.
 
 displays the date and time.
 
+=item MONTH_NAME_AND_DAY_NUMBER
+
+displays a long month name and day number, e.g. October 31
+
+
 =back
 
 =cut
@@ -61,6 +66,7 @@ __PACKAGE__->compile([
     DATE => [1],
     TIME => [2],
     DATE_TIME => [3],
+    MONTH_NAME_AND_DAY_NUMBER => [4],
 ]);
 
 =head1 COPYRIGHT

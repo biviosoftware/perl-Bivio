@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Format::DateTime;
 use strict;
 $Bivio::UI::HTML::Format::DateTime::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Format::DateTime::VERSION;
 
 =head1 NAME
 
@@ -36,6 +37,21 @@ use Bivio::Type::DateTime;
 use Bivio::UI::DateTimeMode;
 
 #=VARIABLES
+my(@_MONTH_NAMES) = qw(
+    N/A
+    January
+    February
+    March
+    April
+    May
+    June
+    July
+    August
+    September
+    October
+    November
+    December
+);
 
 =head1 METHODS
 
@@ -65,6 +81,8 @@ sub get_widget_value {
     my($m) = Bivio::UI::DateTimeMode->from_any(
 	    $mode || 'DATE_TIME')->as_int;
     # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
+    return $_MONTH_NAMES[$mon].' '.$mday.($no_timezone ? '': ' GMT')
+	    if $m == 4;
     return (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
 	    .($m == 3 ? ' ' : '')
 	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
@@ -76,7 +94,7 @@ sub get_widget_value {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

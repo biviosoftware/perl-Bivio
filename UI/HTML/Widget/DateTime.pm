@@ -117,20 +117,24 @@ function dt(m,j,t,gmt){
     // Convert the time to milliseconds adding in the seconds component
     var d=new Date((y*$_SECONDS+t)*1000);
 
-    // Format the date, time, or date time
-    // ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
+    // ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2, DATE_TIME=3
+    //          and MONTH_NAME_AND_DAY_NUMBER=4
+    // This renders more compact javascript and is possibly slower on client.
     document.write(
             ((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d))
                   :'')
             +(m==3?' ':'')
-            +((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):''));
+            +((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):'')
+            +(m==4?dt_mn(d)+' '+d.getDate():''));
 }
 
+// Returns a zero-padded number
 function dt_n(n){
     // Why doesn't javascript have a sprintf?  Insert leading 0s
     return n<10?'0'+n:n;
 }
 
+// Returns the year
 function dt_y(d){
     // NS3 does bizarre things with dates.  Anyway,
     // this is the solution.  Study it carefully before changing it.
@@ -139,6 +143,25 @@ function dt_y(d){
     }
     var y=d.getYear();
     return y<1000?y+1900:y;
+}
+
+// Returns the long month name
+function dt_mn(d){
+    switch(d.getMonth()){
+    case 0: return 'January';
+    case 1: return 'February';
+    case 2: return 'March';
+    case 3: return 'April';
+    case 4: return 'May';
+    case 5: return 'June';
+    case 6: return 'July';
+    case 7: return 'August';
+    case 8: return 'September';
+    case 9: return 'October';
+    case 10: return 'November';
+    case 11: return 'December';
+    }
+    return 'N/A';
 }
 EOF
 
