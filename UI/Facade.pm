@@ -152,6 +152,7 @@ sub new {
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
 	# Anybody referencing this facade will get an error; see _load().
 	_trace($class, ': non-production Facade, not initializing');
+	delete($_CLASS_MAP{$class});
 	return undef;
     }
 
