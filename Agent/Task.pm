@@ -266,9 +266,12 @@ sub execute {
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
 	my($auth_user) = $req->get('auth_user');
-	Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
+	Bivio::Die->die('FORBIDDEN',
 		{auth_user => $auth_user, entity => $auth_realm,
-		    auth_role => $auth_role, operation => $attrs->{id}});
+		    auth_role => $auth_role, operation => $attrs->{id}})
+		    if $auth_user;
+	$req->server_redirect(Bivio::Agent::TaskId::LOGIN());
+	# DOES NOT RETURN
     }
     my($i);
     foreach $i (@{$attrs->{items}}) {
