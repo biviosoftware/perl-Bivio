@@ -118,20 +118,24 @@ sub cascade_delete {
 
 =for html <a name="change_ownership"></a>
 
-=head2 change_ownership(string user_id)
+=head2 change_ownership(string user_id, boolean include_k1)
 
 Changes all tables owned in the current realm by this user to the specified
 user id.
 
+If 'include_k1' is true, then the member's TaxK1 record will be moved.
+
 =cut
 
 sub change_ownership {
-    my($self, $user_id) = @_;
+    my($self, $user_id, $include_k1) = @_;
     my($req) = $self->get_request;
 
+    my(@tables) = qw(member_entry_t realm_transaction_t file_t realm_invite_t);
+    push(@tables, 'tax_k1_t') if $include_k1;
+
     # change all references to the user
-    foreach my $table (qw(member_entry_t realm_transaction_t tax_k1_t file_t
-            realm_invite_t)) {
+    foreach my $table (@tables) {
 	Bivio::SQL::Connection->execute("
                 UPDATE $table
                 SET user_id=?
