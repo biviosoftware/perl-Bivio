@@ -94,6 +94,7 @@ my($_CVS_RPM_SPEC_DIR);
 my($_RPM_HOME_DIR);
 my($_RPM_HTTP_ROOT);
 my($_RPM_USER);
+my($_RPM_GROUP);
 my($_TMP_DIR) = "/var/tmp/build-$$";
 #TODO: Not sure this is right.  Probably should be local to the
 #      method doing the create.
@@ -104,6 +105,7 @@ Bivio::IO::Config->register({
     rpm_home_dir => Bivio::IO::Config->REQUIRED,
     rpm_http_root => Bivio::IO::Config->REQUIRED,
     rpm_user => Bivio::IO::Config->REQUIRED,
+    rpm_group => undef,
     tmp_dir => $_TMP_DIR,
 });
 
@@ -275,10 +277,14 @@ Where the packages reside in the http hierarchy, e.g.
 
     http://build-server/b-release
 
+=item rpm_group : string [rpm_user]
+
+The group which owns the releases.  This is probably the same group which
+your http server is running as.
+
 =item rpm_user : string (required)
 
-The user which owns the releases.  This is probably the same user which your
-http server is running as.
+The user which owns the releases.  Typically, you want this to be root.
 
 =item tmp_dir : string ["/var/tmp/build-$$"]
 
@@ -294,6 +300,7 @@ sub handle_config {
     $_RPM_HOME_DIR = $cfg->{rpm_home_dir};
     $_RPM_HTTP_ROOT = $cfg->{rpm_http_root};
     $_RPM_USER = $cfg->{rpm_user};
+    $_RPM_GROUP = $cfg->{rpm_group} || $cfg->{rpm_user};
     $_TMP_DIR = $cfg->{tmp_dir};
     return;
 }
@@ -546,7 +553,7 @@ sub _save_rpm_file {
     Bivio::Die->die("Missing rpm file $rpm_file") unless -f $rpm_file;
 
     $$output .= "SAVING RPM $rpm_file in $_RPM_HOME_DIR\n";
-    _system("chown $_RPM_USER.$_RPM_USER $rpm_file", $output);
+    _system("chown $_RPM_USER.$_RPM_GROUP $rpm_file", $output);
     _system("cp -p $rpm_file $_RPM_HOME_DIR", $output);
     return;
 }
