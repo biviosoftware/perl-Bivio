@@ -30,7 +30,6 @@ C<Bivio::Biz::SqlSupport>
 
 #=IMPORTS
 use Bivio::Biz::SqlConnection;
-use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 use Carp();
 use Data::Dumper;
@@ -99,7 +98,7 @@ sub create {
 	push(@values, $new_values->{$_});
     }
 
-    &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
+    &_trace_sql($sql, @values) if $_TRACE;
 
     # not using prepare_cached
     my($statement) = $conn->prepare($sql);
@@ -107,11 +106,12 @@ sub create {
     Bivio::Biz::SqlConnection->execute($statement, $model, @values);
     $statement->finish();
 
-    # update all the model properties, undefined fields as well
-    foreach (keys(%$properties)) {
-	$properties->{$_} = $new_values->{$_};
+    if ($model->get_status()->is_OK()) {
+	# update all the model properties, undefined fields as well
+	foreach (keys(%$properties)) {
+	    $properties->{$_} = $new_values->{$_};
+	}
     }
-
     return $model->get_status()->is_OK();
 }
 
@@ -131,7 +131,7 @@ sub delete {
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{delete}.$where_clause;
-    &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
+    &_trace_sql($sql, @values) if $_TRACE;
 
     # not using prepare_cached
     my($statement) = $conn->prepare($sql);
@@ -176,7 +176,7 @@ sub find {
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
-    &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
+    &_trace_sql($sql, @values) if $_TRACE;
     my($statement) = $conn->prepare_cached($sql);
 
     Bivio::Biz::SqlConnection->execute($statement, $model, @values);
@@ -223,7 +223,7 @@ sub update {
 	&_trace('no update required') if $_TRACE;
 	return;
     }
-    &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
+    &_trace_sql($sql, @values) if $_TRACE;
 
     my($conn) =  Bivio::Biz::SqlConnection->get_connection();
 
@@ -234,9 +234,11 @@ sub update {
 
     $statement->finish();
 
-    # update the model properties
-    foreach (keys(%$new_values)) {
-	$properties->{$_} = $new_values->{$_};
+    if ($model->get_status()->is_OK()) {
+	# update the model properties
+	foreach (keys(%$new_values)) {
+	    $properties->{$_} = $new_values->{$_};
+	}
     }
     return $model->get_status()->is_OK();
 }
@@ -260,11 +262,15 @@ sub _create_update_statement {
     my($cols);
     my($name);
     foreach $name (keys(%$new_values)) {
-	if ($old_values->{$name} ne $new_values->{$name}) {
+	my($old) = $old_values->{$name};
+	my($new) = $new_values->{$name};
+
+	# lots of extra comparison to avoid undef warning
+
+	if (defined($old) != defined($new) || ($old && $new && $old ne $new)) {
 	    my($col_name) = $field_map->{$name};
 	    $cols .= $col_name.'='
-		    .$conn->quote($new_values->{$name},
-			    $column_types->{$col_name}).',';
+		    .$conn->quote($new, $column_types->{$col_name}).',';
 	}
     }
 
@@ -274,6 +280,11 @@ sub _create_update_statement {
     # remove the extra ',' from cols
     chop($cols);
     return 'update '.$fields->{table_name}.' set '.$cols.' '.$where_clause;
+}
+
+sub _equals {
+    my($val, $val2);
+    return $val ne $val2;
 }
 
 # _get_column_types(string table_name, array fields) : hash
@@ -303,6 +314,24 @@ sub _get_column_types {
 
     $statement->finish();
     return $column_types;
+}
+
+# _trace_sql(string sql, array values)
+#
+# Traces the specified sql statement with substitution values.
+
+sub _trace_sql {
+    my($sql, @values) = @_;
+
+    $sql .= ' (';
+    for (my($i) = 0; $i < scalar(@values); $i++) {
+	$sql .= defined($values[$i]) ? $values[$i] : 'undef';
+	$sql .= ',';
+    }
+    chop($sql);
+    $sql .= ')';
+
+    &_trace($sql);
 }
 
 =head1 COPYRIGHT
