@@ -918,6 +918,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/edit/member/privileges
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::ClubMemberTitleForm
@@ -2258,6 +2259,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/member/delete
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::DeleteMemberForm
         Bivio::UI::HTML::Club::DeleteMember
@@ -3138,6 +3140,7 @@ my(@_CFG) = (
         ADMIN_WRITE
         adm/lookup-new
         Bivio::Biz::Model::AdmLookupForm
+        Bivio::Biz::Model::AdmRealmOwnerList->execute_load_page
         Bivio::UI::HTML::Adm::LookupList
         next=HTTP_DOCUMENT
         require_secure=1
