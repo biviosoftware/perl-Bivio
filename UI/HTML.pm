@@ -542,10 +542,7 @@ sub initialize_standard_support {
     ]));
     $self->group(home_login => $_W->load_and_new('HomeLogin'));
 
-    $self->group(club_counter => $_W->join([
-	[sub {Bivio::Biz::Model::Club->count_all}],
-    ]));
-#    month_day widget;
+    $self->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
     return;
 }
 
