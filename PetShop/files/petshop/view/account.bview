@@ -15,7 +15,7 @@ my($edit_mode_condition) = sub {
 view_put(menu_content => Form('UserAccountForm',
     Grid([
 	[
-	    String(<<'EOF', 'error', {cell_colspan => 2}),
+	    String(<<'EOF', 'warning', {cell_colspan => 2}),
 This a demonstration site.
 DO NOT ENTER REAL DATA.
 

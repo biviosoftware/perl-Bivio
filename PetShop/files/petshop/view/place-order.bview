@@ -11,7 +11,7 @@ view_put(header_title => 'Enter Your Information');
 
 view_put(menu_content => Form('OrderForm', Grid([
     [
-        String(<<'EOF', 'error', {cell_colspan => 2}),
+        String(<<'EOF', 'warning', {cell_colspan => 2}),
 This a demonstration site.
 DO NOT ENTER REAL DATA.
 
