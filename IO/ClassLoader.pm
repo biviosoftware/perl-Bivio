@@ -98,7 +98,7 @@ Returns the delegate for the specified class.
 sub delegate_require {
     my($proto, $class) = @_;
     my($module) = $_DELEGATES->{$class};
-    Bivio::IO::Alert->die('no delegate found for ', $class) unless $module;
+    Bivio::IO::Alert->bootstrap_die('no delegate found for ', $class) unless $module;
     $proto->simple_require($module);
     return $module;
 }
@@ -128,13 +128,9 @@ sub delegate_require_info {
 A map is a named path, e.g.
 
    AccountScraper => ['Bivio::Data::AccountScraper'],
-   View => 'Bivio::UI::View',
 
-If a class path is provided (array_ref), ClassLoader does all the work.  It
-searches the path specified for the classes in the map's name space.  If a
-class (string) is provided, the class is loaded and the method
-L<handle_map_require|"handle_map_require"> is called on the class to load the
-class.
+A class path is a list (array_ref)
+of module prefixes to insert in front of the simple class names to load.
 
 =item delegates : hash_ref []
 
@@ -146,44 +142,20 @@ A map of class names to delegate class names.
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    Bivio::IO::Alert->die('maps must be a hash_ref')
+    Bivio::IO::Alert->bootstrap_die('maps must be a hash_ref')
 		unless ref($cfg->{maps}) eq 'HASH';
 
     # Normalize and validate the map paths
     $_MAPS = {};
     while (my($k, $v) = each(%{$cfg->{maps}})) {
-	if (ref($v) eq 'ARRAY') {
-	    $_MAPS->{$k} = _map_path_init($k, $v);
-	}
-	elsif (defined($v) && !ref($v)) {
-	    $_MAPS->{$k} = $v;
-	}
-	else {
-	    Bivio::IO::Alert->die('map ', $k,
-		    ' not an array_ref or class name: ', $v);
-	}
+	Bivio::IO::Alert->bootstrap_die('map ', $k, ' not an array_ref: ', $v)
+	    unless ref($v) eq 'ARRAY';
+	$_MAPS->{$k} = _map_path_init($k, $v);
     }
     my($model_path) = $cfg->{maps}->{'Model'};
     _find_property_models($model_path) if $model_path;
     $_DELEGATES = $cfg->{delegates};
     return;
-}
-
-=for html <a name="handle_map_require"></a>
-
-=head2 abstract handle_map_require(string map_name, string class_name, string map_class) : UNIVERSAL
-
-Called by L<map_require|"map_require"> in map handle classes.  A handler class
-must look up I<class_name> (syntax specific to this I<map_name>) and return the
-class or an instance of the class.  I<map_class> is the fully qualified name.
-
-Map handlers are responsible for managing their own cache.  This module
-will not cache the result.  It will return true for is_loaded, however.
-
-=cut
-
-$_ = <<'}'; # emacs
-sub handle_map_require {
 }
 
 =for html <a name="is_loaded"></a>
@@ -225,20 +197,19 @@ sub is_valid_map {
 
 =for html <a name="map_require"></a>
 
-=head2 static map_require(string map_class) : UNIVERSAL
+=head2 static map_require(string map_class) : string
 
-=head2 static map_require(string class_name) : UNIVERSAL
+=head2 static map_require(string class_name) : string
 
-=head2 static map_require(string map_name, string class_name) : UNIVERSAL
+=head2 static map_require(string map_name, string class_name) : string
 
-Returns the fully qualified class or an instance of a class.
+Returns the fully qualified class loaded.
 
 A I<map_class> is of the form:
 
     map_name.class_name
 
-Throws an exception if the class can't be found or doesn't load.  The
-syntax of class is map specific.
+Throws an exception if the class can't be found or doesn't load.
 
 If I<class_name> is passed without a I<map_name> or if I<class_name>
 is a qualified class name (contains ::), the class will be loaded
@@ -253,15 +224,7 @@ sub map_require {
     return $_MAP_CLASS{$map_class} if defined($_MAP_CLASS{$map_class});
 
     my($map) = $_MAPS->{$map_name};
-    Bivio::IO::Alert->die($map_name, ': no such map') unless $map;
-    unless (ref($map)) {
-	_init_map_handler($map_name, $map) unless $_SIMPLE_CLASS{$map};
-	my($res) = $map->handle_map_require(
-		$map_name, $class_name, $map_class);
-	# Exists, but not defined so above test falls through.
-	$_MAP_CLASS{$map_class} = undef;
-	return $res;
-    }
+    Bivio::IO::Alert->bootstrap_die($map_name, ': no such map') unless $map;
 
     my($die);
     foreach my $path (@$map) {
@@ -270,7 +233,8 @@ sub map_require {
 	$die->throw unless $die->get('code') == Bivio::DieCode->NOT_FOUND;
 	_trace($die) if $_TRACE;
     }
-    Bivio::IO::Alert->die($map_class, ': not found In class map ', $map_name);
+    Bivio::IO::Alert->bootstrap_die($map_class, ': not found In class map ',
+	    $map_name);
     # DOES NOT RETURN
 }
 
@@ -301,8 +265,8 @@ Returns the names of the classes loaded.
 sub map_require_all {
     my($proto, $map_name, $filter) = @_;
     my($map) = $_MAPS->{$map_name};
-    Bivio::IO::Alert->die($map_name, ': no such map') unless $map;
-    Bivio::IO::Alert->die($map, ': cannot load all classes in dynamic maps')
+    Bivio::IO::Alert->bootstrap_die($map_name, ': no such map') unless $map;
+    Bivio::IO::Alert->bootstrap_die($map, ': cannot load all classes in dynamic maps')
 	unless ref($map);
 
     # Outer loop is @$map, because this is how map_require works (@INC)
@@ -341,7 +305,7 @@ sub simple_require {
     my($proto, @pkg) = @_;
     my($die);
     foreach my $pkg (@pkg) {
-	Bivio::IO::Alert->die('undefined package') unless $pkg;
+	Bivio::IO::Alert->bootstrap_die('undefined package') unless $pkg;
 	$die->throw unless _require($pkg, \$die);
     }
     return wantarray ? @pkg : $pkg[0];
@@ -405,21 +369,6 @@ sub _init_die {
     return;
 }
 
-# _init_map_handler(string map_name, string map_handler)
-#
-# Loads the class and ensures is valid.
-#
-sub _init_map_handler {
-    my($map_name, $map_handler) = @_;
-    my($die);
-    $die->throw unless _require($map_handler, \$die);
-    Bivio::IO::Alert->die($map_handler, ': must implement handle_map_require',
-	    ' for map ', $map_name)
-		unless $map_handler->can('handle_map_require');
-    $_SIMPLE_CLASS{$map_handler}++;
-    return;
-}
-
 # _map_args(any proto, string map_name, string class_name) : array
 # _map_args(any proto, string map_class) : array
 # _map_args(any proto, string simple_class) : array
@@ -446,7 +395,7 @@ sub _map_args {
     return ($proto, $1, $2, $map_name)
 	    if $map_name =~ /^(\w+)$_SEP_PAT(\S+)$/o;
 
-    Bivio::IO::Alert->die('invalid map_class: ', $map_name);
+    Bivio::IO::Alert->bootstrap_die('invalid map_class: ', $map_name);
     # DOES NOT RETURN
 }
 
@@ -459,7 +408,7 @@ sub _map_path_init {
     return [map {
 	my($x) = $_;
 	$x =~ s/(?<!::)$/::/;
-	Bivio::IO::Alert->die('map ', $map_name, ' path invalid: ', $_)
+	Bivio::IO::Alert->bootstrap_die('map ', $map_name, ' path invalid: ', $_)
 		    unless $x =~ /^(\w+::)+$/;
 	my($dir) = $x;
 	$dir =~ s,::,/,g;
@@ -469,7 +418,7 @@ sub _map_path_init {
 	    $ok = 1;
 	    last;
 	}
-	Bivio::IO::Alert->die('map ', $map_name, ' path not found: ', $_)
+	Bivio::IO::Alert->bootstrap_die('map ', $map_name, ' path not found: ', $_)
 		    unless $ok;
 	$x;
     } @$paths];
@@ -516,7 +465,7 @@ sub _require {
         require $pkg;";
     # Using \$code keeps the stack trace clean
     $$die = Bivio::Die->catch(\$code);
-#    Bivio::IO::Alert->die($pkg, ': not a Bivio::UNIVERSAL')
+#    Bivio::IO::Alert->bootstrap_die($pkg, ': not a Bivio::UNIVERSAL')
 #	    unless UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
 
     return undef if $$die;
