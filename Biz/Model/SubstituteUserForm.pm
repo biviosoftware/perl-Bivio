@@ -63,9 +63,7 @@ sub execute_empty {
     my($query) = $self->get_request->unsafe_get('query');
     return unless defined($query->{t});
     $self->internal_put_field(login => $query->{t});
-    $self->validate();
-    $self->execute_ok() unless $self->in_error();
-#TODO would be nice to go to club site
+    $self->validate_and_execute_ok();
     return;
 }
 
