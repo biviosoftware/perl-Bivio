@@ -278,6 +278,34 @@ sub submit_form {
     return;
 }
 
+=for html <a name="verify_form"></a>
+
+=head2 verify_form(hash_ref form_fields)
+
+Verifies the state of I<form_fields>. Only fields specified will be
+verified.
+
+=cut
+
+sub verify_form {
+    my($self, $form_fields) = @_;
+    my($fields) = $self->[$_IDI];
+    my($field);
+    my($visibles) = _assert_html($self)->get('Forms')
+	->get_by_field_names(keys(%$form_fields))->{visible};
+    _trace($visibles) if $_TRACE;
+
+    foreach $field (keys(%$form_fields)) {
+	my($control) = $visibles->{$field};
+	Bivio::Die->die($control->{type}, " ", $field,
+	    ' unexpected setting from ', $form_fields->{$field}) unless
+		$control->{type} eq 'checkbox' ?
+		    defined($control->{checked}) == $form_fields->{$field}
+			: $form_fields->{$field} eq $control->{value};
+    }
+    return;
+}
+
 =for html <a name="verify_text"></a>
 
 =head2 verify_text(string text)
