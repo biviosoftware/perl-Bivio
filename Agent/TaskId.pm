@@ -266,6 +266,7 @@ my(@_CFG) = (
 	Bivio::Biz::Model::AccountValuationList->execute_load_all
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
+        help=valuation_statement
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
