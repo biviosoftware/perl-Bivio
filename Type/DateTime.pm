@@ -639,9 +639,10 @@ See also L<now_as_filename|"now_as_filename">.
 
 sub local_now_as_file_name {
     my($proto) = @_;
-    my($now) = $proto->now;
+    # We call DateTime now, because we have to adjust for timezone.
+    my($now) = __PACKAGE__->now();
     my($tz) = _timezone();
-    $proto->add_seconds($now, -$tz) if $tz;
+    $now = $proto->add_seconds($now, -$tz * 60) if $tz;
     return $proto->to_file_name($now);
 }
 
