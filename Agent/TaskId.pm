@@ -155,7 +155,9 @@ my(@_CFG) = (
         CLUB
         MAIL_READ
         _:_/communications/mail:_/mail
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::MessageList
+        Bivio::UI::HTML::Club::MessageList
+
     )],
     [qw(
         CLUB_COMMUNICATIONS_MOTION_LIST
@@ -389,7 +391,8 @@ my(@_CFG) = (
         CLUB
         MAIL_READ
         _/communications/mail/message
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::UI::HTML::Club::MessageDetail
+
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INTEREST
