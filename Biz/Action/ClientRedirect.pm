@@ -48,7 +48,6 @@ sub QUERY_TAG {
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');

@@ -111,7 +111,6 @@ use Bivio::Biz::Model::SummaryList;
 use Bivio::Biz::QueryType;
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
-use Bivio::Util;
 use Bivio::Type::PageSize;
 
 #=VARIABLES

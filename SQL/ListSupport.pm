@@ -179,7 +179,6 @@ use Bivio::IO::Trace;
 use Bivio::Biz::PropertyModel;
 use Bivio::SQL::Connection;
 use Bivio::Type::PrimaryId;
-use Bivio::Util;
 use Carp ();
 
 #=VARIABLES

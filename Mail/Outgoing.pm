@@ -39,7 +39,6 @@ scratch.
 #=IMPORTS
 use Carp;
 use MIME::Base64;
-use Bivio::Util;
 use Bivio::MIME::Type;
 use Bivio::IO::Trace;
 use Bivio::Mail::Incoming;

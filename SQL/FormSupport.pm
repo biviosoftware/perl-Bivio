@@ -138,7 +138,6 @@ incoming mail via b-sendmail-agent.
 use Bivio::Biz::Model;
 use Bivio::IO::Trace;
 use Bivio::Type::PrimaryId;
-use Bivio::Util;
 use Carp();
 
 #=VARIABLES

@@ -49,7 +49,6 @@ How far apart should the buttons be.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
 use Bivio::UI::HTML::Widget::ClearDot;
 use Bivio::UI::HTML::Widget::Submit;
 

@@ -52,7 +52,6 @@ The (constant) width of the dot.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
 use Bivio::UI::Icon;
 use Carp ();
 

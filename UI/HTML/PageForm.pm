@@ -59,7 +59,6 @@ use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Select;
 use Bivio::UI::HTML::Widget::StandardSubmit;
 use Bivio::UI::HTML::Widget::Text;
-use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;

@@ -282,7 +282,6 @@ use Bivio::IO::Trace;
 use Bivio::MIME::Base64;
 use Bivio::Type::LoginCookie;
 use Bivio::Type::UserAgent;
-use Bivio::Util;
 use Crypt::CBC;
 
 #=VARIABLES
