@@ -26,7 +26,11 @@ use Bivio::UI::HTML::Widget;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget::Submit> draws a submit button.
+C<Bivio::UI::HTML::Widget::Submit> draws a submit button.  The
+font is always I<FORM_SUBMIT>.
+
+If the form's L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> returns an empty
+string, the button won't be rendered.
 
 =head1 ATTRIBUTES
 
@@ -35,10 +39,6 @@ C<Bivio::UI::HTML::Widget::Submit> draws a submit button.
 =item form_model : array_ref (required, inherited)
 
 Which form are we dealing with.
-
-=item has_next : boolean [false]
-
-If true, then a Next button will appear instead of the OK button.
 
 =back
 
@@ -85,6 +85,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
+    $fields->{is_first_render} = 1;
     return;
 }
 
@@ -99,7 +100,7 @@ Will return true if always renders exactly the same way.
 sub is_constant {
     my($fields) = shift->{$_PACKAGE};
     Carp::croak('can only be called after first render')
-		unless $fields->{initialized};
+		if $fields->{is_first_render};
     return 1;
 }
 
@@ -114,15 +115,20 @@ Render the object.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value}, return if $fields->{initialized};
+    $$buffer .= $fields->{value}, return unless $fields->{is_first_render};
     my($form) = $source->get_widget_value(@{$fields->{model}});
     my($name) = $form->SUBMIT();
-    $fields->{value} = '<input type=submit name='.$name.' value="'
-	    .($self->unsafe_get('has_next') ? $form->SUBMIT_NEXT()
-		    : $form->SUBMIT_OK())
-	    .'">&nbsp;<input type=submit name='.$name.' value="'
-	    .$form->SUBMIT_CANCEL().'">';
+    my($p, $s) = Bivio::UI::Font->as_html('form_submit');
+    my($ok) = $form->SUBMIT_OK;
+    my($cancel) = $form->SUBMIT_CANCEL;
+    # There's always an OK, but not be a cancel.
+    $fields->{value} = $p.'<input type=submit name='.$name.' value="'.$ok.'">';
+    $fields->{value} .=
+	    '&nbsp;<input type=submit name='.$name.' value="'.$cancel.'">'
+		    if $cancel;
+    $fields->{value} .= $s;
     $$buffer .= $fields->{value};
+    $fields->{is_first_render} = 0;
     return;
 }
 
