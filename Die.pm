@@ -49,7 +49,6 @@ use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
-use Bivio::Type::Enum;
 
 #=VARIABLES
 use vars qw($_TRACE);

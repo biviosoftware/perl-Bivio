@@ -25,10 +25,9 @@ C<Bivio::IO::File> is a collection of file utilities.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::Trace;
 use File::Path ();
-use Bivio::Die;
-use Bivio::Type::DateTime;
 
 #=VARIABLES
 use vars ('$_TRACE');

@@ -96,11 +96,10 @@ L<get_result|"get_result">.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
-
 
 =head1 FACTORIES
 
