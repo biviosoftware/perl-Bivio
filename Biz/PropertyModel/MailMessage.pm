@@ -109,14 +109,6 @@ sub create {
     # now extract all the mime attachments
     &_trace('extracting MIME attachments for this mail message') if $_TRACE;
     _extract_mime($entity, 0, $club_name, $msgid);
-
-    # crude reset of the file position:
-    $file = $msg->get_rfc822_io;
-    my($keywords) = _parse_keywords($file);
-    $file->close;
-    my($rslt) = '';
-    $_FILE_CLIENT->set_keywords('/'.$club_name.'/messages/html/'.$msgid.".0",
-	    $keywords, \$rslt) || die("set_keywords failed: \$body");
     return;
 }
 
@@ -132,6 +124,21 @@ Deletes the current model from the database. Returns 1 if successful,
 sub delete {
     my($self) = @_;
     die("not supported");
+}
+
+=for html <a name="get_keywords"></a>
+
+=head2 get_keywords(void) : keywords (arrayref)
+
+Will implement keyword "getting" for a mail message file.
+
+=cut
+
+#TODO implement this.
+
+sub get_keywords {
+    my($self) = @_;
+    return;
 }
 
 
@@ -232,8 +239,8 @@ sub setup_club {
 # _extract_mime(MIME::Entity entity, int file_index, string club_name, string message_id)
 #
 # Extract each MIME "part" of the message and write each one to a file named
-# <messageid>.<index>.  Additionally, each MIME header is written to a file:
-# <messageid>.<index>_hdr
+# [messageid].[index].  Additionally, each MIME header is written to a file:
+# [messageid].[index]_hdr
 #
 sub _extract_mime {
     my($entity, $file_index, $club_name, $message_id) = @_;
@@ -241,8 +248,6 @@ sub _extract_mime {
     my($num_parts) = $entity->parts || 0;
     &_trace('number of parts: ', $num_parts) if $_TRACE;
 
-#TODO:    if($file_index > 0 ){ # then we're probably talking about
-#         sub parts. Whatever that means.
     my($mime) = _extract_mime_body_decoded($entity);
     my($output_file_name) = $message_id.'.'.$file_index;
     my($msg) = $$mime;
@@ -250,7 +255,7 @@ sub _extract_mime {
     my($write) = 1;
     my($ctype) = lc($entity->head->get('content-type'));
     my($hdr) = _extract_mime_header($entity);
-    &_trace('content type: "', $ctype, '"') if $_TRACE;
+    &_trace('content type: ', $ctype) if $_TRACE;
     if ($mime) {
 	if ($ctype =~ /multipart\/alternative/) {
 	    # maybe throw away the text/plain, and just write out the HTML
@@ -269,14 +274,25 @@ sub _extract_mime {
 	if ($textplain && $write) {
 	    &_trace('content type is text/plain') if $_TRACE;
 	    &_trace('wrapping with <PRE></PRE>') if $_TRACE;
+	    #TODO here is where we need to "reformat" the email for web browser display.
 	    $msg = "<PRE>\n" . $msg . "\n</PRE>\n";
 	    _write_mime($club_name, $output_file_name, \$msg);
             _write_mime_header($club_name, $output_file_name, \$hdr);
+	    &_trace('now parsing the keywords for this mime part, since it is plain text.') if $_TRACE;
+	    #moved keyword parsing here.
+	    my $file = IO::Scalar->new(\$msg);
+	    my($keywords) = _parse_keywords($file);
+	    $file->close;
+	    my($rslt) = '';
+	    $_FILE_CLIENT->set_keywords('/'.$club_name.'/messages/html/'.$message_id . ".$file_index",
+		    $keywords, \$rslt) || die("set_keywords failed: \$body");
+	    &_trace('done with the keyword storage.') if $_TRACE;
 	}
 	else {
 	    # could be text/html or some other mime type
-	    &_trace('content-type is not text/plain. it is \"$ctype\"')
-		    if $_TRACE;
+	    &_trace('content-type is not text/plain. it is ', $ctype) if $_TRACE;
+	    #TODO: We need to parse keywords for this IF it is text/html AND we did
+	    #	   not already parse the text/plain part that is identical
 	    if ($write) {
 		&_trace('writing straight through.') if $_TRACE;
 		_write_mime($club_name, $output_file_name, \$msg);
@@ -301,14 +317,13 @@ sub _extract_mime {
 sub _extract_mime_body_decoded {
     my($entity) = @_;
     my($s);
-#TODO: don't use tied handles.
 #TODO: use single file handle to avoid leaks
-    tie(*FILEHANDLE, 'IO::Scalar', \$s);
+    my $file = IO::Scalar->new(\$s);
     my($io) = $entity->open('r');
 #TODO: Is this supposed to return an empty scalar?
     return \$s unless defined($io);
     my($line);
-    print FILEHANDLE $line while defined($line = $io->getline);
+    $file->print($line) while defined($line = $io->getline);
     $io->close;
     return \$s
 }
@@ -320,11 +335,13 @@ sub _extract_mime_body_decoded {
 sub _extract_mime_header {
     my($entity) = @_;
     my($s);
-#TODO: don't use tied handles.
 #TODO: use single file handle to avoid leaks
-    tie(*HEADERHANDLE, 'IO::Scalar', \$s);
+    my $file = IO::Scalar->new(\$s);
     my($head) = $entity->head;
-    $head->print(\*HEADERHANDLE);
+    &_trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
+    $head->print($file);
+#    $head->print(\*HEADERHANDLE);
+    &_trace('done writing mime_header');
     return $s;
 }
 
@@ -350,9 +367,10 @@ sub _get_date {
 # _parse_keywords(IO::Handle file) : hash_ref
 #
 # parses the mail message for all words.
-# Note that right now, this method is receiving an IO::Handle from
-# the mail message which includes the mail header. We should just be
-# parsing the mail *body*
+# Currently, this method is called for a MIME part that is
+# only text/plain. It is not called for other mime parts.
+# This means we don't ever see the Subject, Date, From, To
+# Fields when this method is called.
 #
 sub _parse_keywords {
     my($file) = @_;
@@ -360,9 +378,6 @@ sub _parse_keywords {
     my(%keywords) = ();
     while (!$file->eof) {
 	my($line) = $file->getline;
-#TODO: Remove this after "preliminary debugging".  Don't want all
-#      entire message written to log.
-	&_trace($line) if $_TRACE;
 	if ($line =~ /^Date:/i) {
 #TODO: use Mail::Incoming->get_dttm
 	    my($fdate) = _get_date(\$line);
@@ -373,14 +388,6 @@ sub _parse_keywords {
 	}
 	_parse_msg_line(\$line, \%keywords);
     }
-#   if ($_TRACE) {
-#       my($totalwords) = 0;
-#       foreach $k (keys(%keywords)) {
-#	    $totalwords += $keywords{$k};
-#	    &_trace($k, ' => ', $keywords{$k});
-#       }
-#       &_trace("Total Number of Words: $totalwords");
-#   }
     return \%keywords;
 }
 
@@ -399,22 +406,19 @@ sub _parse_keywords {
 # that are not normally encoded inside angle brackets (i.e. &nbsp)
 #
 # All words are stored lower case only.
-#
-#TODO: STORE THIS INFORMATION INTO THE FILE SERVER!
+
 #
 sub _parse_msg_line {
     my($line, $keywords) = @_;
     &_trace("_parse_msg_line called.") if $_TRACE;
     my($str) = $$line;
     if (!$$line){
-#TODO: Should this be a die?  Or should this just be ignored?
+# This condition should be ignored.
 #	print(STDERR "NULL LINE.\n");
 	return;
     }
 #TODO: Handle multi-line tags.
     $str =~ s/--//g;
-    # let's assume we don't care about case:
-    # and let's put off worrying about if this is MSWord, Excel, etc.
     $str = lc($str);
 #TODO: what about "gt", "lt", etc.  Need general alg, e.g. "\&[a-z]+;".
     $str =~ s/nbsp//g;
@@ -422,6 +426,8 @@ sub _parse_msg_line {
     $str =~ s/[.]\s//g;
 #TODO: Careful about stripping e-mail addrs.  Want to enter foo@bar.com as
 #      a complete keyword.
+
+    # Hmmmm.
     $str =~ s/[!@#%^&*,();:\t\[\]]//g;
     # Strip leading spaces so split works nicely.
     $str =~ s/^\s+//;
