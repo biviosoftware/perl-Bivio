@@ -256,6 +256,7 @@ sub _upgrade {
     _upgrade_create_bivio_buck($req);
     my($subscribers) = _upgrade_credit_current_subscribers($req);
     _upgrade_subscribe_free_trial($req, $subscribers);
+    _upgrade_inifinite_clubs($req);
     print("\n*** done ***\n");
     return;
 }
@@ -387,6 +388,28 @@ DROP TABLE bivio_buck_t
            DELETE FROM ec_subscription_t
            WHERE ec_subscription_t.subscription_type=?',
 	   [Bivio::Type::ECSubscription->BASIC_SERVICE->as_int]);
+    }
+    return;
+}
+
+# _upgrade_infinite_clubs(Bivio::Agent::Request req)
+#
+# Sets infinite subscriptions for clubs like 'Ask Candis',...
+#
+sub _upgrade_infinite_clubs {
+    my($req) = @_;
+    print("setting infinite subscriptions for special clubs\n");
+
+    use Bivio::Biz::Util::EC;
+    use Bivio::Type::RealmName;
+
+    my($ec_util) = Bivio::Biz::Util::EC->new;
+    $ec_util->put(req => $req);
+
+    foreach my $name (Bivio::Type::RealmName->CELEBRITY_CLUBS,
+	'ask_candis', 'trez_talk') {
+	$req->set_realm($name);
+	$ec_util->infinite_subscription('FREE_TRIAL');
     }
     return;
 }
