@@ -250,91 +250,116 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_charitable_sub_categories($req);
-    _upgrade_set_1065_draft_and_irs_center($req);
+    _upgrade_ec_subscription($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_charitable_sub_categories(Bivio::Agent::Request req)
+# _upgrade_ec_subscription(Bivio::Agent::Request req)
 #
-# Adds "50% Limit Organization" and "20% Limit Orgainization"
-# categories under "Charitable Contributions".
+# Delete renewal_period and drop ec_subscription_t6 constraint
 #
-sub _upgrade_add_charitable_sub_categories {
+sub _upgrade_ec_subscription {
     my($req) = @_;
-    print("\nadding charitable contribution sub categories\n");
+    print("Updating infinite subscriptions\n");
+    my($d) = 'Bivio::Type::Date';
+    # change infinite subscription to be get_max - 1 year.
+    Bivio::SQL::Connection->execute("
+UPDATE ec_subscription_t set end_date = to_date(?, 'J SSSSS')
+WHERE end_date = to_date(?, 'J SSSSS')",
+	[
+	    # Hack: copied from Model.ECSubscription
+	    $d->add_days($d->get_max, -366),
+	    $d->get_max,
+	]);
+    print("Deleting free trials where other subscriptions in place\n");
+    # delete free_trials which have another subscription;
+    _do_sql('
+DELETE FROM ec_subscription_t
+WHERE subscription_type = '
+	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
+	.'
+AND realm_id IN (
+   SELECT realm_id
+   FROM ec_subscription_t
+   WHERE subscription_type != '
+	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
+	.'
+   )
+/'
+	);
 
-    my($category) = Bivio::Biz::Model->new($req, 'ExpenseCategory');
-
+    print("Making all subscriptions non-overlapping\n");
+    # Find all realms with more than one subscription
+    my($realms) = [];
     my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, name
-            FROM realm_owner_t, club_t
-            WHERE realm_owner_t.realm_id=club_t.club_id
-            ORDER by realm_owner_t.name',
-            []);
+SELECT distinct realm_owner_t.realm_id, realm_owner_t.name
+  FROM ec_subscription_t, realm_owner_t
+  WHERE realm_owner_t.realm_id = ec_subscription_t.realm_id
+  AND subscription_type != '
+	.Bivio::Type::ECSubscription->FREE_TRIAL->as_sql_param
+	.'
+  AND realm_type = '
+	.Bivio::Auth::RealmType->CLUB->as_sql_param
+	.'
+  HAVING count(ec_subscription_id) > 1
+  GROUP BY realm_owner_t.realm_id, realm_owner_t.name
+  ORDER BY realm_owner_t.name
+    ');
     while (my $row = $sth->fetchrow_arrayref) {
-        my($realm_id, $name) = @$row;
-	$req->set_realm($name);
+	push(@$realms, [$row->[0], $row->[1]]);
+    }
 
-        my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
-                SELECT expense_category_id
-                FROM expense_category_t
-                WHERE name=?
-                AND deductible=1
-                AND realm_id=?',
-                ['Charitable Contributions', $realm_id]) || [])->[0];
+    # Update all subscriptions so they are non-overlapping.  Most recent
+    # subscription is first (and "right").
+    my($ecs) = Bivio::Biz::Model->new($req, 'ECSubscription');
+    foreach my $ro (@$realms) {
+	my($realm_id, $realm_name) = @$ro;
+	my($it) = $ecs->unauth_iterate_start(
+	    'end_date desc', {realm_id => $realm_id});
+	my($end_date);
+	while ($ecs->iterate_next_and_load($it)) {
+	    my($start_date) = $ecs->get('start_date');
+	    # AK subs always end on 12/31.  I looked through DB and there
+	    # are a number which are 1/1, so need a special correction.
+	    # Start dates are always ok.
+	    if ($ecs->get('subscription_type')
+		->equals_by_name('ACCOUNT_KEEPER')
+		&& ($d->to_parts($ecs->get('end_date')))[3] == 1) {
+		$ecs->update({
+		    end_date => $d->add_days($ecs->get('end_date'), -1)});
+	    }
 
-        unless ($parent_id) {
-            print("\t", $name, " - skipping, no parent expense category\n");
-            next;
-        }
-
-	foreach my $sub_category ('50% Limit Organization',
-	    '30% Limit Organization') {
-
-	    next if $category->unsafe_load({
-		name => $sub_category,
-	    });
-
-	    $category->create({
-		realm_id => $realm_id,
-		name => $sub_category,
-		deductible => 1,
-		parent_category_id => $parent_id,
-	    });
+	    if ($end_date) {
+		if ($d->compare($ecs->get('start_date'), $end_date) >= 0) {
+		    $ecs->update({
+			end_date => $d->add_days($end_date, -1)});
+		    Bivio::IO::Alert->info($realm_name, ': new end_date=',
+			$d->to_string($ecs->get('end_date')),
+			' ', $ecs->get('subscription_type')->get_name);
+		}
+		if ($d->compare($start_date, $end_date) >= 0) {
+		    $ecs->update({start_date =>
+			$d->add_days($end_date, -1)});
+		    $start_date = $ecs->get('start_date');
+		    Bivio::IO::Alert->info($realm_name, ': new start_date=',
+			$d->to_string($start_date),
+			' ', $ecs->get('subscription_type')->get_name);
+		}
+	    }
+	    $end_date = $start_date;
 	}
     }
-    return;
-}
-
-# _upgrade_set_1065_draft_and_irs_center(Bivio::Agent::Request req)
-#
-# Sets the draft field for the 2001 1065.
-# Sets the IRS center to unknown for 2001.
-#
-sub _upgrade_set_1065_draft_and_irs_center {
-    my($req) = @_;
-    print("updating 1065 for all clubs\n");
-    my($end_2001) = Bivio::Type::Date->from_literal('12/31/2001');
-    my($tax1065) = Bivio::Biz::Model->new($req, 'Tax1065');
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, name
-            FROM realm_owner_t, club_t
-            WHERE realm_owner_t.realm_id=club_t.club_id
-            ORDER by realm_owner_t.name',
-            []);
-    while (my $row = $sth->fetchrow_arrayref) {
-        my($realm_id, $name) = @$row;
-	$req->set_realm($name);
-
-	$tax1065->load_or_default($end_2001);
-	$tax1065->update({
-	    irs_center => Bivio::Type::F1065IRSCenter->UNKNOWN,
-	    draft => 1,
-	});
-    }
+    print("Dropping renewal_period and renewal_method\n");
+    # Fix up tables (dropping columns and unnecessary constraints)
+    _do_sql('
+DROP INDEX ec_subscription_t6
+/
+ALTER TABLE ec_subscription_t DROP COLUMN renewal_period
+/
+ALTER TABLE ec_subscription_t DROP COLUMN renewal_method
+/
+');
     return;
 }
 
