@@ -73,11 +73,21 @@ I<proto> is either the instance or class passed to C<handle_die>.
 
 authentication required: user must authenticate first before proceeding
 
+=item INVALID_VERSION: entity, class
+
+invalid version: user request using invalid or old form, query, or uri
+
+=item INVALID_QUERY: entity, class
+
+invalid query: user request contains invalid query value
+
 =back
 
 =cut
 
 #=IMPORTS
+# Don't import, because would be circular reference.
+# use Bivio::Die;
 
 #=VARIABLES
 __PACKAGE__->compile(
@@ -126,7 +136,37 @@ __PACKAGE__->compile(
 	'authentication required',
 	'user must authenticate first before proceeding',
     ],
+    INVALID_VERSION => [
+    	9,
+	'invalid version',
+	'user request using invalid or old form, query, or uri',
+    ],
+    INVALID_QUERY => [
+    	10,
+	'invalid query',
+	'user request contains invalid query value',
+    ],
 );
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="die"></a>
+
+=head2 die(hash_ref attrs)
+
+=head2 die(scalar message)
+
+Dies in caller with this die code.
+
+=cut
+
+sub die {
+    my($self, $attrs) = @_;
+    $attrs = {message => $attrs} unless ref($attrs) eq 'HASH';
+    Bivio::Die->die($self, $attrs, caller);
+}
 
 #=PRIVATE METHODS
 
