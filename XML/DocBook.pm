@@ -6,7 +6,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::XML::DocBook - converts XML DocBook files to HTML
+Bivio::XML::DocBook - converts XML DocBook files to HTML and counts words
 
 =head1 RELEASE SCOPE
 
@@ -29,7 +29,8 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::XML::DocBook> converts XML DocBook files to HTML.
+C<Bivio::XML::DocBook> converts XML DocBook files to HTML.  Also can
+L<count_words|"count_words"> on XML files.
 
 =cut
 
@@ -46,6 +47,7 @@ Returns:
   usage: b-docbook [options] command [args...]
   commands:
       to_html file.xml -- converts input xml to output html
+      count_words file.xml -- returns number of words in XML file
 
 =cut
 
@@ -54,6 +56,7 @@ sub USAGE {
 usage: b-docbook [options] command [args...]
 commands:
     to_html file.xml -- converts input xml to output html
+    count_words file.xml -- returns number of words in XML file
 EOF
 }
 
@@ -158,6 +161,21 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
 
 =cut
 
+=for html <a name="count_words"></a>
+
+=head2 count_words(string xml_file) : int
+
+Returns the words in XML content.
+
+=cut
+
+sub count_words {
+    my($self, $xml_file) = @_;
+    return _count_words(
+	XML::Parser->new(Style => 'Tree')->parsefile($xml_file))
+	. "\n";
+}
+
 =for html <a name="to_html"></a>
 
 =head2 to_html(string xml_file) : string_ref
@@ -211,6 +229,23 @@ sub _compile_program {
 sub _compile_tags_to_html {
     my($names, $prefix) = @_;
     return join('', map {"<$prefix$_>"} @$names);
+}
+
+# _count_words(array_ref children) : int
+#
+# Counts the words in the literal children and recurses the tree.
+#
+sub _count_words {
+    my($children) = @_;
+    shift(@$children) if ref($children->[0]) eq 'HASH';
+    my($res) = 0;
+    my(@dontcare);
+    while (@$children) {
+	my($tag, $child) = splice(@$children, 0, 2);
+	$res += $tag ? _count_words($child)
+	    : scalar(@dontcare = split(' ', $child));
+    }
+    return $res;
 }
 
 # _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string

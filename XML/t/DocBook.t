@@ -12,6 +12,12 @@ Bivio::Test->unit([
 		[$_] => [Bivio::IO::File->read($html)];
 	    } sort(<DocBook/*.xml>)
 	],
+        count_words => [
+	    ['DocBook/01.xml'] => ["4\n"],
+	    ['DocBook/02.xml'] => ["13\n"],
+	    # Certain punctuation is counted as words.
+	    ['DocBook/03.xml'] => ["26\n"],
+	],
     ],
 ]);
 
