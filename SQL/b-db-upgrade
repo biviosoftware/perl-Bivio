@@ -147,6 +147,32 @@ sub _upgrade {
     use Bivio::Type::FileVolume;
     use Bivio::Type::Integer;
 
+    # drop and readd file_t volume constraints, adds expanded volume check
+    # to include the EW_IMPORT volume
+    _drop_constraints('file_t', 'volume');
+    _do('
+ALTER TABLE file_t modify volume not null
+/
+ALTER TABLE file_t add check (volume BETWEEN 1 AND 2)
+/
+');
+
+    # fix Herly Industries Inc Wts 1999 ticker problem
+    Bivio::SQL::Connection->execute("
+            UPDATE instrument_t
+            SET ticker_symbol='HRLYW'
+            WHERE instrument_id = (
+                SELECT instrument_id
+                FROM mgfs_instrument_t
+                WHERE symbol='HRLYW'
+            )");
+
+    # add check on ticker so it doesn't happen again
+    _do('
+ALTER TABLE instrument_t modify ticker_symbol not null
+/
+');
+
     # update existing shadow names, add "-1" active flag to end of each
     my($sth) = Bivio::SQL::Connection->execute("
             SELECT name FROM realm_owner_t
