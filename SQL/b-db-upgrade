@@ -246,24 +246,32 @@ EOF
 
 sub _upgrade {
     my($req) = @_;
-    _upgrade_missing_file_constraint($req);
+    _upgrade_convert_fees_to_commissions($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_missing_file_constraint(Bivio::Agent::Request req)
+# _upgrade_convert_fees_to_commissions(Bivio::Agent::Request req)
 #
-# Adds a missing file_t.user_id not null constraint.
+# Converts investment fees after 1/1/2002 into commissions.
 #
-sub _upgrade_missing_file_constraint {
+sub _upgrade_convert_fees_to_commissions {
     my($req) = @_;
-    _do_sql('
-ALTER TABLE file_t modify user_id not null
-/
-');
+    use Bivio::Data::EW::ClubImporter;
+    print("converting investment fees into commissions\n");
+    my($sth) = Bivio::SQL::Connection->execute('
+        SELECT realm_owner_t.name
+        FROM realm_owner_t, club_t
+        WHERE realm_owner_t.realm_id=club_t.club_id
+        ORDER BY realm_owner_t.name', []);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($name) = $row->[0];
+        $req->set_realm($name);
+        Bivio::Data::EW::ClubImporter->convert_fees_into_commissions($req);
+    }
     return;
 }
-
 
 # _usage(array message)
 #
