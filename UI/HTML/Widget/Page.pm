@@ -57,6 +57,11 @@ How to render the C<HEAD> tag contents.
 Usually a
 L<Bivio::UI::HTML::Widget::Title|Bivio::UI::HTML::Widget::Title>.
 
+=item style : Bivio::UI::Widget
+
+Renders an inline style in the header.  The widget
+must render the C<STYLE> or C<META> tags as appropriate.
+
 =back
 
 =cut
@@ -135,6 +140,8 @@ sub initialize {
 	$v->put(parent => $self);
 	$v->initialize;
     }
+    $fields->{style}->put_and_initialize(parent => $self)
+	    if $fields->{style} = $self->unsafe_get('style');
     return;
 }
 
@@ -151,6 +158,7 @@ sub render {
 	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
+    $fields->{style}->render($source, $buffer) if $fields->{style};
     $$buffer .= '</head><body';
     my($req) = $source->get_request;
     # Always have a background color

@@ -56,7 +56,9 @@ sub UNDEF_CONFIG {
 use Bivio::UI::Facade;
 
 #=VARIABLES
-Bivio::UI::Facade->register(['Bivio::UI::Icon']);
+# HTML uses all of these
+Bivio::UI::Facade->register(['Bivio::UI::Icon', 'Bivio::UI::Color',
+    'Bivio::UI::Font']);
 
 =head1 METHODS
 
@@ -143,7 +145,6 @@ sub get_standard_copyright {
 			Bivio::UI::Label->get_simple(
 				'USER_AGREEMENT_TEXT'),
 			'USER_AGREEMENT_TEXT',
-			0,
 		       ),
 	    ]),
 	    'copyright_and_disclaimer');
@@ -196,7 +197,7 @@ sub get_standard_footer {
 	    [
 		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
 			cell_expand => 1,
-			cell_bgcolor => 'footer_menu',
+			cell_bgcolor => 'footer_line',
 		       ),
 	    ],
 	    [
@@ -413,7 +414,29 @@ sub get_standard_page {
     return Bivio::UI::HTML::Widget::Page->new({
 	head => $proto->get_standard_head(),
 	body => $proto->get_standard_body(),
+	style => $proto->get_standard_style(),
     });
+}
+
+=for html <a name="get_standard_style"></a>
+
+=head2 static get_standard_style() : Bivio::UI::HTML::Widget
+
+Returns the standard widget for style.  Renders "hover" of
+links in I<page_link_hover> color.
+
+=cut
+
+sub get_standard_style {
+    return Bivio::UI::HTML::Widget->join([
+	"<style>\n",
+	"<!--\n",
+        "a:hover {\n",
+	['Bivio::UI::Color', '->format_html', 'page_link_hover', 'color:'],
+        "}\n",
+        "-->\n",
+	"</style>\n",
+    ]);
 }
 
 =for html <a name="get_value"></a>
