@@ -57,8 +57,9 @@ Bivio::IO::Config->register({
     },
 });
 my($_DEFAULT_OPTIONS) = {
-    'AutoCommit' => 0,
-    'RaiseError' => 1,
+    AutoCommit => 0,
+    RaiseError => 1,
+    PrintError => 0,
 };
 
 =head1 FACTORIES
