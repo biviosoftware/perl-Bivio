@@ -81,8 +81,10 @@ must generate proper html.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::IO::Alert;
 use Bivio::UI::Font;
+use Bivio::UI::HTML::Format;
+use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -128,23 +130,15 @@ sub initialize {
     $p .= '&nbsp;' x $pad_left if $pad_left > 0;
 
     # Formatter
-    $fields->{format} = $self->get_or_default('format', 0);
-    if ($fields->{format}) {
-	$fields->{format} = 'Bivio::UI::HTML::Format::'.$fields->{format}
-		unless $fields->{format} =~ /::/;
-	die($fields->{format}, ': not a Bivio::UI::HTML::Format')
-		unless UNIVERSAL::isa($fields->{format},
-			'Bivio::UI::HTML::Format');
-    }
+    my($f) = $self->unsafe_get('format', 0);
+    $fields->{format} = Bivio::UI::HTML::Format->get_instance($f) if $f;
 
     $fields->{undef_value} = $self->get_or_default('undef_value', '');
 
     # Value
     $fields->{value} = $self->get('value');
     if ($fields->{is_constant} = !ref($fields->{value})) {
-	my($v) = $fields->{value};
-	$v = $fields->{format}->get_widget_value($v) if $fields->{format};
-    	$fields->{value} = $p._escape($v).$s;
+    	$fields->{value} = $p._format($fields->{format}, $fields->{value}).$s;
     }
     else {
 	$fields->{prefix} = $p;
@@ -198,9 +192,7 @@ sub render {
 	    $value->render($source, \$b);
 	}
 	else {
-	    $value = $fields->{format}->get_widget_value($value)
-		    if $fields->{format};
-	    $b .= _escape($value);
+	    $b .= _format($fields->{format}, $value);
 	}
     }
     # Don't output anything if nothing passed
@@ -210,14 +202,19 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _escape(string value) : string
+# _format(Bivio::UI::HTML::Format format, string value) : string
 #
-# Escapes the string and replaces newlines with <br>.  An all space
-# string equates to a &nbsp;
+# Formats and escapes the string and replaces newlines with <br>.
+# An all space string equates to a &nbsp;
 #
-sub _escape {
-    my($value) = @_;
-    die('got ref where scalar expected') if ref($value);
+sub _format {
+    my($format, $value) = @_;
+    if ($format) {
+	$value = $format->get_widget_value($value);
+	return $value if $format->result_is_html;
+    }
+    Bivio::IO::Alert->die('got ref where scalar expected: ', $value)
+		if ref($value);
     $value = Bivio::Util::escape_html($value);
     $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
     return $value;
