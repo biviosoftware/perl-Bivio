@@ -74,6 +74,22 @@ sub get_width {
     return 15;
 }
 
+=for html <a name="includes"></a>
+
+=head2 includes(Bivio::Auth::Permission perm_name) : boolean
+
+Returns true if this permission set includes perm_name.
+
+=cut
+
+sub includes {
+    my($proto, $perm_set, $perm_name) = @_;
+    my($p) = Bivio::Auth::Permission->unsafe_from_any($perm_name);
+    return 0
+	unless $p && $p->get_name eq $perm_name;
+    return vec($perm_set, $p->as_int, 1);
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
