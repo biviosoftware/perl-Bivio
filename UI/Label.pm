@@ -189,6 +189,7 @@ _compile(
     FRACTIONAL_SHARE_CASH => ['Cash Received'],
 
     # Accounting Reports (Tasks sorted alphabetically)
+    CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
     CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE => [
 	    'Performance Comparison Report'],
@@ -268,7 +269,7 @@ _compile(
     CLUB_ADMIN_MEMBER_ADD => ['Add Members'],
     CLUB_ADMIN_MEMBER_DELETE => ['Member Delete'],
     CLUB_ADMIN_TOOLS => ['Administrative Tools'],
-    CLUB_ADMIN_USER_LIST => ['Roster'],
+    CLUB_ADMIN_USER_LIST => ['Club Roster'],
     CLUB_ADMIN_PUBLIC => ['Allow Public Access'],
     CLUB_ADMIN_PRIVATE => ['Close Public Access'],
     CLUB_COMMUNICATIONS_FILE_READ => ['Files'],
@@ -424,8 +425,7 @@ _compile(
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_SORTING => ['Sorting'],
-    ANNOUNCE_SOLD => ['Investment Sold'],
+    ANNOUNCE_PERFORMANCE => ['Built for Speed'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
