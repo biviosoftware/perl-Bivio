@@ -8,6 +8,10 @@ $Bivio::Biz::FormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Biz::FormModel - an abstract model of a user input screen
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
 =cut
@@ -145,7 +149,6 @@ use Bivio::SQL::FormSupport;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_TIMEZONE_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->TIMEZONE_FIELD;
 Bivio::Agent::HTTP::Cookie->register($_PACKAGE);
 
 =head1 FACTORIES
@@ -579,7 +582,7 @@ Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
 
 sub handle_cookie_in {
     my($self, $cookie, $req) = @_;
-    my($v) = $cookie->unsafe_get($_TIMEZONE_COOKIE_FIELD);
+    my($v) = $cookie->unsafe_get(TIMEZONE_FIELD());
     $req->put_durable(timezone => $v) if defined($v);
     return;
 }
@@ -1025,7 +1028,8 @@ sub process {
 	# Auxiliary forms are not the "main" form models on the page
 	# and therefore, do not have any input.  They always return
 	# back to this page, if they require_context.
-	_trace(ref($self), ': auxiliary form') if $_TRACE;
+	_trace(ref($self), ': auxiliary form; primary_class=', $primary_class)
+		if $_TRACE;
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request($req)
 		if $fields->{require_context};
@@ -1598,13 +1602,13 @@ sub _parse_timezone {
 
     my($req) = $self->get_request;
     my($cookie) = $req->get('cookie');
-    my($old_v) = $cookie->unsafe_get($_TIMEZONE_COOKIE_FIELD);
+    my($old_v) = $cookie->unsafe_get(TIMEZONE_FIELD());
 
     # No change, don't do any more work
     return if defined($old_v) && $old_v eq $v;
 
     # Set the new timezone
-    $cookie->put($_TIMEZONE_COOKIE_FIELD => $v);
+    $cookie->put(TIMEZONE_FIELD() => $v);
     $req->put_durable(timezone => $v);
     return;
 }
