@@ -30,10 +30,17 @@ Bivio::Test->new({
  	    ['Forms', 'Enrolled_0', 'visible',
  		 'Enrolled_1', 'checked' ] => Bivio::DieCode::DIE,
  	],
+    ], [
 	'ieeesa-ballot-invitation-request-step-2' => [
 	    ['Forms', 'AES/GA', 'visible',
 		 'AES/GA', 'type'] => [ 'checkbox' ],
 	],
+    ], [
+	'ieeesa-open-ballot-invitations' => [
+	    ['Forms', 'Join Ballot Group_0', 'visible',
+		 'Classification_0', 'options', '', 'value'] => [ '1' ],
+	],
+    ], [
 	login => [
 	    ['Links', 'Please Register.', 'href'] => ['/pub/register'],
 	    ['Links', 'help_off', 'href'] => ['/hp/index.html'],
