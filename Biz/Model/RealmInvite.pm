@@ -313,6 +313,22 @@ sub execute_accept {
     return;
 }
 
+=for html <a name="execute_delete_cookie"></a>
+
+=head2 execute_delete_cookie(Bivio::Agent::Request req) : boolean
+
+Deletes our cookie field.  Call if you are sure we don't want
+to keep the cookie lying around.  Should'n be called on USER_CREATE
+or LOGIN tasks.
+
+=cut
+
+sub execute_delete_cookie {
+    my(undef, $req) = @_;
+    $req->get('cookie')->delete($_COOKIE_FIELD);
+    return 0;
+}
+
 =for html <a name="format_query"></a>
 
 =head2 format_query() : string
@@ -425,9 +441,6 @@ sub _check_cookie {
 
     my($self) = $proto->new($req);
     if ($self->unauth_load(realm_invite_id => $id)) {
-#TODO: DELETE THIS LINE after 6/15/2000.
-	$ac = $self->get_auth_code() unless $c =~ /$_SEPARATOR/o;
-
 	_trace('actual=', $ac, '; expected=', $self->get_auth_code) if $_TRACE;
 	# If the auth_code was in the cookie, set it on the request.
 	if (defined($ac) && $ac eq $self->get_auth_code()) {
