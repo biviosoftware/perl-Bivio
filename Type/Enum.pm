@@ -532,7 +532,7 @@ sub is_equal {
 
 =for html <a name="to_literal"></a>
 
-=head2 static to_literal(Bivio::type::Enum value) : int
+=head2 static to_literal(Bivio::Type::Enum value) : int
 
 Return the integer representation of I<value>
 
@@ -548,7 +548,7 @@ sub to_literal {
 
 =head2 static to_sql_param(Bivio::Type::Enum value) : int
 
-Returns integer representation of I<value>
+Returns L<as_string|"as_string"> for I<value> or the empty string.
 
 =cut
 
@@ -556,6 +556,34 @@ sub to_sql_param {
     my($proto, $value) = @_;
     return undef unless defined($value);
     return _get_info($proto, $value)->[0];
+}
+
+=for html <a name="to_string"></a>
+
+=head2 to_string(Bivio::Type::Enum value) : string
+
+Returns the string representation of the value.
+
+=cut
+
+sub to_string {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    return _get_info($proto, $value)->[4];
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 to_xml(Bivio::Type::Enum value) : string
+
+Returns the name of I<value>.
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    return _get_info($proto, $value)->[3];
 }
 
 #=PRIVATE METHODS

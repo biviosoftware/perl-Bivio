@@ -301,6 +301,21 @@ sub to_sql_value {
     return shift;
 }
 
+=for html <a name="to_string"></a>
+
+=head2 to_string(any value) : string
+
+Returns the L<to_literal|"to_literal"> representation of the value.
+Always returns a defined value.  I<undef> is returned as the empty string.
+
+=cut
+
+sub to_string {
+    my($self, $value) = @_;
+    $value = $self->to_literal($value);
+    return defined($value) ? $value : '';
+}
+
 =for html <a name="to_uri"></a>
 
 =head2 to_uri(any value) : string
@@ -314,6 +329,18 @@ sub to_uri {
     my($self, $value) = @_;
     return '' unless defined($value);
     return Bivio::Util::escape_uri($self->to_literal($value));
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 to_xml(any value) : string
+
+Same as L<to_html|"to_html">.
+
+=cut
+
+sub to_xml {
+    return shift->to_html(@_);
 }
 
 #=PRIVATE METHODS
