@@ -68,6 +68,10 @@ If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
 
 If true, the table will C<WIDTH> will be C<100%>.
 
+=item hide_empty_cells : boolean [false]
+
+If true, empty cells will not be rendered.
+
 =item pad : number [0]
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
@@ -471,6 +475,11 @@ sub render {
 	    # else undefined, render nothing
 	}
 	$row .= '</tr>';
+
+	# don't redner empty cells for 'hide_empty_cells'
+	$row =~ s!<td[^>]*></td>!!gs
+	    if $self->unsafe_get('hide_empty_cells');
+
 	# If row is completely empty, don't render it.
 	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
