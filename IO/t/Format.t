@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..6\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::IO::Format;
@@ -32,6 +32,7 @@ sub t {
 	    : ("not ok ", $T++,
 		"; actual = ", $$actual,
 		"; expected = ", $expected,
+		"; test line = ", (caller)[2],
 		"; format = ", $format,
 		"; args = ", ${Bivio::ShellUtil->ref_to_string($args)},
 		"\n"));
@@ -63,23 +64,40 @@ three lines
 bla
 RESULT
 
-my($f) = Bivio::IO::Format->new()->add_line("hello:\n@<<<<", [\$v])
+my($f) = Bivio::IO::Format->new()->add_line(" @<<<<", [\$v])->add_line("\n")
 	->put_top('HERE');
 # foreach statements change the reference "value" of the variable,
 # so we can't just say "foreach $v (qw(a b c))", because the \$v above
 # is going away for the duration of the foreach loop.
-foreach my $x (qw(a b c)) {
+foreach my $x ('a', '', 'c') {
     $v = $x;
     $f->process;
 }
 t($f, <<'RESULT');
 HERE
-hello:
-a
+ a
+
 HERE
-hello:
-b
+
+
 HERE
-hello:
-c
+ c
+
 RESULT
+
+$f->clear_result->put(delete_blank_lines => 1);
+foreach my $x ('a', '', 'c') {
+    $v = $x;
+    $f->process;
+}
+t($f, <<'RESULT');
+HERE
+ a
+
+HERE
+
+HERE
+ c
+
+RESULT
+

@@ -15,14 +15,31 @@ Bivio::IO::Format - uses formline to generate paged string output
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::IO::Format::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
+=cut
+
+use Bivio::Collection::Attributes;
+@Bivio::IO::Format::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
 C<Bivio::IO::Format> uses formline to generate a string output.  The example
 I<swrite> in the perlform man page doesn't take into account TOP format
 statements.  This class does.
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item delete_blank_lines : boolean [0]
+
+If a line results in a blank, don't print it unless the line is
+a constant blank line.
+
+=back
 
 =head1 EXAMPLES
 
@@ -51,8 +68,8 @@ Let's say you have:
 You would translate this to:
 
   my($form) = Bivio::IO::Format->new
-           ->add_top_line(<<'EOF', \$club_info)
-  Club: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+           ->put_top(<<"EOF")
+  Club: $club_info
 
   ID 		              Sent                        Privileges
   Email		              Full Name                   Login
@@ -91,14 +108,14 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::IO::Format
+=head2 static new(hash_ref attrs) : Bivio::IO::Format
 
 Returns a new Bivio::IO::Format.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UNIVERSAL::new(@_);
+    my($self) = Bivio::Collection::Attributes::new(@_);
     $self->{$_PACKAGE} = {
 	lines => [],
 	result => '',
@@ -135,7 +152,25 @@ sub add_line {
     push(@{$fields->{lines}}, {
 	format => $format,
 	args => $args,
+	is_blank => $format =~ /^\s*$/s ? 1 : 0,
     });
+    return $self;
+}
+
+=for html <a name="clear_result"></a>
+
+=head2 clear_result() : Bivio::IO::Format
+
+Clears the contents of the result.
+
+Returns self.
+
+=cut
+
+sub clear_result {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{result} = '';
     return $self;
 }
 
@@ -166,8 +201,11 @@ sub process {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     # We'll check for top here...
-    local($^A) = '';
+    local($^A);
+    my($delete_blank_lines) = $self->get_or_default('delete_blank_lines', 0);
+    my($res);
     foreach my $l (@{$fields->{lines}}) {
+	$^A = '';
 	# Dynamically generate the formline, because we are passed the values
 	# by reference and formline takes scalars, not references.  To get the
 	# proper behavior of caret (^>>>) fields, we have to pass the
@@ -176,12 +214,17 @@ sub process {
 		.join(',', map {'${$l->{args}->['.$_.']}'} 0..$#{$l->{args}})
 		.')')
 		|| die($@);
+	$res .= $^A unless $delete_blank_lines && $^A =~ /^\s*$/s
+		&& !$l->{is_blank};
     }
-    my($new_page) = _new_page($fields) unless defined($fields->{line_num});
-    my($lines) = _count_lines($^A);
+    my($lines) = _count_lines($res);
+    return $self unless $lines;
+
+    my($new_page) = _new_page($fields)
+	    unless defined($fields->{line_num});
     _new_page($fields) if !$new_page && $lines + $fields->{line_num} > $=;
     $fields->{line_num} += $lines;
-    $fields->{result} .= $^A;
+    $fields->{result} .= $res;
     return $self;
 }
 
