@@ -72,6 +72,10 @@ The column names to display, in order. Column headings will be assigned
 by looking up name.'_HEADING' in the Bivio::UI::Label enum.
 Each value in columns may be one of:
 
+=item want_sorting : boolean [1]
+
+Should column sorting be displayed?
+
 =over 4
 
 =item string
@@ -308,6 +312,7 @@ sub initialize {
         $lm = $list->get_info('list_class')->get_instance;
     }
     my($sort_columns) = $lm->get_info('order_by_names');
+    my($want_sorting) = $self->get_or_default('want_sorting', 1);
 
     # Create widgets for each heading, column, and summary
     my($cells) = [];
@@ -334,8 +339,8 @@ sub initialize {
 
         # Can we sort on this column?
         my($sort_fields) = $cell->unsafe_get('column_order_by')
-                || [grep($col eq $_, @$sort_columns)]
-                        if defined($sort_columns);
+		|| [grep($col eq $_, @$sort_columns)]
+                        if $want_sorting && defined($sort_columns);
 
         push(@$headings, _get_heading($self, $lm, $col, $cell, $sort_fields));
 	push(@$summary_cells, _get_summary_cell($self, $cell));
