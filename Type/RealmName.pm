@@ -58,7 +58,7 @@ Returns array of realm names of well-known celebrity spaces
 =cut
 
 sub CELEBRITY_CLUBS {
-    return ('ask_candis', 'club_cafe', 'take_stock', 'trez_talk');
+    return ('ask_candis', 'trez_talk');
 }
 
 =for html <a name="DEMO_CLUB"></a>
