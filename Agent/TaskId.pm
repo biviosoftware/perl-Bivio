@@ -370,7 +370,7 @@ my(@_CFG) = (
 	38
         GENERAL
         DOCUMENT_READ
-        hm/privacy.html
+        hm/safe.html
         Bivio::Biz::Action::HTTPDocument
     )],
     # No actions, just a token for authentication action
