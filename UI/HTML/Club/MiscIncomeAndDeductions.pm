@@ -142,6 +142,7 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
 
     $req->put(page_title_value => $fields->{heading},
+	    page_want_spreadsheet => 1,
 	    page_content => $fields->{content});
     Bivio::UI::HTML::Club::ReportPage->execute($req);
     return;
