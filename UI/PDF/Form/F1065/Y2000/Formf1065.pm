@@ -2591,6 +2591,96 @@ endobj
 /AP << /N 493 0 R >>
 >>
 endobj
+651 0 obj
+<< /T (f3-78) /Kids [ 233 0 R ] /FT /Tx /DA (/HeBo 9 Tf 0 0 0.627 rg) >>
+endobj
+233 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 274.42004 228.18997 448.02014 243.1304 ]
+/F 4
+/P 5 0 R
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/AP << /N 512 0 R >>
+/Parent 651 0 R
+>>
+endobj
+652 0 obj
+<< /T (f3-79) /Kids [ 234 0 R ] /FT /Tx /Q 2 /DA (/HeBo 9 Tf 0 0 0.627 rg) >>
+endobj
+234 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 143.58951 191.83359 198.59077 206.50032 ]
+/F 4
+/P 5 0 R
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/AP << /N 515 0 R >>
+/Parent 652 0 R
+>>
+endobj
+239 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 249.58911 132.49997 258.58917 142.50002 ]
+/T (c3-1)
+/FT /Btn
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/F 4
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/P 5 0 R
+/AS /Off
+/AP << /N << /Yes 266 0 R >> /D << /Yes 267 0 R /Off 268 0 R >> >>
+>>
+endobj
+240 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 299.58939 132.8333 308.58945 142.50003 ]
+/T (c3-2)
+/FT /Btn
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/F 4
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/P 5 0 R
+/AS /Off
+/AP << /N << /Yes 269 0 R >> /D << /Yes 270 0 R /Off 271 0 R >> >>
+>>
+endobj
+245 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 481.71622 131.67725 541.38336 145.01067 ]
+/T (f3-88)
+/FT /Tx
+/Q 2
+/P 5 0 R
+/F 4
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/AP << /N 526 0 R >>
+>>
+endobj
+246 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 545.46346 131.6774 561.13026 145.0108 ]
+/T (f3-89)
+/FT /Tx
+/Q 2
+/P 5 0 R
+/F 4
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/AP << /N 527 0 R >>
+>>
+endobj
 252 0 obj
 <<
 /Type /Annot

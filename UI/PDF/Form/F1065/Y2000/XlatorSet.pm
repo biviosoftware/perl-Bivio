@@ -509,32 +509,46 @@ my(@_XLATORS) = (
 #		],
 #		2
 #	       ),
-#	Bivio::UI::PDF::Form::RadioBtnXlator->new(
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_tax_type'
-#		],
-#		Bivio::Type::F1065ForeignTax::PAID(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c3-1', 'Yes'),
-#		Bivio::Type::F1065ForeignTax::ACCRUED(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c3-2', 'Yes')
-#	       ),
-#	Bivio::UI::PDF::Form::IntXlator->new(
-#		'f3-84',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_tax'
-#		],
-#		','
-#	       ),
-#	Bivio::UI::PDF::Form::FracXlator->new(
-#		'f3-85',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_tax'
-#		],
-#		2
-#	       ),
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f3-78',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income_country'
+		]
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f3-79',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income'
+		]
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax_type'
+		],
+		Bivio::Type::F1065ForeignTax::PAID(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c3-1', 'Yes'),
+		Bivio::Type::F1065ForeignTax::ACCRUED(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c3-2', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-88',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-89',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax'
+		],
+		2
+	       ),
 	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-95',
 		[
