@@ -139,6 +139,11 @@ _compile(
     TAX_FREE_INT => ['Federal Tax Free Interest',
 	    Bivio::Type::TaxCategory->FEDERAL_TAX_FREE_INTEREST->get_short_desc
 	   ],
+    PAID => ['Total Paid'],
+    EARNINGS => ["Earnings\nAllocated"],
+    ADD_ROWS => ['Add Rows'],
+    LOOKUP_BUTTON => ['Symbol Lookup'],
+    NEW_UNLISTED => ['New Unlisted'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
@@ -182,6 +187,7 @@ _compile(
     CLUB_CREATE => ['Create Club Site'],
     CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
     CLUB_ADMIN_GUEST_2_MEMBER => ['Invite Guest to become Member'],
+    CLUB_OPEN_BALANCE => ['Edit Opening Balances'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
@@ -200,11 +206,12 @@ _compile(
     NET_PROFIT_HEADING => ["Net\nProfit"],
     LAST_FIRST_MIDDLE_HEADING => ['Name'],
     PAID_HEADING => ['Paid'],
-    UNITS_HEADING => ['Units'],
+    UNITS_HEADING => ['Units', undef, 'MemberEntry.units'],
     VALUE_HEADING => ['Value'],
     PERCENT_HEADING => ['Percent'],
     DESCRIPTION_HEADING => ['Description'],
-    ACQUISITION_DATE_HEADING => ["Date\nAcquired"],
+    ACQUISITION_DATE_HEADING => ["Date\nAcquired", undef,
+	    'RealmInstrumentEntry.acquisition_Date'],
     SELL_DATE_HEADING => ['Date Sold'],
     SALES_PRICE_HEADING => ['Sales Price'],
     COST_BASIS_HEADING => ['Cost Basis'],
