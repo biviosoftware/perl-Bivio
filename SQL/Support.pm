@@ -211,9 +211,61 @@ sub init_column {
     return $col;
 }
 
-=for html <a name="init_models_primary_key"></a>
+=for html <a name="init_column_classes"></a>
 
-=head2 static init_models_primary_key(hash_ref attrs)
+=head2 init_column_classes(hash_ref attrs, hash_ref decl, array_ref classes) : string
+
+Initialize the column classes.
+Returns the beginnings of the where clause (alias field identities)
+
+=cut
+
+sub init_column_classes {
+    my($proto, $attrs, $decl, $classes) = @_;
+    my($column_aliases) = $attrs->{column_aliases};
+    my($where) = '';
+    # Initialize all columns and put into appropriate column classes
+    foreach my $class (@$classes) {
+	$attrs->{$class} = [];
+	my($list) = $decl->{$class};
+	next unless $list;
+	# auth_id is only one that is syntactically different
+	$list = [$list] if $class eq 'auth_id';
+	foreach my $decl (@$list) {
+	    my(@aliases, $first, $col);
+	    if (ref($decl) eq 'HASH') {
+		$col = _init_column_from_hash($attrs, $decl, $class,
+			\@aliases);
+		$first = $col->{name};
+	    }
+	    else {
+		# case: [] or Model.name
+		@aliases = ref($decl) ? @$decl : ($decl);
+		# First column is the official name.  The rest are aliases.
+		$first = shift(@aliases);
+		$col = $proto->init_column($attrs, $first, $class, 0);
+	    }
+	    $column_aliases->{$first} = $col;
+	    my($alias);
+	    foreach $alias (@aliases) {
+		# Creates a temporary column just to get sql_name and
+		# to make sure "model" is created if need be.
+		my($alias_col) = $proto->init_column(
+			$attrs, $alias, $class, 1);
+#TODO: Shouldn't allow where to be created for local columns
+		$where .= ' and '.$col->{sql_name}.'='.$alias_col->{sql_name};
+		# All aliases point to main column.  They don't exist
+		# outside of this context.
+		$column_aliases->{$alias} = $col;
+	    }
+	}
+    }
+    return $where;
+}
+
+=for html <a name="init_model_primary_key_maps"></a>
+
+=head2 static init_model_primary_key_maps(hash_ref attrs)
 
 B<INTERNAL USE ONLY>
 
@@ -224,7 +276,7 @@ in C<column_aliases> of I<attrs>
 
 =cut
 
-sub init_models_primary_key {
+sub init_model_primary_key_maps {
     my($proto, $attrs) = @_;
     # Ensure that (qual) columns defined for all (qual) models and their
     # primary keys and initialize primary_key_map.
@@ -263,6 +315,47 @@ sub init_version {
 }
 
 #=PRIVATE METHODS
+
+# _init_column_from_hash(hash_ref attrs, hash_ref decl, string class, array_ref aliases) : hash_ref
+#
+# Initializes the column from a hash reference of (name, type, constraint).
+#
+sub _init_column_from_hash {
+    my($attrs, $decl, $class, $aliases) = @_;
+    my($col, $first);
+    # case: "{ name => }"
+    if (ref($first = $decl->{name})) {
+	# case: "{name => [a, b]}"
+	@$aliases = @$first;
+	$first = shift(@$aliases);
+    }
+    if ($first =~ /\./) {
+	# case: "{name => Model.column}"
+	$col = __PACKAGE__->init_column($attrs, $first, $class, 0);
+    }
+    else {
+	# case: "{name => local_field}"
+	Carp::croak($first, ': declared at least twice')
+		    if $attrs->{columns}->{$first};
+	Carp::croak('type and constraint must be defined')
+		    unless $decl->{type} && $decl->{name};
+	$col = {name => $first};
+	push(@{$attrs->{local_columns}}, $col);
+    }
+    # Override or define new, but only set if set
+    if ($decl->{type}) {
+	Carp::croak($decl->{type}, ': not a Bivio::Type')
+		    unless UNIVERSAL::isa($decl->{type}, 'Bivio::Type');
+	$col->{type} = $decl->{type};
+    }
+    if ($decl->{constraint}) {
+	Carp::croak($decl->{constraint}, ': not a Bivio::SQL::Constraint')
+		    unless UNIVERSAL::isa($decl->{constraint},
+			    'Bivio::SQL::Constraint');
+	$col->{constraint} = $decl->{constraint};
+    }
+    return $col;
+}
 
 =head1 COPYRIGHT
 

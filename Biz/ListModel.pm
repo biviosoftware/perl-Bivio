@@ -73,7 +73,8 @@ Loads a new instance of this model using the request.
 sub execute {
     my($proto, $req) = @_;
     my($query) = $req->unsafe_get('query');
-    $proto->new($req)->load($query ? %$query : ());
+    # Pass a copy of the query, because it is trashed by ListQuery.
+    $proto->new($req)->load($query ? {%$query} : {});
     return;
 }
 
@@ -91,6 +92,23 @@ sub get_result_set_size {
     return int(@$rows);
 }
 
+=for html <a name="internal_get_rows"></a>
+
+=head2 internal_get_rows() : array_ref
+
+B<FOR INTERNAL USE ONLY.>
+
+Returns the rows associated with the query.  If the model
+hasn't been loaded, blows up.
+
+=cut
+
+sub internal_get_rows {
+    my($rows) = shift->{$_PACKAGE}->{rows};
+    Carp::croak('not loaded') unless $rows;
+    return $rows;
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
@@ -105,38 +123,63 @@ sub internal_initialize_sql_support {
     return Bivio::SQL::ListSupport->new(shift->internal_initialize);
 }
 
+=for html <a name="internal_load"></a>
+
+=head2 internal_load(array_ref rows, Bivio::SQL::ListQuery query)
+
+B<FOR INTERNAL USE ONLY.>
+
+Loads the ListModel with I<rows>.
+
+=cut
+
+sub internal_load {
+    my($self, $rows, $query) = @_;
+    my($empty_properties) = $self->{$_PACKAGE}->{empty_properties};
+    # Easier to just replace the hash_ref
+    $self->{$_PACKAGE} = {
+	rows => $rows,
+	cursor => -1,
+	query => $query,
+	empty_properties => $empty_properties,
+    };
+    $self->internal_put($empty_properties);
+    $self->get_request->put(ref($self), $self);
+    return;
+}
+
 =for html <a name="load"></a>
 
-=head2 load(hash query)
+=head2 load(hash_ref query)
+
+=head2 load(Bivio::SQL::ListQuery query)
 
 Loads the property model from I<query> which must be a form
-acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>.
+acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+unless I<query> is already a ListQuery.
 
-I<auth_id> and I<count> will be added as attributes using the
-values in the request.
+I<count> will be added to I<query> only if it is a hash_ref.
+
+I<auth_id> will be put in I<query> using the value in the request.
 
 If the load is successful, saves the model in the request.
 
 =cut
 
 sub load {
-    my($self, %query) = @_;
+    my($self, $query) = @_;
     # Clear out old query
-    $query{auth_id} = $self->get_request->get('auth_id');
-    $query{count} = $_PAGE_SIZE;
+    my($auth_id) = $self->get_request->get('auth_id');
     my($sql_support) = $self->internal_get_sql_support;
-    my($list_query) = Bivio::SQL::ListQuery->new(\%query, $sql_support);
-    my($rows) = $sql_support->load($list_query);
-    my($empty_properties) = $self->{$_PACKAGE}->{empty_properties};
-    # Easier to just replace the hash_ref
-    $self->{$_PACKAGE} = {
-	rows => $rows,
-	cursor => -1,
-	query => $list_query,
-	empty_properties => $empty_properties,
-    };
-    $self->internal_put($empty_properties);
-    $self->get_request->put(ref($self), $self);
+    if (ref($query) eq 'HASH') {
+	$query->{auth_id} = $auth_id;
+	$query->{count} = $_PAGE_SIZE;
+	$query = Bivio::SQL::ListQuery->new($query, $sql_support);
+    }
+    else {
+	$query->put('auth_id' => $auth_id);
+    }
+    $self->internal_load($sql_support->load($query), $query);
     return;
 }
 

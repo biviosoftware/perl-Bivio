@@ -188,6 +188,8 @@ sub new {
 	column_aliases => {},
 	# The columns returned by select in order (not including auth_id)
 	select_columns => [],
+	# Columns which have no corresponding property model field
+	local_columns => [],
     };
     $proto->init_version($attrs, $decl);
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
@@ -210,8 +212,12 @@ Data will be loaded starting at the specified index into the result set.
 
 sub load {
     my($self, $query, $die) = @_;
-    return $query->get('this') ? _load_this($self, $query, $die)
-	    : _load_list($self, $query, $die);
+    # If there is a select, load with "this" or "list".
+    # Otherwise, no select such just return an empty list.
+    return $self->has_keys('select') ?
+	    $query->get('this') ? _load_this($self, $query, $die)
+		    : _load_list($self, $query, $die)
+			    : [];
 }
 
 #=PRIVATE METHODS
@@ -281,58 +287,31 @@ sub _format_select_order_by {
 #
 sub _init_column_classes {
     my($attrs, $decl) = @_;
-    my($column_aliases) = $attrs->{column_aliases};
-#TODO: Need an "column_aliases" map to deal with primary keys.
-    my($where) = '';
-    my($class);
-    # Initialize all columns and put into appropriate column classes
-    foreach $class (qw(auth_id primary_key order_by other)) {
-	$attrs->{$class} = [];
-	my($list) = $decl->{$class};
-	next unless $list;
-	# auth_id is only one that is syntactically different
-	$list = [$list] if $class eq 'auth_id';
-	my($c);
-	foreach $c (@$list) {
-	    my(@c) = ref($c) ? @$c : ($c);
-	    # First column is the official name.  The rest are aliases.
-	    my($first) = shift(@c);
-	    my($col) = __PACKAGE__->init_column($attrs, $first, $class, 0);
-	    $column_aliases->{$first} = $col;
-	    my($alias);
-	    foreach $alias (@c) {
-		# Creates a temporary column just to get sql_name and
-		# to make sure "model" is created if need be.
-		my($alias_col) = __PACKAGE__->init_column(
-			$attrs, $alias, $class, 1);
-		$where .= ' and '.$col->{sql_name}.'='.$alias_col->{sql_name};
-		# All aliases point to main column.  They don't exist
-		# outside of this context.
-		$column_aliases->{$alias} = $col;
-	    }
-	}
-    }
+    my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
+	    [qw(auth_id primary_key order_by other)]);
+
+    return undef unless %{$attrs->{models}};
 
     # auth_id must be exactly one column.  Turn into that column.
     Carp::croak('no auth_id or too many auth_id fields')
 		unless int(@{$attrs->{auth_id}}) == 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
 
-    # primary_key must be at least one column.  Sort alphabetically.
-    Carp::croak('no primary_key fields') unless @{$attrs->{primary_key}};
-
-    $attrs->{primary_key} = [sort {$a->{sql_name} cmp $a->{sql_name}}
+    # primary_key must be at least one column if there are models.
+    Carp::croak('no primary_key fields')
+		unless @{$attrs->{primary_key}} || !%{$attrs->{models}};
+    # Sort all names in a select alphabetically.
+    $attrs->{primary_key} = [sort {$a->{name} cmp $a->{name}}
 	@{$attrs->{primary_key}}];
 
     # other can be empty.  No reformatting necessary
 
     # Ensure that (qual) columns defined for all (qual) models and their
     # primary keys and initialize primary_key_map.
-    __PACKAGE__->init_models_primary_key($attrs);
+    __PACKAGE__->init_model_primary_key_maps($attrs);
 
     # order_by may be empty and stays in specified order.  Update some avlues
-    my($c);
-    foreach $c (@{$attrs->{order_by}}) {
+    foreach my $c (@{$attrs->{order_by}}) {
 	my($cc) = $c->{constraint};
 #TODO: If SQL::Constraint changes, this will probably break.
 #      SQL::Constraint really is a set.
@@ -351,25 +330,28 @@ sub _init_column_classes {
 #
 # Creates many of the lists in $attrs which are derived from the class
 # lists (primary_key, order_by).  Creates select and select_this
-# using "where" of field identities and column information already in $attrs.
+# using "where" of field identities and column information already in $attrs
+# only if "where" is defined (see _init_column_classes).
 #
 sub _init_column_lists {
     my($attrs, $where) = @_;
     my($columns) = $attrs->{columns};
-    # All lists are sorted to keep Oracle's cache happy across invocations
-    $attrs->{primary_key_names} = [map {
-	$_->{name};
-    } sort {$a->{name} cmp $b->{name}} (@{$attrs->{primary_key}})];
-    $attrs->{primary_key_types} = [
-	map {$columns->{$_}->{type}} @{$attrs->{primary_key_names}},
-    ];
-    $attrs->{order_by_names} = [
-	map {$_->{name}} @{$attrs->{order_by}},
-    ];
+
+    # Lists are sorted to keep Oracle's cache happy across invocations
+    $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
+    $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
+    # order_by can't be sorted, because order is important
+    $attrs->{order_by_names} = [map {$_->{name}} @{$attrs->{order_by}}];
+    $attrs->{column_names} = [sort(keys(%{$attrs->{columns}}))];
+
+    # Nothing to select
+    return unless defined($where);
+
     # Order select columns alphabetically, ignoring primary_key and auth_id
     my(%ignore) = map {
 	($_->{name}, 1),
-    } (@{$attrs->{primary_key}}, $attrs->{auth_id});
+    } (@{$attrs->{primary_key}}, $attrs->{auth_id},
+	    @{$attrs->{local_columns}});
     $attrs->{select_columns} = [
 	# Everything but primary_keys and auth_id are in column_names
 	sort {$a->{name} cmp $b->{name}} (grep(!defined($ignore{$_->{name}}),
@@ -377,6 +359,7 @@ sub _init_column_lists {
     ];
     # Put primary key at front
     unshift(@{$attrs->{select_columns}}, @{$attrs->{primary_key}});
+
     # Get names and set select_index
     my($i) = 0;
     my(@select_sql_names) = map {
@@ -384,27 +367,24 @@ sub _init_column_lists {
 	$_->{type}->from_sql_value($_->{sql_name});
     } @{$attrs->{select_columns}};
 
-    # Create select from all columns and include auth_id constraint in where
+    # Create select from all columns and include auth_id constraint
+    # in where
     $attrs->{select} = 'select '.join(',', @select_sql_names)
 	    .' from '.join(',',
 		    map {
 			my($tn) = $_->{instance}->get_info('table_name');
-			$tn eq $_->{sql_name} ? $tn : $tn.' '.$_->{sql_name};
+			$tn eq $_->{sql_name}
+				? $tn : $tn.' '.$_->{sql_name};
 		    } sort(values(%{$attrs->{models}})))
 	    .' where '
 	    .$attrs->{auth_id}->{sql_name}
-		    .'='.Bivio::Type::PrimaryId->to_sql_value('?')
+	    .'='.Bivio::Type::PrimaryId->to_sql_value('?')
 	    .$where;
-
     # How to select a single item (_load_this)
     $attrs->{select_this} = join(' and ', $attrs->{select},
 	    map {$_->{sql_name}.'='.$_->{type}->to_sql_value('?')}
 	    @{$attrs->{primary_key}});
 
-    # Add in auth_id to column_names
-    $attrs->{column_names}
-	    = [(map {$_->{name}} @{$attrs->{select_columns}}),
-		$attrs->{auth_id}->{name}];
     return;
 }
 

@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..12\n"; }
+BEGIN { $| = 1; print "1..18\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::SQL::ListSupport;
@@ -20,6 +20,7 @@ use Bivio::Type::Boolean;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::Gender;
+use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
@@ -81,7 +82,10 @@ package main;
 
 my($T) = 2;
 sub t {
-    print shift(@_) ? "ok $T\n" : ("not ok $T at line ", (caller)[2], "\n");
+    my($actual, $expected) = @_;
+    print $actual eq $expected
+	    ? "ok $T\n" : ("not ok $T ($actual != $expected)",
+		    ' at ', __FILE__, " line ", (caller)[2], "\n");
     $T++;
 }
 my($m);
@@ -127,6 +131,11 @@ Bivio::SQL::Connection->commit;
 my($support) = Bivio::SQL::ListSupport->new({
     version => 1,
     other => [
+	{
+	    name => 'local_field',
+	    type => 'Bivio::Type::Integer',
+	    constraint => Bivio::SQL::Constraint::NONE(),
+	},
     ],
     order_by => [
 	[qw(TListT1.name TListT2.name)],
@@ -145,9 +154,9 @@ my($query) = Bivio::SQL::ListQuery->new({
 }, $support);
 
 my($rows) = $support->load($query);
-t(int(@$rows) == 5);
+t(int(@$rows), 5);
 # Make sure both primary keys are returned, even though we only listed one.
-t($rows->[0]->{'TListT1.dttm'} eq $rows->[0]->{'TListT2.dttm'});
+t($rows->[0]->{'TListT1.dttm'}, $rows->[0]->{'TListT2.dttm'});
 
 # Check all rows returned
 $query = Bivio::SQL::ListQuery->new({
@@ -155,7 +164,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 100,
 }, $support);
 $rows = $support->load($query);
-t(int(@$rows) == 20);
+t(int(@$rows), 20);
 
 # Check begin limit
 $query = Bivio::SQL::ListQuery->new({
@@ -164,7 +173,7 @@ $query = Bivio::SQL::ListQuery->new({
     b0 => 'name06',
 }, $support);
 $rows = $support->load($query);
-t(int(@$rows) == 8);
+t(int(@$rows), 8);
 
 # Check end limit
 $query = Bivio::SQL::ListQuery->new({
@@ -173,7 +182,7 @@ $query = Bivio::SQL::ListQuery->new({
     e0 => 'name03',
 }, $support);
 $rows = $support->load($query);
-t(int(@$rows) == 8);
+t(int(@$rows), 8);
 
 # Check begin & end limit
 $query = Bivio::SQL::ListQuery->new({
@@ -183,7 +192,7 @@ $query = Bivio::SQL::ListQuery->new({
     e0 => 'name07',
 }, $support);
 $rows = $support->load($query);
-t(int(@$rows) == 4);
+t(int(@$rows), 4);
 
 # Check limiting two columns
 $query = Bivio::SQL::ListQuery->new({
@@ -193,7 +202,7 @@ $query = Bivio::SQL::ListQuery->new({
     e1 => 1,
 }, $support);
 $rows = $support->load($query);
-t(int(@$rows) == 4);
+t(int(@$rows), 4);
 
 # Check order of first sort by
 $query = Bivio::SQL::ListQuery->new({
@@ -204,8 +213,8 @@ $query = Bivio::SQL::ListQuery->new({
     o => '0d',
 }, $support);
 $rows = $support->load($query);
-t($rows->[0]->{'TListT1.name'} eq 'name03'
-	&& $rows->[3]->{'TListT1.name'} eq 'name00');
+t($rows->[0]->{'TListT1.name'}, 'name03');
+t($rows->[3]->{'TListT1.name'}, 'name00');
 
 # Check order of second sort by (also type conversions)
 $query = Bivio::SQL::ListQuery->new({
@@ -214,8 +223,8 @@ $query = Bivio::SQL::ListQuery->new({
     o => '0d1d',
 }, $support);
 $rows = $support->load($query);
-t($rows->[0]->{'TListT1.gender'} == Bivio::Type::Gender::MALE()
-	&& $rows->[1]->{'TListT1.gender'} == Bivio::Type::Gender::FEMALE());
+t($rows->[0]->{'TListT1.gender'}, Bivio::Type::Gender::MALE());
+t($rows->[1]->{'TListT1.gender'}, Bivio::Type::Gender::FEMALE());
 
 
 # Check just prior
@@ -227,7 +236,7 @@ $query = Bivio::SQL::ListQuery->new({
 }, $support);
 $rows = $support->load($query);
 # Should begin after first the first name.
-t($rows->[0]->{'TListT1.dttm'} == $now + 1);
+t($rows->[0]->{'TListT1.dttm'}, $now + 1);
 # DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
 
 # Check missed just prior
@@ -238,4 +247,11 @@ $query = Bivio::SQL::ListQuery->new({
     b0 => 'name00',
 }, $support);
 $rows = $support->load($query);
-t($rows->[0]->{'TListT1.name'} eq 'name01');
+t($rows->[0]->{'TListT1.name'}, 'name01');
+
+# Check internal fields which shouldn't be defined
+my($local_columns) = $support->get('local_columns');
+t(int(@$local_columns), 1);
+t($local_columns->[0]->{name}, 'local_field');
+t($local_columns->[0]->{type}, 'Bivio::Type::Integer');
+t($local_columns->[0]->{constraint}, Bivio::SQL::Constraint::NONE());
