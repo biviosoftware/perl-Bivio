@@ -62,6 +62,7 @@ sub internal_initialize {
        other => [qw(
        	    	      MailMessage.subject
 		      MailMessage.from_name
+		      MailMessage.from_email
     	    	      )],
        primary_key => [
                       [qw(MailMessage.mail_message_id)],
