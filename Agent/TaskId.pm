@@ -3110,6 +3110,26 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::Delete
         next=HTTP_DOCUMENT
     )],
+    [qw(
+        ADM_SPLIT_LIST
+        272
+        GENERAL
+        ADMIN_WRITE
+        adm/splits
+        Bivio::Biz::Model::AdmInstrumentSplitList->execute_load_page
+        Bivio::UI::HTML::Adm::InstrumentSplitList
+        require_secure=1
+    )],
+    [qw(
+        ADM_QUOTES
+        273
+        GENERAL
+        ADMIN_WRITE
+        adm/quotes
+        Bivio::Biz::Model::AdmQuoteList->execute_load_page
+        Bivio::UI::HTML::Adm::QuoteList
+        require_secure=1
+    )],
 );
 
 __PACKAGE__->compile([
