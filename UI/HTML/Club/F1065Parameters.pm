@@ -50,6 +50,22 @@ Returns the form.
 sub create_content {
     my($self) = @_;
     return $self->form('F1065ParametersForm', [
+	    ['TaxId.tax_id', undef, <<'EOF', '12-3456789'],
+Partnership's identifying number
+EOF
+	    ['Club.start_date', undef, <<'EOF', undef, {allow_undef => 1}],
+The date the club began as a partnership
+EOF
+	    ['Address.street1', undef, <<'EOF'],
+Partnership's address and ZIP code
+EOF
+	    ['Address.street2'],
+	    ['Address.city'],
+	    ['Address.state', undef, undef, 'NY, CA, CO', {size => 2}],
+	    ['Address.zip', undef, undef, '12345, 12345-6789'],
+	    ['Tax1065.irs_center', 'IRS Center', <<'EOF'],
+Select the state where the partnership files its return
+EOF
 	    ['Tax1065.allocation_method', 'Allocation Method',
 		    <<'EOF',
 Determines the manner in which taxable entries are allocated to each
