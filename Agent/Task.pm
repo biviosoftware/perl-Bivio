@@ -270,7 +270,7 @@ sub commit {
     _call_txn_resources($req, 'handle_commit');
     Bivio::SQL::Connection->commit;
     Bivio::Mail::Common->send_queued_messages;
-    Bivio::Mail::Message->send_queued_messages;
+    Bivio::Mail::Message->send_queued_messages($req);
 #TODO: Garbage collect state that doesn't agree with SQL DB
     # Note: rollback is in handle_die
     return;
