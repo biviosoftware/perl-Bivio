@@ -80,6 +80,18 @@ sub to_literal {
     return ref($value) ? $$value : '';
 }
 
+=for html <a name="to_query"></a>
+
+=head2 static to_query(any value) : string
+
+B<NOT SUPPORTED>
+
+=cut
+
+sub to_query {
+    die("can't convert a blob to a query");
+}
+
 =for html <a name="to_uri"></a>
 
 =head2 static to_uri(any value) : string
