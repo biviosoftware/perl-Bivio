@@ -1,0 +1,24 @@
+Login->execute();
+Imagemenu->go_section('Accounting', 'my-club-site');
+Verify->title('Investments');
+Verify->text('Summary');
+
+Browser->click('Taxes');
+Verify->title('Taxes');
+Verify->text('Partnership Taxes');
+
+Browser->click('IRS K-1 Options');
+#Verify->title('');
+Verify->text('IRS K\-1 Tax Fields');
+
+# Section below does not work because page doesn't have these fields.
+
+#Browser->view_parsed_source();
+
+#Browser->submit({
+#     'Partner Type_0' => 'General Partner',
+#     'Entity Type_0' => 'Corporation',
+#     'Foreign Partner' => 0,
+#     }, 'OK');
+#Verify->title('Taxes');
+#Verify->text('Partnership Taxes');
