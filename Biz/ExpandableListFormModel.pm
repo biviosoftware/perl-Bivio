@@ -1,4 +1,4 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ExpandableListFormModel;
 use strict;
@@ -84,22 +84,24 @@ sub new {
 
 =for html <a name="internal_load_field"></a>
 
-=head2 internal_load_field(string field)
+=head2 internal_load_field(string form_field, string list_field)
 
-Loads the specified field from the list model, or from the request
-values depending on whether the task was redirected through add_rows.
+Loads I<form_field> from the list model's I<list_field> (defaults to
+(I<form_field>), or from the request values depending on whether the task was
+redirected through add_rows.
 
 =cut
 
 sub internal_load_field {
-    my($self, $field) = @_;
+    my($self, $form_field, $list_field) = @_;
+    $list_field ||= $form_field;
     my($list) = $self->get_list_model;
-    my($rows) = $self->get_request->unsafe_get(__PACKAGE__.'rows');
+    my($rows) = $self->get_request->unsafe_get(ref($self) . '.rows');
 
     my($value) = defined($rows)
-	    ? $rows->[$list->get_cursor]->{$field}
-	    : $list->get($field);
-    $self->internal_put_field($field, $value) if defined($value);
+	    ? $rows->[$list->get_cursor]->{$list_field}
+	    : $list->get($list_field);
+    $self->internal_put_field($form_field, $value) if defined($value);
     return;
 }
 
@@ -149,8 +151,7 @@ sub internal_initialize_list {
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get('form');
-#TODO: Why off the request and not explicit call?
-    my($empty_row_count) = $req->unsafe_get(__PACKAGE__.'empty_row_count');
+    my($empty_row_count) = $req->unsafe_get(ref($self) . '.empty_row_count');
     unless ($empty_row_count) {
 	if ($form) {
 #TODO: Need some validation here, I think?
@@ -180,33 +181,33 @@ request and redirects to the same task.
 =cut
 
 sub validate {
-    my($self) = @_;
-
-    if (defined($self->get('add_rows'))) {
-	# increment the empty_row count and redirect to the same task
-	my($req) = $self->get_request;
-	$req->put(__PACKAGE__.'empty_row_count' =>
-		$self->get('empty_row_count') + $self->ROW_INCREMENT);
-
-	my($rows) = [];
-	$self->reset_cursor;
-	while ($self->next_row) {
-	    # make a copy of the current values
-	    push(@$rows, {%{$self->internal_get}});
-	}
-	$self->reset_cursor;
-	$req->put(__PACKAGE__.'rows' => $rows);
-	$req->server_redirect($req->get('task_id'));
+    my($self) = shift;
+    return $self->SUPER::validate(@_)
+	unless defined($self->unsafe_get('add_rows'));
+    # increment the empty_row count and redirect to the same task
+    my($req) = $self->get_request;
+    my($rows) = [];
+    $self->reset_cursor;
+    while ($self->next_row) {
+	# make a copy of the current values
+	push(@$rows, $self->get_shallow_copy);
     }
-    $self->SUPER::validate();
-    return;
+    $self->reset_cursor;
+    $req->put_durable(
+	ref($self) . '.rows' => $rows,
+	ref($self) . '.empty_row_count' =>
+	    $self->get('empty_row_count') + $self->ROW_INCREMENT,
+    );
+    # Put last for testing
+    $req->server_redirect($req->get('task_id'));
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
