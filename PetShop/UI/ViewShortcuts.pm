@@ -35,16 +35,13 @@ C<Bivio::PetShop::UI::ViewShortcuts>
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
 use Bivio::PetShop::Type::Category;
-use Bivio::UI::HTML::Widget::FormFieldError;
+use Bivio::UI::HTML::Widget::FormField;
 use Bivio::UI::HTML::Widget::Grid;
-use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::Text;
 use Bivio::UI::Widget::Join;
 
 #=VARIABLES
-my($_WF) = 'Bivio::UI::HTML::WidgetFactory';
 
 =head1 METHODS
 
@@ -61,12 +58,15 @@ Returns the address fields.
 sub vs_address_fields {
     my($proto, $form_name, $address_suffix) = @_;
 
+    my($address) = $form_name.'.EntityAddress'.$address_suffix;
+
     # state/zip are shown on one line
-    my($state_zip) = [$proto->vs_form_field(
-	    $form_name.'.EntityAddress'.$address_suffix.'.state'),
+    my($state_zip) = [
+	Bivio::UI::HTML::Widget::FormField->new(
+		$address.'.state')->get_label_and_field,
 	$proto->vs_space(3),
-	$proto->vs_form_field(
-		$form_name.'.EntityAddress'.$address_suffix.'.zip'),
+	Bivio::UI::HTML::Widget::FormField->new(
+		$address.'.zip')->get_label_and_field,
     ];
     $state_zip = [$state_zip->[0],
 	Bivio::UI::HTML::Widget::Grid->new({
@@ -77,68 +77,18 @@ sub vs_address_fields {
     ];
 
     return (
-	    [$proto->vs_form_field(
-		    $form_name.'.EntityAddress'.$address_suffix.'.addr1')],
-	    [$proto->vs_form_field(
-		    $form_name.'.EntityAddress'.$address_suffix.'.addr2', {
-			label_on_field => 0,
-		    })],
-	    [$proto->vs_form_field(
-		    $form_name.'.EntityAddress'.$address_suffix.'.city')],
+	    [Bivio::UI::HTML::Widget::FormField->new(
+		    $address.'.addr1')->get_label_and_field],
+	    [$proto->vs_space, Bivio::UI::HTML::Widget::FormField->new(
+		    $address.'.addr2')],
+	    [Bivio::UI::HTML::Widget::FormField->new(
+		    $address.'.city')->get_label_and_field],
 	    $state_zip,
-	    [$proto->vs_form_field(
-		    $form_name.'.EntityAddress'.$address_suffix.'.country')],
-	    [$proto->vs_form_field(
-		    $form_name.'.EntityPhone'.$address_suffix.'.phone')],
-	   );
-}
-
-=for html <a name="vs_form_field"></a>
-
-=head2 vs_form_field(string name) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget)
-
-=head2 vs_form_field(string name, hash_ref attributes) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget)
-
-=head2 vs_form_field(string name, hash_ref attributes, array_ref row_control) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget)
-
-Returns the label/widget pair for the specified form field.
-
-=cut
-
-sub vs_form_field {
-    my($proto, $name, $attributes, $row_control) = @_;
-
-    my($model_name, $field_name) = $name =~ /^([^\.]+)\.(.+)$/;
-    # strip out any suffix, not used for label lookup
-    my($label_value) = $field_name;
-    $label_value =~ s/_\d+(\.\w+)$/$1/;
-    $label_value = [['->get_request'], 'Bivio::UI::Facade', 'Text',
-	'->get_value', $label_value];
-
-    my($label) = Bivio::UI::HTML::Widget::String->new({
-	string_font => 'form_field_label',
-	value => Bivio::UI::Widget::Join->new({
-	    values => [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => $label_value,
-		}),
-		': ',
-	    ],
-	}),
-    });
-    $label->put(row_control => $row_control)
-	    if $row_control;
-
-    my($widget) = $_WF->create($name, $attributes ? $attributes : ());
-    return ($widget->get_or_default('label_on_field', 1)
-	    ? $label : $proto->vs_space,
-	    Bivio::UI::Widget::Join->new([
-		Bivio::UI::HTML::Widget::FormFieldError->new({
-		    field => $field_name,
-		    label => $label_value,
-		}),
-		$widget,
-	    ])
+	    [Bivio::UI::HTML::Widget::FormField->new(
+		    $address.'.country')->get_label_and_field],
+	    [Bivio::UI::HTML::Widget::FormField->new(
+		    $form_name.'.EntityPhone'.$address_suffix.'.phone')
+		    ->get_label_and_field],
 	   );
 }
 
