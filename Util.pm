@@ -36,6 +36,7 @@ BEGIN {
 
 #TODO: Fix this HACK.  Probably need once a day time for events like this?
 my($_THIS_YEAR) = (localtime)[5] + 1900;
+my(%_PACKAGES);
 
 # are_you_sure()
 # are_you_sure(string prompt)
@@ -200,9 +201,18 @@ sub my_require {
     foreach $pkg (@pkg) {
 	die('undefined package') unless $pkg;
 	no strict 'refs';
-	next if defined(%{*{"$pkg\::"}});
+
+	# We use our own symbol table, because there is a weird case
+	# with enums which define the package symbol table in advance
+	# of loading. In other words, this doesn't work:
+	#    next if defined(%{*{"$pkg\::"}});
+	next if defined($_PACKAGES{$pkg});
+
 	# Must be a "bareword" for it to do '::' substitution
 	eval("require $pkg") || die($@);
+
+	# Only define if loads properly.
+	$_PACKAGES{$pkg} = 1;
     }
 }
 
