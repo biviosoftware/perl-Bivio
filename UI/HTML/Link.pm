@@ -34,6 +34,18 @@ C<Bivio::UI::HTML::Link>
 
 =cut
 
+=for html <a name="BACK_ICON"></a>
+
+=head2 BACK_ICON : string
+
+The string form of back.gif
+
+=cut
+
+sub BACK_ICON {
+    return '"/i/back.gif" height=31 width=31 border=0';
+}
+
 =for html <a name="EMPTY_ICON"></a>
 
 =head2 EMPTY_ICON : string
@@ -143,14 +155,9 @@ sub SCROLL_UP_ICON {
 }
 
 #=IMPORTS
-#use Bivio::IO::Config;
-#use Bivio::IO::Trace;
 
 #=VARIABLES
-#use vars ($_TRACE);
-#Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-#Bivio::IO::Config->register;
 
 =head1 FACTORIES
 
@@ -181,23 +188,6 @@ sub new {
 =head1 METHODS
 
 =cut
-
-=for html <a name="configure"></a>
-
-=head2 static configure(hash cfg)
-
-=over 4
-
-=item name : type [default]
-
-=back
-
-=cut
-
-sub configure {
-    my(undef, $cfg) = @_;
-    return;
-}
 
 =for html <a name="get_name"></a>
 
