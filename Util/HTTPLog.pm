@@ -252,6 +252,7 @@ sub _initialize {
 	    'Accounting::Util::.* Creat(?:ed|ing) /home/account_sync',
 	    '::UPDATE_COLLISION: list_attrs=>',
 	    '::warn:\d+ adjusting allocations',
+	    'HTTP::Form::_parse_header:\d+ unexpected field',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
