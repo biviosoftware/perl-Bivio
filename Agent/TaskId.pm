@@ -461,10 +461,9 @@ my(@_CFG) = (
         ?/accounting/investment/sell
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
-        Bivio::Biz::Model::InstrumentSellForm
-        Bivio::UI::HTML::Club::InstrumentSell
-        next=CLUB_ACCOUNTING_INVESTMENT_SELL2
-        cancel=CLUB_ACCOUNTING_INVESTMENT_LIST
+        Bivio::Biz::Model::InstrumentSaleForm
+        Bivio::UI::HTML::Club::InstrumentSale
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
         help=investment-transactions
     )],
     [qw(
@@ -792,18 +791,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::RealmRedirect
         next=USER_HOME
     )],
-    [qw(
-        CLUB_ACCOUNTING_INVESTMENT_SELL2
-        85
-        CLUB
-        ACCOUNTING_WRITE
-        ?/accounting/investment/sell2
-        Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::InstrumentSellForm2
-        Bivio::UI::HTML::Club::InstrumentSell2
-        next=CLUB_ACCOUNTING_INVESTMENT_LIST
-        help=investment-transactions
-    )],
+#85
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_TRANSACTION_DELETE
