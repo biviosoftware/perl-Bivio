@@ -116,7 +116,7 @@ sub render {
     # need first time initialization to get field name from form model
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<textarea '
+	$fields->{prefix} = '<textarea name='
 		.$form->get_field_name_for_html($field)
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
