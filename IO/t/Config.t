@@ -4,26 +4,21 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN {
+    $| = 1;
+    print "1..8\n";
+}
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 BEGIN {
+    use Cwd ();
+    $ENV{BCONF} = Cwd::getcwd() . '/Config/t1.bconf';
     @ARGV = qw(
         --Bivio::IO::Config::t::T1.p4=p4
         --Bivio::IO::Config::t::T1.p5=p5
     );
 }
 use Bivio::IO::Config;
-Bivio::IO::Config->introduce_values({
-    'Bivio::IO::Config::t::T1' => {
-	p1 => 'p1',
-	p3 => 'p3',
-        goodbye => {
-	    p3 => 'gp3',
-	    p4 => 'gp4',
-        },
-    },
-});
 $loaded = 1;
 print "ok 1\n";
 
@@ -60,8 +55,10 @@ sub handle_config {
     return;
 }
 Bivio::IO::Config->register({
-    'p1' => Bivio::IO::Config->REQUIRED,
-    'p2' => 'p2',
+    p1 => Bivio::IO::Config->REQUIRED,
+    p1_1 => -1,
+    p2 => 'p2',
+    p2_2 => -1,
     Bivio::IO::Config->NAMED => {
        p3 => Bivio::IO::Config->REQUIRED,
        p4 => undef,
@@ -98,25 +95,28 @@ foreach $k (qw(p1 p2)) {
     die("shouldn't be set named $k") if exists($c->{$k});
 }
 
-1;
-
-# Test whether bconf is being read
-package Bivio::IO::Alert;
-sub handle_config {
-    return;
-}
-
-Bivio::IO::Config->register({
-    intercept_warn => 1,
-    stack_trace_warn => -1,
-    stack_trace_warn_deprecated => 0,
-    max_arg_length => 99,
-    want_stderr => 0,
-    want_pid => 0,
-    want_time => 0,
-    max_warnings => 2000,
+Bivio::IO::Config->introduce_values({
+    'Bivio::IO::Config::t::T1' => {
+	p1 => 999,
+	freddy => {
+	    p3 => 777,
+	},
+    },
 });
 
-my($c2) = main::conf_get();
-die('stack_trace_warn invalid') unless $c2->{stack_trace_warn} != -1;
+foreach my $x (
+    [p1 => 999],
+    ['freddy.p3' => 777],
+    [p1_1 => 1],
+    [p2_2 => 2],
+) {
+    my($expect) = pop(@$x);
+    my($a, $b) = $x->[0] =~ /(\w+)/g;
+    my($actual) = main::conf_get($a);
+    $actual = $actual->{$b}
+	if $b;
+    die($actual, ": $x->[0] not $expect")
+	unless $actual == $expect;
+}
+
 1;
