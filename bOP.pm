@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Request->setup_all_facades allows testing of different facades
+  * Bivio::UI::HTML::Widget::JavaScript->render was adding spurious newlines
+    which would create unexpected spaces
+
+  Revision 1.64  2003/05/30 22:48:56  nagler
+  * MAJOR INCOMPATIBLE CHANGE: Bivio::UI::Facade defines http_host and
+    mail_host.  Formerly, Bivio::UI::Text controlled these values.  Use
+    vs_mail_host(); in views to get mail_host (was vs_text('mail_host')).
+    *::BConf needs to define http_suffix and mail_host for
+    Bivio::UI::Facade.  See Bivio::PetShop::BConf for an example.
+  * Bivio::Biz::Model::MailReceiveDispatchForm sets the facade based on
+    the incoming mail host (if available).
+  * Bivio::UI::Facade->setup_request accepts a domain name.  Expects
+    that a domain component matches one facade's uri or uses default
+    facade.  For example, petshop.bivio.biz matches uri "petshop".
+  * Bivio::Util::LinuxConfig->add_sendmail_http_agent should be rerun
     (b-linux-config add_sendmail_http_agent your-host:80/bla/%s) to
     update your sendmail.cf to allow facade matching.  The changes
     to sendmail.cf are significant but minimal.
