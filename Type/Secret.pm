@@ -125,7 +125,6 @@ sub encrypt_http_base64 {
     my($proto, $clear_text) = @_;
     return _encrypt($clear_text, 0);
 }
-
 =for html <a name="from_sql_column"></a>
 
 =head2 static from_sql_column(string value) : string
@@ -229,7 +228,7 @@ sub _decrypt {
     my($s) = $is_hex ? $_CIPHER->decrypt_hex($encoded)
 	: $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($encoded));
     return undef unless
-	    $s =~ s/^$_MAGIC//o && $s =~ s/$_MAGIC(\d+)$//o && time >= $1;
+	    $s =~ s/^\Q$_MAGIC\E//o && $s =~ s/\Q$_MAGIC\E(\d+)$//o && time >= $1;
     return $s;
 }
 
