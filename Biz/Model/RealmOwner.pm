@@ -833,6 +833,8 @@ Returns false.
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
     my($req) = $self->get_request;
+    # Emails are always lower case
+    $email = lc($email);
 
     # Load the email.  Return the result of the next unauth_load, just in case
     my($em) = Bivio::Biz::Model::Email->new($req);
@@ -864,7 +866,7 @@ sub unauth_load_by_email_id_or_name {
 	    if $email_id_or_name =~ /@/;
     return $self->unauth_load(realm_id => $email_id_or_name)
 	    if $email_id_or_name =~ /^\d+$/;
-    return $self->unauth_load(name => $email_id_or_name);
+    return $self->unauth_load(name => lc($email_id_or_name));
 }
 
 =for html <a name="unauth_load_by_id_or_name_or_die"></a>
@@ -880,7 +882,7 @@ Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, furt
 sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
     return $self->unauth_load_or_die(
-	    ($id_or_name =~ /^\d+$/ ? 'realm_id' : 'name') => $id_or_name,
+	    ($id_or_name =~ /^\d+$/ ? 'realm_id' : 'name') => lc($id_or_name),
 	    $realm_type
 	    ? (realm_type => Bivio::Auth::RealmType->from_any($realm_type))
 	    : ());
