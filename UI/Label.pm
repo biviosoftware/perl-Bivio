@@ -539,7 +539,7 @@ _compile([
     HELP_EXPENSE_ALLOCATION_METHODS => ['Expense Allocation Methods'],
 
     # Help links
-    WHATS_THIS => ["what's this?"],
+    WHATS_THIS => ["[what's this?]"],
     LEARN_MORE => ["[learn more]"],
 
     # Preferences
