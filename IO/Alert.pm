@@ -322,7 +322,13 @@ sub _initial_warn_handler {
 sub _log_apache {
     my($severity, $msg) =@_;
 #RJN: How to log a "notice" from mod_perl?
-    Apache->request->log_error($msg);
+    if (Apache->request) {
+	Apache->request->log_error($msg);
+    }
+    else {
+#pjm: something has gone wrong at httpd startup, need something better
+	die($msg);
+    }
 }
 
 sub _log_syslog {
