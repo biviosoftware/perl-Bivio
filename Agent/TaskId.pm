@@ -3087,6 +3087,19 @@ my(@_CFG) = (
         next=ADM_SPINOFFS
         require_secure=1
     )],
+    [qw(
+        CLUB_ADMIN_MEMBERS_MERGE
+        270
+        CLUB
+        DOCUMENT_READ
+        ?/adm/merge
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::ClubUserList->execute_load_this
+        Bivio::Biz::Model::MemberList->execute_load_all
+        Bivio::Biz::Model::MembersMergeForm
+        Bivio::UI::HTML::Club::MembersMerge
+        next=CLUB_ADMIN_USER_LIST
+    )],
 );
 
 __PACKAGE__->compile([
