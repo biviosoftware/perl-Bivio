@@ -10,8 +10,8 @@ use Bivio::Data;
 use Bivio::User;
 use Bivio::Club::Page;
 use Bivio::Club::Page::Agreement;
-#use Bivio::Club::Page::Distributions;
-#use Bivio::Club::Page::Members;
+use Bivio::Club::Page::Distributions;
+use Bivio::Club::Page::Members;
 #use Bivio::Club::Page::Messages;
 use Bivio::Club::Page::Watchlist;
 
@@ -30,8 +30,8 @@ my($_DEFAULT_PAGE);
 # Order is important
 my(@_PAGES) = (
     Bivio::Club::Page::Agreement->new(),
-#    Bivio::Club::Page::Distributions->new(),
-#    Bivio::Club::Page::Members->new(),
+    Bivio::Club::Page::Distributions->new(),
+    Bivio::Club::Page::Members->new(),
 #    Bivio::Club::Page::Messages->new(),
     $_DEFAULT_PAGE = Bivio::Club::Page::Watchlist->new(),
 );
@@ -80,11 +80,17 @@ sub authenticate ($$)
 {
     my($self, $br) = @_;
     $br->set_club($self);
-    defined($self->{members}->{$br->user->{name}}) && return; 	  # club member
-    defined($self->{guests}) &&
-	defined($self->{guests}->{$self->{name}}) ||
+    defined($self->members->{$br->user->name}) && return; 	  # club member
+    defined($self->guests) &&
+	defined($self->guests->{$self->name}) ||
 	    $br->forbidden('not a club member'); 		  # not a guest
     $br->make_read_only;				  # guest, limit access
+}
+
+sub member_attr ($$$) {
+    my($self, $member, $attr) = @_;
+    my($m) = $self->members->{$member};
+    return defined($m) && defined($m->{$attr}) ? $m->{$attr} : undef;
 }
 
 1;

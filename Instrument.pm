@@ -98,8 +98,9 @@ sub execute_query ($$$) {
 		       (,|$)}{}x 	      # Matches separator or terminator
 		|| die($_REQUEST->uri, ': unable to parse: ', $line, "\n");
 	    my($v) = defined($2) ? $2 : $3;
-	    $instrument->{$field} = $v eq 'N/A' ? undef : $v;
+	    $instrument->{$field} = $v =~ /\bN\/A\b/ ? undef : $v;
 	}
+	defined($instrument->{name}) && &adjust_name($instrument->{name});
 #RJN: Need a surer way...
 	# "Found" means that "exchange" is valid--see compile_query
 	# When an exchange is not applicable, the string will be "", not N/A
@@ -107,6 +108,13 @@ sub execute_query ($$$) {
 	    ? bless($instrument, $class) : undef);
     }
     return $result;
+}
+
+# Adjust the case and eliminate blanks to make it look pretty
+sub adjust_name ($) {
+    $_[0] =~ s/\b([A-Z])([A-Z]*[AEIOU][A-Z]*)\b/$1\L$2\E/g; 	   # SUN -> Sun
+    $_[0] =~ s/\b([AEOIU])([A-Z]+)\b/$1\L$2\E/g; 	  	 # INTL -> Intl
+    $_[0] =~ s/\s+$//;				    # yahoo has trailing spaces
 }
 
 # attr $instrument $attr $br -> $self->{$attr}

@@ -59,7 +59,7 @@ my($html) = $t->render_html('My First Table',
 
 ################################################################
 
-$t = Bivio::Club::Table->new();
+$t = Bivio::Club::Table->new(undef, 'spreadsheet');
 $t->begin_column_group();
 $t->add_column('1a', 'left');
 $t->add_column('1b', 'left');
