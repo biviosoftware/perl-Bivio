@@ -1,23 +1,19 @@
 #!perl -w
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 2001 bivio, LLC.  All rights reserved.
 # $Id$
 use strict;
 
 =head1 NAME
 
-b-realm-role - manipulate realm_role_t database table
+b-realm-role - calls Bivio::Biz::Util::RealmRole
 
 =head1 SYNOPSIS
 
-  b-realm-role [-n] edit realm role (+|-)(permission|role)...
-  b-realm-role list [realm [role]]
-  b-realm-role [-n] init
-  b-realm-role [-n] init_defaults
-  b-realm-role [-n] set_same new_permission like_permission
+b-realm-role [options] command [args...]
 
 =head1 DESCRIPTION
 
-See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>.
+See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>
 
 =cut
 
@@ -25,11 +21,6 @@ See L<Bivio::Biz::Util::RealmRole|Bivio::Biz::Util::RealmRole>.
 use Bivio::Biz::Util::RealmRole;
 
 #=VARIABLES
-
-#=PRIVATE METHODS
-
-#=MAIN
-
 Bivio::Biz::Util::RealmRole->main(@ARGV);
 
 =head1 SEE ALSO
@@ -38,7 +29,7 @@ Bivio::Biz::Util::RealmRole
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 2001 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
 

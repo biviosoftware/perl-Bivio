@@ -30,7 +30,6 @@ C<Bivio::Biz::Util::RealmRole> manages the RealmRole table.
 
 =cut
 
-
 =head1 CONSTANTS
 
 =cut
@@ -44,12 +43,9 @@ Returns:
     usage: b-realm-role [options] command [args...]
     commands:
 	edit role operation ... -- changes the permissions for realm/role
-	init --  initializes all values in __DATA__ section
-	init_defaults --  initializes the "realm_type" realms (general, user, club)
 	list [role] -- lists permissions for this realm and role or all
 	list_all [realm_type] -- lists permissions for all realms of realm_type
 	set_same old new - copies permission old to new for ALL realms
-        setup_fund -- creates permissions for a fund
 
 =cut
 
@@ -58,12 +54,9 @@ sub USAGE {
 usage: b-realm-role [options] command [args...]
 commands:
     edit role operation ... -- changes the permissions for realm/role
-    init --  initializes all values in __DATA__ section
-    init_defaults --  initializes the "realm_type" realms (general, user, club)
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
     set_same old new - copies permission old to new for ALL realms
-    setup_fund -- creates permissions for a fund
 EOF
 }
 
@@ -178,32 +171,6 @@ sub edit {
     return;
 }
 
-=for html <a name="init"></a>
-
-=head2 init()
-
-Initializes the defaults, demo_club, etc.
-
-=cut
-
-sub init {
-    my($self) = @_;
-    return _init($self, 0);
-}
-
-=for html <a name="init_defaults"></a>
-
-=head2 init_defaults()
-
-Initializes the default roles for the three realm types only.
-
-=cut
-
-sub init_defaults {
-    my($self) = @_;
-    return _init($self, 1);
-}
-
 =for html <a name="list"></a>
 
 =head2 list(string role_name)
@@ -282,24 +249,6 @@ sub set_same {
     return;
 }
 
-=for html <a name="setup_fund"></a>
-
-=head2 setup_fund()
-
-Sets the permissions for the current realm to be like a fund.
-
-=cut
-
-sub setup_fund {
-    my($self) = @_;
-    my(@p) = qw(-MEMBER_READ -DOCUMENT_WRITE -ADMIN_READ);
-    $self->edit('GUEST', @p);
-    $self->edit('MEMBER', @p, '+PRO_FUND_INVESTOR');
-    $self->edit('ACCOUNTANT', '+PRO_FUND_MANAGER');
-    $self->edit('ADMINISTRATOR', '+PRO_FUND_MANAGER');
-    return;
-}
-
 #=PRIVATE METHODS
 
 # _get_permission_set(self, string realm_id, Bivio::Auth::Role role, boolean dont_die) : string
@@ -315,43 +264,6 @@ sub _get_permission_set {
     return Bivio::Auth::PermissionSet->get_min if $dont_die;
     $self->usage($role->as_string, ": not set for realm");
     # DOES NOT RETURN
-}
-
-# _init(self, boolean defaults_only)
-#
-# Initializes the database with the values from __DATA__ section
-# in this file.  If defaults_only, stops at "END DEFAULTS" flag in
-# DATA section.
-#
-sub _init {
-    my($self, $defaults_only) = @_;
-    unless (@_DATA) {
-	@_DATA = <DATA>;
-	chomp(@_DATA);
-    }
-    my($cmd);
-    foreach my $line (@_DATA) {
-	# Drop out if hit sentinel
-	last if $defaults_only && $line =~ /^#\s*END\s+DEFAULTS/;
-
-	# Skip comments and blank cmds
-	next if $line =~ /^\s*(#|$)/;
-	$cmd .= $line;
-
-	# Continuation char at end of line?
-	next if $cmd =~ s/\\$/ /;
-
-	# Parse command
-	my(@args) = split(' ', $cmd);
-
-	# Delete the b-realm-role at the front
-	shift(@args);
-	$self->main(@args);
-        $cmd = '';
-    }
-    # Avoids error messages containing DATA
-    close(DATA);
-    return;
 }
 
 # _list_one(self, Bivio::Auth::Realm realm, array_ref roles) : string_ref
@@ -427,249 +339,3 @@ $Id$
 =cut
 
 1;
-__DATA__
-#
-# GENERAL Permissions
-#
-b-realm-role -r GENERAL edit ANONYMOUS - \
-    +DOCUMENT_READ \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r GENERAL edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r GENERAL edit WITHDRAWN - \
-    +USER
-b-realm-role -r GENERAL edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER
-b-realm-role -r GENERAL edit MEMBER - \
-    +GUEST
-b-realm-role -r GENERAL edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r GENERAL edit ADMINISTRATOR - \
-    +ACCOUNTANT \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_RECEIVE \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-
-#
-# USER Permissions
-#
-b-realm-role -r user edit ANONYMOUS - \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r user edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r user edit WITHDRAWN - \
-    +USER
-b-realm-role -r user edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ
-b-realm-role -r user edit MEMBER - \
-    +GUEST
-b-realm-role -r user edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r user edit ADMINISTRATOR - \
-    +ACCOUNTANT \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_RECEIVE \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-
-#
-# CLUB Permissions
-#
-b-realm-role -r club edit ANONYMOUS - \
-    +LOGIN \
-    +MAIL_WRITE
-b-realm-role -r club edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r club edit WITHDRAWN - \
-    +USER
-b-realm-role -r club edit GUEST - \
-    +WITHDRAWN \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r club edit MEMBER - \
-    +GUEST \
-    +DOCUMENT_WRITE \
-    +MAIL_RECEIVE
-b-realm-role -r club edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +FILE_ADMIN \
-    +MAIL_ADMIN \
-    +MEMBER_WRITE \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-b-realm-role -r club edit ADMINISTRATOR - \
-    +ACCOUNTANT
-#END DEFAULTS -- this tag is used by init_defaults()
-
-#
-# Demo Club Permissions, everybody is like a GUEST of a normal club
-#
-b-realm-role -r demo_club edit ANONYMOUS - \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +ANY_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +LOGIN \
-    +MAIL_READ \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r demo_club edit USER - \
-    +ANONYMOUS
-b-realm-role -r demo_club edit WITHDRAWN - \
-    +USER \
-b-realm-role -r demo_club edit GUEST - \
-    +WITHDRAWN
-b-realm-role -r demo_club edit MEMBER - \
-    +GUEST
-b-realm-role -r demo_club edit ACCOUNTANT - \
-    +MEMBER
-b-realm-role -r demo_club edit ADMINISTRATOR - \
-    +ACCOUNTANT
-
-#
-# club_index Permissions: anonymous can look at all investment things
-#
-b-realm-role -r club_index edit ANONYMOUS - \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +INVESTMENT_READ \
-    +LOGIN
-b-realm-role -r club_index edit USER - \
-    +ANONYMOUS \
-    +ANY_USER
-b-realm-role -r club_index edit WITHDRAWN - \
-    +USER \
-b-realm-role -r club_index edit GUEST - \
-    +WITHDRAWN \
-    +ACCOUNTING_READ \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ANY_REALM_USER \
-    +DOCUMENT_READ \
-    +INVESTMENT_READ \
-    +MAIL_FORWARD \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_WRITE \
-    +MEMBER_READ \
-    +MOTION_READ
-b-realm-role -r club_index edit MEMBER - \
-    +GUEST \
-    +DOCUMENT_WRITE \
-    +MAIL_RECEIVE
-b-realm-role -r club_index edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +MAIL_ADMIN \
-    +MEMBER_WRITE \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE \
-    +UNKNOWN
-b-realm-role -r club_index edit ADMINISTRATOR - \
-    +ACCOUNTANT
-
-#
-# club_cafe
-#
-#   * Like public club
-#   * No MAIL_WRITE
-#   * MAIL_POST only for user+
-#   * No MAIL_FORWARD (only for guest+)
-#   * Members and guests have very limited privs
-#
-b-realm-role -r club_cafe edit ANONYMOUS - \
-    +DOCUMENT_READ \
-    +LOGIN \
-    +MAIL_READ
-b-realm-role -r club_cafe edit USER - \
-    +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_FORWARD \
-    +MAIL_POST
-b-realm-role -r club_cafe edit WITHDRAWN - \
-    +USER
-b-realm-role -r club_cafe edit GUEST - \
-    +WITHDRAWN \
-    +ANY_REALM_USER \
-    +MAIL_WRITE
-b-realm-role -r club_cafe edit MEMBER - \
-    +GUEST \
-    +MAIL_RECEIVE
-b-realm-role -r club_cafe edit ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_READ \
-    +ACCOUNTING_WRITE \
-    +ACCOUNT_READ \
-    +ADMIN_READ \
-    +ADMIN_WRITE \
-    +DEBUG_ACTION \
-    +DOCUMENT_WRITE \
-    +FILE_ADMIN \
-    +INVESTMENT_READ \
-    +MAIL_ADMIN \
-    +MEMBER_READ \
-    +MEMBER_WRITE \
-    +MOTION_READ \
-    +MOTION_WRITE \
-    +REALM_PUBLICIZE
-b-realm-role -r club_cafe edit ADMINISTRATOR - \
-    +ACCOUNTANT
