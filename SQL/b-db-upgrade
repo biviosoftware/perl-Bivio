@@ -243,164 +243,28 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_realm_transaction();
-    _upgrade_entry();
-    _upgrade_institution();
-    _upgrade_delete_zero_entries();
-    _upgrade_account_data($req);
-    _upgrade_change_demo();
+    _upgrade_rename_petty_cash_account();
 
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_account_data()
+# _upgrade_rename_petty_cash_account()
 #
-# Deleted unused petty cash accounts, and sets the default account to
-# broker.
+# Renames existing petty cash accounts to "Petty Cash - Off the Books".
 #
-sub _upgrade_account_data {
-    my($req) = @_;
+sub _upgrade_rename_petty_cash_account {
 
-    use Bivio::Auth::Realm;
-    use Bivio::Biz::Model::RealmOwner;
-    use Bivio::Data::EW::ClubImporter;
-
-    print("deleting unused petty cash accounts, setting default account\n");
-    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, name
-            FROM realm_owner_t, club_t
-            WHERE realm_owner_t.realm_id=club_t.club_id
-            ORDER by name',
-            []);
-    while (my $row = $sth->fetchrow_arrayref) {
-        my($realm_id, $name) = @$row;
-        print("\t$name\n");
-        $realm_owner->unauth_load(realm_id => $realm_id);
-        $req->set_realm(Bivio::Auth::Realm->new($realm_owner));
-	Bivio::Data::EW::ClubImporter->delete_unused_petty_cash_account($req);
-	Bivio::Data::EW::ClubImporter->set_default_account($req);
-    }
-    return;
-}
-
-# _upgrade_change_demo()
-#
-# Changes the demo club to newdemoclub.
-#
-sub _upgrade_change_demo {
-
-    Bivio::SQL::Connection->execute("
-            UPDATE realm_owner_t
-            SET name='demo_club_old'
-            WHERE name='demo_club'", []);
-
-    Bivio::SQL::Connection->execute("
-            UPDATE realm_owner_t
-            SET name='demo_club'
-            WHERE name='newdemoclub'", []);
+    print("changing petty cash account names\n");
+    Bivio::SQL::Connection->execute('
+            update realm_account_t
+            set name=?
+            where in_valuation=0',
+	    ['Petty Cash - Off the Books']);
 
     return;
 }
 
-# _upgrade_delete_zero_entries()
-#
-# Deletes any 0 petty cash entries. Removes 0 opening balance entries,
-# allowing the account to be removed.
-#
-sub _upgrade_delete_zero_entries {
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT entry_t.entry_id
-            FROM realm_account_t, realm_account_entry_t, entry_t
-            WHERE realm_account_t.realm_account_id
-                =realm_account_entry_t.realm_account_id
-            AND realm_account_entry_t.entry_id=entry_t.entry_id
-            AND entry_t.amount=0 and realm_account_t.in_valuation=0',
-	    []);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($entry_id) = $row->[0];
-	foreach my $table (qw(realm_account_entry_t entry_t)) {
-	    Bivio::SQL::Connection->execute("
-                    DELETE from $table
-                    WHERE entry_id=?",
-		    [$entry_id]);
-	}
-    }
-    return;
-}
-
-# _upgrade_institution()
-#
-# Drops institution_t and changes name of institution_id column.
-#
-sub _upgrade_institution {
-    print("dropping institution_t/s and changing realm_accoun_t\n");
-    _drop_column('realm_account_t', 'institution_id');
-    _do_sql('
-DROP TABLE institution_t
-/
-DROP SEQUENCE institution_s
-/
-');
-    _add_column('realm_account_t', 'institution', 'NUMBER(4)', '0');
-    _do_sql('
-ALTER TABLE realm_account_t modify institution not null
-/
-ALTER TABLE realm_account_t
-  add constraint realm_account_t7
-  check (institution between 0 and 10)
-/
-CREATE INDEX realm_account_t8 on realm_account_t (
-  institution
-)
-  tablespace index_1m
-  pctfree 50 initrans 4 storage (freelists 8)
-/
-');
-    return;
-}
-
-# _upgrade_realm_transaction
-#
-# Added modified_date_time
-#
-sub _upgrade_realm_transaction {
-    print("adding realm_transaction_t.modified_date_time\n");
-    _add_column('realm_transaction_t', 'modified_date_time', 'DATE', 'date_time');
-    _do_sql('
-ALTER TABLE realm_transaction_t modify modified_date_time not null
-/
-CREATE INDEX realm_transaction_t8 ON realm_transaction_t (
-  modified_date_time
-)
-  tablespace index_8m
-  pctfree 50 initrans 4 storage (freelists 8)
-/
-');
-    return;
-}
-
-# _upgrade_entry
-#
-# Added some EntryTypes
-#
-sub _upgrade_entry {
-    print("updating entry_t.entry_type\n");
-    _drop_constraints('entry_t', 'entry_type');
-    _do_sql('
-ALTER TABLE entry_t modify entry_type not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t7
-  check (entry_type between 1 and 8
-  or entry_type between 100 and 113
-  or entry_type between 200 and 220)
-/
-');
-    return;
-}
 
 # _usage(array message)
 #
