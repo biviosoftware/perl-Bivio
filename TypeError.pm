@@ -939,6 +939,11 @@ __PACKAGE__->compile([
 	undef,
 	'days outside of the maximum for a date',
     ],
+    SELECT_VALID_DEBIT_TYPE => [
+	132,
+	undef,
+	'identify the expense deducted',
+    ],
 ]);
 
 #=PRIVATE METHODS
