@@ -35,24 +35,50 @@ L<Bivio::Biz::ListModel>.
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my(%_CLASS_INFO);
 
 =head1 FACTORIES
 
 =cut
 
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::Biz::PropertyModel
+
+Returns the singleton for this class.
+
+=cut
+
+sub get_instance {
+    my($proto) = @_;
+    my($class) = ref($proto) || $proto;
+    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    return $_CLASS_INFO{$class}->{singleton};
+}
+
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref properties, Bivio::Agent::Request req) : Bivio::Biz::Model
+=head2 static new() : Bivio::Biz::PropertyModel
 
-Creates a new model.
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::PropertyModel
+
+Creates a PropertyModel with the specified request.
+
+A PropertyModel may only be loaded if I<req> is non-null.
 
 =cut
 
 sub new {
-    my($proto, $properties, $req) = @_;
-    my($self) = &Bivio::Collection::Attributes::new($proto, $properties);
+    my($proto, $req) = @_;
+    my($class) = ref($proto) || $proto;
+    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    my($ci) = $_CLASS_INFO{$class};
+    # Make a copy of the properties for this instance
+    my($self) = Bivio::Collection::Attributes::new($proto,
+	    {@{$ci->{properties}}});
     $self->{$_PACKAGE} = {
-	request => $req,
+	class_info => $ci,
+        request => $req,
     };
     return $self;
 }
@@ -60,6 +86,38 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Pretty prints an identifier for this model.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($ci) = $self->{$_PACKAGE}->{class_info};
+    # All primary keys must be defined or just return ref($self).
+    return ref($self) . '(' . join(',', map {
+	return ref($self) unless defined($_);
+	$_;
+    } $self->get(@{$ci->{as_string_fields}})) . ')';
+}
+
+=for html <a name="assert_not_singleton"></a>
+
+=head2 assert_not_singleton()
+
+Throws an exception if this is the singleton instance.
+
+=cut
+
+sub assert_not_singleton {
+    my($fields) = shift->{$_PACKAGE};
+    return unless $fields->{is_singleton};
+    Carp::croak("can't create, update, read, or delete singleton instance");
+}
 
 =for html <a name="clone"></a>
 
@@ -95,6 +153,46 @@ Not supported.
 
 sub delete_all {
     die('not supported');
+}
+
+=for html <a name="get_field_constraint"></a>
+
+=head2 get_field_constraint(string name) : Bivio::SQL::Constraint
+
+Returns the constraint for this field.
+
+=cut
+
+sub get_field_constraint {
+    return shift->{$_PACKAGE}->{class_info}->{sql_support}->
+	    get_column_constraint(@_);
+}
+
+=for html <a name="get_field_type"></a>
+
+=head2 get_field_type(string name) : Bivio::Type
+
+Returns the type of this field.
+
+=cut
+
+sub get_field_type {
+    return shift->{$_PACKAGE}->{class_info}->{sql_support}->
+	    get_column_type(@_);
+}
+
+=for html <a name="get_info"></a>
+
+=head2 get_info(string attr) : any
+
+Returns meta information about the model.
+
+B<Do not modify references returned by this method.>
+
+=cut
+
+sub get_info {
+    return shift->{$_PACKAGE}->{class_info}->{sql_support}->get(shift);
 }
 
 =for html <a name="die"></a>
@@ -133,17 +231,51 @@ sub get_request {
     return $req;
 }
 
-=for html <a name="find"></a>
+=for html <a name="internal_get_sql_support"></a>
 
-=head2 abstract load(string key, string value, ...) : boolean
+=head2 internal_get_sql_support() : Bivio::SQL::Support
 
-Loads the model using values from the specified search parameters.
-Returns 1 if successful, or 0 if no data was loaded.
+Returns L<Bivio::SQL::Support|Bivio::SQL::Support> for this instance
+only if this is not the singleton.  If it is the singleton, dies.
 
 =cut
 
-sub load {
-    CORE::die("abstract method");
+sub internal_get_sql_support {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $self->assert_not_singleton if $fields->{is_singleton};
+    return $fields->{class_info}->{sql_support};
+}
+
+=for html <a name="internal_initialize"></a>
+
+=head2 static abstract internal_initialize() : hash_ref
+
+B<FOR INTERNAL USE ONLY.>
+
+Returns an has_ref describing the model suitable for passing
+to L<Bivio::SQL::PropertySupport::new|Bivio::SQL::PropertySupport/"new">
+or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
+
+=cut
+
+sub internal_initialize {
+    Carp::croak('abstract method');
+}
+
+=for html <a name="internal_initialize_sql_support"></a>
+
+=head2 static abstract internal_initialize_sql_support() : Bivio::SQL::Support
+
+B<FOR INTERNAL USE ONLY>.
+
+Returns the L<Bivio::SQL::Support|Bivio::SQL::Support> object
+for this model.
+
+=cut
+
+sub internal_initialize_sql_support {
+    Carp::croak('abstract method');
 }
 
 =for html <a name="put"></a>
@@ -159,6 +291,30 @@ sub put {
 }
 
 #=PRIVATE METHODS
+
+
+sub _initialize_class_info {
+    my($class) = @_;
+    # Have here for safety to avoid infinite recursion if called badly.
+    return if $_CLASS_INFO{$class};
+    my($sql_support) = $class->internal_initialize_sql_support;
+    my($ci) = $_CLASS_INFO{$class} = {
+	sql_support => $sql_support,
+	as_string_fields => [@{$sql_support->get('primary_key_names')}],
+	# Is an array, because faster than a hash_ref for our purposes
+	properties => [map {
+		($_, undef);
+	    } @{$sql_support->get('column_names')},
+	],
+    };
+    unshift(@{$ci->{as_string_fields}}, 'name')
+	    if $sql_support->has_columns('name')
+		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
+    # $_CLASS_INFO{$class} is sentinel to stop recursion
+    $ci->{singleton} = $class->new;
+    $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
+    return;
+}
 
 =head1 COPYRIGHT
 
