@@ -301,7 +301,7 @@ sub _base {
 	    database => 'none',
 	    user => 'none',
 	    password => 'none',
-	    connection => 'Bivio::SQL::Connection::Postgres',
+	    connection => 'Bivio::SQL::Connection::None',
 	},
 	'Bivio::IO::Alert' => {
 	    intercept_warn => 1,
