@@ -1150,8 +1150,10 @@ sub validate_and_execute_ok {
 	    # DOES NOT RETURN
 	}
     }
+
     # Some type of error, rollback and fall through to the next
     # task items.
+    $self->get_request->warn('form_errors=', $fields->{errors});
     Bivio::Agent::Task->rollback;
     return 0;
 }

@@ -1209,6 +1209,28 @@ sub task_ok {
     return $realm->can_user_execute_task($task, $self);
 }
 
+=for html <a name="warn"></a>
+
+=head2 warn(any args, ...)
+
+Writes a warning and follows with the request context (task, user,
+uri, query, form).
+
+=cut
+
+sub warn {
+    my($self) = shift;
+    my($r) = $self->unsafe_get('r');
+    Bivio::IO::Alert->warn(@_,
+	    ' task=', $self->get('task_id')->get_name,
+	    ' user=', $r ? $r->connection->user : undef,
+	    ' uri=', $self->unsafe_get('uri'),
+	    ' query=', $self->unsafe_get('query'),
+	    ' form=', $self->unsafe_get('form'),
+	    );
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _get_realm(Bivio::Agent::Request self, Bivio::Auth::RealmType realm_type, Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm

@@ -345,9 +345,8 @@ sub handle_die {
 	return unless defined($new_task_id);
     }
 
-    # Redirected
-    # This is enough tracing, because the dispatcher describes the transition
-    _trace('mapped server redirect from ', $die_code) if $_TRACE;
+    # Redirect to error redirect
+    $req->warn('task_error=', $die, ' new_task=', $new_task_id->get_name);
     $die->set_code(Bivio::DieCode::SERVER_REDIRECT_TASK(),
 	    task_id => $new_task_id);
     return;
