@@ -9,6 +9,10 @@ $_ = $Bivio::Ext::LWPUserAgent::VERSION;
 
 Bivio::Ext::LWPUserAgent - extends LWP::UserAgent with bivio config
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Ext::LWPUserAgent;
