@@ -55,6 +55,11 @@ Literal text to use for C<HREF> attribute of C<A> tag.
 
 Anchor name.
 
+=item off_value : any [value]
+
+The value to use when the control returns false.
+If the off_value is 0, then nothing will be rendered.
+
 =item value : widget (required)
 
 The value between the C<A> tags aka the label.
@@ -122,13 +127,28 @@ sub initialize {
     $fields->{is_initialized} = 0;
     $fields->{prefix} = $p;
     $fields->{value}->put(parent => $self);
-    $fields->{value}->initialize;
 
-    # check control
+    # check control and off_value
     $fields->{control} = $self->unsafe_get('control');
     $fields->{control} = [['->get_request'], '->can_user_execute_task',
 	Bivio::Agent::TaskId->from_any($fields->{control})]
-	    unless !$fields->{control} || $fields->{control} eq 'ARRAY';
+	    if $fields->{control} && ref($fields->{control}) ne 'ARRAY';
+    if ($fields->{control}) {
+	$fields->{off_value} = $self->unsafe_get('off_value');
+	if (ref($fields->{off_value})) {
+	    $fields->{off_value}->put(parent => $self);
+	    $fields->{off_value}->initialize;
+	}
+	elsif ($fields->{off_value}) {
+	    Bivio::IO::Alert->die($fields->{off_value}, ': invalid off value');
+	}
+	elsif (!defined($fields->{off_value})) {
+	    $fields->{off_value} = $fields->{value};
+	}
+    }
+
+    # Child initializations happen last.
+    $fields->{value}->initialize;
     return;
 }
 
@@ -163,8 +183,9 @@ sub render {
 
     if ($fields->{control}
 	    && !$source->get_widget_value(@{$fields->{control}})) {
-	$fields->{value}->render($source, $buffer);
-	# Make sure we initialize
+	$fields->{off_value}->render($source, $buffer)
+		if $fields->{off_value};
+	# Make sure we don't initialize twice.
 	$fields->{is_initialized} = 1 unless $fields->{is_initialized};
 	return;
     }
