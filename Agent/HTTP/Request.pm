@@ -180,10 +180,7 @@ sub format_uri {
     # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, int(@_) >= 4 ? $auth_realm :
-	    $self->internal_get_realm_for_task(
-		    Bivio::Agent::Task->get_by_id($task_id)
-		    ->get('realm_type'),
-		    $task_id));
+	    $self->internal_get_realm_for_task($task_id));
 #TODO: Is this right?
 #PJM: I think so
     $query = $self->get('query_string') unless int(@_) >= 3;
