@@ -280,7 +280,7 @@ sub _reformat_pod {
     my($in_pod) = 0;
     foreach my $line (@$lines) {
 	my($pod, $doc);
-	if ($line =~ m,^(<font.*[^>]>)?(=[chiobpfbe]\w+)\s?(.*?)(</font>)?$,) {
+	if ($line =~ m,^(<font[^>]+>)?(=[chiobpfbe]\w+)\s?(.*?)(</font>)?$,) {
 	    $in_pod = 1;
 	    $pod = $2;
 	    $doc = $3;
@@ -288,7 +288,7 @@ sub _reformat_pod {
 	next unless $in_pod;
 
 	if ($pod && $doc && $pod eq '=for' && $doc =~ s/^html\s//) {
-	    substr($line, 0, 0) = $doc;
+	    $line =~ s/=for\shtml\s//;
 	    next;
 	}
 	$line = _unescape_pod($line);
