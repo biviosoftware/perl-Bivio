@@ -580,7 +580,7 @@ Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
 sub handle_cookie_in {
     my($self, $cookie, $req) = @_;
     my($v) = $cookie->unsafe_get($_TIMEZONE_COOKIE_FIELD);
-    $req->put(timezone => $v) if defined($v);
+    $req->put_durable(timezone => $v) if defined($v);
     return;
 }
 
@@ -1605,7 +1605,7 @@ sub _parse_timezone {
 
     # Set the new timezone
     $cookie->put($_TIMEZONE_COOKIE_FIELD => $v);
-    $req->put(timezone => $v);
+    $req->put_durable(timezone => $v);
     return;
 }
 
