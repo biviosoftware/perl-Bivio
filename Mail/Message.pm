@@ -116,6 +116,9 @@ sub new {
         'entity' => $parser->parse_data(defined($in) ? $in : ''),
         'rfc822' => $in,
     };
+    Bivio::IO::Alert->die('MIME parser failed to parse message')
+                unless defined($self->{$_PACKAGE}->{entity});
+
     # If a new message, do the boilerplate setup here
     unless (defined($in)) {
         $self->get_head->add('Date', Bivio::Type::DateTime->rfc822);
