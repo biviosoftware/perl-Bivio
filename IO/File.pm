@@ -31,6 +31,7 @@ C<Bivio::IO::File> is a collection of file utilities.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::IO::Trace;
+use Cwd ();
 use File::Path ();
 use File::Basename ();
 
@@ -92,7 +93,7 @@ sub chdir {
     Bivio::Die->die('no directory supplied')
 	    unless defined($directory) && length($directory);
     Bivio::Die->die('chdir(', $directory, "): $!")
-		unless chdir($directory);
+		unless Cwd::chdir($directory);
     _trace($directory) if $_TRACE;
     return $directory;
 }
@@ -174,18 +175,9 @@ Returns the current working directory.  dies if can't get pwd.
 =cut
 
 sub pwd {
-    # Need more than one exec argument, so it works with -T (taintchecks)
-    open(PWD, '-|') || exec('/bin/sh', '-c', '/bin/pwd');
-    my($pwd);
-    {
-        local($/) = undef;
-        $pwd = <PWD>;
-    }
-    die('unable to get pwd') unless close(PWD);
-    chomp($pwd);
-    # Return tainted value
-    $pwd =~ /(.+)/;
-    return $1;
+    my($dir) = Cwd::getcwd();
+    Bivio::Die->die("couldn't get cwd") unless $dir;
+    return $dir;
 }
 
 =for html <a name="read"></a>
