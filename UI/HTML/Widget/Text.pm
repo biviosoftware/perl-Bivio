@@ -68,6 +68,8 @@ This is to prevent unnecessary transient state.
 
 The second form may be deprecated, so try to avoid it.
 
+=item is_read_only : boolean [!is_field_editable()]
+
 =item size : int (required)
 
 How wide is the field represented.  (maxlength comes from the
@@ -194,7 +196,8 @@ sub render {
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
 	$field, $source) if $fields->{handler};
-    $$buffer .= ' readonly' unless $form->is_field_editable($field);
+    $$buffer .= ' disabled'
+	if $self->get_or_default('is_read_only', !$form->is_field_editable($field));
 
     # Format if provided
     my($v);

@@ -74,12 +74,8 @@ sub render {
     my($form_name) = $self->ancestral_get('form_name');
     my($prefix) = "document.$form_name.";
     my($total) = $prefix . $source->get_field_name_for_html($self->get('sum_field'));
-    my($multiplier) = $self->get('multiplier'),
-    my($oper1) = $prefix . $source->get_field_name_for_html($self->get('oper1'));
-    my($oper2) = $prefix . $source->get_field_name_for_html($self->get('oper2'));
-    my($vals) = [
-	$oper1, $oper2
-    ];
+    my($multiplier) = $self->get('multiplier');
+    my($vals) = $self->get('fields');
     Bivio::UI::HTML::Widget::JavaScript->render(
 	$source, $buffer, _function_name($self, $source), <<"EOF"
 
@@ -92,7 +88,7 @@ EOF
 	. join("\n- -",
 	    # ASSUMES: form names follow specific structure.
 	    map({
-		"$_.value";
+		$prefix . $source->get_field_name_for_html($_) . ".value";
 	    } @$vals)
 	) . <<"EOF"
 
