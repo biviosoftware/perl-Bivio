@@ -418,6 +418,7 @@ EOF
     }
     close(SPECOUT);
 
+    $version = _search('version', $base_spec) || $version;
     my($name) = _search('name', $base_spec)
 	    || Bivio::Die->die("$specin: Missing Name: tag!\n");
     return ($specout, "$name-$version", "$name-$version-$release");
