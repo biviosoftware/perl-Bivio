@@ -95,7 +95,7 @@ sub new {
 
 =over 4
 
-=item source_dir> : string (required)
+=item source_dir : string (required)
 
 The directory to search for source code.
 
