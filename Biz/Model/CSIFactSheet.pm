@@ -43,6 +43,21 @@ _initialize();
 
 =cut
 
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values, Bivio::Type::InstrumentType type) : Bivio::Biz::Model::CSIFactSheet
+
+Create a new model. Needs an instrument I<type> to
+create the Instrument and CSIInstrument models if necessary.
+
+=cut
+
+sub create {
+    my($self, $new_values, $type) = @_;
+    _sync_instrument_models($self, $new_values, $type);
+    return $self->SUPER::create($new_values);
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -58,7 +73,7 @@ sub internal_initialize {
 	columns => {
 	    csi_id => ['Bivio::Data::CSI::Id', 'PRIMARY_KEY'],
             fact_date => ['Date', 'PRIMARY_KEY'],
-            fact_op => ['Bivio::Data::CSI::FactSheetFunction', 'NOT_NULL'],
+            fact_function => ['Bivio::Data::CSI::FactSheetFunction', 'NOT_NULL'],
             ticker_symbol => ['Name', 'NOT_NULL'],
             name => ['Line', 'NOT_NULL'],
             conversion_factor => ['Bivio::Data::CSI::Amount', 'NOT_NULL'],
@@ -82,19 +97,31 @@ sub processRecord {
     my($values) = {
         csi_id => Bivio::Data::CSI::Id->from_literal($fields->[1]),
         fact_date => Bivio::Type::Date->from_literal($date),
-        fact_op => Bivio::Data::CSI::FactSheetFunction->from_any($fields->[2]),
+        fact_function => Bivio::Data::CSI::FactSheetFunction->from_any($fields->[2]),
         ticker_symbol => _otc_adjust($fields->[0], $fields->[5]),
-        name => $fields->[3],
         exchange_name => $fields->[5],
         conversion_factor => $fields->[6],
-        instrument_type => Bivio::Type::InstrumentType->from_csi($fields->[4]),
     };
     # Instrument name can be empty, use symbol instead
-    $values->{name} = $values->{ticker_symbol}
-            unless defined($values->{name}) && length($values->{name});
-    _sync_instrument_models($self, $values);
-    $self->create($values);
+    my($name) = $fields->[3];
+    $values->{name} = defined($name) && length($name)
+            ? $name : $values->{ticker_symbol};
+    $self->create($values, Bivio::Type::InstrumentType->from_csi($fields->[4]));
     return;
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values) : Bivio::Biz::Model::CSIFactSheet
+
+Catch calls and die.
+
+=cut
+
+sub update {
+    my($self) = @_;
+    Bivio::Die->die('can only be updated via modification records');
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
@@ -118,15 +145,15 @@ sub _otc_adjust {
     return $symbol . ($exchange_name eq 'OTC' ? '.OB' : '');
 }
 
-# _sync_instrument_models(self, hash_ref values)
+# _sync_instrument_models(self, hash_ref values, Bivio::Type::InstrumentType type)
 #
-# Lookup an Instrument given a ticker symbol.
-# Create a new instrument if necessary.
-# Lookup a CSI Instrument given a CSI Id.
-# Create a new instrument if necessary.
+# Lookup an Instrument given a ticker symbol,
+# create a new instrument if necessary.
+# Lookup a CSI Instrument given a CSI Id,
+# create a new CSI instrument if necessary.
 #
 sub _sync_instrument_models {
-    my($self, $values) = @_;
+    my($self, $values, $type) = @_;
     my($req) = $self->get_request;
     my($inst) = Bivio::Biz::Model::Instrument->new($req);
     unless ($inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
@@ -134,7 +161,7 @@ sub _sync_instrument_models {
             name => $values->{name},
             ticker_symbol => $values->{ticker_symbol},
             exchange_name => $values->{exchange_name},
-            instrument_type => $values->{instrument_type},
+            instrument_type => $type,
             fed_tax_free => Bivio::Type::Boolean::FALSE(),
         });
     }
@@ -143,9 +170,10 @@ sub _sync_instrument_models {
         $csi_inst->create({
             csi_id => $values->{csi_id},
             instrument_id => $inst->get('instrument_id'),
-            instrument_type => $values->{instrument_type},
+            instrument_type => $type,
         });
     }
+    return;
 }
 
 =head1 COPYRIGHT
