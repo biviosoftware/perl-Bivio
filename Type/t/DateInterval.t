@@ -15,6 +15,8 @@ Bivio::Test->new({
     },
     result_ok => sub {
 	my($object, $method, $params, $expected, $actual) = @_;
+	return Bivio::Test->default_result_ok(@_)
+	    if ref($expected) eq 'Bivio::DieCode';
 	return $_D->from_literal_or_die($expected->[0]) eq $actual->[0];
     }
 })->unit([
@@ -22,21 +24,26 @@ Bivio::Test->new({
 	inc => [
 	    ['1/1/1911'] => ['2/1/1911'],
 	    ['1/31/2000'] => ['2/29/2000'],
+	    [$_D->get_max] => Bivio::DieCode->DIE,
 	],
 	dec => [
 	    ['1/1/1911'] => ['12/1/1910'],
 	    ['2/29/2000'] => ['1/29/2000'],
 	    ['7/31/2000'] => ['6/30/2000'],
+	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
     Bivio::Type::DateInterval->YEAR => [
 	inc => [
 	    ['1/1/1911'] => ['1/1/1912'],
 	    ['2/29/2000'] => ['2/28/2001'],
+	    [$_D->get_max] => Bivio::DieCode->DIE,
 	],
 	dec => [
 	    ['1/1/1911'] => ['1/1/1910'],
 	    ['2/29/2000'] => ['2/28/1999'],
+	    [$_D->get_min] => Bivio::DieCode->DIE,
+	    [$_D->get_max] => ['12/31/2198'],
 	],
     ],
 ]);
