@@ -61,8 +61,8 @@ Perform lookup and su automatically if coming in with query string.
 sub execute_empty {
     my($self) = @_;
     my($query) = $self->get_request->unsafe_get('query');
-    return unless defined($query->{p});
-    $self->internal_put_field(login => $query->{p});
+    return unless defined($query->{t});
+    $self->internal_put_field(login => $query->{t});
     $self->validate();
     $self->execute_ok() unless $self->in_error();
 #TODO would be nice to go to club site
