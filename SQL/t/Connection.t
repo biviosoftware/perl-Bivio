@@ -5,7 +5,7 @@ use Bivio::SQL::Connection;
 
 my($_TABLE) = 't_connection_t';
 Bivio::Test->unit([
-    Bivio::SQL::Connection->create => [
+    Bivio::SQL::Connection->get_instance => [
 	execute => [
 	    # Drop the table first, we don't care about the result
 	    ["drop table $_TABLE"] => undef,
