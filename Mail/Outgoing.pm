@@ -114,7 +114,8 @@ sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
     my(undef, $incoming) = @_;
     my($fields) = {};
-    if (UNIVERSAL::isa($incoming, 'Bivio::Mail::Incoming')) {
+    if (defined($incoming)
+	    && UNIVERSAL::isa($incoming, 'Bivio::Mail::Incoming')) {
 	my($body);
 	$incoming->get_body(\$body);
 	$fields->{body} = $body;
