@@ -1768,7 +1768,7 @@ my(@_CFG) = (
         166
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/f1065/parameters
+        ?/accounting/tax99/f1065/options
         Bivio::Biz::Model::F1065ParametersForm
         Bivio::UI::HTML::Club::F1065Parameters
         next=CLUB_ACCOUNTING_TAX99
@@ -1778,7 +1778,7 @@ my(@_CFG) = (
         167
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/k1/parameters
+        ?/accounting/tax99/k1/options
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
         Bivio::Biz::Model::F1065K1ParametersForm
@@ -1841,6 +1841,17 @@ my(@_CFG) = (
         Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
         Bivio::UI::HTML::Tax::PortfolioDeductions
         next=CLUB_ACCOUNTING_TAX99_DEDUCTIONS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_CHARGES_PAID
+        173
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/investment/charges_paid
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::InstrumentChargesForm
+        Bivio::UI::HTML::Club::InstrumentCharges
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
 );
 
