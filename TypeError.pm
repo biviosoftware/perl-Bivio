@@ -297,6 +297,13 @@ __PACKAGE__->compile(
 	undef,
 	'new shares can\'t equal old shares',
     ],
+    REALM_INVITE_STATE => [
+	52,
+	undef,
+	# This text is not to be displayed to the user.
+	# This error is only internally.
+	'',
+    ],
 );
 
 #=PRIVATE METHODS
