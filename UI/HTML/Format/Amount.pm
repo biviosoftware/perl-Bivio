@@ -33,7 +33,7 @@ number of decimal points.
 
 #=IMPORTS
 use Bivio::TypeError;
-use Math::BigInt ();
+use Bivio::Type::Amount;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -58,46 +58,16 @@ the amount is a valid number.
 sub get_widget_value {
     my(undef, $amount, $round) = @_;
 
-#TODO: very ugly code needs revisiting
+    $amount = Bivio::Type::Amount->round($amount, $round);
+    my($negative) = $amount =~ /^[-]/;
 
-    die("round $round > $_DECIMAL_MAX") if $round > $_DECIMAL_MAX;
-    my($valid) = Bivio::Type::Number->from_literal($amount);
-    die("invalid number $amount") unless defined($valid);
-
-    my($negative) = $amount =~ /^-/;
-
-    my($length) = length($amount);
-    my($dot_pos) = index($amount, '.');
-    my($decimals) = ($dot_pos == -1) ? 0 : $length - $dot_pos - 1;
-
-    # pad to exactly _DECIMAL_MAX decimal places
-    if ($decimals == 0) {
-	$amount .= $_FULL_PAD;
+    my($num, $dec);
+    if (($num, $dec) = $amount =~ /^[+-]?(.*)\.(.*)$/) {
+	;
     }
-    elsif ($decimals < $_DECIMAL_MAX) {
-	$amount .= '0' x ($_DECIMAL_MAX - $decimals);
+    else {
+	$num = $amount;
     }
-    elsif ($decimals > $_DECIMAL_MAX) {
-	$amount = substr($amount, 0, $length - ($decimals - $_DECIMAL_MAX));
-    }
-
-    # strip . and round up
-    $amount =~ s/\.//;
-    my($bigint) = Math::BigInt->new($amount);
-    my($rounder) = '5'.('0' x ($_DECIMAL_MAX - $round - 1));
-    $rounder = '-'.$rounder if $negative;
-    $bigint = $bigint->badd($rounder);
-
-    # strip sign and left pad with 0 if necessary
-    $bigint =~ s/^.//;
-    my($need_pad) = ($_DECIMAL_MAX + 1) - length($bigint);
-    if ($need_pad > 0) {
-	$bigint = ('0' x $need_pad) . $bigint;
-    }
-
-    # extract number and decimal
-    my($dec) = substr($bigint, length($bigint) - $_DECIMAL_MAX, $round);
-    my($num) = substr($bigint, 0, length($bigint) - $_DECIMAL_MAX);
 
     # put ',' in the number
     if (length($num) > 3) {
@@ -109,7 +79,8 @@ sub get_widget_value {
 	}
     }
 
-    my($result) = $num.'.'.$dec;
+    my($result) = defined($dec) ? ($num.'.'.$dec) : $num;
+#TODO: really want &nbsp; around positive values
     return $negative ? '('.$result.')' : ' '.$result.' ';
 }
 
