@@ -98,7 +98,7 @@ sub processRecord {
         csi_id => Bivio::Data::CSI::Id->from_literal($fields->[1]),
         fact_date => Bivio::Type::Date->from_literal($date),
         fact_function => Bivio::Data::CSI::FactSheetFunction->from_any($fields->[2]),
-        ticker_symbol => _otc_adjust($fields->[0], $fields->[5]),
+        ticker_symbol => $fields->[0],
         exchange_name => $fields->[5],
         conversion_factor => $fields->[6],
     };
@@ -108,20 +108,6 @@ sub processRecord {
             ? $name : $values->{ticker_symbol};
     $self->create($values, Bivio::Type::InstrumentType->from_csi($fields->[4]));
     return;
-}
-
-=for html <a name="update"></a>
-
-=head2 update(hash_ref new_values) : Bivio::Biz::Model::CSIFactSheet
-
-Catch calls and die.
-
-=cut
-
-sub update {
-    my($self) = @_;
-    Bivio::Die->die('can only be updated via modification records');
-    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
@@ -134,15 +120,6 @@ sub _initialize {
     Bivio::Biz::Model::CSIBase->internal_register_handler($_PACKAGE,
             Bivio::Data::CSI::RecordType::FACT_SHEET_MODIFICATION());
     return;
-}
-
-# _otc_adjust(string symbol, string exchange_name) : string
-#
-# Add extenstion .OB for OTC instruments
-#
-sub _otc_adjust {
-    my($symbol, $exchange_name) = @_;
-    return $symbol . ($exchange_name eq 'OTC' ? '.OB' : '');
 }
 
 # _sync_instrument_models(self, hash_ref values, Bivio::Type::InstrumentType type)
