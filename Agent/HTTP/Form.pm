@@ -107,12 +107,9 @@ sub _parse {
 		if $len < 0;
     }
     else {
-	_trace('Content-Length: not set') if $_TRACE;
-	$len = 0;
+	$req->throw_die('CORRUPT_FORM', 'Content-Length: not set or zero');
     }
-
-#TODO: I believe that Apache does this for us with the whole request
-    $r->soft_timeout('Bivio::Agent::HTTP::Form::_parse');
+    _trace('Content-Length=', $len) if $_TRACE;
 
     # Assume the boundary begins with the first -- line
     # Until it gets all the bytes to read
@@ -157,6 +154,9 @@ sub _parse {
 	    $form->{$field->{name}} = $$content;
 	}
 
+        Bivio::IO::Alert->warn('buffer length < 2, buf="', $buf, '"')
+                    if (length($buf) < 2);
+
 	# Parse the trailing \r\n
 	next if $buf =~ s/^\r\n//;
 
@@ -165,15 +165,14 @@ sub _parse {
 
         # Add more info re the corrupt form problem
         Bivio::IO::Alert->warn('Form contents so far=', $form);
-        Bivio::IO::Alert->warn('Last field=', $$content);
+        Bivio::IO::Alert->warn('Last field=', $field);
+        Bivio::IO::Alert->warn('Last field content=', $$content);
         Bivio::IO::Alert->warn('Remaining buffer length=', length($buf));
         Bivio::IO::Alert->warn('Remaining buffer="', $buf, '"');
 	$req->throw_die('CORRUPT_FORM',
 		{message => 'invalid encapsulation or closing boundary',
 		    entity => substr($buf, 0, 20)});
     }
-#TODO: I believe that Apache does this for us with the whole request
-    $r->kill_timeout();
     $req->throw_die('CLIENT_ERROR',
 	    'client interrupt or timeout while reading form-data')
 	    if $r->connection->aborted();
@@ -215,12 +214,13 @@ sub _parse_content {
 	# Read some pretty big chunks now (as opposed to parse_header_line),
 	# because we didn't hit # it in a "short" field of thousand bytes, so
 	# likely to be a file.
-	my($read);
-	my($j) = $$len && $$len < 0x10000 ? $$len : 0x10000;
+ 	$req->throw_die('CORRUPT_FORM', 'Attempt to read past Content-Length')
+                unless $$len;
+	my($j) = $$len < 0x10000 ? $$len : 0x10000;
 
 	# read appends to buffer
 	_read($r, \$value, $j, $req);
-	$$len -= $j if $$len;
+	$$len -= $j;
     }
     return;
 }
@@ -342,15 +342,16 @@ sub _parse_header_line {
     # We try to find a line by reading 10 times.  If this fails, the
     # client has sent a bogus header (> 10240 bytes on one line).
     for (my $j = 10; $j > 0; $j--) {
-	my($read);
+ 	$req->throw_die('CORRUPT_FORM', 'Attempt to read past Content-Length')
+                unless $$len;
 	# 1000 bytes should hit the header and then some
-	my($i) = $$len && $$len < 0x400 ? $$len : 0x400;
+	my($i) = $$len < 0x400 ? $$len : 0x400;
 
 	# Read appends to buffer
 	_read($r, $buf, $i, $req);
+	$$len -= $i;
 
 	# Got something, adjust values and see if we have a line
-	$$len -= $i if $$len;
 	if ($$buf =~ s/^(.*)\r\n//) {
 	    $$line = $1;
 	    return 1;
@@ -365,13 +366,10 @@ sub _parse_header_line {
 #
 sub _read {
     my($r, $buf, $len, $req) = @_;
-    $r->soft_timeout('Bivio::Agent::HTTP::Form::_read');
-    # NOTE: Doesn't actually do a "soft" timeout.  Sets a hard
-    # timeout.
+    _trace('_read_len=', $len) if $_TRACE;
     $r->read($$buf, $len) || $req->throw_die('CLIENT_ERROR', 'read error');
     $req->throw_die('CLIENT_ERROR', 'buffer undefined after read')
 	    unless defined($$buf);
-    $r->reset_timeout;
 }
 
 =head1 SEE ALSO
