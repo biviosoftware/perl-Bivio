@@ -33,6 +33,7 @@ C<Bivio::Biz::Model::Visitor> represents a non-user, i.e. a "unique" visitor.
 #=IMPORTS
 
 #=VARIABLES
+my($_CLIENT_ADDR_LENGTH) = Bivio::Type::RealmName->get_width;
 
 =head1 METHODS
 
@@ -50,6 +51,8 @@ sub create {
     my($self, $values) = @_;
     $values->{creation_date_time} ||= Bivio::Type::DateTime->now();
     $values->{user_id} ||= undef;
+    $values->{client_addr} = substr($values->{client_addr}, 0,
+            $_CLIENT_ADDR_LENGTH) if defined($values->{client_addr});
     return $self->SUPER::create($values);
 }
 
