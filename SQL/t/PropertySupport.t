@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..12\n"; }
+BEGIN { $| = 1; print "1..18\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::SQL::PropertySupport;
@@ -89,7 +89,8 @@ my($support) = Bivio::SQL::PropertySupport->new({
 });
 my($load) = $support->unsafe_load({$_ID => $_MIN_ID});
 t(!defined($load));
-my($values) = {gender => Bivio::Type::Gender::FEMALE()};
+my($values) = {gender => Bivio::Type::Gender::FEMALE(),
+   boolean => 0};
 $support->create($values);
 $load = $support->unsafe_load({$_ID => $_MIN_ID});
 t(defined($load));
@@ -109,9 +110,9 @@ $support->update($load, {
     text => 'text',
     amount => '20.7',
     boolean => 99,
-    date_time => $time,
-    dt => int($time / 86400) * 86400,
-    tm => 60 * 60,
+    date_time => Bivio::Type::DateTime->from_unix($time),
+    dt => Bivio::Type::Date->from_unix($time),
+    tm => Bivio::Type::Time->from_unix($time),
     gender => Bivio::Type::Gender::MALE(),
 });
 Bivio::SQL::Connection->commit;
@@ -120,9 +121,9 @@ t(defined($load));
 t($load->{name} eq 'name' && $load->{line} eq 'line'
 	&& $load->{text} eq 'text' && $load->{amount} eq '20.7');
 t($load->{boolean} == 1);
-t($load->{date_time} == $time);
-t($load->{tm} == 3600);
-t($load->{dt} == int($time / 86400) * 86400);
+t($load->{date_time} eq Bivio::Type::DateTime->from_unix($time));
+t($load->{tm} eq Bivio::Type::Time->from_unix($time));
+t($load->{dt} eq Bivio::Type::Date->from_unix($time));
 t($load->{gender} == Bivio::Type::Gender::MALE);
 $support->delete($load);
 Bivio::SQL::Connection->commit;
