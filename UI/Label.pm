@@ -725,6 +725,7 @@ EOF
     HELP_MEMBER_TRANSACTIONS => 'Member Transactions',
     HELP_PRICE_DATABASE => 'Price Database',
     HELP_PRINTING => 'Printing',
+    HELP_PRIVILEGES => 'Privileges',
     HELP_PROBLEMS_IMPORTING_NCA =>
         'Problems Importing NAIC Club Accounting(tm)',
     HELP_SECURE_DATA => 'Secure Data Fields',
