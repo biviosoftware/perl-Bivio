@@ -313,6 +313,7 @@ sub new_other {
     }
     my($other) = $class->new($options);
     $other->put_request($self->get_request) if $self->unsafe_get('req');
+    $other->put(program => $self->unsafe_get('program') || '');
     return $other;
 }
 
@@ -358,7 +359,7 @@ sub are_you_sure {
     # Get answer stripping spaces to be nice.
     my $answer = <STDIN>;
     $answer =~ s/\s+//g;
-    die("Operation aborted\n") unless $answer eq 'yes';
+    $self->usage_error("Operation aborted") unless $answer eq 'yes';
 
     # Yes answer
     return;
@@ -375,7 +376,10 @@ Returns the command line that was used to execute this command.
 sub command_line {
     my($self) = @_;
     return ref($self)
-	    ? join(' ', $self->get('program'), @{$self->get('argv')})
+	    ? join(' ', $self->unsafe_get('program') || '',
+		    map {
+			defined($_) ? $_ : '<undef>'
+		    } @{$self->unsafe_get('argv') || []})
 		    : 'N/A';
 }
 
@@ -865,10 +869,25 @@ Dies with I<msg> followed by L<USAGE|"USAGE">.
 
 sub usage {
     my($proto) = shift;
-    Bivio::Die->die(
-	    <<"EOF".$proto->USAGE().$proto->OPTIONS_USAGE());
-ERROR: @{[join('', @_)]}
-EOF
+    $proto->usage_error(@_, "\n", $proto->USAGE(), $proto->OPTIONS_USAGE());
+    # DOES NOT RETURN
+}
+
+=for html <a name="usage_error"></a>
+
+=head2 usage_error(string msg, ...)
+
+Terminates caller with a usage error.  Doesn't print usage.
+
+TODO: Need to avoid stack trace.
+
+=cut
+
+sub usage_error {
+    my($self) = shift;
+    Bivio::IO::Alert->warn_simply('ERROR: ', @_);
+    Bivio::Die->throw_quietly('DIE');
+    # DOES NOT RETURN
 }
 
 =for html <a name="write_file"></a>
@@ -997,7 +1016,7 @@ sub _parse_realm_id {
     return $realm unless defined($realm);
     Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model');
     my($ro) = Bivio::Biz::Model->get_instance('RealmOwner')->new();
-    Bivio::Die->die($realm, ': no such ', $attr)
+    $self->usage_error($realm, ': no such ', $attr)
 		unless $ro->unauth_load_by_email_id_or_name($realm);
     return $ro->get('realm_id');
 }
