@@ -1438,7 +1438,8 @@ sub _format_uri_args {
 	    $uri = $req->format_stateless_uri($uri);
 	}
 	else {
-	    $self->die('unknown type for uri_or_task: ', $uri);
+	    $self->die('unknown type for uri_or_task: ', $uri)
+                if ref($uri);
 	}
     }
     else {
