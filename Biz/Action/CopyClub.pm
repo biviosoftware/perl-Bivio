@@ -240,21 +240,3 @@ $Id$
 =cut
 
 1;
-
-=begin comment
-
-use Bivio::Agent::TestRequest;
-use Bivio::IO::Config;
-
-Bivio::IO::Config->initialize();
-
-my($req) = Bivio::Agent::TestRequest->get_current_or_new({
-    source_club_id => 5400002,
-    target_club_id => 5600002,
-});
-
-Bivio::Biz::Action::CopyClub->get_instance()->execute($req);
-Bivio::SQL::Connection->commit();
-
-=cut
-
