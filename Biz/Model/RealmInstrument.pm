@@ -33,6 +33,7 @@ and delete interface to the C<realm_instrument_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Instrument;
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
@@ -75,6 +76,40 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+=for html <a name="unsafe_find_or_create"></a>
+
+=head2 unsafe_find_or_create(string ticker) : boolean
+
+Attempts to find a realm instrument with the specified ticker. If
+no realm instrument exists, then a new one is created.
+On success, 1 is returned.
+If no instrument exists for the ticker, then 0 is returned.
+
+=cut
+
+sub unsafe_find_or_create {
+    my($self, $ticker) = @_;
+    my($req) = $self->get_request;
+
+#TODO: need to check local instruments first
+
+    # load the instrument from the ticker
+    my($inst) = Bivio::Biz::Model::Instrument->new($req);
+    unless ($inst->unsafe_load(ticker_symbol => uc($ticker))) {
+	return 0;
+    }
+
+    # see if there is a realm instrument for it
+    unless ($self->unsafe_load(instrument_id => $inst->get('instrument_id'))) {
+	# need to create it
+	$self->create({
+	    instrument_id => $inst->get('instrument_id'),
+	    realm_id => $req->get('auth_id'),
+	});
+    }
+    return 1;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -114,7 +149,6 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NONE()],
         },
 	other => [
-#	    [qw(realm_id RealmOwner.realm_id)],
 	    [qw(instrument_id Instrument.instrument_id)],
 	],
 	auth_id => 'realm_id',
