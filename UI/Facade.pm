@@ -107,6 +107,8 @@ used.
 
 =item ic : BUYandHOLD (production)
 
+=item investmentexpo : InvestmentExpo (production)
+
 =item aristau : WFN
 
 =item muri :
@@ -117,7 +119,7 @@ used.
 
 =item bumpliz : AllWomenInvest
 
-=item ollon : InvestmentExpo
+=item ollon :
 
 =item stange :
 
