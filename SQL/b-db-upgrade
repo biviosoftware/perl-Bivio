@@ -429,6 +429,7 @@ sub _interactive_update_export_info {
 sub _upgrade_redo_allocations {
 
     use Bivio::Auth::Realm;
+    use Bivio::Biz::Accounting::AllocationCache;
     use Bivio::Biz::Accounting::Tax;
     use Bivio::Biz::Accounting::MemberBasis;
     use Bivio::Biz::Model::File;
@@ -531,6 +532,8 @@ DELETE FROM member_allocation_t
 	my($die) = Bivio::Die->catch(sub {
 	    print("\n\timporting allocations");
 	    $importer->import_allocations($info);
+	    Bivio::Biz::Accounting::AllocationCache->new($req)
+			->create_import_skip_years;
 	    print("\n\tcalculating withdrawal gains");
 	    Bivio::Biz::Accounting::MemberBasis
 			->calculate_all_realized_gain($req);
