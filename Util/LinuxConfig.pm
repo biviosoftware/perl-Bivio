@@ -286,7 +286,7 @@ Adds lines to file, creating if necessary.
 
 sub append_lines {
     my($self, $file, $owner, $group, $perms, @lines) = @_;
-    my($lines) = 
+    $perms = oct($perms) if $perms =~ /^0/;
     return _add_file($self, $file, $owner, $group, $perms)
 	. _edit($self, $file, map {
 	    ['$', "$_\n", qr/^\Q$_\E$/m],
