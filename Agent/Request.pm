@@ -20,8 +20,8 @@ use Bivio::Collection::Attributes;
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::Request> Request provides a common interface for http,
-email, ... requests to the application.  The transport specific
+C<Bivio::Agent::Request> Request provides a common interface for http,...
+requests to the application.  The transport specific
 Request implementation initializes most of these values
 
 The Attributes are defined:
@@ -92,7 +92,7 @@ Are we running in secure mode (SSL)?
 
 Host name to be used in mailto URLs and such.
 
-=item message : Bivio::Mail::Incoming
+=item message : Bivio::Mail::Message
 
 Mail message represented by this request.
 
@@ -493,7 +493,6 @@ If the task doesn't have a uri, returns undef.
 
 sub format_uri {
     my($self, $task_id, $query, $auth_realm, $path_info) = @_;
-    # Note: Bivio::Agent::Mail::Request may call this.
     $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
     $query = $self->get_widget_value(@$query) if ref($query) eq 'ARRAY';
     $auth_realm = $self->get_widget_value(@$auth_realm)
