@@ -3054,6 +3054,34 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::Delete
         next=USER_HOME
     )],
+    [qw(
+        ADM_SPINOFFS
+        267
+        GENERAL
+        ADMIN_WRITE
+        adm/spin-offs
+        Bivio::Biz::Model::InstrumentSpinoffList->execute_load_page
+        Bivio::UI::HTML::Adm::InstrumentSpinoffs
+    )],
+    [qw(
+        ADM_SPINOFF_DELETE
+        268
+        GENERAL
+        ADMIN_WRITE
+        adm/spin-off/delete
+        Bivio::Biz::Model::InstrumentSpinoff->execute_load_this
+        Bivio::Biz::Action::InstrumentSpinoffDelete
+    )],
+    [qw(
+        ADM_SPINOFF_CREATE
+        269
+        GENERAL
+        ADMIN_WRITE
+        adm/spin-off/create
+        Bivio::Biz::Model::InstrumentSpinoffInfoForm
+        Bivio::UI::HTML::Adm::InstrumentSpinoffInfo
+        next=ADM_SPINOFFS
+    )],
 );
 
 __PACKAGE__->compile([
