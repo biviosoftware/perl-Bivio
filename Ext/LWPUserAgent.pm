@@ -44,6 +44,7 @@ use LWP::Debug ();
 
 #=VARIABLES
 use vars ('$_TRACE');
+my($_PKG) = __PACKAGE__;
 Bivio::IO::Trace->register;
 my($_HTTP_PROXY);
 Bivio::IO::Config->register({
@@ -56,17 +57,22 @@ Bivio::IO::Config->register({
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Ext::LWPUserAgent
+=head2 static new(boolean want_redirects) : Bivio::Ext::LWPUserAgent
 
 Calls SUPER::new and sets timeout and proxy.
+
+If I<want_redirects> is true, L<redirect_ok|"redirect_ok"> will return true.
 
 Turns on LWP::Debug if $_TRACE is true for this class.
 
 =cut
 
 sub new {
-    my($proto) = @_;
+    my($proto, $want_redirects) = @_;
     my($self) = $proto->SUPER::new;
+    my($fields) = $self->{$_PKG} = {
+	want_redirects => $want_redirects ? 1 : 0,
+    };
     # Relatively short timeout, so we don't get stuck in remote services.
     $self->timeout(60);
     # Use a proxy if configured
@@ -104,7 +110,7 @@ sub handle_config {
 
 =for html <a name="redirect_ok"></a>
 
-=head2 static redirect_ok() : boolean
+=head2 redirect_ok() : boolean
 
 Always returns false.  Redirects need to be handled at higher level for cookies
 and logging.
@@ -112,7 +118,7 @@ and logging.
 =cut
 
 sub redirect_ok {
-    return 0;
+    return shift->{$_PKG}->{want_redirects};
 }
 
 #=PRIVATE METHODS
