@@ -165,7 +165,7 @@ sub as_string {
 
 =for html <a name="create_message_id"></a>
 
-=head2 create_message_id(Bivio::Agent::Request req) :
+=head2 create_message_id(Bivio::Agent::Request req)
 
 Create globally unique message id and add to header
 
@@ -184,7 +184,7 @@ sub create_message_id {
 
 =for html <a name="discard_queued_messages"></a>
 
-=head2 discard_queued_messages() : 
+=head2 discard_queued_messages()
 
 Empties the send queue, throwing away all messages in the queue.
 
@@ -453,7 +453,7 @@ sub handle_config {
 
 =for html <a name="send_queued_messages"></a>
 
-=head2 static send_queued_messages()
+=head2 static send_queued_messages(Bivio::Agent::Request req)
 
 Sends messages that have been queued with L<enqueue|"enqueue">.  This should be
 called after at the end of request processing.
@@ -461,15 +461,16 @@ called after at the end of request processing.
 =cut
 
 sub send_queued_messages {
+    my(undef, $req) = @_;
     while (@_QUEUE) {
-	shift(@_QUEUE)->send;
+	shift(@_QUEUE)->send($req);
     }
     return;
 }
 
 =for html <a name="send"></a>
 
-=head2 send():
+=head2 send(Bivio::Agent::Request req)
 
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
@@ -478,13 +479,14 @@ iwc an exception is raised or no I<msg>.
 =cut
 
 sub send {
-    my($self) = @_;
+    my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     defined(@{$fields->{recipients}}) || die("no recipients\n");
 
     # Always have header to do loop counting
     my($num_loops) = $self->get_head->get('X-Bivio-Forwarded') || 0;
     $self->get_head->replace('X-Bivio-Forwarded', $num_loops+1);
+    $self->get_head->replace('X-Bivio-Client-IP', $req->get('client_addr'));
 
     _trace('To ', join(',',@{$fields->{recipients}})) if $_TRACE;
 
@@ -574,6 +576,7 @@ sub set_headers_for_list_send {
     foreach $name (@_REMOVE_FOR_LIST_RESEND) {
 	$head->delete($name);
     }
+#TODO: Should find way to pass in request object
     my($req) = Bivio::Agent::Request->get_current_or_new();
     my($sender) = $list_name . '-owner@' . $req->get('mail_host');
     $head->replace('Sender', $sender);
@@ -599,7 +602,7 @@ sub set_headers_for_list_send {
 
 =for html <a name="set_field"></a>
 
-=head2 set_field(string name, string value) :
+=head2 set_field(string name, string value)
 
 Sets a new value for field "name". Creates field if it doesn't exist.
 
