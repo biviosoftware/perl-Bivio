@@ -997,7 +997,7 @@ sub run_daemon {
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
 	    my($args) = $next_command->();
 	    last unless $args;
-	    _reap_daemon_children($children);
+	    _reap_daemon_children($children, 0);
 	    if (grep(
 		Bivio::IO::Ref->nested_equals($args, $_),
 		values(%$children),
@@ -1366,14 +1366,15 @@ sub _process_exists {
 #
 sub _reap_daemon_children {
     my($children, $stopped) = @_;
-    while (!$stopped || $stopped > 0) {
-	if ($stopped) {
+    while (1) {
+	if ($stopped > 0) {
 	    _trace('stopped: ', $stopped, ' ', $children->{$stopped})
 		if $_TRACE;
 	    Bivio::IO::Alert->warn($stopped, ': unknown pid')
 		unless delete($children->{$stopped});
 	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
+	last unless $stopped > 0;
     }
     return;
 }
