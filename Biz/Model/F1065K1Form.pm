@@ -31,10 +31,11 @@ C<Bivio::Biz::Model::F1065K1Form> IRS 1065 K-1 fields
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::ClubOwnership;
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::F1065Form;
-use Bivio::Biz::Model::MemberSummaryList;
 use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::TaxK1;
 use Bivio::Collection::Attributes;
 use Bivio::SQL::Connection;
 use Bivio::Type::Amount;
@@ -114,25 +115,35 @@ sub execute_empty {
     my($properties) = $self->internal_get;
 
     my($date) = $req->get('report_date');
-    $date = Bivio::Type::Date->to_local_date($date);
     my($tax) = 'Bivio::Type::TaxCategory';
 
     # Get the target user
 #    my($user) = $req->get('target_realm_owner');
     my($realm_user) = $req->get('Bivio::Biz::Model::RealmUser');
     my($user) = Bivio::Biz::Model::RealmOwner->new($req);
-    $user->unauth_load(realm_id => $realm_user->get('user_id'))
-	    || die("couldn't load user ".$realm_user->get('user_id'));
+    $user->unauth_load_or_die(realm_id => $realm_user->get('user_id'));
+
+    my($taxk1) = Bivio::Biz::Model::TaxK1->new($req);
+    unless ($taxk1->unsafe_load(fiscal_end_date => $date,
+	   user_id => $user->get('realm_id'))) {
+	my($user_id) = $user->get('realm_id');
+	my($address) = Bivio::Biz::Model::Address->new($req);
+	$address->unauth_load_or_die(realm_id => $user_id,
+		location => Bivio::Type::Location::HOME());
+	$taxk1->create_default($user_id, $date,
+		Bivio::Type::F1065IRSCenter->get_irs_center(
+			$address->get('state', 'zip')));
+    }
 
     my($allocations) = _get_user_allocations($self, $user, $date);
 
-    $properties->{partner_type} = Bivio::Type::F1065Partner->GENERAL;
-    $properties->{entity_type} = 'Individual';
-    $properties->{foreign} = 0;
-    $properties->{irs_center} = '';
+    $properties->{partner_type} = $taxk1->get('partner_type');
+    $properties->{entity_type} = $taxk1->get('entity_type');
+    $properties->{foreign} = $taxk1->get('foreign_partner');
+    $properties->{irs_center} = $taxk1->get('irs_center');
     $properties->{percentage_start} = _get_percentage($self, $user, $date, 1);
     $properties->{percentage_end} = _get_percentage($self, $user, $date, 0);
-    $properties->{return_type} = Bivio::Type::F1065Return->UNKNOWN;
+    $properties->{return_type} = _get_return_type($self, $user, $date);
 
     $properties->{interest_income} = $allocations->get_or_default(
 	$tax->INTEREST->get_short_desc, 0);
@@ -193,7 +204,7 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'entity_type',
-		type => 'Name',
+		type => 'Bivio::Type::F1065Entity',
 		constraint => 'NONE',
 	    },
 	    {
@@ -213,7 +224,7 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'irs_center',
-		type => 'Name',
+		type => 'Bivio::Type::F1065IRSCenter',
 		constraint => 'NONE',
 	    },
 	    {
@@ -389,7 +400,6 @@ sub _get_foreign_income {
     my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
     $income->reset_cursor;
     $income->next_row || die("couldn't load income/expense list");
-    $income->adjust_for_allocations;
 
     my($tax) = 'Bivio::Type::TaxCategory';
     my($total_foreign_tax) = $income->get($tax->FOREIGN_TAX->get_short_desc);
@@ -407,26 +417,54 @@ sub _get_foreign_income {
 #
 sub _get_percentage {
     my($self, $user, $date, $start) = @_;
-    my($req) = $self->get_request;
 
-    my($report_date) = $req->get('report_date');
     if ($start) {
-	$req->put(report_date =>
-		Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year($date));
+	$date = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year($date);
     }
-    my($list) = Bivio::Biz::Model::MemberSummaryList->new($req);
-    $list->load_all;
-    my($percent) = 0;
-    # look for the user
-    while ($list->next_row) {
-	if ($list->get('RealmUser.user_id') eq $user->get('realm_id')) {
-	    $percent = $list->get('percent');
-	}
+    my($ownership) = Bivio::Biz::Accounting::ClubOwnership->new(
+	    $self->get_request->get('auth_realm')->get('owner'), $date);
+    my($date_own) = $ownership->get_ownership($date);
+    return 0 unless exists($date_own->{$user->get('realm_id')});
+
+    return Bivio::Type::Amount->mul(
+	    $date_own->{$user->get('realm_id')}->[0], 100);
+}
+
+# _get_return_type(Bivio::Biz::Model::RealmOwner user, string date) : Bivio::Type::F1065Return
+#
+# Determines the user's type of return. Final for total withdrawals.
+#
+sub _get_return_type {
+    my($self, $user, $date) = @_;
+
+    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
+	    $date);
+
+    my($entry_type) = 'Bivio::Type::EntryType';
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT COUNT(*)
+            FROM realm_transaction_t, entry_t, member_entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =entry_t.realm_transaction_id
+            AND entry_t.entry_id=member_entry_t.entry_id
+            AND member_entry_t.user_id=?
+            AND entry_t.entry_type in (?, ?)
+            AND realm_transaction_t.date_time BETWEEN
+                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+            AND realm_transaction_t.realm_id=?",
+	    [$user->get('realm_id'),
+		    $entry_type->MEMBER_WITHDRAWAL_FULL_CASH->as_int,
+		    $entry_type->MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
+		    $start_date, $date,
+		    $self->get_request->get('auth_id')]);
+
+    my($count) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$count = $row->[0] || 0;
     }
 
-    # restore the report date
-    $req->put(report_date => $report_date);
-    return $percent;
+    return $count > 0 ? Bivio::Type::F1065Return->FINAL_RETURN
+	    : Bivio::Type::F1065Return->UNKNOWN;
 }
 
 # _get_stock_withdrawal_amount(Bivio::Biz::Model::RealmOwner user, string date, boolean start) : string

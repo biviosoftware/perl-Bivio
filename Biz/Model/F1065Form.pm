@@ -32,6 +32,7 @@ C<Bivio::Biz::Model::F1065Form> IRS 1065 fields
 
 #=IMPORTS
 use Bivio::Biz::Accounting::Tax;
+use Bivio::Biz::Model::Tax1065;
 use Bivio::SQL::Connection;
 use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
@@ -128,13 +129,15 @@ sub execute_empty {
     my($properties) = $self->internal_get;
 
     my($date) = $req->get('report_date');
-    $date = Bivio::Type::Date->to_local_date($date);
+    my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
+    unless ($tax1065->unsafe_load(fiscal_end_date => $date)) {
+	$tax1065->create_default($date);
+    }
     my($tax) = 'Bivio::Type::TaxCategory';
 
     my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
     $income->reset_cursor;
     $income->next_row || die("couldn't load income/expense list");
-    $income->adjust_for_allocations;
 
     my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDForm');
 
@@ -142,22 +145,26 @@ sub execute_empty {
     $properties->{principal_service} = 'Investment Club';
     $properties->{business_code} = '525990';
     $properties->{business_start_date} = undef;
-    $properties->{return_type} = Bivio::Type::F1065Return->UNKNOWN;
+    $properties->{return_type} = $tax1065->get('return_type');
     $properties->{accounting_method} =
 	    Bivio::Type::F1065AccountingMethod->CASH;
     $properties->{number_of_k1s} = _get_member_count($self, $date);
-    $properties->{partnership_type} =
-	    Bivio::Type::F1065Partnership->GENERAL;
-    $properties->{partner_is_partnership} = 0;
-    $properties->{partnership_is_partner} = 0;
-    $properties->{consolidated_audit} = 1;
-    $properties->{three_requirements} = 1;
-    $properties->{foreign_partners} = 0;
-    $properties->{publicly_traded} = 0;
-    $properties->{tax_shelter} = 0;
+    $properties->{partnership_type} = $tax1065->get('partnership_type');
+    $properties->{partner_is_partnership} =
+	    $tax1065->get('partner_is_partnership');
+    $properties->{partnership_is_partner} =
+	    $tax1065->get('partnership_is_partner');
+    $properties->{consolidated_audit} =
+	    $tax1065->get('consolidated_audit');
+    $properties->{three_requirements} = _meets_three_requirements($self,
+	    $date);
+    $properties->{foreign_partners} = _has_foreign_partners($self, $date);
+    $properties->{publicly_traded} = $tax1065->get('publicly_traded');
+    $properties->{tax_shelter} = $tax1065->get('tax_shelter');
     $properties->{foreign_account} = 0;
-    $properties->{foreign_account_country} = '';
-    $properties->{foreign_trust} = 0;
+    $properties->{foreign_account_country} =
+	    $tax1065->get('foreign_account_country');
+    $properties->{foreign_trust} = $tax1065->get('foreign_trust');
     $properties->{transfer_of_interest} = _has_transfer_of_interest($self,
 	    $date);
 
@@ -632,6 +639,26 @@ sub _get_withdrawal_amount {
     return $amount;
 }
 
+# _has_foreign_partners(string date) : boolean
+#
+# Returns 1 if one of the partners isn't domestic.
+#
+sub _has_foreign_partners {
+    my($self, $date) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT SUM(tax_k1_t.foreign_partner)
+            FROM tax_k1_t
+            WHERE tax_k1_t.fiscal_end_date = $_SQL_DATE_VALUE
+            AND tax_k1_t.realm_id=?",
+	    [$date, $self->get_request->get('auth_id')]);
+    my($result) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$result = $row->[0] || 0;
+    }
+    return $result > 0 ? 1 : 0;
+}
+
 # _has_transfer_of_interest(string date) : boolean
 #
 # Returns 1 if a partner withdrew in stock within the specified tax year.
@@ -643,6 +670,33 @@ sub _has_transfer_of_interest {
 	return 1;
     }
     return 0;
+}
+
+# _meets_three_requirements(string date) : boolea
+#
+# Returns 1 if the club meets the three requirements needed to avoid
+# filling out the Scheduls L, M-1 and M-2.
+#
+# Are total receipts < $ 250,000
+# Are club assets < $ 600,000
+# Returned by due date (assumed true)
+#
+sub _meets_three_requirements {
+    my($self, $date) = @_;
+    my($req) = $self->get_request;
+
+    my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
+    if (Bivio::Type::Amount->compare($income->get('total_income'),
+	    '250000') > 0) {
+	return 0;
+    }
+
+    my($realm) = $req->get('auth_realm')->get('owner');
+    if (Bivio::Type::Amount->compare($realm->get_value($date),
+	    '600000') > 0) {
+	return 0;
+    }
+    return 1;
 }
 
 =head1 COPYRIGHT
