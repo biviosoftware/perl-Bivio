@@ -58,7 +58,7 @@ my($_IMAGE_MAP) = {
     'text/plain' => 'text_attachment',
     'image/gif' => 'gif_attachment',
     'image/jpeg' => 'jpeg_attachment',
-    undef => 'attachment'
+    '' => 'attachment'
     };
 
 
@@ -98,9 +98,10 @@ sub new {
 	    ' on ',
 	    ['Bivio::Biz::Model::MailMessage', 'date_time',
 		'Bivio::UI::HTML::Format::DateTime'],
-	    ' GMT</center><p>',
+	    ' GMT</center><p><div align=left>',
 	    ['Bivio::Biz::Model::MailMessage', '->get_body'],
 	    $fields->{mime_uri},
+	    '</div>',
 	],
     });
     $fields->{content}->initialize;
@@ -144,9 +145,11 @@ sub execute {
     if( int(@mimen) != 0){
 	my @urls;
 	my $i = 1;
-	print(STDERR "\nFOUND " . int(@mimen) . " attachments for this message.\n");
 	foreach my $info (@mimen){
-	    my $gifname = $_IMAGE_MAP->{$info->{type}};
+	    my $gifname = defined($info->{type})
+		    && defined($_IMAGE_MAP->{$info->{type}})
+			    ? $_IMAGE_MAP->{$info->{type}}
+				    : $_IMAGE_MAP->{''};
 	    push(@urls,
 		    Bivio::UI::HTML::Widget::Link->new({
 			href  => $req->format_uri(
