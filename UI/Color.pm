@@ -61,14 +61,22 @@ __PACKAGE__->compile(
     ],
     HEADING_BG => [
 	0xE0E0FF,
-	'text_tab_bg',
+	'table_separator',
     ],
     TABLE_STRIPE_BG => [
-	0xEEEEEE,
-	'icon_text_ia',
+	0xFFF0F0,
     ],
     ERROR => [
 	0xFF0000,
+    ],
+    TEXT_TAB_BG => [
+	0x999999,
+    ],
+    ICON_TEXT_IA => [
+	0xEEEEEE,
+    ],
+    SUMMARY_LINE => [
+	0x66CC66,
     ],
 );
 

@@ -46,7 +46,7 @@ The current font names are:
 
 =item TIME
 
-=item MONOSPACED
+=item NUMBER_CELL
 
 =back
 
@@ -67,7 +67,8 @@ _compile([
     ERROR => [undef, 'error', 'i'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
-    MONOSPACED => [undef, undef, 'tt'],
+    NUMBER_CELL => [undef, undef, 'tt'],
+    TABLE_ROW_TITLE => [undef, undef, 'small', 'strong'],
 ]);
 
 =head1 METHODS
