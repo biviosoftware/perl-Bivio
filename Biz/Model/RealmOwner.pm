@@ -87,7 +87,7 @@ sub create {
 =head2 static format_email(Bivio::Biz::Model model, string model_prefix) : string
 
 Returns fully-qualified email address for this realm or '' if the
-realm is an accounting offline user.
+realm is an offline user.
 
 See L<format_name|"format_name"> for params.
 
@@ -207,6 +207,29 @@ Returns true if self's password is valid.
 sub has_valid_password {
     my($self) = @_;
     return Bivio::Type::Password->is_valid($self->get('password'));
+}
+
+=for html <a name="init_db"></a>
+
+=head2 init_db()
+
+Initializes database with default realms.  The default realms
+have special realm_ids.
+
+=cut
+
+sub init_db {
+    my($self) = @_;
+    foreach my $rt (Bivio::Auth::RealmType->get_list) {
+	# 0 is UNKNOWN and is an invalid realm_id.
+	next if $rt->as_int == 0;
+	$self->create({
+	    name => lc($rt->get_name),
+	    realm_id => $rt->as_int,
+	    realm_type => $rt,
+	});
+    }
+    return;
 }
 
 =for html <a name="internal_initialize"></a>
