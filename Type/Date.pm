@@ -188,14 +188,13 @@ sub get_width {
 
 =for html <a name="local_today"></a>
 
-=head2 local_today() : string
+=head2 static local_today() : string
 
 Returns GMT date so it renders as today local time.
 
 =cut
 
 sub local_today {
-    my(undef) = @_;
     # Use DateTime, not Date's now
     my($date, $time) = split(' ', Bivio::Type::DateTime->now);
     my($req) = Bivio::Agent::Request->get_current;
@@ -217,9 +216,22 @@ sub local_today {
     return $date.$_TIME_SUFFIX;
 }
 
+=for html <a name="local_yesterday"></a>
+
+=head2 static local_yesterday() : string
+
+Returns GMT date so it renders as yesterday local time.
+
+=cut
+
+sub local_yesterday {
+    my($proto) = @_;
+    return $proto->add_days($proto->local_today, -1);
+}
+
 =for html <a name="now"></a>
 
-=head2 now() : string
+=head2 static  now() : string
 
 Returns date with DEFAULT_TIME for now.
 
