@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.51  2003/03/24 23:11:15  moeller
+  changed lost password query arg from 'p' to 'x'
 
   Revision 1.50  2003/03/24 01:21:10  nagler
   * Bivio::SQL::Connection::None is the default database connection
