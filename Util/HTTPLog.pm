@@ -55,11 +55,14 @@ EOF
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
 use IO::File ();
 use Sys::Hostname ();
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CFG) = {
     error_file => '/var/log/httpd/error.log',
@@ -70,7 +73,7 @@ my($_CFG) = {
 Bivio::IO::Config->register($_CFG);
 my($_RECORD_PREFIX) = '^(?:\[('
 	._clean_regex(Bivio::Type::DateTime->REGEX_CTIME)
-        .')\]|(?:\[\d+\] )?('
+        .')\]|(?:\[\d+\])?('
 	._clean_regex(Bivio::Type::DateTime->REGEX_ALERT)
 	.'))';
 my($_IGNORE_REGEX);
@@ -139,7 +142,10 @@ sub parse_errors {
 		    if Bivio::Type::DateTime->compare($start, $date) >= 0;
 	    $in_interval = 1;
 	}
-	next RECORD if $record =~ /$_IGNORE_REGEX/o;
+	if ($record =~ /$_IGNORE_REGEX/o) {
+	    _trace('ignoring: ', $&) if $_TRACE;
+	    next RECORD;
+	}
 	if ($record =~ /$_CRITICAL_REGEX/o) {
 	    _pager_report($self, 'CRITICAL ERROR')
 		    unless $fields->{pager_res};
