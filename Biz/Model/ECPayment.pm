@@ -41,7 +41,6 @@ TODO: Should payment gateway code go into another module??
 use Bivio::IO::Config;
 use HTTP::Request;
 use LWP::UserAgent;
-use Bivio::IO::Config;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -52,11 +51,9 @@ my($_GW_LOGIN);
 my($_GW_PASSWORD);
 my($_GW_TEST_MODE);
 Bivio::IO::Config->register({
-    Bivio::IO::Config->NAMED => {
-        login => undef,
-        password => undef,
-        test_mode => 1,
-    },
+    login => undef,
+    password => undef,
+    test_mode => 1,
 });
 
 =head1 METHODS
@@ -85,32 +82,34 @@ sub check_transaction_batch {
     $hreq->content('x_Login='.$_GW_LOGIN.'&x_Password='.$_GW_PASSWORD.
             '&Action=DOWNLOAD&BATCHID=NULL');
     my($response) = $_USER_AGENT->request($hreq);
+    my($payment) = $proto->new($req);
     foreach my $transaction (split(/\n/, $response->content)) {
         my(@fields) = split(/\t/, $transaction);
         my($status, $payment_id, $realm_id) = (@fields)[0,7,12];
-        Bivio::IO::Alert->warn('missing field values in: ',
-                join(',', @fields)), next unless
-                        defined($status) && defined($payment_id);
-        # clear credit card field
-        $fields[5] = '';
+#TODO: RJN: Shouldn't realm_id be required?
+	unless (defined($status) && defined($payment_id)) {
+	    Bivio::IO::Alert->warn('missing field values in: ',
+		    \@fields);
+	    next;
+	}
         _trace('transaction data: ', join(',', @fields));
         # Skip errors as they will be retried if not fatal
         $status =~ /^[12]$/ || next;
-        my($payment) =
-                $proto->new($req)->unauth_load(ec_payment_id => $payment_id);
-        Bivio::IO::Alert->warn('cannot load payment: ', $payment_id)
-                    unless defined($payment);
+        unless ($payment->unauth_load(ec_payment_id => $payment_id)) {
+	    Bivio::IO::Alert->warn('cannot load payment: ', $payment_id);
+	    next;
+	}
         if ($status eq '1') {
             next if $payment->get('status')->is_approved;
             Bivio::IO::Alert->warn('fixing status of approved payment: ',
                     $payment_id);
-            $payment->_update_status($status);
+            _update_status($payment, $status);
         } elsif ($status eq '2') {
             next if $payment->get('status')
                     == Bivio::Type::ECPaymentStatus::DECLINED();
             Bivio::IO::Alert->warn('fixing status of declined payment: ',
                     $payment_id);
-            $payment->_update_status($status);
+            _update_status($payment, $status);
         }
     }
     return;
@@ -172,7 +171,9 @@ sub internal_initialize {
         table_name => 'ec_payment_t',
         columns => {
             ec_payment_id => ['PrimaryId', 'PRIMARY_KEY'],
+	    # Which realm is using the service
             realm_id => ['PrimaryId', 'NOT_NULL'],
+	    # Which realm paid for the service
             user_id => ['PrimaryId', 'NOT_NULL'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
             payment_type => ['ECPayment', 'NOT_ZERO_ENUM'],
@@ -184,11 +185,12 @@ sub internal_initialize {
             status => ['ECPaymentStatus', 'NOT_NULL'],
             processed_date_time => ['DateTime', 'NONE'],
             processor_response => ['Text', 'NONE'],
-            transaction_id => ['Name', 'NONE'],
+            processor_transaction_number => ['Name', 'NONE'],
             credit_card_number => ['CreditCardNumber', 'NONE'],
             credit_card_expiration_date => ['Date', 'NONE'],
             credit_card_name => ['Line', 'NONE'],
             credit_card_zip => ['Name', 'NONE'],
+	    description => ['Line', 'NOT_NULL'],
             remark => ['Text', 'NONE'],
         },
         auth_id => 'realm_id',
@@ -221,13 +223,16 @@ sub process_payment {
     my($response_string) = $response->as_string;
     _trace($response_string) if $_TRACE;
 #TODO: die message will contain login/password. OK?
+#TODO: Don't you want to log the response as well?
     Bivio::Die->die('request failed: ', $hreq->as_string)
 		unless $response->is_success;
     _trace('RESULT=', $response->content) if $_TRACE;
+#TODO: RJN: Need more error checking on responses from external sites.
+#      @details is just assumed to be correct later on.
     my($result_code, @details) = split(',', $response->content);
     Bivio::Die->die('cannot parse result string: ', $response->content)
 		unless defined($result_code);
-    _update_status($self, $result_code, @details);
+    _update_status($self, $result_code, \@details);
     return;
 }
 
@@ -236,7 +241,7 @@ sub process_payment {
 # _setup_user_agent()
 #
 # Create a LWP user agent. Read proxy configuration from environment
-# variable <I>http_proxy.
+# variable $http_proxy.
 #
 sub _setup_user_agent {
     unless (defined($_USER_AGENT)) {
@@ -270,12 +275,9 @@ sub _transact_form_data {
         # 1=Approved, 2=Declined, 3=Error
         $amount = 1;
     } else {
-#TODO: Need to replace with real credit card implementation
         $credit_card_number = $properties->{credit_card_number};
         $amount = $properties->{amount};
     }
-    my($transaction_id) = $properties->{transaction_id} ?
-            '&x_Trans_ID='.$properties->{transaction_id} : '';
     return 'x_ADC_Delim_Data=TRUE'.
             '&x_ADC_URL=FALSE'.
             '&x_Version=3.0'.
@@ -283,16 +285,21 @@ sub _transact_form_data {
             '&x_Password='.$_GW_PASSWORD.
             '&x_Type='.Bivio::Type::ECPaymentStatus
                     ->get_authorize_net_type($properties->{status}).
-            $transaction_id.
+#TODO: RJN: Needs to be defined(), because might be 0s.  We don't know what it
+#      it is.  It won't be blanks, however, because it is a Type::Name.
+	    (defined($properties->{processor_transaction_number}) ?
+		    '&x_Trans_ID='.$properties->{processor_transaction_number}
+		    : '').
             '&x_Amount='.$amount.
             '&x_Card_Num='.$credit_card_number.
+            '&x_Description='.$properties->{description}.
             '&x_Exp_Date='.$exp_date.
             '&x_Cust_ID='.$properties->{realm_id}.
             '&x_Invoice_Num='.$properties->{ec_payment_id}.
             $test_request;
 }
 
-# _update_status(self, string result_code, string subcode, string error_code, array details)
+# _update_status(self, string result_code, array_ref details)
 #
 # Update payment status given the gateway's result code.
 # Look at Authorize.Net developer's guide, app. C, for a list of error codes.
@@ -300,37 +307,44 @@ sub _transact_form_data {
 #TODO: Need to send e-mail to user. Or a Notice?
 #
 sub _update_status {
-    my($self, $result_code, @details) = @_;
+    my($self, $result_code, $details) = @_;
     my($now) = Bivio::Type::DateTime->now;
-    my($error_code, $msg, $transaction_id) = (@details)[1,2,5];
+    my($error_code, $msg, $processor_transaction_number)
+	    = (@$details)[1,2,5] if $details;
     if ($result_code eq '1') {
         $self->update({
-            status => Bivio::Type::ECPaymentStatus->get_success_state(
-                   $self->get('status')),
+            status => $self->get('status')->get_success_state,
             processed_date_time => $now,
             processor_response => $msg,
-            transaction_id => $transaction_id,
+            processor_transaction_number => $processor_transaction_number,
         });
-    } elsif ($result_code eq '2') {
+    }
+    elsif ($result_code eq '2') {
         $self->update({
             status => Bivio::Type::ECPaymentStatus::DECLINED(),
             processed_date_time => $now,
             processor_response => $msg,
-            transaction_id => $transaction_id,
+            processor_transaction_number => $processor_transaction_number,
         });
-    } elsif ($result_code eq '3') {
+    }
+    elsif ($result_code eq '3') {
         $self->update({
             processed_date_time => $now,
             processor_response => $msg,
-            transaction_id => $transaction_id,
+            processor_transaction_number => $processor_transaction_number,
         });
         # Error. Keep existing status except for the following fatal cases
         return unless $error_code =~ /^([5-9]|1[079]|2[01235678]|3[5])$/;
         $self->update({
             status => Bivio::Type::ECPaymentStatus::FAILED(),
         });
-    } else {
-        Bivio::Die->die('unknown processor result code: ', $result_code);
+    }
+    else {
+        Bivio::Die->throw_die('DIE', {
+	    message => 'unknown processor result code: ', $result_code,
+	    entity => $self->unsafe_get('ec_payment_id'),
+	    details => $details,
+	});
     }
     return;
 }
