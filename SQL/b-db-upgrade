@@ -256,7 +256,7 @@ sub _upgrade {
 sub _upgrade_create_ec_tables {
     print("Adding new column to ec_ tables\n");
     _do_sql('
-alter table ec_payment_t add transaction_id varchar2(30)
+alter table ec_payment_t add processor_transaction_number varchar2(30)
 /
 ');
     return;
