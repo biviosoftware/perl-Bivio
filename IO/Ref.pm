@@ -90,6 +90,19 @@ sub nested_equals {
     return $left eq $right ? 1 : 0;
 }
 
+=for html <a name="to_scalar_ref"></a>
+
+=head2 to_scalar_ref(string scalar) : scalar_ref
+
+Returns its argument as a scalar_ref.
+
+=cut
+
+sub to_scalar_ref {
+    my(undef, $scalar) = @_;
+    return \$scalar;
+}
+
 =for html <a name="to_short_string"></a>
 
 =head2 to_short_string(any value) : string
