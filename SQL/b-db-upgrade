@@ -272,7 +272,7 @@ sub _upgrade_add_ellis_bio_link {
     my($bio) = $decor->get('profile_bio');
     $bio =~ s/(Father of Technamental)/$article_link$1/
 	|| die("couldn't find text in bio");
-    $decor->update(profile_bio => $bio);
+    $decor->update({profile_bio => $bio});
 
     return;
 }
