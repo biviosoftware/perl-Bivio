@@ -70,7 +70,6 @@ Bivio::IO::Config->introduce_values({
 	    daemon_log_file => $_LOG,
 	    daemon_max_children => 2,
 	    daemon_sleep_after_start => 1,
-	    daemon_child_priority => 5,
 	},
     },
 });

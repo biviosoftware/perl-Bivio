@@ -260,7 +260,6 @@ Bivio::IO::Config->register(my $_CFG = {
 	daemon_max_children => 1,
 	daemon_sleep_after_start => 60,
 	daemon_log_file => Bivio::IO::Config->REQUIRED,
-	daemon_child_priority => 5,
     },
 });
 
@@ -545,10 +544,6 @@ Number of children for the worker.  This creates a single queue.
 =item daemon_sleep_after_start : int [60] (named)
 
 Sleep after starts and before retries.
-
-=item daemon_child_priority : int [5] (named)
-
-Run priority of children.
 
 =item lock_directory : string [/tmp]
 
@@ -989,7 +984,6 @@ sub run_daemon {
 	'FILE',
 	Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
     ) if $cfg->{daemon_log_file};
-    Bivio::IO::ClassLoader->simple_require('BSD::Resource');
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
     while (1) {
@@ -1508,8 +1502,6 @@ sub _start_daemon_child {
 	    _trace('started: ', $child, ' ', $args) if $_TRACE;
 	    return $child;
 	}
-	setpriority(BSD::Resource::PRIO_PROCESS(), 0,
-	    $cfg->{daemon_child_priority});
 	Bivio::Agent::Request->clear_current;
 	$0 = join(' ', @$args);
 	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
