@@ -207,6 +207,7 @@ sub _task {
     $t->group(ORDER_COMMIT => '?/commit-order');
     $t->group(MISSING_COOKIES => 'pub/missing-cookies');
     $t->group(SOURCE => 'src');
+    $t->group(ADM_SUBSTITUTE_USER => 'su');
     return;
 }
 

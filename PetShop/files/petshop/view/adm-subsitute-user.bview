@@ -1,0 +1,27 @@
+# $Id$
+#
+# Substitute User
+#
+view_parent('menu');
+view_put(
+    header_title => 'Become another user',
+    menu_content => Join([
+	Form('AdmSubstituteUserForm', Grid([
+	    [
+		vs_form_field('AdmSubstituteUserForm.login'),
+	    ], [
+		vs_blank_cell(),
+		ImageFormButton({
+		    cell_colspan => 2,
+		    image => 'submit',
+		    field => 'ok_button',
+		    alt => 'Submit',
+		}),
+	    ],
+	], {
+	    align => 'left',
+	    pad => 2,
+	    string_font => 'page_text',
+	})),
+    ]),
+);
