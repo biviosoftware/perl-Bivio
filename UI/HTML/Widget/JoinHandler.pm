@@ -84,14 +84,19 @@ sub new {
 
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
-    my($req) = $source->get_request;
-    my($model) = $req->get($self->ancestral_get('form_class'));
-    return ' onBlur="'. _function_name($self, $model) . '(this)"';
-
-#     my($self, $field_name, $source) = @_;
-#     my($fields) = $self->[$_IDI];
-#     my($field_namefound) = $self->ancestral_get('field');
-#     return ' onBlur="'. $self->_function_name($fields, $source) . '(this)"';
+    my($fields) = $self->[$_IDI];
+    my($a) = {};
+    foreach my $h (@{$fields->{values}}) {
+	my($x) = $h->get_html_field_attributes($field_name, $source);
+	while ($x){
+	    $x =~ s/^\s+(\w+)="([^"]+)"// or die("invalid pattern");
+	    push(@{$a->{lc($1)} ||= []}, $2);
+	}
+    }
+    my($str) = map({
+	" $_=\"" . join(';', @{$a->{$_}}) . '"';
+    } sort(keys(%$a)));
+    return $str;
 }
 
 =for html <a name="initialize"></a>
@@ -146,52 +151,14 @@ widget values.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
     my($fields) = $self->[$_IDI];
-    my($model) = $req->get($self->ancestral_get('form_class'));
     my($name) = 0;
     foreach my $v (@{$fields->{values}}) {
-	$self->unsafe_render_value($name++, $v, $model, $buffer);
+	$self->unsafe_render_value($name++, $v, $source, $buffer);
     }
-    my($functions) = _function_names($fields, $model);
-    Bivio::UI::HTML::Widget::JavaScript->render(
-	$source, $buffer, $self->_function_name($fields, $model),
-	"function @{[$self->_function_name($fields, $model)]}(field) {$functions}");
-
     return;
 }
 
-#=PRIVATE SUBROUTINES
-
-# _function_name(fields, source) : 
-#
-#
-#
-sub _function_name {
-    my($self, $model) = @_;
-    return 'csxm_' . $self->ancestral_get('form_name')
-	. 'jh_multimath_' ;#. $model->get_field_name_for_html($self->get('field'));
-
-#     my($self, $fields, $source) = @_;
-#     my($form_name) = $self->ancestral_get('form_name');
-#     my($field_name) = $self->ancestral_get('field');
-#     return 'jh_multmath' . $form_name . '_' . $source->get_field_name_for_html($field_name);
-}
-
-# _function_names(hash_ref fields) : string
-#
-#
-#
-sub _function_names {
-    my($fields, $source) = @_;
-    my($buffer) = "\n"; 
-    foreach my $v (@{$fields->{values}}) {
-	    $buffer .= "\n    "
-	    . $v->_function_name($source)
-	    . "(field);";
-    }
-    return $buffer . "\n";
-}
 
 
 =head1 COPYRIGHT
