@@ -56,6 +56,8 @@ sub create {
     my($self, $values) = @_;
     $values->{location} = Bivio::Type::Location::HOME()
 	    unless $values->{location};
+    $values->{want_bulletin} = 1
+	    unless defined($values->{want_bulletin});
     return $self->SUPER::create($values);
 }
 
@@ -69,15 +71,13 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     return {
-	version => 1,
+	version => 2,
 	table_name => 'email_t',
 	columns => {
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            location => ['Bivio::Type::Location',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            email => ['Bivio::Type::Email',
-    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            location => ['Location', 'PRIMARY_KEY'],
+            email => ['Email', 'NOT_NULL_UNIQUE'],
+	    want_bulletin => ['Boolean', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
     };
