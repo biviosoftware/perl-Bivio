@@ -296,7 +296,7 @@ sub check_mailq {
 
 sub verify_pkgs {
 # TODO: Should have a way to list all local packages
-    my(@out) = `rpm -y societas html`;
+    my(@out) = `rpm -V societas files.societas`;
     @out && print "PACKAGE MODIFICATIONS:\n@out";
 }
 
