@@ -270,6 +270,35 @@ sub to_sql_param {
     return $param_value;
 }
 
+=for html <a name="to_string"></a>
+
+=head2 static to_string(any value) : string
+
+Returns L<to_literal|"to_literal">
+
+=cut
+
+sub to_string {
+    return shift->to_literal(@_);
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 static to_xml(string value) : string
+
+Converts to a XSL date (see
+http://www.w3.org/TR/xmlschema-2/#date).
+See also ISO 8601 (see http://www.iso.ch/markete/8601.pdf).
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    my(undef, undef, undef, $mday, $mon, $year) = $proto->to_parts($value);
+    return sprintf('%04d-%02d-%02d', $year, $mon, $mday);
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT

@@ -612,7 +612,6 @@ sub to_string {
     return '' unless defined($date_time);
     my($sec, $min, $hour, $mday, $mon, $year)
 	    = $proto->to_parts($date_time);
-    # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
     return sprintf('%02d/%02d/%04d %02d:%02d:%02d GMT', $mon, $mday, $year,
 	    $hour, $min, $sec);
 }
@@ -637,14 +636,18 @@ sub to_unix {
 
 =head2 static to_xml(string value) : string
 
-Converts to a string and escapes for XML.
+Converts to a XSL timeInstant (see
+http://www.w3.org/TR/xmlschema-2/#timeInstant).
+See also ISO 8601 (http://www.iso.ch/markete/8601.pdf).
 
 =cut
 
 sub to_xml {
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return Bivio::Util::escape_html($proto->to_string($value));
+    my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($value);
+    return sprintf('%04d-%02d-%02dT%02d:%02d:%02dZ', $year, $mon, $mday,
+	    $hour, $min, $sec);
 }
 
 #=PRIVATE METHODS

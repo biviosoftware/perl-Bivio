@@ -168,6 +168,35 @@ sub to_sql_param {
     return $param_value;
 }
 
+=for html <a name="to_string"></a>
+
+=head2 static to_string(any value) : string
+
+Returns L<to_literal|"to_literal">
+
+=cut
+
+sub to_string {
+    return shift->to_literal(@_);
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 static to_xml(string value) : string
+
+Converts to a XSL time (see
+http://www.w3.org/TR/xmlschema-2/#time).
+See also ISO 8601 (see http://www.iso.ch/markete/8601.pdf).
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    my($sec, $min, $hour) = $proto->to_parts($value);
+    return sprintf('%02d:%02d:%02dZ', $hour, $min, $sec);
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
