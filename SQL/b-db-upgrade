@@ -220,95 +220,39 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_add_five_year_capital_gain();
-    _upgrade_expense_t();
-    _upgrade_fix_csi_tables();
-
+    _upgrade_password_request();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_five_year_capital_gain()
+# _upgrade_password_request()
 #
-# Adds the new tax category FIVE_YEAR_CAPITAL_GAIN
+# Add password request table and constrain
 #
-sub _upgrade_add_five_year_capital_gain {
-
-    # alter tax_category constraints
-    print("altering tax_category constraints entry_t, member_allocation_t\n");
+sub _upgrade_password_request {
+    print("Adding password_request_t, setting realm_id as primary key\n");
     _do_sql('
-ALTER TABLE entry_t DROP constraint ENTRY_T9
-/
-ALTER TABLE member_allocation_t DROP constraint MEMBER_ALLOCATION_T5
-/
-ALTER TABLE entry_t
-  add constraint entry_t9
-  check (tax_category between 1 and 12)
-/
-ALTER TABLE member_allocation_t
-  add constraint member_allocation_t5
-  check (tax_category between 1 and 12
-  or tax_category = 100)
-/
-');
-
-    return;
-}
-
-sub _upgrade_expense_t {
-    print("Adding unique constraint to expense_category_t\n");
-    _do_sql('
-CREATE UNIQUE INDEX expense_category_t7 on expense_category_t (
-  realm_id,
-  name
+CREATE TABLE password_request_t (
+  realm_id NUMBER(18),
+  authorization_code NUMBER(18),
+  creation_date_time DATE
 )
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
+  tablespace data_1m
+  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
 /
-');
-    return;
-}
-
-# _upgrade_fix_csi_tables()
-#
-# Migrate CHAR(2) columns to NUMBER(2)
-#
-sub _upgrade_fix_csi_tables {
-    print("Fixing csi_distribution_t\n");
-    _do_sql('
-alter table csi_distribution_t drop constraint csi_distribution_t3
+ALTER TABLE password_request_t
+  ADD constraint password_request_t1
+  primary key(realm_id)
+  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
-alter table csi_distribution_t drop primary key
+ALTER TABLE password_request_t
+  add constraint password_request_t2
+  foreign key(realm_id)
+  references realm_owner_t(realm_id)
 /
-alter table csi_distribution_t add amount_type NUMBER(2)
+ALTER TABLE password_request_t modify authorization_code NOT NULL
 /
-UPDATE csi_distribution_t set amount_type=distribution_type
-/
-ALTER TABLE csi_distribution_t
-  add constraint csi_distribution_t1
-  primary key(csi_id, distribution_date, amount_type)
-  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
-/
-ALTER TABLE csi_distribution_t
-  add constraint csi_distribution_t3
-  check (amount_type between 1 and 2)
-/
-alter table csi_distribution_t drop column distribution_type
-/
-');
-    print("Fixing csi_fact_sheet_t\n");
-    _do_sql('
-alter table csi_fact_sheet_t drop constraint csi_fact_sheet_t3
-/
-alter table csi_fact_sheet_t add fact_function NUMBER(2)
-/
-UPDATE csi_fact_sheet_t set fact_function=fact_op
-/
-ALTER TABLE csi_fact_sheet_t
-  add constraint csi_fact_sheet_t3
-  check (fact_function between 1 and 3)
-/
-alter table csi_fact_sheet_t drop column fact_op
+ALTER TABLE password_request_t modify creation_date_time NOT NULL
 /
 ');
     return;
