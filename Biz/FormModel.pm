@@ -793,6 +793,24 @@ sub validate_not_negative {
     return;
 }
 
+=for html <a name="validate_not_null"></a>
+
+=head2 validate_not_null(string field)
+
+Ensures the specified field isn't undef. Puts an error on the form
+if it fails.
+
+=cut
+
+sub validate_not_null {
+    my($self, $field) = @_;
+    my($value) = $self->get($field);
+
+    $self->internal_put_error($field, Bivio::TypeError::NULL())
+	    unless defined($value);
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _apply_type_error(Bivio::Biz::FormModel self, Bivio::Die die)
@@ -871,13 +889,14 @@ sub _parse {
     # Ditto for timezone
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
 
-    # Parse only if parse_submit says it is ok to parse
-    return 0 unless _parse_submit($self, $form);
+    # parse, but only save errors if it is a submit
+    my($is_submit) = _parse_submit($self, $form);
     my($values) = {};
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
     $self->internal_put($values);
-    return 1;
+    delete($fields->{errors}) unless ($is_submit);
+    return $is_submit;
 }
 
 # _parse_col(Bivio::Biz::FormModel self, hash_ref form, Bivio::SQL::FormSupport sql_support, hash_ref values, boolean is_hidden)
