@@ -57,8 +57,6 @@ Leading and trailing blanks are trimmed.
 
 sub from_literal {
     my($value, $err) = shift->SUPER::from_literal(@_);
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
     return ($value, $err)
 	unless defined($value);
     return (undef, Bivio::TypeError->COUNTRY)

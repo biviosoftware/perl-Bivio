@@ -944,8 +944,8 @@ Converts literal (J SSSSS), ctime, and alert formats.
 
 sub from_literal {
     my($proto, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return undef unless defined($value) && $value =~ /\S/;
     # Fix up blanks (multiples, leading, trailing)
     $value =~ s/^\s+|\s+$//;

@@ -123,9 +123,9 @@ Returns printable string.
 =cut
 
 sub to_literal {
-    my(undef, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return join(', ', $value ? @$value : ());
 }
 

@@ -57,9 +57,9 @@ if the syntax check fails.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return undef unless defined($value);
     # Remove all spaces and dashes
     $value =~ s/[-\s]+//g;

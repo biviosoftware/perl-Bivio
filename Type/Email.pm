@@ -89,8 +89,8 @@ Checks syntax and returns L<Bivio::TypeError|Bivio::TypeError>.
 
 sub from_literal {
     my($proto, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return undef unless defined($value);
     # Leave middle spaces, because user can't have them
     $value =~ s/^\s+|\s+$//g;

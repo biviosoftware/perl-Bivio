@@ -61,16 +61,16 @@ use Bivio::Type::Text;
 
 =for html <a name="from_literal"></a>
 
-=head2 from_literal(any value) : hash_ref
+=head2 static from_literal(any value) : hash_ref
 
 Checks the incoming file for valid values.
 
 =cut
 
 sub from_literal {
-    my($self, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return (undef, undef) unless defined($value);
 
     unless (ref($value) eq 'HASH') {

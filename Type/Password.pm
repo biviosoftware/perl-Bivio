@@ -109,9 +109,9 @@ Returns C<undef> if the name is empty.  All characters are allowed.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return undef unless defined($value) && length($value);
     return (undef, Bivio::TypeError::PASSWORD()) if length($value) < 6;
 #TODO: What type of checks should be here?

@@ -119,9 +119,9 @@ or C<Bivio::Type::DateTime> format.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
 #TODO: Improve the checks here
     return undef unless defined($value) && $value =~ /\S/;
     return _from_date_time($value, $1) if $value =~ /^\d+ (\d+)$/;

@@ -71,9 +71,10 @@ Same as L<from_sql_column|"from_sql_column">.
 =cut
 
 sub from_literal {
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
-    return shift->from_sql_column(@_);
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
+    return $proto->from_sql_column($value);
 }
 
 =for html <a name="from_sql_column"></a>

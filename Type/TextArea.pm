@@ -62,7 +62,7 @@ sub LINE_WIDTH {
 
 =for html <a name="from_literal"></a>
 
-=head2 from_literal(string value, int line_width) : any
+=head2 static from_literal(string value, int line_width) : any
 
 Wrap text lines at I<line_width> if desired by looking
 up the user's preference.
@@ -70,10 +70,9 @@ up the user's preference.
 =cut
 
 sub from_literal {
-    my($self, $value, $line_width) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
-
+    my($proto, $value, $line_width) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     # careful to see if Preferences model is present before accessing
     my($pref);
     if (defined($value)
@@ -82,9 +81,9 @@ sub from_literal {
 		    Bivio::Agent::Request->get_current,
 		    \$pref)
 	    && $pref) {
-	return $self->wrap_lines($value, $line_width || $self->LINE_WIDTH);
+	return $proto->wrap_lines($value, $line_width || $proto->LINE_WIDTH);
     }
-    return $self->SUPER::from_literal($value);
+    return $proto->SUPER::from_literal($value);
 }
 
 =for html <a name="get_width"></a>

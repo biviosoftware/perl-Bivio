@@ -131,8 +131,8 @@ this integer type.
 
 sub from_literal {
     my($proto, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     # Null (blank) string and null are same thing.
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user

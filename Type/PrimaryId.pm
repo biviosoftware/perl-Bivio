@@ -112,9 +112,9 @@ Make sure is at least one digit long, non-zero, and unsigned.
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
-    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
-            unless wantarray;
+    my($proto, $value) = @_;
+    $proto->internal_from_literal_warning
+        unless wantarray;
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
