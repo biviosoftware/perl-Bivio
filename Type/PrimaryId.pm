@@ -29,6 +29,9 @@ C<Bivio::Type::PrimaryId> is a number which uniquely identifies a
 row in certain tables.  It is the one and only primary key for those
 tables.
 
+Compare C<PrimaryId> values using C<eq> and C<ne>, B<not> the numeric
+equivalents.  PrimaryIds are larger that fit into a 32-bit integer.
+
 All C<PrimaryId> values are unique within a given "universe".  PrimaryIds are
 "structured", but you should not depend on this structure.  The purpose of the
 structure is to allow for easy horizontal and vertical partitioning.  The lower
