@@ -974,6 +974,11 @@ __PACKAGE__->compile([
 	undef,
 	'The current user is a member of a club(s)',
     ],
+    ACCOUNT_INSTITUTION_UNKNOWN => [
+	140,
+	undef,
+	'Brokerage must be specified if you have a login or password',
+    ],
 ]);
 
 #=PRIVATE METHODS
