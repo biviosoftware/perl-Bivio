@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::ShellUtil supports subclassing of utilities
+  * Bivio::UI::HTML::Widget::FormField uses FormFieldLabel instead of String
+  * Misc bug fixes
+
+  Revision 1.14  2002/05/08 14:54:14  nagler
   * Added Bivio::Util::Backup (b-backup) which supports configured rsync mirroring
   * Added an include option to Bivio::Util::Release (b-release)
   * Minor bugs fixed
