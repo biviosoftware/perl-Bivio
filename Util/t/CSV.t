@@ -5,15 +5,13 @@ Bivio::Test->unit([
     {
 	object => Bivio::Util::CSV->new,
 	compute_params => sub {
-	    my($object, $method, $params) = @_;
+	    my($case, $params) = @_;
+	    my($expect) = $case->get('expect');
+	    $case->expect([\$expect->[0]]);
 	    # First parameter is -input value
-	    $object->put(input => \$params->[0]);
+	    $case->get('object')->put(input => \$params->[0]);
 	    shift(@$params);
 	    return $params;
-	},
-	result_ok => sub {
-	    my($object, $method, $params, $expect, $actual) = @_;
-	    return ${$actual->[0]} eq $expect->[0];
 	},
     } => [
 	colrm => [

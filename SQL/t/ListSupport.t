@@ -31,9 +31,9 @@ use Bivio::SQL::ListQuery;
 use Bivio::SQL::Support;
 
 
-package Bivio::Biz::PropertyModel::TListT1;
+package Bivio::Biz::Model::TListT1;
 
-@Bivio::Biz::PropertyModel::TListT1::ISA = ('Bivio::Biz::PropertyModel');
+@Bivio::Biz::Model::TListT1::ISA = ('Bivio::Biz::PropertyModel');
 
 sub internal_initialize {
     return {
@@ -54,9 +54,9 @@ sub internal_initialize {
     };
 }
 
-package Bivio::Biz::PropertyModel::TListT2;
+package Bivio::Biz::Model::TListT2;
 
-@Bivio::Biz::PropertyModel::TListT2::ISA = ('Bivio::Biz::PropertyModel');
+@Bivio::Biz::Model::TListT2::ISA = ('Bivio::Biz::PropertyModel');
 
 sub internal_initialize {
     return {
@@ -91,7 +91,7 @@ my($m);
 my($req) = Bivio::Collection::Attributes->new;
 my($now) = Bivio::Type::DateTime->from_literal('2001/12/31 17:00:00');
 foreach $m ('TListT1', 'TListT2') {
-    my($pkg) = "Bivio::Biz::PropertyModel::$m";
+    my($pkg) = "Bivio::Biz::Model::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
     eval {
 	Bivio::SQL::Connection->execute("drop table $table");

@@ -35,6 +35,7 @@ C<Bivio::Test::Case> provides the execution environment for at test case.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Ref;
 
 #=VARIABLES
 
@@ -61,10 +62,30 @@ sub as_string {
     $sig .= '->'.($attr->{method} || '<method>').'#'.$attr->{method_num}
 	if $attr->{method_num};
     $sig .= '(case#'.$attr->{case_num}
-	.($attr->{params} ? '['._summarize($attr->{params}).']' : '')
+	.($attr->{params} ? '['.
+	    Bivio::IO::Ref->to_short_string($attr->{params}).']' : '')
 	.')'
 	if $attr->{case_num};
     return $sig;
+}
+
+=for html <a name="expect"></a>
+
+=head2 expect(any expect)
+
+Sets I<expect> attribute for this case.  Asserts that it is valid first.
+
+=cut
+
+sub expect {
+    my($self, $expect) = @_;
+    Bivio::Die->die('Error in case ', $self,
+	': expect must be undef, array_ref, CODE, or Bivio::DieCode')
+	unless !defined($expect) || ref($expect)
+	    && (ref($expect) =~ /^(ARRAY|CODE)$/
+		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
+    $self->put(expect => $expect);
+    return;
 }
 
 #=PRIVATE SUBROUTINES

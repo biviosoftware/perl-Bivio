@@ -62,12 +62,11 @@ Bivio::Test->unit([
 	{
 	    method => 'set_end_of_month',
 	    compute_params => sub {
-		my($obj, $method, $params) = @_;
-		return [$obj->from_literal_or_die($params->[0])];
-	    },
-	    result_ok => sub {
-		my($obj, $method, $params, $expect, $actual) = @_;
-		return $actual->[0] eq $obj->from_literal_or_die($expect->[0]);
+		my($case, $params) = @_;
+		my($o) = $case->get('object');
+		$case->put(expect => [$o->from_literal_or_die(
+			$case->get('expect')->[0])]);
+		return [$o->from_literal_or_die($params->[0])];
 	    },
 	} => [
 	    ['12/1/2000 0:0:0'] => ['12/31/2000 0:0:0'],

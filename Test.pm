@@ -43,14 +43,17 @@ you to define what you want to test very succinctly.  Here's an example:
 	        ['1'] => [1],
 	        ['x'] => [undef, Bivio::TypeError->INTEGER],
             ],
+            from_literal_or_die => [
+                ['99'] => '99',
+                ['x99'] => Bivio::DieCode->DIE,
+            ],
         ],
     ]);
 
 The first argument to L<unit|"unit"> is a list of object groups.  An object
 group is tuple of the object (class or instance) and a list of method groups.
 A method group is a tuple of the method name followed by a list of test cases.
-Each test case is a tuple of parameters and a return value.
-
+Each test case is a tuple of I<params> and an I<expect> value.
 
 If the return value is undef, specify C<[undef]> as the result.  That's what
 the method should return if it doesn't return anything.  perl methods return
@@ -70,9 +73,9 @@ Here's an example:
 
 The result of the call to the method C<do_something> will not be checked.
 
-If the expected return value is an array_ref, it will be compared with the
-actual return value.  If the result is an array_ref, you'll need to wrap
-it one more time in an array_ref, e.g.
+If the I<expect> is an array_ref, it will be compared with the I<return>.  If
+the method returns an array_ref, you'll need to wrap it one more time in an
+array_ref, e.g.
 
     make_array_ref => [
         [1, 2, 3] => [[1, 2, 3]],
@@ -82,21 +85,20 @@ Here C<make_array_ref> is a routine being tested.  It returns an array_ref of
 its arguments.  We have an extra level of square brackets on the result
 of C<make_array_ref>.
 
-If the expected (declared) return value is a L<Bivio::DieCode|Bivio::DieCode>,
-an exception is expected and must match the C<DieCode> exactly.
+If the I<expect> is a L<Bivio::DieCode|Bivio::DieCode>, an exception is
+expected to be thrown and must match the L<Bivio::DieCode|Bivio::DieCode>
+exactly.
 
-If the expected is a code_ref, this will be a custom result_ok (see below)
-for this case only.
+If the I<expect> is a code_ref, this will be a custom check_return (see below)
+for this case only.  If the 
 
     Bivio::Test->unit([
 	Bivio::Math::EMA->new(30) => [
 	    compute => [
 	        [1] => sub {
-		    my($object, $method, $params, $expect, $actual) = @_;
-		    return 0
-			unless defined($actual->[0]) && !ref($actual->[0]);
-		    return $actual->[0] == 1;
-		},
+                    my($case, $
+                    return [1];
+                },
 	    ],
         ],
     ]);
@@ -107,15 +109,14 @@ Sometimes it is difficult to specify a return result.  For example, in
 L<Bivio::SQL::Connection|Bivio::SQL::Connection>, the result is often a
 C<DBI::st>.  The result can't be compared structurally.
 
-You can specify a I<result_ok> option to L<new|"new"> or at the
+You can specify a I<success_ok> option to L<new|"new"> or at the
 object or method level.  Here's an example at instantiation:
 
     Bivio::Test->new->({
-	result_ok => sub {
-	    my($object, $method, $params, $expect, $actual) = @_;
+	check_return => sub {
+	    my($case, $return) = @_;
             # Round to 6 decimal places
-	    return POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000
-	        == $expect->[0];
+	    return [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
 	},
     })->unit([
 	Bivio::Math::EMA->new(30) => [
@@ -133,10 +134,9 @@ as in:
     Bivio::Test->unit([
         {
 	    object => Bivio::Math::EMA->new(30),
-	    result_ok => sub {
-		# Round to 6 decimal places
-		return POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000
-		    == $expect->[0];
+            check_return => sub {
+                my($case, $return) = @_;
+                return [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
 	    },
         } => [
 	    compute => [
@@ -149,7 +149,7 @@ as in:
 
 Note the introduction of a hash_ref in place of the object
 C<Bivio::Math::EMA-E<gt>new(30)> and the introduction of the
-named attributes: C<object> and C<result_ok>.
+named attributes: C<object> and C<check_return>.
 
 The object level overrides the value supplied to L<new|"new">.
 The method level overrides the object level.
@@ -158,34 +158,24 @@ The following options are allowed:
 
 =over 4
 
+=item check_die : code_ref
+
+See L<check_die|"check_die">.
+
+=item check_return : code_ref
+
+See L<check_return|"check_return">.
+
 =item compute_params : code_ref
 
-A pre-processor for input parameters specified in the test cases.
-See the abstract sub L<compute_params|"compute_params"> for
-a description of the inputs and output of this sub.
+See L<compute_params|"compute_params">
 
-The default is to pass the params in each case verbatim to the
-method.
-
-=item print : code_ref (new level only)
+=item print : code_ref (global attribute)
 
 You can override the print function used to output the results of the test.
 This is probably useful for testing L<Bivio::Test|Bivio::Test> itself.
-
-=item result_ok : code_ref
-
-A post-processor for the result specified in the test cases.
-Will be called only if the expect and actual results match at
-the type level.  In the non-exception, expect is an array_ref.
-If an exception isn't thrown, actual will an array_ref.
-
-For C<undef> expect values, the L<result_ok|"result_ok"> sub is
-not called.
-
-See the abstract sub L<result_ok|"result_ok"> for
-a description of the inputs and output of this sub.
-
-The default is to compare the expect and actual verbatim.
+Only acceptable as an attribute on the
+L<Bivio::Test|Bivio::Test> object itself.
 
 =back
 
@@ -213,6 +203,7 @@ use Bivio::Test::Case;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my(@_CALLBACKS) = qw(check_return check_die compute_params);
 
 =head1 FACTORIES
 
@@ -238,15 +229,65 @@ sub new {
 
 =cut
 
+=for html <a name="check_die"></a>
+
+=head2 abstract check_die(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : boolean
+
+=head2 abstract check_die(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : Bivio::DieCode
+
+This callback is defined as a I<check_die> group attribute.
+
+Will be called only if the case results in an exception (L<Bivio::Die|Bivio::Die> and I<expect> is a L<Bivio::Die|Bivio::Die>, i.e. not
+an array_ref or C<undef>.
+
+Returns true or false when it compares the I<die> to the I<expect> or
+some other criteria.  True means pass.
+
+Returns a L<Bivio::DieCode|Bivio::DieCode> for the new value of I<case.die>.
+This module will then compare the I<expect> with I<die>.
+
+B<Called as a I<sub>, not a method>.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub check_die {
+}
+
+=for html <a name="check_return"></a>
+
+=head2 callback check_return(Bivio::Test::Case case, array_ref return, array_ref expect) : boolean
+
+=head2 callback check_return(Bivio::Test::Case case, array_ref return, array_ref expect) : array_ref
+
+This callback is defined as the code_ref either in the I<expect> location
+in a test case or as the I<check_return> group attribute.
+
+Will be called only if the actual result is a return and I<expect> is an
+array_ref, i.e. not a L<Bivio::Die|Bivio::Die> or C<undef>.
+
+Returns true or false when it compares the I<return> to the I<expect> or
+some other criteria.   True means pass.
+
+Returns an array_ref for the new value of I<case.return>.  This module will
+then compare the I<expect> with I<return>.
+
+B<Called as a I<sub>, not a method>.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub check_return {
+}
+
 =for html <a name="compute_params"></a>
 
-=head2 abstract sub compute_params(any object, string method, array_ref params) : array_ref
+=head2 callback compute_params(Bivio::Test::Case case, array_ref params, any method, any object) : array_ref
 
 Returns the parameters to be passed to I<method>.  I<object> is the instance or
 class to be executed.  I<params> were the values specified with the test case.
 
-The sub always returns a valid array_ref, a L<Bivio::DieCode|Bivio::DieCode>,
-or C<undef> (ignore result) which may be empty.
+The sub always returns a valid array_ref.
 
 B<Called as a I<sub>, not a method>.
 
@@ -256,69 +297,23 @@ $_ = <<'}'; # emacs
 sub compute_params {
 }
 
-=for html <a name="default_result_ok"></a>
+=for html <a name="print"></a>
 
-=head2 static default_result_ok(any object, string method, array_ref params, array_ref expect, array_ref actual) : boolean
+=head2 callback print(array args)
 
-=head2 static default_result_ok(any object, string method, array_ref params, Bivio::DieCode expect, Bivio::DieCode actual) : boolean
+Prints its arguments.
 
-C<default_result_ok> custom L<result_ok|"result_ok"> subs to handle the normal
-case.  This allows you to override default result comparisons only in certain
-cases.  For example, the custom result_ok is only called if the method
-is C<compute> in the following:
+Set as an attribute on L<Bivio::Test|Bivio::Test>.
+Overrides the print function used to output the results of the test.
 
-    Bivio::Test->new->({
-	result_ok => sub {
-	    my($object, $method, $params, $expect, $actual) = @_;
-            return Bivio::Test->default_result_ok(@_)
-                if $method ne 'compute';
-	    return POSIX::ceil($actual * 100000) / 100000;
-	}
-    })->unit({
-        ...
-    })
+Defaults to C<print(STDOUT @args)>.
 
-=cut
-
-sub default_result_ok {
-    my($proto, $object, $method, $params, $expect, $actual) = @_;
-    die('default_result_ok called with invalid expect')
-	unless ref($expect);
-    die('default_result_ok called with invalid actual')
-	unless ref($actual);
-    die('default_result_ok called with incorrect parameters')
-	unless ref($expect) eq ref($actual)
-	    || UNIVERSAL::isa($expect, 'Bivio::DieCode')
-		&& UNIVERSAL::isa($actual, 'Bivio::DieCode');
-    return Bivio::IO::Ref->nested_equals($expect, $actual);
-}
-
-=for html <a name="result_ok"></a>
-
-=head2 abstract sub result_ok(any object, string method, array_ref params, array_ref expect, array_ref actual) : boolean
-
-=head2 abstract sub result_ok(any object, string method, array_ref params, Bivio::DieCode expect, Bivio::DieCode actual) : boolean
-
-I<object> is the instance or class which was executed.  I<method> was called
-with I<params>.  I<expect> is the result specified in the test case,
-either an array_ref or a L<Bivio::DieCode|Bivio::DieCode>.
-
-I<actual> is the result returned from the call to I<method>.
-
-C<result_ok> is only called if the types of I<expect> and I<actual> match.
-For example, if I<actual> is a DieCode and I<expect> is an array_ref, the
-test fails and the C<result_ok> method is not called.
-
-The sub returns true if the test passed, i.e. I<expect> equals I<actual>.
-
-This handler may be specified at the test, object, or method levels.
-
-See L<OPTIONS|"OPTIONS"> or an example.
+B<Called as a I<sub>, not a method>.
 
 =cut
 
 $_ = <<'}'; # emacs
-sub result_ok {
+sub print {
 }
 
 =for html <a name="unit"></a>
@@ -328,9 +323,9 @@ sub result_ok {
 Evaluates I<tests> which are defined as tuples of tuples of tuples.
 see L<DESCRIPTION|"DESCRIPTION"> for the syntax.
 
-The tests are suitable for processing by C<Test::Harness>, a standard CPAN
-module.  See also L<Bivio::Util::Test|Bivio::Util::Test> which is a
-front-end to C<Test::Harness>.
+The tests are suitable for processing by
+L<Bivio::Util::Test::unit|Bivio::Util::Test/"unit">
+(command C<b-test unit>) or C<Test::Harness> (a standard CPAN module).
 
 =cut
 
@@ -338,9 +333,6 @@ sub unit {
     my($self, $tests) = @_;
     # Instantiate first, if called statically.
     return $self->new->unit($tests) unless ref($self);
-
-    # Compile blows up.  May want to "catch" and print result as opposed
-    # to dying.
     _eval($self, _compile($self, $tests));
     return;
 }
@@ -355,7 +347,7 @@ sub _assert_options {
     my($options) = @_;
     die('options not a hash_ref') unless ref($options) eq 'HASH';
     my($o) = {%$options};
-    foreach my $c ('result_ok', 'compute_params', 'print') {
+    foreach my $c (@_CALLBACKS, 'print') {
 	next unless exists($o->{$c});
 	die($c, ': option not a subroutine (code_ref)')
 	    unless ref($o->{$c}) eq 'CODE';
@@ -373,9 +365,10 @@ sub _assert_options {
 sub _compile {
     my($self, $objects) = @_;
     my($state) = {
-	result_ok => $self->unsafe_get('result_ok'),
-	compute_params => $self->unsafe_get('compute_params'),
 	object_num => 0,
+	map {
+	    ($_ => $self->unsafe_get($_));
+	} @_CALLBACKS
     };
     _compile_assert_even($objects, $state);
     my(@objects) = @$objects;
@@ -420,27 +413,23 @@ sub _compile_case {
     $state->{case_num}++;
     _compile_die($state, 'params must be array_ref or CODE')
 	unless ref($params) =~ /^(ARRAY|CODE)$/;
-    _compile_die($state, "expected result must be undef, array_ref, "
-	." CODE, or Bivio::DieCode")
-	unless !defined($expect) || ref($expect)
-	    && (ref($expect) =~ /^(ARRAY|CODE)$/
-		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
-    push(@$tests, Bivio::Test::Case->new({
+    push(@$tests, my $case = Bivio::Test::Case->new({
 	%$state,
 	params => $params,
-	expect => $expect,
     }));
-    _trace($tests->[$#$tests]) if $_TRACE;
+    $case->expect($expect);
+    _trace($case) if $_TRACE;
     return;
 }
 
-# _compile_die(hash_ref state, array msg)
+# _compile_die(any state, array msg)
 #
 # Calls _die() with msg and state of compilation.
 #
 sub _compile_die {
     my($state, @msg) = @_;
-    _die('Error compiling ', Bivio::Test::Case->new({%$state}), ': ', @msg);
+    _die('Error compiling ', ref($state) eq 'HASH'
+	? Bivio::Test::Case->new({%$state}) : $state, ': ', @msg);
     # DOES NOT RETURN
 }
 
@@ -464,6 +453,10 @@ sub _compile_method {
 	$cases = [
 	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
 	];
+    }
+    else {
+	_compile_die($state, 'cases is not an ARRAY, CODE, scalar or undef: ',
+	    $cases);
     }
     my(@cases) = @$cases;
     $state->{case_num} = 0;
@@ -506,12 +499,16 @@ sub _compile_options {
     # Make a copy, so we retain defaults of parent
     $state = {%$state};
 
-    if (ref($entity_or_hash) eq 'HASH') {
+    unless (ref($entity_or_hash) eq 'HASH') {
+	# No customizations, just set $which
+	$state->{$which} = $entity_or_hash;
+    }
+    else {
 	# Customizations and $which
 	my($h) = {%$entity_or_hash};
 	_compile_die($state, '"', $which, '" must be specified in HASH')
 	    unless $h->{$which};
-	foreach my $c ('result_ok', 'compute_params', $which) {
+	foreach my $c (@_CALLBACKS, $which) {
 	    next unless exists($h->{$c});
 	    $state->{$c} = $h->{$c};
 	    delete($h->{$c});
@@ -522,10 +519,6 @@ sub _compile_options {
 	_compile_die($state, 'unknown options: ',
 	    join(' ', sort(keys(%$h))))
 	    if %$h;
-    }
-    else {
-	# No customizations, just set $which
-	$state->{$which} = $entity_or_hash;
     }
     _trace('state: ', $state) if $_TRACE;
     return $state;
@@ -561,31 +554,29 @@ sub _eval {
     my($err);
     foreach my $case (@$tests) {
 	$c++;
-	my($actual);
+	my($result);
 	$case->put(params => _eval_params($case, [], \$err));
 	next if $err;
 	my($die) = Bivio::Die->catch(sub {
 	    my($method) = $case->get('method');
-	    _trace($case->get('object'), '->',
-		$method, '(', $case->get('params'), ')')
-		if $_TRACE;
-	    $actual = [$case->get('object')->$method(@{$case->get('params')})];
+	    _trace($case) if $_TRACE;
+	    $result = [$case->get('object')->$method(@{$case->get('params')})];
 	    return;
 	});
-	_trace('returned ', $die || $actual) if $_TRACE;
+	_trace('returned ', $die || $result) if $_TRACE;
 	if ($die) {
 	    $case->put(die => $die);
-	    $err = _eval_result($case, $die->get('code'));
+	    $err = _eval_result($case, $die);
 	}
 	elsif (defined($case->unsafe_get('expect'))) {
-	    $case->put(success => $actual);
-	    $err = _eval_result($case, $actual);
+	    $case->put(return => $result);
+	    $err = _eval_result($case, $result);
 	}
 	# else ignore result
     }
     continue {
 	$print->(!$err
-	    ? "ok $c\n" : ("not ok $c " . $case . ": $err\n"));
+	    ? "ok $c\n" : ("not ok $c " . $case->as_string . ": $err\n"));
 	$err = undef;
     }
     return;
@@ -593,31 +584,38 @@ sub _eval {
 
 # _eval_custom(Bivio::Test::Case case, string which, array_ref params, string_ref err) : any
 #
-# Returns result of custom call $which (result_ok or compute_params).
+# Returns result of custom call $which (check_return or compute_params).
 # If there is an error, $err will be set.  Checks for appropriate return
 # result in case of compute_params.
 #
-# $params only needs extra params for result_ok only.
+# $params only needs extra params for check_return only.
 #
 sub _eval_custom {
     my($case, $which, $params, $err) = @_;
     my($res);
     my($die) = Bivio::Die->catch(sub {
-	$res = $case->get($which)->(
-#TODO: change interface
-	    $case->get('object'), $case->get('method'),
-	    $case->get('params'), @$params);
+	$res = $case->get($which)->($case, @$params);
 	return;
     });
     if ($die) {
-	$$err = "Error in custom $which: ".$die->as_string;
+	$$err = "Error in custom $which: " . $die->as_string;
 	return undef;
     }
-    if ($which =~ /params/ && defined($res)
-	&& !(ref($res) || ref($res) eq 'ARRAY'
-	    || UNIVERSAL::isa($res, 'Bivio::DieCode'))) {
+    if ($which =~ /params/ && ref($res) ne 'ARRAY') {
 	$$err = 'custom compute_params did not return an array_ref: '
-	    ._summarize($res);
+	    . Bivio::IO::Ref->to_short_string($res);
+	return undef;
+    }
+    if ($which =~ /expect|return/
+	&& ref($res) && ref($res) ne 'ARRAY') {
+	$$err = 'custom check_return did not return an array_ref or scalar: '
+	    . Bivio::IO::Ref->to_short_string($res);
+	return undef;
+    }
+    if ($which =~ /die/
+	&& ref($res) && !UNIVERSAL::isa($res, 'Bivio::DieCode')) {
+	$$err = 'custom check_die did not return a Bivio::DieCode or scalar: '
+	    . Bivio::IO::Ref->to_short_string($res);
 	return undef;
     }
     return $res;
@@ -629,10 +627,11 @@ sub _eval_custom {
 #
 sub _eval_params {
     my($case, $err) = @_;
-    return _eval_custom($case, 'params', [], $err)
-	if ref($case->get('params')) eq 'CODE';
-    return _eval_custom($case, 'compute_params', [], $err)
-	if $case->get('compute_params');
+    foreach my $custom (qw(params compute_params)) {
+	return _eval_custom(
+	    $case, $custom, [$case->get(qw(params method object))], $err)
+	    if ref($case->unsafe_get($custom)) eq 'CODE';
+    }
     return $case->get('params');
 }
 
@@ -644,39 +643,40 @@ sub _eval_params {
 sub _eval_result {
     my($case, $actual) = @_;
     my($custom);
+    my($result) = ref($actual) eq 'Bivio::Die'
+	? $actual->get('code') : $actual;
     if (ref($case->get('expect')) eq 'CODE') {
-	$custom = 'expect';
+	# Only on success do we eval a case-specific check_return
+	$custom = 'expect'
+	    if ref($actual) eq 'ARRAY';
     }
-    elsif (ref($case->get('expect')) eq ref($actual)) {
-	if ($case->get('result_ok')) {
-	    $custom = 'result_ok';
-	}
-	else {
+    elsif (ref($case->get('expect')) eq ref($result)) {
+	$custom = ref($actual) eq 'Bivio::Die' ? 'check_die' : 'check_return';
+	unless ($case->unsafe_get($custom)) {
 	    return undef if
-		Bivio::IO::Ref->nested_equals($case->get('expect'), $actual);
+		Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
+	    $custom = undef;
 	}
     }
     if ($custom) {
 	my($err);
 	my($res) = _eval_custom(
-	    $case, $custom, [$case->get('expect'), $actual], \$err);
+	    $case, $custom, [$actual, $case->get('expect')], \$err);
 	return $err if $err;
-	return undef if $res;
+	if (ref($res)) {
+	    # New value for return or die, save and compare
+	    $custom =~ s/^check_//;
+	    $case->put($custom => $actual = $res);
+	    return undef if
+		Bivio::IO::Ref->nested_equals($case->get('expect'), $res);
+	}
+	elsif ($res) {
+	    return undef;
+        }
+	# else false return from custom
     }
-    return 'expected ' . _summarize($case->get('expect'))
-	.' but got ' . _summarize($actual);
-}
-
-# _summarize(any value) : string
-#
-# Returns a string summary of the array_ref.  Used very specially by
-# eval code.  We don't summarize all data structures.
-#
-sub _summarize {
-    my($value) = @_;
-    my($res) = Bivio::IO::Alert->format_args($value);
-    chomp($res);
-    return $res;
+    return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
+	.' but got ' . Bivio::IO::Ref->to_short_string($actual);
 }
 
 =head1 COPYRIGHT

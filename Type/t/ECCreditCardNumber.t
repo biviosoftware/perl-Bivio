@@ -8,21 +8,15 @@ use Bivio::Type::ECCreditCardNumber;
 
 Bivio::Test->unit([
     'Bivio::Type::ECCreditCardNumber' => [
-	{
-	    method => 'from_literal',
-	    # Expect is always params->[0]
-	    result_ok => sub {
-		my($object, $method, $params, $expect, $actual) = @_;
-		return Bivio::Test->default_result_ok(
-		    $object, $method, $params, $params, $actual);
-	    },
-	} => [
+	from_literal => [map {
+	    ([$_] => [$_]);
+	    }
 	    # Visa
-	    ['4222222222222'] => [],
+	    '4222222222222',
 	    # MC
-	    ['5222222222222227'] => [],
+	    '5222222222222227',
 	    # AMEX
-	    ['342222222222223'] => [],
+	    '342222222222223',
 	],
     ],
 ]);

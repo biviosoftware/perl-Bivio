@@ -9,17 +9,12 @@ my($_D) = 'Bivio::Type::Date';
 my($_DI) = 'Bivio::Type::DateInterval';
 Bivio::Test->new({
     compute_params => sub {
-	my($object, $method, $params) = @_;
-	$params->[0] = Bivio::Type::Date->from_literal_or_die(
-	    $params->[0]);
-	return $params;
+	my($case, $params) = @_;
+	$case->put(expect => [$_D->from_literal_or_die(
+	    $case->get('expect')->[0])])
+	    if ref($case->get('expect')) eq 'ARRAY';
+	return [Bivio::Type::Date->from_literal_or_die($params->[0])];
     },
-    result_ok => sub {
-	my($object, $method, $params, $expected, $actual) = @_;
-	return Bivio::Test->default_result_ok(@_)
-	    if ref($expected) eq 'Bivio::DieCode';
-	return $_D->from_literal_or_die($expected->[0]) eq $actual->[0];
-    }
 })->unit([
     $_DI->NONE => [
 	inc => [

@@ -4,20 +4,17 @@ use strict;
 use Bivio::Test;
 use Bivio::Type::Secret;
 Bivio::Test->new({
-    result_ok => sub {
-	my($object, $method, $params, $expect, $actual) = @_;
-	return 0 unless ref($actual) eq 'ARRAY';
-	my($reverse) = $method;
+    check_return => sub {
+	my($case, $return) = @_;
+	my($reverse) = $case->get('method');
 	$reverse =~ s/encrypt/decrypt/;
-	return 0 if defined($params->[0]) != defined($actual->[0]);
-	return 1 unless defined($params->[0]);
-	return $params->[0] eq $object->$reverse($actual->[0]);
+	return [$case->get('object')->$reverse($return->[0])];
     },
 })->unit([
     Bivio::Type::Secret => [
 	map {(
 	    "encrypt_$_" => [
-		map {([$_] => [])}
+		map {([$_] => [$_])}
 		    undef,
 		    '',
 		    'the quick brown fox ate the gingerbread boy',

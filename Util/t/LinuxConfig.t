@@ -17,9 +17,7 @@ Bivio::Test->unit([
 	    my($method, $args, $tests) = @$_;
 	    ({
 		method => $method,
-		result_ok => sub {
-		    my($object, $method, $params, $expect, $actual) = @_;
-		    return 0 unless ref($actual) eq 'ARRAY';
+		check_return => sub {
 		    foreach my $v (@$tests) {
 			my($file, $exp) = @$v;
 			my($data) = Bivio::IO::File->read("$_tmp/$file");

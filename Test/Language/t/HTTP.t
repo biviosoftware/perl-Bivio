@@ -20,7 +20,7 @@ Bivio::Test->unit([
 	{
 	    method => 'test_run',
 	    compute_params => sub {
-		my($object, $method, $params) = @_;
+		my(undef, $params) = @_;
 		return [\$params->[0]],
 	    },
 	} => [
