@@ -185,8 +185,6 @@ There may only be one FormModel in the items of a task.
 A mapping item is of the form I<name>=I<action>, where I<name>
 and I<action> are attributes as defined above.
 
-=back
-
 =cut
 
 sub new {
