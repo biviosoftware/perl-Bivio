@@ -28,7 +28,6 @@ L<Bivio::Biz::ListModel>.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Status;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
