@@ -86,9 +86,8 @@ EOF
     ],
     [
 	'RealmInstrument.name',
-	['RealmInstrument.country', undef, <<'EOF'],
-Enter the two character country code for following investments which
-had foreign taxes. ** NEED A LINK TO COUNTRY CODE HELP PAGE HERE **
+	['country_code', undef, <<'EOF'],
+Select the country for any investment which received foreing taxes.
 EOF
     ],
     {
