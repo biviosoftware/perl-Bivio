@@ -2216,6 +2216,17 @@ my(@_CFG) = (
 #        Bivio::UI::HTML::Club::FileUnzip
 #        next=CLUB_COMMUNICATIONS_FILE_READ
 #    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_MERGER
+        226
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/investment/merger
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::InstrumentMergerForm
+        Bivio::UI::HTML::Club::InstrumentMerger
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
 );
 
 __PACKAGE__->compile(
