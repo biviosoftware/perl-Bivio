@@ -231,11 +231,9 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::ClubPreference;
-use Bivio::Type::ClubPreference;
 use Bivio::Type::DateTime;
 use Bivio::Type::RealmName;
 use Bivio::Type::UserAgent;
-use Bivio::Type::UserPreference;
 use Bivio::Type::UserPreference;
 
 #=VARIABLES
@@ -405,46 +403,6 @@ sub client_redirect {
     return $self->server_redirect(@_);
 }
 
-=for html <a name="set_current"></a>
-
-=head2 set_current() : self
-
-Sets current to I<self> and returns self.
-
-=cut
-
-sub set_current {
-    return shift->internal_set_current();
-}
-
-=for html <a name="throw_die"></a>
-
-=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
-
-Terminate the request with a specific code.
-
-=cut
-
-sub throw_die {
-    my($self, $code, $attrs, $package, $file, $line) = @_;
-    $package ||= (caller)[0];
-    $file ||= (caller)[1];
-    $line ||= (caller)[2];
-    $attrs ||= {};
-    ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
-
-    # Give some context to the error message
-    my($realm, $task, $user) = $self->unsafe_get(
-	    qw(auth_realm task_id auth_user));
-    # Be a little more "safe" than usual, because we are in an
-    # error situation.
-    $attrs->{realm} = ref($realm) ? $realm->as_string : undef;
-    $attrs->{task} = ref($task) ? $task->get_name : undef;
-    $attrs->{user} = ref($user) ? $user->as_string : undef;
-
-    Bivio::Die->throw($code, $attrs, $package, $file, $line);
-}
-
 =for html <a name="elapsed_time"></a>
 
 =head2 elapsed_time() : float
@@ -531,6 +489,23 @@ sub format_http {
     # Must be @_ so format_uri handles overloading properly
     my($uri) = $self->format_uri(@_);
     return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix.$uri;
+}
+
+=for html <a name="format_http_insecure"></a>
+
+=head2 format_http_insecure(Bivio::Agent::TaskId task_id, hash_ref query, any auth_realm, boolean no_context) : string
+
+=head2 format_http_insecure(Bivio::Agent::TaskId task_id, string query, any auth_realm, boolean no_context) : string
+
+
+=cut
+
+sub format_http_insecure {
+    my($self) = shift;
+    # Must be @_ so format_uri handles overloading properly
+    my($uri) = $self->format_uri(@_);
+    return $uri if $uri =~ s/^https:/http:/;
+    return 'http://'.$self->get('http_host').$uri;
 }
 
 =for html <a name="format_http_prefix"></a>
@@ -1145,6 +1120,18 @@ sub set_club_pref {
     return;
 }
 
+=for html <a name="set_current"></a>
+
+=head2 set_current() : self
+
+Sets current to I<self> and returns self.
+
+=cut
+
+sub set_current {
+    return shift->internal_set_current();
+}
+
 =for html <a name="set_realm"></a>
 
 =head2 set_realm(Bivio::Auth::Realm new_realm)
@@ -1296,6 +1283,34 @@ sub task_ok {
 	return 0 unless $realm;
     }
     return $realm->can_user_execute_task($task, $self);
+}
+
+=for html <a name="throw_die"></a>
+
+=head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
+
+Terminate the request with a specific code.
+
+=cut
+
+sub throw_die {
+    my($self, $code, $attrs, $package, $file, $line) = @_;
+    $package ||= (caller)[0];
+    $file ||= (caller)[1];
+    $line ||= (caller)[2];
+    $attrs ||= {};
+    ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
+
+    # Give some context to the error message
+    my($realm, $task, $user) = $self->unsafe_get(
+	    qw(auth_realm task_id auth_user));
+    # Be a little more "safe" than usual, because we are in an
+    # error situation.
+    $attrs->{realm} = ref($realm) ? $realm->as_string : undef;
+    $attrs->{task} = ref($task) ? $task->get_name : undef;
+    $attrs->{user} = ref($user) ? $user->as_string : undef;
+
+    Bivio::Die->throw($code, $attrs, $package, $file, $line);
 }
 
 =for html <a name="warn"></a>
