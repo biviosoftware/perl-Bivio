@@ -417,7 +417,7 @@ sub _walk_attachment_tree {
             @parts = ( $header, $entity);
         }
         my($i);
-        for $i (0..$#parts) {
+        foreach $i (0..$#parts) {
             # For multipart/alternatives, only keep the HTML text-type part
             if ($ct eq 'multipart/alternative' &&
                     $parts[$i]->mime_type =~ m|^text/|) {
