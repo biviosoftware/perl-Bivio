@@ -53,7 +53,7 @@ __PACKAGE__->compile({
     ],
 });
 
-sub is_sequential { return 0; }
+sub is_continuous { return 0; }
 
 1;
 

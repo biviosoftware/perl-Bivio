@@ -144,7 +144,7 @@ EOF
     defined($min) || Carp::croak('no values');
     $info->{_min} = $min;
     $info->{_max} = $max;
-    if ($pkg->is_sequential) {
+    if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
 	    defined($info->{$n}) || Carp::croak("missing number $n");
@@ -212,16 +212,16 @@ sub get_short_desc {
     return $map->{$self}->[1];
 }
 
-=for html <a name="is_sequential"></a>
+=for html <a name="is_continuous"></a>
 
-=head2 is_sequential() : 1
+=head2 is_continuous() : 1
 
-Is this enumeration sequentially numbered?  By default, this is true.
-Enumerations which don't want to be sequential should override this method.
+Is this enumeration an unbroken sequence?  By default, this is true.
+Enumerations which don't want to be continous should override this method.
 
 =cut
 
-sub is_sequential {
+sub is_continuous {
     return 1;
 }
 
