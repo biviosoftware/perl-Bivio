@@ -98,24 +98,25 @@ sub MEMBER_ROLES {
 
 =for html <a name="bring_offline"></a>
 
-=head2 bring_offline() : Bivio::Biz::Model::RealmUser
+=head2 bring_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
 
 Creates an off-line version of the RealmUser and moves all associated
 records to the offline version. Returns the off-line realm user.
 
-Dies if the user is not a member. 
+Dies if the user is not a member unless I<any_user_ok> is true.
 
 =cut
 
 sub bring_offline {
-    my($self) = @_;
+    my($self, $any_user_ok) = @_;
     my($req) = $self->get_request;
 
     # Sanity check.  Can't bring_offline if is admin or guest
     $self->die('User ', $self->get('user_id'), ' is ',
 	    $self->get('role'), ' but must be a MEMBER of ',
 	    $self->get('realm_id'))
-	    unless $self->get('role') == Bivio::Auth::Role::MEMBER();
+	    unless $any_user_ok
+		    || $self->get('role') == Bivio::Auth::Role::MEMBER();
 
     # create an off-line copy and move all associated records
     my($user) = Bivio::Biz::Model::User->new($req)
