@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Delegate::SimpleTaskId added default ROBOTS_TXT task,
+    allow robot browsing only for production sites
+  * Bivio::Biz::Action::LocalFilePlain->execute_robots_txt
+
+  Revision 2.56  2005/02/27 18:23:36  nagler
+  * Bivio::Test::Language::HTTP->verify_no_text validates text doesn't exist
   * Bivio::Test::Language::HTTP->verify_text uses text_exists
   * Bivio::Biz::Model::ECSubscription->INFINITE_END_DATE exports
     constant used by make_infinite
