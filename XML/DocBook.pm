@@ -84,6 +84,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     envar => ['tt'],
     epigraph => [],
     figure => [],
+    'figure/title' => ['center', 'b'],
     filename => ['tt'],
     firstterm => ['i'],
     footnote => sub {
@@ -99,16 +100,6 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     graphic => {
 	template => '<br><img border=0 src="${fileref}" align=${align}><br>',
 	default_align => 'center',
-    },
-    b_include_file => sub {
-	my($attr, $html, $clipboard) = @_;
-	my($res) = Bivio::IO::File->read($attr->{file});
-	# merge lines that end in backslash
-	$$res =~ s/\\\n//sg;
-	$res = HTML::Entities::encode($$res);
-	# create markup from #\w+# values in file.
-	$res =~ s,#(/?\w+)#,<$1>,g;
-	return $res;
     },
     itemizedlist => ['ul'],
     listitem => ['li'],
@@ -139,7 +130,8 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     'varlistentry/listitem' => ['dd'],
     'varlistentry/term' => ['dt'],
     varname => ['tt'],
-    note => '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
+    warning =>
+        '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
     xref => '[CROSS-REFERENCE ${linkend}]',
 });
 
