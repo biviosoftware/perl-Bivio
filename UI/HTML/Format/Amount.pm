@@ -32,6 +32,7 @@ number of decimal points.
 =cut
 
 #=IMPORTS
+use Bivio::TypeError;
 use Math::BigInt ();
 
 #=VARIABLES
@@ -48,10 +49,9 @@ my($_FULL_PAD) = '.' . ('0' x $_DECIMAL_MAX);
 
 =head2 static get_widget_value(string amount, $round) : string
 
-Formats a numeric amount to the specified number of decimal digits. The
-amount must be of the form:
-
-  (-)?d+(.d+)?
+Formats a numeric amount to the specified number of decimal digits.
+L<Bivio::Type::Number|Bivio::Type::Number> is used to check whether
+the amount is a valid number.
 
 =cut
 
@@ -60,12 +60,9 @@ sub get_widget_value {
 
 #TODO: very ugly code needs revisiting
 
-    if ($amount =~ /^\./) {
-	$amount = '0'.$amount;
-    }
-
     die("round $round > $_DECIMAL_MAX") if $round > $_DECIMAL_MAX;
-    die("invalid number $amount") unless $amount =~ /^-?\d+(\.\d+)?$/;
+    my($valid) = Bivio::Type::Number->from_literal($amount);
+    die("invalid number $amount") unless defined($valid);
 
     my($negative) = $amount =~ /^-/;
 
@@ -112,10 +109,9 @@ sub get_widget_value {
 
 =begin
 
-
 print(
 Bivio::UI::HTML::Format::Amount->get_widget_value('123.456', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('0.456', 2)."\n".
+Bivio::UI::HTML::Format::Amount->get_widget_value('0.456x', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('0', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('-1.1', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('-1.12345678', 2)."\n".
