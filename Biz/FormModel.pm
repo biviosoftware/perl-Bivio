@@ -627,6 +627,29 @@ sub get_model_properties {
     return \%res;
 }
 
+=for html <a name="has_context_field"></a>
+
+=head2 has_context_field(string name) : boolean
+
+Returns true if there is a form in the context and it has a context
+field I<name>.
+
+=cut
+
+sub has_context_field {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('form does not require_context') unless $fields->{context};
+    my($c) = $fields->{context};
+    my($model) = $c->{form_model};
+    return 0 unless $model;
+
+    # From the form_model's sql_support, get the type and return
+    # the result of from_literal.
+    my($mi) = $model->get_instance;
+    return $mi->has_fields($name);
+}
+
 =for html <a name="in_error"></a>
 
 =head2 in_error() : boolean
@@ -940,10 +963,10 @@ sub unsafe_get_context_field {
     Carp::croak('form does not require_context') unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
-    return (undef) unless $model;
+    return undef unless $model;
 
     # If there is no form, can't be a value
-    return (undef) unless $c->{form};
+    return undef unless $c->{form};
 
     # From the form_model's sql_support, get the type and return
     # the result of from_literal.
