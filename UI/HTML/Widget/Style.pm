@@ -90,6 +90,7 @@ my($_TAGS) = join(',', qw(
     p
     pre
     select
+    th
     td
     textarea
     ul
