@@ -45,7 +45,8 @@ This is how you should always create objects:
     my($_IDI) = __PACKAGE__->instance_data_index;
 
     sub new {
-	my($self) = MySuperClass::new(@_);
+        my($proto) = shift;
+        my($self) = $proto->SUPER::new(@_);
 	$self->[$_IDI] = {'field1' => 'value1'};
 	return $self;
     }

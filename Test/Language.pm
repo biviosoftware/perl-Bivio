@@ -30,16 +30,12 @@ use Bivio::Collection::Attributes;
 
 =head1 DESCRIPTION
 
-C<Bivio::Test::Language> provides support
-
-put durable.  The attributes of one test which are durable are copied to the
-next test.  Not sure if it makes totally sense, because the tests may not be
-related.  However, if they are run in the same set, it may make sense.  Better
-to have the feature with a caveat than to suffer performance loss as a result
-of not having it.
-
-put_durable is slightly different than in Request case.  Add the feature
-explicitly as opposed to adding it to adding it to Attributes.
+C<Bivio::Test::Language> is a framework for acceptance testing.  A test script
+is a Perl program which is evaluated within the context of this class.  The
+first line consists of a call to L<setup|"setup">, which identifies a subclass
+of this class.  The subclass defines methods which are called with an instance
+created during L<setup|"setup">.  The instance contains state about the test,
+e.g. cookies and connections to servers.
 
 =head1 ATTRIBUTES
 
@@ -47,8 +43,7 @@ explicitly as opposed to adding it to adding it to Attributes.
 
 =item script : string
 
-name of the script
-
+file name of the script
 
 =back
 
@@ -58,7 +53,7 @@ name of the script
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
-
+my($_SELF_IN_EVAL);
 
 =head1 FACTORIES
 
@@ -66,9 +61,9 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Test::Language
+=head2 static new(hash_ref attrs) : Bivio::Test::Language
 
-Instantiates the test language class.
+Instantiates this class.
 
 =cut
 
@@ -81,7 +76,7 @@ sub new {
 
 =for html <a name="setup"></a>
 
-=head2 setup(string map_class, array setup_args) : Bivio::Test::Language
+=head2 static setup(string map_class, array setup_args) : Bivio::Test::Language
 
 Loads TestLanguage I<map_class>.  Calls L<new|"new"> on the loaded class with
 I<new_args>.
@@ -89,8 +84,9 @@ I<new_args>.
 =cut
 
 sub setup {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
+    my($proto, $map_class, $setup_args) = @_;
+    my($self) = _assert_in_eval();
+    my($subclass) = Bivio::IO::ClassLoader->map_require($map_class);
     return;
 }
 
@@ -100,20 +96,68 @@ sub setup {
 
 =for html <a name="cleanup"></a>
 
-=head2 cleanup()
+=head2 static cleanup()
 
-Clean up state, such as open files, external files, database values, etc.
-You should call this like.
+Clean up state, such as external files, database values, etc.
+Must not rely on state of instance, but be able to clean up globally.
+
+Usage:
+
+    sub cleanup {
+        my($proto) = @_;
+        my clean up...;
+        $proto->SUPER::cleanup;
+        return;
+    }
 
 =cut
 
 sub cleanup {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
+    # need to handle explicit call.
     return;
 }
 
+=for html <a name="run"></a>
+
+=head2 static run(string script_name) : boolean
+
+=head2 static run(string_ref script) : boolean
+
+Runs 
+
+
+=cut
+
+sub run {
+    my($proto, $script) = @_;
+    my($script_name) = ref($script) ? '<inline>' : $script;
+    $_SELF_IN_EVAL->die($script_name, ': called from within test script')
+	if $_SELF_IN_EVAL;
+    $_SELF_IN_EVAL = $proto->new({script => $script_name});
+    my($die) = Bivio::Die->catch(sub {
+        $script = Bivio::IO::File->read($script_name) unless ref($script);
+	my($copy) = 'use strict; '.$$script;
+        Bivio::Die->eval_or_die(\$copy);
+	return;
+    });
+    $_SELF_IN_EVAL = undef;
+    return $die;
+}
+
 #=PRIVATE METHODS
+
+# _assert_in_eval() : Bivio::Test::Language
+#
+# Returns the current test or terminates.
+#
+sub _assert_in_eval {
+    my($op) = @_;
+    return $_SELF_IN_EVAL if $_SELF_IN_EVAL;
+    $op ||= 'eval';
+    $op =~ s/.*:://;
+    Bivio::Die->die($op, ': attempted operation outside script');
+    # DOES NOT RETURN
+}
 
 =head1 COPYRIGHT
 

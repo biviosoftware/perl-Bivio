@@ -7,7 +7,7 @@ $_ = $Bivio::Test::Util::VERSION;
 
 =head1 NAME
 
-Bivio::Test::Util - runs tests using Test::Harness
+Bivio::Test::Util - runs and manages acceptance (.btest) and unit (.t) tests
 
 =head1 RELEASE SCOPE
 
@@ -30,7 +30,9 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::Test::Util> runs tests using C<Test::Harness>.
+C<Bivio::Test::Util> runs acceptance and unit tests.  A unit test is defined
+using L<Bivio::Test|Bivio::Test>.  An acceptance test has its own language,
+which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 
 =cut
 
@@ -54,12 +56,15 @@ sub USAGE {
     return <<'EOF';
 usage: b-test [options] command [args...]
 commands:
-    unit tests... -- runs the tests under Test::Harness
+    accept tests... - runs the tests (.btest) under Bivio::Test::Language
+    cleanup tests... - runs the cleanup function of tests (.btest) 
+    unit tests... -- runs the tests (.t) under Test::Harness
 EOF
 }
 
 #=IMPORTS
 use Test::Harness ();
+use Bivio::Test::Language;
 
 #=VARIABLES
 
