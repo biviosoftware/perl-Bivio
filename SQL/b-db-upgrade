@@ -284,7 +284,7 @@ sub _upgrade_shadow_emails {
     my($sth) = Bivio::SQL::Connection->execute(<<'EOF', []);
             SELECT email
             FROM email_t
-            WHERE email like 'ignore-=%'
+            WHERE email like 'ignore-%'
             AND email not like '%bivio.com'
 EOF
     my($row, %shadow);
