@@ -38,7 +38,7 @@ use Bivio::IO::Config;
 
 #=VARIABLES
 # What perl outputs on "die" or "warn" without a newline
-my($_PERL_MSG_AT_LINE) = ' at (\S+|\(eval \d+\)) line \d+\.$';
+my($_PERL_MSG_AT_LINE) = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
 my($_PACKAGE) = __PACKAGE__;
 my($_LOGGER) = \&_log_stderr;
 my($_DEFAULT_MAX_ARG_LENGTH) = 128;
@@ -191,7 +191,9 @@ sub eval_or_warn {
     } && return $result;
     # If the warning was already output, the following operation has
     # no effect.
-    Bivio::IO::Alert->warn($@);
+    my($msg) = $@;
+    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    Bivio::IO::Alert->warn($msg);
     return undef;
 }
 
