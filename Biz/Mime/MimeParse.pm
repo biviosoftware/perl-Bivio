@@ -135,26 +135,46 @@ sub parse {
 #
 sub _extract_mime {
     my($entity, $filename, $ext, $keywords) = @_;
-    _parse_mime($entity, $keywords); #parses keywords if this is text/plain
+    if(!$entity){
+	die('no entity was passed to _extract_mime()') if $_TRACE;
+    }
+    _trace('filename: ', $filename, ' ext: ', $ext) if $_TRACE;
+    _parse_mime($entity, $keywords); #parses keywords only if this is text/plain
+    $filename .= $ext;
+    _trace('filename after concat: ', $filename) if $_TRACE;
+    
 
-    #TODO parse it if it is HTML
+#TODO parse for keyword storage if MIME part content type is HTML
+#right now, we're only parsing for keywords MIME type "plain-text".
 
-    _write_mime($entity, $filename, $ext);
+    _write_mime($entity, $filename); #writes the mime to a file.
 
-    my $numparts = $entity->parts || 0;
-    my $i = 0;
+    my($numparts) = $entity->parts || 0;
+    my($i) = 0;
     &_trace('number of parts for this MIME part is ', $numparts) if $_TRACE;
     if($numparts eq(0)){
 	return;
     }
     for($i = 0; $i < $numparts; $i++){
 	print(STDERR "getting part " . $i . "\n");
-	my $subentity = $entity->part($i);
-	#recursion doesn't seem to work the way I expected.
-	#Nested MIME parts don't get "unwound."
-	#Maybe I need to  use the MIME::Parser again and again?
-	# %-\
-	_extract_mime($subentity, $filename, '_' . $i, $keywords); #recurse
+	my($subentity) = $entity->part($i);
+	my($head) = $subentity->head();
+	my($ctype) = $head->get('content-type');
+	if($ctype =~ /message\/rfc822/){
+	    _trace('the MIME part is an rfc922 message. Sub parsing this...') if $_TRACE;
+	    my($bodyhandle) = $subentity->bodyhandle();
+	    my($io) = $bodyhandle->open('r');
+	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
+            my($rootentity) = $parser->read($io);
+	    if(!$rootentity){
+		_trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE;
+	    }
+	    _extract_mime($rootentity, $filename, "_" . $i, $keywords);
+	}
+	elsif($ctype =~ /text\/plain/){ #then we want keywords from it
+	    print(STDERR "message is text plain.\n");
+	    _extract_mime($subentity, $filename, '_' . $i, $keywords); #recurse
+	}
     }
     return;
 }
@@ -269,14 +289,12 @@ sub _parse_msg_line {
 
 }
 
-# _write_mime(Entityref entity, string suffix) : void
+# _write_mime(Entityref entity, string filename) : void
 #
 # Writes the mime header and body content to a file.
-# Appends suffix to the filename.
 #
 sub _write_mime {
-    my($entity, $filename, $suffix) = @_;
-    my($ext) = $suffix || "";
+    my($entity, $filename) = @_;
     #extract the header and body, and shove them into a string.
     #probably I should re-use a scalar ref or an IO handle for both of these.
     my $msghdr = _extract_mime_header($entity);
@@ -293,7 +311,7 @@ sub _write_mime {
     }
     my $msg = $msghdr;
     if($$msgbody){$msg .= $$msgbody;}
-    $_FILE_CLIENT->create($filename . $ext, \$msg) || die("write failed: $$msg");
+    $_FILE_CLIENT->create($filename, \$msg) || die("write failed: $$msg");
     return;
 }
 
