@@ -28,10 +28,9 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::Club;
 use Bivio::Auth::Realm::General;
-use Bivio::Auth::Realm::User;
 use Bivio::Auth::Realm;
+use Bivio::Auth::Realm::Proxy;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
@@ -62,26 +61,33 @@ Bivio::IO::Config->register({
 
 =for html <a name="format"></a>
 
-=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm) : string
+=head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req) : string
 
 Transforms I<task_id> and I<realm> (if needed) into a URI.
 
 =cut
 
 sub format {
-    my(undef, $task_id, $realm) = @_;
+    my(undef, $task_id, $realm, $req) = @_;
     Bivio::IO::Alert->die($task_id, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($uri) = $_FROM_TASK_ID{$task_id}->[1];
     Bivio::IO::Alert->die($task_id, ': task has no uri')
 	    unless defined($uri);
-#TODO: Only can have realm owner at front of uri.
-    if ($uri =~ /^_/) {
+# Add in the form context with \& at the end which turns into nothing
+# if no context added.
+    # URI contains a lone
+    if ($uri =~ /%/) {
 	# If the realm doesn't have an owner, there's a bug somewhere
-	my($ro) = $realm->get('owner_name');
-	$uri =~ s/^_/$ro/g;
+	my($ro) = $realm->format_uri;
+	# Replace everything leading up to the % with the uri prefix
+	$uri =~ s/.*%/$ro/g;
     }
-    return $uri =~ /^\// ? $uri : '/'.$uri;
+    $uri = '/'.$uri unless $uri =~ /^\//;
+
+    my($rc) = Bivio::Agent::Task->get_by_id($task_id)->get('require_context');
+    $uri .= '?'.Bivio::Biz::FormModel->format_context_as_query($req) if $rc;
+    return $uri;
 }
 
 =for html <a name="get_document_root"></a>
@@ -133,6 +139,7 @@ sub initialize {
     $_INITIALIZED && return;
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     $_GENERAL = Bivio::Auth::Realm::General->new;
+    my($_PROXY_PREFIX) = Bivio::Auth::Realm::Proxy::FIRST_URI_COMPONENT().'/%';
     map {
 	my($task_id_name, $realm_type_name, $uri_list) = @{$_}[0,2,4];
 	my($task_id) = Bivio::Agent::TaskId->$task_id_name();
@@ -144,7 +151,7 @@ sub initialize {
 	    $realm = $_GENERAL;
 	}
 #TODO: Shouldn't have to do this mapping here.  Should be in RealmType.
-	elsif ($realm_type_name =~ /^(CLUB|USER)$/) {
+	elsif ($realm_type_name =~ /^(CLUB|USER|PROXY)$/) {
 	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type_name));
 	}
 	else {
@@ -161,8 +168,19 @@ sub initialize {
 		$uri = undef;
 	    }
 	    else {
-		die("$task_id_name: $uri: must begin with '_'")
-			unless $is_general || $uri =~ /^_(\/|$)/;
+		# Is the URI valid
+		if (!$is_general) {
+		    if ($realm_type_name eq 'PROXY') {
+			die("$task_id_name: $uri: must begin with 'pub/%'")
+				unless $uri =~ m!^$_PROXY_PREFIX(?:\/|$)!o;
+		    }
+		    else {
+			die("$task_id_name: $uri: must begin with '%'")
+				unless $uri =~ m!^%(?:\/|$)!;
+		    }
+		}
+
+		# Save the URI in the map
 		if ($_FROM_URI{$uri}) {
 		    die("$task_id_name: $uri $realm_type_name: uri already"
 			    .' mapped to ',
@@ -199,16 +217,13 @@ Returns I<task_id> and I<auth_realm> for I<uri>.
 
 sub parse {
     my(undef, $req, $uri) = @_;
-#TODO: Is this lc a dubious practice?  It will help clubs/users
-#      which like their names mixed case.
     my($orig_uri) = $uri;
-    $uri = lc($uri);
     $uri =~ s!^/+!!g;
-    # Underscore is a special character
+    # Percent is a special character
     my(@uri) = map {
 	$req->die(Bivio::DieCode::NOT_FOUND,
-		{entity => $orig_uri, message => 'contains underscore'})
-		if $_ eq '_';
+		{entity => $orig_uri, message => 'contains percent'})
+		if $_ eq '%';
 	$_
     } split(/\/+/, $uri);
     $uri = join('/', @uri);
@@ -216,31 +231,58 @@ sub parse {
     return ($_FROM_URI{$uri}->[$_GENERAL_INT]->[0], $_GENERAL)
 	    if defined($_FROM_URI{$uri}->[$_GENERAL_INT]);
 
-    # If document_root is set, look for the file directly.  If found,
-    # go to HTTP_DOCUMENT task.
-    return ($_DOCUMENT_TASK->[0], $_GENERAL)
-	    if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
+    # If first uri doesn't match a RealmName, can't be one.
+    if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
+	# Not a realm, but is it a document and it is found?
+	return ($_DOCUMENT_TASK->[0], $_GENERAL)
+		if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
 
-    # If '/', then always not found
-    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
-	    unless int(@uri);
+	$req->die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
+	    entity => $_DOCUMENT_ROOT.$uri});
+    }
 
-    # Try to find the uri with the realm replaced by '_'.
-    my($name) = shift(@uri);
+    # Try to find the uri with the realm replaced by '%'
     # Replace realm with underscore.  This is ugly, but good enough for now.
-    $uri = join('/', '_', @uri);
-    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
-	    unless defined($_FROM_URI{$uri});
+    my($realm);
+    if ($uri[0] eq Bivio::Auth::Realm::Proxy::FIRST_URI_COMPONENT()) {
+	#
+	# Proxy Realm
+	#
+	# RJN: This is experimental.  I'm not sure if this is the right
+	# 	   approach, because all Celebrity realms may not contain the
+	# 	   same URIs.
+	# Be friendly, by downcasing
+	my($name) = lc($uri[1]);
+	$uri[1] = '%';
 
-    # Is this a valid, authorized realm with a task for this uri?
-    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-    $req->die(Bivio::DieCode::NOT_FOUND,
-	    {entity => $name, uri => $orig_uri, class => 'Bivio::Auth::Realm'})
-	    unless $o->unauth_load(name => $name);
-    my($realm) = Bivio::Auth::Realm->new($o);
-    my($rti) = $realm->get_type->as_int;
+	# Blows up if not found.
+	$realm = Bivio::Auth::Realm::Proxy->from_name($name);
+    }
+    elsif (defined($_FROM_URI{$uri})) {
+	#
+	# Ordinary Realm
+	#
+	# Be friendly, by downcasing
+	my($name) = lc($uri[0]);
+	$uri[0] = '%';
+
+	# Is this a valid, authorized realm with a task for this uri?
+	my($o) = Bivio::Biz::Model::RealmOwner->new($req);
+	$req->die(Bivio::DieCode::NOT_FOUND,
+		{entity => $name, uri => $orig_uri,
+		    class => 'Bivio::Auth::Realm'})
+		unless $o->unauth_load(name => $name);
+	$realm = Bivio::Auth::Realm->new($o);
+    }
+    else {
+	$req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri});
+    }
+
+    # Found the realm, now try to find the URI
+    $uri = join('/', @uri);
+    my($rti) = $realm->get('type')->as_int;
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
-            realm_type => $realm->get_type->get_name})
+	realm_type => $realm->get('type')->get_name})
 	    unless defined($_FROM_URI{$uri}->[$rti]);
     return ($_FROM_URI{$uri}->[$rti]->[0], $realm);
 }
