@@ -971,10 +971,10 @@ sub load_from_model_properties {
 	$model = $m->simple_package_name;
     }
     else {
-	$self->die($model, ': no such model')
-		unless defined($models->{$model});
 	$m = $self->get_model($model);
     }
+    $self->die($model, ': no such model')
+        unless defined($models->{$model});
     my($properties) = $self->internal_get();
     my($column_aliases) = $sql_support->get('column_aliases');
     foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
