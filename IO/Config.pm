@@ -233,18 +233,88 @@ $_ = <<'}'; # for emacs
 sub handle_config {
 }
 
-=for html <a name="initialize"></a>
+=for html <a name="merge"></a>
 
-=head2 initialize()
+=head2 static merge(hash_ref custom, hash_ref defaults) : hash_ref
 
-DEPRECATED.
+Creates a new hash_ref by copying I<custom> values int a I<default>
+configuration.  Most applications have a common set of configuration which they
+should define in a perl module.  Development, test, and production
+configurations can then be customized more easily without having to edit lots
+of files.
+
+For example, your I<bconf> file might be defined as follows:
+
+    #
+    # My development configuration
+    #
+    use strict;
+    use OurSite::BConf;
+    OurSite::BConf->merge({
+	'Bivio::UI::Text' => {
+	    http_host => 'myhost.oursite.com:8888',
+	    mail_host => 'myhost.oursite.com',
+	},
+	'Bivio::UI::FacadeComponent' => {
+	    die_on_error => 1,
+	},
+    });
+
+The class I<OurSite::BConf> might contain the standard production
+configuration, which will be overridden by the custom configuration above:
+
+    sub merge {
+        my($proto, $custom) = @_;
+	return Bivio::IO::Config->merge($custom, {
+	    'Bivio::UI::FacadeComponent' => {
+		# Production systems don't die if can't find component values,
+		# just return "undef" configuration.
+		die_on_error => 0,
+	    },
+	    'Bivio::UI::Text' => {
+		http_host => 'www.oursite.com',
+		mail_host => 'www.oursite.com',
+	    },
+	    'Bivio::Die' => {
+		stack_trace_error => 1,
+	    },
+	    'Bivio::IO::ClassLoader' => {
+		delegates => {
+		    'Bivio::Agent::TaskId' => 'OurSite::Agent::TaskId',
+		    'Bivio::Agent::HTTP::Cookie' => 'OurSite::Agent::Cookie',
+		    'Bivio::UI::FacadeChildType' => 'OurSite::UI::FacadeChildType',
+		    'Bivio::UI::HTML::FormErrors' => 'OurSite::UI::FormErrors',
+		    'Bivio::TypeError' => 'OurSite::TypeError',
+		},
+		maps => {
+		    Model => ['OurSite::Model', 'Bivio::Biz::Model'],
+		    Type => ['OurSite::Type', 'Bivio::Type'],
+		    HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		    HTMLFormat => ['Bivio::UI::HTML::Format'],
+		    MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+		    FacadeComponent => ['OurSite::UI', 'Bivio::UI'],
+		    Facade => ['OurSite::UI::Facade'],
+		    Action => ['OurSite::Action', 'Bivio::Biz::Action'],
+		},
+	    },
+	});
+    }
 
 =cut
 
-sub initialize {
-    warn('DEPRECATED Bivio::IO::Config->initialize call at '
-	    .join(' ', caller)."\n");
-    return;
+sub merge {
+    my($proto, $custom, $defaults) = @_;
+
+    # Make a copy, so we don't modify original values in defaults
+    my($result) = {%$defaults};
+    while (my($key, $value) = each(%$custom)) {
+	# Recurse if custom and default are both hashes
+	$result->{$key} = ref($result->{$key}) eq 'HASH'
+		&& ref($value) eq 'HASH'
+		? $proto->merge($value, $result->{$key})
+		: $value;
+    }
+    return $result;
 }
 
 =for html <a name="register"></a>
