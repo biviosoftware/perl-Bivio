@@ -261,7 +261,7 @@ sub _upgrade_add_new_ec_columns {
 
     _add_column('ec_subscription_t', 'ec_payment_id', 'NUMBER(18)');
     _add_column('ec_payment_t', 'salesperson_id', 'NUMBER(18)');
-    _add_column('ec_payment_t', 'service', 'NUMBER(2)', 0);
+    _add_column('ec_payment_t', 'service', 'NUMBER(2)');
 
     return;
 }
@@ -585,6 +585,12 @@ sub _upgrade_map_columns {
             WHERE ec_payment_id=?',
 	    [$subscription_type, $ec_payment_id]);
     }
+
+    Bivio::SQL::Connection->execute('
+        UPDATE ec_payment_t
+        SET service=0
+        WHERE service IS NULL',
+	[]);
 
     return;
 }
