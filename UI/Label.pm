@@ -241,37 +241,37 @@ _compile([
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
-    CLUB_ACCOUNTING_REPORT_BALANCE_SHEET => ['Balance Sheet Report'],
-    CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
+    CLUB_ACCOUNTING_REPORT_BALANCE_SHEET => ['Balance Sheet'],
+    CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Accounts'],
     CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE => [
-	    'Performance Comparison Report'],
+	    'Performance Comparison'],
     CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL => [
-	    'Journal Report'],
+	    'Transaction Ledger'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
-	'Income and Expense Report'],
+	'Income Statement'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
-	'Investment Performance Report'],
+	'Investment Performance'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL => [
-	'Investment Performance Detail Report'],
+	'Investment Performance Detail'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => [
-	'Capital Gains and Losses Report'],
-    CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
+	'Capital Gains and Losses'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investments'],
     CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
-	'Member Tax Allocation Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE => ['Member Performance Report'],
+	'Member Tax Allocations'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE => ['Member Performance'],
     CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL => [
-	    'Member Performance Detail Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Member Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
+	    'Member Performance Detail'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Members'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal'],
     # Not really a report, but on the report page
     CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST => [
 	'Member Withdrawal Summary'],
     CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => [
-	'Miscellaneous Income and Deductions Report'],
+	'Income and Expense History'],
     CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY => [
-	'Transaction History Report'],
-    CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
+	'Transaction History'],
+    CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation (NAV)'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],

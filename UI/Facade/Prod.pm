@@ -248,9 +248,12 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->initialize_standard_support;
 	    $fc->value(want_secure => 1);
 
+	    # Used by standard_page/body.
+	    $fc->group(footer_widget => $fc->get_standard_footer);
+
 	    # These are required names, which are checked by page.
-	    $fc->group(page_widget => $fc->get_standard_page);
 	    $fc->group(header_widget => $fc->get_standard_header);
+	    $fc->group(page_widget => $fc->get_standard_page);
 	    $fc->group(logo_widget => $fc->get_standard_logo);
 	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(header_height => $fc->get_standard_header_height);

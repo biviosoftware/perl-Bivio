@@ -109,20 +109,23 @@ sub get_logo {
 
 =for html <a name="get_standard_body"></a>
 
-=head2 static get_standard_body() : Bivio::UI::HTML::Widget
+=head2 get_standard_body() : Bivio::UI::HTML::Widget
 
 Returns a Join widget which can be passed to
 I<body> attribute of
 L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>.
 
+The attribute I<header_widget> and I<footer_widget>
+must be defined on I<self>.
+
 =cut
 
 sub get_standard_body {
-    my($proto) = @_;
+    my($self) = @_;
     return $_W->join([
-	$proto->get_standard_header(),
+	$self->get_value('header_widget'),
 	$_W->indirect(['page_scene']),
-	$proto->get_standard_footer(),
+	$self->get_value('footer_widget'),
     ]);
     return;
 }
@@ -404,20 +407,21 @@ sub get_standard_logo {
 
 =for html <a name="get_standard_page"></a>
 
-=head2 static get_standard_page() : Bivio::UI::HTML::Widget::Page
+=head2 get_standard_page() : Bivio::UI::HTML::Widget::Page
 
-Returns a Page widget combined of a L<get_standard_head|"get_standard_head">
-and L<get_standard_body|"get_standard_body">.
+Returns a Page widget combined of a L<get_standard_style|"get_standard_style">
+L<get_standard_body|"get_standard_body">, and
+L<get_standard_head|"get_standard_head">.
 
 =cut
 
 sub get_standard_page {
-    my($proto) = @_;
+    my($self) = @_;
     $_W->load_class('Page');
     return Bivio::UI::HTML::Widget::Page->new({
-	head => $proto->get_standard_head(),
-	body => $proto->get_standard_body(),
-	style => $proto->get_standard_style(),
+	head => $self->get_standard_head(),
+	body => $self->get_standard_body(),
+	style => $self->get_standard_style(),
     });
 }
 
