@@ -366,6 +366,10 @@ _compile(\%_MAP, [
 	'Member Withdrawal Summary',
     CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS =>
 	'Income and Expense History',
+    CLUB_ACCOUNTING_REPORT_SELF_PERFORMANCE_DETAIL => [
+	'' => 'Member Performance Detail',
+	help_topic => 'Member Performance Detail Report',
+    ],
     CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY => 'Transaction History',
     CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => [
 	'' => 'Valuation (NAV)',

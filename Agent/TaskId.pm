@@ -2105,7 +2105,21 @@ my(@_CFG) = (
         NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
-#184
+    [qw(
+        CLUB_ACCOUNTING_REPORT_SELF_PERFORMANCE_DETAIL
+        184
+        CLUB
+        ACCOUNTING_READ&PRO_FUND_INVESTOR
+        ?/accounting/reports/self-performance-detail
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::DateSpanForm
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
+        Bivio::UI::HTML::Club::MemberPerformanceDetailReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
+        help=member-performance-detail-report
+        NOT_FOUND=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
+    )],
         # CLUB_MAIL_ADMIN_RECEIVE has permission LOGIN
         # (and not MAIL_WRITE) so that there are no restrictions
         # on who can send a message to <club>-owner. Even if a club
