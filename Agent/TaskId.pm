@@ -2209,16 +2209,7 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
         help=member-performance-detail-report
     )],
-    [qw(
-        CLUB_HOME_PAGE
-        216
-        CLUB
-        DOCUMENT_READ
-        ?/home
-        Bivio::Biz::Action::PublicRealm
-        Bivio::UI::HTML::Common::HomePage
-        Bivio::UI::HTML::ErrorPages->execute_home_page_parser_error
-    )],
+#216
     [qw(
         CLUB_HEADING_AS_FRAME
         217
