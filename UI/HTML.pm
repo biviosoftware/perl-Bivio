@@ -516,7 +516,9 @@ sub initialize_standard_support {
     # May be overridden.
     my($uri) = $self->get_facade->unsafe_get('uri');
     my($attrs) = {};
-    if ($uri) {
+
+    # Fix up the uri for this facade.  "www" is the prod facade's uri
+    if ($uri && $uri ne 'www') {
 	my($http_host) = Bivio::Agent::Request->get_current->get('http_host');
 	$http_host =~ s/^(?:www\.)?/$uri./;
 	$attrs->{http_host} = $http_host;
@@ -598,6 +600,20 @@ sub internal_initialize_value {
 	}
     }
     $value->{value} = $v;
+    return;
+}
+
+=for html <a name="setup_request"></a>
+
+=head2 setup_request(Bivio::Agent::Request req)
+
+Initializes facade-based attributes.
+
+=cut
+
+sub setup_request {
+    my($self, $req) = @_;
+    $req->put(%{$self->get_value('request_attrs')});
     return;
 }
 
