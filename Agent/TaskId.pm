@@ -129,7 +129,7 @@ my(@_CFG) = (
         6
         GENERAL
         DOCUMENT_READ
-        hm/tour.html
+        hm/tour_new/index.html
         Bivio::Biz::Action::HTTPDocument
     )],
 #TODO: This is only temporary (ha!).  It names the demo_club
@@ -1674,6 +1674,14 @@ my(@_CFG) = (
         pub/my_site
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=USER_HOME
+    )],
+    [qw(
+        HELP
+        159
+        GENERAL
+        DOCUMENT_READ
+        hp/index.html
+        Bivio::Biz::Action::HTTPDocument
     )],
 );
 

@@ -110,7 +110,7 @@ _compile(
     CLUB_ACCOUNTING => ['Accounting'],
     CLUB_COMMUNICATIONS => ['Communications'],
 
-    REALM_CHOOSER => ['Select Area'],
+    REALM_CHOOSER => ['Select Site'],
 
     # Tasks
     CLUB_LEGACY_INVITE => ['Bring Members Online'],
@@ -119,8 +119,8 @@ _compile(
     CLUB_LEGACY_UPLOAD => ['Import Club Accounting'],
     CLUB_ADMIN_TOOLS => ['Administration Tools'],
     CLUB_ADMIN_INVITE => ['Add Members'],
-    CLUB_HOME => ['Your Club Area'],
-    USER_HOME => ['Your Personal Area'],
+    CLUB_HOME => ['Club Site'],
+    USER_HOME => ['My Site'],
     CLUB_ACCOUNTING_PAYMENT => ['Payments'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     LOGOUT => ['Logout'],
@@ -138,6 +138,8 @@ _compile(
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Investment Sale Gain/(Loss)'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
 	'Income and Expense Statement'],
+    HTTP_DOCUMENT => ['Home Page'],
+    HELP => ['Help'],
 );
 
 =head1 METHODS
