@@ -79,10 +79,11 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(ListModel model, array rows, int max, string where_clause, string value, ...) : boolean
+=head2 find(ListModel model, array rows, int index, int max, string where_clause, string value, ...) : boolean
 
 Loads the specified rows with data using the parameterized where_clause
 and substitution values. At most the specified max rows will be loaded.
+Data will be loaded starting at the specified index into the result set.
 
 =cut
 
