@@ -413,7 +413,6 @@ sub _create_edit {
 	$attrs->{label_on_field} = 0;
 	return Bivio::UI::HTML::Widget::Checkbox->new({
 	    field => $field,
-	    label => Bivio::UI::Label->get_simple($field),
 	    %$attrs,
 	});
     }
