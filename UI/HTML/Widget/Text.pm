@@ -185,8 +185,6 @@ sub render {
 	$fields->{prefix} = '<input type='
 		.($type->is_password ? 'password' : 'text')
 		.' size='.$s.' maxlength='.$w;
-	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
-		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
 	$fields->{initialized} = 1;
     }
@@ -194,6 +192,8 @@ sub render {
     # Name
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
+	$field, $source) if $fields->{handler};
     $$buffer .= ' readonly' unless $form->is_field_editable($field);
 
     # Format if provided

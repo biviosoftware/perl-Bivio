@@ -240,16 +240,14 @@ sub render {
     my($field) = $fields->{field};
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<select ';
-	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
-		$field, $source) if $fields->{handler};
-	$fields->{prefix} .= ' name=';
-
+	$fields->{prefix} = '<select name=';
 	$fields->{initialized} = 1;
     }
 
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
+	$field, $source) if $fields->{handler};
     $$buffer .= ' size='.$self->get_or_default('size', 1);
     $$buffer .= ' disabled' if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};

@@ -163,8 +163,6 @@ sub render {
 	# allow extra size padding for IE 5.5 with small style
 	$fields->{prefix} = "<input type=text size="
 		.($width  + 2)." maxlength=$width";
-	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
-		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
 	$fields->{suffix} = '">';
 	$fields->{initialized} = 1;
@@ -173,6 +171,8 @@ sub render {
     # If field in error, just return the value user entered
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
+	$field, $source) if $fields->{handler};
     $$buffer .= ' readonly' unless $form->is_field_editable($field);
     $$buffer .= ' value="';
  SWITCH:
