@@ -368,8 +368,23 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_http {
     my($self) = shift;
     # Must be @_ so format_uri handles overloading properly
-    return 'http://' . $self->get('http_host')
-	    . $self->format_uri(@_);
+    return $self->format_http_prefix.$self->format_uri(@_);
+}
+
+=for html <a name="format_http_prefix"></a>
+
+=head2 format_http_prefix() : string
+
+Returns the http or https prefix for this http_host.  Does not add
+trailing '/'
+
+=cut
+
+sub format_http_prefix {
+    my($self) = @_;
+    # If is_secure is not set, default to non-secure
+    return ($self->unsafe_get('is_secure') ? 'https://' : 'http://')
+	.$self->get('http_host');
 }
 
 =for html <a name="format_mailto"></a>
