@@ -154,9 +154,10 @@ sub render {
 	$fields->{value}->render($source, \$suffix);
 	$suffix .= '</a>';
 
+	my($is_constant) = $fields->{value}->is_constant;
 	# If the value is constant, then have {suffix} and no {value}
 	$fields->{suffix} = $suffix, delete($fields->{value})
-		if $fields->{is_constant} = $fields->{value}->is_constant;
+		if $is_constant;
 
 	# Render the href.  If it is constant, then {href} won't be defined
 	$$buffer .= $fields->{prefix};
@@ -164,9 +165,9 @@ sub render {
 	    # href isn't constant, so just use suffix optimization if available
 	    $$buffer .= ' href="'.Bivio::Util::escape_html(
 		    $source->get_widget_value(@{$fields->{href}})).'"';
-	    $fields->{is_constant} = 0;
+	    $is_constant = 0;
 	}
-	elsif ($fields->{is_constant}) {
+	elsif ($is_constant) {
 	    # Everything is constant.  Delete other fields and store constant
 	    $fields->{value} = $fields->{prefix} . $fields->{suffix};
 	    delete($fields->{prefix});
@@ -176,6 +177,7 @@ sub render {
 	# Finish first rendering.  Suffix contains value.
 	$$buffer .= $suffix;
 	$fields->{is_initialized} = 1;
+	$fields->{is_constant} = $is_constant;
 	return;
     }
     # Not a constant, render href (if needed) and value.
