@@ -41,6 +41,8 @@ invalid RealmName names.  Syntax is limited.
 
 Name used for the demo club.
 
+#TODO: Make a config param
+
 =cut
 
 sub DEMO_CLUB {
@@ -52,6 +54,8 @@ sub DEMO_CLUB {
 =head2 DEMO_CLUB_SUFFIX : string
 
 Suffix for a user's demo club.
+
+#TODO: Make a config param
 
 =cut
 
@@ -65,10 +69,26 @@ sub DEMO_CLUB_SUFFIX {
 
 Returns prefix character for shadow names.
 
+#TODO: Make a config param
+
 =cut
 
 sub SHADOW_PREFIX {
     return '=';
+}
+
+=for html <a name="SITE_SEARCH"></a>
+
+=head2 SITE_SEARCH : string
+
+Returns the club name for the site search.
+
+#TODO: Make a config param
+
+=cut
+
+sub SITE_SEARCH {
+    return 'bivio_site_search';
 }
 
 =for html <a name="TEST_SUFFIX"></a>
@@ -76,6 +96,8 @@ sub SHADOW_PREFIX {
 =head2 TEST_SUFFIX : string
 
 Convention which identifies of test clubs and users.
+
+#TODO: Make a config param
 
 =cut
 
