@@ -239,9 +239,10 @@ sub _handle_hidden {
     my($name) = $attr->{name};
     my($value) = $attr->{value};
 
-    my($form) = $fields->{$fields->{currentform}};
+    my($form) = $fields->{forms}->{$fields->{currentform}};
     
     _trace('Form $form->{name} hidden field: $name') if $_TRACE;
+    $form->{hidden_fields} = {} unless (defined ($form->{hidden_fields}));
     $form->{hidden_fields}->{$name} = $value;
 
     return;
@@ -275,12 +276,17 @@ sub _handle_submit {
     my($name) = $attr->{name};
     my($value) = $attr->{value};
 
-    my($form) = $fields->{form}->{$fields->{currentform}};
-    
-    if ($name) {
-	_trace('push \@{$form->{name}}->{$value}, $name)')
-		if $_TRACE;
-	push (@{$form->{$value}}, $name);
+    unless (defined ($name)) {
+	$name = "unnamed-".$fields->{unnamed_count};
+	$fields->{unnamed_count}++;
+    }
+
+    if (defined ($fields->{currentform})) {
+	my($form) = $fields->{forms}->{$fields->{currentform}};
+	_trace('push \@{$form->{name}}->{$value}, $name)') if $_TRACE;
+#	push (@{$form->{$value}}, $name);
+	$form->{submit} = {} unless (defined ($form->{submit}));
+	$form->{submit}->{$value} = $name;
     }
     
     return;
@@ -300,7 +306,7 @@ sub _handle_text_password_file_textarea {
     my($text) = $fields->{currenttext};
     my($out);
 
-    my($form) = $fields->{form}->{$fields->{currentform}};
+    my($form) = $fields->{forms}->{$fields->{currentform}};
     
     Bivio::Die->die ("No text found associated with input field: $origtext")
 		unless defined ($text);
@@ -377,7 +383,6 @@ sub _parse_end_form {
     my($fields) = $self->{$_PACKAGE};
     delete $fields->{currentform};
     delete $fields->{currenttext};
-    delete $fields->{form};
     return;
 }
 
@@ -410,7 +415,7 @@ sub _parse_end_tr {
 #
 sub _parse_input_checkbox {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_radio_checkbox($self, $attr, $origtext);
+    $self->_handle_radio_checkbox($attr, $origtext);
     return;
 }
 
@@ -420,7 +425,7 @@ sub _parse_input_checkbox {
 #
 sub _parse_input_file {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_text_password_file_textarea($self, $attr, $origtext);
+    $self->_handle_text_password_file_textarea($attr, $origtext);
     return;
 }
 
@@ -430,7 +435,7 @@ sub _parse_input_file {
 #
 sub _parse_input_hidden {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_hidden($self, $attr, $origtext);
+    $self->_handle_hidden($attr, $origtext);
     return;
 }
 
@@ -440,7 +445,7 @@ sub _parse_input_hidden {
 #
 sub _parse_input_password {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_text_password_file_textarea($self, $attr, $origtext);
+    $self->_handle_text_password_file_textarea($attr, $origtext);
     return;
 }
 
@@ -450,7 +455,7 @@ sub _parse_input_password {
 #
 sub _parse_input_radio {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_radio_checkbox($self, $attr, $origtext);
+    $self->_handle_radio_checkbox($attr, $origtext);
     return;
 }
 
@@ -460,7 +465,7 @@ sub _parse_input_radio {
 #
 sub _parse_input_submit {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_submit($self, $attr, $origtext);
+    $self->_handle_submit($attr, $origtext);
     return;
 }
 
@@ -470,7 +475,7 @@ sub _parse_input_submit {
 #
 sub _parse_input_text {
     my($self, $attr, $origtext) = @_;
-    $self->_handle_text_password_file_textarea($self, $attr, $origtext);
+    $self->_handle_text_password_file_textarea($attr, $origtext);
     return;
 }
 
