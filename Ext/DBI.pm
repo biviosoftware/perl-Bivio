@@ -84,7 +84,7 @@ sub connect {
     my($cfg) = Bivio::IO::Config->get($database);
 #TODO: Is this really true
     # Mod_perl wipes out %ENV on each request, it seems...
-    $ENV{ORACLE_HOME} ||= $_ORACLE_HOME;
+    $ENV{ORACLE_HOME} ||= $_ORACLE_HOME if $_ORACLE_HOME;
     _trace($cfg->{connection}->get_dbi_prefix($cfg), $cfg->{database}, ':',
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
