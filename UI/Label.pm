@@ -133,6 +133,7 @@ _compile(
 	    Bivio::Type::TaxCategory->FOREIGN_TAX->get_short_desc],
     TOTAL_EXPENSE => ['Total Expense'],
     NET_PROFIT => ['Net Profit/(Loss)'],
+    ALLOCATION_METHOD => ['Allocation Method'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
