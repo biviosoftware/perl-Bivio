@@ -641,6 +641,21 @@ sub link_support {
     return $_MAILTO_SUPPORT;
 }
 
+=for html <a name="link_target_as_html"></a>
+
+=head2 link_target_as_html() : string
+
+Looks up the attribute I<link_target> ancestrally and renders
+it as ' target="XXX"' (with leading space) whatever its value is.
+
+=cut
+
+sub link_target_as_html {
+    my($self) = @_;
+    my($t) = $self->ancestral_get('link_target', undef);
+    return defined($t) ? (' target="'.Bivio::Util::escape_html($t).'"') : '';
+}
+
 =for html <a name="link_tm"></a>
 
 =head2 static link_tm(any label, string task) : Bivio::UI::HTML::Widget::Link

@@ -186,7 +186,7 @@ my(@_CFG) = (
         ?/accounting/reports
         Bivio::Biz::Model::AccountingReportForm
         Bivio::UI::HTML::Club::AccountingReport
-        next=CLUB_HOME
+        next=CLUB_INTRO
     )],
     [qw(
         CLUB_ADMIN_USER_LIST
@@ -402,6 +402,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        help=account-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_DIVIDEND
@@ -413,6 +414,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        help=account-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INCOME
@@ -424,6 +426,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        help=account-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_EXPENSE
@@ -435,6 +438,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        help=account-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_DETAIL_BUY
@@ -534,7 +538,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         demo
 	Bivio::Biz::Action::DemoClubRedirect
-        next=CLUB_HOME
+        next=CLUB_INTRO
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_FEE
@@ -826,6 +830,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
+        help=account-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_INCOME
@@ -1089,6 +1094,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransferForm
         Bivio::UI::HTML::Club::AccountTransfer
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
+        help=account-transactions
     )],
     [qw(
         DEFAULT_ERROR_REDIRECT_NO_RESOURCES
@@ -1243,7 +1249,6 @@ my(@_CFG) = (
 #        ?/test_job
 #        Bivio::Biz::Model::Lock
 #        Bivio::Biz::Action::TestJob
-#        next=CLUB_HOME
 #    )],
     [qw(
         CLUB_LEGACY_UPLOAD
@@ -2190,6 +2195,25 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
+    )],
+    [qw(
+        CLUB_HOME_PAGE
+        216
+        CLUB
+        DOCUMENT_READ
+        ?/home
+        Bivio::Biz::Action::PublicRealm
+        Bivio::UI::HTML::Common::HomePage
+        Bivio::UI::HTML::ErrorPages->execute_home_page_parser_error
+    )],
+    [qw(
+        CLUB_HEADING_AS_FRAME
+        217
+        CLUB
+        DOCUMENT_READ
+        ?/heading-frame
+        Bivio::Biz::Action::PublicRealm
+        Bivio::UI::HTML::Common::HomePage->execute_frame
     )],
 );
 
