@@ -78,7 +78,8 @@ L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
 
 =item require_context
 
-The I<form_model> has C<require_context> defined.
+The I<form_model> has C<require_context> defined, unless
+overriden by the configuration.
 
 =back
 
@@ -110,6 +111,7 @@ use Bivio::DieCode;
 use Bivio::Mail::Common;
 use Bivio::Mail::Message;
 use Bivio::SQL::Connection;
+use Bivio::Type::Boolean;
 # use Bivio::Agent::Job::Dispatcher;
 use Carp ();
 
@@ -223,7 +225,8 @@ sub new {
 	Carp::croak($id->as_string, ": FormModels require \"next=\" item")
 		    unless $attrs->{next};
 	$attrs->{require_context} = $attrs->{form_model}->get_instance
-		->get_info('require_context');
+		->get_info('require_context')
+			unless defined($attrs->{require_context});
 	# default cancel to next unless present
 	$attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
     }
@@ -479,6 +482,11 @@ sub _parse_map_item {
 		$attrs->{help}) unless
 			-r Bivio::Agent::HTTP::Location->get_help_root()
 				.$attrs->{help};
+	return;
+    }
+
+    if ($cause eq 'require_context') {
+	$attrs->{$cause} = Bivio::Type::Boolean->from_literal_or_die($action);
 	return;
     }
 
