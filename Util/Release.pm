@@ -463,11 +463,11 @@ EOF
     echo /b_release_files.list
     echo /b_release_files.exclude
 } > $_EXCLUDE_LIST
-{
+(
     # Protect against error exit
     %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST
 EOF
-            $res .= '} ';
+            $res .= ') ';
             if ($prefix) {
 		my($p) = $prefix;
 		$p =~ s/(\W)/\\$1/g;
