@@ -31,6 +31,7 @@ HTML pages and attempts to determine their semantic content.  It is
 never concerned with the original HTML.
 
 To do: remove $self->{'Bivio::Test::HTMLParser'} = $p in new().
+Add 'escaping' to gen_form_get().
 
 =cut
 
@@ -139,6 +140,27 @@ sub find_row_by_content {
     }
   
     return undef;
+}
+
+=for html <a name="gen_form_uri"></a>
+
+=head2 gen_form_uri(Bivio::Test::HTMLAnalyzer self, string name) : array_ref 
+
+Generate the URI and passed data for the named form.
+
+=cut
+
+sub gen_form_uri {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # dispatch the appropriate handler.
+    my($form_name) = $fields->{$name}->{form_name};
+    my($method) = $fields->{$name}->{forms}->{$form_name}->{method};
+    $method = 'post' if ($method =~ /^post$/io);
+    $method = 'get' if ($method =~ /^get$/io);
+    $method = '_gen_form_'.$method;
+    return &{\&{$method}}($self, $fields->{$name}->{forms}->{$form_name});
 }
 
 =for html <a name="get_form_action"></a>
@@ -419,6 +441,67 @@ sub _find_tos {
 	}
     }
     return;
+}
+
+# _gen_form_get(Bivio::Test::HTMLAnalyzer self, hash_ref p) : array_ref
+#
+# Generate the URI and data for a "GET" form.
+#
+sub _gen_form_get {
+    my($self, $form) = @_;
+    my($results) = $form->{action};
+    my($key);
+
+    $results .= '?';
+
+    if (defined($form->{fields})) {
+	foreach $key (keys(%{$form->{fields}})) {
+	    $results .= $form->{fields}->{$key}->{name};
+	    $results .= '='.$form->{fields}->{$key}->{value}
+		    if (defined($form->{fields}->{$key}->{value}));
+	    $results .= '&';
+	}
+    }
+    if (defined($form->{hidden_fields})) {
+	foreach $key (keys(%{$form->{hidden_fields}})) {
+	    $results .= $form->{hidden_fields}->{$key}->{name};
+	    $results .= '='.$form->{hidden_fields}->{$key}->{value}
+		    if (defined($form->{hidden_fields}->{$key}->{value}));
+	    $results .= '&';
+	}
+    }
+    chomp ($results);
+
+    return \@{[ $results ]};
+}
+
+# _gen_form_post(Bivio::Test::HTMLAnalyzer self, hash_ref p) : array_ref
+#
+# Generate the URI and data for a "POST" form.
+#
+sub _gen_form_post {
+    my($self, $form) = @_;
+    my($data) = [];
+    my($key);
+
+    if (defined($form->{fields})) {
+	foreach $key (keys(%{$form->{fields}})) {
+	    my($line) = $form->{fields}->{$key}->{name};
+	    $line .= '='.$form->{fields}->{$key}->{value}
+		    if (defined($form->{fields}->{$key}->{value}));
+	    push(@{$data}, $line);
+	}
+    }
+
+    if (defined($form->{hidden_fields})) {
+	foreach $key (keys(%{$form->{hidden_fields}})) {
+	    my($line) = $form->{hidden_fields}->{$key}->{name};
+	    $line .= '='.$form->{hidden_fields}->{$key}->{value}
+		    if (defined($form->{hidden_fields}->{$key}->{value}));
+	    push(@{$data}, $line);
+	}
+    }
+    return \@{[ $form->{action}, $data ]};
 }
 
 	
