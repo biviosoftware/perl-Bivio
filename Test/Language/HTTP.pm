@@ -524,7 +524,7 @@ sub verify_local_mail {
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($email_match);
-    $email = qr{\Q$email}
+    $email = qr{\Q$email}i
 	unless ref($email);
     for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
 	if (my(@found) = map({
@@ -866,15 +866,6 @@ sub _log {
 	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
 	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
     return;
-}
-
-# _regexp(string_or_regexp_ref pattern) : regexp_ref
-#
-# Coerce the given I<pattern> into a regexp_ref if it isn't one already.
-#
-sub _regexp {
-    my($pattern) = shift;
-    return (ref($pattern) eq 'Regexp') ? $pattern : qr{\Q$pattern};
 }
 
 # _send_request(self, HTTP::Request request)
