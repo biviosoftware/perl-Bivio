@@ -638,6 +638,7 @@ Value',
     HELP_FONT_SIZE => 'Font Size',
     HELP_PRICE_DATABASE => 'Price Database',
     HELP_EXPENSE_ALLOCATION_METHODS => 'Expense Allocation Methods',
+    HELP_SUSPENSE_ACCOUNT => 'Suspense Account',
 
     # Help links
     WHATS_THIS => "[what's this?]",
