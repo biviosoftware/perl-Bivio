@@ -208,6 +208,7 @@ sub _fixup_outer_join {
 	    || Bivio::Die->die('failed to find outer join: ', $sql);
 	push(@$relations, [$3, $4]);
     }
+    return unless @$relations;
     Bivio::Die->die('too weird outer join: ', $sql)
 	if $sql =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
     my($joins) = {};
