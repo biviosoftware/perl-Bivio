@@ -27,8 +27,9 @@ use Bivio::UI::HTML::Widget;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Table> renders a
-L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
-
+L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table. Headings with a
+single '-' character are converted to Bivio::UI::HTML::Widget::HorizontalRule
+instances at initialization.
 
 =head1 TABLE ATTRIBUTES
 
@@ -129,6 +130,7 @@ If true, the column won't wrap text.
 #=IMPORTS
 use Bivio::UI::Align;
 use Bivio::UI::Color;
+use Bivio::UI::HTML::Widget::HorizontalRule;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -262,11 +264,19 @@ sub _init_cell {
     my($self, $cells, $attrs, $cell) = @_;
 
     unless (UNIVERSAL::isa($cell, 'Bivio::UI::HTML::Widget')) {
-	$cell = Bivio::UI::HTML::Widget::String->new({
+	# replace '-' with a HR
+	if ($cell eq '-') {
+	    $cell = Bivio::UI::HTML::Widget::HorizontalRule->new({
+		noshade => 1,
+	    });
+	}
+	else {
+	    $cell = Bivio::UI::HTML::Widget::String->new({
 		value => $cell,
 		# Make a copy
 		%$attrs,
-	});
+	    });
+	}
     }
     else {
 	my($a);
