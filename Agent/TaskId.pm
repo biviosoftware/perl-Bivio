@@ -1648,6 +1648,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/investment_sale
         Bivio::Biz::Action::ReportDate
+        Bivio::Type::ScheduleDParams->execute_show_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
@@ -1712,22 +1713,38 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/tax99/f1065/test
         Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Type::ScheduleDParams->execute_hide_distributions
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::Biz::Model::ScheduleDForm
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form
         Bivio::UI::HTML::FormDump
         next=CLUB_ACCOUNTING_TAX99_F1065_TEST
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_SCHEDULE_D_TEST
+        CLUB_ACCOUNTING_TAX99_F1065K1_TEST
         163
         CLUB
         ACCOUNTING_READ
-        ?/accounting/tax99/schedule_d/test
+        ?/accounting/tax99/f1065k1/test
+        Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
-        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
-        Bivio::Biz::Model::ScheduleDForm
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::WithdrawnAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::F1065K1Form
         Bivio::UI::HTML::FormDump
-        next=CLUB_ACCOUNTING_TAX99_SCHEDULE_D_TEST
+        next=CLUB_ACCOUNTING_TAX99_F1065_TEST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_TEST
+        164
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/tax99/test
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::UI::HTML::Club::TaxTest
     )],
 );
 
