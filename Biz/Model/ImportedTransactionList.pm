@@ -32,7 +32,7 @@ C<Bivio::Biz::Model::ImportedTransactionList> imported account sync txns
 
 #=IMPORTS
 use Bivio::Biz::Action::EditTransaction;
-use Bivio::Biz::Model::RealmTransaction;
+use Bivio::Biz::Model::AccountTransactionList;
 use Bivio::Type::EntryType;
 
 #=VARIABLES
@@ -153,25 +153,20 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="internal_post_load_row"></a>
+=for html <a name="internal_load"></a>
 
-=head2 internal_post_load_row(hash_ref row)
+=head2 internal_load(array_ref rows, Bivio::SQL::ListQuery query)
 
-Generates a remark for the row.
+Generates the appropriate remark for entries whose source is an instrument
+or member.
 
 =cut
 
-sub internal_post_load_row {
-    my($self, $row) = @_;
-
-    return if $row->{'RealmTransaction.source_class'}
-	    == Bivio::Type::EntryClass::CASH();
-
-    # generate a remark for each row (slow)
-    $row->{'RealmTransaction.remark'} = Bivio::Biz::Model::RealmTransaction
-	    ->new($self->get_request)->load(realm_transaction_id =>
-		    $row->{'RealmTransaction.realm_transaction_id'})
-		    ->generate_entry_remark();
+sub internal_load {
+    my($self, $rows, $query) = @_;
+    $self->SUPER::internal_load($rows, $query);
+    Bivio::Biz::Model::AccountTransactionList->generate_remarks(
+	    $self, 'RealmTransaction.remark', 1);
     return;
 }
 
