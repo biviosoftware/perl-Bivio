@@ -120,6 +120,7 @@ sub new {
 	$incoming->get_body(\$body);
 	$fields->{body} = $body;
 	$fields->{headers} = $incoming->get_headers();
+        $fields->{env_from} = $incoming->get_from();
     }
     else {
 	$fields->{headers} = {};
@@ -164,7 +165,7 @@ sub send {
     my($fields) = $self->{$_PACKAGE};
     my($msg) = $self->as_string;
     Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0, 
-                              $fields->{sender});
+                              $fields->{env_from});
 }
 
 =for html <a name="set_body"></a>
@@ -220,6 +221,8 @@ sub set_headers_for_list_send {
     $reply_to_list && ($headers->{'reply-to'} = 'Reply-' . $headers->{to});
     # If there is no From:, add it now.
     $headers->{from} ||= "From: owner-$list_name\n";
+    # Set the envelope FROM which is used for bounces
+    $fields->{env_from} = "owner-$list_name";
     # Insert the list in the subject, if not already there
 #TODO: Need to upcase $list_name appropriately, e.g. Cosmic:, not cosmic:.
     if ($list_in_subject) {
