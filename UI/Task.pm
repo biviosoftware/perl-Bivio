@@ -57,7 +57,7 @@ values within the same uri component, e.g. my-component vs. my_component.
 Dashes are readable when underlined and they are legal URI characters.
 
 A I<uri> may contain a realm name (see special characters below).  We restrict
-vvthis to the top level name in the space.  This is an efficiency concern, but it
+this to the top level name in the space.  This is an efficiency concern, but it
 is also pragmatic.  It enforces a practical naming convention which allows you
 to avoid collisions between reserved realm names (see
 L<Bivio::Type::RealmName|Bivio::Type::RealmName>) and URI components.  Indeed

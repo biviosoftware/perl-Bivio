@@ -62,6 +62,10 @@ displays month/day.
 
 displays MONTH day, year
 
+=item FULL_MONTH_AND_YEAR_UC
+
+displays MONTH, year
+
 =back
 
 =cut
@@ -78,6 +82,7 @@ __PACKAGE__->compile([
     MONTH_NAME_AND_DAY_NUMBER => [4],
     MONTH_AND_DAY => [5],
     FULL_MONTH_DAY_AND_YEAR_UC => [6],
+    FULL_MONTH_AND_YEAR_UC => [7],
 ]);
 
 #=PRIVATE METHODS

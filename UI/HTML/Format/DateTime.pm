@@ -95,6 +95,9 @@ sub get_widget_value {
     return uc($_MONTH_NAMES[$mon]).' '.$mday.', '
 	.$year.($no_timezone ? '': ' GMT')
 	if $mode == Bivio::UI::DateTimeMode->FULL_MONTH_DAY_AND_YEAR_UC;
+    return uc($_MONTH_NAMES[$mon]).', '
+	.$year.($no_timezone ? '': ' GMT')
+	if $mode == Bivio::UI::DateTimeMode->FULL_MONTH_AND_YEAR_UC;
     return sprintf('%02d/%02d', $mon, $mday).($no_timezone ? '': ' GMT')
 	    if $mode == Bivio::UI::DateTimeMode->MONTH_AND_DAY;
     Bivio::Die->throw_die('DIE', {
