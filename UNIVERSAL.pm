@@ -6,27 +6,20 @@ $Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UNIVERSAL - base class for all bivio modules
+Bivio::UNIVERSAL - base class for all bivio classes
 
 =head1 SYNOPSIS
 
     use Bivio::UNIVERSAL;
-    @ISA = qw(Bivio::Universal);
-
-    my($_PACKAGE) = __PACKAGE__;
-
-    sub new {
-	my($self) = &Bivio::UNIVERSAL::new(@_);
-	$self->{$_PACKAGE} = {'field1' => 'value1'};
-	return $self;
-    }
 
 =cut
 
 =head1 DESCRIPTION
 
-C<Bivio::UNIVERSAL> is the base class for all bivio modules.  All of the
+C<Bivio::UNIVERSAL> is the base class for all bivio classes.  All of the
 methods defined here may be overriden.
+
+Please note the example use of new.
 
 =cut
 
@@ -41,6 +34,23 @@ methods defined here may be overriden.
 =head2 static new(string name) : Bivio::UNIVERSAL
 
 Creates and blesses the object.
+
+This is how you should always create objects:
+
+    my($_PACKAGE) = __PACKAGE__;
+
+    sub new {
+	my($self) = MySuperClass::new(@_);
+	$self->{$_PACKAGE} = {'field1' => 'value1'};
+	return $self;
+    }
+
+All instances in Bivio's object space use this form.  This is the
+only "bless" in the system.  There are several advantages of this.
+Firstly, bless is inefficient and reblessing is an unnecessary
+operation.  Secondly, all object creations go through this one
+method, so we can track object allocations by adding just a little
+bit of code.
 
 =cut
 
