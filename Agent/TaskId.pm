@@ -3044,6 +3044,16 @@ my(@_CFG) = (
         ?/offline
         Bivio::UI::HTML::User::MemberOfflineConfirmation
     )],
+    [qw(
+        CLUB_ADMIN_CLUB_DELETE
+        266
+        CLUB
+        ADMIN_WRITE
+        ?/admin/info/delete-club
+        Bivio::Biz::Model::ClubDeleteForm
+        Bivio::UI::HTML::Club::Delete
+        next=USER_HOME
+    )],
 );
 
 __PACKAGE__->compile([
