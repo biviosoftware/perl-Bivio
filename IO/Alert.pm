@@ -7,7 +7,7 @@ $_ = $Bivio::IO::Alert::VERSION;
 
 =head1 NAME
 
-Bivio::IO::Alert - error messages for servers and programs
+Bivio::IO::Alert - safely formatted error messages and warnings
 
 =head1 SYNOPSIS
 
@@ -20,28 +20,34 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::IO::Alert> outputs error messages for programs and servers.  It also
-intercepts C<$SIG{__DIE__}> and C<$SIG{__WARN__}> if configured to
-do so.
+C<Bivio::IO::Alert> formats warnings and error messages safely.
+If there is an C<undef> as one of the arguments to L<warn|"warn">,
+L<warn_simply|"warn_simply">, or L<info|"info">.
+
+You should use L<warn|"warn"> instead of C<CORE::warn>, because special
+case arguments (C<undef>) are handled correctly, output length is limited
+on each argument, and data structures are printed instead of references.
+
+Bivio::IO::Alert intercepts C<$SIG{__WARN__}> if configured to do so.
 
 Policies: C<intercept_warn> should probably be set.  This prevents warnings
-from going into the bit bucket.  C<intercept_die> should probably not be set.
-Instead L<eval_or_warn|"eval_or_warn"> should be used.  This allows for
-exceptions to be ignored when they are part of the normal part of operations.
-It is probably best to use C<CORE::warn> and C<CORE::die> instead of the
-redefinitions here.
+from going into the bit bucket.  C<stack_trace_warn> is useful in production
+systems, because undefined (scalar) value messages are warnings in perl and not
+fatal.
 
 C<max_warnings> in any given program invocation is limited to
 a (default) 1000. You can L<reset_warn_counter|"reset_warn_counter">,
 which is typically used by servers.  Use L<info|"info"> to avoid
-this warn counter behavior in I<limited cases>.
+this warn counter behavior in I<limited cases>. reset_warn_counter is
+called by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> on
+entry.
 
 =cut
 
 #=VARIABLES
 my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER, $_LOG_FILE,
 	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
-        $_STACK_TRACE_DIE, $_STACK_TRACE_WARN, $_MAX_WARNINGS, $_WARN_COUNTER);
+        $_STACK_TRACE_WARN, $_MAX_WARNINGS, $_WARN_COUNTER);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
@@ -51,13 +57,13 @@ BEGIN {
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_WANT_PID = 0;
     $_WANT_TIME = 0;
-    $_STACK_TRACE_DIE = 0;
     $_STACK_TRACE_WARN = 0;
     $_MAX_WARNINGS = 1000;
     $_WARN_COUNTER = $_MAX_WARNINGS;
 }
 
 #=IMPORTS
+# Should not important anything else.
 use Bivio::IO::Config;
 use Carp ();
 
@@ -71,13 +77,8 @@ eval 'use MIME::Parser ();';
 #use Sys::Syslog ();
 
 #=VARIABLES
-# Normalize error messages
-# $SIG{__DIE__} = \&_initial_die_handler;
-# $SIG{__WARN__} = \&_warn_handler;
 my($_LAST_WARNING);
 Bivio::IO::Config->register({
-    intercept_die => 0,
-    stack_trace_die => 0,
     intercept_warn => 1,
     stack_trace_warn => 0,
     log_facility => 'daemon',
@@ -94,42 +95,30 @@ Bivio::IO::Config->register({
 
 =cut
 
-=for html <a name="die"></a>
+=for html <a name="bootstrap_die"></a>
 
-=head2 static die(string arg1, ...)
+=head2 static bootstrap_die(string arg1, ...)
 
-Sends a warning message to the alert log and then calls C<CORE::die>
-with "\n".
+You should use L<Bivio::Die::die|Bivio::Die/"die">, not this method.
+
+Called by I<low level classes> in bOP which are used by
+L<Bivio::Die|Bivio::Die>.
+
+This method tries to call L<Bivio::Die::die|Bivio::Die/"die"> if
+it is defined and loaded.  Bivio::Die does not call this method.
 
 =cut
 
-sub die {
+sub bootstrap_die {
     my($proto) = shift;
+    # If Bivio::Die is loaded, call it so we get cleaner error handling
+    Bivio::Die->die(@_)
+		if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
+			&& UNIVERSAL::can('Bivio::Die', 'die');
+
+    # Otherwise, call CORE::DIE
     CORE::die(_call_format($proto, \@_, 0));
-}
-
-=for html <a name="eval_or_warn"></a>
-
-=head2 eval_or_warn(code sub) : result
-
-Calls I<sub> and if it throws an exception, prints a warning.
-Returns the result of the subroutine or undef.
-
-=cut
-
-sub eval_or_warn {
-    my(undef, $sub) = @_;
-    my($result);
-    eval {
-	$result = &$sub;
-	1;
-    } && return $result;
-    # If the warning was already output, the following operation has
-    # no effect.
-    my($msg) = $@;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    Bivio::IO::Alert->warn($msg);
-    return undef;
+    # DOES NOT RETURN
 }
 
 =for html <a name="format"></a>
@@ -199,11 +188,6 @@ sub get_max_arg_length {
 
 =over 4
 
-=item intercept_die : boolean [false]
-
-If true, installs a C<$SIG{__DIE__}> handler which writes alerts on all
-calls to die.
-
 =item intercept_warn : boolean [true]
 
 If true, installs a C<$SIG{__WARN__}> handler which writes alerts on all
@@ -227,11 +211,6 @@ L<die|"die"> and L<warn|"warn">.
 Maximum number of warnings between L<reset_warn_counter|"reset_warn_counter">
 calls.  By default, L<reset_warn_counter|"reset_warn_counter"> is not
 called, so this is the maximum per program invocation.
-
-=item stack_trace_die : boolean [false]
-
-If true, implies B<intercept_die> is true and will print a stack trace
-on L<die|"die">.
 
 =item stack_trace_warn : boolean [false]
 
@@ -284,11 +263,8 @@ sub handle_config {
     # time, so probably ok.  The low level code shouldn't loop. :-(
     $_WARN_COUNTER = $_MAX_WARNINGS = $cfg->{max_warnings};
 
-    $_STACK_TRACE_DIE = $cfg->{stack_trace_die};
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
 
-    $SIG{__DIE__} = \&_die_handler
-	    if $cfg->{intercept_die} || $cfg->{stack_trace_die};
     $SIG{__WARN__} = \&_warn_handler
 	    if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
 
@@ -324,7 +300,7 @@ Note: If the message consists of a single newline, nothing is output.
 
 sub info {
     my($proto) = shift(@_);
-    int(@_) == 1 && $_[0] eq "\n" && return;
+    int(@_) == 1 && defined($_[0]) && $_[0] eq "\n" && return;
     &$_LOGGER('err', _call_format($proto, \@_));
     return;
 }
@@ -376,13 +352,13 @@ sub set_printer {
 	$_LOGGER = \&_log_stderr if $logger eq 'STDERR';
     }
     elsif ($logger eq 'FILE') {
-	$proto->die('Must specify log file with FILE as printer')
+	$proto->bootstrap_die('Must specify log file with FILE as printer')
 		    unless defined($log_file);
 	$_LOG_FILE = $log_file;
 	$_LOGGER = \&_log_file;
     }
     else {
-	$proto->die('Unknown logger type ', $logger);
+	$proto->bootstrap_die('Unknown logger type ', $logger);
     }
     return;
 }
@@ -407,15 +383,17 @@ sub warn {
 
 =head2 static warn_deprecated(string message)
 
-Puts out a message warning of a deprecated usage.  Must be called
-from the routine whose usage is deprecated.
+Puts out a message warning of a deprecated usage.
 
 =cut
 
 sub warn_deprecated {
     my($proto, $message) = @_;
-    $proto->warn('DEPRECATED: ', (caller(1))[3], ': ', $message,
-	    ' called from ', (caller(2))[0], ':', (caller(2))[2]);
+    my($pkg) = caller(0);
+    my($i) = 0;
+    $i++ while caller($i) eq $pkg;
+    $proto->warn('DEPRECATED: ', (caller($i-1))[3], ': ', $message,
+	    ' called from ', (caller($i))[0], ':', (caller($i))[2]);
     return;
 }
 
@@ -454,11 +432,6 @@ sub _call_format {
 	    $msg);
 }
 
-sub _die_handler {
-    _warn_handler(@_);
-    _trace_stack() if $_STACK_TRACE_DIE;
-    CORE::die("\n");
-}
 
 # _do_warn(proto, array_ref args, boolean simply)
 #
@@ -466,7 +439,7 @@ sub _die_handler {
 #
 sub _do_warn {
     my($proto, $args, $simply) = @_;
-    int(@$args) == 1 && $args->[0] eq "\n" && return;
+    int(@$args) == 1 && defined($args->[0]) && $args->[0] eq "\n" && return;
     $_LAST_WARNING = _call_format($proto, $args, $simply);
     &$_LOGGER('err', $_LAST_WARNING);
     return unless --$_WARN_COUNTER < 0;
@@ -568,18 +541,6 @@ sub _format_string_simple {
 			: $s;
 }
 
-sub _initial_die_handler {
-    my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    CORE::die(_call_format(__PACKAGE__, [$msg]));
-}
-
-sub _initial_warn_handler {
-    my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    print STDERR _call_format(__PACKAGE__, [$msg]);
-}
-
 sub _log_apache {
     my($severity, $msg) = @_;
 #TODO: How to log a "notice" from mod_perl?
@@ -589,7 +550,7 @@ sub _log_apache {
     else {
 	# something has gone wrong at httpd startup, pick
 	# another output medium. (DO NOT CALL die, because
-	# will recurse if intercept_die is true.
+	# will recurse if someone is intercepting __DIE__).
 	_log_stderr(@_);
     }
 }
