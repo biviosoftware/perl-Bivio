@@ -81,6 +81,11 @@ invalid version: user request using invalid or old form, query, or uri
 
 invalid query: user request contains invalid query value
 
+=item REDIRECT_TASK: task_id
+
+redirect task: direct dispatcher to switch to the specified task.
+Transactions, messages, etc. SHOULD NOT be rolled back.
+
 =back
 
 =cut
@@ -145,6 +150,11 @@ __PACKAGE__->compile(
     	10,
 	'invalid query',
 	'user request contains invalid query value',
+    ],
+    REDIRECT_TASK => [
+	11,
+	'redirect task',
+	'direct dispatcher to switch to new task',
     ],
 );
 

@@ -372,6 +372,27 @@ sub handle_config {
     return;
 }
 
+=for html <a name="redirect"></a>
+
+=head2 redirect(Bivio::Agent::TaskId new)
+
+Redirect the current task to the new task.
+
+B<DOES NOT RETURN.>
+
+=cut
+
+sub redirect {
+    my($self, $new) = @_;
+    # Encapsulates the redirect.  Actually has nothing to do with
+    # request, but $req is central mechanism for such things.
+    Carp::croak($new, ': not a task id')
+		unless UNIVERSAL::isa($new, 'Bivio::Agent::TaskId');
+    Bivio::Die->die(Bivio::DieCode::REDIRECT_TASK(),
+	    {task_id => $new});
+    return;
+}
+
 =for html <a name="task_ok"></a>
 
 =head2 task_ok(Bivio::Agent::TaskId task_id) : boolean

@@ -70,14 +70,13 @@ sub new {
 
 =for html <a name="flush"></a>
 
-=head2 abstract flush()
+=head2 flush()
 
 Sends the buffered reply data.
 
 =cut
 
 sub flush {
-    die('abstract method');
 }
 
 =for html <a name="get_output_type"></a>

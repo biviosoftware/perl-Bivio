@@ -45,6 +45,7 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Action;
 use Bivio::Biz::Model;
+use Bivio::DieCode;
 use Bivio::Mail::Common;
 use Bivio::SQL::Connection;
 use Bivio::UI::View;
@@ -111,6 +112,7 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
+#TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_role_execute_task($auth_role, $fields->{id})) {
 	my($auth_user) = $req->get('auth_user');
 	Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
@@ -170,15 +172,16 @@ sub get_by_id {
 
 =for html <a name="handle_die"></a>
 
-=head2 handle_die(string die_msg)
+=head2 handle_die(Bivio::Die die)
 
 Something happened while executing a request, so we have to rollback
-and discard the mail queue.
+and discard the mail queue unless is a REDIRECT_TASK.
 
 =cut
 
 sub handle_die {
-    my($proto, $die_msg) = @_;
+    my($proto, $die) = @_;
+    return if $die->get('code') == Bivio::DieCode::REDIRECT_TASK();
 #TODO: Need to undo mkdir or writes in MailMessage.  Probably push on stack of
 #      commit handlers...??
     Bivio::SQL::Connection->rollback;

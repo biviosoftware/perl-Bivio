@@ -79,23 +79,41 @@ Creates a request and returns a result.
 sub process_request {
     my($self, @protocol_args) = @_;
     Bivio::Agent::Request->clear_current;
-    my($die) = Bivio::Die->catch(sub {
-	my($req) = $self->create_request(@protocol_args);
-	my($auth_realm, $auth_user, $task_id)
-		= $req->get(qw(auth_realm auth_user task_id));
-	my($owner) = $auth_realm->unsafe_get('owner');
-	if ($owner) {
-	    my($f) = $auth_realm->get('owner_id_field');
-	    # owner is put by PropertyModel
-	    $req->put(auth_id => $owner->get('realm_id'),
-		    auth_id_field => $f);
+    my($die, $req, $task_id, $auth_role, $auth_realm, $auth_user);
+    my($max_tries) = 3;
+ TRY: {
+	$die = Bivio::Die->catch(
+		sub {
+		    unless ($req) {
+			$req = $self->create_request(@protocol_args);
+			($auth_realm, $auth_user, $task_id)
+				= $req->get(qw(auth_realm auth_user task_id));
+			my($owner) = $auth_realm->unsafe_get('owner');
+			if ($owner) {
+			    my($f) = $auth_realm->get('owner_id_field');
+			    # owner is put by PropertyModel
+			    $req->put(auth_id => $owner->get('realm_id'),
+				    auth_id_field => $f);
+			}
+			$auth_role = $auth_realm->get_user_role(
+				$auth_user, $req);
+		    }
+		    elsif ($max_tries-- <= 0) {
+			die("too many dispatcher retries");
+		    }
+		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+		    $req->put(auth_role => $auth_role, task => $task);
+		    # Task checks authorization
+		    $task->execute($req);
+		});
+	if ($die && $die->get('code') == Bivio::DieCode::REDIRECT_TASK()) {
+	    my($attrs) = $die->get('attrs');
+	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
+		    if $_TRACE;
+	    $req->put(task_id => ($task_id = $attrs->{task_id}));
+	    redo TRY;
 	}
-	my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
-	my($task) = Bivio::Agent::Task->get_by_id($task_id);
-	$req->put(auth_role => $auth_role, task => $task);
-	# Task checks authorization
-	$task->execute($req);
-    });
+    }
     Bivio::Agent::Request->clear_current;
     return $die;
 }

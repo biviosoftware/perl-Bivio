@@ -190,6 +190,14 @@ my(@_CFG) = (
         _/test
 	Bivio::UI::HTML::View::ClubTest
     )],
+    [qw(
+	CLUB_TEST_REDIRECT
+	16
+        CLUB
+        MEMBER
+        _/redirect
+	Bivio::Biz::Action::ClubTestRedirect
+    )],
 );
 
 __PACKAGE__->compile(

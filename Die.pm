@@ -13,7 +13,7 @@ Bivio::Die - dispatch die_handler in modules on stack
     use Bivio::Die;
     Bivio::Die->catch(sub {});
     sub handle_die {
-	my($proto, $die_msg) = @_;
+	my($proto, $die) = @_;
     }
 
 =cut
