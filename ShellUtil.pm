@@ -886,7 +886,7 @@ TODO: Need to avoid stack trace.
 
 sub usage_error {
     my($self) = shift;
-    Bivio::IO::Alert->warn_simply('ERROR: ', @_);
+    Bivio::IO::Alert->print_literally('ERROR: ', @_);
     Bivio::Die->throw_quietly('DIE');
     # DOES NOT RETURN
 }
