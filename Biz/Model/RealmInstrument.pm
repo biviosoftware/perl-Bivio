@@ -36,6 +36,7 @@ and delete interface to the C<realm_instrument_t> table.
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
+use Bivio::Type::DateTime;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
@@ -62,7 +63,8 @@ sub get_cost_per_share {
     my(undef, $realm_instrument_id, $date) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= TO_DATE(?,\'J SSSSS\')',
+	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
+	    .Bivio::Type::DateTime->to_sql_value('?'),
 	   [$realm_instrument_id, $date]);
 
     my($total_cost) = 0.0;
@@ -89,7 +91,9 @@ sub get_first_buy_date {
     my(undef, $realm_instrument_id) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select TO_CHAR(min(realm_transaction_t.dttm), \'J SSSSS\') from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.entry_type = 200 and realm_instrument_entry_t.realm_instrument_id=?',
+	    'select '.Bivio::Type::DateTime->from_sql_value(
+		    'min(realm_transaction_t.dttm)')
+	    .' from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.entry_type = 200 and realm_instrument_entry_t.realm_instrument_id=?',
 	    [$realm_instrument_id]);
 
     my($date);
@@ -99,7 +103,9 @@ sub get_first_buy_date {
     }
 
     $sth = Bivio::SQL::Connection->execute(
-	    'select TO_CHAR(min(realm_instrument_valuation_t.dttm), \'J SSSSS\') from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=?',
+	    'select '.Bivio::Type::DateTime->from_sql_value(
+		    'min(realm_instrument_valuation_t.dttm)')
+	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=?',
 	   [$realm_instrument_id]);
 
     if ($row = $sth->fetchrow_arrayref()) {
@@ -143,7 +149,8 @@ sub get_number_of_shares {
     # note: doesn't include fractional shares paid in cash (not tax basis)
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= TO_DATE(?, \'J SSSSS\')',
+	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
+	    .Bivio::Type::DateTime->to_sql_value('?'),
 	   [$realm_instrument_id, $date]);
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
@@ -162,16 +169,22 @@ sub get_share_price {
     my(undef, $realm_instrument_id, $date) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_valuation_t.price_per_share from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.dttm <= TO_DATE(?, \'J SSSSS\') order by realm_instrument_valuation_t.dttm desc',
+	    'select realm_instrument_valuation_t.price_per_share, '
+	    .Bivio::Type::DateTime->from_sql_value(
+		    'realm_instrument_valuation_t.dttm')
+	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.dttm <= '
+	    .Bivio::Type::DateTime->to_sql_value('?')
+	    .' order by realm_instrument_valuation_t.dttm desc',
 	   [$realm_instrument_id, $date]);
 
     my($row);
     if ($row = $sth->fetchrow_arrayref()) {
-	my ($value) = $row->[0];
+	my ($value, $date) = @$row;
+	$date = Bivio::Type::DateTime->from_sql_column($date);
 	$sth->finish();
-	return $value;
+	return ($value, $date);
     }
-    return 0.0;
+    return (0.0, 0);
 }
 
 =for html <a name="internal_initialize"></a>
