@@ -87,8 +87,10 @@ sub main {
     if ($execute) {
         -f 'httpd.pid' && kill('TERM', `cat httpd.pid`);
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
-	system('cvs checkout html; cd html/societas; make')
-		unless -f 'html/index.html';
+        unless (-f 'html/index.html') {
+            system('cd ../.. && cvs checkout html && cd html/societas && make')
+                    && die('Could not create static pages');
+        }
 	&symlink('.', 'logs');
     }
     else {
@@ -195,9 +197,8 @@ starting the server for testing your own copy.  See L<"FILES">.
 
 =item html/societas
 
-The command "cvs checkout html/societas" will be executed in the current
-directory and the static site will be built,
-if the directory doesn't already exist.
+The command "cvs checkout html/societas" will be executed in directory ../..
+and the static site will be built, if the index.html doesn't already exist.
 
 =item httpd.lock.*
 
