@@ -110,7 +110,8 @@ sub get_email_addresses {
     my($self, $which) = @_;
     my($loc) = $which ? $which : Bivio::Type::Location::HOME();
     my($email) = Bivio::Biz::Model::Email->new($self->get_request);
-    return $which ? [] : undef unless $email->unauth_load($loc);
+    return $which ? [] : undef unless $email->unauth_load(
+	    location => $loc, realm_id => $self->get('user_id'));
     return $which ? [$email->get('email')] : $email->get('email');
 }
 
