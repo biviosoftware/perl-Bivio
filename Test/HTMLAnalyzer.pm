@@ -172,19 +172,26 @@ sub gen_form_data {
 
     if (defined($p)) {
 	foreach $key (keys(%{$p})) {
-	    my($line) = $p->{$key}->{name};
-	    $line .= '='.$p->{$key}->{value}
-		    if (defined($p->{$key}->{value}));
-	    push(@{$data}, $line);
+	    if (defined($p->{$key}->{value})) {
+		push(@{$data}, { name => $p->{$key}->{name},
+		    value => $p->{$key}->{value} });
+	    }
+	    else {
+		push(@{$data}, { name => $p->{$key}->{name} } );
+	    }
 	}
     }
 
-    if (defined($form->{hidden_fields})) {
-	foreach $key (keys(%{$form->{hidden_fields}})) {
-	    my($line) = $form->{hidden_fields}->{$key}->{name};
-	    $line .= '='.$form->{hidden_fields}->{$key}->{value}
-		    if (defined($form->{hidden_fields}->{$key}->{value}));
-	    push(@{$data}, $line);
+    $p = $form->{hidden_fields};
+    if (defined($p)) {
+	foreach $key (keys(%{$p})) {
+	    if (defined($p->{$key}->{value})) {
+		push(@{$data}, { name => $p->{$key}->{name},
+		    value => $p->{$key}->{value} });
+	    }
+	    else {
+		push(@{$data}, { name => $p->{$key}->{name} } );
+	    }
 	}
     }
 
