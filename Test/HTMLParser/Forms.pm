@@ -94,7 +94,6 @@ sub get_by_field_names {
 	$found = $values;
     }
     return $found if $found;
-
     Bivio::Die->die(\@name, ': no form matches named fields, visible fields: ',
         map({[sort(keys(%{$_->{visible}}))]} values(%$forms)));
 }
@@ -255,7 +254,8 @@ sub _end_table {
 sub _end_textarea {
     my($fields) = @_;
     $fields->{text} = '' unless defined($fields->{text});
-    $fields->{textarea}->{value} = _text($fields);
+    _trace($fields->{textarea}) if $_TRACE;
+    $fields->{textarea}->{value} = _text($fields, 1);
     $fields->{textarea} = undef;
     return;
 }
@@ -577,15 +577,18 @@ sub _submit_label_clean {
     return $1;
 }
 
-# _text(hash_ref fields) : string
+# _text(hash_ref fields, boolean no_die) : string
 #
-# Returns the text field or dies if not defined.
+# Returns the text field or dies if zero length.  Won't die if !$no_die.
 #
 sub _text {
-    my($fields) = @_;
-    my($res) = $fields->{text} || $fields->{prev_cell_text};
-    Bivio::Die->die('no text field: ', $fields)
-	unless $res;
+    my($fields, $no_die) = @_;
+    my($res) = defined($fields->{text}) && length($fields->{text})
+	? $fields->{text}
+	: defined($fields->{prev_cell_text}) && length($fields->{prev_cell_text})
+	    ? $fields->{prev_cell_text}
+        : $no_die ? ''
+	: Bivio::Die->die('no text field: ', $fields);
     $fields->{prev_cell_text} = $fields->{text} = undef;
     return $res;
 }
