@@ -538,6 +538,46 @@ sub initialize_ui {
     return;
 }
 
+=for html <a name="internal_lock_action"></a>
+
+=head2 internal_lock_action(string action)
+
+Creates a file lock for I<action> in /tmp/.  If I<action> is undef,
+uses C<caller> sub.  The usage is:
+
+    sub my_action {
+	my($self, ...) = @_;
+	return
+	    unless $self->internal_lock_action;
+    }
+
+This method forks a new process and returns true in the child process.
+The parent waits for the child and returns.  There is no timeout, so
+child must be designed to be robust.
+
+=cut
+
+sub internal_lock_action {
+    my($dir) = '/tmp/'.(caller(1))[3].'.lockdir';
+    unless (mkdir($dir, 0700)) {
+	Bivio::IO::Alert->warn('unable to create lock: ', $dir);
+	return 0;
+    }
+    my($pid) = fork;
+    defined($pid) || die("fork: $!");
+    return 1 unless $pid;
+    # Parent process waits for child to finish
+    my($res) = waitpid($pid, 0) == -1 ? undef : $?;
+    # Don't need an error check; rather have $res always returned
+    rmdir($dir);
+    die("waitpid failed: $!\nsomething seriously wrong")
+	    unless defined($res);
+    die((caller(1))[3]." failed\n") if $res;
+
+    # Tell caller to return, not exit()
+    return 0;
+}
+
 =for html <a name="is_loadavg_ok"></a>
 
 =head2 is_loadavg_ok() : boolean
