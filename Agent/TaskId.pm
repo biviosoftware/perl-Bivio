@@ -248,6 +248,9 @@ my(@_CFG) = (
     )],
     # These two tasks must have the same "first part".  The string
     # msg-part/*?t=NNN is encoded in the MAIL_CACHE generation code.
+    # Path info (/*) is ignored by MailPartDownload, because it isn't
+    # a unique identifier.  It is there so attachments can be saved
+    # to disk nicely.
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_PART
         19
