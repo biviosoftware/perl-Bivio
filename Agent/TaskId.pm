@@ -146,7 +146,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Model::AccountSummaryList->execute_load_all
+        Bivio::Biz::Model::AccountSummaryList->execute_load_all_with_query
         Bivio::UI::HTML::Club::AccountList
         help=account-summary
     )],
@@ -197,7 +197,7 @@ my(@_CFG) = (
         ADMIN_READ&MEMBER_READ
         ?/admin/roster
         Bivio::Biz::Model::InactiveForm
-        Bivio::Biz::Model::ClubUserList->execute_load_all
+        Bivio::Biz::Model::ClubUserList->execute_load_all_with_query
         Bivio::UI::HTML::Club::UserList
         next=CLUB_ADMIN_USER_LIST
     )],
@@ -698,7 +698,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ&MEMBER_READ
         ?/admin/invites:?/admin/invitations
-        Bivio::Biz::Model::RealmInviteList->execute_load_all
+        Bivio::Biz::Model::RealmInviteList->execute_load_all_with_query
         Bivio::Biz::Model::ClubUserList->execute_load_all
         Bivio::UI::HTML::Club::InviteList
     )],
@@ -994,7 +994,7 @@ my(@_CFG) = (
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Action::FileDownload->execute_if_file
-        Bivio::Biz::Model::FileTreeList->execute_load_all
+        Bivio::Biz::Model::FileTreeList->execute_load_all_with_query
         Bivio::Biz::Model::FileTreeListForm->execute_if_allowed
         Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileTree
@@ -2176,7 +2176,7 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         pub/clubs
-        Bivio::Biz::Model::PublicClubList->execute_load_all
+        Bivio::Biz::Model::PublicClubList->execute_load_all_with_query
         Bivio::UI::HTML::General::PublicClubs
     )],
     [qw(
