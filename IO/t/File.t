@@ -3,6 +3,7 @@
 use strict;
 use Bivio::Test;
 use IO::File;
+system('rm -rf File');
 Bivio::Test->new('Bivio::IO::File')->unit([
     'Bivio::IO::File' => [
 	{
@@ -33,7 +34,9 @@ Bivio::Test->new('Bivio::IO::File')->unit([
 	],
 	write => [
 	    ['File/1.txt', 'hello'] => undef,
-	    [IO::File->new('> File/2.txt'), "1\n2\n"] => undef,
+	    sub {
+		return [IO::File->new('> File/2.txt'), "1\n2\n"];
+	    } => undef,
 	    ['File/not-found/3.txt', 'x'] => Bivio::DieCode->IO_ERROR,
 	    sub {
 		open(SAVE_STDOUT, '>&STDOUT') or die;
@@ -50,7 +53,9 @@ Bivio::Test->new('Bivio::IO::File')->unit([
         ],
 	read => [
 	    ['File/1.txt'] => [\("hello\ngoodbye")],
-	    [IO::File->new('< File/2.txt')] => [\("1\n2\n")],
+	    sub {
+		return [IO::File->new('< File/2.txt')];
+	    } => [\("1\n2\n")],
 	    # deprecated form
 	    ['File/2.txt', IO::File->new('< File/2.txt')] => [\("1\n2\n")],
 	    ['File/not-found/3.txt'] => Bivio::DieCode->IO_ERROR,
