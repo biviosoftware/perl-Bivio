@@ -192,7 +192,8 @@ sub get_keywords {
 
 =head2 get_num_mime_parts() : 
 
-Returns the number of MIME parts for this part.
+Returns an array of hashes. Each has contains information about the
+MIME parts attached to this mail message.
 
 =cut
 
@@ -473,9 +474,10 @@ sub _get_date {
     return undef;
 }
 
-# _get_mime_part_info() : 
+# _get_mime_part_info(string filename, string ID, string message_id) : hash_ref
 #
-#
+# This method creates a hash of information regarding a MIME part
+# stored in the file server.
 #
 sub _get_mime_part_info {
     my($filename, $id, $message_id) = @_;
