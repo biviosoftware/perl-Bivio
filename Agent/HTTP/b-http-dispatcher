@@ -118,13 +118,10 @@ EOF
 		RewriteLog rewrite.log
 		RewriteLogLevel 0
 
-#		RewriteRule ^/./ - [NS,L]
 		RewriteRule ^(.*) /*$facade\$1 [NS,PT]
 
-		<LocationMatch "^/(index.html|[*a-zA-Z0-9_\-]{2,}(\$|/))">
-		    SetHandler perl-script
-		    PerlHandler $handler
-		</LocationMatch>
+		SetHandler perl-script
+		PerlHandler $handler
 	    </VirtualHost>
 EOF
     }
@@ -181,7 +178,7 @@ sub _get_facade_uri_list {
 	# Find the uri if set, otherwise the package base name in lower case.
 	my($uri) = $file;
 	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
-	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);  	 #emacs
+	my($uri2) = grep(s/^\s*uri\s*=>\s*['"]([^'"]+).*\n/\L$1/, <IN>);
 	push(@uri, $uri2 || $uri);
     }
     close(IN);
@@ -316,10 +313,8 @@ NameVirtualHost <$hostip>:<$port>
 
 <VirtualHost <$hostip>:<$port> 127.0.0.1:<$port>>
     ServerName <$hostname>
-    <LocationMatch "^/(index.html|[*a-zA-Z0-9_\-]{2,}($|/))">
-        SetHandler perl-script
-        PerlHandler <$handler>
-    </LocationMatch>
+    SetHandler perl-script
+    PerlHandler <$handler>
 </VirtualHost>
 
 <$facades>
