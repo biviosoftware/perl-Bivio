@@ -153,6 +153,7 @@ sub _check_error_log {
                 || /visitor invalid, deleting from cookie/
                 || /Unable to parse address/
                 || /and logging as new user/
+                || /Bivio::UI::HTML::Common::SearchList::execute:\d+ phrase/
                ) && next;
 
         _report($_);
