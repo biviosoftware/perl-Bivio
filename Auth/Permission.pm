@@ -34,6 +34,8 @@ NOTE: When you add a new permission, you must update the
       corresponding table (realm_role_t) in the database.
       Use b-realm-role for this.
 
+Permissions which end in "_TRANSIENT" are not stored in the database.
+
 =cut
 
 #=IMPORTS
@@ -69,6 +71,7 @@ __PACKAGE__->compile([
     INVESTMENT_READ => [24],
     PRO_FUND_INVESTOR => [25],
     PRO_FUND_MANAGER => [26],
+    SUPER_USER_TRANSIENT => [27],
 ]);
 
 =head1 METHODS
