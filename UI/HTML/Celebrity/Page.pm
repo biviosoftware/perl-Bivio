@@ -72,7 +72,7 @@ _initialize();
 
 =for html <a name="new"></a>
 
-=head2 static new(string realm_owner, string title, string icon, string text) : Bivio::UI::HTML::Celebrity::Page
+=head2 static new(string realm_owner, string title, hash_ref icon, string text) : Bivio::UI::HTML::Celebrity::Page
 
 Creates the static instance of a celebrity page.  Caller
 must supply the I<title>, I<icon>, and I<text>
@@ -91,7 +91,9 @@ sub new {
 		if ref($text) eq 'ARRAY';
 
     # Look up the icon
-    my($picture) = Bivio::UI::Icon->get_widget_value($icon);
+    my($picture) = Bivio::UI::Icon->get_widget_value($icon->{name});
+    $picture->{width} = $icon->{width} if $icon->{width};
+    $picture->{height} = $icon->{height} if $icon->{height};
 
     # Render the frame that contains the content.
     my($frame) = Bivio::UI::HTML::Widget::Grid->new({
@@ -233,7 +235,12 @@ sub _initialize {
     __PACKAGE__->new(
 	    'ask_candis',
 	    'Candis King',
-	    'candis_king',
+	    {
+#TODO: Program to get size of jpgs
+		name => 'candis_king.jpg',
+		width => 150,
+		height => 189,
+	    },
 	    [<<'EOF'],
 Feel free to ask Candis King your nuts-and-bolts questions about bivio,
 investing, and the investment club experience.
