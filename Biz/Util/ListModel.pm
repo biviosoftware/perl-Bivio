@@ -93,12 +93,19 @@ sub csv {
     });
 
     my($model) = $models;
+    my($iterating) = {};
+    my($method) = 'next_row';
     unless (ref($model)) {
 	foreach my $model_name (split(/[,\s]+/, $models)) {
 	    $model = Bivio::Biz::Model->new($self->get_request, $model_name);
 	    die(ref($model), ': is not a ListModel')
-		    unless $model->isa('Bivio::Biz::ListModel');
-	    $model->load_all(Bivio::Agent::HTTP::Query->parse($query || ''));
+		unless $model->isa('Bivio::Biz::ListModel');
+	    my($m) = 'load_all';
+	    if ($models =~ /(,|^)$model_name$/ && $model->can_iterate) {
+		$method = 'iterate_next_and_load';
+		$m = 'iterate_start';
+	    }
+	    $model->$m(Bivio::Agent::HTTP::Query->parse($query || ''));
 	}
     }
     my($cols) = $columns ?
@@ -116,8 +123,9 @@ sub csv {
 		} values(%{$model->get_info('columns')})
 	    ];
     my($res) = join(',', map {$_->{name}} @$cols)."\n";
-    $model->reset_cursor;
-    while ($model->next_row) {
+    $model->reset_cursor
+	if $method eq 'next_row';
+    while ($model->$method()) {
 	foreach my $c (@$cols) {
 	    my($cell) = $c->{type}->to_string($model->get($c->{name}));
 	    _quote_cell(\$cell);
@@ -126,6 +134,8 @@ sub csv {
 	chop($res);
 	$res .= "\n";
     }
+    $model->iterate_end
+	if $method eq 'iterate_next_and_load';
 
     $res .= <<"EOF";
 
