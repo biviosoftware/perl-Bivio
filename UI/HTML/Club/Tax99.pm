@@ -82,17 +82,26 @@ EOF
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Tax Parameters',
+		    value => 'Tax Options',
 		    string_font => 'table_heading',
+		}),
+	    ],
+	    [
+		Bivio::UI::HTML::Widget::String->new({
+		    value => <<'EOF',
+Before selecting the reports below, follow the option links to specify
+extra information about your partnership and members.
+
+EOF
 		}),
 	    ],
 	    [
 		$self->join(
 		    '<ul><li>',
-		    $self->link('IRS 1065 Parameters',
+		    $self->link('IRS 1065 Options',
 			    'CLUB_ACCOUNTING_TAX99_1065_PARAMETERS'),
 		    '</li><li>',
-		    $self->link('IRS K-1 Parameters',
+		    $self->link('IRS K-1 Options',
 			    'CLUB_ACCOUNTING_TAX99_K1_PARAMETERS'),
 		    '</li></ul>',
 		),
