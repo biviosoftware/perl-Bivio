@@ -2,13 +2,14 @@
 #
 # $Id$
 #
-# b-db-backup-adhoc [[db-login] [[db-name] [[backup-host] [transfer-host]]]]
+# b-db-backup-adhoc [db-login] [db-name] [backup-host] [transfer-host] [keep-days]
 #
 
 DB_LOGIN=${1:-bivio/bivio}
 DB_NAME=${2:-PROD}
 BACKUP_HOST=${3:-carve}
 TRANSFER_HOST=${4:-locker}
+KEEP_DAYS=${5:-7}
 
 HOST=`hostname`
 HOST=`expr $HOST : '\([^\.]*\)\.' '|' $HOST`
@@ -58,12 +59,12 @@ echo Writing to tape (if it exists) on $BACKUP_HOST
 /usr/local/bin/ssh $BACKUP_HOST "[ -c /dev/tape ] && tar cbf 200b /dev/tape /home/bkp/$DB_NAME/$ts"
 
 if [ "$TRANSFER_HOST" != "NONE" ]; then
-    echo Transferring also to $TRANSFER_HOST
+    echo Transferring to $TRANSFER_HOST
     ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
 fi
 
 # Keep a few days worth of backup online
-thin=`ls -dt [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] | tail +$THIN_DAYS`
+thin=`ls -dt [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] | tail +$KEEP_DAYS`
 if [ "$thin" ]; then
     echo Thinning backups on $HOST, removing $thin
     rm -rf $thin
