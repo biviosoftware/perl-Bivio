@@ -30,11 +30,11 @@ C<Bivio::HOWTO::CodingStyle> describes the bOP coding style.
 
 =over 4
 
-=item
+=item *
 
 Indent by four.
 
-=item
+=item *
 
 Keyword statements are formatted with the keyword (if, elsif, while,
 continue) beginning the line:
@@ -50,7 +50,7 @@ continue) beginning the line:
     }
 
 
-=item
+=item *
 
 All lines should be less than 80 characters, including pod.  Any perl line
 that exceeds 80 char should break on logic, '(', or '-&gt;', e.g.,
@@ -72,7 +72,7 @@ that exceeds 80 char should break on logic, '(', or '-&gt;', e.g.,
     $some_long_object
         ->method;
 
-=item
+=item *
 
 Operators should have spaces around them:
 
@@ -81,12 +81,12 @@ Operators should have spaces around them:
     $a = $b + $c;
     $a = $b . $c;
 
-=item
+=item *
 
 For clarity, the list of imports should be sorted (ctrl-x ctrl-l on the
 region).
 
-=item
+=item *
 
 Don't line things up vertically. It gets messed up as the program is maintained
 and variables are renamed.
@@ -107,25 +107,25 @@ and variables are renamed.
 
 =over 4
 
-=item
+=item *
 
 Let emacs do the work for you. We rely on C<cperl-mode> to do the
 formatting for us. Sometimes it screws up, but most of the time it does
 a great job. Hit I<tab> on lines that don't make sense.
 
-=item
+=item *
 
 If a file does not end in .pl or .pm, include the line:
 C<'#mode:cperl'>
 at the bottom before
 C<'#End:'>. to make it fontify correctly
 
-=item
+=item *
 
 Use the bivio's builtin functions in emacs mode. bivio functions begin
 with C<b-perl-> when C<cperl-mode> is loaded.
 
-=item
+=item *
 
 Sometimes you have to help out emacs. If you have an abstract method, you
 can use the following form to declare the routine:
@@ -191,20 +191,20 @@ fundemental semantics changed.
 
 =over 4
 
-=item
+=item *
 
 Modules should end in .pm
 
-=item
+=item *
 
 Programs should not end in .pl (see the Emacs section
 for how to get them to fontify)
 
-=item
+=item *
 
 Programs should start with 'b-' eg, b-realm-admin and b-petshop.
 
-=item
+=item *
 
 Use dashes '-' instead of underscores '_' in URI components or names that might
 become URI components, e.g. foo-bar.bview.  It's easier to read when
@@ -216,7 +216,7 @@ underlined. For example, we have file-delete and not file_delete.
 
 =over 4
 
-=item
+=item *
 
 Multiword variables names should use the form:
 
@@ -228,7 +228,7 @@ Multiword variables names should use the form:
 
 =over 4
 
-=item
+=item *
 
 Constant subs should be uppercase and use '_' to separate words.
 Declare constants before methods.
@@ -240,7 +240,7 @@ Declare constants before methods.
 
 Use C-c c in emacs to create constants.
 
-=item
+=item *
 
 Protected methods begin with an C<internal_> prefix,
 as in:
@@ -267,23 +267,23 @@ Normally, we don't "protect" a protected method with an assertion like this.
 
 =over 4
 
-=item
+=item *
 
 Keep =head1 NAME particularly succinct.
 
 
-=item
+=item *
 
 Avoid redundancy, except with Facades, e.g. Bivio::PetShop::Facade::PetShop
 is ok, but Bivio::Math::MathEMA is bad.
 
-=item
+=item *
 
 Name parameters explicitly in descriptions, e.g.
 
      Tests to see if I<match_user> matches the user stored in the login.
 
-=item
+=item *
 
 Static methods and constants should be documented as such. In perl, static
 methods and constants may be overridden by subclasses.
@@ -299,7 +299,7 @@ methods and constants may be overridden by subclasses.
          my($proto) = @_;
      }
 
-=item
+=item *
 
 Abstract methods and constants should be documented as such, and should
 die with a descriptive message if called. The purpose of an abstract method
@@ -316,24 +316,24 @@ for an object.
     sub my_abstract {
     }
 
-=item
+=item *
 
 The die can be used with a check to see if the caller is a subclass.
 This should be used sparingly as it imposes a run-time overhead and in
 general, perl is a "friendly" language.
 
-=item
+=item *
 
 When documenting variable types, consider using the following identifiers:
 I<int, string, string_ref, float, hash_ref, array_ref, any>.
 If the value is an instance, use the module name, e.g. I<Bivio::Type::Name>.
 
-=item
+=item *
 
 Within the method description, describe the contents of hash and array
 parameters.
 
-=item
+=item *
 
 Don't use perl symbols C<$ % @ \ ;> in method documentation.
 
@@ -348,24 +348,24 @@ Don't use perl symbols C<$ % @ \ ;> in method documentation.
          ...
      }
 
-=item
+=item *
 
 Don't include the C<$self> variable in method documentation, it is
 considered implicit for member methods.
 
-=item
+=item *
 
 Overloaded methods should include multipleC< =head2> documentation comments in
 some cases.  You may want to use C<any> declarations if the overloading is
 complex. The shortest versions should be first. For an extreme case, see
 C<Bivio::Agent::Request-E<gt>format_uri.>
 
-=item
+=item *
 
 Don't use method prototypes. Perl doesn't use this when dynamically dispatching
 an object method anyway.
 
-=item
+=item *
 
 For USAGE methods, include the output usage statement in the pod description
 (but remember to maintain it!).
@@ -376,7 +376,7 @@ For USAGE methods, include the output usage statement in the pod description
 
 =over 4
 
-=item
+=item *
 
 Comments should always be on their own line, with a space after the '#'.
 
@@ -393,7 +393,7 @@ Comments should always be on their own line, with a space after the '#'.
 
 
 
-=item
+=item *
 
 Code which is unfinished or a "hack" which should be fixed is marked as
 below. This comment is left justified, so it is easily recognizable.
@@ -401,13 +401,13 @@ below. This comment is left justified, so it is easily recognizable.
 
      #TODO: Description of problem here.
 
-=item
+=item *
 
 Factories should be documented in the FACTORIES section. In cperl-mode,
 if you define new it will be put in the FACTORIES section with the appropriate
 super call.
 
-=item
+=item *
 
 Bivio::IO::Alert-E<gt>warn should
 be used instead of perl's warn. We catch perl's warn and output a stack
@@ -420,7 +420,7 @@ the variables.
 C<Bivio::IO::Alert-E<gt>warn> automatically truncates
 long values and unwraps hash_refs and array_refs.
 
-=item
+=item *
 
 C<Bivio::IO::Trace> for debugging output.
 Don't check in libraries that use C<print STDERR> for debugging
@@ -444,7 +444,7 @@ Usage:
 
      _trace($bla) if $_TRACE;
 
-=item
+=item *
 
 Configuration is handled by registering with
 C<Bivio::IO::Config>.
@@ -461,7 +461,7 @@ for modules that use configuration, e.g. C<Bivio::IO::Trace>
 and C< Bivio::Ext::DBI>. Read the perldoc of C<Bivio::IO::Config>
 for how to configuration your system.
 
-=item
+=item *
 
 Exceptions are managed by C<Bivio::Die>. Modules which would like
 to catch exceptions "along the way" should define a handle_die method.
@@ -473,19 +473,19 @@ C<handle_die>. For the brave, check out the implementation
 of
 C<Bivio::Die>.
 
-=item
+=item *
 
 Primary Ids are strings, not numbers. Use "eq" and "ne" for comparison.
 Do not depend on the value of the contents.
 
-=item
+=item *
 
 Use C<Bivio::ShellUtil> as the base class for program function classes.
 The programs themselves should simply call:
 
    Bivio::Some::Program::Package->main(@ARGV);
 
-=item
+=item *
 
 Avoid the use of C<Bivio::Agent::Request-E<gt>get_current> or
 C<get_current_or_new>.
@@ -499,7 +499,7 @@ You'll need to use:
 
 on widget values set from inherited attributes, e.g. form_model.
 
-=item
+=item *
 
 ListModel queries are sometimes tricky to get right, because Oracle tends
 towards the "constants" in the query. The first constant evaluated should
@@ -507,7 +507,7 @@ be the auth_id, since this will narrow the query to just the realm's data.
 If there is another constant, e.g. entry_type, make sure the auth_id qualifies
 this table.
 
-=item
+=item *
 
 Magic variables are conveniences. Here is a list:
 
@@ -515,7 +515,7 @@ Magic variables are conveniences. Here is a list:
      $_W is 'Bivio::UI::HTML::Widget'.
      $_IDI is the instance data index, see Bivio::UNIVERSALx
 
-=item
+=item *
 
 CONNECT BY should be programmed as follows:
 
@@ -539,12 +539,12 @@ should be specified in the "START WITH" and the "CONNECT BY".
 
 =over 4
 
-=item
+=item *
 
     #!/usr/bin/perl -w
     use strict;
 
-=item
+=item *
 
 To force the debugger to stop at a particular piece of code, use:
 
@@ -553,7 +553,7 @@ To force the debugger to stop at a particular piece of code, use:
 It is harmless if the debugger isn't running. compile.PL has this otherwise
 you never get a chance to "break" the debugger.
 
-=item
+=item *
 
 Watch out for this one:
 
@@ -567,7 +567,7 @@ Watch out for this one:
 The two cases aren't equivalent, the first case isn't using numeric comparison
 so it won't be applied. The second is the correct form. Very embarrassing.
 
-=item
+=item *
 
 Avoid variable interpolation in trace and die statements. If the
 variables are undef, this may cause problems. Also avoid string concatenation
@@ -582,7 +582,7 @@ Incorrect usage:
 
 _trace statements never need a '\n' at the end.
 
-=item
+=item *
 
 Perl commands that are methods should be followed by a parenthesis (no
 space) like all methods.
@@ -596,7 +596,7 @@ space) like all methods.
 
 =over 4
 
-=item
+=item *
 
 To avoid namespace pollution created by the @EXPORT=... statement in third
 party modules, packages should be imported as
@@ -617,7 +617,7 @@ API changes.
 
 =over 4
 
-=item
+=item *
 
 Always call public static methods using the dynamic dispatch (->) form.
 
@@ -630,7 +630,7 @@ or $self. There is no such restriction on private methods, since the _method()
 form is used--see below.
 
 
-=item
+=item *
 
 Constants should be called with dynamic dispatch (->), because they may
 be overriden,
@@ -659,7 +659,7 @@ C<cperl-mode> automatically inserts methods which begin with an underscore
 
 =over 4
 
-=item
+=item *
 
 If you have a series of td's, and you want one of them to expand into
 filling a browser of any size, with the other ones fixed, you can't use
@@ -680,7 +680,7 @@ width=xxx> for instance. This is an IE, not a NS bug.
 
 =over 4
 
-=item
+=item *
 
 Keep instance state in its own namespace
 within the field hash. This avoids having to know the field names of all
@@ -719,7 +719,7 @@ any other method.
 
 
 
-=item
+=item *
 
 Avoid global variables in modules except at initialization. This avoids
 subtle bugs in supposedly stateless servers. It's ok to cache certain things
@@ -734,7 +734,7 @@ during a operation.
 
 
 
-=item
+=item *
 
 Avoid putting logic in perl programs. It is likely it will be reused, so
 create a module that contains the logic and call it from the program. For
@@ -743,7 +743,7 @@ an example, see the perl/Bivio/Biz/Util directory.
 
 
 
-=item
+=item *
 
 Don't use temporary variables in a method if it can be avoided. Never use
 the word 'temp' in a variable name. Avoiding temporary variables makes
@@ -765,7 +765,7 @@ cases (like format statements).
 
 
 
-=item
+=item *
 
 In general, pass and return references to arrays and hashes. For example,
 Bivio::Collection::Attributes::new takes a hash_ref, which it assumes ownership
@@ -775,14 +775,14 @@ There are exceptions, e.g. multi-variable method results, e.g.
 C<Bivio::Type::from_literal> and variable argument methods, e.g.
 C<Bivio::Biz::PropertyModel::load>.
 
-=item
+=item *
 
 Import "minimally", i.e. don't use packages unless you have to. This goes
 against the standard of declaring before use, but this standard is only
 useful for unqualified imports. We always import qualified (full package
 name), so you know where the object is coming from.
 
-=item
+=item *
 
 Little languages pop up everywhere. perl is an interpreted language,
 so you don't need to invent your own languages. For examples, see
@@ -796,7 +796,7 @@ and stuffs the attributes in a hash.
 The advantages of using one language for everything outweighs
 almost any disadvantage.
 
-=item
+=item *
 
 Methods that return a value should use the 'return' keyword.
 
@@ -804,12 +804,12 @@ Methods that return a value should use the 'return' keyword.
          return 1;
      }
 
-=item
+=item *
 
 Encapsulate anything that can be. Don't expose unnecessary variables,
 methods, etc.
 
-=item
+=item *
 
 Avoid modifying global data structures, even if they aren't used again.
 
@@ -820,13 +820,13 @@ Avoid modifying global data structures, even if they aren't used again.
 
 =over 4
 
-=item
+=item *
 
 We use a fail fast policy within the application. If the code cannot recover
 from a state problem, call die. However, exceptions should be thrown or
 returned when data is invalid, e.g. no rows match a user query.
 
-=item
+=item *
 
 C<Bivio::Die-E<gt>die> or C<die> should be used to indicate a program
 error. Use C<Bivio::Die> when in doubt. In general, die is
@@ -840,7 +840,7 @@ This is more cumbersome, but allows you to set an arbitrary list of attributes
 associated with the error. Typically, you just want to print a message
 with some arguments, so the above form is rarely used.
 
-=item
+=item *
 
 If you can continue, but would like to log the error use
 
@@ -852,7 +852,7 @@ If you can continue, but would like to log the error use
 
 =over 4
 
-=item
+=item *
 
 Always unwrap arguments as the first statement.
 
