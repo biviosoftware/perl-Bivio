@@ -36,7 +36,6 @@ and delete interface to the C<club_t> table.
 #=IMPORTS
 use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::File;
-use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberTransactionList;
 use Bivio::Biz::Model::RealmAdminList;
 use Bivio::Biz::Model::RealmInvite;
@@ -120,15 +119,12 @@ sub cascade_delete {
     Bivio::Biz::Model::RealmInvite->cascade_delete($realm);
 
     # delete file server/mail messages
+    Bivio::Biz::Model::Mail->delete_but_leave_files($realm);
     Bivio::Biz::Model::File->cascade_delete($realm);
 
     my($club_name) = $realm->get('name');
     $self->delete();
     $realm->cascade_delete;
-
-    # Always delete file server files last, since other
-    # calls may fail.  Eventually this will go away.
-    Bivio::Biz::Model::MailMessage->delete_club($club_name);
     return;
 }
 
@@ -332,7 +328,6 @@ sub rename {
     # database, we can be pretty sure the file name will change successfully.
     my($old_name) = $realm->get('name');
     $realm->update({name => $new_name});
-    Bivio::Biz::Model::MailMessage->rename_club($old_name, $new_name);
     return;
 }
 

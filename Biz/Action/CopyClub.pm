@@ -38,7 +38,6 @@ use Bivio::Biz::Model::Address;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::File;
-use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::Phone;
 use Bivio::Biz::Model::RealmAccount;
@@ -100,9 +99,6 @@ sub execute {
     Bivio::Biz::Model::TaxId->new($req)->create({realm_id => $realm_id});
 
     my($id_map) = {$source_id => $new_realm->get('realm_id')};
-
-    # NOTE: doesn't copy mail messages, but creates directories
-    Bivio::Biz::Model::MailMessage->setup_club($new_realm);
 
 #TODO: Use auth_user here.
     # NOTE: doesn't copy files.

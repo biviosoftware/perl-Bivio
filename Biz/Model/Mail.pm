@@ -277,6 +277,25 @@ sub cache_parts {
     return $cache_id;
 }
 
+=for html <a name="delete_but_leave_files"></a>
+
+=head2 static delete_but_leave_files(Bivio::Biz::Model::RealmOwner realm)
+
+Deletes all mail records, but doesn't delete files.  We know that
+L<Bivio::Biz::Model::File::cascade_delete|Bivio::Biz::Model::File/"cascade_delete">
+will be called after this.
+
+=cut
+
+sub delete_but_leave_files {
+    my(undef, $realm) = @_;
+    Bivio::SQL::Connection->execute('
+            DELETE FROM mail_t
+            WHERE realm_id=?',
+	    [$realm->get('realm_id')]);
+    return;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref

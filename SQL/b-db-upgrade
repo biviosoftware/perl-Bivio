@@ -196,11 +196,18 @@ ALTER TABLE $table MODIFY $column $type
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
+    _drop_constraints('file_t', 'is_public');
     _do_sql('
 UPDATE file_t SET is_public=0
 /
 ');
     use Bivio::Biz::Util::Mail;
+    _do_sql('
+DELETE from mail_t
+/
+DELETE from file_t where volume in (3, 4)
+/
+');
     Bivio::Biz::Util::Mail->do_all('migrate');
     Bivio::Biz::Util::Mail->reinit_sequence;
 
