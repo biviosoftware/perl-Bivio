@@ -380,6 +380,13 @@ Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
 
 sub init_type {
     my(undef, $col, $type_cfg) = @_;
+
+    # allow the type to be defined on another model, ex RealmOwner.realm_id
+    if ($type_cfg =~ /^(.*)\.(.*)$/) {
+	my($model, $field) = ($1, $2);
+	$type_cfg = Bivio::Biz::Model->get_instance($model)
+		->get_field_type($field);
+    }
     $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::Biz::Model')
 	    ? $type_cfg
 	    : Bivio::Type->get_instance($type_cfg);
