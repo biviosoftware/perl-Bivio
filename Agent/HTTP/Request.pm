@@ -45,19 +45,21 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Apache::Request r) : Bivio::Agent::HTTP::Request
+=head2 static new(Apache::Request r, string default_controller_name) : Bivio::Agent::HTTP::Request
 
-Creates a Request.
+Creates a Request from an apache request. The default controller name
+will be used if no controller name can be parsed from the URI.
 
 =cut
 
 sub new {
-    my($proto, $r) = @_;
+    my($proto, $r, $default_controller_name) = @_;
 
     #this is required for the connection->user to work!?
     $r->get_basic_auth_pw();
     my($user) = $r->connection->user;
     my($target, $controller, $view) = _parse_request($r->uri());
+    $controller ||= $default_controller_name;
 
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	   $user);
