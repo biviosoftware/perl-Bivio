@@ -386,6 +386,11 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_ACCOUNT_INTEREST => 'Account Interest',
     CLUB_ACCOUNTING_ACCOUNT_LIST => 'Account Summary',
     CLUB_ACCOUNTING_ACCOUNT_TRANSFER => 'Account Transfer',
+    CLUB_ACCOUNTING_REALM_ACCOUNT_CREATE => [
+	# This label isn't in use, yet.
+	'' => 'Create New Account',
+	HELP_TOPIC => 'Creating New Accounts',
+    ],
     CLUB_ACCOUNTING_CLEAR => 'Clear Online Accounting',
     CLUB_ACCOUNTING_FEE => 'Fees',
     CLUB_ACCOUNTING_INVESTMENT_BUY => 'Record Purchase',
@@ -435,7 +440,10 @@ _compile(\%_MAP, [
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
-    CLUB_OPEN_BALANCE => 'Edit Opening Balances',
+    CLUB_OPEN_BALANCE => [
+	'' => 'Edit Opening Balances',
+	HELP_TOPIC => 'Editing Opening Balances',
+    ],
     DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
