@@ -991,7 +991,7 @@ my(@_CFG) = (
         105
         PROXY
         DOCUMENT_READ
-        pub/?/mail-msg
+        pub/?/msg
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Celebrity::MailDetail
