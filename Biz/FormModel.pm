@@ -1628,11 +1628,22 @@ sub _put_literal {
 sub _redirect {
     my($self, $which) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($req) = $self->get_request;
+
+    # Ensure this form_model is seen as the redirect model
+    # by get_context_from_request and set a flag so it
+    # knows to pop context instead of pushing.
+    $req->put(form_model => $self);
+    $fields->{redirecting} = 1;
 
     # Success, redirect to the next task or to the task in
     # the context.
-    my($req) = $self->get_request;
     $req->client_redirect($req->get('task')->get($which))
+	    # Simulate what happens in client_redirect.  We don't want
+	    # context, because there isn't any and we don't want it to
+	    # default (would loop back to where we are).
+#	    undef, $req->unsafe_get('query'), $req->unsafe_get('path_info'),
+#	    1)
 	    unless $fields->{context};
 
     my($c) = $fields->{context};
@@ -1640,7 +1651,8 @@ sub _redirect {
 	if ($which eq 'cancel' && $c->{cancel_task}) {
 	    _trace('no form, client_redirect: ', $c->{cancel_task}) if $_TRACE;
 	    # If there is no form, redirect to client so looks
-	    # better.
+	    # better.  get_context_from_request will do the right thing
+	    # and return the stacked context.
 	    $req->client_redirect($c->{cancel_task}, $c->{realm},
 		   $c->{query}, $c->{path_info});
 	    # DOES NOT RETURN
@@ -1665,12 +1677,6 @@ sub _redirect {
     # Initializes context
     my($f) = $c->{form};
     $f->{'.next'} = $which eq 'cancel' ? 'cancel' : 'unwind';
-
-    # Ensure this form_model is seen as the redirect model
-    # by get_context_from_request and set a flag so it
-    # knows to pop context instead of pushing.
-    $req->put(form_model => $self);
-    $fields->{redirecting} = 1;
 
     # Redirect calls us back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_task},
