@@ -127,7 +127,7 @@ t(
 	    object => '3',
 	    compute_object => sub {
 		my($case, $object) = @_;
-		return Bivio::t::Test::Testee->new($object),
+		return Bivio::t::Test::Testee->new(@$object),
 	    },
 	} => [
 	    ok => [
@@ -158,6 +158,25 @@ t(
     ],
     32,
     [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28],
+);
+t(
+    {
+	compute_object => sub {
+	    my($case, $params) = @_;
+	    return Bivio::t::Test::Testee->new(@$params);
+	},
+    }, [
+	3 => [
+	    ok => 3,
+	],
+	sub {
+	    return Bivio::t::Test::Testee->new(5);
+        } => [
+	    ok => 5,
+        ],
+    ],
+    2,
+    [],
 );
 
 
@@ -191,6 +210,10 @@ sub t {
 		elsif ($msg =~ /FAILED (\d+).*passed (\d+)/i) {
 		    $err .= "incorrect counts: $msg"
 			unless $1 == @$not_ok && $1 + $2 == $num_tests;
+		}
+		elsif ($msg =~ /All \((\d+)\) tests PASSED/i) {
+		    $err .= "incorrect counts: $msg"
+			unless $1 == $num_tests && !@$not_ok;
 		}
 		else {
 		    $err .= "Unexpected msg: ".$msg;

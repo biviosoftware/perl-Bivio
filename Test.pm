@@ -253,9 +253,9 @@ sub new {
 
 =for html <a name="check_die_code"></a>
 
-=head2 abstract check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : boolean
+=head2 callback check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : boolean
 
-=head2 abstract check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : Bivio::DieCode
+=head2 callback check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : Bivio::DieCode
 
 This callback is defined as a I<check_die_code> group attribute.
 
@@ -307,11 +307,12 @@ sub check_return {
 
 =for html <a name="compute_object"></a>
 
-=head2 abstract compute_object(Bivio::Test::Case case, any object) : any
+=head2 callback compute_object(Bivio::Test::Case case, array_ref params) : any
 
-Returns the object to be used for this method group.  I<object> is the
-value in the "object" location of the test case tree.  It can be any
-value.  The result must be an object, which "can" the methods.
+Returns the object to be used for this method group.  I<params> is the value in
+the "object" location of the test case tree.  It can be an array_ref or a
+scalar (turned into an array_ref).  The result must be an object, which C<can>
+the methods.
 
 =cut
 
@@ -545,8 +546,13 @@ sub _compile_object {
 	my($fields) = $self->[$_IDI];
 	$state->{_eval_object} = @{$fields->{_eval_object} ||= []};
 	push(@{$fields->{_eval_object}}, [
-	    $state->{compute_object} || $state->{object},
-	    $state->{object},
+	    ref($state->{object}) eq 'CODE'
+	       ? ($state->{object}, [])
+	       : ($state->{compute_object},
+		   ref($state->{object}) eq 'ARRAY' ? $state->{object}
+		   : !ref($state->{object}) ? [$state->{object}]
+		   : _compile_die('object must be a scalar, ARRAY, or CODE',
+		       $state->{object})),
 	]);
 	$state->{object} = undef;
 	$state->{compute_object} = undef;
