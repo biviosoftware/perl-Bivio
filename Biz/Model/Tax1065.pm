@@ -31,6 +31,8 @@ C<Bivio::Biz::Model::Tax1065> IRS 1065 tax parameters
 =cut
 
 #=IMPORTS
+#use Bivio::Biz::Accounting::AllocationCache;
+use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Address;
 use Bivio::Type::AllocationMethod;
 use Bivio::Type::F1065IRSCenter;
@@ -115,6 +117,33 @@ sub load_or_default {
 	});
     }
 
+    return;
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values)
+
+Overrides PropertyModel.update to invalidate the AllocationCache when
+the allocation method is changed.
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+
+    my($allocation_method) = $new_values->{allocation_method};
+    if (defined($allocation_method)
+	    && $allocation_method != $self->get('allocation_method')) {
+	my($realm) = $self->get_request->get('auth_realm')->get('owner');
+	my($cache) = Bivio::Biz::Accounting::AllocationCache->new($realm);
+
+#TODO: need to track allocations by year, currently always using last year
+# that way, only have to invalid the current fiscal_end_date
+	$cache->invalidate($self->get('fiscal_end_date'));
+	$cache->invalidate(Bivio::Biz::Accounting::Tax->get_this_fiscal_year);
+    }
+    $self->SUPER::update($new_values);
     return;
 }
 
