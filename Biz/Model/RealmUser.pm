@@ -111,8 +111,8 @@ sub cascade_delete {
     my($self) = @_;
     my($realm_id, $user_id) = $self->get('realm_id', 'user_id');
     my($invite) = Bivio::Biz::Model::RealmInvite->new($self->get_request);
-    $invite->unauth_load(realm_id => $realm_id, realm_user_id => $user_id);
-    $invite->delete();
+    $invite->delete() if $invite->unauth_load(
+	    realm_id => $realm_id, realm_user_id => $user_id);
     return $self->delete();
 }
 
