@@ -197,8 +197,8 @@ CREATE TABLE tax_1065_t (
   tax_shelter NUMBER(1),
   foreign_account_country CHAR(2),
   foreign_trust NUMBER(1),
-  return_type NUMBER(2)
-  allocation_method NUMBER(2),
+  return_type NUMBER(2),
+  allocation_method NUMBER(2)
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
