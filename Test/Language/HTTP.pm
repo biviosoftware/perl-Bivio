@@ -255,7 +255,7 @@ sub _assert_html {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{html_parser}
-	|| Bivio::Die->die(_assert_response
+	|| Bivio::Die->die(
 	    _assert_response($self)->content_type, ': response not html');
 }
 
