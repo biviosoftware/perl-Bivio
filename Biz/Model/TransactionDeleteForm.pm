@@ -40,30 +40,6 @@ my($_ENTRY_KEY) = 'ek';
 
 =cut
 
-=for html <a name="execute_empty"></a>
-
-=head2 execute_empty()
-
-
-=cut
-
-sub execute_empty {
-    my($self) = @_;
-    my($req) = $self->get_request;
-
-    # load the entry from the special key, set in the appropriate tran list
-    my($entry) = Bivio::Biz::Model::Entry->new($req);
-    $entry->load(entry_id => $req->get('query')->{$_ENTRY_KEY});
-
-    # sets the hidden transacion id field (not used!)
-    $self->internal_get()->{'RealmTransaction.realm_transaction_id'}
-	    = $entry->get('realm_transaction_id');
-
-    # hack to remove special query key
-    delete($self->get_request->get('query')->{$_ENTRY_KEY});
-    return;
-}
-
 =for html <a name="execute_input"></a>
 
 =head2 execute_input()
@@ -77,30 +53,11 @@ sub execute_input {
     my($req) = $self->get_request;
 
     # loads the entry
-    my($entry) = Bivio::Biz::Model::Entry->new($req);
-    $entry->load(entry_id => $req->get('query')->{$_ENTRY_KEY});
+    my($entry) = $req->get('Bivio::Biz::Model::Entry');
 
     # delete the related transaction and all its entries
     $entry->get_model('RealmTransaction')->cascade_delete;
 
-    # hack to remove special query key
-    delete($self->get_request->get('query')->{$_ENTRY_KEY});
-    return;
-}
-
-=for html <a name="execute_other"></a>
-
-=head2 execute_other(string button)
-
-Called for cancel.
-
-=cut
-
-sub execute_other {
-    my($self) = @_;
-
-    # hack to remove special query key
-    delete($self->get_request->get('query')->{$_ENTRY_KEY});
     return;
 }
 
@@ -115,14 +72,8 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
 	version => 1,
-	hidden => [
-	    'RealmTransaction.realm_transaction_id',
-	],
-	auth_id =>
-	    ['RealmTransaction.realm_id', 'RealmOwner.realm_id'],
-	primary_key => [
-	    'RealmTransaction.realm_transaction_id',
-	],
+	require_context => 1,
+	auth_id => ['RealmTransaction.realm_id', 'RealmOwner.realm_id'],
     };
 }
 
