@@ -438,7 +438,8 @@ sub _create_edit {
     # PUT SUPERCLASSES last since they may be overridden
 
 #TODO: need to be intelligent here, create widget based on the field type
-    if (UNIVERSAL::isa($type, 'Bivio::Type::String')) {
+    if (UNIVERSAL::isa($type, 'Bivio::Type::String')
+	   || UNIVERSAL::isa($type, 'Bivio::Type::RealmName')) {
 	return Bivio::UI::HTML::Widget::Text->new({
 	    field => $field,
 	    size => _default_size($type),
