@@ -47,8 +47,8 @@ sub format {
     return undef unless $query;
     my($res) = '';
     foreach my $k (keys(%$query)) {
-	$res .= Bivio::Util::escape_uri($k).'='
-		.Bivio::Util::escape_uri($query->{$k}).'&';
+	$res .= Bivio::Util::escape_query($k).'='
+		.Bivio::Util::escape_query($query->{$k}).'&';
     }
     chop($res);
     return $res;
