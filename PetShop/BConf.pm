@@ -68,6 +68,7 @@ Base configuration.
 =cut
 
 sub merge_overrides {
+    my($proto) = @_;
     return {
 	'Bivio::Ext::DBI' => {
 	    database => 'petdb',
@@ -75,7 +76,18 @@ sub merge_overrides {
 	    password => 'petpass',
 	    connection => 'Bivio::SQL::Connection::Postgres',
 	},
-	'Bivio::IO::ClassLoader' => {
+	$proto->merge_class_loader({
+	    delegates => {
+		'Bivio::Agent::HTTP::Cookie' =>
+		    'Bivio::Delegate::PersistentCookie',
+		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
+	    },
+	    maps => {
+		Model => ['ColoSLA::Model'],
+		Type => ['ColoSLA::Type'],
+	    },
+	}),
+	$proto->merge_class_loader({
 	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
@@ -89,15 +101,14 @@ sub merge_overrides {
                     'Bivio::PetShop::Delegate::ECService',
 	    },
 	    maps => {
-		Model => ['Bivio::PetShop::Model', 'Bivio::Biz::Model'],
-		Type => [ 'Bivio::PetShop::Type', 'Bivio::Type'],
-		HTMLWidget => ['Bivio::PetShop::Widget',
-		    'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		Model => ['Bivio::PetShop::Model'],
+		Type => [ 'Bivio::PetShop::Type'],
+		HTMLWidget => ['Bivio::PetShop::Widget'],
 		Facade => ['Bivio::PetShop::Facade'],
-		Action => ['Bivio::PetShop::Action', 'Bivio::Biz::Action'],
+		Action => ['Bivio::PetShop::Action'],
 		TestLanguage => ['Bivio::PetShop::Test'],
 	    },
-	},
+	}),
 	'Bivio::Test::Language::HTTP' => {
 	    home_page_uri => 'http://petshop.bivio.biz',
 	},
