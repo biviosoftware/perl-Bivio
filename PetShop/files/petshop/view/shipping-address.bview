@@ -12,9 +12,7 @@ view_put(menu_content => Form('ShippingAddressForm', Grid([
 	    .'your order shipped.', 'page_text')
 	    ->put(cell_colspan => 2),
     ], [
-	vs_form_field('ShippingAddressForm.Order.ship_to_first_name'),
-    ], [
-	vs_form_field('ShippingAddressForm.Order.ship_to_last_name'),
+	vs_form_field('ShippingAddressForm.Order.ship_to_name'),
     ],
     vs_address_fields('OrderForm', '_2'),
     [
