@@ -647,23 +647,26 @@ EOF
 
 =head2 static image(any icon) : Bivio::UI::HTML::Widget::Image
 
-=head2 static image(any icon, any alt) : Bivio::UI::HTML::Widget::Image
+=head2 static image(any icon, any alt, hash_ref attrs) : Bivio::UI::HTML::Widget::Image
 
 Returns an Image widget configured with I<icon> and I<alt>.
 
 If I<alt> is not defined and I<icon> is not a ref, will lookup
 in the label table as I<icon>_ALT.
 
+I<attrs> are applied to the Image Widget.
+
 =cut
 
 sub image {
-    my($proto, $icon, $alt) = @_;
+    my($proto, $icon, $alt, $attrs) = @_;
     _use('Image');
     $alt = Bivio::UI::Label->get_simple($icon.'_alt')
 	    unless defined($alt) || ref($icon);
     return Bivio::UI::HTML::Widget::Image->new({
 	src => $icon,
 	alt => $alt,
+	$attrs ? %$attrs : (),
     });
 }
 
