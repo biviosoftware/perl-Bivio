@@ -100,7 +100,7 @@ my(@_CFG) = (
     [qw(
 	SETUP_USER_CREATE
 	6
-	undef
+	CreateUser
 	Setup::Login
     )],
     [qw(
