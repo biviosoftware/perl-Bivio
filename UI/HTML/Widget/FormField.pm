@@ -53,12 +53,12 @@ Widget value boolean which dynamically determines if the row should render.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::Widget::FormFieldError;
-use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::HTML::WidgetFactory;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 FACTORIES
 
@@ -86,7 +86,7 @@ sub new {
 
     # adds the error widget and the edit widget
     $self->put(values => [
-	Bivio::UI::HTML::Widget::FormFieldError->new({
+	$_VS->vs_new('FormFieldError', {
 	    field => _get_field_name($self),
 	    label => _get_label_value($self),
 	}),
@@ -102,7 +102,7 @@ sub new {
 
 =for html <a name="get_label_and_field"></a>
 
-=head2 get_label_and_field() : (Bivio::UI::HTML::Widget::String, Bivio::UI::HTML::Widget::FormField)
+=head2 get_label_and_field() : (Bivio::UI::HTML::Widget::FormFieldLabel, Bivio::UI::HTML::Widget::FormField)
 
 Creates a label for the field, and returns the (label, field) pair.
 
@@ -111,30 +111,23 @@ Creates a label for the field, and returns the (label, field) pair.
 sub get_label_and_field {
     my($self) = @_;
 
-    my($label) = Bivio::UI::HTML::Widget::String->new({
-	string_font => 'form_field_label',
-	value => Bivio::UI::Widget::Join->new({
-	    values => [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => _get_label_value($self),
-		}),
-		': ',
-	    ],
-	}),
-    });
-    $label->put(row_control => $self->get('row_control'))
-	    if $self->unsafe_get('row_control');
-
-    return ($label, $self);
+    return ($_VS->vs_new('FormFieldLabel', {
+	field => _get_field_name($self),
+	label => $_VS->vs_string(
+	    $_VS->vs_join(_get_label_value($self), ':'), 'form_field_label'),
+	($self->unsafe_get('row_control')
+	    ? (row_control => $self->get('row_control'))
+	    : ()),
+    }), $self);
 }
 
 =for html <a name="internal_new_args"></a>
 
-=head2 static internal_new_args(string field) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget) : hash_ref
+=head2 static internal_new_args(string field) : hash_ref
 
-=head2 static internal_new_args(string field, hash_ref edit_attributes) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget) : hash_ref
+=head2 static internal_new_args(string field, hash_ref edit_attributes) : hash_ref
 
-=head2 static internal_new_args(string field, hash_ref edit_attributes, array_ref row_control) : (Bivio::UI::HTML::Widget::String, Bivio::UI::Widget) : hash_ref
+=head2 static internal_new_args(string field, hash_ref edit_attributes, array_ref row_control) : hash_ref
 
 Implements positional argument parsing for L<new|"new">.
 
