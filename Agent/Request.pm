@@ -1,9 +1,10 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Request;
 use strict;
 
 $Bivio::Agent::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::Request::VERSION;
 
 =head1 NAME
 
@@ -312,6 +313,28 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Returns the important request context as a string.  Items currently
+returned: task, user, referer, uri, query, and form.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($r) = $self->unsafe_get('r');
+    return 'Request['.Bivio::IO::Alert->format_args(
+	    'task=', $self->get('task_id')->get_name,
+	    ' user=', $r ? $r->connection->user : undef,
+	    ' referer=', $r ? $r->header_in('Referer') : undef,
+	    ' uri=', $self->unsafe_get('uri'),
+	    ' query=', $self->unsafe_get('query'),
+	    ' form=', $self->unsafe_get('form'),
+	   ).']';
+}
 
 =for html <a name="can_user_execute_task"></a>
 
@@ -1230,15 +1253,7 @@ uri, query, form).
 
 sub warn {
     my($self) = shift;
-    my($r) = $self->unsafe_get('r');
-    Bivio::IO::Alert->warn(@_,
-	    ' task=', $self->get('task_id')->get_name,
-	    ' user=', $r ? $r->connection->user : undef,
-	    ' uri=', $self->unsafe_get('uri'),
-	    ' query=', $self->unsafe_get('query'),
-	    ' form=', $self->unsafe_get('form'),
-	    );
-    return;
+    return Bivio::IO::Alert->warn(@_, ' ', $self)
 }
 
 #=PRIVATE METHODS
@@ -1328,7 +1343,7 @@ RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
