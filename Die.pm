@@ -98,6 +98,8 @@ I<die> will be C<undef> if I<code> succeeded.
 If I<code> threw a Die, I<die> will contain that value
 and the return value will be C<undef> or an empty list.
 
+$_ is localized in this call.  Do not assume it will be modified by I<code>.
+
 =cut
 
 sub catch {
@@ -246,6 +248,8 @@ If I<code> is a string or string_ref, will be evaled in the caller's package.
 
 NOTE: Warnings are not suppressed during code execution.
 
+$_ is localized in this call.  Do not assume it will be modified by I<code>.
+
 =cut
 
 sub eval {
@@ -261,6 +265,8 @@ sub eval {
 Calls L<catch|"catch"> preserving calling context (using wantarray).  If the
 operation fails, rethrows the die.  Otherwise, returns the result as in
 L<catch|"catch"> with preseved call context.
+
+$_ is localized in this call.  Do not assume it will be modified by I<code>.
 
 =cut
 
@@ -500,6 +506,7 @@ sub _check_code {
 #
 sub _eval {
     my($code) = @_;
+    local($_);
     return eval {&$code();} if ref($code) eq 'CODE';
     my($i, $pkg) = 0;
     0 while ($pkg = caller($i++)) eq __PACKAGE__;
