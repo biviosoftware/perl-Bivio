@@ -210,7 +210,7 @@ sub _run {
     foreach my $d (sort(keys(%$tests))) {
 	$self->print("*** Entering: $d\n") unless $one_dir;
 	Bivio::IO::File->chdir($d);
-	foreach my $t (@{$tests->{$d}}) {
+	foreach my $t (sort(@{$tests->{$d}})) {
 	    $self->print(sprintf('%20s: ', $t));
 	    my($res) = 'FAILED';
 	    my($out);
