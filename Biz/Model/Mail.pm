@@ -611,11 +611,13 @@ sub _attach_to_parent {
 sub _sortable_subject {
     my($subject, $realm_name) = @_;
 
-    chomp($subject) if defined($subject);
+    if (defined($subject)) {
+        chomp($subject);
+        # Strip the name prefix out of the message, but leave the "Re:"
+        $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
+        $subject = substr($subject, 0, $_MAX_WIDTH);
+    }
     $subject = '(no subject)' unless defined($subject) && length($subject);
-    # Strip the name prefix out of the message, but leave the "Re:"
-    $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
-    $subject = substr($subject, 0, $_MAX_WIDTH);
 
     my($sortable) = lc($subject);
     $sortable =~ s/^\s*re:\s*//;
