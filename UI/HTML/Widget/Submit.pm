@@ -32,18 +32,11 @@ C<Bivio::UI::HTML::Widget::Submit> draws a submit button.
 
 =over 4
 
-=back image : array_ref
+=item form_model : array_ref (required, inherited)
 
-I<Not implemented.>
+Which form are we dealing with.
 
-=item submit_name : string [] (inherited)
-
-The value to be passed to the C<NAME> attribute of the C<INPUT> tag.
-
-=item submit_value : string [] (inherited)
-
-The value to be passed to the C<VALUE> attribute of the C<INPUT> tag.
-I<Note: this is also the label on the button>.
+=back
 
 =cut
 
@@ -79,20 +72,15 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.  In this case, prefix and suffix
-field values.
+Initializes static information.
 
 =cut
 
 sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return if exists($fields->{value});
-    my($name, $value) = $self->unsafe_get(qw(simple_name simple_value));
-    my($p) = ('<input type=submit');
-    $p .= qq! name="$name"! if defined($name);
-    $p .= qq! value="$value"! if defined($value);
-    $fields->{value} = $p . '>';
+    return if $fields->{model};
+    $fields->{model} = $self->ancestral_get('form_model');
     return;
 }
 
@@ -100,12 +88,14 @@ sub initialize {
 
 =head2 is_constant : boolean
 
-Returns true
+Will return true if always renders exactly the same way.
 
 =cut
 
 sub is_constant {
-#TODO: fix when image implemented
+    my($fields) = shift->{$_PACKAGE};
+    Carp::croak('can only be called after first render')
+		unless $fields->{initialized};
     return 1;
 }
 
@@ -120,6 +110,13 @@ Render the object.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $$buffer .= $fields->{value}, return if $fields->{initialized};
+    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($name) = $form->SUBMIT();
+    $fields->{value} = '<input type=submit name='.$name.' value="'
+	    .$form->SUBMIT_OK()
+	    .'">&nbsp;<input type=submit name='.$name.' value="'
+	    .$form->SUBMIT_CANCEL().'">';
     $$buffer .= $fields->{value};
     return;
 }

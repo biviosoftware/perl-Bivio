@@ -40,14 +40,14 @@ No special formatting is implemented.  For layout, use, e.g.
 
 =over 4
 
-=item action : string (required)
+=item action : string [$req->format_uri]
 
 Literal text to use as
 the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item action : array_ref (required)
+=item action : array_ref [$req->format_uri]
 
 Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
 used as the C<ACTION> attribute of the C<FORM> tag.
@@ -57,6 +57,11 @@ before rendering.
 =item form_method : string [POST] (inherited)
 
 The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
+
+=item form_model : array_ref (required, inherited)
+
+Which form are we dealing with.  Will call
+L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
 
 =item value : Bivio::UI::Widget (required)
 
@@ -70,10 +75,10 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 =cut
 
 #=IMPORTS
+use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_DEFAULT_METHOD) = 'POST';
 
 =head1 FACTORIES
 
@@ -110,17 +115,21 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{prefix};
     my($p) = '<form method=';
-    $p .= $self->ancestral_get('form_method', $_DEFAULT_METHOD);
-    my($action);
-    ($action, $fields->{value}) = $self->get('action', 'value');
+    $p .= $self->ancestral_get('form_method', 'POST');
+    ($fields->{model}, $fields->{value}) = $self->get('form_model', 'value');
+    my($action) = $self->unsafe_get('action');
     $p .= ' action="';
     if (ref($action)) {
 	$fields->{action} = $action;
     }
-    else {
+    elsif (defined($action)) {
 	$p .= Bivio::Util::escape_html($action) . "\">\n";
     }
+    else {
+	$fields->{action} = 1;
+    }
     $fields->{prefix} = $p;
+    $fields->{model} = $self->get('form_model');
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
     return;
@@ -135,10 +144,31 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    # Method
     $$buffer .= $fields->{prefix};
-    $$buffer .= Bivio::Util::escape_html(
-	    $source->get_widget_value(@{$fields->{action}})) . "\">\n"
-		    if $fields->{action};
+
+    # Action (if not static)
+    my($action) = $fields->{action};
+    if ($action) {
+	# If there is an action, get it.  Otherwise, the action is
+	# this current task's action.
+	$action = ref($action)
+		? $source->get_widget_value(@$action)
+			: Bivio::Agent::Request->get_current->format_uri();
+	$$buffer .= $action . "\">\n"
+    }
+
+    # Hidden fields (if any)
+    my($hidden) = $source->get_widget_value(@{$fields->{model}})
+	    ->get_hidden_field_values();
+    while (@$hidden) {
+	# hidden fields have been converted to literal, but not  escaped.
+	$$buffer .= '<input type=hidden name='.shift(@$hidden).' value="'
+		.Bivio::Util::escape_html(shift(@$hidden))."\">\n";
+    }
+
+    # Rest of the form
     $fields->{value}->render($source, $buffer);
     $$buffer .= '</form>';
     return;
