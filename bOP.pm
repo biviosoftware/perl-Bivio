@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    verify_link() fixed, and pattern arg is optional for old tests
+  * Bivio::Type::DateInterval added IRS_TAX_SEASON
+  * Bivio::Util::Release first pass at custom up2date-like management
+
+  Revision 2.39  2004/10/19 22:58:21  nagler
+  * Bivio::Biz::Model->internal_initialize_local_fields accepts a list
+    of (class, fields) tuples
+  * Bivio::Delegator refactored and optimized with unit test
+  * Bivio::IO::ClassLoader->delegate_require refactored
+  * Bivio::Mail::Outgoing->set_headers_for_list_send no longer sets
+    Precedence: list -- too many spam filters catch this
+  * Bivio::Test::HTMLParser::Forms->unsafe/get_field look up fields in
+    forms using string or regexp. get_by_field_names uses these new
+    routines.
+  * Bivio::Test::Language::HTTP uses (above) get_field to allow more
+    flexible verification and form submission.
+  * Bivio::Test::Language::HTTP->verify_form accepts option values or
+    labels for radios and selects.
+  * Bivio::Type::DateInterval->THREE_MONTHS added
+  * Bivio::Type::Enum->equals_by_name accepts multipe names
+  * Bivio::Type::EnumDelegator allows calls directly on delegated enum
+    values.
   * Bivio::Type::ECService subclasses (above) EnumDelegator
   * Bivio::Type::Number->max/min supported
   * Bivio::UI::HTML::Widget::Select refactored
