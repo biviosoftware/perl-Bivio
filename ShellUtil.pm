@@ -36,7 +36,10 @@ L<setup|"setup"> creates a request from the standard
 options (I<user>, I<db>, and I<realm>).  It is called
 implicitly by L<get_request|"get_request">
 
-Options precede the command.  See L<OPTIONS|"OPTIONS">.
+Options precede the command.  See L<OPTIONS|"OPTIONS">.  If the options
+contain references or are C<undef>, the value is used verbatim.  If
+the option value is a string, it will be parsed with the C<from_literal>
+of the option's type.
 
 For an example, see L<Bivio::Biz::Util::File|Bivio::Biz::Util::File>
 and L<Bivio::Biz::Util::Filtrum|Bivio::Biz::Util::Filtrum> (less complex).
@@ -69,6 +72,16 @@ if available.
 =item force : boolean [0]
 
 If true, L<are_you_sure|"are_you_sure"> will always return true.
+
+=item input : string [-]
+
+Reads the input file. If C<->, reads from stdin.  See
+L<read_input|"read_input">.
+
+=item input : ref
+
+The contents of the input file.  Value is returned verbatim from
+L<read_input|"read_input">.
 
 =item noexecute : boolean [1]
 
@@ -225,6 +238,7 @@ use Bivio::Die;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use Bivio::Type;
+use Bivio::Type::DateTime;
 use Bivio::TypeError;
 use Data::Dumper ();
 
@@ -315,21 +329,35 @@ sub command_line {
 		    : 'N/A';
 }
 
+=for html <a name="commit_or_rollback"></a>
+
+=head2 commit_or_rollback(boolean abort)
+
+Commits if !I<abort> and !I<noexecute>.
+
+=cut
+
+sub commit_or_rollback {
+    my($self, $abort) = @_;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Task');
+    $self->unsafe_get('noexecute') || $abort
+	    ? Bivio::Agent::Task->rollback($self->get('req'))
+		    : Bivio::Agent::Task->commit($self->get('req'));
+    return;
+}
+
 =for html <a name="finish"></a>
 
 =head2 finish(boolean abort)
 
-Commit (if !noexecute) and clean up work of setup.
+Calls L<commit_or_rollback|"commit_or_rollback"> and undoes setup.
 
 =cut
 
 sub finish {
     my($self, $abort) = @_;
     my($fields) = $self->{$_PACKAGE};
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Task');
-    $self->unsafe_get('noexecute') || $abort
-	    ? Bivio::Agent::Task->rollback($self->get('req'))
-		    : Bivio::Agent::Task->commit($self->get('req'));
+    $self->commit_or_rollback($abort);
     return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
 }
 
@@ -490,6 +518,19 @@ sub put {
     return $self->SUPER::put(@_);
 }
 
+=for html <a name="put_request"></a>
+
+=head2 put_request(Bivio::Agent::Request req) : self
+
+Puts I<req> on I<self> and modifies other values appropriately.
+
+=cut
+
+sub put_request {
+    my($self, $req) = @_;
+    return $self->put(req => $req);
+}
+
 =for html <a name="read_file"></a>
 
 =head2 static read_file(string file_name) : string_ref
@@ -509,13 +550,14 @@ sub read_file {
 =head2 read_input() : string_ref
 
 Returns the contents if I<input> argument.  If no argument, reads
-from STDIN.
+from STDIN.  If I<input> is a ref, just return that.
 
 =cut
 
 sub read_input {
     my($self) = @_;
-    return Bivio::IO::File->read($self->get('input'));
+    my($input) = $self->get('input');
+    return ref($input) ? $input : Bivio::IO::File->read($input);
 }
 
 =for html <a name="ref_to_string"></a>
@@ -549,13 +591,34 @@ or printing to STDOUT.
 
 sub result {
     my($self, $cmd, $res) = @_;
-    $res = _result_ref($res);
+    $res = _result_ref($self, $res);
     return unless $res;
 
     # If we write email or output, then don't write to STDOUT.
-    return if _result_email(@_) + _result_output(@_);
+    return if _result_email($self, $cmd, $res)
+	    + _result_output($self, $cmd, $res);
     print STDOUT $$res;
     return;
+}
+
+=for html <a name="set_user_to_first_admin"></a>
+
+=head2 set_user_to_first_admin() : Bivio::Biz::Model::RealmOwner
+
+Sets the user to first_admin on I<self> and I<req>.  Returns the
+first admin.
+
+=cut
+
+sub set_user_to_first_admin {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    $req->set_user(Bivio::Biz::Model->new($req, 'RealmAdminList')
+	    ->get_first_admin($self->get('req')->get('auth_realm')
+		    ->get('owner')));
+    my($user) = $req->get('auth_user');
+    $self->put(user => $user->get('name'));
+    return $user;
 }
 
 =for html <a name="setup"></a>
@@ -588,19 +651,12 @@ sub setup {
 	auth_id => $realm,
 	auth_user_id => $user,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
+	timezone => Bivio::Type::DateTime->get_local_timezone(),
     }));
 
-    my($req) = $self->get('req');
-    if ($realm && !$user) {
-	# No user, but have a realm, so set a user
-        $req->set_user(
-		Bivio::Biz::Model::RealmOwner->new($req)->unauth_load_or_die(
-			realm_id => Bivio::Biz::Model->new($req,
-				'RealmAdminList')
-			->get_first_admin(
-				$self->get('req')->get('auth_realm')
-				->get('owner'))));
-    }
+    # Must be after req is put on self (avoids infinite recursion).
+    # No user, but have a realm, so set a user.
+    $self->set_user_to_first_admin if $realm && !$user;
     return;
 }
 
@@ -753,9 +809,15 @@ sub _parse_options {
 	    next;
 	}
 	$self->usage("-$k: missing an argument") unless @$argv;
-	my($v, $e) = shift(@$argv);
-	($v, $e) = $opt->[1]->from_literal($v);
-	$self->usage("-$k: ", $e->get_long_desc) if $e;
+	my($v, $e);
+	$v = shift(@$argv);
+
+	# We allow the caller to pass in "undef" or a "ref" for the value
+	# of an option, i.e. it doesn't need to be parsed.
+	unless (ref($v) || !defined($v)) {
+	    ($v, $e) = $opt->[1]->from_literal($v);
+	    $self->usage("-$k: ", $e->get_long_desc) if $e;
+	}
 	$res->{$opt->[0]} = $v;
     }
 
@@ -813,7 +875,7 @@ sub _result_email {
     return 1;
 }
 
-# _result_output(Bivio::ShellUtil self, string cmd, string_ref res) : boolean
+# _result_output(self, string cmd, string_ref res) : boolean
 #
 # Returns true if there is an output option and it is written to a file.
 #
@@ -826,19 +888,17 @@ sub _result_output {
     return 1;
 }
 
-# _result_ref(any res) : scalar_ref
+# _result_ref(self, any res) : scalar_ref
 #
 # Returns a scalar reference to the result or undef if no result to print.
+# Will print any structure.
 #
 sub _result_ref {
-    my($res) = @_;
+    my($self, $res) = @_;
     return undef unless defined($res);
     my($ref) = \$res;
     if (ref($res)) {
-	unless (ref($res) eq 'SCALAR') {
-	    Bivio::IO::Alert->warn('result is not a scalar: ', $res);
-	    return undef;
-	}
+	return $self->ref_to_string($res) unless ref($res) eq 'SCALAR';
 	$ref = $res;
     }
     return defined($$ref) && length($$ref) ? $ref : undef;
