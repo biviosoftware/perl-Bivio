@@ -67,14 +67,11 @@ sub execute_empty {
     $req->put(target_realm_owner => $req->get('auth_realm')->get('owner'));
 
     my($tax) = Bivio::Biz::Model::Tax1065->new($req);
-    unless ($tax->unsafe_load(fiscal_end_date => $end_date)) {
-	$tax->create_default($end_date);
-    }
+    $tax->load_or_default($end_date);
 
     $properties->{'Tax1065.realm_id'} = $req->get('auth_id');
     $properties->{'Tax1065.fiscal_end_date'} = $end_date;
     $properties->{'Address.location'} = Bivio::Type::Location::HOME();
-#    $properties->{'Club.club_id'} = $req->get('auth_id');
     $self->load_from_model_properties('Tax1065');
     $self->load_from_model_properties('Address');
     $self->load_from_model_properties('TaxId');
@@ -132,7 +129,6 @@ sub internal_initialize {
     return {
 	version => 1,
 	visible => [
-	    'Tax1065.allocation_method',
 	    'Tax1065.partnership_type',
 #TODO: bug in form doesn't allow undef booleans as false
 	    {

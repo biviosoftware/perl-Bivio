@@ -125,14 +125,7 @@ sub execute_empty {
     $user->unauth_load_or_die(realm_id => $realm_user->get('user_id'));
 
     my($taxk1) = Bivio::Biz::Model::TaxK1->new($req);
-    unless ($taxk1->unsafe_load(fiscal_end_date => $date,
-	   user_id => $user->get('realm_id'))) {
-	my($user_id) = $user->get('realm_id');
-	my($address) = Bivio::Biz::Model::Address->new($req);
-	$address->unauth_load_or_die(realm_id => $user_id,
-		location => Bivio::Type::Location::HOME());
-	$taxk1->create_default($user_id, $date);
-    }
+    $taxk1->load_or_default($user->get('realm_id'), $date);
 
     my($allocations) = _get_user_allocations($self, $user, $date);
 
@@ -396,9 +389,7 @@ sub _get_irs_center {
     my($self, $taxk1) = @_;
     my($date) = $taxk1->get('fiscal_end_date');
     my($tax1065) = Bivio::Biz::Model::Tax1065->new($self->get_request);
-    unless ($tax1065->unsafe_load(fiscal_end_date => $date)) {
-	$tax1065->create_default($date);
-    }
+    $tax1065->load_or_default($date);
     return $tax1065->get('irs_center');
 }
 

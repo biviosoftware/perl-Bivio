@@ -40,38 +40,6 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="create_default"></a>
-
-=head2 create_default(string fiscal_end_date)
-
-Creates a model for the current realm with default values.
-
-=cut
-
-sub create_default {
-    my($self, $fiscal_end_date) = @_;
-
-#TODO: determine irs center from club address
-    my($irs_center) = Bivio::Type::F1065IRSCenter->UNKNOWN;
-
-    $self->create({
-	realm_id => $self->get_request->get('auth_id'),
-	fiscal_end_date => $fiscal_end_date,
-	partnership_type => Bivio::Type::F1065Partnership::GENERAL(),
-	partnership_is_partner => 0,
-	partner_is_partnership => 0,
-	consolidated_audit => 1,
-	publicly_traded => 0,
-	tax_shelter => 0,
-	foreign_account_country => undef,
-	foreign_trust => 0,
-	return_type => Bivio::Type::F1065Return::UNKNOWN(),
-	irs_center => $irs_center,
-	allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
-    });
-    return;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -101,6 +69,40 @@ sub internal_initialize {
         },
 	auth_id => 'realm_id',
     };
+}
+
+=for html <a name="load_or_default"></a>
+
+=head2 load_or_default(string fiscal_end_date)
+
+Loads or creates the 1065 model for the previous tax year.
+
+=cut
+
+sub load_or_default {
+    my($self, $fiscal_end_date) = @_;
+    unless ($self->unsafe_load(fiscal_end_date => $fiscal_end_date)) {
+
+#TODO: determine irs center from club address
+	my($irs_center) = Bivio::Type::F1065IRSCenter->UNKNOWN;
+
+	$self->create({
+	    realm_id => $self->get_request->get('auth_id'),
+	    fiscal_end_date => $fiscal_end_date,
+	    partnership_type => Bivio::Type::F1065Partnership::GENERAL(),
+	    partnership_is_partner => 0,
+	    partner_is_partnership => 0,
+	    consolidated_audit => 1,
+	    publicly_traded => 0,
+	    tax_shelter => 0,
+	    foreign_account_country => undef,
+	    foreign_trust => 0,
+	    return_type => Bivio::Type::F1065Return::UNKNOWN(),
+	    irs_center => $irs_center,
+	    allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
+	});
+    }
+    return;
 }
 
 #=PRIVATE METHODS

@@ -39,28 +39,6 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="create_default"></a>
-
-=head2 create_default(string user_id, string fiscal_end_date)
-
-Creates a K1 model for the current realm with default values.
-
-=cut
-
-sub create_default {
-    my($self, $user_id, $fiscal_end_date) = @_;
-
-    $self->create({
-	realm_id => $self->get_request->get('auth_id'),
-	user_id => $user_id,
-	fiscal_end_date => $fiscal_end_date,
-	entity_type => Bivio::Type::F1065Entity->INDIVIDUAL,
-	partner_type => Bivio::Type::F1065Partner->GENERAL,
-	foreign_partner => 0,
-    });
-    return;
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -82,6 +60,31 @@ sub internal_initialize {
 	    foreign_partner => ['Boolean', 'NOT_NULL'],
         },
     };
+}
+
+=for html <a name="load_or_default"></a>
+
+=head2 load_or_default(string user_id, string fiscal_end_date)
+
+Loads or creates a new k1 for the specified user and tax year.
+
+=cut
+
+sub load_or_default {
+    my($self, $user_id, $fiscal_end_date) = @_;
+    unless ($self->unsafe_load(fiscal_end_date => $fiscal_end_date,
+	    user_id => $user_id)) {
+
+	$self->create({
+	    realm_id => $self->get_request->get('auth_id'),
+	    user_id => $user_id,
+	    fiscal_end_date => $fiscal_end_date,
+	    entity_type => Bivio::Type::F1065Entity->INDIVIDUAL,
+	    partner_type => Bivio::Type::F1065Partner->GENERAL,
+	    foreign_partner => 0,
+	});
+    }
+    return;
 }
 
 #=PRIVATE METHODS

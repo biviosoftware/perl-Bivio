@@ -130,9 +130,7 @@ sub execute_empty {
 
     my($date) = $req->get('report_date');
     my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
-    unless ($tax1065->unsafe_load(fiscal_end_date => $date)) {
-	$tax1065->create_default($date);
-    }
+    $tax1065->load_or_default($date);
     my($tax) = 'Bivio::Type::TaxCategory';
 
     my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
