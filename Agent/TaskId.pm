@@ -1782,6 +1782,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::F1065ParametersForm
         Bivio::UI::HTML::Club::F1065Parameters
         next=CLUB_ACCOUNTING_TAX99
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99_F1065K1_PARAMETERS
@@ -1794,6 +1795,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::F1065K1ParametersForm
         Bivio::UI::HTML::Club::F1065K1Parameters
         next=CLUB_ACCOUNTING_TAX99
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99_SCHEDULE_D
@@ -1886,6 +1888,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Tax::Checklist
         next=CLUB_ACCOUNTING_TAX99_CHECKLIST
+        require_secure=1
     )],
     [qw(
         CLUB_ACCOUNTING_TAX99_MISSING_FIELDS
@@ -1901,6 +1904,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Tax::Checklist
         next=CLUB_ACCOUNTING_TAX99_CHECKLIST
+        require_secure=1
     )],
     [qw(
         MAIL_RECEIVE
