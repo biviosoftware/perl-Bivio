@@ -133,8 +133,8 @@ sub check_accept_after_login {
 
     # Don't do anything if already unwinding to an invite task
     my($task) = $login->unsafe_get_context('unwind_task');
-    if ($task == Bivio::Agent::TaskId::REALM_INVITE_ACCEPT()
-	    || $task == Bivio::Agent::TaskId::CLUB_GUEST_2_MEMBER_ACCEPT()) {
+    if (defined($task) && ($task == Bivio::Agent::TaskId::REALM_INVITE_ACCEPT()
+            || $task == Bivio::Agent::TaskId::CLUB_GUEST_2_MEMBER_ACCEPT())) {
 	_trace('unwinding to ', $task) if $_TRACE;
 	return;
     }
