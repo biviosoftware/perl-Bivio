@@ -23,13 +23,14 @@ use Bivio::Test::Engine;
 
 #=VARIABLES
 
-Bivio::Test::Engine->main(@ARGV);
+my($engine) = Bivio::Test::Engine->new();
+$engine->main(@ARGV);
 
 =head1 SEE ALSO
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Bivio, Inc.  All rights reserved.
+Copyright (c) 2000 Bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
