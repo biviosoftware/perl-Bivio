@@ -56,10 +56,10 @@ Creates a reply in an error state with the 'text/plain' output type.
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
+    my($self) = Bivio::UNIVERSAL::new(@_);
     $self->[$_IDI] = {
         'output_type' => 'text/plain',
-        'die_code' => Bivio::DieCode::DIE(),
+        'die_code' => Bivio::DieCode->DIE,
     };
     return $self;
 }
