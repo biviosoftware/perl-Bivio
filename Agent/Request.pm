@@ -969,11 +969,14 @@ uses Request.auth_user_id.
 
 sub is_super_user {
     my($self, $user_id) = @_;
-#TODO: Optimize using user_realms
-    return Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
-	realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
-	user_id => $user_id || $self->get('auth_user_id'),
-    });
+    return !$user_id || $user_id eq $self->get('auth_user_id')
+	? _get_role($self, Bivio::Auth::RealmType::GENERAL->as_int)
+	    ->equals_by_name('ADMINISTRATOR')
+	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
+	    realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
+	    user_id => $user_id,
+	    role => Bivio::Auth::Role->ADMINISTRATOR,
+	});
 }
 
 =for html <a name="push_txn_resource"></a>
