@@ -456,8 +456,6 @@ sub internal_initialize {
 
 =for html <a name="redirect"></a>
 
-=head2 redirect(Bivio::Agent::TaskId new)
-
 =head2 redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
 
 Redirect the current task to the new task.
