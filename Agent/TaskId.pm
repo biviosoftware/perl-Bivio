@@ -239,7 +239,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/reports/accounts
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::AccountSummaryList
+        Bivio::UI::HTML::Club::AccountSummaryReport
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_JOURNAL
