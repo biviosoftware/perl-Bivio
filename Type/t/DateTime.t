@@ -3,11 +3,13 @@ use Bivio::Test;
 use Bivio::Type::DateTime;
 use Bivio::Type::Date;
 use Bivio::Type::Time;
-sub make_time {
-    return Bivio::Type::DateTime->DEFAULT_DATE.' '.shift(@_);
-}
-Bivio::Test->new({
-})->unit([
+use Bivio::Agent::Request;
+
+# Set the timezone to something specific
+Bivio::Agent::Request->get_current_or_new->put(timezone => 120);
+
+# Tests
+Bivio::Test->unit([
     'Bivio::Type::DateTime' => [
 	from_literal => [
 	    [undef] => [undef],
