@@ -24,34 +24,18 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::SQL::Connection> is a collection of static methods used
-to transact with the database. This module maintains one connection
-to the database at all times.  It will reset the connection if the
-database the connection is lost.
+C<Bivio::SQL::Connection> is used to transact with the database. Instances
+of this module maintains one connection to the database at all times.  They
+will reset the connection if the database the connection is lost.
 
-B<Bivio::Agent::Task depends on the fact that this is the only module
-which modifies the database.>
+B<Bivio::Agent::Task> depends on the fact that this is the only module
+which modifies the database.
 
 =cut
 
 =head1 CONSTANTS
 
 =cut
-
-=for html <a name="MAX_BLOB"></a>
-
-=head2 MAX_BLOB : int
-
-Maximum length of a blob.  You cannot retrieve blobs larger than this.
-You can only have one blob per record.
-
-Returns 0x400_000
-
-=cut
-
-sub MAX_BLOB {
-    return 0x400_000;
-}
 
 =for html <a name="MAX_PARAMETERS"></a>
 
@@ -70,101 +54,56 @@ sub MAX_PARAMETERS {
     return 100;
 }
 
-=for html <a name="MAX_RETRIES"></a>
-
-=head2 MAX_RETRIES : int
-
-Number of times we retry a single statement.
-
-Returns 3.
-
-=cut
-
-sub MAX_RETRIES {
-    return 3;
-}
-
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
 use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
-use Bivio::TypeError;
 use Bivio::Type::DateTime;
-# See reference to ORA_BLOB below
-# use DBD::Oracle qw(:ora_types);
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_DBI_NAME) = undef;
-my($_DB_IS_READ_ONLY) = 0;
-my($_CONNECTION);
-# Set to the pid that creates the connection.  Ensures all children
-# use a different connection.
-my($_CONNECTION_PID) = 0;
-# If there is an error, this will be true.  _get_connection checks the
-# connection with a ping to make sure it is still alive.
-my($_NEED_PING) = 0;
-my($_NEED_COMMIT) = 0;
-my($_DB_TIME) = 0;
-# Allow for a bit larger space than maximum blob
-my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
-my(%_ERR_TO_DIE) = (
-# Why bother?
-#	1400 => Bivio::DieCode::ALREADY_EXISTS,
-#	die('required value missing') if $err == 1400;
-#    die('invalid number') if $err == 1722;
-        # ORA-00060: deadlock detected
-    60 => {
-	code => Bivio::DieCode->UPDATE_COLLISION,
-    },
-    # ORA-12154: TNS:could not resolve service name
-    12154 => {
-	code => Bivio::DieCode->CONFIG_ERROR,
-	message => 'Invalid database configuration. Oracle not configured?',
-	program_error => 1,
-    },
-);
+my($_CONNECTIONS) = {};
+my($_DEFAULT_DBI_NAME);
+# Number of times we retry a single statement.
+my($_MAX_RETRIES) = 3;
 
-#
-# We need to retry connections in the event of certain failures.  These
-# are outlined in:
-# http://www.oracle.com/nt/clusters/failsafe/html/fs_30_cawp.html
-#
-# We have seen ORA-03113 as the result of a oracle slave crash.
-# See:
-# http://www.oracle.com/support/bulletins/net/net2/html/1523.html
-#
-# Always sleep between oracle errors and retries.  We saw ORA-00020 at
-# one point on the test system when we were having a spate of 3113
-# errors.  This led to defunct processes.
-#
-# Key=ora-#, value=sleep_seconds
-my(%_ERR_RETRY_SLEEP) = (
-    # ORA-01012: not logged on to Oracle
-    1012 => 2,
-    # ORA-01033: Oracle initialization or shutdown in progress
-    1033 => 15,
-    # ORA-01034: ORACLE not available
-    1034 => 5,
-    # ORA-01089: immediate shutdown in progress - no operations are permitted
-    1089 => 5,
-    # ORA-03113: end-of-file on communication channel
-    3113 => 2,
-    # ORA-03114: not connected to ORACLE
-    3114 => 2,
-    # ORA-12203: TNS: unable to connect to destination
-    12203 => 5,
-    # ORA-12500: TNS: listener failed to start a dedicated server process
-    12500 => 5,
-    # ORA-12537: TNS connection closed
-    12537 => 5,
-    # ORA-12571: TNS: packet writer failure
-    12571 => 2,
-);
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="internal_new"></a>
+
+=head2 static internal_new(string dbi_name) : Bivio::SQL::Connection
+
+Creates a new connection which uses the specified DBI config name.
+Do not call this method directly, use L<connect|"connect">.
+
+=cut
+
+sub internal_new {
+    my($proto, $dbi_name) = @_;
+    my($self) = Bivio::UNIVERSAL::new($proto);
+    $self->{$_PACKAGE} = {
+	dbi_name => $dbi_name,
+	db_is_read_only => 0,
+	connection => undef,
+	# Set to the pid that creates the connection.  Ensures all
+	# children use a different connection.
+	connection_pid => 0,
+	need_commit => 0,
+	# If there is an error, this will be true.  _get_connection
+	# checks the connection with a ping to make sure it is still
+	# alive.
+	need_ping => 0,
+	db_time => 0,
+    };
+    return $self;
+}
 
 =head1 METHODS
 
@@ -179,11 +118,40 @@ Commits all open transactions.
 =cut
 
 sub commit {
-    return unless $_NEED_COMMIT;
-    &_trace('commit') if $_TRACE;
-    _get_connection()->commit() unless $_DB_IS_READ_ONLY;
-    $_NEED_COMMIT = 0;
+    my($self) = @_;
+    return _get_instance($self)->commit
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
+    return unless $fields->{need_commit};
+    _trace('commit') if $_TRACE;
+    _get_connection($self)->commit() unless $fields->{db_is_read_only};
+    $fields->{need_commit} = 0;
     return;
+}
+
+=for html <a name="connect"></a>
+
+=head2 static connect() : Bivio::SQL::Connection
+
+=head2 static connect(string dbi_name) : Bivio::SQL::Connection
+
+Returns a connection instance which uses the specified database
+configuration.
+
+=cut
+
+sub connect {
+    my($proto, $dbi_name) = @_;
+
+    my($key) = defined($dbi_name) ? $dbi_name : '<default>';
+    # cache connections by dbi_name
+    unless ($_CONNECTIONS->{$key}) {
+	my($module) = Bivio::Ext::DBI->get_config($dbi_name)->{connection};
+	Bivio::IO::ClassLoader->simple_require($module);
+	_trace($module) if $_TRACE;
+	$_CONNECTIONS->{$key} = $module->internal_new($dbi_name);
+    }
+    return $_CONNECTIONS->{$key};
 }
 
 =for html <a name="disconnect"></a>
@@ -195,9 +163,13 @@ Disconnects from database.
 =cut
 
 sub disconnect {
-    _get_connection()->disconnect();
-    $_CONNECTION_PID = 0;
-    $_CONNECTION = undef;
+    my($self) = @_;
+    return _get_instance($self)->disconnect
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
+    _get_connection($self)->disconnect();
+    $fields->{connection_pid} = undef;
+    $fields->{connection} = undef;
     return;
 }
 
@@ -218,18 +190,23 @@ B<NOTE: All calls must go through this>
 
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 
-I<has_blob> is specified, the arguments are scanned for a scalar_ref.
+If I<has_blob> is specified, the arguments are scanned for a scalar_ref.
 If found, the positional parameter is bound properly.  If no scalar_ref
 is found, then the BLOB is assumed to be an output parameter and
 I<LongReadLen> and I<LongTruncOk> are set accordingly.
 
-We retry on certain errors (see $_ERR_RETRY_SLEEP in this model).
+We retry on certain errors (see
+L<internal_get_retry_sleep|"internal_get_retry_sleep">).
 
 =cut
 
 sub execute {
     my($self, $sql, $params, $die, $has_blob) = @_;
+    return _get_instance($self)->execute($sql, $params, $die, $has_blob)
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
 
+    $sql = $self->internal_fixup_sql($sql);
     my($err, $errstr, $statement);
     my($retries) = 0;
  TRY: {
@@ -248,20 +225,21 @@ sub execute {
 
 	# If we get an error, it may be a timed-out connection.  We'll
 	# check the connection the next time through.
-	$_NEED_PING = 1;
+	$fields->{need_ping} = 1;
 
 	# Can we retry?
-	last TRY unless exists($_ERR_RETRY_SLEEP{$err});
+	my($sleep) = $self->internal_get_retry_sleep($err);
+	last TRY unless defined($sleep);
 
 	# Don't retry if connection has executed DML already
-	if ($_NEED_COMMIT) {
+	if ($fields->{need_commit}) {
 	    Bivio::IO::Alert->warn($errstr,
 		    '; not retrying, partial transaction');
 	    last TRY;
 	}
 
 	# Maxed out?
-	if (++$retries > MAX_RETRIES()) {
+	if (++$retries > $_MAX_RETRIES) {
 	    Bivio::IO::Alert->warn($errstr, '; max retries hit');
 	    last TRY;
 	}
@@ -273,10 +251,10 @@ sub execute {
 		'; params=', @{_prep_params_for_io($params)},
 		'; retries=', $retries) if $retries == 1;
 
-	_trace('retry after sleep=', $_ERR_RETRY_SLEEP{$err}) if $_TRACE;
+	_trace('retry after sleep=', $sleep) if $_TRACE;
 
 	# Don't call "empty" sleeps
-	sleep($_ERR_RETRY_SLEEP{$err}) if $_ERR_RETRY_SLEEP{$err} > 0;
+	sleep($sleep) if $sleep > 0;
 	redo TRY;
     }
 
@@ -288,39 +266,12 @@ sub execute {
 	sql => $sql,
 	sql_params => $params,
     };
-    my($die_code);
-
-    # Constraint violation?
-    if ($errstr =~ /constraint \((\w+)\.(\w+)\) violated/i) {
-	$die_code = _interpret_constraint_violation($attrs, uc($1), uc($2));
-    }
+    my($die_code) = $self->internal_get_error_code($attrs);
 
     # Clean up just in case statement is cached
     Bivio::Die->eval(sub {
 	$statement->finish if $statement;
     });
-
-    # If we don't have a die_code, map it simply
-    unless ($die_code) {
-	unless ($err) {
-#TODO: This maybe should get moved up top.  I didn't want to change too much
-#      now, since we don't know what types of errors Oracle reports.
-	    # Some errors have to be parsed out.
-	    ($err) = $attrs->{message} =~ /ORA-0*(\d+):/;
-	    $err ||= 0;
-	}
-	if (defined($err) && defined($_ERR_TO_DIE{$err})) {
-	    # These may be program manageable errors;  See my(%_ERR_TO_DIE).
-	    $attrs = {%$attrs, %{$_ERR_TO_DIE{$err}}};
-	    $die_code = $attrs->{code};
-	    delete($attrs->{code});
-	}
-	else {
-	    $attrs->{program_error} = 1;
-	    # Unexpected oracle error is treated as an assertion fault
-	    $die_code = Bivio::DieCode::DB_ERROR();
-	}
-    }
 
     # Throw exception
     $die ||= 'Bivio::Die';
@@ -338,7 +289,10 @@ If there is no row, returns C<undef>.
 =cut
 
 sub execute_one_row {
-    my($sth) = shift->execute(@_);
+    my($self) = shift;
+    return _get_instance($self)->execute_one_row(@_)
+	    unless ref($self);
+    my($sth) = $self->execute(@_);
     my($row) = $sth->fetchrow_arrayref;
     $sth->finish;
     return $row;
@@ -346,7 +300,7 @@ sub execute_one_row {
 
 =for html <a name="get_db_time"></a>
 
-=head2 static get_db_time() : int
+=head2 get_db_time() : int
 
 If tracing is enabled, this returns the amount of time spent processing
 database requests. Invoking this method clears the counter.
@@ -354,26 +308,30 @@ database requests. Invoking this method clears the counter.
 =cut
 
 sub get_db_time {
-    my($result) = $_DB_TIME;
-    $_DB_TIME = 0;
+    my($self) = @_;
+    return _get_instance($self)->get_db_time
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
+    my($result) = $fields->{db_time};
+    $fields->{db_time} = 0;
     return $result;
 }
 
-=for html <a name="get_dbi_name"></a>
+=for html <a name="get_dbi_prefix"></a>
 
-=head2 get_dbi_name() : string
+=head2 static abstract get_dbi_prefix(hash_ref cfg) : string
 
-Returns current dbi name.
+Returns the DBI connect prefix for the database.
 
 =cut
 
-sub get_dbi_name {
-    return $_DBI_NAME;
+$_ = <<'}'; # emacs
+sub get_dbi_prefix {
 }
 
 =for html <a name="increment_db_time"></a>
 
-=head2 static increment_db_time(int start_time) : int
+=head2 increment_db_time(int start_time) : int
 
 If tracing is enabled, this increments the database time counter and
 returns its new value.
@@ -381,10 +339,99 @@ returns its new value.
 =cut
 
 sub increment_db_time {
-    my(undef, $start_time) = @_;
+    my($self, $start_time) = @_;
+    return _get_instance($self)->increment_db_time($start_time)
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
     die('invalid start_time') unless $start_time;
-    $_DB_TIME += Bivio::Type::DateTime->gettimeofday_diff_seconds($start_time);
-    return $_DB_TIME;
+    $fields->{db_time} += Bivio::Type::DateTime->gettimeofday_diff_seconds(
+	    $start_time);
+    return $fields->{db_time};
+}
+
+=for html <a name="internal_clear_ping"></a>
+
+=head2 internal_clear_ping()
+
+Clears the need_ping state.
+
+=cut
+
+sub internal_clear_ping {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{need_ping} = 0;
+    return;
+}
+
+=for html <a name="internal_fixup_sql"></a>
+
+=head2 internal_fixup_sql(string sql) : string
+
+Performs any database specific changes to the Oracle SQL string.
+
+=cut
+
+sub internal_fixup_sql {
+    my($self, $sql) = @_;
+    return $sql;
+}
+
+=for html <a name="internal_get_dbi_connection"></a>
+
+=head2 internal_get_dbi_connection() : connection
+
+Returns the raw DBI connection.
+
+=cut
+
+sub internal_get_dbi_connection {
+    my($self) = @_;
+    return _get_connection($self);
+}
+
+=for html <a name="internal_get_error_code"></a>
+
+=head2 internal_get_error_code(hash_ref die_attrs) : Bivio::Type::Enum
+
+Converts the database error into an appropriate error code. Subclasses
+should override this to handle constraint violations.
+
+=cut
+
+sub internal_get_error_code {
+    my($self, $die_attrs) = @_;
+    $die_attrs->{program_error} = 1;
+    # Unexpected error is treated as an assertion fault
+    return Bivio::DieCode::DB_ERROR();
+}
+
+=for html <a name="internal_get_retry_sleep"></a>
+
+=head2 internal_get_retry_sleep(string error) : int
+
+Returns the number of seconds to sleep for the specified transient
+error code. 0 indicates retry immediately, undef indicates don't
+retry.
+
+=cut
+
+sub internal_get_retry_sleep {
+    return undef;
+}
+
+=for html <a name="internal_execute_blob"></a>
+
+=head2 internal_prepare_blob(boolean is_select, array_ref params, scalar_ref statement) : array_ref
+
+Prepares the statement which store a blob. By default this method is not
+implemented.
+Returns the altered statement params.
+
+=cut
+
+sub internal_prepare_blob {
+    Bivio::Die->die("not implemented");
 }
 
 =for html <a name="is_read_only"></a>
@@ -397,7 +444,27 @@ database.
 =cut
 
 sub is_read_only {
-    return $_DB_IS_READ_ONLY;
+    my($self) = @_;
+    return _get_instance($self)->is_read_only
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{db_is_read_only};
+}
+
+=for html <a name="next_primary_id"></a>
+
+=head2 abstract next_primary_id(string table_name, ref die) : string
+
+Subclasses should return the next sequence number for the specified
+table.
+
+=cut
+
+sub next_primary_id {
+    my($self, $table_name, $die) = @_;
+    return _get_instance($self)->next_primary_id($table_name, $die)
+	    unless ref($self);
+    Bivio::Die->die('abstract method');
 }
 
 =for html <a name="rollback"></a>
@@ -409,10 +476,14 @@ Rolls back all open transactions.
 =cut
 
 sub rollback {
-    return unless $_NEED_COMMIT;
-    &_trace('rollback') if $_TRACE;
-    _get_connection()->rollback() unless $_DB_IS_READ_ONLY;
-    $_NEED_COMMIT = 0;
+    my($self) = @_;
+    return _get_instance($self)->rollback
+	    unless ref($self);
+    my($fields) = $self->{$_PACKAGE};
+    return unless $fields->{need_commit};
+    _trace('rollback') if $_TRACE;
+    _get_connection($self)->rollback() unless $fields->{db_is_read_only};
+    $fields->{need_commit} = 0;
     return;
 }
 
@@ -425,7 +496,7 @@ to use.  The default is C<undef>.  Returns the previous name.
 
 Doesn't do anything if I<name> is not different from the current name.
 
-B<To be used by utilities only.>
+The name selected will become the default database for all static calls.
 
 =cut
 
@@ -433,18 +504,15 @@ sub set_dbi_name {
     my(undef, $name) = @_;
 
     # Don't do anything if the names are equal
-    return $name if defined($name) == defined($_DBI_NAME)
-	    && (!defined($name) || $name eq $_DBI_NAME);
+    return $name if defined($name) == defined($_DEFAULT_DBI_NAME)
+	    && (!defined($name) || $name eq $_DEFAULT_DBI_NAME);
 
-    my($old) = $_DBI_NAME;
-    # This will force the connection to be re-opened after the next use
-    $_CONNECTION_PID = 0;
-    $_DBI_NAME = $name;
+    my($old) = $_DEFAULT_DBI_NAME;
+    $_DEFAULT_DBI_NAME = $name;
     return $old;
 }
 
 #=PRIVATE METHODS
-
 
 # _execute_helper(string sql, array_ref params, boolean has_blob, scalar_ref statement)
 #
@@ -453,164 +521,81 @@ sub set_dbi_name {
 #
 sub _execute_helper {
     my($self, $sql, $params, $has_blob, $statement) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     _trace_sql($sql, $params) if $_TRACE;
 #TODO: Need to investigate problems and performance of cached statements
 #TODO: If do cache, then make sure not "active" when making call.
-    $$statement = _get_connection()->prepare($sql);
+    $$statement = _get_connection($self)->prepare($sql);
 
     # Only need a commit if there has been data modification language
     # Tightly coupled with PropertySupport
     my($is_select) = $sql =~ /^\s*select/i
 	    && $sql !~ /\bfor\s+update\b/i;
-    return if !$is_select && $_DB_IS_READ_ONLY;
+    return if !$is_select && $fields->{db_is_read_only};
     if ($has_blob) {
-	if ($is_select) {
-	    # Returns a value
-	    $$statement->{LongReadLen} = $_MAX_BLOB;
-	    $$statement->{LongTruncOk} = 0;
-	}
-	else {
-	    # Passing a value, possibly
-	    my($i) = 1;
-	    foreach my $p (@$params) {
-		$$statement->bind_param($i++, $p), next unless ref($p);
-		# I wonder if it stores a reference or a copy?
-		# DBD::Oracle::ORA_BLOB is 113.  Saves importing DBD::Oracle
-		# explicitly.
-		$$statement->bind_param($i++,  $$p, {ora_type => 113});
-	    }
-	    # Parameters are bound, so don't pass below
-	    $params = undef;
-	}
+	$params = $self->internal_prepare_blob($is_select, $params,
+		$statement);
     }
+    $fields->{need_commit} = 1 unless $is_select;
     ref($params) ? $$statement->execute(@$params)
 	    : $$statement->execute();
-
-    # Only need a commit after successful DML operation
-    $_NEED_COMMIT = 1 unless $is_select;
-
     return;
 }
 
-# _interpret_constraint_violation(hash_ref attrs, string owner, string constraint) : Bivio::Type::Enum
+# _get_instance(proto) : Bivio::SQL::Connection
 #
-# Will set "columns" and "table" in attrs.  Returns die code that is
-# appropriate for the constraint violation.
+# Returns the default instance.
 #
-sub _interpret_constraint_violation {
-    my($attrs, $owner, $constraint) = @_;
-    my($die_code);
-
-    # Ignore errors, die_code will be undef in this case and result in a
-    # server error
-    Bivio::Die->eval(sub {
-
-	# Try to find the constraint columns
-	my($statement) = _get_connection()->prepare(<<"EOF");
-	    SELECT user_cons_columns.table_name,
-		    user_cons_columns.column_name
-	    FROM user_cons_columns
-	    WHERE user_cons_columns.constraint_name = ?
-            UNION
-	    SELECT user_ind_columns.table_name,
-		    user_ind_columns.column_name
-	    FROM user_ind_columns
-	    WHERE user_ind_columns.index_name = ?
-EOF
-	$statement->execute($constraint, $constraint);
-	my($row);
-	my($cols) = [];
-	my($table);
-	while ($row = $statement->fetchrow_arrayref) {
-# TODO: table must always be the same(?)
-	    $table = lc($row->[0]);
-	    push(@$cols, lc($row->[1]));
-	}
-
-	# This is an operation error, not db error.  Don't need to ping.
-	$_NEED_PING = 0;
-
-	# Found the constraint?
-	if ($table) {
-	    # Save the state for the die message
-	    $attrs->{columns} = $cols, $attrs->{table} = $table;
-	    _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
-		    if $_TRACE;
-	    if (1 == $attrs->{dbi_err}) {
-		# unique constraint violated (ORA-00001)
-		$die_code = Bivio::TypeError::EXISTS();
-	    }
-	    elsif (2290 == $attrs->{dbi_err}) {
-		# check constraint violated (ORA-02290)
-		# We understand only one type of check constraint:
-		# max_* exceeded.  This will back all the way to
-		# the Task level and it will map to a different
-		# task.
-		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode::NO_RESOURCES();
-		}
-	    }
-	    elsif (2292 == $attrs->{dbi_err}) {
-		# integrity constraint violated (ORA-02292)
-		# child record not found
-		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode::NO_RESOURCES();
-		}
-	    }
-	}
-	else {
-	    # returns undef for die_code
-	    _trace($owner, '.', $constraint,
-		    ': constraint query returned nothing') if $_TRACE;
-	}
-	1;
-    });
-
-    _trace($owner, '.', $constraint, ':', $@) if $_TRACE && $@;
-    return $die_code;
+sub _get_instance {
+    my($proto) = @_;
+    return $proto->connect($_DEFAULT_DBI_NAME);
 }
 
-# static _get_connection() : connection
+# static _get_connection(self) : connection
 #
 # Returns a cached database connection for this process.  Checks the
 # connection for validity.
 #
 sub _get_connection {
-    if ($_CONNECTION_PID != $$) {
-	if ($_CONNECTION) {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{connection_pid} != $$) {
+	if ($fields->{connection}) {
 	    # This disconnects the parent process'.  Make sure we rollback
 	    # any pending transactions.  By default, disconnect commits
 	    Bivio::Die->eval(sub {
-		$_CONNECTION->ping && $_CONNECTION->rollback});
-	    Bivio::Die->eval(sub {$_CONNECTION->disconnect});
-	    Bivio::IO::Alert->warn("reconnecting to oracle: pid=$$");
+		$fields->{connection}->ping
+			&& $fields->{connection}->rollback});
+	    Bivio::Die->eval(sub {$fields->{connection}->disconnect});
+	    Bivio::IO::Alert->warn("reconnecting to database: pid=$$");
 	    # Make sure we don't enter this code again.
-	    $_CONNECTION = undef;
+	    $fields->{connection} = undef;
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
-	$_CONNECTION = Bivio::Ext::DBI->connect($_DBI_NAME);
-	$_DB_IS_READ_ONLY = Bivio::Ext::DBI->get_config($_DBI_NAME)
-		->{is_read_only};
+	$fields->{connection} = Bivio::Ext::DBI->connect($fields->{dbi_name});
+	$fields->{db_is_read_only} = Bivio::Ext::DBI->get_config(
+		$fields->{dbi_name})->{is_read_only};
 	# Got a connection which will be reused on next call.  We don't
 	# need to ping it (just in case parent process had an error on
 	# the connection).
-	$_CONNECTION_PID = $$;
-	$_NEED_PING = 0;
+	$fields->{connection_pid} = $$;
+	$fields->{need_ping} = 0;
     }
-    elsif ($_NEED_PING) {
+    elsif ($fields->{need_ping}) {
 	# Got an error on a previous use of this connection.  Make
 	# sure is still valid.
-	$_NEED_PING = 0;
-	unless (Bivio::Die->eval(sub {$_CONNECTION->ping})) {
+	$fields->{need_ping} = 0;
+	unless (Bivio::Die->eval(sub {$fields->{connection}->ping})) {
 	    # Just in case, rollback any pending actions
 	    # be executed.  Caller will reset $_CONNECTION
-	    $_CONNECTION_PID = 0;
-	    return _get_connection();
+	    $fields->{connection_pid} = 0;
+	    return _get_connection($self);
 	}
 	# Current connection is valid
     }
-    return $_CONNECTION;
+    return $fields->{connection};
 }
 
 # _prep_params_for_io(array_ref params) : array_ref
