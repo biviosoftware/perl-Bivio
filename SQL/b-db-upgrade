@@ -192,7 +192,7 @@ ALTER TABLE file_quota_t
   add foreign key (realm_id)
     references realm_owner_t(realm_id)
 /
-ALTER TABLE file_t modify realm_id not null
+ALTER TABLE file_quota_t modify realm_id not null
 /
 ALTER TABLE file_quota_t modify kbytes not null
 /
