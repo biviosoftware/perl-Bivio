@@ -213,14 +213,17 @@ sub create {
 
 =head2 format_email() : string
 
-Returns fully-qualified email address for this realm.
+Returns fully-qualified email address for this realm or '' if the
+realm is an accounting shadow user.
 
 =cut
 
 sub format_email {
     my($self) = @_;
 #TODO: Need to modify Request to handle this case.
-    return $self->get('name').'@'.$self->get_request->get('mail_host');
+    my($name) = $self->format_name;
+    return $name ? $name.'@'.$self->get_request->get('mail_host')
+	    : '';
 }
 
 =for html <a name="format_http"></a>
@@ -251,6 +254,21 @@ Returns email address with C<mailto:> prefix.
 sub format_mailto {
     my($self) = @_;
     return 'mailto:'.$self->format_email();
+}
+
+=for html <a name="format_name"></a>
+
+=head2 format_name() : string
+
+Returns the name formatted for display. Accounting shadow users
+return ''.
+
+=cut
+
+sub format_name {
+    my($self) = @_;
+    my($name) = $self->get('name');
+    return ($name =~ /^=/) ? '' : $name;
 }
 
 =for html <a name="format_uri"></a>
