@@ -63,12 +63,18 @@ use XML::Parser ();
 use HTML::Entities ();
 
 #=VARIABLES
-my($_TO_HTML) = {
+my($_TO_HTML) = _to_html_compile({
+    attribution => {
+	prefix => '<div align=right>-- ',
+	suffix => '</div>',
+    },
     chapter => ['html', 'body'],
+    emphasis => ['b'],
+    epigraph => [],
     para => ['p'],
     simplesect => [],
     title => ['h1'],
-};
+});
 
 =head1 METHODS
 
@@ -100,6 +106,23 @@ sub _to_html {
     return \$res;
 }
 
+# _to_html_compile(hash_ref config) : hash_ref
+#
+# Creates the $_TO_HTML hash from $config, which is a mapping of XML tags to
+# HTML commands.  If the HTML command is an array_ref, calls _to_html_tags to
+# create the prefix and suffix.
+#
+sub _to_html_compile {
+    my($config) = @_;
+    while (my($xml, $html) = each(%$config)) {
+	$config->{$xml} = {
+	    prefix => _to_html_tags($html, ''),
+	    suffix => _to_html_tags([reverse(@$html)], '/'),
+	} if ref($html) eq 'ARRAY';
+    }
+    return $config;
+}
+
 # _to_html_node(string tag, array_ref tree) : string
 #
 # Lookup $tag in $_TO_HTML and evaluate.
@@ -110,9 +133,7 @@ sub _to_html_node {
     die($tag, ': unhandled tag') unless my $op = $_TO_HTML->{$tag};
     # We ignore the attributes for now,
     shift(@$tree);
-    return _to_html_tags($op, '')
-	. ${_to_html($tree)}
-	. _to_html_tags([reverse(@$op)], '/');
+    return $op->{prefix} . ${_to_html($tree)} . $op->{suffix};
 }
 
 # _to_html_tags(array_ref names, string prefix) : string
