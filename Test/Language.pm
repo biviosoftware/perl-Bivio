@@ -106,7 +106,14 @@ sub AUTOLOAD {
     _die($self, "function $func: ", _check_autoload($self, $func))
 	if _check_autoload($self, $func);
     _trace($func, ' called with ', \@args) if $_TRACE;
-    return $self->$func(@args);
+    return $self->$func(@args)
+	unless $self->unsafe_get('test_deviance');
+    my($die) = Bivio::Die->catch(sub {
+	return $self->$func(@args);
+    });
+    _die($self, 'deviance call failed: ', $func, \@args)
+	unless $die;
+    return;
 }
 
 =for html <a name="DESTROY"></a>
@@ -213,6 +220,19 @@ See L<handle_cleanup|"handle_cleanup"> for what subclasses should implement.
 sub test_cleanup {
     my($proto) = @_;
     return ($_SELF_IN_EVAL || $proto)->handle_cleanup();
+}
+
+=for html <a name="test_deviance"></a>
+
+=head2 static test_deviance()
+
+Sets up test for deviance testing.  Expect all functions to fail.
+
+=cut
+
+sub test_deviance {
+    _assert_in_eval('test_setup')->put(test_deviance => 1);
+    return;
 }
 
 =for html <a name="test_log_output"></a>

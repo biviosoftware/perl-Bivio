@@ -1,33 +1,40 @@
 # $Id$
-BEGIN {
-    use Bivio::IO::Config;
-    Bivio::IO::Config->introduce_values({
-	Bivio::IO::ClassLoader => {
-	    maps => {
-		TestLanguage => ['Bivio::Test::t::Language'],
-	    },
-	},
-    });
-}
 use Bivio::Test;
 use Bivio::Test::Language;
-
+Bivio::IO::Config->introduce_values({
+    Bivio::IO::ClassLoader => {
+	maps => {
+	    TestLanguage => ['Bivio::Test::t::Language'],
+	},
+    },
+});
 Bivio::Test->unit([
     'Bivio::Test::Language' => [
 	{
 	    method => 'test_run',
 	    compute_params => sub {
-		my($object, $method, $params) = @_;
+		my($case, $params) = @_;
 		return [\$params->[0]],
 	    },
 	} => [
-	    [<<'EOF'] => [undef],
-test_setup('T1', 'x1');
-EOF
-	    [<<'EOF'] => [undef],
-test_setup('T1', 'x2');
-die unless double_it('hello') eq 'hellohello'
-EOF
+	    map({
+		[$_] => [undef],
+	    }
+		q{
+		    test_setup('T1', 'x1');
+		}, q{
+		    test_setup('T1', 'x2');
+		    die unless double_it('hello') eq 'hellohello'
+		}, q{
+		    test_setup('T1', 'x3');
+		    test_deviance();
+		    die_now();
+		},
+	    ),
+	    [q{
+                test_setup('T1', 'x4');
+                die_now();
+            }] => qr/Bivio::Die/s,
 	],
     ],
 ]);

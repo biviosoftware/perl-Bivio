@@ -63,6 +63,19 @@ sub new {
 
 =cut
 
+=for html <a name="die_now"></a>
+
+=head2 die_now()
+
+Always dies.
+
+=cut
+
+sub die_now {
+    die('you gravy sucking pig');
+    # DOES NOT RETURN
+}
+
 =for html <a name="double_it"></a>
 
 =head2 double_it(string v) : string
