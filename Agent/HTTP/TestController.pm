@@ -83,7 +83,9 @@ sub handle_request {
     $req->print("<pre>user = ".Data::Dumper->Dumper($req->get_user())
 	    ."<pre><br>&nbsp<br>");
     $req->print("</body></html>");
-    $req->set_state(Bivio::Agent::Request::OK);
+    if ($req->get_state() == $req->NOT_HANDLED) {
+	$req->set_state($req->OK);
+    }
     return;
 }
 

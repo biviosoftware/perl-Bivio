@@ -60,10 +60,7 @@ Creates a message and message list controller.
 
 sub new {
     my($proto, $views, $default_view) = @_;
-    my($self) = &Bivio::Agent::Controller::new($proto, $views);
-    $self->{$_PACKAGE} = {
-	default_view => $default_view->get_name()
-    };
+    my($self) = &Bivio::Agent::Controller::new($proto, $views, $default_view);
     return $self;
 }
 
@@ -93,7 +90,7 @@ sub handle_request {
 
     # set the default view if necessary
     unless ($req->get_view_name()) {
-	$req->set_view_name($fields->{default_view});
+	$req->set_view_name($self->get_default_view_name);
     }
     my($view) = $self->get_view($req->get_view_name());
 
@@ -107,8 +104,11 @@ sub handle_request {
 	$fp->put('club', $club->get('id'));
 	$model->find($fp); # error handling done by view
 	$view->activate()->render($model, $req);
-	$req->set_state(Bivio::Agent::Request::OK);
+	if ($req->get_state() == $req->NOT_HANDLED) {
+	    $req->set_state($req->OK);
+	}
     }
+    return;
 }
 
 #=PRIVATE METHODS

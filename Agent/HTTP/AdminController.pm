@@ -49,10 +49,7 @@ specified default_view.
 
 sub new {
     my($proto, $views, $default_view) = @_;
-    my($self) = &Bivio::Agent::Controller::new($proto, $views);
-    $self->{$_PACKAGE} = {
-	default_view => $default_view->get_name()
-    };
+    my($self) = &Bivio::Agent::Controller::new($proto, $views, $default_view);
     return $self;
 }
 
@@ -81,7 +78,7 @@ sub handle_request {
 
     # set the default view if necessary
     unless ($req->get_view_name()) {
-	$req->set_view_name($fields->{default_view});
+	$req->set_view_name($self->get_default_view_name());
     }
     my($view) = $self->get_view($req->get_view_name());
 
@@ -98,7 +95,7 @@ sub handle_request {
 	if ($req->get_action_name()) {
 	    $model->get_action($req->get_action_name())->execute($model, $req);
 
-	    if ($model->get_status()->is_OK()
+	    if ($model->get_status()->is_ok()
 		    && $req->get_action_name() eq 'add'
 		    && $req->get_view_name() eq 'user') {
 
@@ -113,11 +110,14 @@ sub handle_request {
 	}
 
 	$view->activate()->render($model, $req);
-	$req->set_state(Bivio::Agent::Request::OK);
+	if ($req->get_state() == $req->NOT_HANDLED) {
+	    $req->set_state($req->OK);
+	}
     }
     else {
 	&_trace('couldn\'t find view '.$req->get_view_name());
     }
+    return;
 }
 
 #=PRIVATE METHODS
