@@ -61,6 +61,8 @@ should be I<checkbox> if you are creating your own widget.
 If I<label> is C<undef>, will look up in Bivio::UI::Text using I<field>
 and I<form_class>.
 
+If I<label> is the empty string, renders nothing.
+
 =item value : string [1]
 
 The checkbox's submit value.
@@ -117,13 +119,15 @@ sub initialize {
     my($l) = $self->unsafe_get('label');
     $fields->{label} = $self->unsafe_initialize_attr('label');
     $fields->{label} = $_VS->vs_text(
-	    $self->ancestral_get('form_class')->simple_package_name,
-	    $fields->{field})
-	    unless defined($fields->{label});
+	$self->ancestral_get('form_class')->simple_package_name,
+	$fields->{field})
+	unless defined($fields->{label});
     $fields->{label} = $_VS->vs_string($fields->{label}, 'checkbox')
-	    ->put_and_initialize(parent => $self)
-		    unless UNIVERSAL::isa($fields->{label},
-			    'Bivio::UI::Widget');
+	if !UNIVERSAL::isa($fields->{label}, 'Bivio::UI::Widget')
+	    # Works ok even if a ref()
+	    && length($fields->{label});
+    $fields->{label}->put_and_initialize(parent => $self)
+	if $fields->{label};
     return;
 }
 
@@ -146,13 +150,16 @@ sub render {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
 	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
-	$fields->{suffix} .= ">\n";
+	$fields->{suffix} .= ">";
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
     $$buffer .= ' checked' if $form->get($field);
     $$buffer .= $fields->{suffix};
-    $fields->{label}->render($source, $buffer);
+    if ($fields->{label}) {
+	$$buffer .= "\n";
+	$fields->{label}->render($source, $buffer);
+    }
     return;
 }
 
