@@ -10,26 +10,7 @@ Bivio::IO::Config - simple configuration using perl syntax
 
 =head1 SYNOPSIS
 
-    b-<program> [--Module.param=value] [--TRACE=value]
-
     use Bivio::IO::Config;
-    Bivio::IO::Config->register();
-    sub handle_config {
-	my($class, $cfg) = @_;
-	$cfg->{param1} && ...;
-    }
-
-    Bivio::IO::Config->initialize();
-    Bivio::IO::Config->initialize(\@argv);
-    Bivio::IO::Config->initialize($file);
-    Bivio::IO::Config->initialize({
-	'Some::Package' => {
-	    'some_param' => $some_value,
-	},
-	'Some::Other::Package' => {
-	    'some_other_param' => $some_other_value,
-	},
-    });
 
 =cut
 

@@ -11,10 +11,6 @@ Bivio::IO::Trace - statement level trace management
 =head1 SYNOPSIS
 
     use Bivio::IO::Trace;
-    Bivio::IO::Trace->register;
-    _trace("this is my message") if $_TRACE;
-    _trace("This is ", &a_complex, " list of arguments") if $_TRACE;
-    Bivio::IO::Trace->set_filters('/my message/');
 
 =cut
 

@@ -11,8 +11,6 @@ Bivio::IO::Alert - error messages for servers and programs
 =head1 SYNOPSIS
 
     use Bivio::IO::Alert;
-    Bivio::IO::Alert->die("my message", $my_long_var);
-    Bivio::IO::Alert->warn("my message");
 
 =cut
 
