@@ -5,7 +5,7 @@ use strict;
 
 =head1 NAME
 
-b-checkbot - recursively retrieve all pages from a server
+b-checkbot - recursively retrieve pages from a web server
 
 =head1 SYNOPSIS
 
@@ -13,8 +13,11 @@ b-checkbot url ...
 
 =head1 DESCRIPTION
 
-B<b-checkbot> creates a C<.csv> file from the request track active
-list.
+B<b-checkbot> creates a C<checkbot.html> file containing the
+test results. The first URL defines the access prefix. Any
+URL beginning with this prefix is considered internal and will
+be retrieved (GET) and parsed for links. Any other link is external
+and only its header (HEAD) is retrieved to see if the link exists.
 
 =cut
 
@@ -27,6 +30,7 @@ my(@_URLS) = ();
 sub main {
     my(@argv) = @_;
     my($mail, $bot_opt, $verbose);
+    my($bot_opt) = '--sleep 0 ';
     while (@argv) {
 	my($a) = shift(@argv);
 	$a =~ /^-m$/ && ($mail = shift(@argv), next);
@@ -37,15 +41,15 @@ sub main {
     @_URLS || &_usage("Missing test URLs");
     exists($ENV{'http_proxy'}) && ($bot_opt .= "--proxy $ENV{'http_proxy'} ");
     
-    open(BOT, "checkbot $bot_opt --sleep 0 @_URLS 2>&1|");
-    my(@bot);
+    open(BOT, "checkbot $bot_opt @_URLS 2>&1|");
+    my(@bot_out);
     while(<BOT>) {
-        $verbose || (push(@bot, $_), next);
+        $verbose || (push(@bot_out, $_), next);
         print;
     }
     close(BOT);
-    $? && warn("checkbot failed (rc=$?):\n@bot");
-    print"View the results in\n\tfile:";
+    $? && warn("checkbot failed (rc=$?):\n@bot_out");
+    print"View the test results in\n\tfile:";
     print cwd, "/checkbot.html\n";
 }
 
