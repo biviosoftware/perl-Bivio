@@ -50,12 +50,6 @@ to get string to use (see below).
 =item href : string (required)
 
 Literal text to use for C<HREF> attribute of C<A> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
-before rendering.
-
-The result will be used for C<HREF> attribute of C<A> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
-before rendering.
 
 =item name : string []
 
@@ -121,7 +115,7 @@ sub initialize {
 	$fields->{href} = $href;
     }
     else {
-	$p .= ' href="'.Bivio::Util::escape_html($href).'"';
+	$p .= ' href="'.$href.'"';
     }
     # We assume is not a constant and on first rendering, may be set to true
     $fields->{is_constant} = 0;
@@ -180,8 +174,8 @@ sub render {
 
     # Render href
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' href="'.Bivio::Util::escape_html(
-	    $source->get_widget_value(@{$fields->{href}})).'"'
+    $$buffer .= ' href="'.
+	    $source->get_widget_value(@{$fields->{href}}).'"'
 		    if $fields->{href};
 
     # Render value
