@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Model::Phone::VERSION;
 
 Bivio::Biz::Model::Phone - interface to phone_t SQL table
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::Phone;
