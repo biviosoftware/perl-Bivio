@@ -99,7 +99,15 @@ sub get_widget_value {
     my($dec) = substr($bigint, length($bigint) - $_DECIMAL_MAX, $round);
     my($num) = substr($bigint, 0, length($bigint) - $_DECIMAL_MAX);
 
-#TODO: put , in num
+    # put ',' in the number
+    if (length($num) > 3) {
+	my(@chars) = reverse(split(//, $num));
+	$num = '';
+	for (my($i) = 0; $i < int(@chars); $i++) {
+	    $num = ','.$num unless ($i == 0 || $i % 3);
+	    $num = $chars[$i].$num;
+	}
+    }
 
     my($result) = $num.'.'.$dec;
     return $negative ? '-'.$result : $result;
@@ -111,7 +119,7 @@ sub get_widget_value {
 
 print(
 Bivio::UI::HTML::Format::Amount->get_widget_value('123.456', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('0.456x', 2)."\n".
+#Bivio::UI::HTML::Format::Amount->get_widget_value('0.456x', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('0', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('-1.1', 2)."\n".
 Bivio::UI::HTML::Format::Amount->get_widget_value('-1.12345678', 2)."\n".
