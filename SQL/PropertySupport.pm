@@ -392,6 +392,10 @@ sub update {
 	next if ! exists($new_values->{$n});
 	my($column) = $columns->{$n};
 	if ($column->{is_primary_key}) {
+            Bivio::IO::Alert->warn('Attempted to change primary key field: ',
+                $attrs->{table_name}, '.', $column->{name})
+                if exists($new_values->{$n}) && $column->{type}->compare(
+                    $new_values->{$n}, $old_values->{$n}) != 0;
 	    # Ensure primary keys aren't different, because PropertyModel
 	    # always copies new_values to old_values on success
 	    $new_values->{$n} = $old_values->{$n};
