@@ -163,6 +163,7 @@ sub die_to_http_code {
     return Apache::Constants::OK() unless defined($die);
     unless (%_DIE_TO_HTTP_CODE) {
 	%_DIE_TO_HTTP_CODE = (
+	    # Keep in synch with HTTP::Dispatcher
 	    Bivio::DieCode::AUTH_REQUIRED()
 		=> Apache::Constants::AUTH_REQUIRED(),
 	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN(),
