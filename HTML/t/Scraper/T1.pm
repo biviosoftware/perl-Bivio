@@ -55,7 +55,7 @@ Creates new instance
 
 sub new {
     my($proto, $dir) = @_;
-    return $proto->SUPER::new->put(directory => $dir);
+    return $proto->SUPER::new({directory => $dir});
 }
 
 =head1 METHODS

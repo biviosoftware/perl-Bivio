@@ -83,16 +83,15 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::HTML::Scraper
+=head2 static new(hash_ref attrs) : Bivio::HTML::Scraper
 
 Creates a new instance of self.
 
 =cut
 
 sub new {
-    my($proto) = @_;
-    my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = {};
+    my($proto) = shift;
+    my($self) = $proto->SUPER::new(@_);
     $self->put(
 	user_agent => Bivio::Ext::LWPUserAgent->new,
 	cookie_jar => HTTP::Cookies->new,
@@ -100,6 +99,7 @@ sub new {
     );
     $self->get('user_agent')->agent(
 	'Mozilla/4.0 (compatible; MSIE 5.5; Windows 98)');
+    $self->[$_IDI] = {};
     return $self;
 }
 
