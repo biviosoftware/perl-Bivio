@@ -142,7 +142,9 @@ sub send {
     if ($is_scalar) {
 	# Don't allow caching of dynamically generated replies, because
 	# we don't know the contents (typically from the database)
-	$self->set_cache_private();
+	# This isn't *really* private, i.e. not setting Pragma: no-cache.
+	# This pragma screws up Netscape on animated gifs.
+	$self->set_cache_private(1);
     }
     else {
 	# Files read from disk are never private
@@ -215,16 +217,19 @@ sub die_to_http_code {
 
 =for html <a name="set_cache_private"></a>
 
-=head2 set_cache_private()
+=head2 set_cache_private(boolean not_really_private)
 
-Do not allow shared caching of this response.
+Do not allow shared caching of this response.  If I<not_really_private>, then
+don't set C<Pragma: no-cache>.  This case is necessary to handle animated gifs
+with Netscape.  Netscape retrieves the animated gif continuously if you set
+C<Pragma: no-cache>.
 
 =cut
 
 sub set_cache_private {
-    my($self) = @_;
+    my($self, $not_really_private) = @_;
     $self->set_header('Cache-Control', 'private');
-    $self->set_header('Pragma', 'no-cache');
+    $self->set_header('Pragma', 'no-cache') unless $not_really_private;
     return;
 }
 
@@ -372,8 +377,9 @@ sub _send_http_header {
 	# Set the status if was set, otherwise defaults to 200 by Apache
 	$r->status($fields->{status}) if defined($fields->{status});
 
-	# We set the cookie if we don't cache this answer
-	$self->set_cache_private() if $req->get('cookie')->header_out($r);
+	# We set the cookie if we don't cache this answer.  0 means
+	# *really* private.
+	$self->set_cache_private(0) if $req->get('cookie')->header_out($r);
 
 	# Set any optional headers
 	if ($fields->{headers}) {
