@@ -38,7 +38,7 @@ C<Bivio::Biz::Model::ForbiddenForm>
 
 =over 4
 
-=head1 require_explicit_su : boolean
+=item require_explicit_su : boolean
 
 If true for executing task, will not try to auto-logout super users.
 
