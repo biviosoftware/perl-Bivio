@@ -214,94 +214,23 @@ ALTER TABLE $table MODIFY $column $type
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    _drop_constraints('file_t', 'is_public');
-    _do_sql('
-UPDATE file_t SET is_public=0
-/
-');
-    use Bivio::Biz::Util::Mail;
-    _do_sql('
-DELETE from mail_t
-/
-DELETE from file_t where volume in (3, 4)
-/
-');
-    Bivio::Biz::Util::Mail->do_all('migrate');
-    Bivio::Biz::Util::Mail->reinit_sequence;
 
-    _do_sql('
-ALTER TABLE file_t modify is_public not null
-/
-ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
-/
-');
-    _upgrade_mail_message_t();
-    return;
-}
+    use Bivio::Agent::Request;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Data::EW::ClubImporter;
 
-# _upgrade_columns()
-#
-# Deletes columns.
-#
-sub _upgrade_columns {
-    _drop_column('club_t', 'kbytes_in_use');
-    _drop_column('club_t', 'max_storage_kbytes');
-    _drop_column('realm_invite_t', 'title');
-    _drop_column('realm_user_t', 'title');
-    _drop_column('entry_t', 'remark');
-    _drop_column('realm_invite_t', 'message');
-    return;
-}
+    # changes MTCG entries to LTCG where appropriate for a select
+    # group of clubs identified as having invalid data
 
-# _upgrade_mail_message_t()
-#
-#
-#
-sub _upgrade_mail_message_t {
-    # We do this so we can delete clubs, without deleting mail_message_t
-    # entries.
-    _drop_constraints('mail_message_t', 'club_id');
-    _upgrade_user_title();
-    return;
-}
-
-# _upgrade_user_title()
-#
-# Moves user's title to the new enum field 'honorific' for realm_user_t
-# and realm_invite_t.
-#
-sub _upgrade_user_title {
-    # drop constraints for title
-    # add honorific
-    # migrate title to honorific
-    # add constraints to honorific
-    foreach my $table (qw(realm_invite_t realm_user_t)) {
-
-	# Allow retry
-	_add_column($table, 'honorific', 'NUMBER(2)')
-		unless _drop_constraints($table, 'honorific');
-	_drop_constraints($table, 'title');
-
-	for (my($i) = 0; $i < Bivio::Type::Honorific->get_count; $i++) {
-	    Bivio::SQL::Connection->execute("
-                    UPDATE $table
-                    SET title=NULL, honorific=?
-                    WHERE title=?",
-		    [$i, Bivio::Type::Honorific->from_int($i)
-			->get_short_desc]);
+    my($realm) = Bivio::Biz::Model::RealmOwner->new(
+	    Bivio::Agent::Request->get_current_or_new);
+    foreach my $name (qw(aic beachtraders doctors top2)) {
+	unless ($realm->unauth_load(name => $name)) {
+	    print(STDERR "skipping $name\n");
+	    next;
 	}
-	my($sth) = Bivio::SQL::Connection->execute(
-		"select count(*) from $table where honorific is null");
-	my($n) = $sth->fetchrow_array();
-	warn("WARNING: $table: missing honorifics in $n cases") if $n;
-	_do_sql("
-ALTER TABLE $table add check (honorific between 1 and 9)
-/
-ALTER TABLE $table modify honorific not null
-/
-");
+	Bivio::Data::EW::ClubImporter->fix_incorrect_gain_types($realm);
     }
-    _upgrade_columns();
     return;
 }
 
