@@ -108,7 +108,7 @@ sub _upgrade {
 
     my($count) = Bivio::Biz::Util::RealmInvite->expire(1);
     print STDERR "Deleting $count invites\n";
-    do(<<'EOF');
+    _do(<<'EOF');
 -- Add the column
 ALTER TABLE realm_invite_t add user_id NUMBER(18)
 /
