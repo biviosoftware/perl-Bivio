@@ -41,6 +41,10 @@ Number of decimals to display.
 
 Name of the field to render.
 
+=item zero_as_blank : boolean [false]
+
+If true, renders the value 0 as ' '.
+
 =back
 
 =cut
@@ -86,8 +90,10 @@ sub initialize {
     return if $fields->{initialized};
     my($field) = $self->get('field');
     my($d) = $self->get_or_default('decimals', 2);
+    my($zero_as_blank) = $self->get_or_default('zero_as_blank', 0);
     $self->put(
-	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d, 1],
+	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d, 1,
+		   $zero_as_blank],
 	    column_align => 'E',
 	    string_font => 'number_cell',
 	    pad_left => 1,
