@@ -63,8 +63,8 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
 	['RealmUser.user_id', 'Email.realm_id'],
     ],
 });
-my($_COUNT_ALL_WHERE_CLAUSE) = "
-        name NOT LIKE '%"
+my($_COUNT_ALL_WHERE_CLAUSE) =
+        "name NOT LIKE '%"
 	.Bivio::Type::RealmName::DEMO_CLUB()
 	."'
         AND name NOT LIKE '%"
@@ -146,7 +146,7 @@ sub count_all_members {
             FROM realm_user_t, realm_owner_t
             WHERE role IN $_MEMBER_ROLES
             AND realm_user_t.realm_id = realm_owner_t.realm_id
-            $_COUNT_ALL_WHERE_CLAUSE")->[0];
+            AND $_COUNT_ALL_WHERE_CLAUSE")->[0];
 }
 
 =for html <a name="delete_instruments_and_transactions"></a>
