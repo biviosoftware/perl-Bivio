@@ -1502,7 +1502,10 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         %/accounting/valuation/new
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::LocalPriceList
+        Bivio::Biz::Model::LocalPricesForm
+        Bivio::UI::HTML::Club::LocalPrices
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
 );
 
