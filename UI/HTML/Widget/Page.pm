@@ -53,8 +53,6 @@ the color defaults to the browser default.
 
 Name of the icon to use for the page background.
 
-=back
-
 =item body : Bivio::UI::Widget (required)
 
 How to render the C<BODY> tag contents.  Usually a
@@ -92,6 +90,8 @@ Facade color for visited links.
 
 Renders an inline style in the header.  The widget
 must render the C<STYLE> or C<META> tags as appropriate.
+
+=back
 
 =head1 COMPONENT ATTRIBUTES
 
