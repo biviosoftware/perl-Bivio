@@ -31,8 +31,13 @@ C<Bivio::Ext::LWPUserAgent> adds timeouts and proxy handling to LWP::UserAgent.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 
 #=VARIABLES
+my($_HTTP_PROXY);
+Bivio::IO::Config->register({
+    http_proxy => undef,
+});
 
 =head1 FACTORIES
 
@@ -50,13 +55,37 @@ sub new {
     my($self) = LWP::UserAgent::new(@_);
     # Relatively short timeout, so we don't get stuck in remote services.
     $self->timeout(60);
-    $self->proxy(['http', 'https'], $ENV{http_proxy}) if $ENV{http_proxy};
+    # Use a proxy if configured
+    if (defined($_HTTP_PROXY)) {
+        $self->proxy(['http', 'https'], $_HTTP_PROXY);
+    }
+    elsif ($ENV{http_proxy}) {
+        $self->proxy(['http', 'https'], $ENV{http_proxy});
+    }
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item http_proxy : string [undef]
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_HTTP_PROXY = $cfg->{http_proxy};
+    return;
+}
 
 #=PRIVATE METHODS
 
