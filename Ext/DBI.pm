@@ -46,7 +46,7 @@ Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
 	'database' => Bivio::IO::Config->REQUIRED,
 	'user' => Bivio::IO::Config->REQUIRED,
-	'pass' => Bivio::IO::Config->REQUIRED,
+	'password' => Bivio::IO::Config->REQUIRED,
     },
 });
 my($_DEFAULT_OPTIONS) = {
