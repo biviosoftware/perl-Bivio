@@ -250,7 +250,7 @@ sub initialize {
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
 		    _append(\@p, " colspan=$expand_cols") if $expand_cols > 1;
-		    _append(\@p, ' width="100%"') if $expand2;
+		    _append(\@p, ' width="100%"') if $expand2 && !$width;
 		    $expand_cols = 1;
 		}
 #TODO: Need better crosschecking
