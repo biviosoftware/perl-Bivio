@@ -35,7 +35,6 @@ use Bivio::Biz::Model::ImportedTransactionForm;
 use Bivio::TypeValue;
 use Bivio::Type::EntryTypeSet;
 use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::UI::HTML::Widget::EditRowTable;
 use Bivio::UI::HTML::Widget::Enum;
 use Bivio::UI::HTML::Widget::Form;
@@ -48,6 +47,9 @@ my($_PACKAGE) = __PACKAGE__;
 my($_ENTRY_CREDIT_SET) = Bivio::Type::EntryTypeSet::CREDIT();
 my($_ENTRY_CREDIT) = Bivio::TypeValue->new(
 	'Bivio::Type::EntryTypeSet', \$_ENTRY_CREDIT_SET);
+my($_ENTRY_DEBIT_SET) = Bivio::Type::EntryTypeSet::DEBIT();
+my($_ENTRY_DEBIT) = Bivio::TypeValue->new(
+	'Bivio::Type::EntryTypeSet', \$_ENTRY_DEBIT_SET);
 
 =head1 METHODS
 
@@ -74,24 +76,15 @@ sub create_content {
 	    list_class => 'ImportedTransactionList',
 	    columns => [
 		['Entry.entry_type', {
-		    column_edit_widget => $self->join(
-			    $wf->create(
-			      'ImportedTransactionTypeForm.Entry.entry_type', {
-				  column_selectable => 1,
-				  auto_submit => 1,
-				  choices => $_ENTRY_CREDIT,
-			      }),
-			    '<noscript>',
-			    $wf->create(
-				    'ImportedTransactionTypeForm.ok_button'),
-			    '</noscript>',
-			),
+		    column_edit_widget => $self->director(['Entry.entry_type'],
+			    {
+			       Bivio::Type::EntryType::CASH_UNASSIGNED_CREDIT()
+				=> _create_type_editor($self, 1)
+			    },
+			    _create_type_editor($self, 0)),
 		}],
 		'RealmTransaction.date_time',
 		'Entry.amount',
-		['RealmTransaction.remark', {
-		    column_heading => 'description_heading',
-		}],
 		$self->list_actions([
 		    ['delete', 'CLUB_ACCOUNTING_ACCOUNT_TRANSACTION_DELETE'],
 		    ['edit', 'CLUB_ACCOUNTING_TRANSACTION_EDIT', undef,
@@ -115,7 +108,7 @@ sub create_content {
 		'RealmTransaction.date_time',
 		['Entry.amount', {column_selectable => 1}],
 		['RealmTransaction.remark', {
-		    column_heading => 'description_heading',
+		    column_heading => '',
 		    column_selectable => 1,
 		    column_edit_widget => _create_description_widget($self),
 		}],
@@ -180,15 +173,12 @@ sub _create_description_widget {
 	    [[['->get_request'], 'Bivio::Biz::Model::ImportedTransactionForm',
 		'Entry.entry_type'], '->as_int'],
 	    {
-		$type->MEMBER_PAYMENT->as_int => _create_payment_widget($self),
-		$type->MEMBER_PAYMENT_FEE->as_int => _create_member_widget(
-			$self),
-		$type->CASH_TRANSFER->as_int => $wf->create(
-		     'ImportedTransactionForm.target_account_id', {
-			 choices => ['Bivio::Biz::Model::RealmAccountList'],
-			 list_display_field => 'RealmAccount.name',
-			 list_id_field => 'RealmAccount.realm_account_id',
-		     }),
+		$type->MEMBER_PAYMENT->as_int => _create_payment_widget($self,
+		       1),
+		$type->MEMBER_PAYMENT_FEE->as_int => _create_payment_widget(
+			$self, 0),
+		$type->CASH_TRANSFER->as_int => _create_transfer_widget($self),
+		$type->CASH_EXPENSE->as_int => _create_expense_widget($self),
 	    },
 
 	    # default is remark field
@@ -196,36 +186,57 @@ sub _create_description_widget {
 	   );
 }
 
-# _create_member_widget() : Bivio::UI::HTML::Widget
+# _create_expense_widget() : Bivio::UI::HTML::Widget
 #
-# Returns a widget which renders the member list.
+# Returns the widget for editing an account expense.
 #
-sub _create_member_widget {
-    my($self) = @_;
-    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
-    return $wf->create(
-	    'ImportedTransactionForm.MemberEntry.user_id', {
-		choices => ['Bivio::Biz::Model::AllMemberList'],
-		list_display_field => 'last_first_middle',
-		list_id_field => 'RealmUser.user_id',
-	    });
-}
-
-# _create_payment_widget() : Bivio::UI::HTML::Widget
-#
-# Returns the widget used when editing a single member payment.
-#
-sub _create_payment_widget {
+sub _create_expense_widget {
     my($self) = @_;
 
     my($wf) = 'Bivio::UI::HTML::WidgetFactory';
     return Bivio::UI::HTML::Widget::Grid->new({
 	values => [
 	    [
-		$self->string("Member: "),
-		_create_member_widget($self),
+		$self->string("Category: "),
+		Bivio::UI::HTML::Widget::ExpenseCategorySelect->new({
+		    field => 'ExpenseCategory.expense_category_id',
+		}),
 	    ],
 	    [
+		$wf->blank_cell,
+		$wf->create(
+		       'ImportedTransactionForm.ExpenseInfo.allocate_equally'),
+	    ],
+	    [
+		$self->string("Remark:"),
+		$wf->create(
+			'ImportedTransactionForm.RealmTransaction.remark'),
+	    ],
+	],
+    });
+    return;
+}
+
+# _create_payment_widget(boolean include_valdate) : Bivio::UI::HTML::Widget
+#
+# Returns the widget used when editing a single member payment.
+#
+sub _create_payment_widget {
+    my($self, $include_valdate) = @_;
+
+    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
+    return Bivio::UI::HTML::Widget::Grid->new({
+	values => [
+	    [
+		$self->string("Member: "),
+		$wf->create(
+			'ImportedTransactionForm.MemberEntry.user_id', {
+			    choices => ['Bivio::Biz::Model::AllMemberList'],
+			    list_display_field => 'last_first_middle',
+			    list_id_field => 'RealmUser.user_id',
+			}),
+	    ],
+	    ($include_valdate ? [
 		$self->string("Valuation Date: "),
 		$self->join(
 			Bivio::UI::HTML::Widget::FormFieldError->new({
@@ -235,9 +246,65 @@ sub _create_payment_widget {
 			$wf->create(
 			 'ImportedTransactionForm.MemberEntry.valuation_date'),
 		       ),
+	    ] : ()),
+	    [
+		$self->string("Remark:"),
+		$wf->create(
+			'ImportedTransactionForm.RealmTransaction.remark'),
 	    ],
 	],
     });
+}
+
+# _create_transfer_widget() : Bivio::UI::HTML::Widget
+#
+# Returns a widget for editing account transfers.
+#
+sub _create_transfer_widget {
+    my($self) = @_;
+
+    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
+    return Bivio::UI::HTML::Widget::Grid->new({
+	values => [
+	    [
+		$self->string("Target Account: "),
+		$wf->create(
+			'ImportedTransactionForm.source_account_id', {
+			    choices => ['Bivio::Biz::Model::RealmAccountList'],
+			    list_display_field => 'RealmAccount.name',
+			    list_id_field => 'RealmAccount.realm_account_id',
+			}),
+	    ],
+	    [
+		$self->string("Remark:"),
+		$wf->create(
+			'ImportedTransactionForm.RealmTransaction.remark'),
+	    ],
+	],
+    });
+}
+
+# _create_type_editor(boolean income) : Bivio::UI::HTML::Widget
+#
+# Returns an income or expense type editor.
+#
+sub _create_type_editor {
+    my($self, $income) = @_;
+
+    my($wf) = 'Bivio::UI::HTML::WidgetFactory';
+    return $self->join(
+	    $wf->create(
+		    'ImportedTransactionTypeForm.Entry.entry_type', {
+			column_selectable => 1,
+			auto_submit => 1,
+			choices => $income ? $_ENTRY_CREDIT
+			        : $_ENTRY_DEBIT,
+		    }),
+	    '<noscript>',
+	    $wf->create(
+		    'ImportedTransactionTypeForm.ok_button'),
+	    '</noscript>',
+	   );
 }
 
 =head1 COPYRIGHT
