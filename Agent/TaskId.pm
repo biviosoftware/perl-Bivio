@@ -2419,6 +2419,20 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
         help=journal-report
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
+        238
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/balance-sheet
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Action::ReportDateToday
+        Bivio::Biz::Model::BalanceSheetList->execute_load_all
+        Bivio::UI::HTML::Club::BalanceSheet
+        next=CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
+    )],
 );
 
 __PACKAGE__->compile([
