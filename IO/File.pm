@@ -97,6 +97,47 @@ sub chdir {
     return $directory;
 }
 
+=for html <a name="chmod"></a>
+
+=head2 static chmod(int perms, string file, ....)
+
+Changes permissions of I<file>s to I<perms>.  Dies on first error.
+
+=cut
+
+sub chmod {
+    my(undef, $perms,  @file) = @_;
+    foreach my $file (@file) {
+	CORE::chmod($perms, $file)
+	    or Bivio::Die->die($file, ": unable to set permissions: $!");
+    }
+    return;
+}
+
+=for html <a name="chown_by_name"></a>
+
+=head2 static chown_by_name(string owner, string group, string file, ...)
+
+Changes ownership of I<file>s to I<owner> AND I<group>.  Looking up with
+getpwnam first.  Dies on first error.
+
+=cut
+
+sub chown_by_name {
+    my(undef, $owner, $group, @file) = @_;
+    my($o) = (CORE::getpwnam($owner))[3];
+    Bivio::Die->die($owner, ': no such user')
+	unless defined($o);
+    my($g) = (CORE::getpwnam($group))[2];
+    Bivio::Die->die($group, ': no such group')
+	unless defined($g);
+    foreach my $file (@file) {
+	CORE::chown($o, $g, $file)
+	    or Bivio::Die->die($file, ": unable to set owner: $!");
+    }
+    return;
+}
+
 =for html <a name="ls"></a>
 
 =head2 static ls(string directory) : array_ref
