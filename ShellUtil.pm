@@ -286,20 +286,27 @@ sub new {
 Writes I<prompt> (default: "Are you sure?") to STDERR.  User must
 answer "yes", on STDIN or the routine throws an exception.
 
-Always returns in STDIN is not a tty (-t STDIN returns false).
+Does not prompt if:
+
+   * STDIN is not a tty (-t STDIN returns false)
+   * self is not a reference (called statically)
+   * -force option is true
 
 It is assumed STDERR is set up for autoflushing.
 
 =cut
 
 sub are_you_sure {
-    my($proto, $prompt) = @_;
+    my($self, $prompt) = @_;
 
     # Not a tty?
     return unless -t STDIN;
 
+    # Not an instance?
+    return unless ref($self);
+
     # Force?
-    return if ref($proto) && $proto->unsafe_get('force');
+    return if $self->unsafe_get('force');
 
     # Ask
     $prompt ||= 'Are you sure?';
