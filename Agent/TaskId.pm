@@ -325,10 +325,9 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
     )],
-#27-29
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
-        30
+        27
         CLUB
         ACCOUNTING_READ
         ?/accounting/reports/account
@@ -338,16 +337,117 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountSummaryReport
         help=account-report
     )],
-#31-37
+    [qw(
+        CLUB_ADMIN_SUBSCRIPTIONS
+        28
+        CLUB
+        ADMIN_READ
+        ?/admin/subscriptions
+        Bivio::Type::ECSubscription->execute_account_sync
+        Bivio::Biz::Model::ECSubscriptionPriceList->execute_for_type_and_realm
+        Bivio::Biz::Model::ECSubscriptionList->execute_load_all_with_query
+        Bivio::Biz::Model::ECSubscriptionListForm->execute_if_allowed
+        Bivio::UI::HTML::Club::ECSubscriptionList
+        next=CLUB_ADMIN_SUBSCRIPTIONS
+    )],
+    [qw(
+        CLUB_ADMIN_SUBSCRIBE_ACCOUNT_SYNC
+        29
+        CLUB
+        ADMIN_READ&ADMIN_WRITE
+        ?/admin/subscription/account-sync
+        Bivio::Type::ECSubscription->execute_account_sync
+        Bivio::Biz::Model::ECSubscriptionForm
+        Bivio::UI::HTML::Club::ECSubscription
+        next=CLUB_ADMIN_SUBSCRIPTIONS
+    )],
+    [qw(
+        CLUB_ADMIN_SUBSCRIBE_ACCOUNT_KEEPER
+        30
+        CLUB
+        ADMIN_READ&ADMIN_WRITE
+        ?/admin/subscription/account-keeper
+        Bivio::Type::ECSubscription->execute_account_keeper
+        Bivio::Biz::Model::ECSubscriptionForm
+        Bivio::UI::HTML::Club::ECSubscription
+        next=CLUB_ADMIN_SUBSCRIPTIONS
+    )],
+    [qw(
+        CLUB_ADMIN_SUBSCRIPTION_DETAIL
+        31
+        CLUB
+        ADMIN_READ&ADMIN_WRITE
+        ?/admin/subscription/detail
+        Bivio::Biz::Model::ECSubscription
+        Bivio::UI::HTML::Club::ECSubscriptionDetail
+    )],
+    [qw(
+        CLUB_ADMIN_SUBSCRIPTION_PAYMENT
+        32
+        CLUB
+        ADMIN_READ&ADMIN_WRITE
+        ?/admin/subscription/payment
+        Bivio::Biz::Model::ECSubscriptionForm
+        Bivio::UI::HTML::Club::ECSubscription
+        next=CLUB_ADMIN_SUBSCRIPTIONS
+    )],
+    [qw(
+        CLUB_ADMIN_PAYMENTS
+        33
+        CLUB
+        ADMIN_READ
+        ?/admin/payments
+        Bivio::Biz::Model::ECPaymentList->execute_load_all_with_query
+        Bivio::UI::HTML::Club::ECPaymentList
+        next=CLUB_ADMIN_PAYMENTS
+    )],
+    [qw(
+        CLUB_ADMIN_PAYMENT_DETAIL
+        34
+        CLUB
+        ADMIN_READ
+        ?/admin/payment/detail
+        Bivio::Biz::Model::ECPayment
+        Bivio::UI::HTML::Club::ECPaymentDetail
+        next=CLUB_ADMIN_PAYMENT_DETAIL
+    )],
+    [qw(
+	ADM_EC_PAYMENTS
+	35
+        GENERAL
+        ADMIN_WRITE
+        adm/ec-payments
+	Bivio::Biz::Model::SubstituteUserForm
+        Bivio::Biz::Model::ECPaymentListAll->execute_load_page
+	Bivio::UI::HTML::Adm::ECPaymentListAll
+        next=HTTP_DOCUMENT
+    )],
+    [qw(
+        GENERAL_PAYMENTS_PROCESS_ALL
+        36
+        GENERAL
+        DOCUMENT_READ
+        /_ec_payments_process_all
+        Bivio::Biz::Action::ECPaymentProcessAll
+    )],
+    [qw(
+        CLUB_ADMIN_PROCESS_PAYMENT
+        37
+        CLUB
+        DOCUMENT_READ
+        ?/_ec_payment_process
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::ECPayment->execute_process
+    )],
+#38
     [qw(
 	GENERAL_PRIVACY
-	38
+	39
         GENERAL
         DOCUMENT_READ
         hm/safe.html
         Bivio::Biz::Action::HTTPDocument
     )],
-#39
 #TODO: Probably should be TargetRealm->execute_this_member, but difficult to
 #      use right now.
     [qw(
