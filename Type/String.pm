@@ -32,6 +32,7 @@ It is currently a placeholder.
 =cut
 
 #=IMPORTS
+use Text::Tabs;
 
 #=VARIABLES
 
@@ -68,7 +69,66 @@ sub from_literal {
     return $value;
 }
 
+=for html <a name="wrap_lines"></a>
+
+=head2 wrap_lines(string value, int width) : string
+
+=head2 wrap_lines(string_ref value, int width) : string
+
+Returns I<value> with lines wider than I<width> wrapped.
+The default value for I<width> is 72.
+
+=cut
+
+sub wrap_lines {
+    my($proto, $value, $width) = @_;
+
+    $width = 72 unless $width;
+    my(@lines) = (split /\n/, ref($value) ? $$value : $value);
+    @lines = Text::Tabs::expand(@lines);
+
+    my($formatted) = [];
+    my($indent) = 0;
+    foreach my $line (@lines) {
+        $line =~ s/\s+$//;
+        while (length($line) > $width) {
+            _wrap_line($formatted, \$line, $indent, $width);
+        }
+        push(@$formatted, $line) if defined($line);
+    }
+    return join("\n", @$formatted, '');
+}
+
 #=PRIVATE METHODS
+
+# _wrap_line(array_ref formatted, string_ref line, int indent, int width)
+#
+# - find I<line> indentation
+# - search for white space around I<width>
+#   If found, break line and push left side to I<@formatted>,
+#      re-indent the remainding (right) part of the line
+# - Dont break line if no white space found or if line is quoted
+#
+sub _wrap_line {
+    my($formatted, $line, $indent, $width) = @_;
+
+    $$line =~ /(^\s*(|\S)\s+)/;
+    $indent = defined($1) ? substr($1, 0, $width) : '';
+    my($white_pos) = rindex($$line, ' ', $width);
+    $white_pos = index($$line, ' ', $width) if $white_pos < length($indent);
+    # Line cannot be broken if no white-space found or quoted
+    if ($white_pos == -1 || $$line =~ /^\s*[>]/) {
+        push(@$formatted, $$line);
+        undef($$line);
+    }
+    else {
+        my($wrapped) = substr($$line, 0, $white_pos);
+        push(@$formatted, $wrapped);
+        $$line = substr($$line, $white_pos);
+        $$line =~ s/^\s+/' ' x length($indent)/e;
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 
