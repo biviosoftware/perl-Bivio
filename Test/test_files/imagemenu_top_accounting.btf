@@ -1,2 +1,2 @@
-HTTP->login();
-HTTP->click_imagemenu('Accounting');
+Browser->login();
+Browser->click_imagemenu('Accounting');

@@ -1,2 +1,2 @@
-HTTP->login();
-HTTP->click_imagemenu('Administration');
+Browser->login();
+Browser->click_imagemenu('Administration');
