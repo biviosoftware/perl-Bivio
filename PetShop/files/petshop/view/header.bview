@@ -13,7 +13,10 @@ view_put(
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
 view_main(Page({
-    head => Title({values => [view_widget_value('header_title')]}),
+    head => Join([
+        Title({values => [view_widget_value('header_title')]}),
+        FirstFocus(),
+    ]),
     string_font => 'page_text',
     body => Join([
 	Grid([
