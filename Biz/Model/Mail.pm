@@ -200,7 +200,7 @@ sub delete {
                 [$properties->{mail_id}]);
         my $row = $sth->fetchrow_arrayref;
         my($new_root) = $row->[0];
-        if( defined($new_root) ) {
+        if (defined($new_root)) {
             _trace('Making ', $new_root, ' the new thread root') if $_TRACE;
             # Let all other thread members point to the new root message
             my($sth) = Bivio::SQL::Connection->execute('
@@ -230,13 +230,13 @@ sub delete {
     return 0 unless $self->SUPER::delete(@_);
 
     my($file) = Bivio::Biz::Model::File->new($req);
-    if( defined($properties->{rfc822_file_id}) ) {
+    if (defined($properties->{rfc822_file_id})) {
         _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id})
                 if $_TRACE;
         $file->delete(file_id => $properties->{rfc822_file_id},
             volume => $_MAIL_VOLUME);
     }
-    if( defined($properties->{cache_file_id}) ) {
+    if (defined($properties->{cache_file_id})) {
         _trace('Deleting cache file, id=', $properties->{cache_file_id})
                 if $_TRACE;
         $file->delete(file_id => $properties->{cache_file_id},
@@ -400,7 +400,7 @@ sub _walk_attachment_tree {
             volume => $_CACHE_VOLUME,
         });
         $dir_id = $file->get('file_id');
-        if( $ct eq 'message/rfc822' ) {
+        if ($ct eq 'message/rfc822') {
             # Re-parse this part as a separate mail message
             my($content) = $entity->bodyhandle->as_string;
             my($msg) = Bivio::Mail::Message->new(\$content);
@@ -419,8 +419,8 @@ sub _walk_attachment_tree {
         my($i);
         for $i (0..$#parts) {
             # For multipart/alternatives, only keep the HTML text-type part
-            if( $ct eq 'multipart/alternative' &&
-                    $parts[$i]->mime_type =~ m|^text/| ) {
+            if ($ct eq 'multipart/alternative' &&
+                    $parts[$i]->mime_type =~ m|^text/|) {
                 next unless $parts[$i]->mime_type eq 'text/html';
             }
             # Pass $mail_id and $i separately, so a subpart can refer to its parent
@@ -463,7 +463,7 @@ sub _attach_to_thread {
                 WHERE message_id=?',
                 [$in_reply_to]);
         my($row) = $sth->fetchrow_arrayref;
-        if( defined($row) ) {
+        if (defined($row)) {
             _trace('Found parent via Message-Id') if $_TRACE;
             _attach_to_parent($row, $values);
         }
@@ -478,7 +478,7 @@ sub _attach_to_thread {
                 [$values->{subject_sort}]);
         # Attach to oldest message
         my($row) = $sth->fetchrow_arrayref;
-        if( defined($row) ) {
+        if (defined($row)) {
             _trace('Found parent via Subject') if $_TRACE;
            _attach_to_parent($row, $values);
         }

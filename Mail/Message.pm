@@ -247,10 +247,10 @@ sub get_references {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($refs, @refs);
-    if( defined($refs = $fields->{entity}->head->get('References')) ) {
+    if (defined($refs = $fields->{entity}->head->get('References'))) {
         while ($refs =~ s/<([^<>]+)>//) { push(@refs, $1); }
     }
-    if( defined($refs = $fields->{entity}->head->get('In-Reply-To')) ) {
+    if (defined($refs = $fields->{entity}->head->get('In-Reply-To'))) {
         # Only want last id
         $refs =~ s/<([^<>]+)>//g;
         push(@refs, $1)  if $1;
@@ -272,7 +272,7 @@ sub get_message_id {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($id);
-    if( defined($id = $fields->{entity}->head->get('Message-Id')) ) {
+    if (defined($id = $fields->{entity}->head->get('Message-Id'))) {
         $id =~ s/<([^<>]+)>/$1/;
         chomp($id);
     }
@@ -323,7 +323,7 @@ sub send {
     unless (defined($pid)) {
 	Bivio::Die->die(Bivio::DieCode::NO_RESOURCES(), "open('|-') failed: $!");
     }
-    if( $pid ) { # parent
+    if ($pid) { # parent
         print $fh $fields->{entity}->as_string;
         close($fh);
         $? == 0 || Bivio::Die->die(Bivio::DieCode::IO_ERROR(),
@@ -373,9 +373,9 @@ sub set_headers_for_list_send {
     # If there is no From:, add it now.
     $head->get('From') || $head->add('From', $sender);
     # Insert the list name in the subject, if not already there
-    if( $list_in_subject ) {
+    if ($list_in_subject) {
         my($s) = $head->get('Subject');
-        if( defined($s) ) {
+        if (defined($s)) {
             $s = $list_name . ': ' . $s
                     unless $s =~ /^(\s*Re:\s*)*$list_name:\s/i;
 	    $head->replace('Subject', $s);
@@ -453,7 +453,7 @@ Returns undef if Reply-To is not set or cannot be parsed.
 sub get_reply_to {
     my($self) = @_;
     my($reply_to) = $self->get_head->get('reply-to');
-    if( defined($reply_to) ) {
+    if (defined($reply_to)) {
         my($email, $name) = Bivio::Mail::Address::parse($reply_to);
         &_trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
@@ -477,7 +477,7 @@ sub get_from {
     my($self) = @_;
     my($head) = $self->get_head;
     my($from) = $head->get('from') || $head->get('apparently-from');
-    if( defined($from) ) {
+    if (defined($from)) {
         my($email, $name) = Bivio::Mail::Address::parse($from);
         &_trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
@@ -499,7 +499,7 @@ Returns undef if the date cannot be parsed or is not available.
 sub get_date_time {
     my($self) = @_;
     my($date) = $self->get_field('date') || $self->get_field('received');
-    if( defined($date) ) {
+    if (defined($date)) {
         my($date_time) = _parse_date($date);
         &_trace($date, ' -> ', $date_time) if $_TRACE;
         return $date_time;
@@ -605,7 +605,7 @@ sub _parse_date {
     defined($mday)
             || (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef);
     $mon = uc($mon);
-    if( defined(Bivio::Mail::RFC822::MONTHS->{$mon}) ) {
+    if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
         $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
     }
     else {
@@ -615,10 +615,10 @@ sub _parse_date {
     my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
 
     $tz = uc($tz);
-    if( defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz}) ) {
+    if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
         $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
     }
-    if( $tz =~ /^(-|\+?)(\d\d?)(\d\d)/s ) {
+    if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
         $date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
     }
     elsif ($tz !~ /^0+$/) {

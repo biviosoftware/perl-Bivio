@@ -62,17 +62,17 @@ sub dispatch_action {
     $self->die('DIE', { message => 'undefined mailto value'})
             unless defined($mailto);
     _trace('mailto=', $mailto) if $_TRACE;
-    if( $mailto eq Bivio::Type::MailTo::CLUB() ) {
+    if ($mailto eq Bivio::Type::MailTo::CLUB()) {
         Bivio::Biz::Action::ClubMailBoard->execute($req);
         Bivio::Biz::Action::ClubMailMembers->execute($req);
     }
-    elsif( $mailto eq Bivio::Type::MailTo::MEMBERS() ) {
+    elsif ($mailto eq Bivio::Type::MailTo::MEMBERS()) {
         Bivio::Biz::Action::ClubMailMembers->execute($req);
     }
-    elsif( $mailto eq Bivio::Type::MailTo::BOARD() ) {
+    elsif ($mailto eq Bivio::Type::MailTo::BOARD()) {
         Bivio::Biz::Action::ClubMailBoard->execute($req);
     }
-    elsif( $mailto eq Bivio::Type::MailTo::ADMINISTRATOR() ) {
+    elsif ($mailto eq Bivio::Type::MailTo::ADMINISTRATOR()) {
         Bivio::Biz::Action::ClubMailAdmin->execute($req);
     }
     else {
@@ -226,7 +226,6 @@ No-op for base class
 =cut
 
 sub internal_modify_mail {
-    my($self) = @_;
     return 0;
 }
 
