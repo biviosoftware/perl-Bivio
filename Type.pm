@@ -172,7 +172,7 @@ sub from_sql_column {
 
 =for html <a name="from_sql_value"></a>
 
-=head2 from_sql_value(string place_holder) : string
+=head2 static from_sql_value(string place_holder) : string
 
 Converts I<place_holder>, which is typically a column name on a SELECT, to
 a TO_CHAR string.  For most types, returns I<place_holder>.  For dates,
@@ -293,7 +293,7 @@ sub is_equal {
 
 =for html <a name="is_password"></a>
 
-=head2 is_password() : boolean
+=head2 static is_password() : boolean
 
 Is this value a password, i.e. should it not be displayed?
 
@@ -307,7 +307,7 @@ sub is_password {
 
 =for html <a name="is_secure_data"></a>
 
-=head2 is_secure_data() : boolean
+=head2 static is_secure_data() : boolean
 
 Requires that the field be displayed only in secure environments.
 
@@ -434,7 +434,7 @@ sub to_uri {
 
 =for html <a name="to_xml"></a>
 
-=head2 to_xml(any value) : string
+=head2 static to_xml(any value) : string
 
 Same as L<to_html|"to_html">.
 
