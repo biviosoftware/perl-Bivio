@@ -53,14 +53,10 @@ my($_DEFAULT_CONFIG) = Bivio::BConf->merge({
     },
     'Bivio::UI::Facade' => {
         default => 'PetShop',
-	local_file_root => '/home/httpd/files',
     },
     'Bivio::UI::Text' => {
 	http_host => 'petshop.bivio.biz',
 	mail_host => 'bivio.biz',
-    },
-    'Bivio::UI::HTML::Widget::SourceCode' => {
-	source_dir => '/home/httpd/files/src',
     },
 });
 
