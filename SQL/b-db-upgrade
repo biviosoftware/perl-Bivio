@@ -271,6 +271,35 @@ ALTER TABLE mgfs_download_t add primary key (file_name, file_date, file_size)
 	Bivio::SQL::Connection->commit;
     }
 
+    _upgrade_shadow_emails();
+    return;
+}
+
+# _upgrade_shadow_emails()
+#
+# Change ignore-=.*_realm_id to: .*:realm_id.  This must match the
+# algorithm in Model::Email.
+#
+sub _upgrade_shadow_emails {
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF', []);
+            SELECT email
+            FROM email_t
+            WHERE email like 'ignore-=%'
+            AND email not like '%bivio.com'
+EOF
+    my($row, %shadow);
+    while ($row = $sth->fetchrow_arrayref) {
+	my($e) = $row->[0];
+	$shadow{$e} = $1.':'.$2 if $e =~ /ignore-.(.+)_(\d+)$/;
+    }
+
+    while (my($k, $v) = each(%shadow)) {
+	Bivio::SQL::Connection->execute(<<'EOF', [$v, $k]);
+		UPDATE email_t
+                SET email = ?
+                WHERE email = ?
+EOF
+    }
     return;
 }
 
