@@ -129,6 +129,7 @@ sub find {
 	    my($val);
 	    if ($col_field_count->[$j] == 1 ) {
 		$val = &_convert_value($types, $col, $row->[$col]);
+		$col++;
 	    }
 	    else {
 		$val = [];
