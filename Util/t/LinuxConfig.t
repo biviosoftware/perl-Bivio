@@ -56,6 +56,10 @@ Bivio::Test->unit([
 		['etc/rc.d/init.d/iptables', 'iptables-restore \&\&'],
 	    ],
 	], [
+	    'add_bashrc_d', [] => [
+		['etc/bashrc', '/etc/bashrc.d/'],
+	    ],
+	], [
 	    'add_sendmail_class_line', ['relay-domains', '10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
 	    ],
