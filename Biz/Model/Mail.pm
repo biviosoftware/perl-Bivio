@@ -121,8 +121,8 @@ sub create {
         is_public => 0,
         is_thread_root => 0,
         bytes => 0,
-        rfc822_file_id => 0,
-        cache_file_id => 0,
+        rfc822_file_id => undef,
+        cache_file_id => undef,
     };
     # Provide mail_id if it was passed on
     $values->{mail_id} = $mail_id if defined($mail_id);
