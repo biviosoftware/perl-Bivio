@@ -2,6 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Presentation;
 use strict;
+use Bivio::UI::HTML::MenuRenderer();
 $Bivio::UI::HTML::Presentation::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -17,11 +18,11 @@ Bivio::UI::HTML::Presentation - A view arranger with NavBar and ActionBar.
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::MultiView>
+L<Bivio::UI::MultiView>
 
 =cut
 
-@Bivio::UI::HTML::Presentation::ISA = qw(Bivio::UI::HTML::MultiView);
+@Bivio::UI::HTML::Presentation::ISA = qw(Bivio::UI::MultiView);
 
 =head1 DESCRIPTION
 
@@ -51,17 +52,21 @@ in a menu. The format looks like:
 
 =for html <a name="new"></a>
 
-=head2 static new(string name, hash views, string default_view) : Bivio::UI::HTML::Presentation
+=head2 static new(array views, Menu menu) : Bivio::UI::HTML::Presentation
 
-Creates a presentation with the specified views. The active view has its
-actions rendered in an ActionBar.
+Creates a view presentation with the specified subviews and menu.
+
+=head2 static new(array views, Menu menu) : Bivio::UI::HTML::Presentation
+
+Creates a view presentation with the specified subviews.
 
 =cut
 
 sub new {
-    my($proto, $name, $views, $default_view) = @_;
-    my($self) = &Bivio::UI::HTML::MultiView::new($proto, $name, $views,
-	    $default_view);
+    my($proto, $views, $menu) = @_;
+
+    # no view name
+    my($self) = &Bivio::UI::MultiView::new($proto, undef, $views, $menu);
     return $self;
 }
 
@@ -80,36 +85,36 @@ Renders a view with NavBar, ActionBar, and Menu.
 sub render {
     my($self, $model, $req) = @_;
 
-    print('<table border=0 cellpadding=0 cellspacing=0 width="100%">
+    $req->print('<table border=0 cellpadding=0 cellspacing=0 width="100%">
 <tr><td colspan=3><!-- TITLE -->
 ');
 
     $self->render_title($model, $req);
 
-    print('</td></tr>
+    $req->print('</td></tr>
 <tr><td valign=top><!-- NAV BAR -->
 ');
 
     $self->render_nav_bar($model, $req);
 
-    print('<td width="1%" rowspan=2>
+    $req->print('<td width="1%" rowspan=2>
 <!-- SPACER -->&nbsp;</td>
 ');
 
-    print('<td width="1%" rowspan=2 valign="top">
+    $req->print('<td width="1%" rowspan=2 valign="top">
 <table border=0 cellpadding=0 cellspacing=0>
 <tr><td><!-- VIEW ACTIONS -->
 ');
 
     $self->render_action_bar($model, $req);
 
-    print('</td></tr></table></td></tr>
+    $req->print('</td></tr></table></td></tr>
 <tr><td valign="top"><!-- VIEW -->
 ');
 
     $self->get_active_view()->render($model, $req);
 
-    print('</td></tr></table>
+    $req->print('</td></tr></table>
 ');
 }
 
@@ -124,11 +129,11 @@ Renders a model's actions.
 sub render_action_bar {
     my($self, $model, $req) = @_;
 
-    print('<table border=0 cellpadding=5 cellspacing=0 bgcolor="#E9E3C7">
+    $req->print('<table border=0 cellpadding=5 cellspacing=0 bgcolor="#E9E3C7">
 <tr><td align=center valign="top"><small>
 ');
 
-    #TODO: get actions
+    #TODO: get actions from model
 
     for (my($i) = 1; $i <= 3; $i++) {
 	print('<p><a href="mailto:societas@bivio.com">
@@ -137,7 +142,7 @@ alt="Compose a new message to the club"><br>Compose'.$i
 .'</a>');
     }
 
-    print('</small></td></tr></table>
+    $req->print('</small></td></tr></table>
 ');
 }
 
@@ -152,7 +157,7 @@ Draws the nav and menu bar.
 sub render_nav_bar {
     my($self, $model, $req) = @_;
 
-    print('<table border=0 cellpadding=0 cellspacing=0>
+    $req->print('<table border=0 cellpadding=0 cellspacing=0>
 <tr><td width="1%"><img src="/i/scroll_up_ia.gif" height=31
 width=31 border=0 alt="Next page" vspace=5></td>
 <td width="1%"><img src="/i/scroll_up_ia.gif" height=31
@@ -161,9 +166,13 @@ width=31 border=0 alt="Previous page" hspace=3></td>
 <!-- VIEW MENU -->
 ');
 
-    $self->render_menu(0, $req);
+    if ($self->get_menu()) {
+	$self->get_menu()->set_selected($self->get_active_view()->get_name());
+	Bivio::UI::HTML::MenuRenderer->get_instance()->render(
+		$self->get_menu(), $req);
+    }
 
-    print('</td>
+    $req->print('</td>
 <td width="1%"><img src="/i/scroll_up_ia.gif" height=31
 width=31 border=0 alt="Next message" hspace=3></td>
 <td width="1%"><img src="/i/scroll_up_ia.gif" height=31
@@ -183,15 +192,15 @@ Draws the active view title.
 sub render_title {
     my($self, $model, $req) = @_;
 
-    print('<table border=0 cellpadding=5 cellspacing=0 width="100%">
+    $req->print('<table border=0 cellpadding=5 cellspacing=0 width="100%">
 <tr bgcolor="#E0E0FF">
 <td width="100%" colspan=2>
 <font face="arial,helvetica,sans-serif">
 <big><strong>');
 
-    print($self->get_title());
+    $req->print($model->get_title());
 
-    print('</strong></big></font>
+    $req->print('</strong></big></font>
 </td></tr></table>
 ');
 }
