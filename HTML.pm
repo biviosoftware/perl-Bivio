@@ -104,12 +104,14 @@ sub escape {
 
 =head2 static escape_query(string text) : string
 
-Same as escape_uri.
+Same as escape_uri except escapes '+' as well.
 
 =cut
 
 sub escape_query {
-    return shift->escape_uri(@_);
+    my($proto, $text) = @_;
+    $text =~ s/\+/\%2B/g;
+    return $proto->escape_uri($text);
 }
 
 =for html <a name="escape_uri"></a>
