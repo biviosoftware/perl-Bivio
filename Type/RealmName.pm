@@ -129,6 +129,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     setup
     shutdown
     site
+    support
     sync
     sys
     sysop
