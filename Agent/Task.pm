@@ -409,8 +409,15 @@ sub handle_die {
 	Bivio::DieCode->SERVER_REDIRECT_TASK,
 	task_id => $new_task_id,
     );
-    # Save state of current task executing
+#TODO: Figure out how to save the current form in context if there is one.
+#      Cannot simply call $req->get_form here, because it has to be
+#      parsed into internal_values by FormModel.
+    # Save state of current task executing; emulates server_redirect
     $req->put_durable(
+	query => undef,
+	form => undef,
+	form_model => undef,
+	path_info => undef,
 	form_context => Bivio::Biz::FormModel->get_context_from_request($req),
     );
     return;
