@@ -35,6 +35,7 @@ and delete interface to the C<club_t> table.
 
 #=IMPORTS
 use Bivio::Biz::ListModel;
+use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
