@@ -60,9 +60,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(HTTP::Response response) : Bivio::Test::HTMLParser
+=head2 static new(string content) : Bivio::Test::HTMLParser
 
-Parse an HTTP::Response and return an instance
+Parse an HTML page and return an instance
 
 =cut
 
