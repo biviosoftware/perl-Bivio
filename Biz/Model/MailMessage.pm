@@ -188,35 +188,30 @@ sub handle_config {
 
 =for html <a name="get_body"></a>
 
-=head2 get_body() : string_ref
+=head2 get_body() : string
 
 Returns the htmlized body of the mail message. This is retrieved from the
-file server using the path "club-id/messages/message-id".
+file server using the path "club_name/messages/message-id".
 
 =cut
 
 sub get_body {
     my($self) = @_;
     my($body);
-#TODO: Is this what we want?  Probably more complex than just single get.
-    
-    my($sql) = 'select name from realm_owner_t where realm_id = ?';
-    my($statement) = Bivio::SQL::Connection->execute($sql,
-	    [$self->get('club_id')], $self);
-    my($result) = [];
-    my($row);
-    my($club_name) = '';
-    while($row = $statement->fetchrow_arrayref()) {
-	push(@$result, $row->[0]);
-	_trace('row[0] = ', $row->[0]);
-	$club_name = $row->[0];
-    }
-    my $filename = '/' . $club_name . '/messages/html/' . $self->get('mail_message_id');
-    $_FILE_CLIENT->get($filename, \$body) || die("couldn't get mail body: $body");
-    my($i) = index $body, "<!DOCTYPE";
-    my($sub_body) = '';
-    $sub_body = substr $body, $i unless ($i eq(-1));
-    return \$sub_body;
+    my($club_id, $msg_id) = $self->get('club_id', 'mail_message_id');
+    my($req) = $self->get_request;
+#TODO: Need to make a general registry of models, so we share without
+#      having to resort to tricks like this.
+    $self->die(Bivio::DieCode::DIE(),
+	    message => 'should not have gotten here')
+	    unless $club_id eq $req->get('auth_id');
+    my($club_name) = $req->get('auth_realm')->get('owner_name');
+    my($filename) = '/'.$club_name.'/messages/html/'.$msg_id;
+    die("couldn't get mail body: $body")
+	    unless$_FILE_CLIENT->get($filename, \$body);
+#TODO: This needs to be fixed to search for header separator(?)
+    my($i) = index($body, '<!DOCTYPE');
+    return $i == -1 ? '' : substr($body, $i);
 }
 
 =for html <a name="internal_initialize"></a>
