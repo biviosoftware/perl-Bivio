@@ -8,7 +8,7 @@ use strict;
 
 use HTML::Entities ();
 use Carp ();
-require 'syscall.ph';
+$^O !~ /win32/i && require 'syscall.ph';
 
 BEGIN {
     # Create routines dynamically
