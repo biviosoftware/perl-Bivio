@@ -228,9 +228,7 @@ sub get_standard_footer {
 		$label, $task, 'footer_menu'),
 		$spacer);
     }
-    push(@$links, $_W->mailto(['support_email'])->put(
-	    string_font => 'footer_menu',
-	   ));
+    push(@$links, $_W->link(['support_email'], 'MAIL_SUPPORT', 'footer_menu'));
 
     # Create grid
     $_W->load_class('Grid', 'EditPreferences');
