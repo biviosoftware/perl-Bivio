@@ -170,6 +170,7 @@ _compile(
     REPORT_YEAR => ['Report Year'],
     TASK_ID => ['Task', undef, 'task_id2'],
     FEE_PERCENT => ['Percent Fee Type'],
+    MONTH => ['Month'],
 
     PRE_WITHDRAWAL_BASIS => ["Member's Basis Before Withdrawal"],
     ADJUSTED_BASIS => ['(A)  Adjusted basis'],
@@ -180,6 +181,8 @@ _compile(
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
+    CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE => [
+	    'Performance Comparison Report'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
 	'Income and Expense Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
