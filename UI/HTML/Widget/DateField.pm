@@ -28,6 +28,8 @@ use Bivio::UI::HTML::Widget;
 
 C<Bivio::UI::HTML::Widget::DateField> is a date field for forms.
 
+B<Don't use this for DateTime values.>
+
 =head1 ATTRIBUTES
 
 =over 4
@@ -53,15 +55,10 @@ use Bivio::Type::DateTime;
 use Bivio::Type::Date;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::Format::DateTime;
-use Bivio::UI::HTML::Widget::DateTime;
-use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
-# Share functions with DateTime
-my($_FN) = Bivio::UI::HTML::Widget::DateTime->JAVASCRIPT_FUNCTION_NAME;
-my($_FUNCS) = Bivio::UI::HTML::Widget::DateTime->JAVASCRIPT_FUNCTIONS;
 
 =head1 FACTORIES
 
@@ -136,33 +133,22 @@ sub render {
 	return;
     }
 
-    # Default is now unless allow_undef set
+    # Default is local_today unless allow_undef set
     my($value) = $form->get($field);
     unless (defined($value)) {
 	if ($fields->{allow_undef}) {
 	    $$buffer .= $fields->{prefix}.$fields->{suffix};
 	    return;
 	}
-	$value = Bivio::Type::DateTime->now;
+	$value = Bivio::Type::Date->local_today;
     }
 
-    # What to render if javascript not available.  Must be acceptable
-    # to Date::from_literal.
-    my($gmt) = Bivio::Type::Date->to_literal($value);
-
-    # Share functions with DateTime
-    Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
-	    $_FN,
-	    $_FUNCS,
-	    # script
-	    "document.write('".$fields->{prefix}."');\n"
-	    # Must not begin dates with 0 (netscape barfs, so have to
-	    # print as decimals
-	    ."$_FN(".sprintf('%d,%d,%d,%s', $_MODE_INT,
-		    split(' ', $value), "'$gmt'").');'
-	    ."document.write('".$fields->{suffix}."');",
-	    # noscript
-	    $fields->{prefix}.$gmt.$fields->{suffix});
+    # We render the date in GMT always.  The only strange case
+    # is when we render the default.  Otherwise, values are
+    # coming from the db which means they are GMT anyway and
+    # have a fixed time component.
+    $$buffer .= $fields->{prefix}.
+	    Bivio::Type::Date->to_literal($value).$fields->{suffix};
     return;
 }
 
