@@ -34,6 +34,7 @@ and delete interface to the C<realm_instrument_valuation_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
 use Bivio::Type::DateTime;
@@ -44,6 +45,39 @@ use Bivio::Type::PrimaryId;
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_or_update"></a>
+
+=head2 static Bivio::Biz::Model::RealmInstrumentValuation create_or_update(string realm_instrument_id, string date, string price)
+
+Creates or updates an instance of RealmInstrumentValuation using the specifed
+values.
+
+=cut
+
+sub create_or_update {
+    my(undef, $realm_instrument_id, $date, $price) = @_;
+
+    my($req) = Bivio::Agent::Request->get_current;
+    my($inst_val) = Bivio::Biz::Model::RealmInstrumentValuation->new($req);
+
+    # see if a valuation already exists, if so update it
+    if ($inst_val->unsafe_load(
+	    realm_instrument_id => $realm_instrument_id,
+	    date_time => $date)) {
+
+	$inst_val->update({price_per_share => $price});
+    }
+    else {
+	$inst_val->create({
+	    realm_id => $req->get('auth_id'),
+	    realm_instrument_id => $realm_instrument_id,
+	    date_time => $date,
+	    price_per_share => $price,
+	});
+    }
+    return $inst_val;
+}
 
 =for html <a name="internal_initialize"></a>
 
