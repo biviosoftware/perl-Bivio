@@ -154,8 +154,10 @@ my(@_CFG) = (
         ACCOUNTING_READ
         %/accounting/investments:%/investments
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_LIST
