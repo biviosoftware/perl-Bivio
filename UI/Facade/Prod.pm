@@ -277,28 +277,7 @@ my($_SELF) = __PACKAGE__->new({
     },
 });
 
-# Only initialize children if parent was created.  Won't be
-# created on production if not is_production.
-if ($_SELF) {
-    foreach my $cfg (
-	    ['small', 'xx-small'], # 1
-	    ['large', 'small'], # 3
-	    ['extra_large', 'medium']) { # 4
-	$_SELF->new_child({
-	    child_type => $cfg->[0],
-	    'Bivio::UI::Font' => {
-		initialize => sub {
-		    my($fc) = @_;
-		    $fc->value(default => [
-			'family=arial,sans-serif',
-			'size='.$cfg->[1],
-		    ]);
-		    return;
-		},
-	    },
-	});
-    }
-}
+Bivio::UI::Font->initialize_children($_SELF);
 
 =head1 METHODS
 
