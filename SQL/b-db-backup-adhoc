@@ -8,7 +8,7 @@
 DB_LOGIN=${1:-bivio/bivio}
 DB_NAME=${2:-SOC}
 BACKUP_HOST=${3:-s2b}
-KEEP_DAYS=${4:-6}
+KEEP_DAYS=${4:-5}
 
 HOST=`hostname`
 HOST=`expr $HOST : '\([^\.]*\)\.' '|' $HOST`
