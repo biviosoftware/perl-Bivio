@@ -2,6 +2,7 @@
 # $Id$
 package Bivio::Agent::Controller;
 use strict;
+use Carp();
 $Bivio::Agent::Controller::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -29,26 +30,55 @@ C<Bivio::Agent::Controller> is an abstract class for processing requests.
 
 #=VARIABLES
 
+my($_PACKAGE) = __PACKAGE__;
+
 =head1 FACTORIES
 
 =cut
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Agent::Controller
+=head2 static new(array views, View default_view) : Bivio::Agent::Controller
 
-Creates a new controller.
+Creates a new controller which controlls the specified views, and shows
+the default_view if the request doesn't contain a view.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
+    my($proto, $views, $default_view) = @_;
+    my($self) = &Bivio::UNIVERSAL::new($proto);
+
+    my($view_hash) = {};
+    my($view);
+    foreach $view (@$views) {
+	$view_hash->{$view->get_name()} = $view;
+    }
+    $view_hash->{''} = $default_view;
+
+    $self->{$_PACKAGE} = {
+	views => $view_hash,
+    };
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_view"></a>
+
+=head2 get_view(string name) : View
+
+Returns the named view or undef if a view by the name was never added.
+
+=cut
+
+sub get_view {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{views}->{$name};
+}
 
 =for html <a name="handle_request"></a>
 
