@@ -39,6 +39,7 @@ use Bivio::Type::F1065AccountingMethod;
 use Bivio::Type::F1065ForeignTax;
 use Bivio::Type::F1065Partnership;
 use Bivio::Type::F1065Return;
+use Bivio::UI::HTML::Format::SSN;
 use Bivio::UI::PDF::Form::ButtonXlator;
 use Bivio::UI::PDF::Form::DateXlator;
 use Bivio::UI::PDF::Form::IntXlator;
@@ -220,8 +221,7 @@ my(@_XLATORS) = (
 		    Bivio::UI::PDF::Form::StringXlator->new(
 			    'f2-21',
 			    [
-				'User.TaxId',
-				'tax_id'
+				'user_tax_id',
 			    ]
 			   ),
 		    Bivio::UI::PDF::Form::StringCatXlator->new(
@@ -701,7 +701,8 @@ sub set_up {
     # Load the user's tax_id onto the request.
     my($user_tax_id) = Bivio::Biz::Model::TaxId->new($req);
     $user_tax_id->unauth_load_or_die(realm_id => $user_realm->get('realm_id'));
-    $req->put('User.TaxId' => $user_tax_id);
+    $req->put(user_tax_id => Bivio::UI::HTML::Format::SSN->get_widget_value(
+	    $user_tax_id->get('tax_id')));
 
     return;
 }
