@@ -208,8 +208,16 @@ my(@_CFG) = (
         Bivio::Biz::Action::Referral
     )],
     [qw(
-        CLUB_COMMUNICATIONS_MAIL_LIST
+        USER_REFERRAL
         16
+        USER
+        LOGIN
+        ?/ref
+        Bivio::Biz::Action::Referral
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_LIST
+        17
         CLUB
         MAIL_READ
         ?/mail
@@ -218,14 +226,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailListForm->execute_if_admin
         Bivio::UI::HTML::Club::MailList
         next=CLUB_COMMUNICATIONS_MAIL_LIST
-    )],
-    [qw(
-        USER_REFERRAL
-        17
-        USER
-        LOGIN
-        ?/ref
-        Bivio::Biz::Action::Referral
     )],
     [qw(
         CLUB_COMMUNICATIONS_MAIL_DETAIL
@@ -603,6 +603,7 @@ my(@_CFG) = (
         USER
         ADMIN_READ
         ?/admin:?/admin/info
+        Bivio::Biz::Model::User->execute_load
         Bivio::UI::HTML::User::AdminInfo
     )],
     [qw(
