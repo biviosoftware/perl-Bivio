@@ -40,9 +40,45 @@ see things, e.g. date/time format.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
+use Bivio::Util;
 
 #=VARIABLES
 
+
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::UI::HTML::Format
+
+=head2 static get_instance(any class) : Bivio::UI::HTML::Format
+
+Returns a usable instance (or class).  The name will be prefixed
+if necessary.  The class will be loaded dynamically.
+
+=cut
+
+sub get_instance {
+    my($proto, $class) = @_;
+    if (defined($class)) {
+	$class = ref($class) if ref($class);
+	$class = 'Bivio::UI::HTML::Format::'.$class unless $class =~ /::/;
+	# Make sure the class is loaded.
+	Bivio::Util::my_require($class);
+    }
+    else {
+	$class = ref($proto) || $proto;
+	Bivio::IO::Alert->die('invalid class; cannot be ', __PACKAGE__)
+		    if $class eq __PACKAGE__;
+    }
+    Bivio::IO::Alert->die($class, ': not a ', __PACKAGE__)
+		unless UNIVERSAL::isa($class, __PACKAGE__);
+    return $class;
+}
 
 =head1 METHODS
 
@@ -59,6 +95,20 @@ and returns it.
 
 sub get_widget_value {
     die('abstract method');
+}
+
+=for html <a name="result_is_html"></a>
+
+=head2 result_is_html() : boolean
+
+Returns true if the result is html.
+
+False by default.
+
+=cut
+
+sub result_is_html {
+    return 0;
 }
 
 #=PRIVATE METHODS
