@@ -163,6 +163,75 @@ sub post_form {
     return;
 }
 
+=for html <a name="verify_all"></a>
+
+=head2 verify_all(string uri, string title, string text)
+
+Runs all three verification tests on the current parsed response.
+
+=cut
+
+sub verify_all {
+    my($proto, $uri, $title, $text) = @_;
+    $proto->verify_uri($uri);
+    $proto->verify_title($title);
+    $proto->verify_text($text);
+    return;
+}
+
+=for html <a name="verify_text"></a>
+
+=head2 verify_text(string text)
+
+Dies if specified text is not found within the current parsed response.
+
+=cut
+
+sub verify_text {
+    my(undef, $text) = @_;
+    #TODO: use get_widget_value to search through the hash for a string??
+    #die("Failed verification.  text: $text not found in page.")
+    #	unless ...
+    return;
+}
+
+=for html <a name="verify_title"></a>
+
+=head2 verify_title(string $match_title)
+
+Dies if title in current page does not match string $title (case insensitive).
+
+=cut
+
+sub verify_title {
+    my(undef, $match_title) = @_;
+    my($page_title) = Bivio::Test::BulletinBoard->get_current()->get(
+	    'response')->get_title();
+    die("Failed verification.
+         title: $page_title does not match expected: $match_title")
+	    unless $page_title =~ /$match_title/i;
+    return;
+}
+
+=for html <a name="verify_uri"></a>
+
+=head2 verify_uri(string path)
+
+Verifies that the uri of the current response contains the specified string.
+The specified uri should optimally be only the path after the base uri so that
+this will succeed with different base uris.
+
+=cut
+
+sub verify_uri {
+    my(undef, $path) = @_;
+    my($uri) = Bivio::Test::BulletinBoard->get_current()->get('current_uri');
+    die("Failed verification.
+         current uri: $uri does not match/contain expected: $path")
+	    unless ($uri =~ /$path/);
+    return;
+}
+
 =for html <a name="visit"></a>
 
 =head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
