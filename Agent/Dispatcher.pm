@@ -75,7 +75,8 @@ sub process_request {
 	my($controller);
 	foreach $controller (@$list) {
 	    $controller->handle_request($req);
-	    return if $req->get_state() != Bivio::Agent::Request::NOT_HANDLED;
+	    return if $req->get_reply->get_state()
+		    != Bivio::Agent::Reply->NOT_HANDLED;
 	}
     }
     return;

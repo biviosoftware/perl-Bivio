@@ -19,74 +19,11 @@ use Bivio::UNIVERSAL;
 C<Bivio::Agent::Request> Request provides a common interface for http,
 email, ... requests to the application. It provides methods to access
 the controller name and user information. Action arguments can be accessed
-through the L<"get_arg"> method. Request also provides access to the
-request output stream through the method L<"print">.
+through the L<"get_arg"> method. Requests provide access to a
+L<Bivio::Agent::Reply|"Bivio::Agent::Reply"> using the
+L<get_reply|"get_reply"> method.
 
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="OK"></a>
-
-=head2 OK : int
-
-successful
-
-=cut
-
-sub OK {
-    return 0
-}
-
-=for html <a name="FORBIDDEN"></a>
-
-=head2 FORBIDDEN : int
-
-use not authorized to do request
-
-=cut
-
-sub FORBIDDEN {
-    return 1;
-}
-
-=for html <a name="NOT_HANDLED"></a>
-
-=head2 NOT_HANDLED : int
-
-request not processed - ie not found
-
-=cut
-
-sub NOT_HANDLED {
-    return 2;
-}
-
-=for html <a name="AUTH_REQUIRED"></a>
-
-=head2 AUTH_REQUIRED : int
-
-needs authorization to proceed
-
-=cut
-
-sub AUTH_REQUIRED {
-    return 3;
-}
-
-=for html <a name="SERVER_ERROR"></a>
-
-=head2 SERVER_ERROR : int
-
-internal error
-
-=cut
-
-sub SERVER_ERROR {
-    return 4;
-}
 
 #=IMPORTS
 use Bivio::Util;
@@ -116,8 +53,6 @@ sub new {
         'target' => $target_name,
         'controller' => $controller_name,
         'user' => $user,
-        'reply_type' => '',
-        'state' => NOT_HANDLED,
 	'start_time' => $start_time
     };
     return $self;
@@ -168,33 +103,17 @@ sub get_controller_name {
     return $fields->{controller};
 }
 
-=for html <a name="get_reply_type"></a>
+=for html <a name="get_reply"></a>
 
-=head2 get_reply_type() : string
+=head2 abstract get_reply() : Bivio::Agent::Reply
 
-Returns the reply format type.
-
-=cut
-
-sub get_reply_type {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{reply_type};
-}
-
-=for html <a name="get_state"></a>
-
-=head2 get_state() : int
-
-Returns the state of the request. This should be one of the constant
-values described above.
+Returns the L<Bivio::Agent::Reply|"Bivio::Agent::Reply"> subclass for this
+particular instance.
 
 =cut
 
-sub get_state {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{state};
+sub get_reply {
+    die("abstract method");
 }
 
 =for html <a name="get_target_name"></a>
@@ -226,18 +145,6 @@ sub get_user {
     return $fields->{user};
 }
 
-=for html <a name="print"></a>
-
-=head2 abstract print(string str)
-
-Writes the specified string to the request's output stream.
-
-=cut
-
-sub print {
-    die("abstract method");
-}
-
 =for html <a name="put_arg"></a>
 
 =head2 abstract put_arg(string name, string value)
@@ -248,37 +155,6 @@ Adds or replaces the named arguments value.
 
 sub put_arg {
     die("abstract method");
-}
-
-=for html <a name="set_reply_type"></a>
-
-=head2 set_reply_type(string type)
-
-Sets the reply format type. For example this could be 'text/html'.
-
-=cut
-
-sub set_reply_type {
-    my($self, $type) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{reply_type} = $type;
-    return;
-}
-
-=for html <a name="set_state"></a>
-
-=head2 set_state(int state)
-
-Sets the state of the request the specified value. This should be one of the
-constant values describe above.
-
-=cut
-
-sub set_state {
-    my($self, $state) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{state} = $state;
-    return;
 }
 
 #=PRIVATE METHODS

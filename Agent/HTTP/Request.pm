@@ -42,7 +42,8 @@ using the L<"get_model_args">.
 =cut
 
 #=IMPORTS
-use Apache::Constants;
+#use Apache::Constants;
+use Bivio::Agent::HTTP::Reply;
 use Bivio::Biz::FindParams;
 use Bivio::Biz::User;
 use Bivio::Util;
@@ -82,17 +83,14 @@ sub new {
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	    &_find_user($r->connection->user), $start_time);
     $self->{$_PACKAGE} = {
-        'r' => $r,
+#        'r' => $r,
 	'view_name' => $view,
-        'header_sent' => 0,
 	'args' => \%args,
 	'password' => $password,
-	'model_args' => Bivio::Biz::FindParams->from_string($args{mf} || '')
+	'model_args' => Bivio::Biz::FindParams->from_string($args{mf} || ''),
+	'reply' => Bivio::Agent::HTTP::Reply->new($r)
     };
     delete($args{mf});
-
-    #default to html
-    $self->set_reply_type('text/html');
 
     return $self;
 }
@@ -130,34 +128,6 @@ sub get_arg {
     return $fields->{args}->{$name};
 }
 
-=for html <a name="get_http_return_code"></a>
-
-=head2 get_http_return_code() : int
-
-Returns the appropriate Apache::Constant depending on the current state
-of the request.
-
-=cut
-
-sub get_http_return_code {
-    my($self) = @_;
-    my($state) = $self->get_state();
-
-    # need to translate from Request state to Apache rc
-    return Apache::Constants::AUTH_REQUIRED
-	    if $state == Bivio::Agent::Request->AUTH_REQUIRED;
-    return Apache::Constants::FORBIDDEN
-	    if $state == Bivio::Agent::Request->FORBIDDEN;
-    return Apache::Constants::NOT_FOUND
-	    if $state == Bivio::Agent::Request->NOT_HANDLED;
-    return Apache::Constants::OK
-	    if $state == Bivio::Agent::Request->OK;
-    return Apache::Constants::SERVER_ERROR
-	    if $state == Bivio::Agent::Request->SERVER_ERROR;
-
-    die("invalid request state $state");
-}
-
 =for html <a name="get_model_args"></a>
 
 =head2 get_model_args() : Bivio::Biz::FindParams
@@ -173,6 +143,22 @@ sub get_model_args {
     my($fields) = $self->{$_PACKAGE};
 
     return $fields->{model_args};
+}
+
+=for html <a name="get_reply"></a>
+
+=head2 abstract get_reply() : Bivio::Agent::Reply
+
+Returns the L<Bivio::Agent::Reply|"Bivio::Agent::Reply"> subclass for this
+particular instance.
+
+=cut
+
+sub get_reply {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{reply};
 }
 
 =for html <a name="get_password"></a>
@@ -229,29 +215,6 @@ sub make_path {
 
     return '/'.$self->get_target_name().'/'.$controller_name
 	    .'/'.$view_name.'/';
-}
-
-=for html <a name="print"></a>
-
-=head2 print(string str)
-
-Writes the specified string to the request's output stream.
-
-=cut
-
-sub print {
-    my($self,$str) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    if ($fields->{header_sent} == 0) {
-	# only do this on first print
-	$fields->{header_sent} = 1;
-
-	$fields->{r}->content_type($self->get_reply_type());
-	$fields->{r}->send_http_header;
-    }
-    $fields->{r}->print(defined($str) ? $str : 'undef');
-    return;
 }
 
 =for html <a name="put_arg"></a>

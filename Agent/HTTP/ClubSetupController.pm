@@ -109,8 +109,10 @@ sub handle_request {
 	}
 
 	$view->activate()->render($model, $req);
-	if ($req->get_state() == $req->NOT_HANDLED) {
-	    $req->set_state($req->OK);
+
+	my($reply) = $req->get_reply();
+	if ($reply->get_state() == $reply->NOT_HANDLED) {
+	    $reply->set_state($reply->OK);
 	}
     }
     else {

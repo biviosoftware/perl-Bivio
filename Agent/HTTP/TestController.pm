@@ -26,7 +26,6 @@ dumps the contents of the request to the html page.
 =cut
 
 #=IMPORTS
-use Bivio::Agent::Request;
 use Data::Dumper ();
 
 #=VARIABLES
@@ -68,7 +67,7 @@ sub handle_request {
     my($self, $req) = @_;
 
     if (! $req->get_user()) {
-	$req->set_state(Bivio::Agent::Request::AUTH_REQUIRED);
+	$req->get_reply()->set_state($req->get_reply()->AUTH_REQUIRED);
 	return;
     }
 
@@ -83,8 +82,10 @@ sub handle_request {
     $req->print("<pre>user = ".Data::Dumper->Dumper($req->get_user())
 	    ."<pre><br>&nbsp<br>");
     $req->print("</body></html>");
-    if ($req->get_state() == $req->NOT_HANDLED) {
-	$req->set_state($req->OK);
+
+    my($reply) = $req->get_reply();
+    if ($reply->get_state() == $reply->NOT_HANDLED) {
+	$reply->set_state($reply->OK);
     }
     return;
 }

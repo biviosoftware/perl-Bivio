@@ -179,7 +179,7 @@ sub handler {
 	my($request) = Bivio::Agent::HTTP::Request->new($r,
 		$_SELF->get_default_controller_name());
 	$_SELF->process_request($request);
-	$return_code = $request->get_http_return_code();
+	$return_code = $request->get_reply()->get_http_return_code();
 	1;
     };
     unless (defined($return_code)) {

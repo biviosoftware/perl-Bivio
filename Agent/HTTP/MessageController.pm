@@ -35,7 +35,6 @@ C<Bivio::Agent::HTTP::MessageController>
 =cut
 
 #=IMPORTS
-use Bivio::Agent::Request;
 use Bivio::Biz::Club;
 use Bivio::Biz::ClubUser;
 use Bivio::Biz::FindParams;
@@ -84,7 +83,7 @@ sub handle_request {
 	    Bivio::Agent::HTTP::Auth->authorize_club_user($req);
 
     if (! $club) {
-	$req->set_state(Bivio::Agent::Request::AUTH_REQUIRED);
+	$req->get_reply()->set_state($req->get_reply()->AUTH_REQUIRED);
 	return;
     }
 
@@ -104,8 +103,10 @@ sub handle_request {
 	$fp->put('club', $club->get('id'));
 	$model->find($fp); # error handling done by view
 	$view->activate()->render($model, $req);
-	if ($req->get_state() == $req->NOT_HANDLED) {
-	    $req->set_state($req->OK);
+
+	my($reply) = $req->get_reply();
+	if ($reply->get_state() == $reply->NOT_HANDLED) {
+	    $reply->set_state($reply->OK);
 	}
     }
     return;
