@@ -239,11 +239,11 @@ sub USAGE {
 #=IMPORTS
 use Bivio::Die;
 use Bivio::IO::File;
+use Bivio::IO::Ref;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::Type::DateTime;
 use Bivio::TypeError;
-use Data::Dumper ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -727,18 +727,13 @@ sub read_input {
 
 =head2 static ref_to_string(any ref) : string_ref
 
-Converts ref into a string.
+B<DEPRECATED: Use Bivio::IO::Ref directly.>
 
 =cut
 
 sub ref_to_string {
     my(undef, $ref) = @_;
-    my($dd) = Data::Dumper->new([$ref]);
-    $dd->Indent(1);
-    $dd->Terse(1);
-    $dd->Deepcopy(1);
-    my($res) = $dd->Dumpxs();
-    return \$res;
+    return Bivio::IO::Ref->to_string($ref);
 }
 
 =for html <a name="result"></a>
