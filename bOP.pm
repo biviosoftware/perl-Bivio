@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.13  2002/05/03 18:54:56  nagler
+  * Some files didn't get updated in 1.12.
+
+  Revision 1.12  2002/05/03 18:05:06  nagler
+  * Fixed Bivio-bOP.spec (once again :-)
   * Fixed login and add to cart problems
   * Improved README demo instructions and added two more FAQs
   * Bivio::Util::Release more flexible and added support for perl
