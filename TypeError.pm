@@ -359,7 +359,7 @@ __PACKAGE__->compile(
     PASSWORD => [
 	18,
 	undef,
-	'invalid password; must be at least six characters',
+	'invalid password; must be at least SIX characters',
     ],
     REALM_NAME => [
 	19,
