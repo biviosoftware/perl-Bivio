@@ -60,6 +60,11 @@ Only valid if I<value> is not a widget.
 Newlines force hard breaks in the text.  Only valid if
 I<escape_html> is true.
 
+=item hard_spaces : boolean [0]
+
+Replace all spaces (not tabs or newlines) in the text with &nbsp;.
+Only valid if I<escape_html> is true.
+
 =item pad_left : int [0]
 
 Number of non-breaking spaces to pad on the left.
@@ -158,6 +163,7 @@ sub initialize {
 
     $fields->{hard_newlines} = $self->get_or_default('hard_newlines',
 	    $fields->{escape});
+    $fields->{hard_spaces} = $self->get_or_default('hard_spaces', 0);
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
     my($pad_right) = $self->get_or_default('pad_right', 0);
@@ -259,7 +265,8 @@ sub _escape {
     my($fields, $value) = @_;
     $value = Bivio::HTML->escape($value);
     $value =~ s/\n/<br>/mg if $fields->{hard_newlines};
-    $value =~ s/^\s+$/&nbsp;/s;
+    $fields->{hard_spaces} ? ($value =~ s/ /&nbsp;/sg)
+	: ($value =~ s/^\s+$/&nbsp;/s);
     return $value;
 }
 
