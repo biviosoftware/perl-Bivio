@@ -49,6 +49,10 @@ The number of rows to show.
 
 The number of character columns to show.
 
+=item wrap : string (optional) [HARD]
+
+The text wrapping mode.
+
 =back
 
 =cut
@@ -96,6 +100,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
+    $fields->{wrap} = $self->get_or_default('wrap', 'hard');
     return;
 }
 
@@ -120,6 +125,7 @@ sub render {
 	$fields->{prefix} = '<textarea'
 		.' rows='.$fields->{rows}
 		.' cols='.$fields->{cols}
+		.' wrap='.$fields->{wrap}
 		.' name=';
 	$fields->{initialized} = 1;
     }
