@@ -46,6 +46,18 @@ You can also:
 
 =cut
 
+=for html <a name="EMPTY_KEY_VALUE"></a>
+
+=head2 EMPTY_KEY_VALUE : string
+
+The value used to populate keys for rows added by append_empty_rows().
+
+=cut
+
+sub EMPTY_KEY_VALUE {
+    return '1';
+}
+
 =for html <a name="LAST_ROW"></a>
 
 =head2 LAST_ROW() : int
@@ -154,6 +166,35 @@ sub new_anonymous {
 =head1 METHODS
 
 =cut
+
+=for html <a name="append_empty_rows"></a>
+
+=head2 append_empty_rows(int count)
+
+Adds the specified number of empty rows to the end of the list.
+
+=cut
+
+sub append_empty_rows {
+    my($self, $count) = @_;
+    my($rows) = $self->internal_get_rows;
+
+    # create an empty row
+    my($empty_row) = {};
+    foreach my $field (@{$self->get_keys}) {
+	$empty_row->{$field} = undef;
+    }
+    # give each key a bogus value
+    foreach my $key (@{$self->get_info('primary_key_names')}) {
+	$empty_row->{$key} = EMPTY_KEY_VALUE();
+    }
+
+    while ($count--) {
+	# append a copy of the empty row
+	push(@$rows, {%$empty_row});
+    }
+    return;
+}
 
 =for html <a name="can_next_row"></a>
 
