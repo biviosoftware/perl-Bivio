@@ -34,17 +34,45 @@ and delete interface to the C<realm_user_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::PrimaryId;
-use Bivio::Type::Name;
 use Bivio::Auth::Role;
+use Bivio::Auth::RoleSet;
+use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
+use Bivio::Type::Name;
+use Bivio::Type::PrimaryId;
 
 #=VARIABLES
+my($_CLUB_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_CLUB_ROLES,
+	Bivio::Auth::Role::GUEST(),
+	Bivio::Auth::Role::MEMBER(),
+	Bivio::Auth::Role::ACCOUNTANT(),
+	Bivio::Auth::Role::ADMINISTRATOR(),
+	);
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="VALID_CLUB_ROLES"></a>
+
+=head2 VALID_CLUB_ROLES : string
+
+Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
+
+=cut
+
+sub VALID_CLUB_ROLES {
+    return $_CLUB_ROLES;
+}
 
 =head1 METHODS
 
 =cut
+
+#TODO: Add code to make sure don't delete last admin.
+#      See ClubUserForm.  Throw type error on field and wille
+#      be picked up by form.
 
 =for html <a name="create"></a>
 
