@@ -383,8 +383,13 @@ bound to this model.  If I<uri_or_task> is not supplied,
 uses current request's I<task_id>.
 
 If I<uri_or_task> is a valid enum name or is an actual TaskId instance,
-I<uri_or_task> will be treated as a task.  Otherwise, I<uri_or_task> will be
-treated as a uri.
+I<uri_or_task> will be treated as a task.
+
+If I<uri_or_task> is an array_ref, it will be evaluated as a widget value:
+
+     $self->get_widget_value(@$uri);
+
+Otherwise, I<uri_or_task> will be treated as a uri.
 
 If I<query_args> are provided, they'll be added to the query.
 
@@ -1366,22 +1371,22 @@ sub _format_uri_args {
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
-#TODO: Remove once tested to not be in use any more
-    $self->die('query_args must be third arg')
-	    if ref($uri) eq 'HASH';
-
     Bivio::Die->die('query_args ', $query_args, ' not allowed for ', $type)
 	    if $query_args && $type != Bivio::Biz::QueryType->THIS_LIST;
 
     if (defined($uri)) {
-	unless (ref($uri)) {
+	if (ref($uri) eq 'ARRAY') {
+	    $uri = $self->get_widget_value(@$uri);
+	}
+	if (!ref($uri)) {
 	    $uri = Bivio::Agent::TaskId->$uri()
 		    if Bivio::Agent::TaskId->is_valid_name($uri);
 	}
-	if (ref($uri)) {
-	    $self->die('unknown type for uri_or_task: ', $uri)
-		    unless ref($uri) eq 'Bivio::Agent::TaskId';
+	elsif (ref($uri) eq 'Bivio::Agent::TaskId') {
 	    $uri = $req->format_stateless_uri($uri);
+	}
+	else {
+	    $self->die('unknown type for uri_or_task: ', $uri);
 	}
     }
     else {
