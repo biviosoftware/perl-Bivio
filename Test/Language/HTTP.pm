@@ -278,14 +278,18 @@ sub home_page_uri {
 
 =head2 reload_page()
 
+=head2 reload_page(string uri)
+
 Reloads the current page.  Intended to be used after a deviance
 test to clear errors so that conformance tests can be resumed.
+If defined, uses given uri, otherwise uses get_uri()
 
 =cut
 
 sub reload_page {
-    my($self) = @_;
-    $self->visit_uri($self->get_uri());
+    my($self, $uri) = @_;
+    defined($uri) ? $self->visit_uri($uri) :
+	$self->visit_uri($self->get_uri());
     return;
 }
 
