@@ -71,7 +71,8 @@ sub get_widget_value {
     $round = 2 unless defined($round);
 
     $amount = Bivio::Type::Amount->round($amount, $round);
-    my($negative) = $amount =~ /^[-]/;
+    # check for leading '-' and not '-0.00'
+    my($negative) = $amount =~ /^[-]/ && $amount =~ /[^\-^0^\.]/;
 
     my($num, $dec);
     if (($num, $dec) = $amount =~ /^[+-]?(.*)\.(.*)$/) {
@@ -99,19 +100,6 @@ sub get_widget_value {
 }
 
 #=PRIVATE METHODS
-
-=begin
-
-print(
-Bivio::UI::HTML::Format::Amount->get_widget_value('123.456', 2)."\n".
-#Bivio::UI::HTML::Format::Amount->get_widget_value('0.456x', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('0', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('-1.1', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('-1.12345678', 2)."\n".
-Bivio::UI::HTML::Format::Amount->get_widget_value('12345678901234567890.777777777777', 2)."\n"
-       );
-
-=cut
 
 =head1 COPYRIGHT
 
