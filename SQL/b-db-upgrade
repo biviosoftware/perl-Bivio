@@ -222,6 +222,7 @@ sub _upgrade {
 
     _upgrade_add_five_year_capital_gain();
     _upgrade_expense_t();
+    _upgrade_fix_csi_tables();
 
     print("\n*** done ***\n");
     return;
@@ -263,6 +264,51 @@ CREATE UNIQUE INDEX expense_category_t7 on expense_category_t (
 )
   tablespace index_1m
   pctfree 0 initrans 4 storage (freelists 8)
+/
+');
+    return;
+}
+
+# _upgrade_fix_csi_tables()
+#
+# Migrate CHAR(2) columns to NUMBER(2)
+#
+sub _upgrade_fix_csi_tables {
+    print("Fixing csi_distribution_t\n");
+    _do_sql('
+alter table csi_distribution_t drop constraint csi_distribution_t3
+/
+alter table csi_distribution_t drop primary key
+/
+alter table csi_distribution_t add amount_type NUMBER(2)
+/
+ALTER TABLE csi_distribution_t
+  add constraint csi_distribution_t1
+  primary key(csi_id, distribution_date, amount_type)
+  using index tablespace index_1m pctfree 10 initrans 2 storage (freelists 1)
+/
+ALTER TABLE csi_distribution_t
+  add constraint csi_distribution_t3
+  check (amount_type between 1 and 2)
+/
+UPDATE csi_distribution_t set amount_type=distribution_type
+/
+alter table csi_distribution_t drop column distribution_type
+/
+');
+    print("Fixing csi_fact_sheet_t\n");
+    _do_sql('
+alter table csi_fact_sheet_t drop constraint csi_fact_sheet_t3
+/
+alter table csi_fact_sheet_t add fact_function NUMBER(2)
+/
+ALTER TABLE csi_fact_sheet_t
+  add constraint csi_fact_sheet_t3
+  check (fact_function between 1 and 3)
+/
+UPDATE csi_fact_sheet_t set fact_function=fact_op
+/
+alter table csi_fact_sheet_t drop column fact_op
 /
 ');
     return;
