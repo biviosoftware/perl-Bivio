@@ -471,8 +471,8 @@ __PACKAGE__->compile([
     LAST_CLUB_ADMIN => [
 	40,
 	undef,
-	'there must be at least one Administrator, President, or'
-	.' Vice President in a club',
+	'there must be at least one President, Vice President, or'
+	.' Administrator',
     ],
     INVALID_SUM => [
 	41,
