@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,63 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::ListModel->map_rows calls reset cursor
+  * Bivio::UI::Facade->get_local_file_root returns local_file_root
+  * Bivio::Util::Release->install_tar is the install compliment to build_tar
+
+  Revision 2.9  2004/02/24 11:52:38  nagler
+  * Login redirects are handled by Model.ForbiddenForm. Two new default
+    tasks were added to Bivio::Delegate::SimpleTaskId, which need to be
+    added to any facades that want automatic login redirects on
+    forbidden.  Here's an example of what you need.
+
+      $t->group(DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef);
+      $t->group(FORBIDDEN => undef);
+
+    The DEFAULT_ERROR_REDIRECT_FORBIDDEN task calculates what to do
+    when a forbidden exception is thrown.  The logic automatically
+    logs out substituted users, and logs super users in to a different
+    auth_realm.  This makes access simpler for administrators.  If
+    you override Model.AdmSubstituteUserForm, you may not want these
+    tasks on your system.  This change involved small changes to the
+    Dispatcher, Task, and Request packages.  As a side effect,
+    form_context is now saved when an exception is thrown that reaches
+    Bivio::Agent::Task.
+  * Bivio::UI::WidgetValueSource->get_widget_value now unwraps widget
+    values until no more array_refs are returned.  There's a
+    recursion limit of 10 to avoid infinite loops.  This may break your
+    code.  Bivio::UI::Widget->unsafe_render_value no longer does the
+    unwrapping.
+  * Bivio::IO::Config->merge_list and merge_dir support Bivio::BConf.
+    You can now have a bconf.d in a subdirectory of any *.bconf file,
+    and Bivio::BConf will find it.  Bivio::BConf->dev calls merge_dir
+    implicitly.  Bivio::BConf->merge_dir might be deprecated at
+    some point.
+  * Bivio::IO::Config->bconf_file returns the absolute name of the
+    *.bconf used by the current process.  This is available to the
+    *.bconf file and all files in bconf.d during config read.
+  * Bivio::Biz::FormContext is now a Bivio::Collection::Attributes.
+    This allowed more code to be pulled out of Bivio::Biz::FormModel.
+  * Bivio::IO::Ref->nested_differences now returns the element by
+    element differences when two arrays are of different lengths.
+  * PetShop has a guest user as well as demo.  Used to test
+    FORBIDDEN redirects.
+  * Bivio::Type::DateTime->now_as_year returns the year of now,
+    which is useful for copyrights and such.
+  * Bivio::Type->is_equal calls compare() if $proto can compare.
+    Otherwise defaults to a simple string compare.
+  * Bivio::UI::LocalFileType->DDL added for completeness and to
+    enable build_tar to be clean.
+  * Bivio::Util::Release->build_tar supports building standard
+    MakeMaker tar.gz distributions from a well structured bivio
+    project.
+  * Bivio::Util::Release.projects is new config of the form:
+      projects => [
+  	[Bivio => b => 'bivio Software Artisans, Inc.'],
+      ],
+  * Bivio::Util::Release->list_projects_el prints a list of projects
+    from the new config parameter.
+  * Bivio::Util::Release->list works on ordinary directories.
   * Bivio::Util::Release defaults more config params, and Bivio::BConf
     configures the rest to reasonable defaults.  This allows easier
     testing.
