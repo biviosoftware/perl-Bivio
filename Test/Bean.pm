@@ -49,16 +49,16 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref initial_values) : Bivio::Test::Bean
+=head2 static new() : Bivio::Test::Bean
 
-Saves initial_values, which may be empty.
+Creates a bean.  Set initial values by calling methods.
 
 =cut
 
 sub new {
-    my($proto, $initial_values) = @_;
+    my($proto) = @_;
     my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = $initial_values || {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
