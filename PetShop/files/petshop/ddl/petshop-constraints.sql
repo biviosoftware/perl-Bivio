@@ -20,58 +20,33 @@
 ----------------------------------------------------------------
 
 --
--- cart_t
---
-ALTER TABLE cart_t
-  add constraint cart_t2
-  check (cart_id > 0)
-/
-
---
 -- cart_item_t
 --
 ALTER TABLE cart_item_t
-  add constraint cart_item_t2
-  check (cart_item_id > 0)
-/
-ALTER TABLE cart_item_t
-  ADD CONSTRAINT cart_item_t3
+  ADD CONSTRAINT cart_item_t2
   FOREIGN KEY (cart_id)
   REFERENCES cart_t(cart_id)
 /
+CREATE INDEX cart_item_t3 on cart_item_t (
+  cart_id
+)
+/
 ALTER TABLE cart_item_t
-  add constraint cart_item_t4
+  ADD CONSTRAINT cart_item_t4
+  FOREIGN KEY (item_id)
+  REFERENCES item_t(item_id)
+/
+CREATE INDEX cart_item_t5 on cart_item_t (
+  item_id
+)
+/
+ALTER TABLE cart_item_t
+  add constraint cart_item_t6
   check (quantity > 0)
 /
 ALTER TABLE cart_item_t
-  add constraint cart_item_t5
+  add constraint cart_item_t7
   check (unit_price >= 0)
-/
-
---
--- entity_address_t
---
-ALTER TABLE entity_address_t
-  ADD CONSTRAINT entity_address_t2
-  FOREIGN KEY (entity_id)
-  REFERENCES entity_t(entity_id)
-/
-ALTER TABLE entity_address_t
-  ADD CONSTRAINT entity_address_t3
-  CHECK (location BETWEEN 1 AND 3)
-/
-
---
--- entity_phone_t
---
-ALTER TABLE entity_phone_t
-  ADD CONSTRAINT entity_phone_t2
-  FOREIGN KEY (entity_id)
-  REFERENCES entity_t(entity_id)
-/
-ALTER TABLE entity_phone_t
-  ADD CONSTRAINT entity_phone_t3
-  CHECK (location BETWEEN 1 AND 3)
 /
 
 --
@@ -91,63 +66,44 @@ ALTER TABLE item_t
   FOREIGN KEY (product_id)
   REFERENCES product_t(product_id)
 /
-ALTER TABLE item_t
-  add constraint item_t3
-  check (list_price >= 0)
+CREATE INDEX item_t3 on item_t (
+  product_id
+)
 /
 ALTER TABLE item_t
   add constraint item_t4
+  check (list_price >= 0)
+/
+ALTER TABLE item_t
+  add constraint item_t5
   check (unit_cost >= 0)
-/
-ALTER TABLE item_t
-  ADD CONSTRAINT item_t5
-  FOREIGN KEY (supplier_id)
-  REFERENCES supplier_t(supplier_id)
-/
-ALTER TABLE item_t
-  ADD CONSTRAINT item_t6
-  CHECK (status BETWEEN 1 AND 2)
 /
 
 --
 -- order_t
 --
 ALTER TABLE order_t
-  ADD CONSTRAINT order_t2
-  FOREIGN KEY (order_id)
-  REFERENCES entity_t(entity_id)
+  add constraint order_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
 /
 ALTER TABLE order_t
   ADD CONSTRAINT order_t3
   FOREIGN KEY (cart_id)
   REFERENCES cart_t(cart_id)
 /
-ALTER TABLE order_t
-  ADD CONSTRAINT order_t4
-  FOREIGN KEY (user_id)
-  REFERENCES user_t(user_id)
+CREATE INDEX order_t4 on order_t (
+  cart_id
+)
 /
 ALTER TABLE order_t
-  ADD CONSTRAINT order_t5
-  CHECK (card_type BETWEEN 1 AND 3)
+  add constraint order_t5
+  foreign key (ec_payment_id)
+  references ec_payment_t(ec_payment_id)
 /
-
---
--- order_status
---
-ALTER TABLE order_status_t
-  ADD CONSTRAINT order_status_t2
-  FOREIGN KEY (order_id)
-  REFERENCES order_t(order_id)
-/
-ALTER TABLE order_status_t
-  ADD CONSTRAINT order_status_t4
-  FOREIGN KEY (user_id)
-  REFERENCES user_t(user_id)
-/
-ALTER TABLE order_status_t
-  ADD CONSTRAINT order_status_t5
-  CHECK (status BETWEEN 1 AND 2)
+CREATE INDEX order_t6 on order_t (
+  ec_payment_id
+)
 /
 
 --
@@ -158,22 +114,9 @@ ALTER TABLE product_t
   FOREIGN KEY (category_id)
   REFERENCES category_t(category_id)
 /
-
---
--- supplier_t
---
-ALTER TABLE supplier_t
-  ADD CONSTRAINT supplier_t2
-  FOREIGN KEY (supplier_id)
-  REFERENCES entity_t(entity_id)
-/
-CREATE UNIQUE INDEX supplier_t3 ON supplier_t (
-  name
+CREATE INDEX product_t3 on product_t (
+  category_id
 )
-/
-ALTER TABLE supplier_t
-  ADD CONSTRAINT supplier_t4
-  CHECK (status BETWEEN 1 AND 4)
 /
 
 --
@@ -183,17 +126,4 @@ ALTER TABLE user_account_t
   ADD CONSTRAINT user_account_t2
   FOREIGN KEY (user_id)
   REFERENCES user_t(user_id)
-/
-ALTER TABLE user_account_t
-  ADD CONSTRAINT user_account_t3
-  FOREIGN KEY (entity_id)
-  REFERENCES entity_t(entity_id)
-/
-ALTER TABLE user_account_t
-  ADD CONSTRAINT user_account_t4
-  CHECK (status BETWEEN 1 AND 2)
-/
-ALTER TABLE user_account_t
-  ADD CONSTRAINT user_account_t5
-  CHECK (user_type BETWEEN 1 AND 2)
 /
