@@ -252,10 +252,10 @@ ALTER TABLE realm_decor_t
 EOF
 
     print("Renaming celebrity clubs\n");
-    Bivio::Biz::Util::Club->rename('ask_candis', 'ask_candis_inbox');
-    Bivio::Biz::Util::Club->rename('ask_candis_publish', 'ask_candis');
-    Bivio::Biz::Util::Club->rename('trez_talk', 'trez_talk_inbox');
-    Bivio::Biz::Util::Club->rename('trez_talk_publish', 'trez_talk');
+    Bivio::Biz::Util::Club->rename('ask_candis', 'ask_candis_inbox', 1);
+    Bivio::Biz::Util::Club->rename('ask_candis_publish', 'ask_candis', 1);
+    Bivio::Biz::Util::Club->rename('trez_talk', 'trez_talk_inbox', 1);
+    Bivio::Biz::Util::Club->rename('trez_talk_publish', 'trez_talk', 1);
 
     print("Fixing permissions for the celebrity clubs\n");
     # Allow everyone to mail
