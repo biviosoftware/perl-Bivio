@@ -256,73 +256,6 @@ my($_DECIMAL_QUOTES) = {
 # array of date, factor pairs
 my($_SPLITS) = {};
 
-=begin comment
-
-NO POINT! MGFS seems to use 3 decimal factor, not actual value
-see CCK '89
-
-# from the MGFS Glossary, Stock Split and Stock Dividend Factors
-# increase the precision on rounded values
-my($_FACTORS) = {
-    # Dividends
-    '.99' => 1 / 1.01,
-    '.98' => 1 / 1.02,
-    '.971' => 1 / 1.03,
-    '.962' => 1/ 1.04,
-    '.952' => 1 / 1.05,
-    '.943' => 1 / 1.06,
-    '.935' => 1 / 1.07,
-    '.926' => 1 / 1.08,
-    '.917' => 1 / 1.09,
-    '.909' => 1 / 1.1,
-    '.901' => 1 / 1.11,
-    '.893' => 1 / 1.12,
-    '.885' => 1 / 1.13,
-    '.877' => 1 / 1.14,
-    '.87' => 1 / 1.15,
-    '.862' => 1 / 1.16,
-    '.855' => 1 / 1.17,
-    '.847' => 1 / 1.18,
-    '.84' => 1 / 1.19,
-    '.833' => 1 / 1.2,
-    '.8' => 1 / 1.25,
-    '.769' => 1 / 1.3,
-    '.752' => 1 / 1.33,
-    '.75' => 1 / 1.333,
-    '.714' => 1 / 1.4,
-    '.667' => 1 / 1.5,
-    '.625' => 1 / 1.6,
-    '.571' => 1 / 1.75,
-    '.556' => 1 / 1.8,
-    '.5' => 1 / 2,
-    '.333' => 1 / 3,
-    '.976' => 1 / 1.025,
-    '.966' => 1 / 1.035,
-    '.957' => 1 / 1.045,
-    '.948' => 1 / 1.055,
-    '.939' => 1 / 1.065,
-    '.93' => 1 / 1.075,
-    '.922' => 1 / 1.085,
-    '.913' => 1 / 1.095,
-    '.905' => 1 / 1.105,
-    # Splits
-    '.333' => 1 / 3,
-    '.167' => 1 / 6,
-    '.143' => 1 / 7,
-    '.111' => 1 / 9,
-    '.667' => 2 / 3,
-    '.833' => 5 / 6,
-    '.286' => 2 / 7,
-    '.429' => 3 / 7,
-    '.571' => 4 / 7,
-    '.714' => 5 / 7,
-    '.857' => 6 / 7,
-    '1.333' => 4 / 3,
-    '33.333' => 100 / 3,
-};
-
-=cut
-
 =head1 FACTORIES
 
 =cut
@@ -624,15 +557,15 @@ sub _unsplit {
 	    last;
 	}
     }
-    if ($aligned || $_DECIMAL_QUOTES->{$mg_id}) {
-	;
-    }
-    else {
-	# align along fractional boundary
-	$values->{close} = $self->align_price($values->{close});
-	$values->{high} = $self->align_price($values->{high});
-	$values->{low} = $self->align_price($values->{low});
-    }
+#    if ($aligned || $_DECIMAL_QUOTES->{$mg_id}) {
+#	;
+#    }
+#    else {
+#	# align along fractional boundary
+#	$values->{close} = $self->align_price($values->{close});
+#	$values->{high} = $self->align_price($values->{high});
+#	$values->{low} = $self->align_price($values->{low});
+#    }
 
     return $values;
 }
