@@ -32,7 +32,6 @@ C<Bivio::Biz::Model::ImportedMemberInviteForm> invite imported shadow members
 
 #=IMPORTS
 use Bivio::Type::FileVolume;
-use Bivio::Biz::Model::ClubInviteForm;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::LegacyClubUploadForm;
 use Bivio::Biz::Model::RealmInvite;
@@ -42,6 +41,7 @@ use Bivio::Type::ClubUserTitle;
 use Bivio::TypeError;
 use Bivio::Type::Email;
 use Bivio::Type::FileVolume;
+use Bivio::UI::Mail::ClubInvite;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -130,12 +130,25 @@ Sends an invite or merges each member which has an email.
 
 sub execute_input_row {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($properties) = $self->internal_get;
 
     my($email) = $properties->{'RealmInvite.email'};
     if (defined($email)) {
-	_send_invite($self, $email,
-		$self->get_list_model->get_model('Email'));
+
+	# send an invite to the person as a member
+	my($member) = Bivio::Type::ClubUserTitle::MEMBER();
+	my($invite) = Bivio::Biz::Model::RealmInvite->new($req);
+	$invite->create({
+	    realm_id => $req->get('auth_id'),
+	    realm_user_id => $self->get_list_model->get('RealmUser.user_id'),
+	    email => $email,
+	    title => $member->get_short_desc,
+	    role => $member->get_role,
+	});
+
+	# send an invitation
+	Bivio::UI::Mail::ClubInvite->execute($self->get_request);
     }
     return;
 }
@@ -238,34 +251,6 @@ sub validate_start {
 
 #=PRIVATE METHODS
 
-# _send_invite(string email_address, Bivio::Biz::Model::Email shadow_email)
-#
-# Invites the specified shadow user with the specified email to join the
-# club.
-#
-sub _send_invite {
-    my($self, $email_address, $shadow_email) = @_;
-
-    my($req) = $self->get_request;
-    my($club_id) = $req->get('auth_id');
-
-    # set a shadow email for the shadow user
-    # this will be reconciled during the invitation acceptance
-    # Bivio::Biz::Model::RealmInviteAcceptForm
-    $shadow_email->update({
-	email => $shadow_email->generate_shadow_email(
-		$email_address, $club_id)
-    });
-
-    Bivio::Biz::Model::ClubInviteForm->execute($req, {
-	title => Bivio::Type::ClubUserTitle::MEMBER(),
-	'RealmInvite.email' => $email_address,
-	'RealmInvite.realm_id' => $club_id,
-    });
-
-    return;
-}
-
 # _get_existing_member_email(string email) : Bivio::Biz::Model::RealmUser
 #
 # Returns the realm user associated with the email if it exists.
@@ -318,75 +303,6 @@ sub _is_merged_member_email {
     }
     return 0;
 }
-
-=comment
-
-sub invite_users {
-    my($proto, $config) = @_;
-
-    my($club_id) = $config->{club_id} || die("config missing club_id");
-
-#TODO: an awful lot of hackery just to get Bivio::Biz::Model::ClubInviteForm
-#      ready to use
-    use Bivio::Agent::HTTP::Dispatcher;
-    Bivio::Agent::HTTP::Dispatcher->initialize;
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    my($club_realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    $club_realm->unauth_load(realm_id => $club_id)
-            || die("couldn't load club realm $club_id");
-    $req->put(auth_user => _find_club_admin($club_id));
-    $req->put(task_id => Bivio::Agent::TaskId::CLUB_ADMIN_INVITE());
-    $req->put(auth_realm => Bivio::Auth::Realm::Club->new($club_realm));
-# end hackery
-
-    my($email) = Bivio::Biz::Model::Email->new($req);
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
-    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-
-    # create shadow emails and send invites
-    my($users) = $config->{users};
-    foreach my $user (values(%$users)) {
-        my($email_address) = $user->{email};
-        next unless $email_address;
-        next unless exists($user->{user_id});
-
-        # make sure the shadow user exists
-        my($shadow) = $user->{login};
-        unless ($realm->unauth_load(name => $shadow)) {
-            _trace("no shadow '$shadow', skipping");
-            next;
-        }
-
-        my($shadow_email) = $email->generate_shadow_email($email_address,
-                $club_id);
-
-        # check if a shadow email has already been created
-        if ($email->unauth_load(email => $shadow_email)) {
-            _trace("invite already sent for $email_address");
-            next;
-        }
-
-        # set a shadow email for the shadow user
-        # this will be reconciled during the invitation acceptance
-        # Bivio::Biz::Model::RealmInviteAcceptForm
-        $email->unauth_load(realm_id => $user->{user_id})
-                || die("couldn't find email for shadow user");
-        $email->update({
-            email => $shadow_email,
-        });
-
-        _trace("inviting $email_address");
-        Bivio::Biz::Model::ClubInviteForm->execute($req, {
-            title => Bivio::Type::ClubUserTitle::MEMBER(),
-            'RealmInvite.email' => $email_address,
-            'RealmInvite.realm_id' => $club_id,
-        });
-    }
-    Bivio::Mail::Common::send_queued_messages;
-    return;
-}
-
-=cut
 
 =head1 COPYRIGHT
 
