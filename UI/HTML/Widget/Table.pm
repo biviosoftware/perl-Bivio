@@ -110,6 +110,10 @@ The value applies separately to headings and cells.
 If true, the column will be C<width="100%">.  Should only be
 applied to headings.
 
+=item column_nowrap : boolean [false]
+
+If true, the column won't wrap text.
+
 =back
 
 =cut
@@ -260,8 +264,10 @@ sub _init_cell {
     die('last cell is not a scalar') unless ref($prefix) eq 'SCALAR';
     $$prefix .= '<td';
     $$prefix .= ' width="100%"' if $cell->get_or_default('column_expand', 0);
+    $$prefix .= ' nowrap' if $cell->get_or_default('column_nowrap', 0);
     $$prefix .= Bivio::UI::Align->as_html(
 	    $cell->get_or_default('column_align', 'LEFT'));
+    $$prefix .= '>';
     push(@$cells, $cell, "</td>\n");
     return;
 }
