@@ -131,7 +131,7 @@ sub action_grid {
 
     my($rows) = [];
     foreach my $v (@$values) {
-	my($label, $task, $value) = @$v;
+	my($label, $task, $value, $attrs) = @$v;
 	# Label
 	$label = $proto->string(
 		Bivio::UI::Label->get_simple($label));
@@ -152,7 +152,14 @@ sub action_grid {
 	       ) if ref($value) eq 'ARRAY';
 	$value->put(cell_align => 'nw');
 
-	push(@$rows, [$label, $value]);
+	# Attributes: What's This
+	if (defined($attrs->{whats_this})) {
+	    push(@$rows, [$label, $value,
+		$proto->whats_this($attrs->{whats_this})]);
+	}
+	else {
+	    push(@$rows, [$label, $value]);
+	}
     }
     return Bivio::UI::HTML::Widget::Grid->new({
 #TODO: If you put in this, it screws up the footer.  Don't ask me why...
