@@ -60,18 +60,18 @@ sub execute_input {
     my($realm) = $req->get('auth_realm')->get('owner');
 
     my($properties) = $self->internal_get();
-    my($paid) = Bivio::Type::Amount->round($properties->{'paid'}, 2);
-    my($earnings) = Bivio::Type::Amount->round($properties->{'earnings'}, 2);
+    my($paid) = Bivio::Type::Amount->round(
+	    $properties->{'paid'} || 0, 2);
+    my($earnings) = Bivio::Type::Amount->round(
+	    $properties->{'earnings'} || 0, 2);
     my($units) = $properties->{'MemberEntry.units'};
     my($user) = $req->get('Bivio::Biz::Model::RealmUser');
 
     # create the transaction
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
     $transaction->create({
-	realm_id => $realm->get('realm_id'),
 	source_class => Bivio::Type::EntryClass::MEMBER(),
 	date_time => $properties->{'RealmTransaction.date_time'},
-	user_id => $req->get('auth_user')->get('realm_id'),
 	remark => $properties->{'RealmTransaction.remark'},
     });
 
