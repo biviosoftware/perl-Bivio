@@ -81,7 +81,9 @@ my($_MAX_INTEGER) = Bivio::Type::Integer->get_max;
 =head2 static check_accept(Bivio::Agent::Request req)
 
 If there is a pending accept, load and set the I<realm_invite_state>
-on I<req>.  Cookie is unmodified.
+I<realm_invite_shadow_user> (if set)
+on I<req>.  These values will be undef, if not loaded.
+Cookie is unmodified.
 
 =cut
 
@@ -162,7 +164,8 @@ Otherwise, we'll check the cookie to see if there is an outstanding
 invite and load it.
 
 Sets the realm to that of the realm_id of the invite.  Determines
-the L<Bivio::Type::RealmInviteState|Bivio::Type::RealmInviteState>.
+the L<Bivio::Type::RealmInviteState|Bivio::Type::RealmInviteState>
+and puts I<realm_invite_shadow_user> and I<realm_invite_state> on request.
 
 =cut
 
@@ -341,7 +344,18 @@ sub _set_state {
 				    eq $user->get('realm_id')
 				    ? 'AUTH_USER_MATCHES_EMAIL' : 'AUTH_USER')
 	    : $invited_user ? 'EMAIL_MATCHES_USER' : 'NO_USER';
-    $req->put(realm_invite_state => Bivio::Type::RealmInviteState->$state());
+
+    my($shadow);
+    if ($self->get('realm_user_id')) {
+	$shadow = Bivio::Biz::Model::RealmOwner->new($req);
+	$shadow->unauth_load_or_die(realm_id => $self->get('realm_user_id'),
+		realm_type => Bivio::Auth::RealmType::USER());
+    }
+
+    $req->put(
+	    realm_invite_state => Bivio::Type::RealmInviteState->$state(),
+	    realm_invite_shadow_user => $shadow,
+	   );
     _trace($self->get('realm_invite_id'), ': state=', $state) if $_TRACE;
     return;
 }
