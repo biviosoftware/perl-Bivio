@@ -30,12 +30,82 @@ C<Bivio::IO::Ref> manipulates references.
 
 #=IMPORTS
 use Data::Dumper ();
+use Bivio::IO::Alert;
 
 #=VARIABLES
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="nested_equals"></a>
+
+=head2 nested_equals(any left, any right) : boolean
+
+Returns true if I<left> is structurally equal to I<right>, i.e. the contents of
+all the data.
+
+B<Does not handle cyclic data structures.>
+
+=cut
+
+sub nested_equals {
+    my($proto, $left, $right) = @_;
+    return 0 unless defined($left) eq defined($right);
+    return 1 unless defined($left);
+
+    # References must match exactly or we've got a problem
+    return 0 unless ref($left) eq ref($right);
+
+    # Scalar
+    return $left eq $right ? 1 : 0 unless ref($left);
+
+    if (ref($left) eq 'ARRAY') {
+	return 0 unless int(@$left) == int(@$right);
+	for (my($i) = 0; $i <= $#$left; $i++) {
+	    return 0
+		unless $proto->nested_equals($left->[$i], $right->[$i]);
+	}
+	return 1;
+    }
+    if (ref($left) eq 'HASH') {
+	my(@e_keys) = sort(keys(%$left));
+	my(@a_keys) = sort(keys(%$right));
+	return 0
+	    unless $proto->nested_equals(\@e_keys, \@a_keys);
+	foreach my $k (@e_keys) {
+	    return 0
+		unless $proto->nested_equals($left->{$k}, $right->{$k});
+	}
+	return 1;
+    }
+    return $proto->nested_equals($$left, $$right)
+	if ref($left) eq 'SCALAR';
+
+    # blessed ref: Check if can equals and compare that way
+    return $left->equals($right) ? 1 : 0
+	if UNIVERSAL::can($left, 'equals');
+
+    # CODE, GLOB, Regex, and blessed references should always be equal exactly
+    return $left eq $right ? 1 : 0;
+}
+
+=for html <a name="to_short_string"></a>
+
+=head2 to_short_string(any value) : string
+
+Returns a string summary of the ref.  Uses
+L<Bivio::IO::Alert::format_args|Bivio::IO::Alert/"format_args">,
+but doesn't include ending newline.
+
+=cut
+
+sub to_short_string {
+    my(undef, $value) = @_;
+    my($res) = Bivio::IO::Alert->format_args($value);
+    chomp($res);
+    return $res;
+}
 
 =for html <a name="to_string"></a>
 
