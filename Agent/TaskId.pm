@@ -1749,6 +1749,60 @@ my(@_CFG) = (
         Bivio::UI::HTML::Tax::Checklist
         next=CLUB_ACCOUNTING_TAX99_CHECKLIST
     )],
+    [qw(
+        MAIL_RECEIVE
+        177
+        GENERAL
+        DOCUMENT_READ
+        /_mail_receive
+        Bivio::Biz::Model::MailReceiveForm
+        next=HTTP_DOCUMENT
+    )],
+    [qw(
+        USER_MAIL_RECEIVE
+        178
+        USER
+        MAIL_RECEIVE
+        !
+        Bivio::Biz::Action::UserMailPeople
+        Bivio::UI::Mail::Receive
+    )],
+    [qw(
+        CLUB_MAIL_RECEIVE
+        179
+        CLUB
+        MAIL_RECEIVE&MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailPeople
+        Bivio::UI::Mail::Receive
+    )],
+    [qw(
+        CLUB_MAIL_BOARD_RECEIVE
+        180
+        CLUB
+        MAIL_RECEIVE&MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailBoard
+        Bivio::UI::Mail::Receive
+    )],
+    [qw(
+        CLUB_MAIL_PEOPLE_RECEIVE
+        181
+        CLUB
+        MAIL_RECEIVE
+        !
+        Bivio::Biz::Action::ClubMailPeople
+        Bivio::UI::Mail::Receive
+    )],
+    [qw(
+        CLUB_MAIL_ADMIN_RECEIVE
+        182
+        CLUB
+        MAIL_RECEIVE
+        !
+        Bivio::Biz::Action::ClubMailAdmin
+        Bivio::UI::Mail::Receive
+    )],
 );
 
 __PACKAGE__->compile(
