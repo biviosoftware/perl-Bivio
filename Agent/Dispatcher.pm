@@ -46,14 +46,16 @@ sub MAX_SERVER_REDIRECTS {
 }
 
 #=IMPORTS
-use Bivio::IO::ClassLoader;
-use BSD::Resource;
-use Bivio::Agent::HTTP::Request;
+use Bivio::Agent::HTTP::Location;
+use Bivio::Agent::Request;
 use Bivio::Agent::Task;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
+use Bivio::UI::Facade;
+use Bivio::UI::HTML::Page;
+use BSD::Resource;
 
 #=VARIABLES
 # No core dumps please
@@ -78,16 +80,19 @@ sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
     return $self;
 }
+
 =head1 METHODS
 
 =cut
 
 =for html <a name="process_request"></a>
 
-=head2 process_request(array protocol_args) : undef or Bivio::Die
+=head2 process_request(array protocol_args) : Bivio::Die
 
 Creates a request and returns a result.  Resets the warn counter at
 the end of each request.
+
+Returns undef if no errors are encountered.
 
 =cut
 
@@ -145,22 +150,19 @@ Initialize Agent state.
 =cut
 
 sub initialize {
-    $_INITIALIZED && return;
+    return if $_INITIALIZED;
     $_INITIALIZED = 1;
     # Need a current request for initialization
     Bivio::Agent::Request->get_current_or_new;
 
     # Initialize URI map
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::HTTP::Location');
     Bivio::Agent::HTTP::Location->initialize;
 
     # Initialize all tasks and task items
     Bivio::Agent::Task->initialize;
 
     # Initialize user interface support
-    Bivio::IO::ClassLoader->simple_require('Bivio::UI::Facade');
     Bivio::UI::Facade->initialize;
-    Bivio::IO::ClassLoader->simple_require('Bivio::UI::HTML::Page');
     Bivio::UI::HTML::Page->initialize;
 
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;

@@ -3,6 +3,7 @@
 package Bivio::Agent::Job::Dispatcher;
 use strict;
 $Bivio::Agent::Job::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::Job::Dispatcher::VERSION;
 
 =head1 NAME
 
@@ -36,14 +37,15 @@ not queue new jobs during L<execute_queue|"execute_queue">.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
 use Bivio::Agent::Job::Request;
+use Bivio::Agent::TaskId;
+use Bivio::Die;
+use Bivio::IO::Alert;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 # Don't allow queueing while in execute.
 my($_SELF);
-my($_INITIALIZED);
 my($_IN_EXECUTE) = 0;
 my(@_QUEUE);
 __PACKAGE__->initialize;
@@ -184,10 +186,9 @@ Called on first request.
 
 sub initialize {
     my($proto) = @_;
-    $_INITIALIZED && return;
+    return if $_SELF;
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
-    $_INITIALIZED = 1;
     return;
 }
 

@@ -3,6 +3,7 @@
 package Bivio::Agent::Job::Request;
 use strict;
 $Bivio::Agent::Job::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::Job::Request::VERSION;
 
 =head1 NAME
 
@@ -32,12 +33,11 @@ loads a new auth_realm every time.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
-use Bivio::Type::DateTime;
-use Bivio::HTML;
 use Bivio::Agent::Reply;
-use Bivio::Auth::Realm::General;
 use Bivio::Auth::Realm;
+use Bivio::Auth::RealmType;
+use Bivio::Biz::Model;
+use Bivio::Type::DateTime;
 use Bivio::Type::UserAgent;
 
 #=VARIABLES
@@ -85,10 +85,8 @@ sub new {
     # User
     my($auth_user);
     if ($params->{auth_user_id}) {
-	$auth_user = Bivio::Biz::Model::RealmOwner->new($self);
-	$auth_user->unauth_load(realm_id => $params->{auth_user_id})
-		|| Bivio::Die->die('unable to load user=',
-			$params->{auth_user_id});
+	$auth_user = Bivio::Biz::Model->new($self, 'RealmOwner')
+		->unauth_load_or_die(realm_id => $params->{auth_user_id});
     }
     $self->internal_initialize($realm, $auth_user);
     return $self;

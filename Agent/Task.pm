@@ -96,7 +96,6 @@ Task must be in secure mode to function.
 
 =cut
 
-
 =head1 CONSTANTS
 
 =cut
@@ -114,18 +113,19 @@ sub DEFAULT_HELP {
 }
 
 #=IMPORTS
-use Bivio::Die;
-use Bivio::IO::Trace;
+use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::TaskId;
+use Bivio::Auth::PermissionSet;
+use Bivio::Auth::RealmType;
 use Bivio::Collection::SingletonMap;
+use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::IO::ClassLoader;
+use Bivio::IO::Trace;
 use Bivio::Mail::Common;
 use Bivio::Mail::Message;
 use Bivio::SQL::Connection;
 use Bivio::Type::Boolean;
-# use Bivio::Agent::Job::Dispatcher;
-use Carp ();
-
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -344,6 +344,7 @@ task id is sought.
 sub handle_die {
     my($proto, $die) = @_;
     my($die_code) = $die->get('code');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
     if ($_REDIRECT_DIE_CODES{$die_code}) {
 	# commit redirects: current task is completed
 	_trace('commit: ', $die_code) if $_TRACE;

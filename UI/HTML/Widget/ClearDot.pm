@@ -59,8 +59,8 @@ The (constant) width of the dot.
 =cut
 
 #=IMPORTS
+use Bivio::UI::Align;
 use Bivio::UI::Icon;
-use Carp ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
