@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
-$Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

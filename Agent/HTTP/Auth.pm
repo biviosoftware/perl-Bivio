@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Agent::HTTP::Auth;
 use strict;
-$Bivio::Agent::HTTP::Auth::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::HTTP::Auth::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

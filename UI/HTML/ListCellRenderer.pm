@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::ListCellRenderer;
 use strict;
-$Bivio::UI::HTML::ListCellRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::HTML::ListCellRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

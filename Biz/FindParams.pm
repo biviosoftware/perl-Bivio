@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::FindParams;
 use strict;
-$Bivio::Biz::FindParams::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::FindParams::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

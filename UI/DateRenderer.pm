@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::DateRenderer;
 use strict;
-$Bivio::UI::DateRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::DateRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

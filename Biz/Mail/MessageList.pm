@@ -3,7 +3,7 @@
 package Bivio::Biz::Mail::MessageList;
 use strict;
 use Carp();
-$Bivio::Biz::Mail::MessageList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::Mail::MessageList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

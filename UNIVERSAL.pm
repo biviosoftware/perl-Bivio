@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
-$Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UNIVERSAL::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

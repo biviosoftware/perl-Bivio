@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::ModelRefRenderer;
 use strict;
-$Bivio::UI::HTML::ModelRefRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::HTML::ModelRefRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

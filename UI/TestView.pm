@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::TestView;
 use strict;
-$Bivio::UI::TestView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::TestView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

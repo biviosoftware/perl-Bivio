@@ -3,7 +3,7 @@
 package Bivio::UI::Menu;
 use strict;
 
-$Bivio::UI::Menu::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::Menu::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

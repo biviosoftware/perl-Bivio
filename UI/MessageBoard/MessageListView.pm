@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::MessageBoard::MessageListView;
 use strict;
-$Bivio::UI::MessageBoard::MessageListView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::MessageBoard::MessageListView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

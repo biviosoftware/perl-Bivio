@@ -5,7 +5,7 @@ use strict;
 use Apache::Constants();
 use Bivio::Agent::Request();
 use Bivio::Agent::HTTP::Request();
-$Bivio::Agent::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

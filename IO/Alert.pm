@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::IO::Alert;
 use strict;
-$Bivio::IO::Alert::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::IO::Alert::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

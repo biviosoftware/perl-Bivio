@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::IO::Trace;
 use strict;
-$Bivio::IO::Trace::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::IO::Trace::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::EmailRefRenderer;
 use strict;
-$Bivio::UI::HTML::EmailRefRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::HTML::EmailRefRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

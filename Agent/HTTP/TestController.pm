@@ -14,7 +14,7 @@ use Bivio::Biz::TestListModel();
 use Bivio::Biz::TestModel();
 use Bivio::UI::HTML::TestMathView();
 
-$Bivio::Agent::HTTP::TestController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::HTTP::TestController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

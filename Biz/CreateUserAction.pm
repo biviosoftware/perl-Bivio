@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::CreateUserAction;
 use strict;
-$Bivio::Biz::CreateUserAction::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::CreateUserAction::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

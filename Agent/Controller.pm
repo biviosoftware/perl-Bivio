@@ -3,7 +3,7 @@
 package Bivio::Agent::Controller;
 use strict;
 
-$Bivio::Agent::Controller::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::Controller::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::SqlListSupport;
 use strict;
-$Bivio::Biz::SqlListSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::SqlListSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

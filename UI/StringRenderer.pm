@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::StringRenderer;
 use strict;
-$Bivio::UI::StringRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::StringRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -3,7 +3,7 @@
 package Bivio::UI::Renderer;
 use strict;
 use Bivio::UNIVERSAL;
-$Bivio::UI::Renderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::Renderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

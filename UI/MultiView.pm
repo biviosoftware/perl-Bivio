@@ -3,7 +3,7 @@
 package Bivio::UI::MultiView;
 use strict;
 
-$Bivio::UI::MultiView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::MultiView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

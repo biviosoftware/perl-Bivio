@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::FieldDescriptor;
 use strict;
-$Bivio::Biz::FieldDescriptor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::FieldDescriptor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Error;
 use strict;
-$Bivio::Biz::Error::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::Error::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

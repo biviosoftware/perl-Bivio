@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::FieldUtil;
 use strict;
-$Bivio::UI::HTML::FieldUtil::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::UI::HTML::FieldUtil::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

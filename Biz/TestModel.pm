@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::TestModel;
 use strict;
-$Bivio::Biz::TestModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Biz::TestModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Agent::HTTP::MessageController;
 use strict;
-$Bivio::Agent::HTTP::MessageController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$Bivio::Agent::HTTP::MessageController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
