@@ -2,6 +2,7 @@
 # $Id$
 use strict;
 use Bivio::Test;
+use Bivio::Type::Integer;
 use POSIX ();
 Bivio::Test->new({
     class_name => 'Bivio::Math::EMA',
@@ -41,16 +42,15 @@ Bivio::Test->new({
 	    9 => 9.000000,
 	],
     ],
-    30 => [
-	value => [
-	    [] => Bivio::DieCode->DIE,
-	],
-    ],
     'Bivio::Math::EMA' => [
 	new => [
 	    -1 => Bivio::DieCode->DIE,
 	    0 => Bivio::DieCode->DIE,
 	    3.5 => Bivio::DieCode->DIE,
+	    Bivio::Type::Integer->get_max + 1 => Bivio::DieCode->DIE,
 	],
+    ],
+    50 => [
+	value => Bivio::DieCode->DIE,
     ],
 ]);

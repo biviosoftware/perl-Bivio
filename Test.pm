@@ -521,8 +521,9 @@ sub _compile_assert_even {
 sub _compile_case {
     my($state, $tests, $params, $expect) = @_;
     $state->{case_num}++;
-    $params = [$params] if defined($params) && !ref($params);
-    _compile_die($state, 'params must be array_ref or CODE')
+    $params = [$params]
+	if defined($params) && !ref($params);
+    _compile_die($state, 'params must be array_ref, Bivio::DieCode, or CODE')
 	unless ref($params) =~ /^(ARRAY|CODE)$/;
     push(@$tests, my $case = Bivio::Test::Case->new({
 	%$state,
@@ -555,7 +556,8 @@ sub _compile_method {
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
-    elsif (!ref($cases) || ref($cases) =~ /^(?:CODE|Regexp)$/) {
+    elsif (!ref($cases) || ref($cases) =~ /^(?:CODE|Regexp)$/
+	|| UNIVERSAL::isa($cases, 'Bivio::DieCode')) {
 	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
 	$cases = [
 	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
@@ -563,7 +565,7 @@ sub _compile_method {
     }
     else {
 	_compile_die($state,
-	    'cases is not an ARRAY, CODE, Regexp, scalar or undef: ',
+	    'cases is not an ARRAY, CODE, Regexp, Bivio::DieCode, scalar or undef: ',
 	    $cases);
     }
     my(@cases) = @$cases;

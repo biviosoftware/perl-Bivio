@@ -207,10 +207,11 @@ t(
 	    } => [
 		[] => Bivio::DieCode->DIE,
 	    ],
+	    die => Bivio::DieCode->DIE,
 	],
 #TODO: Need more deviance tests
     ],
-    44,
+    45,
     [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44],
 );
 t(
