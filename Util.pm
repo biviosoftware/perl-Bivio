@@ -198,10 +198,11 @@ sub my_require {
     my(@pkg) = @_;
     my($pkg);
     foreach $pkg (@pkg) {
+	die('undefined package') unless $pkg;
 	no strict 'refs';
 	next if defined(%{*{"$pkg\::"}});
 	# Must be a "bareword" for it to do '::' substitution
-	eval "require $pkg" || die($@);
+	eval("require $pkg") || die($@);
     }
 }
 
