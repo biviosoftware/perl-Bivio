@@ -1042,7 +1042,7 @@ sub server_redirect {
     $self->internal_server_redirect($new_task, @_);
     # clear db time
     Bivio::SQL::Connection->get_db_time;
-    Bivio::Die->throw(Bivio::DieCode::SERVER_REDIRECT_TASK(),
+    Bivio::Die->throw_quietly(Bivio::DieCode::SERVER_REDIRECT_TASK(),
 	    {task_id => $new_task});
     return;
 }
