@@ -172,13 +172,16 @@ _compile(
     LAST_VALUATION_DATE_HEADING => ["Valuation\nDate"],
     PERCENT_OF_PORTFOLIO_HEADING => ["Percent of\nPortfolio"],
     SHARES_HEADING => ["Shares\nHeld"],
-    COST_PER_SHARE_HEADING => ["Cost per\nShare"],
+    COST_PER_SHARE_HEADING => ["Cost Basis\nper Share"],
     TOTAL_COST_HEADING => ["Total\nCost"],
     SHARE_PRICE_HEADING => ["Price per\nShare"],
     TOTAL_VALUE_HEADING => ["Market\nValue"],
     UNREALIZED_GAIN_HEADING => ["Unrealized\nGain/(Loss)"],
     PERCENT_OF_TOTAL_HEADING => ["Percent\nofTotal"],
     CASH_ACCOUNT_HEADING => ['Cash Account'],
+    REALMTRANSACTION_DATE_TIME_HEADING => ['Date'],
+    REALMTRANSACTION_REMARK_HEADING => ['Description'],
+    ENTRY_AMOUNT_HEADING => ['Amount'],
 );
 
 =head1 METHODS
