@@ -31,7 +31,6 @@ follow_link('Sign-in');
 follow_link('New User');
 my($id) = "test_http_$$";
 submit_form(submit => {
-    'User ID:' => $id,
     'Password:' => 'password',
     'E-Mail Address:' => "ignore-$id\@bivio.biz",
     'First Name:' => 'HTTP',
