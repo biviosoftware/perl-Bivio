@@ -28,7 +28,7 @@ The Attributes are defined:
 
 =over 4
 
-=time auth_id : string
+=item auth_id : string
 
 Value of C<auth_realm->get('id')>.
 
@@ -401,6 +401,8 @@ sub format_email {
 =for html <a name="format_http"></a>
 
 =head2 format_http(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
+
+=head2 format_http(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
 
 Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
 
@@ -827,7 +829,11 @@ sub internal_initialize {
 
 =head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
 
+=head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
+
 =head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info)
+
+=head2 internal_server_redirect(Bivio::Agent::Request self, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, string new_path_info)
 
 Sets all values and saves form context.
 
@@ -854,6 +860,8 @@ sub internal_server_redirect {
 	$new_form = undef;
     }
 
+    $new_query = Bivio::Agent::HTTP::Query->parse($new_query)
+	    if defined($new_query) && !ref($new_query);
     # Now fill in the rest of the request context
     $self->put(uri =>
 	    # If there is no uri, use current one
@@ -901,6 +909,8 @@ sub push_txn_resource {
 
 =head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
 
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
+
 Server_redirect the current task to the new task.
 
 B<DOES NOT RETURN.>
@@ -920,6 +930,8 @@ sub server_redirect {
 =for html <a name="server_redirect_in_handle_die"></a>
 
 =head2 server_redirect_in_handle_die(Bivio::Die die, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
+
+=head2 server_redirect_in_handle_die(Bivio::Die die, Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
 
 Same as L<server_redirect|"server_redirect">, but puts the attributes
 on I<die> instead of executing L<Bivio::Die::die|Bivio::Die/"die">.

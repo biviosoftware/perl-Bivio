@@ -116,15 +116,7 @@ sub new {
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
-    my $qs = $r->args;
-    my($query);
-    if (defined($qs)) {
-	# Avoid "odd number elements in hash" errors, because the query
-	# string is somehow corrupt.
-	my(@q) = $r->args;
-	push(@q, '') if int(@q) % 2;
-	$query = {@q};
-    }
+    my($query) = Bivio::Agent::HTTP::Query->parse(scalar($r->args));
 
     _trace($r->method, ': query=', $query, '; path_info=', $path_info)
 	    if $_TRACE;
@@ -153,7 +145,11 @@ sub new {
 
 =head2 client_redirect(string new_uri, hash_ref new_query)
 
+=head2 client_redirect(string new_uri, string new_query)
+
 =head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info)
+
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, string new_path_info)
 
 Client side redirect to the new task within the new realm.  If I<new_task>
 is the same as the current task, does an server_redirect.  Otherwise,
@@ -190,7 +186,7 @@ sub client_redirect {
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
-	if ($new_query) {
+	if (ref($new_query)) {
 	    my($query) = Bivio::Agent::HTTP::Query->format($new_query);
 	    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query);
 	}
@@ -252,7 +248,11 @@ sub get_form {
 
 =head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
 
+=head2 server_redirect(string new_uri, string new_query, hash_ref new_form, string new_path_info)
+
 =head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
+
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
 
 Server-side (aka internal) redirect to the new task within the new realm.
 
@@ -282,7 +282,11 @@ sub server_redirect {
 
 =head2 server_redirect_in_handle_die(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
 
+=head2 server_redirect_in_handle_die(string new_uri, string new_query, hash_ref new_form, string new_path_info)
+
 =head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
+
+=head2 server_redirect_in_handle_die(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info)
 
 Server-side (aka internal) redirect to the new task within the new realm.
 
