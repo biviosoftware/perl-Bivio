@@ -244,9 +244,9 @@ sub build {
 		_would_run("cd $tmp; $rpm_command", $output);
 		next;
 	    }
-	    _system($rpm_command, \$output);
-	    _save_rpm_file("$arch/$fullname.$arch.rpm");
-	    _link_base_version("$fullname.$arch.rpm", "$base.rpm");
+	    _system($rpm_command, $output);
+	    _save_rpm_file("$arch/$fullname.$arch.rpm", $output);
+	    _link_base_version("$fullname.$arch.rpm", "$base.rpm", $output);
 	}
 	return;
     });
