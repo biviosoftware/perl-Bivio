@@ -6,7 +6,7 @@
 # Description: Class extending HTML::Parser used to parse an HTML page
 #
 
-package BivioParser;
+package Bivio::Test::BivioParser;
 use strict;
 
 use base qw(HTML::Parser);
