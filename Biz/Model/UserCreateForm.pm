@@ -86,7 +86,8 @@ sub internal_create_models {
     });
     my($realm) = $self->new($req, 'RealmOwner')->create({
 	realm_id => $user->get('user_id'),
-	name => 'u' . $user->get('user_id'),
+	name =>	 $self->unsafe_get('RealmOwner.name')
+	    || 'u' . $user->get('user_id'),
 	realm_type => Bivio::Auth::RealmType->USER,
 	password => Bivio::Type::Password->encrypt(
 	    $self->get('RealmOwner.password')),
@@ -126,6 +127,13 @@ sub internal_initialize {
 		name => 'confirm_password',
 		type => 'Password',
 		constraint => 'NOT_NULL',
+	    },
+	],
+	other => [
+	    {
+		# Optionally, set user name explicitly
+		name => 'RealmOwner.name',
+		constraint => 'NONE',
 	    },
 	],
     };
