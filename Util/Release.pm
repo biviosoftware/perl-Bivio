@@ -651,7 +651,8 @@ packages if they aren't already on the current host.
 
 sub update {
     my($self) = @_;
-    return $self->install(@{_get_update_list(0, @_)});
+    my($x) = _get_update_list(0, @_);
+    return @$x ? $self->install(@$x) : "All packages up to date\n";
 }
 
 #=PRIVATE METHODS
