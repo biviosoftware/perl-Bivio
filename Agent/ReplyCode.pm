@@ -33,6 +33,10 @@ C<Bivio::Agent::ReplyCode> defines the following reply codes:
 
 success: operation was successful
 
+=item AUTH_REQUIRED
+
+need authentication: user must supply valid credentials
+
 =item FORBIDDEN
 
 not authorized: user not authorized to process request
@@ -40,10 +44,6 @@ not authorized: user not authorized to process request
 =item NOT_HANDLED
 
 not found: unable to process request
-
-=item AUTH_REQUIRED
-
-need authentication: user must supply valid credentials
 
 =item SERVER_ERROR
 
@@ -57,16 +57,16 @@ unknown error: unexpected or unknown error
 
 =cut
 
-__PACKAGE__->compile({
-    'OK' => [
+__PACKAGE__->compile(
+    'UNKNOWN' => [
     	0,
+	'unknown error',
+	'unexpected or unknown error',
+    ],
+    'OK' => [
+    	1,
 	'success',
 	'operation was successful',
-    ],
-    'FORBIDDEN' => [
-    	1,
-	'not authorized',
-	'user not authorized to process request',
     ],
     'NOT_HANDLED' => [
     	2,
@@ -83,12 +83,12 @@ __PACKAGE__->compile({
 	'server error',
 	'internal failure',
     ],
-    'UNKNOWN' => [
+    'FORBIDDEN' => [
     	5,
-	'unknown error',
-	'unexpected or unknown error',
+	'not authorized',
+	'user not authorized to process request',
     ],
-});
+);
 
 =head1 COPYRIGHT
 

@@ -29,7 +29,7 @@ C<Bivio::UI::HTML::TestMathView>
 
 #=IMPORTS
 use Bivio::UI::HTML::ListView;
-use Bivio::Biz::TestListModel;
+use Bivio::Biz::ListModel::Test;
 use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::Presentation;
 
@@ -48,25 +48,6 @@ my($_RESET_LINK) = Bivio::UI::HTML::Link->new( 'reset',
 	'"/i/undo.gif" border=0',
 	'', 'Reset', 'Reset to (1,1)');
 my($_ACTION_LINKS) = [$_RESET_LINK];
-
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::TestMathView
-
-Creates a new view which shows a list view for a multiplication table.
-
-=cut
-
-sub new {
-    my($proto, $name)  = @_;
-    my($self) = &Bivio::UI::View::new($proto, $name);
-    return $self;
-}
 
 =head1 METHODS
 
@@ -99,7 +80,7 @@ Returns the default model ready for rendering.
 
 sub get_default_model {
     #NOTE: could cache this
-    return Bivio::Biz::TestListModel->new();
+    return Bivio::Biz::ListModel::Test->new();
 }
 
 =for html <a name="get_nav_links"></a>

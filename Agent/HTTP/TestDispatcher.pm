@@ -84,18 +84,6 @@ sub create_site {
     return;
 }
 
-=for html <a name="get_default_controller_name"></a>
-
-=head2 get_default_controller_name() : string
-
-Returns 'test'
-
-=cut
-
-sub get_default_controller_name {
-    return 'test';
-}
-
 =for html <a name="handler"></a>
 
 =head2 handler(Apache::Request r) : int

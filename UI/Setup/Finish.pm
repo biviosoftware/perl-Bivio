@@ -24,65 +24,46 @@ C<Bivio::UI::Setup::Finish> a congratulatory view of club creation.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Agent::TaskId;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Setup::Finish
-
-Creates a setup finished view.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = &Bivio::UI::View::new($proto, 'finish');
-    $self->{$_PACKAGE} = {};
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="get_default_model"></a>
+=for html <a name="execute"></a>
 
-=head2 get_default_model() : UserList
-
-Returns an a dummy model.
+=head2 execute(Bivio::AgentRequest req)
 
 =cut
 
-sub get_default_model {
-    return Bivio::Biz::TestModel->new(undef, undef, 'Setup Completed',
-	    'Setup Completed');
+sub execute {
+    my($self, $req) = @_;
+    $self->activate->render(
+	    $req->get('Bivio::Biz::PropertyModel::Club'), $req);
+    return;
 }
 
 =for html <a name="render"></a>
 
-=head2 render(User user, Request req)
+=head2 render(undef, Request req)
 
 Shows the congratulatory view.
 
 =cut
 
 sub render {
-    my($self, $user, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($self, $club, $req) = @_;
     my($reply) = $req->get_reply();
 
     $reply->print('<table border=0><tr><td>');
 
-    $reply->print('<form action=/'.$req->get_arg('club').'/admin'
+    # Club created.  Need to switch realms.
+    my($realm) = Bivio::Auth::Realm::Club->new($club);
+    $reply->print('<form action='
+	    .$req->format_uri(Bivio::Agent::TaskId::CLUB_MEMBER_LIST,
+		   undef, $realm)
 	    .' method="post">');
 
     $reply->print('Congratulations, club setup is completed. After '

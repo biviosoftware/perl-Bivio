@@ -102,9 +102,9 @@ sub main {
     my($file_port) = ($tmp || $pwd) . "/bfs";
     my($mail_port) = ($tmp || $pwd) . "/bmd";
     my($host) = `hostname`;
-    my($user) = getpwuid($>) || $>;
     chop($host);
     $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
+    my($user) = getpwuid($>) || $>;
     print STDERR "http://$host:$http_port/club/setup\n",
 	    "b-sendmail-agent $user $mail_port x x < msg\n";
     unless ($execute) {
@@ -198,55 +198,64 @@ $Id$
 __DATA__
 use strict;
 {
-    'Bivio::Biz::Mail::Message' => {
-	'file_server' => 'file',
+    'Bivio::Agent::Request' => {
+	http_host => '<$host>:<$http_port>',
+	mail_host => '[<$host>]',
+    },
+    'Bivio::Biz::PropertyModel::MailMessage' => {
+	file_server => 'file',
+    },
+    'Bivio::Die' => {
+	stack_trace => 1,
     },
     'Bivio::Ext::DBI' => {
-	'ORACLE_HOME' => '/usr/local/oracle/product/8.0.5',
-	'database' => 'surf_test',
-	'user' => '<$user>',
-	'password' => 'bivio,ho',
+	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
+	database => 'surf_test',
+	user => '<$user>',
+	password => 'bivio,ho',
     },
     'Bivio::File::Server' => {
-	'file' => {
-	    'root' => '<$file_root>',
+	file => {
+	    root => '<$file_root>',
 	},
     },
     'Bivio::IO::Alert' => {
-	'stack_trace_die' => 1,
-	'stack_trace_warn' => 0,
-	'want_stderr' => 1,
-	'want_pid' => 1,
-	'intercept_die' => 1,
-	'intercept_warn' => 1,
+# Doesn't work with Bivio::Die in the way
+	stack_trace_die => 0,
+	stack_trace_warn => 0,
+	want_stderr => 1,
+	want_pid => 1,
+# This doesn't work right now.
+	intercept_die => 0,
+	intercept_warn => 1,
     },
     'Bivio::IO::Trace' => {
 	'package_filter' => '/Bivio/',
     },
     'Bivio::IPC::Client' => {
-	'file' => {
-	    'proto' => 'unix',
-	    'port' => '<$file_port>',
+	file => {
+	    proto => 'unix',
+	    port => '<$file_port>',
 	},
-	'mail' => {
-	    'proto' => 'unix',
-	    'port' => '<$mail_port>',
+	mail => {
+	    proto => 'unix',
+	    port => '<$mail_port>',
 	},
     },
     'Bivio::IPC::Server' => {
-	'file' => {
-	    'proto' => 'unix',
-	    'port' => '<$file_port>',
+	file => {
+	    proto => 'unix',
+	    port => '<$file_port>',
 	},
-	'mail' => {
-	    'proto' => 'unix',
-	    'port' => '<$mail_port>',
-	    'file_mode' => 0777,
+	mail => {
+	    proto => 'unix',
+	    port => '<$mail_port>',
+	    file_mode => 0777,
 	},
     },
-    'main' => {
-	'http' => {
-	    'port' => '<$http_port>',
+    main => {
+	http => {
+	    port => '<$http_port>',
 	},
     },
 };

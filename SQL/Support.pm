@@ -127,9 +127,8 @@ names which correspond to the same named model property.
 sub new {
     my($proto, $table_name, @columns) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    $table_name =~ /_t/i
+    $table_name =~ /_t$/i
 	    || Carp::croak("$table_name: invalid table name, must end in _t");
-
     $self->{$_PACKAGE} = {
 	'table_name' => $table_name,
 	'select' => undef,
@@ -137,6 +136,7 @@ sub new {
 	'insert' => undef,
 	'columns' => \@columns,
 	'column_types' => undef,
+	'primary_id_column' => -1,
     };
     return $self;
 }
@@ -147,13 +147,13 @@ sub new {
 
 =for html <a name="create"></a>
 
-=head2 create(Model model, hash properties, hash new_values) : boolean
+=head2 create(Model model, hash properties, hash new_values)
 
 Inserts a new record into to database and loads the model's properties. If
-successful, the properties hash will contain the new values. Otherwise
-the model's L<Bivio::Biz::Status> will contain error messages.
+successful, the properties hash will contain the new values. Otherwise,
+it dies with the error.
 
-If the first column is named C<id>, the value will be retrieved from
+If there is a I<primary_id_column>, the value will be retrieved from
 the sequence I<table_name_s> (table_name sans '_t', that is).
 
 =cut
@@ -169,15 +169,15 @@ sub create {
 
     my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
-    my($id_col) = $fields->{id_column};
+    my($primary_id_column) = $fields->{primary_id_column};
     my(@values);
 
     for (my($i) = 0; $i < int(@$columns); $i++) {
 	my($col) = $columns->[$i];
 	push(@values, $types->[$i] == SQL_DATE_TYPE()
 		? $self->from_time($new_values->{$col})
-                : $id_col eq $i
-		? ($new_values->{$col} = _next_id($self, $model, $conn))
+                : $primary_id_column eq $i
+		? ($new_values->{$col} = _next_primary_id($self, $model, $conn))
 		: $new_values->{$col});
     }
 
@@ -187,29 +187,23 @@ sub create {
     my($statement) = $conn->prepare($sql);
 
     Bivio::SQL::Connection->execute($statement, $model, @values);
-    $statement->finish();
-
-    if ($model->get_status()->is_ok()) {
-	# update all the model properties, undefined fields as well
-	foreach (keys(%$properties)) {
-	    $properties->{$_} = $new_values->{$_};
-	}
+    # update all the model properties, undefined fields as well
+    foreach (keys(%$properties)) {
+	$properties->{$_} = $new_values->{$_};
     }
-
     if ($_TRACE) {
 	Bivio::SQL::Connection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_ok();
+    return;
 }
 
 =for html <a name="delete"></a>
 
-=head2 delete(Model m, string where_clause, string value, ...) : boolean
+=head2 delete(Model m, string where_clause, string value, ...)
 
 Removes the row with identified by the specified parameterized where_clause
-and substitution values. If an error occurs during the delete, the
-model's L<Bivio::Biz::Status> will contain the error messages.
+and substitution values. If an error occurs during the delete, calls die.
 
 =cut
 
@@ -228,13 +222,11 @@ sub delete {
 
     Bivio::SQL::Connection->execute($statement, $model, @values);
 
-    $statement->finish();
-
     if ($_TRACE) {
 	Bivio::SQL::Connection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_ok();
+    return;
 }
 
 =for html <a name="from_time"></a>
@@ -254,6 +246,23 @@ sub from_time {
     my($s) = $time % &SECONDS_IN_DAY;
     my($j) = int($time / &SECONDS_IN_DAY) + &UNIX_EPOCH_IN_JULIAN_DAYS;
     return $j . ' ' . $s;
+}
+
+=for html <a name="get_primary_id_field"></a>
+
+=head2 get_primary_id_field() : string
+
+Returns the primary id (key) field.  The primary id field is
+a field which is named after the table, but instead of ending
+in '_t', it ends in '_id'.  Primary ids are always integers
+and are never 0.
+
+=cut
+
+sub get_primary_id_field {
+    my($self) = @_;
+    return $self->{primary_id_column} >= 0 ?
+	    $self->{columns}->{$self->{primary_id_column}} : undef;
 }
 
 =for html <a name="initialize"></a>
@@ -282,7 +291,9 @@ sub initialize {
     my($select) = 'select ';
     my($insert) = 'insert into '.$fields->{table_name}
 	    .' ('.join(',', @$columns).') values (';
-    $fields->{id_column} = -1;
+    $fields->{primary_id_column} = -1;
+    my($id_name) = $fields->{table_name};
+    $id_name =~ s/_t$/_id/;
     for (my($i) = 0; $i < int(@$columns); $i++) {
 	my($col) = $columns->[$i];
 	if ($types->[$i] == SQL_DATE_TYPE()) {
@@ -290,9 +301,9 @@ sub initialize {
 	    $insert .= q{TO_DATE(?,'}.DATE_FORMAT().q{'),};
 	}
 	else {
-	    if ($col eq 'id') {
-		$fields->{id_column} = $i;
-		($fields->{next_id} = 'select '
+	    if ($col eq $id_name) {
+		$fields->{primary_id_column} = $i;
+		($fields->{next_primary_id} = 'select '
 			# Trim _t which is required (see create)
 			. substr($fields->{table_name}, 0, -2)
 			. '_s.nextval from dual');
@@ -314,16 +325,15 @@ sub initialize {
 
 =for html <a name="find"></a>
 
-=head2 load(PropertyModel model, hash properties, string where_clause, string value, ...) : boolean
+=head2 unsafe_load(PropertyModel model, hash properties, string where_clause, string value, ...) : boolean
 
 Loads the specified properties with data using the parameterized where_clause
 and substitution values. If successful, the properties hash will contain the
-new values. Otherwise the model's L<Bivio::Biz::Status> will contain error
-messages.
+new values.  Returns false if no rows were returned.
 
 =cut
 
-sub load {
+sub unsafe_load {
     my($self, $model, $properties, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("not initialized");
@@ -332,13 +342,16 @@ sub load {
     my($conn) =  Bivio::SQL::Connection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
     &_trace_sql($sql, @values) if $_TRACE;
+
     my($statement) = $conn->prepare_cached($sql);
-
     Bivio::SQL::Connection->execute($statement, $model, @values);
-
     my($row) = $statement->fetchrow_arrayref();
+    my($too_many) = $statement->fetchrow_array ? 1 : 0 if $row;
+    # Must call finish here, because statement is cached
+    $statement->finish;
 
     if ($row) {
+	die('too many rows returned') if $too_many;
 	my($columns) = $fields->{columns};
 	my($types) = $fields->{column_types};
 
@@ -347,22 +360,12 @@ sub load {
 	    $properties->{$col} = $types->[$i] == SQL_DATE_TYPE()
 		    ? $self->to_time($row->[$i]) : $row->[$i];
 	}
-
-#TODO: die if > 1 row returned.
     }
-    else {
-
-#TODO: need a better error than this
-
-	$model->get_status()->add_error(
-		Bivio::Biz::Error->new("Not Found"));
-    }
-    $statement->finish();
     if ($_TRACE) {
 	Bivio::SQL::Connection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_ok();
+    return $row ? 1 : 0;
 }
 
 =for html <a name="to_time"></a>
@@ -386,11 +389,10 @@ sub to_time {
 
 =for html <a name="update"></a>
 
-=head2 update(Model model, hash properties, hash new_values, string where_clause, string value, ...) : boolean
+=head2 update(Model model, hash properties, hash new_values, string where_clause, string value, ...)
 
 Updates the database fields for the specified model. If successful, values
-will be mapped into the specified properties hash. Otherwise the model's
-L<Bivio::Biz::Statis> will contain any error messages.
+will be mapped into the specified properties hash. Otherwise, calls die.
 
 =cut
 
@@ -415,20 +417,15 @@ sub update {
     my($statement) = $conn->prepare($sql);
 
     Bivio::SQL::Connection->execute($statement, $model, @values);
-
-    $statement->finish();
-
-    if ($model->get_status()->is_ok()) {
-	# update the model properties
-	foreach (keys(%$new_values)) {
-	    $properties->{$_} = $new_values->{$_};
-	}
+    # update the model properties
+    foreach (keys(%$new_values)) {
+	$properties->{$_} = $new_values->{$_};
     }
     if ($_TRACE) {
 	Bivio::SQL::Connection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_ok();
+    return;
 }
 
 #=PRIVATE METHODS
@@ -449,6 +446,7 @@ sub _create_update_statement {
 
     my($set);
 
+#TODO: Should understand primary keys
     for (my($i) = 0; $i < int(@$columns); $i++) {
 	my($col) = $columns->[$i];
 	my($old) = $old_values->{$col};
@@ -521,21 +519,19 @@ sub _get_column_types {
 	$column_types->[$i] = $types->[$i];
     }
 
-    $statement->finish();
     return $column_types;
 }
 
-# _next_id(Bivio::SQL::Support self, Bivio::Biz::Model model, Bivio::SQL::Connection conn) : int
+# _next_primary_id(Bivio::SQL::Support self, Bivio::Biz::Model model, Bivio::SQL::Connection conn) : int
 #
 # Returns the next primary key id for this table
-sub _next_id {
+sub _next_primary_id {
     my($self, $model, $conn) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($statement) = $conn->prepare($fields->{next_id});
-    &_trace($fields->{next_id}) if $_TRACE;
+    my($statement) = $conn->prepare($fields->{next_primary_id});
+    &_trace($fields->{next_primary_id}) if $_TRACE;
     Bivio::SQL::Connection->execute($statement, $model);
     my($id) = $statement->fetchrow_array();
-    $statement->finish();
     return $id;
 }
 

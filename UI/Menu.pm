@@ -13,10 +13,10 @@ Bivio::UI::Menu - a menu holder
 
     use Bivio::UI::Menu;
     my($menu) = Bivio::UI::Menu->new(1,
-	    ['human', 'Human',
-	     'cat', 'Cat',
-	     'dog', 'Dog']);
-    $menu->set_selected('cat');
+	    [Bivio::Agent::TaskId::HUMAN_DETAIL, 'Human',
+	     Bivio::Agent::TaskId::CAT_DETAIL, 'Cat',
+	     Bivio::Agent::TaskId::DOG_DO, 'Dog']);
+    $menu->set_selected(Bivio::Agent::TaskId::CAT_DETAIL);
 
 =cut
 
@@ -25,11 +25,14 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Menu> contains a list of menu names and display names. It
+C<Bivio::UI::Menu> contains a list of task ids and display names. It
 tracks which menu item is currently selected. Menus may either be top-level
 or sub menus.
 
 =cut
+
+#=IMPORTS
+use Bivio::Agent::TaskId;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -82,15 +85,15 @@ sub get_display_names {
     return \@result;
 }
 
-=for html <a name="get_names"></a>
+=for html <a name="get_task_ids"></a>
 
-=head2 get_names() : array
+=head2 get_task_ids() : array
 
 Returns the names of all the items.
 
 =cut
 
-sub get_names {
+sub get_task_ids {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my(@result);
@@ -104,9 +107,9 @@ sub get_names {
 
 =for html <a name="get_selected"></a>
 
-=head2 get_selected() : string
+=head2 get_selected() : Bivio::Agent::TaskId
 
-Returns the name of the selected item.
+Returns the task_id of the selected item.
 
 =cut
 
@@ -132,16 +135,16 @@ sub is_top {
 
 =for html <a name="set_selected"></a>
 
-=head2 set_selected(string name)
+=head2 set_selected(Bivio::Agent::TaskId task_id)
 
 Sets the currently selected item.
 
 =cut
 
 sub set_selected {
-    my($self, $name) = @_;
+    my($self, $task_id) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{selected} = $name;
+    $fields->{selected} = $task_id;
     return;
 }
 

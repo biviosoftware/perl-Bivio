@@ -26,7 +26,7 @@ output type will be 'text/html'.
 =cut
 
 #=IMPORTS
-use Apache::Constants;
+use Apache::Constants ();
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -102,18 +102,19 @@ sub get_http_return_code {
     my($state) = $self->get_state();
 
     # need to translate from Request state to Apache rc
-    return Apache::Constants::AUTH_REQUIRED
+    return Apache::Constants::AUTH_REQUIRED()
 	    if $state == $self->AUTH_REQUIRED;
-    return Apache::Constants::FORBIDDEN
+    return Apache::Constants::FORBIDDEN()
 	    if $state == $self->FORBIDDEN;
-    return Apache::Constants::NOT_FOUND
+    return Apache::Constants::NOT_FOUND()
 	    if $state == $self->NOT_HANDLED;
-    return Apache::Constants::OK
+    return Apache::Constants::OK()
 	    if $state == $self->OK;
-    return Apache::Constants::SERVER_ERROR
+    return Apache::Constants::SERVER_ERROR()
 	    if $state == $self->SERVER_ERROR;
 
-    die("invalid request state $state");
+    warn("$state: unknown Bivio::Agent::Reply state");
+    return Apache::Constants::SERVER_ERROR();
 }
 
 =for html <a name="print"></a>
@@ -126,9 +127,9 @@ Writes the specified string to the request's output stream.
 
 sub print {
     my($self,$str) = @_;
+    defined($str) || die("ASSERTION_FAULT: argument undefined");
     my($fields) = $self->{$_PACKAGE};
-
-    $fields->{output} .= defined($str) ? $str : 'undef';
+    $fields->{output} .= $str;
     return;
 }
 

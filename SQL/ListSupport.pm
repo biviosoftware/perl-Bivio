@@ -13,7 +13,7 @@ Bivio::SQL::ListSupport - sql support for ListModels
     package MyListModel;
 
     use Bivio::SQL::ListSupport;
-    my($support) = Bivio::SQL::ListSupport->new('email_message',
+    my($support) = Bivio::SQL::ListSupport->new('mail_message',
 	['id,subject', 'from_name,from_email,subject', 'dttm']);
 
     support->load($self, $self->internal_get_rows()
@@ -146,13 +146,14 @@ sub load {
 	    last;
 	}
     }
+    # Do we need to finish here?
     $statement->finish();
 
     if ($_TRACE) {
 	Bivio::SQL::Connection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_ok();
+    return;
 }
 
 =for html <a name="get_result_set_size"></a>

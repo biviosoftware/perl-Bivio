@@ -11,12 +11,6 @@ Bivio::UI::View - Abstract base class of model renderers.
 
 =head1 SYNOPSIS
 
-    # get a model from a view
-    my($model) = $view->get_default_model();
-
-    # do something with the model
-    $model->get_action($req->get_action_name())->execute($model, $req);
-
     # brings a view to the front and renders a model
     $view->activate()->render($model, $req);
 
@@ -41,7 +35,12 @@ for lookup by L<Bivio::Agent::Controller>s.
 
 =cut
 
+#=IMPORTS
+use Bivio::IO::Trace;
+
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -50,18 +49,16 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name) : Bivio::UI::View
+=head2 static new() : Bivio::UI::View
 
 Creates a view with the specified name.
 
 =cut
 
 sub new {
-    my($proto, $name) = @_;
+    my($proto) = @_;
     my($self) = &Bivio::UI::Renderer::new($proto);
-
     $self->{$_PACKAGE} = {
-        'name' => $name,
         'parent' => undef
     };
     return $self;
@@ -85,36 +82,24 @@ sub activate {
     my($fields) = $self->{$_PACKAGE};
     my($parent) = $fields->{parent};
     if (defined($parent)) {
+	&_trace('activating parent of ',  $self) if $_TRACE;
 	return $parent->set_active_view($self);
     }
+    &_trace('activating ',  $self) if $_TRACE;
     return $self;
 }
 
-=for html <a name="get_default_model"></a>
+=for html <a name="execute"></a>
 
-=head2 get_default_model() : Model
+=head2 abstract execute(Bivio::Agent::Request req)
 
-Returns the model to use if none has been specified. By default, this
-method returns undef, indicating no default model exists.
-
-=cut
-
-sub get_default_model {
-    return undef;
-}
-
-=for html <a name="get_name"></a>
-
-=head2 get_name() : string
-
-Returns this view's name.
+Executes the request which involves creating the necessary models,
+activating, and rendering through parents.
 
 =cut
 
-sub get_name {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{name};
+sub execute {
+    die('view not executable');
 }
 
 =for html <a name="set_parent"></a>
@@ -130,10 +115,8 @@ have one parent. see L<Bivio::UI::MultiView>.
 sub set_parent {
     my($self, $parent) = @_;
     my($fields) = $self->{$_PACKAGE};
-
-    if ($fields->{parent}) {
-	die('view '.$self->get_name().' already parented');
-    }
+    die('view already parented') if $fields->{parent};
+    &_trace($self, '->parent = ', $parent) if $_TRACE;
     $fields->{parent} = $parent;
     return;
 }

@@ -11,7 +11,7 @@ Bivio::UI::TestView - a simple testing view
 =head1 SYNOPSIS
 
     use Bivio::UI::TestView;
-    my($model) = Bivio::Biz::TestModel->new('test2', {}, 'title', 'heading');
+    my($model) = Bivio::Biz::PropertyModel::Test->new('test2', {}, 'title', 'heading');
     my($view) = Bivio::UI::TestView->new('test', '<i>a test view</i>', $model);
     $view->activate()->render($model, $req);
 
@@ -30,7 +30,7 @@ use Bivio::UI::View;
 
 C<Bivio::UI::TestView> ignores the model and prints a few things
 when renderering. This is a good place-holder for work-in-progress.
-See L<Bivio::Biz::TestModel>.
+See L<Bivio::Biz::PropertyModel::Test>.
 
 =cut
 

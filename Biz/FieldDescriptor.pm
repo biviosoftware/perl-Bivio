@@ -50,7 +50,7 @@ Currency type.
 =cut
 
 sub CURRENCY {
-    return BOOLEAN + 1;
+    return 2;
 }
 
 =for html <a name="DATE"></a>
@@ -62,7 +62,7 @@ Date type.
 =cut
 
 sub DATE {
-    return CURRENCY() + 1;
+    return 3;
 }
 
 =for html <a name="EMAIL_REF"></a>
@@ -75,7 +75,7 @@ An email reference compound type. An email ref is made up of
 =cut
 
 sub EMAIL_REF {
-    return DATE() + 1;
+    return 4;
 }
 
 =for html <a name="EMAIL"></a>
@@ -87,7 +87,7 @@ Email address type.
 =cut
 
 sub EMAIL {
-    return EMAIL_REF() + 1;
+    return 5;
 }
 
 =for html <a name="GENDER"></a>
@@ -99,7 +99,7 @@ Gender type.
 =cut
 
 sub GENDER {
-    return EMAIL() + 1;
+    return 6;
 }
 
 =for html <a name="HTML_REF"></a>
@@ -111,7 +111,7 @@ An HTML reference compound type. An html ref is made up of (link, text) parts.
 =cut
 
 sub HTML_REF {
-    return GENDER() + 1;
+    return 7;
 }
 
 =for html <a name="MODEL_REF"></a>
@@ -123,7 +123,7 @@ A model reference compound type. A model ref is made up of (id, text) parts.
 =cut
 
 sub MODEL_REF {
-    return HTML_REF() + 1;
+    return 8;
 }
 
 =for html <a name="NUMBER"></a>
@@ -135,7 +135,7 @@ Numeric type.
 =cut
 
 sub NUMBER {
-    return MODEL_REF() + 1;
+    return 9;
 }
 
 =for html <a name="PASSWORD"></a>
@@ -147,7 +147,7 @@ Password type.
 =cut
 
 sub PASSWORD {
-    return NUMBER() + 1;
+    return 10;
 }
 
 =for html <a name="ROLE"></a>
@@ -159,7 +159,7 @@ Role type.
 =cut
 
 sub ROLE {
-    return PASSWORD() + 1;
+    return 11;
 }
 
 =for html <a name="STRING"></a>
@@ -171,7 +171,7 @@ String type.
 =cut
 
 sub STRING {
-    return ROLE() + 1;
+    return 12;
 }
 
 =for html <a name="USER_FULL_NAME"></a>
@@ -183,7 +183,7 @@ Full name type.
 =cut
 
 sub USER_FULL_NAME {
-    return STRING() + 1;
+    return 13;
 }
 
 #=IMPORTS

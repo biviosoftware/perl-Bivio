@@ -120,7 +120,7 @@ sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
         'output_type' => 'text/plain',
-        'state' => NOT_HANDLED,
+        'state' => SERVER_ERROR,
     };
     return $self;
 }

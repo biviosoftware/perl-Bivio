@@ -46,11 +46,12 @@ through the method L<"get_column_descriptor">.
 
 =cut
 
-#=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-
 #=IMPORTS
 use Bivio::Util;
+
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+my(%_CLASS_INFO);
 
 =head1 FACTORIES
 
@@ -58,24 +59,56 @@ use Bivio::Util;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name, array column_info) : Bivio::Biz::ListModel
+=head2 static new(Bivio::Agent::Request $req, array column_info) : Bivio::Biz::ListModel
 
-Creates a new ListModel with the specified name and column information.
+Creates a new ListModel with the specified request and column information.
 column_info should have the format:
     [
         ['heading', field-descriptor]
         ...
     }
 
+Associates this model with the request.
+
 =cut
 
 sub new {
-    my($proto, $name, $column_info) = @_;
-    my($self) = &Bivio::Biz::Model::new($proto, $name);
+    my($proto, $req) = @_;
+    my($self) = &Bivio::Biz::Model::new($proto, $req);
+    my($class) = ref($self);
+    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    my($ci) = $_CLASS_INFO{$class};
     $self->{$_PACKAGE} = {
-	'column_info' => $column_info,
-	'rows' => []
+	request => $req,
+	class_info => $ci,
+	rows => [],
     };
+    # List models are different from PropertyModels in that a load
+    # always "succeeds" in the sense that it either "dies" or returns
+    # the number of rows.  Therefore, we associate the model now
+    # so the specific implementations don't have to do it.
+    $req->put(ref($self), $self);
+    return $self;
+}
+
+=for html <a name="load_from_request"></a>
+
+=head2 static load_from_request(Bivio::Agent::Request req) : Bivio::Biz::ListModel
+
+Loads the model from the request.  If the class is already loaded, just
+gets that.
+
+=cut
+
+sub load_from_request {
+    my($proto, $req) = @_;
+#TODO: Generalize in Model?
+    my($class) = ref($proto) || $proto;
+    my($self) = $req->unsafe_get($class);
+    return $self if $self;
+    $self = $class->new($req);
+    $self->load(%{$req->get_fields('query',
+	    $self->{$_PACKAGE}->{class_info}->{query_fields})});
     return $self;
 }
 
@@ -92,9 +125,8 @@ Returns the number of columns in the model.
 =cut
 
 sub get_column_count {
-    my($self, $col) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return int(@{$fields->{column_info}});
+    my($ci) = shift->{$_PACKAGE}->{class_info};
+    return int(@{$ci->{column_info}});
 }
 
 =for html <a name="get_column_descriptor"></a>
@@ -107,22 +139,22 @@ Returns the descriptor for the indexed column.
 
 sub get_column_descriptor {
     my($self, $col) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{column_info}->[$col][1];
+    my($ci) = $self->{$_PACKAGE}->{class_info};
+    return $ci->{column_info}->[$col][1];
 }
 
-=for html <a name="get_column_heading"></a>
+=for html <a name="get_column_name"></a>
 
-=head2 get_column_heading(int col) : string
+=head2 get_column_name(int col) : string
 
 Returns the heading for the specified column.
 
 =cut
 
-sub get_column_heading {
+sub get_column_name {
     my($self, $col) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{column_info}->[$col][0];
+    my($ci) = $self->{$_PACKAGE}->{class_info};
+    return $ci->{column_info}->[$col][0];
 }
 
 =for html <a name="get_default_sort_key"></a>
@@ -140,16 +172,28 @@ sub get_default_sort_key {
     return undef;
 }
 
-=for html <a name="get_finder_at"></a>
+=for html <a name="get_request"></a>
 
-=head2 abstract get_finder_at(int row) : string
+=head2 get_request() : Bivio::Agent::Request
 
-Returns the model finder for the specified row. This should be the string
-format of a L<Bivio::Biz::FindParams>.
+Returns the request associated with this model.
 
 =cut
 
-sub get_finder_at {
+sub get_request {
+    my($fields) = shift->{$_PACKAGE};
+    return $fields->{request};
+}
+
+=for html <a name="get_query_at"></a>
+
+=head2 abstract get_query_at(int row) : hash_ref
+
+Returns the model query for the specified row.
+
+=cut
+
+sub get_query_at {
     die("abstract method");
 }
 
@@ -169,19 +213,19 @@ sub get_index {
 
 =for html <a name="get_order_by"></a>
 
-=head2 get_order_by(FindParams fp) : string
+=head2 get_order_by(hash_ref query) : string
 
-Returns the 'order by' clause based on the sort argument in the FindParams.
+Returns the 'order by' clause based on the sort argument in the query.
 The sort param must be of the form: sort(a|d<col>). If the model doesn't
 support sorting, then '' is returned.
 
 =cut
 
 sub get_order_by {
-    my($self, $fp) = @_;
+    my($self, $query) = @_;
 
     my($order_by) = '';
-    my($sort) = $fp->get('sort') || '';
+    my($sort) = $query->{sort} || '';
     my($default_key) = $self->get_default_sort_key() || '';
 
     # make sure it is in correct form and col is in range
@@ -308,7 +352,35 @@ sub internal_get_rows {
     return $fields->{rows};
 }
 
+=for html <a name="internal_initialize"></a>
+
+=head2 internal_initialize() : array_ref
+
+B<FOR INTERNAL USE ONLY>.
+
+Returns an array_ref of the column info, sql support,
+and valid request query fields.
+
+=cut
+
+sub internal_initialize {
+    die('abstract method');
+
+}
+
 #=PRIVATE METHODS
+
+sub _initialize_class_info {
+    my($class) = @_;
+    my($ci) = $class->internal_initialize;
+    $_CLASS_INFO{$class} = $ci = {
+	column_info => $ci->[0],
+	sql_support => $ci->[1],
+	query_fields => $ci->[2],
+    };
+    $ci->{sql_support}->initialize;
+    return;
+}
 
 =head1 COPYRIGHT
 

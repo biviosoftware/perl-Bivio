@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::TestListModel;
+package Bivio::Biz::ListModel::Test;
 use strict;
-$Bivio::Biz::TestListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::ListModel::Test::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::TestListModel - A testing list model.
+Bivio::Biz::ListModel::Test - A testing list model.
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::TestListModel;
-    Bivio::Biz::TestListModel->new();
+    use Bivio::Biz::ListModel::Test;
+    Bivio::Biz::ListModel::Test->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::ListModel>
 =cut
 
 use Bivio::Biz::ListModel;
-@Bivio::Biz::TestListModel::ISA = qw(Bivio::Biz::ListModel);
+@Bivio::Biz::ListModel::Test::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::TestListModel>
+C<Bivio::Biz::ListModel::Test>
 
 =cut
 
@@ -46,7 +46,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Biz::TestListModel
+=head2 static new() : Bivio::Biz::ListModel::Test
 
 Creates a new testing ListModel.
 
@@ -67,7 +67,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 load(FindParams fp) : boolean
+=head2 load(hash query) : boolean
 
 Loads the list using the specified parameters. Query fields may be
 'index', ...
@@ -75,10 +75,10 @@ Loads the list using the specified parameters. Query fields may be
 =cut
 
 sub load {
-    my($self, $fp) = @_;
+    my($self, %query) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $fields->{index} = $fp->get('index') || 1;
+    $fields->{index} = $query{index} || 1;
     return 1;
 }
 
@@ -141,7 +141,7 @@ Returns the index of the first item into the result set.
 =cut
 
 sub get_index {
-    my($self, $fp) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     return $fields->{index};

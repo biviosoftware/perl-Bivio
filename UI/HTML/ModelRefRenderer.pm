@@ -11,9 +11,8 @@ Bivio::UI::HTML::ModelRefRenderer - renders MODEL_REF types
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ModelRefRenderer;
-    my($fp) = Bivio::Biz::FindParams->new({'id' => 120});
-    my($mr) = Bivio::UI::HTML::ModelRefRenderer->new();
-    $mr->render([$fp->as_string(), 'To be or not to be...'], $req);
+    my($mr) = Bivio::UI::HTML::ModelRefRenderer->new($task_id);
+    $mr->render([$id, 'To be or not to be...'], $req);
 
 =cut
 
@@ -53,28 +52,22 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new() : Bivio::UI::HTML::ModelRefRenderer
 
-Creates a new model reference renderer. The controller and view names
+Creates a new model reference renderer. The task_id
 will be taken from the request at the time of rendering.
 
-=head2 static new(string view_name) : Bivio::UI::HTML::ModelRefRenderer
+=head2 static new(Bivio::Agent::TaskId task_id) : Bivio::UI::HTML::ModelRefRenderer
 
-Creates a new model reference renderer. The controller name will be taken
-from the request at the time of rendering. The view will be the specified
+Creates a new model reference renderer. The task_id will be the specified
 value.
-
-=head2 static new(string view_name, string controller_name) : Bivio::UI::HTML::ModelRefRenderer
-
-Creates a new model reference renderer which will use the specified view
-and controller names during rendering.
 
 =cut
 
 sub new {
-    my($proto, $view_name, $controller_name) = @_;
+    my($proto, $task_id) = @_;
     my($self) = &Bivio::UI::Renderer::new($proto);
+#TODO: Should $path be an array?
     $self->{$_PACKAGE} = {
-	'view_name' => $view_name,
-	'controller_name' => $controller_name
+	task_id => $task_id,
     };
     return $self;
 }
@@ -95,13 +88,17 @@ sub render {
     my($self, $model_ref, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my($id) = $model_ref->[0];
+    my($query) = $model_ref->[0];
     my($text) = $model_ref->[1];
+#TODO: HACK.  Set in ListModel::MailMessage.  Needs to be passed in elsewhere
+    my($task_id) = $query->{task_id};
+    delete $query->{task_id};
 
     # view_name or controller_name fields may be null
 
-    $req->get_reply()->print('<a href="'.$req->make_path($fields->{view_name},
-	    $fields->{controller_name}).'?'.$id.'">'.$text.'</a>');
+    $req->get_reply()->print('<a href="'
+	    .$req->format_uri($task_id, $query)
+	    .'">'.$text.'</a>');
     return;
 }
 

@@ -13,7 +13,7 @@ Bivio::Die - dispatch die_handler in modules on stack
     use Bivio::Die;
     Bivio::Die->catch(sub {});
     sub handle_die {
-	my($proto, $die) = @_;
+	my($proto, $die_msg) = @_;
     }
     Bivio::Die->get_last;
     $die->push_error($new);
@@ -56,7 +56,11 @@ use Bivio::IO::Trace;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_STACK_TRACE) = 0;
 my($_LAST_SELF);
+Bivio::IO::Config->register({
+    'stack_trace' => $_STACK_TRACE,
+});
 
 =head1 FACTORIES
 
@@ -100,6 +104,7 @@ sub catch {
     $_LAST_SELF = undef;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
+	$_STACK_TRACE && print STDERR Carp::longmess($msg);
 	my($self) = &Bivio::UNIVERSAL::new($proto);
 	$self->{$_PACKAGE} = {
 	    'errors' => [$msg],
@@ -129,6 +134,35 @@ sub catch {
 
 =cut
 
+=for html <a name="clear_errors"></a>
+
+=head2 clear_errors()
+
+Removes all errors associated with this instance.
+
+=cut
+
+sub clear_errors {
+    my($fields) = shift(@_)->{$_PACKAGE};
+    $fields->{errors} = [];
+    return;
+}
+
+=for html <a name="clear_last"></a>
+
+=head2 static clear_last()
+
+Clears state associated with L<get_last|"get_last">.
+
+=cut
+
+sub clear_last {
+    # This breaks any circular references, so AGC can work
+    defined($_LAST_SELF) && $_LAST_SELF->clear_errors;
+    $_LAST_SELF = undef;
+    return;
+}
+
 =for html <a name="get_errors"></a>
 
 =head2 get_errors() : array_ref OR undef
@@ -139,14 +173,13 @@ the order they occurred.  If there are no errors, returns C<undef>.
 =cut
 
 sub get_errors {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = shift(@_)->{$_PACKAGE};
     return @{$fields->{errors}} ? $fields->{errors} : undef;
 }
 
 =for html <a name="get_last"></a>
 
-=head2 get_last() : Bivio::Die or undef
+=head2 static get_last() : Bivio::Die or undef
 
 Returns the last Die object to be created by L<catch|"catch">.
 Returns C<undef> if the last L<catch|"catch"> returned successfully.
@@ -155,6 +188,26 @@ Returns C<undef> if the last L<catch|"catch"> returned successfully.
 
 sub get_last {
     return $_LAST_SELF;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(string class, hash cfg)
+
+=over 4
+
+=item stack_trace : boolean [false]
+
+If true, will print a stack trace on L<die|"die">.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_STACK_TRACE = $cfg->{stack_trace};
+    return;
 }
 
 =for html <a name="push_error"></a>

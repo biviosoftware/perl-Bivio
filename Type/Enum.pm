@@ -12,13 +12,13 @@ Bivio::Type::Enum - base class for enumerated types
 
     use Bivio::Type::Enum;
     @<PACKAGE>:ISA = qw(Bivio::Type::Enum);
-    __PACKAGE__->compile({
+    __PACKAGE__->compile(
         'NAME' => {
             0,
             'short description',
             'long description',
         },
-    });
+    );
     __PACKAGE__->NAME;
     __PACKAGE__->NAME->as_string;
     __PACKAGE__->NAME->as_int;
@@ -53,6 +53,47 @@ use Carp ();
 #=VARIABLES
 my(%_MAP);
 
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="from_int"></a>
+
+=head2 static from_int(int num) : Bivio::Type::Enum
+
+Returns enum value for specified integer.
+
+=cut
+
+sub from_int {
+    return &_get_info(shift(@_), shift(@_) + 0)->[4];
+}
+
+=for html <a name="from_string"></a>
+
+=head2 static from_string(string name) : Bivio::Type::Enum
+
+Returns enum value for specified string
+
+=cut
+
+sub from_string {
+    return &_get_info(shift(@_), shift(@_))->[4];
+}
+
+=for html <a name="get_list"></a>
+
+=head2 static get_list() : array
+
+Return the list of all enumerated types.  These are not returned in
+any particular order.
+
+=cut
+
+sub get_list {
+    return @{&_get_info(shift(@_), '_list')};
+}
+
 =head1 METHODS
 
 =cut
@@ -66,9 +107,7 @@ Returns integer value for enum value
 =cut
 
 sub as_int {
-    my($self) = @_;
-    my($map) = $_MAP{ref($self)};
-    return $map->{$self}->[0];
+    return &_get_info(shift(@_), undef)->[0];
 }
 
 =for html <a name="as_string"></a>
@@ -80,14 +119,12 @@ Returns string representation of enum value
 =cut
 
 sub as_string {
-    my($self) = @_;
-    my($map) = $_MAP{ref($self)};
-    return $map->{$self}->[3];
+    return &_get_info(shift(@_), undef)->[3];
 }
 
 =for html <a name="compile"></a>
 
-=head2 static compile(hash_ref declaration)
+=head2 static compile(hash declaration)
 
 Hash of enum names pointing to array containing number, short
 description, and, long description.  If the long description
@@ -98,14 +135,15 @@ and all underscores (_) will be replaced with space.
 =cut
 
 sub compile {
-    my(undef, $info) = @_;
+    my($proto, %info) = @_;
     my($pkg) = caller;
     defined($_MAP{$pkg}) && Carp::croak('already compiled');
     my($name);
-    my($eval) = "package $pkg;\nmy(\$_INFO) = \$info;\n";
+    my($eval) = "package $pkg;\nmy(\$_INFO) = \\\%info;\n";
     # Make a copy, because we're going to grow $decl.
-    my(%info_copy) = %$info;
     my($min, $max);
+    my(@list);
+    my(%info_copy) = %info;
     while (my($name, $d) = each(%info_copy)) {
 	ref($d) eq 'ARRAY'
 		|| Carp::croak("$name: does not point to an array");
@@ -134,7 +172,8 @@ sub compile {
 	else {
 	    $min = $max = $d;
 	}
-	$info->{$d->[0]} = $d;
+	$info{$d->[0]} = $d;
+	push(@list, $d->[0]);
 	$eval .= <<"EOF";
 	    \sub $name {return \\&$name;}
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
@@ -142,46 +181,20 @@ sub compile {
 EOF
     }
     defined($min) || Carp::croak('no values');
-    $info->{_min} = $min;
-    $info->{_max} = $max;
+    $info{_min} = $min;
+    $info{_max} = $max;
     if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
-	    defined($info->{$n}) || Carp::croak("missing number $n");
+	    defined($info{$n}) || Carp::croak("missing number $n");
 	}
     }
     eval($eval . '; 1')
 	    || Carp::croak("compilation failed: $@");
-    $_MAP{$pkg} = $info;
+    $_MAP{$pkg} = \%info;
+    # Must happen last
+    $info{_list} = [map {$pkg->from_int($_)} @list];
     return;
-}
-
-=for html <a name="from_int"></a>
-
-=head2 static from_int(int num) : Bivio::Type::Enum
-
-Returns enum value for specified integer.
-
-=cut
-
-sub from_int {
-    my($proto, $num) = @_;
-    my($map) = $_MAP{ref($proto) || $proto};
-    return $map->{$num + 0}->[4];
-}
-
-=for html <a name="from_string"></a>
-
-=head2 static from_string(string name) : Bivio::Type::Enum
-
-Returns enum value for specified string
-
-=cut
-
-sub from_string {
-    my($proto, $name) = @_;
-    my($map) = $_MAP{ref($proto) || $proto};
-    return $map->{$name}->[4];
 }
 
 =for html <a name="get_long_desc"></a>
@@ -193,9 +206,7 @@ Returns the long description for the enum value.
 =cut
 
 sub get_long_desc {
-    my($self) = @_;
-    my($map) = $_MAP{ref($self)};
-    return $map->{$self}->[2];
+    return &_get_info(shift(@_), undef)->[2];
 }
 
 =for html <a name="get_short_desc"></a>
@@ -207,9 +218,7 @@ Returns the short description for the enum value.
 =cut
 
 sub get_short_desc {
-    my($self) = @_;
-    my($map) = $_MAP{ref($self)};
-    return $map->{$self}->[1];
+    return &_get_info(shift(@_), undef)->[1];
 }
 
 =for html <a name="is_continuous"></a>
@@ -234,9 +243,7 @@ Returns the minimum
 =cut
 
 sub min {
-    my($proto) = @_;
-    my($map) = $_MAP{ref($proto) || $proto};
-    return $map->{_min}->[4];
+    return _get_info(shift(@_), '_min')->[4];
 }
 
 =for html <a name="max"></a>
@@ -248,12 +255,21 @@ Returns the maximum
 =cut
 
 sub max {
-    my($proto, $name) = @_;
-    my($map) = $_MAP{ref($proto) || $proto};
-    return $map->{_max}->[4];
+    return _get_info(shift(@_), '_max')->[4];
 }
 
 #=PRIVATE METHODS
+
+# _get_info self name -> value
+#
+# Finds info for I<name> in I<self> (can be a proto) or dies.
+# Returns the field specified or the hole array if field undefined.
+sub _get_info {
+    my($self, $name, $field) = @_;
+    my($info) = $_MAP{ref($self) || $self};
+    Carp::croak('not an enumerated type') unless defined($info);
+    return $info->{defined($name) ? $name : $self};
+}
 
 =head1 COPYRIGHT
 

@@ -40,7 +40,7 @@ my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER,
        $_STACK_TRACE_DIE, $_STACK_TRACE_WARN);
 BEGIN {
     # What perl outputs on "die" or "warn" without a newline
-    $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
+    $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
     $_PACKAGE = __PACKAGE__;
     $_LOGGER = \&_log_stderr;
     $_DEFAULT_MAX_ARG_LENGTH = 512;
@@ -56,7 +56,8 @@ use Carp ();
 
 #=INITIALIZATION
 # Normalize error messages
-$SIG{__WARN__} = \&_warn_handler;
+# $SIG{__DIE__} = \&_initial_die_handler;
+# $SIG{__WARN__} = \&_warn_handler;
 Bivio::IO::Config->register({
     'intercept_die' => 0,
     'stack_trace_die' => 0,
@@ -107,7 +108,7 @@ sub eval_or_warn {
     # If the warning was already output, the following operation has
     # no effect.
     my($msg) = $@;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     Bivio::IO::Alert->warn($msg);
     return undef;
 }
@@ -218,10 +219,11 @@ sub handle_config {
     $_MAX_ARG_LENGTH = $cfg->{max_arg_length};
     $_STACK_TRACE_DIE = $cfg->{stack_trace_die};
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
+#TODO: This isn't correct.  Want to set back to "old" configuration
     $SIG{__DIE__} = $cfg->{intercept_die} || $cfg->{stack_trace_die}
-	    ? \&_die_handler : '';
+	    ? \&_die_handler : $SIG{__DIE__};
     $SIG{__WARN__} = $cfg->{intercept_warn} || $cfg->{stack_trace_warn}
-	    ? \&_warn_handler : '';
+	    ? \&_warn_handler : $SIG{__WARN__};
     if ($cfg->{want_stderr}) {
 	$_LOGGER = \&_log_stderr;
     }
@@ -330,13 +332,13 @@ sub _format {
 
 sub _initial_die_handler {
     my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     CORE::die(&_call_format([$msg]));
 }
 
 sub _initial_warn_handler {
     my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     print STDERR &_call_format([$msg]);
 }
 
@@ -375,7 +377,7 @@ sub _trace_stack {
 sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
-    $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
     Bivio::IO::Alert->warn($msg);
     $_STACK_TRACE_WARN && &_trace_stack();
 }

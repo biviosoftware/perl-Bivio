@@ -71,8 +71,8 @@ sub commit {
 
 =head2 execute(statement sth, Model m, string value, ...)
 
-Executes the specified statement and adds the appropriate error to the
-model if it fails.
+Executes the specified statement and dies with an appropriate error
+if it fails.
 
 =cut
 
@@ -82,28 +82,25 @@ sub execute {
     eval {
 	$statement->execute(@values);
     };
+    return unless $@;
 
+    my($eval_err) = $@;
     # check for db errors
-    if ($@) {
-	my($err) = $statement->err;
-	my($msg);
-
+    my($err) = $statement->err;
+#TODO: Bivio::Die->no_catch, otherwise catches and calls recursively
+    eval {
+	# Clean up just in case statement is cached
+	$statement->finish;
+	# Save the error messages in request
+	$model->get_request->put(error_object => $model,
+		error_number => $err, error_message => $eval_err);
+    };
 #TODO: add more application error processing here
-
-	$msg = 'already exists' if $err == 1;
-	$msg = 'required value missing' if $err == 1400;
-	$msg = 'invalid number' if $err == 1722;
-
-	if ($msg) {
-	    &_trace($statement->errstr);
-	    $model->get_status()->add_error(Bivio::Biz::Error->new($msg));
-	}
-	else {
-	    # error not handled
-	    die $@;
-	}
-    }
-    return;
+#TODO: Add reply processing
+    die('already exists') if $err == 1;
+    die('required value missing') if $err == 1400;
+    die('invalid number') if $err == 1722;
+    die $eval_err;
 }
 
 =for html <a name="get_connection"></a>
@@ -115,7 +112,6 @@ Returns a cached database connection.
 =cut
 
 sub get_connection {
-
     if (!$_CONNECTION) {
 	&_trace('creating connection') if $_TRACE;
 	$_CONNECTION = Bivio::Ext::DBI->connect();

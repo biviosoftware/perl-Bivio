@@ -24,13 +24,21 @@ Bivio::Agent::Dispatcher - HTTP and email dispatcher
 
 C<Bivio::Agent::Dispatcher> is the outside entry point into the Bivio
 application. When the dispatcher receives input, it wraps it in the
-appropriate Request subclass and then passes it off to the controller
-which registered for that request.
+appropriate Request subclass, checks the user is authorized to
+execute a task, and excutes the Task.
 
 =cut
 
+#=IMPORTS
+use Bivio::Agent::HTTP::Location;
+use Bivio::Agent::Tasks;
+use Bivio::Agent::Views;
+use Bivio::IO::Trace;
+
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
+my($_INITIALIZED);
 
 =head1 FACTORIES
 
@@ -46,64 +54,64 @@ Creates a new dispatcher.
 
 sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {
-	'controllers' => {},
-    };
     return $self;
 }
 =head1 METHODS
 
-=for html <a name="process_request"></a>
+=cut
+
+=for html <a name="initialize"></a>
+
+=head2 static initialize()
+
+Initialize Agent state.
+
+=cut
+
+sub initialize {
+    $_INITIALIZED && return;
+    Bivio::Agent::HTTP::Location->initialize;
+    Bivio::Agent::Views->initialize;
+    Bivio::Agent::Tasks->initialize;
+    $_INITIALIZED = 1;
+    return;
+}
+
+=for html <a name="process_requets"></a>
 
 =head2 process_request(Bivio::Agent::Request req)
 
-Looks up and invokes the controller for the specified request. If a
-controller exists for the message, then the the controller's
-handle_request() method is invoked. If multiple controllers have
-registered using the same name, then each is invoked until one of
-them handles the request.
+Checks task authorization and executes.
 
 =cut
 
 sub process_request {
     my($self, $req) = @_;
-    my($controllers) = $self->{$_PACKAGE}->{controllers};
-    my($list) = $controllers->{$req->get_controller_name()};
-
-    # iterate the controller list until one of them handles the request
-    if ($list) {
-	my($controller);
-	foreach $controller (@$list) {
-	    $controller->handle_request($req);
-	    return if $req->get_reply->get_state()
-		    != Bivio::Agent::Reply->NOT_HANDLED;
-	}
+    my($auth_realm, $auth_user, $task_id)
+	    = $req->get(qw(auth_realm auth_user task_id));
+    my($owner) = $auth_realm->unsafe_get('owner');
+    if ($owner) {
+	my($f) = $auth_realm->get('owner_id_field');
+	$req->put(auth_owner_id => $owner->get($f),
+		auth_owner_id_field => $f);
     }
-    return;
-}
-
-=for html <a name="register_controller"></a>
-
-=head2 static register_controller(string name, Bivio::Agent::Controller controller)
-
-Controller implementation registration. Multiple controllers can be
-registered under the same name. Each controller will be invoked until
-one of them handles the request.
-
-=cut
-
-sub register_controller {
-    my($self, $name, $controller) = @_;
-    my($controllers) = $self->{$_PACKAGE}->{controllers};
-    UNIVERSAL::isa($controller, 'Bivio::Agent::Controller')
-		|| die("not a controller");
-    if (!$controllers->{$name}) {
-	# create a list if it is a new name
-	$controllers->{$name} = [$controller];
+    my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
+    my($reply) = $req->get('reply');
+    unless ($auth_realm->can_role_execute_task($auth_role, $task_id)) {
+	&_trace($auth_user, ": auth denied for ", $task_id, " as ",
+		$auth_role) if $_TRACE;
+	$reply->set_state($auth_user ? $reply->FORBIDDEN
+		: $reply->AUTH_REQUIRED);
+	return;
     }
-    else {
-	push(@{$controllers->{$name}}, $controller);
-    }
+    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    $req->put(task => $task,
+	    auth_role => $auth_role,
+	    $owner ? (ref($owner) => $owner) : (),
+	   );
+    $task->execute($req);
+#TODO: Remove this?
+    $reply->set_state($reply->OK);
     return;
 }
 

@@ -35,19 +35,19 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name, array views) : Bivio::UI::MultiView
+=head2 static new(array views) : Bivio::UI::MultiView
 
-Creates a new MultiView with the specified name and sub views.
+Creates a new MultiView with the specified sub views.
 
-=head2 static new(string name, array views, Menu menu) : Bivio::UI::MultiView
+=head2 static new(array views, Menu menu) : Bivio::UI::MultiView
 
-Creates a MultiView with the specified name, sub views, and menu.
+Creates a MultiView with the specified sub views, and menu.
 
 =cut
 
 sub new {
-    my($proto, $name, $views, $menu) = @_;
-    my($self) = &Bivio::UI::View::new($proto, $name);
+    my($proto, $views, $menu) = @_;
+    my($self) = &Bivio::UI::View::new($proto);
     $self->{$_PACKAGE} = {
 	'views' => $views,
 	'menu' => $menu,

@@ -12,6 +12,10 @@ Bivio::Mail::Common - utilities for mail modules
 
     use Bivio::Mail::Common;
     Bivio::Mail::Common->send($recipients, $msg);
+    $self->send();
+    $self->enqueue_send();
+    Bivio::Mail::Common->send_queued_messages();
+    Bivio::Mail::Common->discard_queued_messages();
 
 =cut
 
@@ -44,10 +48,55 @@ Bivio::IO::Config->register({
     'errors_to' => $_ERRORS_TO,
     'sendmail' => $_SENDMAIL,
 });
+my(@_QUEUE) = ();
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::UNIVERSAL
+
+Pass through
+
+=cut
+
+sub new {
+    return &Bivio::UNIVERSAL::new(@_);
+}
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="discard_queued_messages"></a>
+
+=head2 discard_queued_messages()
+
+Empties the send queue, throwing away all messages in the queue.
+
+=cut
+
+sub discard_queued_messages () {
+    @_QUEUE = ();
+    return;
+}
+
+=for html <a name="enqueue_send"></a>
+
+=head2 enqueue_send()
+
+Queues this message for sending with
+L<send_queued_messages|"send_queued_messages">.
+
+=cut
+
+sub enqueue_send {
+    my($self) = @_;
+    push(@_QUEUE, $self);
+    return;
+}
 
 =for html <a name="handle_config"></a>
 
@@ -147,6 +196,23 @@ Error while trying to message to $recipients:
 ${$msg_ref}
 EOF
     close($fh) || die("close \"$_SENDMAIL $_ERRORS_TO\": $!\n");
+    return;
+}
+
+=for html <a name="send_queued_messages"></a>
+
+=head2 static send_queued_messages()
+
+Sends messages that have been queued with L<enqueue|"enqueue">.  This should be
+called after at the end of request processing.  Any errors are mailed to the
+postmaster.
+
+=cut
+
+sub send_queued_messages {
+    while (@_QUEUE) {
+	shift(@_QUEUE)->send;
+    }
     return;
 }
 

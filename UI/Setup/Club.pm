@@ -24,52 +24,33 @@ C<Bivio::UI::Setup::Club> is a club creation view.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Club;
-use Bivio::IO::Trace;
+use Bivio::Agent::TaskId;
+use Bivio::Biz::PropertyModel::Club;
 use Bivio::UI::HTML::FieldUtil;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Setup::Club
-
-Creates a club creation view.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = &Bivio::UI::View::new($proto, 'info');
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="get_default_model"></a>
+=for html <a name="execute"></a>
 
-=head2 get_default_model() : Model
-
-Returns an instance of the Club model.
+=head2 execute(Bivio::AgentRequest req)
 
 =cut
 
-sub get_default_model {
-    return Bivio::Biz::Club->new();
+sub execute {
+    my($self, $req) = @_;
+#TODO: Need to allow for no model in rendering code
+    $self->activate->render(
+	    Bivio::Biz::PropertyModel::Club->new($req), $req);
+    return;
 }
 
 =for html <a name="render"></a>
 
-=head2 render(User user, Request req)
+=head2 render(undef, Request req)
 
 Creates a form for editing the specified Club model.
 
@@ -77,7 +58,6 @@ Creates a form for editing the specified Club model.
 
 sub render {
     my($self, $club, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
     my($reply) = $req->get_reply();
 
     $reply->print('<table border=0><tr><td>');
@@ -86,20 +66,11 @@ sub render {
     $reply->print('Now enter a short name for the club identifier, and a '
 	    .'descriptive name for the full name.<p>');
 
-    if (! $club->get_status()->is_ok() ) {
-	$reply->print('<font color="#FF0000">');
-	my($errors) = $club->get_status()->get_errors();
-	foreach (@$errors) {
-	    $reply->print($_->get_message().'<br>');
-	}
-	$reply->print('</font>');
-    }
+    $reply->print('<form action='
+	    .$req->format_uri(Bivio::Agent::TaskId::SETUP_CLUB_CREATE)
+	    .' method="post">');
 
-    $reply->print('<form action='.$req->make_path().' method="post">');
-
-    $reply->print('<input type="hidden" name="ma" value=add>');
-    $reply->print('<input type="hidden" name="admin" value='
-	    .$req->get_arg('admin').' >');
+#TODO: Need to get club_create from somewhere
     $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'name', $req, 1);

@@ -11,11 +11,12 @@ Bivio::UI::HTML::ListView - A view which renders a ListModel.
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ListView;
-    my($users) = Bivio::Biz::UserList->new();
+    my($users) = Bivio::Biz::ListModel::User->new();
     if ($users->load({'club' => $club_id})) {
-        my($list_view) = Bivio::UI::HTML::ListView->new('userlist');
+        my($list_view) = Bivio::UI::HTML::ListView->new();
         $list_view->render($users, $req);
     }
+
 
 =cut
 
@@ -49,6 +50,7 @@ use Bivio::UI::HTML::FieldUtil;
 use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::ListCellRenderer;
 use Bivio::UI::HTML::Presentation;
+use Bivio::Agent::TaskId;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -66,19 +68,19 @@ my($_NAV_LINKS) = [$_UP_LINK, $_DOWN_LINK];
 
 =for html <a name="new"></a>
 
-=head2 static new(string name) : Bivio::UI::HTML::ListView
+=head2 static new() : Bivio::UI::HTML::ListView
 
 Creates a ListView with the specified view name.
 
-=head2 static new(string name, string attributes) : Bivio::UI::HTML::ListView
+=head2 static new(string attributes) : Bivio::UI::HTML::ListView
 
 Creates a ListView with the specified view name and HTML table attributes.
 
 =cut
 
 sub new {
-    my($proto, $name, $attributes) = @_;
-    my($self) = &Bivio::UI::View::new($proto, $name);
+    my($proto, $attributes) = @_;
+    my($self) = &Bivio::UI::View::new($proto);
     $self->{$_PACKAGE} = {
 	'attributes' => $attributes
 	    || 'width="100%" border=0 cellpadding=5 cellspacing=0',
@@ -150,8 +152,9 @@ sub get_nav_links {
     if ($next_items > 0) {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_ICON());
 	$_DOWN_LINK->set_description("Next $next_items items");
-	$_DOWN_LINK->set_url($req->make_path()
-		.&_index($index + $page_size, $req));
+	$_DOWN_LINK->set_url($req->format_uri(
+		undef,
+		_index($index + $page_size, $req)));
     }
     else {
 	$_DOWN_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_DOWN_IA_ICON());
@@ -173,8 +176,8 @@ sub get_nav_links {
     if ($prev_items > 0) {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_ICON());
 	$_UP_LINK->set_description("Previous $prev_items items");
-	$_UP_LINK->set_url($req->make_path()
-		.&_index($index - $prev_items, $req));
+	$_UP_LINK->set_url($req->format_uri(
+		undef, _index($index - $prev_items, $req)));
     }
     else {
 	$_UP_LINK->set_icon(Bivio::UI::HTML::Link::SCROLL_UP_IA_ICON());
@@ -264,6 +267,7 @@ sub render_heading {
     my($reply) = $req->get_reply();
 
     $reply->print('<tr bgcolor="#E0E0FF">');
+    my($sort) = $req->get_field('query', 'sort');
     for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
 
 	$reply->print('<th align=left>');
@@ -273,28 +277,26 @@ sub render_heading {
 	# no sort key means the column doesn't support sorting
 	if ($model->get_sort_key($i)) {
 
-	    my($fp) = $req->get_model_args();
-	    my($fp2) = Bivio::Biz::FindParams->new();
+	    my($q) = {};
 
 	    # show a sorting indicator in the heading
-	    if ($fp->get('sort') and $fp->get('sort') =~ /(.)$i/) {
+	    if ($sort and $sort =~ /(.)$i/) {
 		if ($1 eq 'a') {
-		    $fp2->put('sort', 'd'.$i);
+		    $q->{sort} = 'd'.$i;
 		    $dir = ' &lt;';
 		}
 		elsif ($1 eq 'd') {
-		    $fp2->put('sort', 'a'.$i);
+		    $q->{sort} = 'a'.$i;
 		    $dir = ' &gt;';
 		}
 	    }
 	    else {
-		$fp2->put('sort', 'a'.$i);
+		$q->{sort} = 'a'.$i;
 	    }
-	    $reply->print('<a href="/'.$req->get_target_name().'/'
-		    .$req->get_controller_name().'/'
-		    .$self->get_name().'/?'.$fp2->as_string().'">');
+#TODO: Don't need to check task if this task?
+	    $reply->print('<a href="'.$req->format_uri(undef, $q).'">');
 	}
-	$reply->print($model->get_column_heading($i));
+	$reply->print('NEED HEADING: ' . $model->get_column_name($i));
 
 	$reply->print('</a>') if ($model->get_sort_key($i));
 	$reply->print($dir) if ($dir);
@@ -324,18 +326,17 @@ sub set_column_renderer {
 
 #=PRIVATE METHODS
 
-# _index(int index, Request req) : string
+# _index(int index, Request req) : hash_ref
 #
-# Returns the finder params with the specified index. It is careful not to
-# clobber existing finder params.
+# Returns the query for specified index.
 
 sub _index {
     my($index, $req) = @_;
 
-    my($fp) = $req->get_model_args()->clone();
-    $fp->put('index', $index);
-    $fp->remove('club');
-    return '?'.$fp->as_string();
+    my($query) = $req->get('query');
+    $query = $query ? {%$query} : {};
+    $query->{index} = $index;
+    return $query;
 }
 
 =head1 COPYRIGHT

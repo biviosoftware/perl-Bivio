@@ -24,47 +24,28 @@ C<Bivio::UI::Setup::Admin> shows an admin creation screen.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::UserDemographics;
-use Bivio::Biz::UserEmail;
-use Bivio::IO::Trace;
+use Bivio::Biz::PropertyModel::UserDemographics;
+use Bivio::Biz::PropertyModel::UserEmail;
+use Bivio::Agent::TaskId;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Setup::Admin
-
-Creates a administrator user creation view.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = &Bivio::UI::View::new($proto, 'admin');
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="get_default_model"></a>
+=for html <a name="execute"></a>
 
-=head2 get_default_model() : Model
-
-Returns an instance of the User model.
+=head2 execute(Bivio::AgentRequest req)
 
 =cut
 
-sub get_default_model {
-    return Bivio::Biz::User->new();
+sub execute {
+    my($self, $req) = @_;
+#TODO: Need to allow for no model in rendering code
+    $self->activate->render(
+	    Bivio::Biz::PropertyModel::User->new($req), $req);
+    return;
 }
 
 =for html <a name="render"></a>
@@ -77,33 +58,23 @@ Creates a form for editing the club administrator's User model.
 
 sub render {
     my($self, $user, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
     my($reply) = $req->get_reply();
 
     # used for type information only
-    my($demographics) = Bivio::Biz::UserDemographics->new();
-    my($email) = Bivio::Biz::UserEmail->new();
+    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new($req);
+    my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
 
+#TODO: Put some line breaks so easier to read.  Don't call print so many times.
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
 
     $reply->print('First, let\'s get some information about the club '
 	    .'administrator. Required fields are indicated with a *.<p>');
 
-    # print any errors if present
+    $reply->print('<form action='
+	    .$req->format_uri(Bivio::Agent::TaskId::SETUP_USER_CREATE)
+	    .' method="post">');
 
-    if (! $user->get_status()->is_ok() ) {
-	$reply->print('<font color="#FF0000">');
-	my($errors) = $user->get_status()->get_errors();
-	foreach (@$errors) {
-	    $reply->print($_->get_message().'<br>');
-	}
-	$reply->print('</font>');
-    }
-
-    $reply->print('<form action='.$req->make_path().' method="post">');
-
-    $reply->print('<input type="hidden" name="ma" value=add>');
     $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
     # render all the entry fields - values are from the model or

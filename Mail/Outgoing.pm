@@ -17,16 +17,12 @@ Bivio::Mail::Outgoing - send mail directly or via a queue
     $bmo->set_header('X-Magic', 'hello');
     $bmo->set_recipients([qw(larry mo curly)]);
     $bmo->set_body('what a body');
-    $bmo->send();
-    $bmo->enqueue();
     $bmo->remove_headers('Subject', 'x-mailer');
-    Bivio::Mail::Outgoing->send_queued_messages();
-    Bivio::Mail::Outgoing->discard_queued_messages();
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Mail::Outgoing::ISA = qw(Bivio::UNIVERSAL);
+use Bivio::Mail::Common;
+@Bivio::Mail::Outgoing::ISA = qw(Bivio::Mail::Common);
 
 =head1 DESCRIPTION
 
@@ -38,14 +34,12 @@ scratch.
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use Bivio::Mail::Common;
 use Bivio::Mail::Incoming;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my(@_QUEUE) = ();
 # Some of these were taken from majordomo's resend.  Others, just make
 # sense.  Check set_headers_for_list_send for headers which set but
 # not in this list.
@@ -137,34 +131,6 @@ sub new {
 
 =cut
 
-=for html <a name="discard_queued_messages"></a>
-
-=head2 discard_queued_messages()
-
-Empties the send queue, throwing away all messages in the queue.
-
-=cut
-
-sub discard_queued_messages () {
-    @_QUEUE = ();
-    return;
-}
-
-=for html <a name="enqueue"></a>
-
-=head2 enqueue()
-
-Queues this message for sending with
-L<send_queued_messages|"send_queued_messages">.
-
-=cut
-
-sub enqueue {
-    my($self) = @_;
-    push(@_QUEUE, $self);
-    return;
-}
-
 =for html <a name="remove_headers"></a>
 
 =head2 remove_headers(string name1, ...)
@@ -188,31 +154,15 @@ sub remove_headers {
 =head2 send()
 
 Sends the message.  Recipients must be set.  Errors are
-e-mailed except if recipients are set.
+e-mailed except if recipients are not set.
 
 =cut
 
 sub send {
     my($self, $email_errors) = @_;
-    return &_send($self);
-}
-
-=for html <a name="send_queued_messages"></a>
-
-=head2 static send_queued_messages()
-
-Sends messages that have been queued with L<enqueue|"enqueue">.
-This should be
-called after at the end of request processing.  Any errors are mailed
-to the postmaster.
-
-=cut
-
-sub send_queued_messages () {
-    while (@_QUEUE) {
-	&_send(shift(@_QUEUE), 1);
-    }
-    return;
+    my($fields) = $self->{$_PACKAGE};
+    my($msg) = $self->as_string;
+    Bivio::Mail::Common->send($fields->{recipients}, \$msg);
 }
 
 =for html <a name="set_body"></a>
@@ -349,15 +299,6 @@ sub as_string {
 }
 
 #=PRIVATE METHODS
-
-#   Does the work for send and queued messages.
-sub _send {
-#TODO: Move to Mail::Common
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($msg) = $self->as_string;
-    Bivio::Mail::Common->send($fields->{recipients}, \$msg);
-}
 
 =head1 COPYRIGHT
 

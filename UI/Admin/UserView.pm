@@ -15,78 +15,56 @@ L<Bivio::UI::View>
 =cut
 
 use Bivio::UI::View;
-@Bivio::UI::Admin::UserView::ISA = qw(Bivio::UI::View);
+@Bivio::UI::Admin::UserView::ISA = ('Bivio::UI::View');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::User> model.
+C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::PropertyModel::User> model.
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::ClubUser;
-use Bivio::Biz::User;
-use Bivio::Biz::UserDemographics;
-use Bivio::IO::Trace;
+use Bivio::Agent::TaskId;
+use Bivio::Biz::PropertyModel::ClubUser;
+use Bivio::Biz::PropertyModel::User;
+use Bivio::Biz::PropertyModel::UserDemographics;
 use Bivio::UI::HTML::FieldUtil;
 
 #=VARIABLES
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::Admin::UserView
-
-Creates a user editing view.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = &Bivio::UI::View::new($proto, 'user');
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="get_default_model"></a>
+=for html <a name="execute"></a>
 
-=head2 get_default_model() : Model
-
-Returns an instance of the User model.
+=head2 execute(Bivio::Agent::Request req)
 
 =cut
 
-sub get_default_model {
-    return Bivio::Biz::User->new();
+sub execute {
+    my($self, $req) = @_;
+#TODO: Need to do load_from_request allowing for not found.
+    $self->activate->render(Bivio::Biz::PropertyModel::User->new($req), $req);
+    return;
 }
 
 =for html <a name="render"></a>
 
-=head2 render(User user, Request req)
+=head2 render(undef, Request req)
 
-Creates a form for editing the L<Bivio::Biz::User> model.
+Creates a form for editing the L<Bivio::Biz::PropertyModel::User> model.
 
 =cut
 
 sub render {
     my($self, $user, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
     my($reply) = $req->get_reply();
 
 #TODO: handle update as well
-    my($action) = 'add';
-    my($demographics) = Bivio::Biz::UserDemographics->new();
-    my($email) = Bivio::Biz::UserEmail->new();
-    my($club_user) = Bivio::Biz::ClubUser->new();
+    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new();
+    my($email) = Bivio::Biz::PropertyModel::UserEmail->new();
+    my($club_user) = Bivio::Biz::PropertyModel::ClubUser->new();
 
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
@@ -94,18 +72,11 @@ sub render {
     $reply->print('Enter user information below. Required fields are'
 	    .' indicated with a *.<p>');
 
-    if (! $user->get_status()->is_ok() ) {
-	$reply->print('<font color="#FF0000">');
-	my($errors) = $user->get_status()->get_errors();
-	foreach (@$errors) {
-	    $reply->print($_->get_message().'<br>');
-	}
-	$reply->print('</font>');
-    }
+#TODO: This has to be ok, because we got to the form.
+    $reply->print('<form action='
+	    .$req->format_uri(Bivio::Agent::TaskId::CLUB_MEMBER_ADD)
+	    .' method="post">');
 
-    $reply->print('<form action='.$req->make_path().' method="post">');
-
-    $reply->print('<input type="hidden" name="ma" value='.$action.'>');
     $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
@@ -127,6 +98,7 @@ sub render {
     $reply->print('<tr><td>&nbsp;</td></tr>');
     $reply->print('<tr><td colspan=2 align=center>'
 	    .'<input type="submit" value="OK">&nbsp'
+#TODO: Cancel button needs to be implemented
 #	    .'<input type="submit" value="Cancel">'
 	    .'</td></tr>');
 

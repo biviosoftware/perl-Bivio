@@ -177,6 +177,16 @@ sub date_range ($$) {
     return $left . ' - ' . $right;
 }
 
+
+sub require {
+    map {
+	my($c) = $_;
+	$c =~ s!::!/!g;
+#TODO: Why doesn't perl let me use "use"?
+	require $c . '.pm';
+    } @_;
+}
+
 1;
 __END__
 

@@ -60,24 +60,27 @@ sub entry_field {
     my(undef, $model, $field, $req, $required) = @_;
     my($reply) = $req->get_reply();
 
+#TODO: Probably don't want to call reply->print for each of these.
+#      instead build up the string and then call reply->print.
     $reply->print('<tr><td>');
     $reply->print('*&nbsp;') if $required;
     my($fd) = $model->get_field_descriptor($field);
 
-    # get the current value from the request or the model
-    my($value) = $req->get_arg($field) || $model->get($field);
+    # Get the current value from the model
+    my($value) = $model->get($field);
 
     if ($fd->get_type() == Bivio::Biz::FieldDescriptor::STRING
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::CURRENCY
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::NUMBER
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::DATE
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::EMAIL) {
+#TODO: Need to put in label here
 	$reply->print('<label for="'.$field.'">'
-		.$model->get_field_caption($field).': </label></td><td>');
+		.'NEED LABEL: '.$field.': </label></td><td>');
 	$reply->print('<input type="text" name="'.$field
 		.'" maxlength='.$fd->get_size());
 
-	if ($value) {
+	if (defined($value)) {
 	    $reply->print(' value="'.$value.'"');
 	}
 	if ($fd->get_size() < 15) {
@@ -91,6 +94,7 @@ sub entry_field {
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::BOOLEAN) {
 	$reply->print('<input type="checkbox" name="'.$field.'"');
+#TODO: Is this correct or should there be a test for defined($value)?
 	if ($value) {
 	    $reply->print(' checked');
 	}
@@ -99,12 +103,12 @@ sub entry_field {
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::GENDER) {
 	$reply->print('<input type="radio" name="'.$field
 		.'" value="M"');
-	if ($value && $value eq "M") {
+	if (defined($value) && $value eq "M") {
 	    $reply->print(' checked');
 	}
 	$reply->print('> Male <br><input type="radio" name="'
 		.$field.'" value="F"');
-	if ($value && $value eq "F") {
+	if (defined($value) && $value eq "F") {
 	    $reply->print(' checked');
 	}
 	$reply->print('> Female <br>');
@@ -112,7 +116,7 @@ sub entry_field {
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::PASSWORD) {
 	$reply->print('<label for="password">Password: </label></td><td>'
 		.'<input type="password" name="password" maxlength=32');
-	if ($value) {
+	if (defined($value)) {
 	    $reply->print(' value="'.$value.'"');
 	}
 	$reply->print('><br></td></tr><tr><td>');
@@ -126,22 +130,18 @@ sub entry_field {
 	$reply->print('><br></td></tr>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::ROLE) {
-	$reply->print('<input type="radio" name="'.$field
-		.'" value="0"');
-	if ($value && $value == 0) {
-	    $reply->print(' checked');
+	my($role);
+#TODO: Encapsulate valid values so can validate input as well.
+#      Must be clear definition of what a form allows and doesn't or
+#      we'll have security problems.
+	foreach $role (qw(ADMINISTRATOR MEMBER GUEST)) {
+	    my($r) = Bivio::Auth::Role->$role();
+	    my($i, $n) = ($r->as_int, ucfirst($r->as_string));
+	    my($checked) = defined($value) && $value == $i ? ' checked' : '';
+	    $reply->print(<<"EOF");
+$n<br><input type="radio" name="$field" value=$i$checked>
+EOF
 	}
-	$reply->print('> Administrator<br><input type="radio" name="'
-		.$field.'" value="1"');
-	if ($value && $value == 1) {
-	    $reply->print(' checked');
-	}
-	$reply->print('> Member<br><input type="radio" name="'
-	       .$field.'" value="2"');
-	if ($value && $value == 2) {
-	    $reply->print(' checked');
-	}
-	$reply->print('> Guest<br>');
     }
     $reply->print('</td></tr>');
     return;

@@ -24,8 +24,9 @@ C<Bivio::Biz::Action::CreateClub> creates a club and its administrator.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::ClubUser;
-use Bivio::Biz::Mail::Message;
+use Bivio::Biz::Action::CreateClubUser;
+use Bivio::Biz::PropertyModel::ClubUser;
+use Bivio::Biz::PropertyModel::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 
@@ -33,25 +34,7 @@ use Bivio::SQL::Connection;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Biz::Action::CreateClub
-
-Creates an action for creating a bivio club.
-
-=cut
-
-sub new {
-    my($proto) = @_;
-    my($self) = &Bivio::Biz::Action::new($proto, 'add', 'Create Club',
-	   'Create a new club', '/i/new.gif');
-    return $self;
-}
+my(@_ALLOWED_FIELDS) = qw(name full_name);
 
 =head1 METHODS
 
@@ -59,7 +42,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 execute(Club club, Request req) : boolean
+=head2 static execute(Request req)
 
 Creates a new club record in the database using values specified in the
 request.
@@ -67,72 +50,27 @@ request.
 =cut
 
 sub execute {
-    my($self, $club, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my(undef, $req) = @_;
+    my($user) = $req->get('auth_user');
 
-#TODO: Need to create the messages directory
-    eval {
-	my($values) = &_create_field_map($club, $req);
+    my($values) = $req->get_fields('form', \@_ALLOWED_FIELDS);
+    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
+    # There has to be an auth_user or can't create a club
+    $values->{'bytes_in_use'} = 0;
+    $values->{'bytes_max'} = 8 * 1024 * 1024;
+    $club->create($values);
 
-	$values->{'bytes_in_use'} = 0;
-	$values->{'bytes_max'} = 8 * 1024 * 1024;
-	$club->create($values);
+    # Create the first club user, the auth_user as administrator
+    $req->get('form')->{role} = Bivio::Auth::Role::ADMINISTRATOR->as_int;
+    Bivio::Biz::Action::CreateClubUser->execute($req);
 
-	if ($club->get_status()->is_ok()) {
-
-	    # create the club's admin user
-	    if ($req->get_arg('admin')) {
-		my($club_user) = Bivio::Biz::ClubUser->new();
-		$club_user->create({
-		    'club_id' => $club->get('id'),
-		    'user_id' => $req->get_arg('admin'),
-		    'role' => 0,
-		    'email_mode' => 1
-		});
-
-		# need to add errors to club, it is what is sent through
-		# the system
-		foreach (@{$club_user->get_status()->get_errors()}) {
-		    $club->get_status()->add_error($_);
-		}
-	    }
-	    my($bbmm) = Bivio::Biz::Mail::Message->new();
-	    $bbmm->setup_club($club);
-	}
-    };
-
-    # check for exceptions
-    if ($@) {
-	Bivio::SQL::Connection->rollback();
-	die($@);
-    }
-
-    if ($club->get_status()->is_ok()) {
-	Bivio::SQL::Connection->commit();
-	return 1;
-    }
-
-    Bivio::SQL::Connection->rollback();
-    die(join("\n", map {$_->get_message} @{$club->get_status->get_errors}));
+    # Initialize the message manager
+    my($mm) = Bivio::Biz::PropertyModel::MailMessage->new($req);
+    $mm->setup_club($club);
+    return;
 }
 
 #=PRIVATE METHODS
-
-# _create_field_map(PropertyModel model, Request req) : hash
-#
-# Creates a hash of model fields which exist in the specified request.
-
-sub _create_field_map {
-    my($model, $req) = @_;
-
-    my($result) = {};
-    my($fields) = $model->get_field_names();
-
-    foreach (@$fields) {
-	$result->{$_} = $req->get_arg($_);
-    }
-    return $result;
-}
 
 =head1 COPYRIGHT
 

@@ -22,8 +22,8 @@ Bivio::Mail::Incoming - parses an incoming mail message
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Mail::Incoming::ISA = qw(Bivio::UNIVERSAL);
+use Bivio::Mail::Common;
+@Bivio::Mail::Incoming::ISA = qw(Bivio::Mail::Common);
 
 =head1 DESCRIPTION
 
@@ -158,8 +158,8 @@ destroyed.
 =cut
 
 sub new {
-    my($self) = &Bivio::UNIVERSAL::new(@_);
-    my(undef, $rfc822, $offset) = @_;
+    my($proto, $rfc822, $offset) = @_;
+    my($self) = &Bivio::Mail::Common::new($proto);
     $self->initialize($rfc822, $offset);
     return $self;
 }
@@ -446,24 +446,21 @@ sub initialize {
     return;
 }
 
-=for html <a name="resend"></a>
+=for html <a name="send"></a>
 
-=head2 resend(string recipients)
+=head2 send()
 
-=head2 resend(array_ref recipients)
-
-Resend the mail message to the specified recipients.  The headers
+Send the mail message to the specified recipients (see
+L<set_recipients|"set_recipients">).  The headers
 and body remain unchanged, even C<Sender:>.   This should be used
 for "alias-like" forwarding only.
 
-NOTE: Does not L<set_recipients|"set_recipients">.
-
 =cut
 
-sub resend {
-    my($self, $recipients) = @_;
+sub send {
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    Bivio::Mail::Common->send($recipients, $fields->{rfc822},
+    Bivio::Mail::Common->send($fields->{recipients}, $fields->{rfc822},
 	    $fields->{header_offset});
 }
 

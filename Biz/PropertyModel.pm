@@ -12,13 +12,13 @@ Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
     my($model) = ...;
 
-    if ($model->load(Bivio::Biz::FindParams->new({'id' => 500}))) {
+    if ($model->load(id => 500)) {
         for (@{$model->get_field_names()}) {
             print($_.' = '.$model->get($_)."\n");
         }
     }
 
-    for (0..100) {
+    for (1..100) {
         $model->create({'id' => $_, 'foo' => 'xxx'});
     }
 
@@ -54,6 +54,8 @@ use Carp;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+# Maps classes (models) to static class information in an hash_ref
+my(%_CLASS_INFO);
 
 =head1 FACTORIES
 
@@ -61,9 +63,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name, hash property_info) : Bivio::Biz::PropertyModel
+=head2 static new(Bivio::Agent::Request req, hash property_info) : Bivio::Biz::PropertyModel
 
-Creates a PropertyModel with the specified name and property information.
+Creates a PropertyModel with the specified request and property information.
 property_info should have the format:
     {
         'property-name' => ['caption', field-descriptor]
@@ -80,18 +82,27 @@ property_info should have the format:
 	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
     }
 
+If this is the first time this class has been newed, calls
+C<internal_initialize>.
+
 =cut
 
 sub new {
-    my($proto, $name, $property_info) = @_;
-    my($self) = &Bivio::Biz::Model::new($proto, $name);
+    my($proto, $req) = @_;
+    die('invalid request') unless ref($req);
+    my($self) = &Bivio::Biz::Model::new($proto, $req);
+    my($class) = ref($self);
+    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    my($ci) = $_CLASS_INFO{$class};
     my($properties) = {};
-    foreach (keys(%{$property_info})) {
+    local($_);
+    foreach (keys(%{$ci->{property_info}})) {
 	$properties->{$_} = undef;
     }
     $self->{$_PACKAGE} = {
-	'property_info' => $property_info,
-	'properties' => $properties
+	request => $req,
+	properties => $properties,
+	class_info => $ci,
     };
     return $self;
 }
@@ -102,61 +113,61 @@ sub new {
 
 =for html <a name="create"></a>
 
-=head2 abstract create(hash new_values) : boolean
+=head2 abstract create(hash new_values)
 
-Creates a new model in the database with the specified value. After creation,
-this instance has the same values. Returns 1 if successful, 0 otherwise. If
-creation fails, then L<Bivio::Biz::Model/"get_status"> should return errors.
+Creates a new model in the database with the specified values. After creation,
+this instance has the same values.  Dies on error.
 
 =cut
 
 sub create {
-    die("abstract method");
+    my($self, $new_values) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{class_info}->{sql_support}->create(
+	    $self, $fields->{properties}, $new_values);
+    $self->get_request->put(ref($self), $self);
+    return;
 }
 
 =for html <a name="delete"></a>
 
-=head2 abstract delete() : boolean
+=head2 delete()
 
-Deletes the current model from the database. Returns 1 if successful,
-0 otherwise.
+Deletes the current model from the database.   Dies on error.
 
 =cut
 
 sub delete {
-    die("abstract method");
+    my($self) = @_;
+#TODO: Should the fields be nulled?
+    my($fields) = $self->{$_PACKAGE};
+    my($ci) = $fields->{class_info};
+    $ci->{sql_support}->delete($self, $ci->{primary_where},
+	    $self->get(@{$ci->{primary_keys}}));
+    return;
 }
 
 =for html <a name="get"></a>
 
-=head2 get(string name) : scalar or array
+=head2 get(string name) : (scalar or array)
 
-Returns the value of the named property. This value may be a scalar for
+Returns the value of the named properties. The values may be a scalar for
 simple types, or array for complex types. Property names are exported
 throught the L<"get_field_names"> method.
 
 =cut
 
 sub get {
-    my($self, $name) = @_;
+    my($self, @names) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($properties) = $fields->{properties};
-
-    exists($properties->{$name}) || die("unknown property $name");
-    return $properties->{$name};
-}
-
-=for html <a name="get_field_caption"></a>
-
-=head2 get_field_caption(string name) : string
-
-Returns the caption for the named field.
-
-=cut
-
-sub get_field_caption {
-    my($self, $name) = @_;
-    return &_get_property_info_value($self, $name, 0);
+    my(@res) = map {
+	exists($properties->{$_}) || die("$_: unknown property");
+	$properties->{$_};
+    } @names;
+    return @res if wantarray;
+    die('get not called in array context') unless int(@res) == 1;
+    return $res[0];
 }
 
 =for html <a name="get_field_descriptor"></a>
@@ -182,9 +193,24 @@ Returns an array of field names.
 
 sub get_field_names {
     my($self) = @_;
+#TODO: Cache the return result?
+#TODO: Filter those fields which shouldn't be filled in.
     my($fields) = $self->{$_PACKAGE};
     my(@names) = keys(%{$fields->{properties}});
     return \@names;
+}
+
+=for html <a name="get_request"></a>
+
+=head2 get_request() : Bivio::Agent::Request
+
+Returns the request associated with this model.
+
+=cut
+
+sub get_request {
+    my($fields) = shift->{$_PACKAGE};
+    return $fields->{request};
 }
 
 =for html <a name="internal_get_fields"></a>
@@ -204,32 +230,153 @@ sub internal_get_fields {
     return $fields->{properties};
 }
 
+=for html <a name="internal_initialize"></a>
+
+=head2 abstract internal_initialize() : array_ref
+
+B<FOR INTERNAL USE ONLY>.
+
+Returns an array_ref of the property info, sql support, the primary
+keys for this model.
+
+=cut
+
+sub internal_initialize {
+    die('abstract method');
+}
+
+=for html <a name="load"></a>
+
+=head2 load(hash query)
+
+Loads the model or dies if not found or other error.
+Subclasses shouldn't override this method.
+
+=cut
+
+sub load {
+    my($self) = shift;
+    $self->unsafe_load(@_) && return;
+    $self->get_request->put(error_object => $self,
+	    error_message => 'not found');
+    die('not found');
+}
+
+=for html <a name="unauth_load"></a>
+
+=head2 unauth_load(hash query) : boolean
+
+Loads the model as with L<unsafe_load|"unsafe_load">.  However, does
+not insert security realm into query params.  Use this when you
+B<are certain> there are no security issues involved with loading
+the date.
+
+On success, saves model in request and returns true.
+
+Returns false if not found.  Dies on any other errors.
+
+Subclasses should override this method if there model doesn't match
+the usual property model.  L<unsafe_load|"unsafe_load"> and
+L<load|"load"> call this method.
+
+=cut
+
+sub unauth_load {
+    my($self, %query) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($ci) = $fields->{class_info};
+    # Don't bother checking query.  Will kick back if empty.
+
+    # Create the where clause
+    my($where, @values);
+    while (my($k, $v) = each(%query)) {
+	die('invalid field name syntax') unless $k =~ /^\w{1,32}$/;
+	$where .= (defined($where) ? ' and ' : 'where ') . $k . '=?';
+	push(@values, $v);
+    }
+
+    return 0 unless $ci->{sql_support}->unsafe_load(
+	    $self, $fields->{properties}, $where, @values);
+    # If found, put a reference to this model in request
+    $self->get_request->put(ref($self), $self);
+    return 1;
+}
+
+=for html <a name="unsafe_load"></a>
+
+=head2 unsafe_load(hash query) : boolean
+
+Loads the model.  On success, saves model in request and returns true.
+
+Returns false if not found.  Dies on all other errors.
+
+Subclasses shouldn't override this method.
+
+=cut
+
+sub unsafe_load {
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
+    die('no query arguments') unless @_;
+    my($req) = $fields->{request};
+
+    # Ensure we are only getting data from the realm we are authorized
+    # to operate in.
+    my($k, $v) = $req->unsafe_get('auth_owner_id_field', 'auth_owner_id');
+    # Will override existing value for auth_owner if any
+    return $self->unauth_load(@_, $k ? ($k, $v) : ());
+}
+
 =for html <a name="update"></a>
 
-=head2 abstract update(hash new_values) : boolean
+=head2 update(hash new_values) : boolean
 
-Updates the current model's values. Returns 1 if successful 0 otherwise.
-Errors are stored in the Model's status.
+Updates the current model's values.
+NOTE: find should be called prior to an update.
 
 =cut
 
 sub update {
-    die("abstract method");
+    my($self, $new_values) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($ci) = $fields->{class_info};
+    my($pk) = $ci->{primary_keys};
+    my($properties) = $fields->{properties};
+    # Ensure primary keys aren't different in new_values from properties
+    # or SQL::Support will try to update them.
+    map {$new_values->{$_} = $properties->{$_}} @$pk;
+    $ci->{sql_support}->update($self, $properties,
+	    $new_values, $ci->{primary_where}, $self->get(@$pk));
+    return;
 }
 
 #=PRIVATE METHODS
 
-# _get_property_info_value(string name, int index) : any
+# _get_property_info_value(self, string name, int index) : any
 #
 # Returns the value at the specified index of the named property's
 # configuration
 
 sub _get_property_info_value {
     my($self, $name, $index) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($property_info) = $fields->{property_info}->{$name};
-    $property_info || die("unknown property $name");
-    return $property_info->[$index];
+    my($property_info) = $self->{$_PACKAGE}->{class_info}->{property_info};
+    my($property) = $property_info->{$name};
+    $property || die("$name: unknown property");
+    return $property->[$index];
+}
+
+sub _initialize_class_info {
+    my($class) = @_;
+    my($ci) = $class->internal_initialize;
+    $_CLASS_INFO{$class} = $ci = {
+	property_info => $ci->[0],
+	sql_support => $ci->[1],
+	primary_keys => $ci->[2],
+    };
+    $ci->{sql_support}->initialize;
+    $ci->{primary_where} = 'where ' . join(' and ',
+	    map {$_ . '=?'} @{$ci->{primary_keys}});
+    return;
 }
 
 =head1 COPYRIGHT

@@ -77,7 +77,7 @@ $bmo->set_headers_for_list_send($_USER, 'My Fancy List', 1, 1);
 $bmo->set_recipients($_USER);
 print STDERR "\nYou should be receiving two identical mail messages\n";
 $bmo->send();
-$bmo->enqueue();
+$bmo->enqueue_send();
 $bmo->send_queued_messages();
 print $bmo->as_string eq $_OUT ? "ok $test\n" : "not ok $test\n";
 $test++;

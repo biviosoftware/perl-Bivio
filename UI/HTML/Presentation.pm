@@ -11,7 +11,7 @@ Bivio::UI::HTML::Presentation - A view arranger with NavBar and ActionBar.
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Presentation;
-    my($model) = Bivio::Biz::TestModel->new('test2', {}, 'title', 'heading');
+    my($model) = Bivio::Biz::PropertyModel::Test->new('test2', {}, 'title', 'heading');
     my($view) = Bivio::UI::TestView->new('test', '<i>a test view</i>', $model);
     my($page) = Bivio::UI::HTML::Presentation->new([view]);
     $view->activate()->render($model, $req);
@@ -124,30 +124,6 @@ my($_MENU_RENDERER) = Bivio::UI::HTML::MenuRenderer->new();
 
 my($_EMPTY_LINK) = Bivio::UI::HTML::Link->new('empty',
 	Bivio::UI::HTML::Link::EMPTY_ICON(), '', '', '');
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(array views, Menu menu) : Bivio::UI::HTML::Presentation
-
-Creates a view presentation with the specified subviews and menu.
-
-=head2 static new(array views) : Bivio::UI::HTML::Presentation
-
-Creates a view presentation with the specified subviews.
-
-=cut
-
-sub new {
-    my($proto, $views, $menu) = @_;
-
-    # no view name
-    my($self) = &Bivio::UI::MultiView::new($proto, undef, $views, $menu);
-    return $self;
-}
 
 =head1 METHODS
 
@@ -278,7 +254,7 @@ sub render_nav_bar {
 
     my($menu) = $self->get_menu();
     if ($menu) {
-	$menu->set_selected($self->get_active_view()->get_name());
+	$menu->set_selected($req->get('task_id'));
 	$_MENU_RENDERER->render($menu, $req);
     }
     $reply->print('</td>');
@@ -320,8 +296,10 @@ sub render_title {
 	    .'<td width="100%" colspan=2>'
 	    .'<font face="arial,helvetica,sans-serif">'
 	    .'<big><strong>');
-
-    $reply->print($model->get_title() || '&nbsp;');
+    my($view) = $self->get_active_view();
+    my($title) = $view->can('get_title') ? $view->get_title($model, $req)
+	    : '&nbsp;';
+    $reply->print($title);
 
     $reply->print('</strong></big></font></td></tr></table>');
     return;

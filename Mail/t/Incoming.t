@@ -208,6 +208,8 @@ Message-Id: <1234567890\@blow.com>
 This is the body.
 EOF
 my($bmi) = Bivio::Mail::Incoming->new(\$msg);
-$bmi->resend(User::pwent::getpwuid($>)->name);
+$bmi->set_recipients(User::pwent::getpwuid($>)->name);
+$bmi->enqueue_send;
+$bmi->send_queued_messages;
 print "ok $test\n";
 $test++;

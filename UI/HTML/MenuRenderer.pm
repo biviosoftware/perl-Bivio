@@ -12,10 +12,10 @@ Bivio::UI::HTML::MenuRenderer - Draws a Bivio::UI::Menu as HTML.
 
     use Bivio::UI::HTML::MenuRenderer;
     my($menu) = Bivio::UI::Menu->new(1,
-	    ['human', 'Human',
-	     'cat', 'Cat',
-	     'dog', 'Dog']);
-    $menu->set_selected('cat');
+	    [Bivio::Agent::TaskId::HUMAN_DETAIL, 'Human',
+	     Bivio::Agent::TaskId::CAT_DETAIL, 'Cat',
+	     Bivio::Agent::TaskId::DOG_DO, 'Dog']);
+    $menu->set_selected(Bivio::Agent::TaskId::CAT_DETAIL);
     my($mr) = Bivio::UI::HTML::MenuRenderer->new();
     $mr->render($menu, $req);
 
@@ -75,12 +75,12 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my($reply) = $req->get_reply();
 
-    my($names) = $menu->get_names();
+    my($task_ids) = $menu->get_task_ids();
     my($display_names) = $menu->get_display_names();
     my($active) = $menu->get_selected();
 
     # don't show menu if is a sub menu and has only one item
-    if (!$menu->is_top() && int(@{$names}) <= 1) {
+    if (!$menu->is_top() && int(@{$task_ids}) <= 1) {
         return;
     }
 
@@ -88,15 +88,12 @@ sub render {
 
     my($pad) = '<td></td>';
     my($html) = '<td>&nbsp;</td>';
-    my($link_root) = $menu->is_top() ? '/'.$req->get_target_name().'/'
-	    : '/'.$req->get_target_name().'/'.$req->get_controller_name().'/';
-
-    for (my($i) = 0; $i < int(@$names); $i++) {
-        my($name) = $names->[$i];
+    for (my($i) = 0; $i < int(@$task_ids); $i++) {
+        my($task_id) = $task_ids->[$i];
 	my($display_name) = $display_names->[$i];
-	my($link) = '<a href="'.$link_root.$name.'">'.$display_name.'</a>';
-
-        if ($name eq $active) {
+	my($link) = '<a href="'.$req->format_uri($task_id)
+			.'">'.$display_name.'</a>';
+        if ($task_id eq $active) {
             $pad .= '<td bgcolor="#E0E0FF"><img src="/i/dot.gif"'
 		    .'height=1 width=1 border=0></td>';
             $html .= '<td bgcolor="#E0E0FF"><strong>'

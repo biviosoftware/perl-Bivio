@@ -39,29 +39,16 @@ method L<set_handler|"set_handler">.
 =cut
 
 #=IMPORTS
+use Apache::Constants ();
 use Bivio::Agent::Dispatcher;
-use Bivio::Agent::HTTP::AdminController;
-use Bivio::Agent::HTTP::ClubSetupController;
-use Bivio::Agent::HTTP::MessageController;
-use Bivio::Biz::TestModel;
+use Bivio::Die;
 use Bivio::IO::Trace;
-use Bivio::UI::Admin::UserListView;
-use Bivio::UI::Admin::UserView;
-use Bivio::UI::HTML::Page;
-use Bivio::UI::HTML::Presentation;
-use Bivio::UI::Menu;
-use Bivio::UI::MessageBoard::DetailView;
-use Bivio::UI::MessageBoard::ListView;
-use Bivio::UI::Setup::Admin;
-use Bivio::UI::Setup::Club;
-use Bivio::UI::Setup::Finish;
-use Bivio::UI::Setup::Intro;
-use Bivio::UI::TestView;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_INITIALIZED);
 my($_SELF);
 
 =head1 FACTORIES
@@ -72,89 +59,17 @@ my($_SELF);
 
 =head2 static new() : Bivio::Agent::HTTP::Dispatcher
 
-Creates a new dispatcher and initializes the site.
+Creates a new dispatcher.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::Agent::Dispatcher::new(@_);
-    $self->create_site();
-    return $self;
+    return &Bivio::Agent::Dispatcher::new(@_);
 }
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="create_site"></a>
-
-=head2 create_site()
-
-Creates the views and controllers which make up the site. This is called
-from the constructor - subclasses will want to override this to create
-a site different from the default.
-
-=cut
-
-sub create_site {
-    my($self) = @_;
-    defined($_SELF) || Bivio::IO::Config->initialize();
-    my($default_model) = Bivio::Biz::TestModel->new("test", {}, "T", "t");
-
-    my($setup_intro) = Bivio::UI::Setup::Intro->new();
-    my($admin_setup) = Bivio::UI::Setup::Admin->new();
-    my($club_setup) = Bivio::UI::Setup::Club->new();
-    my($setup_finish) = Bivio::UI::Setup::Finish->new();
-
-    my($setup_pres) = Bivio::UI::HTML::Presentation->new(
-	    [$setup_intro, $admin_setup, $club_setup, $setup_finish]);
-    my($setup_page) = Bivio::UI::HTML::Page->new([$setup_pres],
-	    Bivio::UI::Menu->new(1, ['setup', 'Club Setup']));
-
-    my($user_list) = Bivio::UI::Admin::UserListView->new();
-    my($add_user) = Bivio::UI::Admin::UserView->new();
-    my($message_list) = Bivio::UI::MessageBoard::ListView->new();
-    my($message_detail) = Bivio::UI::MessageBoard::DetailView->new();
-
-    my($admin) = Bivio::UI::HTML::Presentation->new([$user_list, $add_user]);
-    my($messages) = Bivio::UI::HTML::Presentation->new([$message_list,
-	    $message_detail]);
-
-    my($main_menu) = Bivio::UI::Menu->new(1,
-	    ['admin', 'Administration',
-		    'messages', 'Messages']);
-
-    my($page) = Bivio::UI::HTML::Page->new(
-	    [$admin, $messages], $main_menu);
-
-    my($club_setup_controller) = Bivio::Agent::HTTP::ClubSetupController->new(
-	    [$setup_intro, $admin_setup, $club_setup, $setup_finish],
-	    $setup_intro);
-    $self->register_controller('setup', $club_setup_controller);
-
-    my($admin_controller) = Bivio::Agent::HTTP::AdminController->new(
-	    [$user_list, $add_user], $user_list);
-    $self->register_controller('admin', $admin_controller);
-
-    my($message_controller) = Bivio::Agent::HTTP::MessageController->new(
-	    [$message_list, $message_detail], $message_list);
-    $self->register_controller('messages', $message_controller);
-    return;
-}
-
-=for html <a name="get_default_controller_name"></a>
-
-=head2 get_default_controller_name() : string.
-
-Returns the name of the default controller to use if none is specified
-in the URL. Subclasses should override this if they provide a site
-different from the default.
-
-=cut
-
-sub get_default_controller_name {
-    return 'messages';
-}
 
 =for html <a name="handler"></a>
 
@@ -174,23 +89,53 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 sub handler {
     my($r) = @_;
     my($return_code);
-    eval {
-	defined($_SELF) || ($_SELF = $_PACKAGE->new());
-	my($request) = Bivio::Agent::HTTP::Request->new($r,
-		$_SELF->get_default_controller_name());
+    Bivio::Agent::Request->clear_current;
+    my($res) = Bivio::Die->catch(sub {
+	$_INITIALIZED || __PACKAGE__->initialize;
+	my($request) = Bivio::Agent::HTTP::Request->new($r);
 	$_SELF->process_request($request);
-	$return_code = $request->get_reply()->get_http_return_code();
-
-	if ($return_code == Apache::Constants::OK) {
-	    $request->get_reply()->flush();
+	my($reply) = $request->get('reply');
+	if (defined($reply)) {
+	    $return_code = $reply->get_http_return_code();
+	    $reply->flush if $return_code == Apache::Constants::OK();
 	}
 	1;
-    };
+    });
     unless (defined($return_code)) {
-	warn($@);
-	$return_code = Apache::Constants::SERVER_ERROR;
+	$return_code = Apache::Constants::SERVER_ERROR();
+	eval {
+	    my($die) = Bivio::Die->get_last;
+	    defined($die) && warn(@{$die->get_errors});
+	    my($req) = Bivio::Agent::Request->get_current;
+	    my($reply) = ref($req) && $req->unsafe_get('reply');
+	    $return_code = ref($reply) ? $reply->get_http_return_code()
+		    : Apache::Constants::SERVER_ERROR();
+	    1;
+	} || warn($@);
     }
+    Bivio::Agent::Request->clear_current;
+    Bivio::Die->clear_last;
+    $r->log_error($return_code)
+	    unless $return_code == Apache::Constants::OK();
     return $return_code;
+}
+
+=for html <a name="initialize"></a>
+
+=head2 static initialize()
+
+Called on first request.
+
+=cut
+
+sub initialize {
+    my($proto) = @_;
+    $_INITIALIZED && return;
+    Bivio::IO::Config->initialize;
+    $_SELF = $proto->new;
+    $_SELF->SUPER::initialize();
+    $_INITIALIZED = 1;
+    return;
 }
 
 =for html <a name="set_handler"></a>

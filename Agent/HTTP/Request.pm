@@ -23,37 +23,31 @@ C<Bivio::Agent::HTTP::Request> is a Bivio Request wrapper for an
 Apache::Request. It gathers request information from the URI and posted
 parameters. The general format is:
 
-bivio.com/<target>/<controller>/<view>
-&mf=<arg1>(<val1>),<arg2>(<val2>)...&ma=<action>&...
+bivio.com/<target>/<operation>
+&mf=<arg1>(<val1>),<arg2>(<val2>)...&op=<op>&...
 
   where <target> is a person or club
-  <controller> is the controller id (messages, accounting, ...)
-  <view> is the view id (list, detail, ...)
+  <path> is value in the path map
   <arg1>(<val1>)... are model finder parameters
-  <action> is what to do with the model (update, vote, ...)
+  <op> further qualifies <path>
 
-The rest of the arguments are action parameters.
-Much of the URI is optional (requests have default controllers, controllers
-have default views).
+The rest of the arguments are action parameters.  The path may be
+partially complete as the path components have default values.
 
-The 'mf' argument is converted into a Bivio::Biz::FindParams and is available
-using the L<"get_model_args">.
-
-If the connection is using authentication and a Bivio::Biz::User exists
-for the login, then 'user' and 'password' entries will be put into the
-Request's context (a Bivio::Biz::User and string respectively).
+If the connection is using authentication and a
+L<Bivio::Biz::PropertyModel::User|Bivio::Biz::PropertyModel::User> exists
+for the login, then C<user> and C<password> entries will defined
+in the Request's context (a L<Bivio::Biz::PropertyModel::User|Bivio::Biz::PropertyModel::User>
+and string respectively).
 
 =cut
 
 #=IMPORTS
-#use Apache::Constants;
+use Apache::Constants ();
+use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Reply;
-use Bivio::Biz::FindParams;
-use Bivio::Biz::User;
+use Bivio::Biz::PropertyModel::User;
 use Bivio::Util;
-use Data::Dumper;
-
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
@@ -61,51 +55,41 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Apache::Request r, string default_controller_name) : Bivio::Agent::HTTP::Request
+=head2 static new(Apache::Request r) : Bivio::Agent::HTTP::Request
 
-Creates a Request from an apache request. The default controller name
-will be used if no controller name can be parsed from the URI.
+Creates a Request from an apache request.  The target and path are
+separated.
 
 =cut
 
 sub new {
-    my($proto, $r, $default_controller_name) = @_;
-
+    my($proto, $r) = @_;
     my($start_time) = Bivio::Util::gettimeofday();
-
-    my($target, $controller, $view) = _parse_request($r->uri());
-    $controller ||= $default_controller_name;
-
-    my($args) = {$r->args};
-
-    # this will clobber the query args if present
-    if ($r->method_number() eq Apache::Constants::M_POST()) {
-	&_add_posted_args($r, $args);
-    }
-    my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	    $start_time);
-    $self->{$_PACKAGE} = {
-#        'r' => $r,
-	'view_name' => $view,
-	'args' => $args,
-	'model_args' => Bivio::Biz::FindParams->from_string($args->{mf} || ''),
-	'reply' => Bivio::Agent::HTTP::Reply->new($r)
-    };
-
-    # not available except through get_model_args()
-    delete($args->{mf});
-
-    # put the user and password into the context, if present
+    # Sets Bivio::Agent::Request->get_current, so do the minimal thing
+    my($self) = Bivio::Agent::Request::new($proto, {
+	    start_time => $start_time,
+	    reply => Bivio::Agent::HTTP::Reply->new($r),
+    });
+    # Always create query
     my($ret, $password) = $r->get_basic_auth_pw();
-
-    if ($ret == Apache::Constants::OK) {
-	my($user) = &_find_user($r->connection->user);
-
-	if ($user) {
-	    $self->put('user', $user);
-	    $self->put('password', $password);
-	}
-    }
+    my($auth_user) = ($ret == Apache::Constants::OK())
+	    ? _auth_user($self, $r->connection->user, $password) : undef;
+    my($auth_realm, $task_id)
+	    = Bivio::Agent::HTTP::Location->parse($self, $r->uri);
+    # NOTE: Syntax is weird to avoid passing $r->args in an array context
+    # which avoids parsing $r->args.
+    my($query) = (defined $r->args) ? +{$r->args} : undef;
+    # Form may be undef
+    my($form) = $r->method_number() eq Apache::Constants::M_POST()
+	    ? {$r->content()} : undef;
+    $self->put(
+	    # FindParams are always unique.
+	    auth_realm => $auth_realm,
+	    auth_user => $auth_user,
+	    form => $form,
+	    query => {$r->args},
+	    task_id => $task_id,
+	   );
     return $self;
 }
 
@@ -113,209 +97,64 @@ sub new {
 
 =cut
 
-=for html <a name="get_action_name"></a>
+=for html <a name="format_uri"></a>
 
-=head2 get_action_name() : string
+=head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
 
-Returns the requested action.
-
-=cut
-
-sub get_action_name {
-    my($self) = @_;
-    return $self->get_arg('ma');
-}
-
-=for html <a name="get_arg"></a>
-
-=head2 get_arg(string name) : string
-
-Returns the named request argument value from the inquiry or posted
-parameters.
+Creates a URI relative to this host/port.
+If I<query> is C<undef>, will not create a query string.
+If I<auth_realm> is C<undef>, request's realm will be used.
 
 =cut
 
-sub get_arg {
-    my($self,$name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{args}->{$name};
-}
-
-=for html <a name="get_model_args"></a>
-
-=head2 get_model_args() : Bivio::Biz::FindParams
-
-Returns the model finder arguments. Created from the 'mf' argument.
-If no arguments are present, then an empty FindParams is returned.
-see L<Bivio::Biz::FindParams>.
-
-=cut
-
-sub get_model_args {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{model_args};
-}
-
-=for html <a name="get_reply"></a>
-
-=head2 abstract get_reply() : Bivio::Agent::Reply
-
-Returns the L<Bivio::Agent::Reply|"Bivio::Agent::Reply"> subclass for this
-particular instance.
-
-=cut
-
-sub get_reply {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{reply};
-}
-
-=for html <a name="get_view_name"></a>
-
-=head2 get_view_name() : string
-
-Returns the requested view name.
-
-=cut
-
-sub get_view_name {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{view_name};
-}
-
-=for html <a name="make_path"></a>
-
-=head2 make_path() : string
-
-Creates a path URI to the location of the current request.
-
-=head2 make_path(string view_name) : string
-
-Creates a path URI to the location of the current controller and the
-specified view.
-
-=head2 make_path(string view_name, string controller_name) : string
-
-Creates a path URI to the location of the specified controller and view.
-
-=cut
-
-sub make_path {
-    my($self, $view_name, $controller_name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    $view_name ||= $self->get_view_name();
-    $controller_name ||= $self->get_controller_name();
-
-    return '/'.$self->get_target_name().'/'.$controller_name
-	    .'/'.$view_name.'/';
-}
-
-=for html <a name="put_arg"></a>
-
-=head2 put_arg(string name, string value)
-
-Adds or replaces the named argument.
-
-=cut
-
-sub put_arg {
-    my($self, $name, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    $fields->{args}->{$name} = $value;
-    return;
-}
-
-=for html <a name="set_args"></a>
-
-=head2 set_args(hash args)
-
-Sets the request arguments to the specified hash. All previous arguments
-will be lost.
-
-=cut
-
-sub set_args {
-    my($self, $args) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    $fields->{args} = $args;
-    return;
-}
-
-=for html <a name="set_view_name"></a>
-
-=head2 set_view_name(string name)
-
-Redirects the requests view to the specified one.
-
-=cut
-
-sub set_view_name {
-    my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{view_name} = $name;
-    return;
+sub format_uri {
+    my($self, $task_id, $query, $auth_realm) = @_;
+    # Note: Bivio::Agent::Mail::Request may call this.
+    $task_id ||= $self->get('task_id');
+    my($uri) = Bivio::Agent::HTTP::Location->format(
+	    $task_id, $auth_realm || $self->get('auth_realm'));
+    return $uri unless defined $query && %$query;
+#TODO: Map query strings to brief names
+    my(@s);
+    while (my($k, $v) = each(%$query)) {
+	push(@s, $k . '=' . Bivio::Util::escape_uri($v));
+    }
+    return $uri . '?' . join('&', @s);
 }
 
 #=PRIVATE METHODS
 
-# _add_posted_args(Apache::Request r, hash result)
+# _auth_user(string name, string password) : Bivio::Biz::PropertyModel::User
 #
-# puts all the posted name=value pairts into the result hash
-
-sub _add_posted_args {
-    my($r, $result) = @_;
-
-    # returned as an array of name/value pairs
-    my(@posted) = $r->content();
-    for (my($i) = 0; $i < int(@posted); $i += 2) {
-	$result->{$posted[$i]} = $posted[$i+1];
+# Attempts to find a user with the specified login id.
+sub _auth_user {
+    my($self, $name, $password) = @_;
+    return undef unless defined($name);
+    my($user) = Bivio::Biz::PropertyModel::User->new($self);
+    $user->load(name => $name);
+    unless ($user->get('password') eq $password) {
+	my($reply) = $self->get('reply');
+	$reply->set_state($reply->AUTH_REQUIRED);
+	die('password mismatch');
     }
-    return;
+    return $user;
 }
 
-# _find_user(string name) : User
+# _parse_uri(string uri) : (Bivio::Biz::Model, Bivio::Agent::Task)
 #
-# Attempts to find a user with the specified login id. Returns undef if
-# no user exists for that login.
-
-sub _find_user {
-    my($name) = @_;
-
-    return undef if ! $name;
-
-    my($user) = Bivio::Biz::User->new();
-    return $user->load(Bivio::Biz::FindParams->new({'name' => $name}))
-	    ? $user : undef;
-}
-
-# _parse_request(string uri) : (string, string, view)
+# Takes a URI request and parses the realm and the task.
 #
-# Takes a URI request and parses the target, controller, and view
+# input format: /<realm>[/<location>]
 #
-# input format: /<target>[/<controller>[/view][/]]
+# Location may have one or more components separated by slashes.
+# Realm and location are used to find the task.
 #
-sub _parse_request {
+sub _parse_uri {
     my($str) = @_;
-
-    # trim leading and trailing '/'
-    $str =~ s,^/|/$,,g;
-
-    my(@parts) = split('/', $str);
-
-    my($target) = $parts[0];
-    my($controller) = $parts[1] || '';
-    my($view) = $parts[2] || '';
-
-    return ($target, $controller, $view);
+    # trim leading and trailing '/'s
+    $str =~ s,^/+|/+$,,g;
+    my($target, @path) = split(m!/+!, $str);
+    return ($target, \@path);
 }
 
 =head1 COPYRIGHT
