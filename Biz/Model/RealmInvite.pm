@@ -250,7 +250,6 @@ sub internal_initialize {
             role => ['Bivio::Auth::Role', 'NOT_ZERO_ENUM'],
 	    honorific => ['Honorific', 'NOT_ZERO_ENUM'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
-            message => ['Text', 'NONE'],
 	    # unique(realm_id, email)
         },
 	auth_id => [qw(realm_id RealmOwner_1.realm_id)],
