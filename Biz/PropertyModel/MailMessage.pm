@@ -84,6 +84,8 @@ sub create {
 	'subject' => $msg->get_subject || '',
 #TODO: Measure real size (all unpacked files)
 	'bytes' => length($body),
+	'subject_sort' => &_sortable_subject($msg->get_subject( ) || '' , $club->get('name')),
+	'name_sort' => &_sortable_name($from_name, $from_email)
     };
     $_SQL_SUPPORT->create($self, $self->internal_get_fields(), $values);
 #TODO: Update club_t.bytes here
@@ -106,6 +108,7 @@ sub delete {
     my($self) = @_;
     die("not supported");
 }
+
 
 =for html <a name="handle_config"></a>
 
@@ -168,8 +171,13 @@ sub internal_initialize {
 	'subject' => ['Subject',
 		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
 	'bytes' => ['Number of Bytes',
-		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)]
+		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)],
+	'subject_sort' =>['Subject Sort',
+		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
+	'name_sort' =>['Name Sort',
+		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)]
     };
+    
     $_SQL_SUPPORT = Bivio::SQL::Support->new(
 	    'mail_message_t', keys(%$property_info));
     return [$property_info,
@@ -207,5 +215,35 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 $Id$
 
 =cut
+
+
+#RETURNS a stripped, lowercase version of the subject line for sorting.
+sub _sortable_subject {
+    my($subject, $clubname) = @_;
+    if(!$clubname){
+	die('no club name supplied to _sortable_subject');
+    }
+    if(!$subject){
+	die('no subject supplied to _sortable_subject');
+    }
+
+    $subject = lc($subject);
+    $subject =~ s/^re:\s*($clubname)?//i;
+    $subject =~ s/\W//gi;
+    $subject .= "~";
+    return $subject;
+}
+
+sub _sortable_name {
+    my($from_name, $from_email) = @_;
+    print(STDERR "_sortable_name( ) called.");
+    if(!$from_name){
+	die('no from_name supplied to _sortable_name');
+    }
+    my($str) = lc($from_name .  " <" . $from_email . ">" );
+    $str =~ s/[!#$%^&*-+=]/\s/g;
+    print(STDERR "stripped user name: " . $str);
+    return $str;
+}
 
 1;
