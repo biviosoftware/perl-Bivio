@@ -55,6 +55,10 @@ A year relative to current date/time.  Time component unmodified.
 
 Six months.
 
+=item THREE_MONTHS
+
+Three months.
+
 =back
 
 =cut
@@ -85,6 +89,9 @@ __PACKAGE__->compile([
     ],
     SIX_MONTHS => [
 	-4,
+    ],
+    THREE_MONTHS => [
+	-5,
     ],
 ]);
 
@@ -187,8 +194,15 @@ sub _dec_month {
 # Decrement six months.
 #
 sub _dec_six_months {
-    my($date_time) = @_;
-    return $_DT->add_months($date_time, -6);
+    return $_DT->add_months(shift, -6);
+}
+
+# _dec_three_months(string date_time) : string
+#
+# Decrement three months.
+#
+sub _dec_three_months {
+    return $_DT->add_months(shift, -3);
 }
 
 # _dec_year(string date_time) : string
@@ -246,8 +260,15 @@ sub _inc_month {
 # Increments by six months.
 #
 sub _inc_six_months {
-    my($date_time) = @_;
-    return $_DT->add_months($date_time, 6);
+    return $_DT->add_months(shift, 6);
+}
+
+# _inc_three_months(string date_time) : string
+#
+# Increments by three months.
+#
+sub _inc_three_months {
+    return $_DT->add_months(shift, 3);
 }
 
 # _inc_to_end_day(self, string start_date) : string
