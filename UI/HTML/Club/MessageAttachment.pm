@@ -93,7 +93,6 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    print(STDERR "\nexecute called on MessageAttachment.");
     my($fields) = $self->{$_PACKAGE};
     my($body);
     my($fh);
@@ -113,15 +112,12 @@ sub execute {
 	$i = index($body, 'Content-Type: ');
 	my($ctypestr) = substr($body, $i);
 	$i = index($ctypestr, "\n");
-	print(STDERR "\nindex of end of line: $i");
 	$ctypestr = substr($ctypestr, 0, $i);
-	print(STDERR "\nctypestr = $ctypestr\n");
 	if($ctypestr =~ 'text/plain'){$esc = 1;}
 	#everything we get from the file server should be text/html
 	if($ctypestr =~ 'text/html'){$esc = 0;}
 	if($ctypestr =~ "image/"){
 	    $esc = 0;
-	    print(STDERR "\nIMAGE type creating link.\n");
 	    $s = "\n<IMG SRC=".$req->format_uri(
 		Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
 		"img=".$attachment_id).">";
