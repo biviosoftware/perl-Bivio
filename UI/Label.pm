@@ -188,7 +188,7 @@ _compile(\%_MAP, [
     NAME_TICKER => 'Name',
     ['FED_TAX_FREE', 'RealmInstrument.fed_tax_free']
         => 'Federal Tax Free',
-    ['VALUATION_SEARCH_DATE', 'InstrumentSpinoff.spinoff_date'] => 'Date',
+    ['VALUATION_SEARCH_DATE', 'InstrumentMergerSpinoff.action_date'] => 'Date',
     IMPORT_USER_INFO => 'Import User Information',
     WANT_SSN => 'Social Security Numbers',
     WANT_PHONE => 'Telephone Numbers',
@@ -312,10 +312,11 @@ _compile(\%_MAP, [
     FOREIGN_TAXES_PAID_HEADING => "17f. Total Foreign\nTaxes Paid",
     SOURCE_NAME => 'Source',
     NEW_NAME => 'New Security',
-    'InstrumentSpinoff.remaining_basis' => 'Remaining Basis',
-    'InstrumentSpinoff.new_shares_ratio' => 'New Shares Ratio',
-    'InstrumentSpinoff_remaining_basis_HEADING' => "Remaining\nBasis",
-    'InstrumentSpinoff_new_shares_ratio_HEADING' => "New Shares\nRatio",
+    'InstrumentMergerSpinoff.action' => 'Action',
+    'InstrumentMergerSpinoff.remaining_basis' => 'Remaining Basis',
+    'InstrumentMergerSpinoff.new_shares_ratio' => 'New Shares Ratio',
+    'InstrumentMergerSpinoff_remaining_basis_HEADING' => "Remaining\nBasis",
+    'InstrumentMergerSpinoff_new_shares_ratio_HEADING' => "New Shares\nRatio",
     NEW_TICKER_SYMBOL => 'New Ticker Symbol',
 
     # Accounting Reports (Tasks sorted alphabetically)
@@ -404,8 +405,8 @@ _compile(\%_MAP, [
 
     # Tasks (sorted alphabetically)
     ADM_REALM_NOTICE_LIST => 'Notices',
-    ADM_SPINOFF_CREATE => 'Create New Spin-off Information',
-    ADM_SPINOFFS => 'Spin-offs',
+    ADM_MERGER_SPINOFF_CREATE => 'Create New Merger/Spin-off Information',
+    ADM_MERGER_SPINOFF_LIST => 'Mergers & Spin-offs',
     CLUB_ACCOUNTING_ACCOUNT_DETAIL => 'Account Detail',
     CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => 'Account Dividend',
     CLUB_ACCOUNTING_ACCOUNT_EXPENSE => 'Account Expense',
