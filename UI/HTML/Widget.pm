@@ -680,7 +680,8 @@ I<attrs> are applied to the Image Widget.
 sub image {
     my($proto, $icon, $alt, $attrs) = @_;
     _use('Image');
-    $alt = Bivio::UI::Label->get_simple($icon.'_alt')
+    $alt = Bivio::UI::Label->unsafe_get_simple($icon, 'image_alt')
+	    || Bivio::UI::Label->unsafe_get_simple($icon.'alt')
 	    unless defined($alt) || ref($icon);
     return Bivio::UI::HTML::Widget::Image->new({
 	src => $icon,
@@ -846,7 +847,7 @@ Returns a link to Trez Talk.
 =cut
 
 sub link_ask_candis {
-    return shift->link('Ask Candis', '/pub/ask_candis');
+    return shift->link('Ask Candis', '/ask_candis');
 }
 
 =for html <a name="link_goto"></a>
@@ -911,6 +912,27 @@ sub link_secure {
 	# When the facade doesn't support SSL
 	2 => $self->join("\n"),
     });
+}
+
+=for html <a name="link_static_site"></a>
+
+=head2 static link_static_site(any label, string page, string font) : Bivio::UI::HTML::Widget
+
+Returns a link to the static site I<page>.  It will append C<.html> and prefix
+with a '/', but must include directory, e.g. "hm/services.html".
+
+=cut
+
+sub link_static_site {
+    my($proto, $label, $page, $font) = @_;
+    return $proto->link($label,
+	    Bivio::Agent::Request->get_current->format_uri(
+		    Bivio::Agent::TaskId::HTTP_DOCUMENT(),
+		    undef,
+		    '',
+		    Bivio::Agent::HTTP::Location->get_document_path_info(
+			    $page)),
+	    $font);
 }
 
 =for html <a name="link_support"></a>
@@ -979,7 +1001,7 @@ Returns a link to Trez Talk.
 =cut
 
 sub link_trez_talk {
-    return shift->link('Trez Talk', '/pub/trez_talk');
+    return shift->link('Trez Talk', '/trez_talk');
 }
 
 =for html <a name="list_actions"></a>
