@@ -194,6 +194,21 @@ sub update {
 
 #=PRIVATE METHODS
 
+# _abbreviate_name(hash_ref values)
+#
+# Abbreviates the instrument name if present.
+#
+# Corporation --> Corp.
+# Incorporated --> Inc.
+#
+sub _abbreviate_name {
+    my($values) = @_;
+    return unless exists($values->{name});
+    $values->{name} =~ s/Corporation/Corp./;
+    $values->{name} =~ s/Incorporated/Inc./;
+    return;
+}
+
 # _synchronize_instrument(hash_ref new_values, boolean update) : hash_ref
 #
 # Updates or creates a corresponding Instrument from the values.
@@ -201,6 +216,8 @@ sub update {
 sub _synchronize_instrument {
     my($self, $new_values, $update) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    _abbreviate_name($new_values);
 
     # only create/update if it is a stock
     if ($fields->{is_stock} || ($update && $self->get('instrument_id'))) {
