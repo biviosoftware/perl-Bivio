@@ -35,13 +35,13 @@ i.e. zero means "doesn't exist".
 
 =over 4
 
-=item height : int []
+=item height : int [1]
 
 =item height : array_ref []
 
 The (constant) height of the dot.
 
-=item width : int []
+=item width : int [1]
 
 =item width : array_ref []
 
@@ -107,8 +107,7 @@ sub as_html {
 
 =head2 initialize()
 
-Initializes static information.  In this case, prefix, alt, and
-src, and have_size.
+Initializes static information.
 
 =cut
 
@@ -121,7 +120,7 @@ sub initialize {
             .'" border=0';
     $fields->{is_constant} = 1;
     foreach my $f (qw(width height)) {
-	my($fv) = $self->get_or_default($f, 0);
+	my($fv) = $self->get_or_default($f, 1);
 	if (ref($fv)) {
 	    $fields->{is_constant} = 0;
 	    $fields->{$f} = $fv;

@@ -238,7 +238,7 @@ sub get_width_short_desc {
 
 =for html <a name="is_continuous"></a>
 
-=head2 static is_continuous() : 1
+=head2 static is_continuous() : boolean
 
 Is this enumeration an unbroken sequence?  By default, this is true.
 Enumerations which don't want to be continous should override this method.

@@ -12,6 +12,7 @@ Bivio::Biz::Util::RealmRole - manipulate realm_role_t database table
 
     use Bivio::Biz::Util::RealmRole;
     Bivio::Biz::Util::RealmRole->init();
+    Bivio::Biz::Util::RealmRole->init_defaults();
     Bivio::Biz::Util::RealmRole->edit($realm, $role, @operations);
     Bivio::Biz::Util::RealmRole->list($realm, $role);
     Bivio::Biz::Util::RealmRole->main(@ARGV);
@@ -51,7 +52,12 @@ C<+> sets all permissions.
 
 =item B<-init>
 
-Initialize the database with the default permissions.
+Initialize the database with the default permissions, demo club,
+and celebrity realms.
+
+=item B<-init_defaults>
+
+Initialize the database with the default permissions only.
 
 =item B<-n>
 
@@ -75,6 +81,7 @@ use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 
 #=VARIABLES
+my(@_DATA);
 
 =head1 METHODS
 
@@ -142,31 +149,28 @@ sub edit {
 
 =head2 init()
 
-Initializes the database with the values from C<__DATA__> section
-in this file.
+Initializes the defaults, demo_club, etc.
 
 B<Does not commit changes to DB.>
 
 =cut
 
 sub init {
-    my($line);
-    local($_);
-    while (<DATA>) {
-	# Skip comments and blank lines
-	next if /^\s*(#|$)/;
-	chop;
-	$line .= $_;
-	next if $line =~ s/\\$/ /;
-	my(@args) = split(' ', $line);
-	# Delete the b-realm-role at the front
-	shift(@args);
-	edit(undef, @args);
-        $line = '';
-    }
-    # Avoids error messages containing DATA
-    close(DATA);
-    return;
+    return _init(0);
+}
+
+=for html <a name="init_defaults"></a>
+
+=head2 init_defaults()
+
+Initializes the default roles for the three realm types only.
+
+B<Does not commit changes to DB.>
+
+=cut
+
+sub init_defaults {
+    return _init(1);
 }
 
 =for html <a name="list"></a>
@@ -271,10 +275,17 @@ sub main {
     my(undef, @argv) = @_;
     Bivio::IO::Config->initialize(\@argv);
     Bivio::Agent::Request->get_current_or_new;
+
+    # Parse -n flag
     my($execute) = 1;
     $execute = 0, shift(@argv) if @argv && $argv[0] eq '-n';
+
+    # Parse operation
     if (int(@argv) && $argv[0] eq '-init') {
 	init(undef);
+    }
+    elsif (int(@argv) && $argv[0] eq '-init_defaults') {
+	init_defaults(undef);
     }
     elsif (int(@argv) <= 2) {
 	list(undef, @argv);
@@ -342,6 +353,43 @@ sub _get_permission_set {
     _usage($role->as_string, ": not set for realm");
 }
 
+# _init(boolean defaults_only)
+#
+# Initializes the database with the values from __DATA__ section
+# in this file.  If defaults_only, stops at "END DEFAULTS" flag in
+# DATA section.
+#
+sub _init {
+    my($defaults_only) = @_;
+    unless (@_DATA) {
+	@_DATA = <DATA>;
+	chomp(@_DATA);
+    }
+    my($cmd);
+    foreach my $line (@_DATA) {
+	# Drop out if hit sentinel
+	last if $defaults_only && $line =~ /^#\s*END\s+DEFAULTS/;
+
+	# Skip comments and blank cmds
+	next if $line =~ /^\s*(#|$)/;
+	$cmd .= $line;
+
+	# Continuation char at end of line?
+	next if $cmd =~ s/\\$/ /;
+
+	# Parse command
+	my(@args) = split(' ', $cmd);
+
+	# Delete the b-realm-role at the front
+	shift(@args);
+	edit(undef, @args);
+        $cmd = '';
+    }
+    # Avoids error messages containing DATA
+    close(DATA);
+    return;
+}
+
 # _usage(array msg)
 #
 # Outputs a message and dies
@@ -351,6 +399,7 @@ sub _usage {
 b-realm-role: @{[join('', @_)]}
 usage: b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
        b-realm-role -init
+       b-realm-role -init_defaults
 EOF
 }
 
@@ -434,6 +483,7 @@ b-realm-role CLUB MEMBER - \
     +MAIL_RECEIVE
 b-realm-role CLUB ACCOUNTANT +
 b-realm-role CLUB ADMINISTRATOR +
+#END DEFAULTS -- this tag is used by init_defaults()
 
 #
 # Demo Club Permissions, everybody is like a GUEST of a normal club

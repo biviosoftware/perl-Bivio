@@ -27,11 +27,11 @@ output type will be 'text/html'.
 
 #=IMPORTS
 use Apache::Constants ();
-use Bivio::Agent::HTTP::Cookie;
 use Bivio::Die;
 use Bivio::IO::Alert;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
+use Bivio::Type::DateTime;
 use Carp ();
 use UNIVERSAL;
 # Avoid import
@@ -62,10 +62,10 @@ sub new {
     my($proto, $r) = @_;
     my($self) = &Bivio::Agent::Reply::new($proto);
     $self->{$_PACKAGE} = {
-	'output' => '',
-	'r' => $r,
+	output => '',
+	r => $r,
     };
-    # default output to html
+    # default output is html
     $self->set_output_type('text/html');
     return $self;
 }
@@ -95,8 +95,9 @@ sub client_redirect {
     # return value when handling a form
     $r->header_out(Location => $uri);
     $r->status(302);
-    _send_http_header($req, $r);
-    # make it look like apache's redirect
+    _send_http_header($self, $req, $r);
+    # make it look like apache's redirect.  Ignore HEAD, because this
+    # is like an error.
     $r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
@@ -127,14 +128,30 @@ sub send {
     die('no reply generated, missing UI item on Task')
 	    unless $is_scalar || ref($o) eq 'GLOB';
     my($size) = $is_scalar ? length($$o) : -s $o;
-
-
-    # only do this the first time
-    $r->header_out('Content-Length', $size);
-    $r->header_out('Connection', 'close');
-    $r->content_type($self->get_output_type());
-    _send_http_header($req, $r);
+    # NOTE: The -s $o and the "stat(_)" below must be near each other
     if ($is_scalar) {
+	# Don't allow caching of dynamically generated replies, because
+	# we don't know the contents (typically from the database)
+	$self->set_cache_private();
+    }
+    else {
+	# Files read from disk are never private
+	$self->set_last_modified((stat(_))[9]);
+    }
+
+    # Don't keep the connection open on normal replies
+    $r->header_out('Connection', 'close');
+
+    $r->header_out('Content-Length', $size);
+    $r->content_type($self->get_output_type());
+
+    _send_http_header($self, $req, $r);
+
+    # M_HEAD not defined, so can't use method_number12
+    if (uc($r->method) eq 'HEAD') {
+	# No body, just header
+    }
+    elsif ($is_scalar) {
 	$r->print($$o);
     }
     else {
@@ -145,7 +162,8 @@ sub send {
     # don't let any more data be sent.  Don't clear early in case
     # there is an error and we get called back in die_to_http_code
     # (then _error()).
-    $self->{$_PACKAGE} = undef
+    $self->{$_PACKAGE} = undef;
+    return;
 }
 
 =for html <a name="die_to_http_code"></a>
@@ -185,6 +203,52 @@ sub die_to_http_code {
     return _error(Apache::Constants::SERVER_ERROR(), $r);
 }
 
+=for html <a name="set_cache_private"></a>
+
+=head2 set_cache_private()
+
+Do not allow shared caching of this response.
+
+=cut
+
+sub set_cache_private {
+    my($self) = @_;
+    $self->set_header('Cache-Control', 'private');
+    $self->set_header('Pragma', 'no-cache');
+    return;
+}
+
+=for html <a name="set_header"></a>
+
+=head2 set_header(string name, string value)
+
+Sets an arbitrary header value.
+
+=cut
+
+sub set_header {
+    my($self, $name, $value) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    ($fields->{headers} ||= {})->{$name} = $value;
+    return;
+}
+
+=for html <a name="set_last_modified"></a>
+
+=head2 set_last_modified(string date_time)
+
+=head2 set_last_modified(int unix_time)
+
+Sets the last modified header.
+
+=cut
+
+sub set_last_modified {
+    my($self, $time) = @_;
+    $self->set_header('Last-Modified', Bivio::Type::DateTime->rfc822($time));
+    return;
+}
+
 =for html <a name="set_output"></a>
 
 =head2 set_output(scalar_ref value)
@@ -218,9 +282,11 @@ sub _error {
     return $code if $code == Apache::Constants::OK();
     $r->status($code);
     $r->content_type('text/html');
-    _send_http_header(undef, $r);
+    _send_http_header(undef, undef, $r);
     # make it look like apache's redirect
     my($uri) = $r->uri;
+
+    # Ignore HEAD.  There was an error, give the whole body
     if ($code == Apache::Constants::NOT_FOUND()) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -266,15 +332,25 @@ EOF
     return Apache::Constants::OK();
 }
 
-# _send_http_header(Bivio::Agent::Request req, Apache r)
+# _send_http_header(Bivio::Agent::HTTP::Reply self, Bivio::Agent::Request req, Apache r)
 #
 # Sends the header, turning off keep alive (if necessary) and set cookie
 # (if req)
 #
 sub _send_http_header {
-    my($req, $r) = @_;
-    # We always set the cookie
-    Bivio::Agent::HTTP::Cookie->set($req, $r) if $req;
+    my($self, $req, $r) = @_;
+    if ($req) {
+	# We set the cookie if we don't cache this answer
+	$self->set_cache_private() if $req->get('cookie')->header_out($r);
+
+	# Set any optional headers
+	my($fields) = $self->{$_PACKAGE};
+	if ($fields->{headers}) {
+	    foreach my $k (sort(keys(%{$fields->{headers}}))) {
+		$r->header_out($k, $fields->{headers}->{$k});
+	    }
+	}
+    }
 
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.

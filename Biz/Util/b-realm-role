@@ -11,6 +11,7 @@ b-realm-role - manipulate realm_role_t database table
 
   b-realm-role [-n] [realm [role [(+|-)(permission|role)...]]]
   b-realm-role [-n] -init
+  b-realm-role [-n] -init_defaults
 
 =head1 DESCRIPTION
 

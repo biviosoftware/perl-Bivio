@@ -72,7 +72,7 @@ _initialize();
 
 =for html <a name="new"></a>
 
-=head2 static new(string realm_owner, string title, hash_ref icon, string text) : Bivio::UI::HTML::Celebrity::Page
+=head2 static new(string realm_owner, string title, hash_ref icon, array_ref text, string disclaimer) : Bivio::UI::HTML::Celebrity::Page
 
 Creates the static instance of a celebrity page.  Caller
 must supply the I<title>, I<icon>, and I<text>
@@ -82,14 +82,20 @@ If I<text> is an array_ref, will be converted to a Join.
 =cut
 
 sub new {
-    my($proto, $realm_owner, $title,  $icon, $text) = @_;
+    my($proto, $realm_owner, $title,  $icon, $text, $disclaimer) = @_;
     Carp::croak($realm_owner, ': duplicate celebrity realm')
 		if $_MAP->{$realm_owner};
     # Convert text to a widget if necessary.  If it is just a string,
     # will render properly in the String widget.
     $text = Bivio::UI::HTML::Widget::Join->new({values => $text})
 		if ref($text) eq 'ARRAY';
-
+    $disclaimer = Bivio::UI::HTML::Widget::String->new({
+	cell_align => 'center',
+	value => Bivio::UI::HTML::Widget::Join->new({
+	    values => [$disclaimer],
+	}),
+	string_font => 'celebrity_disclaimer',
+    });
     # Look up the icon
     my($picture) = Bivio::UI::Icon->get_widget_value($icon->{name});
     $picture->{width} = $icon->{width} if $icon->{width};
@@ -115,6 +121,24 @@ sub new {
 		    ],
 		    [
 			['page_content'],
+		    ],
+		    [
+			' ',
+		    ],
+		    [
+			Bivio::UI::HTML::Widget::Grid->new({
+			    values => [[
+				Bivio::UI::HTML::Widget::ClearDot->new({
+				    height => 1,
+				    width => 20,
+				}),
+				$disclaimer,
+				Bivio::UI::HTML::Widget::ClearDot->new({
+				    width => 20,
+				    height => 1,
+				}),
+			    ]],
+			}),
 		    ],
 		],
 	    }),
@@ -231,6 +255,7 @@ sub _initialize {
     # box title
     # box icon
     # box text
+    # disclaimer
     __PACKAGE__->new(
 	    'ask_candis',
 	    'Candis King',
@@ -253,6 +278,12 @@ is not having joined a club sooner.  Though enthusiastic about her clubs,
 she's willing to take the bad with the good.  "We've committed just about
 every investment mistake there is," she says, "but we've learned from them,
 and so our experience has been overwhelmingly positive."
+EOF
+	    <<'EOF',
+Disclaimer: statements are opinions expressed by Candis King. These statements
+are not intended to replace professional advice. When in doubt, follow the
+advice of your local tax advisor or accountant who is familiar with your
+particular circumstances.
 EOF
 	   );
     __PACKAGE__->new(
@@ -280,6 +311,13 @@ three times" he's had a lot more success as a financial planner, investment
 advisor, and accountant, having launched his own CPA firm back in the 1950s.
 Both have worked extensively with computers, and they have decades of
 investment club experience between them.
+EOF
+	    <<'EOF',
+Disclaimer: statements are opinions expressed by Rip West and Jerry Dressel
+and are not official statements from either bivio or the IRS. These statements
+are not intended to replace professional tax or accounting advice.
+When in doubt, follow the advice of your local tax advisor or accountant
+who is familiar with your particular circumstances.
 EOF
 	   );
     return;

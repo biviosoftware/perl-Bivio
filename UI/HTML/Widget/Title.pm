@@ -102,21 +102,26 @@ sub initialize {
 
 =head2 render(any source, string_ref buffer)
 
-Render the title by joining the I<values>.
+Render the title by joining the I<values>.  We set the Title in the
+reply as well.
 
 =cut
 
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my(@v, $v) = ();
-    foreach $v (@{$fields->{values}}) {
-	push(@v, Bivio::Util::escape_html($v)), next unless ref($v);
-	my($x) = $source->get_widget_value(@$v);
-	next unless defined($x) && length($x);
+    my(@v, @t) = ();
+    foreach my $v (@{$fields->{values}}) {
+	my($x) = $v;
+	if (ref($x)) {
+	    $x = $source->get_widget_value(@$x);
+	    next unless defined($x) && length($x);
+	}
 	push(@v, Bivio::Util::escape_html($x));
+	push(@t, $x);
     }
     $$buffer .= '<title>'.join($fields->{separator}, @v)."</title>\n";
+    $source->get('reply')->set_header('Title', join($fields->{separator}, @t));
     return;
 }
 

@@ -181,6 +181,9 @@ my(@_YEAR_BASE);
 my($_TIME_SUFFIX) = ' '.DEFAULT_TIME();
 my($_DATE_PREFIX) = FIRST_YEAR_IN_JULIAN_DAYS().' ';
 my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
+my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
+my(@_MONTH) = ('Jan','Feb','Mar','Apr','May','Jun',
+	'Jul','Aug','Sep','Oct','Nov','Dec');
 _initialize();
 
 =head1 METHODS
@@ -338,6 +341,33 @@ Returns date/time for now.
 
 sub now {
     return from_unix(__PACKAGE__, time);
+}
+
+=for html <a name="rfc822"></a>
+
+=head2 rfc822() : string
+
+=head2 rfc822(int unix_time) : string
+
+=head2 rfc822(string date_time) : string
+
+Return the rfc822 for the date/time in GMT. Format is:
+
+    Dow, DD Mon YYYY HH::MM::SS GMT
+
+=cut
+
+sub rfc822 {
+    my($proto, $unix_time) = @_;
+    $unix_time = time unless defined($unix_time);
+    $unix_time = $proto->to_unix($unix_time) if $unix_time =~ /\s/;
+
+    # We go to unix_time, because we need the weekday
+    my($sec, $min, $hour, $mday, $mon, $year, $wday)
+	    = gmtime($unix_time);
+    return sprintf('%s, %2d %s %04d %02d:%02d:%02d GMT',
+	    $_DOW[$wday], $mday, $_MONTH[$mon], $year + 1900,
+	    $hour, $min, $sec);
 }
 
 =for html <a name="set_local_end_of_day"></a>

@@ -155,14 +155,14 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
     )],
-    [qw(
-        CLUB_ACCOUNTING_HISTORY
-        10
-        CLUB
-        ACCOUNTING_READ
-        ?/accounting/history
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_HISTORY
+#        10
+#        CLUB
+#        ACCOUNTING_READ
+#        ?/accounting/history
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
@@ -212,12 +212,12 @@ my(@_CFG) = (
         next=CLUB_ADMIN_USER_LIST
     )],
     [qw(
-        CLUB_ADMIN_PREFERENCE_LIST
+        CLUB_REFERRAL
         15
         CLUB
-        ADMIN_READ
-        ?/admin/preferences:?/preferences
-        Bivio::UI::HTML::Club::Embargoed
+        LOGIN
+        ?/ref
+        Bivio::Biz::Action::Referral
     )],
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_LIST
@@ -230,37 +230,16 @@ my(@_CFG) = (
 
     )],
     [qw(
-        CLUB_COMMUNICATIONS_MOTION_LIST
+        USER_REFERRAL
         17
-        CLUB
-        MOTION_READ
-        ?/motions
-        Bivio::UI::HTML::Club::Embargoed
+        USER
+        LOGIN
+        ?/ref
+        Bivio::Biz::Action::Referral
     )],
-    [qw(
-        CLUB_COMMUNICATIONS_MEMBER_LIST
-        18
-        CLUB
-        ADMIN_READ&MEMBER_READ
-        ?/rolodex
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_LIBRARY_LIST
-        19
-        CLUB
-        DOCUMENT_READ
-        ?/library
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_SSG
-        20
-        CLUB
-        FINANCIAL_DATA_READ
-        ?/research/ssg
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#18
+#19
+#20
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21

@@ -372,6 +372,62 @@ sub _upgrade_reinvested_commissions {
 			->INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION
 			->as_int]);
     }
+    _upgrade_visitor();
+    return;
+}
+
+# _upgrade_visitor()
+#
+# Creates the visitor table.
+#
+sub _upgrade_visitor {
+    my() = @_;
+    _do_sql('
+CREATE TABLE visitor_t (
+  visitor_id NUMBER(18),
+  user_id NUMBER(18),
+  entry_uri VARCHAR2(100),
+  referer_uri VARCHAR2(100),
+  referer_realm_id NUMBER(18),
+  client_addr VARCHAR2(30),
+  creation_date_time DATE
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+/
+ALTER TABLE visitor_t ADD primary key(visitor_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE visitor_t
+  add foreign key (referer_realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE visitor_t
+  add foreign key (user_id)
+    references user_t(user_id)
+/
+ALTER TABLE visitor_t modify creation_date_time not null
+/
+
+CREATE INDEX visitor_referer_realm_i ON visitor_t (
+  referer_realm_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+
+CREATE INDEX visitor_user_i ON visitor_t (
+  user_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+CREATE sequence visitor_s
+  minvalue 100012 maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
+/
+');
     return;
 }
 

@@ -160,11 +160,13 @@ club.  Put the cookie field back in this weird case.
 
 sub delete_cookie {
     my($self) = @_;
-    my($c) = Bivio::Agent::HTTP::Cookie->delete_field($self->get_request,
-	    $_COOKIE_FIELD);
-    Bivio::Agent::HTTP::Cookie->set_field($self->get_request,
-	    $_COOKIE_FIELD, $c)
-		if defined($c) && $c ne $self->get('realm_invite_id');
+    my($cookie) = $self->get_request->get('cookie');
+    my($c) = $cookie->delete($_COOKIE_FIELD);
+
+    # Don't actually delete the cookie if the user was editing the
+    # invite list.
+    $cookie->put($_COOKIE_FIELD, $c)
+	    if defined($c) && $c ne $self->get('realm_invite_id');
     return;
 }
 
@@ -203,20 +205,18 @@ sub execute_accept {
 		'invite not found in db from query')
 		unless $self->unauth_load(realm_invite_id => $id->[0]);
 
-#TODO: Remove check after 2/16/00
+	# Compare actual and expected
 	my($actual) = $q->{$_QUERY_FIELD};
-	if (defined($actual)) {
-	    my($expected) = _magic($self);
-	    $self->die(Bivio::DieCode::NOT_FOUND(),
-		    'missing magic query field') unless $actual;
-	    $self->die(Bivio::DieCode::NOT_FOUND(),
-		    {actual => $actual, expected => $expected,
-			message => 'magic field mismatch'})
-		    unless $actual eq $expected;
-	}
+	my($expected) = _magic($self);
+	$self->die(Bivio::DieCode::NOT_FOUND(),
+		'missing magic query field') unless $actual;
+	$self->die(Bivio::DieCode::NOT_FOUND(),
+		{actual => $actual, expected => $expected,
+		    message => 'magic field mismatch'})
+		unless $actual eq $expected;
 
 	# Loaded ok, so set in the cookie
-	Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
+	$req->get('cookie')->put($_COOKIE_FIELD,
 		$self->get('realm_invite_id'));
     }
     else {
@@ -306,15 +306,15 @@ sub _check_cookie {
     my($proto, $req) = @_;
 
     # Coming in from another class.  Can we load from the cookie?
-    my($c) = Bivio::Agent::HTTP::Cookie->unsafe_get_field($req,
-	    $_COOKIE_FIELD);
+    my($cookie) = $req->get('cookie');
+    my($c) = $cookie->unsafe_get($_COOKIE_FIELD);
     # Nope, fall through to normal business logic
     return undef unless $c;
 
     my($self) = $proto->new($req);
     return $self if $self->unauth_load(realm_invite_id => $c);
     _trace($c, ': not found, deleting cookie') if $_TRACE;
-    Bivio::Agent::HTTP::Cookie->delete_field($req, $_COOKIE_FIELD);
+    $cookie->delete($_COOKIE_FIELD);
     return $c;
 }
 

@@ -23,30 +23,32 @@ C<Bivio::Agent::HTTP::Request> is a Bivio Request wrapper for an
 Apache::Request. It gathers request information from the URI and posted
 parameters.
 
+A note about URI vs URL.  Basically, we use URI everywhere.  [RJN: I don't
+understand the distinction, but there is a distinction and RFC2616 uses
+URI for the most part, so we do, too.]
+
 =cut
 
 #=IMPORTS
 use Apache::Constants;
 use Bivio::Agent::HTTP::Cookie;
-use Bivio::Agent::HTTP::CookieState;
 use Bivio::Agent::HTTP::Form;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::Task;
-use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Biz::Model::RealmOwner;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
+# Avoid circular import
+#use Bivio::Biz::Action::Logout;
 use Bivio::Type::UserAgent;
 use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_ANONYMOUS) = Bivio::Auth::Role::ANONYMOUS->get_name;
 
 =head1 FACTORIES
 
@@ -73,6 +75,14 @@ sub new {
 	is_secure => $ENV{HTTPS} ? 1 : 0,
     });
     Bivio::Type::UserAgent->execute_browser($self);
+
+    # Cookie parsed first, so referral and log code works properly.
+    my($cookie) = Bivio::Agent::HTTP::Cookie->new($self, $r);
+    # We must put the cookie now, because it may be used below.
+    $self->put(cookie => $cookie);
+
+    # Location next, because may not be found or location may want
+    # to clear 'auth_user_id'.
     my($uri) = $r->uri;
     my($task_id, $auth_realm, $path_info)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
@@ -80,14 +90,35 @@ sub new {
     # Must re-escape the URI.
     $uri = Bivio::Util::escape_uri($uri) if $uri;
 
-    my($auth_user) = Bivio::Agent::HTTP::Cookie->parse($self, $r);
+    # This special field is set by one of the handlers (LoginForm).
+    my($auth_user_id) = $self->unsafe_get('auth_user_id');
+    my($auth_user);
+    if ($auth_user_id) {
+	$auth_user = Bivio::Biz::Model::RealmOwner->new($self);
+	unless ($auth_user->unauth_load(
+		realm_id => $auth_user_id,
+		realm_type => Bivio::Auth::RealmType::USER())) {
+	    # Unknown user, so force logout (which clears cookie)
+	    Bivio::IO::Alert->warn($auth_user_id,
+		    ': user_id not found, logging out');
+	    Bivio::Biz::Model::LoginForm->invalidate_user($self);
+	    $auth_user = undef;
+	}
+    }
+
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
     my $qs = $r->args;
-#TODO: Apache bug: ?bla&foo=1 will generate "odd number elements in hash"
-#      warning.
-    my($query) = defined($qs) ? {$r->args} : undef;
+    my($query);
+    if (defined($qs)) {
+	# Avoid "odd number elements in hash" errors, because the query
+	# string is somehow corrupt.
+	my(@q) = $r->args;
+	push(@q, '') if int(@q) % 2;
+	$query = {@q};
+    }
+
     _trace($r->method, ': query=', $query, '; path_info=', $path_info)
 	    if $_TRACE;
 
@@ -154,7 +185,7 @@ sub client_redirect {
 	$uri = $new_uri;
 	if ($new_query) {
 	    my($query) = Bivio::Agent::HTTP::Query->format($new_query);
-	    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+	    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query);
 	}
     }
     $self->get('reply')->client_redirect($self, $uri);
@@ -184,7 +215,7 @@ sub format_http_toggling_secure {
 #      really the form_model.
     $query = $redirect_count ? Bivio::Agent::HTTP::Query->format($query)
 	    : $r->args;
-    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query) if $query;
+    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query) if $query;
 
     # Go into secure if not secure and vice-versa
     return ($is_secure ? 'http://' : 'https://').$host.$uri;
@@ -273,28 +304,14 @@ sub server_redirect_in_handle_die {
     return;
 }
 
-=for html <a name="set_user"></a>
-
-=head2 set_user(Bivio::Biz::Model::RealmOwner user)
-
-Sets I<user> to be C<auth_user>.  May be C<undef>.  Also caches
-user_realms and updates user in connection for logging.
-
-Tags the user specially if I<super_user_id> is set on this request.
-
-=cut
-
-sub set_user {
-    my($self) = shift;
-    $self->SUPER::set_user(@_);
-    my($user) = shift;
-    $user = defined($user) ? $user->get('name') : $_ANONYMOUS;
-    $user = 'su-'.$user if $self->unsafe_get('super_user_id');
-    $self->get('r')->connection->user($user);
-    return;
-}
 
 #=PRIVATE METHODS
+
+=head1 SEE ALSO
+
+RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
+RFC2109 (Cookies), RFC1630 (URI), RFC1738 (URL), RFC2396 (new URI),
+RFC1808 (Relative URL)
 
 =head1 COPYRIGHT
 

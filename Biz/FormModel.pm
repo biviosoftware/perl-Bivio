@@ -209,6 +209,7 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_TIMEZONE_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->TIMEZONE_FIELD;
+Bivio::Agent::HTTP::Cookie->register($_PACKAGE);
 
 =head1 FACTORIES
 
@@ -291,7 +292,8 @@ sub execute {
     if ($values) {
 	$self->internal_put($values);
 	$fields->{literals} = {};
-	_initialize_context($self, $req);
+	# Forms called internally don't have a context.  Form models
+	# should blow up.
 	return 1 if $self->execute_input();
 	return 0 unless $fields->{errors};
 	Carp::croak($self->as_string, ": called with invalid values");
@@ -648,6 +650,21 @@ sub get_model_properties {
 		if defined($pn) && exists($properties->{$pn});
     }
     return \%res;
+}
+
+=for html <a name="handle_cookie_in"></a>
+
+=head2 handle_cookie_in(Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req)
+
+Looks for timezone in I<cookie> and sets I<timezone> on I<req>.
+
+=cut
+
+sub handle_cookie_in {
+    my($self, $cookie, $req) = @_;
+    my($v) = $cookie->unsafe_get($_TIMEZONE_COOKIE_FIELD);
+    $req->put(timezone => $v) if defined($v);
+    return;
 }
 
 =for html <a name="has_context_field"></a>
@@ -1345,8 +1362,20 @@ sub _parse_timezone {
     # to handle timezone as undef.
     return unless defined($v);
 
+    unless ($v =~ /^\d+$/) {
+	Bivio::IO::Alert->warn($v, ':timezone field in form invalid');
+	return;
+    }
+
     my($req) = $self->get_request;
-    Bivio::Agent::HTTP::Cookie->set_field($req, $_TIMEZONE_COOKIE_FIELD, $v);
+    my($cookie) = $req->get('cookie');
+    my($old_v) = $cookie->unsafe_get($_TIMEZONE_COOKIE_FIELD);
+
+    # No change, don't do any more work
+    return if defined($old_v) && $old_v eq $v;
+
+    # Set the new timezone
+    $cookie->put($_TIMEZONE_COOKIE_FIELD => $v);
     $req->put(timezone => $v);
     return;
 }

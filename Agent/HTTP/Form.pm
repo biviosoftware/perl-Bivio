@@ -33,9 +33,6 @@ in the file field case or with forms which contain file fields
 L<Bivio::Type::FileField|Bivio::Type::FileField>.  The hash_ref
 contains the attributes: name, content_type, filename, and content.
 
-Other references: RFC 1806 (Content-Disposition),
-RFC1945 (HTTP/1.0) and RFC2616 (HTTP/1.1), RFC1521 (MIME).
-
 =cut
 
 #=IMPORTS
@@ -354,6 +351,11 @@ sub _read {
 	    unless defined($$buf);
     $r->reset_timeout;
 }
+
+=head1 SEE ALSO
+
+RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
+RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 

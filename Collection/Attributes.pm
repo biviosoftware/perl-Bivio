@@ -338,7 +338,10 @@ sub get_widget_value {
 	    # Auto increment?
 	    Carp::croak("++${param1}: not found")
 			unless exists($fields->{$param1});
-	    $value = ++$fields->{$param1};
+	    $value = $fields->{$param1} + 1;
+	    # Call "put", because value is being modified and a subclass
+	    # may have overriden.
+	    $self->put($param1 => $value);
 	}
 	else {
 	    if (ref($param1) eq 'ARRAY') {

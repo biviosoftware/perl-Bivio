@@ -48,6 +48,7 @@ _compile(
     NEW_PASSWORD => ['New Password'],
     CONFIRM_NEW_PASSWORD => ['Confirm New'],
     LOGIN => ['Login'],
+    SAVE_PASSWORD => ['Save Password'],
 
     # Address labels
     ADDRESS => ['Address'],

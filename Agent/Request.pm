@@ -45,6 +45,11 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 The user authenticated with the request.
 
+=item auth_user_id : string
+
+The user id authenticated with the request.  Set before I<auth_user>
+as a part of cookie processing.
+
 =item Bivio::Type::UserAgent : Bivio::Type::UserAgent
 
 The type of the user agent for this request.
@@ -53,21 +58,18 @@ The type of the user agent for this request.
 
 Client's network address if available.
 
-=item cookie : hash_ref
+=item cookie : Bivio::Agent::Cookie
 
 This is the cookie that came in the HTTP header.  It may be
-C<undef>.  Very few tasks should access the cookie directly.
+C<undef> only if the protocol doesn't support cookies.
+Very few tasks should access the cookie directly.
 If at all possible, the hidden form fields and the query string should
 be used to maintain state.
 
-Any fields set in the request cookie will be set in the reply.
+Any fields set in the request cookie will be set in the reply,
+i.e. there is only one cookie for request/reply.
 See L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>
 for details.
-
-=item cookie_state : Bivio::Agent::HTTP::CookieState
-
-Indicates the state of the cookie that arrived with the request.
-It may be C<undef>.
 
 =item form : hash_ref
 
@@ -171,15 +173,19 @@ and L<Bivio::Biz::Model::Preferences|Bivio::Biz::Model::Preferences>.
 
 Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
 
-=item unauth_user : Bivio::Biz::Model::RealmOwner
+=item user_id : string
 
-The user in a the request which could had insufficient authentication
-information.  This typically is set if the cookie expires, but is
-otherwise correct.  Currently only used in C<LoginForm>.
+User associated with the request's cookie.  This is set by the
+cookie management code and my be cleared by Location for performance
+reasons (HTTP_DOCUMENT).
 
 =item uri : string
 
 URI from the incoming request unmodified.  It is already "escaped".
+
+=item visitor_id : string
+
+The id of the visitor from the cookie.
 
 =item E<lt>ModuleE<gt> : Bivio::UNIVERSAL
 
@@ -980,6 +986,15 @@ sub set_realm {
 
 =head2 set_user(Bivio::Biz::Model::RealmOwner user)
 
+B<Use
+L<Bivio::Biz::Model::LoginForm|Bivio::Biz::Model::LoginForm>
+to change users so the cookie gets updated.>
+This is used to set the user temporarily and is called by
+LoginForm, which manages the cookie as well.
+
+In general, switching users should be limited to a small set of
+classes.
+
 Sets I<user> to be C<auth_user>.  May be C<undef>.  Also caches
 user_realms.
 
@@ -1006,7 +1021,11 @@ sub set_user {
     else {
 	$user_realms = {};
     }
-    $self->put(auth_user => $user, user_realms => $user_realms);
+    Bivio::IO::Alert->die($user, ': not a RealmOwner')
+	    if defined($user) && !$user->isa('Bivio::Biz::Model::RealmOwner');
+    $self->put(auth_user => $user,
+	    auth_user_id => $user ? $user->get('realm_id') : undef,
+	    user_realms => $user_realms);
     # Set the (cached) auth_role if requested (by default).
     $self->put(auth_role => _get_role($self, $self->get('auth_id')))
 	    unless $dont_set_role;
@@ -1144,6 +1163,11 @@ sub _get_role {
     # User has no special privileges in realm 
     return Bivio::Auth::Role::USER();
 }
+
+=head1 SEE ALSO
+
+RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
+RFC2109 (Cookies), RFC1806 (Content-Disposition), RFC1521 (MIME)
 
 =head1 COPYRIGHT
 

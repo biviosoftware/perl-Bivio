@@ -178,9 +178,12 @@ sub get_column_name {
 
 =for html <a name="get_column_type"></a>
 
-=head2 get_column_type(string name) : Bivio::Type
+=head2 get_column_type(string name) : Bivio::UNIVERSAL
 
-Returns the type of the column.
+Returns the type of the column.  May be a
+L<Bivio::Type|Bivio::Type> or a
+L<Bivio::Biz::Model|Bivio::Biz::Model>.  The latter may only be
+used for non-database fields.
 
 =cut
 
@@ -363,7 +366,9 @@ Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
 
 sub init_type {
     my(undef, $col, $type_cfg) = @_;
-    $col->{type} = Bivio::Type->get_instance($type_cfg);
+    $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::Biz::Model')
+	    ? $type_cfg
+	    : Bivio::Type->get_instance($type_cfg);
     $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
 	    $col->{type});
     return;

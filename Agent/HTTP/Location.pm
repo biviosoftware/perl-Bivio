@@ -327,9 +327,18 @@ sub parse {
     # If first uri doesn't match a RealmName, can't be one.
     if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
 	# Not a realm, but is it a document and is it found?
-	return ($_DOCUMENT_TASK, $_GENERAL, $uri, '')
-		if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
+	if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
+#TODO: Could optimize further and simply return the file here.
 
+	    # OPTIMIZATION: We know the DOCUMENT_TASK does not need
+	    # a user.  It is visible to all users.  Therefore, we avoid
+	    # a user lookup here which is a database hit.
+	    $req->put(user_id => undef);
+
+	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, '');
+	}
+
+	# Not found
 	$req->die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
 	    entity => $_DOCUMENT_ROOT.$uri,
 	    message => 'no such document'});

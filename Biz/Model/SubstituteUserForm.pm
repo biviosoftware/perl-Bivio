@@ -27,7 +27,7 @@ use Bivio::Biz::FormModel;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Model::SubstituteUserForm> allows a general admin to
-become another user. 
+become another user.
 Sets the special cookie value
 so we know the we are operating in super-user mode.
 
@@ -63,13 +63,15 @@ sub SUBMIT_CANCEL {
 
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
+use Bivio::Biz::Model::LoginForm;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Hash;
 use Bivio::Type::Text;
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
+# Cookie handled by LoginForm::handle_cookie_in
+my($_SU_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =head1 METHODS
 
@@ -79,7 +81,7 @@ my($_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =head2 execute_input()
 
-Sets the user if found.
+Logs in the I<realm_owner> and updates the cookie.
 
 =cut
 
@@ -87,17 +89,48 @@ sub execute_input {
     my($self) = @_;
     my($properties) = $self->internal_get;
     my($req) = $self->get_request;
+    my($cookie) = $req->get('cookie');
 
-    my($super_user_id) = $req->get('auth_user')->get('realm_id');
-    # Only set the user if not already su'd
-    Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
-	    $super_user_id)
-		unless defined(Bivio::Agent::HTTP::Cookie->unsafe_get_field(
-			$req, $_COOKIE_FIELD));
-    $req->put(super_user_id => $super_user_id);
+    my($new_user) = $properties->{realm_owner};
+    if (defined($new_user)) {
+	# Set (Login)
+	unless ($cookie->unsafe_get($_SU_FIELD)) {
+	    # Only set cookie field if not already set.  This keeps original
+	    # user and doesn't allow someone to su to an admin and then su
+	    # as that admin.
+	    my($super_user_id) = $req->get('auth_user')->get('realm_id');
+	    $cookie->put($_SU_FIELD => $super_user_id);
+	    $req->put(super_user_id => $super_user_id);
+	}
 
-    # Loaded by validate
-    $req->set_user($req->get('Bivio::Biz::Model::RealmOwner'));
+	# Execute the login
+	Bivio::Biz::Model::LoginForm->execute($req,
+		{realm_owner => $new_user});
+	return;
+    }
+
+    # Unset (Logout)
+    my($super_user_id) = $req->unsafe_get('super_user_id');
+    if ($super_user_id) {
+	$req->delete('super_user_id');
+	$cookie->delete($_SU_FIELD);
+	# Load the super user and unset
+	my($new_user) = Bivio::Biz::Model::RealmOwner->new($req);
+	if ($new_user->unauth_load(
+		realm_id => $super_user_id,
+		realm_type => Bivio::Auth::RealmType::USER())) {
+	    # Loaded super user, so set as ordinary user and redirect to
+	    # SU task again
+	    Bivio::Biz::Model::LoginForm->execute($req,
+		    {realm_owner => $new_user});
+	    $req->client_redirect(Bivio::Agent::TaskId::SUBSTITUTE_USER());
+	    # DOES NOT RETURN
+	}
+
+	# Unable to load super user (no permissions), so ordinary logout
+    }
+    Bivio::Biz::Model::LoginForm->execute($req,
+	    {realm_owner => undef});
     return;
 }
 
@@ -115,8 +148,15 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'login',
-		type => 'Bivio::Type::Line',
-		constraint => Bivio::SQL::Constraint::NOT_NULL(),
+		type => 'Line',
+		constraint => 'NOT_NULL',
+	    },
+	],
+	other => [
+	    {
+		name => 'realm_owner',
+		type => 'Bivio::Biz::Model::RealmOwner',
+		constraint => 'NONE',
 	    },
 	],
 	auth_id => ['RealmOwner.realm_id'],
@@ -130,7 +170,7 @@ sub internal_initialize {
 
 =head2 validate()
 
-Validate user is found.
+Look up the user by email, user_id, or name.
 
 =cut
 
@@ -145,15 +185,25 @@ sub validate {
 
     my($login) = $properties->{'login'};
     my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    my($expected) = ($login =~ /@/ ? $owner->unauth_load_by_email($login)
-	    : $owner->unauth_load(name => $login))
-	    ? $owner->get('password') : undef;
-    # Also handles ("impossible case") of a NULL password
-    unless (defined($expected)) {
-	$self->internal_put_error('login',
-		Bivio::TypeError::NOT_FOUND());
-	return;
+    $properties->{realm_owner} = $owner;
+    if ($login =~ /@/) {
+	# Login by email
+	return if $owner->unauth_load_by_email($login,
+		{realm_type => Bivio::Auth::RealmType::USER()});
     }
+    elsif ($login =~ /^\d/) {
+	# Login by realm id
+	return if $owner->unauth_load(realm_id => $login,
+		{realm_type => Bivio::Auth::RealmType::USER()});
+    }
+    else {
+	# Login by name
+	return if $owner->unauth_load(name => $login,
+		realm_type => Bivio::Auth::RealmType::USER());
+    }
+
+    # Failed
+    $self->internal_put_error('login', Bivio::TypeError::NOT_FOUND());
     return;
 }
 

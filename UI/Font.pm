@@ -98,6 +98,8 @@ _compile([
     FORM_SUBMIT => [$_SANS_SERIF, undef],
     SUBSTITUTE_USER => [$_SANS_SERIF, 'error', 'big', 'strong'],
     FOOTER_MENU => [$_SANS_SERIF, 'footer_menu', 'small'],
+    COPYRIGHT_AND_DISCLAIMER => [$_SANS_SERIF, undef, 'small'],
+    CELEBRITY_DISCLAIMER => [$_SANS_SERIF, 'celebrity_disclaimer', 'small'],
     ACTION_BAR_STRING => [undef, undef, 'strong'],
     ACTION_BUTTON => [undef, undef],
     REPORT_PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
