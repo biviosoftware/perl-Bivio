@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget::DateYearHandler - txn to val date handler
 
 =head1 RELEASE SCOPE
 
-bOP
+Societas
 
 =head1 SYNOPSIS
 
@@ -44,8 +44,6 @@ Used to access the form within JavaScript.
 
 The date field to receive the new value. This value only get assigned
 if the source date is less than the current value.
-
-=back
 
 =cut
 
@@ -87,21 +85,34 @@ function dy_complete_date(s) {
   slash_1 = s.value.indexOf('/');
   slash_2 = s.value.indexOf('/', slash_1 + 1);
   s_month = s.value.substring(0, slash_1);
-  s_day = s.value.substring(slash_1 + 1, slash_2);
-  s_year = s.value.substring(slash_2 + 1, s.value.length);
+
+  if (slash_2 == -1) {
+    s_day = s.value.substring(slash_1 + 1, s.value.length);
+    s_year = "";
+  } else {
+    s_day = s.value.substring(slash_1 + 1, slash_2);
+    s_year = s.value.substring(slash_2 + 1, s.value.length);
+  }
+
+  var pattern = new RegExp("[0-9]?[0-9]/[0-9]?[0-9](/[0-9][0-9])?");
+
+  alert(s_month.length);
+  alert(s_day.length);
+
+  if (!pattern.test(s.value)) {
+    return;
+  } else if (s_month.length > 2 || s_day.length > 2) {
+    return;
+  }
 
   if (slash_2 == -1) {
     s.value = s.value + '/' + c_year;
-  }
-
-  else if (s_year.length == 2) {
+  } else if (s_year.length == 2) {
     diff = c_year - 1980;
 
     if (diff >= s_year) {
       s_year = '20' + s_year;
-    }
-
-    else {
+    } else {
       s_year = '19' + s_year;
     }
 
