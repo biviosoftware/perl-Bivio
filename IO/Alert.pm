@@ -60,6 +60,12 @@ BEGIN {
 #=IMPORTS
 use Bivio::IO::Config;
 use Carp ();
+
+# This avoids warning messages when MIME::Parser initializes.
+# The related Mail::Field class doesn't initialize nicely, and issues
+# warnings which shouldn't be caught by this class.
+eval 'use MIME::Parser ();';
+
 # TODO: Commented out because it's causing an ugly warning message
 #       Might be ok in a future version of Perl libraries
 #use Sys::Syslog ();
