@@ -1894,6 +1894,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberOpenBalanceListForm
         Bivio::UI::HTML::Club::MemberOpenBalanceList
         next=CLUB_ADMIN_SHADOW_MEMBER_INVITE
+        help=opening-balance
     )],
     [qw(
         CLUB_INVESTMENT_OPEN_BALANCE
@@ -1905,6 +1906,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentOpenBalanceListForm
         Bivio::UI::HTML::Club::InstrumentOpenBalanceList
         next=CLUB_MEMBER_OPEN_BALANCE
+        help=opening-balance
     )],
     [qw(
         CLUB_OPEN_BALANCE
@@ -1917,6 +1919,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountOpenBalance
         next=CLUB_INVESTMENT_OPEN_BALANCE
         cancel=CLUB_ADMIN_TOOLS
+        help=opening-balance
     )],
     [qw(
         CLUB_MAIL_DELETE
@@ -2537,6 +2540,18 @@ my(@_CFG) = (
         next=USER_ADMIN_PREFERENCES_EDIT
         help=change-preferences
     )],
+    [qw(
+        CLUB_ACCOUNTING_REALM_ACCOUNT_CREATE
+        244
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/account/create
+        Bivio::Biz::Model::RealmAccountForm
+        Bivio::UI::HTML::Club::RealmAccount
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+        want_query=0
+        help=creating-accounts
+     )],
 );
 
 __PACKAGE__->compile([
