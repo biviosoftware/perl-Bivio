@@ -92,9 +92,9 @@ sub internal_initialize {
 	table_name => 'realm_decor_t',
 	columns => {
             realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-            show_all_columns => ['Boolean', 'NONE'],
-            show_disclaimer => ['Boolean', 'NONE'],
-            show_profile => ['Boolean', 'NONE'],
+            show_all_columns => ['Boolean', 'NOT_NULL'],
+            show_disclaimer => ['Boolean', 'NOT_NULL'],
+            show_profile => ['Boolean', 'NOT_NULL'],
             disclaimer => ['LongText', 'NONE'],
             profile_title => ['Line', 'NONE'],
             profile_bio => ['LongText', 'NONE'],
