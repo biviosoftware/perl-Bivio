@@ -72,11 +72,21 @@ Creates a mail message model from an L<Bivio::Mail::Incoming>.
 
 sub create {
     my($self, $msg, $realm_owner, $club) = @_;
+    my($req) = $self->unsafe_get_request;
+
+    # Check disk utilization first.  Round down
+    my($kbytes) = int($msg->get_rfc822_length/1024);
+    $club->update({
+	kbytes_in_use => $club->get('kbytes_in_use') + $kbytes,
+    });
+
     # Archive mail message first
     # $date_time is always valid
     my($date_time) = $msg->get_date_time() || time;
     my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
     my($from_email, $from_name) = $msg->get_from;
+    $from_email = $req->format_email('ignore-unknown')
+	    unless defined($from_email);
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
     my($body) = $msg->get_body;
@@ -84,6 +94,7 @@ sub create {
 #TODO: Should we allow NULL for subject?  Makes code elsewhere complicated,
 #      but would be more true to what is actually going on.
     $subject = '(no subject)' unless $subject;
+
     my($values) = {
 	club_id => $club_id,
 	rfc822_id => $msg->get_message_id,
@@ -93,25 +104,13 @@ sub create {
 	reply_to_email => $reply_to_email,
 	subject => $subject,
 #TODO: Measure real size (all unpacked files)
-	kbytes => int((length($body) + 1023)/ 1024),
+	kbytes => $kbytes,
 	subject_sort => _sortable_subject($subject, $club_name),
-	from_name_sort => _sortable_name($from_name, $from_email)
+	from_name_sort => lc($from_name),
     };
     $self->SUPER::create($values);
     my($msgid) = $self->get('mail_message_id');
 #TODO: Update club_t.bytes here
-    _trace('validation of kbyte size for message.');
-
-#TODO This is a two step process. Probably should move the whole thing
-#into club.
-
-    my($kbytes) = $values->{kbytes};
-    #NOTE this is an estimate:
-#    my($isok) = $club->check_kbytes(\$kbytes);
-#    #kbytes is incremented if okay.
-#    if($isok eq(0)){
-#	die("Mail message size exceeds max size for club.");
-#    }
 
     my $rfc = $msg->get_rfc822();
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
@@ -120,8 +119,8 @@ sub create {
 #return;
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
-    my($req) = $self->unsafe_get_request;
-    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT, $req);
+    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename,
+	    $_FILE_CLIENT, $req);
     $mimeparser->parse_and_store();
     # due to the above two lines, all the MIME stuff in this
     # file will be removed
@@ -129,12 +128,6 @@ sub create {
     $self->update({
 	parts => $nparts,
     });
-    my($curkbytes) = $club->get('kbytes_in_use') + $mimeparser->get_kbytes_written();
-    _trace('updating kbytes_in_use for this club: ', $curkbytes) if $_TRACE;
-#TODO There could be rounding error, here:
-#    $club->update({
-#	kbytes_in_use => $curkbytes,
-#    });
     return;
 }
 
@@ -581,20 +574,6 @@ sub _parse_msg_line {
 	$keywords->{$w}++;
     }
     return;
-}
-
-# _sortable_name(string from_name, string from_email) : string
-#
-# Returns from_name and from_email stripped and downcased for storing
-# in the "from_name_sort" field.
-#
-sub _sortable_name {
-    my($from_name, $from_email) = @_;
-#TODO: Should do either from_name or from_email, not both.
-    my($str) = lc($from_name .  " <" . $from_email . ">" );
-    $str =~ s/[!#$%^&*-+=]/\s/g;
-    &_trace('stripped user name: ', $str) if $_TRACE;
-    return $str;
 }
 
 # _sortable_subject(string subject, string clubname) : string
