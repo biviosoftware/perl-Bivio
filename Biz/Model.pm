@@ -93,8 +93,8 @@ with I<class> as its argument and the resultant class is instantiated.
 
 sub new {
     my($proto, $req, $class) = @_;
-    $class = defined($class) ? ref(__PACKAGE__->get_instance($class))
-	    : (ref($proto) || $proto);
+    return $proto->get_instance($class)->new($req) if defined($class);
+    $class = ref($proto) || $proto;
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
     # Make a copy of the properties for this instance.  properties
