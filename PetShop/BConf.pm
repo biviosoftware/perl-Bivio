@@ -77,12 +77,16 @@ sub merge_overrides {
 	},
 	'Bivio::IO::ClassLoader' => {
 	    delegates => {
-		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Agent::TaskId',
+		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
 		'Bivio::UI::HTML::FormErrors' =>
-	    	    'Bivio::PetShop::UI::FormErrors',
-		'Bivio::TypeError' => 'Bivio::PetShop::TypeError',
+	    	    'Bivio::PetShop::Delegate::FormErrors',
+		'Bivio::TypeError' => 'Bivio::PetShop::Delegate::TypeError',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
+                'Bivio::Type::Location' =>
+                    'Bivio::PetShop::Delegate::Location',
+                'Bivio::Type::ECService' =>
+                    'Bivio::PetShop::Delegate::ECService',
 	    },
 	    maps => {
 		Model => ['Bivio::PetShop::Model', 'Bivio::Biz::Model'],
