@@ -127,12 +127,18 @@ sub client_redirect {
     my($uri);
     if (ref($_[0])) {
 	my($new_task, $new_realm, $new_query) = @_;
+
 	# use previous query if not specifed, maintains state across pages
 	$new_query ||= $self->get('query');
+
+	# server_redirect if same task or if task doesn't have a uri
 	$self->SUPER::server_redirect($new_task, $new_realm, $new_query)
-		if $new_task eq $self->get('task_id');
+		if $new_task eq $self->get('task_id')
+		    || !Bivio::Agent::HTTP::Location->task_has_uri($new_task);
+
 	$self->internal_redirect_realm($new_task, $new_realm);
 	$uri = $self->format_uri($new_task, $new_query);
+
     }
     else {
 	my($new_uri, $new_query) = @_;
@@ -169,6 +175,8 @@ Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
 If I<auth_realm> is C<undef>, request's realm will be used.
+
+If the task doesn't have a uri, returns undef.
 
 =cut
 
