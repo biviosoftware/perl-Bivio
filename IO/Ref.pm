@@ -94,6 +94,8 @@ sub nested_equals {
 
 =head2 to_scalar_ref(string scalar) : scalar_ref
 
+DEPRECATED: Use \('bla').
+
 Returns its argument as a scalar_ref.
 
 =cut
