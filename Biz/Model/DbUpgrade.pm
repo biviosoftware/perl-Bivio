@@ -1,17 +1,21 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::DbUpgrade;
 use strict;
 $Bivio::Biz::Model::DbUpgrade::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::DbUpgrade::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::DbUpgrade - database upgrade indicator
+Bivio::Biz::Model::DbUpgrade - maintains current database DDL version
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
     use Bivio::Biz::Model::DbUpgrade;
-    Bivio::Biz::Model::DbUpgrade->new();
 
 =cut
 
@@ -26,7 +30,11 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::DbUpgrade> database upgrade indicator
+C<Bivio::Biz::Model::DbUpgrade> database upgrade indicator.  Applications
+should create a program, e.g. db-upgrade, which contains the current upgrade.
+When the upgrade is complete (before the commit), this table should be updated
+with the CVS revision of the upgrade.  Since there is a unique key on
+db_upgrade_t.version, an upgrade can't run twice.
 
 =cut
 
@@ -52,7 +60,9 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'db_upgrade_t',
 	columns => {
+	    # Which version, can be anything, but must be unique
             version => ['Name', 'PRIMARY_KEY'],
+	    # When did the upgrade run?
 	    run_date_time => ['DateTime', 'NOT_NULL'],
         },
     };
@@ -62,7 +72,7 @@ sub internal_initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
