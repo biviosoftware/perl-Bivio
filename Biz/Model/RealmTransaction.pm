@@ -256,23 +256,25 @@ sub _generate_instrument_remark {
 	    [$self->get('realm_transaction_id', 'realm_id')]);
     }
 
-    my($result);
-    my($row);
-    while ($row = $sth->fetchrow_arrayref) {
-	my($name, $count) = @$row;
-	$result ||= $name;
-	$count = abs($count);
-
-	# get the grammar right
-	if ($count == 1) {
-	    $result = '1 Share '.$name if $count > 0;
-	}
-	elsif ($count != 0) {
-	    $result = $count.' Shares '.$name if $count > 0;
-	}
+    my($result) = '';
+    my($total) = 0;
+    my($name) = '';
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($count);
+	($name, $count) = @$row;
+	$total += abs($count);
     }
+
+    # get the grammar right
+    if ($total == 1) {
+	$result = '1 Share ';
+    }
+    elsif ($total != 0) {
+	$result = $total.' Shares ';
+    }
+
     # guaranteed result if class is instrument
-    return $result;
+    return $result.$name;
 }
 
 # _generate_member_remark() : string
