@@ -141,12 +141,11 @@ sub _set_realm {
     my($realm) = Bivio::Biz::Model->new($req, 'RealmOwner')
 	->unauth_load_or_die({
 	    name => $name,
-	    realm_type => Bivio::Auth::RealmType->USER,
 	});
     $self->throw_die('NOT_FOUND', {
 	entity => $realm,
-        message => 'cannot mail to a default realm',
-    }) if $realm->is_default;
+        message => 'cannot mail to a default realm or offline user',
+    }) if $realm->is_default || $realm->is_offline_user;
     $req->set_realm($realm);
     return;
 }
