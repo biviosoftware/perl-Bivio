@@ -90,7 +90,7 @@ sub init {
     my($user_list) = Bivio::UI::Admin::UserListView->new();
     my($add_user) = Bivio::UI::Admin::UserView->new();
     my($message_list) = Bivio::UI::MessageBoard::MessageListView->new();
-    my($message_detail) = Bivio::UI::TestView->new("message", "<i>Message</i>",
+    my($message_detail) = Bivio::UI::TestView->new("detail", "<i>Message</i>",
 	    $default_model);
 
     my($admin) = Bivio::UI::HTML::Presentation->new([$user_list, $add_user]);
