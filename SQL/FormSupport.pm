@@ -289,7 +289,7 @@ sub _init_column_classes {
 	    # Check syntax of user designated fields
 	    die($col->{name}, ': duplicate form name (',
 		    $col->{form_name}, ')') if $form_names{$col->{form_name}};
-	    die($col->{name}, ': form name cannot be fNN')
+	    die($col->{name}, ': form name cannot be fNN. You probably have a field in both the \'visible\' and \'hidden\' sections of your form definition')
 		    if $col->{form_name} =~ /^f\d+/;
 	    $form_names{$col->{form_name}} = 1;
 	}
