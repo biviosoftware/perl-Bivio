@@ -650,6 +650,8 @@ EOF
 sub _build_tar_copy {
     my($cvs_dir, $project, $tgt) = @_;
     File::Find::find(sub {
+	# The alg fails with '.'
+	return if $_ eq '.';
 	my($dst);
 	my($file) = $File::Find::name;
         if ($file =~ m#(?:^|/)(?:CVS|.*\.old|old)/#) {
@@ -695,7 +697,7 @@ sub _build_tar_copy {
 	Bivio::IO::File->mkdir_parent_only($dst);
 	Bivio::IO::File->write($dst, Bivio::IO::File->read($_));
 	return;
-    }, $cvs_dir);
+    }, "$cvs_dir/$project->[0]");
     return;
 }
 
