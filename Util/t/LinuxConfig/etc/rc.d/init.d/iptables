@@ -64,7 +64,7 @@ start() {
             for i in $chains; do iptables -t $i -Z; done
 
 	    echo $"Applying iptables firewall rules: "
-		grep -v "^[[:space:]]*#" $IPTABLES_CONFIG | grep -v '^[[:space:]]*$' | /sbin/iptables-restore -c && \
+		grep -v "^[[:space:]]*#" $IPTABLES_CONFIG | grep -v '^[[:space:]]*$' | /sbin/iptables-restore && \
 		    success $"Applying iptables firewall rules" || \
 		    failure $"Applying iptables firewall rules"
 	    echo
@@ -162,7 +162,7 @@ case "$1" in
 	echo -n $"Saving current rules to $IPTABLES_CONFIG: "
 	touch $IPTABLES_CONFIG
 	chmod 600 $IPTABLES_CONFIG
-	/sbin/iptables-save -c > $IPTABLES_CONFIG  2>/dev/null && \
+	/sbin/iptables-save > $IPTABLES_CONFIG  2>/dev/null && \
 	  success $"Saving current rules to $IPTABLES_CONFIG" || \
 	  failure $"Saving current rules to $IPTABLES_CONFIG"
 	echo

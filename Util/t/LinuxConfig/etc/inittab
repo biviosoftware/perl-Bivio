@@ -51,6 +51,7 @@ pr:12345:powerokwait:/sbin/shutdown -c "Power Restored; Shutdown Cancelled"
 4:2345:respawn:/sbin/mingetty tty4
 5:2345:respawn:/sbin/mingetty tty5
 6:2345:respawn:/sbin/mingetty tty6
+S0:2345:respawn:/sbin/agetty ttyS0 38400
 
 # Run xdm in runlevel 5
 # xdm is now a separate service

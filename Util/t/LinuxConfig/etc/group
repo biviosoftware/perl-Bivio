@@ -1,4 +1,4 @@
-root:x:0:root
+root:x:0:root,larry
 bin:x:1:bin,daemon
 daemon:x:2:bin,daemon
 sys:x:3:bin,adm
