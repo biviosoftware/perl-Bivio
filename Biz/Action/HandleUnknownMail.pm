@@ -20,13 +20,8 @@ use Bivio::Biz::Action;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Action::HandleUnknownMail> handles mail sent to an
-unknown user.  There are some standard names, e.g. C<owner-*> and
-C<*-owner> which cause mail to be forwarded to the postmaster.
-We will eventually forward these to the administrators of a club
-and user space.  For now it as convenient handle.
-
+unknown user.
 We throw away mail sent to C<ignore-*>.
-
 Other mail gets bounced with a not-found.
 
 =cut
@@ -49,8 +44,11 @@ my($_IGNORE) = Bivio::Type::Email->IGNORE_PREFIX;
 
 =head2 static execute(Request req)
 
-Looks at recipient to determine action: forward to postmaster,
-toss, or bounce.
+Looks at recipient to determine action:
+ ignore-club : toss
+ club-owner  : forward to administrators only (address used for bounces)
+ club-people : forward to all users of club, but don't store in message board
+ club-board  : only store in message board
 
 =cut
 
@@ -60,17 +58,10 @@ sub execute {
 
     # There should only be one recipient
     my($who) = $msg->get_recipients->[0];
-    if ($who =~ /^owner-|-owner$/i) {
-	$msg->set_recipients('postmaster');
-	$msg->enqueue_send;
-	return;
-    }
-
     # Ignore?
     return if $who =~ /^$_IGNORE/oi;
 
-#TODO: Really should be in Mail::Request and TaskId configuration
-    if ($who =~ /^(\w+)-(people|board)$/i) {
+    if ($who =~ /^(\w+)-(people|board|owner)$/i) {
 	my($name, $which) = (lc($1), $2);
 	my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
 	if ($realm_owner->unauth_load(name => $name)
@@ -82,10 +73,20 @@ sub execute {
 		Bivio::Biz::Action::ForwardClubMail->send(
 			$realm_owner, $club, $msg);
 	    }
-	    else {
+	    elsif ($which eq 'board') {
 		Bivio::Biz::Action::ForwardClubMail->store(
 			$realm_owner, $club, $msg);
 	    }
+            else {
+                # club-owner
+                # Forward message unchanged to the Administrators
+                my($out_msg) = Bivio::Mail::Outgoing->new($msg);
+                my($admins) = Bivio::Biz::Model::RealmAdminList->new($req);
+                $admins->unauth_load_all({auth_id => $club->get('club_id')});
+                $out_msg->set_recipients($admins->get_outgoing_emails);
+                $out_msg->set_envelope_from($req->get('support_email'));
+                $out_msg->enqueue_send;
+            }
 	    return;
 	}
     }

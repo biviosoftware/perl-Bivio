@@ -149,7 +149,7 @@ Add an attachment part to the mail message.
 Arguments 'content' and 'content-type' are mandatory.
 'name' is the file name that should be used to store it.
 'binary' can be set to true to base64-encode the contents.
-Anything which is not if type text/* is encoded automatically.
+Anything which is not of type text/* is encoded automatically.
 
 =cut
 
@@ -253,14 +253,15 @@ sub set_headers_for_list_send {
     foreach $name (@_REMOVE_FOR_LIST_RESEND) {
 	delete $headers->{$name};
     }
-    $headers->{precedence} = "Precedence: bulk\n";
-    $headers->{sender} = "Sender: owner-$list_name\n";
+    my($sender) = "$list_name-owner";
+    $headers->{precedence} = "Precedence: list\n";
+    $headers->{sender} = "Sender: $sender\n";
+    $self->set_envelope_from($sender);
     $headers->{to} = "To: \"$list_title\" <$list_name>\n";
     $reply_to_list && ($headers->{'reply-to'} = 'Reply-' . $headers->{to});
     # If there is no From:, add it now.
-    $headers->{from} ||= "From: owner-$list_name\n";
+    $headers->{from} ||= "From: $sender\n";
     # Insert the list in the subject, if not already there
-#TODO: Need to upcase $list_name appropriately, e.g. Cosmic:, not cosmic:.
     if ($list_in_subject) {
 	if (defined($headers->{subject})) {
 	    $headers->{subject}
@@ -284,6 +285,9 @@ Sets the Content-Type header field. Any previous setting is overridden.
 sub set_content_type {
     my($self, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
+    # Remove possibly existing Content-Type setting from the headers
+    exists($fields->{headers}->{'content-type'})
+            && delete($fields->{headers}->{'content-type'});
     $fields->{content_type} = $value;
     return;
 }
@@ -374,8 +378,12 @@ sub as_string {
                 Bivio::IO::Alert->warn("ignoring body, have attachments");
         _encapsulate_parts(\$res, $fields->{content_type}, $fields->{parts});
     } else {
-        defined($fields->{body}) && ($res .= "\n"
-                . (ref($fields->{body}) ? ${$fields->{body}} : $fields->{body}));
+        if (defined($fields->{body})) {
+            defined($fields->{content_type})
+                    && ($res .= "Content-Type: $fields->{content_type}\n");
+            $res .= "\n" . (ref($fields->{body}) ?
+                    ${$fields->{body}} : $fields->{body});
+        }
     }
     return $res;
 }
