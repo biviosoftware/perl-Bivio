@@ -61,7 +61,7 @@ sub dev {
     my($pwd) = Cwd::getcwd();
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
-    return _merge(
+    return _validate_config(_merge(
 	$overrides || {},
 	$proto->dev_overrides($pwd, $host, $user, $http_port),
 	{
@@ -93,7 +93,7 @@ sub dev {
 	},
 	$proto->merge_overrides($host),
 	_base(),
-    );
+    ));
 }
 
 =for html <a name="dev_overrides"></a>
@@ -240,6 +240,22 @@ sub _merge {
 	$res = Bivio::IO::Config->merge($c, $res);
     }
     return $res;
+}
+
+# _validate_config(hash_ref config) : hash_ref
+#
+# Ensures the configuration is consistent. For example, NoDbAuthSupport
+# should not be present if if Bivio::Ext::DBI is defined.
+# Issues warnings only for dev() configuration.
+#
+sub _validate_config {
+    my($config) = @_;
+    warn('WARNING: NoDbAuthSupport used with Bivio::Ext::DBI')
+	if ($config->{'Bivio::IO::ClassLoader'}
+	    ->{delegates}->{'Bivio::Auth::Support'}
+	    eq 'Bivio::Delegate::NoDbAuthSupport')
+	    && ($config->{'Bivio::Ext::DBI'}->{database} ne 'none');
+    return $config;
 }
 
 =head1 COPYRIGHT
