@@ -162,13 +162,17 @@ sub format_last_first_middle {
 
     # We shown the last_name as "-" if not set.
     my($res) = undef;
-    $ln = '-' unless defined($ln);
+    if (defined($ln)) {
+	return $ln unless defined($fn) || defined($mn);
+	$res = $ln.',';
+	$res .= ' '.$fn if defined($fn);
+	$res .= ' '.$mn if defined($mn);
+	return $res;
+    }
 
-    return $ln unless defined($fn) || defined($mn);
-    $res = $ln.',';
-    $res .= ' '.$fn if defined($fn);
-    $res .= ' '.$mn if defined($mn);
-    return $res;
+    return $fn.' '.$mn if defined($fn) && defined($mn);
+
+    return defined($fn) ? $fn : $mn;
 }
 
 =for html <a name="generate_shadow_user_name"></a>
