@@ -673,8 +673,10 @@ sub _calculate_income {
     my($diff) = $_M->sub($properties->{net_income}, $total);
 
     # the Schedule D can be off by a few pennies, unfortunately
+    # if it is more than that, it is either incorrect imported allocations,
+    # or a taxable item recorded prior to ownership in the club
     if ($diff != 0) {
-	Bivio::IO::Alert->info('adjusting allocations ', $diff);
+	$self->get_request->warn('adjusting allocations ', $diff);
 
 	# use income_general_individual to take up the slack
 	$properties->{income_general_individual} = $_M->add(
