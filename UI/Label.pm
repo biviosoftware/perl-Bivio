@@ -180,6 +180,7 @@ _compile(
     HELP => ['Help'],
     CLUB_CREATE => ['Create Club Site'],
     CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
+    CLUB_ADMIN_GUEST_2_MEMBER => ['Invite Guest to become Member'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
