@@ -117,11 +117,8 @@ sub new {
 	unless (ref($owner)) {
 	    Bivio::Die->die('cannot create model without request')
 			unless ref($req);
-	    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
-	    Bivio::Die->die($owner, ': realm_id not found')
-			unless $o->unauth_load(($owner =~ /^\d+$/
-				? 'realm_id' : 'name') => $owner);
-	    $owner = $o;
+	    $owner = Bivio::Biz::Model::RealmOwner->new($req)
+		    ->unauth_load_by_id_or_name_or_die($owner);
 	}
 	my($realm_type) = $owner->get('realm_type');
 	return Bivio::Auth::Realm::Club->new($owner)
