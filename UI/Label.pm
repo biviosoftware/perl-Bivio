@@ -486,7 +486,6 @@ _compile([
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    ANNOUNCE_EDIT_EMAILS => ['Modifying Email Addresses'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
