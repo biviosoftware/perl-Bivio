@@ -9,10 +9,13 @@ $_ = $Bivio::Biz::ExpandableListFormModel::VERSION;
 
 Bivio::Biz::ExpandableListFormModel - list form which can have extra rows
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::ExpandableListFormModel;
-    Bivio::Biz::ExpandableListFormModel->new();
 
 =cut
 
@@ -105,7 +108,7 @@ sub internal_initialize {
 	hidden => [
 	    {
 		name => 'empty_row_count',
-		type => 'Amount',
+		type => 'Integer',
 		constraint => 'NONE',
 	    },
 	],
@@ -130,9 +133,11 @@ sub internal_initialize_list {
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get('form');
+#TODO: Why off the request and not explicit call?
     my($empty_row_count) = $req->unsafe_get(__PACKAGE__.'empty_row_count');
     unless ($empty_row_count) {
 	if ($form) {
+#TODO: Need some validation here, I think?
 	    $empty_row_count = $form->{
 		$self->get_field_name_for_html('empty_row_count')};
 	}
