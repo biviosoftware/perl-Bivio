@@ -6,7 +6,7 @@ $Bivio::Biz::Model::RealmValuationAccountList::VERSION = sprintf('%d.%02d', q$Re
 
 =head1 NAME
 
-Bivio::Biz::Model::RealmValuationAccountList - 
+Bivio::Biz::Model::RealmValuationAccountList - provide valuation account list
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSCashFlow::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSCashFlow - 
+Bivio::Biz::Model::MGFSCashFlow - provide cash flow format
 
 =head1 SYNOPSIS
 

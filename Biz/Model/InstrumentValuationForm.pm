@@ -6,7 +6,7 @@ $Bivio::Biz::Model::InstrumentValuationForm::VERSION = sprintf('%d.%02d', q$Revi
 
 =head1 NAME
 
-Bivio::Biz::Model::InstrumentValuationForm - 
+Bivio::Biz::Model::InstrumentValuationForm - process an instrument valuation
 
 =head1 SYNOPSIS
 

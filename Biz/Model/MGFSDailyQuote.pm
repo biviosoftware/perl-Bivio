@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSDailyQuote::VERSION = sprintf('%d.%02d', q$Revision$ =~ 
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSDailyQuote - 
+Bivio::Biz::Model::MGFSDailyQuote - provide daily quotes formats
 
 =head1 SYNOPSIS
 

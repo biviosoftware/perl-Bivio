@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSFundamental::VERSION = sprintf('%d.%02d', q$Revision$ =~
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSFundamental - 
+Bivio::Biz::Model::MGFSFundamental - provide fundamental format
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSBalanceSheet::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSBalanceSheet - 
+Bivio::Biz::Model::MGFSBalanceSheet - provide balance sheet format
 
 =head1 SYNOPSIS
 

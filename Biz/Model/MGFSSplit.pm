@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSSplit::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSSplit - 
+Bivio::Biz::Model::MGFSSplit - provide split format
 
 =head1 SYNOPSIS
 

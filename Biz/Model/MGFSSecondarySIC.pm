@@ -6,7 +6,7 @@ $Bivio::Biz::Model::MGFSSecondarySIC::VERSION = sprintf('%d.%02d', q$Revision$ =
 
 =head1 NAME
 
-Bivio::Biz::Model::MGFSSecondarySIC - 
+Bivio::Biz::Model::MGFSSecondarySIC - provide SIC code format
 
 =head1 SYNOPSIS
 

@@ -6,7 +6,7 @@ $Bivio::Biz::Model::InstrumentSellForm::VERSION = sprintf('%d.%02d', q$Revision$
 
 =head1 NAME
 
-Bivio::Biz::Model::InstrumentSellForm - 
+Bivio::Biz::Model::InstrumentSellForm - process an instrument sell form
 
 =head1 SYNOPSIS
 
