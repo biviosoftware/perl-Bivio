@@ -635,6 +635,10 @@ sub _parse {
 	    # Bad cookie
 	    _trace('unable to decrypt cookie: key=', $k, ', value=', $v)
 		    if $_TRACE;
+	    # This will help us track users who hack cookies.
+	    Bivio::IO::Alert->warn('invalid ',
+		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
+		    ' cookie: ', \@v);
 
 	    $bad = 1;
 	    # fall through, so we can see the fields in the warning below
@@ -647,9 +651,6 @@ sub _parse {
     }
 
     if ($bad) {
-	# This will help us track users who hack cookies.
-	Bivio::IO::Alert->warn('invalid cookie: ', $fields);
-
 	# We know nothing about the validity of the cookie, so must destroy
 	# both volatile and persistent.
 	$fields = {MODIFIED_FIELD() => 1};
