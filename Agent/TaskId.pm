@@ -1718,14 +1718,14 @@ my(@_CFG) = (
         162
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/f1065
+        ?/accounting/tax99/f1065.pdf
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDForm
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form
-        Bivio::UI::HTML::FormDump
+	Bivio::UI::PDF::Form::f1065::y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(
@@ -1733,13 +1733,13 @@ my(@_CFG) = (
         163
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/tax99/f1065k1
+        ?/accounting/tax99/f1065k1.pdf
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
-        Bivio::UI::HTML::FormDump
+	Bivio::UI::PDF::Form::f1065sk1::y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(
