@@ -247,7 +247,7 @@ sub set_header {
     my($self, $name, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
 #TODO: Should assert header name is valid and quote value if need be
-    $fields->{lc($name)} = $name . ':' . $value . "\n";
+    $fields->{headers}->{lc($name)} = $name . ':' . $value . "\n";
     return;
 }
 
