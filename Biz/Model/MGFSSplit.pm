@@ -78,7 +78,7 @@ sub from_mgfs {
 
     my($values) = {mg_id => $id};
     for (my($i) = 0; $i < 10; $i++) {
-	last unless defined($dates[$i]);
+	next unless defined($dates[$i]);
 	$values->{date_time} = $dates[$i];
 	$values->{factor} = $factors[$i];
 
