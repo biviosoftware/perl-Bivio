@@ -30,7 +30,9 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::Util::LinuxConfig>
+C<Bivio::Util::LinuxConfig> manipulates various config files in Linux.
+Syntax is rigid, but the commands die if anything is out of the
+ordinary.
 
 =cut
 
