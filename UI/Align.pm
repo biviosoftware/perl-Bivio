@@ -125,12 +125,12 @@ __PACKAGE__->compile(
     TOP => [
 	12,
 	undef,
-	' valign=top align=center',
+	' valign=top',
     ],
     BOTTOM => [
 	13,
 	undef,
-	' valign=bottom align=center',
+	' valign=bottom',
     ],
 );
 
