@@ -313,7 +313,7 @@ _compile(
     FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
     FILE_IS_PUBLIC_ALT => ['File is publicly viewable'],
     FILE_SIZE => ['Size'],
-    FILE_LOCATION => ['Location'],
+    FILE_LOCATION => ['Folder'],
     MAKE_PUBLIC => ['Publish Contents'],
 
     # Julie Stav
