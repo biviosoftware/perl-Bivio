@@ -508,25 +508,19 @@ sub _init_form_attrs {
 sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
 
-    if ($cause eq 'help') {
-	$attrs->{help} = Bivio::Agent::HTTP::Location->get_help_path_info(
-		$action);
-	return;
-    }
+    return _put_attr($attrs, 'help',
+	    Bivio::Agent::HTTP::Location->get_help_path_info($action))
+	    if $cause eq 'help';
 
-    if ($cause =~ /^(?:require_context|want_query|require_secure)$/) {
-	$attrs->{$cause} = Bivio::Type::Boolean->from_literal_or_die($action);
-	return;
-    }
+    return _put_attr($attrs, $cause,
+	    Bivio::Type::Boolean->from_literal_or_die($action))
+	    if $cause =~ /^(?:require_context|want_query|require_secure)$/;
 
     # These items all have tasks as actions
     $action = Bivio::Agent::TaskId->from_any($action);
 
-    if ($cause =~ /^(?:next|cancel)$/) {
-	# Special cases (non-enums)
-	$attrs->{$cause} = $action;
-	return;
-    }
+    # Special cases (non-enums)
+    return _put_attr($attrs, $cause, $action) if $cause =~ /^(?:next|cancel)$/;
 
     # Map die action
     if ($cause =~ /(.+)::(.+)/) {
@@ -540,10 +534,26 @@ sub _parse_map_item {
 	# Must be a DieCode
 	$cause = Bivio::DieCode->from_name($cause);
     }
-    Carp::croak($cause->get_name, ': cannot be a mapped item (',
-	    $attrs->{id}->as_string, ')')
+    Bivio::Die->die($cause->get_name, ': cannot be a mapped item (',
+	    $attrs->{id}, ')')
 		if $_REDIRECT_DIE_CODES{$cause};
-    $attrs->{die_actions}->{$cause} = $action;
+    return _put_attr($attrs, 'die_actions', $cause, $action);
+}
+
+# _put_attr(hash_ref attrs, string key, ..., any value)
+#
+#
+sub _put_attr {
+    my($attrs, @keys) = @_;
+    my($a) = $attrs;
+    my($value) = pop(@keys);
+    my($final) = pop(@keys);
+    foreach my $k (@keys) {
+	$a = $a->{$k};
+    }
+    Bivio::Die->die([@keys, $final], ': attribute already exists for ',
+	    $attrs->{id}) if defined($a->{$final});
+    $a->{$final} = $value;
     return;
 }
 
