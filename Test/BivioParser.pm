@@ -38,7 +38,7 @@ close(IN);
 #
 $_DEBUG = $_DEFS->{DEBUG};
 $_DEBUG_LONG = $_DEFS->{DEBUG_LONG};
-$_IGNORED_TAGS = 'html|head|body|title|meta|style|table|td|script|font|b|br|small|i|p|noscript|div|ul|li|ol|hr|blockquote|h1';
+$_IGNORED_TAGS = 'html|head|body|title|meta|style|big|table|td|script|font|b|br|small|i|p|noscript|div|ul|li|ol|hr|blockquote|h1';
 
 ################################################################################
 ##                                                                            ##
