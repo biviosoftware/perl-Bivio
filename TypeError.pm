@@ -910,6 +910,11 @@ __PACKAGE__->compile([
 	undef,
 	'identify the income received',
     ],
+    INVALID_WITHDRAWAL_VALUATION_DATE => [
+	126,
+	undef,
+	'the valuation date must be earlier than the transaction date for full withdrawals, or partial withdrawals which include fees.',
+    ],
 ]);
 
 #=PRIVATE METHODS
