@@ -86,6 +86,8 @@ Returns 'NaN' if the value isn't valid, ie. x/0.
 
 NOTE: the result is truncated, not rounded
 
+#TODO: the result is should be rounded, not truncated
+
 =cut
 
 sub div {
@@ -146,6 +148,8 @@ precision.
 If decimals is undef, then the default precision is used.
 
 NOTE: the result is truncated, not rounded
+
+#TODO: the result is should be rounded, not truncated
 
 =cut
 
