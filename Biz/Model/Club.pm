@@ -116,34 +116,6 @@ sub cascade_delete {
     return;
 }
 
-=for html <a name="check_kbytes"></a>
-
-=head2 check_kbytes(int kbytestin) : boolean
-
-Checks kbytestin to see if we'll go over the limit for this
-club's message allocation size.
-
-=cut
-
-sub check_kbytes {
-    _trace('check_kbytes called. Validating the size of the message.') if $_TRACE;
-    my($self, $kbytestin) = @_;
-    _trace('size to check is: ', $kbytestin) if $_TRACE;
-    my($curkbytes) = $self->get('kbytes_in_use');
-    my($maxkbytes) = $self->get('max_storage_kbytes');
-    _trace('max KBytes for club: ', $maxkbytes,
-	    'K current bytes in use: ', $curkbytes,
-	    'K mail message size: ', $$kbytestin, "K") if $_TRACE;
-    if( $curkbytes + $$kbytestin > $maxkbytes){
-	_trace('Size for this message exceeds limit for club.') if $_TRACE;
-	$$kbytestin = 0;
-	return 0;
-    }
-    $$kbytestin += $curkbytes;
-    _trace('The size of this message is ok for this club.') if $_TRACE;
-    return 1;
-}
-
 =for html <a name="delete_instruments_and_transactions"></a>
 
 =head2 delete_instruments_and_transactions()
@@ -314,29 +286,6 @@ sub rename {
     # database, we can be pretty sure the file name will change successfully.
     my($old_name) = $realm->get('name');
     $realm->update({name => $new_name});
-    return;
-}
-
-=for html <a name="update"></a>
-
-=head2 update(hash_ref new_values)
-
-Checks to see C<kbytes_in_use> is less than C<max_storage_kbytes>.
-If it isn't, throws a C<NO_RESOURCES> exception.
-
-=cut
-
-sub update {
-    my($self, $new_values) = @_;
-    my($properties) = $self->internal_get;
-    my($kb) = defined($new_values->{kbytes_in_use})
-	    ? $new_values->{kbytes_in_use} : $properties->{kbytes_in_use};
-    my($max) = defined($new_values->{max_storage_kbytes})
-	    ? $new_values->{max_storage_kbytes}
-		    : $properties->{max_storage_kbytes};
-    $self->die('NO_RESOURCES', max_storage_kbytes => $max,
-	    kbytes_in_use => $kb) if $max < $kb;
-    $self->SUPER::update($new_values);
     return;
 }
 
