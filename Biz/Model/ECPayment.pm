@@ -7,7 +7,7 @@ $_ = $Bivio::Biz::Model::ECPayment::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::ECPayment - handle payments for premium services
+Bivio::Biz::Model::ECPayment - payments for services
 
 =head1 RELEASE SCOPE
 
