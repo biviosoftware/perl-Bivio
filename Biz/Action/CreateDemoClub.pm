@@ -79,10 +79,12 @@ sub execute {
 	'realm_id' => $realm->get('realm_id'),
 	'user_id' => $user->get('user_id'))) {
 
+	my($title) = Bivio::Type::ClubUserTitle::ADMINISTRATOR();
 	$realm_user->create({
 	    'realm_id' => $realm->get('realm_id'),
 	    'user_id' => $user->get('user_id'),
-	    'role' => Bivio::Auth::Role::ADMINISTRATOR(),
+	    'role' => $title->get_role(),
+	    'title' => $title->get_short_desc(),
 	});
     }
     return;
