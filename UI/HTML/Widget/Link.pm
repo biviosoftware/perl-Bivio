@@ -48,6 +48,10 @@ The result will be used for C<HREF> attribute of C<A> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
+=item name : string []
+
+Anchor name.
+
 =item value : widget (required)
 
 The value between the C<A> tags aka the label.
@@ -102,6 +106,8 @@ sub initialize {
     my($href);
     ($fields->{value}, $href) = $self->get('value', 'href');
     my($p, $s) = ('<a', '');
+    my($n) = $self->get_or_default('name', 0);
+    $p .= ' name="'.Bivio::Util::escape_html($n).'"' if $n;
     if (ref($href)) {
 	$fields->{href} = $href;
     }
