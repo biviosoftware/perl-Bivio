@@ -2820,16 +2820,15 @@ my(@_CFG) = (
         Bivio::UI::HTML::Tax::ForeignIncome
         next=CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
     )],
-#TODO: AKB is working on this....
-#    [qw(
-#        CLUB_AGE
-#        248
-#        CLUB
-#        ADMIN_READ
-#        ?/age
-#        Bivio::Biz::Model::RealmUser->execute_auth_user
-#        Bivio::UI::HTML::Club::Age
-#    )],
+    [qw(
+        CLUB_SETUP_AGE
+        248
+        CLUB
+        ADMIN_READ
+        ?/age
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::UI::HTML::Club::New
+    )],
     # All tax views are ACCOUNTING_WRITE so only the accountant can access
     [qw(
         CLUB_ACCOUNTING_TAXES_SCHEDULE_D_PDF
@@ -2844,6 +2843,15 @@ my(@_CFG) = (
         Bivio::Biz::Model::ScheduleDList->execute_load_all
         Bivio::UI::PDF::ScheduleD
         next=CLUB_ACCOUNTING_TAXES_SCHEDULE_D_PDF
+    )],
+    [qw(
+        CLUB_SETUP_ACCOUNTING
+        250
+        CLUB
+        ADMIN_READ
+        ?/setup-accounting
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::UI::HTML::Club::New
     )],
 );
 
