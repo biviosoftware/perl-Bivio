@@ -250,6 +250,11 @@ __PACKAGE__->compile(
 	undef,
 	'shares sold is greater than the lot quantity',
     ],
+    SHARES_SOLD_EXCEEDS_OWNED => [
+	43,
+	undef,
+	'shares sold exceeds shares owned',
+    ],
 );
 
 #=PRIVATE METHODS
