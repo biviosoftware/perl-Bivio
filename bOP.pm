@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  All form fields are printed on error, except secure fields.
+  Added REALM_DATA LocalFileType.
+  Added b-realm-admin reset_password.
+
+  Revision 1.73  2003/07/22 22:32:11  moeller
   b-sendmail now receives domain
   mozilla considered a modern browser
   FormField fixup
