@@ -235,6 +235,12 @@ sub execute_load_all_with_query {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request;
+
+#TODO: Need to check for "this".  It is a corrupt query if it is
+#    passed in.
+#    For now, we delete the this.
+    $query->put(this => undef);
+
     $self->load_all($query);
     return 0;
 }
