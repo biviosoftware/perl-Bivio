@@ -112,9 +112,14 @@ If I<auth_realm> is C<undef>, request's realm will be used.
 sub format_uri {
     my($self, $task_id, $query, $auth_realm) = @_;
     # Note: Bivio::Agent::Mail::Request may call this.
+    $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
+    $query = $self->get_widget_value(@$query) if ref($query) eq 'ARRAY';
+    $auth_realm = $self->get_widget_value(@$auth_realm)
+	    if ref($auth_realm) eq 'ARRAY';
     $task_id ||= $self->get('task_id');
+    # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
-	    $task_id, $auth_realm || $self->get('auth_realm'));
+	    $task_id, int(@_) >= 4 ? $auth_realm : $self->get('auth_realm'));
     return $uri unless defined $query && %$query;
 #TODO: Map query strings to brief names
     my(@s);
