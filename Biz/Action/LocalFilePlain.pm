@@ -26,13 +26,20 @@ use Bivio::UNIVERSAL;
 
 C<Bivio::Biz::Action::LocalFilePlain> opens files in the C<Facade> local plain
 files area. The file named by C<Request.uri> is returned with no
-interpretation.
+interpretation unless L<execute|"execute"> is called explicitly in
+which case both the file name and content type may be overriden.
 
 Uses L<Bivio::MIME::Type|Bivio::MIME::Type> to determine the mime type
 of the file.
 
 Doesn't allow the opening of files which begin with C<.> (dot-files) or which
 are named C<CVS>.
+
+=head1 ATTRIBUTES
+
+=item Request.uri : string
+
+Default file name.
 
 =cut
 
@@ -53,21 +60,27 @@ $Bivio::Biz::Action::LocalFilePlain::IN = undef;
 
 =for html <a name="execute"></a>
 
-=head2 execute(Bivio::Agent::Request req) : boolean
+=head2 execute(Bivio::Agent::Request req, string file, string content_type) : boolean
 
-Reply with the document if it satisfies certain conditions.
-If the URI is '/' or '', then reply with the home_page.
+Reply with the document found in the plain files area.
+
+If I<file_name> is not supplied, I<Request.uri> will be used.
+
+If I<content_type> is not supplied, it will be determined from I<file_name>.
+
+Always returns true (stop processing).
 
 =cut
 
 sub execute {
-    my(undef, $req) = @_;
+    my(undef, $req, $file_name, $content_type) = @_;
     my($mime_type);
-    my($uri) = $req->get('uri');
+    $file_name = $req->get('uri') unless defined($file_name);
 
-    my($res) = _open($req, $uri, \$mime_type);
+    my($res) = _open($req, $file_name, \$mime_type);
     my($reply) = $req->get('reply');
-    $reply->set_output_type($mime_type);
+    $reply->set_output_type(
+	    defined($content_type) ? $content_type : $mime_type);
     $reply->set_output($res);
     _trace(sprintf('total=%.3fs; db=%.3fs',
 	    $req->get_current->elapsed_time,
@@ -77,16 +90,16 @@ sub execute {
 
 #=PRIVATE METHODS
 
-# _open(Bivio::Agent::Request req, string_ref mime_type) : file_handle
+# _open(Bivio::Agent::Request req, string file_name, string_ref mime_type) : file_handle
 #
-# Opens the uri on the request as a document or throws NOT_FOUND
+# Opens the file_name on the request as a document or throws NOT_FOUND
 #
 sub _open {
-    my($req, $uri, $mime_type) = @_;
+    my($req, $file_name, $mime_type) = @_;
     my($doc) = Bivio::UI::Facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->PLAIN, $uri, $req);
+	    Bivio::UI::LocalFileType->PLAIN, $file_name, $req);
     # No files which begin with '.' or contain CVS are allowed
-    if ($uri =~ /\/\./ || $uri =~ /\/CVS/) {
+    if ($file_name =~ /\/\./ || $file_name =~ /\/CVS/) {
 	_trace($doc, ': invalid name') if $_TRACE;
     }
     else {
