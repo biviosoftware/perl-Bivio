@@ -82,15 +82,15 @@ my($_TO_HTML) = _to_html_compile({
 
 =for html <a name="to_html"></a>
 
-=head2 to_html(string input_file) : string_ref
+=head2 to_html(string xml_file) : string_ref
 
-Converts I<input_file> from XML to HTML.
+Converts I<xml_file> from XML to HTML.
 
 =cut
 
 sub to_html {
-    my($self, $input_file) = @_;
-    return _to_html(XML::Parser->new(Style => 'Tree')->parsefile($input_file));
+    my($self, $xml_file) = @_;
+    return _to_html(XML::Parser->new(Style => 'Tree')->parsefile($xml_file));
 }
 
 #=PRIVATE METHODS
@@ -102,7 +102,7 @@ sub to_html {
 sub _to_html {
     my($tree) = @_;
     my($res) = '';
-    $res .= _to_html_node(shift(@$tree), shift(@$tree)) while @$tree;
+    $res .= _to_html_node(splice(@$tree, 0, 2)) while @$tree;
     return \$res;
 }
 
