@@ -1059,7 +1059,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::FileUpload
 	next=CLUB_COMMUNICATIONS_FILE_READ
     )],
-#112
+    #112
     [qw(
         CLUB_COMMUNICATIONS_FILE_REPLACE
         113
