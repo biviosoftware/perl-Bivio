@@ -561,11 +561,11 @@ sub _format_string_simple {
     return '<undef>' unless defined($o);
     # Don't output any errors if there is an error evaluating $o
     local($SIG{__WARN__});
-    my($s) = ref($o) && UNIVERSAL::can($o, 'as_string')
-	    ? (eval {$o->as_string} || $o) : $o;
-    return length($s) > $_MAX_ARG_LENGTH
-		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
-			: $s;
+    eval {$o = $o->as_string}
+	if ref($o) && UNIVERSAL::can($o, 'as_string');
+    return length($o) > $_MAX_ARG_LENGTH
+		? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
+			: $o;
 }
 
 # _log_apache(string msg)
