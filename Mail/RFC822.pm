@@ -73,7 +73,7 @@ any ASCII control character and DEL
 =cut
 
 sub CTL {
-    return '[\\0-\\037\\177-\\377]';
+    return '[\\0-\\037\\177]';
 }
 
 =for html <a name="LWSP"></a>
@@ -121,7 +121,7 @@ any CHAR except specials, SPACE and CTLs
 =cut
 
 sub ATOM {
-    return '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
+    return '[^][()<>@,;:\\\\". \\000-\\040\\177]+';
 }
 
 =for html <a name="QUOTED_STRING"></a>
