@@ -58,8 +58,6 @@ displays a long month name and day number, e.g. October 31
 #=IMPORTS
 
 #=VARIABLES
-
-#=PRIVATE METHODS
 __PACKAGE__->compile([
     # DO NOT CHANGE THESE NUMBERS
     # unless you modify UI::Widget::HTML::DateTime
@@ -68,6 +66,8 @@ __PACKAGE__->compile([
     DATE_TIME => [3],
     MONTH_NAME_AND_DAY_NUMBER => [4],
 ]);
+
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
