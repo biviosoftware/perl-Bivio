@@ -612,7 +612,7 @@ __PACKAGE__->compile(
     INVALID_EXPORT_FILE => [
 	67,
 	undef,
-	"import unsuccessful, the file has been sent to support@bivio.com for analysis",
+	'import unsuccessful, the file has been sent to support@bivio.com for analysis',
     ],
     INCORRECT_EXPORT_FILE_NAME => [
 	68,
