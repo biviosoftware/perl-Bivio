@@ -39,20 +39,54 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="chdir"></a>
+
+=head2 static chdir(string directory) : string
+
+Change to I<directory> or die.  Returns I<directory>.
+
+=cut
+
+sub chdir {
+    my(undef, $directory) = @_;
+    Bivio::Die->die('no directory supplied')
+	    unless defined($directory) && length($directory);
+    Bivio::Die->die('chdir(', $directory, "): $!")
+		unless chdir($directory);
+    return $directory;
+}
+
 =for html <a name="mkdir_p"></a>
 
-=head2 static mkdir_p(string path)
+=head2 static mkdir_p(string path) : string
 
-=head2 static mkdir_p(string path, int permissions)
+=head2 static mkdir_p(string path, int permissions) : string
 
-Creates I<path> including parent directories.
+Creates I<path> including parent directories.  Returns I<path>.
 
 =cut
 
 sub mkdir_p {
     my(undef, $path, $permissions) = @_;
+    Bivio::Die->die('no path supplied')
+	    unless defined($path) && length($path);
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
-    return;
+    return $path;
+}
+
+=for html <a name="pwd"></a>
+
+=head2 static pwd() : string
+
+Returns the current working directory.  dies if can't get pwd.
+
+=cut
+
+sub pwd {
+    my($pwd) = `pwd 2>&1`;
+    die('unable to get pwd') unless $? == 0;
+    chomp($pwd);
+    return $pwd;
 }
 
 =for html <a name="read"></a>
@@ -93,6 +127,24 @@ sub read {
 	entity => $file_name,
     });
     # DOES NOT RETURN
+}
+
+=for html <a name="rename"></a>
+
+=head2 static rename(string old, string new) : string
+
+Renames I<old> to I<new> and returns I<new>.  Dies on errors.
+
+=cut
+
+sub rename {
+    my(undef, $old, $new) = @_;
+    Bivio::Die->die('missing args')
+	    unless defined($new) && length($new)
+		    && defined($old) && length($old);
+    rename($old, $new)
+	    || Bivio::Die->die('rename(', $old, ',', $new, "): $!");
+    return $new;
 }
 
 =for html <a name="write"></a>
