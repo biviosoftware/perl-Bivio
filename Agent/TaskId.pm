@@ -370,7 +370,7 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _/accounting/account/detail
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::UI::HTML::Club::AccountDetail
     )],
 #TODO: the list has to come after the form or server error - investigate
     [qw(
@@ -383,6 +383,16 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccountList
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_INTEREST
+        44
+        CLUB
+        TREASURER
+        _/accounting/account/interest
+        Bivio::Biz::Model::AccountInterestForm
+        Bivio::UI::HTML::Club::AccountInterest
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
     )],
 );
 
