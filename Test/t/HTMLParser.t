@@ -1,14 +1,21 @@
 # $Id$
 use Bivio::Test;
-use Bivio::Test::HTMLParser;
 use Bivio::IO::File;
-Bivio::Test->unit([
-    (map {(
-        Bivio::Test::HTMLParser->new(
-	    Bivio::IO::File->read("HTMLParser/$_->[0].html")) => [
-		get_nested => $_->[1]
-	    ],
-    )} [
+my($_NEW) = 
+Bivio::Test->new({
+    class_name => 'Bivio::Test::HTMLParser',
+    create_object => sub {
+	my($case, $params) = @_;
+	my($o) = Bivio::Test::HTMLParser->new(
+	    Bivio::IO::File->read("HTMLParser/$params->[0].html"));
+	return $params->[1] ? $o->get($params->[1]) : $o;
+    },
+})->unit([
+    map({
+	$_->[0] => [
+	    get_nested => $_->[1],
+        ];
+    } [
 	login => [
 	    ['Links', 'Please Register.', 'href'] => ['/pub/register'],
 	    ['Links', 'help_off', 'href'] => ['/hp/index.html'],
@@ -55,6 +62,17 @@ Bivio::Test->unit([
 	'petshop-cart' => [
 	    ['Forms', 'remove_0', 'visible', 'Quantity_0',
 		 'value'] => ['1'],
+	    ['Tables', 0, 'headings', 0] => ['Remove'],
+	    ['Tables', 0, 'rows', 0, 1] => ['EST-6'],
+	    ['Tables', 0, 'rows', 0, 2] => ['Male Adult Corgi'],
+	    ['Tables', 0, 'rows', 0, 5] => ['1'],
+	    ['Tables', 0, 'rows', 1, 1] => ['Total:'],
+	    ['Tables', 0, 'rows', 1, 6] => ['18.50'],
+	],
+    ], [
+	'petshop-checkout' => [
+	    ['Tables', 0, 'headings', 2] => ['In Stock'],
+	    ['Tables', 0, 'rows', 0, 2] => ['yes'],
 	],
     ], [
 	'petshop-cart-error' => [
@@ -69,12 +87,18 @@ Bivio::Test->unit([
 	    ['Forms', 'User ID:', 'visible', 'State/Province:', 'name']
 	        => ['f8'],
 	],
+
     ]),
-    Bivio::Test::HTMLParser->new(
-	Bivio::IO::File->read('HTMLParser/login.html'))->get('Forms') => [
-	    get_by_field_names => [
-		['User ID or Email:', 'Password:', 'Save Password'] => undef,
-		['Not found'] => Bivio::DieCode->DIE,
-	    ],
+    ['login', 'Forms'] => [
+	get_by_field_names => [
+	    ['User ID or Email:', 'Password:', 'Save Password'] => undef,
+	    ['Not found'] => Bivio::DieCode->DIE,
 	],
+    ],
+    ['petshop-cart', 'Tables'] => [
+	get_by_headings => [
+	    ['Remove'] => undef,
+	    ['Not found'] => Bivio::DieCode->DIE,
+	],
+    ],
 ]);
