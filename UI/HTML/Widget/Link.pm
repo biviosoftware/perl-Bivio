@@ -33,6 +33,15 @@ an C<HREF> attribute.
 
 =over 4
 
+=item control : string []
+
+=item control : Bivio::Agent::TaskId []
+
+=item control : array_ref []
+
+Don't make a link if doesn't return true.
+If string or task, will generate the appropriate control.
+
 =item href : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
@@ -120,6 +129,12 @@ sub initialize {
     $fields->{prefix} = $p;
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
+
+    # check control
+    $fields->{control} = $self->unsafe_get('control');
+    $fields->{control} = [['->get_request'], '->can_user_execute_task',
+	Bivio::Agent::TaskId->from_any($fields->{control})]
+	    unless !$fields->{control} || $fields->{control} eq 'ARRAY';
     return;
 }
 
@@ -151,54 +166,44 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
-    unless ($fields->{is_initialized}) {
-	Carp::croak($self, '->initialize: not called')
-		    unless $fields->{value};
-	# If everything is constant, just return value
-	# Build up suffix in local buffer
-	my($suffix) = '>';
-	$fields->{value}->render($source, \$suffix);
-	$suffix .= '</a>';
 
-	my($is_constant) = $fields->{value}->is_constant;
-	# If the value is constant, then have {suffix} and no {value}
-	$fields->{suffix} = $suffix, delete($fields->{value})
-		if $is_constant;
-
-	# Render the href.  If it is constant, then {href} won't be defined
-	$$buffer .= $fields->{prefix};
-	if ($fields->{href}) {
-	    # href isn't constant, so just use suffix optimization if available
-	    $$buffer .= ' href="'.Bivio::Util::escape_html(
-		    $source->get_widget_value(@{$fields->{href}})).'"';
-	    $is_constant = 0;
-	}
-	elsif ($is_constant) {
-	    # Everything is constant.  Delete other fields and store constant
-	    $fields->{value} = $fields->{prefix} . $fields->{suffix};
-	    delete($fields->{prefix});
-	    delete($fields->{suffix});
-	}
-
-	# Finish first rendering.  Suffix contains value.
-	$$buffer .= $suffix;
-	$fields->{is_initialized} = 1;
-	$fields->{is_constant} = $is_constant;
+    if ($fields->{control}
+	    && !$source->get_widget_value(@{$fields->{control}})) {
+	$fields->{value}->render($source, $buffer);
+	# Make sure we initialize
+	$fields->{is_initialized} = 1 unless $fields->{is_initialized};
 	return;
     }
-    # Not a constant, render href (if needed) and value.
+
+    # Used only at initialization
+    my($start) = length($$buffer);
+
+    # Render href
     $$buffer .= $fields->{prefix};
     $$buffer .= ' href="'.Bivio::Util::escape_html(
 	    $source->get_widget_value(@{$fields->{href}})).'"'
 		    if $fields->{href};
 
-    # If value is a constant, suffix contains the rest.  We're done
-    $$buffer .= $fields->{suffix}, return if $fields->{suffix};
-
-    # Value isn't a constant, render away...
+    # Render value
     $$buffer .= '>';
     $fields->{value}->render($source, $buffer);
     $$buffer .= '</a>';
+
+    # Initialize?
+    return if $fields->{is_initialized};
+    Carp::croak($self, '->initialize: not called')
+		unless $fields->{value};
+    $fields->{is_initialized} = 1;
+
+    # Can't be constant if control or href
+    return if $fields->{control} || $fields->{href}
+	    || !$fields->{value}->is_constant;
+
+    # Everything is constant.  Delete other fields and store constant
+    $fields->{value} = substr($$buffer, $start);
+    $fields->{is_constant} = 1;
+    delete($fields->{prefix});
+    delete($fields->{suffix});
     return;
 }
 
