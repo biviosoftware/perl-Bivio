@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::ListActions::VERSION = sprintf('%d.%02d', q$Revision$ 
 
 Bivio::UI::HTML::Widget::ListActions - actions which appear in a list
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::ListActions;
