@@ -1545,7 +1545,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDList->execute_load_all
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
-        Bivio::Biz::Model::F1065Form
+        Bivio::Biz::Model::F1065Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
@@ -1560,7 +1560,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberTaxList->execute_load_all
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
-        Bivio::Biz::Model::F1065K1Form
+        Bivio::Biz::Model::F1065K1Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065sk1::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
     )],
@@ -2033,7 +2033,7 @@ my(@_CFG) = (
         ?/accounting/reports/withdrawal
         Bivio::Biz::Model::Entry
         Bivio::Biz::Model::MemberEntry
-        Bivio::Biz::Model::MemberWithdrawalInfo
+        Bivio::Biz::Model::MemberWithdrawalInfo->execute_load_all
         Bivio::UI::HTML::Club::MemberWithdrawalReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
     )],
