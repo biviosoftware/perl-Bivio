@@ -50,6 +50,18 @@ sub BULLETIN_ID_KEY {
     return __PACKAGE__ . 'bulletin_id';
 }
 
+=for html <a name="TEST_MODE"></a>
+
+=head2 TEST_MODE : string
+
+Returns the request key for the test mode.
+
+=cut
+
+sub TEST_MODE {
+    return __PACKAGE__ . 'test_mode';
+}
+
 #=IMPORTS
 use Bivio::Biz::Model;
 use Bivio::IO::File;
@@ -82,6 +94,13 @@ sub execute {
         bulletin_id => $req->get(BULLETIN_ID_KEY()),
     });
 
+    if ($req->get(TEST_MODE())) {
+        _send_bulletin($proto, $bulletin,
+            Bivio::UI::Text->get_value('support_email', $req));
+        $bulletin->cascade_delete;
+        return;
+    }
+
     foreach my $email (@{$proto->internal_get_recipients($req)}) {
         next unless Bivio::Type::Email->is_valid($email)
             && ! Bivio::Type::Email->is_ignore($email);
@@ -92,6 +111,21 @@ sub execute {
         _send_bulletin($proto, $bulletin, $email);
     }
     return;
+}
+
+=for html <a name="get_body"></a>
+
+=head2 static get_body(Bivio::Biz::Model bulletin, string email) : string_ref
+
+Returns the text/plain or text/html message body. Subclasses may override
+this method to provide dynamic content.
+
+=cut
+
+sub get_body {
+    my($proto, $bulletin, $email) = @_;
+    my($content) = $bulletin->get('body');
+    return \$content;
 }
 
 =for html <a name="internal_get_recipients"></a>
@@ -142,16 +176,16 @@ sub _send_bulletin {
     $msg->set_header('From', qq!"$site_name" <$support_email>!);
     $msg->set_header('To', $email);
     $msg->set_header('Subject', $bulletin->get('subject'));
+    my($body) = $proto->get_body($bulletin, $email);
 
     if ($bulletin->has_attachments) {
         $msg->set_content_type('multipart/mixed');
-        my($content) = $bulletin->get('body');
-        $msg->attach(\$content, $bulletin->get('body_content_type'));
+        $msg->attach($body, $bulletin->get('body_content_type'));
         _add_attachments($proto, $msg, $bulletin);
     }
     else {
         $msg->set_content_type($bulletin->get('body_content_type'));
-        $msg->set_body($bulletin->get('body'));
+        $msg->set_body($body);
     }
     $msg->enqueue_send;
     return;
