@@ -60,6 +60,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     home
     hostmaster
     httpd
+    general
     info
     ingres
     jobs
