@@ -525,6 +525,25 @@ sub heading {
 	   );
 }
 
+=for html <a name="heading_as_label"></a>
+
+=head2 static heading_as_label() : Bivio::UI::HTML::Widget::Join
+
+=head2 static heading_as_label(string label) : Bivio::UI::HTML::Widget::Join
+
+Returns a page heading for I<label>.  If there is no label,
+will use the task_id (dynamically).
+
+=cut
+
+sub heading_as_label {
+    my($proto, $label) = @_;
+    return $proto->heading(
+	    defined($label) ? Bivio::UI::Label->get_simple($label)
+	    : [sub {Bivio::UI::Label->get_simple(shift->get('task_id')
+		    ->get_name)}]);
+}
+
 =for html <a name="heading_with_inactive_form"></a>
 
 =head2 static heading_with_inactive_form(string label, boolean is_report) : Bivio::UI::HTML::Widget
