@@ -722,7 +722,7 @@ sub _get_heading {
                             ]),
                         1 => $_VS->vs_join([
                             $_VS->vs_link($heading, ['->format_uri_for_sort',
-				undef, 0, $sort_fields]),
+				undef, 0, @$sort_fields]),
                             ' ',
                             $_VS->vs_image('sort_down',
                                     'This column sorted in ascending order')
