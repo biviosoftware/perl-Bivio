@@ -76,7 +76,7 @@ sub internal_initialize {
             location => ['Bivio::Type::Location',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             phone => ['Bivio::Type::Phone',
-    		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
+    		Bivio::SQL::Constraint::NONE()],
         },
 	auth_id => 'realm_id',
     };
