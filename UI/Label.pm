@@ -112,6 +112,7 @@ _compile(
     CLUB_ACCOUNTING_PAYMENT => ['Payments'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     LOGOUT => ['Logout'],
+    CLUB_ACCOUNTING_LOCAL_VALUATION_DATES => ['Change Past Valuations'],
 );
 
 =head1 METHODS
