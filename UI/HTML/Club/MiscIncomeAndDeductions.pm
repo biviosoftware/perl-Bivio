@@ -61,8 +61,10 @@ sub new {
 
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
+	    '<table border=0 cellspacing=0 cellpadding=5>',
 	    Bivio::UI::HTML::Widget::Table2->new({
 		list_class => 'PortfolioIncomeList',
+		start_tag => 0,
 		end_tag => 0,
 		columns => [
 		    # showing date_time as date
@@ -82,8 +84,7 @@ sub new {
 		title => 'Miscellaneous Income',
 		empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
 		    values => [
-			"\n<table border=0 cellspacing=0 cellpadding=5 ".
-			    "align=center>\n<tr><td colspan=3>$msg1</td></tr>",
+			"\n<tr><td colspan=3>$msg1</td></tr>",
 		    ],
 		}),
 	    }),
@@ -91,6 +92,7 @@ sub new {
 	    Bivio::UI::HTML::Widget::Table2->new({
 		list_class => 'PortfolioDeductionList',
 		start_tag => 0,
+		end_tag => 0,
 		columns => [
 		    # showing date_time as date
 		    ['RealmTransaction.date_time', {
@@ -109,7 +111,7 @@ sub new {
 		title => 'Deductions',
 		empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
 		    values => [
-			"\n<tr><td colspan=3>$msg2</td></tr>\n</table>",
+			"\n<tr><td colspan=3>$msg2</td></tr>",
 		    ],
 		}),
 	    }),
