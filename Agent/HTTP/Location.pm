@@ -231,13 +231,13 @@ sub parse {
 	$_
     } split(/\/+/, $uri);
     $uri = join('/', @uri);
-    # General realm is direct map, no underscores
+    # General realm is direct map, no percents
     return ($_FROM_URI{$uri}->[$_GENERAL_INT]->[0], $_GENERAL)
 	    if defined($_FROM_URI{$uri}->[$_GENERAL_INT]);
 
     # If first uri doesn't match a RealmName, can't be one.
     if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
-	# Not a realm, but is it a document and it is found?
+	# Not a realm, but is it a document and is it found?
 	return ($_DOCUMENT_TASK->[0], $_GENERAL)
 		if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
 
