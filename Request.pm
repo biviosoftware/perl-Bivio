@@ -52,9 +52,10 @@ sub process_email ($$$) {
     };
     &_process($proto, $self, $code) && return &Apache::Constants::OK;
     my($caller) = (caller)[0] eq 'main' ? (caller)[1] : (caller)[0];
+    my($attach) = defined($header)
+	    ? [{'value_type' => 'text', 'value' => $header}] : undef;
     &Bivio::Mail::send(
-	    undef, 'postmaster', "ERROR: $caller",
-	    <<"EOF", [], [{'value_type' => 'text', 'value' => '$header'}]);
+	    undef, 'postmaster', "ERROR: $caller", <<"EOF", [], $attach);
 Error while processing email message via Bivio::Request::process_mail:
 
     $@
