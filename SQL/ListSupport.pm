@@ -285,6 +285,33 @@ sub new {
 
 =cut
 
+=for html <a name="iterate_next"></a>
+
+=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row) : boolean
+
+=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row, string converter) : boolean
+
+Calls SUPER::iterate_next, and cleans adds auth_id and parent_id if
+appropriate.
+
+=cut
+
+sub iterate_next {
+    my($self) = shift;
+    return 0
+	unless $self->SUPER::iterate_next(@_);
+    my($model, $iterator, $row, $converter) = @_;
+    my($attrs) = $self->internal_get;
+    my($query) = $model->get_query;
+    foreach my $f ('auth_id', 'parent_id') {
+	next unless $attrs->{$f};
+	my($v) = $query->unsafe_get($f);
+	$row->{$attrs->{$f}->{name}} =
+	    $converter ? $attrs->{type}->$converter($v) : $v;
+    }
+    return 1;
+}
+
 =for html <a name="iterate_start></a>
 
 =head2 iterate_start(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : ref
