@@ -150,6 +150,11 @@ __PACKAGE__->compile(
 	undef,
 	'value not found',
     ],
+    NOT_NEGATIVE => [
+	23,
+	undef,
+	'can not be negative',
+    ],
 );
 
 #=PRIVATE METHODS
