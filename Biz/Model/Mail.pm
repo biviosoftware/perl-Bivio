@@ -96,7 +96,7 @@ sub create {
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
 
-    my($subject) = $msg->get_head->get('subject');
+    my($subject) = $msg->get_field('subject');
     my($sortable_subject);
     ($subject, $sortable_subject) = _sortable_subject($subject, $realm_name);
 
