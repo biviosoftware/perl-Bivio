@@ -85,7 +85,7 @@ sub create {
     my($values) = {
 	club_id => $club_id,
 	rfc822_id => $msg->get_message_id,
-	dttm => $dttm,
+	dttm => Bivio::Type::DateTime->from_unix($dttm),
 	from_name => $from_name,
 	from_email => $from_email,
 	reply_to_email => $reply_to_email,

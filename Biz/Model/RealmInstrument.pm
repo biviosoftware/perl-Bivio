@@ -111,7 +111,8 @@ sub get_first_buy_date {
     if ($row = $sth->fetchrow_arrayref()) {
 	my($date2) = Bivio::Type::DateTime->from_sql_column($row->[0]);
 
-	if (!defined($date) || $date > $date2) {
+	if (!defined($date) ||
+		Bivio::Type::DateTime->compare($date, $date2) > 0) {
 	    $date = $date2;
 	}
     }
@@ -135,7 +136,7 @@ sub get_next_block {
 
 =for html <a name="get_number_of_shares"></a>
 
-=head2 static get_number_of_shares(string realm_instrument_id, Bivio::Type::DateTime date) : int
+=head2 static get_number_of_shares(string realm_instrument_id, string date) : int
 
 Returns the number of shares of the specified realm instrument that are
 owned by on the specified date.
@@ -157,7 +158,7 @@ sub get_number_of_shares {
 
 =for html <a name="get_share_price"></a>
 
-=head2 static get_share_price(string realm_instrument_id, Bivio::Type::DateTime date) : string
+=head2 static get_share_price(string realm_instrument_id, string date) : string
 
 Returns the value of one share of the specified instrument on the specified
 date.
@@ -184,7 +185,7 @@ sub get_share_price {
 	$sth->finish();
 	return ($value, $date);
     }
-    return (0.0, 0);
+    return (0.0, Bivio::Type::DateTime->get_min);
 }
 
 =for html <a name="internal_initialize"></a>
