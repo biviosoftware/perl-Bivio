@@ -104,9 +104,6 @@ BEGIN {
 # Do not use explicitly, to ensure this module initialized first
 # use Bivio::IO::Alert;
 # use Bivio::IO::Trace;
-# This is here to avoid a bunch of error messages when societas
-# is started in stack_trace_warn.
-use MIME::Parser;
 
 =head1 METHODS
 
