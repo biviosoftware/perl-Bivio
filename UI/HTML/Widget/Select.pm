@@ -266,7 +266,7 @@ sub render {
     for (my($i) = 0; $i < int(@$items); $i += 2) {
 	my($v) = $items->[$i];
 	if ($editable || $field_value eq $v) {
-	    $$buffer .= '<option value='.$v;
+	    $$buffer .= '<option value="' . $v . '"';
 	    $$buffer .= ' selected' if $field_value eq $v;
 	    $$buffer .= '>'.$items->[$i+1]."\n";
 	}
