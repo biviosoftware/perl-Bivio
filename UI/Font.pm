@@ -102,6 +102,7 @@ _compile([
     RADIO => [undef, undef],
     CELEBRITY_BOX_TITLE => [$_SANS_SERIF, 'celebrity_box_title'],
     CELEBRITY_BOX_TEXT => [$_SANS_SERIF, undef, 'small'],
+    FILE_TREE_BYTES => [undef, undef, 'small'],
 ]);
 
 =head1 METHODS
