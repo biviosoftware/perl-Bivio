@@ -658,14 +658,8 @@ my(@_CFG) = (
         Bivio::UI::HTML::Realm::EditPhone
         next=USER_ADMIN_INFO
     )],
-    [qw(
-	UNKNOWN_MAIL
-	74
-        GENERAL
-        MAIL_WRITE
-        !
-	Bivio::Biz::Action::HandleUnknownMail
-    )],
+#74
+#75
     [qw(
         CLUB_ADMIN_INVITE_LIST
         76
