@@ -217,7 +217,10 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 use Bivio::Die;
 use Bivio::Type::Array;
 use Bivio::TypeError;
-$^O !~ /win32/i && CORE::require 'syscall.ph';
+if ($^O !~ /win32/i) {
+    package main;
+    require 'syscall.ph';
+}
 
 #=VARIABLES
 my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';
@@ -651,8 +654,7 @@ Returns an array_ref of seconds and microseconds.
 
 sub gettimeofday {
     my($i) = '8..bytes';
-#    syscall(&main::SYS_gettimeofday, $i, 0);
-    syscall(&SYS_gettimeofday, $i, 0);
+    syscall(&main::SYS_gettimeofday, $i, 0);
     return [unpack('ll', $i)];
 }
 
