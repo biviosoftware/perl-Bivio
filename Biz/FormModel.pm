@@ -995,6 +995,13 @@ sub process {
 	# should blow up.
 	return 1 if _call_execute($self, 'execute_ok', 'ok_button');
 	return 0 unless $fields->{errors};
+	if ($_TRACE) {
+	    my($msg) = '';
+	    foreach my $field (keys(%{$fields->{errors}})) {
+		$msg .= $field.' '.$fields->{errors}->{$field}->get_name."\n";
+	    }
+	    _trace($msg);
+	}
 	Bivio::Die->die($self->as_string,
 		": called with invalid values");
 	# DOES NOT RETURN
