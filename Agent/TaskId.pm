@@ -390,7 +390,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ
         ?/admin/subscription/detail
-        Bivio::Biz::Model::ECSubscription
+        Bivio::Biz::Model::ECSubscription->execute_load_this
         Bivio::UI::HTML::Club::ECSubscriptionDetail
         require_secure=1
     )],
@@ -424,7 +424,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ
         ?/admin/payment/detail
-        Bivio::Biz::Model::ECPayment
+        Bivio::Biz::Model::ECPayment->execute_load_this
         Bivio::UI::HTML::Club::ECPaymentDetail
         next=CLUB_ADMIN_EC_PAYMENT_DETAIL
         require_secure=1
@@ -484,7 +484,7 @@ my(@_CFG) = (
         ?/accounting/member/detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::MemberTransactionList->execute_load_page
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Model::RealmUser->execute_load_parent
         Bivio::Biz::Model::AllMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
         help=member-detail
@@ -498,7 +498,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentTransactionList->execute_load_page
-        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrument->execute_load_parent
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentDetail
         help=investment-detail
@@ -512,7 +512,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountTransactionList->execute_load_page
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccount->execute_load_parent
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountDetail
         help=account-detail
@@ -1692,7 +1692,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         ?/admin/invite/resend
-        Bivio::Biz::Model::RealmInvite
+        Bivio::Biz::Model::RealmInvite->execute_load_this
         Bivio::Biz::Model::ResendInviteForm
         Bivio::UI::HTML::Club::ResendInvite
         next=CLUB_ADMIN_INVITE_LIST
@@ -1999,7 +1999,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/taxes-k1/*
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Model::RealmUser->execute_load_parent
         Bivio::Biz::Model::TaxYearSubForm
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
@@ -2369,7 +2369,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/investment/lot-list
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrument->execute_load_parent
         Bivio::Biz::Model::RealmInstrumentLotList->execute_load_all
         Bivio::Biz::Model::RealmInstrumentLotListForm
         Bivio::UI::HTML::Club::RealmInstrumentLotList
@@ -2394,8 +2394,8 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/withdrawal
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::Entry
-        Bivio::Biz::Model::MemberEntry
+        Bivio::Biz::Model::Entry->execute_load_parent
+        Bivio::Biz::Model::MemberEntry->execute_load_parent
         Bivio::Biz::Model::MemberWithdrawalInfo->execute_load_all
         Bivio::UI::HTML::Club::MemberWithdrawalReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
@@ -2674,7 +2674,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/investment/detail/delete
-        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrument->execute_load_this
         Bivio::Biz::Action::InstrumentDelete
     )],
     [qw(
@@ -2778,7 +2778,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/detail/delete
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccount->execute_load_this
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Action::RealmAccountDelete
     )],
@@ -2987,7 +2987,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/account/adjustment
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccount->execute_load_parent
         Bivio::Biz::Model::AccountAdjustmentForm
         Bivio::UI::HTML::Club::AccountAdjustment
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
@@ -2999,7 +2999,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/adjustment
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmInstrument->execute_load_parent
         Bivio::Biz::Model::InstrumentAdjustmentForm
         Bivio::UI::HTML::Club::InstrumentAdjustment
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
