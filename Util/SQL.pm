@@ -67,7 +67,7 @@ EOF
 
 #=IMPORTS
 use Bivio::SQL::Connection;
-use Bivio::Type::Number;
+use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_REALM_ROLE_CONFIG);
@@ -357,8 +357,8 @@ sub reinitialize_sequences {
 	my($inc) = $cmd =~ /increment\s+by\s+(\d+)/si
 	    or die('bad sequence increment by: ', $cmd);
 	# Increment by two to be sure
-	$inc = Bivio::Type::Number->add($max->[0],
-	    Bivio::Type::Number->mul($inc, 2, 0), 0);
+	$inc = Bivio::Type::PrimaryId->add($max->[0],
+	    Bivio::Type::PrimaryId->mul($inc, 2, 0), 0);
 	# Number puts in '+'
 	$inc =~ s/\D//g;
 	$cmd =~ s/minvalue\s+(\d+)/minvalue $inc/i
