@@ -34,6 +34,25 @@ C<Bivio::Test::HTMLParser::Links> models the links on a page.
 
 =cut
 
+=head1 ATTRIBUTES
+
+Links are stored as attributes indexed by their labels.
+
+=over 4
+
+=item E<lt>labelE<gt> => {
+
+            label =>  <label of the hyperlink>,
+            href  =>  <contents of href attribute>,
+            alt   =>  <contents of alt attribute>
+       }
+
+=item usage:  $links->get('label')->{href}
+
+=back
+
+=cut
+
 #=IMPORTS
 use Bivio::IO::Trace;
 
