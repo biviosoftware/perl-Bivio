@@ -58,12 +58,12 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
-    return (undef, Bivio::TypeError::TIME) unless
+    return (undef, Bivio::TypeError->TIME) unless
 	    $value =~ m!^(\d+):(\d+)(?::(\d+))?(?:([ap])(?:|m|\.m\.))?$!i;
     my($h, $m, $s, $am_pm) = ($1, $2, $3, $4);
     $s = 0 unless defined($s);
     if (defined($am_pm)) {
-	return (undef, Bivio::TypeError::HOUR) if $h > 12;
+	return (undef, Bivio::TypeError->HOUR) if $h > 12;
 	if ($h == 12) {
 	    # 12 a.m is really 0 o'clock
 	    $h = 0 if $am_pm eq 'a';
@@ -76,7 +76,7 @@ sub from_literal {
     else {
 	if ($h > 23) {
 	    # 24:0:0 is allowed
-	    return (undef, Bivio::TypeError::HOUR) if $h > 24
+	    return (undef, Bivio::TypeError->HOUR) if $h > 24
 		    || $m + $s > 0;
 	    $h = 0;
 	}
