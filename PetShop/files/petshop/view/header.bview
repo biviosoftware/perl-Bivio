@@ -4,11 +4,14 @@
 #
 # Parameters:
 view_declare('header_content');
-view_put(header_title => 'bOP Pet Shop Demo');
+view_put(
+    header_title => 'bOP Pet Shop Demo',
+    # Used a few places, so centralize here
+    header_categories => [qw(FISH DOGS REPTILES CATS BIRDS)],
+);
 
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
-
 view_main(Page({
     head => Title({values => [view_widget_value('header_title')]}),
     string_font => 'page_text',

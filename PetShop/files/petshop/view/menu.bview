@@ -15,7 +15,7 @@ my($menu_cells) = [map {
 	Link(String($category->get_short_desc), vs_product_uri($category)),
 	Join([' | ']),
     );
-} qw(FISH DOGS REPTILES CATS BIRDS)];
+} @{view_get('header_categories')}];
 # remove the extra 'Join([' |'
 pop(@$menu_cells);
 

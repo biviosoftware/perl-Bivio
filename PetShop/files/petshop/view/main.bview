@@ -7,7 +7,7 @@ view_parent('header');
 # The default page title.  Child views can override this.
 view_put(header_title => 'Welcome to the bOP Pet Shop Demo');
 
-# Construct the left menu cells from the list of products.
+# Construct the left menu cells from the list of product categories.
 my(@left_menu_cells) = map {
     my($category) = Bivio::PetShop::Type::Category->$_();
     (
@@ -19,9 +19,10 @@ my(@left_menu_cells) = map {
 	[String($category->get_long_desc, 'main_description_text')],
 	[Join(['<br>', vs_space()])],
     );
-} qw(FISH DOGS REPTILES CATS BIRDS);
+} @{view_get('header_categories')};
 
 # Construct the image map from a list of products and coordinates.
+# There's no pretty way to do image maps in bOP.
 my(@image_map) = map {
     my($product, $coords) = split(/:/, $_);
     ('<area href="', vs_product_uri($product),
