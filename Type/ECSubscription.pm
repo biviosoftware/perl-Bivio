@@ -84,7 +84,7 @@ my(%_UPGRADE_INDEX);
 {
     my($i) = 0;
     %_UPGRADE_INDEX = map {
-	(__PACKAGE__->$_, $i++);
+	(__PACKAGE__->$_(), $i++);
     } qw(
 	FREE_TRIAL
 	PREMIUM_SUPPORT
