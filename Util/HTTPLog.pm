@@ -288,7 +288,7 @@ sub _parse_errors_init {
     $self->put(email => $_CFG->{email})
 	    unless defined($self->unsafe_get('email'));
     $self->put(result_subject =>
-	    'Server Errors on '.Sys::Hostname::hostname().' at '
+	    'Errors on '.Sys::Hostname::hostname().' at '
 	    .Bivio::Type::DateTime->to_local_string(
 		    Bivio::Type::DateTime->now));
     my($fields) = $self->{$_PACKAGE} = {
