@@ -222,21 +222,15 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Auth::RoleSet;
-use Bivio::Biz::Action::DemoClub;
 use Bivio::Biz::FormModel;
-use Bivio::Biz::Model::Preferences;
 use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-use Bivio::Type::ClubPreference;
 use Bivio::Type::DateTime;
-use Bivio::Type::RealmName;
 use Bivio::Type::UserAgent;
-use Bivio::Type::UserPreference;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -259,16 +253,7 @@ Bivio::IO::Config->register({
 });
 my($_CURRENT);
 my($_GENERAL);
-my($_ACTIVE_CLUB_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_ACTIVE_CLUB_ROLES,
-	Bivio::Auth::Role::GUEST(),
-	Bivio::Auth::Role::MEMBER(),
-	Bivio::Auth::Role::ACCOUNTANT(),
-	Bivio::Auth::Role::ADMINISTRATOR(),
-	);
 my($_DEFAULT_HELP) = Bivio::Agent::Task->DEFAULT_HELP();
-my($_USER_PREFS) = Bivio::Type::UserPreference->REQUEST_ATTRIBUTE;
-my($_CLUB_PREFS) = Bivio::Type::ClubPreference->REQUEST_ATTRIBUTE;
 
 =head1 FACTORIES
 
@@ -383,7 +368,7 @@ Clears the state of the current request.  See L<get_current|"get_current">.
 
 sub clear_current {
     # This breaks any circular references, so AGC can work
-    defined($_CURRENT) && $_CURRENT->delete_all;
+    $_CURRENT->delete_all if $_CURRENT;
     $_CURRENT = undef;
     return;
 }
@@ -450,7 +435,8 @@ Returns the number of seconds elapsed since the request was created.
 
 sub elapsed_time {
     my($self) = @_;
-    return Bivio::Type::DateTime->gettimeofday_diff_seconds($self->get('start_time'));
+    return Bivio::Type::DateTime->gettimeofday_diff_seconds(
+	    $self->get('start_time'));
 }
 
 =for html <a name="format_email"></a>
@@ -688,29 +674,6 @@ sub get_auth_role {
     return $auth_id eq $realm_id ? $auth_role : _get_role($self, $realm_id);
 }
 
-=for html <a name="get_club_pref"></a>
-
-=head2 get_club_pref(any pref) : any
-
-Gets a club preference.  I<pref> must be a
-L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
-The value returned may be C<undef> if club is undefined or preference
-not set iwc the default should be used.
-
-=cut
-
-sub get_club_pref {
-    my($self, $pref) = @_;
-    my($auth_realm) = $self->get('auth_realm');
-    return Bivio::Biz::Model::Preferences->get_value(
-	    $self,
-	    $_CLUB_PREFS,
-	    $auth_realm && $auth_realm->get('type')
-		    == Bivio::Auth::RealmType::CLUB()
-	    ? $auth_realm->get('owner') : undef,
-	    Bivio::Type::ClubPreference->from_any($pref));
-}
-
 =for html <a name="get_current"></a>
 
 =head2 static get_current() : Bivio::Agent::Request
@@ -833,26 +796,6 @@ sub get_request {
     return ref($proto) ? $proto : $proto->get_current_or_new;
 }
 
-=for html <a name="get_user_pref"></a>
-
-=head2 get_user_pref(any pref) : any
-
-Gets a user preference.  I<pref> must be a
-L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
-The value returned may be C<undef> if user undefined or preference
-not set iwc the default should be used.
-
-=cut
-
-sub get_user_pref {
-    my($self, $pref) = @_;
-    return Bivio::Biz::Model::Preferences->get_value(
-	    $self,
-	    $_USER_PREFS,
-	    $self->get('auth_user'),
-	    Bivio::Type::UserPreference->from_any($pref));
-}
-
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -929,31 +872,6 @@ sub internal_redirect_realm {
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
-
-		    # need to understand where this is being called
-		    Bivio::IO::Alert->info("no realm found for club task");
-
-#TODO: MOVE this out of here
-#      Eventually need specific list.
-		    # Club not found.  Try to redirect to DEMO_REDIRECT
-		    # which must be in GENERAL domain
-		    my($auth_user) = $self->unsafe_get('auth_user');
-#TODO: Total hack.  This stuff needs a good going over...
-		    $self->client_redirect('/demo_club')
-			    unless defined($auth_user);
-		    Bivio::Die->die(
-			    'misconfiguration of DEMO_REDIRECT task')
-				if Bivio::Agent::TaskId::DEMO_REDIRECT()
-					eq $new_task;
-		    my($demo_name) = Bivio::Biz::Action::DemoClub
-			    ->format_demo_club_name($auth_user);
-		    my($demo_realm)
-			    = Bivio::Biz::Model::RealmOwner->new($self);
-		    # Only redirect to personal demo club if found
-		    $self->client_redirect(
-			    Bivio::Agent::TaskId::DEMO_REDIRECT())
-			    if $demo_realm->unauth_load(name => $demo_name);
-#TODO: This is coupled with my_club redirect
 		    # GO TO HOME instead of a club.  He can choose
 		    # realm chooser
 		    $self->client_redirect(Bivio::Agent::TaskId::USER_HOME())
@@ -1138,33 +1056,6 @@ sub server_redirect_in_handle_die {
     return;
 }
 
-=for html <a name="set_club_pref"></a>
-
-=head2 set_club_pref(any pref, any value)
-
-Sets a club preference.  I<pref> must be a
-L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
-I<value> may be undef.
-
-Avoid setting defaults in the file.  If the value is same as
-default, don't set it.
-
-=cut
-
-sub set_club_pref {
-    my($self, $pref, $value) = @_;
-    my($auth_realm) = $self->get('auth_realm');
-    return undef unless $auth_realm && $auth_realm->get('type')
-	    == Bivio::Auth::RealmType::CLUB();
-    Bivio::Biz::Model::Preferences->set_value(
-	    $self,
-	    $_CLUB_PREFS,
-	    $auth_realm->get('owner'),
-	    Bivio::Type::ClubPreference->from_any($pref),
-	    $value);
-    return;
-}
-
 =for html <a name="set_current"></a>
 
 =head2 set_current() : self
@@ -1200,28 +1091,6 @@ sub set_realm {
 	    auth_id => $realm_id,
 	    auth_role => $new_role);
     _trace($new_realm, '; ', $new_role) if $_TRACE;
-
-    # Don't set preferences unless browser
-    return unless $self->get('Bivio::Type::UserAgent')->is_browser;
-
-    # Don't set preferences if no auth_user
-    return unless $self->get('auth_user');
-
-    # Set CLUB_LAST_VISITED preference
-    #
-    # But only it is a club
-    return unless $new_realm->get('type') == Bivio::Auth::RealmType::CLUB();
-
-    # Don't save the demo club as a visited club
-    return if Bivio::Biz::Action::DemoClub->is_demo_club(
-	    $new_realm->get('owner'));
-
-    # Don't save if not a guest or member
-    return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_CLUB_ROLES,
-	    $new_role);
-
-    # Finally, set the preference
-    $self->set_user_pref('CLUB_LAST_VISITED', $realm_id);
     return;
 }
 
@@ -1276,32 +1145,6 @@ sub set_user {
     # Set the (cached) auth_role if requested (by default).
     $self->put(auth_role => _get_role($self, $self->get('auth_id')))
 	    unless $dont_set_role;
-    return;
-}
-
-=for html <a name="set_user_pref"></a>
-
-=head2 set_user_pref(any pref, any value)
-
-Sets a user preference.  I<pref> must be a
-L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
-I<value> may be undef.
-
-Avoid setting defaults in the file.  If the value is same as
-default, don't set it.
-
-=cut
-
-sub set_user_pref {
-    my($self, $pref, $value) = @_;
-    my($auth_user) = $self->get('auth_user');
-    return unless $auth_user;
-    Bivio::Biz::Model::Preferences->set_value(
-	    $self,
-	    $_USER_PREFS,
-	    $auth_user,
-	    Bivio::Type::UserPreference->from_any($pref),
-	    $value);
     return;
 }
 
@@ -1412,9 +1255,6 @@ sub _get_realm {
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 #TODO: Roles aren't necessarily ordered
 	    next unless  $rr > $role;
-#TODO: Why don't we want to return the demo_club?
-	    next if Bivio::Biz::Action::DemoClub->is_demo_club(
-		    $r->{'RealmOwner.name'});
 	    $realm_id = $r->{'RealmUser.realm_id'};
 	    $role = $rr;
 	}
@@ -1461,7 +1301,7 @@ sub _get_role {
     return $user_realms->{$realm_id}->{'RealmUser.role'}
 	    if ref($user_realms->{$realm_id});
 
-    # User has no special privileges in realm 
+    # User has no special privileges in realm
     return Bivio::Auth::Role::USER();
 }
 
