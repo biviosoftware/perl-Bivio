@@ -64,7 +64,7 @@ sub execute {
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
     $out_msg->set_recipients($club->get_outgoing_emails());
     $out_msg->set_headers_for_list_send($realm_owner->get('name'),
-	    $club->get('full_name'), 1, 1);
+	    $realm_owner->get('display_name'), 1, 1);
     $out_msg->enqueue_send;
     return;
 }
