@@ -834,6 +834,16 @@ __PACKAGE__->compile(
 	undef,
 	'the member has a payment on or after the full withdrawal date',
     ],
+    TRANSACTION_PRIOR_TO_MEMBER_DEPOSIT => [
+	111,
+	undef,
+	'this transaction may only be entered on a date after member deposits',
+    ],
+    TRANSACTION_PRIOR_TO_ACQUISITION => [
+	112,
+	undef,
+	'this transaction may only be entered on a date after the investment was acquired',
+    ],
 );
 
 #=PRIVATE METHODS
