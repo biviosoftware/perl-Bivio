@@ -138,14 +138,99 @@ EOF
 #
 sub _upgrade {
 
-    # delete any instruments for which there are no corresponding MGFS entry
-    _do('
-            DELETE from instrument_t
-            WHERE NOT EXISTS (
-                SELECT mg_id
-                FROM mgfs_instrument_t
-                WHERE instrument_id=instrument_t.instrument_id)
-/');
+    use Bivio::Auth::RealmType;
+    use Bivio::Agent::Request;
+    use Bivio::Biz::Model::File;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Biz::Model::RealmOwnerList;
+    use Bivio::Type::DateTime;
+    use Bivio::Type::FileVolume;
+    use Bivio::Type::Integer;
+
+    # update existing shadow names, add "-1" active flag to end of each
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT name FROM realm_owner_t
+            WHERE name like '=%'",
+	    []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name) = $row->[0];
+	unless ($name =~ /-\d+$/) {
+	    Bivio::SQL::Connection->execute('
+                    UPDATE realm_owner_t
+                    SET name=?
+                    WHERE name=?',
+		    [$name.'-1', $name]);
+	}
+    }
+
+    # add EW_IMPORT file volume to existing clubs
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($realms) = Bivio::Biz::Model::RealmOwnerList->new($req);
+    $realms->unauth_load({
+        realm_type => Bivio::Auth::RealmType::CLUB(),
+        count => Bivio::Type::Integer->get_max,
+    });
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($realm_id) = '';
+    my($file) = Bivio::Biz::Model::File->new($req);
+    while ($realms->next_row) {
+        # May have multiple administrators
+        next if $realm_id eq $realms->get('RealmOwner.realm_id');
+        $realm_id = $realms->get('RealmOwner.realm_id');
+        die('failed to load realm ', $realm_id)
+                unless $realm->unauth_load(realm_id => $realm_id);
+	$req->put(auth_id => $realm_id);
+
+	my($volume) = Bivio::Type::FileVolume::EW_IMPORT();
+	my($user_id) = $realms->get('RealmUser.user_id');
+	$file->create({
+	    file_id => $volume->get_root_directory_id($realm_id),
+	    realm_id => $realm_id,
+	    volume => $volume,
+	    directory_id => undef,
+	    name => $volume->get_name.$realm_id,
+	    user_id => $user_id,
+	    modified_date_time => Bivio::Type::DateTime->now,
+	    bytes => 0,
+	    is_directory => 1,
+	    aux_info => undef,
+	    content => undef,
+	});
+    }
+
+do('
+CREATE TABLE lock_t (
+  realm_id NUMBER(18),
+  lock_type NUMBER(2),
+  host VARCHAR2(100),
+  process_id NUMBER(9),
+  sentinel NUMBER(1),
+  creation_date_time DATE
+)
+/
+--
+-- lock_t
+--
+ALTER TABLE lock_t
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE lock_t
+  add primary key(lock_type, realm_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE lock_t ADD CHECK (lock_type BETWEEN 0 AND 1)
+/
+ALTER TABLE lock_t modify host NOT NULL
+/
+ALTER TABLE lock_t modify process_id NOT NULL
+/
+ALTER TABLE lock_t ADD CHECK (sentinel BETWEEN 0 AND 1)
+/
+ALTER TABLE lock_t modify creation_date_time NOT NULL
+/
+');
 
     return;
 }
