@@ -99,7 +99,7 @@ sub cascade_delete {
 
     # Delete all from tables which are used by accounting and
     # aren't deleted by above.
-    _delete_all($id, qw(realm_user_t realm_account_t));
+    _delete_all($id, qw(realm_user_t realm_account_t expense_category_t));
 
     # Delete the club and then the realm
     $self->delete();
@@ -158,6 +158,7 @@ sub delete_instruments_and_transactions {
             member_entry_t
             realm_instrument_entry_t
             realm_account_entry_t
+            expense_info_t
             entry_t
             realm_transaction_t
             realm_instrument_t
