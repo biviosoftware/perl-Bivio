@@ -177,6 +177,10 @@ days outside of the maximum for a date
 
 invalid password
 
+=item US_ZIP_CODE
+
+invalid US Zip; must be 5 or 9 digits.
+
 =back
 
 =cut
@@ -384,6 +388,11 @@ sub get_delegate_info {
 	36,
 	undef,
 	'days outside of the maximum for a date',
+    ],
+    US_ZIP_CODE => [
+	37,
+	undef,
+	'invalid US Zip; must be 5 or 9 digits.',
     ],
 ];
 }
