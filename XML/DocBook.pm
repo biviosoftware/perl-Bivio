@@ -205,6 +205,7 @@ my($in_preface) = 0;
 my($in_keyword) = 0;
 my($keyword) = '';
 my($clean_normal) = 1;
+my($programlisting) = 0;
 my($clean_literal) = 0;
 my($attrib) = '';
 my($label) = '';
@@ -444,12 +445,13 @@ my($_XML_TO_LATEX_PROGRAM) = {
 	return '\mainmatter' . "\n";
     },
     programlisting => sub {
-	$clean_normal = 0;
-	return '\begin{quote}\begin{alltt}';
+        $programlisting = 1;
+	return '\begin{quote}\verb#';
     },
     '/programlisting' => sub {
-	$clean_normal = 1;
-	return '\end{alltt}\end{quote}';
+        $programlisting = 0;
+        _end_verb();
+	return '\end{quote}';
     },
     quote => '``',
     '/quote' => '\'\'',
@@ -662,6 +664,16 @@ sub _end_tex {
     $tex .= '\end{document}' . "\n";
 }
 
+# _end_verb()
+#
+# Ends a verb or deletes \verb#
+#
+sub _end_verb {
+    $tex .= '#'
+	unless $tex =~ s/\\verb\#$//s;
+    return;
+}
+
 # _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
 #
 # _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
@@ -776,7 +788,8 @@ sub _process_xml_file {
 
     my(@open_tags) = ('root');
     my(@xml_chars) = split(//, $xml);
-    foreach my $char (@xml_chars) {
+    foreach my $c (@xml_chars) {
+	my($char) = $c;
 	$char = $_CLEAN_CHAR->{$char} if $clean_normal &&
 	    defined($_CLEAN_CHAR->{$char});
 	$char = $_CLEAN_VERB_CHAR->{$char} if !$clean_normal &&
@@ -807,9 +820,20 @@ sub _process_xml_file {
 		$parent_tag = $open_tags[$#open_tags];
 	    }
 
+	    _end_verb()
+		if $programlisting && $tag !~ /programlisting/;
 	    _process_tag($parent_tag, $tag, $args);
+	    $tex .= '\verb#'
+		if $programlisting && $tag !~ /programlisting/;
 	    $tag = '';
 	    next;
+	}
+	elsif ($open_tags[$#open_tags] eq 'programlisting') {
+	    $char = $c eq '#' ? '#\verb!#!\verb#'
+		: $c eq "\n" ? "#\\newline\n\\verb#"
+		: $c;
+	    _end_verb()
+		if $char =~ s/^#//;
 	}
 
 	$tag .= $char if $in_tag;
