@@ -90,7 +90,7 @@ sub create {
 
     # Need to have a From address to continue
     my($from_email, $from_name) = $msg->get_from;
-    $self->die('NOT_FOUND', {message => 'missing or bad From: address'})
+    $self->die('DIE', {message => 'missing or bad From: address'})
                 unless defined($from_email);
 
     defined($from_name) || ($from_name = $from_email);
