@@ -453,13 +453,13 @@ sub _compile_method {
 	' does not implement method "', $method, '"')
 	unless defined($method) && !ref($method)
 	    && UNIVERSAL::can($state->{object}, $method);
-    if (ref($cases)) {
+    if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
-    else {
+    elsif (!ref($cases) || ref($cases) eq 'CODE') {
 	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
 	$cases = [
-	    [] => defined($cases) ? [$cases] : undef,
+	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
 	];
     }
     my(@cases) = @$cases;
