@@ -199,7 +199,8 @@ sub test_run {
     my($proto, $script) = @_;
     my($die) = Bivio::Die->catch(sub {
 	my($script_name) = ref($script) ? '<inline>' : $script;
-	_die($_SELF_IN_EVAL, 'called ', $script_name,  ' from within test script')
+	_die($_SELF_IN_EVAL, 'called ', $script_name,
+	    ' from within test script')
 	    if $_SELF_IN_EVAL;
 	$_SELF_IN_EVAL = $proto->new({test_script => $script_name});
         $script = Bivio::IO::File->read($script_name) unless ref($script);
