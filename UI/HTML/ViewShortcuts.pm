@@ -1131,9 +1131,8 @@ sub vs_page_heading_banner_ad {
 #	    $proto->vs_image('promote_stop_small'), 'hm/account-sync.html')
 #	    ->put(control => $proto->vs_html_value('want_ads'));
     return $proto->vs_link_goto(
-	$proto->vs_image('ad_mld_onyourown_230x33_4k_NL',
-		'Enroll with Merrill Lynch and get $100'),
-	'http://www.mldirect.ml.com/publish/public/offer.asp?medium=BIV0001')
+	    $proto->vs_image('ad_bivio_stop_small', 'Learn about AccountSync'),
+	    '/hm/account-sync.html')
 	->put(control => $proto->vs_html_value('want_ads'));
 }
 
