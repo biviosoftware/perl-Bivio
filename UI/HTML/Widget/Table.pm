@@ -204,6 +204,13 @@ If true, then the column headings are rendered.
 The name of the list model as it appears upon the request. This value will
 default to the 'list_class' attribute if not defined.
 
+=item source_name : array_ref [] (source)
+
+The widget value from I<source> that returns the model to render.  Note that
+I<table_max_rows> feature uses the ref($list) for list_name (see below).
+
+Using this attribute allows lists of lists.
+
 =item start_tag : boolean [true]
 
 If false, this widget won't render the C<&gt;TABLE&lt;>tag.
@@ -471,7 +478,9 @@ sub get_render_state {
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($list_name) = $self->get('source_name');
-    my($list) = $req->get($list_name);
+    my($list) = ref($list_name) ? $source->get_widget_value(@$list_name)
+	: $req->get($list_name);
+    $list_name = ref($list_name) ? ref($list) : $list_name;
 
     # check for an empty list
     if ($fields->{empty_list_widget} && $list->get_result_set_size == 0) {

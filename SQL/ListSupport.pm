@@ -139,6 +139,10 @@ declaration changes.  It is used to reject an out-dated query.
 Is this going to be in the select?  If false, like setting
 in_select to false for all columns.
 
+=item want_select_distinct : boolean [0]
+
+Use SELECT DISTINCT instead of SELECT.
+
 =item want_level_in_select : boolean
 
 Add C<LEVEL> to the select.  This is an Oracle specific field.
@@ -522,8 +526,10 @@ sub _init_column_lists {
 	$from .= $where;
     }
     $attrs->{from_where} = $from;
-    $attrs->{select} = 'SELECT '.join(',', @select_sql_names);
-    $attrs->{select_count} = 'SELECT COUNT(*)';
+    my($select) = $decl->{want_select_distinct}
+	? 'SELECT DISTINCT ' : 'SELECT ';
+    $attrs->{select} =  $select . join(',', @select_sql_names);
+    $attrs->{select_count} = $select . 'COUNT(*)';
     if ($attrs->{date}) {
 	$attrs->{where_begin_date} = ' AND '
 		.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
