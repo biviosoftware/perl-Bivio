@@ -342,7 +342,7 @@ sub format_context_as_query {
     # don't render the context.  Prevents infinite recursion.
     # If we don't have an unwind task, we don't return a context
     return ''
-	if !$c->unsafe_get('unwind_task')
+	if !$c || !$c->unsafe_get('unwind_task')
 	    || $c->get('unwind_task') == $uri_task;
 #TODO: Tightly coupled with Widget::Form which knows this is fc=
 #      Need to understand better how to stop the context propagation
