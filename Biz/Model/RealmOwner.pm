@@ -103,6 +103,7 @@ my(%_HOME_TASK_MAP) = (
     Bivio::Auth::RealmType::CLUB() => Bivio::Agent::TaskId::CLUB_HOME(),
     Bivio::Auth::RealmType::USER() => Bivio::Agent::TaskId::USER_HOME(),
 );
+my($_MAIL_HOST);
 
 =head1 FACTORIES
 
@@ -708,13 +709,12 @@ C<undef>, returns false.
 =cut
 
 sub is_name_eq_email {
-    my($self, $req, $name, $email) = @_;
+    my(undef, $req, $name, $email) = @_;
     return 0 unless defined($name) && defined($email);
-#TODO: Make into a global
-    my($mail_host) = $req->get('mail_host');
+    $_MAIL_HOST = $req->get('mail_host') unless $_MAIL_HOST;
 #TODO: ANY OTHER mail_host aliases?
-    return $email eq $name.'@'.$mail_host
-	    || $email eq $name.'@www.'.$mail_host;
+    return $email eq $name.'@'.$_MAIL_HOST
+	    || $email eq $name.'@www.'.$_MAIL_HOST;
 }
 
 =for html <a name="is_shadow_user"></a>
