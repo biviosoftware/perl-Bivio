@@ -286,7 +286,7 @@ sub validate {
 	$lot_list = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
 	$req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
 		=> $self->get('RealmTransaction.date_time'));
-	$lot_list->load();
+	$lot_list->load_all();
     }
     $lot_list->reset_cursor;
 

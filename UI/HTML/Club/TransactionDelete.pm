@@ -171,9 +171,8 @@ sub execute {
     my($self, $req) = @_;
     my($entry) = $req->get('Bivio::Biz::Model::Entry');
     my($entry_list) = Bivio::Biz::Model::EntryList->new($req);
-    $entry_list->load({
+    $entry_list->load_all({
 	p => $entry->get('realm_transaction_id'),
-	count => Bivio::Type::Integer->get_max,
     });
 
     my($tran) = Bivio::Biz::Model::RealmTransaction->new($req);

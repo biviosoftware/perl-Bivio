@@ -183,7 +183,7 @@ sub _fill_lots_average_cost {
     my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
     $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
 	    => $date);
-    $lot_list->load();
+    $lot_list->load_all();
     my($lot_num) = 0;
     my($form) = $req->get('form');
 
@@ -231,7 +231,7 @@ sub _fill_lots_fifo {
     my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
     $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
 	    => $date);
-    $lot_list->load();
+    $lot_list->load_all();
     my($lot_num) = 0;
     my($form) = $req->get('form');
 

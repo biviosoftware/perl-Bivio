@@ -251,6 +251,27 @@ sub new {
 
 =cut
 
+=for html <a name="iterate_start></a>
+
+=head2 iterate_start(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : ref
+
+Returns a handle which can be used to iterate the rows with
+L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+Arguments are the same as L<load|"load">.
+
+=cut
+
+sub iterate_start {
+    my($self, $query, $where, $params, $die) = @_;
+
+    my($select) = $self->unsafe_get('select');
+    $die->die('DIE', 'must support select') unless $select;
+
+    return _execute_select($self, $query, \$select, $params, $die);
+}
+
 =for html <a name="load"></a>
 
 =head2 load(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : array_ref
@@ -273,27 +294,6 @@ sub load {
     return $query->get('this')
 	    ? _load_this($self, $query, $statement, $die)
 		    : _load_list($self, $query, $statement, $select, $params);
-}
-
-=for html <a name="iterate_start></a>
-
-=head2 iterate_start(Bivio::SQL::ListQuery query, string where, array_ref params, ref die) : ref
-
-Returns a handle which can be used to iterate the rows with
-L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
-
-Arguments are the same as L<load|"load">.
-
-=cut
-
-sub iterate_start {
-    my($self, $query, $where, $params, $die) = @_;
-
-    my($select) = $self->unsafe_get('select');
-    $die->die('DIE', 'must support select') unless $select;
-
-    return _execute_select($self, $query, \$select, $params, $die);
 }
 
 #=PRIVATE METHODS
@@ -470,7 +470,7 @@ sub _init_column_lists {
     return;
 }
 
-# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement) : array_ref
+# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery query, DBI::Statement statement) : array_ref
 #
 # Load "this" from statement.  We search serially through all records.
 # There doesn't appear to be a better way to do this, because we need
@@ -558,10 +558,10 @@ sub _load_list {
  FIND_START: {
 	# Set prev first, because there is a return in the for loop
 	if ($page_number > 0) {
-	    $query->put(has_prev => 1, prev => $page_number - 1);
+	    $query->put(has_prev => 1, prev_page => $page_number - 1);
 	}
 	else {
-	    $query->put(has_prev => 0, prev => undef);
+	    $query->put(has_prev => 0, prev_page => undef);
 	}
 
 	# Find the page.  We load the first row of the page here.
@@ -607,7 +607,7 @@ sub _load_list {
 	});
 
 	# Have we got enough?
-	last if $count-- <= 0;
+	last if --$count <= 0;
 
 	# If no more, return what there is
 	unless ($row = $statement->fetchrow_arrayref) {
@@ -618,7 +618,7 @@ sub _load_list {
 
     # Is there a next?
     if ($statement->fetchrow_arrayref) {
-	$query->put(has_next => 1, next => $page_number + 1);
+	$query->put(has_next => 1, next_page => $page_number + 1);
 	# See discussion of =item orabug_fetch_all_select
 	if ($attrs->{orabug_fetch_all_select}) {
 	    0 while $statement->fetchrow_arrayref;

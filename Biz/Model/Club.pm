@@ -176,8 +176,15 @@ sub delete_member_by_name {
 
     # If has txns, can't delete.
     my($txn_list) = Bivio::Biz::Model::MemberTransactionList->new($req);
-    $txn_list->unauth_load({auth_id => $id, parent_id => $user_id});
-    $user->die('user has transactions') if $txn_list->get_result_set_size();
+#TODO: This is broken unless $id is $auth_id.  Don't have (or want)
+#      unauth_iterate_start.
+    die('trying to delete outside auth_realm')
+	    unless $id eq $req->get('auth_id');
+    my($it) = $txn_list->iterate_start({parent_id => $user_id});
+    my(%row);
+    my($has_txn) = $txn_list->iterate_next($it, \%row);
+    $txn_list->iterate_end($it);
+    $user->die('user has transactions') if $has_txn;
 
 #TODO: Need to check for owner of Files and admin of Transactions
 
@@ -210,8 +217,9 @@ sub delete_shadow_users {
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     my($user) = Bivio::Biz::Model::User->new($req);
     my($list) = Bivio::Biz::Model::RealmUserList->new($req);
-    $list->load_all;
-    while ($list->next_row) {
+    my($it) = $list->iterate_start({});
+    my(%row);
+    while ($list->iterate_next_and_load($it)) {
 	next unless $list->is_shadow_user;
 
 	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
@@ -219,6 +227,7 @@ sub delete_shadow_users {
 	$user->unauth_load(user_id => $list->get('RealmUser.user_id'));
 	$user->cascade_delete;
     }
+    $list->iterate_end($it);
     return;
 }
 

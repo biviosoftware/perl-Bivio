@@ -268,7 +268,7 @@ sub delete {
 
 =for html <a name="iterate_start></a>
 
-=head2 iterate_start(ref die, string auth_id, string order_by) : ref
+=head2 iterate_start(ref die, string order_by) : ref
 
 Returns a handle which can be used to iterate the rows with
 L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
@@ -283,17 +283,10 @@ C<ORDER BY>.
 =cut
 
 sub iterate_start {
-    my($self, $die, $auth_id, $order_by) = @_;
+    my($self, $die, $order_by, $query) = @_;
     my($attrs) = $self->internal_get;
-    my($sql) =  $attrs->{select};
     my(@params);
-    if ($auth_id) {
-	$die->die('DIE', 'Model does not have auth_id')
-		unless $attrs->{auth_id};
-	$sql .= ' where '.$attrs->{auth_id}->{sql_name}
-		.'='.$attrs->{auth_id}->{sql_pos_param};
-	push(@params, $attrs->{auth_id}->{type}->to_sql_param($auth_id));
-    }
+    my($sql) = _prepare_select($self, $query, \@params);
     $sql .= ' order by '.$order_by;
     my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
@@ -316,17 +309,9 @@ I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 
 sub unsafe_load {
     my($self, $query, $die) = @_;
-    # Create the where clause and values array
     my($attrs) = $self->internal_get;
-    my($columns) = $attrs->{columns};
     my(@params);
-    my($sql) = $attrs->{select}.' where '.join(' and ', map {
-	my($column) = $columns->{$_};
-	Carp::croak("invalid field name: $_") unless $column;
-	push(@params, $column->{type}->to_sql_param($query->{$_}));
-	$_.'='.$column->{sql_pos_param};
-	# Use a sort to force order which (may) help Oracle's cache.
-    } sort keys(%$query));
+    my($sql) = _prepare_select($self, $query, \@params);
     my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
     my($start_time) = Bivio::Util::gettimeofday();
@@ -434,6 +419,28 @@ sub _next_primary_id {
     my($attrs) = $self->internal_get;
     return Bivio::SQL::Connection->execute($attrs->{next_primary_id},
 	    $_EMPTY_ARRAY, $die)->fetchrow_array;
+}
+
+# _prepare_select(Bivio::SQL::PropertySupport self, hash_ref query, array_ref params) : string
+#
+# Returns select statement including where if there is a query.
+#
+sub _prepare_select {
+    my($self, $query, $params) = @_;
+    # Create the where clause and values array
+    my($attrs) = $self->internal_get;
+    my($columns) = $attrs->{columns};
+    my($sql) = $attrs->{select};
+    if ($query) {
+	$sql .=' where '.join(' and ', map {
+	    my($column) = $columns->{$_};
+	    Bivio::IO::Alert->die('invalid field name: ', $_) unless $column;
+	    push(@$params, $column->{type}->to_sql_param($query->{$_}));
+	    $_.'='.$column->{sql_pos_param};
+	    # Use a sort to force order which (may) help Oracle's cache.
+	} sort keys(%$query));
+    }
+    return $sql;
 }
 
 =head1 COPYRIGHT

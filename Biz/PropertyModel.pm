@@ -197,20 +197,26 @@ sub internal_initialize_sql_support {
 
 =head2 iterate_start(string order_by) : ref
 
+=head2 iterate_start(string order_by, hash_ref query) : ref
+
 Returns a handle which can be used to iterate the rows for this
 realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
 should be called, too.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords C<ORDER BY>.
 
+I<query> is the same as in L<load|"load">.
+
 =cut
 
 sub iterate_start {
-    my($self) = shift;
+    my($self, $order_by, $query) = @_;
     my($auth_id) = $self->get_request->get('auth_id');
     $self->die('DIE', 'no auth_id') unless $auth_id;
-    return $self->internal_get_sql_support->iterate_start(
-	    $self, $auth_id, @_);
+    my($support) = $self->internal_get_sql_support;
+    $query ||= {};
+    $query->{$support->get('auth_id')->{name}} = $auth_id;
+    return $support->iterate_start($self, $order_by, $query);
 }
 
 =for html <a name="iterate_next_and_load"></a>
@@ -228,8 +234,13 @@ Returns false if there is no next.
 sub iterate_next_and_load {
     my($self, $it) = @_;
     my($values) = {};
-    return 0 unless $self->internal_get_sql_support->iterate_next(
-	    $it, $values);
+    unless ($self->internal_get_sql_support->iterate_next(
+	    $it, $values)) {
+	$self->internal_clear_model_cache;
+	$self->internal_put({});
+	return 0;
+    }
+
     return _load($self, $values);
 }
 
@@ -326,6 +337,8 @@ sub load_from_request {
 
 =head2 unauth_iterate_start(string order_by) : ref
 
+=head2 unauth_iterate_start(string order_by, hash_ref query) : ref
+
 B<Do not use this method unless you are sure the user is authorized
 to access all realms or all rows of the table.>
 
@@ -337,12 +350,14 @@ should be called, too.
 I<order_by> is an SQL C<ORDER BY> clause without the keywords
 C<ORDER BY>.
 
+I<query> is the same as in L<load|"load">.
+
+
 =cut
 
 sub unauth_iterate_start {
     my($self) = shift;
-    return $self->internal_get_sql_support->iterate_start(
-	    $self, undef, @_);
+    return $self->internal_get_sql_support->iterate_start($self, @_);
 }
 
 =for html <a name="unauth_load"></a>

@@ -10,6 +10,8 @@ Bivio::Biz::ListModel - an abstract model of an SQL query and result
 
 =head1 SYNOPSIS
 
+   use Bivio::Biz::ListModel;
+
 =cut
 
 =head1 EXTENDS
@@ -38,6 +40,11 @@ Here is a an example iteration:
 You can also:
 
    $list->set_cursor_or_not_found(0);
+   print $list->get('my_attr'), "\n";
+
+Or:
+
+   $list->set_cursor_or_die(0);
    print $list->get('my_attr'), "\n";
 
 =cut
@@ -136,12 +143,7 @@ Create a new ListModel associated with the request.
 =cut
 
 sub new {
-    my($self) = &Bivio::Biz::Model::new(@_);
-    # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->{$_PACKAGE} = {
-	empty_properties => $self->internal_get,
-    };
-    return $self;
+    return _new(Bivio::Biz::Model::new(@_));
 }
 
 =for html <a name="new_anonymous"></a>
@@ -155,12 +157,7 @@ Create a new_anonymous ListModel associated with the request.
 =cut
 
 sub new_anonymous {
-    my($self) = &Bivio::Biz::Model::new_anonymous(@_);
-    # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->{$_PACKAGE} = {
-	empty_properties => $self->internal_get,
-    };
-    return $self;
+    return _new(Bivio::Biz::Model::new_anonymous(@_));
 }
 
 =head1 METHODS
@@ -223,23 +220,9 @@ sub can_next_row {
     return defined(shift->{$_PACKAGE}->{cursor}) ? 1 : 0;
 }
 
-=for html <a name="execute"></a>
-
-=head2 static execute(Bivio::Agent::Request req) : boolean
-
-Loads a new instance of this model using the request.
-
-=cut
-
-sub execute {
-    my($proto, $req) = @_;
-    $proto->new($req)->load_from_request();
-    return 0;
-}
-
 =for html <a name="execute_load_all"></a>
 
-=head2 execute_load_all(Bivio::Agent::Request req)
+=head2 execute_load_all(Bivio::Agent::Request req) : boolean
 
 Loads "all" records of this model.
 
@@ -253,16 +236,39 @@ sub execute_load_all {
 
 =for html <a name="execute_load_page"></a>
 
-=head2 execute_load_page(Bivio::Agent::Request req)
+=head2 execute_load_page(Bivio::Agent::Request req) : boolean
 
-Loads exactly a page.
+Loads current page from I<req> query.
 
 =cut
 
 sub execute_load_page {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
-    $self->load({count => $self->PAGE_SIZE});
+    my($query) = $self->parse_query_from_request();
+    $self->die('CORRUPT_QUERY', {message => 'unexpected this',
+	query => $req->unsafe_get('query')})
+	    if $query->unsafe_get('this');
+    $self->load_page($query);
+    return 0;
+}
+
+=for html <a name="execute_load_this"></a>
+
+=head2 static execute_load_this(Bivio::Agent::Request req) : boolean
+
+Loads I<this> from I<req> query.
+
+=cut
+
+sub execute_load_this {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($query) = $self->parse_query_from_request();
+    $self->die('CORRUPT_QUERY', {message => 'missing this',
+	query => $req->unsafe_get('query')})
+	    unless $query->unsafe_get('this');
+    $self->load_this($query);
     return 0;
 }
 
@@ -718,12 +724,64 @@ already applied.
 
 sub iterate_next {
     my($self, $iterator, $row) = (shift, shift, shift);
-    return 0 unless $self->internal_get_sql_support->iterate_next(
-	    $iterator, $row, @_);
+    unless ($self->internal_get_sql_support->iterate_next(
+	    $iterator, $row, @_)) {
+	return 0;
+    }
 
     # Fixup the row if loaded.
     $self->internal_post_load_row($row)
 	    if $self->can('internal_post_load_row');
+    $self->internal_put($row);
+    return 1;
+}
+
+=for html <a name="iterate_next_and_load"></a>
+
+=head2 iterate_next_and_load(ref iterator) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+Will iterate to the next row and load the model with the row.
+Can be used to update a row.
+
+It appears as if the model was loaded with one row and the
+cursor was set at 0. Do not call L<next_row|"next_row">,
+however, or the behaviour will break, i.e. there will be
+no cursor.
+
+There may only be one iteration outstanding on an instance.
+
+This is slower than L<iterate_next|"iterate_next">.  The
+two routines can be used alternately.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next_and_load {
+    my($self, $iterator) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($row);
+    if ($fields->{iterate_load}) {
+	$row = $fields->{rows}->[0];
+    }
+    else {
+	# Initialize once.  It will be overwritten if a real load happens.
+	$fields->{rows} = [$row = {}];
+	$fields->{cursor} = 0;
+    }
+    unless ($self->internal_get_sql_support->iterate_next(
+	    $iterator, $row)) {
+	$self->internal_clear_model_cache;
+	$self->internal_put($fields->{empty_properties});
+	return 0;
+    }
+
+    # Fixup the row if loaded.
+    $self->internal_post_load_row($row)
+	    if $self->can('internal_post_load_row');
+    $self->internal_clear_model_cache;
+    $self->internal_put($row);
     return 1;
 }
 
@@ -761,36 +819,13 @@ sub iterate_start {
     return $sql_support->iterate_start($query, $where, $params, $self);
 }
 
-=for html <a name="load"></a>
-
-=head2 load()
-
-=head2 load(hash_ref query)
-
-=head2 load(Bivio::SQL::ListQuery query)
-
-Loads the property model from I<query> which must be a form
-acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
-unless I<query> is already a ListQuery.
-
-I<count> will be added to I<query> only if it is a hash_ref.
-
-I<auth_id> will be put in I<query> using the value in the request.
-
-If the load is successful, saves the model in the request.
-
-=cut
-
-sub load {
-    my($self, $query) = @_;
-    $query = $self->parse_query($query);
-    $self->unauth_load($query);
-    return;
-}
-
 =for html <a name="load_all"></a>
 
 =head2 load_all()
+
+=head2 load_all(hash_ref attrs)
+
+=head2 load_all(Bivio::SQL::ListQuery query)
 
 Loads "all" the records in this realm.
 If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
@@ -801,24 +836,85 @@ however.
 =cut
 
 sub load_all {
-    my($self) = @_;
-    $self->load({count => $self->LOAD_ALL_SIZE});
+    my($self, $query) = @_;
+    $query = $self->parse_query($query);
+    $query->put(count => $self->LOAD_ALL_SIZE);
+    _unauth_load($self, $query);
     _assert_all($self);
     return;
 }
 
-=for html <a name="load_from_request"></a>
+=for html <a name="load_page"></a>
 
-=head2 load_from_request()
+=head2 load_page(hash_ref query)
 
-Executes the load from the query string in the request.
+=head2 load_page(Bivio::SQL::ListQuery query)
+
+Loads the specified page in I<query> which must be a form
+acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+unless I<query> is already a ListQuery.
+
+I<this> must not be specified.
+
+I<count> will be added to I<query> only if it is a hash_ref.
+
+I<auth_id> will be put in I<query> using the value in the request.
+
+Saves the model in the request.
 
 =cut
 
-sub load_from_request {
-    my($self) = @_;
-    $self->unauth_load($self->parse_query_from_request());
+sub load_page {
+    my($self, $query) = @_;
+    $query = $self->parse_query($query);
+
+    # Must NOT specify a "this" else programming error.
+    $self->die('DIE', {message => 'unexpected this',
+	query => $query}) if $query->unsafe_get('this');
+
+    _unauth_load($self, $query);
     return;
+}
+
+=for html <a name="load_this"></a>
+
+=head2 load_this(hash_ref query)
+
+=head2 load_this(Bivio::SQL::ListQuery query)
+
+Loads the specified I<this> in I<query> which must be a form
+acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+unless I<query> is already a ListQuery.
+
+I<this> must be specified.
+
+Dies with NOT_FOUND if no rows are returned.
+
+I<count> will be added to I<query> only if it is a hash_ref.
+
+I<auth_id> will be put in I<query> using the value in the request.
+
+Saves the model in the request.
+
+=cut
+
+sub load_this {
+    my($self, $query) = @_;
+    $query = $self->parse_query($query);
+
+    # Must specify a "this" else programming error.
+    $self->die('DIE', {message => 'missing this',
+	query => $query}) unless $query->unsafe_get('this');
+
+    my($count) = _unauth_load($self, $query);
+    return if $count == 1;
+
+    $self->die('NOT_FOUND', {message => 'this not found',
+	query => $query}) unless $count;
+
+    $self->die('TOO_MANY', {message => 'expecting just one this',
+	query => $query});
+    # DOES NOT RETURN
 }
 
 =for html <a name="map_primary_key_to_rows"></a>
@@ -880,20 +976,17 @@ sub next_row_or_die {
 
 =for html <a name="parse_query"></a>
 
-=head2 parse_query() : Bivio::SQL::ListQuery
-
 =head2 parse_query(hash_ref query) : Bivio::SQL::ListQuery
 
 =head2 parse_query(Bivio::SQL::ListQuery query) : Bivio::SQL::ListQuery
 
 Does the processing of I<query>.  Converts to
 L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery> which
-may modify I<query>.
+may modify I<query> if it isn't already a ListQuery.
 
-Does not extract query from request if called with no args.
-See L<parse_query_from_request|"parse_query_from_request">.
+See also L<parse_query_from_request|"parse_query_from_request">.
 
-Puts I<auth_id> from request on query.
+Puts I<auth_id> from request on query in all cases.
 
 =cut
 
@@ -909,6 +1002,8 @@ sub parse_query {
 	# Let user override page count
 	return Bivio::SQL::ListQuery->new($query, $sql_support, $self);
     }
+
+    # Already a list query, put auth_id on query
     $query->put('auth_id' => $auth_id);
     return $query;
 }
@@ -1033,51 +1128,11 @@ sub set_cursor_or_not_found {
 	entity => $_[0]});
 }
 
-=for html <a name="unauth_load"></a>
-
-=head2 unauth_load(hash_ref attrs)
-
-=head2 unauth_load(Bivio::SQL::ListQuery query)
-
-Loads the model without forcing I<auth_id>.
-
-I<attrs> is not the same as I<query> of L<load|"load">.  I<attrs> is
-passed to
-L<Bivio::SQL::ListQuery::unauth_new|Bivio::SQL::ListQuery/"unauth_new">,
-while I<query> is L<Bivio::SQL::ListQuery::new|Bivio::SQL::ListQuery/"new">.
-B<Use the full names of ListQuery attributes.>
-
-I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if not already
-set.
-
-=cut
-
-sub unauth_load {
-    my($self, $query) = @_;
-    my($sql_support) = $self->internal_get_sql_support;
-
-    # Convert to listQuery
-    $query = Bivio::SQL::ListQuery->unauth_new($query, $self, $sql_support)
-	    if ref($query) eq 'HASH';
-
-    # Add in count if not there
-    $query->put(count => $self->PAGE_SIZE()) unless $query->has_keys('count');
-
-    # Let the subclass add specializations to the query.
-    my($params) = [];
-    my($where) = $self->internal_pre_load($query, $sql_support, $params);
-    $where = ' and '.$where if $where;
-    $self->internal_load(
-	    $self->internal_load_rows($query, $where, $params, $sql_support),
-	    $query);
-    return;
-}
-
 =for html <a name="unauth_load_all"></a>
 
-=head2 unauth_load(hash_ref attrs)
+=head2 unauth_load_all(hash_ref attrs)
 
-=head2 unauth_load(Bivio::SQL::ListQuery query)
+=head2 unauth_load_all(Bivio::SQL::ListQuery query)
 
 Adds in I<count> equal to L<LOAD_ALL_SIZE|"LOAD_ALL_SIZE">.
 
@@ -1093,7 +1148,7 @@ sub unauth_load_all {
     else {
 	$query->put(count => $self->LOAD_ALL_SIZE);
     }
-    $self->unauth_load($query);
+    _unauth_load($self, $query);
     _assert_all($self);
     return;
 }
@@ -1111,6 +1166,58 @@ sub _assert_all {
 	    .$self->LOAD_ALL_SIZE.' records')
 	    if $fields->{query}->get('has_next');
     return;
+}
+
+# _new(Bivio::Biz::ListModel self) : Bivio::Biz::ListModel
+#
+# Finishes instantiation.
+#
+sub _new {
+    my($self) = @_;
+    # NOTE: fields are dynamically replaced.  See, e.g. load.
+    $self->{$_PACKAGE} = {
+	empty_properties => $self->internal_get,
+    };
+    return $self;
+}
+
+# _unauth_load(Bivio::Biz::ListModel self, hash_ref attrs) : int
+# _unauth_load(Bivio::Biz::ListModel self, Bivio::SQL::ListQuery query) : int
+#
+# Loads the model without forcing I<auth_id>.
+#
+# I<attrs> is not the same as I<query> of L<load|"load">.  I<attrs> is
+# passed to
+# L<Bivio::SQL::ListQuery::unauth_new|Bivio::SQL::ListQuery/"unauth_new">,
+# while I<query> is L<Bivio::SQL::ListQuery::new|Bivio::SQL::ListQuery/"new">.
+# B<Use the full names of ListQuery attributes.>
+#
+# I<count> will be set to L<PAGE_SIZE|"PAGE_SIZE"> if not already
+# set.
+#
+# Returns count of rows loaded.
+#
+sub _unauth_load {
+    my($self, $query) = @_;
+    my($sql_support) = $self->internal_get_sql_support;
+
+    # Convert to listQuery
+    $query = Bivio::SQL::ListQuery->unauth_new($query, $self, $sql_support)
+	    if ref($query) eq 'HASH';
+
+    # Add in count if not there
+    $query->put(count => $self->PAGE_SIZE()) unless $query->has_keys('count');
+
+    # Add specializations to the where and params.
+    my($params) = [];
+    my($where) = $self->internal_pre_load($query, $sql_support, $params);
+    $where = ' and '.$where if $where;
+
+    # Execute the load and fixups
+    my($rows) = $self->internal_load_rows($query, $where, $params,
+	    $sql_support);
+    $self->internal_load($rows, $query);
+    return int(@$rows);
 }
 
 =head1 COPYRIGHT
