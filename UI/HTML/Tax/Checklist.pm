@@ -189,8 +189,7 @@ sub execute {
 
     $fields->{large_club_warning}->put(value =>
 	    Bivio::Biz::Accounting::Tax->meets_three_requirements(
-		    $req->get('auth_realm')->get('owner'),
-		    $req->get('report_date'))
+		    $req, $req->get('report_date'))
 
 	    ? 0 : $fields->{warning_message});
 
