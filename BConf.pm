@@ -248,7 +248,7 @@ sub merge_http_log {
 		    '\[notice\] Accept mutex',
 		    'Dispatcher::execute_queue:.*JOB_(?:START|END):',
 		    # Virii and such
-		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2)',
+		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2|site_root/default.bview)',
 		    'DieCode::MISSING_COOKIES',
 		    'client sent HTTP/1.1 request without hostname',
 		    'mod_ssl: SSL handshake timed out',
