@@ -46,6 +46,10 @@ Number of decimals to display.
 
 Name of the field to render.
 
+=item pad_left : int [1]
+
+Number of spaces to pad to left (same as String's pad_left).
+
 =item zero_as_blank : boolean [false]
 
 If true, renders the value 0 as ' '.
@@ -99,7 +103,7 @@ sub initialize {
 		$self->get_or_default('decimals', 2), 1,
 		$self->get_or_default('zero_as_blank', 0)],
 	    column_align => $self->get_or_default('column_align', 'E'),
-	    pad_left => 1,
+	    pad_left => $self->get_or_default('pad_left', 1),
 	    column_nowrap => 1,
 	   );
     $self->put(string_font => 'number_cell')
