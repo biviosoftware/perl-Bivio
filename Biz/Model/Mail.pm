@@ -120,6 +120,8 @@ sub create {
     $self->SUPER::create($values);
     $mail_id = $self->get('mail_id');
 
+    $self->setup_club($realm_owner);
+
     my($volume) = Bivio::Type::FileVolume::MAIL;
     my($user_id) = $req->unsafe_get('auth_user');
     # Get user of root directory if we don't have an auth_user
@@ -230,9 +232,42 @@ sub delete {
     return $self->SUPER::delete(@_);
 }
 
+=for html <a name="setup_club"></a>
+
+=head2 setup_club(Bivio::Biz::Model::RealmOwner club) :
+
+Setup necessary volumes
+
+=cut
+
+sub setup_club {
+    my($self, $realm_owner) = @_;
+    my($req) = $self->unsafe_get_request;
+
+    my($club_id) = $realm_owner->get('realm_id');
+    
+    # Get club admin (pick first in list)
+    my($admins) = Bivio::Biz::Model::RealmAdminList->new($req);
+    $admins->unauth_load_all({auth_id => $club_id});
+    $admins->set_cursor(0);
+    my($user_id) = $admins->get('RealmUser.user_id');
+
+    # Initialize club's file volumes MAIL and MAIL_CACHE, if necessary
+    my($v);
+    for $v (Bivio::Type::FileVolume::MAIL, Bivio::Type::FileVolume::MAIL_CACHE) {
+        my($file) = Bivio::Biz::Model::File->new($req);
+        # Try to load top-level directory for this volume
+        unless( $file->unsafe_load(file_id => $v->get_root_directory_id($club_id)) ) {
+            # Create top-level volume
+            $file->create_volume($club_id, $user_id, $v);
+        }
+    }
+    return;
+}
+
 =for html <a name="unpack_and_cache"></a>
 
-=head2 unpack_and_cache(Request req, MIME::Entity e, user_id, mail_id) : int
+=head2 unpack_and_cache(Request req, MIME::Entity e, int user_id, int mail_id) : int
 
 Unpack all parts recursively, convert simple text into HTML and store all
 parts in cache. Returns the top-level directory id.
@@ -346,7 +381,7 @@ sub _walk_attachment_tree {
             my($tohtml) = Bivio::MIME::TextToHTML->new;
             $tohtml->convert($entity, 'att?t=' . $mail_id);
         }
-        # Append the given index or its content-id to the name of the directory
+        # Append the given index or its content-id to the name of the file
         if(my($cid) = $entity->head->get('Content-ID')) {
             $mail_id .= '.' . $cid;
         } elsif ($index) {
