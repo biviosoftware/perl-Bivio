@@ -140,6 +140,19 @@ sub get_default_sort_key {
     return undef;
 }
 
+=for html <a name="get_finder_at"></a>
+
+=head2 abstract get_finder_at(int row) : string
+
+Returns the model finder for the specified row. This should be the string
+format of a L<Bivio::Biz::FindParams>.
+
+=cut
+
+sub get_finder_at {
+    die("abstract method");
+}
+
 =for html <a name="get_index"></a>
 
 =head2 get_index() : int
@@ -223,6 +236,31 @@ sub get_row_count {
 
     return int(@{$fields->{rows}});
 }
+
+=for html <a name="get_selected_index"></a>
+
+=head2 get_selected_index() : int
+
+Returns the index of the selected item, or -1 if no item is selected.
+
+=cut
+
+sub get_selected_index {
+    return -1;
+}
+
+=for html <a name="get_selected_item"></a>
+
+=head2 get_selected_item() : Model
+
+Returns the selected model or undef if none was selected.
+
+=cut
+
+sub get_selected_item {
+    return undef;
+}
+
 
 =for html <a name="get_sort_key"></a>
 
