@@ -48,8 +48,8 @@ which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 Returns:
  usage: b-test [options] command [args...]
  commands:
-    accept tests... - runs the tests (.btest) under Bivio::Test::Language
-    unit tests/dirs... -- runs the tests (*.t) under Test::Harness
+    accept tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 
 =cut
 
@@ -57,8 +57,8 @@ sub USAGE {
     return <<'EOF';
 usage: b-test [options] command [args...]
 commands:
-    accept tests... - runs the tests (.btest) under Bivio::Test::Language
-    unit tests/dirs... -- runs the tests (*.t) under Test::Harness
+    accept tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 EOF
 }
 
@@ -87,7 +87,21 @@ Run acceptance tests.
 =cut
 
 sub acceptance {
-    my($self) = @_;
+    my($self, $tests) = _find_files(\@_, 't');
+    _run($self, $tests, sub {
+        my($self, $test) = @_;
+	my($max, $ok) = (-1, 0);
+	foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $test 2>&1")})) {
+	    _trace($line) if $_TRACE;
+	    if ($max >= 0) {
+		$ok++ if $line =~ /^ok\s*(\d+)/;
+	    }
+	    elsif ($line =~ /^1\.\.(\d+)/) {
+		$max = $1;
+	    }
+	}
+	return $ok == $max;
+    });
     return;
 }
 
@@ -103,38 +117,20 @@ will be executed.  All tests must end in C<*.t>.
 
 sub unit {
     my($self, $tests) = _find_files(\@_, 't');
-    my($total_ok, $total_max) = (0, 0);
     _run($self, $tests, sub {
-	my($self, $tests) = @_;
-	foreach my $t (@$tests) {
-	    my($max, $ok, $not_ok) = (0, 0, 0, 0);
-	    $self->print(sprintf('%20s: ', $t));
-	    _trace('running: ', $t) if $_TRACE;
-	    foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $t 2>&1")})) {
-		_trace($line) if $_TRACE;
-		if ($max) {
-		    $ok++ if $line =~ /^ok\s*(\d+)/;
-		}
-		elsif ($line =~ /^1\.\.(\d+)/) {
-		    $max = $1;
-		}
+        my($self, $test) = @_;
+	my($max, $ok) = (-1, 0);
+	foreach my $line (split(/\n/, ${$self->piped_exec("$^X -w $test 2>&1")})) {
+	    _trace($line) if $_TRACE;
+	    if ($max >= 0) {
+		$ok++ if $line =~ /^ok\s*(\d+)/;
 	    }
-	    $self->print($ok == $max ? 'ok' : 'NOT OK', "\n");
-	    $total_ok++ if $ok == $max;
-	    $total_max++;
-        }
+	    elsif ($line =~ /^1\.\.(\d+)/) {
+		$max = $1;
+	    }
+	}
+	return $ok == $max;
     });
-    unless ($total_max == $total_ok) {
-	$self->print(
-	    sprintf('FAILED %d (%.1f%%) and passed %d (%.1f%%)' . "\n",
-		map {
-		    ($_, 100 * $_ / $total_max);
-		} ($total_max - $total_ok), $total_ok
-	));
-	Bivio::Die->throw_quietly('DIE');
-        # DOES NOT RETURN
-    }
-    $self->print("All ($total_max) tests passed\n");
     return;
 }
 
@@ -169,12 +165,34 @@ sub _find_files {
 #
 sub _run {
     my($self, $tests, $action) = @_;
+    my($total_ok, $total_max) = (0, 0);
     foreach my $d (sort(keys(%$tests))) {
 	$self->print("*** Entering: $d\n");
 	Bivio::IO::File->chdir($d);
-	&$action($self, $tests->{$d});
+	foreach my $t (@{$tests->{$d}}) {
+	    $self->print(sprintf('%20s: ', $t));
+	    _trace('running: ', $t) if $_TRACE;
+	    my($res) = 'FAILED';
+	    if (&$action($self, $t)) {
+		$res = 'PASSED';
+		$total_ok++;
+	    }
+	    $self->print($res, "\n");
+	    $total_max++;
+        }
 	$self->print("*** Leaving: $d\n\n");
     }
+    unless ($total_max == $total_ok) {
+	$self->print(
+	    sprintf('FAILED %d (%.1f%%) and passed %d (%.1f%%)' . "\n",
+		map {
+		    ($_, 100 * $_ / $total_max);
+		} ($total_max - $total_ok), $total_ok
+	));
+	Bivio::Die->throw_quietly('DIE');
+        # DOES NOT RETURN
+    }
+    $self->print("All ($total_max) tests passed\n");
     return;
 }
 
