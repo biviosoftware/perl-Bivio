@@ -59,7 +59,7 @@ sub main {
     my(@argv) = @_;
     $> == 0 && die('this program cannot be run as root');
     Bivio::IO::Config->initialize(\@argv);
-    my($cmd_fmt) = '"$prog $arg"';
+    my($cmd_fmt) = '"$prog_file $arg"';
     my($tmp);
     my($file_root);
     my($execute) = 1;
@@ -67,7 +67,7 @@ sub main {
     while (@argv) {
 	$_ = shift(@argv);
 	/^-x(term)?$/
-		&& ($cmd_fmt = '"xterm -name $prog -e $prog $arg"', next);
+		&& ($cmd_fmt = qq("xterm -name \$prog -e $cmd_fmt"), next);
 	/^-t(mp)?$/ && ($tmp = "/tmp/societas$$", next);
 	/^-n/ && ($execute = 0, next);
 	/^-/ && &_usage("unknown option \"$_\"");
@@ -84,7 +84,7 @@ sub main {
 	    chdir($tmp) || die("chdir $tmp: $!");
 	}
 	else {
-	    print STDOUT "Creating and cd'ing to $tmp\n";
+	    print STDOUT "Would mkdir and cd to $tmp\n";
         }
     }
     my(%processes, $server);
@@ -108,7 +108,7 @@ sub main {
     print STDERR "http://$host:$http_port/club/setup\n",
 	    "b-sendmail-agent $user $mail_port x x < msg\n";
     unless ($execute) {
-	print STDOUT "export BIVIO_CONF=$conf\n";
+	print STDOUT "Would export BIVIO_CONF=$conf\n";
 	$conf = '&STDOUT';
     }
     open(OUT, ">$conf") || die("open $conf: $!");
@@ -121,27 +121,28 @@ sub main {
     }
     close(OUT) || die("close $conf: $!");
     close(DATA);
-    foreach $server (qw(b-file-server:file
-                   b-mail-dispatcher:mail
-                   b-http-dispatcher:http)) {
-	my($prog, $arg) = split(/:/, $server);
+    foreach $server (qw(File/b-file-server:file
+                   Agent/Mail/b-mail-dispatcher:mail
+                   Agent/HTTP/b-http-dispatcher:http)) {
+	my($prog_file, $prog, $arg) = $server =~ m!(.+/(.+)):(\w+)!;
 	if ($execute) {
 	    my($pid) = fork;
 	    defined($pid) || die("fork: $!");
 	    if ($pid) {
 		$processes{$pid} = $prog;
-		print STDERR "[$pid] $prog\n";
 		next;
 	    }
 	}
-	# interpolate $prog and $arg in $cmd_fmt
+	# interpolate $prog_file and $arg in $cmd_fmt
+	$prog_file = -f $prog_file ? ('perl -w ' . $prog_file) : $prog;
 	my($cmd) = eval $cmd_fmt;
 	if ($execute) {
+	    print STDERR "[$$] Starting: $cmd\n";
 	    exec($cmd);
 	    die("exec $cmd: $!");
 	}
 	else {
-	    print STDOUT "Starting: $cmd\n";
+	    print STDOUT "Would start: $cmd\n";
 	}
     }
     $execute || return 0;
