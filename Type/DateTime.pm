@@ -961,7 +961,7 @@ Date windowing adjusts twenty years ahead of this year.
 sub to_four_digit_year {
     my(undef, $year) = @_;
     return $year >= 100 ? $year
-	    : $year + ($year > $_WINDOW_YEAR ? $1900 : $2000);
+	    : $year + ($year > $_WINDOW_YEAR ? 1900 : 2000);
 }
 
 =for html <a name="to_local_string"></a>
@@ -1220,7 +1220,7 @@ sub _initialize {
     _compute_local_timezone();
 
     # Windowing year is always 20 years ahead of now.
-    $_WINDOW_YEAR = ((localtime)[5] + 20) % 100;
+    $_WINDOW_YEAR = int(((localtime)[5] + 20) % 100);
     return;
 }
 
