@@ -179,8 +179,6 @@ my(@_XLATORS) = (
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-12', 'Yes'),
 		Bivio::Type::F1065Partnership::LIMITED_LIABILITY(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-13', 'Yes'),
-#		Bivio::Type::F1065Partnership::OTHER(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-14', 'Yes')
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
@@ -322,20 +320,20 @@ my(@_XLATORS) = (
 		    'foreign_trust'
 		],
 		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-29a', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-30a', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'transfer_of_interest'
+		],
+		Bivio::Type::Boolean::TRUE(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-31', 'Yes'),
 		Bivio::Type::Boolean::FALSE(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-32', 'Yes')
 	       ),
-#	Bivio::UI::PDF::Form::RadioBtnXlator->new(
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'transfer_of_interest'
-#		],
-#		Bivio::Type::Boolean::TRUE(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-33', 'Yes'),
-#		Bivio::Type::Boolean::FALSE(),
-#		Bivio::UI::PDF::Form::ButtonXlator->new('c2-34', 'Yes')
-#	       ),
  	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-11',
 		[
@@ -479,36 +477,6 @@ my(@_XLATORS) = (
 		],
 		2
 	       ),
-# 	Bivio::UI::PDF::Form::StringXlator->new(
-#		'f3-78',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_income_type'
-#		]
-#	       ),
-# 	Bivio::UI::PDF::Form::StringXlator->new(
-#		'f3-79',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_income_country'
-#		]
-#	       ),
-#	Bivio::UI::PDF::Form::IntXlator->new(
-#		'f3-80',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_income'
-#		],
-#		','
-#	       ),
-#	Bivio::UI::PDF::Form::FracXlator->new(
-#		'f3-81',
-#		[
-#		    'Bivio::Biz::Model::F1065Form',
-#		    'foreign_income'
-#		],
-#		2
-#	       ),
  	Bivio::UI::PDF::Form::StringXlator->new(
 		'f3-78',
 		[
