@@ -669,7 +669,8 @@ sub lock_action {
 	}
 	my($pid, $host) = split(/\s+/, ${Bivio::IO::File->read($lock_pid)});
 	return _lock_warning($lock_dir)
-	    if $host ne Sys::Hostname::hostname() || _process_exists($pid);
+	    if ($host && $host ne Sys::Hostname::hostname())
+		|| _process_exists($pid);
 	Bivio::IO::Alert->warn(
 	    $pid, ": process doesn't exist, removing ", $lock_dir);
 	# Don't test results, because there may be contention
