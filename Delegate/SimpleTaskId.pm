@@ -61,6 +61,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
+            cancel=SITE_ROOT
 	)],
 	[qw(
 	    SITE_ROOT
@@ -161,7 +162,23 @@ sub get_delegate_info {
             ANYBODY
             Action.LocalFilePlain->execute_favicon
         )],
-];
+	[qw(
+            DEFAULT_ERROR_REDIRECT_FORBIDDEN
+            13
+            GENERAL
+            ANYBODY
+            Model.ForbiddenForm
+            next=FORBIDDEN
+	    login_task=LOGIN
+        )],
+        [qw(
+            FORBIDDEN
+            14
+            GENERAL
+            ANYBODY
+            Action.Forbidden
+        )],
+    ];
 }
 
 =for html <a name="merge_task_info"></a>
