@@ -14,6 +14,19 @@ Bivio::IO::File->mkdir_p(my $facades_dir = "$base/f");
 Bivio::Test->new('Bivio::Util::Release')->unit([
     # -noexecute leaves tmp directory around, which helps debugging
     [['-noexecute']] => [
+	list_updates => [
+	    sub {
+		my($case) = @_;
+		my($x) = [
+		    (split(/\n/, $case->get('object')->create_stream))[0,1,2],
+		];
+		# Force a difference
+		$x->[1] =~ s/\b(\d+)\b/$1 + 1/eg;
+		Bivio::IO::File->write("$home/prod-rpms.txt", join("\n", @$x));
+		$case->put(expect => [(split(/\s/, $x->[1]))[2] . "\n"]);
+		return ['prod'];
+	    } => 0,
+	],
 	build_tar => [
 	    R1 => sub {
 		my($case) = @_;

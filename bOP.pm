@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::type::DateTime->from_literal recognizes to_file_name format
+  * Removed Bivio::UI::Color->format_pdf
+  * Bivio::UI::PDF::* removed
+
+  Revision 2.47  2004/12/29 20:33:38  moeller
   * Bivio::Biz::PropertyModel dies if update() is called on an unloaded model
   * Bivio::Type::Secret allows for multiple encryption keys, which are
     tried sequentially. Used to transition to a new key.
