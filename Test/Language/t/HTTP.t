@@ -40,7 +40,7 @@ Bivio::Die->die(q{$mail_file: should not exist})
     if -e q{$mail_file};
 my(\$e1) = generate_local_email();
 test_deviance(qr/No mail for /);
-verify_mail(\$e1, '');
+verify_local_mail(\$e1, '');
 test_conformance();
 my(\$i) = 1;
 my(\$m) = sub {
@@ -53,23 +53,23 @@ You have mail
 END
 };
 \$m->();
-verify_mail(\$e1, 'You have mail');
+verify_local_mail(\$e1, 'You have mail');
 test_deviance(qr/No mail for /);
-verify_mail(\$e1, 'You have mail');
+verify_local_mail(\$e1, 'You have mail');
 test_conformance();
 my(\$e2) = generate_local_email('.*');
 \$m->();
 test_deviance(qr/No mail for /);
-verify_mail(\$e2, '');
+verify_local_mail(\$e2, '');
 test_deviance(qr/Found mail for .* but does not match /);
-verify_mail(\$e1, 'this should not match');
+verify_local_mail(\$e1, 'this should not match');
 test_conformance();
 \$m->(\$e2);
-verify_mail(\$e2, 'You have mail');
+verify_local_mail(\$e2, 'You have mail');
 test_deviance(qr/No mail for /);
-verify_mail(\$e2, 'You have mail');
+verify_local_mail(\$e2, 'You have mail');
 test_conformance();
-verify_mail(\$e1, 'You have mail');
+verify_local_mail(\$e1, 'You have mail');
 EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
