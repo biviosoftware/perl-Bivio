@@ -61,7 +61,10 @@ Perform lookup and su automatically if coming in with query string.
 sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
-    $self->internal_put_field(next_task => $req->get('task')->get('next'));
+    $self->internal_put_field(next_task =>
+	Bivio::Societas::Biz::Model::Preferences
+	    ->get_user_pref($req, 'ADM_SU_NEXT_TASK')
+	|| $req->get('task')->get('next'));
     my($query) = $req->unsafe_get('query');
     my($this) = $query->{Bivio::SQL::ListQuery->to_char('this')};
     return unless $this;
@@ -100,6 +103,10 @@ sub execute_ok {
 	    $cookie->put($_SU_FIELD => $super_user_id) if $cookie;
 	    $req->put(super_user_id => $super_user_id);
 	}
+
+	# Set the preference before su'ing
+	Bivio::Societas::Biz::Model::Preferences->set_user_pref(
+	    $req, 'ADM_SU_NEXT_TASK', $properties->{next_task});
 
 	# MUST BE LAST (may redirect)
 	Bivio::Biz::Model::LoginForm->execute($req,
