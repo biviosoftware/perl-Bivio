@@ -238,8 +238,10 @@ my($_SEP) = Bivio::IO::ClassLoader->MAP_SEPARATOR;
 my($_LOAD_PATH) = undef;
 my($_CURRENT);
 my(%_CACHE);
+my($_CACHE_INSTANCES) = 1;
 Bivio::IO::Config->register({
     load_path => Bivio::IO::Config->REQUIRED,
+    cache_instances => $_CACHE_INSTANCES,
 });
 
 =head1 FACTORIES
@@ -274,7 +276,7 @@ sub get_instance {
     $view_name = $self->get('view_name');
 
     # In the cache and up to date?
-    if ($_CACHE{$view_name}) {
+    if ($_CACHE_INSTANCES && $_CACHE{$view_name}) {
 	my($cache) = $_CACHE{$view_name};
 	$self->compile_die('called recursively') unless ref($cache);
 #TODO: Race condition on package installs, because parents should be
@@ -397,6 +399,10 @@ sub execute_uri {
 
 =over 4
 
+=item cache_instances : boolean [1]
+
+If true, instances will be cached.
+
 =item load_path : array_ref (required)
 
 A list of absolute directories which contain the I<bview> files.  All dirs
@@ -415,6 +421,7 @@ sub handle_config {
 	push(@load_path, Bivio::Type::FileName->add_trailing_slash($p));
     }
     $_LOAD_PATH = \@load_path;
+    $_CACHE_INSTANCES = $cfg->{cache_instances};
     return;
 }
 
