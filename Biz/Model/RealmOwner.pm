@@ -62,6 +62,7 @@ use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
 use Bivio::Type::Amount;
+use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
@@ -111,6 +112,7 @@ specified date.
 
 sub audit_units {
     my($self, $date) = @_;
+    $date = Bivio::Type::Date->to_local_date($date);
     my($req) = $self->get_request;
     my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
     my($entries) = Bivio::Biz::Model::MemberEntryList->new($req);
@@ -316,6 +318,7 @@ by the realm. Returns realm_instrument_id => cost.
 
 sub get_cost_per_share {
     my($self, $date) = @_;
+    $date = Bivio::Type::Date->to_local_date($date);
 
 #TODO: THIS SHOULD ALL BE DONE IN SQL!
 #      very clumsy with cost basis of fractional shares
@@ -385,7 +388,7 @@ specified date. Returns a hash of realm_instrument_id => count.
 sub get_number_of_shares {
     my($self, $date) = @_;
     my($fields) = $self->{$_PACKAGE};
-
+    $date = Bivio::Type::Date->to_local_date($date);
     my($cache) = $fields->{'get_number_of_shares'.$date};
     return $cache if $cache;
 
@@ -429,15 +432,16 @@ the RealmInstruments on the specified date.
 =cut
 
 sub get_share_price_and_date {
-    my($self, $search_date) = @_;
+    my($self, $date) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($cache) = $fields->{'get_share_price_and_date'.$search_date};
+    $date = Bivio::Type::Date->to_local_date($date);
+    my($cache) = $fields->{'get_share_price_and_date'.$date};
     return $cache if $cache;
 
     my($result) = {};
 
     # search last 8 days
-    my($j, undef) = $search_date =~ /^(.*)\s(.*)$/;
+    my($j, undef) = $date =~ /^(.*)\s(.*)$/;
     my($dates) = '';
     for (1..8) {
 	$dates .= Bivio::Type::DateTime->to_sql_value(
@@ -451,7 +455,7 @@ sub get_share_price_and_date {
     #   if not in MGFS use local (realm_instrument_valuation_t).
     #   otherwise get most recent value from realm_instrument_valuation_t
 
-    my($id, $value, $date);
+    my($id, $value, $val_date);
 
     # look on exactly that date, allows a local override
     my($sth) = Bivio::SQL::Connection->execute("
@@ -459,11 +463,11 @@ sub get_share_price_and_date {
             FROM realm_instrument_valuation_t
             WHERE realm_id=?
             AND date_time=$_SQL_DATE_VALUE",
-	    [$self->get('realm_id'), $search_date]);
+	    [$self->get('realm_id'), $date]);
     my($row);
     while ($row = $sth->fetchrow_arrayref) {
 	($id, $value) = @$row;
-	$result->{$id} = [$value, $search_date];
+	$result->{$id} = [$value, $date];
     }
 
     my($d) = Bivio::Type::DateTime->from_sql_value(
@@ -482,11 +486,11 @@ sub get_share_price_and_date {
 EOF
 
     while ($row = $sth->fetchrow_arrayref) {
-	($id, $value, $date) = @$row;
-	$date = Bivio::Type::DateTime->from_sql_column($date);
+	($id, $value, $val_date) = @$row;
+	$val_date = Bivio::Type::DateTime->from_sql_column($val_date);
 
 	unless (exists($result->{$id})) {
-	    $result->{$id} = [$value, $date];
+	    $result->{$id} = [$value, $val_date];
 	}
     }
 
@@ -518,17 +522,17 @@ EOF
 EOF
 	my($sth2) = Bivio::SQL::Connection->execute($d,
 		[$self->get('realm_id'), $id,
-			Bivio::Type::DateTime->to_sql_param($search_date)]);
+			Bivio::Type::DateTime->to_sql_param($date)]);
 
 	my($row2);
 	if ($row2 = $sth2->fetchrow_arrayref()) {
-	    ($value, $date) = @$row2;
-	    $date = Bivio::Type::DateTime->from_sql_column($date);
-	    $result->{$id} = [$value, $date];
+	    ($value, $val_date) = @$row2;
+	    $val_date = Bivio::Type::DateTime->from_sql_column($val_date);
+	    $result->{$id} = [$value, $val_date];
 	}
     }
 
-    $fields->{'get_share_price_and_date'.$search_date} = $result;
+    $fields->{'get_share_price_and_date'.$date} = $result;
     return $result;
 }
 
@@ -548,7 +552,7 @@ sub get_unit_value {
 
 =for html <a name="get_units"></a>
 
-=head2 get_units(Bivio::Type::DateTime date) : string
+=head2 get_units(string date) : string
 
 Returns the total number of units purchased in the realm up to the specified
 date.
@@ -558,6 +562,7 @@ date.
 sub get_units {
     my($self, $date) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $date = Bivio::Type::Date->to_local_date($date);
     my($cache) = $fields->{'get_units'.$date};
     return $cache if $cache;
 
@@ -581,7 +586,7 @@ EOF
 
 =for html <a name="get_value"></a>
 
-=head2 get_value(Bivio::Type::DateTime date) : string
+=head2 get_value(string date) : string
 
 Returns the realm's value on the specified date.
 
@@ -590,6 +595,7 @@ Returns the realm's value on the specified date.
 sub get_value {
     my($self, $date) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $date = Bivio::Type::Date->to_local_date($date);
     my($cache) = $fields->{'get_value'.$date};
     return $cache if $cache;
 
@@ -611,7 +617,7 @@ sub get_value {
 
 =for html <a name="get_tax_basis"></a>
 
-=head2 get_tax_basis(EntryClass class, Bivio::Type::DateTime date) : string
+=head2 get_tax_basis(EntryClass class, string date) : string
 
 Returns the total tax basis of the specified entry class up to the specified
 date.
@@ -620,6 +626,7 @@ date.
 
 sub get_tax_basis {
     my($self, $class, $date) = @_;
+    $date = Bivio::Type::Date->to_local_date($date);
 
     my($query) = <<"EOF";
 	SELECT sum(entry_t.amount)
@@ -752,6 +759,7 @@ sub unauth_load_by_email {
 sub _get_unit_value {
     my($self, $date, $include_todays_member_entries) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $date = Bivio::Type::Date->to_local_date($date);
     my($cache) = $fields->{'_get_unit_value'.$date
 	.$include_todays_member_entries};
     return $cache if $cache;
