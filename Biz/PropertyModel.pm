@@ -199,7 +199,7 @@ sub load_from_query {
 	    : $q ? Bivio::SQL::ListQuery->new({
 		%$q,
 		auth_id => $req->get('auth_id'),
-		count => 1}, $support)
+		count => 1}, $support, $self)
 		    : $self->die(Bivio::DieCode::CORRUPT_QUERY(),
 			    'missing query');
 

@@ -421,7 +421,7 @@ sub load {
 	$query->{auth_id} = $auth_id;
 	# Let user override page count
 	$query->{count} = $self->PAGE_SIZE() unless $query->{count};
-	$query = Bivio::SQL::ListQuery->new($query, $sql_support);
+	$query = Bivio::SQL::ListQuery->new($query, $sql_support, $self);
     }
     else {
 	$query->put('auth_id' => $auth_id);
