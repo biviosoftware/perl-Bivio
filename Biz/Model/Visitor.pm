@@ -31,9 +31,10 @@ C<Bivio::Biz::Model::Visitor> represents a non-user, i.e. a "unique" visitor.
 =cut
 
 #=IMPORTS
+use Bivio::Type::Name;
 
 #=VARIABLES
-my($_CLIENT_ADDR_LENGTH) = Bivio::Type::RealmName->get_width;
+my($_CLIENT_ADDR_LENGTH) = Bivio::Type::Name->get_width;
 
 =head1 METHODS
 
@@ -81,7 +82,7 @@ sub internal_initialize {
 	    # Propagate misspelling as per RFC2616
 	    referer_uri => ['Line', 'NONE'],
 	    referer_realm_id => ['PrimaryId', 'NONE'],
-	    client_addr => ['RealmName', 'NOT_NULL'],
+	    client_addr => ['Name', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
 
