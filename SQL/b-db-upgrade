@@ -250,6 +250,21 @@ ALTER TABLE realm_decor_t
   foreign key (realm_id)
   references realm_owner_t(realm_id)
 EOF
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
+ALTER TABLE realm_decor_t
+  add constraint realm_decor_t3
+  check (show_all_columns BETWEEN 0 AND 1)
+EOF
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
+ALTER TABLE realm_decor_t
+  add constraint realm_decor_t4
+  check (show_disclaimer BETWEEN 0 AND 1)
+EOF
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
+ALTER TABLE realm_decor_t
+  add constraint realm_decor_t5
+  check (show_profile BETWEEN 0 AND 1)
+EOF
 
     print("Renaming celebrity clubs\n");
     Bivio::Biz::Util::Club->rename('ask_candis', 'ask_candis_inbox', 1);
