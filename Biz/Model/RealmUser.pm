@@ -43,8 +43,8 @@ use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
-my($_CLUB_ROLES) = '';
-Bivio::Auth::RoleSet->set(\$_CLUB_ROLES,
+my($_ACTIVE_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_ACTIVE_ROLES,
 	Bivio::Auth::Role::GUEST(),
 	Bivio::Auth::Role::MEMBER(),
 	Bivio::Auth::Role::ACCOUNTANT(),
@@ -61,16 +61,16 @@ Bivio::Auth::RoleSet->set(\$_MEMBER_ROLES,
 
 =cut
 
-=for html <a name="VALID_CLUB_ROLES"></a>
+=for html <a name="VALID_ACTIVE_ROLES"></a>
 
-=head2 VALID_CLUB_ROLES : string
+=head2 VALID_ACTIVE_ROLES : string
 
 Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
 
 =cut
 
-sub VALID_CLUB_ROLES {
-    return $_CLUB_ROLES;
+sub VALID_ACTIVE_ROLES {
+    return $_ACTIVE_ROLES;
 }
 
 =for html <a name="MEMBER_ROLES"></a>
