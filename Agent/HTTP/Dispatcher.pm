@@ -3,6 +3,7 @@
 package Bivio::Agent::HTTP::Dispatcher;
 use strict;
 $Bivio::Agent::HTTP::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::HTTP::Dispatcher::VERSION;
 
 =head1 NAME
 
@@ -10,10 +11,9 @@ Bivio::Agent::HTTP::Dispatcher - dispatches Apache httpd requests
 
 =head1 SYNOPSIS
 
+
     PerlModule Bivio::Agent::HTTP::Dispatcher
-    <LocationMatch "^/\w{3,}($|/)">
-    AuthName bivio
-    AuthType Basic
+    <LocationMatch "^/(index.html|[*a-zA-Z0-9_-]{2,}($|/))">
     SetHandler perl-script
     PerlHandler Bivio::Agent::HTTP::Dispatcher
     </LocationMatch>
@@ -32,29 +32,27 @@ use Bivio::Agent::Dispatcher;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
-handler.  It creates a single instance of itself on the first request.
+handler.  It creates a single instance when this module is loaded.
 
 =cut
 
 #=IMPORTS
-use Bivio::IO::ClassLoader;
-use Bivio::Ext::ApacheConstants;
-use Bivio::Agent::Dispatcher;
+# dynamically imports Bivio::Agent::Job::Dispatcher
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::HTTP::Request;
-use Bivio::Agent::TaskId;
-use Bivio::Die;
+use Bivio::Agent::Task;
+use Bivio::DieCode;
+use Bivio::Ext::ApacheConstants;
+use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-# Required in initialize
-# use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_SELF);
-my($_INITIALIZED);
 __PACKAGE__->initialize;
 
 =head1 FACTORIES
@@ -142,8 +140,7 @@ Creates C<$_SELF> and initializes config.
 
 sub initialize {
     my($proto) = @_;
-    $_INITIALIZED && return;
-    $_INITIALIZED = 1;
+    return if $_SELF;
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
     # Avoids import problems
