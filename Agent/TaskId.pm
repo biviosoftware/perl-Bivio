@@ -2519,6 +2519,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/account/detail/delete
         Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Action::RealmAccountDelete
     )],
 );
