@@ -129,7 +129,7 @@ Formats the query string with I<authorization_code>
 
 sub format_query_with_auth_code {
     my($self) = @_;
-    return $self->SUPER::format_query().'&'.$_QUERY_FIELD.'='
+    return $self->SUPER::format_query_for_this().'&'.$_QUERY_FIELD.'='
 	    .$self->get('authorization_code');
 }
 

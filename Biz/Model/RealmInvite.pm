@@ -167,7 +167,7 @@ sub check_accept_after_login {
 
     # Do not use local format_query, because it includes the auth_code
     # which we want from the user.
-    my($query) = $invite->SUPER::format_query();
+    my($query) = $invite->SUPER::format_query_for_this();
 
     # Have an invite figure out what type of invite it is
     my($realm_user_id) = $invite->get('realm_user_id');
@@ -339,7 +339,7 @@ Formats the query string with I<this> and I<auth_code>.
 
 sub format_query_with_auth_code {
     my($self) = @_;
-    return $self->SUPER::format_query().'&'.$_QUERY_FIELD
+    return $self->SUPER::format_query_for_this().'&'.$_QUERY_FIELD
 	    .'='.$self->get_auth_code;
 }
 
