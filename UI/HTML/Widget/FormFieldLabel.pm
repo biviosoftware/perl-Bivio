@@ -99,9 +99,11 @@ sub initialize {
 	default_value => Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
 	    string_font => 'error',
+	    parent => $self,
 	}),
 	undef_value =>  Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
+	    parent => $self,
 	}),
     );
     $self->SUPER::initialize;
