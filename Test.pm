@@ -118,9 +118,11 @@ object or method level.  Here's an example at instantiation:
 
     Bivio::Test->new->({
 	check_return => sub {
-	    my($case, $return) = @_;
+	    my($case, $return, $expect) = @_;
             # Round to 6 decimal places
-	    return [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
+	    $case->actual_return(
+                [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000]);
+            return $expect;
 	},
     })->unit([
 	Bivio::Math::EMA->new(30) => [
@@ -139,8 +141,10 @@ as in:
         {
 	    object => Bivio::Math::EMA->new(30),
             check_return => sub {
-                my($case, $return) = @_;
-                return [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
+                my($case, $return, $expect) = @_;
+                $case->actual_return(
+                    [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
+                return $expect;
 	    },
         } => [
 	    compute => [
@@ -251,10 +255,10 @@ This callback is defined as a I<check_die> group attribute.
 Will be called only if the case results in an exception (L<Bivio::Die|Bivio::Die> and I<expect> is a L<Bivio::Die|Bivio::Die>, i.e. not
 an array_ref or C<undef>.
 
-Returns true or false when it compares the I<die> to the I<expect> or
-some other criteria.  True means pass.
+Returns 1 or 0 when it compares the I<die> to the I<expect> or
+some other criteria.  1 means pass.
 
-Returns a L<Bivio::DieCode|Bivio::DieCode> for the new value of I<case.die>.
+Returns a L<Bivio::DieCode|Bivio::DieCode> for the new value of I<case.expect>.
 This module will then compare the I<expect> with I<die>.
 
 B<Called as a I<sub>, not a method>.
@@ -277,11 +281,14 @@ in a test case or as the I<check_return> group attribute.
 Will be called only if the actual result is a return and I<expect> is an
 array_ref, i.e. not a L<Bivio::Die|Bivio::Die> or C<undef>.
 
-Returns true or false when it compares the I<return> to the I<expect> or
-some other criteria.   True means pass.
+Returns 1 or 0 when it compares the I<return> to the I<expect> or
+some other criteria.   1 means pass.
 
-Returns an array_ref for the new value of I<case.return>.  This module will
+Returns an array_ref for the new value of I<case.expect>.  This module will
 then compare the I<expect> with I<return>.
+
+See L<Bivio::Test::Case::actual_return|Bivio::Test::Case/"actual_return">
+to see how to change the actual return value for comparisons.
 
 B<Called as a I<sub>, not a method>.
 
@@ -591,7 +598,7 @@ sub _eval {
 	});
 	_trace('returned ', $die || $result) if $_TRACE;
 	if ($die) {
-	    $case->put(die => $die);
+	    $case->put(die => $die->get('code'));
 	    $err = _eval_result($case, $die);
 	}
 	elsif (defined($case->unsafe_get('expect'))) {
@@ -671,15 +678,15 @@ sub _eval_params {
 sub _eval_result {
     my($case, $actual) = @_;
     my($custom);
-    my($result) = ref($actual) eq 'Bivio::Die'
-	? $actual->get('code') : $actual;
+    my($result, $which) = ref($actual) eq 'Bivio::Die'
+	? ($actual->get('code'), 'die') : ($actual, 'return');
     if (ref($case->get('expect')) eq 'CODE') {
 	# Only on success do we eval a case-specific check_return
 	$custom = 'expect'
-	    if ref($actual) eq 'ARRAY';
+	    if ref($result) eq 'ARRAY';
     }
     elsif (ref($case->get('expect')) eq ref($result)) {
-	$custom = ref($actual) eq 'Bivio::Die' ? 'check_die' : 'check_return';
+	$custom = "check_$which";
 	unless ($case->unsafe_get($custom)) {
 	    return undef if
 		Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
@@ -687,11 +694,11 @@ sub _eval_result {
 	}
     }
     elsif (ref($case->get('expect')) eq 'Regexp'
-	&& ref($actual) ne 'Bivio::Die') {
+	&& ref($result) ne 'Bivio::DieCode') {
 #TODO: Replace when perl bug is fixed.
 	my($x) = $case->get('expect');
 	$x = "$x";
-	return undef if ${Bivio::IO::Ref->to_string($actual)} =~ /$x/;
+	return undef if ${Bivio::IO::Ref->to_string($result)} =~ /$x/;
     }
     if ($custom) {
 	my($err);
@@ -699,21 +706,32 @@ sub _eval_result {
 	    $case, $custom, [$actual, $case->get('expect')], \$err);
 	_trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
 	return $err if $err;
-	if (ref($res)) {
-	    # New value for return or die, save and compare
+	$custom = 'check_return' if $custom eq 'expect';
+	if ($custom eq 'check_return' ? ref($res) eq 'ARRAY'
+	    : ref($res) && UNIVERSAL::isa($res, 'Bivio::DieCode')) {
 	    $custom =~ s/^check_//;
-	    $case->put($custom => $actual = $res);
-	    return undef if
-		Bivio::IO::Ref->nested_equals($case->get('expect'), $res);
+	    # New value for return or die, save and compare
+	    $case->expect($res);
+	    return undef
+		if Bivio::IO::Ref->nested_equals(
+		    $case->get('expect'),
+		    $result = $case->get($custom));
 	}
-	elsif (defined($res)) {
-	    return "custom $custom must be 0 or 1 if a scalar"
+	elsif (defined($res) && !ref($res)) {
+	    return "custom $custom must return 0 or 1 if it returns a scalar"
 		unless $res =~ /^[01]$/;
 	    return undef if $res;
         }
+	else {
+	    return "custom $custom must return a boolean (0 or 1) or "
+		. ($which eq 'return' ? 'array_ref' : 'Bivio::DieCode')
+		. ', not '
+	        . Bivio::IO::Ref->to_short_string($res);
+	}
     }
     return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
-	.' but got ' . Bivio::IO::Ref->to_short_string($actual);
+	.' but got '
+	. Bivio::IO::Ref->to_short_string($case->get($which));
 }
 
 =head1 COPYRIGHT

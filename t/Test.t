@@ -61,14 +61,14 @@ t(
 		# Conformance: 17
 		[3] => sub {
 		    my($case, $return) = @_;
-		    return $return->[0] == 3;
+		    return $return->[0] == 3 ? 1 : 0;
 		},
 		sub {[3, 4, 5]} => sub {[3, 4, 5]},
 		# Deviance: 19
 		[1] => sub {Bivio::DieCode->DIE},
 		sub {
 		    my($case) = @_;
-		    $case->put(expect => [999, 999]);
+		    $case->expect([999, 999]);
 		    return [@{$case->get('expect')}];
 		} => Bivio::DieCode->DIE,
 	    ],
@@ -76,7 +76,7 @@ t(
 		# Conformance: 21
 		sub {
 		    my($case) = @_;
-		    $case->put(expect => Bivio::DieCode->DIE);
+		    $case->expect(Bivio::DieCode->DIE);
 		    return [];
 		} => [],
 	    ],
@@ -86,10 +86,31 @@ t(
 	    ok => sub {
 		return 3;
 	    },
+	    # Deviance: 25
+	    ok => sub {
+		my($case, $return) = @_;
+		$case->expect(['99']);
+		return ['99'];
+	    },
+	    ok => sub {
+		my($case, $return) = @_;
+		$case->actual_return(['99']);
+		return ['99'];
+	    },
+	    # Deviance: 27
+	    die => sub {
+		my($case, $return) = @_;
+		return Bivio::DieCode->DIE;
+	    },
+	    # Deviance: 28
+	    ok => sub {
+		my($case, $return) = @_;
+		return '3';
+	    },
 	],
     ],
-    24,
-    [3, 5, 8, 9, 12, 14, 16, 19, 24],
+    28,
+    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28],
 );
 
 
