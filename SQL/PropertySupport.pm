@@ -393,7 +393,8 @@ sub update {
 	my($column) = $columns->{$n};
 	if ($column->{is_primary_key}) {
             Bivio::IO::Alert->warn('Attempted to change primary key field: ',
-                $attrs->{table_name}, '.', $column->{name})
+                $attrs->{table_name}, '.', $column->{name}, ': (old, new) = (',
+                $old_values, ',', $new_values, ')')
                 if exists($new_values->{$n}) && $column->{type}->compare(
                     $new_values->{$n}, $old_values->{$n}) != 0;
 	    # Ensure primary keys aren't different, because PropertyModel
