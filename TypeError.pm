@@ -794,6 +794,21 @@ __PACKAGE__->compile(
 	undef,
 	'quotes for that ticker are not available from the specified start date',
     ],
+    TICKER_LOOKUP_NOT_UNIQUE => [
+	103,
+	undef,
+	'Unable to identify a unique club investment using that ticker.',
+    ],
+    INVALID_PERCENT => [
+	104,
+	undef,
+	'the percentage must be between 0 and 100',
+    ],
+    TICKER_NOT_INVESTMENT_SOURCE => [
+	105,
+	undef,
+	'the ticker may not be the same as the investment source',
+    ],
 );
 
 #=PRIVATE METHODS
