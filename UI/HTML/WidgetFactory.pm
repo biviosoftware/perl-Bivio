@@ -337,15 +337,6 @@ sub _create_edit {
 	});
     }
 
-    if (UNIVERSAL::isa($type, 'Bivio::Type::TextArea')) {
-	return Bivio::UI::HTML::Widget::TextArea->new({
-	    field => $field,
-	    rows => 15,
-	    cols => Bivio::Type::TextArea->LINE_WIDTH,
-	    %$attrs,
-	});
-    }
-
     # Primary Ids are always select boxes.  The caller must supply
     # the details of the select, however.
     if (UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')) {
