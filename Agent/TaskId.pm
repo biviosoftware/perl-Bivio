@@ -1435,7 +1435,7 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         !
-        Bivio::UI::HTML::ErrorPages->execute_corrupt_query
+        Bivio::UI::HTML::ErrorPages->execute_version_mismatch
     )],
     [qw(
         CLUB_ADMIN_INVITE_DELETE
