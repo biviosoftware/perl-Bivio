@@ -78,7 +78,7 @@ sub from_literal {
     # database that can be searchable.
     $value = lc($value);
 
-    # Domain must not match our local mail or server domain
+    # Domain must NOT match our local mail or server domain
     my($req) = Bivio::Agent::Request->get_current;
     my($domain);
     foreach $domain ($req->get('http_host'), $req->get('mail_host')) {
@@ -86,7 +86,7 @@ sub from_literal {
         $value =~ /\@$domain$/i && return (undef, Bivio::TypeError::EMAIL());
     }
     
-    # Must match a simple dotted atom address
+    # Must match a simple dotted atom address and must contain at least one dot
 #TODO: parse out address and try to do a DNS resolution?
 #      I checked out Net::DNS, but it doesn't seem like it can
 #      handle timeouts properly.  (No way to stop the query once
@@ -94,7 +94,7 @@ sub from_literal {
 #      addresses.  The best way would be to mail the user the password.
 #      I don't know if we could sustain this in the beginning.
     my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
-    return $value if $value =~ /^$ATOM_ONLY_ADDR$/os;
+    return $value if $value =~ /^$ATOM_ONLY_ADDR$/os && $value =~ /.+\..*/;
 #TODO: This is weak.  Either make good, or just use general message
 #    # Give a reasonable error message
 #    # We don't accept domain literal addresses?
