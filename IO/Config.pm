@@ -283,6 +283,7 @@ likely it is to cause problems.
 
 sub introduce_values {
     my($proto, $new_values) = @_;
+#TODO: Named config defaults don't get filled in
     die('new_values must be a hash_ref') unless ref($new_values) eq 'HASH';
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
     _actual_changed();
