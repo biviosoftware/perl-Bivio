@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::ListModel;
 use strict;
@@ -7,7 +7,11 @@ $_ = $Bivio::Biz::Util::ListModel::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Util::ListModel - manipulate a list model
+Bivio::Biz::Util::ListModel - manipulate list models
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
@@ -26,7 +30,7 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Util::ListModel> implements utilities that use
+C<Bivio::Biz::Util::ListModel> provides utilities to manipulate
 ListModels generically.
 
 =cut
@@ -152,7 +156,7 @@ sub _quote_cell {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000,2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
