@@ -903,8 +903,11 @@ sub internal_server_redirect {
 	$new_form = undef;
     }
 
+    # Format as string, because we
+    $new_query = Bivio::Agent::HTTP::Query->format($new_query)
+	if ref($new_query);
     $new_query = Bivio::Agent::HTTP::Query->parse($new_query)
-	    if defined($new_query) && !ref($new_query);
+	if defined($new_query);
     # Now fill in the rest of the request context
     $self->put_durable(uri =>
 	    # If there is no uri, use current one
