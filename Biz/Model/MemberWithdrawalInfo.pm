@@ -169,6 +169,11 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'basis_after_withdrawal',
+		type => 'Amount',
+		constraint => 'NOT_NULL',
+	    },
 	],
     };
 }
@@ -239,6 +244,7 @@ sub internal_load {
             member_tax_basis withdrawal_allocations cash_withdrawn
             member_instrument_cost_basis));
     $properties->{show_realized_gain} = 1;
+    $properties->{basis_after_withdrawal} = 0;
 
     # partial withdrawals can't have a positive realized_gain
     if (($properties->{type} ==
@@ -247,6 +253,8 @@ sub internal_load {
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
 	    && $math->compare($properties->{withdrawal_realized_gain}, 0)
 	    <= 0) {
+	$properties->{basis_after_withdrawal} =
+		$math->neg($properties->{withdrawal_realized_gain});
 	$properties->{withdrawal_realized_gain} = 0;
 	$properties->{show_realized_gain} = 0;
     }
