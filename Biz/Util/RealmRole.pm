@@ -115,30 +115,26 @@ initialized and not one of the default realms.
 
 sub edit {
     my($self, $role_name, @operations) = @_;
-    $self->usage('missing operations') unless @operations;
+    $self->usage('missing operations')
+	unless @operations;
     my($req) = $self->get_request;
     my($realm) = $req->get('auth_realm');
     my($realm_id) = $realm->get('id');
     Bivio::Biz::Model->new($req, 'RealmRole')->initialize_permissions(
-	    Bivio::Biz::Model->new($req, 'RealmOwner')
-	    ->unauth_load_or_die(realm_id => $realm_id))
-		unless $realm->is_default;
-    my($role) = Bivio::Auth::Role->from_name($role_name);
-
-    # Get the database value or an empty set
+	$realm->get('owner'),
+    ) unless $realm->is_default;
+    my($role) = Bivio::Auth::Role->from_any($role_name);
     my($ps) = _get_permission_set($self, $realm_id, $role, 1);
     _trace('current ', $role, ' ', Bivio::Auth::PermissionSet->to_literal($ps))
-	    if $_TRACE;
-
-    # Modify the initial value
+	if $_TRACE;
     foreach my $op (@operations) {
-	$self->usage("$op: invalid operation syntax")
-		unless $op =~ /^([-+])(\w*)$/;
+	$self->usage_error("$op: invalid operation syntax")
+	    unless $op =~ /^([-+])(\w*)$/;
 	my($which, $operand) = ($1, uc($2));
 	if (length($operand)) {
 	    my($p) = Bivio::Auth::Permission->unsafe_from_any($operand);
 	    Bivio::Die->die($p, ': cannot set TRANSIENT permissions')
-			if $which eq '+' && $p && $p->get_name =~ /TRANSIENT/;
+	        if $which eq '+' && $p && $p->get_name =~ /TRANSIENT/;
 	    if ($p && $p->get_name eq $operand) {
 		vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
 	    }
@@ -148,25 +144,29 @@ sub edit {
 			unless $r && $r->get_name eq $operand;
 		my($s) = _get_permission_set($self, $realm_id, $r, 0);
 		_trace($which, $r, ' ',
-			Bivio::Auth::PermissionSet->to_literal($s)) if $_TRACE;
+		    Bivio::Auth::PermissionSet->to_literal($s)) if $_TRACE;
 		# Set lengths must match for ~$s to work properly
 		Bivio::Die->die(
-			'ASSERTION FAULT: set lengths differ: ',
-			length($s), ' != ', length($ps))
-			    if length($s) != length($ps);
+		    'ASSERTION FAULT: set lengths differ: ',
+		    length($s), ' != ', length($ps)
+		) if length($s) != length($ps);
 		$ps = $which eq '+' ? ($ps | $s) : ($ps & ~$s);
 	    }
 	}
 	else {
-	    $ps = $which eq '+' ? Bivio::Auth::PermissionSet->get_max
-		    : Bivio::Auth::PermissionSet->get_min;
+	    $ps = $which eq '+'
+		? Bivio::Auth::PermissionSet->get_max
+		: Bivio::Auth::PermissionSet->get_min;
 	}
     }
-    my($rr) = Bivio::Biz::Model::RealmRole->new();
+    my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
     $rr->unauth_load(realm_id => $realm_id, role => $role)
-	    ? $rr->update({permission_set => $ps})
-	    : $rr->create({realm_id => $realm_id, role => $role,
-		permission_set => $ps});
+	? $rr->update({permission_set => $ps})
+	: $rr->create({
+	    realm_id => $realm_id,
+	    role => $role,
+	    permission_set => $ps,
+	});
     return;
 }
 
