@@ -490,7 +490,7 @@ sub initialize {
 	Bivio::UI::Icon->initialize_by_facade($f);
 	Bivio::UI::View->initialize_by_facade($f);
     }
-    $_IS_FULLY_INITIALIZED = 1;
+    $_IS_FULLY_INITIALIZED = $partially ? 0 : 1;
     return;
 }
 
