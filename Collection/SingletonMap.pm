@@ -64,10 +64,14 @@ sub get {
     $_MAP{$class} = {} unless $_MAP{$class};
     my($map) = $_MAP{$class};
     @_ || Carp::croak('must supply at least one class argument');
-    return map {
+    my(@res) = map {
 	$proto->put($_) unless exists($map->{$_});
 	$map->{$_};
     } @_;
+    return @res if wantarray;
+    die('get not called in array context and more than one return result')
+	    unless int(@res) == 1;
+    return $res[0];
 }
 
 =for html <a name="put"></a>
