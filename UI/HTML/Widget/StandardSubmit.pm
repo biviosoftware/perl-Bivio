@@ -72,9 +72,13 @@ my($_SEPARATION) = 10;
 
 =for html <a name="new"></a>
 
+=head2 static new(array_ref buttons, hash_ref attributes) : Bivio::UI::HTML::Widget::StandardSubmit
+
+List of I<buttons> can be supplied with options I<attributes>.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::StandardSubmit
 
-Creates a new StandardSubmit widget.
+Creates a new StandardSubmit widget from I<attributes.
 
 =cut
 
@@ -129,6 +133,24 @@ sub initialize {
     $self->put(values => [$values]);
     $self->SUPER::initialize;
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $buttons, $attributes) = @_;
+    return '"buttons" attribute must be defined' unless defined($buttons);
+    return '"buttons" must be an array_ref' unless ref($buttons) eq 'ARRAY';
+    return {
+	buttons => $buttons,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 #=PRIVATE METHODS
