@@ -54,7 +54,7 @@ usage: b-docbook [options] command [args...]
 commands:
     to_html file.xml -- converts input xml to output html
     count_words file.xml -- returns number of words in XML file
-    to_pdf <dir> file.pdf -- converts xpip chapters from dir to file.pdf
+    to_pdf <dir> file.pdf [test] -- converts xpip chapters from dir to file.pdf
 EOF
 }
 
@@ -562,12 +562,16 @@ sub to_html {
 
 =head2 to_pdf(string input_dir, string output_pdf)
 
+=head2 to_pdf(string input_dir, string output_pdf, string $mode)
 
+Converts the xpip xml chapters to a single book-style pdf.  If
+$mode eq "test" then the program will output the resulting
+tex file.
 
 =cut
 
 sub to_pdf {
-    my($self, $input_dir, $output_pdf) = @_;
+    my($self, $input_dir, $output_pdf, $mode) = @_;
     my($output_root) = $output_pdf;
     $output_root =~ s/\.pdf//;
     my($output_tex) = $output_root . '.tex';
@@ -590,6 +594,8 @@ sub to_pdf {
     _end_tex();
 
     _clean_tex();
+
+    print $tex if defined($mode) && $mode eq "test";
 
     Bivio::IO::File->write($output_tex, $tex);
     Bivio::Die->die("PDF Write failed, check $output_root.log for details")
