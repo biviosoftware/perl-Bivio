@@ -140,7 +140,7 @@ sub create_cell {
 	# garbage collected - probably OK for UI widgets created only
 	# during initialization
 
-	_trace('circular dependency ', $cell->get('field')) if $_TRACE;
+	_trace('circular dependency ', $cell->unsafe_get('field')) if $_TRACE;
 	$edit_cell->put(cell => $cell);
 	$cell->put(edit_cell => $edit_cell);
     }
