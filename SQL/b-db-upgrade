@@ -246,49 +246,62 @@ EOF
 
 sub _upgrade {
     my($req) = @_;
-    _upgrade_point_of_sale($req);
+    _upgrade_add_ec_indices($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_point_of_sale(Bivio::Agent::Request req)
+# _upgrade_add_ec_indices(Bivio::Agent::Request req)
 #
-# Moves the point_of_sale from ec_credit_card_payment to ec_payment_t.
+# Adds missing foreign key indices.
 #
-sub _upgrade_point_of_sale {
+sub _upgrade_add_ec_indices {
     my($req) = @_;
-    print("move point_of_sale from ec_credit_card_payment to ec_payment_t\n");
-
-    _add_column('ec_payment_t', 'point_of_sale', 'NUMBER(2)', 0);
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT ec_payment_id, point_of_sale
-        FROM ec_credit_card_payment_t', []);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($ec_payment_id, $point_of_sale) = @$row;
-	Bivio::SQL::Connection->execute('
-            UPDATE ec_payment_t
-            SET point_of_sale=?
-            WHERE ec_payment_id=?',
-	    [$point_of_sale, $ec_payment_id]);
-    }
-
-    _drop_constraints('ec_credit_card_payment_t', 'point_of_sale');
-    _drop_column('ec_credit_card_payment_t', 'point_of_sale');
-
-    Bivio::SQL::Connection->execute('
-        UPDATE ec_payment_t
-        SET point_of_sale=0
-        WHERE point_of_sale IS NULL', []);
-
+    print("adding missing ec indices\n");
     _do_sql('
-ALTER TABLE ec_payment_t modify point_of_sale not null
+CREATE INDEX ec_check_payment_t4 on ec_check_payment_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
 /
-ALTER TABLE ec_payment_t
-  add constraint ec_payment_t9
-  check (point_of_sale between 0 and 5)
+CREATE INDEX ec_credit_card_payment_t4 on ec_credit_card_payment_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX ec_payment_t10 on ec_payment_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX ec_payment_t11 on ec_payment_t (
+  user_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX ec_payment_t12 on ec_payment_t (
+  salesperson_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX ec_subscription_t5 on ec_subscription_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX expense_info_t7 on expense_info_t (
+  expense_category_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
 /
 ');
-
     return;
 }
 
