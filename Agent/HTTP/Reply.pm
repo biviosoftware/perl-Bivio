@@ -34,6 +34,8 @@ use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Carp ();
 use UNIVERSAL;
+# Avoid import
+# use Bivio::Agent::Job::Dispatcher
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -60,7 +62,6 @@ sub new {
     my($proto, $r) = @_;
     my($self) = &Bivio::Agent::Reply::new($proto);
     $self->{$_PACKAGE} = {
-        'header_sent' => 0,
 	'output' => '',
 	'r' => $r,
     };
@@ -93,9 +94,8 @@ sub client_redirect {
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
     $r->header_out(Location => $uri);
-    Bivio::Agent::HTTP::Cookie->set($req, $r);
     $r->status(302);
-    $r->send_http_header;
+    _send_http_header($req, $r);
     # make it look like apache's redirect
     $r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -131,10 +131,9 @@ sub send {
 
     # only do this the first time
     $r->header_out('Content-Length', $size);
-    # We always set a cookie
-    Bivio::Agent::HTTP::Cookie->set($req, $r);
+    $r->header_out('Connection', 'close');
     $r->content_type($self->get_output_type());
-    $r->send_http_header;
+    _send_http_header($req, $r);
     if ($is_scalar) {
 	$r->print($$o);
     }
@@ -219,7 +218,7 @@ sub _error {
     return $code if $code == Apache::Constants::OK();
     $r->status($code);
     $r->content_type('text/html');
-    $r->send_http_header;
+    _send_http_header(undef, $r);
     # make it look like apache's redirect
     my($uri) = $r->uri;
     if ($code == Apache::Constants::NOT_FOUND()) {
@@ -265,6 +264,25 @@ in the server error log.<P>
 EOF
     }
     return Apache::Constants::OK();
+}
+
+# _send_http_header(Bivio::Agent::Request req, Apache r)
+#
+# Sends the header, turning off keep alive (if necessary) and set cookie
+# (if req)
+#
+sub _send_http_header {
+    my($req, $r) = @_;
+    # We always set the cookie
+    Bivio::Agent::HTTP::Cookie->set($req, $r) if $req;
+
+    # Turn off KeepAlive if there are jobs.  This is because IE doesn't
+    # cycle connections.  It goes back to exactly the same one.
+    $r->header_out('Connection', 'close')
+	    unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
+
+    $r->send_http_header;
+    return;
 }
 
 
