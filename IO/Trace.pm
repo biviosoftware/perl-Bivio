@@ -164,26 +164,12 @@ sub handle_config {
     return;
 }
 
-=for html <a name="print"></a>
-
-=head2 static print(string pkg, string file, int line, string sub, array msg) : boolean
-
-Formats output with L<Bivio::IO::Alert::format|Bivio::IO::Alert/"format"> and
-writes the result using L<get_printer|"get_printer">, whose result is returned.
-
-=cut
-
-sub print {
-    shift(@_);
-    return &$_PRINTER(Bivio::IO::Alert->format(@_));
-}
-
 =for html <a name="import"></a>
 
-=head2 static import()
+=head2 import()
 
-Registers callers of 'use Bivio::IO::Trace;' for tracing.  Two entities are
-exported to the calling package:
+Registers the calling package for tracing.  This will create two entities in
+the calling package:
 
 =over 4
 
@@ -192,7 +178,7 @@ exported to the calling package:
 is defined if tracing is turned on in the calling package.
 It is common place to use it as the qualifier to any trace statement,
 since it is faster than calling the subroutine if tracing is off
-in the calling package.  However, it is not mandatory.
+in thecalling package.
 
 =item _trace()
 
@@ -215,26 +201,31 @@ the C<if $_TRACE> predicate is one of the fastest statements in perl.
 
 sub import {
     my($pkg) = caller();
-    my($trace_val) = _lookup_trace($pkg, $_PKG_SUB);
+    grep($pkg eq $_, @_REGISTERED) && return;
+    push(@_REGISTERED, $pkg);
+    _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
+    return;
+}
 
-    _register($pkg);
-    no strict;
-    *{$pkg.'::_TRACE'} = \$trace_val;
-    if (!defined(&{$pkg.'::_trace'})) {
-	if ($trace_val) {
-	    *{$pkg.'::_trace'} = \&Bivio::IO::Trace::_trace;
-	}
-	else {
-	    *{$pkg.'::_trace'} = \&Bivio::IO::Trace::_no_trace;
-	}
-    }
+=for html <a name="print"></a>
+
+=head2 static print(string pkg, string file, int line, string sub, array msg) : boolean
+
+Formats output with L<Bivio::IO::Alert::format|Bivio::IO::Alert/"format"> and
+writes the result using L<get_printer|"get_printer">, whose result is returned.
+
+=cut
+
+sub print {
+    shift(@_);
+    return $_PRINTER->(Bivio::IO::Alert->format(@_));
 }
 
 =for html <a name="register"></a>
 
 =head2 static register()
 
-DEPRECATED
+B<DEPRECATED> automatically registered with L<import|"import">.
 
 =cut
 
@@ -300,7 +291,7 @@ The package registered for tracing.
 
 To turn off tracing, use:
 
-    Periscope::Trace->set_filters(undef, undef);
+    Bivio::IO::Trace->set_filters(undef, undef);
 
 Returns the previous filters.
 
@@ -310,14 +301,14 @@ sub set_filters {
     my(undef, $call_filter, $pkg_filter) = @_;
     my($prev_point, $prev_pkg) = ($_CALL_FILTER, $_PKG_FILTER);
     # If package filter w/o point filter, force to be true.
-    my($point_sub, $pkg_sub);
+    my($call_sub, $pkg_sub);
     if (defined($call_filter)) {
 	if ($call_filter =~ /^\s*1\s*$/s) {
-	    $point_sub = undef;
+	    $call_sub = undef;
 	}
 	else {
 	    local($SIG{__DIE__});
-	    $point_sub = eval <<"EOF";
+	    $call_sub = eval <<"EOF";
                 use strict;
 		sub {
 		    my(\$pkg, \$file, \$line, \$sub, \$msg) = \@_;
@@ -326,7 +317,7 @@ sub set_filters {
                             \$line, \$sub, \$msg);
 		}
 EOF
-            defined($point_sub) || Carp::croak("call filter invalid: $@");
+            defined($call_sub) || Carp::croak("call filter invalid: $@");
 	}
     }
     if (defined($pkg_filter)) {
@@ -343,10 +334,10 @@ EOF
     }
     my($pkg);
     foreach $pkg (@_REGISTERED) {
-	_define_pkg_symbols($pkg, $point_sub, $pkg_sub);
+	_define_pkg_symbols($pkg, $call_sub, $pkg_sub);
     }
     ($_CALL_FILTER, $Bivio::IO::Trace::_CALL_SUB, $_PKG_FILTER, $_PKG_SUB)
-	    = ($call_filter, $point_sub, $pkg_filter, $pkg_sub);
+	    = ($call_filter, $call_sub, $pkg_filter, $pkg_sub);
     return ($prev_point, $prev_pkg);
 }
 
@@ -374,23 +365,28 @@ sub set_printer {
 #=PRIVATE METHODS
 
 sub _define_pkg_symbols {
-    my($pkg, $point_sub, $pkg_sub) = @_;
-    my($trace, $sub) = (_lookup_trace($pkg, $pkg_sub), undef);
-    if ($trace && defined($point_sub)) {
-	# Tracing is on
-	$sub = 'return &{$Bivio::IO::Trace::_CALL_SUB}'
-		. '((caller), (caller(1))[3] || undef, \@_)';
-#		. (defined($point_sub)
-#			? '&{$Bivio::IO::Trace::_CALL_SUB}'
-#			: 'Bivio::IO::Trace->print')
-	        # caller(1) can return an empty array, hence '|| undef'
-#		. '((caller), (caller(1))[$[+3] || undef, \@_)';
+    my($pkg, $call_sub, $pkg_sub) = @_;
+    my($trace, $sub) = '1';
+    unless ($pkg_sub->($pkg)) {
+	# Tracing is off
+	$trace = 'undef';
+	$sub = 'return 0';
     }
-    return unless defined($sub);
+    else {
+	# Tracing is on
+	$sub = 'return '
+		. (defined($call_sub)
+			? '$Bivio::IO::Trace::_CALL_SUB->'
+			: 'Bivio::IO::Trace->print')
+	        # caller(1) can return an empty array, hence '|| undef'
+		. '((caller), (caller(1))[$[+3] || undef, \@_)';
+    }
     Bivio::IO::Alert->bootstrap_die("internal inconsistency: $@")
 	unless eval <<"EOF";
         package $pkg;
+        use Bivio::IO::Trace;
         use strict;
+        \$${pkg}::_TRACE = $trace;
         BEGIN {
             undef(&_trace);
         }
@@ -401,31 +397,6 @@ sub _define_pkg_symbols {
 EOF
 }
 
-sub _trace {
-    my($pkg, $file, $line, $sub, $msg) =
-        ((caller), (caller(1))[3] || undef, \@_);
-#    eval($_CALL_FILTER) || return 0
-#        if defined($call_filter) && $call_filter !~ /^\s*1\s*$/s;
-    return &$_PRINTER(
-        Bivio::IO::Alert->format($pkg, $file, $line, $sub, $msg));
-}
-
-
-sub _lookup_trace {
-    my($pkg, $pkg_sub) = @_;
-    return &$pkg_sub($pkg) ? 1 : 0;
-}
-
-sub _register {
-    my($pkg) = @_;
-    defined($pkg) && $pkg ne 'main'
-	    || Carp::croak('registrations may only occur packages',
-		    ' other than main');
-    # already registered?
-    grep($pkg eq $_, @_REGISTERED) && return;
-    push(@_REGISTERED, $pkg);
-    _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
-}
 
 sub _false {
     return 0;
@@ -434,8 +405,6 @@ sub _false {
 sub _true {
     return 1;
 }
-
-sub _no_trace {}
 
 =head1 BUGS
 
