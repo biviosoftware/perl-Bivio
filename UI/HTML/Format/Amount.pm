@@ -60,6 +60,10 @@ sub get_widget_value {
 
 #TODO: very ugly code needs revisiting
 
+    if ($amount =~ /^./) {
+	$amount = '0'.$amount;
+    }
+
     die("round $round > $_DECIMAL_MAX") if $round > $_DECIMAL_MAX;
     die("invalid number $amount") unless $amount =~ /^-?\d+(\.\d+)?$/;
 
