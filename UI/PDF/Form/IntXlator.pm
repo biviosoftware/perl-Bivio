@@ -51,10 +51,11 @@ my($_INT_REGEX) = Bivio::UI::PDF::Regex::INT_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-    my(undef, $output_field, $input_field) = @_;
+    my(undef, $output_field, $input_field, $separator) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
-	'input_field' => $input_field
+	'input_field' => $input_field,
+	'separator' => $separator
     };
     return $self;
 }
@@ -84,6 +85,14 @@ sub add_value {
 	else {
 	    die(__FILE__, ", ", __LINE__, ": no value returned\n");
 	}
+    }
+
+    # Add separator characters between groups of 3 digits.
+    if (defined($fields->{'separator'})) {
+	my($separator) = $fields->{'separator'};
+	my($reversed) = reverse($output_value);
+	$reversed =~ s/(\d\d\d)(?=\d)/$1$fields->{'separator'}/g;
+	$output_value = reverse($reversed);
     }
 
     # Add the output value to the values hash.
