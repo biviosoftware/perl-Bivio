@@ -419,6 +419,25 @@ sub client_redirect {
     return $self->server_redirect(@_);
 }
 
+=for html <a name="client_redirect_contextless"></a>
+
+=head2 client_redirect_contextless(Bivio::Agent::TaskId task, any realm, any query, string path_info)
+
+=head2 client_redirect_contextless(string uri, any realm, any query, string path_info)
+
+Calls L<client_redirect|"client_redirect"> without state or context.
+If I<realm> is undef, chooses appropriate realm.
+If I<query> is undef, there is no query.
+If I<path_info> is undef, there is no path_info.
+
+=cut
+
+sub client_redirect_contextless {
+    my($self, $uri_task, $realm, $query, $path_info) = @_;
+    $self->client_redirect($uri_task, $realm, $query, $path_info, 1);
+    # DOES NOT RETURN
+}
+
 =for html <a name="elapsed_time"></a>
 
 =head2 elapsed_time() : float
