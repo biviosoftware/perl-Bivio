@@ -764,6 +764,11 @@ __PACKAGE__->compile(
 	undef,
 	'Authorization code does not match invite.',
     ],
+    MORE_THAN_ONE_WITHDRAWAL_ON_DATE => [
+	97,
+	undef,
+	'the selected member already has a withdrawal on this date',
+    ],
 );
 
 #=PRIVATE METHODS
