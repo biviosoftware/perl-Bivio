@@ -206,6 +206,8 @@ _compile(
     FRACTIONAL_SHARE_CASH => ['Cash Received'],
     ACQUIRING_TICKER_SYMBOL => ['Acquiring Ticker'],
     PAYMENT => ['Payment'],
+    SOURCE_ACCOUNT_ID => ['Source Account'],
+    TARGET_ACCOUNT_ID => ['Target Account'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
@@ -254,7 +256,12 @@ _compile(
 
     # Tasks (sorted alphabetically)
     CLUB_ACCOUNTING_ACCOUNT_DETAIL => ['Account Detail'],
+    CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => ['Account Dividend'],
+    CLUB_ACCOUNTING_ACCOUNT_EXPENSE => ['Account Expense'],
+    CLUB_ACCOUNTING_ACCOUNT_INCOME => ['Account Income'],
+    CLUB_ACCOUNTING_ACCOUNT_INTEREST => ['Account Interest'],
     CLUB_ACCOUNTING_ACCOUNT_LIST => ['Account Summary'],
+    CLUB_ACCOUNTING_ACCOUNT_TRANSFER => ['Account Transfer'],
     CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
