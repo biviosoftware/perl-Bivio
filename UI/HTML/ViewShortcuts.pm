@@ -125,6 +125,19 @@ sub vs_director {
     return $proto->vs_new('Director', @_);
 }
 
+=for html <a name="vs_escape_html"></a>
+
+=head2 vs_escape_html(array_ref value) : array_ref
+
+Wraps I<value> in L<Bivio::HTML::escape|Bivio::HTML/"escape">,
+
+=cut
+
+sub vs_escape_html {
+    my(undef, $value) = @_;
+    return [\&_escape, $value];
+}
+
 =for html <a name="vs_form_field"></a>
 
 =head2 static vs_form_field(string field) : array
@@ -282,6 +295,17 @@ sub vs_string {
 }
 
 #=PRIVATE METHODS
+
+# _escape(any source, string value) : string
+#
+# Escapes its argument.  Must be a scalar, and not undef.
+#
+sub _escape {
+    my(undef , $value) = @_;
+    Bivio::Die->die($value, ': vs_escape_html not passed a string')
+        if ref($value) || !defined($value);
+    return Bivio::HTML->escape($value);
+}
 
 # _use(string class, ....) : array
 #
