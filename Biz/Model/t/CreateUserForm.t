@@ -18,7 +18,7 @@ print "ok 1\n";
 
 my($T) = 2;
 
-# First section has *.tin files, second section doesn't.
+# Get names:results from command line or from list of standard tests.
 my(@names) = @ARGV
 	? map {[split(/:/, $_, 2)]} @ARGV
 	: (
