@@ -1563,7 +1563,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_TAX99_F1065K1
         163
         CLUB
-        ACCOUNTING_WRITE&MEMBER_READ
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/f1065k1.pdf
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
@@ -1851,6 +1851,42 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailList
         Bivio::Biz::Action::ClubMailDelete
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
+        190
+        CLUB
+        ACCOUNTING_READ&MEMBER_WRITE
+        ?/accounting/member/withdrawal
+        Bivio::Biz::Model::RealmUserList
+        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::MemberWithdrawalForm
+        Bivio::UI::HTML::Club::MemberWithdrawal
+        next=CLUB_ACCOUNTING_MEMBER_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_CONFIRM
+        191
+        CLUB
+        ACCOUNTING_READ&MEMBER_WRITE
+        ?/accounting/member/withdrawal/confirm
+        Bivio::Biz::Model::RealmUserList
+        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Model::MemberWithdrawalConfirmForm
+        Bivio::UI::HTML::Club::MemberWithdrawalConfirm
+        next=CLUB_ACCOUNTING_MEMBER_LIST
+    )],
+    [qw(
+        CLUB_ADMIN_MEMBER_DELETE
+        192
+        CLUB
+        ADMIN_WRITE&MEMBER_WRITE
+        ?/admin/member/delete
+        Bivio::Biz::Model::ClubUserList
+        Bivio::Biz::Model::DeleteMemberForm
+        Bivio::UI::HTML::Club::DeleteMember
+        next=CLUB_ADMIN_USER_LIST
     )],
 );
 
