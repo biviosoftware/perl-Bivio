@@ -104,8 +104,6 @@ use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
-use Bivio::Mail::Common;
-use Bivio::Mail::Message;
 use Bivio::SQL::Connection;
 use Bivio::Type::Boolean;
 
@@ -225,20 +223,11 @@ handle_commit for txn_resources.
 
 sub commit {
     my(undef, $req) = @_;
-    # Always commit before sending queued messages.  The database
-    # is more important than email and mail dispatcher may need the
-    # state to accurately send the email.  If we get an error
-    # while rendering view, don't commit since the only side effect
-    # is that there might be some external state outside of SQL DB
-    # which needs to be garbage-collected.
-    #
     # These modules are intelligent and won't do anything if there
     # were no modifications.
     #
     _call_txn_resources($req, 'handle_commit');
     Bivio::SQL::Connection->commit;
-    Bivio::Mail::Common->send_queued_messages;
-    Bivio::Mail::Message->send_queued_messages($req);
 #TODO: Garbage collect state that doesn't agree with SQL DB
     # Note: rollback is in handle_die
     return;
@@ -309,8 +298,7 @@ sub get_by_id {
 =head2 static handle_die(Bivio::Die die)
 
 Something happened while executing a request, so we have to rollback
-and discard the mail queue unless is a C<CLIENT_REDIRECT_TASK>
-or C<SERVER_REDIRECT_TASK>.
+ unless is a C<CLIENT_REDIRECT_TASK> or C<SERVER_REDIRECT_TASK>.
 
 If I<proto> is a reference which can map the I<die> code in
 one of its I<die_actions> (cannot be redirect code) if the
@@ -430,7 +418,7 @@ sub register {
 =head2 rollback(Bivio::Agent::Request req)
 
 Rollback the current transaction.  Call C<handle_rollback> with
-L<txn_resources|"txn_resources">.  Clears any queued mail.
+L<txn_resources|"txn_resources">.
 
 Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 
@@ -442,8 +430,6 @@ sub rollback {
     # and this code must stay in synch with it.
     _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
-    Bivio::Mail::Common->discard_queued_messages;
-    Bivio::Mail::Message->discard_queued_messages;
     return;
 }
 

@@ -29,6 +29,7 @@ C<Bivio::Mail::Message>
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::ClassLoader;
@@ -210,6 +211,9 @@ L<send_queued_messages|"send_queued_messages">.
 
 sub enqueue_send {
     my($self) = @_;
+#TODO: queue $self.
+    Bivio::Agent::Request->get_current_or_new->push_txn_resource(ref($self))
+	unless @_QUEUE;
     # Make sure the same message isn't added more than once
     push(@_QUEUE, $self) unless grep($_ eq $self, @_QUEUE);
     return;
@@ -429,6 +433,20 @@ sub get_message_id {
     return $id;
 }
 
+=for html <a name="handle_commit"></a>
+
+=head2 handle_commit()
+
+Commit called, delete lock from request before DB commit
+
+=cut
+
+sub handle_commit {
+    my($proto) = @_;
+    $proto->send_queued_messages;
+    return;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -454,6 +472,20 @@ sub handle_config {
 	    && die("$cfg->{errors_to}: invalid errors_to");
     $_ERRORS_TO = $cfg->{errors_to};
     $_SENDMAIL = $cfg->{sendmail};
+    return;
+}
+
+=for html <a name="handle_rollback"></a>
+
+=head2 handle_rollback()
+
+Rollback called, calls L<discard_queued_messages|"discard_queued_messages">.
+
+=cut
+
+sub handle_rollback {
+    my($proto) = @_;
+    $proto->discard_queued_messages;
     return;
 }
 
