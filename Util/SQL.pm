@@ -55,7 +55,7 @@ commands:
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
-    export_db file -- exports database (only works for pg right now)
+    export_db dir -- exports database (only works for pg right now)
     import_db file -- imports database (ditto)
     import_tables_only file -- imports tables and sequences only
     reinitialize_constraints -- creates constraints
