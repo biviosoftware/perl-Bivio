@@ -45,6 +45,12 @@ a call to
 L<Bivio::Biz::ListModel::format_uri|Bivio::Biz::ListModel/"format_uri">
 with I<wf_list_link> as the query type.
 
+If I<task> is specified, it will be passed as a second argument to
+I<format_uri>.
+
+If I<uri> is specified, it will be passed as a second argument to
+I<format_uri>.
+
 The rest of the attributes are passed to the link directly, e.g. control.
 I<control_off_value> is set to be the widget (i.e. the name).
 
@@ -131,7 +137,10 @@ sub create {
 	my($wll) = $widget->unsafe_get('wf_list_link');
 	$widget = Bivio::UI::HTML::Widget::Link->new({
 	    href => ['->format_uri',
-		Bivio::Biz::QueryType->from_any($wll->{query})],
+		Bivio::Biz::QueryType->from_any($wll->{query}),
+		$wll->{task} ? (Bivio::Agent::TaskId->from_any($wll->{task}))
+		: $wll->{uri} ? $wll->{uri} : (),
+	    ],
 	    value => $widget,
 	    control_off_value => $widget,
 	    %$wll,
