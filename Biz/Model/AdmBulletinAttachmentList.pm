@@ -71,7 +71,6 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
         version => 1,
-	can_iterate => 1,
         other => [
             {
                 name => 'filename',
