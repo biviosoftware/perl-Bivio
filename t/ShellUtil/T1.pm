@@ -114,6 +114,7 @@ Write a message to the log and sleep.
 
 sub rd1a {
     my($self, $arg) = @_;
+    $self->initialize_ui;
     Bivio::IO::Alert->warn('myarg=', $arg);
     sleep(1);
     return;
