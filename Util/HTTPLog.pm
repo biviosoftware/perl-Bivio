@@ -9,6 +9,10 @@ $_ = $Bivio::Util::HTTPLog::VERSION;
 
 Bivio::Util::HTTPLog - manipulates HTTP logs
 
+=head1 RELEASE SCOPE
+
+Societas
+
 =head1 SYNOPSIS
 
     use Bivio::Util::HTTPLog;
@@ -255,6 +259,7 @@ sub _initialize {
 	    '::warn:\d+ not importing data - transactions already exist',
 	    '::warn:\d+ Message very similar to (?:earlier one|parent)',
             '::warn:\d+ blocking mail with executable content',
+            '::HomePage::execute:.*Both <FRAMESET> and <BODY> tags found',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
