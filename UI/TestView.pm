@@ -37,7 +37,7 @@ when renderering.
 
 #=VARIABLES
 
-my($PACKAGE) = __PACKAGE__;
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
@@ -57,7 +57,7 @@ sub new {
 
 #    print Dumper($self);
 
-    $self->{$PACKAGE} = {
+    $self->{$_PACKAGE} = {
 	output => $output
     };
     return $self;
@@ -73,7 +73,7 @@ Prints the output string to the specified request.
 
 sub render {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
 
     print($fields->{output});
 }
