@@ -77,7 +77,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
-=head2 static new(any width, any height) : Bivio::UI::HTML::Widget::ClearDot
+=head2 static new(any width, any height, hash_ref attributes) : Bivio::UI::HTML::Widget::ClearDot
 
 Creates a new ClearDot widget with I<width> and I<height> attributes.
 
@@ -193,11 +193,12 @@ sub render {
 # Returns arguments to be passed to Attributes::new.
 #
 sub _new_args {
-    my($proto, $width, $height) = @_;
+    my($proto, $width, $height, $attributes) = @_;
     return ($proto, $width) if ref($width) eq 'HASH' || int(@_) == 1;
     return ($proto, {
 	width => $width,
 	height => $height,
+	($attributes ? %$attributes : ()),
     }) if defined($width) || defined($height);
     $proto->die(undef, undef, 'invalid arguments to new');
     # DOES NOT RETURN
