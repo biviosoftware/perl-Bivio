@@ -444,8 +444,7 @@ Adds C<EnglishSyntax> formatter for 'a'.
 sub vs_english_a {
     my(undef, $widget_value) = @_;
     _use('Bivio::UI::HTML::Format::EnglishSyntax');
-    push(@$widget_value, 'Bivio::UI::HTML::Format::EnglishSyntax', 'a');
-    return $widget_value;
+    return [$widget_value, 'Bivio::UI::HTML::Format::EnglishSyntax', 'a'];
 }
 
 =for html <a name="vs_english_list"></a>
