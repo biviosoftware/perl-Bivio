@@ -79,7 +79,7 @@ sub internal_initialize {
             name => ['Bivio::Type::Line',
     		Bivio::SQL::Constraint::NOT_NULL()],
             ticker_symbol => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+    		Bivio::SQL::Constraint::NONE()],
             exchange_name => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
             instrument_type => ['Bivio::Type::InstrumentType',
