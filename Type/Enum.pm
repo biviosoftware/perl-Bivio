@@ -60,7 +60,6 @@ An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 #=IMPORTS
 #Avoid circular reference and pray east someone is using TypeError.
 #use Bivio::TypeError;
-use Carp ();
 
 #=VARIABLES
 my(%_MAP);
@@ -106,11 +105,11 @@ Returns enum value for specified name in a case-insensitive manner.
 
 sub from_name {
     my($proto, $name) = @_;
-    Carp::croak("$name: is not a string") if ref($name);
+    die($name, ': is not a string') if ref($name);
     $name = uc($name);
     my($info) = _get_info($proto, $name);
-    Carp::croak("$name: is not the name of an ", ref($proto) || $proto)
-		unless $name eq $info->[3];
+    Bivio::IO::Alert->die($name, ': is not the name of an ',
+	    ref($proto) || $proto) unless $name eq $info->[3];
     return $info->[5];
 }
 
@@ -158,7 +157,7 @@ Put I<self> on the request as its class.
 
 sub execute {
     my($self, $req) = @_;
-    Carp::croak('not a reference') unless ref($self);
+    die('not a reference') unless ref($self);
     $req->put(ref($self) => $self);
     return 0;
 }
@@ -308,7 +307,7 @@ will cause an error.
 
 sub compile {
     my($pkg, %info) = @_;
-    defined($_MAP{$pkg}) && Carp::croak('already compiled');
+    defined($_MAP{$pkg}) && Bivio::IO::Alert->die($pkg, ': already compiled');
     my($name);
     my($eval) = "package $pkg;\nmy(\$_INFO) = \\\%info;\n";
     # Make a copy, because we're going to grow $decl.
@@ -320,8 +319,10 @@ sub compile {
     my($long_width) = 0;
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
-	Carp::croak("$name: is a reserved word") if $pkg->can($name);
-	Carp::croak("$name: does not point to an array")
+	Bivio::IO::Alert->die($pkg, '::', $name, ': is a reserved word')
+		    if $pkg->can($name);
+	Bivio::IO::Alert->die($pkg, '::', $name,
+		': does not point to an array')
 		    unless ref($d) eq 'ARRAY';
 	unless (defined($d->[1])) {
 	    # Turn TEST_VIEW into Test View.
@@ -334,9 +335,10 @@ sub compile {
 	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
 	# Remove aliases
 	my(@aliases) = splice(@$d, 3);
-	Carp::croak("$name: invalid number \"$d->[0]\"")
+	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid number "',
+		$d->[0], '"')
 		    unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
-	Carp::croak("$name: invalid enum name")
+	Bivio::IO::Alert->die($pkg, '::', $name, ': invalid enum name')
 		    unless $name =~ /^[A-Z][A-Z0-9_]*$/;
 	# Fill out declaration to reverse map number to name (index 3)
 	push(@$d, $name);
@@ -354,7 +356,7 @@ sub compile {
 	    $min = $max = $d;
 	}
 	$can_be_zero = 1 if $d->[0] == 0;
-	Carp::croak($d->[0], ': duplicate int value (',
+	Bivio::IO::Alert->die($pkg, '::', $d->[0], ': duplicate int value (',
 		$d->[3], ' and ', $info{$d->[0]}->[3], ')')
 		    if defined($info{$d->[0]});
 	$info{$d->[0]} = $d;
@@ -363,7 +365,7 @@ sub compile {
 	$info{uc($d->[2])} = $d unless defined($info{uc($d->[2])});
 	# Map extra aliases
 	foreach my $alias (@aliases) {
-	    Carp::croak($alias, ': duplicate alias')
+	    Bivio::IO::Alert->die($pkg, '::', $alias, ': duplicate alias')
 			if defined($info{uc($alias)});
 	    $info{uc($alias)} = $d;
 	}
@@ -376,11 +378,12 @@ sub compile {
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
     }
-    defined($min) || Carp::croak('no values');
+    defined($min) || Bivio::IO::Alert->die($pkg, ': no values');
     if ($pkg->is_continuous) {
 	my($n);
 	foreach $n ($min->[0] .. $max->[0]) {
-	    defined($info{$n}) || Carp::croak("missing number $n");
+            Bivio::IO::Alert->die($pkg, ': missing number (', $n, ') in enum')
+	        unless defined($info{$n});
 	}
     }
     eval($eval . '; 1')
@@ -600,7 +603,8 @@ sub _get_info {
     Carp::croak($self, ': not an enumerated type') unless defined($info);
     defined($ident) || ($ident = $self);
     return $info->{$ident} if defined($info->{$ident});
-    Carp::croak($ident, ': no such ', ref($self) || $self) unless $dont_die;
+    Bivio::IO::Alert->die($ident, ': no such ', ref($self) || $self)
+		unless $dont_die;
     return undef;
 }
 
