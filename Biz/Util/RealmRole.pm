@@ -280,7 +280,8 @@ sub unmake_super_user {
     my($req) = $self->get_request;
     Bivio::Biz::Model->new($req, 'RealmUser')->unauth_delete({
 	realm_id => Bivio::Auth::RealmType->GENERAL->as_int,
-	user_id => $req->get('auth_user_id') || 0,
+	user_id => $req->get('auth_user_id')
+	    || $self->usage_error('user not set'),
 	honorific => Bivio::Type::Honorific->ADMINISTRATOR,
     });
     return;
