@@ -197,12 +197,7 @@ EOF
 		}),
 	    ],
 	    [
-		$self->join('<br>',
-		    Bivio::UI::HTML::Widget::HorizontalRule->new({
-			size => 1,
-			noshade => 1,
-		    }),
-		),
+		$self->join('&nbsp;'),
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
