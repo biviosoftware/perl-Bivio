@@ -554,19 +554,33 @@ sub render {
     return;
 }
 
+=for html <a name="render_cell"></a>
+
+=head2 render_cell(Bivio::UI::HTML::Widget cell, any source, string_ref buffer)
+
+Draws the specified cell onto the output buffer.
+
+=cut
+
+sub render_cell {
+    my($self, $cell, $source, $buffer) = @_;
+    $cell->render($source, $buffer);
+    return;
+}
+
 =for html <a name="render_row"></a>
 
 =head2 render_row(array_ref cells, any source, string_ref buffer)
 
-=head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean fix_space)
+=head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean in_list)
 
 Renders the specified set of widgets onto the output buffer.
-If fix_space is true, then empty strings will be rendered as '&nbsp;'.
+If in_list is true, then empty strings will be rendered as '&nbsp;'.
 
 =cut
 
 sub render_row {
-    my($self, $cells, $source, $buffer, $row_prefix, $fix_space) = @_;
+    my($self, $cells, $source, $buffer, $row_prefix, $in_list) = @_;
     $row_prefix ||= "\n<tr>";
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
@@ -578,8 +592,8 @@ sub render_row {
 	# Insert a "&nbsp;" if the widget doesn't render.  This
 	# makes the table look nicer on certain browsers.
 	my($start) = length($$buffer);
-	$cell->render($source, $buffer);
-	$$buffer .= '&nbsp;' if length($$buffer) == $start && $fix_space;
+	$self->render_cell($cell, $source, $buffer);
+	$$buffer .= '&nbsp;' if length($$buffer) == $start && $in_list;
 	$$buffer .= '</td>';
     }
     $$buffer .= "\n</tr>";
