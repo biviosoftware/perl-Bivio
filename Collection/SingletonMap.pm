@@ -85,12 +85,12 @@ is already instantiated, won't re-instantiate.
 =cut
 
 sub put {
-    my($proto) = shift;
+    my($proto, @classes) = @_;
     my($class) = ref($proto) || $proto;
     $_MAP{$class} = {} unless $_MAP{$class};
     my($map) = $_MAP{$class};
     my($c);
-    foreach $c (@_) {
+    foreach $c (@classes) {
 	next if $map->{$c};
 	Bivio::Util::my_require($c);
 	$map->{$c} = $c->can('get_instance') ? $c->get_instance : $c->new;
