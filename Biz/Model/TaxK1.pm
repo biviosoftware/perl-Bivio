@@ -41,21 +41,20 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="create_default"></a>
 
-=head2 create_default(string user_id, string fiscal_end_date, Bivio::Type::F1065IRSCenter irs_center)
+=head2 create_default(string user_id, string fiscal_end_date)
 
 Creates a K1 model for the current realm with default values.
 
 =cut
 
 sub create_default {
-    my($self, $user_id, $fiscal_end_date, $irs_center) = @_;
+    my($self, $user_id, $fiscal_end_date) = @_;
 
     $self->create({
 	realm_id => $self->get_request->get('auth_id'),
 	user_id => $user_id,
 	fiscal_end_date => $fiscal_end_date,
 	entity_type => Bivio::Type::F1065Entity->INDIVIDUAL,
-	irs_center => $irs_center,
 	partner_type => Bivio::Type::F1065Partner->GENERAL,
 	foreign_partner => 0,
     });
@@ -79,7 +78,6 @@ sub internal_initialize {
 	    user_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    fiscal_end_date => ['Date', 'PRIMARY_KEY'],
 	    entity_type => ['F1065Entity', 'NOT_NULL'],
-	    irs_center => ['F1065IRSCenter', 'NOT_NULL'],
 	    partner_type => ['F1065Partner', 'NOT_NULL'],
 	    foreign_partner => ['Boolean', 'NOT_NULL'],
         },
