@@ -2194,6 +2194,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberPerformanceList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
+        help=member-performance-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
@@ -2206,6 +2207,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
+        help=member-performance-detail-report
     )],
     [qw(
         CLUB_HOME_PAGE
