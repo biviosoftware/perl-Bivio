@@ -99,11 +99,17 @@ sub initialize {
     $self->put(
 	control => [['->get_request'], $model, '->get_field_error', $field],
 	values => {},
-	default_value => Bivio::UI::HTML::Widget::String->new({
-	    value => $label,
-	    string_font => 'form_field_error_label',
-	    parent => $self,
-	}),
+	default_value => $self->join([
+	    $self->image('error_triangle', 'error here', {
+	       align => 'SW',
+	    }),
+	    '&nbsp',
+	    Bivio::UI::HTML::Widget::String->new({
+		value => $label,
+		string_font => 'form_field_error_label',
+		parent => $self,
+	    }),
+	]),
 	undef_value =>  Bivio::UI::HTML::Widget::String->new({
 	    value => $label,
 	    string_font => 'form_field_label',
