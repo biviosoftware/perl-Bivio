@@ -103,18 +103,23 @@ Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 Sets the realm to logged in user.  If I<realm_owner> is C<undef>,
 is same as logout.
 
-Note: If you call this method with a I<realm_owner>, the cookie
-will be checked.   Don't calle this method unless you expect
+Note: If you call this method explicitly (via I<execute>), the cookie
+will be checked.  Don't call this method unless you want the cookie
+set.
+
+If call this method with a I<login>, but no I<realm_owner>,
+I<realm_owner> will be loaded, a die will happen if not found.
 
 =cut
 
 sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($properties) = $self->internal_get;
-    my($realm) = $properties->{realm_owner};
-    _assert_realm_owner($self, $realm)
-	if $realm && !$properties->{validate_called};
+    my($realm) = $self->unsafe_get('validate_called')
+	? $self->get('realm_owner')
+        : $self->has_keys('realm_owner') ? _assert_realm($self)
+	: $self->has_keys('login') ? _assert_login($self)
+	: Bivio::Die->die('missing form fields');
     return _su_logout($self)
 	if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
@@ -233,7 +238,7 @@ sub validate {
     my($self) = @_;
     return if $self->in_error;
 
-    my($owner) = $self->validate_login($self);
+    my($owner) = $self->validate_login;
     return unless $owner;
 
     unless (Bivio::Type::Password->is_equal(
@@ -253,12 +258,14 @@ sub validate {
 =head2 static validate_login(Bivio::Biz::FormModel model) : Bivio::Biz::Model
 
 Looks at I<login> field of I<model> and loads.
-Returns a RealmOwner model, if valid.
+Returns a RealmOwner model, if valid.  If I<model> is not passed, uses
+I<self>.
 
 =cut
 
 sub validate_login {
-    my(undef, $model) = @_;
+    my($proto, $model) = @_;
+    $model ||= $proto;
     $model->internal_put_field(validate_called => 1);
     my($login) = $model->get('login');
     return undef
@@ -281,12 +288,28 @@ sub validate_login {
 
 #=PRIVATE METHODS
 
-# _assert_realm_owner(self, Bivio::Biz::Model realm)
+# _assert_login(self) : Model.RealmOwner
+#
+# Asserts the login and returns the new realm_owner.
+#
+sub _assert_login {
+    my($self) = @_;
+    my($realm) = $self->validate_login;
+    $self->throw_die('NOT_FOUND', {
+	entity => $self->get('login'),
+    }) if $self->in_error;
+    return $realm;
+}
+
+# _assert_realm(self)
 #
 # Validates realm_owner is valid
 #
-sub _assert_realm_owner {
-    my($self, $realm) = @_;
+sub _assert_realm {
+    my($self) = @_;
+    my($realm) = $self->get('realm_owner');
+    return undef
+	unless $realm;
     $self->throw_die('DIE', {entity => $realm,
 	message => "can't login as offline user"})
 	if $realm->is_offline_user();
@@ -298,7 +321,8 @@ sub _assert_realm_owner {
     $self->throw_die('DIE', {entity => $realm,
 	message => "can't login as *the* USER realm"})
 	if $realm->is_default;
-    return;
+    $self->internal_put_field(validate_called => 1);
+    return $realm;
 }
 
 # _get(Bivio::Agent::HTTP::Cookie cookie, string field) : string
