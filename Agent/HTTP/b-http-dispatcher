@@ -1,11 +1,15 @@
 #!perl -w
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 use strict;
 
 =head1 NAME
 
 b-http-dispatcher - starts Apache running Bivio::Agent::HTTP::Dispatcher
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
@@ -235,7 +239,7 @@ Bivio::IO::Config, Bivio::Agent::HTTP::Dispatcher, httpd, mod_perl
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
