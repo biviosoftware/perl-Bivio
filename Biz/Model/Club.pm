@@ -34,6 +34,8 @@ and delete interface to the C<club_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::MailMessage;
+use Bivio::Biz::Model::RealmOwner;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Integer;
@@ -49,6 +51,45 @@ Bivio::IO::Trace->register;
 =head1 METHODS
 
 =cut
+
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes the club, and all of its related transactions, membership records,
+and file server messages.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+    my($id) = $self->get('club_id');
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    $realm->unauth_load(realm_id => $id)
+	    || die("couldn't load realm from club");
+
+    $self->delete_instruments_and_transactions();
+
+    foreach my $table (qw(
+            realm_account_t
+            realm_user_t)) {
+
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE realm_id=?',
+		[$id]);
+    }
+    Bivio::SQL::Connection->execute('
+            DELETE FROM mail_message_t
+            WHERE club_id=?',
+	    [$id]);
+
+    # delete file server/mail messages
+    Bivio::Biz::Model::MailMessage->delete_club($realm);
+    $self->delete();
+    $realm->cascade_delete;
+    return;
+}
 
 =for html <a name="check_kbytes"></a>
 
@@ -76,6 +117,36 @@ sub check_kbytes {
     $$kbytestin += $curkbytes;
     _trace('The size of this message is ok for this club.') if $_TRACE;
     return 1;
+}
+
+=for html <a name="delete_instruments_and_transactions"></a>
+
+=head2 delete_instruments_and_transactions()
+
+Deletes all realm instruments and accounting transaction for the club.
+This "cleans the slate" for the club books.
+
+=cut
+
+sub delete_instruments_and_transactions {
+    my($self) = @_;
+
+    my($id) = $self->get('club_id');
+    foreach my $table (qw(
+            realm_instrument_valuation_t
+            member_entry_t
+            realm_instrument_entry_t
+            realm_account_entry_t
+            entry_t
+            realm_transaction_t
+            realm_instrument_t)) {
+
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE realm_id=?',
+		[$id]);
+    }
+    return;
 }
 
 =for html <a name="get_outgoing_emails"></a>
