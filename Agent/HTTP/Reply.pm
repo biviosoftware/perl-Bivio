@@ -60,17 +60,50 @@ sub new {
     $self->{$_PACKAGE} = {
         'header_sent' => 0,
 	'output' => '',
-	'r' => $r
+	'r' => $r,
     };
     # default output to html
     $self->set_output_type('text/html');
-
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="client_redirect"></a>
+
+=head2 client_redirect(string uri)
+
+Redirects the client to the specified uri.
+
+=cut
+
+sub client_redirect {
+    my($self, $uri) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # don't let any more data be sent
+    $fields->{output} = '';
+    $fields->{header_sent} = 1;
+
+    # have to do it the long way, there is a bug in using the REDIRECT
+    # return value when handling a form
+    my($r) = $fields->{r};
+    $r->header_out(Location => $uri);
+    $r->status(302);
+    $r->send_http_header;
+    # make it look like apache's redirect
+    $r->print('<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML><HEAD>
+<TITLE>302 Found</TITLE>
+</HEAD><BODY>
+<H1>Found</H1>
+The document has moved <A HREF="'.$uri.'">here</A>.<P>
+</BODY></HTML>
+');
+    return;
+}
 
 =for html <a name="flush"></a>
 
@@ -118,6 +151,7 @@ If I<die> is C<undef>, returns C<Apache::Constants::OK>.
 
 sub die_to_http_code {
     my(undef, $die) = @_;
+
     return Apache::Constants::OK() unless defined($die);
     $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
     return Apache::Constants::OK() unless defined($die);
@@ -127,6 +161,8 @@ sub die_to_http_code {
 		=> Apache::Constants::AUTH_REQUIRED(),
 	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN(),
 	    Bivio::DieCode::NOT_FOUND() => Apache::Constants::NOT_FOUND(),
+	    Bivio::DieCode::CLIENT_REDIRECT_TASK()
+		=> Apache::Constants::OK(),
 	);
     }
     return $_DIE_TO_HTTP_CODE{$die}
