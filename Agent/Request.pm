@@ -1005,12 +1005,10 @@ sub set_user {
     my($user_realms);
     _trace($user) if $_TRACE;
     if ($user) {
-	# Load the UserRealmList.  For right now, the auth_id is this
-	# user since we don't have a realm.
+	# Load the UserRealmList for this user.
 	my($user_id) = $user->get('realm_id');
-	$self->put(auth_id => $user_id);
 	my($list) = Bivio::Biz::Model::UserRealmList->new($self);
-	$list->load_all();
+	$list->unauth_load_all({auth_id => $user_id});
 #TODO: This may be quite expensive if lots of realms(?)
 	$user_realms = $list->map_primary_key_to_rows;
     }
