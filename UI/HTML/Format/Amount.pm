@@ -49,7 +49,7 @@ my($_FULL_PAD) = '.' . ('0' x $_DECIMAL_MAX);
 
 =head2 static get_widget_value(string amount) : string
 
-=head2 static get_widget_value(string amount, int round) : string
+=head2 static get_widget_value(string amount, int round, boolean want_parens) : string
 
 Formats a numeric amount to the specified number of decimal digits.
 L<Bivio::Type::Number|Bivio::Type::Number> is used to check whether
@@ -59,10 +59,13 @@ Default I<round> is two (2).
 
 Returns the empty string if I<amount> is not defined.
 
+If I<want_parens>, negative numbers will be displayed with parenthesis
+and positive numbers will be bracketed in spaces.
+
 =cut
 
 sub get_widget_value {
-    my(undef, $amount, $round) = @_;
+    my(undef, $amount, $round, $want_parens) = @_;
 
     return '' unless defined($amount);
     $round = 2 unless defined($round);
@@ -89,8 +92,10 @@ sub get_widget_value {
     }
 
     my($result) = defined($dec) ? ($num.'.'.$dec) : $num;
-#TODO: really want &nbsp; around positive values
-    return $negative ? '('.$result.')' : ' '.$result.' ';
+
+#TODO: really want &nbsp; around positive values.  Add result_is_html()
+    return $negative ? '('.$result.')' : ' '.$result.' ' if $want_parens;
+    return $negative ? '-'.$result : $result;
 }
 
 #=PRIVATE METHODS
