@@ -155,13 +155,12 @@ _compile(
     WITHDRAWAL_VALUE => ['Withdrawal Value'],
     WITHDRAWAL_FEE => ['Withdrawal Fee'],
     WITHDRAWAL_AMOUNT => ['Withdrawal Amount'],
-    CASH_WITHDRAWN => ['Cash Withdrawn'],
+    CASH_WITHDRAWN => ['Cash'],
     INSTRUMENT_FMV => ["Investments' FMV"],
     WITHDRAWAL_ADJUSTMENT => ['Post-Withdrawal Adjustment'],
     MEMBER_TAX_BASIS => ["Member's Tax Basis"],
-    WITHDRAWAL_ALLOCATIONS => ["Tax Allocations"],
-    MEMBER_INSTRUMENT_COST_BASIS => ["Investments' Cost Basis"],
-    REALIZED_GAIN => ["Realized Gain/(Loss)"],
+    WITHDRAWAL_ALLOCATIONS => ["Current Income Allocations"],
+    MEMBER_INSTRUMENT_COST_BASIS => ["Stock"],
     UNIT_VALUE => ['Unit Value'],
     UNITS_WITHDRAWN => ['Units Withdrawn'],
     GENERATE => ['Generate'],
@@ -169,6 +168,11 @@ _compile(
     REPORT_YEAR => ['Report Year'],
     TASK_ID => ['Task', undef, 'task_id2'],
     FEE_PERCENT => ['Percent Fee Type'],
+
+    PRE_WITHDRAWAL_BASIS => ["Member's Basis Before Withdrawal"],
+    ADJUSTED_BASIS => ['(A)  Adjusted basis'],
+    BASIS_WITHDRAWN => ['(B)  Total'],
+    WITHDRAWAL_REALIZED_GAIN => ["Gain Realized on Withdrawal (B)-(A)"],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
