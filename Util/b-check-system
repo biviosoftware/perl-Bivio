@@ -177,6 +177,7 @@ sub check_messages {
             /named\[\d+\]: zone transfer/ && next;
             /named\[\d+\]: approved AXFR from/ && next;
             /named\[\d+\]: named (startup|shutdown) succeeded/ && next;
+            /named\[\d+\]: NOTIFY\(SOA\) for non-secondary name/ && next;
             /named-xfer\[\d+\]: send AXFR query/ && next;
 
             /cvs\[\d+\]: connect from/ && next;
