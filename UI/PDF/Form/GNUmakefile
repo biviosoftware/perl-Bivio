@@ -4,7 +4,9 @@
 
 dirs := \
 	F1065/Y1999 \
-	F1065sk1/Y1999
+	F1065/Y2000 \
+	F1065sk1/Y1999 \
+	F1065sk1/Y2000
 
 makefiles := $(dirs:=/GNUmakefile)
 
