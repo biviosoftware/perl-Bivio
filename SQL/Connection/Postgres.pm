@@ -34,6 +34,22 @@ C<Bivio::SQL::Connection::Postgres>
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="REQUIRE_COMMIT_OR_ROLLBACK"></a>
+
+=head2 REQUIRE_COMMIT_OR_ROLLBACK : boolean
+
+Returns true.
+
+=cut
+
+sub REQUIRE_COMMIT_OR_ROLLBACK {
+    return 1;
+}
+
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
