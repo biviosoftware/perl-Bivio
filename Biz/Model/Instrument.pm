@@ -67,9 +67,6 @@ sub abbreviate_name {
     $name =~ s/Incorporated/Inc./i;
     $name =~ s/^The\s(.*)$/$1 The/;
 
-    # MGFS doesn't allow '@' symbol in name
-    $name = '@Plan Inc.' if $name =~ /^At Plan Inc/;
-
     return $name;
 }
 
