@@ -1,7 +1,5 @@
 # $Id$
 
-view_put(header_title => 'bOP Pet Shop Demo');
-
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
 
