@@ -32,10 +32,12 @@ It also displays links to other, nested MIME parts.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::DieCode;
+use Bivio::File::Client;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::String;
@@ -43,6 +45,39 @@ use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_FILE_CLIENT);
+Bivio::IO::Config->register({
+    'file_server' => Bivio::IO::Config->REQUIRED,
+});
+
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::UI::HTML::Club::MessageAttachment
+
+
+
+=cut
+
+sub new {
+    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($fields) = $self->{$_PACKAGE} = {};
+#    $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
+#	value => ['body'],
+#	});
+    $fields ->{content} = Bivio::UI::HTML::Widget::Indirect->new({
+ 	      value => 0,
+	      cell_rowspan => 1,
+	      cell_compact => 1,
+	      cell_align => 'N',
+ 	    });
+    $fields->{content}->initialize;
+    return $self;
+}
 
 =head1 METHODS
 
@@ -57,8 +92,76 @@ my($_PACKAGE) = __PACKAGE__;
 =cut
 
 sub execute {
-    my($self) = @_;
+    my($self, $req) = @_;
+    print(STDERR "\nexecute called on MessageAttachment.");
     my($fields) = $self->{$_PACKAGE};
+    my($body);
+    my($fh);
+    my($filename);
+    my($s);
+    my($esc) = 1;
+    if (defined($req->get('query')) && defined($req->get('query')->{att})) {
+	my($club_name) = $req->get('auth_realm')->get('owner_name');
+	my($attachment_id) = $req->get('query')->{att};
+	$filename = '/'.$club_name.'/messages/html/'.$attachment_id;
+	die("couldn't get mime  body for $attachment_id. Error: $body")
+	    unless $_FILE_CLIENT->get($filename, \$body);
+	my($i) = index($body, 'X-BivioNumParts: ');
+	$s = substr($body, $i);
+	$i = index($s, "\n");
+	$s = substr($s, $i);
+	$i = index($body, 'Content-Type: ');
+	my($ctypestr) = substr($body, $i);
+	$i = index($ctypestr, "\n");
+	print(STDERR "\nindex of end of line: $i");
+	$ctypestr = substr($ctypestr, 0, $i);
+	print(STDERR "\nctypestr = $ctypestr\n");
+	if($ctypestr =~ 'text/plain'){$esc = 1;}
+	if($ctypestr =~ 'text/html'){$esc = 0;}
+	if($ctypestr =~ "image/"){
+	    $esc = 0;
+	    print(STDERR "\nIMAGE type creating link.\n");
+	    $s = "\n<IMG SRC=".$req->format_uri(
+		Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
+		"img=".$attachment_id).">";
+	}
+	my($str) = Bivio::UI::HTML::Widget::String->new({
+		value => $s,
+	        escape_text => $esc
+	    });
+#	$req->put(body => $s);
+#	$fields->{content}->put( body => $s);
+	$fields->{content}->put(value => $str);
+	$str->initialize();
+    }
+    $req->put(
+	    page_subtopic => "", 
+	    page_heading => "", 
+	    page_content => $fields->{content},
+	    page_action_bar => 0,
+	    );
+#	    body => $s,
+    Bivio::UI::HTML::Club::Page->execute($req);
+    return;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item <required> : <type> (required)
+
+=item <optional> : <type> [<default>]
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
     return;
 }
 
