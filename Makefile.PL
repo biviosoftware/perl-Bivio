@@ -16,10 +16,10 @@ sub find {
     if (/^\w+.pm$/) {
 	my($file) = $File::Find::name;
 	$file =~ s!^\./!!;
-	$pm{$file} = $file;
+	$pm{$file} = '$(INST_LIB)/' . $file;
 	return;
     }
-    $_ eq 'blib' && ($File::Find::prune = 1);
+    ($_ eq 'blib' || $_ eq 'pm_to_blib') && ($File::Find::prune = 1);
 }
 
 File::Find::find(\&find, '.');
