@@ -90,6 +90,27 @@ for C<::> and C<.> separators) for this syntax to work.
 If a valid configuration is found, calls packages which have
 called L<register|"register">.
 
+=head2 Bivio::IO::Config configuration
+
+=over 4
+
+=item bconf_file : string (not settable)
+
+This value appears in the config for Bivio::IO::Config.  It is only visible
+through tracing.
+
+=item trace : boolean [0]
+
+If true, every time the configuration changes, print all config to STDERR.  Of
+note is Bivio::IO::Config.bconf_file, if you are trying to debug where your
+configuration is coming from.  Here's how to pass it from the command line:
+
+    my-program --Bivio::IO::Config.trace=1
+
+May also be set in the config file itself.
+
+=back
+
 =head1 ENVIRONMENT
 
 =over 4
@@ -148,6 +169,7 @@ sub REQUIRED {
 # use Bivio::BConf;
 
 #=VARIABLES
+my($_PKG) = __PACKAGE__;
 # The configuration read off disk or passed in
 my($_ACTUAL) = {};
 # List of packages registered
@@ -263,6 +285,7 @@ sub introduce_values {
     my($proto, $new_values) = @_;
     die('new_values must be a hash_ref') unless ref($new_values) eq 'HASH';
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
+    _actual_changed();
     return;
 }
 
@@ -409,11 +432,30 @@ sub register {
     $_SPEC{$pkg} = $spec;
 
     # Call handle_config
-    &{\&{$pkg . '::handle_config'}}($pkg, &_get_pkg($pkg));
+    &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
     return;
 }
 
 #=PRIVATE METHODS
+
+# _actual_changed()
+#
+# Call handlers and dump config, if debug option set.
+#
+sub _actual_changed {
+    eval(q{
+	use Data::Dumper;
+	my($dd) = Data::Dumper->new([$_ACTUAL]);
+	$dd->Indent(1);
+	$dd->Terse(1);
+	$dd->Deepcopy(1);
+	print(STDERR "Configuration is: ", $dd->Dumpxs(), "\n");
+    }) if $_ACTUAL->{$_PKG}->{trace};
+    foreach my $pkg (@_REGISTERED) {
+	&{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
+    }
+    return;
+}
 
 sub _get_pkg {
     my($pkg) = @_;
@@ -522,8 +564,10 @@ sub _initialize {
     }
     die("$file error: ", $@ || 'Must return hash ref')
 	unless ref($_ACTUAL) eq 'HASH';
+    ($_ACTUAL->{$_PKG} ||= {})->{bconf_file} = $file;
     # Only process arguments in not_setuid case
     _process_argv($_ACTUAL, $argv) unless $is_setuid;
+    _actual_changed();
     return;
 }
 
