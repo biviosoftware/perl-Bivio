@@ -163,6 +163,11 @@ sub _parse {
 	# Parse the closing boundary
 	last if $buf =~ s/^--//;
 
+        # Add more info re the corrupt form problem
+        Bivio::IO::Alert->warn('Form contents so far=', $form);
+        Bivio::IO::Alert->warn('Last field=', $$content);
+        Bivio::IO::Alert->warn('Remaining buffer length=', length($buf));
+        Bivio::IO::Alert->warn('Remaining buffer="', $buf, '"');
 	$req->throw_die('CORRUPT_FORM',
 		{message => 'invalid encapsulation or closing boundary',
 		    entity => substr($buf, 0, 20)});
