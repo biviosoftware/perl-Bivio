@@ -76,6 +76,10 @@ sub new {
 	links => {},
 	text => {},
 
+	line_no => 1,
+	table_count => 0,
+	table_depth => 0,
+	
 	# counter used to create unique form names.
 	unnamed_count => 0
     };
@@ -104,7 +108,7 @@ cases it will call the procedure named _parse_end_$tag.
 sub end {
     my($self, $tag, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($_INTERESTING_TAGS) = 'a|form|select|tr';
+    my($_INTERESTING_TAGS) = 'a|form|select|table|tr';
 
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
@@ -129,7 +133,8 @@ cases it will call the procedure named _parse_start_$tag.
 sub start {
     my($self, $tag, $attr, $attrseq, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($_INTERESTING_TAGS) = 'a|form|input|img|option|select|textarea';
+    my($_INTERESTING_TAGS)
+	    = 'a|form|input|img|option|select|table|textarea';
 
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
@@ -160,6 +165,8 @@ sub text {
     my($self, $text) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    $fields->{line_no}++ if ($text =~ /\n/);
+
     # ignore blank lines
     return unless ($text =~ /\S+/ && $text ne '&nbsp;');
 
@@ -172,13 +179,10 @@ sub text {
     # store onsreen text
     # options terminate with text
     if (defined ($fields->{option})) {
-        if (defined ($fields->{currentform}
-		&& defined ($fields->{currentselect}))) {
-	    my($form) = $fields->{forms}->{$fields->{currentform}};
-	    my($selection) = $form->{$fields->{currentselect}};
-	    _trace ('\$selection->{$text} = $fields->{option}') if $_TRACE;
-#	    push (@{$selection->{options}});
-	    $selection->{options}->{$text} = $fields->{option};
+        if (defined ($fields->{currentselect})) {
+	    _trace ('\selection->{$text} = $fields->{option}') if $_TRACE;
+#	    push (@{$fields->{currentselect}->{options}});
+	    $fields->{currentselect}->{options}->{$text} = $fields->{option};
 	}
 	delete ($fields->{option});
     }
@@ -187,7 +191,7 @@ sub text {
     # radio_or_checkbox inputs terminate with text
     elsif (defined ($fields->{radio_or_checkbox})) {
 	if (! defined ($fields->{currentform})) {
-	    _trace('Warning!  Skipping radio/checkbox input because of nameless form')
+	    _trace('Warning!  Skipping radio/checkbox input outside of form')
 		    if $_TRACE;
 	}
 	elsif (! defined ($text)) {
@@ -195,10 +199,9 @@ sub text {
 		    if $_TRACE;
 	}
 	else {
-	    my($form) = $fields->{forms}->{$fields->{currentform}};
-	    _trace ('\$form->{$text} = $fields->{radio_or_checkbox}')
+	    _trace ('\$fields->{currentform}->{$text} = $fields->{radio_or_checkbox}')
 		    if $_TRACE;
-	    $form->{$text} = $fields->{radio_or_checkbox};
+	    $fields->{currentform}->{$text} = $fields->{radio_or_checkbox};
 	}
 	delete $fields->{radio_or_checkbox};
     }
@@ -239,11 +242,11 @@ sub _handle_hidden {
     my($name) = $attr->{name};
     my($value) = $attr->{value};
 
-    my($form) = $fields->{forms}->{$fields->{currentform}};
-    
-    _trace('Form $form->{name} hidden field: $name') if $_TRACE;
-    $form->{hidden_fields} = {} unless (defined ($form->{hidden_fields}));
-    $form->{hidden_fields}->{$name} = $value;
+    _trace('Form $fields->{currentname}->{name} hidden field: $name')
+	    if $_TRACE;
+    $fields->{currentform}->{hidden_fields} 
+	= {} unless (defined ($fields->{currentform}->{hidden_fields}));
+    $fields->{currentform}->{hidden_fields}->{$name} = $value;
 
     return;
 }
@@ -282,11 +285,12 @@ sub _handle_submit {
     }
 
     if (defined ($fields->{currentform})) {
-	my($form) = $fields->{forms}->{$fields->{currentform}};
-	_trace('push \@{$form->{name}}->{$value}, $name)') if $_TRACE;
-#	push (@{$form->{$value}}, $name);
-	$form->{submit} = {} unless (defined ($form->{submit}));
-	$form->{submit}->{$value} = $name;
+	_trace('push \@{$fields->{currentform}->{name}}->{$value}, $name)')
+		if $_TRACE;
+#	push (@{$fields->{currentform}->{$value}}, $name);
+	$fields->{currentform}->{submit} = {}
+		unless (defined ($fields->{currentform}->{submit}));
+	$fields->{currentform}->{submit}->{$value} = $name;
     }
     
     return;
@@ -306,15 +310,13 @@ sub _handle_text_password_file_textarea {
     my($text) = $fields->{currenttext};
     my($out);
 
-    my($form) = $fields->{forms}->{$fields->{currentform}};
-    
     Bivio::Die->die ("No text found associated with input field: $origtext")
 		unless defined ($text);
 
     $out = $value ? $name.'='.$value : $name.'=';
 
-    _trace('push \@{\$form->{$text}), $out') if $_TRACE;
-    push (@{$form->{$text}}, $out);
+    _trace('push \@{\$fields->{currentform}->{$text}), $out') if $_TRACE;
+    push (@{$fields->{currentform}->{$text}}, $out);
 
     return;
 }
@@ -394,6 +396,17 @@ sub _parse_end_select {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     delete $fields->{currentselect};
+    return;
+}
+
+# _parse_end_table(Bivio::Test::HTMLParser self) : 
+#
+# Decrement the table counters.
+#
+sub _parse_end_table {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{table_depth}--;
     return;
 }
 
@@ -516,28 +529,27 @@ sub _parse_start_form {
 	$fields->{unnamed_count}++;
     }
 
-    my($form) = $fields->{forms}->{$name} = {};
-    $form->{name} = $name;
+    $fields->{currentform} = $fields->{forms}->{$name} = {};
+    $fields->{currentform}->{name} = $name;
     
     # if an action is specified, save it.
     if ($action) {
-	_trace('Form $form->{name} action: $action') if $_TRACE;
-	$form->{action} = $action;
+	_trace('Form $fields->{currentform}->{name} action: $action')
+		if $_TRACE;
+	$fields->{currentform}->{action} = $action;
     }
 
     # if a method is specified, save it.
     if ($method) {
-	_trace('Form $form->{name} method: $method') if $_TRACE;
-	$form->{method} = $method;
+	_trace('Form $fields->{currentform}->{name} method: $method')
+		if $_TRACE;
+	$fields->{currentform}->{method} = $method;
     }
-
-    # cache name of current form.
-    $fields->{currentform} = $name;
 
     return;
 }
 
-# _parse_start_img(hash_ref attr, string origtext) : 
+# _parse_start_img(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
 #
 # Store image's source in temporary field.
 #
@@ -548,7 +560,7 @@ sub _parse_start_img {
     return;
 }
 
-# _parse_start_input(hash_ref attr, string origtext) : 
+# _parse_start_input(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
 #
 # Dispatch method for all form <input...> tags.
 #
@@ -569,12 +581,10 @@ sub _parse_start_input {
 sub _parse_start_option {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{currentform})
-	    && defined ($fields->{currentselect})) {
+    if (defined ($fields->{currentselect})) {
 	$fields->{option} = $attr->{value};
-	my($form) = $fields->{forms}->{$fields->{currentform}};
-	my($selection) = $form->{$fields->{currentselect}};
-	$selection->{options} = {} unless (defined ($selection->{options}));
+	$fields->{currentselect}->{options} = {} 
+		unless (defined ($fields->{currentselect}->{options}));
     }
     return;
 }
@@ -586,42 +596,52 @@ sub _parse_start_select {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
     if (defined ($fields->{currentform})) {
-	my($form) = $fields->{forms}->{$fields->{currentform}};
 
-	if (defined ($form->{select})) {
+	if (defined ($fields->{currentform}->{select})) {
 	    $fields->{option} = $attr->{value};
 	    return;
 	}
 	my($name) = $attr->{name};
-	my($action) = $form->{action};
-	my($method) = $form->{method};
+	my($action) = $fields->{currentform}->{action};
+	my($method) = $fields->{currentform}->{method};
 	my($text) = $fields->{currenttext};
 
 	$text = 'RealmChooser'
 		if (!defined ($text) && $action && $action eq '/goto');
 
-	my($selection) = $form->{$name} = {};
-	
-	$fields->{currentselect} = ${selection}->{name} = $name;
-	${selection}->{text} = $text;
+	$fields->{currentselect} = $fields->{currentform}->{$name} = {};
+	$fields->{currentselect}->{name} = $name;
+	$fields->{currentselect}->{text} = $text;
 
 	if (defined ($action)) {
-	    _trace ('Form $form->{name}, selection $name: action $action')
+	    _trace ('Form, selection $name: action $action')
 		    if $_TRACE;
-	    ${selection}->{action} = $action;
+	    $fields->{currentselect}->{action} = $action;
 	}
 
 	if (defined ($method)) {
-	    _trace ('Form $form->{name}, selection $name: method $method')
+	    _trace ('Form, selection $name: method $method')
 		    if $_TRACE;
-	    ${selection}->{method} = $method;
+	    $fields->{currentselect}->{method} = $method;
 	}
     }
     
     return;
 }
 
-# _parse_start_textarea(hash_ref attr, string origtext) : 
+# _parse_start_table(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
+#
+# Increment the table counters.
+#
+sub _parse_start_table {
+    my($self, $attr, $origtext) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{table_depth}++;
+    $fields->{table_count}++;
+    return;
+}
+
+# _parse_start_textarea(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
 #
 # Handle <textarea> start tags.
 #
