@@ -870,6 +870,16 @@ __PACKAGE__->compile([
 	undef,
 	"an account already exists with that name",
     ],
+    MEMBER_CANT_AFFORD_EXPENSE => [
+	118,
+	undef,
+	"this amount can't be equally allocated because not all members can afford the expense",
+    ],
+    INVALID_EQUALLY_ALLOCATED_ACCOUNT => [
+	119,
+	undef,
+	"the selected account doesn't allow equally allocated expenses",
+    ],
 ]);
 
 #=PRIVATE METHODS
