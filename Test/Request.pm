@@ -101,6 +101,22 @@ sub set_realm_and_user {
     return $self;
 }
 
+=for html <a name="setup_facade"></a>
+
+=head2 setup_facade() : self
+
+Sets up the default facade.  Sets up http unless already setup.
+
+=cut
+
+sub setup_facade {
+    my($self) = @_;
+    $self = $self->get_instance unless ref($self);
+    $self->setup_http unless $self->unsafe_get('r');
+    Bivio::ShellUtil->initialize_ui;
+    return $self;
+}
+
 =for html <a name="setup_http"></a>
 
 =head2 static setup_http(string cookie_class) : self
