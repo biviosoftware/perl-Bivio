@@ -359,12 +359,12 @@ sub _walk_attachment_tree {
     my(@parts) = $entity->parts;
     if (@parts) {
         # Has sub-parts, so create directory and descend
-        $mail_id .= '.' . $index if $index;
+        $mail_id .= '_' . $index if $index;
         $file->create({
             is_directory => 1,
             name => $mail_id,
             user_id => $user_id,
-            aux_info => $entity->header_as_string,
+            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $entity->mime_type,
             directory_id => $dir_id,
             volume => Bivio::Type::FileVolume::MAIL_CACHE,
         });
@@ -373,7 +373,7 @@ sub _walk_attachment_tree {
         for $i (0..$#parts) {
             # Pass $mail_id and $i separately, so subparts can refer to parent
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $mail_id, $i);
+                    $mail_id, sprintf('%02X', $i));
         }
     } else {
         my($mime_type) = $entity->mime_type;
@@ -383,16 +383,18 @@ sub _walk_attachment_tree {
         }
         # Append the given index or its content-id to the name of the file
         if(my($cid) = $entity->head->get('Content-ID')) {
-            $mail_id .= '.' . $cid;
+            $mail_id .= '_' . $cid;
         } elsif ($index) {
-            $mail_id .= '.' . $index;
+            $mail_id .= '_' . $index;
         }
+        my($content) = $entity->bodyhandle->as_string;
         $file->create({
             is_directory => 0,
             name => $mail_id,
             user_id => $user_id,
-            aux_info => $entity->mime_type,
-            content => $entity->bodyhandle->as_string,
+            # Store the full header information only for sub-parts, not for single-part messages
+            aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $entity->mime_type,
+            content => \$content,
             directory_id => $dir_id,
             volume => Bivio::Type::FileVolume::MAIL_CACHE,
         });
