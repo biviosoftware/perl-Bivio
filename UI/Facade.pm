@@ -115,7 +115,7 @@ used.
 
 =item dubeli : fool
 
-=item bumpliz :
+=item bumpliz : AllWomenInvest
 
 =item ollon : InvestmentExpo
 
