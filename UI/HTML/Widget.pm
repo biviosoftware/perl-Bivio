@@ -241,7 +241,7 @@ sub center {
 
 =for html <a name="checkmark"></a>
 
-=head static checkmark(string field) : Bivio::UI::HTML::Widget
+=head2 static checkmark(string field) : Bivio::UI::HTML::Widget
 
 Shows a checkmark for the field.  Looks up $field."_ALT" for
 alt text for image.
