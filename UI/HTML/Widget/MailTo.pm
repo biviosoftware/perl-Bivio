@@ -186,7 +186,8 @@ sub render {
     if (Bivio::Type::Email->is_ignore($email)) {
 	# Don't make visible ignored addresses
 	if ($fields->{email} eq $fields->{value}
-		|| $email eq $source->get_widget_value(@{$fields->{value}})) {
+	    || ref($fields->{value}) eq 'ARRAY'
+	    && $email eq $source->get_widget_value(@{$fields->{value}})) {
 	    $fields->{value_invalid}->render($source, $buffer)
 		    if $fields->{value_invalid};
 	} else {
