@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+      mime_type and mime_encoding.
+    * Bivio::UI::Widget calls put_and_initialize before rendering a
+      widget if the widget has no parent.
+
+  Revision 2.20  2004/04/16 03:42:28  nagler
+  * Bivio::ShellUtil->main will return the result as a string_ref if
+    called from an array context and there is output.  This change
+    facilitates unit testing of ShellUtil subclasses.
+  * Bivio::ShellUtil->run_daemon can be configured to limit the run-time
+    of children.  The configuration parameters daemon_sleep_after_reap,
+    daemon_max_child_run_seconds, and daemon_max_child_term_seconds have
+    been added to facilitate this feature.
+  * Added Bivio::BConf default config for Bivio::Util::HTTPLog to
     ignore 'Facade::setup_request:.*: unknown facade uri'.
   * Bivio::XML::DocBook->to_html converts sect1/title to h2 and
     sect2/title to h4
