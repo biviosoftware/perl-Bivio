@@ -78,7 +78,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         my_club
 	Bivio::Biz::Action::MyClubRedirect
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_HOME
     )],
 #TODO: MY_CLUB_REDIRECT isn't right if user not part of club.
 #      Need a redirect to club or to user's home.
@@ -87,7 +87,7 @@ my(@_CFG) = (
 	5
         GENERAL
         LOGIN
-        login
+        pub/login
 	Bivio::Biz::Model::LoginForm
 	Bivio::UI::HTML::General::Login
         next=MY_CLUB_REDIRECT
@@ -102,7 +102,7 @@ my(@_CFG) = (
     )],
 #TODO: Make searching for public docs general
     [qw(
-	SLOGIN_GIF
+	SLOGAN_GIF
 	7
         GENERAL
         LOGIN
@@ -114,7 +114,7 @@ my(@_CFG) = (
 	8
         GENERAL
         LOGIN
-        logout
+        pub/logout
 	Bivio::Biz::Action::Logout
         next=LOGIN
     )],
@@ -178,13 +178,12 @@ my(@_CFG) = (
         _/admin/preferences:_/preferences
         Bivio::UI::HTML::Club::Embargoed
     )],
-    # Default page for clubs, see MY_CLUB_REDIRECT
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_LIST
         16
         CLUB
         MAIL_READ
-        _:_/mail
+        _/mail
         Bivio::Biz::Model::MessageList
         Bivio::UI::HTML::Club::MessageList
 
@@ -604,7 +603,101 @@ my(@_CFG) = (
         _/mail/image
         Bivio::UI::HTML::Club::ImageAttachment
     )],
-
+    # This URI must match the form in the user agreement document.
+    [qw(
+        USER_AGREEMENT_FORM
+        62
+        GENERAL
+        LOGIN
+        pub/user_agreement
+        Bivio::Biz::Model::UserAgreementForm
+        next=USER_CREATE
+        cancel=HTTP_DOCUMENT
+    )],
+    # This URI must identify the user agreement document file.
+    [qw(
+        USER_AGREEMENT_TEXT
+        63
+        GENERAL
+        LOGIN
+        hm/user.html
+        Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
+        USER_CREATE
+        64
+        GENERAL
+        LOGIN
+        pub/create_user
+        Bivio::Biz::Model::CreateUserForm
+        Bivio::UI::HTML::General::CreateUser
+        next=USER_HOME
+    )],
+    # Default page for users, see MY_BIVIO_REDIRECT
+    [qw(
+        USER_HOME
+        65
+        USER
+        DOCUMENT_READ
+        _
+        Bivio::UI::HTML::User::Home
+    )],
+    [qw(
+        USER_ADMIN_INFO
+        66
+        USER
+        ADMIN_READ
+        _/admin:_/admin/info
+        Bivio::UI::HTML::User::AdminInfo
+    )],
+    [qw(
+        USER_CLUB_LIST
+        67
+        USER
+        ADMIN_READ
+        _/clubs
+        Bivio::Biz::Model::UserClubList
+        Bivio::UI::HTML::User::ClubList
+    )],
+    [qw(
+        USER_ADMIN_NAME_EDIT
+        68
+        USER
+        ADMIN_WRITE
+        _/admin/edit/name
+        Bivio::Biz::Model::UserNameForm
+        Bivio::UI::HTML::User::Name
+        next=USER_ADMIN_INFO
+    )],
+    [qw(
+        CLUB_CREATE
+        69
+        USER
+        ADMIN_WRITE
+        _/create_club
+        Bivio::Biz::Model::CreateClubForm
+        Bivio::UI::HTML::User::CreateClub
+        next=USER_CLUB_LIST
+    )],
+    # Default page for users, see MY_CLUB_REDIRECT
+    [qw(
+        CLUB_HOME
+        70
+        CLUB
+        DOCUMENT_READ
+        _
+        Bivio::UI::HTML::Club::Home
+    )],
+    [qw(
+        USER_ADMIN_PASSWORD_EDIT
+        71
+        USER
+        ADMIN_WRITE
+        _/admin/edit/password
+        Bivio::Biz::Model::PasswordForm
+        Bivio::UI::HTML::User::Password
+        next=USER_ADMIN_INFO
+    )],
        );
 
 __PACKAGE__->compile(
