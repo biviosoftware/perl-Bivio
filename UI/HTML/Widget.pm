@@ -1253,13 +1253,17 @@ Returns an lock/unlock image link to toggle secure mode.
 
 sub toggle_secure {
     my($proto) = @_;
-    return $proto->link(
-	    $proto->director(['is_secure'], {
-		0 => $proto->image('unlock', 'Switch to secure mode (slower)'),
-		1 => $proto->image('lock',
-			'Switch to non-secure mode (faster)'),
-	    }),
-	    ['->format_http_toggling_secure']);
+    return $proto->director(['task', 'require_secure'], {
+	1 => $proto->image('lock', 'Secure mode (required)'),
+	0 => $proto->link(
+		$proto->director(['is_secure'], {
+		    0 => $proto->image('unlock',
+			    'Switch to secure mode (slower)'),
+		    1 => $proto->image('lock',
+			    'Switch to non-secure mode (faster)'),
+		}),
+		['->format_http_toggling_secure']),
+    });
 }
 
 =for html <a name="tour"></a>
