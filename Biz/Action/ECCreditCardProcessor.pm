@@ -84,6 +84,8 @@ Format is one transaction per line (CR-LF), fields are TAB-separated.
 
 sub check_transaction_batch {
     my($proto, $req) = @_;
+#TODO: Recode this to new interface
+    return;
     _setup_user_agent();
     my($hreq) = HTTP::Request->new(
 	POST => 'https://secure.authorize.net/Interface/minterface.dll?batchreport');
