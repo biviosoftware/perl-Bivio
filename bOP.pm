@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::PropertyModel dies if update() is called on an unloaded model
+  * Bivio::Type::Secret allows for multiple encryption keys, which are
+    tried sequentially. Used to transition to a new key.
+
+  Revision 2.46  2004/12/23 22:53:29  nagler
+  * Bivio::Biz::FormModel->process outputs form values if executed
+    directly with invalid values
+  * Bivio::Util::Release->update/list_updates only installs/shows
+    packages already installed on current host
+  * Bivio::Util::Release->create_stream creates stream file from
     rpms or what's on current host
   * Bivio::Util::Release->install_stream updates all rpms in stream
     whether they are on the host or not
