@@ -555,6 +555,7 @@ _compile(\%_MAP, [
     ['FILE_IS_PUBLIC', 'File.is_public', 'MAIL_IS_PUBLIC', 'Mail.is_public']
         => 'Public',
     MAIL_IS_PUBLIC_ALT => 'Message is publicly viewable',
+    MAIL_THREAD => 'Thread',
 
     # FILES
     FILE_NAME => 'Name',
@@ -756,6 +757,10 @@ EOF
     PAGE_SIZE => 'List Size',
     FACADE_CHILD_TYPE => 'Style',
     TEXTAREA_WRAP_LINES => 'Wrap Lines',
+    MAIL_SET_REPLY_TO => 'Address replies to the club',
+    MAIL_ALLOW_ATTACHMENTS => 'Allow message attachments',
+    MAIL_POST_PUBLIC => 'Message posting is public',
+    MAIL_SHOW_THREADS => 'Show Threads',
 
     # page subtopics
     OVERVIEW => 'Overview',
