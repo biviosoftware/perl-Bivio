@@ -24,7 +24,20 @@ use Bivio::Delegate;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::SimpleTypeError>
+C<Bivio::Delegate::SimpleTypeError> returns default TypeErrors for
+simplest bOP site.
+
+You can extend this delegate with:
+
+    sub get_delegate_info {
+	return [
+	    @{Bivio::Delegate::SimpleTypeError->get_delegate_info()},
+	    ...my TypeErrors...
+	];
+    }
+
+Start your TypeErrors at 501.  Don't worry about dups, because
+L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 
 =over 4
 
