@@ -27,9 +27,7 @@ use Bivio::UI::HTML::Widget;
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Club::ReportDate> provides a single date field for
-selecting a report date. It works with Bivio::Biz::Model::ReportDateForm
-and places a 'report_date' parameter on the request before redirecting
-to the actual report page.
+selecting a report date. It works with Bivio::Biz::Model::ReportDateForm.
 
 =cut
 
@@ -58,7 +56,6 @@ sub new {
 	values => ['&nbsp;']});
     $fields->{form} = Bivio::UI::HTML::Widget::Form->new({
 	form_model => ['Bivio::Biz::Model::ReportDateForm'],
-
 # note: needed a join, or the errors widen the form too much
 	value => Bivio::UI::HTML::Widget::Join->new({
 	    values => [
