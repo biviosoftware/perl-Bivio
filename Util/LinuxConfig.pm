@@ -342,7 +342,7 @@ sub enable_service {
 	next
 	    if ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
 		=~ /^$s\s.*\bon\b/;
-	$res .= _exec($self, "chkconfig --level 2345 $s");
+	$res .= _exec($self, "chkconfig --level 2345 $s on");
 	$res .= _exec($self, "/etc/rc.d/init.d/$s start")
 	    if -x "/etc/rc.d/init.d/$s";
     }
