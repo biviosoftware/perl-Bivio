@@ -100,15 +100,37 @@ sub div {
 =head2 static from_literal(string value) : string
 
 Makes sure is a number.  Does not except scientific notation.
+Allows fractional values like "-7 11/15" or "32/3". Fractional
+values are converted to decimal using the precision returned by
+get_decimals().
 
 =cut
 
 sub from_literal {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     return undef unless defined($value) && $value =~ /\S/;
-    # Get rid of all blanks to be nice to user
-    $value =~ s/\s+//g;
-    return $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
+
+    # check for possible "i n/d" format
+    if ($value =~ /\//) {
+	# parse it and convert to decimal
+	my($sign, $integer, $numerator, $denominator) =
+		$value =~ /^([-+])?(\d+\s)?(\d+)\/(\d+)$/;
+	if (defined($denominator) && $denominator != 0) {
+
+	    $value = $proto->add($integer || 0,
+		    $proto->div($numerator, $denominator));
+
+	    if (defined($sign) && $sign eq '-') {
+		$value = $proto->neg($value);
+	    }
+	    return $value;
+	}
+    }
+    else {
+	# Get rid of all blanks to be nice to user
+	$value =~ s/\s+//g;
+	return $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
+    }
     return (undef, Bivio::TypeError::NUMBER());
 }
 
