@@ -484,7 +484,7 @@ sub parse_uri {
     # Special case: '/' or ''
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
-	$req->put(initial_uri => '/');
+	$req->put_durable(initial_uri => '/');
 	return ($fields->{document_task}, $_GENERAL, '', '/');
     }
 
@@ -499,7 +499,7 @@ sub parse_uri {
     # There is always something in $uri and @uri at this point
     $uri = join('/', @uri);
     my($info);
-    $req->put(initial_uri => '/'.$uri);
+    $req->put_durable(initial_uri => '/'.$uri);
 
     # General realm simple map; no placeholders or path_info.
     if (defined($info = $fields->{from_uri}->{$uri}->[$_GENERAL_INT])) {
