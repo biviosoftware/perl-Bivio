@@ -50,7 +50,6 @@ use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_OFFLINE_PREFIX) = Bivio::Type::RealmName::OFFLINE_PREFIX();
 
 #TODO: this needs to be configurable, maybe a method on RealmType?
 my(%_HOME_TASK_MAP) = (
@@ -162,7 +161,7 @@ sub format_name {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($name) = $model->get($model_prefix.'name');
 
-    if ($name =~ /^$_OFFLINE_PREFIX/o) {
+    if (Bivio::Type::RealmName->is_offline($name)) {
 	if ($name =~ /^=\(/o) {
 	    # show a withdrawn offline name in ()
 	    $name =~ s/^=(\(\w+\))\d+/$1/;
@@ -319,7 +318,8 @@ See L<format_name|"format_name"> for params.
 
 sub is_offline_user {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return $model->get($model_prefix.'name') =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
+    return Bivio::Type::RealmName->is_offline(
+	    $model->get($model_prefix.'name'));
 }
 
 =for html <a name="unauth_load_by_email"></a>
