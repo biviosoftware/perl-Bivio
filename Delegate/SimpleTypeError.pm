@@ -209,6 +209,10 @@ file cannot be empty
 
 operation not allowed for offline user
 
+=item CONFIRM_PASSWORD
+
+password and confirm password fields do not match
+
 =back
 
 =cut
@@ -456,6 +460,11 @@ sub get_delegate_info {
 	44,
 	undef,
 	'operation not allowed for offline user',
+    ],
+    CONFIRM_PASSWORD => [
+	45,
+	undef,
+	'password and confirm password fields do not match',
     ],
 ];
 }
