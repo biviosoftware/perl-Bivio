@@ -64,8 +64,8 @@ sub execute {
     my($emails) = $club->get_outgoing_emails;
     $req->die('NOT_FOUND', 'alls emails marked as invalid')
             unless $emails;
-    $msg->set_recipients($emails);
-    
+    $msg->add_recipients($emails);
+
     my($display_name) = $realm_owner->get('display_name');
     $msg->set_headers_for_list_send($realm_owner->get('name'),
             $display_name, 1, 1);
