@@ -340,6 +340,23 @@ sub get_keys {
     return [@{shift->get_info('column_names')}];
 }
 
+=for html <a name="internal_get_target"></a>
+
+=head2 internal_get_target() : (proto, Bivio::Biz::Model, string)
+
+=head2 static internal_get_target(Bivio::Biz::Model model, string model_prefix) : (proto, Bivio::Biz::Model, string)
+
+Returns the class, target model and optional model prefix. This method is
+used by subclasses when defining a method which can operate on self, or
+on another model target. For an example, see RealmOwner.format_email.
+
+=cut
+
+sub internal_get_target {
+    my($self, $model, $model_prefix) = @_;
+    return (ref($self) || $self, $model || $self, $model_prefix || '');
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
