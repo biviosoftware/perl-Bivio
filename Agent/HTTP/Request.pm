@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
-use Apache::Constants;
-use Bivio::Agent::Request();
-use Bivio::Biz::FindParams();
 $Bivio::Agent::HTTP::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -51,6 +48,10 @@ have default views).
 =cut
 
 #=VARIABLES
+
+#=IMPORTS
+use Apache::Constants;
+use Bivio::Agent::Request;
 
 my($_PACKAGE) = __PACKAGE__;
 
@@ -156,7 +157,7 @@ sub get_http_return_code {
 
 =for html <a name="get_model_args"></a>
 
-=head2 get_model_args() : FindParams
+=head2 get_model_args() : hash
 
 Returns the model finder arguments. Parsed from the 'mf' argument.
 If no arguments are present, then an empty FindParams is returned.
@@ -179,7 +180,7 @@ sub get_model_args {
 	    $map->{$1} = $2;
 	}
     }
-    return Bivio::Biz::FindParams->new($map);
+    return $map;
 }
 
 =for html <a name="get_model_name"></a>
