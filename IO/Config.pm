@@ -149,9 +149,6 @@ sub REQUIRED {
 #=IMPORTS
 # This is the first module to initialize.  Don't import anything that
 # might import other bivio modules.
-# This is here to avoid a bunch of error messages when societas
-# is started in stack_trace_warn.
-use MIME::Parser ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
