@@ -949,6 +949,17 @@ __PACKAGE__->compile([
 	undef,
 	'operation not allowed for shadow user',
     ],
+    AMOUNT_OR_UNITS_INVALID => [
+	134,
+	undef,
+	'units and/or amount must be specified',
+    ],
+    NO_LOT_ADJUSTMENT_SELECTED => [
+	135,
+	undef,
+	'no lot adjustment was entered',
+    ],
+
 ]);
 
 #=PRIVATE METHODS
