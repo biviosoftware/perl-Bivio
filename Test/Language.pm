@@ -107,13 +107,19 @@ sub AUTOLOAD {
     _die($self, "function $func: ", _check_autoload($self, $func))
 	if _check_autoload($self, $func);
     _trace($func, ' called with ', \@args) if $_TRACE;
+    my($td) = $self->unsafe_get('test_deviance');
     return $self->$func(@args)
-	unless $self->unsafe_get('test_deviance');
+	unless $td;
     my($die) = Bivio::Die->catch(sub {
 	return $self->$func(@args);
     });
-    _die($self, 'deviance call failed: ', $func, \@args)
+    _die($self, 'deviance call failed to die: ', $func, \@args)
 	unless $die;
+print STDERR $td, "\n";
+print STDERR $die->as_string, "\n";
+    _die($self, 'deviance call to ', $func, \@args, ' failed with "',
+	$die, '" but did not match pattern: ', $td)
+	unless $die->as_string =~ $td;
     return;
 }
 
@@ -238,15 +244,22 @@ sub test_conformance {
 
 =for html <a name="test_deviance"></a>
 
-=head2 static test_deviance()
+=head2 static test_deviance(string regex)
 
-Sets up test for deviance testing.  Expect all functions to fail.
-See also L<test_conformance|"test_conformance">
+=head2 static test_deviance(regex_ref regex)
+
+Sets up test for deviance testing.  Expect all functions to fail.  If I<regex>
+supplied, expect the exception (L<Bivio::Die|Bivio::Die>)
+to contain I<regex>.  If I<regex> is a
+string, will be compiled with qr/$regex/is.  See also
+L<test_conformance|"test_conformance">
 
 =cut
 
 sub test_deviance {
-    _assert_in_eval('test_setup')->put(test_deviance => 1);
+    my(undef, $regex) = _args(@_);
+    _assert_in_eval('test_setup')->put(test_deviance =>
+	ref($regex) ? $regex : defined($regex) ? qr/$regex/is : qr//);
     return;
 }
 
@@ -288,7 +301,6 @@ sub test_run {
         $script = Bivio::IO::File->read($script_name) unless ref($script);
 	substr($$script, 0, 0) = 'use strict;';
 	my($die) = Bivio::Die->catch($script);
-#TODO: test_deviance is an attribute with a pattern to match against die->as-string.
 	_trace($die) if $_TRACE;
 	return unless $die;
 	$_SELF_IN_EVAL->test_log_output('test_run.err',

@@ -29,12 +29,21 @@ Bivio::Test->unit([
 		    test_setup('T1', 'x3');
 		    test_deviance();
 		    die_now();
+		}, q{
+		    test_setup('T1', 'x4');
+		    test_deviance('DIE: you gravy sucking pig');
+		    die_now();
 		},
 	    ),
 	    [q{
-                test_setup('T1', 'x4');
+                test_setup('T1', 'x5');
                 die_now();
             }] => qr/Bivio::Die/s,
+	    [q{
+                test_setup('T1', 'x6');
+                test_deviance('NO WAY');
+                die_now();
+            }] => qr/Bivio::Die.*not match pattern:.*NO WAY/is,
 	],
     ],
 ]);
