@@ -53,6 +53,10 @@ If true, the table will C<WIDTH> will be C<100%>.
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
 
+=item space : number [0]
+
+The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
+
 =item values : array_ref (required)
 
 An array_ref of rows of array_ref of columns (cells).  A cell may
@@ -76,11 +80,19 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
+=item cell_compact : boolean [false]
+
+If true, the cell will be C<WIDTH=1%>.
+
 =item cell_expand : boolean [false]
 
 If true, the cell will consume any excess columns in its row.
 Excess columns are not the same as C<undef> columns which are
 blank place holders.
+
+=item cell_nowrap : boolean [false]
+
+If true, the cell will not be wrapped.
 
 =item cell_rowspan : number [1]
 
@@ -95,7 +107,6 @@ use Bivio::UI::Align;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_DEFAULT_PAD) = 0;
 
 =head1 FACTORIES
     Bivio::UI::HTML::Widget::Form->new();
@@ -132,11 +143,12 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{rows});
-    my($p) = '<table border=0 cellspacing=0 cellpadding=';
+    my($p) = '<table border=0';
     # We don't want to check parents
     my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
     my($rowspan);
-    $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
+    $p .= ' cellpadding='.$self->get_or_default('pad', 0);
+    $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
     $p .= Bivio::UI::Align->as_html($align) if $align;
     $p .= Bivio::UI::Color->as_html($bg) if $bg;
@@ -170,9 +182,11 @@ sub initialize {
 		    $p .= ' width="100%"' if $expand;
 		    $expand_cols = 1;
 		}
+		$p .= ' width="1%"' if $c->get_or_default('cell_compact', 0);
 		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
 		$p .= " rowspan=$rowspan" if $rowspan;
+		$p .= ' nowrap' if $c->get_or_default('cell_nowrap', 0);
 	    }
 	    elsif (!defined($c)) {
 		$c = '';
