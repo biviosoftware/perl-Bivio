@@ -2053,6 +2053,33 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_realm_invite_wrong_user
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE
+        209
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/investment-performance
+        Bivio::Biz::Model::InactiveForm->execute_active_only
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::InstrumentPerformanceList->execute_load_all
+        Bivio::UI::HTML::Club::InstrumentPerformanceReport
+        next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
+        210
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/investment-performance-detail
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::InstrumentPerformanceDetailList->execute_load_all
+        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
+        Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
+        next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
+    )],
 );
 
 __PACKAGE__->compile(
