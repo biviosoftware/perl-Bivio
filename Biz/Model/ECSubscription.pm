@@ -56,7 +56,7 @@ sub internal_initialize {
             ec_subscription_id => ['PrimaryId', 'PRIMARY_KEY'],
             realm_id => ['PrimaryId', 'NOT_NULL'],
             subscription_type => ['ECSubscription', 'NOT_ZERO_ENUM'],
-            start_date_time => ['DateTime', 'NOT_NULL'],
+            start_date => ['Date', 'NOT_NULL'],
             end_date => ['Date', 'NOT_NULL'],
             renewal_method => ['ECRenewalMethod', 'NOT_ZERO_ENUM'],
             renewal_period => ['DateInterval', 'NOT_NULL'],
