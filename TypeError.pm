@@ -75,15 +75,15 @@ __PACKAGE__->compile(
 	undef,
 	'expecting a number',
     ],
-    DATE_RANGE => [
+    YEAR_RANGE => [
 	8,
 	undef,
-	'date outside of valid range (1970 to 2038)',
+	'year outside of valid range (1800 to 2199)',
     ],
-    TIME_RANGE => [
+    EXISTS => [
 	9,
 	undef,
-	'date outside of valid range (years 1970 to 2037)',
+	'name already exists',
     ],
     MONTH => [
 	10,
@@ -136,11 +136,6 @@ __PACKAGE__->compile(
 	'invalid name syntax; must begin with a letter,'
 	. ' contain letters, numbers, and underscores,'
 	. ' and be at least three characters',
-    ],
-    EXISTS => [
-	20,
-	undef,
-	'name already exists',
     ],
 );
 

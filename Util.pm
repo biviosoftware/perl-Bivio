@@ -190,6 +190,30 @@ sub my_require {
     }
 }
 
+sub bsearch_numeric {
+    my($key, $array) = @_;
+    my($upper) = $#$array;
+    my($lower) = 0;
+    my($middle);
+    my($i);
+    while ($lower <= $upper) {
+	my($cmp) = $array->[$middle = int(($lower+$upper)/2)]
+		<=> $key;
+	if ($cmp > 0) {
+	    $upper = $middle - 1;
+	}
+	elsif ($cmp < 0) {
+	    $lower = $middle + 1;
+	}
+	else {
+	    # Return success and exact match
+	    return (1, $middle);
+	}
+    }
+    # Return failure and "neighbor" match
+    return (0, $middle);
+}
+
 1;
 __END__
 
