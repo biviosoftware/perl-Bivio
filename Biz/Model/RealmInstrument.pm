@@ -122,6 +122,26 @@ sub get_name {
 	    : $self->get('name');
 }
 
+=for html <a name="get_shares_owned"></a>
+
+=head2 get_shares_owned(string date) : string
+
+=head2 get_shares_owned(string date, boolean refresh) : string
+
+Returns the number of shares owned on the specified date.
+If refresh is specified and is true, then the cached value won't
+be used and the query will be made again.
+
+=cut
+
+sub get_shares_owned {
+    my($self, $date, $refresh) = @_;
+    my($realm) = $self->get_request->get('auth_realm')->get('owner');
+    $realm->clear_instrument_cache if $refresh;
+    return $realm->get_number_of_shares($date)
+		->{$self->get('realm_instrument_id')} || 0;
+}
+
 =for html <a name="get_ticker_symbol"></a>
 
 =head2 get_ticker_symbol() : string
