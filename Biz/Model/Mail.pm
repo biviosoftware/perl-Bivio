@@ -110,7 +110,7 @@ sub connect_to_thread {
         if (defined($row)) {
             _trace('msgid=', $mail_id, ', found parent via Message-Id=',
                     $in_reply_to) if $_TRACE;
-            _connect_to_parent($self, @$row);
+            _connect_to_parent($self, $msg, @$row);
             $found_parent = 1;
             last;
         }
@@ -129,7 +129,7 @@ sub connect_to_thread {
         my($row) = $sth->fetchrow_arrayref;
         if (defined($row)) {
             _trace('msgid=', $mail_id, ', found parent via subject') if $_TRACE;
-           _connect_to_parent($self, @$row);
+           _connect_to_parent($self, $msg, @$row);
             $found_parent = 1;
         } else {
             $self->update({thread_root_id => $mail_id});
@@ -478,15 +478,34 @@ EOF
 
 #=PRIVATE METHODS
 
-# _connect_to_parent(string parent_id, string root_id)
+# _connect_to_parent(Bivio::Mail::Message msg, string parent_id, string root_id)
 #
-# Use first row returned by I<sth> as the parent message and
-# update I<values> to link to it. Also mark the parent as a "thread root"
-# in case it does neither have a thread_root_id nor a thread_parent_id.
+# Connect the current message to a parent and a root message.
+# Adjust number of replies for all messages in this thread line.
+# Compare message author and body with that of the parent to
+# catch mail loops.
 #
 sub _connect_to_parent {
-    my($self, $parent_id, $root_id) = @_;
+    my($self, $msg, $parent_id, $root_id) = @_;
     _trace('Connecting to parent msg, id=', $parent_id) if $_TRACE;
+    my($req) = $self->get_request;
+    my($parent) = Bivio::Biz::Model::Mail->new($req)
+            ->load({mail_id => $parent_id});
+    if ($parent->get('from_email') eq $self->get('from_email')) {
+        # Same author, compare message body
+        my($file) = Bivio::Biz::Model::File->new($req)
+                ->load({
+                    file_id => $parent->get('rfc822_file_id'),
+                    volume => $_MAIL_VOLUME,
+                });
+        my($parent_msg) = Bivio::Mail::Message->new($file->get('content'));
+        if ($msg->get_body->as_string eq $parent_msg->get_body->as_string) {
+            # Very likely a mail loop
+            Bivio::IO::Alert->warn('Mail msg ', $self->get('mail_id'),
+                    ' identical to parent, handle to avoid loop');
+            $req->put('mail_in_loop', 1);
+        }
+    }
     $self->update({
         thread_parent_id => $parent_id,
         thread_root_id => $root_id,
