@@ -362,7 +362,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investment/detail
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -430,6 +430,28 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_BUY
+        49
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/buy
+        Bivio::Biz::Model::InstrumentBuyForm
+        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::UI::HTML::Club::InstrumentBuy
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_SELL
+        50
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/sell
+        Bivio::Biz::Model::InstrumentSellForm
+        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::UI::HTML::Club::InstrumentSell
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
 );
 
