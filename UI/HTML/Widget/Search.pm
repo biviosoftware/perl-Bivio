@@ -100,7 +100,7 @@ sub render {
     my($bp, $bs) = Bivio::UI::Font->format_html('form_submit', $req);
     # search list might not be loaded
 #TODO: Make this more general so can be using any search list
-    my($list) = $req->unsafe_get('Bivio::Biz::Model::SearchList');
+    my($list) = $req->unsafe_get('Model.SearchList');
     $$buffer .= '<form method=get action="'
 	    .$req->format_stateless_uri(
 		    $self->ancestral_get('search_use_this_task', 0)
