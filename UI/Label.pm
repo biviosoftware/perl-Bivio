@@ -176,28 +176,28 @@ _compile(
     BASIS_AFTER_WITHDRAWAL => ["Member's Basis After Withdrawal"],
     RETURN_SINCE => ['Return Since'],
 
-    # Accounting Reports (Tasks)
-    CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
-    # Not really a report, but on the report page
-    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST => [
-	'Member Withdrawal Summary'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
-	'Member Tax Allocation Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Member Report'],
+    # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
-    CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
+    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
+	'Income and Expense Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
 	'Investment Performance Report'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL => [
 	'Investment Performance Detail Report'],
-    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
-	'Income and Expense Report'],
-    CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Capital Gains and Losses Report'],
-    CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => ['Miscellaneous Income and Deductions Report'],
-    CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL => [
-	'Investment Performance Detail Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => [
+	'Capital Gains and Losses Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
+	'Member Tax Allocation Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Member Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
+    # Not really a report, but on the report page
+    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST => [
+	'Member Withdrawal Summary'],
+    CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => [
+	'Miscellaneous Income and Deductions Report'],
+    CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
