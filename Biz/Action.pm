@@ -11,7 +11,7 @@ Bivio::Biz::Action - An abstract model action.
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Biz::Action::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Biz::Action::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -35,6 +35,27 @@ request.  A "main" action may call subordinate actions.
 =cut
 
 #=VARIABLES
+my(%_CLASS_TO_SINGLETON);
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::Biz::Action
+
+Returns the singleton for this class.
+
+=cut
+
+sub get_instance {
+    my($proto) = @_;
+    my($class) = ref($proto) || $proto;
+    $_CLASS_TO_SINGLETON{$class} = $proto->new
+	    unless $_CLASS_TO_SINGLETON{$class};
+    return $_CLASS_TO_SINGLETON{$class};
+}
 
 =head1 METHODS
 
