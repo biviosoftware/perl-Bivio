@@ -513,7 +513,7 @@ _compile(\%_MAP, [
 	'' => 'Club Site',
 	help_topic => 'Club Home Page',
     ],
-    CLUB_ADMIN_SHADOW_MEMBER_INVITE => 'Bring Members Online',
+    CLUB_ADMIN_OFFLINE_MEMBER_INVITE => 'Bring Members Online',
     CLUB_LEGACY_SECURITY_RECONCILIATION => 'Identify Listed Investments',
     CLUB_LEGACY_UPLOAD => [
 	'' => 'Import NAIC Club Accounting(tm)',

@@ -3,6 +3,7 @@
 package Bivio::Type::RealmName;
 use strict;
 $Bivio::Type::RealmName::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::RealmName::VERSION;
 
 =head1 NAME
 
@@ -89,17 +90,17 @@ sub DEMO_CLUB_SUFFIX {
     return '_'.DEMO_CLUB();
 }
 
-=for html <a name="SHADOW_PREFIX"></a>
+=for html <a name="OFFLINE_PREFIX"></a>
 
-=head2 SHADOW_PREFIX : string
+=head2 OFFLINE_PREFIX : string
 
-Returns prefix character for shadow names.
+Returns prefix character for offline names.
 
 #TODO: Make a config param
 
 =cut
 
-sub SHADOW_PREFIX {
+sub OFFLINE_PREFIX {
     return '=';
 }
 
@@ -138,7 +139,7 @@ use Bivio::TypeError;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_DEMO_CLUB_SUFFIX) = DEMO_CLUB_SUFFIX();
-my($_SHADOW_PREFIX) = SHADOW_PREFIX();
+my($_OFFLINE_PREFIX) = OFFLINE_PREFIX();
 my(%_RESERVED) = map {($_, 1)} qw(
     abuse
     adm
@@ -248,17 +249,17 @@ sub from_literal {
     return $value;
 }
 
-=for html <a name="is_shadow"></a>
+=for html <a name="is_offline"></a>
 
-=head2 is_shadow(string value) : boolean
+=head2 is_offline(string value) : boolean
 
-Returns true if the RealmName is a shadow name.
+Returns true if the RealmName is a offline name.
 
 =cut
 
-sub is_shadow {
+sub is_offline {
     my(undef, $value) = @_;
-    return defined($value) && $value =~ /^$_SHADOW_PREFIX/o ? 1 : 0;
+    return defined($value) && $value =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
 }
 
 =for html <a name="to_xml"></a>
@@ -267,14 +268,14 @@ sub is_shadow {
 
 Returns I<name> formatted properly for XML.
 
-HACK: if I<value> L<is_shadow|"is_shadow">, it rendered as the empty string.
+HACK: if I<value> L<is_offline|"is_offline">, it rendered as the empty string.
 This is assumed by L<Bivio::UI::XML::ClubExport|Bivio::UI::XML::ClubExport>.
 
 =cut
 
 sub to_xml {
     my($proto, $value) = @_;
-    return '' unless defined($value) && !$proto->is_shadow($value);
+    return '' unless defined($value) && !$proto->is_offline($value);
     return Bivio::HTML->escape($value);
 }
 
