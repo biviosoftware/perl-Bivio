@@ -417,16 +417,17 @@ sub equals_by_name {
 
 =for html <a name="execute"></a>
 
-=head2 execute(Bivio::Agent::Request req) : boolean
+=head2 execute(Bivio::Agent::Request req, boolean put_durable) : boolean
 
 Put I<self> on the request as its class.
 
 =cut
 
 sub execute {
-    my($self, $req) = @_;
+    my($self, $req, $put_durable) = @_;
     Bivio::IO::Alert->bootstrap_die('not a reference') unless ref($self);
-    $req->put(
+    my($method) = $put_durable ? 'put_durable' : 'put';
+    $req->$method(
 	ref($self) => $self,
 	'Type.'.$self->simple_package_name => $self,
     );

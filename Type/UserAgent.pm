@@ -107,12 +107,12 @@ sub put_on_request {
     my($proto, $ua, $req) = @_;
     # MSIE 5+ is the only modern browser.
 #TODO: Test with Netscape 6
-    my($self) = $ua =~ /\bMSIE (\d+)/ && $1 >= 5 ? $proto->BROWSER
+    my($self) = ref($ua) ?
+	UNIVERSAL::isa($ua, __PACKAGE__) ? $ua
+	: Bivio::Die->die($ua, ': invalid argument')
+	: $ua =~ /\bMSIE (\d+)/ && $1 >= 5 ? $proto->BROWSER
 	: $ua =~ /b-sendmail/i ? $proto->MAIL : $proto->BROWSER_HTML3;
-    $req->put_durable(
-	ref($self) => $self,
-	'Type.'.$self->simple_package_name => $self,
-    );
+    $self->execute($req, 1);
     return;
 }
 
