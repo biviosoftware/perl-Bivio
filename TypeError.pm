@@ -865,6 +865,11 @@ __PACKAGE__->compile([
 	undef,
 	"the selected account doesn't support deductible expenses",
     ],
+    DUPLICATE_ACCOUNT_NAME => [
+	117,
+	undef,
+	"an account already exists with that name",
+    ],
 ]);
 
 #=PRIVATE METHODS
