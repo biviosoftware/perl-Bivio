@@ -107,7 +107,7 @@ sub get_action_links {
 	    .'@'.$req->get('host'));
 
     # set the mailto subject on the reply
-    my($message) = $list->get_selected_message();
+    my($message) = $list->get_selected_item();
     if ($message) {
 	my($url) = 'mailto:'.$req->get('club')->get('name')
 		.'@'.$req->get('host').'?subject=';
@@ -154,7 +154,11 @@ presentation when rendering.
 sub get_nav_links {
     my($self, $model, $req) = @_;
 
-    my($prev) = $model->get_prev_message_id();
+    my($selected_index) = $model->get_selected_index();
+
+    my($prev) = $selected_index != -1
+	    ? $model->get_finder_at($selected_index - 1)
+	    : undef;
     if ($prev) {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_ICON());
 	$_PREV_LINK->set_description('Previous message');
@@ -166,7 +170,9 @@ sub get_nav_links {
 	$_PREV_LINK->set_url('');
     }
 
-    my($next) = $model->get_next_message_id();
+    my($next) = $selected_index != -1
+	    ? $model->get_finder_at($selected_index + 1)
+	    : undef;
     if ($next) {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_ICON());
 	$_NEXT_LINK->set_description('Next message');
@@ -206,7 +212,7 @@ sub render {
 
 #TODO: need to render from_name, date etc.
 
-    my($message) = $list->get_selected_message();
+    my($message) = $list->get_selected_item();
     if ($message) {
 	$req->get_reply()->print('<pre>'.${$message->get_body()}.'</pre>');
     }
