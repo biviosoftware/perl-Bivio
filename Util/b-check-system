@@ -36,9 +36,7 @@ while ($arg = shift) {
 check_diskuse();
 check_raid();
 verify_pkgs();
-# Can't check mail queue easily as the cron job always
-# has a pending request...
-# check_mailq();
+check_mailq();
 check_messages() && print_report();
 exit(0);
 
@@ -286,7 +284,7 @@ sub check_raid {
 sub check_mailq {
     # Just send pending queue for now, will filter once we know better
     my(@q) = `mailq -v| grep -v 'Mail queue is empty'`;
-    @q && print "PENDING MAIL QUEUE:\n@q";
+    print "PENDING MAIL QUEUE:\n@q" if scalar(@q) > 1;
 }
 
 sub verify_pkgs {
