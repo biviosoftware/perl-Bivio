@@ -45,43 +45,24 @@ Permissions which end in "_TRANSIENT" are not stored in the database.
 #=IMPORTS
 
 #=VARIABLES
-__PACKAGE__->compile([
-    # DO NOT CHANGE the numbers in this list, the values are
-    # stored in the database.
-    UNKNOWN => [0],
-    DEBUG_ACTION => [1],
-    ACCOUNTING_READ => [2],
-    ACCOUNTING_WRITE => [3],
-    MAIL_READ => [4],
-    MAIL_WRITE => [5],
-    NOT_IN_USE_1 => [6],
-    MOTION_READ => [7],
-    MOTION_WRITE => [8],
-    MEMBER_READ => [9],
-    MEMBER_WRITE => [10],
-    ADMIN_READ => [11],
-    ADMIN_WRITE => [12],
-    DOCUMENT_READ => [13],
-    LOGIN => [14],
-    MAIL_RECEIVE => [15],
-    DOCUMENT_WRITE => [16],
-    ANY_USER => [17],
-    MAIL_ADMIN => [18],
-    MAIL_FORWARD => [19],
-    ANY_REALM_USER => [20],
-    REALM_PUBLICIZE => [21],
-    FILE_ADMIN => [22],
-    ACCOUNT_READ => [23],
-    INVESTMENT_READ => [24],
-    PRO_FUND_INVESTOR => [25],
-    PRO_FUND_MANAGER => [26],
-    SUPER_USER_TRANSIENT => [27],
-    MAIL_POST => [28],
-]);
+__PACKAGE__->compile(
+	Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : false
+
+Task Ids aren't continuous.  Tasks can go away.
+
+=cut
+
+sub is_continuous {
+    return 0;
+}
 
 #=PRIVATE METHODS
 
