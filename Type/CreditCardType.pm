@@ -84,9 +84,8 @@ sub get_by_number {
             if ($len == 13 || $len == 16) && $number =~ /^4/;
     return Bivio::Type::CreditCardType::MASTERCARD()
             if $len == 16 && $number =~ /^5[1-5]/;
-#TODO: Waiting on Wells Fargo
-#    return Bivio::Type::CreditCardType::AMEX()
-#            if $len == 15 && $number =~ /^3[47]/;
+    return Bivio::Type::CreditCardType::AMEX()
+            if $len == 15 && $number =~ /^3[47]/;
     return Bivio::Type::CreditCardType::UNKNOWN();
 }
 
