@@ -77,14 +77,6 @@ sub execute_input {
     my($req) = $self->get_request;
     $properties->{'RealmInvite.realm_id'} = $req->get('auth_id')
 	    unless defined($properties->{'RealmInvite.realm_id'});
-    # Shouldn't load.  If it does, then already invited.
-#TODO: Make this work.  It needs to load email explicitly
-    my($invite) = $self->get_model('RealmInvite');
-    if ($invite->get('realm_id')) {
-	$self->internal_put_error('RealmInvite.email',
-		Bivio::TypeError::ALREADY_INVITED());
-	return;
-    }
     my($values) = $self->get_model_properties('RealmInvite');
     # This transfer is necessary, because the types don't agree.
     # We are using a string in the DB, but a enum (for convenience) in UI
@@ -125,6 +117,27 @@ sub internal_initialize {
 	    'RealmInvite.email',
 	],
     };
+}
+
+=for html <a name="validate"></a>
+
+=head2 validate()
+
+Make sure user isn't already invited.
+
+=cut
+
+sub validate {
+    my($self) = @_;
+    my($properties) = $self->internal_get;
+    my($req) = $self->get_request;
+    my($realm_id) = $req->get('auth_id');
+    $self->internal_put_error('RealmInvite.email',
+	    Bivio::TypeError::ALREADY_INVITED())
+	    if defined($properties->{'RealmInvite.email'})
+		    && Bivio::Biz::Model::RealmInvite->new($req)->unsafe_load(
+			    email => $properties->{'RealmInvite.email'});
+    return;
 }
 
 #=PRIVATE METHODS
