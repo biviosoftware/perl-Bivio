@@ -13,6 +13,11 @@ Bivio::Test->unit([
 	    [3, ['a', 'b', 'c', 'd']] => Bivio::DieCode->DIE,
 	],
 	lock_action => [
+	    [sub {
+		 -d '/tmp/Bivio.Test.__ANON__.lockdir'
+		     or die('wrong default name'),
+	    }] => 1,
+	    [sub {return}] => 1,
 	    [sub {return}, 'Bivio::ShellUtil::t::ShellUtil'] => 1,
 	    [sub {die('bad')}, 'Bivio::ShellUtil::t::ShellUtil']
 	        => Bivio::DieCode->DIE,
