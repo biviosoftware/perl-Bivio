@@ -290,10 +290,12 @@ sub render {
 sub _enum_sort {
     my($self) = @_;
     my($enum_sort) = $self->get_or_default('enum_sort', 'get_name');
-    return $enum_sort if ref($enum_sort) eq 'CODE';
+    return $enum_sort
+	if ref($enum_sort) eq 'CODE';
     Bivio::Die->die($enum_sort, ': enum_sort method not implemented by Enum')
-		unless Bivio::Type::Enum->can($enum_sort);
-    return \&_enum_sort_by_int if $enum_sort eq 'as_int';
+	unless Bivio::Type::Enum->can($enum_sort);
+    return \&_enum_sort_by_int
+	if $enum_sort eq 'as_int';
     # Create a sub which will do the comparisons using $enum_sort method.
     return eval(<<"EOF") || die($@);
 	sub {
@@ -326,19 +328,19 @@ sub _load_items {
     my($self, $choices) = @_;
     # Most common dynamic case is first
     return _load_items_from_list($self, $choices)
-	    if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
+	if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
     return _load_items_from_enum($self, $choices)
-	    if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
+	if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
     if (UNIVERSAL::isa($choices, 'Bivio::TypeValue')) {
 	my($t) = $choices->get('type');
 	return _load_items_from_enum_set($self, $choices)
-		if $t->isa('Bivio::Type::EnumSet');
-	return _load_items_from_integer_array($self, $choices)
-		if $t->isa('Bivio::Type::Integer')
-			&& ref($choices->get('value')) eq 'ARRAY';
-	return _load_items_from_string_array($self, $choices)
-		if $t->isa('Bivio::Type::String')
-			&& ref($choices->get('value')) eq 'ARRAY';
+	    if $t->isa('Bivio::Type::EnumSet');
+	if (ref($choices->get('value')) eq 'ARRAY') {
+	    return _load_items_from_integer_array($self, $choices)
+		if $t->isa('Bivio::Type::Integer');
+	    return _load_items_from_string_array($self, $choices)
+		if $t->isa('Bivio::Type::String');
+        }
     }
     Bivio::Die->throw_die('DIE', {
 	message => 'unknown choices type',
@@ -369,7 +371,7 @@ sub _load_items_from_enum_list {
     my($fields) = $self->[$_IDI];
 
     my(@values) = sort {
-	&{$fields->{enum_sort}}($a, $b);
+	$fields->{enum_sort}->($a, $b);
     } @$list;
 
     shift(@values) unless $self->get_or_default('show_unknown', 1);

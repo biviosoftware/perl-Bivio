@@ -100,10 +100,9 @@ Returns the delegate for the specified class.
 
 sub delegate_require {
     my($proto, $class) = @_;
-    my($module) = $_DELEGATES->{$class};
-    Bivio::IO::Alert->bootstrap_die('no delegate found for ', $class) unless $module;
-    $proto->simple_require($module);
-    return $module;
+    return $proto->simple_require(
+	$_DELEGATES->{$class}
+	|| Bivio::IO::Alert->bootstrap_die('no delegate found for ', $class));
 }
 
 =for html <a name="delegate_require_info"></a>

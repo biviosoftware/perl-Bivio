@@ -30,14 +30,12 @@ must have an entry in ClassLoader.delegates.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
-my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$AUTOLOAD');
+my($_IDI) = __PACKAGE__->instance_data_index;
+my($_MAP) = {};
 
 =head1 FACTORIES
 
@@ -53,9 +51,9 @@ Creates a new instance of the delegator and the delegate.
 
 sub new {
     my($proto, @args) = @_;
-    my($self) = Bivio::UNIVERSAL::new($proto);
+    my($self) = $proto->SUPER::new($proto);
     $self->[$_IDI] = {
-	delegate => _get_delegate_class($proto)->new(@args),
+	delegate => _map(ref($self))->new(@args),
     };
     return $self;
 }
@@ -74,31 +72,23 @@ subclass doesn't implement the method.
 =cut
 
 sub AUTOLOAD {
-    my($proto, @args) = @_;
-    # magic variable, created by perl
+    my($proto) = shift;
     my($method) = $AUTOLOAD =~ /([^:]+)$/;
-    # don't forward destructors, it will be handled by perl
     return if $method eq 'DESTROY';
-
-    _trace((ref($proto) ? 'self' : 'proto'), '->',
-	    $method, '(', join(', ', @args), ')') if $_TRACE;
-
-    if (ref($proto)) {
-	my($fields) = $proto->[$_IDI];
-	return $fields->{delegate}->$method(@args);
-    }
-    return _get_delegate_class($proto)->$method(@args);
+    return (ref($proto) ? $proto->[$_IDI]->{delegate} : _map($proto))
+	->$method(@_);
 }
 
 #=PRIVATE METHODS
 
-# _get_delegate_class() : string
+# _map(proto) : string
 #
 # Returns the delegate class for the current class/instance.
 #
-sub _get_delegate_class {
+sub _map {
     my($proto) = @_;
-    return Bivio::IO::ClassLoader->delegate_require(ref($proto) || $proto);
+    return $_MAP->{$proto}
+	||= Bivio::IO::ClassLoader->delegate_require($proto);
 }
 
 =head1 COPYRIGHT
