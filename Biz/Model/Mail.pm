@@ -195,7 +195,6 @@ sub create {
         num_replies => 0,
         bytes => 0,
     };
-    # Provide mail_id if it was passed on
     $values->{mail_id} = $mail_id if defined($mail_id);
 
     $self->SUPER::create($values);
@@ -265,11 +264,10 @@ sub delete {
         Bivio::SQL::Connection->execute('
                 UPDATE mail_t
                 SET num_replies = (num_replies - 1)
-                WHERE mail_id IN (SELECT mail_id FROM mail_t
-                START WITH realm_id = ?
-                    AND mail_id = ?
-                CONNECT BY realm_id = ?
-                    AND mail_id = PRIOR thread_parent_id)',
+                WHERE mail_id IN (
+                    SELECT mail_id FROM mail_t
+                    START WITH realm_id = ? AND mail_id = ?
+                    CONNECT BY PRIOR thread_parent_id)',
                 [$realm_id, $properties->{thread_parent_id}, $realm_id]);
     }
     else {
@@ -472,9 +470,7 @@ sub set_is_public {
             START WITH realm_id = ?
                 AND file_id = ?
                 AND volume = ?
-            CONNECT BY realm_id = ?
-                AND PRIOR file_id = directory_id
-                AND volume = ?)
+            CONNECT BY PRIOR file_id = directory_id)
 EOF
                 [$is_public, $realm_id, $cache_file_id, $fv,
                     $realm_id, $fv]);
@@ -482,6 +478,56 @@ EOF
 }
 
 #=PRIVATE METHODS
+
+# _connect_to_parent(string parent_id, string root_id)
+#
+# Use first row returned by I<sth> as the parent message and
+# update I<values> to link to it. Also mark the parent as a "thread root"
+# in case it does neither have a thread_root_id nor a thread_parent_id.
+#
+sub _connect_to_parent {
+    my($self, $parent_id, $root_id) = @_;
+    _trace('Connecting to parent msg, id=', $parent_id) if $_TRACE;
+    $self->update({
+        thread_parent_id => $parent_id,
+        thread_root_id => $root_id,
+    });
+    my($realm_id) = $self->get('realm_id');
+    my($sth) = Bivio::SQL::Connection->execute('
+            UPDATE mail_t
+            SET num_replies = (num_replies + 1)
+            WHERE mail_id IN (
+                SELECT mail_id FROM mail_t
+                START WITH realm_id = ? AND mail_id = ?
+                CONNECT BY PRIOR thread_parent_id = mail_id)',
+            [$realm_id, $parent_id, $realm_id]);
+    return;
+}
+
+# _sortable_subject(string subject, string realm_name) : string
+#
+# Returns a stripped, lowercase version of the subject line for
+# storing in the "subject_sort" field which is used by the database
+# to sort subjects. Must ensure to not return an empty string.
+#
+sub _sortable_subject {
+    my($subject, $realm_name) = @_;
+
+    if (defined($subject)) {
+        chomp($subject);
+        # Strip the name prefix out of the message, but leave the "Re:"
+        $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
+        $subject = substr($subject, 0, $_MAX_WIDTH);
+    }
+    $subject = '(no subject)' unless defined($subject) && length($subject);
+
+    my($sortable) = lc($subject);
+    $sortable =~ s/^\s*re:\s*//;
+    $sortable =~ s/\s+//g;
+    # Handle case of empty subject
+    $sortable = '.' unless length($sortable);
+    return ($subject, $sortable);
+}
 
 # _strip_non_mime(string header) : string
 #
@@ -576,57 +622,6 @@ sub _walk_attachment_tree {
         });
     }
     return $file->get('file_id');
-}
-
-# _connect_to_parent(string parent_id, string root_id)
-#
-# Use first row returned by I<sth> as the parent message and
-# update I<values> to link to it. Also mark the parent as a "thread root"
-# in case it does neither have a thread_root_id nor a thread_parent_id.
-#
-sub _connect_to_parent {
-    my($self, $parent_id, $root_id) = @_;
-    _trace('Connecting to parent msg, id=', $parent_id) if $_TRACE;
-    $self->update({
-        thread_parent_id => $parent_id,
-        thread_root_id => $root_id,
-    });
-    my($realm_id) = $self->get('realm_id');
-    my($sth) = Bivio::SQL::Connection->execute('
-            UPDATE mail_t
-            SET num_replies = (num_replies + 1)
-            WHERE mail_id IN (SELECT mail_id FROM mail_t
-            START WITH realm_id = ?
-                AND mail_id = ?
-            CONNECT BY realm_id = ?
-                AND PRIOR thread_parent_id = mail_id)',
-            [$realm_id, $parent_id, $realm_id]);
-    return;
-}
-
-# _sortable_subject(string subject, string realm_name) : string
-#
-# Returns a stripped, lowercase version of the subject line for
-# storing in the "subject_sort" field which is used by the database
-# to sort subjects. Must ensure to not return an empty string.
-#
-sub _sortable_subject {
-    my($subject, $realm_name) = @_;
-
-    if (defined($subject)) {
-        chomp($subject);
-        # Strip the name prefix out of the message, but leave the "Re:"
-        $subject =~ s/^\s*((?:re:)?\s*)$realm_name:\s*/$1/i;
-        $subject = substr($subject, 0, $_MAX_WIDTH);
-    }
-    $subject = '(no subject)' unless defined($subject) && length($subject);
-
-    my($sortable) = lc($subject);
-    $sortable =~ s/^\s*re:\s*//;
-    $sortable =~ s/\s+//g;
-    # Handle case of empty subject
-    $sortable = '.' unless length($sortable);
-    return ($subject, $sortable);
 }
 
 =head1 COPYRIGHT
