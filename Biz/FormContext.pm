@@ -180,6 +180,8 @@ sub from_literal {
 
 	$which = $_CHAR_TO_KEY{$which};
 	$c->{$which} = Bivio::MIME::Base64->http_decode($enc);
+	return _parse_error($model, $item, $which, 'http_decode error')
+		unless defined($c->{$which});
     }
 
     # Parse the decoded fields and validate. unwind_task must be checked first,

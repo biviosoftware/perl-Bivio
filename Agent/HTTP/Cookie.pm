@@ -606,10 +606,14 @@ sub _parse {
 	    next;
 	}
 
-#TODO: Remove 10/1/00: There is a new Bivio::MIME::Base64 encoding which
-#      doesn't include + and /, both of which are bad for query strings.
-	$fields->{MODIFIED_FIELD()} = 1 if $v =~ /[\/+]/;
-	my($s) = $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($v));
+	my($s) = Bivio::MIME::Base64->http_decode($v);
+	unless (defined($s)) {
+	    # Error decoding.  Warning already output by Base64.
+	    _trace('bad http_decode') if $_TRACE;
+	    $bad = 1;
+	    next;
+	}
+	$s = $_CIPHER->decrypt($s);
 
 	my(@v) = split(/$_SEP/o, $s);
 	_trace('data=', \@v) if $_TRACE;
