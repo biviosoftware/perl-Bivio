@@ -46,6 +46,7 @@ upcalled with their configuration.
 
 =cut
 
+#=IMPORTS
 # Do not use explicitly, to ensure this module initialized first
 # use Bivio::IO::Alert;
 
@@ -106,22 +107,23 @@ sub initialize {
 	    $_DATA = $arg;
 	}
 	else {
-	    -r $arg || die("$arg: not readable file\nusage: $0 config.pl");
+	    -r $arg || Bivio::IO::Alert->die(
+		    "$arg: not readable file\nusage: $0 config.pl");
 	    $file = $arg;
 	}
     }
     # If we are setuid or setgid, then don't initialize from environment
     # variables.
     elsif ($< == $> && $( == $) && defined($ENV{BIVIO_CONFIG})) {
-	-r $ENV{BIVIO_CONFIG}
-		|| die("\$BIVIO_CONFIG environment variable invalid\n");
+	-r $ENV{BIVIO_CONFIG} || Bivio::IO::Alert->die(
+		"\$BIVIO_CONFIG environment variable invalid\n");
 	$file = $ENV{BIVIO_CONFIG};
     }
     if (defined($file)) {
 	my($data) = do $file;
-	ref($data) eq 'HASH'
-		|| die("$file: config parse failed: ", $@ ? $@
-			: "empty or not a hash_ref");
+	ref($data) eq 'HASH' || Bivio::IO::Alert->die(
+		"$file: config parse failed: ",
+		$@ ? $@ : "empty or not a hash_ref");
 	$_DATA = $data;
     }
     # Call registrants in FIFO
@@ -148,7 +150,8 @@ arguments, the class and the configuration as a hash.
 sub register {
     my($proto) = @_;
     my($pkg) = caller;
-    defined(&{$pkg . '::configure'}) || die("&$pkg\::configure not defined");
+    defined(&{$pkg . '::configure'}) || Bivio::IO::Alert->die(
+	    "&$pkg\::configure not defined");
     push(@_REGISTERED, $pkg);
     $_INITIALIZED && &_configure($pkg);
     return;

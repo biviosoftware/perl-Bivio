@@ -52,7 +52,7 @@ Bivio::IO::Config->register();
 
 =for html <a name="configure"></a>
 
-=head2 configure(string class, hash cfg)
+=head2 static configure(string class, hash cfg)
 
 =over 4
 

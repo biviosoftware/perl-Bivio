@@ -44,9 +44,10 @@ L<filter|"filter">  will be treated as always true.
 
 =cut
 
-use Carp ();
+#=IMPORTS
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
+use Carp ();
 
 #=VARIABLES
 
@@ -71,7 +72,7 @@ Bivio::IO::Config->register(\&_configure);
 
 =for html <a name="configure"></a>
 
-=head2 configure(hash cfg)
+=head2 static configure(hash cfg)
 
 =over 4
 
@@ -357,7 +358,7 @@ sub _define_pkg_symbols {
 	        # caller(1) can return an empty array, hence '|| undef'
 		. '((caller), (caller(1))[$[+3] || undef, \@_)';
     }
-    eval <<"EOF" || die("internal inconsistency: $@");
+    eval <<"EOF" || Bivio::IO::Alert->die("internal inconsistency: $@");
         package $pkg;
         use Bivio::IO::Trace;
         use strict;
