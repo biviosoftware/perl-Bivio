@@ -12,9 +12,9 @@ view_put(
 
 	Form('UserLoginForm', Grid([
 	    [
-		vs_form_field('LoginForm.RealmOwner.name'),
+		vs_form_field('UserLoginForm.RealmOwner.name'),
 	    ], [
-		vs_form_field('LoginForm.RealmOwner.password'),
+		vs_form_field('UserLoginForm.RealmOwner.password'),
 	    ], [
 		vs_space(),
 		ImageFormButton({
