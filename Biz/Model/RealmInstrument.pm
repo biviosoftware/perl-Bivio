@@ -65,6 +65,13 @@ sub create {
     $values->{average_cost_method} = 0
 	    unless exists($values->{average_cost_method});
     $values->{drp_plan} = 0 unless exists($values->{drp_plan});
+
+    # don't allow club-local fields if refers to an instrument
+    die("contains club-local field and an instrument_id")
+	    if (exists($values->{instrument_id})
+		    && ($values->{fed_tax_free} || $values->{instrument_type}
+			    || $values->{name} || $values->{ticker_symbol}));
+
     return $self->SUPER::create($values);
 }
 
