@@ -199,7 +199,7 @@ sub validate {
 	    $self->get('empty_row_count') + $self->ROW_INCREMENT,
     );
     # Put last for testing
-    $req->server_redirect($req->get('task_id'));
+    $req->server_redirect($req->get(qw(task_id auth_realm query path_info)));
     # DOES NOT RETURN
 }
 
