@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Select defaults list_id_field to ListModel
+    primary key. Allow a string, widget value or Widget for
+    list_display_field.
 
   Revision 2.59  2005/03/18 23:48:27  moeller
   * Bivio::Type::ECCreditCardType add support for discover
