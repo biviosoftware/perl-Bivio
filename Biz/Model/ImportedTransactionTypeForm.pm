@@ -90,7 +90,7 @@ sub execute_ok {
     # otherwise go to the txn editor detail
     # preserves the query for date sort order
     $req->server_redirect(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY2(),
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY_DETAIL(),
 	    $req->get('auth_realm'),
 	    $req->get('query')
 	   );
