@@ -363,6 +363,28 @@ sub from_parts {
     return (split(' ', $date))[0].' '.(split(' ', $time))[1];
 }
 
+=for html <a name="from_parts_or_die"></a>
+
+=head2 static from_parts_or_die(int sec, int min, int hour, int mday, int mon, int year) : array
+
+Same as L<from_parts|"from_parts">, but dies if there is an error.
+
+=cut
+
+sub from_parts_or_die {
+    my($proto) = shift;
+    my($res, $e) = $proto->from_parts(@_);
+    return $res if defined($res);
+    Bivio::Die->throw_die('DIE', {
+	message => 'from_parts failed: '.$e->get_long_desc,
+	program_error => 1,
+	error_enum => $e,
+	entity => [@_],
+	class => (ref($proto) || $proto),
+    });
+    # DOES NOT RETURN
+}
+
 =for html <a name="get_last_day_in_month"></a>
 
 =head2 get_last_day_in_month(int mon, int year) : int
@@ -812,7 +834,9 @@ sub time_from_parts {
 
 =head2 to_parts(string value) : array
 
-Returns the date/time in parts in the same order as C<gmtime>.
+Returns the date/time in parts in the same order as C<gmtime>
+(set, min, hour, mday, mon, year), but mday is one-based and
+year is four digits.
 
 Handles BOTH unix and date/time formats (for convenience).
 
@@ -838,11 +862,11 @@ sub to_parts {
 
     # Make sure within range
     if ($i == 0) {
-	Carp::croak("$value: time less than first year")
+	die("$value: time less than first year")
 		    if FIRST_DATE_IN_JULIAN_DAYS > $date;
     }
     elsif ($i >= $#_YEAR_BASE) {
-	Carp::croak("$value: time greater than last year")
+	die("$value: time greater than last year")
 		    if LAST_DATE_IN_JULIAN_DAYS() < $date;
     }
 
