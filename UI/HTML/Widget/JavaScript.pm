@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::JavaScript - renders a JavaScript version flag
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::JavaScript::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::JavaScript::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -49,8 +49,11 @@ sub VERSION_VAR {
 }
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_VV) = VERSION_VAR();
 my($_JSV) = <<"EOF";
 <script language="JavaScript">

@@ -17,12 +17,12 @@ Bivio::UI::Facade::InvestmentExpo::LeftMenu - implements left navigation
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::Facade::InvestmentExpo::LeftMenu::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::Facade::InvestmentExpo::LeftMenu::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -35,8 +35,11 @@ out where we "are".
 
 #=IMPORTS
 use Bivio::Biz::Action::DemoClub;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my($_URI) = 'investmentexpo_left_menu_uri';
 my($_STRING) = 'investmentexpo_left_menu_string';
@@ -55,7 +58,7 @@ Returns a new instance of LeftMenu.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -97,11 +100,11 @@ sub initialize {
 	my($w) = $x;
 	unless (ref($x) eq 'CODE') {
 	    my($label, $uri) = split(/:/, $x, 2);
-	    $w = Bivio::UI::HTML::Widget->string($label)->put(
+	    $w = $_VS->vs_string($label)->put(
 		    escape_html => 0);
 	    if (defined($uri)) {
 		$w->put(string_font => 'left_menu_normal');
-		$w = Bivio::UI::HTML::Widget->link($w,
+		$w = $_VS->vs_link($w,
 			'http://www.investmentexpo.com'.$uri);
 	    }
 	    else {
@@ -113,19 +116,19 @@ sub initialize {
     }
     $fields->{main_list} = \@list;
 
-    my($sep) = "</td>\n<td>".Bivio::UI::HTML::Widget->clear_dot_as_html(8);
-    $fields->{selected} = Bivio::UI::HTML::Widget->join(
+    my($sep) = "</td>\n<td>".$_VS->vs_clear_dot_as_html(8);
+    $fields->{selected} = $_VS->vs_join(
 	    '<tr><td align=right>',
-	    Bivio::UI::HTML::Widget->image('arrow', ''),
+	    $_VS->vs_image('arrow', ''),
 	    $sep,
-	    Bivio::UI::HTML::Widget->string([$_STRING], 'left_menu_selected'),
+	    $_VS->vs_string([$_STRING], 'left_menu_selected'),
 	    "</td>\n</tr>",
 	   )->put_and_initialize(parent => $self);
 
-    $fields->{normal} = Bivio::UI::HTML::Widget->join(
+    $fields->{normal} = $_VS->vs_join(
 	    '<tr><td>'.$sep,
-	    Bivio::UI::HTML::Widget->link(
-		    Bivio::UI::HTML::Widget->string([$_STRING],
+	    $_VS->vs_link(
+		    $_VS->vs_string([$_STRING],
 			    'left_menu_normal'),
 		    [$_URI]),
 	    "</td>\n</tr>",
@@ -135,7 +138,7 @@ sub initialize {
     # around with this.
     $fields->{prefix} = "<table cellpadding=2 border=0>\n"
 	    .'<tr><td width=14>'
-	    .Bivio::UI::HTML::Widget->clear_dot_as_html(14, 1)
+	    .$_VS->vs_clear_dot_as_html(14, 1)
 	    ."</td>\n<td></td></tr>\n";
     return;
 }

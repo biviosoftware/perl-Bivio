@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::ScriptOnly - java script only widget rendering
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::ScriptOnly::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::ScriptOnly::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -32,11 +32,11 @@ C<Bivio::UI::HTML::Widget::ScriptOnly> java script only widget rendering.
 
 =over 4
 
-=item widget : Bivio::UI::HTML::Widget (required)
+=item widget : Bivio::UI::Widget (required)
 
 The widget to render when javascript is present.
 
-=item alt_widget : Bivio::UI::HTML::Widget []
+=item alt_widget : Bivio::UI::Widget []
 
 The widget which is rendered if javascript is not present.
 
@@ -45,8 +45,11 @@ The widget which is rendered if javascript is not present.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -62,7 +65,7 @@ Creates a new ScriptOnly widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

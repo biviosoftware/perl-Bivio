@@ -17,18 +17,18 @@ Bivio::UI::HTML::Widget::Form - renders an HTML form
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Form::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Form::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Form> is an HTML C<FORM> tag surrounding
 a widget, which is usually a
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
+L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>,
 but might be a
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 The widget or its children should contain a
@@ -98,7 +98,7 @@ The value to be passed to the C<TARGET> attribute of C<A> tag.
 =item value : Bivio::UI::Widget (required)
 
 How to render the form.  Usually a
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>
+L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>
 or
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
@@ -109,8 +109,11 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 #=IMPORTS
 use Bivio::HTML;
 use Bivio::UI::HTML::Widget::TimezoneField;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my($_FORM_NAME_INDEX) = 0;
 
@@ -127,7 +130,7 @@ Creates a new Form widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -185,7 +188,7 @@ sub initialize {
     # Initialize prefix
     my($p) = '<form method=';
     $p .= $self->ancestral_get('form_method', 'POST');
-    $p .= $self->link_target_as_html().' name="'.$name.'"';
+    $p .= $_VS->vs_link_target_as_html($self).' name="'.$name.'"';
     my($action) = $self->unsafe_get('action');
     $p .= ' action="';
     if (ref($action)) {

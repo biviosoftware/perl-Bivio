@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::FormFieldError - an error message for a form field
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::FormFieldError::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::FormFieldError::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -51,8 +51,11 @@ The label used for the error.
 #=IMPORTS
 use Bivio::UI::Font;
 use Bivio::UI::HTML::FormErrors;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -68,7 +71,7 @@ Creates a new DescriptiveFormField widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

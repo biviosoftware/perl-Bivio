@@ -18,12 +18,12 @@ Bivio::UI::HTML::Widget::DateField - a date field for forms
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::DateField::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::DateField::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ B<Don't use this for DateTime values.>
 
 Allow undef for field, i.e. don't fill in with now.
 
-=item event_handler : Bivio::UI::HTML::Widget []
+=item event_handler : Bivio::UI::Widget []
 
 If set, this widget will be initialized as a child and must
 support a method C<get_html_field_attributes> which returns a
@@ -63,8 +63,11 @@ use Bivio::Type::DateTime;
 use Bivio::Type::Date;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
 my(@_ATTRS) = qw(
@@ -87,7 +90,7 @@ Creates a Date widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

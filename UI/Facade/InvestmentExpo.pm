@@ -34,8 +34,11 @@ www.investmentexpo.com.
 #=IMPORTS
 use Bivio::UI::Facade::InvestmentExpo::Home;
 use Bivio::UI::Facade::InvestmentExpo::LeftMenu;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 __PACKAGE__->new({
     clone => 'Prod',
     is_production => 1,
@@ -96,12 +99,12 @@ __PACKAGE__->new({
 	    $fc->value(image_menu_left_cell => 0);
 
 	    $fc->value(text_menu_left_cell =>
-		    Bivio::UI::HTML::Widget->image('subarrow', ''));
+		    $_VS->vs_image('subarrow', ''));
 
 	    $fc->value(image_menu_separator_width => 1);
 
 	    # These are required names, which are checked by page.
-	    Bivio::UI::HTML::Widget->load_class('Page');
+	    $_VS->vs_load_class('Page');
 	    $fc->group(page_widget => Bivio::UI::HTML::Widget::Page->new({
 		head => $fc->get_standard_head(),
 		style => $fc->get_standard_style(),
@@ -133,7 +136,7 @@ __PACKAGE__->new({
 #
 sub _body {
     my($html) = @_;
-    Bivio::UI::HTML::Widget->load_class('Grid');
+    $_VS->vs_load_class('Grid');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
@@ -141,14 +144,14 @@ sub _body {
 		# have to have clear_dots for Netscape to render properly.
 		# 124 is the width of the background vertical bar.
 		# This forces the left nav to fit in this space.
-		Bivio::UI::HTML::Widget->clear_dot(124),
+		$_VS->vs_clear_dot(124),
 		# 16 is the no man's land margin
-	        Bivio::UI::HTML::Widget->clear_dot(16),
+	        $_VS->vs_clear_dot(16),
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_expand => 1,
 		    values => [[
 			_logo($html)->put(cell_align => 'nw'),
-			Bivio::UI::HTML::Widget->clear_dot(20),
+			$_VS->vs_clear_dot(20),
 			_realm_name()->put(
 				cell_expand => 1,
 				cell_align => 'left'),
@@ -156,31 +159,31 @@ sub _body {
 		}),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(1, 25)->put(
+		$_VS->vs_clear_dot(1, 25)->put(
 			cell_align => 'nw'),
-		Bivio::UI::HTML::Widget->blank_cell,
-		Bivio::UI::HTML::Widget->indirect(['page_image_menu'])->put(
+		$_VS->vs_blank_cell,
+		$_VS->vs_indirect(['page_image_menu'])->put(
 			cell_align => 'nw'),
 	    ],
 	    [
 		Bivio::UI::Facade::InvestmentExpo::LeftMenu->new->put(
 			cell_align => 'nw',
 			cell_rowspan => 2),
-		Bivio::UI::HTML::Widget->blank_cell,
-		Bivio::UI::HTML::Widget->indirect(['page_text_menu'])->put(
+		$_VS->vs_blank_cell,
+		$_VS->vs_indirect(['page_text_menu'])->put(
 			cell_align => 'nw'),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->blank_cell,
-		Bivio::UI::HTML::Widget->indirect(['page_scene'])->put(
+		$_VS->vs_blank_cell,
+		$_VS->vs_indirect(['page_scene'])->put(
 			cell_align => 'nw'),
 	    ],
 	    [
 		# Must be less than 124 wide.
-		Bivio::UI::HTML::Widget->link(
-			Bivio::UI::HTML::Widget->image('bivio_power'),
+		$_VS->vs_link(
+			$_VS->vs_image('bivio_power'),
 			'http://www.bivio.com')->put(cell_align => 'sw'),
-		Bivio::UI::HTML::Widget->blank_cell,
+		$_VS->vs_blank_cell,
 		_footer()->put(cell_align => 'nw'),
 	    ],
 	],
@@ -188,7 +191,7 @@ sub _body {
     return;
 }
 
-# _footer() : Bivio::UI::HTML::Widget
+# _footer() : Bivio::UI::Widget
 #
 # Returns footer widget.
 #
@@ -200,31 +203,31 @@ sub _footer {
 	    'Safe & Private:GENERAL_PRIVACY',
 	   ) {
 	my($label, $task) = split(/:/, $t, 2);
-	push(@$links, Bivio::UI::HTML::Widget->link(
+	push(@$links, $_VS->vs_link(
 		$label, $task, 'footer_menu'),
 		'&nbsp;|&nbsp;');
     }
-    push(@$links, Bivio::UI::HTML::Widget->mailto(['support_email'])->put(
+    push(@$links, $_VS->vs_mailto(['support_email'])->put(
 	    string_font => 'footer_menu',
 	   ));
 
     # Create grid
-    Bivio::UI::HTML::Widget->load_class('Grid', 'EditPreferences');
+    $_VS->vs_load_class('Grid', 'EditPreferences');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(1, 10),
+		$_VS->vs_clear_dot(1, 10),
 	    ],
 #	    [
 #		Bivio::UI::HTML::Widget::EditPreferences->new->put(
 #			cell_expand => 1,
 #		),
-#		Bivio::UI::HTML::Widget->toggle_secure()->put(
+#		$_VS->vs_toggle_secure()->put(
 #			cell_align => 'right'),
 #	    ],
 	    [
-#		Bivio::UI::HTML::Widget->blank_cell,
+#		$_VS->vs_blank_cell,
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_align => 'center',
 		    cell_expand => 1,
@@ -234,7 +237,7 @@ sub _footer {
 		}),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(1, 10),
+		$_VS->vs_clear_dot(1, 10),
 	    ],
 	    [
 		Bivio::UI::HTML->get_standard_copyright->put(
@@ -247,13 +250,13 @@ sub _footer {
     return;
 }
 
-# _header(Bivio::UI::HTML html) : Bivio::UI::HTML::Widget
+# _header(Bivio::UI::HTML html) : Bivio::UI::Widget
 #
 # Returns header widget.  Must be synchronized with _body().
 #
 sub _header {
     my($html) = @_;
-    Bivio::UI::HTML::Widget->load_class('Grid');
+    $_VS->vs_load_class('Grid');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
@@ -261,25 +264,25 @@ sub _header {
 		_logo($html)->put(cell_align => 'nw', cell_expand => 1),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->indirect(['page_image_menu'])->put(
+		$_VS->vs_indirect(['page_image_menu'])->put(
 			cell_align => 'nw'),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->indirect(['page_text_menu'])->put(
+		$_VS->vs_indirect(['page_text_menu'])->put(
 			cell_align => 'nw'),
 	    ],
 	],
     });
 }
 
-# _logo(Bivio::UI::HTML html) : Bivio::UI::HTML::Widget
+# _logo(Bivio::UI::HTML html) : Bivio::UI::Widget
 #
 # Returns the logo widget which points to investmentexpo home page.
 #
 sub _logo {
     my($html) = @_;
-    return Bivio::UI::HTML::Widget->link(
-	    Bivio::UI::HTML::Widget->image(
+    return $_VS->vs_link(
+	    $_VS->vs_image(
 		    $html->get_value('logo_icon'),
 		    $html->get_value('home_alt_text'),
 		   ),
@@ -291,7 +294,7 @@ sub _logo {
 # Returns the realm name rendering widget
 #
 sub _realm_name {
-    return Bivio::UI::HTML::Widget->string([
+    return $_VS->vs_string([
 	sub {
 	    my($req) = shift->get_request;
 	    my($o) = $req->get('auth_realm')->unsafe_get('owner');

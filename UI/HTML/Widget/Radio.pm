@@ -16,12 +16,12 @@ Bivio::UI::HTML::Widget::Radio - a radio input field
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget::ControlBase>
+L<Bivio::UI::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::HTML::Widget::ControlBase;
-@Bivio::UI::HTML::Widget::Radio::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
+use Bivio::UI::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::Radio::ISA = ('Bivio::UI::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ Should the a click submit the form?
 
 =item control : any
 
-See L<Bivio::UI::HTML::Widget::ControlBase|Bivio::UI::HTML::Widget::ControlBase>.
+See L<Bivio::UI::Widget::ControlBase|Bivio::UI::Widget::ControlBase>.
 
 =item field : string (required)
 
@@ -63,8 +63,11 @@ Value of button.
 #=IMPORTS
 use Bivio::HTML;
 use Bivio::UI::Font;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -80,7 +83,7 @@ Creates a Radio widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::ControlBase::new(@_);
+    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

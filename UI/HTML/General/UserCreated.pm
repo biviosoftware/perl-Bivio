@@ -50,12 +50,13 @@ sub PAGE_TOPIC {
 
 #=IMPORTS
 use Bivio::Biz::Model::RealmInvite;
-use Bivio::UI::HTML::Widget::Director;
+use Bivio::UI::Widget::Director;
 use Bivio::Auth::RealmType;
 use Bivio::UI::HTML::Widget::Link;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_P) = __PACKAGE__;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 METHODS
 
@@ -63,14 +64,14 @@ my($_P) = __PACKAGE__;
 
 =for html <a name="create_content"></a>
 
-=head2 create_content() : Bivio::UI::HTML::Widget::Director
+=head2 create_content() : Bivio::UI::Widget::Director
 
 Returns widget which renders this page.
 
 =cut
 
 sub create_content {
-    return Bivio::UI::HTML::Widget::Director->new({
+    return Bivio::UI::Widget::Director->new({
 	control => ['auth_realm', 'type'],
 	values => {
 	    Bivio::Auth::RealmType::CLUB() => _page_club(),
@@ -81,22 +82,22 @@ sub create_content {
 
 #=PRIVATE METHODS
 
-# _page_club() : Bivio::UI::HTML::Widget::Join
+# _page_club() : Bivio::UI::Widget::Join
 #
 # New user and member of club
 #
 sub _page_club {
-    return $_P->join([
+    return $_VS->vs_join([
 	_part_congrats(),
     ]);
 }
 
-# _page_no_club() : Bivio::UI::HTML::Widget::Join
+# _page_no_club() : Bivio::UI::Widget::Join
 #
 # New user, not connected with a club.
 #
 sub _page_no_club {
-    return $_P->join([
+    return $_VS->vs_join([
 	_part_congrats(),
     ]);
 }
@@ -106,12 +107,12 @@ sub _page_no_club {
 # Renders congratulation text.
 #
 sub _part_congrats {
-    return $_P->join([
+    return $_VS->vs_join([
 	'Congratulations, you are now a bivio user with User ID',
-	$_P->highlight(['auth_user', 'name']),
+	$_VS->vs_highlight(['auth_user', 'name']),
 	".\n<p>A confirmation email has been sent to your email address.\n"
 	."<p>People can email you at ",
-	$_->link($_P->highlight(['auth_user', '->format_email']),
+	$_VS->vs_link($_VS->vs_highlight(['auth_user', '->format_email']),
 		['auth_user', '->format_mailto']),
 	".\n<p>",
     ]);

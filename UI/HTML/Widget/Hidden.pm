@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Hidden - renders hidden inputs for a form
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Hidden::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Hidden::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -48,8 +48,11 @@ before rendering.
 
 #=IMPORTS
 use Bivio::HTML;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -65,7 +68,7 @@ Creates a new Hidden inputs widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Checkbox - form checkbox
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Checkbox::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Checkbox::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -65,8 +65,11 @@ The checkbox's submit value.
 
 #=IMPORTS
 use Bivio::UI::Label;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -82,7 +85,7 @@ Creates a Checkbox widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -111,7 +114,7 @@ sub initialize {
     $l = Bivio::UI::Label->get_form_field(
 	    $self->ancestral_get('form_class'), $fields->{field})
 		unless defined($l);
-    $fields->{label} = $self->template_as_string(' '.$l, 'checkbox')
+    $fields->{label} = $_VS->vs_template_as_string(' '.$l, 'checkbox')
 	    ->put_and_initialize(parent => $self);
     return;
 }

@@ -31,9 +31,11 @@ C<Bivio::UI::Facade::Prod> is the main production and default Facade.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_W) = 'Bivio::UI::HTML::Widget';
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
@@ -289,20 +291,20 @@ my($_SELF) = __PACKAGE__->new({
 	    # Home page widgets
 	    foreach my $r (Bivio::Type::RealmName->CELEBRITY_CLUBS) {
 		$fc->group('mail_home_list_'.$r =>
-			$_W->load_and_new('MailHomeList', {realm_name => $r}));
+			$_VS->vs_new('MailHomeList', {realm_name => $r}));
 	    }
 	    Bivio::IO::ClassLoader->simple_require(
 		    'Bivio::Biz::Util::Filtrum');
-	    $fc->group(filtrum_holdings => $_W->join([
+	    $fc->group(filtrum_holdings => $_VS->vs_join([
 		[sub {${Bivio::Biz::Util::Filtrum->realm_file(
 			'holdings_file');}}],
 	    ]));
-	    $fc->group(club_index => $_W->join([
+	    $fc->group(club_index => $_VS->vs_join([
 		[sub {${Bivio::Biz::Util::Filtrum->realm_file(
 			'club_index_file')}}],
 	    ]));
-	    $fc->group(home_login => $_W->load_and_new('HomeLogin'));
-	    $fc->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
+	    $fc->group(home_login => $_VS->vs_new('HomeLogin'));
+	    $fc->group(home_date_clubs => $_VS->vs_new('HomeDateClubs'));
 	    return;
 	},
     },

@@ -18,12 +18,12 @@ Bivio::UI::HTML::Widget::Text - text and password form input fields
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Text::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Text::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -36,7 +36,7 @@ will render as a C<TYPE=PASSWORD>.
 
 =over 4
 
-=item event_handler : Bivio::UI::HTML::Widget []
+=item event_handler : Bivio::UI::Widget []
 
 If set, this widget will be initialized as a child and must
 support a method C<get_html_field_attributes> which returns a
@@ -77,8 +77,11 @@ field's type.)
 use Bivio::HTML;
 use Bivio::UI::HTML::Format;
 use Bivio::Type::Password;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my(@_ATTRS) = qw(
     event_handler
@@ -101,7 +104,7 @@ Creates a new Text widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Image - renders an in-line image
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Image::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Image::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -100,8 +100,11 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::UI::Icon;
 use Carp ();
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -119,7 +122,7 @@ widget to select between different Image widgets.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

@@ -41,15 +41,18 @@ Name of the enum field to render.
 =item display_values : hash_ref
 
 Map of enum values to display values. Overrides enum->get_short_desc.
-Values may be a string or Bivio::UI::HTML::Widget.
+Values may be a string or Bivio::UI::Widget.
 
 =back
 
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 

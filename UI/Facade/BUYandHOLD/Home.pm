@@ -31,8 +31,11 @@ C<Bivio::UI::Facade::BUYandHOLD::Home>
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -41,7 +44,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 create_content() : Bivio::UI::HTML::Widget
+=head2 create_content() : Bivio::UI::Widget
 
 Creates a tax 99 page contents.
 
@@ -53,10 +56,10 @@ sub create_content {
 	pad => 5,
 	expand => 1,
 	values => [
-	    [$self->image('one', 'Sign up'),
-	     $self->string('Sign up', 'page_heading')],
+	    [$_VS->vs_image('one', 'Sign up'),
+	     $_VS->vs_string('Sign up', 'page_heading')],
 	    [' ',
-	    $self->string($self->join(<<'EOF'), 'page_text')],
+	    $_VS->vs_string($_VS->vs_join(<<'EOF'), 'page_text')],
 Use bivio to organize your club. The first step is to
 <a href="http://www.bivio.com/pub/register" target=_blank>register with bivio</a>.
 <p>
@@ -75,10 +78,10 @@ required by the government in the Roster.
 <br>
 &nbsp;
 EOF
-	    [$self->image('two', 'Get Legal'),
-	     $self->string('Get Legal', 'page_heading')],
+	    [$_VS->vs_image('two', 'Get Legal'),
+	     $_VS->vs_string('Get Legal', 'page_heading')],
 	    [' ',
-	    $self->string($self->join(<<'EOF'), 'page_text')],
+	    $_VS->vs_string($_VS->vs_join(<<'EOF'), 'page_text')],
 You should establish a <b>partnership agreement</b>. We recommend the
 <a href="/goto?x=http://www.better-investing.org/clubs/sample-pa.html" target=_blank>sample partnership agreement</a>
 supplied by the NAIC&#153;. All members must sign a copy of your partnership
@@ -99,13 +102,13 @@ State to find out if you need to register.
 <br>
 &nbsp;
 EOF
-	    [$self->image('three', 'Start Investing'),
-	     $self->string('Start Investing', 'page_heading')],
+	    [$_VS->vs_image('three', 'Start Investing'),
+	     $_VS->vs_string('Start Investing', 'page_heading')],
 	    [' ',
-	    $self->string($self->join(<<'EOF',
+	    $_VS->vs_string($_VS->vs_join(<<'EOF',
 You're now ready to open a <b>brokerage account</b> with
 EOF
-		    $self->link_goto(
+		    $_VS->vs_link_goto(
 			    'BUYandHOLD',
 			    'http://www.buyandhold.com/Buy?request=rr.refBy'
 			    .'&ref=BIVIO&dest=/bh/en/advert/closed/bivio'

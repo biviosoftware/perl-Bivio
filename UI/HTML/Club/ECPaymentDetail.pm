@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::ECPaymentDetail - show payment details
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::ECPaymentDetail::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Club::ECPaymentDetail::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -34,8 +34,11 @@ TODO: Want to allow modification of credit card info iff state
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -53,23 +56,23 @@ Bivio::IO::Trace->register;
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    $fields->{content} = $self->join([
+    $fields->{content} = $_VS->vs_join([
         Bivio::UI::HTML::Widget::Grid->new({
             values => [
                 [
-                    $self->string('Payment entered on: '),
-                    $self->date_time(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_string('Payment entered on: '),
+                    $_VS->vs_date_time(['Bivio::Biz::Model::ECPayment',
                         'creation_date_time']),
                 ], [
-                    $self->string('Payment status: '),
-                    $self->string(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_string('Payment status: '),
+                    $_VS->vs_string(['Bivio::Biz::Model::ECPayment',
                         'status', '->get_short_desc']),
                 ], [
-                    $self->string('Payment remark: '),
-                    $self->string(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_string('Payment remark: '),
+                    $_VS->vs_string(['Bivio::Biz::Model::ECPayment',
                         'remark']),
                 ],
             ]

@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::LineCell - renders a double line cell
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::LineCell::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::LineCell::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -53,8 +53,11 @@ in pixels.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -70,7 +73,7 @@ Creates a new LineCell widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -93,7 +96,7 @@ sub initialize {
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
     my($count) = $self->get_or_default('count', 1);
-    my($line) = "<td>".$self->clear_dot_as_html(1, $h)."</td>";
+    my($line) = "<td>".$_VS->vs_clear_dot_as_html(1, $h)."</td>";
     $fields->{value} = "<table width=\"100%\" cellspacing=0"
 	    . " cellpadding=0 border=0>\n"
 	    . (("<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n") x --$count)

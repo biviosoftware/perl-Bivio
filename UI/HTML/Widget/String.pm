@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::String - renders a string with font decoration
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::String::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::String::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -79,10 +79,10 @@ get_widget_value may be widget in which case render is called.
 
 Text to render.
 
-=item value : Bivio::UI::HTML::Widget (required)
+=item value : Bivio::UI::Widget (required)
 
 The widget to render.  Typically, can only be
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
+L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>,
 but may be any widget.  Purpose is to be able to set the
 font on a collection of strings join.
 
@@ -98,8 +98,11 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Format;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -115,7 +118,7 @@ Creates a new String widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -210,7 +213,7 @@ sub render {
 			: $fields->{undef_value}
 				unless defined($value);
 	# Result may be a widget!
-	if (ref($value) && UNIVERSAL::isa($value, 'Bivio::UI::HTML::Widget')) {
+	if (ref($value) && UNIVERSAL::isa($value, 'Bivio::UI::Widget')) {
 	    $value->render($source, \$b);
 	}
 	else {

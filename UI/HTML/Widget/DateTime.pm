@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::DateTime - prints dates/times in html
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::DateTime::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::DateTime::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -95,8 +95,11 @@ use Bivio::Type::DateTime;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Widget::JavaScript;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
@@ -185,7 +188,7 @@ Creates a new DateTime widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

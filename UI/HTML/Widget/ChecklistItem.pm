@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::ChecklistItem - a checklist item
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::ChecklistItem::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::ChecklistItem::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -69,8 +69,11 @@ The body to display when the widget isn't checked.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -86,7 +89,7 @@ Creates a new checklist item.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -175,7 +178,7 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _initialize_subwidget(Bivio::UI::HTML::Widget widget, string name)
+# _initialize_subwidget(Bivio::UI::Widget widget, string name)
 #
 # Initializes the specified sub widget and stores it in the named
 # instance field.

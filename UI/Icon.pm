@@ -62,6 +62,7 @@ sub UNDEF_CONFIG {
 }
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -69,6 +70,7 @@ use Bivio::UI::Facade;
 use Image::Size ();
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
@@ -120,9 +122,9 @@ sub format_html {
 =head2 get_clear_dot() : hash_ref
 
 Please use
-L<Bivio::UI::HTML::Widget::clear_dot|Bivio::UI::HTML::Widget/"clear_dot">
+L<Bivio::UI::HTML::Widget::vs_clear_dot|Bivio::UI::Widget/vs_"clear_dot">
 or
-L<Bivio::UI::HTML::Widget::clear_dot_as_html|Bivio::UI::HTML::Widget/"clear_dot_as_html">
+L<Bivio::UI::HTML::Widget::vs_clear_dot_as_html|Bivio::UI::Widget/vs_"clear_dot_as_html">
 to get a clear dot of arbitrary width/height.
 
 Returns single pixel transparent gif.  Value must be treated as

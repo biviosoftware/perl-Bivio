@@ -18,12 +18,12 @@ Bivio::UI::HTML::WidgetFactory - creates widgets for model fields
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::WidgetFactory::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::WidgetFactory::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -75,14 +75,14 @@ use Bivio::Biz::Model;
 use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
-use Bivio::UI::HTML::Widget;
+use Bivio::UI::Widget;
 use Bivio::UI::HTML::Widget::AmountCell;
 use Bivio::UI::HTML::Widget::Checkbox;
 use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Enum;
 use Bivio::UI::HTML::Widget::FormButton;
-use Bivio::UI::HTML::Widget::Join;
+use Bivio::UI::Widget::Join;
 use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::RadioGrid;
 use Bivio::UI::HTML::Widget::Select;
@@ -93,8 +93,10 @@ use Bivio::UI::Label;
 use Bivio::TypeValue;
 use Bivio::Type::Name;
 use Bivio::Type::TextArea;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -112,9 +114,9 @@ my(%_DEFAULT_DECIMALS) = (
 
 =for html <a name="create"></a>
 
-=head2 static create(string field) : Bivio::UI::HTML::Widget
+=head2 static create(string field) : Bivio::UI::Widget
 
-=head2 static create(string field, hash_ref attrs) : Bivio::UI::HTML::Widget
+=head2 static create(string field, hash_ref attrs) : Bivio::UI::Widget
 
 Creates a widget for the specified field. 'field' should be of the form:
   '<model name>.<field name>'
@@ -153,7 +155,7 @@ sub create {
 	    %$wll,
 	    %attrs_copy,
 	}) if $wll;
-	$widget = $proto->secure_data($widget)->put(%attrs_copy)
+	$widget = $_VS->vs_secure_data($widget)->put(%attrs_copy)
 		if $field_type->is_secure_data;
     }
     return $widget;
@@ -161,7 +163,7 @@ sub create {
 
 #=PRIVATE METHODS
 
-# _create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
+# _create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
 #
 # Create a display-only widget for the specified field.
 #
@@ -169,7 +171,7 @@ sub _create_display {
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
-	return $proto->load_and_new($attrs->{wf_class}, {
+	return $_VS->vs_new($attrs->{wf_class}, {
 	    field => $field,
 	    %$attrs,
 	});
@@ -185,7 +187,7 @@ sub _create_display {
     }
 
     if ($field =~ /is_public$/) {
-	return $proto->checkmark($field)->put(
+	return $_VS->vs_checkmark($field)->put(
 		column_align => 'center',
 		column_control => [
 		    sub { my($req) = shift->get_request;
@@ -262,7 +264,7 @@ sub _create_display {
     });
 }
 
-# _create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::HTML::Widget
+# _create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
 #
 # Create an editable widget for the specified field.
 #
@@ -270,7 +272,7 @@ sub _create_edit {
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
-	return $proto->load_and_new($attrs->{wf_class}, {
+	return $proto->vs_new($attrs->{wf_class}, {
 	    field => $field,
 	    %$attrs,
 	});
@@ -279,7 +281,7 @@ sub _create_edit {
     if ($field eq 'Instrument.ticker_symbol') {
 
 	# Creates a text field with a "symbol lookup" button
-	return Bivio::UI::HTML::Widget::Join->new({
+	return Bivio::UI::Widget::Join->new({
 	    # field is needed here by DescriptiveFormField
 	    field => $field,
 	    values => [
@@ -297,10 +299,10 @@ sub _create_edit {
     }
 
     if ($field =~ /is_public$/) {
-	return $proto->director(
+	return $_VS->vs_director(
 		[['->get_request'], 'user_can_modify_is_public'],
 		{
-		    0 => $proto->checkmark($field),
+		    0 => $_VS->vs_checkmark($field),
 		    1 => Bivio::UI::HTML::Widget::Checkbox->new({
 			field => $field,
 			label => '',

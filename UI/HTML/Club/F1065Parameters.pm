@@ -33,8 +33,11 @@ C<Bivio::UI::HTML::Club::F1065Parameters> IRS 1065 parameters
 
 #=IMPORTS
 use Bivio::UI::HTML::Club::ReportPage;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -51,7 +54,7 @@ Returns the form.
 
 sub create_content {
     my($self) = @_;
-    return $self->director(['show_countries'], {
+    return $_VS->vs_director(['show_countries'], {
 	0 => _create_form($self, 0),
 	1 => _create_form($self, 1),
     });
@@ -82,14 +85,14 @@ sub execute {
 
 #=PRIVATE METHODS
 
-# _create_form(boolean show_countries) : Bivio::UI::HTML::Widget
+# _create_form(boolean show_countries) : Bivio::UI::Widget
 #
 # Returns the form, which optional shows the foreign country list.
 #
 sub _create_form {
     my($self, $show_countries) = @_;
 
-    return $self->form('F1065ParametersForm', [
+    return $_VS->vs_form('F1065ParametersForm', [
 	['TaxId.tax_id', undef, <<'EOF', '12-3456789'],
 Partnership's identifying number
 EOF

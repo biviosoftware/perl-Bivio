@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::TimezoneField - hidden field which computes Timezone
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::TimezoneField::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::TimezoneField::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -38,8 +38,11 @@ client.
 #=IMPORTS
 use Bivio::Biz::FormModel;
 use Bivio::UI::HTML::Widget::JavaScript;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_FIELD) = Bivio::Biz::FormModel->TIMEZONE_FIELD;
 my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 function tzf(){

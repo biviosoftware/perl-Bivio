@@ -37,8 +37,11 @@ use Bivio::Biz::Model::RealmTransaction;
 use Bivio::UI::HTML::Widget::ClearDot;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::DateTime;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -47,7 +50,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="create_content"></a>
 
-=head2 create_content() : Bivio::UI::HTML::Widget
+=head2 create_content() : Bivio::UI::Widget
 
 Create widgets.
 
@@ -57,7 +60,7 @@ sub create_content {
     my($self) = @_;
 
     # list of entries
-    my($entry_table) = $self->table(
+    my($entry_table) = $_VS->vs_table(
 	'EntryList',
 	[
 	    ['', {
@@ -76,9 +79,9 @@ sub create_content {
     # followed by the entry table for that transaction
     return Bivio::UI::HTML::Widget::Grid->new({pad => 5, values => [
 	[
-	    $self->string('Date', 'table_heading'),
-	    $self->string('Created By', 'table_heading'),
-	    $self->string('Remark', 'table_heading'),
+	    $_VS->vs_string('Date', 'table_heading'),
+	    $_VS->vs_string('Created By', 'table_heading'),
+	    $_VS->vs_string('Remark', 'table_heading'),
 	],
 	[
 	    Bivio::UI::HTML::Widget::LineCell->new({
@@ -92,8 +95,8 @@ sub create_content {
 		value => ['Bivio::Biz::Model::RealmTransaction', 'date_time'],
 		string_font => 'table_cell',
 	    }),
-	    $self->string(['RealmTransaction.user_name'], 'table_cell'),
-	    $self->string(['Bivio::Biz::Model::RealmTransaction', 'remark'],
+	    $_VS->vs_string(['RealmTransaction.user_name'], 'table_cell'),
+	    $_VS->vs_string(['Bivio::Biz::Model::RealmTransaction', 'remark'],
 		   'table_cell'),
 	],
 	[
@@ -110,7 +113,7 @@ sub create_content {
 	    }),
 	],
 	[
-	    $self->join('&nbsp;'),
+	    $_VS->vs_join('&nbsp;'),
 	],
 	[
 	    Bivio::UI::HTML::Widget::String->new({
@@ -120,7 +123,7 @@ sub create_content {
 	    }),
 	],
 	[
-	    $self->form('Bivio::Biz::Model::TransactionDeleteForm', []),
+	    $_VS->vs_form('Bivio::Biz::Model::TransactionDeleteForm', []),
 	],
     ]});
 }

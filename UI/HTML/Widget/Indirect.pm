@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Indirect - renders an arbitrary widget dynamically
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Indirect::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Indirect::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -34,7 +34,7 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 =over 4
 
-=item value : Bivio::UI::HTML::Widget (required, dynamic)
+=item value : Bivio::UI::Widget (required, dynamic)
 
 Accessed dynamically.  If the dynamic value is false, nothing is rendered.
 
@@ -48,8 +48,11 @@ false.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 
 =head1 METHODS
 

@@ -18,18 +18,18 @@ Bivio::UI::HTML::Widget::Page - renders an HTML page
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Page::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Page::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Page> is an HTML C<PAGE> tag surrounding
 a widget, which is usually a
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
+L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>,
 but might be a
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 The widget or its children should be a
@@ -48,7 +48,7 @@ the color defaults to the browser default.
 =item body : Bivio::UI::Widget (required)
 
 How to render the C<BODY> tag contents.  Usually a
-L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>
+L<Bivio::UI::Widget::Join|Bivio::UI::Widget::Join>
 or
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
@@ -86,8 +86,11 @@ Color of links.
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::IO::Config;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
@@ -109,7 +112,7 @@ Creates a new Page widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -117,6 +120,18 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_content_type"></a>
+
+=head2 get_content_type(any source) : string
+
+Returns C<text/html>.
+
+=cut
+
+sub get_content_type {
+    return 'text/html';
+}
 
 =for html <a name="handle_config"></a>
 

@@ -417,7 +417,9 @@ sub initialize {
 
 
     # Load 'em up
-    Bivio::IO::ClassLoader->simple_require(@classes);
+    foreach my $c (@classes) {
+	Bivio::IO::ClassLoader->simple_require($c);
+    }
 
     # Make sure the default facade is there and was properly initialized
     Bivio::Die->die($_DEFAULT,

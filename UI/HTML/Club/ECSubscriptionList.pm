@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::ECSubscriptionList - view subscriptions
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::ECSubscriptionList::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Club::ECSubscriptionList::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -31,8 +31,11 @@ C<Bivio::UI::HTML::Club::ECSubscriptionList> displays subscriptions.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -51,16 +54,16 @@ Creates a new widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    $fields->{page_heading} = $self->heading(
+    $fields->{page_heading} = $_VS->vs_heading(
 	    Bivio::UI::Label->get_simple('EC_SUBSCRIPTION_PAGE_HEADING'))
 	    ->put_and_initialize(parent => $self);
-    $fields->{action_bar} = $self->action_bar('club_post_message');
+    $fields->{action_bar} = $_VS->vs_action_bar('club_post_message');
     $fields->{action_bar}->initialize;
 
-    my($empty_message) = $self->join('No running subscriptions.');
+    my($empty_message) = $_VS->vs_join('No running subscriptions.');
     my($table) = Bivio::UI::HTML::Widget::Table->new({
         list_class => 'ECSubscriptionList',
 	expand => 1,
@@ -92,30 +95,30 @@ sub new {
                 heading_align => 'LEFT',
                 column_expand => 1,
                 column_heading => 'ECSubscription.subscription_type',
-                column_widget => $self->link([['->get_list_model'],
+                column_widget => $_VS->vs_link([['->get_list_model'],
                     'ECSubscription.subscription_type', '->get_short_desc'],
                         [['->get_list_model'], '->format_uri', 'THIS_DETAIL']),
             },
             ['ECSubscription.start_date', {
                 column_align => 'CENTER',
-                column_widget => $self->date_time(
+                column_widget => $_VS->vs_date_time(
                         [['->get_list_model'], 'ECSubscription.start_date']),
             }],
             ['ECSubscription.end_date', {
                 column_align => 'CENTER',
-                column_widget => $self->date_time(
+                column_widget => $_VS->vs_date_time(
                         [['->get_list_model'], 'ECSubscription.end_date']),
             }],
             {
                 column_align => 'CENTER',
                 column_heading => 'ECSubscription.renewal_method',
-                column_widget => $self->director([sub {
+                column_widget => $_VS->vs_director([sub {
                     my($list) = shift->get_list_model;
                     return Bivio::Type::Date->compare(
                             $list->get('ECSubscription.end_date'),
                             Bivio::Type::Date->now) == 1 ? 1 : 0;
                 }], {
-                    0 => $self->string('EXPIRED'),
+                    0 => $_VS->vs_string('EXPIRED'),
                     1 => Bivio::UI::HTML::Widget::Select->new({
                         field => 'ECSubscription.renewal_method',
                         choices => 'Bivio::Type::ECRenewalMethod',
@@ -125,13 +128,13 @@ sub new {
             {
                 column_align => 'CENTER',
                 column_heading => 'ECSubscription.renewal_period',
-                column_widget => $self->director([sub {
+                column_widget => $_VS->vs_director([sub {
                     my($list) = shift->get_list_model;
                     return Bivio::Type::Date->compare(
                             $list->get('ECSubscription.end_date'),
                             Bivio::Type::Date->now) == 1 ? 1 : 0;
                 }], {
-                    0 => $self->string('EXPIRED'),
+                    0 => $_VS->vs_string('EXPIRED'),
                     1 => Bivio::UI::HTML::Widget::Select->new({
                         field => 'ECSubscription.renewal_period',
                         choices => ['Bivio::Biz::Model::ECSubscriptionPriceList'],
@@ -142,7 +145,7 @@ sub new {
             },
             ['ECSUBSCRIPTION_ACTION', {
                 column_nowrap => 1,
-                column_widget => $self->director([
+                column_widget => $_VS->vs_director([
                     sub {
                         my($list) = shift->get_list_model;
                         return Bivio::Type::Date->compare(
@@ -169,17 +172,17 @@ sub new {
         empty_list_widget => $empty_message,
     });
 
-    my($form) = $self->simple_form('ECSubscriptionListForm',
-            $self->join($table_admin,
-                    $self->indent($self->director(
+    my($form) = $_VS->vs_simple_form('ECSubscriptionListForm',
+            $_VS->vs_join($table_admin,
+                    $_VS->vs_indent($_VS->vs_director(
                             ['Bivio::Biz::Model::ECSubscriptionList',
                                 '->get_result_set_size'], {
-                                    0 => $self->join(),
-                                }, $self->form_button(
+                                    0 => $_VS->vs_join(),
+                                }, $_VS->vs_form_button(
                                         'ECSubscriptionListForm.ok_button',
                                         'apply_changes_button')))
                    ));
-    $fields->{content} = $self->director(
+    $fields->{content} = $_VS->vs_director(
 	    ['->has_keys', 'Bivio::Biz::Model::ECSubscriptionListForm'],
 	    {
 		0 => $table,

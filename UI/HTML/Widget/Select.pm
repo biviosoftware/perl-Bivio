@@ -18,12 +18,12 @@ Bivio::UI::HTML::Widget::Select - select from a list of several items
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Select::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Select::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -73,7 +73,7 @@ Sort method to call.  Enums passed in I<left> and I<right> params,
 just like L<Bivio::Type::compare|Bivio::Type/"compare">.  This is
 a sub call, not a method call, so no method or self is passed.
 
-=item event_handler : Bivio::UI::HTML::Widget []
+=item event_handler : Bivio::UI::Widget []
 
 If set, this widget will be initialized as a child and must
 support a method C<get_html_field_attributes> which returns a
@@ -115,8 +115,11 @@ How many rows should be visible
 use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::Type::Enum;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
@@ -148,7 +151,7 @@ Creates a new Select widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

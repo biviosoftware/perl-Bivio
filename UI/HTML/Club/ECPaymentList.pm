@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::ECPaymentList - view payments
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::ECPaymentList::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Club::ECPaymentList::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -31,8 +31,11 @@ C<Bivio::UI::HTML::Club::ECPaymentList> displays payments made.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -51,16 +54,16 @@ Creates a new widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    $fields->{page_heading} = $self->heading(
+    $fields->{page_heading} = $_VS->vs_heading(
 	    Bivio::UI::Label->get_simple('EC_PAYMENT_PAGE_HEADING'))
 	    ->put_and_initialize(parent => $self);
-    $fields->{action_bar} = $self->action_bar;
+    $fields->{action_bar} = $_VS->vs_action_bar;
     $fields->{action_bar}->initialize;
 
-    my($empty_message) = $self->string('No payments.',
+    my($empty_message) = $_VS->vs_string('No payments.',
             'page_text');
     my($table) = Bivio::UI::HTML::Widget::Table->new({
         list_class => 'ECPaymentList',
@@ -75,16 +78,16 @@ sub new {
             }],
             ['ECPayment.payment_type', {
                 column_align => 'CENTER',
-                column_widget => $self->director([
+                column_widget => $_VS->vs_director([
                     sub {
                         my($list) = shift->get_list_model;
                         return defined($list->get('ECPayment.ec_subscription_id'));
                     }], {
 #TODO: Want to display subscription name, eg. "AccountSync"
-                        1 => $self->load_and_new('Enum', {
+                        1 => $_VS->vs_new('Enum', {
                             field => 'ECPayment.payment_type',
                         }),
-                    }, $self->load_and_new('Enum', {
+                    }, $_VS->vs_new('Enum', {
                         field => 'ECPayment.payment_type',
                     }),
                        ),
@@ -99,7 +102,7 @@ sub new {
             }],
             ['ECPAYMENT_ACTION', {
                 column_nowrap => 1,
-                column_widget => $self->director([
+                column_widget => $_VS->vs_director([
                     sub {
                         my($list) = shift->get_list_model;
                         return 1;

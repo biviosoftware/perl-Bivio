@@ -30,8 +30,11 @@ C<Bivio::UI::Facade::Eklubs::Home> is intro to clubs.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -40,7 +43,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 create_content() : Bivio::UI::HTML::Widget
+=head2 create_content() : Bivio::UI::Widget
 
 Won't get here.
 
@@ -49,8 +52,8 @@ Won't get here.
 sub create_content {
     my($self) = @_;
     # Won't get here.
-    return $self->join(
-	    $self->link($self->string('Return to Investment Clubs', 'strong'),
+    return $_VS->vs_join(
+	    $_VS->vs_link($_VS->vs_string('Return to Investment Clubs', 'strong'),
 		    'http://www.eklubs.com'),
 	   );
 }

@@ -17,7 +17,7 @@ Bivio::UI::HTML::Widget::StandardSubmit - renders a submit button of a form
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
@@ -54,8 +54,11 @@ field name.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget::ClearDot;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 my($_SEPARATION) = 10;
 

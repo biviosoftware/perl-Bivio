@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::FormFieldLabel - label which can check for errors
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget::Director>
+L<Bivio::UI::Widget::Director>
 
 =cut
 
-use Bivio::UI::HTML::Widget::Director;
-@Bivio::UI::HTML::Widget::FormFieldLabel::ISA = ('Bivio::UI::HTML::Widget::Director');
+use Bivio::UI::Widget::Director;
+@Bivio::UI::HTML::Widget::FormFieldLabel::ISA = ('Bivio::UI::Widget::Director');
 
 =head1 DESCRIPTION
 
@@ -55,8 +55,11 @@ Which form are we dealing with.
 
 #=IMPORTS
 use Bivio::HTML;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -73,7 +76,7 @@ Nothing here.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::Director::new(@_);
+    my($self) = &Bivio::UI::Widget::Director::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -99,8 +102,8 @@ sub initialize {
     $self->put(
 	control => [['->get_request'], $model, '->get_field_error', $field],
 	values => {},
-	default_value => $self->join([
-	    $self->image('error_triangle', 'error here', {
+	default_value => $_VS->vs_join([
+	    $_VS->vs_image('error_triangle', 'error here', {
 	       align => 'SW',
 	    }),
 	    '&nbsp',

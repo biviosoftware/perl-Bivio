@@ -85,7 +85,7 @@ to the right of the type.
 are retrieved during rendering.  They must be supplied during
 initialization, but the value may be change before each call to
 render.  See
-L<Bivio::UI::HTML::Widget::Indirect::value|Bivio::UI::HTML::Widget::Indirect/"item_value">
+L<Bivio::UI::Widget::Indirect::value|Bivio::UI::Widget::Indirect/"item_value">
 for an example.
 
 =back
@@ -151,7 +151,7 @@ following call:
 
 Icon's C<get_widget_value> returns the information for the
 C<'next'> icon, whatever that is.
-    
+
 =item source
 
 is an attribute of
@@ -207,7 +207,7 @@ I<can> C<get_widget_value>, so the following call is executed:
 
     return Bivio::UI::HTML::Format::Printf->get_widget_value(
         $name, 'The auth_user is %s');
-  
+
 This particular class is known as a I<formatter>, used for
 the purpose of controlling rendering via the configuration
 of a widget.
@@ -296,7 +296,7 @@ should be simple and as syntax free as possible.
 
 =over 4
 
-=item parent : Bivio::UI::HTML::Widget []
+=item parent : Bivio::UI::Widget []
 
 This widget's "owner".  The ancestral hierarchy is checked
 for attributes, i.e. attributes are inherited from parents.
@@ -342,6 +342,21 @@ Returns false for backward compatibility.
 
 sub accepts_attribute {
     return 0;
+}
+
+=for html <a name="get_content_type"></a>
+
+=head2 abstract get_content_type(any source) : string
+
+Returns the content type of this widget.  Only top level widgets
+need to return the content type.  The content type is defined
+by the application protocol.  For HTTP, the content type is the
+MIME type.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub get_content_type {
 }
 
 =for html <a name="initialize"></a>

@@ -26,10 +26,12 @@ C<Bivio::UI::Mail::ClubCreated>
 
 #=IMPORTS
 use Bivio::UI::Mail::SupportAuthor;
-use Bivio::UI::HTML::Widget;
+use Bivio::UI::Widget;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_W) = 'Bivio::UI::HTML::Widget';
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 
 =head1 METHODS
 
@@ -51,9 +53,9 @@ sub execute {
     my($recipient) = $club->format_email();
     my($http) = $req->format_http_prefix;
     my($as) = $http
-	    .$_W->format_uri_static_site($req, 'hm/account-sync.html');
+	    .$_VS->vs_format_uri_static_site($req, 'hm/account-sync.html');
     my($ak) = $http
-	    .$_W->format_uri_static_site($req, 'hm/account-keeper.html');
+	    .$_VS->vs_format_uri_static_site($req, 'hm/account-keeper.html');
     my($msg) = Bivio::UI::Mail::SupportAuthor->enqueue_message($req,
 	    $recipient,
 	    # For syntax see Common::_text_to_html

@@ -33,9 +33,11 @@ www.eklubs.com.
 
 #=IMPORTS
 use Bivio::UI::Facade::Eklubs::Home;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_W) = 'Bivio::UI::HTML::Widget';
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 __PACKAGE__->new({
     clone => 'Prod',
     is_production => 1,
@@ -74,7 +76,7 @@ __PACKAGE__->new({
 
 #=PRIVATE METHODS
 
-# _footer(Bivio::UI::HTML html) : Bivio::UI::HTML::Widget
+# _footer(Bivio::UI::HTML html) : Bivio::UI::Widget
 #
 # Sets footer_widget.
 #
@@ -90,22 +92,22 @@ sub _footer {
 	    'START A CLUB:http://www.eklubs.com/start.htm',
 	   ) {
 	my($label, $task) = split(/:/, $t, 2);
-	push(@$links, $_W->link($label, $task, 'footer_menu'),
+	push(@$links, $_VS->vs_link($label, $task, 'footer_menu'),
 		'&nbsp;|&nbsp;');
     }
     # Delete last separator
     pop(@$links);
 
     # Create grid
-    $_W->load_class('Grid');
+    $_VS->vs_load_class('Grid');
     $html->group(footer_widget => Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(1, 10),
+		$_VS->vs_clear_dot(1, 10),
 		],
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
+		$_VS->vs_clear_dot(undef, 1)->put(
 			cell_expand => 1,
 			cell_bgcolor => 'footer_line',
 		       ),
@@ -120,7 +122,7 @@ sub _footer {
 			$links,
 		    ],
 		}),
-		$_W->link('top', '#top', 'footer_menu'),
+		$_VS->vs_link('top', '#top', 'footer_menu'),
 	    ],
 	    [
 		' ',
@@ -131,7 +133,7 @@ sub _footer {
 		    cell_expand => 1,
 		    values => [
 			[
-			    $_W->link($_W->image('bivio_power'),
+			    $_VS->vs_link($_VS->vs_image('bivio_power'),
 				    'http://www.bivio.com')
 				    ->put(cell_align => 'sw'),
 			    $html->get_standard_copyright->put(
@@ -147,7 +149,7 @@ sub _footer {
     return;
 }
 
-# _header(Bivio::UI::HTML html) : Bivio::UI::HTML::Widget
+# _header(Bivio::UI::HTML html) : Bivio::UI::Widget
 #
 # Sets header_widget and header_height.
 #
@@ -164,14 +166,14 @@ sub _header {
     return;
 }
 
-# _logo(Bivio::UI::HTML html) : Bivio::UI::HTML::Widget
+# _logo(Bivio::UI::HTML html) : Bivio::UI::Widget
 #
 # Returns the logo widget which points to eklubs home page.
 #
 sub _logo {
     my($html) = @_;
-    return $_W->link(
-	    $_W->image('eklubs_header', $html->get_value('home_alt_text')),
+    return $_VS->vs_link(
+	    $_VS->vs_image('eklubs_header', $html->get_value('home_alt_text')),
 	        'http://www.eklubs.com');
 
 }

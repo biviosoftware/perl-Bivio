@@ -720,9 +720,9 @@ Value',
     AccountSyncForm => [
 	accept_agreement => <<'EOF',
 I agree with the
-<{link_static_site('AccountSync Amendment', 'hm/account-access', 0)}>
-to the site_name()
-<{link_static_site('Terms of Service', 'hm/user', 0)}>.
+<{vs_link_static_site('AccountSync Amendment', 'hm/account-access', 0)}>
+to the vs_site_name()
+<{vs_link_static_site('Terms of Service', 'hm/user', 0)}>.
 EOF
     ],
     RealmAccountForm => [

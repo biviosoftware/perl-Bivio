@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::MiscIncomeAndDeductions - lists portfolio income/expense
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::MiscIncomeAndDeductions::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Club::MiscIncomeAndDeductions::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -34,8 +34,11 @@ and deductions.
 #=IMPORTS
 use Bivio::UI::HTML::Club::ReportPage;
 use Bivio::UI::HTML::Widget::DateTime;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -52,19 +55,19 @@ Creates a new Misc. Income and Deductions report.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    my($msg1) = $self->string(
+    my($msg1) = $_VS->vs_string(
 	    'No miscellaneous income to report within the date range.',
 	    'page_text');
-    my($msg2) = $self->string(
+    my($msg2) = $_VS->vs_string(
 	    'No deductions to report within the date range.',
 	    'page_text');
 
-    $fields->{content} = $self->join(
+    $fields->{content} = $_VS->vs_join(
 	'<table border=0 cellspacing=0 cellpadding=5>',
-	$self->table('PortfolioIncomeList', [
+	$_VS->vs_table('PortfolioIncomeList', [
 	    # showing date_time as date
 	    ['RealmTransaction.date_time', {
 		column_widget => Bivio::UI::HTML::Widget::DateTime->new({
@@ -82,14 +85,14 @@ sub new {
 	    summarize => 1,
 	    summary_line_type => '=',
 	    title => 'Miscellaneous Income',
-	    empty_list_widget => $self->join(
+	    empty_list_widget => $_VS->vs_join(
 		    "\n<tr><td colspan=3>",
 		    $msg1,
 		    "</td></tr>",
 	    ),
 	}),
 	"\n<tr><td><br></td></tr>",
-	$self->table('PortfolioDeductionList', [
+	$_VS->vs_table('PortfolioDeductionList', [
 	    # showing date_time as date
 	    ['RealmTransaction.date_time', {
 		column_widget => Bivio::UI::HTML::Widget::DateTime->new({
@@ -107,7 +110,7 @@ sub new {
 	    end_tag => 0,
 	    summary_line_type => '=',
 	    title => 'Deductions',
-	    empty_list_widget => $self->join(
+	    empty_list_widget => $_VS->vs_join(
 		    "\n<tr><td colspan=3>",
 		    $msg2,
 		    "</td></tr>",

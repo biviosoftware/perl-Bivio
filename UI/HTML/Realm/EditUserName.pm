@@ -31,14 +31,17 @@ C<Bivio::UI::HTML::User::EditUserName> allows user to update name.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 
 =head1 METHODS
 
 =cut
 
-=head2 create_content() : Bivio::UI::HTML::Widget
+=head2 create_content() : Bivio::UI::Widget
 
 Create values
 
@@ -47,7 +50,7 @@ Create values
 sub create_content {
     my($self) = @_;
     $self->put_edit_heading('USER_NAME', 'USER_DISPLAY_NAME');
-    return $self->form('UserNameForm', [
+    return $_VS->vs_form('UserNameForm', [
 	$self->get_name_field,
 	$self->get_full_name_fields,
     ]);

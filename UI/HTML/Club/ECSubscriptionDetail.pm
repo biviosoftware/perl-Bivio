@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::ECSubscriptionDetail - subscription detail page
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::ECSubscriptionDetail::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Club::ECSubscriptionDetail::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -34,8 +34,11 @@ TODO: Should be used to configure/modify subscription configuration
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -53,21 +56,21 @@ Bivio::IO::Trace->register;
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    $fields->{content} = $self->join([
+    $fields->{content} = $_VS->vs_join([
 #TODO:        'TODO: This should be the service setup page!',
         '<P>',
         Bivio::UI::HTML::Widget::Grid->new({
             values => [
                 [
-                    $self->string('Subscription first started on: '),
-                    $self->date_time(['Bivio::Biz::Model::ECSubscription',
+                    $_VS->vs_string('Subscription first started on: '),
+                    $_VS->vs_date_time(['Bivio::Biz::Model::ECSubscription',
                         'start_date']),
                 ], [
-                    $self->string('Subscription ends at: '),
-                    $self->date_time(['Bivio::Biz::Model::ECSubscription',
+                    $_VS->vs_string('Subscription ends at: '),
+                    $_VS->vs_date_time(['Bivio::Biz::Model::ECSubscription',
                         'end_date']),
                 ],
             ]

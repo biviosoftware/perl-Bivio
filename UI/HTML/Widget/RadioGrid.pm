@@ -85,8 +85,11 @@ use Bivio::HTML;
 use Bivio::Type::Enum;
 use Bivio::UI::HTML::Widget::Radio;
 use Bivio::UI::Label;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 
 =head1 FACTORIES
 

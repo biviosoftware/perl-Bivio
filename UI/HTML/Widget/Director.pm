@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Director - directs rendering to one widget of a set
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Director::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Director::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -62,8 +62,11 @@ If zero (0), renders nothing.
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -79,7 +82,7 @@ Creates a new Director widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }

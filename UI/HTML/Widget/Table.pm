@@ -18,12 +18,12 @@ Bivio::UI::HTML::Widget::Table - renders a ListModel in an html table
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Table::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Table::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -115,7 +115,7 @@ or the empty string which will render as the empty cell:
 
     '',
 
-=item empty_list_widget : Bivio::UI::HTML::Widget []
+=item empty_list_widget : Bivio::UI::Widget []
 
 If set, the widget to display instead of the table when the
 list_model is empty.
@@ -254,7 +254,7 @@ If true, the column will be C<width="100%">.
 
 =item column_heading : string
 
-=item column_heading : Bivio::UI::HTML::Widget
+=item column_heading : Bivio::UI::Widget
 
 The heading label to use for the columns heading. By default, the column
 name is used to look up the heading label.  The name of the label
@@ -292,7 +292,7 @@ The value for the C<COLSPAN> tag, which is not inserted if C<1>.
 Determines whether the specified cell will be summarized. Only applies to
 numeric columns. By default, numeric columns always summarize.
 
-=item column_widget : Bivio::UI::HTML::Widget
+=item column_widget : Bivio::UI::Widget
 
 The widget which will be used to render the column. By default the column
 widget is based on the column's field type.
@@ -308,17 +308,20 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
 
 #=IMPORTS
 use Bivio::Die;
+use Bivio::UI::HTML::ViewShortcuts;
 
 use Bivio::Biz::Model;
 use Bivio::UI::Align;
 use Bivio::UI::Color;
 use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::HTML::Widget::Join;
+use Bivio::UI::Widget::Join;
 use Bivio::UI::HTML::Widget::LineCell;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::Label;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_INFINITY_ROWS) = 0x7fffffff;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
@@ -337,7 +340,7 @@ Creates a new Table widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -348,7 +351,7 @@ sub new {
 
 =for html <a name="create_cell"></a>
 
-=head2 create_cell(Bivio::Biz::Model model, string col, hash_ref attrs) : Bivio::UI::HTML::Widget
+=head2 create_cell(Bivio::Biz::Model model, string col, hash_ref attrs) : Bivio::UI::Widget
 
 Returns the widget for the specified cell. The model is used for
 column metadata which may be used to construct a widget.
@@ -366,7 +369,7 @@ sub create_cell {
     }
     elsif ($col eq '') {
 #TODO: optimize, could share instances with common span
-	$cell =  Bivio::UI::HTML::Widget::Join->new({
+	$cell =  Bivio::UI::Widget::Join->new({
 	    values => ['&nbsp;'],
 	    column_span => $attrs->{column_span} || 1,
 	});
@@ -489,7 +492,7 @@ sub initialize {
 
 =for html <a name="initialize_child_widget"></a>
 
-=head2 initialize_child_widget(Bivio::UI::HTML::Widget widget)
+=head2 initialize_child_widget(Bivio::UI::Widget widget)
 
 Initializes the specified widget.
 
@@ -539,7 +542,7 @@ sub render {
     # Row counting
     my($list_size) = $_INFINITY_ROWS;
     if ($self->get_or_default('repeat_headings', 0)
-	    && Bivio::IO::ClassLoader->is_class_loaded(
+	    && Bivio::IO::ClassLoader->is_loaded(
 		    'Bivio::Biz::Model::Preferences')) {
 	$list_size = Bivio::Biz::Model::Preferences->get_user_pref(
 		$req, 'PAGE_SIZE');
@@ -577,7 +580,7 @@ sub render {
 
 =for html <a name="render_cell"></a>
 
-=head2 render_cell(Bivio::UI::HTML::Widget cell, any source, string_ref buffer)
+=head2 render_cell(Bivio::UI::Widget cell, any source, string_ref buffer)
 
 Draws the specified cell onto the output buffer.
 
@@ -623,7 +626,7 @@ sub render_row {
 
 #=PRIVATE METHODS
 
-# _get_heading(Bivio::Biz::ListModel list, string col, Bivio::UI::HTML::Widget cell, array_ref sort_fields) : Bivio::UI::HTML::Widget
+# _get_heading(Bivio::Biz::ListModel list, string col, Bivio::UI::Widget cell, array_ref sort_fields) : Bivio::UI::Widget
 #
 # Returns the table heading widget for the specified column widget.
 #
@@ -632,7 +635,7 @@ sub _get_heading {
 
     my($heading) = $cell->get_or_default('column_heading', $col);
 
-    unless (UNIVERSAL::isa($heading, 'Bivio::UI::HTML::Widget')) {
+    unless (UNIVERSAL::isa($heading, 'Bivio::UI::Widget')) {
 	# Try to get the heading label first
 	if ($heading) {
 	    my($hl) = Bivio::UI::Label->unsafe_get_exactly(
@@ -670,30 +673,30 @@ sub _get_heading {
     }
 
     if (defined($sort_fields) && @$sort_fields) {
-        $heading = $self->director([
+        $heading = $_VS->vs_director([
             Bivio::Die->eval_or_die("sub {
                 my(\$sort_col) = shift->get_query->get('order_by')->[0];
                 return \$sort_col eq '$sort_fields->[0]' ? 1 : 0;
             }")], {
-                0 => $self->link($heading,
+                0 => $_VS->vs_link($heading,
                         ['->format_uri_for_sort', $sort_fields]),
-                1 => $self->director([
+                1 => $_VS->vs_director([
                     sub {
                         return shift->get_query->get('order_by')->[1];
                     }], {
-                        0 => $self->join([
-                            $self->link($heading, ['->format_uri_for_sort',
+                        0 => $_VS->vs_join([
+                            $_VS->vs_link($heading, ['->format_uri_for_sort',
                                 $sort_fields, 1]),
                             ' ',
-                            $self->image('sort_up',
+                            $_VS->vs_image('sort_up',
                                     'This column sorted in descending order')
                             ->put(align => 'BOTTOM'),
                             ]),
-                        1 => $self->join([
-                            $self->link($heading, ['->format_uri_for_sort',
+                        1 => $_VS->vs_join([
+                            $_VS->vs_link($heading, ['->format_uri_for_sort',
                                 $sort_fields, 0]),
                             ' ',
-                            $self->image('sort_down',
+                            $_VS->vs_image('sort_down',
                                     'This column sorted in ascending order')
                             ->put(align => 'BOTTOM'),
                         ]),
@@ -710,7 +713,7 @@ sub _get_heading {
     return $heading;
 }
 
-# _get_summary_cell(Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+# _get_summary_cell(Bivio::UI::Widget cell) : Bivio::UI::Widget
 #
 # Returns a widget which renders the summary widget for the specified column.
 #
@@ -721,7 +724,7 @@ sub _get_summary_cell {
 	return $cell;
     }
 #TODO: optimize, could share instances with common span
-    my($blank_string) = Bivio::UI::HTML::Widget::Join->new({
+    my($blank_string) = Bivio::UI::Widget::Join->new({
 	values => ['&nbsp;'],
 	column_span => $cell->get_or_default('column_span', 1),
     });
@@ -729,7 +732,7 @@ sub _get_summary_cell {
     return $blank_string;
 }
 
-# _get_summary_line(Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+# _get_summary_line(Bivio::UI::Widget cell) : Bivio::UI::Widget
 #
 # Returns a widget which renders the summary line for the specified column.
 #

@@ -1,0 +1,432 @@
+# Copyright (c) 2001 bivio Inc.  All rights reserved.
+# $Id$
+package Bivio::UI::ViewLanguage;
+use strict;
+$Bivio::UI::ViewLanguage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::ViewLanguage::VERSION;
+
+=head1 NAME
+
+Bivio::UI::ViewLanguage - defines and compiles the view language
+
+=head1 SYNOPSIS
+
+    use Bivio::UI::ViewLanguage;
+
+=cut
+
+use Bivio::UNIVERSAL;
+@Bivio::UI::ViewLanguage::ISA = ('Bivio::UNIVERSAL');
+
+=head1 DESCRIPTION
+
+C<Bivio::UI::ViewLanguage> defines the language used by
+L<Bivio::UI::View|Bivio::UI::View>.  Here's a simple
+view language file:
+
+    view_class_map('HTMLWidget');
+    view_main(Page({
+        ...,
+    });
+
+The first call to I<view_class_map> tells this module where to load
+widgets from.  The name is defined in the configuration for
+L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader>.
+
+The next call defines the main widget, i.e. the widget that
+will be called when the view is rendered by
+L<Bivio::UI::View::execute|Bivio::UI::View/"execute">.  All views
+must define a I<view_main> or a view's parents must define a main.
+
+A view may have a parent, e.g.:
+
+    view_parent('common');
+    view_put(page_body => Prose('hello, world!'));
+
+This view inherits its attributes from a view called C<common>.
+The C<common> view or its parents must define I<view_class_map> and
+I<view_main>.  This last attribute, I<page_body>, is application
+specific.  Reserved attributes, i.e. attributes defined in the
+view language, begin with the prefix I<view_>.  You may not define
+an application specific attribute which begins with I<view_>.  There
+are a few other restrictions which are defined by I<view_put>.
+
+=cut
+
+#=IMPORTS
+use Bivio::IO::Trace;
+
+#=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
+my($_PACKAGE) = __PACKAGE__;
+my($_VIEW_IN_EVAL);
+use vars ('$AUTOLOAD');
+
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new()
+
+You cannot instantiate this class.
+
+=cut
+
+sub new {
+    Bivio::Die->die('this class may not be instantiated');
+}
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="AUTOLOAD"></a>
+
+=head2 AUTOLOAD(...) : any
+
+The widget and shortcut methods are dynamically loaded.
+
+=cut
+
+sub AUTOLOAD {
+    my($proto, @args) = _args(@_);
+    my($view) = _assert_in_eval($AUTOLOAD);
+    my($method) = $AUTOLOAD;
+    $method =~ s/.*:://;
+    if ($method =~ /^[A-Z]/) {
+	my($map) = $view->ancestral_get('view_class_map', undef);
+	_die("view_class_map() must be called before $method") unless $map;
+	return Bivio::IO::ClassLoader->map_require($map, $method)
+		->new(@args);
+    }
+    if ($method =~ /^vs_/) {
+	my($vs) = $view->ancestral_get('view_shortcuts', undef);
+	_die("view_shortcuts() must be called before $method") unless $vs;
+	_die("$method is not implemented by $vs") unless $vs->can($method);
+	return $vs->$method(@args);
+    }
+    _die("$method invalid view function, widget, or shortcut.");
+    # DOES NOT RETURN
+}
+
+=for html <a name="eval"></a>
+
+=head2 static eval(Bivio::UI::View view) : Bivio::Die
+
+Compiles I<view.view_file_name>.
+
+Returns C<undef> on success.  Returns die instance on failure.
+
+=head2 static eval(string_ref code) : any
+
+Compiles I<code> within context of the current view being compiled.
+
+=cut
+
+sub eval {
+    my(undef, $value) = @_;
+    return _eval_view($value) if UNIVERSAL::isa($value, 'Bivio::UI::View');
+    return _eval_code($value) if ref($value) eq 'SCALAR';
+    _die('eval: invalid argument (not a string_ref or view)');
+    # DOES NOT RETURN
+}
+
+=for html <a name="view_class_map"></a>
+
+=head2 static view_class_map(string map_name)
+
+Identifies the load path for Widgets specified in view programs.
+I<map_name> is a string which identifies a configured class path
+(L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader>).
+May be used to override parent's specification, but typically only
+defined in the root view.
+
+This attribute must be defined in the view or its parents.
+
+=cut
+
+sub view_class_map {
+    my($proto, $map_name) = _args(@_);
+    _assert_value(view_class_map => $map_name);
+    _die($map_name.': not a valid view_class_map;'
+	    .' check Bivio::IO::ClassLoader configuration')
+	    unless Bivio::IO::ClassLoader->is_valid_map($map_name);
+    _put(view_class_map => $map_name);
+    return;
+}
+
+=for html <a name="view_declare"></a>
+
+=head2 static view_declare(string attr_name, ...)
+
+Defines existence of I<attr_name>s on view.  This is equivalent to
+calling L<view_put|"view_put"> on the I<attr_name>s with valus
+of C<undef>.
+
+=cut
+
+sub view_declare {
+    my($proto, @args) = _args(@_);
+    return $proto->view_put(map {($_, undef)} @args);
+}
+
+=for html <a name="view_main"></a>
+
+=head2 static view_main(Bivio::UI::Widget widget)
+
+Specifies the "main" widget for this view.  This widget will be rendered when
+the view or its children are executed.
+
+A view must either have a L<view_parent|"view_parent"> or a view_main.
+
+=cut
+
+sub view_main {
+    my($proto, $widget) = _args(@_);
+    _assert_value('view_main', $widget,
+	    qw(Bivio::UI::Widget get_content_type render));
+    _put(view_main => $widget);
+    return;
+}
+
+=for html <a name="view_parent"></a>
+
+=head2 static view_parent(string view_name)
+
+A view may be the child of another view.  Child views inherit attributes from
+their parents.  Child views may override their ancestors' attributes.  A view
+without a view_parent is called a I<root view>.
+
+A view must either have a L<view_main|"view_main"> or a view_parent.
+
+=cut
+
+sub view_parent {
+    my($proto, $view_name) = _args(@_);
+    _assert_value('view_parent', $view_name);
+    # COUPLING: View catches recursion, because it maintains the list
+    # of all views.  "parent" is a special word used by Collection::Attributes.
+    # We define both to keep consistency in the "view_*" attribute space.
+    my($parent) = Bivio::UI::View->get_instance($view_name);
+    _put(view_parent => $parent);
+    _put(parent => $parent);
+    return;
+}
+
+=for html <a name="view_put"></a>
+
+=head2 static view_put(string attr_name, string attr_value, ....)
+
+Sets (I<attr_name>, I<attr_value>) attributes.
+
+I<attr_name>s must not already exist, must be perl identifiers
+beginning with a letter, must be all lower case,
+and may not begin with I<view_>.
+
+=cut
+
+sub view_put {
+    my($proto, @args) = _args(@_);
+    _die('view_put not supplied any arguments') unless int(@args) > 1;
+    _die('view_put not supplied an even number of arguments')
+	    if int(@args) % 2 != 0;
+    while (@args) {
+	my($n, $v) = (shift(@args), shift(@args));
+	# The syntax is very rigid to allow for expansion
+	_die($n.': attr_name is not a perl identifier') if $n =~ /\W/;
+	_die($n.': attr_name does not begin with a letter')
+		unless $n =~ /^[a-z]/;
+	_die($n.': attr_name is not all lower case') if $n =~ /[A-Z]/;
+	_die($n.': attr_name may not begin with view_') if $n =~ /^view_/;
+	_die($n.': is a reserved attribute name') if $n eq 'parent';
+	_put($n, $v);
+    }
+    return;
+}
+
+=for html <a name="view_shortcuts"></a>
+
+=head2 static view_shortcuts(Bivio::UI::ViewShortcutsBase class_name)
+
+Shortcuts are application specific functions available to view programs.  A
+view defines the class which implements these shortcuts.  If no shortcuts are
+used, this attribute need not be defined.
+
+I<class_name> defines the shortcuts.  I<class_name> must be a subclass
+L<Bivio::UI::ViewShortcutsBase|Bivio::UI::ViewShortcutsBase>.
+
+Shortcuts begin with the prefix C<vs_>.  This ensures the names of shortcuts do
+not conflict with perl's internal names, the ViewLanguage functions (which always
+begin with C<view_>), or names of widgets (which are always begin with an upper
+case letter and are simple class names).
+
+=cut
+
+sub view_shortcuts {
+    my($proto, $class_name) = _args(@_);
+    _assert_value('view_shortcuts', $class_name,
+	    'Bivio::UI::ViewShortcutsBase');
+    _put(view_shortcuts => $class_name);
+    return;
+}
+
+=for html <a name="view_widget_value"></a>
+
+=head2 static view_widget_value(string attr) : array_ref
+
+Returns a widget value which retrieves a L<Bivio::UI::View|Bivio::UI::View>
+attribute from the view at render time.  Used by parent views to retrieve
+attributes from their children at run-time.
+
+=cut
+
+sub view_widget_value {
+    my(undef, $attr) = _args(@_);
+    my($view) = _assert_in_eval('view_widget_value');
+    _die($attr.': attribute not found; view or its parents must declare'
+	    .' before use')
+	    if $view->ancestral_get($attr, $view) eq $view;
+    return [['->get_request'], 'Bivio::UI::View', '->ancestral_get', $attr];
+}
+
+#=PRIVATE METHODS
+
+# _args(...) : array
+#
+# Detects if first argument is $proto or not.  When view_*() methods
+# are called from view files or templates, they are not given a $proto.
+#
+sub _args {
+    return $_[0] eq __PACKAGE__ ? @_ : (__PACKAGE__, @_);
+}
+
+# _assert_in_eval() : Bivio::UI::View
+#
+# Returns the current view or terminates.
+#
+sub _assert_in_eval {
+    my($op) = @_;
+    return $_VIEW_IN_EVAL if $_VIEW_IN_EVAL;
+    $op ||= 'eval';
+    $op =~ s/.*:://;
+    Bivio::Die->die($op, ': operation only allowed in views');
+    # DOES NOT RETURN
+}
+
+# _assert_value(string name, string value, string class, array methods)
+#
+# Asserts value is defined, isa class, and implements methods.
+#
+sub _assert_value {
+    my($name, $value, $class, @methods) = @_;
+    _die("$name() not supplied a value") unless defined($value);
+    return unless $class;
+
+    # Load class and value class unless is ref (loaded)
+    unless (ref($value)) {
+	Bivio::IO::ClassLoader->simple_require($class);
+	Bivio::IO::ClassLoader->simple_require($value);
+    }
+    _die(": $name()'s value not a $class")
+	    unless UNIVERSAL::isa($value, $class);
+
+    foreach my $m (@methods) {
+	_die("$name()'s value does not implement '$m'") unless $value->can($m);
+    }
+    return;
+}
+
+# _die(string msg)
+#
+# Calls _assert_in_eval()->compile_die($msg).
+#
+sub _die {
+    _assert_in_eval()->compile_die(@_);
+    # DOES NOT RETURN
+}
+
+# _eval_code(string_ref code) : any
+#
+# Evaluates a sequence of code in this class's context.
+#
+sub _eval_code {
+    my($code) = @_;
+    _assert_in_eval('eval');
+    _trace($code) if $_TRACE;
+    return Bivio::Die->eval_or_die($code);
+}
+
+# _eval_view(Bivio::UI::View view) : Bivio::Die
+#
+# Does view version of eval.
+#
+sub _eval_view {
+    my($view) = @_;
+    $view->compile_die('view already compiled!') if $view->is_read_only;
+
+    my($old_current) = $_VIEW_IN_EVAL;
+    $_VIEW_IN_EVAL = $view;
+    my($die) = Bivio::Die->catch(sub {
+	my($code) = Bivio::IO::File->read($view->get('view_file_name'));
+	_eval_code($code);
+	_initialize($view);
+	return;
+    });
+    $_VIEW_IN_EVAL = $old_current;
+    return $die;
+}
+
+# _initialize($view)
+#
+# Ensures the attributes are properly defined.  Specifies refs
+# with no uses.
+#
+sub _initialize {
+    my($view) = @_;
+    my($values) = $view->get_shallow_copy;
+#TODO: is_terminal needs to traverse hierarchy
+    my($is_terminal) = 1;
+    while (my($k, $v) = each(%$values)) {
+	$v->initialize if UNIVERSAL::isa($v, 'Bivio::UI::Widget');
+	$is_terminal = 0 unless defined($v);
+    }
+#TODO: broken.  Need to traverse parents to see if everything used
+    $view->put(view_is_executable => 1);
+
+    _die('view_main or view_parent must be specified')
+	    unless $view->has_keys('view_main')
+		    || $view->has_keys('view_parent');
+    $view->set_read_only;
+    return;
+}
+
+# _put(string name, any value) : any
+#
+# Asserts in eval and puts the attribute.  Cannot be called twice.
+#
+sub _put {
+    my($name, $value) = @_;
+    my($view) = _assert_in_eval($name);
+    # We allow an attribute to be view_declared (undef) and then
+    # assigned later in the view.
+    _die($name.': view attribute already defined (no overrides within view)')
+	    if defined($view->unsafe_get($name));
+    $view->put($name => $value);
+    return;
+}
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 bivio Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+1;

@@ -32,10 +32,13 @@ Women's Financial Network Investment Club Exchange.
 =cut
 
 #=IMPORTS
-use Bivio::UI::HTML::Widget;
+use Bivio::UI::Widget;
 use Bivio::UI::Facade::BUYandHOLD::Home;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_INFO_INTRO) = {
     uri => 'http://www.buyandhold.com/bh/en/investmentclubs/index.html',
     display_name => 'Intro'
@@ -121,7 +124,7 @@ __PACKAGE__->new({
 		space => 2,
 		values => [
 		    [
-			Bivio::UI::HTML::Widget->join([
+			$_VS->vs_join([
 			    '<a href="http://www.buyandhold.com/bh/en/'
 			    .'investmentclubs/index.html"><img src="'
 			    .'http://www.buyandhold.com/bh/en/investmentclubs'
@@ -133,7 +136,7 @@ __PACKAGE__->new({
 			),
 		    ],
 		    [
-			Bivio::UI::HTML::Widget->join(
+			$_VS->vs_join(
 			    [[\&_chooser]],
 			)->put(
 			    cell_width => '65%',
@@ -141,8 +144,8 @@ __PACKAGE__->new({
 			    cell_nowrap => 1,
 			    cell_end => 0,
 			),
-			Bivio::UI::HTML::Widget->link(
-			    Bivio::UI::HTML::Widget->image(
+			$_VS->vs_link(
+			    $_VS->vs_image(
 				'bivio_power',
 				'bivio - accounting, reports, taxes, and'
 				.' administration for your investment club',
@@ -158,7 +161,7 @@ __PACKAGE__->new({
 
 	    $fc->group(copyright_widget => _copyright());
 
-	    $fc->group(content_widget => Bivio::UI::HTML::Widget->indirect(
+	    $fc->group(content_widget => $_VS->vs_indirect(
 			    ['page_scene']
 		   ));
 
@@ -205,13 +208,13 @@ sub _chooser {
 #
 sub _copyright {
     my($year) = (gmtime(time))[5] + 1900;
-    return Bivio::UI::HTML::Widget->string(
-	    Bivio::UI::HTML::Widget->join([
+    return $_VS->vs_string(
+	    $_VS->vs_join([
 		"Copyright &copy; $year, bivio Inc."
 		." <i>All Rights Reserved.</i>\n<br>"
 		."Use of this Web site constitutes acceptance"
 		." of the bivio\n",
-		Bivio::UI::HTML::Widget->link(
+		$_VS->vs_link(
 			Bivio::UI::Label->get_simple(
 				'USER_AGREEMENT_TEXT'),
 			'http://www.bivio.com/hm/user.html',

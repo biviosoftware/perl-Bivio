@@ -12,8 +12,6 @@ Bivio::UI::Color - named colors
 =head1 SYNOPSIS
 
     use Bivio::UI::Color;
-    '<font Bivio::UI::Color->as_html('text_ia')>';
-    '<td '.Bivio::UI::Color->as_html_bg('page_bg').'>';
 
 =cut
 

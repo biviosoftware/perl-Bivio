@@ -18,12 +18,12 @@ Bivio::UI::HTML::Widget::Search - search field
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::Widget>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Search::ISA = qw(Bivio::UI::HTML::Widget);
+use Bivio::UI::Widget;
+@Bivio::UI::HTML::Widget::Search::ISA = qw(Bivio::UI::Widget);
 
 =head1 DESCRIPTION
 
@@ -53,8 +53,11 @@ How wide is the field represented.
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 
 =head1 METHODS
 
@@ -95,7 +98,7 @@ sub render {
 		    ? Bivio::Agent::TaskId::CLUB_SEARCH()
 		    : Bivio::Agent::TaskId::GENERAL_SEARCH())
             .'"'
-	    .$self->link_target_as_html().'>'
+	    .$_VS->vs_link_target_as_html($self).'>'
 	    .$fp.'<input type=text size='.$self->get('size')
 #TODO: should be flush left
             .' maxlength='.Bivio::Type::Line->get_width()

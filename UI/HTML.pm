@@ -23,7 +23,7 @@ L<Bivio::UI::FacadeComponent>
 =cut
 
 use Bivio::UI::FacadeComponent;
-use Bivio::UI::HTML::Widget;
+use Bivio::UI::Widget;
 @Bivio::UI::HTML::ISA = ('Bivio::UI::FacadeComponent');
 
 =head1 DESCRIPTION
@@ -56,9 +56,11 @@ sub UNDEF_CONFIG {
 #=IMPORTS
 use Bivio::Die;
 use Bivio::UI::Facade;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
-my($_W) = 'Bivio::UI::HTML::Widget';
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 # HTML uses all of these
 Bivio::UI::Facade->register(['Bivio::UI::Icon', 'Bivio::UI::Color',
     'Bivio::UI::Font']);
@@ -69,7 +71,7 @@ Bivio::UI::Facade->register(['Bivio::UI::Icon', 'Bivio::UI::Color',
 
 =for html <a name="get_data_disclaimer"></a>
 
-=head2 static get_data_disclaimer() : Bivio::UI::HTML::Widget
+=head2 static get_data_disclaimer() : Bivio::UI::Widget
 
 Returns the data disclaimer widget (which is a director)
 
@@ -78,7 +80,7 @@ Returns the data disclaimer widget (which is a director)
 sub get_data_disclaimer {
     my($proto) = @_;
     # Only render csi data if accounting page
-    return $_W->director(
+    return $_VS->vs_director(
 	    [sub {
 		 # Some tasks don't have uris; always have names
 		 return shift->get('task_id')->get_name =~ /ACCOUNTING/
@@ -88,19 +90,19 @@ sub get_data_disclaimer {
 		0 => 0,
 		1 => Bivio::UI::HTML::Widget::Grid->new({
 		    values => [[
-			$_W->clear_dot(1, 1)->put(cell_width => '50%'),
-			$_W->template_as_string(
+			$_VS->vs_clear_dot(1, 1)->put(cell_width => '50%'),
+			$_VS->vs_template_as_string(
 				    <<'EOF', 'data_disclaimer')
-<{clear_dot(480, 10)}><br>
+<{vs_clear_dot(480, 10)}><br>
 Historical data and daily updates provided by
-<{link('Commodity Systems, Inc. (CSI)', 'http://www.csidata.com', 0)}>.
+<{vs_link('Commodity Systems, Inc. (CSI)', 'http://www.csidata.com', 0)}>.
 Data and information is provided for informational purposes only, and is not
-intended for trading purposes. Neither site_name() nor its data or content
+intended for trading purposes. Neither vs_site_name() nor its data or content
 providers shall be liable for any errors or delays in the content, or
 for any actions taken in reliance thereon.
 EOF
 				->put(cell_align => 'center'),
-			$_W->clear_dot(1, 1)->put(cell_width => '50%'),
+			$_VS->vs_clear_dot(1, 1)->put(cell_width => '50%'),
 			],
 		    ],
 		}),
@@ -109,7 +111,7 @@ EOF
 
 =for html <a name="get_header"></a>
 
-=head2 static get_header() : Bivio::UI::HTML::Widget
+=head2 static get_header() : Bivio::UI::Widget
 
 Returns the widget used to render the page header.
 
@@ -117,7 +119,7 @@ Returns the widget used to render the page header.
 
 sub get_header {
     my($proto) = @_;
-    return $_W->indirect(
+    return $_VS->vs_indirect(
 	    [__PACKAGE__, '->get_value', 'header_widget']);
 }
 
@@ -135,7 +137,7 @@ sub get_header_height {
 
 =for html <a name="get_logo"></a>
 
-=head2 static get_logo() : Bivio::UI::HTML::Widget
+=head2 static get_logo() : Bivio::UI::Widget
 
 Returns the widget which renders the logo.
 
@@ -143,13 +145,13 @@ Returns the widget which renders the logo.
 
 sub get_logo {
     my($proto) = @_;
-    return $_W->indirect(
+    return $_VS->vs_indirect(
 	    [__PACKAGE__, '->get_value', 'logo_widget']);
 }
 
 =for html <a name="get_standard_body"></a>
 
-=head2 get_standard_body() : Bivio::UI::HTML::Widget
+=head2 get_standard_body() : Bivio::UI::Widget
 
 Returns a Join widget which can be passed to
 I<body> attribute of
@@ -162,9 +164,9 @@ must be defined on I<self>.
 
 sub get_standard_body {
     my($self) = @_;
-    return $_W->join([
+    return $_VS->vs_join([
 	$self->get_value('header_widget'),
-	$_W->indirect(['page_scene']),
+	$_VS->vs_indirect(['page_scene']),
 	$self->get_value('footer_widget'),
     ]);
     return;
@@ -172,7 +174,7 @@ sub get_standard_body {
 
 =for html <a name="get_standard_copyright"></a>
 
-=head2 static get_standard_copyright() : Bivio::UI::HTML::Widget
+=head2 static get_standard_copyright() : Bivio::UI::Widget
 
 Returns standard copyright text which should be wrapped in a
 string.
@@ -181,13 +183,13 @@ string.
 
 sub get_standard_copyright {
     my($year) = (gmtime(time))[5] + 1900;
-    return $_W->string(
-	    $_W->join([
+    return $_VS->vs_string(
+	    $_VS->vs_join([
 		"Copyright &copy; $year, bivio Inc."
 		." <i>All Rights Reserved.</i>\n<br>"
 		."Use of this Web site constitutes acceptance"
 		." of the bivio\n",
-		$_W->link(
+		$_VS->vs_link(
 			Bivio::UI::Label->get_simple(
 				'USER_AGREEMENT_TEXT'),
 			'USER_AGREEMENT_TEXT',
@@ -199,7 +201,7 @@ sub get_standard_copyright {
 
 =for html <a name="get_standard_footer"></a>
 
-=head2 static get_standard_footer() : Bivio::UI::HTML::Widget
+=head2 static get_standard_footer() : Bivio::UI::Widget
 
 Returns a standard footer widget.
 
@@ -214,7 +216,7 @@ I<footer_menu>
 
 sub get_standard_footer {
     my($proto) = @_;
-    my($spacer) = $_W->join(['&nbsp;'])->put(
+    my($spacer) = $_VS->vs_join(['&nbsp;'])->put(
 	cell_width => 20,
     );
 
@@ -224,14 +226,14 @@ sub get_standard_footer {
 	    'Safe & Private:GENERAL_PRIVACY',
 	    'Contact:GENERAL_CONTACT') {
 	my($label, $task) = split(/:/, $t);
-	push(@$links, $_W->link(
+	push(@$links, $_VS->vs_link(
 		$label, $task, 'footer_menu'),
 		$spacer);
     }
-    push(@$links, $_W->link(['support_email'], 'MAIL_SUPPORT', 'footer_menu'));
+    push(@$links, $_VS->vs_link(['support_email'], 'MAIL_SUPPORT', 'footer_menu'));
 
     # Create grid
-    $_W->load_class('Grid', 'EditPreferences');
+    $_VS->vs_load_class('Grid', 'EditPreferences');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
@@ -239,7 +241,7 @@ sub get_standard_footer {
 		' ',
 	    ],
 	    [
-		$_W->clear_dot(undef, 1)->put(
+		$_VS->vs_clear_dot(undef, 1)->put(
 			cell_expand => 1,
 			cell_bgcolor => 'footer_line',
 		       ),
@@ -252,18 +254,18 @@ sub get_standard_footer {
 	    [
 		# Only render second line if the the EditPreferences
 		# widget actually rendered something.
-		$_W->director(
+		$_VS->vs_director(
 			['edit_preferences_rendered'],
 			{
 			    0 => 0,
-			    1 => $_W->clear_dot(undef, 1),
+			    1 => $_VS->vs_clear_dot(undef, 1),
 			})->put(
 				cell_expand => 1,
 				cell_bgcolor => 'footer_line',
 			       ),
 	    ],
 	    [
-		$_W->toggle_secure(),
+		$_VS->vs_toggle_secure(),
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_align => 'center',
 		    cell_expand => 1,
@@ -271,7 +273,7 @@ sub get_standard_footer {
 			$links,
 		    ],
 		}),
-		$_W->link('top', '#top', 'footer_menu'),
+		$_VS->vs_link('top', '#top', 'footer_menu'),
 	    ],
 	    [
 		' ',
@@ -280,8 +282,8 @@ sub get_standard_footer {
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_expand => 1,
 		    values => [[
-			$_W->link_static_site(
-				$_W->image('truste_mark', 'TRUSTe'),
+			$_VS->vs_link_static_site(
+				$_VS->vs_image('truste_mark', 'TRUSTe'),
 				'hm/private.html')->put(
 					cell_align => 'n',
 					cell_expand => 1),
@@ -300,7 +302,7 @@ sub get_standard_footer {
 
 =for html <a name="get_standard_head"></a>
 
-=head2 static get_standard_head() : Bivio::UI::HTML::Widget
+=head2 static get_standard_head() : Bivio::UI::Widget
 
 Returns a Title widget which can be passed to
 I<head> attribute of
@@ -314,7 +316,7 @@ Requires Bivio::UI::HTML::Widget::Page attributes: I<site_name>
 =cut
 
 sub get_standard_head {
-    $_W->load_class('Title');
+    $_VS->vs_load_class('Title');
     return Bivio::UI::HTML::Widget::Title->new({
 	values => [
 	    ['page_subtopic'],
@@ -333,7 +335,7 @@ sub get_standard_head {
 
 =for html <a name="get_standard_header"></a>
 
-=head2 get_standard_header() : Bivio::UI::HTML::Widget
+=head2 get_standard_header() : Bivio::UI::Widget
 
 Returns a widget which renders a logo, an ImageMenu, RealmChooser,
 etc.  The standard bivio setup.  We'll modify this as we go.
@@ -343,18 +345,18 @@ etc.  The standard bivio setup.  We'll modify this as we go.
 sub get_standard_header {
     my($self) = @_;
     # The header is different for each realm type
-    $_W->load_class(qw(RealmChooser Grid));
+    $_VS->vs_load_class(qw(RealmChooser Grid));
     my($realm_info) = $self->get_value('realm_chooser');
     $realm_info->put(cell_nowrap => 1, cell_align => 'left',
 	    cell_colspan => 2, cell_expand => 1);
-    my($top_menu) = $_W->indirect(
+    my($top_menu) = $_VS->vs_indirect(
 	    ['page_image_menu'])->put(
 		    cell_align => 'nw',
 		    cell_bgcolor => 'image_menu_bg',
 		    cell_colspan => 2,
 		    cell_align => 'left',
 		   );
-    my($sub_menu) = $_W->indirect(
+    my($sub_menu) = $_VS->vs_indirect(
 	    ['page_text_menu']);
     my($top_part) = Bivio::UI::HTML::Widget::Grid->new({
 	cell_expand => 1,
@@ -371,25 +373,25 @@ sub get_standard_header {
 		$realm_info,
 	    ],
 	    [
-		$_W->clear_dot(5, 1)->put(
+		$_VS->vs_clear_dot(5, 1)->put(
 		    cell_nowrap => 1,
 		    cell_align => 'right',
 		    cell_colspan => 2,
 		),
 	    ],
 	    [
-		$_W->image('grad_g', '')->put(
+		$_VS->vs_image('grad_g', '')->put(
 			cell_bgcolor => 'stripe_above_menu',
 		       ),
-		$_W->join([
+		$_VS->vs_join([
 		    $self->get_value('want_help')
-		    ? $_W->link($_W->image('help_off'), ['->format_help_uri'])
-		    : $_W->join(''),
-		    $_W->director(
+		    ? $_VS->vs_link($_VS->vs_image('help_off'), ['->format_help_uri'])
+		    : $_VS->vs_join(''),
+		    $_VS->vs_director(
 			    ['auth_user'],
 			    {},
-			    $_W->link($_W->image('logout_off'), 'LOGOUT'),
-			    $_W->link($_W->image('login_square_off'), 'LOGIN'),
+			    $_VS->vs_link($_VS->vs_image('logout_off'), 'LOGOUT'),
+			    $_VS->vs_link($_VS->vs_image('login_square_off'), 'LOGIN'),
 			   ),
 		])->put(
 			cell_bgcolor => 'stripe_above_menu',
@@ -397,7 +399,7 @@ sub get_standard_header {
 		       ),
 	    ],
 	    [
-		$_W->image('grad_1px', '')->put(
+		$_VS->vs_image('grad_1px', '')->put(
 		    cell_bgcolor => 'line_above_menu',
 		    cell_colspan => 2,
 		    height => 1,
@@ -413,7 +415,7 @@ sub get_standard_header {
     # The top is used by the standard_footer.
 #TODO: Make link '_top' dynamic.
     # We set _top, because the header is used in a frame.
-    return $_W->join('<a name="top"></a>',
+    return $_VS->vs_join('<a name="top"></a>',
 	    $top_part, $sub_menu);
 }
 
@@ -433,7 +435,7 @@ sub get_standard_header_height {
 
 =for html <a name="get_standard_logo"></a>
 
-=head2 static get_standard_logo() : Bivio::UI::HTML::Widget
+=head2 static get_standard_logo() : Bivio::UI::Widget
 
 Returns the Logo widget which fits in with everything else.
 
@@ -441,13 +443,13 @@ Returns the Logo widget which fits in with everything else.
 
 sub get_standard_logo {
     my($proto) = @_;
-    return $_W->director(
+    return $_VS->vs_director(
 	    ['super_user_id'],
 	    {},
-	    $_W->string(['auth_user', 'name'],
+	    $_VS->vs_string(['auth_user', 'name'],
 		    'substitute_user'),
-	    $_W->link(
-		    $_W->image(
+	    $_VS->vs_link(
+		    $_VS->vs_image(
 			    [__PACKAGE__, '->get_value', 'logo_icon'],
 			    [__PACKAGE__, '->get_value', 'home_alt_text'],
 			   ),
@@ -468,7 +470,7 @@ Uses I<head_widget>.
 
 sub get_standard_page {
     my($self) = @_;
-    $_W->load_class('Page');
+    $_VS->vs_load_class('Page');
     return Bivio::UI::HTML::Widget::Page->new({
 	head => $self->get_value('head_widget'),
 	body => $self->get_standard_body(),
@@ -478,14 +480,14 @@ sub get_standard_page {
 
 =for html <a name="get_standard_style"></a>
 
-=head2 static get_standard_style() : Bivio::UI::HTML::Widget
+=head2 static get_standard_style() : Bivio::UI::Widget
 
 Returns the standard widget for style.
 
 =cut
 
 sub get_standard_style {
-    $_W->load_class('Style');
+    $_VS->vs_load_class('Style');
     return Bivio::UI::HTML::Widget::Style->new;
 }
 
@@ -584,8 +586,8 @@ sub initialize_standard_support {
 	    + $icon->get_width('grad_y'));
 
     $self->group(image_menu_left_cell => 
-	    $_W->image('grad_y', ''));;
-    $self->group(realm_chooser => $_W->load_and_new('RealmChooser', {
+	    $_VS->vs_image('grad_y', ''));;
+    $self->group(realm_chooser => $_VS->vs_new('RealmChooser', {
 	pad_left => ['Bivio::UI::Icon', '->get_width', 'grad_y'],
     }));
     $self->group(image_menu_separator_width => 1);
@@ -598,7 +600,7 @@ sub initialize_standard_support {
 
     # Widgets used in headers of all pages
     $self->group(home_login_image =>
-		    $_W->load_and_new('HomeLoginImage'));
+		    $_VS->vs_new('HomeLoginImage'));
     my($mld_alt) = 'Enroll with Merrill Lynch and get $100';
     my($mld_uri) = 'http://www.mldirect.ml.com/publish/public/'
 	    .'offer.asp?medium=BIV0001';
@@ -606,7 +608,7 @@ sub initialize_standard_support {
 	    .'Buy?request=rr.refBy&ref=BIVIO'
 	    .'&dest=/bh/en/advert/closed/bivio/bivio.html';
     $self->group(north_banner_widget =>
-	    $_W->load_and_new('Advertizement', {
+	    $_VS->vs_new('Advertizement', {
 		values => [
 		    # weight icon alt uri
 		    [1, 'ad_mld_2_468x60', $mld_alt, $mld_uri],
@@ -625,13 +627,13 @@ sub initialize_standard_support {
 		    [1, 'ad_bivio_stop', 'Learn about AccountSync',
 			'/hm/account-sync.html'],
 		]}));
-    $self->group(toggle_secure_widget => $_W->toggle_secure);
-    $self->group(register_button_widget => $_W->director(
+    $self->group(toggle_secure_widget => $_VS->vs_toggle_secure);
+    $self->group(register_button_widget => $_VS->vs_director(
 	    [sub {shift->get_request->get('user_state')
 			  == Bivio::Type::UserState::JUST_VISITOR() ? 1 : 0}],
 	    {
 		0 => '',
-		1 => $_W->link($_W->image('register', 'Sign up!'),
+		1 => $_VS->vs_link($_VS->vs_image('register', 'Sign up!'),
 			'USER_CREATE'),
 	    }));
     return;
@@ -657,14 +659,10 @@ sub internal_initialize_value {
 
     if (ref($v)) {
 	# If is code, call with $self as param
-	if (ref($v) eq 'CODE') {
-	    $v = &$v($self);
-	}
+	$v = &$v($self) if ref($v) eq 'CODE';
 
 	# If result of sub is widget or config is widget, call initialize.
-	if (UNIVERSAL::isa($v, 'Bivio::UI::HTML::Widget')) {
-	    $v->initialize;
-	}
+	$v->initialize if UNIVERSAL::isa($v, 'Bivio::UI::Widget');
     }
     $value->{value} = $v;
     return;
@@ -722,9 +720,9 @@ sub widget_from_template {
 
 		# Make sure name is a widget
 		Bivio::Die->die($self, ': <$', $name, '>: value ', $w,
-			' not a Bivio::UI::HTML::Widget, on line ', $line_num)
+			' not a Bivio::UI::Widget, on line ', $line_num)
 			    unless UNIVERSAL::isa($w,
-				    'Bivio::UI::HTML::Widget');
+				    'Bivio::UI::Widget');
 		push(@new, $w);
 	    }
 
@@ -739,7 +737,7 @@ sub widget_from_template {
 	    }
 	}
     }
-    return $_W->join(\@new);
+    return $_VS->vs_join(\@new);
 }
 
 #=PRIVATE METHODS

@@ -17,12 +17,12 @@ Bivio::UI::HTML::Widget::Icon - renders an image and label link
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget::Director>
+L<Bivio::UI::Widget::Director>
 
 =cut
 
-use Bivio::UI::HTML::Widget::Director;
-@Bivio::UI::HTML::Widget::Icon::ISA = qw(Bivio::UI::HTML::Widget::Director);
+use Bivio::UI::Widget::Director;
+@Bivio::UI::HTML::Widget::Icon::ISA = qw(Bivio::UI::Widget::Director);
 
 =head1 DESCRIPTION
 
@@ -120,8 +120,11 @@ I<font_ia>.
 
 #=IMPORTS
 use Bivio::HTML;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -137,7 +140,7 @@ Creates a new Icon widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::Director::new(@_);
+    my($self) = &Bivio::UI::Widget::Director::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -169,7 +172,7 @@ sub initialize {
 	control => $href,
 	values => {},
 	default_value => Bivio::UI::HTML::Widget::Link->new({
-	    value => defined($text) ? Bivio::UI::HTML::Widget::Join->new({
+	    value => defined($text) ? Bivio::UI::Widget::Join->new({
 		values => [
 		    $image,
 		    '<br>',
@@ -193,7 +196,7 @@ sub initialize {
 	    my($font_ia) = $self->ancestral_get('icon_font_ia',
 		    'icon_text_ia');
 	    $self->put(
-		undef_value => Bivio::UI::HTML::Widget::Join->new({
+		undef_value => Bivio::UI::Widget::Join->new({
 		    values => [
 			$image_ia,
 			'<br>',

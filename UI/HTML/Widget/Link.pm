@@ -11,18 +11,17 @@ Bivio::UI::HTML::Widget::Link - renders a URI link
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Link;
-    Bivio::UI::HTML::Widget::Link->new($attrs);
 
 =cut
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget::ControlBase>
+L<Bivio::UI::Widget::ControlBase>
 
 =cut
 
-use Bivio::UI::HTML::Widget::ControlBase;
-@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
+use Bivio::UI::Widget::ControlBase;
+@Bivio::UI::HTML::Widget::Link::ISA = ('Bivio::UI::Widget::ControlBase');
 
 =head1 DESCRIPTION
 
@@ -40,7 +39,7 @@ with leading space.
 
 =item control : any
 
-See L<Bivio::UI::HTML::Widget::ControlBase|Bivio::UI::HTML::Widget::ControlBase>.
+See L<Bivio::UI::Widget::ControlBase|Bivio::UI::Widget::ControlBase>.
 
 =item href : array_ref (required)
 
@@ -70,8 +69,11 @@ The value between the C<A> tags aka the label.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::HTML;
+use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -87,7 +89,7 @@ Creates a new Link widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::HTML::Widget::ControlBase::new(@_);
+    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -134,7 +136,7 @@ sub initialize {
     # href and value both must be defined
     my($href);
     ($fields->{value}, $href) = $self->get('value', 'href');
-    my($p, $s) = ('<a'.$self->link_target_as_html, '');
+    my($p, $s) = ('<a'.$_VS->vs_link_target_as_html($self), '');
     my($n) = $self->get_or_default('name', 0);
     $p .= ' name="'.$n.'"' if $n;
     my($a) = $self->unsafe_get('attributes');
