@@ -1039,8 +1039,8 @@ sub validate_not_negative {
 
 =head2 validate_not_null(string field)
 
-Ensures the specified field isn't undef. Puts an error on the form
-if it fails.
+Ensures the specified field isn't undef and isn't in error. Puts an error on
+the form if it fails.
 
 =cut
 
@@ -1048,8 +1048,9 @@ sub validate_not_null {
     my($self, $field) = @_;
     my($value) = $self->get($field);
 
+    # Only put the error if not already in error
     $self->internal_put_error($field, Bivio::TypeError::NULL())
-	    unless defined($value);
+	    unless defined($value) || $self->get_field_error($field);
     return;
 }
 
