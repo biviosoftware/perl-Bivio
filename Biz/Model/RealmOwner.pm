@@ -53,6 +53,7 @@ sub DEFAULT_UNIT_VALUE {
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Model::Email;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::MemberEntryList;
 use Bivio::Biz::Model::RealmInstrument;
@@ -62,14 +63,14 @@ use Bivio::SQL::Constraint;
 use Bivio::SQL::ListQuery;
 use Bivio::Type::Amount;
 use Bivio::Type::DateTime;
+use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::Integer;
-use Bivio::Type::RealmName;
 use Bivio::Type::Name;
 use Bivio::Type::Number;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::Password;
-use Bivio::Type::DateTime;
+use Bivio::Type::PrimaryId;
+use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -192,7 +193,7 @@ Returns fully-qualified email address for this realm.
 sub format_email {
     my($self) = @_;
 #TODO: Need to modify Request to handle this case.
-    return $self->get('name').'@'.$self->get_request->get('mail_host')
+    return $self->get('name').'@'.$self->get_request->get('mail_host');
 }
 
 =for html <a name="format_http"></a>
@@ -210,6 +211,19 @@ sub format_http {
 #TODO: This is a total hack.   Need to know the "root" task
     return 'https://'.$self->get_request->get('http_host')
 	    .'/'.$self->get('name');
+}
+
+=for html <a name="format_mailto"></a>
+
+=head2 format_mailto() : string
+
+Returns email address with C<mailto:> prefix.
+
+=cut
+
+sub format_mailto {
+    my($self) = @_;
+    return 'mailto:'.$self->format_email();
 }
 
 =for html <a name="format_uri"></a>
@@ -629,6 +643,57 @@ sub internal_initialize {
 	    [qw(realm_id Club.club_id User.user_id)],
 	],
     };
+}
+
+=for html <a name="unauth_load_by_email"></a>
+
+=head2 unauth_load_by_email(string email) : boolean
+
+=head2 unauth_load_by_email(string email, hash query) : boolean
+
+Tries to load this realm using I<email> and any other I<query> parameters,
+e.g. (realm_type, Bivio::Auth::RealmType::USER()).
+
+I<email> is interpreted as follows:
+
+=over 4
+
+=item
+
+An C<Bivio::Biz::Model::Email> is loaded with I<email>.  If found,
+loads the I<realm_id> of the model.
+
+=item
+
+Parsed for the I<mail_host> associated with this request.
+If it matches, the mailhost is stripped and the (syntactically
+valid realm) name is used to find a realm owner.
+
+=item
+
+Returns false.
+
+=back
+
+=cut
+
+sub unauth_load_by_email {
+    my($self, $email, @query) = @_;
+    my($req) = $self->get_request;
+
+    # Load the email.  Return the result of the next unauth_load, just in case
+    my($em) = Bivio::Biz::Model::Email->new($req);
+    return $self->unauth_load(@query, realm_id => $em->get('realm_id'))
+	    if $em->unauth_load(email => $email);
+
+    # Strip off @mail_host and validate resulting name
+    my($mh) = '@'.$req->get('mail_host');
+    return 0 unless $email =~ s/\Q$mh\E$//i;
+    my($name) = Bivio::Type::RealmName->from_literal($email);
+    return 0 unless defined($name);
+
+    # Is it a valid user/club?
+    return $self->unauth_load(@query, name => $name);
 }
 
 #=PRIVATE METHODS
