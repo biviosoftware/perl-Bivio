@@ -195,6 +195,7 @@ sub execute_empty {
 	    _get_cash_withdrawal_amount($self, $date);
     $properties->{property_distribution} =
 	    _get_stock_withdraw_amount($self, $date);
+    $properties->{draft} = $tax1065->get('draft');
 
     _calculate_income($self, $properties);
     return;
@@ -479,6 +480,11 @@ sub internal_initialize {
 	    {
 		name => 'passive_income',
 		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'draft',
+		type => 'Boolean',
 		constraint => 'NONE',
 	    },
 	],
