@@ -43,6 +43,7 @@ if [ "$REQNG_HOST" != "NONE" ]; then
     echo reqng-${REQNG_HOST}
     /usr/local/bin/ssh ${REQNG_HOST} tar czf - /usr/local/reqng >$ts-${REQNG_HOST}-reqng.tgz 
     /usr/local/bin/ssh ${REQNG_HOST} tar czf - /home/httpd >$ts-${REQNG_HOST}-httpd.tgz 
+    /usr/local/bin/ssh ${REQNG_HOST} tar czf - /home/connect >$ts-${REQNG_HOST}-connect.tgz 
 fi
 
 # Return to /home/bkp
