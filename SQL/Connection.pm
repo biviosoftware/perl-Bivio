@@ -73,11 +73,11 @@ sub commit {
 
 =for html <a name="execute"></a>
 
-=head2 execute(statement sth)
+=head2 execute(string sql)
 
-=head2 execute(statement sth, array_ref params)
+=head2 execute(string sql, array_ref params)
 
-=head2 execute(statement sth, array_ref params, ref die)
+=head2 execute(string sql, array_ref params, ref die)
 
 Executes the specified statement and dies with an appropriate error
 if it fails.
