@@ -84,14 +84,12 @@ Converts I<input_file> from XML to HTML.
 
 sub to_html {
     my($self, $input_file) = @_;
-    my($tree) = XML::Parser->new(Style => 'Tree')->parsefile($input_file);
-    my($res) = _to_html($tree);
-    return \$res;
+    return _to_html(XML::Parser->new(Style => 'Tree')->parsefile($input_file));
 }
 
 #=PRIVATE METHODS
 
-# _to_html(array_ref tree) : string
+# _to_html(array_ref tree) : string_ref
 #
 # Convert XML tree into HTML.
 #
@@ -99,7 +97,7 @@ sub _to_html {
     my($tree) = @_;
     my($res) = '';
     $res .= _to_html_node((shift(@$tree)), shift(@$tree)) while @$tree;
-    return $res;
+    return \$res;
 }
 
 # _to_html_node(string tag, array_ref tree) : string
@@ -111,14 +109,14 @@ sub _to_html_node {
     return HTML::Entities::encode($tree) unless $tag;
     die($tag, ': unhandled tag') unless my $op = $_TO_HTML_OP->{$tag};
     shift(@$tree);
-    return _to_html_tags($op)._to_html($tree)._to_html_tags([reverse(@$op)], '/');
+    return _to_tags($op).${_to_html($tree)}._to_tags([reverse(@$op)], '/');
 }
 
-# _to_html_tags(array_ref names, string prefix) : string
+# _to_tags(array_ref names, string prefix) : string
 #
 # Convert $names to tags with possible prefix ('/')
 #
-sub _to_html_tags {
+sub _to_tags {
     my($names, $prefix) = @_;
     return join('', map {'<'.($prefix || '').$_.'>'} @$names);
 }
