@@ -1,0 +1,4 @@
+# A test to see if eval-ing print statements works.
+
+print STDERR "test.btf does in fact get properly eval-ed. \n";
+print STDERR "And the peasants rejoiced.\n\n\n";
