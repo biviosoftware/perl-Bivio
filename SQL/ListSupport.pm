@@ -260,15 +260,15 @@ sub load {
     # If no select such just return an empty list.  Only local fields.
     return [] unless $select;
     $select .= $where;
-    my($statement) = _execute_select($self, $query, $select, $params, $die);
+    my($statement) = _execute_select($self, $query, \$select, $params, $die);
     return $query->get('this')
 	    ? _load_this($self, $query, $statement, $die)
-		    : _load_list($self, $query, $statement, $die);
+		    : _load_list($self, $query, $statement, $select, $params);
 }
 
 #=PRIVATE METHODS
 
-# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string select, array_ref params) : DBI::Statement
+# _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref select, array_ref params) : DBI::Statement
 #
 # Create and execute the select statement based on query, auth_id, and
 # parent_id.  Assumes select takes an "auth_id" as the first element and
@@ -290,18 +290,18 @@ sub _execute_select {
     # Formats order_by clause if there are order_by columns
     if (@{$attrs->{order_by}}) {
 	my($columns) = $attrs->{columns};
-	$select .= ' order by';
+	$$select .= ' order by';
 	for (my($i) = 0; $i < int(@$qob); $i += 2) {
 	    # Append to order_by (name, order)
-	    $select .= ' '.$columns->{$qob->[$i]}->{sql_name}
+	    $$select .= ' '.$columns->{$qob->[$i]}->{sql_name}
 		    .($qob->[$i+1] ? ',' : ' desc,');
 	}
 	# Remove trailing comma
-	chop($select);
+	chop($$select);
     }
 
     # Execute the query
-    return Bivio::SQL::Connection->execute($select, $params);
+    return Bivio::SQL::Connection->execute($$select, $params);
 }
 
 # _init_column_classes(hash_ref attrs, hash_ref decl) : string
@@ -440,14 +440,14 @@ sub _init_column_lists {
     return;
 }
 
-# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, any fob_start, ref die) : array_ref
+# _load_this(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement) : array_ref
 #
 # Load "this" from statement.  We search serially through all records.
 # There doesn't appear to be a better way to do this, because we need
 # to know "prev".  Eventually, this will have to be PL/SQL.
 #
 sub _load_this {
-    my($self, $query, $statement, $fob_start, $die) = @_;
+    my($self, $query, $statement) = @_;
     my($attrs) = $self->internal_get;
     my($count, $parent_id, $this) = $query->get(qw(count parent_id this));
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
@@ -512,23 +512,47 @@ sub _load_this {
     return $rows;
 }
 
-# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, ref die) : array_ref
+# _load_list(Bivio::SQL::Support self, Bivio::SQL::ListQuery, DBI::Statement statement, string select, array_ref params) : array_ref
 #
 # Search the list until we find our page_number and then return count rows.
+# If the page_number exceeds the number of rows, read the last page.
 #
 sub _load_list {
-    my($self, $query, $statement, $fob_start, $die) = @_;
+    my($self, $query, $statement, $select, $params) = @_;
     my($attrs) = $self->internal_get;
-    my($count, $page_number, $parent_id, $this)
-	    = $query->get(qw(count page_number parent_id this));
+    my($count, $page_number, $parent_id)
+	    = $query->get(qw(count page_number parent_id));
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
 
-    # Set prev first
-    $query->put(has_prev => 1, prev => $page_number - 1) if $page_number > 0;
+ FIND_START: {
+	# Set prev first, because there is a return in the for loop
+	if ($page_number > 0) {
+	    $query->put(has_prev => 1, prev => $page_number - 1);
+	}
+	else {
+	    $query->put(has_prev => 0, prev => undef);
+	}
 
-    # Find the page
-    for (my($start) = $page_number * $count; $start > 0; $start--) {
-	$statement->finish, return [] unless $statement->fetchrow_arrayref;
+	# Find the page
+	my($start) = $page_number * $count;
+	for (my($i) = 0; $i < $start; $i++) {
+	    next if $statement->fetchrow_arrayref;
+
+	    # End of list, do we need to "back up"?
+	    $statement->finish;
+
+	    # No need to backup, there are no rows
+	    unless ($i) {
+		_trace('no rows found') if $_TRACE;
+		return [];
+	    }
+
+	    # Go back to last page.  Have to restart the select.
+	    $query->put(page_number => $page_number = int(--$i/$count));
+	    _trace('last page=', $page_number, ', retrying') if $_TRACE;
+	    $statement = Bivio::SQL::Connection->execute($$select, $params);
+	    redo FIND_START;
+	}
     }
 
     # Avoid pointer chasing in loop
