@@ -268,16 +268,16 @@ sub command_line {
 
 =for html <a name="finish"></a>
 
-=head2 finish()
+=head2 finish(boolean abort)
 
 Commit (if !noexecute) and clean up work of setup.
 
 =cut
 
 sub finish {
-    my($self) = @_;
+    my($self, $abort) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->unsafe_get('noexecute')
+    $self->unsafe_get('noexecute') || $abort
 	    ? Bivio::Agent::Task->rollback($self->get('req'))
 		    : Bivio::Agent::Task->commit($self->get('req'));
     return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
@@ -337,7 +337,7 @@ sub main {
 	}
 	return $res;
     });
-    $self->finish();
+    $self->finish($die ? 1 : 0);
     $die->throw() if $die;
     $self->result($cmd, $res);
     return;
