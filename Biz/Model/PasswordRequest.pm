@@ -110,7 +110,7 @@ sub execute_load_from_query {
     $self->throw_die(Bivio::DieCode::NOT_FOUND(),
 	    {actual => $actual, expected => $self->get('authorization_code'),
 		message => 'auth_code field mismatch'})
-	    unless $actual eq $self->get('authorization_code');
+	    unless $actual && $actual eq $self->get('authorization_code');
 
     # Now load realm, because we know $self is valid
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req)
