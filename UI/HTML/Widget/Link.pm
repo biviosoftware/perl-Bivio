@@ -100,7 +100,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
+    my($self) = Bivio::UI::Widget::ControlBase::new(_new_args(@_));
     $self->{$_PACKAGE} = {};
     return $self;
 }
