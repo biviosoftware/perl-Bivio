@@ -36,12 +36,9 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
-use Bivio::Biz::Model::RealmInvite;
 use Bivio::IO::Alert;
-use Bivio::SQL::Constraint;
+use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_ACTIVE_ROLES) = '';
@@ -111,9 +108,14 @@ Does not delete transactions or tax tables in the realm.
 sub cascade_delete {
     my($self) = @_;
     my($realm_id, $user_id) = $self->get('realm_id', 'user_id');
-    my($invite) = Bivio::Biz::Model::RealmInvite->new($self->get_request);
-    $invite->delete() if $invite->unauth_load(
-	    realm_id => $realm_id, realm_user_id => $user_id);
+
+    # need a group delete
+    # could have > 1 invite in the same realm
+    Bivio::SQL::Connection->execute('
+            DELETE FROM realm_invite_t
+            WHERE realm_user_id=?
+            AND realm_id=?',
+	    [$user_id, $realm_id]);
     return $self->delete();
 }
 
