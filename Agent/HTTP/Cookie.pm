@@ -54,6 +54,14 @@ See L<Bivio::Biz::Model::LoginForm|Bivio::Biz::Model::LoginForm>.
 Used internally to indicate the cookie was modified and must be
 reset.  It is never sent to the client.
 
+=item received_persistent [internal]
+
+Was the persistent cookie returned by the browser?
+
+=item received_volatile [internal]
+
+Was the volatiles cookie returned by the browser?
+
 =item ri [persistent]
 
 RealmInvite field.  The user has clicked on a URI which contains
@@ -335,6 +343,7 @@ sub new {
 		    == Bivio::Type::UserAgent::BROWSER();
     my($cookie) = $r->header_in('Cookie');
     _trace($cookie) if $_TRACE;
+
     my($fields) = _parse($cookie || '');
     my($self) = Bivio::Collection::Attributes::new($proto, $fields);
     foreach my $h (@_HANDLERS) {
@@ -357,6 +366,7 @@ Removes the named attribute(s) from the map.  They needn't exist.
 
 sub delete {
     my($self) = shift;
+    _trace(\@_) if $_TRACE;
     my($res) = $self->SUPER::delete(@_);
     $self->put(MODIFIED_FIELD() => 1);
     return $res;
@@ -469,10 +479,10 @@ sub header_out {
     my($vc) = _encrypt($fields, \@_VOLATILE_FIELDS, $_VOLATILE_TAG, 0);
 
     # This is a hack, because mod_perl uses a hash to store header_out.
-    # You can't set two cookies, but Yahoo does this.  It's like that
-    # all browsers can't handled multiple cookies on one line.
+    # You can't set two cookies, but Yahoo does this.  It's may be
+    # that some (all?) browsers can't handled multiple cookies on one line
+    # even though the spec allows it.
     $r->header_out('Set-Cookie', $pc.$p."\r\nSet-Cookie: ".$vc.$v);
-
     return 1;
 }
 
@@ -485,7 +495,9 @@ Adds or replaces the named value(s).
 =cut
 
 sub put {
-    return shift->SUPER::put(@_, MODIFIED_FIELD(), 1);
+    my($self) = shift;
+    _trace(\@_) if $_TRACE;
+    return $self->SUPER::put(@_, MODIFIED_FIELD(), 1);
 }
 
 =for html <a name="register"></a>
@@ -518,7 +530,7 @@ sub register {
 sub _encrypt {
     my($fields, $to_copy, $tag, $is_persistent) = @_;
 
-    # Make a copy to ensure we only
+    # Make a copy to ensure we don't modify caller's data
     my(@to_copy_tmp) = @$to_copy;
     if (defined($fields->{LOGIN_FIELD()})) {
 	if ($fields->{LOGIN_FIELD()} == $_LOGIN_PERSISTENT) {
@@ -572,8 +584,15 @@ sub _parse {
 	    next;
 	}
 
+	# Record the state of cookie reception for CookieCheck
 	$k = uc($k);
-	unless ($k eq $_VOLATILE_TAG || $k eq $_PERSISTENT_TAG) {
+	if ($k eq $_VOLATILE_TAG) {
+	    $fields->{received_volatile} = 1;
+	}
+	elsif ($k eq $_PERSISTENT_TAG) {
+	    $fields->{received_persistent} = 1;
+	}
+	else {
 	    _trace('tag from another server or old tag: ', $k) if $_TRACE;
 	    next;
 	}
@@ -607,6 +626,11 @@ sub _parse {
 	    $fields->{$k} = $v;
 	}
     }
+
+    # If we didn't get both cookies, always send them back.
+    $fields->{MODIFIED_FIELD()} = 1 unless
+	    $fields->{received_persistent} && $fields->{received_volatile};
+
     return $fields;
 }
 
