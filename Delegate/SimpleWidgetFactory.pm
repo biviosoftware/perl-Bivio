@@ -86,12 +86,13 @@ sub create {
     my($widget);
     if (! $attrs->{wf_want_display}
 	    && UNIVERSAL::isa($model, 'Bivio::Biz::FormModel')) {
-	$widget = _create_edit($proto, $model, $field_name, $field_type,
-		$attrs);
+	$widget = $proto->internal_create_edit($model, $field_name,
+            $field_type, $attrs);
     }
     else {
 #TODO: This is broken in the case of $attrs->{value} existing.  Hack for now
-	$widget = _create_display($proto, $model, $field_name, $field_type, $attrs);
+	$widget = $proto->internal_create_display($model, $field_name,
+            $field_type, $attrs);
 	my(%attrs_copy) = %$attrs;
 	delete($attrs_copy{value});
 	# Wrap the resultant widget in a link?
@@ -111,13 +112,15 @@ sub create {
     return $widget;
 }
 
-#=PRIVATE METHODS
+=for html <a name="internal_create_display"></a>
 
-# _create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
-#
-# Create a display-only widget for the specified field.
-#
-sub _create_display {
+=head2 static internal_create_display(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
+
+Create a display-only widget for the specified field.
+
+=cut
+
+sub internal_create_display {
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
@@ -205,11 +208,15 @@ sub _create_display {
     });
 }
 
-# _create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
-#
-# Create an editable widget for the specified field.
-#
-sub _create_edit {
+=for html <a name="internal_create_edit"></a>
+
+=head2 static internal_create_edit(Bivio::Biz::Model model, string field, Bivio::Type type, hash_ref attrs) : Bivio::UI::Widget
+
+Create an editable widget for the specified field.
+
+=cut
+
+sub internal_create_edit {
     my($proto, $model, $field, $type, $attrs) = @_;
 
     if ($attrs->{wf_class}) {
@@ -330,6 +337,8 @@ sub _create_edit {
 
     Bivio::Die->die($type, ': unsupported type');
 }
+
+#=PRIVATE METHODS
 
 # _default_size(any type) : int
 #
