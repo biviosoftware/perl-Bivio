@@ -1245,31 +1245,35 @@ sub set_cursor {
 
 =for html <a name="set_cursor_or_die"></a>
 
-=head2 set_cursor_or_die(int index)
+=head2 set_cursor_or_die(int index) : Bivio::Biz::ListModel
 
 Calls L<set_cursor|"set_cursor"> and dies with DIE
 if it returns false.
+
+Returns self.
 
 =cut
 
 sub set_cursor_or_die {
     my($self) = shift;
-    return if $self->set_cursor(@_);
+    return $self if $self->set_cursor(@_);
     $self->throw_die('DIE', {message => 'no such row', entity => $_[0]});
 }
 
 =for html <a name="set_cursor_or_not_found"></a>
 
-=head2 set_cursor_or_not_found(int index)
+=head2 set_cursor_or_not_found(int index) : Bivio::Biz::ListModel
 
 Calls L<set_cursor|"set_cursor"> and dies with NOT_FOUND
 if it returns false.
+
+Returns self.
 
 =cut
 
 sub set_cursor_or_not_found {
     my($self) = shift;
-    return if $self->set_cursor(@_);
+    return $self if $self->set_cursor(@_);
     $self->throw_die('NOT_FOUND', {message => 'no such row',
 	entity => $_[0]});
 }
