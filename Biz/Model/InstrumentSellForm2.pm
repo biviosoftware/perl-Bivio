@@ -279,10 +279,16 @@ sub validate {
     my($req) = $self->get_request;
 
     my($data) = $req->get('form') || {};
-    my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
-    $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
-	    => $self->get('RealmTransaction.date_time'));
-    $lot_list->load();
+    my($lot_list) = $req->unsafe_get(
+	    'Bivio::Biz::Model::RealmInstrumentLotList');
+    unless ($lot_list) {
+	$lot_list = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
+	$req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
+		=> $self->get('RealmTransaction.date_time'));
+	$lot_list->load();
+    }
+    $lot_list->reset_cursor;
+
     my($lot_num) = 0;
     my($lots) = [];
     my($quantity) = [];
