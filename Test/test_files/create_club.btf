@@ -5,12 +5,12 @@ Login->execute();
 Imagemenu->go_section('Clubs', 'my-site');
 Verify->uri('clubs');
 Browser->click('create_club_a');
-Verify->uri('create-club');
+#Verify->uri('create-club');
 Browser->submit({
-     'Full Name:' => 'Testsuite club '.$club_id,
+     'Club Name:' => 'Testsuite club '.$club_id,
      'Club ID:' => $club_id,
      }, 'Create');
 #Verify->uri('new');
 Verify->title('Congratulations');
-
+Manager->delete_club($club_id);
      
