@@ -52,6 +52,7 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_DELETED_ID) = 1818584091;
 my($_INITIALIZED) = 0;
+my($_END_OF_INPUT) = 0;
 
 # easyware transaction type --> [entry type, tax category, transaction id,
 #   <basis>, <sign>]
@@ -1028,6 +1029,7 @@ sub parse_file {
     my($self, $format) = @_;
     my($result) = [];
 
+    $_END_OF_INPUT = 0;
     my($file_name) = $self->{$_PACKAGE}->{directory}.'/'.$format->{file_name};
     open(IN, '< '.$file_name) or die("can't open file $file_name");
     binmode(IN); # for win32
@@ -1094,7 +1096,8 @@ sub parse_file {
     close(IN) or die("couldn't close $file_name");
 
     # check for exception during read
-    die($@) unless ($@ =~ /^end of input/) && ! $reading;
+#    die($@) unless ($@ =~ /^end of input/) && ! $reading;
+    die($@) unless $_END_OF_INPUT && ! $reading;
 
     if ($_TRACE) {
 	foreach (@$result) {
@@ -1160,7 +1163,10 @@ sub _read_bytes {
     my($file, $length) = @_;
 
     my($bytes);
-    read(*$file, $bytes, $length) or die('end of input');
+    unless (read(*$file, $bytes, $length)) {
+	$_END_OF_INPUT = 1;
+	die('end of input');
+    }
 
     return $bytes;
 }
