@@ -419,7 +419,7 @@ formats as a query string value with a '?' prefix.
 
 sub format_context_as_query {
     my($self, $req, $uri_task) = @_;
-    my($c) = $self->get_context_from_request($req);
+    my($c) = $self->get_context_from_request($req, 1);
 
     # If the task we are going to is the same as the unwind task,
     # don't render the context.  Prevents infinite recursion.
@@ -448,16 +448,20 @@ sub get_button_submitted {
 
 =for html <a name="get_context_from_request"></a>
 
-=head2 static get_context_from_request(Bivio::Agent::Request hash_ref) : hash_ref
+=head2 static get_context_from_request(Bivio::Agent::Request hash_ref, boolean no_form) : hash_ref
 
 Returns the context elements extracted from the request as hash_ref.
 If the form is I<redirecting> already, then the nested context
 is returned.
 
+If I<no_form> is true, we don't add in the form to the context.  This is used
+by L<format_context_as_query|"format_context_as_query"> to limit
+the size.
+
 =cut
 
 sub get_context_from_request {
-    my(undef, $req) = @_;
+    my(undef, $req, $no_form) = @_;
     my($model) = $req->unsafe_get('form_model');
 
     # If there is a model, make sure not redirecting
@@ -485,11 +489,13 @@ sub get_context_from_request {
 	_trace('from request: ', $form) if $_TRACE;
     }
 
+    $context = $form = undef if $no_form;
+
     # Construct a new context from existing state in request.
     # This code is coupled with FormContext.
     my($res) = {
 	form_model => ref($model),
-	form => $form,
+	form => $form ,
 	form_context => $context,
 	query => $req->unsafe_get('query'),
 	path_info => $req->unsafe_get('path_info'),
