@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Outgoing;
 use strict;
 $Bivio::Mail::Outgoing::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Mail::Outgoing::VERSION;
 
 =head1 NAME
 
@@ -42,6 +43,7 @@ use MIME::Base64;
 use Bivio::MIME::Type;
 use Bivio::IO::Trace;
 use Bivio::Mail::Incoming;
+use Sys::Hostname ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -224,6 +226,72 @@ sub set_body {
     return;
 }
 
+=for html <a name="set_content_type"></a>
+
+=head2 set_content_type(string name, string value)
+
+Sets the Content-Type header field. Any previous setting is overridden.
+
+=cut
+
+sub set_content_type {
+    my($self, $value) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    # Remove possibly existing Content-Type setting from the headers
+    exists($fields->{headers}->{'content-type'})
+            && delete($fields->{headers}->{'content-type'});
+    $fields->{content_type} = $value;
+    return;
+}
+
+=for html <a name="set_from_with_user"></a>
+
+=head2 set_from_with_user() : string
+
+Sets the from with the current user and host name.  It uses the email
+address not the comment entry (/etc/passwd) for the name.  If it can't get
+the user, it is does nothing.  The MTA will add it.
+
+Returns the from email address or C<undef> if it couldn't set anything.
+
+=cut
+
+sub set_from_with_user {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($name) = getpwuid($>);
+    # We don't know the name, just let the MTA handle it.
+    return unless defined($name);
+    my($host) = Sys::Hostname::hostname();
+    # We don't know the host, defer to MTA.
+    return unless defined($host);
+    my($from_email) = $name.'@'.$host;
+    my($from_name) = $from_email;
+    $from_name =~ s/(["\\])/\\$1/g;
+    $self->set_envelope_from($from_email);
+    $self->set_header('From', qq!"$from_name" <$from_email>!);
+    return $from_email;
+}
+
+=for html <a name="set_header"></a>
+
+=head2 set_header(string name, string value)
+
+Sets a particular header field.  The previous value of the field is
+deleted.  The newline will be appended to the value.
+
+ASSUMES: I<name> and I<value> conform to RFC 822.
+
+=cut
+
+sub set_header {
+    my($self, $name, $value) = @_;
+    my($fields) = $self->{$_PACKAGE};
+#TODO: Should assert header name is valid and quote value if need be
+    $fields->{headers}->{lc($name)} = $name . ': ' . $value . "\n";
+    return;
+}
+
 =for html <a name="set_headers_for_list_send"></a>
 
 =head2 set_headers_for_list_send(string list_name, string list_title, boolean reply_to_list, boolean list_in_subject)
@@ -271,43 +339,6 @@ sub set_headers_for_list_send {
 	    $headers->{subject} = "Subject: $list_name:\n";
 	}
     }
-    return;
-}
-
-=for html <a name="set_content_type"></a>
-
-=head2 set_content_type(string name, string value)
-
-Sets the Content-Type header field. Any previous setting is overridden.
-
-=cut
-
-sub set_content_type {
-    my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    # Remove possibly existing Content-Type setting from the headers
-    exists($fields->{headers}->{'content-type'})
-            && delete($fields->{headers}->{'content-type'});
-    $fields->{content_type} = $value;
-    return;
-}
-
-=for html <a name="set_header"></a>
-
-=head2 set_header(string name, string value)
-
-Sets a particular header field.  The previous value of the field is
-deleted.  The newline will be appended to the value.
-
-ASSUMES: I<name> and I<value> conform to RFC 822.
-
-=cut
-
-sub set_header {
-    my($self, $name, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
-#TODO: Should assert header name is valid and quote value if need be
-    $fields->{headers}->{lc($name)} = $name . ': ' . $value . "\n";
     return;
 }
 
@@ -425,7 +456,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
