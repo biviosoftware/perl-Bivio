@@ -1693,6 +1693,18 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberAllocationReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
+        161
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/income_and_deductions
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::MiscExpenseList
+        Bivio::Biz::Model::MiscIncomeList
+        Bivio::UI::HTML::Club::MiscIncomeAndDeductions
+        next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
+    )],
 );
 
 __PACKAGE__->compile(
