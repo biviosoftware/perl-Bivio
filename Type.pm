@@ -3,6 +3,7 @@
 package Bivio::Type;
 use strict;
 $Bivio::Type::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::VERSION;
 
 =head1 NAME
 
@@ -125,6 +126,32 @@ See L<to_literal|"to_literal">.
 sub from_literal {
     shift;
     return shift;
+}
+
+=for html <a name="from_literal_or_die"></a>
+
+=head2 static from_literal_or_die(string value) : any
+
+Checks the return value of L<from_literal|"from_literal">
+and calls die with an appropriate message if from_literal
+conversion failed.  Dies with TypeError::NULL if not defined.
+
+Returns a scalar, not an array.
+
+=cut
+
+sub from_literal_or_die {
+    my($proto, $value) = @_;
+    my($v, $e) = $proto->from_literal($value);
+    return $v if defined($v);
+    $e ||= Bivio::TypeError::NULL();
+    Bivio::Die->throw_die('DIE', {
+	message => 'from_literal failed: '.$e->get_long_desc,
+	program_error => 1,
+	error_enum => $e,
+	entity => $value,
+	class => (ref($proto) || $proto),
+    });
 }
 
 =for html <a name="from_sql_column"></a>
