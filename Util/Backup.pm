@@ -113,7 +113,7 @@ sub handle_config {
 Mirror files to I<cfg_name>'d host and directory.  I<cfg_name> may be
 C<undef> iwc defaults are used.
 
-Uses the command: rsync -e ssh -azLCSR --delete
+Uses the command: rsync -e ssh -azlCSR --delete
 
 =cut
 
@@ -123,8 +123,8 @@ sub mirror {
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
 	my($cfg) = Bivio::IO::Config->get($cfg_name);
 	$self->piped_exec_remote($cfg->{mirror_dest_host},
-	    "mkdir -p '$cfg->{mirror_dest_dir}'");
-	$res .= ${$self->piped_exec("rsync -e ssh -azLCSR --delete"
+	    "mkdir -p $cfg->{mirror_dest_dir}");
+	$res .= ${$self->piped_exec("rsync -e ssh -azlCSR --delete"
 	    . ($self->unsafe_get('noexecute') ? ' -n' : '')
 	    . ($_TRACE ? ' --progress' : '')
 	    . " '"
@@ -133,7 +133,7 @@ sub mirror {
 		     unless $_ =~ m!^/!;
 		 $_;
 	      } @{$cfg->{mirror_include_dirs}})
-	    . "' '$cfg->{mirror_dest_host}:$cfg->{mirror_dest_dir}' 2>&1")};
+	    . "' '$cfg->{mirror_dest_host}:$cfg->{mirror_dest_dir}'")};
     }
     return \$res;
 }
