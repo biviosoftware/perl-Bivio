@@ -276,7 +276,7 @@ sub set_http_status {
     # a reasonable range.
     Bivio::Die->die($status, ': unknown HTTP status')
 	    unless defined($status) && $status =~ /^\d+$/
-		&& (!$status || 100 <= $status && $status < 600);
+		&& 100 <= $status && $status < 600;
     $fields->{status} = $status;
     return;
 }
@@ -390,7 +390,8 @@ sub _send_http_header {
     if ($req) {
 	my($fields) = $self->[$_IDI];
 	# Set the status if was set, otherwise defaults to 200 by Apache
-	$r->status($fields->{status}) if defined($fields->{status});
+	$r->status($fields->{status})
+	    if defined($fields->{status});
 
 	# We set the cookie if we don't cache this answer.  0 means
 	# *really* private.
