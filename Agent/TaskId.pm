@@ -396,7 +396,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_EC_SUBSCRIPTIONS
+        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
         require_secure=1
     )],
     [qw(
