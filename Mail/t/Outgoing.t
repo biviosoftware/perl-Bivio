@@ -53,14 +53,14 @@ my($_OUT) = <<"EOF";
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 From: "Dan Hess" <dan_hess\@prodigy.net>
 Subject: $_USER: This is my subject
-Sender: owner-$_USER
-To: "My Fancy List" <$_USER>
+Sender: $_USER-owner
+To: "NAIC I-Club-List" <i-club-list\@lists.better-investing.org>
 Reply-To: "My Fancy List" <$_USER>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 List-Unsubscribe: <mailto:leave-i-club-list-14220S\@lists.better-investing.org>
-Precedence: bulk
+Precedence: list
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.3110.3
 X-MSMail-Priority: Normal
 X-Priority: 3
