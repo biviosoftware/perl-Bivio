@@ -597,11 +597,11 @@ sub _assert_class_name {
 #
 sub _initialize_class_info {
     my($class, $config) = @_;
+    _load_all_property_models();
 
     # Have here for safety to avoid infinite recursion if called badly.
     return if !$config && $_CLASS_INFO{$class};
 
-    _load_all_property_models();
     _assert_class_name($class) unless $config;
 
     my($sql_support) = $class->internal_initialize_sql_support($config);
@@ -619,7 +619,7 @@ sub _initialize_class_info {
 		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
     return $ci if $config;
     # $_CLASS_INFO{$class} is sentinel to stop recursion
-    $_CLASS_INFO{$class} ||= $ci;
+    $_CLASS_INFO{$class} = $ci;
     $ci->{singleton} = $class->new;
     $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
     return;
