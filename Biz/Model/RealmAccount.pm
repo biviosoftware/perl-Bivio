@@ -90,6 +90,30 @@ sub get_value {
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
 
+=for html <a name="has_transactions"></a>
+
+=head2 has_transactions() : boolean
+
+Returns 1 if the account has transactions within the realm.
+
+=cut
+
+sub has_transactions {
+    my($self) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT COUNT(*)
+            FROM realm_account_entry_t
+            WHERE realm_id=?
+            AND realm_account_id=?',
+	    [$self->get('realm_id', 'realm_account_id')]);
+    my($count) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$count = $row->[0] || 0;
+    }
+    return $count ? 1 : 0;
+}
+
 =for html <a name="in_valuation"></a>
 
 =head2 in_valuation() : boolean

@@ -169,11 +169,11 @@ sub has_transactions {
             WHERE realm_id=?
             AND realm_instrument_id=?',
 	    [$self->get('realm_id', 'realm_instrument_id')]);
-    my($found_transactions) = 0;
+    my($count) = 0;
     while (my $row = $sth->fetchrow_arrayref) {
-	$found_transactions = $row->[0];
+	$count = $row->[0] || 0;
     }
-    return $found_transactions > 0;
+    return $count ? 1 : 0;
 }
 
 =for html <a name="is_local"></a>

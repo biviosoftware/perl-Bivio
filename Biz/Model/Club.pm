@@ -303,11 +303,11 @@ sub has_transactions {
             FROM realm_transaction_t
             WHERE realm_id=?",
 	    [$self->get('club_id')]);
-    my($found_transactions) = 0;
+    my($count) = 0;
     while (my $row = $sth->fetchrow_arrayref) {
-	$found_transactions = $row->[0];
+	$count = $row->[0] || 0;
     }
-    return $found_transactions > 0;
+    return $count ? 1 : 0;
 }
 
 =for html <a name="internal_initialize"></a>
