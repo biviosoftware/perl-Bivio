@@ -244,7 +244,7 @@ my(@_CFG) = (
         MAIL_READ
         ?/mail-msg
         Bivio::Biz::Model::MailList
-        Bivio::UI::HTML::Club::MessageDetail
+        Bivio::UI::HTML::Club::MailDetail
     )],
     # These two tasks must have the same "first part".  The string
     # msg-part/*?t=NNN is encoded in the MAIL_CACHE generation code.
@@ -992,7 +992,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         pub/?/msg
         Bivio::Biz::Model::MailList
-        Bivio::UI::HTML::Celebrity::MessageDetail
+        Bivio::UI::HTML::Celebrity::MailDetail
     )],
     # No actions, just a token for authentication action
     [qw(
