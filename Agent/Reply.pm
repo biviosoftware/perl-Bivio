@@ -3,6 +3,7 @@
 package Bivio::Agent::Reply;
 use strict;
 $Bivio::Agent::Reply::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
+$_ = $Bivio::Agent::Reply::VERSION;
 
 =head1 NAME
 
@@ -11,7 +12,7 @@ Bivio::Agent::Reply - a user agent reply
 =head1 SYNOPSIS
 
     my($req) = ...;
-    my($reply) = $req->get_reply();
+    my($reply) = $req->get('reply');
 
     $reply->set_output_type('image/gif');  # default is 'text/plain'
     $reply->set_output(\$image);
@@ -30,7 +31,6 @@ L<Bivio::Agent::Request>, it is the output channel.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 
