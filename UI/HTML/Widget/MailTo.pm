@@ -38,6 +38,11 @@ C<mailto> link.
 
 Text to render for the mailto.
 
+=item email : string (required)
+
+Literal to render for the mailto.  The email address need not
+have the host suffix.  It will be appended.
+
 =item value : array_ref [I<email>]
 
 Text to render.  If same as I<email>, nothing will be rendered
@@ -109,7 +114,20 @@ sub initialize {
     # Must be undef, because passed to mailto
     $fields->{subject} = undef unless $fields->{subject};
 
-    $fields->{value} = $fields->{email} unless $fields->{value};
+    # If no value, need to set to email
+    unless ($fields->{value}) {
+	if (ref($fields->{email})) {
+	    # Should already be an email if a widget value
+	    $fields->{value} = $fields->{email};
+	}
+	else {
+	    # Literal string need to format as an email
+	    $fields->{value} = [['->get_request'],
+		'->format_email', $fields->{email}];
+	}
+    }
+
+    # Make the value into a widget
     $fields->{value_widget} = Bivio::UI::HTML::Widget::String->new({
 	value => $fields->{value},
 	parent => $self,
@@ -138,7 +156,13 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($req) = $source->get_request;
-    my($email) = $source->get_widget_value(@{$fields->{email}});
+
+    # Format as an email first before seeing if ignore.  This
+    # allows the case where the email doesn't have a "host" which
+    # would be considered invalid (and ignored).
+    my($email) = ref($fields->{email})
+	    ? $source->get_widget_value(@{$fields->{email}})
+	    : $req->format_email($fields->{email});
 
     # Don't render anything which is ignored.
     if (Bivio::Type::Email->is_ignore($email)) {
