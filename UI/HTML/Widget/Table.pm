@@ -142,6 +142,11 @@ The stripe color to use for odd rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
 undefined, no striping will occur.
 
+=item repeat_headings : boolean [false]
+
+If true, then heading rows are repeated every n rows where n is the page
+size preference for the current user.
+
 =item show_headings : boolean [true]
 
 If true, then the column headings are rendered.
@@ -451,10 +456,24 @@ sub render {
 		    'bgcolor', $req).'>';
 
 
+    my($repeat_headings) = $self->get_or_default('repeat_headings', 0);
+    my($list_size) = $req->get_user_pref(
+	    Bivio::Type::UserPreference::PAGE_SIZE());
+    my($row_count) = 0;
     while ($list->next_row) {
 	_render_row($cells, $list, $buffer,
 		$is_even_row ? $even_row : $odd_row, 1);
 	$is_even_row = !$is_even_row;
+
+	if ($repeat_headings) {
+	    $row_count++;
+	    if ($row_count % $list_size == 0) {
+		_render_row($headings, $list, $buffer);
+		$$buffer .= "\n<tr><td colspan=$colspan>";
+		$fields->{separator}->render($list, $buffer);
+		$$buffer .= "</td>\n</tr>",
+	    }
+	}
     }
 
     # separator
