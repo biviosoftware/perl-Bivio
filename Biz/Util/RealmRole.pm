@@ -151,6 +151,8 @@ sub edit {
 	my($which, $operand) = ($1, uc($2));
 	if (length($operand)) {
 	    my($p) = Bivio::Auth::Permission->unsafe_from_any($operand);
+	    Bivio::Die->die($p, ': cannot set TRANSIENT permissions')
+			if $which eq '+' && $p->get_name =~ /TRANSIENT/;
 	    if ($p && $p->get_name eq $operand) {
 		vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
 	    }
