@@ -9,14 +9,14 @@ use Bivio::Test::Request;
 my($_req) = Bivio::Test::Request->get_instance->setup_facade;
 my($_compute_params) = sub {
     my($case, $params) = @_;
-    my($recipient, $from, $reply_to) = @$params;
+    my($from, $recipient, $reply_to) = @$params;
     return [$_req,  {
 	recipient => $recipient,
 	client_addr => '1.2.3.4',
 	message => {
 	    name => '',
 	    content => Bivio::IO::Ref->to_scalar_ref(<<"EOF"),
-From: $from\@bivio.biz
+From: @{[$from =~ /\@/ ? $from : "$from\@bivio.biz"]}
 @{[$reply_to ? "Reply-To: $reply_to\@bivio.biz" : '']}
 
 EOF
@@ -38,10 +38,12 @@ Bivio::Test->new({
 })->unit([
     'Bivio::Biz::Model::MailReceiveDispatchForm' => [
 	execute => [
-	    ['demo-ignore', 'demo'] => ['demo', 'demo'],
-	    ['ignore.demo', 'demo'] => ['demo', 'demo'],
-	    ['demo-ignore', 'not_a_user'] => [undef, 'demo'],
-	    ['not_a_user-ignore', 'demo'] => Bivio::DieCode->NOT_FOUND,
+	    # [From:, To:] => [auth_user, auth_realm]
+	    ['demo', 'demo-ignore'] => ['demo', 'demo'],
+	    ['demo', 'ignore.demo'] => ['demo', 'demo'],
+	    ['Bob <demo@bivio.biz>', 'ignore.demo'] => ['demo', 'demo'],
+	    ['not_a_user', 'demo-ignore'] => [undef, 'demo'],
+	    ['demo', 'not_a_user-ignore'] => Bivio::DieCode->NOT_FOUND,
 	    ['demo', 'demo'] => Bivio::DieCode->NOT_FOUND,
 	],
     ],

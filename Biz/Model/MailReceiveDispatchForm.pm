@@ -36,10 +36,14 @@ mail to realm/task based on incoming recipient.  See L<execute|"execute">.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Ext::MIMEParser;
+use Bivio::Mail::Address;
 use Bivio::UI::Task;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -53,6 +57,9 @@ Unpacks and stores an incoming mail message.
 Requires form fields: client_addr, recipient, message.
 
 Sets realm, user, and server_redirects to task.
+
+User is set from Reply-To:, From:, Apparently-From:, in that order.
+You can forge any address, but we respect the Reply-To: override.
 
 Two addresses are parsed:
 
@@ -80,12 +87,15 @@ sub execute_ok {
     my($name, $op) = $to =~ /^(\w+)(?:-(.+))?$/;
     ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
 	unless $name;
+    _trace('name: ', $name, ' op: ', $op) if $_TRACE;
     _set_realm($self, $name);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
     $self->internal_put_field(mime_parser => $parser);
-    _login(
-	$self, $parser->head->get('reply-to') || $parser->head->get('from'));
+    _login($self,
+	$parser->head->get('reply-to')
+	|| $parser->head->get('from')
+        || $parser->head->get('apparently-from'));
     $req->server_redirect(_uri($self, $op));
     # DOES NOT RETURN
 }
@@ -105,6 +115,12 @@ sub internal_initialize {
 		type => 'String',
 		constraint => 'NONE',
 	    },
+	    {
+		# User we authenticated (or not)
+		name => 'from_email',
+		type => 'Email',
+		constraint => 'NONE',
+	    },
 	],
     });
 }
@@ -117,15 +133,18 @@ sub internal_initialize {
 #
 sub _login {
     my($self, $from) = @_;
-    chomp($from);
     my($req) = $self->get_request;
+    _trace('from: ', $from) if $_TRACE;
+    ($from) = $from && Bivio::Mail::Address->parse($from);
+    $self->internal_put_field(from_email => $from && lc($from));
+    _trace('from_email: ', $self->get('from_email')) if $_TRACE;
     # We must load the email explicitly, because we won't want the
     # general check in UserLoginForm which strips the domain and
     # checks the login.  Also, we need to handle the case where
     # the user doesn't exist.
     my($email) = Bivio::Biz::Model->new($req, 'Email');
     Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
-	login => $email->unauth_load({email => lc($from)})
+	login => $email->unauth_load({email => $self->get('from_email')})
 	    ? $email->get('realm_id') : undef,
     });
     return;
