@@ -51,6 +51,22 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Sets I<average_cost_method> and I<drp_plan> if not set, then calls SUPER.
+
+=cut
+
+sub create {
+    my($self, $values) = @_;
+    $values->{average_cost_method} = 0
+	    unless defined($values->{average_cost_method});
+    $values->{drp_plan} = 0 unless defined($values->{drp_plan});
+    return $self->SUPER::create($values);
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
