@@ -121,7 +121,6 @@ sub new {
 
     # If a new message, do the boilerplate setup here
     unless (defined($in)) {
-        $self->get_head->add('Date', Bivio::Type::DateTime->rfc822);
         $self->get_head->add('Content-Type', 'text/plain');
     }
     return $self;
