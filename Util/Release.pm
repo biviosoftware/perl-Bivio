@@ -897,9 +897,10 @@ EOF
 	unless _search('copyright', $base_spec);
     $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
-        $line =~ s{^\s*_b_release_include\(([^;]+)\);}
-	    {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xee;
-	$buf .= $line unless $line =~ /^(buildroot|release|name|provides): /i;
+        0 while $line =~ s{^\s*_b_release_include\(([^;]+)\);}
+	    {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xeemg;
+	$buf .= $line
+	    unless $line =~ /^(buildroot|release|name|provides): /i;
     }
     $buf =~ s/\b(_b_release_files\([^;]+\));/$1/eeg;
 
