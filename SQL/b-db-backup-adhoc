@@ -38,7 +38,7 @@ echo Compressing export dump files
 gzip *.dmp
 
 echo dbs-admin-$HOST
-tar czf - $ORACLE_HOME/dbs $ORACLE_HOME/admin $ORACLE_HOME/network/admin >$ts-$HOST-dbs-admin.tgz
+tar czf - $ORACLE_HOME/dbs $ORACLE_HOME/network/admin >$ts-$HOST-dbs-admin.tgz
 
 if [ "$REQNG_HOST" != "NONE" ]; then
     echo reqng-${REQNG_HOST}
