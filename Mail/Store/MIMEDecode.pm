@@ -257,7 +257,9 @@ sub _extract_mime_header {
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
     $entity->head->print($file);
-    _trace('done writing mime_header');
+    my(@parts) = $entity->parts();
+    _trace('>>>>adding custom header field X-BivioNumParts:', int(@parts)) if $_TRACE;
+    $file->print('X-BivioNumParts: ', int(@parts));
     $file->close();
     return $s;
 }
