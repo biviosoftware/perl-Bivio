@@ -44,9 +44,7 @@ wait
 
 gzip --fast <$PIPE >$ts-realm-acct.dmp.gz &
 # Consistent
-$ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y
-indexes=n rows=y constraints=n statistics=none feedback=0 consistent=y
-file=$PIPE 'tables=(ACCOUNT_SYNC_T,ENTRY_T,EXPENSE_CATEGORY_T,EXPENSE_INFO_T,MEMBER_ALLOCATION_T,MEMBER_ENTRY_T,REALM_ACCOUNT_ENTRY_T,REALM_ACCOUNT_T,REALM_INSTRUMENT_ENTRY_T,REALM_INSTRUMENT_T,REALM_INSTRUMENT_VALUATION_T,REALM_TRANSACTION_T,TAX_1065_T,TAX_K1_T)'
+$ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y constraints=n statistics=none feedback=0 consistent=y file=$PIPE 'tables=(ACCOUNT_SYNC_T,ENTRY_T,EXPENSE_CATEGORY_T,EXPENSE_INFO_T,MEMBER_ALLOCATION_T,MEMBER_ENTRY_T,REALM_ACCOUNT_ENTRY_T,REALM_ACCOUNT_T,REALM_INSTRUMENT_ENTRY_T,REALM_INSTRUMENT_T,REALM_INSTRUMENT_VALUATION_T,REALM_TRANSACTION_T,TAX_1065_T,TAX_K1_T)'
 wait
 
 gzip --fast <$PIPE >$ts-realm-files.dmp.gz &
