@@ -1,14 +1,6 @@
 <chapter>
-<title>Simple Chapter</title>
-<epigraph>
-<para>
-Representation <emphasis>is</emphasis> the essence of programming.
-</para>
-<attribution>Fred Brooks</attribution>
-</epigraph>
+<title>Chapter with Section Title</title>
 <simplesect>
-<para>Some Text</para>
-
 <programlisting>
 print(values(%{{1..8}}));
 </programlisting>
