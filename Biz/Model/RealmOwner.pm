@@ -264,6 +264,23 @@ sub invalidate_password {
     return;
 }
 
+=for html <a name="is_auth_realm"></a>
+
+=head2 is_auth_realm() : boolean
+
+=head2 static is_auth_realm(Bivio::Biz::Model model, string model_prefix) : boolean
+
+Returns true if the current row is the request's auth_realm.
+
+=cut
+
+sub is_auth_realm {
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($auth_id) = $model->get_request->get('auth_id');
+    return 0 unless $auth_id;
+    return $model->get($model_prefix.'realm_id') eq $auth_id ? 1 : 0;
+}
+
 =for html <a name="is_auth_user"></a>
 
 =head2 is_auth_user() : boolean
