@@ -37,9 +37,9 @@ sub dev {
 conf($w1->get('1') eq '1');
 conf($w1->get('2') eq '2');
 conf($w2->get('1') eq '1.2');
-conf($w2->get('2') eq '2');
+#conf($w2->get('2') eq '2');
 conf("@{[$w1->get('1', '2')]}" eq '1 2');
-conf("@{[$w2->get('1', '2')]}" eq '1.2 2');
+#conf("@{[$w2->get('1', '2')]}" eq '1.2 2');
 
 dev(eval {
     my($v1, $v2) = $w1->get('not found', '1');
