@@ -1,3 +1,5 @@
+# Copyright (c) 2005 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
 use strict;
 my($_LOG) = 'HTTPLog.tmp';
 use Bivio::IO::Config;
