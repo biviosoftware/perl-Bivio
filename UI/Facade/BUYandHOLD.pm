@@ -82,8 +82,8 @@ __PACKAGE__->new({
 	    my($fc) = @_;
 	    my($name) = 'BUYandHOLD Investment Clubs';
 
-	    # Some required strings
-	    $fc->group(logo_icon => 'band');
+	    # Some required strings.  Any logo icon will do.
+	    $fc->group(logo_icon => 'bivio');
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
 	    $fc->group(page_left_margin => 0);
