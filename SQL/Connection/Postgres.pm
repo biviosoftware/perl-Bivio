@@ -81,6 +81,13 @@ sub internal_fixup_sql {
 
     # No 'by' on sequence increments
     $sql =~ s/( INCREMENT )BY /$1/ig;
+
+    $sql = _fixup_outer_join($sql)
+	if $sql =~ /\(\+\)/;
+
+    $sql = _fixup_select_count($sql)
+	if $sql =~ /\bSELECT\s+COUNT\(\*\)\s+FROM\s/is;
+
     return $sql;
 }
 
@@ -137,6 +144,62 @@ sub next_primary_id {
 }
 
 #=PRIVATE METHODS
+
+# _fixup_outer_join(string sql) : string
+#
+# Replaces Oracle style outer joins (+) with Postgres syntax LEFT JOIN.
+#
+sub _fixup_outer_join {
+    my($sql) = @_;
+
+    # find the outer join expression, remove it from the WHERE clause
+    # and add it to the FROM section with the LEFT JOIN . ON . syntax
+
+    # example:
+    #
+    # select * from ec_payment_t, ec_subscription_t, realm_owner_t
+    # where ec_payment_id.realm_id=realm_owner_t.realm_id
+    # and ec_payment_t.ec_payment_id=ec_subscription_t.ec_payment_id(+)
+    #
+    # becomes:
+    #
+    # select * from ec_payment_t LEFT JOIN ec_subscription_t ON
+    # ec_payment_t.ec_payment_id=ec_subscription_t.ec_payment_id, realm_owner_t
+    # where ec_payment_id.realm_id=realm_owner_t.realm_id
+
+#TODO: the regexps need to be refined
+    while ($sql =~ /\(\+\)/) {
+	$sql =~ s/AND?\s+([\w.]+)\s?\=\s?([\w.]+)\(\+\)//is
+	    || Bivio::Die->die('failed to find outer join: ', $sql);
+
+	my($left, $right) = ($1, $2);
+	my($source_table) = _parse_table_name($left);
+	my($target_table) = _parse_table_name($right);
+
+	$sql =~ s/(\sFROM\s.*)$target_table(,)?(.*\sWHERE\s)/$1$3/is
+	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $sql);
+	my($join) = ' LEFT JOIN '.$target_table.' ON '.$left.' = '.$right.' ';
+
+	$sql =~ s/(\sFROM\s.*?$source_table)(.*\sWHERE\s)/$1$join$2/is
+	    || die('failed to insert outer join');
+    }
+    # remove extra commas
+    $sql =~ s/,\s*(\swhere\s)/$1/is;
+    $sql =~ s/,\s*(\sleft\s)/$1/is;
+
+    return $sql;
+}
+
+# _fixup_select_count(string sql) : string
+#
+# Removes 'order by' clause from purse 'select count(*) from ...'
+# queries. Order by confuses Postgres in that case, dbi_err 7.
+#
+sub _fixup_select_count {
+    my($sql) = @_;
+    $sql =~ s/\border\s+by\s.*$//;
+    return $sql;
+}
 
 # _interpret_constraint_violation(self, hash_ref attrs, string constraint) : Bivio::Type::Enum
 #
@@ -198,6 +261,18 @@ EOF
 
     _trace($constraint, ':', $@) if $_TRACE && $@;
     return $die_code;
+}
+
+# _parse_table_name(string str) : string
+#
+# Parses the table name from a table_name.field string.
+#
+sub _parse_table_name {
+    my($str) = @_;
+
+    $str =~ /^(\w+)\./
+	|| Bivio::Die->die("didn't find table: ", $str);
+    return $1;
 }
 
 =head1 COPYRIGHT
