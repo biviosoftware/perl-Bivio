@@ -158,21 +158,90 @@ sub _parse {
     $out->print("\r\n<!DOCTYPE HTML PUBLIC");
     $out->print("\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n");
     $out->print("<HTML><HEAD></HEAD><BODY BGCOLOR=\"#CCCCCC\">");
+    
 #TODO don't hardcode the bg color.    
-
+    my $s='';
     while(!$in->eof){
-	my($line) = $in->getline();
-	_process_line(\$line, $chars);
-#TODO count the number of '>' chars at the start of this line and
-#	use a different colored font for each number.
-	if ($line =~ /^&gt;/){
-	    $line = "<BR><font color = $font_color >" . $line . "</font>";
-	}
-	$out->print($line);
+	$s .= $in->getline();
     }
-    #end the 'document'
+    _subparse(\$s, $out);
     $out->print("</BODY></HTML>");
     return;
+}
+
+# _parse_line() : 
+#
+#
+#
+sub _parse_line {
+    my $line = shift;
+    my @words = split(" ", $line);
+    my $len = @words;
+    return "" unless ($len > 0);
+    
+    my $newline = ();
+    my $res = '';
+    my $map = {
+	38 => "&amp;",
+	34 => "&quot;",
+	60 => "&lt;",
+	62 => "&gt;",
+	160 =>"&nbsp;",
+	162 => "&cent;",
+	163 => "&pound;",
+	165 => "&yen;",
+	169 => "&copy;",
+    };
+    foreach my $word (@words){
+	if($word =~ /(.*@[a-z]*[A-Z]*\.[a-z]*[A-Z]*)/){
+	    my $str = $1;
+	    $word =~ s/$str/\<a HREF=mailto:$str\>$str\<\/a\>/;
+	}
+	elsif($word =~ /(http:\/\/.*)/){
+	    print(STDERR "\nmatched: $1");
+	    my $uri = $1;
+	    my $suri = $1;
+	    $suri =~ s/\?/\\?/g;
+	    $word =~ s/$suri/\<a HREF=$uri\>$uri\<\/a\>/;
+	}
+	elsif($word =~ /(www\..*[^\.])/){
+	    my $uri = $1;
+	    my $suri = $1;
+	    $suri =~ s/\?/\\?/g;
+	    $word =~ s/$suri/\<a HREF=$uri\>$uri\<\/a\>/;
+	}
+	my @chars = unpack("a*", $word);
+	foreach my $x (@chars){
+	    $res = $map->{ord($x)} || next;
+	    next if ord($x) < 40 || ord($x) == 127;
+	    $res = '&#'.ord($x).';', next if ord($x) > 127;
+	}
+	$word = $res if(! $res eq(''));
+	push @$newline, $word;
+	$res = '';
+    }
+    return join ' ' , @$newline;
+}
+
+# _parse_paragraph() : 
+#
+#
+#
+sub _parse_paragraph {
+    my($paragraph_ref, $out) = @_;
+    if(!$out){die('received an undef for output stream!')};
+    my @lines = split("\n", $$paragraph_ref);
+    my $count = @lines;
+    if($count == 0){return ;}
+    if(($lines[$count-1] =~ s/\<+?$//) && ($lines[0] =~ s/^\>*//)){
+	foreach my $line (@lines){
+	    $line =~ s/^/\> /;
+	}
+    }
+    foreach my $line (@lines){
+	$line =~ s/\>/\<BR\>&gt;/g;
+	$out->print( _parse_line($line));
+    }
 }
 
 # _process_line(scalar_ref line) : 
@@ -202,6 +271,21 @@ sub _process_line {
     }
     return;
 }
+
+# _sub_parse() : 
+#
+#
+#
+sub _subparse {
+    my($str_ref, $out) = @_;
+    if(!$out){die('received <undef> for output stream!');}
+    my @paragraphs = split("\n\n", $$str_ref);
+    foreach my $s (@paragraphs){
+	_parse_paragraph(\$s, $out);
+    }
+    
+}
+
 
 =head1 COPYRIGHT
 
