@@ -460,6 +460,10 @@ _compile([
     PERCENT_REALMS => ["\% Clubs\nWhich Own"],
     STOCK_WITHDRAWAL_VALUE_HEADING => ["Stock\nWithdrawal\nValue"],
 
+    # Page headings
+    MAIL_LIST_PAGE_HEADING => ['Mail Message Board'],
+    SEARCH_LIST_PAGE_HEADING => ['Search Results'],
+
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
     REALMINVITE_HONORIFIC_HEADING => ['Privileges'],
@@ -479,8 +483,6 @@ _compile([
 
     # Form Fields
     INVITE_MESSAGE => ['Message'],
-    SEARCH_STRING => ['Search'],
-    SEARCH_RESULT => ['Result'],
 
     # Misc. Features
     NEW_HARDWARE => ['New Computers'],
@@ -540,7 +542,8 @@ _compile([
     BIVIO_POWER_ALT => ['Powered by bivio'],
 
     # Search
-    SEARCH_BUTTON => ['Search'],
+    SEARCH_STRING => ['Search', undef, 'SEARCH_BUTTON'],
+    SEARCH_RESULT => ['Result'],
     SCORE_PERCENT => ['Score'],
     DATE_TIME => ['Date'],
 ]);
