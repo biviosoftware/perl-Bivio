@@ -529,6 +529,7 @@ sub _parse_end_table {
 	}
 	delete $fields->{currenttable};
     }
+    delete $fields->{currenttext};
     return;
 }
 
@@ -550,7 +551,6 @@ sub _parse_end_tr {
 	}
 	delete($fields->{currentrow});
     }
-    delete $fields->{currenttext};
     delete $fields->{radio_or_checkbox};
     return;
 }
