@@ -145,7 +145,7 @@ sub add_group {
     my($gname, $gid) = split(/:/, $group);
     my($real) = (getgrnam($gname))[2];
     if (defined($real)) {
-	Bivio::Die->die("$gname: expected gid ($gid) but got ($real)")
+	Bivio::IO::Alert->warn("$gname: expected gid ($gid) but got ($real)")
 	    if defined($gid) && $real != $gid;
 	return '';
     }
@@ -214,7 +214,7 @@ sub add_user {
     my($uname, $uid) = split(/:/, $user);
     my($real) = (getpwnam($uname))[3];
     if (defined($real)) {
-	Bivio::Die->die("$uname: expected uid ($uid) but got ($real)")
+	Bivio::IO::Alert->warn("$uname: expected uid ($uid) but got ($real)")
 	    if defined($uid) && $uid != $real;
 	return '';
     }
