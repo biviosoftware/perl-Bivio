@@ -177,12 +177,13 @@ _compile([
 	    Bivio::Type::TaxCategory->FEDERAL_TAX_FREE_INTEREST->get_short_desc
 	   ],
     PAID => ['Total Paid'],
-    EARNINGS => ["Earnings\nAllocated"],
+    EARNINGS => ['Earnings Allocated'],
     ADD_ROWS => ['Add Rows'],
     FEE => ['Fee'],
     WITHDRAWAL_TYPE => ['Type'],
     SELECTED => ['Selected'],
-    ACQUISITION_DATE => ['Acquisition Date'],
+    ACQUISITION_DATE => ['Acquisition Date', undef,
+	'RealmInstrumentEntry.acquisition_date'],
     COST_PER_SHARE => ['Cost/Share'],
     TRANSFER_VALUATION_DATE => ['Transfer Valuation Date'],
     WITHDRAWAL_VALUE => ['Withdrawal Value'],
@@ -409,8 +410,6 @@ _compile([
     UNITS_HEADING => ['Units', undef, 'MemberEntry.units'],
     PERCENT_HEADING => ['Percent'],
     DESCRIPTION_HEADING => ['Description'],
-    ACQUISITION_DATE_HEADING => ["Date\nAcquired", undef,
-	    'RealmInstrumentEntry.acquisition_Date'],
     SELL_DATE_HEADING => ['Date Sold'],
     SALES_PRICE_HEADING => ['Sales Price'],
     COST_BASIS_HEADING => ['Cost Basis'],
@@ -474,6 +473,7 @@ _compile([
     PERCENT_REALMS => ["\% Clubs\nWhich Own"],
     STOCK_WITHDRAWAL_VALUE_HEADING => ["Stock\nWithdrawal\nValue"],
     NON_DEDUCTIBLE_EXPENSE_HEADING => ["Non-Deductible\nExpense"],
+    EARNINGS_HEADING => ["Earnings\nAllocated"],
 
     # Page headings
     MAIL_LIST_PAGE_HEADING => ['Mail Message Board'],
