@@ -520,7 +520,6 @@ sub setup {
         Bivio::Agent::Job::Request
         Bivio::Agent::TaskId
         Bivio::SQL::Connection
-        Bivio::Agent::HTTP::Location
     });
     $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
 
@@ -547,8 +546,6 @@ sub setup {
 				$self->get('req')->get('auth_realm')
 				->get('owner'))));
     }
-
-    Bivio::Agent::HTTP::Location->initialize_map;
     return;
 }
 
