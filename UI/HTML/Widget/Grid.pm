@@ -40,7 +40,7 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
-=item bgcolor : string []
+=item bgcolor : string [] (dynamic)
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
@@ -85,7 +85,7 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
-=item cell_bgcolor : string []
+=item cell_bgcolor : string [] (dynamic)
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
@@ -175,15 +175,14 @@ sub initialize {
     return if exists($fields->{rows});
     my($p) = '<table border='.$self->get_or_default('border', 0);
     # We don't want to check parents
-    my($expand, $bg, $align, $width)
-	    = $self->unsafe_get(qw(expand bgcolor align width));
+    my($expand, $align, $width)
+	    = $self->unsafe_get(qw(expand align width));
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
     $p .= " width=\"$width\"" if $width;
     $p .= Bivio::UI::Align->as_html($align) if $align;
-    $p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
-    $fields->{prefix} = $p . '>';
+    $fields->{prefix} = $p;
     $fields->{suffix} = '</table>';
     my($num_cols) = 0;
     my($rows, $r) = $self->get('values');
@@ -202,14 +201,15 @@ sub initialize {
 	    my($form_end) = 0;
 	    if (ref($c) eq 'ARRAY') {
 		# Widget value, nothing to prepare.
+		$p .= '>';
 	    }
 	    elsif (ref($c)) {
 		# May set attributes on itself
 		$c->put('parent', $self);
 		$c->initialize($self, $source);
 		my($align, $width, $height, $colspan, $rowspan);
-		($bg, $expand, $align, $colspan, $rowspan, $width, $height)
-			= $c->unsafe_get(qw(cell_bgcolor cell_expand
+		($expand, $align, $colspan, $rowspan, $width, $height)
+			= $c->unsafe_get(qw(cell_expand
 				cell_align cell_colspan cell_rowspan cell_width
 				cell_height));
 		if ($expand) {
@@ -222,7 +222,6 @@ sub initialize {
 		}
 #TODO: Need better crosschecking
 		$p .= ' width="1%"' if $c->get_or_default('cell_compact', 0);
-		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
 		$p .= " rowspan=$rowspan" if $rowspan;
 		$p .= " colspan=$colspan" if $colspan;
@@ -230,43 +229,32 @@ sub initialize {
 #TODO: Should be a number or percent?
 		$p .= qq! width="$width"! if $width;
 		$p .= qq! height="$height"! if $height;
+		# NOTE: Start tag will be closed by render in case there
+		# is a cell_bgcolor.
 		$end = $c->get_or_default('cell_end', 1);
 		$form_end = $c->get_or_default('cell_end_form', 0);
 	    }
 	    elsif (!defined($c)) {
 		# Replace undef cells with something real. 
+		$p .= '>';
 		$c = '';
 	    }
 	    elsif ($c =~ /^\s+$/) {
-		$p .= ' width="1%"';
+		$p .= ' width="1%">';
 		$c =~ s/\s/&nbsp;/g;
 	    }
+	    else {
+		$p .= '>';
+	    }
 	    # Render scalars literally.
-	    push(@$r, $p .'>', $c, $end ? "</td>\n" : '',
+	    push(@$r, $p, $c, $end ? "</td>\n" : '',
 		   $form_end ? '</form>' : '');
 	}
     }
     $fields->{rows} = $rows;
-    $fields->{is_constant} = 0;
-    $fields->{is_first_render} = 1;
     return;
 }
 
-
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Will return true if always renders exactly the same way.
-
-=cut
-
-sub is_constant {
-    my($fields) = shift->{$_PACKAGE};
-    Carp::croak('can only be called after first render')
-		if $fields->{is_first_render};
-    return $fields->{is_constant};
-}
 
 =for html <a name="layout_buttons"></a>
 
@@ -320,41 +308,40 @@ sub layout_buttons {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value}, return if $fields->{is_constant};
 
     my($start) = length($$buffer);
     $$buffer .= $fields->{prefix};
+    my($bg) = $self->unsafe_get('bgcolor');
+    $$buffer .= Bivio::UI::Color->as_html_bg($bg) if $bg;
+    $$buffer .= '>';
+
     my($r, $c);
     foreach $r (@{$fields->{rows}}) {
 	my($row) = "<tr>\n";
 	foreach $c (@$r) {
 	    # Look up widget value
-	    my($w) = ref($c) eq 'ARRAY' ? $source->get_widget_value(@$c) : $c;
-	    # Render widget, string, or undef
-	    ref($w) ? $w->render($source, \$row) :
-		    defined($w) ? ($row .= $w) : ();
+	    my($is_widget_value) = ref($c) eq 'ARRAY';
+	    my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
+	    if (ref($w)) {
+		# Render widget
+		unless ($is_widget_value) {
+		    my($bg) = $c->unsafe_get('cell_bgcolor');
+		    $row .= Bivio::UI::Color->as_html_bg($bg) if $bg;
+		    # Close cell start always.  See initialization.
+		    $row .= '>';
+		}
+		$w->render($source, \$row);
+	    }
+	    elsif (defined($w)) {
+		$row .= $w;
+	    }
+	    # else undefined, render nothing
 	}
 	$row .= '</tr>';
 	# If row is completely empty, don't render it.
 	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
     $$buffer .= $fields->{suffix};
-
-    if ($fields->{is_first_render}) {
-	$fields->{is_first_render} = 0;
-
-	# Are the values constant?
-	my($constant) = 1;
-	foreach $r (@{$fields->{rows}}) {
-	    foreach $c (@$r) {
-		last unless $constant &&= !ref($c) ||
-			ref($c) ne 'ARRAY' && $c->is_constant;
-	    }
-	}
-	# If values are constant, save off what we just rendered
-	$fields->{value} = substr($$buffer, $start)
-		if $fields->{is_constant} = $constant;
-    }
     return;
 }
 

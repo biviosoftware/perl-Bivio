@@ -433,6 +433,55 @@ sub heading {
 	   );
 }
 
+=for html <a name="heading_with_inactive_form"></a>
+
+=head2 static heading_with_inactive_form(string label, boolean is_report) : Bivio::UI::HTML::Widget
+
+Renders the heading for the InstrumentList and MemberList pages.
+
+I<label> is a L<Bivio::UI::Label|Bivio::UI::Label>
+and appears on the checkbox.
+
+The heading includes a form with a single check box.
+The task must have an InactiveForm in its business logic items.
+
+=cut
+
+sub heading_with_inactive_form {
+    my($proto, $label, $is_report) = @_;
+    _use(qw(Bivio::UI::HTML::Club::ReportPage Grid Form Checkbox));
+    return Bivio::UI::HTML::Widget::Grid->new({
+	expand => 1,
+	values => [
+	    [
+		($is_report ? Bivio::UI::HTML::Club::ReportPage
+			->get_heading_with_one_date('page_heading')
+			: $proto->string([
+			    sub {
+				return Bivio::UI::Label->get_simple(
+					shift->get('task_id')->get_name);
+			    }],
+				'page_heading')),
+		Bivio::UI::HTML::Widget::Form->new({
+		    end_tag => 0,
+		    cell_end_form => 1,
+		    cell_align => 'E',
+		    form_class => 'Bivio::Biz::Model::InactiveForm',
+		    value => $proto->join(
+			    Bivio::UI::HTML::Widget::Checkbox->new({
+				field => 'show_inactive',
+				label => Bivio::UI::Label->get_simple($label),
+				auto_submit => 1,
+			    }),
+			    '<noscript><input type=submit value="Refresh">',
+			    '</noscript>',
+			   ),
+		}),
+	    ],
+        ],
+    });
+}
+
 =for html <a name="highlight"></a>
 
 =head2 static highlight(any value) : Bivio::UI::HTML::Widget::String
@@ -693,6 +742,25 @@ sub link_trez_talk {
     return shift->link('Trez Talk', '/pub/trez_talk');
 }
 
+=for html <a name="list_actions"></a>
+
+=head2 static list_actions(array_ref actions) : hash_ref
+
+Returns a L<table|"table"> column value which is a
+L<Bivio::UI::HTML::Widget::ListActions|Bivio::UI::HTML::Widget::ListActions>.
+
+=cut
+
+sub list_actions {
+    my($proto, $actions) = @_;
+    return {
+	column_heading => 'list_actions',
+	column_widget => Bivio::UI::HTML::Widget::ListActions->new({
+	    values => $actions,
+	}),
+    };
+}
+
 =for html <a name="mailto"></a>
 
 =head2 static static mailto(any email) : Bivio::UI::HTML::Widget::MailTo
@@ -777,6 +845,27 @@ sub string {
 	# Allow caller to set font to undef
 	int(@_) >= 3 ? (string_font => $font) : (),
     });
+}
+
+=for html <a name="table"></a>
+
+=head2 static table(string list_class, array_ref columns, hash_ref attrs) : Bivio::UI::HTML::Widget::Table
+
+Wrapper for
+L<Bivio::UI::HTML::Widget::Table|Bivio::UI::HTML::Widget::Table>.
+
+I<attrs> are the global attributes sans I<list_class> and I<columns>.
+I<attrs> may be C<undef> or an empty hash_ref.
+
+=cut
+
+sub table {
+    my($proto, $list_class, $columns, $attrs) = @_;
+    _use('Table');
+    $attrs ||= {};
+    $attrs->{list_class} = $list_class;
+    $attrs->{columns} = $columns;
+    return Bivio::UI::HTML::Widget::Table->new($attrs);
 }
 
 =for html <a name="task_list"></a>

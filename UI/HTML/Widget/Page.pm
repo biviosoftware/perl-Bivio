@@ -128,15 +128,6 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{prefix};
-    $fields->{middle} = '</head><body';
-    # Always have a background color
-    $fields->{middle} .= Bivio::UI::Color->as_html_bg('page_bg');
-    foreach my $c ('text', 'link', 'alink', 'vlink') {
-	my($n) = 'page_'.$c;
-	$fields->{middle} .= Bivio::UI::Color->as_html($c, $n)
-		if Bivio::UI::Color->unsafe_from_any($n);
-    }
-    $fields->{middle} .= ">\n";
     my($v);
     foreach $v (($fields->{head}, $fields->{body})
 	    = $self->get('head', 'body')) {
@@ -159,7 +150,15 @@ sub render {
 	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
-    $$buffer .= $fields->{middle};
+    $$buffer .= '</head><body';
+    # Always have a background color
+    $$buffer .= Bivio::UI::Color->as_html_bg('page_bg');
+    foreach my $c ('text', 'link', 'alink', 'vlink') {
+	my($n) = 'page_'.$c;
+	$$buffer .= Bivio::UI::Color->as_html($c, $n);
+    }
+    $$buffer .= ">\n";
+
     $fields->{body}->render($source, $buffer);
     $$buffer .= "</body></html>\n";
     return unless $_SHOW_TIME || $_TRACE;

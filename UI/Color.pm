@@ -48,6 +48,7 @@ The current color names are:
 __PACKAGE__->compile(
     NO_COLOR_TAG => [
 	-1,
+	'table_odd_row_bg',
     ],
     PAGE_BG => [
 	0xFFFFFF,
@@ -92,7 +93,7 @@ __PACKAGE__->compile(
     SUMMARY_LINE => [
 	0x66CC66,
     ],
-    TABLE_STRIPE_BG => [
+    TABLE_EVEN_ROW_BG => [
 	# This is not websafe, but it will round down to 0xCCCCCC
 	# on systems that have only 256 colors.
 	0xE4E4E4,
@@ -116,25 +117,26 @@ __PACKAGE__->compile(
 
 =for html <a name="as_html"></a>
 
-=head2 as_html(string attr) : string
-
-=head2 as_html(string attr, any thing) : string
+=head2 static as_html(string attr, any thing) : string
 
 Returns the color as an attribute=value string suitable for HTML.
+
+If I<thing> returns false (zero or C<undef>), returns an empty string.
 
 =cut
 
 sub as_html {
-    my($proto, $attr) = (shift, shift);
-    my($c) = Bivio::Type::Enum::from_any($proto, @_)->as_int;
+    die('expecting exactly three args') unless int(@_) == 3;
+    my($proto, $attr, $thing) = @_;
+    return '' unless $thing;
+
+    my($c) = Bivio::Type::Enum::from_any($proto, $thing)->as_int;
     return $c >= 0 ? sprintf(' %s="#%06X"', $attr, $c) : '';
 }
 
 =for html <a name="as_html_bg"></a>
 
-=head2 as_html_bg() : string
-
-=head2 as_html_bg(any thing) : string
+=head2 static as_html_bg(any thing) : string
 
 Same as L<as_html|"as_html">, but generates C<BGCOLOR> attribute.
 
@@ -144,9 +146,7 @@ sub as_html_bg {
     shift->as_html('bgcolor', @_);
 }
 
-=head2 as_html_fg() : string
-
-=head2 as_html_fg(any thing) : string
+=head2 static as_html_fg(any thing) : string
 
 Returns the color as a C<COLOR> attribute.
 

@@ -34,7 +34,7 @@ and deductions.
 #=IMPORTS
 use Bivio::UI::HTML::Club::ReportPage;
 use Bivio::UI::HTML::Widget::Join;
-use Bivio::UI::HTML::Widget::Table2;
+use Bivio::UI::HTML::Widget::Table;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -62,7 +62,7 @@ sub new {
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
 	    '<table border=0 cellspacing=0 cellpadding=5>',
-	    Bivio::UI::HTML::Widget::Table2->new({
+	    Bivio::UI::HTML::Widget::Table->new({
 		list_class => 'PortfolioIncomeList',
 		start_tag => 0,
 		end_tag => 0,
@@ -89,7 +89,7 @@ sub new {
 		}),
 	    }),
 	    "\n<tr><td><br></td></tr>",
-	    Bivio::UI::HTML::Widget::Table2->new({
+	    Bivio::UI::HTML::Widget::Table->new({
 		list_class => 'PortfolioDeductionList',
 		start_tag => 0,
 		end_tag => 0,

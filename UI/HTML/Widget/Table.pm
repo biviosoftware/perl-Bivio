@@ -22,67 +22,71 @@ L<Bivio::UI::HTML::Widget>
 =cut
 
 use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Table::ISA = qw(Bivio::UI::HTML::Widget);
+@Bivio::UI::HTML::Widget::Table::ISA = ('Bivio::UI::HTML::Widget');
 
 =head1 DESCRIPTION
 
 C<Bivio::UI::HTML::Widget::Table> renders a
 L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
-There are a few special heading and cell values:
-
-=over 4
-
-=item ' ' (spaces)
-
-rendered as C<&nbsp;>
-
-=item - (dash)
-
-rendered as
-L<Bivio::UI::HTML::Widget::LineCell|Bivio::UI::HTML::Widget::LineCell>
-in C<summary_line> color and C<count> equal one.
-
-=item = (equals)
-
-rendered as
-L<Bivio::UI::HTML::Widget::LineCell|Bivio::UI::HTML::Widget::LineCell>
-in C<summary_line> color and C<count> equal two.
-
-=back
-
 =head1 TABLE ATTRIBUTES
 
 =over 4
 
-=item align : string [CENTER]
+=item align : string [center]
 
 How to align the table.  The allowed (case
 insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
-=item bgcolor : string []
+=item border : int [0]
 
-The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
-See L<Bivio::UI::Color|Bivio::UI::Color>.
+Width of border surrounding the table and its cells.
 
-=item cell_attrs : hash_ref [{string_font => 'table_cell'}]
+=item cellpadding : int [5]
 
-Attributes to be applied to all table cells.  They will be overriden
-by cell specific attributes.
+Padding inside each cell in pixels.
 
-=item cells : array_ref (required)
+=item cellspacing : int [0]
 
-The widgets that are to be used to render the cells.  If the
-widget is a scalar or array_ref, it identifies the field in the
-list model to use.
-A L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
-instance will be created with the corresponding value.
+Spacing around each cell in pixels.
 
-=item end_tag : boolean [true]
+=item columns : array_ref (required)
 
-If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
+The column names to display, in order. Column headings will be assigned
+by looking up name.'_HEADING' in the Bivio::UI::Label enum.
+Each value in columns may be one of:
+
+=over 4
+
+=item string
+
+The field name in the ListModel.
+
+=item array_ref
+
+First element is the field.  Second is a hash_ref containing
+attributes.
+
+=item hash_ref
+
+May or may not have a field and the attrs describe how to create the
+widget.  The name of field is in the attribute named C<field>.
+
+=back
+
+An empty field will be rendered as a empty cell.
+
+=item column_enabler : UNIVERSAL
+
+The object which determines which columns to dynamically enable.
+If present, then the method:
+
+  enable_column(string name, Bivio::UI::HTML::Widget::Table table) : boolean
+
+will be invoked upon it prior to rendering the table to determine which
+columns to display.
 
 =item empty_list_widget : Bivio::UI::HTML::Widget []
 
@@ -93,61 +97,68 @@ The I<source> will be the original source, not the list_model.
 
 If not set, displays an empty table (with headers).
 
+=item end_tag : boolean [true]
+
+If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
+
+=item even_row_bgcolor : string [table_even_row_bg]
+
+The stripe color to use for even rows as defined by
+L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
+undefined (NO_COLOR_TAG), no striping will occur.
+
 =item expand : boolean [false]
 
-If true, the table will C<WIDTH> will be C<95%>.
+If true, the table C<WIDTH> will be C<95%>.
 
-=item heading_attrs: hash_ref [{string_font => 'table_heading', column_align => 'S'}]
+=item list_class : string (required)
 
-Attributes to be applied to all table cells.  They will be overriden
-by heading specific attributes.
+The class name of the list model to be rendered. The list_class is used
+to determine the column cell types for the table. The
+C<Bivio::Biz::Model::> prefix will be inserted if need be.
 
-=item heading_bgcolor : string []
+=item odd_row_bgcolor : string [table_odd_row_bg]
 
-The bgcolor of the heading row as defined by
-L<Bivio::UI::Color|Bivio::UI::Color>.
+The stripe color to use for odd rows as defined by
+L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
+undefined (NO_COLOR_TAG), no striping will occur.
 
-=item headings : array_ref []
+=item show_headings : boolean [true]
 
-The widgets that are to be used for the column headings.
-If the heading value is itself an array_ref, the first value is
-the widget and the second value is the "sort field" to be passed
-to the list model.  If the widget is a string, not a widget,
-a L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
-instance will be created.
+If true, then the column headings are rendered.
 
-=item leading_separator : boolean [true]
+=item source_name : string
 
-A separator will separate the cells from the heading.  The color will be
-C<table_separator>.
-
-=item pad : number [5]
-
-The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
-
-=item source : array_ref []
-
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get the source to pass to the table heading and cell widgets.
+The name of the list model as it appears upon the request. This value will
+default to the 'list_class' attribute if not defined.
 
 =item start_tag : boolean [true]
 
 If false, this widget won't render the C<&gt;TABLE&lt;>tag.
 
-=item stripe_bgcolor : string [table_stripe_bg]
+=item summarize : boolean [false]
 
-The stripe color to use for even rows as defined by
-L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
-false, no striping will occur.
+If true, the list's summary model will be rendered.  Will be true
+implicitly, if I<summary_line_type> is set.
+
+=item summary_line_type : string
+
+The type of summary line to render.
+If defined, valid types are '-' for a single line, '=' for a double line.
+If true, sets I<summarize> to true if I<summarize> is not already set.
+
+=item title : string
+
+The name of the table.
 
 =item trailing_separator : boolean [false]
 
-A separator will separate the cells from the end.  The color will be
+A separator will separate the cells from the summary.  The color will be
 C<table_separator>.
 
 =back
 
-=head1 HEADING AND CELL ATTRIBUTES
+=head1 CELL ATTRIBUTES
 
 =over 4
 
@@ -158,33 +169,74 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
-The value applies separately to headings and cells.
+=item column_control : value
+
+A widget value which, if set, must be a true value to render the column.
 
 =item column_expand : boolean [false]
 
-If true, the column will be C<width="100%">.  Should only be
-applied to headings.
+If true, the column will be C<width="100%">.
+
+=item column_heading : string
+
+The heading label to use for the columns heading. By default, the column
+name is used to look up the heading label.  The name of the label
+is the I<column_heading> with C<_HEADING> appended.
+
+=item column_heading : string_ref
+
+B<DEPRECATED>.
+
+The literal text of the label.  The indirected value will be
+looked up once and used.  This avoids a second lookup.  Only
+used by DescriptivePageForm.
+
+=item field : string
+
+Name of the column.  By default, it is the positional name.
+
+=item column_nowrap : boolean [false]
+
+If true, the column won't wrap text.
 
 =item column_span : int [1]
 
 The value for the C<COLSPAN> tag, which is not inserted if C<1>.
 
-=item column_nowrap : boolean [false]
+=item column_summarize : boolean
 
-If true, the column won't wrap text.
+Determines whether the specified cell will be summarized. Only applies to
+numeric columns. By default, numeric columns always summarize.
+
+=item column_widget : Bivio::UI::HTML::Widget
+
+The widget which will be used to render the column. By default the column
+widget is based on the column's field type.
+
+=item heading_align : string [S]
+
+How to align the heading.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
 
 =back
 
 =cut
 
 #=IMPORTS
+
+use Bivio::Biz::Model;
 use Bivio::UI::Align;
 use Bivio::UI::Color;
-use Bivio::UI::HTML::Widget::HorizontalRule;
+use Bivio::UI::HTML::WidgetFactory;
+use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::LineCell;
+use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::Label;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 FACTORIES
 
@@ -219,218 +271,390 @@ Initializes static information.
 sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return if exists($fields->{headings});
-    my($p) = '';
-    if ($self->get_or_default('start_tag', 1)) {
-	$p .= '<table border=0 cellspacing=0 cellpadding=';
-	# We don't want to check parents
-	$p .= $self->get_or_default('pad', 5);
-	$p .= Bivio::UI::Align->as_html(
-		$self->get_or_default('align', 'center'));
-	$p .= ' width="95%"' if $self->get_or_default('expand', 0);
-	my($bgcolor) = $self->get_or_default('bgcolor', 0);
-	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
-	$p .= '>';
-    }
-    $fields->{prefix} = $p;
-    $p = '';
+    return if $fields->{headings};
 
-    # Headings
-    my($num_columns) = 0;
-    if ($self->unsafe_get('headings')) {
-	$p .= '<tr';
-	my($bgcolor) = $self->get_or_default('heading_bgcolor', 0);
-	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
-	my($headings) = [$p . ">\n"];
-	my($heading_attrs) = $self->get_or_default('heading_attrs',
-		{string_font => 'table_heading', column_align => 'S'});
-	my($nc) = 0;
-	foreach my $c (@{$self->get('headings')}) {
-	    _init_cell($self, $headings, $heading_attrs, $c);
-	    $nc++;
+    # Make sure the class is loaded
+    my($list) = Bivio::Biz::Model->get_instance($self->get('list_class'));
+    $self->put(source_name => ref($list))
+	    unless $self->has_keys('source_name');
+
+    my($columns) = $self->get('columns');
+
+#TODO: optimize, don't create summary widgets unless they are needed
+
+    # create widgets for each heading, column, and summar
+    my($cells) = [];
+    my($headings) = [];
+    my($summary_cells) = [];
+    my($summary_lines) = [];
+    foreach my $col (@$columns) {
+	my($attrs);
+	if (ref($col) eq 'ARRAY') {
+	    ($col, $attrs) = @$col;
+	    $attrs->{field} = $col unless $attrs->{field};
+	    $col = $attrs->{field} unless $col;
 	}
-        $fields->{headings} = $headings;
-	$num_columns = $nc;
-    }
-
-    # Cells
-    if ($self->unsafe_get('cells')) {
-	# Stripe: finishes off previous row (which may be header)
-	# First row is even (row = 0)
-	$fields->{even_row} = "<tr>\n";
-	$fields->{odd_row} = '<tr';
-	my($bgcolor)
-		= $self->get_or_default('stripe_bgcolor', 'table_stripe_bg');
-	$fields->{odd_row} .= Bivio::UI::Color->as_html_bg($bgcolor)
-		if $bgcolor;
-	$fields->{odd_row} .= ">\n";
-
-	my($cell_attrs) = $self->get_or_default('cell_attrs',
-		{string_font => 'table_cell'});
-	my($nc) = 0;
-	my($cells) = [''];
-	foreach my $c (@{$self->get('cells')}) {
-	    _init_cell($self, $cells, $cell_attrs, $c);
-	    $nc++;
+	elsif (ref($col) eq 'HASH') {
+	    $attrs = $col;
+	    $col = $attrs->{field} || '';
 	}
-	$fields->{cells} = $cells;
-	$num_columns = $nc if $nc > $num_columns;
+	else {
+	    $attrs = {field => $col};
+	}
+
+	my($cell) = _get_cell($self, $list, $col, $attrs);
+	push(@$cells, $cell);
+	push(@$headings, _get_heading($self, $col, $cell));
+	push(@$summary_cells, _get_summary_cell($self, $cell));
+	push(@$summary_lines, _get_summary_line($self, $cell));
     }
-    $fields->{leading_separator} = $self->get_or_default('leading_separator',
-	    1);
-    $fields->{trailing_separator} = $self->get_or_default('trailing_separator',
-	    0);
-    if ($fields->{leading_separator} || $fields->{trailing_separator}) {
-	$fields->{separator} = Bivio::UI::HTML::Widget::LineCell->new({
-	    height => 1,
-	    color => 'table_separator',
-	});
-	$fields->{separator_row} = "<tr><td colspan=$num_columns>";
-	$fields->{separator}->put(parent => $self);
-	$fields->{separator}->initialize;
+    $fields->{headings} = $headings;
+    $fields->{cells} = $cells;
+    $fields->{summary_lines} = $summary_lines;
+    $fields->{summary_cells} = $summary_cells;
+
+    my($title) = $self->unsafe_get('title');
+    if (defined($title)) {
+	$fields->{title} = Bivio::UI::HTML::Widget::String->new({
+            value => "\n$title\n",
+            string_font => 'table_heading',
+        });
+	$fields->{title}->initialize;
     }
-    Carp::croak('one of cells or headings must be defined')
-		unless $fields->{headings} || $fields->{cells};
-    $fields->{source} = $self->get('source');
-    $fields->{end_tag} = $self->get_or_default('end_tag', 1);
-    $fields->{empty_list_widget} = $self->get_or_default(
-	    'empty_list_widget', undef);
+
+    # heading separator and summary
+    $fields->{separator} = Bivio::UI::HTML::Widget::LineCell->new({
+	height => 1,
+	color => 'table_separator',
+    });
+    $fields->{separator}->initialize;
+
+    $fields->{empty_list_widget} = $self->unsafe_get('empty_list_widget');
     if ($fields->{empty_list_widget}) {
 	$fields->{empty_list_widget}->put(parent => $self);
 	$fields->{empty_list_widget}->initialize;
     }
+
+    my($prefix) = "\n<table border=";
+    $prefix .= $self->get_or_default('border', 0);
+    $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
+    $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
+    $prefix .= Bivio::UI::Align->as_html(
+	    $self->get_or_default('align', 'center'));
+    $prefix .= ' width="95%"' if $self->unsafe_get('expand');
+    $fields->{table_prefix} = $prefix.'>';
     return;
 }
 
 =for html <a name="render"></a>
 
-=head2 render(string_ref buffer)
+=head2 render(any source, string_ref buffer)
+
+Draws the table upon the output buffer.
 
 =cut
 
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($list_model) = $source->get_widget_value(@{$fields->{source}});
+    my($list) = $source->get($self->get('source_name'));
+
+    # check for an empty list
     return $fields->{empty_list_widget}->render($source, $buffer)
 	    if $fields->{empty_list_widget}
-		    && $list_model->get_result_set_size == 0;
-    $source = $list_model;
+		    && $list->get_result_set_size == 0;
 
-    $$buffer .= $fields->{prefix};
-    # Headings
-    if ($fields->{headings}) {
-	foreach my $c (@{$fields->{headings}}) {
-	    ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
-	}
-	$$buffer .= "</tr>\n";
+    my($headings, $cells, $summary_cells, $summary_lines) =
+	    _get_enabled_widgets($self, $source);
+
+    $$buffer .= $fields->{table_prefix}
+	    if $self->get_or_default('start_tag', 1);
+
+#TODO: optimize, for static tables just compute this once in initialize
+    my($colspan) = _get_column_count($cells);
+
+    # table title
+    if ($fields->{title}) {
+	$$buffer .= "\n<tr><td colspan=$colspan>";
+	$fields->{title}->render($list, $buffer);
+	$$buffer .= "</td>\n</tr>",
     }
 
-    # Leading separator
-    my($want_sep) = 1;
-    if ($fields->{leading_separator}) {
-	$$buffer .= $fields->{separator_row};
-	$fields->{separator}->render($source, $buffer);
-	$$buffer .= "</td></tr>\n";
-	$want_sep = 0;
+    # headings
+    if ($self->get_or_default('show_headings', 1)) {
+	_render_row($headings, $list, $buffer);
+	$$buffer .= "\n<tr><td colspan=$colspan>";
+	$fields->{separator}->render($list, $buffer);
+	$$buffer .= "</td>\n</tr>",
     }
 
-    # Cells
-    if ($fields->{cells}) {
-	# Rows
-	my($row) = 0;
-	# Always start at beginning
-	$source->reset_cursor;
-	while ($source->next_row()) {
-	    $$buffer .= $fields->{$row++ % 2 ? 'odd_row' : 'even_row'};
-	    foreach my $c (@{$fields->{cells}}) {
-		$$buffer .= $c, next unless ref($c);
+    # rows
+    $list->reset_cursor;
+    my($is_even_row) = 0;
+    # alternating row colors
+    my($odd_row) = "\n<tr"
+	    .Bivio::UI::Color->as_html_bg(
+		    $self->get_or_default('odd_row_bgcolor',
+			    'table_odd_row_bg')).'>';
+    my($even_row) = "\n<tr"
+	    .Bivio::UI::Color->as_html_bg(
+		    $self->get_or_default('even_row_bgcolor',
+			    'table_even_row_bg')).'>';
 
-		# Insert a "&nbsp;" if the widget doesn't render.  This
-		# makes the table look nicer on certain browsers.
-		my($start) = length($$buffer);
-		$c->render($source, $buffer);
-		$$buffer .= '&nbsp;' if length($$buffer) == $start;
-	    }
-	    $$buffer .= "</tr>\n";
-	}
-	$want_sep = 1 if $row > 0;
+
+    while ($list->next_row) {
+	_render_row($cells, $list, $buffer,
+		$is_even_row ? $even_row : $odd_row, 1);
+	$is_even_row = !$is_even_row;
     }
 
-    if ($fields->{trailing_separator} && $want_sep) {
-	$$buffer .= $fields->{separator_row};
-	$fields->{separator}->render($source, $buffer);
-	$$buffer .= "</td></tr>\n";
+    # separator
+    if ($self->unsafe_get('trailing_separator')) {
+	$$buffer .= "\n<tr><td colspan=$colspan>";
+	$fields->{separator}->render($list, $buffer);
+	$$buffer .= "</td>\n</tr>",
     }
 
-    # Always close off row, because headings is left unclosed
-    $$buffer .= '</table>' if $fields->{end_tag};
+    # summary
+    if ($self->get_or_default('summarize',
+	    $self->unsafe_get('summary_line_type') ? 1 : 0)) {
+	my($summary_list) = $list->get_summary;
+	_render_row($summary_cells, $summary_list, $buffer);
+    }
 
+    # summary lines
+    if ($self->unsafe_get('summary_line_type')) {
+	_render_row($summary_lines, $list, $buffer);
+    }
+
+    $$buffer .= "\n</table>" if $self->get_or_default('end_tag', 1);
     return;
 }
 
 #=PRIVATE METHODS
 
-# _init_cell(Bivio::UI::HTML::Widget::Table self, array_ref cells, hash_ref attrs, any cell)
+# _get_cell(Bivio::Biz::ListModel list, string col, hash_ref attrs) : Bivio::UI::HTML::Widget
 #
-# Adds widget to cells, updating $cells->[$#$cells] with the attribute-
-# based prefix.
+# Returns the widget for the specified cell. The list model is used for
+# column metadata which may be used to construct a widget.
 #
-sub _init_cell {
-    my($self, $cells, $attrs, $cell) = @_;
+sub _get_cell {
+    my($self, $list, $col, $attrs) = @_;
 
-    my($double, $single);
-    unless (UNIVERSAL::isa($cell, 'Bivio::UI::HTML::Widget')) {
-	if ($cell eq '-') {
-	    $single = Bivio::UI::HTML::Widget::LineCell->new(
-		    {color => 'summary_line', column_align => 'N', %$attrs})
-		    unless $single;
-	    $cell = $single;
+    my($cell);
+    # see if widget is already provided
+    if ($attrs->{column_widget}) {
+	$cell = $attrs->{column_widget};
+	$cell->put(%$attrs);
+    }
+    elsif ($col eq '') {
+#TODO: optimize, could share instances with common span
+	$cell =  Bivio::UI::HTML::Widget::Join->new({
+	    values => ['&nbsp;'],
+	    column_span => $attrs->{column_span} || 1,
+	});
+    }
+    else {
+	my($type) = $list->get_field_type($col);
+	$cell = Bivio::UI::HTML::WidgetFactory->create(
+		ref($list).'.'.$col, $attrs);
+	unless ($cell->has_keys('column_summarize')) {
+	    $cell->put(column_summarize => UNIVERSAL::isa($type,
+		    'Bivio::Type::Amount'));
 	}
-	elsif ($cell eq '=') {
-	    $double = Bivio::UI::HTML::Widget::LineCell->new(
-		    {color => 'summary_line', column_align => 'N',
-			count => 2, %$attrs})
-		    unless $double;
-	    $cell = $double;
+    }
+    _initialize_widget($self, $cell);
+    return $cell;
+}
+
+# _get_column_count(array_ref cells) : int
+#
+# Returns the number of columns spanned by the specified cells.
+#
+sub _get_column_count {
+    my($cells) = @_;
+    my($count) = 0;
+    foreach my $cell (@$cells) {
+	$count += $cell->get_or_default('column_span', 1);
+    }
+    return $count;
+}
+
+# _get_enabled_widgets(Bivio::UI::HTML::Widget::Table self, any source) : array
+#
+# Returns the heading, cell, summary, and line widgets which are currently
+# enabled.
+#
+sub _get_enabled_widgets {
+    my($self, $source) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($all_headings) = $fields->{headings};
+    my($all_cells) = $fields->{cells};
+    my($all_summary_cells) = $fields->{summary_cells};
+    my($all_summary_lines) = $fields->{summary_lines};
+
+    my($enabler) = $self->unsafe_get('column_enabler');
+    my($headings) = [];
+    my($cells) = [];
+    my($summary_cells) = [];
+    my($summary_lines) = [];
+    my($control);
+
+    # determine which columns to render
+    my($columns) = $self->get('columns');
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+        my($col) = $columns->[$i];
+        if ($col) {
+            if (defined($enabler)) {
+                next unless $enabler->enable_column($col, $self);
+            }
+            elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
+                next unless $source->get_widget_value($control);
+            }
+        }
+        push(@$headings, $all_headings->[$i]);
+        push(@$cells, $all_cells->[$i]);
+        push(@$summary_cells, $all_summary_cells->[$i]);
+        push(@$summary_lines, $all_summary_lines->[$i]);
+    }
+    return ($headings, $cells, $summary_cells, $summary_lines);
+}
+
+# _get_heading(string col, Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+#
+# Returns the table heading widget for the specified column widget.
+#
+sub _get_heading {
+    my($self, $col, $cell) = @_;
+
+    my($label) = $cell->get_or_default('column_heading', $col);
+    if ($label) {
+        my($l) = $label;
+	$l =~ s/\s/_/g;
+	$label = Bivio::UI::Label->unsafe_get_simple($l);
+	unless (defined($label)) {
+	    # Replace periods with underscores and try to append "_heading"
+	    $l =~ s/\./_/;
+	    $label = Bivio::UI::Label->unsafe_get_simple($l.'_HEADING');
+	    $label = Bivio::UI::Label->get_simple($l) unless defined($label);
 	}
-	elsif ($cell =~ /^\s+$/) {
-	    $cell =~ s/\s/&nbsp;/g;
-	    $cell = Bivio::UI::HTML::Widget::Join->new({
-		values => [$cell],
-		%$attrs,
+    }
+    my($heading) = Bivio::UI::HTML::Widget::String->new({
+	value => $label,
+	string_font => 'table_heading',
+	column_align => $cell->get_or_default('heading_align', 'S'),
+	column_span => $cell->get_or_default('column_span', 1),
+        heading_expand => $cell->unsafe_get('column_expand'),
+    });
+    _initialize_widget($self, $heading);
+    return $heading;
+}
+
+# _get_summary_cell(Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+#
+# Returns a widget which renders the summary widget for the specified column.
+#
+sub _get_summary_cell {
+    my($self, $cell) = @_;
+
+    if ($cell->get_or_default('column_summarize', 0)) {
+	return $cell;
+    }
+#TODO: optimize, could share instances with common span
+    my($blank_string) = Bivio::UI::HTML::Widget::Join->new({
+	values => ['&nbsp;'],
+	column_span => $cell->get_or_default('column_span', 1),
+    });
+    _initialize_widget($self, $blank_string);
+    return $blank_string;
+}
+
+# _get_summary_line(Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
+#
+# Returns a widget which renders the summary line for the specified column.
+#
+sub _get_summary_line {
+    my($self, $cell) = @_;
+
+    my($widget);
+    if ($cell->get_or_default('column_summarize', 0)
+	    && $self->unsafe_get('summary_line_type')) {
+
+	my($line_type) = $self->unsafe_get('summary_line_type');
+	if ($line_type eq '-') {
+#TODO: optimize, could share instances with common span
+	    $widget =  Bivio::UI::HTML::Widget::LineCell->new({
+		color => 'summary_line',
+		column_align => 'N'
+	    });
+	}
+	elsif ($line_type eq '=') {
+#TODO: optimize, could share instances with common span
+	    $widget = Bivio::UI::HTML::Widget::LineCell->new({
+		color => 'summary_line',
+		column_align => 'N',
+		count => 2
 	    });
 	}
 	else {
-	    $cell = Bivio::UI::HTML::Widget::String->new({
-		value => $cell,
-		%$attrs,
-	    });
+	    die("invalid summary_line_type $line_type");
 	}
     }
     else {
-	my($a);
-	foreach $a (keys(%$attrs)) {
-	    $cell->put($a, $attrs->{$a}) unless $cell->has_keys($a);
-	}
+#TODO: optimize, could share instances with common span
+	$widget = Bivio::UI::HTML::Widget::String->new({
+	    value => '',
+	});
     }
-    $cell->put(parent => $self);
-    # May set attributes to be used by table
-    $cell->initialize;
-    my($prefix) = \$cells->[$#$cells];
-    # Sanity check to make sure always can append
-    die('prior cell is not a scalar') unless ref($prefix) eq 'SCALAR';
-    $$prefix .= '<td';
-    $$prefix .= ' width="100%"' if $cell->get_or_default('column_expand', 0);
-    $$prefix .= ' nowrap' if $cell->get_or_default('column_nowrap', 0);
-    my($span) = $cell->get_or_default('column_span', 1);
-    $$prefix .= " colspan=$span" if $span != 1;
-    my($bgcolor) = $cell->get_or_default('column_bgcolor', 0);
-    $$prefix .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
-    $$prefix .= Bivio::UI::Align->as_html(
-	    $cell->get_or_default('column_align', 'LEFT'));
-    $$prefix .= '>';
-    push(@$cells, $cell, "</td>\n");
+    $widget->put(column_span => $cell->get_or_default('column_span', 1));
+    _initialize_widget($self, $widget);
+    return $widget;
+}
+
+# _initialize_widget(Bivio::UI::HTML::Widget widget)
+#
+# Initializes the specified widget.
+#
+sub _initialize_widget {
+    my($self, $widget) = @_;
+
+    $widget->put(parent => $self);
+    $widget->initialize;
+    my($column_prefix) = Bivio::UI::Align->as_html(
+	    $widget->get_or_default('column_align', 'LEFT'));
+    $column_prefix .= ' nowrap' if $widget->unsafe_get('column_nowrap');
+    my($span) = $widget->get_or_default('column_span', 1);
+    $column_prefix .= " colspan=$span" if $span != 1;
+    $widget->put(column_prefix => $column_prefix);
+    return;
+}
+
+# _render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean fix_space)
+#
+# _render_row(array_ref cells, any source, string_ref buffer)
+#
+# Renders the specified set of widgets onto the output buffer.
+# If fix_space is true, then empty strings will be rendered as '&nbsp;'.
+#
+sub _render_row {
+    my($cells, $source, $buffer, $row_prefix, $fix_space) = @_;
+    $row_prefix ||= "\n<tr>";
+    $$buffer .= $row_prefix;
+    foreach my $cell (@$cells) {
+	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
+        $$buffer .= ' width="100%"'
+                if $cell->get_or_default('heading_expand', 0);
+        $$buffer .= '>';
+
+	# Insert a "&nbsp;" if the widget doesn't render.  This
+	# makes the table look nicer on certain browsers.
+	my($start) = length($$buffer);
+	$cell->render($source, $buffer);
+	$$buffer .= '&nbsp;' if length($$buffer) == $start && $fix_space;
+	$$buffer .= '</td>';
+    }
+    $$buffer .= "\n</tr>";
     return;
 }
 

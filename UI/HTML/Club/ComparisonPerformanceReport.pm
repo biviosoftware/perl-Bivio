@@ -38,7 +38,7 @@ use Bivio::UI::HTML::Widget::IRRCell;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::SimpleFormError;
 use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::HTML::Widget::Table2;
+use Bivio::UI::HTML::Widget::Table;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -59,7 +59,7 @@ sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    my($club_perf) = Bivio::UI::HTML::Widget::Table2->new({
+    my($club_perf) = Bivio::UI::HTML::Widget::Table->new({
 	list_class => 'RealmPerformanceList',
 	columns => [
 	    ['month', {column_align => 'right'}],
@@ -69,7 +69,7 @@ sub new {
 	],
     });
 
-    my($compare_perf) = Bivio::UI::HTML::Widget::Table2->new({
+    my($compare_perf) = Bivio::UI::HTML::Widget::Table->new({
 	list_class => 'ComparisonPerformanceList',
 	columns => [
 	    'Entry.amount',

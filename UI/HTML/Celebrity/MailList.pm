@@ -33,7 +33,6 @@ a message list.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::Biz::Model::MailList;
 use Bivio::UI::HTML::Celebrity::Page;
@@ -60,51 +59,35 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    $fields->{content} = Bivio::UI::HTML::Widget::Table->new({
-	source => ['Bivio::Biz::Model::MailList'],
-	expand => 1,
-	headings => [
-	    Bivio::UI::HTML::Widget::String->new({
-		value => 'Topic',
-		column_expand => 1,
-		column_align => 'sw',
-	    }),
-	    'Date',
-	],
-	cells => [
-	    Bivio::UI::HTML::Widget::Link->new({
-		href => ['->format_uri_for_this'],
-		value => Bivio::UI::HTML::Widget::String->new({
-		    value => ['Mail.subject'],
-	        }),
-	    }),
-            Bivio::UI::HTML::Widget::DateTime->new({
-		value => ['Mail.date_time'],
-		mode => 'DATE',
-	    }),
-	],
-    });
+    $fields->{content} = $self->table('MailList',
+	    [
+		[
+		    'Mail.subject', {
+			column_heading => 'CELEBRITY_MAIL_SUBJECT',
+			column_expand => 1,
+			column_align => 'W',
+			heading_align => 'SW',
+			wf_list_link => 'THIS_DETAIL',
+		    },
+		],
+		[
+		    'Mail.date_time', {
+			column_nowrap => 1,
+		    },
+		],
+	    ],
+	    {expand => 1},
+	);
     $fields->{content}->initialize;
-    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
-	values => Bivio::UI::HTML::ActionButtons->get_list(
-		'celebrity_post_message'),
-    });
+    $fields->{action_bar} = $self->action_bar('celebrity_post_message');
     $fields->{action_bar}->initialize;
 
-    $fields->{heading} = Bivio::UI::HTML::Widget::Join->new({
-	values => [
+    $fields->{heading} = $self->join(
 	    'Messages from ',
-	    Bivio::UI::HTML::Widget::DateTime->new({
-		value => ['message_list_start'],
-		mode => 'DATE',
-	    }),
+	    $self->date_time(['message_list_start'], 'DATE'),
 	    ' to ',
-	    Bivio::UI::HTML::Widget::DateTime->new({
-		value => ['message_list_end'],
-		mode => 'DATE',
-	    }),
-	],
-    });
+	    $self->date_time(['message_list_end'], 'DATE'),
+	   );
     $fields->{heading}->initialize;
     return $self;
 }

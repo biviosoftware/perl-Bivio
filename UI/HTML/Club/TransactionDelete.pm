@@ -42,7 +42,6 @@ use Bivio::UI::HTML::Widget::ClearDot;
 use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::HTML::Widget::Table;
 use Bivio::UI::HTML::Widget::DateTime;
 
 #=VARIABLES
@@ -64,38 +63,20 @@ sub create_fields {
     my($self) = @_;
 
     # list of entries
-    my($entry_table) = Bivio::UI::HTML::Widget::Table->new({
-	source => ['Bivio::Biz::Model::EntryList'],
-	headings => [
-	    'Category',
-	    'Type',
-	    'Tax',
-	    'Amount',
+    my($entry_table) = $self->table(
+	'EntryList',
+	[
+	    {
+		field => 'remark',
+		column_heading => 'CATEGORY_HEADING',
+	    },
+	    ['', {
+		column_widget => Bivio::UI::HTML::Widget::TaxType->new({}),
+		column_heading => 'Entry.entry_type',
+	    }],
+	    'Entry.amount',
 	],
-	cells => [
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['remark'],
-	    }),
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['Entry.entry_type', '->get_short_desc'],
-	    }),
-	    Bivio::UI::HTML::Widget::Director->new({
-		control => ['Entry.tax_category'],
-		default_value => Bivio::UI::HTML::Widget::String->new({
-		    value => ['Entry.tax_category', '->get_short_desc'],
-		}),
-		values => {
-		    Bivio::Type::TaxCategory::NOT_TAXABLE() =>
-		        Bivio::UI::HTML::Widget::Join->new({
-			    values => ['&nbsp;']
-			}),
-		},
-	    }),
-	    Bivio::UI::HTML::Widget::AmountCell->new({
-		field => 'Entry.amount',
-	    }),
-	],
-    });
+    );
 
     # super table with transaction info
     # followed by the entry table for that transaction

@@ -92,28 +92,14 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
-    my($c) = $self->get_or_default('color', 'table_separator');
     my($count) = $self->get_or_default('count', 1);
-    $c = Bivio::UI::Color->as_html_bg($c);
     my($dot) = Bivio::UI::Icon->get_clear_dot->{uri};
     my($line) = "<td><img src=\"$dot\" height=$h width=1 border=0></td>";
     my($pc) = Bivio::UI::Color->as_html_bg('page_bg');
     $fields->{value} = "<table width=\"100%\" cellspacing=0"
 	    . " cellpadding=0 border=0>\n"
-	    . (("<tr$c>$line</tr>\n<tr$pc>$line</tr>\n") x --$count)
-	    . "<tr$c>$line</tr></table>";
-}
-
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : true
-
-Always renders exactly the same way.
-
-=cut
-
-sub is_constant {
-    return 1;
+	    . (("<tr!COLOR!>$line</tr>\n<tr$pc>$line</tr>\n") x --$count)
+	    . "<tr!COLOR!>$line</tr></table>";
 }
 
 =for html <a name="render"></a>
@@ -127,7 +113,14 @@ Render the object.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value};
+    my($value) = $fields->{value};
+
+    my($c) = $self->get_or_default('color', 'table_separator');
+    if ($c) {
+	$c = Bivio::UI::Color->as_html_bg($c);
+	$value =~ s/!COLOR!/$c/g;
+    }
+    $$buffer .= $value;
     return;
 }
 

@@ -136,13 +136,12 @@ sub initialize {
     # Value
     $fields->{value} = $self->get('value');
     if ($fields->{is_literal} = !ref($fields->{value})) {
+	# Format the constant once
+	$fields->{value} = _format($fields->{format}, $fields->{value});
 
 	# Only constant if there is no font
-	if ($fields->{is_constant} = !$fields->{font}) {
-	    my($p, $s) = Bivio::UI::Font->as_html($fields->{font});
-	    $fields->{value} = $p.$fields->{prefix}._format($fields->{format},
-		    $fields->{value}).$s;
-	}
+	$fields->{value} = $fields->{prefix}.$fields->{value}
+		if $fields->{is_constant} = !$fields->{font};
     }
     elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
 	$fields->{value}->put(parent => $self);

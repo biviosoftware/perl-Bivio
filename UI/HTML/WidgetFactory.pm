@@ -20,7 +20,22 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::WidgetFactory> creates widgets for model fields
+C<Bivio::UI::HTML::WidgetFactory> creates widgets for model fields.
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item wf_list_link : string []
+
+Set to a L<Bivio::Biz::QueryType|Bivio::Biz::QueryType> and
+the widget will be wrapped in a link whose I<href> is
+a call to
+L<Bivio::Biz::ListModel::format_uri|Bivio::Biz::ListModel/"format_uri">
+with I<wf_list_link> as the query type.
+
+
+=back
 
 =cut
 
@@ -48,6 +63,13 @@ use Bivio::UI::HTML::Widget::TextArea;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
+
+# A map of field names to default value for "decimals" attribute.
+my(%_DEFAULT_DECIMALS) = (
+    quantity => 3,
+    share_price => 4,
+    units => 6,
+);
 
 =head1 METHODS
 
@@ -78,6 +100,14 @@ sub create {
     }
     else {
 	$widget = _create_display($field_name, $field_type, $attrs);
+
+	# Wrap the resultant widget in a link?
+	my($wll) = $widget->unsafe_get('wf_list_link');
+	$widget = Bivio::UI::HTML::Widget::Link->new({
+	    href => ['->format_uri', Bivio::Biz::QueryType->from_any($wll)],
+	    value => $widget,
+	    %$attrs,
+	}) if $wll;
     }
     return $widget;
 }
@@ -99,6 +129,7 @@ sub _create_display {
 	    %$attrs,
 	});
     }
+
     if (UNIVERSAL::isa($type, 'Bivio::Type::IRR')) {
 	return Bivio::UI::HTML::Widget::IRRCell->new({
 	    field => $field,
@@ -114,6 +145,8 @@ sub _create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
 	return Bivio::UI::HTML::Widget::AmountCell->new({
 	    field => $field,
+	    decimals => $_DEFAULT_DECIMALS{$field}
+	    ? $_DEFAULT_DECIMALS{$field} : 2,
 	    %$attrs,
 	});
     }

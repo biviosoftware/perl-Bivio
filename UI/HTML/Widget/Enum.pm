@@ -93,10 +93,10 @@ sub initialize {
     if (defined($display_values)) {
 	foreach my $field (keys(%$display_values)) {
 	    my($value) = $display_values->{$field};
-	    next if ref($value);
 	    $value = Bivio::UI::HTML::Widget::String->new({
 		value => $value,
-	    });
+	    }) unless ref($value);
+	    $value->put(parent => $self);
 	    $value->initialize;
 	    $display_values->{$field} = $value;
 	}

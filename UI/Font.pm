@@ -95,6 +95,7 @@ _compile([
     REPORT_FOOTER => [$_SANS_SERIF, undef, 'small'],
     PREV_NEXT_BAR_LINK => [$_SANS_SERIF, 'text_menu_font', 'strong'],
     PREV_NEXT_BAR_TEXT => [$_SANS_SERIF, undef],
+    LOOKUP_BUTTON => [undef, undef, 'small'],
 ]);
 
 =head1 METHODS
@@ -103,7 +104,7 @@ _compile([
 
 =for html <a name="as_html"></a>
 
-=head2 as_html(any thing) : array
+=head2 static as_html(any thing) : array
 
 Returns the font as prefix and suffix strings to surround the text with.
 
