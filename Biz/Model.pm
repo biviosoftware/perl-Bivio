@@ -93,6 +93,7 @@ with I<class> as its argument and the resultant class is instantiated.
 
 sub new {
     my($proto, $req, $class) = @_;
+    $req ||= $proto->unsafe_get_request;
     return $proto->get_instance($class)->new($req) if defined($class);
     $class = ref($proto) || $proto;
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
@@ -301,6 +302,24 @@ sub get_info {
     return shift->{$_PACKAGE}->{class_info}->{sql_support}->get(shift);
 }
 
+=for html <a name="get_model"></a>
+
+=head2 get_model(string name) : Bivio::Biz::PropertyModel
+
+Same as L<unsafe_get_model|"unsafe_get_model">, but dies if
+the model could not be loaded.
+
+=cut
+
+sub get_model {
+    my($self) = shift;
+    my($model) = $self->unsafe_get_model(@_);
+    $self->throw_die('NOT_FOUND', {
+	message => 'unable to load model', entity => $model})
+	    unless $model->is_loaded;
+    return $model;
+}
+
 =for html <a name="throw_die"></a>
 
 =head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
@@ -323,59 +342,6 @@ sub throw_die {
     $attrs->{model} = $self;
     Bivio::Die->throw($code, $attrs, $package, $file, $line);
     # DOES NOT RETURN
-}
-
-=for html <a name="get_model"></a>
-
-=head2 get_model(string name) : Bivio::Biz::PropertyModel
-
-Returns the named property model associated with this instance.
-If it can be loaded, it will be.
-
-=cut
-
-sub get_model {
-    my($self, $name) = @_;
-#TODO: clear_models?  Need to reset the state
-    my($fields) = $self->{$_PACKAGE};
-
-    # Asserts operation is valid
-    my($sql_support) = $self->internal_get_sql_support;
-
-    if (defined($fields->{models})) {
-	return $fields->{models}->{$name} if $fields->{models}->{$name};
-    }
-    else {
-	$fields->{models} = {};
-    }
-    my($models) = $sql_support->get('models');
-    Carp::croak($name, ': no such model') unless defined($models->{$name});
-    my($m) = $models->{$name};
-    my($properties) = $self->internal_get;
-    my($req) = $self->unsafe_get_request;
-    # Always store the model.
-    my($mi) = $fields->{models}->{$name} = $m->{instance}->new($req);
-    my(@query) = ();
-    my($map) = $m->{primary_key_map};
-    foreach my $pk (keys(%$map)) {
-	my($v);
-	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
-	    # If there is an auth_id, use it if this is the missing
-	    # primary key.
-	    my($auth_id) = $mi->get_info('auth_id');
-	    unless ($auth_id && $pk eq $auth_id->{name}) {
-		_trace($self, ': loading ', $m->{instance}, ' missing key ',
-			$map->{$pk}->{name}) if $_TRACE;
-		return $mi;
-	    }
-	    $v = $req->get('auth_id');
-	}
-	push(@query, $pk, $v);
-    }
-#TODO: SECURITY: Is this valid?
-    # Can be "unauth_load", because the primary load was authenticated
-    $mi->unauth_load(@query);
-    return $mi;
 }
 
 =for html <a name="get_request"></a>
@@ -542,6 +508,60 @@ Not supported.
 
 sub put {
     CORE::die('put: not supported');
+}
+
+=for html <a name="unsafe_get_model"></a>
+
+=head2 unsafe_get_model(string name) : Bivio::Biz::PropertyModel
+
+Returns the named PropertyModel associated with this instance.
+If it can be loaded, it will be.  See
+L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
+
+=cut
+
+sub unsafe_get_model {
+    my($self, $name) = @_;
+#TODO: clear_models?  Need to reset the state
+    my($fields) = $self->{$_PACKAGE};
+
+    # Asserts operation is valid
+    my($sql_support) = $self->internal_get_sql_support;
+
+    if (defined($fields->{models})) {
+	return $fields->{models}->{$name} if $fields->{models}->{$name};
+    }
+    else {
+	$fields->{models} = {};
+    }
+    my($models) = $sql_support->get('models');
+    Carp::croak($name, ': no such model') unless defined($models->{$name});
+    my($m) = $models->{$name};
+    my($properties) = $self->internal_get;
+    my($req) = $self->unsafe_get_request;
+    # Always store the model.
+    my($mi) = $fields->{models}->{$name} = $m->{instance}->new($req);
+    my(@query) = ();
+    my($map) = $m->{primary_key_map};
+    foreach my $pk (keys(%$map)) {
+	my($v);
+	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
+	    # If there is an auth_id, use it if this is the missing
+	    # primary key.
+	    my($auth_id) = $mi->get_info('auth_id');
+	    unless ($auth_id && $pk eq $auth_id->{name}) {
+		_trace($self, ': loading ', $m->{instance}, ' missing key ',
+			$map->{$pk}->{name}) if $_TRACE;
+		return $mi;
+	    }
+	    $v = $req->get('auth_id');
+	}
+	push(@query, $pk, $v);
+    }
+#TODO: SECURITY: Is this valid?
+    # Can be "unauth_load", because the primary load was authenticated
+    $mi->unauth_load(@query);
+    return $mi;
 }
 
 =for html <a name="unsafe_get_request"></a>
