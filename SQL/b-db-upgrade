@@ -246,30 +246,353 @@ EOF
 
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_ellis_bio_link($req);
+    _upgrade_rebuild_ec_tables($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_add_ellis_bio_link(Bivio::Agent::Request req)
+# _upgrade_add_new_ec_columns(Bivio::Agent::Request req)
 #
-# Adds a link to a new article in Ellis' bio.
+# Adds new columns to ec_payment_t and ec_subscription_t.
 #
-sub _upgrade_add_ellis_bio_link {
+sub _upgrade_add_new_ec_columns {
     my($req) = @_;
-    $req->set_realm('take_stock');
 
-    my($article_link) = qq|<a href="/hm/take-stock-020523.html">When Why should you Sell?</a>
-<br>&nbsp;<br>
-|;
+    _add_column('ec_subscription_t', 'ec_payment_id', 'NUMBER(18)');
+    _add_column('ec_payment_t', 'salesperson_id', 'NUMBER(18)');
+    _add_column('ec_payment_t', 'service', 'NUMBER(2)', 0);
 
-    my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
-    $decor->load;
-    my($bio) = $decor->get('profile_bio');
-    $bio =~ s/(Father of Technamental)/$article_link$1/
-	|| die("couldn't find text in bio");
-    $decor->update({profile_bio => $bio});
+    return;
+}
 
+# _upgrade_add_new_ec_constraints(Bivio::Agent::Request req)
+#
+# Adds constraints for new columns.
+#
+sub _upgrade_add_new_ec_constraints {
+    my($req) = @_;
+
+    _do_sql('
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t1
+  primary key(ec_payment_id)
+  using index tablespace index_1m pctfree 50 initrans 4 storage (freelists 8)
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t3
+  foreign key (ec_payment_id)
+  references ec_payment_t(ec_payment_id)
+/
+
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t7
+  foreign key (salesperson_id)
+  references user_t(user_id)
+/
+ALTER TABLE ec_payment_t modify service not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t6
+  check (service between 0 and 6)
+/
+');
+    return;
+}
+
+# _upgrade_create_new_ec_tables(Bivio::Agent::Request req)
+#
+# Creates the new ec tables.
+#
+sub _upgrade_create_new_ec_tables {
+    my($req) = @_;
+
+    _do_sql('
+CREATE TABLE ec_check_payment_t (
+  ec_payment_id NUMBER(18),
+  realm_id NUMBER(18),
+  check_number VARCHAR(100),
+  institution VARCHAR(100)
+)
+  tablespace data_1m
+  pctfree 25 pctused 70 initrans 2 storage (freelists 8)
+/
+
+CREATE TABLE ec_credit_card_payment_t (
+  ec_payment_id NUMBER(18),
+  realm_id NUMBER(18),
+  processed_date_time DATE,
+  processor_response VARCHAR2(500),
+  processor_transaction_number VARCHAR2(30),
+  card_number VARCHAR2(4000),
+  card_expiration_date DATE,
+  card_name VARCHAR2(100),
+  card_zip VARCHAR2(30),
+  point_of_sale NUMBER(2)
+)
+  tablespace data_1m
+  pctfree 25 pctused 70 initrans 2 storage (freelists 8)
+/
+
+ALTER TABLE ec_check_payment_t
+  add constraint ec_check_payment_t1
+  primary key(ec_payment_id)
+  using index tablespace index_1m pctfree 50 initrans 4 storage (freelists 8)
+/
+ALTER TABLE ec_credit_card_payment_t
+  add constraint ec_credit_card_payment_t1
+  primary key(ec_payment_id)
+  using index tablespace index_1m pctfree 50 initrans 4 storage (freelists 8)
+/
+
+ALTER TABLE ec_check_payment_t modify realm_id not null
+/
+ALTER TABLE ec_check_payment_t
+  add constraint ec_check_payment_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE ec_check_payment_t
+  add constraint ec_check_payment_t3
+  foreign key (ec_payment_id)
+  references ec_payment_t(ec_payment_id)
+/
+ALTER TABLE ec_check_payment_t modify check_number not null
+/
+
+ALTER TABLE ec_credit_card_payment_t modify realm_id not null
+/
+ALTER TABLE ec_credit_card_payment_t
+  add constraint ec_credit_card_payment_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE ec_credit_card_payment_t
+  add constraint ec_credit_card_payment_t3
+  foreign key (ec_payment_id)
+  references ec_payment_t(ec_payment_id)
+/
+ALTER TABLE ec_credit_card_payment_t modify point_of_sale not null
+/
+ALTER TABLE ec_credit_card_payment_t
+  add constraint ec_credit_card_payment_t5
+  check (point_of_sale between 0 and 5)
+/
+ALTER TABLE ec_credit_card_payment_t modify card_number not null
+/
+ALTER TABLE ec_credit_card_payment_t modify card_expiration_date not null
+/
+ALTER TABLE ec_credit_card_payment_t modify card_name not null
+/
+ALTER TABLE ec_credit_card_payment_t modify card_zip not null
+/
+
+');
+    return;
+}
+
+# _upgrade_drop_unused_ec_columns(Bivio::Agent::Request req)
+#
+# Drops unused ec columns from ec_subscription_t and ec_payment_t.
+#
+sub _upgrade_drop_unused_ec_columns {
+    my($req) = @_;
+
+    foreach my $column (qw(payment_type ec_subscription_id
+            ec_subscription_start_date processed_date_time
+            processor_response processor_transaction_number
+            credit_card_number credit_card_expiration_date
+            credit_card_name credit_card_zip )) {
+
+	_drop_column('ec_payment_t', $column);
+    }
+    foreach my $column (qw(ec_subscription_id subscription_type)) {
+	_drop_column('ec_subscription_t', $column);
+    }
+    return;
+}
+
+# _upgrade_drop_unused_ec_constraints(Bivio::Agent::Request req)
+#
+# Drops unused ec column constraints.
+#
+sub _upgrade_drop_unused_ec_constraints {
+    my($req) = @_;
+
+    foreach my $column (qw(payment_type ec_subscription_id
+            ec_subscription_start_date processed_date_time
+            processor_response processor_transaction_number
+            credit_card_number credit_card_expiration_date
+            credit_card_name credit_card_zip )) {
+
+	_drop_constraints('ec_payment_t', $column);
+    }
+    foreach my $column (qw(ec_subscription_id subscription_type)) {
+	_drop_constraints('ec_subscription_t', $column);
+    }
+    return;
+}
+
+# _upgrade_map_columns(Bivio::Agent::Request req)
+#
+# Copies columns from tables into the new tables.
+#
+sub _upgrade_map_columns {
+    my($req) = @_;
+    my($sth);
+
+    use Bivio::Type::DateTime;
+    use Bivio::Type::ECPaymentMethod;
+    use Bivio::Type::ECPaymentStatus;
+    use Bivio::Type::ECPointOfSale;
+    use Bivio::Type::ECService;
+
+    # foreach credit card payment, create an ec_credit_card_payment_t
+    my($pd) = Bivio::Type::DateTime->from_sql_value('processed_date_time');
+    my($cd) = Bivio::Type::DateTime->from_sql_value(
+	'credit_card_expiration_date');
+    $sth = Bivio::SQL::Connection->execute("
+        SELECT ec_payment_id, realm_id, $pd, processor_response,
+            processor_transaction_number, credit_card_number,
+            $cd, credit_card_name, credit_card_zip
+        FROM ec_payment_t
+        WHERE method=?",
+	[Bivio::Type::ECPaymentMethod->CREDIT_CARD->as_int]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($ec_payment_id, $realm_id, $processed_date_time,
+	    $processor_response, $processor_transaction_number,
+	    $card_number, $card_expiration_date, $card_name,
+	    $card_zip) = @$row;
+
+	Bivio::Biz::Model->new($req, 'ECCreditCardPayment')->create({
+	    ec_payment_id => $ec_payment_id,
+	    realm_id => $realm_id,
+	    processed_date_time => $processed_date_time,
+	    processor_response => $processor_response,
+	    processor_transaction_number => $processor_transaction_number,
+	    card_number => Bivio::Type::CreditCardNumber->from_sql_column(
+		$card_number),
+	    card_expiration_date => $card_expiration_date,
+	    card_name => $card_name,
+	    card_zip => $card_zip,
+	    point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
+	});
+    }
+
+    # foreach check payment, create an ec_check_payment_t
+    $sth = Bivio::SQL::Connection->execute("
+        SELECT ec_payment_id, realm_id, remark
+        FROM ec_payment_t
+        WHERE method=?",
+	[Bivio::Type::ECPaymentMethod->BANK_CHECK->as_int]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($ec_payment_id, $realm_id, $remark) = @$row;
+	# use the remark for the check_number field
+	if (defined($remark)) {
+	    $remark =~ s/\n/ /g;
+	    $remark =~ s/\r/ /g;
+	}
+
+	Bivio::Biz::Model->new($req, 'ECCheckPayment')->create({
+	    ec_payment_id => $ec_payment_id,
+	    realm_id => $realm_id,
+	    check_number => $remark,
+	});
+    }
+
+    # foreach subscription find latest ec_payment_id
+    # or create a NO_PAYMENT ec_payment_t record and use that
+    my($no_payment_creation_date_time) = Bivio::Type::DateTime->now;
+    my($bivio_user_id) = Bivio::SQL::Connection->execute_one_row('
+        SELECT realm_id
+        FROM realm_owner_t
+        WHERE name=?',
+	['bivio'])->[0];
+    $sth = Bivio::SQL::Connection->execute('
+        SELECT ec_subscription_id, realm_id
+        FROM ec_subscription_t',
+	[]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($ec_subscription_id, $realm_id) = @$row;
+	my($ec_payment_id);
+
+	my($sth2) = Bivio::SQL::Connection->execute('
+            SELECT MAX(ec_payment_id)
+            FROM ec_payment_t
+            WHERE ec_subscription_id=?',
+	    [$ec_subscription_id]);
+	while (my $row = $sth2->fetchrow_arrayref) {
+	    $ec_payment_id = $row->[0];
+	}
+
+	unless ($ec_payment_id) {
+	    $ec_payment_id = Bivio::Biz::Model->new($req, 'ECPayment')
+		->create({
+		    realm_id => $realm_id,
+		    user_id => $bivio_user_id,
+		    creation_date_time => $no_payment_creation_date_time,
+		    amount => 0,
+		    method => Bivio::Type::ECPaymentMethod->NO_PAYMENT,
+		    status => Bivio::Type::ECPaymentStatus->CAPTURED,
+		    service => Bivio::Type::ECService->FREE_TRIAL,
+		    description => 'Free Trial',
+		})->get('ec_payment_id')
+	}
+	Bivio::SQL::Connection->execute('
+            UPDATE ec_subscription_t
+            SET ec_payment_id=?
+            WHERE ec_subscription_id=?',
+	    [$ec_payment_id, $ec_subscription_id]);
+    }
+
+    # foreach payment, determine service from ec_subscription_t
+    $sth = Bivio::SQL::Connection->execute('
+        SELECT ec_payment_id, ec_subscription_id
+        FROM ec_payment_t
+        WHERE service IS NULL',
+	[]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($ec_payment_id, $ec_subscription_id) = @$row;
+	my($subscription_type);
+
+	if ($ec_subscription_id) {
+	    my($sth2) = Bivio::SQL::Connection->execute('
+                SELECT subscription_type
+                FROM ec_subscription_t
+                WHERE ec_subscription_id=?',
+		[$ec_subscription_id]);
+
+	    while (my $row = $sth2->fetchrow_arrayref) {
+		$subscription_type = $row->[0];
+	    }
+	}
+	$subscription_type ||= 0;
+
+	Bivio::SQL::Connection->execute('
+            UPDATE ec_payment_t
+            SET service=?
+            WHERE ec_payment_id=?'
+	    [$subscription_type, $ec_payment_id]);
+    }
+
+    return;
+}
+
+# _upgrade_rebuild_ec_tables(Bivio::Agent::Request req)
+#
+# Creates new EC tables and maps current values into the new tables.
+#
+sub _upgrade_rebuild_ec_tables {
+    my($req) = @_;
+    _upgrade_create_new_ec_tables($req);
+    _upgrade_add_new_ec_columns($req);
+    _upgrade_drop_unused_ec_constraints($req);
+    _upgrade_map_columns($req);
+    _upgrade_drop_unused_ec_columns($req);
+    _upgrade_add_new_ec_constraints($req);
     return;
 }
 
