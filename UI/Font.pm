@@ -122,12 +122,12 @@ Bivio::UI::Facade->register(['Bivio::UI::Color']);
 # Map style names to numeric sizes
 my(%_SIZE_MAP) = (
     'xx-small' => 1,
-    'x-small' => 1,
-    'small' => 2,
-    'medium' => 3,
-    'large' => 4,
-    'x-large' => 5,
-    'xx-large' => 6,
+    'x-small' => 2,
+    'small' => 3,
+    'medium' => 4,
+    'large' => 5,
+    'x-large' => 6,
+    'xx-large' => 7,
 );
 
 =head1 METHODS

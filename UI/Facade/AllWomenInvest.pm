@@ -88,9 +88,9 @@ __PACKAGE__->new({
 	initialize => sub {
 	    my($fc) = @_;
 	    $fc->value(default => [
-		'family=arial,sans-serif', 'size=x-small',
+		'family=arial,sans-serif', 'size=xx-small',
 	    ]);
-	    $fc->value(realm_name => ['bold', 'size=large']);
+	    $fc->value(realm_name => ['bold', 'size=medium']);
 	    $fc->group(top_menu_normal => []);
 	    $fc->group(top_menu_selected => []);
 	    return;

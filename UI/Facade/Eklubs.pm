@@ -55,7 +55,7 @@ __PACKAGE__->new({
 	initialize => sub {
 	    my($fc) = @_;
 	    $fc->value(default => [
-		'family=arial', 'size=x-small',
+		'family=arial', 'size=xx-small',
 	    ]);
 	    $fc->group(help_log_button => ['bold']);
 	    return;

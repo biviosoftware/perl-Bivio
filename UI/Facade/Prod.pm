@@ -131,7 +131,7 @@ my($_SELF) = __PACKAGE__->new({
 	    my($fc) = @_;
 	    $fc->group(default => [
 		'family=arial,sans-serif',
-		'size=small',
+		'size=x-small',
 	    ]);
 	    $fc->group(profile_box_title => ['bold']);
 	    $fc->group(celebrity_disclaimer => ['smaller']);
@@ -219,8 +219,9 @@ my($_SELF) = __PACKAGE__->new({
                     link
             )],
 		   []);
-	    $fc->group(home_login_field_label => ['size=1']);
-	    $fc->group(home_date => ['size=5']);
+	    $fc->group(home_login_field_label => ['size=xx-small']);
+	    $fc->group(home_login_site_header => ['bold']);
+	    $fc->group(home_date => ['size=large']);
 	    return;
 	}
     },
@@ -255,9 +256,9 @@ my($_SELF) = __PACKAGE__->new({
 # created on production if not is_production.
 if ($_SELF) {
     foreach my $cfg (
-	    ['small', 'x-small'],
-	    ['large', 'medium'],
-	    ['extra_large', 'large']) {
+	    ['small', 'xx-small'], # 1
+	    ['large', 'small'], # 3
+	    ['extra_large', 'medium']) { # 4
 	$_SELF->new_child({
 	    child_type => $cfg->[0],
 	    'Bivio::UI::Font' => {

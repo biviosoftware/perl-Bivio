@@ -61,11 +61,11 @@ __PACKAGE__->new({
 	initialize => sub {
 	    my($fc) = @_;
 	    $fc->value(default => [
-		'family=verdana,arial,helvetica,sans-serif', 'size=x-small',
+		'family=verdana,arial,helvetica,sans-serif', 'size=xx-small',
 	    ]);
 	    $fc->regroup(text_menu_selected =>
 		    ['color=page_link', 'bold']);
-	    $fc->value(realm_name => ['bold', 'size=large']);
+	    $fc->value(realm_name => ['bold', 'size=medium']);
 
 	    # Fixed size to match the investmentexpo site
 	    $fc->group(left_menu_normal => ['bold', 'size=xx-small']);
@@ -96,7 +96,7 @@ __PACKAGE__->new({
 	    $fc->value(image_menu_left_cell => 0);
 
 	    $fc->value(text_menu_left_cell =>
-		    Bivio::UI::HTML::Widget->image('subarrow'));
+		    Bivio::UI::HTML::Widget->image('subarrow', ''));
 
 	    $fc->value(image_menu_separator_width => 1);
 
