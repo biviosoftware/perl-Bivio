@@ -171,21 +171,21 @@ sub _upgrade {
     use Bivio::Type::EntryType;
 
     # add start_date to club_t
-    _do('
+    _do_sql('
 ALTER TABLE club_t
     ADD start_date DATE
 /
 ');
 
     # add country to realm_instrument_t
-    _do('
+    _do_sql('
 ALTER TABLE realm_instrument_t
     ADD country CHAR(2)
 /
 ');
 
     # create the tax_1065_t and tax_k1_t tables
-    _do('
+    _do_sql('
 CREATE TABLE tax_1065_t (
   realm_id NUMBER(18),
   fiscal_end_date DATE,
