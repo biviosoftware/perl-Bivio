@@ -197,6 +197,7 @@ sub execute_empty {
 	    _get_stock_withdraw_amount($self, $date);
     $properties->{draft} = $tax1065->get('draft');
 
+    Bivio::Biz::Accounting::Tax->round_all($self, $properties);
     _calculate_income($self, $properties);
     return;
 }
