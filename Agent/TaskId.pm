@@ -95,14 +95,7 @@ my(@_CFG) = (
 	Bivio::UI::HTML::General::Login
         next=MY_CLUB_REDIRECT
     )],
-    [qw(
-        MY_CLUB_NOT_FOUND
-        6
-        GENERAL
-        DOCUMENT_READ
-        hm/start.html
-        Bivio::Biz::Action::HTTPDocument
-    )],
+#missing: 6
 #TODO: Make searching for public docs general
     [qw(
 	SLOGAN_GIF

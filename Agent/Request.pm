@@ -563,15 +563,15 @@ sub internal_redirect_realm {
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
 		if ($trt eq Bivio::Auth::RealmType::CLUB()) {
-		    # Club not found.  Try to redirect to MY_CLUB_NOT_FOUND
+		    # Club not found.  Try to redirect to DEMO_REDIRECT
 		    # which must be in GENERAL domain
 		    my($auth_user) = $self->unsafe_get('auth_user');
 		    if (defined($auth_user)) {
-			CORE::die('misconfiguration of MY_CLUB_NOT_FOUND task')
-				if Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND()
+			CORE::die('misconfiguration of DEMO_REDIRECT task')
+				if Bivio::Agent::TaskId::DEMO_REDIRECT()
 					eq $new_task;
 			$self->client_redirect(
-				Bivio::Agent::TaskId::MY_CLUB_NOT_FOUND());
+				Bivio::Agent::TaskId::DEMO_REDIRECT());
 		    }
 		}
 		Bivio::Die->die('AUTH_REQUIRED', {
