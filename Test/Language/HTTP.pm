@@ -108,6 +108,19 @@ sub follow_link {
     return;
 }
 
+=for html <a name="get_content"></a>
+
+=head2 get_content() : string
+
+Returns the current page content.
+
+=cut
+
+sub get_content {
+    my($self) = @_;
+    return _assert_response($self)->content;
+}
+
 =for html <a name="get_html_parser"></a>
 
 =head2 get_html_parser() : Bivio::Test::HTMLParser
@@ -202,7 +215,7 @@ Verifies that the specified text appears on the page.
 sub verify_text {
     my($self, $text) = @_;
     Bivio::Die->die($text, ': text not found in response')
-	unless _assert_response($self)->content =~ /$text/;
+	unless $self->get_content =~ /$text/;
     return;
 }
 
