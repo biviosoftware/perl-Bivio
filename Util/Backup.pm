@@ -45,7 +45,7 @@ C<Bivio::Util::Backup> is a mirroring utility.
 
 Returns:
 
- usage: s-backup [options] command [args...]
+ usage: b-backup [options] command [args...]
  commands:
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
 
@@ -53,7 +53,7 @@ Returns:
 
 sub USAGE {
     return <<'EOF';
-usage: s-backup [options] command [args...]
+usage: b-backup [options] command [args...]
 commands:
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
 EOF
