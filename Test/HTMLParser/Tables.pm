@@ -138,8 +138,9 @@ sub find_row {
     $self->do_rows($table_name,
 	sub {
 	    my($row) = @_;
+	    my($t) = $row->{$column_name}->get('text');
 	    return 1
-		unless $row->{$column_name}->get('text') eq $column_value;
+		unless $t eq $column_value || $t =~ $column_value;
 	    $found_row = $row;
 	    return 0;
 	});
