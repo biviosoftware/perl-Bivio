@@ -244,8 +244,6 @@ sub _upgrade {
     my($req) = @_;
 
     _upgrade_create_ec_tables();
-    _upgrade_fix_mgfs_industry_error();
-    _upgrade_ec_subscription_t5();
     print("\n*** done ***\n");
     return;
 }
@@ -255,38 +253,164 @@ sub _upgrade {
 # Add missing column.
 #
 sub _upgrade_create_ec_tables {
-    print("Adding new column to ec_ tables\n");
+    print("Recreating ec tables\n");
     _do_sql('
-alter table ec_payment_t add processor_transaction_number varchar2(30)
+drop sequence ec_payment_s
 /
-');
-    return;
-}
+CREATE sequence ec_payment_s
+  minvalue '
+  # On dev/test, we use 100015 for the base number.  This avoids
+  # collisions with the gateway batch download on test/prod machines.
+  .(Bivio::Agent::Request->get_current_or_new->unsafe_get('is_production')
+	    ? '100015' : '101015')
+  .' maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
+/
+drop table ec_payment_t
+/
+drop table ec_subscription_t
+/
+CREATE TABLE ec_payment_t (
+  ec_payment_id NUMBER(18),
+  realm_id NUMBER(18),
+  user_id NUMBER(18),
+  creation_date_time DATE,
+  payment_type NUMBER(2),
+  amount NUMBER(20,6),
+  method NUMBER(2),
+  ec_subscription_id NUMBER(18),
+  ec_subscription_start_date DATE,
+  ec_subscription_period NUMBER(4),
+  status NUMBER(2),
+  processed_date_time DATE,
+  processor_response VARCHAR2(500),
+  processor_transaction_number VARCHAR2(30),
+  credit_card_number VARCHAR2(4000),
+  credit_card_expiration_date DATE,
+  credit_card_name VARCHAR2(100),
+  credit_card_zip VARCHAR2(30),
+  description VARCHAR(100),
+  remark VARCHAR2(500)
+)
+  tablespace data_1m
+  pctfree 25 pctused 70 initrans 2 storage (freelists 8)
+/
 
-sub _upgrade_ec_subscription_t5 {
-    print("Fixing constraint ec_subscription_t5\n");
-    _do_sql('
-alter table ec_subscription_t
-  drop constraint ec_subscription_t5
+CREATE TABLE ec_subscription_t (
+  ec_subscription_id NUMBER(18),
+  realm_id NUMBER(18),
+  subscription_type NUMBER(2),
+  start_date DATE,
+  end_date DATE,
+  renewal_method NUMBER(2),
+  renewal_period NUMBER(4)
+)
+  tablespace data_1m
+  pctfree 25 pctused 70 initrans 2 storage (freelists 8)
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t1
+  primary key(ec_payment_id)
+  using index tablespace index_1m pctfree 50 initrans 4 storage (freelists 8)
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t1
+  primary key(ec_subscription_id)
+  using index tablespace index_1m pctfree 50 initrans 4 storage (freelists 8)
+/
+--
+-- ec_payment_t
+--
+ALTER TABLE ec_payment_t modify realm_id not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE ec_payment_t modify user_id not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t3
+  foreign key (user_id)
+  references user_t(user_id)
+/
+ALTER TABLE ec_payment_t modify creation_date_time not null
+/
+ALTER TABLE ec_payment_t modify payment_type not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t4
+  check (payment_type between 1 and 3)
+/
+ALTER TABLE ec_payment_t modify amount not null
+/
+ALTER TABLE ec_payment_t modify method not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t5
+  check (method between 1 and 4)
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t6
+  foreign key (ec_subscription_id)
+  references ec_subscription_t(ec_subscription_id)
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t7
+  check (ec_subscription_period = 0 or ec_subscription_period = -2
+         or ec_subscription_period = -3)
+/
+ALTER TABLE ec_payment_t modify status not null
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t8
+  check (status between 0 and 4)
+/
+ALTER TABLE ec_payment_t modify description not null
+/
+
+--
+-- ec_subscription_t
+--
+ALTER TABLE ec_subscription_t modify realm_id not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+ALTER TABLE ec_subscription_t modify subscription_type not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t3
+  check (subscription_type between 1 and 3)
+/
+ALTER TABLE ec_subscription_t modify start_date not null
+/
+ALTER TABLE ec_subscription_t modify end_date not null
+/
+ALTER TABLE ec_subscription_t modify renewal_method not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t4
+  check (renewal_method between 1 and 3)
+/
+ALTER TABLE ec_subscription_t modify renewal_period not null
 /
 ALTER TABLE ec_subscription_t
   add constraint ec_subscription_t5
   check (renewal_period = 0 or renewal_period = -2 or renewal_period = -3)
 /
-');
-    return;
-}
-
-# _upgrade_fix_mgfs_industry_error()
-#
-# Fixes RHI import problem by inserting a new "unknown" sp industry code.
-#
-sub _upgrade_fix_mgfs_industry_error {
-
-    _do_sql("
-insert into mgfs_sp_industry_t (code, name) values ('513', 'unknown')
+CREATE UNIQUE INDEX ec_subscription_t6 ON ec_subscription_t (
+  realm_id,
+  subscription_type
+)
+  tablespace index_1m
+  pctfree 50 initrans 4 storage (freelists 8)
 /
-");
+
+');
     return;
 }
 
