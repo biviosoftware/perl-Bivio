@@ -288,6 +288,9 @@ LockFile httpd.lock
     Options FollowSymLinks
 </Directory>
 
+ErrorDocument 502 /m/maintenance.html
+ErrorDocument 413 /m/upload-too-large.html
+
 <Location /s>
     SetHandler perl-script
     PerlHandler Apache::Status
