@@ -3162,7 +3162,7 @@ sub get_delegate_info {
         279
         GENERAL
         ADMIN_WRITE
-        ?/adm/ec-edit
+        adm/ec-edit
         Bivio::Biz::Model::AdmECSubscriptionEditForm
 	Bivio::UI::HTML::Adm::ECSubscriptionEdit
         next=HTTP_DOCUMENT
