@@ -30,7 +30,7 @@ C<Bivio::UI::HTML::Widget::TextTabMenu> renders a menu of tabbed strings,
 e.g.
        +---------+
        | Messages|   Motions   Accounting
-       |         |
+       +---------+
 
 The I<control> attribute causes a tab to be highlighted.  Each tab
 string can be mapped to one or more tasks.
@@ -41,7 +41,9 @@ string can be mapped to one or more tasks.
 
 =item text_tab_color : string [text_tab_bg] (inherited)
 
-Color of the tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
+Color of the frame around the tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
+The background of the contents of the tab will always be
+C<page_bg> color.
 
 =item text_tab_font : string [] (inherited)
 
@@ -49,7 +51,7 @@ Font for the tab tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
 
 =item text_tab_height : int [1] (inherited)
 
-How high should the tab "extension" be.  If zero, no extension
+How high should the tab "spacing" be.  If zero, no extension
 will be drawn.
 
 =item orient : string (required)
@@ -59,7 +61,7 @@ Must be either C<up> or C<down>.  Defines the direction of the tabs.
 =item values : array_ref (required)
 
 The list of labels to task ids.  Each label may map to more than
-one task id.  The first task id is the defines the URI to which
+one task id.  The first task id defines the URI to which
 the menu item points.  For example,
 
     values => [
@@ -120,17 +122,20 @@ sub initialize {
     my($th) = $self->ancestral_get('text_tab_height', 1);
     my($tc) = $self->ancestral_get('text_tab_color', 'text_tab_bg');
     $tc = Bivio::UI::Color->as_html_bg($tc) if $tc;
+    my($pc) = Bivio::UI::Color->as_html_bg('page_bg');
     $o = lc($o);
     $fields->{up} = 1 if $o eq 'up';
     $fields->{up} = 0 if $o eq 'down';
     Carp::croak("$o: invalid orient value") unless exists($fields->{up});
     my($dot) = Bivio::UI::Icon->get_clear_dot->{uri};
-    $fields->{highlight_extender} =
-	    qq!<td$tc><img src="$dot" height=$th!
+    $fields->{spacer} =
+	    "<td><img src=\"$dot\" height=$th"
 		    . " width=1 border=0></td>"
 			    if $fields->{tab_height} = $th;
-    $fields->{highlight_prefix} = qq!<td$tc><strong>!;
-    $fields->{highlight_suffix} = "</strong></td>";
+    $fields->{highlight_prefix}
+	    = "<td$tc><table border=0 cellspacing=0 cellpadding=2>"
+		    ."<td$pc><strong>";
+    $fields->{highlight_suffix} = "</strong></td></tr></table></td>";
     my($tf) = $self->ancestral_get('text_tab_font', undef);
     $fields->{text_prefix} = '<td>';
     $fields->{text_suffix} = '</td>';
@@ -179,7 +184,7 @@ sub render {
     my($th) = $fields->{tab_height};
     my($item);
     my($text_prefix, $text_suffix, $text_space)
-	    = @{$fields}{'text_prefix','text_suffix', 'text_space'};
+	    = @{$fields}{'text_prefix', 'text_suffix', 'text_space'};
     foreach $item (@{$fields->{items}}) {
 	my($t) = $item->[1];
 #TODO: Bug: tasks in other realm types are not visible.  Need to know
@@ -188,22 +193,18 @@ sub render {
 	my($link) = '<a href="'.$req->format_uri($t)
 		.'">'.$item->[0].'</a>';
         if ($t == $this_task) {
-            $pad .= $fields->{highlight_extender} if $th;
             $labels .= $fields->{highlight_prefix}
 		    .$link.$fields->{highlight_suffix};
         }
         else {
-            $pad .= '<td></td>' if $th;
             $labels .= $text_prefix.$link.$text_suffix;
         }
-	$pad .= '<td></td>' if $th;
 	$labels .= $text_space;
     }
     $$buffer .= "<table border=0 cellpadding=2 cellspacing=0><tr>\n";
-    # 9 is length of '<td></td>'.
     $$buffer .= $th == 0 ? $labels
-	    : $fields->{up} ? ($labels."</tr><tr>\n".$pad."\n")
-	    : ($pad."\n</tr><tr>\n".$labels);
+	    : $fields->{up} ? ($labels."</tr><tr>\n".$fields->{spacer}."\n")
+	    : ($fields->{spacer}."\n</tr><tr>\n".$labels);
     $$buffer .= "</tr></table>\n";
     return;
 }
