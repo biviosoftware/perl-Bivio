@@ -35,6 +35,18 @@ invalid RealmName names.  Syntax is limited.
 
 =cut
 
+=for html <a name="ACCOUNT_IMPORTER"></a>
+
+=head2 ACCOUNT_IMPORTER : string
+
+User which AccountImporter uses to enter values into the books.
+
+=cut
+
+sub ACCOUNT_IMPORTER {
+    return 'account_sync';
+}
+
 =for html <a name="CELEBRITY_CLUBS"></a>
 
 =head2 CELEBRITY_CLUBS : array
