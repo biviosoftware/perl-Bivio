@@ -52,6 +52,11 @@ C<format_uri_for_prev_page>
 
 C<format_uri_for_this>
 
+=item THIS_DETAIL_WITH_PATH
+
+C<format_uri_for_this>.  The I<path_info> from the list is also appended
+to the uri.
+
 =item THIS_LIST
 
 C<format_uri_for_this_page>
@@ -90,6 +95,7 @@ __PACKAGE__->compile(
     THIS_PATH => [9, 'format_uri_for_this_path', 'detail_uri'],
     THIS_PATH_NO_QUERY => [10, '', 'detail_uri'],
     NO_QUERY => [11, '', 'list_uri'],
+    THIS_DETAIL_WITH_PATH => [12, 'format_uri_for_this', 'detail_uri'],
 );
 
 =head1 METHODS
