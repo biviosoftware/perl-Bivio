@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::ClassLoader;
 use strict;
 $Bivio::IO::ClassLoader::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::IO::ClassLoader::VERSION;
 
 =head1 NAME
 
@@ -26,15 +27,126 @@ and configurable.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="MAP_SEPARATOR"></a>
+
+=head2 MAP_SEPARATOR : string
+
+Returns the separator character (#)
+
+=cut
+
+sub MAP_SEPARATOR {
+    return '#';
+}
+
 #=IMPORTS
+use Bivio::IO::Alert;
+use Bivio::IO::Trace;
+use Bivio::IO::Config;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my(%_PACKAGES);
+my(%_MAP_CLASS);
+my($_MAPS);
+my($_SEP) = MAP_SEPARATOR();
+Bivio::IO::Config->register({
+    maps => {
+	AccountScraper => ['Bivio::Data::AccountScraper'],
+    },
+});
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item maps : hash_ref []
+
+A map is a named path, e.g.
+
+   AccountScraper => ['Bivio::Data::AccountScraper'],
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    Bivio::IO::Alert->die('maps must be a hash_ref')
+		unless ref($cfg->{maps}) eq 'HASH';
+
+    # Normalize and validate the map paths
+    $_MAPS = {};
+    while (my($k, $v) = each(%{$cfg->{maps}})) {
+	Bivio::IO::Alert->die('map ', $k, ' not an array_ref: ', $v)
+		    unless ref($v) eq 'ARRAY';
+	$_MAPS->{$k} = [map {
+	    my($x) = $_;
+	    $x =~ s/(?<!::)$/::/;
+	    Bivio::IO::Alert->die('map ', $k, ' path invalid: ', $_)
+			unless $x =~ /^(\w+::)+$/;
+	    my($dir) = $x;
+	    $dir =~ s,::,/,g;
+	    my($ok);
+	    foreach my $inc (@INC) {
+		next unless -d $inc.'/'.$dir;
+		$ok = 1;
+		last;
+	    }
+	    Bivio::IO::Alert->die('map ', $k, ' path not found: ', $_)
+			unless $ok;
+	    $x;
+	} @$v];
+    }
+    return;
+}
+
+=for html <a name="map_require"></a>
+
+=head2 static map_require(string map, string simple_package_name) : string
+
+=head2 static map_require(string map_class) : string
+
+Returns the fully qualified I<class> from I<map> for the
+I<simple_package_name> or from the I<map_class>, which is
+of the form:
+
+    map#simple_package_name
+
+Throws an exception if the class can't be found or doesn't load.
+
+=cut
+
+sub map_require {
+    my(undef, $map, $simple_package_name, $map_class) = _map_args(@_);
+    return $_MAP_CLASS{$map_class} if $_MAP_CLASS{$map_class};
+
+    Bivio::IO::Alert->die($map, ': no such map') unless $_MAPS->{$map};
+
+    my($last_real_error);
+    foreach my $path (@{$_MAPS->{$map}}) {
+	return $_MAP_CLASS{$map_class} = $path.$simple_package_name
+		if _require($path.$simple_package_name);
+	$last_real_error = $@
+		unless defined($last_real_error) && $@ =~ /^Can't locate/i;
+    }
+    Bivio::IO::Alert->die($map_class, ': ', defined($last_real_error) ? $last_real_error
+	    : 'no paths in map');
+    # DOES NOT RETURN
+}
 
 =for html <a name="simple_require"></a>
 
@@ -49,32 +161,60 @@ sub simple_require {
     my(undef, @pkg) = @_;
     my($pkg);
 
-    # Avoid problems with uses of $_ in caller
-    local($_);
-
     foreach $pkg (@pkg) {
 	die('undefined package') unless $pkg;
-	no strict 'refs';
-
-	# We use our own symbol table, because there is a weird case
-	# with enums which define the package symbol table in advance
-	# of loading. In other words, this doesn't work:
-	#    next if defined(%{*{"$pkg\::"}});
-	next if defined($_PACKAGES{$pkg});
-
-	# Must be a "bareword" for it to do '::' substitution
-	eval("require $pkg") || die($@);
-
-	# Only define if loads properly.
-	$_PACKAGES{$pkg} = 1;
+	_require($pkg) || die($@);
     }
 }
 
 #=PRIVATE METHODS
 
+# _map_args(any proto, string map, string simple_package_name) : array
+# _map_args(any proto, string map_class) : array
+#
+# Splits the $map_class if simple_package_name is not defined.
+# Returns ($proto, $map, $simple_package_name, $map_class).
+#
+sub _map_args {
+    my($proto, $map, $simple_package_name) = @_;
+    return ($proto, $map, $simple_package_name,
+	    $map.$_SEP.$simple_package_name) if $simple_package_name;
+    Bivio::IO::Alert->die('invalid map_class: ', $map)
+		unless $map =~ /^(\w+)#(\w+)$/;
+    return ($proto, $1, $2, $map);
+}
+
+# _require(string pkg) : boolean
+#
+# Returns true if the package could be required.
+#
+sub _require {
+    my($pkg) = @_;
+
+    # Avoid problems with uses of $_ in $pkg
+    local($_);
+
+    # This avoids problems with Bivio::Die
+    local($SIG{__DIE__});
+
+    no strict 'refs';
+    # We use our own symbol table, because there is a weird case
+    # with enums which define the package symbol table in advance
+    # of loading. In other words, this doesn't work:
+    #    next if defined(%{*{"$pkg\::"}});
+    return 1 if defined($_PACKAGES{$pkg});
+
+    # Must be a "bareword" for it to do '::' substitution
+    return 0 unless eval("require $pkg");
+    _trace($pkg) if $_TRACE;
+
+    # Only define if loads properly.
+    return $_PACKAGES{$pkg} = 1;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
