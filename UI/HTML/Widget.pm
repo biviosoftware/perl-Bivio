@@ -132,7 +132,7 @@ sub action_grid {
 	my($label, $task, $value) = @$v;
 	# Label
 	$label = $proto->string(
-		Bivio::UI::Label->from_any($label)->get_short_desc);
+		Bivio::UI::Label->get_simple($label));
 	$label = Bivio::UI::HTML::Widget::Link->new({
 	    href => ref($task) eq 'ARRAY' ? $task
             : ['->format_uri', Bivio::Agent::TaskId->from_any($task)],
