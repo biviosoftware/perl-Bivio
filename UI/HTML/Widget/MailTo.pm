@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::MailTo;
 use strict;
 $Bivio::UI::HTML::Widget::MailTo::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::MailTo::VERSION;
 
 =head1 NAME
 
@@ -15,7 +16,6 @@ bOP
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::MailTo;
-    Bivio::UI::HTML::Widget::MailTo->new($attrs);
 
 =cut
 
@@ -66,7 +66,7 @@ Used to render value.
 
 =item want_link : boolean [1]
 
-By default, render as a link.  Otherwis, just render the email address.
+By default, render as a link.  Otherwise, just render the email address.
 
 =back
 
@@ -85,14 +85,19 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::HTML::Widget::MailTo
+=head2 static new(any email, any value, any subject) : Bivio::UI::HTML::Widget::MailTo
 
-Create an Email.
+Create an MailTo widget using I<email>, I<value>, and I<subject>.
+I<email> is the only required attribute.
+
+=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::MailTo
+
+Create an MailTo widget using I<attributes>.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = Bivio::UI::Widget::new(_new_args(@_));
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -205,9 +210,25 @@ sub render {
 
 #=PRIVATE METHODS
 
+# _new_args(proto, any arg, ...) : array
+#
+# Returns arguments to be passed to Attributes::new.
+#
+sub _new_args {
+    my($proto, $email, $value, $subject) = @_;
+    return ($proto, $email) if ref($email) eq 'HASH' || int(@_) == 1;
+    return ($proto, {
+	email => $email,
+	value => $value,
+	subject => $subject,
+    }) if defined($email);
+    $proto->die(undef, undef, 'invalid arguments to new');
+    # DOES NOT RETURN
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
