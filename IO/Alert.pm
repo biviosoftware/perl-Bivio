@@ -39,7 +39,7 @@ this warn counter behavior in I<limited cases>.
 =cut
 
 #=VARIABLES
-my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER,
+my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER, $_LOG_FILE,
 	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
         $_STACK_TRACE_DIE, $_STACK_TRACE_WARN, $_MAX_WARNINGS, $_WARN_COUNTER);
 BEGIN {
@@ -352,6 +352,35 @@ sub reset_warn_counter {
     return;
 }
 
+=for html <a name="set_printer"></a>
+
+=head2 set_printer(string logger)
+
+=head2 set_printer(string logger, string log_file)
+
+Overwrites logger set in handle_config with specified logger.  Logger options
+are currently 'STDERR' and 'FILE'.  If 'FILE' is specified, the argument
+I<log_file> is required as there is no default.
+
+=cut
+
+sub set_printer {
+    my($proto, $logger, $log_file) = @_;
+    if ($logger eq 'STDERR') {
+	$_LOGGER = \&_log_stderr if $logger eq 'STDERR';
+    }
+    elsif ($logger eq 'FILE') {
+	Bivio::Die->die('Must specify log file with FILE as printer')
+		    unless defined($log_file);
+	$_LOG_FILE = $log_file;
+	$_LOGGER = \&_log_file;
+    }
+    else {
+	Bivio::Die->die('Unknown logger type ', $logger);
+    }
+    return;
+}
+
 =for html <a name="warn"></a>
 
 =head2 static warn(string arg1, ...)
@@ -518,6 +547,13 @@ sub _log_apache {
 	# will recurse if intercept_die is true.
 	&_log_stderr(@_);
     }
+}
+
+sub _log_file {
+    my($severity, $msg) = @_;
+    open(FILE, ">>$_LOG_FILE");
+    print FILE $msg;
+    close FILE;
 }
 
 sub _log_syslog {
