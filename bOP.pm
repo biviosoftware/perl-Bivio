@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    * Bivio::Biz::Model::QuerySearchBaseForm provides generic ability to
+      redirect post data as URL query data. Default values for form/query
+      data can be specified as an attribute of the field definition.
+
+  Revision 1.86  2003/11/04 19:20:10  nagler
+  * Bivio::Agent::HTTP::Dispatcher wraps BSD::Resource calls in an eval
+    Makes portable to cygwin/win3
+  * Fixed some bad $VERSION values, which caused failures on Perl 5.8
+  * Bivio::ShellUtil.daemon_child_priority removed.  This feature wasn't
+    in use (afawk), and it caused portability problems.
+  * Bivio::Test::Request->get_instance was broken in previous release
   * Bivio::Util::RealmAdmin->invalidate_password refactored
   * Bivio::Util::RealmAdmin->invalidate_email added
   * Bivio::Type::DateTime->gettimeofday fixed for portability to cygwin
