@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.61  2005/04/04 19:24:22  moeller
+  * Bivio::UI::HTML::Widget::Enum added internal_new_args()
+
+  Revision 2.60  2005/03/24 23:19:20  moeller
+  * Bivio::Biz::Model::QuerySearchBaseForm added
+    OMIT_DEFAULT_VALUES_FROM_QUERY to control rendering query values
+  * Bivio::Biz::Model::UserLostPasswordForm removed to_query() calls,
+    should only be used if passing as a string
   * Bivio::UI::HTML::Widget::Select defaults list_id_field to ListModel
     primary key. Allow a string, widget value or Widget for
     list_display_field.
