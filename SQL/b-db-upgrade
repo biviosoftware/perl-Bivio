@@ -257,6 +257,7 @@ sub _upgrade {
 #
 sub _upgrade_add_new_ec_columns {
     my($req) = @_;
+    print("_upgrade_add_new_ec_columns\n");
 
     _add_column('ec_subscription_t', 'ec_payment_id', 'NUMBER(18)');
     _add_column('ec_payment_t', 'salesperson_id', 'NUMBER(18)');
@@ -271,6 +272,7 @@ sub _upgrade_add_new_ec_columns {
 #
 sub _upgrade_add_new_ec_constraints {
     my($req) = @_;
+    print("_upgrade_add_new_ec_constraints\n");
 
     _do_sql('
 ALTER TABLE ec_subscription_t
@@ -305,6 +307,7 @@ ALTER TABLE ec_payment_t
 #
 sub _upgrade_create_new_ec_tables {
     my($req) = @_;
+    print("_upgrade_create_new_ec_tables\n");
 
     _do_sql('
 CREATE TABLE ec_check_payment_t (
@@ -396,6 +399,7 @@ ALTER TABLE ec_credit_card_payment_t modify card_zip not null
 #
 sub _upgrade_drop_unused_ec_columns {
     my($req) = @_;
+    print("_upgrade_drop_unused_ec_columns\n");
 
     foreach my $column (qw(payment_type ec_subscription_id
             ec_subscription_start_date processed_date_time
@@ -417,6 +421,7 @@ sub _upgrade_drop_unused_ec_columns {
 #
 sub _upgrade_drop_unused_ec_constraints {
     my($req) = @_;
+    print("_upgrade_drop_unused_ec_constraints\n");
 
     foreach my $column (qw(payment_type ec_subscription_id
             ec_subscription_start_date processed_date_time
@@ -439,6 +444,7 @@ sub _upgrade_drop_unused_ec_constraints {
 sub _upgrade_map_columns {
     my($req) = @_;
     my($sth);
+    print("_upgrade_map_columns\n");
 
     use Bivio::Type::DateTime;
     use Bivio::Type::ECPaymentMethod;
@@ -464,6 +470,7 @@ sub _upgrade_map_columns {
 	    $card_number, $card_expiration_date, $card_name,
 	    $card_zip) = @$row;
 
+	# credit card data may be missing for edited payments
 	Bivio::Biz::Model->new($req, 'ECCreditCardPayment')->create({
 	    ec_payment_id => $ec_payment_id,
 	    realm_id => $realm_id,
@@ -471,10 +478,11 @@ sub _upgrade_map_columns {
 	    processor_response => $processor_response,
 	    processor_transaction_number => $processor_transaction_number,
 	    card_number => Bivio::Type::CreditCardNumber->from_sql_column(
-		$card_number),
-	    card_expiration_date => $card_expiration_date,
-	    card_name => $card_name,
-	    card_zip => $card_zip,
+		$card_number) || 'xx',
+	    card_expiration_date => $card_expiration_date
+	        || Bivio::Type::Date->now,
+	    card_name => $card_name || 'xx',
+	    card_zip => $card_zip || 'xx',
 	    point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
 	});
     }
@@ -497,7 +505,7 @@ sub _upgrade_map_columns {
 	Bivio::Biz::Model->new($req, 'ECCheckPayment')->create({
 	    ec_payment_id => $ec_payment_id,
 	    realm_id => $realm_id,
-	    check_number => $remark,
+	    check_number => $remark || 'xx',
 	});
     }
 
@@ -574,7 +582,7 @@ sub _upgrade_map_columns {
 	Bivio::SQL::Connection->execute('
             UPDATE ec_payment_t
             SET service=?
-            WHERE ec_payment_id=?'
+            WHERE ec_payment_id=?',
 	    [$subscription_type, $ec_payment_id]);
     }
 
