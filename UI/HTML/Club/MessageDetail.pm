@@ -84,15 +84,15 @@ Executes the view.
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-    _trace('executing view.') if $_TRACE;
     if (defined($req->get('query')) && defined($req->get('query')->{pk})) {
 	my($mail_message_id) = $req->get('query')->{pk};
 	my($mail_message) = Bivio::Biz::Model::MailMessage->new($req);
 	$mail_message->load(mail_message_id => $mail_message_id);
 	$fields->{message} = $mail_message;
 	$req->put(page_subtopic => undef,
-		page_heading => $mail_message->get('subject'),
-		page_content => $self, #$fields->{content},
+		page_heading => $mail_message->get('subject') . ' : ' . 
+		       $mail_message->get('from_name'),
+		page_content => $self,
 		name => $mail_message->get('subject'));
 	Bivio::UI::HTML::Club::Page->execute($req);
 	return;
@@ -112,12 +112,10 @@ message. It does not parse sub MIME parts.
 =cut
 
 sub render {
-    _trace("\nrendering the body.\n\n");
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($mail_message) = $fields->{message};
     my($body) = $mail_message->get_body();
-    _trace('message body: ', $$body);
     $$buffer .= $$body;
     return;
 }
