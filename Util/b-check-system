@@ -155,6 +155,7 @@ sub check_messages {
             /imapd\[\d+\]: imap service init from/ && next;
             /imapd\[\d+\]: Authenticated user=/ && next;
             /imapd\[\d+\]: Moved \d+ bytes of new mail/ && next;
+            /imapd\[\d+\]: Command stream end of file, while reading line/ && next;
 
             /sslwrap\[\d+\]: connect from/ && next;
 
