@@ -41,6 +41,7 @@ use Bivio::Type::DateTime;
 # For convenience
 use Bivio::Test;
 use Bivio::Test::Bean;
+use Bivio::Test::Reply;
 use Bivio::ShellUtil;
 use Socket ();
 
@@ -73,6 +74,7 @@ sub get_instance {
 	    task_id => Bivio::Agent::TaskId->SHELL_UTIL,
 	    timezone => Bivio::Type::DateTime->timezone,
 	});
+	$_SELF->put(reply => Bivio::Test::Reply->new);
 	$_SELF->set_realm(undef);
 	$_SELF->set_user(undef);
     }
