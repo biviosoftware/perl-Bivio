@@ -148,7 +148,7 @@ sub from_literal {
 	    if $proto->compare($parsed_value, $proto->get_min) >= 0
 		    && $proto->compare($parsed_value, $proto->get_max) <= 0;
 
-    return (undef, Bivio::TypeError::NUMBER_OUT_OF_RANGE());
+    return (undef, Bivio::TypeError::NUMBER_RANGE());
 }
 
 =for html <a name="mul"></a>
