@@ -38,6 +38,7 @@ use Bivio::Type::Location;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
+my($_SHADOW_PREFIX) = '=';
 
 =head1 METHODS
 
@@ -70,7 +71,20 @@ returns ''.
 sub format_email {
     my($self) = @_;
     my($email) = $self->get('email');
-    return ($email =~ /^ignore-=/) ? '' : $email;
+    return ($email =~ /^ignore-/) ? '' : $email;
+}
+
+=for html <a name="generate_shadow_email"></a>
+
+=head2 static generate_shadow_email(string email, string club_id) : string
+
+Returns a shadow email address for the specified email / club_id combo.
+
+=cut
+
+sub generate_shadow_email {
+    my(undef, $email, $club_id) = @_;
+    return 'ignore-'.$_SHADOW_PREFIX.$email.'_'.$club_id;
 }
 
 =for html <a name="internal_initialize"></a>
