@@ -1144,8 +1144,10 @@ sub _lock_files {
 #
 sub _lock_warning {
     my($lock_dir) = @_;
-    Bivio::IO::Alert->warn($lock_dir, ': not acquired; lock age in seconds=',
-	time - (stat($lock_dir))[9]);
+    Bivio::IO::Alert->warn($lock_dir, ': not acquired; lock age=',
+	time - (stat($lock_dir))[9],
+	's',
+    );
     return 0;
 }
 
