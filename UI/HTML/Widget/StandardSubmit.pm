@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::StandardSubmit::VERSION = sprintf('%d.%02d', q$Revisio
 
 Bivio::UI::HTML::Widget::StandardSubmit - renders a submit button of a form
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::StandardSubmit;
