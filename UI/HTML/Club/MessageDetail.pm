@@ -33,6 +33,8 @@ It provides links to MIME parts (such as attached GIF, JPEG files).
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::DieCode;
+use Bivio::UI::HTML::Format::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -90,8 +92,7 @@ sub execute {
 	$mail_message->load(mail_message_id => $mail_message_id);
 	$fields->{message} = $mail_message;
 	$req->put(page_subtopic => undef,
-		page_heading => $mail_message->get('subject') . ' : ' . 
-		       $mail_message->get('from_name'),
+		page_heading => $mail_message->get('subject'),
 		page_content => $self,
 		name => $mail_message->get('subject'));
 	Bivio::UI::HTML::Club::Page->execute($req);
@@ -116,6 +117,13 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my($mail_message) = $fields->{message};
     my($body) = $mail_message->get_body();
+    $$buffer .= '<center>';
+    my($msg) = $source->get('Bivio::Biz::Model::MailMessage');
+    $$buffer .= '<center>by '.
+	    $msg->get('from_name')
+		    .' on '
+	    .Bivio::UI::HTML::Format::DateTime->get_widget_value(
+		    $msg->get('dttm')).' GMT</center><p>';
     $$buffer .= $$body;
     return;
 }
