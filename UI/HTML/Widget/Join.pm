@@ -122,12 +122,12 @@ sub render {
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
     if ($fields->{is_first_render}) {
 	my($buf) = '';
-	$fields->{is_constant} = 1;
+	my($is_constant) = 1;
 	for (my($i) = 0; $i < int(@{$fields->{values}}); $i++) {
 	    my($v) = $fields->{values}->[$i];
 	    if (ref($v)) {
 		if (ref($v) eq 'ARRAY') {
-		    $fields->{is_constant} = 0;
+		    $is_constant = 0;
 		    $buf .= $source->get_widget_value(@$v);
 		}
 		else {
@@ -135,7 +135,7 @@ sub render {
 		    $v->render($source, \$s);
  		    # Optimize case when some widgets are constant
 		    $v->is_constant ? ($fields->{values}->[$i] = $s)
-			    : ($fields->{is_constant} = 0);
+			    : ($is_constant = 0);
 		    $buf .= $s;
 		}
 	    }
@@ -143,11 +143,12 @@ sub render {
 		$buf .= $v;
 	    }
 	}
-	if ($fields->{is_constant}) {
+	if ($is_constant) {
 	    $fields->{value} = $buf;
 	    delete($fields->{values});
 	}
 	$$buffer .= $buf;
+	$fields->{is_constant} = $is_constant;
 	$fields->{is_first_render} = 0;
     }
     else {
