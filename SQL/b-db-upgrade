@@ -138,6 +138,7 @@ EOF
 #
 sub _upgrade {
 
+    use Bivio::Type::Date;
     use Bivio::Type::EntryType;
     use Bivio::Type::EntryClass;
 
@@ -159,6 +160,28 @@ sub _upgrade {
 		    Bivio::Type::EntryType::INSTRUMENT_SELL->as_int,
 		    Bivio::Type::EntryClass::MEMBER->as_int,
 	    ]);
+
+    # fixes any existing payments where the valuation date > transaction date
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_transaction_t.realm_id,
+                '.Bivio::Type::Date->from_sql_value(
+			'realm_transaction_t.date_time').',
+                member_entry_t.entry_id
+            FROM realm_transaction_t, entry_t, member_entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =entry_t.realm_transaction_id
+            AND entry_t.entry_id=member_entry_t.entry_id
+            AND realm_transaction_t.date_time < member_entry_t.valuation_date',
+	    []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm_id, $date, $entry_id) = @$row;
+	Bivio::SQL::Connection->execute('
+                UPDATE member_entry_t
+                SET valuation_date='.Bivio::Type::Date->to_sql_value('?').'
+                WHERE realm_id=?
+                AND entry_id=?',
+		[$date, $realm_id, $entry_id]);
+    }
 
     return;
 }
