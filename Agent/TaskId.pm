@@ -155,7 +155,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_LIST
         9
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
@@ -170,7 +170,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/investments:?/investments
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -288,7 +288,7 @@ my(@_CFG) = (
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ&ACCOUNT_READ
         ?/accounting/reports/valuation
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -302,7 +302,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
         24
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/reports/investment
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -329,7 +329,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         27
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ
         ?/accounting/reports/account
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
@@ -475,7 +475,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_DETAIL
         40
         CLUB
-        ACCOUNTING_READ&MEMBER_READ
+        ACCOUNTING_READ&MEMBER_READ&ACCOUNT_READ
         ?/accounting/member/detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::MemberTransactionList->execute_load_page
@@ -488,7 +488,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_DETAIL
         41
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ&INVESTMENT_READ
         ?/accounting/investment/detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -502,7 +502,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_ACCOUNT_DETAIL
         42
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ&INVESTMENT_READ&MEMBER_READ
         ?/accounting/account/detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -1733,7 +1733,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
         156
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/reports/capital-gains-and-losses
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -1750,7 +1750,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
         157
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ
         ?/accounting/reports/income-and-expense
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -1783,7 +1783,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
         160
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-tax-allocations
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -1800,7 +1800,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
         161
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ
         ?/accounting/reports/misc-income-and-deductions
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -2322,7 +2322,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK
         203
         CLUB
-        ACCOUNTING_READ&MEMBER_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/withdrawal-stock
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -2337,7 +2337,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_INVESTMENT_LOT_LIST
         204
         CLUB
-        ACCOUNTING_READ&MEMBER_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/investment/lot-list
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmInstrument
@@ -2393,7 +2393,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE
         209
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/reports/investment-performance
         Bivio::Biz::Model::Lock
         Bivio::Type::UserPreference->execute_show_inactive_instruments
@@ -2407,7 +2407,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
         210
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/reports/investment-performance-detail
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::InstrumentDateSpanForm
@@ -2529,7 +2529,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
         220
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&INVESTMENT_READ
         ?/accounting/reports/comparison-performance
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ComparisonDateSpanForm
@@ -2701,7 +2701,7 @@ my(@_CFG) = (
 	CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
 	237
         CLUB
-        ACCOUNTING_READ&MEMBER_READ
+        ACCOUNTING_READ&MEMBER_READ&ACCOUNT_READ&INVESTMENT_READ
         ?/accounting/reports/journal
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -2716,7 +2716,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
         238
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_READ&ACCOUNT_READ
         ?/accounting/reports/balance-sheet
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
@@ -2731,7 +2731,7 @@ my(@_CFG) = (
 	CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
 	239
         CLUB
-        ACCOUNTING_READ&MEMBER_READ
+        ACCOUNTING_READ&MEMBER_READ&ACCOUNT_READ&INVESTMENT_READ
         ?/accounting/reports/transaction-history
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
