@@ -33,7 +33,7 @@ Verify->text('Club Roster');
 #### changepassword
 
 Browser->click('change_password_a');
-Verify->title('Change Password');
+Verify->title('Password');
 Verify->text('current password');
  
 # get current password from Login.pm
