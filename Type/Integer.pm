@@ -109,7 +109,7 @@ sub MIN {
 
 =for html <a name="PRECISION"></a>
 
-=head2 abstract PRECISION : int
+=head2 PRECISION : int
 
 Returns 9.
 

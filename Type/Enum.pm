@@ -84,7 +84,7 @@ sub IS_CONTINUOUS {
 
 =for html <a name="LIST"></a>
 
-=head2 static LIST() : array
+=head2 abstract static LIST : array
 
 Return the list of all enumerated types.  These are not returned in
 any particular order.
@@ -97,7 +97,7 @@ sub LIST {
 
 =for html <a name="WIDTH"></a>
 
-=head2 WIDTH : int
+=head2 abstract WIDTH : int
 
 Defines the maximum width of L<get_name|"get_name">.
 
@@ -199,8 +199,9 @@ sub compile {
 	Carp::croak("$name: does not point to an array")
 		    unless ref($d) eq 'ARRAY';
 	if (int(@$d) == 1) {
-	    my($n) = lc($name);
-	    $n =~ s/_/ /g;
+	    # Turn TEST_VIEW into Test View.
+	    my($n) = ucfirst(lc($name));
+	    $n =~ s/_(\w?)/ \u$1/g;
 	    push(@$d, $n, $n);
 	}
 	elsif (int(@$d) == 2) {
@@ -318,6 +319,23 @@ Returns the short description for the enum value.
 
 sub get_short_desc {
     return &_get_info(shift(@_), undef)->[1];
+}
+
+=for html <a name="get_widget_value"></a>
+
+=head2 get_widget_value() : string
+
+=head2 get_widget_value(string method) : string
+
+Returns the short description if no I<method>.  Else calls
+I<method> on I<self>.
+
+=cut
+
+sub get_widget_value {
+    my($self, $method) = @_;
+    $method ||= 'get_short_desc';
+    return $self->$method();
 }
 
 =for html <a name="to_sql_param"></a>

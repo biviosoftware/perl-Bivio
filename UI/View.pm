@@ -99,7 +99,7 @@ activating, and rendering through parents.
 =cut
 
 sub execute {
-    die('view not executable');
+    die('abstract method');
 }
 
 =for html <a name="set_parent"></a>
