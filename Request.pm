@@ -55,7 +55,7 @@ sub process_email ($$$) {
     my($attach) = defined($header)
 	    ? [{'value_type' => 'text', 'value' => $header}] : undef;
     &Bivio::Mail::send(
-	    undef, 'postmaster', "ERROR: $caller", <<"EOF", [], $attach);
+	    undef, 'postmaster', "ERROR: $caller", <<"EOF", undef, $attach);
 Error while processing email message via Bivio::Request::process_mail:
 
     $@
