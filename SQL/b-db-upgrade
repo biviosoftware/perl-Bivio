@@ -222,7 +222,7 @@ ALTER TABLE $table MODIFY $column $type
 #
 sub _sqlplus {
     my($db_login, $actions) = @_;
-    my($res) = Bivio::ShellUtil::piped_exec(undef, 'su oracle -c sqlplus',
+    my($res) = Bivio::ShellUtil::piped_exec(undef, 'su - oracle -c sqlplus',
             <<"EOF");
 $db_login
 set linesize 10000
@@ -279,8 +279,6 @@ EOF
     # Back to bivio/bivio
     Bivio::SQL::Connection->set_dbi_name($prior_db);
     _do_sql(<<'EOF');
-BEGIN ctx_ddl.drop_preference('im_storage'); END;
-/
 BEGIN ctx_ddl.create_preference('im_storage', 'BASIC_STORAGE'); END;
 /
 BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
@@ -294,8 +292,6 @@ BEGIN ctx_ddl.set_attribute('im_storage', 'N_TABLE_CLAUSE', 'tablespace index_64
 BEGIN ctx_ddl.set_attribute('im_storage', 'I_TABLE_CLAUSE', 'tablespace index_64m'); END;
 /
 BEGIN ctx_ddl.set_attribute('im_storage', 'P_TABLE_CLAUSE', 'tablespace index_64m'); END;
-/
-BEGIN ctx_ddl.drop_preference('im_filter'); END;
 /
 BEGIN ctx_ddl.create_preference('im_filter', 'USER_FILTER'); END;
 /
