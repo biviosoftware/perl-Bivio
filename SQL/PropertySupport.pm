@@ -86,12 +86,13 @@ sub new {
     # Oracle caching of prepared statements.
     my($column_names) = $attrs->{column_names} = [sort(keys(%$column_cfg))];
     my($primary_key_names) = $attrs->{primary_key_names} = [];
+    my($primary_key) = $attrs->{primary_key} = [];
     $attrs->{column_aliases} = {};
     # Go through columns and
     my($n);
     foreach $n (@$column_names) {
 	my($cfg) = $column_cfg->{$n};
-	$attrs->{column_aliases}->{$n} = $columns->{$n} = {
+	my($col) = $attrs->{column_aliases}->{$n} = $columns->{$n} = {
 	    # Bivio::SQL::Support attributes
 	    name => $n,
 	    type => $cfg->[0],
@@ -101,7 +102,7 @@ sub new {
 	    # Other attributes
 	    sql_pos_param => $cfg->[0]->to_sql_value('?'),
 	};
-	push(@$primary_key_names, $n)
+	push(@$primary_key_names, $n), push(@$primary_key, $col)
 		if $columns->{$n}->{is_primary_key}
 			= $cfg->[1] eq Bivio::SQL::Constraint::PRIMARY_KEY();
     }
