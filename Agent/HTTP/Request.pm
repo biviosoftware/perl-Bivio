@@ -77,7 +77,7 @@ sub new {
     # Set remote IP address if passed through by mod_proxy (RH6.2 and RH7.2)
     $r->connection->remote_ip($1)
 	if ($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
-	    =~ /(?:(\d+\.){3}\d+)/;
+	    =~ /((?:\d+\.){3}\d+)/;
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = Bivio::Agent::Request::internal_new($proto, {
 	start_time => $start_time,
