@@ -69,6 +69,7 @@ Bivio::IO::Trace->register;
 my($_MAX_WIDTH) = Bivio::Type::Line->get_width;
 my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
 my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
+my($_ONE_HOUR_SECONDS) = 3600;
 
 =head1 METHODS
 
@@ -482,7 +483,7 @@ EOF
 #
 # Connect the current message to a parent and a root message.
 # Adjust number of replies for all messages in this thread line.
-# Compare message author and body with that of the parent to
+# Compare message author, time and body with that of the parent to
 # catch mail loops.
 #
 sub _connect_to_parent {
@@ -499,10 +500,13 @@ sub _connect_to_parent {
                     volume => $_MAIL_VOLUME,
                 });
         my($parent_msg) = Bivio::Mail::Message->new($file->get('content'));
-        if ($msg->get_body->as_string eq $parent_msg->get_body->as_string) {
+        my($diff) = Bivio::Type::DateTime->diff_seconds(
+                $self->get('date_time'), $parent->get('date_time'));
+        if ($msg->get_body->as_string eq $parent_msg->get_body->as_string &&
+               abs($diff) < $_ONE_HOUR_SECONDS) {
             # Very likely a mail loop
             Bivio::IO::Alert->warn('Mail msg ', $self->get('mail_id'),
-                    ' identical to parent, handle to avoid loop');
+                    ' very similar to parent, maybe a loop?');
             $req->put('mail_in_loop', 1);
         }
     }
