@@ -361,17 +361,11 @@ sub format_query {
 
 =for html <a name="format_uri"></a>
 
-=head2 format_uri(Bivio::Biz::QueryType type) : string
-
-=head2 format_uri(string type) : string
-
-=head2 format_uri(Bivio::Biz::QueryType, string uri) : string
-
-=head2 format_uri(string type, string uri) : string
-
-=head2 format_uri(Bivio::Biz::QueryType, hash_ref query_args) : string
+=head2 format_uri(any type, string uri) : string
 
 =head2 format_uri(string type, hash_ref query_args) : string
+
+=head2 format_uri(string type, Bivio::Agent::TaskId task) : string
 
 Returns the formatted uri for I<type> based on the existing query
 bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
@@ -389,18 +383,22 @@ for an example.
 sub format_uri {
     my($self, $type, $uri) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($req) = $self->get_request;
 
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
     my($query_args);
-    if (ref($uri)) {
+    if (ref($uri) eq 'HASH') {
         $query_args = $uri;
         $uri = undef;
     }
+    elsif (ref($uri) eq 'Bivio::Agent::TaskId') {
+	$uri = $req->format_stateless_uri($uri);
+    }
 
     # Need to get the list_uri or detail_uri from the request?
-    $uri ||= $self->get_request->get($type->get_long_desc);
+    $uri ||= $req->get($type->get_long_desc);
 
     if ($type->get_name =~ /PATH/) {
 	my($c) = $fields->{cursor};
