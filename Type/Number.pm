@@ -28,8 +28,11 @@ use Bivio::Type;
 C<Bivio::Type::Number> is the base class for all number types.
 It is currently a placeholder.
 
+=cut
+
 #=IMPORTS
-use Bivio::TypeError;
+# intesting circular import if you uncomment this, 'use Bivio::Enum' instead
+#use Bivio::TypeError;
 
 #=VARIABLES
 
@@ -50,7 +53,7 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
-    return $value if $value =~ /^[-+]?\d+(?:\.\d+)?$/;
+    return $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
     return (undef, Bivio::TypeError::NUMBER());
 }
 
