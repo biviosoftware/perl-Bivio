@@ -45,14 +45,25 @@ my(%_CLASS_TO_SINGLETON);
 
 =head2 static get_instance() : Bivio::Biz::Action
 
-Returns the singleton for this class.
+=head2 static get_instance(string class) : Bivio::Biz::Action
+
+Returns the singleton for I<class> or I<proto>.
 
 =cut
 
 sub get_instance {
-    my($proto) = @_;
-    my($class) = ref($proto) || $proto;
-    $_CLASS_TO_SINGLETON{$class} = $proto->new
+    my($proto, $class) = @_;
+    if (defined($class)) {
+	$class = ref($class) if ref($class);
+	$class = 'Bivio::Biz::Action::'.$class unless $class =~ /::/;
+	# First time, make sure the class is loaded.
+	Bivio::IO::ClassLoader->simple_require($class)
+		    unless $_CLASS_TO_SINGLETON{$class};
+    }
+    else {
+	$class = ref($proto) || $proto;
+    }
+    $_CLASS_TO_SINGLETON{$class} = $class->new
 	    unless $_CLASS_TO_SINGLETON{$class};
     return $_CLASS_TO_SINGLETON{$class};
 }
@@ -65,14 +76,20 @@ sub get_instance {
 
 =head2 abstract execute(Bivio::Biz::Request req) : boolean
 
+=head2 static execute(Bivio::Biz::Request req, string class) : boolean
+
 Call this method to perform the action on I<req>.  The form and
 query associated with the request will be used to find the models
 to act on.
 
+If I<class> is supplied, will be loaded first.
+
 =cut
 
 sub execute {
-    die("abstract method");
+    my($proto, $req, $class) = @_;
+    die("abstract method") unless $class;
+    return $proto->get_instance($class)->execute($req);
 }
 
 #=PRIVATE METHODS
