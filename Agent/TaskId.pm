@@ -861,6 +861,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/split
         Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSplitForm
         Bivio::UI::HTML::Club::InstrumentSplit
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -2332,7 +2333,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_READ
         !
-        Bivio::UI::HTML::ErrorPages->execute_club_accounting_instrument_delete_faliure
+        Bivio::UI::HTML::ErrorPages->execute_club_accounting_instrument_delete_failure
     )],
     [qw(
         ADM_FIND_REALM_OWNER
