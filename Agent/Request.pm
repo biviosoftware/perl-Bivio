@@ -969,6 +969,7 @@ uses Request.auth_user_id.
 
 sub is_super_user {
     my($self, $user_id) = @_;
+#TODO: Optimize using user_realms
     return Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
 	realm_id => Bivio::Auth::RealmType::GENERAL->as_int,
 	user_id => $user_id || $self->get('auth_user_id'),
@@ -1135,7 +1136,6 @@ sub set_user {
 	my($user_id) = $user->get('realm_id');
 	my($list) = Bivio::Biz::Model->new($self, 'UserRealmList');
 	$list->unauth_load_all({auth_id => $user_id});
-#TODO: This may be quite expensive if lots of realms(?)
 	$user_realms = $list->map_primary_key_to_rows;
     }
     else {
