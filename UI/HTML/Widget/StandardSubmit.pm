@@ -40,7 +40,7 @@ string, the button won't be rendered.
 
 Which form are we dealing with.
 
-=item separation : int [10];
+=item standard_submit_separation : int [10] (inherited);
 
 How far apart should the buttons be.
 
@@ -128,7 +128,7 @@ sub render {
 
     my($form) = $source->get_widget_value(
 	    @{$self->ancestral_get('form_model')});
-    my($separation) = $self->get_or_default('separation', 10);
+    my($separation) = $self->ancestral_get('standard_submit_separation', 10);
     my($row) = [
 	Bivio::UI::HTML::Widget::Submit->new({
 	    value => 'SUBMIT_OK',
