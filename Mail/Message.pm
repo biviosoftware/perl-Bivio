@@ -634,6 +634,8 @@ sub _parse_date {
     (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef)
             unless defined($mday);
     $mon = uc($mon);
+    # Seconds is an optional field
+    $sec = 0 unless defined($sec);
     if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
         $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
     }
