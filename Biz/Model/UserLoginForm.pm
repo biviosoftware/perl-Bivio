@@ -261,7 +261,7 @@ sub validate {
 #
 sub _execute_cookie {
     my($self, $req, $realm_id) = @_;
-    Bivio::HTTP::Agent::Cookie->assert_is_ok($req) if $realm_id;
+    Bivio::Agent::HTTP::Cookie->assert_is_ok($req) if $realm_id;
 
     # Set login state and user (if not undef)
     my($cookie) = $req->get('cookie');
