@@ -191,6 +191,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountingReportForm
         Bivio::UI::HTML::Club::AccountingReport
         next=CLUB_INTRO
+        help=accounting-reports
     )],
     [qw(
         CLUB_ADMIN_USER_LIST
@@ -202,6 +203,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubUserList->execute_load_all_with_query
         Bivio::UI::HTML::Club::UserList
         next=CLUB_ADMIN_USER_LIST
+        help=club-roster
     )],
     [qw(
         CLUB_REFERRAL
