@@ -235,10 +235,10 @@ sub _upgrade_index_1 {
     _do_sql(<<"EOF",
         DROP INDEX mgfs_daily_quote_t3
 /
-        CREATE INDEX mgfs_daily_quote_t3 on mgfs_daily_quote_t (
+        CREATE BITMAP INDEX mgfs_daily_quote_t3 on mgfs_daily_quote_t (
           mg_id
         )
-          tablespace index_64m
+          tablespace index_8m
           pctfree 10 initrans 2 storage (freelists 1)
 /
 EOF
@@ -251,10 +251,10 @@ sub _upgrade_index_2 {
     _do_sql(<<"EOF",
         DROP INDEX mgfs_daily_quote_t4
 /
-        CREATE INDEX mgfs_daily_quote_t4 on mgfs_daily_quote_t (
+        CREATE BITMAP INDEX mgfs_daily_quote_t4 on mgfs_daily_quote_t (
           date_time
         )
-          tablespace index_64m
+          tablespace index_8m
           pctfree 10 initrans 2 storage (freelists 1)
 /
 EOF
@@ -267,7 +267,7 @@ sub _upgrade_index_3 {
     _do_sql(<<"EOF",
         DROP INDEX instrument_t4
 /
-        CREATE INDEX instrument_t4 ON instrument_t (
+        CREATE BITMAP INDEX instrument_t4 ON instrument_t (
           instrument_type
         )
           tablespace index_1m
@@ -283,7 +283,7 @@ sub _upgrade_index_4 {
     _do_sql(<<"EOF",
         DROP INDEX instrument_t6
 /
-        CREATE INDEX instrument_t6 ON instrument_t (
+        CREATE BITMAP INDEX instrument_t6 ON instrument_t (
           fed_tax_free
         )
           tablespace index_1m
