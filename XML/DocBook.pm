@@ -129,7 +129,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
 
     },
     graphic => {
-	template => '<br><img border=0 src="${fileref}" align=${align}><br>',
+	template => '<div align=${align}><img border=0 src="${fileref}"></div>',
 	default_align => 'center',
     },
     itemizedlist => ['ul'],
