@@ -31,16 +31,17 @@ member info, instrument info, and transactions.
 #=IMPORTS
 use Bivio::Agent::TestRequest;
 use Bivio::Biz::PropertyModel::AccountEntry;
-use Bivio::Biz::PropertyModel::ClubInstrumentEntry;
+use Bivio::Biz::PropertyModel::InstrumentEntry;
 use Bivio::Biz::PropertyModel::Entry;
 use Bivio::Biz::PropertyModel::MemberEntry;
 use Bivio::Biz::PropertyModel::Transaction;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
 use Data::Dumper ();
-use Time::Local;
+use Time::Local ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -49,232 +50,284 @@ my($_PACKAGE) = __PACKAGE__;
 my($_DELETED_ID) = 1818584091;
 my($_INITIALIZED) = 0;
 
-# easyware transaction type --> [entry type, tax category]
-# the enums get compiled when an instance is first created
+# easyware transaction type --> [entry type, tax category, transaction id]
+# the enums get compiled when an instance is first created.
+# a transaction id of 0 indicates a unary transaction.
 
 my($_TYPE_MAP) = {
     # Expense
-    0 => ['CASH_EXPENSE', 'MISC_EXPENSE'],
+    0 => ['CASH_EXPENSE', 'MISC_EXPENSE',
+	    0, '-cash', '+misc'],
     # Income
-    1 => ['CASH_INCOME', 'MISC_INCOME'],
+    1 => ['CASH_INCOME', 'MISC_INCOME',
+	    0, '-misc', '+cash'],
     # Interest
-    2 => ['CASH_INTEREST', 'INTEREST'],
+    2 => ['CASH_INTEREST', 'INTEREST',
+	    0, '-interest', '+cash'],
     # Dividend
-    3 => ['CASH_DIVIDEND', 'DIVIDEND'],
+    3 => ['CASH_DIVIDEND', 'DIVIDEND',
+	    0, '-dividend', '+cash'],
     # Beg. Bal.
-    4 => ['CASH_OPENING_BALANCE', 'NOT_TAXABLE'],
+    4 => ['CASH_OPENING_BALANCE', 'NOT_TAXABLE',
+	    0, '+cash', ''],
     # Trsfr From
-    5 => ['CASH_TRANSFER', 'NOT_TAXABLE'],
+    5 => ['CASH_TRANSFER', 'NOT_TAXABLE',
+	    1, '-cash', ''],
     # Trsfr To
-    6 => ['CASH_TRANSFER', 'NOT_TAXABLE'],
+    6 => ['CASH_TRANSFER', 'NOT_TAXABLE',
+	    1, '+cash', ''],
 
     # Payment
-    10 => ['MEMBER_PAYMENT', 'NOT_TAXABLE'],
+    10 => ['MEMBER_PAYMENT', 'NOT_TAXABLE',
+	    0, '-member', '+cash'],
     # Fee
-    11 => ['MEMBER_PAYMENT_FEE', 'NOT_TAXABLE'],
+    11 => ['MEMBER_PAYMENT_FEE', 'NOT_TAXABLE',
+	    0, '-member', '+cash'],
     # PC Contr
-    12 => ['MEMBER_PAYMENT', 'NOT_TAXABLE'],
+    12 => ['MEMBER_PAYMENT', 'NOT_TAXABLE',
+	    0, '-member', '+cash'],
     # Withd-Cash
-    13 => ['MEMBER_WITHDRAWAL_FULL_CASH', 'NOT_TAXABLE'],
+    13 => ['MEMBER_WITHDRAWAL_FULL_CASH', 'NOT_TAXABLE',
+	    2, '-cash', '+member',],
     # Withd-Stock
-    14 => ['MEMBER_WITHDRAWAL_FULL_STOCK', 'NOT_TAXABLE'],
+    14 => ['MEMBER_WITHDRAWAL_FULL_STOCK', 'NOT_TAXABLE',
+	    2, '-investment', '+member'],
     # PWith-Cash
-    15 => ['MEMBER_WITHDRAWAL_PARTIAL_CASH', 'NOT_TAXABLE'],
+    15 => ['MEMBER_WITHDRAWAL_PARTIAL_CASH', 'NOT_TAXABLE',
+	    2, '-cash', '+member'],
     # PWith-Stck
-    16 => ['MEMBER_WITHDRAWAL_PARTIAL_STOCK', 'NOT_TAXABLE'],
+    16 => ['MEMBER_WITHDRAWAL_PARTIAL_STOCK', 'NOT_TAXABLE',
+	    2, '-investment', '+member'],
     # Withd Fee
-    17 => ['MEMBER_WITHDRAWAL_FEE', 'NOT_TAXABLE'],
+    17 => ['MEMBER_WITHDRAWAL_FEE', 'NOT_TAXABLE',
+	    2, '-member', '+cash'],
     # BBal Invst
-    18 => ['MEMBER_OPENING_BALANCE', 'NOT_TAXABLE'],
+    18 => ['MEMBER_OPENING_BALANCE', 'NOT_TAXABLE',
+	    0, '-member', ''],
     # BBal Earns
-    19 => ['MEMBER_OPENING_EARNINGS_DISTRIBUTION', 'NOT_TAXABLE'],
+    19 => ['MEMBER_OPENING_EARNINGS_DISTRIBUTION', 'NOT_TAXABLE',
+	    0, '-member', ''],
     # Distr-Div
-    20 => ['MEMBER_DISTRIBUTION', 'DIVIDEND'],
+    20 => ['MEMBER_DISTRIBUTION', 'DIVIDEND',
+	    3, '-dividend', '+member'],
     # Distr-Int
-    21 => ['MEMBER_DISTRIBUTION', 'INTEREST'],
+    21 => ['MEMBER_DISTRIBUTION', 'INTEREST',
+	    3, '-interest', '+member'],
     # Distr-TFI
-    22 => ['MEMBER_DISTRIBUTION', 'FEDERAL_TAX_FREE_INTEREST'],
+    22 => ['MEMBER_DISTRIBUTION', 'FEDERAL_TAX_FREE_INTEREST',
+	    3, '-interest', '+member'],
     # Distr-Stcg
-    23 => ['MEMBER_DISTRIBUTION', 'SHORT_TERM_CAPITAL_GAIN'],
+    23 => ['MEMBER_DISTRIBUTION', 'SHORT_TERM_CAPITAL_GAIN',
+	    3, '-gain', '+member'],
     # Distr-Ltcg
-    24 => ['MEMBER_DISTRIBUTION', 'LONG_TERM_CAPITAL_GAIN'],
+    24 => ['MEMBER_DISTRIBUTION', 'LONG_TERM_CAPITAL_GAIN',
+	    3, '-gain', '+member'],
     # Distr-Inc
-    25 => ['MEMBER_DISTRIBUTION', 'MISC_INCOME'],
+    25 => ['MEMBER_DISTRIBUTION', 'MISC_INCOME',
+	    3, '-misc', '+member'],
     # Distr-Exp
-    26 => ['MEMBER_DISTRIBUTION', 'MISC_EXPENSE'],
+    26 => ['MEMBER_DISTRIBUTION', 'MISC_EXPENSE',
+	    3, '-misc', '+member'],
     # Distr-ForT
-    27 => ['MEMBER_DISTRIBUTION', 'FOREIGN_TAX'],
+    27 => ['MEMBER_DISTRIBUTION', 'FOREIGN_TAX',
+	    3, '-dividend', '+member'],
     # WDist-Div
-    28 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'DIVIDEND'],
+    28 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'DIVIDEND',
+	    2, '-dividend', '+member'],
     # WDist-Int
-    29 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'INTEREST'],
+    29 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'INTEREST',
+	    2, '-interest', '+member'],
     # WDist-TFI
-    30 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'FEDERAL_TAX_FREE_INTEREST'],
+    30 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'FEDERAL_TAX_FREE_INTEREST',
+	    2, '-interest', '+member'],
     # WDist-Stcg
-    31 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'SHORT_TERM_CAPITAL_GAIN'],
+    31 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'SHORT_TERM_CAPITAL_GAIN',
+	    2, '-gain', '+member'],
     # WDist-Ltcg
-    32 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'LONG_TERM_CAPITAL_GAIN'],
+    32 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'LONG_TERM_CAPITAL_GAIN',
+	    2, '-gain', '+member'],
     # WDist-Inc
-    33 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MISC_INCOME'],
+    33 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MISC_INCOME',
+	    2, '-misc', '+member'],
     # WDist-Exp
-    34 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MISC_EXPENSE'],
+    34 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MISC_EXPENSE',
+	    2, '-misc', '+member'],
     # WDist-ForT
-    35 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'FOREIGN_TAX'],
+    35 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'FOREIGN_TAX',
+	    2, '-dividend', '+member'],
     # Distr-Itcg
-    36 => ['MEMBER_DISTRIBUTION', 'MEDIUM_TERM_CAPITAL_GAIN'],
+    36 => ['MEMBER_DISTRIBUTION', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    3, '-gain', '+member'],
     # WDist-Itcg
-    37 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MEDIUM_TERM_CAPITAL_GAIN'],
+    37 => ['MEMBER_WITHDRAWAL_DISTRIBUTION', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    2, '-gain', '+member'],
 
     # Buy
-    40 => ['INSTRUMENT_BUY', 'NOT_TAXABLE'],
+    40 => ['INSTRUMENT_BUY', 'NOT_TAXABLE',
+	    4, '-cash', '+investment'],
     # Comm-Buy
-    41 => ['INSTRUMENT_BUY_COMMISSION', 'NOT_TAXABLE'],
+    41 => ['INSTRUMENT_BUY_COMMISSION', 'NOT_TAXABLE',
+	    4, '-cash', '+intstrument'],
     # Fee-Buy
-    42 => ['INSTRUMENT_BUY_FEE', 'MISC_EXPENSE'],
+    42 => ['INSTRUMENT_BUY_FEE', 'MISC_EXPENSE',
+	    4, '-cash', '+misc'],
     # Sell
-    43 => ['INSTRUMENT_SELL', 'NOT_TAXABLE'],
+    43 => ['INSTRUMENT_SELL', 'NOT_TAXABLE',
+	    5, '-investment', '+cash'],
     # Transfer
-    44 => ['INSTRUMENT_TRANSFER', 'NOT_TAXABLE'],
+    44 => ['INSTRUMENT_TRANSFER', 'NOT_TAXABLE',
+	    0, '-investment', '+member'],
     # Stcg-Sell
-    45 => ['INSTRUMENT_SELL', 'SHORT_TERM_CAPITAL_GAIN'],
+    45 => ['INSTRUMENT_SELL', 'SHORT_TERM_CAPITAL_GAIN',
+	    5, '+cash', '+gain'],
     # Ltcg-Sell
-    46 => ['INSTRUMENT_SELL', 'LONG_TERM_CAPITAL_GAIN'],
+    46 => ['INSTRUMENT_SELL', 'LONG_TERM_CAPITAL_GAIN',
+	    5, '+cash', '+gain'],
     # Exp-Sell
-    47 => ['INSTRUMENT_SELL', 'NOT_TAXABLE'],
+    47 => ['INSTRUMENT_SELL', 'NOT_TAXABLE',
+	    5, '-investment', '+cash'],
     # Div-Cash
-    48 => ['INSTRUMENT_DISTRIBUTION_CASH', 'DIVIDEND'],
+    48 => ['INSTRUMENT_DISTRIBUTION_CASH', 'DIVIDEND',
+	    0, '+cash', '+dividend'],
     # Int-Cash
-    49 => ['INSTRUMENT_DISTRIBUTION_CASH', 'INTEREST'],
+    49 => ['INSTRUMENT_DISTRIBUTION_CASH', 'INTEREST',
+	    0, '+cash', '+interest'],
     # Stcg-Cash
-    50 => ['INSTRUMENT_DISTRIBUTION_CASH', 'SHORT_TERM_CAPITAL_GAIN'],
+    50 => ['INSTRUMENT_DISTRIBUTION_CASH', 'SHORT_TERM_CAPITAL_GAIN',
+	    0, '+cash', '+gain'],
     # Ltcg-Cash
-    51 => ['INSTRUMENT_DISTRIBUTION_CASH', 'LONG_TERM_CAPITAL_GAIN'],
+    51 => ['INSTRUMENT_DISTRIBUTION_CASH', 'LONG_TERM_CAPITAL_GAIN',
+	    0, '+cash', '+gain'],
     # RetCp-Cash
-    52 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE'],
+    52 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE',
+	    0, '-investment', '+cash'],
     # Div-Inv
-    53 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'DIVIDEND'],
+    53 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'DIVIDEND',
+	    6, '+cash', '+dividend'],
     # Int-Inv
-    54 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'INTEREST'],
+    54 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'INTEREST',
+	    7, '+investment', '+interest'],
     # Stcg-Inv
-    55 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'SHORT_TERM_CAPITAL_GAIN'],
+    55 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'SHORT_TERM_CAPITAL_GAIN',
+	    8, '+investment', '+gain'],
     # Ltcg-Inv
-    56 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'LONG_TERM_CAPITAL_GAIN'],
+    56 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'LONG_TERM_CAPITAL_GAIN',
+	    9, '+investment', '+gain'],
+#TODO: this is a weird case - from investment to investment?
     # RetCp-Inv
-    57 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE'],
+    57 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE',
+	    10, '-investment', '+cash'],
     # Fee-DivInv
-    58 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    58 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    6, '-cash', '+misc'],
     # Fee-IntInv
-    59 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    59 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    7, '-cash', '+misc'],
     # Fee-StcInv
-    60 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    60 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    8, '-cash', '+misc'],
     # Fee-LtcInv
-    61 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    61 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    9, '-cash', '+misc'],
     # Fee-RtcInv
-    62 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    62 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    10, '-cash', '+misc'],
     # Split
-    63 => ['INSTRUMENT_SPLIT', 'NOT_TAXABLE'],
+    63 => ['INSTRUMENT_SPLIT', 'NOT_TAXABLE',
+	    12, '', ''],
     # SpFr-Cost
-    64 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'NOT_TAXABLE'],
+    64 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'NOT_TAXABLE',
+	    12, '+cash', '-investment'],
     # SpFr-Stcg
-    65 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN'],
+    65 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN',
+	    12, '+cash', '+gain'],
     # SpFr-Ltcg
-    66 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN'],
+    66 => ['INSTRUMENT_SPLIT_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN',
+	    12, '+cash', 'gain'],
     # StkDiv-New
-    67 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE'],
+    67 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE',
+	    13, '', ''],
     # StkDiv-Old
-    68 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE'],
+    68 => ['INSTRUMENT_SPINOFF', 'NOT_TAXABLE',
+	    13, '', ''],
     # SDFr-Cost
-    69 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'NOT_TAXABLE'],
+    69 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'NOT_TAXABLE',
+	    13, '+cash', '-investment'],
     # SDFr-Stcg
-    70 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN'],
+    70 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN',
+	    13, '+cash', '+gain'],
     # SDFr-Ltcg
-    71 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN'],
+    71 => ['INSTRUMENT_SPINOFF_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN',
+	    13, '+cash', '+gain'],
     # Merger-Add
-    72 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE'],
+    72 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE',
+	    14, '', ''],
     # Merger-Cls
-    73 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE'],
+    73 => ['INSTRUMENT_MERGER', 'NOT_TAXABLE',
+	    14, '', ''],
     # MrgFt-Cost
-    74 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'NOT_TAXABLE'],
+    74 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'NOT_TAXABLE',
+	    14, '+cash', '-investment'],
     # MrgFt-Stcg
-    75 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN'],
+    75 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'SHORT_TERM_CAPITAL_GAIN',
+	    14, '+cash', '+gain'],
     # MrgFt-Ltcg
-    76 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN'],
+    76 => ['INSTRUMENT_MERGER_SHARES_AS_CASH', 'LONG_TERM_CAPITAL_GAIN',
+	    14, '+cash', '+gain'],
 #TODO: need to handle this case
     # For Tax
-    77 => ['UNKNOWN', 'UNKNOWN'],
+    77 => ['UNKNOWN', 'UNKNOWN',
+	    15, '', ''],
     # Pd By Comp
-    78 => ['INSTRUMENT_DISTRIBUTION_CHARGES_PAID_BY_COMPANY', 'NOT_TAXABLE'],
+    78 => ['INSTRUMENT_DISTRIBUTION_CHARGES_PAID_BY_COMPANY', 'NOT_TAXABLE',
+	    0, '-investment', '-dividend'],
     # Beg Bal
-    79 => ['INSTRUMENT_OPENING_BALANCE', 'NOT_TAXABLE'],
+    79 => ['INSTRUMENT_OPENING_BALANCE', 'NOT_TAXABLE',
+	    0, '+investment', ''],
 #TODO: need to handle this case
     # Div-ForTax
-    80 => ['UNKNOWN', 'UNKNOWN'],
+    80 => ['UNKNOWN', 'UNKNOWN',
+	    15, '', ''],
 
     # DivInvComm
-    92 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    92 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    6, '', ''],
     # IntInvComm
-    93 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    93 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    7, '', ''],
     # StcInvComm
-    94 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    94 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    8, '', ''],
     # LtcInvComm
-    95 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    95 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    9, '', ''],
     # RtCpIvComm
-    96 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    96 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    10, '', ''],
     # Mtcg-Sell
-    97 => ['INSTRUMENT_SELL', 'MEDIUM_TERM_CAPITAL_GAIN'],
+    97 => ['INSTRUMENT_SELL', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    5, '+cash', '+gain'],
     # Mtcg-Cash
-    98 => ['INSTRUMENT_DISTRIBUTION_CASH', 'MEDIUM_TERM_CAPITAL_GAIN'],
+    98 => ['INSTRUMENT_DISTRIBUTION_CASH', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    0, '+cash', '+gain'],
     # Mtcg-Inv
-    99 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'MEDIUM_TERM_CAPITAL_GAIN'],
+    99 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'MEDIUM_TERM_CAPITAL_GAIN',
+	    11, '+investment', '+gain'],
     # MtcInvComm
-    100 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE'],
+    100 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
+	    11, '', ''],
     # Fee-MtcInv
-    101 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE'],
+    101 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE', 'MISC_EXPENSE',
+	    11, '-cash', '+misc'],
 
-#TODO: SpFr-Mtcg, SDFr-Mtcg, MrgFr-Mtcg
+#TODO: SpFr-Mtcg, SDFr-Mtcg, MrgFr-Mtcg: trans (12, 13, 14)
 };
 
-# created from the set below at runtime, keyed by transaction type
-my($_TRANSACTION_SET_MAP) = {};
+# created for the set of transactions implicitly associated with easyware
+# transaction types, indexed by transaction id --> [types...].
+# For example: _TRANSACTION_ID_SET[6] --> [53, 58, 92]
 
-# implicit easyware transaction entry sets
-my($_TRANSACTION_SETS) = [
-	# note: cash payment source 0 is all payments on date (multiple)
-	[10],
-	# transfer from/to
-	[5,6],
-	# member withdraw
-	[13, 14, 15, 16, 17, 28, 29, 30, 31, 32, 33, 34, 35, 37],
-	# member distribution
-	[20, 21, 22, 23, 24, 25, 26, 27, 36],
-	# buy
-	[40, 41, 42],
-	# sell
-	[43, 45, 46, 47, 97],
-	# reinvested distribution, dividend
-	[53, 58, 92],
-	# reinvested distribution, interest
-	[54, 59, 93],
-	# reinvested distribution, short term gain
-	[55, 60, 94],
-	# reinvested distribution, long term gain
-	[56, 61, 95],
-	# reinvested distribution, return of capital
-	[57, 62, 96],
-	# reinvested distribution, mid term gain
-	[99, 100, 101],
-	# stock split
-#TODO: add SpFr-Mtcg
-	[63, 64, 65, 66],
-	# spinoff
-#TODO: add SDFr-Mtcg
-	[67, 68, 69, 70, 71],
-	# merger
-#TODO: add MrgFr-Mtcg
-	[72, 73, 74, 75, 76],
-	# foreign taxes
-	[77, 80],
-       ];
+my($_TRANSACTION_ID_SET) = [];
 
 # easyware data formats
 
@@ -286,7 +339,7 @@ my($_MEMBER_FORMAT) = {
 	    'last_name', 'string21',
 	    'first_name', 'string26',
 	    'address', 'string31',
-	    'unknown-1', 'byte10',
+	    'UNKNOWN-1', 'byte10',
 	    'city', 'string21',
 	    'state', 'string3',
 	    'zip', 'string12',
@@ -295,7 +348,7 @@ my($_MEMBER_FORMAT) = {
 	    'contact', 'string31',
 	    'ssn', 'string12',
 	    'active', 'boolean2',
-	    'unknown-2', 'byte60',
+	    'UNKNOWN-2', 'byte60',
 	   ],
 };
 
@@ -322,7 +375,7 @@ my($_CASH_TRANSACTION_FORMAT) = {
 	    'account_type', 'int2',
 	    'amount', 'double8',
 	    'remark', 'string31',
-	    'unknown', 'byte1',
+	    'UNKNOWN', 'byte1',
 	   ],
 };
 
@@ -340,7 +393,7 @@ my($_INSTRUMENT_FORMAT) = {
 	    'average_cost_method', 'boolean2',
 	    'drp_plan', 'boolean2',
 	    'ticker_symbol', 'string8',
-	    'unknown', 'byte50',
+	    'UNKNOWN', 'byte50',
 	   ],
 };
 
@@ -391,8 +444,9 @@ sub new {
     if (! $_INITIALIZED) {
 	$_INITIALIZED = 1;
 	_compile_type_map();
-	_create_transaction_set_map();
+	_create_transaction_id_set();
     }
+
     return $self;
 }
 
@@ -507,131 +561,81 @@ Attributes:
 
 sub import_transactions {
     my($self, $attributes) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     my($member_trans) = _parse_file($self, $_MEMBER_TRANSACTION_FORMAT);
     my($instrument_trans) = _parse_file($self,
 	    $_INSTRUMENT_TRANSACTION_FORMAT);
     my($cash_trans) = _parse_file($self, $_CASH_TRANSACTION_FORMAT);
 
-    my($req) = Bivio::Agent::TestRequest->new({});
-    my($transaction) = Bivio::Biz::PropertyModel::Transaction->new($req);
-    my($entry) = Bivio::Biz::PropertyModel::Entry->new($req);
-    my($member_entry) = Bivio::Biz::PropertyModel::MemberEntry->new($req);
-    my($instrument_entry) =
-	    Bivio::Biz::PropertyModel::ClubInstrumentEntry->new($req);
-    my($account_entry) = Bivio::Biz::PropertyModel::AccountEntry->new($req);
+    $fields->{member_trans} = $member_trans;
+    $fields->{instrument_trans} = $instrument_trans;
+    $fields->{cash_trans} = $cash_trans;
 
-#TODO: link transactions properly
-    # for now all one transaction!
-    $transaction->create({
-	club_id => $attributes->{club_id},
-	source_class => Bivio::Type::EntryClass->MEMBER->as_int(),
-	dttm => 870436800,
-	remark => 'a really big transaction',
-	});
+    my($trans);
+    foreach $trans (@$member_trans) {
 
-#=begin
+	next if (! defined($trans));
 
-    # member transactions
-    foreach (@$member_trans) {
-	_create_entry($entry, $transaction, Bivio::Type::EntryClass->MEMBER,
-		$_);
-	$member_entry->create({
-	    entry_id => $entry->get('entry_id'),
-	    user_id => $attributes->{member_id_map}->{$_->{member_id}},
-	    units => $_->{units}
-	    });
+	my($dttm) = $trans->{dttm};
+	my($transaction) = _create_transaction($attributes->{club_id},
+		Bivio::Type::EntryClass->MEMBER, $dttm);
+
+	_import_transactions($self, $transaction, $trans->{member_id}, $dttm,
+		$trans->{transaction_type}, $attributes);
     }
 
-    # instrument transactions
-    foreach (@$instrument_trans) {
-	_create_entry($entry, $transaction,
-		Bivio::Type::EntryClass->INSTRUMENT, $_);
-	$instrument_entry->create({
-	    entry_id => $entry->get('entry_id'),
-	    instrument_id => $attributes->{instrument_id_map}->{
-		$_->{instrument_id}},
-	    shares => $_->{shares},
-	    block => $_->{block},
-	    });
+    foreach $trans (@$instrument_trans) {
 
-	_create_account_entry($account_entry, $entry,
-		$entry->get('tax_category'), $attributes);
+	next if (! defined($trans));
+
+	my($dttm) = $trans->{dttm};
+	my($transaction) = _create_transaction($attributes->{club_id},
+		Bivio::Type::EntryClass->INSTRUMENT, $dttm);
+
+	_import_transactions($self, $transaction, $trans->{instrument_id}, $dttm,
+		$trans->{transaction_type}, $attributes);
     }
 
-#=cut
+    foreach $trans (@$cash_trans) {
 
-    # cash transactions
-    foreach (@$cash_trans) {
-	
+	next if (! defined($trans));
+
+	my($dttm) = $trans->{dttm};
+	my($transaction) = _create_transaction($attributes->{club_id},
+		Bivio::Type::EntryClass->ACCOUNT, $dttm);
+
+	_import_transactions($self, $transaction, $trans->{source_id}, $dttm,
+		$trans->{transaction_type}, $attributes);
     }
+
+    foreach $trans (@$member_trans) {
+	die('missed transaction: '.Data::Dumper->Dumper($trans)) if (defined($trans));
+    }
+    foreach $trans (@$instrument_trans) {
+	die('missed transaction: '.Data::Dumper->Dumper($trans)) if (defined($trans));
+    }
+    foreach $trans (@$cash_trans) {
+	die('missed transaction: '.Data::Dumper->Dumper($trans)) if (defined($trans));
+    }
+
+    Bivio::SQL::Connection->commit();
 }
 
 #=PRIVATE METHODS
 
-# _create_account_entry(AccountEntry account_entry, Entry entry, TaxCategory tax_category, hash_ref accounts)
+# _contains(array_ref a, scalar value) : boolean
 #
-# Creates an account entry for the specified values
+# Returns 1 if the specified array contains the specified value.
 
-sub _create_account_entry {
-    my($account_entry, $entry, $tax_category, $accounts) = @_;
+sub _contains {
+    my($a, $value) = @_;
 
-    my($account_id);
-    if ($tax_category == Bivio::Type::TaxCategory->DIVIDEND) {
-
-	$account_id = $accounts->{dividend};
-
-    } elsif ($tax_category == Bivio::Type::TaxCategory->INTEREST
-	    or $tax_category
-	    == Bivio::Type::TaxCategory->FEDER_TAX_FREE_INTEREST) {
-
-	$account_id = $accounts->{interest};
-
-    } elsif ($tax_category
-	    == Bivio::Type::TaxCategory->SHORT_TERM_CAPITAL_GAIN
-	    or $tax_category
-	    == Bivio::Type::TaxCategory->MEDIUM_TERM_CAPITAL_GAIN
-	    or $tax_category
-	    == Bivio::Type::TaxCategory->LONG_TERM_CAPITAL_GAIN) {
-
-	$account_id = $accounts->{gain};
-
-    } elsif ($tax_category
-	    == Bivio::Type::TaxCategory->FOREIGN_TAX
-	    or $tax_category
-	    == Bivio::Type::TaxCategory->MISC_INCOME
-	    or $tax_category
-	    == Bivio::Type::TaxCategory->MISC_EXPENSE) {
-
-	$account_id = $accounts->{misc};
-
-    } else {
-
-	die("can't create default account entry for $tax_category");
+    my($target);
+    foreach $target (@$a) {
+	return 1 if $target eq $value;
     }
-
-    $account_entry->create({
-	entry_id => $entry->get('entry_id'),
-	account_id => $account_id,
-    });
-}
-
-# _create_entry(Entry entry, Transaction transaction_id EntryClass class, hash_ref values)
-#
-# Creates the entry with the specified class and values.
-
-sub _create_entry {
-    my($entry, $transaction, $class, $values) = @_;
-
-    $entry->create({
-	transaction_id => $transaction->get('transaction_id'),
-	class => $class->as_int(),
-	entry_type => $_TYPE_MAP->{$values->{transaction_type}}->[0]->as_int(),
-	tax_category => $_TYPE_MAP->{
-	    $values->{transaction_type}}->[1]->as_int(),
-	amount => $values->{amount},
-	remark => $values->{remark},
-    });
+    return 0;
 }
 
 # _compile_type_map()
@@ -652,21 +656,47 @@ sub _compile_type_map {
     }
 }
 
-# _create_transaction_set_map()
+# _create_transaction(ID club_id, EntryClass class, date dttm) : Transaction
 #
-# creates the _TRANSACTION_SET_MAP hash using values from
-# _TRANSACTION_SETS
+# Creates a Bivio::Biz::PropertyModel::Transactions from the specified
+# data.
 
-sub _create_transaction_set_map {
+sub _create_transaction {
+    my($club_id, $class, $dttm) = @_;
 
-    my($set);
-    foreach $set (@$_TRANSACTION_SETS) {
-	foreach (@$set) {
-	    die("transaction $_ in multiple sets") if exists(
-		    $_TRANSACTION_SET_MAP->{$_});
-	    $_TRANSACTION_SET_MAP->{$_} = $set;
+    my($req) = Bivio::Agent::TestRequest->new({});
+    my($transaction) = Bivio::Biz::PropertyModel::Transaction->new($req);
+
+    $transaction->create({
+	club_id => $club_id,
+	source_class => $class->as_int(),
+	dttm => $dttm,
+    });
+
+    return $transaction;
+}
+
+# _create_transaction_id_set()
+#
+# creates the _TRANSACTION_ID_SET array using values from _TYPE_MAP
+
+sub _create_transaction_id_set {
+
+    my($type);
+    foreach $type (keys(%$_TYPE_MAP)) {
+	my($index) = $_TYPE_MAP->{$type}->[2];
+
+	next if $index == 0;
+
+	if (defined($_TRANSACTION_ID_SET->[$index])) {
+	    push(@{$_TRANSACTION_ID_SET->[$index]}, $type),
+	}
+	else {
+	    $_TRANSACTION_ID_SET->[$index] = [$type];
 	}
     }
+    # index 0 is the empty set
+    $_TRANSACTION_ID_SET->[0] = [];
 }
 
 # _parse_file(hash_ref format) : array_ref
@@ -678,7 +708,7 @@ sub _parse_file {
     my($result) = [];
 
     my($file_name) = $self->{$_PACKAGE}->{directory}.'/'.$format->{file_name};
-    open(IN, '< '.$file_name) || die("can't open file $file_name");
+    open(IN, '< '.$file_name) or die("can't open file $file_name");
     binmode(IN); # for win32
 
     my($fields) = $format->{fields};
@@ -740,7 +770,7 @@ sub _parse_file {
 	    push(@$result, $record);
 	}
     };
-    close(IN) || die("couldn't close $file_name");
+    close(IN) or die("couldn't close $file_name");
 
     # check for exception during read
     die($@) unless ($@ =~ /^end of input/) && ! $reading;
@@ -752,6 +782,172 @@ sub _parse_file {
     }
 
     return $result;
+}
+
+# _import_transations(Transaction transaction, int source_id, date dttm, int transaction_type, hash_ref attributes)
+#
+# Creates the transaction and entries for all the data which occurs
+# on the specified date within the specified transaction set index.
+
+sub _import_transactions {
+    my($self, $transaction, $source_id, $dttm, $transaction_type, $attributes) = @_;
+    my($set_index) = $_TYPE_MAP->{$transaction_type}->[2];
+
+    my($fields) = $self->{$_PACKAGE};
+
+    my($member_trans) = $fields->{member_trans};
+    my($instrument_trans) = $fields->{instrument_trans};
+    my($cash_trans) = $fields->{cash_trans};
+
+    my($entry) = Bivio::Biz::PropertyModel::Entry->new(
+	    $transaction->get_request());
+    my($member_entry) = Bivio::Biz::PropertyModel::MemberEntry->new(
+	    $transaction->get_request());
+    my($instrument_entry) = Bivio::Biz::PropertyModel::InstrumentEntry->new(
+	    $transaction->get_request());
+    my($account_entry) = Bivio::Biz::PropertyModel::AccountEntry->new(
+	    $transaction->get_request());
+    my($set) = $_TRANSACTION_ID_SET->[$set_index];
+    my($handled) = 0;
+
+    my($trans);
+    foreach $trans (@$member_trans) {
+	next if (! defined($trans));
+
+	if ($trans->{member_id} == $source_id
+		&& $trans->{dttm} == $dttm
+		&& ($trans->{transaction_type} == $transaction_type
+			or _contains($set, $trans->{transaction_type}))) {
+
+	    $entry->create({
+		transaction_id => $transaction->get('transaction_id'),
+		class => Bivio::Type::EntryClass->MEMBER->as_int(),
+		entry_type => $_TYPE_MAP->{
+		    $trans->{transaction_type}}->[0]->as_int(),
+		tax_category => $_TYPE_MAP->{
+		    $trans->{transaction_type}}->[1]->as_int(),
+		amount => $trans->{amount},
+		remark => $trans->{remark},
+	    });
+
+	    $member_entry->create({
+		entry_id => $entry->get('entry_id'),
+		user_id => $attributes->{member_id_map}->{$trans->{member_id}},
+		units => $trans->{'units'},
+	    });
+
+	    # set the transaction to undef in place
+	    $trans = undef;
+	    $handled = 1;
+	}
+    }
+
+    foreach $trans (@$instrument_trans) {
+	next if (! defined($trans));
+
+	if ($trans->{instrument_id} == $source_id
+		&& $trans->{dttm} == $dttm
+		&& ($trans->{transaction_type} == $transaction_type
+			or _contains($set, $trans->{transaction_type}))) {
+
+	    $entry->create({
+		transaction_id => $transaction->get('transaction_id'),
+		class => Bivio::Type::EntryClass->INSTRUMENT->as_int(),
+		entry_type => $_TYPE_MAP->{
+		    $trans->{transaction_type}}->[0]->as_int(),
+		tax_category => $_TYPE_MAP->{
+		    $trans->{transaction_type}}->[1]->as_int(),
+		amount => $trans->{amount},
+		remark => $trans->{remark},
+	    });
+
+	    $instrument_entry->create({
+		entry_id => $entry->get('entry_id'),
+		instrument_id => $attributes->{instrument_id_map}->{
+		    $trans->{instrument_id}},
+		shares => $trans->{shares},
+		block => $trans->{block},
+	    });
+
+	    # set the transaction to undef in place
+	    $trans = undef;
+	    $handled = 1;
+	}
+    }
+
+    foreach $trans (@$cash_trans) {
+	next if (! defined($trans));
+
+	if ($trans->{source_id} == $source_id
+		&& $trans->{dttm} == $dttm
+		&& ($trans->{transaction_type} == $transaction_type
+			or _contains($set, $trans->{transaction_type}))) {
+
+	    my($trans_info) = $_TYPE_MAP->{$trans->{transaction_type}};
+	    my($source_sign, $source) = $trans_info->[3] =~ /^(.)(.*)$/;
+	    my($target_sign, $target) = $trans_info->[4] =~ /^(.)(.*)$/;
+
+	    $source = _lookup_account($trans, $source) if (defined($source));
+	    $target = _lookup_account($trans, $target) if (defined($target));
+
+	    if (defined($source)) {
+		$entry->create({
+		    transaction_id => $transaction->get('transaction_id'),
+		    class => Bivio::Type::EntryClass->ACCOUNT->as_int(),
+		    entry_type => $trans_info->[0]->as_int(),
+		    tax_category => $trans_info->[1]->as_int(),
+		    amount => $trans->{amount},
+		    remark => $trans->{remark},
+		});
+
+		die("invalid account: $source") if (! defined($attributes->{accounts}->{$source}));
+		$account_entry->create({
+		    entry_id => $entry->get('entry_id'),
+		    account_id => $attributes->{accounts}->{$source}
+		});
+		$handled = 1;
+	    }
+	    if (defined($target)) {
+		$entry->create({
+		    transaction_id => $transaction->get('transaction_id'),
+		    class => Bivio::Type::EntryClass->ACCOUNT->as_int(),
+		    entry_type => $trans_info->[0]->as_int(),
+		    tax_category => $trans_info->[1]->as_int(),
+		    amount => $trans->{amount},
+		    remark => $trans->{remark},
+		});
+
+		die("invalid account: $target") if (! defined($attributes->{accounts}->{$target}));
+		$account_entry->create({
+		    entry_id => $entry->get('entry_id'),
+		    account_id => $attributes->{accounts}->{$target}
+		});
+		$handled = 1;
+	    }
+	    # set the transaction to undef in place
+	    $trans = undef;
+	}
+    }
+    die("Transaction not handled: $transaction_type\n") unless $handled;
+
+    return;
+}
+
+# _lookup_account(hash_ref trans, string name) : string
+#
+# Returns the name of the target account
+
+sub _lookup_account {
+    my($trans, $name) = @_;
+
+    if ($name eq 'cash') {
+	my($account) = $trans->{account_type};
+	$name = 'bank' if $account == 0;
+	$name = 'broker' if $account == 1;
+	$name = 'suspense' if $account == 2;
+	$name = 'petty_cash' if $account == 3;
+    }
+    return $name;
 }
 
 #WARNING:
@@ -769,7 +965,7 @@ sub _read_boolean {
     my($value) = _read_int2($file);
     die('invalid boolean '.$value) unless ($value == 0 or $value == 1);
 
-    _trace("boolean $value") if $_TRACE;
+#    _trace("boolean $value") if $_TRACE;
     return $value;
 }
 
@@ -781,7 +977,7 @@ sub _read_bytes {
     my($file, $length) = @_;
 
     my($bytes);
-    read(*$file, $bytes, $length) || die('end of input');
+    read(*$file, $bytes, $length) or die('end of input');
 
     return $bytes;
 }
@@ -809,7 +1005,7 @@ sub _read_date {
     }
     my($value) = Time::Local::timegm(0, 0, 12, $day, $month - 1, $year);
 
-    _trace("date $value") if $_TRACE;
+#    _trace("date $value") if $_TRACE;
     return $value;
 }
 
@@ -822,7 +1018,7 @@ sub _read_double {
 
     my($value) = unpack('d', _read_bytes($file, 8));
 
-    _trace("double $value") if $_TRACE;
+#    _trace("double $value") if $_TRACE;
     return $value;
 }
 
@@ -835,7 +1031,7 @@ sub _read_int2 {
 
     my($value) = unpack('s', _read_bytes($file, 2));
 
-    _trace("int $value") if $_TRACE;
+#    _trace("int $value") if $_TRACE;
     return $value;
 }
 
@@ -848,7 +1044,7 @@ sub _read_int4 {
 
     my($value) = unpack('i', _read_bytes($file, 4));
 
-    _trace("int4 $value") if $_TRACE;
+#    _trace("int4 $value") if $_TRACE;
     return $value;
 }
 
@@ -864,7 +1060,7 @@ sub _read_string {
     # trim after the first null
     $value = substr($value, 0, index($value, "\0"));
 
-    _trace("string '$value'") if $_TRACE;
+#    _trace("string '$value'") if $_TRACE;
     return $value;
 }
 
