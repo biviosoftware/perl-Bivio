@@ -524,6 +524,7 @@ sub _load_list {
 	    = $query->get(qw(count page_number parent_id));
     my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
 
+    my($row);
  FIND_START: {
 	# Set prev first, because there is a return in the for loop
 	if ($page_number > 0) {
@@ -533,12 +534,12 @@ sub _load_list {
 	    $query->put(has_prev => 0, prev => undef);
 	}
 
-	# Find the page
+	# Find the page.  We load the first row of the page here.
 	my($start) = $page_number * $count;
-	for (my($i) = 0; $i < $start; $i++) {
-	    next if $statement->fetchrow_arrayref;
+	for (my($i) = 0; $i <= $start; $i++) {
+	    next if $row = $statement->fetchrow_arrayref;
 
-	    # End of list, do we need to "back up"?
+	    # End of list.
 	    $statement->finish;
 
 	    # No need to backup, there are no rows
@@ -561,13 +562,10 @@ sub _load_list {
 	    : undef;
     my($select_columns) = $attrs->{select_columns};
 
-    # Save the rows from the page
-    my(@rows, $row);
-    while ($count-- > 0) {
-	# If no more, return what there is
-	$statement->finish, return \@rows
-		unless $row = $statement->fetchrow_arrayref;
-
+    # Save the rows from the page.  $row comes in from above
+    my(@rows);
+    for (;;) {
+	# Convert the row to a hash_ref
 	my($i) = 0;
 	push(@rows, {
 	    (map {
@@ -577,6 +575,15 @@ sub _load_list {
 	    ($auth_id_name ? ($auth_id_name => $auth_id) : ()),
 	    $parent_id_name ? ($parent_id_name => $parent_id) : (),
 	});
+
+	# Have we got enough?
+	last if $count-- <= 0;
+
+	# If no more, return what there is
+	unless ($row = $statement->fetchrow_arrayref) {
+	    $statement->finish;
+	    return \@rows;
+	}
     }
 
     # Is there a next?
