@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Boolean;
 use strict;
 $Bivio::Type::Boolean::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Boolean::VERSION;
 
 =head1 NAME
 
@@ -103,6 +104,19 @@ sub can_be_zero {
     return 1;
 }
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : array
+
+Booleans are never non-null.  Always returns 0 or 1 or error.
+
+=cut
+
+sub from_literal {
+    my($res, $err) = shift->SUPER::from_literal(@_);
+    return defined($res) ? $res : $err ? ($res, $err) : 0;
+}
+
 =for html <a name="get_decimals"></a>
 
 =head2 static get_decimals : int
@@ -194,7 +208,7 @@ sub to_xml {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
