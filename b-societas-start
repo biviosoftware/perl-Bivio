@@ -285,6 +285,13 @@ use strict;
 	    file_mode => 0777,
 	},
     },
+    'Bivio::UI::Icon' => {
+	uri => '/i',
+	directory => '<$pwd>/html/i',
+    },
+    'Bivio::UI::HTML::Widget::Page' => {
+	show_time => 1,
+    },
     main => {
 	http => {
 	    port => '<$http_port>',
