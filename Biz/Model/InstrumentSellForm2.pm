@@ -65,7 +65,11 @@ Creates an instrument buy form.
 
 sub new {
     my($self) = &Bivio::Biz::FormModel::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->{$_PACKAGE} = {
+	stcg => 0,
+	mtcg => 0,
+	ltcg => 0,
+    };
     return $self;
 }
 
@@ -150,35 +154,19 @@ sub execute_input {
     while ($lot_list->next_row) {
 	my($amount) = $data->{'lot'.$count++};
 	if ($amount) {
-	    _create_sell_and_gain_entries($self,
+	    _create_sell_entry($self,
 		    $realm_inst->get('realm_instrument_id'),
 		    $transaction, $lot_list, $amount, $share_value);
 	}
     }
     $lot_list->reset_cursor;
+    _create_gain_entries($self, $realm_inst->get('realm_instrument_id'),
+	    $transaction);
 
-    # create a valuation entry for that instrument on the date
-    my($inst_val) = Bivio::Biz::Model::RealmInstrumentValuation->new($req);
-
-    # see if a valuation already exists, if so update it
-    if ($inst_val->unsafe_load(
-	realm_instrument_id => $realm_inst->get('realm_instrument_id'),
-	date_time => $properties->{'RealmTransaction.date_time'})) {
-
-	$inst_val->update({
-	    price_per_share => $properties->{
-		'RealmInstrumentValuation.price_per_share'},
-	});
-    }
-    else {
-	$inst_val->create({
-	    realm_id => $auth_id,
-	    realm_instrument_id => $realm_inst->get('realm_instrument_id'),
-	    date_time => $properties->{'RealmTransaction.date_time'},
-	    price_per_share => $properties->{
-		'RealmInstrumentValuation.price_per_share'},
-	});
-    }
+    Bivio::Biz::Model::RealmInstrumentValuation->create_or_update(
+	    $realm_inst->get('realm_instrument_id'),
+	    $properties->{'RealmTransaction.date_time'},
+	    $properties->{'RealmInstrumentValuation.price_per_share'});
     return;
 }
 
@@ -314,6 +302,7 @@ sub validate {
     $lot_list->reset_cursor;
     my($size) = $lot_list->get_result_set_size;
 
+    # iterate lots, validate each and calculate sum
     my($sum) = 0;
     for (my($i) = 0; $i < $size; $i++) {
 	my($name) = 'lot'.$i;
@@ -336,7 +325,8 @@ sub validate {
     }
     my($properties) = $self->internal_get;
     unless ($self->in_error) {
-	if ($sum == 0 ) {
+#	if ($sum == 0 ) {
+	if ($self->get_request->get('form')->{stay_on_page}) {
 	    # see overridden in_error()
 	    $self->internal_put_error(stay_on_page =>
 		    Bivio::TypeError::UNKNOWN());
@@ -350,12 +340,45 @@ sub validate {
 
 #=PRIVATE METHODS
 
-# _create_sell_and_gain_entries(string id, RealmTransaction transaction, RealmInstrumentLotList lot_list, string amount, string share_value)
+# _create_gain_entries()
 #
-# Creates transaction entries for the sale and gain.
+# Creates entries for short, medium, and long term capital gains.
 #
-sub _create_sell_and_gain_entries {
+sub _create_gain_entries {
+    my($self, $id, $transaction) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($inst_entry) = Bivio::Biz::Model::RealmInstrumentEntry->new(
+	    $self->get_request);
+
+    foreach my $type ('stcg', 'mtcg', 'ltcg') {
+	next if $fields->{$type} == 0;
+
+	$inst_entry->create_entry($transaction, {
+	    entry_type => Bivio::Type::EntryType::INSTRUMENT_SELL(),
+	    realm_instrument_id => $id,
+	    amount => $fields->{$type},
+	    tax_category => $type eq 'stcg'
+	        ? Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN()
+	        : $type eq 'mtcg'
+ 	            ? Bivio::Type::TaxCategory::MEDIUM_TERM_CAPITAL_GAIN()
+	            : Bivio::Type::TaxCategory::LONG_TERM_CAPITAL_GAIN(),
+	    tax_basis => 0,
+	    count => 0,
+	    external_identifier => 0,
+	});
+    }
+
+    return;
+}
+
+# _create_sell_entry(string id, RealmTransaction transaction, RealmInstrumentLotList lot_list, string amount, string share_value)
+#
+# Creates transaction entries for the sale and calculates gain.
+#
+sub _create_sell_entry {
     my($self, $id, $transaction, $lot_list, $amount, $share_value) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     # cost basis
     my($cost_basis) = Bivio::Type::Amount->mul(
@@ -376,17 +399,10 @@ sub _create_sell_and_gain_entries {
     my($gain) = Bivio::Type::Amount->sub(
 	    Bivio::Type::Amount->mul($amount, $share_value),
 	    $cost_basis);
-    $inst_entry->create_entry($transaction, {
-	entry_type => Bivio::Type::EntryType::INSTRUMENT_SELL(),
-	realm_instrument_id => $id,
-	amount => Bivio::Type::Amount->neg($gain),
-	tax_category => _determine_gain_type(
+    $fields->{_determine_gain_type(
 		$lot_list->get('purchase_date'),
-		$transaction->get('date_time')),
-	tax_basis => 0,
-	count => 0,
-	external_identifier => $lot_list->get('lot'),
-    });
+		$transaction->get('date_time'))}
+	    += Bivio::Type::Amount->neg($gain);
     return;
 }
 
@@ -396,7 +412,7 @@ sub _create_sell_and_gain_entries {
 # dates.
 #
 # if days <= 1 year then STCG
-# else if sell in 1997 and before may 7 or held <= 18 months MTCG
+# else if sell in 1997 and (before may 7 or held <= 18 months) MTCG
 # otherwise LTCG
 #
 sub _determine_gain_type {
@@ -406,21 +422,21 @@ sub _determine_gain_type {
 	    $sell_date);
 #TODO: handle leap year
     if ($days <= 365) {
-	return Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN();
+	return 'stcg';
     }
     my(@parts) = Bivio::Type::Date->to_parts($sell_date);
     my($sell_year) = $parts[5];
     if ($sell_year == 1997) {
 	my($may_7_1997) = Bivio::Type::Date->date_from_parts(7, 5, 1997);
 	if (Bivio::Type::Date->compare($may_7_1997, $sell_date)) {
-	    return Bivio::Type::TaxCategory::MEDIUM_TERM_CAPITAL_GAIN();
+	    return 'mtcg';
 	}
 #TODO; need to determine 18 months holding
 	if ($days < 18 * 30) {
-	    return Bivio::Type::TaxCategory::MEDIUM_TERM_CAPITAL_GAIN();
+	    return 'mtcg';
 	}
     }
-    return Bivio::Type::TaxCategory::LONG_TERM_CAPITAL_GAIN();
+    return 'ltcg';
 }
 
 =head1 COPYRIGHT
