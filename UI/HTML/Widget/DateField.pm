@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::UI::HTML::Widget::Date;
+package Bivio::UI::HTML::Widget::DateField;
 use strict;
-$Bivio::UI::HTML::Widget::Date::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::UI::HTML::Widget::DateField::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::HTML::Widget::Date - a date field for forms
+Bivio::UI::HTML::Widget::DateField - a date field for forms
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::HTML::Widget::Date;
-    Bivio::UI::HTML::Widget::Date->new();
+    use Bivio::UI::HTML::Widget::DateField;
+    Bivio::UI::HTML::Widget::DateField->new();
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::UI::HTML::Widget>
 =cut
 
 use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Widget::Date::ISA = ('Bivio::UI::HTML::Widget');
+@Bivio::UI::HTML::Widget::DateField::ISA = ('Bivio::UI::HTML::Widget');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget::Date> is a date field for forms.
+C<Bivio::UI::HTML::Widget::DateField> is a date field for forms.
 
 =head1 ATTRIBUTES
 
@@ -57,7 +57,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::HTML::Widget::Date
+=head2 static new() : Bivio::UI::HTML::Widget::DateField
 
 Creates a Date widget.
 

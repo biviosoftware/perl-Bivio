@@ -37,7 +37,7 @@ use Bivio::UI::HTML::Format::Amount;
 use Bivio::UI::HTML::Format::Date;
 use Bivio::UI::HTML::Format::Printf;
 use Bivio::UI::HTML::Widget::Currency;
-use Bivio::UI::HTML::Widget::Date;
+use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
 use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Join;

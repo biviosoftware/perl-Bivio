@@ -42,6 +42,7 @@ use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Table;
+use Bivio::UI::HTML::Widget::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -130,9 +131,9 @@ sub create_fields {
 	    }),
 	],
 	[
-	    Bivio::UI::HTML::Widget::String->new({
-		value => ['RealmTransaction.date_time',
-			'Bivio::UI::HTML::Format::Date', 2],
+	    Bivio::UI::HTML::Widget::DateTime->new({
+		mode => 'DATE',
+		value => ['RealmTransaction.date_time'],
 	    }),
 	    Bivio::UI::HTML::Widget::String->new({
 		value => ['RealmTransaction.user_name',],

@@ -36,7 +36,7 @@ use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Currency;
-use Bivio::UI::HTML::Widget::Date;
+use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::Form;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
@@ -45,6 +45,7 @@ use Bivio::UI::HTML::Widget::Hidden;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Submit;
 use Bivio::UI::HTML::Widget::TextArea;
+use Bivio::UI::HTML::Widget::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -94,7 +95,7 @@ sub new {
 		],
 		[
 		    _field('Valuation Date',
-			    Bivio::UI::HTML::Widget::Date->new({
+			    Bivio::UI::HTML::Widget::DateField->new({
 				field => 'RealmInstrumentValuation.date_time',
 			    })),
 		],
@@ -127,13 +128,14 @@ sub new {
 		    }),
 		],
 		[
-		    Bivio::UI::HTML::Widget::String->new({
-			value => ['date', 'Bivio::UI::HTML::Format::Date'],
+		    Bivio::UI::HTML::Widget::DateTime->new({
+			mode => 'DATE',
+			value => ['date'],
 		    }),
 		],
 		[
 		    _field('Valuation Date',
-			    Bivio::UI::HTML::Widget::Date->new({
+			    Bivio::UI::HTML::Widget::DateField->new({
 				field => 'RealmInstrumentValuation.date_time',
 			    })),
 		],

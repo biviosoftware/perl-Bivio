@@ -34,7 +34,7 @@ C<Bivio::UI::HTML::Club::InstrumentSell>
 use Bivio::Biz::Model::RealmInstrument;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Currency;
-use Bivio::UI::HTML::Widget::Date;
+use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::Director;
 use Bivio::UI::HTML::Widget::FormFieldLabel;
 use Bivio::UI::HTML::Widget::Join;
@@ -63,7 +63,7 @@ sub create_fields {
     return [
 	[
 	    $self->create_caption('Date',
-		    Bivio::UI::HTML::Widget::Date->new({
+		    Bivio::UI::HTML::Widget::DateField->new({
 			field => 'RealmTransaction.date_time',
 		    })),
 	    $blank_cell,

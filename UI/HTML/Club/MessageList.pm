@@ -37,9 +37,11 @@ use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::Biz::Model::MessageList;
 use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Table;
+use Bivio::UI::HTML::Widget::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -81,8 +83,11 @@ sub new {
 		value => ['MailMessage.from_name'],
 		column_nowrap => 1,
 	    }),
-            ['MailMessage.date_time',
-		   'Bivio::UI::HTML::Format::Date', 2],
+            Bivio::UI::HTML::Widget::DateTime->new({
+		value => ['MailMessage.date_time'],
+		mode => 'DATE_TIME',
+		column_nowrap => 1,
+	    }),
 	],
 	empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
 	    values => [<<'EOF'],
@@ -97,6 +102,22 @@ EOF
 	    'club_compose_message'),
     });
     $fields->{action_bar}->initialize;
+
+    $fields->{heading} = Bivio::UI::HTML::Widget::Join->new({
+	values => [
+	    'Messages from ',
+	    Bivio::UI::HTML::Widget::DateTime->new({
+		value => ['message_list_start'],
+		mode => 'DATE',
+	    }),
+	    ' to ',
+	    Bivio::UI::HTML::Widget::DateTime->new({
+		value => ['message_list_end'],
+		mode => 'DATE',
+	    }),
+	],
+    });
+    $fields->{heading}->initialize;
     return $self;
 }
 
@@ -120,13 +141,10 @@ sub execute {
     my($heading) = '';
     if ($length > 0) {
 	$list->set_cursor(0);
-	my($start) = Bivio::UI::HTML::Format::Date->get_widget_value(
-		$list->get('MailMessage.date_time'), 2);
+	$req->put(message_list_start => $list->get('MailMessage.date_time'));
 	$list->set_cursor($length - 1);
-	my($end) = Bivio::UI::HTML::Format::Date->get_widget_value(
-		$list->get('MailMessage.date_time'), 2);
-	$heading = $start ne $end ? "Messages from $start to $end"
-		: "Messages on $start";
+	$req->put(message_list_end => $list->get('MailMessage.date_time'));
+	$heading = $fields->{heading};
     }
     $req->put(
 	    page_subtopic => undef,

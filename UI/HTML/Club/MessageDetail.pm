@@ -41,13 +41,13 @@ use Bivio::Biz::Model::MessageList;
 use Bivio::DieCode;
 use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Club::Page;
-use Bivio::UI::HTML::Format::DateTime;
 use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::Image;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Indirect;
+use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Format::ReplySubject;
 
 #=VARIABLES
@@ -107,9 +107,11 @@ sub new {
 			    }),
 			}),
 			' on ',
-			['Bivio::Biz::Model::MailMessage', 'date_time',
-			    'Bivio::UI::HTML::Format::DateTime'],
-			' GMT',
+			Bivio::UI::HTML::Widget::DateTime->new({
+			    mode => 'DATE_TIME',
+			    value => ['Bivio::Biz::Model::MailMessage',
+				'date_time']
+			}),
 		    ],
 		}),
 	    }),

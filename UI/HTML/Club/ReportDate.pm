@@ -74,7 +74,7 @@ sub new {
 		    values => [
 		    [
 		        _field('Report Date',
-			    Bivio::UI::HTML::Widget::Date->new({
+			    Bivio::UI::HTML::Widget::DateField->new({
 				field => 'report_date',
 			    })),
 		    ],

@@ -42,20 +42,30 @@ use Bivio::Type::DateTime;
 
 =for html <a name="get_widget_value"></a>
 
-=head2 static get_widget_value(int time) : string
+=head2 static get_widget_value(string time) : string
 
-Formats a date/time value as a string.  Handles both unix
-and DateTime formats.
+=head2 static get_widget_value(string time, Bivio::UI::DateTimeMode mode) : string
+
+Formats a date/time value as a string.
+
+May pass string for I<mode> and it will be interpreted
+as a L<Bivio::UI::DateTimeMode|Bivio::UI::DateTimeMode>.
 
 =cut
 
 sub get_widget_value {
-    my(undef, $time) = @_;
+    my(undef, $time, $mode) = @_;
     return '' unless defined($time);
     my($sec, $min, $hour, $mday, $mon, $year)
 	    = Bivio::Type::DateTime->to_parts($time);
-    return sprintf('%02d/%02d/%04d %02d:%02d:%02d',
-	    $mon, $mday, $year, $hour, $min, $sec);
+    my($m) = Bivio::UI::DateTimeMode->from_any(
+	    $mode || 'DATE_TIME')->as_int;
+    # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
+    return (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
+	    .($m == 1 ? ' ' : '')
+	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
+	    # This is even correct if just a time, no?
+	    .' GMT';
 }
 
 #=PRIVATE METHODS

@@ -40,6 +40,7 @@ use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::File::Client;
 use Bivio::UI::HTML::Widget::Join;
+use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::String;
 
@@ -88,9 +89,12 @@ sub new {
 		}),
 	    }),
 	    ' on ',
-	    ['Bivio::Biz::Model::MailMessage', 'date_time',
-		'Bivio::UI::HTML::Format::DateTime'],
-	    ' GMT</center><p><div align=left>',
+	    Bivio::UI::HTML::Widget::DateTime->new({
+		mode => 'DATE_TIME',
+		value => ['Bivio::Biz::Model::MailMessage',
+		    'date_time']
+	    }),
+	    '</center><p><div align=left>',
 	    $fields->{attachment},
 	    '</div>',
 	]

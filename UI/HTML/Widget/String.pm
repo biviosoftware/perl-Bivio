@@ -47,7 +47,8 @@ Number of non-breaking spaces to pad on the left.
 =item value : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get string to use (see below).
+to get string to use (see below).  The return value of
+get_widget_value may be widget in which case render is called.
 
 =item value : string (required)
 
@@ -158,10 +159,9 @@ sub render {
     die("String not initialized") unless exists($fields->{value});
 
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
+    $$buffer .= $fields->{prefix};
     if ($fields->{is_widget}) {
-	$$buffer .= $fields->{prefix};
 	$fields->{value}->render($source, $buffer);
-	$$buffer .= $fields->{suffix};
     }
     else {
 	my($value) = $source->get_widget_value(@{$fields->{value}});
@@ -169,8 +169,15 @@ sub render {
 		? $source->get_widget_value(@{$fields->{undef_value}})
 			: $fields->{undef_value}
 				unless defined($value);
-	$$buffer .= $fields->{prefix}._escape($value).$fields->{suffix};
+	# Result may be a widget!
+	if (ref($value)) {
+	    $value->render($source, $buffer);
+	}
+	else {
+	    $$buffer .= _escape($value);
+	}
     }
+    $$buffer .= $fields->{suffix};
     return;
 }
 
@@ -178,12 +185,13 @@ sub render {
 
 # _escape(string value) : string
 #
-# Escapes the string and replaces newlines with <br>.
+# Escapes the string and replaces newlines with <br>.  A single space
+# equates to a &nbsp;
 #
 sub _escape {
     my($value) = @_;
     $value = Bivio::Util::escape_html($value);
-    $value =~ s/\n/<br>/mg;
+    $value =~ s/\n/<br>/mg || $value eq ' ' && ($value = '&nbsp;');
     return $value;
 }
 
