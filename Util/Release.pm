@@ -205,6 +205,8 @@ commands:
     install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
+    list_updates stream_name -- list packages that need to updated
+    update stream_name -- retrieve and apply updates
 EOF
 }
 
@@ -417,6 +419,7 @@ sub install {
     my($command) = ['rpm', '-Uvh'];
     push(@$command, '--force') if $self->unsafe_get('force');
     push(@$command, '--nodeps') if $self->unsafe_get('nodeps');
+    push(@$command, '--test') if $self->unsafe_get('noexecute');
     push(@$command, _get_proxy($self))
 	unless $_CFG->{http_realm};
 
@@ -439,8 +442,6 @@ sub install {
 	    substr($arg, 0) = $file;
 	}
 	_output($output, "@$command\n");
-	return
-	    if $self->get('noexecute');
 
 	# For some reason, system and `` doesn't work right with rpm and
 	# a redirect (see _system, but `@$command 2>&1` doesn't work either).
@@ -453,8 +454,6 @@ sub install {
     }) if $_CFG->{http_realm};
 
     $self->print(join(' ', @$command, "\n"));
-    return
-	if $self->get('noexecute');
 
     exec(@$command);
     die("command failed: $!\n");
@@ -582,6 +581,34 @@ sub list_projects_el {
 	    map(sprintf('("%s" "%s" "%s")', @$_),
 		@{$_CFG->{projects}}))
 	. ")\n";
+}
+
+=for html <a name="list_updates"></a>
+
+=head2 list_updates(string stream) : string
+
+Lists packages in I<stream> that have updates.
+
+=cut
+
+sub list_updates {
+    my($self, $stream) = @_;
+    $self->usage_error("No stream specified.") unless $stream;
+    return join("\n", @{_get_update_list($stream)})."\n";
+}
+
+=for html <a name="update"></a>
+
+=head2 update(string stream)
+
+Download and apply package updates.
+
+=cut
+
+sub update {
+    my($self, $stream) = @_;
+    $self->usage_error("No stream specified.") unless $stream;
+    $self->install(@{_get_update_list($stream)});
 }
 
 #=PRIVATE METHODS
@@ -935,6 +962,30 @@ sub _get_rpm_arch {
     my($rc) = _read_all("rpm --showrc|");
     grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
     return 'i386';
+}
+
+# _get_update_list(string stream) : array_ref
+#
+# Returns a list of packages to be applied as updates
+#
+
+sub _get_update_list {
+    my($stream) = shift;
+    my(@local_rpms) = split(/\n/, `rpm -qa --queryformat '%{NAME}  %{VERSION}-%{RELEASE}\n' | sort`);
+
+    my(@server_rpms) = split(/\n/, ${_http_get("$stream-rpms.txt")});
+    my(%local_rpms, @update_rpms);
+    foreach my $rpm (@local_rpms) {
+	$local_rpms{$rpm} = 1;
+    }
+
+    foreach my $rpm (@server_rpms) {
+	$rpm =~ /(.*  .*)  (.*)/;
+	push(@update_rpms, $2)
+	    unless exists $local_rpms{$1};
+    }
+
+    return [@update_rpms];
 }
 
 # _http_get(string uri, string_ref output) : string_ref
