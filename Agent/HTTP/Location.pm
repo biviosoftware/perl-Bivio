@@ -326,7 +326,7 @@ sub parse {
 
     # Is this a general realm with path_info?  The above always
     # maps "/", so know there is at least one component.
-    if (defined($info = $_FROM_URI{'/'.$uri[0]}->[$_GENERAL_INT])) {
+    if (defined($info = $_FROM_URI{$uri[0]}->[$_GENERAL_INT])) {
 	# At this stage, we have to map to a general realm, because
 	# all first components of the general realm are not valid
 	# Bivio::Type::RealmName values.  Therefore, we fail with
