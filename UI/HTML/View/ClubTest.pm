@@ -65,14 +65,8 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($buffer) = '';
-    Bivio::Biz::PropertyModel::Club->new($req)->load(
-	club_id => $req->get('auth_id'),
-    );
     $req->put(page_subtopic => undef, page_heading => 'Page Heading');
-    $fields->{page}->render($req, \$buffer);
-    $req->get('reply')->print($buffer);
+    Bivio::UI::HTML::Club::Page->execute($req, $self);
     return;
 }
 
@@ -85,7 +79,16 @@ sub execute {
 sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{page} = Bivio::UI::HTML::Club::Page->get_instance;
+    return;
+}
+
+=for html <a name="render"></a>
+
+=head2 render() : 
+
+=cut
+
+sub render {
     return;
 }
 
