@@ -63,12 +63,12 @@ sub new {
     my($proto, $min, $max) = @_;
     $min = defined($min) ? __PACKAGE__->from_literal($min)
 	    : __PACKAGE__->get_min;
-    Carp::croak('invalid min value') unless defined($min);
+    Bivio::Die->die('invalid min value') unless defined($min);
     $max = defined($max) ? __PACKAGE__->from_literal($max)
 	    : __PACKAGE__->get_max;
-    Carp::croak('invalid max value') unless defined($max);
-    Carp::croak('min greater than max') unless $min <= $max;
-    my($self) = $proto->SUPER::new();
+    Bivio::Die->die('invalid max value') unless defined($max);
+    Bivio::Die->die('min greater than max') unless $min <= $max;
+    my($self) = $proto->SUPER::new;
     $self->{$_PACKAGE} = {
 	# get_min and get_max return strings
 	min => "$min",
