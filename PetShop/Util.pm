@@ -57,6 +57,7 @@ sub USAGE {
 usage: b-petshop [options] command [args...]
 commands:
     create_db -- initializes database (must be run from files/ddl directory)
+    destroy_db -- drops all the tables, indexes, and sequences created
 EOF
 }
 
@@ -91,6 +92,8 @@ sub create_db {
     my($self) = @_;
     my($req) = $self->get_request;
     my($sql) = $self->new_other('Bivio::Util::SQL');
+    $self->usage('must be run in files/ddl directory')
+	    unless -r $_SQL_FILES[0];
     foreach my $file (@_SQL_FILES) {
 	# Set up new file so read_input returns new value each time
 	$self->print('Executing ', $file, "\n");
@@ -113,6 +116,8 @@ Undoes the operations of L<create_db|"create_db">.
 
 sub destroy_db {
     my($self) = @_;
+    $self->usage('must be run in files/ddl directory')
+	    unless -r $_SQL_FILES[0];
     $self->get_request;
     my($sql) = $self->new_other('Bivio::Util::SQL');
     # We drop in opposite order.  Some constraint drops will
