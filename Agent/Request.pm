@@ -601,6 +601,18 @@ sub get_field {
     return ref($attr) ? $attr->{$name} : undef;
 }
 
+=for html <a name="get_form"></a>
+
+=head2 get_form() : hash_ref
+
+Returns undef.
+
+=cut
+
+sub get_form {
+    return undef;
+}
+
 =for html <a name="get_http_host"></a>
 
 =head2 get_http_host() : string
