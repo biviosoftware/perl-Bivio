@@ -201,13 +201,15 @@ Become another user if you are super_user.
 
 sub substitute_user {
     my($proto, $realm, $req) = @_;
-    my($cookie) = $req->unsafe_get('cookie');
-
+    # A small sanity check, since this is an important function
+    Bivio::Die->die('not a super user')
+	unless $req->is_super_user;
     unless ($req->unsafe_get('super_user_id')) {
 	# Only set super_user_id field if not already set.  This keeps
 	# original user and doesn't allow someone to su to an admin and
 	# then su as that admin.
 	my($super_user_id) = $req->get('auth_user')->get('realm_id');
+	my($cookie) = $req->unsafe_get('cookie');
 	$cookie->put($proto->SUPER_USER_FIELD => $super_user_id)
 	    if $cookie;
 	$req->put_durable(super_user_id => $super_user_id);
@@ -410,7 +412,7 @@ sub _set_user {
 sub _su_logout {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($su) = $req->get('su');
+    my($su) = $req->get('super_user_id');
     $req->delete('super_user_id');
     $req->get('cookie')->delete($self->SUPER_USER_FIELD)
 	if $req->unsafe_get('cookie');
