@@ -212,14 +212,16 @@ Adds users to /etc/group.
 
 sub add_users_to_group {
     my($self, $group, @user) = @_;
-    return _edit($self, '/etc/group', map {
+    my($res) = _edit($self, '/etc/group', map {
 	my($user) = $_;
 	[
 	    qr/^($group:.*:)(.*)/m,
-	    sub {$1 . (length($2) ? "$2,$user" : '$user')},
+	    sub {$1 . (length($2) ? "$2,$user" : "$user")},
 	    qr/^$group:.*[:,]$user(,|$)/m,
 	];
     } @user);
+    $res .= _exec($self, 'grpconv') if $res && $> == 0;
+    return $res;
 }
 
 =for html <a name="allow_any_sendmail_smtp"></a>
@@ -459,7 +461,7 @@ inittab.   May be called repeatedly.
 
 sub serial_console {
     my($self) = @_;
-    return _edit($self, '/etc/securetty', ['$', "/dev/ttyS0\n"])
+    return _edit($self, '/etc/securetty', ['$', "ttyS0\n"])
 	. _edit($self, '/etc/inittab', ['(?<=getty tty6\n)',
 	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
         . _edit($self, '/etc/grub.conf',
