@@ -398,7 +398,7 @@ method will be expanded over time.
 sub clear_nondurable_state {
     my($self) = @_;
     # This is a hack for now
-    $self->delete(grep(/Bivio::/, @{$fields->{req}->get_keys}));
+    $self->delete(grep(/Bivio::Biz::/, @{$fields->{req}->get_keys}));
     return;
 }
 
