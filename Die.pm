@@ -231,8 +231,16 @@ In the second form, I<self> is "rethrown".
 
 sub die {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
-    CORE::die($_IN_CATCH ? "$proto\n" : $proto->as_string)
-	    if ref($proto);
+    if (ref($proto)) {
+	# Rethrow of an existing die.  If inside a catch, must
+	$_CURRENT_SELF = $proto;
+	CORE::die("$proto\n") if $_IN_CATCH;
+	# Not in a catch, so must call handle_die explicitly
+	_handle_die($proto);
+	# _handle_die returns, but user called die.  So need to
+	# throw a bogus exception.
+	CORE::die("\n");
+    }
     $package ||= (caller)[0];
     $file ||= (caller)[1];
     $line ||= (caller)[2];
@@ -329,6 +337,7 @@ sub is_destroyed {
 sub _handle_die {
     $_IN_HANDLE_DIE++;
     eval {
+	local($SIG{__DIE__});
 	my($self) = @_;
 	if ($_STACK_TRACE_ERROR) {
 	    my($attrs) = $self->get('attrs');
@@ -357,19 +366,32 @@ sub _handle_die {
 	    $prev_proto ne $proto || next;
 	    $prev_proto = $proto;
 	    eval {
-		&_trace("calling ", ref($proto) || $proto, "->handle_die")
+		_trace("calling ", ref($proto) || $proto, "->handle_die")
 		    if $_TRACE;
 		$proto->handle_die($self);
 		1;
 	    } && next;
 	    my($msg) = $@;
-	    eval {
-		&_trace($proto, "->handle_die: ", $msg) if $_TRACE;
-	    };
-	    $msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
-	    _new_from_core_die($self, Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
-		    {message => $msg, proto => $proto, program_error => 1},
-		    ref($proto) || $proto, $1, $2);
+	    # If not rethrow of an existing error?
+	    if ($msg eq "$self\n") {
+		# In this case, we don't want as_string
+		_trace("$self: self rethrown") if $_TRACE;
+	    }
+	    elsif ($msg eq "$_CURRENT_SELF\n") {
+		# In this case, we don't want as_string
+		_trace("$_CURRENT_SELF: older die rethrown") if $_TRACE;
+		$self = $_CURRENT_SELF;
+	    }
+	    else {
+		eval {
+		    &_trace($proto, "->handle_die: ", $msg) if $_TRACE;
+		};
+		$msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
+		_new_from_core_die($self,
+			Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
+			{message => $msg, proto => $proto, program_error => 1},
+			ref($proto) || $proto, $1, $2);
+	    }
 	}
 	1;
     } || warn($@);
