@@ -84,6 +84,23 @@ The I<form_model> has C<require_context> defined.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DEFAULT_HELP"></a>
+
+=head2 DEFAULT_HELP : string
+
+This is the path_info for the default help file.
+
+=cut
+
+sub DEFAULT_HELP {
+    return '/index.html';
+}
+
 #=IMPORTS
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
@@ -128,16 +145,20 @@ and I<action> are mapped as follows:
 
 =over 4
 
+=item cancel
+
+the "Cancel" task of a form.  If not specified, defaults to
+the I<next> task.
+
+=item help
+
+The name of the help file for this task.
+
 =item next
 
 identifies "OK" task of a form.  All tasks which have an
 L<Bivio::Biz::FormModel|Bivio::Biz::FormModel> as an executable
 item, must have a I<next>.
-
-=item cancel
-
-the "Cancel" task of a form.  If not specified, defaults to
-the I<next> task.
 
 =item I<DIE_CODE>
 
@@ -426,15 +447,33 @@ sub _commit {
 #
 sub _parse_map_item {
     my($attrs, $cause, $action) = @_;
+
+    if ($cause eq 'help') {
+	Bivio::IO::Alert->die($attrs->{id}, ': invalid help=', $action)
+		unless $action =~ /^\w+$/;
+#TODO: This presumes a lot.  Too much?
+	$attrs->{help} = '/'.$action.'.html';
+	Bivio::IO::Alert->die($attrs->{id}, ': help file not found: ',
+		$attrs->{help}) unless
+			-r Bivio::Agent::HTTP::Location->get_help_root()
+				.$attrs->{help};
+	return;
+    }
+
+    # These items all have tasks as actions
     $action = Bivio::Agent::TaskId->from_any($action);
+
     if ($cause =~ /^(?:next|cancel)$/) {
 	# Special cases (non-enums)
 	$attrs->{$cause} = $action;
+	return;
     }
-    elsif ($cause =~ /(.+)::(.+)/) {
+
+    # Map die action
+    if ($cause =~ /(.+)::(.+)/) {
 	# Fully specified enum
 	my($class, $method) = ($1, $2);
-	Carp::croak("$cause: not an enum (", $attrs->{id}->as_string, ')')
+	Bivio::IO::Alert->die($cause, ': not an enum (', $attrs->{id}, ')')
 		    unless UNIVERSAL::isa($class, 'Bivio::Type::Enum');
 	$cause = $class->from_name($method);
     }
