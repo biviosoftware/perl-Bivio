@@ -98,7 +98,7 @@ sub execute_empty {
     $properties->{withdrawal_allocations} = $math->round($math->neg(
 	    $transfer_list->get_allocations), 2);
 
-    $properties->{realized_gain} = _add($properties, qw(
+    $properties->{withdrawal_realized_gain} = _add($properties, qw(
             member_tax_basis withdrawal_allocations cash_withdrawn
             member_instrument_cost_basis));
     $properties->{show_realized_gain} = 1;
@@ -108,8 +108,9 @@ sub execute_empty {
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_STOCK
 	    || $properties->{type} ==
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
-	    && $math->compare($properties->{realized_gain}, 0) <= 0) {
-	$properties->{realized_gain} = 0;
+	    && $math->compare($properties->{withdrawal_realized_gain}, 0)
+	    <= 0) {
+	$properties->{withdrawal_realized_gain} = 0;
 	$properties->{show_realized_gain} = 0;
     }
     $properties->{withdrawal_value} = _add($properties, qw(
@@ -118,6 +119,16 @@ sub execute_empty {
     $properties->{unit_value} = $math->div(
 	    $properties->{withdrawal_value}, $properties->{units_withdrawn});
 
+    $properties->{pre_withdrawal_basis} =
+	    $math->neg($properties->{member_tax_basis});
+    $properties->{adjusted_basis} = $math->neg(
+	    $math->add($properties->{member_tax_basis},
+		    $properties->{withdrawal_allocations}));
+    $properties->{basis_withdrawn} = $math->add(
+	    $properties->{cash_withdrawn},
+	    $properties->{member_instrument_cost_basis});
+    $properties->{withdrawal_allocations} = $math->neg(
+	    $properties->{withdrawal_allocations});
     return;
 }
 
@@ -219,13 +230,28 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	    {
-		name => 'realized_gain',
+		name => 'withdrawal_realized_gain',
 		type => 'Amount',
 		constraint => 'NOT_NULL',
 	    },
 	    {
 		name => 'show_realized_gain',
 		type => 'Boolean',
+		constraint => 'NOT_NULL',
+	    },
+	    {
+		name => 'pre_withdrawal_basis',
+		type => 'Amount',
+		constraint => 'NOT_NULL',
+	    },
+	    {
+		name => 'adjusted_basis',
+		type => 'Amount',
+		constraint => 'NOT_NULL',
+	    },
+	    {
+		name => 'basis_withdrawn',
+		type => 'Amount',
 		constraint => 'NOT_NULL',
 	    },
 	],
