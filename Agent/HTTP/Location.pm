@@ -432,11 +432,7 @@ sub parse {
 
     # Special case: '/' or ''
     unless (length($uri)) {
-	# OPTIMIZATION: We know the DOCUMENT_TASK does not need
-	# a user.  It is visible to all users.  Therefore, we avoid
-	# a user lookup here which is a database hit.
-	$req->put(user_id => undef, initial_uri => '/');
-
+	$req->put(initial_uri => '/');
 	return ($_DOCUMENT_TASK, $_GENERAL, '', '/');
     }
 
@@ -478,16 +474,8 @@ sub parse {
     # If first uri doesn't match a RealmName, can't be one.
     if ($uri[0] !~ /^\w{3,}$/) {
 	# Not a realm, but is it a document and is it found?
-	if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
-#TODO: Could optimize further and simply return the file here.
-
-	    # OPTIMIZATION: We know the DOCUMENT_TASK does not need
-	    # a user.  It is visible to all users.  Therefore, we avoid
-	    # a user lookup here which is a database hit.
-	    $req->put(user_id => undef);
-
-	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, $orig_uri);
-	}
+	return ($_DOCUMENT_TASK, $_GENERAL, '/'.$uri, $orig_uri)
+		if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT.$uri);
 
 	# Not found
 	$req->throw_die(Bivio::DieCode::NOT_FOUND, {uri => $orig_uri,
