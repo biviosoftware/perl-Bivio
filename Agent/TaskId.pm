@@ -799,6 +799,9 @@ my(@_CFG) = (
     )],
 # Another task here which handles does the invite accept part.
 # May need multiple tasks, because the cancels will be different
+    # We use RealmUserList and ClubUserList, because this is a detail
+    # and we need the whole list for the chooser and the individual
+    # validated by the normal "this" loading.
     [qw(
         CLUB_ADMIN_USER_DETAIL
         78
@@ -1363,7 +1366,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/payment
         Bivio::Type::EntryType->execute_member_payment
-        Bivio::Biz::Model::RealmMemberList->execute_load_all
+        Bivio::Biz::Model::MemberList->execute_load_all
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultiplePayment
@@ -1377,7 +1380,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/fee
         Bivio::Type::EntryType->execute_member_payment_fee
-        Bivio::Biz::Model::RealmMemberList->execute_load_all
+        Bivio::Biz::Model::MemberList->execute_load_all
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultipleFee

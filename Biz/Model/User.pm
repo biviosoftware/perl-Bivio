@@ -96,6 +96,32 @@ sub cascade_delete {
     return;
 }
 
+=for html <a name="concat_last_first_middle"></a>
+
+=head2 static concat_last_first_middle(string last, string first, string middle) : string
+
+Does the work of L<format_last_first_middle|"format_last_first_middle">.
+
+=cut
+
+sub concat_last_first_middle {
+    my(undef, $ln, $fn, $mn) = @_;
+
+    # We shown the last_name as "-" if not set.
+    if (defined($ln)) {
+	my($res) = undef;
+	return $ln unless defined($fn) || defined($mn);
+	$res = $ln.',';
+	$res .= ' '.$fn if defined($fn);
+	$res .= ' '.$mn if defined($mn);
+	return $res;
+    }
+
+    return $fn.' '.$mn if defined($fn) && defined($mn);
+
+    return defined($fn) ? $fn : $mn;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -113,6 +139,9 @@ sub create {
 	if (defined($value) && length($value)) {
 	    $values->{$field.'_sort'} = lc($value);
 	    $got_one++;
+	}
+	else {
+	    $values->{$field.'_sort'} = undef;
 	}
     }
     $self->die('must have at least one of first, last, and middle names')
@@ -160,22 +189,9 @@ sub format_last_first_middle {
     # Have at least on name or returns undef
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
-    my($ln, $fn, $mn) = $m->unsafe_get(
-	    $p.'last_name', $p.'first_name', $p.'middle_name');
 
-    # We shown the last_name as "-" if not set.
-    my($res) = undef;
-    if (defined($ln)) {
-	return $ln unless defined($fn) || defined($mn);
-	$res = $ln.',';
-	$res .= ' '.$fn if defined($fn);
-	$res .= ' '.$mn if defined($mn);
-	return $res;
-    }
-
-    return $fn.' '.$mn if defined($fn) && defined($mn);
-
-    return defined($fn) ? $fn : $mn;
+    return $self->concat_last_first_middle($m->unsafe_get(
+	    $p.'last_name', $p.'first_name', $p.'middle_name'));
 }
 
 =for html <a name="generate_shadow_user_name"></a>
@@ -301,13 +317,15 @@ sub update {
 	    if (defined($new_values->{$n}) && length($new_values->{$n})) {
 		$new_values->{$n.'_sort'} = lc($new_values->{$n});
 		$got_one++;
-		last;
+	    }
+	    else {
+		# Set value to null
+		$new_values->{$n.'_sort'} = undef;
 	    }
 	}
 	# Don't need to check length, since user can't touch these values
 	elsif (defined($properties->{$n})) {
 	    $got_one++;
-	    last;
 	}
     }
     $self->die('must have at least one of first, last, and middle names')

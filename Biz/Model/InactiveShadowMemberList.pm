@@ -31,10 +31,9 @@ C<Bivio::Biz::Model::InactiveShadowMemberList> lists inactive shadow member
 =cut
 
 #=IMPORTS
-use Bivio::Type::Location;
+use Bivio::Auth::Role;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 
@@ -49,39 +48,20 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
-	version => 1,
-	order_by => [qw(
-            RealmOwner.name
-	)],
-	primary_key => [
-	    [qw(RealmUser.user_id RealmOwner.realm_id User.user_id
-                Address.realm_id Email.realm_id Phone.realm_id
-                TaxId.realm_id)],
-	],
-	other => [qw(
-            RealmOwner.display_name
-            User.first_name
-            User.middle_name
-            User.last_name
-            Email.email
-            Phone.phone
-            Address.street1
-            Address.street2
-            Address.city
-            Address.state
-            Address.country
-            Address.zip
-            TaxId.tax_id
-        )],
-	auth_id => [qw(RealmUser.realm_id)],
-	where => [
-#TODO: probably should have to quote the last one, problem in base class
-	    'RealmOwner.name', 'like', "'=%-0'",
+    my($proto) = @_;
+    my($res) = $proto->SUPER::internal_initialize();
+    push(@{$res->{other}},
+	    [qw(RealmUser.user_id TaxId.realm_id)],
+	    'TaxId.tax_id');
+    my($shadow) = Bivio::Biz::Model::RealmOwner->SHADOW_PREFIX();
+    push(@{$res->{where}},
 	    'AND',
-	    'email_t.location', '=', Bivio::Type::Location::HOME->as_int,
-	],
-    };
+	    'RealmUser.role', '=',
+	    Bivio::Auth::Role::WITHDRAWN->as_sql_param,
+	    'AND',
+	    'RealmOwner.name', 'LIKE', "'$shadow%'",
+    );
+    return $res;
 }
 
 #=PRIVATE METHODS
