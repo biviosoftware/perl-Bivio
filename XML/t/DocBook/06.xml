@@ -1,0 +1,48 @@
+<chapter id="the-problem">
+<title>The Problem</title>
+<simplesect>
+
+<qandaset defaultlabel="label">
+
+<qandaentry>
+<question label="Boss:">
+<para>
+Get me a rock.
+</para>
+</question>
+
+<answer label="Peon:">
+<para>
+Sure, boss.  Let's go for a ride to the quarry.
+</para>
+</answer>
+</qandaentry>
+
+<para>
+...a little while later...
+</para>
+
+<qandaentry>
+<question label="Boss:">
+<para>
+That was easy!  Thanks for pointing out this rock.  I would have
+missed it if I went by myself.
+</para>
+</question>
+
+<answer label="Peon:">
+<para>
+You're welcome, boss.
+</para>
+</answer>
+</qandaentry>
+
+</qandaset>
+
+<para>
+The alternative moral to the story is: If you can't bring the boss to
+the quarry, the boss just created a huge inefficiency.
+</para>
+</simplesect>
+</chapter>
+

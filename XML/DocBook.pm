@@ -66,6 +66,8 @@ use XML::Parser ();
 my($_XML_TO_HTML_PROGRAM) = _compile_program({
     abstract => '<p><table width="70%" align=center border=0><tr>'
         . '<td align=center>${_}</td></tr></table></p>',
+    answer => '<p><i>${label}</i>${_}</p>',
+    'answer/para' => [],
     attribution => '<div align=right>-- ${_}</div>',
     blockquote => ['blockquote'],
     'chapter/title' => ['h1'],
@@ -110,6 +112,10 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     programlisting => ['blockquote', 'pre'],
     property => ['tt'],
     replaceable => ['i'],
+    qandaentry => [],
+    qandaset => [],
+    question => '<p><i>${label}</i>${_}</p>',
+    'question/para' => [],
     quote => '"${_}"',
     sect1 => [],
     'sect1/title' => ['h2'],
