@@ -97,7 +97,7 @@ _compile(\%_MAP, [
         => 'State',
     ['ZIP', 'Address.zip']
         => 'Zip',
-    ['COUNTRY', 'Address.country']
+    ['COUNTRY', 'Address.country', 'country_code']
         => 'Country',
     ADDRESS_COUNTRY => 'Country',
     ADDRESS_STATE => 'State',
@@ -299,7 +299,6 @@ _compile(\%_MAP, [
     ['ALLOCATE_EQUALLY', 'ExpenseInfo.allocate_equally']
         => 'Allocate Equally Among Members',
     'Tax1065.allocation_method' => 'Allocation Method',
-    'RealmInstrument.country' => 'Country Code',
     FOREIGN_INCOME_COUNTRY_HEADING => '17a. Country',
     FOREIGN_INCOME_HEADING => "17c(1). Passive\nForeign Gross Income",
     FOREIGN_TAXES_PAID_HEADING => "17f. Total Foreign\nTaxes Paid",
