@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::RadioGrid;
 use strict;
 $Bivio::UI::HTML::Widget::RadioGrid::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::RadioGrid::VERSION;
 
 =head1 NAME
 
@@ -34,6 +35,24 @@ of the buttons.
 
 =over 4
 
+=item auto_submit : boolean [0]
+
+Should the a click submit the form?
+
+=item choices : Bivio::Type::Enum (required)
+
+List of choices will be constructed from the Enum's values.
+
+=item choices : Bivio::TypeValue (required)
+
+List of choices will be constructed from the Enum (type) and an
+array_ref (value) containing the enum's values.  Doesn't support
+EnumSets, but could be made to.  This format is more convenient
+for the problem I have right now.
+
+B<If a L<Bivio::UI::Label|Bivio::UI::Label> exists for the
+enum name, it will be used in place of the description.>
+
 =item field : string (required)
 
 Name of the form field.
@@ -42,17 +61,13 @@ Name of the form field.
 
 Which form are we dealing with.
 
-=item choices : Bivio::Type::Enum (required)
+=item column_count : int [undef]
 
-List of choices will be constructed from the Enum's values.
+If defined, forces the number of columns to a fixed width.
 
 =item show_unknown : boolean [1]
 
 Should the UNKNOWN type be displayed?
-
-=item auto_submit : boolean [0]
-
-Should the a click submit the form?
 
 =back
 
@@ -63,6 +78,7 @@ use Bivio::Die;
 use Bivio::HTML;
 use Bivio::Type::Enum;
 use Bivio::UI::HTML::Widget::Radio;
+use Bivio::UI::Label;
 
 #=VARIABLES
 
@@ -84,8 +100,18 @@ sub new {
     my($choices) = $self->get('choices');
 
     # Only allow Enum right now
-    Bivio::Die->die($choices, ': not supported choices')
-		unless UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
+    my($items);
+    if (UNIVERSAL::isa($choices, 'Bivio::Type::Enum')) {
+	_load_items_from_enum($self, $choices);
+    }
+    elsif ($choices->isa('Bivio::TypeValue')
+	   && $choices->get('type')->isa('Bivio::Type::Enum')
+	   && ref($choices->get('value')) eq 'ARRAY') {
+	$items = _load_items_from_enum_array($self, $choices);
+    }
+    else {
+	Bivio::Die->die($choices, ': unsupported choices type');
+    }
 
     # Convert to Radio
     my(@items) = map {
@@ -94,11 +120,17 @@ sub new {
 	    value => $_->[0],
 	    label => $_->[1],
 	    auto_submit => $self->get_or_default('auto_submit', 0),
-	}),
-    } @{_load_items_from_enum($self, $choices)};
+	});
+    } @$items;
 
     # Layout the buttons
-    $self->layout_buttons(\@items, $choices->get_width_long_desc);
+    my($cc) = $self->unsafe_get('column_count');
+    if ($cc) {
+	$self->layout_buttons_row_major(\@items, $cc);
+    }
+    else {
+	$self->layout_buttons(\@items, $choices->get_width_long_desc);
+    }
     return $self;
 }
 
@@ -144,9 +176,28 @@ sub _load_items_from_enum_list {
     return \@items;
 }
 
+# _load_items_from_enum_array(Bivio::UI::HTML::Widget::Select self, Bivio::TypeValue choices)
+#
+# Loads the items from an array_ref which contains enums or enum names/ints.
+# Keeps order.
+#
+sub _load_items_from_enum_array {
+    my($self, $choices) = @_;
+    my($type, $value) = $choices->get('type', 'value');
+    return [
+	map {
+	    my($e) = $type->from_any($_);
+	    [$e, Bivio::HTML->escape(
+		    # Use the label if available
+		    Bivio::UI::Label->unsafe_get_simple($e->get_name)
+		    || $e->get_long_desc)];
+	} @$value
+    ];
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
