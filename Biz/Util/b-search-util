@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-search-util - Bivio::Biz::Util::Search
+
+=head1 SYNOPSIS
+
+See Bivio::Biz::Util::Search
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::Search|Bivio::Biz::Util::Search>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::Search;
+
+#=VARIABLES
+
+Bivio::Biz::Util::Search->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
