@@ -30,10 +30,6 @@ C<Bivio::Biz::Club>
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
 #=IMPORTS
 use Bivio::Biz::CreateClubAction;
 use Bivio::Biz::Error;
@@ -207,6 +203,46 @@ sub get_heading {
 
     return 'Club Information';
 }
+
+=for html <a name="get_outgoing_emails"></a>
+
+=head2 get_outgoing_emails() : array
+
+Returns an array of email addresses (string) for all members of the club.
+If an error occurs during processing, then undef is returned.
+
+=cut
+
+sub get_outgoing_emails {
+    my($self) = @_;
+
+    my($conn) = Bivio::Biz::SqlConnection->get_connection();
+
+    # a 4 table join
+    my($statement) = $conn->prepare_cached(
+	    'select user_email.email '
+	    .'from user_email, user_, club, club_user '
+	    .'where club.id=? '
+	    .'and club.id=club_user.club '
+	    .'and club_user.user_=user_.id '
+	    .'and user_.id=user_email.user_');
+
+    Bivio::Biz::SqlConnection->execute($statement, $self, $self->get('id'));
+
+    my($result);
+
+    if ($self->get_status()->is_OK()) {
+	$result = [];
+	my($row);
+
+	while($row = $statement->fetchrow_arrayref()) {
+	    push(@$result, $row->[0]);
+	}
+    }
+    $statement->finish();
+    return $result;
+}
+
 =for html <a name="get_title"></a>
 
 =head2 get_title() : string
