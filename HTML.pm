@@ -191,12 +191,13 @@ sub unescape_uri {
 # _extra_escape_uri(string v) : string
 #
 # Escapes & and = in URIs, because browsers don't do the right thing
-# in quoted strings.
+# in quoted strings.  Unescape '/'s because they shouldn't be escaped.
 #
 sub _extra_escape_uri {
     my($v) = @_;
     $v =~ s/\=/%3D/g;
     $v =~ s/\&/%26/g;
+    $v =~ s/%2F/\//g;
     return $v;
 }
 
