@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::WidgetFactory;
 use strict;
 $Bivio::UI::HTML::WidgetFactory::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::WidgetFactory::VERSION;
 
 =head1 NAME
 
@@ -67,25 +68,31 @@ If true, will force a widget to a be a select, if it can.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
+# also dynaimcally imports many optional widgets for optional types
+use Bivio::Agent::TaskId;
+use Bivio::Biz::QueryType;
 use Bivio::Biz::Model;
+use Bivio::Die;
+use Bivio::IO::ClassLoader;
+use Bivio::IO::Trace;
+use Bivio::UI::HTML::Widget;
 use Bivio::UI::HTML::Widget::AmountCell;
 use Bivio::UI::HTML::Widget::Checkbox;
-use Bivio::UI::HTML::Widget::Currency;
 use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Enum;
-use Bivio::UI::HTML::Widget::File;
 use Bivio::UI::HTML::Widget::FormButton;
-use Bivio::UI::HTML::Widget::IRRCell;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::MailTo;
-use Bivio::UI::HTML::Widget::PercentCell;
 use Bivio::UI::HTML::Widget::RadioGrid;
 use Bivio::UI::HTML::Widget::Select;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Text;
 use Bivio::UI::HTML::Widget::TextArea;
+use Bivio::UI::Label;
+use Bivio::TypeValue;
+use Bivio::Type::Name;
+use Bivio::Type::TextArea;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -191,12 +198,16 @@ sub _create_display {
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::IRR')) {
+	Bivio::IO::ClassLoader->simple_require(
+		'Bivio::UI::HTML::Widget::IRRCell');
 	return Bivio::UI::HTML::Widget::IRRCell->new({
 	    field => $field,
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Percent')) {
+	Bivio::IO::ClassLoader->simple_require(
+		'Bivio::UI::HTML::Widget::PercentCell');
 	return Bivio::UI::HTML::Widget::PercentCell->new({
 	    field => $field,
 	    %$attrs,
@@ -341,6 +352,8 @@ sub _create_edit {
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::FileField')) {
+	Bivio::IO::ClassLoader->simple_require(
+		'Bivio::UI::HTML::Widget::File');
 	return Bivio::UI::HTML::Widget::File->new({
 	    field => $field,
 	    size => 45,
@@ -356,6 +369,8 @@ sub _create_edit {
 		%$attrs,
 	    });
 	}
+	Bivio::IO::ClassLoader->simple_require(
+		'Bivio::UI::HTML::Widget::Currency');
 	return Bivio::UI::HTML::Widget::Currency->new({
 	    field => $field,
 	    size => 10,
