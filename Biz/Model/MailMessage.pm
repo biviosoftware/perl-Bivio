@@ -1,3 +1,5 @@
+
+
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::MailMessage;
@@ -139,7 +141,8 @@ sub create {
     if($msg){
 	&_trace('msg is not null when we call ctor MimeDecode.') if $_TRACE;
     }
-    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT);
+    my($req) = $self->unsafe_get_request;
+    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT, $req);
     $mimeparser->parse_and_store();
     # due to the above two lines, all the MIME stuff in this
     # file will be removed
@@ -211,7 +214,8 @@ sub get_num_mime_parts {
     $start = index($xbivio, "\n");
     my($nparts) = substr($xbivio, 0, int($start));
     for(my $i = 0; $i < $nparts; $i++){
-	push(@linkarray, "$msg_id"."_$i");
+	my $info = _get_mime_part_info($filename."_$i", $i, $msg_id);
+	push(@linkarray, $info);
     }
     return @linkarray;
 }
@@ -467,6 +471,27 @@ sub _get_date {
     }
 #TODO: What should be returned here?
     return undef;
+}
+
+# _get_mime_part_info() : 
+#
+#
+#
+sub _get_mime_part_info {
+    my($filename, $id, $message_id) = @_;
+    my $body;
+    die("couldn't get mime part info $body")
+	    unless$_FILE_CLIENT->get($filename, \$body);
+    $body =~ /(Content-Type: *)(\w*\/\w*)/;
+    my $type = $2;
+    $body =~ /(X-BivioNumParts: *)(\d+)/;
+    my $numparts = $2;
+    return {
+	type => $type,
+	numparts => $numparts,
+	attachment_number => $id,
+	message_id => $message_id,
+	};
 }
 
 # _parse_keywords(IO::Handle file) : hash_ref
