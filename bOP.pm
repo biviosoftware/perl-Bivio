@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.7  2004/02/20 17:36:31  moeller
+  * fixed bugs in Bivio::UI::Mail::Widget::Message recipient handling
+
+  Revision 2.6  2004/02/19 22:24:40  david
+  Bivio::Agent::Request removed unecessary widget handling.
+  Bivio::Biz::Action::ECCreditCardProcessor now warns on errors while
+  downloading the current transaction batch instead of skipping them
+  completely.
+  Bivio::Mail::Address->parse_list_strict parses a list of simple email
+  addresses.
+  Bivio::Type::Array now supports from_literal.
+  Bivio::UI::HTML::Widget::MailTo->new now accepts an attributes
+  hash_ref.
   Bivio::UI::Mail::Widget::Message no longer requires the recipients
   attribute to filled. If no recipients are specified, the attribute is
   filled with the contents of to and cc.
