@@ -136,7 +136,7 @@ sub verify_cart {
     my($rows) = [@{$t->{rows}}];
     my($i) = 0;
     my($total) = 0;
-    foreach my $item (sort({$a->{name} <=> $b->{name}} values(%$cart))) {
+    foreach my $item (sort({$a->{name} cmp $b->{name}} values(%$cart))) {
 	my($r) = shift(@$rows);
 	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
 	    unless $r;
