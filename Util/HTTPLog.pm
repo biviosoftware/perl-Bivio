@@ -243,7 +243,8 @@ sub _initialize {
     $_ERROR_REGEX = join('|',
 	    'Bivio::DieCode::DIE',
 	    'Bivio::DieCode::CONFIG_ERROR',
-	    );
+	    'Connection refused: proxy connect to .* port .* failed',
+	   );
     # Value is sent to pager
     $_CRITICAL_REGEX = join('|',
 	    'Bivio::DieCode::DB_ERROR',
