@@ -68,15 +68,9 @@ sub new {
         list_class => 'ECPaymentList',
 	expand => 1,
         columns => [
-            ['ECPayment.creation_date_time', {
-                column_align => 'LEFT',
-            }],
-            ['RealmOwner.name', {
-                column_heading => 'ECPayment.user',
-                column_align => 'CENTER',
-            }],
+            'ECPayment.creation_date_time',
+            'RealmOwner.name',
             ['ECPayment.payment_type', {
-                column_align => 'CENTER',
                 column_widget => $_VS->vs_director([
                     sub {
                         my($list) = shift->get_list_model;
@@ -91,14 +85,9 @@ sub new {
                     }),
                        ),
             }],
-            ['ECPayment.status', {
-                column_align => 'CENTER',
-            }],
-            ['ECPayment.amount', {
-            }],
-            ['ECPayment.method', {
-                column_align => 'CENTER',
-            }],
+            'ECPayment.status',
+            'ECPayment.amount',
+            'ECPayment.method',
             ['ECPAYMENT_ACTION', {
                 column_nowrap => 1,
                 column_widget => $_VS->vs_director([

@@ -67,21 +67,11 @@ sub new {
         list_class => 'ECSubscriptionList',
 	expand => 1,
         columns => [
-            ['ECSubscription.subscription_type', {
-                heading_align => 'LEFT',
-            }],
-            ['ECSubscription.start_date', {
-                column_align => 'CENTER',
-            }],
-            ['ECSubscription.end_date', {
-                column_align => 'CENTER',
-            }],
-            ['ECSubscription.renewal_method', {
-                column_align => 'CENTER',
-            }],
-            ['ECSubscription.renewal_period', {
-                column_align => 'CENTER',
-            }],
+            'ECSubscription.subscription_type',
+            'ECSubscription.start_date',
+            'ECSubscription.end_date',
+            'ECSubscription.renewal_method',
+            'ECSubscription.renewal_period',
         ],
         empty_list_widget => $empty_message,
     });
