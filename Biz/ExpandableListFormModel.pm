@@ -3,6 +3,7 @@
 package Bivio::Biz::ExpandableListFormModel;
 use strict;
 $Bivio::Biz::ExpandableListFormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::ExpandableListFormModel::VERSION;
 
 =head1 NAME
 
@@ -115,15 +116,16 @@ sub internal_initialize {
 
 =for html <a name="internal_initialize_list"></a>
 
-=head2 internal_initialize_list(Bivio::Biz::ListModel list)
+=head2 internal_initialize_list() : Bivio::Biz::ListModel
 
 Appends empty rows to the list.
 
 =cut
 
 sub internal_initialize_list {
-    my($self, $list) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($list) = $self->SUPER::internal_initialize_list();
     return if $fields->{list_initialized};
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
@@ -144,8 +146,7 @@ sub internal_initialize_list {
 	    = $empty_row_count;
 
     $list->append_empty_rows($empty_row_count);
-
-    return;
+    return $list;
 }
 
 =for html <a name="validate"></a>
