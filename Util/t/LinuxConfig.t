@@ -62,6 +62,11 @@ Bivio::Test->unit([
 		['ssl.crt/www.linuxcrazy.man.crt', '--END CERTIFICATE--'],
 		['ssl.csr/www.linuxcrazy.man.csr', '--END CERTIFICATE REQ'],
 	    ],
+	], [
+	    add_users_to_group =>
+		[qw(root root larry)], [
+		['etc/group', 'larry'],
+	    ],
 	]),
 	rename_rpmnew => [
 	    ['/etc/logrotate.conf.rpmnew'] => [

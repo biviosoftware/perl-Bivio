@@ -141,6 +141,31 @@ sub add_user {
 	    . "'$uname'");
 }
 
+=for html <a name="add_users_to_group"></a>
+
+=head2 add_users_to_group(string group, string user, ...) : string
+
+Adds users to /etc/group.
+
+=cut
+
+sub add_users_to_group {
+    my($self, $group, @user) = @_;
+    return _insert_text('/etc/group', map {
+	my($user) = $_;
+	my($code) = q{sub {
+            my($data) = @_;
+            return 0 if $$data =~ /^$group:.*[:,]$user(,|$)/m;
+            $$data =~ s{^($group:.*:)(.*)}
+                {$1 . (length($2) ? "$2,$user" : '$user')}xem
+                || Bivio::Die->die('$group: no such group');
+            return 1;
+        }};
+	$code =~ s/(\$(user|group))/$1/eeg;
+	[Bivio::Die->eval_or_die($code)];
+    } @user);
+}
+
 =for html <a name="create_ssl_crt"></a>
 
 =head2 create_ssl_crt(string iso_country, string state, string city, string organization, string hostname) : string
@@ -330,9 +355,14 @@ sub _insert_text {
     my($got);
     foreach my $op (@op) {
 	my($where, $value) = @$op;
-	next if $$data =~ /\Q$value/s;
-	$$data =~ s/$where/$value/sg
-	    || Bivio::Die->die($file, ": didn't find /", $where, "/\n");
+	if (ref($where) eq 'CODE') {
+	    next unless &$where($data);
+	}
+	else {
+	    next if $$data =~ /\Q$value/s;
+	    $$data =~ s/$where/$value/sg
+	        or Bivio::Die->die($file, ": didn't find /", $where, "/\n");
+	}
 	$got++;
     }
     return '' unless $got;
