@@ -52,15 +52,34 @@ Creates a new TestView with the specified title, and rendering output.
 =cut
 
 sub new {
-    my($proto, $name, $output) = @_;
+    my($proto, $name, $output, $default_model) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
 
 #    print Dumper($self);
 
     $self->{$_PACKAGE} = {
-	output => $output
+	output => $output,
+	default_model => $default_model
     };
     return $self;
+}
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="get_default_model"></a>
+
+=head2 get_default_model() : Model
+
+Returns a default model, ready for rendering.
+
+=cut
+
+sub get_default_model {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{default_model};
 }
 
 =for html <a name="render"></a>
@@ -72,10 +91,10 @@ Prints the output string to the specified request.
 =cut
 
 sub render {
-    my($self) = @_;
+    my($self, $target, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    print($fields->{output});
+    $req->print($fields->{output});
 }
 
 
