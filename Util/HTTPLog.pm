@@ -185,7 +185,9 @@ sub _clean_regex {
 # Initialize the regex arrays
 #
 sub _initialize {
-    # Initialize regexs which 
+    # Initialize regexs.  Make sure regexs are unique, e.g. have a
+    # '::' in them.  This avoids ignoring messages which contain
+    # user data, but are critical or errors.
     $_IGNORE_REGEX = join('|',
 	    # Skip non-warnings
 	    'Server configured -- resuming normal operations',
@@ -202,6 +204,7 @@ sub _initialize {
 	    'mod_ssl: SSL handshake timed out',
 	    'System: Connection reset by peer',
 	    'System: Broken pipe',
+	    '\[error\].*File does not exist:',
 	    # Skip regular Bivio messages
 	    'Agent::Job::Dispatcher:.*JOB_(?:START|END)',
 	    'SQL::Connection::_get_connection.*reconnecting',
