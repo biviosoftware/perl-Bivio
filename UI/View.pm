@@ -176,7 +176,7 @@ See L<Bivio::UI::ViewLanguage::view_class_map|Bivio::UI::ViewLanguage/"view_clas
 =item view_name : string (computed)
 
 The name of this view.  Every view has a name.  The name may does not contain
-the L<SUFFIX|"SUFFIX"> (C<.bview>) or the ClassLoader qualifier (C<View#>).
+the L<SUFFIX|"SUFFIX"> (C<.bview>) or the ClassLoader qualifier (C<View.>).
 View names are otherwise just relative file names (no '.' or '..' are allowed).
 
 View names are globally unique to an application invocation.  They are used to

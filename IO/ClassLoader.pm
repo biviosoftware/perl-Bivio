@@ -25,7 +25,7 @@ C<Bivio::IO::ClassLoader> implements dynamic class loading.
 L<simple_require|"simple_require"> implements a dynamic C<use> clause.
 
 L<map_require|"map_require"> is an indirect load via mapped name.  The classes
-loaded have names of the form I<Map>#I<Class>.  The I<map> is a simple perl
+loaded have names of the form I<Map>.I<Class>.  The I<map> is a simple perl
 identifier which identifies a class path or handler class which does the
 loading.  map_require calls simple_require if the I<map_class> is a
 simple class.
@@ -49,12 +49,12 @@ L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> with this module.>
 
 =head2 MAP_SEPARATOR : string
 
-Returns the separator character (#)
+Returns the separator character (.)
 
 =cut
 
 sub MAP_SEPARATOR {
-    return '#';
+    return '.';
 }
 
 #=IMPORTS
@@ -79,6 +79,8 @@ my($_DELEGATES);
 my($_MAPS);
 my($_MODELS);
 my($_SEP) = MAP_SEPARATOR();
+my($_SEP_PAT) = MAP_SEPARATOR();
+$_SEP_PAT =~ s/(\W)/\\$1/g;
 Bivio::IO::Config->register;
 
 =head1 METHODS
@@ -202,7 +204,7 @@ sub is_loaded {
     my($proto, $class) = @_;
     # this seems to work
 #TODO: This test is insufficient.  Need something more general.
-    return ($class =~ /$_SEP/o ? exists($_MAP_CLASS{$class})
+    return ($class =~ /$_SEP_PAT/o ? exists($_MAP_CLASS{$class})
 	    	: ($_SIMPLE_CLASS{$class}
 		    || UNIVERSAL::isa($class, 'Bivio::UNIVERSAL')))
 	    ? 1 : 0;
@@ -233,7 +235,7 @@ Returns the fully qualified class or an instance of a class.
 
 A I<map_class> is of the form:
 
-    map_name#class_name
+    map_name.class_name
 
 Throws an exception if the class can't be found or doesn't load.  The
 syntax of class is map specific.
@@ -440,9 +442,9 @@ sub _map_args {
     return ($proto, $map_name, $class_name, $map_name.$_SEP.$class_name)
 	    if $map_name && $class_name;
 
-    # ('Type#Bla')
+    # ('Type.Bla')
     return ($proto, $1, $2, $map_name)
-	    if $map_name =~ /^(\w+)$_SEP(\S+)$/o;
+	    if $map_name =~ /^(\w+)$_SEP_PAT(\S+)$/o;
 
     Bivio::IO::Alert->die('invalid map_class: ', $map_name);
     # DOES NOT RETURN
