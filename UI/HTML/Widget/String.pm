@@ -249,8 +249,14 @@ sub render {
 
     # Render the font dynamically.  Don't call method unless there is a font
     # for performance reasons.
-    my($p, $s) = $fields->{font} ? Bivio::UI::Font->format_html(
-	    $fields->{font}, $source->get_request) : ('', '');
+    my($f) = $fields->{font};
+    if (ref($f)) {
+	$f = '';
+	$self->unsafe_render_value(
+	    'string_font', $fields->{font}, $source, \$f);
+    }
+    my($p, $s) = $f ? Bivio::UI::Font->format_html($f, $source->get_request)
+	: ('', '');
     $$buffer .= $p.$fields->{prefix}.$b.$fields->{suffix}.$s;
     return;
 }
