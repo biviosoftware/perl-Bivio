@@ -31,7 +31,6 @@ C<Bivio::UI::HTML::Club::ValuationStatement>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::ListModel::ListTotals;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Format::Amount;
 use Bivio::UI::HTML::Format::Date;
@@ -196,7 +195,6 @@ sub new {
 			   values => ['<br>']
 		       }),
 		       $fields->{securities_table},
-		       $fields->{total_securities_table},
 		       $fields->{account_table}]});
     $fields->{report}->initialize;
 
