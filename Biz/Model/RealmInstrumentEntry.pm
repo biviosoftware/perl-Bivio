@@ -35,11 +35,7 @@ and delete interface to the C<realm_instrument_entry_t> table.
 
 #=IMPORTS
 use Bivio::Biz::Model::Entry;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Amount;
 use Bivio::Type::EntryClass;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 
@@ -93,16 +89,12 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_instrument_entry_t',
 	columns => {
-            entry_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            realm_instrument_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            count => ['Bivio::Type::Amount',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            external_identifier => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            entry_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_instrument_id => ['PrimaryId', 'NOT_NULL'],
+            count => ['Amount', 'NOT_NULL'],
+            external_identifier => ['Name', 'NOT_NULL'],
+	    acquisition_date => ['Date', 'NONE'],
         },
 	other => [
 	    [qw(entry_id Entry.entry_id)],
