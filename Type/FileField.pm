@@ -8,6 +8,10 @@ $Bivio::Type::FileField::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::FileField - a form field which contains a file
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::FileField;
