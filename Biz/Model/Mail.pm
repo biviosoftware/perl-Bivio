@@ -267,7 +267,7 @@ sub delete {
                 WHERE mail_id IN (
                     SELECT mail_id FROM mail_t
                     START WITH realm_id = ? AND mail_id = ?
-                    CONNECT BY PRIOR thread_parent_id)',
+                    CONNECT BY PRIOR thread_parent_id = mail_id)',
                 [$realm_id, $properties->{thread_parent_id}]);
     }
     else {
