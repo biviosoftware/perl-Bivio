@@ -269,10 +269,10 @@ sub unsafe_load {
 	# Use a sort to force order which (may) help Oracle's cache.
     } sort keys(%$query));
     my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die);
-    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
+    my($start_time) = Bivio::Util::gettimeofday();
     my($row) = $statement->fetchrow_arrayref();
     my($too_many) = $statement->fetchrow_array ? 1 : 0 if $row;
-    Bivio::SQL::Connection->increment_db_time($start_time) if $_TRACE;
+    Bivio::SQL::Connection->increment_db_time($start_time);
     my($values);
     if ($row) {
 	die('too many rows returned') if $too_many;

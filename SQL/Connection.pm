@@ -84,12 +84,10 @@ I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 sub execute {
     my($self, $sql, $params, $die) = @_;
 
-    my($statement, $start_time);
+    my($statement);
     eval {
-	if ($_TRACE) {
-	    _trace_sql($sql, $params);
-	    $start_time = Bivio::Util::gettimeofday();
-	}
+	_trace_sql($sql, $params) if $_TRACE;
+	my($start_time) = Bivio::Util::gettimeofday();
 #TODO: Need to investigate problems and performance of cached statements
 #TODO: If do cache, then make sure not "active" when making call.
 	$statement = $self->get_connection->prepare($sql);
@@ -161,7 +159,6 @@ returns its new value.
 =cut
 
 sub increment_db_time {
-    return 0 if ! $_TRACE;
     my(undef, $start_time) = @_;
     Carp::croak('invalid start_time') unless $start_time;
     $_DB_TIME += Bivio::Util::time_delta_in_seconds($start_time);

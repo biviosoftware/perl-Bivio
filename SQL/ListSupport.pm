@@ -125,7 +125,7 @@ sub load {
     my($sql) = $fields->{select}.$where_clause;
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
     my($statement) = Bivio::SQL::Connection->execute($sql, \@values, $model);
-    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
+    my($start_time) = Bivio::Util::gettimeofday();
 
     my($row);
     my($i) = 0;
@@ -163,9 +163,7 @@ sub load {
     # Do we need to finish here?
     $statement->finish();
 
-    if ($_TRACE) {
-	Bivio::SQL::Connection->increment_db_time($start_time);
-    }
+    Bivio::SQL::Connection->increment_db_time($start_time);
     return;
 }
 
@@ -188,13 +186,10 @@ sub get_result_set_size {
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
     my($statement) = Bivio::SQL::Connection->execute($sql, \@values, $model);
 
-    my($start_time) = $_TRACE ? Bivio::Util::gettimeofday() : 0;
+    my($start_time) = Bivio::Util::gettimeofday();
     my($result) = $statement->fetchrow_arrayref()->[0];
     $statement->finish();
-
-    if ($_TRACE) {
-	Bivio::SQL::Connection->increment_db_time($start_time);
-    }
+    Bivio::SQL::Connection->increment_db_time($start_time);
     return $result;
 }
 
