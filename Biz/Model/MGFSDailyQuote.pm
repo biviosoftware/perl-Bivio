@@ -34,13 +34,99 @@ C<Bivio::Biz::Model::MGFSDailyQuote>
 use Bivio::Data::MGFS::Amount;
 use Bivio::Data::MGFS::Date;
 use Bivio::Data::MGFS::Id;
+use Bivio::Data::MGFS::Quote;
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="FRACTIONAL_ALIGNMENT"></a>
+
+=head2 FRACTIONAL_ALIGNMENT : float
+
+returns 1 / 64
+
+=cut
+
+sub FRACTIONAL_ALIGNMENT {
+    return 1 / 64;
+}
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_DATES) = 'a8' x 265;
 my($_AMOUNTS) = 'a6' x 265;
 
+# used to unsplit values, it is keyed by mg_id and contains an
+# array of date, factor pairs
+my($_SPLITS) = {};
 
+=begin comment
+
+NO POINT! MGFS seems to use 3 decimal factor, not actual value
+see CCK '89
+
+# from the MGFS Glossary, Stock Split and Stock Dividend Factors
+# increase the precision on rounded values
+my($_FACTORS) = {
+    # Dividends
+    '.99' => 1 / 1.01,
+    '.98' => 1 / 1.02,
+    '.971' => 1 / 1.03,
+    '.962' => 1/ 1.04,
+    '.952' => 1 / 1.05,
+    '.943' => 1 / 1.06,
+    '.935' => 1 / 1.07,
+    '.926' => 1 / 1.08,
+    '.917' => 1 / 1.09,
+    '.909' => 1 / 1.1,
+    '.901' => 1 / 1.11,
+    '.893' => 1 / 1.12,
+    '.885' => 1 / 1.13,
+    '.877' => 1 / 1.14,
+    '.87' => 1 / 1.15,
+    '.862' => 1 / 1.16,
+    '.855' => 1 / 1.17,
+    '.847' => 1 / 1.18,
+    '.84' => 1 / 1.19,
+    '.833' => 1 / 1.2,
+    '.8' => 1 / 1.25,
+    '.769' => 1 / 1.3,
+    '.752' => 1 / 1.33,
+    '.75' => 1 / 1.333,
+    '.714' => 1 / 1.4,
+    '.667' => 1 / 1.5,
+    '.625' => 1 / 1.6,
+    '.571' => 1 / 1.75,
+    '.556' => 1 / 1.8,
+    '.5' => 1 / 2,
+    '.333' => 1 / 3,
+    '.976' => 1 / 1.025,
+    '.966' => 1 / 1.035,
+    '.957' => 1 / 1.045,
+    '.948' => 1 / 1.055,
+    '.939' => 1 / 1.065,
+    '.93' => 1 / 1.075,
+    '.922' => 1 / 1.085,
+    '.913' => 1 / 1.095,
+    '.905' => 1 / 1.105,
+    # Splits
+    '.333' => 1 / 3,
+    '.167' => 1 / 6,
+    '.143' => 1 / 7,
+    '.111' => 1 / 9,
+    '.667' => 2 / 3,
+    '.833' => 5 / 6,
+    '.286' => 2 / 7,
+    '.429' => 3 / 7,
+    '.571' => 4 / 7,
+    '.714' => 5 / 7,
+    '.857' => 6 / 7,
+    '1.333' => 4 / 3,
+    '33.333' => 100 / 3,
+};
+
+=cut
 
 =head1 FACTORIES
 
@@ -63,6 +149,20 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Creates an MGFS Daily Quote. Does price unsplitting.
+
+=cut
+
+sub create {
+    my($self, $new_values) = @_;
+    $self->SUPER::create(_unsplit($new_values));
+    return;
+}
 
 =for html <a name="from_mgfs"></a>
 
@@ -187,16 +287,30 @@ sub internal_initialize {
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
             date_time => ['Bivio::Data::MGFS::Date',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    high => ['Bivio::Data::MGFS::Amount',
+	    high => ['Bivio::Data::MGFS::Quote',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            low => ['Bivio::Data::MGFS::Amount',
+            low => ['Bivio::Data::MGFS::Quote',
     		Bivio::SQL::Constraint::NOT_NULL()],
-            close => ['Bivio::Data::MGFS::Amount',
+            close => ['Bivio::Data::MGFS::Quote',
     		Bivio::SQL::Constraint::NOT_NULL()],
             volume => ['Bivio::Data::MGFS::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
     };
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values)
+
+Updates an MGFS Daily Quote. Does price unsplitting.
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+    $self->SUPER::update(_unsplit($new_values));
+    return;
 }
 
 #=PRIVATE METHODS
@@ -210,6 +324,91 @@ sub _add_decimal {
     foreach my $value (@$values) {
 	$value =~ s/^(.*)(..)$/$1\.$2/;
     }
+}
+
+# _align(string value) : string
+#
+# Aligns the value along the FRACTIONAL_ALIGNMENT boundary.
+#
+sub _align {
+    my($value) = @_;
+    my($whole) = int($value);
+    my($div) = int(($value - $whole) / FRACTIONAL_ALIGNMENT() + 0.5);
+    return $whole + $div * FRACTIONAL_ALIGNMENT();
+}
+
+# _get_splits(string mg_id) : array_ref
+#
+# Loads the global var _SPLITS with an array of date, factor pairs for the
+# specified mg_id. Returns the array.
+#
+sub _get_splits {
+    my($mg_id) = @_;
+
+    my($d) = Bivio::Type::Date->from_sql_value('date_time');
+    my($sth) = Bivio::SQL::Connection->execute(
+            <<"EOF", [$mg_id]);
+            SELECT $d, factor
+            FROM mgfs_split_t
+            WHERE mg_id=?
+            ORDER BY date_time
+EOF
+
+    my($result) = [];
+    my($row, $date, $factor);
+    while ($row = $sth->fetchrow_arrayref()) {
+	($date, $factor) = @$row;
+#	$factor = $_FACTORS->{$factor} || $factor;
+	$date = Bivio::Type::Date->from_sql_column($date);
+	# only interested in first part
+	$date =~ s/^(.*)\s/$1/;
+	push(@$result, $date);
+	push(@$result, $factor);
+    }
+    $_SPLITS->{$mg_id} = $result;
+    return $result;
+}
+
+# _unsplit(hash_ref values) : hash_ref
+#
+# Unsplits 'high', 'low', and 'close' by the split factors up to that 'date'.
+# Returns the same hash_ref.
+#
+sub _unsplit {
+    my($values) = @_;
+    my($mg_id) = $values->{mg_id};
+    my($date) = $values->{date_time};
+    # only interested in first part
+    $date =~ s/^(.*)\s/$1/;
+
+    my($aligned) = 0;
+    my($splits) = $_SPLITS->{$mg_id} || _get_splits($mg_id);
+    for (my($i) = int(@$splits) - 2; $i >= 0; $i -= 2) {
+	if ($date < $splits->[$i]) {
+	    my($factor) = $splits->[$i+1];
+	    $values->{close} /= $factor;
+	    $values->{high} /= $factor;
+	    $values->{low} /= $factor;
+
+	    # align along fractional boundary
+	    $values->{close} = _align($values->{close});
+	    $values->{high} = _align($values->{high});
+	    $values->{low} = _align($values->{low});
+	    $aligned = 1;
+	}
+	else {
+	    # splits are ordered by date, so can skip the rest
+	    last;
+	}
+    }
+    unless ($aligned) {
+	# align along fractional boundary
+	$values->{close} = _align($values->{close});
+	$values->{high} = _align($values->{high});
+	$values->{low} = _align($values->{low});
+    }
+
+    return $values;
 }
 
 =head1 COPYRIGHT
