@@ -263,7 +263,7 @@ sub unsafe_load {
     my(@params);
     my($sql) = $fields->{select}.join(' and ', map {
 	my($column) = $columns->{$_};
-	Carp::croak('invalid field name') unless $column;
+	Carp::croak("invalid field name: $_") unless $column;
 	push(@params, $query->{$_});
 	$_.'='.$column->{sql_pos_param};
 	# Use a sort to force order which (may) help Oracle's cache.
