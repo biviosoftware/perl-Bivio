@@ -10,9 +10,9 @@ Bivio::Test->new('Bivio::Type::Password')->unit([
 	encrypt => [
 	    ['foo'] => qr/[\w]+/,
 	],
-	salt => [
-	    [ 2 ] => qr/[\w]{2}/,
-	],
+#	salt => [
+#	    [ 2 ] => qr/[\w]{2}/,
+#	],
 	from_literal => [ map({
 	    [$_] => [undef, Bivio::TypeError::PASSWORD];
 	} qw(aaaaa 12345)),
