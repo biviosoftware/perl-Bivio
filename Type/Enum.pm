@@ -679,7 +679,7 @@ Returns the string representation of the value.
 sub to_string {
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return _get_info($proto, $value)->[3];
+    return $value->get_short_desc;
 }
 
 =for html <a name="to_xml"></a>
