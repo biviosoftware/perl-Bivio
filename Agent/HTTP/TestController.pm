@@ -9,7 +9,7 @@ use Bivio::UI::Menu();
 use Bivio::UI::TestView();
 use Bivio::UI::HTML::Presentation();
 use Bivio::UI::HTML::Page();
-use Bivio::BusObj::TestModel();
+use Bivio::Biz::TestModel();
 
 $Bivio::Agent::HTTP::TestController::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
@@ -44,7 +44,7 @@ C<Bivio::Agent::HTTP::TestController>
 
 #=VARIABLES
 
-#cached pages for _test3()
+my($_PACKAGE) = __PACKAGE__;
 my($_PAGE) = 0;
 
 =head1 FACTORIES
@@ -61,7 +61,10 @@ Creates a new TestController.
 
 sub new {
     my($proto, $views, $default_view) = @_;
-    my($self) = &Bivio::Agent::Controller::new($proto, $views, $default_view);
+    my($self) = &Bivio::Agent::Controller::new($proto, $views);
+    $self->{$_PACKAGE} = {
+	default_view => $default_view->get_name()
+    };
     return $self;
 }
 
@@ -92,19 +95,24 @@ Exercises a simple page.
 
 sub handle_request {
     my($self, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     if ($_PAGE == 0) {
 	die("page not created");
     }
+    unless ($req->get_view_name()) {
+	#$req->log_error("\noverriding view ".$fields->{default_view}."\n\n");
+	$req->set_view_name($fields->{default_view});
+    }
     my($view) = $self->get_view($req->get_view_name());
 
     if (defined($view)) {
-
-	my($model) = Bivio::BusObj::TestModel->new({}, "T", "t");
+	my($model) = Bivio::Biz::TestModel->new({}, "T", "t");
 	$view->activate()->render($model, $req);
 	$req->set_state(Bivio::Agent::Request::OK);
     }
     else {
+	$req->log_error("\n__PACKAGE__ couldn't find view $view\n\n");
 	$req->set_state(Bivio::Agent::Request::NOT_HANDLED);
     }
 }
