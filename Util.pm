@@ -180,12 +180,14 @@ sub date_range ($$) {
 
 
 sub my_require {
-    map {
-	my($c) = $_;
-	$c =~ s!::!/!g;
-#TODO: Why doesn't perl let me use "use"?
-	CORE::require $c . '.pm';
-    } @_;
+    my(@pkg) = @_;
+    my($pkg);
+    foreach $pkg (@pkg) {
+	no strict 'refs';
+	next if defined(%{*{"$pkg\::"}});
+	# Must be a "bareword" for it to do '::' substitution
+	eval "require $pkg" || die($@);
+    }
 }
 
 1;
