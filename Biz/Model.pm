@@ -199,7 +199,11 @@ sub get_info {
 
 =head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
+=head2 static die(Bivio::Type::Enum code, string message, string package, string file, int line)
+
 Terminate the I<model> as entity and request in I<attrs> with a specific code.
+
+I<package>, I<file>, and I<line> need not be defined
 
 =cut
 
@@ -209,7 +213,7 @@ sub die {
     $file ||= (caller)[1];
     $line ||= (caller)[2];
     $attrs ||= {};
-    ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
+    ref($attrs) eq 'HASH' || ($attrs = {message => $attrs});
     $attrs->{entity} = $self;
     # Don't call get_request, because will blow up if not set.
     $attrs->{request} = $self->{$_PACKAGE}->{request};
