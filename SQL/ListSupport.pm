@@ -307,7 +307,7 @@ sub iterate_next {
 	next unless $attrs->{$f};
 	my($v) = $query->unsafe_get($f);
 	$row->{$attrs->{$f}->{name}} =
-	    $converter ? $attrs->{type}->$converter($v) : $v;
+	    $converter ? $attrs->{$f}->{type}->$converter($v) : $v;
     }
     return 1;
 }
