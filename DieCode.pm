@@ -96,6 +96,11 @@ corrupt form: user request contains invalid form value.  This is
 not the same as invalid input.  The form has been corrupted.  It
 might be due to an error on the server.
 
+=item CLIENT_REDIRECT_TASK: task_id
+
+redirects the user agent to the specified task. As with internal redirects,
+transactions, messages, etc. SHOULD NOT be rolled back.
+
 =back
 
 =cut
@@ -170,6 +175,11 @@ __PACKAGE__->compile(
     	12,
 	'corrupt form',
 	'user request contains invalid form',
+    ],
+    CLIENT_REDIRECT_TASK => [
+	13,
+	'client redirect task',
+	'direct user agent to new task',
     ],
 );
 
