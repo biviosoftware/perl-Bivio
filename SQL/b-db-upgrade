@@ -218,6 +218,18 @@ ALTER TABLE file_t modify is_public not null
 ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
 /
 ');
+    _upgrade_mail_message_t();
+    return;
+}
+
+# _upgrade_mail_message_t()
+#
+#
+#
+sub _upgrade_mail_message_t {
+    # We do this so we can delete clubs, without deleting mail_message_t
+    # entries.
+    _drop_constraints('mail_message_t', 'club_id');
     return;
 }
 
