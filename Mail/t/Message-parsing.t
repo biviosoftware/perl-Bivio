@@ -429,7 +429,7 @@ This is the body.
 EOF
 
 my($bm) = Bivio::Mail::Message->new(\$msg);
-$bm->set_recipients(User::pwent::getpwuid($>)->name);
+$bm->add_recipients(User::pwent::getpwuid($>)->name);
 my($r) = $bm->get_recipients;
 $r->[0] eq User::pwent::getpwuid($>)->name || die;
 $bm->enqueue_send;

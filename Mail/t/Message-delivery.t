@@ -27,13 +27,13 @@ This is the body.
 EOF
 
 my($bm) = Bivio::Mail::Message->new(\$msg1);
-$bm->set_recipients($user->name);
+$bm->add_recipients($user->name);
 my($r) = $bm->get_recipients;
 $r->[0] eq User::pwent::getpwuid($>)->name || die;
 $bm->enqueue_send;
 
 my($m2) = Bivio::Mail::Message->new;
-$m2->set_recipients($user->name);
+$m2->add_recipients($user->name);
 my($h) = $m2->get_head;
 $h->replace('Subject', "Hi!");
 $m2->get_entity->attach(Path => 'Mail/t/ms_y2k.jpg', Type => "image/jpeg", Encoding => "base64");
@@ -59,7 +59,7 @@ EOF
 
 my($bm) = Bivio::Mail::Message->new(\$msg);
 $bm->set_headers_for_list_send('LIST-NAME', 'LIST_TITLE', 1, 1);
-$bm->set_recipients($user->name);
+$bm->add_recipients($user->name);
 $bm->enqueue_send;
 
 print("You should have received 3 messages, please check manually\n");
