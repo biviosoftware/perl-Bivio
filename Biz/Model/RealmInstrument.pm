@@ -38,6 +38,7 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryType;
+use Bivio::Type::InstrumentType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
@@ -62,8 +63,8 @@ Sets I<average_cost_method> and I<drp_plan> if not set, then calls SUPER.
 sub create {
     my($self, $values) = @_;
     $values->{average_cost_method} = 0
-	    unless defined($values->{average_cost_method});
-    $values->{drp_plan} = 0 unless defined($values->{drp_plan});
+	    unless exists($values->{average_cost_method});
+    $values->{drp_plan} = 0 unless exists($values->{drp_plan});
     return $self->SUPER::create($values);
 }
 
@@ -93,6 +94,16 @@ sub internal_initialize {
             drp_plan => ['Bivio::Type::Boolean',
     		Bivio::SQL::Constraint::NOT_NULL()],
             remark => ['Bivio::Type::Text',
+    		Bivio::SQL::Constraint::NONE()],
+            name => ['Bivio::Type::Line',
+    		Bivio::SQL::Constraint::NONE()],
+            ticker_symbol => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            exchange_name => ['Bivio::Type::Name',
+    		Bivio::SQL::Constraint::NONE()],
+            instrument_type => ['Bivio::Type::InstrumentType',
+    		Bivio::SQL::Constraint::NONE()],
+            fed_tax_free => ['Bivio::Type::Boolean',
     		Bivio::SQL::Constraint::NONE()],
         },
 	other => [
