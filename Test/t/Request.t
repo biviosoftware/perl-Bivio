@@ -20,8 +20,8 @@ Bivio::Test->new('Bivio::Test::Request')->unit([
 	$req->capture_mail;
         my($msg) = Bivio::Mail::Outgoing->new(
             Bivio::Mail::Incoming->new(\(<<'EOF')));
-From: Joe Blow <joe@blow.com>
-To: mary@com.com
+From: Joe Blow <joe@example.com>
+To: mary@example.com
 
 What a body!
 EOF
