@@ -72,6 +72,7 @@ my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
     PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
     TABLE_HEADING => [$_SANS_SERIF, undef, 'small', 'strong'],
+    NORMAL_TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     TABLE_CELL => [undef, undef, 'small'],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'i'],
@@ -82,6 +83,7 @@ _compile([
     FORM_FIELD_LABEL => [undef, undef, 'small'],
     FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i', 'small'],
     REALM_NAME => [$_SANS_SERIF, 'realm_name', 'big'],
+    USER_NAME => [$_SANS_SERIF, 'user_name', 'big'],
     FORM_SUBMIT => [$_SANS_SERIF, undef],
 ]);
 
