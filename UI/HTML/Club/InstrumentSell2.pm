@@ -167,7 +167,7 @@ sub _create_sell_table {
 		     string_font => 'table_heading',
 		 }),
 		 Bivio::UI::HTML::Widget::String->new({
-		     value => 'Quantity',
+		     value => 'Shares',
 		     string_font => 'table_heading',
 		 }),
 		 Bivio::UI::HTML::Widget::String->new({
