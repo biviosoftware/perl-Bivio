@@ -388,7 +388,7 @@ Verifies that the href of the given I<link_name> matches I<pattern>
 
 sub verify_link {
     my($self, $link_text, $pattern) = @_;
-    my $href = _assert_html($self)->get_nested('Links', $link_text, 'href');
+    my($href) = _assert_html($self)->get_nested('Links', $link_text, 'href');
     return;
 
     Bivio::Die->die('Link "', $link_text, '" does not match "', $pattern, '"')
@@ -409,7 +409,7 @@ sub verify_options {
     my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names($select_field);
-    my $f = _assert_form_field($form, 'visible', $select_field);
+    my($f) = _assert_form_field($form, 'visible', $select_field);
     Bivio::Die->die('Select field "', $select_field, '" does not contain any options.')
 	    unless $f->{options};
     foreach my $option (@$options) {
@@ -440,10 +440,15 @@ sub verify_table {
     my($columns) = shift(@$expect);
 
     foreach my $expect_row (@$expect) {
-	my $row = $self->_find_row($table_name, $columns->[0], $expect_row->[0]);
+	my($row) = _find_row($self, $table_name, $columns->[0],
+            $expect_row->[0]);
 	my($diff) = Bivio::IO::Ref->nested_differences(
 	    $expect_row,
-	    [map($row->{$_}->get('text'), @$columns)]);
+	    [map({
+                Bivio::Die->die('column not found: ', $_)
+                   unless defined($row->{$_});
+                $row->{$_}->get('text');
+            } @$columns)]);
 	Bivio::Die->die($diff) if defined($diff);
     }
     return;
@@ -570,7 +575,7 @@ sub _create_form_request {
     if ($method eq 'GET') {
 	# trim any query which might be there
 	$uri =~ s/\?.*//;
-        my $url = URI->new('http:');
+        my($url) = URI->new('http:');
         $url->query_form(@$form);
 	return HTTP::Request->new(GET => $uri . '?' . $url->query);
     }
@@ -609,33 +614,6 @@ sub _fixup_uri {
     }
     return $uri;
 }
-
-# _format_field(hash_ref field, string value) : string
-#
-# Formats the field as $name=$value&.  If not defined($value), then
-# returns empty string.
-#
-#  sub _format_field {
-#      my($field, $value) = @_;
-#      Bivio::Die->die($value, ': invalid value for field ', $field->{name})
-#  	if ref($value);
-#      return ''
-#  	unless defined($value);
-#      if ($field->{options}) {
-#  	# Radio or Select: Allows the user to set value directly instead
-#  	# of matching label
-#  	foreach my $k (keys(%{$field->{options}})) {
-#  	    next unless $k eq $value;
-#  	    $value = $field->{options}->{$k}->{value};
-#  	    _trace($k, ': mapped to ', $value) if $_TRACE;
-#  	    last;
-#  	}
-#      }
-#      return defined($field->{name}) && length($field->{name})
-#  	? Bivio::HTML->escape_query($field->{name}) . '='
-#  	   . Bivio::HTML->escape_query($value) . '&'
-#          : '';
-#  }
 
 # _format_form(hash_ref form, string submit,  hash_ref form_fields) : array_ref
 #
