@@ -116,8 +116,7 @@ sub create {
     $sql_support->create($new_values, $self);
     $self->internal_clear_model_cache;
     $self->internal_put($new_values);
-    my($req) = $self->unsafe_get_request;
-    $req->put(ref($self), $self) if $req;
+    $self->put_on_request;
     return $self;
 }
 
@@ -785,8 +784,7 @@ sub _load {
     $self->internal_clear_model_cache;
     $self->internal_put($values);
     # If found, put a reference to this model in request
-    my($req) = $self->unsafe_get_request;
-    $req->put(ref($self), $self) if $req;
+    $self->put_on_request;
     return 1;
 }
 

@@ -790,8 +790,9 @@ sub internal_load {
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
     $self->throw_die('NOT_FOUND') if $self->NOT_FOUND_IF_EMPTY && !@$rows;
+    $self->put_on_request;
     my($req) = $self->unsafe_get_request;
-    $req->put(ref($self) => $self, list_model => $self) if $req;
+    $req->put(list_model => $self) if $req;
 
     # Fixup if need be
     if ($self->can('internal_post_load_row')) {

@@ -987,7 +987,7 @@ sub process {
     my($fields) = $self->{$_PACKAGE};
 
     # Save in request
-    $req->put(ref($self) => $self);
+    $self->put_on_request;
 
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
