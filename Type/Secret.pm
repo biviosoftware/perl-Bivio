@@ -42,6 +42,7 @@ that the user enters.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::TypeError;
 use Bivio::Die;
 use Bivio::IO::Config;
@@ -50,18 +51,16 @@ use Bivio::MIME::Base64;
 use Crypt::CBC;
 
 #=VARIABLES
-# Should be short and non-numeric.  Placed on both ends of string to "ensure"
-# decryption worked.
-my($_MAGIC) = 'X';
-my($_ALGORITHM) = 'DES';
-# Before initialization (_init_cipher()) is set to key
-my($_CIPHER) = undef;
-my($_PROMPT) = 0;
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
+my($_CFG);
+my($_DEFAULT_VALUES) = {
+    magic => 'X',
+    algorithm => 'DES',
+};
 Bivio::IO::Config->register({
-    key => Bivio::IO::Config->REQUIRED,
-    prompt => $_PROMPT,
-    magic => $_MAGIC,
-    algorithm => $_ALGORITHM,
+    prompt => 0,
+    cipher => [],
 });
 
 =head1 METHODS
@@ -125,6 +124,7 @@ sub encrypt_http_base64 {
     my($proto, $clear_text) = @_;
     return _encrypt($clear_text, 0);
 }
+
 =for html <a name="from_sql_column"></a>
 
 =head2 static from_sql_column(string value) : string
@@ -137,14 +137,15 @@ the column from the database.
 sub from_sql_column {
     my($proto, $value) = @_;
     return undef unless $value;
-
     my($s) = $proto->decrypt_hex($value);
+    return $s if defined($s);
     # There is a configuration error if we can't decrypt values from DB
-    Bivio::Die->throw('CONFIG_ERROR',
-	    {entity => 'key', class => __PACKAGE__,
-	    message => 'unable to decrypt value'})
-		unless defined($s);
-    return $s;
+    Bivio::Die->throw('CONFIG_ERROR', {
+        entity => 'key',
+        class => __PACKAGE__,
+        message => 'unable to decrypt value',
+    });
+    # DOES NOT RETURN
 }
 
 =for html <a name="handle_config"></a>
@@ -161,17 +162,47 @@ The way we encrypt the data.
 
 Do we need to prompt for a passphrase to decrypt I<key>?
 
+=item magic : string ['X']
+
+Should be short and non-numeric.  Placed on both ends of string
+to "ensure" decryption worked.
+
+=item algorithm : string ['DES']
+
+Encryption algorithm.
+
+=item cipher : array_ref []
+
+A list of (key, magic, algorithm) keyed hashes. When decrypting,
+the ciphers are applied in order until a match is found.
+When encrypting the first value is used.
+
 =back
 
 =cut
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_CIPHER = $cfg->{key};
-#TODO: Need a way to compute which programs need to decrypt the key.
-    $_PROMPT = $cfg->{prompt};
-    $_MAGIC = $cfg->{magic};
-    $_ALGORITHM = $cfg->{algorithm};
+    $_CFG = $cfg;
+
+    # if no ciphers defined, use the root config values
+    if (defined($_CFG->{key}) && int(@{$_CFG->{cipher}}) == 0) {
+        $_CFG->{cipher} = [{
+            map({
+                $_ => $_CFG->{$_},
+            } (qw(key magic algorithm))),
+        }];
+    }
+
+    foreach my $cipher (@{$_CFG->{cipher}}) {
+        Bivio::Die->die('missing key, ', $cipher)
+            unless defined($cipher->{key});
+
+        foreach my $field (qw(magic algorithm)) {
+            next if defined($cipher->{$field});
+            $cipher->{$field} = $_DEFAULT_VALUES->{$field};
+        }
+    }
     _init_cipher() if $ENV{MOD_PERL};
     return;
 }
@@ -208,10 +239,12 @@ sub to_sql_param {
 # If cypher doesn't exist, blows up.
 #
 sub _assert_cipher {
-    return if ref($_CIPHER) || _init_cipher();
-    Bivio::Die->throw('CONFIG_ERROR',
-	    {entity => 'key', class => __PACKAGE__,
-	    message => 'no cipher configured'});
+    return if ref(_default_cipher()->{key}) || _init_cipher();
+    Bivio::Die->throw('CONFIG_ERROR', {
+        entity => 'key',
+        class => __PACKAGE__,
+        message => 'no cipher configured',
+    });
     # DOES NOT RETURN
 }
 
@@ -225,38 +258,51 @@ sub _decrypt {
     _assert_cipher();
 
     # Decrypt and make sure surrounded by magic and a time not before now
-    my($s) = $is_hex ? $_CIPHER->decrypt_hex($encoded)
-	: $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($encoded));
-    return undef unless
-	    $s =~ s/^\Q$_MAGIC\E//o && $s =~ s/\Q$_MAGIC\E(\d+)$//o && time >= $1;
-    return $s;
+    foreach my $cipher (@{$_CFG->{cipher}}) {
+        next unless ref($cipher->{key});
+        my($s) = $is_hex ? $cipher->{key}->decrypt_hex($encoded)
+            : $cipher->{key}->decrypt(
+                Bivio::MIME::Base64->http_decode($encoded));
+        my($magic) = $cipher->{magic};
+
+        unless ($s =~ s/^\Q$magic\E//o && $s =~ s/\Q$magic\E(\d+)$//o
+            && time >= $1) {
+            _trace('cipher failed, trying next one') if $_TRACE;
+            next;
+        }
+        _trace('cipher sucessful') if $_TRACE;
+        return $s;
+    }
+    return undef;
 }
 
-# _decrypt_key(string key_in) : string
+# _decrypt_key(hash_ref cipher, string phrase, string key_in) : string
 #
 # Returns the key or undef.
 #
 sub _decrypt_key {
-    my($key_in) = @_;
-    $_CIPHER = undef;
-
-    my($p) = Bivio::IO::TTY->read_password(__PACKAGE__.' passphrase: ');
-    unless (defined($p)) {
-	Bivio::IO::Alert->warn('unable to open /dev/tty for key');
-	return undef;
-    }
+    my($cipher, $phrase, $key_in) = @_;
+    $cipher->{key} = undef;
 
     # Use this module to decrypt the key.  Protect against die, so
-    # $_CIPHER can be reset.
+    # cipher can be reset.
     my($key_out) = Bivio::Die->eval(
-	    sub {
-		$_CIPHER = Crypt::CBC->new($p, $_ALGORITHM);
-		return __PACKAGE__->from_sql_column($key_in);
-	    });
-    $_CIPHER = undef;
+        sub {
+            $cipher->{key} = Crypt::CBC->new($phrase, $cipher->{algorithm});
+            return __PACKAGE__->from_sql_column($key_in);
+        });
+    $cipher->{key} = undef;
     Bivio::IO::Alert->warn('unable to decrypt key in config: ', $@)
-		if $@;
+        if $@;
     return $key_out;
+}
+
+# _default_cipher() : hash_ref
+#
+# Returns the default cipher.
+#
+sub _default_cipher {
+    return $_CFG->{cipher}->[0];
 }
 
 # _encrypt(string clear_text, boolean is_hex) : string
@@ -268,9 +314,10 @@ sub _encrypt {
     return undef unless defined($clear_text);
     _assert_cipher();
     # Surround with magic and trailing time and encrypt
-    my($v) = $_MAGIC . $clear_text . $_MAGIC . time;
-    return $is_hex ? $_CIPHER->encrypt_hex($v)
-        : Bivio::MIME::Base64->http_encode($_CIPHER->encrypt($v));
+    my($cipher) = _default_cipher();
+    my($v) = $cipher->{magic} . $clear_text . $cipher->{magic} . time;
+    return $is_hex ? $cipher->{key}->encrypt_hex($v)
+        : Bivio::MIME::Base64->http_encode($cipher->{key}->encrypt($v));
 }
 
 # _init_cipher() : boolean
@@ -278,13 +325,26 @@ sub _encrypt {
 # Initializes the cipher.
 #
 sub _init_cipher {
-    # If no key, then blow up.
-    return 0 unless defined($_CIPHER);
-    my($key) = $_CIPHER;
-    $_CIPHER = undef;
-    $key = _decrypt_key($key) if $_PROMPT;
-    return 0 unless $key;
-    $_CIPHER = Crypt::CBC->new($key, $_ALGORITHM);
+    return 0 unless defined(_default_cipher()->{key});
+    my($phrase);
+
+    foreach my $cipher (@{$_CFG->{cipher}}) {
+        my($key) = $cipher->{key};
+        $cipher->{key} = undef;
+
+        if ($_CFG->{prompt}) {
+            $phrase ||= Bivio::IO::TTY->read_password(
+                __PACKAGE__ . ' passphrase: ');
+
+            unless (defined($phrase)) {
+                Bivio::IO::Alert->warn('unable to open /dev/tty for key');
+                return 0;
+            }
+            $key = _decrypt_key($cipher, $phrase, $key);
+        }
+        return 0 unless $key;
+        $cipher->{key} = Crypt::CBC->new($key, $cipher->{algorithm});
+    }
     return 1;
 }
 
