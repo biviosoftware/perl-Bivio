@@ -342,7 +342,7 @@ sub unsafe_load {
 
 =for html <a name="update"></a>
 
-=head2 update(hash_ref new_values) : boolean
+=head2 update(hash_ref new_values)
 
 Updates the current model's values.
 NOTE: find should be called prior to an update.
