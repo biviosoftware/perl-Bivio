@@ -6,52 +6,46 @@ $Bivio::Agent::HTTP::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g)
 
 =head1 NAME
 
-Bivio::Agent::HTTP::Request -  An HTTP Request
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::HTTP::Request;
-    Bivio::Agent::HTTP::Request->new();
-
-=cut
+Bivio::Agent::HTTP::Request - An HTTP Request
 
 =head1 EXTENDS
 
-L<Bivio::Agent::Request> is a Bivio Request wrapper for an Apache::Request.
+L<Bivio::Agent::Request>
 
 =cut
 
+use Bivio::Agent::Request;
 @Bivio::Agent::HTTP::Request::ISA = qw(Bivio::Agent::Request);
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::HTTP::Request>
+C<Bivio::Agent::HTTP::Request> is a Bivio Request wrapper for an
+Apache::Request. It gathers request information from the URI and posted
+parameters. The general format is:
 
-http://bivio.com/<target>/<controller>/<view>
- &mf=<arg1>(<val1>),<arg2>(<val2>)...&ma=<action>&...
+bivio.com/<target>/<controller>/<view>
+&mf=<arg1>(<val1>),<arg2>(<val2>)...&ma=<action>&...
 
-where <target> is a person or club
- <controller> is the controller id (messages, accounting, ...)
- <view> is the view id (list, detail, ...)
- <arg1>(<val1>)... are model finder parameters
- <action> is what to do with the model (update, vote, ...)
+  where <target> is a person or club
+  <controller> is the controller id (messages, accounting, ...)
+  <view> is the view id (list, detail, ...)
+  <arg1>(<val1>)... are model finder parameters
+  <action> is what to do with the model (update, vote, ...)
 
 The rest of the arguments are action parameters.
 Much of the URI is optional (requests have default controllers, controllers
 have default views).
 
+The 'mf' argument is converted into a Bivio::Biz::FindParams and is available
+using the L<"get_model_args">.
+
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-#=VARIABLES
 
 #=IMPORTS
 use Apache::Constants;
-use Bivio::Agent::Request;
 use Bivio::Biz::FindParams;
+use Bivio::Biz::User;
+use Bivio::Util;
 
 my($_PACKAGE) = __PACKAGE__;
 
@@ -86,8 +80,10 @@ sub new {
 	view_name => $view,
         header_sent => 0,
 	args => \%args,
-	password => $password
+	password => $password,
+	model_args => Bivio::Biz::FindParams->from_string($args{mf} || '')
     };
+    delete($args{mf});
 
     #default to html
     $self->set_reply_type('text/html');
@@ -153,8 +149,6 @@ sub get_http_return_code {
     return Apache::Constants::SERVER_ERROR
 	    if $state == Bivio::Agent::Request::SERVER_ERROR;
 
-    #otherwise, an invalid state was set, log it and die
-    $self->log_error("invalid request state $state");
     die("invalid request state $state");
 }
 
@@ -164,28 +158,15 @@ sub get_http_return_code {
 
 Returns the model finder arguments. Created from the 'mf' argument.
 If no arguments are present, then an empty FindParams is returned.
-Argument format should be 'mf=arg(value),arg2(value2)'.
-ex. mf=foo(bar),x(7)
+see L<Bivio::Biz::FindParams>.
 
 =cut
 
 sub get_model_args {
     my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
-    return Bivio::Biz::FindParams->from_string($self->get_arg('mf') || '');
-}
-
-=for html <a name="get_model_name"></a>
-
-=head2 get_model_name() : string
-
-Returns the requested model name. Parsed from the 'm' argument.
-
-=cut
-
-sub get_model_name {
-    my($self) = @_;
-    return $self->get_arg('m') || '';
+    return $fields->{model_args};
 }
 
 =for html <a name="get_password"></a>
@@ -220,7 +201,7 @@ sub get_view_name {
 
 =head2 log_error(string message)
 
-Writes the specified message to an error log appropriate for the request.
+Writes the specified message to the apache error log.
 
 =cut
 
@@ -256,7 +237,7 @@ sub print {
 
 =head2 put_arg(string name, string value)
 
-Adds or updates the argument to the specified value.
+Adds or replaces the named argument.
 
 =cut
 
@@ -310,9 +291,8 @@ sub _find_user {
     return undef if ! $name;
 
     my($user) = Bivio::Biz::User->new();
-    $user->find(Bivio::Biz::FindParams->new({name => $name}));
-
-    return $user->get_status()->is_OK() ? $user : undef;
+    return $user->find(Bivio::Biz::FindParams->new({name => $name}))
+	    ? $user : undef;
 }
 
 # _parse_request(string uri) : (string, string, view)
@@ -325,8 +305,7 @@ sub _parse_request {
     my($str) = @_;
 
     # trim leading and trailing '/'
-    $str =~ s|^/(.+)$|$1|;
-    $str =~ s|^(.+)/$|$1|;
+    $str =~ s,^/|/$,,g;
 
     my(@parts) = split('/', $str);
 
@@ -346,6 +325,5 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 $Id$
 
 =cut
-
 
 1;

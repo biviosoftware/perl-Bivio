@@ -8,26 +8,31 @@ $Bivio::Biz::Action::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::Biz::Action - An abstract model action.
 
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Action;
-    Bivio::Biz::Action->new();
-
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Biz::Action::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Action> describes a interaction which can be performed
 on a Model. Models expose the actions which may be performed against
-themselves through get_actions(). Actions may be done, and undone. At
-any time it may not be possible to (un)execute an action depending on the
-state of the model it relates to.
+themselves through L<Bivio::Biz::Model/"get_action">. Actions may be done,
+and undone. At any time it may not be possible to (un)execute an action
+depending on the state of the model it relates to. Actions can be queried
+as to whether they can be performed using the L<"can_execute"> and
+L<"can_unexecute">.
 
-=cut
+An action embodies a complete transactions against a model. During execution,
+the action either completes successful and commits all data to storage, or
+fails and rolls back changes.
 
-=head1 CONSTANTS
+Generally there will be at most one action executed when processing a
+request. Actions should work with models only and not do any view
+manipulation.
+
+Actions get their execution arguments from a request by name using the
+L<Bivio::Agent::Request/"get_arg"> method of Bivio::Agent::Request.
 
 =cut
 
@@ -64,9 +69,9 @@ sub new {
 
 =for html <a name="can_execute"></a>
 
-=head2 can_execute(UNIVERSAL target) : boolean
+=head2 can_execute(Model model) : boolean
 
-Returns 1 if the action can be executed on the specified target. The Action
+Returns 1 if the action can be executed on the specified model. The Action
 base class always returns 0.
 
 =cut
@@ -77,9 +82,9 @@ sub can_execute {
 
 =for html <a name="can_unexecute"></a>
 
-=head2 can_unexecute(UNIVERSAL target) : boolean
+=head2 can_unexecute(Model model) : boolean
 
-Returns 1 if the action can be undone on the specified target. The Action
+Returns 1 if the action can be undone on the specified model. The Action
 base class always returns 0.
 
 =cut
@@ -90,9 +95,9 @@ sub can_unexecute {
 
 =for html <a name="execute"></a>
 
-=head2 abstract execute(UNIVERSAL target, Request req) : boolean
+=head2 abstract execute(Model model, Request req) : boolean
 
-Call this method to perform the action on the specified target,
+Call this method to perform the action on the specified model,
 using arguments from the specified request. Returns 1 if successful, 0
 otherwise.
 
@@ -160,7 +165,7 @@ sub get_name {
 
 =for html <a name="unexecute"></a>
 
-=head2 abstract unexecute(UNIVERSAL target, Request req) : boolean
+=head2 abstract unexecute(Model model, Request req) : boolean
 
 Call this method to undo the action on the specified target,
 using the arguments from the specified request. Returns 1 if successful, 0

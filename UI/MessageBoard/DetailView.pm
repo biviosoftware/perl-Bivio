@@ -150,7 +150,7 @@ sub get_nav_links {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_ICON());
 	$_PREV_LINK->set_description('Previous message');
 	$_PREV_LINK->set_url(&_make_path($self->get_name(), $req)
-		.'?mf='.$prev);
+		.'?'.$prev);
     }
     else {
 	$_PREV_LINK->set_icon(Bivio::UI::HTML::Link::PREV_IA_ICON());
@@ -163,7 +163,7 @@ sub get_nav_links {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_ICON());
 	$_NEXT_LINK->set_description('Next message');
 	$_NEXT_LINK->set_url(&_make_path($self->get_name(), $req)
-		.'?mf='.$next);
+		.'?'.$next);
     }
     else {
 	$_NEXT_LINK->set_icon(Bivio::UI::HTML::Link::NEXT_IA_ICON());
@@ -177,7 +177,7 @@ sub get_nav_links {
     $fp->remove('id');
     $fp->put('index', $fp->get('index') + 1) if $fp->get('index');
 
-    my($back_url) = &_make_path('list', $req).'?mf='.$fp->to_string();
+    my($back_url) = &_make_path('list', $req).'?'.$fp->to_string();
 
     $_BACK_LINK->set_url($back_url);
 

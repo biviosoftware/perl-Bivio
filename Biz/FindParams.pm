@@ -72,7 +72,7 @@ sub new {
 =head2 static from_string(string uri_value) : Bivio::Bizz::FindParams
 
 Creates a finder from the uri string format. The format should be:
-<key>'('<value>')'{','<key>'('<value>')'}
+[mf=]<key>'('<value>')'{','<key>'('<value>')'}
 
 =cut
 
@@ -83,6 +83,9 @@ sub from_string {
     #        embedded in the search values. '(' ')' are handled OK.
 
     my($map) = {};
+
+    # remove optional 'mf='
+    $uri_value =~ s/^mf=//;
 
     foreach (split(',', $uri_value)) {
 
@@ -228,6 +231,8 @@ sub to_string {
     }
     # remove extra ','
     chop($uri_value);
+
+    $uri_value = 'mf='.$uri_value if $uri_value;
 
     return $uri_value;
 }

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::View;
 use strict;
-use Bivio::UI::Renderer();
+
 $Bivio::UI::View::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -11,8 +11,14 @@ Bivio::UI::View - Abstract base class of model renderers.
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::View;
-    Bivio::UI::View->new();
+    # get a model from a view
+    my($model) = $view->get_default_model();
+
+    # do something with the model
+    $model->get_action($req->get_action_name())->execute($model, $req);
+
+    # brings a view to the front and renders a model
+    $view->activate()->render($model, $req);
 
 =cut
 
@@ -22,20 +28,20 @@ L<Bivio::UI::Renderer>
 
 =cut
 
+use Bivio::UI::Renderer;
 @Bivio::UI::View::ISA = qw(Bivio::UI::Renderer);
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::View>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::View> is a model renderer. They are responsible for drawing
+a model's state in an intelligent manner. A view is not specific to HTML,
+it could apply to text or image output as well. Views may be nested within
+other views (L<Bivio::UI::MultiView>). Views have a name which is used
+for lookup by L<Bivio::Agent::Controller>s.
 
 =cut
 
 #=VARIABLES
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -88,8 +94,7 @@ sub activate {
 
 =head2 get_default_model() : Model
 
-Returns the model to use if none has been specified. The model returned
-should be primed with data and ready for rendering. By default, this
+Returns the model to use if none has been specified. By default, this
 method returns undef, indicating no default model exists.
 
 =cut
@@ -118,7 +123,7 @@ sub get_name {
 
 Sets the parent view of this one. Don't call this method directory, it
 is called when you create a container for this view. A view may only
-have one parent.
+have one parent. see L<Bivio::UI::MultiView>.
 
 =cut
 
@@ -127,7 +132,7 @@ sub set_parent {
     my($fields) = $self->{$_PACKAGE};
 
     if ($fields->{parent}) {
-	die("view ".$self->get_name()." already parented");
+	die('view '.$self->get_name().' already parented');
     }
     $fields->{parent} = $parent;
 }

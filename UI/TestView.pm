@@ -11,7 +11,9 @@ Bivio::UI::TestView - a simple testing view
 =head1 SYNOPSIS
 
     use Bivio::UI::TestView;
-    Bivio::UI::TestView->new();
+    my($model) = Bivio::Biz::TestModel->new('test2', {}, 'title', 'heading');
+    my($view) = Bivio::UI::TestView->new('test', '<i>a test view</i>', $model);
+    $view->activate()->render($model, $req);
 
 =cut
 
@@ -27,19 +29,12 @@ use Bivio::UI::View;
 =head1 DESCRIPTION
 
 C<Bivio::UI::TestView> ignores the model and prints a few things
-when renderering.
+when renderering. This is a good place-holder for work-in-progress.
+See L<Bivio::Biz::TestModel>.
 
 =cut
-
-=head1 CONSTANTS
-
-=cut
-
-#=IMPORTS
-use Data::Dumper;
 
 #=VARIABLES
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -48,17 +43,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string name, string output) : Bivio::UI::TestView
+=head2 static new(string name, string output, Model default_model) : Bivio::UI::TestView
 
-Creates a new TestView with the specified title, and rendering output.
+Creates a new TestView with the specified name, output, and default model.
 
 =cut
 
 sub new {
     my($proto, $name, $output, $default_model) = @_;
     my($self) = &Bivio::UI::View::new($proto, $name);
-
-#    print Dumper($self);
 
     $self->{$_PACKAGE} = {
 	output => $output,
@@ -75,7 +68,7 @@ sub new {
 
 =head2 get_default_model() : Model
 
-Returns a default model, ready for rendering.
+Returns a default model.
 
 =cut
 
@@ -87,14 +80,14 @@ sub get_default_model {
 
 =for html <a name="render"></a>
 
-=head2 render(UNIVERSAL target, Request req)
+=head2 render(Model model, Request req)
 
 Prints the output string to the specified request.
 
 =cut
 
 sub render {
-    my($self, $target, $req) = @_;
+    my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     $req->print($fields->{output});

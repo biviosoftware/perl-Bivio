@@ -200,14 +200,14 @@ sub get_nav_links {
 
 # _index(int index, Request req) : string
 #
-# Returns the mf params with the specified index.
+# Returns the finder params with the specified index.
 
 sub _index {
     my($index, $req) = @_;
 
     my($fp) = $req->get_model_args()->clone();
     $fp->put('index', $index);
-    return '?mf='.$fp->to_string();
+    return '?'.$fp->to_string();
 }
 
 # _make_path(View view, Request req) : string

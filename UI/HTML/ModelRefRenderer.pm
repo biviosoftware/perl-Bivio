@@ -88,8 +88,7 @@ sub render {
     $req->print('<a href="/'.$req->get_target_name()
 	    .'/'.$req->get_controller_name()
 	    .'/'.$fields->{view_name}
-#	    .'/?mf=id('.$id.')">'.$text.'</a>');
-	    .'/?mf='.$id.'">'.$text.'</a>');
+	    .'/?'.$id.'">'.$text.'</a>');
 }
 
 #=PRIVATE METHODS

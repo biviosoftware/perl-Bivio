@@ -2,34 +2,27 @@
 # $Id$
 package Bivio::Agent::Controller;
 use strict;
-use Carp();
+
 $Bivio::Agent::Controller::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
 
 Bivio::Agent::Controller - Base class for all controllers.
 
-=head1 SYNOPSIS
-
-    use Bivio::Agent::Controller;
-    Bivio::Agent::Controller->new();
-
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::Agent::Controller::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
 C<Bivio::Agent::Controller> is an abstract class for processing requests.
-
-=cut
-
-=head1 CONSTANTS
+It is the controllers responsibility to handle requests, invoke actions,
+and select a view for output.
 
 =cut
 
 #=VARIABLES
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -40,7 +33,8 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new(array views) : Bivio::Agent::Controller
 
-Creates a new controller which controlls the specified views.
+Creates a new controller which controls the specified views. The views
+are available later using the L<"get_view"> method.
 
 =cut
 
@@ -55,7 +49,7 @@ sub new {
     }
 
     $self->{$_PACKAGE} = {
-	views => $view_hash,
+	views => $view_hash
     };
     return $self;
 }

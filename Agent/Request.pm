@@ -9,11 +9,6 @@ $Bivio::Agent::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 Bivio::Agent::Request - Abstract request wrapper
 
-=head1 SYNOPSIS
-
-    use Bivio::Agent::Request;
-    Bivio::Agent::Request->new();
-
 =cut
 
 use Bivio::UNIVERSAL;
@@ -23,37 +18,80 @@ use Bivio::UNIVERSAL;
 
 C<Bivio::Agent::Request> Request provides a common interface for http,
 email, ... requests to the application. It provides methods to access
-the club, controller, model, view, and user information. Other action
-parameters can be accessed through the get_parameter($name) method.
-Request also provides access to the request output stream through the
-method print($str).
+the controller name and user information. Action arguments can be accessed
+through the L<"get_arg"> method. Request also provides access to the
+request output stream through the method L<"print">.
 
 =cut
 
 =head1 CONSTANTS
 
-Request states:
+=cut
 
-OK - successful
-FORBIDDEN - user not authorized to do request
-NOT_HANDLED - request not supported
-AUTH_REQUIRED - needs authorization to proceed
-SERVER_ERROR - internal error
+=for html <a name="OK"></a>
+
+=head2 OK : int
+
+successful
 
 =cut
 
-sub OK { 0 };
-sub FORBIDDEN { 1 };
-sub NOT_HANDLED { 2 };
-sub AUTH_REQUIRED { 3 };
-sub SERVER_ERROR { 4 }
+sub OK {
+    return 0
+}
+
+=for html <a name="FORBIDDEN"></a>
+
+=head2 FORBIDDEN : int
+
+use not authorized to do request
+
+=cut
+
+sub FORBIDDEN {
+    return 1;
+}
+
+=for html <a name="NOT_HANDLED"></a>
+
+=head2 NOT_HANDLED : int
+
+request not processed - ie not found
+
+=cut
+
+sub NOT_HANDLED {
+    return 2;
+}
+
+=for html <a name="AUTH_REQUIRED"></a>
+
+=head2 AUTH_REQUIRED : int
+
+needs authorization to proceed
+
+=cut
+
+sub AUTH_REQUIRED {
+    return 3;
+}
+
+=for html <a name="SERVER_ERROR"></a>
+
+=head2 SERVER_ERROR : int
+
+internal error
+
+=cut
+
+sub SERVER_ERROR {
+    return 4;
+}
 
 #=IMPORTS
-use Bivio::Biz::User;
 use Bivio::Util;
 
 #=VARIABLES
-
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -62,7 +100,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 new(string target_name, string controller_name, string user_name, float start_time) : Bivio::Agent::Request
+=head2 new(string target_name, string controller_name, Bivio::Biz::User user, float start_time) : Bivio::Agent::Request
 
 Creates a Request using the specified target, controller, and user.
 The initial state of the request is NOT_HANDLED. user may be undef,
@@ -175,10 +213,10 @@ sub get_target_name {
 
 =for html <a name="get_user"></a>
 
-=head2 get_user() : User
+=head2 get_user() : Bivio::Biz::User
 
-Returns the user. If no user exists (ie. no login has been done, then
-undef is returned.
+Returns the L<Bivio::Biz::User>. If no user exists (ie. no login has been
+performed, then undef is returned.
 
 =cut
 
@@ -192,8 +230,7 @@ sub get_user {
 
 =head2 abstract log_error(string message)
 
-Writes the specified message to an error log appropriate for
-the request.
+Writes the specified message to an error log appropriate for the request.
 
 =cut
 
@@ -217,7 +254,7 @@ sub print {
 
 =head2 abstract put_arg(string name, string value)
 
-Adds or updates the argument to the specified value.
+Adds or replaces the named arguments value.
 
 =cut
 
@@ -229,7 +266,7 @@ sub put_arg {
 
 =head2 set_reply_type(string type)
 
-Sets the reply format type.
+Sets the reply format type. For example this could be 'text/html'.
 
 =cut
 
@@ -265,7 +302,5 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 $Id$
 
 =cut
-
-my($r) = Bivio::Agent::Request->new();
 
 1;

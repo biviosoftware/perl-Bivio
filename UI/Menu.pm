@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Menu;
 use strict;
-use Bivio::UNIVERSAL();
+
 $Bivio::UI::Menu::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -12,19 +12,22 @@ Bivio::UI::Menu - a menu holder
 =head1 SYNOPSIS
 
     use Bivio::UI::Menu;
-    Bivio::UI::Menu->new();
+    my($menu) = Bivio::UI::Menu->new(1,
+	    ['human', 'Human',
+	     'cat', 'Cat',
+	     'dog', 'Dog']);
+    $menu->set_selected('cat');
 
 =cut
 
+use Bivio::UNIVERSAL;
 @Bivio::UI::Menu::ISA = qw(Bivio::UNIVERSAL);
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Menu>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::Menu> contains a list of menu names and display names. It
+tracks which menu item is currently selected. Menus may either be top-level
+or sub menus.
 
 =cut
 
@@ -71,10 +74,10 @@ sub get_display_names {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my(@result);
-    my(@items) = @{$fields->{items}};
+    my($items) = $fields->{items};
 
-    for (my($i) = 1; $i < scalar(@items); $i += 2 ) {
-	push(@result, $items[$i]);
+    for (my($i) = 1; $i < scalar(@$items); $i += 2 ) {
+	push(@result, $items->[$i]);
     }
     return \@result;
 }
@@ -91,10 +94,10 @@ sub get_names {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my(@result);
-    my(@items) = @{$fields->{items}};
+    my($items) = $fields->{items};
 
-    for (my($i) = 0; $i < scalar(@items); $i += 2 ) {
-	push(@result, $items[$i]);
+    for (my($i) = 0; $i < scalar(@$items); $i += 2 ) {
+	push(@result, $items->[$i]);
     }
     return \@result;
 }
@@ -143,22 +146,6 @@ sub set_selected {
 
 #=PRIVATE METHODS
 
-sub _unit_test {
-    my($menu) = Bivio::UI::Menu->new(1,
-	    ['human', 'Human',
-	     'cat', 'Cat',
-	     'dog', 'Dog']);
-    my($m);
-    foreach $m (@{$menu->get_names()}) {
-	print($m.' ');
-    }
-    print("\n");
-    foreach $m (@{$menu->get_display_names()}) {
-	print($m.' ');
-    }
-    print("\n");
-}
-
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
@@ -169,5 +156,4 @@ $Id$
 
 =cut
 
-#&_unit_test();
 1;

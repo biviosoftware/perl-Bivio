@@ -11,7 +11,8 @@ Bivio::UI::DateRenderer - a date string renderer
 =head1 SYNOPSIS
 
     use Bivio::UI::DateRenderer;
-    Bivio::UI::DateRenderer->new();
+    my($renderer) = Bivio::UI::DateRenderer->new();
+    $renderer->render('01/25/1999', $req);   # prints '1/25/99'
 
 =cut
 
@@ -28,10 +29,6 @@ use Bivio::UI::Renderer;
 
 C<Bivio::UI::DateRenderer> takes a date in MM/DD/YYYY and renderers it
 as MM/DD/YY without leading 0s.
-
-=cut
-
-=head1 CONSTANTS
 
 =cut
 
@@ -74,11 +71,14 @@ Writes the date as MM/DD/YY with no leading zeros.
 
 sub render {
     my($self, $date, $req) = @_;
+
+    # strip leading 0
     $date =~ s/^0//;
+
+    # remove trailing century
     $date =~ s/..(..)$/$1/;
     $req->print($date);
 }
-
 
 #=PRIVATE METHODS
 

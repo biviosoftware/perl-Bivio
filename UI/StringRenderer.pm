@@ -6,12 +6,14 @@ $Bivio::UI::StringRenderer::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
 
-Bivio::UI::StringRenderer - simple string drawer
+Bivio::UI::StringRenderer - simple text value printer
 
 =head1 SYNOPSIS
 
     use Bivio::UI::StringRenderer;
-    Bivio::UI::StringRenderer->new();
+    my($renderer) = Bivio::UI::StringRenderer->new();
+    $renderer->render('a string', $req);
+    $renderer->render(['an', 'array', 'of', 'strings'], $req);
 
 =cut
 
@@ -25,11 +27,8 @@ L<Bivio::UI::Renderer>
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::StringRenderer>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::StringRenderer> can render simple or compound values as
+text onto the request's output stream.
 
 =cut
 
@@ -59,9 +58,9 @@ sub new {
 
 =for html <a name="render"></a>
 
-=head2 render(ANY target, Request req)
+=head2 render(scalar target, Request req)
 
-Draws the target string onto the request output stream.
+Draws the target scalar or array ref onto the request output stream.
 
 =cut
 
@@ -69,9 +68,17 @@ sub render {
     my($self, $target, $req) = @_;
 
     my($str);
-    if (ref($target)) {
-	# warns on undef...
-	$str = join(' ', @$target);
+    if (ref($target) eq 'ARRAY') {
+
+	# print the values separated by ' '
+	# can't use split because values may be undef
+
+	$str = '';
+	foreach (@$target) {
+	    $str .= $_.' ' if defined($_);
+	}
+	# remove the ' ' if present
+	chop($str);
     }
     else {
 	$str = $target;

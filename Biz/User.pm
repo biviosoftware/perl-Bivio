@@ -49,7 +49,6 @@ use Bivio::Biz::FindParams;
 use Bivio::Biz::SqlSupport;
 use Bivio::Biz::UserDemographics;
 use Bivio::IO::Trace;
-use Bivio::Util;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -164,9 +163,6 @@ are 'id' or 'name'.
 sub find {
     my($self, $fp) = @_;
 
-    if (ref($fp) eq 'HASH') {
-	Bivio::Util::dump_stack();
-    }
     # clear the status from previous invocations
     $self->get_status()->clear();
 

@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::Agent::TestRequest;
 use strict;
-use Bivio::Agent::Request();
 $Bivio::Agent::TestRequest::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -22,6 +21,7 @@ L<Bivio::Agent::Request>
 
 =cut
 
+use Bivio::Agent::Request;
 @Bivio::Agent::TestRequest::ISA = qw(Bivio::Agent::Request);
 
 =head1 DESCRIPTION
@@ -31,9 +31,8 @@ components indepently from a web or mail server.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
+#=IMPORTS
+use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -44,9 +43,13 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 new(string target_name, string controller_name, string user_name) : Bivio::Agent::TestRequest
+=head2 new(string target_name) : Bivio::Agent::TestRequest
 
-=head2 new(string target_name, string controller_name, string user_name, hash args) : Bivio::Agent::TestRequest
+=head2 new(string target_name, string controller_name) : Bivio::Agent::TestRequest
+
+=head2 new(string target_name, string controller_name, User user) : Bivio::Agent::TestRequest
+
+=head2 new(string target_name, string controller_name, User user, hash args) : Bivio::Agent::TestRequest
 
 Creates a test request with the specified target, controller, and user.
 An optional hash of initial args may also be specified
@@ -56,7 +59,7 @@ An optional hash of initial args may also be specified
 sub new {
     my($proto, $target, $controller, $user, $args) = @_;
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	    $user);
+	    $user, Bivio::Util::gettimeofday());
     $args ||= {};
     $self->{$_PACKAGE} = {
 	args => $args

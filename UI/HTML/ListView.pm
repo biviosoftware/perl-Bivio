@@ -38,10 +38,9 @@ C<Bivio::UI::HTML::ListView>
 my($_PACKAGE) = __PACKAGE__;
 
 #=IMPORTS
-use Data::Dumper;
 use Bivio::UI::DateRenderer;
 use Bivio::UI::StringRenderer;
-use Bivio::UI::HTML::EmailRenderer;
+use Bivio::UI::HTML::EmailRefRenderer;
 use Bivio::UI::HTML::ListCellRenderer;
 
 =head1 FACTORIES
@@ -88,7 +87,7 @@ sub get_default_renderer {
 	$attributes = "nowrap";
     }
     elsif ($type->get_type() == Bivio::Biz::FieldDescriptor::EMAIL_REF()) {
-	$inner = Bivio::UI::HTML::EmailRenderer->new();
+	$inner = Bivio::UI::HTML::EmailRefRenderer->new();
 	$attributes = "nowrap";
     }
     else {
@@ -240,7 +239,7 @@ sub render_heading {
 	    }
 	    $req->print('<a href="/'.$req->get_target_name().'/'
 		    .$req->get_controller_name().'/'
-		    .$self->get_name().'/?mf='.$fp2->to_string().'">');
+		    .$self->get_name().'/?'.$fp2->to_string().'">');
 	}
 
 	$req->print('<font face="arial,helvetica,sans-serif">');
