@@ -75,7 +75,7 @@ sub create_content {
 	['to', 'MAIL_TO', undef, undef, {widget => $to_chooser}],
 	['cc', 'MAIL_CC', undef, undef, {size => 60}],
 	['subject', 'MAIL_SUBJECT', undef, undef, {size => 60}],
-	['text', 'MAIL_TEXT', undef, undef, {cols => 60}],
+	['text', 'MAIL_TEXT', undef, undef, {cols => 60, label_align => 'NE'}],
 	['att1', 'MAIL_ATT'],
 	['att2', 'MAIL_ATT'],
 	['att3', 'MAIL_ATT'],
