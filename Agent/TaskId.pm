@@ -2865,17 +2865,17 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubPreferencesForm
         Bivio::UI::HTML::Club::EditPreferences
         next=CLUB_ADMIN_PREFERENCES_EDIT
-        help=investment-performance-report
         require_context=0
     )],
     [qw(
-        CLUB_SETUP_OPENING_BALANCE_CHOICE
+        CLUB_SETUP_SWITCHOVER_CHOICE
         252
         CLUB
         ADMIN_READ
         ?/switchover-choice
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
+        help=switchover-date
     )],
 );
 
