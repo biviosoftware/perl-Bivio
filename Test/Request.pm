@@ -134,26 +134,7 @@ sub execute_task {
     my($self) = shift->initialize_fully(@_);
     $self->get('task')->execute($self);
     my($o) = $self->get('reply')->get_output;
-    return [$o ? $$o : undef, @{$self->get_captured_mail}];
-}
-
-=for html <a name="get_captured_mail"></a>
-
-=head2 get_captured_mail() : array_ref
-
-Returns captured mail and clears queue.
-
-Returns empty array_ref if no queue mail.
-
-=cut
-
-sub get_captured_mail {
-    my($self) = @_;
-    my($res) = $self->unsafe_get($_MSG_QUEUE_ATTR);
-    Bivio::Die->die('you need to call capture_mail() first')
-	unless $res;
-    $self->put($_MSG_QUEUE_ATTR => []);
-    return $res;
+    return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail || []}];
 }
 
 =for html <a name="initialize_fully"></a>
@@ -265,6 +246,27 @@ sub setup_http {
 	realm_owner => $user,
     });
     return $self;
+}
+
+=for html <a name="unsafe_get_captured_mail"></a>
+
+=head2 unsafe_get_captured_mail() : array_ref
+
+Returns captured mail and clears queue.
+
+Returns empty array_ref if no queue mail.
+
+Returns undef if L<capture_mail|"capture_mail"> hasn't been called.
+
+=cut
+
+sub unsafe_get_captured_mail {
+    my($self) = @_;
+    my($res) = $self->unsafe_get($_MSG_QUEUE_ATTR);
+    return undef
+	unless $res;
+    $self->put($_MSG_QUEUE_ATTR => []);
+    return $res;
 }
 
 #=PRIVATE METHODS
