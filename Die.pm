@@ -257,13 +257,15 @@ $_ is localized in this call.  Do not assume it will be modified by I<code>.
 sub eval {
     my(undef, $code) = @_;
     local($SIG{__DIE__});
+    my($current_self) = $_CURRENT_SELF;
+
     if (wantarray) {
 	my(@res) = _eval($code);
-	$_CURRENT_SELF = undef;
+	$_CURRENT_SELF = $current_self;
 	return @res;
     }
     my $res = _eval($code);
-    $_CURRENT_SELF = undef;
+    $_CURRENT_SELF = $current_self;
     return $res;
 }
 
