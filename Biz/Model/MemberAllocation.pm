@@ -27,7 +27,7 @@ use Bivio::Biz::PropertyModel;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Model::MemberAllocation> member tax allocation info.
-This model caches member allocations performed by the MemberAllocationList.
+This model caches member allocations performed by the AllocationCache.
 
 =cut
 
@@ -110,6 +110,7 @@ sub internal_initialize {
             user_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    allocation_date => ['Date', 'PRIMARY_KEY'],
             tax_category => ['TaxCategory', 'PRIMARY_KEY'],
+	    allocation_type => ['Allocation', 'PRIMARY_KEY'],
             amount => ['Amount', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
