@@ -139,6 +139,20 @@ sub execute_next {
     # DOES NOT RETURN
 }
 
+=for html <a name="execute_next_stateless"></a>
+
+=head2 execute_next_stateless(Bivio::Agent::Request req)
+
+Redirect to I<next> task without a query.
+
+=cut
+
+sub execute_next_stateless {
+    my(undef, $req) = @_;
+    $req->client_redirect($req->get('task')->get('next'), undef, undef);
+    # DOES NOT RETURN
+}
+
 =for html <a name="execute_query"></a>
 
 =head2 execute_query(Bivio::Agent::Request req)
