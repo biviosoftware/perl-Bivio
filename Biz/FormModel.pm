@@ -143,25 +143,70 @@ sub new {
 
 =head2 static execute(Bivio::Agent::Request)
 
+=head2 static execute(Bivio::Agent::Request, hash_ref values)
+
+There are two modes:
+
+=over 4
+
+=item html form
+
+I<values> is not passed.  Form values are processed from I<req.form>.
 Loads a new instance of this model using the request.
 If the form processing ends in errors, any transactions are rolled back.
+
+=item action
+
+This method is called as an action with I<values>.  I<values>
+passed must match the properties of this FormModel.  If an error
+occurs parsing the form, I<die> is called--internal program error
+due to incorrect parameter passing.  On success, this method
+returns normally.  This method should only be used if the caller
+knows I<values> is valid.   L<validate|"validate"> is not called.
+
+=back
 
 =cut
 
 sub execute {
-    my($proto, $req) = @_;
-    my($input) = $req->unsafe_get('form');
+    my($proto, $req, $values) = @_;
     my($self) = $proto->new($req);
-    if ($input) {
-	$self->internal_execute_input($input);
-	# Errors occured processing input, rollback
-	Bivio::Agent::Task->rollback if $self->{$_PACKAGE}->{errors};
+    my($fields) = $self->{$_PACKAGE};
+
+    # Called as an action internally, process values.  Do no validation.
+    if ($values) {
+	$self->internal_put($values);
+	$self->execute_input();
+	return _put_self($self) unless $fields->{errors};
+	Carp::croak($self->as_string, ": called with invalid values");
     }
-    else {
+
+    my($input) = $req->unsafe_get('form');
+
+    # User didn't input anything, render blank form
+    unless ($input) {
 	$self->execute_empty;
+	return _put_self($self);
     }
-    # Render form filled in from db, new form, or form with errors
-    $req->put(ref($self) => $self, form_model => $self);
+
+    # User submitted a form, parse, validate, and execute
+    # Cancel causes an immediate redirect.
+    _parse($self, $input);
+    unless ($fields->{errors}) {
+	$self->validate();
+	unless ($fields->{errors}) {
+	    $self->execute_input();
+	    unless ($fields->{errors}) {
+		# Success, redirect to the next task.
+		my($req) = $self->get_request;
+		$req->client_redirect($req->get('task')->get('next'));
+		# DOES NOT RETURN
+	    }
+	}
+    }
+    # Some type of error, rollback and put self so can render form again
+    Bivio::Agent::Task->rollback;
+    _put_self($self);
     return;
 }
 
@@ -320,40 +365,6 @@ sub in_error {
     return defined(shift->{$_PACKAGE}->{errors});
 }
 
-=for html <a name="internal_execute_input"></a>
-
-=head2 internal_execute_input(hash_ref input)
-
-Parses the input with L<_parse|"_parse">.  If succesful, checks to see
-list_properties (if exists) against this form's primary_key.  All
-the values should match or someone is trying to stuff data into an
-arbitrary data field by hacking the primary_id of the form.
-
-Finally, call the execute_input method on the class.  This will
-do the work necessary to store the form data.
-
-=cut
-
-sub internal_execute_input {
-    my($self, $input) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    # Cancel causes an immediate redirect.  False means there was
-    # form input error that the user should correct.  We don't check
-    # the list_model unless the form parses correctly.
-    _parse($self, $input);
-    return if $fields->{errors};
-    my($sql_support) = $self->internal_get_sql_support();
-    my($properties) = $self->internal_get();
-    $self->validate();
-    return if $fields->{errors};
-    $self->execute_input();
-    return if $fields->{errors};
-    # Success, redirect to the next task.
-    my($req) = $self->get_request;
-    $req->client_redirect($req->get('task')->get('next'));
-    # DOES NOT RETURN
-}
-
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
@@ -394,7 +405,66 @@ sub internal_put_error {
     return;
 }
 
+=for html <a name="load_from_model_properties"></a>
+
+=head2 load_from_model_properties(string model)
+
+Gets I<model> and copies all properties from I<model> to I<properties>.
+
+=cut
+
+sub load_from_model_properties {
+    my($self, $model) = @_;
+    my($sql_support) = $self->internal_get_sql_support();
+    my($properties) = $self->internal_get();
+    my($models) = $sql_support->get('models');
+    Carp::croak($model, ': no such model') unless defined($models->{$model});
+    my(%res);
+    my($column_aliases) = $sql_support->get('column_aliases');
+    my($m) = $self->get_model($model);
+    foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
+#TODO: Document this is being used elsewhere!
+	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
+	# Copy the model's property to this model
+	$properties->{$pn} = $m->get($cn);
+    }
+    return;
+}
+
 #=PRIVATE METHODS
+
+# _convert_values_to_form(Bivio::Biz::FormModel self, hash_ref values) : hash_ref
+#
+# Converts values to the form as if it came in from html.
+# This is a bit inefficient, but at least we use the same logic.
+#
+sub _convert_values_to_form {
+    my($self, $values) = @_;
+#TODO: Should this be made more efficient, i.e. avoid convert roundtrip
+    my($sql_support) = $self->internal_get_sql_support;
+    my($columns) = $sql_support->get('columns');
+    my($form) = {
+	version => $sql_support->get('version'),
+	submit => $self->SUBMIT_OK,
+    };
+    foreach my $k (keys(%$values)) {
+	my($col) = $columns->{$k};
+	Carp::croak("$k: unknown column") unless defined($col);
+	$form->{$col->{form_name}} = $col->{type}->to_literal($values->{$k});
+    }
+    return;
+}
+
+# _put_self(Bivio::Biz::FormModel self)
+#
+# Sets itself in the request and returns.
+#
+sub _put_self {
+    my($self) = @_;
+    # Render form filled in from db, new form, or form with errors
+    $self->get_request->put(ref($self) => $self, form_model => $self);
+    return;
+}
 
 # _parse(Bivio::Biz::FormModel self, hash_ref form)
 #
