@@ -37,7 +37,7 @@ C<Bivio::Agent::HTTP::Request>
 
 #=VARIABLES
 
-my($PACKAGE) = __PACKAGE__;
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
@@ -57,14 +57,14 @@ sub new {
     #this is required for the connection->user to work!?
     $r->get_basic_auth_pw();
     my($user) = $r->connection->user;
-    my($target, $controller, $path) = _parse_request($r->uri());
+    my($target, $controller, $view) = _parse_request($r->uri());
 
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	   $user);
-    $self->{$PACKAGE} = {
+    $self->{$_PACKAGE} = {
         r => $r,
-	path => $path,
-        header_send => 0
+	view_name => $view,
+        header_sent => 0
     };
 
     #default to html
@@ -88,7 +88,7 @@ parameters. If the argument doesn't exist, '' is returned.
 
 sub get_arg {
     my($self,$name) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
 
     my(%args) = $fields->{'r'}->args;
     return $args{$name} || '';
@@ -124,18 +124,18 @@ sub get_http_return_code {
     die("invalid request state $state");
 }
 
-=for html <a name="get_path"></a>
+=for html <a name="get_view_name"></a>
 
-=head2 get_path() : array
+=head2 get_view_name() : string
 
-Returns the full path of the request.
+Returns the requested view name.
 
 =cut
 
-sub get_path {
+sub get_view_name {
     my($self) = @_;
-    my($fields) = $self->{$PACKAGE};
-    return $fields->{path};
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{view_name};
 }
 
 =for html <a name="log_error"></a>
@@ -148,7 +148,7 @@ Writes the specified message to an error log appropriate for the request.
 
 sub log_error {
     my($self, $message) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
     $fields->{'r'}->log_error($message);
 }
 
@@ -162,7 +162,7 @@ Writes the specified string to the request's output stream.
 
 sub print {
     my($self,$str) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
 
     if ($fields->{'header_sent'} == 0) {
 	# only do this on first print
@@ -184,7 +184,7 @@ Adds or updates the argument to the specified value.
 
 sub put_arg {
     my($self, $name, $value) = @_;
-    my($fields) = $self->{$PACKAGE};
+    my($fields) = $self->{$_PACKAGE};
 
     my(%args);
     %args = $self->{'r'}->args;
@@ -193,11 +193,11 @@ sub put_arg {
 
 #=PRIVATE METHODS
 
-# _parse_request(string uri) : (string, string, array)
+# _parse_request(string uri) : (string, string, view)
 #
-# Takes a URI request and parses the target, controller, and path.
+# Takes a URI request and parses the target, controller, and view
 #
-# input format: /<target>[/<controller>[/<path][/]]
+# input format: /<target>[/<controller>[/view][/]]
 #
 sub _parse_request {
     my($str) = @_;
@@ -210,9 +210,9 @@ sub _parse_request {
 
     my($target) = $parts[0];
     my($controller) = $parts[1] || '';
-    my(@path) = @parts[0..$#parts];
+    my($view) = $parts[2] || '';
 
-    return ($target, $controller, \@path);
+    return ($target, $controller, $view);
 }
 
 =head1 COPYRIGHT
