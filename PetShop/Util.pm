@@ -98,7 +98,7 @@ sub _init_demo {
     my($self) = @_;
     _init_demo_categories($self);
     _init_demo_products($self);
-    _init_demo_items($self, _init_demo_suppliers($self));
+    _init_demo_items($self);
     _init_demo_users($self);
     return;
 }
@@ -122,13 +122,12 @@ sub _init_demo_categories {
     return;
 }
 
-# _init_demo_items(array_ref suppliers)
+# _init_demo_items()
 #
-# Init Model.Item and Model.inventory with rotating suppliers.
+# Init Model.Item and Model.inventory.
 #
 sub _init_demo_items {
-    my($self, $suppliers) = @_;
-    my($supplier) = 0;
+    my($self) = @_;
     my($item) = Bivio::Biz::Model->new($self->get_request, 'Item');
     my($inventory) = Bivio::Biz::Model->new($self->get_request, 'Inventory');
     my($status) = Bivio::Type->get_instance('ItemStatus')->OK;
@@ -165,7 +164,6 @@ sub _init_demo_items {
 	    product_id => $col[1],
 	    list_price => $col[2],
 	    unit_cost => $col[3],
-	    supplier_id => $suppliers->[$supplier++ % int(@$suppliers)],
 	    status => $status,
 	    attr1 => $col[4],
 	});
@@ -214,25 +212,6 @@ sub _init_demo_products {
     return;
 }
 
-# _init_demo_suppliers(self) : array_ref
-#
-# Initializes suppliers.  Returns the supplier ids.
-#
-sub _init_demo_suppliers {
-    my($self) = @_;
-    my(@id);
-    my($model) = Bivio::Biz::Model->new($self->get_request, 'Supplier');
-    my($status) = Bivio::Type->get_instance('SupplierStatus')->PREFERRED;
-    foreach my $name ('XYZ Pets', 'ABC Pets') {
-	$model->create({
-	    name => $name,
-	    status => $status,
-	});
-	push(@id, $model->get('supplier_id'));
-    }
-    return \@id;
-}
-
 # _init_demo_users(self)
 #
 # Creates user demo@bivio.biz with password "password".  Creates user
@@ -247,13 +226,13 @@ sub _init_demo_users {
 	    'User.first_name' => 'Demo',
 	    'User.last_name' => 'User',
 	    'Email.email' => "$u\@bivio.biz",
-	    'EntityAddress.addr1' => '1313 Mockingbird Lane',
-	    'EntityAddress.addr2' => undef,
-	    'EntityAddress.city' => 'Boulder',
-	    'EntityAddress.state' => 'CO',
-	    'EntityAddress.zip' => '80304',
-	    'EntityAddress.country' => 'US',
-	    'EntityPhone.phone' => '555-1212',
+	    'Address.street1' => '1313 Mockingbird Lane',
+	    'Address.street2' => undef,
+	    'Address.city' => 'Boulder',
+	    'Address.state' => 'CO',
+	    'Address.zip' => '80304',
+	    'Address.country' => 'US',
+	    'Phone.phone' => '555-1212',
 	    'RealmOwner.password' => 'password',
 	    force_create => 1,
 	});
