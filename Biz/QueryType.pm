@@ -115,6 +115,30 @@ __PACKAGE__->compile([
 
 =cut
 
+=for html <a name="get_method"></a>
+
+=head2 get_method() : string
+
+Returns method name for this query type.  It may be the empty string.
+
+=cut
+
+sub get_method {
+    return shift->get_short_desc;
+}
+
+=for html <a name="get_uri_attr"></a>
+
+=head2 get_uri_attr() : string
+
+Returns the request attribute for this query type.
+
+=cut
+
+sub get_uri_attr {
+    return shift->get_long_desc;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
