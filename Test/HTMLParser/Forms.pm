@@ -272,15 +272,28 @@ sub _end_form {
 	if $fields->{input};
     _unwind_duplicates($fields);
     my($label) = $fields->{current}->{label};
+    my($curr) = $fields->{current};
+    $fields->{current} = undef;
     if (defined($label)) {
 	my($e) = $self->get('elements');
-        Bivio::Die->die('duplicate form ', $label, ': ', $fields->{current})
-                if $e->{$label}
-		    && !Bivio::IO::Ref->nested_equals($e->{$label}, $fields->{current});
-        $self->get('elements')->{$label} = $fields->{current};
+	# If there is a complete duplicate, then we ignore.
+	if ($e->{$label}) {
+	    if (Bivio::IO::Ref->nested_equals($e->{$label}, $curr)) {
+		_trace('ignoring duplicate form: ', $curr) if $_TRACE;
+		return;
+	    }
+	    # Rename first form
+	    my($new_label) = "$label#0";
+	    $e->{$new_label} = $e->{$label};
+	    $e->{$new_label}->{label} = $label;
+	    $e->{$label} = undef;
+	}
+	for (my $i = 0; $e->{"$label#$i"};) {
+	    $curr->{label} = $label . '#' . ++$i;
+	}
+        $self->get('elements')->{$curr->{label}} = $curr;
     }
-    _trace($fields->{current}) if $_TRACE;
-    $fields->{current} = undef;
+    _trace($curr) if $_TRACE;
     return;
 }
 
@@ -668,7 +681,6 @@ sub _unwind_duplicates {
 		$c->{$k} = $found->[0];
 		next;
 	    }
-	    my($i) = 0;
 	    # If all values are identical, we leave #NNN values and
 	    # copy a simple one.
 	    if (grep(Bivio::IO::Ref->nested_equals($found->[0], $_), @$found)
@@ -679,6 +691,7 @@ sub _unwind_duplicates {
 	    else {
 		delete($c->{$k});
 	    }
+	    my($i) = 0;
 	    foreach my $v (@$found) {
 		$c->{$v->{label} = $k . '#' . $i++} = $v;
 		_trace('relabeled ', $v) if $_TRACE;
