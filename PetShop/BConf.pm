@@ -44,7 +44,7 @@ C<Bivio::PetShop::BConf> default petshop.bivio.biz configuration.
 
 =for html <a name="dev_overrides"></a>
 
-=head2 dev_overrides(string pwd, string host) : hash_ref
+=head2 dev_overrides(string pwd, string host, string user, int http_port) : hash_ref
 
 Development environment configuration.
 
@@ -64,7 +64,7 @@ sub dev_overrides {
 
 =for html <a name="merge_overrides"></a>
 
-=head2 merge_overrides(string pwd, string host) : hash_ref
+=head2 merge_overrides(string host) : hash_ref
 
 Base configuration.
 
