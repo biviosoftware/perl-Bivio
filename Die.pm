@@ -669,7 +669,7 @@ sub _new_from_eval_syntax_error {
 	    undef, undef, undef, Carp::longmess($@));
     _print_stack($self)
 	    if $_STACK_TRACE_ERROR && $self->get('attrs')->{program_error};
-    return;
+    return $self;
 }
 
 # _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
