@@ -26,6 +26,7 @@ that are not associated with instantiated classes.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Test::BulletinBoard;
 use Bivio::Test::HTTPUtil;
@@ -34,6 +35,14 @@ use Data::Dumper ();
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_USER);
+my($_PASSWORD);
+my($_SAVE_PASS);
+Bivio::IO::Config->register({
+    user => "btfuserx",
+    password => "foobar",
+    save_pass => "0",
+});
 
 =head1 METHODS
 
@@ -42,14 +51,14 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="click_button"></a>
 
-=head2 click_button(string label)
+=head2 static click_button(string label)
 
 Visits page associated with the url for the named button.
 
 =cut
 
 sub click_button {
-    my($proto, $target) = @_;
+    my(undef, $target) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
     my($parsed_res) = $board->get('response');
     die ("Must visit a page before clicking on a button.")
@@ -62,7 +71,7 @@ sub click_button {
 
 =for html <a name="click_imagemenu"></a>
 
-=head2 click_imagemenu(string target, optional string subtarget)
+=head2 static click_imagemenu(string target, optional string subtarget)
 
 Visits page associated with the url for the target portion of the imagemenu.
 The optional argument subtitle is used for accessing the expanded part of the
@@ -71,7 +80,7 @@ imagemenu.
 =cut
 #TODO: subtarget won't be optional until the other parts of imagemenu are there
 sub click_imagemenu {
-    my($proto, $target, $subtarget) = @_;
+    my(undef, $target, $subtarget) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
     my($parsed_res) = $board->get('response');
     die ("Must visit a page before clicking on imagemenu.")
@@ -88,7 +97,7 @@ sub click_imagemenu {
 
 =for html <a name="dump_analyzer"></a>
 
-=head2 dump_analyzer()
+=head2 static dump_analyzer()
 
 for debugging purposes only.
 
@@ -108,10 +117,77 @@ sub dump_analyzer {
     return;
 }
 
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item user : string
+
+default user to log in as
+
+=item password : string
+
+password for default user
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_USER = $cfg->{user};
+    $_PASSWORD = $cfg->{password};
+    $_SAVE_PASS = $cfg->{save_pass};
+    return;
+}
+
+=for html <a name="login"></a>
+
+=head2 login(optional string $user, optional string $pass, optional boolean $save)
+
+login is a static wrapper for the object method Login->execute().  It gets the
+current login object from the BulletinBoard.  If login information (user, pass)
+are specified and do not match the current login object, a new login object is
+made and the login is performed.
+
+
+
+=cut
+
+sub login {
+    my($proto, $user, $pass, $save) = @_;
+    #set user information unless passed in
+    unless (defined $user && defined $pass) {
+	_trace("Using default user information") if $_TRACE;
+	$user = $_USER;
+	$pass = $_PASSWORD;
+    }
+    $save = $_SAVE_PASS unless (defined $save);
+
+    #is there a current login with the same information?
+    my($login) = Bivio::Test::BulletinBoard->get_current()->get('login');
+    if (defined $login) {
+	if($login->matches_user($user)) {
+	    _trace("Already logged in as $user.  Skipping login.") if $_TRACE;
+	    #TODO redirect to intro page so verification succeeds?
+	    return;
+	}
+	_trace("Old login exists.  Now logging in as $user") if $_TRACE;
+    }
+    else {
+	#make a new login object
+	$login = Bivio::Test::Login->new($user, $pass, $save);
+    }
+    $login->execute();
+    return;
+}
+
 
 =for html <a name="post_form"></a>
 
-=head2 post_form(hashref fields_and_input)
+=head2 static post_form(hashref fields_and_input)
 
 Interfaces with HTTP methods to submit a form post.  Input is a hash with exact
 field names for public fields and the content to post.  This method assumes
@@ -120,7 +196,7 @@ that the last page visited contains the form to submit.
 =cut
 
 sub post_form {
-    my($proto, $fields_and_input) = @_;
+    my($undef, $fields_and_input) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
     my($parsed_res) = $board->get('response');
     #get form by looking at first field listed
@@ -142,7 +218,7 @@ sub post_form {
 
 =for html <a name="verify_all"></a>
 
-=head2 verify_all(string uri, string title, string text)
+=head2 static verify_all(string uri, string title, string text)
 
 Runs all three verification tests on the current parsed response.
 
@@ -166,9 +242,11 @@ Dies if specified text is not found within the current parsed response.
 
 sub verify_text {
     my(undef, $text) = @_;
-    #TODO: use get_widget_value to search through the hash for a string??
+    # set content for first iteration
+    my($content) = Bivio::Test::BulletinBoard->get_current()->get('response');
+
     #die("Failed verification.  text: $text not found in page.")
-    #	unless ...
+    #	unless (_unravel_and_match($text, $content);
     return;
 }
 
@@ -211,7 +289,7 @@ sub verify_uri {
 
 =for html <a name="visit"></a>
 
-=head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
+=head2 static visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
 
 Visits the page specified by uri and puts the response and uri in the current
 BulletinBoard object.  The uri may be the path beyond a base uri which will be
@@ -220,7 +298,7 @@ substituted in.
 =cut
 
 sub visit {
-    my($proto, $uri) = @_;
+    my(undef, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
     my($board) = Bivio::Test::BulletinBoard->get_current();
@@ -235,6 +313,23 @@ sub visit {
 }
 
 #=PRIVATE METHODS
+
+# _unravel_and_match(string $match, unknown $content) : boolean
+#
+# Unravels hash looking for the match string.  Returns 1 if match is a success.
+#
+sub _unravel_and_match {
+    my($match, $content) = @_;
+
+     #TODO:
+    # if ref($content) eq 'hash'
+    # foreach value in the hash
+    #   verify_text($content)
+    # if string
+    # compare...return 1 on match
+
+    return;
+}
 
 =head1 COPYRIGHT
 
