@@ -69,6 +69,19 @@ sub MAX_PARAMETERS {
     return 100;
 }
 
+=for html <a name="REQUIRE_COMMIT_OR_ROLLBACK"></a>
+
+=head2 REQUIRE_COMMIT_OR_ROLLBACK : boolean
+
+Should a commit/rollback be issued even for queries? Subclasses may
+override this, default is false.
+
+=cut
+
+sub REQUIRE_COMMIT_OR_ROLLBACK {
+    return 0;
+}
+
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
@@ -138,7 +151,10 @@ sub commit {
     return _get_instance($self)->commit
 	    unless ref($self);
     my($fields) = $self->[$_IDI];
-    return unless $fields->{need_commit};
+
+    unless ($self->REQUIRE_COMMIT_OR_ROLLBACK) {
+        return unless $fields->{need_commit};
+    }
     _trace('commit') if $_TRACE;
     _get_connection($self)->commit() unless $fields->{db_is_read_only};
     $fields->{need_commit} = 0;
@@ -581,7 +597,10 @@ sub rollback {
     return _get_instance($self)->rollback
 	    unless ref($self);
     my($fields) = $self->[$_IDI];
-    return unless $fields->{need_commit};
+
+    unless ($self->REQUIRE_COMMIT_OR_ROLLBACK) {
+        return unless $fields->{need_commit};
+    }
     _trace('rollback') if $_TRACE;
     _get_connection($self)->rollback() unless $fields->{db_is_read_only};
     $fields->{need_commit} = 0;
