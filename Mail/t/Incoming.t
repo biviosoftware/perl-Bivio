@@ -5,7 +5,7 @@
 #TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..7\n"; }
+BEGIN { $| = 1; print "1..8\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Incoming;
@@ -198,6 +198,56 @@ EOF
     'reply_to_email' => 'johnk@inil.com',
     'subject' => 'Re: Christmas meeting',
     'date_time' => 944777921,
+},
+<<'EOF'
+Return-Path: <nagler@mail.bivio.com>
+Received: from mail.bivio.com (ski.bivio.com [207.174.140.66])
+        by test.bivio.com (8.9.3/8.9.3) with ESMTP id PAA22679
+        for <ask_candis@test.bivio.com>; Thu, 16 Dec 1999 15:20:38 -0700
+Received: (from nagler@localhost)
+        by mail.bivio.com (8.8.7/8.8.7) id PAA09081
+        for ask_candis@test.bivio.com; Thu, 16 Dec 1999 15:20:38 -0700
+Date: Thu, 16 Dec 1999 15:20:38 -0700
+Message-Id: <199912162220.PAA09081@mail.bivio.com>
+From: Candis King <candis@enteract.com>
+Subject: What resources are available to new investors?
+MIME-Version: 1.0
+To: ask_candis_publish@test.bivio.com
+Subject: What makes you successful as an NAIC investor?
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+<title>What resources are available to new investors?</title>
+</head>
+<body>
+<u>Susan M. of Bay View, MI writes:</u>
+<br>
+<i>
+I am a new investor and don't understand where to begin to look
+for investing information.  What resources would you suggest a
+new investor start out with?
+</i>
+
+<p>
+Dear Susan,
+<p>
+Candis King<br>
+Wheaton, IL<br>
+<a href="mailto:ask_candis@bivio.com">ask_candis@bivio.com</a><br>
+</body>
+</html>
+EOF
+=>
+{
+    'content_type' => 'text/html',
+    'from_name' => 'Candis King',
+    'from_email' => 'candis@enteract.com',
+    'reply_to_email' => undef,
+    'subject' => 'What resources are available to new investors?',
+    'date_time' => 945382838,
 },
 );
 
