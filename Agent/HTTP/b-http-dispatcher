@@ -22,6 +22,10 @@ Logs are written to stdout.
 
 =over 4
 
+=item -background
+
+Execute in background (not -X) mode.  KeepAlives will be turned on.
+
 =item -n
 
 Don't execute, just show configuration file generated and
@@ -62,11 +66,13 @@ sub main {
     my(@argv) = @_;
     Bivio::IO::Config->initialize(\@argv);
     my($execute) = 1;
+    my($background) = 0;
     my($server_name) = undef;
     local($_);
     while (@argv) {
 	$_ = shift(@argv);
 	/^-n/ && ($execute = 0, next);
+	/^-(?:b|bg|background)/ && ($background = 1, next);
 	/^-/ && &_usage("unknown option \"$_\"");
 	defined($server_name) && &_usage('too many arguments');
 	$server_name = $_;
@@ -91,12 +97,15 @@ ln -s $_APACHE_HOME/libexec libexec
 ln -s . logs
 EOF
     }
+    my($log) = $background ? 'stderr.log' : '|cat';
+    my($keepalive) = $background ? 'on' : 'off';
     my($port) = $cfg->{port};
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
     my($pwd) = &Cwd::cwd();
     my($host) = `hostname`;
     my($handler) = $cfg->{handler};
+    my(@start_mode) = $background ? () : ('-X');
     my($bivio_conf) = $ENV{'BIVIO_CONF'}
 	    ? "PerlSetEnv BIVIO_CONF $ENV{'BIVIO_CONF'}" : '';
     chop($host);
@@ -114,8 +123,9 @@ EOF
     close(OUT) || die("close $conf: $!");
     close(DATA);
     if ($execute) {
-	print STDERR "Starting: $_HTTPD -X -d $pwd -f $pwd/$conf\n";
-	exec("$_HTTPD", '-X', '-d', $pwd, '-f', "$pwd/$conf");
+	print STDERR "Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf\n";
+	print STDERR "tail -f stderr.log\n" if $background;
+	exec("$_HTTPD", @start_mode, '-d', $pwd, '-f', "$pwd/$conf");
 	die("$_HTTPD: $!");
     }
     else {
@@ -136,7 +146,7 @@ sub _usage {
     my($msg) = join('', @_);
     print STDERR <<"EOF";
 $0: $msg
-usage: $0 [--config] [-n] [server-name]
+usage: $0 [--config] [-n] [-background] [server-name]
 EOF
     exit(1);
 }
@@ -235,9 +245,9 @@ PerlPassEnv ORACLE_SID
 
 Timeout 10
 HostnameLookups off
-KeepAlive off
+KeepAlive <$keepalive>
 MinSpareServers 1
-MaxSpareServers 1
+MaxSpareServers 3
 StartServers 1
 MaxClients 2
 MaxRequestsPerChild 1000
@@ -246,12 +256,12 @@ LimitRequestBody 4194304
 ServerRoot <$pwd>
 DocumentRoot <$pwd>/html
 PidFile httpd.pid
-ErrorLog |cat
+ErrorLog <$log>
 # Possible values include: debug, info, notice, warn, error, crit,
 # alert, emerg.
 LogLevel debug
 LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
-CustomLog |cat combined
+CustomLog <$log> combined
 TypesConfig /etc/mime.types
 DefaultType text/html
 LockFile httpd.lock
