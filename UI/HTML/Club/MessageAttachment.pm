@@ -121,13 +121,12 @@ sub execute {
 		    "img=".$attachment_id).">";
 	    }
 	    else {
-		$body =~ /(X-BivioNumParts: \d*)\n/;
-		$html = $';
+		$body =~ /(?:X-BivioNumParts: \d*)\n(.*)/m;
+		$html = $esc ? Bivio::Util::escape_html($1) : $1;
 	    }
-	    $str = Bivio::UI::HTML::Widget::String->new({
-		    value => $html,
-		    escape_text => $esc,
-		});
+	    $str = Bivio::UI::HTML::Widget::Join->new({
+		values => [$html],
+	    });
 	    $str->initialize();
 	    $fields->{content}->put(value => $str);
 	}
