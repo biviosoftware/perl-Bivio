@@ -242,7 +242,7 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 use Bivio::Die;
 use Bivio::Type::Array;
 use Bivio::TypeError;
-if ($^O !~ /win32/i) {
+if ($^O !~ /win32|cygwin/i) {
     package main;
     require 'syscall.ph';
 }
@@ -697,10 +697,11 @@ Returns an array_ref of seconds and microseconds.
 =cut
 
 sub gettimeofday {
+    return [time, 0]
+	unless defined(&main::SYS_gettimeofday);
     my($i) = '8..bytes';
-    return [unpack('ll', $i)]
-	if Bivio::Die->eval(sub {syscall(&main::SYS_gettimeofday, $i, 0)});
-    return [time, 0];
+    syscall(&main::SYS_gettimeofday, $i, 0);
+    return [unpack('ll', $i)];
 }
 
 =for html <a name="gettimeofday_diff_seconds"></a>
