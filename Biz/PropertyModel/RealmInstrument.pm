@@ -42,6 +42,7 @@ use Bivio::Type::PrimaryId;
 use Bivio::Type::Text;
 
 #=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 
@@ -108,9 +109,22 @@ sub get_first_buy_date {
 	    $date = $date2;
 	}
     }
-#    my($d, $m, $y) = (gmtime($date))[3,4,5];
-#    return sprintf('%02d/%02d/%02d', ++$m, $d, $y);
     return $date;
+}
+
+=for html <a name="get_next_block"></a>
+
+=head2 get_next_block() : string
+
+Returns the next block identifier.
+
+=cut
+
+sub get_next_block {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    die("not implemented");
+    return;
 }
 
 =for html <a name="get_number_of_shares"></a>
