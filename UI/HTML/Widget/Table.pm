@@ -706,14 +706,15 @@ sub _get_heading {
                 return \$sort_col eq '$sort_fields->[0]' ? 1 : 0;
             }")], {
                 0 => $_VS->vs_link($heading,
-                        ['->format_uri_for_sort', undef, $sort_fields]),
+                        ['->format_uri_for_sort', undef, undef,
+			    @$sort_fields]),
                 1 => $_VS->vs_director([
                     sub {
                         return shift->get_query->get('order_by')->[1];
                     }], {
                         0 => $_VS->vs_join([
                             $_VS->vs_link($heading, ['->format_uri_for_sort',
-				undef, $sort_fields, 1]),
+				undef, 1, @$sort_fields]),
                             ' ',
                             $_VS->vs_image('sort_up',
                                     'This column sorted in descending order')
@@ -721,7 +722,7 @@ sub _get_heading {
                             ]),
                         1 => $_VS->vs_join([
                             $_VS->vs_link($heading, ['->format_uri_for_sort',
-				undef, $sort_fields, 0]),
+				undef, 0, $sort_fields]),
                             ' ',
                             $_VS->vs_image('sort_down',
                                     'This column sorted in ascending order')
