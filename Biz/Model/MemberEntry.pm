@@ -34,16 +34,55 @@ and delete interface to the C<member_entry_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Entry;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
+use Bivio::Type::EntryClass;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_entry"></a>
+
+=head2 create_entry(Bivio::Biz::Model::RealmTransactions trans, hash_ref properties)
+
+Creates the member entry, and transaction entry for the specified
+transaction, using the values from the specified properties hash. Dies
+on failure.
+
+Defaults tax_category to NOT_TAXABLE, tax_basis to true, units to 0,
+and valuation_date to undef.
+
+=cut
+
+sub create_entry {
+    my($self, $trans, $properties) = @_;
+
+    $properties->{class} = Bivio::Type::EntryClass::MEMBER();
+    ($properties->{realm_id}, $properties->{realm_transaction_id})
+	    = $trans->get('realm_id', 'realm_transaction_id');
+
+    # defaults
+    $properties->{tax_category} = Bivio::Type::TaxCategory::NOT_TAXABLE()
+	    unless exists($properties->{tax_category});
+    $properties->{tax_basis} = 1
+	    unless exists($properties->{tax_basis});
+    $properties->{units} = 0
+	    unless exists($properties->{units});
+
+    my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
+    $entry->create($properties);
+
+    $properties->{entry_id} = $entry->get('entry_id');
+    $self->create($properties);
+    return;
+}
 
 =for html <a name="internal_initialize"></a>
 
