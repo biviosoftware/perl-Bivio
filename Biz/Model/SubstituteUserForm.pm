@@ -168,13 +168,10 @@ sub validate {
     my($login) = $properties->{'login'};
     my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
     $properties->{realm_owner} = $owner;
-    if ($login =~ /@/ && $owner->unauth_load_by_email($login)
-	    || $login =~ /^\d+$/ && $owner->unauth_load(realm_id => $login)
-	    || $owner->unauth_load(name => $login)) {
-
+    if ($owner->unauth_load_by_email_id_or_name($login)) {
 	# No shadow users please
 	if ($owner->is_shadow_user) {
-	    $self->internal_put_error('login', 'SU_SHADOW_USER');
+	    $self->internal_put_error('login', 'SHADOW_USER');
 	    return;
 	}
 
