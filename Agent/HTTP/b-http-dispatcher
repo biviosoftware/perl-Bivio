@@ -75,12 +75,14 @@ sub main {
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
 	-d 'html/i' || system('cvs checkout html/i');
 	&symlink("$_APACHE_HOME/libexec", 'libexec');
+	&symlink('.', 'logs');
     }
     else {
 	print <<"EOF";
 rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf
 cvs checkout html/i
 ln -s $_APACHE_HOME/libexec libexec
+ln -s . logs
 EOF
     }
     my($port) = $cfg->{port};
