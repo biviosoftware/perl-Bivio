@@ -11,7 +11,6 @@ Bivio::Mail::RFC822 - Defines the proper syntax for mail message headers
 =head1 SYNOPSIS
 
     use Bivio::Mail::RFC822;
-    Bivio::Mail::RFC822->new();
 
 =cut
 
@@ -20,104 +19,435 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Mail::RFC822>
+C<Bivio::Mail::RFC822> offers regular expressions which are derived from the
+augmented BNF specified in RFC 822.
 
 =cut
 
-
 =head1 CONSTANTS
+
+=cut
+
+=for html <a name="CHAR"></a>
+
+=head2 CHAR : string
+
+any ASCII character
 
 =cut
 
 sub CHAR {
     return '[\\0-\\177]';
 }
+
+=cut
+
+=for html <a name="ALPHA"></a>
+
+=head2 ALPHA : string
+
+any ASCII alphabetic character
+
+=cut
+
 sub ALPHA {
     return '[\\101-\\132\\141-\\172]';
 }
+
+=cut
+
+=for html <a name="DIGIT"></a>
+
+=head2 DIGIT : string
+
+any ASCII decimal digit
+
+=cut
+
 sub DIGIT {
     return '[\\060-\\071]';
 }
+
+=cut
+
+=for html <a name="CTL"></a>
+
+=head2 CTL : string
+
+any ASCII control character and DEL
+
+=cut
+
 sub CTL {
     return '[\\0-\\037\\177-\\377]';
 }
+
+=cut
+
+=for html <a name="LWSP"></a>
+
+=head2 LWSP : string
+
+Linear white-space
+
+=cut
+
 sub LWSP {
     return '[ \\t]';
 }
+
+=cut
+
+=for html <a name="SPECIALS"></a>
+
+=head2 SPECIALS : string
+
+Special characters which must be in quoted-string, to use within a word
+
+=cut
+
 sub SPECIALS {
     return '[][()<>@,;:\\\\".]';
 }
+
+=cut
+
+=for html <a name="ATOM"></a>
+
+=head2 ATOM : string
+
+any CHAR except specials, SPACE and CTLs
+
+=cut
+
 sub ATOM {
     return '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
 }
+
+=cut
+
+=for html <a name="QUOTED_STRING"></a>
+
+=head2 QUOTED_STRING : string
+
+Regular qouted text or quoted chars
+
+=cut
+
 sub QUOTED_STRING {
     return '"(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
 }
+
+=cut
+
+=for html <a name="DOMAIN_LITERAL"></a>
+
+=head2 DOMAIN_LITERAL : string
+
+dtext          = any CHAR excluding "[", ]", "\" & CR, & including linear-white-space
+quoted-pair    = "\" CHAR
+domain-literal = "[" *(dtext / quoted-pair) "]"
+
+=cut
+
 sub DOMAIN_LITERAL {
     return '\\[(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^][\\\\])*)\\]';
 }
-# 822 comments can be nested.  We test for simple comments and if
-# that fails, we have to get complex.
+
+=cut
+
+=for html <a name="NOT_NESTED_COMMENT"></a>
+
+=head2 NOT_NESTED_COMMENT : string
+
+822 comments can be nested.  We test for simple comments and if
+that fails, we have to get complex.
+
+ctext   = any CHAR excluding "[", ]", "\" & CR, & including linear-white-space
+comment = "(" *(ctext / quoted-pair / comment) ")"
+
+=cut
+
 sub NOT_NESTED_COMMENT {
     return '\\((?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^()\\\\])*)\\)';
 }
+
+=cut
+
+=for html <a name="WORD"></a>
+
+=head2 WORD : string
+
+word = atom / quoted-string
+
+=cut
+
 sub WORD {
-    return "(?:".&ATOM."|".&QUOTED_STRING.")";
+    return "(?:". ATOM() . "|" . QUOTED_STRING() .")";
 }
+
+=cut
+
+=for html <a name="PHRASE"></a>
+
+=head2 PHRASE : string
+
+sequence of words
+
+=cut
+
 sub PHRASE {
-    return &WORD."(?:\\s+".&WORD.")*";
+    return WORD() . "(?:\\s+" . WORD() .")*";
 }
+
+=cut
+
+=for html <a name="ATOM_ONLY_PHRASE"></a>
+
+=head2 ATOM_ONLY_PHRASE : string
+
+sequence of atoms
+
+=cut
+
 sub ATOM_ONLY_PHRASE {
-    return &ATOM."(?:\\s+".&ATOM.")*";
+    return ATOM() . "(?:\\s+" . ATOM() . ")*";
 }
+
+=cut
+
+=for html <a name="LOCAL_PART"></a>
+
+=head2 LOCAL_PART : string
+
+sequence of dotted words
+
+=cut
+
 sub LOCAL_PART {
-    return &WORD."(?:\\.".&WORD.")*";
+    return WORD() . "(?:\\." . WORD() .")*";
 }
+
+=cut
+
+=for html <a name="DOTTED_ATOMS"></a>
+
+=head2 DOTTED_ATOMS : string
+
+sequence of dotted atoms
+
+=cut
+
 sub DOTTED_ATOMS {
-    return &ATOM."(?:\\.".&ATOM.")*";
+    return ATOM() . "(?:\\." . ATOM() . ")*";
 }
+
+=cut
+
+=for html <a name="SUB_DOMAIN"></a>
+
+=head2 SUB_DOMAIN : string
+
+domain-ref = atom
+sub-domain = domain-ref / domain-literal
+
+=cut
+
 sub SUB_DOMAIN {
-    return "(?:".&ATOM."|".&DOMAIN_LITERAL.")";
+    return "(?:" . ATOM() . "|" . DOMAIN_LITERAL() . ")";
 }
+
+=cut
+
+=for html <a name="DOMAIN"></a>
+
+=head2 DOMAIN : string
+
+sequence of sub-domains
+
+=cut
+
 sub DOMAIN {
-    return &SUB_DOMAIN."(?:\\.".&SUB_DOMAIN.")*";
+    return SUB_DOMAIN() . "(?:\\." . SUB_DOMAIN() . ")*";
 }
+
+=cut
+
+=for html <a name="ADDR_SPEC"></a>
+
+=head2 ADDR_SPEC : string
+
+global address
+
+=cut
+
 sub ADDR_SPEC {
-    return &LOCAL_PART."\@".&DOMAIN."";
+    return LOCAL_PART() . "\@" . DOMAIN() . "";
 }
+
+=cut
+
+=for html <a name="ATOM_ONLY_ADDR"></a>
+
+=head2 ATOM_ONLY_ADDR : string
+
+
+
+=cut
+
 sub ATOM_ONLY_ADDR {
-    return &DOTTED_ATOMS."\@".&DOTTED_ATOMS;
+    return DOTTED_ATOMS() . "\@" . DOTTED_ATOMS();
 }
+
+=cut
+
+=for html <a name="ROUTE"></a>
+
+=head2 ROUTE : string
+
+path-relative route
+
+=cut
+
 sub ROUTE {
-    return "\@".&DOMAIN."(?:,\@".&DOMAIN.")*:";
+    return "\@" . &DOMAIN . "(?:,\@" . &DOMAIN .")*:";
 }
+
+=cut
+
+=for html <a name="ROUTE_ADDR"></a>
+
+=head2 ROUTE_ADDR : string
+
+route-addr = "<" [route] addr-spec ">"
+
+=cut
+
 sub ROUTE_ADDR {
-    return "<(?:".&ROUTE.")?".&ADDR_SPEC.">";
+    return "<(?:" . ROUTE() . ")?" . ADDR_SPEC() .">";
 }
+
+=cut
+
+=for html <a name="MAILBOX"></a>
+
+=head2 MAILBOX : string
+
+simple address name & addr-spec
+
+=cut
+
 sub MAILBOX {
-    return "(?:".&ADDR_SPEC."|(?:".&PHRASE."\\s+)*".&ROUTE_ADDR.")";
+    return "(?:" . ADDR_SPEC() . "|(?:" . PHRASE() . "\\s+)*" . ROUTE_ADDR() . ")";
 }
+
+=cut
+
+=for html <a name="GROUP"></a>
+
+=head2 GROUP : string
+
+group = phrase ":" [#mailbox] ";"
+
+=cut
+
 sub GROUP {
-    return &PHRASE.":(?:".&MAILBOX."(?:,".&MAILBOX.")*;";
+    return PHRASE() . ":(?:" . MAILBOX() . "(?:," . MAILBOX() . ")*;";
 }
+
+=cut
+
+=for html <a name="ADDRESS"></a>
+
+=head2 ADDRESS : string
+
+one addressee named list
+
+=cut
+
 sub ADDRESS {
-    return "(?:".&MAILBOX."|".&GROUP.")";
+    return "(?:" . MAILBOX() . "|" . GROUP() .")";
 }
+
+=cut
+
+=for html <a name="FIELD_NAME"></a>
+
+=head2 FIELD_NAME : string
+
+Header field name, any CHAR, excluding CTLs, SPACE, and ":"
+
+=cut
+
 sub FIELD_NAME {
     return '[\\041-\\071\\073-\\176]+:';
 }
+
+=cut
+
+=for html <a name="DAY"></a>
+
+=head2 DAY : string
+
+day of week
+
+=cut
+
 sub DAY {
     return "[a-zA-Z]{3}";
 }
+
+=cut
+
+=for html <a name="DATE"></a>
+
+=head2 DATE : string
+
+day month year
+
+=cut
+
 sub DATE {
     return '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
 }
+
+=cut
+
+=for html <a name="TIME"></a>
+
+=head2 TIME : string
+
+hour zone
+
+=cut
+
 sub TIME {
     return '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s*([-+\\w]{1,5})';
 }
+
+=cut
+
+=for html <a name="DATE_TIME"></a>
+
+=head2 DATE_TIME : string
+
+date-time  = [ day "," ] date time
+
+=cut
+
 sub DATE_TIME {
-    return "(?:".&DAY."\\s*,)?\\s*".&DATE."\\s*".&TIME;
+    return "(?:" . DAY() . "\\s*,)?\\s*" . DATE() . "\\s*" . TIME();
 }
+
+=cut
+
+=for html <a name="MONTHS"></a>
+
+=head2 MONTHS : hash_ref
+
+Month names mapped to value 0-11
+
+=cut
 
 sub MONTHS {
     return {
@@ -135,7 +465,17 @@ sub MONTHS {
             'DEC' => 11,
            };
 }
-        
+
+=cut
+
+=for html <a name="TIME_ZONES"></a>
+
+=head2 TIME_ZONES : hash_ref
+
+Time zone names mapped to GMT time offsets
+
+=cut
+
 sub TIME_ZONES {
     return {
             'UT' => 0,
@@ -182,8 +522,6 @@ sub TIME_ZONES {
 #=VARIABLES
 
 =head1 METHODS
-
-=cut
 
 #=PRIVATE METHODS
 
