@@ -340,6 +340,13 @@ sub _initialize_html {
 	$p .= '<b>';
 	$s = '</b>'.$s;
     }
+
+    # Generate physical styles: <B> and <I>
+    if (defined($attrs{rel_size})) {
+	$p .= "<$attrs{rel_size}>";
+	$s = "</$attrs{rel_size}>".$s;
+    }
+
     return [$p, $s];
 }
 
