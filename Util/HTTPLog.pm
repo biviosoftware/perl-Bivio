@@ -248,6 +248,7 @@ sub _initialize {
 	    "::_create_stock_transfer_entry.*Couldn't find related stock",
 	    'HTTP::Form::parse.*unknown form Content-Type: <undef>',
 	    "::warn:.*income statement doesn't match schedule d",
+	    '::warn:\d+ large audit, \d+ entries',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
