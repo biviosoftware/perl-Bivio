@@ -72,7 +72,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program({
     'chapter/title' => ['h1'],
     chapter => sub {
 	my($html, $state) = @_;
-	$$html .= "<p><h2>Footnotes</h2></p><ol>\n$state->{footnotes}</ol>\n"
+	$$html .= "<h2>Footnotes</h2><ol>\n$state->{footnotes}</ol>\n"
 	    if $state->{footnote_idx};
 	return "<html><body>$$html</body></html>";
     },
@@ -175,9 +175,11 @@ sub _eval_child {
 	$state);
 }
 
-# _eval_op(hash_ref op, string_ref html, hash_ref state) : string
+# _eval_op(any op, string_ref html, hash_ref state) : string
 #
-# Surround $html with prefix and suffix from $op.  Return concatenation.
+# If $op is CODE, call the subroutine with $html and $state.  Otherwise,
+# surround $html with prefix and suffix from $op.  Return concatenation
+# or result of call to $op.
 #
 sub _eval_op {
     my($op, $html, $state) = @_;
