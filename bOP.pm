@@ -19,25 +19,24 @@ bOP
 
 =cut
 
-=head1 EXTENDS
-
-L<Bivio>
-
-=cut
-
-use Bivio;
-@Bivio::bOP::ISA = ('Bivio');
+use Bivio::UNIVERSAL;
+@Bivio::bOP::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
-C<Bivio::bOP>
+C<bOP> is a multi-dimensional, application framework.  At the highest level,
+bOP provides support for web-delivered applications based on a
+Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
+cohesive infrastructure for any Perl application.
+
+We'll be writing more here later.  Please visit
+http://www.bivio.ws for more info.
 
 =cut
 
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
   Renamed bivio.net -> bivio.biz
