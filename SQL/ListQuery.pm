@@ -129,6 +129,9 @@ my(%_QUERY_TO_FIELDS) = (
     't' => 'this',
 );
 my(@_QUERY) = sort(values(%_QUERY_TO_FIELDS));
+# Separates elements in a multivalued primary key.
+# Tightly coupled with $Bivio::Biz::FormContext::_HASH_CHAR
+my($_SEPARATOR) = "\177";
 
 =head1 FACTORIES
 
@@ -491,7 +494,7 @@ sub _format_uri {
     }
 
     # search
-    $res .= 's='.Bivio::Util::escape_uri($attrs->{search}).'&'
+    $res .= 's='.Bivio::Util::escape_query($attrs->{search}).'&'
 	    if defined($attrs->{search});
 
     # Delete trailing '&'
@@ -513,7 +516,7 @@ sub _format_uri_primary_key {
     for (my($i) = 0; $i < int(@$pk_cols); $i++) {
 	$res .= $pk_cols->[$i]->{type}->to_query(
 		$is_array ? $pk->[$i] : $pk->{$pk_cols->[$i]->{name}})
-		."\177";
+		.$_SEPARATOR;
     }
     chop($res);
     return $res;
@@ -591,7 +594,7 @@ sub _parse_parent_id {
 
 # _parse_pk(hash_ref attrs, Bivio::SQL::Support support, ref die, string tag, string name)
 #
-# Parse the primary key.  The \177 is a special character
+# Parse the primary key.  The $_SEPARATOR is a special character
 # that is unlikely to appear in primary keys.
 #
 sub _parse_pk {
@@ -599,9 +602,9 @@ sub _parse_pk {
     my($value) = $attrs->{$tag};
     $attrs->{$name} = undef, return unless defined($value);
     my($res) = $attrs->{$name} = [];
-    my(@pk) = split(/\177/, $value);
+    my(@pk) = split(/$_SEPARATOR/o, $value);
     foreach my $t (@{$support->get('primary_key_types')}) {
-#TODO: Need to check for correct number of \177 values
+#TODO: Need to check for correct number of $_SEPARATOR values
 	my($literal) = shift(@pk);
 	my($v, $err) = $t->from_literal($literal);
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(),
