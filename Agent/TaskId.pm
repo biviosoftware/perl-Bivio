@@ -973,6 +973,8 @@ my(@_CFG) = (
     )],
     # Redirect to MY_SITE by default, because the user may not be
     # logged in and USER_HOME requires an auth_realm.
+#TODO: Make this goto/*  I can't do that now, because too close to release
+#      Need to modify ClientRedirect to throw away path info in default case.
     [qw(
 	CLIENT_REDIRECT
 	84
@@ -1155,7 +1157,7 @@ my(@_CFG) = (
 	104
         USER
         LOGIN
-        ?/goto
+        ?/goto/*
         Bivio::Biz::Action::ClientRedirect->execute_query
         next=HTTP_DOCUMENT
     )],
@@ -1164,7 +1166,7 @@ my(@_CFG) = (
 	105
         CLUB
         LOGIN
-        ?/goto
+        ?/goto/*
         Bivio::Biz::Action::ClientRedirect->execute_query
         next=HTTP_DOCUMENT
     )],
