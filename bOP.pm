@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application. 
+cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    values.
+  * Bivio::UI::Icon supports PNG.
+  * Bivio::Ext::LWPUserAgent added (missing in last release)
+
+  Revision 1.15  2002/06/07 23:13:36  nagler
+  * EC (e-commerce) classes added which supports authorize.net
+  * Bivio::BConf sharing config improved.
+  * Bivio::Collection::Attributes->get_nested now recurses into Attributes
+  * Bivio::Delegate::SimplePermission has ADMIN_WRITE and ADMIN_READ
+  * Bivio::Util::SQL (b-sql) supports subclassing (better sharing)
+  * Bivio::Test::Util (b-test) searches for unit tests recursively
+  * Bivio::Test::Language fully implemented (no petshop examples)
+  * Bivio::UI::HTML::Widget::Link renders TaskId values dynamically
+  * Bivio::UI::HTML::Widget::Table renders headings in <th> (helps with testing)
+  * Bivio::UNIVERSAL->inheritance_ancestor_list returns classes ancestors
   * Bivio::ShellUtil supports subclassing of utilities
   * Bivio::UI::HTML::Widget::FormField uses FormFieldLabel instead of String
   * Misc bug fixes
