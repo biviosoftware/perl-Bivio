@@ -49,6 +49,10 @@ String label to use.
 
 Value of button.
 
+=item auto_submit : boolean [0]
+
+Should the a click submit the form?
+
 =back
 
 =cut
@@ -98,6 +102,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
     $fields->{value} = $self->get('value');
+    $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
     return;
 }
 
@@ -120,7 +125,10 @@ sub render {
     unless ($fields->{initialized}) {
 	$fields->{prefix} = '<nobr><input name=';
 	$fields->{suffix} = ' type=radio value="'
-		.$value->to_html($value)."\">\n&nbsp;"
+		.$value->to_html($value)
+		."\""
+		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
+		.">\n&nbsp;"
 		.$_FONT_PREFIX. Bivio::Util::escape_html($self->get('label'))
 		.$_FONT_SUFFIX.'</nobr>';
 	$fields->{initialized} = 1;

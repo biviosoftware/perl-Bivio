@@ -50,6 +50,10 @@ List of choices will be constructed from the Enum's values.
 
 Should the UNKNOWN type be displayed?
 
+=item auto_submit : boolean [0]
+
+Should the a click submit the form?
+
 =back
 
 =cut
@@ -87,6 +91,7 @@ sub new {
 	    field => $field,
 	    value => $_->[0],
 	    label => $_->[1],
+	    auto_submit => $self->get_or_default('auto_submit', 0),
 	}),
     } @{_load_items_from_enum($self, $choices)};
 
