@@ -32,9 +32,10 @@ loads a new auth_realm every time.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::Realm;
 use Bivio::Agent::Reply;
 use Bivio::Auth::Realm::General;
+use Bivio::Auth::Realm;
+use Bivio::Type::UserAgent;
 use Bivio::Util;
 
 #=VARIABLES
@@ -64,6 +65,7 @@ sub new {
 	# Needed by Task->execute, but not used here
 	reply => Bivio::Agent::Reply->new(),
     });
+    Bivio::Type::UserAgent->execute_job($self);
 
     # Realm
     my($realm);

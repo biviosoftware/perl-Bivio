@@ -101,14 +101,14 @@ my(@_CFG) = (
         /
 	Bivio::Biz::Action::HTTPDocument
     )],
-#TODO: MY_CLUB_REDIRECT isn't right if user not part of club.
+#TODO: MY_CLUB_SITE isn't right if user not part of club.
 #      Need a redirect to club or to user's home.
     [qw(
-	MY_CLUB_REDIRECT
+	MY_CLUB_SITE
 	4
         GENERAL
-        DOCUMENT_READ
-        home
+        ANY_USER
+        pub/my_club_site
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_HOME
     )],
@@ -121,7 +121,7 @@ my(@_CFG) = (
 	Bivio::Biz::Action::Logout
 	Bivio::Biz::Model::LoginForm
 	Bivio::UI::HTML::General::Login
-        next=MY_CLUB_REDIRECT
+        next=MY_CLUB_SITE
     )],
     # Must match the start of the tour
     [qw(
@@ -1664,6 +1664,16 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::UI::HTML::Club::IncomeAndExpenseReport
         next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
+    )],
+    # Forces user to login and then redirects to USER_HOME
+    [qw(
+        MY_SITE
+        158
+        GENERAL
+        ANY_USER
+        pub/my_site
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=USER_HOME
     )],
 );
 

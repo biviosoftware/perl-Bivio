@@ -153,7 +153,9 @@ sub execute {
 #TODO: If do cache, then make sure not "active" when making call.
 	$statement = _get_connection()->prepare($sql);
 	# Only need a commit if there has been data modification language
-	my($is_select) = $sql =~ /^\s*select/i;
+	# Tightly coupled with PropertySupport
+	my($is_select) = $sql =~ /^\s*select/i
+		&& $sql !~ /for\s+update\s*$/i;
 	$_NEED_COMMIT = 1 unless $is_select;
 	if ($has_blob) {
 	    if ($is_select) {

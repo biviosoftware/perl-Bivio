@@ -109,7 +109,9 @@ sub enqueue {
     my($u) = $req->get('auth_user');
     $params->{auth_user_id} = $u ? $u->get('realm_id') : undef;
 
-    # Enqueue
+    # Enqueue and add as a txn resource (may end up calling handle_rollback
+    # multiple times, but the routine is re-enterable).
+    $req->push_txn_resource($self);
     push(@_QUEUE, $params);
     return;
 }
@@ -142,6 +144,32 @@ sub execute_queue {
 	}
     }
     $_IN_EXECUTE = 0;
+    return;
+}
+
+=for html <a name="handle_commit"></a>
+
+=head2 handle_commit()
+
+Commit called, do nothing.
+
+=cut
+
+sub handle_commit {
+    return;
+}
+
+=for html <a name="handle_rollback"></a>
+
+=head2 handle_rollback()
+
+Rollback called, clear queue.
+
+=cut
+
+sub handle_rollback {
+    my($self) = @_;
+    $self->discard_queue;
     return;
 }
 

@@ -154,6 +154,12 @@ sub new {
 	    @{$primary_key_names});
     $attrs->{delete} = "delete from $table_name ".$attrs->{primary_where};
     $attrs->{update} = "update $table_name set ";
+
+    # Need to lock records for update if has blob.  Coupled with
+    # Connection
+    $attrs->{update_lock} = "select ".$primary_key_names->[0]
+	    ." from $table_name ".$attrs->{primary_where}." for update";
+
     my($primary_id_name) = $attrs->{table_name};
     $primary_id_name =~ s/_t$/_id/;
     if ($columns->{$primary_id_name}) {
@@ -344,9 +350,18 @@ sub update {
     # remove the extra ',' from set
     chop($set);
     # add primary key values for the primary_where
+    my(@pk);
     foreach $n (@{$attrs->{primary_key_names}}) {
-	push(@params, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
+	push(@pk, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
     }
+    push(@params, @pk);
+
+    # Need to lock the row before updating if lob
+    if ($attrs->{has_blob}) {
+	Bivio::SQL::Connection->execute(
+		$attrs->{update_lock}, \@pk, $die)->finish();
+    }
+
     Bivio::SQL::Connection->execute(
 	    $attrs->{update}.$set.$attrs->{primary_where}, \@params, $die,
 	    $attrs->{has_blob})->finish();

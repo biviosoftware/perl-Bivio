@@ -257,19 +257,19 @@ sub die {
 
 =for html <a name="eval"></a>
 
-=head2 eval(code sub) : any
+=head2 eval(code_ref sub) : any
 
-Calls eval on I<sub>, but turns off any handle_die processing.  This should be
+=head2 eval(string code) : any
+
+Calls eval on I<code>, but turns off any handle_die processing.  This should be
 used everyhwere in place of a normal eval.  Returns the result of I<sub>.
 
 =cut
 
 sub eval {
-    my($self, $sub) = @_;
+    my($self, $code) = @_;
     local($SIG{__DIE__});
-    return eval {
-	&$sub();
-    };
+    return ref($code) ? eval {&$code();} : eval($code);
 }
 
 =for html <a name="handle_config"></a>

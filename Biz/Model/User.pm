@@ -81,11 +81,10 @@ sub cascade_delete {
 	    || die("couldn't find user's RealmUser");
     $realm_user->delete();
 
-    # clear the user from any outstanding invites
-    # this could happen if the user is a shadow user
+    # Clear the user from any outstanding invites.
+    # This happens if the user is a shadow user.
     Bivio::SQL::Connection->execute('
-            UPDATE realm_invite_t
-            set realm_user_id=?
+            DELETE from realm_invite_t
             WHERE realm_user_id=?',
 	    [undef, $id]);
 

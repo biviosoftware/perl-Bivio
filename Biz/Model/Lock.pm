@@ -169,6 +169,36 @@ sub execute {
     $req->get(ref($self))->die('EXISTS', 'more than one lock on the request')
 	    if $req->unsafe_get(ref($self));
     $self->acquire($type);
+    $req->push_txn_resource($self);
+    return;
+}
+
+=for html <a name="handle_commit"></a>
+
+=head2 handle_commit()
+
+Commit called, delete lock from request before DB commit
+
+=cut
+
+sub handle_commit {
+    my($self) = @_;
+    $self->release();
+    return;
+}
+
+=for html <a name="handle_rollback"></a>
+
+=head2 handle_rollback()
+
+Rollback called, delete lock from request.  Won't be committed.
+
+=cut
+
+sub handle_rollback {
+    my($self) = @_;
+    # Delete this lock from the request
+    $self->get_request->delete(ref($self));
     return;
 }
 

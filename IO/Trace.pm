@@ -292,6 +292,7 @@ sub set_filters {
 	    $point_sub = undef;
 	}
 	else {
+	    local($SIG{__DIE__});
 	    $point_sub = eval <<"EOF";
                 use strict;
 		sub {

@@ -25,6 +25,7 @@ C<Bivio::Type> base class of all types.
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::IO::Alert;
 
 #=VARIABLES
 
@@ -141,6 +142,26 @@ Number of digits to the right of the decimal point.
 
 sub get_decimals {
     return undef;
+}
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance(any type) : Bivio::Type
+
+Returns an instance for I<type>.  This may be a class name.
+Will look up names in C<Bivio::Type::> if I<type> is not a reference.
+
+=cut
+
+sub get_instance {
+    my($self, $type) = @_;
+    unless (ref($type)) {
+	$type = 'Bivio::Type::'.$type unless $type =~ /::/;
+	Bivio::Util::my_require($type);
+    }
+    Bivio::IO::Alert->die($type, ': not a Bivio::Type')
+		unless UNIVERSAL::isa($type, 'Bivio::Type');
+    return $type;
 }
 
 =for html <a name="get_max"></a>

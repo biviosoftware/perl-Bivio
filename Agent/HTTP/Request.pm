@@ -40,6 +40,7 @@ use Bivio::Biz::Model::RealmOwner;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
+use Bivio::Type::UserAgent;
 use Bivio::Util;
 
 #=VARIABLES
@@ -71,6 +72,7 @@ sub new {
 	client_addr => $r->connection->remote_ip,
 	is_secure => $ENV{HTTPS} ? 1 : 0,
     });
+    Bivio::Type::UserAgent->execute_browser($self);
     my($uri) = $r->uri;
     my($task_id, $auth_realm, $path_info)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);

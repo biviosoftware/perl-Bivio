@@ -93,10 +93,11 @@ NOT NORMALLY USED.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::IO::Alert;
-use Bivio::SQL::ListQuery;
+use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
+use Bivio::SQL::ListQuery;
+use Bivio::Type;
 use Carp ();
 
 #=VARIABLES
@@ -362,11 +363,7 @@ Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
 
 sub init_type {
     my(undef, $col, $type_cfg) = @_;
-    $type_cfg = 'Bivio::Type::'.$type_cfg unless $type_cfg =~ /::/;
-    Bivio::Util::my_require($type_cfg);
-    Carp::croak($type_cfg, ': not a Bivio::Type')
-		unless UNIVERSAL::isa($type_cfg, 'Bivio::Type');
-    $col->{type} = $type_cfg;
+    $col->{type} = Bivio::Type->get_instance($type_cfg);
     $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
 	    $col->{type});
     return;

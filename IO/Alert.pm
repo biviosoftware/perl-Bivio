@@ -374,7 +374,7 @@ sub _format_string {
 	return chop($s) eq '{' ? '{}' : $s.'}';
     }
     if (ref($o) eq 'SCALAR') {
-	return _format_string_simple($$o)
+	return '\\${'._format_string_simple($$o).'}';
     }
     return _format_string_simple($o);
 }

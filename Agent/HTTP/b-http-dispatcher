@@ -241,9 +241,9 @@ Timeout 10
 HostnameLookups off
 KeepAlive <$keepalive>
 MinSpareServers 1
-MaxSpareServers 3
+MaxSpareServers 4
 StartServers 1
-MaxClients 2
+MaxClients 4
 MaxRequestsPerChild 1000
 LimitRequestBody 4194304
 

@@ -45,6 +45,10 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 The user authenticated with the request.
 
+=item Bivio::Type::UserAgent : Bivio::Type::UserAgent
+
+The type of the user agent for this request.
+
 =item client_addr : string
 
 Client's network address if available.
@@ -157,6 +161,16 @@ This host (hostname).
 
 The user's timezone (if available).
 
+=item txn_resources : array_ref
+
+The list of resources (objects) which have transaction handlers
+(handle_commit and handle_rollback).  The handlers are called before
+any commit or rollback.  Examples:
+L<Bivio::Biz::Model::Lock|Bivio::Biz::Model::Lock>
+and L<Bivio::Biz::Model::Preferences|Bivio::Biz::Model::Preferences>.
+
+Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
+
 =item unauth_user : Bivio::Biz::Model::RealmOwner
 
 The user in a the request which could had insufficient authentication
@@ -184,6 +198,8 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
+use Bivio::Auth::RoleSet;
+use Bivio::Biz::Model::Preferences;
 use Bivio::Biz::Model::UserRealmList;
 use Bivio::Biz::FormModel;
 use Bivio::Die;
@@ -191,6 +207,8 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::RealmName;
+use Bivio::Type::UserAgent;
+use Bivio::Type::UserPreference;
 use Bivio::Util;
 use Carp ();
 
@@ -217,6 +235,13 @@ Bivio::IO::Config->register({
 });
 my($_CURRENT);
 my($_GENERAL);
+my($_ACTIVE_CLUB_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_ACTIVE_CLUB_ROLES,
+	Bivio::Auth::Role::GUEST(),
+	Bivio::Auth::Role::MEMBER(),
+	Bivio::Auth::Role::ACCOUNTANT(),
+	Bivio::Auth::Role::ADMINISTRATOR(),
+	);
 
 =head1 FACTORIES
 
@@ -242,7 +267,10 @@ sub new {
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
 	    support_email_as_html => $_SUPPORT_EMAIL_AS_HTML,
+	    txn_resources => [],
 	   );
+    # Make sure a value gets set
+    Bivio::Type::UserAgent->execute_unknown($self);
     return $_CURRENT = $self;
 }
 
@@ -615,6 +643,28 @@ sub get_request {
     return ref($proto) ? $proto : $proto->get_current_or_new;
 }
 
+=for html <a name="get_user_pref"></a>
+
+=head2 get_user_pref(any pref) : any
+
+Gets a user preference.  I<pref> must be a
+L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
+The value returned may be C<undef> if user undefined or preference
+not set iwc the default should be used.
+
+=cut
+
+sub get_user_pref {
+    my($self, $pref) = @_;
+    my($auth_user) = $self->get('auth_user');
+    return undef unless $auth_user;
+    return Bivio::Biz::Model::Preferences->get_value(
+	    $self,
+	    'user_prefs',
+	    $auth_user,
+	    Bivio::Type::UserPreference->from_any($pref));
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -820,6 +870,22 @@ sub is_production {
     return $_IS_PRODUCTION;
 }
 
+=for html <a name="push_txn_resource"></a>
+
+=head2 push_txn_resource(any resource)
+
+Adds a new transaction resource to this request.  I<resource> must
+support C<handle_commit> and C<handle_rollback>.
+
+=cut
+
+sub push_txn_resource {
+    my($self, $resource) = @_;
+    _trace($resource) if $_TRACE;
+    push(@{$self->get('txn_resources')}, $resource);
+    return;
+}
+
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info)
@@ -869,9 +935,32 @@ sets C<auth_role>.
 sub set_realm {
     my($self, $new_realm) = @_;
     my($realm_id) = $new_realm->get('id');
+    my($new_role) = _get_role($self, $realm_id);
     $self->put(auth_realm => $new_realm,
 	    auth_id => $realm_id,
-	    auth_role => _get_role($self, $realm_id));
+	    auth_role => $new_role);
+
+    # Don't set preferences unless browser
+    return unless $self->get('Bivio::Type::UserAgent')
+	    eq Bivio::Type::UserAgent::BROWSER();
+
+    # Don't set preferences if no auth_user
+    return unless $self->get('auth_user');
+
+    # Set CLUB_LAST_VISITED preference
+    #
+    # But only it is a club
+    return unless $new_realm->get('type') == Bivio::Auth::RealmType::CLUB();
+
+    # Don't save the demo club as a visited club
+    return if $new_realm->get('owner')->is_demo_club();
+
+    # Don't save if not a guest or member
+    return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_CLUB_ROLES,
+	    $new_role);
+
+    # Finally, set the preference
+    $self->set_user_pref('CLUB_LAST_VISITED', $realm_id);
     return;
 }
 
@@ -898,8 +987,7 @@ sub set_user {
 	my($user_id) = $user->get('realm_id');
 	$self->put(auth_id => $user_id);
 	my($list) = Bivio::Biz::Model::UserRealmList->new($self);
-#TODO: What should this number for "large" lists?
-	$list->load({count => 1000});
+	$list->load_all();
 #TODO: This may be quite expensive if lots of realms(?)
 	$user_realms = $list->map_primary_key_to_rows;
     }
@@ -910,6 +998,32 @@ sub set_user {
     # Set the (cached) auth_role if requested (by default).
     $self->put(auth_role => _get_role($self, $self->get('auth_id')))
 	    unless $dont_set_role;
+    return;
+}
+
+=for html <a name="set_user_pref"></a>
+
+=head2 set_user_pref(any pref, any value)
+
+Sets a user preference.  I<pref> must be a
+L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
+I<value> may be undef.
+
+Avoid setting defaults in the file.  If the value is same as
+default, don't set it.
+
+=cut
+
+sub set_user_pref {
+    my($self, $pref, $value) = @_;
+    my($auth_user) = $self->get('auth_user');
+    return unless $auth_user;
+    Bivio::Biz::Model::Preferences->set_value(
+	    $self,
+	    'user_prefs',
+	    $auth_user,
+	    Bivio::Type::UserPreference->from_any($pref),
+	    $value);
     return;
 }
 
@@ -965,8 +1079,10 @@ sub _get_realm {
 	    next unless $r->{'RealmOwner.realm_type'}
 		    eq Bivio::Auth::RealmType::CLUB();
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
+#TODO: Roles aren't necessarily ordered
 	    next unless  $rr > $role;
-	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix$/x;
+	    next if Bivio::Biz::Model::RealmOwner->is_demo_club(
+		    $r->{'RealmOwner.name'});
 	    $realm_id = $r->{'RealmUser.realm_id'};
 	    $role = $rr;
 	}

@@ -73,7 +73,8 @@ Bivio::Auth::RoleSet->set(\$_MEMBER_OR_WITHDRAWN_ROLES,
 
 =head2 VALID_ACTIVE_ROLES : string
 
-Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
+Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>
+includes Guest, Member, Accountant, and Administrator.
 
 =cut
 
@@ -278,6 +279,24 @@ sub is_member {
     $model_prefix ||= '';
     $list_model ||= $self;
     return Bivio::Auth::RoleSet->is_set(\$_MEMBER_ROLES,
+	    $list_model->get($model_prefix.'role'));
+}
+
+=for html <a name="is_member_or_guest"></a>
+
+=head2 is_member_or_guest() : boolean
+
+=head2 static is_member_or_guest(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Is this a member, accountant, admin, or a guest?
+
+=cut
+
+sub is_member_or_guest {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_ROLES,
 	    $list_model->get($model_prefix.'role'));
 }
 

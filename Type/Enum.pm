@@ -307,8 +307,7 @@ will cause an error.
 =cut
 
 sub compile {
-    my($proto, %info) = @_;
-    my($pkg) = caller;
+    my($pkg, %info) = @_;
     defined($_MAP{$pkg}) && Carp::croak('already compiled');
     my($name);
     my($eval) = "package $pkg;\nmy(\$_INFO) = \\\%info;\n";
@@ -321,7 +320,7 @@ sub compile {
     my($long_width) = 0;
     my($can_be_zero) = 0;
     while (my($name, $d) = each(%info_copy)) {
-	Carp::croak("$name: is a reserved word") if $proto->can($name);
+	Carp::croak("$name: is a reserved word") if $pkg->can($name);
 	Carp::croak("$name: does not point to an array")
 		    unless ref($d) eq 'ARRAY';
 	unless (defined($d->[1])) {

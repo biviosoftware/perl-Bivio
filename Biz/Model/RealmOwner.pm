@@ -194,7 +194,7 @@ sub cascade_delete {
 
     # delete related records
     foreach my $table ('email_t', 'phone_t', 'address_t', 'realm_role_t',
-	    'tax_id_t') {
+	    'tax_id_t', 'preferences_t') {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
                 WHERE realm_id=?',
@@ -762,13 +762,21 @@ sub internal_initialize {
 
 =head2 is_demo_club() : boolean
 
-Returns true if demo_club.
+=head2 static is_demo_club(string name) : boolean
+
+=head2 static is_demo_club(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if demo_club.  Gets I<name> from I<self> if not provided.
 
 =cut
 
 sub is_demo_club {
-    my($self) = @_;
-    return $self->get('name') =~ /$_DEMO_SUFFIX$/o ? 1 : 0;
+    my($self, $list_model, $model_prefix) = @_;
+    my($name) = defined($model_prefix)
+	    ? $list_model->get($model_prefix.'name')
+		    : defined($list_model)
+			    ? $list_model : $self->get('name');
+    return $name =~ /$_DEMO_SUFFIX$/o ? 1 : 0;
 }
 
 =for html <a name="is_name_eq_email"></a>

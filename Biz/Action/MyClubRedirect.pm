@@ -20,13 +20,15 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Action::MyClubRedirect> looks up C<auth_user> to find
-to which clubs she belongs.  Redirects request
+C<Bivio::Biz::Action::MyClubRedirect> looks up preferences and
+sends to I<LAST_CLUB_VISITED>.
 
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Realm;
 use Bivio::Agent::TaskId;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::UserClubList;
 use Bivio::IO::Trace;
 
@@ -49,11 +51,47 @@ Redirects user to club start page if user is a member of a club.
 
 sub execute {
     my(undef, $req) = @_;
-#TODO: If more than one club, then provide list or lookup default?
-#TODO: Look for club where user is not a guest.
-    # All the work is in redirect which switches realms for us
-    # Go to the task for my_club
-    $req->client_redirect($req->get('task')->get('next'));
+
+    # Must have auth_user
+    my($user_id) = $req->get('auth_user')->get('realm_id');
+
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    my($club_id) = $req->get_user_pref('CLUB_LAST_VISITED');
+    if (defined($club_id)) {
+	# Still a user?
+	if ($realm_user->unauth_load(
+		realm_id => $club_id, user_id => $user_id)
+		&& $realm_user->is_member_or_guest()) {
+	    $req->client_redirect(
+		    Bivio::Agent::TaskId::CLUB_HOME(),
+		    Bivio::Auth::Realm->new($club_id, $req),
+		    undef, undef);
+	    # DOES NOT_RETURN
+	}
+	# Not a user
+    }
+
+    my($list) = Bivio::Biz::Model::UserClubList->new($req);
+    $list->unauth_load_all({auth_id => $user_id});
+
+    while ($list->next_row) {
+	next if $list->is_demo_club();
+
+	# Got a club, go to it.  Don't bother setting pref.  Will
+	# get set when user comes back in from redirect
+	$req->client_redirect(
+		Bivio::Agent::TaskId::CLUB_HOME(),
+		Bivio::Auth::Realm->new($list->get('RealmUser.realm_id'),
+			$req),
+		undef, undef);
+	# DOES NOT RETURN
+    }
+
+    # Not a valid club and no valid clubs.  Unset preference.
+    $req->set_user_pref('CLUB_LAST_VISITED', undef);
+
+    # Redirect to a logical place in user's site (list of clubs)
+    $req->client_redirect(Bivio::Agent::TaskId::USER_CLUB_LIST());
     # DOES NOT RETURN
 }
 

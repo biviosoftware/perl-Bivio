@@ -354,8 +354,8 @@ sub initialize {
 
 =head2 rollback()
 
-Rollback any transactions.  Does not free locks, but deletes them from
-the request (if any).  Clears any queued mail and jobs.
+Rollback the current transaction.  Call C<handle_rollback> with
+L<txn_resources|"txn_resources">.  Clears any queued mail.
 
 Called from L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.
 
@@ -365,20 +365,38 @@ sub rollback {
     # NOTE: Bivio::Biz::Model::Lock::release behaves a particular way
     # and this code must stay in synch with it.
     my($req) = Bivio::Agent::Request->get_current;
-#TODO: Need to undo mkdir or writes in MailMessage.  Probably push on stack of
-#      commit handlers...??
-    $req->delete('Bivio::Biz::Model::Lock') if $req;
+    _call_txn_resources($req, 'handle_rollback');
     Bivio::SQL::Connection->rollback;
     Bivio::Mail::Common->discard_queued_messages;
-    Bivio::Agent::Job::Dispatcher->discard_queue;
     return;
 }
 
 #=PRIVATE METHODS
 
+# _call_txn_resources(Bivio::Agent::Request req, string method) 
+#
+# Call the transaction resource handlers.
+#
+sub _call_txn_resources {
+    my($req, $method) = @_;
+    return unless $req;
+    my($resources) = $req->unsafe_get('txn_resources');
+    if (ref($resources) eq 'ARRAY') {
+	foreach my $r (@$resources) {
+	    _trace($r, '->', $method) if $_TRACE;
+	    $r->$method();
+	}
+    }
+
+    # Empty the list
+    $req->put(txn_resources => []);
+    return;
+}
+
 # _commit(Bivio::Agent::request req)
 #
-# Commits transactions to storage if necessary.  Frees the lock if held.
+# Commits transactions to storage if necessary, but first calls
+# handle_commit for txn_resources.
 #
 sub _commit {
     my($req) = @_;
@@ -392,11 +410,7 @@ sub _commit {
     # These modules are intelligent and won't do anything if there
     # were no modifications.
     #
-    # We release any locks before committing.  See the documentation
-    # in Bivio::Biz::Model::Lock.
-    $req->get('Bivio::Biz::Model::Lock')->release()
-	    if $req && $req->unsafe_get('Bivio::Biz::Model::Lock');
-
+    _call_txn_resources($req, 'handle_commit');
     Bivio::SQL::Connection->commit;
     Bivio::Mail::Common->send_queued_messages;
 #TODO: Garbage collect state that doesn't agree with SQL DB
