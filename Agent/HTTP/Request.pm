@@ -203,20 +203,6 @@ sub get_view_name {
     return $fields->{view_name};
 }
 
-=for html <a name="log_error"></a>
-
-=head2 log_error(string message)
-
-Writes the specified message to the apache error log.
-
-=cut
-
-sub log_error {
-    my($self, $message) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{r}->log_error($message);
-}
-
 =for html <a name="make_path"></a>
 
 =head2 make_path() : string
