@@ -117,8 +117,10 @@ sub link {
     my($uri) = ($scraper->get('links'))->{$label}->{href};
 
     die("Label: $label not found amoung page links.") unless (defined $uri);
-    _trace("Label: $label corresponds to: $uri") if $_TRACE; 
-  #  $proto->visit('/'.$uri);
+    _trace("Label: '$label' gives: $uri") if $_TRACE; 
+
+    $uri = _add_path($uri) unless ($uri =~ /\/.*/);
+    $proto->visit($uri);
     return;
 }
 
@@ -293,6 +295,20 @@ sub visit {
 }
 
 #=PRIVATE METHODS
+
+# _add_path(string link) : string 
+#
+# Adds the current directory to a link if it is only a file name.
+#
+sub _add_path {
+    my($link) = @_;
+    my($uri) = Bivio::Test::BulletinBoard->get_current()
+	    ->get('current_uri');
+    # replace portion after last '/' with $link (could make just full path)
+    $uri =~ s/(^.*\/).*$/$1$link/;
+    _trace("Added path to $link.  Now: $uri") if $_TRACE;
+    return $uri;
+}
 
 # _unravel_and_match(string $match, unknown $content) : boolean
 #
