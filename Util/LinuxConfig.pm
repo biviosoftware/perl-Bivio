@@ -35,7 +35,6 @@ Syntax is rigid, but the commands die if anything is out of the
 ordinary.
 
 TODO:
-   sendmail_cf b-sendmail-http
    see files in LinuxConfig dir
 
 =cut
@@ -184,11 +183,13 @@ sub add_sendmail_http_agent {
     my($self, $uri) = @_;
     return _edit($self, '/etc/sendmail.cf',
 	[qr/\$#local \$: \$1/, '$#bsendmailhttp $: $1'],
+	# Remove any existing bsendmailhttp
+	[qr/\nMbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}/s, ''],
 	# We don't set "w", sendmail-http does it itself
 	['$', <<"EOF", qr/\nMbsendmailhttp/],
 Mbsendmailhttp,	P=/usr/bin/b-sendmail-http,
 	F=9:|/\@ADFhlMnsPqS,
-	S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
+	S=EnvFromL/HdrFromL, R=AddDomain/HdrToL, T=DNS/RFC822/X-Unix,
 	A=b-sendmail-http \${client_addr} \$u $uri /usr/bin/procmail -t -Y -a \$h -d \$u
 EOF
     );

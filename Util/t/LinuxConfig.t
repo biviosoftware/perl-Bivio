@@ -42,6 +42,13 @@ Bivio::Test->unit([
 		[@$args] => [],
 	    ]);
 	} [
+#	    'postgresql_conf', ['large'] => [
+#		['etc/sysctl.conf', 'kernel/shmmax = 128000000'],
+#		['var/lib/pgsql/data/postgresql.conf', 'timezone = UTC'],
+#		['var/lib/pgsql/data/postgresql.conf', 'shared_buffers = '],
+#		['var/lib/pgsql/data/postgresql.conf', 'timezone = UTC'],
+#	    ],
+#	], [
 	    'serial_console', [] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
 		['etc/inittab', 'getty\s+ttyS0'],
@@ -114,6 +121,8 @@ other.host
 	    'add_sendmail_http_agent', ['localhost:80/my_uri'] => [
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
+ 		['etc/sendmail.cf', 'Mbsendmailhttp'],
+ 		['etc/sendmail.cf', 'A=b-sendmail-http'],
 	    ],
 	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [
