@@ -232,6 +232,18 @@ sub as_int {
     return _get_info(shift(@_), undef)->[0];
 }
 
+=for html <a name="as_sql_param"></a>
+
+=head2 as_sql_param() : int
+
+Returns integer representation of this value.
+
+=cut
+
+sub as_sql_param {
+    return _get_info(shift(@_), undef)->[0];
+}
+
 =for html <a name="as_string"></a>
 
 =head2 as_string() : string
