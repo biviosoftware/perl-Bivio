@@ -456,6 +456,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/payment
+        Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Type::EntryType->execute_member_payment
         Bivio::Biz::Model::RealmAccountList->execute_load_all
@@ -629,6 +630,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/fee
+        Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Type::EntryType->execute_member_payment_fee
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
@@ -803,6 +805,7 @@ my(@_CFG) = (
         ADMIN_READ&MEMBER_READ
         %/admin/roster/detail
         Bivio::Biz::Model::ClubUserList
+        Bivio::Biz::Model::RealmUserList->execute_load_all
         Bivio::UI::HTML::Club::UserDetail
     )],
 #        Bivio::Biz::Model::RealmUser
@@ -813,6 +816,8 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/privileges
+        Bivio::Biz::Model::ClubUserList
+        Bivio::Biz::Action::TargetRealm->execute_this_real_member
         Bivio::Biz::Model::ClubMemberTitleForm
         Bivio::UI::HTML::Club::EditMemberTitle
         next=CLUB_ADMIN_USER_DETAIL
@@ -1045,6 +1050,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         %/accounting/member/withdrawal
+        Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::MemberWithdrawalForm
@@ -1195,6 +1201,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE
         %/accounting/member/openbal
+        Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::MemberOpeningBalanceForm
         Bivio::UI::HTML::Club::MemberOpeningBalance
@@ -1256,6 +1263,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/address
+        Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::AddressForm
         Bivio::UI::HTML::Realm::EditAddress
@@ -1278,6 +1286,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE&LOGIN
         %/admin/edit/member/tax_id
+        Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
@@ -1500,7 +1509,7 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
-        DEFAULT_ERROR_UPDATE_COLLISION
+        DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION
         143
         GENERAL
         DOCUMENT_READ
@@ -1513,6 +1522,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/phone
+        Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::PhoneForm
         Bivio::UI::HTML::Realm::EditPhone
@@ -1525,6 +1535,7 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/name
         Bivio::Type::NameEdit->execute_display_only
+        Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::Club::EditUserName
@@ -1553,8 +1564,24 @@ my(@_CFG) = (
         cancel=CLUB_ADMIN_USER_LIST
     )],
     [qw(
-        CLUB_ADMIN_INVITE_DELETE
+        DEFAULT_ERROR_REDIRECT_CORRUPT_QUERY
         149
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_corrupt_query
+    )],
+    [qw(
+        DEFAULT_ERROR_REDIRECT_VERSION_MISMATCH
+        150
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_corrupt_query
+    )],
+    [qw(
+        CLUB_ADMIN_INVITE_DELETE
+        151
         CLUB
         ADMIN_WRITE
         %/admin/invite/delete
@@ -1564,7 +1591,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ADMIN_INVITE_RESEND
-        150
+        152
         CLUB
         ADMIN_WRITE
         %/admin/invite/resend
@@ -1575,7 +1602,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ADMIN_GUEST_DELETE
-        151
+        153
         CLUB
         ADMIN_WRITE
         %/admin/guest/delete
