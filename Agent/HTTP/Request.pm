@@ -117,6 +117,31 @@ sub new {
 
 =cut
 
+=for html <a name="client_redirect"></a>
+
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm)
+
+Client side redirect to the new task within the new realm.
+
+B<DOES NOT RETURN.>
+
+=cut
+
+sub client_redirect {
+    my($self, $new_task, $new_realm) = @_;
+
+#TODO: need a better way to determine whether to use https
+    my($host) = $self->SUPER::get_http_host;
+    my($uri) = 'http://'.$host if $host =~ /:/;
+    $uri ||= 'https//'.$host;
+
+    $self->SUPER::internal_redirect_realm($new_task, $new_realm);
+    $uri .= $self->format_uri($new_task, undef);
+    $self->get('reply')->client_redirect($uri);
+
+    Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
+}
+
 =for html <a name="format_uri"></a>
 
 =head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
