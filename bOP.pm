@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    ignore 'Facade::setup_request:.*: unknown facade uri'.
+  * Bivio::XML::DocBook->to_html converts sect1/title to h2 and
+    sect2/title to h4
+
+  Revision 2.19  2004/04/08 20:20:39  nagler
+  * Bivio::UI::Task->parse_uri uses $r->hostname if available and if the
     facade isn't explicitly set with /*<facade>
   * Bivio::HTML::Scraper sets last_uri to the redirected uri
   * Bivio::UI::Text no longer uses @x[] form (deprecated in perl 5.8)
