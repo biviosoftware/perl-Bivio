@@ -769,7 +769,6 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/lookup
         Bivio::Biz::Model::InstrumentLookupForm
-        Bivio::Biz::Model::InstrumentLookupList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentLookup
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-transactions
