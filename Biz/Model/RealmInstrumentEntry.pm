@@ -51,7 +51,7 @@ Creates the instrument entry, and transaction entry for the specified
 transaction, using the values from the specified properties hash. Dies
 on failure.
 
-Defaults tax_basis, count, and external_identifer to 0 unless specified.
+Defaults tax_basis, count, and external_identifier to 0 unless specified.
 
 =cut
 
