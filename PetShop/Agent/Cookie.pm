@@ -167,6 +167,15 @@ sub header_out {
     my($self, $r, $req) = @_;
     my($fields) = $self->internal_get;
 
+    # don't send header unless we are in the correct Facade
+    if ($_DOMAIN) {
+	my($uri) = Bivio::UI::Facade->get_from_request_or_self($req)
+	    ->get('uri');
+	return 0 unless $_DOMAIN =~ /^$uri/;
+
+	_trace("in cookie domain: ", $_DOMAIN, ', uri: ', $uri) if $_TRACE;
+    }
+
     # Only set if a modified and a browser.
     return 0 unless $fields->{$_MODIFIED_FIELD}
 	    && $req->get('Bivio::Type::UserAgent')->is_browser;
