@@ -72,6 +72,7 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $req->get('Bivio::Biz::Model::F1065K1Form')->set_cursor_or_die(0);
     my($draft) = $req->get_widget_value('Bivio::Biz::Model::F1065K1Form',
 	    'draft');
     my($real_form);
