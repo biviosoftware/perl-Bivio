@@ -243,23 +243,26 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_mail_rfc822_files();
+    _upgrade_realm_account();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_mail_rfc822_files()
+# _upgrade_realm_account()
 #
-# Sets public bit on rfc822 files for all public messages
+# Expand the size on external_password and account to 4000.
 #
-sub _upgrade_mail_rfc822_files {
-
-    print("fixing public bits\n");
-    Bivio::SQL::Connection->execute('
-            update file_t
-            set is_public=1
-            where file_id in
-            (select rfc822_file_id from mail_t where is_public=1)');
+sub _upgrade_realm_account {
+    print("Upgrading realm_account_t\n");
+    _do_sql('
+update realm_account_t set external_password = null, account_number = null
+/
+alter table realm_account_t modify (
+    external_password VARCHAR(4000),
+    account_number VARCHAR(4000)
+)
+/
+');
     return;
 }
 
