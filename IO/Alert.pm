@@ -98,8 +98,8 @@ with "\n".
 =cut
 
 sub die {
-    &warn(@_);
-    CORE::die("\n");
+    my($proto) = shift;
+    CORE::die(_call_format($proto, \@_, 0));
 }
 
 =for html <a name="eval_or_warn"></a>
@@ -148,6 +148,7 @@ sub format {
 =head2 static format_args(any arg, ...) : string
 
 Formats I<arg>s as a string.  Truncation, C<undef>, etc. handled properly.
+Appends a newline.
 
 =cut
 
@@ -158,6 +159,7 @@ sub format_args {
 	# Only go three levels deep on structures
 	$res .= _format_string($o, 3);
     }
+    $res .= "\n" unless substr($res, -1) eq "\n";
     return $res;
 }
 
@@ -387,18 +389,9 @@ Note: If the message consists of a single newline, nothing is output.
 =cut
 
 sub warn {
-    my($proto) = shift(@_);
-    int(@_) == 1 && $_[0] eq "\n" && return;
-    $_LAST_WARNING = _call_format($proto, \@_);
-    &$_LOGGER('err', $_LAST_WARNING);
-    return unless --$_WARN_COUNTER < 0;
-
-    # This code is careful to avoid infinite loops.  Don't change it
-    # unless you understand all the relationships.
-    $_LAST_WARNING = 'Bivio::IO::Alert TOO MANY WARNINGS (max='
-	    .$_MAX_WARNINGS.")\n";
-    &$_LOGGER('err', $_LAST_WARNING);
-    CORE::die("\n");
+    my($proto, @msg) = @_;
+    _do_warn($proto, \@msg, 0);
+    return;
 }
 
 =for html <a name="warn_deprecated"></a>
@@ -417,10 +410,34 @@ sub warn_deprecated {
     return;
 }
 
+=for html <a name="warn_simply"></a>
+
+=head2 static warn(string arg1, ...)
+
+Sends warning message to the alert log.
+
+Note: If the message consists of a single newline, nothing is output.
+
+Does not output any info (pid, time, etc.)
+
+=cut
+
+sub warn_simply {
+    my($proto, @msg) = @_;
+    _do_warn($proto, \@msg, 1);
+    return;
+}
+
 #=PRIVATE METHODS
 
+# _call_format(proto, array_ref msg, boolean simply) : string
+#
+# Calls _format with the right "caller" args.  If $simply, calls
+# format_args directly.
+#
 sub _call_format {
-    my($proto, $msg) = @_;
+    my($proto, $msg, $simply) = @_;
+    return $proto->format_args(@$msg) if $simply;
     my($i) = 0;
     $i++ while caller($i) eq __PACKAGE__;
     return _format($proto,
@@ -434,6 +451,31 @@ sub _die_handler {
     CORE::die("\n");
 }
 
+# _do_warn(proto, array_ref args, boolean simply)
+#
+# Does the work of warn and warn_simply.
+#
+sub _do_warn {
+    my($proto, $args, $simply) = @_;
+    int(@$args) == 1 && $args->[0] eq "\n" && return;
+    $_LAST_WARNING = _call_format($proto, $args, $simply);
+    &$_LOGGER('err', $_LAST_WARNING);
+    return unless --$_WARN_COUNTER < 0;
+
+    # This code is careful to avoid infinite loops.  Don't change it
+    # unless you understand all the relationships.
+    $_LAST_WARNING = 'Bivio::IO::Alert TOO MANY WARNINGS (max='
+	    .$_MAX_WARNINGS.")\n";
+    &$_LOGGER('err', $_LAST_WARNING);
+    CORE::die("\n");
+    return;
+}
+
+# _format(proto, string pkg, string file, string line, string sub, array_ref msg, boolean simply) : string
+#
+# Formats the message with prefixes unless simply is true, iwc. it just
+# formats $msg.
+#
 sub _format {
     my($proto, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
@@ -460,7 +502,6 @@ sub _format {
     }
     defined($line) && ($text .= ":$line");
     $text .= ' '.$proto->format_args(@$msg);
-    substr($text, -1) eq "\n" || ($text .= "\n");
     return $text;
 }
 
