@@ -120,10 +120,6 @@ Are we running in production mode?
 
 Are we running in secure mode (SSL)?
 
-=item message : Bivio::Mail::Message
-
-Mail message represented by this request.
-
 =item path_info : string
 
 The dynamic part of the URI.   The name comes from CGI which defines
