@@ -10,7 +10,6 @@ BEGIN {
 	},
 	'Bivio::Test::Language::HTTP' => {
  	    home_page_uri => 'http://petshop.bivio.biz',
-#	    home_page_uri => 'http://jump.bivio.com:8088',
 	},
     });
 }
