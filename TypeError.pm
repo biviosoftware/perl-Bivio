@@ -814,6 +814,11 @@ __PACKAGE__->compile(
 	undef,
 	'the charges may not exceed the distribution amount',
     ],
+    CORRUPT_ZIP_ARCHIVE => [
+	107,
+	undef,
+	'the zip archive contains invalid data and cannot be read',
+    ],
 );
 
 #=PRIVATE METHODS
