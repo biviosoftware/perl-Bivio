@@ -103,6 +103,30 @@ explosion, i.e. don't do:
 This will result in 26^3 names for 'some value'.  It's unlikely that you
 want this.
 
+=head1 REQUIRED VALUES
+
+=over 4
+
+=item home_page_uri : string
+
+Where to redirect to when the user browses '/', i.e. the document
+root without any path_info.  Used by
+L<Bivio::Biz::Action::ClientRedirect::execute_if_home_page|Bivio::Biz::Action::ClientRedirect/"execute_if_home_page">
+
+=item http_host : string
+
+The host to be rendered in URI strings.  It may contain host and port,
+e.g. localhost:8888.
+Used by
+L<Bivio::Agent::Request::format_http|Bivio::Agent::Request/"format_http">.
+
+=item mail_host : string
+
+The host to render mail addresses.  Used by
+L<Bivio::Agent::Request::format_email|Bivio::Agent::Request/"format_email">.
+
+=back
+
 =cut
 
 =head1 CONSTANTS
@@ -378,6 +402,18 @@ sub regroup {
     return;
 }
 
+=for html <a name="unsafe_get_widget_value_by_name"></a>
+
+=head2 unsafe_get_widget_value_by_name(string tag) : any
+
+Returns the text value identified by I<tag>.
+
+=cut
+
+sub unsafe_get_widget_value_by_name {
+    return shift->internal_get_value(shift(@_))->{value}
+}
+
 =for html <a name="value_host_groups"></a>
 
 =head2 value_host_groups(string mail_host)
@@ -421,7 +457,7 @@ and it should be replaceable, but it's not.
 If you pass I<mail_host> to this method, it will be set as the
 I<Text.mail_host>.  Otherwise, the configured value will be used.
 
-B<Testing:> If
+B<Testing:>
 L<Bivio::Agent::Request::is_production|Bivio::Agent::Request/"is_production">
 returns false, several things happen.  I<mail_host> is ignored.  It always goes
 to the configured value.  If the configured I<http_host> contains the prefix
