@@ -46,7 +46,7 @@ so can be just the string name.
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get date to use (see below).
 
-=item undef_value : string ['']
+=item undef_value : string ['&nbsp;']
 
 What to display if I<value> is C<undef>.
 Not used if I<value> is a constant.
@@ -104,7 +104,7 @@ sub initialize {
     $fields->{value} = $self->get('value');
     $fields->{mode} = Bivio::UI::DateTimeMode->from_any(
 	    $self->get_or_default('mode', 'DATE'))->as_int;
-    $fields->{undef_value} = $self->get_or_default('undef_value', '');
+    $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
 }
 
 =for html <a name="render"></a>
@@ -123,7 +123,7 @@ sub render {
 
     # Don't display anything if null
     $$buffer .= $fields->{undef_value}, return unless defined($value);
-    $$buffer .= '<script language="JavaScript">';
+    $$buffer .= "<script language=\"JavaScript\">\n<!--\n";
     my($req) = Bivio::Agent::Request->get_current;
     unless ($req->unsafe_get('javascript_dt')) {
 	# ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
@@ -143,7 +143,7 @@ EOF
     }
     my($mi) = $fields->{mode};
     $$buffer .= 'dt('.join(',', $mi, split(' ', $value)).')'
-	    .'</script><noscript>';
+	    ."\n// -->\n</script><noscript>";
     $$buffer .= Bivio::UI::HTML::Format::DateTime->get_widget_value(
 	    $value, $fields->{mode});
     $$buffer .= '</noscript>';
