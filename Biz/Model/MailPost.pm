@@ -330,7 +330,7 @@ sub _dispatch_proxy {
 
 # _process_attachments(MIME::Entity entity)
 #
-# Create message attachments if att? form fields exist
+# Create message attachments if att? form fields exist and a filename is given.
 # The content type is automatically changed to multipart/mixed
 #
 sub _process_attachments {
@@ -338,15 +338,14 @@ sub _process_attachments {
     my($att, $att_name);
     foreach my $i (1..$_NUM_ATTACHMENTS) {
         $att = $self->get('att'.$i);
-        defined($att) || next;
+        # Don't process attachment unless it has a filename attribute
+        defined($att) && $att->{filename} || next;
         my($ct) = $att->{content_type} || 'application/octet-stream';
-        my($att_name) = $att->{filename}
-                || 'file'.$i.'.'.Bivio::MIME::Type->to_extension($ct);
         my($content) = $att->{content};
         my($encoding) = Bivio::MIME::Type->suggest_encoding($ct, $content);
-        # Attaching a part will convert message to multipart/mixed
+        # Attaching a part will convert entity to a multipart/mixed message
         $entity->attach(Type => $ct, Data => $$content,
-                Encoding => $encoding, Filename => $att_name);
+                Encoding => $encoding, Filename => $att->{filename});
     }
     return 0;
 }
