@@ -31,10 +31,6 @@ CREATE INDEX address_t3 on address_t (
   realm_id
 )
 /
-ALTER TABLE address_t
-  add constraint address_t4
-  check (location between 1 and 2)
-/
 
 --
 -- ec_check_payment_t
@@ -101,10 +97,6 @@ ALTER TABLE ec_payment_t
   CHECK (method between 1 and 4)
 /
 ALTER TABLE ec_payment_t
-  ADD CONSTRAINT ec_payment_t6
-  CHECK (service between 0 and 6)
-/
-ALTER TABLE ec_payment_t
   ADD CONSTRAINT ec_payment_t7
   FOREIGN KEY (salesperson_id)
   REFERENCES user_t(user_id)
@@ -169,10 +161,6 @@ CREATE INDEX email_t3 ON email_t (
   realm_id
 )
 /
-ALTER TABLE email_t
-  ADD CONSTRAINT email_t4
-  CHECK (location BETWEEN 1 AND 2)
-/
 CREATE UNIQUE INDEX email_t5 ON email_t (
   email
 )
@@ -198,10 +186,6 @@ ALTER TABLE phone_t
 CREATE INDEX phone_t3 on phone_t (
   realm_id
 )
-/
-ALTER TABLE phone_t
-  add constraint phone_t4
-  check (location between 1 and 2)
 /
 
 --
