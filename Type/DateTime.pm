@@ -177,6 +177,18 @@ sub REGEX_CTIME {
     return '(?:\w+ )?(\w+)\s+(\d+) (\d+):(\d+):(\d+)(?: \w+)? (\d+)';
 }
 
+=for html <a name="REGEX_FILE_NAME"></a>
+
+=head2 REGEX_FILE_NAME : string
+
+Returns the L<to_file_name|"to_file_name"> regex.
+
+=cut
+
+sub REGEX_FILE_NAME {
+    return '(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})';
+}
+
 =for html <a name="REGEX_LITERAL"></a>
 
 =head2 REGEX_LITERAL : string
@@ -271,10 +283,6 @@ my(%_PART_NAMES) = (
     month => 4,
     year => 5,
 );
-my($_REGEX_LITERAL) = REGEX_LITERAL();
-my($_REGEX_CTIME) = REGEX_CTIME();
-my($_REGEX_ALERT) = REGEX_ALERT();
-my($_REGEX_STRING) = REGEX_STRING();
 my($_LOCAL_TIMEZONE);
 my($_WINDOW_YEAR);
 _initialize();
@@ -450,17 +458,17 @@ error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
 sub date_from_parts {
     my(undef, $mday, $mon, $year) = @_;
     return (undef, Bivio::TypeError::YEAR_DIGITS())
-	    if $year < 100;
+	if $year < 100;
     return (undef, Bivio::TypeError::YEAR_RANGE())
-	    unless FIRST_YEAR() <= $year && $year <= LAST_YEAR();
+	unless FIRST_YEAR() <= $year && $year <= LAST_YEAR();
     return (undef, Bivio::TypeError::MONTH()) unless 1 <= $mon && $mon <= 12;
     $mon--;
     $year -= Bivio::Type::DateTime::FIRST_YEAR();
     my($ly) = $_IS_LEAP_YEAR[$year];
     return (undef, Bivio::TypeError::DAY_OF_MONTH())
-	    unless 1 <= $mday && $mday <= $_MONTH_DAYS[$ly]->[$mon];
+	unless 1 <= $mday && $mday <= $_MONTH_DAYS[$ly]->[$mon];
     return ($_YEAR_BASE[$year] + $_MONTH_BASE[$ly]->[$mon] + --$mday)
-	    .$_TIME_SUFFIX;
+	. $_TIME_SUFFIX;
 }
 
 =for html <a name="date_from_parts_or_die"></a>
@@ -790,7 +798,7 @@ sub from_unix {
 Returns the file name for I<now> adjusted by the I<timezone> in the
 current request.  If no request, just like now_as_file_name.
 
-See also L<now_as_filename|"now_as_filename">.
+See also L<now_as_file_name|"now_as_file_name">.
 
 =cut
 
@@ -997,8 +1005,14 @@ sub from_literal {
     $value =~ s/\s+/ /g;
     my(@res);
     foreach my $method (
-	\&_from_literal, \&_from_alert, \&_from_ctime, \&_from_string) {
-	return @res if @res = &$method($proto, $value);
+	\&_from_literal,
+	\&_from_alert,
+	\&_from_ctime,
+	\&_from_string,
+	\&_from_file_name,
+    ) {
+	return @res
+	    if @res = $method->($proto, $value);
     }
     # unknown format
     return (undef, Bivio::TypeError->DATE_TIME);
@@ -1088,7 +1102,7 @@ sub timezone {
 
 =head2 static to_file_name(string value) : string
 
-Returns I<value> as a string that can be used as a part of filename.
+Returns I<value> as a string that can be used as a part of file name.
 
 =cut
 
@@ -1305,7 +1319,7 @@ sub _compute_local_timezone {
 #
 sub _from_alert {
     my($proto, $value, $res, $err) = @_;
-    my($y, $mon, $d, $h, $m, $s) = $value =~ /^$_REGEX_ALERT$/o;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[REGEX_ALERT()]}$/o;
     return () unless defined($s);
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
@@ -1317,12 +1331,22 @@ sub _from_alert {
 #
 sub _from_ctime {
     my($proto, $value, $res, $err) = @_;
-    my($mon, $d, $h, $m, $s, $y) = $value =~ /^$_REGEX_CTIME$/o;
+    my($mon, $d, $h, $m, $s, $y) = $value =~ /^@{[REGEX_CTIME()]}$/o;
     return () unless defined($y);
 
     return (undef, Bivio::TypeError->MONTH)
 	unless defined($mon = $_MONTH_TO_NUM->{uc($mon)});
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
+}
+
+# _from_file_name(proto, string value) : array
+#
+# Parses to_file_name format
+#
+sub _from_file_name {
+    my($proto, $value) = @_;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[REGEX_FILE_NAME()]}$/o;
+    return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
 }
 
 # _from_literal(proto, string value) : array
@@ -1331,7 +1355,7 @@ sub _from_ctime {
 #
 sub _from_literal {
     my($proto, $value, $res, $err) = @_;
-    my($date, $time) = $value =~ /^$_REGEX_LITERAL$/o;
+    my($date, $time) = $value =~ /^@{[REGEX_LITERAL()]}$/o;
     return () unless defined($time);
     return (undef, Bivio::TypeError->DATE_RANGE)
 	if length($date) > length(LAST_DATE_IN_JULIAN_DAYS())
@@ -1343,7 +1367,7 @@ sub _from_literal {
     return ($date.' '.$time)
 }
 
-# _from_or_die() : 
+# _from_or_die(string method, proto, ...)
 #
 #
 #
@@ -1366,12 +1390,10 @@ sub _from_or_die {
 # Returns ($res, $err) if it matches to_string pattern.  Parses string format.
 #
 sub _from_string {
-    my($proto, $value, $res, $err) = @_;
-    my($mon, $d, $y, $h, $m, $s) = $value =~ /^$_REGEX_STRING$/o;
-    return () unless defined($s);
-    return $proto->from_parts($s, $m, $h, $d, $mon, $y);
+    my($proto, $value) = @_;
+    my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[REGEX_STRING()]}$/o;
+    return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
 }
-
 
 # _initialize()
 #
