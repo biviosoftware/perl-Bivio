@@ -43,20 +43,21 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<IMG> tag.
 
 =item alt : string (required)
 
-B<DEPRECATED>
+The verbatim text to use for I<alt_text>.  No Facade.Text lookup is performed.
 
 =item alt_text : string (required)
-
-=item alt_text : array_ref (required)
 
 Text tag to use for C<ALT> attribute of C<IMG> tag.  Tag will be prefixed with
 C<Image_alt> qualifier.  Resultant text will be passed to
 L<Bivio::HTML->escape|Bivio::Util/"escape_html">.
 
+=item alt_text : array_ref (required)
+
 =item alt_text : Bivio::UI::Widget (required)
 
 Widget to render string to be used in C<ALT> attribute.
-Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">.
+Will be passed to
+L<Bivio::HTML::escape_attr_value|Bivio::HTML/"escape_attr_value">.
 
 =item attributes : string []
 
@@ -228,7 +229,7 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
 
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' alt="'.Bivio::HTML->escape(
+    $$buffer .= ' alt="'.Bivio::HTML->escape_attr_value(
 	    _render_alt($self, $fields, $source, $req)).'"'
 		    unless $fields->{prefix} =~ / alt=/;
 
@@ -284,7 +285,7 @@ sub _render_alt {
     return '' unless $fields->{alt_text};
 
     my($b) = $self->render_value('alt_text', $fields->{alt_text}, $source);
-    return $$b if UNIVERSAL::isa($fields->{alt_text}, 'Bivio::UI::Widget');
+    return $$b if ref($fields->{alt_text});
     return Bivio::UI::Text->get_value('Image_alt', $$b, $req);
 }
 
