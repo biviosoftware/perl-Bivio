@@ -50,8 +50,13 @@ Bivio::Test->unit([
 		['etc/rc.d/init.d/iptables', 'iptables-restore \&\&'],
 	    ],
 	], [
-	    'relay_domains', ['10.1.1.1'] => [
+	    'sendmail_class_file', ['relay-domains', '10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
+	    ],
+	], [
+	    'allow_any_sendmail_smtp', [99999] => [
+		['etc/sendmail.cf', "\nO MaxMessageSize=99999\n"],
+		['etc/sendmail.cf', "O DaemonPortOptions=Port=smtp, Name=MTA"],
 	    ],
 	], [
 	    'sshd_param', ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'] => [

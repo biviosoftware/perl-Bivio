@@ -58,6 +58,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-linux-config [options] command [args...]
 commands:
+    allow_any_sendmail_smtp [max_message_size] -- open up sendmail while making more secure
     add_group group[:gid] -- add a group
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
@@ -65,7 +66,7 @@ commands:
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
-    relay_domains host ... -- add hosts to sendmail relay-domains
+    sendmail_class_file filename host ... -- add values trusted-users, relay-domains, etc.
     rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console -- configure grub and init for serial port console
@@ -156,7 +157,7 @@ Adds users to /etc/group.
 
 sub add_users_to_group {
     my($self, $group, @user) = @_;
-    return _insert_text($self, '/etc/group', map {
+    return _edit($self, '/etc/group', map {
 	my($user) = $_;
 	[
 	    qr/^($group:.*:)(.*)/m,
@@ -164,6 +165,34 @@ sub add_users_to_group {
 	    qr/^$group:.*[:,]$user(,|$)/m,
 	];
     } @user);
+}
+
+=for html <a name="allow_any_sendmail_smtp"></a>
+
+=head2 allow_any_sendmail_smtp(string max_message_size) : string
+
+Enable sendmail's smtp to listen from anywhere.  Makes privacy options
+stricter.  Closes off /var/spool/mqueue.  Sets max message size,
+defaults to 10000000.
+
+=cut
+
+sub allow_any_sendmail_smtp {
+    my($self, $max_message_size) = @_;
+    $max_message_size ||= 10000000;
+    return _edit($self, '/etc/sendmail.cf',
+	[qr/^\#?(O\s+DaemonPortOptions\s*=.*),Addr=127.0.0.1/m,
+	    sub {$1},
+	    qr/DaemonPortOptions=Port=smtp,(?!Addr=127.0.0.1)/m],
+	map {
+	    my($option, $value) = split(/=/);
+	    [qr/^#?O\s+$option\s*=.*/m, "O $option=$value\n",
+	        qr/^\Q$option=$value\E$/m];
+	} 'PrivacyOptions=goaway,restrictmailq,restrictqrun',
+	    'SmtpGreetingMessage=$j',
+	    "MaxMessageSize=$max_message_size"
+        )
+        . _exec($self, "chmod 0700 " . _prefix_file('/var/spool/mqueue'));
 }
 
 =for html <a name="create_ssl_crt"></a>
@@ -211,7 +240,7 @@ Updates /etc/rc.d/init.d/iptables to not save/restore with counters.
 
 sub disable_iptables_counters {
     my($self) = @_;
-    return _insert_text($self, '/etc/rc.d/init.d/iptables',
+    return _edit($self, '/etc/rc.d/init.d/iptables',
 	map {
 	    [qr/(iptables-$_)\s+-c\b/m, sub {$1},
 		 qr/iptables-$_\s+[&>;]/];
@@ -281,21 +310,6 @@ sub handle_config {
     return;
 }
 
-=for html <a name="relay_domains"></a>
-
-=head2 static relay_domains(string host, ...)
-
-Adds I<host>s to relay-domains file (creating if it doesn't exist).
-
-=cut
-
-sub relay_domains {
-    my($self, @host) = @_;
-    my($f) = '/etc/mail/relay-domains';
-    return _add_file($self, $f, 'root', 'mail', 0640)
-	. _insert_text($self, $f, ['^', join("\n", @host) . "\n"]);
-}
-
 =for html <a name="rename_rpmnew"></a>
 
 =head2 rename_rpmnew(string rpmnew_file, ...) : string
@@ -345,10 +359,28 @@ Very prelim.  See test for example in use.
 
 sub rhn_up2date_param {
     my($self, @args) = @_;
-    return _insert_text($self, '/etc/sysconfig/rhn/up2date', map {
+    return _edit($self, '/etc/sysconfig/rhn/up2date', map {
 	my($param, $value) = @$_;
 	[qr/\n$param\s*=\s*[^;]+;/m, "\n$param=$value;"],
     } @{$self->group_args(2, \@args)});
+}
+
+=for html <a name="sendmail_class_file"></a>
+
+=head2 static sendmail_class_file(string file, string value, ...)
+
+Adds I<value>s to class file (e.g. trusted-users),
+creating if it doesn't exist.
+
+=cut
+
+sub sendmail_class_file {
+    my($self, $file, @value) = @_;
+    $file = "/etc/mail/$file";
+    return _add_file($self, $file, 'root', 'mail', 0640)
+	. _edit($self, $file, map {
+	    ['^', "$_\n", qr/^\Q$_\E$/m],
+	 } @value);
 }
 
 =for html <a name="serial_console"></a>
@@ -362,10 +394,10 @@ inittab.   May be called repeatedly.
 
 sub serial_console {
     my($self) = @_;
-    return _insert_text($self, '/etc/securetty', ['^', "/dev/ttyS0\n"])
-	. _insert_text($self, '/etc/inittab', ['(?<=getty tty6\n)',
+    return _edit($self, '/etc/securetty', ['^', "/dev/ttyS0\n"])
+	. _edit($self, '/etc/inittab', ['(?<=getty tty6\n)',
 	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
-        . _insert_text($self, '/etc/grub.conf',
+        . _edit($self, '/etc/grub.conf',
 	    ['(?<!\#)splashimage', '#splashimage'],
 	    ["(?=\n\tinitrd)", ' console=ttyS0,38400'],
 	    ["\ntimeout=10\n", <<'EOF']);
@@ -387,7 +419,7 @@ those parameters which already exist in the file.
 
 sub sshd_param {
     my($self, @args) = @_;
-    return _insert_text($self, '/etc/ssh/sshd_config', map {
+    return _edit($self, '/etc/ssh/sshd_config', map {
 	my($param, $value) = @$_;
 	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param $value"],
     } @{$self->group_args(2, \@args)});
@@ -411,24 +443,11 @@ sub _add_file {
     return "Created: $file\n";
 }
 
-# _exec(self, string command, string $in) : string
-#
-# Execute obeying noexecute.
-#
-sub _exec {
-    my($self, $cmd, $in) = @_;
-    $in ||= '';
-    $cmd .= ' 2>&1';
-    return "Would have executed: $cmd\n"
-	if $self->unsafe_get('noexecute');
-    return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
-}
-
-# _insert_text(self, string file, array_ref op)
+# _edit(self, string file, array_ref op)
 #
 # Inserts a value into a file.
 #
-sub _insert_text {
+sub _edit {
     my($self, $file, @op) = @_;
     $file = _prefix_file($file);
     my($data) = Bivio::IO::File->read($file);
@@ -448,6 +467,19 @@ sub _insert_text {
     system("cp -a $file $file.bak");
     Bivio::IO::File->write($file, $data);
     return "Updated: $file\n";
+}
+
+# _exec(self, string command, string $in) : string
+#
+# Execute obeying noexecute.
+#
+sub _exec {
+    my($self, $cmd, $in) = @_;
+    $in ||= '';
+    $cmd .= ' 2>&1';
+    return "Would have executed: $cmd\n"
+	if $self->unsafe_get('noexecute');
+    return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
 }
 
 # _prefix_file(string file) : string
