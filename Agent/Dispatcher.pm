@@ -16,7 +16,7 @@ Bivio::Agent::Dispatcher - HTTP and email dispatcher
 
 =cut
 
-@Bivio::Agent::Dispatcher::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Agent::Dispatcher::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -151,6 +151,7 @@ sub initialize {
     $_INITIALIZED = 1;
     Bivio::Agent::HTTP::Location->initialize;
     Bivio::Agent::Task->initialize;
+    _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;
     return;
 }
 
