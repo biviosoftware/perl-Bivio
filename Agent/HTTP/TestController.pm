@@ -179,7 +179,6 @@ sub _create_page {
 
     my($human_controller) = Bivio::Agent::HTTP::TestController->new(
 	    [$paul_view, $ellen_view], $ellen_view);
-    Bivio::Agent::Dispatcher::register_controller('', $human_controller);
     Bivio::Agent::Dispatcher::register_controller('human', $human_controller);
 
     my($dog_controller) = Bivio::Agent::HTTP::TestController->new(
