@@ -173,6 +173,8 @@ sub execute {
 sub internal_read_data {
     my($proto, $fh_ref) = @_;
 
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::PDF::IndirectObjRef');
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::PDF::Number');
     my($base_pdf_text_ref, $base_root_ref, $base_size_ref, $base_xref_ref,
 	    $last_section, $next_section);
 
