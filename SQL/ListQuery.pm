@@ -815,14 +815,15 @@ sub _parse_interval {
 #
 sub _parse_order_by {
     my($attrs, $support, $die) = @_;
-    my($value) = $attrs->{o} || $attrs->{order_by} || '';
+    my($orig_value) = $attrs->{o} || $attrs->{order_by} || '';
     my($res) = $attrs->{order_by} = [];
     my($order_by, $columns) = $support->unsafe_get(
 	    'order_by_names', 'columns');
     return unless $order_by;
+    my($value) = $orig_value;
     while (length($value)) {
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
-		$attrs->{o}) unless $value =~ s/^(\d+)([ad])//;
+		$orig_value) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
