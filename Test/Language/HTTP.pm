@@ -491,7 +491,7 @@ sub verify_uri {
     my($self, $uri) = @_;
     my($current_uri) = $self->get_uri;
 #    $current_uri =~ s{http.*//[^/]*/}{};
-    Bivio::Die->die('Current uri is ', $current_uri, ' does not match ', $uri)
+    Bivio::Die->die('Current uri ', $current_uri, ' does not match ', $uri)
 #	unless $current_uri eq $uri;
 	unless $current_uri =~ $uri;
     return;
