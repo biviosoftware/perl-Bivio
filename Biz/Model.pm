@@ -214,6 +214,7 @@ sub die {
     my($self, @args) = @_;
     $self->throw_die('DIE', {
 	message => Bivio::IO::Alert->die(@args),
+	program_error => 1,
     },
 	    caller);
     # DOES NOT RETURN
@@ -597,6 +598,8 @@ sub _assert_class_name {
 #
 sub _initialize_class_info {
     my($class, $config) = @_;
+    # This may load the models and we'll try to get the class_info
+    # again after the models are loaded.
     _load_all_property_models();
 
     # Have here for safety to avoid infinite recursion if called badly.
