@@ -119,6 +119,7 @@ sub format_uri {
 #TODO: Map query strings to brief names
     my(@s);
     while (my($k, $v) = each(%$query)) {
+	next unless defined($v) && length($v);
 	push(@s, $k . '=' . Bivio::Util::escape_uri($v));
     }
     return $uri . '?' . join('&', @s);
