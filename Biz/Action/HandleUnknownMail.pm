@@ -53,7 +53,7 @@ sub execute {
     my(undef, $req) = @_;
     my($msg) = $req->get('message');
     # There should only be one recipient
-    my($who) = $req->get_recipients->[0];
+    my($who) = $msg->get_recipients->[0];
     if ($who =~ /^owner-|-owner$/i) {
 	$msg->set_recipients('postmaster');
 	$msg->enqueue_send;
