@@ -136,6 +136,7 @@ my(%_REDIRECT_DIE_CODES) = (
     Bivio::DieCode::CLIENT_REDIRECT_TASK() => 1,
     Bivio::DieCode::SERVER_REDIRECT_TASK() => 1,
 );
+my(@_HANDLERS);
 
 =head1 FACTORIES
 
@@ -295,6 +296,7 @@ sub execute {
 	$req->server_redirect(Bivio::Agent::TaskId::LOGIN());
 	# DOES NOT RETURN
     }
+    _invoke_pre_execute_handlers($req);
     my($i);
     foreach $i (@{$attrs->{items}}) {
 	my($instance, $method) = @$i;
@@ -413,6 +415,22 @@ sub initialize {
     return;
 }
 
+=for html <a name="register"></a>
+
+=head2 static register(proto handler)
+
+Registers a pre execution handler if not already registered. The I<handler>
+must support L<handle_pre_execute_task|"handle_pre_execute_task">.
+
+=cut
+
+sub register {
+    my($proto, $handler) = @_;
+    return if grep($_ eq $handler, @_HANDLERS);
+    push(@_HANDLERS, $handler);
+    return;
+}
+
 =for html <a name="rollback"></a>
 
 =head2 rollback(Bivio::Agent::Request req)
@@ -512,6 +530,19 @@ sub _init_form_attrs {
     }
     else {
 	$attrs->{require_context} = $form_require;
+    }
+    return;
+}
+
+# _invoke_pre_execute_handlers(Bivio::Agent::Request req)
+#
+# Calls the L<handle_pre_execute_task|"handle_pre_execute_task"> method
+# on all the registered handlers.
+#
+sub _invoke_pre_execute_handlers {
+    my($req) = @_;
+    foreach my $handler (@_HANDLERS) {
+	$handler->handle_pre_execute_task($req);
     }
     return;
 }
