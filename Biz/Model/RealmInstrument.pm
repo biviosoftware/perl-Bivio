@@ -143,21 +143,6 @@ sub get_first_buy_date {
     return $date;
 }
 
-=for html <a name="get_next_block"></a>
-
-=head2 get_next_block() : string
-
-Returns the next block identifier.
-
-=cut
-
-sub get_next_block {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    die("not implemented");
-    return;
-}
-
 =for html <a name="get_number_of_shares"></a>
 
 =head2 static get_number_of_shares(string realm_instrument_id, string date) : int
@@ -192,23 +177,56 @@ date.
 
 sub get_share_price {
 #TODO: input array of instruments and use group by
-    my(undef, $realm_instrument_id, $date) = @_;
+    my(undef, $realm_instrument_id, $search_date, $realm) = @_;
 
+    # more clumsy SQL
+    # need to do one query, not for each instrument as now
+
+    # valuation algorithm:
+    #   if not in mgfs use local (realm_instrument_valuation_t).
+    #   if date < club create date local
+    #   if neither return 0, min date
+
+    my($value, $date);
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select realm_instrument_valuation_t.price_per_share, '
+	    'select mgfs_daily_quote_t.close, '
 	    .Bivio::Type::Date->from_sql_value(
-		    'realm_instrument_valuation_t.date_time')
-	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.date_time <= '
+		    'mgfs_daily_quote_t.date_time')
+	    .' from realm_instrument_t, mgfs_instrument_t, mgfs_daily_quote_t where realm_instrument_t.realm_instrument_id=? and realm_instrument_t.instrument_id=mgfs_instrument_t.instrument_id and mgfs_instrument_t.mg_id=mgfs_daily_quote_t.mg_id and mgfs_daily_quote_t.date_time <= '
 	    .Bivio::Type::Date->to_sql_value('?')
-	    .' order by realm_instrument_valuation_t.date_time desc',
-	   [$realm_instrument_id,
-		   Bivio::Type::Date->to_sql_param($date)]);
+	    .' order by mgfs_daily_quote_t.date_time desc',
+	    [$realm_instrument_id,
+		    Bivio::Type::Date->to_sql_param($search_date)]);
 
     my($row);
     if ($row = $sth->fetchrow_arrayref()) {
-	my ($value, $date) = @$row;
+	($value, $date) = @$row;
 	$date = Bivio::Type::Date->from_sql_column($date);
 	$sth->finish();
+    }
+
+    # use local validations if not present, or the date is pre bivio
+    if (! defined($value)
+	    || _date_less_than($date, $realm->get('creation_date_time'))) {
+
+	$sth = Bivio::SQL::Connection->execute(
+		'select realm_instrument_valuation_t.price_per_share, '
+		.Bivio::Type::Date->from_sql_value(
+			'realm_instrument_valuation_t.date_time')
+		.' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.date_time <= '
+		.Bivio::Type::Date->to_sql_value('?')
+		.' order by realm_instrument_valuation_t.date_time desc',
+		[$realm_instrument_id,
+			Bivio::Type::Date->to_sql_param($search_date)]);
+	if ($row = $sth->fetchrow_arrayref()) {
+	    ($value, $date) = @$row;
+	    $date = Bivio::Type::Date->from_sql_column($date);
+	    $sth->finish();
+	    return ($value, $date);
+	}
+    }
+
+    if (defined($value)) {
 	return ($value, $date);
     }
     return (0.0, Bivio::Type::Date->get_min);
@@ -251,6 +269,25 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _date_less_than(string date, string date2) : boolean
+#
+# Returns true if date is less than date2.
+#
+sub _date_less_than {
+    my($date, $date2) = @_;
+
+    my($j, $s) = $date =~ /^(.*)\s(.*)$/;
+    my($j2, $s2) = $date2 =~ /^(.*)\s(.*)$/;
+
+    if ($j < $j2) {
+	return 1;
+    }
+    if ($j == $j2) {
+	return $s < $2;
+    }
+    return 0;
+}
 
 =head1 COPYRIGHT
 
