@@ -125,11 +125,11 @@ sub render {
 
     # render time initialization
     my($size) = $self->get('parent')->ancestral_get('size');
-    $fields->{location} = [_get_location($self, $pdf)];
-    $self->put(width => $size->[0] - $fields->{location}->[0])
-        unless $self->unsafe_get('width');
-    $self->put(height => $size->[1] - $fields->{location}->[1])
-        unless $self->unsafe_get('height');
+    $fields->{location} = [$self->get_location($pdf)];
+    $fields->{width} = $self->get_or_default('width',
+        $size->[0] - $fields->{location}->[0]);
+    $fields->{height} = $self->get_or_default('height',
+        $size->[1] - $fields->{location}->[1]);
 
     $fields->{has_text} = 0;
     $fields->{y_pos} = 0;
@@ -159,18 +159,19 @@ sub render_in_box {
 	return if $text eq '';
     }
 
-    my($height) = $self->get('height') - $fields->{y_pos};
+    my($height) = $fields->{height} - $fields->{y_pos};
 
-    _trace('show boxed: ', $x, ' ', $y, ' ', $self->get('width'),
+    _trace('show boxed: ', $x, ' ', $y, ' ', $fields->{width},
         ' ', $height) if $_TRACE;
-    my($c) = $pdf->show_boxed($text, $x, $y - $self->get('height'),
-	$self->get('width'), $height,
+    my($c) = $pdf->show_boxed($text, $x, $y - $fields->{height},
+	$fields->{width}, $height,
         $self->get('align'), '');
     Bivio::IO::Alert->warn("text clipped: ", $text) if $c;
 
-    #$pdf->rect($x, $y - $self->get('height'),
-    #    $self->get('width'), $height);
-    #$pdf->stroke;
+    if ($self->unsafe_get('debug')) {
+        $pdf->rect($x, $y - $fields->{height}, $fields->{width}, $height);
+        $pdf->stroke;
+    }
 
     if ($text =~ /\n$/) {
         $pdf->continue_text('');
@@ -183,36 +184,16 @@ sub render_in_box {
 
 #=PRIVATE SUBROUTINES
 
-# _get_location(Bivio::UI::PDF pdf) : (float, float)
-#
-# Returns the location of the widget. Translates textx and texty into
-# actual coordinates.
-#
-sub _get_location {
-    my($self, $pdf) = @_;
-    my($fields) = $self->[$_IDI];
-    my($x, $y) = @{$self->get('location')};
-    my($parent_location) = $self->get('parent')->ancestral_get('location');
-
-    if ($x eq 'textx') {
-        $x = $pdf->get_value('textx', 0) - $parent_location->[0];
-    }
-    if ($y eq 'texty') {
-        $y = $self->get_pdf_y($pdf,
-            $pdf->get_value('texty', 0) + $parent_location->[1]);
-    }
-    return ($x, $y);
-}
-
 # _render_trailing_text(float x, string text, Bivio::UI::PDF pdf) : string
 #
 # Draws the trailing text. Returns any text which was not rendered.
 #
 sub _render_trailing_text {
     my($self, $x, $text, $pdf) = @_;
+    my($fields) = $self->[$_IDI];
     my($textx) = $pdf->get_value('textx', 0);
     my($texty) = $pdf->get_value('texty', 0);
-    my($width) = $x + $self->get('width') - $textx;
+    my($width) = $x + $fields->{width} - $textx;
     my($line_size) = $pdf->get_value('leading', 0);
 
     my($c) = $pdf->show_boxed($text, $textx,
