@@ -64,9 +64,10 @@ use HTML::Entities ();
 
 #=VARIABLES
 my($_TO_HTML_OP) = {
-    para => 'p',
-    chapter => ['<html><body>', '</body></html>'],
-    title => 'h1',
+    chapter => ['html', 'body'],
+    para => ['p'],
+    simplesect => [],
+    title => ['h1'],
 };
 
 =head1 METHODS
@@ -113,9 +114,16 @@ sub _to_html_node {
     return HTML::Entities::encode($tree) unless $tag;
     die($tag, ': unhandled tag') unless my $op = $_TO_HTML_OP->{$tag};
     shift(@$tree);
-    return $op->[0]._to_html($tree).$op->[1] if ref($op) eq 'ARRAY';
-    die($tag, ': unknown operation in $_TO_HTML_OP: ', ref($op)) if ref($op);
-    return '<'.$op.'>'._to_html($tree).'</'.$op.'>';
+    return _to_html_tags($op)._to_html($tree)._to_html_tags([reverse(@$op)], '/');
+}
+
+# _to_html_tags(array_ref names, string prefix) : string
+#
+# Convert $names to tags with possible prefix ('/')
+#
+sub _to_html_tags {
+    my($names, $prefix) = @_;
+    return join('', map {'<'.($prefix || '').$_.'>'} @$names);
 }
 
 =head1 COPYRIGHT
