@@ -38,12 +38,13 @@ use Bivio::Agent::Request;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::SQL::Constraint;
+use Bivio::Type::Date;
+use Bivio::Type::Email;
 use Bivio::Type::Enum;
 use Bivio::Type::Gender;
-use Bivio::Type::Name;
-use Bivio::Type::Date;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::Location;
+use Bivio::Type::Name;
+use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_SHADOW_PREFIX) = '=';
@@ -142,37 +143,35 @@ sub generate_shadow_user_name {
     return $name.$unique_num;
 }
 
-=for html <a name="get_email_address"></a>
+=for html <a name="get_outgoing_emails"></a>
 
-=head2 get_email_address() : string
+=head2 get_outgoing_emails() : array_ref
 
-Returns the "first" email address.
+=head2 get_outgoing_emails(Bivio::Type::Location which) : array_ref
 
-=cut
+Returns an array of outgoing addresses for this user if no
+I<which>.  Otherwise, returns a single address.
 
-sub get_email_address {
-#TODO: Need to make this real
-    return shift->get_email_addresses();
-}
-
-=for html <a name="get_email_addresses"></a>
-
-=head2 get_email_addresses() : array
-
-=head2 get_email_addresses(Bivio::Type::Location which) : array
-
-Returns an array of email addresses for this user.  Returns
-a particular email address (starting at number 0).
+Returns C<undef> is there are no outgoing email addresses for
+this user.
 
 =cut
 
-sub get_email_addresses {
+sub get_outgoing_emails {
     my($self, $which) = @_;
+
+
+    # Load Email
     my($loc) = $which ? $which : Bivio::Type::Location::HOME();
     my($email) = Bivio::Biz::Model::Email->new($self->get_request);
-    return $which ? [] : undef unless $email->unauth_load(
+    return undef unless $email->unauth_load(
 	    location => $loc, realm_id => $self->get('user_id'));
-    return $which ? [$email->get('email')] : $email->get('email');
+
+    # Validate address
+    my($a) = $email->get('email');
+    return undef unless Bivio::Type::Email->is_valid($a);
+
+    return [$email->get('email')];
 }
 
 =for html <a name="internal_initialize"></a>
