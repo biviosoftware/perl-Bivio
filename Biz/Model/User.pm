@@ -154,7 +154,7 @@ sub generate_shadow_user_name {
 	    || Bivio::Agent::Request->new();
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
     my($unique_num) = 0;
-    while ($realm->unauth_load(name => $name.$unique_num)) {
+    while ($realm->unauth_load(name => $name.$unique_num.'-'.$active)) {
 	$unique_num++;
     }
     return $name.$unique_num.'-'.$active;
