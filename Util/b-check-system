@@ -180,6 +180,8 @@ sub check_messages {
             /named\[\d+\]: NOTIFY\(SOA\) for non-secondary name/ && next;
             /named-xfer\[\d+\]: send AXFR query/ && next;
 
+            /anacron\[\d+\]: Updated timestamp for job/ && next;
+
             /cvs\[\d+\]: connect from/ && next;
             
             /tcp-env\[\d+\]: connect / && next;
