@@ -11,6 +11,8 @@ use Bivio::Test::Request;
 # Most of the test work is implemented by UserLoginForm.t, so we
 # just test the flow here.
 my($_req) = Bivio::Test::Request->set_realm_and_user('general', 'root');
+# UserLoginForm looks at the task for an optional 'su_task' field
+$_req->put(task => Bivio::Collection::Attributes->new({}));
 Bivio::Test->new->unit([
     'Bivio::Biz::Model::AdmSubstituteUserForm' => [
 	execute => [
