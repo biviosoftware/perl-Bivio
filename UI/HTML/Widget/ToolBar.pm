@@ -32,7 +32,8 @@ can be found in
 L<Bivio::UI::HTML::ActionButtons|Bivio::UI::HTML::ActionButtons>
 
 If the task is not executable in the current realm by the current role, the
-button is not displayed.
+button is not displayed.  Each button also has a I<button_control>, which,
+if supplied, must return true for the button to be rendered.
 
 If I<tool_bar_nav> is set, the nav buttons will be rendered.
 
@@ -49,6 +50,11 @@ The list of ActionButton widgets.
 =head1 BUTTON ATTRIBUTES
 
 =over 4
+
+=item button_control : array_ref (dynamic)
+
+If this widget value returns false, the button will not be rendered.
+Checked after I<button_task_id>.
 
 =item button_task_id : Bivio::Agent::TaskId (required,dynamic)
 
