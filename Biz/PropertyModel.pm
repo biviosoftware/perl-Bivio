@@ -61,7 +61,8 @@ sub create {
     }
     $sql_support->create($new_values, $self);
     $self->internal_put($new_values);
-    $self->get_request->put(ref($self), $self);
+    my($req) = $self->unsafe_get_request;
+    $req->put(ref($self), $self) if $req;
     return;
 }
 
@@ -152,7 +153,8 @@ sub unauth_load {
     return 0 unless $values;
     $self->internal_put($values);
     # If found, put a reference to this model in request
-    $self->get_request->put(ref($self), $self);
+    my($req) = $self->unsafe_get_request;
+    $req->put(ref($self), $self) if $req;
     return 1;
 }
 
