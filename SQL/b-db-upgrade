@@ -297,7 +297,7 @@ CREATE TABLE bivio_buck_t (
 /
 ALTER TABLE bivio_buck_t
   add constraint bivio_buck_t1
-  primary key(realm_id, ec_payment_id)
+  primary key(realm_id, ec_payment_id, amount)
   using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
 ALTER TABLE bivio_buck_t
@@ -305,12 +305,16 @@ ALTER TABLE bivio_buck_t
   foreign key (ec_payment_id)
   references ec_payment_t(ec_payment_id)
 /
+CREATE INDEX bivio_buck_t3 on bivio_buck_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
 ALTER TABLE bivio_buck_t
-  add constraint bivio_buck_t3
+  add constraint bivio_buck_t4
   foreign key (realm_id)
   references realm_owner_t(realm_id)
-/
-ALTER TABLE bivio_buck_t modify amount not null
 /
 ');
     return;
