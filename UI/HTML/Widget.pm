@@ -408,6 +408,7 @@ sub display_widget {
 #TODO: need a generic way to switch a widget's source
     # Default the widget_value
     $widget_value = [ref($model), $property] unless $widget_value;
+#TODO: This breaks WidgetFactory's code
     $attrs->{field} = $widget_value;
     $attrs->{value} = $widget_value;
 
@@ -507,6 +508,20 @@ The button label may be overridden by supplying the Bivio::UI::Label value.
 
 sub form_button {
     return shift->simple_form_field(@_);
+}
+
+=for html <a name="get_label"></a>
+
+=head2 static get_label(string name, ....) : string
+
+Looks up label with
+L<Bivio::UI::Label::get_simple|Bivio::UI::Label/"get_simple">.
+
+=cut
+
+sub get_label {
+    shift;
+    return Bivio::UI::Label->get_simple(@_);
 }
 
 =for html <a name="heading"></a>
@@ -779,7 +794,6 @@ If I<task> is passed, will create a widget value by formatting
 as a stateless uri for the TaskId named by I<task>.
 
 If I<abs_uri> is passed, it must contain a / or : or #.
-
 
 =cut
 
@@ -1078,6 +1092,21 @@ sub realm_name {
     $widget_value = ['auth_realm', 'owner', 'display_name']
 	    unless $widget_value;
     return $proto->indent($proto->string($widget_value, 'realm_name'));
+}
+
+=for html <a name="secure_data"></a>
+
+=head2 static secure_data(Bivio::UI::HTML::Widget widget) : Bivio::UI::HTML::Widget
+
+Wraps I<widget> in a
+L<Bivio::UI::HTML::Widget::SecureData|Bivio::UI::HTML::Widget::SecureData>
+widget.
+
+=cut
+
+sub secure_data {
+    my($proto, $widget) = @_;
+    return $proto->load_and_new('SecureData', {value => $widget});
 }
 
 =for html <a name="simple_form"></a>
