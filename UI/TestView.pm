@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::UI::TestView;
 use strict;
-use Data::Dumper;
 $Bivio::UI::TestView::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -22,6 +21,7 @@ L<Bivio::UI::View>
 
 =cut
 
+use Bivio::UI::View;
 @Bivio::UI::TestView::ISA = qw(Bivio::UI::View);
 
 =head1 DESCRIPTION
@@ -34,6 +34,9 @@ when renderering.
 =head1 CONSTANTS
 
 =cut
+
+#=IMPORTS
+use Data::Dumper;
 
 #=VARIABLES
 
