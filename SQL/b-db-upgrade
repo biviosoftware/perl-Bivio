@@ -222,6 +222,7 @@ sub _upgrade {
 
     _upgrade_account_sync();
     _upgrade_realm_notice();
+    _upgrade_adjustment_types();
     print("\n*** done ***\n");
     return;
 }
@@ -276,6 +277,29 @@ ALTER TABLE account_sync_t
   add constraint account_sync_t5
   foreign key (realm_transaction_id)
   references realm_transaction_t(realm_transaction_id)
+/
+');
+    return;
+}
+
+# _upgrade_adjustment_types()
+#
+# Expands entry_type constraints to include cash/investment/member
+# adjustments.
+#
+sub _upgrade_adjustment_types {
+    print("expanding entry_type constraints\n");
+
+    _drop_constraints('entry_t', 'entry_type');
+    _do_sql('
+ALTER TABLE entry_t modify entry_type not null
+/
+ALTER TABLE entry_t
+  add constraint entry_t7
+  check (entry_type between 1 and 9
+  or entry_type between 100 and 113
+  or entry_type=117
+  or entry_type between 200 and 221)
 /
 ');
     return;
