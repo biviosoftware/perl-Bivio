@@ -527,6 +527,7 @@ sub is_loadavg_ok {
 =head2 lock_realm()
 
 Locks the current realm.  Dies if general realm is auth_realm.
+Handles re-locking existing realm.
 
 =cut
 
@@ -536,7 +537,7 @@ sub lock_realm {
     Bivio::Die->die("can't lock general realm")
 	    if $req->get('auth_realm')->get('type')
 		    == Bivio::Auth::RealmType::GENERAL();
-    Bivio::Biz::Model->get_instance('Lock')->execute($req);
+    Bivio::Biz::Model->get_instance('Lock')->execute_if_not_acquired($req);
     return;
 }
 
