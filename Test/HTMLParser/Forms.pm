@@ -35,14 +35,18 @@ C<Bivio::Test::HTMLParser::Forms> models the forms on a page.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
+my($_=);
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_ERROR_COLOR) = '#990000';
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
+Bivio::IO::Config->register(my $_CFG = {
+    error_color => '#990000',
+});
 
 =head1 FACTORIES
 
@@ -102,6 +106,26 @@ sub get_by_field_names {
 	$found = $values;
     }
     return $found || Bivio::Die->die(\@name, ': no form matches named fields');
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item error_color : string [#990000]
+
+unique color for error text on page. If found, assumes form failed.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 =for html <a name="html_parser_end"></a>
@@ -182,7 +206,7 @@ sub _end_font {
     my($fields) = @_;
     my($f) = pop(@{$fields->{font}});
     return unless defined($f->{color})
-	&& $f->{color} eq $_ERROR_COLOR
+	&& $f->{color} eq $_CFG->{error_color}
 	&& $fields->{text}
 	&& !_have_prefix_label($fields);
     $fields->{input_error} = $fields->{text};
