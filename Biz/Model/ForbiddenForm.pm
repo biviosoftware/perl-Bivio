@@ -34,7 +34,7 @@ C<Bivio::Biz::Model::ForbiddenForm>
 
 =cut
 
-=head1 TASK ATTRIBUTES
+=head1 ATTRIBUTES
 
 =over 4
 
