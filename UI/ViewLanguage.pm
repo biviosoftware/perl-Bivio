@@ -188,7 +188,7 @@ A view must either have a L<view_parent|"view_parent"> or a view_main.
 sub view_main {
     my($proto, $widget) = _args(@_);
     _assert_value('view_main', $widget,
-	    qw(Bivio::UI::Widget get_content_type render));
+	    qw(Bivio::UI::Widget execute render));
     _put(view_main => $widget);
     return;
 }
@@ -289,7 +289,7 @@ sub view_widget_value {
     my($view) = _assert_in_eval('view_widget_value');
     _die($attr.': attribute not found; view or its parents must declare'
 	    .' before use')
-	    if $view->ancestral_get($attr, $view) eq $view;
+	    unless $view->ancestral_has_keys($attr);
     return [['->get_request'], 'Bivio::UI::View', '->ancestral_get', $attr];
 }
 
@@ -301,7 +301,7 @@ sub view_widget_value {
 # are called from view files or templates, they are not given a $proto.
 #
 sub _args {
-    return $_[0] eq __PACKAGE__ ? @_ : (__PACKAGE__, @_);
+    return defined($_[0]) && $_[0] eq __PACKAGE__ ? @_ : (__PACKAGE__, @_);
 }
 
 # _assert_in_eval() : Bivio::UI::View
@@ -391,7 +391,7 @@ sub _initialize {
 #TODO: is_terminal needs to traverse hierarchy
     my($is_terminal) = 1;
     while (my($k, $v) = each(%$values)) {
-	$v->initialize if UNIVERSAL::isa($v, 'Bivio::UI::Widget');
+	$v->initialize if $v && UNIVERSAL::isa($v, 'Bivio::UI::Widget');
 	$is_terminal = 0 unless defined($v);
     }
 #TODO: broken.  Need to traverse parents to see if everything used
@@ -410,10 +410,11 @@ sub _initialize {
 #
 sub _put {
     my($name, $value) = @_;
-    my($view) = _assert_in_eval($name);
+    my($view) = _assert_in_eval();
     # We allow an attribute to be view_declared (undef) and then
     # assigned later in the view.
-    _die($name.': view attribute already defined (no overrides within view)')
+    _die($name, ': view attribute already defined',
+	    ' (no overrides within view)')
 	    if defined($view->unsafe_get($name));
     $view->put($name => $value);
     return;
