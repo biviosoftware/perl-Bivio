@@ -1,6 +1,7 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
 package Bivio::Mail::Incoming;
+use IO::Scalar;
 use strict;
 $Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -360,14 +361,31 @@ sub get_reply_to {
 
 I was not sure what to call this method. Basically, you want it to return
 the entire RFC822, offset by the header_offset.
-Note that this method is creating a COPY. It is not yet using IO::Stringy.
 
 =cut
 
 sub get_rfc822 {
+    print(STDERR "get_rfc822\n");
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return substr(${$fields->{rfc822}}, $fields->{header_offset});
+}
+
+=for html <a name="get_rfc822_io"></a>
+
+=head2 get_rfc822_io() : 
+
+
+
+=cut
+
+sub get_rfc822_io {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my $file = IO::Scalar->new($fields->{rfc822});
+    $file->setpos($fields->{header_offset});
+    return $file;
+
 }
 
 =for html <a name="get_subject"></a>
