@@ -39,6 +39,7 @@ use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
+use DBI ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -82,6 +83,9 @@ sub internal_fixup_sql {
     # No 'by' on sequence increments
     $sql =~ s/(\sINCREMENT\s+)BY\b/$1/igs;
 
+    # blobs
+    $sql =~ s/\bBLOB\b/BYTEA/igs;
+
     $sql = _fixup_outer_join($sql)
 	if $sql =~ /\(\+\)/;
 
@@ -89,6 +93,18 @@ sub internal_fixup_sql {
 	if $sql =~ /\bSELECT\s+COUNT\(\*\)\s+FROM\s/is;
 
     return $sql;
+}
+
+=for html <a name="internal_get_blob_type"></a>
+
+=head2 internal_get_blob_type() : hash_ref
+
+Returns the bind_param() value for a BLOB.
+
+=cut
+
+sub internal_get_blob_type {
+    return DBI::SQL_BINARY();
 }
 
 =for html <a name="internal_get_error_code"></a>
