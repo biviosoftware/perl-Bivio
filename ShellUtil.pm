@@ -602,10 +602,8 @@ sub lock_action {
     $name ||= (caller(1))[3];
     $name =~ s/::/./g;
     my($lock) = '/tmp/' . $name . '.lockdir';
-    unless (mkdir($lock, 0700)) {
-	Bivio::IO::Alert->warn('unable to create lock: ', $lock);
-	return 0;
-    }
+    return _lock_warning($lock)
+	unless mkdir($lock, 0700);
     my($die) = Bivio::Die->catch($op);
     rmdir($lock);
     $die->throw
@@ -1078,10 +1076,8 @@ sub _deprecated_lock_action {
     my(undef, $action) = @_;
     $action ||= (caller(1))[3];
     my($dir) = "/tmp/$action.lockdir";
-    unless (mkdir($dir, 0700)) {
-	Bivio::IO::Alert->warn('unable to create lock: ', $dir);
-	return 0;
-    }
+    return _lock_warning($dir)
+	unless mkdir($dir, 0700);
     my($pid) = fork;
     defined($pid) || die("fork: $!");
     return 1 unless $pid;
@@ -1111,6 +1107,17 @@ sub _initialize {
 	argv => $orig_argv,
     );
     return $self;
+}
+
+# _lock_warning(string lock_dir) : int
+#
+# Prints warning with lock_dir's age.  Returns 0
+#
+sub _lock_warning {
+    my($lock_dir) = @_;
+    Bivio::IO::Alert->warn($lock_dir, ': not acquired; lock age in seconds=',
+	time - (stat($lock_dir))[9]);
+    return 0;
 }
 
 # _method_ok(Bivio::ShellUtil self, string method) : boolean
