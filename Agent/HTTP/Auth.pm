@@ -24,7 +24,8 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::HTTP::Auth> provides static methods for user and club
-authorization.
+authorization. If authorization is successful, then a 'club' and 'club_user'
+entry will be placed into the Request's context.
 
 =cut
 
@@ -49,6 +50,8 @@ my($_PACKAGE) = __PACKAGE__;
 
 Authorizes that the current user is an administrator of the current club.
 Returns the club and club-user instances if sucessful, otherwise undef.
+If successful, the club and club_user instances will be put into the
+Request's context using the keys 'club' and 'club_user' respectively.
 
 =cut
 
@@ -71,37 +74,40 @@ sub authorize_admin {
 
 Authorizes that the current user is a user of the current club.
 Returns the club and club-user instances if sucessful, otherwise undef.
+If successful, the club and club_user instances will be put into the
+Request's context using the keys 'club' and 'club_user' respectively.
 
 =cut
 
 sub authorize_club_user {
     my(undef, $req) = @_;
 
-    my($user) = $req->get_user();
-
     # has the user logged in?
-    return undef if ! $user;
+    return undef if ! $req->exists('user');
+    my($user) = $req->get('user');
 
     # do the password's match?
-    unless($req->get_password()
-	    && $req->get_password() eq $user->get('password')) {
+    unless($req->exists('password')
+	    && $req->get('password') eq $user->get('password')) {
 	return undef;
     }
 
     my($club) = Bivio::Biz::Club->new();
-    $club->find(Bivio::Biz::FindParams->new(
+    $club->load(Bivio::Biz::FindParams->new(
 	    {'name' => $req->get_target_name()}));
 
     # does the club exist?
     return undef if ! $club->get_status()->is_ok();
 
     my($club_user) = Bivio::Biz::ClubUser->new();
-    $club_user->find(Bivio::Biz::FindParams->new(
+    $club_user->load(Bivio::Biz::FindParams->new(
 	    {'club' => $club->get('id'), 'user_' => $user->get('id')}));
 
     # is the user a member of the club?
     return undef if ! $club_user->get_status()->is_ok();
 
+    $req->put('club', $club);
+    $req->put('club_user', $club_user);
     return ($club, $club_user);
 }
 
