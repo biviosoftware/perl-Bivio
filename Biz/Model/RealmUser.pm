@@ -158,6 +158,30 @@ sub execute_auth_user {
     return;
 }
 
+=for html <a name="has_transactions"></a>
+
+=head2 has_transactions() : boolean
+
+Returns 1 if the user has accounting transactions within the realm.
+
+=cut
+
+sub has_transactions {
+    my($self) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT COUNT(*)
+            FROM member_entry_t
+            WHERE realm_id=?
+            AND user_id=?',
+	    [$self->get('realm_id', 'user_id')]);
+    my($found_transactions) = 0;
+    while (my $row = $sth->fetchrow_arrayref) {
+	$found_transactions = $row->[0];
+    }
+    return $found_transactions > 0;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
