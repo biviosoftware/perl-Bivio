@@ -151,6 +151,24 @@ sub delete_all {
     return;
 }
 
+=for html <a name="delete_all_by_regexp"></a>
+
+=head2 delete_all_by_regexp(string pattern) : self
+
+Deletes all keys matching I<pattern>.
+
+=cut
+
+sub delete_all_by_regexp {
+    my($self, $pattern) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    foreach my $k (keys(%$fields)) {
+	next unless $k =~ /$pattern/;
+	delete($fields->{$k});
+    }
+    return $self;
+}
+
 =for html <a name="dump"></a>
 
 =head2 dump()
