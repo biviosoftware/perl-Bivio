@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::User;
 use strict;
 $Bivio::Biz::Model::User::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::User::VERSION;
 
 =head1 NAME
 
@@ -96,10 +97,14 @@ sub cascade_delete {
             DELETE from realm_invite_t
             WHERE realm_user_id=?',
 	    $params);
-    Bivio::SQL::Connection->execute('
-            DELETE from tax_k1_t
-            WHERE user_id=?',
-	    $params);
+
+    # delete any tax or allocations records
+    foreach my $table (qw(tax_k1_t member_allocation_t)) {
+	Bivio::SQL::Connection->execute("
+                DELETE from $table
+                WHERE user_id=?",
+		$params);
+    }
 
     # Delete any links from visitor_t.
     Bivio::SQL::Connection->execute('
