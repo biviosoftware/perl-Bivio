@@ -110,7 +110,7 @@ sub get_widget_value {
     }
 
     my($result) = $num.'.'.$dec;
-    return $negative ? '('.$result.')' : $result;
+    return $negative ? '('.$result.')' : ' '.$result.' ';
 }
 
 #=PRIVATE METHODS
