@@ -192,7 +192,9 @@ sub _create_display {
 	    %$attrs,
 	});
     }
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')
+	   || UNIVERSAL::isa($type, 'Bivio::Data::CSI::Amount')
+	   || UNIVERSAL::isa($type, 'Bivio::Data::CSI::Quote')) {
 	return Bivio::UI::HTML::Widget::AmountCell->new({
 	    field => $field,
 	    decimals => $_DEFAULT_DECIMALS{$field}
