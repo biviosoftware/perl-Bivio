@@ -7,6 +7,10 @@ use strict;
 
 b-http-log - calls Bivio::Util::HTTPLog
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
 b-http-log [options] command [args...]
