@@ -179,12 +179,16 @@ If no instrument exists for the ticker, then 0 is returned.
 sub unsafe_find_or_create {
     my($self, $ticker) = @_;
     my($req) = $self->get_request;
+    $ticker = uc($ticker);
 
-#TODO: need to check local instruments first
+    # check local instrument first
+    if ($self->unsafe_load(ticker_symbol => $ticker)) {
+	return 1;
+    }
 
     # load the instrument from the ticker
     my($inst) = Bivio::Biz::Model::Instrument->new($req);
-    unless ($inst->unsafe_load(ticker_symbol => uc($ticker))) {
+    unless ($inst->unsafe_load(ticker_symbol => $ticker)) {
 	return 0;
     }
 
