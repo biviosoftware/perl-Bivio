@@ -48,14 +48,10 @@ sub IGNORE_PREFIX {
 
 #=IMPORTS
 use Bivio::TypeError;
+use Bivio::Mail::RFC822;
 
 #=VARIABLES
 my($_IGNORE) = IGNORE_PREFIX();
-# Borrowed from Bivio::Mail::Incoming.  Should really share code
-my($_822_ATOM) = '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
-my($_822_DOTTED_ATOMS) = "$_822_ATOM(?:\\.$_822_ATOM)*";
-my($_822_ATOM_ONLY_ADDR) = "$_822_DOTTED_ATOMS\@$_822_DOTTED_ATOMS";
-my($_822_DOMAIN_LITERAL) = '\\[(?:(?:(?:\\\\{2})+|\\\\[^\\\\]|[^][\\\\])*)\\]';
 
 =head1 METHODS
 
@@ -81,6 +77,15 @@ sub from_literal {
     # We always force to lower case to ensure values get into the
     # database that can be searchable.
     $value = lc($value);
+
+    # Domain must not match our local mail or server domain
+    my($req) = Bivio::Agent::Request->get_current;
+    my($domain);
+    foreach $domain ($req->get('http_host'), $req->get('mail_host')) {
+        $domain =~ s/(\W)/\\$1/g;
+        $value =~ /\@$domain$/i && return (undef, Bivio::TypeError::EMAIL());
+    }
+    
     # Must match a simple dotted atom address
 #TODO: parse out address and try to do a DNS resolution?
 #      I checked out Net::DNS, but it doesn't seem like it can
@@ -88,7 +93,8 @@ sub from_literal {
 #      started(?)).  Anyway, we need a way to avoid entering bogus
 #      addresses.  The best way would be to mail the user the password.
 #      I don't know if we could sustain this in the beginning.
-    return $value if $value =~ /^$_822_ATOM_ONLY_ADDR$/os;
+    my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
+    return $value if $value =~ /^$ATOM_ONLY_ADDR$/os;
 #TODO: This is weak.  Either make good, or just use general message
 #    # Give a reasonable error message
 #    # We don't accept domain literal addresses?
@@ -127,7 +133,8 @@ values stored in the database which may be invalidated by support.
 
 sub is_valid {
     my($proto, $email) = @_;
-    return defined($email) && $email =~ /^$_822_ATOM_ONLY_ADDR$/os ? 1 : 0;
+    my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
+    return defined($email) && $email =~ /^$ATOM_ONLY_ADDR$/os ? 1 : 0;
 }
 
 #=PRIVATE METHODS
