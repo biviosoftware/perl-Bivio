@@ -48,22 +48,44 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="add_to_cart"></a>
 
-=head2 add_to_cart()
+=head2 add_to_cart(string item_name)
 
-Selects the 'Add to Cart' button.  Saves items in the internal copy
-of the cart.
+Selects the 'Add to Cart' button for I<item_name>.  Saves items in the internal
+copy of the cart.  If I<item_name> is not supplied, assumes there is a single
+add_to_cart link.
 
 =cut
 
 sub add_to_cart {
-    my($self) = @_;
+    my($self, $item_name) = @_;
     my($fields) = $self->[$_IDI] ||= {};
-    my($row) = $self->get_html_parser->get_nested('Tables', 'item', 'rows', 0);
-    $self->submit_form(add_to_cart => {});
-    (($fields->{cart} ||= {})->{$row->[0]} ||= {
-	name => $row->[0],
+    my($button) = 'add_to_cart';
+    my($price);
+    if ($item_name) {
+	my($rows) = $self->get_html_parser
+	    ->get_nested('Tables', 'Item ID', 'rows');
+	my($i) = -1;
+	foreach my $row (@$rows) {
+	    $i++;
+	    next unless $row->[1] eq $item_name;
+	    $price = $row->[2];
+	    $button .= "_$i";
+	    last;
+	}
+	die($item_name, ': not found in table')
+	    unless $price;
+    }
+    else {
+	my($row) = $self->get_html_parser
+	    ->get_nested('Tables', 'item', 'rows', 0);
+	$item_name = $row->[0];
+	$price = $row->[1];
+    }
+    $self->submit_form($button => {});
+    (($fields->{cart} ||= {})->{$item_name} ||= {
+	name => $item_name,
 	quantity => 0,
-	price => $row->[1],
+	price => $price,
     })->{quantity}++;
     return;
 }
@@ -96,6 +118,28 @@ sub checkout_as_demo {
     return;
 }
 
+=for html <a name="login_as"></a>
+
+=head2 login_as(string user, string password)
+
+Logs in as I<user> and I<password>.
+
+=cut
+
+sub login_as {
+    my($self, $user, $password) = @_;
+    my($fields) = $self->[$_IDI];
+    $self->follow_link('Sign-out')
+	if $self->get_html_parser->get('Links')->unsafe_get('Sign-out');
+    $self->follow_link('Sign-in');
+    $self->submit_form(submit => {
+        'Email:' => $user,
+	'Password:' => $password,
+    });
+    $self->verify_text('Sign-out');
+    return;
+}
+
 =for html <a name="login_as_demo"></a>
 
 =head2 login_as_demo()
@@ -106,12 +150,7 @@ Logs in as demo user.  Returns to the current page.
 
 sub login_as_demo {
     my($self) = @_;
-    $self->follow_link('Sign-in');
-    $self->submit_form(submit => {
-        'Email:' => 'demo',
-	'Password:' => 'password',
-    });
-    $self->verify_text('Sign-out');
+    $self->login_as('demo', 'password');
     return;
 }
 
@@ -132,6 +171,22 @@ sub remove_from_cart {
 	    $self->submit_form("remove_$index");
 	    return;
 	})->{name}
+    });
+    return;
+}
+
+=for html <a name="search_for"></a>
+
+=head2 search_for(string words)
+
+Submits the search form with I<words>.
+
+=cut
+
+sub search_for {
+    my($self, $words) = @_;
+    $self->submit_form(search => {
+	'_anon' => $words,
     });
     return;
 }

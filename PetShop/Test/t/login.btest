@@ -1,0 +1,10 @@
+# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+login_as('demo', 'password');
+login_as('DEMO', 'password');
+test_deviance();
+login_as('demo', 'PASSWORD');
+login_as('demo', '');
+login_as('nosuchuser', 'password');
