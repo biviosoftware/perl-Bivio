@@ -390,7 +390,7 @@ sub internal_iterate_next {
 	# deprecated form
     }
     return $self->internal_get_sql_support->iterate_next(
-	$it, $row, $converter) ? ($self, $row) : ();
+	$self, $it, $row, $converter) ? ($self, $row) : ();
 }
 
 =for html <a name="internal_put_iterator"></a>

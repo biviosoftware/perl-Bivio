@@ -948,7 +948,7 @@ sub iterate_next_and_load {
     $fields->{rows} = [$row];
     $fields->{cursor} = 0;
     while ($self->internal_get_sql_support->iterate_next(
-	$it || $self->internal_get_iterator, $row)) {
+	$self, $it || $self->internal_get_iterator, $row)) {
 	next if $self->can('internal_post_load_row')
 	    && !$self->internal_post_load_row($row);
 	$self->internal_clear_model_cache;

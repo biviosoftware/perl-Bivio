@@ -442,9 +442,9 @@ sub iterate_end {
 
 =for html <a name="iterate_next"></a>
 
-=head2 iterate_next(ref iterator, hash_ref row) : boolean
+=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row) : boolean
 
-=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
+=head2 iterate_next(Bivio::Biz::Model model, ref iterator, hash_ref row, string converter) : boolean
 
 I<iterator> was returned by L<iterate_start|"iterate_start">.
 I<row> is the resultant values by field name.
@@ -456,7 +456,7 @@ Returns false if there is no next.
 =cut
 
 sub iterate_next {
-    my($self, $iterator, $row, $converter) = @_;
+    my($self, $model, $iterator, $row, $converter) = @_;
     my($start_time) = Bivio::Type::DateTime->gettimeofday();
     my($r) = $iterator->fetchrow_arrayref;
     Bivio::SQL::Connection->increment_db_time($start_time);
