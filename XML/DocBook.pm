@@ -54,6 +54,7 @@ usage: b-docbook [options] command [args...]
 commands:
     to_html file.xml -- converts input xml to output html
     count_words file.xml -- returns number of words in XML file
+    to_pdf <dir> file.pdf -- converts xpip chapters from dir to file.pdf
 EOF
 }
 
@@ -197,6 +198,327 @@ my($_XML_TO_HTML_PROGRAM) = {
     },
 };
 
+my($tex) = '';
+my($ignore) = 0;
+my($in_attrib) = 0;
+my($in_preface) = 0;
+my($in_keyword) = 0;
+my($keyword) = '';
+my($clean_normal) = 1;
+my($attrib) = '';
+my($label) = '';
+my($GRAPHIC_WIDTH) = "4.3in";
+my($dir) = '';
+
+# used to clean latex special characters
+# used when $clean_normal
+my($_CLEAN_CHAR) = {
+    "\n" => ' ',
+    '_' => '\_',
+    '$' => '\$',
+    '&' => '\&',
+    '%' => '\%',
+    '#' => '\#',
+    '{' => '\{',
+    '}' => '\}',
+    '\\' => '$\backslash$',
+    '^' => '\symbol{94}',
+    '~' => '\symbol{126}',
+};
+
+# used to clean latex special characters in "alltt" environments
+# used when !$clean_normal
+my($_CLEAN_VERB_CHAR) = {
+    '{' => '\{',
+    '}' => '\}',
+    '\\' => '\symbol{92}',
+    "\n" => ' \linebreak[4]',
+};
+
+my(@_CHAPTERS) = (
+    'preface.xml',
+    'the-problem.xml',
+    'extreme-programming.xml',
+    'perl.xml',
+    'release-planning.xml',
+    'iteration-planning.xml',
+    'pair-programming.xml',
+    'tracking.xml',
+    'acceptance-testing.xml',
+    'coding-style.xml',
+    'logistics.xml',
+    'test-driven-design.xml',
+    'continuous-design.xml',
+    'unit-testing.xml',
+    'refactoring.xml',
+    'its-a-smop.xml',
+   );
+
+# used to convert xml tags to latex commands
+my($_XML_TO_LATEX_PROGRAM) = {
+    # Many-to-one mappings
+    # Do nothing unless a label should be defined (id=foo)
+    map({$_ => sub { 
+	 my($args) = @_;
+	 return '' unless defined($args);
+	 return '' unless $args =~ /id=/;
+	 $args =~ s/id=//;
+	 $args =~ s/"//g;
+	 $args =~ s/\///;
+	 $label = $args;
+	 return '';
+     }
+    } qw(
+        answer/para
+	question/para
+        figure
+	sect1
+	sect2
+	simplesect
+	term
+	varlistentry
+        answer//para
+	question//para
+	/figure
+	/sect1
+	/sect2
+	/simplesect
+	/term
+	/varlistentry
+    )),
+    map({$_ => '\textit{'} qw(
+	citetitle
+	firstterm
+	replaceable
+    )),
+    map({$_ => '}'} qw(
+	/citetitle
+	/firstterm
+	/replaceable
+    )),
+    map({$_ => '\texttt{'} qw(
+	classname
+	command
+	constant
+	envar
+	filename
+	function
+	literal
+	property
+	type
+	userinput
+	varname
+    )),
+    map({$_ => '}'} qw(
+	/classname
+	/command
+	/constant
+	/envar
+	/filename
+	/function
+	/literal
+	/property
+	/type
+	/userinput
+	/varname
+    )),
+    # Do nothing unless label should be defined (id=foo)
+    map({$_ => sub {
+	 my($args) = @_;
+	 return '' unless defined($args);
+	 return '' unless $args =~ /id=/;
+	 $args =~ s/id=//;
+	 $args =~ s/"//g;
+	 $args =~ s/\///;
+	 $label = $args;
+	 return '';
+     }
+    } qw(
+        chapter
+    )),
+    map({$_ => ''} qw(
+        /chapter
+    )),
+
+    # One-to-one mappings
+    # Have to save the attribution to be output after the epigraph
+    attribution => sub {
+	$in_attrib = 1;
+	$attrib = '';
+	return '';
+    },
+    '/attribution' => sub {
+	$in_attrib = 0;
+	return '';
+    },
+    blockquote => '\begin{quote}',
+    '/blockquote' => '\end{quote}',
+    'chapter/title' => '\chapter{',
+    # Output label for each chapter
+    'chapter//title' => sub {
+	return '}' . "\n" if $label eq '';
+	my($result) = '}\label{' . $label . '}' . "\n";
+	$label = '';
+	return $result;
+    },
+    # Ignore comments
+    comment => sub {
+	$ignore = 1;
+	return '';
+    },
+    '/comment' => sub {
+	$ignore = 0;
+	return '';
+    },
+    emphasis => '\emph{',
+    '/emphasis' => '}',
+    # Use texttt mode because some epigraphs use verbatim mode
+    # which always appears as as true type font
+    epigraph => '\texttt{\begin{quote}',
+    # Output saved attribution after epigraph is closed
+    '/epigraph' => sub {
+	return '\end{quote}}\begin{flushright}-- ' .
+	    $attrib . '\end{flushright}' . "\n";
+    },
+    'figure/title' => '\begin{center}\textbf{',
+    'figure//title' => '}\end{center}' . "\n",
+    'firstterm' => sub {
+	$in_keyword = 1;
+	$keyword = '';
+	return '\index{';
+    },
+    '/firstterm' => sub {
+	$in_keyword = 0;
+	return '}' . $keyword;
+    },
+    footnote => '\footnote{',
+    '/footnote' => '}',
+    foreignphrase => '\textit{',
+    '/foreignphrase' => '}',
+    graphic => sub {
+	my($args) = @_;
+	my($file);
+	$file = $` if $args =~ / /;
+	$file = $args if !($args =~ / /);
+	$file =~ s/fileref=//;
+	$file =~ s/\"//g;
+	return '\begin{center}\includegraphics[width=' . $GRAPHIC_WIDTH . ']{' .
+	    $dir . '/' . $file . '}\end{center}' . "\n";
+    },
+    itemizedlist => '\begin{itemize}' . "\n",
+    '/itemizedlist' => '\end{itemize}' . "\n",
+    listitem => '\item ',
+    '/listitem' => "\n",
+    literallayout => sub {
+	$clean_normal = 0;
+	return '\begin{alltt}';
+    },
+    '/literallayout' => sub {
+	$clean_normal = 1;
+	return '\end{alltt}' . "\n";
+    },
+    para => "\n",
+    '/para' => "\n",
+    'preface/title' => '\chapter*{',
+    'preface//title' => sub {
+	return '}' . "\n" if $label eq '';
+	my($result) = '}\label{' . $label . '}' . "\n" .
+	    '\addcontentsline{toc}{chapter}{Preface}' . "\n";
+	$label = '';
+	return $result;
+    },
+    'preface' => sub {
+	my($args) = @_;
+	return '' unless defined($args);
+	return '' unless $args =~ /id=/;
+	$args =~ s/id=//;
+	$args =~ s/"//g;
+	$args =~ s/\///;
+	$label = $args;
+	$in_preface = 1;
+	return '';
+    },
+    '/preface' => sub {
+	$in_preface = 0;
+	return '\tableofcontents' . "\n" . '\mainmatter' . "\n";
+    },
+    programlisting => sub {
+	$clean_normal = 0;
+	return '\begin{quote}\begin{alltt}';
+    },
+    '/programlisting' => sub {
+	$clean_normal = 1;
+	return '\end{alltt}\end{quote}';
+    },
+    quote => '``',
+    '/quote' => '\'\'',
+    'sect1/title' => sub {
+	$in_preface ? return '\section*{' : return '\section{';
+    },
+    'sect1//title' => sub {
+	return '}' . "\n" if $label eq '';
+	my($result) = '}\label{' . $label . '}' . "\n";
+	$label = '';
+	return $result;
+    },
+    'sect2/title' => sub {
+	$in_preface ? return '\section*{' : return '\section{';
+    },
+    'sect2//title' => sub {
+	return '}' . "\n" if $label eq '';
+	my($result) = '}\label{' . $label . '}' . "\n";
+	$label = '';
+	return $result;
+    },
+    sidebar => sub {
+	my($args) = @_;
+	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+	    unless defined($args);
+	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+	    unless $args =~ /id=/;
+	$args =~ s/id=//;
+	$args =~ s/"//g;
+	$args =~ s/\///;
+	$label = $args;
+	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+    },
+    '/sidebar' => '\end{minipage}}}' . "\n",
+    superscript => '^{',
+    '/superscript' => '}',
+    systemitem => '\linebreak[3]',
+    '/systemitem' => '',
+    'term' => sub {
+	$in_keyword = 1;
+	$keyword = '';
+	return '\index{';
+    },
+    '/term' => sub {
+	$in_keyword = 0;
+	$tex .= $keyword;
+	return '}';
+    },
+    'title' => sub {
+	$in_preface ? return '\section*{' : return '\section{';
+    },
+    '/title' => '}',
+    variablelist => '\begin{description}' . "\n",
+    '/variablelist' => '\end{description}' . "\n",
+    'varlistentry/listitem' => "\n",
+    'varlistentry//listitem' => "\n",
+    'varlistentry/term' => '\item[',
+    'varlistentry//term' => ']',
+    warning => '\quote{\textbf{Warning!}\textit{${_}',
+    '/warning' => '}',
+    xref => sub {
+	my($args) = @_;
+	$args =~ s/linkend=//;
+	$args =~ s/"//g;
+	$args =~ s/\///;
+	return '\nameref{' . $args . '}';
+    },
+    '/xref' => '', #Nothing to be done here
+};
+
 =head1 METHODS
 
 =cut
@@ -236,7 +558,63 @@ sub to_html {
 	});
 }
 
+=for html <a name="to_pdf"></a>
+
+=head2 to_pdf(string input_dir, string output_pdf)
+
+
+
+=cut
+
+sub to_pdf {
+    my($self, $input_dir, $output_pdf) = @_;
+    my($output_root) = $output_pdf;
+    $output_root =~ s/\.pdf//;
+    my($output_tex) = $output_root . '.tex';
+    my($output_idx) = $output_root . '.idx';
+    $dir = $input_dir;
+    if ($output_pdf !~ /\.pdf/) {
+	print "usage: perl -w xpip2pdf.PL <input_dir> <name>.pdf\n";
+	return;
+    }
+
+    _start_tex();
+
+    my($full_path);
+    foreach my $xml_file (@_CHAPTERS) {
+	$full_path = $input_dir . '/' . $xml_file;
+	print "Processing $full_path\n";
+	_process_xml_file($full_path);
+    }
+
+    _end_tex();
+
+    _clean_tex();
+
+    Bivio::IO::File->write($output_tex, $tex);
+    Bivio::Die->die("PDF Write failed, check $output_root.log for details")
+	    unless system("pdflatex -interaction nonstopmode $output_tex > $output_root.log") >= 0;
+    # LaTeX must be run twice to process table of contents and index
+    Bivio::Die->die("PDF Write failed, check $output_root.log for details")
+	    unless system("pdflatex -interaction nonstopmode $output_tex > $output_root.log") >= 0;
+    print "$output_pdf Created\n";
+}
+
 #=PRIVATE METHODS
+
+# _clean_tex()
+#
+# Cleans the global tex string
+#
+sub _clean_tex {
+    $tex =~ s/\\&quot;/"/g;
+    $tex =~ s/\&quot;/"/g;
+    $tex =~ s/\&amp;/&/g;
+    $tex =~ s/\\&lt;/</g;
+    $tex =~ s/\&lt;/</g;
+    $tex =~ s/\\&gt;/>/g;
+    $tex =~ s/\&gt;/>/g;
+}
 
 # _count_words(array_ref children) : int
 #
@@ -254,6 +632,16 @@ sub _count_words {
 	    : scalar(@dontcare = split(' ', $child));
     }
     return $res;
+}
+
+# _end_tex()
+#
+# Adds necessary information to end of tex string
+#
+sub _end_tex {
+    $tex .= '\backmatter\n';
+    $tex .= '\printindex' . "\n";
+    $tex .= '\end{document}' . "\n";
 }
 
 # _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
@@ -327,6 +715,119 @@ sub _lookup_op {
     return $_XML_TO_HTML_PROGRAM->{"$parent_tag/$tag"}
 	|| $_XML_TO_HTML_PROGRAM->{$tag}
 	|| die("$parent_tag/$tag: unhandled tag");
+}
+
+# _process_tag()
+#
+# Processes each xml tag, adds appropriate tex code to tex string
+#
+sub _process_tag {
+    my($parent_tag, $tag, $args) = @_;
+
+    my($result);
+    if (defined($_XML_TO_LATEX_PROGRAM->{"$parent_tag/$tag"})) {
+	$result = $_XML_TO_LATEX_PROGRAM->{"$parent_tag/$tag"}
+    } elsif (defined($_XML_TO_LATEX_PROGRAM->{$tag})) {
+	$result = $_XML_TO_LATEX_PROGRAM->{$tag};
+    } else {
+	die("$parent_tag/$tag: unhandled tag");
+    }
+
+    if ('CODE' eq ref($result)) {
+	$attrib .= $result->($args) if $in_attrib;
+	$tex .= $result->($args) if !$in_attrib;
+    } else {
+	$attrib .= $result if $in_attrib;
+	$tex .= $result if !$in_attrib;
+    }
+}
+
+# _process_xml_file(string filename)
+#
+# Reads an xml file, converts it to a tex file, adds information to global
+# tex string
+#
+sub _process_xml_file {
+    my($filename) = @_;
+    my($xml) = ${Bivio::IO::File->read($filename)};
+
+    my($in_tag) = 0;
+    my($parent_tag) = '';
+    my($tag) = '';
+    my($args);
+
+    my(@open_tags) = ('root');
+    my(@xml_chars) = split(//, $xml);
+    foreach my $char (@xml_chars) {
+	$char = $_CLEAN_CHAR->{$char} if $clean_normal &&
+	    defined($_CLEAN_CHAR->{$char});
+	$char = $_CLEAN_VERB_CHAR->{$char} if !$clean_normal &&
+	    defined($_CLEAN_VERB_CHAR->{$char});
+
+	if ($char eq '<' && !$in_tag) {
+	    $in_tag = 1;
+	    $args = '';
+	    next;
+	} elsif ($char eq '>' && $in_tag) {
+	    $in_tag = 0;
+	    if ($parent_tag =~ / /) {
+		$parent_tag =~ /(.+)( )(.+)/;
+		$parent_tag = $1;
+	    }
+
+	    if ($tag =~ / /) {
+		$tag =~ /(.+?)( )(.+)/;
+		$tag = $1;
+		$args = $3;
+	    }
+
+	    if ($tag !~ /\//) {
+		$parent_tag = $open_tags[$#open_tags];
+		push(@open_tags, $tag);
+	    } else {
+		pop(@open_tags);
+		$parent_tag = $open_tags[$#open_tags];
+	    }
+
+	    _process_tag($parent_tag, $tag, $args);
+	    $tag = '';
+	    next;
+	}
+
+	$tag .= $char if $in_tag;
+	$tex .= $char if !$in_tag && !$ignore && !$in_attrib;
+	$attrib .= $char if !$in_tag && $in_attrib;
+	$keyword .= $char if $in_keyword && !$in_tag;
+    }
+}
+
+# _start_tex()
+#
+# Adds necessary information to beginning of tex string
+#
+sub _start_tex {
+    $tex .= '\documentclass[11pt]{book}' . "\n";
+    $tex .= '\usepackage{color}' . "\n";
+    $tex .= '\usepackage{graphicx}' . "\n";
+    $tex .= '\usepackage{alltt}' . "\n";
+    $tex .= '\usepackage{fancyhdr}' . "\n";
+    $tex .= '\usepackage{makeidx}' . "\n";
+    $tex .= '\RequirePackage[pdftex,pdfpagemode=none, pdftoolbar=true,
+pdffitwindow=true,pdfcenterwindow=true]{hyperref}' . "\n";
+    $tex .= '\pagestyle{fancy}' . "\n";
+    $tex .= '\fancyhf{}' . "\n";
+    $tex .= '\documentstyle{makeidx}' . "\n";
+    $tex .= '\makeindex' . "\n";
+    $tex .= '\renewcommand{\headrulewidth}{0}' . "\n";
+    $tex .= '\renewcommand{\footrulewidth}{0}' . "\n";
+    $tex .= '\lfoot{Copyright~\copyright~2004 \newline All rights reserved}' . "\n";
+    $tex .= '\rfoot{Robert Nagler \newline nagler@extremeperl.org}' . "\n";
+    $tex .= '\begin{document}' . "\n";
+    $tex .= '\frontmatter';
+    $tex .= '\title{Extreme Programming in Perl}';
+    $tex .= '\author{Robert Nagler}';
+    $tex .= '\maketitle';
+    $tex .= '\thispagestyle{empty}' . "\n";
 }
 
 # _to_html(string tag, array_ref children, hash_ref clipboard) : string_ref
