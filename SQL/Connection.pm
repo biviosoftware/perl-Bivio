@@ -11,7 +11,6 @@ Bivio::SQL::Connection - a database connection manager
 =head1 SYNOPSIS
 
     use Bivio::SQL::Connection;
-    Bivio::SQL::Connection->execute('update user_t set name=?', ['foo']);
 
 =cut
 
@@ -25,7 +24,7 @@ to transact with the database. This module maintains one connection
 to the database at all times.  It will reset the connection if the
 database the connection is lost.
 
-B<Bivio::Agent::Task depends on the fact that this the only module
+B<Bivio::Agent::Task depends on the fact that this is the only module
 which modifies the database.>
 
 =cut
