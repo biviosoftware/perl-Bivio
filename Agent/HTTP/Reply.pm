@@ -74,7 +74,7 @@ sub new {
 
 =for html <a name="flush"></a>
 
-=head2 abstract flush()
+=head2 flush()
 
 Sends the buffered reply data.
 
@@ -84,15 +84,24 @@ sub flush {
     my($self,$str) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    my($size);
     if ($fields->{header_sent} == 0) {
 	# only do this the first time
 	$fields->{header_sent} = 1;
-
+	$fields->{r}->header_out('Content-Length',
+		$size = -s $fields->{file_handle}) if $fields->{file_handle};
 	$fields->{r}->content_type($self->get_output_type());
 	$fields->{r}->send_http_header;
     }
-    $fields->{r}->print($fields->{output});
-    $fields->{output} = '';
+    if ($fields->{file_handle}) {
+	$fields->{r}->send_fd($fields->{file_handle}, $size);
+	close($fields->{file_handle});
+	delete($fields->{file_handle});
+    }
+    else {
+	$fields->{r}->print($fields->{output});
+	$fields->{output} = '';
+    }
 }
 
 =for html <a name="die_to_http_code"></a>
@@ -115,9 +124,9 @@ sub die_to_http_code {
     unless (%_DIE_TO_HTTP_CODE) {
 	%_DIE_TO_HTTP_CODE = (
 	    Bivio::DieCode::AUTH_REQUIRED()
-		=> Apache::Constants::AUTH_REQUIRED,
-	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN,
-	    Bivio::DieCode::NOT_FOUND() => Apache::Constants::NOT_FOUND,
+		=> Apache::Constants::AUTH_REQUIRED(),
+	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN(),
+	    Bivio::DieCode::NOT_FOUND() => Apache::Constants::NOT_FOUND(),
 	);
     }
     return $_DIE_TO_HTTP_CODE{$die}
@@ -139,7 +148,28 @@ Writes the specified string to the request's output stream.
 sub print {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
+    die('set_output_from_file and print cannot both be called')
+	    if $fields->{file_handle};
     $fields->{output} .= join('', @_);
+    return;
+}
+
+=for html <a name="set_output_from_file"></a>
+
+=head2 set_output_from_file(file handle)
+
+Sets the output to the file.  Output type must be set.
+The handle will be owned by this method.
+
+=cut
+
+sub set_output_from_file {
+    my($self, $handle) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    die('set_output_from_file and print cannot both be called')
+	    if length($fields->{output});
+    die('too many calls to set_output_from_file') if $fields->{file_handle};
+    $fields->{file_handle} = $handle;
     return;
 }
 

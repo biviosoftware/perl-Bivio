@@ -27,6 +27,7 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::AnyMember;
 use Bivio::Auth::Realm::AnyUser;
@@ -41,6 +42,10 @@ use Bivio::DieCode;
 my($_INITIALIZED) = 0;
 my(%_FROM_URI);
 my(%_FROM_TASK_ID);
+my($_DOCUMENT_ROOT) = undef;
+Bivio::IO::Config->register({
+    document_root => undef,
+});
 
 =head1 METHODS
 
@@ -62,6 +67,31 @@ sub format {
     # If the realm doesn't have an owner, then a bug and will crash.
     $uri =~ s/_/$realm->get('owner_name')/eg;
     return '/' . $uri;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item document_root : string [undef]
+
+If defined, URIs not found by the normal mechanism will be sought
+for in this directory.  The realm is specified by
+C<HTTP_DOCUMENT> task.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_DOCUMENT_ROOT = $cfg->{document_root};
+    return unless defined($_DOCUMENT_ROOT);
+    die("$_DOCUMENT_ROOT: not a directory") unless -d $_DOCUMENT_ROOT;
+    $_DOCUMENT_ROOT =~ s!([^/])$!$1/!;
+    return;
 }
 
 =for html <a name="initialize"></a>
@@ -98,6 +128,9 @@ sub initialize {
 			= [$realm, $task_id, $uri];
 	}
     } @$cfg;
+    die('HTTP_DOCUMENT: task must be configured if document_root set')
+	    unless !defined($_DOCUMENT_ROOT)
+		    || $_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()};
     $_INITIALIZED = 1;
     return;
 }
@@ -128,12 +161,25 @@ sub parse {
 #TODO: Need to be able to map '/'
     # Realm without an owner
     return @{$_FROM_URI{$uri}}[0,1] if defined($_FROM_URI{$uri});
+
+    # If document_root is set, look for the file directly.  If found,
+    # go to HTTP_DOCUMENT task.
+    if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
+	$req->put(http_document => $_DOCUMENT_ROOT . $uri);
+	return @{$_FROM_TASK_ID{Bivio::Agent::TaskId::HTTP_DOCUMENT()}}[0,1];
+    }
+
+    # If '/', then always not found
     die("$uri: / not found") unless int(@uri);
+
+    # Try to find the uri with the realm replaced by '_'.
     my($name) = shift(@uri);
     # Replace realm with underscore.  This is ugly, but good enough for now.
     $uri = join('/', '_', @uri);
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
 	    unless defined($_FROM_URI{$uri});
+
+    # Found the uri, but is this a valid, authorized realm?
     my($class, $realm);
 #TODO: Only search the appropriate realm.  Need to do something about
 #      shared realm uris.
