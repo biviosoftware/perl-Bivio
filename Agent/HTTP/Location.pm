@@ -395,7 +395,7 @@ sub parse {
 	    # a user lookup here which is a database hit.
 	    $req->put(user_id => undef);
 
-	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, '', $orig_uri);
+	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, $orig_uri);
 	}
 
 	# Not found
