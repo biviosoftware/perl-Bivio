@@ -60,9 +60,14 @@ usage: b-linux-config [options] command [args...]
 commands:
     add_group group[:gid] -- add a group
     add_user user[:uid] [group[:gid] [shell]] -- create a user
+    add_users_to_group group user... -- add users to group
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
+    disable_iptables_counters -- disables saving counters in iptables state file
+    disable_service service... -- calls chkconfig and stops services
+    enable_service service ... -- enables service
     relay_domains host ... -- add hosts to sendmail relay-domains
     rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
+    rhn_up2date_param param value ... -- update params in up2date config
     serial_console -- configure grub and init for serial port console
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
@@ -151,7 +156,7 @@ Adds users to /etc/group.
 
 sub add_users_to_group {
     my($self, $group, @user) = @_;
-    return _insert_text('/etc/group', map {
+    return _insert_text($self, '/etc/group', map {
 	my($user) = $_;
 	[
 	    qr/^($group:.*:)(.*)/m,
@@ -196,23 +201,64 @@ EOF
 	    . "-signkey $f->{key} -out $f->{crt}");
 }
 
-=for html <a name="enable_xinetd_service"></a>
+=for html <a name="disable_iptables_counters"></a>
 
-=head2 enable_xinetd_service(string service, ...) : string
+=head2 disable_iptables_counters() : string
 
-Enables I<service>s in xinetd.
+Updates /etc/rc.d/init.d/iptables to not save/restore with counters.
 
 =cut
 
-sub enable_xinetd_service {
+sub disable_iptables_counters {
+    my($self) = @_;
+    return _insert_text($self, '/etc/rc.d/init.d/iptables',
+	map {
+	    [qr/(iptables-$_)\s+-c\b/m, sub {$1},
+		 qr/iptables-$_\s+[&>;]/];
+	} qw(save restore));
+}
+
+=for html <a name="disable_service"></a>
+
+=head2 disable_service(string service, ...) : string
+
+Disables services.
+
+=cut
+
+sub disable_service {
     my($self, @service) = @_;
-    return join('', map {
-	_insert_text("/etc/xinetd.d/$_", [
-	    qr/^\s*disable\s*=\s*yes\s*/m,
-	    "\tdisable\t= no",
-	    qr/^\s*disable\s*=\s*no\s*/m,
-	]);
-    } @service);
+    my($res);
+    foreach my $s (@service) {
+	next unless
+	    ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
+		=~ /^$s\s.*\bon\b/;
+	$res .= _exec($self, "chkconfig --del $s")
+	    . _exec($self, "/etc/rc.d/init.d/$s stop");
+    }
+    return $res;
+}
+
+=for html <a name="enable_service"></a>
+
+=head2 enable_service(string service, ...) : string
+
+Enables I<service>s and starts them running at 2345 run levels.
+
+=cut
+
+sub enable_service {
+    my($self, @service) = @_;
+    my($res);
+    foreach my $s (@service) {
+	next
+	    if ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
+		=~ /^$s\s.*\bon\b/;
+	$res .= _exec($self, "chkconfig --level 2345 $s");
+	$res .= _exec($self, "/etc/rc.d/init.d/$s start")
+	    if -x "/etc/rc.d/init.d/$s";
+    }
+    return $res;
 }
 
 =for html <a name="handle_config"></a>
@@ -244,10 +290,10 @@ Adds I<host>s to relay-domains file (creating if it doesn't exist).
 =cut
 
 sub relay_domains {
-    my(undef, @host) = @_;
+    my($self, @host) = @_;
     my($f) = '/etc/mail/relay-domains';
-    return _add_file($f, 'root', 'mail', 0640)
-	. _insert_text($f, ['^', join("\n", @host) . "\n"]);
+    return _add_file($self, $f, 'root', 'mail', 0640)
+	. _insert_text($self, $f, ['^', join("\n", @host) . "\n"]);
 }
 
 =for html <a name="rename_rpmnew"></a>
@@ -299,7 +345,7 @@ Very prelim.  See test for example in use.
 
 sub rhn_up2date_param {
     my($self, @args) = @_;
-    return _insert_text('/etc/sysconfig/rhn/up2date', map {
+    return _insert_text($self, '/etc/sysconfig/rhn/up2date', map {
 	my($param, $value) = @$_;
 	[qr/\n$param\s*=\s*[^;]+;/m, "\n$param=$value;"],
     } @{$self->group_args(2, \@args)});
@@ -316,10 +362,10 @@ inittab.   May be called repeatedly.
 
 sub serial_console {
     my($self) = @_;
-    return _insert_text('/etc/securetty', ['^', "/dev/ttyS0\n"])
-	. _insert_text('/etc/inittab', ['(?<=getty tty6\n)',
+    return _insert_text($self, '/etc/securetty', ['^', "/dev/ttyS0\n"])
+	. _insert_text($self, '/etc/inittab', ['(?<=getty tty6\n)',
 	    "S0:2345:respawn:/sbin/agetty ttyS0 38400\n"])
-        . _insert_text('/etc/grub.conf',
+        . _insert_text($self, '/etc/grub.conf',
 	    ['(?<!\#)splashimage', '#splashimage'],
 	    ["(?=\n\tinitrd)", ' console=ttyS0,38400'],
 	    ["\ntimeout=10\n", <<'EOF']);
@@ -341,7 +387,7 @@ those parameters which already exist in the file.
 
 sub sshd_param {
     my($self, @args) = @_;
-    return _insert_text('/etc/ssh/sshd_config', map {
+    return _insert_text($self, '/etc/ssh/sshd_config', map {
 	my($param, $value) = @$_;
 	["(?<=\n)\\s*#?\\s*$param\[^\n+]", "$param $value"],
     } @{$self->group_args(2, \@args)});
@@ -349,19 +395,20 @@ sub sshd_param {
 
 #=PRIVATE METHODS
 
-# _add_file(string file, string owner, string group, int perms)
+# _add_file(self, string file, string owner, string group, int perms)
 #
 # Creates the file if it doesn't exist.
 #
 sub _add_file {
-    my($file, $owner, $group, $perms) = @_;
+    my($self, $file, $owner, $group, $perms) = @_;
     $file = _prefix_file($file);
     return '' if -e $file;
+    return "Would have created: $file\n" if $self->unsafe_get('noexecute');
     Bivio::IO::File->write($file, '');
     Bivio::IO::File->chown_by_name($owner, $group, $file)
 	if $> == 0;
     Bivio::IO::File->chmod($perms, $file);
-    return "$file: created\n";
+    return "Created: $file\n";
 }
 
 # _exec(self, string command, string $in) : string
@@ -377,12 +424,12 @@ sub _exec {
     return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
 }
 
-# _insert_text(string file, array_ref op)
+# _insert_text(self, string file, array_ref op)
 #
 # Inserts a value into a file.
 #
 sub _insert_text {
-    my($file, @op) = @_;
+    my($self, $file, @op) = @_;
     $file = _prefix_file($file);
     my($data) = Bivio::IO::File->read($file);
     my($got);
@@ -396,9 +443,11 @@ sub _insert_text {
 	$got++;
     }
     return '' unless $got;
+    return "Would have updated: $file\n"
+	if $self->unsafe_get('noexecute');
     system("cp -a $file $file.bak");
     Bivio::IO::File->write($file, $data);
-    return "$file: updated\n";
+    return "Updated: $file\n";
 }
 
 # _prefix_file(string file) : string
