@@ -163,6 +163,8 @@ sub format {
 	    Bivio::Die->die($task_id, '(', $uri,
 		    '): path_info must begin with slash (', $path_info, ')')
 			unless $path_info =~ /^\//;
+	    # Deletes trailing '/' on URI (only happens in case of DOC ROOT)
+	    $uri =~ s/\/$//;
 	    $uri .= Bivio::HTML->escape_uri($path_info);
 	}
     }
