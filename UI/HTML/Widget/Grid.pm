@@ -178,7 +178,8 @@ sub initialize {
 		$c = '';
 	    }
 	    elsif ($c =~ /^\s+$/) {
-		$c = '&nbsp;';
+		$p .= ' width="1%"';
+		$c =~ s/\s/&nbsp;/g;
 	    }
 	    # Replace undef cells with something real.  Render
 	    # text strings literally.
