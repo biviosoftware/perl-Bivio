@@ -1368,7 +1368,7 @@ my(@_CFG) = (
         124
         USER
         ADMIN_WRITE&LOGIN
-        ?/admin/edit/member/tax-id:?/admin/edit/member/tax_id
+        ?/admin/edit/tax-id:?/admin/edit/member/tax-id:?/admin/edit/member/tax_id
         Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
@@ -1485,6 +1485,7 @@ my(@_CFG) = (
         next=CLUB_LEGACY_SECURITY_RECONCILIATION
         cancel=CLUB_ADMIN_TOOLS
         require_secure=1
+        help=importing-naic-club-accounting
     )],
     [qw(
         CLUB_ADMIN_SHADOW_MEMBER_INVITE
@@ -1524,6 +1525,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClearAccountingForm
         Bivio::UI::HTML::Club::ClearAccounting
         next=CLUB_ADMIN_TOOLS
+        help=importing-naic-club-accounting
     )],
     [qw(
         CLUB_ADMIN_TOOLS
@@ -1920,6 +1922,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AllocationMethodForm
         Bivio::UI::HTML::Club::AllocationMethod
         next=CLUB_ADMIN_TOOLS
+        help=tax-allocation-methods
     )],
     [qw(
         CLUB_ACCOUNTING_TAXES_ALLOCATIONS
@@ -1934,6 +1937,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberAllocationReport
         Bivio::UI::HTML::Tax::AttachmentPage
         next=CLUB_ACCOUNTING_TAXES_ALLOCATIONS
+        help=tax-allocation-methods
     )],
     [qw(
         CLUB_ACCOUNTING_TAXES_MISSING_FIELDS
@@ -2332,6 +2336,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::RealmInstrumentLotList
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-lots
+        want_query=1
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST
