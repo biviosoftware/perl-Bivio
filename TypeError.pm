@@ -604,6 +604,11 @@ __PACKAGE__->compile(
 	undef,
 	'invalid federal tax identifier must contain exactly 9 digits',
     ],
+    NO_AMOUNTS => [
+	66,
+	undef,
+	'you must specify at least one Amount',
+    ],
 );
 
 #=PRIVATE METHODS
