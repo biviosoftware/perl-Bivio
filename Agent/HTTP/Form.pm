@@ -44,8 +44,8 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 # Taken from RFC1521.  NOT the same as 822_ATOM, btw.
 my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
-# This is the same as $_822_QUOTED_STRING in Mail::Incoming, except
-# we parse out the surounding quotes.
+# This is the same as Mail::RFC822::QUOTED_STRING, except
+# we parse out the surrounding quotes.
 my($_QUOTED_STRING) = '"((?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
 
 =head1 METHODS
