@@ -107,6 +107,21 @@ sub execute {
     return;
 }
 
+=for html <a name="execute_if_not_acquired"></a>
+
+=head2 static execute_if_not_acquired(Bivio::Agent::Request req)
+
+Executes the lock on I<req.auth_realm> if not already acquired on I<req>.
+
+=cut
+
+sub execute_if_not_acquired {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $self->acquire unless $self->is_acquired;
+    return;
+}
+
 =for html <a name="handle_commit"></a>
 
 =head2 handle_commit()
@@ -132,8 +147,7 @@ so don't need to delete the row.
 
 sub handle_rollback {
     my($self) = @_;
-    # Delete this lock from the request
-    $self->get_request->delete(ref($self));
+    $self->delete_from_request;
     return;
 }
 
@@ -150,10 +164,27 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'lock_t',
 	columns => {
-            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+	    # We don't link here, because the lock shouldn't be deleted
+	    # if 
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
 	},
 	auth_id => 'realm_id',
     };
+}
+
+=for html <a name="is_acquired"></a>
+
+=head2 is_acquired() : boolean
+
+Returns true if the I<Request.auth_realm> is already acquired.
+
+=cut
+
+sub is_acquired {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    return 0 unless my $other = $req->unsafe_get(ref($self));
+    return $other->get('realm_id') eq $req->get('auth_id') ? 1 : 0;
 }
 
 =for html <a name="release"></a>
@@ -171,6 +202,7 @@ L<Bivio::Agent::Task|Bivio::Agent::Task>.
 sub release {
     my($self) = @_;
 
+
     # NOTE: Bivio::Agent::Task::rollback knows that this method behaves this
     # way.  Keep in synch.
 
@@ -181,7 +213,7 @@ sub release {
     $self->throw_die('DIE', {message => 'too many locks on the same request',
 	request_lock => $req_lock}) unless $req_lock == $self;
     _trace($self) if $_TRACE;
-    $req->delete(ref($self));
+    $self->delete_from_request;
 
     # If it can't release the lock and database is writable, blow up.
     $self->throw_die('UPDATE_COLLISION')
