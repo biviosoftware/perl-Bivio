@@ -91,6 +91,7 @@ use Bivio::Agent::TaskId;
 use Bivio::Collection::SingletonMap;
 use Bivio::DieCode;
 use Bivio::Mail::Common;
+use Bivio::Mail::Message;
 use Bivio::SQL::Connection;
 # use Bivio::Agent::Job::Dispatcher;
 use Carp ();
@@ -413,6 +414,7 @@ sub _commit {
     _call_txn_resources($req, 'handle_commit');
     Bivio::SQL::Connection->commit;
     Bivio::Mail::Common->send_queued_messages;
+    Bivio::Mail::Message->send_queued_messages;
 #TODO: Garbage collect state that doesn't agree with SQL DB
     # Note: rollback is in handle_die
     return;
