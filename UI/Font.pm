@@ -83,6 +83,7 @@ _compile([
     ERROR => [undef, 'error', 'b'],
     WARNING => [undef, 'warning', 'b'],
     LIST_ERROR => [undef, 'error', 'small'],
+    CHECKBOX_ERROR => [undef, 'error', 'small'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
     NUMBER_CELL => [undef, undef],
