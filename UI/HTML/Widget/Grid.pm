@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Grid;
 use strict;
 $Bivio::UI::HTML::Widget::Grid::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::Widget::Grid::VERSION;
 
 =head1 NAME
 
@@ -154,6 +155,8 @@ use Bivio::UI::Align;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_SPACER) = '&nbsp;' x 3;
+
 
 =head1 FACTORIES
 
@@ -293,34 +296,70 @@ I<RadioGrid> and I<CheckboxGrid> for examples.
 =cut
 
 sub layout_buttons {
-    my($self, $buttons, $max_width) = @_;
-    my(@rows) = ();
-    my($s) = '&nbsp;' x 3;
+    my($self, $buttons, $max_width, $num_cols) = @_;
 
-    # Max 4 items across in one row
+    my($rows);
     if (int(@$buttons) * $max_width < 60 && int(@$buttons) <= 4) {
-	@$buttons = map {($_, $s)} @$buttons;
-	pop(@$buttons);
-	push(@rows, $buttons);
+	# Layout in one row
+	my(@buttons) = map {($_, $_SPACER)} @$buttons;
+	pop(@buttons);
+	$rows = [\@buttons];
     }
     elsif ($max_width < 20) {
 	my($third) = int((int(@$buttons) + 2)/3);
+	$rows = [];
 	for (my($i) = 0; $i < $third; $i++) {
-	    push(@rows, [$buttons->[$i],
-		$s, $buttons->[$i+$third] || $s,
-		$s, $buttons->[$i+2*$third] || $s]);
+	    push(@$rows, [$buttons->[$i],
+		$_SPACER, $buttons->[$i+$third] || $_SPACER,
+		$_SPACER, $buttons->[$i+2*$third] || $_SPACER]);
 	}
     }
     elsif ($max_width < 30) {
 	my($half) = int((int(@$buttons) + 1)/2);
+	$rows = [];
 	for (my($i) = 0; $i < $half; $i++) {
-	    push(@rows, [$buttons->[$i], $s, $buttons->[$i+$half] || $s]);
+	    push(@$rows, [$buttons->[$i], $_SPACER,
+		$buttons->[$i+$half] || $_SPACER]);
 	}
     }
     else {
-	push(@rows, [shift(@$buttons)]) while @$buttons;
+	$rows = [map {[$_]} @$buttons];
     }
 
+    $self->put(values => $rows);
+    return;
+}
+
+=for html <a name="layout_buttons_row_major"></a>
+
+=head2 layout_buttons(array_ref buttons, int column_count)
+
+Lays out I<column_count> in row major (across the rows) format.
+
+Here's a three column example:
+
+    [
+        button1, button2, button3,
+        button4, button5, button6,
+        ...
+    ]
+
+=cut
+
+sub layout_buttons_row_major {
+    my($self, $buttons, $column_count) = @_;
+    my(@buttons) = @$buttons;
+    $column_count--;
+    my(@rows);
+    while (@buttons) {
+	my($row) = [map {
+	    (shift(@buttons) || $_SPACER, $_SPACER);
+	} 0..$column_count];
+
+	# Get rid of last separator and push on another row
+	pop(@$row);
+	push(@rows, $row);
+    }
     $self->put(values => \@rows);
     return;
 }
@@ -398,7 +437,7 @@ sub _append {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
