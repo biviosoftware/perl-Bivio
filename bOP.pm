@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * uses shorter argument format for sendmail calls in Bivio::Mail::Common
+    and Bivio::Mail::Message
+  * 'b-test nightly' will expunge old test directories
+
   Revision 1.88  2003/11/21 17:24:09  moeller
   * Bivio::Test::Util->nightly now gets latest tests from CVS and runs
     all acceptance tests
