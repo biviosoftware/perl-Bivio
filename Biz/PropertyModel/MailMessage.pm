@@ -103,9 +103,7 @@ sub create {
     _trace('validation of kbyte size for message.');
 
 #TODO This is a two step process. Probably should move the whole thing
-#into club. Also, this part could be done after parsing MIME parts.
-#That way we could probably increment the size of the entire message
-
+#into club.
 
     my($kbytes) = $values->{kbytes};
     my($isok) = $club->check_kbytes(\$kbytes);
@@ -113,7 +111,6 @@ sub create {
     if($isok eq(0)){
 	die("Mail message size exceeds max size for club.");
     }
-    _trace('updating the KBYTES IN USE: ', $kbytes) if $_TRACE;
     $club->update({
 	kbytes_in_use => $kbytes,
     });
@@ -126,11 +123,16 @@ sub create {
     if($msg){
 	&_trace('msg is not null when we call ctor MimeParse.') if $_TRACE;
     }
-    
+
     my $mimeparser = Bivio::Biz::Mime::MimeParse->new($msg, $filename, $_FILE_CLIENT);
     $mimeparser->parse();
     # due to the above two lines, all the MIME stuff in this
     # file will be removed shortly.
+    my($nparts) = $mimeparser->get_num_parts();
+    $self->update({
+	parts => $nparts,
+    });
+
     return;
 }
 
@@ -230,6 +232,8 @@ sub internal_initialize {
         subject_sort => ['Bivio::Type::Line',
 		Bivio::SQL::Constraint::NOT_NULL()],
         kbytes => ['Bivio::Type::Integer',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        parts => ['Bivio::Type::Integer',
 		Bivio::SQL::Constraint::NOT_NULL()],
 
     });
