@@ -77,7 +77,7 @@ sub from_literal {
     # Don't allow '.' or '..'.
     return (undef, Bivio::TypeError::FILE_NAME())
 	    if $value =~ m!^\.\.?$|[\\/:*?"<>|\0-\037\177]!;
-    return $value;
+    return $proto->SUPER::from_literal($value);
 }
 
 =for html <a name="get_tail"></a>
