@@ -30,7 +30,7 @@ my(@_PAGES, $_PAGE_MENU, %_URI_TO_PAGE_MAP,
    $_MAILINGLIST_PAGE_MENU, %_MAILINGLIST_URI_TO_PAGE_MAP);
 if (defined($ENV{MOD_PERL})) {
     eval '
-	use Bivio::Club::Page::Agreement;
+	use Bivio::Club::Page::Documents;
 	use Bivio::Club::Page::Distributions;
 	use Bivio::Club::Page::Members;
 	use Bivio::Club::Page::Messages;
@@ -40,7 +40,7 @@ if (defined($ENV{MOD_PERL})) {
     $@ && die($@);
     # Order defines the order in the top menu.
     @_PAGES = (
-	Bivio::Club::Page::Agreement->new(),
+	Bivio::Club::Page::Documents->new(),
 	Bivio::Club::Page::Distributions->new(),
 	Bivio::Club::Page::Members->new(),
 	$_MESSAGE_PAGE = $_DEFAULT_PAGE = Bivio::Club::Page::Messages->new(),

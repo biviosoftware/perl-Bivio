@@ -4,14 +4,17 @@
 #
 package Bivio::Data;
 
-use strict;
-use Fcntl ();
-use Data::Dumper ();
-use File::Copy ();
+require 'mhmimetypes.pl';
+require 'sys/stat.ph';
+use Bivio::Club::Table;
 use Bivio::Util;
+use Data::Dumper ();
+use Fcntl ();
+use File::Copy ();
 use GD ();
+use strict;
 
-$Bivio::Data::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Data::VERSION = sprintf('%d.%02d1<', q$Revision$ =~ /\d+/g);
 
 sub MAX_FILE_LENGTH { 128 }
 
@@ -23,8 +26,7 @@ my $_Home = undef;
 sub PERL { 0 }							      # default
 sub MHONARC { 1 }
 sub ALL_KEYS { 2 }
-sub FILE { 3 }
-sub GIF_INFO { 4 }
+sub GIF_INFO { 3 }
 
 # The ending to $_Home; Must end in /.  Directory relative to the document_root
 sub _REL_HOME { '/../data/' }
@@ -35,6 +37,24 @@ my($_TXN_HANDLE) = undef;
 
 # Cached data
 my $_Cache = {};
+
+my(%_MIME_TYPES) = ();
+
+{
+    # Create $_MIME_TYPES from map in mhmimetypes.pl
+    my($k, $v);
+    while (($k, $v) = each(%mhonarc::CTExt)) {
+	$_MIME_TYPES{(split(/:/, $v))[0]} = $k;
+    }
+}
+
+# Used by &_setup_table to define columns and the fields they correspond to
+my(@_DIR_COLUMNS) = (
+    ['File', 'uri', 'fit'],
+    ['Date', 'date', 'fit'],
+    ['Size', 'byte_size', 'fit'],
+);
+my($_DIR_TABLE) = Bivio::Club::Table->new(\@_DIR_COLUMNS, 'spreadsheet');
 
 # &lookup $file $proto_or_sub $br [$type] -> $value | undef
 #
@@ -92,15 +112,6 @@ sub lookup ($$$;$)
 	    ($value = [map {s/.pl$//; s,.*/,,; $_} (<$absfile/*.pl>)])
 	    : ($@ = 'not a directory')
     }
-    elsif ($type == &FILE) {
-	# Return the file descriptor
-	&_check_file_name($br, $file);
-	$absfile = &_home($br) . $file;
-	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
-	open($fh, $absfile) && return $fh;
-	-e $absfile || $br->not_found($absfile);
-	$@ = "open failed: $!";
-    }
     elsif ($type == &GIF_INFO) {
 	# Return the dimensions
 	$absfile = $br->document_root . $file;
@@ -154,6 +165,60 @@ sub lookup ($$$;$)
 	'type' => $type,
     };
     return $value;
+}
+
+sub reply_file {
+    my($file, $dir_uri, $br) = @_;
+    # Return the file descriptor
+    &_check_file_name($br, $file);
+    my($absfile) = &_home($br) . $file;
+    -d $absfile && $dir_uri && return _send_dir($absfile, $file, $dir_uri);
+    my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
+    open($fh, $absfile) && return _send_file($absfile, $fh, $br);
+#TODO: This is wrong, but good enough for now
+    $br->not_found($absfile);
+}
+
+sub _send_file {
+    my($absfile, $fh, $br) = @_;
+    $absfile =~ /(\w+)$/;
+    $br->r->content_type(defined($1) && defined($_MIME_TYPES{$1})
+	    ? $_MIME_TYPES{$1} : 'application/octet-stream');
+    my($size) = -s $fh;
+    $br->r->header_out('Content-Length', $size);
+    $br->r->send_http_header();
+    $br->r->send_fd($fh, $size);
+    close($fh);
+    $br->set_reply_sent(1);
+}
+
+sub _send_dir {
+    my($absfile, $file, $dir_uri) = @_;
+    my($dir) = {map {
+	my($n) = $_;
+	$n =~ s!.*/!!;
+	my($mode, $size, $mtime) = (stat($_))[2,7,9];
+	my($is_dir) = S_ISDIR($mode);
+	my($label) = $is_dir ? "[$n]" : $n;
+	my($key) = $is_dir ? " $n" : $n;	# ensure directories are first
+	$size = $is_dir ? undef : $size;
+	($key, [
+	    [$dir_uri . $n, $label],
+	    $mtime,
+	    $size,
+	]);
+    } <$absfile/*>};
+    my($rows) = [];
+#HACK: Assumes fixed uri layout, but works for now...
+    my(@parts) = split('/+', $file);
+    if (int(@parts) > 3) {
+	(my $p = $dir_uri) =~ s!/[^/]+/$!!;
+	push(@$rows, [[$p, '[Up One Directory]']]);
+    };
+    map {
+	push(@$rows, $dir->{$_}) unless /(:?^ CVS|~|.bak|-)$/;
+    } sort keys(%$dir);
+    return $_DIR_TABLE->render_html(undef, $rows);
 }
 
 sub begin_txn ($$) {
