@@ -216,26 +216,27 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 =cut
 
 #=IMPORTS
-use Bivio::Type::DateTime;
-use Bivio::HTML;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::Biz::FormModel;
 use Bivio::Biz::Model::Preferences;
 use Bivio::Biz::Model::UserRealmList;
-use Bivio::Biz::FormModel;
 use Bivio::Die;
+use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
+use Bivio::Type::ClubPreference;
+use Bivio::Type::ClubPreference;
+use Bivio::Type::DateTime;
 use Bivio::Type::RealmName;
 use Bivio::Type::UserAgent;
 use Bivio::Type::UserPreference;
-use Bivio::Type::ClubPreference;
-use Carp ();
+use Bivio::Type::UserPreference;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -266,6 +267,8 @@ Bivio::Auth::RoleSet->set(\$_ACTIVE_CLUB_ROLES,
 	Bivio::Auth::Role::ADMINISTRATOR(),
 	);
 my($_DEFAULT_HELP) = Bivio::Agent::Task->DEFAULT_HELP();
+my($_USER_PREFS) = Bivio::Type::UserPreference->REQUEST_ATTRIBUTE;
+my($_CLUB_PREFS) = Bivio::Type::ClubPreference->REQUEST_ATTRIBUTE;
 
 =head1 FACTORIES
 
@@ -687,7 +690,7 @@ sub get_club_pref {
     my($auth_realm) = $self->get('auth_realm');
     return Bivio::Biz::Model::Preferences->get_value(
 	    $self,
-	    'club_prefs',
+	    $_CLUB_PREFS,
 	    $auth_realm && $auth_realm->get('type')
 		    == Bivio::Auth::RealmType::CLUB()
 	    ? $auth_realm->get('owner') : undef,
@@ -843,7 +846,7 @@ sub get_user_pref {
     my($self, $pref) = @_;
     return Bivio::Biz::Model::Preferences->get_value(
 	    $self,
-	    'user_prefs',
+	    $_USER_PREFS,
 	    $self->get('auth_user'),
 	    Bivio::Type::UserPreference->from_any($pref));
 }
@@ -913,7 +916,7 @@ sub internal_redirect_realm {
     if ($new_realm) {
 	# Assert param
 	my($nrt) = $new_realm->get('type');
-	Carp::croak($new_task->as_string, 'realm_type mismatch (',
+	Bivio::Die->die($new_task->as_string, 'realm_type mismatch (',
 		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
     }
     else {
@@ -1133,7 +1136,7 @@ sub set_club_pref {
 	    == Bivio::Auth::RealmType::CLUB();
     Bivio::Biz::Model::Preferences->set_value(
 	    $self,
-	    'club_prefs',
+	    $_CLUB_PREFS,
 	    $auth_realm->get('owner'),
 	    Bivio::Type::ClubPreference->from_any($pref),
 	    $value);
@@ -1258,7 +1261,7 @@ sub set_user_pref {
     return unless $auth_user;
     Bivio::Biz::Model::Preferences->set_value(
 	    $self,
-	    'user_prefs',
+	    $_USER_PREFS,
 	    $auth_user,
 	    Bivio::Type::UserPreference->from_any($pref),
 	    $value);
