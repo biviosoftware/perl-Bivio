@@ -103,7 +103,7 @@ Loads the page for the L<link_name|"link_name">
 
 sub follow_link {
     my($self, $link_text) = @_;
-    $self->visit_url(
+    $self->visit_uri(
 	_assert_html($self)->get_nested('Links', $link_text, 'href'));
     return;
 }
@@ -150,7 +150,7 @@ Requests the the home page.
 =cut
 
 sub home_page {
-    return shift->visit_url($_CFG->{home_page_uri});
+    return shift->visit_uri($_CFG->{home_page_uri});
 }
 
 =for html <a name="home_page_uri"></a>
@@ -206,15 +206,15 @@ sub verify_text {
     return;
 }
 
-=for html <a name="visit_url"></a>
+=for html <a name="visit_uri"></a>
 
-=head2 visit_url(string uri)
+=head2 visit_uri(string uri)
 
 Loads the page using the specified URI.
 
 =cut
 
-sub visit_url {
+sub visit_uri {
     my($self, $uri) = @_;
     _trace($uri) if $_TRACE;
     _send_request($self, HTTP::Request->new(GET => _fixup_uri($self, $uri)));
