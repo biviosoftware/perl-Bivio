@@ -24,7 +24,7 @@ sub find {
 	push(@tests, $File::Find::name);
 	return;
     }
-    -d $_ && !/^[.A-Z]|^t$|^[fy]\d+$/ && ($File::Find::prune = 1);
+    -d $_ && !/^[.A-Z]|^t$|^[fy]\d+\w+$/ && ($File::Find::prune = 1);
 }
 
 File::Find::find(\&find, '.');
