@@ -94,7 +94,7 @@ sub find {
 
     if ($fp->{'club'}) {
 	# club users
-	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100,
+	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 0, 100,
 		'where club_user.club=? and club_user.user_=user_.id'
 		.' order by user_.name',
 		$fp->{'club'});
