@@ -583,7 +583,7 @@ EOF
 	    unless _search('version', $base_spec);
     $buf .= "Copyright: Bivio\n"
 	    unless _search('copyright', $base_spec);
-    $buf .= _build_root(_search('buildroot'));
+    $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
         $line =~ s/\b(_b_release_macro_\w+\(.*\);)/Bivio::Die->eval_or_die("$1")/e;
 	$buf .= $line unless $line =~ /^(buildroot|release): /i;
