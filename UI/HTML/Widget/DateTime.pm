@@ -182,6 +182,7 @@ sub initialize {
 	    $self->get_or_default('mode', 'DATE'))->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
+    warn("initialized without parent") unless $self->get('parent');
     return;
 }
 
