@@ -51,6 +51,7 @@ sub PAGE_SIZE {
 #=IMPORTS
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
+use Bivio::Biz::QueryType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -111,141 +112,150 @@ sub execute_load_all {
     return;
 }
 
+=for html <a name="format_uri"></a>
+
+=head2 format_uri(Bivio::Biz::QueryType type) : string
+
+=head2 format_uri(string type) : string
+
+=head2 format_uri(Bivio::Biz::QueryType, string uri) : string
+
+=head2 format_uri(string type, string uri) : string
+
+Returns the formatted uri for I<type> based on the existing query
+bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
+or I<list_uri> depending on the type.
+
+=cut
+
+sub format_uri {
+    my($self, $type, $uri) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Convert to enum unless already converted
+    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
+
+    # Determine if need to pass in current row
+    my($arg);
+
+    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST/) {
+	my($c) = $fields->{cursor};
+	Carp::croak('no cursor') unless defined($c) && $c >= 0;
+	$arg = $self->internal_get();
+    }
+    else {
+	Carp::croak('not loaded') unless $fields->{rows};
+    }
+
+    # Get the query using the method defined in QueryType
+    my($method) = $type->get_short_desc;
+    my($query) = $fields->{query}->$method(
+	    $self->internal_get_sql_support(), $arg);
+
+    # Need to get the list_uri or detail_uri from the request?
+    $uri ||= $self->get_request->get($type->get_long_desc);
+
+    # Push the query on the front of the form context.
+    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+    return $uri;
+}
+
 =for html <a name="format_uri_for_next"></a>
 
 =head2 format_uri_for_next() : string
 
-Returns the formated uri for next row.  The request bound to next list model
-must have a I<detail_uri> attribute not including the query string.
+=head2 format_uri_for_next(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_next {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($c) = $fields->{cursor};
-    Carp::croak('no cursor') unless defined($c) && $c >= 0;
-    my($sql_support) = $self->internal_get_sql_support();
-    return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_next($sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::NEXT_DETAIL(), @_);
 }
 
 =for html <a name="format_uri_for_next_page"></a>
 
 =head2 format_uri_for_next_page() : string
 
-Returns the formated uri for the next page.  The request bound to this list
-model must have a I<list_uri> attribute not including the query string.
+=head2 format_uri_for_next_page(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_next_page {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    Carp::croak('not loaded') unless $fields->{rows};
-    my($sql_support) = $self->internal_get_sql_support();
-    my($row) = $fields->{rows}->[$#{$fields->{rows}}];
-    return $self->get_request->get('list_uri').'?'
-	    .$fields->{query}->format_uri_for_next_page($sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::NEXT_LIST(), @_);
 }
 
 =for html <a name="format_uri_for_prev"></a>
 
 =head2 format_uri_for_prev() : string
 
-Returns the formated uri for prev row.  The request bound to prev list model
-must have a I<detail_uri> attribute not including the query string.
+=head2 format_uri_for_prev(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_prev {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($c) = $fields->{cursor};
-    Carp::croak('no cursor') unless defined($c) && $c >= 0;
-    my($sql_support) = $self->internal_get_sql_support();
-    return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_prev($sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::PREV_DETAIL(), @_);
 }
 
 =for html <a name="format_uri_for_prev_page"></a>
 
 =head2 format_uri_for_prev_page() : string
 
-Returns the formated uri for the previous page.  The request bound to this list
-model must have a I<list_uri> attribute not including the query string.
+=head2 format_uri_for_prev_page(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_prev_page {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    Carp::croak('not loaded') unless $fields->{rows};
-    my($sql_support) = $self->internal_get_sql_support();
-    my($row) = $fields->{rows}->[0];
-    return $self->get_request->get('list_uri').'?'
-	    .$fields->{query}->format_uri_for_prev_page($sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::PREV_LIST(), @_);
 }
 
 =for html <a name="format_uri_for_this"></a>
 
 =head2 format_uri_for_this() : string
 
-Returns the formated uri for this row.  The request bound to this list model
-must have a I<detail_uri> attribute not including the query string.
+=head2 format_uri_for_this(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_this {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($c) = $fields->{cursor};
-    Carp::croak('no cursor') unless defined($c) && $c >= 0;
-    my($sql_support) = $self->internal_get_sql_support();
-    return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_this(
-		    $self->internal_get(), $sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::THIS_DETAIL(), @_);
 }
 
 =for html <a name="format_uri_for_this_child"></a>
 
 =head2 format_uri_for_this_child() : string
 
-Returns the formated uri for this row which is a child list.  The primary key
-of such this list must be a single primary id.  The request bound to this list
-model must have a I<detail_uri> attribute not including the query string.
+=head2 format_uri_for_this_child(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_this_child {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($c) = $fields->{cursor};
-    Carp::croak('no cursor') unless defined($c) && $c >= 0;
-    my($sql_support) = $self->internal_get_sql_support();
-    return $self->get_request->get('detail_uri')
-	    .'?'.$fields->{query}->format_uri_for_this_child(
-		    $self->internal_get(), $sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::THIS_CHILD_LIST(), @_);
 }
 
 =for html <a name="format_uri_for_this_page"></a>
 
 =head2 format_uri_for_this_page() : string
 
-Returns the formated uri for the page which contains I<this>.  The request
-bound to this list model must have a I<list_uri> attribute not including the
-query string.
+=head2 format_uri_for_this_page(string uri) : string
+
+B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 =cut
 
 sub format_uri_for_this_page {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($c) = $fields->{cursor};
-    Carp::croak('no cursor') unless defined($c) && $c >= 0;
-    my($sql_support) = $self->internal_get_sql_support();
-    return $self->get_request->get('list_uri')
-	    .'?'.$fields->{query}->format_uri_for_this_page($sql_support);
+    return shift->format_uri(Bivio::Biz::QueryType::THIS_LIST(), @_);
 }
 
 =for html <a name="get_hidden_field_values"></a>
