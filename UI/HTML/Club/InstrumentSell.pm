@@ -17,12 +17,12 @@ Bivio::UI::HTML::Club::InstrumentSell -
 
 =head1 EXTENDS
 
-L<Bivio::UI::HTML::Widget>
+L<Bivio::UI::HTML::PageForm>
 
 =cut
 
-use Bivio::UI::HTML::Widget;
-@Bivio::UI::HTML::Club::InstrumentSell::ISA = ('Bivio::UI::HTML::Widget');
+use Bivio::UI::HTML::PageForm;
+@Bivio::UI::HTML::Club::InstrumentSell::ISA = ('Bivio::UI::HTML::PageForm');
 
 =head1 DESCRIPTION
 
@@ -47,117 +47,81 @@ use Bivio::UI::HTML::Widget::TextArea;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_FIELDS) = [];
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Club::AccountTransaction
-
-Creates and arranges an account transaction dialog.
-
-=cut
-
-sub new {
-    my($self) = &Bivio::UI::HTML::Widget::new(@_);
-    my($fields) = $self->{$_PACKAGE} = {};
-    my($blank_cell) = Bivio::UI::HTML::Widget::Join->new({
-	values => ['&nbsp;']});
-    $fields->{form} = Bivio::UI::HTML::Widget::Form->new({
-	form_model => ['Bivio::Biz::Model::InstrumentSellForm'],
-	value => Bivio::UI::HTML::Widget::Grid->new({
-	    pad => 5,
-	    values => [
-		[
-		    Bivio::UI::HTML::Widget::Director->new({
-			control => ['->unsafe_get', 'page_error'],
-			values => {},
-			cell_expand => 1,
-			cell_align => 'center',
-			undef_value => $blank_cell,
-			default_value => Bivio::UI::HTML::Widget::Join->new({
-			    values => [['page_error']],
-			}),
-		    }),
-		],
-		[
-		    _field('Date',
-			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmTransaction.date_time',
-			    })),
-		    $blank_cell,
-		    _field('Account',
-			    Bivio::UI::HTML::Widget::Select->new({
-				field => 'RealmAccountEntry.realm_account_id',
-			        choices => [
-				'Bivio::Biz::Model::RealmValuationAccountList',
-				],
-				list_display_field => 'RealmAccount.name',
-			      list_id_field => 'RealmAccount.realm_account_id',
-			    })),
-		],
-		[
-		    Bivio::UI::HTML::Widget::String->new({
-			value => '&nbsp;',
-		    }),
-		],
-		[
-		    _field('Price/Share',
-			    Bivio::UI::HTML::Widget::Currency->new({
-				field => 'Entry.amount',
-				size => 10,
-			    })),
-		],
-		[
-		    _field('Commission',
-			    Bivio::UI::HTML::Widget::Currency->new({
-				field => 'commission',
-				size => 10,
-			    })),
-		    $blank_cell,
-		    _field('Service Fee',
-			    Bivio::UI::HTML::Widget::Currency->new({
-				field => 'admin_fee',
-				size => 10,
-			    })),
-		],
-		[
-		    Bivio::UI::HTML::Widget::Join->new({
-			cell_expand => 1,
-			values => [
-			    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-				label => 'Remark',
-				field => 'RealmTransaction.remark',
-			    }),
-			    '<br>',
-			    Bivio::UI::HTML::Widget::TextArea->new({
-				cell_expand => 1,
-				field => 'RealmTransaction.remark',
-				rows => 3,
-				cols => 40,
-			    }),
-			],
-		    }),
-		],
-		[
-		    Bivio::UI::HTML::Widget::Submit->new({
-			cell_expand => 1,
-			cell_align => 'center',
-		    }),
-		],
-	    ],
-	}),
-    });
-    $fields->{form}->initialize;
-    return $self;
-}
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="create_fields"></a>
+
+=head2 create_fields() : array_ref
+
+Create Grid I<values> for this form.
+
+=cut
+
+sub create_fields {
+    my($self) = @_;
+
+    my($blank_cell) = Bivio::UI::HTML::Widget::Join->new({
+	values => ['&nbsp;']});
+    return [
+	[
+	    $self->add_field('RealmTransaction.date_time', 'Date',
+		    Bivio::UI::HTML::Widget::Date->new({
+			field => 'RealmTransaction.date_time',
+		    })),
+	    $blank_cell,
+	    $self->add_field('RealmAccountEntry.realm_account_id', 'Account',
+		    Bivio::UI::HTML::Widget::Select->new({
+			field => 'RealmAccountEntry.realm_account_id',
+			choices => [
+				'Bivio::Biz::Model::RealmValuationAccountList',
+			       ],
+			list_display_field => 'RealmAccount.name',
+			list_id_field => 'RealmAccount.realm_account_id',
+		    })),
+	],
+	[
+	    $self->add_field('RealmInstrumentEntry.count', '# of Shares',
+		    Bivio::UI::HTML::Widget::Currency->new({
+			field => 'RealmInstrumentEntry.count',
+			size => 10,
+		    })),
+	    $blank_cell,
+	    $self->add_field('Entry.amount', 'Price/Share',
+		    Bivio::UI::HTML::Widget::Currency->new({
+			field => 'RealmInstrumentValuation.price_per_share',
+			size => 10,
+		    })),
+	],
+	[
+	    $self->add_field('commission', 'Commission',
+		    Bivio::UI::HTML::Widget::Currency->new({
+			field => 'commission',
+			size => 10,
+		    })),
+	],
+	[
+	    Bivio::UI::HTML::Widget::Join->new({
+		cell_expand => 1,
+		values => [
+			Bivio::UI::HTML::Widget::FormFieldLabel->new({
+			    label => 'Remark',
+			    field => 'RealmTransaction.remark',
+			}),
+			'<br>',
+			Bivio::UI::HTML::Widget::TextArea->new({
+			    cell_expand => 1,
+			    field => 'RealmTransaction.remark',
+			    rows => 3,
+			    cols => 40,
+			}),
+		],
+	    }),
+	],
+    ];
+}
 
 =for html <a name="execute"></a>
 
@@ -171,60 +135,41 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # get the select realm instrument
-    my($list) = $req->get('Bivio::Biz::Model::InstrumentSummaryList');
-    $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
-    $list->next_row;
-    my($id) = $list->get('RealmInstrument.realm_instrument_id');
+    # hack to redirect to sell form 2
+    if ($req->get('form_model')->in_error) {
+	my($errors) = $req->get('form_model')->get_errors;
+	if ($errors->{redirect}) {
+	    $req->server_redirect($req->get('task')->get('next'),
+		    $req->get('auth_realm'),
+		    $req->get('query'),
+		    $req->get('form'));
+	    # does not return
+	}
+    }
 
-    my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
-    $realm_inst->load(realm_instrument_id => $id);
+    my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
 
     $req->put(page_heading => 'Sell: '.$realm_inst
-	    ->get_model('Instrument')->get('name'),
+	    ->get_model('Instrument')->get('name').' (page 1 / 2)',
 	    page_subtopic => undef,
-	    page_content => $fields->{form});
-    my($form) = $req->get('form_model');
-
-    if ($form->in_error) {
-	my($errors) = $form->get_errors;
-
-	my(@errors);
-	foreach my $f (@$_FIELDS) {
-	    my($n) = $f->[0];
-	    next unless defined($errors->{$n});
-	    push(@errors, Bivio::Util::escape_html(
-		    $f->[1].': '.$errors->{$n}->get_long_desc));
-	}
-
-	my($p, $s) = Bivio::UI::Font->as_html('error');
-	$req->put(page_error =>
-		"<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
-		.join("</td></tr>\n<tr><td><li>",
-			"${p}Please correct the following errors:$s",
-			@errors)
-		."</td></tr></table>\n<hr>");
-    }
+	    page_content => $self);
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
 }
 
-#=PRIVATE METHODS
+=for html <a name="initialize"></a>
 
-# _field(string caption, Widget widget) : (FormFieldLabel, Widget)
-#
-# Returns a (label, widget) pair for the specified caption and widget.
-#
-sub _field {
-    my($caption, $widget) = @_;
+=head2 initialize()
 
-    my($label) = Bivio::UI::HTML::Widget::FormFieldLabel->new({
-	label => $caption,
-	field => $widget->get('field'),
-    });
+Sets attributes on self used by SUPER.
 
-    push(@$_FIELDS, [$label->get('field'), $caption]);
-    return ($label, $widget);
+=cut
+
+sub initialize {
+    my($self) = @_;
+    $self->put(form_model => ['Bivio::Biz::Model::InstrumentSellForm']);
+    $self->SUPER::initialize;
+    return;
 }
 
 =head1 COPYRIGHT
