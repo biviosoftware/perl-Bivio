@@ -71,6 +71,8 @@ commands:
     disable_iptables_counters -- disables saving counters in iptables state file
     disable_service service... -- calls chkconfig and stops services
     enable_service service ... -- enables service
+    ifcfg_static device hostname ip_cfg gateway -- configure device with a static ip address
+    resolv_conf domain nameserver ... -- updates resolv.conf with name servers
     rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     rhn_up2date_param param value ... -- update params in up2date config
     serial_console [speed] -- configure grub and init for serial port console
@@ -437,6 +439,106 @@ sub handle_config {
     return;
 }
 
+=for html <a name="ifcfg_static"></a>
+
+=head2 ifcfg_static(string device, string hostname, string ip_cfg, string gateway) : string
+
+I<ip_addr> is of form w.x.y.z/n, e.g. 1.2.3.4/29 for a 3 bit subnet for
+host 1.2.3.4.  Updates:
+
+    /etc/sysconfig/network
+    /etc/sysconfig/network-scripts/ifcfg-$device
+    /etc/hosts
+
+=cut
+
+sub ifcfg_static {
+    my($self, $device, $hostname, $ip_addr, $gateway) = @_;
+    my($ip, $net, $mask)
+	= $ip_addr =~ m!^(((?:\d{1,3}\.){3})\d{1,3})/(\d{2})$!;
+    $self->usage_error($ip_addr, ": ip address must be of form 1.2.3.4/28")
+	unless $mask;
+    $self->usage_error($mask, ": network must be in range from 24-31")
+	unless $mask >= 24 && $mask <= 31;
+    $self->usage_error($gateway,
+	': bad gateway or not on same net as ip_addr: ', $ip)
+	unless $gateway =~ s/^(?=\d{1,3}$)/$net/
+	    || ($gateway =~ /^((?:\d{1,3}\.){3})d{1,3}$/)[0] eq $net;
+    $mask = '255.255.255.' . (256 - (1 << (32 - $mask)));
+    return _edit($self, '/etc/sysconfig/network',
+	    [qr/^NETWORKING=.*\n/im, "NETWORKING=yes\n"],
+	    [qr/^HOSTNAME=.*\n/im, "HOSTNAME=$hostname\n"],
+	) . _edit($self, "/etc/sysconfig/network-scripts/ifcfg-$device",
+	    [sub {
+		 my($data) = @_;
+		 $$data = <<"EOF";
+DEVICE=$device
+ONBOOT=yes
+BOOTPROTO=none
+IPADDR=$ip
+NETMASK=$mask
+GATEWAY=$gateway
+EOF
+	     }],
+	) . $self->append_lines('/etc/hosts', 'root', 'root', 0644,
+	    "$hostname\t$ip");
+}
+
+=for html <a name="resolv_conf"></a>
+
+=head2 resolv_conf(string string domain, string nameserver, ...) : string
+
+Updates resolv.conf like:
+
+    search $domain
+    domain $domain
+    nameserver $nameserver
+    ...
+
+=cut
+
+sub resolv_conf {
+    my($self, $domain, @nameserver) = @_;
+    return _edit($self, "/etc/resolv.conf",
+	[sub {
+	     my($data) = @_;
+	     $$data = <<"EOF";
+search $domain
+domain $domain@{[join('', map("\nnameserver $_", @nameserver))]}
+EOF
+	 }]);
+}
+
+#=for html <a name="postgresql_conf"></a>
+#
+#=head2 postgresql_conf(string shared_buffers) : string
+#
+#Sets /var/lib/pgsql/data/postgresql.conf
+#
+#    shared_buffers = $shared_buffers
+#    sort_mem = $shared_buffers
+#    vacuum_mem = $shared_buffers * 8
+#    autocommit = false
+#
+#Ensures /proc/sys/kernel/shmmax has enough space for I<shared_buffers>, and
+#updates /etc/sysctl.conf for a permanent value if a change is needed.
+#
+#=cut
+#
+#sub postgresql_conf {
+#    my($self, $shared_buffers) = @_;
+## These may be commented out
+#shared_buffers = 8000           # 2*max_connections, min 16, typically 8KB each
+#sort_mem = 8000                 # min 64, size in KB
+#vacuum_mem = 64000              # min 1024, size in KB
+#autocommit = false
+#
+## Change system.redhat7 to create the file, and set here.
+#sysctl.conf
+#kernel/shmmax = 128000000
+#    return;
+#}
+
 =for html <a name="rename_rpmnew"></a>
 
 =head2 rename_rpmnew(string rpmnew_file, ...) : string
@@ -600,6 +702,7 @@ sub _edit {
     my($self, $file, @op) = @_;
     $file = _prefix_file($file);
     my($data) = Bivio::IO::File->read($file);
+    my($orig_data) = $$data;
     my($got);
     foreach my $op (@op) {
 	my($where, $value, $search) = @$op;
@@ -623,7 +726,8 @@ sub _edit {
 	}
 	$got++;
     }
-    return '' unless $got;
+    return ''
+	unless $got && $$data ne $orig_data;
     return "Would have updated: $file\n"
 	if $self->unsafe_get('noexecute');
     # Delete the backup file.  This has side effects for add_crontab_line

@@ -50,6 +50,18 @@ Bivio::Test->unit([
 		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
+            'ifcfg_static', [qw(eth0 any.host 1.2.3.4/28 99)] => [
+		['etc/sysconfig/network', "HOSTNAME=any.host\n"],
+		['etc/sysconfig/network-scripts/ifcfg-eth0',
+		    "NETMASK=255.255.255.240\nGATEWAY=1.2.3.99\n"],
+		['etc/hosts', "any.host\t1.2.3.4\n"],
+	    ],
+	], [
+            'resolv_conf', [qw(my.dom 1.2.3.4 1.2.3.5)] => [
+		['etc/resolv.conf', "domain my.dom\n"],
+		['etc/resolv.conf', "nameserver 1.2.3.4\nnameserver 1.2.3.5\n"],
+	    ],
+	], [
 	    'serial_console', [9600] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
 		['etc/inittab', 'getty\s+ttyS0'],
