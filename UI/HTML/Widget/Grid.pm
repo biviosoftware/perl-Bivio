@@ -68,7 +68,7 @@ An array_ref of rows of array_ref of columns (cells).  A cell may
 be C<undef>.  A cell may be a widget_value which returns a widget
 or a string or it may be a widget or a string.
 
-=item width : int []
+=item width : string []
 
 Set the width of the table explicitly.  I<expand> should be
 used in most cases.
