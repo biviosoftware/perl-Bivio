@@ -588,25 +588,18 @@ Widget.
 
 sub unsafe_render_value {
     my($self, $attr_name, $value, $source, $buffer) = @_;
-    return 0 unless defined($value);
-    my($i) = 10;
-    while (ref($value) eq 'ARRAY') {
-	$value = $source->get_widget_value(@$value);
-	return 0 unless defined($value);
-	$self->die($attr_name, $source, 'infinite loop trying to ',
-		' unwind widget value: ', $value)
-		if --$i < 0;
-    }
-    if (ref($value) && UNIVERSAL::isa($value, __PACKAGE__)) {
+    $value = $source->get_widget_value(@$value)
+	if ref($value) eq 'ARRAY';
+#TODO: We should remove these few lines once we get
+#      WidgetValueSource::_eval_args fixed to do this for us.
+    if (ref($value) && UNIVERSAL::can($value, 'render')) {
 	$value->render($source, $buffer);
     }
-# removed until all director widgets are fixed up
-#    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
-#	$$buffer .= $value->as_string;
-#    }
     else {
-        Bivio::IO::Alert->warn('rendering ref as string: ', $value)
-                if ref($value);
+	return 0
+	    unless defined($value);
+	Bivio::IO::Alert->warn('rendering ref as string: ', $value)
+	    if ref($value);
 	$$buffer .= $value;
     }
     return 1;
