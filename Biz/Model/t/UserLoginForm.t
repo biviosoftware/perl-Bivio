@@ -7,7 +7,7 @@ use strict;
 use Bivio::Biz::Model::UserLoginForm;
 use Bivio::Test;
 use Bivio::Test::Request;
-my($_req) = Bivio::Test::Request->get_instance->setup_http;
+my($_req) = Bivio::Test::Request->initialize_fully->setup_http;
 my($_compute_params) = sub {
     my($case, $params) = @_;
     my($realm) = $params->[0] ? Bivio::Biz::Model->new($_req, 'RealmOwner')
