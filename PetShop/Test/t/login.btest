@@ -7,4 +7,4 @@ login_as('DEMO', 'password');
 test_deviance();
 login_as('demo', 'PASSWORD');
 login_as('demo', '');
-login_as('nosuchuser', 'password');
+login_as('nosuchuser', '');
