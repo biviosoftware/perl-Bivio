@@ -46,7 +46,6 @@ use Bivio::Type::RealmName;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 my($_OFFLINE_PREFIX) = Bivio::Type::RealmName::OFFLINE_PREFIX();
 
 #TODO: this needs to be configurable, maybe a method on RealmType?
@@ -78,27 +77,6 @@ sub create {
     $values->{password} = Bivio::Type::Password->INVALID()
 	    unless defined($values->{password});
     return $self->SUPER::create($values);
-}
-
-=for html <a name="format_demo_club_name"></a>
-
-=head2 format_demo_club_name() : string
-
-Formats demo club name for this user.
-
-=cut
-
-sub format_demo_club_name {
-    my($self) = @_;
-    my($demo_threshold) = Bivio::Type::RealmName->get_width
-	    - length($_DEMO_SUFFIX);
-    my($name) = $self->get('name');
-
-    # This is a legitimate realm name, but users can't enter it because
-    # it begins with a number and ends with the demo suffix.
-    # See Type::RealmName
-    $name = $self->get('realm_id') if length($name) > $demo_threshold;
-    return $name.Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 }
 
 =for html <a name="format_email"></a>
@@ -303,27 +281,6 @@ sub is_default {
     my($self) = @_;
     # Default realms have ids same as their types as_int.
     return $self->get('realm_type')->as_int eq $self->get('realm_id') ? 1 : 0;
-}
-
-=for html <a name="is_demo_club"></a>
-
-=head2 is_demo_club() : boolean
-
-=head2 static is_demo_club(string name) : boolean
-
-=head2 static is_demo_club(Bivio::Biz::Model model, string model_prefix) : boolean
-
-Returns true if demo_club.  Gets I<name> from I<self> if not provided.
-
-=cut
-
-sub is_demo_club {
-    my($self, $model, $model_prefix) = @_;
-    my($name) = defined($model_prefix)
-            ? $model->get($model_prefix.'name')
-                    : defined($model)
-                            ? $model : $self->get('name');
-    return $name =~ /$_DEMO_SUFFIX$/o ? 1 : 0;
 }
 
 =for html <a name="is_name_eq_email"></a>
