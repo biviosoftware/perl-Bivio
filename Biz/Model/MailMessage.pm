@@ -660,7 +660,7 @@ sub _write_mime_header{
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
-v
+
 $Id$
 
 =cut
