@@ -359,7 +359,7 @@ sub handle_die {
     }
 
     # Some type of unhandled error.  Rollback and check die_actions
-    $proto->rollback;
+    $proto->rollback(Bivio::Agent::Request->get_current);
     return unless ref($proto);
 
     # Is this an HTTP request? (We don't redirect on non-http requests)
