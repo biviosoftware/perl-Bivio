@@ -198,7 +198,7 @@ sub _set_display_name {
     # If supplying both last and first names, then use both as
     # display name.
     if (defined($user_values->{last_name})
-	    && defined($user_values->{middle_name})) {
+	    && defined($user_values->{first_name})) {
 	$user_values->{display_name}
 		= $user_values->{first_name}.' '.$user_values->{last_name};
     }
