@@ -9,6 +9,9 @@ $_ = $Bivio::Ext::HTMLParser::VERSION;
 
 Bivio::Ext::HTMLParser - allows classes to parse without subclassing HTML::Parser
 
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
