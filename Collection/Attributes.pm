@@ -16,8 +16,14 @@ Bivio::Collection::Attributes - a collection of key/value pairs
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Collection::Attributes::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::UI::WidgetValueSource>
+
+=cut
+
+use Bivio::UI::WidgetValueSource;
+@Bivio::Collection::Attributes::ISA = ('Bivio::UI::WidgetValueSource');
 
 =head1 DESCRIPTION
 
@@ -373,164 +379,6 @@ sub get_shallow_copy {
     return {%{shift->{$_PACKAGE}}};
 }
 
-=for html <a name="get_widget_value"></a>
-
-=head2 get_widget_value(string param1, ...) : any
-
-Returns a value to the widget.  The return value is determined as follows:
-
-=over 4
-
-=over 4
-
-=item 1.0.
-
-If <param1> is "!" (not), shifts arguments and calls recursively,
-inverting the result (returning a valid Type::Boolean).
-
-=item 1.1.
-
-Attribute is not a reference or there are no more parameters.
-The value of the attribute will be returned unless there are
-more parameters in which case the next parameter must be a blessed reference
-which supports C<get_widget_value>.  The first argument will be the attribute
-and the rest of the arguments will be passed.
-
-=item 1.2.
-
-Attribute whose value is a blessed reference, then the rest of the parameters
-will be passed to C<get_widget_value> of the reference.
-
-=item 1.3.
-
-Attribute is hash or array reference, the second parameter will be used as a
-key into the reference.  If the second parameter is an array_ref,
-its value will be interpreted by C<get_widget_value>.
-If there are more parameters, the third parameter must
-be a blessed reference which supports C<get_widget_value>.  The first argument
-will be the value from the hash, array, or indexed value
-and the rest of the arguments will be passed.
-
-=back
-
-=item 2.1.
-
-If I<param1> begins with C<-E<gt>>, C<$self-E<gt>$param1(@_)> will be called.
-
-=item 2.2.
-
-If I<param1> I<can> C<get_widget_value>,
-C<$param-E<gt>get_widget_value(@_)> will be called.
-
-=item 2.3.
-
-If I<param1> is an unblessed array reference, then
-C<$self-E<gt>get_widget_value(@$param1)> will be called.
-
-=item 2.4.
-
-If I<param1> is an unblessed code reference, then
-C<&$param1($self)> will be called.
-
-=item 3.
-
-Otherwise, die will be called.
-
-=back
-
-=cut
-
-sub get_widget_value {
-    my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
-    _die($self, 'too few arguments passed to ', $self) unless @_;
-    my($param1) = shift;
-    my($value);
-
-    return $self->get_widget_value(@_) ? 0 : 1 if $param1 eq '!';
-
-    # What value does $param1 identify?
-    if (exists($fields->{$param1})) {
-	# Plain old attribute, may be undef
-	$value = $fields->{$param1};
-    }
-    else {
-	# No such key, try to call the method on $param1
-	return $self->$param1(@_) if $param1 =~ s/^\-\>//;
-
-	if (UNIVERSAL::can($param1, 'get_widget_value')) {
-	    # Have to have params to call get_widget_value
-	    return $param1->get_widget_value(@_) if @_;
-
-#TODO: Document this very special case...
-#	    # Return self if we're looking for self
-#	    return $self if ref($self) eq $param1;
-
-	    # Otherwise, couldn't find it.
-	    _die($self, $param1, ': not found in source ', $self);
-	}
-
-	if (ref($param1) eq 'ARRAY') {
-	    $value = $self->get_widget_value(@$param1);
-	}
-	elsif (ref($param1) eq 'CODE') {
-	    $value = &$param1($self);
-	}
-	else {
-	    _die($self, $param1, ": not found and can't get_widget_value");
-	}
-    }
-
-    # Have value figure out what to do with it
-    unless (ref($value)) {
-	# fall through, not a reference
-    }
-    elsif (!@_) {
-	# No more params, further checking not required
-	return $value;
-    }
-    elsif ($value =~ /=/) {
-	# It's a blessed reference
-	return $value->get_widget_value(@_);
-    }
-    else {
-	# value is a hash or array ref
-	my($param2) = shift;
-	die($self, $param1, ': is a ref, but not passed second param')
-		    unless defined($param2);
-	$param2 = $self->get_widget_value(@$param2)
-		if ref($param2) eq 'ARRAY';
-	if (ref($value) eq 'HASH') {
-	    # key must exist
-	    _die($self, $param1, '->{', $param2, '}: does not exist')
-			unless exists($value->{$param2});
-	    $value = ($value->{$param2});
-	}
-	elsif (ref($value) eq 'ARRAY') {
-	    # index must exist (and be a number)
-	    die($self, $param1, '->[', $param2, ']: does not exist')
-			unless $param2 <= $#$value;
-	    $value = $value->[$param2];
-	}
-	else {
-	    die($self, $param1, ': unsupported reference type: ',
-		    ref($value));
-	}
-    }
-
-    # Check for next param which must be able to get_widget_value or
-    # must be a widget value which returns something that can return
-    # a widget value.
-    return $value unless @_;
-    $param1 = shift(@_);
-    $param1 = $self->get_widget_value(@$param1) if ref($param1) eq 'ARRAY';
-    return $param1->get_widget_value($value, @_)
-	    if UNIVERSAL::can($param1, 'get_widget_value');
-    die($self, $param1,
-	    ": can't get_widget_value (not a formatter)");
-    # DOES NOT RETURN
-}
-
 =for html <a name="has_keys"></a>
 
 =head2 has_keys(string key, string key2, ...) : boolean
@@ -648,16 +496,14 @@ sub set_read_only {
 =head2 unsafe_get(string key, ...) : (string, ...)
 
 Returns the named value(s).  If I<key> doesn't exist, C<undef> is returned
-in its place. 
+in its place.
 
 =cut
 
 sub unsafe_get {
     my($self) = shift(@_);
     my($fields) = $self->{$_PACKAGE};
-    my(@res) = map {
-	exists($fields->{$_}) ? $fields->{$_} : undef;
-    } @_;
+    my(@res) = map {$fields->{$_}} @_;
     return @res if wantarray;
     _die($self, 'unsafe_get not called in array context')
 	    unless int(@res) == 1;
@@ -681,6 +527,22 @@ sub unsafe_get_by_regexp {
     return defined($match) ? $self->{$_PACKAGE}->{$match} : undef;
 }
 
+=for html <a name="unsafe_get_widget_value_by_name"></a>
+
+=head2 unsafe_get_widget_value_by_name(string name) : array
+
+Returns:
+
+    ($self->unsafe_get($name), $self->exists($name))
+
+=cut
+
+sub unsafe_get_widget_value_by_name {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return ($fields->{$name}, exists($fields->{$name}) ? 1 : 0);
+}
+
 #=PRIVATE METHODS
 
 # _die(self, any msg, ...)
@@ -691,9 +553,7 @@ sub _die {
     my($self, @msg) = @_;
     my($sub) = (caller(1))[3];
     $sub =~ s/.*://;
-    my($die) = UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
-	    ? 'Bivio::Die' : 'Bivio::IO::Alert';
-    $die->die($self, '->', $sub, ': ', @msg);
+    Bivio::IO::Alert->bootstrap_die($self, '->', $sub, ': ', @msg);
     # DOES NOT RETURN
 }
 
