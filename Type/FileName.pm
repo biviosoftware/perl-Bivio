@@ -57,7 +57,7 @@ sub from_literal {
 
     # This is the same as the Win32 set, so we are pretty safe
     return (undef, Bivio::TypeError::FILE_NAME())
-	    if $value =~ m![?%\\/:<>|]!;
+	    if $value =~ m![\\/:*?"<>|]!;
     return $value;
 }
 
