@@ -440,7 +440,7 @@ my($_XML_TO_LATEX_PROGRAM) = {
     },
     '/preface' => sub {
 	$in_preface = 0;
-	return '\tableofcontents' . "\n" . '\mainmatter' . "\n";
+	return '\mainmatter' . "\n";
     },
     programlisting => sub {
 	$clean_normal = 0;
@@ -604,9 +604,10 @@ sub to_pdf {
     Bivio::IO::File->write($output_tex, $tex);
     system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
     system("makeindex -q $output_root");
-    # LaTeX must be run twice to process table of contents and index
+    # LaTeX must be run thrice to process table of contents and index
+    system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
     my($result) = system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
-    foreach my $ext (qw(aux idx ilg ind log out tex toc)) {
+    foreach my $ext (qw(aux idx ilg ind log out toc)) {
 	system("rm $output_root.$ext") unless $result < 0;
     }
     print "PDF Generation failed, check $output_root.log for details\n"
@@ -849,6 +850,7 @@ pdffitwindow=true,pdfcenterwindow=true]{hyperref}' . "\n";
     $tex .= '\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}' . "\n";
     $tex .= '\maketitle' . "\n";
     $tex .= '\thispagestyle{empty}' . "\n";
+    $tex .= '\tableofcontents' . "\n";
 }
 
 # _to_html(string tag, array_ref children, hash_ref clipboard) : string_ref
