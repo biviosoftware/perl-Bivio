@@ -32,6 +32,8 @@ use Bivio::Biz::FormModel;
 
 C<Bivio::Biz::Model::ForbiddenForm>
 
+=cut
+
 =head1 TASK ATTRIBUTES
 
 =over 4
