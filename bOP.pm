@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  allow SimpleWidgetFactory to be subclassed
+  added warnings when from_literal() is called in scalar context
+  Checkbox now has an event_handler
 
   Revision 1.61  2003/04/24 03:04:56  moeller
   PersistentCookie uses domain from facade first, config second
