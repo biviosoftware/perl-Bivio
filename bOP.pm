@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.57  2003/04/10 23:11:44  moeller
+  added ECSecureSourceProcessor credit card processor
+
+  Revision 1.56  2003/04/05 13:12:00  nagler
+  * Bivio::Agent::HTTP::Reply removed custom error returns for perl
+    5.6.* and up.  Also removed hardwired hostname (bivio.com)
   * Bivio::UI::HTML::Widget::Text.is_read_only maps to html 'readonly' attribute
   * Bivio::Util::LinuxConfig->ifcfg_static configures static IP addrs
   * Bivio::Util::LinuxConfig->resolv_conf writes resolv.conf
