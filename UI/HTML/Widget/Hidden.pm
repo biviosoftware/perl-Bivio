@@ -124,7 +124,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
-    _render($source->get_widget_value(@{$fields->{values}}, $buffer);
+    _render($source->get_widget_value(@{$fields->{values}}, $buffer));
     return;
 }
 
@@ -138,7 +138,7 @@ sub _render {
     my($values, $buffer) = @_;
     my($k);
     foreach $k (sort(keys(%$values))) {
-	$$buffer .= '<input type=hidden name="'.$k''" value="'
+	$$buffer .= '<input type=hidden name="'.$k.'" value="'
 		.Bivio::Util::escape_html($values->{$k})."\">\n";
     }
     return;
