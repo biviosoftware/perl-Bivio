@@ -102,7 +102,7 @@ use strict;
 use Bivio::Test::Language;
 print "1..1\n";
 my(\$die) = Bivio::Test::Language->test_run(qw{$test});
-print(\$die ? "not ok: " . \$die->as_string . "\n" : "1 ok\n");
+print(\$die ? "1 not ok: " . \$die->as_string . "\n" : "1 ok\n");
 EOF
             chomp($line);
             $ok++ if $line eq "1 ok";
