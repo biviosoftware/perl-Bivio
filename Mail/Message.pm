@@ -54,7 +54,6 @@ my(@_REMOVE_FOR_LIST_RESEND) = qw(
     message-id
     priority
     received
-    references
     reply-to
     return-path
     return-receipt-to
@@ -65,18 +64,16 @@ my(@_REMOVE_FOR_LIST_RESEND) = qw(
     x-pmrqc
 );
 # 822:
-# Due to an artifact of the notational conventions, the syn-
-# tax  indicates that, when present, some fields, must be in
-# a particular order.  Header fields  are  NOT  required  to
-# occur  in  any  particular  order, except that the message
-# body must occur AFTER  the  headers.   It  is  recommended
-# that,  if  present,  headers be sent in the order "Return-
-# Path", "Received", "Date",  "From",  "Subject",  "Sender",
-# "To", "cc", etc.
+# Due to an artifact of the notational conventions, the syntax  indicates that,
+# when present, some fields, must be in a particular order.  Header fields  are
+# NOT  required  to occur  in  any  particular  order, except that the message
+# body must occur AFTER  the  headers.   It  is  recommended that,  if  present,
+# headers be sent in the order "Return-Path", "Received", "Date",  "From",
+# "Subject",  "Sender", "To", "cc", etc.
 #
-# This specification permits multiple  occurrences  of  most
-# fields.   Except  as  noted,  their  interpretation is not
-# specified here, and their use is discouraged.
+# This specification permits multiple  occurrences  of  most fields.   Except
+# as  noted,  their  interpretation is not specified here, and their use is
+# discouraged.
 #
 # NOTE: This is list is sorted as described above!
 my(@_FIRST_HEADERS) = qw(
@@ -114,10 +111,12 @@ work with an existing message.
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
     my(undef, $rfc822) = @_;
+    ref($rfc822) || Bivio::IO::Alert->die('rfc822: not a string_ref');
     my($parser) = MIME::Parser->new(output_to_core => 'ALL');
     $self->{$_PACKAGE} = {
 	'time' => time,
-        'parts' => $parser->parse_data($rfc822),
+        'entity' => $parser->parse_data($rfc822),
+        'rfc822' => $rfc822,
     };
     return $self;
 }
@@ -141,32 +140,46 @@ sub enqueue_send {
     return;
 }
 
+=for html <a name="get_rfc822"></a>
+
+=head2 get_rfc822() : string_ref
+
+Returns the original message text as passed to new()
+
+=cut
+
+sub get_rfc822 {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{rfc822};
+}
+
 =for html <a name="get_entity"></a>
 
 =head2 get_head() : MIME::Entity
 
-Returns the header of this message.
+Returns the MIME entity
 
 =cut
 
 sub get_entity {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{parts};
+    return $fields->{entity};
 }
 
 =for html <a name="get_head"></a>
 
 =head2 get_head() : MIME::Head
 
-Returns the header of this message.
+Returns the header
 
 =cut
 
 sub get_head {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{parts}->head;
+    return $fields->{entity}->head;
 }
 
 =for html <a name="get_body"></a>
@@ -180,7 +193,55 @@ Returns the body parts of this message.
 sub get_body {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{parts}->bodyhandle;
+    return $fields->{entity}->bodyhandle;
+}
+
+=for html <a name="get_references"></a>
+
+=head2 get_references() : array
+
+Return sorted array of message ids this message refers to.
+
+The first id in the array returned is either the "In-Reply-To" value
+or (if In-Reply-To does not exist) the last (most recent) id in the
+"References" list.
+
+=cut
+
+sub get_references {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($refs, @refs);
+    if (defined($refs = $fields->{entity}->head->get('References'))) {
+        while ($refs =~ s/<([^<>]+)>//) { push(@refs, $1); }
+    }
+    if (defined($refs = $fields->{entity}->head->get('In-Reply-To'))) {
+        # Only want last id
+        $refs =~ s/<([^<>]+)>//g;
+        push(@refs, $1)  if $1;
+    }
+    # Remove duplicates
+    my(%saw);
+    return grep(!$saw{$_}++, @refs);
+}
+
+=for html <a name="get_message_id"></a>
+
+=head2 get_message_id() : string
+
+Return Message-Id
+
+=cut
+
+sub get_message_id {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($id);
+    if (defined($id = $fields->{entity}->head->get('Message-Id'))) {
+        $id =~ s/<([^<>]+)>/$1/;
+        chomp($id);
+    }
+    return $id;
 }
 
 =for html <a name="send_queued_messages"></a>
@@ -224,7 +285,7 @@ sub send {
 	Bivio::Die->die(Bivio::DieCode::NO_RESOURCES(), "open('|-') failed: $!");
     }
     if ($pid) { # parent
-        print $fh $fields->{parts}->as_string;
+        print $fh $fields->{entity}->as_string;
         close($fh);
         $? == 0 || Bivio::Die->die(Bivio::DieCode::IO_ERROR(),
                 "close(): status non-zero ($?)");
@@ -244,9 +305,9 @@ Removes the headers that are either to be replaced or are uninteresting on a
 resend.  This is used for mailing list resends, not simple alias forwarding.
 For example, Received:, To:, Cc:, and Message-Id: are removed.
 
-Sets the I<list_name> in the C<To>. Sets From to owner-I<list_name> if C<From:>
-not already set.  Inserts the I<list_name> in the C<Subject:> if
-I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
+Sets From to I<list_name>-owner if C<From:> not already set.
+Inserts the I<list_name> in the C<Subject:> if I<list_in_subject>.
+Sets I<Reply-To:> to I<list_name> if I<reply_to_list>.
 
 ASSUMES: Header addresses are rewritten with appropriate domain name
 by MTA (sendmail).
@@ -268,8 +329,7 @@ sub set_headers_for_list_send {
     $head->replace('Sender', $sender);
     $head->replace('Precedence', 'list');
     $self->set_from($sender);
-    $head->replace('To', "\"$list_title\" <$list_name>");
-    $reply_to_list && $head->replace('Reply-To', $head->get('To'));
+    $reply_to_list && $head->replace('Reply-To', "\"$list_title\" <$list_name>");
     # If there is no From:, add it now.
     $head->get('From') || $head->add('From', $sender);
     # Insert the list in the subject, if not already there
@@ -388,7 +448,8 @@ sub get_from {
 
 =head2 get_date_time() : time
 
-Returns the date specified by the message
+Returns the date (UNIX time) specified by the message.
+Returns undef if the date cannot be parsed or is not available.
 
 =cut
 
@@ -499,24 +560,25 @@ sub _parse_date {
     my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
     my($mday, $mon, $year, $hour, $min, $sec, $tz) = /$DATE_TIME/os;
     defined($mday)
-            || (Bivio::IO::Alert->warn('Cannot parse: ', $_), return undef);
+            || (Bivio::IO::Alert->warn('unable to parse date: ', $_), return undef);
     $mon = uc($mon);
     if (defined(Bivio::Mail::RFC822::MONTHS->{$mon})) {
         $mon = Bivio::Mail::RFC822::MONTHS->{$mon};
     }
     else {
-        Bivio::IO::Alert->warn("month \"$mon\" unknown in \"$_\"");
+        Bivio::IO::Alert->warn('month "', $mon, '" unknown in: ', $_);
         $mon = 0;
     }
+    my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
+
     $tz = uc($tz);
     if (defined(Bivio::Mail::RFC822::TIME_ZONES->{$tz})) {
         $tz = Bivio::Mail::RFC822::TIME_ZONES->{$tz};
     }
-    my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
     if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
         $date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
-    } elsif ($tz != 0) {
-        Bivio::IO::Alert->warn("timezone \"$tz\" unknown in \"$_\"");
+    } elsif ($tz !~ /^0+$/) {
+        Bivio::IO::Alert->warn('timezone "', $tz, '" unknown in: ', $_);
     }
     return $date_time;
 }

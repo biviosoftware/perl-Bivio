@@ -11,7 +11,7 @@ Bivio::Mail::Address - parses e-mail addresses according to RFC 822
 =head1 SYNOPSIS
 
     use Bivio::Mail::Address;
-    Bivio::Mail::Address->new();
+    my($email, $name) = Bivio::Mail::Address->parse($addr);
 
 =cut
 
@@ -20,7 +20,8 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::Mail::Address>
+C<Bivio::Mail::Address> parses e-mail addresses as specified in the
+BNF syntax in RFC 822.
 
 =cut
 
@@ -36,7 +37,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="parse"></a>
 
-=head2 parse() : 
+=head2 parse(string addr) : string
+
+=head2 parse(string addr) : array
 
 822:
     For purposes of display, and when passing  such  struc-
