@@ -141,27 +141,26 @@ sub internal_get_mgfs_import_format {
 
 =for html <a name="try_to_update_or_create"></a>
 
-=head2 Bivio::Die try_to_update_or_create(hash_ref values, boolean update)
+=head2 Bivio::Die try_to_update_or_create(hash_ref values, int update_flag)
 
 Attempts to update or create a model with the specified values.
 See from_mgfs(). Returns undef on success, a Bivio::Die instance otherwise.
+If update_flag is 0, then only a create is attempted.
+If update_flag is 1, then an existence check will be tried, then update.
+If update_flag is 2, then an existence check will be created but not updated.
 
 =cut
 
 sub try_to_update_or_create {
-    my($self, $values, $update) = @_;
+    my($self, $values, $update_flag) = @_;
 
 #TODO: probably better to have a handle_die() method?
     my($die) = Bivio::Die->catch(
 	    sub {
-		if ($update) {
+		if ($update_flag) {
 		    # get the key fields from values
 		    my($sql_support) = $self->internal_get_sql_support;
 		    my(@key_names) = $sql_support->get('primary_key_names');
-
-#		    use Data::Dumper;
-#		    $Data::Dumper::Indent = 1;
-#		    print(Dumper($values));
 
 		    my(%key) = ();
 #TODO: use the first key array?
@@ -171,7 +170,7 @@ sub try_to_update_or_create {
 
 		    # existence check, update if it already exists
 		    if ($self->unauth_load(%key)) {
-			$self->update($values);
+			$self->update($values) if ($update_flag == 1);
 			return;
 		    }
 		    # otherwise drop through and create it
