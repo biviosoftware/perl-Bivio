@@ -228,6 +228,7 @@ sub new {
     # NOTE: fields are dynamically replaced.  See, e.g. load.
     $self->{$_PACKAGE} = {
 	empty_properties => $self->internal_get,
+	stay_on_page => 0,
     };
     return $self;
 }
@@ -360,7 +361,7 @@ sub execute {
 	if ($fields->{errors}) {
 	    _put_file_field_reset_errors($self);
 	}
-	else {
+	elsif ( ! $fields->{stay_on_page}) {
 	    _redirect($self, 'next');
 	    # DOES NOT RETURN
 	}
@@ -890,6 +891,23 @@ Puts a value on a field.  No validation checking.
 sub internal_put_field {
     my($self, $property, $value) = @_;
     $self->internal_get->{$property} = $value;
+    return;
+}
+
+=for html <a name="internal_stay_on_page"></a>
+
+=head2 internal_stay_on_page()
+
+Directs the form to remain on the current page regardless of the error state.
+No changes are committed to the database. This is useful for non-submit
+buttons which need to perform calculations on the current data.
+
+=cut
+
+sub internal_stay_on_page {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{stay_on_page} = 1;
     return;
 }
 
