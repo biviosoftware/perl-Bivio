@@ -232,13 +232,13 @@ sub build {
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
 	unless $rpm_stage =~ /^[pcib]$/;
     return _do_in_tmp($self, 1, sub {
-	my($tmp, $output) = @_;
+	my($tmp, $output, $pwd) = @_;
 	my($arch) = _get_rpm_arch();
 	_system("ln -s . $arch", $output)
 	    unless -d $arch;
 	for my $specin (@packages) {
-	    my($specout, $base, $fullname) = _create_rpm_spec($self, $specin,
-		   $output);
+	    my($specout, $base, $fullname) = _create_rpm_spec(
+		$self, $specin, $output, $pwd);
 	    my($rpm_command) = "rpm -b$rpm_stage $specout";
 	    if ($self->get('noexecute')) {
 		_would_run("cd $tmp; $rpm_command", $output);
@@ -742,19 +742,19 @@ sub _chdir {
     return $dir;
 }
 
-# _create_rpm_spec(string specin, string_ref output) : (string, string, string)
+# _create_rpm_spec(string specin, string_ref output, string pwd) : array
 #
 # Creates an rpm spec using the generic spec file specified.
 # Appends build info to the output buffer.
 # Returns (output spec file name, base name, full name).
 #
 sub _create_rpm_spec {
-    my($self, $specin, $output) = @_;
+    my($self, $specin, $output, $pwd) = @_;
     my($version) = $self->get('version');
 
     my($cvs) = 0;
     if ($specin =~ /\.spec$/) {
-	$specin = Bivio::IO::File->pwd.'/'.$specin
+	$specin = $pwd.'/'.$specin
 	    unless $specin =~ m!^/!;
     }
     else {
@@ -823,7 +823,7 @@ sub _do_in_tmp {
     return _do_output(sub {
         my($output) = @_;
 	my($prev_dir) = Bivio::IO::File->pwd;
-	$op->(_chdir($_CFG->{tmp_dir}, $output), $output);
+	$op->(_chdir($_CFG->{tmp_dir}, $output), $output, $prev_dir);
 	_chdir($prev_dir);
 	Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
 	    unless $self->get('noexecute');
