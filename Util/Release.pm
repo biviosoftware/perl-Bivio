@@ -447,6 +447,11 @@ test -s '$_FILES_LIST' || {
 EOF
             next;
         }
+	elsif ($line eq '%') {
+	    # clear prefix
+	    $prefix = '',
+	    next;
+	}
 	elsif ($line =~ /^%/) {
 	    $prefix = $line . ' ';
 	    next;
@@ -454,7 +459,7 @@ EOF
 	elsif ($line eq '+') {
 	    $res .= <<"EOF";
 {
-    perl -p -e 's#^[^/]+##' $_FILES_LIST
+    test -f $_FILES_LIST && perl -p -e 's#^[^/]+##' $_FILES_LIST
     echo /b_release_files.list
     echo /b_release_files.exclude
 } > $_EXCLUDE_LIST
