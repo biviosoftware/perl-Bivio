@@ -84,7 +84,7 @@ Returns the form.
 
 sub create_content {
     my($self) = @_;
-    my($req) = Bivio::Agent::Request->new();
+    my($req) = Bivio::Agent::Request->get_current_or_new;
 
     # Read in terms of service
     my($fh) = Bivio::Biz::Action::HTTPDocument->open($req,
