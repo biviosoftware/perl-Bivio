@@ -1508,6 +1508,14 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::LocalPrices
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
+    [qw(
+        DEFAULT_ERROR_UPDATE_COLLISION
+        143
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_update_collision
+    )],
 );
 
 __PACKAGE__->compile(
