@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::MGFSInstrument;
 use strict;
 $Bivio::Biz::Model::MGFSInstrument::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::MGFSInstrument::VERSION;
 
 =head1 NAME
 
@@ -42,7 +43,7 @@ use Bivio::Data::MGFS::Id;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_INSTRUMENT);
+#my($_INSTRUMENT);
 
 =head1 FACTORIES
 
@@ -220,27 +221,27 @@ sub _synchronize_instrument {
 
     # only create/update if it is a stock
     if ($fields->{is_stock} || ($update && $self->get('instrument_id'))) {
-	$_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new(
-		$self->get_request);
-
-	if ($update) {
-	    $new_values->{ticker_symbol} =
-		    exists($new_values->{symbol})
-			    ? $new_values->{symbol}
-			    : $self->get('symbol');
-	    $_INSTRUMENT->unauth_load(instrument_id =>
-		    $self->get('instrument_id'));
-	    $_INSTRUMENT->update($new_values);
-	}
-	else {
-	    $_INSTRUMENT->create({
-		name => $new_values->{name},
-		ticker_symbol => $new_values->{symbol},
-		instrument_type => Bivio::Type::InstrumentType::STOCK(),
-		fed_tax_free => 0,
-	    });
-	    $new_values->{instrument_id} = $_INSTRUMENT->get('instrument_id');
-	}
+#	$_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new(
+#		$self->get_request);
+#
+#	if ($update) {
+#	    $new_values->{ticker_symbol} =
+#		    exists($new_values->{symbol})
+#			    ? $new_values->{symbol}
+#			    : $self->get('symbol');
+#	    $_INSTRUMENT->unauth_load(instrument_id =>
+#		    $self->get('instrument_id'));
+#	    $_INSTRUMENT->update($new_values);
+#	}
+#	else {
+#	    $_INSTRUMENT->create({
+#		name => $new_values->{name},
+#		ticker_symbol => $new_values->{symbol},
+#		instrument_type => Bivio::Type::InstrumentType::STOCK(),
+#		fed_tax_free => 0,
+#	    });
+#	    $new_values->{instrument_id} = $_INSTRUMENT->get('instrument_id');
+#	}
     }
     # otherwise, make the symbol the same as the mg_id for uniqueness
     # it is an industry or composite record
