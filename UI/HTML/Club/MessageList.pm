@@ -81,7 +81,8 @@ sub new {
 	        }),
 	    }),
 	    Bivio::UI::HTML::Widget::MailTo->new({
-		email => ['MailMessage.from_name'],
+		value => ['MailMessage.from_name'],
+		email => ['MailMessage.from_email'],
 		column_nowrap => 1,
 	    }),
             Bivio::UI::HTML::Widget::DateTime->new({
