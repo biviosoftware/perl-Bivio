@@ -88,14 +88,14 @@ function dy_complete_date(s) {
   s_month = s.value.substring(0, slash_1);
   s_day = s.value.substring(slash_1 + 1, slash_2);
   s_year = s.value.substring(slash_2 + 1, s.value.length);
-  
+
   if (slash_2 == -1) {
     s.value = s.value + '/' + c_year;
   }
 
   else if (s_year.length == 2) {
     diff = c_year - 1980;
-  
+
     if (diff >= s_year) {
       s_year = '20' + s_year;
     }
@@ -123,7 +123,8 @@ Returns the inlined source for this method.
 
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
-    return ' onChange="dy_complete_date(this)"';
+    # This has to be onBlur, because onChange doesn't work quite right in IE.
+    return ' onBlur="dy_complete_date(this)"';
 }
 
 =for html <a name="initialize"></a>
