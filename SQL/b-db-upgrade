@@ -248,6 +248,7 @@ sub _upgrade {
     _upgrade_institution();
     _upgrade_delete_zero_entries();
     _upgrade_account_data($req);
+    _upgrade_change_demo();
 
     print("\n*** done ***\n");
     return;
@@ -281,6 +282,25 @@ sub _upgrade_account_data {
 	Bivio::Data::EW::ClubImporter->delete_unused_petty_cash_account($req);
 	Bivio::Data::EW::ClubImporter->set_default_account($req);
     }
+    return;
+}
+
+# _upgrade_change_demo()
+#
+# Changes the demo club to newdemoclub.
+#
+sub _upgrade_change_demo {
+
+    Bivio::SQL::Connection->execute("
+            UPDATE realm_owner_t
+            SET name='demo_club_old'
+            WHERE name='demo_club'", []);
+
+    Bivio::SQL::Connection->execute("
+            UPDATE realm_owner_t
+            SET name='demo_club'
+            WHERE name='newdemoclub'", []);
+
     return;
 }
 
