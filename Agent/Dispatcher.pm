@@ -34,7 +34,7 @@ which registered for that request.
 =cut
 
 sub _DEFAULT_HTTP_CONTROLLER_NAME {
-    return 'admin';
+    return 'messages';
 }
 
 #=VARIABLES
