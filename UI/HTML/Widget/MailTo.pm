@@ -64,7 +64,6 @@ use Bivio::Type::Email;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_IGNORE);
 
 =head1 FACTORIES
 
@@ -140,13 +139,10 @@ sub render {
     my($req) = $source->get_request;
     my($email) = $source->get_widget_value(@{$fields->{email}});
 
-    # Initialize $_IGNORE
-    $_IGNORE = Bivio::Type::Email->IGNORE_PREFIX .'.*'.$req->get('mail_host')
-	    unless $_IGNORE;
-
     # Don't render anything from this domain which begins with ignore-
     # or isn't defined, length, etc.
-    if (!defined($email) || !length($email) || $email =~ /^$_IGNORE$/io) {
+    if (!defined($email) || !length($email)
+	    || !Bivio::Type::Email->is_valid($email)) {
 	# Don't make visible ignored addresses
 	if ($fields->{email} eq $fields->{value}
 		|| $email eq $source->get_widget_value(@{$fields->{value}})) {
