@@ -1,3 +1,5 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
+# $Id$
 BEGIN {
     use Bivio::IO::Config;
     Bivio::IO::Config->introduce_values({

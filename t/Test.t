@@ -1,4 +1,5 @@
 #!perl -w
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 #
 # $Id$
 #

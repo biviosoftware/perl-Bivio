@@ -1,3 +1,4 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # -*-perl-*-
 #
 # $Id$
