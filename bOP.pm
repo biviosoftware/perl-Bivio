@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Util->nightly sets PERLLIB correctly
+  * Bivio::UI::HTML::Widget::Page->render uses unsafe_render_attr on
+    body's html_tag_attrs
+
+  Revision 2.1  2004/01/09 01:20:04  nagler
+  * Bivio::IO::Ref->nested_differences produces a recursive diff of two
+    data structures with contextual clues.
+  * Bivio::IO::Ref->to_string acepts an indent parameter which it passes
+    to Data::Dumper::Maxdepth, default is 1 (as it was before).
+  * Bivio::Test::Language::HTTP->verify_uri validates a uri is what it
+    should be.
+  * Bivio::Test::Request->initialize_fully correctly gets the current
+    request if any
+  * Bivio::Test::Util->nightly corrected to set PERLLIB
+  * Bivio::Test->unit uses nested_differences to show delta between
+    actual and expected.
+  * Bivio::Type::FileName->from_literal calls SUPER to do text processing
   * Bivio::Type::String->compare treats undef same as '' (SQL like)
   * Bivio::Type::Enum->compare assumes undef and undef are equal, which
     is how SQL treats NULL in an order by
