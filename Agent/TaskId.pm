@@ -377,7 +377,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_SINGLE_DEPOSIT
         43
         CLUB
-        MEMBER
+        TREASURER
         _/accounting/member/deposit
         Bivio::Biz::Model::SingleDepositForm
         Bivio::Biz::Model::RealmAccountList
