@@ -65,26 +65,33 @@ __PACKAGE__->new({
 		    decor_disclaimer
 		    tax_disclaimer
             ));
-	    $fc->create_group(0x006666, qw(
+	    # These are links, so don't set the color
+	    $fc->create_group(-1, qw(
 		    footer_menu
+	            user_name
+	            text_menu_font
+	            task_list_label_link
+            ));
+	    $fc->create_group(0x006666, qw(
+	            page_link
 	            page_vlink
 	            page_alink
-	            page_link
-	            user_name
 	            line_above_menu
-	            action_bar_border
+		    footer_line
 	            detail_chooser
 	            page_heading
 	            form_field_label_in_text
-	            text_menu_font
 	            celebrity_box
 	            profile_box
 	            description_label
 	            task_list_heading
-	            task_list_label
+	            task_list_label_no_link
             ));
             $fc->create_group(0xEEEEEE, qw(
                     icon_text_ia
+            ));
+            $fc->create_group(0xCC9900, qw(
+                    page_link_hover
             ));
             $fc->create_group(0x66CC66, qw(
                     summary_line
@@ -174,8 +181,10 @@ __PACKAGE__->new({
 		    'icon_text_ia');
 	    $fc->create_group([undef, 'page_text'],
 		    'realm_chooser_text');
-	    $fc->create_group([undef, 'task_list_label'],
-		    'task_list_label');
+	    $fc->create_group([undef, 'task_list_label_link'],
+		    'task_list_label_link');
+	    $fc->create_group([undef, 'task_list_label_no_link'],
+		    'task_list_label_no_link');
 	    $fc->create_group([undef, 'task_list_heading', 'strong'],
 		    'task_list_heading');
 	    $fc->create_group([undef, undef, 'b'],

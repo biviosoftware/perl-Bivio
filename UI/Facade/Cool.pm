@@ -42,7 +42,7 @@ __PACKAGE__->new({
 	    $fc->set_group_value('page_bg', 0x000000);
 	    $fc->set_group_value('error', 0x000099);
 	    $fc->set_group_value('page_text', 0xFFFFFF);
-	    $fc->set_group_value('footer_menu', 0x660066);
+	    $fc->set_group_value('page_link', 0x660066);
             $fc->set_group_value('summary_line', 0xFF0000);
             $fc->set_group_value('table_even_row_bg', 0x330033);
             $fc->set_group_value('realm_name', 0x3366FF);
