@@ -442,7 +442,7 @@ sub _process_argv {
 	# HACK: Probably want to generalize(?)
 	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
 	# Matches our form?
-	(my($m, $p, $v) = $a =~ /^--([\w:]+)(\.[\w]+)*=(.*)$/s) || next;
+	(my($m, $p, $v) = $a =~ /^--([\w:]+)([\.\w]+)*=(.*)$/s) || next;
 	# Need to default to package main?
 	# (Convention: packages begin with upper-case letter)
 	if ($m =~ /^[a-z0-9_]+$/ && $m ne 'main') {
