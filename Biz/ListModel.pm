@@ -28,8 +28,19 @@ rows.  This class is typically subclassed.  However, you can create
 anonymous ListModels by calling
 L<new_anonymous|Bivio::Biz::PropertyModel/"new_anonymous">.
 
-=cut
+Here is a an example iteration:
 
+   $list->reset_cursor;
+   while ($list->next_row) {
+       print $list->get('my_attr'), "\n";
+   }
+
+You can also:
+
+   $list->set_cursor(0);
+   print $list->get('my_attr'), "\n";
+
+=cut
 
 =head1 CONSTANTS
 
