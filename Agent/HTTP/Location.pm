@@ -380,14 +380,21 @@ Note that the I<path_info> is left on the URI.
 
 sub parse {
     my(undef, $req, $uri) = @_;
-    my($facade) = $uri =~ s!^/*\*(\w+)!! ? $1 : undef;
+    my($facade) = $uri =~ s/^\/*\*(\w+)// ? $1 : undef;
     Bivio::UI::Facade->setup_request($facade, $req)
 		unless $req->has_keys('facade');
     my($orig_uri) = $uri;
     $uri =~ s!^/+!!;
 
-    # Internal redirect to the home page.
-    $orig_uri = '/' unless length($uri);
+    # Special case: '/' or ''
+    unless (length($uri)) {
+	# OPTIMIZATION: We know the DOCUMENT_TASK does not need
+	# a user.  It is visible to all users.  Therefore, we avoid
+	# a user lookup here which is a database hit.
+	$req->put(user_id => undef);
+
+	return ($_DOCUMENT_TASK, $_GENERAL, '', '/');
+    }
 
     # Question mark is a special character
     my(@uri) = map {
@@ -397,15 +404,16 @@ sub parse {
 	$_;
     } split(/\/+/, $uri);
 
+    # There is always something in $uri and @uri at this point
     $uri = join('/', @uri);
-
     my($info);
-    # General realm simple map; no placeholders or path_info
+
+    # General realm simple map; no placeholders or path_info.
     return ($info->{task}, $_GENERAL, '', $orig_uri)
 	    if defined($info = $_FROM_URI{$uri}->[$_GENERAL_INT]);
 
-    # Is this a general realm with path_info?  The above always
-    # maps "/", so know there is at least one component.
+    # Is this a general realm with path_info?  URI has at least
+    # one component.
     if (defined($info = $_FROM_URI{$uri[0]}->[$_GENERAL_INT])) {
 	# At this stage, we have to map to a general realm, because
 	# all first components of the general realm are not valid
@@ -423,7 +431,7 @@ sub parse {
     }
 
     # If first uri doesn't match a RealmName, can't be one.
-    if (!length($uri) || $uri[0] !~ /^\w{3,}$/) {
+    if ($uri[0] !~ /^\w{3,}$/) {
 	# Not a realm, but is it a document and is it found?
 	if (defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri)) {
 #TODO: Could optimize further and simply return the file here.
