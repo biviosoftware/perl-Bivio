@@ -255,19 +255,22 @@ CREATE TABLESPACE ctxapp
 /
 EOF
     my($ora_home) = Bivio::Ext::DBI->get_config($dba)->{oracle_home};
-    print _sqlplus('internal', <<"EOF");
+    my($res) = _sqlplus('internal', <<"EOF");
 \@$ora_home/ctx/admin/dr0csys ctxsys ctxapp temp
 EOF
-    # Need to pass the full path to the ctxx library
-    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+    print $$res;
+    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
 \@$ora_home/ctx/admin/dr0inst $ora_home/ctx/lib/libctxx8.so
 EOF
-    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+    print $$res;
+    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
 \@$ora_home/ctx/admin/defaults/drdefus
 EOF
-    print _sqlplus('ctxsys/ctxsys', <<"EOF");
+    print $$res;
+    $res = _sqlplus('ctxsys/ctxsys', <<"EOF");
 exec Ctx_Adm.set_parameter('log_directory', '/var/log/oracle')
 EOF
+    print $$res;
 
     Bivio::SQL::Connection->set_dbi_name($prior_db);
     _upgrade_volume4_names();
@@ -296,7 +299,6 @@ EOF
         next if $name =~ /00003$/ || $name =~ /\-/;
         my($base, $suffix) = $name =~ /^(.+00003)(.+)$/;
         die("$name: does not match pattern") unless defined($base);
-        die("$suffix: not even length") if length($suffix) % 2;
         my($fixed_name) = $base;
         if ($suffix =~ /_/) {
             $suffix =~ s/_/-/g;
