@@ -1,6 +1,5 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-
 package Bivio::Biz::PropertyModel::MailMessage;
 use strict;
 
@@ -24,31 +23,29 @@ L<Bivio::Biz::PropertyModel>
 =cut
 
 use Bivio::Biz::PropertyModel;
-@Bivio::Biz::PropertyModel::MailMessage::ISA = qw(Bivio::Biz::PropertyModel);
+@Bivio::Biz::PropertyModel::MailMessage::ISA = ('Bivio::Biz::PropertyModel');
 
 =head1 DESCRIPTION
 
 C<Bivio::Biz::PropertyModel::MailMessage> holds information about an email
 message, the body of which is stored in the file server.
 
+#TODO: Better description of storage structure and usage.
+
 =cut
 
 #=IMPORTS
-use MIME::Parser;
-use IO::File;
-use IO::Stringy;
-use IO::Scalar;
-use Bivio::Biz::FieldDescriptor;
-use IO::Scalar;
 use Bivio::File::Client;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
+use Bivio::SQL::Support;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::PrimaryId;
-use Bivio::SQL::Support;
-use Bivio::IO::Trace;
+use IO::Scalar;
+use MIME::Parser;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -75,68 +72,51 @@ Creates a mail message model from an L<Bivio::Mail::Incoming>.
 sub create {
     my($self, $msg, $realm_owner, $club) = @_;
     # Archive mail message first
-    my($mbox) = $msg->get_unix_mailbox;
+#TODO: don't get_unix_mailbox, get_rfc822.
     # $dttm is always valid
     my($dttm) = $msg->get_dttm() || time;
-    my($mon, $year) = (gmtime($dttm))[4,5];
-    $year < 1900 && ($year += 1900);
     my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
-
-#    my $result = $_FILE_CLIENT->create('/'. $club_name . '/messages/'
-#	    . sprintf("%04d%02d", $year, ++$mon), \$mbox) || die("mbox create failed: $mbox");
-
-    $_FILE_CLIENT->append('/'. $club_name . '/mbox/'
-	    . sprintf("%04d%02d", $year, ++$mon), \$mbox)
-	    || die("mbox append failed: $mbox");
-#TODO:: Need to truncate these.  If from_email is too long, what to do?
-    my($from_email, $from_name) = $msg->get_from();
+    my($from_email, $from_name) = $msg->get_from;
     defined($from_name) || ($from_name = $from_email);
-    my($reply_to_email) = $msg->get_reply_to();
-    my($body) = $msg->get_body();
+    my($reply_to_email) = $msg->get_reply_to;
+    my($body) = $msg->get_body;
+    my($subject) = $msg->get_subject;
+#TODO: Should we allow NULL for subject?  Makes code elsewhere complicated,
+#      but would be more true to what is actually going on.
+    $subject = '(no subject)' unless $subject;
     my($values) = {
-	'club_id' => $club_id,
-	'rfc822_id' => $msg->get_message_id,
-	'dttm' => $dttm,
-	'from_name' => $from_name,
-	'from_email' => $from_email,
-	'reply_to_email' => $reply_to_email,
-	'subject' => $msg->get_subject || '',
-#TODO:: Measure real size (all unpacked files)
-	'kbytes' => int((length($body) + 1023)/ 1024),
-	'subject_sort' => &_sortable_subject($msg->get_subject( ) || '',
-		$club_name),
-	'from_name_sort' => &_sortable_name($from_name, $from_email)
+	club_id => $club_id,
+	rfc822_id => $msg->get_message_id,
+	dttm => $dttm,
+	from_name => $from_name,
+	from_email => $from_email,
+	reply_to_email => $reply_to_email,
+	subject => $subject,
+#TODO: Measure real size (all unpacked files)
+	kbytes => int((length($body) + 1023)/ 1024),
+	subject_sort => _sortable_subject($subject, $club_name),
+	from_name_sort => _sortable_name($from_name, $from_email)
     };
     $self->SUPER::create($values);
-    my $msgid = $self->get('mail_message_id');
-#TODO:: Update club_t.bytes here
-    $_FILE_CLIENT->create('/' . $club_name . '/messages/rfc822/'
-	    . $values->{mail_message_id}, \$body)|| die("create of file failed: $body");
-
+    my($msgid) = $self->get('mail_message_id');
+#TODO: Update club_t.bytes here
+    $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
+	    \$body) || die("create failed: $body");
     # Handle email attachments. Here's a first cut...
-    my $parser = new MIME::Parser(output_to_core => 'ALL');
-    my $file = $msg->get_rfc822_io();
-    
-    #change this. We're not saving the header.
-    $_FILE_CLIENT->create('/' . $club_name . '/messages/'
-	    . $msgid, \$body)
-	    || die("file server failed: $body");
-
-    my $entity = $parser->read($file);
-
-    #now extract all the mime attachments
+    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
+    my($file) = $msg->get_rfc822_io;
+    my($entity) = $parser->read($file);
+    # now extract all the mime attachments
     &_trace('extracting MIME attachments for this mail message') if $_TRACE;
-#    my $msgid = $values->{mail_message_id};
     _extract_mime($entity, 0, $club_name, $msgid);
-    
-    #crude reset of the file position:
-    $file = $msg->get_rfc822_io();
-    my $keywords = _parse_keywords($file);
+
+    # crude reset of the file position:
+    $file = $msg->get_rfc822_io;
+    my($keywords) = _parse_keywords($file);
     $file->close;
-    my $rslt = "";
-    $_FILE_CLIENT->set_keywords('/' . $club_name . '/messages/html/' . $values->{mail_message_id} . ".0",
-	    $keywords,
-	    \$rslt);
+    my($rslt) = '';
+    $_FILE_CLIENT->set_keywords('/'.$club_name.'/messages/html/'.$msgid.".0",
+	    $keywords, \$rslt) || die("set_keywords failed: \$body");
     return;
 }
 
@@ -163,7 +143,7 @@ sub delete {
 
 =item file_server : string (required)
 
-Where are the messages stored.
+Where the messages are stored.
 
 =back
 
@@ -187,15 +167,16 @@ file server using the path "club-id/messages/message-id".
 sub get_body {
     my($self) = @_;
     my($body);
+#TODO: Is this what we want?  Probably more complex than just single get.
     $_FILE_CLIENT->get('/'.$self->get('club_id')
-	    .'/messages/'.$self->get('mail_message_id'),
-	    \$body) || die("couldn't get mail body");
+	    .'/messages/html/'.$self->get('mail_message_id').'.0',
+	    \$body) || die("couldn't get mail body: $body");
     return \$body;
 }
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : array_ref
+=head2 internal_initialize() : Bivio::SQL::Support
 
 =cut
 
@@ -226,6 +207,7 @@ sub internal_initialize {
 
     });
 }
+
 =for html <a name="setup_club"></a>
 
 =head2 setup_club(Bivio::Biz::PropertyModel::Club club)
@@ -239,7 +221,7 @@ sub setup_club {
     my($res);
     my($club_name) = $club->get('name');
     my($dir);
-    foreach $dir ($club_name, "$club_name/mbox", "$club_name/messages/rfc822", "$club_name/messages/html") {
+    foreach $dir ("$club_name/messages/rfc822", "$club_name/messages/html") {
 	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
     }
     return;
@@ -247,7 +229,106 @@ sub setup_club {
 
 #=PRIVATE METHODS
 
-# _get_date(line : string reference) : string
+# _extract_mime(MIME::Entity entity, int file_index, string club_name, string message_id)
+#
+# Extract each MIME "part" of the message and write each one to a file named
+# <messageid>.<index>.  Additionally, each MIME header is written to a file:
+# <messageid>.<index>_hdr
+#
+sub _extract_mime {
+    my($entity, $file_index, $club_name, $message_id) = @_;
+    &_trace('extract index: ', $file_index) if $_TRACE;
+    my($num_parts) = $entity->parts || 0;
+    &_trace('number of parts: ', $num_parts) if $_TRACE;
+
+#TODO:    if($file_index > 0 ){ # then we're probably talking about
+#         sub parts. Whatever that means.
+    my($mime) = _extract_mime_body_decoded($entity);
+    my($output_file_name) = $message_id.'.'.$file_index;
+    my($msg) = $$mime;
+    my($textplain) = 0;
+    my($write) = 1;
+    my($ctype) = lc($entity->head->get('content-type'));
+    my($hdr) = _extract_mime_header($entity);
+    &_trace('content type: "', $ctype, '"') if $_TRACE;
+    if ($mime) {
+	if ($ctype =~ /multipart\/alternative/) {
+	    # maybe throw away the text/plain, and just write out the HTML
+	    &_trace('content-type is multipart/alternative.',
+		    ' Not writing this part.') if $_TRACE;
+	    $write = 0;
+	}
+	if ($ctype =~ /multipart\/mixed/) {
+	    &_trace('content type is multipart/mixed. Not writing this part.')
+		    if $_TRACE;
+	    $write = 0;
+	}
+	if ($ctype =~ /text\/plain/) {
+	    $textplain = 1;
+	}
+	if ($textplain && $write) {
+	    &_trace('content type is text/plain') if $_TRACE;
+	    &_trace('wrapping with <PRE></PRE>') if $_TRACE;
+	    $msg = "<PRE>\n" . $msg . "\n</PRE>\n";
+	    _write_mime($club_name, $output_file_name, \$msg);
+            _write_mime_header($club_name, $output_file_name, \$hdr);
+	}
+	else {
+	    # could be text/html or some other mime type
+	    &_trace('content-type is not text/plain. it is \"$ctype\"')
+		    if $_TRACE;
+	    if ($write) {
+		&_trace('writing straight through.') if $_TRACE;
+		_write_mime($club_name, $output_file_name, \$msg);
+		_write_mime_header($club_name, $output_file_name, \$hdr);
+	    }
+	}
+    }
+
+    &_trace('found $num_parts elements. ') if $_TRACE;
+    for (my($index) = 0; $index < $num_parts; $index += 1) {
+	my($e) = $entity->part($index);
+	$file_index = $file_index + 1;
+        _extract_mime($e, $file_index, $club_name, $message_id);
+    }
+    return;
+}
+
+# _extract_mime_body_decoded(MIME::Entity entity) : string_ref
+#
+# Returns mime body for this entity.
+#
+sub _extract_mime_body_decoded {
+    my($entity) = @_;
+    my($s);
+#TODO: don't use tied handles.
+#TODO: use single file handle to avoid leaks
+    tie(*FILEHANDLE, 'IO::Scalar', \$s);
+    my($io) = $entity->open('r');
+#TODO: Is this supposed to return an empty scalar?
+    return \$s unless defined($io);
+    my($line);
+    print FILEHANDLE $line while defined($line = $io->getline);
+    $io->close;
+    return \$s
+}
+
+# _extract_mime_header(MIME::Entity entity) : string
+#
+# Returns mime header for this entity.
+#
+sub _extract_mime_header {
+    my($entity) = @_;
+    my($s);
+#TODO: don't use tied handles.
+#TODO: use single file handle to avoid leaks
+    tie(*HEADERHANDLE, 'IO::Scalar', \$s);
+    my($head) = $entity->head;
+    $head->print(\*HEADERHANDLE);
+    return $s;
+}
+
+# _get_date(string_ref line) : string
 #
 # Probably should return a reference.
 # This method extracts a DATE from the line.
@@ -255,16 +336,18 @@ sub setup_club {
 # BEGINS with Date:, rather than parsing a date that might occur inside
 # the mail message body. 
 #
-#TODO: don't assume this is a mail header field. 
 sub _get_date {
     my($line) = @_;
-    if($$line =~ s/^Date:\s*//){
-	my @date = split /\s*/, $$line;
-	return _todate(\@date);
+#TODO: Use Mail::Incoming::get_dttm
+    if ($$line =~ s/^Date:\s*//i) {
+	my(@date) = split(/\s+/, $$line);
+	return _to_date(\@date);
     }
+#TODO: What should be returned here?
+    return undef;
 }
 
-# _parse_keywords(file : IO::File) : void
+# _parse_keywords(IO::Handle file) : hash_ref
 #
 # parses the mail message for all words.
 # Note that right now, this method is receiving an IO::Handle from
@@ -273,36 +356,31 @@ sub _get_date {
 #
 sub _parse_keywords {
     my($file) = @_;
-    &_trace("_parse_keywords called.") if $_TRACE;
-    my %keywords;# = {};
-    LOOP : while(!$file->eof( )){
-	my $line = $file->getline( );
+    &_trace('called') if $_TRACE;
+    my(%keywords) = ();
+    while (!$file->eof) {
+	my($line) = $file->getline;
+#TODO: Remove this after "preliminary debugging".  Don't want all
+#      entire message written to log.
 	&_trace($line) if $_TRACE;
-	if($line =~ /^Date:/){
-	    my $fdate = _get_date(\$line);
-	    next LOOP;
+	if ($line =~ /^Date:/i) {
+#TODO: use Mail::Incoming->get_dttm
+	    my($fdate) = _get_date(\$line);
 	}
-	if($line =~ s/^From:\s*//){
-	    next LOOP;
-	}
-	if($line =~ s/^To:\s*//){
-	    next LOOP;
-	}
-	if($line =~ s/^Subject:\s*//){
-	    next LOOP;
+	elsif ($line =~ s/^(?:From|To|Subject):\s*//i) {
+#TODO: what is supposed to be here?
+	    next;
 	}
 	_parse_msg_line(\$line, \%keywords);
-
     }
-    my(@keys) = keys %keywords;
-    my(@values) = values %keywords;
-    my $totalwords = 0;
-#    while(@keys){
-#	my $n = pop(@values);
-#	$totalwords += $n;
-#	&_trace(pop(@keys) . "\" => " . $n) if $_TRACE;
-#    }
-#    &_trace("Total Number of Words: $totalwords") if $_TRACE;
+#   if ($_TRACE) {
+#       my($totalwords) = 0;
+#       foreach $k (keys(%keywords)) {
+#	    $totalwords += $keywords{$k};
+#	    &_trace($k, ' => ', $keywords{$k});
+#       }
+#       &_trace("Total Number of Words: $totalwords");
+#   }
     return \%keywords;
 }
 
@@ -322,183 +400,125 @@ sub _parse_keywords {
 #
 # All words are stored lower case only.
 #
-#
 #TODO: STORE THIS INFORMATION INTO THE FILE SERVER!
+#
 sub _parse_msg_line {
     my($line, $keywords) = @_;
     &_trace("_parse_msg_line called.") if $_TRACE;
-    my $str = $$line;
-    if(!$$line){
-	print(STDERR "NULL LINE.\n");
+    my($str) = $$line;
+    if (!$$line){
+#TODO: Should this be a die?  Or should this just be ignored?
+#	print(STDERR "NULL LINE.\n");
 	return;
     }
+#TODO: Handle multi-line tags.
     $str =~ s/--//g;
+    # let's assume we don't care about case:
+    # and let's put off worrying about if this is MSWord, Excel, etc.
+    $str = lc($str);
+#TODO: what about "gt", "lt", etc.  Need general alg, e.g. "\&[a-z]+;".
     $str =~ s/nbsp//g;
     $str =~ s/\<.*\>//g;
     $str =~ s/[.]\s//g;
+#TODO: Careful about stripping e-mail addrs.  Want to enter foo@bar.com as
+#      a complete keyword.
     $str =~ s/[!@#%^&*,();:\t\[\]]//g;
-    #let's assume we don't care about case:
-    $str = lc($str);
-    #and let's put off worrying about if this is MSWord, Excel, etc.
-    my @words = split /\s/, $str;
-    for(my $x = 0; $x < $#words +1; $x++){
-	my $n = $keywords->{$words[$x]};
-	my $i = $n ? $n+1 : 1;
-	if($words[$x] eq("")){
-	    print(STDERR "found null word. Skipping.\n");
-	}
-	else{
-	    &_trace("found: " . $words[$x]) if $_TRACE;
-	    $keywords->{$words[$x]} = $i;
-	}
+    # Strip leading spaces so split works nicely.
+    $str =~ s/^\s+//;
+    my($w);
+    foreach $w (split(/\s+/, $str)) {
+	$keywords->{$w}++;
     }
-    
+    return;
 }
 
-# _todate(date string) : string
+# _sortable_name(string from_name, string from_email) : string
+#
+# Returns from_name and from_email stripped and downcased for storing
+# in the "from_name_sort" field.
+#
+sub _sortable_name {
+    my($from_name, $from_email) = @_;
+#TODO: Should do either from_name or from_email, not both.
+    my($str) = lc($from_name .  " <" . $from_email . ">" );
+    $str =~ s/[!#$%^&*-+=]/\s/g;
+    &_trace('stripped user name: ', $str) if $_TRACE;
+    return $str;
+}
+
+# _sortable_subject(string subject, string clubname) : string
+#
+# Returns a stripped, lowercase version of the subject line for
+# storing in the "subject_sort" field.
+#
+sub _sortable_subject {
+    my($subject, $clubname) = @_;
+    my($reply_marker) = '';
+    $subject = lc($subject);
+    $subject =~ s/^\s*$clubname://;
+    # Replies should come after the original message.  Strip
+    # an "Re:" and put a tilde (~) on the end so will sort after
+    # original subject.
+    $subject =~ s/^\s*re:\s*(?:$clubname:)?// && ($reply_marker = '~');
+    # Strip all non-alphanumerics
+#TODO: should we be stripping spaces?
+    $subject =~ s/[^a-z0-9]//g;
+    return $subject . $reply_marker;
+}
+
+# _to_date(string date) : string
+#
 # gets an array of elements, each corresponding to
 # parts of the date stripped out of a line;
 # [day][date][month-abbreviated][year][time][gmtoffset]
 # receives an arrayref, returns a scalar (formatted string)
 #
-#
-sub _todate {
+sub _to_date {
     my($date) = @_;
-    my $d = "@$date[2] ";
-    $d .= @$date[1] =~ /\d\d/ ? @$date : "0" . @$date[1];
-    $d .= " @$date[3]";
+#TODO: This actually is incorrect, because day of week is optional
+#      so may have N or N+1 parts depending on sender
+    my($d) = $date->[2].' ';
+#TODO: Is this right?
+    $d .= $date->[1] =~ /\d\d/ ? $date->[1] : '0' . $date->[1];
+    $d .= ' '.$date->[3];
     return $d;
 }
 
-
-#NOTE: this method returns a scalar, not a reference.
-#The mime header is assumed to be small.
-#TODO: don't use tie'd handles. 
-sub _extract_mime_header($ ){
-    my($entity) = @_;
-    my $s;
-    tie *HEADERHANDLE, 'IO::Scalar', \$s;
-    my $head = $entity->head( );
-    $head->print(\*HEADERHANDLE);
-    return $s;
+# _write_mime(string club_name, string file_name, string_ref msg)
+#
+# Writes msg to file server.
+#
+sub _write_mime {
+    my($club_name, $file_name, $msg) = @_;
+    &_trace('writing file: $file_name') if $_TRACE;
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/html/'
+	    . $file_name, $msg) || die("write failed: $$msg");
+    return;
 }
 
-#NOTE: this method returns a scalar reference.
-#TODO: don't use tied handles.
-sub _extract_mime_body_decoded($ ){
-    my($entity) = @_;
-    my $s;
-    tie *FILEHANDLE, 'IO::Scalar', \$s;
-    if (my $io = $entity->open("r")) {
-       while (defined($_ = $io->getline)) { print (FILEHANDLE $_); }
-       $io->close;
-    }
-    return \$s
-    
-}
-
-
+# _write_mime(string club_name, string output_file_name, string_ref hdr)
+#
+# Writes hdr to file server.
+#
+#TODO: merge with _write_mime.  Name could be passed in.
 sub _write_mime_header{
-    my($club_name, $outputfilename, $hdr) = @_;
-   $_FILE_CLIENT->create('/' . $club_name . '/messages/html/'
-	. $outputfilename . "_hdr", $hdr)
-	|| die("writing of mime header failed: $$hdr");
+    my($club_name, $output_file_name, $hdr) = @_;
+#TODO: create method to create files names, instead of having this
+#      concat everywhere
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/html/'
+	    . $output_file_name . "_hdr", $hdr)
+	    || die("write failed: $$hdr");
+    return;
 }
 
+=head1 COPYRIGHT
 
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
-# filename, clubname scalarRef
-sub _write_mime{
-    my($filename, $clubname, $msg) = @_;
-    &_trace('writing file: $filename') if $_TRACE;
-    $_FILE_CLIENT->create('/' . $clubname . '/messages/html/'
-    . $filename, $msg) || die("writing of mime part failed: $$msg");
-}
+=head1 VERSION
+v
+$Id$
 
-# This method is supposed to extract each MIME "part" of the message
-# and write each one to a file named <messageid>.<index>.
-# Additionally, each MIME header is written to a file: <messageid>.<index>_hdr
-
-sub _extract_mime{
-    my($entity, $fileindex, $club_name, $message_id) = @_;
-    &_trace('extract index: $fileindex') if $_TRACE;
-    my($numparts) = $entity->parts( ) || 0; #number of parts;
-    &_trace('number of parts: $numparts') if $_TRACE;
-
-#    if($fileindex > 0 ){ # then we're probably talking about sub parts. Whatever that means.
-    my $mime = _extract_mime_body_decoded($entity);
-    my $outputfilename = $message_id . "." . $fileindex;
-    my $msg = $$mime;
-    my $textplain = 0;
-    my $write=1;
-    my $ctype = $entity->head->get('content-type');
-    my $hdr = _extract_mime_header($entity);
-    &_trace('content type: \"$ctype\"') if $_TRACE;
-    if($mime){
-	if($ctype =~ /multipart\/alternative/){
-	    #maybe throw away the text/plain, and just write out the HTML
-	    &_trace('content-type is multipart/alternative. Not writing this part.') if $_TRACE;
-	    $write = 0;
-	}
-	if($ctype =~ /multipart\/mixed/){
-	    &_trace('content type is multipart/mixed. Not writing this part.') if $_TRACE;
-	    $write = 0;
-	}
-	if($ctype =~ /text\/plain/){
-	    $textplain = 1;
-	}
-	if($textplain eq(1) && $write eq(1)){ 
-	    &_trace('content type is text/plain') if $_TRACE;
-	    &_trace('wrapping with <PRE></PRE>') if $_TRACE;
-	    $msg = "<PRE>\n" . $msg . "\n</PRE>\n";
-	    _write_mime($outputfilename, $club_name, \$msg);
-            _write_mime_header($club_name, $outputfilename, \$hdr);
-	}
-	else{ #could be text/html or some other mime type
-	    &_trace('content-type is not text/plain. it is \"$ctype\"') if $_TRACE;
-	    if($write eq(1)){
-		&_trace('writing straight through.') if $_TRACE;
-		_write_mime($outputfilename, $club_name, \$msg);
-		_write_mime_header($club_name, $outputfilename, \$hdr);
-	    }
-	}
-    }
-
-    &_trace('found $numparts elements. ') if $_TRACE;
-    for(my $index=0; $index < $numparts; $index += 1){
-	my $e = $entity->part($index);
-	$fileindex = $fileindex + 1;
-        _extract_mime($e, $fileindex, $club_name, $message_id);
-    }
-}
-
-sub _sortable_subject {
-     my($subject, $clubname) = @_;
-     if(!$clubname){
-       die('no club name supplied to _sortable_subject');
-     }
-     if(!$subject){
-       die('no subject supplied to _sortable_subject');
-     }
- 
-     $subject = lc($subject);
-     $subject =~ s/^re:\s*($clubname)?//i;
-     $subject =~ s/\W//gi;
-     $subject .= "~";
-     return $subject;
-}
-
-# constructs a string we can store and use as a "sortable" subject.
-sub _sortable_name {
-     my($from_name, $from_email) = @_;
-     if(!$from_name){
-       die('no from_name supplied to _sortable_name');
-     }
-     my($str) = lc($from_name .  " <" . $from_email . ">" );
-     $str =~ s/[!#$%^&*-+=]/\s/g;
-     return $str;
-}
-
+=cut
 
 1;
-
