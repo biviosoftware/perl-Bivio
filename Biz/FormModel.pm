@@ -1196,10 +1196,10 @@ sub unsafe_get_context_field {
 
 =for html <a name="validate"></a>
 
-=head2 validate()
+=head2 validate(string form_button)
 
 By default this method does nothing. Subclasses should override it to provide
-form specific validation.
+form specific validation. I<form_button> is the name of the button clicked.
 
 C<validate> is always called, even if some of the fields do not
 meet the SQL constraints.  This allows us to return as many errors
@@ -1233,7 +1233,7 @@ sub validate_and_execute_ok {
     # validate is always called so we try to return as many errors
     # to the user as possible.
     $self->internal_pre_execute('validate_and_execute_ok');
-    $self->validate();
+    $self->validate($form_button);
     if ($fields->{errors}) {
 	_put_file_field_reset_errors($self);
     }
