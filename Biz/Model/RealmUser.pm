@@ -96,6 +96,28 @@ sub MEMBER_ROLES {
 
 =cut
 
+=for html <a name="can_auth_user_edit"></a>
+
+=head2 can_auth_user_edit() : boolean
+
+=head2 static can_auth_user_edit(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Return if the request's auth_user can edit the RealmUser.
+
+=cut
+
+sub can_auth_user_edit {
+    my($self) = shift;
+    # Always can edit self
+    return 1 if $self->is_auth_user(@_);
+    # Can't edit if guest
+    return 0 if $self->is_guest(@_);
+    # Can only edit if can execute NAME_EDIT task.
+    my($model) = shift() || $self;
+    return $model->get_request->can_user_execute_task(
+	    Bivio::Agent::TaskId::CLUB_ADMIN_MEMBER_NAME_EDIT());
+}
+
 =for html <a name="cascade_delete"></a>
 
 =head2 cascade_delete()
@@ -270,6 +292,27 @@ sub internal_initialize {
 	    [qw(user_id User_2.user_id  RealmOwner_2.realm_id)],
 	],
     };
+}
+
+=for html <a name="can_auth_user_edit"></a>
+
+=head2 is_auth_user() : boolean
+
+=head2 static is_auth_user(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if the current row is the request's auth_user.
+
+
+=cut
+
+sub is_auth_user {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    my($auth_user) = $list_model->get_request->get('auth_user');
+    return 0 unless $auth_user;
+    return $list_model->get($model_prefix.'user_id')
+	    == $auth_user->get('realm_id') ? 1 : 0;
 }
 
 =for html <a name="is_guest"></a>
