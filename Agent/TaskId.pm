@@ -3141,6 +3141,16 @@ my(@_CFG) = (
         next=HTTP_DOCUMENT
         require_secure=1
     )],
+    [qw(
+        ADM_ACCOUNT_SYNC
+        275
+        CLUB
+        ADMIN_WRITE&SUPER_USER_TRANSIENT
+        ?/adm/account-sync
+        Bivio::Biz::Action::AdmAccountSync
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
 );
 
 __PACKAGE__->compile([
