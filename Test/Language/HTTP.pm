@@ -339,23 +339,24 @@ verified.
 sub verify_form {
     my($self, $form_fields) = @_;
     my($fields) = $self->[$_IDI];
-    my($field);
     my($visibles) = _assert_html($self)->get('Forms')
 	->get_by_field_names(keys(%$form_fields))->{visible};
     _trace($visibles) if $_TRACE;
 
-    foreach $field (keys(%$form_fields)) {
+    foreach my $field (keys(%$form_fields)) {
 	my($control) = $visibles->{$field};
-	Bivio::Die->die($control->{type}, " ", $field,
-	    ' unexpected setting from ', $form_fields->{$field}) unless
-		$control->{type} eq 'checkbox'
-		    ? ($control->{checked}
-			? defined($control->{value})
-			    ? $control->{value} : 1 : 0)
-			== (defined($form_fields->{$field})
-			    ? $form_fields->{$field} : 0)
-		    : $form_fields->{$field} eq $control->{value};
+	Bivio::Die->die($control->{type}, ' ', $field,
+	    ' unexpected setting of "', $form_fields->{$field}, '"',
+        ) unless
+	    $control->{type} eq 'checkbox'
+		? ($control->{checked}
+		    ? defined($control->{value})
+		    ? $control->{value} : 1 : 0)
+		    == (defined($form_fields->{$field})
+			? $form_fields->{$field} : 0)
+			: $form_fields->{$field} eq $control->{value};
     }
+
     return;
 }
 
@@ -545,7 +546,17 @@ sub _format_form {
     while (my($k, $v) = each(%$form_fields)) {
 	my($f) = _assert_form_field($form, 'visible', $k);
 	$match->{$f}++;
-        push(@$result, $f->{name}, $v);
+	my($value) = $v;
+	if ($f->{options}) {
+	    # Radio or Select: Allow the use of the option label instead of value
+	    foreach my $o (keys(%{$f->{options}})) {
+		next unless $o eq $value;
+		$value = $f->{options}->{$o}->{value};
+		_trace($o, ': mapped to ', $value) if $_TRACE;
+		last;
+	    }
+  	}
+        push(@$result, $f->{name}, $value);
     }
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {
