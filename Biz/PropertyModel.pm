@@ -138,6 +138,8 @@ sub create_or_update {
 
 =head2 static delete(hash load_args) : boolean
 
+=head2 static delete(hash_ref load_args) : boolean
+
 Deletes the current model from the database.   Dies on error.
 
 If I<load_args> is supplied, deletes the model specified by
@@ -146,17 +148,18 @@ I<load_args> and not the current model.  May be called statically.
 =cut
 
 sub delete {
-    my($self) = shift;
-    if (@_) {
-	my($self) = $self->new();
-	my($sql_support) = $self->internal_get_sql_support;
-	# Is always an "auth_load" unless no auth_id
-	my($load_args) = {@_};
-	my($f) = $sql_support->get('auth_id');
-	$load_args->{$f->{name}} = $self->get_request->get('auth_id') if $f;
-	return $sql_support->delete($load_args, $self);
-    }
-    return $self->internal_get_sql_support->delete($self->internal_get, $self);
+    my($self, @args) = @_;
+    return $self->internal_get_sql_support->delete($self->internal_get, $self)
+	    unless @args;
+
+    # With args
+    $self = $self->new();
+    my($sql_support) = $self->internal_get_sql_support;
+    my($load_args) = int(@args) == 1 ? @args : {@args};
+    # Is always an "auth_load" unless no auth_id
+    my($f) = $sql_support->get('auth_id');
+    $load_args->{$f->{name}} = $self->get_request->get('auth_id') if $f;
+    return $sql_support->delete($load_args, $self);
 }
 
 =for html <a name="execute"></a>
