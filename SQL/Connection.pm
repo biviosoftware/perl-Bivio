@@ -91,6 +91,8 @@ my(%_ERR_TO_DIE_CODE) = (
 #	1400 => Bivio::DieCode::ALREADY_EXISTS,
 #	die('required value missing') if $err == 1400;
 #    die('invalid number') if $err == 1722;
+        # ORA-00060: deadlock detected
+	60 => Bivio::DieCode::UPDATE_COLLISION(),
 );
 # Allow for a bit larger space than maximum blob
 my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
@@ -192,7 +194,7 @@ sub execute {
     };
     my($die_code);
     if ($errstr =~ /constraint \((\w+)\.(\w+)\) violated/i) {
-	$die_code = _intrepret_constraint_violation($attrs, uc($1), uc($2));
+	$die_code = _interpret_constraint_violation($attrs, uc($1), uc($2));
     }
     Bivio::Die->eval(sub {
 	# Clean up just in case statement is cached
@@ -263,12 +265,12 @@ sub rollback {
 
 #=PRIVATE METHODS
 
-# _intrepret_constraint_violation(hash_ref attrs, string owner, string constraint) : Bivio::Type::Enum
+# _interpret_constraint_violation(hash_ref attrs, string owner, string constraint) : Bivio::Type::Enum
 #
 # Will set "columns" and "table" in attrs.  Returns die code that is
 # appropriate for the constraint violation.
 #
-sub _intrepret_constraint_violation {
+sub _interpret_constraint_violation {
     my($attrs, $owner, $constraint) = @_;
     my($die_code);
 
@@ -305,7 +307,6 @@ EOF
 	    $attrs->{columns} = $cols, $attrs->{table} = $table;
 	    _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
 		    if $_TRACE;
-
 	    if (1 == $attrs->{dbi_err}) {
 		# unique constraint violated (ORA-00001)
 		$die_code = Bivio::TypeError::EXISTS();
