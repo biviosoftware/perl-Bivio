@@ -90,7 +90,7 @@ a:hover { color: "#CC9900"; }
 <tr><td bgcolor="#FFCC33"><img src="/i/dot.gif" border=0 width=1 height=1></td></tr></table></td></tr></table><table border=0 cellpadding=0 cellspacing=0 width="100%"><tr><td width="100%" valign=top>&nbsp;</td></tr><tr><td width="100%" valign=top><table border=0 cellpadding=0 cellspacing=0 width="600"><tr>
 <td><img src="/i/dot.gif" border=0 height=1 width=20></td>
 <td>&nbsp;<br><font color="#006666"><b>Unlisted Investment Valuation Dates</b></font><br>&nbsp;<br>This page lists dates on which unlisted investments were valued. Selecting<br>a date below will display a list of investments owned on that date, and<br>their value. You may use that form to value any investments not covered by<br>the bivio investment database.<br><p>Valuation dates are listed by year. To view another year, change the value<br>in the Year selector.<br><p>
-<form>Year: <select name="y" size=1 onchange="submit()" onblur="return options[0].selected=true">
+<form method=get action="/rob_test/accounting/valuation/dates">Year: <select name="y" size=1 onchange="submit()" onblur="return options[0].selected=true">
 <option value="2000" selected>2000
 <option value="1999">1999
 <option value="1998">1998
@@ -192,7 +192,7 @@ document.write('<input name=tz type=hidden value="'+o+'">');
 tzf();
 // -->
 </script><input type=hidden name=v value="2">
-<input type=hidden name=c value="aMTQw!ccm9iX3Rlc3Q_">
+<input type=hidden name=c value="aMTQw!ccm9iX3Rlc3Q_!deQEyMDAw">
 <table cellpadding=5 cellspacing=0 border=0><tr>
 <td nowrap><input type=submit name=f0 value="Change Preferences" ></td><td nowrap>Style: <select name=f3 size=1>
 <option value=0>Normal
@@ -203,7 +203,7 @@ tzf();
 </tr></table></td></form></tr><tr>
 <td colspan=3 width="100%" bgcolor="#006666"><img src="/i/dot.gif" border=0 width=1 height=1></td>
 </tr><tr>
-<td><a target="_top" href="https://test.bivio.com/rob_test/accounting/valuation/dates"><img alt="Switch to secure mode (slower)" border=0 src="/i/unlock.gif" width=21 height=17></a></td>
+<td><a target="_top" href="https://test.bivio.com/rob_test/accounting/valuation/dates?y=2000"><img alt="Switch to secure mode (slower)" border=0 src="/i/unlock.gif" width=21 height=17></a></td>
 <td width="100%" align=center><table border=0 cellpadding=0 cellspacing=0><tr>
 <td><a target="_top" href="/">Home</a></td>
 <td width="20">&nbsp;</td>
@@ -221,5 +221,5 @@ tzf();
 <br>Use of this Web site constitutes acceptance of the bivio
 <a target="_top" href="/hm/user.html"><small>Terms of Service</small></a></small></td>
 </tr></table>
-<!-- total=0.224s; db=0.115s -->
+<!-- total=0.615s; db=0.352s -->
 </body></html>
