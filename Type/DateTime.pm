@@ -543,8 +543,22 @@ Returns I<month> as a three character string with first letter caps.
 sub english_month3 {
     my(undef, $month) = @_;
     Bivio::Die->die('month out of range: ', $month)
-		unless 1 <= $month && $month <= 12;
+        unless 1 <= $month && $month <= 12;
     return $_NUM_TO_MONTH->[$month - 1];
+}
+
+=for html <a name="from_english_month3"></a>
+
+=head2 static from_english_month3(string month) : int
+
+Returns integer for I<month>.
+
+=cut
+
+sub from_english_month3 {
+    my(undef, $month) = @_;
+    return $_MONTH_TO_NUM->{uc($month)}
+	|| Bivio::Die->die($month, ': month not found');
 }
 
 =for html <a name="from_local_literal"></a>

@@ -116,5 +116,13 @@ Bivio::Test->unit([
 	    ['2452873 48900', undef] => 0,
 	    [undef, undef] => 1,
 	],
+	english_month3 => [
+	    1 => 'Jan',
+	    12 => 'Dec',
+	],
+	from_english_month3 => [
+	    Feb => 2,
+	    Mar => 3,
+	],
     ],
 ]);
