@@ -125,6 +125,23 @@ __PACKAGE__->compile(
 	undef,
 	'country must be exactly two letters',
     ],
+    PASSWORD => [
+	18,
+	undef,
+	'invalid password; must be at least six characters',
+    ],
+    REALM_NAME => [
+	19,
+	undef,
+	'invalid name syntax; must begin with a letter,'
+	. ' contain letters, numbers, and underscores,'
+	. ' and be at least three characters',
+    ],
+    EXISTS => [
+	20,
+	undef,
+	'name already exists',
+    ],
 );
 
 #=PRIVATE METHODS
