@@ -90,7 +90,13 @@ Bivio::Test->unit([
 	    ['2452874 05700', '2452868 03540'] => -6.025,
 	],
 	# Just make sure it doesn't blow
-	gettimeofday => undef,
+	gettimeofday => sub {
+	    my($case, $actual) = @_;
+	    my($s, $us) = @{$actual->[0]};
+	    die($us, ': microseconds greater than 1m')
+		unless $us < 1_000_000;
+	    return $s <= time ? 1 : 0;
+	},
 	compare => [
 	    ['2452874 05700', '2452874 05700'] => 0,
 	    ['2452874 05700', '2452874 27300'] => -1,
