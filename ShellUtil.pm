@@ -221,7 +221,6 @@ sub USAGE {
 }
 
 #=IMPORTS
-use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
@@ -324,6 +323,7 @@ Commit (if !noexecute) and clean up work of setup.
 sub finish {
     my($self, $abort) = @_;
     my($fields) = $self->{$_PACKAGE};
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Task');
     $self->unsafe_get('noexecute') || $abort
 	    ? Bivio::Agent::Task->rollback($self->get('req'))
 		    : Bivio::Agent::Task->commit($self->get('req'));
