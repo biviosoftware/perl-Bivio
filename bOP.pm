@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    also works for ListFormModels
+  * Bivio::Util::Release update() may not update anything so need to
+    check before calling install()
+
+  Revision 2.50  2005/01/27 18:33:01  nagler
+  * Added contrib/ directory with tutorial by Tom Vilot and E-R diagram
+    from Terrence Brannon
+  * Updated READM
+  * Various changes to PetShop and bOP doc thanks to Terrence Brannon
+  * Bivio::HTML->escape_query escapes '+' properly (was double escaping
+    to %252B)
+  * Bivio::IO::File->chown_by_name calls getgrnam for group (was calling
+    getpwnam, which only worked on Red Hat)
+  * Bivio::Test::Language::HTTP->text_exists is like verify_text but
+    doesn't die if text doesn't match.
+  * Bivio::Test::Language::HTTP->unsafe_get_uri lets you test for the
+    existence of a base uri.
+  * Bivio::Test::Language::HTTP->verify_pdf uses pdftotext and behaves
+    like verify_text
+  * Bivio::Test::Language->test_log_output returns log file and can
+    be called from scripts
+  * Bivio::Type::Date->from_sql_column ensures time component of date
+    is expected constant value.
   * Bivio::Type::DateTime->english_month3_to_int converts Jan, Feb, ...
     to 1, 2, ...
   * Bivio::Type::Number->div dies if dividing by 0 (was returning "inf")
