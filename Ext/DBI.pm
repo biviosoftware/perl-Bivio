@@ -77,11 +77,11 @@ sub connect {
 #TODO: Is this really true
     # Mod_perl wipes out %ENV on each request, it seems...
     $ENV{ORACLE_HOME} ||= $_ORACLE_HOME;
-    my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
-	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
     _trace('dbi:Oracle:', $cfg->{database}, ':',
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
+    my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
+	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
     return $self;
 }
 
