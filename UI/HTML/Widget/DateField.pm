@@ -138,7 +138,10 @@ sub render {
 	    $_FUNCS,
 	    # script
 	    "document.write('".$fields->{prefix}."');\n"
-	    ."$_FN(".join(',', $_MODE_INT, split(' ', $value), "'$gmt'").');'
+	    # Must not begin dates with 0 (netscape barfs, so have to
+	    # print as decimals
+	    ."$_FN(".sprintf('%d,%d,%d,%s', $_MODE_INT,
+		    split(' ', $value), "'$gmt'").');'
 	    ."document.write('".$fields->{suffix}."');",
 	    # noscript
 	    $fields->{prefix}.$gmt.$fields->{suffix});
