@@ -208,6 +208,21 @@ sub next_row {
     return 1;
 }
 
+=for html <a name="reset_cursor"></a>
+
+=head2 reset_cursor()
+
+Places the cursor at the start of the list.
+
+=cut
+
+sub reset_cursor {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{cursor} = -1;
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
