@@ -44,21 +44,20 @@ use Bivio::Auth::PermissionSet;
 
 =for html <a name="add_permissions"></a>
 
-=head2 add_permissions(string realm_id, array_ref roles, Bivio::Auth::PermissionSet permissions)
+=head2 add_permissions(Bivio::Auth::Realm realm, array_ref roles, Bivio::Auth::PermissionSet permissions)
 
 Add permissions to the roles for the given realm.
-Note: Creates entries for ALL ROLES if this one does not exist.
+Note: Creates new entries for ALL ROLES if one does not exist.
 
 =cut
 
 sub add_permissions {
-    my($self, $realm_id, $roles, $permissions) = @_;
+    my($self, $realm, $roles, $permissions) = @_;
 
-    # Copy permission set from CLUB if first role not found
-    $self->_clone_realm(Bivio::Auth::RealmType->CLUB()->as_int, $realm_id)
-            unless $self->unauth_load(realm_id => $realm_id,
-                    role => $roles->[0]);
+    # Copy permission set from CLUB if necessary
+    _clone_realm($self, Bivio::Auth::RealmType->CLUB(), $realm);
 
+    my($realm_id) = $realm->get('id');
     my($ps, $role);
     foreach $role (@$roles) {
         # Load current permission set and add new ones
@@ -74,14 +73,20 @@ sub add_permissions {
 
 =for html <a name="remove_permissions"></a>
 
-=head2 remove_permissions(string realm_id, array_ref roles, Bivio::Auth::PermissionSet permissions)
+=head2 remove_permissions(Bivio::Auth::Realm realm, array_ref roles, Bivio::Auth::PermissionSet permissions)
 
 Removes permissions from the roles for the given realm.
+Note: Creates new entries for ALL ROLES if one does not exist.
 
 =cut
 
 sub remove_permissions {
-    my($self, $realm_id, $roles, $permissions) = @_;
+    my($self, $realm, $roles, $permissions) = @_;
+
+    # Copy permission set from CLUB if necessary
+    _clone_realm($self, Bivio::Auth::RealmType->CLUB(), $realm);
+
+    my($realm_id) = $realm->get('id');
     my($ps, $role);
     foreach $role (@$roles) {
         $self->die('NOT_FOUND', { message => 'missing role entry',
@@ -119,19 +124,28 @@ sub internal_initialize {
 
 #=PRIVATE METHODS
 
-# _create(string existing_realm, string new_realm) : 
+# _clone_realm(Bivio::Auth::RealmType existing, Bivio::Auth::Realm new)
 #
-# Clone the permission set for all roles
+# Clone the permission set for all roles. Check realm types are identical.
 #
 sub _clone_realm {
     my($self, $existing, $new) = @_;
 
+    $self->die('DIE', { message => 'realm types do not match'})
+            unless $existing eq $new->get('type');
+
+    my($existing_id) = $existing->as_int;
+    my($new_id) = $new->get('id');
+
     my($ps);
     foreach my $role (Bivio::Auth::Role::get_list()) {
         next if $role eq Bivio::Auth::Role::UNKNOWN();
-        $self->unauth_load(realm_id => $existing, role => $role);
+        # Skip role if already cloned
+        next if $self->unauth_load(realm_id => $new_id,
+                role => $role);
+        $self->unauth_load(realm_id => $existing_id, role => $role);
         $ps = $self->get('permission_set');
-        $self->create({realm_id => $new, role => $role,
+        $self->create({realm_id => $new_id, role => $role,
             permission_set => $ps});
     }
     return;
