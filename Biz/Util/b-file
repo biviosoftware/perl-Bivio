@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-file - command line utilities for listing and accessing files
+
+=head1 SYNOPSIS
+
+b-file
+
+=head1 DESCRIPTION
+
+B<b-file> command line utilities for listing and accessing files
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::File;
+
+#=VARIABLES
+
+Bivio::Biz::Util::File->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
