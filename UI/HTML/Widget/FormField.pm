@@ -114,7 +114,10 @@ sub get_label_and_field {
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
 	label => $_VS->vs_string(
-	    $_VS->vs_join(_get_label_value($self), ':'), 'form_field_label'),
+	    $_VS->vs_join(
+		$_VS->vs_string(_get_label_value($self), 0),
+		':'),
+	    'form_field_label'),
 	($self->unsafe_get('row_control')
 	    ? (row_control => $self->get('row_control'))
 	    : ()),
