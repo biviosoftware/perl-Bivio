@@ -1,22 +1,16 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Type::LockType;
+package Bivio::Type::Lock;
 use strict;
-$Bivio::Type::LockType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Type::Lock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Type::LockType - lock_t lock types
+Bivio::Type::Lock - lock_t types
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::LockType;
-    use Bivio::Biz::Model::Lock;
-
-    my($lock) = Bivio::Type::Lock->new($req);
-    if ($lock->aquire(Bivio::Type::LockType::ACCOUNTING_IMPORT())) {
-        # locked
-    }
+    use Bivio::Type::Lock;
 
 =cut
 
@@ -27,19 +21,15 @@ L<Bivio::Type::Enum>
 =cut
 
 use Bivio::Type::Enum;
-@Bivio::Type::LockType::ISA = ('Bivio::Type::Enum');
+@Bivio::Type::Lock::ISA = ('Bivio::Type::Enum');
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::LockType> lock_t lock types
+C<Bivio::Type::Lock> lock_t lock types
 
 The following types are defined:
 
 =over 4
-
-=item UNKNOWN
-
-invalid type
 
 =item ACCOUNTING_IMPORT
 
@@ -53,10 +43,6 @@ accounting import lock
 
 #=VARIABLES
 __PACKAGE__->compile(
-    'UNKNOWN' => [
-    	0,
-	'unknown',
-    ],
     'ACCOUNTING_IMPORT' => [
     	1,
 	'accounting import',
