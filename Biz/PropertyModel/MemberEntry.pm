@@ -64,6 +64,11 @@ sub internal_initialize {
             units => ['Bivio::Type::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+#TODO: SECURITY: Not authenticated, but ok to load other models?
+	other => [
+	    [qw(entry_id Entry.entry_id)],
+	    [qw(user_id User.user_id)],
+	],
     };
 }
 

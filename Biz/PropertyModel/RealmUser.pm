@@ -64,6 +64,11 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
 	auth_id => 'realm_id',
+#TODO: SECURITY: If user_id known, does that mean can get to all user's info?
+	other => [
+	    [qw(realm_id Club.club_id User_1.user_id)],
+	    [qw(user_id User_2.user_id)],
+	],
     };
 }
 

@@ -78,6 +78,12 @@ sub internal_initialize {
             remark => ['Bivio::Type::Text',
     		Bivio::SQL::Constraint::NONE()],
         },
+#TODO: SECURITY: Not authenticated, but ok to load other models?
+	other => [
+	    [qw(entry_id AccountEntry.entry_id ClubInstrumentEntry.entry_id
+		MemberEntry.entry_id)],
+	    [qw(transaction_id Transaction.transaction_id)],
+	],
     };
 }
 

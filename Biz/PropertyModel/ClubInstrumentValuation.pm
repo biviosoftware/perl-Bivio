@@ -65,6 +65,10 @@ sub internal_initialize {
             price_per_share => ['Bivio::Type::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+#TODO: SECURITY: Not authenticated, but ok to load other models?
+	other => [
+	    [qw(club_instrument_id ClubInstrument.club_instrument_id)],
+	],
     };
 }
 

@@ -63,6 +63,9 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
 	auth_id => 'user_id',
+	other => [
+	    [qw(user_id User.user_id)],
+	],
     };
 }
 

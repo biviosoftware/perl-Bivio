@@ -61,6 +61,10 @@ sub internal_initialize {
             account_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
+	other => [
+	    [qw(acount_id Account.account_id)],
+	    [qw(entry_id ClubInstrumentEntry.entry_id)],
+	],
     };
 }
 
