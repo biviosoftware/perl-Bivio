@@ -27,11 +27,21 @@ C<Bivio::UI::HTML::WidgetFactory> creates widgets for model fields
 #=IMPORTS
 use Bivio::Biz::Model;
 use Bivio::UI::HTML::Widget::AmountCell;
+use Bivio::UI::HTML::Widget::Checkbox;
+use Bivio::UI::HTML::Widget::Currency;
+use Bivio::UI::HTML::Widget::DateField;
 use Bivio::UI::HTML::Widget::DateTime;
 use Bivio::UI::HTML::Widget::Enum;
+use Bivio::UI::HTML::Widget::File;
+use Bivio::UI::HTML::Widget::FormButton;
+use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::MailTo;
 use Bivio::UI::HTML::Widget::PercentCell;
+use Bivio::UI::HTML::Widget::RadioGrid;
+use Bivio::UI::HTML::Widget::Select;
 use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::Widget::Text;
+use Bivio::UI::HTML::Widget::TextArea;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
