@@ -448,6 +448,10 @@ sub format_help_uri {
 
 =head2 format_http(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
 
+=head2 format_http(Bivio::Agent::TaskId task_id, hash_ref query, string realm_name) : string
+
+=head2 format_http(Bivio::Agent::TaskId task_id, string query, string realm_name) : string
+
 Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
 
 If I<task_id>, I<query> or I<auth_realm> is an array_ref, will call
@@ -526,6 +530,10 @@ sub format_stateless_uri {
 =head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
 
 =head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm, string path_info) : string
+
+=head2 format_uri(Bivio::Agent::TaskId task_id, string query, string realm_name) : string
+
+=head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, string realm_name, string path_info) : string
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
