@@ -221,7 +221,9 @@ sub USAGE {
 }
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 use Bivio::Type;
 use Bivio::TypeError;
 
