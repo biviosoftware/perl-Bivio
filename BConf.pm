@@ -155,6 +155,7 @@ sub _base {
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
+		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
 	    },
 	    maps => {
 		Model => ['Bivio::Biz::Model'],
