@@ -209,7 +209,7 @@ sub get_value {
     foreach $inst (@$instruments) {
 	my($id) = $inst->[0];
 	my($price) = Bivio::Biz::Model::RealmInstrument
-		->get_share_price($id, $date);
+		->get_share_price($id, $date, $self);
 #	$value += Bivio::Biz::Model::RealmInstrument
 #		->get_number_of_shares($id, $date) * $price;
 	$value = Bivio::Type::Amount->add($value,
