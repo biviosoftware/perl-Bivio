@@ -59,6 +59,7 @@ commands:
     import_db file -- imports database (ditto)
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
+    run_command sql -- executes sql in command line interpreter (shell)
 EOF
 }
 
@@ -208,8 +209,7 @@ Dumps the current database to I<dir> (or '.') to a file of the form:
 
 sub export_db {
     my($self, $dir) = @_;
-    $self->get_request;
-    my($db) = Bivio::SQL::Connection->get_dbi_config;
+    my($db) = _assert_postgres($self);
     my($f) = ($dir || '.') . '/' . $db->{database} . '-'
 	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
     $self->piped_exec(
@@ -253,8 +253,7 @@ Restores the database from file.
 
 sub import_db {
     my($self, $file) = @_;
-    $self->get_request;
-    my($db) = Bivio::SQL::Connection->get_dbi_config;
+    my($db) = _assert_postgres($self);
     $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
     $self->piped_exec(
 	"env PGUSER=$db->{user} pg_restore --clean --format=c "
@@ -329,8 +328,8 @@ sub reinitialize_sequences {
 
 =head2 run()
 
-Runs I<input>, terminating on errors.  Any query results are thrown
-away.
+Runs SQL read from I<input>, terminating on errors.  Any query results are
+thrown away.
 
 =cut
 
@@ -342,7 +341,38 @@ sub run {
     return;
 }
 
+=for html <a name="run_command"></a>
+
+=head2 run_command(string commands) : string_ref
+
+Runs command line interpreter (e.g. psql or sqlplus) on the current database.
+I<commands> may be a string_ref.  Aborts on errors.
+
+Currently only supports postgres.
+
+=cut
+
+sub run_command {
+    my($self, $commands) = @_;
+    my($c) = _assert_postgres($self);
+    return $self->piped_exec(
+	"psql -U '$c->{user}' -d '$c->{database}' 2>&1", $commands);
+}
+
 #=PRIVATE METHODS
+
+# _assert_postgres(self) : hash_ref
+#
+# Returns DBI config.  Asserts postgres is connection type.
+#
+sub _assert_postgres {
+    my($self) = @_;
+    $self->get_request;
+    my($c) = Bivio::SQL::Connection->get_dbi_config;
+    $self->usage_error($c->{connection}, ': connection type not supported')
+	unless $c->{connection} =~ /postgres/i;
+    return $c;
+}
 
 # _ddl_files(self) : array_ref
 #
