@@ -89,7 +89,8 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.  In this case, prefix field value.
+Partially initializes by copying attributes to fields.
+It is fully initialized after first render.
 
 =cut
 
@@ -109,7 +110,7 @@ sub initialize {
     }
     # We assume is not a constant and on first rendering, may be set to true
     $fields->{is_constant} = 0;
-    $fields->{is_first_render} = 1;
+    $fields->{is_initialized} = 0;
     $fields->{prefix} = $p;
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
@@ -127,7 +128,7 @@ Is this instance a constant?
 sub is_constant {
     my($fields) = shift->{$_PACKAGE};
     Carp::croak('can only be called after first render')
-		if $fields->{is_first_render};
+		unless $fields->{is_initialized};
     return $fields->{is_constant};
 }
 
@@ -136,7 +137,7 @@ sub is_constant {
 =head2 render(any source, string_ref buffer)
 
 Render the link.  Most of the code is involved in avoiding unnecessary method
-calls.  If the I<value> is a constant, then it will only be rendered once.
+calls.  If I<value> is a constant, then it will be rendered only once.
 
 =cut
 
@@ -144,15 +145,20 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
-    if ($fields->{is_first_render}) {
+    unless ($fields->{is_initialized}) {
+	Carp::croak($self, '->initialize: not called')
+		    unless $fields->{value};
 	# If everything is constant, just return value
 	# Build up suffix in local buffer
 	my($suffix) = '>';
 	$fields->{value}->render($source, \$suffix);
 	$suffix .= '</a>';
-	# If the value is constant, then we have a suffix
+
+	# If the value is constant, then have {suffix} and no {value}
 	$fields->{suffix} = $suffix, delete($fields->{value})
 		if $fields->{is_constant} = $fields->{value}->is_constant;
+
+	# Render the href.  If it is constant, then {href} won't be defined
 	$$buffer .= $fields->{prefix};
 	if ($fields->{href}) {
 	    # href isn't constant, so just use suffix optimization if available
@@ -166,9 +172,10 @@ sub render {
 	    delete($fields->{prefix});
 	    delete($fields->{suffix});
 	}
-	# Finish rendering
+
+	# Finish first rendering.  Suffix contains value.
 	$$buffer .= $suffix;
-	$fields->{is_first_render} = 0;
+	$fields->{is_initialized} = 1;
 	return;
     }
     # Not a constant, render href (if needed) and value.
@@ -176,8 +183,10 @@ sub render {
     $$buffer .= ' href="'.Bivio::Util::escape_html(
 	    $source->get_widget_value(@{$fields->{href}})).'"'
 		    if $fields->{href};
-    # If value is a constant, suffix contains the rest
-    $$buffer .= $fields->{suffix} if $fields->{suffix};
+
+    # If value is a constant, suffix contains the rest.  We're done
+    $$buffer .= $fields->{suffix}, return if $fields->{suffix};
+
     # Value isn't a constant, render away...
     $$buffer .= '>';
     $fields->{value}->render($source, $buffer);
