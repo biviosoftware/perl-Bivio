@@ -176,6 +176,23 @@ sub delete_instruments_and_transactions {
     return;
 }
 
+=for html <a name="delete_member"></a>
+
+=head2 delete_member(string member)
+
+Delete a member
+
+=cut
+
+sub delete_member {
+    my($self, $member) = @_;
+    my($id) = $self->get('club_id');
+    my($sql) = 'DELETE FROM realm_user_t WHERE realm_id=? AND '.
+            'user_id = (SELECT realm_id FROM realm_owner_t WHERE name=?)';
+    Bivio::SQL::Connection->execute($sql, [$id, $member]);
+    return;
+}
+
 =for html <a name="get_outgoing_emails"></a>
 
 =head2 get_outgoing_emails() : array
