@@ -105,7 +105,7 @@ sub execute_input {
     # create the transaction
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
     $transaction->create({
-	source_class => Bivio::Type::EntryClass::MEMBER(),
+	source_class => Bivio::Type::EntryClass::INSTRUMENT(),
 	date_time => $properties->{'RealmTransaction.date_time'},
 	remark => $properties->{'RealmTransaction.remark'},
     });
