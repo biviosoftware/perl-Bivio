@@ -32,7 +32,7 @@ A role is a collection of privileges.  A privilege is a the ability
 to execute a particular L<Bivio::Agent::Task|Bivio::Agent::Task>
 within a realm.  For example, an C<ADMIN> may be granted the
 ability to execute
-L<Bivio::Agent::TaskId::CLUB_ADD_MEMBER|Bivio::Agent::TaskId/"CLUB_ADD_MEMBER">
+L<Bivio::Agent::TaskId::CLUB_ADMIN_ADD_MEMBER|Bivio::Agent::TaskId/"CLUB_ADMIN_ADD_MEMBER">
 in the L<Bivio::Auth::Realm::CLUB|Bivio::Auth::Realm/"CLUB">.
 
 The following roles are defined:
@@ -50,6 +50,10 @@ not a user: user not supplied with request or unable to authenticate
 =item USER
 
 any user: privileges of any authenticated user, not particular to realm
+
+=item WITHDRAWN
+
+withdrawn member: privileges of any authenticated user, not particular to realm
 
 =item GUEST
 
@@ -91,23 +95,29 @@ __PACKAGE__->compile(
 	'Any User',
 	'privileges of any authenticated user, not particular to realm',
     ],
+    'WITHDRAWN' => [
+	3,
+	'Withdrawn Member',
+	'withdrawn member: privileges of any authenticated user,'
+        .' not particular to realm',
+    ],
     'GUEST' => [
-    	3,
+    	4,
 	'Guest',
 	'limited access to realm',
     ],
     'MEMBER' => [
-    	4,
+    	5,
 	'Member',
 	'normal participant in realm',
     ],
     'ACCOUNTANT' => [
-    	5,
+    	6,
 	'Accountant',
 	'normal and financial transaction privileges',
     ],
     'ADMINISTRATOR' => [
-    	6,
+    	7,
 	'Administrator',
 	'all privileges',
     ],
