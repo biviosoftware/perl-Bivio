@@ -53,8 +53,7 @@ Adds the specified item to the current cart.
 sub add_item_to_cart {
     my($proto, $item) = @_;
     my($req) = $item->get_request;
-    my($cart_id) = $proto->new($req, 'Cart')->load_from_cookie
-	->get('cart_id');
+    my($cart_id) = $proto->new($req, 'Cart')->load_from_cookie->get('cart_id');
 
     # if the item is already present, reset the quantity to 1
     my($cart_item) = $proto->new($req, 'CartItem');
