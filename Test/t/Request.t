@@ -5,6 +5,12 @@
 #
 use Bivio::Test::Request;
 Bivio::Test->new('Bivio::Test::Request')->unit([
+    'Bivio::Test::Request' => [
+	initialize_fully => sub {
+	    my($case, $actual) = @_;
+	    return $actual->[0]->isa('Bivio::Test::Request') ? 1 : 0;
+        },
+    ],
     sub {
 	my($req) = Bivio::Test::Request->get_instance;
 	$req->capture_mail;
