@@ -77,7 +77,7 @@ Returns the widget used to render the page header.
 
 sub get_header {
     my($proto) = @_;
-    return Bivio::UI::HTML::Widget->indirect(
+    return $_W->indirect(
 	    [__PACKAGE__, '->get_value', 'header_widget']);
 }
 
@@ -103,7 +103,7 @@ Returns the widget which renders the logo.
 
 sub get_logo {
     my($proto) = @_;
-    return Bivio::UI::HTML::Widget->indirect(
+    return $_W->indirect(
 	    [__PACKAGE__, '->get_value', 'logo_widget']);
 }
 
@@ -119,9 +119,9 @@ L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>.
 
 sub get_standard_body {
     my($proto) = @_;
-    return Bivio::UI::HTML::Widget->join([
+    return $_W->join([
 	$proto->get_standard_header(),
-	Bivio::UI::HTML::Widget->indirect(['page_scene']),
+	$_W->indirect(['page_scene']),
 	$proto->get_standard_footer(),
     ]);
     return;
@@ -138,13 +138,13 @@ string.
 
 sub get_standard_copyright {
     my($year) = (gmtime(time))[5] + 1900;
-    return Bivio::UI::HTML::Widget->string(
-	    Bivio::UI::HTML::Widget->join([
+    return $_W->string(
+	    $_W->join([
 		"Copyright &copy; $year, bivio Inc."
 		." <i>All Rights Reserved.</i>\n<br>"
 		."Use of this Web site constitutes acceptance"
 		." of the bivio\n",
-		Bivio::UI::HTML::Widget->link(
+		$_W->link(
 			Bivio::UI::Label->get_simple(
 				'USER_AGREEMENT_TEXT'),
 			'USER_AGREEMENT_TEXT',
@@ -171,7 +171,7 @@ I<footer_menu>
 
 sub get_standard_footer {
     my($proto) = @_;
-    my($spacer) = Bivio::UI::HTML::Widget->join(['&nbsp;'])->put(
+    my($spacer) = $_W->join(['&nbsp;'])->put(
 	cell_width => 20,
     );
 
@@ -181,16 +181,16 @@ sub get_standard_footer {
 	    'Safe & Private:GENERAL_PRIVACY',
 	    'Contact:GENERAL_CONTACT') {
 	my($label, $task) = split(/:/, $t);
-	push(@$links, Bivio::UI::HTML::Widget->link(
+	push(@$links, $_W->link(
 		$label, $task, 'footer_menu'),
 		$spacer);
     }
-    push(@$links, Bivio::UI::HTML::Widget->mailto(['support_email'])->put(
+    push(@$links, $_W->mailto(['support_email'])->put(
 	    string_font => 'footer_menu',
 	   ));
 
     # Create grid
-    Bivio::UI::HTML::Widget->load_class('Grid', 'EditPreferences');
+    $_W->load_class('Grid', 'EditPreferences');
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
@@ -198,7 +198,7 @@ sub get_standard_footer {
 		' ',
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
+		$_W->clear_dot(undef, 1)->put(
 			cell_expand => 1,
 			cell_bgcolor => 'footer_line',
 		       ),
@@ -211,18 +211,18 @@ sub get_standard_footer {
 	    [
 		# Only render second line if the the EditPreferences
 		# widget actually rendered something.
-		Bivio::UI::HTML::Widget->director(
+		$_W->director(
 			['edit_preferences_rendered'],
 			{
 			    0 => 0,
-			    1 => Bivio::UI::HTML::Widget->clear_dot(undef, 1),
+			    1 => $_W->clear_dot(undef, 1),
 			})->put(
 				cell_expand => 1,
 				cell_bgcolor => 'footer_line',
 			       ),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->toggle_secure(),
+		$_W->toggle_secure(),
 		Bivio::UI::HTML::Widget::Grid->new({
 		    cell_align => 'center',
 		    cell_expand => 1,
@@ -230,7 +230,7 @@ sub get_standard_footer {
 			$links,
 		    ],
 		}),
-		Bivio::UI::HTML::Widget->link('top', '#top', 'footer_menu'),
+		$_W->link('top', '#top', 'footer_menu'),
 	    ],
 	    [
 		' ',
@@ -261,7 +261,7 @@ Requires Bivio::UI::HTML::Widget::Page attributes: I<site_name>
 =cut
 
 sub get_standard_head {
-    Bivio::UI::HTML::Widget->load_class('Title');
+    $_W->load_class('Title');
     return Bivio::UI::HTML::Widget::Title->new({
 	values => [
 	    ['page_subtopic'],
@@ -290,20 +290,20 @@ etc.  The standard bivio setup.  We'll modify this as we go.
 sub get_standard_header {
     my($proto) = @_;
     # The header is different for each realm type
-    Bivio::UI::HTML::Widget->load_class(qw(RealmChooser Grid));
+    $_W->load_class(qw(RealmChooser Grid));
     my($realm_info) = Bivio::UI::HTML::Widget::RealmChooser->new({
 	pad_left => ['Bivio::UI::Icon', '->get_width', 'grad_y'],
     });
     $realm_info->put(cell_nowrap => 1, cell_align => 'left',
 	    cell_colspan => 2, cell_expand => 1);
-    my($top_menu) = Bivio::UI::HTML::Widget->indirect(
+    my($top_menu) = $_W->indirect(
 	    ['page_image_menu'])->put(
 		    cell_align => 'nw',
 		    cell_bgcolor => 'image_menu_bg',
 		    cell_colspan => 2,
 		    cell_align => 'left',
 		   );
-    my($sub_menu) = Bivio::UI::HTML::Widget->indirect(
+    my($sub_menu) = $_W->indirect(
 	    ['page_text_menu']);
     my($top_part) = Bivio::UI::HTML::Widget::Grid->new({
 	cell_expand => 1,
@@ -320,41 +320,23 @@ sub get_standard_header {
 		$realm_info,
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->clear_dot(5, 1)->put(
+		$_W->clear_dot(5, 1)->put(
 		    cell_nowrap => 1,
 		    cell_align => 'right',
 		    cell_colspan => 2,
 		),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->image('grad_g', '')->put(
+		$_W->image('grad_g', '')->put(
 			cell_bgcolor => 'stripe_above_menu',
 		       ),
-		Bivio::UI::HTML::Widget->join([
-		    Bivio::UI::HTML::Widget->link(
-			    Bivio::UI::HTML::Widget->image(
-				    'help_off',
-				    'Get help using bivio',
-				   ),
-			    ['->format_help_uri'],
-			   ),
-		    Bivio::UI::HTML::Widget->director(
+		$_W->join([
+		    $_W->link($_W->image('help_off'), ['->format_help_uri']),
+		    $_W->director(
 			    ['auth_user'],
 			    {},
-			    Bivio::UI::HTML::Widget->link(
-				Bivio::UI::HTML::Widget->image(
-				    'logout_off',
-				    'Sign off from bivio',
-				       ),
-				'LOGOUT'
-			       ),
-			    Bivio::UI::HTML::Widget->link(
-				Bivio::UI::HTML::Widget->image(
-				    'login_square_off',
-				    'Sign on to bivio',
-				       ),
-				    'LOGIN'
-				   ),
+			    $_W->link($_W->image('logout_off'), 'LOGOUT'),
+			    $_W->link($_W->image('login_square_off'), 'LOGIN'),
 			   ),
 		])->put(
 			cell_bgcolor => 'stripe_above_menu',
@@ -362,7 +344,7 @@ sub get_standard_header {
 		       ),
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->image('grad_1px', '')->put(
+		$_W->image('grad_1px', '')->put(
 		    cell_bgcolor => 'line_above_menu',
 		    cell_colspan => 2,
 		    height => 1,
@@ -378,7 +360,7 @@ sub get_standard_header {
     # The top is used by the standard_footer.
 #TODO: Make link '_top' dynamic.
     # We set _top, because the header is used in a frame.
-    return Bivio::UI::HTML::Widget->join('<a name="top"></a>',
+    return $_W->join('<a name="top"></a>',
 	    $top_part, $sub_menu);
 }
 
@@ -406,13 +388,13 @@ Returns the Logo widget which fits in with everything else.
 
 sub get_standard_logo {
     my($proto) = @_;
-    return Bivio::UI::HTML::Widget->director(
+    return $_W->director(
 	    ['super_user_id'],
 	    {},
-	    Bivio::UI::HTML::Widget->string(['auth_user', 'name'],
+	    $_W->string(['auth_user', 'name'],
 		    'substitute_user'),
-	    Bivio::UI::HTML::Widget->link(
-		    Bivio::UI::HTML::Widget->image(
+	    $_W->link(
+		    $_W->image(
 			    [__PACKAGE__, '->get_value', 'logo_icon'],
 			    [__PACKAGE__, '->get_value', 'home_alt_text'],
 			   ),
@@ -431,7 +413,7 @@ and L<get_standard_body|"get_standard_body">.
 
 sub get_standard_page {
     my($proto) = @_;
-    Bivio::UI::HTML::Widget->load_class('Page');
+    $_W->load_class('Page');
     return Bivio::UI::HTML::Widget::Page->new({
 	head => $proto->get_standard_head(),
 	body => $proto->get_standard_body(),
@@ -448,7 +430,7 @@ Returns the standard widget for style.
 =cut
 
 sub get_standard_style {
-    Bivio::UI::HTML::Widget->load_class('Style');
+    $_W->load_class('Style');
     return Bivio::UI::HTML::Widget::Style->new;
 }
 
@@ -525,7 +507,7 @@ sub initialize_standard_support {
 	    + $icon->get_width('grad_y'));
 
     $self->group(image_menu_left_cell => 
-	    Bivio::UI::HTML::Widget->image('grad_y', ''));;
+	    $_W->image('grad_y', ''));;
 
     $self->group(image_menu_separator_width => 1);
     $self->group(text_menu_left_cell => undef);
@@ -541,7 +523,7 @@ sub initialize_standard_support {
 	[sub {${Bivio::Biz::Util::Filtrum->realm_file('holdings_file')}}],
     ]));
     $self->group(home_login => $_W->load_and_new('HomeLogin'));
-
+    $self->group(home_login_image => $_W->load_and_new('HomeLoginImage'));
     $self->group(home_date_clubs => $_W->load_and_new('HomeDateClubs'));
     return;
 }
@@ -634,7 +616,7 @@ sub widget_from_template {
 	    }
 	}
     }
-    return Bivio::UI::HTML::Widget->join(\@new);
+    return $_W->join(\@new);
 }
 
 #=PRIVATE METHODS
