@@ -91,6 +91,26 @@ EOF
     });
 }
 
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req)
+
+Renders the page.
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+
+    $req->put(
+    	    # don't show preferences, messes up the target_realm_owner
+	    want_preferences_render => 0,
+	   );
+
+    $self->SUPER::execute($req);
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
