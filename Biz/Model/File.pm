@@ -150,9 +150,8 @@ sub create {
     $values->{bytes} = ref($values->{content})
 	    ? length(${$values->{content}}) : 0;
     $values->{name_sort} = lc($values->{name});
-
-    # Never make a file public by default.  Only allow it on update.
-    $values->{is_public} = 0;
+    $values->{is_public} = 0
+            unless $values->{is_public};
 
     # Set the volume from request if not set.
     $values->{volume} = $req->get('Bivio::Type::FileVolume')
