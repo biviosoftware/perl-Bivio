@@ -34,8 +34,8 @@ without polluting a class's internal field name space.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
-# DON'T use Bivio::Die, because Die extends this module
 
 #=VARIABLES
 use vars qw($_TRACE);

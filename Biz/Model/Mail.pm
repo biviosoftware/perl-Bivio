@@ -52,7 +52,9 @@ sub ATT_DELIMITER {
 
 
 #=IMPORTS
-use MIME::Parser;
+use MIME::Head ();
+use MIME::Entity ();
+use MIME::Parser ();
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
