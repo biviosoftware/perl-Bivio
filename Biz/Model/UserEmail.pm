@@ -35,7 +35,7 @@ and delete interface to the C<user_email_t> table.
 
 #=IMPORTS
 use Bivio::SQL::Constraint;
-use Bivio::Type::Line;
+use Bivio::Type::Email;
 use Bivio::Type::PrimaryId;
 
 #=VARIABLES
@@ -57,7 +57,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'user_email_t',
 	columns => {
-            email => ['Bivio::Type::Line',
+            email => ['Bivio::Type::Email',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
