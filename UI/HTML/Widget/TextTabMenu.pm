@@ -49,10 +49,6 @@ Color of the frame around the tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
 The background of the contents of the tab will always be
 C<page_bg> color.
 
-=item text_tab_font : string [] (inherited)
-
-Font for the tab tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
-
 =item text_tab_height : int [1] (inherited)
 
 How high should the tab "spacing" be.  If zero, no extension
@@ -158,14 +154,8 @@ sub initialize {
 	    = "<td$tc><table border=0 cellspacing=0 cellpadding=2><tr>"
 		    ."<td$pc><strong>";
     $fields->{highlight_suffix} = "</strong></td></tr></table></td>";
-    my($tf) = $self->ancestral_get('text_tab_font', undef);
     $fields->{text_prefix} = '<td>';
     $fields->{text_suffix} = '</td>';
-    if ($tf) {
-	my(@f) = Bivio::UI::Font->as_html($tf);
-	$fields->{text_prefix} .= $f[0];
-	$fields->{text_suffix} = $f[0] . $fields->{text_suffix};
-    }
     $fields->{text_space} = $fields->{text_prefix}.'&nbsp;'
 	    .$fields->{text_suffix}."\n";
     $fields->{items} = [];

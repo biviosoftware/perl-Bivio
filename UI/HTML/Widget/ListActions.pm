@@ -101,14 +101,13 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{values});
-    my($p, $s) = Bivio::UI::Font->as_html('list_action');
     $fields->{values} = [];
     my($target) = $self->link_target_as_html;
     foreach my $v (@{$self->get('values')}) {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>",
+	    label => Bivio::Util::escape_html($v->[0]),
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
@@ -152,6 +151,7 @@ sub render {
 
     # Write executable actions
     my($sep) = '';
+    my($p, $s) = Bivio::UI::Font->as_html('list_action');
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
 	next if $v2->{control}
@@ -160,7 +160,7 @@ sub render {
 		($v2->{format_uri}
 			? $source->get_widget_value(@{$v2->{format_uri}})
 			: $source->format_uri($v2->{method}, $v->{uri}))
-			.$v2->{suffix};
+			.'">'.$p.$v2->{label}.$s."</a>",
 	$sep = ",\n";
     }
     return;

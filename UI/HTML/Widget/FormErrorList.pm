@@ -93,10 +93,6 @@ sub initialize {
     return if exists($fields->{model});
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{fields} = $self->get('fields');
-    my($p, $s) = Bivio::UI::Font->as_html('error');
-    $fields->{prefix}
-	    = "${p}Please correct the following errors:$s<p><ul>";
-    $fields->{suffix} = "</ul><p>\n";
     return;
 }
 
@@ -116,7 +112,8 @@ sub render {
     my($model) = $source->get_widget_value(@{$fields->{model}});
     return unless $model->in_error;
     my($errors) = $model->get_errors;
-    my($e) = $fields->{prefix};
+    my($p, $s) = Bivio::UI::Font->as_html('error');
+    my($e) = "${p}Please correct the following errors:$s<p><ul>";
 
     # iterate errors, so general errors don't have to be bound to a field
     foreach my $name (keys(%$errors)) {
@@ -127,7 +124,7 @@ sub render {
 		$source, $model, $name, $caption || '', $errors->{$name});
     }
 
-    $$buffer .= $e.$fields->{suffix};
+    $$buffer .= $e."</ul><p>\n";
     return;
 }
 

@@ -61,7 +61,10 @@ _compile([
     NUMBER_CELL => [undef, undef],
     TABLE_ROW_TITLE => [undef, undef, 'strong'],
     FORM_FIELD_LABEL => [undef, undef],
-    FORM_FIELD_IN_TEXT => [undef, 'form_field_in_text', 'strong'],
+    FORM_FIELD_LABEL_IN_TEXT => [undef, 'form_field_label_in_text', 'strong'],
+    FORM_FIELD_DESCRIPTION => [undef, undef],
+    FORM_FIELD_EXAMPLE => [undef, undef],
+    FORM_FIELD_ERROR => [undef, 'error', 'b'],
     DESCRIPTION_LABEL => [undef, 'description_label', 'strong'],
     TASK_LIST_LABEL => [undef, 'task_list_label'],
     FORM_FIELD_ERROR_LABEL => [undef, 'error', 'i'],
@@ -100,17 +103,22 @@ _compile([
 
 =for html <a name="as_html"></a>
 
-=head2 as_html() : array
-
 =head2 as_html(any thing) : array
 
 Returns the font as prefix and suffix strings to surround the text with.
 
+If I<thing> returns false (zero or C<undef>), returns two empty
+strings.
+
 =cut
 
 sub as_html {
+    die('expecting exactly two args') unless int(@_) == 2;
+    my($proto, $thing) = @_;
+    return ('', '') unless $thing;
+
     # 2 forces exactly two fields (even if both are zero length)
-    return split(/$;/, Bivio::Type::Enum::from_any(@_)->get_long_desc, 2);
+    return split(/$;/, $proto->from_any($thing)->get_long_desc, 2);
 }
 
 #=PRIVATE METHODS

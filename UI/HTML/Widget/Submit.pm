@@ -99,25 +99,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{value} = $self->get('value');
     $fields->{attributes} = $self->get_or_default('attributes', undef);
-    $fields->{is_constant} = 0;
-    $fields->{is_first_render} = 1;
     return;
-}
-
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Is this instance a constant?
-
-
-=cut
-
-sub is_constant {
-    my($fields) = shift->{$_PACKAGE};
-    Carp::croak('can only be called after first render')
-		if $fields->{is_first_render};
-    return $fields->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -131,33 +113,17 @@ Draws the submit button.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{value}, return if $fields->{is_constant};
 
     my($value) = $fields->{value};
 
-    if ($fields->{is_first_render}) {
-	my($model) = $source->get_widget_value(@{$fields->{model}});
-	my($p, $s) = Bivio::UI::Font->as_html('form_submit');
-	$fields->{prefix} = $p.'<input type=submit name="'
-		.$model->SUBMIT().'" value="';
-	$fields->{suffix} = $fields->{attributes}
-		? '" '.$fields->{attributes}.'>' : '">'.$s;
-	unless (ref($value)) {
-	    my($method) = $fields->{value};
-	    $fields->{value} = $fields->{prefix}
-		    .Bivio::Util::escape_html($model->$method())
-		    .$fields->{suffix};
-	    $$buffer .= $fields->{value};
-	    $fields->{is_constant} = 1;
-	    $fields->{is_first_render} = 0;
-	    return;
-	}
-	$fields->{is_first_render} = 0;
-    }
-    $$buffer .= $fields->{prefix}
+    my($p, $s) = Bivio::UI::Font->as_html('form_submit');
+    my($model) = $source->get_widget_value(@{$fields->{model}});
+    $$buffer .= $p.'<input type=submit name="'.$model->SUBMIT().'" value="'
 	    .Bivio::Util::escape_html(
-		    $source->get_widget_value(@{$fields->{value}}))
-	    .$fields->{suffix};
+		    ref($value) ? $source->get_widget_value(@$value)
+		    : $model->$value())
+	    .($fields->{attributes}
+		    ? '" '.$fields->{attributes}.'>' : '">').$s;
     return;
 }
 

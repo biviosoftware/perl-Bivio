@@ -47,7 +47,7 @@ Only valid if I<value> is not a widget.
 
 Number of non-breaking spaces to pad on the left.
 
-=item string_font : string [] (inherited)
+=item string_font : string [] (inherited, dynamic)
 
 The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
 
@@ -115,8 +115,7 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.  In this case, prefix and suffix
-field values.
+Initializes static information.
 
 =cut
 
@@ -124,10 +123,9 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
-    my($font) = $self->ancestral_get('string_font', undef);
-    my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
+    $fields->{font} = $self->ancestral_get('string_font', undef);
     my($pad_left) = $self->get_or_default('pad_left', 0);
-    $p .= '&nbsp;' x $pad_left if $pad_left > 0;
+    $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
 
     # Formatter
     my($f) = $self->unsafe_get('format', 0);
@@ -137,16 +135,18 @@ sub initialize {
 
     # Value
     $fields->{value} = $self->get('value');
-    if ($fields->{is_constant} = !ref($fields->{value})) {
-    	$fields->{value} = $p._format($fields->{format}, $fields->{value}).$s;
-    }
-    else {
-	$fields->{prefix} = $p;
-	$fields->{suffix} = $s;
-	if ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
-	    $fields->{value}->put(parent => $self);
-	    $fields->{value}->initialize;
+    if ($fields->{is_literal} = !ref($fields->{value})) {
+
+	# Only constant if there is no font
+	if ($fields->{is_constant} = !$fields->{font}) {
+	    my($p, $s) = Bivio::UI::Font->as_html($fields->{font});
+	    $fields->{value} = $p.$fields->{prefix}._format($fields->{format},
+		    $fields->{value}).$s;
 	}
+    }
+    elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
+	$fields->{value}->put(parent => $self);
+	$fields->{value}->initialize;
     }
     return;
 }
@@ -178,8 +178,12 @@ sub render {
 	    unless exists($fields->{value});
 
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
+
     my($b) = '';
-    if ($fields->{is_widget}) {
+    if ($fields->{is_literal}) {
+	$b = $fields->{value};
+    }
+    elsif ($fields->{is_widget}) {
 	$fields->{value}->render($source, \$b);
     }
     else {
@@ -196,8 +200,14 @@ sub render {
 	    $b .= _format($fields->{format}, $value);
 	}
     }
-    # Don't output anything if nothing passed
-    $$buffer .= $fields->{prefix}.$b.$fields->{suffix} if length($b);
+    # Don't output anything if string is empty
+    return unless length($b);
+
+    # Render the font dynamically.  Don't call method unless there is a font
+    # for performance reasons.
+    my($p, $s) = $fields->{font}
+	    ? Bivio::UI::Font->as_html($fields->{font}) : ('', '');
+    $$buffer .= $p.$fields->{prefix}.$b.$s;
     return;
 }
 

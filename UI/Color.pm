@@ -79,7 +79,7 @@ __PACKAGE__->compile(
 	'action_bar_border',
 	'detail_chooser',
 	'page_heading',
-	'form_field_in_text',
+	'form_field_label_in_text',
 	'text_menu_font',
         'celebrity_box',
 	'description_label',

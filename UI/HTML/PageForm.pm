@@ -51,7 +51,6 @@ and its child fields.
 =cut
 
 #=IMPORTS
-use Bivio::UI::Font;
 use Bivio::UI::HTML::General::Page;
 use Bivio::UI::HTML::Widget::Form;
 use Bivio::UI::HTML::Widget::FormFieldLabel;

@@ -62,7 +62,6 @@ use Bivio::UI::Font;
 use Bivio::Util;
 
 #=VARIABLES
-my($_FONT_PREFIX, $_FONT_SUFFIX) = Bivio::UI::Font->as_html('RADIO');
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -122,6 +121,7 @@ sub render {
     my($value) = $fields->{value};
 
     # first render initialization
+    my($p, $s) = Bivio::UI::Font->as_html('RADIO');
     unless ($fields->{initialized}) {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'
@@ -129,8 +129,7 @@ sub render {
 		."\""
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
 		.">&nbsp;"
-		.$_FONT_PREFIX. Bivio::Util::escape_html($self->get('label'))
-		.$_FONT_SUFFIX;
+		.$p. Bivio::Util::escape_html($self->get('label')).$s;
 	$fields->{initialized} = 1;
     }
 
