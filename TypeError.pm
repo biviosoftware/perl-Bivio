@@ -266,6 +266,12 @@ __PACKAGE__->compile(
 	undef,
 	'input is too long.  Maximum size is 500 characters.',
     ],
+    INVALID_ACCOUNTING_REPORT => [
+	46,
+	undef,
+#TODO: This can only happen if someone corrupted the form
+	'invalid accounting report selected',
+    ],
 );
 
 #=PRIVATE METHODS
