@@ -59,8 +59,10 @@ EOF
 }
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
+use Bivio::Type::DateTime;
+use Bivio::Type::Integer;
 use IO::File ();
 use Sys::Hostname ();
 
@@ -77,6 +79,8 @@ my($_CFG) = {
     ignore_list => Bivio::IO::Config->REQUIRED,
     error_list => Bivio::IO::Config->REQUIRED,
     critical_list => Bivio::IO::Config->REQUIRED,
+    ignore_unless_count => Bivio::Type::Integer->get_max,
+    ignore_unless_count_list => [],
 };
 Bivio::IO::Config->register($_CFG);
 my($_RECORD_PREFIX) = '^(?:\[('
@@ -128,6 +132,15 @@ I<error_count_for_page>.
 
 List of regexps which will be thrown away.
 
+=item ignore_unless_count : int [9999]
+
+How many times should we ignore matches to I<ignore_unless_count_list>?
+
+=item ignore_unless_count_list : array_ref []
+
+List of regexps which will be thrown away unless they exceed
+I<ignore_unless_count>.
+
 =item pager_email : string ['']
 
 Email addresses separated by commas which get pager messages.  See
@@ -141,7 +154,7 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     $_REGEXP = {};
-    foreach my $r (qw(ignore critical error)) {
+    foreach my $r (qw(ignore critical error ignore_unless_count)) {
 	$_REGEXP->{$r} = qr/(@{[join('|', @{$cfg->{"${r}_list"}})]})/;
     }
     return;
@@ -170,6 +183,7 @@ sub parse_errors {
     my($error_countdown) = $_CFG->{error_count_for_page};
     my($date, $record, $in_interval);
     my($last_error) = Bivio::Type::DateTime->get_min;
+    my($ignored) = {};
     my(%error_times);
  RECORD: while (_parse_record($self, \$record, \$date)) {
 	unless ($in_interval) {
@@ -177,16 +191,24 @@ sub parse_errors {
 		    if Bivio::Type::DateTime->compare($start, $date) >= 0;
 	    $in_interval = 1;
 	}
+	_trace('record: ', $record) if $_TRACE;
 	if ($record =~ $_REGEXP->{ignore}) {
 	    _trace('ignoring: ', $1) if $_TRACE;
 	    next RECORD;
 	}
+	if ($record =~ $_REGEXP->{ignore_unless_count}) {
+	    $ignored->{$1}++;
+	    _trace('ignore_unless_count: ', $1) if $_TRACE;
+	    next RECORD;
+	}
 	# Critical already avoids dups, so put before time check after.
 	if ($record =~ $_REGEXP->{critical}) {
+	    _trace('critical: ', $1) if $_TRACE;
 	    _pager_report($self, $1);
 	    $record =~ s/^/***CRITICAL*** /;
 	}
 	if ($record =~ $_REGEXP->{error}) {
+	    _trace('error: ', $1) if $_TRACE;
 	    # Certain error messages don't pass the $_REGEXP->{error} on the
 	    # first output.  die message comes out first and it's what we want
 	    # in the email.  However, we need to count the error regexp on the
@@ -203,6 +225,10 @@ sub parse_errors {
 	$last_error = $date;
 	# Never send more than 256 bytes (three lines) in a record via email
 	_report($self, substr($record, 0, 256));
+    }
+    foreach my $k (sort(keys(%$ignored))) {
+	_report($self, "[repeated $ignored->{$k} times] ", $k)
+	    if $ignored->{$k} >= $_CFG->{ignore_unless_count};
     }
     return _parse_errors_complete($self);
 }

@@ -16,6 +16,10 @@ Bivio::IO::Config->introduce_values({
 	ignore_list => [
 	    'this is normal',
 	],
+	ignore_unless_count_list => [
+	    'sometimes important',
+	],
+	ignore_unless_count => 3,
 	error_file => $_LOG,
     },
     'Bivio::IO::Alert' => {
@@ -59,6 +63,10 @@ Bivio::Test->new('Bivio::Util::HTTPLog')->unit([
 	    '4:51 this is critical' => qr/CRITICAL.*this is critical/,
 	    # Repeated
 	    [map("4:2$_ this is an error", 1..2)] => qr/CRITICAL/,
+	    # Repeated
+	    [map("4:2$_ sometimes important", 1..2)] => [],
+	    [map("4:2$_ sometimes important", 1..3)] =>
+		qr/\[repeated 3 times\] sometimes important/,
 	    # Unknown
 	    '4:55 Unknown' => '4:55 Unknown',
 	    '4:55 normal' => '4:55 normal',
