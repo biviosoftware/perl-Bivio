@@ -34,6 +34,16 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
+=item bgcolor : string []
+
+The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
+See L<Bivio::UI::Color|Bivio::UI::Color>.
+
+=item cell_attrs : hash_ref [{string_font => 'table_cell'}]
+
+Attributes to be applied to all table cells.  They will be overriden
+by cell specific attributes.
+
 =item cells : array_ref (required)
 
 The widgets that are to be used to render the cells.  If the
@@ -42,15 +52,19 @@ list model to use.
 A L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 instance will be created with the corresponding value.
 
-=item table_cell_attrs : hash_ref [{string_font => 'table_cell'}] (inherited)
+=item expand : boolean [false]
+
+If true, the table will C<WIDTH> will be C<100%>.
+
+=item heading_attrs: hash_ref [{string_font => 'table_heading'}]
 
 Attributes to be applied to all table cells.  They will be overriden
-by cell specific attributes.
+by heading specific attributes.
 
-=item cell_source : array_ref (required)
+=item heading_bgcolor : string [heading_bg]
 
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to get the source to pass to the table cell widgets.
+The bgcolor of the heading row as defined by
+L<Bivio::UI::Color|Bivio::UI::Color>.
 
 =item headings : array_ref (required)
 
@@ -61,21 +75,16 @@ to the list model.  If the widget is a string, not a widget,
 a L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 instance will be created.
 
-=item table_heading_attrs: hash_ref [{string_font => 'table_heading'}] (inherited)
-
-Attributes to be applied to all table cells.  They will be overriden
-by heading specific attributes.
-
-=item table_heading_bgcolor : string [heading_bg] (inherited)
-
-The bgcolor of the heading row as defined by
-L<Bivio::UI::Color|Bivio::UI::Color>.
-
-=item table_pad : number [5] (inherited)
+=item pad : number [5]
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
 
-=item table_stripe_bgcolor : string [table_stripe_bg] (inherited)
+=item source : array_ref (required)
+
+Dereferenced and passed to C<$source-E<gt>get_widget_value>
+to get the source to pass to the table heading and cell widgets.
+
+=item stripe_bgcolor : string [table_stripe_bg]
 
 The stripe color to use for even rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
@@ -83,11 +92,11 @@ false, no striping will occur.
 
 =back
 
-=head1 CELL ATTRIBUTES
+=head1 HEADING AND CELL ATTRIBUTES
 
 =over 4
 
-=item table_column_align : string [LEFT] (inherited)
+=item column_align : string [LEFT]
 
 How to align the value within the cell or heading.  The allowed (case
 insensitive) values are defined in
@@ -96,7 +105,7 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
 The value applies separately to headings and cells.
 
-=item table_column_expand : boolean [false] (inherited)
+=item column_expand : boolean [false]
 
 If true, the column will be C<width="100%">.  Should only be
 applied to headings.
@@ -150,95 +159,44 @@ Initializes static information.
 sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return if exists($fields->{rows});
+    return if exists($fields->{headings});
     my($p) = '<table border=0 cellspacing=0 cellpadding=';
     # We don't want to check parents
-    my($expand) = $self->unsafe_get('table_expand');
-    $p .= $self->ancestral_get('table_pad', $_DEFAULT_PAD);
-    $p .= ' width="100%"' if $expand;
-    $fields->{prefix} = $p . '>';
-    $fields->{suffix} = '</table>';
-    my($cell_attrs) = $self->ancestral_get('table_cell_attrs',
-	   {string_font => 'table_cell'});
-    $fields->{cells} = [];
-    my($c);
-    foreach $c (@{$fields->{cells} = $self->get('cells')}) {
-	unless (UNIVERSAL::isa($c, 'Bivio::UI::HTML::Widget')) {
-	    $c = Bivio::UI::HTML::Widget::String->new({
-		value => ref($c) ? $c : [$c],
-		# Make a copy
-		%$cell_attrs,
-	    });
-	}
-	else {
-	    my($a);
-	    foreach $a (keys(%$cell_attrs)) {
-		$c->put($a, $cell_attrs->{$a}) unless $c->has_keys($a);
-	    }
-	}
-    }
-    my($h);
-    my($heading_attrs) = $self->ancestral_get('table_heading_attrs',
+    $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
+    $p .= ' width="100%"' if $self->get_or_default('expand', 0);
+    my($bgcolor) = $self->get_or_default('bgcolor', 0);
+    $p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
+    $p .= '><tr';
+    $bgcolor = $self->get_or_default('heading_bgcolor', 'heading_bg');
+    $p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
+
+    # Headings
+    my($headings) = [$p . ">\n"];
+    my($heading_attrs) = $self->get_or_default('heading_attrs',
 	    {string_font => 'table_heading'});
-    foreach $h (@{$fields->{headings} = $self->get('headings')}) {
-
-	unless (UNIVERSAL::isa($c, 'Bivio::UI::HTML::Widget')) {
-	    $c = Bivio::UI::HTML::Widget::String->new({
-		value => ref($c) ? $c : [$c],
-		# Make a copy
-		%$heading_attrs,
-	    });
-	}
-	else {
-	    my($a);
-	    foreach $a (keys(%$heading_attrs)) {
-		$c->put($a, $heading_attrs->{$a}) unless $c->has_keys($a);
-	    }
-	}
-    }
-
-    my($heading_bgcolor) = $self->ancestral_get('table_heading_bgcolor',
-	    'heading_bg');
     my($c);
-    foreach $c (@{$fields->{cells}}) {
-	$num_cols = int(@$r) if $num_cols < int(@$r);
+    foreach $c (@{$self->get('headings')}) {
+	_init_cell($self, $headings, $heading_attrs, $c);
     }
-    foreach $r (@$rows) {
-	# search for "expand"
-	my($expand_cols) = $num_cols - int(@$r) + 1;
-	my(@cols) = @$r;
-	$#$r = -1;
-	my($c);
-	foreach $c (@cols) {
-	    my($p) = '<td';
-	    if (ref($c)) {
-		# parent not set, so won't pick up $self's $bgcolor, etc.
-		my($align);
-		($bgcolor, $expand, $align) = $c->unsafe_get(qw(
-                        table_cell_bgcolor table_cell_expand table_cell_align));
-		if ($expand) {
-		    # First expanded cell gets all the rest of the columns.
-		    # If the table is expanded itself, then set this cell's
-		    # width to 100%.
-		    $p .= " colspan=$expand_cols";
-		    $p .= ' width="100%"' if $expand;
-		    $expand_cols = 1;
-		}
-		$p .= qq! bgcolor="$bgcolor"! if $bgcolor;
-		$p .= ' '.Bivio::UI::Align->from_any($align)
-			->get_long_desc if $align;
-#TODO: Table doesn't connect parent to child to avoid strange inheritance,
-#      e.g. tables within tables.  Perhaps this is ok.  Need to try out.
-#      If ok, then document above.
-#		$c->put('parent', $self);
-		$c->initialize($self, $source);
-	    }
-	    # Replace undef cells with something real.  Render
-	    # text strings literally.
-	    push(@$r, $p .'>', defined($c) ? $c : '', "</td>\n");
-	}
+    $fields->{headings} = $headings;
+    # Doesn't end in </tr>
+
+    # Stripe: finishes off previous row (which may be header)
+    $fields->{odd_row} = "</tr><tr>\n";
+    $fields->{even_row} = '</tr><tr';
+    $bgcolor = $self->get_or_default('stripe_bgcolor', 'table_stripe_bg');
+    $fields->{even_row} .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
+    $fields->{even_row} .= ">\n";
+
+    # Cells
+    my($cell_attrs) = $self->get_or_default('cell_attrs',
+	   {string_font => 'table_cell'});
+    my($cells) = [''];
+    foreach $c (@{$self->get('cells')}) {
+	_init_cell($self, $cells, $cell_attrs, $c);
     }
-    $fields->{rows} = $rows;
+    $fields->{cells} = $cells;
+    $fields->{source} = $self->get('source');
     return;
 }
 
@@ -251,21 +209,61 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= $fields->{prefix};
-    my($r, $c);
-#TODO: Optimize for is_constant
-    foreach $r (@{$fields->{rows}}) {
-	$$buffer .= "<tr>\n";
-	foreach $c (@$r) {
+    $source = $source->get_widget_value(@{$fields->{source}});
+
+    # Headings
+    my($c);
+    foreach $c (@{$fields->{headings}}) {
+	ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
+    }
+
+    # Rows
+    my($row) = 0;
+    while ($source->next_row()) {
+	$$buffer .= $fields->{$row++ % 2 ? 'odd_row' : 'even_row'};
+	foreach $c (@{$fields->{cells}}) {
 	    ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
 	}
-	$$buffer .= '</tr>';
     }
-    $$buffer .= $fields->{suffix};
+
+    # Always close off row, because headings is left unclosed
+    $$buffer .= "</tr></table>\n";
     return;
 }
 
 #=PRIVATE METHODS
+
+# _init_cell(Bivio::UI::HTML::Widget::Table self, array_ref cells, hash_ref attrs, any cell)
+#
+# Adds widget to cells, updating $cells->[$#$cells] with the attribute-
+# based prefix.
+#
+sub _init_cell {
+    my($self, $cells, $attrs, $cell) = @_;
+    unless (UNIVERSAL::isa($cell, 'Bivio::UI::HTML::Widget')) {
+	$cell = Bivio::UI::HTML::Widget::String->new({
+		value => $cell,
+		# Make a copy
+		%$attrs,
+	});
+    }
+    else {
+	my($a);
+	foreach $a (keys(%$attrs)) {
+	    $cell->put($a, $attrs->{$a}) unless $cell->has_keys($a);
+	}
+    }
+    $cell->put(parent => $self);
+    $cell->initialize;
+    my($prefix) = \$cells->[$#$cells];
+    die('last cell is not a scalar') unless ref($prefix) eq 'SCALAR';
+    $$prefix .= '<td';
+    $$prefix .= ' width="100%"' if $cell->get_or_default('column_expand', 0);
+    $$prefix .= Bivio::UI::Align->as_html(
+	    $cell->get_or_default('column_align', 'LEFT'));
+    push(@$cells, $cell, "</td>\n");
+    return;
+}
 
 =head1 COPYRIGHT
 
