@@ -122,6 +122,34 @@ sub get_standard_body {
     return;
 }
 
+=for html <a name="get_standard_copyright"></a>
+
+=head2 static get_standard_copyright() : Bivio::UI::HTML::Widget
+
+Returns standard copyright text which should be wrapped in a
+string.
+
+=cut
+
+sub get_standard_copyright {
+    my($year) = (gmtime(time))[5] + 1900;
+    return Bivio::UI::HTML::Widget->string(
+	    Bivio::UI::HTML::Widget->join([
+		"Copyright &copy; $year, bivio Inc."
+		." <i>All Rights Reserved.</i>\n<br>"
+		."Use of this Web site constitutes acceptance"
+		." of the bivio\n",
+		Bivio::UI::HTML::Widget->link(
+			Bivio::UI::Label->get_simple(
+				'USER_AGREEMENT_TEXT'),
+			'USER_AGREEMENT_TEXT',
+			0,
+		       ),
+	    ]),
+	    'copyright_and_disclaimer');
+    return;
+}
+
 =for html <a name="get_standard_footer"></a>
 
 =head2 static get_standard_footer() : Bivio::UI::HTML::Widget
@@ -157,8 +185,6 @@ sub get_standard_footer {
 	    string_font => 'footer_menu',
 	   ));
 
-    my($year) = (gmtime(time))[5] + 1900;
-
     # Create grid
     Bivio::UI::HTML::Widget->load_class('Grid');
     return Bivio::UI::HTML::Widget::Grid->new({
@@ -188,23 +214,10 @@ sub get_standard_footer {
 		' ',
 	    ],
 	    [
-		Bivio::UI::HTML::Widget->string(
-			Bivio::UI::HTML::Widget->join([
-			    "Copyright &copy; $year, bivio Inc."
-			    ." <i>All Rights Reserved.</i>\n<br>"
-			    ."Use of this Web site constitutes acceptance"
-			    ." of the bivio\n",
-			    Bivio::UI::HTML::Widget->link(
-				    Bivio::UI::Label->get_simple(
-					    'USER_AGREEMENT_TEXT'),
-				    'USER_AGREEMENT_TEXT',
-				    0,
-			    ),
-			]),
-			'copyright_and_disclaimer')->put(
-				cell_expand => 1,
-				cell_align => 'right',
-			),
+		$proto->get_standard_copyright->put(
+		    cell_align => 'right',
+		    cell_expand => 1,
+		),
 	    ],
 	],
     });

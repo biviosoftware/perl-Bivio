@@ -6,14 +6,11 @@ $Bivio::Biz::Action::ClientRedirect::VERSION = sprintf('%d.%02d', q$Revision$ =~
 
 =head1 NAME
 
-Bivio::Biz::Action::ClientRedirect - client redirect to specific task
+Bivio::Biz::Action::ClientRedirect - client redirect to specific task or URI
 
 =head1 SYNOPSIS
 
     use Bivio::Biz::Action::ClientRedirect;
-    Bivio::Biz::Action::ClientRedirect->execute_next($req);
-    Bivio::Biz::Action::ClientRedirect->execute_cancel($req);
-    Bivio::Biz::Action::ClientRedirect->SOME_TASK($req);
 
 =cut
 
@@ -34,8 +31,23 @@ tasks in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 
 =cut
 
+=head1 CONSTANTS
+
+=for html <a name="QUERY_TAG"></a>
+
+=head2 QUERY_TAG : string
+
+Returns tag to be used in query string
+
+=cut
+
+sub QUERY_TAG {
+    return 'x';
+}
+
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Util;
 
 #=VARIABLES
 _compile();
@@ -68,6 +80,32 @@ Redirect to I<next> task.
 
 sub execute_next {
     my(undef, $req) = @_;
+    $req->client_redirect($req->get('task')->get('next'));
+    # DOES NOT RETURN
+}
+
+=for html <a name="execute_query"></a>
+
+=head2 execute_query(Bivio::Agent::Request req)
+
+Redirects to URI in query string or to I<next> task if no query string.
+
+=cut
+
+sub execute_query {
+    my(undef, $req) = @_;
+
+    # If there is a query, use that as the name of the realm
+    my($query) = $req->unsafe_get('query');
+    if ($query && defined($query->{QUERY_TAG()})) {
+	my($uri) = Bivio::Util::escape_uri($query->{QUERY_TAG()});
+	# Insert absolute path if not already absolute
+	$uri =~ s,^(?!\w+:|\/),\/,;
+	$req->client_redirect($uri);
+	# DOES NOT RETURN
+    }
+
+    # Just redirect to the configured default
     $req->client_redirect($req->get('task')->get('next'));
     # DOES NOT RETURN
 }

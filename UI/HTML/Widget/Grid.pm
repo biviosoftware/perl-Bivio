@@ -182,7 +182,7 @@ Initializes static information.
 =cut
 
 sub initialize {
-    my($self, $source) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{rows});
     my($p) = '<table border='.$self->get_or_default('border', 0);
@@ -217,8 +217,7 @@ sub initialize {
 	    }
 	    elsif (ref($c)) {
 		# May set attributes on itself
-		$c->put('parent', $self);
-		$c->initialize($self, $source);
+		$c->put_and_initialize(parent => $self);
 		my($expand2, $align, $colspan, $rowspan, $width, $height,
 		       $width_as_html, $height_as_html)
 			= $c->unsafe_get(qw(cell_expand

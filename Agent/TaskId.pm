@@ -512,7 +512,6 @@ my(@_CFG) = (
         next=CLUB_ADMIN_USER_DETAIL
     )],
 #58
-    # MUST MATCH Bivio::Biz::Action::REALM_REDIRECT
     [qw(
 	DEMO_REDIRECT
 	59
@@ -763,15 +762,15 @@ my(@_CFG) = (
         hm/contact.html
         Bivio::Biz::Action::HTTPDocument
     )],
-    # Redirect to MY_SITE by default, because the user may not be 
+    # Redirect to MY_SITE by default, because the user may not be
     # logged in and USER_HOME requires an auth_realm.
     [qw(
-	REALM_REDIRECT
+	CLIENT_REDIRECT
 	84
         GENERAL
         DOCUMENT_READ
         goto
-        Bivio::Biz::Action::RealmRedirect
+        Bivio::Biz::Action::ClientRedirect->execute_query
         next=MY_SITE
     )],
 #85

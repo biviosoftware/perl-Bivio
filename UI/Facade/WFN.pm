@@ -234,6 +234,8 @@ __PACKAGE__->new({
 	    $fc->create_group($name.' home', 'home_alt_text');
 	    $fc->create_group(0, 'page_left_margin');
 	    $fc->create_group('left', 'table_default_align');
+	    $fc->create_group(1, 'scene_show_profile');
+	    $fc->create_group(undef, 'scene_header');
 
 	    $fc->create_group(Bivio::UI::HTML::Widget->join(
 		    Bivio::UI::HTML::Widget->indirect(
