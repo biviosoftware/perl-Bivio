@@ -38,10 +38,9 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::Enum;
 use Bivio::Type::Gender;
 use Bivio::Type::Name;
-use Bivio::Type::Line;
-use Bivio::Type::Country;
 use Bivio::Type::Date;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::Location;
 
 #=VARIABLES
 
@@ -49,30 +48,70 @@ use Bivio::Type::PrimaryId;
 
 =cut
 
+=for html <a name="create"></a>
+
+=head2 create(hash_ref new_values)
+
+Sets I<gender> if not set, then calls SUPER.
+
+=cut
+
+sub create {
+    my($self, $values) = @_;
+    $values->{gender} = Bivio::Type::Gender::UNKNOWN();
+    return $self->SUPER::create($values);
+}
+
+=for html <a name="format_full_name"></a>
+
+=head2 format_full_name() : string
+
+Returns the first, middle, and last names as one string.
+
+=cut
+
+sub format_full_name {
+    my($self) = @_;
+    # Have at least on name or returns undef
+    my($res) = undef;
+    foreach my $n ($self->unsafe_get(qw(first_name middle_name last_name))) {
+	$res .= $n.' ' if defined($n);
+    }
+    # Get rid of last ' '
+    chop($res) if defined($res);
+    return $res;
+}
+
+=for html <a name="get_email_address"></a>
+
+=head2 get_email_address() : string
+
+Returns the "first" email address.
+
+=cut
+
+sub get_email_address {
+#TODO: Need to make this real
+    return shift->get_email_addresses();
+}
+
 =for html <a name="get_email_addresses"></a>
 
 =head2 get_email_addresses() : array
 
-Returns an array of email addresses for this user.
+=head2 get_email_addresses(Bivio::Type::Location which) : array
+
+Returns an array of email addresses for this user.  Returns
+a particular email address (starting at number 0).
 
 =cut
 
 sub get_email_addresses {
-    my($self) = @_;
-    # a 4 table join
-    my($sql) = 'select email '
-	    .'from user_email_t '
-	    .'where user_id=? ';
-    my($statement) = Bivio::SQL::Connection->execute(
-	    $sql, [$self->get('user_id')], $self);
-    my($result) = [];
-    my($row);
-    while($row = $statement->fetchrow_arrayref()) {
-	push(@$result, $row->[0]);
-    }
-#TODO: Do we need statement->finish here?
-#    $statement->finish();
-    return $result;
+    my($self, $which) = @_;
+    my($loc) = $which ? $which : Bivio::Type::Location::HOME();
+    my($email) = Bivio::Biz::Model::Email->new($self->get_request);
+    return $which ? [] : undef unless $email->unauth_load($loc);
+    return $which ? [$email->get('email')] : $email->get('email');
 }
 
 =for html <a name="internal_initialize"></a>
@@ -90,8 +129,6 @@ sub internal_initialize {
 	columns => {
             user_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    display_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NOT_NULL()],
             first_name => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
             middle_name => ['Bivio::Type::Name',
@@ -101,22 +138,6 @@ sub internal_initialize {
             gender => ['Bivio::Type::Gender',
     		Bivio::SQL::Constraint::NOT_NULL()],
             birth_date => ['Bivio::Type::Date',
-    		Bivio::SQL::Constraint::NONE()],
-	    street1 => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NONE()],
-	    street2 => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NONE()],
-	    city => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    state => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    zip => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    country => ['Bivio::Type::Country',
-    		Bivio::SQL::Constraint::NONE()],
-	    phone => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-	    fax => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
         },
 	auth_id => 'user_id',

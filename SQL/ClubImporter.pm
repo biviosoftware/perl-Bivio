@@ -373,7 +373,7 @@ sub MEMBER_TRANSACTION_FORMAT {
     data_start => 1274,
     fields => [
 	    'id', 'int2',
-	    'dttm', 'date2',
+	    'date_time', 'date2',
 	    'transaction_type', 'int2',
 	    'amount', 'double8',
 	    'units', 'double8',
@@ -387,7 +387,7 @@ sub CASH_TRANSACTION_FORMAT {
     file_name => 'cash.dt',
     data_start => 1274,
     fields => [
-	    'dttm', 'date2',
+	    'date_time', 'date2',
 	    'transaction_type', 'int2',
 	    'id', 'int2',
 	    'account_type', 'int2',
@@ -424,7 +424,7 @@ sub INSTRUMENT_TRANSACTION_FORMAT {
     data_start => 1274,
     fields => [
 	    'id', 'int2',
-	    'dttm', 'date2',
+	    'date_time', 'date2',
 	    'transaction_type', 'int2',
 	    'count', 'double8',
 	    'amount', 'double8',
@@ -439,7 +439,7 @@ sub VALUATION_FORMAT {
     file_name => 'valuatn.dt',
     data_start => 1274,
     fields => [
-	    'dttm', 'date2',
+	    'date_time', 'date2',
 	    'instrument_id', 'int2',
 	    'price_per_share', 'double8',
 	   ],
@@ -590,9 +590,10 @@ sub import_valuations {
     my($val);
     foreach $val (@$valuations) {
 	$valuation->create({
+	    realm_id => $attributes->{club_id},
 	    realm_instrument_id => $attributes->{instrument_id_map}
 	    ->{$val->{instrument_id}},
-	    dttm => $val->{dttm},
+	    date_time => $val->{date_time},
 	    price_per_share => $val->{price_per_share},
 	});
     }
@@ -676,11 +677,11 @@ sub _link_spinoffs {
 	    $parent_name || die("couldn't link spinoff: ".$trans->{remark});
 	    my($parent_id) = _find_name_like($instruments, $parent_name);
 
-	    if ($_SPINOFF->{$trans->{dttm}}) {
-		push(@{$_SPINOFF->{$trans->{dttm}}}, $id, $parent_id);
+	    if ($_SPINOFF->{$trans->{date_time}}) {
+		push(@{$_SPINOFF->{$trans->{date_time}}}, $id, $parent_id);
 	    }
 	    else {
-		$_SPINOFF->{$trans->{dttm}} = [$id, $parent_id];
+		$_SPINOFF->{$trans->{date_time}} = [$id, $parent_id];
 	    }
 	}
     }
@@ -738,13 +739,13 @@ sub _compile_type_map {
     }
 }
 
-# _create_transaction(ID club_id, ID user_id, EntryClass class, date dttm) : Transaction
+# _create_transaction(ID club_id, ID user_id, EntryClass class, date date_time) : Transaction
 #
 # Creates a Bivio::Biz::Model::RealmTransactions from the specified
 # data.
 
 sub _create_transaction {
-    my($club_id, $user_id, $class, $dttm) = @_;
+    my($club_id, $user_id, $class, $date_time) = @_;
 
     my($req) = Bivio::Agent::TestRequest->new({});
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
@@ -752,7 +753,7 @@ sub _create_transaction {
     $transaction->create({
 	realm_id => $club_id,
 	source_class => $class->as_int(),
-	dttm => $dttm,
+	date_time => $date_time,
 	user_id => $user_id
     });
 
@@ -782,13 +783,13 @@ sub _create_transaction_id_set {
     $_TRANSACTION_ID_SET->[0] = [];
 }
 
-# _create_entries(hash_ref easyware_trans, Transaction transaction, int source_id, date dttm, int transaction_type, hash_ref attributes)
+# _create_entries(hash_ref easyware_trans, Transaction transaction, int source_id, date date_time, int transaction_type, hash_ref attributes)
 #
 # Creates the entries for all the data which occurs on the specified date
 # for the specified transaction.
 
 sub _create_entries {
-    my($easyware_trans, $transaction, $source_id, $dttm, $transaction_type,
+    my($easyware_trans, $transaction, $source_id, $date_time, $transaction_type,
 	    $attributes) = @_;
     my($set_index) = $_TYPE_MAP->{$transaction_type}->[2];
     die("unknown tran type $transaction_type") unless defined($set_index);
@@ -801,7 +802,7 @@ sub _create_entries {
 
 	my($type) = $trans->{transaction_type};
 
-	if ($trans->{dttm} eq $dttm && ($type == $transaction_type
+	if ($trans->{date_time} eq $date_time && ($type == $transaction_type
 		|| _contains($set, $type))) {
 
 	    # group deposit and earning distributions
@@ -809,7 +810,7 @@ sub _create_entries {
 		    || _is_deposit($type)
 		    || _is_earnings_distribution($type)
 		    || _is_related_spinoff($type, $trans->{id}, $source_id,
-			    $dttm)) {
+			    $date_time)) {
 
 		_create_entry($transaction, $trans, $attributes);
 
@@ -818,7 +819,7 @@ sub _create_entries {
 			&& ($type == 14 || $type == 16)) {
 
 		    _create_stock_transfer_entry($easyware_trans, $transaction,
-			    $dttm, $attributes);
+			    $date_time, $attributes);
 		}
 		# set the transaction to undef in place
 		$trans = undef;
@@ -831,19 +832,19 @@ sub _create_entries {
     return;
 }
 
-# _create_stock_transfer_entry(hash_ref easyware_trans, Transaction transaction, int dttm, hash_ref attributes)
+# _create_stock_transfer_entry(hash_ref easyware_trans, Transaction transaction, int date_time, hash_ref attributes)
 #
 # Iterates easyware transactions looking for the transfer on the specified
 # date.
 
 sub _create_stock_transfer_entry {
-    my($easyware_trans, $transaction, $dttm, $attributes) = @_;
+    my($easyware_trans, $transaction, $date_time, $attributes) = @_;
 
     my($trans);
     foreach $trans (@$easyware_trans) {
 	next if (! defined($trans));
 
-	if ($trans->{dttm} eq $dttm && $trans->{transaction_type} == 44) {
+	if ($trans->{date_time} eq $date_time && $trans->{transaction_type} == 44) {
 
 	    _create_entry($transaction, $trans, $attributes);
 	    $trans = undef;
@@ -890,13 +891,13 @@ sub _is_earnings_distribution {
 # Returns true if the easyware type is related to an instrument spinoff.
 
 sub _is_related_spinoff {
-    my($type, $id, $source_id, $dttm) = @_;
+    my($type, $id, $source_id, $date_time) = @_;
 
 #TODO: add SDFr-Mtcg
     if ($type == 67 || $type == 68 || $type == 69 || $type == 70
 	    || $type == 71) {
 
-	my($list) = $_SPINOFF->{$dttm};
+	my($list) = $_SPINOFF->{$date_time};
 
 	for (my($i) = 0; $i < int(@$list); $i += 2) {
 	    if ($id == $list->[$i] && $source_id == $list->[$i + 1]) {
@@ -948,6 +949,7 @@ sub _create_entry {
 	    $transaction->get_request());
 
     $entry->create({
+	realm_id => $attributes->{club_id},
 	realm_transaction_id => $transaction->get('realm_transaction_id'),
 	class => $trans->{class}->as_int(),
 	entry_type => $_TYPE_MAP->{
@@ -964,6 +966,7 @@ sub _create_entry {
 		$transaction->get_request());
 	$member_entry->create({
 	    entry_id => $entry->get('entry_id'),
+	    realm_id => $attributes->{club_id},
 	    user_id => $attributes->{member_id_map}->{$trans->{id}},
 	    units => $trans->{'units'},
 	});
@@ -974,6 +977,7 @@ sub _create_entry {
 			$transaction->get_request());
 	$instrument_entry->create({
 	    entry_id => $entry->get('entry_id'),
+	    realm_id => $attributes->{club_id},
 	    realm_instrument_id => $attributes->{instrument_id_map}->{
 		$trans->{id}},
 	    count => $trans->{count},
@@ -987,6 +991,7 @@ sub _create_entry {
 	my($account) = $trans->{account_type};
 	$account_entry->create({
 	    entry_id => $entry->get('entry_id'),
+	    realm_id => $attributes->{club_id},
 	    realm_account_id => $attributes->{accounts}->{
 #TODO: use constants
 		$account == 0 ? 'bank'
@@ -1118,11 +1123,11 @@ sub _process_transactions {
 	    next;
 	}
 
-	my($dttm) = $trans->{dttm};
+	my($date_time) = $trans->{date_time};
 	my($transaction) = _create_transaction($attributes->{club_id},
-		$attributes->{user_id},	$trans->{class}, $dttm);
+		$attributes->{user_id},	$trans->{class}, $date_time);
 
-	_create_entries($easyware_trans, $transaction, $trans->{id}, $dttm,
+	_create_entries($easyware_trans, $transaction, $trans->{id}, $date_time,
 		$trans->{transaction_type}, $attributes);
     }
     return;
