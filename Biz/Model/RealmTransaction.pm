@@ -33,14 +33,10 @@ and delete interface to the C<realm_transaction_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Auth::Role;
 use Bivio::SQL::Connection;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
-use Bivio::Type::Honorific;
-use Bivio::Type::Integer;
-use Bivio::Biz::Model::MemberEntry;
-use Bivio::Biz::Model::RealmUser;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 
@@ -91,57 +87,6 @@ sub cascade_delete {
     $self->SUPER::cascade_delete;
     return;
 }
-
-=for html <a name="cascade_delete"></a>
-
-=head2 cascade_delete()
-
-Deletes this transaction, and all its entires, member entries,
-instrument entries, and account entries.
-
-Note: this method doesn't audit the books after the date or change
-a member's state. The caller is responsible for ensuring the books are
-audited after this operation.
-
-sub cascade_delete {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($id) = $self->get('realm_transaction_id');
-
-    # delete member, instrument, and account entries
-    # and cash expenses
-    foreach my $table (qw(member_entry_t realm_instrument_entry_t
-	    realm_account_entry_t expense_info_t)) {
-	Bivio::SQL::Connection->execute('
-                DELETE FROM '.$table.'
-                WHERE entry_id IN (
-                    SELECT entry_id FROM entry_t
-                    WHERE realm_transaction_id=?
-                    AND realm_id=?)',
-		[$id, $req->get('auth_id')]);
-    }
-
-    # delete entries
-    Bivio::SQL::Connection->execute('
-            DELETE FROM entry_t
-            WHERE realm_transaction_id=?
-            AND realm_id=?',
-	    [$id, $req->get('auth_id')]);
-
-    # unhook account sync entries
-    Bivio::SQL::Connection->execute('
-            UPDATE account_sync_t
-            SET realm_transaction_id=?
-            WHERE realm_transaction_id=?
-            AND realm_id=?',
-	    [undef, $id, $req->get('auth_id')]);
-
-    # delete the transaction
-    $self->delete();
-    return;
-}
-
-=cut
 
 =for html <a name="create"></a>
 
@@ -195,6 +140,23 @@ sub generate_entry_remark {
 	die("invalid entry class $class");
     }
     return $remark;
+}
+
+=for html <a name="has_transactions"></a>
+
+=head2 static has_transactions(Bivio::Agent::Request req) : boolean
+
+Returns 1 if the current realm has any accounting transactions.
+
+=cut
+
+sub has_transactions {
+    my($proto, $req) = @_;
+    return Bivio::SQL::Connection->execute_one_row('
+            SELECT COUNT(*)
+            FROM realm_transaction_t
+            WHERE realm_id=?',
+	    [$req->get('auth_id')])->[0] ? 1 : 0;
 }
 
 =for html <a name="internal_initialize"></a>
