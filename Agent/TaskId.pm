@@ -338,7 +338,7 @@ my(@_CFG) = (
         help=account-report
     )],
     [qw(
-        CLUB_ADMIN_SUBSCRIPTIONS
+        CLUB_ADMIN_EC_SUBSCRIPTIONS
         28
         CLUB
         ADMIN_READ
@@ -348,68 +348,78 @@ my(@_CFG) = (
         Bivio::Biz::Model::ECSubscriptionList->execute_load_all_with_query
         Bivio::Biz::Model::ECSubscriptionListForm->execute_if_allowed
         Bivio::UI::HTML::Club::ECSubscriptionList
-        next=CLUB_ADMIN_SUBSCRIPTIONS
+        next=CLUB_ADMIN_EC_SUBSCRIPTIONS
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_SUBSCRIBE_ACCOUNT_SYNC
+        CLUB_ADMIN_EC_SUBSCRIBE_ACCOUNT_SYNC
         29
         CLUB
-        ADMIN_READ&ADMIN_WRITE
-        ?/admin/subscription/account-sync
+        ADMIN_READ
+        ?/admin/subscribe/account-sync
+        Bivio::Biz::Model::Lock
         Bivio::Type::ECSubscription->execute_account_sync
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_SUBSCRIPTIONS
+        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_SUBSCRIBE_ACCOUNT_KEEPER
+        CLUB_ADMIN_EC_SUBSCRIBE_ACCOUNT_KEEPER
         30
         CLUB
-        ADMIN_READ&ADMIN_WRITE
-        ?/admin/subscription/account-keeper
+        ADMIN_READ
+        ?/admin/subscribe/account-keeper
+        Bivio::Biz::Model::Lock
         Bivio::Type::ECSubscription->execute_account_keeper
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_SUBSCRIPTIONS
+        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_SUBSCRIPTION_DETAIL
+        CLUB_ADMIN_EC_SUBSCRIPTION_DETAIL
         31
         CLUB
-        ADMIN_READ&ADMIN_WRITE
+        ADMIN_READ
         ?/admin/subscription/detail
         Bivio::Biz::Model::ECSubscription
         Bivio::UI::HTML::Club::ECSubscriptionDetail
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_SUBSCRIPTION_PAYMENT
+        CLUB_ADMIN_EC_SUBSCRIPTION_PAYMENT
         32
         CLUB
-        ADMIN_READ&ADMIN_WRITE
-        ?/admin/subscription/payment
+        ADMIN_READ
+        ?/admin/subscription/renew
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ECSubscriptionForm
         Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_SUBSCRIPTIONS
+        next=CLUB_ADMIN_EC_SUBSCRIPTIONS
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_PAYMENTS
+        CLUB_ADMIN_EC_PAYMENTS
         33
         CLUB
         ADMIN_READ
         ?/admin/payments
         Bivio::Biz::Model::ECPaymentList->execute_load_page
         Bivio::UI::HTML::Club::ECPaymentList
-        next=CLUB_ADMIN_PAYMENTS
+        next=CLUB_ADMIN_EC_PAYMENTS
+        require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_PAYMENT_DETAIL
+        CLUB_ADMIN_EC_PAYMENT_DETAIL
         34
         CLUB
         ADMIN_READ
         ?/admin/payment/detail
         Bivio::Biz::Model::ECPayment
         Bivio::UI::HTML::Club::ECPaymentDetail
-        next=CLUB_ADMIN_PAYMENT_DETAIL
+        next=CLUB_ADMIN_EC_PAYMENT_DETAIL
+        require_secure=1
     )],
     [qw(
 	ADM_EC_PAYMENTS
@@ -417,25 +427,25 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/ec-payments
-	Bivio::Biz::Model::SubstituteUserForm
-        Bivio::Biz::Model::ECPaymentListAll->execute_load_page
-	Bivio::UI::HTML::Adm::ECPaymentListAll
+        Bivio::Biz::Model::ECAdmPaymentList->execute_load_page
+	Bivio::UI::HTML::Adm::ECPaymentList
         next=HTTP_DOCUMENT
+        require_secure=1
     )],
     [qw(
-        GENERAL_PAYMENTS_PROCESS_ALL
+        EC_PAYMENTS_PROCESS_ALL
         36
         GENERAL
         DOCUMENT_READ
-        /_ec_payments_process_all
+        _ec_payments_process_all
         Bivio::Biz::Action::ECPaymentProcessAll
     )],
     [qw(
-        CLUB_ADMIN_PROCESS_PAYMENT
+        CLUB_ADMIN_EC_PROCESS_PAYMENT
         37
         CLUB
-        DOCUMENT_READ
-        ?/_ec_payment_process
+        ADMIN_WRITE
+        !
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ECPayment->execute_process
     )],
@@ -820,8 +830,33 @@ my(@_CFG) = (
         Bivio::UI::HTML::Realm::EditPhone
         next=USER_ADMIN_INFO
     )],
-#74
-#75
+    [qw(
+        CLUB_ADMIN_EC_SUBSCRIBE_PREMIUM_SUPPORT
+        74
+        CLUB
+        ADMIN_READ
+        ?/admin/subscribe/premium-support
+        Bivio::Biz::Model::Lock
+        Bivio::Type::ECSubscription->execute_premium_support
+        Bivio::Biz::Model::ECSubscriptionForm
+        Bivio::UI::HTML::Club::ECSubscription
+        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        require_secure=1
+    )],
+    [qw(
+        USER_ADMIN_EC_PAYMENT
+        75
+        USER
+        ADMIN_READ
+        ?/admin/pay/merchandise
+        Bivio::Biz::Model::Lock
+        Bivio::Type::ECSubscription->execute_unknown
+        Bivio::Type::ECPayment->execute_merchandise
+        Bivio::Biz::Model::ECSubscriptionForm
+        Bivio::UI::HTML::Club::ECSubscription
+        next=USER_ADMIN_INFO
+        require_secure=1
+    )],
     [qw(
         CLUB_ADMIN_INVITE_LIST
         76
@@ -913,6 +948,7 @@ my(@_CFG) = (
 	Bivio::UI::HTML::Adm::SubstituteUser
         next=USER_HOME
         cancel=HTTP_DOCUMENT
+        require_secure=1
     )],
     [qw(
 	GENERAL_CONTACT
@@ -933,7 +969,14 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClientRedirect->execute_query
         next=MY_SITE
     )],
-#85
+    [qw(
+        CLUB_ADMIN_EC_SUBSCRIBE_DONE
+        85
+        CLUB
+        ADMIN_READ
+        ?/admin/subscribe/done
+        Bivio::UI::HTML::Club::ECSubscriptionDone
+    )],
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_TRANSACTION_DELETE
@@ -1414,7 +1457,7 @@ my(@_CFG) = (
         134
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
-        ?/admin/invite/offline_members
+        ?/admin/invite/offline_members:?/admin/invite/offline-members
         Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::UninvitedMemberList->execute_load_all_active
         Bivio::Biz::Model::InviteMemberListForm
@@ -2563,6 +2606,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AdmFindRealmOwnerForm
         Bivio::UI::HTML::Adm::FindRealmOwner
         next=HTTP_DOCUMENT
+        require_secure=1
     )],
     [qw(
         USER_ADMIN_PREFERENCES_EDIT
