@@ -224,6 +224,18 @@ sub get_primary_key_names {
     return shift->{$_PACKAGE}->{primary_key_names};
 }
 
+=for html <a name="get_table_name"></a>
+
+=head2 get_table_name() : string
+
+Returns table name for this instance.
+
+=cut
+
+sub get_table_name {
+    return shift->{$_PACKAGE}->{table_name};
+}
+
 =for html <a name="has_columns"></a>
 
 =head2 has_columns(string column_name, ...) : boolean
