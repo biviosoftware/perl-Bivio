@@ -78,8 +78,7 @@ sub merge_overrides {
 	'Bivio::IO::ClassLoader' => {
 	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Agent::TaskId',
-		'Bivio::Agent::HTTP::Cookie' =>
-		    'Bivio::Delegate::PersistentCookie',
+		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
 		'Bivio::UI::HTML::FormErrors' =>
 	    	    'Bivio::PetShop::UI::FormErrors',
 		'Bivio::TypeError' => 'Bivio::PetShop::TypeError',
