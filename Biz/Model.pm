@@ -303,8 +303,6 @@ sub throw_die {
     $attrs ||= {};
     ref($attrs) eq 'HASH' || ($attrs = {message => $attrs});
     $attrs->{model} = $self;
-    # Don't call get_request, because will blow up if not set.
-    $attrs->{request} = $self->unsafe_get_request;
     Bivio::Die->throw($code, $attrs, $package, $file, $line);
 }
 
