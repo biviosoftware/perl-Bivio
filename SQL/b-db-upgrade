@@ -250,61 +250,30 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_fix_club_accounting_subscription_start($req);
+    _upgrade_subscription_constraint($req);
     print("\n*** done ***\n");
     return;
 }
 
-sub _upgrade_fix_club_accounting_subscription_start {
+# _upgrade_subscription_constraint(Bivio::Agent::Request req)
+#
+# Expands ec_subscription_t.subscription_type constraint
+#
+sub _upgrade_subscription_constraint {
     my($req) = @_;
-
-    use Bivio::Type::Date;
-    use Bivio::Type::ECSubscription;
-
-    print("fixing club accounting subscription start for 11/5 and 11/10\n");
-    my($payment) = Bivio::Biz::Model->new($req, 'ECPayment');
-    my($subscription) = Bivio::Biz::Model->new($req, 'ECSubscription');
-    my($sth) = Bivio::SQL::Connection->execute('
-        SELECT realm_owner_t.name,
-            ec_subscription_t.ec_subscription_id
-        FROM realm_owner_t, ec_subscription_t
-        WHERE realm_owner_t.realm_id=ec_subscription_t.realm_id
-        AND subscription_type=?
-        AND (start_date=TO_DATE(?, \'J SSSSS\')
-            OR start_date=TO_DATE(?, \'J SSSSS\'))
-        ORDER by realm_owner_t.name',
-	[
-	    Bivio::Type::ECSubscription->BASIC_SERVICE->as_int,
-	    Bivio::Type::Date->from_literal_or_die('11/5/2001'),
-	    Bivio::Type::Date->from_literal_or_die('11/10/2001'),
-	]);
-
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($name, $subscription_id) = @$row;
-	$req->set_realm($name);
-	$subscription->load({ec_subscription_id => $subscription_id});
-	$payment->load({ec_subscription_id => $subscription_id});
-
-	my($date) = $payment->get('creation_date_time');
-	next unless Bivio::Type::Date->compare(
-	    $date, $subscription->get('start_date')) > 0;
-
-	my($start_date) = Bivio::Type::Date->get_previous_day(
-	    Bivio::Type::Date->from_literal_or_die(
-		Bivio::Type::Date->get_part($date, 'month').'/'
-		.Bivio::Type::Date->get_part($date, 'day').'/'
-		.Bivio::Type::Date->get_part($date, 'year')));
-
-	print($name, "\t", Bivio::Type::Date->to_literal(
-		$subscription->get('start_date')), " --> ",
-	    Bivio::Type::Date->to_literal($start_date), "\n");
-
-	$subscription->update({
-	    start_date => $start_date,
-	});
-    }
+    print("expanding ec_subscription_t.subscription_type constraint\n");
+    _drop_constraints('ec_subscription_t', 'subscription_type');
+    _do_sql('
+ALTER TABLE ec_subscription_t modify subscription_type not null
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t3
+  check (subscription_type between 1 and 6)
+/
+');
     return;
 }
+
 # _usage(array message)
 #
 # Print a message and terminate
