@@ -24,6 +24,22 @@ Bivio::Test->unit([
 		 ) and die('lock should not be obtained');
 		 return;
 	    }, 'Bivio::ShellUtil::t::ShellUtil'] => 1,
+	    sub {
+		# Test to see if we delete the lock when owner dies
+		my($child) = fork;
+		if ($child) {
+		    waitpid($child, 0) == $child
+			or die('wrong process died');
+		    $? >> 8 == 0
+			or die($?, ": bad exit code");
+		    return [sub {return}, 'Bivio::ShellUtil::t::ShellUtil'];
+	        }
+		Bivio::ShellUtil->lock_action(sub {
+		    kill('KILL', $$);
+		}, 'Bivio::ShellUtil::t::ShellUtil',
+		);
+	        die("shouldn't get here!");
+	    } => 1,
 	],
     ],
     'Bivio::t::ShellUtil::T1' => [

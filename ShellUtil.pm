@@ -244,6 +244,7 @@ use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::Type::DateTime;
 use Bivio::TypeError;
+use POSIX ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -573,8 +574,12 @@ uses C<caller> subroutine name.  The usage is:
 Prints a warning of the lock couldn't be obtained.  If I<op> dies,
 rethrows die after removing lock.
 
+The lock is a directory, and is owned by process.  If that process dies,
+the lock is removed and re-acquired by this process.
+
 Returns true if lock was obtained and I<op> executed without dying.
 Returns false if lock could not be acquired.
+
 
 B<DEPRECATED USAGE BELOW>
 
@@ -599,13 +604,27 @@ sub lock_action {
     my(undef, $op, $name) = @_;
     return _deprecated_lock_action(@_)
 	unless ref($op) eq 'CODE';
-    $name ||= (caller(1))[3];
-    $name =~ s/::/./g;
-    my($lock) = '/tmp/' . $name . '.lockdir';
-    return _lock_warning($lock)
-	unless mkdir($lock, 0700);
+    my($lock_dir, $lock_pid) = _lock_files($name);
+    for my $retry (1, 0) {
+	last if mkdir($lock_dir, 0700);
+	unless ($retry) {
+	    Bivio::IO::Alert->warn(
+		$lock_dir, ': unable to delete lock for dead process');
+	    return _lock_warning($lock_dir);
+	}
+	my($pid) = ${Bivio::IO::File->read($lock_pid)};
+	return _lock_warning($lock_dir)
+	    if _process_exists($pid);
+	Bivio::IO::Alert->warn($pid, ": process doesn't exist, removing ",
+	    $lock_dir);
+	# Don't test results, because there may be contention
+	unlink($lock_pid);
+	rmdir($lock_dir);
+    }
+    Bivio::IO::File->write($lock_pid, $$);
     my($die) = Bivio::Die->catch($op);
-    rmdir($lock);
+    unlink($lock_pid);
+    rmdir($lock_dir);
     $die->throw
 	if $die;
     return 1;
@@ -1109,6 +1128,18 @@ sub _initialize {
     return $self;
 }
 
+# _lock_files(string name) : array
+#
+# Returns the $name converted to (lock_dir, lock_pid)
+#
+sub _lock_files {
+    my($name) = @_;
+    $name ||= (caller(1))[3];
+    $name =~ s/::/./g;
+    my($d) = '/tmp/' . $name . '.lockdir';
+    return ($d, "$d/pid");
+}
+
 # _lock_warning(string lock_dir) : int
 #
 # Prints warning with lock_dir's age.  Returns 0
@@ -1196,6 +1227,16 @@ sub _parse_realm_id {
     $self->usage_error($realm, ': no such ', $attr)
 		unless $ro->unauth_load_by_email_id_or_name($realm);
     return $ro->get('realm_id');
+}
+
+# _process_exists(string pid) : boolean
+#
+# Returns true if $pid exists
+#
+sub _process_exists {
+    my($pid) = @_;
+    $! = undef;
+    return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
 }
 
 # _result_email(Bivio::ShellUtil self, string cmd, string_ref res) : boolean
