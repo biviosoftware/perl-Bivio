@@ -118,6 +118,8 @@ sub audit_units {
 	    Bivio::SQL::ListQuery->new({
 		count => Bivio::Type::Integer->get_max,
 		auth_id => $req->get('auth_id'),
+#TODO: want the transaction date ascending, this isn't apparent
+		o => '0a',
 #TODO: this doesn't look right
 	    }, $entries->internal_get_sql_support()));
 
