@@ -263,7 +263,7 @@ CREATE INDEX csi_instrument_t4 on csi_instrument_t (
 
 # _upgrade_mail_t()
 #
-#
+# Replace is_thread_root with num_replies column
 #
 sub _upgrade_mail_t {
     print("updating mail_t\n");
@@ -277,6 +277,15 @@ update mail_t set num_replies=0
 alter table mail_t modify num_replies not null
 /
 ');
+    return;
+}
+
+# _upgrade_rethread_mail()
+#
+# Rethread all mail messages
+#
+sub _upgrade_rethread_mail {
+    print("rethreading mail_t\n");
     use Bivio::Biz::Util::Mail;
     Bivio::Biz::Util::Mail->main('rethread_all');
     return;
