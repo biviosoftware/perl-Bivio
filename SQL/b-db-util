@@ -1,0 +1,47 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-db-util - general database queries
+
+=head1 SYNOPSIS
+
+  b-db-util options...
+
+=head1 DESCRIPTION
+
+See L<Bivio::SQL::Util|Bivio::SQL::Util>.
+
+=cut
+
+#=IMPORTS
+use Bivio::SQL::Util;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+Bivio::SQL::Util->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::SQL::Util
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
