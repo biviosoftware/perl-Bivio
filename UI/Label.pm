@@ -191,6 +191,9 @@ _compile(
     CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
     CLUB_ADMIN_GUEST_2_MEMBER => ['Invite Guest to become Member'],
     CLUB_OPEN_BALANCE => ['Edit Opening Balances'],
+    CLUB_MAIL_DELETE => ['Mail Delete'],
+    CLUB_ACCOUNTING_MEMBER_WITHDRAWAL => ['Member Withdrawal'],
+    CLUB_ADMIN_MEMBER_DELETE => ['Member Delete'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
@@ -257,6 +260,9 @@ _compile(
     TAX_SALES_PRICE_HEADING => ['(d) Sales price'],
     TAX_COST_BASIS_HEADING => ['(e) Cost or other basis'],
     TAX_GAIN_HEADING => ['(f) Gain or (loss)'],
+
+    # Misc. Features
+    NEW_HARDWARE => ['New Computers'],
 );
 
 =head1 METHODS
