@@ -464,6 +464,21 @@ sub verify_text {
     return;
 }
 
+=for html <a name="verify_title"></a>
+
+=head2 verify_title(string title)
+
+Verifies that the specified title appears on the page.
+
+=cut
+
+sub verify_title {
+    my($self, $title) = @_;
+    Bivio::Die->die($title, ': title not found in response')
+	    unless $self->get_content =~ /<title>.*$title.*<\/title>/;
+    return;
+}
+
 =for html <a name="verify_uri"></a>
 
 =head2 verify_uri(string uri)
