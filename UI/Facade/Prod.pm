@@ -123,6 +123,11 @@ my($_SELF) = __PACKAGE__->new({
                   home_login_bg
             )],
 		    0xFFCC33);
+
+	    # Club Index
+	    $fc->group(club_index_change_plus => 0x00FF33);
+	    $fc->group(club_index_change_zero => 0x000000);
+	    $fc->group(club_index_change_minus => 0xFF0033);
 	    return;
 	},
     },
@@ -231,6 +236,12 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(home_login_field_label => ['size=xx-small']);
 	    $fc->group(home_login_site_header => ['bold']);
 	    $fc->group(home_date => ['size=large']);
+
+	    # Club Index doesn't scale
+	    $fc->group(club_index_today => ['size=small']);
+	    $fc->group(club_index_change_plus => ['size=x-small']);
+	    $fc->group(club_index_change_zero => ['size=x-small']);
+	    $fc->group(club_index_change_minus => ['size=x-small']);
 	    return;
 	}
     },
