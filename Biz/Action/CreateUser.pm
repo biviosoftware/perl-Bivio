@@ -30,6 +30,7 @@ use Bivio::Biz::PropertyModel::Club;
 use Bivio::Biz::PropertyModel::ClubUser;
 use Bivio::Biz::PropertyModel::RealmOwner;
 use Bivio::Biz::PropertyModel::RealmUser;
+use Bivio::Biz::PropertyModel::User;
 use Bivio::Biz::PropertyModel::UserEmail;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
