@@ -76,9 +76,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref attributes) : Bivio::UI::Widget::Director
-
-=head2 static new(any control, hash_ref values, Bivio::UI::Widget default_value, Bivio::UI::Widget undef_value) : Bivio::UI::Widget::Director
+=head2 static new(any control, hash_ref values, Bivio::UI::Widget default_value, Bivio::UI::Widget undef_value, hash_ref attributes) : Bivio::UI::Widget::Director
 
 Create a C<Director> widget with I<control>, I<values>,
 I<default_value>, and I<undef_value>.  The last three of
@@ -86,10 +84,14 @@ which may be C<undef>.
 
 Creates a new Director widget.
 
+=head2 static new(hash_ref attributes) : Bivio::UI::Widget::Director
+
+Creates a new Director widget with named attributes.
+
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -151,6 +153,26 @@ sub internal_as_string {
     return $self->unsafe_get('control');
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $control, $values, $default_value, $undef_value, $attrs) = @_;
+    return '"control" attribute must be defined' unless defined($control);
+    return {
+	control => $control,
+	values => $values ? $values : {},
+	default_value => $default_value,
+	undef_value => $undef_value,
+	($attrs ? %$attrs : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)
@@ -169,23 +191,6 @@ sub render {
 }
 
 #=PRIVATE METHODS
-
-# _new_args(proto, any value) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $value, $values, $default_value, $undef_value) = @_;
-    return ($proto, $value) if ref($value) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
-	control => $value,
-	values => $values ? $values : {},
-	default_value => $default_value,
-	undef_value => $undef_value,
-    }) if ref($value) eq 'ARRAY';
-    Bivio::Die->die('invalid arguments to new');
-    # DOES NOT RETURN
-}
 
 # _select(self, any source) : Bivio::UI::Widget
 #
