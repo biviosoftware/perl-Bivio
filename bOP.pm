@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test.create_object renamed from compute_object
+  * Bivio::Test.class_name adds a create_object for the class
+  * Bivio::Test.check_return can return a Regexp (better code sharing, too)
+
+  Revision 1.30  2002/11/08 22:36:52  nagler
+  * Bivio::Biz::Model::MailReceiveDispatchForm supports alternative
+    authentication methods
+  * Bivio::Agent::Task/Id has better documentation
+  * Bivio::SQL::Connection error handling improved
   * Bivio::Test allows subroutine for object (compute_object)
   * Bivio::UI::HTML::Widget::Radio allows dynamic labels and positional
     arguments
