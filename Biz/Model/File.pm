@@ -709,7 +709,7 @@ sub _set_title_in_auxinfo {
     $t =~ s/(["\\])/\\$1/g;
 
     # Append the title to aux_info
-    $i =~ s/([^\n])$/$1\n/;
+    $i =~ s/\s+$/\n/;
     $i .= "Title: \"".$t.'"';
 
     # just in case, truncate.  Doesn't matter if it is in the middle
