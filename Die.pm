@@ -70,9 +70,9 @@ Bivio::IO::Config->register({
 
 =for html <a name="catch"></a>
 
-=head2 catch(code_ref code) : Bivio::Die or undef
+=head2 catch(any code) : Bivio::Die
 
-=head2 catch(string code) : Bivio::Die or undef
+=head2 catch(any code, ref die) : any
 
 Installs a local C<$SIG{__DIE__}> handler, calls I<code>.
 If I<code> succeeds without error, C<undef> is returned.
@@ -90,10 +90,18 @@ object will be created and chained on to the current die.
 You may not call catch from within a die handler, because
 C<$SIG{__DIE__}> is specifically disabled.
 
+If I<code> is a string or string_ref, will be evaled in the caller's package.
+
+If I<die> is a ref (scalar or ref), the return value of this method
+will be the return value (with appropriate wantarray context) of I<code>.
+I<die> will be C<undef> if I<code> succeeded.
+If I<code> threw a Die, I<die> will contain that value
+and the return value will be C<undef> or an empty list.
+
 =cut
 
 sub catch {
-    my($proto, $code) = @_;
+    my($proto, $code, $die) = @_;
     Bivio::Die->die(Bivio::DieCode::CATCH_WITHIN_DIE(),
 	    {code => $code, program_error => 1}, (caller)[0], (caller)[2])
 		if $_IN_HANDLE_DIE;
@@ -110,11 +118,25 @@ sub catch {
 	       ));
 	return;
     };
-    my($self) = (ref($code) ? eval {&$code(); 1} : eval($code.'; 1'))
-	    ? undef : $_CURRENT_SELF;
-    $_CURRENT_SELF = undef;
-    $_IN_CATCH--;
-    return $self;
+
+    # Call in appropriate context and return appropriate result
+    unless (ref($die) =~ /^SCALAR$|^REF$/) {
+	# Normal case: no $die arg
+	_eval($code);
+	return _catch_done();
+    }
+
+    if (wantarray) {
+	# Return array with $die
+	my(@res) = _eval($code);
+	$$die = _catch_done();
+	return $$die ? () : @res;
+    }
+
+    # Return scalar with $die
+    my($res) = _eval($code);
+    $$die = _catch_done();
+    return $$die ? undef : $res;
 }
 
 =head1 METHODS
@@ -215,33 +237,46 @@ sub die {
 
 =head2 static eval(string code) : any
 
+=head2 static eval(string_ref code) : any
+
 Calls eval on I<code>, but turns off any handle_die processing.  This should be
-used everyhwere in place of a normal eval.  Returns the result of I<sub>.
+used everywhere in place of a normal eval.  Returns the result of I<sub>.
+
+If I<code> is a string or string_ref, will be evaled in the caller's package.
+
+NOTE: Warnings are not suppressed during code execution.
 
 =cut
 
 sub eval {
-    my($self, $code) = @_;
+    my(undef, $code) = @_;
     local($SIG{__DIE__});
-    return ref($code) ? eval {&$code();} : eval($code);
+    return _eval($code);
 }
 
 =for html <a name="eval_or_die"></a>
 
 =head2 static eval_or_die(any code) : any
 
-Calls L<eval|"eval"> and dies if it fails.
+Calls L<catch|"catch"> preserving calling context (using wantarray).  If the
+operation fails, rethrows the die.  Otherwise, returns the result as in
+L<catch|"catch"> with preseved call context.
 
 =cut
 
 sub eval_or_die {
-    my($self) = shift;
-    my($res) = $self->eval(@_);
-    $self->throw_die('DIE', {
-	message => $@,
-	program_error => 1,
-    }) if $@;
-    return $res;
+    my($proto, $code) = @_;
+    my($die);
+    if (wantarray) {
+	my(@res) = $proto->catch($code, \$die);
+	return @res unless $die;
+    }
+    else {
+	my($res) = $proto->catch($code, \$die);
+	return $res unless $die;
+    }
+    $die->throw;
+    # DOES NOT RETURN
 }
 
 =for html <a name="handle_config"></a>
@@ -419,6 +454,18 @@ sub _as_string_args {
     return $msg;
 }
 
+# _catch_done() : Bivio::Die
+#
+# Returns $_CURRENT_SELF if got an error ($@) or undef.
+# Cleans up catch state.
+#
+sub _catch_done {
+    my($self) =  $@ ? $_CURRENT_SELF : undef;
+    $_CURRENT_SELF = undef;
+    $_IN_CATCH--;
+    return $self;
+}
+
 # _check_code(any code, hash_ref attrs) : Bivio::Type::Enum
 #
 # Validates code and sets attributes to error state if invalid.
@@ -443,6 +490,20 @@ sub _check_code {
     return $code;
 }
 
+# _eval(any code) : any
+#
+# Evaluates code (maintaining return context)
+#
+sub _eval {
+    my($code) = @_;
+    return eval {&$code();} if ref($code) eq 'CODE';
+    my($i, $pkg) = 0;
+    0 while ($pkg = caller($i++)) eq __PACKAGE__;
+    # Don't put in newline, because would change line numbering
+    $pkg = 'package '.$pkg.'; ';
+    return eval(ref($code) eq 'SCALAR' ? $pkg.$$code : $pkg.$code);
+}
+
 # _handle_die(self)
 #
 # Called from within $SIG{__DIE__} inside catch.  $_CURRENT_SELF is
@@ -462,29 +523,37 @@ sub _handle_die {
 	my(@a);
 	my($prev_proto) = '';
 	my($stop) = -1;
+	my(%already_seen);
 	# Iterate until just one routine after catch
 	while ($stop <= 0 && do { { package DB; @a = caller($i++) } } ) {
 	    # Only start incrementing stop when "catch" is seen
 	    $stop++ if $stop >= 0;
 	    my($sub, $has_args) = @a[3,4];
 	    # Only call if argument is to a public method in a module
-	    defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args || next;
+	    next unless defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args;
 	    if ($sub eq "${_PACKAGE}::catch") {
 		# This gives us one more loop iteration
 		$stop++;
 		next;
 	    }
+
+	    # Does this sub's argument (self or proto) implement handle_die?
 	    my($proto) = $DB::args[0];
-	    $proto && UNIVERSAL::can($proto, 'handle_die') || next;
-	    # Don't call twice if in same "entry" into module
-	    $prev_proto ne $proto || next;
-	    $prev_proto = $proto;
-	    eval {
+	    next unless $proto && UNIVERSAL::can($proto, 'handle_die');
+
+	    # Don't call twice if in same "entry" into self or proto.
+	    # OK to call multiple times on instances of same class.
+	    next if $already_seen{$proto}++;
+
+	    # Continue if successful eval
+	    next if eval {
 		_trace("calling ", ref($proto) || $proto, "->handle_die")
 		    if $_TRACE;
 		$proto->handle_die($self);
 		1;
-	    } && next;
+	    };
+
+	    # Unsuccessful eval, chain the error.
 	    my($msg) = $@;
 	    # If not rethrow of an existing error?
 	    if ($msg eq "$self\n") {
