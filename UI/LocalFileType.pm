@@ -56,6 +56,10 @@ Denormalized files which can be rebuilt.
 
 Files by realm.
 
+=item DDL
+
+SQL files to create database
+
 =back
 
 =cut
@@ -79,6 +83,10 @@ __PACKAGE__->compile([
     REALM_DATA => [
         4,
         'realm-data/',
+    ],
+    DDL => [
+	5,
+	'ddl/',
     ],
 ]);
 
