@@ -155,7 +155,8 @@ my(@_CFG) = (
         CLUB
         MEMBER
         _:_/communications/mail:_/mail
-        Bivio::UI::HTML::Club::Embargoed
+        Bivio::Biz::Model::MessageList
+        Bivio::UI::HTML::Club::MessageList
     )],
     [qw(
         CLUB_COMMUNICATIONS_MOTION_LIST
@@ -385,8 +386,16 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_MEMBER_DETAIL
     )],
     [qw(
-        CLUB_ACCOUNTING_ACCOUNT_INTEREST
+        CLUB_COMMUNICATIONS_MESSAGE_DETAIL
         44
+        CLUB
+        MEMBER
+        _/communications/mail/mailmessage
+        Bivio::UI::HTML::Club::MessageDetail
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_INTEREST
+        45
         CLUB
         TREASURER
         _/accounting/account/interest
@@ -396,7 +405,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_DIVIDEND
-        45
+        46
         CLUB
         TREASURER
         _/accounting/account/dividend
@@ -406,7 +415,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INCOME
-        46
+        47
         CLUB
         TREASURER
         _/accounting/account/income
