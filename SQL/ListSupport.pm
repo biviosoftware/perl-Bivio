@@ -143,7 +143,7 @@ in_select to false for all columns.
 
 Use SELECT DISTINCT instead of SELECT.
 
-=item want_level_in_select : boolean
+=item want_level_in_select : boolean [0]
 
 Add C<LEVEL> to the select.  This is an Oracle specific field.
 It is used with C<CONNECT BY>.
@@ -261,8 +261,10 @@ sub new {
 	local_columns => [],
 	# See discussion of =item orabug_fetch_all_select
 	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
-	want_date => $decl->{want_date} ? 1 : 0,
-	can_iterate => $decl->{can_iterate} ? 1 : 0,
+	# Default is false
+	map({
+	    $_ => $decl->{$_} ? 1 : 0;
+	} qw(can iterate want_date)),
 	# Default is true
 	want_select => !defined($decl->{want_select}) || $decl->{want_select}
 	         ? 1 : 0,
@@ -364,6 +366,26 @@ sub load {
 
 #=PRIVATE METHODS
 
+# _count_pages(self, Bivio::SQL::ListQuery query, string where, array_ref params) : int
+#
+# Sets page_count and adjusts page_number.  Returns page_count.
+#
+sub _count_pages {
+    my($self, $query, $where, $params) = @_;
+    my($statement) = Bivio::SQL::Connection->execute(
+	$self->get('select_count') . $where, $params);
+    my($row_count) = $statement->fetchrow_array;
+    my($page_count) = _page_number($query, $row_count);
+    my($page_number) = $query->get('page_number');
+    _trace('page_count=', $page_count) if $_TRACE;
+    if ($page_number > $page_count) {
+	_trace('page_number (',  $page_number, ') > count') if $_TRACE;
+	$query->put(page_number => $page_number = $page_count);
+    }
+    $query->put(page_count => $page_count, row_count => $row_count);
+    return $page_count;
+}
+
 # _execute_select(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string where, array_ref params, any die) : DBI::Statement
 #
 # Prepare and execute the select statement.
@@ -372,10 +394,75 @@ sub _execute_select {
     my($self, $query, $where, $params, $die) = @_;
     my($attrs) = $self->internal_get;
     my($select, $from_where) = $self->unsafe_get('select', 'from_where');
-    $die->throw_die('DIE', 'must support select') unless $select;
+    ($die || 'Bivio::Die')
+	->throw_die('DIE', 'must support select') unless $select;
     _prepare_where($self, $query, \$from_where, \$where, $params);
     return Bivio::SQL::Connection->execute("$select$from_where$where",
 	$params);
+}
+
+# _find_list_start(self, Bivio::SQL::ListQuery query, string where, array_ref params, any die) : array
+#
+# Returns $rows and $statement after finding first row to return.
+#
+sub _find_list_start {
+    my($self, $query, $where, $params, $die) = @_;
+    my($db) = Bivio::SQL::Connection->get_instance;
+    my($select) = $self->get('select') . $where;
+    my($statement, $row);
+    my($page_number, $count) = $query->get(qw(page_number count));
+    foreach my $is_second_try (0 .. 1) {
+	# Set prev first, because there is a return in the for loop
+	if ($page_number > $query->FIRST_PAGE) {
+	    $query->put(has_prev => 1, prev_page => $page_number - 1);
+	}
+	else {
+	    $query->put(has_prev => 0, prev_page => undef,
+		# Avoids problems if page_number is negative
+		page_number => ($page_number = $query->FIRST_PAGE));
+	}
+	if ($db->CAN_LIMIT_AND_OFFSET) {
+	    $statement = $db->execute(
+		$select . sprintf(' OFFSET %d LIMIT %d',
+		    ($page_number - 1) * $count, $count),
+		 $params);
+	    return ($row, $statement)
+		if $row = $statement->fetchrow_arrayref;
+	    $statement->finish;
+	    return (undef, undef)
+		if $is_second_try || $page_number == $query->FIRST_PAGE;
+	    $page_number = _count_pages($self, $query, $where, $params);
+	    next;
+	}
+
+	# No LIMIT/OFFSET, so go through rows serially
+	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
+#TODO: Is this needed?  $count has to be > 0, no?
+	$start = 0 if $start < 0;
+	$statement = $db->execute($select, $params);
+	my($num_rows) = 0;
+
+	0 while $row = $statement->fetchrow_arrayref and ++$num_rows <= $start;
+	return ($row, $statement)
+	    if $row;
+	$statement->finish;
+	unless ($num_rows) {
+	    _trace('no rows found') if $_TRACE;
+	    return (undef, undef);
+	}
+	$query->put(page_number =>
+	    $page_number = _page_number($query, $num_rows));
+    }
+    continue {
+	_trace('last page=', $page_number, ', retrying') if $_TRACE;
+    }
+    ($die || 'Bivio::Die')->throw_die('DB_ERROR', {
+	message => 'unable to find page in list',
+	page_number => $page_number,
+	where => $where,
+	params => $params,
+    });
+    # DOES NOT RETURN
 }
 
 # _init_column_classes(hash_ref attrs, hash_ref decl) : string
@@ -547,64 +634,17 @@ sub _init_column_lists {
 sub _load_list {
     my($self, $query, $where, $params, $die) = @_;
     my($attrs) = $self->internal_get;
-    my($count, $page_number, $parent_id)
-	    = $query->get(qw(count page_number parent_id));
     my($from_where) = $attrs->{from_where};
-    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
-
     _prepare_where($self, $query, \$from_where, \$where, $params);
-
-    # Count the pages if requested
-    if ($query->unsafe_get('want_page_count')) {
-	my($statement) = Bivio::SQL::Connection->execute(
-		"$attrs->{select_count}$from_where$where", $params);
-	my($row_count) = $statement->fetchrow_array;
-	my($page_count) = _page_number($query, $row_count);
-	_trace('page_count=', $page_count) if $_TRACE;
-	if ($page_number > $page_count) {
-	    _trace('page_number (',  $page_number, ') > count') if $_TRACE;
-	    $query->put(page_number => $page_number = $page_count);
-	}
-	$query->put(page_count => $page_count, row_count => $row_count);
-    }
-
-    my($select) = "$attrs->{select}$from_where$where";
-    my($statement) = Bivio::SQL::Connection->execute($select, $params);
-
-    my($row);
- FIND_START: {
-	# Set prev first, because there is a return in the for loop
-	if ($page_number > $query->FIRST_PAGE()) {
-	    $query->put(has_prev => 1, prev_page => $page_number - 1);
-	}
-	else {
-	    $query->put(has_prev => 0, prev_page => undef);
-	}
-
-	# Find the page.  We load the first row of the page here.
-	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
-        if ($start < 0) {
-            $start = 0;
-        }
-	for (my($i) = 0; $i <= $start; $i++) {
-	    next if $row = $statement->fetchrow_arrayref;
-
-	    # End of list.
-	    $statement->finish;
-	    # No need to backup, there are no rows
-	    unless ($i) {
-		_trace('no rows found') if $_TRACE;
-		return [];
-	    }
-
-	    # Go back to last page.  Have to restart the select.
-	    $query->put(page_number =>
-		    $page_number = _page_number($query, $i));
-	    _trace('last page=', $page_number, ', retrying') if $_TRACE;
-	    $statement = Bivio::SQL::Connection->execute($select, $params);
-	    redo FIND_START;
-	}
-    }
+    $where = $from_where . $where;
+    _count_pages($self, $query, $where, $params)
+	if $query->unsafe_get('want_page_count');
+    my($auth_id) = $attrs->{auth_id} ? $query->get('auth_id') : undef;
+    my($count, $parent_id) = $query->get(qw(count parent_id));
+    my($row, $statement)
+	= _find_list_start($self, $query, $where, $params, $die);
+    return []
+	unless $row;
 
     # Avoid pointer chasing in loop
     my($auth_id_name) =  $attrs->{auth_id} ? $attrs->{auth_id}->{name} : undef;
@@ -638,7 +678,8 @@ sub _load_list {
 
     # Is there a next?
     if ($statement->fetchrow_arrayref) {
-	$query->put(has_next => 1, next_page => $page_number + 1);
+	$query->put(has_next => 1,
+	    next_page => $query->get('page_number') + 1);
 	# See discussion of =item orabug_fetch_all_select
 	if ($attrs->{orabug_fetch_all_select}) {
 	    0 while $statement->fetchrow_arrayref;
@@ -732,13 +773,13 @@ sub _load_this {
     return $rows;
 }
 
-# _page_number(Bivio::SQL::ListQuery query, int row_number) : int
+# _page_number(Bivio::SQL::ListQuery query, int num_rows) : int
 #
-# Returns the page number that $row_number is on.
+# Returns the page number that $num_rows is on.
 #
 sub _page_number {
-    my($query, $row_number) = @_;
-    return int(--$row_number/$query->get('count')) + $query->FIRST_PAGE();
+    my($query, $num_rows) = @_;
+    return int(--$num_rows/$query->get('count')) + $query->FIRST_PAGE();
 }
 
 # _prepare_order_by(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, string_ref where, array_ref params)
@@ -753,9 +794,10 @@ sub _prepare_order_by {
     # Formats order_by clause if there are order_by columns
     my($qob) = $query->get('order_by');
     return unless $qob && @$qob;
+    my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
     my($columns) = $attrs->{columns};
     $$where .= ' ORDER BY';
-    for (my($i) = 0; $i < int(@$qob); $i += 2) {
+    for (my($i) = 0; $i < $max_i; $i += 2) {
 	# Append to order_by (name, order)
 	$$where .= ' '.$columns->{$qob->[$i]}->{sql_name}
 		.($qob->[$i+1] ? ',' : ' desc,');
