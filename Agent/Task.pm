@@ -88,6 +88,10 @@ if the I<form_model> doesn't require it already.
 L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
 (even if supplied) if this is false.
 
+=item require_secure : boolean [0]
+
+Task must be in secure mode to function.
+
 =back
 
 =cut
@@ -232,6 +236,7 @@ sub new {
 
     # Other defaults
     $attrs->{want_query} = 1 unless defined($attrs->{want_query});
+    $attrs->{require_secure} = 0 unless defined($attrs->{require_secure});
 
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
@@ -294,6 +299,7 @@ the fact that L<handle_die|"handle_die"> is called to execute rollback.
 sub execute {
     my($self, $req) = @_;
     my($attrs) = $self->internal_get;
+    $req->client_redirect_if_not_secure() if $self->get('require_secure');
     my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
 #TODO: Handle multiple realms and roles.  Switching between should be possible.
     unless ($auth_realm->can_user_execute_task($self, $req)) {
@@ -508,7 +514,7 @@ sub _parse_map_item {
 	return;
     }
 
-    if ($cause =~ /^(?:require_context|want_query)$/) {
+    if ($cause =~ /^(?:require_context|want_query|require_secure)$/) {
 	$attrs->{$cause} = Bivio::Type::Boolean->from_literal_or_die($action);
 	return;
     }

@@ -1268,23 +1268,25 @@ my(@_CFG) = (
         122
         CLUB
         ANY_REALM_USER&LOGIN
-        ?/admin/edit/self/tax_id
+        ?/admin/edit/self/tax-id:?/admin/edit/self/tax_id
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
         next=CLUB_ADMIN_USER_DETAIL
+        require_secure=1
     )],
     [qw(
         CLUB_ADMIN_MEMBER_TAX_ID_EDIT
         123
         CLUB
         ADMIN_WRITE&MEMBER_WRITE&LOGIN
-        ?/admin/edit/member/tax_id
+        ?/admin/edit/member/tax-id:?/admin/edit/member/tax_id
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
         next=CLUB_ADMIN_USER_DETAIL
+        require_secure=1
     )],
     [qw(
         USER_ADMIN_TAX_ID_EDIT
@@ -1296,6 +1298,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
         next=USER_ADMIN_INFO
+        require_secure=1
     )],
     [qw(
         CLUB_ADMIN_TAX_ID_EDIT
@@ -1307,6 +1310,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
         next=CLUB_ADMIN_INFO
+        require_secure=1
     )],
     [qw(
         CLUB_ADMIN_INFO
