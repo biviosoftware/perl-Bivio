@@ -31,7 +31,7 @@ execute a task, and excutes the Task.
 use BSD::Resource;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Request;
-use Bivio::Agent::Tasks;
+use Bivio::Agent::Task;
 use Bivio::Agent::Views;
 use Bivio::Die;
 use Bivio::DieCode;
@@ -41,12 +41,11 @@ use Bivio::IO::Trace;
 use MIME::Parser;
 
 #=VARIABLES
-# No cor dumps please
+# No core dumps please
 setrlimit(RLIMIT_CORE, 0, 0);
-
+my($_INITIALIZED);
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_INITIALIZED);
 
 =head1 FACTORIES
 
@@ -89,12 +88,8 @@ sub process_request {
 			($auth_realm, $auth_user, $task_id)
 				= $req->get(qw(auth_realm auth_user task_id));
 			my($owner) = $auth_realm->unsafe_get('owner');
-			if ($owner) {
-			    my($f) = $auth_realm->get('owner_id_field');
-			    # owner is put by PropertyModel
-			    $req->put(auth_id => $owner->get('realm_id'),
-				    auth_id_field => $f);
-			}
+			$req->put(auth_id => $owner->get('realm_id'))
+				if $owner;
 			$auth_role = $auth_realm->get_user_role(
 				$auth_user, $req);
 		    }
@@ -130,7 +125,7 @@ sub initialize {
     $_INITIALIZED && return;
     Bivio::Agent::HTTP::Location->initialize;
     Bivio::Agent::Views->initialize;
-    Bivio::Agent::Tasks->initialize;
+    Bivio::Agent::Task->initialize;
     $_INITIALIZED = 1;
     return;
 }

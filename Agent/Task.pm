@@ -6,13 +6,15 @@ $Bivio::Agent::Task::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Agent::Task - defines the tuple (id, action, and view)
+Bivio::Agent::Task - defines the tuple (id, @items)
 
 =head1 SYNOPSIS
 
     use Bivio::Agent::Task;
-    Bivio::Agent::Task->new($id, $action, $model1, $view, $model2);
-    $task->get('id', 'action', 'view');
+    Bivio::Agent::Task->initialize();
+    Bivio::Agent::Task->new($id, @items);
+    $task->get('id');
+    $task->get('next');
     $task->execute($req)
 
 =cut
@@ -33,9 +35,14 @@ The following fields are returned by L<get|"get">:
 
 L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 
-=item action
+=item items
 
-=item view
+A list of classes which have an C<execute> method.
+
+=item next
+
+The next task_id to go to in certain cases.  Not always
+defined.
 
 =back
 
@@ -43,16 +50,17 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Biz::Action;
-use Bivio::Biz::Model;
+use Bivio::Collection::SingletonMap;
 use Bivio::DieCode;
 use Bivio::Mail::Common;
 use Bivio::SQL::Connection;
-use Bivio::UI::View;
+use Carp ();
+
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my(%_ID_TO_TASK) = ();
+my($_INITIALIZED);
 
 =head1 FACTORIES
 
@@ -71,23 +79,29 @@ items to be executed (in order).
 sub new {
     my($proto, $id, @items) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-#MODIFIES_SQL
-#MODIFIES_FILES
-#MODIFIES_MAIL_QUEUE
-    die("id invalid")
-	    unless $id->isa('Bivio::Agent::TaskId');
-    my($i);
-    foreach $i (@items) {
-	Carp::croak($i, ": can't be executed") unless $i->can('execute');
-    }
-    $_ID_TO_TASK{$id} && die($id->as_string, ': id already defined');
+    die("id invalid") unless $id->isa('Bivio::Agent::TaskId');
+    die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
+    my($i, $next, @new_items);
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
-    $self->{$_PACKAGE} = {
+    my($fields) = $self->{$_PACKAGE} = {
 	'id' => $id,
-	'items' => \@items,
     };
+    foreach $i (@items) {
+	if ($i =~ /^(next)=(\w+)$/) {
+	    $fields->{$1} = Bivio::Agent::TaskId->from_any($2);
+	}
+	else {
+	    my($c) = Bivio::Collection::SingletonMap->get($i);
+	    Carp::croak($i, ": can't be executed") unless $c->can('execute');
+	    push(@new_items, $c);
+	}
+    }
+    # If there is an error, we'll be caching instances in one of the
+    # hashes which may never be used.  Unlikely we'll be continuing after
+    # the error anyway...
+    $fields->{items} = \@new_items;
     return $_ID_TO_TASK{$id} = $self;
 }
 
@@ -150,8 +164,9 @@ Returns the list of attributes specified.
 sub get {
     my($fields) = shift->{$_PACKAGE};
     return map {
-	exists($fields->{$_}) || die("$_: no such attribute");
-	$fields->{$_}
+	Carp::croak("$_: no such attribute for ", $fields->{id}->as_string)
+		unless exists($fields->{$_});
+	$fields->{$_};
     } @_;
 }
 
@@ -165,7 +180,7 @@ Returns the task associated with the id.
 
 sub get_by_id {
     my(undef, $id) = @_;
-    die($id->as_string, ": no task associated with id")
+    Carp::croak($id->as_string, ": no task associated with id")
 	    unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
@@ -186,6 +201,28 @@ sub handle_die {
 #      commit handlers...??
     Bivio::SQL::Connection->rollback;
     Bivio::Mail::Common->discard_queued_messages;
+    return;
+}
+
+=for html <a name="initialize"></a>
+
+=head2 initialize()
+
+Initializes task list from the configuration in
+L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+
+=cut
+
+sub initialize {
+    return if $_INITIALIZED;
+    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
+    map {
+	my(@items) = @$_;
+	my($id_name) = shift(@items);
+	splice(@items, 0, 4);
+	Bivio::Agent::Task->new(Bivio::Agent::TaskId->$id_name(), @items);
+    } @$cfg;
+    $_INITIALIZED = 1;
     return;
 }
 
