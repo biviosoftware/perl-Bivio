@@ -19,8 +19,14 @@ bOP
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::Action::ISA = ('Bivio::UNIVERSAL');
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
+=cut
+
+use Bivio::Collection::Attributes;
+@Bivio::Biz::Action::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -67,7 +73,7 @@ sub get_instance {
 	$class = ref($proto) ? ref($proto) : $proto;
     }
 
-    $_CLASS_TO_SINGLETON{$class} = $class->new
+    $_CLASS_TO_SINGLETON{$class} = $class->new->set_read_only
 	    unless $_CLASS_TO_SINGLETON{$class};
     return $_CLASS_TO_SINGLETON{$class};
 }
@@ -100,6 +106,27 @@ sub execute {
     my($proto, $req, $class) = @_;
     die("abstract method") unless $class;
     return $proto->get_instance($class)->execute($req);
+}
+
+=for html <a name="put_on_request"></a>
+
+=head2 put_on_request(Bivio::Agent::Request req) : self
+
+Puts self on request.  May not be called with
+L<get_instance|"get_instance">.
+
+=cut
+
+sub put_on_request {
+    my($self, $req) = @_;
+    Bivio::Die->die($self, ': must be instance')
+	if !ref($self);
+    Bivio::Die->die($self, ': may not put singleton on request')
+	if $self->get_instance == $self;
+    foreach my $key ('Action.' . $self->simple_package_name, ref($self)) {
+	$req->put($key => $self);
+    }
+    return $self;
 }
 
 #=PRIVATE METHODS
