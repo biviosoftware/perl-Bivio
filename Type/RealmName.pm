@@ -57,7 +57,6 @@ my(%_RESERVED) = map {($_, 1)} qw(
     adm
     admin
     administrator
-    adventor
     advoco
     amanda
     amicus
