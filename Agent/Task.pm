@@ -38,7 +38,8 @@ The task_id to go to in other cases. Not required.
 =item die_actions
 
 The map of die codes (any enums, actually) to tasks executed when
-the die code is encountered for this task.
+the die code is encountered for this task.  I<Only maps if the
+request is from HTTP.>
 
 =item form_model
 
@@ -66,6 +67,10 @@ L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
 =item realm_type
 
 L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
+
+=item require_context
+
+The I<form_model> has C<require_context> defined.
 
 =back
 
@@ -177,8 +182,13 @@ sub new {
     if ($fields->{form_model}) {
 	Carp::croak($id->as_string, ": FormModels require \"next=\" item")
 		    unless $fields->{next};
+	$fields->{require_context} = $fields->{form_model}->get_instance
+		->get_info('require_context');
 	# default cancel to next unless present
 	$fields->{cancel} = $fields->{next} unless $fields->{cancel};
+    }
+    else {
+	$fields->{require_context} = 0;
     }
 
     # If there is an error, we'll be caching instances in one of the
@@ -267,9 +277,14 @@ and discard the mail queue unless is a <tt>CLIENT_REDIRECT_TASK</tt>
 or <tt>SERVER_REDIRECT_TASK</tt>.
 
 If I<proto> is a reference which can map the I<die> code in
-one of its I<die_actions> (cannot be redirect code).
+one of its I<die_actions> (cannot be redirect code) if the
+request is from HTTP.
+
 The die code is converted to <tt>SERVER_REDIRECT_TASK</tt>
 with the mapped die_action set as its I<task_id> attribute.
+
+If no specific I<die_action> is found, the C<DEFAULT_ERROR_REDIRECT_>
+task id is sought.
 
 =cut
 
@@ -286,9 +301,17 @@ sub handle_die {
     $proto->rollback;
     return unless ref($proto);
 
+    # Is this an HTTP request? (We don't redirect on non-http requests)
+    return unless $proto->isa('Bivio::Agent::HTTP::Request');
+
     # Mapped?
     my($new_task_id) = $proto->{$_PACKAGE}->{die_actions}->{$die_code};
-    return unless defined($new_task_id);
+    unless (defined($new_task_id)) {
+	# Default mapped?
+	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
+		'DEFAULT_ERROR_REDIRECT_'.$die_code->get_name);
+	return unless defined($new_task_id);
+    }
 
     # Redirected
     # This is enough tracing, because the dispatcher describes the transition
