@@ -220,7 +220,7 @@ sub delete {
                     [$new_root, $req->get('auth_id'), $mail_id]);
             _trace('Making ', $new_root, ' the new thread root') if $_TRACE;
             # Let all other thread members point to the new root message
-            my($sth) = Bivio::SQL::Connection->execute('
+            $sth = Bivio::SQL::Connection->execute('
                     UPDATE mail_t
                     SET thread_root_id = ?
                     WHERE realm_id = ?
