@@ -55,7 +55,8 @@ sub execute {
 #TODO: Look for club where user is not a guest.
     # All the work is in redirect which switches realms for us
     # Go to the task for my_club
-    $req->redirect($req->get('task')->get('next'));
+    $req->client_redirect($req->get('task')->get('next'));
+#    $req->redirect($req->get('task')->get('next'));
     # DOES NOT RETURN
 }
 
