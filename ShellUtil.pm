@@ -533,7 +533,8 @@ sub initialize_ui {
     Bivio::Agent::Dispatcher->initialize(1);
     Bivio::UI::Facade->setup_request(undef, $req);
     $req->put_durable(
-	task => Bivio::Agent::Task->get_by_id($req->get('task_id')));
+	task => Bivio::Agent::Task->get_by_id($req->get('task_id')))
+	if $req->unsafe_get('task_id');
     return;
 }
 
