@@ -14,10 +14,14 @@ Bivio::Biz::Model - a business object
     # load a model with data
     $model->load(id => 100);
 
+=head1 EXTENDS
+
+L<Bivio::Collection::Attributes>
+
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Biz::Model::ISA = qw(Bivio::UNIVERSAL);
+use Bivio::Collection::Attributes;
+@Bivio::Biz::Model::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
@@ -46,13 +50,53 @@ Creates a new model.
 
 sub new {
     my($proto, $req) = @_;
-    my($self) = &Bivio::UNIVERSAL::new(@_);
+    Carp::croak('invalid request') unless ref($req);
+    my($self) = &Bivio::Collection::Attributes::new($proto, {});
+    $self->{$_PACKAGE} = {
+	request => $req,
+    };
     return $self;
 }
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="clone"></a>
+
+=head2 clone()
+
+Not supported.
+
+=cut
+
+sub clone {
+    die('not supported');
+}
+
+=for html <a name="delete"></a>
+
+=head2 delete()
+
+Not supported.
+
+=cut
+
+sub delete {
+    die('not supported');
+}
+
+=for html <a name="delete_all"></a>
+
+=head2 delete_all()
+
+Not supported.
+
+=cut
+
+sub delete_all {
+    die('not supported');
+}
 
 =for html <a name="die"></a>
 
@@ -74,6 +118,19 @@ sub die {
     Bivio::Die->die($code, $attrs, $package, $file, $line);
 }
 
+=for html <a name="get_request"></a>
+
+=head2 get_request() : Bivio::Agent::Request
+
+Returns the request associated with this model.
+
+=cut
+
+sub get_request {
+    my($fields) = shift->{$_PACKAGE};
+    return $fields->{request};
+}
+
 =for html <a name="find"></a>
 
 =head2 abstract load(string key, string value, ...) : boolean
@@ -85,6 +142,18 @@ Returns 1 if successful, or 0 if no data was loaded.
 
 sub load {
     CORE::die("abstract method");
+}
+
+=for html <a name="put"></a>
+
+=head2 put()
+
+Not supported.
+
+=cut
+
+sub put {
+    CORE::die('not supported');
 }
 
 #=PRIVATE METHODS

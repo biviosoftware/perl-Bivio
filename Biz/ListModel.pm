@@ -79,10 +79,10 @@ sub new {
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
     $self->{$_PACKAGE} = {
-	request => $req,
 	class_info => $ci,
 	rows => [],
     };
+#TODO: Is this right?
     # List models are different from PropertyModels in that a load
     # always "succeeds" in the sense that it either "dies" or returns
     # the number of rows.  Therefore, we associate the model now
@@ -170,19 +170,6 @@ exists.
 
 sub get_default_sort_key {
     return undef;
-}
-
-=for html <a name="get_request"></a>
-
-=head2 get_request() : Bivio::Agent::Request
-
-Returns the request associated with this model.
-
-=cut
-
-sub get_request {
-    my($fields) = shift->{$_PACKAGE};
-    return $fields->{request};
 }
 
 =for html <a name="get_query_at"></a>

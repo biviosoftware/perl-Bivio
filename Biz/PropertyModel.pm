@@ -91,7 +91,6 @@ C<internal_initialize>.
 
 sub new {
     my($proto, $req) = @_;
-    Carp::croak('invalid request') unless ref($req);
     my($self) = &Bivio::Biz::Model::new($proto, $req);
     my($class) = ref($self);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
@@ -101,10 +100,9 @@ sub new {
 	} @{$ci->{sql_support}->get_column_names}
     };
     $self->{$_PACKAGE} = {
-	request => $req,
-	properties => $properties,
 	class_info => $ci,
     };
+    $self->internal_put($properties);
     return $self;
 }
 
@@ -149,7 +147,7 @@ sub create {
 	$new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
-    $fields->{properties} = $new_values;
+    $self->internal_put($new_values);
     $self->get_request->put(ref($self), $self);
     return;
 }
@@ -165,48 +163,8 @@ Deletes the current model from the database.   Dies on error.
 sub delete {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{class_info}->{sql_support}->delete($fields->{properties}, $self);
+    $fields->{class_info}->{sql_support}->delete($self->internal_get, $self);
     return;
-}
-
-=for html <a name="get"></a>
-
-=head2 get(string name) : (scalar or array)
-
-Returns the value of the named properties. The values may be a scalar for
-simple types, or array for complex types. Property names are exported
-throught the L<"get_field_names"> method.
-
-=cut
-
-sub get {
-    my($self, @names) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($properties) = $fields->{properties};
-    my(@res) = map {
-	Carp::croak("$_: unknown property") unless exists($properties->{$_});
-	$properties->{$_};
-    } @names;
-    return @res if wantarray;
-    Carp::croak('get not called in array context') unless int(@res) == 1;
-    return $res[0];
-}
-
-=for html <a name="get_field_names"></a>
-
-=head2 get_field_names() : array
-
-Returns an array of field names.
-
-=cut
-
-sub get_field_names {
-    my($self) = @_;
-#TODO: Cache the return result?
-#TODO: Filter those fields which shouldn't be filled in.
-    my($fields) = $self->{$_PACKAGE};
-    my(@names) = keys(%{$fields->{properties}});
-    return \@names;
 }
 
 =for html <a name="get_field_type"></a>
@@ -218,35 +176,6 @@ sub get_field_names {
 sub get_field_type {
     my($sql_support) = shift->{$_PACKAGE}->{class_info}->{sql_support};
     return $sql_support->get_column_type(@_);
-}
-
-=for html <a name="get_request"></a>
-
-=head2 get_request() : Bivio::Agent::Request
-
-Returns the request associated with this model.
-
-=cut
-
-sub get_request {
-    my($fields) = shift->{$_PACKAGE};
-    return $fields->{request};
-}
-
-=for html <a name="internal_get_fields"></a>
-
-=head2 protected internal_get_fields() : hash
-
-Returns the contents of the property hash. Only subclasses may call this
-method (enforced).
-
-=cut
-
-sub internal_get_fields {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    caller(0)->isa($_PACKAGE) || Carp::croak("protected method");
-    return $fields->{properties};
 }
 
 =for html <a name="internal_initialize"></a>
@@ -276,8 +205,7 @@ Subclasses shouldn't override this method.
 sub load {
     my($self) = shift;
     $self->unsafe_load(@_) && return;
-    Bivio::Die->die(Bivio::DieCode::NOT_FOUND(),
-	    {@_, entity => $self, request => $self->get_request}, caller);
+    $self->die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
 }
 
 =for html <a name="unauth_load"></a>
@@ -306,7 +234,7 @@ sub unauth_load {
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $ci->{sql_support}->unsafe_load(\%query, $self);
     return 0 unless $values;
-    $fields->{properties} = $values;
+    $self->internal_put($values);
     # If found, put a reference to this model in request
     $self->get_request->put(ref($self), $self);
     return 1;
@@ -328,11 +256,10 @@ sub unsafe_load {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
     Carp::croak('no query arguments') unless @_;
-    my($req) = $fields->{request};
 
     # Ensure we are only getting data from the realm we are authorized
     # to operate in.
-    my($k, $v) = $req->unsafe_get('auth_id_field', 'auth_id');
+    my($k, $v) = $self->get_request->unsafe_get('auth_id_field', 'auth_id');
     # Will override existing value for auth_id if any
     return $self->unauth_load(@_, $k ? ($k, $v) : ());
 }
@@ -349,7 +276,7 @@ NOTE: find should be called prior to an update.
 sub update {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($properties) = $fields->{properties};
+    my($properties) = $self->internal_get;
     $fields->{class_info}->{sql_support}->update($properties,
 	    $new_values, $self);
     my($n);
