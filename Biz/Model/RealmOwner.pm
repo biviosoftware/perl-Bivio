@@ -115,7 +115,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_email {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($name) = $proto->format_name($model, $model_prefix);
     return $name ? $model->get_request->format_email($name) : '';
 }
@@ -135,7 +135,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_http {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $model->get_request->format_http_prefix.$proto->format_uri(
 	   $model, $model_prefix);
 }
@@ -153,7 +153,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_mailto {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $model->get_request->format_mailto($proto->format_email(
 	   $model, $model_prefix));
 }
@@ -178,7 +178,7 @@ Other Models can declare a method of the form:
 =cut
 
 sub format_name {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($name) = $model->get($model_prefix.'name');
 
     if ($name =~ /^$_OFFLINE_PREFIX/o) {
@@ -206,7 +206,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub format_uri {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($name) = $proto->format_name($model, $model_prefix);
     Bivio::Die->die($model->get($model_prefix.'name'),
 	    ': must not be offline user') unless $name;
@@ -283,7 +283,7 @@ Returns true if the current row is the request's auth_user.
 =cut
 
 sub is_auth_user {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     my($auth_user) = $model->get_request->get('auth_user');
     return 0 unless $auth_user;
     return $model->get($model_prefix.'realm_id')
@@ -358,7 +358,7 @@ See L<format_name|"format_name"> for params.
 =cut
 
 sub is_offline_user {
-    my($proto, $model, $model_prefix) = _process_model_prefix_args(@_);
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $model->get($model_prefix.'name') =~ /^$_OFFLINE_PREFIX/o ? 1 : 0;
 }
 
@@ -472,17 +472,6 @@ sub unsafe_get_model {
 }
 
 #=PRIVATE METHODS
-
-# _process_model_prefix_args(self) : (proto, Bivio::Biz::Model, string)
-#
-# _process_model_prefix_args(proto, Bivio::Biz::Model model, string model_prefix) : (proto, Bivio::Biz::Model, string)
-#
-# Returns the class, target model and optional model prefix.
-#
-sub _process_model_prefix_args {
-    my($self, $model, $model_prefix) = @_;
-    return (ref($self) || $self, $model || $self, $model_prefix || '');
-}
 
 =head1 COPYRIGHT
 
