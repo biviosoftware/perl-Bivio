@@ -1639,6 +1639,28 @@ my(@_CFG) = (
         next=CLUB_ADMIN_USER_LIST
         NOT_FOUND=REALM_INVITE_NOT_FOUND
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
+        156
+        CLUB
+        ACCOUNTING_READ
+        %/accounting/reports/investment_sale
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::UI::HTML::Club::InstrumentSaleReport
+        next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
+        157
+        CLUB
+        ACCOUNTING_READ
+        %/accounting/reports/income_and_expense
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::UI::HTML::Club::IncomeAndExpenseReport
+        next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
+    )],
 );
 
 __PACKAGE__->compile(
