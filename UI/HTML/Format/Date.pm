@@ -55,6 +55,7 @@ sub get_widget_value {
     my(undef, $time, $year_digits) = @_;
     die("invalid year_digits $year_digits") if (defined($year_digits)
 	    && $year_digits != 2 && $year_digits != 4);
+    $year_digits ||= 4;
     my($sec, $min, $hour, $mday, $mon, $year) = localtime($time);
     return $year_digits == 2
 	    ? sprintf('%02d/%02d/%02d', $mon + 1, $mday, $year =~ /(\d\d)$/)
