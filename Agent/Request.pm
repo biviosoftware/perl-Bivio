@@ -241,7 +241,7 @@ Bivio::IO::Config->register({
     can_secure => 1,
 });
 my($_CURRENT);
-my($_GENERAL);
+my($_GENERAL) = Bivio::Auth::Realm::General->new;
 
 =head1 FACTORIES
 
@@ -1049,7 +1049,9 @@ sets C<auth_role>.  Returns the realm.
 
 sub set_realm {
     my($self, $new_realm) = @_;
-    $new_realm = Bivio::Auth::Realm->new($new_realm, $self)
+    $new_realm = defined($new_realm)
+	? Bivio::Auth::Realm->new($new_realm, $self)
+	: $_GENERAL
 	unless UNIVERSAL::isa($new_realm, 'Bivio::Auth::Realm');
     my($realm_id) = $new_realm->get('id');
     my($new_role) = _get_role($self, $realm_id);
@@ -1213,11 +1215,8 @@ sub _get_realm {
 #      all of this code.
     my($self, $realm_type, $task_id) = @_;
     # Find the appropriate realm
-    if ($realm_type eq Bivio::Auth::RealmType::GENERAL()) {
-	$_GENERAL = Bivio::Auth::Realm::General->new unless $_GENERAL;
-	return $_GENERAL;
-    }
-    if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
+    return $_GENERAL if $realm_type eq Bivio::Auth::RealmType->GENERAL;
+    if ($realm_type eq Bivio::Auth::RealmType->CLUB) {
 	my($user_realms) = $self->get('user_realms');
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
