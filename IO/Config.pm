@@ -466,42 +466,36 @@ sub _initialize {
     my($argv) = @_;
     %_CONFIGURED = ();
     # On failure, we have no configuration.
-    $_ACTUAL = {};
-    my($not_setuid) = $< == $> && $( == $);
+    $_ACTUAL = undef;
+    my($is_setuid) = !($< == $> && $( == $));
     # If we are setuid or setgid, then don't _initialize from
     # environment variables or files in the current directory.
     # /etc/bivio.bconf is last resort if the file doesn't exist.
     my($file) = $ENV{'BCONF'};
-    unless (defined($file) && -f $file && -r $file && $not_setuid) {
-	$file = '/etc/bivio.bconf';
+    if ($is_setuid && $file) {
+	warn("Ignoring \$BCONF while running setuid");
+	$file = undef;
+    }
+    unless (defined($file) && -f $file && -r $file) {
+	$file = '/etc/bivio.bconf' if -r '/etc/bivio.bconf';
     }
     if (defined($file)) {
-	# if the file isn't there and there is no BCONF setting,
-	# then use Bivio::BConf as a default
-	if (! -e $file && ! $ENV{'BCONF'}) {
-	    # If there's no configuration, this will be {} as init'd above
-	    # We don't do a eval with {}, because we want the use to happen
-	    # dynamically.
-	    eval '
-		use Bivio::BConf;
-		$_ACTUAL = Bivio::BConf->merge({});
-	    ';
-	}
-	else {
-#TODO: Should probably die if not readable?
-	    warn("$file: not readable\n") if -e $file && !-r _;
-	    my($actual) = do($file);
-	    unless (ref($actual) eq 'HASH') {
-		-e $file && die("$file: config parse failed: ",
-			$@ ? $@ : "empty or not a hash_ref");
-		$actual = {};
-	    }
-	    $_ACTUAL = $actual;
-	}
+	$_ACTUAL = do($file);
     }
-
+    else {
+	# If there's no configuration, this will be {} as init'd above
+	# We don't do a eval with {}, because we want the use to happen
+	# dynamically.
+	eval '
+	    use Bivio::BConf;
+	    $_ACTUAL = Bivio::BConf->merge({});
+	';
+	$file = 'Bivio::BConf';
+    }
+    die("$file error: ", $@ || 'Must return hash ref')
+	unless ref($_ACTUAL) eq 'HASH';
     # Only process arguments in not_setuid case
-    _process_argv($_ACTUAL, $argv) if $not_setuid;
+    _process_argv($_ACTUAL, $argv) unless $is_setuid;
     return;
 }
 
