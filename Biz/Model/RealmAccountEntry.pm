@@ -43,6 +43,30 @@ use Bivio::Type::PrimaryId;
 
 =cut
 
+=for html <a name="create_entry"></a>
+
+=head2 create_entry(Bivio::Biz::Model::RealmTransactions trans, hash_ref properties)
+
+Creates the account entry, and transaction entry for the specified
+transaction, using the values from the specified properties hash. Dies
+on failure.
+
+=cut
+
+sub create_entry {
+    my($self, $trans, $properties) = @_;
+
+    $properties->{class} = Bivio::Type::EntryClass::CASH();
+    $properties->{realm_transaction_id} = $trans->get('realm_transaction_id');
+
+    my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
+    $entry->create($properties);
+
+    $properties->{entry_id} = $entry->get('entry_id');
+    $self->create($properties);
+    return;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
