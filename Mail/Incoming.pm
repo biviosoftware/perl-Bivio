@@ -293,7 +293,7 @@ sub get_message_id {
 	&_trace('no Message-Id') if $_TRACE;
 	return $fields->{message_id} = undef;
     }
-#RJN: Should really parse this, but I mean RIIILLY....
+#TODO: Should really parse this, but I mean RIIILLY....
     $id =~ s!^\s+!!s;
     $id =~ s!\s+$!!s;
     $fields->{message_id} = $id;
@@ -429,7 +429,7 @@ sub initialize {
     # [rfc882] Unfolding is accomplished by regarding CRLF immediately
     # followed by a LWSP-char as equivalent to the LWSP-char.
     # Can't use \s, because isn't locale specific.
-    # RJN: Not handling quoted CRLF sequences which appear to be legitimate.
+    # TODO: Not handling quoted CRLF sequences which appear to be legitimate.
     #      The effect will be to lose quoted LF and replace it with a
     #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
@@ -593,7 +593,7 @@ sub _parse_addr {
 }
 
 sub _parse_complex_addr {
-#RJN: NEED TO IMPLEMENT!
+#TODO: NEED TO IMPLEMENT!
     local($_) = @_;
     die("unable to parse address: $_");
 }
@@ -625,7 +625,7 @@ sub _parse_date {
 
 # strips out comments
 sub _parse_complex_date {
-#RJN: NEED TO IMPLEMENT!
+#TODO: NEED TO IMPLEMENT!
     local($_) = @_;
     die("unable to parse date: $_");
 }

@@ -342,7 +342,7 @@ sub _initial_warn_handler {
 
 sub _log_apache {
     my($severity, $msg) = @_;
-#RJN: How to log a "notice" from mod_perl?
+#TODO: How to log a "notice" from mod_perl?
     if (Apache->request) {
 	Apache->request->log_error($msg);
     }
@@ -365,7 +365,7 @@ sub _log_stderr {
 }
 
 sub _trace_stack {
-#RJN: reaching inside Carp isn't great.  Also copying code from &warn
+#TODO: reaching inside Carp isn't great.  Also copying code from &warn
 #     is not pretty either.
     # Doesn't trim stack trace, so may be really long.  Have an
     # absolute limit?

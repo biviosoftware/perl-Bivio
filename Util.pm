@@ -34,7 +34,7 @@ BEGIN {
     }
 }
 
-#RJN: Fix this HACK.  Probably need once a day time for events like this?
+#TODO: Fix this HACK.  Probably need once a day time for events like this?
 my($_THIS_YEAR) = (localtime)[5] + 1900;
 
 sub unescape_html { &HTML::Entities::decode }
