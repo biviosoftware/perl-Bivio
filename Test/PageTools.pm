@@ -26,7 +26,6 @@ that are not associated with instantiated classes.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Test::BulletinBoard;
 use Bivio::Test::HTTPUtil;
@@ -35,10 +34,6 @@ use Data::Dumper ();
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_BASE_URI);
-Bivio::IO::Config->register({
-    base_uri => 'http://www.test.bivio.com',
-});
 
 =head1 METHODS
 
@@ -61,7 +56,7 @@ sub click_button {
 	    unless (defined $parsed_res);
     my($uri_to_request) = $parsed_res->get_uri('buttons', $target);
     _trace("Uri for button: $uri_to_request") if $_TRACE;
-    $board->get('HTTPUtil')->http_href($_BASE_URI.$uri_to_request);
+    $board->get('HTTPUtil')->http_href($board->get('base_uri').$uri_to_request);
     return;
 }
 
@@ -86,7 +81,8 @@ sub click_imagemenu {
 	    'imagemenu', $target, $subtarget);
     _trace("Uri for imagemenu: $uri_to_request") if $_TRACE;
 
-    $board->get('HTTPUtil')->http_href($_BASE_URI.$uri_to_request);
+    $board->get('HTTPUtil')->http_href(
+	    $board->get('base_uri').$uri_to_request);
     return;
 }
 
@@ -112,25 +108,6 @@ sub dump_analyzer {
     return;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item <required> : <type> (required)
-
-=item <optional> : <type> [<default>]
-
-=back
-
-=cut
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_BASE_URI = $cfg->{base_uri};
-    return;
-}
 
 =for html <a name="post_form"></a>
 
@@ -246,11 +223,13 @@ sub visit {
     my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
+    my($board) = Bivio::Test::BulletinBoard->get_current();
+    my($base_uri) = $board->get('base_uri');
     unless ($uri =~ /http:/) {
-	$uri =~ s/(.*)/$_BASE_URI$1/;
+	$uri =~ s/(.*)/$base_uri$1/;
 	_trace("Full uri is: $uri") if $_TRACE;
     }
-    Bivio::Test::BulletinBoard->get_current->get('HTTPUtil')->http_href(
+    $board->get('HTTPUtil')->http_href(
 	    $uri);
     return;
 }
