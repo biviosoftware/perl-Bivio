@@ -61,8 +61,10 @@ sub get_html_field_attributes {
 
 =head2 render(Bivio::UI::WidgetValueSource source, string_ref buffer)
 
-Renders this instance into I<buffer> using I<source> to evaluate
-widget values.
+Renders this instance into I<buffer> using I<source> to evaluate widget
+values. Renders the javascript code needed to perform math function. The
+javascript simply takes the initial value and subtracts the values in the
+supplied 'sub_fields' parameter.
 
 =cut
 
@@ -76,7 +78,6 @@ sub render {
     my($form_name) = $self->ancestral_get('form_name');
     my($prefix) = "document.$form_name.";
     my($total) = $prefix . $model->get_field_name_for_html($self->get('sum_field'));
-    my($add_fields) = $self->get('add_fields');
     my($sub_fields) = $self->get('sub_fields');
     my($initial_value) = $prefix . $model->get_field_name_for_html($self->get('initial_value'));
     Bivio::UI::HTML::Widget::JavaScript->render(
