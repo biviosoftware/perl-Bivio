@@ -55,6 +55,7 @@ Abbreviates an instrument name.
 
 Corporation --> Corp.
 Incorporated --> Inc.
+The ... --> ... The
 
 =cut
 
@@ -63,6 +64,7 @@ sub abbreviate_name {
 
     $name =~ s/Corporation/Corp./i;
     $name =~ s/Incorporated/Inc./i;
+    $name =~ s/^The\s(.*)$/$1 The/;
 
     return $name;
 }
