@@ -80,7 +80,6 @@ Placeholder for checking into cvs
 =cut
 
 sub execute {
-    print(STDERR "\nImage attachment execute...\n");
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($body);
@@ -137,7 +136,6 @@ sub _get_image_subtype {
     my($substr) = substr($$buffer, $i, 255);
     $i = index($substr, "\n");
     $substr = substr($substr, 0, $i);
-    print(STDERR "\nimage type: $substr\n");
     if($substr =~ "image/jpeg"){
 	return "jpeg";
     }
