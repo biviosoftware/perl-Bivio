@@ -49,6 +49,8 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 # Bivio::IO::Config->register;
 
+#TODO: Move to Bivio::Mail::RFC822
+#TODO: Create Bivio::Mail::Address with parsing routines
 my($_822_CHAR) = '[\\0-\\177]';
 my($_822_ALPHA) = '[\\101-\\132\\141-\\172]';
 my($_822_DIGIT) = '[\\060-\\071]';
@@ -501,16 +503,20 @@ sub uninitialize {
 
 sub _clean_comment {
     local($_) = @_;
-    s/^\(//s || die("not a comment: $_");
-    chop;
+    s/^\(//s && s/\)$//s || Carp::cluck("not a comment: $_");
     s/\\(.)/$1/gs;
+    return $_;
+}
+
+sub _clean_route_addr {
+    local($_) = @_;
+    s/^\<//s && s/\>$//s || die("not a route address: $_");
     return $_;
 }
 
 sub _clean_quoted_string {
     local($_) = @_;
-    s/^"//s || die("not a quoted string: $_");
-    chop;
+    s/^\"//s && s/\"$//s || die("not a quoted string: $_");
     s/\\(.)/$1/gs;
     return $_;
 }
@@ -563,7 +569,8 @@ sub _get_field {
 #     From: Jeffrey Richer [SMTP:jricher@inet.net]
 #     From: . <winsv@ix.netcom.com>
 #     From: <MNatto@aol.com>
-# Probably part of Outlook
+# Probably part of Outlook.  Not a problem for us as the "Original Message"
+# is not an 822 thing.
 #
 # Parses the first address in the field. If there are multiple
 # addresses, only grabs the first one.
@@ -586,15 +593,24 @@ sub _parse_addr {
 	return ($a, undef);
     }
     # joe@bob.com (Joe Bob)
-    if (($a, $n) = m!^($_822_ATOM_ONLY_ADDR)\s*$_822_NOT_NESTED_COMMENT!o) {
+    if (($a, $n) = m!^($_822_ATOM_ONLY_ADDR)\s*($_822_NOT_NESTED_COMMENT)!os) {
 	return ($a, &_clean_comment($n));
     }
-    &_parse_complex_addr($_);
-}
-
-sub _parse_complex_addr {
-#TODO: NEED TO IMPLEMENT!
-    local($_) = @_;
+    if (($a, $n) = /^($_822_MAILBOX)\s*((?:$_822_NOT_NESTED_COMMENT)*)/os) {
+#TODO: Need to make sure we hit 99.99% of addresses with this
+#      We don't handle groups. ok?  What about "Undisclosed Recipients:;"?
+	# complex@addr (My comment) AND complex@addr
+	if ($a =~ /^$_822_ADDR_SPEC$/) {
+	    # $a is an address, no further parsing necessary
+	    return ($a, length($n) ? &_clean_comment($n) : $n);
+	}
+	# $_822_MAILBOX: My Comment complex@addr
+	if (($n, $a) = /^($_822_PHRASE)\s+($_822_ROUTE_ADDR)/) {
+	    return (&_clean_route_addr($a), $n);
+	}
+#TODO: error or assert_fail
+	die("822 regular expressions incorrect");
+    }
     die("unable to parse address: $_");
 }
 

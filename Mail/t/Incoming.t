@@ -2,9 +2,10 @@
 #
 # $Id$
 #
+#TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..6\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Incoming;
@@ -134,6 +135,33 @@ EOF
     'reply_to_email' => 'i-club-list@lists.better-investing.org',
     'subject' => '',
     'dttm' => 930841505,
+},
+<<'EOF'
+From moeller@[209.181.76.152]  Fri Jul 23 15:11:23 1999
+Return-Path: <moeller@[209.181.76.152]>
+Received: from [209.181.76.152] (moeller@ndsl152.dnvr.uswest.net [209.181.76.152])
+	by bivio.com (8.8.7/8.8.7) with ESMTP id PAA03666
+	for <nagler@bivio.com>; Fri, 23 Jul 1999 15:11:23 -0600
+From: moeller@[209.181.76.152]
+Received: (from moeller@localhost)
+	by [209.181.76.152] (8.8.7/8.8.7) id PAA01336
+	for nagler@bivio.com; Fri, 23 Jul 1999 15:12:47 -0600
+Date: Fri, 23 Jul 1999 15:12:47 -0600
+Message-Id: <199907232112.PAA01336@[209.181.76.152]>
+To: nagler@bivio.com
+Subject: hello
+Status: R
+
+12.
+EOF
+=>
+{
+    'content_type' => 'text/plain',
+    'from_name' => '',
+    'from_email' => 'moeller@[209.181.76.152]',
+    'reply_to_email' => undef,
+    'subject' => 'hello',
+    'dttm' => 932764367,
 },
 );
 
