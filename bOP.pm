@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Text.is_read_only maps to html 'readonly' attribute
+  * Bivio::Util::LinuxConfig->ifcfg_static configures static IP addrs
+  * Bivio::Util::LinuxConfig->resolv_conf writes resolv.conf
+
+  Revision 1.55  2003/04/01 17:35:06  nagler
+  * Bivio::BConf added more standard ignored errors
+  * Model.UserCreateForm will not create email if Email.email is
+    Bivio::Type::Email->IGNORE_PREFIX
+  * Bivio::Biz::Model->new accepts a name as first argument, e.g.
+    Bivio::Biz::Model->new('RealmOwner'), and will use
+    unsafe_get_request for instance's request.  Best to call as
+    $self->new('RealmOwner').
+  * Bivio::SQL::ListSupport allows primary_key to be local field,
+    but you can't call load_this on the model.
+  * Bivio::UI::HTML::Widget::Checkbox allows '' as label and
     won't output any string or extra newline.
   * Bivio::Util::SQL->run_command appends commit or rollback to
     SQL command before executing (depends on -noexecute value).
