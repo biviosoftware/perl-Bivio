@@ -224,6 +224,27 @@ sub die {
     # DOES NOT RETURN
 }
 
+=for html <a name="format_uri_for_this_property_model"></a>
+
+=head2 format_uri_for_this_property_model(any task, string model_name) : string
+
+Formats a uri for I<task> and model I<name> of I<self>.  Blows up if not all
+the primary keys are available for I<model_name>.  Doesn't load the I<model>.
+I<task> can be a name or L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+
+=cut
+
+sub format_uri_for_this_property_model {
+    my($self, $task, $name) = @_;
+    $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
+    my($query, $mi) = _get_model_query($self, $name);
+    $self->throw_die('NOT_FOUND', {
+	message => 'missing primary keys in self for model', entity => $name})
+	unless $query;
+    return $self->get_request->format_uri(
+	$task, $mi->format_query_for_this($query), undef, undef);
+}
+
 =for html <a name="get_as"></a>
 
 =head2 get_as(string field, string converter)
@@ -546,45 +567,19 @@ L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
 
 sub unsafe_get_model {
     my($self, $name) = @_;
-#TODO: clear_models?  Need to reset the state
     my($fields) = $self->{$_PACKAGE};
-
-    # Asserts operation is valid
-    my($sql_support) = $self->internal_get_sql_support;
-
     if (defined($fields->{models})) {
 	return $fields->{models}->{$name} if $fields->{models}->{$name};
     }
     else {
 	$fields->{models} = {};
     }
-    my($models) = $sql_support->get('models');
-    Carp::croak($name, ': no such model') unless defined($models->{$name});
-    my($m) = $models->{$name};
-    my($properties) = $self->internal_get;
-    my($req) = $self->unsafe_get_request;
-    # Always store the model.
-    my($mi) = $fields->{models}->{$name} = $m->{instance}->new($req);
-    my(@query) = ();
-    my($map) = $m->{primary_key_map};
-    foreach my $pk (keys(%$map)) {
-	my($v);
-	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
-	    # If there is an auth_id, use it if this is the missing
-	    # primary key.
-	    my($auth_id) = $mi->get_info('auth_id');
-	    unless ($auth_id && $pk eq $auth_id->{name}) {
-		_trace($self, ': loading ', $m->{instance}, ' missing key ',
-			$map->{$pk}->{name}) if $_TRACE;
-		return $mi;
-	    }
-	    $v = $req->get('auth_id');
-	}
-	push(@query, $pk, $v);
-    }
+    my($query, $mi) = _get_model_query($self, $name);
+    $fields->{models}->{$name} = $mi;
+
 #TODO: SECURITY: Is this valid?
     # Can be "unauth_load", because the primary load was authenticated
-    $mi->unauth_load(@query);
+    $mi->unauth_load($query) if $query;
     return $mi;
 }
 
@@ -624,6 +619,41 @@ sub _assert_class_name {
     Bivio::Die->die($class, ': must be a ', $super)
 	    unless UNIVERSAL::isa($class, $super);
     return;
+}
+
+# _get_model_query(self, string name) : array
+#
+# Returns the model (query, instance) by looking for the model.
+#
+sub _get_model_query {
+    my($self, $name) = @_;
+    # Asserts operation is valid
+    my($sql_support) = $self->internal_get_sql_support;
+    my($models) = $sql_support->get('models');
+    $self->die("$name: no such model") unless defined($models->{$name});
+    my($m) = $models->{$name};
+    my($properties) = $self->internal_get;
+    my($req) = $self->unsafe_get_request;
+    # Always store the model.
+    my($mi) = $m->{instance}->new($req);
+    my($query) = {};
+    my($map) = $m->{primary_key_map};
+    foreach my $pk (keys(%$map)) {
+	my($v);
+	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
+	    # If there is an auth_id, use it if this is the missing
+	    # primary key.
+	    my($auth_id) = $mi->get_info('auth_id');
+	    unless ($auth_id && $pk eq $auth_id->{name}) {
+		_trace($self, ': loading ', $m->{instance}, ' missing key ',
+			$map->{$pk}->{name}) if $_TRACE;
+		return (undef, $mi);
+	    }
+	    $v = $req->get('auth_id');
+	}
+	$query->{$pk} = $v;
+    }
+    return ($query, $mi);
 }
 
 # _initialize_class_info(string class)
