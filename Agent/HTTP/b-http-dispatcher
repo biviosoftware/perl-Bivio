@@ -42,6 +42,7 @@ sub main {
 		'port' => Bivio::IO::Config->REQUIRED,
 	    },
 	});
+#TODO: Why doesn't return an error when @argv = () and no default config?
 	my($cfg) = Bivio::IO::Config->get(@argv);
 	$port = $cfg->{port};
     }
