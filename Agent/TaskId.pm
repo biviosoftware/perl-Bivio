@@ -1470,6 +1470,7 @@ my(@_CFG) = (
         ?/accounting/reports/investment-sale:?/accounting/reports/investment_sale
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Action::ReportDateToday
         Bivio::Type::ScheduleDParams->execute_show_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
@@ -1484,6 +1485,7 @@ my(@_CFG) = (
         ?/accounting/reports/income-and-expense:?/accounting/reports/income_and_expense
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Action::ReportDateToday
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::UI::HTML::Club::IncomeAndExpenseReport
         next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
@@ -1517,7 +1519,9 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Action::ReportDateToday
         Bivio::UI::HTML::Club::MemberAllocationReport
+        Bivio::UI::HTML::Club::ReportPage
         next=CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
     )],
     [qw(
@@ -1528,6 +1532,7 @@ my(@_CFG) = (
         ?/accounting/reports/income-and-deductions:?/accounting/reports/income_and_deductions
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Action::ReportDateToday
         Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
         Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
         Bivio::UI::HTML::Club::MiscIncomeAndDeductions
@@ -1679,6 +1684,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::UI::HTML::Club::MemberAllocationReport
+        Bivio::UI::HTML::Tax::AttachmentPage
         next=CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
     )],
     [qw(
