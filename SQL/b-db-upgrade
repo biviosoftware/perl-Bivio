@@ -220,113 +220,61 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_password_request();
-    _upgrade_account_sync_and_category();
-    _upgrade_invalidate_passwords();
+    _upgrade_account_sync();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_account_sync_and_category()
+# _upgrade_account_sync()
 #
-# Changes the account sync user, and the expense category name.
+# Recreates the account_sync_t table.
 #
-sub _upgrade_account_sync_and_category {
-    _upgrade_account_sync_user();
-    _upgrade_expense_category_name();
-    return;
-}
+sub _upgrade_account_sync {
 
-# _upgrade_account_sync_user
-#
-# Changes transactions associated with user account_sync to bivio.
-#
-sub _upgrade_account_sync_user {
-
-    Bivio::SQL::Connection->execute("
-        UPDATE realm_transaction_t
-        SET user_id=(
-            SELECT realm_id
-            FROM realm_owner_t
-            WHERE realm_owner_t.name='bivio')
-        WHERE user_id=(
-            SELECT realm_id
-            FROM realm_owner_t
-            WHERE realm_owner_t.name='account_sync')", []);
-
-    return;
-}
-
-# _upgrade_expense_category_name()
-#
-# Changes the expense category "Tax Preparation" to
-# "Accounting & Tax Services".
-#
-sub _upgrade_expense_category_name {
-
-    _do_sql("
-UPDATE expense_category_t
-SET name='Accounting & Tax Services'
-WHERE name='Tax Preparation'
-/
-");
-    return;
-}
-
-# _upgrade_invalidate_passwords()
-#
-# Ensures we have invalid passwords on certain accounts.
-#
-sub _upgrade_invalidate_passwords {
-    my($m) = Bivio::Biz::Model->new(Bivio::Agent::Request->get_current_or_new,
-	    'RealmOwner');
-    foreach my $realm (sort(qw(bivio treztalk askcandis takestock account_sync
-		tam_rodriguez rollie_sherman janine_bartlett rose_caesar
-		elina_rutledge sam_chase gwen_button customercare bounce
-		ad_about_001 ad_about_002 ad_about_003 ad_about_004
-		ad_about_005 ad_about_006 ad_about_b001 ad_about_b002
-		ad_about_b003 ad_about_b004 cnn fool ignore investware
-                user_id upload
-        	))) {
-	if ($m->unauth_load(name => $realm)) {
-	    $m->update({password => Bivio::Type::Password->INVALID});
-	    print($realm, ": invalidating password\n");
-	}
-	else {
-	    print($realm, ": NOT FOUND\n");
-	}
-    }
-    return;
-}
-
-# _upgrade_password_request()
-#
-# Add password request table and constrain
-#
-sub _upgrade_password_request {
-    print("Adding password_request_t, setting realm_id as primary key\n");
     _do_sql('
-CREATE TABLE password_request_t (
+DROP TABLE account_sync_t
+/
+CREATE TABLE account_sync_t (
+  realm_transaction_id NUMBER(18),
   realm_id NUMBER(18),
-  authorization_code NUMBER(18),
-  creation_date_time DATE
+  sync_key VARCHAR2(100),
+  import_date DATE
 )
   tablespace data_1m
   pctfree 5 pctused 90 initrans 2 storage (freelists 8)
 /
-ALTER TABLE password_request_t
-  ADD constraint password_request_t1
-  primary key(realm_id)
+ALTER TABLE account_sync_t
+  add constraint account_sync_t1
+  primary key(realm_transaction_id)
   using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
-ALTER TABLE password_request_t
-  add constraint password_request_t2
-  foreign key(realm_id)
+ALTER TABLE account_sync_t
+  add constraint account_sync_t2
+  foreign key (realm_id)
   references realm_owner_t(realm_id)
 /
-ALTER TABLE password_request_t modify authorization_code NOT NULL
+ALTER TABLE account_sync_t modify realm_id not null
 /
-ALTER TABLE password_request_t modify creation_date_time NOT NULL
+ALTER TABLE account_sync_t modify sync_key not null
+/
+CREATE INDEX account_sync_t3 on account_sync_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX account_sync_t4 on account_sync_t (
+  sync_key
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+  /
+ALTER TABLE account_sync_t modify import_date NOT NULL
+/
+ALTER TABLE account_sync_t
+  add constraint account_sync_t5
+  foreign key (realm_transaction_id)
+  references realm_transaction_t(realm_transaction_id)
 /
 ');
     return;
