@@ -276,7 +276,7 @@ CREATE TABLE ec_payment_t (
   remark VARCHAR2(500)
 )
   tablespace data_1m
-  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+  pctfree 25 pctused 90 initrans 2 storage (freelists 8)
 /
 CREATE TABLE ec_subscription_t (
   ec_subscription_id NUMBER(18),
@@ -288,7 +288,7 @@ CREATE TABLE ec_subscription_t (
   renewal_period NUMBER(4)
 )
   tablespace data_1m
-  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+  pctfree 25 pctused 90 initrans 2 storage (freelists 8)
 /
 ');
     print("Adding primary keys\n");
