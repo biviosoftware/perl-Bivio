@@ -257,11 +257,15 @@ Returns I<self> if called without an argument and by an instance.
 Returns the instance for the given I<file_name> file.  Caches the
 result so that only one instance of a view exists at any one time.
 
+=head2 static get_instance() : proto
+
+Used only by L<SingletonMap|"SingletonMap">.
+
 =cut
 
 sub get_instance {
     my($proto, $view_name) = @_;
-    return $proto if ref($proto) && !$view_name;
+    return $proto unless defined($view_name);
 
     my($self) = $proto->new({
 	view_name => $view_name,
@@ -369,6 +373,24 @@ sub execute {
     return 0;
 }
 
+=for html <a name="execute_uri"></a>
+
+=head2 static execute_uri(Bivio::Agent::Request req) : boolean
+
+Uses I<req>.uri as the view name and executes it.  May compile the
+view dynamically.  Removes a C<.html> or C<.htm> suffix if it exists.
+
+Dies with NOT_FOUND, if widget is not found.
+
+=cut
+
+sub execute_uri {
+    my($proto, $req) = @_;
+    my($uri) = $req->get('uri');
+    $uri =~ s/\.html?$//;
+    return $proto->get_instance($uri)->execute($req);
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -448,7 +470,10 @@ sub _find_file {
 			Bivio::Type::DateTime->from_unix($mtime)
 	) if defined($mtime);
     }
-    $self->compile_die('not found');
+    Bivio::Die->throw('NOT_FOUND', {
+	message => 'view not found',
+	entity => $self,
+    });
     # DOES NOT RETURN
 }
 
