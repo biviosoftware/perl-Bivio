@@ -136,9 +136,12 @@ Returns load average and httpd process_status changes.
 
 sub process_status {
     my($self) = @_;
+    my($s) = ${$self->piped_exec('/etc/rc.d/init.d/httpd status', undef, 1)};
+    $s =~ s#^(httpd\s+\(pid\s+).*(\)\s+is\s+running...)$#$1${
+         Bivio::IO::File->read('/var/run/httpd.pid')}$2#;
+    $s =~ s/\n//g;
     ${Bivio::IO::File->read('/proc/loadavg')} =~ /^\S+\s+\S+\s+(\S+)/;
-    my($new) = "System load above @{[int($1)]}\n"
-	. ${$self->piped_exec('/etc/rc.d/init.d/httpd status', undef, 1)};
+    my($new) = "System load above @{[int($1)]}\n$s\n";
     my($res) = $self->piped_exec("diff '$_CFG->{status_file}' -", $new,	1);
     Bivio::IO::File->write($_CFG->{status_file}, $new);
     return $$res;
