@@ -143,6 +143,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(checked_icon => ['smaller']);
 	    $fc->group(page_heading => ['bold']);
 	    $fc->group(realm_name => ['bold']);
+	    $fc->group(realm_name => ['bold']);
 	    $fc->group(tax_disclaimer => ['italic']);
 	    $fc->group(['prev_next_bar_link', 'text_menu_selected'] =>
 		    ['color=text_menu_font', 'bold']);
@@ -190,6 +191,7 @@ my($_SELF) = __PACKAGE__->new({
                     filtrum_top_holdings_heading
                     register_now
                     learn_more
+                    report_page_realm_name
             )],
 		    ['larger', 'bold']);
 	    $fc->group([qw(
