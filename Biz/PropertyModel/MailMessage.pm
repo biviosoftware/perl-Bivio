@@ -65,8 +65,8 @@ sub create {
     my($dttm) = $msg->get_dttm() || time;
     my($mon, $year) = (gmtime($dttm))[4,5];
     $year < 1900 && ($year += 1900);
-    my($club_id) = $club->get('club_id');
-    $_FILE_CLIENT->append('/'. $club_id . '/mbox/'
+    my($club_id, $club_name) = $club->get('club_id', 'name');
+    $_FILE_CLIENT->append('/'. $club_name . '/mbox/'
 	    . sprintf("%04d%02d", $year, ++$mon), \$mbox)
 	    || die("mbox append failed: $mbox");
 #TODO: Need to truncate these.  If from_email is too long, what to do?
@@ -89,7 +89,7 @@ sub create {
     };
     $_SQL_SUPPORT->create($self, $self->internal_get_fields(), $values);
 #TODO: Update club_t.bytes here
-    $_FILE_CLIENT->create('/' . $club_id . '/messages/'
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/'
 	    . $values->{mail_message_id}, \$body)
 	    || die("file server failed: $body");
     return;
@@ -196,9 +196,9 @@ Creates the club message storage area.
 sub setup_club {
     my($self, $club) = @_;
     my($res);
-    my($club_id) = $club->get('club_id');
+    my($club_name) = $club->get('name');
     my($dir);
-    foreach $dir ($club_id, "$club_id/mbox", "$club_id/messages") {
+    foreach $dir ($club_name, "$club_name/mbox", "$club_name/messages") {
 	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
     }
     return;
