@@ -629,20 +629,7 @@ If the load is successful, saves the model in the request.
 
 sub load {
     my($self, $query) = @_;
-
-    # May be called without args
-    $query = {} unless defined($query);
-
-    my($auth_id) = $self->get_request->get('auth_id');
-    if (ref($query) eq 'HASH') {
-	my($sql_support) = $self->internal_get_sql_support;
-	$query->{auth_id} = $auth_id;
-	# Let user override page count
-	$query = Bivio::SQL::ListQuery->new($query, $sql_support, $self);
-    }
-    else {
-	$query->put('auth_id' => $auth_id);
-    }
+    $query = $self->parse_query($query);
     $self->unauth_load($query);
     return;
 }
@@ -676,9 +663,7 @@ Executes the load from the query string in the request.
 
 sub load_from_request {
     my($self) = @_;
-    my($query) = $self->get_request->unsafe_get('query');
-    # Pass a copy of the query, because it is trashed by ListQuery.
-    $self->load($query ? {%$query} : {});
+    $self->unauth_load($self->parse_query_from_request());
     return;
 }
 
@@ -723,6 +708,56 @@ sub next_row {
     }
     $self->internal_put($fields->{rows}->[$fields->{cursor}]);
     return 1;
+}
+
+=for html <a name="parse_query"></a>
+
+=head2 parse_query() : Bivio::SQL::ListQuery
+
+=head2 parse_query(hash_ref query) : Bivio::SQL::ListQuery
+
+=head2 parse_query(Bivio::SQL::ListQuery query) : Bivio::SQL::ListQuery
+
+Does the processing of I<query>.  Converts to
+L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery> which
+may modify I<query>.
+
+Does not extract query from request if called with no args.
+See L<parse_query_from_request|"parse_query_from_request">.
+
+Puts I<auth_id> from request on query.
+
+=cut
+
+sub parse_query {
+    my($self, $query) = @_;
+    # May be called without args
+    $query = {} unless defined($query);
+
+    my($auth_id) = $self->get_request->get('auth_id');
+    if (ref($query) eq 'HASH') {
+	my($sql_support) = $self->internal_get_sql_support;
+	$query->{auth_id} = $auth_id;
+	# Let user override page count
+	return Bivio::SQL::ListQuery->new($query, $sql_support, $self);
+    }
+    $query->put('auth_id' => $auth_id);
+    return $query;
+}
+
+=for html <a name="parse_query_from_request"></a>
+
+=head2 parse_query_from_request() : Bivio::SQL::ListQuery
+
+Parses the query from the request.  If not set, uses default query.
+
+=cut
+
+sub parse_query_from_request {
+    my($self) = @_;
+    my($query) = $self->get_request->unsafe_get('query');
+    # Pass a copy of the query, because it is trashed by ListQuery.
+    return $self->parse_query($query ? {%$query} : {});
 }
 
 =for html <a name="prev_row"></a>
