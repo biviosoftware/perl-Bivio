@@ -77,7 +77,7 @@ sub execute_ok {
     my($self) = @_;
     $self->get_request->server_redirect(
         Bivio::Agent::TaskId->ADM_CREATE_BULLETIN_CONFIRM)
-        unless $self->get('confirmed_bulletin');
+        unless $self->get('confirmed_bulletin') || $self->get('test_mode');
 
     my($bulletin) = $self->new($self->get_request, 'Bulletin')->create({
         body => ${$self->read_body},
@@ -93,8 +93,15 @@ sub execute_ok {
     Bivio::Agent::Job::Dispatcher->enqueue($self->get_request,
         'ADM_MAIL_BULLETIN', {
             Bivio::Biz::Action::AdmMailBulletin->BULLETIN_ID_KEY =>
-            $bulletin->get('bulletin_id'),
+                $bulletin->get('bulletin_id'),
+            Bivio::Biz::Action::AdmMailBulletin->TEST_MODE =>
+                $self->get('test_mode'),
         });
+
+    # return to the confirmation page if test_mode
+    $self->get_request->server_redirect(
+        Bivio::Agent::TaskId->ADM_CREATE_BULLETIN_CONFIRM)
+        if $self->get('test_mode');
     return;
 }
 
@@ -111,33 +118,7 @@ sub execute_other {
     my($self) = @_;
     $self->clear_errors;
     $self->internal_stay_on_page;
-
-    # stores body file and attachments in the cache directory
-    # until bulletin is created during execute_ok().
-
-    if ($self->get('body')) {
-        my($content_type) = lc($self->get('body')->{content_type});
-
-        # MSIE always uploads with application/octet-stream...
-        if ($content_type =~ /application/) {
-            $content_type = Bivio::MIME::Type->from_extension(
-                $self->get('body')->{filename});
-        }
-
-        unless ($content_type eq 'text/plain'
-            || $content_type eq 'text/html') {
-            $self->internal_put_error(body => 'INVALID_MESSAGE_BODY');
-            return;
-        }
-        $self->internal_put_field(body_content_type => $content_type);
-        $self->internal_put_field(body_file =>
-            _write_cache_file($self, 'body'));
-    }
-
-    if ($self->get('attachment')) {
-        _append_field($self, 'attachment_files',
-            _write_cache_file($self, 'attachment'));
-    }
+    _save_attachments($self);
     return;
 }
 
@@ -152,7 +133,7 @@ Return from the confirmation page, save the bulletin info and start mail job.
 sub execute_unwind {
     my($self) = @_;
 
-    if ($self->get('confirmed_bulletin')) {
+    if ($self->get('confirmed_bulletin') || $self->get('test_mode')) {
 	$self->execute_ok;
 	$self->internal_redirect_next;
 	# DOES NOT RETURN
@@ -171,7 +152,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 1,
+	version => 2,
 	visible => [
             'Bulletin.subject',
 	    {
@@ -216,6 +197,11 @@ sub internal_initialize {
 		type => 'Boolean',
 	        constraint => 'NOT_NULL',
 	    },
+            {
+                name => 'test_mode',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
 	],
     };
     return $self->merge_initialize_info(
@@ -249,9 +235,9 @@ Ensure the message body exists.
 
 sub validate {
     my($self) = @_;
-    $self->execute_other;
+    _save_attachments($self);
     $self->internal_put_error(body => 'NULL')
-        unless $self->get('body_file');
+        unless $self->get('body_file') || $self->get('body');
     return;
 }
 
@@ -282,6 +268,40 @@ sub _copy_attachments {
             . $bulletin_id . '/' . $file),
             Bivio::IO::File->read(Bivio::UI::Facade->get_local_file_name(
                 Bivio::UI::LocalFileType->CACHE, 'bulletin/' . $file)));
+    }
+    return;
+}
+
+# _save_attachments(self)
+#
+# Stores body file and attachments in the cache directory
+# until bulletin is created during execute_ok().
+#
+sub _save_attachments {
+    my($self) = @_;
+
+    if ($self->get('body')) {
+        my($content_type) = lc($self->get('body')->{content_type});
+
+        # MSIE always uploads with application/octet-stream...
+        if ($content_type =~ /application/) {
+            $content_type = Bivio::MIME::Type->from_extension(
+                $self->get('body')->{filename});
+        }
+
+        unless ($content_type eq 'text/plain'
+            || $content_type eq 'text/html') {
+            $self->internal_put_error(body => 'INVALID_MESSAGE_BODY');
+            return;
+        }
+        $self->internal_put_field(body_content_type => $content_type);
+        $self->internal_put_field(body_file =>
+            _write_cache_file($self, 'body'));
+    }
+
+    if ($self->get('attachment')) {
+        _append_field($self, 'attachment_files',
+            _write_cache_file($self, 'attachment'));
     }
     return;
 }
