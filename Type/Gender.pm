@@ -43,7 +43,7 @@ C<Bivio::Type::Gender> defines male, female, and unknown gender values.
 
 #=VARIABLES
 __PACKAGE__->compile(
-    UNKNOWN => [0],
+    UNKNOWN => [0, 'Unspecified'],
     FEMALE => [1],
     MALE => [2],
 );
