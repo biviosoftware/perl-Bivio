@@ -46,8 +46,7 @@ use Bivio::Type::Line;
 use Bivio::Type::PrimaryId;
 use IO::Scalar;
 use MIME::Parser;
-use Bivio::Biz::Mime::MimeParse;
-
+use Bivio::Mail::Store::MIMEDecode;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -106,14 +105,12 @@ sub create {
 #into club.
 
     my($kbytes) = $values->{kbytes};
+    #NOTE this is an estimate:
     my($isok) = $club->check_kbytes(\$kbytes);
     #kbytes is incremented if okay.
     if($isok eq(0)){
 	die("Mail message size exceeds max size for club.");
     }
-    $club->update({
-	kbytes_in_use => $kbytes,
-    });
 
     my $rfc = $msg->get_rfc822();
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
@@ -121,18 +118,23 @@ sub create {
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
     if($msg){
-	&_trace('msg is not null when we call ctor MimeParse.') if $_TRACE;
+	&_trace('msg is not null when we call ctor MimeDecode.') if $_TRACE;
     }
-
-    my $mimeparser = Bivio::Biz::Mime::MimeParse->new($msg, $filename, $_FILE_CLIENT);
-    $mimeparser->parse();
+    _trace('creating MIMEDecode object') if $_TRACE;
+    my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename);
+    $mimeparser->parse_and_store();
     # due to the above two lines, all the MIME stuff in this
     # file will be removed shortly.
     my($nparts) = $mimeparser->get_num_parts();
     $self->update({
 	parts => $nparts,
     });
-
+    my($curkbytes) = $club->get('kbytes_in_use') + $mimeparser->get_kbytes_written();
+    _trace('updating kbytes_in_use for this club: ', $curkbytes) if $_TRACE;
+#TODO There could be rounding error, here:
+    $club->update({
+	kbytes_in_use => $curkbytes,
+    });
     return;
 }
 
