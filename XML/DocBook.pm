@@ -121,7 +121,7 @@ my($_XML_TO_HTML_PROGRAM) = {
 	# epigraph requires attribution be first in O'Reilly's dblite
 	# DTD.  This means we have to store it in the clipboard and
 	# retrieve it in epigraph.  Element order shouldn't matter...
-	$clipboard->{attribution} = '<div align="right">-- ${_}</div>';
+	$clipboard->{attribution} = qq{<div align="right">-- $$html</div>};
 	return '';
     },
     blockquote => ['blockquote'],
