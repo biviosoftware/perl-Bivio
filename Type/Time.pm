@@ -40,6 +40,10 @@ julian days and seconds on that day ('J SSSSS').
 my($_DATE_PREFIX) = Bivio::Type::DateTime::FIRST_YEAR_IN_JULIAN_DAYS().' ';
 my($_MAX) = $_DATE_PREFIX.(Bivio::Type::DateTime::SECONDS_IN_DAY()-1);
 
+=head1 METHODS
+
+=cut
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
@@ -116,6 +120,22 @@ sub now {
     my($unix_time) = time;
     my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY() + 0.5);
     return $_DATE_PREFIX.$s;
+}
+
+=for html <a name="to_literal"></a>
+
+=head2 to_literal(any value) : string
+
+Converts the time part which is acceptable to from_literal.  Never returns
+undef, always a string.
+
+=cut
+
+sub to_literal {
+    my($proto, $value) = @_;
+    return '' unless defined($value);
+    my($s, $m, $h) = $proto->to_parts($value);
+    return sprintf('%02d:%02d:%02d', $h, $m, $s);
 }
 
 =for html <a name="to_sql_param"></a>
