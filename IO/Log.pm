@@ -137,7 +137,8 @@ sub write {
     local($?);
     Bivio::IO::File->write(
 	$base_name =~ /\.gz$/
-	    ? IO::File->new("| gzip -c - > '$base_name'") : $base_name,
+	    ? IO::File->new("| gzip --best --stdout - > '$base_name'")
+	    : $base_name,
 	ref($contents) ? $contents : \$contents);
     Bivio::Die->throw_die('IO_ERROR', {
 	entity => $base_name,
