@@ -34,6 +34,22 @@ C<Bivio::PetShop::Model::ProductSearchList>
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="PAGE_SIZE"></a>
+
+=head2 PAGE_SIZE : int
+
+Returns 8.
+
+=cut
+
+sub PAGE_SIZE {
+    return 8;
+}
+
 #=IMPORTS
 
 #=VARIABLES
