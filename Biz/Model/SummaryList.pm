@@ -27,7 +27,7 @@ Note: SummaryList provides a summary only for the values currently loaded
 by the source ListModel(s). If it has only loaded a page of data, then only
 the page will be summarized.
 
-SummaryList L<get|get> will reset the cursor in the ListModel to the
+SummaryList L<get|"get"> will reset the cursor in the ListModel to the
 beginning of the list each time a value is requested - don't call this
 methods while iterating through the source(s).
 

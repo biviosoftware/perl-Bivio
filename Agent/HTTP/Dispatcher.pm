@@ -31,7 +31,7 @@ use Bivio::Agent::Dispatcher;
 
 =head1 DESCRIPTION
 
-C<Bivio::Agent::HTTP::Dispatcher> is an L<Apache> L<mod_perl|mod_perl>
+C<Bivio::Agent::HTTP::Dispatcher> is an C<Apache> C<mod_perl>
 handler.  It creates a single instance of itself on the first request.
 For testing, a subclass can register itself as the singleton using the
 method L<set_handler|"set_handler">.
@@ -39,6 +39,7 @@ method L<set_handler|"set_handler">.
 =cut
 
 #=IMPORTS
+use Apache::Constants;
 use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Agent::HTTP::Request;
@@ -114,9 +115,9 @@ sub handle_die {
 
 =head2 static handler(Apache::Request r) : int
 
-Handler called by L<mod_perl|mod_perl>.
+Handler called by C<mod_perl>.
 
-Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
+Returns an HTTP code defined in C<Apache::Constants>.
 
 =cut
 

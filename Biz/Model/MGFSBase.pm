@@ -18,7 +18,8 @@ Bivio::Biz::Model::MGFSBase - base class of MGFS models
 =head1 EXTENDS
 
 L<Bivio::Biz::PropertyModel> is the base class of MGFS models. Its most
-important method is L<from_mgfs> which converts an MGFS flat record into
+important method is L<from_mgfs|"from_mgfs">
+which converts an MGFS flat record into
 the fields required for our database.
 
 =cut
