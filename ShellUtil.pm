@@ -66,6 +66,10 @@ Name of database to connect to.
 Where to mail the output.  Uses I<result_type> and I<result_name>,
 if available.
 
+=item force : boolean [0]
+
+If true, L<are_you_sure|"are_you_sure"> will always return true.
+
 =item noexecute : boolean [1]
 
 Won't execute any "modifying" operations.  Will not call
@@ -123,6 +127,7 @@ Called by L<usage|"usage"> and returns the string:
   options:
 	  -db - name of database connection
 	  -email - who to mail the results to (may be a comma separated list)
+          -force - don't ask "are you sure?"
           -input - a file to read from ("-" is STDIN)
           -noexecute - don't commit
           -output - a file to write the output to ("-" is STDOUT)
@@ -136,6 +141,7 @@ sub OPTIONS_USAGE {
 options:
         -db - name of database connection
         -email - who to mail the results to (may be a comma separated list)
+        -force - don't ask "are you sure?"
         -input - a file to read from ("-" is STDIN)
         -noexecute - don't commit
         -output - a file to write the output to ("-" is STDOUT)
@@ -152,14 +158,15 @@ Returns a mapping of options to bivio types and default values.
 The default values are:
 
     {
+	db => ['Name', undef],
+	email => ['Text', undef],
+	force => ['Boolean', 0],
+	noexecute => ['Boolean', 0],
+	quiet => ['Boolean', 0],  # DEPRECATED, use Trace instead
 	realm => ['Name', undef],
 	user => ['Name', undef],
-	db => ['Name', undef],
         input => ['Line', '-'],
-	noexecute => ['Boolean', 0],
         output => ['Line', undef],
-	email => ['Text', undef],
-	quiet => ['Boolean', 0],  # DEPRECATED, use Trace instead
     }
 
 Boolean is treated specially, but all other options are parsed
@@ -179,14 +186,15 @@ letter version is also supported.
 
 sub OPTIONS {
     return {
-	realm => ['Name', undef],
-	user => ['Name', undef],
 	db => ['Name', undef],
 	email => ['Text', undef],
+	force => ['Boolean', 0],
 	input => ['Line', '-'],
 	noexecute => ['Boolean', 0],
-        output => ['Line', undef],
 	quiet => ['Boolean', 0],
+	realm => ['Name', undef],
+	user => ['Name', undef],
+        output => ['Line', undef],
     };
 }
 
@@ -247,6 +255,9 @@ sub are_you_sure {
 
     # Not a tty?
     return unless -t STDIN;
+
+    # Force?
+    return if ref($proto) && $proto->unsafe_get('force');
 
     # Ask
     $prompt ||= 'Are you sure?';
