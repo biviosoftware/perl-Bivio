@@ -76,7 +76,9 @@ the actual send-to addresses.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::Mail::Address;
+use Bivio::Mail::Outgoing;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
