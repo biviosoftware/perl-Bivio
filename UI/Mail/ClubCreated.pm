@@ -50,6 +50,8 @@ sub execute {
     my($url) = $club->format_http();
     my($recipient) = $club->format_email();
     my($http) = $req->format_http_prefix;
+    my($as) = $http
+	    .$_W->format_uri_static_site($req, 'hm/account-sync.html');
     my($ak) = $http
 	    .$_W->format_uri_static_site($req, 'hm/account-keeper.html');
     my($msg) = Bivio::UI::Mail::SupportAuthor->enqueue_message($req,
@@ -66,8 +68,15 @@ Use bivio to:
     * Generate financial and performance reports.
     * Share documents and exchange messages.
 
-Promote yourself to CFO.  Let your bivio AccountKeeper do all the work for
-only \$195 per year, including year-end tax forms:
+Sign up to AccountSync your brokerage accounts electronically to bivio,
+and avoid entering transactions by hand.  AccountSync is only \$95 per
+year (or about 50 cents per member per month):
+
+    $as
+
+Promote yourself to CFO with our highest level of service, AccountKeeper.
+Your bivio AccountKeeper does all the work.  We will even sign your tax
+forms, all for only \$195 per year (or about \$1 per member per month):
 
     $ak
 
