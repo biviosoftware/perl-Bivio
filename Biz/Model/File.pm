@@ -358,6 +358,61 @@ sub fixup_root_directory_name {
     return;
 }
 
+=for html <a name="get_mime_filename"></a>
+
+=head2 get_mime_filename() : string
+
+Treats aux_info field as a MIME header to find the (file)name specified.
+Strips a leading path. Returns first occurence if found. If not, it
+will create a name "download.<ext>" where <ext> matches the content-type.
+
+Sample "aux_info" entries:
+
+Content-Disposition: inline; filename="/tmp/nsmail38B49DB928B0262.jpeg"
+Content-Disposition: inline;
+ filename="ms_y2k.jpg"
+Content-Type: image/gif;
+        name="bivio_large.gif"
+Content-Disposition: inline; filename="C:\windows\TEMP\nsmailQT.gif"
+
+=cut
+
+sub get_mime_filename {
+    my($self) = @_;
+    my($properties) = $self->internal_get;
+    if( $properties->{aux_info} =~ /(file|)name="([^"]+)"/ ) {
+        my($name) = $2;
+        $name =~ s|.*[\\/]||;
+        return $name;
+    }
+    else {
+        # Create a name based on the Content-Type based file suffix
+        # Use 'download.bin' in case the file type is unknown
+        my($ct) = $self->get_mime_content_type;
+        return 'download.bin' unless defined($ct);
+        my($info) = Bivio::MIME::Type->get_type_info($ct);
+        return 'download.bin' unless defined($info) && $info =~ /^([^,:]+)/;
+        return 'download.' . $1;
+    }
+}
+
+=for html <a name="get_mime_content_type"></a>
+
+=head2 get_mime_content_type() : string
+
+Treats aux_info field as a MIME header to find the content type.
+Returns first occurence or 'text/plain' if none found.
+
+=cut
+
+sub get_mime_content_type {
+    my($self) = @_;
+    my($properties) = $self->internal_get;
+    # The regexp will match newline if the Content-Type line extends over two lines
+    return undef unless $properties->{aux_info} =~ /content-type:\s+([^;\n]+)/i;
+    return $1;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
