@@ -47,7 +47,8 @@ use User::pwent ();
 use vars qw($_TRACE);
 my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
-my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
+#my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
+my($_SENDMAIL) = '/usr/lib/sendmail -U -oem -odb -i';
 Bivio::IO::Trace->register;
 my($_PKG) = __PACKAGE__;
 Bivio::IO::Config->register({
@@ -203,8 +204,10 @@ sub send {
 #TODO: fork and exec, so can pass argument lists
 #TODO: recipients may be very long(?).  If so either throw an error
 #      or need to generate multiple sends.
-    &_trace('sending to ', $recipients) if $_TRACE;
-    unless (open($fh, "| $_SENDMAIL '$from' '$recipients'")) {
+    _trace('sending to ', $recipients) if $_TRACE;
+    my($command) = "| $_SENDMAIL $from '$recipients'";
+    _trace($command) if $_TRACE;
+    unless (open($fh, $command)) {
 	$err = "open failed: $!";
 	goto error;
     }
@@ -223,7 +226,7 @@ sub send {
 
  error:
 #TODO: Make a MIME delivery/report
-    &_trace('ERROR ', $err) if $_TRACE;
+    _trace('ERROR ', $err) if $_TRACE;
     my($u) = User::pwent::getpwuid($>);
     $u = defined($u) ? $u->name : 'uid' . $>;
     open($fh, "| $_SENDMAIL $_ERRORS_TO")
