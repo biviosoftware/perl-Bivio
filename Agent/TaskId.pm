@@ -1091,8 +1091,19 @@ my(@_CFG) = (
 	next=CLUB_COMMUNICATIONS_FILE_READ
     )],
     [qw(
-        FILE_READ_NOT_FOUND
+        CLUB_COMMUNICATIONS_FILE_SEARCH
         114
+        CLUB
+        DOCUMENT_WRITE
+        ?/file-search/*
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Action::FileSearchRedirect
+    )],
+    [qw(
+        FILE_READ_NOT_FOUND
+        115
         GENERAL
         DOCUMENT_READ
         !
@@ -2029,10 +2040,9 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailReply
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-#200
     [qw(
         CLUB_MAIL_FORWARD
-        201
+        200
         CLUB
         MAIL_FORWARD
         ?/mail/forward
@@ -2042,7 +2052,28 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailForward
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-#202
+    [qw(
+        GENERAL_SEARCH
+        201
+        GENERAL
+        DOCUMENT_READ
+        pub/search
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::SearchList->execute_load_page
+        Bivio::UI::HTML::Club::SearchList
+        next=HTTP_DOCUMENT
+    )],
+    [qw(
+        CLUB_SEARCH
+        202
+        CLUB
+        DOCUMENT_READ
+        ?/search
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::SearchList->execute_load_page
+        Bivio::UI::HTML::Club::SearchList
+        next=HTTP_DOCUMENT
+    )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK
         203
