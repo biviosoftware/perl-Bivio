@@ -24,20 +24,27 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::IO::Alert> formats warnings and error messages safely.
-If there is an C<undef> as one of the arguments to L<warn|"warn">,
-L<warn_simply|"warn_simply">, or L<info|"info">.
+C<Bivio::IO::Alert> formats warnings and error messages safely.  It limits
+argument lengths, outputs stack traces based on configuration parameters, and
+formats arguments using
+L<Bivio::UNIVERSAL::as_string|Bivio::UNIVERSAL/"as_string">, dies in "warn
+loops", and inserts time/pid if configured.
 
-You should use L<warn|"warn"> instead of C<CORE::warn>, because special
-case arguments (C<undef>) are handled correctly, output length is limited
-on each argument, and data structures are printed instead of references.
+You should use this module's L<warn|"warn"> instead of C<CORE::warn>, because
+special case arguments (C<undef>) are handled correctly, output length is
+limited on each argument, and data structures are printed instead of
+references.
+
+If there is an C<undef> as one of the arguments to L<warn|"warn">,
+L<warn_simply|"warn_simply">, or L<info|"info">, the output doesn't
+generate a nested warning.  Rather E<lt>undefE<gt> is output.
 
 Bivio::IO::Alert intercepts C<$SIG{__WARN__}> if configured to do so.
 
-Policies: C<intercept_warn> should probably be set.  This prevents warnings
-from going into the bit bucket.  C<stack_trace_warn> is useful in production
-systems, because undefined (scalar) value messages are warnings in perl and not
-fatal.
+Policies: C<intercept_warn> should probably be set.  This prevents perl
+warnings (C<warn>) from going into the bit bucket.  C<stack_trace_warn> is
+useful in production systems, because undefined (scalar) value messages are
+warnings in perl and not fatal.
 
 C<max_warnings> in any given program invocation is limited to
 a (default) 1000. You can L<reset_warn_counter|"reset_warn_counter">,
@@ -78,21 +85,14 @@ use Carp ();
 # warnings which shouldn't be caught by this class.
 eval 'use MIME::Parser ();';
 
-# TODO: Commented out because it's causing an ugly warning message
-#       Might be ok in a future version of Perl libraries
-#use Sys::Syslog ();
-
 #=VARIABLES
 my($_LAST_WARNING);
 Bivio::IO::Config->register({
     intercept_warn => 1,
     stack_trace_warn => 0,
     stack_trace_warn_deprecated => 0,
-    log_facility => 'daemon',
-    log_name => $0,
     max_arg_length => $_DEFAULT_MAX_ARG_LENGTH,
     want_stderr => 0,
-    syslog_socket => 'unix',
     want_pid => 0,
     want_time => 0,
     max_warnings => $_MAX_WARNINGS,
@@ -200,14 +200,6 @@ sub get_max_arg_length {
 If true, installs a C<$SIG{__WARN__}> handler which writes alerts on all
 warnings.
 
-=item log_facility : string [daemon]
-
-If writing to C<Sys::Syslog>, the facility to use.
-
-=item log_name : string [$0]
-
-If writing to C<Sys::Syslog>, the name of the server.
-
 =item max_arg_length : int [2048]
 
 Maximum length of warning message components, i.e. arguments to
@@ -241,25 +233,17 @@ If running under mod_perl, writes to apache error log
 
 =item *
 
-If C<STDERR> is a tty, writes to stderr.
-
-=item *
-
-Otherwise, writes to Sys::Syslog
+Otherwise, writes to stderr.
 
 =back
 
-=item syslog_socket : 'unix' or 'inet' [unix]
-
-If writing to C<Sys::Syslog>, the type of socket to open.
-
 =item want_pid : boolean [false]
 
-If not writing to C<Sys::Syslog>, include the pid in the log messages.
+Includes the pid in the log messages.
 
 =item want_time : boolean [false]
 
-If not writing to C<Sys::Syslog>, include the time in the log messages.
+Includes the time in the log messages.
 
 =back
 
@@ -283,11 +267,11 @@ sub handle_config {
     if ($cfg->{want_stderr}) {
 	$_LOGGER = \&_log_stderr;
     }
-    elsif (exists $ENV{MOD_PERL}) {
+    elsif (exists($ENV{MOD_PERL})) {
 	$_LOGGER = \&_log_apache;
     }
     else {
-	# Apache overrides default stderr, so gets reason
+	# Default logger is stderr
 	$_LOGGER = \&_log_stderr;
     }
     $_WANT_PID = $cfg->{want_pid};
@@ -313,7 +297,7 @@ Note: If the message consists of a single newline, nothing is output.
 sub info {
     my($proto) = shift(@_);
     int(@_) == 1 && defined($_[0]) && $_[0] eq "\n" && return;
-    &$_LOGGER('err', _call_format($proto, \@_));
+    &$_LOGGER(_call_format($proto, \@_));
     return;
 }
 
@@ -329,7 +313,7 @@ B<Use sparingly.>  Much better to us L<warn|"warn"> and L<info|"info">.
 
 sub print_literally {
     shift;
-    &$_LOGGER('debug', join('', @_));
+    &$_LOGGER(join('', @_));
     return;
 }
 
@@ -350,24 +334,36 @@ sub reset_warn_counter {
 
 =head2 set_printer(string logger)
 
+=head2 set_printer(code_ref logger)
+
 =head2 set_printer(string logger, string log_file)
 
 Overwrites logger set in handle_config with specified logger.  Logger options
 are currently 'STDERR' and 'FILE'.  If 'FILE' is specified, the argument
 I<log_file> is required as there is no default.
 
+If I<logger> is a code_ref, it will be called as follows:
+
+    &$logger($msg);
+
+This is a low level module in bOP.  This interface shouldn't be used in
+general.  It's good for test handling.
+
 =cut
 
 sub set_printer {
     my($proto, $logger, $log_file) = @_;
-    if ($logger eq 'STDERR') {
-	$_LOGGER = \&_log_stderr if $logger eq 'STDERR';
+    if ($logger eq 'STDERR' && $logger eq 'STDERR') {
+	$_LOGGER = \&_log_stderr;
     }
     elsif ($logger eq 'FILE') {
 	$proto->bootstrap_die('Must specify log file with FILE as printer')
 		    unless defined($log_file);
 	$_LOG_FILE = $log_file;
 	$_LOGGER = \&_log_file;
+    }
+    elsif (ref($logger) eq 'CODE') {
+	$_LOGGER = $logger;
     }
     else {
 	$proto->bootstrap_die('Unknown logger type ', $logger);
@@ -454,14 +450,14 @@ sub _do_warn {
     my($proto, $args, $simply) = @_;
     int(@$args) == 1 && defined($args->[0]) && $args->[0] eq "\n" && return;
     $_LAST_WARNING = _call_format($proto, $args, $simply);
-    &$_LOGGER('err', $_LAST_WARNING);
+    &$_LOGGER($_LAST_WARNING);
     return unless --$_WARN_COUNTER < 0;
 
     # This code is careful to avoid infinite loops.  Don't change it
     # unless you understand all the relationships.
     $_LAST_WARNING = 'Bivio::IO::Alert TOO MANY WARNINGS (max='
 	    .$_MAX_WARNINGS.")\n";
-    &$_LOGGER('err', $_LAST_WARNING);
+    &$_LOGGER($_LAST_WARNING);
     CORE::die("\n");
     return;
 }
@@ -544,9 +540,15 @@ sub _format_string {
     return _format_string_simple($o);
 }
 
+# _format_string_simple(any o) : string
+#
+# Formats a single object, which may be undef.
+#
 sub _format_string_simple {
     my($o) = @_;
     return '<undef>' unless defined($o);
+    # Don't output any errors if there is an error evaluating $o
+    local($SIG{__WARN__});
     my($s) = ref($o) && UNIVERSAL::can($o, 'as_string')
 	    ? (eval {$o->as_string} || $o) : $o;
     return length($s) > $_MAX_ARG_LENGTH
@@ -554,8 +556,12 @@ sub _format_string_simple {
 			: $s;
 }
 
+# _log_apache(string msg)
+#
+# Logs to apache directly or stderr if it doesn't have a request.
+#
 sub _log_apache {
-    my($severity, $msg) = @_;
+    my($msg) = @_;
 #TODO: How to log a "notice" from mod_perl?
     if (Apache->request) {
 	Apache->request->log_error($msg);
@@ -569,41 +575,56 @@ sub _log_apache {
     return;
 }
 
+# _log_file(string msg)
+#
+# Logs to a file.  Opens the file for each message.
+#
 sub _log_file {
-    my($severity, $msg) = @_;
+    my($msg) = @_;
     open(FILE, ">>$_LOG_FILE");
     print FILE $msg;
-    close FILE;
+    close(FILE);
     return;
 }
 
-sub _log_syslog {
-    my($severity, $msg) = @_;
-    Sys::Syslog::syslog($severity, $msg);
-    return;
-}
-
+# _log_stderr(string msg)
+#
+# Writes to STDERR.
+#
 sub _log_stderr {
-    my($severity, $msg) = @_;
+    my($msg) = @_;
     print STDERR $msg;
     return;
 }
 
+# _timestamp() : string
+#
+# Returns local time in a format suitable for logging.
+#
 sub _timestamp {
     my($sec, $min, $hour, $mday, $mon, $year) = localtime(time);
     return sprintf('%d/%02d/%02d %02d:%02d:%02d ', 1900+$year, $mon+1, $mday,
            $hour, $min, $sec);
 }
 
+# _trace_stack()
+#
+# Calls &$_LOGGER with stack trace as returned by Carp::longmess.
+#
 sub _trace_stack {
 #TODO: reaching inside Carp isn't great.  Also copying code from &warn
 #     is not pretty either.
     # Doesn't trim stack trace, so may be really long.  Have an
     # absolute limit?
-    &$_LOGGER('err', Carp::longmess(''));
+    &$_LOGGER(Carp::longmess(''));
     return;
 }
 
+# _warn_handler(string msg)
+#
+# Handler for $SIG{__WARN__}.  Reformats message.  May output stack trace
+# if $_STACK_TRACE_WARN.
+#
 sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
