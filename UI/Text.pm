@@ -404,14 +404,16 @@ sub regroup {
 
 =for html <a name="unsafe_get_widget_value_by_name"></a>
 
-=head2 unsafe_get_widget_value_by_name(string tag) : any
+=head2 unsafe_get_widget_value_by_name(string tag) : array
 
-Returns the text value identified by I<tag>.
+Returns the text value identified by I<tag> if defined.
 
 =cut
 
 sub unsafe_get_widget_value_by_name {
-    return shift->internal_get_value(shift(@_))->{value}
+    my($self, $tag) = @_;
+    my($v) = $self->internal_unsafe_lc_get_value(lc($tag));
+    return $v ? ($v->{value}, 1) : (undef, 0);
 }
 
 =for html <a name="value_host_groups"></a>
