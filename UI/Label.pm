@@ -131,6 +131,7 @@ _compile(\%_MAP, [
         => 'Joined',
     ['CLUB_START_DATE', 'Club.start_date']
         => 'Date Club Started',
+    MY_DEMO_CLUB => 'My Demo Club',
 
     # User labels
     ['USER_DISPLAY_NAME', 'RealmOwner.display_name']
@@ -444,7 +445,7 @@ _compile(\%_MAP, [
 	'' => 'Edit Opening Balances',
 	HELP_TOPIC => 'Editing Opening Balances',
     ],
-    DEMO_REDIRECT => 'My Demo Club',
+    DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
     HTTP_DOCUMENT => 'Home Page',
