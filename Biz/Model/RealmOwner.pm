@@ -39,19 +39,6 @@ use Bivio::Type::RealmName;
 
 =cut
 
-=for html <a name="DEFAULT_UNIT_VALUE"></a>
-
-=head2 DEFAULT_UNIT_VALUE : string
-
-The unit value used when a valid unit value can't be caluculated.
-Used when a club if first started, but no securities have been purchased.
-
-=cut
-
-sub DEFAULT_UNIT_VALUE {
-    return '10.0';
-}
-
 =for html <a name="SHADOW_PREFIX"></a>
 
 =head2 SHADOW_PREFIX : string
@@ -140,18 +127,13 @@ sub new {
 Recalculates and adjusts member entries which affect units after the
 specified date.
 
+Deprecated, use Bivio::Biz::Accounting::Audit->new()->audit_units($date)
+
 =cut
 
 sub audit_units {
     my($self, $date) = @_;
-
-#TODO: the whole caching scheme is really messed up wrt get_unit_value
-# this needs to be reworked
-    # clear any cached values
-    $self->{$_PACKAGE} = {};
-
-    my($auditor) = Bivio::Biz::Accounting::Audit->new($self);
-    $auditor->audit_units($date);
+    Bivio::Biz::Accounting::Audit->new()->audit_units($date);
     return;
 }
 
@@ -190,21 +172,20 @@ sub cascade_delete {
     return;
 }
 
-=for html <a name="clear_units_cache"></a>
+=for html <a name="clear_instrument_cache"></a>
 
-=head2 clear_units_cache(string date)
+=head2 clear_instrument_cache()
 
-Clears the cache used to keep units values on the specified date.
+Clears all cached instrument info.
+
+#TODO: move this an instrument calculations to a separate class.
 
 =cut
 
-#TODO: total hack, need to get this out of RealmOwner
-# and create a separate cache manager class for auditing
-
-sub clear_units_cache {
-    my($self, $date) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    delete($fields->{'get_units'.$date});
+sub clear_instrument_cache {
+    my($self) = @_;
+    # clear any cached values
+    $self->{$_PACKAGE} = {};
     return;
 }
 
@@ -384,7 +365,8 @@ sub get_instruments_info {
 	SELECT realm_instrument_t.realm_instrument_id,
 	    realm_instrument_t.name || instrument_t.name cat_name,
 	    realm_instrument_t.ticker_symbol || instrument_t.ticker_symbol,
-            realm_instrument_t.instrument_id
+            realm_instrument_t.instrument_id,
+            realm_instrument_t.average_cost_method
 	FROM realm_instrument_t, instrument_t
         WHERE realm_instrument_t.instrument_id = instrument_t.instrument_id (+)
 	AND realm_id=?
@@ -396,8 +378,8 @@ EOF
     my($result) = [];
 
     while (my $row = $sth->fetchrow_arrayref) {
-	my($id, $name, $symbol, $instrument_id) = @$row;
-	push(@$result, [$id, $name, $symbol, $instrument_id]);
+	my($id, $name, $symbol, $instrument_id, $ave_cost) = @$row;
+	push(@$result, [$id, $name, $symbol, $instrument_id, $ave_cost]);
     }
     $fields->{get_instruments_info} = $result;
     return $result;
@@ -632,177 +614,6 @@ EOF
 
     $fields->{'get_share_price_and_date'.$date} = $result;
     return $result;
-}
-
-=for html <a name="get_unit_value"></a>
-
-=head2 get_unit_value(Bivio::Type::Date date) : string
-
-Returns the unit value for the realm on the specified date.
-
-=cut
-
-sub get_unit_value {
-    my($self, $date) = @_;
-
-    my($units, $value) = $self->get_units_and_value($date, 1);
-    return DEFAULT_UNIT_VALUE() if $units == 0 || $value == 0;
-    return $math->div($value, $units);
-}
-
-=for html <a name="get_units"></a>
-
-=head2 get_units(string date) : string
-
-Returns the total number of units purchased in the realm up to the specified
-date.
-
-=cut
-
-sub get_units {
-    my($self, $date) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $date = Bivio::Type::Date->to_local_date($date);
-    my($cache) = $fields->{'get_units'.$date};
-    return $cache if $cache;
-
-    my($query) = <<"EOF";
-	SELECT SUM(member_entry_t.units)
-	FROM realm_transaction_t, entry_t, member_entry_t
-	WHERE realm_transaction_t.realm_transaction_id
-	    =entry_t.realm_transaction_id
-	AND entry_t.entry_id = member_entry_t.entry_id
- 	AND realm_transaction_t.realm_id=?
-	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
-EOF
-    my($sth) = Bivio::SQL::Connection->execute($query,
-	    [$self->get('realm_id'),
-		    Bivio::Type::DateTime->to_sql_param($date)]);
-
-    my($units) = $sth->fetchrow_arrayref()->[0] || '0';
-    $fields->{'get_units'.$date} = $units;
-    return $units;
-}
-
-=for html <a name="get_units_and_value"></a>
-
-=head2 get_units_and_value(string date, boolean include_todays_member_entries) : (string, string)
-
-Returns the the units owned and the club value for the specified date.
-If include_todays_member_entries is false, then the result won't include
-member entries on the specified date.
-
-=cut
-
-sub get_units_and_value {
-    my($self, $date, $include_todays_member_entries) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $date = Bivio::Type::Date->to_local_date($date);
-    my($cache) = $fields->{
-	'get_units_and_value'.$date.$include_todays_member_entries};
-    return @$cache if $cache;
-
-    my($units) = $self->get_units($date);
-    my($value) = $self->get_value($date);
-
-    unless ($include_todays_member_entries) {
-
-	# get the member unit and amount for the day
-	# then subtract it from the previous totals
-	my($query) = <<"EOF";
-  	    SELECT SUM(member_entry_t.units),
-                SUM(entry_t.amount)
-	    FROM realm_transaction_t, entry_t, member_entry_t
-	    WHERE realm_transaction_t.realm_transaction_id
-	        =entry_t.realm_transaction_id
-	    AND entry_t.entry_id=member_entry_t.entry_id
-	    AND entry_t.tax_basis=1
-            AND realm_transaction_t.date_time=member_entry_t.valuation_date
-	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
- 	    AND realm_transaction_t.realm_id=?
-EOF
-
-	my($sth) = Bivio::SQL::Connection->execute($query,
-		[Bivio::Type::DateTime->to_sql_param($date),
-			$self->get('realm_id')]);
-	# returns at most one row
-	while (my $row = $sth->fetchrow_arrayref) {
-	    my($mem_units, $mem_value) = @$row;
-	    _trace("removing $mem_units units, $mem_value value")
-		    if $_TRACE;
-	    $units = $math->sub($units, $mem_units)
-		    if $mem_units;
-	    $value = $math->sub($value, $mem_value)
-		    if $mem_value;
-	}
-    }
-    my($result) = [$units, $value];
-    $fields->{
-	'get_units_and_value'.$date.$include_todays_member_entries} = $result;
-    _trace("\n", Bivio::Type::Date->to_literal($date), ' ',
-	    $units, ' ', $value) if $_TRACE;
-    return @$result;
-}
-
-=for html <a name="get_value"></a>
-
-=head2 get_value(string date) : string
-
-Returns the realm's value on the specified date.
-
-=cut
-
-sub get_value {
-    my($self, $date) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $date = Bivio::Type::Date->to_local_date($date);
-    my($cache) = $fields->{'get_value'.$date};
-    return $cache if $cache;
-
-    my($value) = $self->get_tax_basis(Bivio::Type::EntryClass->CASH, $date);
-
-    my($instruments) = $self->get_instruments_info();
-    my($price_dates) = $self->get_share_price_and_date($date);
-    my($shares) = $self->get_number_of_shares($date);
-
-    foreach my $inst (@$instruments) {
-	my($id) = $inst->[0];
-	my($price_date) = $price_dates->{$id};
-	my($price) = $price_date ? $price_date->[0] : 0;
-	$value = $math->add($value,
-		$math->mul($shares->{$id} || 0, $price));
-    }
-    $fields->{'get_value'.$date} = $value;
-    return $value;
-}
-
-=for html <a name="get_tax_basis"></a>
-
-=head2 get_tax_basis(EntryClass class, string date) : string
-
-Returns the total tax basis of the specified entry class up to the specified
-date.
-
-=cut
-
-sub get_tax_basis {
-    my($self, $class, $date) = @_;
-    $date = Bivio::Type::Date->to_local_date($date);
-
-    my($query) = <<"EOF";
-	SELECT sum(entry_t.amount)
-	FROM realm_transaction_t, entry_t
-	WHERE realm_transaction_t.realm_transaction_id
-		= entry_t.realm_transaction_id
-	AND entry_t.tax_basis = 1
-	AND realm_transaction_t.realm_id=?
-	AND entry_t.class=?
-	AND realm_transaction_t.date_time <= $_SQL_DATE_VALUE
-EOF
-    my($sth) = Bivio::SQL::Connection->execute($query,
-	   [$self->get('realm_id'), $class->as_int(),
-		   Bivio::Type::DateTime->to_sql_param($date)]);
-    return $sth->fetchrow_arrayref()->[0] || '0.00';
 }
 
 =for html <a name="internal_initialize"></a>
