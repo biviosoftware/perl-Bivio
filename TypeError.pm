@@ -920,6 +920,11 @@ __PACKAGE__->compile([
 	undef,
 	'select the foreign tax source for the investment',
     ],
+    MISSING_GENERAL_PARTNER => [
+	128,
+	undef,
+	'The club must have at least one general partner',
+    ],
 ]);
 
 #=PRIVATE METHODS
