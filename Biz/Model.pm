@@ -337,6 +337,18 @@ sub put {
     CORE::die('not supported');
 }
 
+=for html <a name="unsafe_get_request"></a>
+
+=head2 unsafe_get_request() : Bivio::Agent::Request
+
+Returns the request associated with this model (if defined).
+
+=cut
+
+sub unsafe_get_request {
+    return shift->{$_PACKAGE}->{request};
+}
+
 #=PRIVATE METHODS
 
 
