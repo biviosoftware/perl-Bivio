@@ -43,12 +43,26 @@ can insert widgets the same way:
 
    Here is an Image('my_image', 'my alt text'); in the middle.
 
-Any ViewLanguage function call can be inserted as long as it does
-not contain the code sequence C<);> (close parethesis followed by
-semicolon).
+Any ViewLanguage function call can be inserted as long as it does not
+contain the code sequence C<);> (close parethesis followed immediately
+by a semicolon).
 
-You can enter more complex ViewLanguage programs which are
-bracketed as follows:
+You can escape a word followed by an open parethesis as follows:
+
+   My text with escape<(>s)
+
+This sequence is a bit cumbersome to type, but is unlikely to occur
+in any of the common text formatting languages or in source text.
+Ideally, you would be able to insert a space between the word (C<escape>
+in this case) and the open parenthesis, e.g.
+
+   My text with escape (s)
+
+However, this is cumbersome in certain languages, hence the escape
+mechanism.
+
+You can enter more complex ViewLanguage programs by bracketing the
+programs as follows:
 
    Here is a complex <{
        if (vs_some_condition()) {
@@ -57,11 +71,17 @@ bracketed as follows:
            vs_do_that();
        }
    }
-   >} and some more text here.
+   }> and some more text here.
 
-Currently, nested bracketing is not supported.
+Currently, nested bracketing is not supported.  You can escape a
+E<lt>{ or }E<gt> sequence using the same bracketing technique around
+the angle brackets, e.g.
 
-You may not include code 
+    This is my escaped opening program bracket <<>{
+    and my escaped closing bracket }<>>.
+
+Note that any E<lt>E<lt>E<gt> and E<lt>E<gt><gt> sequences in the
+text will be unescaped when processing.
 
 =head1 ATTRIBUTES
 
@@ -159,8 +179,10 @@ sub _parse_text {
     my($text) = @_;
     my(@res, $bit);
     while (length($text)) {
-	unless ($text =~ /\b\w+\(/) {
-	    ($bit, $text) = split(/(?=\b\w+\()/, $text);
+	unless ($text =~ /^\w+\(/) {
+	    ($bit, $text) = split(/(?=\b\w+\()/, $text, 2);
+	    # Unescape parens followed by words
+	    $bit =~ s/\<([\<\>\(])\>/$1/g if $bit;
 	    push(@res, $bit);
 	    last unless defined($text) && length($text);
 	}
