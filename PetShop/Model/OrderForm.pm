@@ -164,13 +164,15 @@ sub internal_initialize {
   		constraint => 'NOT_NULL',
   	    },
 	    # billing info
-	    'Order.bill_to_name',
-            'Address.street1',
-            'Address.street2',
-            'Address.city',
-            'Address.state',
-            'Address.zip',
+            map({
+                {
+                    name => $_,
+                    constraint => 'NOT_NULL',
+                },
+            } (qw(Order.bill_to_name Address.street1 Address.city
+                Address.state Address.zip))),
             'Address.country',
+            'Address.street2',
             'Phone.phone',
 	    # shipping info
             map({
