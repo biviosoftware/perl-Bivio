@@ -54,7 +54,6 @@ END
 };
 \$m->();
 my(\$mail) = verify_local_mail(\$e1, 'You have mail');
-Bivio::IO::Alert->warn(\$\$mail);
 \$\$mail =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
     or die('bad return value from verify_local_mail()');
 test_deviance(qr/No mail for /);
