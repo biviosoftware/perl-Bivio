@@ -50,6 +50,7 @@ sub IGNORE_PREFIX {
 use Bivio::TypeError;
 
 #=VARIABLES
+my($_IGNORE) = IGNORE_PREFIX();
 # Borrowed from Bivio::Mail::Incoming.  Should really share code
 my($_822_ATOM) = '[^][()<>@,;:\\\\". \\000-\\040\\177-\\377]+';
 my($_822_DOTTED_ATOMS) = "$_822_ATOM(?:\\.$_822_ATOM)*";
@@ -112,7 +113,7 @@ values stored in the database which may be invalidated by support.
 sub is_valid {
     my($proto, $email) = @_;
     return defined($email) && $email =~ /^$_822_ATOM_ONLY_ADDR$/os
-	    ? 1 : 0;
+	    && $email !~ /^$_IGNORE/os ? 1 : 0;
 }
 
 #=PRIVATE METHODS
