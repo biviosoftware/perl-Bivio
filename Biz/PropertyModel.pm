@@ -226,12 +226,32 @@ sub iterate_next {
     return $self->internal_get_sql_support->iterate_next(@_);
 }
 
+=for html <a name="iterate_next_and_load"></a>
+
+=head2 iterate_next_and_load(ref iterator) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+Will iterate to the next row and load the model with the row.
+Can be used to update a row.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next_and_load {
+    my($self, $it) = @_;
+    my($values) = {};
+    return 0 unless $self->internal_get_sql_support->iterate_next(
+	    $it, $values);
+    return _load($self, $values);
+}
+
 =for html <a name="iterate_start></a>
 
 =head2 iterate_start(string order_by) : ref
 
-Returns a handle which can be used to iterate the rows with
-L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+Returns a handle which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
 should be called, too.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords
@@ -241,8 +261,10 @@ C<ORDER BY>.
 
 sub iterate_start {
     my($self) = shift;
+    my($auth_id) = $self->get_request->get('auth_id');
+    $self->die('DIE', 'no auth_id') unless $auth_id;
     return $self->internal_get_sql_support->iterate_start(
-	    $self, $self->get_request->get('auth_id'), @_);
+	    $self, $auth_id, @_);
 }
 
 =for html <a name="load"></a>
@@ -334,6 +356,30 @@ sub load_from_request {
     return $self->load(@query);
 }
 
+=for html <a name="unauth_iterate_start"></a>
+
+=head2 unauth_iterate_start(string order_by) : ref
+
+B<Do not use this method unless you are sure the user is authorized
+to access all realms or all rows of the table.>
+
+Returns a handle which can be used to iterate ALL rows in
+the table (not just this realm) with
+L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
+
+I<order_by> is an SQL C<ORDER BY> clause without the keywords
+C<ORDER BY>.
+
+
+=cut
+
+sub unauth_iterate_start {
+    my($self) = shift;
+    return $self->internal_get_sql_support->iterate_start(
+	    $self, undef, @_);
+}
+
 =for html <a name="unauth_load"></a>
 
 =head2 unauth_load(hash query) : boolean
@@ -358,12 +404,7 @@ sub unauth_load {
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(\%query, $self);
     return 0 unless $values;
-    $self->internal_clear_model_cache;
-    $self->internal_put($values);
-    # If found, put a reference to this model in request
-    my($req) = $self->unsafe_get_request;
-    $req->put(ref($self), $self) if $req;
-    return 1;
+    return _load($self, $values);
 }
 
 =for html <a name="unauth_load_or_die"></a>
@@ -430,6 +471,20 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _load(Bivio::Biz::PropertyModel self, hash_ref values) : boolean
+#
+# Initializes the self with values and returns 1.
+#
+sub _load {
+    my($self, $values) = @_;
+    $self->internal_clear_model_cache;
+    $self->internal_put($values);
+    # If found, put a reference to this model in request
+    my($req) = $self->unsafe_get_request;
+    $req->put(ref($self), $self) if $req;
+    return 1;
+}
 
 =head1 COPYRIGHT
 

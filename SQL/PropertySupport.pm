@@ -44,6 +44,11 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 Is true if the PropertModel has a BLOB data type.  Requires special
 handling in L<Bivio::SQL::Connection|Bivio::SQL::Connection>.
 
+=item select : string
+
+The list of select_columns followed FROM table.  Does not include
+WHERE.
+
 =back
 
 =cut
@@ -147,7 +152,7 @@ sub new {
     } @$column_names];
     $attrs->{select} = 'select '.join (',', map {
 	$columns->{$_}->{type}->from_sql_value($_);
-    } @$column_names)." from $table_name where ";
+    } @$column_names)." from $table_name ";
     $attrs->{insert} = "insert into $table_name ("
 	    .join(',', @$column_names).') values ('
 	    .join(',', map {$columns->{$_}->{sql_pos_param}} @$column_names)
@@ -322,7 +327,8 @@ Returns a handle which can be used to iterate the rows with
 L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
 should be called, too.
 
-I<auth_id> must be the auth_id for the table.
+I<auth_id> must be the auth_id for the table.  It need not be set
+iwc all rows will be returned.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords
 C<ORDER BY>.
@@ -332,15 +338,16 @@ C<ORDER BY>.
 sub iterate_start {
     my($self, $die, $auth_id, $order_by) = @_;
     my($attrs) = $self->internal_get;
-    $die->die('DIE', 'auth_id not supplied') unless $auth_id;
-    $die->die('DIE', 'Model does not have auth_id') unless $attrs->{auth_id};
-
-    my($columns) = $attrs->{columns};
+    my($sql) =  $attrs->{select};
     my(@params);
-    my($sql) =  $attrs->{select}.$attrs->{auth_id}->{sql_name}
-	    .'='.$attrs->{auth_id}->{sql_pos_param}
-	    .' order by '.$order_by;
-    push(@params, $attrs->{auth_id}->{type}->to_sql_param($auth_id));
+    if ($auth_id) {
+	$die->die('DIE', 'Model does not have auth_id')
+		unless $attrs->{auth_id};
+	$sql .= ' where '.$attrs->{auth_id}->{sql_name}
+		.'='.$attrs->{auth_id}->{sql_pos_param};
+	push(@params, $attrs->{auth_id}->{type}->to_sql_param($auth_id));
+    }
+    $sql .= ' order by '.$order_by;
     my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
     return $iterator;
@@ -366,7 +373,7 @@ sub unsafe_load {
     my($attrs) = $self->internal_get;
     my($columns) = $attrs->{columns};
     my(@params);
-    my($sql) = $attrs->{select}.join(' and ', map {
+    my($sql) = $attrs->{select}.' where '.join(' and ', map {
 	my($column) = $columns->{$_};
 	Carp::croak("invalid field name: $_") unless $column;
 	push(@params, $column->{type}->to_sql_param($query->{$_}));
