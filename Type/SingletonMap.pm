@@ -99,7 +99,7 @@ of this routine in the future.
 
 sub put {
     my($pkg, $classes) = @_;
-    Bivio::Util::require(@$classes);
+    Bivio::Util::my_require(@$classes);
     $_MAP{$pkg} = {map {
 	($_, $_->new);
     } @$classes};

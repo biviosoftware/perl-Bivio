@@ -55,7 +55,7 @@ sub initialize {
 	my($id_name, undef, $action_class, $view_class) = @$_;
 	if ($action_class) {
 	    $action_class = 'Bivio::Biz::Action::' . $action_class;
-	    Bivio::Util::require($action_class);
+	    Bivio::Util::my_require($action_class);
 	}
 	Bivio::Agent::Task->new(
 		Bivio::Agent::TaskId->$id_name(),

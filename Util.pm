@@ -178,7 +178,7 @@ sub date_range ($$) {
 }
 
 
-sub require {
+sub my_require {
     map {
 	my($c) = $_;
 	$c =~ s!::!/!g;
