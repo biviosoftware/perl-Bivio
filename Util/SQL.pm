@@ -124,7 +124,10 @@ Undoes the operations of L<create_db|"create_db">.
 
 sub destroy_db {
     my($self) = @_;
-    $self->are_you_sure('DROP THE ENTIRE DATABASE?');
+    $self->get_request;
+    $self->are_you_sure('DROP THE ENTIRE '
+	. Bivio::SQL::Connection->get_dbi_config->{database}
+	. ' DATABASE?');
     # We drop in opposite order.  Some constraint drops will
     # fail, but that's ok.  We need to drop the foreign key
     # constraints so we can drop the tables.
