@@ -83,17 +83,17 @@ sub get_instance {
 
 =head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model
 
-=head2 static new(Bivio::Agent::Request req, string model) : Bivio::Biz::Model
+=head2 static new(Bivio::Agent::Request req, any class) : Bivio::Biz::Model
 
-Creates a Model with the specified request, if supplied.
-
-A PropertyModel may only be loaded if I<req> is non-null.
+Creates a Model with I<req>, if supplied.  The class of the model is defined by
+C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
+with I<class> as its argument and the resultant class is instantiated.
 
 =cut
 
 sub new {
-    my($proto, $req, $model) = @_;
-    my($class) = defined($model) ? ref(__PACKAGE__->get_instance($model))
+    my($proto, $req, $class) = @_;
+    $class = defined($class) ? ref(__PACKAGE__->get_instance($class))
 	    : (ref($proto) || $proto);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
