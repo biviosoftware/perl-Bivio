@@ -122,11 +122,11 @@ sub execute {
     }
 
     if ($club->get_status()->is_OK()) {
-	Bivio::Biz::SqlConnection->get_connection()->commit();
+	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }
     else {
-	Bivio::Biz::SqlConnection->get_connection()->rollback();
+	Bivio::Biz::SqlConnection->rollback();
 	return 0;
     }
 }
