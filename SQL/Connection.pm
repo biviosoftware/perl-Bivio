@@ -36,7 +36,6 @@ to the database at all times.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Error;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
