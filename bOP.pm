@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Request->capture_mail provides messages committed in a ShellUtil
+  * Bivio::Biz::Action::JobBase->set_sentinel added (supports b-test task)
+  * Bivio::UI::Facade->is_fully_initialized bug fix
+
+  Revision 1.32  2002/12/01 22:16:29  nagler
+  * Bivio::Biz::Action isa Bivio::Collection::Attributes
+  * Bivio::IO::Alert.max_arg_depth is config parameter (was hardwired to 3)
+  * Bivio::ShellUtil uses Bivio::Test::Request for cleaner exec environment
+  * Bivio::Test::Request->execute_task allows task testing
+  * b-test task allows you to call above from command line
+  * Bivio::Test.create_object renamed from compute_object
+  * Bivio::Test.want_scalar forces scalar context for method invocation
   * Bivio::Test accepts a Bivio::DieCode in no param case, e.g.
        my_method => Bivio::DieCode->DIE
   * Bivio::UI::PDF provides basic PDF support (requires http://www.pdflib.com)
