@@ -1,2 +1,1 @@
-print STDERR "This file (no_comment.btf) does in fact get properly eval-ed. \n";
-print STDERR "And the peasants rejoiced.\n\n\n";
+_trace ("This file (which just prints) does in fact get properly eval-ed. \n") if $_TRACE;

@@ -1,4 +1,3 @@
-# A test to see if eval-ing print statements works.
+# A test to see if eval-ing works
 
-print STDERR "test.btf does in fact get properly eval-ed. \n";
-print STDERR "And the peasants rejoiced.\n\n\n";
+_trace("Statements did get properly eval-ed. \n") if $_TRACE;
