@@ -304,12 +304,12 @@ sub get_instruments_info {
 #TODO: make this a ListModel
     my($query) = <<'EOF';
 	SELECT realm_instrument_t.realm_instrument_id,
-	    instrument_t.name,
-	    instrument_t.ticker_symbol
+	    realm_instrument_t.name || instrument_t.name cat_name,
+	    realm_instrument_t.ticker_symbol || instrument_t.ticker_symbol
 	FROM realm_instrument_t, instrument_t
-        WHERE realm_instrument_t.instrument_id = instrument_t.instrument_id
+        WHERE realm_instrument_t.instrument_id = instrument_t.instrument_id (+)
 	AND realm_id=?
-	ORDER BY instrument_t.name
+	ORDER BY cat_name
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
 	    [$self->get('realm_id')]);
