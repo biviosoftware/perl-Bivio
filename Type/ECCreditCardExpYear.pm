@@ -35,50 +35,16 @@ C<Bivio::Type::ECCreditCardExpYear>
 =cut
 
 #=IMPORTS
+use Bivio::Type::Date;
 
 #=VARIABLES
+my($_NOW) = Bivio::Type::Date->get_part(Bivio::Type::Date->now, 'year');
 
+# 10 year window from current year forward, ex. (Y2004 => [2004, 2004])
 __PACKAGE__->compile([
-    Y2003 => [
-        2003,
-        '2003',
-    ],
-    Y2004 => [
-        2004,
-        '2004',
-    ],
-    Y2005 => [
-        2005,
-        '2005',
-    ],
-    Y2006 => [
-        2006,
-        '2006',
-    ],
-    Y2007 => [
-        2007,
-        '2007',
-    ],
-    Y2008 => [
-        2008,
-        '2008',
-    ],
-    Y2009 => [
-        2009,
-        '2009',
-    ],
-    Y2010 => [
-        2010,
-        '2010',
-    ],
-    Y2011 => [
-        2011,
-        '2011',
-    ],
-    Y2012 => [
-        2012,
-        '2012',
-    ],
+    map({
+	("Y$_" => [$_, $_]),
+    } ($_NOW .. $_NOW + 9)),
 ]);
 
 =head1 METHODS
