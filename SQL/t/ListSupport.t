@@ -91,6 +91,7 @@ sub t {
 my($m);
 my($req) = Bivio::Collection::Attributes->new;
 my($now) = Bivio::Type::DateTime->from_literal('2001/12/31 17:00:00');
+my($names) = ['name00'..'name09'];
 foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::Model::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
@@ -120,7 +121,7 @@ EOF
     my($model) = $pkg->new($req);
     my($toggle) = 1;
     foreach $auth_id (1..2) {
-	foreach $name ('name00'..'name09') {
+	foreach $name (@$names) {
 	    foreach $gender ('FEMALE', 'MALE') {
 		$model->create({
 		    date_time => $date_time,
@@ -138,6 +139,7 @@ EOF
 Bivio::SQL::Connection->commit;
 my($support) = Bivio::SQL::ListSupport->new({
     version => 1,
+    can_iterate => 1,
     other => [
 	{
 	    name => 'local_field',
@@ -297,4 +299,48 @@ my($rows2) = $support->load($query, '', []);
 t(Bivio::IO::Ref->nested_equals($rows, $rows2), 0);
 
 # can_iterate
-t($support->can_iterate, 1);
+t($support->get('can_iterate'), 1);
+
+$support = Bivio::SQL::ListSupport->new({
+    version => 1,
+    can_iterate => 1,
+    order_by => [
+	map(+{
+	    name => "count$_",
+	    constraint => 'NOT_NULL',
+	    type => 'Integer',
+	    in_select => 1,
+	    select_value => "COUNT(t_list${_}_t.date_time) AS count$_",
+	}, 1, 2),
+    ],
+    group_by => [
+	[qw(TListT1.gender TListT2.gender)],
+    ],
+    primary_key => [
+	'TListT1.gender',
+    ],
+    auth_id => [qw(TListT1.auth_id TListT2.auth_id)],
+    other => [
+	[qw(TListT1.name TListT2.name)],
+	map({
+	    my($f) = $_;
+	    map(+{
+		name => "TListT$_.$f",
+		in_select => 0,
+	    }, 1, 2);
+	} qw(toggle date_time name)),
+    ],
+});
+$rows = $support->load(Bivio::SQL::ListQuery->new({
+    auth_id => 1,
+    count => 99999,
+    o => '0d',
+}, $support), '', []);
+t(Bivio::IO::Ref->nested_equals($rows, [
+    map({
+	'TListT1.auth_id' => 1,
+	count1 => scalar(@$names),
+	count2 => scalar(@$names),
+	'TListT1.gender' => Bivio::Type::Gender->from_int($_)
+    }, 1, 2),
+]), 1);
