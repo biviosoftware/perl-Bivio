@@ -778,7 +778,8 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ&MEMBER_READ
         %/admin/invitations
-        Bivio::Biz::Model::RealmInviteList
+        Bivio::Biz::Model::RealmInviteList->execute_load_all
+        Bivio::Biz::Model::RealmUserList->execute_load_all
         Bivio::UI::HTML::Club::InviteList
     )],
     # This technically doesn't have to be in your domain
@@ -1541,24 +1542,25 @@ my(@_CFG) = (
         next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(
-        CLUB_ADMIN_ADD_MEMBER
+        CLUB_ADMIN_MEMBER_ADD
         147
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
-        %/admin/add/member
-        Bivio::Biz::Model::AddMemberForm
-        Bivio::UI::HTML::Club::AddMember
-        next=CLUB_ADMIN_INVITE_LIST
-        cancel=CLUB_ADMIN_USER_LIST
+        %/admin/add/members
+        Bivio::Biz::Model::NumberedList->execute_load_page
+        Bivio::Biz::Model::AddMemberListForm
+        Bivio::UI::HTML::Club::AddMemberList
+        next=CLUB_ADMIN_USER_LIST
     )],
     [qw(
-        CLUB_ADMIN_INVITE_GUEST
+        CLUB_ADMIN_GUEST_INVITE
         148
         CLUB
         ADMIN_WRITE
-        %/admin/invite/guest
-        Bivio::Biz::Model::InviteGuestForm
-        Bivio::UI::HTML::Club::InviteGuest
+        %/admin/invite/guests
+        Bivio::Biz::Model::NumberedList->execute_load_page
+        Bivio::Biz::Model::InviteGuestListForm
+        Bivio::UI::HTML::Club::InviteGuestList
         next=CLUB_ADMIN_INVITE_LIST
         cancel=CLUB_ADMIN_USER_LIST
     )],
@@ -1627,7 +1629,7 @@ my(@_CFG) = (
         155
         CLUB
         ADMIN_READ&MEMBER_READ
-        %/guest/memberize
+        %/guest/make/member
         Bivio::Biz::Model::RealmInvite
         Bivio::Biz::Model::Guest2MemberAcceptForm
         Bivio::UI::HTML::Club::Guest2MemberAccept
