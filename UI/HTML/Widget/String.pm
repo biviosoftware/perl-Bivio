@@ -98,12 +98,12 @@ sub initialize {
     my($font) = $self->ancestral_get('string_font', undef);
     my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
     $fields->{value} = $self->get('value');
-    if (ref($fields->{value})) {
-	$fields->{prefix} = $p;
-	$fields->{suffix} = $s;
+    if ($fields->{is_constant} = !ref($fields->{value})) {
+    	$fields->{value} = $p.Bivio::Util::escape_html($fields->{value}).$s;
     }
     else {
-	$fields->{value} = $p.Bivio::Util::escape_html($fields->{value}).$s;
+	$fields->{prefix} = $p;
+	$fields->{suffix} = $s;
     }
     return;
 }
@@ -117,7 +117,7 @@ Will return true if always renders exactly the same way.
 =cut
 
 sub is_constant {
-    return ref(shift->{$_PACKAGE}->{value});
+    return shift->{$_PACKAGE}->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -131,10 +131,10 @@ Render the object.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($v) = $fields->{value};
-    $$buffer .= $v, return unless ref($v);
+    $$buffer .= $fields->{value}, return if $fields->{is_constant};
     $$buffer .= $fields->{prefix}
-	    .Bivio::Util::escape_html($source->get_widget_value(@$v))
+	    .Bivio::Util::escape_html($source->get_widget_value(
+		    @{$fields->{value}}))
 	    .$fields->{suffix};
     return;
 }
