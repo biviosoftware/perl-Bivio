@@ -271,6 +271,7 @@ sub get_headers {
     my($f);
     foreach $f (split(/^(?=$_822_FIELD_NAME)/om, $fields->{header})) {
 	my($n) = $f =~ /^($_822_FIELD_NAME)/;
+	warn("invalid 822 field: $f"), next unless defined($n);
 	chop($n);
 	$headers->{lc($n)} .= $f;
     }
@@ -413,6 +414,10 @@ sub initialize {
     $offset ||= 0;
     my($i) = index($$rfc822, "\n\n", $offset);
     my($h);
+    if (substr($$rfc822, $offset, 5) eq 'From ') {
+	# Skip Unix From line
+	$offset = index($$rfc822, "\n", $offset) + 1;
+    }
     if ($i >= 0) {
 	$i -= $offset;
 	$h = substr($$rfc822, $offset, $i + 1);
