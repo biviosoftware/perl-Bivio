@@ -31,6 +31,23 @@ and delete interface to the C<realm_invite_t> table.
 
 =cut
 
+=head1 PROPERTIES
+
+=over 4
+
+=item realm_user_id
+
+This is the RealmUser id of the user with the invite.
+
+=over 4
+
+=item realm_invite_id
+
+This is the auth code of the invite.
+
+=back
+
+=cut
 
 =head1 CONSTANTS
 
