@@ -44,11 +44,16 @@ List of columns order_by columns (in order).
 
 =item orabug_fetch_all_select : boolean
 
-If set, then selects must be read to completion.  The problem occurs
-on certain "wide" selects, e.g.
-L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>.
-An ORA-03113 error occurs on the next statement.  The slave has
-crashed.  The connection must be restarted.
+If set, then selects must be read to completion.  We were seeing ORA-03113
+because the oracle slave was crashing with a SEGV
+on the test system only.  It isn't happening any more.  We don't know
+why, but we've taken it out of RealmUserList.  I've left the code in,
+because it may need to be added quickly.  Just add it to internal_initialize
+of the list model, e.g.
+
+    # This select causes the oracle db slave to crash.  The next
+    # operation fails.  See ListSupport for more details.
+    orabug_fetch_all_select => 1,
 
 =item primary_key_types : array_ref
 
