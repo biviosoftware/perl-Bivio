@@ -84,7 +84,7 @@ Returns 1 if successful, or 0 if no data was loaded.
 =cut
 
 sub load {
-    die("abstract method");
+    CORE::die("abstract method");
 }
 
 #=PRIVATE METHODS
