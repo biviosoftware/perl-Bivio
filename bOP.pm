@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    when modifying exception state.
+  * Bivio::Biz::FormModel->get_context_from_request was not checking
+    context state correctly in minor case
+
+  Revision 2.11  2004/02/26 23:42:54  nagler
+  * Bivio::Biz::Model::ForbiddenForm checks executing task for
     require_explicit_su attribute.  If true, it will not automatically
     logout substituted users or substitute to new users
   * Bivio::Util::Release had some minor bugs in new functions
