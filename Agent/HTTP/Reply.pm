@@ -146,7 +146,7 @@ sub flush {
 
 =head2 static die_to_mail_reply_code(Bivio::Die die) : int
 
-=head2 static die_to_http_code(Bivio::DieCode die) : int
+=head2 static die_to_http_code(Bivio::DieCode die, Apache::Request r) : int
 
 Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
 
@@ -155,7 +155,7 @@ If I<die> is C<undef>, returns C<Apache::Constants::OK>.
 =cut
 
 sub die_to_http_code {
-    my(undef, $die) = @_;
+    my(undef, $die, $r) = @_;
 
     return Apache::Constants::OK() unless defined($die);
     $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
@@ -170,12 +170,12 @@ sub die_to_http_code {
 		=> Apache::Constants::OK(),
 	);
     }
-    return $_DIE_TO_HTTP_CODE{$die}
+    return _error($_DIE_TO_HTTP_CODE{$die}, $r)
 	    if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
     Carp::carp($die, ": unknown Bivio::DieCode")
 		unless UNIVERSAL::isa($die, 'Bivio::DieCode');
-    return Apache::Constants::SERVER_ERROR();
+    return _error(Apache::Constants::SERVER_ERROR(), $r);
 }
 
 =for html <a name="print"></a>
@@ -215,6 +215,63 @@ sub set_output_from_file {
 }
 
 #=PRIVATE METHODS
+
+# _error(int code, Apache::Request r) : Apache::Constants::OK
+#
+# Workaround for apache in error mode.  Sends the reply in line.
+# This is due to a bug in apache which uses a form.  See Req#21
+#
+sub _error {
+    my($code, $r) = @_;
+    return $code if $code == Apache::Constants::OK();
+    $r->status($code);
+    $r->send_http_header;
+    # make it look like apache's redirect
+    my($uri) = $r->uri;
+    if ($code == Apache::Constants::NOT_FOUND()) {
+	$r->print(<<"EOF");
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML><HEAD>
+<TITLE>404 Not Found</TITLE>
+</HEAD><BODY>
+<H1>Not Found</H1>
+The requested URL $uri was not found on this server.<P>
+</BODY></HTML>
+EOF
+    }
+    elsif ($code == Apache::Constants::FORBIDDEN()) {
+	$r->print(<<"EOF");
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML><HEAD>
+<TITLE>403 Forbidden</TITLE>
+</HEAD><BODY>
+<H1>Forbidden</H1>
+You don't have permission to access $uri
+on this server.<P>
+</BODY></HTML>
+EOF
+    }
+    else {
+	$r->print(<<'EOF');
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML><HEAD>
+<TITLE>500 Internal Server Error</TITLE>
+</HEAD><BODY>
+<H1>Internal Server Error</H1>
+The server encountered an internal error or
+misconfiguration and was unable to complete
+your request.<P>
+Please contact the server administrator,
+ webmaster@bivio.com and inform them of the time the error occurred,
+and anything you might have done that may have
+caused the error.<P>
+More information about this error may be available
+in the server error log.<P>
+</BODY></HTML>
+EOF
+    }
+    return Apache::Constants::OK();
+}
 
 
 =head1 COPYRIGHT
