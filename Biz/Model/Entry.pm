@@ -63,6 +63,8 @@ sub internal_initialize {
 	columns => {
             entry_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
+            realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
             realm_transaction_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
             class => ['Bivio::Type::EntryClass',

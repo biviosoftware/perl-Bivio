@@ -86,7 +86,7 @@ sub new {
 		[
 		    _field('Date',
 			    Bivio::UI::HTML::Widget::Date->new({
-				field => 'RealmTransaction.dttm',
+				field => 'RealmTransaction.date_time',
 			    })),
 		    $blank_cell,
 		    _field('Account',
