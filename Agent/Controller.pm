@@ -38,15 +38,14 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(array views, View default_view) : Bivio::Agent::Controller
+=head2 static new(array views) : Bivio::Agent::Controller
 
-Creates a new controller which controlls the specified views, and shows
-the default_view if the request doesn't contain a view.
+Creates a new controller which controlls the specified views.
 
 =cut
 
 sub new {
-    my($proto, $views, $default_view) = @_;
+    my($proto, $views) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
 
     my($view_hash) = {};
@@ -54,7 +53,6 @@ sub new {
     foreach $view (@$views) {
 	$view_hash->{$view->get_name()} = $view;
     }
-    $view_hash->{''} = $default_view;
 
     $self->{$_PACKAGE} = {
 	views => $view_hash,
