@@ -79,17 +79,18 @@ sub initialize {
     foreach my $x (
        'Home:/',
        'About Us:/about.html',
+       'Attendee:/attendee.html',
        'Exhibitors:/exhibitors.html',
        'Expo Hall:/expohall.html',
-       # No URI which _render_main() treats specially
-       'Investment Clubs',
-       # No label (handled by _render_sublist, can't be first in this list)
-       \&_render_sublist,
        'Register:/register.html',
        'Shows:/shows.html',
        'Speakers:/nyspeakers.html',
-       'Sponsorship:/sponshorship.html',
+       'Sponsorships:/sponsorship.html',
        'Miami Espa&ntilde;ol:/espanol.html',
+       # No URI which _render_main() treats specially
+       "Investment<br>Expo Clubs",
+       # No label (handled by _render_sublist, can't be first in this list)
+       \&_render_sublist,
 	   ) {
 	my($w) = $x;
 	unless (ref($x) eq 'CODE') {
