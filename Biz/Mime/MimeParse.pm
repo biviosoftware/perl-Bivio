@@ -108,20 +108,34 @@ sub parse {
     &_trace('extracting MIME attachments for mail message. File: ', $filename) if $_TRACE;
     # the second field is the file "extension". For the main message part, this should
     # be undef since there is no .0, .1, .0.1 suffix
-    _extract_mime($entity, $filename, undef);
+    _extract_mime($entity, $filename, undef, $keywords);
+
+    &_trace('getting all the keywords we found...') if $_TRACE;
+    my $k = $fields->{keywords};
+    my(@keys) = keys %$k;
+    print(STDERR "KEYWORDS-------------------------------");
+    while(@keys){
+	print(STDERR "\n\"" . pop(@keys) . "\"");
+    }
+    print(STDERR "\n");
+    &_trace('Writing the keywords to the file') if $_TRACE;
+    my $rslt;
+    $_FILE_CLIENT->set_keywords($filename, $keywords, \$rslt) || die("set_keywords failed: \$body");
+    &_trace('done with the keyword storage.') if $_TRACE;
+    
     return;
 }
 
 #=PRIVATE METHODS
 
-# _extract_mime(Entity entity) : void
+# _extract_mime(Entity entity, String filename, String ext, Hashref keywords) : void
 #
 # Extracts sub mime parts for this mime entity. This method is called
 # recursively.
 #
 sub _extract_mime {
-    my($entity, $filename, $ext) = @_;
-    _parse_mime($entity); #parses keywords if this is text/plain
+    my($entity, $filename, $ext, $keywords) = @_;
+    _parse_mime($entity, $keywords); #parses keywords if this is text/plain
 
     #TODO parse it if it is HTML
 
@@ -129,15 +143,23 @@ sub _extract_mime {
 
     my $numparts = $entity->parts || 0;
     my $i = 0;
-    if($numparts eq(0)){return;}
+    &_trace('number of parts for this MIME part is ', $numparts) if $_TRACE;
+    if($numparts eq(0)){
+	return;
+    }
     for($i = 0; $i < $numparts; $i++){
+	print(STDERR "getting part " . $i . "\n");
 	my $subentity = $entity->part($i);
-	_extract_mime($subentity, $filename, '_' . $i); #recurse
+	#recursion doesn't seem to work the way I expected.
+	#Nested MIME parts don't get "unwound."
+	#Maybe I need to  use the MIME::Parser again and again?
+	# %-\
+	_extract_mime($subentity, $filename, '_' . $i, $keywords); #recurse
     }
     return;
 }
 
-# _extract_mime_body_decoded(MIME_Entity entity) : 
+# _extract_mime_body_decoded(MIME_Entity entity) : scalar_ref
 #
 # Extracts the body of a MIME Entity decoded.
 #
@@ -195,14 +217,19 @@ sub _parse_keywords {
 # then _parse_msg_line is called for each line of the content.
 #
 sub _parse_mime {
-    my($entity) = @_;
+    my($entity, $keywords) = @_;
     my($ctype) = lc($entity->head->get('content-type'));
-    if($ctype =~ /text-plain/){ #then we want keywords from it
+    &_trace('PARSE THE MIME: the mime type is ', $ctype) if $_TRACE;
+    if($ctype =~ /text\/plain/){ #then we want keywords from it
+	print(STDERR "message is text plain.\n");
 	my $body = _extract_mime_body_decoded($entity);
-        my $file = IO::Scalar->new(\$body);
+        my $file = IO::Scalar->new($body);
 	while(!$file->eof){
-	    _parse_msg_line($file->getline());
+	    print(STDERR ".");
+	    my $line = $file->getline();
+	    _parse_msg_line(\$line, $keywords);
 	}
+	print(STDERR "done parsing\n");
     }
     return;
 }
@@ -216,8 +243,10 @@ sub _parse_msg_line {
     my($line, $keywords) = @_;
     my($str) = $$line;
     if (!$$line){
+	print(STDERR "THE LINE IS NULL\n");
 	return;
     }
+    print(STDERR "THE LINE IS \"" . $$line . "\n");
 #TODO: Handle multi-line tags.
     $str =~ s/--//g;
     $str = lc($str);
