@@ -6,13 +6,11 @@ $Bivio::MIME::Base64::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::MIME::Base64 - implements base64 modified operations
+Bivio::MIME::Base64 - implements modified base64 operations
 
 =head1 SYNOPSIS
 
     use Bivio::MIME::Base64;
-    $encoded = Bivio::MIME::Base64->http_encode($decoded);
-    $decoded = Bivio::MIME::Base64->http_decode($encoded);
 
 =cut
 
@@ -22,8 +20,8 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::MIME::Base64> implements a web-safe encoding of base64,
-which we call http-base64.
-This consists of swapping the = char for an underscore.
+which we call http-base64.  The specials in Base64 are not
+web friendly, so they are all replaced.
 
 =cut
 
@@ -31,9 +29,6 @@ This consists of swapping the = char for an underscore.
 use MIME::Base64 ();
 
 #=VARIABLES
-# Base64 uses '=' for a fill character which doesn't work well in
-# query strings so we substitute something else (_).
-my($_EQUALS_SUBSTITUTE) = '_';
 
 =head1 METHODS
 
@@ -50,7 +45,7 @@ http-base64 decoding.
 
 sub http_decode {
     my(undef, $encoded) = @_;
-    $encoded =~ s/$_EQUALS_SUBSTITUTE/=/og;
+    $encoded =~ tr/_*-/=+\//;
 #TODO: Need to catch decode errors.  MIME::Base64 outputs warnings, but
 #      silently succeeds.
     return MIME::Base64::decode($encoded);
@@ -68,7 +63,7 @@ http-base64 encoding.
 sub http_encode {
     my(undef, $decoded) = @_;
     my($encoded) = MIME::Base64::encode($decoded, '');
-    $encoded =~ s/=/$_EQUALS_SUBSTITUTE/og;
+    $encoded =~ tr/=+\//_*-/;
     return $encoded;
 }
 
