@@ -40,15 +40,16 @@ use Bivio::SQL::Constraint;
 use Bivio::TypeError;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
+use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
-use Bivio::UI::HTML::Format::Date;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_MAY_7_1997) = Bivio::Type::Date->date_from_parts(7, 5, 1997);
 
 
 =head1 FACTORIES
@@ -93,11 +94,6 @@ sub execute_input {
     my($req) = $self->get_request();
     my($auth_id) = $req->get('auth_id');
     my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
-
-    # convert date from hidden display value
-    $properties->{'RealmTransaction.date_time'} =
-	    Bivio::Type::Date->from_literal(
-		    $properties->{'RealmTransaction.date_time'});
 
     # create the transaction
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
@@ -246,8 +242,7 @@ sub internal_initialize {
 	hidden => [
 	    {
 		name => 'RealmTransaction.date_time',
-#		type => 'Bivio::Type::Date',
-		type => 'Bivio::Type::String',
+		type => 'Bivio::Type::Date',
 		constraint => Bivio::SQL::Constraint::NOT_NULL(),
 	    },
 	    'RealmAccountEntry.realm_account_id',
@@ -408,17 +403,17 @@ sub _create_sell_entry {
 sub _determine_gain_type {
     my($purchase_date, $sell_date) = @_;
 
+    # This is literal days.  It doesn't matter what time.
     my($days) = Bivio::Type::Date->get_days_between($purchase_date,
 	    $sell_date);
 #TODO: handle leap year
     if ($days <= 365) {
 	return 'stcg';
     }
-    my(@parts) = Bivio::Type::Date->to_parts($sell_date);
+    my(@parts) = Bivio::Type::DateTime->to_parts($sell_date);
     my($sell_year) = $parts[5];
     if ($sell_year == 1997) {
-	my($may_7_1997) = Bivio::Type::Date->date_from_parts(7, 5, 1997);
-	if (Bivio::Type::Date->compare($may_7_1997, $sell_date)) {
+	if (Bivio::Type::DateTime->compare($_MAY_7_1997, $sell_date)) {
 	    return 'mtcg';
 	}
 #TODO; need to determine 18 months holding
