@@ -283,8 +283,7 @@ sub _transact_form_data {
             '&x_Version=3.0'.
             '&x_Login='.$_GW_LOGIN.
             '&x_Password='.$_GW_PASSWORD.
-            '&x_Type='.Bivio::Type::ECPaymentStatus
-                    ->get_authorize_net_type($properties->{status}).
+            '&x_Type='.$properties->{status}->get_authorize_net_type.
 #TODO: RJN: Needs to be defined(), because might be 0s.  We don't know what it
 #      it is.  It won't be blanks, however, because it is a Type::Name.
 	    (defined($properties->{processor_transaction_number}) ?
