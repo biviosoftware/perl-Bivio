@@ -55,8 +55,8 @@ usage: b-test [options] command [args...]
 commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     nightly -- runs all acceptance tests with current tests from CVS
-    unit tests/dirs... -- runs the tests (*.t) and print cummulative results
     task name query path_info -- executes task in context supplied returns output
+    unit tests/dirs... -- runs the tests (*.t) and print cummulative results
 EOF
 }
 
@@ -75,8 +75,8 @@ use File::Spec ();
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 Bivio::IO::Config->register({
-    nightly_output_dir => '/home/testsuite',
-    nightly_cvs_dir => 'perl/Bivio/PetShop/Test',
+    nightly_output_dir => '/tmp/test-run',
+    nightly_cvs_dir => 'perl/Bivio',
 });
 my($_CFG);
 
@@ -122,9 +122,15 @@ EOF
 
 =over 4
 
-=item nightly_output_dir : string ['/home/testsuite']
+=item nightly_output_dir : string ['/tmp/test-run'],
 
-=item nightly_cvs_dir : string ['perl/Bivio/PetShop/Test']
+Root directory of the run.  A subdirectory will be created with the timestamp
+of the run.  Assumes "perl" subdirectory is PERLLIB (see code, sorry for the
+hack).
+
+=item nightly_cvs_dir : string ['perl/Bivio'],
+
+The directory to checkout of cvs, which contains the source and the code.
 
 =back
 
@@ -140,9 +146,8 @@ sub handle_config {
 
 =head2 nightly()
 
-Creates test directory, calls cvs update to get latest test files.
-Runs all acceptance tests.
-Output is to STDERR.
+Creates test directory, calls cvs update to get latest test files.  Runs all
+acceptance tests.  Output is to STDERR.
 
 =cut
 
@@ -151,6 +156,8 @@ sub nightly {
     my($old_pwd) = Bivio::IO::File->pwd;
     _expunge($self);
     _make_nightly_dir($self);
+    $ENV{PERLLIB} = Bivio::IO::File->pwd . '/perl'
+	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
     my($die) = Bivio::Die->catch(sub {
         # CVS checkout
         system('cvs -Q checkout ' . $_CFG->{nightly_cvs_dir});
@@ -270,7 +277,7 @@ sub _find_files {
     return ($self, $tests);
 }
 
-# _make_nightly_dir()
+# _make_nightly_dir() : string
 #
 # Makes the directory in which nightly() executes and leaves testsuite
 # log files.
@@ -284,7 +291,7 @@ sub _make_nightly_dir {
     Bivio::IO::File->mkdir_p($dir);
     Bivio::IO::File->chdir($dir);
     $self->print("Created $dir\n");
-    return;
+    return $dir;
 }
 
 # _run(self, hash_ref tests, code_ref action)
