@@ -266,23 +266,21 @@ EOF
 		height => 106,
 	    },
 	    [<<'EOF'],
-Investment Club Treasurers have been relying on Jerry
-Dressel and Rip West's accounting and tax advice
-for years.  Together they have contributed literally
-thousands of messages to the
-<a href="http://www.better-investing.org">NAIC's</a>
-and
-<a href="http://www.fool.com">Motley Fool's</a>
-message boards.
+Jerry Dressel and Rip West will answer your questions about club
+accounting and taxes.
 <p>
-Now Jerry and Rip have a place which they can
-call their own and, more importantly, you
-will always know where to find them.
-Trez Talk is your center for tax and accounting
-advice.
+Investment club treasurers have been relying on them for years,
+via the <a href="http://www.better-investing.org">NAIC</a> and
+<a href="http://www.fool.com">Motley Fool</a> message boards.
+Now you can find their sound advice right here at "Trez Talk"
+on bivio.
 <p>
-Yet another free service from bivio, your
-investment community.
+Jerry is a pilot for Northwest Airlines who keeps himself busy teaching
+accounting courses for fellow investors. Though Rip "has failed retirement
+three times" he's had a lot more success as a financial planner, investment
+advisor, and accountant, having launched his own CPA firm back in the 1950s.
+Both have worked extensively with computers, and they have decades of
+investment club experience between them.
 EOF
 	   );
     return;
