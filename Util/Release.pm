@@ -431,14 +431,23 @@ sub install {
     }
 
     _umask('install_umask');
-    $output .= _do_in_tmp($self, 0, sub {
-	my($tmp, $output) = @_;
-        foreach my $arg (@$command) {
+    return _do_in_tmp($self, 0, sub {
+	my($tmp, $output2) = @_;
+	substr($$output2, 0, 0) = $output;
+	foreach my $arg (@$command) {
 	    next unless $arg =~ /^http/;
 	    my($file) = $arg =~ m{([^/]+)$};
-	    Bivio::IO::File->write($file, _http_get($arg, $output));
+	    Bivio::IO::File->write($file, _http_get($arg, $output2));
 	    substr($arg, 0) = $file;
 	}
+	$command = join(' ', @$command);
+	if ($self->get('noexecute')) {
+	    $$output2 .= $command . "\n";
+	}
+	else {
+	    _system($command, $output2);
+	}
+	return;
     }) if $_CFG->{http_realm};
 
     $self->print($output, join(' ', @$command, "\n"));
@@ -1062,7 +1071,7 @@ sub _system {
     my($command, $output) = @_;
     my($die) = Bivio::Die->catch(sub {
 	$command =~ s/'/"/g;
-	$$output .= "** $command\n";
+	$$output .= "$command\n";
 	$$output .= ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")};
 	return;
     });
