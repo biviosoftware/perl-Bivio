@@ -115,6 +115,26 @@ sub check_transaction_batch {
     return;
 }
 
+=for html <a name="delete_all"></a>
+
+=head2 static delete_all(Bivio::Agent::Request req)
+
+Deletes all payments and subscriptions in current realm.
+
+=cut
+
+sub delete_all {
+    my($self, $req) = @_;
+    my($realm_id) = $req->get('auth_id');
+    foreach my $t (qw(ec_payment_t ec_subscription_t)) {
+	Bivio::SQL::Connection->execute("
+                DELETE FROM $t
+                WHERE realm_id = ?",
+		[$realm_id]);
+    }
+    return;
+}
+
 =for html <a name="execute_process"></a>
 
 =head2 execute_process(Bivio::Agent::Request req) : boolean
