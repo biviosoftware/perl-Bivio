@@ -34,6 +34,11 @@ C<Bivio::Util::LinuxConfig> manipulates various config files in Linux.
 Syntax is rigid, but the commands die if anything is out of the
 ordinary.
 
+TODO:
+   bashrc_d
+   sendmail_cf
+   see files in LinuxConfig dir
+
 =cut
 
 
@@ -54,6 +59,7 @@ sub USAGE {
 usage: b-linux-config [options] command [args...]
 commands:
     relay_domains host ... -- add hosts to sendmail relay-domains
+    rename_rpmnew file.rpmnew ... -- renames rpmnew to orig & orig to rpmsave
     serial_console -- configure grub and init for serial port console
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
@@ -104,6 +110,42 @@ sub relay_domains {
     my($f) = '/etc/mail/relay-domains';
     return _add_file($f, 'root', 'mail', 0640)
 	. _insert_text($f, ['^', join("\n", @host) . "\n"]);
+}
+
+=for html <a name="rename_rpmnew"></a>
+
+=head2 rename_rpmnew(string rpmnew_file, ...) : string
+
+Renames rpmnew files to actual file.
+
+Usage is typically:
+
+    b-linux-config -noexecute rename_rpmnew $(find /etc /var /usr -name \*.rpmnew)
+
+Returns list of actions.
+
+=cut
+
+sub rename_rpmnew {
+    my($self, @rpmnew_file) = @_;
+    my($res) = '';
+    foreach my $n (map {_prefix_file($_)} @rpmnew_file) {
+	my($f) = $n;
+	$f =~ s/.rpmnew$//;
+	next unless -f $n;
+	unless ($self->unsafe_get('noexecute')) {
+	    my($s) = "$f.rpmsave";
+	    unlink($s);
+	    $self->piped_exec("cp -af $f $s");
+	    $self->piped_exec("cp -af $n $f");
+	    unlink($n);
+	}
+	else {
+	    $res .= 'Would have ';
+	}
+	$res .= "Updated: $f\n";
+    }
+    return $res;
 }
 
 =for html <a name="serial_console"></a>
