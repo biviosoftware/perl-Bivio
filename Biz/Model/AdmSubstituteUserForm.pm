@@ -56,10 +56,12 @@ Perform lookup and su automatically if coming in with query string.
 
 sub execute_empty {
     my($self) = @_;
-    my($this) = ($self->get_request->unsafe_get('query') || {})
+    my($req) = $self->get_request;
+    my($this) = ($req->unsafe_get('query') || {})
 	->{Bivio::SQL::ListQuery->to_char('this')};
     return unless $this;
     $self->internal_put_field(login => $this);
+    $req->put(query => {});
     $self->validate_and_execute_ok;
     return;
 }
