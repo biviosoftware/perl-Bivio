@@ -254,6 +254,174 @@ ALTER TABLE member_allocation_t
     return;
 }
 
+# _upgrade_export_info()
+#
+# Upgrades the legacy import export_info.txt file for every club.
+#
+sub _upgrade_export_info {
+
+    use Bivio::Auth::Realm;
+    use Bivio::Auth::Role;
+    use Bivio::Biz::Action::AccountingImport;
+    use Bivio::Biz::Model::ClubUserList;
+    use Bivio::Biz::Model::File;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Biz::Model::RealmUser;
+    use Bivio::Data::EW::ConfigurationGenerator;
+
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($user) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($file) = Bivio::Biz::Model::File->new($req);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT file_t.file_id, file_t.realm_id, file_t.user_id
+            FROM file_t, realm_owner_t
+            WHERE file_t.realm_id=realm_owner_t.realm_id
+            AND file_t.name=?
+            AND file_t.volume=?
+            ORDER BY realm_owner_t.name',
+	    ['export_info.txt', Bivio::Type::FileVolume::EW_IMPORT()->as_int]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($file_id, $realm_id, $user_id) = @$row;
+	$realm->unauth_load_or_die(realm_id => $realm_id);
+	$user->unauth_load_or_die(realm_id => $user_id);
+	$req->set_realm(Bivio::Auth::Realm->new($realm));
+	$req->set_user($user);
+
+	$file->load(name => 'export_info.txt');
+	print("\n".$realm->get('name'));
+	_interactive_update_export_info($req, $file);
+    }
+
+    print("\n*** done ***\n");
+    return;
+}
+
+# _interactive_update_export_info(Bivio::Agent::Request req, Bivio::Biz::Model::File file)
+#
+# Updates the user_id field in the export_info.txt file to the correct
+# user.
+#
+sub _interactive_update_export_info {
+    my($req, $file) = @_;
+    my($info) = eval(${$file->get('content')});
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+
+    # essentially:
+    # find all invalid user_ids in the export_info
+    # iterate invalid user_ids
+    # iterate the ClubUserList looking for unmatched users with transactions
+    # simple guess on display_name
+    # show choices and invalid user info
+    # accept choice from console, allowing skip and abort
+
+    my($has_changed) = 0;
+    my($matched_users) = {};
+    my($unmatched_users) = [];
+    foreach my $user (values(%{$info->{members}})) {
+	my($user_id) = $user->{user_id};
+	if ($realm_user->unsafe_load(user_id => $user_id)) {
+	    $matched_users->{$user_id} = 1;
+	}
+	else {
+	    push(@$unmatched_users, $user);
+	}
+    }
+
+    # all OK
+    if (int(@$unmatched_users) == 0) {
+	print("\n\tno matching required");
+	return 1;
+    }
+
+    print("\n");
+    my($members) = Bivio::Biz::Model::ClubUserList->new($req);
+    $members->load_all;
+    foreach my $user (@$unmatched_users) {
+    redo:
+	# (user_id, member_info)
+	my($search_display_name) = uc(($user->{first_name} || '').' '
+		.($user->{last_name} || ''));
+	my($default_choice) = undef;
+	my($current_index) = 0;
+	my($match_list) = [];
+	$members->reset_cursor;
+	while ($members->next_row) {
+	    my($user_id, $role) = $members->get(qw(
+                    RealmUser.user_id RealmUser.role));
+	    next if exists($matched_users->{$user_id});
+	    next if $role == Bivio::Auth::Role::GUEST();
+
+	    $realm_user->load(user_id => $user_id);
+	    next unless $realm_user->has_transactions;
+
+	    my($phone) = $members->get('Phone.phone') || '';
+	    my($member_info) = uc($members->get('RealmOwner.display_name'))
+		    .lc(' ('.$phone.")\n"
+			    .$members->format_address."\n\n");
+	    push(@$match_list, [$user_id, $member_info]);
+
+	    # best guess using display_name
+	    # if > 1 hit, then use invalid '-1' value
+	    if (uc($members->get('RealmOwner.display_name'))
+		    eq $search_display_name) {
+		if (defined($default_choice)) {
+		    $default_choice = '-1';
+		}
+		else {
+		    $default_choice = $current_index;
+		}
+	    }
+	    $current_index++;
+	}
+	# give up if no matches available
+	next unless int(@$match_list) > 0;
+
+	for (my($i) = 0; $i < int(@$match_list); $i++) {
+	    my($match) = $match_list->[$i];
+	    print($i.'. '.$match->[1]);
+	}
+	my($member_info) = '';
+	print("match: ".uc(($user->{first_name} || '').' '
+		.($user->{last_name} || ''))
+		.lc(' ('.($user->{home_phone} || '').")\n"
+			.($user->{street1} || '')."\n"
+			.($user->{city} || '').' '
+			.($user->{state} || '').' '
+			.($user->{zip} || '')."\n"));
+	print('(s) to skip, (q) to abort ');
+	print(", ($default_choice)") if defined($default_choice);
+	print(' > ');
+	my $choice = <STDIN>;
+	if ($choice eq "\n" && defined($default_choice)) {
+	    $choice = $default_choice;
+	}
+	next if $choice eq "s\n";
+	exit(-1) if $choice eq "q\n";
+	# hacker!
+	goto redo unless $choice =~ /^\d+$/;
+	goto redo if $choice >= int(@$match_list);
+
+	my($matched_user_id) = $match_list->[$choice]->[0];
+	$matched_users->{$matched_user_id} = 1;
+	$user->{user_id} = $matched_user_id;
+	$has_changed = 1;
+
+	print("---------------------------------------------------------\n\n");
+    }
+
+    # save the export_info.txt file (hacked method deletes then recreates it)
+    if ($has_changed) {
+	my($new_info) = Bivio::Data::EW::ConfigurationGenerator
+		->hash_as_string($info);
+	# total hacker!
+	Bivio::Biz::Action::AccountingImport::_hack_update_file_content(
+		$file, \$new_info);
+    }
+    return;
+}
+
 # _upgrade_redo_allocations()
 #
 # Redo tax allocations for imported clubs.
