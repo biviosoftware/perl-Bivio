@@ -143,19 +143,21 @@ sub validate {
     $self->validate_not_negative('Entry.amount');
     $self->validate_greater_than_zero('RealmInstrumentEntry.count');
 
-    my($req) = $self->get_request;
-    my($realm) = $req->get('auth_realm')->get('owner');
-    my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
-    my($shares_owned) = $realm->get_number_of_shares(
-	    $properties->{'RealmTransaction.date_time'})
-	    ->{$realm_inst->get('realm_instrument_id')};
-    # number of shares shouldn't exceed owned
-    $self->internal_put_error('RealmInstrumentEntry.count',
-	    Bivio::TypeError::SHARES_SOLD_EXCEEDS_OWNED())
-	    unless !defined($properties->{'RealmInstrumentEntry.count'})
-		    || $properties->{'RealmInstrumentEntry.count'}
-			    <= $shares_owned;
-
+    # don't validate shares owned unless the date is valid
+    my($date) = $properties->{'RealmTransaction.date_time'};
+    if (defined($date)) {
+	my($req) = $self->get_request;
+	my($realm) = $req->get('auth_realm')->get('owner');
+	my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
+	my($shares_owned) = $realm->get_number_of_shares($date)
+		->{$realm_inst->get('realm_instrument_id')};
+	# number of shares shouldn't exceed owned
+	$self->internal_put_error('RealmInstrumentEntry.count',
+		Bivio::TypeError::SHARES_SOLD_EXCEEDS_OWNED())
+		unless !defined($properties->{'RealmInstrumentEntry.count'})
+			|| $properties->{'RealmInstrumentEntry.count'}
+				<= $shares_owned;
+    }
     return;
 }
 
