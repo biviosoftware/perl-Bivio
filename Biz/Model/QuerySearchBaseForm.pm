@@ -34,6 +34,23 @@ C<Bivio::Biz::Model::QuerySearchBaseForm>
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="OMIT_DEFAULT_VALUES_FROM_QUERY"></a>
+
+=head2 OMIT_DEFAULT_VALUES_FROM_QUERY : boolean
+
+Returns true if the query values are to be omitted if they match
+the default_value. Subclasses may override this to change the behavior.
+
+=cut
+
+sub OMIT_DEFAULT_VALUES_FROM_QUERY {
+    return 1;
+}
+
 #=IMPORTS
 
 #=VARIABLES
@@ -41,31 +58,6 @@ C<Bivio::Biz::Model::QuerySearchBaseForm>
 =head1 METHODS
 
 =cut
-
-=for html <a name="emit_query_values"></a>
-
-=head2 emit_query_values() : 
-
-Build query hash from form data.
-
-=cut
-
-sub emit_query_values {
-    my($self) = @_;
-    return
-	{
-	    map({
-		my($v) = $self->unsafe_get($_);
-		my($dv) = $self->get_field_info($_, 'default_value');
-		my($t) = $self->get_field_info($_, 'type');
-		$t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v));
-	    } grep({
-		!($self->get_field_info($_, 'type')
-		    && $self->get_field_info($_, 'type')
-		        ->isa('Bivio::Type::FormButton'))}
-		@{$self->get_info('visible_field_names')})),
-	};
-}
 
 =for html <a name="execute_empty"></a>
 
@@ -77,9 +69,9 @@ Fills in the default values.
 
 sub execute_empty {
     my($self) = @_;
-    my($q) = $self->get_request->get('query');
-    foreach my $x (@{$self->get_info('visible_field_names')}) {
-	$self->load_query_value($q, $x);
+
+    foreach my $field (@{_get_visible_fields($self)}) {
+	_load_query_value($self, $field);
     }
     return;
 }
@@ -94,25 +86,23 @@ Sets the query.
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
-    # Redirect to this task with new query, but must got through
-    # CLIENT_REDIRECT to avoid browser seeing redirect loop
-    $req->client_redirect(
-	Bivio::Agent::TaskId->CLIENT_REDIRECT,
-	undef,
-	{
-	    Bivio::Biz::Action::ClientRedirect->QUERY_TAG =>
-	        $req->format_uri($req->get('task_id'),
-		    $self->emit_query_values(),
-		),
-	},
-    );
+    # Build query hash from form data.
+    _redirect($self, {
+        map({
+            my($v) = $self->unsafe_get($_);
+            my($t) = $self->get_field_info($_, 'type');
+            my($dv) = $self->get_field_info($_, 'default_value');
+            $self->OMIT_DEFAULT_VALUES_FROM_QUERY
+                ? ($t->is_equal($dv, $v) ? () : ($_ => $t->to_literal($v)))
+                : ($_ => $t->to_literal($v));
+        } @{_get_visible_fields($self)}),
+    });
     return;
 }
 
 =for html <a name="execute_other"></a>
 
-=head2 execute_other() : 
+=head2 execute_other()
 
 Reset all form fields to their default value if the reset button was clicked.
 
@@ -120,25 +110,16 @@ Reset all form fields to their default value if the reset button was clicked.
 
 sub execute_other {
     my($self, $button_field) = @_;
-    my($req) = $self->get_request;
-
-    if ($button_field eq 'reset_button') {
-	$req->client_redirect(Bivio::Agent::TaskId->CLIENT_REDIRECT,
-	    undef,
-	    {
-		Bivio::Biz::Action::ClientRedirect->QUERY_TAG =>
-	            $req->format_uri($req->get('task_id'), {}),
-	    },
-	),
-    }
+    _redirect($self)
+        if $button_field eq 'reset_button';
     return $self->SUPER::execute_other($button_field);
 }
 
 =for html <a name="internal_initialize"></a>
 
-=head2 internal_initialize() : 
+=head2 internal_initialize() : hash_ref
 
-
+B<FOR INTERNAL USE ONLY>
 
 =cut
 
@@ -157,56 +138,51 @@ sub internal_initialize {
 
 =for html <a name="internal_pre_execute"></a>
 
-=head2 internal_pre_execute() : 
+=head2 internal_pre_execute()
 
 Load the default value of any fields that were not present on the form.
 
 =cut
 
 sub internal_pre_execute {
-    my($self) = shift;
-    my($form) = $self->get_request()->get('form');
-    return unless defined($form);
+    my($self) = @_;
+    return unless $self->get_request->get('form');
 
-    map({
-	my($fn) = $self->get_field_name_for_html($_);
-	$self->load_default_value($_)
-	    unless defined($self->unsafe_get($_));
-    # might want to check for type=FormButton instead
-    } grep({!($_ =~ /_button/)}
-	@{$self->get_info('visible_field_names')}));
+    foreach my $field (@{_get_visible_fields($self)}) {
+        next if defined($self->unsafe_get($field));
+        next if $self->get_field_error($field);
+        $self->internal_put_field($field =>
+            $self->get_field_info($field, 'default_value'));
+    }
     return;
 }
 
-=for html <a name="load_default_value"></a>
+#=PRIVATE SUBROUTINES
 
-=head2 load_default_value(string field) : 
+# _get_visible_fields(self) : array_ref
+#
+# Returns the visible non-button form field names.
+#
+sub _get_visible_fields {
+    my($self) = @_;
+    return [
+        grep(! ($self->get_field_info($_, 'type')
+            && $self->get_field_info($_, 'type')
+                ->isa('Bivio::Type::FormButton')),
+            @{$self->get_info('visible_field_names')}),
+    ];
+}
 
-Set the field to its default value.
-
-=cut
-
-sub load_default_value {
+# _load_query_value(self, string field)
+#
+# Load query value into form model.  Load the default value if no value is
+# present on the query.
+#
+sub _load_query_value {
     my($self, $field) = @_;
-    $self->internal_put_field($field =>
-	$self->get_field_info($field, 'default_value'));
-    return;
-}
-
-=for html <a name="load_query_value"></a>
-
-=head2 load_query_value(hash_ref query, string field)
-
-Load query value into form model.  Load the default value if no value is
-present on the query.
-
-=cut
-
-sub load_query_value {
-    my($self, $query, $field, $alias) = @_;
-    Bivio::Die->die($alias, ': alias not support for fields ', $field)
-       if $alias;
+    my($query) = $self->get_request->get('query');
     my($v, $e);
+
     if (exists($query->{$field})) {
 	($v, $e) = $self->get_field_type($field)
 	    ->from_literal($query->{$field});
@@ -222,7 +198,22 @@ sub load_query_value {
     return;
 }
 
-#=PRIVATE SUBROUTINES
+# _redirect(self)
+#
+# _redirect(self, hash_ref query)
+#
+# Redirect to this task with new query, but must got through
+# CLIENT_REDIRECT to avoid browser seeing redirect loop.
+#
+sub _redirect {
+    my($self, $query) = @_;
+    my($req) = $self->get_request;
+    $req->client_redirect(Bivio::Agent::TaskId->CLIENT_REDIRECT, undef, {
+        Bivio::Biz::Action::ClientRedirect->QUERY_TAG =>
+            $req->format_uri($req->get('task_id'), $query || {}),
+    });
+    return;
+}
 
 =head1 COPYRIGHT
 
