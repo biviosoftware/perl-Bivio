@@ -70,6 +70,12 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 This value is computed from I<form_model> if it can be.  It
 also be set.
 
+=item form_end_cell : boolean [0]
+
+Opposite of I<cell_end_form>.  Will end the cell as well as the form.
+Do not set I<end_tag> or I<cell_end_form> with this value.  You should
+set I<cell_end> on a Grid to false.
+
 =item form_method : string [POST] (inherited)
 
 The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
@@ -196,6 +202,7 @@ sub initialize {
     $fields->{end_tag} = $self->get_or_default('end_tag',
 	    $self->get_or_default('cell_end_form', 0)
 	    ? 0 : 1);
+    $fields->{form_end_cell} = $self->get_or_default('form_end_cell', 0);
 
     # Initialize renderer
     $fields->{value} = $self->get('value');
@@ -259,6 +266,7 @@ sub render {
 
     # Rest of the form
     $fields->{value}->render($source, $buffer);
+    $$buffer .= '</td>' if $fields->{form_end_cell};
     $$buffer .= '</form>' if $fields->{end_tag};
     return;
 }
