@@ -852,18 +852,18 @@ I<email> is interpreted as follows:
 
 =over 4
 
-=item
+=item *
 
 An C<Bivio::Biz::Model::Email> is loaded with I<email>.  If found,
 loads the I<realm_id> of the model.
 
-=item
+=item *
 
 Parsed for the I<mail_host> associated with this request.
 If it matches, the mailhost is stripped and the (syntactically
 valid realm) name is used to find a realm owner.
 
-=item
+=item *
 
 Returns false.
 
