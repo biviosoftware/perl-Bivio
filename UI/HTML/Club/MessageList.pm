@@ -32,6 +32,12 @@ a message list.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
+use Bivio::Biz::Model::MessageList;
+use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Widget::Link;
+use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::Widget::Table;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -52,15 +58,19 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {};
     $fields->{content} = Bivio::UI::HTML::Widget::Table->new({
 	source => ['Bivio::Biz::Model::MessageList'],
+	expand => 1,
 	headings => [
-		'Subject',
+		Bivio::UI::HTML::Widget::String->new({
+		    value => 'Subject',
+		    column_expand => 1,
+		    column_align => 'sw',
+		}),
 		'Author',
 		'Date',
 	],
 	cells => [
 		Bivio::UI::HTML::Widget::Link->new({
-        #    	    href => ['->format_uri_for_this'],
-		    href => ['->hacked_uri'],
+            	    href => ['->format_uri_for_this'],
 		    value => Bivio::UI::HTML::Widget::String->new({
 			value => ['MailMessage.subject'],
 	        }),
@@ -90,8 +100,17 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $req->put(page_subtopic => undef, page_heading => 'Messages',
-	   page_content => $fields->{content});
+    $req->put(
+	    page_subtopic => undef,
+	    page_heading => 'Messages',
+	    page_content => $fields->{content},
+	    page_type => Bivio::UI::PageType::LIST(),
+	    list_model => $req->get('Bivio::Biz::Model::MessageList'),
+	    list_uri => $req->format_uri($req->get('task_id'), undef),
+	    detail_uri => $req->format_uri(
+		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_DETAIL(),
+		    undef)
+	   );
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
 
