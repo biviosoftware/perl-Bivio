@@ -219,72 +219,25 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_create_spinoff_table();
-    _upgrade_permission_table();
+    _upgrade_add_csi_index();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_create_spinoff_table()
+# _upgrade_add_csi_index()
 #
-# Creates instrument_spinoff_t.
+# Adds the csi_instrument_t.instrument_id index.
 #
-sub _upgrade_create_spinoff_table {
-    print("creating instrument_merger_spinoff_t\n");
+sub _upgrade_add_csi_index {
+    print("creating index csi_instrument_t4\n");
     _do_sql('
-CREATE TABLE instrument_merger_spinoff_t (
-  action_date DATE,
-  action NUMBER(2),
-  source_instrument_id NUMBER(18),
-  new_instrument_id NUMBER(18),
-  remaining_basis NUMBER(20,6),
-  new_shares_ratio NUMBER(20,6)
+CREATE INDEX csi_instrument_t4 on csi_instrument_t (
+  instrument_id
 )
-  tablespace data_1m
-  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
-/
-ALTER TABLE instrument_merger_spinoff_t
-  add constraint instrument_merger_spinoff_t1
-  primary key(action_date, action, source_instrument_id, new_instrument_id)
-  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
-/
-ALTER TABLE instrument_merger_spinoff_t modify action_date not null
-/
-ALTER TABLE instrument_merger_spinoff_t modify action not null
-/
-ALTER TABLE instrument_merger_spinoff_t 
-  add constraint instrument_merger_spinoff_t2
-  check (action between 1 and 2)
-/
-ALTER TABLE instrument_merger_spinoff_t modify source_instrument_id not null
-/
-ALTER TABLE instrument_merger_spinoff_t
-  add constraint instrument_merger_spinoff_t3
-  foreign key (source_instrument_id)
-  references instrument_t(instrument_id)
-/
-ALTER TABLE instrument_merger_spinoff_t modify new_instrument_id not null
-/
-ALTER TABLE instrument_merger_spinoff_t
-  add constraint instrument_merger_spinoff_t4
-  foreign key (new_instrument_id)
-  references instrument_t(instrument_id)
-/
-ALTER TABLE instrument_merger_spinoff_t modify remaining_basis not null
-/
-ALTER TABLE instrument_merger_spinoff_t modify new_shares_ratio not null
+  tablespace index_1m
+  pctfree 10 initrans 2 storage (freelists 1)
 /
 ');
-    return;
-}
-
-# _upgrade_permission_table()
-#
-# New permission MAIL_POST
-#
-sub _upgrade_permission_table {
-    use Bivio::Biz::Util::RealmRole;
-    Bivio::Biz::Util::RealmRole->main('set_same', 'MAIL_WRITE', 'MAIL_POST');
     return;
 }
 
