@@ -32,6 +32,7 @@ and delete interface to the C<realm_instrument_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::InstrumentUtil;
 use Bivio::Biz::Model::Instrument;
 use Bivio::Biz::Model::RealmAccount;
 use Bivio::SQL::Connection;
@@ -51,8 +52,6 @@ my($_PACKAGE) = __PACKAGE__;
 Deletes this realm instrument and any valuations associated with it.
 This method will die if the instrument has any accounting transactions.
 
-=cut
-
 sub cascade_delete {
     my($self) = @_;
 
@@ -66,6 +65,8 @@ sub cascade_delete {
     $self->delete();
     return;
 }
+
+=cut
 
 =for html <a name="create"></a>
 
@@ -154,10 +155,11 @@ be used and the query will be made again.
 
 sub get_shares_owned {
     my($self, $date, $refresh) = @_;
-    my($realm) = $self->get_request->get('auth_realm')->get('owner');
-    $realm->clear_instrument_cache if $refresh;
-    return $realm->get_number_of_shares($date)
-		->{$self->get('realm_instrument_id')} || 0;
+    my($util) = Bivio::Biz::Accounting::InstrumentUtil->get_instance(
+	    $self->get_request);
+    $util->clear_instrument_cache if $refresh;
+    return $util->get_number_of_shares($date)->{
+	$self->get('realm_instrument_id')} || 0;
 }
 
 =for html <a name="get_ticker_symbol"></a>
@@ -308,7 +310,7 @@ sub internal_initialize {
 	columns => {
             realm_instrument_id => ['PrimaryId', 'PRIMARY_KEY'],
             instrument_id => ['PrimaryId', 'NOT_NULL'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             account_number => ['Name', 'NONE'],
             average_cost_method => ['Boolean', 'NOT_NULL'],
             drp_plan => ['Boolean', 'NOT_NULL'],
