@@ -139,12 +139,11 @@ my(@_CFG) = (
 	LOGOUT
 	8
         GENERAL
-        ANY_USER
+        DOCUMENT_READ
         pub/logout
 	Bivio::Biz::Action::Logout
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=HTTP_DOCUMENT
-        cancel=USER_HOME
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
@@ -1425,10 +1424,9 @@ my(@_CFG) = (
         ?/admin/invite/offline_members
         Bivio::Biz::Action::NotDemoClub
         Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
-        Bivio::Biz::Model::ImportedMemberInviteForm
-        Bivio::UI::HTML::Club::ImportedMemberInvite
+        Bivio::Biz::Model::InviteMemberListForm
+        Bivio::UI::HTML::Club::InviteMemberList
         next=CLUB_ADMIN_USER_LIST
-        cancel=CLUB_ADMIN_TOOLS
     )],
     [qw(
         CLUB_LEGACY_SECURITY_RECONCILIATION

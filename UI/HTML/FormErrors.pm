@@ -42,6 +42,8 @@ my($_MAP) = _compile();
 
 =for html <a name="to_html"></a>
 
+=head2 to_html(any source, Bivio::Biz::FormModel form, string field) : string
+
 =head2 to_html(any source, Bivio::Biz::FormModel form, string field, string label, Bivio::TypeError error) : string
 
 Returns the error string for this tuple.  If none is found,
@@ -54,6 +56,7 @@ The I<source> is so widget values can be inserted.
 sub to_html {
     my(undef, $source, $form, $field, $label, $error) = @_;
     my($form_class) = ref($form) || $form;
+    $error ||= $form->get_field_error($field);
 
     # FormModel takes precedence
     my($msg) = _lookup($form_class, $field, $error);
@@ -175,6 +178,14 @@ sub _lookup {
     return $res;
 }
 
+# _support()
+#
+# Customer support email
+#
+sub _support {
+    return Bivio::UI::HTML::DescriptivePage->link_support();
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
@@ -278,4 +289,17 @@ NAME_LIKE_FUND
 The name you entered seems to be a club name.
 First you register yourself with bivio.  The next step
 is to create your own private club space on bivio.
+%%
+
+
+INCORRECT_EXPORT_FILE_NAME
+The file you upload must be named NCADATA.DAT.  We only support
+imports from NAIC Club Accounting software.  If you are trying to
+upload another format, please email the file to @{[_support()]}
+and we will try to import your data.
+%%
+AddMemberListForm
+RealmOwner.display_name
+EXISTS
+This person is already a member of your club.
 %%

@@ -96,6 +96,7 @@ NOT NORMALLY USED.
 use Bivio::IO::Trace;
 use Bivio::IO::Alert;
 use Bivio::SQL::ListQuery;
+use Bivio::SQL::Constraint;
 use Carp ();
 
 #=VARIABLES
@@ -262,7 +263,7 @@ sub init_column {
 	};
 	$columns->{$qual_col} = $col unless $is_alias;
     }
-    push(@{$attrs->{$class}}, $col) unless $is_alias;
+    _add_to_class($attrs, $class, $col) unless $is_alias;
     return $col;
 }
 
@@ -392,6 +393,17 @@ sub init_version {
 
 #=PRIVATE METHODS
 
+# _add_to_class(hash_ref attrs, string class, hash_ref col)
+#
+# Adds to class if not already in class.
+#
+sub _add_to_class {
+    my($attrs, $class, $col) = @_;
+    return if grep($col->{name} eq $_->{name}, @{$attrs->{$class}});
+    push(@{$attrs->{$class}}, $col);
+    return;
+}
+
 # _init_column_from_hash(hash_ref attrs, hash_ref decl, string class, array_ref aliases) : hash_ref
 #
 # Initializes the column from a hash reference of (name, type, constraint).
@@ -427,7 +439,11 @@ sub _init_column_from_hash {
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
     $col->{in_select} = $decl->{in_select} ? 1 : 0;
-    push(@{$attrs->{$class}}, $col);
+
+    # Syntax checked in FormSupport.  Not used by other Model types.
+    $col->{form_name} = $decl->{form_name} if $decl->{form_name};
+
+    _add_to_class($attrs, $class, $col);
     return $col;
 }
 

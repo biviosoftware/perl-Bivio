@@ -125,6 +125,11 @@ True if the field is a file field.
 
 True if the field is visible.
 
+=item form_name : string
+
+Let's you specify form names explicitly for special cases, e.g.
+incoming mail via b-sendmail-agent.
+
 =back
 
 =cut
@@ -266,10 +271,24 @@ sub _init_column_classes {
     # Add it as an alias for easy input parsing.
     my($i) = 0;
     $attrs->{file_fields} = undef;
+#TODO: These must agree with FormModel
+    my(%form_names) = (Bivio::Biz::FormModel->VERSION_FIELD() => 1,
+	    Bivio::Biz::FormModel->CONTEXT_FIELD() => 1,
+	    Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,);
     foreach my $col (@{$attrs->{visible}}, @{$attrs->{hidden}}) {
-	$attrs->{column_aliases}->{$i} = $col;
-	# Can't just use a number here
-	$col->{form_name} = 'f'.$i++;
+	if ($col->{form_name}) {
+	    # Check syntax of user designated fields
+	    die($col->{name}, ': duplicate form name (',
+		    $col->{form_name}, ')') if $form_names{$col->{form_name}};
+	    die($col->{name}, ': form name cannot be fNN')
+		    if $col->{form_name} =~ /^f\d+/;
+	    $form_names{$col->{form_name}} = 1;
+	}
+	else {
+	    # Can't just use a number here
+	    $col->{form_name} = 'f'.$i++;
+	}
+	$attrs->{column_aliases}->{$col->{form_name}} = $col;
 	if ($col->{is_file_field} = UNIVERSAL::isa($col->{type},
 		'Bivio::Type::FileField') ? 1 : 0) {
 	    $attrs->{file_fields} = [] unless $attrs->{file_fields};

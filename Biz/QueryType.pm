@@ -89,6 +89,7 @@ __PACKAGE__->compile(
     THIS_PARENT => [8, 'format_uri_for_this_parent', 'parent_uri'],
     THIS_PATH => [9, 'format_uri_for_this_path', 'detail_uri'],
     THIS_PATH_NO_QUERY => [10, '', 'detail_uri'],
+    NO_QUERY => [11, '', 'list_uri'],
 );
 
 =head1 METHODS

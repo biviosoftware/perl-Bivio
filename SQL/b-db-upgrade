@@ -137,102 +137,16 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-
-    use Bivio::Type::EntryClass;
-    use Bivio::Type::EntryType;
-    use Bivio::Type::TaxCategory;
-
-    # update transaction, INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE is negative
-    # and INSTRUMENT_BUY_FEE too
-    Bivio::SQL::Connection->execute('
-            UPDATE entry_t
-            SET amount = -amount
-            WHERE entry_t.entry_type in (?, ?)
-            AND amount > 0',
-	    [
-	Bivio::Type::EntryType::INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE->as_int,
-		Bivio::Type::EntryType::INSTRUMENT_BUY_FEE->as_int,
-	    ]);
-
-    # remove spurious instrument dividend for foreign taxes
-    Bivio::SQL::Connection->execute('
-            DELETE FROM realm_instrument_entry_t
-            WHERE entry_id IN (
-                SELECT a.entry_id
-                FROM entry_t a, entry_t b, realm_transaction_t
-                WHERE a.realm_transaction_id
-                    = realm_transaction_t.realm_transaction_id
-                AND a.realm_transaction_id=b.realm_transaction_id
-                AND a.tax_category=?
-                AND b.tax_category=?
-                AND realm_transaction_t.source_class=?)',
-	    [
-		    Bivio::Type::TaxCategory::DIVIDEND->as_int,
-		    Bivio::Type::TaxCategory::FOREIGN_TAX->as_int,
-		    Bivio::Type::EntryClass::INSTRUMENT->as_int,
-	    ]);
-    Bivio::SQL::Connection->execute('
-            DELETE FROM entry_t
-            WHERE entry_id IN (
-                SELECT a.entry_id
-                FROM entry_t a, entry_t b, realm_transaction_t
-                WHERE a.realm_transaction_id
-                    = realm_transaction_t.realm_transaction_id
-                AND a.realm_transaction_id=b.realm_transaction_id
-                AND a.tax_category=?
-                AND b.tax_category=?
-                AND realm_transaction_t.source_class=?)',
-	    [
-		    Bivio::Type::TaxCategory::DIVIDEND->as_int,
-		    Bivio::Type::TaxCategory::FOREIGN_TAX->as_int,
-		    Bivio::Type::EntryClass::INSTRUMENT->as_int,
-	    ]);
-
-    _upgrade_files();
-    return;
-}
-
-# _upgrade_files()
-#
-#
-#
-sub _upgrade_files {
-    use Bivio::Biz::Model::RealmAdminList;
-    use Bivio::Biz::Model::RealmOwner;
-
-    my($sth) = _do('select realm_id, file_id, name from file_t
-		/');
-    my(@files);
-    my(%realms);
-    while (my $row = $sth->fetchrow_arrayref()) {
-	next unless $row->[2] =~ s![\\/:*?"<>|]!-!g;
-	push(@files, {
-	    file_id => $row->[1],
-	    name => $row->[2],
-	});
-	$realms{$row->[0]}++;
-    }
-    $sth->finish;
-
-    foreach my $file (@files) {
-	my($name) = $file->{name};
-	print STDERR $file->{name}, "\n";
-	$sth = Bivio::SQL::Connection->execute('
-            UPDATE file_t
-            SET name = ?
-            WHERE file_id = ?', [$file->{name}, $file->{file_id}]);
-    }
-
-    my($admins) = Bivio::Biz::Model::RealmAdminList->new();
-    my($realm) = Bivio::Biz::Model::RealmOwner->new();
-    foreach my $realm_id (keys(%realms)) {
-	$realm->unauth_load_or_die(realm_id => $realm_id);
-	$admins->unauth_load_all({auth_id => $realm_id});
-	my($emails) = $admins->get_outgoing_emails();
-	print join(' ', $realms{$realm_id}, $realm_id,
-		$realm->get('name'), $emails ? @$emails : '<no admins>'),
-			"\n";
-    }
+    _do('
+ALTER TABLE realm_invite_t
+  add foreign key (user_id)
+    references user_t(user_id)
+/
+ALTER TABLE realm_invite_t add unique(realm_id, realm_user_id)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+        ');
     return;
 }
 

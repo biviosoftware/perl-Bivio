@@ -82,6 +82,18 @@ and the errant literal value may not be valid for the type.
 
 =cut
 
+=for html <a name="CONTEXT_FIELD"></a>
+
+=head2 CONTEXT_FIELD : string
+
+Returns "context".
+
+=cut
+
+sub CONTEXT_FIELD {
+    return 'context';
+}
+
 =for html <a name="MAX_FIELD_SIZE"></a>
 
 =head2 MAX_FIELD_SIZE : int
@@ -170,6 +182,18 @@ Returns field used in forms to set timezone.
 
 sub TIMEZONE_FIELD {
     return 'tz';
+}
+
+=for html <a name="VERSION_FIELD"></a>
+
+=head2 VERSION_FIELD : string
+
+Returns 'version'
+
+=cut
+
+sub VERSION_FIELD {
+    return 'version';
 }
 
 #=IMPORTS
@@ -558,10 +582,10 @@ sub get_hidden_field_values {
     my($sql_support) = $self->internal_get_sql_support();
 #TODO: make a constant
     my(@res);
-    push(@res, version => $sql_support->get('version'));
-    push(@res, context =>
-	    Bivio::Type::SecretAny->to_literal($fields->{context}))
-	    if $fields->{context};
+    push(@res, VERSION_FIELD() => $sql_support->get('version'));
+    push(@res, CONTEXT_FIELD() =>
+	    Bivio::Type::SecretAny->to_literal($fields->{CONTEXT_FIELD()}))
+	    if $fields->{CONTEXT_FIELD()};
     my($properties) = $self->internal_get();
     foreach my $n (@{$self->internal_get_hidden_field_names}) {
 	my($fn) = $self->get_field_name_for_html($n);
@@ -695,7 +719,7 @@ sub internal_get_field_values {
     my($fields) = $self->{$_PACKAGE};
     my($properties) = $self->internal_get;
     my($res) = {
-	version => $self->get_info('version'),
+	VERSION_FIELD() => $self->get_info('version'),
 	TIMEZONE_FIELD() => $fields->{literals}->{TIMEZONE_FIELD()},
     };
     foreach my $n (@{$self->internal_get_hidden_field_names},
@@ -919,7 +943,7 @@ sub put_context_fields {
 
     my($mi) = $model->get_instance;
     # If there is no form, initialize
-    my($f) = $c->{form} ||= {version => $mi->get_info('version')};
+    my($f) = $c->{form} ||= {VERSION_FIELD() => $mi->get_info('version')};
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	my($fn) = $mi->get_field_name_for_html($k);
@@ -1129,7 +1153,7 @@ sub _parse {
     delete($fields->{errors});
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
-    _parse_version($self, $form->{version}, $sql_support);
+    _parse_version($self, $form->{VERSION_FIELD()}, $sql_support);
     # Parse context first, so can be used by parse_submit (is_submit_ok)
     _parse_context($self, $form) if $sql_support->get('require_context');
     # Ditto for timezone
@@ -1234,12 +1258,12 @@ sub _parse_context {
     my($self, $form) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if ($form->{context}) {
+    if ($form->{CONTEXT_FIELD()}) {
 	# If there is an incoming context, must be syntactically valid.
 	# Overwrites the query context, if any
 	my($c, $e) = Bivio::Type::SecretAny->from_literal($form->{context});
 	$self->die(Bivio::DieCode::CORRUPT_FORM(),
-		{field => 'context', actual => $form->{context},
+		{field => CONTEXT_FIELD(), actual => $form->{context},
 		    error => $e}) unless $c;
 	$self->{$_PACKAGE}->{context} = $c;
     }
@@ -1314,7 +1338,7 @@ sub _parse_version {
 	return if (defined($v) && $v eq $sql_support->get('version'));
     }
     $self->die(Bivio::DieCode::VERSION_MISMATCH(),
-	    {field => 'version',
+	    {field => VERSION_FIELD(),
 		expected => $sql_support->get('version'),
 		actual => $value});
     return;

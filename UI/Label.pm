@@ -113,9 +113,9 @@ _compile(
     REALM_CHOOSER => ['Select Area'],
 
     # Tasks
-    CLUB_LEGACY_INVITE => ['Bring Members On-line'],
+    CLUB_LEGACY_INVITE => ['Bring Members Online'],
     CLUB_LEGACY_SECURITY_RECONCILIATION => ['Identify Listed Investments'],
-    CLUB_ACCOUNTING_CLEAR => ['Clear On-line Accounting'],
+    CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_LEGACY_UPLOAD => ['Import Club Accounting'],
     CLUB_ADMIN_TOOLS => ['Administration Tools'],
     CLUB_ADMIN_INVITE => ['Add Members'],
