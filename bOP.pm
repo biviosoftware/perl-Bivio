@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.42  2004/11/05 20:45:56  moeller
+  * Bivio::Test::HTMLParser::Links now correctly parses links with '0' text
+  * Bivio::Type::Password added is_secure_data() so it will not appear in logs
+
+  Revision 2.41  2004/11/04 15:14:56  moeller
+  * Bivio::UI::HTML::Widget::FirstFocus new widget which sets focus to
+    the first form field on the page
+  * Added FirstFocus widget to PetShop demo
+  * Bivio::Agent::HTTP::Request Bivio::Type::UserAgent->put_on_request
+    no longer exists, now call from_header and put_on_request
+  * Bivio::Test::HTMLParser::Forms duplicate forms get duplicate labels,
+    unless they are identical, iwc only one form is entered.
+  * Bivio::Test::HTMLParser::Links changed missing href on <a> to info,
+    not die.
+  * Bivio::Test::Language::HTTP added go_back(), set the browser to
+    something other than just the script
+  * Bivio::Type::Date removed to_local_date(), use local_today() instead
+  * Bivio::Type::Enum move put_on_request to Type.pm
+  * Bivio::Type::UserAgent renamed put_on_request to from_header
+  * Bivio::Type added put_on_request
   * Bivio::UI::HTML::Widget::Search Use Model.SearchList to be more
     general than specific class name
   * Bivio::Util::Release added get_projects helper function
