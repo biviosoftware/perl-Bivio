@@ -59,7 +59,7 @@ Creates a tax 99 page contents.
 sub create_content {
     my($self) = @_;
     $self->put(page_heading => '1999 Taxes (Beta)');
-
+    $self->put(page_subtopic => Bivio::UI::Label->get_simple('TAXES'));
     return Bivio::UI::HTML::Widget::Grid->new({
 	values => [
 	    [
