@@ -1022,7 +1022,6 @@ my(@_CFG) = (
         Bivio::Biz::Action::FileDownload->execute_if_file
         Bivio::Biz::Model::FileTreeList->execute_load_all_with_query
         Bivio::Biz::Model::FileTreeListForm->execute_if_allowed
-        Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileTree
 	next=CLUB_COMMUNICATIONS_FILE_READ
         NOT_FOUND=FILE_READ_NOT_FOUND
@@ -2060,7 +2059,7 @@ my(@_CFG) = (
         pub/search
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::SearchList->execute_load_page
-        Bivio::UI::HTML::Club::SearchList
+        Bivio::UI::HTML::Common::SearchList
         next=HTTP_DOCUMENT
     )],
     [qw(
@@ -2071,7 +2070,7 @@ my(@_CFG) = (
         ?/search
         Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::SearchList->execute_load_page
-        Bivio::UI::HTML::Club::SearchList
+        Bivio::UI::HTML::Common::SearchList
         next=HTTP_DOCUMENT
     )],
     [qw(
