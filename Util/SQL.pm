@@ -404,7 +404,10 @@ sub run_command {
     my($c) = _assert_postgres($self);
     return $self->piped_exec(
 	"psql --username '$c->{user}' --dbname '$c->{database}' 2>&1",
-	$commands);
+	# Ensures commit happens
+	(ref($commands) ? $$commands : $commands)
+	. ($self->unsafe_get('noexecute') ? "\n;rollback;\n" : "\n;commit;\n"),
+    );
 }
 
 #=PRIVATE METHODS
