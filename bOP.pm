@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    calls RealmName->from_literal() to see if uri is in a realm
+  * Bivio::UNIVERSAL
+    added package_version
+
+  Revision 2.21  2004/04/28 18:11:18  david
+    * Bivio::Agent::Request now lets you specify a link anchor in the
+      various format functions.  The format functions now also accept a
+      hash of arguments.
+    * Bivio::Biz::Model::QuerySearchBaseForm now does a better job of
+      not putting form button values on queries.
+    * Bivio::Delegate::Cookie takes over the job of PersistentCookie and
+      adds the following features:
+      - cookies can now be temporary - they won't get stored on the
+        client's disk
+      - temporary cookies can time-out on inactivity. This forces the
+        user to login again after a certain time has passed.
+    * Bivio::Delegate::PersistentCookie now derives from Cookie
+      and is deprecated.
+    * Bivio::IO::File->write returns its first arguement.
+    * Bivio::UI::Widget::MIMEEntity now does a better job of setting
       mime_type and mime_encoding.
     * Bivio::UI::Widget calls put_and_initialize before rendering a
       widget if the widget has no parent.
