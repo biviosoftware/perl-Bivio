@@ -97,8 +97,8 @@ sub format_mail {
     my($s);
     my($out_io) = IO::Scalar->new();
     $out_io->open(\$s);
-    my($chars) = _init();
-    _parse($in_io, $out_io, $chars);
+    _parse($in_io, $out_io);
+#TODO Don't use IO handles.
     $out_io->close();
     $in_io->close();
     return \$s;
@@ -149,7 +149,7 @@ sub _init {
 # (formatted in HTML) to out.
 #
 sub _parse {
-    my($in, $out, $chars) = @_;
+    my($in, $out) = @_;
     my($font_color) = "CC0000";
 
     #\r\n for the sake of RFC822 consistency. Kinda not necessary, since
@@ -178,9 +178,9 @@ sub _parse_line {
     my @words = split(" ", $line);
     my $len = @words;
     return "" unless ($len > 0);
-    
     my $newline = ();
     my $res = '';
+#TODO make this a static data structure.    
     my $map = {
 	38 => "&amp;",
 	34 => "&quot;",
@@ -225,8 +225,9 @@ sub _parse_line {
 
 # _parse_paragraph() : 
 #
-#
-#
+# This method parses a paragraph of text. It receives
+# a reference to a paragraph, and calls _parse_line for each
+# line it finds in the paragraph. 
 sub _parse_paragraph {
     my($paragraph_ref, $out) = @_;
     if(!$out){die('received an undef for output stream!')};
@@ -244,38 +245,11 @@ sub _parse_paragraph {
     }
 }
 
-# _process_line(scalar_ref line) : 
-#
-# This method does very basic processing of a plain/text line.
-# It converts non [a-z][A-Z[0-9] characters into valid HTML
-# representations. It is called on each line we get in _parse().
-#
-# There is probably a more efficient way to do this. Currently,
-# we iterate over all the characters in {char_map} and do
-# global replaces for each in the line. However, the vast majority
-# of these characters probably won't be in the line. We could
-# perhaps check for characters falling outsize [a-z][A-Z][0-9]
-# before proceding on to the pattern match and replace...
-sub _process_line {
-    my($line, $chars) = @_;
-    if($$line =~ /^\s*$/){
-	$$line = "\n<P>";
-	return;
-    }
-    my($s);
-    my @keys = keys(%$chars);
-    foreach $s (@keys){
-	my($r) = $chars->{$s};
-	$s = "\\" . $s;
-	$$line =~ s/$s/$r/g;
-    }
-    return;
-}
-
 # _sub_parse() : 
 #
-#
-#
+# Probably redundant to call it _subparse, but this method 
+# takes a reference to a large scalar and parses it into paragraphs.
+# This works assuming we can use '\n\n' as a paragraph delimiter.
 sub _subparse {
     my($str_ref, $out) = @_;
     if(!$out){die('received <undef> for output stream!');}
