@@ -32,8 +32,9 @@ while ($arg = shift) {
     else { &usage("unexpected option '$arg'"); }
 }
 
-&checkdiskuse;
-&checkraid;
+&check_diskuse;
+&check_raid;
+&check_mailq;
 &check_messages;
 %msgs && &send_notice;
 exit(0);
@@ -200,7 +201,7 @@ sub add_problem {
 			  : ($msgs{$level} = "$message\n");
 }
 
-sub checkdiskuse {
+sub check_diskuse {
     # Capacity limits
     my($max_cap_dflt) =	90;	# default fs capacity limit
     my(%max_cap_fs) = (		# custom limits for specific fs's
@@ -252,7 +253,7 @@ sub checkdiskuse {
     }
 }
 
-sub checkraid {
+sub check_raid {
     my($mdfile) = '/proc/mdstat';
     if (open(F, $mdfile)) {
         while(<F>) {
@@ -260,6 +261,12 @@ sub checkraid {
         }
         close(F);
     }
+}
+
+sub check_mailq {
+    # Just send pending queue for now, will filter once we know better
+    my(@q) = `mailq -v| grep -v 'Mail queue is empty'`;
+    @q && print "PENDING MAIL QUEUE:\n@q";
 }
 
 sub usage {
