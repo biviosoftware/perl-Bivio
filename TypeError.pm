@@ -885,6 +885,26 @@ __PACKAGE__->compile([
 	undef,
 	'the start date may not be less than the first member transaction date',
     ],
+    CREDITCARD_INVALID_NUMBER => [
+	121,
+	undef,
+	"not a valid credit card number",
+    ],
+    CREDITCARD_EXPIRED => [
+	122,
+	undef,
+	"expiration date is in the past",
+    ],
+    CREDITCARD_UNSUPPORTED_TYPE => [
+	123,
+	undef,
+	"type of card not supported",
+    ],
+    CREDITCARD_WRONG_TYPE => [
+	124,
+	undef,
+	"card number does not match card type",
+    ],
 ]);
 
 #=PRIVATE METHODS
