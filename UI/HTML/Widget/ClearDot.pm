@@ -74,9 +74,13 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
+=head2 static new(any width, any height) : Bivio::UI::HTML::Widget::ClearDot
+
+Creates a new ClearDot widget with I<width> and I<height> attributes.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::ClearDot
 
-Creates a new ClearDot widget.
+Creates a new ClearDot widget using I<attributes>.
 
 =cut
 
@@ -180,6 +184,21 @@ sub render {
 }
 
 #=PRIVATE METHODS
+
+# _new_args(proto, any arg, ...) : array
+#
+# Returns arguments to be passed to Attributes::new.
+#
+sub _new_args {
+    my($proto, $width, $height) = @_;
+    return ($proto, $width) if ref($width) eq 'HASH' || int(@_) == 1;
+    return ($proto, {
+	width => $width,
+	height => $height,
+    }) if defined($width) || defined($height);
+    $proto->die(undef, undef, 'invalid arguments to new');
+    # DOES NOT RETURN
+}
 
 =head1 COPYRIGHT
 
