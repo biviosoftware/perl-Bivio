@@ -5,7 +5,7 @@ use strict;
 use Bivio::Test;
 use Bivio::Type::Integer;
 use Bivio::TypeError;
-Bivio::Test->run([
+Bivio::Test->unit([
     'Bivio::Type::Integer' => [
     	get_min => [
 	    [] => [-999999999],
