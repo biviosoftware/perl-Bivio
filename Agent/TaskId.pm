@@ -33,30 +33,6 @@ tasks defined in this module is:
 
 =over 4
 
-=item CLUB_MESSAGE_DETAIL
-
-=item CLUB_MESSAGE_LIST
-
-=item CLUB_MEMBER_ADD
-
-=item CLUB_MEMBER_ADD_EDIT
-
-=item CLUB_MEMBER_LIST
-
-=item SETUP_USER_CREATE
-
-=item SETUP_USER_EDIT
-
-=item SETUP_CLUB_CREATE
-
-=item SETUP_INTRO
-
-=item CLUB_MAIL_FORWARD
-
-=item USER_MAIL_FORWARD
-
-=item VALUATION_STATEMENT
-
 =back
 
 =cut
@@ -69,86 +45,8 @@ my(@_CFG) = (
     # DO NOT CHANGE the order of this list, the values may be
     # stored in the database.
     [qw(
-        CLUB_MESSAGE_DETAIL
-        1
-        CLUB
-        MEMBER
-        _/messages/detail
-	Bivio::UI::MessageBoard::DetailView
-    )],
-    [qw(
-        CLUB_MESSAGE_LIST
-        2
-        CLUB
-        MEMBER
-        _:_/messages
-	Bivio::UI::MessageBoard::ListView
-    )],
-    [qw(
-	CLUB_MEMBER_ADD
-	3
-        CLUB
-        ADMINISTRATOR
-        _/members/added
-	Bivio::Biz::Action::AddClubUser
-	Bivio::UI::Admin::UserListView
-    )],
-    [qw(
-	CLUB_MEMBER_ADD_EDIT
-	4
-        CLUB
-        ADMINISTRATOR
-        _/members/new
-	Bivio::UI::Admin::UserView
-    )],
-    [qw(
-	CLUB_MEMBER_LIST
-	5
-        CLUB
-        MEMBER
-        _/members
-	Bivio::Biz::ListModel::ClubUser
-	Bivio::UI::HTML::Club::UserList
-    )],
-    [qw(
-	SETUP_USER_CREATE
-	6
-	PUBLIC
-	ANONYMOUS
-	user/created
-	Bivio::Biz::Action::CreateUser
-	Bivio::UI::Setup::Login
-    )],
-    [qw(
-	SETUP_USER_EDIT
-	7
-	PUBLIC
-	ANONYMOUS
-	user/new
-	Bivio::Biz::FormModel::User
-	Bivio::UI::HTML::Setup::User
-        next=SETUP_USER_EDIT
-    )],
-    [qw(
-	SETUP_CLUB_CREATE
-	8
-        ANY_USER
-        USER
-        club/created
-	Bivio::Biz::Action::CreateClub
-	Bivio::UI::Setup::Finish
-    )],
-    [qw(
-	SETUP_INTRO
-	9
-	PUBLIC
-	ANONYMOUS
-	club/setup
-	Bivio::UI::Setup::Intro
-    )],
-    [qw(
 	CLUB_MAIL_FORWARD
-	10
+	1
         CLUB
         ANONYMOUS
         :
@@ -156,61 +54,118 @@ my(@_CFG) = (
     )],
     [qw(
 	USER_MAIL_FORWARD
-	11
+	2
         USER
         ANONYMOUS
         :
 	Bivio::Biz::Action::ForwardUserMail
     )],
     [qw(
-	SETUP_CLUB_EDIT
-	12
-        ANY_USER
-        USER
-        club/new
-	Bivio::UI::Setup::Club
-    )],
-    [qw(
-	TEST_VIEW
-	13
-        PUBLIC
-        ANONYMOUS
-        test
-	Bivio::UI::HTML::View::Test
-    )],
-    [qw(
-	TEST_FORM
-	14
-        PUBLIC
-        ANONYMOUS
-        test/form
-	Bivio::UI::HTML::View::TestForm
-    )],
-    [qw(
-	CLUB_TEST_VIEW
-	15
+        CLUB_ACCOUNTING_ACCOUNT_LIST
+        9
         CLUB
         MEMBER
-        _/test
-	Bivio::UI::HTML::View::ClubTest
+        _/accounting/accounts:_/accounts
+        Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
-	CLUB_TEST_REDIRECT
-	16
+        CLUB_ACCOUNTING_HISTORY
+        10
         CLUB
         MEMBER
-        _/redirect
-	Bivio::Biz::Action::ClubTestRedirect
+        _/accounting/history
+        Bivio::UI::HTML::Club::Embargoed
     )],
     [qw(
-	VALUATION_STATEMENT
-	17
+        CLUB_ACCOUNTING_INVESTMENT_LIST
+        11
+        CLUB
+        MEMBER
+        _/accounting/investments:_/investments
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_LIST
+        12
+        CLUB
+        MEMBER
+        _/accounting/members
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_LIST
+        13
+        CLUB
+        MEMBER
+        _/accounting/reports
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_ADMIN_MEMBER_LIST
+        14
+        CLUB
+        MEMBER
+        _/admin/members
+        Bivio::Biz::ListModel::ClubUser
+        Bivio::UI::HTML::Club::UserList
+    )],
+    [qw(
+        CLUB_ADMIN_PREFERENCE_LIST
+        15
+        CLUB
+        MEMBER
+        _/admin/preferences:_/preferences
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MESSAGE_LIST
+        16
+        CLUB
+        MEMBER
+        _:_/communications/mail:_/mail
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MOTION_LIST
+        17
+        CLUB
+        MEMBER
+        _/communications/motions:_/motions
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MEMBER_LIST
+        18
+        CLUB
+        MEMBER
+        _/communications/rolodex:_/rolodex
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_LIBRARY_LIST
+        19
+        CLUB
+        MEMBER
+        _/library
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+        CLUB_SSG
+        20
+        CLUB
+        MEMBER
+        _/research/ssg
+        Bivio::UI::HTML::Club::Embargoed
+    )],
+    [qw(
+	CLUB_VALUATION_REPORT
+	21
         CLUB
         MEMBER
         _/valuation
 	Bivio::Biz::ListModel::AccountValuationList
 	Bivio::Biz::ListModel::InstrumentValuationList
-	Bivio::UI::HTML::Club::ValuationStatement
+	Bivio::UI::HTML::Club::ValuationReport
     )],
 );
 
@@ -232,6 +187,18 @@ ONLY TO BE CALLED BY L<Bivio::Agent::Tasks>.
 
 sub get_cfg_list {
     return \@_CFG;
+}
+
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : false
+
+Task Ids aren't continuous.  Tasks can go away.
+
+=cut
+
+sub is_continuous {
+    return 0;
 }
 
 #=PRIVATE METHODS
