@@ -46,6 +46,7 @@ use Bivio::Biz::Model::User;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
+my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 #TODO: Need to fix this so looks at all roles and checks MAIL_RECEIVE
 #TODO: Need Location policy.  Probably need a field added to table.
 #      which says where people want email sent from bivio.
@@ -292,18 +293,29 @@ sub get_outgoing_emails {
 
 =head2 has_transactions() : boolean
 
+=head2 has_transactions(string start_date, string end_date) : boolean
+
 Returns 1 if the club has any accounting transactions.
 
 =cut
 
 sub has_transactions {
-    my($self) = @_;
+    my($self, $start_date, $end_date) = @_;
 
-    my($sth) = Bivio::SQL::Connection->execute("
+    my($sql) = "
             SELECT COUNT(*)
             FROM realm_transaction_t
-            WHERE realm_id=?",
-	    [$self->get('club_id')]);
+            WHERE realm_id=?";
+    my($params) = [$self->get('club_id')];
+
+    if (defined($start_date)) {
+	$sql .= "
+            AND realm_transaction_t.date_time
+                BETWEEN $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE";
+	push(@$params, $start_date, $end_date);
+    }
+
+    my($sth) = Bivio::SQL::Connection->execute($sql, $params);
     my($count) = 0;
     while (my $row = $sth->fetchrow_arrayref) {
 	$count = $row->[0] || 0;
