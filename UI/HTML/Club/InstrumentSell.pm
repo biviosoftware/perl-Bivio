@@ -177,42 +177,42 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # make sure the member key is in the query
-    if (defined($req->get('query')) && defined($req->get('query')->{pk})) {
-	my($id) = $req->get('query')->{pk};
+    # get the select realm instrument
+    my($list) = $req->get('Bivio::Biz::Model::InstrumentSummaryList');
+    $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
+    $list->next_row;
+    my($id) = $list->get('RealmInstrument.realm_instrument_id');
 
-	my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
-	$realm_inst->load(realm_instrument_id => $id);
+    my($realm_inst) = Bivio::Biz::Model::RealmInstrument->new($req);
+    $realm_inst->load(realm_instrument_id => $id);
 
-	$req->put(page_heading => 'Sell: '.$realm_inst
-		->get_model('Instrument')->get('name'),
-		page_subtopic => undef,
-		page_content => $fields->{form});
-	my($form) = $req->get('form_model');
+    $req->put(page_heading => 'Sell: '.$realm_inst
+	    ->get_model('Instrument')->get('name'),
+	    page_subtopic => undef,
+	    page_content => $fields->{form});
+    my($form) = $req->get('form_model');
 
-	if ($form->in_error) {
-	    my($errors) = $form->get_errors;
+    if ($form->in_error) {
+	my($errors) = $form->get_errors;
 
-	    my(@errors);
-	    foreach my $f (@$_FIELDS) {
-		my($n) = $f->[0];
-		next unless defined($errors->{$n});
-		push(@errors, Bivio::Util::escape_html(
-			$f->[1].': '.$errors->{$n}->get_long_desc));
-	    }
-
-	    my($p, $s) = Bivio::UI::Font->as_html('error');
-	    $req->put(page_error =>
-		    "<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
-		    .join("</td></tr>\n<tr><td><li>",
-			    "${p}Please correct the following errors:$s",
-			    @errors)
-		    ."</td></tr></table>\n<hr>");
+	my(@errors);
+	foreach my $f (@$_FIELDS) {
+	    my($n) = $f->[0];
+	    next unless defined($errors->{$n});
+	    push(@errors, Bivio::Util::escape_html(
+		    $f->[1].': '.$errors->{$n}->get_long_desc));
 	}
-	Bivio::UI::HTML::Club::Page->execute($req);
-	return;
+
+	my($p, $s) = Bivio::UI::Font->as_html('error');
+	$req->put(page_error =>
+		"<table border=0 cellpadding=5 cellspacing=0>\n<tr><td>"
+		.join("</td></tr>\n<tr><td><li>",
+			"${p}Please correct the following errors:$s",
+			@errors)
+		."</td></tr></table>\n<hr>");
     }
-    $req->die(Bivio::DieCode::NOT_FOUND);
+    Bivio::UI::HTML::Club::Page->execute($req);
+    return;
 }
 
 #=PRIVATE METHODS
