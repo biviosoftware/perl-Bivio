@@ -36,12 +36,12 @@ If the validation passes, i.e. no errors are put with
 L<internal_put_error|"internal_put_error">, then
 L<execute_ok|"execute_ok"> is called.
 
-A form may have a context.  This is specified by the C<require_context>
-in
-L<internal_initialize_sql_support|"internal_initialize_sql_support">.
-The context is how we got to this form, e.g. from another form and
-the contents of that form.  Forms with context return to the uri
-specified in the context on "ok" completion.
+A form may have a context.  This is specified by the C<require_context> in
+L<internal_initialize_sql_support|"internal_initialize_sql_support">.  The
+context is how we got to this form, e.g. from another form and the contents of
+that form.  Forms with context return to the uri specified in the context on
+"ok" completion.  If the request has FormModel.require_context set to false,
+no context will be required.
 
 A query may have a context as well.  The form's context overrides
 the query's context.  The query's context is usually only valid
@@ -249,7 +249,9 @@ sub execute {
 	_trace(ref($self), ': auxiliary form') if $_TRACE;
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request($req)
-		if $self->get_info('require_context');
+		if $self->get_info('require_context')
+			&& $req->get_or_default(ref($self).'.'
+				.'require_context', 1);
 	return $self->execute_empty;
     }
 
