@@ -229,6 +229,12 @@ sub _add_links {
 	    $line =~ s,($package),<a href="/$uri?s=$1">$1</a>,
 		    || Bivio::Die->die('invalid package match: ', $package);
 	}
+
+	# add links to the view's parent
+	if ($line =~ /view_parent\(.*?>.(\w+)/) {
+	    my($view) = $1;
+	    $line =~ s,($view),<a href="/$uri?s=View.$1">$1</a>,;
+	}
     }
     return;
 }
