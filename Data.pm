@@ -9,6 +9,7 @@ use Fcntl ();
 use Data::Dumper ();
 use File::Copy ();
 use Bivio::Util;
+use GD ();
 
 $Bivio::Data::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -23,6 +24,7 @@ sub PERL { 0 }							      # default
 sub MHONARC { 1 }
 sub ALL_KEYS { 2 }
 sub FILE { 3 }
+sub GIF_INFO { 4 }
 
 # The ending to $_Home; Must end in /
 sub _REL_HOME { '/../data/' }
@@ -58,6 +60,7 @@ sub lookup ($$$;$)
 	$cache->{mtime} == -M $cache->{absfile} && return $cache->{value};
     local($SIG{__WARN__}) = sub { die @_ };		# perl be quiet, please
     my($absfile, $value, $dont_cache);
+    $@ = undef;
     if (!defined($type) || $type == &PERL) {
 	$type = &PERL;
 	&_check_file_name($br, $file);
@@ -100,6 +103,29 @@ sub lookup ($$$;$)
 	open($fh, $absfile) && return $fh;
 	-e $absfile || $br->not_found($absfile);
 	$@ = "open failed: $!";
+    }
+    elsif ($type == &GIF_INFO) {
+	# Return the dimensions
+	$absfile = $br->document_root . $file;
+	my($fh) = \*Bivio::Data::IN;	   # Use only one handle to avoid leaks
+	if (open($fh, $absfile)) {
+	    my($gif) =  GD::Image->newFromGif($fh);
+	    if (defined($gif)) {
+		my($w, $h) = $gif->getBounds();
+		$value = {
+		    'width' => $w,
+		    'height' => $h,
+		    'uri' => $file,
+		};
+	    }
+	    else {
+		$@ = "newFromGif failed";
+	    }
+	    close($fh);
+	}
+	else {
+	    $@ = "open failed: $!";
+	}
     }
     else {
 	$br->server_error("$type: unknown type")
