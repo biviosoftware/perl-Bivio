@@ -706,7 +706,9 @@ sub _get_parent_id_type {
     my($attrs, $support) = @_;
     # use the list support first, otherwise default to first primary key
     return $support->unsafe_get('parent_id_type')
-	    || $support->get('primary_key')->[0]->{type};
+	    || ($support->unsafe_get('primarky_key')
+		    && $support->get('primary_key')->[0]->{type})
+		    || 'Bivio::Type::PrimaryId';
 }
 
 # _new(any proto, hash_ref attrs, Bivio::SQL::Support, ref die) : Bivio::SQL::ListQuery
