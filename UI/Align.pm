@@ -49,7 +49,15 @@ The alignments and their values are:
 
 =item NW (northwest): valign=top align=left
 
-=item center: align=center
+=item CENTER: align=center
+
+=item LEFT: align=left
+
+=item RIGHT: align=right
+
+=item TOP:  valign=top align=center
+
+=item BOTTOM: valign=bottom align=center
 
 =back
 

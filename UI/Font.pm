@@ -46,6 +46,8 @@ The current font names are:
 
 =item TIME
 
+=item MONOSPACED
+
 =back
 
 =cut
