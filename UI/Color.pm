@@ -101,30 +101,6 @@ sub format_html {
 	    : _format_html($v->{config}, $attr);
 }
 
-=for html <a name="format_pdf"></a>
-
-=head2 static format_pdf(string name, Bivio::Collection::Attributes req_or_facade) : array_ref
-
-Returns an array or [r,g,b] values for the color.
-
-=cut
-
-sub format_pdf {
-    my($proto, $name, $req) = @_;
-    return [0, 0, 0] unless $name;
-
-    # Lookup name
-    my($v) = $proto->internal_get_value($name, $req);
-    return [0, 0, 0] unless $v;
-
-    my($num) = $v->{config};
-    return [
-        (($num & 0xFF0000) >> 16) / 255,
-        (($num & 0x00FF00) >> 8) / 255,
-        ($num & 0x0000FF) / 255,
-    ];
-}
-
 =for html <a name="handle_register"></a>
 
 =head2 static handle_register()
