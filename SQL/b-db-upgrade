@@ -1,0 +1,198 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+my($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+=head1 NAME
+
+b-db-upgrade - database upgrade
+
+=head1 SYNOPSIS
+
+b-db-upgrade
+
+=head1 DESCRIPTION
+
+B<b-db-upgrade> database upgrade.
+This script is the home for database table or data modifications. It stores
+a copy of the current version in the database to prevent rerunning the
+script.
+
+To install an upgrade, use the magic argument 'upgrade':
+
+    b-db-upgrade upgrade
+
+To create a new upgrade script, replace the entire contents of the
+_upgrade() method and check in the new version.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Model::DbUpgrade;
+use Bivio::Collection::Attributes;
+use Bivio::IO::Config;
+use Bivio::SQL::Connection;
+use Bivio::Type::DateTime;
+
+# upgrade imports
+use Bivio::Type::EntryClass;
+use Bivio::Type::EntryType;
+
+#=VARIABLES
+
+sub main {
+    # want to avoid accidentally running this script
+    my($magic_word) = @_;
+    die("usage: b-db-upgrade upgrade\n")
+	    unless $magic_word && ($magic_word eq 'upgrade');
+    Bivio::IO::Config->initialize();
+
+    my($req) = Bivio::Collection::Attributes->new();
+    my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
+#TODO: uncomment this for subsequent versions, the table isn't there yet.
+#    if ($upgrade->unauth_load(version => $VERSION)) {
+#	print(STDERR "b-db-upgrade $VERSION already ran\n");
+#	exit -1;
+#    }
+
+    _upgrade();
+
+    # creates a completion entry in db to prevent re-running
+    $upgrade->create({
+	version => $VERSION,
+	run_date_time => Bivio::Type::DateTime->now
+    });
+    Bivio::SQL::Connection->commit;
+
+    return 1;
+}
+
+main(@ARGV);
+
+#=PRIVATE METHODS
+
+# _upgrade()
+#
+# Replace this method with the table/data manipulations.
+#
+sub _upgrade {
+
+    #
+    # create the db_upgrate_t table
+    #
+
+    Bivio::SQL::Connection->execute('
+            CREATE TABLE db_upgrade_t (
+              version VARCHAR2(30),
+              run_date_time DATE
+            )
+            storage (initial 10m next 10m minextents 1
+              maxextents 500 pctincrease 0)
+            tablespace realm_data', []);
+    Bivio::SQL::Connection->execute('
+            ALTER TABLE db_upgrade_t add primary key(version)
+              using index tablespace realm_indx
+              storage (initial 10m NEXT 10m minextents 1
+                maxextents 500 pctincrease 0)', []);
+    Bivio::SQL::Connection->execute('
+            ALTER TABLE db_upgrade_t modify run_date_time not null', []);
+
+
+    # Fixes the transaction source class for sell entries. I messed this up
+    # in Bivio::Biz::Model::InstrumentSellForm2 which was setting it as
+    # a MEMBER source class. Fixed now.
+
+    # get all sell entries
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_transaction_t.realm_transaction_id,
+                realm_transaction_t.source_class
+            FROM realm_transaction_t, entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                = entry_t.realm_transaction_id
+            AND entry_t.entry_type=?',
+	    [Bivio::Type::EntryType::INSTRUMENT_SELL->as_int]);
+    # update transaction source_class if it isn't already INSTRUMENT
+    my($row);
+    while ($row = $sth->fetchrow_arrayref) {
+	my($tran_id, $class) = @$row;
+	if ($class != Bivio::Type::EntryClass::INSTRUMENT->as_int) {
+	    Bivio::SQL::Connection->execute('
+                    UPDATE realm_transaction_t
+                    SET source_class=?
+                    WHERE realm_transaction_id=?',
+		    [Bivio::Type::EntryClass::INSTRUMENT->as_int,
+			    $tran_id]);
+	}
+    }
+
+    #
+    # moves remarks from entries to transactions
+    #
+
+    my(%UPDATED_TRANSACTION_IDS) = ();
+
+    # get all entries
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT realm_transaction_t.realm_transaction_id,
+                realm_transaction_t.remark,
+                realm_transaction_t.source_class,
+                entry_t.class, entry_t.remark
+            FROM realm_transaction_t, entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                = entry_t.realm_transaction_id', []);
+
+    while ($row = $sth->fetchrow_arrayref) {
+	my($tran_id, $tran_remark, $source_class, $entry_class,
+		$entry_remark) = @$row;
+
+	next unless defined($entry_remark);
+
+	# skip it if already updated, easyware duplicates remarks
+	next if exists($UPDATED_TRANSACTION_IDS{$tran_id});
+
+	# skip legacy generated valuation date entry remark
+	next if defined($entry_remark)
+		&& ($entry_remark =~ /\/..\sValuation/);
+
+	# see if the entry is the source of the transaction
+	if ($source_class == $entry_class) {
+	    # extra paranoid
+	    die("transaction remark already defined: $tran_remark")
+		    if defined($tran_remark);
+
+	    Bivio::SQL::Connection->execute('
+                    UPDATE realm_transaction_t
+                    SET remark=?
+                    WHERE realm_transaction_id=?',
+		    [$entry_remark, $tran_id]);
+	    $UPDATED_TRANSACTION_IDS{$tran_id} = $tran_id;
+	}
+    }
+
+    # clear all existing remark fields
+    Bivio::SQL::Connection->execute('
+            UPDATE entry_t
+            SET remark=?',
+	    ['']);
+
+    return;
+}
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
