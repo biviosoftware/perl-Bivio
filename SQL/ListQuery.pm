@@ -51,25 +51,25 @@ The auth_id extracted from the request.
 Number of lines on a page.  Not passed in the query, set by the
 caller of L<new|"new">.
 
+=item begin_date : Bivio::Type::Date
+
+If supplied, then is the last date to return (inclusive).  Allows you to
+specify an explicit date range.
+
+You can pass C<begin_date> in the query string and it will be parsed as a date.
+
+You cannot pass I<begin_date> and I<interval>.
+
 =item date : Bivio::Type::Date
 
 Arbitrary date used to load the ListModel.  Bivio::Type::DateTime
 and a Bivio::Type::Date are both acceptable.
 
-You can pass C<date> or C<report_date> in the query string and it
+You can pass C<date>, C<end_date>, or C<report_date> in the query string and it
 will be parsed as a date.
 
 Will be set to DateTime-E<gt>local_end_of_today if C<undef>
 and support has I<want_date> set.
-
-=item interval : Bivio::Type::DateInterval
-
-A L<Bivio::Type::DateInterval|Bivio::Type::DateInterval>.  Does not default.
-You can pass C<interval> in the query string and it will be parsed
-as an interval.
-
-Accepts a ref or tries to convert unsafe_from_any.  Is left at C<undef>,
-if not set.
 
 =item has_next : boolean
 
@@ -84,6 +84,17 @@ Are there items prior to this query?
 This value may be invalid until the query is executed by
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 Initialized to false.
+
+=item interval : Bivio::Type::DateInterval
+
+A L<Bivio::Type::DateInterval|Bivio::Type::DateInterval>.  Does not default.
+You can pass C<interval> in the query string and it will be parsed
+as an interval.
+
+Accepts a ref or tries to convert unsafe_from_any.  Is left at C<undef>,
+if not set.
+
+You cannot pass I<begin_date> and I<interval>.
 
 =item list_support : Bivio::SQL::ListSupport
 
@@ -189,6 +200,7 @@ use Bivio::Type;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my(%_QUERY_TO_FIELDS) = (
+    'b' => 'begin_date',
     'd' => 'date',
     'i' => 'interval',
     'n' => 'page_number',
@@ -228,7 +240,7 @@ sub new {
     foreach my $k (@_QUERY_FIELDS) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
-    return _new($proto, $attrs, $support);
+    return _new($proto, $attrs, $support, $die);
 }
 
 =for html <a name="unauth_new"></a>
@@ -249,7 +261,7 @@ sub unauth_new {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
 		unless exists($attrs->{$k});
     }
-    return _new($proto, $attrs, $support);
+    return _new($proto, $attrs, $support, $model);
 }
 
 =head1 METHODS
@@ -616,6 +628,10 @@ sub _format_uri {
     $res .= 's='.Bivio::Type::String->to_query($attrs->{search}).'&'
 	    if defined($attrs->{search});
 
+    # begin_date
+    $res .= 'b='.Bivio::Type::Date->to_query($attrs->{begin_date}).'&'
+	    if defined($attrs->{begin_date});
+
     # date
     $res .= 'd='.Bivio::Type::Date->to_query($attrs->{date}).'&'
 	    if defined($attrs->{date});
@@ -649,34 +665,60 @@ sub _format_uri_primary_key {
     return $res;
 }
 
-# _new(any proto, hash_ref attrs, Bivio::SQL::Support) : Bivio::SQL::ListQuery
+# _new(any proto, hash_ref attrs, Bivio::SQL::Support, ref die) : Bivio::SQL::ListQuery
 #
 # Initializes default attrs and instantiates.
 #
 sub _new {
-    my($proto, $attrs, $support) = @_;
+    my($proto, $attrs, $support, $die) = @_;
     # Reset attrs that are set by Support
     @{$attrs}{qw(has_prev has_next prev next prev_page next_page list_support)}
 	   = (0, 0, undef, undef, undef, undef, $support);
+    _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
+	message => 'cannot have both interval and begin_date',
+	begin_date => $attrs->{begin_date},
+    },
+	    $attrs->{interval}) if $attrs->{interval} && $attrs->{begin_date};
     return Bivio::Collection::Attributes::new($proto, $attrs);
+}
+
+# _parse_begin_date(hash_ref attrs, Bivio::SQL::Support support, ref die)
+#
+# Parses the "begin_date" attribute.
+#
+sub _parse_begin_date {
+    my($attrs, $support, $die) = @_;
+    $attrs->{begin_date} = _parse_date_value(
+	    $attrs->{e} || $attrs->{begin_date} || undef,
+	    0, $die);
+    return;
 }
 
 # _parse_date(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
-# Parses a date string.  We handle both a literal DateTime (J SSSSS) and
-# a Date (mm/dd/yyyy).  We also check for report_date and date passed
-# in.  If the date is invalid, we set it to undef or now depending on
-# value of want_date.
+# Parses the "date" attribute.
 #
 sub _parse_date {
     my($attrs, $support, $die) = @_;
-    my($literal) = $attrs->{d} || $attrs->{date} || $attrs->{report_date} ||
-	    undef;
-    unless ($literal) {
-	$attrs->{date} = $support->unsafe_get('want_date')
-		? Bivio::Type::DateTime->local_end_of_today : undef;
-	return;
-    }
+    $attrs->{date} = _parse_date_value(
+	    $attrs->{d} || $attrs->{date} || $attrs->{end_date}
+	    || $attrs->{report_date} || undef,
+	    $support->unsafe_get('want_date'), $die);
+    return;
+}
+
+# _parse_date_value(string literal, boolean want_date, ref die) : string
+#
+# Parses the literal and returns a Type::Date. We handle both a literal
+# DateTime (J SSSSS) and a Date (mm/dd/yyyy).  We also check for report_date
+# and date passed in.  If the date is invalid, we set it to undef or now
+# depending on value of want_date.
+#
+sub _parse_date_value {
+    my($literal, $want_date, $die) = @_;
+    return $want_date
+	    ? Bivio::Type::DateTime->local_end_of_today : undef
+		    unless $literal;
 
     my($value, $e) = Bivio::Type::DateTime->from_literal($literal);
     ($value, $e) = Bivio::Type::Date->from_literal($literal)
@@ -686,8 +728,7 @@ sub _parse_date {
 	type_error => $e,
     },
 	    $literal) unless $value;
-    $attrs->{date} = $value;
-    return;
+    return $value;
 }
 
 # _parse_interval(hash_ref attrs, Bivio::SQL::Support support, ref die)

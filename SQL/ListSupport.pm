@@ -367,7 +367,7 @@ sub _init_column_classes {
     Bivio::Die->die('too many auth_id fields')
 		if int(@{$attrs->{auth_id}}) > 1;
 
-    # auth_id must be at most one column.  Turn into that column or undef.
+    # date must be at most one column.  Turn into that column or undef.
     Bivio::Die->die('too many date fields')
 		if int(@{$attrs->{date}}) > 1;
 
@@ -475,6 +475,12 @@ sub _init_column_lists {
     }
     $attrs->{select} = 'select '.join(',', @select_sql_names).$from;
     $attrs->{select_count} = 'select count(*)'.$from;
+    if ($attrs->{date}) {
+	$attrs->{where_begin_date} = ' AND '
+		.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
+	$attrs->{where_end_date} = ' AND '
+		.$attrs->{date}->{sql_name}.' <= '.$_DATE_SQL_VALUE;
+    }
     return;
 }
 
@@ -720,8 +726,9 @@ sub _prepare_where {
 sub _prepare_where_date {
     my($self, $query, $where, $params) = @_;
     my($attrs) = $self->internal_get;
-    my($date, $interval) = $query->get(qw(date interval));
-    unless (defined($date)) {
+    my($date, $interval, $begin_date)
+	    = $query->get(qw(date interval begin_date));
+    unless ($date || $begin_date) {
 #TODO: make this a $req->warn  or fix Alert to have a hook to $req on warn
 	Bivio::IO::Alert->warn('query has interval "',
 		$interval, '" but no date, ignoring')
@@ -729,11 +736,13 @@ sub _prepare_where_date {
 	return;
     }
 
-    if ($interval) {
-	$$where .= ' AND '.$attrs->{date}->{sql_name}.' >= '.$_DATE_SQL_VALUE;
-	push(@$params, $interval->dec($date));
+    # Won't have both a begin_date and interval (see ListQuery)
+    $begin_date = $interval->dec($date) if $interval;
+    if ($begin_date) {
+	$$where .= $attrs->{where_begin_date};
+	push(@$params, $begin_date);
     }
-    $$where .= ' AND '.$attrs->{date}->{sql_name}.' <= '.$_DATE_SQL_VALUE;
+    $$where .= $attrs->{where_end_date};
     push(@$params, $date);
     return;
 }
