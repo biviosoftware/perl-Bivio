@@ -46,7 +46,7 @@ C<Bivio::Test::Util> runs tests using C<Test::Harness>.
 Returns:
   usage: b-test [options] command [args...]
   commands:
-      run test_files... -- runs the tests under Test::Harness
+      unit test_files... -- runs the tests under Test::Harness
 
 =cut
 
@@ -54,7 +54,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-test [options] command [args...]
 commands:
-    run tests... -- runs the tests under Test::Harness
+    unit tests... -- runs the tests under Test::Harness
 EOF
 }
 
@@ -67,15 +67,41 @@ use Test::Harness ();
 
 =cut
 
-=for html <a name="run"></a>
+=for html <a name="accept"></a>
 
-=head2 run(string test_file, ...)
+=head2 accept(string tests, ...)
+
+Run acceptance tests.
+
+=cut
+
+sub accept {
+    my($self) = @_;
+    return;
+}
+
+=for html <a name="cleanup"></a>
+
+=head2 cleanup(string btest)
+
+Run cleanup method on btest file after setup.
+
+=cut
+
+sub cleanup {
+    my($self) = @_;
+    return;
+}
+
+=for html <a name="unit"></a>
+
+=head2 unit(string test_file, ...)
 
 Executes I<test_file>(s) by calling C<Test::Harness::runtests>.
 
 =cut
 
-sub run {
+sub unit {
     my($self, @test_file) = @_;
     Test::Harness::runtests(@test_file);
     return;
