@@ -37,16 +37,27 @@ L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>.
 
 =cut
 
+=for html <a name="assert_is_ok"></a>
+
+=head2 assert_is_ok(Bivio::Agent::Request req) : boolean
+
+This cookie is always OK.
+
+=cut
+
+sub assert_is_ok {
+    return 1;
+}
+
 =for html <a name="header_out"></a>
 
-=head2 header_out(Apache::Request r, Bivio::Agent::Request req) : boolean
+=head2 header_out(Bivio::Agent::Request req, Apache::Request r) : boolean
 
 Does nothing.
 
 =cut
 
 sub header_out {
-    my($self, $r, $req) = @_;
     return;
 }
 
