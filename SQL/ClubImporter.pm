@@ -189,7 +189,7 @@ my($_TYPE_MAP) = {
 	    5, 1, '-'],
     # Transfer
     44 => ['INSTRUMENT_TRANSFER', 'NOT_TAXABLE',
-	    0, 1, '-'],
+	    2, 1, '-'],
     # Stcg-Sell
     45 => ['INSTRUMENT_SELL', 'SHORT_TERM_CAPITAL_GAIN',
 	    5, 0],
@@ -781,10 +781,34 @@ sub import_transactions {
     # compute the implied valuation dates for easyware data
     $self->generate_valuation_dates($attributes->{club_id});
 
+    # hack fix for petty cash transactions, never in basis
+    _fix_petty_cash_basis($attributes->{club_id});
+
     Bivio::SQL::Connection->commit();
 }
 
 #=PRIVATE METHODS
+
+# _fix_petty_cash_basis(string realm_id)
+#
+# Sets all petty cash account transaction basis to 0.
+#
+sub _fix_petty_cash_basis {
+    my($realm_id) = @_;
+
+    Bivio::SQL::Connection->execute('
+            UPDATE entry_t
+            SET tax_basis = 0
+            WHERE entry_id IN (
+                SELECT entry_id
+                FROM realm_account_entry_t, realm_account_t
+                WHERE realm_account_entry_t.realm_account_id
+                    = realm_account_t.realm_account_id
+                AND realm_account_t.in_valuation = 0
+                AND realm_account_t.realm_id=?
+            )', [$realm_id]);
+    return;
+}
 
 # _link_spinoffs(self, array_ref instrument_trans)
 #
@@ -829,10 +853,8 @@ sub _link_spinoffs {
 sub _find_name_like {
     my($instruments, $name) = @_;
 
-#    print(STDERR "\nlooking for $name\n");
     my($inst);
     foreach $inst (@$instruments) {
-#	print(STDERR "\t".$inst->{instrument_name}."\n");
 	if ($inst->{instrument_name} =~ /^$name/) {
 	    return $inst->{instrument_id};
 	}
@@ -924,8 +946,8 @@ sub _create_transaction_id_set {
 # for the specified transaction.
 
 sub _create_entries {
-    my($easyware_trans, $transaction, $source_id, $date_time, $transaction_type,
-	    $attributes) = @_;
+    my($easyware_trans, $transaction, $source_id, $date_time,
+	    $transaction_type, $attributes) = @_;
     my($set_index) = $_TYPE_MAP->{$transaction_type}->[2];
     die("unknown tran type $transaction_type") unless defined($set_index);
     my($set) = $_TRANSACTION_ID_SET->[$set_index];
@@ -974,18 +996,22 @@ sub _create_entries {
 sub _create_stock_transfer_entry {
     my($easyware_trans, $transaction, $date_time, $attributes) = @_;
 
+    my($success) = 0;
     my($trans);
     foreach $trans (@$easyware_trans) {
-	next if (! defined($trans));
+	next unless defined($trans);
 
-	if ($trans->{date_time} eq $date_time && $trans->{transaction_type} == 44) {
+	if ($trans->{date_time} eq $date_time
+		&& $trans->{transaction_type} == 44) {
 
 	    _create_entry($transaction, $trans, $attributes);
 	    $trans = undef;
-	    return;
+	    $success = 1;
 	}
     }
-    die("Couldn't find related stock transfer for stock withdrawal");
+    die("Couldn't find related stock transfer for stock withdrawal")
+	    unless $success;
+    return;
 }
 
 # _is_group_deposit(hash_ref trans, array_ref easyware_trans) : boolean
@@ -1180,7 +1206,6 @@ sub _create_entry {
 sub lookup_instrument {
     my($self, $symbol) = @_;
 
-#    print(STDERR "\nlookuping up '$symbol'\n");
     my($req) = Bivio::Agent::TestRequest->new({});
     my($instrument) = Bivio::Biz::Model::Instrument->new($req);
     $instrument->unauth_load(ticker_symbol => $symbol)
@@ -1297,9 +1322,18 @@ sub _process_transactions {
 	my($transaction) = _create_transaction($attributes->{club_id},
 		$attributes->{user_id},	$trans->{class}, $date_time);
 
-	_create_entries($easyware_trans, $transaction, $trans->{id}, $date_time,
-		$trans->{transaction_type}, $attributes);
+	_create_entries($easyware_trans, $transaction, $trans->{id},
+		$date_time, $trans->{transaction_type}, $attributes);
     }
+
+    my($success) = 1;
+    foreach $trans (@$easyware_trans) {
+	if (defined($trans)) {
+	    $success = 0;
+	    _trace(Data::Dumper->Dumper($trans));
+	}
+    }
+    die("didn't handle all records") unless $success;
     return;
 }
 
