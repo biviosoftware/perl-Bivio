@@ -52,7 +52,7 @@ Name of the form field.
 
 Which form are we dealing with.
 
-=item label : string (required)
+=item label : string [Model.field]
 
 String label to use.
 
@@ -70,6 +70,7 @@ L<get_widget_value|"get_widget_value"> on the rendering source.
 #=VARIABLES
 
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 =head1 FACTORIES
 
@@ -108,11 +109,9 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
 
-    my($label) = $self->get('label');
-    unless (ref($label)) {
-	$label = Bivio::HTML->escape($label);
-    }
-    $fields->{label} = $label;
+    my($label) = $self->get_or_default('label',
+	$_VS->vs_text($self->ancestral_get('form_class')->simple_package_name, $fields->{field}));
+    $fields->{label} = ref($label) ? $label : Bivio::HTML->escape($label);
     return;
 }
 
