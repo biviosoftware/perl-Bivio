@@ -20,7 +20,8 @@ BEGIN {
 	    sub escape_html { &Apache::Util::escape_html }
 	    sub escape_uri { &Apache::Util::escape_uri }
 	    sub unescape_uri { &Apache::unescape_url }
-	';
+	    1;
+	' || die($@);
     }
     else {
         eval '
@@ -28,7 +29,8 @@ BEGIN {
 	    sub escape_html { &HTML::Entities::encode }
 	    sub escape_uri { &URI::Escape::uri_escape }
 	    sub unescape_uri { &URI::Escape::uri_unescape }
-	';
+	    1;
+	' || die($@);
     }
 }
 

@@ -186,14 +186,14 @@ sub _process_http ($) {
     my($br) = @_;
     my($user) = Bivio::User->authenticate_http($br);
     my($path);
-    ($path = $br->r->uri) =~ s,^/+([^/]+),,;
+    ($path = $br->r->uri) =~ s,^/+([^/]+)/*,,;
     my($name) = $1;
     my($self) = Bivio::Club->lookup($name, $br);
     defined($self) || $br->not_found($name, ': no such club');
     $self->authenticate($br);
     my($page);
     # NOTE: $1 not reset if match fails
-    $path =~ s,^/+([^/]+)/*,, && ($page = $1);
+    $path =~ s,^([^/]+)/*,, && ($page = $1);
     $page = !defined($page) ? $_DEFAULT_PAGE
 	: defined($self->{page_map}->{$page}) ? $self->{page_map}->{$page}
 	    : $br->not_found("no such page");
