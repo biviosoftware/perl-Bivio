@@ -573,7 +573,8 @@ Global options precede the command and are set on the instance.
 sub main {
     my($proto, @argv) = @_;
     local($|) = 1;
-    my($self) = ref($proto) ? _initialize($proto, \@argv)
+    # Forces a setup, if called as $self
+    my($self) = ref($proto) ? $proto->setup(_initialize($proto, \@argv))
 	: $proto->new(\@argv);
     my($fields) = $self->[$_IDI];
     $fields->{in_main} = 1;
@@ -835,7 +836,7 @@ L<set_user_to_any_online_admin|"set_user_to_any_online_admin">.
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
     $realm = Bivio::Auth::Realm::General->get_instance()
-	    unless defined($realm);
+	unless defined($realm);
     my($req) = $self->get_request;
     $req->set_realm($realm);
 
@@ -872,7 +873,7 @@ sub set_user_to_any_online_admin {
 
 =for html <a name="setup"></a>
 
-=head2 setup()
+=head2 setup() : self
 
 Configures the environment for request.  Does nothing if already setup.
 
@@ -882,7 +883,7 @@ sub setup {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{in_main} ? _setup_for_main($self) : _setup_for_call($self);
-    return;
+    return $self;
 }
 
 =for html <a name="unsafe_get"></a>
