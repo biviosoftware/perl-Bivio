@@ -166,18 +166,7 @@ sub execute {
     foreach $i (@{$fields->{items}}) {
 	$i->execute($req);
     }
-    # Always commit before sending queued messages.  The database
-    # is more important than email.  If we get an error
-    # while rendering view, don't commit since the only side effect
-    # is that there might be some external state outside of SQL DB
-    # which needs to be garbage-collected.
-    #
-    # These modules are intelligent and won't do anything if there
-    # were no modifications.
-    Bivio::SQL::Connection->commit;
-    Bivio::Mail::Common->send_queued_messages;
-#TODO: Garbage collect state that doesn't agree with SQL DB
-    # Note: rollback is in handle_die
+    _commit();
     $req->get('reply')->flush;
     return;
 }
@@ -226,9 +215,14 @@ and discard the mail queue unless is a REDIRECT_TASK.
 sub handle_die {
     my($proto, $die) = @_;
     my($die_code) = $die->get('code');
-    return if $die_code == Bivio::DieCode::REDIRECT_TASK()
-	    || $die_code == Bivio::DieCode::CLIENT_REDIRECT_TASK();
-    $proto->rollback;
+    if ($die_code == Bivio::DieCode::REDIRECT_TASK()
+	    || $die_code == Bivio::DieCode::CLIENT_REDIRECT_TASK()) {
+	# commit redirects: current task is completed
+	_commit();
+    }
+    else {
+	$proto->rollback;
+    }
     return;
 }
 
@@ -278,6 +272,26 @@ sub rollback {
 }
 
 #=PRIVATE METHODS
+
+# _commit()
+#
+# Commits transactions to storage if necessary.
+#
+sub _commit {
+    # Always commit before sending queued messages.  The database
+    # is more important than email.  If we get an error
+    # while rendering view, don't commit since the only side effect
+    # is that there might be some external state outside of SQL DB
+    # which needs to be garbage-collected.
+    #
+    # These modules are intelligent and won't do anything if there
+    # were no modifications.
+    Bivio::SQL::Connection->commit;
+    Bivio::Mail::Common->send_queued_messages;
+#TODO: Garbage collect state that doesn't agree with SQL DB
+    # Note: rollback is in handle_die
+    return;
+}
 
 =head1 COPYRIGHT
 
