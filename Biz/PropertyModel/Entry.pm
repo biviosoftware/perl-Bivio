@@ -63,7 +63,7 @@ sub internal_initialize {
 	columns => {
             entry_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            transaction_id => ['Bivio::Type::PrimaryId',
+            realm_transaction_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::NOT_NULL()],
             class => ['Bivio::Type::EntryClass',
     		Bivio::SQL::Constraint::NOT_NULL()],
@@ -80,9 +80,11 @@ sub internal_initialize {
         },
 #TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
-	    [qw(entry_id AccountEntry.entry_id ClubInstrumentEntry.entry_id
-		MemberEntry.entry_id)],
-	    [qw(transaction_id Transaction.transaction_id)],
+#TODO: causes Deep recursion die
+#	    [qw(entry_id RealmAccountEntry.entry_id
+#                RealmInstrumentEntry.entry_id
+#		MemberEntry.entry_id)],
+	    [qw(realm_transaction_id RealmTransaction.realm_transaction_id)],
 	],
     };
 }
