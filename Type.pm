@@ -326,12 +326,14 @@ sub internal_from_literal_warning {
 
 =head2 static is_equal(any left, any right) : boolean
 
-Are the two values equal?  Uses "eq" comparison.
+Are the two values equal?  Uses "eq" comparison if compare is not available
 
 =cut
 
 sub is_equal {
-    my(undef, $left, $right) = @_;
+    my($proto, $left, $right) = @_;
+    return shift->compare(@_) ? 1 : 0
+	if $proto->can('compare');
     return defined($left) == defined($right)
 	&& (!defined($right) || $left eq $right) ? 1 : 0;
 }
