@@ -140,6 +140,7 @@ sub render {
 	    Bivio::UI::HTML::Widget::ClearDot->as_html($separation),
 	    Bivio::UI::HTML::Widget::Submit->new({
 		value => 'SUBMIT_CANCEL',
+		attributes => 'onclick="reset()"',
 	    }),
 	);
     }
