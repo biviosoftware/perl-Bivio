@@ -522,7 +522,6 @@ sub get_hidden_field_values {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     my($sql_support) = $self->internal_get_sql_support();
-#TODO: make a constant
     my(@res);
     push(@res, VERSION_FIELD() => $sql_support->get('version'));
     push(@res, CONTEXT_FIELD() => Bivio::Biz::FormContext->to_literal(
