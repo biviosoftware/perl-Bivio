@@ -38,7 +38,6 @@ Verify->text('current password');
  
 # get current password from Login.pm
 my($password) = Bivio::Test::Login->get_password();
-_trace("*********************************8Pword : $password") if $_TRACE;
 Browser->submit({
      'Current Password:' => $password,
      'New Password:' => $password,
