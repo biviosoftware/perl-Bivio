@@ -279,9 +279,9 @@ sub new {
 
 =for html <a name="are_you_sure"></a>
 
-=head2 static are_you_sure()
+=head2 are_you_sure()
 
-=head2 static are_you_sure(string prompt)
+=head2 are_you_sure(string prompt)
 
 Writes I<prompt> (default: "Are you sure?") to STDERR.  User must
 answer "yes", on STDIN or the routine throws an exception.
