@@ -387,6 +387,8 @@ _compile(
     YAHOO_20000713 => ['Yahoo! Live Webcast'],
     COMPUFEST_2000 => ['CompuFest 2000'],
     ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
+    A_NEW_LOOK =>['A New Look'],
+    PUBLIC_CLUB_SITES => ['Public Club Sites(tm)'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
