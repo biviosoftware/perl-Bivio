@@ -240,6 +240,7 @@ sub _initialize {
 	    "Request::warn.*couldn't adjust, difference too great,",
 	    "::_create_stock_transfer_entry.*Couldn't find related stock",
 	    'HTTP::Form::parse.*unknown form Content-Type: <undef>',
+	    "::warn:1.*income statement doesn't match schedule d",
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
