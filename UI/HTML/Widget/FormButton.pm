@@ -109,8 +109,10 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
 
-    my($label) = $self->get_or_default('label',
-	$_VS->vs_text($self->ancestral_get('form_class')->simple_package_name, $fields->{field}));
+    my($label) = $self->has_keys('label') ? $self->get('label')
+	: $_VS->vs_text(
+	    $self->ancestral_get('form_class')->simple_package_name,
+	    $fields->{field});
     $fields->{label} = ref($label) ? $label : Bivio::HTML->escape($label);
     return;
 }
