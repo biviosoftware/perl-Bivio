@@ -114,7 +114,7 @@ EOF
 # Searches all subdirectories for programs, modules and tests.
 #
 sub _find {
-    /^b-[-\w]+$/ && (push(@_PROGRAMS, $File::Find::name), return);
+    /^[bs]-[-\w]+$/ && (push(@_PROGRAMS, $File::Find::name), return);
     if (/^\w+.pm$/) {
 	my($file) = $File::Find::name;
 	$file =~ s!^\./!!;
