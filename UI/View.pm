@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::View;
 use strict;
-use Bivio::UI::Renderer;
+use Bivio::UI::Renderer();
 $Bivio::UI::View::VERSION = sprintf('%d.%02d', q$Revision$ =~ /+/g);
 
 =head1 NAME
@@ -36,7 +36,7 @@ C<Bivio::UI::View>
 
 #=VARIABLES
 
-my($PACKAGE) = __PACKAGE__;
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
@@ -44,31 +44,92 @@ my($PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::View
+=head2 static new(string name) : Bivio::UI::View
 
-Creates a view.
+Creates a view with the specified name.
 
 =cut
 
 sub new {
-    return &Bivio::UI::Renderer::new(@_);
+    my($proto, $name) = @_;
+    my($self) = &Bivio::UI::Renderer::new($proto);
+
+    $self->{$_PACKAGE} = {
+        name => $name,
+        parent => undef
+    };
+    return $self;
 }
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="get_title"></a>
+=for html <a name="activate"></a>
 
-=head2 abstract get_title(UNIVERSAL target) : string
+=head2 activate() : View
 
-Returns an appropriate name for the view when used in the target's
-context.
+Prepares this view for renderering by bringing it and its parent view
+to the top layer. Returns the root of the view tree.
 
 =cut
 
-sub get_title {
-    die("abstract method View::get_title invoked!\n");
+sub activate {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($parent) = $fields->{parent};
+    if (defined($parent)) {
+	return $parent->set_active_view($self);
+    }
+    return $self;
+}
+
+=for html <a name="get_default_model"></a>
+
+=head2 get_default_model() : Model
+
+Returns the model to use if none has been specified. The model returned
+should be primed with data and ready for rendering. By default, this
+method returns undef, indicating no default model exists.
+
+=cut
+
+sub get_default_model {
+    return undef;
+}
+
+=for html <a name="get_name"></a>
+
+=head2 get_name() : string
+
+Returns this view's name.
+
+=cut
+
+sub get_name {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{name};
+}
+
+=for html <a name="set_parent"></a>
+
+=head2 set_parent(MultiView parent)
+
+Sets the parent view of this one. Don't call this method directory, it
+is called when you create a container for this view. A view may only
+have one parent.
+
+=cut
+
+sub set_parent {
+    my($self, $parent) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{parent}) {
+	die("view ".$self->get_name()." already parented");
+    }
+    $fields->{parent} = $parent;
 }
 
 #=PRIVATE METHODS
