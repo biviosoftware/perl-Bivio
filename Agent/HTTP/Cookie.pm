@@ -88,12 +88,11 @@ This module puts it on the Request after extracting it from the cookie.
 
 =item u [persistent]
 
-login id (realm_id) of the authenticated user. Not set if
-"ref" or "u" is set.
+login id (realm_id) of the authenticated user.
 
 =item v [persistent]
 
-visitor_id is set only if "u" or "ref" isn't set.
+visitor_id of associated with auth user or non-user visitor.
 
 =back
 
