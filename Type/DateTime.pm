@@ -177,6 +177,18 @@ sub REGEX_CTIME {
     return '(?:\w+ )?(\w+)\s+(\d+) (\d+):(\d+):(\d+)(?: \w+)? (\d+)';
 }
 
+=for html <a name="REGEX_STRING"></a>
+
+=head2 REGEX_STRING : string
+
+Output format for L<to_string|"to_string">.  Allows optional timezone.
+
+=cut
+
+sub REGEX_STRING {
+    return '(\d+)/(\d+)/(\d{4}) (\d+):(\d+):(\d+)(?: \w+)?';
+}
+
 =for html <a name="SECONDS_IN_DAY"></a>
 
 =head2 SECONDS_IN_DAY : int
@@ -250,6 +262,7 @@ my(%_PART_NAMES) = (
 );
 my($_REGEX_CTIME) = REGEX_CTIME();
 my($_REGEX_ALERT) = REGEX_ALERT();
+my($_REGEX_STRING) = REGEX_STRING();
 my($_LOCAL_TIMEZONE);
 my($_WINDOW_YEAR);
 _initialize();
@@ -829,6 +842,22 @@ sub rfc822 {
 	    $hour, $min, $sec);
 }
 
+=for html <a name="set_end_of_month"></a>
+
+=head2 set_end_of_month(string date_time) : string
+
+Sets the the date part to end of the month.  The time part is unmodified.
+
+=cut
+
+sub set_end_of_month {
+    my($self, $date_time) = @_;
+    my($sec, $min, $hour, $day, $mon, $year) = $self->to_parts($date_time);
+    return $self->from_parts_or_die($sec, $min, $hour,
+	$self->get_last_day_in_month($mon, $year),
+	$mon, $year);
+}
+
 =for html <a name="set_local_end_of_day"></a>
 
 =head2 set_local_end_of_day(string date_time) : string
@@ -888,7 +917,8 @@ sub from_literal {
     $value =~ s/^\s+|\s+$//;
     $value =~ s/\s+/ /g;
     my($res, $err);
-    foreach my $method (\&_from_literal, \&_from_alert, \&_from_ctime) {
+    foreach my $method (
+	\&_from_literal, \&_from_alert, \&_from_ctime, \&_from_string) {
 	return ($res, $err) if &$method($proto, $value, \$res, \$err);
     }
     # unknown format
@@ -1224,6 +1254,19 @@ sub _from_literal {
     }
     return 1;
 }
+
+# _from_string(proto, string value, string_ref res, Bivio::TypeError_ref $err) : boolean
+#
+# Returns true if it matches to_string pattern.  Parses string format.
+#
+sub _from_string {
+    my($proto, $value, $res, $err) = @_;
+    my($mon, $d, $y, $h, $m, $s) = $value =~ /^$_REGEX_STRING$/o;
+    return 0 unless defined($s);
+    ($$res, $$err) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
+    return 1;
+}
+
 
 # _initialize()
 #
