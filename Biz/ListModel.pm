@@ -326,6 +326,7 @@ sub internal_load {
 	query => $query,
 	empty_properties => $empty_properties,
     };
+    $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
     $self->get_request->put(ref($self) => $self);
     return;
@@ -406,6 +407,7 @@ sub next_row {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     Carp::croak('no cursor') unless defined($fields->{cursor});
+    $self->internal_clear_model_cache;
     if (++$fields->{cursor} >= int(@{$fields->{rows}})) {
 	$fields->{cursor} = undef;
 	$self->internal_put($fields->{empty_properties});

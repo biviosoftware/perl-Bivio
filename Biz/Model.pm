@@ -32,8 +32,11 @@ L<Bivio::Biz::ListModel>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my(%_CLASS_INFO);
 
@@ -254,7 +257,11 @@ sub get_model {
     my($map) = $m->{primary_key_map};
     foreach my $pk (keys(%$map)) {
 	my($v);
-	return $mi unless defined($v = $properties->{$map->{$pk}->{name}});
+	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
+	    _trace($self, ': loading ', $m, ' missing key ',
+		    $map->{$pk}->{name}) if $_TRACE;
+	    return $mi;
+	}
 	push(@query, $pk, $v);
     }
 #TODO: SECURITY: Is this valid?
@@ -276,6 +283,22 @@ sub get_request {
     my($req) = $self->{$_PACKAGE}->{request};
     Carp::croak($self, ": request not set") unless $req;
     return $req;
+}
+
+=for html <a name="internal_clear_model_cache"></a>
+
+=head2 internal_clear_model_cache()
+
+Called to clear the cache of models.  Necessary
+when a reload occurs.
+
+=cut
+
+sub internal_clear_model_cache {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    delete($fields->{models});
+    return;
 }
 
 =for html <a name="internal_get_sql_support"></a>

@@ -60,6 +60,7 @@ sub create {
 	$new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
+    $self->internal_clear_model_cache;
     $self->internal_put($new_values);
     my($req) = $self->unsafe_get_request;
     $req->put(ref($self), $self) if $req;
@@ -151,6 +152,7 @@ sub unauth_load {
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(\%query, $self);
     return 0 unless $values;
+    $self->internal_clear_model_cache;
     $self->internal_put($values);
     # If found, put a reference to this model in request
     my($req) = $self->unsafe_get_request;
