@@ -84,6 +84,7 @@ one is written.  The others are just loaded.
 
 sub csv {
     my($self, $models, $query, $columns) = @_;
+    $self->initialize_ui;
     $self->usage('too few arguments') unless int(@_) >= 2;
 
 #TODO: Remove this ugly hack

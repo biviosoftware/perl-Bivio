@@ -329,7 +329,7 @@ C<undef>, returns false.
 sub is_name_eq_email {
     my(undef, $req, $name, $email) = @_;
     return 0 unless defined($name) && defined($email);
-    my($mail_host) = Bivio::UI::Text->get_value('mail_host', $req);
+    my($mail_host) = Bivio::UI::Facade->get_value('mail_host', $req);
 #TODO: ANY OTHER mail_host aliases?
     return $email eq $name.'@'.$mail_host
 	    || $email eq $name.'@www.'.$mail_host;
@@ -400,7 +400,7 @@ sub unauth_load_by_email {
         'Bivio::UI::Facade')->is_fully_initialized;
 
     # Strip off @mail_host and validate resulting name
-    my($mail_host) = '@'.Bivio::UI::Text->get_value('mail_host', $req);
+    my($mail_host) = '@'.Bivio::UI::Facade->get_value('mail_host', $req);
     return 0 unless $email =~ s/\Q$mail_host\E$//i;
     my($name) = Bivio::Type::RealmName->from_literal($email);
     return 0 unless defined($name);

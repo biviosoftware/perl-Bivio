@@ -92,7 +92,8 @@ sub check_transaction_batch {
     $hreq->content_type('application/x-www-form-urlencoded');
     $hreq->content('x_Login='.$_GW_LOGIN.'&x_Password='.$_GW_PASSWORD.
             '&Action=DOWNLOAD&BATCHID=NULL');
-    $hreq->referer('https://'.Bivio::UI::Text->get_value('http_host', $req));
+    $hreq->referer(
+	'https://' . Bivio::UI::Facade->get_value('http_host', $req));
     my($response) = $_USER_AGENT->request($hreq);
     my($payment) = Bivio::Biz::Model->new($req, 'ECPayment');
     foreach my $transaction (split(/\n/, $response->content)) {

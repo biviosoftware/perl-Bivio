@@ -56,7 +56,7 @@ Bivio::IO::Trace->register;
 Unpacks and stores an incoming mail message.
 Requires form fields: client_addr, recipient, message.
 
-Sets realm, user, and server_redirects to task.
+Sets facade, realm, user, and server_redirects to task.
 
 User is set from From: or Apparently-From:, in that order.
 
@@ -77,7 +77,8 @@ sub execute_ok {
 	client_addr => $self->get('client_addr'),
 	'Model.' . $self->simple_package_name => $self,
     );
-    my($name, $op) = $self->parse_recipient;
+    my($name, $op, $plus_tag, $domain) = $self->parse_recipient;
+    Bivio::UI::Facade->setup_request($domain, $req);
     _set_realm($self, $name);
     my($copy) = ${$self->get('message')->{content}};
     my($parser) = Bivio::Ext::MIMEParser->parse_data(\$copy);
@@ -150,27 +151,32 @@ sub internal_initialize {
 
 =head2 parse_recipient() : array
 
-Returns (realm, op) from recipient.  I<op> may be undef.
+Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
 
 Two addresses are parsed:
 
-   op.realm+tag
-   realm-op+tag
+   op.realm+plus_tag@domain
+   realm-op+plus_tag@domain
 
-Where +tag is like sendmail style +anything after the address.  You don't need
-+tag.
+Where +plus_tag is like sendmail style +anything after the address.  You don't
+need +plus_tag.
 
 =cut
 
 sub parse_recipient {
     my($self) = @_;
     my($to) = lc($self->get('recipient'));
-    $to =~ s/\+.*$//g;
+    $to =~ s/@(.*)$//;
+    my($domain) = $1;
+    $to =~ s/\+(.*)$//g;
+    my($plus_tag) = $1;
     my($name, $op) = $to =~ /^(\w+)(?:-([^\.]+))?$/;
     ($op, $name) = $to =~/^(?:(.+)\.)(\w+)$/
 	unless $name;
-    _trace('name: ', $name, ' op: ', $op) if $_TRACE;
-    return ($name, $op);
+    _trace('name: ', $name, ' op: ', $op, ' plus_tag: ', $plus_tag,
+	' domain: ', $domain)
+	if $_TRACE;
+    return ($name, $op, $plus_tag, $domain);
 }
 
 #=PRIVATE SUBROUTINES

@@ -446,8 +446,8 @@ sub format_email {
     $email = _deprecate_wv($self, $email, 'email') if ref($email);
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email unless defined($email);
-    $email .= '@' .Bivio::UI::Text->get_value('mail_host', $self)
-	    unless $email =~ /\@/;
+    $email .= '@' . Bivio::UI::Facade->get_value('mail_host', $self)
+	unless $email =~ /\@/;
     return $email;
 }
 
@@ -506,7 +506,7 @@ sub format_http_insecure {
     # Must be @_ so format_uri handles overloading properly
     my($uri) = $self->format_uri(@_);
     return $uri if $uri =~ s/^https:/http:/;
-    return 'http://'.Bivio::UI::Text->get_value('http_host', $self).$uri;
+    return 'http://' . Bivio::UI::Facade->get_value('http_host', $self) . $uri;
 }
 
 =for html <a name="format_http_prefix"></a>
@@ -526,7 +526,7 @@ sub format_http_prefix {
     # If is_secure is not set, default to non-secure
     return ($self->unsafe_get('is_secure') || $require_secure
 	    ? 'https://' : 'http://')
-	    .Bivio::UI::Text->get_value('http_host', $self);
+	    . Bivio::UI::Facade->get_value('http_host', $self);
 }
 
 =for html <a name="format_mailto"></a>

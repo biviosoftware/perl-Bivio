@@ -81,9 +81,7 @@ sub dev {
 	    'Bivio::UI::Facade' => {
 		local_file_root => "$pwd/files",
 		want_local_file_cache => 0,
-	    },
-	    'Bivio::UI::Text' => {
-		http_host => "$host:$http_port",
+		http_suffix => "$host:$http_port",
 		mail_host => $host,
 	    },
 	    'Bivio::Util::HTTPLog' => {
@@ -339,8 +337,8 @@ sub _base {
 	'Bivio::Type::Secret' => {
 	    key => 'alphabet',
 	},
-	'Bivio::UI::Text' => {
-	    http_host => 'localhost',
+	'Bivio::UI::Facade' => {
+	    http_suffix => 'localhost',
 	    mail_host => 'localhost',
 	},
 	$proto->merge_http_log({

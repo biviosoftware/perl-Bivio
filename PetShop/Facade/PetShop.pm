@@ -44,6 +44,8 @@ my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
     uri => 'petshop',
+    http_host => 'petshop.bivio.biz',
+    mail_host => 'bivio.biz',
     Color => {
 	initialize => sub {
 	    my($fc) = @_;
@@ -221,10 +223,6 @@ sub _task {
 #
 sub _text {
     my($t) = @_;
-
-    # This sets http_host and mail_host.  These are based on Bivio::UI::Text
-    # configured values and Request.is_production is true.
-    $t->value_host_groups;
 
     # Where to redirect to when coming in via /, i.e. http://petshop.bivio.biz
     $t->group(home_page_uri => '/pub');

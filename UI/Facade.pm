@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Inc.  All rights reserved.
+# Copyright (c) 2000-2002 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade;
 use strict;
@@ -76,6 +76,10 @@ List of component instances for this facade.
 
 The domain to use for the cookie.
 
+=item http_host : string (facade, computed)
+
+Host to create absolute URIs.  May contain a port number.
+
 =item initialize : sub (component)
 
 The initialization attribute is a C<sub> to initialize a Component.
@@ -98,6 +102,10 @@ production environment.
 Used by L<get_local_file_name|"get_local_file_name"> to create
 the absolute file name to return.  Always ends in a '/'.  Defaults
 to I<Facade.uri>.
+
+=item mail_host : string (facade, computed)
+
+Host used to create mail_to URIs.
 
 =item parent : Bivio::UI::Facade (children)
 
@@ -143,14 +151,13 @@ my(%_URI_MAP);
 my(%_COMPONENTS);
 # Simple class names sorted topologically (prereqs first)
 my(@_COMPONENTS);
-my($_DEFAULT) = 'Prod';
-# Always ends in a trailing slash
-my($_LOCAL_FILE_ROOT);
-my($_WANT_LOCAL_FILE_CACHE) = 1;
-Bivio::IO::Config->register({
-    default =>  $_DEFAULT,
+Bivio::IO::Config->register(my $_CFG = {
+    default => Bivio::IO::Config->REQUIRED,
+    # Always ends in a trailing slash
     local_file_root => Bivio::IO::Config->REQUIRED,
-    want_local_file_cache => $_WANT_LOCAL_FILE_CACHE,
+    want_local_file_cache => 1,
+    mail_host => Bivio::IO::Config->REQUIRED,
+    http_suffix => Bivio::IO::Config->REQUIRED,
 });
 my($_IS_FULLY_INITIALIZED) = 0;
 
@@ -225,12 +232,8 @@ sub new {
     my($lfp) = $config->{local_file_prefix};
     $lfp = $uri unless defined($lfp);
     my($wlfc) = $config->{want_local_file_cache};
-    $wlfc = $_WANT_LOCAL_FILE_CACHE unless defined($wlfc);
-
-    # Not in use
-    delete($config->{uri});
-    delete($config->{local_file_prefix});
-    delete($config->{want_local_file_cache});
+    $wlfc = $_CFG->{want_local_file_cache}
+	unless defined($wlfc);
 
     Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
 	    ref($_URI_MAP{$uri}))
@@ -243,11 +246,16 @@ sub new {
 	local_file_prefix => Bivio::Type::FileName->add_trailing_slash($lfp),
 	want_local_file_cache => $wlfc,
 	is_production => $config->{is_production} ? 1 : 0,
-	is_default => $_DEFAULT eq $self->simple_package_name ? 1 : 0,
+	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
 	children => {},
         cookie_domain => delete($config->{cookie_domain}),
     });
-    delete($config->{is_production});
+    _init_hosts($self, $config);
+    foreach my $x (qw(
+        uri local_file_prefix want_local_file_cache is_production
+        mail_host http_host)) {
+	delete($config->{$x});
+    }
 
     # Load all components before initializing.  This modifies @ & %_COMPONENTS.
     foreach my $comp (keys(%$config)) {
@@ -287,7 +295,7 @@ sub new_child {
     $self->internal_put({
 	(map {
 	    ($_, $parent->get($_));
-	} qw(uri local_file_prefix want_local_file_cache is_production)),
+	} qw(uri local_file_prefix want_local_file_cache is_production http_host mail_host cookie_domain)),
 	is_default => 0,
 	child_type => $type,
 	parent => $parent,
@@ -333,7 +341,7 @@ Get the default facade.
 =cut
 
 sub get_default {
-    return $_CLASS_MAP{$_DEFAULT};
+    return $_CLASS_MAP{$_CFG->{default}};
 }
 
 =for html <a name="get_from_request_or_self"></a>
@@ -404,9 +412,26 @@ sub get_local_file_name {
     my($self, $type, $name, $req) = @_;
     $self = $self->get_from_request_or_self($req)
 	    if defined($req) || !ref($self);
-    return $_LOCAL_FILE_ROOT.$self->get('local_file_prefix')
-	    .$type->get_path.$name;
+    return $_CFG->{local_file_root} . $self->get('local_file_prefix')
+	    . $type->get_path.$name;
 }
+
+=for html <a name="get_value"></a>
+
+=head2 static get_value(string name, Bivio::Collection::Attributes req_or_facade) : string
+
+Return an attribute of the current facade.
+
+=back
+
+=cut
+
+sub get_value {
+    my($proto, $name, $req_or_facade) = @_;
+    # Make a copy for safety reasons
+    return $proto->get_from_request_or_self($req_or_facade)->get($name);
+}
+
 
 =for html <a name="handle_config"></a>
 
@@ -414,16 +439,25 @@ sub get_local_file_name {
 
 =over 4
 
-=item default : string [Prod]
+=item default : string (required)
 
 The default facade class to use, if no facade is specified or
 not found.  C<Bivio::UI::Facade::> will be inserted if not
 a fully qualified class name.
 
+=item http_suffix : string (required)
+
+Host to create absolute URIs.  May contain a port number.  Used only in
+non-production mode.
+
 =item local_file_root : string (required)
 
 The root of all files (icons, documents, views) read from this hosts disks
 for all facades.
+
+=item mail_host : string (required)
+
+Host used to create mail_to URIs.
 
 =item want_local_file_cache : boolean [true]
 
@@ -441,13 +475,12 @@ For development, you probably want to set I<want_local_file_cache> to false.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_DEFAULT = $cfg->{default};
-    Bivio::Die->die($cfg->{local_file_root},
-	    ": local_file_root is not a directory")
-		unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
-    $_LOCAL_FILE_ROOT = Bivio::Type::FileName->add_trailing_slash(
-	    $cfg->{local_file_root});
-    $_WANT_LOCAL_FILE_CACHE = $cfg->{want_local_file_cache};
+    $_CFG = {%{$cfg}};
+    Bivio::Die->die($_CFG->{local_file_root},
+	": local_file_root is not a directory")
+	unless $_CFG->{local_file_root} && -d $_CFG->{local_file_root};
+    $_CFG->{local_file_root} = Bivio::Type::FileName->add_trailing_slash(
+	$_CFG->{local_file_root});
     return;
 }
 
@@ -470,16 +503,16 @@ sub initialize {
     $_INITIALIZED = 1;
 
     if ($partially) {
-	Bivio::IO::ClassLoader->map_require('Facade', $_DEFAULT);
+	Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
     }
     else {
 	Bivio::IO::ClassLoader->map_require_all('Facade');
     }
 
     # Make sure the default facade is there and was properly initialized
-    Bivio::Die->die($_DEFAULT,
+    Bivio::Die->die($_CFG->{default},
 	    ': unable to find or load default Facade')
-		unless ref($_CLASS_MAP{$_DEFAULT});
+		unless ref($_CLASS_MAP{$_CFG->{default}});
 
     Bivio::IO::ClassLoader->simple_require('Bivio::UI::Icon');
     Bivio::IO::ClassLoader->simple_require('Bivio::UI::View');
@@ -588,11 +621,11 @@ sub register {
 
 =for html <a name="setup_request"></a>
 
-=head2 static setup_request(string uri, Bivio::Collection::Attributes req) : sel
+=head2 static setup_request(string uri_or_domain, Bivio::Collection::Attributes req) : sel
 
 Sets up the request with the appropriate Facade.  Sets the attribute
-I<Bivio::UI::Facade>.  If I<uri> is not a valid Facade, writes a warning (only
-once) and uses the default Facade.
+I<Bivio::UI::Facade>.  If I<uri_or_domain> is not a valid Facade, writes a
+warning (only once) and uses the default Facade.
 
 Only outputs the warning once.
 
@@ -601,20 +634,22 @@ Returns the facade.
 =cut
 
 sub setup_request {
-    my($proto, $uri, $req) = @_;
+    my($proto, $uri_or_domain, $req) = @_;
     my($self);
-    _trace('uri: ', $uri) if $_TRACE;
-    if (defined($uri)) {
-	$uri = lc($uri);
-	$self = $_URI_MAP{$uri};
+    _trace('uri: ', $uri_or_domain) if $_TRACE;
+    if (defined($uri_or_domain)) {
+	$uri_or_domain = lc($uri_or_domain);
+	foreach my $uri ($uri_or_domain, split(/\./, $uri_or_domain)) {
+	    last if $self = $_URI_MAP{$uri};
+	}
 	unless ($self) {
-	    Bivio::IO::Alert->warn($uri, ': unknown facade uri');
+	    Bivio::IO::Alert->warn($uri_or_domain, ': unknown facade uri');
 	    # Avoid repeated errors
-	    $self = $_URI_MAP{$uri} = $_CLASS_MAP{$_DEFAULT};
+	    $self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
 	}
     }
     else {
-	$self = $_CLASS_MAP{$_DEFAULT};
+	$self = $_CLASS_MAP{$_CFG->{default}};
     }
     return _setup_request($self, $req);
 }
@@ -635,6 +670,27 @@ sub _get_class_pattern {
     $pat = $INC{$pat};
     $pat =~ s/(\.pm)$/\/*$1/;
     return $pat;
+}
+
+# _init_hosts(self, hash_ref config)
+#
+# Computes *_host based on $_CFG and $self values.
+#
+sub _init_hosts {
+    my($self, $config) = @_;
+    my($http_host, $mail_host) = Bivio::Agent::Request->is_production
+	? map({
+	    $config->{$_} || Bivio::Die->die(
+		$_, ': facade parameter missing in production');
+	} qw(http_host mail_host))
+	: map({
+	    ($self->get('is_default') ? '' : $self->get('uri') . '.') . $_;
+	} @{$_CFG}{qw(http_suffix mail_host)});
+    $self->put(
+	http_host => $http_host,
+	mail_host => $mail_host,
+    );
+    return;
 }
 
 # _initialize(Bivio::UI::Facade self, hash_ref config, Bivio::UI::Facade clone)

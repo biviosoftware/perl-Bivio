@@ -77,6 +77,18 @@ sub vs_html {
 	'->get_value', $attr];
 }
 
+=for html <a name="vs_mail_host"></a>
+
+=head2 vs_mail_host() : array_ref
+
+Returns a widget value for mail_host.
+
+=cut
+
+sub vs_mail_host {
+    return [['->get_request'], 'Bivio::UI::Facade', 'mail_host'];
+}
+
 =for html <a name="vs_text"></a>
 
 =head2 vs_text(string tag_part, ...) : array_ref

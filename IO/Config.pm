@@ -307,8 +307,8 @@ For example, your I<bconf> file might be defined as follows:
     use strict;
     use OurSite::BConf;
     OurSite::BConf->merge({
-	'Bivio::UI::Text' => {
-	    http_host => 'myhost.oursite.com:8888',
+	'Bivio::UI::Facade' => {
+	    http_suffix => 'myhost.oursite.com:8888',
 	    mail_host => 'myhost.oursite.com',
 	},
 	'Bivio::UI::FacadeComponent' => {
@@ -327,9 +327,9 @@ configuration, which will be overridden by the custom configuration above:
 		# just return "undef" configuration.
 		die_on_error => 0,
 	    },
-	    'Bivio::UI::Text' => {
-		http_host => 'www.oursite.com',
-		mail_host => 'www.oursite.com',
+	    'Bivio::UI::Facade' => {
+		http_suffix => 'www.oursite.com',
+		mail_host => 'oursite.com',
 	    },
 	    'Bivio::Die' => {
 		stack_trace_error => 1,

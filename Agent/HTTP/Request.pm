@@ -225,7 +225,7 @@ sub format_http_toggling_secure {
     my($self) = @_;
     my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
 	    qw(is_secure r redirect_count uri query));
-    my($host) = Bivio::UI::Text->get_value('http_host', $self);
+    my($host) = Bivio::UI::Facade->get_value('http_host', $self);
 
     # This is particularly strange.  FormModel deletes the incoming
     # query context.   If we haven't internally redirected, we use
