@@ -472,7 +472,7 @@ sub _sortable_subject {
     return $subject . $reply_marker;
 }
 
-# _to_date(string date) : string
+# _to_date(array_ref date) : string
 #
 # gets an array of elements, each corresponding to
 # parts of the date stripped out of a line;
@@ -483,6 +483,10 @@ sub _to_date {
     my($date) = @_;
 #TODO: This actually is incorrect, because day of week is optional
 #      so may have N or N+1 parts depending on sender
+
+#probably don't need this method, anyway, as I can use get_dttm on
+#mail incoming.
+
     my($d) = $date->[2].' ';
 #TODO: Is this right?
     $d .= $date->[1] =~ /\d\d/ ? $date->[1] : '0' . $date->[1];
