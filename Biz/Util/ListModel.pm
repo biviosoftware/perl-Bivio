@@ -3,6 +3,7 @@
 package Bivio::Biz::Util::ListModel;
 use strict;
 $Bivio::Biz::Util::ListModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Util::ListModel::VERSION;
 
 =head1 NAME
 
@@ -65,24 +66,43 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="csv"></a>
 
-=head2 csv(string model, string query) : string_ref
+=head2 csv(string model, string query, string columns) : string_ref
 
-Generate CSV from list model.
+=head2 static csv(Bivio::Biz::ListModel models, string query, string columns) : string_ref
+
+Generate CSV from list model.  If I<models> is a list, only the last
+one is written.  The others are just loaded.
 
 =cut
 
 sub csv {
-    my($self, $model, $query) = @_;
+    my($self, $models, $query, $columns) = @_;
     $self->usage('incorrect arguments') unless int(@_) >= 2;
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    $model = Bivio::Biz::Model->get_instance($model)->new($req);
-    die(ref($model), ': is not a ListModel')
-	    unless $model->isa('Bivio::Biz::ListModel');
-    $model->load_all(Bivio::Agent::HTTP::Query->parse($query || ''));
-    my($cols) = [sort {
-	$a->{name} cmp $b->{name};
-    } values(%{$model->get_info('columns')})];
+    my($model) = $models;
+    unless (ref($model)) {
+	foreach my $model_name (split(/[,\s]+/, $models)) {
+	    $model = Bivio::Biz::Model->new($self->get_request, $model_name);
+	    die(ref($model), ': is not a ListModel')
+		    unless $model->isa('Bivio::Biz::ListModel');
+	    $model->load_all(Bivio::Agent::HTTP::Query->parse($query || ''));
+	}
+    }
+    my($cols) = $columns ?
+	    [
+		map {
+		    {
+			name => $_,
+			type => $model->get_field_info($_, 'type'),
+		    }
+		} (split(/[,\s]+/, $columns))
+	    ]
+	    : [
+		sort {
+		    $a->{name} cmp $b->{name};
+		} values(%{$model->get_info('columns')})
+	    ];
     my($res) = join(',', map {$_->{name}} @$cols)."\n";
+    $model->reset_cursor;
     while ($model->next_row) {
 	foreach my $c (@$cols) {
 	    my($cell) = $c->{type}->to_string($model->get($c->{name}));
