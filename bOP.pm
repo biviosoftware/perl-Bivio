@@ -27,7 +27,7 @@ use Bivio::UNIVERSAL;
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
-cohesive infrastructure for any Perl application.
+cohesive infrastructure for any Perl application. 
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.9  2002/04/01 22:53:22  nagler
+  * Added RPM specfile: Bivio-bOP.spec
+  * Some bug fixes
+
+  Revision 1.8  2002/02/21 00:54:42  nagler
+  * Bivio::Biz::ListModel->internal_post_load_row now returns a boolean,
+    which allows lists to delete rows on iteration and loads.
+  * Bivio::ShellUtil->piped_exec_remote uses ssh to execute remote calls
     like piped_exec
   * Added Bivio:::SQL::Connection->get_dbi_config
   * Fixed installation bugs (thanks Bob Sidebotham <bob@organic-connect.com>)
