@@ -79,7 +79,7 @@ sub t {
 }
 
 my($t1) = Bivio::Type::Enum::T1->E0;
-t($t1->MIN eq $t1->E0 && $t1->MAX eq $t1->E2);
+t($t1->MIN == $t1->E0 && $t1->MAX == $t1->E2);
 t($t1->CAN_BE_ZERO && $t1->CAN_BE_POSITIVE && !$t1->CAN_BE_NEGATIVE);
 t($t1->WIDTH == 2);
 t($t1->PRECISION == 1);
@@ -88,7 +88,7 @@ my($i);
 my($not_done) = 3;
 foreach $i (0..2) {
     my($e) = 'E' . $i;
-    $t1->from_int($i) eq $t1->$e() || last;
+    $t1->from_int($i) == $t1->$e() || last;
     $t1->from_any($e)->as_int == $i || last;
     $t1->$e()->as_string eq (ref($t1).'::'.$e) || last;
     $t1->$e()->get_short_desc eq lc($e) || last;
