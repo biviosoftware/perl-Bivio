@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * b-realm-admin invalidate_password (Bivio::Util::RealAdmin) invalidates the
+    auth_user's password.
+  * Removed assertion in b-realm-admin reset_password for realm
+
+  Revision 1.78  2003/09/09 17:52:19  nagler
+  * Bivio::UI::HTML::Widget::ListActions->new accepts an array_ref for values
+    and labels are wrapped as a String if not already a Widget
+  * Bivio::Biz::ListModel.other_query_keys allows models to specify
+    keys to be included in ListQuery instance attributes
+  * Bivio::Biz::Model->iterate_map lets you iterate over a model and
     apply a function which returns an array_ref (similar to map).
   * Bivio::Biz::PropertyModel->execute_unauth_load_this supports
     model loading from tasks without "auth_id".
