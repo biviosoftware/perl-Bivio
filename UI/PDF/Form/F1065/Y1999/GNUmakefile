@@ -1,7 +1,7 @@
 .PHONEY:	clean
 
 top=../../..
-forms= Formf1065.pm Formf1065Draft.pm
+forms= Formf1065.pm
 class_prefix=Bivio::UI::PDF::Form::F1065::Y1999::Form
 parent=Bivio::UI::PDF::Form::Form
 modules=  \
