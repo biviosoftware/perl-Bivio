@@ -10,17 +10,7 @@ Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
 =head1 SYNOPSIS
 
-    my($model) = ...;
-
-    if ($model->load(id => 500)) {
-        for (@{$model->get_field_names()}) {
-            print($_.' = '.$model->get($_)."\n");
-        }
-    }
-
-    for (1..100) {
-        $model->create({'id' => $_, 'foo' => 'xxx'});
-    }
+    use Bivio::Biz::PropertyModel;
 
 =cut
 
@@ -31,21 +21,11 @@ L<Bivio::Biz::Model>
 =cut
 
 use Bivio::Biz::Model;
-@Bivio::Biz::PropertyModel::ISA = qw(Bivio::Biz::Model);
+@Bivio::Biz::PropertyModel::ISA = ('Bivio::Biz::Model');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::PropertyModel> is the complement to L<Bivio::Biz::ListModel>
-and represents a row of data from storage. Each field is accessed by
-name using the L<"get"> method. Field type information is available
-by invoking L<"get_field_type">. PropertyModel has several
-lifecycle methods for interacting with storage: L<"create">, L<"delete">,
-and L<"update">.
-
-In general a new instance of a PropertyModel is uninitialized until a
-subsequent L<Bivio::Biz:Model/"find"> or L<"create"> is invoked. This
-allows for a single instance of a model to be reused with different
-data.
+C<Bivio::Biz::PropertyModel>
 
 =cut
 
@@ -58,51 +38,70 @@ use Carp ();
 my($_PACKAGE) = __PACKAGE__;
 # Maps classes (models) to static class information in an hash_ref
 my(%_CLASS_INFO);
+# Maps table names to singleton instances
+my(%_TABLE_TO_SINGLETON);
 
 =head1 FACTORIES
 
 =cut
 
+=for html <a name="from_table"></a>
+
+=head2 static from_table(string table) : Bivio::Biz::PropertyModel
+
+Returns a singleton (non-loadable) instance of property model from the table
+name.
+
+=cut
+
+sub from_table {
+    my($proto, $table) = @_;
+    unless ($_TABLE_TO_SINGLETON{$table}) {
+	# Create class from table.  This may have to have local mappings,
+	# but should be as simple as this.
+	my($class) = lc($table);
+	$class =~ s/(?:^|_)(\w)/\u$1/g;
+	_initialize_class_info(__PACKAGE__.'::'.$class);
+    }
+    return $_TABLE_TO_SINGLETON{$table};
+}
+
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance() : Bivio::Biz::PropertyModel
+
+Returns the singleton for this class.
+
+=cut
+
+sub get_instance {
+    my($proto) = @_;
+    my($class) = ref($proto) || $proto;
+    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    return $_CLASS_INFO{$class}->{singleton};
+}
+
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req, hash property_info) : Bivio::Biz::PropertyModel
+=head2 static new() : Bivio::Biz::PropertyModel
 
-Creates a PropertyModel with the specified request and property information.
-property_info should have the format:
-    {
-        'property-name' => ['caption', field-descriptor]
-        ...
-    }
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::PropertyModel
 
-    ex.
-    {
-	'id' => ['Internal ID',
-	      Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	'name' => ['User ID',
-	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-	'password' => ['Password',
-	      Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
-    }
+Creates a PropertyModel with the specified request.
 
-If this is the first time this class has been newed, calls
-C<internal_initialize>.
+A PropertyModel may only be loaded if I<req> is non-null.
 
 =cut
 
 sub new {
     my($proto, $req) = @_;
-    my($self) = &Bivio::Biz::Model::new($proto, $req);
-    my($class) = ref($self);
+    my($class) = ref($proto) || $proto;
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
-    my($properties) = {map {
-	    ($_, undef);
-	} @{$ci->{sql_support}->get_column_names}
-    };
+    my($self) = &Bivio::Biz::Model::new($proto, {@{$ci->{properties}}}, $req);
     $self->{$_PACKAGE} = {
 	class_info => $ci,
     };
-    $self->internal_put($properties);
     return $self;
 }
 
@@ -128,6 +127,20 @@ sub as_string {
     } $self->get(@{$ci->{as_string_fields}})) . ')';
 }
 
+=for html <a name="assert_not_singleton"></a>
+
+=head2 assert_not_singleton()
+
+Throws an exception if this is the singleton instance.
+
+=cut
+
+sub assert_not_singleton {
+    my($fields) = shift->{$_PACKAGE};
+    return unless $fields->{is_singleton};
+    Carp::croak("can't create, update, read, or delete singleton instance");
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash new_values)
@@ -140,6 +153,7 @@ this instance takes ownership of I<new_values>.  Dies on error.
 sub create {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->assert_not_singleton if $fields->{is_singleton};
     my($sql_support) = $fields->{class_info}->{sql_support};
     # Make sure all columns are defined
     my($n);
@@ -163,6 +177,7 @@ Deletes the current model from the database.   Dies on error.
 sub delete {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->assert_not_singleton if $fields->{is_singleton};
     $fields->{class_info}->{sql_support}->delete($self->internal_get, $self);
     return;
 }
@@ -230,6 +245,7 @@ L<load|"load"> call this method.
 sub unauth_load {
     my($self, %query) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->assert_not_singleton if $fields->{is_singleton};
     my($ci) = $fields->{class_info};
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $ci->{sql_support}->unsafe_load(\%query, $self);
@@ -276,6 +292,7 @@ NOTE: find should be called prior to an update.
 sub update {
     my($self, $new_values) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->assert_not_singleton if $fields->{is_singleton};
     my($properties) = $self->internal_get;
     $fields->{class_info}->{sql_support}->update($properties,
 	    $new_values, $self);
@@ -290,14 +307,25 @@ sub update {
 
 sub _initialize_class_info {
     my($class) = @_;
+    # Have here for safety to avoid infinite recursion if called badly.
+    return if $_CLASS_INFO{$class};
     my($sql_support) = $class->internal_initialize;
     my($ci) = $_CLASS_INFO{$class} = {
 	sql_support => $sql_support,
 	as_string_fields => [@{$sql_support->get_primary_key_names}],
+	# Is an array, because faster than a hash_ref for our purposes
+	properties => [map {
+		($_, undef);
+	    } @{$sql_support->get_column_names},
+	],
     };
     unshift(@{$ci->{as_string_fields}}, 'name')
 	    if $sql_support->has_columns('name')
 		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
+    # $_CLASS_INFO{$class} is sentinel to stop recursion
+    $_TABLE_TO_SINGLETON{$sql_support->get_table_name}
+	    = $ci->{singleton} = $class->new;
+    $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
     return;
 }
 
