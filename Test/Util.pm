@@ -45,11 +45,7 @@ which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 
 =head2 USAGE : string
 
-Returns:
- usage: b-test [options] command [args...]
- commands:
-    acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
-    unit tests/dirs... -- runs the tests (*.t) and print cummulative results
+Returns usage.
 
 =cut
 
@@ -58,22 +54,32 @@ sub USAGE {
 usage: b-test [options] command [args...]
 commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
+    nightly -- runs all acceptance tests with current tests from CVS
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
     task name query path_info -- executes task in context supplied returns output
 EOF
 }
 
 #=IMPORTS
+use Bivio::Die;
+use Bivio::IO::File;
+use Bivio::IO::File;
 use Bivio::IO::Trace;
 use Bivio::Test::Language;
+use Bivio::Test;
+use Bivio::Type::DateTime;
 use File::Find ();
 use File::Spec ();
-use Bivio::IO::File;
-use Bivio::Test;
+use Bivio::IO::Config;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+Bivio::IO::Config->register({
+    nightly_output_dir => '/home/testsuite',
+    nightly_cvs_dir => 'perl/Bivio/PetShop/Test',
+});
+my($_CFG);
 
 =head1 METHODS
 
@@ -109,6 +115,54 @@ EOF
 	}
 	return $ok;
     });
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item nightly_output_dir : string ['/home/testsuite']
+
+=item nightly_cvs_dir : string ['perl/Bivio/PetShop/Test']
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
+=for html <a name="nightly"></a>
+
+=head2 nightly()
+
+Creates test directory, calls cvs update to get latest test files.
+Runs all acceptance tests.
+Output is to STDERR.
+
+=cut
+
+sub nightly {
+    my($self) = @_;
+    my($old_pwd) = Bivio::IO::File->pwd;
+    _make_nightly_dir($self);
+    my($die) = Bivio::Die->catch(sub {
+        # CVS checkout
+        system('cvs -Q checkout ' . $_CFG->{nightly_cvs_dir});
+        $self->print("Completed CVS checkout of test files\n");
+        Bivio::IO::File->chdir($_CFG->{nightly_cvs_dir});
+        $self->print($self->acceptance('.'));
+        return;
+    });
+    # Restore state before die is rethrown
+    Bivio::IO::File->chdir($old_pwd);
+    $die->throw if $die;
+    return;
 }
 
 =for html <a name="task"></a>
@@ -193,6 +247,23 @@ sub _find_files {
 	}},
 	@$args);
     return ($self, $tests);
+}
+
+# _make_nightly_dir()
+#
+# Makes the directory in which nightly() executes and leaves testsuite
+# log files.
+#
+sub _make_nightly_dir {
+    my($self) = @_;
+    my($dir) = $_CFG->{nightly_output_dir} . '/'
+        . Bivio::Type::DateTime->local_now_as_file_name;
+    Bivio::Die->die($dir, ': dir exists; move out of the way')
+        if -d $dir;
+    Bivio::IO::File->mkdir_p($dir);
+    Bivio::IO::File->chdir($dir);
+    $self->print("Created $dir\n");
+    return;
 }
 
 # _run(self, hash_ref tests, code_ref action)
