@@ -124,7 +124,7 @@ sub AUTOLOAD {
 
 =head2 static eval(Bivio::UI::View view) : Bivio::Die
 
-Compiles I<view.view_file_name>.
+Compiles I<view.view_file_name> or I<view.view_code> (if defined).
 
 Returns C<undef> on success.  Returns die instance on failure.
 
@@ -408,7 +408,8 @@ sub _eval_view {
     my($old_current) = $_VIEW_IN_EVAL;
     $_VIEW_IN_EVAL = $view;
     my($die) = Bivio::Die->catch(sub {
-	my($code) = Bivio::IO::File->read($view->get('view_file_name'));
+	my($code) = $view->unsafe_get('view_code')
+	    || Bivio::IO::File->read($view->get('view_file_name'));
 	_eval_code($code);
 	_initialize($view);
 	return;

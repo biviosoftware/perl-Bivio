@@ -301,9 +301,11 @@ sub compile_die {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(string view_name, Bivio::Agent::Request req) : boolean
+=head2 static execute(any view_name, Bivio::Agent::Request req) : boolean
 
-Executes view identified by I<name> and puts result on reply of I<req>.
+Executes view identified by I<view_name> and puts result on reply of I<req>.
+If I<view_name> is a string_ref, saves as I<view_code> and assigns
+anonymous values to view_name and view_file_name attributes.
 
 Always returns false.
 
@@ -423,7 +425,7 @@ sub _clean_name {
     return;
 }
 
-# _get_instance(proto, string view_name, Bivio::Collection::Attributes req_or_facade) : Bivio::UI::View
+# _get_instance(proto, any view_name, Bivio::Collection::Attributes req_or_facade) : Bivio::UI::View
 #
 # Returns an instance of view_name for this facade.  req_or_facade may
 # be undef iwc $_CURRENT_FACADE is used.
@@ -432,32 +434,40 @@ sub _get_instance {
     my($proto, $view_name, $req_or_facade) = @_;
 
     # Canonicalize to help with caching and recursion checking
-    _clean_name($proto, \$view_name);
-
-    my($facade) = $req_or_facade
-	    ? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
-	    : $_CURRENT_FACADE;
-    my($view_file_name) = $facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->VIEW, $view_name).$_SUFFIX;
-
-    # In the cache and up to date?  We use the cache as a recursion
-    # sentinel
-    if ($_CACHE{$view_file_name}) {
-	my($cache) = $_CACHE{$view_file_name};
-	$proto->compile_die('called recursively') unless ref($cache);
-	return $cache;
+    my($code, $view_file_name);
+    if (ref($view_name) eq 'SCALAR') {
+	$code = $view_name;
+	$view_file_name = $view_name = '<inline>';
     }
+    else {
+	_clean_name($proto, \$view_name);
+    }
+    my($facade) = $req_or_facade
+	? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
+	: $_CURRENT_FACADE;
 
-    Bivio::Die->throw('NOT_FOUND', {
-	message => 'view file not found',
-	entity => $view_file_name,
-	facade => $facade,
-	view => $view_name,
-    }) unless -r $view_file_name && -f _;
+    unless ($code) {
+	$view_file_name = $facade->get_local_file_name(
+	    Bivio::UI::LocalFileType->VIEW, $view_name).$_SUFFIX;
+	# In the cache and up to date?  We use the cache as a recursion
+	# sentinel
+	if (!$code && $_CACHE{$view_file_name}) {
+	    my($cache) = $_CACHE{$view_file_name};
+	    $proto->compile_die('called recursively') unless ref($cache);
+	    return $cache;
+	}
+	Bivio::Die->throw('NOT_FOUND', {
+	    message => 'view file not found',
+	    entity => $view_file_name,
+	    facade => $facade,
+	    view => $view_name,
+	}) unless -r $view_file_name && -f _;
+    }
 
     my($self) = $proto->new({
 	view_name => $view_name,
 	view_file_name => $view_file_name,
+	$code ? (view_code => $code) : (),
     });
 
     # Set global state. We use the cache as a recursion sentinel, too.
@@ -480,7 +490,8 @@ sub _get_instance {
 	$die->throw;
 	# DOES NOT RETURN
     }
-    $_CACHE{$view_file_name} = $self if $facade->get('want_local_file_cache');
+    $_CACHE{$view_file_name} = $self
+	if !$code && $facade->get('want_local_file_cache');
     return $self;
 }
 
