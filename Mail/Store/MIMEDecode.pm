@@ -298,7 +298,9 @@ sub _parse_mime {
 # _parse_msg_line(scalar line)
 #
 # Called for each line of a MIME part that is text/plain.
-#
+# This method also calls _strip_html_tags, which modifies
+# its string ref and the $fields->{multi_line_flag}
+# 
 sub _parse_msg_line {
     my($str, $fields) = @_;
     my($keywords) = $fields->{keywords};
@@ -307,30 +309,44 @@ sub _parse_msg_line {
 	_trace('line is zero length, ignoring') if $_TRACE;
 	return;
     }
-#TODO: Handle multi-line tags.
+
+    #modifies both the string ref and $fields->{multi_line_flag}:
+    _strip_html_tags(\$str, $fields);
+
     $str =~ s/--//g;
     $str = lc($str);
-    $str =~ s/\&[a-z]//g;
-    $str =~ s/\<.*\>//g;
-    #stripped out <...> tags. If there's a lone '<' we
-    #are likely starting a multiline tag
-    if ($str =~ s/\<[a-z][A-Z]*//g) { 
-	$multiline = 1;
-    }
-    if ($str =~ s/.*\>//g ) {
-	$multiline = 0;
-    }
-    if(!$multiline){
-	$str =~ s/[.]\s//g;
-	$str =~ s/[!#%^&*,();:\t\[\]]//g;
-	# Strip leading spaces so split works nicely.
-	$str =~ s/^\s+//;
+    $str =~ s/\&[a-z][A-Z]//g;
+    $str =~ s/[.]\s//g;
+    $str =~ s/[!#%^&*,();:\t\[\]]//g;
+    _trace('stripped line is "', $str, '"') if $_TRACE;
+    $str =~ s/^\s+//;
 	my($w);
 	foreach $w (split(/\s+/, $str)) {
 	    $keywords->{$w}++;
-	}
+#	}
     }
     return;
+}
+
+# _strip_html_tags(string_ref str) : 
+#
+# Strips out HTML tags. Note that this method uses the
+# multiline_flag variable to handle multiple line tags.
+#
+sub _strip_html_tags {
+    my($str, $fields) = @_;
+    my($multi_line) = $fields->{multi_line_flag};
+    $$str =~ s/\<.*\>//g;
+    if($multi_line eq(1)){
+	$$str =~ s/.*\>//g;
+    }
+    if($$str =~ s/\<.*$//g){
+	$fields->{multi_line_flag} = 1;
+    }
+    else {
+	$fields->{multi_line_flag} = 0;
+    }
+    return $$str;
 }
 
 # _write_entity_to_file(hash_ref fields, MIME::Entity entity, string file_name)
