@@ -34,6 +34,7 @@ and delete interface to the C<club_t> table.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Accounting::Ratio;
 use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MemberTransactionList;
@@ -74,6 +75,8 @@ my($_COUNT_ALL_WHERE_CLAUSE) =
         .Bivio::Auth::RealmType::CLUB()->as_sql_param;
 my($_MEMBER_ROLES) = Bivio::Biz::Model::RealmUser::MEMBER_ROLES();
 $_MEMBER_ROLES = Bivio::Auth::RoleSet->to_sql_list(\$_MEMBER_ROLES);
+my($_COUNT_ALL_MEMBERS_RATIO);
+_compute_count_all_members_ratio();
 
 =head1 METHODS
 
@@ -133,7 +136,7 @@ sub count_all {
 
 =for html <a name="count_all_members"></a>
 
-=head2 static count_all_members(Bivio::Agent::Request req) : int
+=head2 static count_all_members(Bivio::Agent::Request req) : Bivio::Type::Amount
 
 Returns the total number of members of L<count_all|"count_all"> clubs.
 
@@ -141,12 +144,12 @@ Returns the total number of members of L<count_all|"count_all"> clubs.
 
 sub count_all_members {
     my($proto, $req) = @_;
-    return Bivio::SQL::Connection->execute_one_row(
-	    "SELECT count(DISTINCT user_id)
-            FROM realm_user_t, realm_owner_t
-            WHERE role IN $_MEMBER_ROLES
-            AND realm_user_t.realm_id = realm_owner_t.realm_id
-            AND $_COUNT_ALL_WHERE_CLAUSE")->[0];
+    return Bivio::Type::Amount->round(
+	    $_COUNT_ALL_MEMBERS_RATIO->multiply(
+		    Bivio::SQL::Connection->execute_one_row(
+			    "SELECT count(user_id)
+                            FROM realm_user_t")->[0]),
+	    0);
 }
 
 =for html <a name="delete_instruments_and_transactions"></a>
@@ -390,6 +393,25 @@ sub rename {
 }
 
 #=PRIVATE METHODS
+
+# _compute_count_all_members_ratio()
+#
+# This value is computed once at server startup.
+#
+sub _compute_count_all_members_ratio {
+    $_COUNT_ALL_MEMBERS_RATIO = Bivio::Biz::Accounting::Ratio->new(
+	    Bivio::SQL::Connection->execute_one_row(
+		"SELECT count(DISTINCT user_id)
+                FROM realm_user_t, realm_owner_t
+                WHERE role IN $_MEMBER_ROLES
+                AND realm_user_t.realm_id = realm_owner_t.realm_id
+                AND $_COUNT_ALL_WHERE_CLAUSE")->[0],
+	    Bivio::SQL::Connection->execute_one_row(
+	        "SELECT count(user_id)
+                FROM realm_user_t")->[0]);
+    _trace($_COUNT_ALL_MEMBERS_RATIO) if $_TRACE;
+    return;
+}
 
 # _delete_all(string realm_id, string table, ...)
 #
