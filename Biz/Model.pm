@@ -148,6 +148,19 @@ sub new_anonymous {
     return $self;
 }
 
+=for html <a name="new_other"></a>
+
+=head2 new_other(string class) : Bivio::Biz::Model
+
+Creates a model instance of the specified class.
+
+=cut
+
+sub new_other {
+    my($self, $class) = @_;
+    return $self->get_instance($class)->new($self->get_request);
+}
+
 =head1 METHODS
 
 =cut
