@@ -51,6 +51,10 @@ Only valid if I<value> is not a widget.
 
 Number of non-breaking spaces to pad on the left.
 
+=item pad_right : int [0]
+
+Number of non-breaking spaces to pad on the right.
+
 =item string_font : string [] (inherited, dynamic)
 
 The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
@@ -131,6 +135,8 @@ sub initialize {
     $fields->{escape} = $self->get_or_default('escape_html', 1);
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
+    my($pad_right) = $self->get_or_default('pad_right', 0);
+    $fields->{suffix} = $pad_right > 0 ? ('&nbsp;' x $pad_right) : '';
 
     # Formatter
     my($f) = $self->unsafe_get('format', 0);
@@ -212,7 +218,7 @@ sub render {
     # for performance reasons.
     my($p, $s) = $fields->{font} ? Bivio::UI::Font->format_html(
 	    $fields->{font}, $source->get_request) : ('', '');
-    $$buffer .= $p.$fields->{prefix}.$b.$s;
+    $$buffer .= $p.$fields->{prefix}.$b.$fields->{suffix}.$s;
     return;
 }
 
