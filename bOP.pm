@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+# Copyright (c) 2001-2002 bivio Software Artisans, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version (1.05)
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    like piped_exec
+  * Added Bivio:::SQL::Connection->get_dbi_config
+  * Fixed installation bugs (thanks Bob Sidebotham <bob@organic-connect.com>)
+
+  Revision 1.7  2002/01/23 04:54:23  nagler
+  * License Change: We changed the license to LGPL.
+  * Changed instance data to array_ref from hash_ref for efficiency and
+    more type safety (See Bivio::UNIVERSAL)
+  * Added support for SQL "IN ()" for PropertyModel iterators
     and load queries.  Bivio::Type->to_sql_param_list is called by
     Bivio::SQL::PropertySupport if the query value is an array_ref.
   * Bug fixes.
@@ -62,7 +71,7 @@ http://www.bivio.biz for more info.
 
 =cut
 
-Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+Copyright (c) 2001-2002 bivio Software Artisans, Inc.  All Rights reserved.
 
 =head1 COPYRIGHT
 
