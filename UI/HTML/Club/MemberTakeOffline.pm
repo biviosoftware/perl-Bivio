@@ -97,11 +97,13 @@ sub _page_member {
     return $self->form('MemberOfflineForm', [],
 	    {
 		header => $self->join(
-			'Would you like to take the following Member offline?',
+			'Would you like to take the following '
+			.'Member offline? ',
+			$self->whats_this('CLUB_MEMBER_TAKE_OFFLINE'),
 			$self->indent($self->string(['member_info'])),
 			'<p>',
 			'If you wish to bring them online again, select '
-			.'bring online in the member roster.'
+			.'bring online in the member roster.',
 		       ),
 	    }
 	   );
@@ -116,7 +118,8 @@ sub _page_self {
     return $self->form('MemberOfflineForm', [],
 	    {
 		header => $self->join(
-			'Are you sure you want to take yourself offline?',
+			'Are you sure you want to take yourself offline? ',
+			$self->whats_this('CLUB_MEMBER_TAKE_OFFLINE'),
 			'<p>',
 			'You will remain a bivio member but will not be able'
 			.' to access this club.  If you wish to regain access,'
