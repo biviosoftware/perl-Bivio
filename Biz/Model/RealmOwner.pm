@@ -376,12 +376,17 @@ EOF
 #TODO: ugh - consider consolidating SHARES_AS_CASH types
 		&& ($type == Bivio::Type::EntryType
 			->INSTRUMENT_SPLIT_SHARES_AS_CASH->as_int()
-		    || $type == Bivio::Type::EntryType
-			->INSTRUMENT_SPINOFF_SHARES_AS_CASH->as_int()
-		    || $type == Bivio::Type::EntryType
-			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())) {
+#TODO: whoa! removed these, definitely not consistent here.
+# the import is going to have to do a better job here
+# probably want to adjust instrument split cost
+#		    || $type == Bivio::Type::EntryType
+#			->INSTRUMENT_SPINOFF_SHARES_AS_CASH->as_int()
+#		    || $type == Bivio::Type::EntryType
+#			->INSTRUMENT_MERGER_SHARES_AS_CASH->as_int())
+	       )) {
 	    $pair->[0] = Bivio::Type::Amount->add($pair->[0], $cost);
 	}
+
 	if ($basis) {
 	    $pair->[1] = Bivio::Type::Amount->add($pair->[1], $count);
 	}
