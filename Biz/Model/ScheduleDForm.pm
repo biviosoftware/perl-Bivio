@@ -43,7 +43,23 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 execute_empty()
 
-Loads all fields.
+Loads the form values.
+
+1065 Schedule D
+
+  name    Club.RealmOwner.display_name
+  id      Club.TaxId.tax_id
+   1      InstrumentSaleGainList-STCG
+            description acquisition_date sell_date sales_price cost_basis gain
+            ...
+            ScheduleDForm.total_stcg
+   5      ScheduleDForm.net_stcg
+   6      InstrumentSaleGainList-LTCG
+            description acquisition_date sell_date sales_price cost_basis gain
+            ...
+            ScheduleDForm.total_ltcg
+  10      ScheduleDForm.gain_distributions
+  12      ScheduleDForm.net_ltcg
 
 =cut
 
@@ -53,16 +69,11 @@ sub execute_empty {
     my($properties) = $self->internal_get;
 
     my($list) = $req->get('Bivio::Biz::Model::InstrumentSaleList');
-    my($stcg) = $req->get($list->get_request_key(
-	    Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN()));
-    my($ltcg) = $req->get($list->get_request_key(
-	    Bivio::Type::TaxCategory::LONG_TERM_CAPITAL_GAIN()));
-
-    # need to separate the cash distributions from sales
-    # cash distributions are included with net LTCG
-    my($stcg_sum, $stcg_dist) = _get_sum_and_dist($stcg);
-    my($ltcg_sum, $ltcg_dist) = _get_sum_and_dist($ltcg);
-    my($dist) = Bivio::Type::Amount->add($stcg_dist, $ltcg_dist);
+    my($stcg_sum) = _get_sum($req->get($list->get_request_key(
+	    Bivio::Type::TaxCategory::SHORT_TERM_CAPITAL_GAIN())));
+    my($ltcg_sum) = _get_sum($req->get($list->get_request_key(
+	    Bivio::Type::TaxCategory::LONG_TERM_CAPITAL_GAIN())));
+    my($dist) = $list->get_gain_distributions;
 
     $properties->{total_stcg} = $stcg_sum;
     $properties->{net_stcg} = $stcg_sum;
@@ -115,25 +126,15 @@ sub internal_initialize {
 
 #=PRIVATE METHODS
 
-# _get_sum_and_dist(Bivio::Biz::Model::InstrumentSaleList list) : (string, string)
+# _get_sum(Bivio::Biz::Model::InstrumentSaleList list) : string
 #
-# Returns the sum of the list, with any distribution separate.
+# Returns the sum specified of the list, with any distribution separate.
 #
-sub _get_sum_and_dist {
+sub _get_sum {
     my($list) = @_;
     my($summary) = $list->get_summary;
     $summary->next_row;
-    my($gain) = $summary->get('gain');
-
-    my($dist) = 0;
-    $list->reset_cursor;
-    while ($list->next_row) {
-	if ($list->is_distribution) {
-	    $dist = $list->get('gain');
-	    $gain = Bivio::Type::Amount->sub($gain, $dist);
-	}
-    }
-    return ($gain, $dist);
+    return $summary->get('gain');
 }
 
 =head1 COPYRIGHT
