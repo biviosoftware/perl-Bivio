@@ -137,14 +137,15 @@ sub find_row {
     my($found_row);
     $self->do_rows($table_name,
 	sub {
-	    my($row, $index) = @_;
+	    my($row) = @_;
 	    return 1
 		unless $row->{$column_name}->get('text') eq $column_value;
 	    $found_row = $row;
 	    return 0;
 	});
     return $found_row || Bivio::Die->die(
-	$column_value, ': not found in column "', $column_name, '"');
+	$column_value, ': not found in column ', $column_name,
+    );
 }
 
 =for html <a name="get_by_headings"></a>
