@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::UI::HTML::Widget::Grid.id attribute added
+  * Bivio::UI::Task->format_uri defaults to realmless_uri if realm not
+    supplied, but is required
+
+  Revision 1.36  2002/12/21 05:29:11  nagler
+  * b-sendmail-http strips +.* off names before passing to local delivery agent
+  * Bivio::Biz::ExpandableListFormModel adds more context on
+    server_redirect (works with forms with query strings and path_info)
+  * Bivio::Biz::Model::MailReceiveDispatchForm->parse_recipient strips
+    +.* from name
+  * Bivio::Biz::Model::UserLoginForm->substitute_user redirects to su_task
+    if exists or ADM_SUBSTITUTE_USER if not
+  * Bivio::Biz::Util::ListModel->csv (b-list-model csv) iterates list
     if can_iterate, so can handle lists larger than MAX_SIZE
   * Bivio::Util::LinuxConfig->disable_service ignores errors
   * Bivio::Util::Release file exclude test ignores errors when no files
