@@ -474,6 +474,7 @@ _compile(\%_MAP, [
 	help_topic => 'Adding Members and Guests',
     ],
     CLUB_ADMIN_MEMBER_DELETE => 'Member Delete',
+    CLUB_ADMIN_MEMBERS_MERGE => 'Merge Members',
     CLUB_ADMIN_PREFERENCES_EDIT => [
 	'' => 'Edit Club Configuration',
 	help_topic => 'Club Configuration',
