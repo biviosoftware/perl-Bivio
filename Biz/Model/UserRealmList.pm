@@ -55,6 +55,7 @@ sub internal_initialize {
     return {
 	version => 1,
 	other => [qw(
+            RealmOwner.name
 	    RealmUser.role
 	    RealmOwner.realm_type
 	)],
