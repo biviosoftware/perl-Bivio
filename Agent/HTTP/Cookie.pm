@@ -100,8 +100,7 @@ cookies are not returned with a domain (normal for testing).
 
 =item key : string (required)
 
-If defined, the content of the cookie will be encrypted.  Otherwise,
-the cookie will be sent in plain text (url encoded).
+How to encrypt the cookie.
 
 =item tag : string ['D']
 
@@ -118,7 +117,7 @@ sub handle_config {
     Carp::croak("$cfg->{domain}: domain must have two dots in it")
 		unless !$cfg->{domain} || $cfg->{domain} =~ /\..*\./;
     $_DOMAIN = $cfg->{domain};
-    $_CIPHER = $cfg->{key} ? Crypt::CBC->new($cfg->{key}, 'IDEA') : undef;
+    $_CIPHER = Crypt::CBC->new($cfg->{key}, 'IDEA');
     $_TAG = uc($cfg->{tag});
     return;
 }
@@ -147,8 +146,7 @@ sub parse {
 		_trace('tag from another server: ', $k) if $_TRACE;
 		next;
 	    }
-	    my($s) = $_CIPHER ? $_CIPHER->decrypt_hex($v) :
-		    Bivio::Util::unescape_uri($v);
+	    my($s) = $_CIPHER->decrypt_hex($v);
 	    my(@v) = split(/$;/, $s);
 	    # Make sure we have an even number of elements
 	    push(@v, '') if int(@v) % 2;
@@ -224,9 +222,7 @@ sub set {
     # remove trailing $;
     chop($cs);
     # encrypt and store as value
-    $s = "$_TAG="
-	    .($_CIPHER ? $_CIPHER->encrypt_hex($cs) :
-		    Bivio::Util::escape_uri($cs)).'; '.$s;
+    $s = "$_TAG=".$_CIPHER->encrypt_hex($cs).'; '.$s;
     # No expiry means not saved in cookies file on disk
     $r->header_out('Cache-Control', 'no-cache=set-cookie');
     $r->header_out('Set-Cookie', $s);
