@@ -141,7 +141,7 @@ sub execute {
 	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::LIST(),
 #	    want_page_search => 1,
-	    list_model => $req->get('Bivio::Biz::Model::MailList'),
+	    list_model => $list,
 	    list_uri => $req->format_uri($req->get('task_id'), undef),
 	    detail_uri => $req->format_uri(
 		    Bivio::Agent::TaskId::CELEBRITY_MESSAGE_DETAIL(),

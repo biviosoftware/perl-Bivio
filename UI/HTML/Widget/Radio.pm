@@ -123,14 +123,14 @@ sub render {
 
     # first render initialization
     unless ($fields->{initialized}) {
-	$fields->{prefix} = '<nobr><input name=';
+	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'
 		.$value->to_html($value)
 		."\""
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
-		.">\n&nbsp;"
+		.">&nbsp;"
 		.$_FONT_PREFIX. Bivio::Util::escape_html($self->get('label'))
-		.$_FONT_SUFFIX.'</nobr>';
+		.$_FONT_SUFFIX;
 	$fields->{initialized} = 1;
     }
 

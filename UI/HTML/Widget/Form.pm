@@ -58,7 +58,7 @@ before rendering.
 
 Renders the C<FORM> end tag if true.
 
-=item form_class : Bivio::Biz::FormModel [*computed*] (inherited)
+=item form_class : Bivio::Biz::FormModel (inherited)
 
 This value is computed from I<form_model> if it can be.  It
 also be set.
@@ -67,7 +67,7 @@ also be set.
 
 The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref [*computed*] (required, inherited)
 
 B<DEPRECATED>. Which form are we dealing with.
 Use I<form_class>.
@@ -144,7 +144,6 @@ sub initialize {
 	$self->put(form_class => $class);
     }
     elsif ($class) {
-	# DEPRECATED
 	$model = [$class];
 	$self->put(form_model => $model);
     }
