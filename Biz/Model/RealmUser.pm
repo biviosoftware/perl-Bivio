@@ -217,7 +217,8 @@ sub cascade_delete {
 Changes all tables owned in the current realm by this user to the specified
 user id.
 
-If 'include_k1' is true, then the member's TaxK1 record will be moved.
+If 'include_k1' is true, then the member's TaxK1 record and member
+allocations will be moved.
 
 =cut
 
@@ -226,7 +227,19 @@ sub change_ownership {
     my($req) = $self->get_request;
 
     my(@tables) = qw(member_entry_t realm_transaction_t file_t realm_invite_t);
-    push(@tables, 'tax_k1_t', 'member_allocation_t') if $include_k1;
+
+    if ($include_k1) {
+	# replace the k-1 and allocations info
+	foreach my $table (qw(tax_k1_t member_allocation_t)) {
+	    # delete any existing tax info for target user
+	    Bivio::SQL::Connection->execute("
+                    DELETE FROM $table
+                    WHERE user_id=?
+                    AND realm_id=?",
+		   [$user_id, $req->get('auth_id')]);
+	    push(@tables, $table);
+	}
+    }
 
     # change all references to the user
     foreach my $table (@tables) {
