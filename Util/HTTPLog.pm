@@ -251,6 +251,7 @@ sub _initialize {
 	    '::warn:\d+ large audit, \d+ entries',
 	    'Accounting::Util::.* Creat(?:ed|ing) /home/account_sync',
 	    '::UPDATE_COLLISION: list_attrs=>',
+	    '::warn:\d+ adjusting allocations',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
