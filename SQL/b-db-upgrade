@@ -151,7 +151,7 @@ sub _upgrade {
             AND amount > 0',
 	    [
 	Bivio::Type::EntryType::INSTRUMENT_DISTRIBUTION_INVESTMENT_FEE->as_int,
-		Bivio::Type::EntryType::INSTRUMENT_BUY->as_int,
+		Bivio::Type::EntryType::INSTRUMENT_BUY_FEE->as_int,
 	    ]);
 
     # remove spurious instrument dividend for foreign taxes
