@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget - an HTML display entity
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget;
-    Bivio::UI::HTML::Widget->new();
+    Bivio::UI::HTML::Widget->new($attrs);
 
 =cut
 
@@ -26,11 +26,8 @@ use Bivio::UI::Widget;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::Widget>
-
-=cut
-
-=head1 CONSTANTS
+C<Bivio::UI::HTML::Widget> is the superclass of all HTML
+widgets.
 
 =cut
 
@@ -44,9 +41,9 @@ C<Bivio::UI::HTML::Widget>
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::HTML::Widget
+=head2 static new(hash_ref attrs) : Bivio::UI::HTML::Widget
 
-
+Creates the widget.
 
 =cut
 
