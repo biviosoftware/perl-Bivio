@@ -1093,11 +1093,11 @@ my(@_CFG) = (
         CLUB_COMMUNICATIONS_FILE_SEARCH
         114
         CLUB
-        DOCUMENT_WRITE
+        DOCUMENT_READ
         ?/file-search/*
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
-        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Action::FileSearchRedirect
     )],
     [qw(
