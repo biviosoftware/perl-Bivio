@@ -1,9 +1,9 @@
 # This file was built by buildFormModule.pl
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
-# $Id: Form.pm,v 1.1 2000/03/20 06:21:13 yates Exp $
+# $Id: Form.pm,v 1.2 2000/03/21 21:54:52 nagler Exp $
 package Bivio::UI::PDF::Form::f1065::y1999::Form;
 use strict;
-$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.1 $ =~ /\d+/g);
+$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.2 $ =~ /\d+/g);
 
 =head1 NAME
 
@@ -35,7 +35,6 @@ C<Bivio::UI::PDF::Form::f1065::y1999::Form>
 use Bivio::UI::PDF::OpaqueUpdate;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 # Keep a reference to an OpaqueUpdate that contains the text of the base Pdf
 # document to which we are adding field values.
@@ -68,9 +67,7 @@ __PACKAGE__->initialize();
 =cut
 
 sub new {
-    my($self) = Bivio::UI::PDF::Form::Form::new(@_);
-    $self->{$_PACKAGE} = {};
-    return $self;
+    return Bivio::UI::PDF::Form::Form::new(@_);
 }
 
 =head1 METHODS
@@ -79,67 +76,60 @@ sub new {
 
 =for html <a name="get_base_update_ref"></a>
 
-=head2 get_base_update_ref() : 
+=head2 static get_base_update_ref() : 
 
 
 
 =cut
 
 sub get_base_update_ref {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return($_BASE_UPDATE_REF);
+    return $_BASE_UPDATE_REF;
 }
 
 =for html <a name="get_field_ref"></a>
 
-=head2 get_field_ref() : 
+=head2 static get_field_ref() : 
 
 
 
 =cut
 
 sub get_field_ref {
-    my($self, $field_name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my(undef, $field_name) = @_;
     my($field_obj_ref) = ${$_FIELD_DICTIONARY_REF}{$field_name};
-    unless (defined($field_obj_ref)) {
-	die("Clone failure; did you forget to remake the Form.pm file?");
-    }
-    return($field_obj_ref->clone());
+    die("Clone failure; did you forget to remake the Form.pm file?")
+	    unless defined($field_obj_ref);
+    return $field_obj_ref->clone();
 }
 
 =for html <a name="get_obj_ref"></a>
 
-=head2 get_obj_ref() : 
+=head2 static get_obj_ref() : 
 
 
 
 =cut
 
 sub get_obj_ref {
-    my($self, $obj_number) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return(${$_OBJ_DICTIONARY_REF}{$obj_number}->clone());
+    my(undef, $obj_number) = @_;
+    return ${$_OBJ_DICTIONARY_REF}{$obj_number}->clone();
 }
 
 =for html <a name="get_xlator_set_ref"></a>
 
-=head2 get_xlator_set_ref() : 
+=head2 static get_xlator_set_ref() : 
 
 
 
 =cut
 
 sub get_xlator_set_ref {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return($_XLATOR_SET_REF);
+    return $_XLATOR_SET_REF;
 }
 
 =for html <a name="initialize"></a>
 
-=head2 initialize() : 
+=head2 static initialize() : 
 
 
 
@@ -150,7 +140,7 @@ sub initialize {
     return if $_INITIALIZED;
     ($_BASE_UPDATE_REF, $_XLATOR_SET_REF, $_FIELD_DICTIONARY_REF,
 	   $_OBJ_DICTIONARY_REF)
-	    = $proto->_read_data(\*DATA);
+	    = $proto->internal_read_data(\*DATA);
     $_INITIALIZED = 1;
     return;
 }
@@ -163,7 +153,7 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
 
-$Id: Form.pm,v 1.1 2000/03/20 06:21:13 yates Exp $
+$Id: Form.pm,v 1.2 2000/03/21 21:54:52 nagler Exp $
 
 =cut
 

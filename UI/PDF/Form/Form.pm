@@ -160,40 +160,19 @@ sub execute {
     return;
 }
 
-#=PRIVATE METHODS
+=for html <a name="internal_read_data"></a>
 
-# _get_section() : 
-#
-#
-#
-sub _get_section {
-    my($fh_ref, $next_section_ref) = @_;
-    my($text);
+=head2 internal_read_data(glob_ref fh_ref) : array
 
-    while (<$fh_ref>) {
-	if (/$_SECTION_NAME_REGEX/) {
-	    ${$next_section_ref} = $1;
-	    return \$text;
-	}
-	$text .= $_;
-    }
-    Bivio::IO::Alert->die('unexpected end of file');
-}
 
-# _read_data() : 
-#
-#
-#
-sub _read_data {
+
+=cut
+
+sub internal_read_data {
     my($proto, $fh_ref) = @_;
 
-    my($base_pdf_text_ref);
-    my($base_root_ref);
-    my($base_size_ref);
-    my($base_xref_ref);
-
-    my($last_section);
-    my($next_section);
+    my($base_pdf_text_ref, $base_root_ref, $base_size_ref, $base_xref_ref,
+	    $last_section, $next_section);
 
     # Things to return.
     my($base_update_ref, $xlator_set_ref);
@@ -295,8 +274,28 @@ die("undef text_ref") if ! defined($text_ref);
     $base_update_ref = Bivio::UI::PDF::OpaqueUpdate->new($base_pdf_text_ref,
 	    $base_root_ref, $base_size_ref, $base_xref_ref);
 
-    return($base_update_ref, $xlator_set_ref, $field_dictionary_ref,
-	   $obj_dictionary_ref);
+    return ($base_update_ref, $xlator_set_ref, $field_dictionary_ref,
+	    $obj_dictionary_ref);
+}
+
+#=PRIVATE METHODS
+
+# _get_section() : 
+#
+#
+#
+sub _get_section {
+    my($fh_ref, $next_section_ref) = @_;
+    my($text);
+
+    while (<$fh_ref>) {
+	if (/$_SECTION_NAME_REGEX/) {
+	    ${$next_section_ref} = $1;
+	    return \$text;
+	}
+	$text .= $_;
+    }
+    Bivio::IO::Alert->die('unexpected end of file');
 }
 
 =head1 COPYRIGHT
