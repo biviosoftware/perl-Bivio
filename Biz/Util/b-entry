@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-entry - lists entries
+
+=head1 SYNOPSIS
+
+b-entry [-account | -instrument | -member] <realm name>
+
+=head1 DESCRIPTION
+
+see L<Bivio::Biz::Util::Entry|Bivio::Biz::Util::Entry>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::Entry;
+
+#=VARIABLES
+
+Bivio::Biz::Util::Entry->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
