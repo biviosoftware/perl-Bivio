@@ -376,22 +376,6 @@ sub execute_other {
     return;
 }
 
-=for html <a name="execute_unwound"></a>
-
-=head2 execute_unwound()
-
-Called when the chained form returns and does a server_redirect
-back to this form.
-
-B<The form fields are not parsed.>  The values are left in their
-literal state.
-
-=cut
-
-sub execute_unwound {
-    return;
-}
-
 =for html <a name="format_context_as_query"></a>
 
 =head2 static format_context_as_query(Bivio::Agent::Request req) : string
