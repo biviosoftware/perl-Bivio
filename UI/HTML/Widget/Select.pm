@@ -254,6 +254,9 @@ sub _load_items_from_list {
     }
     $fields->{items} = \@items;
 
+    # reset the list cursor for the next guy
+    $list->reset_cursor;
+
     return;
 }
 
