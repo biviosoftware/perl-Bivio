@@ -1016,7 +1016,8 @@ sub timezone {
 	    unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
     # We can't return something other than undef.
     my($req) = Bivio::Agent::Request->get_current;
-    return $req ? $req->unsafe_get('timezone') : $_LOCAL_TIMEZONE;
+    my($tz) = $req && $req->unsafe_get('timezone');
+    return defined($tz) ? $tz : $_LOCAL_TIMEZONE;
 }
 
 =for html <a name="to_file_name"></a>
