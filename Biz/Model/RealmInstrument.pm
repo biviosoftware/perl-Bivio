@@ -51,7 +51,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="get_cost_per_share"></a>
 
-=head2 static get_cost_per_share(string realm_instrument_id, Bivio::Type::DateTime date) : string
+=head2 static get_cost_per_share(string realm_instrument_id, Bivio::Type::Date date) : string
 
 Returns the average cost per share for the specified instrument up to
 the specified date.
@@ -64,9 +64,9 @@ sub get_cost_per_share {
 
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select entry_t.amount, realm_instrument_entry_t.count from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
-	    .Bivio::Type::DateTime->to_sql_value('?'),
+	    .Bivio::Type::Date->to_sql_value('?'),
 	   [$realm_instrument_id,
-		   Bivio::Type::DateTime->to_sql_param($date)]);
+		   Bivio::Type::Date->to_sql_param($date)]);
 
     my($total_cost) = 0.0;
     my($total_count) = 0;
@@ -93,7 +93,7 @@ sub get_first_buy_date {
     my(undef, $realm_instrument_id) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
-	    'select '.Bivio::Type::DateTime->from_sql_value(
+	    'select '.Bivio::Type::Date->from_sql_value(
 		    'min(realm_transaction_t.dttm)')
 	    .' from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.entry_type = 200 and realm_instrument_entry_t.realm_instrument_id=?',
 	    [$realm_instrument_id]);
@@ -101,20 +101,20 @@ sub get_first_buy_date {
     my($date);
     my($row);
     if ($row = $sth->fetchrow_arrayref()) {
-	$date = Bivio::Type::DateTime->from_sql_column($row->[0]);
+	$date = Bivio::Type::Date->from_sql_column($row->[0]);
     }
 
     $sth = Bivio::SQL::Connection->execute(
-	    'select '.Bivio::Type::DateTime->from_sql_value(
+	    'select '.Bivio::Type::Date->from_sql_value(
 		    'min(realm_instrument_valuation_t.dttm)')
 	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=?',
 	   [$realm_instrument_id]);
 
     if ($row = $sth->fetchrow_arrayref()) {
-	my($date2) = Bivio::Type::DateTime->from_sql_column($row->[0]);
+	my($date2) = Bivio::Type::Date->from_sql_column($row->[0]);
 
 	if (!defined($date) ||
-		Bivio::Type::DateTime->compare($date, $date2) > 0) {
+		Bivio::Type::Date->compare($date, $date2) > 0) {
 	    $date = $date2;
 	}
     }
@@ -153,9 +153,9 @@ sub get_number_of_shares {
 
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(realm_instrument_entry_t.count) from realm_transaction_t, entry_t, realm_instrument_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_instrument_entry_t.entry_id and entry_t.tax_basis = 1 and realm_instrument_entry_t.realm_instrument_id=? and realm_transaction_t.dttm <= '
-	    .Bivio::Type::DateTime->to_sql_value('?'),
+	    .Bivio::Type::Date->to_sql_value('?'),
 	   [$realm_instrument_id,
-		   Bivio::Type::DateTime->to_sql_param($date)]);
+		   Bivio::Type::Date->to_sql_param($date)]);
     return $sth->fetchrow_arrayref()->[0] || '0';
 }
 
@@ -174,22 +174,22 @@ sub get_share_price {
 
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select realm_instrument_valuation_t.price_per_share, '
-	    .Bivio::Type::DateTime->from_sql_value(
+	    .Bivio::Type::Date->from_sql_value(
 		    'realm_instrument_valuation_t.dttm')
 	    .' from realm_instrument_valuation_t where realm_instrument_valuation_t.realm_instrument_id=? and realm_instrument_valuation_t.dttm <= '
-	    .Bivio::Type::DateTime->to_sql_value('?')
+	    .Bivio::Type::Date->to_sql_value('?')
 	    .' order by realm_instrument_valuation_t.dttm desc',
 	   [$realm_instrument_id,
-		   Bivio::Type::DateTime->to_sql_param($date)]);
+		   Bivio::Type::Date->to_sql_param($date)]);
 
     my($row);
     if ($row = $sth->fetchrow_arrayref()) {
 	my ($value, $date) = @$row;
-	$date = Bivio::Type::DateTime->from_sql_column($date);
+	$date = Bivio::Type::Date->from_sql_column($date);
 	$sth->finish();
 	return ($value, $date);
     }
-    return (0.0, Bivio::Type::DateTime->get_min);
+    return (0.0, Bivio::Type::Date->get_min);
 }
 
 =for html <a name="internal_initialize"></a>
