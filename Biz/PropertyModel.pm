@@ -710,7 +710,8 @@ sub _parse_query {
     if ($want_parent) {
 	my($parent_id) = $query->get('parent_id');
 	# parent_id has some restrictions, check them
-	return _query_err($self, 'missing parent') unless $parent_id;
+#TODO: why can't we have a _query_err here.  Too many messages otherwise.
+	return undef unless $parent_id;
 #TODO: Need to make this work more cleanly
 	my($i) = int(@$pk_cols);
 	die('expecting one or two primary key columns for parent_id')
