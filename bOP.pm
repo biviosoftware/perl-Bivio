@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+      just like in bview files.
+  * Bivio::Util::SQL added upgrade_db function.  Subclasses should
+    override internal_upgrade_db to implement upgrade functionality.
 
   Revision 2.23  2004/06/10 23:07:12  moeller
   * Bivio::IO::Trace fixed undefined _trace() if package filter is off
