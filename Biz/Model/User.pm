@@ -48,6 +48,8 @@ use Bivio::Type::PrimaryId;
 
 #=VARIABLES
 my($_SHADOW_PREFIX) = '=';
+# arbitrary value, allows for 99,999 name collisions
+my($_MAX_SHADOW_NAME_SIZE) = 22;
 
 =head1 METHODS
 
@@ -117,21 +119,36 @@ sub format_full_name {
 
 =for html <a name="generate_shadow_user_name"></a>
 
+=head2 static generate_shadow_user_name(string first_name, string last_name, boolean active) : string
+
 =head2 static generate_shadow_user_name(string first_name, string last_name) : string
 
 Creates a shadow realm name for the user with the specified first/last name.
 The name will be unique across current realms.
+Active default to 1.
+
+The shadow user name format is:
+
+    =<first>_<last><num>-<active>
+
+Ex. =roberto_zanutta2-1
+
+The name portion will be truncated if necessary.
 
 =cut
 
 sub generate_shadow_user_name {
-    my(undef, $first_name, $last_name) = @_;
+    my(undef, $first_name, $last_name, $active) = @_;
     die("invalid first and last name") unless ($first_name || $last_name);
+    $active = 1 unless defined($active);
     my($name) = $last_name;
     $name = $first_name.'_'.$name if defined($first_name);
     $name =~ s/\s/_/g;
     $name =~ s/[\W]//g;
     $name = $_SHADOW_PREFIX.lc($name);
+    if (length($name) > $_MAX_SHADOW_NAME_SIZE) {
+	$name = substr($name, 0, $_MAX_SHADOW_NAME_SIZE)
+    }
 
     my($req) = Bivio::Agent::Request->get_current
 	    || Bivio::Agent::Request->new();
@@ -140,7 +157,7 @@ sub generate_shadow_user_name {
     while ($realm->unauth_load(name => $name.$unique_num)) {
 	$unique_num++;
     }
-    return $name.$unique_num;
+    return $name.$unique_num.'-'.$active;
 }
 
 =for html <a name="get_outgoing_emails"></a>
