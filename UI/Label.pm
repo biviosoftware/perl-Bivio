@@ -168,6 +168,7 @@ _compile(
     REPORT_DATE => ['Report Date'],
     REPORT_YEAR => ['Report Year'],
     TASK_ID => ['Task', undef, 'task_id2'],
+    FEE_PERCENT => ['Percent Fee Type'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
