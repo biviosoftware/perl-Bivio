@@ -474,6 +474,40 @@ sub date_from_parts_or_die {
     return _from_or_die('date_from_parts', @_);
 }
 
+=for html <a name="delta_days"></a>
+
+=head2 delta_days(string start_date, string end_date) : int
+
+Returns the floating point difference between two dates.
+
+=cut
+
+sub delta_days {
+    my($proto, $start_date, $end_date) = @_;
+    return 0
+	if $start_date eq $end_date;
+
+    my($sign) = 1;
+    my(@dates) = ([split(/\s+/, $start_date)], [split(/\s+/, $end_date)]);
+    if ($dates[1]->[0] < $dates[0]->[0] ||
+	    ($dates[1]->[0] == $dates[0]->[0] &&
+		$dates[1]->[1] < $dates[0]->[1])) {
+	$sign = -1;
+	@dates = reverse(@dates);
+    }
+
+    my($start_days, $start_secs) = @{$dates[0]};
+    my($end_days, $end_secs) = @{$dates[1]};
+
+    if ($end_secs < $start_secs) {
+	$end_secs += $proto->SECONDS_IN_DAY();
+	$end_days--;
+    }
+
+    return $sign * (($end_days - $start_days) +
+	($end_secs - $start_secs)/$proto->SECONDS_IN_DAY());
+}
+
 =for html <a name="diff_seconds"></a>
 
 =head2 diff_seconds(string left, string right) : int
