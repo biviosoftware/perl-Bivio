@@ -225,6 +225,7 @@ use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
+use Data::Dumper ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -533,6 +534,24 @@ from STDIN.
 sub read_input {
     my($self) = @_;
     return $self->read_file($self->get('input'));
+}
+
+=for html <a name="ref_to_string"></a>
+
+=head2 static ref_to_string(any ref) : string_ref
+
+Converts ref into a string.
+
+=cut
+
+sub ref_to_string {
+    my(undef, $ref) = @_;
+    my($dd) = Data::Dumper->new([$ref]);
+    $dd->Indent(1);
+    $dd->Terse(1);
+    $dd->Deepcopy(1);
+    my($res) = $dd->Dumpxs();
+    return \$res;
 }
 
 =for html <a name="result"></a>
