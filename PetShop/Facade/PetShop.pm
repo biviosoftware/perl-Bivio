@@ -66,7 +66,9 @@ my($_SELF) = __PACKAGE__->new({
 	    # Basic emphasized text
 	    $fc->group(page_heading => 0x111199);
 
-	    $fc->group(['error', 'warning'] => 0x990000);
+	    $fc->group(error => 0x990000);
+            # not quite error color so acceptance tests don't die
+            $fc->group(warning => 0x990001);
 
 	    #
 	    # Table
@@ -101,11 +103,8 @@ my($_SELF) = __PACKAGE__->new({
 		    ['color=table_heading', 'bold'],
 		   );
 	    $fc->group(form_field_error => ['color=error', 'smaller', 'bold']);
-	    $fc->group([qw(
-		    error
-		    warning
-            )],
-		   ['color=error', 'bold']);
+	    $fc->group(error => ['color=error', 'bold']);
+	    $fc->group(warning => ['color=warning', 'bold']);
 	    $fc->group(form_field_error_label => ['color=error', 'italic']);
 	    $fc->group(['list_error', 'checkbox_error'] =>
 		   ['color=error', 'smaller']);
