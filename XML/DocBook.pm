@@ -63,7 +63,7 @@ use XML::Parser ();
 use HTML::Entities ();
 
 #=VARIABLES
-my($_TO_HTML_OP) = {
+my($_TO_HTML) = {
     chapter => ['html', 'body'],
     para => ['p'],
     simplesect => [],
@@ -102,23 +102,26 @@ sub _to_html {
 
 # _to_html_node(string tag, array_ref tree) : string
 #
-# Lookup $tag in $_TO_HTML_OP and evaluate.
+# Lookup $tag in $_TO_HTML and evaluate.
 #
 sub _to_html_node {
     my($tag, $tree) = @_;
     return HTML::Entities::encode($tree) unless $tag;
-    die($tag, ': unhandled tag') unless my $op = $_TO_HTML_OP->{$tag};
+    die($tag, ': unhandled tag') unless my $op = $_TO_HTML->{$tag};
+    # We ignore the attributes for now,
     shift(@$tree);
-    return _to_tags($op).${_to_html($tree)}._to_tags([reverse(@$op)], '/');
+    return _to_html_tags($op, '')
+	. ${_to_html($tree)}
+	. _to_html_tags([reverse(@$op)], '/');
 }
 
-# _to_tags(array_ref names, string prefix) : string
+# _to_html_tags(array_ref names, string prefix) : string
 #
-# Convert $names to tags with possible prefix ('/')
+# Convert @$names to tags with prefix ('/' or '').
 #
-sub _to_tags {
+sub _to_html_tags {
     my($names, $prefix) = @_;
-    return join('', map {'<'.($prefix || '').$_.'>'} @$names);
+    return join('', map {"<$prefix$_>"} @$names);
 }
 
 =head1 COPYRIGHT
