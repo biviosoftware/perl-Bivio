@@ -33,7 +33,7 @@ followed by zero or more arguments.  I<command> must map to a
 method in the subclass.  The arguments are parsed by the method.
 
 L<setup|"setup"> creates a request from the standard
-options (I<user>, I<db>, and I<realm>).  It is called
+voptions (I<user>, I<db>, and I<realm>).  It is called
 implicitly by L<get_request|"get_request">
 
 Options precede the command.  See L<OPTIONS|"OPTIONS">.  If the options
@@ -246,6 +246,8 @@ use Data::Dumper ();
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+# Map of class to Attributes which contains result of _parse_options()
+my(%_DEFAULT_OPTIONS);
 
 
 =head1 FACTORIES
@@ -348,8 +350,8 @@ sub commit_or_rollback {
     my($self, $abort) = @_;
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Task');
     $self->unsafe_get('noexecute') || $abort
-	    ? Bivio::Agent::Task->rollback($self->get('req'))
-		    : Bivio::Agent::Task->commit($self->get('req'));
+	    ? Bivio::Agent::Task->rollback($self->get_request)
+		    : Bivio::Agent::Task->commit($self->get_request);
     return;
 }
 
@@ -528,6 +530,8 @@ sub main {
 	}
 	return $res;
     });
+
+    # Don't finish if setup never called.
     $self->finish($die ? 1 : 0) if $self->unsafe_get('req');;
     $die->throw() if $die;
     $self->result($cmd, $res);
@@ -734,8 +738,7 @@ sub set_user_to_first_admin {
     my($self) = @_;
     my($req) = $self->get_request;
     $req->set_user(Bivio::Biz::Model->new($req, 'RealmAdminList')
-	    ->get_first_admin($self->get('req')->get('auth_realm')
-		    ->get('owner')));
+	    ->get_first_admin($req->get('auth_realm')->get('owner')));
     my($user) = $req->get('auth_user');
     $self->put(user => $user->get('name'));
     return $user;
@@ -786,8 +789,8 @@ sub setup {
 
 =head2 unsafe_get(string name, ...) : any
 
-Return the attribute(s).  Returns C<undef> or empty array
-if called statically.
+Return the attribute(s).  Returns default option values
+or C<undef> if called statically.
 
 Otherwise, just calls
 L<Bivio::Collection::Attributes::unsafe_get|Bivio::Collection::Attributes/"unsafe_get">.
@@ -797,8 +800,10 @@ L<Bivio::Collection::Attributes::unsafe_get|Bivio::Collection::Attributes/"unsaf
 sub unsafe_get {
     my($self) = shift;
     return $self->SUPER::unsafe_get(@_) if ref($self);
-    return () if wantarray;
-    return undef;
+    $_DEFAULT_OPTIONS{$self} = Bivio::Collection::Attributes->new(
+	    _parse_options($self, []))
+	    unless $_DEFAULT_OPTIONS{$self};
+    return $_DEFAULT_OPTIONS{$self}->unsafe_get(@_);
 }
 
 =for html <a name="usage"></a>
@@ -815,22 +820,6 @@ sub usage {
 	    <<"EOF".$proto->USAGE().$proto->OPTIONS_USAGE());
 ERROR: @{[join('', @_)]}
 EOF
-}
-
-=for html <a name="verbose"></a>
-
-=head2 verbose(any arg, ...)
-
-B<DEPRECATED: Use Trace instead.>
-
-=cut
-
-sub verbose {
-    my($self) = shift;
-    Bivio::IO::Alert->warn_deprecated('use _trace()');
-    return if $self->unsafe_get('quiet');
-    $self->print(@_);
-    return;
 }
 
 =for html <a name="write_file"></a>
@@ -911,12 +900,9 @@ sub _method_ok {
 #
 sub _parse_options {
     my($self, $argv) = @_;
-    my($fields) = $self->{$_PACKAGE};
     my($res) = {};
     my($map, $opts) = _compile_options($self);
-    $fields->{compiled_options} = $opts;
-    $fields->{compiled_map} = $map;
-    return unless %$map;
+    return {} unless %$map;
 
     # Parse the options
     while (@$argv && $argv->[0] =~ /^-/) {
