@@ -65,7 +65,7 @@ Icon name.
 use Bivio::HTML;
 
 #=VARIABLES
-
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
 
