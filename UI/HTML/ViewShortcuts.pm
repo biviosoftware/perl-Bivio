@@ -610,32 +610,35 @@ sub vs_heading_with_search {
 }
 
 sub vs_heading_with_search_reduce_support_load {
-        my($proto, $widget) = @_;
-	
-	    return $proto->vs_new('Grid', {
+        my($proto, $widget, $title) = @_;
+
+#TODO Refactor!!!	
+
+	return $proto->vs_new('Grid', {
 		        expand => 1,
 		        pad => 3, 
 	  	        values => [
-			[$proto->vs_heading('Help Resources')],    
+			[],    
+			[$proto->vs_heading("$title")],    
                         [$proto->vs_string('  ')],
 			[
 			 $proto->vs_template_as_string(<<"EOF")
-		          Need help fast? vs_link('Browse our help section', 'HELP').
+		          - Need help fast? vs_link('Browse our help topics', 'HELP').
 EOF
                         ],
 			[
 			 $proto->vs_template_as_string(<<"EOF"),
-			 Get help from experienced bivio users at vs_link('our Club Cafe', '/club_cafe').
+			 - Get help from experienced bivio users at vs_link('our Club Cafe', '/club_cafe').
 EOF
 			],
                         [
 			 $proto->vs_new('Grid', {
 			                              expand => 1,
 			                              values => [[  
-						      $proto->vs_string('Search Bivio','page_text',
+						      $proto->vs_string('- Search Bivio','page_text',
 					                                             {
 											cell_align => 'LEFT',
-											cell_nowrap => 1
+											#cell_nowrap => 1
 										     }
 					                                  ), 
 			                              $proto->vs_new('Search',
@@ -649,7 +652,10 @@ EOF
 			                                         ]],
 			                          }
 				         )
-			]
+			],
+			[],
+			[$proto->vs_string('  ')],    
+			[$proto->vs_string('Customer Support', 'page_heading')]    
 		    ]
 		    });
 	    return;
