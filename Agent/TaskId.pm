@@ -409,10 +409,11 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/interest
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Type::EntryType->execute_cash_interest
         Bivio::Biz::Model::AccountTransactionForm
-        Bivio::UI::HTML::Club::AccountTransaction
-        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        Bivio::UI::HTML::Club::AccountInterest
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
     [qw(
@@ -421,10 +422,11 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/dividend
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Type::EntryType->execute_cash_dividend
         Bivio::Biz::Model::AccountTransactionForm
-        Bivio::UI::HTML::Club::AccountTransaction
-        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        Bivio::UI::HTML::Club::AccountDividend
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
     [qw(
@@ -433,10 +435,11 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/income
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Type::EntryType->execute_cash_income
         Bivio::Biz::Model::AccountTransactionForm
-        Bivio::UI::HTML::Club::AccountTransaction
-        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        Bivio::UI::HTML::Club::AccountIncome
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
     [qw(
@@ -445,10 +448,11 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/expense
-        Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Type::EntryType->execute_cash_expense
         Bivio::Biz::Model::AccountTransactionForm
-        Bivio::UI::HTML::Club::AccountTransaction
-        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+        Bivio::UI::HTML::Club::AccountExpense
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
 # 49
@@ -1665,16 +1669,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
         Bivio::UI::HTML::Tax::MemberDistributions
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_DATE_TEST
-#        171
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/report_date_test
-#        Bivio::Biz::Model::AccountingReportForm
-#        Bivio::UI::HTML::DateTest
-#        next=CLUB_ACCOUNTING_REPORT_DATE_TEST
-#    )],
+#171
     [qw(
         CLUB_ACCOUNTING_TAX99_DEDUCTIONS
         172
