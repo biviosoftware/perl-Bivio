@@ -154,7 +154,9 @@ sub render {
 	my($type) = $form->get_field_type($field);
 	# Might be a subclass of Bivio::Type::Date
 	my($width) = $type->get_width();
-	$fields->{prefix} = "<input type=text size=$width maxlength=$width";
+	# allow extra size padding for IE 5.5 with small style
+	$fields->{prefix} = "<input type=text size="
+		.($width  + 2)." maxlength=$width";
 	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
 		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
