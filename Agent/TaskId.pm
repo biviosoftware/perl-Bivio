@@ -2116,7 +2116,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInstrumentLotListForm
         Bivio::UI::HTML::Club::RealmInstrumentLotList
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
-        help=investment-transactions
+        help=investment-lots
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL_LIST
