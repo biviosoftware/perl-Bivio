@@ -140,7 +140,7 @@ The stripe color to use for even rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
 false, no striping will occur.
 
-=item trailing_separator : boolean [true]
+=item trailing_separator : boolean [false]
 
 A separator will separate the cells from the end.  The color will be
 C<table_separator>.
@@ -232,6 +232,8 @@ sub initialize {
 	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
 	$p .= '>';
     }
+    $fields->{prefix} = $p;
+    $p = '';
 
     # Headings
     my($num_columns) = 0;
@@ -249,19 +251,14 @@ sub initialize {
 	}
         $fields->{headings} = $headings;
 	$num_columns = $nc;
-        # Doesn't end in </tr>
-    }
-    else {
-#TODO: fix this hack, cells already expect the heading
-	$fields->{headings} = ['<tr>'];
     }
 
     # Cells
     if ($self->unsafe_get('cells')) {
 	# Stripe: finishes off previous row (which may be header)
 	# First row is even (row = 0)
-	$fields->{even_row} = "</tr><tr>\n";
-	$fields->{odd_row} = '</tr><tr';
+	$fields->{even_row} = "<tr>\n";
+	$fields->{odd_row} = '<tr';
 	my($bgcolor)
 		= $self->get_or_default('stripe_bgcolor', 'table_stripe_bg');
 	$fields->{odd_row} .= Bivio::UI::Color->as_html_bg($bgcolor)
@@ -320,23 +317,21 @@ sub render {
 		    && $list_model->get_result_set_size == 0;
     $source = $list_model;
 
+    $$buffer .= $fields->{prefix};
     # Headings
-    my($close_row) = 0;
     if ($fields->{headings}) {
-	$close_row++;
 	foreach my $c (@{$fields->{headings}}) {
 	    ref($c) ? $c->render($source, $buffer) : ($$buffer .= $c);
 	}
+	$$buffer .= "</tr>\n";
     }
 
     # Leading separator
     my($want_sep) = 1;
     if ($fields->{leading_separator}) {
-	$$buffer .= "</tr>\n" if $close_row;
-	$close_row++;
 	$$buffer .= $fields->{separator_row};
 	$fields->{separator}->render($source, $buffer);
-	$$buffer .= '</td>';
+	$$buffer .= "</td></tr>\n";
 	$want_sep = 0;
     }
 
@@ -357,20 +352,18 @@ sub render {
 		$c->render($source, $buffer);
 		$$buffer .= '&nbsp;' if length($$buffer) == $start;
 	    }
+	    $$buffer .= "</tr>\n";
 	}
-	$want_sep = 1, $close_row++ if $row > 0;
+	$want_sep = 1 if $row > 0;
     }
 
     if ($fields->{trailing_separator} && $want_sep) {
-	$$buffer .= "</tr>\n" if $close_row;
-	$close_row++;
 	$$buffer .= $fields->{separator_row};
 	$fields->{separator}->render($source, $buffer);
-	$$buffer .= '</td>';
+	$$buffer .= "</td></tr>\n";
     }
 
     # Always close off row, because headings is left unclosed
-    $$buffer .= '</tr>' if $close_row;
     $$buffer .= '</table>' if $fields->{end_tag};
 
     return;
