@@ -44,7 +44,9 @@ my(%_MIME_TYPES) = ();
     # Create $_MIME_TYPES from map in mhmimetypes.pl
     my($k, $v);
     while (($k, $v) = each(%mhonarc::CTExt)) {
-	$_MIME_TYPES{(split(/:/, $v))[0]} = $k;
+	map {
+	    $_MIME_TYPES{$_} = $k;
+	} split(/,/, (split(/:/, $v))[0]);
     }
 }
 
@@ -194,6 +196,7 @@ sub _send_file {
 
 sub _send_dir {
     my($absfile, $file, $dir_uri) = @_;
+    $dir_uri =~ s!([^/])$!$1/!;
     my($dir) = {map {
 	my($n) = $_;
 	$n =~ s!.*/!!;
