@@ -71,7 +71,6 @@ use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::IO::Trace;
-use Carp ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -88,7 +87,9 @@ my(%_CLASS_TO_TYPE) = map {
 } Bivio::Auth::RealmType->get_list;
 my(%_TYPE_TO_CLASS) = reverse(%_CLASS_TO_TYPE);
 # Maps realm types to permission sets
-my(%_DEFAULT_PERMISSION_SET) = ();
+my(%_DEFAULT_PERMISSIONS);
+my(@_USED_ROLES) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
+	    Bivio::Auth::Role->get_list);
 
 =head1 FACTORIES
 
@@ -114,7 +115,8 @@ sub new {
     my($proto, $owner, $req) = @_;
     $_INITIALIZED || _initialize();
     if ($proto eq __PACKAGE__) {
-	Carp::croak("no owner") unless $owner;
+	Bivio::Die->die("must have owner or call type explicitly")
+		    unless $owner;
 	unless (ref($owner)) {
 	    Bivio::Die->die('cannot create model without request')
 			unless ref($req);
@@ -133,25 +135,22 @@ sub new {
 
     # Instantiate and initialize with/out owner
     my($self) = &Bivio::Collection::Attributes::new($proto);
+    $self->{$_PACKAGE} = {};
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
 	my($type) = $_CLASS_TO_TYPE{ref($self)};
-	$self->{$_PACKAGE} = $_DEFAULT_PERMISSION_SET{$type};
 	$self->put(id => $type->as_int, type => $type);
 	return $self;
     }
 
     my($type) = $owner->get('realm_type');
-    $self->{$_PACKAGE} = {
-        default_permission_set => $_DEFAULT_PERMISSION_SET{$type},
-    };
-    Carp::croak('not a Model::RealmOwner') unless UNIVERSAL::isa($owner,
-            'Bivio::Biz::Model::RealmOwner');
+    Bivio::Die->die($owner, ': owner not a Model::RealmOwner')
+	    unless UNIVERSAL::isa($owner, 'Bivio::Biz::Model::RealmOwner');
 
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');
-    Carp::croak('owner must have valid id (must be loaded)')
+    Bivio::Die->die($id, ': owner must have valid id (must be loaded)')
 		unless $id;
     $self->put(owner => $owner, id => $id,
 	    owner_name => $owner->get('name'),
@@ -202,15 +201,8 @@ sub can_user_execute_task {
     # Load the realm_role permissions
     my($fields) = $self->{$_PACKAGE};
     my($privileges);
-    unless (defined($privileges = $fields->{$auth_role})) {
-	my($rr) = Bivio::Biz::Model::RealmRole->new($req);
-	# Cache the permissions for later use
-	$privileges = $fields->{$auth_role}
-		= $rr->unauth_load(realm_id => $self->get('id'),
-			role => $auth_role)
-			? $rr->get('permission_set')
-			: $fields->{default_permission_set}->{$auth_role};
-    }
+    $privileges = _load_permissions($self, $auth_role, $req)
+	    unless defined($privileges = $fields->{$auth_role});
 
     # Does this role have all the required permission?
     return 1 if ($privileges & $required) eq $required;
@@ -318,7 +310,7 @@ sub get_type {
     # Get the type from the instance itself otherwise
     # just from class.
     return $proto->get('type') if ref($proto);
-    Carp::croak("$proto: unknown realm class")
+    Bivio::Die->die($proto, ': unknown realm class')
 	    unless exists($_CLASS_TO_TYPE{$proto});
     return $_CLASS_TO_TYPE{$proto};
 }
@@ -341,32 +333,74 @@ sub is_default {
 
 # _initialize()
 #
-# Initializes %_DEFAULT_PERMISSION_SET for all realm types from the database.
+# Loads the RealmType classes.
 #
 sub _initialize {
-    $_INITIALIZED && return;
-    # Avoid circular import
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model::RealmOwner');
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model::RealmRole');
-
-    my($rr) = Bivio::Biz::Model::RealmRole->new();
-    my(@roles) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
-	    Bivio::Auth::Role->get_list);
-#DBCACHE: realm_role_t
+    return if $_INITIALIZED;
+    $_INITIALIZED = 1;
     foreach my $t ('GENERAL', 'USER', 'CLUB') {
 	my($rt) = Bivio::Auth::RealmType->$t();
-	my($rti) = $rt->as_int;
 	my($rc) = $_TYPE_TO_CLASS{$rt};
 	Bivio::IO::ClassLoader->simple_require($rc);
-	my($dp) = $_DEFAULT_PERMISSION_SET{$rt} = {};
-	foreach my $r (@roles) {
-	    die($rt->as_string, ': unable to load default permissions for ',
-		    $r->as_string)
-		    unless $rr->unauth_load(realm_id => $rti, role => $r);
-	    $dp->{$r} = $rr->get('permission_set');
+    }
+    return;
+}
+
+# _load_default_permissions(int rti, Bivio::Agent::Request rti)
+#
+# Loads default permissions for this rti (RealmType->as_int)
+#
+sub _load_default_permissions {
+    my($rti, $req) = @_;
+    # Copy the default (if loaded) and return
+    my($rr) = Bivio::Biz::Model::RealmRole->new($req);
+    # Load and save the defaults
+    my($dp) = $_DEFAULT_PERMISSIONS{$rti} = {};
+    my($it) = $rr->unauth_iterate_start('role', {realm_id => $rti});
+    my(%row);
+    while ($rr->iterate_next($it, \%row)) {
+	$dp->{$row{role}} = $row{permission_set};
+    }
+    return;
+}
+
+# _load_permissions(self, Bivio::Auth::Role role, Bivio::Agent::Request req) : Bivio::Auth::PermissionSet
+#
+# Load the permissions for this realm/role.  In the case of GENERAL,
+# we load the default permissions.
+#
+# Returns permissions for realm/role.
+#
+sub _load_permissions {
+    my($self, $role, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($owner) = $self->unsafe_get('owner');
+    if ($owner) {
+	my($rr) = Bivio::Biz::Model::RealmRole->new($req);
+	# Try to load for just this role explicitly and cache.
+	return $fields->{$role} = $rr->get('permission_set')
+		if $rr->unauth_load(
+			realm_id => $self->get('id'), role => $role);
+    }
+
+    my($rti) = $self->get('type')->as_int;
+    _load_default_permissions($rti, $req) unless $_DEFAULT_PERMISSIONS{$rti};
+
+    if ($owner) {
+	# Copy just this role's permission if there is an owner
+	$fields->{$role} = $_DEFAULT_PERMISSIONS{$rti}->{$role};
+    }
+    else {
+	# Copy all the permissions if there isn't an owner
+	while (my($k, $v) = each(%{$_DEFAULT_PERMISSIONS{$rti}})) {
+	    $fields->{$k} = $v;
 	}
     }
-    $_INITIALIZED = 1;
+
+    # Return the permission, but make sure it exists
+    Bivio::Die->die($self, ': unable to load default permissions for ', $role)
+		unless defined($fields->{$role});
+    return $fields->{$role};
 }
 
 =head1 COPYRIGHT
