@@ -40,6 +40,7 @@ use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
+use Bivio::Type::RealmName;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::Password;
@@ -171,7 +172,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_owner_t',
 	columns => {
-            name => ['Bivio::Type::Name',
+            name => ['Bivio::Type::RealmName',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             password => ['Bivio::Type::Password',
     		Bivio::SQL::Constraint::NOT_NULL()],
