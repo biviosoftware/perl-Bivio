@@ -66,15 +66,6 @@ EOF
 	    ['Tax1065.irs_center', 'IRS Center', <<'EOF'],
 Select the state where the partnership files its return
 EOF
-	    ['Tax1065.allocation_method', 'Allocation Method',
-		    <<'EOF',
-Determines the manner in which taxable entries are allocated to each
-member. The time based method allocates each taxable entry according
-to each member's ownership in the club at the time of the entry. The
-snapshot method allocates taxable entries according to the member
-ownership at the time of withdrawal, and at the end of the year.
-EOF
-		    undef, {show_unknown => 0}],
 	    ['Tax1065.partnership_type', 'Partnership Type',
 		    <<'EOF',
 Schedule B 1. The partner type determines the member's liability in the
