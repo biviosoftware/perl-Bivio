@@ -295,7 +295,7 @@ sub _parse_keywords {
 #TODO: Algorithm probably need to take into account hyphenated words.
     my($w);
     $str =~ s/\"//g;
-#    $str =~ s/[\.\;\:]//g;
+    $str =~ s/[\.\;\:\"\']//g;
     foreach $w (split(/\s+/, $str)) {
 	_trace('keyword: ', $w);
 	$keywords->{$w}++;
