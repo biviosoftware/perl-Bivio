@@ -1757,6 +1757,8 @@ my(@_CFG) = (
         /_mail_receive
         Bivio::Biz::Model::MailReceiveForm
         next=HTTP_DOCUMENT
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
         USER_MAIL_RECEIVE
@@ -1766,6 +1768,8 @@ my(@_CFG) = (
         !
         Bivio::Biz::Action::UserMailPeople
         Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
         CLUB_MAIL_RECEIVE
@@ -1776,6 +1780,8 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClubMailBoard
         Bivio::Biz::Action::ClubMailPeople
         Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
         CLUB_MAIL_BOARD_RECEIVE
@@ -1785,6 +1791,8 @@ my(@_CFG) = (
         !
         Bivio::Biz::Action::ClubMailBoard
         Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
         CLUB_MAIL_PEOPLE_RECEIVE
@@ -1794,6 +1802,8 @@ my(@_CFG) = (
         !
         Bivio::Biz::Action::ClubMailPeople
         Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
         CLUB_MAIL_ADMIN_RECEIVE
@@ -1803,6 +1813,24 @@ my(@_CFG) = (
         !
         Bivio::Biz::Action::ClubMailAdmin
         Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+    )],
+    [qw(
+        MAIL_RECEIVE_NO_RESOURCES
+        183
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_mail_receive_no_resources
+    )],
+    [qw(
+        MAIL_RECEIVE_NOT_FOUND
+        184
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_mail_receive_not_found
     )],
 );
 
