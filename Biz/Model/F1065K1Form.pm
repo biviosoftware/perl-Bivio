@@ -128,6 +128,9 @@ sub execute_empty {
     my($taxk1) = Bivio::Biz::Model::TaxK1->new($req);
     $taxk1->load_or_default($user->get('realm_id'), $date);
 
+    my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
+    $tax1065->load_or_default($date);
+
     my($allocations) = _get_user_allocations($self, $user, $date);
 
     $properties->{partner_type} = $taxk1->get('partner_type');
@@ -135,7 +138,7 @@ sub execute_empty {
     $properties->{foreign} = $taxk1->get('foreign_partner');
     $properties->{percentage_start} = _get_percentage($self, $user, $date, 1);
     $properties->{percentage_end} = _get_percentage($self, $user, $date, 0);
-    $properties->{irs_center} = _get_irs_center($self, $taxk1);
+    $properties->{irs_center} = $tax1065->get('irs_center');
     $properties->{return_type} = _get_return_type($self, $user, $date);
 
     $properties->{interest_income} = $allocations->get_or_default(
@@ -173,6 +176,7 @@ sub execute_empty {
 	    _get_cash_withdrawal_amount($self, $user, $date);
     $properties->{property_distribution} =
 	    _get_stock_withdrawal_amount($self, $user, $date);
+    $properties->{draft} = $tax1065->get('draft');
 
     Bivio::Biz::Accounting::Tax->round_all($self, $properties);
     return;
@@ -305,6 +309,11 @@ sub internal_initialize {
 		type => 'Amount',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'draft',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	],
     };
 }
@@ -380,18 +389,6 @@ sub _get_foreign_income {
     # in proportion to the foreign_tax percentage
     return $math->neg($math->mul($total_foreign_income,
 	    $math->div($foreign_tax, $total_foreign_tax)));
-}
-
-# _get_irs_center(Bivio::Biz::Model::TaxK1 taxk1) : Bivio::Type::F1065IRSCenter
-#
-# Returns the IRS center of the partnership.
-#
-sub _get_irs_center {
-    my($self, $taxk1) = @_;
-    my($date) = $taxk1->get('fiscal_end_date');
-    my($tax1065) = Bivio::Biz::Model::Tax1065->new($self->get_request);
-    $tax1065->load_or_default($date);
-    return $tax1065->get('irs_center');
 }
 
 # _get_percentage(Bivio::Biz::Model::RealmOwner user, string date, boolean start) : string
