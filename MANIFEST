@@ -1,0 +1,11 @@
+MANIFEST
+Makefile.PL
+Changes
+Data.pm
+Club.pm
+Request.pm
+User.pm
+Club/Members.pm
+Club/Page.pm
+Club/Messages.pm
+test.pl
