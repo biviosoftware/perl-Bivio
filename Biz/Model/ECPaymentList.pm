@@ -80,7 +80,6 @@ sub internal_initialize {
             qw(
             ECPayment.ec_subscription_id
             ECPayment.ec_subscription_start_date
-            ECPayment.ec_subscription_period
             ECPayment.processor_response
             ECPayment.credit_card_number
             ECPayment.credit_card_expiration_date
