@@ -21,5 +21,8 @@ Bivio::Test->unit([
 	    	[59, 59, 21,
 		    (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900],
 	],
+	to_string => [
+	    ['2378497 9'] => ['01/01/1800'],
+	],
     ],
 ]);
