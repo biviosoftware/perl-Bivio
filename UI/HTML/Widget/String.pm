@@ -178,12 +178,13 @@ sub initialize {
     # Value
     $fields->{value} = $self->get('value');
     if ($fields->{is_literal} = !ref($fields->{value})) {
-	# Format the constant once
-	$fields->{value} = _format($fields, $fields->{value});
+        # do nothing, formatter may be dynamic
     }
     elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
 	$fields->{value}->put_and_initialize(parent => $self);
     }
+    Bivio::IO::Alert->warn('is_widget and has formatter')
+            if $fields->{is_widget} && $fields->{format};
     return;
 }
 
@@ -221,7 +222,7 @@ sub render {
 
     my($b) = '';
     if ($fields->{is_literal}) {
-	$b = $fields->{value};
+        $b = _format($fields, $fields->{value});
     }
     elsif ($fields->{is_widget}) {
 	$fields->{value}->render($source, \$b);
