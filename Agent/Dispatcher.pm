@@ -60,7 +60,7 @@ use Bivio::UI::Facade;
 
 #=VARIABLES
 Bivio::Die->eval(qq{
-	Bivio::IO::ClassLoader->simple_require('BSD::Resource');
+        use BSD::Resource;
 	# No core dumps please
 	setrlimit(RLIMIT_CORE, 0, 0);
     }
