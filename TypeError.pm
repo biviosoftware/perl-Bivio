@@ -944,6 +944,11 @@ __PACKAGE__->compile([
 	undef,
 	'identify the expense deducted',
     ],
+    SHADOW_USER => [
+	133,
+	undef,
+	'operation not allowed for shadow user',
+    ],
 ]);
 
 #=PRIVATE METHODS
