@@ -1,5 +1,6 @@
 Login->execute();
-Imagemenu->go_section('Accounting', 'my-club-site');
+# go to the user's demo club, taxes are enabled there
+Imagemenu->go_section('Accounting', 'demo');
 Verify->title('Investments');
 Verify->text('Summary');
 
