@@ -5,6 +5,10 @@
 package Bivio::Data;
 
 use strict;
+use Fcntl ();
+use Data::Dumper ();
+use File::Copy ();
+use Bivio::Util;
 
 $Bivio::Data::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -22,6 +26,10 @@ sub FILE { 3 }
 
 # The ending to $_Home; Must end in /
 sub _REL_HOME { '/../data/' }
+
+my(@_TXN_FILES) = ();
+
+my($_TXN_HANDLE) = undef;
 
 # Cached data
 my $_Cache = {};
@@ -45,13 +53,13 @@ my $_Cache = {};
 sub lookup ($$$;$)
 {
     my($file, $proto_or_sub, $br, $type) = @_;
-    $file =~ tr/A-Z/a-z/;                                	  # be friendly
     my($cache) = $_Cache->{$file};
     defined($cache) && 	     			     # in cache and up to date?
 	$cache->{mtime} == -M $cache->{absfile} && return $cache->{value};
     local($SIG{__WARN__}) = sub { die @_ };		# perl be quiet, please
     my($absfile, $value, $dont_cache);
     if (!defined($type) || $type == &PERL) {
+	$type = &PERL;
 	&_check_file_name($br, $file);
 	$absfile = &_home($br) . $file . '.pl';
 	$value = do $absfile;
@@ -119,6 +127,7 @@ sub lookup ($$$;$)
 	'absfile' => $absfile,
 	'mtime' => $mtime,
 	'value' => $value,
+	'type' => $type,
     };
     return $value;
 }
@@ -135,8 +144,89 @@ sub _check_file_name ($$) {
 	$br->not_found($file, ': file name contains invalid characters');
 }
 
+# &update $file $br
+#   Update a data structure.  This must be in the cache and only valid for
+#   &PERL types.  You must update the value from disk (call invalidate_cache
+#   then lookup) before calling this routine.
+sub _update ($) {
+    my($file, $br) = @_;
+    my($cache) = $_Cache->{$file};
+    defined($cache)  	     			     # in cache and up to date?
+	&& $cache->{mtime} == -M $cache->{absfile}
+	    || $br->server_error("$file: update attempted on stale data");
+    $cache->{type} == &PERL
+	|| $br->server_error("$file: can only update PERL");
+    &_write($cache->{absfile}, $cache->{value}, $br);
+}
+
+# &_write $absfile $value
+#   Writes $value to $absfile carefully.  Old values are copied to the file
+#   name appended with the time.
+#   
+sub _write ($$$) {
+    my($absfile, $value, $br) = @_;
+    my($dd) = Data::Dumper->new([$value]);
+    $dd->Indent(1);
+    $dd->Terse(1);
+    my($s) = $dd->Dumpxs();
+    my($fh) = \*Bivio::Data::OUT;	   # Use only one handle to avoid leaks
+    my($timestamp) = &Bivio::Util::timestamp(time);
+    my($new) = $absfile . '.tmp' . $timestamp;
+    my($old) = $absfile . '.old' . $timestamp;
+    open($fh, ">$new") || $br->server_error("open $new: $!");
+    (print $fh $s) || $br->server_error("print $new: $!");
+    close($fh) || $br->server_error("close $new: $!");
+    unlink($old);				# just in case, shouldn't exist
+    ! -e $absfile || &File::Copy::copy($absfile, $old)
+	|| $br->server_error("copy $absfile $old: $!");
+    rename($new, $absfile) || $br->server_error("rename $new $absfile: $!");
+}
+
 sub _home ($) {
     $_Home || ($_Home = shift->r->document_root . &_REL_HOME);
+}
+
+sub begin_txn ($$) {
+    my($file, $proto_or_sub, $br) = @_;
+    my($retries) = 4;
+    until (@_TXN_FILES) {
+	unless (defined($_TXN_HANDLE)) {
+	    $_TXN_HANDLE = \*Bivio::Data::TXN;
+	    open($_TXN_HANDLE, '>' . &_home($br) . '.lock') || next;
+	}
+	flock($_TXN_HANDLE, &Fcntl::LOCK_EX) && last;
+    }
+    continue {
+	++$retries > 3 && $br->server_busy("can't begin transaction: $!");
+	select(undef, undef, undef, rand() + 0.01);
+    }
+    push(@_TXN_FILES, $file);		       # we hold the lock at this point
+    &invalidate_cache($file);
+    my($res) = &lookup($file, $proto_or_sub, $br);
+    return $res;
+
+}
+
+sub end_txn {
+    my($br) = shift;
+    @_TXN_FILES || $br->server_error("no transaction");
+    my($file) = pop(@_TXN_FILES);
+    &_update($file, $br);
+    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
+}
+
+sub abort_txn {
+    my($br) = shift;
+    @_TXN_FILES || return;			      # no transaction to abort
+    my($file) = pop(@_TXN_FILES);
+    &invalidate_cache($file);
+    @_TXN_FILES || flock($_TXN_HANDLE, &Fcntl::LOCK_UN);
+}
+
+# Called by Bivio::Request only!  Aborts all pending transactions.
+sub check_txn {
+    my($br) = shift;
+    &abort_txn($br) while (@_TXN_FILES);
 }
 
 sub invalidate_cache {

@@ -28,7 +28,9 @@ sub execute ($$$) {
 	'r' => $r,
     };
     bless($self, ref($proto) || $proto);
-    eval { &$code($self); 1;} && return &Apache::Constants::OK;
+    my($ok) = eval { &$code($self); 1;};
+    &Bivio::Data::check_txn($self);
+    $ok && return &Apache::Constants::OK;
     chop($@);
     if (defined($self->{result})) {
 	$r->log_reason($@);
@@ -52,6 +54,11 @@ sub make_read_only ($$) {
 # Terminates if there the request is read-only
 sub assert_writable ($) {
     defined($_[0]->{read_only}) && $_[0]->forbidden("read-only access");
+}
+
+# Returns true if user can't modify data associated with request
+sub is_read_only ($) {
+    defined($_[0]->{read_only});
 }
 
 # send an auth_required code
@@ -81,6 +88,11 @@ sub forbidden ($@) {
 # Terminate the request with a server error
 sub server_error ($@) {
     shift->_terminate(&Apache::Constants::SERVER_ERROR, @_);
+}
+
+# Terminate the request with a server busy
+sub server_busy ($@) {
+    shift->_terminate(&Apache::Constants::HTTP_SERVICE_UNAVAILABLE, @_);
 }
 
 # Terminate an incoming request with a particular Apache::Constants result

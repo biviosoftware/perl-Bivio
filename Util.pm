@@ -32,6 +32,9 @@ BEGIN {
     }
 }
 
+#RJN: Fix this HACK.  Probably need once a day time for events like this?
+my($_THIS_YEAR) = (localtime)[5] + 1900;
+
 sub unescape_html { &HTML::Entities::decode }
 
 # gettimeofday -> [seconds, micros]
@@ -78,35 +81,75 @@ sub compile_attribute_accessors ($@) {
 	    $eval .= "\$self->{$name} = \$value }";
 	}
     }
-    eval $eval . '; 1' || croak("accessor compilation failed: $@");
+    return eval $eval . '; 1' || croak("accessor compilation failed: $@");
 }
 
 # return an "@bivio.com" email address for the arg
 sub email ($) {
-    shift() . '@bivio.com';
+    return shift() . '@bivio.com';
 }
 
-# mailto $link ; $label
+# href $link ; $label
+#   If link is undef, then returns label.
 sub href ($;$) {
     my($href, $label) = @_;
-    defined($href) || return undef;
+    defined($href) || return defined($label) ? &escape_html($label) : undef;
     defined($label) || ($label = $href);
     return '<a href="' . $href . '">' . &escape_html($label) . '</a>';
 }
 
 # mailto $email ; $label $subject
-sub mailto ($;$$) {
-    my($email, $label, $subject) = @_;
+sub mailto_uri ($;$) {
+    my($email, $subject) = @_;
     defined($email) || return undef;
-    defined($label) || ($label = $email);
     if (defined($subject)) {
 	($subject = &escape_uri($subject)) =~
 	    s/([&?])/$1 eq '&' ? '%26' : '%3f'/eg; 	  # easiest, but a hack
 	$email .= '?subject=' . $subject;
     }
-    &href('mailto:' . $email, $label);
+    return 'mailto:' . $email;
 }
 
+# mailto $email ; $label $subject
+sub mailto ($;$$) {
+    my($email, $label, $subject) = @_;
+    defined($label) || ($label = $email);
+    return &href(&mailto_uri($email, $subject), $label);
+}
+
+# Returns a stringified timestamp
+sub timestamp ($) {
+    my($time) = shift;
+    defined($time) || ($time = time);
+    my($sec, $min, $hour, $day, $mon, $year) = localtime($time);
+    return sprintf('%04d%02d%02d%02d%02d%02d', $year + 1900, $mon + 1, $day,
+	   $hour, $min, $sec);
+}
+
+sub date ($) {
+    my($time) = shift;
+    defined($time) || return undef;
+    unless ($time =~ /\D/) {
+	my($day, $mon, $year) = (localtime($time))[3,4,5];
+	$time = sprintf('%02d/%02d/%04d', $mon + 1, $day, $year + 1900);
+    }
+    $time =~ s/\D$_THIS_YEAR//;
+    return $time;
+}
+
+sub date_range ($$) {
+    my($left, $right) = (&date(shift), &date(shift));
+    if (defined($left)) {
+	defined($right) || ($right = '');
+    }
+    elsif (defined($right)) {
+	$left = '';
+    }
+    else {
+	return undef;
+    }
+    return $left . ' - ' . $right;
+}
 
 1;
 __END__

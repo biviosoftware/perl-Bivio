@@ -13,6 +13,7 @@ use Bivio::Club::Page::Agreement;
 use Bivio::Club::Page::Distributions;
 use Bivio::Club::Page::Members;
 use Bivio::Club::Page::Messages;
+use Bivio::Club::Page::Motions;
 use Bivio::Club::Page::Watchlist;
 
 $Bivio::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -27,14 +28,18 @@ BEGIN {
 my($_HOME) = 'clubs/';
 
 my($_DEFAULT_PAGE);
+my($_MESSAGE_PAGE);
 # Order is important
 my(@_PAGES) = (
     Bivio::Club::Page::Agreement->new(),
     Bivio::Club::Page::Distributions->new(),
     Bivio::Club::Page::Members->new(),
-    $_DEFAULT_PAGE = Bivio::Club::Page::Messages->new(),
+    $_MESSAGE_PAGE = $_DEFAULT_PAGE = Bivio::Club::Page::Messages->new(),
+    Bivio::Club::Page::Motions->new(),
     Bivio::Club::Page::Watchlist->new(),
 );
+
+sub message_page { $_MESSAGE_PAGE }
 
 my(%_URI_TO_PAGE_MAP) = map {($_->URI, $_)} @_PAGES;
 
@@ -96,6 +101,16 @@ sub member_attr ($$$) {
 
 sub email ($) {
     &Bivio::Util::email(shift->name);
+}
+
+sub lookup_data ($$$$) {
+    my($self, $file, $proto_or_sub, $br) = @_;
+    &Bivio::Data::lookup($self->data_dir . $file, $proto_or_sub, $br);
+}
+
+sub begin_txn ($$$$) {
+    my($self, $file, $proto_or_sub, $br) = @_;
+    &Bivio::Data::begin_txn($self->data_dir . $file, $proto_or_sub, $br);
 }
 
 1;

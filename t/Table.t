@@ -40,11 +40,14 @@ $t->add_column('Five', 'uri_list');
 $t->add_column('Six', 'left');
 $t->add_column('Seven', 'center');
 $t->add_column('Eight', 'right');
+$t->add_column('Nine', 'date');
+$t->add_column('Ten', 'dates');
 
 my($html) = $t->render_html('My First Table',
 [
   ['1.0',
-   'a string here',   'nagler@bivio.com',
+   'a string here',
+   'nagler@bivio.com',
    'http://yahoo.com',
    [['http://yahoo.com', 'yahoo'],
     ['http://excite.com', 'excite'],
@@ -53,7 +56,37 @@ my($html) = $t->render_html('My First Table',
    'left',
    'center & middle',
    'right',
-  ]
+   time,
+   '4/19/1999',
+  ],
+  ['2.0',
+   'a string here',
+   [undef, 'an email'],
+   'http://yahoo.com',
+   [['http://yahoo.com', 'yahoo'],
+    [undef, 'excite'],
+    ['http://lycos.com', 'lycos'],
+   ],
+   'left',
+   'center & middle',
+   'right',
+   time,
+   ['4/19/1998', time],
+  ],
+  ['3.0',
+   undef,
+   ['nagler@foo.bar', 'email & subj', 'some subject'],
+   undef,
+   [['http://yahoo.com', 'yahoo'],
+    [undef, undef],
+    ['http://lycos.com', 'lycos'],
+   ],
+   'left',
+   undef,
+   'right',
+   undef,
+   ['4/19/1998', undef],
+  ],
 ]);
 &weblint(2, $html);
 
