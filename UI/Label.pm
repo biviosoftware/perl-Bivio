@@ -208,36 +208,19 @@ _compile(\%_MAP, [
         => 'IRS Center',
     ['FOREIGN_PARTNER', 'TaxK1.foreign_partner']
         => 'Foreign Partner',
-    ['SHORT_TERM_CAPITAL_GAIN',
-        Bivio::Type::TaxCategory->SHORT_TERM_CAPITAL_GAIN->get_short_desc]
-        => 'Short-Term Capital Gains',
-    ['MEDIUM_TERM_CAPITAL_GAIN',
-        Bivio::Type::TaxCategory->MEDIUM_TERM_CAPITAL_GAIN->get_short_desc]
-        => 'Medium-Term Capital Gains',
-    ['LONG_TERM_CAPITAL_GAIN',
-        Bivio::Type::TaxCategory->LONG_TERM_CAPITAL_GAIN->get_short_desc]
-        => 'Long-Term Capital Gains',
-    ['FIVE_YEAR_CAPITAL_GAIN',
-        Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->get_short_desc]
-        => 'Five Year Capital Gains',
-    ['MISC_INCOME',
-        Bivio::Type::TaxCategory->MISC_INCOME->get_short_desc]
-        => 'Miscellaneous Income',
+    'SHORT_TERM_CAPITAL_GAIN' => 'Short-Term Capital Gains',
+    'MEDIUM_TERM_CAPITAL_GAIN' => 'Medium-Term Capital Gains',
+    'LONG_TERM_CAPITAL_GAIN' => 'Long-Term Capital Gains',
+    'FIVE_YEAR_CAPITAL_GAIN' => 'Five Year Capital Gains',
+    'MISC_INCOME' => 'Miscellaneous Income',
     TOTAL_INCOME => 'Total Income',
-    ['MISC_EXPENSE',
-        Bivio::Type::TaxCategory->MISC_EXPENSE->get_short_desc]
-        => 'Miscellaneous Expense',
-    ['FOREIGN_TAXES',
-        Bivio::Type::TaxCategory->FOREIGN_TAX->get_short_desc, 'foreign_taxes_paid']
-        => 'Foreign Taxes',
-    ['NON_DEDUCTIBLE_EXPENSE',
-        Bivio::Type::TaxCategory->NON_DEDUCTIBLE_EXPENSE->get_short_desc]
-        => 'Non-Deductible Expense',
+    'MISC_EXPENSE' => 'Miscellaneous Expense',
+    ['FOREIGN_TAX', 'foreign_taxes_paid'] => 'Foreign Taxes',
+    'NON_DEDUCTIBLE_EXPENSE' => 'Non-Deductible Expense',
     TOTAL_EXPENSE => 'Total Expense',
     NET_PROFIT => 'Net Profit/(Loss)',
     ALLOCATION_METHOD => 'Allocation Method',
-    ['TAX_FREE_INT',
-        Bivio::Type::TaxCategory->FEDERAL_TAX_FREE_INTEREST->get_short_desc]
+    ['TAX_FREE_INT', 'FEDERAL_TAX_FREE_INTEREST']
         => 'Federal Tax Free Interest',
     PAID => 'Total Paid',
     EARNINGS => 'Earnings Allocated',
@@ -593,11 +576,11 @@ _compile(\%_MAP, [
         => [['', 'table_heading'] => 'Name'],
     ['DIVIDEND_HEADING', 'dividend'] => 'Dividend',
     ['INTEREST_HEADING', 'interest'] => 'Interest',
-    TAX_FREE_INT_HEADING => "Tax Free\nInterest",
-    STCG_HEADING => "Short-Term\nCapital Gains",
-    MTCG_HEADING => "Medium-Term\nCapital Gains",
-    LTCG_HEADING => "Long-Term\nCapital Gains",
-    '5YCG_HEADING' => "Five Year\nCapital Gains",
+    FEDERAL_TAX_FREE_INTEREST_HEADING => "Tax Free\nInterest",
+    SHORT_TERM_CAPITAL_GAIN_HEADING => "Short-Term\nCapital Gains",
+    MEDIUM_TERM_CAPITAL_GAIN_HEADING => "Medium-Term\nCapital Gains",
+    LONG_TERM_CAPITAL_GAIN_HEADING => "Long-Term\nCapital Gains",
+    FIVE_YEAR_CAPITAL_GAIN_HEADING => "Five Year\nCapital Gains",
     FOREIGN_TAX_HEADING => "Foreign\nTax",
     MISC_INCOME_HEADING => "Misc.\nIncome",
     MISC_EXPENSE_HEADING => "Misc.\nExpense",
