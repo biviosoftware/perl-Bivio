@@ -1,0 +1,46 @@
+#!perl -w
+# Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-test - calls Bivio::Util::Test
+
+=head1 RELEASE SCOPE
+
+bOP
+
+=head1 SYNOPSIS
+
+b-test [options] command [args...]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Util::Test|Bivio::Util::Test>
+
+=cut
+
+#=IMPORTS
+use Bivio::Util::Test;
+
+#=VARIABLES
+Bivio::Util::Test->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Util::Test
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 bivio Software Artisans Inc.  All Rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
