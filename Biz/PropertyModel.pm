@@ -113,6 +113,24 @@ sub new {
 
 =cut
 
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Pretty prints an identifier for this model.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($ci) = $self->{$_PACKAGE}->{class_info};
+    # All primary keys must be defined or just return ref($self).
+    return ref($self) . '(' . join(',', map {
+	return ref($self) unless defined($_);
+	$_;
+    } $self->get(@{$ci->{as_string_fields}})) . ')';
+}
+
 =for html <a name="create"></a>
 
 =head2 abstract create(hash new_values)
@@ -377,6 +395,11 @@ sub _initialize_class_info {
     $ci->{sql_support}->initialize;
     $ci->{primary_where} = 'where ' . join(' and ',
 	    map {$_ . '=?'} @{$ci->{primary_keys}});
+    # sort is so as_string is always in the same order
+    $ci->{as_string_fields} = [sort @{$ci->{primary_keys}}];
+    unshift(@{$ci->{as_string_fields}}, 'name')
+	    if defined($ci->{property_info}->{name})
+		    && !grep($_ eq 'name', @{$ci->{as_string_fields}});
     return;
 }
 

@@ -85,6 +85,23 @@ sub new {
 
 =head1 METHODS
 
+=cut
+
+=for html <a name="as_string"></a>
+
+=head2 as_string() : string
+
+Pretty prints the realm.
+
+=cut
+
+sub as_string {
+    my($self) = @_;
+    my($owner_name, $owner_id) = $self->unsafe_get('owner_name', 'owner_id');
+    return ref($self) . (defined($owner_name)
+	    ? ('('.$owner_name.','.$owner_id.')'): '');
+}
+
 =for html <a name="can_role_execute_task"></a>
 
 =head2 can_role_execute_task(Bivio::Auth::Role auth_role, Bivio::Agent::TaskId task_id, Bivio::Agent::Request req) : boolean
