@@ -35,14 +35,13 @@ C<Bivio::Agent::HTTP::MessageController>
 =cut
 
 #=IMPORTS
-use Bivio::IO::Config;
+use Bivio::Agent::Request;
 use Bivio::IO::Trace;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-Bivio::IO::Config->register;
 
 =head1 FACTORIES
 
@@ -50,15 +49,18 @@ Bivio::IO::Config->register;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Agent::HTTP::MessageController
+=head2 static new(array views, View default_view) : Bivio::Agent::HTTP::MessageController
 
-
+Creates a message and message list controller.
 
 =cut
 
 sub new {
-    my($self) = &Bivio::Agent::Controller::new(@_);
-    $self->{$_PACKAGE} = {};
+    my($proto, $views, $default_view) = @_;
+    my($self) = &Bivio::Agent::Controller::new($proto, $views);
+    $self->{$_PACKAGE} = {
+	default_view => $default_view->get_name()
+    };
     return $self;
 }
 
@@ -66,21 +68,29 @@ sub new {
 
 =cut
 
-=for html <a name="configure"></a>
+=for html <a name="handle_request"></a>
 
-=head2 static configure(hash cfg)
+=head2 handle_request(Request req)
 
-=over 4
-
-=item name : type [default]
-
-=back
+Handles requests for adding and showing club users.
 
 =cut
 
-sub configure {
-    my(undef, $cfg) = @_;
-    return;
+sub handle_request {
+    my($self, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # set the default view if necessary
+    unless ($req->get_view_name()) {
+	$req->set_view_name($fields->{default_view});
+    }
+    my($view) = $self->get_view($req->get_view_name());
+
+    if (defined($view)) {
+	my($model) = $view->get_default_model();
+	$view->activate()->render($model, $req);
+	$req->set_state(Bivio::Agent::Request::OK);
+    }
 }
 
 #=PRIVATE METHODS
