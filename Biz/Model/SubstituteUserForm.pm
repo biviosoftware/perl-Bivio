@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::SubstituteUserForm;
 use strict;
 $Bivio::Biz::Model::SubstituteUserForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::SubstituteUserForm::VERSION;
 
 =head1 NAME
 
@@ -154,41 +155,39 @@ Look up the user by email, user_id, or name.
 sub validate {
     my($self) = @_;
     my($properties) = $self->internal_get();
-    return unless defined($properties->{'login'});
+    return unless defined($properties->{login});
 
     # Emulate what happens in Type::RealmName
-    $properties->{'login'} = lc($properties->{'login'});
-    $properties->{'login'} =~ s/\s+//g;
+    $properties->{login} = lc($properties->{login});
+    $properties->{login} =~ s/\s+//g;
 
+    # Backwards compatibility (we used to require -admin to su to a club)
+    $properties->{login} =~ s/-admin$//;
+
+    # Try to load
     my($login) = $properties->{'login'};
     my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
     $properties->{realm_owner} = $owner;
-    if ($login =~ /@/) {
-	# Login by email
-	return if $owner->unauth_load_by_email($login,
-		realm_type => Bivio::Auth::RealmType::USER());
-    }
-    elsif ($login =~ /^\d+$/) {
-	# Login by realm id
-	return if $owner->unauth_load(realm_id => $login,
-		realm_type => Bivio::Auth::RealmType::USER());
-    }
-    elsif ($login =~ /^(\w+)-admin$/) {
-	# Login by first admin
-	if ($owner->unauth_load(name => $1,
-		realm_type => Bivio::Auth::RealmType::CLUB())) {
+    if ($login =~ /@/ && $owner->unauth_load_by_email($login)
+	    || $login =~ /^\d+$/ && $owner->unauth_load(realm_id => $login)
+	    || $owner->unauth_load(name => $login)) {
+
+	# No shadow users please
+	if ($owner->is_shadow_user) {
+	    $self->internal_put_error('login', 'SU_SHADOW_USER');
+	    return;
+	}
+
+	# Got a user
+	return if $owner->get('realm_type') == Bivio::Auth::RealmType::USER();
+
+	# Got a club?  Go to first admin
+	if ($owner->get('realm_type') == Bivio::Auth::RealmType::CLUB()) {
 	    return if $owner->unauth_load(realm_id =>
 		    Bivio::Biz::Model::RealmAdminList->get_first_admin($owner),
 		    realm_type => Bivio::Auth::RealmType::USER());
 	}
     }
-    else {
-	# Login by name
-	return if $owner->unauth_load(name => $login,
-		realm_type => Bivio::Auth::RealmType::USER());
-    }
-
-    # Failed
     $self->internal_put_error('login', Bivio::TypeError::NOT_FOUND());
     return;
 }
@@ -197,7 +196,7 @@ sub validate {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
