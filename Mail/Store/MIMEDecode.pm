@@ -13,8 +13,9 @@ MIME parts, and also update club_t kbytes_in_use to keep track
 of the amount of disk storage the club is using.
 
 =head1 SYNOPSIS
+
     use Bivio::Mail::Store::MIMEDecode;
-    Bivio::Mail::Store::MIMEDecode->new(Bivio::Mail::Incoming mail_incoming, string file_name, Bivio::File::Client file_client) : Bivio::Mail::Store::MIMEDecode
+    Bivio::Mail::Store::MIMEDecode->new($mail_incoming, $file_name, $file_client)
 
 =cut
 
@@ -34,7 +35,7 @@ It takes a L<Bivio::Mail::Incoming|Bivio::Mail::Incoming>
 object, and recursively parses out the
 MIME parts. Additionally, it creates a keyword hash of all
 words found in all text/plain MIME parts.
-Ultimately, it will also parse HTML parts.
+Ultimately, it will also parse text/html parts.
 
 =cut
 
@@ -52,8 +53,6 @@ use MIME::Parser;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_FILE_CLIENT);
-
 
 =head1 FACTORIES
 
@@ -63,19 +62,17 @@ my($_FILE_CLIENT);
 
 =head2 static new(Bivio::Mail::Incoming mail_incoming, string file_name, Bivio::File::Client file_client) : Bivio::Mail::Store::MIMEDecode
 
-=item mail_incoming : the mail message being sent to this club.
-
-=item file_name : the name of the message (typically this is the message ID) pre-
-pended with the path. i.e. '/clubname/messages/html'
-
-=item file_client : L<The Bivio::IO::Client|The Bivio::IO::Client> object used to write the MIME parts.
+I<mail_incoming> is the mail message being sent to this club.
+I<file_name> the name of the message (typically this is the message ID)
+pre-pended with the path. i.e. '/clubname/messages/html'
+I<file_client> is the L<Bivio::File::Client|The Bivio::File::Client>
+object used to write the MIME parts.
 
 =cut
 
 sub new {
     my($proto, $mail_incoming, $file_name, $file_client) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
-    $_FILE_CLIENT = $file_client;
     $self->{$_PACKAGE} = {
         message => $mail_incoming,
 	parser => MIME::Parser->new(output_to_core => 'ALL'),
@@ -85,6 +82,7 @@ sub new {
 	#accumulates keywords parsed from text/plain message parts.
 	keywords => {},
 	io_scalar => IO::Scalar->new(),
+	file_client => $file_client,
     };
     return $self;
 }
@@ -95,7 +93,7 @@ sub new {
 
 =for html <a name="get_kbytes_written"></a>
 
-=head2 get_kbytes_written() : int 
+=head2 get_kbytes_written() : int
 
 Returns the number of kilobytes written to the file server
 for all MIME parts.
@@ -108,41 +106,22 @@ sub get_kbytes_written {
 
 =for html <a name="get_num_parts"></a>
 
-=head2 get_num_parts(void) : int
+=head2 get_num_parts() : int
 
 returns the number of MIME parts written to the file server.
 
 =cut
 
 sub get_num_parts {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{num_parts};
-}
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item file_server : string (required)
-
-=back
-
-=cut
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
-    return;
+    return shift->{$_PACKAGE}->{num_parts};
 }
 
 =for html <a name="parse_and_store"></a>
 
 =head2 parse_and_store()
 
-Call this method to parse_and_store and store all MIME encoded parts.
+Call this method to parse and write all MIME encoded parts to
+the appropriate file name on file_client.
 
 =cut
 
@@ -154,8 +133,8 @@ sub parse_and_store {
     my($file_name) = $fields->{file_name};
     my($keywords) = $fields->{keywords};
 
-    #we know the first part is the main mail message. We want
-    #to store keywords For Subject, To, Date, and From fields
+    # we know the first part is the main mail message. We want
+    # to store keywords For Subject, To, Date, and From fields
     _parse_keywords($msg->get_subject(), $keywords);
     _parse_keywords($msg->get_reply_to(), $keywords);
     _parse_keywords($msg->get_dttm(), $keywords);
@@ -168,7 +147,7 @@ sub parse_and_store {
 #	    $file_name, undef, $keywords, \$fields->{num_parts},
 #	    \$fields->{kbytes});
     my($rslt);
-    $_FILE_CLIENT->set_keywords($file_name, $keywords, \$rslt)
+    $fields->{file_client}->set_keywords($file_name, $keywords, \$rslt)
 	    || die("set_keywords failed: \$rslt");
     _trace('total bytes written (MIME): ', $fields->{kbytes}, ' K') if $_TRACE;
     return;
@@ -176,48 +155,49 @@ sub parse_and_store {
 
 #=PRIVATE METHODS
 
-# _extract_mime(MIME::Entity entity, string file_name, string ext, hash_ref keywords, int tnum_parts, scalar_ref kbytes)
+# _extract_mime(hash_ref fields, MIME::Entity entity, string file_name)
 #
 # Extracts sub mime parts for this mime entity. This method is called
 # recursively. kbytes is incremented every time we write a MIME Entity to
 # file storage.
+#
 sub _extract_mime {
     my($fields, $entity, $file_name) = @_;
     Carp::croak('no entity was passed to _extract_mime()') unless $entity;
 #   $fields->{keywords}, $fields->{num_parts}, and $fields->{kbytes}
-    my($tnum_parts) = $fields->{num_parts};
-    my($kbytes) = $fields->{kbytes};
-    my($keywords) = $fields->{keywords};
     _trace('file_name: ', $file_name) if $_TRACE;
-    _trace('head: ', $entity->head());
-    
-    my($ctype) = lc($entity->head()->get('content-type'));
-    my($content_type) = Bivio::Type::MIMEType->from_text($ctype);
-    _parse_mime($entity, $fields, $content_type);
+    _trace('head: ', $entity->head()) if $_TRACE;
+    _parse_mime($fields, $entity,
+	    Bivio::Type::MIMEType->from_content_type(
+		    $entity->head->get('content-type')));
 
 #TODO parse for keyword storage if MIME part content type is HTML
 #right now, we're only parsing for keywords MIME type "plain-text".
+    _write_entity_to_file($fields, $entity, $file_name);
 
-    _write_entity_to_file($entity, $file_name, $fields);
+    my(@parts) = $entity->parts();
+    _trace('number of parts for this MIME part is ', int(@parts)) if $_TRACE;
+    return unless @parts;
 
-    my $num_parts  = $entity->parts || 0;
-    
-    my($i) = 0;
-    _trace('number of parts for this MIME part is ', $num_parts) if $_TRACE;
+#TODO: BTW, From the man page of MIME::Entity
+#           Note: for multipart messages, the preamble and
+#           epilogue are not considered parts.  If you need them,
+#           use the preamble() and epilogue() methods.
 
-    return unless $num_parts;
-
-    for ($i = 0; $i < $num_parts; $i++){
-	_trace('getting part ', $i) if $_TRACE;
-	my($subentity) = $entity->part($i);
-	_trace('subentity is valid') if ($_TRACE && $subentity);
-	my($head) = $subentity->head();
-	my($ctype) = lc($head->get('content-type'));
-	$content_type = Bivio::Type::MIMEType->from_text(lc($head->get('content-type')));
-#	if ($ctype =~ m!^\s*message/rfc822\s*(?:\;|$)!) {
-	if ($content_type eq(Bivio::Type::MIMEType->MESSAGE_RFC822)) {
+    # $i used only for trace
+    my($i) = -1;
+    my($subentity);
+    for $subentity (@parts) {
+	_trace('getting part ', ++$i) if $_TRACE;
+	_trace('subentity is valid') if $_TRACE && $subentity;
+	$content_type = Bivio::Type::MIMEType->from_content_type(
+		$subentity->head->get('content-type'));
+#TODO: BTW, 'eq' is a binary operator, not a method.  eq(bla) is not 
+#      appropriate syntax.
+#TODO: Use == on enums.  Use :: form, because faster and 'ok' in this case.
+	if ($content_type == Bivio::Type::MIMEType::MESSAGE_RFC822()) {
 #TODO We need to do the same thing for message/digest
-	    _trace('part', $i, ' is an rfc922 message.') if $_TRACE;
+	    _trace('part', $i, ' is an rfc822 message.') if $_TRACE;
 	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
             my($root_entity) = $parser->read(
 		    $subentity->bodyhandle->open('r'));
@@ -226,10 +206,9 @@ sub _extract_mime {
 	    return unless $root_entity;
 	    _extract_mime($fields, $root_entity, $file_name."_$i");
 	}
-#	elsif ($ctype =~ m!^\s*text/plain\s*(?:\;|$)!) {
-	elsif ($content_type eq(Bivio::Type::MIMEType->TEXT_PLAIN)) {
-	    _trace('part content type is text/plain. calling _extract_mime on it')
-		    if $_TRACE;
+	elsif ($content_type == Bivio::Type::MIMEType::TEXT_PLAIN()) {
+	    _trace('part content type is text/plain.'
+		    .' calling _extract_mime on it') if $_TRACE;
 	    _extract_mime($fields, $subentity, $file_name."_$i");
 	}
 	_trace('done with part ', $i) if $_TRACE;
@@ -237,30 +216,31 @@ sub _extract_mime {
     return;
 }
 
-# _extract_mime_body_decoded(MIME::Entity entity, hash_ref fields) : scalar_ref
+# _extract_mime_body_decoded(hash_ref fields, MIME::Entity entity) : scalar_ref
 #
 # Extracts the body of a MIME Entity decoded.
 #
 sub _extract_mime_body_decoded {
-    my($entity, $fields) = @_;
+    my($fields, $entity) = @_;
     my($s);
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
     my($io) = $entity->open('r');
-    return \$s unless defined($io);
-    my($line);
-    $file->print($line) while defined($line = $io->getline);
-    $io->close();
+    if (defined($io)) {
+	my($line);
+	$file->print($line) while defined($line = $io->getline);
+	$io->close();
+    }
     $file->close();
     return \$s
 }
 
-# _extract_mime_header(MIME::Entity entity) : string
+# _extract_mime_header(hash_ref fields, MIME::Entity entity) : string
 #
 # Extracts the MIME Header out of the entity. Returns it
 # as a scalar.
 sub _extract_mime_header {
-    my($entity, $fields) = @_;
+    my($fields, $entity) = @_;
     _trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
     my($s);
     my($file) = $fields->{io_scalar};
@@ -292,7 +272,7 @@ sub _parse_keywords {
     return;
 }
 
-# _parse_mime(MIME::Entity entity, hash_ref fields, Bivio::Type::MIMEType content_type )
+# _parse_mime(hash_ref fields, MIME::Entity entity, Bivio::Type::MIMEType content_type )
 #
 # Parses a MIME entity. If the MIME type is text/plain,
 # then _parse_msg_line is called for each line of the content.
@@ -300,11 +280,12 @@ sub _parse_keywords {
 # all keywords found in the text line.
 #
 sub _parse_mime {
-    my($entity, $fields, $content_type) = @_;
+    my($fields, $entity, $content_type) = @_;
     _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
     if($content_type eq(Bivio::Type::MIMEType->TEXT_PLAIN)){
 	_trace('content type TEXT_PLAIN. Parsing for keywords') if $_TRACE;
-        my($file) = IO::Scalar->new(_extract_mime_body_decoded($entity, $fields));
+        my($file) = IO::Scalar->new(_extract_mime_body_decoded(
+		$fields, $entity));
 	while (!$file->eof) {
 	    my($line) = $file->getline();
 	    _parse_msg_line($line, $fields->{keywords});
@@ -313,14 +294,15 @@ sub _parse_mime {
     return;
 }
 
-# _parse_msg_line(scalar line) : 
+# _parse_msg_line(scalar line)
 #
 # Called for each line of a MIME part that is text/plain.
 #
 sub _parse_msg_line {
     my($str, $keywords) = @_;
-    if($str eq('')){
-	_trace('line is zero length. _parse_msg_line is ignorning it') if $_TRACE;
+    unless (length($str)) {
+	_trace('line is zero length, ignoring') if $_TRACE;
+	return;
     }
 #TODO: Handle multi-line tags.
     $str =~ s/--//g;
@@ -338,7 +320,7 @@ sub _parse_msg_line {
     return;
 }
 
-# _write_entity_to_file(MIME::Entity entity, string file_name, hash_ref fields);
+# _write_entity_to_file(hash_ref fields, MIME::Entity entity, string file_name)
 #
 # Writes the mime header and body content to a file.
 # modifies $fields->{kbytes} and $fields->{num_parts}
@@ -346,18 +328,18 @@ sub _parse_msg_line {
 # file_name : the name of the file (fully qualified path)
 # fields : member variables from this object (_PACKAGE_)
 sub _write_entity_to_file {
-    my($entity, $file_name, $fields) = @_;
+    my($fields, $entity, $file_name) = @_;
     #extract the header and body, and shove them into a string.
     #probably I should re-use a scalar ref or an IO handle for both of these.
-    my($msg_hdr) = _extract_mime_header($entity, $fields);
+    my($msg_hdr) = _extract_mime_header($fields, $entity);
     die('header is undef') unless defined($msg_hdr) && length($msg_hdr);
-    my($msg_body) = _extract_mime_body_decoded($entity, $fields);
+    my($msg_body) = _extract_mime_body_decoded($fields, $entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
     $msg_hdr .= $$msg_body if $$msg_body;
     $fields->{kbytes} += length($msg_hdr)/1024;
     _trace('kbytes: ', $fields->{kbytes}) if $_TRACE;
-    $_FILE_CLIENT->create($file_name, \$msg_hdr)
+    $fields->{file_client}->create($file_name, \$msg_hdr)
 	    || die("write failed: $msg_hdr");
     $fields->{num_parts}++;
     return;
