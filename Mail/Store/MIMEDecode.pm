@@ -291,9 +291,14 @@ sub _format_body {
     return $formatted_mail;
 }
 
-# _handle_image_attachments() : 
+# _handle_image_attachments(scalar_ref line, scalar_ref index, hash_ref fields) :
+# This method is SUPPOSED to find the cid:part... anchors in HTML emails. It can find them,
+# but to date this method does not work correctly.
 #
-#
+#TODO I have no fucking idea why this doesn't work. I give up.
+# It refuses to find the various occurances of the mime parts, and
+# it refuses to increment the scalar reference I send in ($subpart_index).
+# What the hell am I doing wrong?
 #
 sub _handle_image_attachments {
     my($line, $subpart_index, $fields) = @_;
@@ -302,9 +307,12 @@ sub _handle_image_attachments {
 	my($req) = $fields->{request};
 	my $sb = $1;
 	my $fname = $fields->{filename};
+	_trace('filename: ', $fname);
 	$fname =~ /_(\d*)$/;
-	my $index = $1+1 + $$subpart_index;
-	$$subpart_index++;
+	_trace('subpart index: ' , $$subpart_index);
+	my $index = $1+1 + $$subpart_index++;
+#	$$subpart_index += 1;
+	_trace('index: ', $index) if $_TRACE;
 	$fname =~ s/_(\d*)$/_$index/;
 	my $attachment_id = $fname;
 	$attachment_id =~ /\/(\d.*$)/;
