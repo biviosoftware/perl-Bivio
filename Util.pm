@@ -81,6 +81,33 @@ sub compile_attribute_accessors ($@) {
     eval $eval . '; 1' || croak("accessor compilation failed: $@");
 }
 
+# return an "@bivio.com" email address for the arg
+sub email ($) {
+    shift() . '@bivio.com';
+}
+
+# mailto $link ; $label
+sub href ($;$) {
+    my($href, $label) = @_;
+    defined($href) || return undef;
+    defined($label) || ($label = $href);
+    return '<a href="' . $href . '">' . &escape_html($label) . '</a>';
+}
+
+# mailto $email ; $label $subject
+sub mailto ($;$$) {
+    my($email, $label, $subject) = @_;
+    defined($email) || return undef;
+    defined($label) || ($label = $email);
+    if (defined($subject)) {
+	($subject = &escape_uri($subject)) =~
+	    s/([&?])/$1 eq '&' ? '%26' : '%3f'/eg; 	  # easiest, but a hack
+	$email .= '?subject=' . $subject;
+    }
+    &href('mailto:' . $email, $label);
+}
+
+
 1;
 __END__
 

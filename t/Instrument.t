@@ -51,6 +51,7 @@ print "Testing all attributes...\n";
     ex-dividend_date
     exchange
     high
+    info
     last_trade_date
     last_trade_price
     last_trade_time

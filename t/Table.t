@@ -89,12 +89,16 @@ $t = Bivio::Club::Table->new([
     ['Col2', [
         ['Subcol2a', 'uri'],
         ['Subcol2b', 'email'],
-    ]]
+    ]],
+    [&Bivio::Club::Table::MESSAGE, 'email'],
 ]);
 
 $html = $t->render_html('My Third Table',
 [
   ['1.1a', 'http://www.olsen.ch', 'nagler@olsen.ch'],
+  ['hello', 'http://yahoo.com', 'root@bivio.com'],
+  $t->make_message_row('john@doe.com', "Here's how to mail John",
+		      'a special subject'),
 ]);
 &weblint(4, $html);
 

@@ -12,7 +12,7 @@ use Bivio::Club::Page;
 use Bivio::Club::Page::Agreement;
 use Bivio::Club::Page::Distributions;
 use Bivio::Club::Page::Members;
-#use Bivio::Club::Page::Messages;
+use Bivio::Club::Page::Messages;
 use Bivio::Club::Page::Watchlist;
 
 $Bivio::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -32,8 +32,8 @@ my(@_PAGES) = (
     Bivio::Club::Page::Agreement->new(),
     Bivio::Club::Page::Distributions->new(),
     Bivio::Club::Page::Members->new(),
-#    Bivio::Club::Page::Messages->new(),
-    $_DEFAULT_PAGE = Bivio::Club::Page::Watchlist->new(),
+    $_DEFAULT_PAGE = Bivio::Club::Page::Messages->new(),
+    Bivio::Club::Page::Watchlist->new(),
 );
 
 my(%_URI_TO_PAGE_MAP) = map {($_->URI, $_)} @_PAGES;
@@ -57,7 +57,7 @@ sub _request ($) {
     my($br) = @_;
     my($user) = Bivio::User->authenticate($br);
     my($path);
-    ($path = $br->r->uri) =~ s,^/([^/]+),,;
+    ($path = $br->r->uri) =~ s,^/+([^/]+),,;
     my($name) = $1;
     my($data) = $_HOME . $name;
     my($self) = &Bivio::Data::lookup($data, Bivio::Club::, $br);
@@ -65,7 +65,8 @@ sub _request ($) {
     $self->{data_dir} = $data . '/';
     $self->authenticate($br);
     my($page);
-    $path =~ s,^/([^/]+),, && ($page = $1); # NOTE: $1 not reset if match fails
+    # NOTE: $1 not reset if match fails
+    $path =~ s,^/+([^/]+)/*,, && ($page = $1);
     $page = !defined($page) ? $_DEFAULT_PAGE
 	: defined($_URI_TO_PAGE_MAP{$page}) ? $_URI_TO_PAGE_MAP{$page}
 	    : $br->not_found("no such page");
@@ -91,6 +92,10 @@ sub member_attr ($$$) {
     my($self, $member, $attr) = @_;
     my($m) = $self->members->{$member};
     return defined($m) && defined($m->{$attr}) ? $m->{$attr} : undef;
+}
+
+sub email ($) {
+    &Bivio::Util::email(shift->name);
 }
 
 1;

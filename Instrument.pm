@@ -35,6 +35,7 @@ my(%_ATTR_MAP) = (
     'ex-dividend_date' => 'q',
     'exchange' => 'x',
     'high' => 'h',
+    'info' => 'i',
     'last_trade_date' => 'd1',
     'last_trade_price' => 'l1',
     'last_trade_time' => 't1',
@@ -59,6 +60,7 @@ my($_REQUEST) = undef;
 #   Compiles a query which must be passed to &execute_query
 sub compile_query ($) {
     my($attrs) = @_;
+    $attrs = [@$attrs]; 		       # make a copy, because we modify
     # execute_query needs 'exchange' in attrs to validate symbol
     grep($_ eq 'exchange', @$attrs) || push(@$attrs, 'exchange');
     return {

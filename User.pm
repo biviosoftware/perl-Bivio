@@ -14,7 +14,7 @@ BEGIN {
     use Bivio::Util;
     &Bivio::Util::compile_attribute_accessors(
 	[qw(name passwd first_name middle_name last_name street apt
-	 city state zip home_phone email home_page biography)],
+	 city state zip home_phone real_email home_page biography)],
 	'no_set');
 }
 
@@ -27,7 +27,9 @@ sub authenticate ($$)
 {
     my($proto, $br) = @_;
     my($ret, $sent_pw) = $br->r->get_basic_auth_pw();
-    $ret != 0 && $br->auth_failure('need user/passwd');
+#RJN: For some reason it is failing with need user/passwd in a loop.
+#     Could it be that it is returning some other value
+    $ret != 0 && $br->auth_failure("need user/passwd: ret = $ret");
     my($name) = $br->r->connection->user;
     my($self) = &lookup($proto, $name, $br);
     defined($self) || $br->auth_failure($name, ': no such user');
@@ -104,6 +106,54 @@ sub full_address ($) {
     $n =~ s/^ //;
     push(@$res, $n);
     return $res;
+}
+
+sub lookup_by_email ($$) {
+    my($proto, $email, $br) = @_;
+#RJN: Access control would have to apply here.  Should only be able
+#     to get at full names of users for which $self has access, e.g.
+#     they belong to the same club.
+    $email = lc($email);
+    my($x);
+    foreach $x (1..3) {				 # three strikes and you're out
+	my($map) = &Bivio::Data::lookup($_HOME, \&_init_email_map, $br,
+			     &Bivio::Data::ALL_KEYS);
+	defined($map->{$email}) || return undef;
+	my($u) = $proto->lookup($map->{$email}, $br);
+	defined($u)
+	    && ($u->real_email eq $email || $u->email eq $email)
+	    && return $u;
+	# The user name in the map is not found.  This means the file
+	# was updated.  Were there other files updated?  Better to
+	# just bag it and try again.
+	&Bivio::Data::invalidate_cache($_HOME);
+    }
+    $br->server_error("lookup_by_email($email) looping");
+}
+
+# Called during &map_email_to_user to turn the list of user names into
+# a hash of email address to user names.  We don't cache the actual
+# users instances to avoid stale copies which were discarded by
+# Bivio::Data and left in this cache, because the directory hadn't changed.
+# See lookup_by_email
+sub _init_email_map ($$) {
+    my($list, $br) = @_;
+    my($n);
+    my($map) = {};
+    foreach $n (@$list) {
+	my($u) = Bivio::User->lookup($n, $br);
+	defined($u) || next;				    # file just deleted
+	$map->{$u->email} = $u->name;
+	$map->{$u->real_email} = $u->name;
+    }
+    return $map;
+}
+
+# email $user
+#
+#   Returns the user's (bivio) e-mail address.  See also real_email
+sub email ($) {
+    &Bivio::Util::email(shift->name);
 }
 
 1;
