@@ -44,16 +44,16 @@ my(%_FROM_TASK_ID);
 # Last task_id in list is mapped in $_FROM_TASK_ID
 my(@_MAP_INITIALIZER) = qw(
     PUBLIC 	club/setup 		SETUP_INTRO
-    _		user/new		SETUP_USER_EDIT
-    _		user/created		SETUP_USER_CREATE
+    "		user/new		SETUP_USER_EDIT
+    "		user/created		SETUP_USER_CREATE
     ANY_USER    club/new	        SETUP_CLUB_EDIT
-    _		club/created	        SETUP_CLUB_CREATE
+    "		club/created	        SETUP_CLUB_CREATE
     CLUB        _                       CLUB_MESSAGE_LIST
-    _           _/messages		CLUB_MESSAGE_LIST
-    _           _/messages/detail	CLUB_MESSAGE_DETAIL
-    _           _/members		CLUB_MEMBER_LIST
-    _           _/members/new		CLUB_MEMBER_ADD_EDIT
-    _           _/members/added		CLUB_MEMBER_ADD
+    "           _/messages		CLUB_MESSAGE_LIST
+    "           _/messages/detail	CLUB_MESSAGE_DETAIL
+    "           _/members		CLUB_MEMBER_LIST
+    "           _/members/new		CLUB_MEMBER_ADD_EDIT
+    "           _/members/added		CLUB_MEMBER_ADD
 );
 
 =head1 METHODS
@@ -103,7 +103,7 @@ sub initialize {
 		= (shift(@_MAP_INITIALIZER), shift(@_MAP_INITIALIZER));
 	my($task_id) = Bivio::Agent::TaskId->$task_id_name();
 	# Test for all the realms we understand, explicitly.
-	unless ($new_realm eq '_' || ($realm = $static{$new_realm})) {
+	unless ($new_realm eq '"' || ($realm = $static{$new_realm})) {
 	    die("$new_realm: unknown realm type")
 		    unless $new_realm =~ /^(CLUB|USER)$/;
 	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($new_realm));
