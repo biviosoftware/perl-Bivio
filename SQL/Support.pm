@@ -61,6 +61,20 @@ Version of this support declaration.
 
 =back
 
+=head1 FIELD ATTRIBUTES
+
+These attributes apply to fields (INCOMPLETE!)
+
+=over 4
+
+=item sort_order : boolean
+
+Default order by option.
+True means ascending (normal) and false means descending.
+NOT NORMALLY USED.
+
+=back
+
 =cut
 
 #=IMPORTS
@@ -309,6 +323,25 @@ sub init_model_primary_key_maps {
     return;
 }
 
+=for html <a name="init_type"></a>
+
+=head2 init_type(hash_ref col, any type_cfg)
+
+Sets I<type> and I<sort_order> attributes on I<col> based on I<type_cfg>.
+
+=cut
+
+sub init_type {
+    my(undef, $col, $type_cfg) = @_;
+    $type_cfg = 'Bivio::Type::'.$type_cfg unless $type_cfg =~ /::/;
+    Carp::croak($type_cfg, ': not a Bivio::Type')
+		unless UNIVERSAL::isa($type_cfg, 'Bivio::Type');
+    $col->{type} = $type_cfg;
+    $col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
+	    $col->{type});
+    return;
+}
+
 =for html <a name="init_version"></a>
 
 =head2 static init_version(hash_ref attrs, hash_ref decl)
@@ -358,19 +391,11 @@ sub _init_column_from_hash {
 	$attrs->{columns}->{$first} = $col;
     }
     # Override or define new, but only set if set
-    if ($decl->{type}) {
-	Carp::croak($decl->{type}, ': not a Bivio::Type')
-		    unless UNIVERSAL::isa($decl->{type}, 'Bivio::Type');
-	$col->{type} = $decl->{type};
-	$col->{sort_order} = Bivio::SQL::ListQuery->get_sort_order_for_type(
-		$decl->{type});
-    }
-    if ($decl->{constraint}) {
-	Carp::croak($decl->{constraint}, ': not a Bivio::SQL::Constraint')
-		    unless UNIVERSAL::isa($decl->{constraint},
-			    'Bivio::SQL::Constraint');
-	$col->{constraint} = $decl->{constraint};
-    }
+    __PACKAGE__->init_type($col, $decl->{type}) if $decl->{type};
+    $col->{sort_order} = $decl->{sort_order} ? 1 : 0
+	    if exists($decl->{sort_order});
+    $col->{constraint} = Bivio::SQL::Constraint->from_any(
+	    $decl->{constraint}) if $decl->{constraint};
     push(@{$attrs->{$class}}, $col);
     return $col;
 }
