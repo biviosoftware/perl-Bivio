@@ -990,9 +990,6 @@ sub run_daemon {
 	Bivio::IO::Log->file_name($cfg->{daemon_log_file}),
     ) if $cfg->{daemon_log_file};
     Bivio::IO::ClassLoader->simple_require('BSD::Resource');
-#TODO: Fork/setsid is another program.  Need to set pid of process
-#TODO: Returned by parent on stdout
-#    POSIX::setsid();
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
     my($i) = 3;
