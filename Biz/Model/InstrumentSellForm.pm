@@ -31,6 +31,7 @@ C<Bivio::Biz::Model::InstrumentSellForm>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::RealmInstrumentLotList;
 use Bivio::IO::Trace;
 use Bivio::TypeError;
 use Bivio::UI::HTML::Format::Date;
@@ -85,7 +86,10 @@ sub execute_input {
 	    = Bivio::UI::HTML::Format::Date->get_widget_value(
 		    $properties->{'RealmTransaction.date_time'});
 
+    _fill_lots_fifo($self);
+
     # hacked redirect to page two
+    $self->get_request->get('form')->{stay_on_page} = 1;
     $self->internal_put_error(redirect => Bivio::TypeError::UNKNOWN);
 
     return;
@@ -150,10 +154,54 @@ sub validate {
 	    Bivio::TypeError::GREATER_THAN_ZERO())
 	    unless $properties->{'RealmInstrumentEntry.count'} > 0;
 
+    my($req) = $self->get_request;
+    my($realm) = $req->get('auth_realm')->get('owner');
+    my($realm_inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
+    my($shares_owned) = $realm->get_number_of_shares(
+	    $properties->{'RealmTransaction.date_time'})
+	    ->{$realm_inst->get('realm_instrument_id')};
+    # number of shares shouldn't exceed owned
+    $self->internal_put_error('RealmInstrumentEntry.count',
+	    Bivio::TypeError::SHARES_SOLD_EXCEEDS_OWNED())
+	    unless $properties->{'RealmInstrumentEntry.count'}
+		    <= $shares_owned;
+
     return;
 }
 
 #=PRIVATE METHODS
+
+# _fill_lots_fifo()
+#
+# Loads the lot fields with values using first-in-first-out.
+#
+sub _fill_lots_fifo {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($properties) = $self->internal_get;
+    my($count) = $properties->{'RealmInstrumentEntry.count'};
+
+    my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
+    $lot_list->load();
+    my($lot_num) = 0;
+
+    while ($lot_list->next_row) {
+	my($quantity) = $lot_list->get('quantity');
+
+	if ($quantity >= $count) {
+	    $req->get('form')->{'lot'.$lot_num} =
+		    Bivio::Type::Amount->to_literal($count);
+	    last;
+	}
+	else {
+	    $req->get('form')->{'lot'.$lot_num} =
+		    Bivio::Type::Amount->to_literal($quantity);
+	    $count = Bivio::Type::Amount->sub($count, $quantity);
+	}
+	$lot_num++;
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 
