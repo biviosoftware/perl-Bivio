@@ -36,9 +36,9 @@ use MIME::Parser;
 use Time::Local;
 
 #=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_SPECIAL_CHARS) = Bivio::Mail::RFC822::SPECIALS();
 my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
@@ -264,11 +264,11 @@ sub get_date_time {
     my($date) = $self->get_field('date') || $self->get_field('received');
     if (defined($date)) {
         my($date_time) = _parse_date($date);
-        &_trace($date, ' -> ', $date_time) if $_TRACE;
+        _trace($date, ' -> ', $date_time) if $_TRACE;
         return $date_time;
     } else {
 	Bivio::IO::Alert->warn("no Date or Received field avalable");
-	&_trace('no Date or Received field avalable') if $_TRACE;
+	_trace('no Date or Received field avalable') if $_TRACE;
 	return undef;
     }
 }
@@ -290,7 +290,7 @@ sub get_from {
     my($from) = $head->get('from') || $head->get('apparently-from');
     if (defined($from)) {
         my($email, $name) = Bivio::Mail::Address::parse($from);
-        &_trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
+        _trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
     } else {
 	Bivio::IO::Alert->warn('Missing From: header');
@@ -378,7 +378,7 @@ sub get_reply_to {
     my($reply_to) = $self->get_head->get('reply-to');
     if (defined($reply_to)) {
         my($email, $name) = Bivio::Mail::Address::parse($reply_to);
-        &_trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
+        _trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
         return wantarray ? ($email, $name) : $email;
     } else {
         return wantarray ? (undef, undef) : undef;
@@ -437,8 +437,7 @@ sub handle_config {
 =head2 static send_queued_messages()
 
 Sends messages that have been queued with L<enqueue|"enqueue">.  This should be
-called after at the end of request processing.  Any errors are mailed to the
-postmaster.
+called after at the end of request processing.
 
 =cut
 
@@ -468,7 +467,7 @@ sub send {
     my($num_loops) = $self->get_head->get('X-Bivio-Forwarded') || 0;
     $self->get_head->replace('X-Bivio-Forwarded', $num_loops+1);
 
-    &_trace('To ', join(',',@{$fields->{recipients}})) if $_TRACE;
+    _trace('To ', join(',',@{$fields->{recipients}})) if $_TRACE;
 
     # Use only one handle to avoid leaks
     my($fh) = \*Bivio::Mail::Message::OUT;
@@ -484,7 +483,9 @@ sub send {
     }
     else { # child
         my(@cmd) = split(/\s+/, $_SENDMAIL);
-        defined($fields->{env_from}) && push(@cmd, '-f', $fields->{env_from});
+        # Set mail sender (which will be the one receiving the bounce)
+        push(@cmd, '-f', $fields->{env_from} || $_ERRORS_TO);
+        _trace(join(' ', @cmd)) if $_TRACE;
         exec(@cmd, @{$fields->{recipients}}) || die("$_SENDMAIL: $!");
     }
     return;
