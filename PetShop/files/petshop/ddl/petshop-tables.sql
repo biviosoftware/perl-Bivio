@@ -35,33 +35,6 @@ CREATE TABLE category_t (
 )
 /
 
-CREATE TABLE entity_t (
-  entity_id NUMERIC(18),
-  CONSTRAINT entity_t1 PRIMARY KEY(entity_id)
-) 
-/
-
-CREATE TABLE entity_address_t (
-  entity_id NUMERIC(18) NOT NULL,
-  location NUMERIC(2) NOT NULL,
-  addr1 VARCHAR(100),
-  addr2 VARCHAR(100),
-  city VARCHAR(30),
-  state VARCHAR(30),
-  zip VARCHAR(30),
-  country CHAR(2),
-  CONSTRAINT entity_address_t1 PRIMARY KEY(entity_id, location)
-)
-/
-
-CREATE TABLE entity_phone_t (
-  entity_id NUMERIC(18) NOT NULL,
-  location NUMERIC(2) NOT NULL,
-  phone VARCHAR(30),
-  CONSTRAINT entity_phone_t1 PRIMARY KEY(entity_id, location)
-)
-/
-
 CREATE TABLE inventory_t (
   item_id VARCHAR(30),
   quantity NUMERIC(10) NOT NULL,
@@ -74,7 +47,6 @@ CREATE TABLE item_t (
   product_id VARCHAR(30) NOT NULL,
   list_price NUMERIC(10,2) NOT NULL,
   unit_cost NUMERIC(10,2) NOT NULL,
-  supplier_id NUMERIC(18) NOT NULL,
   status NUMERIC(2) NOT NULL,
   attr1 VARCHAR(100) NOT NULL,
   attr2 VARCHAR(100),      
@@ -86,30 +58,12 @@ CREATE TABLE item_t (
 /
 
 CREATE TABLE order_t (
-  order_id NUMERIC(18),
+  realm_id NUMERIC(18),
   cart_id NUMERIC(18) NOT NULL,
-  user_id NUMERIC(18) NOT NULL,
-  order_date DATE NOT NULL,
-  courier VARCHAR(100) NOT NULL,
-  total_price NUMERIC(10,2) NOT NULL,
-  bill_to_first_name VARCHAR(100) NOT NULL,
-  bill_to_last_name VARCHAR(100) NOT NULL,
-  ship_to_first_name VARCHAR(100) NOT NULL,
-  ship_to_last_name VARCHAR(100) NOT NULL,
-  credit_card VARCHAR(100) NOT NULL,
-  expiration_date DATE NOT NULL,
-  card_type NUMERIC(2) NOT NULL,
-  bonus_miles NUMERIC(18),
-  CONSTRAINT order_t1 PRIMARY KEY(order_id)
-)
-/
-
-CREATE TABLE order_status_t (
-  order_id NUMERIC(18),
-  user_id NUMERIC(18) NOT NULL,
-  time_stamp DATE NOT NULL,
-  status NUMERIC(2) NOT NULL,
-  CONSTRAINT order_status_t1 PRIMARY KEY(order_id)
+  ec_payment_id NUMERIC(18) NOT NULL,
+  bill_to_name VARCHAR(100) NOT NULL,
+  ship_to_name VARCHAR(100) NOT NULL,
+  CONSTRAINT order_t1 PRIMARY KEY(realm_id)
 )
 /
 
@@ -123,19 +77,9 @@ CREATE TABLE product_t (
 )    
 /
 
-CREATE TABLE supplier_t (
-  supplier_id NUMERIC(18),
-  name VARCHAR(100) NOT NULL,
-  status NUMERIC(2) NOT NULL,
-  CONSTRAINT supplier_t1 PRIMARY KEY(supplier_id)
-)
-/
-
 CREATE TABLE user_account_t (
   user_id NUMERIC(18),
-  entity_id NUMERIC(18) NOT NULL,
   status NUMERIC(2) NOT NULL,
-  last_cart_id NUMERIC(18),
   user_type NUMERIC(2) NOT NULL,
   CONSTRAINT user_account_t1 PRIMARY KEY(user_id)
 )
