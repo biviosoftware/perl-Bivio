@@ -45,7 +45,7 @@ Bivio::Test->unit([
 	    ]);
 	} [
 	    'serial_console', [] => [
-		['etc/securetty', '/dev/ttyS0'],
+		['etc/securetty', '(?<!/dev/)ttyS0'],
 		['etc/inittab', 'getty\s+ttyS0'],
 		['etc/grub.conf', '#splash'],
 		['etc/grub.conf', 'serial\s+--unit=0'],
@@ -101,6 +101,10 @@ Bivio::Test->unit([
 	], [
 	    'add_users_to_group', [qw(root root larry)] => [
 		['etc/group', 'larry'],
+	    ],
+	], [
+	    'add_users_to_group', [qw(tty tommy)] => [
+		['etc/group', 'tommy'],
 	    ],
 	], [
             'rhn_up2date_param', ['pkgSkipList', ''] => [
