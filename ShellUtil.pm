@@ -38,7 +38,15 @@ options (I<user>, I<db>, and I<realm>).
 
 Options precede the command.  See L<OPTIONS|"OPTIONS">.
 
-For an example, see L<Bivio::SQL::Util|Bivio::SQL::Util>.
+For an example, see L<Bivio::Biz::Util::File|Bivio::Biz::Util::File>
+and L<Bivio::Biz::Util::Filtrum|Bivio::Biz::Util::Filtrum> (less complex).
+
+When implementing a subclass, try to avoid assumptions about $self.
+For example, don't assume $self is a reference and instead load things
+on the request.   As an example, in Bivio::Biz::Util::File, the volume
+is loaded on the request once it is parsed from $self if it is available.
+
+ShellUtils can't be subclassed.  See _method_ok() below.
 
 =head1 ATTRIBUTES
 
@@ -114,8 +122,9 @@ Called by L<usage|"usage"> and returns the string:
   options:
 	  -db - name of database connection
 	  -email - who to mail the results to (may be a comma separated list)
+          -input - a file to read from ("-" is STDIN)
           -noexecute - don't commit
-          -output - a file to write the output to
+          -output - a file to write the output to ("-" is STDOUT)
 	  -realm - realm_id or realm name
 	  -user - user_id or user name
 
@@ -126,8 +135,9 @@ sub OPTIONS_USAGE {
 options:
         -db - name of database connection
         -email - who to mail the results to (may be a comma separated list)
+        -input - a file to read from ("-" is STDIN)
         -noexecute - don't commit
-        -output - a file to write the output to
+        -output - a file to write the output to ("-" is STDOUT)
         -realm - realm_id or realm name
         -user - user_id or user name
 EOF
@@ -144,6 +154,7 @@ The default values are:
 	realm => ['Name', undef],
 	user => ['Name', undef],
 	db => ['Name', undef],
+        input => ['Line', '-'],
 	noexecute => ['Boolean', 0],
         output => ['Line', undef],
 	email => ['Text', undef],
@@ -171,8 +182,9 @@ sub OPTIONS {
 	user => ['Name', undef],
 	db => ['Name', undef],
 	email => ['Text', undef],
-        output => ['Line', undef],
+	input => ['Line', '-'],
 	noexecute => ['Boolean', 0],
+        output => ['Line', undef],
 	quiet => ['Boolean', 0],
     };
 }
@@ -204,9 +216,6 @@ use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
-# This is here to avoid a bunch of error messages when societas
-# is started in stack_trace_warn.
-use MIME::Parser;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -342,10 +351,7 @@ sub main {
     $self->setup();
     my($cmd, $res);
     my($die) = Bivio::Die->catch(sub {
-	# Execute the method only if defined in subclass
-	# (except for usage)
-	if (@argv && $argv[0] =~ /^([a-z]\w*)$/i && $self->can($1)
-		&& (!__PACKAGE__->can($1) || $1 eq 'usage')) {
+	if (@argv && _method_ok($self, $argv[0])) {
 	    $cmd = shift(@argv);
 	    $res = $self->$cmd(@argv);
 	}
@@ -426,6 +432,53 @@ sub put {
     return $self->SUPER::put(@_);
 }
 
+=for html <a name="read_file"></a>
+
+=head2 static read_file(string file_name) : string_ref
+
+Returns the contents of the file.  If the file name is '-',
+input is read from STDIN.
+
+#TODO: Create Bivio::IO::File->read
+
+=cut
+
+sub read_file {
+    my(undef, $file_name) = @_;
+    my($op) = 'open';
+ TRY: {
+	open(IN, $file_name eq '-' ? '-' : '< '.$file_name) || last TRY;
+	$op = 'read';
+	my($offset, $read, $buf) = (0, 0, '');
+	$offset += $read while $read = read(IN, $buf, 0x1000, $offset);
+	defined($read) || last TRY;
+	$op = 'close';
+        close(IN) || last TRY;
+	_trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
+	return \$buf;
+    }
+    Bivio::Die->throw_die('IO_ERROR', {
+	message => "$!",
+	operation => $op,
+	entity => $file_name,
+    });
+    # DOES NOT RETURN
+}
+
+=for html <a name="read_input"></a>
+
+=head2 read_input() : string_ref
+
+Returns the contents if I<input> argument.  If no argument, reads
+from STDIN.
+
+=cut
+
+sub read_input {
+    my($self) = @_;
+    return $self->read_file($self->get('input'));
+}
+
 =for html <a name="result"></a>
 
 =head2 result(string cmd, string_ref res)
@@ -467,6 +520,7 @@ sub setup {
         Bivio::Agent::Job::Request
         Bivio::Agent::TaskId
         Bivio::SQL::Connection
+        Bivio::Agent::HTTP::Location
     });
     $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
 
@@ -493,6 +547,8 @@ sub setup {
 				$self->get('req')->get('auth_realm')
 				->get('owner'))));
     }
+
+    Bivio::Agent::HTTP::Location->initialize_map;
     return;
 }
 
@@ -556,18 +612,23 @@ sub verbose {
 Creates a file with I<file_name> and writes I<contents> to it.
 Dies with an IO_ERROR on errors.
 
+If the file name is '-', writes to C<STDOUT>.
+
+#TODO: Create Bivio::IO::File->write
+
 =cut
 
 sub write_file {
     my(undef, $file_name, $contents) = @_;
     my($op) = 'open';
  TRY: {
-	open(OUT, '> '.$file_name) || last OUT;
+	open(OUT, $file_name eq '-' ? '>-' : '> '.$file_name) || last TRY;
 	$op = 'print';
-	(print OUT $$contents) || last OUT;
+	(print OUT $$contents) || last TRY;
 	$op = 'close';
-        close(OUT) || last OUT;
-	_trace('Wrote ', $file_name) if $_TRACE;
+        close(OUT) || last TRY;
+	_trace('Wrote ', length($$contents), ' bytes to ', $file_name)
+		if $_TRACE;
 	return;
     }
 
@@ -618,6 +679,21 @@ sub _compile_options {
 	delete($map->{$k}) unless $v;
     }
     return ($map, $opts);
+}
+
+# _method_ok(Bivio::ShellUtil self, string method) : boolean
+#
+# Returns true if the public method exists in subclass or if the
+# method is 'usage'.
+#
+sub _method_ok {
+    my($self, $method) = @_;
+    return 0 unless $method =~ /^([a-z]\w*)$/i;
+    my($can) = $self->can($method);
+    return 1 if $can eq \&{ref($self).'::'.$method};
+    return 0 if ref($self) eq __PACKAGE__;
+    return 1 if $method eq 'usage';
+    return 0;
 }
 
 # _parse_options(string proto, array_ref argv) : hash_ref
