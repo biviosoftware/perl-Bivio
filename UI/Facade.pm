@@ -385,10 +385,10 @@ sub prepare_to_render {
     }
 
     # If there is no child of this type, default case
-    $type ||= Bivio::Biz::Model::Preferences->get_user_pref($req,
+    $type ||= Bivio::Societas::Biz::Model::Preferences->get_user_pref($req,
 	    'facade_child_type')
 	    if !$type && Bivio::IO::ClassLoader->is_loaded(
-		    'Bivio::Biz::Model::Preferences');
+		    'Bivio::Societas::Biz::Model::Preferences');
     unless ($children->{$type}) {
 	_trace($self, ': ', $type, ': no such child') if $_TRACE;
 	return;

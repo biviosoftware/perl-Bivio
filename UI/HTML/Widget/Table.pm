@@ -590,8 +590,8 @@ sub render {
     my($list_size) = $_INFINITY_ROWS;
     if ($self->get_or_default('repeat_headings', 0)
 	    && Bivio::IO::ClassLoader->is_loaded(
-		    'Bivio::Biz::Model::Preferences')) {
-	$list_size = Bivio::Biz::Model::Preferences->get_user_pref(
+		    'Bivio::Societas::Biz::Model::Preferences')) {
+	$list_size = Bivio::Societas::Biz::Model::Preferences->get_user_pref(
 		$req, 'PAGE_SIZE');
     }
     my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');

@@ -34,7 +34,7 @@ C<Bivio::UI::HTML::Tax::Checklist> displays missing tax field
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Accounting::Tax;
-use Bivio::Biz::Model::Address;
+use Bivio::Societas::Biz::Model::Address;
 use Bivio::UI::HTML::Tax::AttachmentPage;
 use Bivio::UI::HTML::Widget::MultiColumnedList;
 use Bivio::UI::HTML::Widget::ChecklistItem;
@@ -100,9 +100,9 @@ EOF
 	    [
 		Bivio::UI::HTML::Widget::ChecklistItem->new({
 		    title => 'Club Tax ID',
-		    checked => ['Bivio::Biz::Model::TaxId', 'tax_id'],
+		    checked => ['Bivio::Societas::Biz::Model::TaxId', 'tax_id'],
 		    checked_body => $_VS->vs_string(
-			['Bivio::Biz::Model::TaxId', 'tax_id',
+			['Bivio::Societas::Biz::Model::TaxId', 'tax_id',
 				'Bivio::UI::HTML::Format::EIN']),
 		    unchecked_body => $_VS->vs_join(
 			$_VS->vs_string('Missing club tax ID. '),
@@ -113,9 +113,9 @@ EOF
 	    [
 		Bivio::UI::HTML::Widget::ChecklistItem->new({
 		    title => 'Club Address',
-		    checked => ['Bivio::Biz::Model::Address', '->format'],
+		    checked => ['Bivio::Societas::Biz::Model::Address', '->format'],
 		    checked_body => $_VS->vs_string(
-			['Bivio::Biz::Model::Address', '->format']),
+			['Bivio::Societas::Biz::Model::Address', '->format']),
 		    unchecked_body => $_VS->vs_join(
 			$_VS->vs_string('Missing club address. '),
 			$_VS->vs_link('Edit', 'CLUB_ADMIN_ADDRESS_EDIT'),
@@ -189,7 +189,7 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    Bivio::Biz::Model::Address->new($req)->load(
+    Bivio::Societas::Biz::Model::Address->new($req)->load(
 	    location => Bivio::Type::Location::HOME());
 
 #TODO: This should be part of the request, not fields

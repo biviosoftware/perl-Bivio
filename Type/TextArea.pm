@@ -70,8 +70,8 @@ sub from_literal {
 
     # careful to see if Preferences model is present before accessing
     if (defined($value) && Bivio::IO::ClassLoader->is_loaded(
-	    'Bivio::Biz::Model::Preferences')
-	    && Bivio::Biz::Model::Preferences->get_user_pref(
+	    'Bivio::Societas::Biz::Model::Preferences')
+	    && Bivio::Societas::Biz::Model::Preferences->get_user_pref(
 		    Bivio::Agent::Request->get_current,
 		    'TEXTAREA_WRAP_LINES')) {
 	return $self->wrap_lines($value, $line_width || $self->LINE_WIDTH);

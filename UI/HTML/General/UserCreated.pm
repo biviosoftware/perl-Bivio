@@ -49,7 +49,7 @@ sub PAGE_TOPIC {
 }
 
 #=IMPORTS
-use Bivio::Biz::Model::RealmInvite;
+use Bivio::Societas::Biz::Model::RealmInvite;
 use Bivio::UI::Widget::Director;
 use Bivio::Auth::RealmType;
 use Bivio::UI::HTML::Widget::Link;

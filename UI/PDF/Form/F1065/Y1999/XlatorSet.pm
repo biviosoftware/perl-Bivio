@@ -640,12 +640,12 @@ sub set_up {
     my($fields) = $self->{$_PACKAGE};
 
     # Load the club's address onto the request.
-    my($club_address) = Bivio::Biz::Model::Address->new($req);
+    my($club_address) = Bivio::Societas::Biz::Model::Address->new($req);
     $club_address->load(location => Bivio::Type::Location::HOME());
     $req->put('Club.Address' => $club_address);
 
     # Load the club's tax id onto the request.
-    my($club_tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    my($club_tax_id) = Bivio::Societas::Biz::Model::TaxId->new($req);
     $club_tax_id->load();
     $req->put('Club.TaxId' => $club_tax_id);
 
@@ -660,14 +660,14 @@ sub set_up {
     $req->put('User.RealmOwner' => $user_realm);
 
     # Load the user's address onto the request.
-    my($user_address) = Bivio::Biz::Model::Address->new($req);
+    my($user_address) = Bivio::Societas::Biz::Model::Address->new($req);
     $user_address->unauth_load_or_die(
 	    realm_id => $user_realm->get('realm_id'),
 	    location => Bivio::Type::Location::HOME());
     $req->put('User.Address' => $user_address);
 
     # Load the user's tax_id onto the request.
-    my($user_tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    my($user_tax_id) = Bivio::Societas::Biz::Model::TaxId->new($req);
     $user_tax_id->unauth_load_or_die(realm_id => $user_realm->get('realm_id'));
     $req->put('User.TaxId' => $user_tax_id);
 

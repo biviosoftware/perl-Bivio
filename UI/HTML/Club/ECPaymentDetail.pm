@@ -64,15 +64,15 @@ sub new {
             values => [
                 [
                     $_VS->vs_string('Payment entered on: '),
-                    $_VS->vs_date_time(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_date_time(['Bivio::Societas::Biz::Model::ECPayment',
                         'creation_date_time']),
                 ], [
                     $_VS->vs_string('Payment status: '),
-                    $_VS->vs_string(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_string(['Bivio::Societas::Biz::Model::ECPayment',
                         'status', '->get_short_desc']),
                 ], [
                     $_VS->vs_string('Payment remark: '),
-                    $_VS->vs_string(['Bivio::Biz::Model::ECPayment',
+                    $_VS->vs_string(['Bivio::Societas::Biz::Model::ECPayment',
                         'remark']),
                 ],
             ]

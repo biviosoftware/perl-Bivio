@@ -33,7 +33,7 @@ Shows a table of all transaction entries.
 
 #=IMPORTS
 use Bivio::Biz::Model::EntryList;
-use Bivio::Biz::Model::RealmTransaction;
+use Bivio::Societas::Biz::Model::RealmTransaction;
 use Bivio::UI::HTML::Widget::ClearDot;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::DateTime;
@@ -92,11 +92,11 @@ sub create_content {
 	[
 	    Bivio::UI::HTML::Widget::DateTime->new({
 		mode => 'DATE',
-		value => ['Bivio::Biz::Model::RealmTransaction', 'date_time'],
+		value => ['Bivio::Societas::Biz::Model::RealmTransaction', 'date_time'],
 		string_font => 'table_cell',
 	    }),
 	    $_VS->vs_string(['RealmTransaction.user_name'], 'table_cell'),
-	    $_VS->vs_string(['Bivio::Biz::Model::RealmTransaction', 'remark'],
+	    $_VS->vs_string(['Bivio::Societas::Biz::Model::RealmTransaction', 'remark'],
 		   'table_cell'),
 	],
 	[
@@ -138,13 +138,13 @@ Draws the transaction and its entries.
 
 sub execute {
     my($self, $req) = @_;
-    my($entry) = $req->get('Bivio::Biz::Model::Entry');
+    my($entry) = $req->get('Bivio::Societas::Biz::Model::Entry');
     my($entry_list) = Bivio::Biz::Model::EntryList->new($req);
     $entry_list->load_all({
 	p => $entry->get('realm_transaction_id'),
     });
 
-    my($txn) = Bivio::Biz::Model::RealmTransaction->new($req);
+    my($txn) = Bivio::Societas::Biz::Model::RealmTransaction->new($req);
     $txn->load(realm_transaction_id => $entry->get('realm_transaction_id'));
     my($txn_user_realm) = Bivio::Biz::Model::RealmOwner->new($req);
     # need to unauth_load so the current club realm isn't used instead

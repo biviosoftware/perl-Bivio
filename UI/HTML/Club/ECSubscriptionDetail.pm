@@ -66,11 +66,11 @@ sub new {
             values => [
                 [
                     $_VS->vs_string('Subscription first started on: '),
-                    $_VS->vs_date_time(['Bivio::Biz::Model::ECSubscription',
+                    $_VS->vs_date_time(['Bivio::Societas::Biz::Model::ECSubscription',
                         'start_date']),
                 ], [
                     $_VS->vs_string('Subscription ends at: '),
-                    $_VS->vs_date_time(['Bivio::Biz::Model::ECSubscription',
+                    $_VS->vs_date_time(['Bivio::Societas::Biz::Model::ECSubscription',
                         'end_date']),
                 ],
             ]
