@@ -34,6 +34,16 @@ Appropriate for use with
 L<Bivio::UI::HTML::Widget::Page|Bivio::UI::HTML::Widget::Page>
 I<style> attribute.
 
+=head1 ATTRIBUTES
+
+=over 4
+
+=item other_styles : array_ref ['']
+
+Returns a string for styles.
+
+=back
+
 =head1 FACADE ATTRIBUTES
 
 =over 4
@@ -167,9 +177,10 @@ sub render {
     my($hover) = Bivio::UI::Color->format_html('page_link_hover', 'color:',
 	    $req);
     $$buffer .= 'a:hover { '.$hover." }\n" if $hover;
+    $self->unsafe_render_attr('other_styles', $source, $buffer);
 
     # End
-    $$buffer .= "-->\n</style>\n";
+    $$buffer .= "\n-->\n</style>\n";
     return;
 }
 
