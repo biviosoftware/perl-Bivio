@@ -1,7 +1,9 @@
-# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2004 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
+my($mail_dir);
 BEGIN {
     use Bivio::IO::Config;
+    use Cwd ();
     Bivio::IO::Config->introduce_values({
 	'Bivio::IO::ClassLoader' => {
 	    maps => {
@@ -10,11 +12,18 @@ BEGIN {
 	},
 	'Bivio::Test::Language::HTTP' => {
  	    home_page_uri => 'http://petshop.bivio.biz',
+	    email_user => 'hello',
+	    mail_dir => ($mail_dir = Cwd::getcwd() . '/tmp'),
+	    mail_tries => 1,
 	},
     });
 }
+use Bivio::IO::File;
 use Bivio::Test;
 use Bivio::Test::Language;
+Bivio::IO::File->mkdir_p(
+    Bivio::IO::File->rm_rf($mail_dir));
+my($mail_file) = Bivio::IO::File->write("$mail_dir/1", 'should be deleted');
 Bivio::Test->unit([
     'Bivio::Test::Language' => [
 	{
@@ -24,6 +33,38 @@ Bivio::Test->unit([
 		return [\$params->[0]],
 	    },
 	} => [
+	    [<<"EOF"] => [undef],
+test_setup('HTTP');
+use Bivio::IO::File;
+Bivio::Die->die(q{$mail_file: should not exist})
+    if -e q{$mail_file};
+my(\$e1) = generate_email();
+test_deviance(qr/No mail for /);
+verify_mail(\$e1, '');
+test_conformance();
+my(\$m) = sub {
+   my(\$x) = \$_[0] || \$e1;
+Bivio::IO::File->write(q{$mail_file}, <<"END");
+To: \$x
+
+You have mail
+END
+};
+\$m->();
+verify_mail(\$e1, 'You have mail');
+test_deviance(qr/No mail for /);
+verify_mail(\$e1, 'You have mail');
+test_conformance();
+my(\$e2) = generate_email('.*');
+\$m->();
+test_deviance(qr/No mail for /);
+verify_mail(\$e2, '');
+test_deviance(qr/Found mail for .* but does not match /);
+verify_mail(\$e1, 'this should not match');
+test_conformance();
+\$m->(\$e1, 'You have mail');
+\$m->(\$e2, 'You have mail');
+EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
 home_page();

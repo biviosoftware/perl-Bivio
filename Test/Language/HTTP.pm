@@ -40,11 +40,13 @@ use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Config;
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
+use Bivio::Type::FileName;
 use Bivio::Test::HTMLParser;
 use File::Temp ();
 use HTTP::Cookies ();
 use HTTP::Request ();
 use HTTP::Request::Common ();
+use Sys::Hostname ();
 use URI ();
 
 #=VARIABLES
@@ -52,7 +54,11 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
+    email_user => $ENV{LOGNAME},
     home_page_uri => Bivio::IO::Config->REQUIRED,
+    mail_dir => "$ENV{HOME}/btest-mail/",
+    mail_tries => 60,
+    email_tag => '+btest_',
 });
 
 =head1 FACTORIES
@@ -197,6 +203,24 @@ sub follow_link_in_table {
     return $self->visit_uri($links->get($k->[0])->{href});
 }
 
+=for html <a name="generate_email"></a>
+
+=head2 generate_email(string suffix) : string
+
+Returns an email address based on I<email_user> and I<suffix> (a random number
+by default).
+
+=cut
+
+sub generate_email {
+    my(undef, $suffix) = @_;
+    return $_CFG->{email_user}
+	. $_CFG->{email_tag}
+	. ($suffix || int(rand(2_000_000_000)) + 1)
+	. '@'
+	. Sys::Hostname::hostname();
+}
+
 =for html <a name="get_content"></a>
 
 =head2 get_content() : string
@@ -242,9 +266,34 @@ sub get_uri {
 
 =over 4
 
+=item email_tag : string [+btest_]
+
+What to include between the I<email_user> and I<suffix> in
+L<generate_email|"generate_email">.
+
+=item email_user : string [$ENV{LOGNAME}]
+
+Base user name to use in email.  Emails will go to:
+
+    email_user+btest_suffix
+
+Where suffix is supplied to L<generate_email|"generate_email">.
+
 =item home_page_uri : string (required)
 
 URI of home page.
+
+=item mail_tries : string [$ENV{HOME}/btest-mail]
+
+Directory in which mail resides.  Set up your .procmailrc to have a rule:
+
+    :0 H
+    * ^TO_.*\+btest_
+    btest-mail/.
+
+=item mail_tries : int [60]
+
+Maximum number of attempts to get mail.  Each try is about 1 second.
 
 =back
 
@@ -252,7 +301,29 @@ URI of home page.
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    Bivio::Die->die($cfg->{email_user}, ': email_user must be an alphanum')
+        if $cfg->{email_user} =~ /\W/;
+    Bivio::Die->die($cfg->{mail_tries},
+	': mail_tries must be a postive integer')
+        if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
     $_CFG = $cfg;
+    return;
+}
+
+=for html <a name="handle_setup"></a>
+
+=head2 handle_setup()
+
+Clears files in I<mail_dir>.
+
+=cut
+
+sub handle_setup {
+    shift->SUPER::handle_setup(@_);
+    _grep_mail_dir(sub {
+        unlink(shift);
+	return;
+    });
     return;
 }
 
@@ -410,6 +481,54 @@ sub verify_link {
     Bivio::Die->die('Link "', $link_text, '" does not match "', $pattern, '"')
 	unless $href =~ $pattern;
     return;
+}
+
+=for html <a name="verify_mail"></a>
+
+=head2 verify_mail(string email, string body_regex)
+
+Get the last messages received for I<email> (see
+L<generate_email|"generate_email">) and verify that
+I<body_regex> matches.  Deletes the message on a match.
+
+Pools for I<mail_tries>.  If multiple messages come in simultaneously, will
+only complete if both I<email> and I<body_regex> match.
+
+=cut
+
+sub verify_mail {
+    my($self, $email, $body_regex) = @_;
+    my($seen) = {};
+    Bivio::Die->die($_CFG->{mail_dir},
+	': mail_dir mail directory does not exist')
+        unless -d $_CFG->{mail_dir};
+    my($email_match);
+    for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
+	if (my(@found) = map({
+	    my($msg) = Bivio::IO::File->read($_);
+	    ($email_match = $$msg =~ /^(?:to|cc):.*\b\Q$email/i)
+	        && $$msg =~ /$body_regex/
+	        ? [$_, $msg] : ();
+	    } _grep_mail_dir(
+		sub {
+		    my($file) = @_;
+		    return !$seen->{$file}++ && -M $file <= 0;
+		}
+	    ))
+	) {
+	    Bivio::Die->die('too many messages matched: ', \@found)
+	        if @found > 1;
+	    unlink($found[0]->[0]);
+	    _log($self, 'mail', $found[0]->[1]);
+	    return;
+	}
+    }
+    Bivio::Die->die(
+	$email_match ? ('Found mail for "', $email,
+	    '", but does not match ', qr/$body_regex/)
+	    : ('No mail for "', $email, '" found'),
+    );
+    # DOES NOT RETURN
 }
 
 =for html <a name="verify_options"></a>
@@ -696,7 +815,18 @@ sub _get_script_line {
     return '?';
 }
 
-# _log(self, string type, HTTP::Message msg)
+# _grep_mail_dir(code_ref op) : array
+#
+# Returns results of grep on mail_dir files.  Only includes valid
+# mail files.
+#
+sub _grep_mail_dir {
+    my($op) = @_;
+    return grep(Bivio::Type::FileName->get_tail($_) =~ /^\d+$/ && $op->($_),
+	glob("$_CFG->{mail_dir}/*"));
+}
+
+# _log(self, string type, any msg)
 #
 # Writes the HTTP message to a file with a nice suffix.  Preserves file
 # ordering.
@@ -706,7 +836,7 @@ sub _log {
     my($fields) = $self->[$_IDI];
     $self->test_log_output(
 	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
-	$msg->as_string);
+	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
     return;
 }
 
