@@ -428,15 +428,28 @@ b-realm-role CLUB ACCOUNTANT - \
 b-realm-role CLUB ADMINISTRATOR +
 
 #
-# Demo Club Permissions, same as CLUB GUEST
+# Demo Club Permissions, everybody is like a GUEST of a normal club
+#
 b-realm-role demo_club ANONYMOUS - \
-    +ACCOUNTING_READ \
-    +ADMIN_READ \
+    +LOGIN \
+    +MAIL_WRITE \
+    +ANONYMOUS \
     +ANY_USER \
+    +ADMIN_READ \
+    +ACCOUNTING_READ \
     +DOCUMENT_READ \
     +FINANCIAL_DATA_READ \
-    +LOGIN \
     +MAIL_READ \
-    +MAIL_WRITE \
     +MEMBER_READ \
     +MOTION_READ
+b-realm-role demo_club USER - \
+    +ANONYMOUS
+b-realm-role demo_club GUEST - \
+    +USER
+#TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
+b-realm-role demo_club MEMBER - \
+    +GUEST
+b-realm-role demo_club ACCOUNTANT - \
+    +MEMBER
+b-realm-role demo_club ADMINISTRATOR - \
+    +ACCOUNTANT
