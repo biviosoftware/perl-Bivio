@@ -94,9 +94,14 @@ sub create {
     die("contains club-local field and an instrument_id")
 	    if (exists($values->{instrument_id})
 		    && ($values->{fed_tax_free} || $values->{instrument_type}
-			    || $values->{name} || $values->{ticker_symbol}
-			    || $values->{exchange_name}));
+			    || defined($values->{name})
+			    || defined($values->{ticker_symbol})
+			    || defined($values->{exchange_name})));
 
+    # Make sure these two are in upper case
+    foreach my $f (qw(ticker_symbol exchange_name)) {
+	$values->{$f} = uc($values->{$f}) if defined($values->{$f});
+    }
     return $self->SUPER::create($values);
 }
 
