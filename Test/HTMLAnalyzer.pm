@@ -65,6 +65,14 @@ sub new {
     # save parser's output, for reference.
     $self->{'Bivio::Test::HTMLParser'} = $p;
 
+    # problem domain question: does any table contain multiple forms?
+    for (my($i) = 0; $i < scalar(@{$p->{tables}}); $i++) {
+	if (defined ($p->{tables}[$i]->{forms})) {
+	    Bivio::Die->die ("Table has multiple forms!\n")
+		    unless (scalar(keys(%{$p->{tables}[$i]->{forms}})) < 2);
+	}
+    }
+
     _find_button_home_page($self, $p);
     _find_button_logout($self, $p);
     _find_button_my_site($self, $p);
