@@ -291,7 +291,8 @@ sub handle_die {
     return unless ref($proto);
 
     # Is this an HTTP request? (We don't redirect on non-http requests)
-    return unless $proto->isa('Bivio::Agent::HTTP::Request');
+    my($req) = Bivio::Agent::Request->get_current;
+    return unless UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request');
 
     # Mapped?
     my($new_task_id) = $proto->get('die_actions')->{$die_code};
