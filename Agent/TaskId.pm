@@ -825,6 +825,36 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSell2
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_TRANSACTION_DELETE
+        86
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/delete
+        Bivio::Biz::Model::TransactionDeleteForm
+        Bivio::UI::HTML::Club::TransactionDelete
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_TRANSACTION_DELETE
+        87
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/member/delete
+        Bivio::Biz::Model::TransactionDeleteForm
+        Bivio::UI::HTML::Club::TransactionDelete
+        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_TRANSACTION_DELETE
+        88
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/account/delete
+        Bivio::Biz::Model::TransactionDeleteForm
+        Bivio::UI::HTML::Club::TransactionDelete
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
+    )],
        );
 
 __PACKAGE__->compile(
