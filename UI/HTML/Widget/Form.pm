@@ -72,8 +72,8 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
 =item form_class : Bivio::Biz::FormModel (inherited, get_request)
 
-This value is computed from I<form_model> if it can be.  It
-also be set.
+The simple name of the class or the mapped name, e.g. I<Model.FooForm>.
+This value is computed from I<form_model> if it can be.
 
 =item form_end_cell : boolean [0]
 
@@ -128,9 +128,14 @@ my($_FORM_NAME_INDEX) = 0;
 
 =for html <a name="new"></a>
 
+=head2 static new(any form_class, Bivio::UI::Widget value, hash_ref attributes) : Bivio::UI::HTML::Widget::Form
+
+Passes I<form_class> and I<value> as attributes.  And optionally, set extra
+I<attributes>.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Form
 
-Creates a new Form widget.
+Creates a new Form widget using I<attributes>.
 
 =cut
 
@@ -222,6 +227,25 @@ sub initialize {
     $fields->{value}->put(parent => $self);
     $fields->{value}->initialize;
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $class, $value, $attributes) = @_;
+    return '"form_class" attribute must be defined' unless defined($class);
+    return '"value" attribute must be defined' unless defined($value);
+    return {
+	form_class => $class,
+	value => $value,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 =for html <a name="render"></a>
