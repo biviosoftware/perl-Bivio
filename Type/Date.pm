@@ -190,30 +190,16 @@ sub get_width {
 
 =head2 static local_today() : string
 
-Returns GMT date so it renders as today local time.
+Returns date today relative to the current timezone.
 
 =cut
 
 sub local_today {
-    # Use DateTime, not Date's now
-    my($date, $time) = split(' ', Bivio::Type::DateTime->now);
-    my($req) = Bivio::Agent::Request->get_current;
-    my($tz) = $req->unsafe_get('timezone');
-
-    return $date.$_TIME_SUFFIX unless defined($tz);
-    # The timezone is really a timezone offset for now.  This will
-    # have to be fixed someday, but not right now.
-    $tz *= 60;
-
-    # First figure out what the day is
-    $time -= $tz;
-    if ($time < 0) {
-	$date--;
-    }
-    elsif ($time >= Bivio::Type::DateTime::SECONDS_IN_DAY()) {
-	$date++;
-    }
-    return $date.$_TIME_SUFFIX;
+    my($proto) = @_;
+    return (split(' ',
+	$proto->add_seconds(
+	    Bivio::Type::DateTime->now, -$proto->timezone * 60)))[0]
+        .$_TIME_SUFFIX;
 }
 
 =for html <a name="local_yesterday"></a>
