@@ -629,8 +629,14 @@ __PACKAGE__->compile(
 	undef,
 	'this member has already been reconciled with existing data',
     ],
-    TICKER_NOT_UNIQUE => [
+    NO_VALUATION_FOR_DATE => [
 	71,
+	undef,
+	# Real message in FormErrors.  Have one here just in case.
+	'no valuation for this date',
+    ],
+    TICKER_NOT_UNIQUE => [
+	72,
 	undef,
 	'this value clashes with a ticker symbol in the bivio database',
     ],
