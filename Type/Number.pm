@@ -115,6 +115,8 @@ sub from_literal {
     # Delete commas and dollar signs
     $value =~ s/[,\$]//g;
 
+    my($parsed_value);
+
     # check for possible "i n/d" format
     if ($value =~ /\//) {
 	# parse it and convert to decimal
@@ -128,15 +130,25 @@ sub from_literal {
 	    if (defined($sign) && $sign eq '-') {
 		$value = $proto->neg($value);
 	    }
-	    return $value;
+	    $parsed_value = $value;
 	}
     }
     else {
 	# Get rid of all blanks to be nice to user
 	$value =~ s/\s+//g;
-	return $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
+	$parsed_value = $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
     }
-    return (undef, Bivio::TypeError::NUMBER());
+
+    # not a number
+    return (undef, Bivio::TypeError::NUMBER())
+	    unless defined($parsed_value);
+
+    # range check
+    return $parsed_value
+	    if $proto->compare($parsed_value, $proto->get_min) >= 0
+		    && $proto->compare($parsed_value, $proto->get_max) <= 0;
+
+    return (undef, Bivio::TypeError::NUMBER_OUT_OF_RANGE());
 }
 
 =for html <a name="mul"></a>
