@@ -878,6 +878,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInviteList->execute_load_all_with_query
         Bivio::Biz::Model::ClubUserList->execute_load_all_active
         Bivio::UI::HTML::Club::InviteList
+        help=adding-members-guests
     )],
     # This technically doesn't have to be in your domain
     [qw(
@@ -1366,6 +1367,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Realm::EditTaxId
         next=CLUB_ADMIN_INFO
         require_secure=1
+        help=tax-id
     )],
     [qw(
         CLUB_ADMIN_INFO
@@ -1374,6 +1376,7 @@ my(@_CFG) = (
         ADMIN_READ
         ?/admin/info
         Bivio::UI::HTML::Club::AdminInfo
+        help=club-info
     )],
     [qw(
         USER_ADMIN_EMAIL_EDIT
@@ -1475,6 +1478,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InviteMemberListForm
         Bivio::UI::HTML::Club::InviteMemberList
         next=CLUB_ADMIN_USER_LIST
+        help=adding-members-guests
     )],
     [qw(
         CLUB_LEGACY_SECURITY_RECONCILIATION
@@ -1612,6 +1616,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::AddMemberListForm
         Bivio::UI::HTML::Club::AddMemberList
         next=CLUB_ADMIN_USER_LIST
+        help=adding-members-guests
     )],
     [qw(
         CLUB_ADMIN_GUEST_INVITE
@@ -1624,6 +1629,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InviteGuestList
         next=CLUB_ADMIN_INVITE_LIST
         cancel=CLUB_ADMIN_USER_LIST
+        help=adding-members-guests
     )],
     [qw(
         DEFAULT_ERROR_REDIRECT_CORRUPT_QUERY
@@ -1684,6 +1690,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::Guest2Member
         next=CLUB_ADMIN_INVITE_LIST
         cancel=CLUB_ADMIN_USER_LIST
+        help=adding-members-guests
     )],
 #TODO: The privilege here is unclear.  This must be a guest.
     [qw(
@@ -1698,6 +1705,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::Guest2MemberAccept
         next=CLUB_ADMIN_USER_LIST
         NOT_FOUND=REALM_INVITE_NOT_FOUND
+        help=adding-members-guests
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
@@ -2368,6 +2376,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::PublicRealmForm
         Bivio::UI::HTML::Club::PublicRealm
         next=CLUB_ADMIN_TOOLS
+        help=public-access
     )],
     [qw(
         CLUB_ADMIN_PRIVATE
@@ -2380,6 +2389,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::PrivateRealmForm
         Bivio::UI::HTML::Club::PrivateRealm
         next=CLUB_ADMIN_TOOLS
+        help=public-access
     )],
     [qw(
         CLUB_INTRO
