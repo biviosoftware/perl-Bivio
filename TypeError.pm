@@ -659,7 +659,12 @@ __PACKAGE__->compile(
         76,
         undef,
         'You must specify at least one of First, Middle, or Last Names',
-    ]
+    ],
+    FILE_NAME => [
+	77,
+	undef,
+	'File names may not contain ?, %, \\, /, :, <, >, or |',
+    ],
 );
 
 #=PRIVATE METHODS
