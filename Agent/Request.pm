@@ -10,6 +10,14 @@ $_ = $Bivio::Agent::Request::VERSION;
 
 Bivio::Agent::Request - Abstract request wrapper
 
+=head1 RELEASE SCOPE
+
+bOP
+
+=head1 SYNOPSIS
+
+    use Bivio::Agent::Request;
+
 =head1 EXTENDS
 
 L<Bivio::Collection::Attributes>
