@@ -667,7 +667,7 @@ sub _names {
 	}
 
 	# No unqualified name
-	return (undef, $name);
+	return (undef, $name.$_SEP.$row);
     }
 
     # No row specified, must be a cursor and must return both forms
