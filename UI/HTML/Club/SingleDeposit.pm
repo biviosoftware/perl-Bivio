@@ -98,7 +98,7 @@ sub create_fields {
 	    $self->create_caption('Account',
 		    Bivio::UI::HTML::Widget::Select->new({
 			field => 'RealmAccountEntry.realm_account_id',
-			choices => ['/AccountList$/'],
+			choices => ['->get_by_regexp', 'AccountList'],
 			list_display_field => 'RealmAccount.name',
 			list_id_field => 'RealmAccount.realm_account_id',
 		    })),
