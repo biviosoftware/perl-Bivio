@@ -256,6 +256,11 @@ __PACKAGE__->compile(
 	undef,
 	'shares sold exceeds shares owned',
     ],
+    MISSING_DISTRIBUTION_AMOUNT => [
+	44,
+	undef,
+	'enter at least one distribution amount',
+    ],
 );
 
 #=PRIVATE METHODS
