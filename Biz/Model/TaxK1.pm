@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::TaxK1;
 use strict;
 $Bivio::Biz::Model::TaxK1::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::TaxK1::VERSION;
 
 =head1 NAME
 
@@ -68,24 +69,43 @@ sub internal_initialize {
 =head2 load_or_default(string user_id, string fiscal_end_date)
 
 Loads or creates a new k1 for the specified user and tax year.
+Return I<self>.
 
 =cut
 
 sub load_or_default {
     my($self, $user_id, $fiscal_end_date) = @_;
+    die('invalid fiscal end date '
+	    .Bivio::Type::Date->to_literal($fiscal_end_date))
+	    if $fiscal_end_date ne Bivio::Biz::Accounting::Tax
+		    ->get_end_of_fiscal_year($fiscal_end_date);
+
     unless ($self->unsafe_load(fiscal_end_date => $fiscal_end_date,
 	    user_id => $user_id)) {
 
-	$self->create({
-	    realm_id => $self->get_request->get('auth_id'),
-	    user_id => $user_id,
-	    fiscal_end_date => $fiscal_end_date,
-	    entity_type => Bivio::Type::F1065Entity->INDIVIDUAL,
-	    partner_type => Bivio::Type::F1065Partner->GENERAL,
-	    foreign_partner => 0,
-	});
+	my($values);
+
+	# use last year's values if present
+	if ($self->unsafe_load(fiscal_end_date =>
+		Bivio::Type::Date->get_previous_year($fiscal_end_date),
+		user_id => $user_id)) {
+	    $values = $self->internal_get;
+	}
+	else {
+	    # otherwise create with default values
+	    $values = {
+		realm_id => $self->get_request->get('auth_id'),
+		user_id => $user_id,
+		entity_type => Bivio::Type::F1065Entity->INDIVIDUAL,
+		partner_type => Bivio::Type::F1065Partner->GENERAL,
+		foreign_partner => 0,
+	    };
+	}
+
+	$values->{fiscal_end_date} = $fiscal_end_date;
+	$self->create($values);
     }
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
