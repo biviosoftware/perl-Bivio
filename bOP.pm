@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    (b-linux-config add_sendmail_http_agent your-host:80/bla/%s) to
+    update your sendmail.cf to allow facade matching.  The changes
+    to sendmail.cf are significant but minimal.
+
+  Revision 1.63  2003/05/13 23:06:44  nagler
+  * Bivio::UI::HTML::Widget::AmountCell.want_parens attribute added
+  * Bivio::UI::Mail::Widget::Message.want_aol_munge attribute added and
     added support for Bivio::UI::Widget::MIMEEntity
   * Bivio::UI::Widget::MIMEEntity constructs MIME 1.0 entities from a
     list of widgets
