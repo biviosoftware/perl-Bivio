@@ -47,10 +47,8 @@ position.
 
 A URI which contains a trailing '*', may have path_info.  These
 URIs are severely restricted.  They cannot be set on the GENERAL
-realm.  On PROXY realms, they must be exactly /pub/?/I<component>.
-On other realms, they must be exactly /?/I<component>.  In both
-ases I<component> must be unique in the global URI space.
-All of these rules are checked in
+realm. They must be exactly /?/I<component>. I<component> must be
+unique in the global URI space. All of these rules are checked in
 L<Bivio::Agent::HTTP::Location|Bivio::Agent::HTTP::Location>.
 
 Use '!' to mean "no uri".
@@ -248,15 +246,7 @@ my(@_CFG) = (
         ?/msg-part/*
         Bivio::Biz::Action::MailPartDownload
     )],
-    # See note above
-    [qw(
-        CELEBRITY_MESSAGE_PART
-        20
-        PROXY
-        DOCUMENT_READ
-        pub/?/msg-part/*
-        Bivio::Biz::Action::MailPartDownload
-    )],
+#20
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21
@@ -316,14 +306,7 @@ my(@_CFG) = (
         hm/safe.html
         Bivio::Biz::Action::HTTPDocument
     )],
-    # No actions, just a token for authentication action
-    [qw(
-        CLUB_MAIL_COMPOSE
-        39
-        CLUB
-        MAIL_WRITE
-        !
-    )],
+#39
 #TODO: Probably should be TargetRealm->execute_this_member, but difficult to
 #      use right now.
     [qw(
@@ -955,38 +938,7 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_demo_club_action_forbidden
     )],
-#TODO: Shadow realms have no data protection.  We may need to
-#      have a second security check in SetProxyRealm or something.
-#      For now, the list is small so easy to manage.
-    [qw(
-        CELEBRITY_MESSAGE_LIST
-        104
-        PROXY
-        DOCUMENT_READ
-        pub/?
-        Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_page
-        Bivio::UI::HTML::Celebrity::MailList
-    )],
-    [qw(
-        CELEBRITY_MESSAGE_DETAIL
-        105
-        PROXY
-        DOCUMENT_READ
-        pub/?/msg
-        Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_this
-        Bivio::Biz::Model::MailPartList->execute_load_all
-        Bivio::UI::HTML::Celebrity::MailDetail
-    )],
-    # No actions, just a token for authentication action
-    [qw(
-        CELEBRITY_MAIL_COMPOSE
-        106
-        PROXY
-        DOCUMENT_READ
-        !
-    )],
+#104-106
     [qw(
         DEFAULT_ERROR_REDIRECT_FORBIDDEN
         107
@@ -1985,17 +1937,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailPost
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-    [qw(
-        CELEBRITY_MAIL_POST
-        198
-        PROXY
-        DOCUMENT_READ
-        pub/?/post
-        Bivio::Biz::Model::MailPostForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Celebrity::MailPost
-        next=CELEBRITY_MESSAGE_LIST
-    )],
+#198
     [qw(
         CLUB_MAIL_REPLY
         199
@@ -2010,20 +1952,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailReply
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-    [qw(
-        CELEBRITY_MAIL_REPLY
-        200
-        PROXY
-        DOCUMENT_READ
-        pub/?/reply
-        Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_this
-        Bivio::Biz::Model::MailPartList->execute_load_all
-        Bivio::Biz::Model::MailReplyForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Celebrity::MailReply
-        next=CELEBRITY_MESSAGE_LIST
-    )],
+#200
     [qw(
         CLUB_MAIL_FORWARD
         201
@@ -2036,18 +1965,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MailForward
         next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
-    [qw(
-        CELEBRITY_MAIL_FORWARD
-        202
-        PROXY
-        MAIL_FORWARD
-        pub/?/forward
-        Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_this
-        Bivio::Biz::Model::MailForwardForm
-        Bivio::UI::HTML::Club::MailForward
-        next=CELEBRITY_MESSAGE_LIST
-    )],
+#202
     [qw(
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK
         203
@@ -2283,6 +2201,21 @@ my(@_CFG) = (
         Bivio::Biz::Action::CelebrityRedirect
         next=CLUB_COMMUNICATIONS_MAIL_DETAIL
     )],
+#    [qw(
+#        CLUB_COMMUNICATIONS_FILE_UNZIP
+#        225
+#        CLUB
+#        DOCUMENT_WRITE
+#        ?/file-unzip/*
+#        Bivio::Biz::Action::PublicRealm
+#        Bivio::Type::FileVolume->execute_file
+#        Bivio::Biz::Model::FilePathList
+#        Bivio::Biz::Model::FileDirectoryList->execute_load_all
+#        Bivio::Biz::Model::FileUnzipForm
+#        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
+#        Bivio::UI::HTML::Club::FileUnzip
+#        next=CLUB_COMMUNICATIONS_FILE_READ
+#    )],
 );
 
 __PACKAGE__->compile(
