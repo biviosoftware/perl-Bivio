@@ -50,6 +50,25 @@ my($_SU_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =cut
 
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Perform lookup and su automatically if coming in with query string.
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    my($query) = $self->get_request->unsafe_get('query');
+    return unless defined($query->{p});
+    $self->internal_put_field(login => $query->{p});
+    $self->validate();
+    $self->execute_ok() unless $self->in_error();
+#TODO would be nice to go to club site
+    return;
+}
+
 =for html <a name="execute_ok"></a>
 
 =head2 execute_ok() : boolean
@@ -120,7 +139,7 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 2,
+	version => 1,
 	visible => [
 	    {
 		name => 'login',
