@@ -30,7 +30,7 @@ use Bivio::Delegator;
 
 =head1 DESCRIPTION
 
-C<Bivio::Societas::UI::WidgetFactory> creates widgets for model fields.
+C<Bivio::UI::HTML::WidgetFactory> creates widgets for model fields.
 
 =head1 ATTRIBUTES
 
