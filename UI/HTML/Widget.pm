@@ -598,6 +598,30 @@ sub highlight {
     return $value;
 }
 
+=for html <a name="href_goto"></a>
+
+=head2 href_goto(string uri) : array_ref
+
+Widget value to create a goto link href for "offsite" links.
+
+=cut
+
+sub href_goto {
+    my(undef, $uri) = @_;
+    Bivio::Die->die($uri, ": must be an absolute uri")
+		unless $uri =~ m!^\w+://!;
+    # Don't want the $uri to be in a closure, so use eval.
+    return eval(<<"EOF") || die($@);
+        [sub {
+	    return Bivio::Agent::HTTP::Location->format_realmless(
+	     Bivio::Agent::TaskId::CLIENT_REDIRECT())
+	    .'?'
+	    .Bivio::Biz::Action::ClientRedirect->QUERY_TAG()
+	    .'='.Bivio::HTML->escape_query(qw($uri));
+        }];
+EOF
+}
+
 =for html <a name="image"></a>
 
 =head2 static image(any icon, any alt) : Bivio::UI::HTML::Widget::Image
@@ -676,9 +700,7 @@ Does not set I<string_font> if I<font> is C<undef>.
 sub label {
     my($proto, $label, $font) = @_;
     return $proto->string(Bivio::UI::Label->get_simple($label),
-#TODO: Fix once all deprecated usage of string()
-#    $font = 'label_in_text' if int(@_) < 3;
-	    int(@_) < 3 ? 'label_in_text' : defined($font) ? ($font) : ());
+	    defined($font) ? $font : 'label_in_text');
 }
 
 =for html <a name="link"></a>
@@ -720,8 +742,7 @@ sub link {
 	$widget_value = $label;
 	$label = Bivio::UI::Label->get_simple($widget_value);
     }
-#TODO: Fix once all deprecated usage of string()
-    $label = $proto->string($label, int(@_) >= 4 ? ($font) : ())
+    $label = $proto->string($label, defined($font) ? ($font) : ())
 	    unless UNIVERSAL::isa($label, 'Bivio::UI::HTML::Widget');
     $widget_value = ['->format_stateless_uri',
 	Bivio::Agent::TaskId->$widget_value()]
@@ -764,6 +785,20 @@ sub link_ask_candis {
     return shift->link('Ask Candis', '/pub/ask_candis');
 }
 
+=for html <a name="link_goto"></a>
+
+=head2 link_goto(string label, string uri) : Bivio::UI::HTML::Widget::Link
+
+Create a "goto" link, which allows us to track references to other
+sites.
+
+=cut
+
+sub link_goto {
+    my($proto, $label, $uri, $font) = @_;
+    return $proto->link($label, $proto->href_goto($uri), $font);
+}
+
 =for html <a name="link_help"></a>
 
 =head2 static link_help(string label) : string
@@ -800,13 +835,19 @@ in secure mode.
 
 sub link_secure {
     my($self) = @_;
-    return $self->director(['is_secure'], {
-	0 => $self->join(
+    return $self->director([sub {
+	    my($req) = shift->get_request;
+	    return Bivio::UI::HTML->get_value('want_secure', $req)
+		    ? $req->get('is_secure') ? 0 : 1 : 2;
+	}], {
+	0 => $self->page_text(
 		"\n<p>&#149; ",
 		$self->link('Click here to switch to secure mode.',
 			['->format_http_toggling_secure']),
 		" &#149;\n"),
-	1 => $self->join("\n<p>&#149; This page is secure. &#149;\n"),
+	1 => $self->page_text("\n<p>&#149; This page is secure. &#149;\n"),
+	# When the facade doesn't support SSL
+	2 => $self->join("\n"),
     });
 }
 
@@ -861,9 +902,10 @@ sub link_tm {
 
     # Must be in a join, because we are pre-escaping the string
     return $proto->link($proto->string(
-	    $proto->join(Bivio::HTML->escape($label).'&#153;'),
-#TODO: Fix once all deprecated usage of string()
-	    int(@_) >= 4 ? ($font) : ()), $arg);
+	    Bivio::HTML->escape($label).'&#153;',
+	    defined($font) ? ($font) : (),
+	   )->put(escape_html => 0),
+	    $arg);
 }
 
 =for html <a name="link_trez_talk"></a>
@@ -1008,18 +1050,11 @@ Use C<0> (zero) to set "no font".  Will not set font, if C<undef>.
 
 sub string {
     my($self, $value, $font) = @_;
-#TODO: Next week (7/23/00) switch mode and fix all calls so that
-#      C<undef> means no font.  Search for all calls to string() in
-#      this package, because only place where deprecated usage was
-#      detected and corrected.  Should be able to just pass undef
-#      to simplify other uses.
-    Bivio::IO::Alert->warn('DEPRECATED USAGE BY ', caller)
-		if int(@_) >= 3 && !defined($font);
     _use('String');
     return Bivio::UI::HTML::Widget::String->new({
 	value => $value,
 	# Allow caller to set font to undef
-	int(@_) >= 3 ? (string_font => $font) : (),
+	defined($font) ? (string_font => $font) : (),
     });
 }
 
