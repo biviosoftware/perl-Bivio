@@ -12,7 +12,7 @@ Bivio::UI::MessageBoard::DetailView - a message detail view
 
     use Bivio::UI::MessageBoard::DetailView;
     my($list) = Bivio::Biz::Mail::MessageList->new();
-    $list->find(Bivio::Biz::FindParams->new({'club' => 100, 'id' => 20});
+    $list->load(Bivio::Biz::FindParams->new({'club' => 100, 'id' => 20});
     my($view) = Bivio::UI::MessageBoard::DetailView->new();
     $view->render($list, $req);
 
@@ -58,7 +58,7 @@ my($_NEXT_LINK) = Bivio::UI::HTML::Link->new(
 my($_NAV_LINKS) = [$_BACK_LINK, $_PREV_LINK, $_NEXT_LINK];
 my($_COMPOSE_LINK) = Bivio::UI::HTML::Link->new('compose',
 	'"/i/compose.gif" border=0',
-	'mailto:bogus@localhost', 'Compose',
+	'', 'Compose',
 	'Compose a new message to the club');
 my($_REPLY_LINK) = Bivio::UI::HTML::Link->new('reply',
 	'"/i/reply.gif" border=0',
@@ -102,10 +102,15 @@ presentation when rendering.
 sub get_action_links {
     my($self, $list, $req) = @_;
 
+    # set the url to the club's name
+    $_COMPOSE_LINK->set_url('mailto:'.$req->get('club')->get('name')
+	    .'@'.$req->get('host'));
+
     # set the mailto subject on the reply
     my($message) = $list->get_selected_message();
     if ($message) {
-	my($url) = 'mailto:'.$message->get('from_email').'?subject=';
+	my($url) = 'mailto:'.$req->get('club')->get('name')
+		.'@'.$req->get('host').'?subject=';
 	my($subject) = $message->get('subject');
 
 	if ($subject =~ /^Re:/i) {

@@ -12,7 +12,7 @@ Bivio::UI::MessageBoard::MessageListView - a list of messages
 
     use Bivio::UI::MessageBoard::MessageListView;
     my($list) = Bivio::Biz::Mail::MessageList->new();
-    $list->find(Bivio::Biz::FindParams->new({'club' => 100});
+    $list->load(Bivio::Biz::FindParams->new({'club' => 100});
     my($view) = Bivio::UI::MessageBoard::MessageListView->new();
     $view->render($list, $req);
 
@@ -56,7 +56,7 @@ my($_NAV_LINKS) = [$_UP_LINK, $_DOWN_LINK];
 
 my($_COMPOSE_LINK) = Bivio::UI::HTML::Link->new('compose',
 	'"/i/compose.gif" border=0',
-	'mailto:bogus@localhost', 'Compose',
+	'', 'Compose',
 	'Compose a new message to the club');
 my($_ACTION_LINKS) = [$_COMPOSE_LINK];
 
@@ -99,6 +99,12 @@ presentation when rendering.
 =cut
 
 sub get_action_links {
+    my($self, $model, $req) = @_;
+
+    # set the url to the club's name
+    $_COMPOSE_LINK->set_url('mailto:'.$req->get('club')->get('name')
+	    .'@'.$req->get('host'));
+
     return $_ACTION_LINKS;
 }
 
