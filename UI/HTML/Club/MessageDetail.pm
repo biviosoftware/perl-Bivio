@@ -32,14 +32,18 @@ It provides links to MIME parts (such as attached GIF, JPEG files).
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Agent::TaskId;
+use Bivio::Biz::Model::MessageList;
+use Bivio::Biz::Model::MailMessage;
 use Bivio::DieCode;
+use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::HTML::Widget::Join;
+use Bivio::UI::HTML::Widget::Link;
+use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
 
 
 =head1 FACTORIES
@@ -57,13 +61,23 @@ Bivio::IO::Trace->register;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    $fields->{content} = Bivio::UI::HTML::Widget::Grid->new({
+    $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
-		[
-		  Bivio::UI::HTML::Widget::String->new({
-		      value => 'The mail message, here.',
-		  }),
+	    '<center>by ',
+	    Bivio::UI::HTML::Widget::Link->new({
+		href => ['->format_mailto',
+		    ['Bivio::Biz::Model::MailMessage', 'from_email'],
+		    ['Bivio::Biz::Model::MailMessage', 'subject'],
 		],
+		value => Bivio::UI::HTML::Widget::String->new({
+		    value => ['Bivio::Biz::Model::MailMessage', 'from_name'],
+		}),
+	    }),
+	    ' on ',
+	    ['Bivio::Biz::Model::MailMessage', 'dttm',
+		'Bivio::UI::HTML::Format::DateTime'],
+	    ' GMT</center><p>',
+	    ['Bivio::Biz::Model::MailMessage', '->get_body'],
 	],
     });
     $fields->{content}->initialize;
@@ -76,7 +90,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 execute() : 
+=head2 execute()
 
 Executes the view.
 
@@ -86,46 +100,25 @@ Executes the view.
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined($req->get('query')) && defined($req->get('query')->{pk})) {
-	my($mail_message_id) = $req->get('query')->{pk};
-	my($mail_message) = Bivio::Biz::Model::MailMessage->new($req);
-	$mail_message->load(mail_message_id => $mail_message_id);
-	$fields->{message} = $mail_message;
-	$req->put(page_subtopic => undef,
-		page_heading => $mail_message->get('subject'),
-		page_content => $self,
-		name => $mail_message->get('subject'));
-	Bivio::UI::HTML::Club::Page->execute($req);
-	return;
-    }
-    $req->die(Bivio::DieCode::NOT_FOUND);
-}
-
-=for html <a name="render"></a>
-
-=head2 render() : 
-
-Renders the body of the email message. Just calls get_body on
-the mail message and renders whatever the result is. MailMessage
-get_body returns whatever is in the file server for that mail
-message. It does not parse sub MIME parts.
-
-=cut
-
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($mail_message) = $fields->{message};
-    my($body) = $mail_message->get_body();
-    $$buffer .= '<center>';
-    my($msg) = $source->get('Bivio::Biz::Model::MailMessage');
-    $$buffer .= '<center>by '.
-	    $msg->get('from_name')
-		    .' on '
-	    .Bivio::UI::HTML::Format::DateTime->get_widget_value(
-		    $msg->get('dttm')).' GMT</center><p>';
-    $$buffer .= $$body;
-    return;
+    my($list) = $req->get('Bivio::Biz::Model::MessageList');
+    $req->die(Bivio::DieCode::NOT_FOUND) if $list->get_result_set_size() < 1;
+    $list->next_row;
+    my($mail_message) = $list->get_model('MailMessage');
+    my($subject) = $mail_message->get('subject');
+    $req->put(
+	    page_subtopic => substr($subject, 0, 60),
+	    page_heading => $subject,
+	    page_content => $fields->{content},
+	    page_type => Bivio::UI::PageType::DETAIL(),
+	    list_model => $list,
+	    list_uri => $req->format_uri(
+		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_LIST(),
+		    undef),
+	    detail_uri => $req->format_uri(
+		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_DETAIL(),
+		    undef)
+	    );
+    Bivio::UI::HTML::Club::Page->execute($req);
 }
 
 #=PRIVATE METHODS
