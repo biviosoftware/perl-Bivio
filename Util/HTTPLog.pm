@@ -215,7 +215,7 @@ sub _initialize {
 	    'Error in hidden value\(s\), refreshing',
 	    'request aborted, rolling back',
 	    'attempt to delete missing entry',
-	    'Base64::http_decode.*Premature (?:end|padding) of base64',
+	    'Premature (?:end|padding) of base64',
 	    'ListFormModel Bivio::DieCode::UPDATE_COLLISION',
 	    'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
 	    "can't login as shadow user",
