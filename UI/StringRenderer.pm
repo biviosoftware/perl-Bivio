@@ -66,7 +66,16 @@ Draws the target string onto the request output stream.
 =cut
 
 sub render {
-    my($self, $str, $req) = @_;
+    my($self, $target, $req) = @_;
+
+    my($str);
+    if (ref($target)) {
+	# warns on undef...
+	$str = join(' ', @$target);
+    }
+    else {
+	$str = $target;
+    }
     $req->print($str);
 }
 
