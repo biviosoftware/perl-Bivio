@@ -313,11 +313,12 @@ sub format_email {
 #TODO: Properly quote the email name???
     $email = $self->get_widget_value(@$email) if ref($email);
     # Will bomb if no auth_realm.
-    my($auth_realm) = $self->get('auth_realm');
-    Carp::croak($auth_realm->get_type->as_string, ": can't format_email")
+    unless (defined($email)) {
+	my($auth_realm) = $self->get('auth_realm');
+	Carp::croak($auth_realm->get_type->as_string, ": can't format_email")
 		if $auth_realm->get_type eq Bivio::Auth::RealmType::GENERAL();
-    $email = $auth_realm->get('owner_name')
-	    unless defined($email);
+	$email = $auth_realm->get('owner_name');
+    }
     $email .= '@' . $self->get('mail_host')
 	    unless $email =~ /\@/;
     return $email;
@@ -626,7 +627,11 @@ sub internal_server_redirect {
     # Save the form context before switching realms
     my($fc) = Bivio::Biz::FormModel->get_context_from_request($self);
     $self->internal_redirect_realm($new_task, $new_realm);
-    $self->put(uri => $self->format_uri($new_task, undef),
+
+    $self->put(uri =>
+	    # If there is no uri, use current one
+	    Bivio::Agent::HTTP::Location->task_has_uri($new_task)
+	    ? $self->format_uri($new_task, undef) : $self->get('uri'),
 	    query => $new_query,
 	    query_string => Bivio::Agent::HTTP::Query->format($new_query),
 	    form => $new_form,
