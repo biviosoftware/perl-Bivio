@@ -54,7 +54,8 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::IO::File;
 use Bivio::IO::ClassLoader;
-use File::Spec;
+use File::Spec ();
+use File::Basename ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -246,7 +247,7 @@ Writes output to a separate log file in I<test_log_prefix> directory.
 sub test_log_output {
     my($self, $file_name, $content) = @_;
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
-    Bivio::IO::File->write($self->get('test_log_prefix') . "-$file_name",
+    Bivio::IO::File->write($self->get('test_log_prefix') . "/$file_name",
 	\$content);
     return;
 }
@@ -381,12 +382,14 @@ sub _log_prefix {
 	    File::Spec->rel2abs(
 		$script_name eq '<inline>' ? $_INLINE_LOG_PREFIX++
 		: $script_name));
-    return File::Spec->catpath(
-	'',
-	Bivio::IO::File->mkdir_p(
+    $f =~ s/(?<=.)\.[^\.]+$//g;
+    return Bivio::IO::File->mkdir_p(
+	Bivio::IO::File->rm_rf(
 	    File::Spec->catpath(
-		$v, $d, $_CFG->{log_dir})),
-	$f);
+		'',
+		File::Spec->catpath(
+		    $v, $d, $_CFG->{log_dir}),
+		$f)));
 }
 
 =head1 COPYRIGHT
