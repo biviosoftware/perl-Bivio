@@ -28,34 +28,39 @@ B<Bivio::IO::Trace> is a module-level development and maintenance facility.
 Trace points are free-form text dispersed throughout a module which may be
 enabled programmatically or via environment variables.
 
-Tracing is enabled by modifying the L<get_filter|"get_filter"> which is a perl
-expression that has access to package, line, etc.  If the filter returns true,
-the trace point is printed using L<get_printer|"get_printer">, which by default
-prints via L<Bivio::IO::Alert::print|Bivio::IO::Alert/"print">.  The
-L<get_filter|"get_filter"> is initialized by the environment variable
-C<BIVIO_TRACE>.
+You can enable tracing from the command line, e.g.
+
+   b-petshop create_db --TRACE=/SQL::Connection/
+
+This turns on trace points in all packages which match the pattern
+C</SQL::Connection/>. This argument is handled specially by
+L<Bivio::IO::Config|Bivio::IO::Config>.  See this class for more info.
+
+Tracing is enabled by modifying the L<get_call_filter|"get_call_filter"> which
+is a perl expression that has access to package, line, etc.  If the call filter
+returns true, the trace point is printed using L<get_printer|"get_printer">,
+which by default prints via
+L<Bivio::IO::Alert::print|Bivio::IO::Alert/"print">.
 
 As an optimization, there is a first level
 L<get_package_filter|"get_package_filter"> which enables tracing at the package
 level.  For large applications, tracing will be speeded up greatly by using the
-L<get_package_filter|"get_package_filter"> only.  The
-L<get_package_filter|"get_package_filter"> is initialized by the environment
-variable C<BIVIO_TRACE_PACKAGES>.  If
+L<get_package_filter|"get_package_filter"> only. If
 L<get_package_filter|"get_package_filter"> is defined and
-L<get_filter|"get_filter"> is undefined, L<get_filter|"get_filter"> will be
-treated as always true.
+L<get_call_filter|"get_call_filter"> is undefined,
+L<get_call_filter|"get_call_filter"> will be treated as always true.
 
 =cut
 
 #=VARIABLES
-my(@_REGISTERED, $_POINT_FILTER, $_PKG_FILTER, $_PKG_SUB, $_PRINTER);
+my(@_REGISTERED, $_CALL_FILTER, $_PKG_FILTER, $_PKG_SUB, $_PRINTER);
 BEGIN {
     # Packages which are registered
     @_REGISTERED = ();
     # The package sub must be registered to be false, because of the
-    # algorithm in &_define_pkg_symbols.
+    # algorithm in _define_pkg_symbols().
     # This must be visible to the outside world.
-    $Bivio::IO::Trace::_POINT_SUB = undef;
+    $Bivio::IO::Trace::_CALL_SUB = undef;
     $_PKG_SUB = \&_false;
     # Sub used for printing.  See &print.
     $_PRINTER = \&default_printer;
@@ -67,9 +72,9 @@ use Bivio::IO::Config;
 use Carp ();
 
 Bivio::IO::Config->register({
-    'filter' => undef,
-    'package_filter' => undef,
-    'printer' => \&default_printer,
+    call_filter => undef,
+    package_filter => undef,
+    printer => \&default_printer,
 });
 
 =head1 METHODS
@@ -92,17 +97,17 @@ sub default_printer {
 }
 
 
-=for html <A name="get_filter"></A>
+=for html <A name="get_call_filter"></A>
 
-=head2 static get_filter() : string
+=head2 static get_call_filter() : string
 
-Returns the current trace filter, or C<undef> if tracing is off.
+Returns the current call filter, or C<undef> if tracing is off.
 To set, use L<set_filters|"set_filters">.
 
 =cut
 
-sub get_filter {
-    return $_POINT_FILTER;
+sub get_call_filter {
+    return $_CALL_FILTER;
 }
 
 =for html <a name="get_package_filter"></a>
@@ -136,9 +141,9 @@ sub get_printer {
 
 =over 4
 
-=item filter : string [undef]
+=item call_filter : string [undef]
 
-Initial L<get_filter|"get_filter">
+Initial L<get_call_filter|"get_call_filter">
 
 =item package_filter : string [undef]
 
@@ -153,9 +158,10 @@ Initial L<get_printer|"get_printer">
 =cut
 
 sub handle_config {
-    my($class, $cfg) = @_;
-    &set_filters(undef, $cfg->{filter}, $cfg->{package_filter});
-    &set_printer(undef, $cfg->{printer});
+    my($proto, $cfg) = @_;
+    $proto->set_filters($cfg->{call_filter}, $cfg->{package_filter});
+    $proto->set_printer($cfg->{printer});
+    return;
 }
 
 =for html <a name="print"></a>
@@ -197,12 +203,13 @@ is the routine to define a trace point.
 These values will be modified dynamically as tracing is turned on/off
 programmatically.
 
-Use C<_trace()> for defining trace_points.  To avoid argument computation, use
-the form:
+Use C<_trace()> for defining trace_points.  To avoid argument computation, we
+always use the form:
 
     _trace(bla, bla, bla, bla) if $_TRACE;
 
-You will need to experiment with which trace points are expensive.
+You will need to experiment with which trace points are expensive, but
+the C<if $_TRACE> predicate is one of the fastest statements in perl.
 
 =cut
 
@@ -210,19 +217,19 @@ sub register {
     my($proto) = @_;
     my($pkg) = caller;
     defined($pkg) && $pkg ne 'main'
-	    || &Carp::croak('registrations may only occur packages',
+	    || Carp::croak('registrations may only occur packages',
 		    ' other than main');
     # already registered?
     grep($pkg eq $_, @_REGISTERED) && return;
     push(@_REGISTERED, $pkg);
-    &_define_pkg_symbols($pkg, $Bivio::IO::Trace::_POINT_SUB, $_PKG_SUB);
+    _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
 }
 
 =for html <a name="set_filters"></a>
 
 =head2 static set_filters(string point_expr, string pkg_expr) : (string, string)
 
-Sets the L<get_filter|"get_filter"> to I<point_expr> which may be C<undef>
+Sets the L<get_call_filter|"get_call_filter"> to I<point_expr> which may be C<undef>
 and L<get_package_filter|"get_package_filter"> to I<pkg_expr> which may be C<undef>.
 Both expressions have full access to perl.
 
@@ -256,14 +263,14 @@ name.
 
 =back
 
-If you want to see all possible trace output, set the point filter to "1" and
+If you want to see all possible trace output, set the call filter to "1" and
 the package filter to C<undef>.  This particular filter is optimized specially.
 
 By setting the package filter, you are controlling the values of
-C<&_trace> and C<$_TRACE> directly.  If a particular package
-matches the filter, then its C<$_TRACE> will be true and C<&_trace>
-will be configured to generate output if L<get_filter|"get_filter"> returns
-true.
+C<_trace> and C<$_TRACE> directly.  If a particular package
+matches the filter, then its C<$_TRACE> will be true and C<_trace>
+will be configured to generate output if L<get_call_filter|"get_call_filter">
+returns true.
 
 The package filter has access to the following variable:
 
@@ -284,12 +291,12 @@ Returns the previous filters.
 =cut
 
 sub set_filters {
-    my(undef, $point_filter, $pkg_filter) = @_;
-    my($prev_point, $prev_pkg) = ($_POINT_FILTER, $_PKG_FILTER);
+    my(undef, $call_filter, $pkg_filter) = @_;
+    my($prev_point, $prev_pkg) = ($_CALL_FILTER, $_PKG_FILTER);
     # If package filter w/o point filter, force to be true.
     my($point_sub, $pkg_sub);
-    if (defined($point_filter)) {
-	if ($point_filter =~ /^\s*1\s*$/s) {
+    if (defined($call_filter)) {
+	if ($call_filter =~ /^\s*1\s*$/s) {
 	    $point_sub = undef;
 	}
 	else {
@@ -298,12 +305,12 @@ sub set_filters {
                 use strict;
 		sub {
 		    my(\$pkg, \$file, \$line, \$sub, \$msg) = \@_;
-		    ($point_filter) || return 0;
+		    ($call_filter) || return 0;
                     return Bivio::IO::Trace->print(\$pkg, \$file,
                             \$line, \$sub, \$msg);
 		}
 EOF
-            defined($point_sub) || &Carp::croak("point filter invalid: $@");
+            defined($point_sub) || Carp::croak("call filter invalid: $@");
 	}
     }
     if (defined($pkg_filter)) {
@@ -313,17 +320,17 @@ EOF
             return $pkg_filter;
         }
 EOF
-	defined($pkg_sub) || &Carp::croak("package filter invalid: $@");
+	defined($pkg_sub) || Carp::croak("package filter invalid: $@");
     }
     else {
-	$pkg_sub = defined($point_filter) ? \&_true : \&_false;
+	$pkg_sub = defined($call_filter) ? \&_true : \&_false;
     }
     my($pkg);
     foreach $pkg (@_REGISTERED) {
-	&_define_pkg_symbols($pkg, $point_sub, $pkg_sub);
+	_define_pkg_symbols($pkg, $point_sub, $pkg_sub);
     }
-    ($_POINT_FILTER, $Bivio::IO::Trace::_POINT_SUB, $_PKG_FILTER, $_PKG_SUB)
-	    = ($point_filter, $point_sub, $pkg_filter, $pkg_sub);
+    ($_CALL_FILTER, $Bivio::IO::Trace::_CALL_SUB, $_PKG_FILTER, $_PKG_SUB)
+	    = ($call_filter, $point_sub, $pkg_filter, $pkg_sub);
     return ($prev_point, $prev_pkg);
 }
 
@@ -342,7 +349,7 @@ Returns the previous printer.
 
 sub set_printer {
     my($proto, $printer) = @_;
-    defined(&{$printer}) || &Carp::croak('printer is not a valid subroutine');
+    defined(&{$printer}) || Carp::croak('printer is not a valid subroutine');
     my($old_printer) = $_PRINTER;
     $_PRINTER = $printer;
     return $old_printer;
@@ -362,7 +369,7 @@ sub _define_pkg_symbols {
 	# Tracing is on
 	$sub = 'return '
 		. (defined($point_sub)
-			? '&{$Bivio::IO::Trace::_POINT_SUB}'
+			? '&{$Bivio::IO::Trace::_CALL_SUB}'
 			: 'Bivio::IO::Trace->print')
 	        # caller(1) can return an empty array, hence '|| undef'
 		. '((caller), (caller(1))[$[+3] || undef, \@_)';
