@@ -173,7 +173,7 @@ sub _parse_line {
 	    $word = "<a HREF=MAILTO:$word>$word</a>";
 #	    _trace('found a mailto: ', $word) if $_TRACE;
 	}
-	elsif($word =~ /(http:\/\/.*)/){
+	elsif($word =~ /(https?:\/\/.*)/){
 	    my $uri = $1;
 	    my $suri = $1;
 	    $word =~ s/\Q$suri/\<a HREF=$uri\>$uri\<\/a\>/;
