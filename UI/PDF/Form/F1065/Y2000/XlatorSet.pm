@@ -605,19 +605,91 @@ my(@_XLATORS) = (
 		2
 	       ),
 	Bivio::UI::PDF::Form::MoneyXlator->new(
-		'f4-4',
+		'f4-3',
 		[
 		    'Bivio::Biz::Model::F1065Form',
-		    'active_income'
+		    'income_general_corporate',
 		],
 		',',
 		2
 	       ),
 	Bivio::UI::PDF::Form::MoneyXlator->new(
-		'f4-5',
+		'f4-4',
 		[
 		    'Bivio::Biz::Model::F1065Form',
-		    'passive_income'
+		    'income_general_individual',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-6',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_general_partnership',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-7',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_general_exempt_org',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-8',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_general_other',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-9',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_limited_corporate',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-10',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_limited_individual',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-12',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_limited_partnership',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-13',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_limited_exempt_org',
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-14',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'income_limited_other',
 		],
 		',',
 		2
