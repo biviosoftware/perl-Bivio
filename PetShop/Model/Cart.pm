@@ -127,7 +127,7 @@ sub load_from_cookie {
     my($cart_id) = $cookie->unsafe_get('cart_id');
 
     # check if the cart exists
-    if (defined($cart_id) && $self->unsafe_load(cart_id => $cart_id)) {
+    if (defined($cart_id) && $self->unsafe_load({cart_id => $cart_id})) {
 
 	# don't use the cart_id if an order is associated with it
 	if ($self->new_other('Order')->unauth_load({
