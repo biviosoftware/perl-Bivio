@@ -129,6 +129,8 @@ sub execute_empty {
 	    $properties->{member_instrument_cost_basis});
     $properties->{withdrawal_allocations} = $math->neg(
 	    $properties->{withdrawal_allocations});
+
+    $properties->{show_allocations} = _get_show_allocations($req);
     return;
 }
 
@@ -254,6 +256,11 @@ sub internal_initialize {
 		type => 'Amount',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'show_allocations',
+		type => 'Boolean',
+		constraint => 'NOT_NULL',
+	    },
 	],
     };
 }
@@ -271,6 +278,24 @@ sub _add {
 	$sum = $math->add($sum, $properties->{$field});
     }
     return $sum;
+}
+
+# _get_show_allocations(Bivio::Agent::Request req) : boolean
+#
+# Returns true if the current Bivio::Biz::Model::MemberAllocationList
+# has data.
+#
+sub _get_show_allocations {
+    my($req) = @_;
+    my($list) = $req->get('Bivio::Biz::Model::MemberAllocationList');
+    if ($list->get_result_set_size > 0) {
+	$list->set_cursor_or_die(0);
+	foreach my $tax (@{Bivio::Type::TaxCategory->get_club_tax_values}) {
+	    my($name) = $tax->get_short_desc;
+	    return 1 if $list->get($name) != 0;
+	}
+    }
+    return 0;
 }
 
 # _get_transaction_amount(Bivio::Biz::Model::RealmTransaction txn, Bivio::Type::EntryType type, Bivio::Type::EntryClass class) : string
