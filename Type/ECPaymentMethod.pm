@@ -35,8 +35,6 @@ The current choices are:
 
 =item CHECK
 
-=item ACH
-
 =back
 
 =cut
@@ -55,10 +53,10 @@ __PACKAGE__->compile([
 	2,
         'Check',
     ],
-    ACH => [
-	3,
-        'ACH',
-    ],
+#    ACH => [
+#	3,
+#        'ACH',
+#    ],
 ]);
 
 =head1 METHODS
