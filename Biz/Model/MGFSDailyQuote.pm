@@ -432,6 +432,21 @@ sub update {
     return;
 }
 
+=for html <a name="update_raw"></a>
+
+=head2 update_raw(hash_ref new_values)
+
+Updates an MGFS Daily Quote. Doesn't modify values like
+L<update|"update">.
+
+=cut
+
+sub update_raw {
+    my($self, $new_values) = @_;
+    $self->SUPER::update($new_values);
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _add_decimal(array_ref values)
