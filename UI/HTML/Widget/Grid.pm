@@ -72,6 +72,10 @@ If true, the table will C<WIDTH> will be C<100%>.
 
 If true, empty cells will not be rendered.
 
+=item id : string
+
+The html ID for the table.
+
 =item pad : number [0]
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
@@ -235,6 +239,8 @@ sub initialize {
 	    = $self->unsafe_get(qw(expand align width));
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
+    $p .= ' id="' . Bivio::HTML->escape_attr_value($self->get('id')) . '"'
+	if $self->unsafe_get('id');
     $p .= ' width="100%"' if $expand;
     if (ref($width)) {
 	$fields->{width} = $width;
