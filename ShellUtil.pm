@@ -3,6 +3,7 @@
 package Bivio::ShellUtil;
 use strict;
 $Bivio::ShellUtil::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::ShellUtil::VERSION;
 
 =head1 NAME
 
@@ -56,13 +57,22 @@ Name of database to connect to.
 Where to mail the output.  Uses I<result_type> and I<result_name>,
 if available.
 
+=item noexecute : boolean [1]
+
+Won't execute any "modifying" operations.  Will not call
+commit on termination.
+
 =item program : string
 
 Name of the program sans suffix and directory.
 
+=item output : string
+
+Name of the file to write the output to.
+
 =item quiet : boolean [0]
 
-Don't output verbosely.
+B<DEPRECATED: Use Trace instead.>
 
 =item realm : string [undef]
 
@@ -80,9 +90,12 @@ File name of the result as set by the caller I<command> method.
 
 MIME type of the result as set by the caller I<command> method.
 
-=item user : string [undef]
+=item user : string [undef or first_admin]
 
-The auth user used to execute I<command>.
+The auth user used to execute I<command>.  If not set and
+I<realm> is set, will be implicitly set to the first_admin
+as defined by
+L<Bivio::Biz::Model::RealmAdminList|Bivio::Biz::Model::RealmAdminList>.
 
 =back
 
@@ -101,8 +114,9 @@ Called by L<usage|"usage"> and returns the string:
   options:
 	  -db - name of database connection
 	  -email - who to mail the results to (may be a comma separated list)
+          -noexecute - don't commit
+          -output - a file to write the output to
 	  -realm - realm_id or realm name
-	  -quiet -- don't display lots of messages
 	  -user - user_id or user name
 
 =cut
@@ -112,8 +126,9 @@ sub OPTIONS_USAGE {
 options:
         -db - name of database connection
         -email - who to mail the results to (may be a comma separated list)
+        -noexecute - don't commit
+        -output - a file to write the output to
         -realm - realm_id or realm name
-        -quiet -- don't display lots of messages
         -user - user_id or user name
 EOF
 }
@@ -129,8 +144,10 @@ The default values are:
 	realm => ['Name', undef],
 	user => ['Name', undef],
 	db => ['Name', undef],
+	noexecute => ['Boolean', 0],
+        output => ['Line', undef],
 	email => ['Text', undef],
-	quiet => ['Boolean', 0],
+	quiet => ['Boolean', 0],  # DEPRECATED, use Trace instead
     }
 
 Boolean is treated specially, but all other options are parsed
@@ -154,6 +171,8 @@ sub OPTIONS {
 	user => ['Name', undef],
 	db => ['Name', undef],
 	email => ['Text', undef],
+        output => ['Line', undef],
+	noexecute => ['Boolean', 0],
 	quiet => ['Boolean', 0],
     };
 }
@@ -171,7 +190,7 @@ Returns the usage string, e.g.
 	   remote_sqlplus host db_login actions
 	   copy_logs_to_standby
 	   recover_standby
-	   sql2csv file.sql [database [email]]
+	   sql2csv file.sql
 	   switch_logs_and_count_rows
 
 =cut
@@ -181,6 +200,7 @@ sub USAGE {
 }
 
 #=IMPORTS
+use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
@@ -241,21 +261,44 @@ Returns the command line that was used to execute this command.
 
 sub command_line {
     my($self) = @_;
-    return join(' ', $self->get('program'), @{$self->get('argv')});
+    return ref($self)
+	    ? join(' ', $self->get('program'), @{$self->get('argv')})
+		    : 'N/A';
 }
 
 =for html <a name="finish"></a>
 
 =head2 finish()
 
-Clean up work of setup.
+Commit (if !noexecute) and clean up work of setup.
 
 =cut
 
 sub finish {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $self->unsafe_get('noexecute')
+	    ? Bivio::Agent::Task->rollback($self->get('req'))
+		    : Bivio::Agent::Task->commit($self->get('req'));
     return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
+}
+
+=for html <a name="get_request"></a>
+
+=head2 static get_request() : Bivio::Agent::Request
+
+If called with an instance, same as $self-E<gt>get('req').  If called
+statically, returns Bivio::Agent::Request-E<gt>get_current or dies
+if no request.
+
+=cut
+
+sub get_request {
+    my($self) = @_;
+    return $self->get('req') if ref($self);
+    my($req) = Bivio::Agent::Request->get_current;
+    Bivio::Die->die('no request') unless $req;
+    return $req;
 }
 
 =for html <a name="main"></a>
@@ -368,9 +411,12 @@ sub put {
 
 =for html <a name="result"></a>
 
-=head2 result(string cmd, any res)
+=head2 result(string cmd, string_ref res)
 
-Processes I<res> by sending via I<email> or printing to STDOUT.
+=head2 result(string cmd, string res)
+
+Processes I<res> by sending via I<email> and writing to I<output>
+or printing to STDOUT.
 
 =cut
 
@@ -378,7 +424,9 @@ sub result {
     my($self, $cmd, $res) = @_;
     $res = _result_ref($res);
     return unless $res;
-    return if _result_email(@_);
+
+    # If we write email or output, then don't write to STDOUT.
+    return if _result_email(@_) + _result_output(@_);
     print STDOUT $$res;
     return;
 }
@@ -408,12 +456,26 @@ sub setup {
     my($p) = $0;
     $p =~ s!.*/!!;
     $p =~ s!\.\w+$!!;
+    $realm = _parse_realm_id($self, 'realm');
+    $user = _parse_realm_id($self, 'user');
     $self->put(req => Bivio::Agent::Job::Request->new({
-	auth_id => _parse_realm_id($self, 'realm'),
-	auth_user_id => _parse_realm_id($self, 'user'),
+	auth_id => $realm,
+	auth_user_id => $user,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
     }),
 	   program => $p);
+
+    if ($realm && !$user) {
+	# No user, but have a realm, so set a user
+	my($req) = $self->get('req');
+        $req->set_user(
+		Bivio::Biz::Model::RealmOwner->new($req)->unauth_load_or_die(
+			realm_id => Bivio::Biz::Model->new($req,
+				'RealmAdminList')
+			->get_first_admin(
+				$self->get('req')->get('auth_realm')
+				->get('owner'))));
+    }
     return;
 }
 
@@ -458,15 +520,45 @@ EOF
 
 =head2 verbose(any arg, ...)
 
-Calls L<print|"print"> if I<quiet> option is not set.
+B<DEPRECATED: Use Trace instead.>
 
 =cut
 
 sub verbose {
     my($self) = shift;
+    Bivio::IO::Alert->warn_deprecated('use _trace()');
     return if $self->unsafe_get('quiet');
     $self->print(@_);
     return;
+}
+
+=for html <a name="write_file"></a>
+
+=head2 static write_file(string file_name, string_ref contents)
+
+Creates a file with I<file_name> and writes I<contents> to it.
+Dies with an IO_ERROR on errors.
+
+=cut
+
+sub write_file {
+    my(undef, $file_name, $contents) = @_;
+    my($op) = 'open';
+ TRY: {
+	open(OUT, '> '.$file_name) || last OUT;
+	$op = 'print';
+	(print OUT $$contents) || last OUT;
+	$op = 'close';
+        close(OUT) || last OUT;
+	return;
+    }
+
+    Bivio::Die->throw_die('IO_ERROR', {
+	message => "$!",
+	operation => $op,
+	entity => $file_name,
+    });
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
@@ -562,7 +654,7 @@ sub _parse_realm_id {
     return $ro->get('realm_id');
 }
 
-# _result_email(Bivio::ShellUtil self, string cmd, string_ref res)
+# _result_email(Bivio::ShellUtil self, string cmd, string_ref res) : boolean
 #
 # Emails the result if there is an email option (returns true in that case).
 #
@@ -588,6 +680,19 @@ sub _result_email {
 	$msg->set_body($res);
     }
     $msg->send();
+    return 1;
+}
+
+# _result_output(Bivio::ShellUtil self, string cmd, string_ref res) : boolean
+#
+# Returns true if there is an output option and it is written to a file.
+#
+sub _result_output {
+    my($self, $cmd, $res) = @_;
+    my($output) = $self->unsafe_get('output');
+    return 0 unless $output;
+
+    $self->write_file($output, $res);
     return 1;
 }
 
