@@ -51,18 +51,20 @@ sub USAGE {
     return <<'EOF';
 usage: b-sql [options] command [args...]
 commands:
-    create_db -- initializes database (must be run from files/ddl directory)
+    create_db -- initializes database (must be run from ddl directory)
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
     export_db file -- exports database (only works for pg right now)
-    import_db file -- imports database
+    import_db file -- imports database (ditto)
+    reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
 EOF
 }
 
 #=IMPORTS
 use Bivio::SQL::Connection;
+use Bivio::Type::Number;
 
 #=VARIABLES
 my($_REALM_ROLE_CONFIG);
@@ -278,6 +280,49 @@ sub realm_role_config {
 	close(DATA);
     }
     return $_REALM_ROLE_CONFIG;
+}
+
+=for html <a name="reinitialize_sequences"></a>
+
+=head2 reinitialize_sequences() : string
+
+Reinitializes all sequences in L<ddl_files|"ddl_files"> to be max value +
+increment in table.
+
+=cut
+
+sub reinitialize_sequences {
+    my($self) = @_;
+    $self->setup;
+    my($res) = $self->unsafe_get('noexecute') ? "Would have executed:\n" : '';
+    foreach my $cmd (
+	map({
+	    grep(/^\s*create\s+sequence/im,
+		split(/^(?=\s*create\s+sequence)/im,
+                    ${Bivio::IO::File->read($_)}));
+	} @{$self->ddl_files})
+    ) {
+	$cmd =~ s,/.*,,s;
+	my($base) = $cmd =~ /sequence\s+(\w+)_s/si
+	    or die('bad sequence name: ', $cmd);
+	my($max) = Bivio::SQL::Connection->execute_one_row(
+	    "select max(${base}_id) from ${base}_t");
+	next unless $max && $max->[0];
+	my($inc) = $cmd =~ /increment\s+by\s+(\d+)/si
+	    or die('bad sequence increment by: ', $cmd);
+	# Increment by two to be sure
+	$inc = Bivio::Type::Number->add($max->[0],
+	    Bivio::Type::Number->mul($inc, 2, 0), 0);
+	# Number puts in '+'
+	$inc =~ s/\D//g;
+	$cmd =~ s/minvalue\s+(\d+)/minvalue $inc/i
+	    or die('bad minvalue: ', $cmd);
+	$res .= "${base}_s => $inc\n";
+	next if $self->unsafe_get('noexecute');
+	Bivio::SQL::Connection->execute("drop sequence ${base}_s");
+	Bivio::SQL::Connection->execute($cmd);
+    }
+    return $res;
 }
 
 =for html <a name="run"></a>
