@@ -282,7 +282,7 @@ sub _find_files {
 		$_FILES->{$name} = 1;
 	    },
 	    $_SOURCE_DIR);
-    return;
+    return $_FILES;
 }
 
 # _reformat_pod(self, array_ref lines)
@@ -319,11 +319,8 @@ sub _reformat_pod {
 	else {
 	    if ($doc) {
 		$doc = _unescape_pod($doc);
-		my($match_doc) = $doc;
-		# escape any regexp meta characters in variable
-		$match_doc =~ s/\\/\\\\/g;
-		$match_doc =~ s/([|()\[{^\$*+?.])/\\$1/g;
-		$line =~ s,$match_doc,<b>$doc</b>,;
+		# the \Q calls quotemeta()
+		$line =~ s,\Q$doc,<b>$doc</b>,;
 	    }
 	    $line = '# '.$line;
 	}
