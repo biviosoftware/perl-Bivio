@@ -160,8 +160,7 @@ sub vs_product_uri {
 	    # Product task is a list of all products in a category.
 	    # The category is the list's parent_id.
 	    'ListQuery.parent_id' =>
-	    Bivio::PetShop::Type::Category->unsafe_from_any($category)
-	    ->get_name(),
+	    Bivio::PetShop::Type::Category->from_any($category)->get_name(),
 	}, undef, undef];
 }
 
