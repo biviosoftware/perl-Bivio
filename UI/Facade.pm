@@ -523,22 +523,12 @@ sub setup_request {
     else {
 	$self = $_CLASS_MAP{$_DEFAULT};
     }
-    _edit_request_attrs($self, $req);
     _setup_request($self, $req);
+    $self->get('Bivio::UI::HTML')->setup_request($req);
     return;
 }
 
 #=PRIVATE METHODS
-
-# _edit_request_attrs(self, Bivio::Agent::Request req)
-#
-# Sets request attributes as defined by Bivio::UI::HTML.request_attrs.
-#
-sub _edit_request_attrs {
-    my($self, $req) = @_;
-    $req->put(%{$self->get('Bivio::UI::HTML')->get_value('request_attrs')});
-    return;
-}
 
 # _get_class_pattern() : string
 #
