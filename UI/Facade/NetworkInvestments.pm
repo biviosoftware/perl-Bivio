@@ -36,7 +36,7 @@ use Bivio::Biz::Action::ClientRedirect;
 
 #=VARIABLES
 my($_W) = 'Bivio::UI::HTML::Widget';
-__PACKAGE__->new({
+my($_SELF) = __PACKAGE__->new({
     clone => 'Prod',
     is_production => 1,
     uri => 'networkinvestments',
@@ -46,8 +46,8 @@ __PACKAGE__->new({
 	    my($fc) = @_;
 
 	    # Some required strings and values
-	    $fc->group(logo_icon => 'networkinvestments');
-	    $fc->group(site_name => 'Network, A Limited Partnership');
+	    $fc->group(logo_icon => 'network');
+	    $fc->group(site_name => 'Network LP');
 	    $fc->group(home_alt_text => 'Network, A Limited Partnership');
 
 	    $fc->initialize_standard_support;
@@ -56,13 +56,24 @@ __PACKAGE__->new({
 	    $fc->value(request_attrs => {
 		http_host => 'www.networkinvestments.com',
 		mail_host => 'networkinvestments.com',
-		support_email => 'networkinvestments@networkinvestments.com',
-		support_phone => '+1 (858) 638-7245',
 	    }) if Bivio::Agent::Request->is_production;
+	    my($ra) = $fc->get_value('request_attrs');
+	    $ra->{support_email} = 'network@networkinvestments.com';
+	    $ra->{support_phone} = '+1 (858) 638-7245';
 
 	    $fc->value(want_secure => 1);
 	    $fc->value(want_help => 0);
-	    $fc->value(realm_chooser => $_W->clear_dot(1, 30));
+	    $fc->value(want_bulletin => 0);
+	    $fc->value(want_tos => 0);
+	    $fc->value(club_or_fund => 'fund');
+
+	    # To force the gradients to be packed.  Have push the
+	    # realm_chooser height.
+	    my($icon) = $fc->get_facade->get('Bivio::UI::Icon');
+	    $fc->value(realm_chooser => $_W->clear_dot(1,
+		    20 + $icon->get_height($fc->get_value('logo_icon'))
+		    - $icon->get_height('bivio')));
+
 	    # Home page is special
 	    $fc->value(home_page => Bivio::Biz::Action::ClientRedirect->new(
 		    '/networkinvestments/files/index.htm'));
@@ -78,6 +89,8 @@ __PACKAGE__->new({
 	},
     },
 });
+
+Bivio::UI::Font->initialize_children($_SELF);
 
 =head1 METHODS
 
@@ -103,7 +116,6 @@ sub _footer {
 		$label, $task, 'footer_menu'),
 		$spacer);
     }
-    pop(@$links);
     push(@$links, $_W->mailto(['support_email'])->put(
 	    string_font => 'footer_menu',
 	   ));
