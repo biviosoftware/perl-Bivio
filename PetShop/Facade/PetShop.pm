@@ -210,6 +210,8 @@ sub _task {
     $t->group(ADM_SUBSTITUTE_USER => 'su');
     $t->group(MAIL_RECEIVE_DISPATCH => 'mail-handler');
     $t->group(MAIL_RECEIVE_IGNORE => '?/mail-handler-ignore');
+    $t->group(USER_ACCOUNT_CREATE_AND_PLACE_ORDER =>
+	'my/create-account-and-order');
     return;
 }
 

@@ -206,6 +206,7 @@ sub get_delegate_info {
 	    Model.Order->execute_load_parent
 	    Model.OrderStatus->execute_load_parent
 	    Model.CartItemList->execute_load_for_order
+            Model.Email->execute_load
 	    View.order-commit
 	)],
 	[qw(
@@ -272,6 +273,15 @@ sub get_delegate_info {
             ANYBODY
             Action.MailReceiveStatus->execute
         )],
+	[qw(
+	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER
+	    524
+	    GENERAL
+	    ANYBODY
+	    Model.UserAccountForm
+	    View.account
+	    next=PLACE_ORDER
+	)],
     ]);
 }
 
