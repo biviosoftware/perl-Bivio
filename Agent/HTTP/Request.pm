@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
 $Bivio::Agent::HTTP::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::HTTP::Request::VERSION;
 
 =head1 NAME
 
@@ -195,6 +196,7 @@ sub client_redirect {
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
+	# Can't check want_query here, because literal URI
 	$new_query = Bivio::Agent::HTTP::Query->format($new_query)
 		if ref($new_query);
 	$uri =~ s/\?/\?$new_query&/ || ($uri .= '?'.$new_query)
@@ -348,7 +350,7 @@ RFC1808 (Relative URL)
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

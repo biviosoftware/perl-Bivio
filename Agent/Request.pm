@@ -582,10 +582,12 @@ sub format_stateless_uri {
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
+if the task doesn't I<want_query>, will not append query string.
 If I<auth_realm> is C<undef>, request's realm will be used.
 If I<path_info> is C<undef>, request's path_info will be used.
 
 If the task doesn't have a uri, returns undef.
+
 
 =cut
 
@@ -611,7 +613,8 @@ sub format_uri {
 
     # Yes, we don't want $query unless it is passed.
     $query = $self->get('query') unless int(@_) >= 3;
-    return $uri unless defined($query);
+    return $uri unless defined($query)
+	    && Bivio::Agent::Task ->get_by_id($task_id)->get('want_query');
     $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
 
     # The uri may have a query string already, if the form requires context.

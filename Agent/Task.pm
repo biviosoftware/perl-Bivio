@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
 $Bivio::Agent::Task::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Agent::Task::VERSION;
 
 =head1 NAME
 
@@ -37,25 +38,25 @@ The following fields are returned by L<get|"get">:
 
 =over 4
 
-=item cancel
+=item cancel : Bivio::Agent::TaskId [next]
 
-The task_id to go to in other cases. Not required.
+The task_id to go to in other cases.
 
-=item die_actions
+=item die_actions : hash_ref
 
 The map of die codes (any enums, actually) to tasks executed when
 the die code is encountered for this task.  I<Only maps if the
 request is from HTTP.>
 
-=item form_model
+=item form_model : Bivio::Biz::FormModel (computed)
 
 The form model in I<items> or C<undef>.
 
-=item id
+=item id : Bivio::Agent::TaskId|Bivio::Agent::TaskId (required)
 
 L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
 
-=item items
+=item items : array_ref (required)
 
 A list of actions.  An action is the tuple (singleton instance,
 method name).  When the task is executed, the methods are
@@ -63,23 +64,28 @@ called on the singletons.  If the singleton is undefined,
 it means the method is a subroutine to be called without
 an instance.
 
-=item next
+=item next : Bivio::Agent::TaskId []
 
-The next task_id to go to in certain cases.  Not always
-defined.
+The next task_id to go to in certain cases.  Required only if
+there is a FormModel in I<items>.
 
-=item permission_set
+=item permission_set : Bivio::Auth::Permission (required)
 
 L<Bivio::Auth::Permission|Bivio::Auth::PermissionSet> for this task.
 
-=item realm_type
+=item realm_type : Bivio::Auth::RealmType (required)
 
 L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
 
-=item require_context
+=item require_context : boolean [form_model's require_context]
 
 The I<form_model> has C<require_context> defined, unless
 overriden by the configuration.
+
+=item want_query : boolean [1]
+
+L<Bivio::Agent::Request|Bivio::Agent::Request> will not add the query
+(even if supplied) if this is false.
 
 =back
 
@@ -233,6 +239,9 @@ sub new {
     else {
 	$attrs->{require_context} = 0;
     }
+
+    # Other defaults
+    $attrs->{want_query} = 1 unless defined($attrs->{want_query});
 
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
@@ -480,7 +489,7 @@ sub _parse_map_item {
 	return;
     }
 
-    if ($cause eq 'require_context') {
+    if ($cause =~ /^(?:require_context|want_query)$/) {
 	$attrs->{$cause} = Bivio::Type::Boolean->from_literal_or_die($action);
 	return;
     }
@@ -515,7 +524,7 @@ sub _parse_map_item {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 

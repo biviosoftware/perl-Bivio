@@ -164,6 +164,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountList
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-summary
+        want_query=0
     )],
 #10
     [qw(
@@ -179,6 +180,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentList
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
         help=investment-summary
+        want_query=0
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_LIST
@@ -193,6 +195,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberList
         next=CLUB_ACCOUNTING_MEMBER_LIST
         help=member-summary
+        want_query=0
     )],
     # NOTE: This must not be CLUB_ACCOUNTING_REPORT_*, because
     # AccountingReportForm knows the list of accounting reports with
