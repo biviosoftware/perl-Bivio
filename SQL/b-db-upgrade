@@ -250,25 +250,25 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_subscription_constraint($req);
+    _upgrade_realm_notice($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_subscription_constraint(Bivio::Agent::Request req)
+# _upgrade_realm_notice(Bivio::Agent::Request req)
 #
-# Expands ec_subscription_t.subscription_type constraint
+# Expands realm_notice_t.realm_notice_type constraint
 #
-sub _upgrade_subscription_constraint {
+sub _upgrade_realm_notice {
     my($req) = @_;
-    print("expanding ec_subscription_t.subscription_type constraint\n");
-    _drop_constraints('ec_subscription_t', 'subscription_type');
+    print("expanding realm_notice_t.realm_notice_type constraint\n");
+    _drop_constraints('realm_notice_t', 'realm_notice_type');
     _do_sql('
-ALTER TABLE ec_subscription_t modify subscription_type not null
+ALTER TABLE realm_notice_t modify realm_notice_type not null
 /
-ALTER TABLE ec_subscription_t
-  add constraint ec_subscription_t3
-  check (subscription_type between 1 and 6)
+ALTER TABLE realm_notice_t
+  add constraint realm_notice_t6
+  check (realm_notice_type between 1 and 6)
 /
 ');
     return;
