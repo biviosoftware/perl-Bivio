@@ -105,8 +105,8 @@ sub main {
     my($user) = getpwuid($>) || $>;
     chop($host);
     $host = sprintf("%d.%d.%d.%d", unpack('C4', (gethostbyname($host))[4]));
-    print STDERR "http://$host:$http_port/\n",
-	    "b-sendmail-agent user $mail_port x x < input\n";
+    print STDERR "http://$host:$http_port/club/setup\n",
+	    "b-sendmail-agent $user $mail_port x x < input\n";
     unless ($execute) {
 	print STDOUT "export BIVIO_CONF=$conf\n";
 	$conf = '&STDOUT';
