@@ -337,21 +337,6 @@ sub format_context_as_query {
 	    Bivio::Biz::FormContext->to_literal($req, $c));
 }
 
-=for html <a name="get_button_submitted"></a>
-
-=head2 get_button_submitted() : string
-
-Returns the name of the button field selected. This value is valid only
-after L<execute|"execute"> has been invoked.
-
-=cut
-
-sub get_button_submitted {
-    my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{button_submitted};
-}
-
 =for html <a name="get_context_from_request"></a>
 
 =head2 static get_context_from_request(Bivio::Agent::Request hash_ref, boolean no_form) : hash_ref
@@ -1114,7 +1099,6 @@ sub process {
 		    if $type->isa('Bivio::Type::FormButton');
 	}
     }
-    $fields->{button_submitted} = $button;
 
     return $self->validate_and_execute_ok($button)
 	    if $button_type->isa('Bivio::Type::OKButton');
