@@ -52,7 +52,7 @@ my($_FILL) = 'X';
 my($_CIPHER) = undef;
 Bivio::IO::Config->register({
     key => Bivio::IO::Config->REQUIRED,
-    prompt => Bivio::IO::Config->REQUIRED,
+    prompt => 0,
 });
 
 =head1 METHODS
@@ -94,7 +94,7 @@ sub from_sql_column {
 
 The way we encrypt the data.
 
-=item prompt : boolean (required)
+=item prompt : boolean [0]
 
 Do we need to prompt for a passphrase to decrypt I<key>?
 
