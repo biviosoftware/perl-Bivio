@@ -89,6 +89,12 @@ sub as_string {
 
 =head2 static compile(hash_ref declaration)
 
+Hash of enum names pointing to array containing number, short
+description, and, long description.  If the long description
+is not supplied, the short description will be used.  If the
+short description is not supplied, the name will be downcased
+and all underscores (_) will be replaced with space.
+
 =cut
 
 sub compile {
@@ -101,8 +107,19 @@ sub compile {
     my(%info_copy) = %$info;
     my($min, $max);
     while (my($name, $d) = each(%info_copy)) {
-	ref($d) eq 'ARRAY' && int(@$d) == 3
-		|| Carp::croak("$name: must point to an array of length 3");
+	ref($d) eq 'ARRAY'
+		|| Carp::croak("$name: does not point to an array");
+	if (int(@$d) == 1) {
+	    my($n) = lc($name);
+	    $n =~ s/_/ /g;
+	    push(@$d, $n, $n);
+	}
+	elsif (int(@$d) == 2) {
+	    push(@$d, $d->[1]);
+	}
+	elsif (int(@$d) != 3) {
+	    Carp::croak("$name: incorrect array length (should be 1 to 3)");
+	}
 	defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/
 		|| Carp::croak("$name: invalid number \"$d->[0]\"");
         $name =~ /^[A-Z][A-Z0-9_]*$/
@@ -127,9 +144,11 @@ EOF
     defined($min) || Carp::croak('no values');
     $info->{_min} = $min;
     $info->{_max} = $max;
-    my($n);
-    foreach $n ($min->[0] .. $max->[0]) {
-	defined($info->{$n}) || Carp::croak("missing number $n");
+    if ($pkg->is_sequential) {
+	my($n);
+	foreach $n ($min->[0] .. $max->[0]) {
+	    defined($info->{$n}) || Carp::croak("missing number $n");
+	}
     }
     eval($eval . '; 1')
 	    || Carp::croak("compilation failed: $@");
@@ -191,6 +210,19 @@ sub get_short_desc {
     my($self) = @_;
     my($map) = $_MAP{ref($self)};
     return $map->{$self}->[1];
+}
+
+=for html <a name="is_sequential"></a>
+
+=head2 is_sequential() : 1
+
+Is this enumeration sequentially numbered?  By default, this is true.
+Enumerations which don't want to be sequential should override this method.
+
+=cut
+
+sub is_sequential {
+    return 1;
 }
 
 =for html <a name="min"></a>

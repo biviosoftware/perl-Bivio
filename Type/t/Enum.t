@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..3\n"; }
+BEGIN { $| = 1; print "1..5\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::Enum;
@@ -38,6 +38,25 @@ __PACKAGE__->compile({
 
 1;
 
+package Bivio::Type::Enum::T2;
+
+use Bivio::Type::Enum;
+@Bivio::Type::Enum::T2::ISA = qw(Bivio::Type::Enum);
+
+__PACKAGE__->compile({
+    'E_0' => [
+    	0,
+    ],
+    'E_2' => [
+    	2,
+	'e two',
+    ],
+});
+
+sub is_sequential { return 0; }
+
+1;
+
 package main;
 
 my($t1) = Bivio::Type::Enum::T1->E0;
@@ -56,3 +75,19 @@ foreach $i (0..2) {
 }
 print $not_done ? "not ok 3\n" : "ok 3\n";
 
+my($t2) = Bivio::Type::Enum::T2->E_0;
+print $t2->min eq $t2->E_0 && $t2->max eq $t2->E_2
+	? "ok 4\n" : "not ok 4\n";
+$not_done = 2;
+foreach $i (0, 2) {
+    my($e) = 'E_' . $i;
+    $t2->from_int($i) eq $t2->$e() || last;
+    $t2->from_string($e)->as_int == $i || last;
+    $t2->$e()->as_string eq $e || last;
+    $not_done--;
+}
+$t2->E_0->get_short_desc eq 'e 0' || ($not_done = -999999);
+$t2->E_0->get_long_desc eq 'e 0' || ($not_done = -999999);
+$t2->E_2->get_short_desc eq 'e two' || ($not_done = -999999);
+$t2->E_2->get_long_desc eq 'e two' || ($not_done = -999999);
+print $not_done ? "not ok 5\n" : "ok 5\n";
