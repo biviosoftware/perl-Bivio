@@ -44,8 +44,8 @@ request.
 
 sub execute {
     my(undef, $req) = @_;
-    CreateUser->execute($req);
-    CreateClubUser->execute($req);
+    Bivio::Biz::Action::CreateUser->execute($req);
+    Bivio::Biz::Action::CreateClubUser->execute($req);
     return;
 }
 
