@@ -40,6 +40,7 @@ use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlSupport;
 use Bivio::File::Client;
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -63,8 +64,6 @@ my($_PROPERTY_INFO) = {
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
     from_email => ['Email',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-    from_user => ['Inernal User ID',
-	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     subject => ['Subject',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
     synopsis => ['Synopsis',
@@ -79,14 +78,15 @@ my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message', {
     ok => 'ok',
     rfc822_id => 'rfc822_id',
     date => 'dttm',
-    receive_date => 'recv_dttm',
     from_name => 'from_name',
     from_email => 'from_email',
-    from_user => 'from_user',
     subject => 'subject',
     synopsis => 'synopsis',
     bytes => 'bytes'
     });
+Bivio::IO::Config->register({
+    'file_server' => Bivio::IO::Config->REQUIRED,
+});
 
 my($_FILE_CLIENT);
 
@@ -111,11 +111,6 @@ sub new {
     $self->{$_PACKAGE} = {};
     $_SQL_SUPPORT->initialize();
 
-    # defer server creation until after everything's configured
-    if (! $_FILE_CLIENT) {
-	$_FILE_CLIENT = Bivio::File::Client->new();
-    }
-
     return $self;
 }
 
@@ -123,10 +118,11 @@ sub new {
 
 =cut
 
-
 =for html <a name="create"></a>
 
 =head2 create(hash new_values) : boolean
+
+=head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::Club club) : boolean
 
 Creates a new email message in the database with the specified values. After
 creation, this instance will have the same values. Returns 1 if successful,
@@ -139,26 +135,69 @@ path "club-id/messages/message-id".
 =cut
 
 sub create {
-    my($self, $new_values) = @_;
+    my($self, $new_values, $club) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
+    if (ref($new_values) eq 'Bivio::Mail::Incoming') {
+	return &_create_from_incoming($self, $new_values, $club);
+    }
     my($body) = $new_values->{body};
     # not part of sql, remove it from values
     delete($new_values->{body});
 
     # first do sql commit, it is possible to rollback if the file server fails
-    my ($status) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
+    my($ok) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
 	    $new_values);
 
-    if ($status) {
+    if ($ok) {
 	$_FILE_CLIENT->create('/'.$new_values->{club}.'/messages/'
 		.$new_values->{id}, $body)
 		|| die("file server failed");
     }
-    return $status;
+    return $ok;
+}
+
+=for html <a name="configure"></a>
+
+=head2 static configure(hash cfg)
+
+=over 4
+
+=item file_server : string (required)
+
+Where are the messages stored.
+
+=back
+
+=cut
+
+sub configure {
+    my(undef, $cfg) = @_;
+    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
+    return;
+}
+
+=for html <a name="create_club"></a>
+
+=head2 create_club(Bivio::Biz::Club club)
+
+Creates the club message storage area.
+
+=cut
+
+sub create_club {
+    my($self, $club) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($res);
+    my($id) = $club->get('id');
+    my($dir);
+    foreach $dir ($id, "$id/mbox", "$id/messages") {
+	$_FILE_CLIENT->mkdir($dir, \$res) || die("mkdir $dir: $res");
+    }
+    return;
 }
 
 =for html <a name="delete"></a>
@@ -277,6 +316,48 @@ sub update {
 
 #=PRIVATE METHODS
 
+sub _create_from_incoming {
+    my($self, $bmi, $club) = @_;
+    # Archive mail message first
+    my($mbox) = $bmi->get_unix_mailbox;
+    my($id) = time;
+    # $dttm is always valid
+    my($dttm) = $bmi->get_dttm() || $id;
+    my($mon, $year) = (gmtime($dttm))[4,5];
+    $year < 1900 && ($year += 1900);
+    $_FILE_CLIENT->append('/'. $club->get('id') . '/mbox/'
+	    . sprintf("%04d%02d", $year, ++$mon), \$mbox)
+	    || die("mbox append failed: $mbox");
+    my($from_email, $from_name) = $bmi->get_from();
+    my($reply_to_email) = $bmi->get_reply_to();
+    my($body) = $bmi->get_body();
+    my($values) = {
+	club => $club->get('id'),
+	id => $id,
+#TODO: Does the ok bit make sense?
+	ok => 1,
+	rfc822_id => $bmi->get_message_id,
+	date => $dttm,
+	from_name => $from_name,
+	from_email => $from_email,
+	reply_to_email => $reply_to_email,
+	subject => $bmi->get_subject || '',
+#TODO: Do a real synopsis here
+	synopsis => $bmi->get_subject || '',
+#TODO: Measure real size (all unpacked files)
+	bytes => length($body),
+    };
+    # first do sql commit, it is possible to rollback if the file server fails
+    my($ok) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
+	    $values);
+    if ($ok) {
+	$_FILE_CLIENT->create('/' . $club->get('id') . '/messages/'
+		. $id, \$body)
+		|| die("file server failed: $body");
+    }
+    return $ok;
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
@@ -322,10 +403,8 @@ $mail->create({
     ok => 1,
     rfc822_id => $id,
     date => '6/7/1995',
-    receive_date => '8/9/1996',
     from_name => 'moeller',
     from_email => 'moeller@bivio.com',
-    from_user => 0,
     subject => 'test subject',
     synopsis => 'the quick brown fox jumps over the lazy dog',
     bytes => 150,

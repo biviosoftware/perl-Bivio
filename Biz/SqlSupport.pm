@@ -36,16 +36,34 @@ statement execution.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
 =for html <a name="DATE_FORMAT"></a>
 
 =head2 DATE_FORMAT : string
 
-Returns the date format for sql statements. MM/DD/YYYY
+Returns the date format for sql statements.  See the functions
+L<to_time|"to_time"> and L<from_time|"from_time"> to convert
+to/from unix time (seconds since epoch).
 
 =cut
 
 sub DATE_FORMAT {
-    return 'MM/DD/YYYY';
+    return 'J SSSSS';
+}
+
+=for html <a name="SECONDS_IN_DAY"></a>
+
+=head2 SECONDS_IN_DAY : int
+
+Returns the number of seconds in a day
+
+=cut
+
+sub SECONDS_IN_DAY {
+    return 86400;
 }
 
 =for html <a name="SQL_DATE_TYPE"></a>
@@ -58,6 +76,18 @@ Returns the internal oracle sql date id.
 
 sub SQL_DATE_TYPE {
     return 9;
+}
+
+=for html <a name="UNIX_EPOCH_IN_JULIAN_DAYS"></a>
+
+=head2 UNIX_EPOCH_IN_JULIAN_DAYS : int
+
+Number of days between the unix and julian epoch
+
+=cut
+
+sub UNIX_EPOCH_IN_JULIAN_DAYS {
+    return 2440588;
 }
 
 #=IMPORTS
@@ -130,8 +160,12 @@ sub create {
 
     my($field_map) = $fields->{field_map};
     my(@values);
+    my($types) = $fields->{column_types};
+    # Note: it's ok to use keys() here, because field_map is static
+    # and perl guarantees the order if you don't touch the hash.
     foreach (keys(%$field_map)) {
-	push(@values, $new_values->{$_});
+	push(@values, $types->{$field_map->{$_}} == SQL_DATE_TYPE()
+		? $self->from_time($new_values->{$_}) : $new_values->{$_});
     }
 
     &_trace_sql($sql, @values) if $_TRACE;
@@ -190,6 +224,25 @@ sub delete {
     return $model->get_status()->is_OK();
 }
 
+=for html <a name="from_time"></a>
+
+=head2 static from_time(int time) : string
+
+Returns an SQL TO_DATE in L<DATE_FORMAT|"DATE_FORMAT"> from a unix
+time (seconds since epoch).
+
+Handles C<undef> properly.
+
+=cut
+
+sub from_time {
+    my(undef, $time) = @_;
+    defined($time) || return 'NULL';
+    my($s) = $time % &SECONDS_IN_DAY;
+    my($j) = int($time / &SECONDS_IN_DAY) + &UNIX_EPOCH_IN_JULIAN_DAYS;
+    return $j . ' ' . $s;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -211,14 +264,16 @@ sub initialize {
 
     my($columns) = $fields->{columns};
     my($types) = $fields->{column_types};
+    my($is_date) = $fields->{column_is_date} = [];
 
     # create the select and insert statements
     my($select) = 'select ';
     my($insert) = 'insert into '.$fields->{table_name}
 	    .' ('.join(',', @$columns).') values (';
 
+    my($i) = 0;
     foreach (@$columns) {
-	if ($types->{$_} == SQL_DATE_TYPE()) {
+	if ($is_date->[$i] = ($types->{$_} == SQL_DATE_TYPE())) {
 	    $select .= qq{TO_CHAR($_,'}.DATE_FORMAT().q{'),};
 	    $insert .= q{TO_DATE(?,'}.DATE_FORMAT().q{'),};
 	}
@@ -226,6 +281,7 @@ sub initialize {
 	    $select .= $_.',';
 	    $insert .= '?,';
 	}
+	$i++;
     }
     # remove extra ','
     chop($select);
@@ -265,9 +321,10 @@ sub find {
 
     if ($row) {
 	my(@fields) = keys(%{$fields->{field_map}});
-
+	my($is_date) = $fields->{column_is_date};
 	for (my($i) = 0; $i < scalar(@fields); $i++) {
-	    $properties->{$fields[$i]} = $row->[$i];
+	    $properties->{$fields[$i]} = $is_date->[$i]
+		    ? $self->to_time($row->[$i]) : $row->[$i];
 	}
 
 	#TODO: die if > 1 row returned.
@@ -285,6 +342,25 @@ sub find {
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
     return $model->get_status()->is_OK();
+}
+
+=for html <a name="to_time"></a>
+
+=head2 static to_time(string sql_date) : int
+
+Converts an sql date in L<DATE_FORMAT|"DATE_FORMAT"> to unix time
+(seconds since epoch).
+
+Handles C<undef> properly.
+
+=cut
+
+sub to_time {
+    my(undef, $sql_date) = @_;
+    defined($sql_date) || return undef;
+    # BTW, I tried "eval '111+5555'" here and it was MUCH slower.
+    my($j, $s) = split(/ /, $sql_date);
+    return ($j - &UNIX_EPOCH_IN_JULIAN_DAYS) * &SECONDS_IN_DAY + $s;
 }
 
 =for html <a name="update"></a>
@@ -363,13 +439,15 @@ sub _create_update_statement {
 	    my($type) = $column_types->{$col_name};
 	    $cols .= $col_name.'=';
 
-	    if ($type == SQL_DATE_TYPE()) {
-		$cols .= qq{TO_DATE('$new','}.DATE_FORMAT().q{'),};
+	    if ($type == SQL_DATE_TYPE() && defined($new)) {
+		$cols .=  "TO_DATE('" . $self->from_time($new)
+			. "','" . DATE_FORMAT() . "'),";
 	    }
 	    else {
 #		$cols .= $conn->quote($new, $column_types->{$col_name}).',';
 
 		# just quote everything - avoid numeric '' problem
+#TODO: Do we need to escape quotes?
 		$cols .= qq{'$new',};
 	    }
 	}

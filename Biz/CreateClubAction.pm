@@ -25,6 +25,7 @@ C<Bivio::Biz::CreateClubAction> creates a club and its administrator.
 
 #=IMPORTS
 use Bivio::Biz::ClubUser;
+use Bivio::Biz::Mail::Message;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -66,6 +67,7 @@ sub execute {
     my($self, $club, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+#TODO: Need to create the messages directory
     eval {
 	my($values) = &_create_field_map($club, $req);
 
@@ -93,6 +95,8 @@ sub execute {
 		    $club->get_status()->add_error($_);
 		}
 	    }
+	    my($bbmm) = Bivio::Biz::Mail::Message->new();
+	    $bbmm->setup_club($bbmm);
 	}
     };
 

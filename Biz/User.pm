@@ -224,7 +224,30 @@ Returns an array of email addresses for this user.
 =cut
 
 sub get_email_addresses {
-    die("not implemented");
+    my($self) = @_;
+    my($conn) = Bivio::Biz::SqlConnection->get_connection();
+
+    # a 4 table join
+    my($statement) = $conn->prepare_cached(
+	    'select user_email.email '
+	    .'from user_email, user_ '
+	    .'where user_.id=? '
+	    .'and user_.id=user_email.user_');
+
+    Bivio::Biz::SqlConnection->execute($statement, $self, $self->get('id'));
+
+    my($result);
+
+    if ($self->get_status()->is_OK()) {
+	$result = [];
+	my($row);
+
+	while($row = $statement->fetchrow_arrayref()) {
+	    push(@$result, $row->[0]);
+	}
+    }
+    $statement->finish();
+    return $result;
 }
 
 =for html <a name="get_full_name"></a>

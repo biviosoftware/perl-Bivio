@@ -43,7 +43,7 @@ BEGIN {
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
     $_PACKAGE = __PACKAGE__;
     $_LOGGER = \&_log_stderr;
-    $_DEFAULT_MAX_ARG_LENGTH = 256;
+    $_DEFAULT_MAX_ARG_LENGTH = 512;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_WANT_PID = 0;
     $_STACK_TRACE_DIE = 0;

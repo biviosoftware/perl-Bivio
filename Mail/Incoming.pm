@@ -41,6 +41,7 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Mail::Common;
 use Time::Local ();
+require 'ctime.pl';
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -300,6 +301,26 @@ sub get_message_id {
     return $id;
 }
 
+=for html <a name="get_recipients"></a>
+
+=head2 get_recipients() : array
+
+Returns the "envelope" recipients that were set with
+L<set_recipients|"set_recipients">.
+
+=cut
+
+sub get_recipients {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($r) = $fields->{recipients};
+    if (ref($r) ne 'ARRAY' && defined($r)) {
+	# Force to be an array for convenience of caller
+	$fields->{recipients} = $r = [$r];
+    }
+    return $r;
+}
+
 =for html <a name="get_reply_to"></a>
 
 =head2 get_reply_to() : (string addr, string name)
@@ -334,8 +355,7 @@ sub get_reply_to {
 
 =head2 get_subject() : string
 
-Returns I<Subject>
-
+Returns I<Subject> of message or C<undef>.
 
 =cut
 
@@ -355,6 +375,23 @@ sub get_subject {
     return $subject;
 }
 
+=for html <a name="get_unix_mailbox"></a>
+
+=head2 get_unix_mailbox() : string
+
+Returns the message in unix mailbox format.  Always ends in a newline.
+
+=cut
+
+sub get_unix_mailbox {
+    my($self, $buffer, $offset) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    # ctime already has newline
+    return 'From unknown ' . ctime($fields->{time})
+	    . substr(${$fields->{rfc822}}, $fields->{header_offset})
+	    . (substr(${$fields->{rfc822}}, -1) eq "\n" ? '' : "\n");
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize(string_ref $rfc822)
@@ -371,9 +408,6 @@ destroyed.
 
 sub initialize {
     my($self, $rfc822, $offset) = @_;
-# RJN: Turns out this is about the fastest way, since any way you
-# clear a hash is expensive.  This is likely to generate more
-# memory churn, but the objects are small..
     $offset ||= 0;
     my($i) = index($$rfc822, "\n\n", $offset);
     my($h);
@@ -387,6 +421,7 @@ sub initialize {
 	$i = length($$rfc822) - $offset;
 	$h = substr($$rfc822, $offset, $i + 1);
     }
+#TODO: Handle "From " start lines.
 #TODO: Don't unfold headers in advance.  Unfold headers as they
 #      are parsed.  This makes resent mail messages cleaner.
     # unfold all headers in advance.  Makes other code simpler.
@@ -404,6 +439,7 @@ sub initialize {
 	'header_offset' => $offset,
 	# If there is no body, get_body will return empty string.
 	'body_offset' => $i,
+	'time' => time,
     };
     return;
 }
@@ -418,6 +454,8 @@ Resend the mail message to the specified recipients.  The headers
 and body remain unchanged, even C<Sender:>.   This should be used
 for "alias-like" forwarding only.
 
+NOTE: Does not L<set_recipients|"set_recipients">.
+
 =cut
 
 sub resend {
@@ -425,6 +463,24 @@ sub resend {
     my($fields) = $self->{$_PACKAGE};
     Bivio::Mail::Common->send($recipients, $fields->{rfc822},
 	    $fields->{header_offset});
+}
+
+=for html <a name="set_recipients"></a>
+
+=head2 set_recipients(string recipients)
+
+=head2 set_recipients(array_ref recipients)
+
+Sets the recipients of this message to I<recipients>.  The recipients
+are part of the "envelope" associated with the message.
+
+=cut
+
+sub set_recipients {
+    my($self, $recipients) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{recipients} = $recipients;
+    return;
 }
 
 =for html <a name="uninitialize"></a>

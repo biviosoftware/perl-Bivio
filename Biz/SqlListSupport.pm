@@ -116,6 +116,7 @@ sub find {
     my($row);
     my($i) = 0;
     my($count) = 0;
+    my($types) = $fields->{types};
     while ($row = $statement->fetchrow_arrayref()) {
 
 	# advance to the start index
@@ -127,12 +128,13 @@ sub find {
 	for (my($j) = 0; $j < scalar(@$col_field_count); $j++) {
 	    my($val);
 	    if ($col_field_count->[$j] == 1 ) {
-		$val = $row->[$col++];
+		$val = &_convert_value($types, $col, $row->[$col]);
 	    }
 	    else {
 		$val = [];
 		for (my($k) = 0; $k < $col_field_count->[$j]; $k++) {
-		    push(@$val, $row->[$col++]);
+		    push(@$val, &_convert_value($types, $col, $row->[$col]));
+		    $col++;
 		}
 	    }
 	    $rows->[$i]->[$j] = $val;
@@ -209,6 +211,7 @@ sub initialize {
     my($statement) = $conn->prepare($sql);
     my($names) = $statement->{NAME_lc};
     my($types) = $statement->{TYPE};
+    $fields->{types} = $types;
 
     my($select) = 'select ';
     for(my($i) = 0; $i < scalar(@$names); $i++) {
@@ -231,6 +234,12 @@ sub initialize {
 }
 
 #=PRIVATE METHODS
+
+sub _convert_value {
+    my($types, $index, $value) = @_;
+    return $types->[$index] == Bivio::Biz::SqlSupport::SQL_DATE_TYPE()
+	    ? Bivio::Biz::SqlSupport->to_time($value) : $value;
+}
 
 # _count_occurances(string str, string search) : int
 #
