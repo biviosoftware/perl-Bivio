@@ -35,6 +35,20 @@ invalid RealmName names.  Syntax is limited.
 
 =cut
 
+=for html <a name="CELEBRITY_CLUBS"></a>
+
+=head2 CELEBRITY_CLUBS : array
+
+Returns array of realm names of well-known celebrity spaces
+
+#TODO: Really would want these realm flagged in some way
+
+=cut
+
+sub CELEBRITY_CLUBS {
+    return ('ask_candis', 'trez_talk');
+}
+
 =for html <a name="DEMO_CLUB"></a>
 
 =head2 DEMO_CLUB : string
@@ -63,6 +77,20 @@ sub DEMO_CLUB_SUFFIX {
     return '_'.DEMO_CLUB();
 }
 
+=for html <a name="SITE_SEARCH_CLUB"></a>
+
+=head2 HELP_CLUB : string
+
+Returns name of the adhoc club containing the static site pages
+
+#TODO: Should not live forever
+
+=cut
+
+sub HELP_CLUB {
+    return 'bivio_site_search';
+}
+
 =for html <a name="SHADOW_PREFIX"></a>
 
 =head2 SHADOW_PREFIX : string
@@ -75,20 +103,6 @@ Returns prefix character for shadow names.
 
 sub SHADOW_PREFIX {
     return '=';
-}
-
-=for html <a name="SITE_SEARCH"></a>
-
-=head2 SITE_SEARCH : string
-
-Returns the club name for the site search.
-
-#TODO: Make a config param
-
-=cut
-
-sub SITE_SEARCH {
-    return 'bivio_site_search';
 }
 
 =for html <a name="TEST_SUFFIX"></a>
