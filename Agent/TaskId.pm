@@ -61,6 +61,23 @@ my(@_CFG) = (
 	Bivio::Biz::Action::ForwardUserMail
     )],
     [qw(
+	HTTP_DOCUMENT
+	3
+        ANY_USER
+        USER
+        /
+	Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
+	MY_CLUB_REDIRECT
+	4
+        ANY_USER
+        USER
+        my_club
+	Bivio::Biz::Action::MyClubRedirect
+        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
+    [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST
         9
         CLUB
@@ -117,6 +134,7 @@ my(@_CFG) = (
         _/admin/preferences:_/preferences
         Bivio::UI::HTML::Club::Embargoed
     )],
+    # Default page for clubs, see MY_CLUB_REDIRECT
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_LIST
         16
