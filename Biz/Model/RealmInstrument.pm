@@ -122,6 +122,23 @@ sub get_name {
 	    : $self->get('name');
 }
 
+=for html <a name="get_ticker_symbol"></a>
+
+=head2 get_ticker_symbol() : string
+
+Returns the local ticker_symbol or the instrument ticker_symbol
+depending on whether this is a realm-local instrument.
+
+=cut
+
+sub get_ticker_symbol {
+    my($self) = @_;
+
+    return defined($self->get('instrument_id'))
+	    ? $self->get_model('Instrument')->get('ticker_symbol')
+	    : $self->get('ticker_symbol');
+}
+
 =for html <a name="has_transactions"></a>
 
 =head2 has_transactions() : boolean
