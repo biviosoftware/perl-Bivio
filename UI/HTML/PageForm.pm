@@ -115,7 +115,7 @@ sub new {
 
 =head2 add_field(string field, string label, int size) : array
 
-=head2 add_field(string field, string label, Bivio::UI::HTML::Widget widget) : array
+=head2 add_field(string field, string label, Bivio::UI::HTML::Widget widget, string desc) : array
 
 Adds a new field to the form.  A field has a I<label>.  If I<size> is
 specified, aL<Bivio::UI::HTML::Widget::Text|Bivio::UI::HTML::Widget::Text>
@@ -128,10 +128,12 @@ L<Bivio::UI::HTML::Widget::FormFieldLabel|Bivio::UI::HTML::Widget::FormFieldLabe
 
 Adds fields to the array of fields return by L<get_fields|"get_fields">.
 
+If <desc> exists, it will be added in a column to the right of the field.
+
 =cut
 
 sub add_field {
-    my($self, $field, $label, $size_or_widget) = @_;
+    my($self, $field, $label, $size_or_widget, $desc) = @_;
     my($fields) = $self->{$_PACKAGE};
     unless (ref($size_or_widget)) {
 	$size_or_widget = Bivio::UI::HTML::Widget::Text->new({
@@ -141,11 +143,28 @@ sub add_field {
     }
     push(@{$fields->{fields}}, [$field, $label]);
     return (Bivio::UI::HTML::Widget::FormFieldLabel->new({
-		label => $label,
-		field => $field,
-	    }),
-	    $size_or_widget,
-	   );
+	label => $label,
+	field => $field,
+	}),
+	$size_or_widget,
+    );
+#TODO: Descriptions need a layout design.
+#    return @basic unless $desc;
+#    return (
+#Bivio::UI::HTML::Widget::Grid->new({
+#	cell_align => 'nw',
+#	pad => 5,
+#	values => [
+#	Bivio::UI::HTML::Widget::Join->new({
+#	    cell_align => 'nw',
+#	    values => [
+#		$basic[0],
+#		"<br>",
+#		$basic[1],
+#	    ],
+#	}),
+#        Bivio::UI::HTML::Widget::Join->new({values => [$desc]}),
+#    );
 }
 
 =for html <a name="create_caption"></a>
