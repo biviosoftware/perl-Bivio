@@ -176,7 +176,7 @@ Reply-To: <johnk@inil.com>
 From: johnk@inil.com (johnk)
 To: <my21cm@bivio.com>
 Subject: Re: Christmas meeting
-Date: Thu, 9 Dec 1999 16:18:41 -0600
+Date: Thu, 9 Dec 1999 16:18:41 GMT
 Message-ID: <A1EEBDC29AE0D211A55200104B9F09664290@DUALIV>
 MIME-Version: 1.0
 Content-Type: text/plain;
@@ -197,7 +197,7 @@ EOF
     'from_email' => 'johnk@inil.com',
     'reply_to_email' => 'johnk@inil.com',
     'subject' => 'Re: Christmas meeting',
-    'date_time' => 944777921,
+    'date_time' => 944756321,
 },
 <<'EOF'
 Return-Path: <nagler@mail.bivio.com>

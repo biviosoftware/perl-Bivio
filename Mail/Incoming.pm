@@ -1,7 +1,6 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
 package Bivio::Mail::Incoming;
-use IO::Scalar;
 use strict;
 $Bivio::Mail::Incoming::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -38,6 +37,7 @@ message.
 =cut
 
 #=IMPORTS
+use IO::Scalar;
 use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
@@ -78,7 +78,7 @@ my($_822_ADDR_SPEC) = "$_822_LOCAL_PART\@$_822_DOMAIN";
 my($_822_ATOM_ONLY_ADDR) = "$_822_DOTTED_ATOMS\@$_822_DOTTED_ATOMS";
 my($_822_ROUTE) = "\@$_822_DOMAIN(?:,\@$_822_DOMAIN)*:";
 my($_822_ROUTE_ADDR) = "<(?:$_822_ROUTE)?$_822_ADDR_SPEC>";
-my($_822_MAILBOX) = "(?:$_822_ADDR_SPEC|(?:$_822_PHRASE\s+)*$_822_ROUTE_ADDR)";
+my($_822_MAILBOX) = "(?:$_822_ADDR_SPEC|(?:$_822_PHRASE\\s+)*$_822_ROUTE_ADDR)";
 my($_822_GROUP) = "$_822_PHRASE:(?:$_822_MAILBOX(?:,$_822_MAILBOX)*;";
 my($_822_ADDRESS) = "(?:$_822_MAILBOX|$_822_GROUP)";
 my($_822_FIELD_NAME) = '[\\041-\\071\\073-\\176]+:';
@@ -86,7 +86,7 @@ my($_822_DAY) = "[a-zA-Z]{3}";
 my($_822_DATE) = '(\\d\\d?)\\s*([a-zA-Z]{3})\\s*(\\d{2,4})';
 # Be flexible with times, as I have seen 17:9:12
 my($_822_TIME) = '(\\d\\d?):(\\d\\d?):(\\d\\d?)\\s*([-+\\w]{1,5})';
-my($_822_DATE_TIME) = "(?:$_822_DAY\s*,)?\\s*$_822_DATE\\s*$_822_TIME";
+my($_822_DATE_TIME) = "(?:$_822_DAY\\s*,)?\\s*$_822_DATE\\s*$_822_TIME";
 my(%_822_MONTHS) = (
     'JAN' => 0,
     'FEB' => 1,
@@ -696,7 +696,7 @@ sub _parse_date {
     my($date_time) = Time::Local::timegm($sec, $min, $hour, $mday, $mon, $year);
     if ($tz =~ /^(-|\+?)(\d\d?)(\d\d)/s) {
 	$date_time -= ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3);
-    } else {
+    } elsif ($tz != 0) {
 	Bivio::IO::Alert->warn("timezone \"$tz\" unknown in date \"$_\"");
     }
     return $date_time;
