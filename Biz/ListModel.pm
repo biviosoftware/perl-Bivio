@@ -223,6 +223,22 @@ sub execute_load_all {
     return 0;
 }
 
+=for html <a name="execute_load_all_with_query"></a>
+
+=head2 execute_load_all_with_query(Bivio::Agent::Request req) : boolean
+
+Loads "all" records of this model, using the query (for order_by, etc).
+
+=cut
+
+sub execute_load_all_with_query {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($query) = $self->parse_query_from_request;
+    $self->load_all($query);
+    return 0;
+}
+
 =for html <a name="execute_load_page"></a>
 
 =head2 execute_load_page(Bivio::Agent::Request req) : boolean
@@ -269,16 +285,23 @@ sub execute_load_this {
 
 =head2 format_query(Bivio::Biz::QueryType type) : string
 
+=head2 format_query(Bivio::Biz::QueryType type, hash_ref args) : string
+
 =head2 format_query(string type) : string
+
+=head2 format_query(string type, hash_ref args) : string
 
 Just the query part of L<format_uri|"format_uri">.  May return undef
 if this QueryType doesn't have a query (e.g. I<THIS_PATH_NO_QUERY>).
 
+If I<args> are provided, they will be forwarded to the query formatting.
+
 =cut
 
 sub format_query {
-    my($self, $type) = @_;
+    my($self, $type, $args) = @_;
     my($fields) = $self->{$_PACKAGE};
+    $args = {} unless defined($args);
 
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
@@ -288,18 +311,16 @@ sub format_query {
     return undef unless $method;
 
     # Determine if need to pass in current row
-    my($arg);
-
     if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|PATH/) {
 	my($c) = $fields->{cursor};
 	Carp::croak('no cursor') unless defined($c) && $c >= 0;
-	$arg = $self->internal_get();
+	$args = {%{$self->internal_get}, %$args};
     }
     else {
 	Carp::croak('not loaded') unless $fields->{rows};
     }
 
-    return $fields->{query}->$method($self->internal_get_sql_support(), $arg);
+    return $fields->{query}->$method($self->internal_get_sql_support(), $args);
 }
 
 =for html <a name="format_uri"></a>
@@ -312,9 +333,15 @@ sub format_query {
 
 =head2 format_uri(string type, string uri) : string
 
+=head2 format_uri(Bivio::Biz::QueryType, hash_ref query_args) : string
+
+=head2 format_uri(string type, hash_ref query_args) : string
+
 Returns the formatted uri for I<type> based on the existing query
 bound to this model.  If I<uri> is not supplied, uses I<detail_uri>
 or I<list_uri> depending on the type.
+
+If I<query_args> are provided, they'll be added to the query.
 
 If the type is I<THIS_PATH>, the list must have a I<path_info> attribute
 which doesn't begin with a leading slash and is already URI-escaped.
@@ -330,6 +357,12 @@ sub format_uri {
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
+    my($query_args);
+    if (ref($uri)) {
+        $query_args = $uri;
+        $uri = undef;
+    }
+
     # Need to get the list_uri or detail_uri from the request?
     $uri ||= $self->get_request->get($type->get_long_desc);
 
@@ -341,7 +374,7 @@ sub format_uri {
 		    unless defined($pi);
 	$uri .= '/'.$pi if length($pi);
     }
-    my($query) = $self->format_query($type);
+    my($query) = $self->format_query($type, $query_args);
 
     return $uri unless $query;
 
@@ -404,6 +437,31 @@ B<DEPRECATED>.  Use L<format_uri|"format_uri">.
 
 sub format_uri_for_prev_page {
     return shift->format_uri(Bivio::Biz::QueryType::PREV_LIST(), @_);
+}
+
+=for html <a name="format_uri_for_sort"></a>
+
+=head2 format_uri_for_sort(array_ref order_fields, boolean direction) : string
+
+Format the URI for THIS_LIST to sort by the fields
+I<order_fields> and order by I<direction>.
+If I<direction> is undefined, uses the first field's default sort order.
+
+=cut
+
+sub format_uri_for_sort {
+    my($self, $order_fields, $direction) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($main_field) = $order_fields->[0];
+    my($main_order) = defined($direction)
+            ? $direction : $self->get_field_info($main_field, 'sort_order');
+
+    my(@order_by);
+    foreach my $field (@$order_fields) {
+        push(@order_by, $field, $main_order);
+    }
+    return $self->format_uri('THIS_LIST', {order_by => \@order_by});
 }
 
 =for html <a name="format_uri_for_this"></a>
