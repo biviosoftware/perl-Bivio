@@ -573,5 +573,4 @@ $Id$
 
 =cut
 
-__PACKAGE__->main(@main::ARGV) if $0 eq __FILE__;
 1;
