@@ -103,6 +103,7 @@ __PACKAGE__->compile([
     NO_QUERY => [11, '', 'list_uri'],
     THIS_DETAIL_WITH_PATH => [12, 'format_uri_for_this', 'detail_uri'],
     ANY_LIST => [13, 'format_uri_for_any_list', 'list_uri'],
+    THIS_AS_PARENT => [14, 'format_uri_for_this_as_parent', 'parent_uri'],
 ]);
 
 =head1 METHODS

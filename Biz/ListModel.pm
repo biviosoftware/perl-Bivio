@@ -347,7 +347,7 @@ sub format_query {
     return undef unless $method;
 
     # Determine if need to pass in current row
-    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|PATH/) {
+    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|THIS_AS_PARENT|PATH/) {
 	my($c) = $fields->{cursor};
 	Carp::croak('no cursor') unless defined($c) && $c >= 0;
 	$args = {%{$self->internal_get}, %$args};
