@@ -61,7 +61,6 @@ my(@_REMOVE_FOR_LIST_RESEND) = qw(
     message-id
     priority
     received
-    references
     reply-to
     return-path
     return-receipt-to
