@@ -217,7 +217,7 @@ sub die {
     $line ||= (caller)[2];
     $attrs ||= {};
     ref($attrs) eq 'HASH' || ($attrs = {message => $attrs});
-    $attrs->{entity} = $self;
+    $attrs->{model} = $self;
     # Don't call get_request, because will blow up if not set.
     $attrs->{request} = $self->{$_PACKAGE}->{request};
     Bivio::Die->die($code, $attrs, $package, $file, $line);
