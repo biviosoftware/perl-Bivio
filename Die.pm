@@ -123,19 +123,19 @@ sub catch {
     unless (ref($die) =~ /^SCALAR$|^REF$/) {
 	# Normal case: no $die arg
 	_eval($code);
-	return _catch_done();
+	return _catch_done($proto);
     }
 
     if (wantarray) {
 	# Return array with $die
 	my(@res) = _eval($code);
-	$$die = _catch_done();
+	$$die = _catch_done($proto);
 	return $$die ? () : @res;
     }
 
     # Return scalar with $die
     my($res) = _eval($code);
-    $$die = _catch_done();
+    $$die = _catch_done($proto);
     return $$die ? undef : $res;
 }
 
@@ -456,11 +456,15 @@ sub _as_string_args {
 
 # _catch_done() : Bivio::Die
 #
-# Returns $_CURRENT_SELF if got an error ($@) or undef.
+# Returns $_CURRENT_SELF if got an error ($@) or undef.  Handles
+# case where _eval() fails because of a syntax error.
 # Cleans up catch state.
 #
 sub _catch_done {
-    my($self) =  $@ ? $_CURRENT_SELF : undef;
+    my($proto) = @_;
+    my($self) =  $@ ? $_CURRENT_SELF ? $_CURRENT_SELF
+	    : _new_from_eval_syntax_error($proto)
+	    : undef;
     $_CURRENT_SELF = undef;
     $_IN_CATCH--;
     return $self;
@@ -515,10 +519,8 @@ sub _handle_die {
     eval {
 	local($SIG{__DIE__});
 	my($self) = @_;
-	if ($_STACK_TRACE_ERROR) {
-	    my($a) = $self->get('attrs');
-	    _print_stack($self) if $a->{program_error};
-	}
+	_print_stack($self)
+		if $_STACK_TRACE_ERROR && $self->get('attrs')->{program_error};
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -609,7 +611,7 @@ sub _new {
     }
     _trace($self) if $_TRACE;
     # After trace, so not too verbose
-    $self->put(stack => $stack);
+    $self->put(stack => $stack || '');
     _print_stack($self) if $_STACK_TRACE;
     return $self;
 }
@@ -631,6 +633,23 @@ sub _new_from_core_die {
     }
 
     return _new($proto, $code, $attrs, $package, $file, $line, $stack);
+}
+
+# _new_from_eval_syntax_error(proto) : Bivio::Die
+#
+# When eval gets a syntax error, we don't get a call to "die".  Don't
+# ask me why she swallowed the fly....
+#
+# We create a new Die and trace stack if necessary.
+#
+sub _new_from_eval_syntax_error {
+    my($proto) = @_;
+    my($self) = _new_from_throw($proto, Bivio::DieCode->DIE,
+	    {message => $@, program_error => 1},
+	    undef, undef, undef, Carp::longmess($@));
+    _print_stack($self)
+	    if $_STACK_TRACE_ERROR && $self->get('attrs')->{program_error};
+    return;
 }
 
 # _new_from_throw(proto, any code, hash_ref attrs, string package, string file, string line, string stack) : Bivio::Die
