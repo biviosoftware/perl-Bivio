@@ -208,8 +208,8 @@ sub export_db {
     my($f) = ($dir || '.') . '/' . $db->{database} . '-'
 	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
     $self->piped_exec(
-	"env PGUSER='$db->{user}' pg_dump --clean --format=c --blobs "
-	. " --file='$f' --dbname '$db->{database}'");
+	"pg_dump --username '$db->{user}' --clean --format=c --blobs "
+	. " --file='$f' '$db->{database}'");
     return "Exported $db->{database} to $f\n";
 }
 
