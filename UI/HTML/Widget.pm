@@ -169,7 +169,7 @@ Returns a cell which renders a blank.  Makes the code clearer to use.
 =cut
 
 sub blank_cell {
-    return shift->join(' ');
+    return shift->join('&nbsp;');
 }
 
 =for html <a name="button"></a>
