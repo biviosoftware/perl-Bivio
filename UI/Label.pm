@@ -484,7 +484,7 @@ _compile(\%_MAP, [
 	'' => 'Add Members',
 	help_topic => 'Adding Members and Guests',
     ],
-    CLUB_ADMIN_MEMBER_DELETE => 'Member Delete',
+    CLUB_ADMIN_MEMBER_DELETE => 'Delete User',
     CLUB_ADMIN_MEMBER_MERGE => 'Merge Members',
     CLUB_ADMIN_PREFERENCES_EDIT => [
 	'' => 'Edit Club Configuration',
@@ -524,7 +524,11 @@ _compile(\%_MAP, [
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
-    CLUB_ADMIN_MEMBER_TAKE_OFFLINE => 'Take Member Offline',
+    # We use "self", so that the link from the help title works in most cases
+    CLUB_ADMIN_SELF_TAKE_OFFLINE => [
+	'' => 'Take Member Offline',
+	help_topic => 'Taking Members Offline',
+    ],
     CLUB_OPEN_BALANCE => [
 	'' => 'Edit Opening Balances',
 	help_topic => 'Editing Opening Balances',
@@ -540,7 +544,7 @@ _compile(\%_MAP, [
     HELP => 'Help',
     HTTP_DOCUMENT => 'Home Page',
     LOGOUT => 'Logout',
-    MEMBER_OFFLINE_CONFIRMATION => 'Offline Confirmation',
+    CLUB_ADMIN_SELF_DISSOCIATE_DONE => 'Removal Confirmation',
     MY_CLUB_SITE => 'My Club Site',
     ['USER_ADMIN_PREFERENCES_EDIT', 'USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT']
         => 'Change User Preferences',
@@ -752,7 +756,6 @@ EOF
     HELP_FONT_SIZE => 'Font Size',
     HELP_INVESTMENT_TRANSACTIONS => 'Investment Transactions',
     HELP_MEMBER_TRANSACTIONS => 'Member Transactions',
-    HELP_TAKING_OFFLINE => 'Taking Members Offline',
     HELP_PRICE_DATABASE => 'Price Database',
     HELP_PRINTING => 'Printing',
     HELP_PRIVILEGES => 'Privileges',
