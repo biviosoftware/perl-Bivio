@@ -41,7 +41,7 @@ L<Bivio::Type>
 =cut
 
 use Bivio::Type::Number;
-@Bivio::Type::Enum::ISA = qw(Bivio::Type::Number);
+@Bivio::Type::Enum::ISA = ('Bivio::Type::Number');
 
 =head1 DESCRIPTION
 

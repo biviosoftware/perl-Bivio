@@ -101,7 +101,7 @@ might be due to an error on the server.
 redirects the user agent to the specified task. As with internal redirects,
 transactions, messages, etc. SHOULD NOT be rolled back.
 
-=item TOO_MANY 
+=item TOO_MANY: model
 
 Too many records were returned.
 
