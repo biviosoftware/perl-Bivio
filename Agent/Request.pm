@@ -72,6 +72,8 @@ Is C<undef>, if method was not POST or equivalent.
 NOTE: Forms must always have unique value names--still ok to
 use C<exists> or C<defined>.
 
+This value is initialized by FormModel, not by Request.
+
 =item is_secure : boolean
 
 Are we running in secure mode (SSL)?
@@ -399,7 +401,7 @@ sub get_auth_role {
 
 =for html <a name="get_current"></a>
 
-=head2 static get_current() : Bivio::Agent::Request OR undef
+=head2 static get_current() : Bivio::Agent::Request
 
 Returns the current Request being processed.  To clear the state
 of the current request, use L<clear_current|"clear_current">.
@@ -408,6 +410,20 @@ of the current request, use L<clear_current|"clear_current">.
 
 sub get_current {
     return $_CURRENT;
+}
+
+=for html <a name="get_current_or_new"></a>
+
+=head2 static get_current_or_new() : Bivio::Agent::Request
+
+Returns the current request or creates as new one.  To be used
+for utilities.
+
+=cut
+
+sub get_current_or_new {
+    my($proto) = @_;
+    return $proto->get_current || $proto->new();
 }
 
 =for html <a name="get_fields"></a>
