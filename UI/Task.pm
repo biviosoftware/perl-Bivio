@@ -485,7 +485,7 @@ sub parse_uri {
     # We don't set the facade if the request already has one,
     # because parse_uri is currently called from more than one place
     # during the request.
-    my($facade) = $uri =~ s/^\/*\*(\w+)// ? $1 : undef;
+    my($facade) = $uri =~ s/^\/*\*([\w\.]+)// ? $1 : undef;
     $facade = $req->unsafe_get('facade')
 	    || Bivio::UI::Facade->setup_request($facade, $req);
     my($self) = $facade->get('Task');
