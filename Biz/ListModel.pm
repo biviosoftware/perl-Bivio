@@ -78,6 +78,29 @@ sub execute {
     return;
 }
 
+=for html <a name="format_uri_for_this"></a>
+
+=head2 format_uri_for_this() : string
+
+Returns the formated uri for this row.
+
+=cut
+
+sub format_uri_for_this {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('no cursor')
+		unless defined($fields->{cursor}) && $fields->{cursor} >= 0;
+    my($sql_support) = $self->internal_get_sql_support();
+    my($properties) = $self->internal_get();
+    my(@this) = map {
+	$properties->{$_};
+    } @{$sql_support->get('primary_key_names')};
+    Carp::croak('no primary keys')
+		unless @this;
+    return $fields->{query}->format_uri_for_this(\@this, $sql_support);
+}
+
 =for html <a name="get_result_set_size"></a>
 
 =head2 get_result_set_size() : int
@@ -144,7 +167,7 @@ sub internal_load {
 	empty_properties => $empty_properties,
     };
     $self->internal_put($empty_properties);
-    $self->get_request->put(ref($self), $self);
+    $self->get_request->put(ref($self) => $self, list_model => $self);
     return;
 }
 
