@@ -81,8 +81,8 @@ and then I<initialize> is called, if supplied.
 sub new {
     my($proto, $facade, $clone, $initialize) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
-    Bivio::Die->die($facade, ': missing or invalid facade')
-		unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
+    $proto->die($facade, 'missing or invalid facade')
+	    unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
 
     # Set up our state
     my($fields) = $self->{$_PACKAGE} = {
@@ -120,7 +120,26 @@ For warnings and debugging only, prints out the I<self> in nice string form.
 
 sub as_string {
     my($self) = @_;
-    return ref($self).'['.$self->get_facade->get('uri').']';
+    return $self unless ref($self);
+    return 'Facade['.$self->get_facade->unsafe_get('uri').'].'
+	    .$self->simple_package_name;
+}
+
+=for html <a name="assert_name"></a>
+
+=head2 static assert_name(string name)
+
+Dies if I<name> is invalid syntax.
+
+May be overridden by subclasses.  There is no real restriction on names,
+but it is convenient to limit names to perl's /\w+/.
+
+=cut
+
+sub assert_name {
+    my($self, $name) = @_;
+    $self->die($name, 'invalid name syntax') unless $name =~ /^\w+$/;
+    return;
 }
 
 =for html <a name="bad_value"></a>
@@ -132,9 +151,26 @@ Prints a warning based on arguments.
 =cut
 
 sub bad_value {
-    my($self, $value) = (shift, shift, shift);
-    Bivio::IO::Alert->warn($self, ' ', $value, ': ', @_);
+    my($self, $value) = (shift, shift);
+    Bivio::IO::Alert->warn($self, '.', $value, ': ', @_);
     return;
+}
+
+=for html <a name="die"></a>
+
+=head2 die(hash_ref value, string msg, ...)
+
+=head2 die(any entity, string msg, ...)
+
+Dies with I<msg> and context.
+
+=cut
+
+sub die {
+    my($self, $value, @msg) = @_;
+    my($n) = ref($value) eq 'HASH' ? $value->{names} : $value;
+    Bivio::Die->die($self, (defined($n) ? ('.', $n) : ()), ': ', @msg);
+    # DOES NOT RETURN
 }
 
 =for html <a name="exists"></a>
@@ -260,6 +296,35 @@ sub internal_get_all {
     return [values(%values)];
 }
 
+=for html <a name="internal_get_self"></a>
+
+=head2 internal_get_self(Bivio::Collection::Attributes req_or_facade) : self
+
+Returns this Facade component by searching I<req_or_facade> or
+current request or just if called with self.  Blows up if it can't
+find self.
+
+=cut
+
+sub internal_get_self {
+    my($proto, $req_or_facade) = @_;
+
+    # $req_or_facade is set to Request->get_current, if it wasn't passed
+    # and we need it.
+    unless ($req_or_facade) {
+	return $proto if ref($proto);
+	$req_or_facade = Bivio::Agent::Request->get_current;
+    }
+
+    # If a reference, then dynamic.  Just get from instance.
+    # Otherwise, $req and $facade behave similarly; they are both
+    # Collection::Attributes with the class as the attribute name.
+    return ($req_or_facade->isa('Bivio::UI::Facade')
+	    ? $req_or_facade
+	    : $req_or_facade->get('Bivio::UI::Facade'))
+	    	    ->get($proto->simple_package_name);
+}
+
 =for html <a name="internal_get_value"></a>
 
 =head2 static internal_get_value(string name, Bivio::Collection::Attributes req_or_facade) : hash_ref
@@ -278,16 +343,7 @@ attribute of I<req_or_facade>.
 
 sub internal_get_value {
     my($proto, $name, $req_or_facade) = @_;
-
-    # If a reference, then dynamic.  Just get from instance.
-    # Otherwise, $req and $facade behave similarly; they are both
-    # Collection::Attributes with the class as the attribute name.
-    my($self) = ref($req_or_facade)
-	    ? ($req_or_facade->isa('Bivio::UI::Facade')
-		    ? $req_or_facade
-		    : $req_or_facade->get('Bivio::UI::Facade'))
-		->get($proto->simple_package_name)
-	    : $proto;
+    my($self) = $proto->internal_get_self($req_or_facade);
     my($fields) = $self->{$_PACKAGE};
 
     # Return undef_value if passed in undef.  Shouldn't happen...
@@ -304,28 +360,13 @@ sub internal_get_value {
     $name = lc($name);
     return $map->{$name} if $map->{$name};
 
-    # Not found
-    Bivio::IO::Alert->warn($self, ': ', $name, ': value not found');
-
     # Add to the map as undef and return
-    return $map->{$name} = $fields->{undef_value};
-}
-
-=for html <a name="internal_unsafe_get_value"></a>
-
-=head2 internal_unsafe_get_value(string name) : hash_ref
-
-Looks up the name simply.  If not found, returns undef.
-
-=cut
-
-sub internal_unsafe_get_value {
-    return shift->{$_PACKAGE}->{map}->{lc(shift(@_))};
+    return $map->{$name} = $self->internal_warn_not_found($name);
 }
 
 =for html <a name="internal_initialize_value"></a>
 
-=head2 abstract internal_initialize_value(array_ref names, hash_ref value)
+=head2 abstract internal_initialize_value(hash_ref value)
 
 Called to initialize the properties of a value.  The I<config>
 property of the hash_ref is set, i.e. this class will call
@@ -339,11 +380,42 @@ its subclasses as follows:
 The value of I<config> and I<names> must not be modified,
 as they may be copied from the I<clone>.
 
-If there is an error, subclasses should try to recover outputting
-a warning using I<names>.  Note that I<names> may be empty, in
-the case of L<UNDEF_CONFIG|"UNDEF_CONFIG">.
+Errors are output by L<die|"die">
 
 =cut
+
+$_ = <<'}'; # for emacs
+sub internal_initialize_value {
+}
+
+=for html <a name="internal_unsafe_lc_get_value"></a>
+
+=head2 internal_unsafe_lc_get_value(string name) : hash_ref
+
+Looks up the name simply.  If not found, returns undef.
+I<name> is assumed to be already downcased.
+
+=cut
+
+sub internal_unsafe_lc_get_value {
+    my($self, $name) = @_;
+    return $self->{$_PACKAGE}->{map}->{$name};
+}
+
+=for html <a name="internal_warn_not_found"></a>
+
+=head2 internal_warn_not_found(any name) : any
+
+Prints a warning and returns the I<undef_value> for this component.
+
+=cut
+
+sub internal_warn_not_found {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Bivio::IO::Alert->warn($self, '.', $name, ': value not found');
+    return $fields->{undef_value};
+}
 
 =for html <a name="regroup"></a>
 
@@ -352,8 +424,7 @@ the case of L<UNDEF_CONFIG|"UNDEF_CONFIG">.
 =head2 regroup(array_ref names, any new_value)
 
 Takes existing I<names> and re-associates with I<new_value>.
-All names must exist.  Use L<add_group_aliases|"add_group_aliases">
-to create new names in an existing group.
+All names must exist.
 
 =cut
 
@@ -365,8 +436,7 @@ sub regroup {
 
     # Delete the names from the map
     foreach my $name (@$names) {
-	Bivio::Die->die($self, '->', $name, ': name not found')
-		unless $map->{$name};
+	$self->die($name, 'name not found') unless $map->{$name};
 	delete($map->{$name});
     }
 
@@ -389,8 +459,7 @@ sub value {
     my($self, $name, $value) = @_;
     _assert_writable($self);
     my($map) = $self->{$_PACKAGE}->{map};
-    Bivio::Die->die($self, '->', $name, ': group not found')
-		unless $map->{$name};
+    $self->die($name, 'group not found') unless $map->{$name};
 
     # Clear out old state and reinitialize
     my($old_value) = $map->{$name};
@@ -407,7 +476,7 @@ sub value {
 #
 sub _assert_writable {
     my($self) = @_;
-    Bivio::Die->die($self, ': attempt to modify after initialization')
+    Bivio::Die->die(undef, 'attempt to modify after initialization')
 		if $self->{$_PACKAGE}->{read_only};
     return;
 }
@@ -419,10 +488,8 @@ sub _assert_writable {
 sub _assign {
     my($self, $map, $name, $value) = @_;
     $name = lc($name);
-    Bivio::Die->die($self, '->', $name, ': duplicate name')
-		if $map->{$name};
-    Bivio::Die->die($self, '->', $name, ': invalid name syntax')
-		unless $name =~ /^\w+$/;
+    $self->die($name, 'duplicate name') if $map->{$name};
+    $self->assert_name($name);
     $map->{$name} = $value;
     return;
 }
