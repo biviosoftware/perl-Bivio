@@ -9,6 +9,10 @@ $_ = $Bivio::UI::HTML::Widget::FormField::VERSION;
 
 Bivio::UI::HTML::Widget::FormField - form model field renderer
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::FormField;
