@@ -233,7 +233,7 @@ sub execute_auth_user {
     return 0;
 }
 
-=for html <a name="execute_auth_realm"></a>
+=for html <a name="execute_load"></a>
 
 =head2 static execute_load(Bivio::Agent::Request req) : boolean
 
