@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::RealmAdmin->invalidate_password refactored
+  * Bivio::Util::RealmAdmin->invalidate_email added
+  * Bivio::Type::DateTime->gettimeofday fixed for portability to cygwin
+
+  Revision 1.85  2003/10/27 19:33:56  nagler
+  * Bivio::ShellUtil->run_daemon logs more
+  * Bivio::SQL::FormSupport.default_value holds a default value for a
+    field.  Eventually to be used by FormModel->execute_empty.
+  * Bivio::IO::Ref->to_string allows you to set max_depth
+  * Bivio::Test::Language::HTTP->submit_from_table allows you to submit
     from multi-button forms in tables
   * Bivio::UI::ViewLanguage modified to allow views to compile view code
     within executing views.
