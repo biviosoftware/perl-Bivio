@@ -91,6 +91,10 @@ Facade color for visited links.
 Renders an inline style in the header.  The widget
 must render the C<STYLE> or C<META> tags as appropriate.
 
+=item want_page_print : any
+
+If true, adds onLoad=window.print() to the body tag.
+
 =back
 
 =head1 COMPONENT ATTRIBUTES
@@ -209,8 +213,9 @@ sub initialize {
 	$v->put(parent => $self);
 	$v->initialize;
     }
+    $self->unsafe_initialize_attr('want_page_print');
     $fields->{style}->put_and_initialize(parent => $self)
-	    if $fields->{style} = $self->unsafe_get('style');
+	if $fields->{style} = $self->unsafe_get('style');
     $fields->{background} = $self->get_or_default('background');
     return;
 }
@@ -246,10 +251,12 @@ sub render {
     }
 
     # background image
-    my($bg) = '';
+    my($a) = '';
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
-	$bg, 'background', $req)
-	if $self->unsafe_render_attr('background', $source, \$bg) && $bg;
+	$a, 'background', $req)
+	if $self->unsafe_render_attr('background', $source, \$a) && $a;
+    $$buffer .= ' onLoad="window.print()"'
+	if $self->unsafe_render_attr('want_page_print', $source, \$a) && $a;
     $fields->{body}->unsafe_render_attr('html_tag_attrs', $source, $buffer);
     $$buffer .= ">\n";
 
