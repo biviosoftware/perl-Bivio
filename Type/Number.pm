@@ -227,6 +227,9 @@ sub from_literal {
     return (undef, Bivio::TypeError::NUMBER())
 	    unless defined($parsed_value);
 
+    # round to the acceptable number of decimals
+    $parsed_value = $proto->round($parsed_value, $proto->get_decimals);
+
     # range check
     return $parsed_value
 	    if $proto->compare($parsed_value, $proto->get_min) >= 0
