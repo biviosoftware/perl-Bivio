@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 2.0  2003/12/22 20:18:24  nagler
+  Societas move
+
+  Revision 1.89  2003/12/10 19:01:58  moeller
   * uses shorter argument format for sendmail calls in Bivio::Mail::Common
     and Bivio::Mail::Message
   * 'b-test nightly' will expunge old test directories
