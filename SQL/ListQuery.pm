@@ -109,6 +109,7 @@ find this primary key.  There should only be one row returned.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Type::DateTime;
@@ -117,6 +118,8 @@ use Bivio::Type::PrimaryId;
 use Bivio::Util;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my(%_QUERY_TO_FIELDS) = (
     'n' => 'page_number',
     'o' => 'order_by',
@@ -135,7 +138,7 @@ my(@_QUERY) = ('version', grep($_ ne 'version',
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref query, Bivio::SQL::Support support) : Bivio::SQL::ListQuery
+=head2 static new(hash_ref query, Bivio::SQL::Support support, ref die) : Bivio::SQL::ListQuery
 
 Creates a new Support.  I<auth_id> and I<count> must be set in
 I<query>.  I<count> is the default page size to use.
@@ -145,14 +148,14 @@ B<I<query> will be subsumed by this module.  Do not use it again.>
 =cut
 
 sub new {
-    my($proto, $attrs, $support) = @_;
+    my($proto, $attrs, $support, $die) = @_;
     Carp::croak('invalid query arg')
 		unless $attrs->{auth_id} && $attrs->{count};
     my($k);
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
     foreach $k (@_QUERY) {
-	&{\&{'_parse_'.$k}}($attrs, $support);
+	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
     # Reset attrs that are set by Support
     @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
@@ -359,8 +362,9 @@ sub get_sort_order_for_type {
 # Calls Bivio::Die::die with appropriate params
 #
 sub _die {
-    my($code, $msg, $value) = @_;
-    Bivio::Die->die($code, {entity => $value,
+    my($die, $code, $msg, $value) = @_;
+    $die ||= 'Bivio::Die';
+    $die->die($code, {entity => $value,
 	class => 'Bivio::SQL::ListQuery', message => $msg}, caller);
 }
 
@@ -420,7 +424,7 @@ sub _format_uri_primary_key {
     return $res;
 }
 
-# _parse_order_by(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_order_by(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # Creates a hash of order_by values.  The default is the order returned from
 # the model.  The value is a list of numbers followed by letters ('a' or 'd'),
@@ -431,17 +435,17 @@ sub _format_uri_primary_key {
 # or false (descending).
 #
 sub _parse_order_by {
-    my($attrs, $support) = @_;
+    my($attrs, $support, $die) = @_;
     my($value) = $attrs->{o} || '';
     my($res) = $attrs->{order_by} = [];
     my($order_by, $columns) = $support->unsafe_get(
 	    'order_by_names', 'columns');
     return unless $order_by;
     while (length($value)) {
-	_die(Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
+	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
 		$attrs->{o}) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
-	_die(Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
+	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a');
     }
@@ -454,12 +458,12 @@ print STDERR $ob, ' ', $columns->{$ob}->{sort_order}, "\n";
     return;
 }
 
-# _parse_page_number(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_page_number(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # If not set or invalid, will be set to zero.
 #
 sub _parse_page_number {
-    my($attrs, $support) = @_;
+    my($attrs, $support, $die) = @_;
 
     # Returns undef if no page number
     $attrs->{page_number} = Bivio::Type::Integer->from_literal($attrs->{'n'});
@@ -471,12 +475,12 @@ sub _parse_page_number {
     return;
 }
 
-# _parse_parent_id(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_parent_id(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # The 'this' value's parent_id.  If not set, will be undef
 #
 sub _parse_parent_id {
-    my($attrs, $support) = @_;
+    my($attrs, $support, $die) = @_;
 
     # Returns undef if no parent_id
     $attrs->{parent_id} = Bivio::Type::PrimaryId->from_literal($attrs->{'p'});
@@ -485,18 +489,18 @@ sub _parse_parent_id {
     return if $attrs->{parent_id};
 
     # Otherwise, are we expecting a parent id?
-    _die(Bivio::DieCode::CORRUPT_QUERY(), 'missing parent_id', 'parent_id')
-	    if $support->unsafe_get('parent_id');
+    _die($die, Bivio::DieCode::CORRUPT_QUERY(), 'missing parent_id',
+	    'parent_id') if $support->unsafe_get('parent_id');
     return;
 }
 
-# _parse_pk(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_pk(hash_ref attrs, Bivio::SQL::Support support, ref die, string tag, string name)
 #
 # Parse the primary key.  The \177 is a special character
 # that is unlikely to appear in primary keys.
 #
 sub _parse_pk {
-    my($attrs, $support, $tag, $name) = @_;
+    my($attrs, $support, $die, $tag, $name) = @_;
     my($value) = $attrs->{$tag};
     $attrs->{$name} = undef, return unless defined($value);
     my($res) = $attrs->{$name} = [];
@@ -505,19 +509,19 @@ sub _parse_pk {
 #TODO: Need to check for correct number of \177 values
 	my($literal) = shift(@pk);
 	my($v) = $t->from_literal($literal);
-	_die(Bivio::DieCode::CORRUPT_QUERY(), "invalid $name", $attrs->{$tag})
-		unless defined($v);
+	_die($die, Bivio::DieCode::CORRUPT_QUERY(),
+		"invalid $name", $attrs->{$tag}) unless defined($v);
 	push(@$res, $v);
     }
     return;
 }
 
-# _parse_search(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_search(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # Parse the search string.  Make sure it doesn't have blanks.
 #
 sub _parse_search {
-    my($attrs, $support) = @_;
+    my($attrs, $support, $die) = @_;
     my($value) = $attrs->{'s'};
     if (defined($value)) {
 	$value =~ s/^\s+|\s+$//g;
@@ -527,7 +531,7 @@ sub _parse_search {
     return;
 }
 
-# _parse_this(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_this(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # The this value's primary key.
 #
@@ -536,18 +540,18 @@ sub _parse_this {
     return;
 }
 
-# _parse_version(hash_ref attrs, Bivio::SQL::Support support)
+# _parse_version(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
 # The version must either be undef or match the model.  If it doesn't
 # match the model, throw a version exception.
 #
 sub _parse_version {
-    my($attrs, $support) = @_;
+    my($attrs, $support, $die) = @_;
     my($value) = $attrs->{v};
     $attrs->{version} = $support->get('version');
     return unless defined($value);
     return if $attrs->{version} == $value;
-    _die(Bivio::DieCode::VERSION_MISMATCH(), 'invalid version', $value);
+    _die($die, Bivio::DieCode::VERSION_MISMATCH(), 'invalid version', $value);
 }
 
 =head1 COPYRIGHT
