@@ -115,16 +115,17 @@ sub new {
 
 =head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
 
-Will ignore redirects if L<ignore_redirects|"ignore_redirects"> was called.
+Will set redirect values but not throw the exception if
+L<ignore_redirects|"ignore_redirects"> was called.
 Otherwise passes off to SUPER.
 
 =cut
 
 sub client_redirect {
     my($self) = shift;
-    return if $self->unsafe_get($_IGNORE_REDIRECTS);
-    $self->SUPER::client_redirect(@_);
-    return;
+    return $self->unsafe_get($_IGNORE_REDIRECTS)
+	? $self->internal_server_redirect(@_)
+	: $self->SUPER::client_redirect(@_);
 }
 
 =for html <a name="ignore_redirects"></a>
@@ -132,6 +133,8 @@ sub client_redirect {
 =head2 ignore_redirects()
 
 Sets internal state to ignore redirects.  This can be dangerous.
+
+Will set the new state, but not throw the exception.
 
 B<EXPERIMENTAL>
 
@@ -150,16 +153,17 @@ sub ignore_redirects {
 
 =head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info, boolean no_context)
 
-Will ignore redirects if L<ignore_redirects|"ignore_redirects"> was called.
+Will set redirect values but not throw the exception if
+L<ignore_redirects|"ignore_redirects"> was called.
 Otherwise passes off to SUPER.
 
 =cut
 
 sub server_redirect {
     my($self) = shift;
-    return if $self->unsafe_get($_IGNORE_REDIRECTS);
-    $self->SUPER::server_redirect(@_);
-    return;
+    return $self->unsafe_get($_IGNORE_REDIRECTS)
+	? $self->internal_server_redirect(@_)
+	: $self->SUPER::server_redirect(@_);
 }
 
 #=PRIVATE METHODS
