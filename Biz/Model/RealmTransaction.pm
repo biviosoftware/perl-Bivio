@@ -63,6 +63,48 @@ audited after this operation.
 
 sub cascade_delete {
     my($self) = @_;
+
+    # delete member, instrument, account entries and cash expenses info.
+    # this isn't handled automatically by PropertyModel.cascade_delete
+    # because of the extra indirection through entry_id
+    foreach my $table (qw(member_entry_t realm_instrument_entry_t
+	    realm_account_entry_t expense_info_t)) {
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE entry_id IN (
+                    SELECT entry_id FROM entry_t
+                    WHERE realm_transaction_id=?
+                    AND realm_id=?)',
+		[$self->get('realm_transaction_id'),
+		    $self->get_request->get('auth_id')]);
+    }
+
+    # Sever any links to account sync entries (not deleted)
+    Bivio::SQL::Connection->execute('
+            UPDATE account_sync_t
+            SET realm_transaction_id = NULL
+            WHERE realm_transaction_id=?
+            AND realm_id=?',
+	    [$self->get('realm_transaction_id'),
+		$self->get_request->get('auth_id')]);
+
+    $self->SUPER::cascade_delete;
+    return;
+}
+
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes this transaction, and all its entires, member entries,
+instrument entries, and account entries.
+
+Note: this method doesn't audit the books after the date or change
+a member's state. The caller is responsible for ensuring the books are
+audited after this operation.
+
+sub cascade_delete {
+    my($self) = @_;
     my($req) = $self->get_request;
     my($id) = $self->get('realm_transaction_id');
 
@@ -98,6 +140,8 @@ sub cascade_delete {
     $self->delete();
     return;
 }
+
+=cut
 
 =for html <a name="create"></a>
 
@@ -167,13 +211,13 @@ sub internal_initialize {
 	table_name => 'realm_transaction_t',
 	columns => {
             realm_transaction_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             source_class => ['EntryClass', 'NOT_NULL'],
 #TODO: Change field name. This was originally a date_time, but really,
 #      it can't be a date_time, because we don't allow users to enter
 #      it as a date_time.
             date_time => ['Date', 'NOT_NULL'],
-            user_id => ['PrimaryId', 'NOT_NULL'],
+            user_id => ['RealmUser.user_id', 'NOT_NULL'],
             remark => ['Text', 'NONE'],
             broker_code => ['Name', 'NONE'],
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
