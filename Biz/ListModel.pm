@@ -59,7 +59,7 @@ May be overridden.
 =cut
 
 sub LOAD_ALL_SIZE {
-    return 200;
+    return 500;
 }
 
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
@@ -862,7 +862,8 @@ sub unauth_load_all {
 sub _assert_all {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->die(Bivio::DieCode::TOO_MANY(), "more than 200 records")
+    $self->die(Bivio::DieCode::TOO_MANY(), 'more than ',
+	    $self->LOAD_ALL_SIZE, ' records')
 	    if $fields->{query}->get('has_next');
     return;
 }
