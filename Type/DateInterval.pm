@@ -55,6 +55,10 @@ The beginning of next year if L<inc|"inc">.
 The beginning of this year if L<dec|"dec">.
 Time component unmodified.
 
+=item END_OF_IRS_TAX_SEASON
+
+4/15.
+
 =back
 
 =cut
@@ -63,6 +67,7 @@ Time component unmodified.
 use Bivio::Type::DateTime;
 
 #=VARIABLES
+my($_DT) = 'Bivio::Type::DateTime';
 __PACKAGE__->compile([
     NONE => [
         0,
@@ -73,6 +78,7 @@ __PACKAGE__->compile([
     WEEK => [
 	7,
     ],
+#TODO: This should go away.  It's not an interval.
     # negative values are interpreted, not actual
     BEGINNING_OF_YEAR => [
 	-1,
@@ -85,6 +91,9 @@ __PACKAGE__->compile([
     ],
     FISCAL_YEAR => [
 	-4,
+    ],
+    IRS_TAX_SEASON => [
+	-5,
     ],
 ]);
 
@@ -102,7 +111,7 @@ Returns I<date_time> decremented by this DateInterval.
 
 sub dec {
     my($self, $date_time) = @_;
-    return Bivio::Type::DateTime->add_days($date_time, -$self->as_int)
+    return $_DT->add_days($date_time, -$self->as_int)
 	    if $self->as_int >= 0;
     return &{\&{'_dec_'.lc($self->get_name)}}($date_time);
 }
@@ -117,9 +126,32 @@ Returns I<date_time> incremented by this DateInterval.
 
 sub inc {
     my($self, $date_time) = @_;
-    return Bivio::Type::DateTime->add_days($date_time, $self->as_int)
+    return $_DT->add_days($date_time, $self->as_int)
 	    if $self->as_int >= 0;
     return &{\&{'_inc_'.lc($self->get_name)}}($date_time);
+}
+
+=for html <a name="inc_to_end"></a>
+
+=head2 inc_to_end(string start_date) : string
+
+Increments I<start_date> to end of interval.  It does not adjust the time
+component.  For DAY and NONE is no-op.  For YEAR, WEEK, and MONTH increments by
+the amount and substracts one day.  It does not go to the calendar period
+except for FISCAL_YEAR, e.g. MONTH-E<gt>inc_to_end('12/22/2001') is
+1/21/2001 (not 12/31/2001).
+
+FISCAL_YEAR increments to 12/31.
+
+BEGINNING_OF_YEAR is not allowed.
+
+=cut
+
+sub inc_to_end {
+    my($self, $start_date) = @_;
+    my($sub) = \&{'_inc_to_end_'.lc($self->get_name)};
+    return defined(&$sub) ? &$sub($self, $start_date)
+	: $_DT->add_days($_DT->$self->inc($start_date), -1);
 }
 
 =for html <a name="is_continuous"></a>
@@ -142,10 +174,31 @@ sub is_continuous {
 #
 sub _dec_beginning_of_year {
     my($date_time) = @_;
-    my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
-    return Bivio::Type::DateTime->from_parts_or_die($sec, $min, $hour,
-	    1, 1, $year);
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
+    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
+}
+
+# _dec_fiscal_year(string date_time) : string
+#
+# On 1/1, goes to prior year.  Else, goes to beginning of this year.
+#
+sub _dec_fiscal_year {
+    my($date_time) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
+    $year-- if $mday == 1 && $mon == 1;
+    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
+}
+
+# _dec_irs_tax_season(string date_time) : string
+#
+#TODO: Not sure what this should do...
+#
+sub _dec_irs_tax_season {
+    my($date_time) = @_;
+    die('not implemented');
+#    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
+#    $year-- if $mon < 4 || $mon == 4 && $mday <= 15;
+#    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
 # _dec_month(string date_time) : string
@@ -156,10 +209,10 @@ sub _dec_beginning_of_year {
 sub _dec_month {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
+	= $_DT->to_parts($date_time);
     $mon = $mon == 1 ? ($year--, 12) : $mon - 1;
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	    $mday, $mon, $year);
+	$mday, $mon, $year);
 }
 
 # _dec_year(string date_time) : string
@@ -170,18 +223,9 @@ sub _dec_month {
 sub _dec_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
+	= $_DT->to_parts($date_time);
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	    $mday, $mon, $year - 1);
-}
-
-# _dec_fiscal_year(string date_time) : string
-#
-# Same as calling _dec_beginning_of_year, but has fiscal year name.
-#
-sub _dec_fiscal_year {
-    my($date_time) = @_;
-    return _dec_beginning_of_year($date_time);
+	$mday, $mon, $year - 1);
 }
 
 # _from_parts_with_mday_correction(int sec, int min, int hour, int mday, int mon, int year) : string
@@ -191,8 +235,8 @@ sub _dec_fiscal_year {
 #
 sub _from_parts_with_mday_correction {
     my($sec, $min, $hour, $mday, $mon, $year) = @_;
-    my($last) = Bivio::Type::DateTime->get_last_day_in_month($mon, $year);
-    return Bivio::Type::DateTime->from_parts_or_die($sec, $min, $hour,
+    my($last) = $_DT->get_last_day_in_month($mon, $year);
+    return $_DT->from_parts_or_die($sec, $min, $hour,
 	    $mday > $last ? $last : $mday, $mon, $year);
 }
 
@@ -203,9 +247,8 @@ sub _from_parts_with_mday_correction {
 sub _inc_beginning_of_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
-    return Bivio::Type::DateTime->from_parts_or_die($sec, $min, $hour,
-	    1, 1, 1 + $year);
+	= $_DT->to_parts($date_time);
+    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, 1 + $year);
 }
 
 # _inc_fiscal_year(string date_time) : string
@@ -217,6 +260,16 @@ sub _inc_fiscal_year {
     return _inc_beginning_of_year($date_time);
 }
 
+# _inc_irs_tax_season(string date_time) : string
+#
+# Goes to start of next tax season.  Always adds a year.
+#
+sub _inc_irs_tax_season {
+    my($date_time) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
+    return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year + 1);
+}
+
 # _inc_month(string date_time) : string
 #
 # Goes to same date/time next month.  Goes to end of month if outside
@@ -225,10 +278,50 @@ sub _inc_fiscal_year {
 sub _inc_month {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
+	= $_DT->to_parts($date_time);
     $mon = $mon == 12 ? ($year++, 1) : $mon + 1;
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	    $mday, $mon, $year);
+	$mday, $mon, $year);
+}
+
+# _inc_to_end_beginning_of_year(self, string start_date) : string
+#
+# Not supported.
+#
+sub _inc_to_end_beginning_of_year {
+    die('operation not implemented on BEGINNING_OF_YEAR');
+    # DOES NOT RETURN
+}
+
+# _inc_to_end_day(self, string start_date) : string
+#
+# No-op.
+#
+sub _inc_to_end_day {
+    shift;
+    return shift;
+}
+
+# _inc_to_end_irs_tax_season(self, string start_date) : string
+#
+# End of IRS tax season goes to 4/15.  This is like
+# _inc_year(_dec_irs_tax_season($start_date)) and setting 4/15.
+# Does nothing if already 4/15.
+#
+sub _inc_to_end_irs_tax_season {
+    my($self, $start_date) = @_;
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($start_date);
+    $year++ unless $mon < 4 || $mon == 4 && $mday <= 15;
+    return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, $year);
+}
+
+# _inc_to_end_none(self, string start_date) : string
+#
+# No-op.
+#
+sub _inc_to_end_none {
+    shift;
+    return shift;
 }
 
 # _inc_year(string date_time) : string
@@ -239,10 +332,11 @@ sub _inc_month {
 sub _inc_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime->to_parts($date_time);
+	= $_DT->to_parts($date_time);
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	    $mday, $mon, $year + 1);
+	$mday, $mon, $year + 1);
 }
+
 
 =head1 COPYRIGHT
 
