@@ -105,7 +105,7 @@ sub load_or_default {
 	    return_type => Bivio::Type::F1065Return::UNKNOWN(),
 	    irs_center => Bivio::Type::F1065IRSCenter::UNKNOWN(),
 	    allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
-	    draft => 1,
+	    draft => 0,
 	});
     }
 
