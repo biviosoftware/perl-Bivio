@@ -1,0 +1,82 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-checkbot - recursively retrieve all pages from a server
+
+=head1 SYNOPSIS
+
+b-checkbot url ...
+
+=head1 DESCRIPTION
+
+B<b-checkbot> creates a C<.csv> file from the request track active
+list.
+
+=cut
+
+#=IMPORTS
+use Cwd;
+
+#=VARIABLES
+my(@_URLS) = ();
+
+sub main {
+    my(@argv) = @_;
+    my($mail, $bot_opt, $verbose);
+    while (@argv) {
+	my($a) = shift(@argv);
+	$a =~ /^-m$/ && ($mail = shift(@argv), next);
+	$a =~ /^-v$/ && ($verbose++, $bot_opt .= '--verbose ', next);
+	_usage("unknown option \"$a\"") if $a =~ /^-/;
+	push(@_URLS, $a);
+    }
+    @_URLS || &_usage("Missing test URLs");
+    exists($ENV{'http_proxy'}) && ($bot_opt .= "--proxy $ENV{'http_proxy'} ");
+    
+    open(BOT, "checkbot $bot_opt --sleep 0 @_URLS 2>&1|");
+    my(@bot);
+    while(<BOT>) {
+        $verbose || (push(@bot, $_), next);
+        print;
+    }
+    close(BOT);
+    $? && warn("checkbot failed (rc=$?):\n@bot");
+    print"View the results in\n\tfile:";
+    print cwd, "/checkbot.html\n";
+}
+
+#=PRIVATE METHODS
+
+sub _usage (@) {
+    $SIG{__DIE__} = '';
+    die <<"EOF";
+b-checkbot: @{[join('', @_)]}
+usage: b-checkbot [-v] url ...
+EOF
+}
+
+#=END
+
+main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
