@@ -303,3 +303,10 @@ RealmOwner.display_name
 EXISTS
 This person is already a member of your club.
 %%
+CreateDirectoryForm
+File.name_sort
+EXISTS
+A folder or file by the name "${value}" already exists.  Please
+select another name or delete the named file or folder before
+continuing.
+%%
