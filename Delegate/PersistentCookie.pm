@@ -38,24 +38,40 @@ more complex cookie management system.
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="DATE_TIME_FIELD"></a>
+
+=head2 DATE_TIME_FIELD : string
+
+String name of the time field, which is set to C<time> every time a cookie is
+set.  Sets to L<Bivio::Type::DateTime|Bivio::Type::DateTime>.
+
+=cut
+
+sub DATE_TIME_FIELD {
+    return 'd';
+}
 
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::Secret;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 # This field is used only locally.  See header_out()
 my($_MODIFIED_FIELD) = '_modified';
-# This field should always be returned with the cookie
-my($_OK_FIELD) = 'ok';
-my($_PERSISTENT_TAG) = 'P';
 my($_SEP) = "\036";
-my($_DOMAIN) = undef;
-Bivio::IO::Config->register({
-    domain => $_DOMAIN,
+#TODO: Need to format dynamically
+my($_EXPIRES) = "; expires=Thu, 15 Apr 2020 20:00:00 GMT";
+Bivio::IO::Config->register(my $_CFG = {
+    domain => undef,
+    tag => 'A',
 });
 
 =head1 FACTORIES
@@ -73,9 +89,9 @@ Creates a new cookie processor.
 sub new {
     my($proto, $req, $r) = @_;
     return Bivio::Collection::Attributes::new($proto, {})
-	    unless $req->get('Bivio::Type::UserAgent')->is_browser();
+	    unless $req->get('Type.UserAgent')->is_browser();
     return Bivio::Collection::Attributes::new($proto,
-	    _parse($r->header_in('Cookie') || ''));
+	    _parse($proto, $r->header_in('Cookie') || ''));
 }
 
 =head1 METHODS
@@ -86,21 +102,20 @@ sub new {
 
 =head2 static assert_is_ok(Bivio::Agent::Request req)
 
-Check to see if cookie is enabled.
+Check to see if cookie has been returned.
 
 =cut
 
 sub assert_is_ok {
     my($proto, $req) = @_;
-    return unless $req->get('Bivio::Type::UserAgent')->is_browser;
+    return unless $req->get('Type.UserAgent')->is_browser;
 
     my($self) = $req->get('cookie');
-    # Make sure browser has both cookies.
-    return if $self->unsafe_get($_OK_FIELD);
+    return if $self->unsafe_get($proto->DATE_TIME_FIELD);
 
     $req->throw_die('MISSING_COOKIES', {
 	client_addr => $req->get('client_addr'),
-	ok_field => $self->unsafe_get($_OK_FIELD),
+	time => $self->unsafe_get($proto->DATE_TIME_FIELD),
     });
     # DOES NOT RETURN
 }
@@ -144,13 +159,19 @@ sub delete_all {
 If defined, maps the cookie domain to be used in cookies.  Otherwise,
 cookies are not returned with a domain (normal for testing).
 
+=item tag : string [A]
+
+Name of the tag.
+
 =back
 
 =cut
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_DOMAIN = $cfg->{domain};
+    Bivio::Die->die($cfg->{domain}, ': domain must begin with dot (.)')
+        if defined($cfg->{domain}) && $cfg->{domain} !~ /^\./;
+    $_CFG = $cfg;
     return;
 }
 
@@ -167,30 +188,24 @@ sub header_out {
     my($self, $r, $req) = @_;
     my($fields) = $self->internal_get;
 
-    # don't send header unless we are in the correct Facade
-    if ($_DOMAIN && $r) {
-	my($uri) = $r->server->server_hostname;
-	return 0 unless $uri =~ /\Q$_DOMAIN\E$/i;
-	_trace("in cookie domain: ", $_DOMAIN, ', uri: ', $uri) if $_TRACE;
-    }
-
-    # Only set if a modified and a browser.
+    # Only set if modified and a browser.
     return 0 unless $fields->{$_MODIFIED_FIELD}
-	    && $req->get('Bivio::Type::UserAgent')->is_browser;
+	&& $req->get('Type.UserAgent')->is_browser;
 
-    # Set the ok field so we can see if the cookie comes back
-    $fields->{$_OK_FIELD} = 1;
+    # don't send header unless we are in the correct server
+    return 0 if $_CFG->{domain}
+	&& $r->server->server_hostname !~ /\Q$_CFG->{domain}\E$/i;
+
+    # Set the time field so we can see if the cookie comes back and
+    # for sessions.
+    $fields->{$self->DATE_TIME_FIELD} = Bivio::Type::DateTime->now;
 
     # Since our fields are encrypted, we don't need to return a "secure"
     # cookie.  Allows us to track users better (on non-secure portions of the
     # site).
     my($p) = '; path=/';
-    $p .= "; domain=$_DOMAIN" if $_DOMAIN;
-    my($v) = $p;
-
-    # Forever
-    $p .= '; expires=Thu, 15 Apr 2013 20:00:00 GMT';
-
+    $p .= "; domain=$_CFG->{domain}" if $_CFG->{domain};
+    $p .= $_EXPIRES;
     _trace('data=', $fields) if $_TRACE;
 
     my($clear_text) = '';
@@ -199,13 +214,13 @@ sub header_out {
 	next if $k =~ /^_/;
 
 	# Only append the field if it is defined
-	$clear_text .= $k.$_SEP.$v.$_SEP if defined($v);
+	$clear_text .= "$k$_SEP$v$_SEP" if defined($v);
     }
-    # Remove last $_SEP
     chop($clear_text);
 
-    my($value) = $_PERSISTENT_TAG
-	    .'='.Bivio::Type::Secret->encrypt_hex($clear_text).$p;
+    my($value) = $_CFG->{tag}
+	. '=' . Bivio::Type::Secret->encrypt_http_base64($clear_text)
+	. $p;
     _trace($value) if $_TRACE;
     $r->header_out('Set-Cookie', $value);
     return 1;
@@ -227,15 +242,21 @@ sub put {
 
 #=PRIVATE METHODS
 
-# _parse(string cookie) : hash_ref
+# _parse(proto, string cookie) : hash_ref
 #
 # Parses the attributes out of the cookie.  If the 
 #
 sub _parse {
-    my($cookie) = @_;
+    my($proto, $cookie) = @_;
     _trace($cookie) if $_TRACE;
+    my($bad) = 0;
     my($values) = {};
 
+    # Our cookies don't have ';' in them.  If someone sends a cookie
+    # back with ';' in it, well, it won't initialize correctly
+    # New cookies have ',' to separate them.  The attributes of a cookie
+    # are separated by ';' and the names begin with '$'.  We ignore
+    # all attributes except our tag.
     foreach my $f (split(/\s*[;,]\s*/, $cookie)) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
 
@@ -247,18 +268,19 @@ sub _parse {
 
 	# Did we get our tag back?
 	$k = uc($k);
-	unless ($k eq $_PERSISTENT_TAG) {
+	unless ($k eq $_CFG->{tag}) {
 	    _trace('tag from another server or old tag: ', $k) if $_TRACE;
 	    next;
 	}
 
-	my($s) = Bivio::Type::Secret->decrypt_hex($v);
+	# Some cookies come back with quotes, strip 'em.
+	$v =~ s/"//g;
+	my($s) = Bivio::Type::Secret->decrypt_http_base64($v);
 	unless ($s) {
 	    # Error decoding.  Warning already output by Base64.
 	    _trace('unable to decode: ', $v) if $_TRACE;
-	    # We know nothing about the validity of the cookie, so we start
-	    # from scratch.
-	    return {$_OK_FIELD => 0, $_MODIFIED_FIELD => 1};
+	    $bad = 1;
+	    last;
 	}
 
 	my(@v) = split(/$_SEP/o, $s);
@@ -267,11 +289,25 @@ sub _parse {
 	push(@v, '') if int(@v) % 2;
 	my(%v) = @v;
 
+	# The date time field is checked for validity by DateTime.
+	unless ((Bivio::Type::DateTime->from_literal(
+	    $v{$proto->DATE_TIME_FIELD}))[0]) {
+	    # Bad cookie.  This will help us track users who have
+	    # cookie problems.
+	    Bivio::IO::Alert->warn(
+		'invalid cookie: encrypted=', $v, ' decrypted=', \@v);
+	    $bad = 1;
+	    last;
+	}
+
 	# Copy over all the field values; they will be parsed by the handlers
 	while (my($k, $v) = each(%v)) {
 	    $values->{$k} = $v;
 	}
     }
+    # If bad, clear the cookie entirely.
+    $values = {$_MODIFIED_FIELD => 1}
+	if $bad;
     return $values;
 }
 
