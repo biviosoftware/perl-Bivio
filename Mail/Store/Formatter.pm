@@ -89,9 +89,17 @@ a scalar and return a reference to it.
 =cut
 
 sub from_entity {
+    print(STDERR "\n\nFROM_ENTITY.");
     my($proto, $entity) = @_;
-    my($type) =   Bivio::Type::MIMEType->from_content_type(
-		    $entity->head->get('content-type'));
+    my($ctype) = $entity->head->get('content-type');
+#TODO this is a complete hack. If there is no MIME type (plain email)
+    # then we won't have a content-type returned from the head.
+    if(!$ctype){
+	#we force it to be text/plain
+	$ctype = "text/plain";
+    }
+#this is probably excessive:    
+    my($type) =   Bivio::Type::MIMEType->from_content_type($ctype);
     _trace("type: \"", $type->get_short_desc(),  "\"");
     my $class = $_MIME_MAP->{$type->get_short_desc()};
     _trace('returning package: ', $class, ' for type ',
