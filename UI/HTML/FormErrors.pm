@@ -312,3 +312,11 @@ use @{[_link($source, 'CLUB_LEGACY_UPLOAD')]} located under
 Administration &gt; Tools.  If you don't understand this message,
 please contact customer support.
 %%
+
+
+TRANSACTION_PRIOR_TO_MEMBER_DEPOSIT
+You cannot enter this transaction because no one in your club has
+made any payments prior to the transaction date.
+@{[_link($source, 'CLUB_ACCOUNTING_PAYMENT',
+'Enter member payments using this link')]}.
+%%
