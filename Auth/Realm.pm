@@ -193,7 +193,8 @@ sub can_user_execute_task {
 
     # Is the task defined in the right realm?
     unless ($self->get('type') eq $realm_type) {
-	&_trace($task->get('id'), ': no such task in ', $self->get('type'));
+	_trace($task->get('id'), ': no such task in ', $self->get('type'))
+		if $_TRACE;
 	return 0;
     }
 
@@ -212,11 +213,19 @@ sub can_user_execute_task {
     }
 
     # Does this role have all the required permission?
-    unless (($privileges & $required) eq $required) {
-	&_trace($task->get('id'), ': insufficient privileges');
-	return 0;
+    return 1 if ($privileges & $required) eq $required;
+
+    # Handle special SUPER_USER_TRANSIENT
+    if ($req->unsafe_get('super_user_id')) {
+	Bivio::Auth::PermissionSet->set(\$privileges,
+		Bivio::Auth::Permission::SUPER_USER_TRANSIENT());
+	_trace('super user: ', $privileges) if $_TRACE;
+	return 1 if ($privileges & $required) eq $required;
     }
-    return 1;
+
+    # Failure
+    _trace($task->get('id'), ': insufficient privileges') if $_TRACE;
+    return 0;
 }
 
 =for html <a name="format_email"></a>
