@@ -3,6 +3,7 @@
 package Bivio::Biz::ListFormModel;
 use strict;
 $Bivio::Biz::ListFormModel::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::ListFormModel::VERSION;
 
 =head1 NAME
 
@@ -411,15 +412,18 @@ sub internal_get_visible_field_names {
 
 =for html <a name="internal_initialize_list"></a>
 
-=head2 internal_initialize_list(Bivio::Biz::Model::ListModel list)
+=head2 internal_initialize_list() : Bivio::Biz::Model::ListModel
 
-Called prior to doing any list manipulations. Allows subclasses to do
-any extra list changes.
+Finds and prepares the ListModel used for this form. Subclasses may
+override this to provide custom list loading.
 
 =cut
 
 sub internal_initialize_list {
-    return;
+    my($self) = @_;
+    my($lm) = $self->get_request->get($self->get_info('list_class'));
+    $lm->reset_cursor;
+    return $lm
 }
 
 =for html <a name="internal_pre_parse_columns"></a>
@@ -673,9 +677,7 @@ sub _execute_init {
     my($req) = $self->get_request;
 
     # Get the the list_class instance
-    my($lm) = $req->get($self->get_info('list_class'));
-    $lm->reset_cursor;
-    $self->internal_initialize_list($lm);
+    my($lm) = $self->internal_initialize_list();
 
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
