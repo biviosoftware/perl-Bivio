@@ -1,7 +1,8 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::PropertyModel::MailMessage;
 
+package Bivio::Biz::PropertyModel::MailMessage;
+use strict;
 
 $Bivio::Biz::PropertyModel::MailMessage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -27,23 +28,31 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::PropertyModel::MailMessage> holds information about an email message,
-the body of which is stored in the file server.
+C<Bivio::Biz::PropertyModel::MailMessage> holds information about an email
+message, the body of which is stored in the file server.
 
 =cut
 
 #=IMPORTS
-use strict;
 use MIME::Parser;
 use IO::File;
 use IO::Stringy;
 use IO::Scalar;
 use Bivio::Biz::FieldDescriptor;
+use IO::Scalar;
 use Bivio::File::Client;
 use Bivio::IO::Config;
+use Bivio::SQL::Constraint;
+use Bivio::Type::DateTime;
+use Bivio::Type::Integer;
+use Bivio::Type::Line;
+use Bivio::Type::PrimaryId;
 use Bivio::SQL::Support;
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 my($_SQL_SUPPORT);
 Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
@@ -57,26 +66,22 @@ my($_FILE_CLIENT);
 
 =for html <a name="create"></a>
 
-=head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::PropertyModel::Club club)
+=head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::PropertyModel::RealmOwner realm_owner, Bivio::Biz::PropertyModel::Club club)
 
 Creates a mail message model from an L<Bivio::Mail::Incoming>.
 
 =cut
 
 sub create {
-    my($self, $msg, $club) = @_;
+    my($self, $msg, $realm_owner, $club) = @_;
     # Archive mail message first
     my($mbox) = $msg->get_unix_mailbox;
     # $dttm is always valid
     my($dttm) = $msg->get_dttm() || time;
     my($mon, $year) = (gmtime($dttm))[4,5];
     $year < 1900 && ($year += 1900);
-    my($club_id, $club_name) = $club->get('club_id', 'name');
+    my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
 
-    # next, we'll want to do a file create to a subdirectory.
-    # I am not sure how to check result codes to see if a directory
-    # does not exist!
-    
 #    my $result = $_FILE_CLIENT->create('/'. $club_name . '/messages/'
 #	    . sprintf("%04d%02d", $year, ++$mon), \$mbox) || die("mbox create failed: $mbox");
 
@@ -97,25 +102,46 @@ sub create {
 	'reply_to_email' => $reply_to_email,
 	'subject' => $msg->get_subject || '',
 #TODO: Measure real size (all unpacked files)
-	'bytes' => length($body),
-	'subject_sort' => &_sortable_subject($msg->get_subject( ) || '' , $club->get('name')),
-	'name_sort' => &_sortable_name($from_name, $from_email)
+	'kbytes' => int((length($body) + 1023)/ 1024),
+	'subject_sort' => &_sortable_subject($msg->get_subject( ) || '',
+		$club_name),
+	'from_name_sort' => &_sortable_name($from_name, $from_email)
     };
-    $_SQL_SUPPORT->create($self, $self->internal_get_fields(), $values);
+    $self->SUPER::create($values);
+    my $msgid = $self->get('mail_message_id');
 #TODO: Update club_t.bytes here
-    my $success = $_FILE_CLIENT->create('/' . $club_name . '/messages/rfc922/'
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/rfc922/'
 	    . $values->{mail_message_id}, \$body)|| die("create of file failed: $body");
 
     # Handle email attachments. Here's a first cut...
     my $parser = new MIME::Parser(output_to_core => 'ALL');
-    my $file = $msg->get_rfc822_io();   
+    my $file = $msg->get_rfc822_io();
+    
+    #change this. We're not saving the header.
+    $_FILE_CLIENT->create('/' . $club_name . '/messages/'
+	    . $msgid, \$body)
+	    || die("file server failed: $body");
+
+# Handle email attachments. Here's a first cut...
+
+    my($mail_message) = $msg->get_rfc822( ); #offset from header
+    # note that above method returns a COPY not a REFERENCE.
+    # this may actually be necessary, I don't know. I think
+    # parser->read( ) will WRITE to this area!!
+
+    my $parser = new MIME::Parser;
+
+    my $file = new IO::Scalar;
+    $file->open(\$mail_message);
     my $entity = $parser->read($file);
     $file->close;
 
     #now extract all the mime attachments
-    print(STDERR "\n\nextracting MIME attachments for this mail message\n");
+    &_trace('extracting MIME attachments for this mail message') if $_TRACE;
     my $msgid = $values->{mail_message_id};
+    &_trace('extracting MIME attachments') if $_TRACE;
     _extract_mime($entity, 0, $club_name, $msgid);
+    &_trace('Done extractng MIME attachments') if $_TRACE;
     return;
 }
 
@@ -179,36 +205,32 @@ sub get_body {
 =cut
 
 sub internal_initialize {
-    my($property_info) = {
-	'mail_message_id' => ['Internal ID',
-		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	'club_id' => ['Internal Club ID',
-		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-	'rfc822_id' => ['RFC822 ID',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
-	'dttm' => ['Date',
-		Bivio::Biz::FieldDescriptor->lookup('DATE')],
-	'from_name' => ['From',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
-	'from_email' => ['Email',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-	'subject' => ['Subject',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-	'bytes' => ['Number of Bytes',
-		Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)],
-	'subject_sort' =>['Subject Sort',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-	'name_sort' =>['Name Sort',
-		Bivio::Biz::FieldDescriptor->lookup('STRING', 256)]
-    };
-    
-    $_SQL_SUPPORT = Bivio::SQL::Support->new(
-	    'mail_message_t', keys(%$property_info));
-    return [$property_info,
-	    $_SQL_SUPPORT,
-	    ['mail_message_id']];
-}
+    return Bivio::SQL::Support->new('mail_message_t', {
+        mail_message_id => ['Bivio::Type::PrimaryId',
+		Bivio::SQL::Constraint::PRIMARY_KEY()],
+        club_id => ['Bivio::Type::PrimaryId',
+		Bivio::SQL::Constraint::NONE()],
+        rfc822_id => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL_UNIQUE()],
+        dttm => ['Bivio::Type::DateTime',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        from_name => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        from_name_sort => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        from_email => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        reply_to_email => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NONE()],
+        subject => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        subject_sort => ['Bivio::Type::Line',
+		Bivio::SQL::Constraint::NOT_NULL()],
+        kbytes => ['Bivio::Type::Integer',
+		Bivio::SQL::Constraint::NOT_NULL()],
 
+    });
+}
 =for html <a name="setup_club"></a>
 
 =head2 setup_club(Bivio::Biz::PropertyModel::Club club)
@@ -260,19 +282,20 @@ sub _sortable_subject {
 
 sub _sortable_name {
     my($from_name, $from_email) = @_;
-    print(STDERR "_sortable_name( ) called.");
+    $trace('_sortable_name( ) called.') if $_TRACE;
     if(!$from_name){
 	die('no from_name supplied to _sortable_name');
     }
     my($str) = lc($from_name .  " <" . $from_email . ">" );
     $str =~ s/[!#$%^&*-+=]/\s/g;
-    print(STDERR "stripped user name: " . $str);
+    $trace('stripped user name: " . $st') if $_TRACE;
     return $str;
 }
 
 
 #NOTE this method returns a scalar, not a reference.
 #The mime header is assumed to be small.
+#TODO don't use tie'd handles. 
 sub _extract_mime_header($ ){
     my($entity) = @_;
     my $s;
@@ -283,6 +306,7 @@ sub _extract_mime_header($ ){
 }
 
 # NOTE this method returns a scalar reference.
+#TODO don't use tied handles.
 sub _extract_mime_body_decoded($ ){
     my($entity) = @_;
     my $s;
@@ -308,7 +332,7 @@ sub _write_mime_header{
 # filename, clubname scalarRef
 sub _write_mime{
     my($filename, $clubname, $msg) = @_;
-    print(STDERR "writing file: $filename\n");
+    $trace('writing file: $filename') if $_TRACE;
     $_FILE_CLIENT->create('/' . $clubname . '/messages/html/'
     . $filename, $msg) || die("writing of mime part failed: $$msg");
 }
@@ -319,9 +343,9 @@ sub _write_mime{
 
 sub _extract_mime{
     my($entity, $fileindex, $club_name, $message_id) = @_;
-    print(STDERR "extract index: $fileindex\n");
+    $trace('extract index: $fileindex') if $_TRACE;
     my($numparts) = $entity->parts( ) || 0; #number of parts;
-    print(STDERR "number of parts: $numparts");
+    $trace('number of parts: $numparts') if $_TRACE;
 
 #    if($fileindex > 0 ){ # then we're probably talking about sub parts. Whatever that means.
     my $mime = _extract_mime_body_decoded($entity);
@@ -331,39 +355,38 @@ sub _extract_mime{
     my $write=1;
     my $ctype = $entity->head->get('content-type');
     my $hdr = _extract_mime_header($entity);
-    print(STDERR "\ncontent type: \"$ctype\"");
+    $trace('content type: \"$ctype\"') if $_TRACE;
     if($mime){
 	if($ctype =~ /multipart\/alternative/){
 	    #maybe throw away the text/plain, and just write out the HTML
-	    print(STDERR "\ncontent-type is multipart/alternative. Not writing this part.");
+	    $trace('content-type is multipart/alternative. Not writing this part.') if $_TRACE;
 	    $write = 0;
 	}
 	if($ctype =~ /multipart\/mixed/){
-	    print(STDERR "\ncontent type is multipart/mixed. Not writing this part.");
+	    $trace('content type is multipart/mixed. Not writing this part.') if $_TRACE;
 	    $write = 0;
 	}
 	if($ctype =~ /text\/plain/){
 	    $textplain = 1;
 	}
 	if($textplain eq(1) && $write eq(1)){ 
-	    print(STDERR "\ncontent type is text/plain");
-	    print(STDERR "\nwrapping with <PRE></PRE>");
-	    $msg = "\n<PRE>\n" . $msg . "\n</PRE>\n";
+	    $trace('content type is text/plain') if $_TRACE;
+	    $trace('wrapping with <PRE></PRE>') if $_TRACE;
+	    $msg = "<PRE>\n" . $msg . "\n</PRE>\n";
 	    _write_mime($outputfilename, $club_name, \$msg);
             _write_mime_header($club_name, $outputfilename, \$hdr);
 	}
 	else{ #could be text/html or some other mime type
-	    print(STDERR "\ncontent-type is not text/plain. it is \"$ctype\"");
+	    $trace('content-type is not text/plain. it is \"$ctype\"') if $_TRACE;
 	    if($write eq(1)){
-		print(STDERR "\nwriting straight through.");
+		$trace('writing straight through.') if $_TRACE;
 		_write_mime($outputfilename, $club_name, \$msg);
 		_write_mime_header($club_name, $outputfilename, \$hdr);
 	    }
 	}
     }
 
-    print(STDERR "found $numparts elements. ");
-    $numparts != 0 ? print(STDERR "Iterating...\n") : print(STDERR "No parts. Not iterating...\n");
+    $trace('found $numparts elements. ') if $_TRACE;
     for(my $index=0; $index < $numparts; $index += 1){
 	my $e = $entity->part($index);
 	$fileindex = $fileindex + 1;
@@ -372,3 +395,4 @@ sub _extract_mime{
 }
 
 1;
+
