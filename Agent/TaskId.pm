@@ -1924,6 +1924,18 @@ my(@_CFG) = (
         Bivio::UI::XML::ClubData->gz
         next=CLUB_ADMIN_TOOLS
     )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
+        197
+        CLUB
+        ACCOUNTING_READ&MEMBER_READ
+        ?/accounting/reports/member_status
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::MemberStatusList->execute_load_all
+        Bivio::UI::HTML::Club::MemberStatusReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
+    )],
 );
 
 __PACKAGE__->compile(
