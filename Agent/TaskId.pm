@@ -1634,8 +1634,8 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
-        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065K1Form->execute_load_all
 	Bivio::UI::PDF::Form::F1065sk1::Y1999::Form
         next=CLUB_ACCOUNTING_TAX99_F1065
