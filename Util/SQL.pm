@@ -62,7 +62,8 @@ commands:
     reinitialize_sequences -- recreates to MAX(primary_id) (must be in ddl directory)
     run -- executes sql contained in input and dies on error
     run_command sql -- executes sql in command line interpreter (shell)
-    vacumm_db_continuously [minutes] - run vacuumdb every minutes (default 60)
+    vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
+    vacuum_db_continuously -- run vacuum_db as a daemon
 EOF
 }
 
@@ -411,25 +412,58 @@ sub run_command {
     );
 }
 
-=for html <a name="vacumm_db_continuously"></a>
+=for html <a name="vacuum_db"></a>
 
-=head2 vacumm_db_continuously(int period_minutes)
+=head2 vacuum_db(string arg, ...)
 
-Runs the postgres vacuumdb -a command every I<period_minutes> (defaults to 60).
-Needs to be run as postgres user.
+Runs I<vacuumdb> with I<args> with a lock.  Prints output using
+L<Bivio::IO::Alert::print_literally|Bivio::IO::Alert/"print_literally">
+so will appear in log when called by
+L<vacuum_db_continuously|"vacuum_db_continuously">.
 
 =cut
 
-sub vacumm_db_continuously {
-    my($self, $period_minutes) = @_;
-    my($s) = 60 * ($period_minutes || 60);
-    while (1) {
-	# Catch so that we get debugging info to log
-	Bivio::Die->catch(sub {
-	    $self->piped_exec('vacuumdb --all --analyze --quiet 2>&1', '', 1);
+sub vacuum_db {
+    my($self, @arg) = @_;
+    _assert_postgres($self);
+    $self->lock_action(sub {
+        Bivio::IO::Alert->print_literally(${
+	    $self->piped_exec(
+		join(' ', 'vacuumdb ', map("'$_'", @arg), '2>&1'),
+		'',
+		1,
+	    ),
 	});
-	sleep($s);
-    }
+    });
+    return;
+}
+
+=for html <a name="vacuum_db_continuously"></a>
+
+=head2 vacuum_db_continuously()
+
+Runs L<vacuum_db|"vacuum_db"> as a daemon.  You need to set the configuration
+I<vacuum_db_continuously> in L<Bivio::ShellUtil|Bivio::ShellUtil>.
+
+=cut
+
+sub vacuum_db_continuously {
+    my($self, $period_minutes) = @_;
+    my($c) = _assert_postgres($self);
+    $self->run_daemon(sub {
+#TODO: See how often --analyze should be run
+#TODO: Configure separately for each database?
+        return [
+	    __PACKAGE__,
+	    'vacuum_db',
+	    '--verbose',
+	    $ENV{USER} eq 'postgres'
+	        ? '--all'
+	        : ('--username', $c->{user}, '--dbname', $c->{database}),
+	],
+    },
+       'vacuum_db_continuously',
+    );
     return;
 }
 
