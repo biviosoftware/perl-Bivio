@@ -762,6 +762,12 @@ sub _prepare_where {
 	if $attrs->{date};
     _prepare_order_by($self, $query, $where, $params)
 	if @{$attrs->{order_by}};
+
+    # if there is no WHERE and the where variable starts with AND, replace it
+    unless ($$from_where =~ /\bWHERE\b/i || $$where =~ /\bWHERE\b/i) {
+        $$where =~ s/^\s*AND\s/ WHERE /is
+            if $$where;
+    }
     return;
 }
 
