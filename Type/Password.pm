@@ -40,6 +40,7 @@ my(@_SALT_CHARS) = (
     'A'..'Z',
     '0'..'9',
 );
+my($_SALT_INDEX_MAX) = int(@_SALT_CHARS) - 1;
 
 =head1 METHODS
 
@@ -71,7 +72,7 @@ sub encrypt {
     my(undef, $password) = @_;
     my($salt) = '';
     for (my($i) = 0; $i < 2; $i++) {
-	$salt .= $_SALT_CHARS[int(rand(int(@_SALT_CHARS)) + 0.5)];
+	$salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
     };
     return crypt($password, $salt);
 }
