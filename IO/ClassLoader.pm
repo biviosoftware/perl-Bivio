@@ -57,17 +57,40 @@ my(%_PACKAGES);
 my(%_MAP_CLASS);
 my($_MAPS);
 my($_SEP) = MAP_SEPARATOR();
+my($_CLASS_VALUES);
 Bivio::IO::Config->register({
     maps => {
 	AccountScraper => ['Bivio::Data::AccountScraper'],
     },
     model_classpath => ['Bivio::Biz::Model'],
+    class_values => {},
 });
 my($_MODELS);
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_class_values"></a>
+
+=head2 get_class_values(string class) : ref
+
+Returns a dynamic implementation values for the specified class.
+The configuration parameter class_values defines location of the
+implementation specific file. Dies if there is no implementation
+available for the class.
+
+=cut
+
+sub get_class_values {
+    my($proto, $class) = @_;
+    my($module) = $_CLASS_VALUES->{$class};
+    Bivio::IO::Alert->die("no class values found for $class")
+		unless $module;
+    $proto->simple_require($module);
+    $module =~ s,\:\:,/,g;
+    return do("$module.pm") || Bivio::IO::Alert->die("$module: $!");
+}
 
 =for html <a name="handle_config"></a>
 
@@ -114,6 +137,7 @@ sub handle_config {
 	} @$v];
     }
     _find_property_models($cfg->{model_classpath});
+    $_CLASS_VALUES = $cfg->{class_values};
     return;
 }
 
@@ -191,6 +215,7 @@ sub simple_require {
 	die('undefined package') unless $pkg;
 	_require($pkg) || die($@);
     }
+    return;
 }
 
 #=PRIVATE METHODS
