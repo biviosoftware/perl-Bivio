@@ -263,6 +263,7 @@ sub _upgrade {
 sub _upgrade_recalculate_2001_gains {
     my($req) = @_;
     use Bivio::Biz::Accounting::InstrumentAudit;
+    use Bivio::Biz::Accounting::AllocationCache;
     my($audit) = Bivio::Biz::Accounting::InstrumentAudit->new($req);
     my($date) = Bivio::Type::Date->from_literal_or_die('1/1/2001');
 
@@ -279,6 +280,22 @@ sub _upgrade_recalculate_2001_gains {
 	print("\t", $name, "\n");
 	$req->set_realm($name);
 	$audit->audit($date);
+    }
+
+    # invalid allocations for affected clubs
+    print("clearing allocations for clubs with 5 year gains\n");
+    $sth  = Bivio::SQL::Connection->execute('
+        SELECT DISTINCT(realm_owner_t.name)
+        FROM realm_owner_t, entry_t
+        WHERE realm_owner_t.realm_id=entry_t.realm_id
+        AND entry_t.tax_category=?
+        ORDER BY realm_owner_t.name',
+	[Bivio::Type::TaxCategory->FIVE_YEAR_CAPITAL_GAIN->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name) = $row->[0];
+	print("\t", $name, "\n");
+	$req->set_realm($name);
+	Bivio::Biz::Accounting::AllocationCache->new($req)->invalidate($date);
     }
     return;
 }
