@@ -511,8 +511,32 @@ sub TIME_ZONES {
 #=IMPORTS
 
 #=VARIABLES
+my($_ATOM_ONLY_PHRASE) = ATOM_ONLY_PHRASE();
 
 =head1 METHODS
+
+=cut
+
+=for html <a name="escape_header_phrase"></a>
+
+=head2 static escape_header_phrase(string value) : string
+
+Escapes an RFC header phrase if necessary, quoting if necessary.
+Handles undef as ''.
+
+=cut
+
+sub escape_header_phrase {
+    my(undef, $value) = @_;
+    return '' unless defined($value);
+    # Remove leading/trailing whitespace (not used in headers)
+    $value =~ s/^\s+|\s+$//g;
+    # Atom only phrases contain at least one word, so need this check
+    return '' unless length($value);
+    return $value if $value =~ /^$_ATOM_ONLY_PHRASE$/o;
+    $value =~ s/(["\\])/\\$1/g;
+    return '"'.$value.'"';
+}
 
 #=PRIVATE METHODS
 
