@@ -431,6 +431,19 @@ sub load_from_model_properties {
     return;
 }
 
+=for html <a name="validate"></a>
+
+=head2 validate()
+
+By default this method does nothing. Subclasses should override it to provide
+form specific validation.
+
+=cut
+
+sub validate {
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _convert_values_to_form(Bivio::Biz::FormModel self, hash_ref values) : hash_ref
