@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test accepts a Bivio::DieCode in no param case, e.g.
+       my_method => Bivio::DieCode->DIE
+  * Bivio::UI::PDF provides basic PDF support (requires http://www.pdflib.com)
+
+  Revision 1.31  2002/11/20 03:42:55  nagler
+  * Bivio::UI::Facade->is_fully_initialized added.
+  * Infrastructure modules (Task* and PropertySupport) added documentation
+  * Bivio::IO::ClassLoader->unsafe_simple_require imports silently
+  * Bivio::Mail::Address->parse handles invalid RFC822 impls
+  * Bivio::PetShop::Agent::TaskId->DEFAULT_ERROR_REDIRECT_MISSING_COOKIES added
   * Bivio::Test.create_object renamed from compute_object
   * Bivio::Test.class_name adds a create_object for the class
   * Bivio::Test.check_return can return a Regexp (better code sharing, too)
