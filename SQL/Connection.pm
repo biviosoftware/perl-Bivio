@@ -228,7 +228,7 @@ sub execute {
 	$fields->{need_ping} = 1;
 
 	# Can we retry?
-	my($sleep) = $self->internal_get_retry_sleep($err);
+	my($sleep) = $self->internal_get_retry_sleep($err, $errstr);
 	last TRY unless defined($sleep);
 
 	# Don't retry if connection has executed DML already
@@ -408,7 +408,7 @@ sub internal_get_error_code {
 
 =for html <a name="internal_get_retry_sleep"></a>
 
-=head2 internal_get_retry_sleep(string error) : int
+=head2 internal_get_retry_sleep(int error, string message) : int
 
 Returns the number of seconds to sleep for the specified transient
 error code. 0 indicates retry immediately, undef indicates don't
