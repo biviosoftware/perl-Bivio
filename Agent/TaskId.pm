@@ -415,7 +415,7 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         %/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
-        Bivio::Biz::Action::RealmUser
+        Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::RealmMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
     )],
