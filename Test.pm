@@ -37,8 +37,7 @@ you to define what you want to test very succinctly.  Here's an example:
     use strict;
     use Bivio::TypeError;
     use Bivio::Test;
-    use Bivio::Type::Integer;
-    Bivio::Test->unit([
+    Bivio::Test->new('Bivio::Type::Integer')->unit([
         Bivio::Type::Integer => [
             from_literal => [
 	        ['1'] => [1],
@@ -60,9 +59,9 @@ If the return value is undef, specify C<[undef]> as the result.  That's what
 the method should return if it doesn't return anything.  perl methods return
 C<undef> implicitly if the last statement they execute is C<return;>.  We
 recommend you always end your methods in a C<return> statement to avoid
-unexpected return values being used.  perl by default returns the value of the
-last statement executed.  This can have serious side-effects unless one is
-careful.
+unexpected return values being used unexpectedly.  perl by default returns the
+value of the last statement executed.  This can have serious side-effects
+unless one is careful.
 
 To ignore the return result, specify C<undef> (as a scalar, not wrapped in an
 array_ref), i.e. the test case tuple should only include the parameter(s).
@@ -72,7 +71,9 @@ Here's an example:
         [1, 2, 3] => undef,
     ],
 
-The result of the call to the method C<do_something> will not be checked.
+The result of the call to the method C<do_something> will not be checked.  If
+the method dies (throws an exception), the case will fail.  When there is no
+exception, the case passes.
 
 If the I<expect> is an array_ref, it will be compared with the I<return>.  If
 the method returns an array_ref, you'll need to wrap it one more time in an
@@ -82,20 +83,22 @@ array_ref, e.g.
         [1, 2, 3] => [[1, 2, 3]],
     ]
 
-If the I<expect> is a regexp_ref, the I<entire> I<return> will be compared
+If I<expect> is a regexp_ref, the I<entire> I<return> will be compared
 to I<expect>.  I<return> will be stringified with
 L<Bivio::IO::Ref::to_string|Bivio::IO::Ref/"to_string">.
 
-Here C<make_array_ref> is a routine being tested.  It returns an array_ref of
+Here C<make_array_ref> is the routine being tested.  It returns an array_ref of
 its arguments.  We have an extra level of square brackets on the result
 of C<make_array_ref>.
+
+If the I<expect> is a code_ref, this will be a custom check_return (see
+L<check_return|"check_return"> and below) for this case only.  If an exception
+is I<not> thrown, I<check_return> is called.  If it is thrown, I<check_return>
+is not called.
 
 If the I<expect> is a L<Bivio::DieCode|Bivio::DieCode>, an exception is
 expected to be thrown and must match the L<Bivio::DieCode|Bivio::DieCode>
 exactly.
-
-If the I<expect> is a code_ref, this will be a custom check_return (see below)
-for this case only.
 
 =head2 OPTIONS
 
@@ -103,9 +106,10 @@ Sometimes it is difficult to specify a return result.  For example, in
 L<Bivio::SQL::Connection|Bivio::SQL::Connection>, the result is often a
 C<DBI::st>.  The result can't be compared structurally.
 
-You can specify a I<check_return> option to L<new|"new"> or at the
-object or method level.  You can also specify a I<class_name> to test
-as long as it implements C<new>.  Here's an example at instantiation:
+You can specify a I<check_return> option to L<new|"new"> or at the object or
+method level.  You can also specify a I<class_name> to require.  When
+I<class_name> implements C<new>, it will be called with the I<object> params.
+Here's an example with global I<check_return> and the implicit call to I<new>:
 
     Bivio::Test->new->({
         class_name => 'Bivio::Math::EMA',
@@ -239,6 +243,34 @@ That being said, you sometimes need to test modules which are
 context sensitive, i.e. they return a scalar in a scalar context
 and an array in a list context.  Set this to true if you want
 all methods in the case group to be invoked in a scalar context.
+
+=back
+
+=head2 IMPERATIVE CASES
+
+You can also specify a L<imperative_case|"imperative_case"> at the method
+level, e.g.,
+
+    Bivio::Test->new('Bivio::Math::EMA')->unit([
+        30 => sub {
+            my($case, $object) = @_;
+            foreach my $sub_case (
+	        [1 => 1],
+	        [2 => 1.666666],
+	        [2 => 1.888888],
+            ) {
+                my($value, $expect) = @$sub_case;
+                return 0
+                    unless $expect
+                    == POSIX::floor(
+                        $object->compute($value) * 1000000 + 0.5) / 1000000;
+	    },
+            return 1;
+        },
+    ]);
+
+You may also specify an I<imperative_case> as the I<method> option of a
+method group.  This allows you to specify the return value.
 
 =back
 
@@ -422,6 +454,19 @@ sub format_results {
 	    map {
 		$_, 100 * $_ / $max;
 	    } ($max - $num_ok), $num_ok);
+}
+
+=for html <a name="imperative_case"></a>
+
+=head2 callback imperative_case(Bivio::Test::Case case, any object) : boolean
+
+Returns 1 if the case passes or false if it fails.  A failure is also indicated
+if the routine dies.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub imperative_case {
 }
 
 =for html <a name="print"></a>
@@ -645,6 +690,9 @@ sub _compile_object {
 	    . ' (forgot to "use"?) or CODE: ', $state->{object})
 	    unless UNIVERSAL::isa($state->{object}, 'UNIVERSAL');
     }
+    $methods = [
+	$methods => 1,
+    ] if ref($methods) eq 'CODE';
     _compile_assert_even($methods, $state);
     $state->{method_num} = 0;
     my(@methods) = @$methods;
@@ -730,10 +778,17 @@ sub _eval {
 	my($die) = Bivio::Die->catch(sub {
 	    _trace($case) if $_TRACE;
             my($method) = $case->get('method');
-	    $result = [$case->unsafe_get('want_scalar')
-		? scalar($case->get('object')->$method(
-		    @{$case->get('params')}))
-		: $case->get('object')->$method(@{$case->get('params')})];
+	    $result = [
+		$case->unsafe_get('want_scalar')
+		? scalar(
+		    ref($method) eq 'CODE'
+		    ? $method->($case, $case->get('object'))
+		    : $case->get('object')->$method(
+			@{$case->get('params')}))
+		: ref($method) eq 'CODE'
+		? $method->($case, $case->get('object'))
+		: $case->get('object')->$method(@{$case->get('params')}),
+	    ];
 	    return;
 	});
 	_trace('returned ', $die || $result) if $_TRACE;
@@ -944,7 +999,8 @@ sub _prepare_case {
 	unless _eval_object($self, $case, $err) && _eval_params($case, $err);
     return 1
 	if $case->unsafe_get('method_is_autoloaded')
-	    || UNIVERSAL::can($case->get('object'), $case->get('method'));
+	|| UNIVERSAL::can($case->get('object'), $case->get('method'))
+	|| ref($case->get('method')) eq 'CODE';
     $$err = $case->get('method')
 	. ': not implemented by '
 	    . (ref($case->get('object')) || $case->get('object'));

@@ -315,9 +315,27 @@ t(
 	} => [
 	    ok => 88,
         ],
+	'Bivio::t::Test::Testee' => sub {
+	    my($case, $object) = @_;
+	    return $object eq 'Bivio::t::Test::Testee' ? 1: 0;
+	},
+	'Bivio::t::Test::Testee' => sub {
+	    return 0;
+	},
+	'Bivio::t::Test::Testee' => sub {
+	    Bivio::Die->throw_quietly('expect fail');
+	},
+	'Bivio::t::Test::Testee' => [
+	    {
+		method => sub {
+		    return my @a = ('a');
+	        },
+		want_scalar => 1,
+	    } => 1,
+	],
     ],
-    4,
-    [4],
+    8,
+    [4, 6, 7],
 );
 
 # t(hash_ref options, array_ref tests, int num_tests, array_ref not_ok)
