@@ -1897,7 +1897,7 @@ my(@_CFG) = (
         ?/accounting/taxes/deductions
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearSubForm
-        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
+        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all_no_margin
         Bivio::UI::HTML::Tax::PortfolioDeductions
         next=CLUB_ACCOUNTING_TAXES_DEDUCTIONS
     )],
