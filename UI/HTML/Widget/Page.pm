@@ -160,15 +160,17 @@ sub render {
     $$buffer .= ">\n";
 
     $fields->{body}->render($source, $buffer);
-    $$buffer .= "</body></html>\n";
-    return unless $_SHOW_TIME || $_TRACE;
 
-    # Output timing info
-    my($times) = sprintf('total=%.3fs; db=%.3fs',
-	    Bivio::Agent::Request->get_current->elapsed_time,
-	    Bivio::SQL::Connection->get_db_time);
-    $$buffer .= '<!-- '.$times." -->\n" if $_SHOW_TIME;
-    _trace($times) if $_TRACE;
+    if ($_SHOW_TIME || $_TRACE) {
+        # Output timing info
+        my($times) = sprintf('total=%.3fs; db=%.3fs',
+                Bivio::Agent::Request->get_current->elapsed_time,
+                Bivio::SQL::Connection->get_db_time);
+        $$buffer .= "\n<!-- " . $times . " -->\n" if $_SHOW_TIME;
+        _trace($times) if $_TRACE;
+    }
+
+    $$buffer .= "</body></html>\n";
     return;
 }
 
