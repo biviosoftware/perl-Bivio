@@ -402,6 +402,18 @@ sub client_redirect {
     return $self->server_redirect(@_);
 }
 
+=for html <a name="set_current"></a>
+
+=head2 set_current() : self
+
+Sets current to I<self> and returns self.
+
+=cut
+
+sub set_current {
+    return shift->internal_set_current();
+}
+
 =for html <a name="throw_die"></a>
 
 =head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
