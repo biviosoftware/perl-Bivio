@@ -49,7 +49,7 @@ request is from HTTP.>
 
 =item form_model
 
-The first form model in I<items> or C<undef>.
+The form model in I<items> or C<undef>.
 
 =item id
 
@@ -140,6 +140,8 @@ class with an C<execute> method, of the form C<class-E<gt>method>,
 or a C<CODE> reference, i.e. a C<sub> which takes a C<$req> as
 a parameter.
 
+There may only be one FormModel in the items of a task.
+
 A mapping item is of the form I<name>=I<action>, where I<name>
 and I<action> are mapped as follows:
 
@@ -205,11 +207,14 @@ sub new {
 	my($class, $method) = split(/->/, $i, 2);
 	my($c) = Bivio::Collection::SingletonMap->get($class);
 	$method ||= 'execute';
-	Carp::croak($i, ": can't be executed (missing $method method)")
-		unless $c->can($method);
-	$attrs->{form_model} = $class
-		unless $attrs->{form_model}
-			|| !$c->isa('Bivio::Biz::FormModel');
+	Bivio::IO::Alert->die($i,
+		": can't be executed (missing $method method)")
+		    unless $c->can($method);
+	if ($c->isa('Bivio::Biz::FormModel')) {
+	    Bivio::IO::Alert->die($id->as_string, ': too many form models')
+			if $attrs->{form_model};
+	    $attrs->{form_model} = $class;
+	}
 	push(@new_items, [$c, $method]);
     }
 
