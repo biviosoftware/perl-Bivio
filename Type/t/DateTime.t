@@ -120,7 +120,7 @@ Bivio::Test->unit([
 	    1 => 'Jan',
 	    12 => 'Dec',
 	],
-	from_english_month3 => [
+	int_for_english_month3 => [
 	    Feb => 2,
 	    Mar => 3,
 	],

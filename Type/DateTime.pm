@@ -547,20 +547,6 @@ sub english_month3 {
     return $_NUM_TO_MONTH->[$month - 1];
 }
 
-=for html <a name="from_english_month3"></a>
-
-=head2 static from_english_month3(string month) : int
-
-Returns integer for I<month>.
-
-=cut
-
-sub from_english_month3 {
-    my(undef, $month) = @_;
-    return $_MONTH_TO_NUM->{uc($month)}
-	|| Bivio::Die->die($month, ': month not found');
-}
-
 =for html <a name="from_local_literal"></a>
 
 =head2 static from_local_literal(string value) : array
@@ -773,6 +759,20 @@ sub gettimeofday_diff_seconds {
     my($end_time) = $proto->gettimeofday;
     return $end_time->[0] - $start_time->[0]
         + ($end_time->[1] - $start_time->[1]) / 1000000.0;
+}
+
+=for html <a name="int_for_english_month3"></a>
+
+=head2 static int_for_english_month3(string month) : int
+
+Returns integer for I<month>.
+
+=cut
+
+sub int_for_english_month3 {
+    my(undef, $month) = @_;
+    return $_MONTH_TO_NUM->{uc($month)}
+	|| Bivio::Die->die($month, ': month not found');
 }
 
 =for html <a name="local_end_of_today"></a>
