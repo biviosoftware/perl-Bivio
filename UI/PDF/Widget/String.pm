@@ -36,13 +36,9 @@ C<Bivio::UI::PDF::Widget::String>
 
 =over 4
 
-=item string_font : string (required)
+=item string_font : string [] (inherited, dynamic)
 
 The font resource name.
-
-=item string_font : array_ref (required)
-
-The widget value font resource name.
 
 =item value : string (required)
 
@@ -101,6 +97,7 @@ sub initialize {
     my($fields) = $self->[$_IDI];
     return if exists($fields->{box});
     $fields->{box} = $self->unsafe_find_box;
+    $fields->{font} = $self->ancestral_get('string_font');
     return;
 }
 
@@ -117,14 +114,12 @@ sub render {
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
 
-    # set the font
-#TODO: get the font widget value if an array_ref
-    my($size) = 12;
-    my($font) = $self->ancestral_get('string_font');
+    # lookup and set the font
+    my($font) = ${$self->render_value('string_font',
+        $fields->{font}, $source)};
     Bivio::UI::PDFFont->set_font($font, $req, $pdf);
 
-#TODO: evaluate text differently if a widget, array_ref, or string
-    my($text) = $self->get('value');
+    my($text) = ${$self->render_attr('value', $source)};
 
     if ($fields->{box}) {
         $fields->{box}->render_in_box($text, $pdf);
