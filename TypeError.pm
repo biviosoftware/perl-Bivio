@@ -665,6 +665,16 @@ __PACKAGE__->compile(
 	undef,
 	'File names may not contain \\, /, :, *, ?, ", <, >, or |',
     ],
+    TOO_MANY_INSTRUMENTS_BUY => [
+	78,
+	undef,
+	'More than one club investment has that ticker, first select the investment from the Investment Summary, then select Bought',
+    ],
+    TOO_MANY_INSTRUMENTS_OPEN_BALANCE => [
+	79,
+	undef,
+	'This action can not be performed because more than one club investment has that ticker',
+    ],
 );
 
 #=PRIVATE METHODS
