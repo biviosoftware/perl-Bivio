@@ -37,7 +37,7 @@ use Bivio::UI::HTML::BUYandHOLD::Home;
 #=VARIABLES
 __PACKAGE__->new({
     clone => 'Prod',
-    uri => 'ic',
+    uri => 'buyandhold',
     is_production => 1,
     'Bivio::UI::Color' => {
 	initialize => sub {
