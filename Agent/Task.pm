@@ -167,7 +167,7 @@ sub execute {
 	$i->execute($req);
     }
     _commit();
-    $req->get('reply')->flush;
+    $req->get('reply')->flush($req);
     return;
 }
 
@@ -278,7 +278,8 @@ sub rollback {
 #
 sub _commit {
     # Always commit before sending queued messages.  The database
-    # is more important than email.  If we get an error
+    # is more important than email and mail dispatcher may need the
+    # state to accurately send the email.  If we get an error
     # while rendering view, don't commit since the only side effect
     # is that there might be some external state outside of SQL DB
     # which needs to be garbage-collected.

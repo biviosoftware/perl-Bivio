@@ -17,7 +17,7 @@ Bivio::Agent::Reply - a user agent reply
     $reply->print($image);
     $reply->set_die_code($die->get('code'));
     $reply->set_die_code(undef);
-    $reply->flush();
+    $reply->flush($req);
 
 =cut
 
@@ -70,7 +70,7 @@ sub new {
 
 =for html <a name="flush"></a>
 
-=head2 flush()
+=head2 flush(Bivio::Agent::Request req)
 
 Sends the buffered reply data.
 

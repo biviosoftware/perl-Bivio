@@ -74,14 +74,14 @@ sub new {
 
 =for html <a name="client_redirect"></a>
 
-=head2 client_redirect(string uri)
+=head2 client_redirect(Bivio::Agent::Request req, string uri)
 
 Redirects the client to the specified uri.
 
 =cut
 
 sub client_redirect {
-    my($self, $uri) = @_;
+    my($self, $req, $uri) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     # don't let any more data be sent
@@ -92,7 +92,7 @@ sub client_redirect {
     # return value when handling a form
     my($r) = $fields->{r};
     $r->header_out(Location => $uri);
-    Bivio::Agent::HTTP::Cookie->set($fields->{r});
+    Bivio::Agent::HTTP::Cookie->set($req, $fields->{r});
     $r->status(302);
     $r->send_http_header;
     # make it look like apache's redirect
@@ -110,14 +110,14 @@ EOF
 
 =for html <a name="flush"></a>
 
-=head2 flush()
+=head2 flush(Bivio::Agent::Request req)
 
 Sends the buffered reply data.
 
 =cut
 
 sub flush {
-    my($self) = @_;
+    my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     my($size);
@@ -127,7 +127,7 @@ sub flush {
 	$fields->{r}->header_out('Content-Length',
 		$size = -s $fields->{file_handle}) if $fields->{file_handle};
 	# We always set a cookie
-	Bivio::Agent::HTTP::Cookie->set($fields->{r});
+	Bivio::Agent::HTTP::Cookie->set($req, $fields->{r});
 	$fields->{r}->content_type($self->get_output_type());
 	$fields->{r}->send_http_header;
     }
