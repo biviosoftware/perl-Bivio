@@ -140,6 +140,7 @@ _compile(
 	'Income and Expense Statement'],
     HTTP_DOCUMENT => ['Home Page'],
     HELP => ['Help'],
+    CLUB_CREATE => ['Create Club Site'],
 );
 
 =head1 METHODS
