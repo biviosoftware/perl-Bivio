@@ -225,7 +225,9 @@ and discard the mail queue unless is a REDIRECT_TASK.
 
 sub handle_die {
     my($proto, $die) = @_;
-    return if $die->get('code') == Bivio::DieCode::REDIRECT_TASK();
+    my($die_code) = $die->get('code');
+    return if $die_code == Bivio::DieCode::REDIRECT_TASK()
+	    || $die_code == Bivio::DieCode::CLIENT_REDIRECT_TASK();
     $proto->rollback;
     return;
 }
