@@ -865,7 +865,7 @@ EOF
     _trace("\nunit_value $display_date units: ".$units."\tvalue: ".$value);
 
     # a value of 0 will only occur if no securities are owned
-    $result ||= DEFAULT_UNIT_VALUE();
+    $result = DEFAULT_UNIT_VALUE() if $result == 0;
     $fields->{'_get_unit_value'.$date
 	.$include_todays_member_entries} = $result;
     return $result;
