@@ -1,0 +1,214 @@
+#!perl -w
+# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-http-dispatcher - check Apache running error logs for new problems
+
+=head1 SYNOPSIS
+
+b-http-dispatcher [-interval minutes]
+
+=head1 DESCRIPTION
+
+B<b-http-dispatcher> is used to check Apache error logs for unknown
+messages during the last interval.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -interval minutes
+
+Set interval length in seconds. Default is 10 minutes.
+
+=item -error_log filename
+
+Set file to be parsed. Default is /var/log/httpd/error.log
+
+=item -mail_to address
+
+Set mail address for sending the report. Default is root
+
+=item -no_mail
+
+Don't send a mail message, print report to stdout instead
+
+=back
+
+=cut
+
+#=IMPORTS
+use Bivio::IO::Config;
+use Bivio::Mail::Message;
+use Sys::Hostname;
+use Time::Local;
+
+#=VARIABLES
+my(%_MONTH) = ('Jan', 0, 'Feb', 1, 'Mar', 2, 'Apr', 3, 'May', 4, 'Jun', 5,
+        'Jul', 6, 'Aug', 7, 'Sep', 8, 'Oct', 9, 'Nov', 10, 'Dec', 11);
+my($_DEFAULT_INTERVAL) = 10;
+my($_DEFAULT_ERROR_LOG) = '/var/log/httpd/error.log';
+my($_DEFAULT_MAIL_TO) = 'root';
+my($_REPORT) = '';
+my($_NOW) = time;
+
+sub main {
+    my(@argv) = @_;
+    Bivio::IO::Config->initialize(\@argv);
+    my($interval) = $_DEFAULT_INTERVAL;
+    my($error_log) = $_DEFAULT_ERROR_LOG;
+    my($mail_to) = $_DEFAULT_MAIL_TO;
+    my($send_mail) = 1;
+    local($_);
+    while ($_ = shift(@argv)) {
+	/^-interval$/ && ($interval = shift(@argv)
+                || _usage($_.': missing arg'), next);
+	/^-error_log$/ && ($error_log = shift(@argv)
+                || _usage($_.': missing arg'), next);
+	/^-mail_to$/ && ($mail_to = shift(@argv)
+                || _usage($_.': missing arg'), next);
+	/^-no_mail$/
+                && ($send_mail = 0, next);
+	&_usage($_ . ': unknown option');
+    }
+    # Convert to seconds
+    $interval *= 60;
+
+    # Parse log file
+    _check_error_log($error_log, $_NOW - $interval);
+
+    $send_mail && $_REPORT && return _send_report($mail_to, $_NOW);
+    print $_REPORT;
+    return;
+}
+
+sub _usage {
+    my($msg) = join('', @_);
+    print STDERR <<"EOF";
+$0: $msg
+usage: $0 [-interval seconds] [-error_log filename] [-mailto address] [-no_mail]
+EOF
+    exit(1);
+}
+
+&main(@ARGV);
+
+#=PRIVATE METHODS
+
+# _check_error_log(string log_file, int start_date)
+#
+# Parse the error log and report warnings younger than the given start time
+#
+sub _check_error_log {
+    my($log_file, $start_time) = @_;
+    my($fh) = IO::File->new;
+    $fh->open($log_file) || (_report($log_file .': '. $!), return);
+    my($in_interval, $mon, $d, $h, $m, $s, $y);
+    local($_);
+    while ($_ = $fh->getline) {
+        chomp;
+        # Find first message within the given time interval
+        unless ($in_interval) {
+            # [Tue Jul 25 23:59:02 2000]
+            /^\[\w+ (\w+) (\d+) (\d+):(\d+):(\d+) (\d+)\]/ &&
+                    (($mon, $d, $h, $m, $s, $y) =
+                            ($_MONTH{$1}, $2, $3, $4, $5, $6));
+            # 2000/07/25 23:59:12 or [29441]2000/07/25 23:59:12
+            m=^(|\[\d+\])(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)= &&
+                    (($y, $mon, $d, $h, $m, $s) =
+                            ($2, $3-1, $4, $5, $6, $7));
+            defined($mon) || (_report($_.': cannot parse date'), next);
+            my($t) = Time::Local::timelocal($s, $m, $h, $d, $mon, $y);
+            $in_interval = $t >= $start_time;
+        }
+        $in_interval || next;
+
+        # Skip non-warnings
+        (/Server configured -- resuming normal operations/ ||
+                /Restart successful/ ||
+                /httpd: caught SIGTERM, shutting down/ ||
+                /SIGHUP received.  Attempting to restart/ ||
+                /\[(info|notice)\]/ ||
+                /child process \d+ still did not exit/ ||
+                /created shared memory segment/ ||
+                /read request (line|headers) timed out for/ ||
+                /(read|send) timed out for (.+)/) && next;
+        # Skip regular Bivio messages
+        (/Bivio::Agent::Job::Dispatcher:.*JOB_(START|END)/
+                || /Bivio::SQL::Connection::_get_connection.*reconnecting/
+               ) && next;
+
+        _report($_);
+    }
+    return;
+}
+
+# _report(string message)
+# _report(array[string] message)
+#
+# Add a message to the log report
+#
+sub _report {
+    my(@msg) = @_;
+    $_REPORT .= join('', @msg, "\n");
+    return;
+}
+
+# _send_report(string mail_address, int now)
+#
+# Create and send an email message including the log report
+#
+sub _send_report {
+    my($mail_address, $now) = @_;
+
+    my($mail) = Bivio::Mail::Message->new;
+    $mail->add_recipients($mail_address);
+    $mail->set_field('To', $mail_address);
+
+    my($user, $gecos) = (getpwuid($>))[0,4];
+    $mail->set_from($user, $gecos);
+
+    my($date);
+    # Must be in scalar context to get string value
+    $date = localtime($_NOW);
+    my($subject) = 'Server Errors on ' . hostname . ' at ' . $date;
+    $mail->set_field('Subject', $subject);
+
+    my($body_out) = $mail->get_body->open('w');
+    $body_out->print($_REPORT);
+    $body_out->close;
+
+    $mail->send;
+    return;
+}
+
+=head1 FILES
+
+=over 4
+
+=item /var/log/httpd
+
+Apache run directory
+
+=item error.log
+
+Apache error log residing in the run directory
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 bivio, Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
