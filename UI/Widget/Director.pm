@@ -93,20 +93,20 @@ sub new {
 
 =cut
 
-=for html <a name="get_content_type"></a>
+=for html <a name="execute"></a>
 
-=head2 get_content_type(any source) : string
+=head2 execute(Bivio::Agent::Request req)
 
-Gets the content type from the widget which would be rendered.
+Executes the child widget as selected from I<req> (as source).
 
 =cut
 
-sub get_content_type {
-    my($self, $source) = @_;
-    my($w) = _select($self, $source);
+sub execute {
+    my($self, $req) = @_;
+    my($w) = _select($self, $req);
     Bivio::Die->die('Director did not select a widget; no content type')
 	    unless defined($w);
-    return $w->get_content_type($source);
+    return $w->execute($req);
 }
 
 =for html <a name="initialize"></a>
@@ -123,14 +123,10 @@ sub initialize {
     return if exists($fields->{control});
     ($fields->{control}, $fields->{values})
 	    = $self->get('control', 'values');
-    $fields->{default_value} = $self->unsafe_get('default_value');
-    $fields->{undef_value} = $self->unsafe_get('undef_value');
-    my($child);
-    foreach $child (values(%{$fields->{values}}), $fields->{default_value},
-	    $fields->{undef_value}) {
-	next unless $child;
-	$child->put(parent => $self);
-	$child->initialize;
+    $fields->{default_value} = $self->unsafe_initialize_attr('default_value');
+    $fields->{undef_value} = $self->unsafe_initialize_attr('undef_value');
+    while (my($k, $v) = each(%{$fields->{values}})) {
+	$self->initialize_value($k, $v);
     }
     return;
 }
@@ -139,8 +135,9 @@ sub initialize {
 
 =head2 render(any source, string_ref buffer)
 
-Render the link.  Most of the code is involved in avoiding unnecessary method
-calls.  If the I<value> is a constant, then it will only be rendered once.
+Render the selected value.  Most of the code is involved in avoiding
+unnecessary method calls.  If the I<value> is a constant, then it will only be
+rendered once.
 
 =cut
 

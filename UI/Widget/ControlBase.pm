@@ -47,7 +47,7 @@ If there is no control, always calls L<control_on_render|"control_on_render">.
 =item control_off_value : any [value]
 
 The value to use when I<control> returns false.  If not defined,
-renders nothing.
+renders nothing.  May be a widget value, widget, etc.
 
 =cut
 
@@ -93,8 +93,8 @@ Renders the I<control_off_value>.  May be overridden.
 sub control_off_render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{off_value}->render($source, $buffer)
-	    if $fields->{off_value};
+    $self->unsafe_render_value('control_off_value',
+	    $fields->{off_value}, $source, $buffer);
     return;
 }
 
@@ -123,22 +123,11 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{control};
 
-    die('off_value deprecated, use control_off_value')
-	    if $self->has_keys('off_value');
-
     $fields->{control} = $self->unsafe_get('control');
     $fields->{control} = [['->get_request'], '->can_user_execute_task',
 	Bivio::Agent::TaskId->from_any($fields->{control})]
 	    if $fields->{control} && ref($fields->{control}) ne 'ARRAY';
-    $fields->{off_value} = $self->unsafe_get('control_off_value');
-    if (ref($fields->{off_value})) {
-	$fields->{off_value}->put(parent => $self);
-	$fields->{off_value}->initialize;
-    }
-    elsif ($fields->{off_value}) {
-	# Can't be "true"
-	Bivio::Die->die($fields->{off_value}, ': invalid off value');
-    }
+    $fields->{off_value} = $self->unsafe_initialize_attr('control_off_value');
     return;
 }
 

@@ -36,6 +36,7 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 =item value : Bivio::UI::Widget (required, dynamic)
 
 Accessed dynamically.  If the dynamic value is false, nothing is rendered.
+B<NOTE: the widget is not initialized.  You must do this yourself.>
 
 =item value : array_ref (required,dynamic)
 
@@ -65,7 +66,7 @@ my($_PACKAGE) = __PACKAGE__;
 =head2 static new(boolean value) : Bivio::UI::Widget::Indirect
 
 Creates a new Indirect widget.  I<value> may be anything but a hash_ref,
-really.  If ti is a hash_ref, it must contain a I<value> attribute.
+really.  If it is a hash_ref, it must contain a I<value> attribute.
 
 =cut
 
@@ -77,32 +78,22 @@ sub new {
 
 =head1 METHODS
 
-=for html <a name="get_content_type"></a>
+=cut
 
-=head2 get_content_type(any source) : string
+=for html <a name="execute"></a>
 
-Gets the content type from the widget which would be rendered.
+=head2 execute(Bivio::Agent::Request req)
+
+Executes the child widget as selected from I<req> (as source).
 
 =cut
 
-sub get_content_type {
-    my($self, $source) = @_;
-    my($w) = _select($self, $source);
+sub execute {
+    my($self, $req) = @_;
+    my($w) = _select($self, $req);
     Bivio::Die->die('Indirect did not select a widget; no content type')
 	    unless defined($w);
-    return $w->get_content_type($source);
-}
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Does nothing.  The widget is fully dynamic.
-
-=cut
-
-sub initialize {
-    return;
+    return $w->execute($req);
 }
 
 =for html <a name="render"></a>
@@ -135,7 +126,6 @@ sub _new_args {
     return ($proto, {
 	value => $value,
     });
-    # DOES NOT RETURN
 }
 
 # _select(self, any source) : Bivio::UI::Widget

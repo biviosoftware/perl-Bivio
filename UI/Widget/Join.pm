@@ -12,7 +12,6 @@ Bivio::UI::Widget::Join - renders a sequence of widgets and strings
 =head1 SYNOPSIS
 
     use Bivio::UI::Widget::Join;
-    Bivio::UI::Widget::Join->new($attrs);
 
 =cut
 
@@ -88,10 +87,9 @@ sub initialize {
     return if $fields->{values};
     $fields->{values} = $self->get('values');
     my($v);
+    my($name) = 0;
     foreach $v (@{$fields->{values}}) {
-	next unless ref($v) && ref($v) ne 'ARRAY';
-	$v->put(parent => $self);
-	$v->initialize;
+	$self->initialize_value($name++, $v);
     }
     return;
 }
@@ -105,15 +103,9 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($name) = 0;
     foreach my $v (@{$fields->{values}}) {
-	my($v2) = ref($v) eq 'ARRAY' ? $source->get_widget_value(@$v) : $v;
-	if (UNIVERSAL::isa($v2, 'Bivio::UI::Widget')) {
-	    $v2->render($source, $buffer);
-	    next;
-	}
-	Bivio::Die->die($v2, ': join value is unexpected reference')
-		    if ref($v2);
-	$$buffer .= $v2;
+	$self->unsafe_render_value($name++, $v, $source, $buffer);
     }
     return;
 }
