@@ -33,8 +33,12 @@ company/index info
 
 #=IMPORTS
 use Bivio::Biz::Model::Instrument;
-use Bivio::Type::InstrumentType;
 use Bivio::Data::MGFS::Importer;
+use Bivio::Type::InstrumentType;
+use Bivio::Type::Line;
+use Bivio::Type::Name;
+use Bivio::Type::PrimaryId;
+use Bivio::Data::MGFS::Id;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
