@@ -118,7 +118,7 @@ sub execute {
 
 # _generate_default_display_name(hash values)
 #
-# Formats name in precedence:
+# Formats name in precedence: (NOT)
 #   last, first middle
 #   last, first
 #   last
@@ -134,6 +134,8 @@ sub _generate_default_display_name {
 	    $values->{middle_name}, $values->{last_name},
 	    $values->{name});
 
+=begin
+
     if ($last) {
 	if ($first) {
 	    if ($middle) {
@@ -144,6 +146,16 @@ sub _generate_default_display_name {
 	return $last;
     }
     return $first ? $first : $login;
+
+=cut
+
+    if ($last) {
+	if ($first) {
+	    return $first.' '.$last;
+	}
+	return $last;
+    }
+    return $login;
 }
 
 =head1 COPYRIGHT
