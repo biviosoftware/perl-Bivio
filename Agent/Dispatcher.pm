@@ -95,6 +95,11 @@ sub process_request {
 		    elsif ($max_tries-- <= 0) {
 			die("too many dispatcher retries");
 		    }
+		    else {
+			# Re-get these values, they may have changed
+			($auth_realm, $auth_user, $auth_role) =
+				$req->get(qw(auth_realm auth_user auth_role));
+		    }
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
 		    $req->put(auth_role => $auth_role, task => $task);
 		    # Task checks authorization
