@@ -500,19 +500,24 @@ sub verify_link {
 
 =head2 verify_local_mail(any recipient_email, any body_regex) : string_ref
 
+=head2 verify_local_mail(any recipient_email, any body_regex, int count) : array of string_ref
+
 Get the last messages received for I<recipient_email> (see
 L<generate_local_email|"generate_local_email">) and verify that
-I<body_regex> matches.  Deletes the message on a match.
+I<body_regex> matches.  Deletes the message(s) on a match.
 
 Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
 only complete if both I<recipient_email> and I<body_regex> match.
 
-Returns a string_ref of the message.
+I<count> defaults to 1.  An exception is thrown if the number of messages found
+is not equal to I<count>.  Returns and array with I<count> string_refs of the
+messages found.
 
 =cut
 
 sub verify_local_mail {
-    my($self, $email, $body_regex) = @_;
+    my($self, $email, $body_regex, $count) = @_;
+    $count ||= 1;
     my($seen) = {};
     Bivio::Die->die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
@@ -521,9 +526,8 @@ sub verify_local_mail {
     $email = qr{\Q$email}
 	unless ref($email);
     for (my $i = $_CFG->{mail_tries}; $i-- > 0; sleep(1)) {
-	my($msg) = undef;
 	if (my(@found) = map({
-	    $msg = Bivio::IO::File->read($_);
+	    my($msg) = Bivio::IO::File->read($_);
 	    ($email_match = $$msg =~ /^(?:to|cc):.*\b$email/mi)
 	        && $$msg =~ /$body_regex/
 	        ? [$_, $msg] : ();
@@ -534,11 +538,16 @@ sub verify_local_mail {
 		}
 	    ))
 	) {
-	    Bivio::Die->die('too many messages matched: ', \@found)
-	        if @found > 1;
-	    unlink($found[0]->[0]);
-	    _log($self, 'msg', $found[0]->[1]);
-	    return $msg;
+	    Bivio::Die->die('wrong number of messages matched.  expected != actual: ',
+		$count, ' != ', int(@found), "\n", \@found)
+	        if @found != $count;
+	    foreach (@found) {
+		unlink($_->[0]);
+		_log($self, 'msg', $_->[1]);
+	    }
+	    return wantarray
+		? map($_->[1], @found)
+		: $found[0]->[1];
 	}
     }
     Bivio::Die->die(
