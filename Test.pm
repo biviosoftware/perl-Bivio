@@ -372,6 +372,7 @@ sub _unit_eval {
     }
     continue {
 	print(!$err ? "ok $c\n" : ("not ok $c $case->{case_name}: $err\n"));
+	$err = undef;
     }
     return;
 }
