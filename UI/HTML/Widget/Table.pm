@@ -344,7 +344,7 @@ Creates a new Table widget.
 
 sub new {
     my($proto, $list_class, $columns, $attributes) = @_;
-    my($self) = ref($list_class)
+    my($self) = ref($list_class) eq 'HASH'
 	    ? Bivio::UI::Widget::new($proto, $list_class)
 	    : Bivio::UI::Widget::new($proto, {
 		list_class => $list_class,
@@ -390,18 +390,12 @@ sub create_cell {
 
 	# if the source is a ListFormModel, use editable fields
 	if (UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')) {
-	    if ($model->has_fields($col)) {
-		# don't allow editing primary keys
-		if ($model->get_field_constraint($col)
-			== Bivio::SQL::Constraint->PRIMARY_KEY) {
-		    $use_list = 1;
-		}
-		else {
-		    $need_error_widget = 1;
-		}
-	    }
-	    else {
-		$use_list = 1;
+	    $use_list = 1;
+	    # We allow editing of all but primary keys
+	    if ($model->has_fields($col) && $model->get_field_constraint($col)
+		    != Bivio::SQL::Constraint->PRIMARY_KEY) {
+		$need_error_widget = 1;
+		$use_list = 0;
 	    }
 	}
 	$model = $model->get_instance($model->get_list_class)
@@ -411,14 +405,19 @@ sub create_cell {
 		ref($model).'.'.$col, $attrs);
 	if ($need_error_widget) {
 	    # wrap the cell, including an error widget
-	    $cell = Bivio::UI::Widget::Join->new([
-		Bivio::UI::HTML::Widget::FormFieldError->new({
-		    field => $col,
-		    label => [['->get_request'], 'Bivio::UI::Facade', 'Text',
-			'->get_value', $col],
-		}),
-		$cell,
-	    ]);
+	    $cell = Bivio::UI::Widget::Join->new({
+		# Need to copy attributes when putting Widget around $cell.
+		%{$cell->get_shallow_copy},
+		# Our attributes override, however.
+		values => [
+		    Bivio::UI::HTML::Widget::FormFieldError->new({
+			field => $col,
+		        label => $_VS->vs_text(
+				$model->simple_package_name, $col),
+		    }),
+		    $cell,
+		],
+	    });
 	}
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize =>
@@ -685,8 +684,7 @@ sub _get_heading {
 	# wrap it in a string widget
 	$heading = Bivio::UI::HTML::Widget::String->new({
 	    value => length($heading)
-	    ? $_VS->vs_text($list->simple_package_name,
-		    'table_column_heading', $heading) : $heading,
+	    ? $_VS->vs_text($list->simple_package_name, $heading) : $heading,
 	    string_font => $self->get_or_default(
 		    'heading_font', 'table_heading'),
 	});
@@ -848,7 +846,7 @@ sub _initialize_render_state {
                 next unless $enabler->enable_column($col, $self);
             }
             elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
-                next unless $source->get_widget_value($control);
+                next unless $source->get_widget_value(@$control);
             }
         }
         push(@$headings, $all_headings->[$i]);
