@@ -48,6 +48,65 @@ List of primary key types in the order of I<primary_key_names>.
 
 =back
 
+=head1 EXAMPLE
+
+The following declaration is taken from
+L<Bivio::Biz::ListModel::ClubUser|Bivio::Biz::ListModel::ClubUser>:
+
+    Bivio::SQL::ListSupport->new({
+	version => 1,
+	order_by => [qw(
+            RealmOwner.name
+            ClubUser.mail_mode
+            RealmUser.role
+	)],
+	other => [qw(
+	    User.last_name
+	    User.middle_name
+	    User.first_name
+	)],
+	primary_key => [
+	    [qw(User.user_id ClubUser.user_id RealmOwner.realm_id
+                RealmUser.user_id)],
+	],
+	auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
+    });
+
+This declaration will produce the following properties:
+
+    User.last_name
+    RealmOwner.name
+    ClubUser.mail_mode
+    RealmUser.role
+    User.user_id
+    ClubUser.club_id
+
+This is the first version.  Any time the field names change, you should change
+the version.  Field identities do not affect the version, because they do not
+affect the external representation, just the implementation of the query.
+
+You can order this model by I<RealmOwner.name>, I<ClubUser.mail_mode>, or
+I<RealmUser.role>.  While it may not make the most sense to order by
+I<ClubUser.mail_mode>, it is allowed and "why not?".  The restriction on
+C<order_by> is that the field may not be null and is ordered in a
+way which is visible to the user.  Ordering by PrimaryId makes no
+sense, because the user shouldn't every see primary ids.
+
+The I<User.last_name> isn't an C<order_by> field, because it can be null.
+We put it in C<other>, so that it is available to be presented to the
+user.
+
+The I<User.user_id> and its aliases
+I<ClubUser.user_id>, I<RealmOwner.realm_id>, and I<RealmUser.user_id>,
+is the C<primary_key> for this ListSupport.  It is guaranteed to be
+unique to each row of the ListSupport.
+
+The I<ClubUser.club_id> and its alias I<RealmUser.realm_id> must
+be equal to the C<auth_id> of the
+L<Bivio::Agent::Request|Bivio::Agent::Request>.  This ensures
+data security, i.e. a user can't hack the request to get by this.
+The user cannot set the C<auth_id>.
+
 =cut
 
 #=IMPORTS
@@ -89,6 +148,8 @@ The categories:
 
 =item auth_id : array_ref (required)
 
+=item auth_id : string (required)
+
 A field or field identity which must be equal to
 request's I<auth_id> attribute.
 
@@ -114,47 +175,10 @@ declaration changes.  It is used to reject an out-dated query.
 
 =back
 
-Example:
-
-    Bivio::SQL::ListSupport->new({
-	version => 1,
-	order_by => [qw(
-            RealmOwner.name
-            ClubUser.mail_mode
-            RealmUser.role
-	)],
-        # last_name can be null, so can't be in order_by
-        other => [qw(
-	    User.last_name
-        )],
-	primary_key => [
-            # Causes a four table join
- 	    [qw(User.user_id ClubUser.user_id RealmUser.user_id
-                    RealmOwner.realm_id)],
-	],
-        # Qualifies the join to work only for a specific club
-	auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
-    });
-
-This will produce the following properties:
-
-    User.last_name
-    RealmOwner.name
-    ClubUser.mail_mode
-    RealmUser.role
-    User.user_id
-    ClubUser.club_id
-
-Note that the I<primary_key> for this query is just C<User.user_id>.  The
-C<club_id> is a necessary identity, but the C<user_id> must be unique to each
-row returned, whereas C<club_id> will be the same for all rows returned.
-
 =cut
 
 sub new {
     my($proto, $decl) = @_;
-    Carp::croak("version: not declared") unless $decl->{version};
-    Carp::croak("version: not a scalar") if ref($decl->{version});
     my($attrs) = {
 	# All columns by qualified name
 	columns => {},
@@ -164,8 +188,8 @@ sub new {
 	column_aliases => {},
 	# The columns returned by select in order (not including auth_id)
 	select_columns => [],
-	version => $decl->{version},
     };
+    $proto->init_version($attrs, $decl);
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
     return &Bivio::SQL::Support::new($proto, $attrs);
 }
@@ -173,23 +197,6 @@ sub new {
 =head1 METHODS
 
 =cut
-
-=for html <a name="get_column_name"></a>
-
-=head2 get_column_name(string name) : string
-
-Returns the name of the column.  This maps all aliases (including
-main column names) to the original column name.
-
-=cut
-
-sub get_column_name {
-    my($column_aliases) = shift->get('columns_aliases');
-    my($name) = shift;
-    my($col) = $column_aliases->{$name};
-    Carp::croak("$name: no such column alias") unless $col;
-    return $col->{name};
-}
 
 =for html <a name="load"></a>
 
@@ -267,52 +274,7 @@ sub _format_select_order_by {
 	    : undef;
 }
 
-# _init_column(hash_ref attrs, string qual_col, string class, boolean is_alias) : hash_ref
-#
-# Initializes qual_col (Model(_N).column) in columns if not already
-# defined.  Sets $attrs->{clauss}
-#
-sub _init_column {
-    my($attrs, $qual_col, $class, $is_alias) = @_;
-    my($columns) = $attrs->{columns};
-    my($col);
-    unless ($col = $columns->{$qual_col}) {
-	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
-	Carp::croak("$qual_col: invalid qualified column name")
-		    unless $qual_model && $column;
-	my($model);
-	unless ($model = $attrs->{models}->{$qual_model}) {
-	    my($package) = 'Bivio::Biz::PropertyModel::'.$qual_model;
-	    $package =~ s!((?:_\d+)?)$!!;
-	    my($qual_index) = $1;
-	    # Make sure package is loaded
-	    Bivio::Util::my_require($package);
-	    my($instance) = $package->get_instance;
-	    $model = $attrs->{models}->{$qual_model} = {
-		name => $qual_model,
-		instance => $instance,
-		sql_name => $instance->get_info('table_name') . $qual_index,
-	    };
-	}
-	my($type) = $model->{instance}->get_field_type($column);
-	$col = {
-	    # Bivio::SQL::Support attributes
-	    name => $qual_col,
-	    type => $type,
-	    constraint => $model->{instance}->get_field_constraint($column),
-
-	    # Other attributes
-	    column_name => $column,
-	    model => $model,
-	    sql_name => $model->{sql_name}.'.'.$column,
-	};
-	$columns->{$qual_col} = $col unless $is_alias;
-    }
-    push(@{$attrs->{$class}}, $col) unless $is_alias;
-    return $col;
-}
-
-# _init_column_classes(hash_ref attrs) : string
+# _init_column_classes(hash_ref attrs, hash_ref decl) : string
 #
 # Initialize the column classes.
 # Returns the beginnings of the where clause
@@ -335,13 +297,14 @@ sub _init_column_classes {
 	    my(@c) = ref($c) ? @$c : ($c);
 	    # First column is the official name.  The rest are aliases.
 	    my($first) = shift(@c);
-	    my($col) = _init_column($attrs, $first, $class, 0);
+	    my($col) = __PACKAGE__->init_column($attrs, $first, $class, 0);
 	    $column_aliases->{$first} = $col;
 	    my($alias);
 	    foreach $alias (@c) {
 		# Creates a temporary column just to get sql_name and
 		# to make sure "model" is created if need be.
-		my($alias_col) = _init_column($attrs, $alias, $class, 1);
+		my($alias_col) = __PACKAGE__->init_column(
+			$attrs, $alias, $class, 1);
 		$where .= ' and '.$col->{sql_name}.'='.$alias_col->{sql_name};
 		# All aliases point to main column.  They don't exist
 		# outside of this context.
@@ -362,20 +325,10 @@ sub _init_column_classes {
 	@{$attrs->{primary_key}}];
 
     # other can be empty.  No reformatting necessary
+
     # Ensure that (qual) columns defined for all (qual) models and their
-    # primary keys.
-    my($n);
-    foreach $n (keys(%{$attrs->{models}})) {
-	my($m) = $attrs->{models}->{$n};
-	$m->{primary_key} = [];
-	my($pk);
-	foreach $pk (@{$m->{instance}->get_info('primary_key_names')}) {
-	    my($cn) = "$m->{name}.$pk";
-	    _init_column($attrs, $cn, 'other', 0)
-		    unless $column_aliases->{$cn};
-	    push(@{$m->{primary_key}}, $cn);
-	}
-    }
+    # primary keys and initialize primary_key_map.
+    __PACKAGE__->init_models_primary_key($attrs);
 
     # order_by may be empty and stays in specified order.  Update some avlues
     my($c);

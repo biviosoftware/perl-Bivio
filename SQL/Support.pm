@@ -25,7 +25,7 @@ use Bivio::Collection::Attributes;
 
 =head1 DESCRIPTION
 
-C<Bivio::SQL::Support> is common attributes and routines for
+C<Bivio::SQL::Support> contains common attributes and routines for
 L<Bivio::SQL::Support|Bivio::SQL::PropertySupport> and
 L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 
@@ -37,13 +37,19 @@ for simplicity and code re-use.
 
 =over 4
 
+=item auth_id : hash_ref
+
+Column which identifies the auth_id field.  On some Support instances,
+this may not be defined.
+
 =item column_names : array_ref
 
 List of the columns.
 
 =item primary_key_names : array_ref
 
-List of primary key column names, which uniquely identify a row.
+List of primary key column names, which uniquely identify a row
+or value.
 
 =item primary_key_types : array_ref
 
@@ -99,6 +105,23 @@ sub get_column_constraint {
     return $col->{constraint};
 }
 
+=for html <a name="get_column_name"></a>
+
+=head2 get_column_name(string name) : string
+
+Returns the name of the column.  This maps all aliases (including
+main column names) to the original column name.
+
+=cut
+
+sub get_column_name {
+    my($column_aliases) = shift->get('columns_aliases');
+    my($name) = shift;
+    my($col) = $column_aliases->{$name};
+    Carp::croak("$name: no such column alias") unless $col;
+    return $col->{name};
+}
+
 =for html <a name="get_column_type"></a>
 
 =head2 get_column_type(string name) : Bivio::Type
@@ -130,6 +153,113 @@ sub has_columns {
 	return 0 unless exists($columns->{$n});
     }
     return 1;
+}
+
+=for html <a name="init_column"></a>
+
+=head2 static init_column(hash_ref attrs, string qual_col, string class, boolean is_alias) : hash_ref
+
+B<INTERNAL USE ONLY>
+
+Initializes I<qual_col> which is of the form C<Model_N.column> or
+C<Model.column> in I<attr>'s C<columns> if not already defined.
+Also updates I<class> and C<models> I<attrs>.
+Only modifies C<models> if I<is_alias>.
+
+Always returns a column hash_ref, but for I<is_alias> is not stored in
+I<attrs>.
+
+=cut
+
+sub init_column {
+    my(undef, $attrs, $qual_col, $class, $is_alias) = @_;
+    my($columns) = $attrs->{columns};
+    my($col);
+    unless ($col = $columns->{$qual_col}) {
+	my($qual_model, $column) = $qual_col =~ m!^(\w+(?:_\d+)?)\.(\w+)$!;
+	Carp::croak("$qual_col: invalid qualified column name")
+		    unless $qual_model && $column;
+	my($model);
+	unless ($model = $attrs->{models}->{$qual_model}) {
+	    my($package) = 'Bivio::Biz::PropertyModel::'.$qual_model;
+	    $package =~ s!((?:_\d+)?)$!!;
+	    my($qual_index) = $1;
+	    # Make sure package is loaded
+	    Bivio::Util::my_require($package);
+	    my($instance) = $package->get_instance;
+	    $model = $attrs->{models}->{$qual_model} = {
+		name => $qual_model,
+		instance => $instance,
+		sql_name => $instance->get_info('table_name') . $qual_index,
+	    };
+	}
+	my($type) = $model->{instance}->get_field_type($column);
+	$col = {
+	    # Bivio::SQL::Support attributes
+	    name => $qual_col,
+	    type => $type,
+	    constraint => $model->{instance}->get_field_constraint($column),
+
+	    # Other attributes
+	    column_name => $column,
+	    model => $model,
+	    sql_name => $model->{sql_name}.'.'.$column,
+	};
+	$columns->{$qual_col} = $col unless $is_alias;
+    }
+    push(@{$attrs->{$class}}, $col) unless $is_alias;
+    return $col;
+}
+
+=for html <a name="init_models_primary_key"></a>
+
+=head2 static init_models_primary_key(hash_ref attrs)
+
+B<INTERNAL USE ONLY>
+
+Initializes C<primary_key_map> for C<models> in I<attrs>.
+
+Primary key names are put in the C<other> category if they are not already
+in C<column_aliases> of I<attrs>
+
+=cut
+
+sub init_models_primary_key {
+    my($proto, $attrs) = @_;
+    # Ensure that (qual) columns defined for all (qual) models and their
+    # primary keys and initialize primary_key_map.
+    my($n);
+    foreach $n (keys(%{$attrs->{models}})) {
+	my($m) = $attrs->{models}->{$n};
+	$m->{primary_key_map} = {};
+	my($pk);
+	foreach $pk (@{$m->{instance}->get_info('primary_key_names')}) {
+	    my($cn) = $m->{name}.'.'.$pk;
+	    $proto->init_column($attrs, $cn, 'other', 0)
+		    unless $attrs->{column_aliases}->{$cn};
+	    $m->{primary_key_map}->{$cn} = $attrs->{column_aliases}->{$cn};
+	}
+    }
+    return;
+}
+
+=for html <a name="init_version"></a>
+
+=head2 static init_version(hash_ref attrs, hash_ref decl)
+
+B<INTERNAL USE ONLY>
+
+Validates C<version> in I<decl> is syntactically correct and
+sets in I<attrs>.
+
+=cut
+
+sub init_version {
+    my($proto, $attrs, $decl) = @_;
+    Carp::croak("version: not declared or invalid (not positive integer)")
+		unless $decl->{version} && $decl->{version} =~ /^\d+$/;
+    $attrs->{version} = $decl->{version};
+    return;
 }
 
 #=PRIVATE METHODS
