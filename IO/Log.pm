@@ -109,7 +109,8 @@ sub read {
     local($?);
     my($contents) = Bivio::IO::File->read(
 	$base_name =~ /\.gz$/
-	    ? IO::File->new("gunzip -c '$base_name' |") : $base_name,
+	    ? IO::File->new("gunzip -c '$base_name' 2>/dev/null |")
+	: $base_name,
     );
     Bivio::Die->throw_die('IO_ERROR', {
 	entity => $base_name,
@@ -138,7 +139,8 @@ sub write {
     local($?);
     Bivio::IO::File->write(
 	$base_name =~ /\.gz$/
-	    ? IO::File->new("| gzip --best --stdout - > '$base_name'")
+	    ? IO::File->new(
+		"| gzip --best --stdout - > '$base_name' 2>/dev/null")
 	    : $base_name,
 	ref($contents) ? $contents : \$contents);
     Bivio::Die->throw_die('IO_ERROR', {
