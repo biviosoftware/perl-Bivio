@@ -255,6 +255,13 @@ sub check_diskuse {
             $err = 1;
         }
     }
+
+    # Print TOP TEN clubs
+    my($data_dir) = '/home/httpd/data';
+    if (-d $data_dir) {
+        print "TOP TEN clubs, usage in $data_dir\n";
+        system("cd $data_dir; du -s * | sort -nr | head -10");
+    }
 }
 
 sub check_raid {
