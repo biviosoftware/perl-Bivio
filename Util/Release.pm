@@ -604,7 +604,7 @@ sub _get_proxy {
     my($self) = @_;
     my($proxy) = $ENV{http_proxy};
     return () unless $proxy;
-    $proxy =~ m,/(\w+):(\d+),
+    $proxy =~ m,/([\w\.]+):(\d+),
         || Bivio::Die->die('couldn\'t parse proxy: ', $proxy);
     return (
         '--httpproxy', $1,
