@@ -178,7 +178,7 @@ sub execute_empty_start {
 
 =for html <a name="execute_ok"></a>
 
-=head2 execute_ok()
+=head2 execute_ok() : boolean
 
 
 =cut
@@ -193,14 +193,14 @@ sub execute_ok {
     while ($self->next_row) {
 	$self->execute_ok_row;
     }
-    $self->execute_ok_end;
+    my($result) = $self->execute_ok_end;
     $self->reset_cursor;
-    return;
+    return $result;
 }
 
 =for html <a name="execute_ok_end"></a>
 
-=head2 execute_ok_end()
+=head2 execute_ok_end() : boolean
 
 Subclasses should override if they need to perform an
 operation during L<execute_ok|"execute_ok">
@@ -209,7 +209,7 @@ B<after> all rows have been processed.
 =cut
 
 sub execute_ok_end {
-    return;
+    return 0;
 }
 
 =for html <a name="execute_ok_row"></a>
