@@ -13,11 +13,11 @@ Bivio::UNIVERSAL - base class for all bivio modules
     use Bivio::UNIVERSAL;
     @ISA = qw(Bivio::Universal);
 
-    my($PACKAGE) = __PACKAGE__;
+    my($_PACKAGE) = __PACKAGE__;
 
     sub new {
 	my($self) = &Bivio::UNIVERSAL::new(@_);
-	$self->{$PACKAGE} = {'field1' => 'value1'};
+	$self->{$_PACKAGE} = {'field1' => 'value1'};
 	return $self;
     }
 
