@@ -168,6 +168,22 @@ sub package_name {
     return ref($proto) || $proto;
 }
 
+=for html <a name="package_version"></a>
+
+=head2 static package_version() : float
+
+Returns the value of the C<$VERSION> variable for I<proto>.  Will die
+if no such version.
+
+=cut
+
+sub package_version {
+    {
+	no strict 'refs';
+	return ${\${shift->package_name . '::VERSION'}};
+    };
+}
+
 =for html <a name="simple_package_name"></a>
 
 =head2 static simple_package_name() : string

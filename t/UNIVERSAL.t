@@ -5,6 +5,8 @@ use Bivio::Test;
 use Bivio::UNIVERSAL;
 
 package Bivio::t::UNIVERSAL::t1;
+$Bivio::t::UNIVERSAL::t1::VERSION = 3.154;
+
 @Bivio::t::UNIVERSAL::t1::ISA = ('Bivio::UNIVERSAL');
 my($_IDI1) = __PACKAGE__->instance_data_index;
 sub my_idi {
@@ -24,6 +26,7 @@ Bivio::Test->unit([
 	    [] => [[qw(Bivio::UNIVERSAL)]],
 	],
 	my_idi => 0,
+	package_version => 3.154,
     ],
     'Bivio::t::UNIVERSAL::t2' => [
 	inheritance_ancestor_list => [
