@@ -196,14 +196,18 @@ sub _parse_text {
 	unless ($text =~ /^\w+\(/) {
 	    ($bit, $text) = split(/(?=\b\w+\()/, $text, 2);
 	    # Unescape any specials in <>.
-	    $bit =~ s/\<([\<\>\(;])\>/$1/g if $bit;
+	    $bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g if $bit;
 	    push(@res, $bit);
 	    last unless defined($text) && length($text);
 	}
+	# We have a function at the start of $text.  Strip it off and
+	# leave in $bit.  $text will contain the rest
 	$bit = $text;
 	Bivio::Die->die($bit, ': missing Prose function terminator ");"')
 		unless $bit =~ s/\);(.*)//s;
 	$text = $1;
+	# Unescape any escaped values in perl code
+	$bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g;
 	push(@res, map {
 	    Bivio::Die->die($_, ': invalid value in Prose function: ', $bit)
 		unless defined($_) && (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
