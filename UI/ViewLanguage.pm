@@ -103,7 +103,8 @@ sub AUTOLOAD {
     $method =~ s/.*:://;
     if ($method =~ /^[A-Z]/) {
 	my($map) = $view->ancestral_get('view_class_map', undef);
-	_die("view_class_map() must be called before $method") unless $map;
+	_die("view_class_map() or view_parent() must be called before $method")
+	    unless $map;
 	return Bivio::IO::ClassLoader->map_require($map, $method)
 		->new(@args);
     }
