@@ -273,9 +273,10 @@ sub check_raid {
         }
         close(F);
     }
-    $mylex_status = '/proc/rd/status';
+    my($mylex_status) = '/proc/rd/status';
     if (open(F, $mylex_status )) {
-        $status = <F>;
+        my($status);
+	$status = <F>;
         close(F);
         if ($status !~ /^OK/) {
             print("WARNING: $mylex_status: $status");
