@@ -33,7 +33,6 @@ C<Bivio::Biz::Model::Tax1065> IRS 1065 tax parameters
 
 #=IMPORTS
 #use Bivio::Biz::Accounting::AllocationCache;
-use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Address;
 use Bivio::Type::AllocationMethod;
 use Bivio::Type::F1065IRSCenter;
@@ -47,6 +46,23 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute_load_for_report_date"></a>
+
+=head2 static execute_load_for_report_date(Bivio::Agent::Request req)
+
+Loads the tax 1065 model on the request, using the current report date
+as a fiscal end date. The report_date must be on a fiscal boundary
+or the load will die().
+
+=cut
+
+sub execute_load_for_report_date {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    $self->load_or_default($req->get('report_date'));
+    return;
+}
 
 =for html <a name="internal_initialize"></a>
 
@@ -82,45 +98,52 @@ sub internal_initialize {
 
 =for html <a name="load_or_default"></a>
 
-=head2 load_or_default(string fiscal_end_date)
+=head2 load_or_default(string fiscal_end_date) : Bivio::Biz::Model::Tax1065
 
 Loads or creates the 1065 model for the previous tax year.
+Returns I<self>.
 
 =cut
 
 sub load_or_default {
     my($self, $fiscal_end_date) = @_;
+    die('invalid fiscal end date '
+	    .Bivio::Type::Date->to_literal($fiscal_end_date))
+	    if $fiscal_end_date ne Bivio::Biz::Accounting::Tax
+		    ->get_end_of_fiscal_year($fiscal_end_date);
+
     unless ($self->unsafe_load(fiscal_end_date => $fiscal_end_date)) {
-	$self->create({
-	    realm_id => $self->get_request->get('auth_id'),
-	    fiscal_end_date => $fiscal_end_date,
-	    partnership_type => Bivio::Type::F1065Partnership::GENERAL(),
-	    partnership_is_partner => 0,
-	    partner_is_partnership => 0,
-	    consolidated_audit => 1,
-	    publicly_traded => 0,
-	    tax_shelter => 0,
-	    foreign_account_country => undef,
-	    foreign_trust => 0,
-	    return_type => Bivio::Type::F1065Return::UNKNOWN(),
-	    irs_center => Bivio::Type::F1065IRSCenter::UNKNOWN(),
-	    allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
-	    draft => 0,
-	});
-    }
 
-    # determine irs center based on club address
-    if ($self->get('irs_center') == Bivio::Type::F1065IRSCenter::UNKNOWN()) {
-	# get the current realm's address
-	my($address) = Bivio::Biz::Model::Address->new($self->get_request);
-	$address->load(location => Bivio::Type::Location::HOME());
-	$self->update({
-	    irs_center => Bivio::Type::F1065IRSCenter->get_irs_center(
-		    $address->get('state'), $address->get('zip'))
-	});
-    }
+	my($values);
 
-    return;
+	# use last year's values if present
+	if ($self->unsafe_load(fiscal_end_date =>
+		Bivio::Type::Date->get_previous_year($fiscal_end_date))) {
+	    $values = $self->internal_get;
+	}
+	else {
+	    # otherwise create with default values
+	    $values = {
+		realm_id => $self->get_request->get('auth_id'),
+		partnership_type => Bivio::Type::F1065Partnership::GENERAL(),
+		partnership_is_partner => 0,
+		partner_is_partnership => 0,
+		consolidated_audit => 1,
+		publicly_traded => 0,
+		tax_shelter => 0,
+		foreign_account_country => undef,
+		foreign_trust => 0,
+		return_type => Bivio::Type::F1065Return::UNKNOWN(),
+		irs_center => _get_default_irs_center($self),
+		allocation_method =>
+		Bivio::Type::AllocationMethod::TIME_BASED(),
+		draft => 0,
+	    };
+	}
+	$values->{fiscal_end_date} = $fiscal_end_date;
+	$self->create($values);
+    }
+    return $self;
 }
 
 =for html <a name="update"></a>
@@ -146,19 +169,34 @@ sub update {
     if (defined($allocation_method)
 	    && $allocation_method != $self->get('allocation_method')
 	    && $invalidate_allocations) {
-	my($cache) = Bivio::Biz::Accounting::AllocationCache->new(
-		$self->get_request);
 
-#TODO: need to track allocations by year, currently always using last year
-# that way, only have to invalid the current fiscal_end_date
-	$cache->invalidate($self->get('fiscal_end_date'));
-	$cache->invalidate(Bivio::Biz::Accounting::Tax->get_this_fiscal_year);
+	Bivio::Biz::Accounting::AllocationCache->new($self->get_request)
+		    ->invalidate($self->get('fiscal_end_date'));
+    }
+    if (defined($new_values->{irs_center})
+	    && $new_values->{irs_center}
+	    == Bivio::Type::F1065IRSCenter::UNKNOWN()) {
+	$new_values->{irs_center} = _get_default_irs_center($self);
     }
     $self->SUPER::update($new_values);
     return;
 }
 
 #=PRIVATE METHODS
+
+# _get_default_irs_center() : Bivio::Type::F1065IRSCenter
+#
+# Returns the default irs center value based on the club's state.
+#
+sub _get_default_irs_center {
+    my($self) = @_;
+
+    # get the current realm's address
+    my($address) = Bivio::Biz::Model::Address->new($self->get_request);
+    $address->load(location => Bivio::Type::Location::HOME());
+    return Bivio::Type::F1065IRSCenter->get_irs_center(
+	    $address->get('state'), $address->get('zip'));
+}
 
 =head1 COPYRIGHT
 
