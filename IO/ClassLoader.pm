@@ -430,19 +430,21 @@ sub _require {
     return $pkg if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
 
     # Avoid problems with uses of $_ in $pkg
-    local($_);
+    {
+	local($_);
+	# This avoids problems with Bivio::Die
+	local($SIG{__DIE__});
 
-    # This avoids problems with Bivio::Die
-    local($SIG{__DIE__});
+	# require can't be in "strict refs" mode
+	no strict 'refs';
 
-    no strict 'refs';
-
-    # Must be a "bareword" for require to do the '::' substitution
-    return undef unless eval("require $pkg");
-    _trace($pkg) if $_TRACE;
-
+	# Must be a "bareword" for require to do the '::' substitution
+	return undef unless eval("require $pkg");
+    };
     Bivio::IO::Alert->die($pkg, ': not a Bivio::UNIVERSAL')
 	    unless UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
+
+    _trace($pkg) if $_TRACE;
     $_SIMPLE_CLASS{$pkg}++;
 
     # Only define if loads properly.
