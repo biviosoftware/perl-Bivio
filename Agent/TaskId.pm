@@ -2508,11 +2508,11 @@ my(@_CFG) = (
         help=transaction-history-report
     )],
     [qw(
-        CLUB_ACCOUNTING_REALM_ACCOUNT
+        CLUB_ACCOUNTING_REALM_ACCOUNT_EDIT
         240
         CLUB
         ACCOUNTING_WRITE
-        ?/accounting/account
+        ?/accounting/account/edit
         Bivio::Biz::Model::RealmAccountForm
         Bivio::UI::HTML::Club::RealmAccount
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
