@@ -237,12 +237,18 @@ sub get_title {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    # detail view of the selected message
     if ($fields->{selected}) {
 	return $fields->{selected}->get('subject');
     }
 
-#TODO: need better title
-    return 'Messages '.&_get_date_range($self);
+    return 'No Messages' if $self->get_row_count() == 0;
+
+    # otherwise show the range of messages displayed
+    my($index) = $self->get_index();
+    return 'Messages '.($index + 1)
+	    .' - '.($index + $self->get_row_count())
+	    .' / '.$self->get_result_set_size();
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -307,19 +313,6 @@ sub _create_model_references {
 	}
     }
     return;
-}
-
-# _get_date_range() : string
-#
-# Returns the range of dates shown in the list as a string.
-
-sub _get_date_range {
-    my($self) = @_;
-
-    my($count) = $self->get_row_count();
-    return '' if $count == 0;
-    return $self->get_value_at(0, 2).' - '
-	    .$self->get_value_at($count - 1, 2);
 }
 
 =head1 COPYRIGHT
