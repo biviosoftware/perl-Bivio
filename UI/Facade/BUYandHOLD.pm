@@ -296,8 +296,8 @@ OpenWin = this.open(page, "CtrlWindow",
                   Clubs </b></a></font></td>
               </tr>
               <tr height="2"> 
-                <td height="2"><a href="http://www.buyandhold.com/bh/en/financial/index.html"><font face="Arial,Helvetica,sans-serif" size="1"><b><img src="http://www.buyandhold.com/bh/en/images/spacer.gif" border="0" height="15" width="6" hspace="2">Financial 
-                  Services </b></font></a></td>
+                <td height="2"><a href="http://www.buyandhold.com/bh/en/resource_center/index.html"><font face="Arial,Helvetica,sans-serif" size="1"><b><img src="http://www.buyandhold.com/bh/en/images/spacer.gif" border="0" height="15" width="6" hspace="2">Resource
+                  Center </b></font></a></td>
               </tr>
               <tr height="2"> 
                 <td height="2"><a href="http://www.buyandhold.com/bh/en/marketplace/index.html"><font face="Arial,Helvetica,sans-serif" size="1"><b><img src="http://www.buyandhold.com/bh/en/images/spacer.gif" height="15" width="6" border="0" hspace="2">Marketplace</b></font></a></td>
