@@ -89,9 +89,9 @@ L<Bivio::Type::Email::IGNORE_PREFIX|Bivio::Type::Email::IGNORE_PREFIX>.
 sub internal_create_models {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($user) = $self->new($req, 'User')->create(
+    my($user) = $self->new_other('User')->create(
         $self->parse_display_name($self->get('RealmOwner.display_name')));
-    my($realm) = $self->new($req, 'RealmOwner')->create({
+    my($realm) = $self->new_other('RealmOwner')->create({
 	realm_id => $user->get('user_id'),
 	name =>	 $self->unsafe_get('RealmOwner.name')
 	    || 'u' . $user->get('user_id'),
@@ -102,7 +102,7 @@ sub internal_create_models {
 	    : Bivio::Type::Password->INVALID,
 	display_name => $self->get('RealmOwner.display_name'),
     });
-    $self->new($req, 'Email')->create({
+    $self->new_other('Email')->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
 	    || $req->format_email(Bivio::Type::Email->IGNORE_PREFIX
@@ -112,7 +112,7 @@ sub internal_create_models {
 	want_bulletin => 0,
     }) unless ($self->unsafe_get('Email.email') || '')
 	eq Bivio::Type::Email->IGNORE_PREFIX;
-    $self->new($req, 'RealmUser')->create({
+    $self->new_other('RealmUser')->create({
 	realm_id => $user->get('user_id'),
 	user_id => $user->get('user_id'),
 	honorific => Bivio::Type::Honorific->SELF,
