@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Widget::Style::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d
 
 Bivio::UI::HTML::Widget::Style - generates an inline style sheet
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Widget::Style;
