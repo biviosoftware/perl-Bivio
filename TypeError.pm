@@ -772,7 +772,12 @@ __PACKAGE__->compile(
     START_DATE_GREATER_THAN_REPORT_DATE => [
 	98,
 	undef,
-	'the start date my not be greater than the end date',
+	'the start date may not be greater than the end date',
+    ],
+    START_DATE_LESS_THAN_FIRST_VALUTAION_DATE => [
+	99,
+	undef,
+	'the start date may not be less than the first valuation date',
     ],
 );
 
