@@ -37,6 +37,7 @@ modules=  \
 	../Update.pm \
 	../Xref.pm \
 	ButtonXlator.pm \
+	DateXlator.pm \
 	FloatXlator.pm \
 	Form.pm \
 	FracXlator.pm \

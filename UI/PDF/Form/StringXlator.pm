@@ -51,16 +51,6 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-# sub new {
-#     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-#     my(undef, $output_field, $input_model, $input_field) = @_;
-#     $self->{$_PACKAGE} = {
-# 	'output_field' => $output_field,
-# 	'input_model' => $input_model,
-# 	'input_field' => $input_field
-#     };
-#     return $self;
-# }
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, $output_field, $get_widget_value_array_ref) = @_;

@@ -39,6 +39,7 @@ use Bivio::Type::F1065ForeignTax;
 use Bivio::Type::F1065Partnership;
 use Bivio::Type::F1065Return;
 use Bivio::UI::PDF::Form::ButtonXlator;
+use Bivio::UI::PDF::Form::DateXlator;
 use Bivio::UI::PDF::Form::IntXlator;
 use Bivio::UI::PDF::Form::FracXlator;
 use Bivio::UI::PDF::Form::MoneyXlator;
@@ -124,11 +125,11 @@ my(@_XLATORS) = (
 		    'tax_id'
 		]
 	       ),
-  	Bivio::UI::PDF::Form::StringXlator->new(
+  	Bivio::UI::PDF::Form::DateXlator->new(
 		'f1-12',
 		[
-		    'Bivio::Biz::Model::F1065Form',
-		    'business_start_date'
+		    'Club',
+		    'start_date'
 		]
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
@@ -206,7 +207,54 @@ my(@_XLATORS) = (
 		    'consolidated_audit'
 		],
 		Bivio::Type::Boolean::TRUE(),
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-19', 'Yes'),
+		[
+		    Bivio::UI::PDF::Form::ButtonXlator->new('c2-19', 'Yes'),
+		    # We only print the Designation of Tax Matters Partner
+		    # information when the consolidated_edit checkbox is true.
+		    Bivio::UI::PDF::Form::StringXlator->new(
+			    'f2-20',
+			    [
+				'User.RealmOwner',
+				'display_name'
+			    ]
+			   ),
+		    Bivio::UI::PDF::Form::StringXlator->new(
+			    'f2-21',
+			    [
+				'User.TaxId',
+				'tax_id'
+			    ]
+			   ),
+		    Bivio::UI::PDF::Form::StringCatXlator->new(
+			    'f2-22',
+			    [
+				'User.Address',
+				'street1'
+			    ],
+			    ', ',
+			    [
+				'User.Address',
+				'street2'
+			    ],
+			   ),
+		    Bivio::UI::PDF::Form::StringCatXlator->new(
+			    'f2-23',
+			    [
+				'User.Address',
+				'city'
+			    ],
+			    ', ',
+			    [
+				'User.Address',
+				'state'
+			    ],
+			    ' ',
+			    [
+				'User.Address',
+				'zip'
+			    ],
+			   ),
+		],
 		Bivio::Type::Boolean::FALSE(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-20', 'Yes')
 	       ),
@@ -266,49 +314,6 @@ my(@_XLATORS) = (
 		    'Bivio::Biz::Model::F1065Form',
 		    'foreign_account_country'
 		]
-	       ),
-	Bivio::UI::PDF::Form::StringXlator->new(
-		'f2-20',
-		[
-		    'User.RealmOwner',
-		    'display_name'
-		]
-	       ),
-  	Bivio::UI::PDF::Form::StringXlator->new(
- 		'f2-21',
- 		[
- 		    'User.TaxId',
- 		    'tax_id'
- 		]
- 	       ),
-   	Bivio::UI::PDF::Form::StringCatXlator->new(
-		'f2-22',
-		[
-		    'User.Address',
-		    'street1'
-		],
-		', ',
-		[
-		    'User.Address',
-		    'street2'
-		],
-	       ),
-  	Bivio::UI::PDF::Form::StringCatXlator->new(
-		'f2-23',
-		[
-		    'User.Address',
-		    'city'
-		],
-		', ',
-		[
-		    'User.Address',
-		    'state'
-		],
-		' ',
-		[
-		    'User.Address',
-		    'zip'
-		],
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
@@ -653,6 +658,11 @@ sub set_up {
     my($club_tax_id) = Bivio::Biz::Model::TaxId->new($req);
     $club_tax_id->load();
     $req->put('Club.TaxId' => $club_tax_id);
+
+    # Load the club itself.
+    my($club) = Bivio::Biz::Model::Club->new($req);
+    $club->load();
+    $req->put('Club' => $club);
 
     # Load the user's realm id onto the request.
     my($user_realm) = $req->get('auth_user');

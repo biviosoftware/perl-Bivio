@@ -1,9 +1,9 @@
 # This file was built by buildFormModule.pl
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
-# $Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
+# $Id: buildFormModule.pl,v 1.3 2000/03/22 03:26:21 yates Exp $
 package Bivio::UI::PDF::Form::f1065::y1999::Form;
 use strict;
-$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.2 $ =~ /\d+/g);
+$Bivio::UI::PDF::Form::f1065::y1999::Form::VERSION = sprintf('%d.%02d', q$Revision: 1.3 $ =~ /\d+/g);
 
 =head1 NAME
 
@@ -153,7 +153,7 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
 
-$Id: buildFormModule.pl,v 1.2 2000/03/20 05:43:48 yates Exp $
+$Id: buildFormModule.pl,v 1.3 2000/03/22 03:26:21 yates Exp $
 
 =cut
 
@@ -1290,50 +1290,6 @@ endobj
 /DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
-599 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 359.16885 627.832 366.83557 634.83206 ]
-/DR 730 0 R
-/P 563 0 R
-/AS /Off
-/F 4
-/H /T
-/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
-/T (c1-3)
-/FT /Btn
-/AA << >>
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/AP << /N << /Yes 602 0 R >> /D << /Yes 600 0 R /Off 601 0 R >> >>
->>
-endobj
-418 0 obj
-<<
-/T (c1-4)
-/Kids [ 603 0 R ]
-/FT /Btn
-/DR 730 0 R
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/AA << >>
->>
-endobj
-603 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 481.00584 627.39325 488.67256 635.39331 ]
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/P 563 0 R
-/AS /Off
-/F 4
-/H /T
-/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
-/AP << /N << /Yes 606 0 R >> /D << /Yes 604 0 R /Off 605 0 R >> >>
-/DR 730 0 R
-/Parent 418 0 R
->>
-endobj
 417 0 obj
 <<
 /T (c1-2)
@@ -1377,6 +1333,50 @@ endobj
 /H /T
 /MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
 /Parent 416 0 R
+>>
+endobj
+599 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 359.16885 627.832 366.83557 634.83206 ]
+/DR 730 0 R
+/P 563 0 R
+/AS /Off
+/F 4
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/T (c1-3)
+/FT /Btn
+/AA << >>
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/AP << /N << /Yes 602 0 R >> /D << /Yes 600 0 R /Off 601 0 R >> >>
+>>
+endobj
+418 0 obj
+<<
+/T (c1-4)
+/Kids [ 603 0 R ]
+/FT /Btn
+/DR 730 0 R
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/AA << >>
+>>
+endobj
+603 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 481.00584 627.39325 488.67256 635.39331 ]
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/P 563 0 R
+/AS /Off
+/F 4
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/AP << /N << /Yes 606 0 R >> /D << /Yes 604 0 R /Off 605 0 R >> >>
+/DR 730 0 R
+/Parent 418 0 R
 >>
 endobj
 448 0 obj
@@ -1453,6 +1453,24 @@ endobj
 /DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
+57 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 228.72723 434.51849 237.93628 443.23499 ]
+/DR 730 0 R
+/P 1 0 R
+/AS /Off
+/F 4
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/T (c2-14)
+/FT /Btn
+/AA << >>
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/AP << /N << /Yes 354 0 R >> /D << /Yes 355 0 R /Off 356 0 R >> >>
+>>
+endobj
 55 0 obj
 <<
 /Type /Annot
@@ -1505,24 +1523,6 @@ endobj
 /AA << >>
 /DA (/ZaDb 9 Tf 0 0 0.627 rg)
 /AP << /N << /Yes 351 0 R >> /D << /Yes 352 0 R /Off 353 0 R >> >>
->>
-endobj
-57 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 228.72723 434.51849 237.93628 443.23499 ]
-/DR 730 0 R
-/P 1 0 R
-/AS /Off
-/F 4
-/H /T
-/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
-/T (c2-14)
-/FT /Btn
-/AA << >>
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/AP << /N << /Yes 354 0 R >> /D << /Yes 355 0 R /Off 356 0 R >> >>
 >>
 endobj
 54 0 obj
@@ -1661,6 +1661,61 @@ endobj
 /AA << >>
 /DA (/ZaDb 9 Tf 0 0 0.627 rg)
 /AP << /N << /Yes 366 0 R >> /D << /Yes 367 0 R /Off 368 0 R >> >>
+>>
+endobj
+102 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 127.1059 101.20135 380.86981 117.63434 ]
+/F 4
+/P 1 0 R
+/T (f2-20)
+/FT /Tx
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+>>
+endobj
+103 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 457.69165 100.20135 568.66296 117.63434 ]
+/F 4
+/P 1 0 R
+/T (f2-21)
+/FT /Tx
+/Q 1
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+>>
+endobj
+463 0 obj
+<< /T (f2-22) /Kids [ 104 0 R ] /FT /Tx /Q 1 /DA (/HeBo 9 Tf 0 0 0.627 rg) >>
+endobj
+104 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 128.1059 87.0072 567.67786 99.21625 ]
+/F 4
+/P 1 0 R
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
+/Q 0
+/Parent 463 0 R
+>>
+endobj
+105 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 128.21655 75.05763 567.78851 87.26668 ]
+/P 1 0 R
+/F 4
+/T (f2-23)
+/FT /Tx
+/AA << >>
+/Q 0
+/DR 730 0 R
+/DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
 79 0 obj
@@ -1864,61 +1919,6 @@ endobj
 /P 1 0 R
 /T (f2-19)
 /FT /Tx
-/DA (/HeBo 9 Tf 0 0 0.627 rg)
->>
-endobj
-102 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 127.1059 101.20135 380.86981 117.63434 ]
-/F 4
-/P 1 0 R
-/T (f2-20)
-/FT /Tx
-/DA (/HeBo 9 Tf 0 0 0.627 rg)
->>
-endobj
-103 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 457.69165 100.20135 568.66296 117.63434 ]
-/F 4
-/P 1 0 R
-/T (f2-21)
-/FT /Tx
-/Q 1
-/DA (/HeBo 9 Tf 0 0 0.627 rg)
->>
-endobj
-463 0 obj
-<< /T (f2-22) /Kids [ 104 0 R ] /FT /Tx /Q 1 /DA (/HeBo 9 Tf 0 0 0.627 rg) >>
-endobj
-104 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 128.1059 87.0072 567.67786 99.21625 ]
-/F 4
-/P 1 0 R
-/DA (/HeBo 9 Tf 0 0 0.627 rg)
-/Q 0
-/Parent 463 0 R
->>
-endobj
-105 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 128.21655 75.05763 567.78851 87.26668 ]
-/P 1 0 R
-/F 4
-/T (f2-23)
-/FT /Tx
-/AA << >>
-/Q 0
-/DR 730 0 R
 /DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
@@ -2337,22 +2337,6 @@ endobj
 /DA (/HeBo 9 Tf 0 0 0.627 rg)
 >>
 endobj
-197 0 obj
-<<
-/Type /Annot
-/Subtype /Widget
-/Rect [ 265.33536 170.99525 272.33542 179.66199 ]
-/F 4
-/P 5 0 R
-/T (c3-2)
-/FT /Btn
-/DA (/ZaDb 9 Tf 0 0 0.627 rg)
-/H /T
-/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
-/AS /Off
-/AP << /N << /Yes 408 0 R >> /D << /Yes 409 0 R /Off 410 0 R >> >>
->>
-endobj
 196 0 obj
 <<
 /Type /Annot
@@ -2367,6 +2351,22 @@ endobj
 /MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
 /AS /Off
 /AP << /N << /Yes 405 0 R >> /D << /Yes 406 0 R /Off 407 0 R >> >>
+>>
+endobj
+197 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/Rect [ 265.33536 170.99525 272.33542 179.66199 ]
+/F 4
+/P 5 0 R
+/T (c3-2)
+/FT /Btn
+/DA (/ZaDb 9 Tf 0 0 0.627 rg)
+/H /T
+/MK << /CA (4) /AC (þÿ) /RC (þÿ) >>
+/AS /Off
+/AP << /N << /Yes 408 0 R >> /D << /Yes 409 0 R /Off 410 0 R >> >>
 >>
 endobj
 198 0 obj
