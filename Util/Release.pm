@@ -413,7 +413,6 @@ Returns a list of commands executed.
 sub install {
     my($self, @packages) = @_;
     $self->usage_error("No packages to install?") unless @packages;
-    my($output) = '';
 
     my($command) = ['rpm', '-Uvh'];
     push(@$command, '--force') if $self->unsafe_get('force');
@@ -432,25 +431,28 @@ sub install {
 
     _umask('install_umask');
     return _do_in_tmp($self, 0, sub {
-	my($tmp, $output2) = @_;
-	substr($$output2, 0, 0) = $output;
+	my($tmp, $output) = @_;
 	foreach my $arg (@$command) {
 	    next unless $arg =~ /^http/;
 	    my($file) = $arg =~ m{([^/]+)$};
-	    Bivio::IO::File->write($file, _http_get($arg, $output2));
+	    Bivio::IO::File->write($file, _http_get($arg, $output));
 	    substr($arg, 0) = $file;
 	}
-	$command = join(' ', @$command);
-	if ($self->get('noexecute')) {
-	    $$output2 .= $command . "\n";
-	}
-	else {
-	    _system($command, $output2);
-	}
+	_output($output, "@$command\n");
+	return
+	    if $self->get('noexecute');
+
+	# For some reason, system and `` doesn't work right with rpm and
+	# a redirect (see _system, but `@$command 2>&1` doesn't work either).
+	# There seems to be a "wait" problem.
+	$self->print($$output);
+	$$output = '';
+	system(@$command) == 0
+	    || Bivio::Die->die('ERROR exit status: ', $?);
 	return;
     }) if $_CFG->{http_realm};
 
-    $self->print($output, join(' ', @$command, "\n"));
+    $self->print(join(' ', @$command, "\n"));
     return
 	if $self->get('noexecute');
 
@@ -775,7 +777,7 @@ EOF
 sub _chdir {
     my($dir, $output) = @_;
     Bivio::IO::File->chdir($dir);
-    $$output .= "cd $dir\n";
+    _output($output, "cd $dir\n");
     return $dir;
 }
 
@@ -944,8 +946,7 @@ sub _http_get {
     my($uri, $output) = @_;
     ($uri = _create_uri($uri)) =~ /^\w+:/
 	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
-    $$output .= "GET $uri\n"
-	if $output;
+    _output($output, "GET $uri\n");
     my($ua) = Bivio::Ext::LWPUserAgent->new(1);
     $ua->credentials(
 	URI->new($uri)->host_port,
@@ -966,8 +967,20 @@ sub _link_base_version {
     my($version, $base, $output) = @_;
     $base = "$_CFG->{rpm_home_dir}/$base";
     unlink($base);
-    $$output .= "LINKING $version AS $base\n";
+    _output($output, "LINKING $version AS $base\n");
     _system("ln -s '$version' '$base'", $output);
+    return;
+}
+
+# _output(string_ref output, any arg)
+#
+# Appends output with arg(s).
+#
+sub _output {
+    my($output) = shift;
+    _trace(@_) if $_TRACE;
+    $$output .= join('', @_)
+	if $output;
     return;
 }
 
@@ -1071,12 +1084,12 @@ sub _system {
     my($command, $output) = @_;
     my($die) = Bivio::Die->catch(sub {
 	$command =~ s/'/"/g;
-	$$output .= "$command\n";
-	$$output .= ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")};
+	_output($output, "$command\n");
+	_output($output, ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")});
 	return;
     });
     return unless $die;
-    $$output .= ${$die->get('attrs')->{output}};
+    _output($output, ${$die->get('attrs')->{output}});
     $die->throw;
     # DOES NOT RETURN
 }
@@ -1088,7 +1101,7 @@ sub _system {
 sub _umask {
     my($umask_name, $output) = @_;
     umask($_CFG->{$umask_name});
-    $$output .= 'umask ' . _umask_string($umask_name) . "\n";
+    _output($output, 'umask ' . _umask_string($umask_name) . "\n");
     return;
 }
 
@@ -1106,7 +1119,7 @@ sub _umask_string {
 #
 sub _would_run {
     my($cmd, $output) = @_;
-    $$output .= "Would run: $cmd\n";
+    _output($output, "Would run: $cmd\n");
     return;
 }
 
