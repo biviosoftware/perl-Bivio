@@ -136,6 +136,7 @@ sub parse_errors {
 	    Bivio::Type::DateTime->now, -$interval_minutes * 60);
     my($error_countdown) = $_CFG->{error_count_for_page};
     my($date, $record, $in_interval);
+    my($last_error) = Bivio::Type::DateTime->get_min;
  RECORD: while (_parse_record($self, \$record, \$date)) {
 	unless ($in_interval) {
 	    next RECORD
@@ -146,14 +147,20 @@ sub parse_errors {
 	    _trace('ignoring: ', $&) if $_TRACE;
 	    next RECORD;
 	}
+	# Critical already avoids dups, so put before time check.
+	# errors.
 	if ($record =~ /$_CRITICAL_REGEX/o) {
-	    _pager_report($self, 'CRITICAL ERROR')
-		    unless $fields->{pager_res};
+	    _pager_report($self, $&);
 	    $record =~ s/^/***CRITICAL*** /;
 	}
-	elsif ($record =~ /$_ERROR_REGEX/) {
-	    _pager_report($self, 'ERROR COUNT EXCEEDED')
-		    if $error_countdown-- == 0;
+	# Avoid duplicate error messages by checking $last_error
+	if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
+	    _trace('same time: ', $record) if $_TRACE;
+	    next RECORD;
+	}
+	$last_error = $date;
+	if ($record =~ /$_ERROR_REGEX/) {
+	    _pager_report($self, $&) if --$error_countdown == 0;
 	}
 	# Never send more than 256 bytes (three lines) in a record via email
 	_report($self, substr($record, 0, 256));
@@ -223,10 +230,12 @@ sub _initialize {
 	    'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
 	    "can't login as shadow user",
 	   );
+    # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
 	    'Bivio::Die::DIE',
 	    'Bivio::Die::CONFIG_ERROR',
 	    );
+    # Value is sent to pager
     $_CRITICAL_REGEX = join('|',
 	    'Bivio::DieCode::DB_ERROR',
 	   );
@@ -242,7 +251,8 @@ sub _pager_report {
     my($fields) = $self->{$_PACKAGE};
     my($msg) = Bivio::IO::Alert->format_args(@args)."\n";
     $fields->{res} = $msg.$fields->{res};
-    $fields->{pager_res} .= $msg;
+    my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
+    push(@{$fields->{pager_res}}, $msg) if !$last && $last ne $msg;
     return;
 }
 
@@ -255,9 +265,9 @@ sub _parse_errors_complete {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{fh}->close;
-    $self->email($_CFG->{pager_email}, 'critical http errors',
-	    \$fields->{pager_res})
-	    if $fields->{pager_res} && $fields->{page_email};
+    my($pr) = join('', @{$fields->{pager_res}});
+    $self->email($_CFG->{pager_email}, 'critical http errors', \$pr)
+	    if $pr && $fields->{page_email};
     return \$fields->{res};
 }
 
@@ -279,7 +289,7 @@ sub _parse_errors_init {
 		    Bivio::Type::DateTime->now));
     my($fields) = $self->{$_PACKAGE} = {
 	res => '',
-	pager_res => '',
+	pager_res => [],
 	fh => IO::File->new,
     };
     unless ($fields->{fh}->open($_CFG->{error_file})) {
