@@ -340,55 +340,55 @@ EOF
     return $rows ? 1 : 0;
 }
 
-=for html <a name="fixup_root_directory_name"></a>
+=for html <a name="extract_mime_content_id"></a>
 
-=head2 static fixup_root_directory_name(hash_ref properties, Bivio::Agent::Request req)
+=head2 extract_mime_content_id() : 
 
-Changes I<File.name> in properties to appropriate name.
-
-Needed because the root dir name must be globally unique.
-
-=cut
-
-sub fixup_root_directory_name {
-    my(undef, $properties, $req) = @_;
-#TODO: Hack....
-    my($volume) = $req->get('Bivio::Type::FileVolume');
-    $properties->{'File.name_sort'}
-	    = lc($properties->{'File.name'} = $volume->get_short_desc);
-    return;
-}
-
-=for html <a name="get_mime_content_type"></a>
-
-=head2 get_mime_content_type() : string
-
-Treats aux_info field as a MIME header to find the content type.
-Returns first occurence or 'text/plain' if none found.
+Treats aux_info field as a MIME header to find the content id.
+Returns undef if not available.
 
 =cut
 
-sub get_mime_content_type {
+sub extract_mime_content_id {
     my($self, $list_model, $model_prefix) = @_;
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
     my($aux_info) = $m->get($p.'aux_info');
-    # The regexp will match newline if the Content-Type line extends over
-    # two lines
+
+    return $1 if defined($aux_info)
+	    && $aux_info =~ /content-id:\s+<?([^;\s>]+)>?/i;
+    return undef;
+}
+
+=for html <a name="extract_mime_content_type"></a>
+
+=head2 extract_mime_content_type() : string
+
+Treats aux_info field as a MIME header to find the content type.
+Returns first occurence or looks up type via filename extension.
+
+=cut
+
+sub extract_mime_content_type {
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    my($aux_info) = $m->get($p.'aux_info');
+
     return $1 if defined($aux_info)
 	    && $aux_info =~ /content-type:\s+([^;\s]+)/i;
 
     # Extract content type from the filename.  MIME::Type always
     # returns a valid content type.
-    my($fn) = _get_mime_filename($aux_info);
+    my($fn) = _extract_mime_filename($aux_info);
     return Bivio::MIME::Type->from_extension(defined($fn) ? $fn : '');
 }
 
-=for html <a name="get_mime_filename"></a>
+=for html <a name="extract_mime_filename"></a>
 
-=head2 get_mime_filename() : string
+=head2 extract_mime_filename() : string
 
-=head2 static get_mime_filename(Bivio::Biz::ListModel list_model, string model_prefix) : string
+=head2 static extract_mime_filename(Bivio::Biz::ListModel list_model, string model_prefix) : string
 
 Treats aux_info field as a MIME header to find the (file)name specified.
 Strips a leading path. Returns first occurence if found. If not, it
@@ -406,27 +406,46 @@ Content-Disposition: inline; filename="C:\windows\TEMP\nsmailQT.gif"
 In the second form, I<list_model> is used to get the values, not I<self>.
 List Models can declare a method of the form:
 
-    sub get_mime_filename {
+    sub extract_mime_filename {
 	my($self) = shift;
-	Bivio::Biz::Model::File->get_mime_filename($self, 'File.', @_);
+	Bivio::Biz::Model::File->extract_mime_filename($self, 'File.', @_);
     }
 
 =cut
 
-sub get_mime_filename {
+sub extract_mime_filename {
     my($self, $list_model, $model_prefix) = @_;
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
     my($aux_info) = $m->get($p.'aux_info');
-    my($fn) = _get_mime_filename($aux_info);
+    my($fn) = _extract_mime_filename($aux_info);
     return $fn if defined($fn);
 
     # Create a name based on the Content-Type based file suffix
     # Use 'download.bin' in case the file type is unknown
-    my($ct) = $self->get_mime_content_type($list_model, $model_prefix);
+    my($ct) = $self->extract_mime_content_type($list_model, $model_prefix);
     return 'download.bin' unless defined($ct);
     my($ext) = Bivio::MIME::Type->to_extension($ct);
     return 'download.'.(defined($ext) ? $ext : 'bin');
+}
+
+=for html <a name="fixup_root_directory_name"></a>
+
+=head2 static fixup_root_directory_name(hash_ref properties, Bivio::Agent::Request req)
+
+Changes I<File.name> in properties to appropriate name.
+
+Needed because the root dir name must be globally unique.
+
+=cut
+
+sub fixup_root_directory_name {
+    my(undef, $properties, $req) = @_;
+#TODO: Hack....
+    my($volume) = $req->get('Bivio::Type::FileVolume');
+    $properties->{'File.name_sort'}
+	    = lc($properties->{'File.name'} = $volume->get_short_desc);
+    return;
 }
 
 =for html <a name="internal_initialize"></a>
@@ -493,11 +512,11 @@ sub update {
 
 #=PRIVATE METHODS
 
-# _get_mime_filename(string aux_info) : string
+# _extract_mime_filename(string aux_info) : string
 #
 # Returns the filename or name attribute from aux_info.
 #
-sub _get_mime_filename {
+sub _extract_mime_filename {
     my($aux_info) = @_;
     return undef
 	    unless defined($aux_info) && $aux_info =~ /(file|)name="([^"]+)"/;
