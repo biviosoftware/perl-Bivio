@@ -1,4 +1,4 @@
-tmp/# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Phone;
 use strict;
