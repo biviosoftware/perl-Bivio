@@ -361,16 +361,7 @@ my(@_CFG) = (
         _/accounting/reports/balance-sheet
         Bivio::UI::HTML::Club::Embargoed
     )],
-    [qw(
-        SETUP_USER
-        38
-        GENERAL
-        DEBUG_ACTION
-        setup/user
-        Bivio::Biz::Model::UserForm
-        Bivio::UI::HTML::Setup::User
-        next=SETUP_USER
-    )],
+    #Missing: 38
     # No actions, just a token for authentication action
     [qw(
         CLUB_MAIL_COMPOSE
@@ -546,26 +537,8 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         cancel=CLUB_ACCOUNTING_REPORT_LIST
     )],
-    [qw(
-        SETUP_CLUB
-        56
-        GENERAL
-        DEBUG_ACTION
-        setup/club
-        Bivio::Biz::Model::ClubForm
-        Bivio::UI::HTML::Setup::Club
-        next=SETUP_MEMBER
-    )],
-    [qw(
-        SETUP_MEMBER
-        57
-        GENERAL
-        DEBUG_ACTION
-        setup/member
-        Bivio::Biz::Model::MemberForm
-        Bivio::UI::HTML::Setup::Member
-        next=SETUP_MEMBER
-    )],
+    #56
+    #57
     [qw(
         CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT
         58
@@ -666,7 +639,7 @@ my(@_CFG) = (
         ADMIN_WRITE
         _/admin/edit/name
         Bivio::Biz::Model::UserNameForm
-        Bivio::UI::HTML::User::Name
+        Bivio::UI::HTML::User::EditName
         next=USER_ADMIN_INFO
     )],
     [qw(
@@ -695,7 +668,27 @@ my(@_CFG) = (
         ADMIN_WRITE
         _/admin/edit/password
         Bivio::Biz::Model::PasswordForm
-        Bivio::UI::HTML::User::Password
+        Bivio::UI::HTML::User::EditPassword
+        next=USER_ADMIN_INFO
+    )],
+    [qw(
+        USER_ADMIN_ADDRESS_EDIT
+        72
+        USER
+        ADMIN_WRITE
+        _/admin/edit/address
+        Bivio::Biz::Model::AddressForm
+        Bivio::UI::HTML::User::EditAddress
+        next=USER_ADMIN_INFO
+    )],
+    [qw(
+        USER_ADMIN_COMM_EDIT
+        73
+        USER
+        ADMIN_WRITE
+        _/admin/edit/phone_email
+        Bivio::Biz::Model::CommForm
+        Bivio::UI::HTML::User::EditComm
         next=USER_ADMIN_INFO
     )],
        );
