@@ -288,7 +288,7 @@ CREATE TABLE preferences_t (
   lob (perl) store as
   (tablespace realm_lob storage
   (initial 10m next 10m pctincrease 0)
-  chunk 1k pctversion 10 cache logging)
+  chunk 1k pctversion 10 cache)
 /
 ALTER TABLE preferences_t add primary key(realm_id)
   using index tablespace realm_indx
