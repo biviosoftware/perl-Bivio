@@ -65,22 +65,34 @@ sub create {
 
 =head2 format() : string
 
+=head2 static format(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
 Returns the street1, street2, city, state, zip, and country as
 a single string (with embedded newlines).
+
+In the second form, I<list_model> is used to get the values, not I<self>.
+List Models can declare a method of the form:
+
+    sub format_address {
+	my($self) = @_;
+	Bivio::Biz::Model::Address->format($self, 'Address.');
+    }
 
 =cut
 
 sub format {
-    my($self) = @_;
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
     my($sep) = ', ';
     my($csz) = undef;
-    foreach my $n ($self->unsafe_get(qw(city state zip))) {
+    foreach my $n ($m->unsafe_get($p.'city', $p.'state', $p.'zip')) {
 	$csz .= $n.$sep if defined($n);
 	$sep = '  ';
     }
     chop($csz), chop($csz) if defined($csz);
     my($res) = undef;
-    my(@f) = $self->unsafe_get(qw(street1 street2 country));
+    my(@f) = $m->unsafe_get($p.'street1', $p.'street2', $p.'country');
     splice(@f, 2, 0, $csz);
     foreach my $n (@f) {
 	$res .= $n."\n" if defined($n);
