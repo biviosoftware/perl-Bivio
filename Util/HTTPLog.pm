@@ -192,7 +192,7 @@ sub _initialize {
 	    'Restart successful',
 	    'httpd: caught SIGTERM, shutting down',
 	    'SIGHUP received.  Attempting to restart',
-	    '\[(?:info|notice)\]',
+	    '\[(?:info|notice|debug)\]',
 	    'child process \d+ still did not exit',
 	    'created shared memory segment',
 	    'read request (?:line|headers) timed out for',
@@ -231,6 +231,7 @@ sub _initialize {
 	    'ListFormModel Bivio::DieCode::UPDATE_COLLISION',
 	    'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
 	    "can't login as shadow user",
+	    'Bivio::Data::EW::ClubImporter::_parse_tax_id.*changed to',
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
