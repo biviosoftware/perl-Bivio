@@ -129,7 +129,7 @@ sub _create_report_links {
 
     $html .= 'General<ul>';
     $html .= _create_bullet_link(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT(),
+     Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT_PARAMS(),
 	    "Valuation Statement");
 
 =begin comment
@@ -146,7 +146,7 @@ sub _create_report_links {
     $html .= '</ul>Investment<ul>';
 
     $html .= _create_bullet_link(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY(),
+      Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY_PARAMS(),
 	    "Investment Summary");
 
 =begin comment
@@ -159,7 +159,7 @@ sub _create_report_links {
 
     $html .= '</ul>Member<ul>';
     $html .= _create_bullet_link(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY(),
+	  Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY_PARAMS(),
 	    "Member Summary");
 
 =begin comment
@@ -180,7 +180,7 @@ sub _create_report_links {
 
     $html .= '</ul>Cash Account<ul>';
     $html .= _create_bullet_link(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY(),
+    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY_PARAMS(),
 	    "Cash Account Summary");
 
 =begin
