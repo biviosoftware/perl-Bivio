@@ -50,9 +50,9 @@ L<Bivio::Agent::HTTP::Dispatcher|Bivio::Agent::HTTP::Dispatcher>.
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::IO::Alert;
+use Bivio::IO::ClassLoader;
 use Cwd ();
 use Sys::Hostname;
-use Bivio::UI::Facade;
 
 #=VARIABLES
 my($_APACHE_HOME) = '/usr/local/apache';
@@ -115,7 +115,7 @@ EOF
 
     my($facades) = '';
     # TIGHT COUPLING with Bivio::UI::Facade
-    foreach my $facade (@{Bivio::UI::Facade->get_uri_list}) {
+    foreach my $facade (@{_get_facade_uri_list()}) {
 	$facades .= <<"EOF";
 	    <VirtualHost $hostip:$port>
 		ServerName $facade.$hostname
@@ -164,6 +164,33 @@ sub symlink {
 
 # We don't do dynamic reconfiguration
 sub handle_config {
+}
+
+# _get_facade_uri_list()
+#
+# Returns list of facade uris by reaching inside the Facades.
+#
+sub _get_facade_uri_list {
+    my(@files, @uri);
+
+    # The filter is used as a hack to load, just get the names of the uris,
+    # but return false so nothing loads.
+    Bivio::IO::ClassLoader->map_require_all('Facade', sub {
+	my($class, $file) = @_;
+	push(@files, $file);
+	return 0;
+    });
+
+    foreach my $file (@files) {
+	open(IN, $file) || next;
+	# Find the uri if set, otherwise the package base name in lower case.
+	my($uri) = $file;
+	$uri =~ s/.*\/(\w+)\.pm$/\L$1/;
+	my($uri2) = grep(s/^\s*uri\s*=>\s*['"](\w+).*\n/\L$1/, <IN>);  	 #emacs
+	push(@uri, $uri2 || $uri);
+    }
+    close(IN);
+    return \@uri;
 }
 
 sub _usage {
