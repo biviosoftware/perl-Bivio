@@ -67,12 +67,13 @@ sub execute_ok {
 
 =for html <a name="internal_create_models"></a>
 
-=head2 internal_create_models() : Model.RealmOwner
+=head2 internal_create_models() : array
 
 Creates User, RealmOwner, Email and RealmUser models.
-Returns the RealmOwner of the user created.
+Returns the RealmOwner and User created.
 
 Sets the password to INVALID if does not exist.
+Email is set to an ignored value if it doesn't exist.
 
 The only difference between this method and execute_ok is that
 the user is logged in at that point.
@@ -99,7 +100,10 @@ sub internal_create_models {
     });
     $self->new($req, 'Email')->create({
 	realm_id => $user->get('user_id'),
-	email => $self->get('Email.email'),
+	email => $self->unsafe_get('Email.email')
+	    || $req->format_email(Bivio::Type::Email->IGNORE_PREFIX
+	    . $realm->get('name')
+	    . '-' . time),
 	location => Bivio::Type::Location->HOME,
 	want_bulletin => 0,
     });
@@ -108,7 +112,7 @@ sub internal_create_models {
 	user_id => $user->get('user_id'),
 	honorific => Bivio::Type::Honorific->SELF,
     });
-    return $realm;
+    return ($realm, $user);
 }
 
 =for html <a name="internal_initialize"></a>
