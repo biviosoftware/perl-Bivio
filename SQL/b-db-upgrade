@@ -254,6 +254,7 @@ sub _upgrade {
     _upgrade_subscribed_taxes($req);
     _upgrade_subscribe_free_trial($req);
     _upgrade_create_bivio_buck($req);
+    _upgrade_credit_current_subscribers($req);
     print("\n*** done ***\n");
     return;
 }
@@ -317,6 +318,42 @@ ALTER TABLE bivio_buck_t
   references realm_owner_t(realm_id)
 /
 ');
+    return;
+}
+
+# _upgrade_credit_current_subscribers(Bivio::Agent::Request req)
+#
+# Give current subscribes 30 bivio bucks.
+#
+sub _upgrade_credit_current_subscribers {
+    my($req) = @_;
+    print("crediting current subscribers\n");
+
+    my($buck) = Bivio::Biz::Model->new($req, 'BivioBuck');
+#TODO: won't load without this...
+    $req->put('auth_id' => 0);
+    my($list) = Bivio::Biz::Model->new($req, 'AdmSubscriberList')->load_all;
+
+    # need to guard against repeats
+    my($names) = {};
+
+    while ($list->next_row) {
+	my($name) = $list->get('RealmOwner.name');
+	next if $names->{$name};
+	print("\t", $name, "\n");
+	$names->{$name} = 1;
+
+	$buck->create({
+	    realm_id => $list->get('RealmOwner.realm_id'),
+	    ec_payment_id => $list->get('ECPayment.ec_payment_id'),
+	    amount => 30,
+	})
+	    unless $buck->unauth_load({
+		realm_id => $list->get('RealmOwner.realm_id'),
+		ec_payment_id => $list->get('ECPayment.ec_payment_id'),
+		amount => 30,
+	    });
+    }
     return;
 }
 
