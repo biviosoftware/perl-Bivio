@@ -24,6 +24,7 @@ C<Bivio::Type> base class of all types.
 =cut
 
 #=IMPORTS
+use Bivio::Util;
 
 #=VARIABLES
 
@@ -69,13 +70,22 @@ sub can_be_zero {
 
 =for html <a name="from_literal"></a>
 
+=head2 static from_literal(string value) : array
+
 =head2 static from_literal(string value) : any
 
 Validates and converts the value from a literal to an internal form.
 The literal is usually a compact representation of the value, e.g.
 for Enums it is the integer form.
 
-If the value is invalid, C<undef> is return.
+If the value is valid, the value returned.
+
+If the value is NULL, the value C<undef> is returned.  Note that
+strings return '' as C<undef> in keeping with SQL.
+
+If the value is invalid, the array (<C<undef>, I<error>)
+is returned, where I<error> is one of
+L<Bivio::TypeError|Bivio::TypeError>.
 
 See L<to_literal|"to_literal">.
 
@@ -188,6 +198,21 @@ sub get_width {
     die('abstract method');
 }
 
+=for html <a name="to_html"></a>
+
+=head2 to_html(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, escapes html and returns.
+
+=cut
+
+sub to_html {
+    my($self, $value) = @_;
+    return '' unless defined($value);
+    return Bivio::Util::escape_html($self->to_literal($value));
+}
+
 =for html <a name="to_literal"></a>
 
 =head2 abstract to_literal(any value) : string
@@ -238,6 +263,21 @@ See also L<to_sql_param|"to_sql_param">.
 sub to_sql_value {
     shift;
     return shift;
+}
+
+=for html <a name="to_uri"></a>
+
+=head2 to_uri(any value) : string
+
+Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
+empty string.  Otherwise, escapes uri and returns.
+
+=cut
+
+sub to_uri {
+    my($self, $value) = @_;
+    return '' unless defined($value);
+    return Bivio::Util::escape_uri($self->to_literal($value));
 }
 
 #=PRIVATE METHODS
