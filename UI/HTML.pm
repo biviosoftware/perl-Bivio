@@ -35,6 +35,7 @@ the HTML part of a Facade.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::UI::Facade;
+use Bivio::UI::Icon;
 
 #=VARIABLES
 
@@ -72,7 +73,7 @@ Registers with Facade.
 
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto, ['Icon', 'Color', 'Font', 'Text']);
+    Bivio::UI::Facade->register($proto, ['Color', 'Font', 'Text']);
     return;
 }
 
