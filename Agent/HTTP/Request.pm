@@ -71,6 +71,8 @@ will be used if no controller name can be parsed from the URI.
 sub new {
     my($proto, $r, $default_controller_name) = @_;
 
+    my($start_time) = Bivio::Util::gettimeofday();
+
     # this is required for the connection->user to work!?
     my($ret, $password) = $r->get_basic_auth_pw();
     my($target, $controller, $view) = _parse_request($r->uri());
@@ -78,7 +80,7 @@ sub new {
 
     my(%args) = $r->args;
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	    &_find_user($r->connection->user));
+	    &_find_user($r->connection->user), $start_time);
     $self->{$_PACKAGE} = {
         r => $r,
 	view_name => $view,

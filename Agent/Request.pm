@@ -62,16 +62,17 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 new(string target_name, string controller_name, string user_name) : Bivio::Agent::Request
+=head2 new(string target_name, string controller_name, string user_name, float start_time) : Bivio::Agent::Request
 
 Creates a Request using the specified target, controller, and user.
 The initial state of the request is NOT_HANDLED. user may be undef,
-indicating that no authorization has been performed.
+indicating that no authorization has been performed. start_time should
+be the time when the request is first constructed.
 
 =cut
 
 sub new {
-    my($proto, $target_name, $controller_name, $user) = @_;
+    my($proto, $target_name, $controller_name, $user, $start_time) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     $self->{$_PACKAGE} = {
         target => $target_name,
@@ -79,7 +80,7 @@ sub new {
         user => $user,
         reply_type => '',
         state => NOT_HANDLED,
-	start_time => Bivio::Util::gettimeofday
+	start_time => $start_time
     };
     return $self;
 }
@@ -99,6 +100,7 @@ Returns the number of seconds elapsed since the request was created.
 sub elapsed_time {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+
     return Bivio::Util::time_delta_in_seconds($fields->{start_time});
 }
 
