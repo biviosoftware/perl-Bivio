@@ -88,6 +88,10 @@ The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
 
 If false, this widget won't render the C<&gt;TABLE&lt;>tag.
 
+=item style : string
+
+Style attribute for the table.  No elements of the string are interpolated.
+
 =item values : array_ref (required)
 
 An array_ref of rows of array_ref of columns (cells).  A cell may
@@ -248,6 +252,8 @@ sub initialize {
     elsif ($width) {
 	$p .= " width=\"$width\"";
     }
+    $p .= ' style="' . Bivio::HTML->escape_attr_value($self->get('style')).'"'
+	if $self->unsafe_get('style');
     $p .= Bivio::UI::Align->as_html($align) if $align;
     $fields->{prefix} = $p;
     $fields->{suffix} = '</table>';
