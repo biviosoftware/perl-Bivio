@@ -118,7 +118,6 @@ _compile(
     PARTNER_TYPE => ['Partner Type', undef, 'TaxK1.partner_type'],
     IRS_CENTER => ['IRS Center', undef, 'TaxK1.irs_center'],
     FOREIGN_PARTNER => ['Foreign Partner', undef, 'TaxK1.foreign_partner'],
-    NAME_AND_SSN => ['Name (SSN)'],
     SHORT_TERM_CAPITAL_GAIN => ['Short-Term Capital Gains', undef,
 	    Bivio::Type::TaxCategory->SHORT_TERM_CAPITAL_GAIN->get_short_desc],
     MEDIUM_TERM_CAPITAL_GAIN => ['Medium-Term Capital Gains', undef,
@@ -224,6 +223,7 @@ _compile(
     REALMINSTRUMENTENTRY_COUNT_HEADING => ['Shares'],
     RECIPIENT_HEADING => ['Recipient'],
     COUNT_HEADING => ['Quantity'],
+    CLUB_COST_BASIS_HEADING => ["Club's\nCost Basis"],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
