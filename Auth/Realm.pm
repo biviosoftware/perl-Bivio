@@ -55,7 +55,7 @@ clubs and users.  General does not have an owner.
 =item owner_name : string
 
 Named retrieved from realm owner.  Not defined for the general realm.
-Always use this value and owner-E<gt>get('name').
+Always use this value instead of owner-E<gt>get('name').
 
 =item type : Bivio::Auth::RealmType
 
