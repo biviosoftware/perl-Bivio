@@ -44,25 +44,20 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
-    id => ['Internal ID',
+    'id' => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    name => ['Club Name',
+    'name' => ['Club Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-    full_name => ['Full Name',
+    'full_name' => ['Full Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
-    bytes_in_use => ['Space Used',
+    'bytes_in_use' => ['Space Used',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 9)],
-    bytes_max => ['Space Allowed',
+    'bytes_max' => ['Space Allowed',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 9)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club', {
-    id => 'id',
-    name => 'name',
-    full_name => 'full_name',
-    bytes_in_use => 'bytes_in_use',
-    bytes_max => 'bytes_max'
-    });
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club',
+	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
 
@@ -107,6 +102,7 @@ sub create {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
+#TODO: probably a better regex than this
     if ($new_values->{'name'} =~ /^\w\w\w\w(\w)*$/) {
 
 	# make sure a user doesn't have the same name
@@ -126,7 +122,7 @@ sub create {
 	$self->get_status()->add_error(
 		Bivio::Biz::Error->new('invalid club name'));
     }
-    return $self->get_status()->is_OK();
+    return $self->get_status()->is_ok();
 }
 
 =for html <a name="delete"></a>
@@ -187,7 +183,7 @@ sub get_action {
     if ($name eq 'add') {
 	return Bivio::Biz::CreateClubAction->new();
     }
-    return undef;
+    die("no action $name");
 }
 
 =for html <a name="get_heading"></a>
@@ -200,7 +196,7 @@ Returns the user's full name.
 
 sub get_heading {
     my($self) = @_;
-
+#TODO: need a meaningful heading
     return 'Club Information';
 }
 
@@ -231,7 +227,7 @@ sub get_outgoing_emails {
 
     my($result);
 
-    if ($self->get_status()->is_OK()) {
+    if ($self->get_status()->is_ok()) {
 	$result = [];
 	my($row);
 
@@ -253,6 +249,7 @@ Returns the user's full name.
 
 sub get_title {
     my($self) = @_;
+#TODO: need a meaningful title
     return 'Club Information';
 }
 
@@ -268,7 +265,7 @@ NOTE: find should be called prior to an update.
 sub update {
     my($self, $new_values) = @_;
 
-    #TODO: if 'id' is in new_values, make sure it is the same
+#TODO: if 'id' is in new_values, make sure it is the same
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
 	    $new_values, 'where id=?', $self->get('id'));

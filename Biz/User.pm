@@ -56,19 +56,16 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_PROPERTY_INFO) = {
-    id => ['Internal ID',
+    'id' => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    name => ['Login Name',
+    'name' => ['Login Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-    password => ['Password',
+    'password' => ['Password',
 	    Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_', {
-    id => 'id',
-    name => 'name',
-    password => 'password'
-    });
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_',
+	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
 
@@ -85,7 +82,7 @@ load the model with values.
 
 sub new {
     my($proto) = @_;
-    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user',
+    my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user_',
 	    $_PROPERTY_INFO);
 
     $self->{$_PACKAGE} = {};
@@ -114,6 +111,7 @@ sub create {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
+#TODO: probably a better regex than this
     if ($new_values->{'name'} =~ /^\w\w\w\w(\w)*$/) {
 
 	# make sure a club doesn't have the same name
@@ -133,7 +131,7 @@ sub create {
 	$self->get_status()->add_error(
 		Bivio::Biz::Error->new('invalid login name'));
     }
-    return $self->get_status()->is_OK();
+    return $self->get_status()->is_ok();
 }
 
 =for html <a name="delete"></a>
@@ -195,7 +193,7 @@ sub get_action {
     if ($name eq 'add') {
 	return Bivio::Biz::CreateUserAction->new();
     }
-    return undef;
+    die("no action $name");
 }
 
 =for html <a name="get_demographics"></a>
@@ -209,9 +207,9 @@ Returns the UserDemographics associated with this user.
 sub get_demographics {
     my($self) = @_;
 
-    #TODO: model cache manager
+#TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
-    $demo->find(Bivio::Biz::FindParams->new({'user' => $self->get('id')}));
+    $demo->find(Bivio::Biz::FindParams->new({'user_' => $self->get('id')}));
     return $demo;
 }
 
@@ -238,7 +236,7 @@ sub get_email_addresses {
 
     my($result);
 
-    if ($self->get_status()->is_OK()) {
+    if ($self->get_status()->is_ok()) {
 	$result = [];
 	my($row);
 
@@ -264,7 +262,7 @@ sub get_full_name {
     my($self) = @_;
 
     if ($self->get('id')) {
-	#TODO: create this from demograhics data
+#TODO: create this from demograhics data
 	return 'Full Name'
     }
     else {
@@ -322,7 +320,7 @@ NOTE: find should be called prior to an update.
 sub update {
     my($self, $new_values) = @_;
 
-    #TODO: if 'id' is in new_values, make sure it is the same
+#TODO: if 'id' is in new_values, make sure it is the same
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
 	    $new_values, 'where id=?', $self->get('id'));

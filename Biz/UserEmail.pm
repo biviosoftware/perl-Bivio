@@ -48,16 +48,14 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_PROPERTY_INFO) = {
-    user => ['Internal User ID',
+    'user_' => ['Internal User ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    email => ['Email',
+    'email' => ['Email',
 	    Bivio::Biz::FieldDescriptor->lookup('EMAIL', 255)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_email', {
-    user => 'user_',
-    email => 'email'
-    });
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('user_email',
+	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
 
@@ -108,7 +106,7 @@ sub create {
 	$self->get_status()->add_error(
 		Bivio::Biz::Error->new('invalid email'));
     }
-    return $self->get_status()->is_OK();
+    return $self->get_status()->is_ok();
 }
 
 =for html <a name="delete"></a>
@@ -124,7 +122,7 @@ sub delete {
     my($self) = @_;
 
     return $_SQL_SUPPORT->delete($self, 'where user_=? and email=?',
-	    $self->get('user'), $self->get('email'));
+	    $self->get('user_'), $self->get('email'));
 }
 
 =for html <a name="find"></a>
@@ -201,7 +199,7 @@ sub get_user {
     my($self) = @_;
 
     my($user) = Bivio::Biz::User->new();
-    $user->find(Bivio::Biz::FindParams->new({id => $self->get('user')}));
+    $user->find(Bivio::Biz::FindParams->new({'id' => $self->get('user_')}));
     return $user;
 }
 

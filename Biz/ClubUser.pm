@@ -45,22 +45,18 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
-    club => ['Club Internal ID',
+    'club' => ['Club Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    user => ['User Internal ID',
+    'user_' => ['User Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    role => ['Role',
+    'role' => ['Role',
 	    Bivio::Biz::FieldDescriptor->lookup('ROLE', 2)],
-    email_mode => ['Email Forwarded',
+    'email_mode' => ['Email Forwarded',
 	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club_user', {
-    club => 'club',
-    user => 'user_',
-    role => 'role',
-    email_mode => 'email_mode'
-    });
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('club_user',
+	keys(%$_PROPERTY_INFO));
 
 =head1 FACTORIES
 
@@ -122,7 +118,7 @@ sub delete {
     my($self) = @_;
 
     return $_SQL_SUPPORT->delete($self, 'where club=? and user_=?',
-	    $self->get('club'), $self->get('user'));
+	    $self->get('club'), $self->get('user_'));
 }
 
 =for html <a name="find"></a>
@@ -130,7 +126,7 @@ sub delete {
 =head2 find(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
-are 'id' or 'name'.
+are 'club' and 'user_'.
 
 =cut
 
@@ -140,10 +136,10 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    if ($fp->has_keys('club', 'user')) {
+    if ($fp->has_keys('club', 'user_')) {
 	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
 		'where club=? and user_=?', $fp->get('club'),
-		$fp->get('user'));
+		$fp->get('user_'));
     }
 
     $self->get_status()->add_error(
@@ -191,7 +187,7 @@ sub update {
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
 	    $new_values, 'where club=? and user_=?',
-	    $self->get('club'), $self->get('user'));
+	    $self->get('club'), $self->get('user_'));
 }
 
 #=PRIVATE METHODS
