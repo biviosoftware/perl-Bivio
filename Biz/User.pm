@@ -57,7 +57,7 @@ my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
     id => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    name => ['User ID',
+    name => ['Login Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
     password => ['Password',
 	    Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
@@ -313,72 +313,3 @@ $Id$
 =cut
 
 1;
-
-
-=pod
-
-#use Bivio::Biz::ListModel;
-use Bivio::Biz::SqlConnection;
-use Bivio::Biz::UserList;
-use Data::Dumper;
-
-$Data::Dumper::Indent = 1;
-Bivio::IO::Config->initialize({
-    'Bivio::Ext::DBI' => {
-	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
-	database => 'surf_test',
-	user => 'moeller',
-	password => 'bivio,ho'
-        },
-
-    'Bivio::IO::Trace' => {
-	'package_filter' => '/Bivio/'
-        },
-    });
-
-
-my($user) = Bivio::Biz::User->new();
-my($fields) = $user->get_field_names();
-print(ref($fields)."\n");
-foreach (@$fields) {
-    print($_."\n");
-}
-print(Dumper($user->get_field_names()));
-
-
-#$user->find({id => 1});
-#$user->find({name => 'paul'});
-#my($demo) = $user->get_demographics();
-#print(Dumper($demo));
-
-#$user->update({'password', "QWERTY"});
-#$user->find({id => 3});
-#$user->delete();
-#$user->create({id => 3, name => 'ted', password => 'RAZOR'});
-#print(Dumper($user->get_status()->get_errors()));
-#$user->create({id => 3, name => 'ted2', password => 'RAZOR'});
-#print(Dumper($user->get_status()->get_errors()));
-#print(Dumper($user));
-
-my($user) = Bivio::Biz::User->new();
-$user->find({id => 5});
-$user->delete if $user->get_status()->is_OK();
-$user->create({id => 5, name => 'buddy', password => 'hotdog'});
-my($demo) = $user->get_demographics();
-$demo->update({first_name => 'Orestes', last_name => 'the Cat', gender => 'M',
-    age => 4});
-$demo->update({gender => undef});
-$demo->delete();
-
-=cut
-
-=pod
-
-my($list) = Bivio::Biz::UserList->new();
-$list->find({});
-print(Dumper($list));
-
-Bivio::Biz::SqlConnection->get_connection()->commit();
-
-=cut
-
