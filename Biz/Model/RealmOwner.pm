@@ -33,6 +33,7 @@ and delete interface to the C<realm_owner_t> table.
 
 =cut
 
+use Bivio::Type::RealmName;
 
 =head1 CONSTANTS
 
@@ -60,14 +61,14 @@ Returns prefix character for shadow users
 =cut
 
 sub SHADOW_PREFIX {
-    return '=';
+    return Bivio::Type::RealmName::SHADOW_PREFIX();
 }
 
 =for html <a name="SHADOW_WITHDRAWN_PREFIX"></a>
 
 =head2 SHADOW_WITHDRAWN_PREFIX : string
 
-Returns previx character for a withdrawn shadow user
+Returns prefix character for a withdrawn shadow user
 
 =cut
 
