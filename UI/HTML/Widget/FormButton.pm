@@ -34,6 +34,11 @@ Font is always C<FORM_SUBMIT>.
 
 =over 4
 
+=item attributes : string []
+
+Attributes to be applied to the button.  C<StandardSubmit>
+uses this to set "onclick=reset()".
+
 =item field : string (required)
 
 Name of the form field.
@@ -42,9 +47,14 @@ Name of the form field.
 
 Which form are we dealing with.
 
-=item text : string (required)
+=item label : string (required)
 
-The button text.
+String label to use.
+
+=item label : array_ref
+
+If specified, the button text will be determined by calling
+L<get_widget_value|"get_widget_value"> on the rendering source.
 
 =back
 
@@ -81,20 +91,22 @@ sub new {
 
 =head2 initialize()
 
-Initializes static information.  In this case, prefix and suffix
-field values.
+Initializes from configuration attributes.
 
 =cut
 
 sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-
+    return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
-    $fields->{text} = $self->get('text');
-    $fields->{prefix} = '<input type=submit name=';
 
+    my($label) = $self->get('label');
+    unless (ref($label)) {
+	$label = Bivio::HTML->escape($label);
+    }
+    $fields->{label} = $label;
     return;
 }
 
@@ -102,24 +114,34 @@ sub initialize {
 
 =head2 render(any source, Text_ref buffer)
 
-Render the input field.  First render is special, because we need
-to extract the field's type and can only do that when we have a form.
+Render the input field.
 
 =cut
 
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
-    my($req) = $source->get_request;
-    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
-    my($value) = $p.$fields->{prefix}
-	    .$form->get_field_name_for_html($field)
-		    .' value ="'.$fields->{text}.'">'.$s;
+    # first render initialization
+    unless ($fields->{initialized}) {
+	$fields->{initialized} = 1;
+	my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
+	$fields->{prefix} = $p.'<input type=submit name=';
+	$fields->{suffix} = '" '.$self->get_or_default('attributes', '')
+		.'>'.$s;
+    }
 
-    $$buffer .= $value;
+    $$buffer .= $fields->{prefix}
+	    .$form->get_field_name_for_html($field).' value="'.
+	    (ref($fields->{label})
+		    ? Bivio::HTML->escape(
+			    $source->get_widget_value(@{$fields->{label}}))
+		    : $fields->{label})
+	    .$fields->{suffix};
+
     return;
 }
 
