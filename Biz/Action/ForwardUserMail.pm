@@ -59,8 +59,8 @@ sub execute {
 	    if $_TRACE;
 
     my($headers) = $msg->get_headers;
-    if (exists($headers->{'x-bivio-forwarding'})) {
-        $req->die('FORBIDDEN', 'msg already has X-Bivio-Forwarding set, avoid mail loops');
+    if (exists($headers->{'x-bivio-forwarded'})) {
+        $req->die('MAIL_LOOP', 'msg has X-Bivio-Forwarded set, avoid mail loops');
     }
             
     # Get the outgoing address(es)

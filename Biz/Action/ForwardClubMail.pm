@@ -60,8 +60,8 @@ sub execute {
     $club->load(club_id => $realm_owner->get('realm_id'));
     my($msg) = $req->get('message');
     my($headers) = $msg->get_headers;
-    if (exists($headers->{'x-bivio-forwarding'})) {
-        $req->die('FORBIDDEN', 'msg already has X-Bivio-Forwarding set, avoid mail loops');
+    if (exists($headers->{'x-bivio-forwarded'})) {
+        $req->die('MAIL_LOOP', 'msg has X-Bivio-Forwarded set, avoid mail loops');
     }
     &_trace($realm_owner, ': ', $msg->get_message_id) if $_TRACE;
     $proto->store($realm_owner, $club, $msg);
@@ -103,7 +103,7 @@ sub send {
 	    Bivio::Agent::TaskId::CLUB_HOME(),
 	    undef, Bivio::Auth::Realm->new($realm_owner)));
     # Add a tag to catch mail loops
-    $out_msg->set_header('X-Bivio-Forwarding', $realm_owner->get('name'));
+    $out_msg->set_header('X-Bivio-Forwarded', $realm_owner->get('name'));
     $out_msg->enqueue_send;
     return;
 }
