@@ -46,6 +46,7 @@ use Bivio::TypeError;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::TTY;
+use Bivio::MIME::Base64;
 use Crypt::CBC;
 
 #=VARIABLES
@@ -89,6 +90,23 @@ sub decrypt_hex {
     return $s;
 }
 
+
+=for html <a name="encrypt_http_base64"></a>
+
+=head2 static decrypt_http_base64(string encoded_http_base64) : string
+
+Same as L<decrypt_hex|"decrypt_hex"> but encodes with
+L<Bivio::MIME::Base64|Bivio::MIME::Base64>.
+
+=cut
+
+sub decrypt_http_base64 {
+    my($proto, $encoded_http_base64) = @_;
+    return undef unless defined($encoded_http_base64);
+    return $proto->decrypt_hex(unpack('H*',
+	    Bivio::MIME::Base64->http_decode($encoded_http_base64)));
+}
+
 =for html <a name="encrypt_hex"></a>
 
 =head2 static encrypt_hex(string clear_text) : string
@@ -105,6 +123,22 @@ sub encrypt_hex {
     _assert_cipher();
     # Surround with magic and trailing time and encrypt
     return $_CIPHER->encrypt_hex($_MAGIC.$clear_text.$_MAGIC.time);
+}
+
+=for html <a name="encrypt_http_base64"></a>
+
+=head2 static encrypt_http_base64(string clear_text) : string
+
+Same as L<encrypt_hex|"encrypt_hex"> but encodes with
+L<Bivio::MIME::Base64|Bivio::MIME::Base64>.
+
+=cut
+
+sub encrypt_http_base64 {
+    my($proto, $clear_text) = @_;
+    return undef unless defined($clear_text);
+    return Bivio::MIME::Base64->http_encode(
+	pack('H*', $proto->encrypt_hex($clear_text)));
 }
 
 =for html <a name="from_sql_column"></a>
