@@ -144,8 +144,7 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
 
     # get the selected user and load them
-    my($owner) = $req->get('Bivio::Biz::Model::RealmUser')
-	    ->get_model('RealmOwner_2');
+    my($owner) = $req->get('target_realm_owner');
 
     my($task_id) = $req->get('task_id');
     my($heading, $account_list, $show_valuation_date);
