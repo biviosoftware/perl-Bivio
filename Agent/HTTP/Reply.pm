@@ -190,26 +190,26 @@ If I<die> is C<undef>, returns C<Bivio::Ext::ApacheConstants::OK>.
 
 sub die_to_http_code {
     my(undef, $die, $r) = @_;
-
-    return Bivio::Ext::ApacheConstants::OK() unless defined($die);
-    $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
-    return Bivio::Ext::ApacheConstants::OK() unless defined($die);
-    unless (%_DIE_TO_HTTP_CODE) {
-	%_DIE_TO_HTTP_CODE = (
-	    # Keep in synch with HTTP::Dispatcher
-	    Bivio::DieCode::FORBIDDEN()
-		=> Bivio::Ext::ApacheConstants::FORBIDDEN(),
-	    Bivio::DieCode::NOT_FOUND()
-		=> Bivio::Ext::ApacheConstants::NOT_FOUND(),
-	    Bivio::DieCode::CLIENT_REDIRECT_TASK()
-		=> Bivio::Ext::ApacheConstants::OK(),
-	);
-    }
+    return Bivio::Ext::ApacheConstants->OK
+	unless defined($die);
+    $die = $die->get('code')
+	if UNIVERSAL::isa($die, 'Bivio::Die');
+    return Bivio::Ext::ApacheConstants->OK
+	unless defined($die);
+    %_DIE_TO_HTTP_CODE = (
+	# Keep in synch with HTTP::Dispatcher
+	Bivio::DieCode->FORBIDDEN
+	    => Bivio::Ext::ApacheConstants->FORBIDDEN,
+	Bivio::DieCode->NOT_FOUND
+	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
+	Bivio::DieCode->CLIENT_REDIRECT_TASK
+	    => Bivio::Ext::ApacheConstants->OK,
+    ) unless %_DIE_TO_HTTP_CODE;
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
-	    if defined($_DIE_TO_HTTP_CODE{$die});
+	if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
     Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
-		unless UNIVERSAL::isa($die, 'Bivio::DieCode');
+	    unless UNIVERSAL::isa($die, 'Bivio::DieCode');
     return _error(Bivio::Ext::ApacheConstants::SERVER_ERROR(), $r);
 }
 
@@ -327,7 +327,14 @@ sub set_output {
 #
 sub _error {
     my($code, $r) = @_;
-    return $code if $code == Bivio::Ext::ApacheConstants::OK();
+#TODO: Older mod_perl versions had Apache::Constants bugs when not
+#      running in apache.  If you're using 5.6.* or higher, you're
+#      probably using a newer apache.  $^V was only defined after 5.005,
+#      so this check is good enough.
+    return $code
+	if defined($^V)
+	    || !exists($ENV{MOD_PERL})
+	    || $code == Bivio::Ext::ApacheConstants->OK;
     $r->status($code);
     $r->content_type('text/html');
     _send_http_header(undef, undef, $r);
@@ -335,7 +342,7 @@ sub _error {
     my($uri) = $r->uri;
 
     # Ignore HEAD.  There was an error, give the whole body
-    if ($code == Bivio::Ext::ApacheConstants::NOT_FOUND()) {
+    if ($code == Bivio::Ext::ApacheConstants->NOT_FOUND) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
@@ -346,7 +353,7 @@ The requested URL $uri was not found on this server.<P>
 </BODY></HTML>
 EOF
     }
-    elsif ($code == Bivio::Ext::ApacheConstants::FORBIDDEN()) {
+    elsif ($code == Bivio::Ext::ApacheConstants->FORBIDDEN) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
@@ -359,7 +366,7 @@ on this server.<P>
 EOF
     }
     else {
-	$r->print(<<'EOF');
+	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML><HEAD>
 <TITLE>500 Internal Server Error</TITLE>
@@ -369,15 +376,15 @@ The server encountered an internal error or
 misconfiguration and was unable to complete
 your request.<P>
 Please contact the server administrator,
- webmaster@bivio.com and inform them of the time the error occurred,
+webmaster\@@{[$r->server->server_hostname]}
+and inform them of the time the error occurred,
 and anything you might have done that may have
 caused the error.<P>
-More information about this error may be available
-in the server error log.<P>
 </BODY></HTML>
 EOF
     }
-    return Bivio::Ext::ApacheConstants::OK();
+    # This is a workaround in older Apache versions
+    return Bivio::Ext::ApacheConstants->OK;
 }
 
 # _send_http_header(Bivio::Agent::HTTP::Reply self, Bivio::Agent::Request req, Apache r)
