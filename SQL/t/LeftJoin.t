@@ -75,6 +75,8 @@ Bivio::Test->unit([
 	    'select count(*) from t_leftjoin_t1 t_leftjoin_t1_1, t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
 	    # Mix it up a bit
 	    'select count(*) from t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 , t_leftjoin_t1 t_leftjoin_t1_1 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
+            # left join on left join
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t2.f2 = t_leftjoin_t3.f2(+)' => [[3]],
        ],
     ],
 ]);
