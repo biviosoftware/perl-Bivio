@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Biz::Model->get_qualified gets "Model.field" or "field"
+    from current model.  Useful if you aren't sure if the field is
+    coming from a ListModel or PropertyModel
+
+  Revision 1.70  2003/07/02 21:34:50  nagler
+  * Added b-realm-role back into release after it was accidently deleted.
+  * Bivio::UI::HTML::Widget::Table.source_name can be a widget value
+    which is evaluated in context of $source.  This allows tables
+    within tables to be relative to the ListModel fields of their
+    parents.
+  * Bivio::Biz::FormModel->get_button_sumbitted as it is redundant
+  * Bivio::Biz::ListModel.want_select_distinct is a new attribute that
     allows SELECT DISTINCT queries for ListModels.
   * Bivio::UI::HTML::Widget::FormButton accepts positional arguments, e.g.
     FormButton('ok_button');
