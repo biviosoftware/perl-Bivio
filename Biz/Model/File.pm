@@ -168,8 +168,7 @@ sub create {
     # Check quota first and ensures directory_id is really a directory
     _update_directory($self, $values, $self->to_kbytes($values->{bytes}));
 
-    $self->SUPER::create($values);
-    return;
+    return $self->SUPER::create($values);
 }
 
 =for html <a name="create_initial"></a>
