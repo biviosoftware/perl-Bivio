@@ -279,8 +279,8 @@ everything goes ok.  Otherwise, returns the die instance created by the script.
 
 sub test_run {
     my($proto, $script) = @_;
+    my($script_name) = ref($script) ? '<inline>' : $script;
     my($die) = Bivio::Die->catch(sub {
-	my($script_name) = ref($script) ? '<inline>' : $script;
 	_die($_SELF_IN_EVAL, 'called ', $script_name,
 	    ' from within test script')
 	    if $_SELF_IN_EVAL;
@@ -300,7 +300,7 @@ sub test_run {
     _trace($die) if $_TRACE;
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
     $_SELF_IN_EVAL = undef;
-    _find_line_number($die) if $die;
+    _find_line_number($die, $script_name) if $die;
     _trace($script, ' ', $die) if $die && $_TRACE;
     return $die;
 }
@@ -389,15 +389,16 @@ sub _die {
     # DOES NOT RETURN
 }
 
-# _find_line_number()
+# _find_line_number(Bivio::Die die, string script_name)
 #
 # Find the line number of error in the test script.
 #
 sub _find_line_number {
-    my($die) = @_;
+    my($die, $script_name) = @_;
     return unless my($stack) = $die->get('stack');
-    my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+eval 'package Bivio::Test::Language; use strict;/s;
-    substr($die->get('attrs')->{message}, 0, 0) = "test line $line: ";
+    my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+eval '/s;
+    substr($die->get('attrs')->{message}, 0, 0) = "$script_name, line $line: "
+	if $line;
     return;
 }
 
