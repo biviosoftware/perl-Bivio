@@ -132,10 +132,6 @@ email addresses with domain literals [w.x.y.z] are not acceptable
 
 email does not contain a @domain.com
 
-=item DEMO_CLUB_SUFFIX
-
-name may not end in _demo_club
-
 =item UNSPECIFIED
 
 field may not be unspecified
@@ -334,10 +330,10 @@ sub get_delegate_info {
 	undef,
 	'email does not contain a @domain.com',
     ],
-    DEMO_CLUB_SUFFIX => [
+    PASSWORD_MISMATCH => [
 	26,
 	undef,
-	'name may not end in _demo_club',
+	'invalid password',
     ],
     UNSPECIFIED => [
 	27,
@@ -389,11 +385,6 @@ sub get_delegate_info {
 	36,
 	undef,
 	'days outside of the maximum for a date',
-    ],
-    PASSWORD_MISMATCH => [
-	37,
-	undef,
-	'invalid password',
     ],
 ];
 }
