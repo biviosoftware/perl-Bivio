@@ -46,7 +46,9 @@ use Bivio::Type::TaxCategory;
 
 =for html <a name="create_entry"></a>
 
-=head2 create_entry(Bivio::Biz::Model::RealmTransactions trans, hash_ref properties)
+=head2 static create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties)
+
+=head2 create_entry(Bivio::Biz::Model::RealmTransactions txn, hash_ref properties)
 
 Creates the account entry, and transaction entry for the specified
 transaction, using the values from the specified properties hash. Dies
@@ -57,11 +59,12 @@ Defaults tax_category to NOT_TAXABLE, and tax_basis to true.
 =cut
 
 sub create_entry {
-    my($self, $trans, $properties) = @_;
+    my($self, $txn, $properties) = @_;
+    $self = $self->new($txn->get_request) unless ref($self);
 
     $properties->{class} = Bivio::Type::EntryClass::CASH();
     ($properties->{realm_id}, $properties->{realm_transaction_id})
-	    = $trans->get('realm_id', 'realm_transaction_id');
+	    = $txn->get('realm_id', 'realm_transaction_id');
 
     # defaults
     $properties->{tax_category} = Bivio::Type::TaxCategory::NOT_TAXABLE()
