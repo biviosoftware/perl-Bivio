@@ -758,10 +758,11 @@ my(@_CFG) = (
         CLUB
         ADMIN_READ&MEMBER_READ
         ?/admin/roster/detail
-        Bivio::Biz::Model::ClubUserList->execute_load_this
+        Bivio::Biz::Model::ClubUserList->execute_load_this_or_first
         Bivio::Biz::Action::TargetRealm->execute_this
         Bivio::Biz::Model::RealmUserList->execute_load_all
         Bivio::UI::HTML::Club::UserDetail
+        NOT_FOUND=CLUB_ADMIN_USER_LIST
     )],
     [qw(
         CLUB_ADMIN_MEMBER_TITLE_EDIT
@@ -2180,6 +2181,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
         help=investment-performance-detail-report
+        NOT_FOUND=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE
     )],
     [qw(
         CLUB_ADMIN_PUBLIC
@@ -2235,12 +2237,13 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/member-performance-detail
         Bivio::Biz::Model::Lock
-        Bivio::Biz::Model::AllMemberList->execute_load_all
         Bivio::Biz::Model::MemberDateSpanForm
+        Bivio::Biz::Model::AllMemberList->execute_load_all
         Bivio::Biz::Model::MemberPerformanceDetailList->execute_load_all
         Bivio::UI::HTML::Club::MemberPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE_DETAIL
         help=member-performance-detail-report
+        NOT_FOUND=CLUB_ACCOUNTING_REPORT_MEMBER_PERFORMANCE
     )],
     [qw(
         DEFAULT_ERROR_REDIRECT_CORRUPT_FORM
