@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+# Copyright (c) 1999-2004 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ExpandableListFormModel;
 use strict;
@@ -82,26 +82,38 @@ sub new {
 
 =cut
 
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Copies submitted values
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    my($prev_self) = $self->get_request->unsafe_get(_key($self));
+    $self->internal_put({%{$prev_self->internal_get}})
+	if $prev_self;
+    return shift->SUPER::execute_empty(@_);
+}
+
 =for html <a name="internal_load_field"></a>
 
 =head2 internal_load_field(string form_field, string list_field)
 
 Loads I<form_field> from the list model's I<list_field> (defaults to
-(I<form_field>), or from the request values depending on whether the task was
-redirected through add_rows.
+(I<form_field>) if this isn't a redirect through add_rows.
 
 =cut
 
 sub internal_load_field {
     my($self, $form_field, $list_field) = @_;
+    return if $self->get_request->unsafe_get(_key($self));
     $list_field ||= $form_field;
-    my($list) = $self->get_list_model;
-    my($rows) = $self->get_request->unsafe_get(ref($self) . '.rows');
-
-    my($value) = defined($rows)
-	    ? $rows->[$list->get_cursor]->{$list_field}
-	    : $list->get($list_field);
-    $self->internal_put_field($form_field, $value) if defined($value);
+    my($value) = $self->get_list_model->get($list_field);
+    $self->internal_put_field($form_field, $value)
+	if defined($value);
     return;
 }
 
@@ -146,34 +158,25 @@ Appends empty rows to the list.
 sub internal_initialize_list {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    my($list) = $self->SUPER::internal_initialize_list();
+    my($list) = $self->SUPER::internal_initialize_list;
     return if $fields->{list_initialized};
     $fields->{list_initialized} = 1;
     my($req) = $self->get_request;
     my($form) = $req->get('form');
-    my($empty_row_count) = $req->unsafe_get(ref($self) . '.empty_row_count');
-    unless ($empty_row_count) {
-	if ($form) {
-#TODO: Need some validation here, I think?
-	    $empty_row_count = $form->{
-		$self->get_field_name_for_html('empty_row_count')};
-	}
-	else {
-	    # default number of rows to add
-	    $empty_row_count = $self->ROW_INCREMENT;
-	}
-    }
-    $self->internal_put_field('empty_row_count', $empty_row_count);
-    $form->{$self->get_field_name_for_html('empty_row_count')}
-	    = $empty_row_count;
-
-    $list->append_empty_rows($empty_row_count);
+    my($prev_self) = $req->unsafe_get(_key($self));
+    my($erc) = $prev_self ? $prev_self->get('empty_row_count')
+	: $form ? $form->{$self->get_field_name_for_html('empty_row_count')}
+	: $self->ROW_INCREMENT;
+    $self->internal_put_field(empty_row_count => $erc);
+    $form->{$self->get_field_name_for_html('empty_row_count')} = $erc
+	if $form;
+    $list->append_empty_rows($erc);
     return $list;
 }
 
 =for html <a name="validate"></a>
 
-=head2 validate()
+=head2 validate(string form_button)
 
 Responds to button click on 'add_rows', save the values on the
 request and redirects to the same task.
@@ -181,23 +184,14 @@ request and redirects to the same task.
 =cut
 
 sub validate {
-    my($self) = shift;
-    return $self->SUPER::validate(@_)
-	unless defined($self->unsafe_get('add_rows'));
-    # increment the empty_row count and redirect to the same task
+    my($self, $form_button) = @_;
+    return shift->SUPER::validate(@_)
+	unless $form_button eq 'add_rows';
     my($req) = $self->get_request;
-    my($rows) = [];
-    $self->reset_cursor;
-    while ($self->next_row) {
-	# make a copy of the current values
-	push(@$rows, $self->get_shallow_copy);
-    }
-    $self->reset_cursor;
-    $req->put_durable(
-	ref($self) . '.rows' => $rows,
-	ref($self) . '.empty_row_count' =>
-	    $self->get('empty_row_count') + $self->ROW_INCREMENT,
-    );
+    # increment the empty_row count and redirect to the same task
+    $self->internal_put_field(empty_row_count =>
+	$self->get('empty_row_count') + $self->ROW_INCREMENT);
+    $req->put_durable(_key($self) => $self);
     # Put last for testing
     $req->server_redirect($req->get(qw(task_id auth_realm query path_info)));
     # DOES NOT RETURN
@@ -205,9 +199,18 @@ sub validate {
 
 #=PRIVATE METHODS
 
+# _key(self) : string
+#
+# Returns the attribute key used on the request.
+#
+sub _key {
+    my($self) = @_;
+    return __PACKAGE__ . '.' . ref($self);
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2002 bivio Inc.  All rights reserved.
+Copyright (c) 1999-2004 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
