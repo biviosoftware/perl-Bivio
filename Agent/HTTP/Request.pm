@@ -206,6 +206,23 @@ sub client_redirect {
     Bivio::Die->throw(Bivio::DieCode::CLIENT_REDIRECT_TASK());
 }
 
+=for html <a name="client_redirect_if_not_secure"></a>
+
+=head2 client_redirect_if_not_secure()
+
+Causes the client to redirect back to this task in secure mode.
+If already in secure mode or can't secure (!I<can_secure>),
+returns (does nothing).
+
+=cut
+
+sub client_redirect_if_not_secure {
+    my($self) = @_;
+    return if $self->get('is_secure') || !$self->get('can_secure');
+    $self->client_redirect($self->format_http_toggling_secure);
+    # DOES NOT RETURN
+}
+
 =for html <a name="format_http_toggling_secure"></a>
 
 =head2 format_http_toggling_secure() : string
@@ -227,6 +244,8 @@ sub format_http_toggling_secure {
 #TODO: This is screwed up.  Probably best to take the current
 #      form's context and shove it on the URL.  Wouldn't hurt if not
 #      really the form_model.
+#      RJN 12/13/00 For require_secure, shouldn't grab form context,
+#      because we don't even want to pretend to process it.
     $query = $redirect_count ? Bivio::Agent::HTTP::Query->format($query)
 	    : $r->args;
     $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query) if $query;
