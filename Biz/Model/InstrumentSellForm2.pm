@@ -407,7 +407,7 @@ sub _determine_gain_type {
     my($purchase_date, $sell_date) = @_;
 
     # This is literal days.  It doesn't matter what time.
-    my($days) = Bivio::Type::Date->get_days_between($purchase_date,
+    my($days) = Bivio::Type::Date->delta_days($purchase_date,
 	    $sell_date);
 #TODO: handle leap year
     if ($days <= 365) {
