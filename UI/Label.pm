@@ -456,7 +456,10 @@ _compile(\%_MAP, [
 	help_topic => 'Adding Members and Guests',
     ],
     CLUB_ADMIN_MEMBER_DELETE => 'Member Delete',
-    CLUB_ADMIN_PREFERENCES_EDIT => 'Edit Club Configuration',
+    CLUB_ADMIN_PREFERENCES_EDIT => [
+	'' => 'Edit Club Configuration',
+	help_topic => 'Club Configuration',
+    ],
     CLUB_ADMIN_TOOLS => 'Administrative Tools',
     CLUB_ADMIN_USER_LIST => 'Club Roster',
     CLUB_ADMIN_PUBLIC => [
@@ -592,8 +595,8 @@ Held',
         => 'Market
 Value',
     MEMBER_COST_BASIS_HEADING => "Member's Adj.\nCost Basis",
-    AVERAGE_ANNUAL_RETURN_HEADING => "Average\nAnnual Return",
-    irr_wait_period => 'A.R.R. Wait Period',
+    AVERAGE_ANNUAL_RETURN_HEADING => "Annualized Internal\nRate of Return",
+    irr_wait_period => 'A.I.R.R. Wait Period',
     AMOUNT_INVESTED_HEADING => 'Investments',
     AMOUNT_RETURNED_HEADING => 'Returns',
     SHOW_INACTIVE => 'Show All',
