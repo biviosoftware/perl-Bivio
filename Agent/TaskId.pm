@@ -98,8 +98,8 @@ my(@_CFG) = (
 	4
         GENERAL
         ANY_USER
-        pub/my_club_site
-	Bivio::Biz::Action::MyClubRedirect
+        my-club-site/*:pub/my_club_site
+        Bivio::Biz::Action::MyRedirect->execute_club_site
         next=CLUB_INTRO
     )],
     [qw(
@@ -628,7 +628,7 @@ my(@_CFG) = (
         69
         USER
         ADMIN_WRITE
-        ?/create_club
+        ?/create-club:?/create_club
         Bivio::Biz::Model::CreateClubForm
         Bivio::UI::HTML::User::CreateClub
         next=CLUB_CREATED
@@ -1153,7 +1153,7 @@ my(@_CFG) = (
         124
         USER
         ADMIN_WRITE&LOGIN
-        ?/admin/edit/member/tax_id
+        ?/admin/edit/member/tax-id:?/admin/edit/member/tax_id
         Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
@@ -1164,7 +1164,7 @@ my(@_CFG) = (
         125
         CLUB
         ADMIN_WRITE&LOGIN
-        ?/admin/edit/tax_id
+        ?/admin/edit/tax-id:?/admin/edit/tax_id
         Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
@@ -1529,8 +1529,8 @@ my(@_CFG) = (
         158
         GENERAL
         ANY_USER
-        pub/my_site
-        Bivio::Biz::Action::ClientRedirect->execute_next
+        my-site/*:pub/my_site
+        Bivio::Biz::Action::MyRedirect->execute_user_site
         next=USER_HOME
     )],
     [qw(
