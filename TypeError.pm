@@ -562,8 +562,39 @@ __PACKAGE__->compile(
 	undef,
 	'email address loops back to itself; must not be the same as your login name',
     ],
-    SOURCE_NOT_EQUAL_TARGET => [
+    REFERENTIAL_CONSTRAINT => [
 	58,
+	undef,
+	'cannot delete the directory, it is not empty',
+    ],
+    FORM_DATA_MULTIPART_MIXED => [
+	59,
+	undef,
+	'only one file may be uploaded at a time',
+    ],
+    PRIMARY_ID => [
+	60,
+	undef,
+	'invalid URL, query string is invalid',
+    ],
+    EMPTY => [
+	61,
+	undef,
+	'file cannot be empty',
+    ],
+    FILE_FIELD => [
+	62,
+	undef,
+	'your browser has not submitted the file correctly; please try again',
+    ],
+    FILE_FIELD_RESET_FOR_SECURITY => [
+	63,
+	undef,
+	# Real message in FormErrors.  Have one here just in case.
+	'your browser reset this field for security reasons',
+    ],
+    SOURCE_NOT_EQUAL_TARGET => [
+	64,
 	undef,
 	'source account and target account must be different',
     ],
