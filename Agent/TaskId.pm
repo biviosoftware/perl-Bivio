@@ -2441,17 +2441,17 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
     )],
     [qw(
-	CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
+	CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
 	239
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        ?/accounting/reports/transaction-summary
+        ?/accounting/reports/transaction-history
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Action::TransactionSummary
 	Bivio::UI::HTML::Club::TransactionSummary
-        next=CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
+        next=CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
     )],
 );
 
