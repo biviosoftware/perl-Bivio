@@ -36,6 +36,10 @@ C<Bivio::UI::HTML::Widget::ListActions>
 
 The value to be passed to the C<TARGET> attribute of C<A> tag.
 
+=item link_font : string [list_action]
+
+Font to use for rendering links in the list.
+
 =item values : array_ref (required)
 
 An array_ref of array_refs where the order is the order of the
@@ -54,8 +58,6 @@ or a widget value which produces a URI.
 
 The fourth optional element is a control.  If the control returns
 true, the action is rendered.
-
-Links will be rendered in the C<list_action> font.
 
 =back
 
@@ -108,6 +110,7 @@ sub initialize {
     return if exists($fields->{values});
     $fields->{values} = [];
     my($target) = $_VS->vs_link_target_as_html($self);
+    $fields->{font} = $self->get_or_default('link_font', 'list_action');
     foreach my $v (@{$self->get('values')}) {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
@@ -132,7 +135,8 @@ Renders the list, skipping those tasks that are invalid.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($values) = $self->{$_PACKAGE}->{values};
+    my($fields) = $self->{$_PACKAGE};
+    my($values) = $fields->{values};
     my($req) = $source->get_request;
 
     # Have we already cached information?
@@ -156,7 +160,7 @@ sub render {
 
     # Write executable actions
     my($sep) = '';
-    my($p, $s) = Bivio::UI::Font->format_html('list_action', $req);
+    my($p, $s) = Bivio::UI::Font->format_html($fields->{font}, $req);
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
 	next if $v2->{control}
