@@ -4,7 +4,6 @@ package Bivio::SQL::Constraint;
 use strict;
 $Bivio::SQL::Constraint::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 $_ = $Bivio::SQL::Constraint::VERSION;
-$_ = $Bivio::SQL::Constraint::VERSION;
 
 =head1 NAME
 
