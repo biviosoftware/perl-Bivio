@@ -834,14 +834,18 @@ sub _parse_parent_id {
     my($attrs, $support, $die) = @_;
 
     # Returns undef if no parent_id or bad parent id
-    ($attrs->{parent_id})
-	    = Bivio::Type::PrimaryId->from_literal($attrs->{'p'});
+    my($err);
+    ($attrs->{parent_id}, $err)
+	    = Bivio::Type::PrimaryId->from_literal(
+		    $attrs->{'p'} || $attrs->{parent_id});
 
     # If the parent id is set and we aren't expecting it, will be ignored
     return if $attrs->{parent_id};
 
     # Otherwise, are we expecting a parent id?
-    _die($die, Bivio::DieCode::CORRUPT_QUERY(), 'missing parent_id',
+    _die($die, Bivio::DieCode::CORRUPT_QUERY(),
+	    {message => 'bad or missing parent_id',
+		type_error => $err},
 	    'parent_id') if $support->unsafe_get('parent_id');
     return;
 }
