@@ -33,9 +33,7 @@ a realm can be subscribed to. The current choices are:
 
 =item ACCOUNT_SYNC
 
-=item ACCOUNT_FULL
-
-=item PROFESSIONAL_FUNDS
+=item ACCOUNT_KEEPER
 
 =back
 
