@@ -196,46 +196,6 @@ sub format_stateless_uri {
     return $self->format_uri($task_id, undef);
 }
 
-=for html <a name="format_uri"></a>
-
-=head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
-
-=head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
-
-Creates a URI relative to this host/port.
-If I<query> is C<undef>, will not create a query string.
-If I<query> is not passed, will use this request's query string.
-If I<auth_realm> is C<undef>, request's realm will be used.
-
-If the task doesn't have a uri, returns undef.
-
-=cut
-
-sub format_uri {
-    my($self, $task_id, $query, $auth_realm) = @_;
-    # Note: Bivio::Agent::Mail::Request may call this.
-    $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
-    $query = $self->get_widget_value(@$query) if ref($query) eq 'ARRAY';
-    $auth_realm = $self->get_widget_value(@$auth_realm)
-	    if ref($auth_realm) eq 'ARRAY';
-    $task_id = $self->get('task_id') unless $task_id;
-    # Allow the realm to be undef
-    my($uri) = Bivio::Agent::HTTP::Location->format(
-	    $task_id, int(@_) >= 4 ? $auth_realm :
-	    $self->internal_get_realm_for_task($task_id), $self);
-#TODO: Is this right?
-#PJM: I think so
-#RJN: Not now??? 12/15/99
-    $query = $self->get('query') unless int(@_) >= 3;
-    return $uri unless defined($query);
-    $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
-
-    # The uri may have a query string already, if the form requires context.
-    # Put the $query first, since the context is long and ugly
-    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
-    return $uri;
-}
-
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form)
