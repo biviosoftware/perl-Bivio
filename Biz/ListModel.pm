@@ -756,8 +756,9 @@ that is returned by C<internal_initialize> to new_anonymous.
 
 sub internal_initialize_sql_support {
     my($proto, $config) = @_;
-    return Bivio::SQL::ListSupport->new(
-	    $config || $proto->internal_initialize);
+    $config ||= $proto->internal_initialize;
+    $config->{class} = ref($proto) || $proto;
+    return Bivio::SQL::ListSupport->new($config);
 }
 
 =for html <a name="internal_is_loaded"></a>
