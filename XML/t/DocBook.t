@@ -10,7 +10,7 @@ Bivio::Test->unit([
 		my($html) = $_;
 		$html =~ s/xml$/html/;
 		[$_] => [Bivio::IO::File->read($html)];
-	    } <DocBook/*.xml>
+	    } sort(<DocBook/*.xml>)
 	],
     ],
 ]);
