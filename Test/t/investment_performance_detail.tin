@@ -1,0 +1,6 @@
+# $Id$
+[
+    ['forms', 'scene', 'method'] => 'post',
+    ['forms', 'scene', 'visible', '_from', 'value'] => '01/01/2000',
+    ['forms', 'scene', 'visible', 'to', 'value'] => '11/01/2000',
+];

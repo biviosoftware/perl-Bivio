@@ -1,0 +1,8 @@
+# $Id$
+my(@visible) = ('forms', 'scene', 'visible');
+[
+    ['forms', 'scene', 'method'] => 'post',
+    [@visible, 'Report Date:', 'value'] => '11/01/2000',
+    [@visible, 'Report Year:', 'value'] => '2000',
+    [@visible, 'radio_0', 'options', 'Valuation Report', 'checked'] => '1',
+];
