@@ -66,3 +66,9 @@ Bivio::Die->catch(sub {
     Bivio::Die::T2->sub('test 2');
 });
 print $MAIN == 0 && $main::T1 == 1 && $main::T2 == 2 ? "ok 3\n" : "not ok 3\n";
+
+my($die) = Bivio::Die->catch('
+use strict;
+this routine should not be found;
+');
+print $die && $die->get('code')->equals_by_name('DIE') ? "ok 4\n" : "not ok 4\n";
