@@ -41,90 +41,91 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static get_delegate_info() : array_ref
 
-Returns the task declarations.
+Returns the task declarations which are needed for the
+simplest site.
 
 =cut
 
 sub get_delegate_info {
     return [
-    # used by UI::Task
-    [qw(
-        SHELL_UTIL
-        1
-        GENERAL
-        DOCUMENT_READ
-        Action.LocalFilePlain
-    )],
-    [qw(
-	SITE_ROOT
-	2
-        GENERAL
-        DOCUMENT_READ
-        Action.ClientRedirect->execute_home_page_if_site_root
-        Bivio::UI::View->execute_uri
-        want_query=0
-    )],
-    [qw(
-	LOCAL_FILE_PLAIN
-	3
-        GENERAL
-        DOCUMENT_READ
-	Action.LocalFilePlain
-        want_query=0
-    )],
-    # used by UI::Task
-    [qw(
-        MY_SITE
-        4
-        GENERAL
-        ANY_USER
-        Action.ClientRedirect->execute_next
-        next=SITE_ROOT
-    )],
-    # used by Model::RealmOwner
-    [qw(
-        USER_HOME
-        5
-        USER
-        DOCUMENT_READ
-        Action.ClientRedirect->execute_next
-        next=SITE_ROOT
-    )],
-    # used by UI::Task
-    [qw(
-	MY_CLUB_SITE
-	6
-        GENERAL
-        ANY_USER
-        Action.ClientRedirect->execute_next
-        next=SITE_ROOT
-    )],
-    # used by Model.RealmOwner
-    [qw(
-        CLUB_HOME
-        7
-        CLUB
-        DOCUMENT_READ
-        Action.ClientRedirect->execute_next
-        next=SITE_ROOT
-    )],
-    # Redirects to a uri supplied in the query
-    [qw(
-	CLIENT_REDIRECT
-	8
-        GENERAL
-        DOCUMENT_READ
-        Action.ClientRedirect->execute_query
-        next=SITE_ROOT
-    )],
-    # Help pages
-    [qw(
-        HELP
-        9
-        GENERAL
-        DOCUMENT_READ
-        Action.LocalFilePlain
-    )],
+	# used by UI::Task
+	[qw(
+	    SHELL_UTIL
+	    1
+	    GENERAL
+	    ANYBODY
+	    Action.LocalFilePlain
+	)],
+	[qw(
+	    SITE_ROOT
+	    2
+	    GENERAL
+	    ANYBODY
+	    Action.ClientRedirect->execute_home_page_if_site_root
+	    Bivio::UI::View->execute_uri
+	    want_query=0
+	)],
+	[qw(
+	    LOCAL_FILE_PLAIN
+	    3
+	    GENERAL
+	    ANYBODY
+	    Action.LocalFilePlain
+	    want_query=0
+	)],
+	# used by UI::Task
+	[qw(
+	    MY_SITE
+	    4
+	    GENERAL
+	    ANY_USER
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
+	# used by Model::RealmOwner
+	[qw(
+	    USER_HOME
+	    5
+	    USER
+	    DATA_READ
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
+	# used by UI::Task
+	[qw(
+	    MY_CLUB_SITE
+	    6
+	    GENERAL
+	    ANY_USER
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
+	# used by Model.RealmOwner
+	[qw(
+	    CLUB_HOME
+	    7
+	    CLUB
+	    DATA_READ
+	    Action.ClientRedirect->execute_next
+	    next=SITE_ROOT
+	)],
+	# Redirects to a uri supplied in the query
+	[qw(
+	    CLIENT_REDIRECT
+	    8
+	    GENERAL
+	    ANYBODY
+	    Action.ClientRedirect->execute_query
+	    next=SITE_ROOT
+	)],
+	# Help pages
+	[qw(
+	    HELP
+	    9
+	    GENERAL
+	    ANYBODY
+	    Action.LocalFilePlain
+	)],
 ];
 }
 
