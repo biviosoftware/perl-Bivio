@@ -212,7 +212,7 @@ sub delete {
         if (defined($new_root)) {
             # Adjust all direct replies to point the new parent message
             _trace('Adjusting replies to point to new parent') if $_TRACE;
-            my($sth) = Bivio::SQL::Connection->execute('
+            $sth = Bivio::SQL::Connection->execute('
                     UPDATE mail_t
                     SET thread_parent_id = ?
                     WHERE realm_id = ?
