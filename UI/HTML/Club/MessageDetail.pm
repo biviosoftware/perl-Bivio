@@ -29,9 +29,8 @@ use Bivio::UI::HTML::Widget;
 C<Bivio::UI::HTML::Club::MessageDetail> shows the body of a mail message.
 It provides links to MIME parts (such as attached GIF, JPEG files).
 
-It is not "smart." That is, it does not know anything about the particular
-MIME parts (disposition, type, etc).
-
+This module knows about the different MIME parts that are attached to
+a mail message, and will draw apropriate icons for links to them.
 =cut
 
 #=IMPORTS
@@ -52,6 +51,7 @@ use Bivio::UI::HTML::Format::ReplySubject;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_FILE_CLIENT);
+#TODO this should be fleshed out better to handle a default case
 my($_IMAGE_MAP) = {
     'text/html' => 'html_attachment',
     'text/plain' => 'text_attachment',
@@ -123,21 +123,10 @@ sub new {
 Executes a rendering of the Message Detail. It creates separate URLs for each
 MIME attachment this mail message has.
 
-Note that this method is on the stupid side; it doesn't know the type
-or disposition of each of the MIME parts. It only knows they are there,
-and what their 'file names' are. This should be re-worked so that
-the content disposition (ie: inline) is understood and handled for each
-MIME attachment file, and the correct task for 'rendering' the MIME part
-is handled.
-
-This was not done at this time because I am very concerned about the overhead
-of parsing all the MIME parts for this one transaction. For this execute method,
-each of the MIME parts would have to be opened, read into a scalar, and parsed
-for the information. Then that information could be stuffed into the array
-passed back from MailMessage.get_num_mime_parts().
-
-I was more concerned with correctly finding and handling MIME attachments
-in the first place.
+The mail message is asked to return the number of mime parts in get_num_mime_parts.
+This method really should be renamed; it does more than return the number of mime parts
+The method returns an array of annonymous hashes, each hash containing some
+detailed information about the various MIME parts associated with this message.
 
 
 =cut
