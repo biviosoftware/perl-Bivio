@@ -170,9 +170,12 @@ sub client_redirect {
     if (ref($_[0])) {
 	my($new_task, $new_realm, $new_query, $new_path_info) = @_;
 
-	# use previous query if not specifed, maintains state across pages
-	$new_query ||= $self->get('query');
-	$new_path_info ||= $self->unsafe_get('path_info');
+	# use previous query if not specified, maintains state across pages
+	if (int(@_) <= 2) {
+	    $new_query = $self->get('query');
+	    $new_path_info = $self->unsafe_get('path_info')
+		    if int(@_) <= 3;
+	}
 
 	# server_redirect if same task or if task doesn't have a uri
 	$self->SUPER::server_redirect($new_task, $new_realm, $new_query,
@@ -271,14 +274,15 @@ sub server_redirect {
     # If the task is specified already, let super handle it.
     $self->SUPER::server_redirect(@_) if ref($_[0]);
 
-    # Need to parse out task from uri
-    my($new_uri) = shift;
-    die('too many args') if int(@_) > 3;
-    my($new_task, $new_realm, $new_path_info)
+    # Need to parse out task and realm from uri
+    die('too many args') if int(@_) > 4;
+    my($new_uri, $new_query, $new_form, $new_path_info) = @_;
+    my($new_task, $new_realm, $path_info_from_uri)
 	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
     # Replace path_info (if not set)
-    $_->[2] ||= $new_path_info;
-    $self->SUPER::server_redirect($new_task, $new_realm, @_);
+    $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
+    $self->SUPER::server_redirect($new_task, $new_realm, $new_query,
+	    $new_form, $new_path_info);
 }
 
 =for html <a name="server_redirect_in_handle_die"></a>
@@ -306,15 +310,15 @@ sub server_redirect_in_handle_die {
     $self->SUPER::server_redirect_in_handle_die($die, @_), return
 	    if ref($_[0]);
 
-    # Need to parse out task from uri
-    my($new_uri) = shift;
-    die('too many args') if int(@_) > 3;
-    my($new_task, $new_realm, $new_path_info)
+    # Need to parse out task and realm from uri
+    die('too many args') if int(@_) > 4;
+    my($new_uri, $new_query, $new_form, $new_path_info) = @_;
+    my($new_task, $new_realm, $path_info_from_uri)
 	    = Bivio::Agent::HTTP::Location->parse($self, $new_uri);
-    # Replace new_path_info (if not set)
-    $_->[2] ||= $new_path_info;
-    $self->SUPER::server_redirect_in_handle_die($die, $new_task,
-	    $new_realm, @_);
+    # Replace path_info (if not set)
+    $new_path_info ||= $path_info_from_uri if int(@_) <= 3;
+    $self->SUPER::server_redirect_in_handle_die($new_task, $new_realm,
+	    $new_query, $new_form, $new_path_info);
     return;
 }
 
