@@ -61,12 +61,12 @@ sub get_enum_type {
 
 =head2 get_width() : int
 
-Returns 30.  That's 240 permissions.
+Returns 15.  That's 120 permissions.
 
 =cut
 
 sub get_width {
-    return 30;
+    return 15;
 }
 
 #=PRIVATE METHODS
