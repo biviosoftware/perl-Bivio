@@ -152,6 +152,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
     )],
@@ -170,6 +171,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/investments:?/investments
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
@@ -182,6 +184,7 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/members
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
@@ -268,6 +271,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/valuation
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
 	Bivio::Biz::Model::AccountValuationList->execute_load_all
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
@@ -296,6 +300,7 @@ my(@_CFG) = (
         ?/accounting/reports/investments
         Bivio::Biz::Model::InactiveForm->execute_active_only
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
@@ -315,6 +320,7 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/members
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
@@ -350,6 +356,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/accounts
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
     )],
@@ -1648,6 +1655,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/investment_sale
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Type::ScheduleDParams->execute_show_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
@@ -1660,6 +1668,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/income_and_expense
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::UI::HTML::Club::IncomeAndExpenseReport
         next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
@@ -1689,7 +1698,7 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/allocations
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Model::WithdrawnAllocationList->execute_load_all
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::UI::HTML::Club::MemberAllocationReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
@@ -1701,17 +1710,18 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/income_and_deductions
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Model::PortfolioDeductionList
-        Bivio::Biz::Model::PortfolioIncomeList
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
+        Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
         Bivio::UI::HTML::Club::MiscIncomeAndDeductions
         next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_F1065_TEST
+        CLUB_ACCOUNTING_TAX99_F1065
         162
         CLUB
-        ACCOUNTING_READ
-        ?/accounting/tax99/f1065/test
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/f1065
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
@@ -1719,14 +1729,14 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::F1065Form
         Bivio::UI::HTML::FormDump
-        next=CLUB_ACCOUNTING_TAX99_F1065_TEST
+        next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_F1065K1_TEST
+        CLUB_ACCOUNTING_TAX99_F1065K1
         163
         CLUB
-        ACCOUNTING_READ
-        ?/accounting/tax99/f1065k1/test
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/f1065k1
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
@@ -1734,28 +1744,103 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
         Bivio::UI::HTML::FormDump
-        next=CLUB_ACCOUNTING_TAX99_F1065_TEST
+        next=CLUB_ACCOUNTING_TAX99_F1065
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_TEST
+        CLUB_ACCOUNTING_TAX99
         164
         CLUB
-        ACCOUNTING_READ
-        ?/accounting/tax99/test
+        ACCOUNTING_WRITE
+        ?/accounting/tax99
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
-        Bivio::UI::HTML::Club::TaxTest
+        Bivio::UI::HTML::Club::Tax99
+    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWALS
+#        165
+#        CLUB
+#        ACCOUNTING_WRITE
+#        ?/accounting/reports/withdrawals
+#    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_1065_PARAMETERS
+        166
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/f1065/parameters
+        Bivio::Biz::Model::F1065ParametersForm
+        Bivio::UI::HTML::Club::F1065Parameters
+        next=CLUB_ACCOUNTING_TAX99
     )],
     [qw(
-        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWALS
-        165
+        CLUB_ACCOUNTING_TAX99_K1_PARAMETERS
+        167
         CLUB
-        ACCOUNTING_READ
-        ?/accounting/reports/withdrawals
-        Bivio::Biz::Action::ReportDate
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/k1/parameters
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::F1065K1ParametersForm
+        Bivio::UI::HTML::Club::F1065K1Parameters
+        next=CLUB_ACCOUNTING_TAX99
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_SCHEDULE_D
+        168
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/schedule_d
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Type::ScheduleDParams->execute_hide_distributions
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::Biz::Model::ScheduleDForm
+        Bivio::UI::HTML::Tax::ScheduleD
+        next=CLUB_ACCOUNTING_TAX99_SCHEDULE_D
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_INCOME
+        169
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/income
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
+        Bivio::UI::HTML::Tax::PortfolioIncome
+        next=CLUB_ACCOUNTING_TAX99_INCOME
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_DISTRIBUTIONS
+        170
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/distributions
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::CashWithdrawalList->execute_load_all
         Bivio::Biz::Model::InstrumentWithdrawalList->execute_load_all
-        Bivio::UI::HTML::Club::MemberWithdrawalReport
+        Bivio::UI::HTML::Tax::MemberDistributions
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_DATE_TEST
+        171
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/report_date_test
+        Bivio::Biz::Model::AccountingReportForm
+        Bivio::UI::HTML::DateTest
+        next=CLUB_ACCOUNTING_REPORT_DATE_TEST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_DEDUCTIONS
+        172
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/tax99/deductions
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::PortfolioDeductionList->execute_load_all
+        Bivio::UI::HTML::Tax::PortfolioDeductions
+        next=CLUB_ACCOUNTING_TAX99_DEDUCTIONS
     )],
 );
 
