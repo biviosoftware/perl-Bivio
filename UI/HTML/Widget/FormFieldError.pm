@@ -123,7 +123,10 @@ sub render {
 	    $$buffer .= $p
 		    .Bivio::UI::HTML::FormErrors->to_html(
 			    $source, $model, $fields->{field},
-			    $fields->{label}, $error)
+			    ref($fields->{label}) eq 'ARRAY'
+			    ? $source->get_widget_value(
+				    @{$fields->{label}}) : '',
+			    $error)
 		    .$s."<br>\n";
 	}
     }
