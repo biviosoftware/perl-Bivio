@@ -142,10 +142,6 @@ ALTER TABLE realm_invite_t
   add foreign key (user_id)
     references user_t(user_id)
 /
-ALTER TABLE realm_invite_t add unique(realm_id, realm_user_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
         ');
     return;
 }
