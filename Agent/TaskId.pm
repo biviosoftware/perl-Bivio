@@ -456,6 +456,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSell
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_VALUATION
+        51
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/valuation
+        Bivio::Biz::Model::InstrumentValuationForm
+        Bivio::UI::HTML::Club::InstrumentValuation
+        next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
 );
 
 __PACKAGE__->compile(
