@@ -64,6 +64,7 @@ my($_DEFAULT_CONFIG) = {
 	    MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
 	    FacadeComponent => ['Bivio::UI'],
 	    Action => ['Bivio::Biz::Action'],
+	    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 	},
     },
     'Bivio::Die' => {
