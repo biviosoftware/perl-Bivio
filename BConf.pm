@@ -246,7 +246,7 @@ sub merge_http_log {
 		    # never goes criticial
 		    'Bivio::DieCode::DIE',
 		    'Bivio::DieCode::CONFIG_ERROR',
-		    'exit signal Segmentation fault (11)',
+		    'exit signal Segmentation fault',
 		],
 		critical_list => [
 		    'Bivio::DieCode::DB_ERROR',
