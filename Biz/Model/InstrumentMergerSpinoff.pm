@@ -75,21 +75,24 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="unsafe_load_recent"></a>
+=for html <a name="load_recent"></a>
 
-=head2 unsafe_load_recent(Bivio::Type::InstrumentAction action, string new_ticker, string date) : boolean
+=head2 load_recent(Bivio::Type::InstrumentAction action, string new_ticker, string date) : Bivio::Biz::Model::InstrumentMergerSpinoff
 
 Attempts to load the specified action for the instrument within one week
 of the specified date.
+Dies on failure.
 
 =cut
 
-sub unsafe_load_recent {
+sub load_recent {
     my($self, $action, $new_ticker, $date) = @_;
 
     _trace('looking for ', $new_ticker, ' ',
-	    Bivio::Type::Date->to_literal($date), ' ', $action) if $_TRACE;
+	    $action->get_short_desc, ' ',
+	    Bivio::Type::Date->to_literal($date)) if $_TRACE;
 
+    # look at dates -7 to 7 range
     my($date_param) = Bivio::Type::DateTime->from_sql_value(
 	    'instrument_merger_spinoff_t.action_date');
     my($sth) = Bivio::SQL::Connection->execute("
@@ -104,7 +107,8 @@ sub unsafe_load_recent {
             AND instrument_merger_spinoff_t.action_date BETWEEN
                 $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE",
 	    [uc($new_ticker), $action->as_int,
-		Bivio::Type::Date->add_days($date, -7), $date]);
+		Bivio::Type::Date->add_days($date, -7),
+		Bivio::Type::Date->add_days($date, 7)]);
 
     my($found_it) = 0;
     while (my $row = $sth->fetchrow_arrayref) {
@@ -119,7 +123,11 @@ sub unsafe_load_recent {
 	Bivio::Die->die("> 1 merger/spinoff found ", $self) if $found_it;
 	$found_it = 1;
     }
-    return $found_it;
+
+    Bivio::Die->die("no merger/spin-off action found for ", $new_ticker, ' ',
+	    Bivio::Type::Date->to_literal($date), ' ', $action)
+		unless $found_it;
+    return $self;
 }
 
 #=PRIVATE METHODS
