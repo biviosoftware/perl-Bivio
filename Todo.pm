@@ -30,7 +30,8 @@ sub handler {
     print(STDERR "Todo.handler( ) called..\n\n\n");
     $r->content_type("text/html");
     $r->send_http_header;
-    $r->print("<HTML><BODY bgcolor=\"#C0C0C0\">");
+    $r->print("<HTML><HEAD><TITLE>Bivio Worker's Todo Lists</TITLE></HEAD>\n");
+    $r->print("<BODY bgcolor=\"#C0C0C0\">");
     my(%args) = $r->args;
     my(@keys) = keys %args;
     my(@values) = values %args;
@@ -38,7 +39,6 @@ sub handler {
 	print(STDERR "\n" . pop(@keys) . "=" . pop(@values));
     }
     print(STDERR "\n\n");
-	   
 
     if (%args){
 	my($view) = $args{view};
