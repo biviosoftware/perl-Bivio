@@ -1433,7 +1433,8 @@ sub _format_uri_args {
 	    $uri = Bivio::Agent::TaskId->$uri()
 		    if Bivio::Agent::TaskId->is_valid_name($uri);
 	}
-	elsif (ref($uri) eq 'Bivio::Agent::TaskId') {
+
+        if (ref($uri) eq 'Bivio::Agent::TaskId') {
 	    $uri = $req->format_stateless_uri($uri);
 	}
 	else {
