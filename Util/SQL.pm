@@ -90,7 +90,13 @@ See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
 sub create_db {
     my($self) = @_;
     $self->setup;
-    _create_tables($self);
+
+    foreach my $file (@{_ddl_files($self)}){
+	# Set up new file so read_input returns new value each time
+	$self->print('Executing ', $file, "\n");
+	$self->put(input => $file);
+	$self->run;
+    }
     Bivio::Biz::Model->new($self->get_request, 'RealmOwner')->init_db;
     $self->init_realm_role;
     return;
@@ -226,17 +232,16 @@ Restores the database from file.
 
 sub import_db {
     my($self, $backup_file) = @_;
-    my($db) = _assert_postgres($self);
     $self->import_tables_only($backup_file);
-    $self->reinitialize_constraints;
-    return $self->reinitialize_sequences;
+    return $self->reinitialize_constraints;
 }
 
 =for html <a name="import_tables_only"></a>
 
 =head2 import_tables_only(string backup_file)
 
-Drops database, readds it and then imports data only from a backup file.
+Destroys database, then imports data only from a backup file. Constraints
+are not restored.
 
 =cut
 
@@ -244,10 +249,7 @@ sub import_tables_only {
     my($self, $backup_file) = @_;
     $self->usage_error('missing file') unless $backup_file;
     my($db) = _assert_postgres($self);
-    $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
-    $self->piped_exec("dropdb --username '$db->{user}' '$db->{database}'",
-        '', 1);
-    $self->piped_exec("createdb --username '$db->{user}' '$db->{database}'");
+    $self->destroy_db;
 
     foreach my $file (@{_ddl_files($self)}) {
         next if $file =~ /constraints/;
@@ -310,9 +312,9 @@ sub realm_role_config {
 
 =for html <a name="reinitialize_constraints"></a>
 
-=head2 reinitialize_constraints()
+=head2 reinitialize_constraints() : string
 
-Adds constraints and reinitializes sequences.
+Applies constraint files and reinitializes sequences.
 
 =cut
 
@@ -323,7 +325,7 @@ sub reinitialize_constraints {
         next unless $file =~ /constraints/;
   	$self->put(input => $file)->run;
     }
-    return;
+    return $self->reinitialize_sequences;
 }
 
 =for html <a name="reinitialize_sequences"></a>
@@ -418,21 +420,6 @@ sub _assert_postgres {
     $self->usage_error($c->{connection}, ': connection type not supported')
 	unless $c->{connection} =~ /postgres/i;
     return $c;
-}
-
-# _create_tables(self)
-#
-# Only creates tables, no data populated.
-#
-sub _create_tables {
-    my($self) = @_;
-    foreach my $file (@{_ddl_files($self)}){
-	# Set up new file so read_input returns new value each time
-	$self->print('Executing ', $file, "\n");
-	$self->put(input => $file);
-	$self->run;
-    }
-    return;
 }
 
 # _ddl_files(self) : array_ref
