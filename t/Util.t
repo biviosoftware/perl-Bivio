@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN { $| = 1; print "1..6\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Util;
@@ -48,3 +48,13 @@ my($start_time) = &Bivio::Util::gettimeofday;
 sleep(1);
 my($secs) = &Bivio::Util::time_delta_in_seconds($start_time);
 print $secs > 0.9 && $secs < 2.0 ? "ok 4\n" : "not ok 4\n";
+
+Bivio::Util::my_require(__PACKAGE__);
+print eval {
+    Bivio::Util::my_require('Some::Random::Package');
+    1;
+} ? "not ok 5\n" : "ok 5\n";
+print eval {
+    Bivio::Util::my_require('Bivio::Type');
+    1;
+} ? "ok 6\n" : "not ok 6\n$@\n";
