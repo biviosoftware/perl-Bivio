@@ -60,7 +60,9 @@ sub internal_initialize {
 	columns => {
             realm_instrument_id => ['Bivio::Type::PrimaryId',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            dttm => ['Bivio::Type::DateTime',
+            realm_id => ['Bivio::Type::PrimaryId',
+    		Bivio::SQL::Constraint::NOT_NULL()],
+            date_time => ['Bivio::Type::DateTime',
     		Bivio::SQL::Constraint::PRIMARY_KEY()],
             price_per_share => ['Bivio::Type::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
