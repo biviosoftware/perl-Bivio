@@ -37,8 +37,9 @@ new request running in general realm.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Auth::Realm::General;
 use Bivio::Type::DateTime;
+use Bivio::Test::Bean;
+use Socket ();
 
 #=VARIABLES
 my($_SELF);
@@ -69,7 +70,8 @@ sub get_instance {
 	    task_id => Bivio::Agent::TaskId->SHELL_UTIL,
 	    timezone => Bivio::Type::DateTime->timezone,
 	});
-	$_SELF->set_realm(Bivio::Auth::Realm::General->get_instance);
+	$_SELF->set_realm(undef);
+	$_SELF->set_user(undef);
     }
     return $_SELF;
 }
@@ -77,6 +79,43 @@ sub get_instance {
 =head1 METHODS
 
 =cut
+
+=for html <a name="setup_http"></a>
+
+=head2 setup_http(string cookie_class) : self
+
+Sets up self to look like an http request.  You probably don't need
+to pass I<cookie_class>.  See UserLoginForm.t and
+PersistentCookie.t for examples.
+
+=cut
+
+sub setup_http {
+    my($self, $cookie_class) = @_;
+    # What's required by bOP infrastructure.
+    Bivio::Type::UserAgent->BROWSER->execute($self, 1);
+    my($r) = Bivio::Test::Bean->new;
+    $self->put_durable(r => $r);
+    my($c) = Bivio::Test::Bean->new;
+    $r->connection($c);
+    $c->remote_ip('127.0.0.1');
+    $c->local_addr(
+	Socket::pack_sockaddr_in(80, Socket::inet_aton($c->remote_ip)));
+    $c->remote_addr($c->local_addr);
+    $r->method('GET');
+    $r->server(Bivio::Test::Bean->new);
+    $r->uri('/');
+    Bivio::IO::Config->introduce_values({
+	'Bivio::IO::ClassLoader' => {
+	    delegates => {
+		'Bivio::Agent::HTTP::Cookie' =>
+		    $cookie_class || 'Bivio::Delegate::NoCookie',
+	    },
+	},
+    });
+    $self->put_durable(cookie => Bivio::Agent::HTTP::Cookie->new($self, $r));
+    return $self;
+}
 
 #=PRIVATE METHODS
 
