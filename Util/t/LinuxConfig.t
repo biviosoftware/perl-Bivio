@@ -122,6 +122,7 @@ other.host
 		['etc/sendmail.cf', 'localhost:80/my_uri'],
  		['etc/sendmail.cf', '\$#bsendmailhttp.*\$#bsendmailhttp'],
  		['etc/sendmail.cf', 'Mbsendmailhttp'],
+ 		['etc/sendmail.cf', 'R=AddDomain'],
  		['etc/sendmail.cf', 'A=b-sendmail-http'],
 	    ],
 	], [
