@@ -9,6 +9,10 @@ $_ = $Bivio::Biz::Action::PublicRealm::VERSION;
 
 Bivio::Biz::Action::PublicRealm - sets realm_is_public attribute on the request
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Biz::Action::PublicRealm;
