@@ -309,6 +309,19 @@ sub get_width {
     die('abstract method');
 }
 
+=for html <a name="internal_from_literal_warning"></a>
+
+=head2 static internal_from_literal_warning()
+
+Issues a warning about calling from_literal() in a scalar context.
+
+=cut
+
+sub internal_from_literal_warning {
+    warn("don't call from_literal in scalar context");
+    return;
+}
+
 =for html <a name="is_equal"></a>
 
 =head2 static is_equal(any left, any right) : boolean
