@@ -155,6 +155,7 @@ use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::SQL::Connection;
 use Bivio::Type::RealmName;
 use Bivio::Util;
 use Carp ();
@@ -639,6 +640,8 @@ sub server_redirect {
     my($self, $new_task, $new_realm, $new_query, $new_form) = @_;
     $self->internal_server_redirect($new_task, $new_realm,
 		$new_query, $new_form);
+    # clear db time
+    Bivio::SQL::Connection->get_db_time;
     Bivio::Die->die(Bivio::DieCode::SERVER_REDIRECT_TASK(),
 	    {task_id => $new_task});
     return;
