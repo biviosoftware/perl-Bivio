@@ -969,7 +969,9 @@ uses Request.auth_user_id.
 
 sub is_super_user {
     my($self, $user_id) = @_;
-    return !$user_id || $user_id eq $self->get('auth_user_id')
+    return !$user_id
+	|| defined($user_id) eq defined($self->get('auth_user_id'))
+	    && $user_id eq $self->get('auth_user_id')
 	? _get_role($self, Bivio::Auth::RealmType::GENERAL->as_int)
 	    ->equals_by_name('ADMINISTRATOR')
 	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
