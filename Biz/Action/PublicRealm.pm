@@ -37,15 +37,8 @@ Set to true if user as "is_public" privs and the realm is public.
 
 =cut
 
-#=IMPORTS
-use Bivio::IO::Trace;
 
-#=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-use vars qw($_TRACE);
-Bivio::IO::Trace->register;
-
-=head1 METHODS
+=head1 CONSTANTS
 
 =cut
 
@@ -59,11 +52,24 @@ Return list of roles which need to be managed for controlling public access
 
 sub ROLES {
     return [
-        Bivio::Auth::Role::ANONYMOUS(),
-        Bivio::Auth::Role::USER(),
-        Bivio::Auth::Role::WITHDRAWN(),
+        Bivio::Auth::Role->ANONYMOUS,
+        Bivio::Auth::Role->USER,
+        Bivio::Auth::Role->WITHDRAWN,
     ];
 }
+
+#=IMPORTS
+use Bivio::Auth::Role;
+use Bivio::IO::Trace;
+
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
+
+=head1 METHODS
+
+=cut
 
 =for html <a name="execute"></a>
 
@@ -84,7 +90,7 @@ sub execute {
 	    && $req->get('auth_realm')->get('type')
 		    == Bivio::Auth::RealmType::CLUB()
 	    && $req->can_user_execute_task(
-		    Bivio::Agent::TaskId::CLUB_ADMIN_PUBLIC())
+		    Bivio::Agent::TaskId->CLUB_ADMIN_PUBLIC)
 		    ? 1 : 0;
     _trace('user_can_modify_is_public=', $can_modify) if $_TRACE;
     $req->put(user_can_modify_is_public => $can_modify);
@@ -114,13 +120,13 @@ sub execute_simple {
         $is_realm_user = 1;
     }
     # A realm is public if ANONYMOUS role has DOCUMENT_READ access
-    my($rr) = Bivio::Biz::Model::RealmRole->new();
+    my($rr) = Bivio::Biz::Model->new($req, 'RealmRole');
     my($realm_is_public) = 0;
     if ($rr->unauth_load(realm_id => $club_id,
-            role => Bivio::Auth::Role::ANONYMOUS())) {
+            role => Bivio::Auth::Role->ANONYMOUS)) {
         my($ps) = $rr->get('permission_set');
         $realm_is_public = Bivio::Auth::PermissionSet->is_set(\$ps,
-                Bivio::Auth::Permission::DOCUMENT_READ());
+                Bivio::Auth::Permission->DOCUMENT_READ);
     }
 
     _trace('is_realm_user,realm_is_public=',
