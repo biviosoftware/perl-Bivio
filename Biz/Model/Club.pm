@@ -33,7 +33,7 @@ and delete interface to the C<club_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Auth::RealmType;
 use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MemberTransactionList;
@@ -42,6 +42,9 @@ use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::RealmUserList;
 use Bivio::Biz::Model::User;
+use Bivio::IO::Trace;
+use Bivio::Type::RealmName;
+
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -60,6 +63,17 @@ my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
 	['RealmUser.user_id', 'Email.realm_id'],
     ],
 });
+my($_COUNT_ALL_WHERE_CLAUSE) = "FROM realm_owner_t
+        WHERE name NOT LIKE '%"
+	.Bivio::Type::RealmName::DEMO_CLUB()
+	."'
+        AND name NOT LIKE '%"
+	.Bivio::Type::RealmName::TEST_SUFFIX()
+	."'
+        AND realm_type = "
+        .Bivio::Auth::RealmType::CLUB()->as_sql_param;
+my($_MEMBER_ROLES) = Bivio::Biz::Model::RealmUser::MEMBER_ROLES();
+$_MEMBER_ROLES = Bivio::Auth::RoleSet->to_sql_list(\$_MEMBER_ROLES);
 
 =head1 METHODS
 
@@ -111,20 +125,26 @@ Returns the total number of clubs.
 
 sub count_all {
     my($proto, $req) = @_;
-    my($sth) = Bivio::SQL::Connection->execute(
+    return Bivio::SQL::Connection->execute_one_row(
 	    "SELECT count(*)
-            FROM realm_owner_t 
-            WHERE name NOT LIKE '%"
-	    .Bivio::Type::RealmName::DEMO_CLUB()
-	    ."'
-            AND name NOT LIKE '%"
-	    .Bivio::Type::RealmName::TEST_SUFFIX()
-	    ."'
-            AND realm_type = "
-            .Bivio::Auth::RealmType::CLUB()->as_sql_param
-	    );
-    my($count) = $sth->fetchrow_array;
-    return $count;
+            ".$_COUNT_ALL_WHERE_CLAUSE)->[0]
+}
+
+=for html <a name="count_all_members"></a>
+
+=head2 static count_all_members(Bivio::Agent::Request req) : int
+
+Returns the total number of members of L<count_all|"count_all"> clubs.
+
+=cut
+
+sub count_all_members {
+    my($proto, $req) = @_;
+    return Bivio::SQL::Connection->execute_one_row(
+	    "SELECT count(DISTINCT user_id)
+            FROM realm_user_t
+            WHERE role IN $_MEMBER_ROLES
+            AND realm_id IN (SELECT realm_id $_COUNT_ALL_WHERE_CLAUSE)")->[0];
 }
 
 =for html <a name="delete_instruments_and_transactions"></a>
