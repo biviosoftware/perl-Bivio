@@ -79,8 +79,15 @@ an exception will be expected.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
+use Bivio::Die;
+use Bivio::DieCode;
+use Bivio::IO::ClassLoader;
+
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
@@ -123,8 +130,10 @@ front-end to C<Test::Harness>.
 
 sub run {
     my($proto, $tests) = @_;
-    my($die) = Bivio::Die->catch(sub {_compile($tests)});
-    return $die->as_string;
+    # Compile blows up.  May want to "catch" and print result as opposed
+    # to dying.
+    _run(_compile($tests));
+    return;
 }
 
 #=PRIVATE METHODS
@@ -196,7 +205,7 @@ sub _compile {
 			    || ref($expected) eq 'ARRAY'
 			    || UNIVERSAL::isa($expected, 'Bivio::DieCode'));
 		push(@result, {
-		    proto_name => $proto_name
+		    proto_name => $proto_name,
 		    proto => $proto,
 		    group_name => $group_name,
 		    method => $method,
@@ -220,6 +229,38 @@ sub _die {
     # DOES NOT RETURN
 }
 
+# _equal(any expected, any actual) : boolean
+#
+# Returns true if the two structures compare identically.
+#
+sub _equal {
+    my($expected, $actual) = @_;
+    return 0 unless defined($expected) eq defined($actual);
+    return 1 unless defined($expected);
+    return 0 unless ref($expected) eq ref($actual);
+    return $expected eq $actual ? 1 : 0 unless ref($expected);
+    if (ref($expected) eq 'ARRAY') {
+	return 0 unless int(@$expected) == int(@$actual);
+	for (my($i) = 0; $i <= $#$expected; $i++) {
+	    return 0 unless _equal($expected->[$i], $actual->[$i]);
+	}
+	return 1;
+    }
+    if (ref($expected) eq 'HASH') {
+	my(@e_keys) = sort(keys(%$expected));
+	my(@a_keys) = sort(keys(%$actual));
+	return 0 unless _equal(\@e_keys, \@a_keys);
+	foreach my $k (@e_keys) {
+	    return 0 unless _equal($expected->{$k}, $actual->{$k});
+	}
+	return 1;
+    }
+    return _equal($$expected, $$actual) if ref($expected) eq 'SCALAR';
+
+    # CODE, GLOB, Regex, and blessed references should always be equal exactly
+    return $expected eq $actual ? 1 : 0;
+}
+
 # _result_ok(any proto, string method, array_ref params, any expected, any actual) : boolean
 #
 # Default result_ok handler.
@@ -228,6 +269,102 @@ sub _result_ok {
     my($proto, $method, $params, $expected, $actual) = @_;
     # Make sure actual equal expected
     return;
+}
+
+# _run(array_ref cases)
+#
+# Runs the tests as returned from _compile().
+#
+sub _run {
+    my($cases) = @_;
+    my($c) = 0;
+    print('1..'.int(@$cases)."\n");
+    foreach my $case (@$cases) {
+	$c++;
+	my($actual);
+	my($die) = Bivio::Die->catch(sub {
+	    my($method) = $case->{method};
+	    _trace($case->{proto}, '->', $method, '(', $case->{params}, ')')
+		if $_TRACE;
+	    $actual = [$case->{proto}->$method(@{$case->{params}})];
+	    return;
+	});
+	_trace('returned ', $die ? $die->as_string : $actual)
+	    if $_TRACE;
+	my($err, $ok);
+	if (ref($case->{expected}) eq 'CODE') {
+	    my($die2) = Bivio::Die->catch(sub {
+		$ok = &{$case->{expected}}(
+		    $case->{proto},
+		    $case->{method},
+		    $case->{params},
+		    $actual || $die,
+		);
+		$err = 'custom result_ok() failed' unless $ok;
+		return;
+	    });
+	    $err = 'Error in result_ok: '.$die2->as_string
+		if $die2;
+	}
+	elsif ($die) {
+	    my($code) = $die->get('code');
+	    if (defined($case->{expected})
+		&& UNIVERSAL::isa($case->{expected}, 'Bivio::DieCode')) {
+		$ok = $case->{expected} eq $code;
+		$err = 'expected '.$case->{expected}->as_string
+		    .' but got '.$code->as_string
+		    unless $ok;
+	    }
+	    else {
+		$err = 'unexpected '.$code->as_string;
+	    }
+	}
+	elsif (ref($case->{expected}) eq 'ARRAY') {
+	    $ok = _equal($case->{expected}, $actual);
+	    $err = 'expected '._summarize($case->{expected})
+		.' but got '._summarize($actual);
+	}
+	# else ignore result
+
+	print($ok ? "ok $c\n" : ("not ok $c $case->{case_name}: $err\n"));
+    }
+    return;
+}
+
+# _summarize(array_ref value) : string
+#
+# Returns a summary of the array_ref.
+#
+sub _summarize {
+    my($value) = @_;
+    return '[]' unless @$value;
+    my($res) = '[';
+    my($i) = 0;
+    foreach my $v (@$value) {
+	if (++$i > 3) {
+	    # Extra dot gets chopped below
+	    $res .= '....';
+	    last;
+	}
+	$res .= ref($v)
+	    ? UNIVERSAL::can($v, 'as_string')
+	        ? _summarize_scalar($v->as_string)
+	        : ref($v)
+	    : _summarize_scalar($v);
+	$res .= ',';
+    }
+    chop($res);
+    return $res.']';
+}
+
+# _summarize_scalar(string v) : string
+#
+# Trims the scalar if too long.  Outputs undef, if undefined.
+#
+sub _summarize_scalar {
+    my($v) = @_;
+    return 'undef' unless defined($v);
+    return length($v) > 20 ? substr($v, 0, 20).'...' : $v;
 }
 
 =head1 COPYRIGHT
