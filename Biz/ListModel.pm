@@ -173,6 +173,8 @@ sub internal_load {
 
 =for html <a name="load"></a>
 
+=head2 load()
+
 =head2 load(hash_ref query)
 
 =head2 load(Bivio::SQL::ListQuery query)
@@ -194,6 +196,7 @@ sub load {
     # Clear out old query
     my($auth_id) = $self->get_request->get('auth_id');
     my($sql_support) = $self->internal_get_sql_support;
+    $query = {} unless defined($query);
     if (ref($query) eq 'HASH') {
 	$query->{auth_id} = $auth_id;
 	$query->{count} = $_PAGE_SIZE;
