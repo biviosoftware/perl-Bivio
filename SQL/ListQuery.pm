@@ -316,6 +316,29 @@ sub format_uri_for_this_page {
     return _format_uri(\%attrs, $support);
 }
 
+=for html <a name="format_uri_for_this_parent"></a>
+
+=head2 format_uri_for_this_parent(Bivio::SQL::Support sql_support) : string
+
+Generates the query string (URL-encoded) for this query's parent as
+this.
+
+=cut
+
+sub format_uri_for_this_parent {
+    my($self, $support) = @_;
+    my($attrs) = $self->internal_get();
+
+#TODO: Need to know which detail_model this is bound
+    # Format explicitly, because breaks all the rules
+    my($res) = 'v='.$attrs->{version};
+    die('no parent_id associated with query') unless $attrs->{parent_id};
+    $res .= '&t='.$attrs->{parent_id};
+
+    # We don't know ordering, because this is the parent list
+    return $res;
+}
+
 =for html <a name="get_hidden_field_values"></a>
 
 =head2 get_hidden_field_values(Bivio::SQL::Support sql_support) : array_ref

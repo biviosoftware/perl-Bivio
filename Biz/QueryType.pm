@@ -76,6 +76,7 @@ __PACKAGE__->compile(
     THIS_DETAIL => [5, 'format_uri_for_this', 'detail_uri'],
     THIS_LIST => [6, 'format_uri_for_this_page', 'list_uri'],
     THIS_CHILD_LIST => [7, 'format_uri_for_this_child', 'detail_uri'],
+    THIS_PARENT => [8, 'format_uri_for_this_parent', 'parent_uri'],
 );
 
 =head1 METHODS
