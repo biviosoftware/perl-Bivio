@@ -54,6 +54,12 @@ use File::Find ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_IGNORE_POD) = {
+    '=for' => 1,
+    '=over' => 1,
+    '=back' => 1,
+    '=cut' => 1,
+};
 
 my($_FILES) = {};
 my($_SOURCE_DIR);
@@ -176,7 +182,7 @@ sub render {
 		unless -e $file;
 
     my($lines) = [`cat $file | perl2html -c`];
-#TODO: reformat POD
+    _reformat_pod($self, $lines);
     _add_links($self, $lines, $package);
 
     $$buffer .= join('', @$lines);
@@ -221,7 +227,8 @@ sub _add_links {
 	    }
 
 	    push(@$matches, $package)
-		    if $_FILES->{$package} && $package ne $ignore_package;
+		    if $_FILES->{$package} && $package ne $ignore_package
+			    && ! _contains($matches, $package);
 	}
 
 	# iterate the matches, substituting in hrefs into the line
@@ -237,6 +244,19 @@ sub _add_links {
 	}
     }
     return;
+}
+
+# _contains(array_ref values, string item) : boolean
+#
+# Returns true if the array contains the item.
+#
+sub _contains {
+    my($values, $item) = @_;
+
+    foreach my $value (@$values) {
+	return 1 if $value eq $item;
+    }
+    return 0;
 }
 
 # _find_files() : hash_ref
@@ -258,6 +278,74 @@ sub _find_files {
 	    },
 	    $_SOURCE_DIR);
     return;
+}
+
+# _reformat_pod(self, array_ref lines)
+#
+# Reformats POD documentation.
+#
+sub _reformat_pod {
+    my($self, $lines) = @_;
+
+    my($in_pod) = 0;
+    foreach my $line (@$lines) {
+	my($pod, $doc);
+	if ($line =~ /^(<font.*[^>]>)?(=[chiobpfbe]\w+)\s?(.*)$/) {
+	    $in_pod = 1;
+	    $pod = $2;
+	    $doc = $3;
+        }
+
+	next unless $in_pod;
+
+	$line = '# '._unescape_pod($line);
+
+	next unless $pod;
+
+	$line =~ s/$pod\s?//;
+
+	if ($doc) {
+	    $doc = _unescape_pod($doc);
+	    my($match_doc) = $doc;
+	    $match_doc =~ s/([()\[\]])/\\$1/g;
+	    $line =~ s,$match_doc,<b>$doc</b>,;
+	}
+
+	if ($_IGNORE_POD->{$pod}) {
+	    $line = '';
+	}
+	if ($pod eq '=cut') {
+	    $in_pod = 0;
+	}
+    }
+    return;
+}
+
+# _unescape_pod(string line) : string
+#
+# Converts POD markup into HTML.
+#
+sub _unescape_pod {
+    my($line) = @_;
+
+#TODO: the doc line isn't escaped
+    $line =~ s,E<lt>,&lt;,g;
+    $line =~ s,E<gt>,&gt;,g;
+    $line =~ s,I<(.*?)>,<i>$1</i>,g;
+
+    $line =~ s,E&lt;lt&gt;,&lt;,g;
+    $line =~ s,E&lt;gt&gt;,&gt;,g;
+    $line =~ s,C&lt;(.*?)&gt;,<code>$1</code>,g;
+    $line =~ s,B&lt;(.*?)&gt;,<b>$1</b>,g;
+    $line =~ s,I&lt;(.*?)&gt;,<i>$1</i>,g;
+
+    # L<Bivio::Collection::Attributes>
+    # L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
+    # L<Bivio::Util->gettimeofday|Bivio::Util/"gettimeofday">
+    $line =~ s,L&lt;(.*?)\|.*?&gt;,$1,g;
+    $line =~ s,L&lt;(.*?)&gt;,$1,g;
+
+    return $line;
 }
 
 =head1 COPYRIGHT
