@@ -108,7 +108,7 @@ sub process_request {
 		    $task_id = $req->get('task_id') unless $task_id;
 		    _trace('Executing: ', $task_id) if $_TRACE;
 		    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-		    $req->put(task => $task,
+		    $req->put_durable(task => $task,
 			    redirect_count => $redirect_count);
 #TODO: This is a hack.  Should we clear out all models(?)
 		    $req->delete(qw(list_model form_model));
@@ -128,6 +128,8 @@ sub process_request {
 	    my($attrs) = $die->get('attrs');
 	    _trace('redirect from ', $task_id, ' to ', $attrs->{task_id})
 		    if $_TRACE;
+#TODO: add this when thoroughly debugged
+#	    $req->clear_nondurable_state;
 #TODO: Make this a method in Request
 	    $req->put(task_id => ($task_id = $attrs->{task_id}));
 	    $req->internal_redirect_realm($task_id);
