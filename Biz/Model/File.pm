@@ -44,6 +44,8 @@ The contents vary by volume type:
 
 Contains the C<Content-Type>.  It may be null
 iwc we detect the content-type (on download) from the name.
+Use L<extract_mime_content_type|"extract_mime_content_type">,
+don't assume this.
 
 =item MAIL_CACHE
 
@@ -73,11 +75,14 @@ use Bivio::MIME::Type;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::FileVolume;
+use Bivio::Mail::RFC822;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_MAX_SQL_PARAMS) = Bivio::SQL::Connection->MAX_PARAMETERS;
+my($_NOT_TSPECIALS) = Bivio::Mail::RFC822->TSPECIALS();
+$_NOT_TSPECIALS =~ s/\[/[^/;
 
 =head1 METHODS
 
@@ -154,7 +159,7 @@ sub create {
     $values->{is_public} = 0
             unless $values->{is_public};
 
-    _set_title_in_auxinfo($values);
+    _set_title_in_auxinfo($values, $values->{name_sort});
 
     # Set the volume from request if not set.
     $values->{volume} = $req->get('Bivio::Type::FileVolume')
@@ -429,6 +434,10 @@ sub extract_mime_content_id {
 
 =head2 extract_mime_content_type() : string
 
+=head2 static extract_mime_content_type(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
+=head2 static extract_mime_content_type(string_ref aux_info) : string
+
 Treats aux_info field as a MIME header to find the content type.
 Returns first occurence or looks up type via filename extension.
 
@@ -436,17 +445,32 @@ Returns first occurence or looks up type via filename extension.
 
 sub extract_mime_content_type {
     my($self, $list_model, $model_prefix) = @_;
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
-    my($aux_info) = $m->get($p.'aux_info');
+    my($aux_info) = _get_aux_info_from_param(@_);
 
-    return lc($1) if defined($aux_info)
-	    && $aux_info =~ /content-type:\s+([^;\s]+)/i;
+    if ($aux_info) {
+#TODO: Deprecated case where the aux_info is just the content type
+	return $aux_info
+		if $aux_info =~ /^$_NOT_TSPECIALS+\/$_NOT_TSPECIALS+/oi;
 
-    # Extract content type from the filename.  MIME::Type always
-    # returns a valid content type.
-    my($fn) = _extract_mime_filename($aux_info);
-    return Bivio::MIME::Type->from_extension(defined($fn) ? $fn : '');
+	# Normal content type
+	return lc($1)
+		if $aux_info =~ /content-type:\s+([^;\s]+)/i;
+
+	# Extract content type from the mime filename.  MIME::Type always
+	# returns a valid content type.
+	my($fn) = _extract_mime_filename($aux_info);
+	return Bivio::MIME::Type->from_extension($fn) if defined($fn);
+    }
+
+    # Map file name, if possible.  If aux_info scalar, just default.
+    my($fn) = '';
+    unless (ref($list_model) eq 'SCALAR') {
+	my($p) = $model_prefix || '';
+	my($m) = $list_model || $self;
+	$fn= $m->get($p.'name');
+    }
+    # MIME::Type always returns a valid type.
+    return Bivio::MIME::Type->from_extension($fn);
 }
 
 =for html <a name="extract_mime_filename"></a>
@@ -508,17 +532,7 @@ Returns the empty string if no title.
 =cut
 
 sub extract_mime_title {
-    my($self, $list_model, $model_prefix) = @_;
-    my($aux_info);
-    if (ref($list_model) eq 'SCALAR') {
-	# Make a copy just in case
-	$aux_info = $$list_model;
-    }
-    else {
-	my($p) = $model_prefix || '';
-	my($m) = $list_model || $self;
-	$aux_info = $m->get($p.'aux_info');
-    }
+    my($aux_info) = _get_aux_info_from_param(@_);
     return '' unless defined($aux_info)
 	    && $aux_info =~ /title:\s*([^\n]+)/i;
     my($title) = $1;
@@ -616,19 +630,22 @@ sub update {
 	    unless $new_values->{modified_date_time};
     $new_values->{user_id} = $req->get('auth_user')->get('realm_id')
 	    unless $new_values->{user_id};
-    foreach my $k (qw(bytes is_directory volume)) {
+    foreach my $k (qw(bytes is_directory volume name_sort)) {
 	$self->throw_die('DIE', "can't set $k in update")
 		if exists($new_values->{$k});
     }
 
-    $new_values->{name_sort} = lc($new_values->{name}) if $new_values->{name};
+    $new_values->{name_sort} = lc($new_values->{name})
+	    if exists($new_values->{name});
 
     my($bytes);
     if (exists($new_values->{content})) {
 	my($c) = $new_values->{content};
 	$new_values->{bytes} = ref($c) ? length($$c) : 0;
 	$bytes = $new_values->{bytes} - $properties->{bytes};
-	_set_title_in_auxinfo($new_values);
+	_set_title_in_auxinfo($new_values,
+		defined($new_values->{name_sort}) ? $new_values->{name_sort}
+		: $properties->{name_sort});
     }
     $self->SUPER::update($new_values);
     _update_quota($self, $self->internal_get, $self->to_kbytes($bytes))
@@ -651,30 +668,53 @@ sub _extract_mime_filename {
     return $name;
 }
 
-# _set_title_in_auxinfo(hash_ref new_values)
+# _get_aux_info_from_param(Bivio::Biz::Model::File self) : string
+# _get_aux_info_from_param(undef, Bivio::Biz::ListModel list_model, string model_prefix) : string
+# extract_mime_content_type(undef, string_ref aux_info) : string
+#
+# Extract aux_info from a file or string_ref.
+#
+sub _get_aux_info_from_param {
+    my($self, $list_model, $model_prefix) = @_;
+    # Make a copy just in case
+    return $$list_model if ref($list_model) eq 'SCALAR';
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    return $m->get($p.'aux_info');
+}
+
+# _set_title_in_auxinfo(hash_ref new_values, string name)
 #
 # We extract the title from the document and append it to aux_info.
 # Must be called after bytes is is set.
 #
 sub _set_title_in_auxinfo {
-    my($values) = @_;
+    my($values, $name) = @_;
 
     # Only handle text/html right now.
-    my($i) = $values->{aux_info};
-    return unless $values->{bytes} && $i && $i !~ /title:/i
-	    && $i =~ /content-type:\s*text.html/i;
+    my($i) = $values->{aux_info} || '';
+    return unless $values->{bytes} && $i !~ /title:/i;
 
-    my($t) = Bivio::HTML->unescape(
-	    ${$values->{content}}
-	    =~ /<title>\s*([.\n]+)\s*<\/title>/);
+    # Optimistic checking
+    return unless extract_mime_content_type(undef, \$i) eq 'text/html'
+	    || Bivio::MIME::Type->from_extension($name) eq 'text/html';
+
+    # Look in the first few bytes
+    my($t) = substr(${$values->{content}}, 0, 10000)
+	    =~ /<title>\s*(.+)\s*<\/title>/is;
+    return unless defined($t) && length($t);
+    $t = Bivio::HTML->unescape($t);
     # Get rid of any special space chars and escape quoted literal
     $t =~ s/\s+/ /g;
     $t =~ s/(["\\])/\\$1/g;
-    $i .= "\r\nTitle: \"".$t.'"';
+
+    # Append the title to aux_info
+    $i =~ s/([^\n])$/$1\n/;
+    $i .= "Title: \"".$t.'"';
+
     # just in case, truncate.  Doesn't matter if it is in the middle
     # of the word--well almost, but LongText is very long.
-    $values->{aux_info} = substr(
-	    length($i), 0, Bivio::Type::LongText->get_width());
+    $values->{aux_info} = substr($i, 0, Bivio::Type::LongText->get_width());
     return;
 }
 
