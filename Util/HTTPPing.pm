@@ -9,6 +9,10 @@ $_ = $Bivio::Util::HTTPPing::VERSION;
 
 Bivio::Util::HTTPPing - pings HTTP server is up
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Util::HTTPPing;
@@ -38,18 +42,13 @@ C<Bivio::Util::HTTPPing> pings a HTTP is running.
 
 =head2 USAGE : string
 
-Returns:
-
-  usage: s-http-ping [options] command [args...]
-  commands:
-    page url ... -- request url(s)
-    process_status -- check load avg and process status
+Returns usage.
 
 =cut
 
 sub USAGE {
     return <<'EOF';
-usage: s-http-ping [options] command [args...]
+usage: b-http-ping [options] command [args...]
 commands:
     page url ... -- request url(s)
     process_status -- check load avg and process status
@@ -57,8 +56,8 @@ EOF
 }
 
 #=IMPORTS
-use Bivio::IO::Config;
 use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::Config;
 use Bivio::IO::File;
 use Bivio::IO::Trace;
 use HTTP::Headers ();
@@ -67,11 +66,8 @@ use HTTP::Request ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my(%_HOST_MAP) = (
-    'www1.bivio.com', 'www.bivio.com',
-    'www2.bivio.com', 'www.bivio.com',
-);
 Bivio::IO::Config->register(my $_CFG = {
+    host_map => {},
     status_file => '/var/tmp/httpd.status',
 });
 
@@ -84,6 +80,10 @@ Bivio::IO::Config->register(my $_CFG = {
 =head2 static handle_config(hash cfg)
 
 =over 4
+
+=item host_map : hash_ref
+
+Name mapping for paged hosts.
 
 =item status_file : string [/var/tmp/httpd.status]
 
@@ -113,15 +113,17 @@ sub page {
     my($self, @pages) = @_;
     my($user_agent) = Bivio::Ext::LWPUserAgent->new(1),
     my($status) = '';
+
     foreach my $page (@pages) {
         my($host) = $page =~ m!^\w+://([^:/]+)!;
-        $host = $_HOST_MAP{$host} if exists($_HOST_MAP{$host});
-        my($header) = HTTP::Headers->new(Host => $host);
-        my($request) = HTTP::Request->new('GET', $page, $header);
-        my($reply) = $user_agent->request($request);
+        $host = $_CFG->{host_map}->{$host}
+            if exists($_CFG->{host_map}->{$host});
+        _trace('paging ', $host) if $_TRACE;
+        my($reply) = $user_agent->request(HTTP::Request->new('GET', $page,
+            HTTP::Headers->new(Host => $host)));
         next if $reply->is_success;
         $status .= 'PAGE: '.$page."\n".$reply->status_line."\n".
-                substr($reply->as_string, 0, 512)."\n---\n";
+            substr($reply->as_string, 0, 512)."\n---\n";
     }
     return $status;
 }
