@@ -414,7 +414,8 @@ sub create_cell {
 	    $cell = Bivio::UI::Widget::Join->new([
 		Bivio::UI::HTML::Widget::FormFieldError->new({
 		    field => $col,
-		    label => $col,
+		    label => [['->get_request'], 'Bivio::UI::Facade', 'Text',
+			'->get_value', $col],
 		}),
 		$cell,
 	    ]);
