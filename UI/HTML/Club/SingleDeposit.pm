@@ -117,17 +117,21 @@ sub new {
 			    })),
 		],
 		[
-		    Bivio::UI::HTML::Widget::FormFieldLabel->new({
-			label => 'Remark',
-			field => 'RealmTransaction.remark',
-		    }),
-		],
-		[
-		    Bivio::UI::HTML::Widget::TextArea->new({
+		    Bivio::UI::HTML::Widget::Join->new({
 			cell_expand => 1,
-			field => 'RealmTransaction.remark',
-			rows => 3,
-			cols => 25,
+			values => [
+			    Bivio::UI::HTML::Widget::FormFieldLabel->new({
+				label => 'Remark',
+				field => 'RealmTransaction.remark',
+			    }),
+			    '<br>',
+			    Bivio::UI::HTML::Widget::TextArea->new({
+				cell_expand => 1,
+				field => 'RealmTransaction.remark',
+				rows => 3,
+				cols => 25,
+			    }),
+			],
 		    }),
 		],
 		[
