@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..55\n"; }
+BEGIN { $| = 1; print "1..61\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Type::DateTime;
@@ -44,6 +44,16 @@ my(@tests) = (
 	    '2440588 0' => '0 0 0 1 1 1970',
 	    '2441377 0' => '0 0 0 29 2 1972',
 	    '2451604 47593' => '13 13 13 29 2 2000',
+	],
+	add_days => [
+	    ['2440588 0', 1] => '2440589 0',
+	    ['2440588 0', -1] => '2440587 0',
+	],
+	add_seconds => [
+	    ['2440588 0', 1] => '2440588 1',
+	    ['2440588 0', 86401] => '2440589 1',
+	    ['2440588 0', -86401] => '2440586 86399',
+	    ['2440588 0', -1] => '2440587 86399',
 	],
     },
     'Bivio::Type::Date', {
@@ -115,13 +125,17 @@ sub t {
     my($class, $method, $case, $expected) = @_;
     my($actual, $error) =  $method eq 'to_parts'
 	    ? join(' ', $class->$method($case))
-		    : $class->$method($case);
-    (print "ok ", $T++, "\n"), return if defined($actual) == defined($expected)
-	    && (!defined($actual) || $actual eq $expected);
+		    : $class->$method(ref($case) ? @$case : $case);
+    if (defined($actual) == defined($expected)
+	    && (!defined($actual) || $actual eq $expected)) {
+	print "ok ", $T++, "\n";
+	return;
+    }
     print "not ok ", $T++,  " $class\->$method\(",
-	    defined($case) ? $case : '<undef>', "\) = ",
+	    defined($case) ? (ref($case) ? join(', ', @$case) : $case)
+		    : '<undef>', "\) = ",
 	    defined($actual) ? $actual : '<undef>',
-	    ', ',
-	    defined($error) ? $error->get_name : '<undef>',
+	    ', expected=', defined($expected) ? $expected : '<undef>',
+	    defined($error) ? (', ', $error->get_name) : '',
 	    "\n";
 }
