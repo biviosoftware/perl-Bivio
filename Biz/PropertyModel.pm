@@ -66,6 +66,34 @@ sub new {
 
 =cut
 
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes all related child models and then the current model.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+    my($children) = $self->internal_get_sql_support->get_children;
+
+    # iterate backward, dependencies are reversed
+    for (my $i = int(@$children) - 2; $i >= 0; $i -= 2) {
+	my($child) = $children->[$i];
+	my($key_map) = $children->[$i + 1];
+
+	# copy the current model's key values into the query
+	my($query) = {};
+	foreach my $key (keys(%$key_map)) {
+	    $query->{$key} = $self->get($key_map->{$key});
+	}
+	$child->delete_all($query);
+    }
+    $self->delete;
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values) : Bivio::Biz::PropertyModel
@@ -161,11 +189,26 @@ sub delete {
     my($query);
     ($self, $query) = _load_args(@_);
     $self = $self->new() unless ref($self);
-    my($sql_support) = $self->internal_get_sql_support;
-    # Is always an "auth_load" unless no auth_id
-    my($f) = $sql_support->get('auth_id');
-    $query->{$f->{name}} = $self->get_request->get('auth_id') if $f;
-    return $sql_support->delete($query, $self);
+    return $self->internal_get_sql_support->delete(
+	    _add_auth_id($self, $query), $self);
+}
+
+=for html <a name="delete_all"></a>
+
+=head2 static delete_all(hash_ref query) : int
+
+Deletes all the models of this type with the specified (possibly
+partial key) query. Returns the number of models deleted.
+
+=cut
+
+sub delete_all {
+    my($self, $query) = @_;
+    $self = $self->new() unless ref($self);
+    my($rows) =  $self->internal_get_sql_support->delete_all(
+	    _add_auth_id($self, $query), $self);
+    _trace($rows, ' ', ref($self)) if $_TRACE;
+    return $rows;
 }
 
 =for html <a name="execute_auth_user"></a>
@@ -312,9 +355,9 @@ to get the hash_ref to initialize the sql support instance.
 sub internal_initialize_sql_support {
     my($proto, $config) = @_;
     die('cannot create anonymous PropertyModels') if $config;
-    my($sql_support) =  Bivio::SQL::PropertySupport->new(
-	    $proto->internal_initialize);
-    return $sql_support;
+    $config = $proto->internal_initialize;
+    $config->{class} = ref($proto) || $proto;
+    return  Bivio::SQL::PropertySupport->new($config);
 }
 
 =for html <a name="is_loaded"></a>
@@ -392,12 +435,10 @@ I<query> is the same as in L<load|"load">.
 
 sub iterate_start {
     my($self, $order_by, $query) = @_;
-    my($auth_id) = $self->get_request->get('auth_id');
-    $self->throw_die('DIE', 'no auth_id') unless $auth_id;
-    my($support) = $self->internal_get_sql_support;
-    $query ||= {};
-    $query->{$support->get('auth_id')->{name}} = $auth_id;
-    return $support->iterate_start($self, $order_by, $query);
+    $self->throw_die('DIE', 'no auth_id')
+	    unless $self->get_request->get('auth_id');
+    return $self->internal_get_sql_support->iterate_start($self, $order_by,
+	    _add_auth_id($self, $query || {}));
 }
 
 =for html <a name="load"></a>
@@ -462,6 +503,21 @@ sub load_this_from_request {
 	    {message => 'see previous warning, too'}, caller)
 	    unless $q;
     return $self->load($q);
+}
+
+=for html <a name="register_child_model"></a>
+
+=head2 register_child_model(string child, hash_ref key_map)
+
+Adds the specified (child, key_map) pair to the child list. Called by
+PropertySupport.
+
+=cut
+
+sub register_child_model {
+    my($self, $child, $key_map) = @_;
+    $self->internal_get_sql_support->register_child_model($child, $key_map);
+    return;
 }
 
 =for html <a name="unauth_delete"></a>
@@ -595,16 +651,7 @@ B<DEPRECATED>
 
 sub unsafe_load {
     my($self, $query) = _load_args(@_);
-
-    # Ensure we are only getting data from the realm we are authorized
-    # to operate in.
-    my($sql_support) = $self->internal_get_sql_support;
-    my($k) = $sql_support->get('auth_id');
-
-    # Will override existing value for auth_id if model has an auth_id
-    $query->{$k->{name}} = $self->get_request->get('auth_id') if $k;
-
-    return $self->unauth_load($query);
+    return $self->unauth_load(_add_auth_id($self, $query));
 }
 
 =for html <a name="unsafe_load_this_from_request"></a>
@@ -662,6 +709,24 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _add_auth_id(self, hash_ref query) : hash_ref
+#
+# Adds the auth_id field and value to the query, if defined. Returns
+# the query.
+#
+# Ensure we are only accessing data from the realm we are authorized
+# to operate in.
+#
+sub _add_auth_id {
+    my($self, $query) = @_;
+    my($sql_support) = $self->internal_get_sql_support;
+    my($auth_field) = $sql_support->get('auth_id');
+    # Will override existing value for auth_id if model has an auth_id
+    $query->{$auth_field->{name}} = $self->get_request->get('auth_id')
+	    if $auth_field;
+    return $query;
+}
 
 # _die_not_found(self, array_ref args, string pkg, string file, string line)
 #
