@@ -1,4 +1,7 @@
 #!perl
+#
+# $Id$
+#
 use Cwd ();
 @ARGV || die('usage: perl run_httpd.pl <port>');
 $ENV{PERLLIB} = '.';
@@ -17,6 +20,18 @@ continue {
     print OUT;
 }
 close(OUT);
+sub symlink ($$) {
+    my($file, $link) = @_;
+    -e $link || symlink($file, $link) || die("symlink($file, $link): $!");
+}
+-e 'html' || mkdir('html', 0755) || die("mkdir(html): $!");
+&symlink('../../../html/i', 'html/i');
+&symlink('../../data', 'data');
+&symlink('.', 'Bivio');
+&symlink('.', 'logs');
+&symlink('/usr/local/apache/libexec', 'libexec');
+-e 'data/clubs/cosmic/messages/maillist.html'
+    || system('mhonarc -rc ../../etc/majordomo/club.mrc -outdir data/clubs/cosmic/messages/ /usr/local/mail/archive/cosmic.1999??');
 exec('/usr/local/apache/bin/httpd', '-X', '-f', "$pwd/run_httpd.conf");
 __DATA__
 #
