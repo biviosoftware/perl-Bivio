@@ -47,12 +47,25 @@ sub DEMO_CLUB_SUFFIX {
     return '_demo_club';
 }
 
+=for html <a name="SHADOW_PREFIX"></a>
+
+=head2 SHADOW_PREFIX : string
+
+Returns prefix character for shadow names.
+
+=cut
+
+sub SHADOW_PREFIX {
+    return '=';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_DEMO_CLUB_SUFFIX) = DEMO_CLUB_SUFFIX();
+my($_SHADOW_PREFIX) = SHADOW_PREFIX();
 my(%_RESERVED) = map {($_, 1)} qw(
     abuse
     adm
@@ -157,6 +170,36 @@ sub from_literal {
     return (undef, Bivio::TypeError::DEMO_CLUB_SUFFIX())
 	    if $value =~ /$_DEMO_CLUB_SUFFIX/o;
     return $value;
+}
+
+=for html <a name="is_shadow"></a>
+
+=head2 is_shadow(string value) : boolean
+
+Returns true if the RealmName is a shadow name.
+
+=cut
+
+sub is_shadow {
+    my(undef, $value) = @_;
+    return defined($value) && $value =~ /^$_SHADOW_PREFIX/o ? 1 : 0;
+}
+
+=for html <a name="to_xml"></a>
+
+=head2 to_xml(any value) : string
+
+Returns I<name> formatted properly for XML.
+
+HACK: if I<value> L<is_shadow|"is_shadow">, it rendered as the empty string.
+This is assumed by L<Bivio::UI::XML::ClubExport|Bivio::UI::XML::ClubExport>.
+
+=cut
+
+sub to_xml {
+    my($proto, $value) = @_;
+    return '' unless defined($value) && !$proto->is_shadow($value);
+    return Bivio::Util::escape_html($value);
 }
 
 #=PRIVATE METHODS
