@@ -31,6 +31,9 @@ If you want
 a simple name, e.g.
 first name, use L<Bivio::Type::Name|Bivio::Type::Name>.
 
+Note: leading and trailing spaces are trimmed in
+L<from_literal|"from_literal">.
+
 =cut
 
 #=IMPORTS
@@ -40,6 +43,24 @@ first name, use L<Bivio::Type::Name|Bivio::Type::Name>.
 =head1 METHODS
 
 =cut
+
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(string value) : any
+
+Returns C<undef> if the line is empty.
+Leading and trailing blanks are trimmed.
+
+=cut
+
+sub from_literal {
+    my(undef, $value) = @_;
+    return undef unless defined($value);
+    # Leave middle spaces in case a "display" name.
+    $value =~ s/^\s+|\s+$//g;
+    return undef unless length($value);
+    return $value;
+}
 
 =for html <a name="get_width"></a>
 
