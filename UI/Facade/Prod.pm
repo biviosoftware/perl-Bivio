@@ -219,8 +219,8 @@ __PACKAGE__->new({
 	    # Some required strings and values
 	    $fc->create_group('bivio', 'logo_icon', 'site_name');
 	    $fc->create_group('bivio home', 'home_alt_text');
-	    $fc->create_group('page_left_margin', 20);
-	    $fc->create_group('table_default_align', 'center');
+	    $fc->create_group(20, 'page_left_margin');
+	    $fc->create_group('center', 'table_default_align');
 
 	    $fc->initialize_standard_support;
 
