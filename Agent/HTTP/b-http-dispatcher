@@ -217,8 +217,6 @@ User <$user>
 Group <$group>
 ServerAdmin <$user>
 UseCanonicalName on
-# Single server operates strangely wrt KeepAlive
-KeepAlive off
 
 #
 # Perl
@@ -243,9 +241,7 @@ PerlPassEnv ORACLE_SID
 #
 Timeout 60
 HostnameLookups off
-KeepAlive On
-MaxKeepAliveRequests 5
-KeepAliveTimeout 10
+KeepAlive off
 MinSpareServers 1
 MaxSpareServers 1
 StartServers 1
