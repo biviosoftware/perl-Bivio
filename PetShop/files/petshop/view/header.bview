@@ -45,8 +45,16 @@ view_main(Page({
 		],
 	    ],
 	}),
-
-	# The child's content
-	view_widget_value('header_content'),
+	Grid({
+	    expand => 1,
+	    values => [
+		[
+		    # The child's content
+		    view_widget_value('header_content'),
+		],
+	    ],
+	}),
+	'<p><hr>',
+	TaskInfo({}),
     ]),
 }));
