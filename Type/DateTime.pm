@@ -651,7 +651,8 @@ Returns an array_ref of seconds and microseconds.
 
 sub gettimeofday {
     my($i) = '8..bytes';
-    syscall(&main::SYS_gettimeofday, $i, 0);
+#    syscall(&main::SYS_gettimeofday, $i, 0);
+    syscall(&SYS_gettimeofday, $i, 0);
     return [unpack('ll', $i)];
 }
 
