@@ -1818,7 +1818,7 @@ my(@_CFG) = (
         ?/accounting/taxes
         Bivio::Biz::Model::TaxYearForm
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
-        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::UI::HTML::Club::Taxes
         next=CLUB_ACCOUNTING_TAXES
     )],
@@ -1853,6 +1853,7 @@ my(@_CFG) = (
         ?/accounting/taxes/checklist
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Action::InactiveMemberHack
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::TaxId->execute_load
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
