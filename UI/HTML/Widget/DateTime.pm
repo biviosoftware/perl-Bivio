@@ -56,15 +56,47 @@ Not used if I<value> is a constant.
 =cut
 
 #=IMPORTS
-use Bivio::Type::DateTime;
 use Bivio::Agent::Request;
+use Bivio::Type::DateTime;
 use Bivio::UI::DateTimeMode;
 use Bivio::UI::HTML::Format::DateTime;
+use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
+my($_JSV) = Bivio::UI::HTML::Widget::JavaScript->VERSION_VAR;
+
+# Write once, run nowhere...  Date.getFullYear was not introduced
+# until JavaScript 1.2.  Date.getYear is totally broken.  Read
+# O'Reilly JavaScript book under Date.getYear.  IE3 doesn't go
+# before 1970.  NS3 does bizarre things with dates.  Anyway,
+# this is the solution.  Study it carefully before changing it.
+my($_FUNCS) = <<"EOF";
+function dt(m,j,t,gmt){
+var y=j-$_UNIX_EPOCH;
+if(y<0
+&&navigator.appName.indexOf('Microsoft')
+&&navigator.appVersion<4.0){
+document.write(gmt);
+return;
+}
+var d=new Date((y*$_SECONDS+t)*1000);
+document.write(
+((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d)):'')
++(m==3?' ':'')
++((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):''));
+}
+function dt_n(n){
+return n<10?'0'+n:n;
+}
+function dt_y(d){
+if($_JSV>=1.2){return d.getFullYear();}
+var y=d.getYear();
+return y<1000?y+1900:y;
+}
+EOF
 
 =head1 FACTORIES
 
@@ -123,29 +155,23 @@ sub render {
 
     # Don't display anything if null
     $$buffer .= $fields->{undef_value}, return unless defined($value);
-    $$buffer .= "<script language=\"JavaScript\">\n<!--\n";
     my($req) = Bivio::Agent::Request->get_current;
     unless ($req->unsafe_get('javascript_dt')) {
+	Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer);
 	# ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
-	$$buffer .= <<"EOF";
-function dt_n(n) {
-return n<10?'0'+n:n;
-}
-function dt(m, j, t) {
-var d=new Date(((j-$_UNIX_EPOCH)*$_SECONDS+t)*1000);
-document.write(
-((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(d.getFullYear()):'')
-+(m==3?' ':'')
-+((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()+Math.round(d.getSeconds()/60)):''));
-}
-EOF
+	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
+	$$buffer .= $_FUNCS;
 	$req->put(javascript_dt => 1);
     }
-    my($mi) = $fields->{mode};
-    $$buffer .= 'dt('.join(',', $mi, split(' ', $value)).')'
-	    ."\n// -->\n</script><noscript>";
-    $$buffer .= Bivio::UI::HTML::Format::DateTime->get_widget_value(
+    else {
+	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
+    }
+    my($gmt) = Bivio::UI::HTML::Format::DateTime->get_widget_value(
 	    $value, $fields->{mode});
+    my($mi) = $fields->{mode};
+    $$buffer .= 'dt('.join(',', $mi, split(' ', $value), "'$gmt'").')'
+	    ."\n// -->\n</script><noscript>";
+    $$buffer .= $gmt;
     $$buffer .= '</noscript>';
     return;
 }
