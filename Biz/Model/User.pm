@@ -33,10 +33,12 @@ and delete interface to the C<user_t> table.
 
 =cut
 
+
 #=IMPORTS
 use Bivio::Agent::Request;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Date;
 use Bivio::Type::Email;
@@ -45,11 +47,13 @@ use Bivio::Type::Gender;
 use Bivio::Type::Location;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::RealmName;
 
 #=VARIABLES
-my($_SHADOW_PREFIX) = '=';
+my($_SHADOW_PREFIX) = Bivio::Biz::Model::RealmOwner->SHADOW_PREFIX();
 # arbitrary value, allows for 99,999 name collisions
-my($_MAX_SHADOW_NAME_SIZE) = 22;
+my($_MAX_SHADOW_INDEX) = 99999;
+my($_MAX_SHADOW_NAME_SIZE) = Bivio::Type::RealmName->get_width - 8;
 
 =head1 METHODS
 
@@ -76,6 +80,15 @@ sub cascade_delete {
     $realm_user->unauth_load(realm_id => $id, user_id => $id)
 	    || die("couldn't find user's RealmUser");
     $realm_user->delete();
+
+    # clear the user from any outstanding invites
+    # this could happen if the user is a shadow user
+    Bivio::SQL::Connection->execute('
+            UPDATE realm_invite_t
+            set realm_user_id=?
+            WHERE realm_user_id=?',
+	    [undef, $id]);
+
     $self->delete();
 
     # delete realm specified data (email, address, ...)
@@ -92,9 +105,18 @@ Sets I<gender> if not set, then calls SUPER.
 =cut
 
 sub create {
-    my($self, $values) = @_;
+    my($self, $values) = (shift, shift);
     $values->{gender} ||= Bivio::Type::Gender::UNKNOWN();
-    return $self->SUPER::create($values);
+    my($got_one) = 0;
+    foreach my $n (qw(last_name first_name middle_name)) {
+	if (defined($values->{$n}) && length($values->{$n})) {
+	    $got_one++;
+	    last;
+	}
+    }
+    $self->die('must have at least one of first, last, and middle names')
+	    unless $got_one;
+    return $self->SUPER::create($values, @_);
 }
 
 =for html <a name="format_full_name"></a>
@@ -119,17 +141,16 @@ sub format_full_name {
 
 =for html <a name="generate_shadow_user_name"></a>
 
-=head2 static generate_shadow_user_name(string first_name, string last_name, boolean active) : string
+=head2 static generate_shadow_user_name(string first_name, string last_name) : string
 
 =head2 static generate_shadow_user_name(string first_name, string last_name) : string
 
 Creates a shadow realm name for the user with the specified first/last name.
 The name will be unique across current realms.
-Active default to 1.
 
 The shadow user name format is:
 
-    =<first>_<last><num>-<active>
+    =<first>_<last><num>
 
 Ex. =roberto_zanutta2-1
 
@@ -138,9 +159,10 @@ The name portion will be truncated if necessary.
 =cut
 
 sub generate_shadow_user_name {
-    my(undef, $first_name, $last_name, $active) = @_;
-    die("invalid first and last name") unless ($first_name || $last_name);
-    $active = 1 unless defined($active);
+    my(undef, $first_name, $last_name) = @_;
+
+    die("invalid first and last name")
+	    unless defined($first_name) || defined($last_name);
     my($name) = $last_name;
     $name = $first_name.'_'.$name if defined($first_name);
     $name =~ s/\s/_/g;
@@ -154,10 +176,13 @@ sub generate_shadow_user_name {
 	    || Bivio::Agent::Request->new();
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
     my($unique_num) = 0;
-    while ($realm->unauth_load(name => $name.$unique_num.'-'.$active)) {
+    my($n);
+    while ($realm->unauth_load(name => $n = $name.$unique_num)) {
 	$unique_num++;
+	# Unlikely to happen, but we certainly want to die when it does.
+	die($n, ": too many collisions") if $unique_num > $_MAX_SHADOW_INDEX;
     }
-    return $name.$unique_num.'-'.$active;
+    return $n;
 }
 
 =for html <a name="get_outgoing_emails"></a>
@@ -219,6 +244,38 @@ sub internal_initialize {
         },
 	auth_id => 'user_id',
     };
+}
+
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values)
+
+Updates the current model's values.  Validates one of
+first, last and middle are set.
+
+=cut
+
+sub update {
+    my($self, $new_values) = (shift, shift);
+    my($properties) = $self->internal_get;
+    my($got_one) = 0;
+    # Must either have a defined value
+    foreach my $n (qw(first_name middle_name last_name)) {
+	if (exists($new_values->{$n})) {
+	    if (defined($new_values->{$n}) && length($new_values->{$n})) {
+		$got_one++;
+		last;
+	    }
+	}
+	# Don't need to check length, since user can't touch these values
+	elsif (defined($properties->{$n})) {
+	    $got_one++;
+	    last;
+	}
+    }
+    $self->die('must have at least one of first, last, and middle names')
+	    unless $got_one;
+    return;
 }
 
 #=PRIVATE METHODS
