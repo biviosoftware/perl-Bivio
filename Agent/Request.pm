@@ -398,6 +398,24 @@ sub redirect {
     return;
 }
 
+=for html <a name="set_realm"></a>
+
+=head2 set_auth_realm(Bivio::Auth::Realm new_realm)
+
+Changes attributes to be authorized for I<new_realm>.
+
+=cut
+
+sub set_realm {
+    my($self, $new_realm) = @_;
+    my($owner) = $new_realm->unsafe_get('owner');
+    my($auth_user) = $self->unsafe_get('auth_user');
+    $self->put(auth_realm => $new_realm,
+	    auth_id => $owner ? $owner->get('realm_id') : undef,
+	    auth_role => $new_realm->get_user_role($auth_user, $self));
+    return;
+}
+
 =for html <a name="task_ok"></a>
 
 =head2 task_ok(Bivio::Agent::TaskId task_id) : boolean
