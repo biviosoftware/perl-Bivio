@@ -43,7 +43,7 @@ BEGIN {
     $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line (\d+)\.' . "\n\$";
     $_PACKAGE = __PACKAGE__;
     $_LOGGER = \&_log_stderr;
-    $_DEFAULT_MAX_ARG_LENGTH = 512;
+    $_DEFAULT_MAX_ARG_LENGTH = 2048;
     $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
     $_WANT_PID = 0;
     $_STACK_TRACE_DIE = 0;
@@ -166,7 +166,7 @@ If writing to C<Sys::Syslog>, the facility to use.
 
 If writing to C<Sys::Syslog>, the name of the server.
 
-=item max_arg_length : int [512]
+=item max_arg_length : int [2048]
 
 Maximum length of warning message components, i.e. arguments to
 L<die|"die"> and L<warn|"warn">.
@@ -317,10 +317,10 @@ sub _format {
     $text .= ' ';
     my($o);
     foreach $o (@$msg) {
-	# Don't let as_string calls crash;
+	# Don't let as_string calls crash;  Only call as_string on refs.
 	defined($o) || ($text .= '<undef>', next);
 	my($s);
-	$s = &UNIVERSAL::can($o, 'as_string') ?
+	$s = ref($o) && &UNIVERSAL::can($o, 'as_string') ?
 		(eval {$o->as_string} || $o) : $o;
 	$text .= length($s) > $_MAX_ARG_LENGTH
 		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
