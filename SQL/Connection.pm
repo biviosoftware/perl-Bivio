@@ -213,7 +213,7 @@ sub execute {
 	# Execute the statement
 	my($start_time) = Bivio::Type::DateTime->gettimeofday();
 #TODO: should be a Die->catch() but this prints a stack trace, and
-#      causes the request to loose attributes?
+#      causes the request to lose attributes?
         my($ok) = Bivio::Die->eval(sub {
         	_execute_helper($self, $sql, $params, $has_blob, \$statement);
                 return 1;
