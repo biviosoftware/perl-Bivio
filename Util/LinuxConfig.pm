@@ -534,6 +534,8 @@ Updates resolv.conf like:
 
 sub resolv_conf {
     my($self, $domain, @nameserver) = @_;
+    $self->usage_error('missing name servers')
+	unless @nameserver;
     return _edit($self, "/etc/resolv.conf",
 	[sub {
 	     my($data) = @_;
