@@ -31,6 +31,7 @@ C<Bivio::Biz::Model::TransactionSummaryDateForm> date fields for txn report
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::CompleteJournalDateForm;
 use Bivio::Type::Date;
 
@@ -56,7 +57,8 @@ sub execute_empty {
 
     unless ($start_date && $end_date) {
 	$end_date = $self->get_request->get('report_date');
-	$start_date = Bivio::Type::Date->get_previous_month($end_date);
+	$start_date = Bivio::Biz::Accounting::Tax
+	    ->get_start_of_fiscal_year($end_date);
     }
     $self->internal_put_field(end_date => $end_date);
     $self->internal_put_field(start_date => $start_date);
