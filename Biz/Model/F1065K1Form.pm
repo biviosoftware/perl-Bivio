@@ -71,7 +71,9 @@ Creates a 1065 K-1 information model.
 
 sub new {
     my($self) = Bivio::Biz::ListModel::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->{$_PACKAGE} = {
+	withdrawal_date => undef,
+    };
     return $self;
 }
 
@@ -202,6 +204,11 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'nondeductible_expenses',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'cash_distribution',
 		type => 'Amount',
 		constraint => 'NONE',
@@ -269,6 +276,7 @@ Returns a single row with calculated values.
   17e     F1065K1Form.foreign_tax_type
   17e     F1065K1Form.foreign_tax
   19      F1065K1Form.tax_exempt_interest
+  21      F1065K1Form.nondeductible_expenses
   22      F1065K1Form.cash_distribution
   23      F1065K1Form.property_distribution
 
@@ -297,7 +305,6 @@ sub internal_load_rows {
 
     my($properties) = {
 	%{$taxk1->get_shallow_copy},
-	percentage_start => _get_percentage($self, $user, $date, 1),
 	percentage_end => _get_percentage($self, $user, $date, 0),
 	irs_center => $tax1065->get('irs_center'),
 	return_type => _get_return_type($self, $user, $date),
@@ -317,6 +324,8 @@ sub internal_load_rows {
 	->get_foreign_income_country($self->get_request),
 	tax_exempt_interest => $allocations->get_or_default(
 		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc, 0),
+	nondeductible_expenses => $_M->neg($allocations->get_or_default(
+		$tax->NON_DEDUCTIBLE_EXPENSE->get_short_desc, 0)),
 	cash_distribution => _get_cash_withdrawal_amount($self, $user, $date),
 	property_distribution => _get_stock_withdrawal_amount($self, $user,
 		$date),
@@ -327,6 +336,7 @@ sub internal_load_rows {
 
     $properties = {
 	%$properties,
+	percentage_start => _get_percentage($self, $user, $date, 1),
 	investment_income => Bivio::Biz::Model::F1065Form
 	        ->get_investment_income($properties),
 	investment_expenses => $properties->{portfolio_deductions},
@@ -495,9 +505,18 @@ sub _get_foreign_income {
 #
 sub _get_percentage {
     my($self, $user, $date, $start) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     if ($start) {
-	$date = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year($date);
+	# if withdrawal_date is present, subtract one day
+	if ($fields->{withdrawal_date}) {
+	    $date = Bivio::Type::DateTime->get_previous_day(
+		    $fields->{withdrawal_date});
+	}
+	else {
+	    $date = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
+		    $date);
+	}
     }
     my($ownership) = Bivio::Biz::Accounting::ClubOwnership->new(
 	    $self->get_request, $date);
@@ -513,13 +532,16 @@ sub _get_percentage {
 #
 sub _get_return_type {
     my($self, $user, $date) = @_;
+    my($fields) = $self->{$_PACKAGE};
 
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
 	    $date);
 
     my($entry_type) = 'Bivio::Type::EntryType';
+    my($date_param) = Bivio::Type::DateTime->from_sql_value(
+	    'realm_transaction_t.date_time');
     my($sth) = Bivio::SQL::Connection->execute("
-            SELECT COUNT(*)
+            SELECT $date_param
             FROM realm_transaction_t, entry_t, member_entry_t
             WHERE realm_transaction_t.realm_transaction_id
                 =entry_t.realm_transaction_id
@@ -528,19 +550,19 @@ sub _get_return_type {
             AND entry_t.entry_type in (?, ?)
             AND realm_transaction_t.date_time BETWEEN
                 $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
-            AND realm_transaction_t.realm_id=?",
+            AND realm_transaction_t.realm_id=?
+            ORDER BY realm_transaction_t.date_time",
 	    [$user->get('realm_id'),
 		    $entry_type->MEMBER_WITHDRAWAL_FULL_CASH->as_int,
 		    $entry_type->MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
 		    $start_date, $date,
 		    $self->get_request->get('auth_id')]);
 
-    my($count) = 0;
     while (my $row = $sth->fetchrow_arrayref) {
-	$count = $row->[0] || 0;
+	$fields->{withdrawal_date} = $row->[0];
     }
 
-    return $count > 0 ? Bivio::Type::F1065Return->FINAL_RETURN
+    return $fields->{withdrawal_date} ? Bivio::Type::F1065Return->FINAL_RETURN
 	    : Bivio::Type::F1065Return->UNKNOWN;
 }
 
