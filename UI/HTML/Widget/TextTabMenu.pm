@@ -105,6 +105,23 @@ sub new {
 
 =cut
 
+=for html <a name="get_task_label"></a>
+
+=head2 get_task_label(Bivio::Agent::TaskId task) : string
+
+Returns the label for I<task> in this menu.
+
+=cut
+
+sub get_task_label {
+    my($self, $task) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    foreach my $item (@{$fields->{items}}) {
+        return $item->[0] if $item->[1] == $task;
+    }
+    Carp::croak($task->as_string, ': not found');
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -178,8 +195,8 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my($req) = Bivio::Agent::Request->get_current;
     my($task) = $req->get('task_id');
-    my($this_task) = $fields->{task2first_task}->{$task};
-    die($task->get_name, ': unknown task') unless defined($this_task);
+    # Task need not be in the list, so set to 0 (not equal to any task)
+    my($this_task) = $fields->{task2first_task}->{$task} || -1;
     my($labels, $pad) = ('<td>&nbsp;</td>', '<td></td>');
     my($th) = $fields->{tab_height};
     my($item);
