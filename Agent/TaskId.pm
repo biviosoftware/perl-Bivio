@@ -589,7 +589,7 @@ my(@_CFG) = (
         USER
         ADMIN_READ
         ?/clubs
-        Bivio::Biz::Model::UserClubList
+        Bivio::Biz::Model::UserClubList->execute_load_all
         Bivio::UI::HTML::User::ClubList
     )],
     [qw(
