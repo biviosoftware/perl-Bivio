@@ -111,7 +111,7 @@ my($_MAIL_HOST);
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::AccountSummaryList
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::RealmOwner
 
 Creates a RealmOwner.
 
