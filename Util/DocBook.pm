@@ -84,6 +84,8 @@ my(%_XML_TO_HTML) = (
     orderedlist => 'ol',
     itemizedlist => 'ul',
     para => 'p',
+    property => 'tt',
+    replaceable => 'i',
     sect1 => 0,
     sect2 => 0,
     simplesect => 0,
@@ -143,6 +145,7 @@ sub _xml_to_html_parse {
 	my($tag) = shift(@$tree);
 	unless ($tag) {
 	    # Literal
+#TODO: Is this a bug?
 	    $state->{out} .= $state->{escape_literal}
 		? Bivio::HTML->escape(shift(@$tree)) : shift(@$tree);
 	    next;
@@ -199,8 +202,12 @@ sub _xml_to_html_parse_attribution {
 #
 sub _xml_to_html_parse_b_includeperl {
     my($state, $tree) = @_;
-    $state->{out} .= Bivio::HTML->escape(
-	${Bivio::IO::File->read($state->{attrs}->{file})});
+    my($res) = 	Bivio::IO::File->read($state->{attrs}->{file});
+    # merge lines that end in backslash
+    $$res =~ s/\\\n//sg;
+    $res = Bivio::HTML->escape($$res);
+    $res =~ s,#(/?\w+)#,<$1>,g;
+    $state->{out} .= $res;
     return;
 }
 
