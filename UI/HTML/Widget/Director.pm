@@ -59,6 +59,7 @@ The widget to use when the I<control> is undefined.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Alert;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -136,7 +137,8 @@ sub render {
 	$fields->{undef_value}->render($source, $buffer);
 	return;
     }
-    die("$ctl: invalid control value");
+    Bivio::IO::Alert->die($fields->{control},
+	    ': invalid control value: ', $ctl);
 }
 
 #=PRIVATE METHODS
