@@ -70,6 +70,10 @@ internal error: CORE::die was caught by Bivio::Die->catch
 die within handle_die: CORE::die was called while handling an existing die
 I<proto> is either the instance or class passed to C<handle_die>.
 
+=item MISSING_COOKIES: client_addr
+
+browser did not return all necessary cookies
+
 =item VERSION_MISMATCH: entity, class
 
 version mismatch: user request using invalid or old form, query, or uri.
@@ -118,17 +122,21 @@ error reading or writing to the client.
 
 two or more people are trying to update your records simultaneously
 
-=item MAIL_LOOP: entity, class, error
-
-avoid a mail loop by not forwarding a message a second time
-
 =item DB_ERROR: entity, class, error
 
 unexpected error while communicating with database
 
-=item MISSING_COOKIES: client_addr
+=item MAIL_LOOP: entity, class, error
 
-unexpected error while communicating with database
+avoid a mail loop by not forwarding a message a second time
+
+=item UNEXPECTED_EOF
+
+unexpected end of file
+
+=item CONFIG_ERROR: entity, class
+
+missing or bad configuration
 
 =back
 
@@ -141,114 +149,142 @@ unexpected error while communicating with database
 #=VARIABLES
 __PACKAGE__->compile([
     UNKNOWN => [
-    	0,
-	'unknown',
+	#
+   	0,
+	undef,
 	'unexpected error',
     ],
     NOT_FOUND => [
+	# entity, class
     	1,
-	'not found',
+	undef,
 	'entity was not found',
     ],
     ALREADY_EXISTS => [
+	# entity, class
     	2,
-	'already exists',
+	undef,
 	'attempt to create an entity which already exists',
     ],
     FORBIDDEN => [
+	# operation, user, entity
     	3,
-	'no permission',
+	undef,
 	'operation is not allowed on entity',
     ],
     CATCH_WITHIN_DIE => [
+	# program_error
     	4,
-	'catch called within die',
+	undef,
 	'Bivio::Die::catch was called within a call to die',
     ],
     INVALID_DIE_CODE => [
+	# code, attrs, program_error
     	5,
-	'invalid die code',
+        undef,
 	'code passed to Bivio::Die->throw is not an Bivio::Type::Enum',
     ],
     DIE => [
+	# message, program_error
     	6,
 	'internal error',
 	'CORE::die was caught by Bivio::Die->catch',
     ],
     DIE_WITHIN_HANDLE_DIE => [
+	# message, proto, program_error
     	7,
-	'die within handle_die',
+	undef,
 	'CORE::die was called while handling an existing die',
     ],
     MISSING_COOKIES => [
+	# client_addr
 	8,
 	undef,
 	'browser did not return all necessary cookies',
     ],
     VERSION_MISMATCH => [
+	# entity, class
     	9,
-	'version mismatch',
+	undef,
 	'user request using invalid or old form, query, or uri',
     ],
     CORRUPT_QUERY => [
+	# entity, class
     	10,
-	'corrupt query',
+	undef,
 	'user request contains invalid query value',
     ],
     SERVER_REDIRECT_TASK => [
+	# task_id
 	11,
-	'server redirect task',
+	undef,
 	'direct dispatcher to switch to new task',
     ],
     CORRUPT_FORM => [
+	# message, entity, class
     	12,
-	'corrupt form',
+	undef,
 	'user request contains invalid form',
     ],
     CLIENT_REDIRECT_TASK => [
+	# task_id
 	13,
-	'client redirect task',
+	undef,
 	'direct user agent to new task',
     ],
     TOO_MANY => [
+	# model
 	14,
-	'too many',
+	undef,
 	'the request returned too much data or too many records',
     ],
     NO_RESOURCES => [
+	# model
 	15,
 	undef,
 	'insufficient resources to satisfy the request',
     ],
     IO_ERROR => [
+	# entity, message
 	16,
 	undef,
 	'file system error',
     ],
     CLIENT_ERROR => [
+	# request
 	17,
 	undef,
 	'error reading or writing to the client',
     ],
     UPDATE_COLLISION => [
+	# entity, class
 	18,
 	undef,
 	'two or more people are trying to update your records simultaneously',
     ],
     DB_ERROR => [
+	# entity, class, error
 	19,
 	undef,
 	'unexpected error while communicating with database',
     ],
     MAIL_LOOP => [
+	# entity, class, error
 	20,
 	undef,
 	'avoid a mail loop',
     ],
     UNEXPECTED_EOF => [
+	#
 	21,
 	undef,
 	'unexpected end of file',
+    ],
+    CONFIG_ERROR => [
+	# entity, class
+	22,
+	undef,
+	'missing or bad configuration',
     ],
 ]);
 
