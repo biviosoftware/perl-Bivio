@@ -186,23 +186,22 @@ sub send {
     my($proto, $recipients, $msg, $offset, $from) = @_;
     Bivio::Die->die('no recipients')
         unless defined($recipients);
-    $recipients = ref($recipients) ? join(',', @$recipients) : $recipients;
-    $msg = ref($msg) ? $msg : \$msg;
-    $recipients =~ s/'/'\\''/g;
     Bivio::Die->die('no message')
         unless defined($msg);
+    my($msg_ref) = ref($msg) ? $msg : \$msg;
+    $recipients = join(',', @$recipients)
+	if ref($recipients);
+    $recipients =~ s/'/'\\''/g;
     $offset ||= 0;
     Bivio::Die->die('negative offset: ', $offset)
         if $offset < 0;
     $from = defined($from) ? '-f' . $from : '';
     $from =~ s/'/'\\''/g;
-    my($err) = _send($proto, $recipients, $msg, $offset, $from);
-
-    # send the error to the errors_to address
+    my($err) = _send($proto, $recipients, $msg_ref, $offset, $from);
     if ($err) {
         $err = _send($proto, $_CFG->{errors_to},
-            _compose_error_message($proto, $err, $recipients, $msg), 0, '');
-        Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg)
+            _compose_error_message($proto, $err, $recipients, $msg_ref), 0, '');
+        Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
             if $err;
     }
     return;
@@ -219,7 +218,6 @@ postmaster.
 =cut
 
 sub send_queued_messages {
-
     while (@$_QUEUE) {
 	shift(@$_QUEUE)->send;
     }
@@ -262,10 +260,9 @@ sub _send {
 #      or need to generate multiple sends.
     _trace('sending to ', $recipients) if $_TRACE;
 
-    if ($_CFG->{reroute_address}) {
-        $recipients = $_CFG->{reroute_address};
-    }
-    my($command) = '| ' . $_CFG->{sendmail} . " $from '$recipients'";
+    my($command) = '| ' . $_CFG->{sendmail} . " $from '"
+	. ($_CFG->{reroute_address} || $recipients)
+	. "'";
     _trace($command) if $_TRACE;
 
     unless (open($fh, $command)) {
