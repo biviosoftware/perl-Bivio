@@ -84,9 +84,11 @@ sub get_instance {
 
 =head2 static new() : Bivio::Biz::Model
 
+=head2 static new(string class) : Bivio::Biz::Model
+
 =head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model
 
-=head2 static new(Bivio::Agent::Request req, any class) : Bivio::Biz::Model
+=head2 static new(Bivio::Agent::Request req, string class) : Bivio::Biz::Model
 
 Creates a Model with I<req>, if supplied.  The class of the model is defined by
 C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
@@ -95,11 +97,12 @@ with I<class> as its argument and the resultant class is instantiated.
 =cut
 
 sub new {
-    my($proto, $req, $class) = @_;
-    $req ||= $proto->unsafe_get_request;
-    return $proto->get_instance($class)->new($req) if defined($class);
+    my($proto, $req, $class) = _new_args(@_);
+    return $proto->get_instance($class)->new($req)
+	if defined($class);
     $class = ref($proto) || $proto;
-    _initialize_class_info($class) unless $_CLASS_INFO{$class};
+    _initialize_class_info($class)
+        unless $_CLASS_INFO{$class};
     my($ci) = $_CLASS_INFO{$class};
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency
@@ -820,6 +823,24 @@ sub _load_all_property_models {
 	$class->get_instance;
     }
     return;
+}
+
+# _new_args(proto, Bivio::Agent::Request req, any class) : array
+# _new_args(proto, any class) : array
+#
+# Returns (proto, req, class).  Figures out calling form and returns
+# the correct parameter values.
+#
+sub _new_args {
+    my($proto, $req, $class) = @_;
+    if (defined($req) && !ref($req)) {
+	Bivio::Die->die($req,
+	    ': bad parameter, expecting a Bivio::Agent::Request',
+	) if defined($class);
+	$class = $req;
+	$req = undef;
+    }
+    return ($proto, $req || $proto->unsafe_get_request, $class);
 }
 
 =head1 COPYRIGHT
