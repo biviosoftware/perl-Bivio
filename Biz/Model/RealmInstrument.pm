@@ -98,6 +98,19 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+=for html <a name="get_fed_tax_free"></a>
+
+=head2 get_fed_tax_free() : string
+
+Returns the local fed_tax_free, or from the instrument.
+
+=cut
+
+sub get_fed_tax_free {
+    my($self) = @_;
+    return _get_field_value($self, 'fed_tax_free');
+}
+
 =for html <a name="get_name"></a>
 
 =head2 get_name() : string
@@ -109,10 +122,7 @@ is a realm-local instrument.
 
 sub get_name {
     my($self) = @_;
-
-    return defined($self->get('instrument_id'))
-	    ? $self->get_model('Instrument')->get('name')
-	    : $self->get('name');
+    return _get_field_value($self, 'name');
 }
 
 =for html <a name="get_shares_owned"></a>
@@ -146,10 +156,7 @@ depending on whether this is a realm-local instrument.
 
 sub get_ticker_symbol {
     my($self) = @_;
-
-    return defined($self->get('instrument_id'))
-	    ? $self->get_model('Instrument')->get('ticker_symbol')
-	    : $self->get('ticker_symbol');
+    return _get_field_value($self, 'ticker_symbol');
 }
 
 =for html <a name="has_transactions"></a>
@@ -394,6 +401,18 @@ sub _get_count {
 	$count = $row->[0];
     }
     return $count;
+}
+
+# _get_field_value(string field) : string
+#
+# Returns the specified field's value, retreived from the local
+# realm instrument, or the global instrument, as apporpriate.
+#
+sub _get_field_value {
+    my($self, $field) = @_;
+    return defined($self->get('instrument_id'))
+	    ? $self->get_model('Instrument')->get($field)
+	    : $self->get($field);
 }
 
 =head1 COPYRIGHT
