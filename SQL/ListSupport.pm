@@ -107,6 +107,10 @@ The version of this particular combination of fields.  It will be
 set in all query strings.  It should be changed whenever the
 declaration changes.  It is used to reject an out-dated query.
 
+=item want_date : boolean [0]
+
+Do we expect a date in the query?  If so, default will be today.
+
 =item want_level_in_select : boolean
 
 Add C<LEVEL> to the select.  This is an Oracle specific field.
@@ -224,6 +228,7 @@ sub new {
 	local_columns => [],
 	# See discussion of =item orabug_fetch_all_select
 	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
+	want_date => $decl->{want_date} ? 1 : 0,
     };
     $proto->init_version($attrs, $decl);
 
