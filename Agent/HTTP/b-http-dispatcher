@@ -250,7 +250,7 @@ AllowOverride None
 Options FollowSymLinks
 </Directory>
 
-<LocationMatch "^/[a-z][a-z][a-z][a-z]+($|/)">
+<LocationMatch "^/[a-z_][a-z_][a-z_][a-z_]+($|/)">
 AuthName bivio:<$port>
 AuthType Basic
 SetHandler perl-script
