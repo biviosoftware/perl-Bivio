@@ -354,6 +354,22 @@ sub get_reply_to {
 	    : $fields->{reply_to_email};
 }
 
+=for html <a name="get_rfc822"></a>
+
+=head2 get_rfc822() : string
+
+I was not sure what to call this method. Basically, you want it to return
+the entire RFC822, offset by the header_offset.
+Note that this method is creating a COPY. It is not yet using IO::Stringy.
+
+=cut
+
+sub get_rfc822 {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return substr(${$fields->{rfc822}}, $fields->{header_offset});
+}
+
 =for html <a name="get_subject"></a>
 
 =head2 get_subject() : string
