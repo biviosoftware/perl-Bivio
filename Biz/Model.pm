@@ -560,6 +560,11 @@ sub merge_initialize_info {
 	    my($value) = $res->{$key};
 	    $proto->die('unexpected key value: ', $key, ' => ', $value)
 		unless ref($value) eq ref($info->{$key});
+	    unless (ref($value)) {
+		# Scalar (version)
+		$res->{$key} = $info->{$key};
+		next;
+	    }
 	    if (ref($value) eq 'ARRAY') {
 		push(@$value, @{$info->{$key}});
 		next;
