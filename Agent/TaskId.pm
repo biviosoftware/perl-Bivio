@@ -1470,7 +1470,7 @@ my(@_CFG) = (
         139
         CLUB
         ACCOUNTING_WRITE
-        %/accounting/investment/local
+        %/accounting/unlisted/new
         Bivio::Biz::Model::LocalInstrumentForm
         Bivio::UI::HTML::Club::LocalInstrument
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -1495,6 +1495,14 @@ my(@_CFG) = (
         Bivio::Biz::Model::LocalPricesForm
         Bivio::UI::HTML::Club::LocalPrices
         next=CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
+    )],
+    [qw(
+        CLUB_ACCOUNTING_LOCAL_VALUE
+        142
+        CLUB
+        ACCOUNTING_WRITE
+        %/accounting/valuation/new
+        Bivio::UI::HTML::Club::Embargoed
     )],
 );
 
