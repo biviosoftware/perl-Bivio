@@ -1051,6 +1051,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileDeleteForm
         Bivio::UI::HTML::Club::FileDelete
