@@ -35,9 +35,27 @@ decimal names (ip numbers).
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="REGEXP"></a>
+
+=head2 REGEXP : regexp_ref
+
+Returns regular expression used for validating.
+
+=cut
+
+sub REGEXP {
+    return qr/^(?:[-a-z0-9]{1,63})(?:\.[-a-z0-9]{1,63})+$/is;
+}
+
 #=IMPORTS
 
 #=VARIABLES
+my($_REGEXP) = __PACKAGE__->REGEXP;
 
 =head1 METHODS
 
@@ -56,7 +74,7 @@ sub from_literal {
     return ($value, $err)
 	unless defined($value);
     return (undef, Bivio::TypeError->DOMAIN_NAME)
-	unless $value =~ /^(?:[-a-z0-9]{1,63})(?:\.[-a-z0-9]{1,63})+$/ios;
+	unless $value =~ $_REGEXP;
     return lc($value);
 }
 
