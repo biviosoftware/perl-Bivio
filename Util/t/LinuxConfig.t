@@ -21,13 +21,19 @@ Bivio::Test->unit([
 		    my($object, $method, $params, $expect, $actual) = @_;
 		    return 0 unless ref($actual) eq 'ARRAY';
 		    foreach my $v (@$tests) {
-			my($data) = Bivio::IO::File->read("$_tmp/$v->[0]");
-			unless ($$data =~ /$v->[1]/s) {
-			    print(STDERR "$v->[1]: not found in $v->[0]\n");
+			my($file, $exp) = @$v;
+			my($data) = Bivio::IO::File->read("$_tmp/$file");
+			if (ref($exp) eq 'CODE') {
+			    next if &$exp($data);
+			    print(STDERR "custom expect failed for $file\n");
 			    return 0;
 			}
-			if ($$data =~ /$v->[1].*$v->[1]/s) {
-			    print(STDERR "$v->[1]: repeated in $v->[0]\n");
+			unless ($$data =~ /$exp/s) {
+			    print(STDERR "$exp: not found in $file\n");
+			    return 0;
+			}
+			if ($$data =~ /$exp.*$exp/s) {
+			    print(STDERR "$exp: repeated in $file\n");
 			    return 0;
 			}
 		    }
@@ -50,8 +56,27 @@ Bivio::Test->unit([
 		['etc/rc.d/init.d/iptables', 'iptables-restore \&\&'],
 	    ],
 	], [
-	    'sendmail_class_file', ['relay-domains', '10.1.1.1'] => [
+	    'add_sendmail_class_line', ['relay-domains', '10.1.1.1'] => [
 		['etc/mail/relay-domains', '10.1.1.1'],
+	    ],
+	], [
+	    'delete_sendmail_class_line', ['relay-domains', 'not-found'] => [
+		# Assumes previous test is an add of 10.1.1.1
+		['etc/mail/relay-domains', sub {${shift(@_)} =~ /10.1.1.1/}],
+	    ],
+	], [
+	    'add_crontab_line', ['existing', '0 * * * * echo exists'] => [
+		['var/spool/cron/existing', 'exists'],
+	    ],
+	], [
+	    'add_crontab_line', ['root', '* 1 * * * OK1', '* * 2 * * OK2'] => [
+		['var/spool/cron/root', 'OK1'],
+		['var/spool/cron/root', 'OK2'],
+	    ],
+	], [
+	    'delete_crontab_line', ['root', '* 1 * * * OK1', '* * 2 * * OK2'] => [
+		# File should be empty
+		['var/spool/cron/root', sub {length(${shift(@_)}) == 0}],
 	    ],
 	], [
 	    'allow_any_sendmail_smtp', [99999] => [
