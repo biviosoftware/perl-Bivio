@@ -1,5 +1,0 @@
-# $Id$
-[
-    ['forms', 'scene', 'visible', 'User ID or Email:', 'type']
-    => 'text',
-];
