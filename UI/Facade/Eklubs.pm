@@ -56,6 +56,7 @@ __PACKAGE__->new({
 	    $fc->value(default => [
 		'family=arial', 'size=x-small',
 	    ]);
+	    $fc->group(help_log_button => ['bold']);
 	    return;
 	}
     },
@@ -73,6 +74,10 @@ __PACKAGE__->new({
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);
 	    $fc->group(scene_header => undef);
+
+	    # Home page isn't special
+	    $fc->group(home_page => '');
+	    $fc->group(descriptive_page_width => 600);
 
 	    # This one is used dynamically by ImageMenu in header_widget
 	    # widget.  It is not a required field.  Only if you are using

@@ -197,6 +197,7 @@ __PACKAGE__->new({
                     descriptive_page
                     page_legend
                     checkbox
+                    page_text
             )],
 		   []);
 	    return;
@@ -219,6 +220,10 @@ __PACKAGE__->new({
 	    $fc->group(table_default_align => 'center');
 	    $fc->group(scene_show_profile => 1);
 	    $fc->group(scene_header => undef);
+
+	    # Home page isn't special
+	    $fc->group(home_page => '');
+	    $fc->group(descriptive_page_width => 600);
 
 	    $fc->initialize_standard_support;
 

@@ -96,6 +96,10 @@ __PACKAGE__->new({
 	    $fc->group(scene_show_profile => 1);
 	    $fc->group(scene_header => undef);
 
+	    # Home page isn't special
+	    $fc->group(home_page => '');
+	    $fc->group(descriptive_page_width => 450);
+
 	    $fc->group(content_widget => Bivio::UI::HTML::Widget->join(
 		    Bivio::UI::HTML::Widget->indirect(
 			    ['page_image_menu']

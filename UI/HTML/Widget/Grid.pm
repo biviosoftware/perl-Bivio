@@ -72,6 +72,10 @@ or a string or it may be a widget or a string.
 Set the width of the table explicitly.  I<expand> should be
 used in most cases.
 
+=item width : array_ref []
+
+Dynamic width.
+
 =back
 
 =head1 CELL ATTRIBUTES
@@ -192,7 +196,12 @@ sub initialize {
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
-    $p .= " width=\"$width\"" if $width;
+    if (ref($width)) {
+	$fields->{width} = $width;
+    }
+    elsif ($width) {
+	$p .= " width=\"$width\"";
+    }
     $p .= Bivio::UI::Align->as_html($align) if $align;
     $fields->{prefix} = $p;
     $fields->{suffix} = '</table>';
@@ -331,6 +340,8 @@ sub render {
     my($bg) = $self->unsafe_get('bgcolor');
     my($req) = $source->get_request;
     $$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req) if $bg;
+    $$buffer .= ' width="'.$source->get_widget_value(@{$fields->{width}}).'"'
+	    if $fields->{width};
     $$buffer .= '>';
 
     my($r, $c);

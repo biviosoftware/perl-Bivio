@@ -32,12 +32,13 @@ Women's Financial Network Investment Club Exchange.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget;
+use Bivio::UI::HTML::BUYandHOLD::Home;
 
 #=VARIABLES
 __PACKAGE__->new({
     clone => 'Prod',
-    uri => 'muri',
-    is_production => 0,
+    uri => 'ic',
+    is_production => 1,
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($fc) = @_;
@@ -89,6 +90,11 @@ __PACKAGE__->new({
 	    $fc->group(table_default_align => 'left');
 	    $fc->group(scene_show_profile => 0);
 	    $fc->group(realm_chooser_button => 'go_small');
+
+	    # Special BUYandHOLD page
+	    $fc->group(home_page => Bivio::UI::HTML::BUYandHOLD::Home->new);
+	    $fc->group(descriptive_page_width => 480);
+
 	    $fc->group(scene_header => Bivio::UI::HTML::Widget::Grid->new({
 		cell_align => 'n',
 		space => 2,
@@ -170,7 +176,7 @@ sub _chooser {
 	    [
 		['http://www.buyandhold.com/bh/en/investmentclubs/index.html',
 			 'Intro'],
-		['/hm/start.html', 'Start a Club'],
+		['/', 'Start a Club'],
 		@{Bivio::UI::HTML::Widget::RealmChooser
 			    ->get_celebrity_columns},
 		['http://www.fool.com/partners/buyandhold/investmentclub'
