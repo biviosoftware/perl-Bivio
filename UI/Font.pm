@@ -311,7 +311,7 @@ sub _initialize {
     $attrs{$_CONFIG_ATTR} = \@c;
     foreach my $a (@c) {
 	if ($_TAG_MAP{$a}) {
-	    $attrs{$_TAG_MAP{$a}} = 1;
+	    $attrs{'tag_'.$_TAG_MAP{$a}} = 1;
 	}
 	elsif ($a =~ /^(family|size|class|id)=(.*)/) {
 	    # May be blank
