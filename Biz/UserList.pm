@@ -35,6 +35,7 @@ C<Bivio::Biz::UserList>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::SqlListSupport;
 use Bivio::IO::Trace;
 
@@ -45,7 +46,7 @@ my($_PACKAGE) = __PACKAGE__;
 my($_COLUMN_INFO) = [
     ['Internal ID', Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     ['User ID', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
-    ['Password', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)]
+    ['Password', Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     ];
 
 my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('user_',
@@ -92,6 +93,30 @@ sub find {
 
     # userlist doesn't use a where clause yet
     return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
+}
+
+=for html <a name="get_heading"></a>
+
+=head2 abstract get_heading() : string
+
+Returns a suitable heading for the model.
+
+=cut
+
+sub get_heading {
+    return "User List";
+}
+
+=for html <a name="get_title"></a>
+
+=head2 abstract get_title() : string
+
+Returns a suitable title of the model.
+
+=cut
+
+sub get_title {
+    return "User List";
 }
 
 #=PRIVATE METHODS
