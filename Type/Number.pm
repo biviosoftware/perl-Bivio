@@ -111,7 +111,7 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
 
     # Delete commas and dollar signs
-    $value =~ s/[,$]//g;
+    $value =~ s/[,\$]//g;
 
     # check for possible "i n/d" format
     if ($value =~ /\//) {
