@@ -72,6 +72,10 @@ Is C<undef>, if method was not POST or equivalent.
 NOTE: Forms must always have unique value names--still ok to
 use C<exists> or C<defined>.
 
+=item is_secure : boolean
+
+Are we running in secure mode (SSL)?
+
 =item mailhost : string
 
 Host name to be used in mailto URLs and such.
@@ -80,21 +84,6 @@ Host name to be used in mailto URLs and such.
 
 Mail message represented by this request.
 
-=item prev_form : hash_ref
-
-Will be set if there is a server redirect and the initial request
-had a form.  Will be overwritten with multiple redirects within same request.
-
-=item prev_query : hash_ref
-
-Will be set if there is a server redirect.  Contains the original
-hash_ref.  Will be overwritten with multiple redirects within same request.
-
-=item prev_uri : string
-
-Will be set if there is a server redirect.  Contains the original
-URI.  Will be overwritten with multiple redirects within same request.
-
 =item query : hash_ref
 
 Attributes in URI query string or other agent equivalent.
@@ -102,12 +91,6 @@ Is C<undef>, if there are no query args--still ok to
 use C<exists> or C<defined>.
 
 NOTE: Query strings must always have unique value names.
-
-=item query_string : string
-
-URI query string or other agent equivalent.
-Is C<undef>, if there is no query_string--still ok to
-use C<exists> or C<defined>.
 
 =item reply : Bivio::Agent::Reply
 
@@ -314,12 +297,7 @@ sub format_email {
 #TODO: Properly quote the email name???
     $email = $self->get_widget_value(@$email) if ref($email);
     # Will bomb if no auth_realm.
-    unless (defined($email)) {
-	my($auth_realm) = $self->get('auth_realm');
-	Carp::croak($auth_realm->get_type->as_string, ": can't format_email")
-		if $auth_realm->get_type eq Bivio::Auth::RealmType::GENERAL();
-	$email = $auth_realm->get('owner_name');
-    }
+    return $self->get('auth_realm')->format_email unless defined($email);
     $email .= '@' . $self->get('mail_host')
 	    unless $email =~ /\@/;
     return $email;
@@ -339,10 +317,6 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_http {
     my($self) = shift;
     # Must be @_ so format_uri handles overloading properly
-#TODO: Check $ENV{HTTPS} to see if set and generate URL based on that?
-#      Need to know if uri itself is in SSL domain...  Add another
-#      attribute to task?  Check to see if anonymous can access?
-#      See if task has a realm owner?
     return 'http://' . $self->get('http_host')
 	    . $self->format_uri(@_);
 }
@@ -543,7 +517,7 @@ sub internal_get_realm_for_task {
     return $realm if $task_id == $self->get('task_id');
     my($task) = Bivio::Agent::Task->get_by_id($task_id);
     my($trt) = $task->get('realm_type');
-    return $realm if $trt == $realm->get_type;
+    return $realm if $trt == $realm->get('type');
     # Else, different realm type, look up
     return _get_realm($self, $trt, $task_id);
 }
@@ -564,14 +538,14 @@ sub internal_redirect_realm {
     my($trt) = $task->get('realm_type');
     if ($new_realm) {
 	# Assert param
-	my($nrt) = $new_realm->get_type;
+	my($nrt) = $new_realm->get('type');
 	Carp::croak($new_task->as_string, 'realm_type mismatch (',
 		$trt->get_name, ' != ', $nrt, ')') unless $trt eq $nrt;
     }
     else {
 	# Only set realm if type is different
 	my($ar) = $self->get('auth_realm');
-	unless ($ar->get_type eq $trt) {
+	unless ($ar->get('type') eq $trt) {
 	    $new_realm = _get_realm($self, $trt, $new_task);
 	    # No new realm, do something reasonable
 	    unless (defined($new_realm)) {
@@ -650,7 +624,6 @@ sub internal_server_redirect {
 	    Bivio::Agent::HTTP::Location->task_has_uri($new_task)
 	    ? $self->format_uri($new_task, undef) : $self->get('uri'),
 	    query => $new_query,
-	    query_string => Bivio::Agent::HTTP::Query->format($new_query),
 	    form => $new_form,
 	    form_model => undef,
 	    form_context => $fc);
@@ -765,7 +738,7 @@ sub task_ok {
     my($task) = Bivio::Agent::Task->get_by_id($task_id);
     my($trt) = $task->get('realm_type');
     my($realm, $role) = $self->get('auth_realm', 'auth_role');
-    my($art) = $realm->get_type;
+    my($art) = $realm->get('type');
     # Normal case is for task and realm types to match, if not...
     if (defined($realm_id)) {
 #TODO: Need to handle multiple realms, e.g. list of clubs to switch to
@@ -814,7 +787,7 @@ sub _get_realm {
 #TODO: This will bomb if the realm disappeared since (cached) user_realms
 #      was accessed.
 	$club->unauth_load(realm_id => $realm_id);
-	return Bivio::Auth::Realm::Club->new($club);
+	return Bivio::Auth::Realm->new($club);
     }
     if ($realm_type eq Bivio::Auth::RealmType::USER()) {
 #TODO: Should this look in the user realm list?  This might point
@@ -823,7 +796,7 @@ sub _get_realm {
 	if ($auth_user) {
 	    my($realm) = $self->unsafe_get('auth_user_realm');
 	    unless ($realm) {
-		$realm = Bivio::Auth::Realm::User->new($auth_user);
+		$realm = Bivio::Auth::Realm->new($auth_user);
 		$self->put(auth_user_realm => $realm);
 	    }
 	    return $realm;
