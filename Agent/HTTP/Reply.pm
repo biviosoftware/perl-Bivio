@@ -44,16 +44,6 @@ my($_PACKAGE) = __PACKAGE__;
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
 my(%_DIE_TO_HTTP_CODE);
-my(%_STATUS_CODES) = map {($_, 1)} (
-	Bivio::Ext::ApacheConstants::OK(),
-	Bivio::Ext::ApacheConstants::NOT_FOUND(),
-	Bivio::Ext::ApacheConstants::SERVER_ERROR(),
-	Bivio::Ext::ApacheConstants::FORBIDDEN(),
-	Bivio::Ext::ApacheConstants::HTTP_SERVICE_UNAVAILABLE(),
-	Bivio::Ext::ApacheConstants::HTTP_BAD_REQUEST(),
-	302,
-	# Add in others as needed
-);
 
 =head1 FACTORIES
 
@@ -199,10 +189,10 @@ sub die_to_http_code {
     unless (%_DIE_TO_HTTP_CODE) {
 	%_DIE_TO_HTTP_CODE = (
 	    # Keep in synch with HTTP::Dispatcher
-	    Bivio::DieCode::AUTH_REQUIRED()
-		=> Bivio::Ext::ApacheConstants::AUTH_REQUIRED(),
-	    Bivio::DieCode::FORBIDDEN() => Bivio::Ext::ApacheConstants::FORBIDDEN(),
-	    Bivio::DieCode::NOT_FOUND() => Bivio::Ext::ApacheConstants::NOT_FOUND(),
+	    Bivio::DieCode::FORBIDDEN()
+		=> Bivio::Ext::ApacheConstants::FORBIDDEN(),
+	    Bivio::DieCode::NOT_FOUND()
+		=> Bivio::Ext::ApacheConstants::NOT_FOUND(),
 	    Bivio::DieCode::CLIENT_REDIRECT_TASK()
 		=> Bivio::Ext::ApacheConstants::OK(),
 	);
@@ -260,8 +250,11 @@ C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
 sub set_http_status {
     my($self, $status) = @_;
     my($fields) = $self->{$_PACKAGE};
+    # It is error prone keeping a list up to date, so we just check
+    # a reasonable range.
     Bivio::IO::Alert->die($status, ': unknown HTTP status')
-		unless defined($status) && $_STATUS_CODES{$status};
+		unless defined($status) && $status =~ /^\d+$/
+			&& 100 <= $status && $status < 600;
     $fields->{status} = $status;
     return;
 }
