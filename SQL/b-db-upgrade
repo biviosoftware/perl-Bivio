@@ -222,6 +222,7 @@ sub _upgrade {
 
     _upgrade_password_request();
     _upgrade_account_sync_and_category();
+    _upgrade_invalidate_passwords();
     print("\n*** done ***\n");
     return;
 }
@@ -269,6 +270,32 @@ SET name='Accounting & Tax Services'
 WHERE name='Tax Preparation'
 /
 ");
+    return;
+}
+
+# _upgrade_invalidate_passwords()
+#
+# Ensures we have invalid passwords on certain accounts.
+#
+sub _upgrade_invalidate_passwords {
+    my($m) = Bivio::Biz::Model->new(Bivio::Agent::Request->get_current_or_new,
+	    'RealmOwner');
+    foreach my $realm (sort(qw(bivio treztalk askcandis takestock account_sync
+		tam_rodriguez rollie_sherman janine_bartlett rose_caesar
+		elina_rutledge sam_chase gwen_button customercare bounce
+		ad_about_001 ad_about_002 ad_about_003 ad_about_004
+		ad_about_005 ad_about_006 ad_about_b001 ad_about_b002
+		ad_about_b003 ad_about_b004 cnn fool ignore investware
+                user_id upload
+        	))) {
+	if ($m->unauth_load(name => $realm)) {
+	    $m->update({password => Bivio::Type::Password->INVALID});
+	    print($realm, ": invalidating password\n");
+	}
+	else {
+	    print($realm, ": NOT FOUND\n");
+	}
+    }
     return;
 }
 
