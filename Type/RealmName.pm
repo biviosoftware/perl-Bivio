@@ -57,9 +57,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     adm
     admin
     administrator
-    advoco
     amanda
-    amicus
     beta
     bin
     bivio
