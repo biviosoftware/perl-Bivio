@@ -113,6 +113,18 @@ sub MAX_FIELD_SIZE {
     return 0x10000;
 }
 
+=for html <a name="NEXT_FIELD"></a>
+
+=head2 NEXT_FIELD : string
+
+Returns the next task to execute.
+
+=cut
+
+sub NEXT_FIELD {
+    return '.next';
+}
+
 =for html <a name="TIMEZONE_FIELD"></a>
 
 =head2 TIMEZONE_FIELD : string
@@ -329,12 +341,13 @@ sub format_context_as_query {
     # If the task we are going to is the same as the unwind task,
     # don't render the context.  Prevents infinite recursion.
     # If we don't have an unwind task, we don't return a context
-    return '' if !$c->{unwind_task} || $c->{unwind_task} == $uri_task;
-
+    return ''
+	if !$c->unsafe_get('unwind_task')
+	    || $c->get('unwind_task') == $uri_task;
 #TODO: Tightly coupled with Widget::Form which knows this is fc=
 #      Need to understand better how to stop the context propagation
-    return '?fc='.Bivio::HTML->escape_query(
-	    Bivio::Biz::FormContext->to_literal($req, $c));
+    return '?fc='
+	. Bivio::HTML->escape_query($c->as_literal($req));
 }
 
 =for html <a name="get_context_from_request"></a>
@@ -365,11 +378,11 @@ sub get_context_from_request {
 
 	    # If redirecting, return the stacked context if there is one
 	    my($c) = $fields->{context};
-	    $c = $c->{form_context} if $c;
+	    $c = $c->get('form_context')
+		if $c;
 	    _trace('unwound context: ', $c) if $_TRACE;
 	    return $c;
 	}
-#TODO: This is horribly inefficient, I think.
 	$form = $self->internal_get_field_values;
 	$context = $self->[$_IDI]->{context};
 	_trace('from model: ', $form) if $_TRACE;
@@ -380,45 +393,27 @@ sub get_context_from_request {
 	_trace('from request: ', $form) if $_TRACE;
     }
 
-    $context = $form = undef if $no_form;
-
-    # Construct a new context from existing state in request.
-    # This code is coupled with FormContext.
-    my($res) = {
-	form_model => ref($self),
-	form => $form,
-	form_context => $context,
-	query => $req->unsafe_get('query'),
-	path_info => $req->unsafe_get('path_info'),
-	unwind_task => $req->unsafe_get('task_id'),
-	cancel_task => $req->get('task')->unsafe_get('cancel'),
-	realm => $req->get('auth_realm'),
-    };
+    $context = $form = undef
+	if $no_form;
 
     # Fix up file fields if any
     my($ff);
-    if ($form && $self
-	    && ($ff = $self->internal_get_file_field_names)) {
+    if ($form && $self && ($ff = $self->internal_get_file_field_names)) {
 	# Need to copy, because we don't want to trash existing form.
 	my($f) = {%$form};
-
-	# Iterate over file fields
 	foreach my $n (@$ff) {
 	    my($fn) = $self->get_field_name_for_html($n);
 	    # Converts to just the file name.  We'd never get this back,
 	    # but we can stuff it into the form.  Widget::File
 	    # knows how to handle this.
 	    $f->{$fn} = $self->get_field_info($n, 'type')
-		    ->to_literal($f->{$fn});
+		->to_literal($f->{$fn});
 	    _trace($n, ': set value=', $f->{$fn}) if $_TRACE;
 	}
-
-	# Save new copy
-	$res->{form} = $f;
+	$form = $f;
     }
-
-    _trace('new context: ', $res) if $_TRACE;
-    return $res;
+    return Bivio::Biz::FormContext->new_from_form(
+	$self, $form, $context, $req);
 }
 
 =for html <a name="get_errors"></a>
@@ -509,9 +504,9 @@ sub get_hidden_field_values {
     my($sql_support) = $self->internal_get_sql_support();
     my(@res);
     push(@res, VERSION_FIELD() => $sql_support->get('version'));
-    push(@res, CONTEXT_FIELD() => Bivio::Biz::FormContext->to_literal(
-	    $self->get_request, $fields->{context}))
-	    if $fields->{context};
+    push(@res, CONTEXT_FIELD() =>
+	$fields->{context}->as_literal($self->get_request),
+    ) if $fields->{context};
     my($properties) = $self->internal_get();
     foreach my $n (@{$self->internal_get_hidden_field_names}) {
 	push(@res, $self->get_field_name_for_html($n),
@@ -600,13 +595,8 @@ sub has_context_field {
     my($fields) = $self->[$_IDI];
     return 0 unless $fields->{context};
     my($c) = $fields->{context};
-    my($model) = $c->{form_model};
-    return 0 unless $model;
-
-    # From the form_model's sql_support, get the type and return
-    # the result of from_literal.
-    my($mi) = $model->get_instance;
-    return $mi->has_fields($name);
+    my($model) = $c->unsafe_get('form_model');
+    return $model ? $model->get_instance->has_fields($name) : 0
 }
 
 =for html <a name="in_error"></a>
@@ -1042,12 +1032,12 @@ sub process {
     my($task) = $req->get('task');
     my($primary_class) = $task->get('form_model');
     $fields->{require_context} = $self->get_info('require_context')
-	    && $req->get_or_default(ref($self).'.'
-		    .'require_context', 1);
+	&& $req->get_or_default(ref($self). '.' . 'require_context', 1);
     if (defined($primary_class) && $primary_class eq ref($self)) {
 	# Primary forms don't require context if task doesn't require
 	# context.
-	$fields->{require_context} = 0 unless $task->get('require_context');
+	$fields->{require_context} = 0
+	    unless $task->get('require_context');
 	_trace(ref($self), ': primary form') if $_TRACE;
     }
     else {
@@ -1058,7 +1048,7 @@ sub process {
 		if $_TRACE;
 	$fields->{literals} = {};
 	$fields->{context} = $self->get_context_from_request($req)
-		if $fields->{require_context};
+	    if $fields->{require_context};
 	return _call_execute($self, 'execute_empty');
     }
 
@@ -1074,21 +1064,21 @@ sub process {
     my($query) = $req->unsafe_get('query');
     if ($query && $query->{fc}) {
 	# If there is an incoming context, must be syntactically valid.
-	my($c) = Bivio::Biz::FormContext->from_literal(
-		$self, $query->{fc});
-	$fields->{context} = $c;
+	$fields->{context} = Bivio::Biz::FormContext->new_from_literal(
+	    $self, $query->{fc});
 	# We don't want it to appear in any more URIs now that we can
 	# store it in a form.
 	delete($query->{fc});
-	$req->put(query => undef) unless int(keys(%$query));
-	_trace('context: ', $c) if $_TRACE;
+	$req->put(query => undef)
+	    unless %$query;
+	_trace('context: ', $fields->{context}) if $_TRACE;
     }
 
     # User didn't input anything, render blank form
     unless ($input) {
 	$fields->{literals} = {};
-	$fields->{context} = _initial_context($self, $req)
-		unless $fields->{context};
+	$fields->{context} = _initial_context($self)
+	    unless $fields->{context};
 	return _call_execute($self, 'execute_empty');
     }
 
@@ -1136,58 +1126,41 @@ the field name explicitly, e.g. RealmOwner.name.1>.
 sub put_context_fields {
     my($self) = shift;
     # Allow zero fields (see _redirect)
-    Carp::croak("must be an even number of parameters")
-		unless int(@_) % 2 == 0;
+    die("must be an even number of parameters")
+	unless @_ % 2 == 0;
     my($fields) = $self->[$_IDI];
-    Carp::croak('form does not require_context') unless $fields->{context};
+    die('form does not require_context')
+	unless $fields->{context};
     my($c) = $fields->{context};
-    my($model) = $c->{form_model};
-    Carp::croak('context does not contain form_model') unless $model;
+    my($model) = $c->get('form_model');
+    die('context does not contain form_model')
+	unless $model;
 
     my($mi) = $model->get_instance;
     # If there is no form, initialize
-    my($f) = $c->{form} ||= {VERSION_FIELD() => $mi->get_info('version')};
+    my($f) = $c->get('form');
+    $c->put(form => $f = {VERSION_FIELD() => $mi->get_info('version')})
+	unless $f;
     while (@_) {
 	my($k, $v) = (shift(@_), shift(@_));
 	my($fn) = $mi->get_field_name_for_html($k);
 	# Convert with to_literal--context->{form} is in raw form
 	$f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
     }
-    _trace('new form: ', $c->{form}) if $_TRACE;
+    _trace('new form: ', $c->get('form')) if $_TRACE;
     return;
 }
 
 =for html <a name="unsafe_get_context"></a>
 
-=head2 unsafe_get_context(string attr) : any
+=head2 unsafe_get_context(string attr) : Bivio::Biz::FormContext
 
-Returns the attribute from the context.  If not in context,
-returns C<undef>.
-
-Valid attributes are:
-
-=over 4
-
-=item unwind_task : Bivio::Agent::TaskId
-
-=item cancel_task : Bivio::Agent::TaskId
-
-=back
+Returns the context object for this form.
 
 =cut
 
 sub unsafe_get_context {
-    my($self, $attr) = @_;
-    my($fields) = $self->[$_IDI];
-
-    # Nothing in context or form doesn't support context
-    return undef unless $fields->{context};
-
-    # Very strict, because we don't want the caller to modify the context.
-    $self->throw_die('DIE', {message => 'invalid context attribute',
-	entity => $attr})
-	    unless $attr =~ /_task$/ && exists($fields->{context}->{$attr});
-    return $fields->{context}->{$attr};
+    return shift->[$_IDI]->{context};
 }
 
 =for html <a name="unsafe_get_context_field"></a>
@@ -1205,20 +1178,20 @@ each time.
 sub unsafe_get_context_field {
     my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
-    Carp::croak('form does not require_context') unless $fields->{context};
+    die('form does not require_context')
+	unless $fields->{context};
     my($c) = $fields->{context};
-    my($model) = $c->{form_model};
-    return undef unless $model;
-
-    # If there is no form, can't be a value
-    return undef unless $c->{form};
-
+    my($model) = $c->get('form_model');
+    return undef
+	unless $model;
+    return undef
+	unless $c->get('form');
     # From the form_model's sql_support, get the type and return
     # the result of from_literal.
     my($mi) = $model->get_instance;
     my($type) = $mi->get_field_info($name, 'type');
     my($fn) = $mi->get_field_name_for_html($name);
-    return $type->from_literal($c->{form}->{$fn});
+    return $type->from_literal($c->get('form')->{$fn});
 }
 
 =for html <a name="validate"></a>
@@ -1442,7 +1415,7 @@ sub _get_literal {
     return defined($value->{filename}) ? $value->{filename} : '';
 }
 
-# _initial_context(Bivio::Biz::FormModel self, Bivio::Agent::Request req) : hash_ref
+# _initial_context(Bivio::Biz::FormModel self) : hash_ref
 #
 # If "self" does not have context, does nothing (context is undef).
 # Else, initialize the context to the "next" task unless the context
@@ -1452,11 +1425,8 @@ sub _initial_context {
     my($self, $req) = @_;
     my($fields) = $self->[$_IDI];
     return unless $fields->{require_context};
-
-    my($c) = $req->unsafe_get('form_context');
-    $c = Bivio::Biz::FormContext->empty($self) unless $c;
-    _trace('context: ', $c) if $_TRACE;
-    return $c;
+    return $self->get_request->unsafe_get('form_context')
+	|| Bivio::Biz::FormContext->new_empty($self);
 }
 
 # _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
@@ -1474,12 +1444,13 @@ sub _parse {
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self,
-	    $form->{VERSION_FIELD()},
+	    $form->{$self->VERSION_FIELD},
 	    $sql_support);
     # Parse context first
-    _parse_context($self, $form) if $fields->{require_context};
+    _parse_context($self, $form)
+	if $fields->{require_context};
     # Ditto for timezone
-    _parse_timezone($self, $form->{TIMEZONE_FIELD()});
+    _parse_timezone($self, $form->{$self->TIMEZONE_FIELD});
 
     # Allow ListFormModel to initialize its state
     $self->internal_pre_parse_columns();
@@ -1490,8 +1461,9 @@ sub _parse {
     $self->internal_put($values);
 
     # .next is set in _redirect()
-    my($next) = $form->{'.next'} || '';
-    _redirect($self, 'cancel') if $next eq 'cancel';
+    my($next) = $form->{$self->NEXT_FIELD} || '';
+    _redirect($self, 'cancel')
+	if $next eq 'cancel';
     return 0 if $next eq 'unwind';
 
     return 1;
@@ -1591,20 +1563,15 @@ sub _parse_cols {
 sub _parse_context {
     my($self, $form) = @_;
     my($fields) = $self->[$_IDI];
-
-    if ($form->{CONTEXT_FIELD()}) {
+    $fields->{context} = $form->{$self->CONTEXT_FIELD}
 	# If there is an incoming context, must be syntactically valid.
 	# Overwrites the query context, if any.
 	# Note that we don't convert "from_html", because we write the
 	# context in Base64 which is HTML compatible.
-	$fields->{context} = Bivio::Biz::FormContext->from_literal(
-		$self, $form->{CONTEXT_FIELD()});
-    }
-    else {
+	? Bivio::Biz::FormContext->new_from_literal(
+	    $self, $form->{$self->CONTEXT_FIELD})
 	# OK, to not have incoming context unless have it from query
-	$fields->{context} = _initial_context($self, $self->get_request)
-		unless $fields->{context};
-    }
+	: $fields->{context} || _initial_context($self);
     _trace('context: ', $fields->{context}) if $_TRACE;
     return;
 }
@@ -1715,56 +1682,14 @@ sub _redirect {
     # Success, redirect to the next task or to the task in
     # the context.
     $req->client_redirect($req->get('task')->get($which))
-	    # Simulate what happens in client_redirect.  We don't want
-	    # context, because there isn't any and we don't want it to
-	    # default (would loop back to where we are).
-#	    undef, $req->unsafe_get('query'), $req->unsafe_get('path_info'),
-#	    1)
-	    unless $fields->{context};
-
-    my($c) = $fields->{context};
-    unless ($c->{form}) {
-	if ($which eq 'cancel' && $c->{cancel_task}) {
-	    _trace('no form, client_redirect: ', $c->{cancel_task}) if $_TRACE;
-	    # If there is no form, redirect to client so looks
-	    # better.  get_context_from_request will do the right thing
-	    # and return the stacked context.
-	    $req->client_redirect($c->{cancel_task}, $c->{realm},
-		   $c->{query}, $c->{path_info});
-	    # DOES NOT RETURN
-	}
-
-	# Next or cancel (not form)
-	_trace('no form, client_redirect: ', $c->{unwind_task},
-		'?', $c->{query}) if $_TRACE;
-	# If there is no form, redirect to client so looks
-	# better.
-	$req->client_redirect($c->{unwind_task}, $c->{realm},
-		$c->{query}, $c->{path_info});
-	# DOES NOT RETURN
-    }
-
-    # Do an server redirect to context, because can't do
-    # client redirect (no way to pass form state (reasonably)).
-    # Indicate to the next form that this is a SUBMIT_UNWIND
-    # Make sure you use that form's SUBMIT_UNWIND button.
-    # In the cancel case, we chain the cancels.
-
-    # Initializes context
-    my($f) = $c->{form};
-    $f->{'.next'} = $which eq 'cancel' ? 'cancel' : 'unwind';
-
-    # Redirect calls us back in get_context_from_request
-    _trace('have form, server_redirect: ', $c->{unwind_task},
-	    '?', $c->{query}) if $_TRACE;
-    $req->server_redirect($c->{unwind_task}, $c->{realm},
-	    $c->{query}, $f, $c->{path_info});
+	unless $fields->{context};
+    $fields->{context}->return_redirect($self, $which);
     # DOES NOT RETURN
 }
 
 # _redirect_same(Bivio::Biz::FormModel self)
 #
-# Redirects to "this" task, because we've encountered a caching
+# Redirects to "this" task, because we've encountered a caching (hidden fields)
 # problem.
 #
 sub _redirect_same {
@@ -1773,8 +1698,7 @@ sub _redirect_same {
     # The form was corrupt.  Throw away the context and
     # the form and redirect back to this task.
     $req->server_redirect($req->get('task_id'),
-	    undef, $req->get('query'), undef,
-	    $req->get('path_info'));
+	undef, $req->get('query'), undef, $req->get('path_info'));
     # DOES NOT RETURN
 }
 
