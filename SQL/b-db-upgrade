@@ -338,6 +338,37 @@ CREATE INDEX tax_k1_realm_i ON tax_k1_t (
                 WHERE entry_type=?)',
 	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()->as_sql_param]);
 
+    _upgrade_reinvested_commissions();
+    return;
+}
+
+# _upgrade_reinvested_commissions()
+#
+# Fixes the tax category on all reinvested commission.
+# Existing records have a tax category of NOT_TAXABLE which isn't correct.
+#
+sub _upgrade_reinvested_commissions {
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_transaction_t.realm_transaction_id,
+                entry_t.tax_category
+            FROM realm_transaction_t, entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =entry_t.realm_transaction_id
+            AND entry_t.entry_type=?',
+	    [Bivio::Type::EntryType->INSTRUMENT_DISTRIBUTION_INVESTMENT
+		    ->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($txn_id, $tax) = @$row;
+	Bivio::SQL::Connection->execute('
+                UPDATE entry_t
+                SET tax_category=?
+                WHERE realm_transaction_id=?
+                AND entry_type=?',
+		[$tax, $txn_id,
+			Bivio::Type::EntryType
+			->INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION
+			->as_int]);
+    }
     return;
 }
 
