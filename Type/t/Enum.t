@@ -137,3 +137,14 @@ t(!$t3->can_be_zero && $t3->can_be_negative && !$t3->can_be_positive);
 t($t3->get_width == 10);
 t($t3->get_precision == 9);
 
+use Bivio::Test::Request;
+my($req) = Bivio::Test::Request->get_instance;
+t(!$req->has_keys('Type.T3'));
+t($t3->execute($req) == 0);
+t($req->get('Type.T3') == $t3);
+t($req->get('Bivio::Type::Enum::T3') == $t3);
+$req->clear_nondurable_state;
+t(!$req->has_keys('Type.T3'));
+t($t3->execute($req, 1) == 0);
+$req->clear_nondurable_state;
+t($req->get('Type.T3') == $t3);
