@@ -214,6 +214,8 @@ Should column sorting be displayed?
 
 =head1 COLUMN ATTRIBUTES
 
+=over 4
+
 =item column_align : string [LEFT]
 
 How to align the value within the cell.  The allowed (case
