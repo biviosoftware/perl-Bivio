@@ -1739,6 +1739,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Action::ReportDateToday
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Type::ScheduleDParams->execute_show_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
@@ -1873,6 +1874,7 @@ my(@_CFG) = (
         ?/accounting/taxes/schedule-d
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDList->execute_load_all
@@ -1972,10 +1974,10 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::MemberTaxList->execute_load_all_with_inactive
         Bivio::Biz::Accounting::Tax->check_required_fields
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDList->execute_load_all
-        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::ForeignIncomeList->execute_load_all
         Bivio::Biz::Model::F1065Form->execute_load_all
 	Bivio::UI::PDF::F1065->execute
@@ -2839,6 +2841,7 @@ my(@_CFG) = (
         ?/accounting/taxes/schedule-d.pdf
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::TaxYearSubForm
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDList->execute_load_all
