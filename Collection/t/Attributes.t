@@ -21,6 +21,12 @@ Bivio::Test->unit([
 	    ['a', 'b'] => Bivio::DieCode->DIE,
 	    a => 3,
 	],
+	get_if_exists_else_put => [
+	    [aa => 33] => 33,
+	    [aa => 99] => 33,
+	    [bb => sub {22}] => 22,
+	    [bb => sub {44}] => 22,
+	],
     ],
 ]);
 
