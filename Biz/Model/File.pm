@@ -35,8 +35,23 @@ and delete interface to the C<file_t> table.
 
 =item aux_info
 
-For C<FILE> volumes, this is the C<Content-Type>.  It may be null
-iwc we detect the content-type (on download) from the name
+The contents vary by volume type:
+
+=over 4
+
+=item FILE
+
+Contains the C<Content-Type>.  It may be null
+iwc we detect the content-type (on download) from the name.
+
+=item MAIL_CACHE
+
+Contains the mime header for
+the message part.  There may be a C<Content-Type:> value in
+the mime header.  See
+L<extract_mime_content_type|"extract_mime_content_type">.
+
+=back
 
 =item name_sort
 
@@ -135,6 +150,9 @@ sub create {
     $values->{bytes} = ref($values->{content})
 	    ? length(${$values->{content}}) : 0;
     $values->{name_sort} = lc($values->{name});
+
+    # Never make a file public by default.  Only allow it on update.
+    $values->{is_public} = 0;
 
     # Set the volume from request if not set.
     $values->{volume} = $req->get('Bivio::Type::FileVolume')
@@ -471,7 +489,8 @@ sub internal_initialize {
             modified_date_time => ['DateTime', 'NOT_NULL'],
             bytes => ['Integer', 'NOT_NULL'],
             is_directory => ['Boolean', 'NOT_NULL'],
-            aux_info => ['Text', 'NONE'],
+            is_public => ['Boolean', 'NOT_NULL'],
+            aux_info => ['LongText', 'NONE'],
             content => ['BLOB', 'NONE'],
         },
 	auth_id => [qw(realm_id)],
