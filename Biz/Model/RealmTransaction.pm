@@ -74,16 +74,6 @@ sub cascade_delete {
 		[$self->get('realm_transaction_id'),
 		    $self->get_request->get('auth_id')]);
     }
-
-    # Sever any links to account sync entries (not deleted)
-    Bivio::SQL::Connection->execute('
-            UPDATE account_sync_t
-            SET realm_transaction_id = NULL
-            WHERE realm_transaction_id=?
-            AND realm_id=?',
-	    [$self->get('realm_transaction_id'),
-		$self->get_request->get('auth_id')]);
-
     $self->SUPER::cascade_delete;
     return;
 }
