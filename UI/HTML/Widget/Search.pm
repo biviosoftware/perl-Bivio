@@ -88,12 +88,13 @@ to extract the field's type and can only do that when we have a form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
-    # search list might not be loaded
-    my($p, $s) = Bivio::UI::Font->format_html('search_field', $req);
+    my($fp, $fs) = Bivio::UI::Font->format_html('search_field', $req);
+    my($bp, $bs) = Bivio::UI::Font->format_html('form_submit', $req);
 #RJN: Deleted list_model, because it is inappropriate.  There is only
 #RJN: one search list.  ancestral_get was inappropriate, too.  Should only
 #RJN: be used in clear circumstances.  Removed initialize, because to
 #RJN: make fully dynamic.  This has been my problem.  I want to pre-optimize. 
+    # search list might not be loaded
     my($list) = $req->unsafe_get('Bivio::Biz::Model::SearchList');
 #RJN: '.' doesn't have spaces around it.  I adopted Paul's style
 #RJN: Don't repeat the assignment.  Assign one long string to $$buffer.
@@ -113,8 +114,7 @@ sub render {
             .'"'
 #RJN: All links should have this.  (See Widget::Form)
 	    .$self->link_target_as_html().'>'
-	    .$p
-	    .'<input type=text size='.$self->get('size')
+	    .$fp.'<input type=text size='.$self->get('size')
 #RJN: #TODO: should be flush left
 #TODO: We don't have a type for the query 'search' field, or do we?
 #RJN: This would normally be part of the form model.  It is
@@ -125,11 +125,11 @@ sub render {
 	    .($list ? Bivio::Type::String->to_html($list->get_query->get(
 		    'search'))
 		    : '')
-	    .'">'
-	    .$s
-            .'<input type=submit value="'
+	    .'">'.$fs
+            .$bp.'<input type=submit value="'
 #RJN: Use labels as much as possible
-	    .Bivio::UI::Label->get_simple('search_button').'">'
+	    .Bivio::UI::Label->get_simple('search_button')
+            .'">'.$bs
 	    .($self->get_or_default('cell_end_form', 0) ? '' : '</form>');
 
     return;
