@@ -125,7 +125,9 @@ my(@_CFG) = (
 	PUBLIC
 	ANONYMOUS
 	user/new
-	Bivio::UI::Setup::Admin
+	Bivio::Biz::FormModel::User
+	Bivio::UI::HTML::Setup::User
+        next=SETUP_USER_EDIT
     )],
     [qw(
 	SETUP_CLUB_CREATE
