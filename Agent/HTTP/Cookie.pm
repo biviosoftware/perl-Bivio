@@ -42,6 +42,30 @@ use Bivio::IO::ClassLoader;
 my($_PACKAGE) = __PACKAGE__;
 my(@_HANDLERS);
 
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req, Apache::Request r) : Bivio::Agent::HTTP::Cookie
+
+Creates an instance of the Cookie, and its delegate implementation
+(handled by Bivio::Delegator). Invokes all handlers registered
+for instance notification.
+
+=cut
+
+sub new {
+    my($proto, $req, $r) = @_;
+    my($self) = Bivio::Delegator::new($proto, $req, $r);
+    foreach my $h (@_HANDLERS) {
+	$h->handle_cookie_in($self, $req);
+    }
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
@@ -61,24 +85,8 @@ There may be a I<handle_cookie_out> someday, hence the name of this routine.
 
 =cut
 
+$_ = <<'}'; #emacs
 sub handle_cookie_in {
-    die('abstract');
-}
-
-=for html <a name="post_create"></a>
-
-=head2 post_create(Bivio::Agent::Request req, Apache::Request r)
-
-Calls each handler back
-
-=cut
-
-sub post_create {
-    my($self, $req, $r) = @_;
-    foreach my $h (@_HANDLERS) {
-	$h->handle_cookie_in($self, $req);
-    }
-    return;
 }
 
 =for html <a name="register"></a>
