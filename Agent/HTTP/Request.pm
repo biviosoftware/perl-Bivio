@@ -27,18 +27,17 @@ L<Bivio::Agent::Request> is a Bivio Request wrapper for an Apache::Request.
 
 C<Bivio::Agent::HTTP::Request>
 
-http://bivio.com/<target>/<controller>/<view>?m=<model>
+http://bivio.com/<target>/<controller>/<view>
  &mf=<arg1>(<val1>),<arg2>(<val2>)...&ma=<action>&...
 
 where <target> is a person or club
  <controller> is the controller id (messages, accounting, ...)
  <view> is the view id (list, detail, ...)
- <model> is a model class type (motion, document,...)
  <arg1>(<val1>)... are model finder parameters
  <action> is what to do with the model (update, vote, ...)
 
 The rest of the arguments are action parameters.
-Much of the URI is optional (views have default models, controller
+Much of the URI is optional (requests have default controllers, controllers
 have default views).
 
 =cut
@@ -71,20 +70,20 @@ will be used if no controller name can be parsed from the URI.
 sub new {
     my($proto, $r, $default_controller_name) = @_;
 
-    #this is required for the connection->user to work!?
-    $r->get_basic_auth_pw();
-    my($user) = $r->connection->user;
+    # this is required for the connection->user to work!?
+    my($ret, $password) = $r->get_basic_auth_pw();
     my($target, $controller, $view) = _parse_request($r->uri());
     $controller ||= $default_controller_name;
 
     my(%args) = $r->args;
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
-	   $user);
+	    &_find_user($r->connection->user));
     $self->{$_PACKAGE} = {
         r => $r,
 	view_name => $view,
         header_sent => 0,
-	args => \%args
+	args => \%args,
+	password => $password
     };
 
     #default to html
@@ -197,6 +196,20 @@ sub get_model_name {
     return $self->get_arg('m') || '';
 }
 
+=for html <a name="get_password"></a>
+
+=head2 get_password() : string
+
+Returns the password from user authentication.
+
+=cut
+
+sub get_password {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{password};
+}
+
 =for html <a name="get_view_name"></a>
 
 =head2 get_view_name() : string
@@ -293,6 +306,22 @@ sub set_view_name {
 }
 
 #=PRIVATE METHODS
+
+# _find_user(string name) : User
+#
+# Attempts to find a user with the specified login id. Returns undef if
+# no user exists for that login.
+
+sub _find_user {
+    my($name) = @_;
+
+    return undef if ! $name;
+
+    my($user) = Bivio::Biz::User->new();
+    $user->find({name => $name});
+
+    return $user->get_status()->is_OK() ? $user : undef;
+}
 
 # _parse_request(string uri) : (string, string, view)
 #
