@@ -241,7 +241,7 @@ sub _init_demo_suppliers {
 sub _init_demo_users {
     my($self) = @_;
     my($req) = $self->get_request;
-    foreach my $u ('demo', ($req->is_production ? () : ('root'))) {
+    foreach my $u ('demo', 'guest', ($req->is_production ? () : ('root'))) {
 	$self->print("Created user $u\@bivio.biz\n");
 	Bivio::Biz::Model->get_instance('UserAccountForm')->execute($req, {
 	    'User.first_name' => 'Demo',
