@@ -462,6 +462,18 @@ sub date_from_parts {
 	    .$_TIME_SUFFIX;
 }
 
+=for html <a name="date_from_parts_or_die"></a>
+
+=head2 static date_from_parts_or_die(int mday, int mon, int year) : array
+
+Same as L<date_from_parts|"date_from_parts">, but dies if there is an error.
+
+=cut
+
+sub date_from_parts_or_die {
+    return _from_or_die('date_from_parts', @_);
+}
+
 =for html <a name="diff_seconds"></a>
 
 =head2 diff_seconds(string left, string right) : int
@@ -535,17 +547,7 @@ Same as L<from_parts|"from_parts">, but dies if there is an error.
 =cut
 
 sub from_parts_or_die {
-    my($proto) = shift;
-    my($res, $e) = $proto->from_parts(@_);
-    return $res if defined($res);
-    Bivio::Die->throw_die('DIE', {
-	message => 'from_parts failed: '.$e->get_long_desc,
-	program_error => 1,
-	error_enum => $e,
-	entity => [@_],
-	class => (ref($proto) || $proto),
-    });
-    # DOES NOT RETURN
+    return _from_or_die('from_parts', @_);
 }
 
 =for html <a name="get_last_day_in_month"></a>
@@ -1278,6 +1280,24 @@ sub _from_literal {
 	if length($time) > length(SECONDS_IN_DAY())
 	    || $time >= SECONDS_IN_DAY();
     return ($date.' '.$time)
+}
+
+# _from_or_die() : 
+#
+#
+#
+sub _from_or_die {
+    my($method, $proto) = (shift, shift);
+    my($res, $e) = $proto->$method(@_);
+    return $res if defined($res);
+    Bivio::Die->throw_die('DIE', {
+	message => "$method failed: " . $e->get_long_desc,
+	program_error => 1,
+	error_enum => $e,
+	entity => [@_],
+	class => (ref($proto) || $proto),
+    });
+    # DOES NOT RETURN
 }
 
 # _from_string(proto, string value) : array
