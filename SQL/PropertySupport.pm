@@ -199,7 +199,7 @@ Returns true if something was deleted.
 =cut
 
 sub delete {
-    my($self, $values, $die, $load_args) = @_;
+    my($self, $values, $die) = @_;
     my($attrs) = $self->internal_get;
     my($columns) = $attrs->{columns};
     my(@params) = map {
