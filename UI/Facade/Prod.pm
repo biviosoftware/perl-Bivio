@@ -198,6 +198,7 @@ my($_SELF) = __PACKAGE__->new({
 		    lookup_button
                     instrument_ticker_symbol
 	    	    form_field_example
+                    help_hint
             )],
 		   ['smaller']);
 	    $fc->group([qw(
