@@ -1,6 +1,5 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-
 package Bivio::Mail::Store::MIMEDecode;
 use strict;
 $Bivio::Mail::Store::MIMEDecode::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -45,13 +44,15 @@ Ultimately, it will also parse HTML parts.
 =cut
 
 #=IMPORTS
+#TODO: btw, C-Xl sorts a region of lines.  I'd love to have
+#      this section maintained magically, but it ain't in the cards right now.
 use Bivio::File::Client;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Type::MIMEType;
 use Carp ();
 use IO::Scalar;
 use MIME::Parser;
-use Bivio::Type::MIMEType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -110,9 +111,10 @@ for all MIME parts.
 =cut
 
 sub get_kbytes_written {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{kbytes};
+#TODO: I've started using the following style for this type of method
+#      (retrieving a single attribute).  Paul and I discussed this and
+#      we decided in this case it is clearer to avoid the @_ form.
+    return shift->{$_PACKAGE}->{kbytes};
 }
 
 =for html <a name="get_num_parts"></a>
@@ -173,28 +175,73 @@ sub parse_and_store {
 	    $file_name) if $_TRACE;
     # the second field is the file "extension". For the main message part,
     # this should be undef since there is no _0, _1, _0_1 suffix
+#TODO: Simplify interface
     _extract_mime($fields->{parser}->read($msg->get_rfc822_io()),
-	    $file_name, undef, $keywords, \$fields->{num_parts}, \$fields->{kbytes});
+	    $file_name, undef, $keywords, \$fields->{num_parts},
+	    \$fields->{kbytes});
     _trace('getting all the keywords we found...') if $_TRACE;
+#TODO: Personal preference alternative:
+#    _trace('getting keywords') if $_TRACE;
+#    "we found..." is unnecessary as it is obvious we found it.
     my($rslt);
     $_FILE_CLIENT->set_keywords($file_name, $keywords, \$rslt)
 	    || die("set_keywords failed: \$rslt");
-    _trace('done with the keyword storage.') if $_TRACE;
+#TODO: The second trace is informative enough.
+#    _trace('done with the keyword storage.') if $_TRACE;
     _trace('total bytes written (MIME): ', $fields->{kbytes}, ' K') if $_TRACE;
+#TODO: Personal preference alternative:
+#   _trace('wrote ', $fields->{kbytes}, 'KB and ', int(%$keywords)/2,
+#          ' keywords') if $_TRACE;
+#   My opinion on this is: the fully qualified method name contains MIME
+#   and parse_and_store.  The extra text doesn't tell the reader much
+#   more than what the method name indicates it is doing.
     return;
 }
 
 #=PRIVATE METHODS
 
-# _extract_mime(
-#   MIME::Entity, string file_name, string ext, hash_ref keywords, scalar_ref kbytes)
+#TODO: Every rule has an exception.  These are the "only" lines we
+#      allow to be over 80 chars.  It is mostly important for "=head2"
+#      lines of public methods.  So to be consistent...
+#TODO: Syntax is "type name, type name".  Was missing name for MIME::Entity
+#      Also was missing "int tnum_parts".
+# _extract_mime(MIME::Entity entity, string file_name, string ext, hash_ref keywords, int tnum_parts, scalar_ref kbytes)
 #
 # Extracts sub mime parts for this mime entity. This method is called
 # recursively. kbytes is incremented every time we write a MIME Entity to
 # file storage. 
 #
+#TODO: Simplify interface as follows:
+#   my($fields, $entity, $file_name) = @_;
+#   $fields->{keywords}, $fields->{num_parts}, and $fields->{kbytes}
+#   would be available.  $ext isn't necessary since the caller can do
+#   the concatenation (see my note from 8/30).  This cuts the number
+#   of parameters in half, thus reducing complexity by at least half.
+#   Complexity increases as the number of params increases in a non-linear
+#   fashion.  By halving the params, the decl becomes:
+# _extract_mime(hash_ref fields, MIME::Entity entity, string file_name)
+#   This fits in 80 chars, easily.  Greatly improving readability.
+#   The coupling is still there, but it is through a "standard interface"
+#   fields.  The reader says, "aha, the guy is using and possibly
+#   modifying global state, because fields is passed in".  The reader
+#   can then leave off what global state until s/he reads the implementation.
+#   The caller must do more work, but it is clear what is going on
+#   there as well:
+#    _extract_mime($fields->{parser}->read($msg->get_rfc822_io()),
+#	    $file_name, undef, $keywords, \$fields->{num_parts},
+#	    \$fields->{kbytes});
+#   becomes:
+#    _extract_mime($fields, $fields->{parser}->read(
+#      	    $msg->get_rfc822_io()), $file_name);
+#   Note that the 'undef' goes away.  I can easily understand each of
+#   these params without looking at method decl.  What's the "undef"?
+#   Well, I'd need to go to the method decl to find out.
+#   In the other calls, we have:
+#	    _extract_mime($fields, $root_entity, $file_name.'_'.$i);
+#   Again, it is clear that a suffix is being add to $file_name
+#   AND the call is shortened to one line instead of two.
 sub _extract_mime {
-    my($entity, $file_name, $ext, $keywords, $tnumparts, $kbytes) = @_;
+    my($entity, $file_name, $ext, $keywords, $tnum_parts, $kbytes) = @_;
     Carp::croak('no entity was passed to _extract_mime()') unless $entity;
     _trace('file_name: ', $file_name, ' ext: ', $ext) if $_TRACE;
     my($ctype) = lc($entity->head()->get('content-type'));
@@ -210,7 +257,7 @@ sub _extract_mime {
 #TODO parse for keyword storage if MIME part content type is HTML
 #right now, we're only parsing for keywords MIME type "plain-text".
 
-    _write_entity_to_file($entity, $file_name, $tnumparts, $kbytes);
+    _write_entity_to_file($entity, $file_name, $tnum_parts, $kbytes);
 
     my($num_parts) = $entity->parts || 0;
     my($i) = 0;
@@ -232,22 +279,25 @@ sub _extract_mime {
 	if ($ctype =~ m!^\s*message/rfc822\s*(?:\;|$)!) {
 	    #special case processing for nested MIMEs.
 #TODO We need to do the same thing for message/digest
-	    _trace('the MIME part is an rfc922 message. Sub parsing this...') if $_TRACE;
+	    _trace('the MIME part is an rfc922 message. Sub parsing this...')
+		    if $_TRACE;
 	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
 	    my($sio) = $subentity->bodyhandle->open('r');
 	    _trace('reading...') if $_TRACE;
             my($root_entity) = $parser->read($sio);
 
-	    _trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE && !$root_entity;
-	    return unless $root_entity;
+	    unless ($root_entity) {
+		_trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE;
+		return;
+	    }
 	    _extract_mime($root_entity, $file_name, '_' . $i,
-		    $keywords, $tnumparts, $kbytes);
+		    $keywords, $tnum_parts, $kbytes);
 	}
 	elsif ($ctype =~ m!^\s*text/plain\s*(?:\;|$)!) {
 	    # then we want keywords from it
 	    _trace('part is text/plain') if $_TRACE;
 	    _extract_mime($subentity, $file_name, '_' . $i, $keywords,
-		    $tnumparts, $kbytes);
+		    $tnum_parts, $kbytes);
 	}
     }
     return;
@@ -369,6 +419,7 @@ sub _write_entity_to_file {
     my($msg_body) = _extract_mime_body_decoded($entity);
     _trace('no body in this MIME Entity')
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
+#TODO: Where is $msg_body being written?
     $msg_hdr .= "" unless $$msg_body;
     $$kbytes += length($msg_hdr)/1024;
     _trace('kbytes: ', $$kbytes) if $_TRACE;
