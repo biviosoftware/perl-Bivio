@@ -104,9 +104,9 @@ sub _footer {
 		$spacer);
     }
     pop(@$links);
-#    push(@$links, $_W->mailto(['support_email'])->put(
-#	    string_font => 'footer_menu',
-#	   ));
+    push(@$links, $_W->mailto(['support_email'])->put(
+	    string_font => 'footer_menu',
+	   ));
 
     # Create grid
     $_W->load_class('Grid', 'EditPreferences');
