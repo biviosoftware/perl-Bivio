@@ -253,7 +253,8 @@ Unpack all parts recursively and store in MAIL_CACHE volume.
 Returns the top-level file id for the cache.
 
 Loads raw RFC822 message from MAIL volume in case a MIME entity
-is not provided.
+is not provided. In this case, the cached parts are deleted and
+recreated after reparsing the RFC822 contents.
 
 =cut
 
@@ -261,6 +262,8 @@ sub cache_parts {
     my($self, $req, $entity, $user_id) = @_;
     my($properties) = $self->internal_get;
 
+    my($volume) = $_CACHE_VOLUME;
+    my($root_id) = $volume->get_root_directory_id($req->get('auth_id'));
     unless( defined($entity) ) {
         my($file) = Bivio::Biz::Model::File->new($req);
         $file->load(
@@ -271,14 +274,20 @@ sub cache_parts {
         $entity = MIME::Parser->new(output_to_core => 'ALL')
                 ->parse_data($file->get('content'));
         # Delete cache files
-            $file->delete(file_id => $properties->{cache_file_id},
-                    volume => $_CACHE_VOLUME)
-                    if defined($properties->{cache_file_id});
+        my($cache_file_id) = $properties->{cache_file_id};
+        if (defined($cache_file_id)) {
+            # Use the root directory as a temporary file_id to keep
+            # the constraint
+            $self->update({cache_file_id => $root_id});
+            $file->delete(file_id => $cache_file_id, volume => $volume);
+            _trace('Deleted cache parts');
+        }
     }
-    my($volume) = $_CACHE_VOLUME;
     my($cache_id) = _walk_attachment_tree($self, $entity,
-            $volume->get_root_directory_id($req->get('auth_id')),
-            $user_id, $self->get('mail_id'));
+            $root_id, $user_id, $self->get('mail_id'));
+    # Correct file_id in case the root directory was used temporarily
+    $self->update({cache_file_id => $cache_id})
+            if defined($properties->{cache_file_id});
     return $cache_id;
 }
 
@@ -396,14 +405,16 @@ sub _walk_attachment_tree {
             my($content) = $entity->bodyhandle->as_string;
             my($msg) = Bivio::Mail::Message->new(\$content);
             $entity = $msg->get_entity;
+            # Save the real top-level content type
+            my($real_ct) = $entity->mime_type;
             $entity->head->unfold;
             # Handle the header as a separate part
             my($header) = MIME::Entity->build(Type => 'text/rfc822-headers',
                     Data => $entity->header_as_string);
             # Replace original header because we stored it separately already
             $entity->head(MIME::Head->new());
-            $entity->head->replace('Content-Type', $entity->mime_type);
-            @parts = ( $header, $msg->get_entity);
+            $entity->head->replace('Content-Type', $real_ct);
+            @parts = ( $header, $entity);
         }
         my($i);
         for $i (0..$#parts) {
