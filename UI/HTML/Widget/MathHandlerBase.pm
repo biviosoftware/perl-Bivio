@@ -39,6 +39,18 @@ C<Bivio::UI::HTML::Widget::MathHandlerBase>
 
 =cut
 
+=for html <a name="MATH_MULTIPLIER_VALUE"></a>
+
+=head2 MATH_MULTIPLIER_VALUE : string
+
+
+
+=cut
+
+sub MATH_MULTIPLIER_VALUE {
+    return '1';
+}
+
 =for html <a name="MATH_ROUND"></a>
 
 =head2 MATH_ROUND : string
@@ -50,6 +62,19 @@ returns name of javascript function for rounding.
 sub MATH_ROUND {
     return 'mhb_round';
 }
+
+=for html <a name="MATN_MULTIPLY"></a>
+
+=head2 MATH_MULTIPLY : string
+
+
+
+=cut
+
+sub MATH_MULTIPLY {
+    return 'mhb_multiply';
+}
+
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget::JavaScript;
@@ -79,6 +104,12 @@ function @{[__PACKAGE__->MATH_ROUND]}(field)
   if (dotIndex == 0)
     field.value = "0" + field.value;
 }
+// multiplies the value by a given constant
+function @{[__PACKAGE__->MATH_MULTIPLY]}(field)
+{
+  return field.value * @{[__PACKAGE__->MATH_MULTIPLIER_VALUE]};
+}
+
 EOF
 
 =head1 METHODS

@@ -150,7 +150,16 @@ sub initialize {
 
     # Initialize handler, if any
     $fields->{handler} = $self->unsafe_get('event_handler');
-    if ($fields->{handler}) {
+    my($h) = $fields->{handler};
+    if (ref($h) eq 'ARRAY'){
+	print(STDERR "\n\nhandler is an array reference");
+	foreach my $handler (@$h) {
+	    print(STDERR "\n\thandler is: " . $handler . "\n");
+	    $handler->put(parent => $self);
+	    $handler->initialize;
+	}
+    }
+    elsif ($fields->{handler}) {
 	$fields->{handler}->put(parent => $self);
 	$fields->{handler}->initialize;
     }
@@ -196,8 +205,17 @@ sub render {
     # Name
     my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}.$form->get_field_name_for_html($field);
-    $$buffer .= ' '.$fields->{handler}->get_html_field_attributes(
-	$field, $source) if $fields->{handler};
+    if (ref($fields->{handler}) eq 'ARRAY') {
+	my($handlers) = $fields->{handler};
+	foreach my $handler (@$handlers) {
+	$$buffer .= ' '.$handler->get_html_field_attributes(
+	    $field, $source);
+	}
+    }
+    else {
+	$$buffer .= ' '. $fields->{handler}->get_html_field_attributes(
+	    $field, $source) if $fields->{handler};
+    }
     $$buffer .= ' disabled'
 	if $self->get_or_default('is_read_only', !$form->is_field_editable($field));
 
@@ -220,7 +238,15 @@ sub render {
 
     # Handler is rendered after, because it probably needs to reference the
     # field.
-    $fields->{handler}->render($source, $buffer) if $fields->{handler};
+    if(ref($fields->{handler}) eq 'ARRAY') {
+	my($handlers) = $fields->{handler};
+	foreach my $h (@$handlers) {
+	    $h->render($source, $buffer);
+	}
+    }
+    else {
+	$fields->{handler}->render($source, $buffer) if $fields->{handler};
+    }
     return;
 }
 
