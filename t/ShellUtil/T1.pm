@@ -72,8 +72,10 @@ Bivio::IO::Config->introduce_values({
 		daemon_max_children => 2,
 		daemon_sleep_after_start => 1,
 		daemon_sleep_after_reap => $_ eq 'rd1' ? 0 : 1,
+		daemon_max_child_run_seconds => $_ eq 'rd3' ? 1 : 0,
+		daemon_max_child_term_seconds => 0,
 	    },
-	)} qw(rd1 rd2)),
+	)} qw(rd1 rd2 rd3)),
     },
 });
 
@@ -93,33 +95,34 @@ sub rd1 {
     my($self, $cfg_name) = @_;
     my($count) = 0;
     unlink(Bivio::IO::Log->file_name($_LOG));
+    $cfg_name ||= 'rd1';
     $self->run_daemon(
 	sub {
 	    return
 		if $count > 4;
 	    return [
-		[__PACKAGE__, 'rd1a', $count],
-		[__PACKAGE__, 'rd1a', $count],
+		[__PACKAGE__, 'rd1a', $count, $cfg_name],
+		[__PACKAGE__, 'rd1a', $count, $cfg_name],
 	    ]->[$count++ % 2];
 	},
-	$cfg_name || 'rd1',
+	$cfg_name,
     );
     return $self->read_log;
 }
 
 =for html <a name="rd1a"></a>
 
-=head2 rd1a(int arg)
+=head2 rd1a(int arg, string cfg_name)
 
 Write a message to the log and sleep.
 
 =cut
 
 sub rd1a {
-    my($self, $arg) = @_;
+    my($self, $arg, $cfg_name) = @_;
     $self->initialize_ui;
+    sleep($cfg_name eq 'rd3' ? 10 : 1);
     Bivio::IO::Alert->warn('myarg=', $arg);
-    sleep(1);
     return;
 }
 

@@ -6,6 +6,7 @@ use Bivio::ShellUtil;
 use Bivio::t::ShellUtil::T1;
 # Needed for the usage_error (DIE below).  Take out for debugging
 Bivio::IO::Alert->set_printer(sub {});
+my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 Bivio::Test->unit([
     'Bivio::ShellUtil' => [
 	group_args => [
@@ -72,8 +73,15 @@ Bivio::Test->unit([
 	main => [
 	    t1 => [],
 	    # If these tests are failing, check ShellUtil/mylog.log
-	    rd1 => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
-	    ['rd1', 'rd2'] => qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s,
+	    rd1 => $myarg_re,
+	    ['rd1', 'rd2'] => $myarg_re,
+	    ['rd1', 'rd3'] => sub {
+		my($case, $actual) = @_;
+		my($r) = $actual->[0];
+		return $$r !~ /myarg/
+		    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
+		    ? 1 : 0;
+	    },
 	],
     ],
 ]);

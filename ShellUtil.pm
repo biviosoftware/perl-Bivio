@@ -261,7 +261,8 @@ Bivio::IO::Config->register(my $_CFG = {
 	daemon_max_children => 1,
 	daemon_sleep_after_start => 60,
 	daemon_sleep_after_reap => 0,
-#	daemon_max_child_seconds => 0,
+	daemon_max_child_run_seconds => 0,
+	daemon_max_child_term_seconds => 0,
 	daemon_log_file => Bivio::IO::Config->REQUIRED,
     },
 });
@@ -544,9 +545,14 @@ rotation easier.
 
 Number of children for the worker.  This creates a single queue.
 
-=item daemon_sleep_after_start : int [60] (named)
+=item daemon_max_child_run_seconds : int [0] (named)
 
-Sleep after starts and before retries.
+Maximum elapsed run-time in seconds for a single process.  If zero, no maximum.
+If greater than zero, child will be killed with TERM after run-time exceeded.
+
+=item daemon_max_child_term_seconds : int [0] (named)
+
+Elapsed run-time after kill TERM, before kill KILL is sent to the child.
 
 =item daemon_sleep_after_reap : int [0] (named)
 
@@ -556,6 +562,10 @@ until any children exit.  This is normal behavior.
 If greater than 0, then childred are reaped by polling C<waitpid> with
 C<POSIX::WNOHANG>.  After all children are reaped, the reaper (run_daemon)
 sleeps for I<daemon_sleep_after_reap> before doing anything else.
+
+=item daemon_sleep_after_start : int [60] (named)
+
+Sleep after starts and before retries.
 
 =item lock_directory : string [/tmp]
 
@@ -573,7 +583,6 @@ sub handle_config {
 	    && -w $cfg->{lock_directory} && -d _;
     Bivio::Die->die($cfg->{lock_directory}, ': not absolute')
 	unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
-    _check_cfg($cfg);
     $_CFG = $cfg;
     return;
 }
@@ -1021,7 +1030,7 @@ sub run_daemon {
 	while (keys(%$children) < $cfg->{daemon_max_children}) {
 	    my($args) = $next_command->();
 	    last unless $args;
-	    _reap_daemon_children($children, 0, 0);
+	    _reap_daemon_children($children, 0, 0, $cfg);
 	    if (grep(
 		Bivio::IO::Ref->nested_equals($args, $_->{args}),
 		values(%$children),
@@ -1034,7 +1043,10 @@ sub run_daemon {
 	    else {
 		$children->{_start_daemon_child($self, $args, $cfg)} = {
 		    args => $args,
-		    started => time,
+		    $cfg->{daemon_max_child_run_seconds} > 0
+		        ? (max_time =>
+		            time + $cfg->{daemon_max_child_run_seconds})
+		        : (),
 		};
 		sleep($cfg->{daemon_sleep_after_start});
 	    }
@@ -1044,7 +1056,8 @@ sub run_daemon {
 	    $children,
 	    $cfg->{daemon_sleep_after_reap} > 0
 	        ? (0, $cfg->{daemon_sleep_after_reap})
-	        : (wait, 0)
+	        : (wait, 0),
+	    $cfg,
 	);
     }
     return;
@@ -1193,10 +1206,17 @@ sub _check_cfg {
     while (my($k, $v) = each(%$cfg)) {
 	next unless $k =~ /_(?:sleep|max|child)_/;
 	next if $v =~ /^\d+$/ && $v >= 0;
+	my($dv) = $_CFG->{Bivio::IO::Config->NAMED}->{$k};
 	Bivio::IO::Alert->warn($v, ': bad value for ',
 	    ($cfg_name ? "$cfg_name." : ''), $k,
-	    '; using ', $_CFG->{$k});
-	$cfg->{$k} = $_CFG->{$k};
+	    '; using ', $dv);
+	$cfg->{$k} = $dv;
+    }
+    if ($cfg->{daemon_max_child_run_seconds} > 0
+	&& $cfg->{daemon_sleep_after_reap} <= 0) {
+	Bivio::IO::Alert->warn('daemon_sleep_after_reap must be non-zero',
+	    ' when daemon_max_child_run_seconds is non-zero; using 1 second');
+	$cfg->{daemon_sleep_after_reap} = 1;
     }
     return;
 }
@@ -1322,6 +1342,26 @@ sub _method_ok {
     return 0;
 }
 
+# _monitor_daemon_children(hash_ref children, hash_ref cfg)
+#
+# Monitor children max_time if daemon_max_child_run_seconds is greater than
+# zero.
+#
+sub _monitor_daemon_children {
+    my($children, $cfg) = @_;
+    return unless $cfg->{daemon_max_child_run_seconds} > 0;
+    my($t) = time;
+    while (my($pid, $child) = each(%$children)) {
+	next if $t < $child->{max_time};
+	my($sig) = $child->{kill_term}++ ? 'KILL' : 'TERM';
+	kill($sig, $pid);
+	Bivio::IO::Alert->info("Sent SIG$sig: pid=", $pid, ' args=',
+	    join(' ', splice(@{$child->{args}}, 2)));
+	$child->{max_time} = $t + $cfg->{daemon_max_child_term_seconds}
+    }
+    return;
+}
+
 # _parse_options(Bivio::ShellUtil self, array_ref argv) : hash_ref
 #
 # Returns the options that were set.
@@ -1392,12 +1432,12 @@ sub _process_exists {
     return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
 }
 
-# _reap_daemon_children(hash_ref children, int stopped, int sleep)
+# _reap_daemon_children(hash_ref children, int stopped, int sleep, hash_ref cfg)
 #
 # Reap children without blocking
 #
 sub _reap_daemon_children {
-    my($children, $stopped, $sleep) = @_;
+    my($children, $stopped, $sleep, $cfg) = @_;
     while (1) {
 	if ($stopped > 0) {
 	    if (my $child = delete($children->{$stopped})) {
@@ -1410,9 +1450,10 @@ sub _reap_daemon_children {
 	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
 	last unless $stopped > 0;
-	sleep($sleep)
-	    if $sleep;
     }
+    _monitor_daemon_children($children, $cfg);
+    sleep($sleep)
+	if $sleep;
     return;
 }
 
@@ -1546,6 +1587,8 @@ sub _start_daemon_child {
 	$0 = join(' ', @$args);
 	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
 	    join(' ', @$args[2 .. $#$args]));
+	# Reset so we can send signals in _monitor_daemon_children()
+	local($SIG{TERM}) = 'DEFAULT';
         $args->[0]->main(@$args[1 .. $#$args]);
 	CORE::exit(0);
     }
