@@ -111,7 +111,7 @@ sub initialize {
 	    $_VS->vs_image('error_triangle', 'error here', {
 	       align => 'SW',
 	    }),
-	    '&nbsp',
+	    '&nbsp;',
 	    $_VS->vs_string($label, 'form_field_error_label'),
 	]),
 	control_off_value =>  $_VS->vs_string($label, 'form_field_label'),
