@@ -35,10 +35,12 @@ C<Bivio::Biz::Model::UserForm>
 =cut
 
 #=IMPORTS
+use Bivio::Auth::RealmType;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::IO::Trace;
-use Bivio::Type::Password;
-use Bivio::Type::Email;
 use Bivio::SQL::Constraint;
+use Bivio::Type::Email;
+use Bivio::Type::Password;
 
 #=VARIABLES
 use vars ('$_TRACE');
