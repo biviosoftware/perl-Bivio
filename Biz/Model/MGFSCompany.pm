@@ -43,7 +43,6 @@ use Bivio::Data::MGFS::Market;
 use Bivio::Data::MGFS::SICCode;
 use Bivio::Data::MGFS::SPIndustry;
 use Bivio::Data::MGFS::SPMember;
-use Bivio::Type::Amount;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::Name;

@@ -79,7 +79,7 @@ sub from_mgfs {
     my($values) = {mg_id => $id};
     for (my($i) = 0; $i < 10; $i++) {
 	last unless defined($dates[$i]);
-	$values->{dttm} = $dates[$i];
+	$values->{date_time} = $dates[$i];
 	$values->{factor} = $factors[$i];
 
 	my($die) = $self->try_to_update_or_create($values,

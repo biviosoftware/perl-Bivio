@@ -64,7 +64,7 @@ sub internal_get_mgfs_import_format {
 	    {
 		# skips sign from id, always +
 		mg_id => ['ID', 44, 8],
-		dttm => ['CHAR', 66, 7],
+		date_time => ['CHAR', 66, 7],
 		annual => ['CHAR', 0, 2],
 		quarter => ['CHAR', 86, 1],
 		using_basic_eps => ['CHAR', 87, 1],

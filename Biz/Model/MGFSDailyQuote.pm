@@ -121,7 +121,7 @@ sub from_mgfs {
 	my($values) = {mg_id => $id};
 	for (my($i) = 0; $i < 265; $i++) {
 	    last unless defined($dates->[$i]);
-	    $values->{dttm} = $dates->[$i];
+	    $values->{date_time} = $dates->[$i];
 	    $values->{high} = $highs[$i];
 	    $values->{low} = $lows[$i];
 	    $values->{close} = $closes[$i];
@@ -161,7 +161,7 @@ sub internal_get_mgfs_import_format {
 	    {
 		# skips sign from id, always +
 		mg_id => ['ID', 44, 8],
-		dttm => ['CHAR', 82, 9],
+		date_time => ['CHAR', 82, 9],
 		close => ['DOLLARS', 91, 8],
 		high => ['DOLLARS', 99, 8],
 		low => ['DOLLARS', 107, 8],
@@ -186,7 +186,7 @@ sub internal_initialize {
 	columns => {
 	    mg_id => ['Bivio::Data::MGFS::Id',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            dttm => ['Bivio::Data::MGFS::Date',
+            date_time => ['Bivio::Data::MGFS::Date',
 		Bivio::SQL::Constraint::PRIMARY_KEY()],
 	    high => ['Bivio::Data::MGFS::Amount',
     		Bivio::SQL::Constraint::NOT_NULL()],
