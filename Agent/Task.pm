@@ -64,6 +64,11 @@ called on the singletons.  If the singleton is undefined,
 it means the method is a subroutine to be called without
 an instance.
 
+=item login : Bivio::Agent::TaskId []
+
+In the event of forbidden access, this is the task to which the
+user will be routed to login.
+
 =item next : Bivio::Agent::TaskId []
 
 The next task_id to go to in certain cases.  Required only if
@@ -161,10 +166,15 @@ and I<action> are mapped as follows:
 
 =over 4
 
-=item cancel
+=item cancel : string
 
-the "Cancel" task of a form.  If not specified, defaults to
+The "Cancel" task of a form.  If not specified, defaults to
 the I<next> task.
+
+=item login : string
+
+The task which is executed in the event the user is not logged in
+and the user is forbidden to execute the task.
 
 =item help
 
@@ -293,7 +303,8 @@ sub execute {
 		{auth_user => $auth_user, entity => $auth_realm,
 		    auth_role => $auth_role, operation => $attrs->{id}})
 		    if $auth_user;
-	$req->server_redirect(Bivio::Agent::TaskId::LOGIN());
+	$req->server_redirect(
+		$attrs->{login} || Bivio::Agent::TaskId::LOGIN());
 	# DOES NOT RETURN
     }
     _invoke_pre_execute_handlers($req);
@@ -566,7 +577,8 @@ sub _parse_map_item {
     $action = Bivio::Agent::TaskId->from_any($action);
 
     # Special cases (non-enums)
-    return _put_attr($attrs, $cause, $action) if $cause =~ /^(?:next|cancel)$/;
+    return _put_attr($attrs, $cause, $action)
+	    if $cause =~ /^(?:next|cancel|login)$/;
 
     # Map die action
     if ($cause =~ /(.+)::(.+)/) {
