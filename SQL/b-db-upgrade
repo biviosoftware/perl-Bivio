@@ -220,7 +220,7 @@ ALTER TABLE connect_survey_t add check (age_range between 0 and 4)
 /
 ALTER TABLE connect_survey_t modify vicinity not null
 /
-ALTER TABLE connect_survey_t add check (vicinity between 0 and 4)
+ALTER TABLE connect_survey_t add check (vicinity between 0 and 5)
 /
 ALTER TABLE connect_survey_t modify risk not null
 /
