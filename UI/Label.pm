@@ -724,6 +724,7 @@ EOF
     HELP_FONT_SIZE => 'Font Size',
     HELP_INVESTMENT_TRANSACTIONS => 'Investment Transactions',
     HELP_MEMBER_TRANSACTIONS => 'Member Transactions',
+    HELP_TAKING_OFFLINE => 'Taking Members Offline',
     HELP_PRICE_DATABASE => 'Price Database',
     HELP_PRINTING => 'Printing',
     HELP_PRIVILEGES => 'Privileges',
