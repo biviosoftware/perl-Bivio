@@ -603,17 +603,19 @@ sub main {
 
 =head2 static piped_exec(string command, string_ref input) : string_ref
 
+=head2 static piped_exec(string command, string_ref input, boolean ignore_exit_code) : string_ref
+
 Runs I<command> with I<input> (or empty input) and returns output.
 I<input> may be C<undef>.
 
-Throws exception if it can't write the input or if the command returns
-a non-zero exit result.  The L<Bivio::Die|Bivio::Die> has an
-I<exit_code> attribute.
+Throws exception if it can't write the input. Throws exception if the
+command returns a non-zero exit result unless ignore_exit_code is
+specified.  The L<Bivio::Die|Bivio::Die> has an I<exit_code> attribute.
 
 =cut
 
 sub piped_exec {
-    my(undef, $command, $input) = @_;
+    my(undef, $command, $input, $ignore_exit_code) = @_;
     my($in) = ref($input) ? $input : \$input;
     $$in = '' unless defined($$in);
     my($pid) = open(IN, "-|");
@@ -628,11 +630,13 @@ sub piped_exec {
     local($/) = undef;
     my($res) = <IN>;
     $res ||= '';
-    close(IN) || Bivio::Die->throw_die('DIE', {
-	message => 'command died with non-zero status',
-	entity => $command,
-	exit_code => $?,
-    });
+    unless (close(IN)) {
+	Bivio::Die->throw_die('DIE', {
+	    message => 'command died with non-zero status',
+	    entity => $command,
+	    exit_code => $?,
+	}) unless $ignore_exit_code;
+    }
     return \$res;
 }
 
