@@ -26,7 +26,12 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::Preferences>
+C<Bivio::Biz::Model::Preferences> holds a list preferences for a realm.
+A preference is specified by an enumerated type (currently
+L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference> or
+L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>).
+The preferences are stored in perl format, but each element is
+converted to "sql" first.   This makes it is easy to do comparisons.
 
 =cut
 
@@ -88,7 +93,7 @@ sub handle_commit {
     $dd->Terse(1);
     my($perl) = $dd->Dumpxs();
 
-    # Write to database
+    # Create or update?  Create if was able to load (see _get_instance)
     if ($self->get('realm_id')) {
 	_trace_self($fields, 'updating ', $perl) if $_TRACE;
 	$self->update({perl => \$perl});
@@ -191,8 +196,10 @@ sub _get_instance {
 
     # Already loaded for this realm?
     if ($self) {
-	my($self_realm_id) = $self->get('realm_id');
+	# Use fields realm_id, because self->get() may be undef (not in db).
+	my($self_realm_id) = $self->{$_PACKAGE}->{realm_id};
 	return $self if defined($self_realm_id) && $self_realm_id eq $realm_id;
+	_trace($realm_id, ': need to load, realms differ') if $_TRACE;
     }
 
     # Load
