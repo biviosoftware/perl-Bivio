@@ -38,7 +38,7 @@ use Bivio::Biz::Model;
 C<Bivio::Biz::PropertyModel> is the complement to L<Bivio::Biz::ListModel>
 and represents a row of data from storage. Each field is accessed by
 name using the L<"get"> method. Field type information is available
-by invoking L<"get_field_descriptor">. PropertyModel has serveral abstract
+by invoking L<"get_field_descriptor">. PropertyModel has several
 lifecycle methods for interacting with storage: L<"create">, L<"delete">,
 and L<"update">.
 
@@ -133,7 +133,7 @@ sub as_string {
 
 =for html <a name="create"></a>
 
-=head2 abstract create(hash new_values)
+=head2 create(hash new_values)
 
 Creates a new model in the database with the specified values. After creation,
 this instance has the same values.  Dies on error.
