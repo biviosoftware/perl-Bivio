@@ -148,6 +148,7 @@ Bivio::IO::Config->register({
     local_file_root => Bivio::IO::Config->REQUIRED,
     want_local_file_cache => $_WANT_LOCAL_FILE_CACHE,
 });
+my($_IS_FULLY_INITIALIZED) = 0;
 
 =head1 FACTORIES
 
@@ -489,7 +490,20 @@ sub initialize {
 	Bivio::UI::Icon->initialize_by_facade($f);
 	Bivio::UI::View->initialize_by_facade($f);
     }
+    $_IS_FULLY_INITIALIZED = 1;
     return;
+}
+
+=for html <a name="is_fully_initialized"></a>
+
+=head2 static is_fully_initialized() : boolean
+
+Returns true if the Facade was has been completely initialized.
+
+=cut
+
+sub is_fully_initialized {
+    return $_IS_FULLY_INITIALIZED;
 }
 
 =for html <a name="prepare_to_render"></a>
