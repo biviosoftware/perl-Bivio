@@ -106,7 +106,7 @@ EOF
 You're now ready to open a <b>brokerage account</b> with
 EOF
 		    $self->link_goto(
-			    'BUYandHOLD.com',
+			    'BUYandHOLD',
 			    'http://www.buyandhold.com/Buy?request=rr.refBy'
 			    .'&ref=BIVIO&dest=/bh/en/advert/closed/bivio'
 			    .'/bivio.html'),
