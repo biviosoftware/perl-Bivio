@@ -41,7 +41,7 @@ _compile(
     NONE => [' '],
     PHONE => ['Phone', undef, 'Phone.phone'],
     TAX_ID => ['Tax ID', undef, 'TaxId.tax_id'],
-    EMAIL => ['Email', undef, 'Email.email'],
+    EMAIL => ['Email', undef, 'Email.email', 'RealmInvite.email'],
     PASSWORD => ['Password', undef, 'RealmOwner.password'],
     OLD_PASSWORD => ['Old Password'],
     NEW_PASSWORD => ['New Password'],
