@@ -60,7 +60,7 @@ sub get_widget_value {
 
 #TODO: very ugly code needs revisiting
 
-    if ($amount =~ /^./) {
+    if ($amount =~ /^\./) {
 	$amount = '0'.$amount;
     }
 
