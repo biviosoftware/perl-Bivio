@@ -465,6 +465,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Type::EntryType->execute_cash_expense
         Bivio::Biz::Model::AccountTransactionForm
+        Bivio::Biz::Model::ExpenseCategoryList->execute_load_all
         Bivio::UI::HTML::Club::AccountExpense
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
