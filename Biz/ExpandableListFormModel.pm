@@ -65,7 +65,7 @@ sub new {
 
 =for html <a name="internal_load_field"></a>
 
-=head2 internal_load_field(string field) : string
+=head2 internal_load_field(string field)
 
 Loads the specified field from the list model, or from the request
 values depending on whether the task was redirected through add_rows.
@@ -80,7 +80,7 @@ sub internal_load_field {
     my($value) = defined($rows)
 	    ? $rows->[$list->get_cursor]->{$field}
 	    : $list->get($field);
-    $self->internal_put_field($field, $value) if $value;
+    $self->internal_put_field($field, $value) if defined($value);
     return;
 }
 
