@@ -300,6 +300,9 @@ _compile(\%_MAP, [
         => 'Allocate Equally Among Members',
     'Tax1065.allocation_method' => 'Allocation Method',
     'RealmInstrument.country' => 'Country Code',
+    FOREIGN_INCOME_COUNTRY_HEADING => '17a. Country',
+    FOREIGN_INCOME_HEADING => "17c(1). Passive\nForeign Gross Income",
+    FOREIGN_TAXES_PAID_HEADING => "17f. Total Foreign\nTaxes Paid",
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => 'Accounting Reports',
