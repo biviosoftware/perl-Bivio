@@ -680,6 +680,16 @@ __PACKAGE__->compile(
 	undef,
 	'For tax reasons, the date may not be beyond the start of this fiscal year',
     ],
+    INVALID_PARTNERSHIP_TYPE => [
+	81,
+	undef,
+	'A general partnership can only be made up of general partners. One or more of the current partners are not general partners',
+    ],
+    INVALID_PARTNER_TYPE => [
+	82,
+	undef,
+	'The club is currently a general partnership, members may only be a general partner',
+    ],
 );
 
 #=PRIVATE METHODS
