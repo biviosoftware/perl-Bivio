@@ -37,8 +37,8 @@ C<Bivio::Util::Release> Build and Release Management with b-release
 Host configuration is controlled via the C</etc/bivio.bconf>:
 
   cvs_rpm_spec_dir - cvs directory with rpm package specifications
-  rpm_http_root    - rpm repository host name/port
-  rpm_home_dir     - location of rpms on rpm_http_root
+  rpm_http_root    - rpm repository host name/port or absolute file
+  rpm_home_dir     - location of rpms on build host
 
 =head2 BUILD
 
@@ -196,7 +196,10 @@ sub USAGE {
 usage: b-release [options] command [args...]
 commands:
     build package ... -- compile & build rpms
+    build_tar project ... -- build perl tar distribution
     install package ... -- install rpms from network repository
+    install_facades facades_dir -- install facade files into local_file_root
+    install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
 EOF
@@ -228,25 +231,24 @@ sub build {
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
 	unless $rpm_stage =~ /^[pcib]$/;
-    return _build($self, sub {
-	my($tmp) = @_;
-	my($output) = '';
+    return _do_in_tmp($self, 1, sub {
+	my($tmp, $output) = @_;
 	my($arch) = _get_rpm_arch();
-	_system("ln -s . $arch", \$output)
+	_system("ln -s . $arch", $output)
 	    unless -d $arch;
 	for my $specin (@packages) {
 	    my($specout, $base, $fullname) = _create_rpm_spec($self, $specin,
-		   \$output);
+		   $output);
 	    my($rpm_command) = "rpm -b$rpm_stage $specout";
 	    if ($self->get('noexecute')) {
-		$output .= "Would run: cd $tmp; $rpm_command\n";
+		_would_run("cd $tmp; $rpm_command", $output);
 		next;
 	    }
 	    _system($rpm_command, \$output);
-	    _save_rpm_file("$arch/$fullname.$arch.rpm", \$output);
-	    _link_rpm_base("$fullname.$arch.rpm", "$base.rpm", \$output);
+	    _save_rpm_file("$arch/$fullname.$arch.rpm");
+	    _link_base_version("$fullname.$arch.rpm", "$base.rpm");
 	}
-	return $output;
+	return;
     });
 }
 
@@ -259,24 +261,25 @@ Builds a perl tar file suitable for use by L<install_tar|"install_tar">.
 =cut
 
 sub build_tar {
-    my($self, @projects) = _project_args(@_);
-    umask($_CFG->{install_umask});
-    return _build($self, sub {
-        my($tmp) = @_;
-	my($o) = '';
+    my($self, @projects) = _project_args(1, @_);
+    return _do_in_tmp($self, 1, sub {
+        my($tmp, $output) = @_;
+	_umask('install_umask', $output);
 	my($cvs_version) = $self->get('version');
 	(my $file_version = _get_date_format()) =~ s/_/./;
 	for my $project (@projects) {
 	    my($cvs) = "$_CFG->{cvs_perl_dir}/$project->[0]";
-	    my($b) = "$project->[0]-$file_version";
-	    my($tgt) = File::Spec->rel2abs(Bivio::IO::File->mkdir_p($b));
-	    _system(join(' ', $_CVS_CHECKOUT, $cvs_version, $cvs), \$o);
+	    my($b) = "$project->[0]-$cvs_version";
+	    my($bv) = "$b-$file_version";
+	    my($tgt) = File::Spec->rel2abs(Bivio::IO::File->mkdir_p($bv));
+	    _system(join(' ', $_CVS_CHECKOUT, $cvs_version, $cvs), $output);
 	    _build_tar_copy($_CFG->{cvs_perl_dir}, $project, $tgt);
 	    _build_tar_makefile($self, $project, $file_version, $tgt);
 	    _system("cd $tgt/.. && tar czf"
-		. " $_CFG->{rpm_home_dir}/$b.tar.gz $b");
+		. " '$_CFG->{rpm_home_dir}/$bv.tar.gz' '$bv'", $output);
+	    _link_base_version("$bv.tar.gz", "$b.tar.gz", $output);
 	}
-	return '';
+	return;
     });
 }
 
@@ -290,9 +293,47 @@ sub build_tar {
 
 The cvs directory which holds your package specifications
 
+=item cvs_perl_dir : string [perl]
+
+Path from cvs repository root to perl project directories.
+
+=item facades_dir : string [/var/www/facades]
+
+Directory where I<Project/files> directory will be installed.
+
+=item facades_group : string [rpm_group]
+
+Group to install facades files as.
+
+=item facades_umask : int [027]
+
+Umask for creation of files and directories in I<facades_dir>.  There may be
+cached user data in this directory so it's best for it not to be publicy
+writable.
+
+=item facades_user : string [rpm_user]
+
+User to install facades files as.
+
+=item install_umask : int [022]
+
+Umask for builds and installs of binaries and libraries.  See also
+I<facades_umask>.
+
+=item projects : array_ref [[[Bivio => b => 'bivio Software Artisans, Inc.']]]
+
+Array_ref of array_refs of the form:
+
+    [
+       [ProjectRootPkg => shell-util-prefix => 'Copyright Owner, Inc.'],
+    ]
+
+This list is used by L<list_projects_el|"list_projects_el"> and
+L<build_tar|"build_tar">.
+
 =item rpm_home_dir : string (required)
 
-The directory on the build server, where the rpms reside, e.g.
+The directory on the build server, where the rpms and tars reside, e.g.
 
     /home/b-release
 
@@ -301,6 +342,8 @@ The directory on the build server, where the rpms reside, e.g.
 Where the packages reside in the http hierarchy, e.g.
 
     http://build-server/b-release
+
+It may also be a simple file.
 
 =item rpm_group : string [rpm_user]
 
@@ -313,7 +356,7 @@ The user which owns the releases.  Typically, you want this to be root.
 
 =item tmp_dir : string ["/var/tmp/build-$$"]
 
-Where the builds take place.
+Where the builds and installs take place.
 
 =back
 
@@ -374,9 +417,73 @@ sub install {
     return
 	if $self->get('noexecute');
 
-    umask($_CFG->{install_umask});
+    _umask('install_umask');
     exec(@command);
     die("command failed: $!\n");
+}
+
+=for html <a name="install_facades"></a>
+
+=head2 install_facades(string facades_dir) : string
+
+Usually called from Makefile/.PL created by L<build_tar|"build_tar">.
+Looks for a subdirectory "facades" in current directory and copies
+all files in that directory to I<facades_dir> using
+I<facades_user>, I<facades_group>, and I<facades_umask>.
+
+=cut
+
+sub install_facades {
+    my($self, $facades_dir) = @_;
+    _do_output(sub {
+	my($output) = @_;
+	my($r) = Bivio::IO::ClassLoader->simple_require('Bivio::UI::Facade')
+	    ->get_local_file_root;
+	_umask('facades_umask');
+	_chdir($facades_dir, $output);
+	_system("tar cf - . | (cd '$r' && tar xf -)", $output);
+	_chdir($r, $output);
+	_system("chown -h -R '$_CFG->{facades_user}' .", $output);
+	_system("chgrp -h -R '$_CFG->{facades_group}' .", $output);
+	return;
+    });
+}
+
+=for html <a name="install_tar"></a>
+
+=head2 install_tar(string project, ...) : string
+
+Installs I<version> (HEAD) of I<project>.  I<project> may be an explicit
+tar.gz file, a shell_util_prefix abbreviation (e.g, b), or a simple
+name (no tar.gz) suffix.  If not found in I<projects> config, will be
+looked up explictly.
+
+=cut
+
+sub install_tar {
+    my($self, @projects) = _project_args(0, @_);
+    return _do_in_tmp($self, 0, sub {
+        my($tmp, $output) = @_;
+	_umask('install_umask');
+	my($cvs_version) = $self->get('version');
+	for my $project (map(ref($_) ? $_->[0] : $_, @projects)) {
+	    my($tgz) = $project =~ /(?:\.tar\.gz|\.tgz)$/ ? $project
+		: "$project-$cvs_version.tar.gz";
+	    Bivio::IO::File->write($tgz, _http_get($tgz, $output));
+	    _system("tar xpzf '$tgz'", $output);
+	    chomp(my $dir = `ls -t | grep -v '$tgz' | head -1`);
+	    Bivio::Die->die($dir, ': not a directory, expecting it to be one')
+	       unless -d $dir;
+	    my($cmd) = "cd '$dir' && perl Makefile.PL < /dev/null "
+		. " && make POD2MAN=true install";
+	    if ($self->get('noexecute')) {
+		_would_run("cd $tmp && $cmd", $output);
+		next;
+	    }
+	    _system($cmd, $output);
+	}
+	return;
+    });
 }
 
 =for html <a name="list"></a>
@@ -517,23 +624,6 @@ sub _b_release_include {
     return ${Bivio::IO::File->read("$spec_dir$to_include")};
 }
 
-# _build(self, code_ref op) : string
-#
-# Returns output
-#
-sub _build {
-    my($self, $op) = @_;
-    $self->usage_error($_CFG->{rpm_home_dir}, ': rpm_home_dir not found')
-        unless -d $_CFG->{rpm_home_dir};
-    Bivio::IO::File->rm_rf($_CFG->{tmp_dir});
-    Bivio::IO::File->mkdir_p($_CFG->{tmp_dir});
-    my($res) = "Changing to $_CFG->{tmp_dir}\n"
-	. $op->(Bivio::IO::File->chdir($_CFG->{tmp_dir}));
-    Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
-	unless $self->get('noexecute');
-    return $res;
-}
-
 # _build_root(array_ref specin)
 #
 #
@@ -626,15 +716,28 @@ ExtUtils::MakeMaker::WriteMakefile(
     dist => {COMPRESS => 'gzip -f', SUFFIX => 'gz'},
     ABSTRACT => q{$project->[0] Application},
     VERSION => $file_version,
-    PREREQ_PM => {}
+    PREREQ_PM => {},
     PMLIBDIRS => ['lib'],
 );
 sub MY::postamble {
     return <<'END';
 install::
-    cd $_FACADES_DIR && @{[$self->get_or_default('program', 'b-release')]} install_facades
+	@{[$self->get_or_default('program', 'b-release')]} install_facades $_FACADES_DIR
+END
+}
 EOF
     return;
+}
+
+# _chdir(string dir, string_ref output)
+#
+# Change to dir, and write to output.
+#
+sub _chdir {
+    my($dir, $output) = @_;
+    Bivio::IO::File->chdir($dir);
+    $$output .= "cd $dir\n";
+    return $dir;
 }
 
 # _create_rpm_spec(string specin, string_ref output) : (string, string, string)
@@ -705,6 +808,42 @@ sub _create_uri {
     return $name =~ /^http/ ? $name : "$_CFG->{rpm_http_root}/$name";
 }
 
+# _do_in_tmp(self, boolean assert_root, code_ref op) : string
+#
+# Returns output of operations.
+#
+sub _do_in_tmp {
+    my($self, $assert_root, $op) = @_;
+    $self->usage_error($_CFG->{rpm_home_dir}, ': rpm_home_dir not found')
+        unless !$assert_root || -d $_CFG->{rpm_home_dir};
+    Bivio::IO::File->rm_rf($_CFG->{tmp_dir});
+    Bivio::IO::File->mkdir_p($_CFG->{tmp_dir});
+    return _do_output(sub {
+        my($output) = @_;
+	$op->(_chdir($_CFG->{tmp_dir}, $output), $output);
+	Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
+	    unless $self->get('noexecute');
+	return;
+    });
+}
+
+# _do_output(code_ref op) : string
+#
+# Catch die and print output along with die.
+#
+sub _do_output {
+    my($op) = @_;
+    my($output) = '';
+    my($die) = Bivio::Die->catch(sub {
+        return $op->(\$output);
+    });
+    return $output
+	unless $die;
+    Bivio::IO::Alert->print_literally($output);
+    $die->throw;
+    # DOES NOT RETURN
+}
+
 # _err_parser() : string
 #
 # Gets rid of 'warning: x saved as y' if the files are the same
@@ -755,15 +894,17 @@ sub _get_rpm_arch {
     return 'i386';
 }
 
-# _http_get(string uri) : string
+# _http_get(string uri, string_ref output) : string
 #
 # Returns content pointed to by $uri.  Handles local files as well
 # as remote files.
 #
 sub _http_get {
-    my($uri) = @_;
+    my($uri, $output) = @_;
     ($uri = _create_uri($uri)) =~ /^\w+:/
-	or $uri = URI::Heuristic::uf_uri($uri);
+	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
+    $$output .= "Executing: GET $uri\n"
+	if $output;
     my($reply) = Bivio::Ext::LWPUserAgent->new(1)->request(
 	HTTP::Request->new('GET', $uri));
     Bivio::Die->die($uri, ": GET failed: ", $reply->status_line)
@@ -771,17 +912,16 @@ sub _http_get {
     return $reply->content;
 }
 
-# _link_rpm_base(string rpm_file, string_ref output)
+# _link_base_version(string version, string base, string_ref output)
 #
-# Create link with base name to this RPM.
+# Create link from $base to $version in rpm_home_dir.
 #
-sub _link_rpm_base {
-    my($rpm_file, $rpm_base, $output) = @_;
-
-    my($base_file) = "$_CFG->{rpm_home_dir}/$rpm_base";
-    unlink($base_file);
-    $$output .= "LINKING AS $base_file\n";
-    _system("ln -s $rpm_file $base_file", $output);
+sub _link_base_version {
+    my($version, $base, $output) = @_;
+    $base = "$_CFG->{rpm_home_dir}/$base";
+    unlink($base);
+    $$output .= "LINKING $version AS $base\n";
+    _system("ln -s '$version' '$base'", $output);
     return;
 }
 
@@ -792,10 +932,10 @@ sub _link_rpm_base {
 sub _perl_make {
     return
 	'%define perl_make umask '
-	. _umask()
+	. _umask_string()
 	. " && perl Makefile.PL < /dev/null && make POD2MAN=true\n"
 	. '%define perl_make_install umask '
-	. _umask()
+	. _umask_string()
 	. '; make '
 	. join(' ', map {
 	     uc($_) . '=$RPM_BUILD_ROOT' . $Config::Config{$_};
@@ -807,12 +947,12 @@ sub _perl_make {
 	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 }
 
-# _project_args(self, string project, ...) : array
+# _project_args(boolean want_die, self, string project, ...) : array
 #
 # Returns project config: ($self, $project)
 #
 sub _project_args {
-    my($self, @projects) = @_;
+    my($want_die, $self, @projects) = @_;
     $self->usage_error('project not supplied')
 	unless @projects;
     return (
@@ -821,7 +961,9 @@ sub _project_args {
 	    my($p) = $_;
 	    (grep(lc($_->[0]) eq lc($p) || lc($_->[1]) eq lc($p),
 		@{$_CFG->{projects}}
-	    ))[0] or $self->usage_error($_, ': project not found');
+	    ))[0] or
+	       $want_die ? $self->usage_error($_, ': project not found')
+	       : $p;
 	} @projects),
     );
 }
@@ -888,18 +1030,38 @@ sub _system {
 	return;
     });
     return unless $die;
-    Bivio::IO::Alert->print_literally(
-	$$output . ${$die->get('attrs')->{output}});
+    $$output .= ${$die->get('attrs')->{output}};
     $die->throw;
     # DOES NOT RETURN
 }
 
-# _umask() : string
+# _umask(string umask_name, string_ref output)
+#
+# Sets umask and indicates in output
+#
+sub _umask {
+    my($umask_name, $output) = @_;
+    umask($_CFG->{$umask_name});
+    $$output .= 'umask ' . _umask_string($umask_name) . "\n";
+    return;
+}
+
+# _umask_string() : string
 #
 # Returns string version of install_umask
 #
-sub _umask {
-    return sprintf('0%o', $_CFG->{install_umask});
+sub _umask_string {
+    return sprintf('0%o', $_CFG->{shift || 'install_umask'});
+}
+
+# _would_run(string cmd, string_ref output)
+#
+# Returns command as "Would run: $cmd"
+#
+sub _would_run {
+    my($cmd, $output) = @_;
+    $$output .= "Would run: $cmd\n";
+    return;
 }
 
 =head1 COPYRIGHT
