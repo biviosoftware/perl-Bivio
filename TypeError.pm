@@ -829,6 +829,11 @@ __PACKAGE__->compile(
 	undef,
 	'no fractional shares were created',
     ],
+    PAYMENT_EXISTS_AFTER_WITH_FULL_WITHDRAWAL => [
+	110,
+	undef,
+	'the member has a payment on or after the full withdrawal date',
+    ],
 );
 
 #=PRIVATE METHODS
