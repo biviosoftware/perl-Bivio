@@ -213,12 +213,14 @@ _compile([
     INVESTMENT => ['Investment'],
     MEMBER => ['Member'],
     TOTAL_ASSETS => ['Total Assets'],
-    TOTAL_LIABILITIES => ['Total Liabilities'],
+    TOTAL_LIABILITIES => ['Total Liabilities and Capital'],
     INVESTMENTS_COST => ['Investments (cost basis)'],
     MEMBER_CAPITAL_ACCOUNTS =>
 	['Member Capital Accounts (adjusted cost basis)'],
     UNALLOCATED_EARNINGS => ['Unallocated Earnings - (Losses)'],
     UNREALIZED_GAINS => ['Unrealized (Gains)/Losses Disbursed'],
+    EXPENSE => ['Expense'],
+    NEW_SHARES => ['New Shares'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
@@ -250,6 +252,8 @@ _compile([
 	'Member Withdrawal Summary'],
     CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => [
 	'Miscellaneous Income and Deductions Report'],
+    CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY => [
+	'Transaction Summary Report'],
     CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
 
     # NCA Import
@@ -454,6 +458,7 @@ _compile([
     UNREALIZED_GAIN_DR_HEADING => ["Unrealized\nGain"],
     FILTRUM_TOP_HOLDINGS_INSTRUMENT_NAME => ["Top Club Holdings"],
     PERCENT_REALMS => ["\% Clubs\nWhich Own"],
+    STOCK_WITHDRAWAL_VALUE_HEADING => ["Stock\nWithdrawal\nValue"],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
