@@ -173,10 +173,9 @@ sub release {
 	request_lock => $req_lock}) unless $req_lock == $self;
     $req->delete(ref($self));
 
-    # If it can't release the lock, blow up.
+    # If it can't release the lock and database is writable, blow up.
     $self->throw_die('UPDATE_COLLISION')
-	    unless $self->delete();
-
+	    unless $self->delete() || Bivio::SQL::Connection->is_read_only;
     return;
 }
 
