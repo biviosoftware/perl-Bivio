@@ -86,26 +86,30 @@ sub render {
     my($tag) = 'javascript_'.$module_tag;
 
     # Render common code
+    my($code);
     unless ($req->unsafe_get($tag)) {
 	# Render "global" common code first
 	unless ($req->unsafe_get('javascript_jsv')) {
+	    # Always write here
 	    $$buffer .= $_JSV;
 	    $req->put(javascript_jsv => 1);
 	}
-	$$buffer .= "<script language=\"JavaScript\">\n<!--\n".$common_code;
+	$code = $common_code;
 	$req->put($tag => 1);
     }
-    else {
+
+    # Render the code and script in a JavaScript section
+    if (defined($script) || defined($code)) {
 	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
+	$$buffer .= $code if defined($code);
+	$$buffer .= $script if defined($script);
+	$$buffer .= "\n// -->\n</script>";
     }
 
-    # Render the script
-    $$buffer .= $script if defined($script);
-    $$buffer .= "\n// -->\n</script>";
-
     # Render noscript
-    return unless defined($no_script_html);
-    $$buffer .= '<noscript>'.$no_script_html.'</noscript>';
+    $$buffer .= '<noscript>'.$no_script_html.'</noscript>'
+	    if defined($no_script_html);
+
     return;
 }
 
