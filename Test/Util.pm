@@ -149,6 +149,7 @@ Output is to STDERR.
 sub nightly {
     my($self) = @_;
     my($old_pwd) = Bivio::IO::File->pwd;
+    _expunge($self);
     _make_nightly_dir($self);
     my($die) = Bivio::Die->catch(sub {
         # CVS checkout
@@ -158,7 +159,7 @@ sub nightly {
         $self->print($self->acceptance('.'));
         return;
     });
-    # Restore state before die is rethrown
+    # restore state before die is rethrown
     Bivio::IO::File->chdir($old_pwd);
     $die->throw if $die;
     return;
@@ -222,6 +223,27 @@ sub unit {
 }
 
 #=PRIVATE METHODS
+
+# _expunge(self)
+#
+# Deletes old test directories. Keeps last two weeks.
+#
+sub _expunge {
+    my($self) = @_;
+    Bivio::IO::File->chdir($_CFG->{nightly_output_dir});
+    my(@dirs) = grep(/^\d{14}$/, <*>);
+    my($count) = scalar(@dirs);
+
+    # this automatically loops through files in ascending order of timestamp
+    foreach my $dir (@dirs) {
+	last if $count <= 14;
+        $self->print("Deleting old test directory ",
+            $_CFG->{nightly_output_dir} . "/$dir\n");
+	system("rm -rf $dir");
+	$count--;
+    }
+    return;
+}
 
 # _find_files(array_ref args, string pattern) : array
 #
