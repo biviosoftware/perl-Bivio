@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version (1.05)
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.5  2001/12/12 03:27:46  nagler
+  Added more packages (Types and HTMLWidgets)
+  Various bug fixes
+
+  Revision 1.4  2001/11/20 21:38:32  nagler
   Renamed bivio.net -> bivio.biz
   Added Bivio::bOP as source of version number
   Bug fixes and enhancements which we'll try to keep better track of.
