@@ -31,7 +31,9 @@ C<Bivio::UI::HTML::Club::Embargoed>
 =cut
 
 #=IMPORTS
+use Bivio::UI::HTML::ActionButtons;
 use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Widget::ActionBar;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -51,6 +53,11 @@ sub new {
 	string_font => 'error',
     });
     $fields->{message}->initialize;
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
+	values => Bivio::UI::HTML::ActionButtons->get_list(
+		'club_compose_message'),
+    });
+    $fields->{action_bar}->initialize;
     return $self;
 }
 
@@ -69,7 +76,8 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
     $req->put(page_subtopic => undef, page_heading => 'Embargoed',
-	   page_content => $fields->{message});
+	   page_content => $fields->{message},
+	   page_action_bar => $fields->{action_bar});
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
 }
