@@ -7,7 +7,7 @@ $_ = $Bivio::bOP::VERSION;
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Language::HTTP->verify_table tests to see if given
+  table has a certain set of rows.
+  * Bivio::Test::Language::HTTP->verify_uri can now take a regular expression.
+
+  Revision 2.4  2004/01/31 04:45:35  nagler
+  * Bivio::SQL::Connection::Postgres handles SELECT.*AS with outer
     (left) joins
   * Bivio::SQL::Support improved some die messages
   * Bivio::PetShop::Test::PetShop->add_to_cart fixed single item case
