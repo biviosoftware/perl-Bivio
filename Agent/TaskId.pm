@@ -3098,6 +3098,18 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberMerge
         next=CLUB_ADMIN_USER_LIST
     )],
+    # Would redirect to bivio home page but want imagemenu bar?
+    [qw(
+        USER_ADMIN_USER_DELETE
+        271
+        USER
+        ADMIN_WRITE&SUPER_USER_TRANSIENT
+        ?/adm/delete-user
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Model::UserDeleteForm
+        Bivio::UI::HTML::User::Delete
+        next=HTTP_DOCUMENT
+    )],
 );
 
 __PACKAGE__->compile([
