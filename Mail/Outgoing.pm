@@ -156,7 +156,7 @@ sub attach {
     my($self, $content, $type, $name, $binary) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    Bivio::MIME::Type->get_type_info($type)
+    Bivio::MIME::Type->to_extension($type)
             || Carp::croak("$type: not a valid type");
     defined($binary) || ($binary = 0);
     my($part) = { content => $content, type => $type, binary => $binary };
