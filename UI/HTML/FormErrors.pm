@@ -148,7 +148,7 @@ sub _compile {
 	    die('unexpected eof') unless int(@lines);
 	    my($line) = shift(@lines);
 	    last if $line =~ /^%%/;
-	    $text .= $line;
+	    $text .= $line.' ';
 	}
 	# So eval can work properly
 	$text =~ s/"/\\"/g;
