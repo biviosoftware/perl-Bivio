@@ -70,6 +70,8 @@ TOO_LONG if I<value>'s length exceeds L<get_width|"get_width">.
 
 sub from_literal {
     my($proto, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return undef
 	unless defined($value) && length($value);
     return (undef, Bivio::TypeError->TOO_LONG)

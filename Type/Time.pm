@@ -54,6 +54,8 @@ Convert from the following formats: h:m:s or h:m:s am, etc.
 
 sub from_literal {
     my(undef, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
 #TODO: Improve the checks here
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user

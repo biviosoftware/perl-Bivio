@@ -113,6 +113,8 @@ Make sure is at least one digit long, non-zero, and unsigned.
 
 sub from_literal {
     my(undef, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;

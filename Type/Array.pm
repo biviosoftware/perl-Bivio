@@ -124,6 +124,8 @@ Returns printable string.
 
 sub to_literal {
     my(undef, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return join(', ', $value ? @$value : ());
 }
 

@@ -58,6 +58,8 @@ if the syntax check fails.
 
 sub from_literal {
     my(undef, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return undef unless defined($value);
     # Remove all spaces and dashes
     $value =~ s/[-\s]+//g;

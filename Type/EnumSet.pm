@@ -71,6 +71,8 @@ Same as L<from_sql_column|"from_sql_column">.
 =cut
 
 sub from_literal {
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return shift->from_sql_column(@_);
 }
 

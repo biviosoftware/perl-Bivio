@@ -61,10 +61,10 @@ If either limit is undef, uses the value for this class.
 
 sub new {
     my($proto, $min, $max) = @_;
-    $min = defined($min) ? __PACKAGE__->from_literal($min)
+    ($min) = defined($min) ? __PACKAGE__->from_literal($min)
 	    : __PACKAGE__->get_min;
     Bivio::Die->die('invalid min value') unless defined($min);
-    $max = defined($max) ? __PACKAGE__->from_literal($max)
+    ($max) = defined($max) ? __PACKAGE__->from_literal($max)
 	    : __PACKAGE__->get_max;
     Bivio::Die->die('invalid max value') unless defined($max);
     Bivio::Die->die('min greater than max') unless $min <= $max;
@@ -131,6 +131,8 @@ this integer type.
 
 sub from_literal {
     my($proto, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     # Null (blank) string and null are same thing.
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user

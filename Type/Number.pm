@@ -176,6 +176,8 @@ get_decimals().
 
 sub from_literal {
     my($proto, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return undef unless defined($value) && $value =~ /\S/;
 
     # Delete commas and dollar signs

@@ -71,6 +71,8 @@ up the user's preference.
 
 sub from_literal {
     my($self, $value, $line_width) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
 
     # careful to see if Preferences model is present before accessing
     my($pref);

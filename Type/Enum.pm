@@ -445,6 +445,8 @@ If not found, returns an error.
 
 sub from_literal {
     my($proto, $value) = @_;
+    Bivio::IO::Alert->warn("don't call from_literal in scalar context")
+            unless wantarray;
     return undef unless defined($value) && $value ne '';
     my($info);
     if ($value =~ /^-?\d+$/) {
