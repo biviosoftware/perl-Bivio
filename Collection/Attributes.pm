@@ -213,7 +213,7 @@ sub get {
 
 =for html <a name="get_by_regexp"></a>
 
-=head2 get_by_regexp(string pattern) : string
+=head2 get_by_regexp(string pattern) : any
 
 Returns a single value by regular expression.  If not found, throws die.
 
@@ -221,17 +221,10 @@ Returns a single value by regular expression.  If not found, throws die.
 
 sub get_by_regexp {
     my($self, $pattern) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($match);
-    foreach my $k (keys(%$fields)) {
-	next unless $k =~ /$pattern/;
-	Bivio::IO::Alert->die($pattern, ': pattern matches more than one key',
-		' (', $k, ' and ', $match, ')')
-		    if $match;
-	$match = $k;
-    }
-    Bivio::IO::Alert->die($pattern, ': pattern not found') unless $match;
-    return $fields->{$match};
+    my($match) = _unsafe_get_by_regexp(@_);
+    Bivio::IO::Alert->die($pattern, ': pattern not found')
+		unless defined($match);
+    return $self->{$_PACKAGE}->{$match};
 }
 
 =for html <a name="get_keys"></a>
@@ -579,7 +572,42 @@ sub unsafe_get {
     return $res[0];
 }
 
+=for html <a name="unsafe_get_by_regexp"></a>
+
+=head2 unsafe_get_by_regexp(string pattern) : any
+
+Returns a single value by regular expression.  If not found, returns
+undef.
+
+If multiple found, throws exception.
+
+=cut
+
+sub unsafe_get_by_regexp {
+    my($self, $pattern) = @_;
+    my($match) = _unsafe_get_by_regexp(@_);
+    return defined($match) ? $self->{$_PACKAGE}->{$match} : undef;
+}
+
 #=PRIVATE METHODS
+
+# _unsafe_get_by_regexp(Bivio::Collection::Attributes self, string pattern) : string
+#
+# Returns the field for unsafe_get_by_regexp and get_by_regexp.
+#
+sub _unsafe_get_by_regexp {
+    my($self, $pattern) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($match);
+    foreach my $k (keys(%$fields)) {
+	next unless $k =~ /$pattern/;
+	Bivio::IO::Alert->die($pattern, ': pattern matches more than one key',
+		' (', $k, ' and ', $match, ')')
+		    if defined($match);
+	$match = $k;
+    }
+    return $match;
+}
 
 =head1 COPYRIGHT
 
