@@ -1015,6 +1015,15 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditProfile
         next=USER_ADMIN_INFO
     )],
+    [qw(
+        CONNECT_LOGIN
+        100
+        GENERAL
+        ANY_USER
+        pub/connect/login
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=USER_ADMIN_PROFILE_EDIT
+    )],
 );
 
 __PACKAGE__->compile(
