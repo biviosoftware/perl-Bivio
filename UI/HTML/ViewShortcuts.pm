@@ -122,6 +122,22 @@ sub vs_director {
     return $proto->vs_new('Director', @_);
 }
 
+=for html <a name="vs_form_field"></a>
+
+=head2 static vs_form_field(string field) : array
+
+Creates a new I<HTMLWidget.FormField> and returns the widgets (label, field).
+This is equivalent to:
+
+   vs_new('FormField', @_)->get_label_and_field
+
+=cut
+
+sub vs_form_field {
+    my($proto) = shift;
+    return $proto->vs_new('FormField', @_)->get_label_and_field;
+}
+
 =for html <a name="vs_image"></a>
 
 =head2 static vs_image(any icon) : Bivio::UI::HTML::Widget::Image
