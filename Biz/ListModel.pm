@@ -23,7 +23,8 @@ use Bivio::Biz::Model;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel> 
+C<Bivio::Biz::ListModel> is used to describe queries which return multiple
+rows.  This class is always subclassed.
 
 =cut
 
@@ -34,7 +35,7 @@ use Bivio::SQL::ListQuery;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 #TODO: Move this into prefs
-my($_PAGE_SIZE) = 10;
+my($_PAGE_SIZE) = 20;
 
 
 =head1 FACTORIES
@@ -167,7 +168,7 @@ sub internal_load {
 	empty_properties => $empty_properties,
     };
     $self->internal_put($empty_properties);
-    $self->get_request->put(ref($self) => $self, list_model => $self);
+    $self->get_request->put(ref($self) => $self);
     return;
 }
 
@@ -199,7 +200,8 @@ sub load {
     $query = {} unless defined($query);
     if (ref($query) eq 'HASH') {
 	$query->{auth_id} = $auth_id;
-	$query->{count} = $_PAGE_SIZE;
+	# Let user override page count
+	$query->{count} = $_PAGE_SIZE unless $query->{count};
 	$query = Bivio::SQL::ListQuery->new($query, $sql_support);
     }
     else {
@@ -207,6 +209,23 @@ sub load {
     }
     $self->internal_load($sql_support->load($query), $query);
     return;
+}
+
+=for html <a name="map_primary_key_to_rows"></a>
+
+=head2 map_primary_key_to_rows() : hash_ref
+
+Maps the primary key to all rows.  The primary key values are separated
+by perl's subscript separator (C<$;>).
+
+=cut
+
+sub map_primary_key_to_rows {
+    my($self) = @_;
+    my($primary_key_names)
+	    = $self->internal_get_sql_support->get('primary_key_names');
+    return {map {(join($;, @$_{@$primary_key_names}), $_)}
+	    @{$self->internal_get_rows}};
 }
 
 =for html <a name="next_row"></a>
