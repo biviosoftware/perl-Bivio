@@ -148,6 +148,28 @@ sub add_field {
 	   );
 }
 
+=for html <a name="create_caption"></a>
+
+=head2 create_caption(string caption, Widget widget) : (FormFieldLabel, Widget)
+
+Creates a FormFieldLabel for the specified widget and returns both.
+Adds fields to the array of fields return by L<get_fields|"get_fields">.
+
+=cut
+
+sub create_caption {
+    my($self, $caption, $widget) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    my($label) = Bivio::UI::HTML::Widget::FormFieldLabel->new({
+	label => $caption,
+	field => $widget->get('field'),
+    });
+
+    push(@{$fields->{fields}}, [$label->get('field'), $label->get('label')]);
+    return ($label, $widget);
+}
+
 =for html <a name="create_fields"></a>
 
 =head2 abstract create_fields() : array_ref
