@@ -40,7 +40,6 @@ use Bivio::UI::HTML::Widget::ChecklistItem;
 use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::MultiColumnedList;
-use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -75,6 +74,22 @@ EOF
 
     $fields->{warning_message}->initialize;
 
+    my($create_anyway) = $self->director(['task_id'], {
+	Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99_MISSING_FIELDS()
+	=> Bivio::UI::HTML::Widget::Link->new({
+	    href => ['->format_uri',
+		Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99_F1065(),
+		Bivio::Biz::Accounting::Tax::CHECK_OVERRIDE().'=1',
+	    ],
+	    value => $self->string(<<'EOF'),
+
+Create tax form with missing fields
+
+EOF
+	}),
+    },
+    $self->join('&nbsp;'));
+
     return Bivio::UI::HTML::Widget::Grid->new({
 	values => [
 	    [
@@ -88,10 +103,9 @@ EOF
 		Bivio::UI::HTML::Widget::ChecklistItem->new({
 		    title => 'Club Tax ID',
 		    checked => ['Bivio::Biz::Model::TaxId', 'tax_id'],
-		    checked_body => Bivio::UI::HTML::Widget::String->new({
-			value => ['Bivio::Biz::Model::TaxId', 'tax_id',
-				'Bivio::UI::HTML::Format::EIN'],
-		    }),
+		    checked_body => $self->string(
+			['Bivio::Biz::Model::TaxId', 'tax_id',
+				'Bivio::UI::HTML::Format::EIN']),
 		    unchecked_body => $self->join(
 			$self->string('Missing club tax ID. '),
 			$self->link('Edit', 'CLUB_ADMIN_TAX_ID_EDIT'),
@@ -102,9 +116,8 @@ EOF
 		Bivio::UI::HTML::Widget::ChecklistItem->new({
 		    title => 'Club Address',
 		    checked => ['Bivio::Biz::Model::Address', '->format'],
-		    checked_body => Bivio::UI::HTML::Widget::String->new({
-			value => ['Bivio::Biz::Model::Address', '->format'],
-		    }),
+		    checked_body => $self->string(
+			['Bivio::Biz::Model::Address', '->format']),
 		    unchecked_body => $self->join(
 			$self->string('Missing club address. '),
 			$self->link('Edit', 'CLUB_ADMIN_ADDRESS_EDIT'),
@@ -115,9 +128,8 @@ EOF
 		Bivio::UI::HTML::Widget::ChecklistItem->new({
 		    title => "Member Tax IDs and Addresses",
 		    checked => ['all_valid_members'],
-		    checked_body => Bivio::UI::HTML::Widget::String->new({
-			value => 'All member tax IDs and addresses are set.',
-		    }),
+		    checked_body => $self->string(
+			'All member tax IDs and addresses are set.'),
 		    unchecked_body => $self->join(
 			$self->string(<<'EOF'),
 The following members are missing their tax ID and/or address. Select the member to edit their personal information.
@@ -128,9 +140,7 @@ EOF
 			    columns => 3,
 			    widget => Bivio::UI::HTML::Widget::Link->new({
 				href => ['->format_uri_for_this'],
-				value => Bivio::UI::HTML::Widget::String->new({
-				    value => ['last_first_middle'],
-				}),
+				value => $self->string(['last_first_middle']),
 			    }),
 			}),
 		    ),
@@ -145,17 +155,17 @@ EOF
 	    [
 		$self->string(<<'EOF'),
 Don't forget to sign and date the printed return and give each member a printed copy of their K-1.
-
 EOF
+	    ],
+	    [
+		$create_anyway,
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::Link->new({
 		    href => ['->format_stateless_uri',
 			Bivio::Agent::TaskId::CLUB_ACCOUNTING_TAX99(),
 		    ],
-		    value => Bivio::UI::HTML::Widget::String->new({
-			value => 'Return to the taxes page',
-		    }),
+		    value => $self->string('Return to the taxes page'),
 		}),
 	    ],
 	],
