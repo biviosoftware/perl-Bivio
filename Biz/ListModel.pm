@@ -486,6 +486,18 @@ sub get_hidden_field_values {
 	    $self->internal_get_sql_support());
 }
 
+=for html <a name="get_list_model"></a>
+
+=head2 get_list_model() : 
+
+Returns itself, the list model.
+
+=cut
+
+sub get_list_model {
+    return shift;
+}
+
 =for html <a name="get_query"></a>
 
 =head2 get_query() : Bivio::SQL::ListQuery
