@@ -32,7 +32,6 @@ C<Bivio::UI::HTML::Club::EditUserRole> edits a club user's title/role.
 
 #=IMPORTS
 use Bivio::Auth::RoleSet;
-use Bivio::Biz::Model::ClubUserForm;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Type::ClubUserTitle;
 use Bivio::TypeValue;
