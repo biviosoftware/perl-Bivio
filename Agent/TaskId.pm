@@ -981,6 +981,7 @@ my(@_CFG) = (
         GENERAL
         LOGIN
         pub/connect
+        Bivio::Biz::Action::ConnectCheckUser
         Bivio::Biz::Model::CreateUserForm
         Bivio::UI::HTML::General::CreateUser
         next=CONNECT_USER_CREATED
@@ -1014,7 +1015,8 @@ my(@_CFG) = (
         %/admin/edit/profile
         Bivio::Biz::Model::ConnectSurveyForm
         Bivio::UI::HTML::User::EditProfile
-        next=USER_ADMIN_INFO
+        next=USER_ADMIN_PROFILE_EDIT_DONE
+        cancel=USER_ADMIN_INFO
     )],
     [qw(
         CONNECT_LOGIN
@@ -1092,6 +1094,14 @@ my(@_CFG) = (
         DOCUMENT_READ
         !
         Bivio::UI::HTML::General::Forbidden
+    )],
+    [qw(
+        USER_ADMIN_PROFILE_EDIT_DONE
+        108
+        USER
+        ADMIN_WRITE
+        %/admin/edit/profile/done
+        Bivio::UI::HTML::User::EditProfileDone
     )],
 );
 
