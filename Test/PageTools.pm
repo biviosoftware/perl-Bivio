@@ -51,17 +51,10 @@ sub visit {
     my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
-    my ($board) = Bivio::Test::BulletinBoard->get_current();
-
     my($util) = ($board->get('HTTPUtil'));
-    #parsed response is actually an instance of HTML::Analyzer
-    my($parsed_res) = $util->get_response($uri);
-    $board->put(current_uri => $uri);
-    $board->put(response => $parsed_res);
-    _trace("\n*****Got page: " . $parsed_res->get_title() . "\n") if
-	    ($_TRACE && (defined $parsed_res->get_title)) ;
 
-    return $parsed_res;
+    $util->get_response($uri);
+    return;
 }
 
 #=PRIVATE METHODS
