@@ -248,8 +248,7 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-
-    _upgrade_celeb_bios();
+    _upgrade_ec_constraints();
     print("\n*** done ***\n");
     return;
 }
@@ -296,6 +295,34 @@ EOF
 	$bio =~ s/<p>/<br>&nbsp;<br>/g;
 	$decor->update({profile_bio => $bio});
     }
+    return;
+}
+
+# _upgrade_ec_constraints() : 
+#
+#
+#
+sub _upgrade_ec_constraints {
+    print ("allowing fiscal year in constraint ec_payment_t7\n");
+    _do_sql('
+ALTER TABLE ec_payment_t DROP CONSTRAINT ec_payment_t7
+/
+ALTER TABLE ec_payment_t
+  add constraint ec_payment_t7
+  check (ec_subscription_period = 0 or ec_subscription_period = -2
+         or ec_subscription_period = -3 OR ec_subscription_period = -4)
+/
+');
+    print ("allowing fiscal year in constraint ec_subscription_t5\n");
+    _do_sql('
+ALTER TABLE ec_subscription_t DROP CONSTRAINT ec_subscription_t5
+/
+ALTER TABLE ec_subscription_t
+  add constraint ec_subscription_t5
+  check (renewal_period = 0 or renewal_period = -2 or renewal_period = -3
+	or renewal_period = -4)
+/
+');
     return;
 }
 
