@@ -407,17 +407,17 @@ b-realm-role CLUB USER - \
     +ANONYMOUS
 b-realm-role CLUB GUEST - \
     +USER \
+    +ADMIN_READ \
     +ACCOUNTING_READ \
     +DOCUMENT_READ \
+    +FINANCIAL_DATA_READ \
+    +MAIL_READ \
+    +MEMBER_READ \
     +MOTION_READ
 #TODO: Model::Club assumes MAIL_RECEIVE set for MEMBER and above
 b-realm-role CLUB MEMBER - \
     +GUEST \
-    +ADMIN_READ \
-    +FINANCIAL_DATA_READ \
-    +MAIL_READ \
-    +MAIL_RECEIVE \
-    +MEMBER_READ
+    +MAIL_RECEIVE
 b-realm-role CLUB ACCOUNTANT - \
     +MEMBER \
     +ACCOUNTING_WRITE \
