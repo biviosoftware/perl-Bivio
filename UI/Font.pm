@@ -99,6 +99,7 @@ _compile([
     MESSAGE_SUBJECT => [$_SANS_SERIF, undef],
     LIST_ACTION => [undef, undef, 'small'],
     STRONG => [undef, undef, 'strong'],
+    RADIO => [undef, undef],
 ]);
 
 =head1 METHODS
