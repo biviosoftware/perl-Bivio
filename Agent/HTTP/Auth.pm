@@ -90,17 +90,17 @@ sub authorize_club_user {
 
     my($club) = Bivio::Biz::Club->new();
     $club->find(Bivio::Biz::FindParams->new(
-	    {name => $req->get_target_name()}));
+	    {'name' => $req->get_target_name()}));
 
     # does the club exist?
-    return undef if ! $club->get_status()->is_OK();
+    return undef if ! $club->get_status()->is_ok();
 
     my($club_user) = Bivio::Biz::ClubUser->new();
     $club_user->find(Bivio::Biz::FindParams->new(
-	    {club => $club->get('id'), user => $user->get('id')}));
+	    {'club' => $club->get('id'), 'user_' => $user->get('id')}));
 
     # is the user a member of the club?
-    return undef if ! $club_user->get_status()->is_OK();
+    return undef if ! $club_user->get_status()->is_ok();
 
     return ($club, $club_user);
 }
