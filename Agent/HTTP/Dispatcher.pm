@@ -122,6 +122,17 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 
 sub handler {
     my($r) = @_;
+    Apache->push_handlers('PerlCleanupHandler', sub {
+	my($req) = Bivio::Agent::Request->get_current;
+	if ($req) {
+	    Bivio::IO::Alert->warn('[', $req->unsafe_get('client_addr'),
+		    '] request aborted, rolling back ',
+		    $req->unsafe_get('task_id'));
+	    Bivio::Agent::Task->rollback;
+	    Bivio::Agent::Request->clear_current;
+	}
+	return Apache::Constants::OK();
+    });
     my($die) = $_SELF->process_request($r);
     $r->log_reason($die->as_string)
 	    # Keep in synch with Reply::die_to_http_code
