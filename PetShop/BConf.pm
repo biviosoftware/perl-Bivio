@@ -100,7 +100,7 @@ sub merge_overrides {
 	},
 	'Bivio::Test::Util' => {
 	    nightly_output_dir => '/home/petshop-testsuite',
-	    nightly_cvs_dir => 'perl/Bivio',
+	    nightly_cvs_dir => 'perl/Bivio/PetShop',
 	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
