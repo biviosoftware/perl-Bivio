@@ -355,6 +355,21 @@ sub get_from_request_or_self {
     return $req_or_facade->get(__PACKAGE__);
 }
 
+=for html <a name="get_instance"></a>
+
+=head2 static get_instance(string simple_class) : Bivio::UI::Facade
+
+Returns facade instance for I<simple_class>.  Facade must be initialized.
+
+=cut
+
+sub get_instance {
+    my($proto, $simple_class) = @_;
+    Bivio::Die->die($simple_class, ': no such facade')
+	    unless $_CLASS_MAP{$simple_class};
+    return $_CLASS_MAP{$simple_class};
+}
+
 =for html <a name="get_local_file_name"></a>
 
 =head2 get_local_file_name(Bivio::UI::LocalFileType type, string name) : string
