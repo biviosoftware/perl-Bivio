@@ -67,6 +67,10 @@ Name of the list field used as the item id.
 TODO: this attribute shouldn't exist - it should use the primary key
       fields of the list model.
 
+=item show_unknown : boolean [1]
+
+Should the UNKNOWN type be displayed?
+
 =back
 
 =cut
@@ -157,12 +161,11 @@ sub render {
     my($field) = $fields->{field};
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
-	$fields->{prefix} = '<select name='
-		.$form->get_field_name_for_html($field)
-		." size=1>\n";
+	$fields->{prefix} = '<select name=';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix};
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
+	    ." size=1>\n";
     _load_items_from_list($self, $source) if $fields->{list_source};
     my($items) = $fields->{items};
     my($field_value) = $form->get($field);
@@ -210,6 +213,8 @@ sub _load_items_from_enum_list {
 	return 1 if $b->as_int == 0;
 	$a->get_name cmp $b->get_name
     } @$list;
+
+    shift(@values) unless $self->get_or_default('show_unknown', 1);
 
     # id, display pairs
     my(@items);
