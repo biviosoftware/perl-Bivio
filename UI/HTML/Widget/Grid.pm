@@ -47,6 +47,8 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
 =item bgcolor : string [] (dynamic)
 
+=item bgcolor : array_ref [] (dynamic)
+
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
@@ -103,6 +105,8 @@ L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
 =item cell_bgcolor : string [] (dynamic)
+
+=item cell_bgcolor : array_ref [] (dynamic)
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
@@ -416,8 +420,9 @@ sub render {
 
     if ($self->get_or_default('start_tag', 1)) {
 	$$buffer .= $fields->{prefix};
-	my($bg) = $self->unsafe_get('bgcolor');
-	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req) if $bg;
+	my($bg);
+	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
+	    if $self->unsafe_render_attr('bgcolor', $source, \$bg) && $bg;
 	$$buffer .= ' width="'
 	    .$source->get_widget_value(@{$fields->{width}}).'"'
 		if $fields->{width};
@@ -433,15 +438,16 @@ sub render {
 	    my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
 	    if (ref($w)) {
 		# Render widget
+		my($rc) = $w->unsafe_get('row_control');
+		next ROW if $rc && !$source->get_widget_value(@$rc);
 		unless ($is_widget_value) {
-		    my($bg) = $c->unsafe_get('cell_bgcolor');
+		    my($bg);
 		    $row .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
-			    if $bg;
+			if $c->unsafe_render_attr(
+			    'cell_bgcolor', $source, \$bg) && $bg;
 		    # Close cell start always.  See initialization.
 		    $row .= '>';
 		}
-		my($rc) = $w->unsafe_get('row_control');
-		next ROW if $rc && !$source->get_widget_value(@$rc);
 		$w->render($source, \$row);
 	    }
 	    elsif (defined($w)) {
