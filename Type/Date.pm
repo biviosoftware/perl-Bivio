@@ -57,6 +57,53 @@ sub can_be_zero {
     return 0;
 }
 
+=for html <a name="delta_days"></a>
+
+=head2 delta_days(string start_date, string end_date) : int
+
+Returns the number of days between two dates.
+
+=cut
+
+sub delta_days {
+    my(undef, $start_date, $end_date) = @_;
+    my($start_days, undef) = split(/\s+/, $start_date);
+    my($end_days, undef) = split(/\s+/, $end_date);
+    return $end_days - $start_days;
+}
+
+=for html <a name="delta_months"></a>
+
+=head2 static delta_months(string start_date, string end_date) : int
+
+Returns the number of full months between start_date and end_date.
+
+=cut
+
+sub delta_months {
+    my($proto, $start_date, $end_date) = @_;
+
+    if ($proto->compare($start_date, $end_date) > 0) {
+	return - $proto->delta_months($end_date, $start_date);
+    }
+
+    my(undef, undef, undef, $start_day, $start_month, $start_year) =
+	    $proto->to_parts($start_date);
+    my(undef, undef, undef, $end_day, $end_month, $end_year) =
+	    $proto->to_parts($end_date);
+
+    # year * 12
+    my($months) = 12 * ($end_year - $start_year);
+
+    # months difference
+    $months += ($end_month - $start_month);
+
+    # subtract 1 month if days difference
+    $months-- if ($start_day > $end_day);
+
+    return $months;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(string value) : array
@@ -92,21 +139,6 @@ sub from_unix {
 	    / Bivio::Type::DateTime::SECONDS_IN_DAY())
 	    + Bivio::Type::DateTime::UNIX_EPOCH_IN_JULIAN_DAYS();
     return $j.$_TIME_SUFFIX;
-}
-
-=for html <a name="get_days_between"></a>
-
-=head2 get_days_between(string date, string date2) : int
-
-Returns the number of days between two dates.
-
-=cut
-
-sub get_days_between {
-    my(undef, $date, $date2) = @_;
-    my($days, undef) = split(/\s+/, $date);
-    my($days2, undef) = split(/\s+/, $date2);
-    return $days2 - $days;
 }
 
 =for html <a name="get_max"></a>
