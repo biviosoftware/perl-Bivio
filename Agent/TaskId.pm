@@ -1042,8 +1042,6 @@ my(@_CFG) = (
         NOT_FOUND=FILE_READ_NOT_FOUND
         help=files
     )],
-    # FilePathList must be after FileDirectoryList, because it uses
-    # the FilePathList, if it is there.
     [qw(
         CLUB_COMMUNICATIONS_FILE_DELETE
         110
@@ -1053,7 +1051,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
-        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileDeleteForm
         Bivio::UI::HTML::Club::FileDelete
@@ -2272,8 +2269,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::PublicClubList->execute_load_all_with_query
         Bivio::UI::HTML::General::PublicClubs
     )],
-    # FilePathList must be before FileDirectoryList, because we only
-    # want to load files at or below FilePathList.
     [qw(
         CLUB_COMMUNICATIONS_FILE_RENAME
         219
@@ -2339,8 +2334,6 @@ my(@_CFG) = (
         Bivio::Biz::Action::CelebrityRedirect
         next=CLUB_COMMUNICATIONS_MAIL_DETAIL
     )],
-    # FilePathList must be after FileDirectoryList, because it uses
-    # the FilePathList, if it is there.
     [qw(
         CLUB_COMMUNICATIONS_FILE_UNZIP
         225
@@ -2350,8 +2343,8 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
-        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
         Bivio::Biz::Model::FileUnzipForm
         Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
         Bivio::UI::HTML::Club::FileUnzip
