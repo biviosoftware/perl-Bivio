@@ -155,13 +155,11 @@ sub audit_units {
 
 	if (Bivio::Type::Date->compare($val_date, $date) >= 0) {
 
-	    my($id, $amount, $units, $tran_date) = $entries->get(
-		    'Entry.entry_id', 'Entry.amount', 'MemberEntry.units',
-		    'RealmTransaction.date_time');
+	    my($id, $amount, $units) = $entries->get(
+		    'Entry.entry_id', 'Entry.amount', 'MemberEntry.units');
 
-	    # don't include member payments on val_date if val_date>=tran_date
-	    my($unit_value) = _get_unit_value($self, $val_date,
-		    Bivio::Type::Date->compare($val_date, $tran_date) < 0);
+	    # don't include units purchased on the valuation date
+	    my($unit_value) = _get_unit_value($self, $val_date, 1);
 	    my($real_units) = Bivio::Type::Amount->div($amount, $unit_value);
 
 	    #_trace("\n$units\t$real_units");
@@ -378,9 +376,7 @@ EOF
 	    [$self->get('realm_id')]);
 
     my($result) = [];
-
-    my($row);
-    while ($row = $sth->fetchrow_arrayref) {
+    while (my $row = $sth->fetchrow_arrayref) {
 	my($id, $name, $symbol, $instrument_id) = @$row;
 	push(@$result, [$id, $name, $symbol, $instrument_id]);
     }
@@ -424,8 +420,7 @@ EOF
 		   Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($result) = {};
-    my($row);
-    while ($row = $sth->fetchrow_arrayref()) {
+    while (my $row = $sth->fetchrow_arrayref()) {
 	my($id, $cost, $count, $type, $basis, $tax) = @$row;
 	my($pair) = $result->{$id};
 	unless ($pair) {
@@ -499,8 +494,7 @@ EOF
 	       Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($result) = {};
-    my($row);
-    while ($row = $sth->fetchrow_arrayref()) {
+    while (my $row = $sth->fetchrow_arrayref()) {
 	my($id, $count) = @$row;
 	$result->{$id} = $count;
     }
@@ -550,8 +544,7 @@ sub get_share_price_and_date {
             WHERE realm_id=?
             AND date_time=$_SQL_DATE_VALUE",
 	    [$self->get('realm_id'), $date]);
-    my($row);
-    while ($row = $sth->fetchrow_arrayref) {
+    while (my $row = $sth->fetchrow_arrayref) {
 	($id, $value) = @$row;
 	$result->{$id} = [$value, $date, 1];
     }
@@ -571,7 +564,7 @@ sub get_share_price_and_date {
             ORDER BY mgfs_daily_quote_t.date_time DESC
 EOF
 
-    while ($row = $sth->fetchrow_arrayref) {
+    while (my $row = $sth->fetchrow_arrayref) {
 	($id, $value, $val_date) = @$row;
 	$val_date = Bivio::Type::DateTime->from_sql_column($val_date);
 
@@ -590,7 +583,7 @@ EOF
             WHERE realm_instrument_t.realm_id=?',
 	    [$self->get('realm_id')]);
 
-    while ($row = $sth->fetchrow_arrayref) {
+    while (my $row = $sth->fetchrow_arrayref) {
 	($id) = @$row;
 
 	next if exists($result->{$id});
@@ -633,7 +626,7 @@ Returns the unit value for the realm on the specified date.
 sub get_unit_value {
     my($self, $date) = @_;
 
-    return _get_unit_value($self, $date, 1);
+    return _get_unit_value($self, $date, 0);
 }
 
 =for html <a name="get_units"></a>
@@ -872,24 +865,24 @@ sub unauth_load_by_email {
 
 #=PRIVATE METHODS
 
-# _get_unit_value(string date, boolean include_todays_member_entries) : string
+# _get_unit_value(string date, boolean exclude_date_entries) : string
 #
 # Returns the unit value for the specified date.
-# If include_todays_member_entries is false, then the result won't include
-# member entries on the specified date.
+# If exclude_date_entries is true, then the result won't include
+# member entries on the specified valuation date.
 #
 sub _get_unit_value {
-    my($self, $date, $include_todays_member_entries) = @_;
+    my($self, $date, $exclude_date_entries) = @_;
     my($fields) = $self->{$_PACKAGE};
     $date = Bivio::Type::Date->to_local_date($date);
     my($cache) = $fields->{'_get_unit_value'.$date
-	.$include_todays_member_entries};
+	.$exclude_date_entries};
     return $cache if $cache;
 
     my($units) = $self->get_units($date);
     my($value) = $self->get_value($date);
 
-    unless ($include_todays_member_entries) {
+    if ($exclude_date_entries && $units != 0) {
 
 #TODO: something fishy here, doesn't seem right
 #      needs to be revisited, probably problems with distributions
@@ -905,16 +898,16 @@ sub _get_unit_value {
 	    AND entry_t.entry_id = member_entry_t.entry_id
             AND entry_t.tax_basis = 1
  	    AND realm_transaction_t.realm_id=?
-	    AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
+	    AND member_entry_t.valuation_date = $_SQL_DATE_VALUE
 EOF
 
 	my($sth) = Bivio::SQL::Connection->execute($query,
 		[$self->get('realm_id'),
 			Bivio::Type::DateTime->to_sql_param($date)]);
 	# returns at most one row
-	my($row);
-	while ($row = $sth->fetchrow_arrayref) {
+	while (my $row = $sth->fetchrow_arrayref) {
 	    my($mem_units, $mem_value) = @$row;
+	    _trace("\nadjust for date $mem_units units, $mem_value value");
 	    $units = Bivio::Type::Amount->sub($units, $mem_units)
 		    if ($mem_units);
 	    $value = Bivio::Type::Amount->sub($value, $mem_value)
@@ -929,7 +922,7 @@ EOF
     # a value of 0 will only occur if no securities are owned
     $result = DEFAULT_UNIT_VALUE() if $result == 0;
     $fields->{'_get_unit_value'.$date
-	.$include_todays_member_entries} = $result;
+	.$exclude_date_entries} = $result;
     return $result;
 }
 
