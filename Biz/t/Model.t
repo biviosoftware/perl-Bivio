@@ -8,6 +8,7 @@ use Bivio::Test;
 use Bivio::Test::Request;
 my($_req) = Bivio::Test::Request->get_instance;
 my($_categories) = [];
+my($_category_count) = 0;
 Bivio::Test->new('Bivio::Biz::Model')->unit([
     'Bivio::Biz::Model' => [
 	internal_initialize_local_fields => [
@@ -129,6 +130,18 @@ Bivio::Test->new('Bivio::Biz::Model')->unit([
 	        }, 'name'];
 	    } => sub {
 		return [[map($_->{name}, reverse(@$_categories))]];
+	    },
+	],
+	do_iterate => [
+	    [
+		sub {
+		    $_category_count++;
+		    return shift->get('name') ne $_categories->[2]->{name};
+		},
+		'name asc',
+	    ] => sub {
+		shift->actual_return([$_category_count]);
+		return [3];
 	    },
 	],
     ],

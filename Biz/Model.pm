@@ -262,6 +262,44 @@ sub die {
     # DOES NOT RETURN
 }
 
+=for html <a name="do_iterate"></a>
+
+=head2 do_iterate(code_ref do_iterate_handler, any other_args, ...) : self
+
+=head2 do_iterate(code_ref do_iterate_handler, string iterate_start, any other_args, ...) : self
+
+Like L<map_iterate|"map_iterate"> but does not return anything.  For each row,
+calls L<iterate_next_and_load|"iterate_next_and_load"> followed by
+L<do_iterate_handler|"do_iterate_handler">.  Terminates the iteration with
+L<iterate_end|"iterate_end"> when there are no more rows or if
+I<do_iterate_handler> returns false.
+
+=cut
+
+sub do_iterate {
+    my($self, $do_iterate_handler) = (shift, shift);
+    my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
+	&& $self->can($_[0]) ? shift : 'iterate_start';
+    $self->$iterate_start(@_);
+    0 while $self->iterate_next_and_load && $do_iterate_handler->($self);
+    $self->iterate_end;
+    return $self;
+}
+
+=for html <a name="do_iterate_handler"></a>
+
+=head2 callback do_iterate_handler(Bivio::Biz::Model self) : boolean
+
+Called by L<do_iterate|"do_iterate"> for each row of the iteration.  Passed
+the model which is being iterated.  Returns false when it would like
+to terminate the iteration.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub do_iterate_handler {
+}
+
 =for html <a name="format_uri_for_this_property_model"></a>
 
 =head2 format_uri_for_this_property_model(any task, string model_name) : string
