@@ -54,7 +54,6 @@ request.
 
 sub execute {
     my(undef, $req) = @_;
-    my($user) = $req->get('auth_user');
 
     my($values) = $req->get_fields('form', \@_ALLOWED_FIELDS);
     my($name) = $values->{name};
@@ -72,6 +71,14 @@ sub execute {
 
     # Create the first club user, the auth_user as administrator
     $req->get('form')->{role} = Bivio::Auth::Role::ADMINISTRATOR->as_int;
+    my($user_id) = $req->get('auth_user')->get('realm_id');
+    my($user) = Bivio::Biz::PropertyModel::User->new();
+    # Needed so CreateClubUser sees this user. 
+#TODO: want $realm_owner->get_user(?), so we don't have to unauth_load here.
+    $user->unauth_load(user_id => $user_id);
+#TODO: This is indeed ugly...
+    $req->put('auth_id') = $club_id;
+#TODO: CreateClubUser can be a Task item, move out of here.
     Bivio::Biz::Action::CreateClubUser->execute($req);
 
     # Initialize the message manager
