@@ -158,9 +158,11 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/accounts:?/accounts
         Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::InactiveForm
         Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
         Bivio::Biz::Model::OffBookAccountSummaryList->execute_load_non_valuation_only
         Bivio::UI::HTML::Club::AccountList
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-summary
     )],
 #10
