@@ -242,8 +242,10 @@ sub merge_http_log {
 	'Bivio::Util::HTTPLog' => Bivio::IO::Config->merge(
 	    $overrides || {}, {
 		ignore_list => [
-		    # Standard apache notices and info
-		    '\] \[(?:info|notice|debug)\] ',
+		    # Standard apache debug and info
+		    '\] \[(?:info|debug)\] ',
+		    '\[notice\] Apache/\S+ configured -- resuming normal operations',
+		    '\[notice\] Accept mutex',
 		    'Dispatcher::execute_queue:.*JOB_(?:START|END):',
 		    # Virii and such
 		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2)',
@@ -265,7 +267,7 @@ sub merge_http_log {
 		    # never goes criticial
 		    'Bivio::DieCode::DIE',
 		    'Bivio::DieCode::CONFIG_ERROR',
-		    'exit signal Segmentation fault',
+		    '\] \[notice\] ',
 		],
 		critical_list => [
 		    'Bivio::DieCode::DB_ERROR',
