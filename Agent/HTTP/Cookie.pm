@@ -606,19 +606,11 @@ sub _parse {
 	    next;
 	}
 
-	my($s);
-#TODO: REMOVE ON 8/1/2000.  It assumes that we have at least one
-#      non-hex in the new form (http-base64), which is probably safe.
-	if ($v =~ /^[0-9a-z]+$/) {
-	    $s = $_CIPHER->decrypt_hex($v);
-	    # Force a rewrite to change encoding
-	    $fields->{MODIFIED_FIELD()} = 1;
-	    _trace('received hex format, rewriting') if $_TRACE;
-	}
-	else {
-#TODO: Keep this
-	    $s = $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($v));
-	}
+#TODO: Remove 10/1/00: There is a new Bivio::MIME::Base64 encoding which
+#      doesn't include + and /, both of which are bad for query strings.
+	$fields->{MODIFIED_FIELD()} = 1 if $v =~ /[\/+]/;
+	my($s) = $_CIPHER->decrypt(Bivio::MIME::Base64->http_decode($v));
+
 	my(@v) = split(/$_SEP/o, $s);
 	_trace('data=', \@v) if $_TRACE;
 	# Make sure we have an even number of elements and then convert to hash
