@@ -389,6 +389,18 @@ CREATE UNIQUE INDEX ec_subscription_t6 ON ec_subscription_t (
   pctfree 50 initrans 4 storage (freelists 8)
 /
 ');
+    print("Adding sequences\n");
+    _do_sql('
+CREATE sequence ec_subscription_s
+  minvalue 100014 maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
+/
+
+CREATE sequence ec_payment_s
+  minvalue 100015 maxvalue 999999999999999999
+  nocycle cache 10 increment BY 100000
+/
+');
     return;
 }
 
