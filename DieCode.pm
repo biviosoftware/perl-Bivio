@@ -73,18 +73,28 @@ I<proto> is either the instance or class passed to C<handle_die>.
 
 authentication required: user must authenticate first before proceeding
 
-=item INVALID_VERSION: entity, class
+=item VERSION_MISMATCH: entity, class
 
-invalid version: user request using invalid or old form, query, or uri
+version mismatch: user request using invalid or old form, query, or uri.
+This might be due to an old link, corrupted user input, or an error
+on the server.
 
-=item INVALID_QUERY: entity, class
+=item CORRUPT_QUERY: entity, class
 
-invalid query: user request contains invalid query value
+corrupt query: user request contains invalid query value.  This is
+not the same as invalid input.  The query has been corrupted.  It
+might be due to an error on the server.
 
 =item REDIRECT_TASK: task_id
 
 redirect task: direct dispatcher to switch to the specified task.
 Transactions, messages, etc. SHOULD NOT be rolled back.
+
+=item CORRUPT_FORM: message, entity, class
+
+corrupt form: user request contains invalid form value.  This is
+not the same as invalid input.  The form has been corrupted.  It
+might be due to an error on the server.
 
 =back
 
@@ -141,20 +151,25 @@ __PACKAGE__->compile(
 	'authentication required',
 	'user must authenticate first before proceeding',
     ],
-    INVALID_VERSION => [
+    VERSION_MISMATCH => [
     	9,
-	'invalid version',
+	'version mismatch',
 	'user request using invalid or old form, query, or uri',
     ],
-    INVALID_QUERY => [
+    CORRUPT_QUERY => [
     	10,
-	'invalid query',
+	'corrupt query',
 	'user request contains invalid query value',
     ],
     REDIRECT_TASK => [
 	11,
 	'redirect task',
 	'direct dispatcher to switch to new task',
+    ],
+    CORRUPT_FORM => [
+    	12,
+	'corrupt form',
+	'user request contains invalid form',
     ],
 );
 
