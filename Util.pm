@@ -230,6 +230,28 @@ sub bsearch_numeric {
     return (0, $middle);
 }
 
+# shell(string command) : string
+# shell(string command, string input) : string
+#
+# Runs the command on the local host and returns the result.
+# input may be undef.
+sub shell {
+    my($command, $input) = @_;
+    $input ||= '';
+    my($pid) = open(IN, "-|");
+    defined($pid) || die("fork: $!");
+    unless ($pid) {
+	open(OUT, "| $command 2>&1") || die("open $command: $!");
+	print OUT $input;
+	close(OUT) || die("write to $command failed: $!");
+	exit(0);
+    }
+    local($/) = undef;
+    my($res) = <IN>;
+    close(IN) || die("$res\n$command failed: $!");
+    return $res;
+}
+
 1;
 __END__
 
