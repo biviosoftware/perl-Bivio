@@ -557,7 +557,28 @@ sub is_loadavg_ok {
 
 =for html <a name="lock_action"></a>
 
-=head2 static lock_action(string action)
+=head2 static lock_action(code_ref op, string action) : boolean
+
+Creates a file lock for I<name> in /tmp/.  If I<name> is undef,
+uses C<caller> subroutine name.  The usage is:
+
+    sub my_action {
+	my($self, ...) = @_;
+	Bivio::ShellUtil->lock_action(sub {
+	     do something;
+	});
+	return;
+    }
+
+Prints a warning of the lock couldn't be obtained.  If I<op> dies,
+rethrows die after removing lock.
+
+Returns true if lock was obtained and I<op> executed without dying.
+Returns false if lock could not be acquired.
+
+B<DEPRECATED USAGE BELOW>
+
+=head2 DEPRECATED static lock_action(string action) : boolean
 
 Creates a file lock for I<action> in /tmp/.  If I<action> is undef,
 uses C<caller> sub.  The usage is:
@@ -575,26 +596,21 @@ child must be designed to be robust.
 =cut
 
 sub lock_action {
-    my(undef, $action) = @_;
-    $action ||= (caller(1))[3];
-    my($dir) = "/tmp/$action.lockdir";
-    unless (mkdir($dir, 0700)) {
-	Bivio::IO::Alert->warn('unable to create lock: ', $dir);
+    my(undef, $op, $name) = @_;
+    return _deprecated_lock_action(@_)
+	unless ref($op) eq 'CODE';
+    $name ||= (caller(1))[3];
+    $name =~ s/::/./g;
+    my($lock) = '/tmp/' . $name . '.lockdir';
+    unless (mkdir($lock, 0700)) {
+	Bivio::IO::Alert->warn('unable to create lock: ', $lock);
 	return 0;
     }
-    my($pid) = fork;
-    defined($pid) || die("fork: $!");
-    return 1 unless $pid;
-    # Parent process waits for child to finish
-    my($res) = waitpid($pid, 0) == -1 ? undef : $?;
-    # Don't need an error check; rather have $res always returned
-    rmdir($dir);
-    die("waitpid failed: $!\nsomething seriously wrong")
-	unless defined($res);
-    die("$action failed\n") if $res;
-
-    # Tell caller to return, not exit()
-    return 0;
+    my($die) = Bivio::Die->catch($op);
+    rmdir($lock);
+    $die->throw
+	if $die;
+    return 1;
 }
 
 =for html <a name="lock_realm"></a>
@@ -1052,6 +1068,33 @@ sub _compile_options {
 	delete($map->{$k}) unless $v;
     }
     return ($map, $opts);
+}
+
+# _deprecated_lock_action(proto, string action) : boolean
+#
+# Implements deprecated form of lock_action.
+#
+sub _deprecated_lock_action {
+    my(undef, $action) = @_;
+    $action ||= (caller(1))[3];
+    my($dir) = "/tmp/$action.lockdir";
+    unless (mkdir($dir, 0700)) {
+	Bivio::IO::Alert->warn('unable to create lock: ', $dir);
+	return 0;
+    }
+    my($pid) = fork;
+    defined($pid) || die("fork: $!");
+    return 1 unless $pid;
+    # Parent process waits for child to finish
+    my($res) = waitpid($pid, 0) == -1 ? undef : $?;
+    # Don't need an error check; rather have $res always returned
+    rmdir($dir);
+    die("waitpid failed: $!\nsomething seriously wrong")
+	unless defined($res);
+    die("$action failed\n") if $res;
+
+    # Tell caller to return, not exit()
+    return 0;
 }
 
 # _initialize(self, array_ref argv) : self
