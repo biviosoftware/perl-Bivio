@@ -159,7 +159,7 @@ sub create {
 	    unless $values->{volume};
 
     # Check quota first and ensures directory_id is really a directory
-    _update_directory($self, $values, _kbytes($values->{bytes}));
+    _update_directory($self, $values, $self->to_kbytes($values->{bytes}));
 
     $self->SUPER::create($values);
     return;
@@ -342,13 +342,13 @@ EOF
 	my($row);
 	while ($row = $statement->fetchrow_arrayref()) {
 	    push(@files, $row->[0]);
-	    $kbytes += _kbytes($row->[1]);
+	    $kbytes += $self->to_kbytes($row->[1]);
 	}
     }
     else {
 	# Not a directory
 	push(@files, $args->{file_id});
-	$kbytes = _kbytes($args->{bytes});
+	$kbytes = $self->to_kbytes($args->{bytes});
     }
 
     # Delete the rows we just found.  Apparently you can't call
@@ -521,6 +521,22 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="to_kbytes"></a>
+
+=head2 static to_kbytes(int bytes) : int
+
+Returns kbytes for bytes.  We round up from the smallest kb.
+Must be synchronized with the value in Format::Bytes.
+
+=cut
+
+sub to_kbytes {
+    my(undef, $bytes) = @_;
+    my($kb) = int(($bytes + 1023)/1024);
+    # Mininum of 1kb per file in quota.
+    return $kb ? $kb : 1;
+}
+
 =for html <a name="update"></a>
 
 =head2 update(hash_ref new_values, boolean in_update_directory)
@@ -566,18 +582,6 @@ sub _extract_mime_filename {
     my($name) = $2;
     $name = Bivio::Type::FileName->get_tail($name);
     return $name;
-}
-
-# _kbytes(int bytes) : int
-#
-# Returns kbytes for bytes.  We round up from the smallest kb.
-# Must be synchronized with the value in Format::Bytes.
-#
-sub _kbytes {
-    my($bytes) = @_;
-    my($kb) = int(($bytes + 1023)/1024);
-    # Mininum of 1kb per file in quota.
-    return $kb ? $kb : 1;
 }
 
 # _update_directory(Bivio::Biz::Model::File self, hash_ref properties, int kbytes)
