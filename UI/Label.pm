@@ -38,6 +38,7 @@ is used as the name.
 _compile(
 #TODO: Should these be dynamically looked up?
     # Common labels
+    NONE => [' '],
     PHONE => ['Phone', undef, 'Phone.phone'],
     TAX_ID => ['Tax ID', undef, 'TaxId.tax_id'],
     EMAIL => ['Email', undef, 'Email.email'],
@@ -84,7 +85,7 @@ _compile(
     MEMBER_SPECIFIC_REMARK => ['Member Specific Remark'],
     REALM_INSTRUMENT_NAME => ['Name', undef, 'RealmInstrument.name'],
     TICKER => ['Ticker', undef, 'Instrument.ticker_symbol'],
-    NONE => [' '],
+    LOCAL_INSTRUMENTS => ['Unlisted Investments'],
     PRICE_PER_SHARE => ['Price/Share', undef,
 	   'RealmInstrumentValuation.price_per_share'],
     NAME_TICKER => ['Name'],
