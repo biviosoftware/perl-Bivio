@@ -252,22 +252,6 @@ my(@_CFG) = (
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
-#        22
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/journal
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
-#        23
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/transactions
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
         24
@@ -281,14 +265,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentSummaryReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY
-#        25
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/reports/investment-history
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
         26
@@ -301,30 +277,6 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
-#        27
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/member-status
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_MEMBER_VALUE
-#        28
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/member-value
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_WITHDRAWAL_EARNINGS
-#        29
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/reports/withdrawal-earnings
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         30
@@ -336,62 +288,6 @@ my(@_CFG) = (
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_CASH_JOURNAL
-#        31
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/reports/cash-journal
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_CASH_CONTRIBUTIONS
-#        32
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/cash-contributions
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_PETTY_CASH_CONTRIBUTIONS
-#        33
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/pettycash-contributions
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_PETTY_CASH_JOURNAL
-#        34
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/pettycash-journal
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_DISTRIBUTIONS
-#        35
-#        CLUB
-#        ACCOUNTING_READ&MEMBER_READ
-#        ?/accounting/reports/distributions
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_INCOME_STATEMENT
-#        36
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/reports/income-expense
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
-#        37
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/reports/balance-sheet
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
     [qw(
 	GENERAL_PRIVACY
 	38
@@ -1041,19 +937,6 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=USER_ADMIN_PROFILE_EDIT
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
-#        101
-#        CLUB
-#        ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
-#        ?/accounting/member/withdrawal
-#        Bivio::Biz::Model::RealmUserList
-#        Bivio::Biz::Action::TargetRealm->execute_this_member
-#        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
-#        Bivio::Biz::Model::MemberWithdrawalForm
-#        Bivio::UI::HTML::Club::MemberWithdrawal
-#        next=CLUB_ACCOUNTING_MEMBER_DETAIL
-#    )],
     [qw(
         CLUB_ADMIN_NAME_EDIT
         102
@@ -1692,6 +1575,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MiscIncomeAndDeductions
         next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
     )],
+    # All tax views are ACCOUNTING_WRITE so only the accountant can access
     [qw(
         CLUB_ACCOUNTING_TAX99_F1065
         162
@@ -1711,7 +1595,7 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_TAX99_F1065K1
         163
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&MEMBER_READ
         ?/accounting/tax99/f1065k1.pdf
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
@@ -1733,15 +1617,8 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::Tax99
         next=CLUB_ACCOUNTING_TAX99
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWALS
-#        165
-#        CLUB
-#        ACCOUNTING_WRITE
-#        ?/accounting/reports/withdrawals
-#    )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_1065_PARAMETERS
+        CLUB_ACCOUNTING_TAX99_F1065_PARAMETERS
         166
         CLUB
         ACCOUNTING_WRITE
@@ -1751,10 +1628,10 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_TAX99
     )],
     [qw(
-        CLUB_ACCOUNTING_TAX99_K1_PARAMETERS
+        CLUB_ACCOUNTING_TAX99_F1065K1_PARAMETERS
         167
         CLUB
-        ACCOUNTING_WRITE
+        ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/tax99/k1/options
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberTaxList->execute_load_all
@@ -1834,12 +1711,26 @@ my(@_CFG) = (
         CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
         174
         CLUB
-        ACCOUNTING_READ
+        ACCOUNTING_WRITE
         ?/accounting/tax99/allocations
         Bivio::Biz::Action::ReportDate->execute1999
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::UI::HTML::Club::MemberAllocationReport
         next=CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_CHECKLIST
+        175
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        ?/accounting/tax99/checklist
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::TaxId->execute_load
+        Bivio::Type::MemberTaxListParams->execute_hide_valid_members
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::UI::HTML::Tax::Checklist
+        next=CLUB_ACCOUNTING_TAX99_CHECKLIST
     )],
 );
 
