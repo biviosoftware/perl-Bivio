@@ -406,6 +406,8 @@ my(@_CFG) = (
         MAIL_WRITE
         !
     )],
+#TODO: Probably should be TargetRealm->execute_this_member, but difficult to
+#      use right now.
     [qw(
         CLUB_ACCOUNTING_MEMBER_DETAIL
         40
@@ -413,7 +415,7 @@ my(@_CFG) = (
         ACCOUNTING_READ&MEMBER_READ
         %/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
-        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Action::RealmUser
         Bivio::Biz::Model::RealmMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
     )],
