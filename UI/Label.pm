@@ -374,9 +374,6 @@ _compile([
     FILE_LOCATION => ['Folder'],
     MAKE_PUBLIC => ['Publish Contents'],
 
-    # Julie Stav
-    JULIE_STAV => ['Julie Stav'],
-
     # Table Headings
     NAME_HEADING => ['Name', undef, 'realmowner_name_heading',
 	    'last_first_middle_heading', 'realmaccount_name_heading',
@@ -518,6 +515,7 @@ _compile([
     # Preferences
     PAGE_SIZE => ['List Size'],
     FACADE_CHILD_TYPE => ['Style'],
+    TEXTAREA_WRAP_LINES => ['Wrap Lines'],
 
     # page subtopics
     OVERVIEW => ['Overview'],
