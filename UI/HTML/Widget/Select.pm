@@ -261,7 +261,8 @@ sub render {
 
     $field_value = '' unless defined($field_value);
     $field_value = $field_value->as_int if ref($field_value);
-    my($editable) = $form->is_field_editable($field);
+    my($editable) = $form->is_field_editable($field)
+	    || $field_value eq '';
 
     for (my($i) = 0; $i < int(@$items); $i += 2) {
 	my($v) = $items->[$i];
