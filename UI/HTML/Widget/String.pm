@@ -47,6 +47,11 @@ Should we escape the value?  Only applies if the value is not a widget.
 The name of the formatter to use on I<value> before escaping the html.
 Only valid if I<value> is not a widget.
 
+=item hard_newlines : boolean [1]
+
+Newlines force hard breaks in the text.  Only valid if
+I<escape_html> is true.
+
 =item pad_left : int [0]
 
 Number of non-breaking spaces to pad on the left.
@@ -133,6 +138,7 @@ sub initialize {
     return if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
     $fields->{escape} = $self->get_or_default('escape_html', 1);
+    $fields->{hard_newlines} = $self->get_or_default('hard_newlines', 1);
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
     my($pad_right) = $self->get_or_default('pad_right', 0);
@@ -148,8 +154,7 @@ sub initialize {
     $fields->{value} = $self->get('value');
     if ($fields->{is_literal} = !ref($fields->{value})) {
 	# Format the constant once
-	$fields->{value} = _format($fields->{format}, $fields->{value},
-		$fields->{escape});
+	$fields->{value} = _format($fields, $fields->{value});
 
 	# Only constant if there is no font
 	$fields->{value} = $fields->{prefix}.$fields->{value}
@@ -208,7 +213,7 @@ sub render {
 	    $value->render($source, \$b);
 	}
 	else {
-	    $b .= _format($fields->{format}, $value, $fields->{escape});
+	    $b .= _format($fields, $value);
 	}
     }
     # Don't output anything if string is empty
@@ -224,23 +229,24 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _format(Bivio::UI::HTML::Format format, string value, boolean escape) : string
+# _format(hash_ref fields, string value) : string
 #
 # Formats and escapes the string and replaces newlines with <br>.
 # An all space string equates to a &nbsp;
 #
 sub _format {
-    my($format, $value, $escape) = @_;
-    if ($format) {
-	$value = $format->get_widget_value($value);
-	return $value if $format->result_is_html;
+    my($fields, $value) = @_;
+    if ($fields->{format}) {
+	$value = $fields->{format}->get_widget_value($value);
+	return $value if $fields->{format}->result_is_html;
     }
     Bivio::Die->die('got ref where scalar expected: ', $value)
 		if ref($value);
-    return $value unless $escape;
+    return $value unless $fields->{escape};
 
     $value = Bivio::HTML->escape($value);
-    $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
+    $value =~ s/\n/<br>/mg if $fields->{hard_newlines};
+    $value =~ s/^\s+$/&nbsp;/s;
     return $value;
 }
 
