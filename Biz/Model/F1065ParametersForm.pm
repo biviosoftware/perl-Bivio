@@ -34,6 +34,7 @@ C<Bivio::Biz::Model::F1065ParametersForm> IRS 1065 parameters
 #=IMPORTS
 use Bivio::Biz::Model::Tax1065;
 use Bivio::SQL::Connection;
+use Bivio::Type::CountryCode;
 use Bivio::Type::DateTime;
 use Bivio::Type::F1065Partner;
 use Bivio::Type::F1065Partnership;
@@ -58,8 +59,9 @@ Loads country codes.
 
 sub execute_empty_row {
     my($self) = @_;
-    $self->internal_put_field('RealmInstrument.country'
-	    => $self->get_list_model->get('RealmInstrument.country'));
+    $self->internal_put_field('country_code',
+	    Bivio::Type::CountryCode->unsafe_from_any(
+		    $self->get_list_model->get('RealmInstrument.country')));
     return;
 }
 
@@ -103,7 +105,7 @@ sub execute_ok_row {
 
     my($realm_inst) = $self->get_list_model->get_model('RealmInstrument');
     $realm_inst->update({
-	country => $self->get('RealmInstrument.country'),
+	country => $self->get('country_code')->get_name,
     });
     return;
 }
@@ -161,7 +163,8 @@ sub internal_initialize {
 	    TaxId.tax_id
 	),
 	    {
-		name => 'RealmInstrument.country',
+		name => 'country_code',
+		type => 'CountryCode',
 		constraint => 'NOT_NULL',
 		in_list => 1,
 	    },
@@ -201,6 +204,27 @@ sub internal_initialize_list {
 	    $self->get_request);
     # use the super class to get the list from the request
     return $self->SUPER::internal_initialize_list();
+}
+
+=for html <a name="validate_row"></a>
+
+=head2 validate_row()
+
+Ensures the selected country is valid.
+
+=cut
+
+sub validate_row {
+    my($self) = @_;
+
+    # must be selected, and not the US
+    $self->internal_put_error('country_code',
+	    Bivio::TypeError::SELECT_VALID_FOREIGN_TAX_COUNTRY())
+	    if $self->get('country_code')
+		    == Bivio::Type::CountryCode::UNKNOWN()
+			    || $self->get('country_code')
+				    == Bivio::Type::CountryCode::US();
+    return;
 }
 
 =for html <a name="validate_start"></a>
