@@ -129,7 +129,7 @@ enum, or integer in a case-insensitive manner.
 sub from_any {
     my($proto, $thing) = @_;
     ref($thing) || ($thing = uc($thing));
-    return &_get_info($proto, $thing)->[5];
+    return _get_info($proto, $thing)->[5];
 }
 
 =for html <a name="from_int"></a>
@@ -141,7 +141,7 @@ Returns enum value for specified integer.
 =cut
 
 sub from_int {
-    return &_get_info(shift(@_), shift(@_) + 0)->[5];
+    return _get_info(shift(@_), shift(@_) + 0)->[5];
 }
 
 =head1 METHODS
@@ -157,7 +157,7 @@ Returns integer value for enum value
 =cut
 
 sub as_int {
-    return &_get_info(shift(@_), undef)->[0];
+    return _get_info(shift(@_), undef)->[0];
 }
 
 =for html <a name="as_string"></a>
@@ -170,7 +170,7 @@ Returns fully-qualified string representation of enum value.
 
 sub as_string {
     my($self) = shift;
-    return &_get_info($self, undef)->[4];
+    return _get_info($self, undef)->[4];
 }
 
 =for html <a name="compile"></a>
@@ -283,16 +283,32 @@ EOF
     return;
 }
 
+=for html <a name="from_literal"></a>
+
+=head2 static from_literal(int value) : Bivio::Type::Enum
+
+Returns the enum for this integer.  If not an integer, throws an exception.
+
+=cut
+
+sub from_literal {
+    my($proto, $value) = @_;
+    return undef unless $value =~ /^[-+]?\d+$/;
+    my($info) = _get_info($proto, $value + 0);
+    return undef unless $info;
+    return $info->[5];
+}
+
 =for html <a name="from_sql_column"></a>
 
 =head2 static from_sql_column(int value) : Bivio::Type::Enum
 
-Returns the enum for this type.
+Returns the enum for this value.
 
 =cut
 
 sub from_sql_column {
-    return &_get_info(shift(@_), shift(@_) + 0)->[5];
+    return _get_info(shift(@_), shift(@_) + 0)->[5];
 }
 
 =for html <a name="get_long_desc"></a>
@@ -304,7 +320,7 @@ Returns the long description for the enum value.
 =cut
 
 sub get_long_desc {
-    return &_get_info(shift(@_), undef)->[2];
+    return _get_info(shift(@_), undef)->[2];
 }
 
 =for html <a name="get_name"></a>
@@ -316,7 +332,7 @@ Returns the string name of the enumerated value.
 =cut
 
 sub get_name {
-    return &_get_info(shift(@_), undef)->[3];
+    return _get_info(shift(@_), undef)->[3];
 }
 
 =for html <a name="get_self"></a>
@@ -340,7 +356,7 @@ Returns the short description for the enum value.
 =cut
 
 sub get_short_desc {
-    return &_get_info(shift(@_), undef)->[1];
+    return _get_info(shift(@_), undef)->[1];
 }
 
 =for html <a name="get_widget_value"></a>
@@ -364,6 +380,18 @@ sub get_widget_value {
     return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
 }
 
+=for html <a name="to_literal"></a>
+
+=head2 static to_literal(Bivio::type::Enum value) : int
+
+Return the integer representation of I<value>
+
+=cut
+
+sub to_literal {
+    return _get_info(shift(@_), shift(@_))->[0];
+}
+
 =for html <a name="to_sql_param"></a>
 
 =head2 static to_sql_param(Bivio::Type::Enum value) : int
@@ -373,23 +401,25 @@ Returns integer representation of I<value>
 =cut
 
 sub to_sql_param {
-    return &_get_info(shift(@_), shift(@_))->[0];
+    return _get_info(shift(@_), shift(@_))->[0];
 }
 
 #=PRIVATE METHODS
 
-# _get_info self name -> value
+# _get_info(string class)
+# _get_info(Bivio::Type::Enum self)
+# _get_info(Bivio::Type::Enum self, any ident)
+# _get_info(Bivio::Type::Enum self, any ident, boolean dont_die)
 #
-# Finds info for I<name> in I<self> (can be a proto) or dies.
-# Returns the field specified or the hole array if field undefined.
+# Finds info for I<ident> in I<self> (can be a proto) or dies.
 sub _get_info {
-    my($self, $name, $field) = @_;
+    my($self, $ident, $dont_die) = @_;
     my($info) = $_MAP{ref($self) || $self};
     Carp::croak($self, ': not an enumerated type') unless defined($info);
-    defined($name) || ($name = $self);
-    Carp::croak($name, ': no such ', ref($self) || $self)
-		unless defined($info->{$name});
-    return $info->{$name};
+    defined($ident) || ($ident = $self);
+    return $info->{$ident} if defined($info->{$ident});
+    Carp::croak($ident, ': no such ', ref($self) || $self) unless $dont_die;
+    return undef;
 }
 
 =head1 COPYRIGHT
