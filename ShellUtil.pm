@@ -993,8 +993,6 @@ sub run_daemon {
 #TODO: Fork/setsid is another program.  Need to set pid of process
 #TODO: Returned by parent on stdout
 #    POSIX::setsid();
-#For now I think is good enough
-    setpgrp();
     _check_cfg($cfg, $cfg_name);
     my($children) = {};
     my($i) = 3;
@@ -1482,6 +1480,9 @@ sub _setup_for_main {
 #
 sub _start_daemon_child {
     my($args, $cfg) = @_;
+    # Force a reconnect for both child and parent; avoids errors in
+    # logs for parent.
+    Bivio::SQL::Connection->disconnect;
     Bivio::IO::Alert->reset_warn_counter;
  RETRY: {
 	my($child) = fork;
@@ -1497,8 +1498,6 @@ sub _start_daemon_child {
 	}
 	setpriority(BSD::Resource::PRIO_PROCESS(), 0,
 	    $cfg->{daemon_child_priority});
-	# Force a reconnect
-	Bivio::SQL::Connection->get_instance;
 	Bivio::Agent::Request->clear_current;
 	$0 = join(' ', @$args);
 	Bivio::IO::Alert->info('Starting: pid=', $$, ' args=',
