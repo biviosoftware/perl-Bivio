@@ -127,6 +127,7 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         pub/logout
+        Bivio::Biz::Model::RealmInvite->execute_delete_cookie
 	Bivio::Biz::Action::Logout
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=HTTP_DOCUMENT
