@@ -279,6 +279,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
+        help=investment_summary
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
@@ -291,6 +292,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
+        help=member_summary
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
@@ -302,6 +304,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
+        help=cash_summary_report
     )],
     [qw(
 	GENERAL_PRIVACY
@@ -713,6 +716,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubMemberTitleForm
         Bivio::UI::HTML::Club::EditMemberTitle
         next=CLUB_ADMIN_USER_DETAIL
+        help=changing_privileges
     )],
 #TODO: not implemented
 #        Bivio::Biz::Action::TargetRealm->execute_this_real_member
@@ -1486,6 +1490,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
+        help=gains_losses_report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
@@ -1498,6 +1503,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::UI::HTML::Club::IncomeAndExpenseReport
         next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
+        help=income_expense_statement
     )],
     # Forces user to login and then redirects to USER_HOME
     [qw(
@@ -1514,7 +1520,7 @@ my(@_CFG) = (
         159
         GENERAL
         DOCUMENT_READ
-        hp/index.html
+        hp/*
         Bivio::Biz::Action::HTTPDocument
     )],
     [qw(
@@ -1888,6 +1894,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::DeleteMemberForm
         Bivio::UI::HTML::Club::DeleteMember
         next=CLUB_ADMIN_USER_LIST
+        help=deleting_members
     )],
 #TODO: These permissions are "wrong" in that you need, not write, but
 #      everybody has read and this means people could read the ssns
