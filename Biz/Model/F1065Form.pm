@@ -32,6 +32,7 @@ C<Bivio::Biz::Model::F1065Form> IRS 1065 fields
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::ClubOwnership;
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Tax1065;
 use Bivio::SQL::Connection;
@@ -358,6 +359,11 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'nondeductible_expenses',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'cash_distribution',
 		type => 'Amount',
 		constraint => 'NONE',
@@ -454,6 +460,7 @@ Returns a single row with calculated values.
   17e     F1065Form.foreign_tax_type
   17e     F1065Form.foreign_tax
   19      F1065Form.tax_exempt_interest
+  21      F1065Form.nondeductible_expenses
   22      F1065Form.cash_distribution
   23      F1065Form.property_distribution
 
@@ -484,6 +491,7 @@ sub internal_load_rows {
 	business_activity => 'Finance',
 	principal_service => 'Investment Club',
 	business_code => '525990',
+	return_type => _get_return_type($self, $date),
 	accounting_method => Bivio::Type::F1065AccountingMethod->CASH,
 	number_of_k1s => _get_member_count($self),
 	three_requirements => _meets_three_requirements($self, $date),
@@ -504,6 +512,8 @@ sub internal_load_rows {
 		$self->get_request),
 	tax_exempt_interest => $income->get(
 		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc),
+	nondeductible_expenses => $_M->neg($income->get(
+		$tax->NON_DEDUCTIBLE_EXPENSE->get_short_desc)),
 	cash_distribution => _get_cash_withdrawal_amount($self, $date),
 	property_distribution => _get_stock_withdraw_amount($self, $date),
     };
@@ -620,6 +630,23 @@ sub _get_member_count {
     my($self) = @_;
     return $self->get_request->get('Bivio::Biz::Model::MemberAllocationList')
 	    ->get_result_set_size;
+}
+
+# _get_return_type(string date) : Bivio::Type::F1065Return
+#
+# Returns the type of return. If there is no club ownership on the end
+# date, then the return is final.
+#
+sub _get_return_type {
+    my($self, $date) = @_;
+
+    my($ownership) = Bivio::Biz::Accounting::ClubOwnership->new(
+	    $self->get_request, $date)->get_ownership($date);
+
+    foreach my $row (values(%$ownership)) {
+	return Bivio::Type::F1065Return::UNKNOWN() if ($row->[0] != 0);
+    }
+    return Bivio::Type::F1065Return::FINAL_RETURN();
 }
 
 # _get_stock_withdraw_amount(string date) : string
