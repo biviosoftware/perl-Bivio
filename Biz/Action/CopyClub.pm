@@ -47,7 +47,6 @@ use Bivio::Biz::Model::RealmUser;
 use Bivio::SQL::Connection;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

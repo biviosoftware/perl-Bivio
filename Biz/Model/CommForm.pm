@@ -35,14 +35,7 @@ use Bivio::TypeError;
 use Bivio::Type::Location;
 
 #=VARIABLES
-my(%_PROPERTY_MAP) = (
-    Phone => {
-	'Phone.phone' => 'phone',
-    },
-    Email => {
-	'Email.email' => 'email',
-    },
-);
+
 =head1 METHODS
 
 =cut
