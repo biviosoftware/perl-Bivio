@@ -6,7 +6,7 @@ $Bivio::ClubMailPeople::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::ClubMailPeople - forward a mail message to club members
+Bivio::ClubMailPeople - forward a mail message to club members AND guests
 
 =head1 SYNOPSIS
 
@@ -27,7 +27,9 @@ use Bivio::Biz::Action;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Action::ClubMailPeople> forwards a mail message
-to club members
+to club members AND guests.
+
+TODO: Need to actually support "the guests".
 
 =cut
 
@@ -47,7 +49,7 @@ Bivio::IO::Trace->register;
 
 =head2 execute(Agent::Request req) : 
 
-Unpacks, stores and forwards an incoming message.
+Forwards an incoming message to members AND guests of a club.
 
 =cut
 
@@ -63,6 +65,7 @@ sub execute {
     $req->die('NOT_FOUND', 'alls emails marked as invalid')
             unless $emails;
     $msg->set_recipients($emails);
+    
     my($display_name) = $realm_owner->get('display_name');
     $msg->set_headers_for_list_send($realm_owner->get('name'),
             $display_name, 1, 1);
