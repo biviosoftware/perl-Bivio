@@ -69,14 +69,14 @@ not exist.
 
 =cut
 
-sub copy_club {
-    my($self, $source, $dest) = @_;
-    my($res);
-    my($s) = $source->get('name');
-    my($d) = $dest->get('name');
-    $_FILE_CLIENT->copy($s, $d, \$res) || die("copy $s $d: $res");
-    return;
-}
+#sub copy_club {
+#    my($self, $source, $dest) = @_;
+#    my($res);
+#    my($s) = $source->get('name');
+#    my($d) = $dest->get('name');
+#    $_FILE_CLIENT->copy($s, $d, \$res) || die("copy $s $d: $res");
+#    return;
+#}
 
 =for html <a name="create"></a>
 
@@ -279,14 +279,14 @@ sub internal_initialize {
 
 =for html <a name="setup_club"></a>
 
-=head2 setup_club(Bivio::Biz::Model::RealmOwner club)
+=head2 static setup_club(Bivio::Biz::Model::RealmOwner club)
 
 Creates the club message storage area.
 
 =cut
 
 sub setup_club {
-    my($self, $club) = @_;
+    my(undef, $club) = @_;
     my($res);
     my($club_name) = $club->get('name');
     my($dir);
