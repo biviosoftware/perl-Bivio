@@ -281,8 +281,9 @@ sub _upgrade_perms {
     Bivio::Biz::Util::RealmRole->edit('CLUB', 'USER', '+MAIL_FORWARD');
     # Add ANY_REALM_USER to GUEST
     Bivio::Biz::Util::RealmRole->edit('CLUB', 'GUEST', '+ANY_REALM_USER');
-    # Add REALM_PUBLICIZE to ACCOUNTANT
+    # Add REALM_PUBLICIZE to ACCOUNTANT & ADMINISTRATOR
     Bivio::Biz::Util::RealmRole->edit('CLUB', 'ACCOUNTANT', '+REALM_PUBLICIZE');
+    Bivio::Biz::Util::RealmRole->edit('CLUB', 'ADMINISTRATOR', '+REALM_PUBLICIZE');
 
     # Realm ask_candis_publish
     # Add ANY_REALM_USER to GUEST
