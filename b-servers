@@ -5,29 +5,32 @@
 # Manage servers for the Sociatas Application
 #
 
+RCDIR=/etc/rc.d/init.d
+
 case "$1" in
   start)
-	/etc/rc.d/init.d/b-file-server start
-	/etc/rc.d/init.d/b-mail-dispatcher start
-	/etc/rc.d/init.d/httpd start
+	$RCDIR/b-file-server start
+	$RCDIR/b-mail-dispatcher start
+	$RCDIR/httpd start
 	;;
   stop)
-	/etc/rc.d/init.d/b-file-server stop
-	/etc/rc.d/init.d/b-mail-dispatcher stop
-	/etc/rc.d/init.d/httpd stop
+	$RCDIR/b-file-server stop
+	$RCDIR/b-mail-dispatcher stop
+	$RCDIR/httpd stop
 	;;
   status)
-	/etc/rc.d/init.d/b-file-server status
-	/etc/rc.d/init.d/b-mail-dispatcher status
-	/etc/rc.d/init.d/httpd status
+	$RCDIR/b-file-server status
+	$RCDIR/b-mail-dispatcher status
+	$RCDIR/httpd status
 	;;
   restart)
-	/etc/rc.d/init.d/b-file-server restart
-	/etc/rc.d/init.d/b-mail-dispatcher restart
-	/etc/rc.d/init.d/httpd restart
+	$RCDIR/b-file-server restart
+	$RCDIR/b-mail-dispatcher restart
+	$RCDIR/httpd restart
 	;;
   *)
 	echo "Usage: $0 {start|stop|restart|reload|status}"
+	echo "       Manage all Societas servers at once."
 	exit 1
 esac
 exit 0
