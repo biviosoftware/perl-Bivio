@@ -81,6 +81,7 @@ Used by ListFormModel to indicate a column is in the list.
 =item in_select : boolean
 
 Used by ListModel to indicate a column is in the select.
+Can be used to force C<LEVEL> to be in select.
 
 =item sort_order : boolean
 
@@ -422,6 +423,10 @@ sub _init_column_from_hash {
     if ($first =~ /\./) {
 	# case: "{name => Model.column}"
 	$col = __PACKAGE__->init_column($attrs, $first, $class, 0);
+	# in_select is set to true by init_column.  Only turn off
+	# if set explicitly.
+	$col->{in_select} = 0 if defined($decl->{in_select})
+		&& !$decl->{in_select};
     }
     else {
 	# case: "{name => local_field}"
@@ -432,6 +437,11 @@ sub _init_column_from_hash {
 	$col = {name => $first};
 	push(@{$attrs->{local_columns}}, $col);
 	$attrs->{columns}->{$first} = $col;
+
+	# Local columns are not in the select by default
+	$col->{in_select} = $decl->{in_select} ? 1 : 0;
+	# If it is in the select (only case is LEVEL so far.
+	$col->{sql_name} = $col->{name} if $col->{in_select};
     }
     # Override or define new, but only set if set
     __PACKAGE__->init_type($col, $decl->{type}) if $decl->{type};
@@ -440,7 +450,6 @@ sub _init_column_from_hash {
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
-    $col->{in_select} = $decl->{in_select} ? 1 : 0;
 
     # Syntax checked in FormSupport.  Not used by other Model types.
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
