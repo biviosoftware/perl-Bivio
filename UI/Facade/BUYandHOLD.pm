@@ -135,9 +135,7 @@ __PACKAGE__->new({
 		],
 	    }));
 
-	    $fc->group(copyright_widget =>
-		    Bivio::UI::HTML->get_standard_copyright->put(
-			    link_target => '_blank'));
+	    $fc->group(copyright_widget => _copyright());
 
 	    $fc->group(content_widget => Bivio::UI::HTML::Widget->indirect(
 			    ['page_scene']
@@ -185,6 +183,27 @@ sub _chooser {
 		    .'/investmentclubintroduction.htm',
 		    'Motley Fool Investment Club Guide'],
 	    ]);
+}
+
+# _copyright() : 
+#
+#
+#
+sub _copyright {
+    my($year) = (gmtime(time))[5] + 1900;
+    return Bivio::UI::HTML::Widget->string(
+	    Bivio::UI::HTML::Widget->join([
+		"Copyright &copy; $year, bivio Inc."
+		." <i>All Rights Reserved.</i>\n<br>"
+		."Use of this Web site constitutes acceptance"
+		." of the bivio\n",
+		Bivio::UI::HTML::Widget->link(
+			Bivio::UI::Label->get_simple(
+				'USER_AGREEMENT_TEXT'),
+			'http://www.bivio.com/hm/user.html',
+		       )->put(link_target => '_blank'),
+	    ]),
+	    'copyright_and_disclaimer');
 }
 
 =head1 COPYRIGHT
