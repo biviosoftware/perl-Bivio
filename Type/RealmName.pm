@@ -75,6 +75,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     beta
     bin
     bivio
+    bounce
     cvs
     daemon
     dba
