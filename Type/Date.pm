@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Date;
 use strict;
 $Bivio::Type::Date::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::Date::VERSION;
 
 =head1 NAME
 
@@ -116,6 +117,7 @@ sub from_literal {
     my(undef, $value) = @_;
 #TODO: Improve the checks here
     return undef unless defined($value) && $value =~ /\S/;
+    return _from_date_time($value, $1) if $value =~ /^\d+ (\d+)$/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;
     return (undef, Bivio::TypeError::DATE())
@@ -315,9 +317,22 @@ sub to_xml {
 
 #=PRIVATE METHODS
 
+# _from_date_time(string value, string time) : string
+#
+# Makes sure is a valid date time.
+#
+sub _from_date_time {
+    my($value, $time) = @_;
+    my($v, $e) = Bivio::Type::DateTime->from_literal($value);
+    return ($v, $e) if $e;
+    return (undef, Bivio::TypeError::TIME_COMPONENT_OF_DATE())
+	    unless $time eq Bivio::Type::DateTime::DEFAULT_TIME();
+    return $v;
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
