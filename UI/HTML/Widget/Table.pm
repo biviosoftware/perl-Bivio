@@ -325,6 +325,7 @@ use Bivio::UI::Align;
 use Bivio::UI::Color;
 use Bivio::UI::HTML::ViewShortcuts;
 use Bivio::UI::HTML::WidgetFactory;
+use Bivio::UI::TableRowClass;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
@@ -718,7 +719,8 @@ sub render {
 			&& $prev_value != $grouping_value;
 
 	$self->render_row($state->{cells}, $list, $buffer,
-		$is_even_row ? $state->{even_row} : $state->{odd_row}, 1);
+	    $is_even_row ? $state->{even_row} : $state->{odd_row},
+	    Bivio::UI::TableRowClass->DATA);
 
 	if (defined($grouping_field)) {
 	    $prev_value = $grouping_value;
@@ -755,7 +757,7 @@ sub render_cell {
 
 =head2 render_row(array_ref cells, any source, string_ref buffer)
 
-=head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean in_list)
+=head2 render_row(array_ref cells, any source, string_ref buffer, string row_prefix, Bivio::UI::TableRowClass class)
 
 Renders the specified set of widgets onto the output buffer.
 If in_list is true, then empty strings will be rendered as '&nbsp;'.
@@ -763,11 +765,12 @@ If in_list is true, then empty strings will be rendered as '&nbsp;'.
 =cut
 
 sub render_row {
-    my($self, $cells, $source, $buffer, $row_prefix, $in_list) = @_;
+    my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     $row_prefix ||= "\n<tr>";
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
-	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
+	$$buffer .= ($class == Bivio::UI::TableRowClass->HEADING
+	    ? "\n<th" : "\n<td") . $cell->get_or_default('column_prefix', '');
 
 	if ($cell->get_or_default('heading_expand', 0)) {
 	    $$buffer .= ' width="100%"'
@@ -782,7 +785,9 @@ sub render_row {
 	# makes the table look nicer on certain browsers.
 	my($start) = length($$buffer);
 	$self->render_cell($cell, $source, $buffer);
-	$$buffer .= '&nbsp;' if length($$buffer) == $start && $in_list;
+	$$buffer .= '&nbsp;'
+	    if length($$buffer) == $start
+		&& $class == Bivio::UI::TableRowClass->DATA;
 	$$buffer .= '</td>';
     }
     $$buffer .= "\n</tr>";
@@ -957,7 +962,8 @@ sub _initialize_row_prefixes {
 sub _render_headings {
     my($state) = @_;
     $state->{self}->render_row($state->{headings},
-	$state->{list}, $state->{buffer})
+	$state->{list}, $state->{buffer}, undef,
+	Bivio::UI::TableRowClass->HEADING)
 	if $state->{show_headings};
     _render_row_with_colspan($state, 'separator')
 	if $state->{heading_separator};
@@ -1011,19 +1017,22 @@ sub _render_trailer {
     my($state) = @_;
     my($self) = $state->{self};
     $self->render_row($self->get('footer_row_widgets'),
-	    $state->{list}, $state->{buffer})
-	    if $self->unsafe_get('footer_row_widgets');
+	$state->{list}, $state->{buffer}, undef,
+	Bivio::UI::TableRowClass->FOOTER)
+	if $self->unsafe_get('footer_row_widgets');
 
     _render_row_with_colspan($state, 'separator')
-	    if $self->unsafe_get('trailing_separator');
+	if $self->unsafe_get('trailing_separator');
 
     $self->render_row($state->{summary_cells},
-	    $state->{list}->get_summary, $state->{buffer})
-	    if $state->{summary_cells};
+	$state->{list}->get_summary, $state->{buffer}, undef,
+	Bivio::UI::TableRowClass->FOOTER)
+	if $state->{summary_cells};
 
     $self->render_row($state->{summary_lines}, $state->{list},
-	    $state->{buffer})
-	    if $self->unsafe_get('summary_line_type');
+	$state->{buffer}, undef,
+	Bivio::UI::TableRowClass->FOOTER)
+	if $self->unsafe_get('summary_line_type');
 
     ${$state->{buffer}} .= "\n</table>" if $self->get_or_default('end_tag', 1);
     return;
