@@ -32,7 +32,7 @@ L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
 but might be a
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 The widget or its children should contain a
-L<Bivio::UI::HTML::Widget::Submit|Bivio::UI::HTML::Widget::Submit>.
+L<Bivio::UI::HTML::Widget::FormButton|Bivio::UI::HTML::Widget::FormButton>.
 
 No special formatting is implemented.  For layout, use, e.g.
 

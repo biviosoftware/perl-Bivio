@@ -32,7 +32,7 @@ L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>,
 but might be a
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 The widget or its children should be a
-L<Bivio::UI::HTML::Widget::Submit|Bivio::UI::HTML::Widget::Submit>.
+L<Bivio::UI::HTML::Widget::FormButton|Bivio::UI::HTML::Widget::FormButton>.
 
 The link, bg, and text colors are specified by the
 L<Bivio::UI::Color|Bivio::UI::Color> names:
