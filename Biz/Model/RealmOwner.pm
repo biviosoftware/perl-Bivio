@@ -690,6 +690,21 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="invalidate_password"></a>
+
+=head2 invalidate_password()
+
+Invalidates I<self>'s password. Deletes any outstanding password requests.
+
+=cut
+
+sub invalidate_password {
+    my($self) = @_;
+    $self->update({password => Bivio::Type::Password->INVALID});
+    Bivio::Biz::Model->get_instance('PasswordRequest')->delete({});
+    return;
+}
+
 =for html <a name="is_default"></a>
 
 =head2 is_default() : boolean
