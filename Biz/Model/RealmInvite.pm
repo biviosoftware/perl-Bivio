@@ -310,6 +310,7 @@ sub execute_accept {
     }
 
     _set_state($self, $req);
+    _redirect_unless_logged_in($req);
     return;
 }
 
@@ -453,6 +454,26 @@ sub _check_cookie {
     return $c;
 }
 
+# _redirect_unless_logged_in(Bivio::Agent::Request req)
+#
+# Redirects to login page if user is logged out
+# Redirects to register page if not a bivio user
+#
+sub _redirect_unless_logged_in {
+    my($req) = @_;
+    my($state) = $req->get('realm_invite_state');
+    if ($state == Bivio::Type::RealmInviteState::IS_USER
+	   || $state == Bivio::Type::RealmInviteState::EMAIL_MATCHES_USER) {
+	_trace("State is: IS_USER or EMAIL_MATCHES_USER");
+	$req->client_redirect(Bivio::Agent::TaskId::LOGIN());
+    }
+    elsif ($state == Bivio::Type::RealmInviteState::NO_USER) {
+	_trace("State is: NO_USER");
+	$req->client_redirect(Bivio::Agent::TaskId::USER_CREATE());
+    }
+    return;
+}
+
 # _set_state(Bivio::Biz::Model::RealmInvite self, Bivio::Agent::Request req)
 #
 # Sets the realm_invite_state $req.
@@ -473,8 +494,11 @@ sub _set_state {
 			    : $invited_user && $invited_user->get('realm_id')
 				    eq $user->get('realm_id')
 				    ? 'AUTH_USER_MATCHES_EMAIL' : 'AUTH_USER')
-	    : $invited_user ? 'EMAIL_MATCHES_USER' : 'NO_USER';
-
+	    : $invited_user
+		    ? 'EMAIL_MATCHES_USER'
+			    : $req->get('user_state')
+				    == Bivio::Type::UserState::LOGGED_OUT()
+				    ? 'IS_USER' : 'NO_USER';
     my($shadow);
     if ($self->get('realm_user_id')) {
 	$shadow = Bivio::Biz::Model::RealmOwner->new($req);
