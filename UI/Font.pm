@@ -59,12 +59,13 @@ use Bivio::UI::Color;
 my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
     PAGE_HEADING => [$_SANS_SERIF, undef, 'large', 'strong'],
-    TABLE_HEADING => [$_SANS_SERIF],
+    TABLE_HEADING => [$_SANS_SERIF, undef, 'small', 'strong'],
     TABLE_CELL => [undef, undef, 'small'],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'i'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
+    MONOSPACED => [undef, undef, 'tt'],
 ]);
 
 =head1 METHODS
