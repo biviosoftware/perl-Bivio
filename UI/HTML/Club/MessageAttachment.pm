@@ -96,9 +96,11 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
     my($body);
     my($fh);
-    my($filename);
-    my($s);
+    my($filename) = '';
+    my($html) = '';
+    my($s) = '';
     my($esc) = 1;
+    my($str) = '';
     if (defined($req->get('query')) && defined($req->get('query')->{att})) {
 	my($club_name) = $req->get('auth_realm')->get('owner_name');
 	my($attachment_id) = $req->get('query')->{att};
@@ -114,16 +116,20 @@ sub execute {
 	    if($ctypestr =~ 'text/html'){$esc = 0;}
 	    if($ctypestr =~ "image/"){
 		$esc = 0;
-		$s = "\n<IMG SRC=".$req->format_uri(
+		$html = "\n<IMG SRC=".$req->format_uri(
 		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
 		    "img=".$attachment_id).">";
 	    }
-	    my($str) = Bivio::UI::HTML::Widget::String->new({
-		    value => $s,
-		    escape_text => $esc
+	    else {
+		$body =~ /(X-BivioNumParts: \d*)\n/;
+		$html = $';
+	    }
+	    $str = Bivio::UI::HTML::Widget::String->new({
+		    value => $html,
+		    escape_text => $esc,
 		});
-	    $fields->{content}->put(value => $str);
 	    $str->initialize();
+	    $fields->{content}->put(value => $str);
 	}
 	else{
 	    my(@urls);
