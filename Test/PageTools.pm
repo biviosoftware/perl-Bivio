@@ -47,10 +47,9 @@ Visits the page specified by url (which may be dynamically passed) and returns t
 =cut
 
 sub visit {
-    my($proto, $board, $uri) = @_;
+    my($proto, $uri) = @_;
     _trace("Current method is visit(). Current url is:", $uri, "\n")
 	    if $_TRACE;
-    $board->put(current_uri => $uri);  #change current_uri to uri?
 
     my($response) = HTTPTools::http_href('URL', $uri);
 
@@ -58,6 +57,7 @@ sub visit {
 	print("Failed to get response from server for $uri.\n");
     }
     elsif ($response->{HTTP_RESPONSE}->is_success) {
+	my ($board) = Bivio::Test::BulletinBoard->get_current();
 	$board->put(response => $response);
 	print("Visiting page: " , ($board->get('response'))->{TITLE} , "\n");
     }
