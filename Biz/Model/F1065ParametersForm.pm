@@ -89,6 +89,10 @@ sub execute_empty_start {
     foreach my $model (qw(Tax1065 Address TaxId Club)) {
 	$self->load_from_model_properties($model);
     }
+
+    # put an error on start date for emphasis
+    $self->internal_put_error('Club.start_date', Bivio::TypeError::NULL())
+	    unless defined($self->get('Club.start_date'));
     return;
 }
 
