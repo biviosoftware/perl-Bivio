@@ -435,8 +435,15 @@ sub _format_form {
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {
 	foreach my $v (values(%{$form->{$class}})) {
-	    $res .= _format_field($v, $v->{value})
-		unless $match->{$v};
+	    next if $match->{$v};
+	    $res .= _format_field($v,
+		$v->{type} eq 'checkbox'
+		    ? $v->{checked}
+		        ? defined($v->{value})
+		            ? $v->{value}
+		            : 1
+		        : next
+		    : $v->{value});
 	}
     }
     # Needs to be some "true" value for our forms
