@@ -189,7 +189,7 @@ sub validate {
     if ($login =~ /@/) {
 	# Login by email
 	return if $owner->unauth_load_by_email($login,
-		{realm_type => Bivio::Auth::RealmType::USER()});
+		realm_type => Bivio::Auth::RealmType::USER());
     }
     elsif ($login =~ /^\d/) {
 	# Login by realm id
