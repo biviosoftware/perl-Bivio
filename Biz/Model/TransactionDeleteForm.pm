@@ -55,7 +55,13 @@ sub execute_input {
     my($entry) = $req->get('Bivio::Biz::Model::Entry');
 
     # delete the related transaction and all its entries
-    $entry->get_model('RealmTransaction')->cascade_delete;
+    my($txn) = $entry->get_model('RealmTransaction');
+    my($date) = $txn->get('date_time');
+
+    $txn->cascade_delete;
+
+    # need to update units after this date
+    $req->get('auth_realm')->get('owner')->audit_units($date);
 
     return;
 }
