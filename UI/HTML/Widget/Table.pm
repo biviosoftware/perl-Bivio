@@ -307,17 +307,17 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
 =cut
 
 #=IMPORTS
-use Bivio::Die;
-use Bivio::UI::HTML::ViewShortcuts;
-
 use Bivio::Biz::Model;
+use Bivio::Die;
 use Bivio::UI::Align;
 use Bivio::UI::Color;
-use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::Widget::Join;
+use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::UI::HTML::Widget::FormFieldError;
 use Bivio::UI::HTML::Widget::LineCell;
 use Bivio::UI::HTML::Widget::String;
+use Bivio::UI::HTML::WidgetFactory;
 use Bivio::UI::Label;
+use Bivio::UI::Widget::Join;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
@@ -335,12 +335,23 @@ Bivio::IO::Trace->register;
 
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Table
 
+=head2 static new(string list_class, array_ref columns) : Bivio::UI::HTML::Widget::Table
+
+=head2 static new(string list_class, array_ref columns, hash_ref attributes) : Bivio::UI::HTML::Widget::Table
+
 Creates a new Table widget.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($proto, $list_class, $columns, $attributes) = @_;
+    my($self) = ref($list_class)
+	    ? Bivio::UI::Widget::new($proto, $list_class)
+	    : Bivio::UI::Widget::new($proto, {
+		list_class => $list_class,
+		columns => $columns,
+		($attributes ? %$attributes : ()),
+	    });
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -375,13 +386,46 @@ sub create_cell {
 	});
     }
     else {
+	my($use_list) = 0;
+	my($need_error_widget) = 0;
+
+	# if the source is a ListFormModel, use editable fields
+	if (UNIVERSAL::isa($model, 'Bivio::Biz::ListFormModel')) {
+	    if ($model->has_fields($col)) {
+		# don't allow editing primary keys
+		if ($model->get_field_constraint($col)
+			== Bivio::SQL::Constraint->PRIMARY_KEY) {
+		    $use_list = 1;
+		}
+		else {
+		    $need_error_widget = 1;
+		}
+	    }
+	    else {
+		$use_list = 1;
+	    }
+	}
+	$model = $model->get_instance($model->get_list_class)
+		if $use_list;
 	my($type) = $model->get_field_type($col);
 	$cell = Bivio::UI::HTML::WidgetFactory->create(
 		ref($model).'.'.$col, $attrs);
-	unless ($cell->has_keys('column_summarize')) {
-	    $cell->put(column_summarize => UNIVERSAL::isa($type,
-		    'Bivio::Type::Amount'));
+	if ($need_error_widget) {
+	    # wrap the cell, including an error widget
+	    $cell = Bivio::UI::Widget::Join->new([
+		Bivio::UI::HTML::Widget::FormFieldError->new({
+		    field => $col,
+		    label => $col,
+		}),
+		$cell,
+	    ]);
 	}
+	unless ($cell->has_keys('column_summarize')) {
+	    $cell->put(column_summarize =>
+		    UNIVERSAL::isa($type,'Bivio::Type::Number')
+		    && ! UNIVERSAL::isa($type, 'Bivio::Type::Enum'));
+	}
+	$cell->put(column_use_list => $use_list);
     }
     $self->initialize_child_widget($cell);
     return $cell;
@@ -588,6 +632,8 @@ Draws the specified cell onto the output buffer.
 
 sub render_cell {
     my($self, $cell, $source, $buffer) = @_;
+    $source = $source->get_list_model
+	    if $cell->unsafe_get('column_use_list');
     $cell->render($source, $buffer);
     return;
 }
