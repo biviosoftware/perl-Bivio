@@ -337,6 +337,14 @@ my(@_CFG) = (
         Bivio::UI::HTML::Setup::User
         next=SETUP_USER
     )],
+    # No actions, just a token for authentication action
+    [qw(
+        CLUB_MAIL_COMPOSE
+        39
+        CLUB
+        MEMBER
+        :
+    )]
 );
 
 __PACKAGE__->compile(
