@@ -172,18 +172,17 @@ sub text {
     # store onsreen text
     # options terminate with text
     if (defined ($fields->{option})) {
-        if (defined ($fields->{currentform})) {
-	    my($form) = $fields->{form}->{$fields->{currentform}};
-	    my($selection) = $form->{$fields->{currentselection}};
+        if (defined ($fields->{currentform}
+		&& defined ($fields->{currentselect}))) {
+	    my($form) = $fields->{forms}->{$fields->{currentform}};
+	    my($selection) = $form->{$fields->{currentselect}};
 	    _trace ('\$selection->{$text} = $fields->{option}') if $_TRACE;
-	    $selection->{$text} = $fields->{option};
+#	    push (@{$selection->{options}});
+	    $selection->{options}->{$text} = $fields->{option};
 	}
-	else {
-	    _trace('Warning! Skipping <option...> because it is outside form')
-		    if $_TRACE;
-	}
-	delete $fields->{option};
+	delete ($fields->{option});
     }
+	    
 
     # radio_or_checkbox inputs terminate with text
     elsif (defined ($fields->{radio_or_checkbox})) {
@@ -196,7 +195,7 @@ sub text {
 		    if $_TRACE;
 	}
 	else {
-	    my($form) = $fields->{form}->{$fields->{currentform}};
+	    my($form) = $fields->{forms}->{$fields->{currentform}};
 	    _trace ('\$form->{$text} = $fields->{radio_or_checkbox}')
 		    if $_TRACE;
 	    $form->{$text} = $fields->{radio_or_checkbox};
@@ -218,7 +217,7 @@ sub text {
     else {
 	_trace ("text '", $text, "': found") if $_TRACE;
 	# following line doesn't seem to do what I intended...
-#	push (@{$fields->{text}}, $text);
+#	push (@{$fields->{text}}, qw/$text/);
 	$fields->{text}->{$text} = 1;
     }
 	
@@ -378,6 +377,7 @@ sub _parse_end_form {
     my($fields) = $self->{$_PACKAGE};
     delete $fields->{currentform};
     delete $fields->{currenttext};
+    delete $fields->{form};
     return;
 }
 
@@ -550,7 +550,7 @@ sub _parse_start_img {
 sub _parse_start_input {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{form})) {
+    if (defined ($fields->{currentform})) {
 	my($method) = '_parse_start_input_'.$attr->{type};
 	&{\&{'_parse_input_'.$attr->{type}}}($self, $attr, $origtext);
     }
@@ -564,21 +564,24 @@ sub _parse_start_input {
 sub _parse_start_option {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{currentform}) && defined ($fields->{select})) {
+    if (defined ($fields->{currentform})
+	    && defined ($fields->{currentselect})) {
 	$fields->{option} = $attr->{value};
+	my($form) = $fields->{forms}->{$fields->{currentform}};
+	my($selection) = $form->{$fields->{currentselect}};
+	$selection->{options} = {} unless (defined ($selection->{options}));
     }
     return;
 }
 
 # _parse_start_select(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
 #
-# Save the name, action, and method of a form <select...> tag.
-#
+# Save the name, action, and method of a form <select...> tag
 sub _parse_start_select {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{form})) {
-	my($form) = $fields->{form}->{$fields->{currentform}};
+    if (defined ($fields->{currentform})) {
+	my($form) = $fields->{forms}->{$fields->{currentform}};
 
 	if (defined ($form->{select})) {
 	    $fields->{option} = $attr->{value};
@@ -590,11 +593,12 @@ sub _parse_start_select {
 	my($text) = $fields->{currenttext};
 
 	$text = 'RealmChooser'
-		if ($text eq undef && $action && $action eq '/goto');
+		if (!defined ($text) && $action && $action eq '/goto');
 
-	my($selection) = $form->{$text} = {};
-
+	my($selection) = $form->{$name} = {};
+	
 	$fields->{currentselect} = ${selection}->{name} = $name;
+	${selection}->{text} = $text;
 
 	if (defined ($action)) {
 	    _trace ('Form $form->{name}, selection $name: action $action')
@@ -619,7 +623,7 @@ sub _parse_start_select {
 sub _parse_start_textarea {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    if (defined ($fields->{form})) {
+    if (defined ($fields->{currentform})) {
 	$self->_handle_text_password_file_textarea($self, $attr, $origtext);
     }
     return;
