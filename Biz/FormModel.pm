@@ -682,7 +682,7 @@ field I<name>.
 sub has_context_field {
     my($self, $name) = @_;
     my($fields) = $self->{$_PACKAGE};
-    Carp::croak('form does not require_context') unless $fields->{context};
+    return 0 unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
     return 0 unless $model;
