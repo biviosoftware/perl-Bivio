@@ -101,6 +101,7 @@ find this primary key.  There should only be one row returned.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::Util;
 
 #=VARIABLES
 my(%_QUERY_TO_FIELDS) = (
@@ -113,6 +114,7 @@ my(%_QUERY_TO_FIELDS) = (
     'v' => 'version',
 );
 my(@_QUERY) = grep($_ ne 'version', sort(values(%_QUERY_TO_FIELDS)));
+my($_PK_RS) = "\0177";
 
 =head1 FACTORIES
 
@@ -158,18 +160,21 @@ sub new {
 
 =cut
 
-=for html <a name="format_next_page"></a>
+=for html <a name="format_uri_for_this"></a>
 
-=head2 format_next_page() : string
+=head2 format_uri_for_this(array_ref primary_key, Bivio::SQL::ListSupport support) : string
 
-Return the query for next page.
+Generates the query string (URL-encoded) for the primary key set as
+C<this> using the current query parameters.
 
 =cut
 
-sub format_next_page {
-    my($self) = @_;
-    my($attrs) = %{$self->internal_get};
-    return;
+sub format_uri_for_this {
+    my($self, $primary_key, $support) = @_;
+    my(%attrs) = %{$self->internal_get()};
+    $attrs{this} = $primary_key;
+    delete($attrs{just_prior});
+    return _format_uri(\%attrs, $support);
 }
 
 #=PRIVATE METHODS
@@ -182,6 +187,62 @@ sub _die {
     my($code, $msg, $value) = @_;
     Bivio::Die->die($code, {entity => $value,
 	class => 'Bivio::SQL::ListQuery', message => $msg}, caller);
+}
+
+# _format_uri(hash_ref attrs, Bivio::SQL::ListSupport support) : string
+#
+# Formats the uri for the configuration parameters specified.
+#
+sub _format_uri {
+    my($attrs, $support) = @_;
+    my($res) = 'v'.$attrs->{version};
+    my($columns) = $support->get('columns');
+
+    # action: this or just_prior?
+    my($pk);
+    if ($pk = $attrs->{this}) {
+	$res .= '&a=t&t=';
+	$pk = $attrs->{this};
+    }
+    else {
+	if ($attrs->{action}) {
+	    $res .= '&a='.$attrs->{action};
+	}
+	if ($pk = $attrs->{just_prior}) {
+	    $res .= '&j=';
+	}
+    }
+
+    # primary key
+    if ($pk) {
+	my($pk_cols) = $support->get('primary_key');
+	for (my($i) = 0; $i < int(@$pk); $i++) {
+	    $res .= $pk_cols->[$i]->{type}->to_uri($pk->[$i]);
+	}
+    }
+
+    # order_by
+    if (@{$attrs->{order_by}}) {
+	$res .= '&o=';
+	my($ob) = $attrs->{order_by};
+	for (my($i) = 0; $i < int(@$ob); $i += 2) {
+	    $res .= $columns->{$ob->[$i]}->{order_by_index}
+		    . ($ob->[$i+1] ? 'a' : 'd');
+	}
+    }
+
+    # begin and end
+    foreach my $limit ('begin', 'end') {
+	next unless %{$attrs->{$limit}};
+	my($limit_values) = $attrs->{$limit};
+	my($prefix) = substr($limit, 0, 1);
+	foreach my $k (keys(%$limit_values)) {
+	    my($col) = $columns->{$k};
+	    $res .= '&'.$prefix.$col->{order_by_index}.'='
+		    .$col->{type}->to_uri($limit_values->{$k});
+	}
+    }
+    return;
 }
 
 # _parse_action(hash_ref attrs, Bivio::SQL::ListSupport support)
@@ -211,7 +272,7 @@ sub _parse_action {
 	    return;
 	}
 	else {
-	    _die(Bivio::DieCode::INVALID_QUERY(), 'invalid action', $value);
+	    _die(Bivio::DieCode::CORRUPT_QUERY(), 'invalid action', $value);
 #TODO: Should we fall through to default?
 	}
     }
@@ -246,7 +307,6 @@ sub _parse_end {
 # Where "N" is the order_by, "t" is tag, and "V" is value.
 #
 # The converted value is set in a hash_ref of ($column, $value).
-# purposes it makes sense to put "begin" and "end" at end of name.
 #
 sub _parse_limit {
     my($attrs, $support, $tag, $name) = @_;
@@ -257,7 +317,7 @@ sub _parse_limit {
 	next unless defined($literal = $attrs->{$tag.$i});
 	my($c) = $order_by->[$i];
 	my($v) = $support->get_column_type($c)->from_literal($literal);
-	_die(Bivio::DieCode::INVALID_QUERY(), "invalid limit $c", $literal)
+	_die(Bivio::DieCode::CORRUPT_QUERY(), "invalid limit $c", $literal)
 		unless defined($v);
 	$res = {} unless $res;
 	$res->{$c} = $v;
@@ -282,10 +342,10 @@ sub _parse_order_by {
     my($res) = $attrs->{order_by} = [];
     my($order_by) = $support->get('order_by_names');
     while (length($value)) {
-	_die(Bivio::DieCode::INVALID_QUERY(), 'invalid order_by',
+	_die(Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
 		$attrs->{o}) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
-	_die(Bivio::DieCode::INVALID_QUERY(), 'unknown order_by column',
+	_die(Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a');
     }
@@ -308,7 +368,7 @@ sub _parse_just_prior {
 
 # _parse_pk(hash_ref attrs, Bivio::SQL::ListSupport support)
 #
-# The pkious value's primary keys.  The $PK_RS is a special character
+# The pkious value's primary keys.  The $_PK_RS is a special character
 # that is unlikely to appear in strings.
 #
 sub _parse_pk {
@@ -317,12 +377,12 @@ sub _parse_pk {
     $attrs->{$name} = undef, return unless defined($value);
     my($res) = $attrs->{$name} = [];
     foreach my $t (@{$support->get('primary_key_types')}) {
-	_die(Bivio::DieCode::INVALID_QUERY(),
+	_die(Bivio::DieCode::CORRUPT_QUERY(),
 		"incomplete $name", $attrs->{$tag})
-		unless $value =~ s/^([^\177]+)\177?//;
+		unless $value =~ s/^([^$_PK_RS]+)$_PK_RS?//o;
 	my($literal) = $1;
 	my($v) = $t->from_literal($literal);
-	_die(Bivio::DieCode::INVALID_QUERY(), "invalid $name", $attrs->{$tag})
+	_die(Bivio::DieCode::CORRUPT_QUERY(), "invalid $name", $attrs->{$tag})
 		unless defined($v);
 	push(@$res, $v);
     }
@@ -349,7 +409,7 @@ sub _parse_version {
     $attrs->{version} = $support->get('version');
     return unless defined($value);
     return if $attrs->{version} == $value;
-    _die(Bivio::DieCode::INVALID_VERSION(), 'invalid version', $value);
+    _die(Bivio::DieCode::VERSION_MISMATCH(), 'invalid version', $value);
 }
 
 =head1 COPYRIGHT
