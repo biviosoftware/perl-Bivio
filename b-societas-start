@@ -99,8 +99,8 @@ sub main {
     my($conf) = $tmp ? "$tmp/bivio.conf" : "$pwd/bivio$$.conf";
     $ENV{'BIVIO_CONF'} = $conf;
     my($http_port) = 10000 + $> * 10;
-    my($file_port) = $http_port + 1;
-    my($mail_port) = ($tmp || $pwd) . "/bmd$$";
+    my($file_port) = ($tmp || $pwd) . "/bfs";
+    my($mail_port) = ($tmp || $pwd) . "/bmd";
     my($host) = `hostname`;
     my($user) = getpwuid($>) || $>;
     chop($host);
@@ -198,35 +198,19 @@ $Id$
 __DATA__
 use strict;
 {
-    'Bivio::IPC::Client' => {
-	'file' => {
-	    'addr' => '<$host>',
-	    'port' => '<$file_port>',
-	},
-	'mail' => {
-	    'proto' => 'unix',
-	    'port' => '<$mail_port>',
-	},
-    },
-    'Bivio::File::Server' => {
-	'file' => {
-	    'root' => '<$file_root>',
-	},
-    },
-    'Bivio::IPC::Server' => {
-	'file' => {
-	    'port' => '<$file_port>',
-	},
-	'mail' => {
-	    'proto' => 'unix',
-	    'port' => '<$mail_port>',
-	},
+    'Bivio::Biz::Mail::Message' => {
+	'file_server' => 'file',
     },
     'Bivio::Ext::DBI' => {
 	'ORACLE_HOME' => '/usr/local/oracle/product/8.0.5',
 	'database' => 'surf_test',
 	'user' => '<$user>',
 	'password' => 'bivio,ho',
+    },
+    'Bivio::File::Server' => {
+	'file' => {
+	    'root' => '<$file_root>',
+	},
     },
     'Bivio::IO::Alert' => {
 	'stack_trace_die' => 1,
@@ -238,6 +222,26 @@ use strict;
     },
     'Bivio::IO::Trace' => {
 	'package_filter' => '/Bivio/',
+    },
+    'Bivio::IPC::Client' => {
+	'file' => {
+	    'proto' => 'unix',
+	    'port' => '<$file_port>',
+	},
+	'mail' => {
+	    'proto' => 'unix',
+	    'port' => '<$mail_port>',
+	},
+    },
+    'Bivio::IPC::Server' => {
+	'file' => {
+	    'proto' => 'unix',
+	    'port' => '<$file_port>',
+	},
+	'mail' => {
+	    'proto' => 'unix',
+	    'port' => '<$mail_port>',
+	},
     },
     'main' => {
 	'http' => {
