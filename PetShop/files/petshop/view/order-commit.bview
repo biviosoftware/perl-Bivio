@@ -5,15 +5,15 @@
 view_parent('menu');
 view_put(header_title => 'Order Shipped');
 
-# Returns a address widget which renders the specified EntityAddress.
+# Returns a address widget which renders the specified Address.
 my($address_widget) = sub {
     my($field) = @_;
 
     return Join([
-	String([$field, 'addr1']),
+	String([$field, 'street1']),
 	'<br>',
-	If([$field, 'addr2'],
-		Join([String([$field, 'addr2']), '<br>',]),
+	If([$field, 'street2'],
+		Join([String([$field, 'street2']), '<br>',]),
 		Join([''])),
 	String([$field, 'city']),
 	', ',
@@ -23,11 +23,18 @@ my($address_widget) = sub {
     ])->put(string_font => 'page_text');
 };
 
+# renders the last four digits of the credit card
+my($card_number) = sub {
+    my($source, $number) = @_;
+    return '***********' . substr($number, -4, 4);
+};
+
 view_put(menu_content => Grid([
     [
 	Join([
 	    String('Date: ', 'page_heading'),
-	    String(['Model.Order', 'order_date', 'HTMLFormat.Date']),
+	    String(['Model.ECPayment', 'creation_date_time',
+                'HTMLFormat.Date']),
 	]),
     ], [
 	Join([
@@ -40,7 +47,7 @@ view_put(menu_content => Grid([
     ], [
 	Join([
 	    String('Order ID: ', 'form_field_label'),
-	    String(['Model.Order', 'order_id']),
+	    String(['Model.Order', 'realm_id']),
 	    '<br>',
 	]),
     ], [
@@ -73,17 +80,10 @@ view_put(menu_content => Grid([
 	Join([
 	    String('Shipping Address:'),
 	    '<br>',
-	    String(['Model.Order', 'ship_to_first_name']),
-	    vs_blank_cell(),
-	    String(['Model.Order', 'ship_to_last_name']),
+	    String(['Model.Order', 'ship_to_name']),
 	    '<br>',
 	    # Attribute is put on the request by view_pre_execute
 	    &$address_widget('order-commit.ship_to_address'),
-	]),
-    ], [
-	Join([
-	    String('Carrier: '),
-	    String(['Model.Order', 'courier']),
 	]),
     ], [
 	String('Billing Information:', 'page_heading'),
@@ -91,38 +91,35 @@ view_put(menu_content => Grid([
 	Join([
 	    String('Bill To Address:'),
 	    '<br>',
-	    String(['Model.Order', 'bill_to_first_name']),
-	    vs_blank_cell(),
-	    String(['Model.Order', 'bill_to_last_name']),
+	    String(['Model.Order', 'bill_to_name']),
 	    '<br>',
 	    # Attribute is put on the request by view_pre_execute
 	    &$address_widget('order-commit.bill_to_address'),
 	    '<p>',
 	]),
     ], [
-	String('Credit Card Information:'),
+	String('Credit Card Information:', 'page_heading'),
     ], [
-	Grid([
-	    [
-		String('Type: '),
-		    String([['Model.Order', 'card_type'], '->get_short_desc']),
-	    ], [
-		String('Number: '),
-		String(['Model.Order', 'credit_card']),
-	    ], [
-		String('Expiration Date: '),
-		CreditCardExpiration({
-		    value => ['Model.Order', 'expiration_date'],
-		}),
-	    ],
-	], {
-	    pad => 2,
-	}),
-    ], [
-	Join([
-	    String('Status: ', 'page_heading'),
-	    String([['Model.OrderStatus', 'status'], '->get_short_desc']),
-	]),
+  	Grid([
+  	    [
+  		String('Number: '),
+  		String([$card_number,
+                    ['Model.ECCreditCardPayment', 'card_number']]),
+  	    ], [
+  		String('Expiration Date: '),
+  		CreditCardExpiration({
+  		    value => ['Model.ECCreditCardPayment',
+                        'card_expiration_date'],
+  		}),
+  	    ],
+  	], {
+  	    pad => 2,
+  	}),
+   ], [
+       Join([
+           String('Status: ', 'page_heading'),
+           String([['Model.ECPayment', 'status'], '->get_short_desc']),
+       ]),
     ],
 ], {
     space => 12,
@@ -131,14 +128,20 @@ view_put(menu_content => Grid([
 
 view_pre_execute(sub {
     my($req) = @_;
-    my($order_id) = $req->get('Model.Order')->get('order_id');
+    Bivio::Biz::Model->new($req, 'Email')->unauth_load_or_die({
+        realm_id => $req->get('auth_user_id'),
+        location => Bivio::Type::Location->PRIMARY,
+    });
+    my($order) = $req->get('Model.Order');
+    $order->get_model('ECPayment')->get_model('ECCreditCardPayment');
+
     foreach my $a (qw(BILL_TO SHIP_TO)) {
 	# Construct a unique address (based on this View's name), since
 	# the Request.* address space by all classes.
 	$req->put('order-commit.'.lc($a).'_address' => Bivio::Biz::Model->new(
-	    $req, 'EntityAddress')->load({
-		entity_id => $order_id,
-		location => Bivio::PetShop::Type::EntityLocation->$a(),
+	    $req, 'Address')->unauth_load_or_die({
+		realm_id => $order->get('realm_id'),
+		location => Bivio::Type::Location->from_name($a),
 	    }));
     }
 });
