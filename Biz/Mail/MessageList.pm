@@ -67,11 +67,11 @@ sub new {
 	    $_COLUMN_INFO);
 
     $self->{$_PACKAGE} = {
-	index => 0,
-	size => 0,
-	selected => undef,
-	next => '',
-	prev => ''
+	'index' => 0,
+	'size' => 0,
+	'selected' => undef,
+	'next' => '',
+	'prev' => ''
     };
     $_SQL_SUPPORT->initialize();
     return $self;
@@ -99,7 +99,7 @@ sub find {
     # default index to 0
     $fields->{index} = $fp->get('index') || 0;
 
-    #TODO: remove hard-coded 15s
+#TODO: remove hard-coded 15s
     if ($fp->get('club')) {
 
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
@@ -123,7 +123,7 @@ sub find {
     # iterate the rows, creating model references
     &_create_model_references($self, $fp);
 
-    return $self->get_status()->is_OK();
+    return $self->get_status()->is_ok();
 }
 
 =for html <a name="get_default_sort_key"></a>
@@ -241,7 +241,7 @@ sub get_title {
 	return $fields->{selected}->get('subject');
     }
 
-    #TODO: need better title
+#TODO: need better title
     return 'Messages '.&_get_date_range($self);
 }
 
@@ -278,7 +278,7 @@ sub _create_model_references {
     my($fp2) = $fp->clone();
     $fp2->remove('club');
 
-    for (my($i) = 0; $i < scalar(@$rows); $i++) {
+    for (my($i) = 0; $i < int(@$rows); $i++) {
 	my($row) = $rows->[$i];
 	my($index) = $i + $fields->{index} - 1;
 	$index = 0 if $index < 0;
@@ -302,10 +302,11 @@ sub _create_model_references {
 	if ($search_index > 0) {
 	    $fields->{prev} = $rows->[$search_index-1]->[0]->[0];
 	}
-	if ($search_index < scalar(@$rows)) {
+	if ($search_index < int(@$rows)) {
 	    $fields->{next} = $rows->[$search_index+1]->[0]->[0];
 	}
     }
+    return;
 }
 
 # _get_date_range() : string

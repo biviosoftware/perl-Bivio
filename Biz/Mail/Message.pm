@@ -48,42 +48,31 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
-    id => ['Internal ID',
+    'club' => ['Internal Club ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    club => ['Internal Club ID',
+    'id' => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    ok => ['OK',
+    'ok' => ['OK',
 	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)],
-    rfc822_id => ['RFC822 ID',
+    'rfc822_id' => ['RFC822 ID',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
-    date => ['Date',
+    'dttm' => ['Date',
 	    Bivio::Biz::FieldDescriptor->lookup('DATE')],
-    receive_date => ['Receive Date',
-	    Bivio::Biz::FieldDescriptor->lookup('DATE')],
-    from_name => ['From',
+    'from_name' => ['From',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 64)],
-    from_email => ['Email',
+    'from_email' => ['Email',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-    subject => ['Subject',
+    'subject' => ['Subject',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-    synopsis => ['Synopsis',
+    'synopsis' => ['Synopsis',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 256)],
-    bytes => ['Number of Bytes',
+    'bytes' => ['Number of Bytes',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 10)]
     };
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message', {
-    id => 'id',
-    club => 'club',
-    ok => 'ok',
-    rfc822_id => 'rfc822_id',
-    date => 'dttm',
-    from_name => 'from_name',
-    from_email => 'from_email',
-    subject => 'subject',
-    synopsis => 'synopsis',
-    bytes => 'bytes'
-    });
+my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message',
+	keys(%$_PROPERTY_INFO));
+
 Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
 });
@@ -248,13 +237,13 @@ sub get_body {
 
 =head2 get_heading() : string
 
-Returns a string composed of 'from_name' 'date' 'subject'
+Returns a string composed of 'from_name' 'dttm' 'subject'
 
 =cut
 
 sub get_heading {
     my($self) = @_;
-    return $self->get('from_name').' '.$self->get('date').' '
+    return $self->get('from_name').' '.$self->get('dttm').' '
 	    .$self->get('subject');
 }
 
@@ -307,7 +296,7 @@ sub update {
 	die("not implemented");
     }
 
-    #TODO: if 'id' is in new_values, make sure it is the same
+#TODO: if 'id' is in new_values, make sure it is the same
 
     return $_SQL_SUPPORT->update($self, $self->internal_get_fields(),
 	    $new_values, 'where id=? and club=?',
@@ -333,20 +322,20 @@ sub _create_from_incoming {
     my($reply_to_email) = $bmi->get_reply_to();
     my($body) = $bmi->get_body();
     my($values) = {
-	club => $club->get('id'),
-	id => $id,
+	'club' => $club->get('id'),
+	'id' => $id,
 #TODO: Does the ok bit make sense?
-	ok => 1,
-	rfc822_id => $bmi->get_message_id,
-	date => $dttm,
-	from_name => $from_name,
-	from_email => $from_email,
-	reply_to_email => $reply_to_email,
-	subject => $bmi->get_subject || '',
+	'ok' => 1,
+	'rfc822_id' => $bmi->get_message_id,
+	'dttm' => $dttm,
+	'from_name' => $from_name,
+	'from_email' => $from_email,
+	'reply_to_email' => $reply_to_email,
+	'subject' => $bmi->get_subject || '',
 #TODO: Do a real synopsis here
-	synopsis => $bmi->get_subject || '',
+	'synopsis' => $bmi->get_subject || '',
 #TODO: Measure real size (all unpacked files)
-	bytes => length($body),
+	'bytes' => length($body),
     };
     # first do sql commit, it is possible to rollback if the file server fails
     my($ok) = $_SQL_SUPPORT->create($self, $self->internal_get_fields(),
@@ -383,10 +372,10 @@ Bivio::IO::Config->initialize({
     },
 
     'Bivio::Ext::DBI' => {
-	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
-	database => 'surf_test',
-	user => 'moeller',
-	password => 'bivio,ho'
+	'ORACLE_HOME' => '/usr/local/oracle/product/8.0.5',
+	'database' => 'surf_test',
+	'user' => 'moeller',
+	'password' => 'bivio,ho'
         },
 
     'Bivio::IO::Trace' => {
@@ -399,21 +388,21 @@ my($body) = "message body ... not very exciting\n";
 my($id) = int(rand(9999998)) + 1;
 
 $mail->create({
-    club => '7957448535598810',
-    id => $id,
-    ok => 1,
-    rfc822_id => $id,
-    date => '6/7/1995',
-    from_name => 'moeller',
-    from_email => 'moeller@bivio.com',
-    subject => 'test subject',
-    synopsis => 'the quick brown fox jumps over the lazy dog',
-    bytes => 150,
-    body => \$body,
+    'club' => '7957448535598810',
+    'id' => $id,
+    'ok' => 1,
+    'rfc822_id' => $id,
+    'dttm' => '6/7/1995',
+    'from_name' => 'moeller',
+    'from_email' => 'moeller@bivio.com',
+    'subject' => 'test subject',
+    'synopsis' => 'the quick brown fox jumps over the lazy dog',
+    'bytes' => 150,
+    'body' => \$body,
     });
-$mail->update({date => '5/6/1955'});
+$mail->update({'dttm' => '5/6/1955'});
 $mail->find(Bivio::Biz::FindParams->new(
-        {id => $id, club => '7957448535598810'}));
+        {'id' => $id, 'club' => '7957448535598810'}));
 print($mail->get_body());
 #$Data::Dumper::Indent = 1;
 #print(Dumper($mail));
