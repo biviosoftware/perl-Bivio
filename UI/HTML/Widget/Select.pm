@@ -291,12 +291,15 @@ sub _load_items_from_list {
     my($self, $list) = @_;
     my($display_name) = $self->get('list_display_field');
     my($id_name) = $self->get('list_id_field');
+    my($display_type) = $list->get_field_info($display_name, 'type');
+    my($id_type) = $list->get_field_info($id_name, 'type');
 
     # id, display pairs
     my(@items);
     $list->reset_cursor;
     while($list->next_row) {
-	push(@items, $list->get($id_name), $list->get($display_name));
+	push(@items, $id_type->to_html($list->get($id_name)),
+		$display_type->to_html($list->get($display_name)));
     }
 
     # reset the list cursor for the next guy

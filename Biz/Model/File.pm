@@ -382,6 +382,27 @@ EOF
     return $rows ? 1 : 0;
 }
 
+=for html <a name="delete_all_in_volume"></a>
+
+=head2 delete_all_in_volume(Bivio::Biz::Model::RealmOwner realm, Bivio::Type::FileVolume volume)
+
+Deletes all the files in the volume except the root directory.
+
+=cut
+
+sub delete_all_in_volume {
+    my($self, $realm, $volume) = @_;
+    my($id) = $realm->get('realm_id');
+    Bivio::SQL::Connection->execute('
+            DELETE FROM file_t
+            WHERE realm_id=?
+            AND volume = ?
+            AND file_id != ?',
+	    [$id, $volume->as_sql_param,
+		$volume->get_root_directory_id($id)]);
+    return;
+}
+
 =for html <a name="extract_mime_content_id"></a>
 
 =head2 extract_mime_content_id() : 

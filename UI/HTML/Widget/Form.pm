@@ -238,7 +238,7 @@ sub render {
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
 	$action =~ s/[&?]fc=[^&=]+//;
-	$$buffer .= $action;
+	$$buffer .= Bivio::HTML->escape($action);
     }
 
     # Set encoding type if form has a file field

@@ -133,7 +133,7 @@ sub initialize {
 	$fields->{href} = $href;
     }
     else {
-	$p .= ' href="'.$href.'"';
+	$p .= ' href="'.Bivio::HTML->escape($href).'"';
     }
     # We assume is not a constant and on first rendering, may be set to true
     $fields->{is_constant} = 0;
@@ -209,8 +209,9 @@ sub render {
     # Render href
     $$buffer .= $fields->{prefix};
     $$buffer .= ' href="'.
-	    $source->get_widget_value(@{$fields->{href}}).'"'
-		    if $fields->{href};
+	    Bivio::HTML->escape(
+		    $source->get_widget_value(@{$fields->{href}})).'"'
+			    if $fields->{href};
 
     # Render value
     $$buffer .= '>';

@@ -125,7 +125,8 @@ B<Always begins with C</> if defined.>  Unlike CGI, I<path_info> is
 not extracted from I<uri>.  I<path_info> is used to generate other
 URIs, not to recreate the existing one.
 
-B<It is not escaped.>  HTTP::Location will escape it before appending.
+B<It is not escaped.>  HTTP::Location and Biz::ListModel
+will escape it before appending.
 
 =item query : hash_ref
 

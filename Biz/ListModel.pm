@@ -393,7 +393,12 @@ sub format_uri {
 	my($pi) = $self->get('path_info');
 	Bivio::Die->die('row ', $c, ': no path_info at cursor')
 		    unless defined($pi);
-	$uri .= '/'.$pi if length($pi);
+	if (length($pi) && $pi ne '/') {
+	    Bivio::IO::Alert->warn_deprecated(
+		    'path_info does not begin with leading /')
+			if $pi =~ s!^([^/])!/$1!;
+	    $uri .= Bivio::HTML->escape_uri($pi);
+	}
     }
     my($query) = $self->format_query($type, $query_args);
 
