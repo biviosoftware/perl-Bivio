@@ -125,6 +125,8 @@ sub new {
 		if $realm_type == Bivio::Auth::RealmType::CLUB();
 	return Bivio::Auth::Realm::User->new($owner)
 		if $realm_type == Bivio::Auth::RealmType::USER();
+	return Bivio::Auth::Realm::General->get_instance
+		if $realm_type == Bivio::Auth::RealmType::GENERAL();
 	Bivio::Die->die($realm_type, ": unknown realm type");
     }
 
@@ -296,6 +298,20 @@ sub get_type {
     Carp::croak("$proto: unknown realm class")
 	    unless exists($_CLASS_TO_TYPE{$proto});
     return $_CLASS_TO_TYPE{$proto};
+}
+
+=for html <a name="is_default"></a>
+
+=head2 is_default() : boolean
+
+Returns true if the realm is one of the default realms (general, user, club).
+
+=cut
+
+sub is_default {
+    my($self) = @_;
+    return 1 if $self->get('type') == Bivio::Auth::RealmType::GENERAL();
+    return $self->get('owner')->is_default;
 }
 
 #=PRIVATE METHODS
