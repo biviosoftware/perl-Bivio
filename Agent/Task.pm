@@ -275,9 +275,10 @@ sub execute {
     _invoke_pre_execute_handlers($req);
     my($i);
     foreach $i (@{$attrs->{items}}) {
-	my($instance, $method) = @$i;
+	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
-	last if defined($instance) ? $instance->$method($req) : &$method($req);
+	last if defined($instance)
+		? $instance->$method(@$args, $req) : &$method(@$args, $req);
     }
     $self->commit($req);
     $req->get('reply')->send($req);
@@ -473,7 +474,13 @@ sub _init_executables {
     my(@new_items);
     foreach my $i (@$executables) {
 	if (ref($i) eq 'CODE') {
-	    push(@new_items, [undef, $i]);
+	    push(@new_items, [undef, $i, []]);
+	    next;
+	}
+
+	# Views have a special syntax
+	if ($i =~ /^View\.(.*)/) {
+	    push(@new_items, ['Bivio::UI::View', 'execute', [$1]]);
 	    next;
 	}
 
@@ -489,7 +496,7 @@ sub _init_executables {
 			if $attrs->{form_model};
 	    $attrs->{form_model} = $class;
 	}
-	push(@new_items, [$c, $method]);
+	push(@new_items, [$c, $method, []]);
     }
     return \@new_items;
 }
