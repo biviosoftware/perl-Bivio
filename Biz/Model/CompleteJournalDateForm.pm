@@ -54,9 +54,16 @@ Sets default dates, using the date boundaries for the existing report_date.
 sub execute_empty {
     my($self) = @_;
 
-    my($start_date, $end_date) = Bivio::Biz::Accounting::Tax
+    # use the query args if present, both must be valid to be used
+    my($start_date, $end_date) = $self->get_dates_from_query(
+	$self->get_request);
+
+    unless ($start_date && $end_date) {
+	($start_date, $end_date) = Bivio::Biz::Accounting::Tax
 	    ->get_date_boundary_for_year(
-		    $self->get_request->get('report_date'));
+		$self->get_request->get('report_date'));
+    }
+
     $self->internal_put_field(start_date => $start_date);
     $self->internal_put_field(end_date => $end_date);
     Bivio::Biz::Action::ReportDate->set_report_date(
@@ -86,7 +93,34 @@ sub execute_ok {
     Bivio::Biz::Action::ReportDate->set_report_date(
 	    $fiscal_end, $self->get_request);
     $self->internal_stay_on_page;
+
+    # save dates in query so CSV gets same args
+    $self->save_dates_in_query($self->get_request,
+	$self->get(qw(start_date end_date)));
     return;
+}
+
+=for html <a name="get_dates_from_query"></a>
+
+=head2 static get_dates_from_query(Bivio::Agent::Request) : (string, string)
+
+Returns (start_date, end_date) parameters from the query. Either may be
+undef.
+
+=cut
+
+sub get_dates_from_query {
+    my($proto, $req) = @_;
+    my($query) = $req->get('query');
+
+    my($start_date, $end_date);
+    if ($query) {
+	($start_date, undef) = Bivio::Type::Date->from_literal(
+	    $query->{start_date});
+	($end_date, undef) = Bivio::Type::Date->from_literal(
+	    $query->{end_date});
+    }
+    return ($start_date, $end_date);
 }
 
 =for html <a name="internal_initialize"></a>
@@ -121,6 +155,25 @@ sub internal_initialize {
     };
     return $self->merge_initialize_info(
 	    $self->SUPER::internal_initialize, $info);
+}
+
+=for html <a name="save_dates_in_query"></a>
+
+=head2 static save_dates_in_query(Bivio::Agent::Request req, string start_date, string end_date)
+
+Saves the start and end date on the request query.
+
+=cut
+
+sub save_dates_in_query {
+    my($proto, $req, $start_date, $end_date) = @_;
+
+    $req->put(
+	query => {
+	    start_date => Bivio::Type::Date->to_query($start_date),
+	    end_date => Bivio::Type::Date->to_query($end_date),
+	});
+    return;
 }
 
 =for html <a name="validate"></a>
