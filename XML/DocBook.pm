@@ -104,10 +104,7 @@ sub _to_html {
 
 # _to_html_node(string tag, array_ref tree) : string
 #
-# Lookup $tag in $_TO_HTML_OP and evaluate value as follows:
-#
-#  string - turn into open and closing tags and recurse
-#  array_ref - use open and closing prefixes and recurse
+# Lookup $tag in $_TO_HTML_OP and evaluate.
 #
 sub _to_html_node {
     my($tag, $tree) = @_;
