@@ -152,7 +152,7 @@ sub edit {
 	if (length($operand)) {
 	    my($p) = Bivio::Auth::Permission->unsafe_from_any($operand);
 	    Bivio::Die->die($p, ': cannot set TRANSIENT permissions')
-			if $which eq '+' && $p->get_name =~ /TRANSIENT/;
+			if $which eq '+' && $p && $p->get_name =~ /TRANSIENT/;
 	    if ($p && $p->get_name eq $operand) {
 		vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
 	    }
@@ -443,9 +443,7 @@ b-realm-role -r GENERAL edit ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role -r GENERAL edit USER - \
     +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_FORWARD \
-    +MAIL_RECEIVE
+    +ANY_USER
 b-realm-role -r GENERAL edit WITHDRAWN - \
     +USER
 b-realm-role -r GENERAL edit GUEST - \
@@ -467,7 +465,10 @@ b-realm-role -r GENERAL edit ADMINISTRATOR - \
     +FILE_ADMIN \
     +INVESTMENT_READ \
     +MAIL_ADMIN \
+    +MAIL_FORWARD \
+    +MAIL_POST \
     +MAIL_READ \
+    +MAIL_RECEIVE \
     +MEMBER_READ \
     +MEMBER_WRITE \
     +MOTION_READ \
@@ -483,8 +484,7 @@ b-realm-role -r user edit ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role -r user edit USER - \
     +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_FORWARD
+    +ANY_USER
 b-realm-role -r user edit WITHDRAWN - \
     +USER
 b-realm-role -r user edit GUEST - \
@@ -507,6 +507,8 @@ b-realm-role -r user edit ADMINISTRATOR - \
     +FILE_ADMIN \
     +INVESTMENT_READ \
     +MAIL_ADMIN \
+    +MAIL_FORWARD \
+    +MAIL_POST \
     +MAIL_READ \
     +MAIL_RECEIVE \
     +MEMBER_READ \
@@ -524,8 +526,7 @@ b-realm-role -r club edit ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role -r club edit USER - \
     +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_FORWARD
+    +ANY_USER
 b-realm-role -r club edit WITHDRAWN - \
     +USER
 b-realm-role -r club edit GUEST - \
@@ -536,6 +537,8 @@ b-realm-role -r club edit GUEST - \
     +ANY_REALM_USER \
     +DOCUMENT_READ \
     +INVESTMENT_READ \
+    +MAIL_FORWARD \
+    +MAIL_POST \
     +MAIL_READ \
     +MEMBER_READ \
     +MOTION_READ
@@ -577,8 +580,6 @@ b-realm-role -r demo_club edit USER - \
     +ANONYMOUS
 b-realm-role -r demo_club edit WITHDRAWN - \
     +USER \
-    +MAIL_FORWARD \
-    +MAIL_WRITE
 b-realm-role -r demo_club edit GUEST - \
     +WITHDRAWN
 b-realm-role -r demo_club edit MEMBER - \
@@ -595,17 +596,12 @@ b-realm-role -r club_index edit ANONYMOUS - \
     +ACCOUNTING_READ \
     +ACCOUNT_READ \
     +INVESTMENT_READ \
-    +LOGIN \
-    +MAIL_WRITE
+    +LOGIN
 b-realm-role -r club_index edit USER - \
     +ANONYMOUS \
-    +ANY_USER \
-    +MAIL_FORWARD
+    +ANY_USER
 b-realm-role -r club_index edit WITHDRAWN - \
-    +ANY_USER \
-    +LOGIN \
-    +MAIL_FORWARD \
-    +MAIL_WRITE
+    +USER \
 b-realm-role -r club_index edit GUEST - \
     +WITHDRAWN \
     +ACCOUNTING_READ \
@@ -614,7 +610,10 @@ b-realm-role -r club_index edit GUEST - \
     +ANY_REALM_USER \
     +DOCUMENT_READ \
     +INVESTMENT_READ \
+    +MAIL_FORWARD \
+    +MAIL_POST \
     +MAIL_READ \
+    +MAIL_WRITE \
     +MEMBER_READ \
     +MOTION_READ
 b-realm-role -r club_index edit MEMBER - \
@@ -632,4 +631,50 @@ b-realm-role -r club_index edit ACCOUNTANT - \
     +REALM_PUBLICIZE \
     +UNKNOWN
 b-realm-role -r club_index edit ADMINISTRATOR - \
+    +ACCOUNTANT
+
+#
+# club_cafe
+#
+#   * Like public club
+#   * No MAIL_WRITE
+#   * MAIL_POST only for user+
+#   * No MAIL_FORWARD (only for guest+)
+#
+b-realm-role -r club edit ANONYMOUS - \
+    +DOCUMENT_READ \
+    +LOGIN \
+    +MAIL_READ
+b-realm-role -r club edit USER - \
+    +ANONYMOUS \
+    +ANY_USER \
+    +MAIL_POST
+b-realm-role -r club edit WITHDRAWN - \
+    +USER
+b-realm-role -r club edit GUEST - \
+    +WITHDRAWN \
+    +ACCOUNTING_READ \
+    +ACCOUNT_READ \
+    +ADMIN_READ \
+    +ANY_REALM_USER \
+    +INVESTMENT_READ \
+    +MAIL_FORWARD \
+    +MEMBER_READ \
+    +MOTION_READ
+b-realm-role -r club edit MEMBER - \
+    +GUEST \
+    +DOCUMENT_WRITE \
+    +MAIL_RECEIVE
+b-realm-role -r club edit ACCOUNTANT - \
+    +MEMBER \
+    +ACCOUNTING_WRITE \
+    +ADMIN_WRITE \
+    +DEBUG_ACTION \
+    +FILE_ADMIN \
+    +MAIL_ADMIN \
+    +MEMBER_WRITE \
+    +MOTION_WRITE \
+    +REALM_PUBLICIZE \
+    +UNKNOWN
+b-realm-role -r club edit ADMINISTRATOR - \
     +ACCOUNTANT
