@@ -53,6 +53,7 @@ file names.
 #=IMPORTS
 use Bivio::Biz::Model::FileQuota;
 use Bivio::IO::Trace;
+use Bivio::MIME::Type;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::FileVolume;
@@ -375,10 +376,10 @@ sub get_mime_content_type {
     # The regexp will match newline if the Content-Type line extends over
     # two lines
     return $1 if defined($aux_info)
-	    && $aux_info =~ /content-type:\s+([^;\n]+)/i;
+	    && $aux_info =~ /content-type:\s+([^;\s]+)/i;
 
     # Extract content type from the filename.  MIME::Type always
-    # returns a valid content type as long as it is given an undef value.
+    # returns a valid content type.
     my($fn) = _get_mime_filename($aux_info);
     return Bivio::MIME::Type->from_extension(defined($fn) ? $fn : '');
 }
@@ -422,10 +423,10 @@ sub get_mime_filename {
 
     # Create a name based on the Content-Type based file suffix
     # Use 'download.bin' in case the file type is unknown
-    my($ct) = $self->get_mime_content_type;
+    my($ct) = $self->get_mime_content_type($list_model, $model_prefix);
     return 'download.bin' unless defined($ct);
     my($ext) = Bivio::MIME::Type->to_extension($ct);
-    return 'download.' . defined($ext) ? $1 : 'bin';
+    return 'download.'.(defined($ext) ? $ext : 'bin');
 }
 
 =for html <a name="internal_initialize"></a>
