@@ -82,6 +82,19 @@ sub as_string {
     return $self;
 }
 
+=for html <a name="package_name"></a>
+
+=head2 static package_name() : string
+
+Returns the package name for the class being called.
+
+=cut
+
+sub package_name {
+    my($proto) = @_;
+    return ref($proto) || $proto;
+}
+
 #=PRIVATE METHODS
 
 =head1 SEE ALSO
