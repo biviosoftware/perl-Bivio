@@ -255,7 +255,11 @@ sub init_column {
 	    $model = $attrs->{models}->{$qual_model} = {
 		name => $qual_model,
 		instance => $instance,
-		sql_name => $instance->get_info('table_name') . $qual_index,
+#TODO: don't know what is wrong here:
+# ListFormModel which uses a ListModel with all local fields dies
+# unless we exclude models ending in List
+		sql_name => $qual_model =~ /List$/
+		    ? '' : $instance->get_info('table_name') . $qual_index,
 		column_names_referenced => [],
 	    };
 	}
