@@ -237,9 +237,34 @@ my(@_CFG) = (
         ?/ref
         Bivio::Biz::Action::Referral
     )],
-#18
-#19
-#20
+    [qw(
+        CLUB_COMMUNICATIONS_MESSAGE_DETAIL
+        18
+        CLUB
+        MAIL_READ
+        ?/mail-msg
+        Bivio::Biz::Model::MessageList
+        Bivio::UI::HTML::Club::MessageDetail
+    )],
+    # These two tasks must have the same "first part".  The string
+    # msg-part/*?t=NNN is encoded in the MAIL_CACHE generation code.
+    [qw(
+        CLUB_COMMUNICATIONS_MESSAGE_PART
+        19
+        CLUB
+        MAIL_READ
+        ?/msg-part/*
+        Bivio::Biz::Action::MailPartDownload
+    )],
+    # See note above
+    [qw(
+        CELEBRITY_MESSAGE_PART
+        20
+        PROXY
+        DOCUMENT_READ
+        pub/?/msg-part/*
+        Bivio::Biz::Model::MailPartDownLoad
+    )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
 	21
@@ -355,14 +380,16 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
+    # This needs to be a redirect, because we need the "directory" to
+    # be correct so MESSAGE_PART works.
     [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_DETAIL
+        DEPRECATED_CLUB_COMMUNICATIONS_MESSAGE_DETAIL
         44
         CLUB
         MAIL_READ
         ?/mail/msg
-        Bivio::Biz::Model::MessageList
-        Bivio::UI::HTML::Club::MessageDetail
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=CLUB_COMMUNICATIONS_MESSAGE_DETAIL
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INTEREST
@@ -497,14 +524,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::User::EditPassword
         next=CLUB_ADMIN_USER_DETAIL
     )],
-    [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_ATTACHMENT
-        58
-        CLUB
-        MAIL_READ
-        ?/mail/attachment
-        Bivio::UI::HTML::Club::MessageAttachment
-    )],
+#58
     # MUST MATCH Bivio::Biz::Action::REALM_REDIRECT
     [qw(
 	DEMO_REDIRECT
@@ -529,14 +549,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
-    [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT
-        61
-        CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
-        ?/mail/image
-        Bivio::UI::HTML::Club::ImageAttachment
-    )],
+#61
     [qw(
         JAPAN_SURVEY_TEXT
         62
