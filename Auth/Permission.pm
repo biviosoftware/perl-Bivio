@@ -60,6 +60,7 @@ __PACKAGE__->compile(
     DOCUMENT_WRITE => [16],
     ANY_USER => [17],
     MAIL_ADMIN => [18],
+    MAIL_FORWARD => [19],
 );
 
 =head1 METHODS
