@@ -116,7 +116,7 @@ sub _create_bullet_link {
 
     return '<li><a href="'.Bivio::Agent::HTTP::Location->format($task_id,
 	    Bivio::Agent::Request->get_current()->get('auth_realm'))
-	    .'">'.$text."</a></li>";
+	    .'">'.$text."</a></li>\n";
 }
 
 # _create_report_links() : string
@@ -125,7 +125,7 @@ sub _create_bullet_link {
 #
 sub _create_report_links {
 
-    my($html) = '<blockquote><table border=0 align=center><tr><td valign="top">';
+    my($html) = '<table width="100%" border=0><tr><td valign="top">';
 
     $html .= 'General<ul>';
     $html .= _create_bullet_link(
@@ -191,7 +191,7 @@ sub _create_report_links {
 	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_REPORT_BALANCE_SHEET(),
 	    "Balance Sheet");
 
-    $html .= '</ul></td></tr></table></blockquote>';
+    $html .= '</ul></td></tr></table>';
 
     return $html;
 }
