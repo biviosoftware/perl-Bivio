@@ -332,6 +332,14 @@ sub _create_edit {
 	});
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::CreditCardNumber')) {
+	return Bivio::UI::HTML::Widget::Text->new({
+	    field => $field,
+	    size => $type->get_width,
+	    %$attrs,
+	});
+    }
+
     # If the Text is in_list, don't make multiline.  Fall through
     # to String below.
     if (UNIVERSAL::isa($type, 'Bivio::Type::Text')
