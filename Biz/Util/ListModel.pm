@@ -11,7 +11,7 @@ Bivio::Biz::Util::ListModel - manipulate list models
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
@@ -86,8 +86,11 @@ sub csv {
     my($self, $models, $query, $columns) = @_;
     $self->usage('too few arguments') unless int(@_) >= 2;
 
-    my($req) = $self->get_request;
-    Bivio::Biz::Action->get_instance('PublicRealm')->execute_simple($req);
+#TODO: Remove this ugly hack
+    Bivio::Die->eval(sub {
+	Bivio::Biz::Action->get_instance('PublicRealm')
+	    ->execute_simple($self->get_request);
+    });
 
     my($model) = $models;
     unless (ref($model)) {
