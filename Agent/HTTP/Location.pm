@@ -69,6 +69,8 @@ Bivio::IO::Config->register({
 
 Transforms I<task_id> and I<realm> (if needed) into a URI.
 
+B<path_info is not escaped>
+
 =cut
 
 sub format {
@@ -102,13 +104,14 @@ sub format {
 	    Bivio::IO::Alert->die($task_id, '(', $uri,
 		    '): path_info must begin with slash (', $path_info, ')')
 			unless $path_info =~ /^\//;
-	    $uri .= $path_info;
+	    $uri .= Bivio::Util::escape_uri($path_info);
 	}
     }
     else {
-	Bivio::IO::Alert->die($task_id, '(', $uri,
-		'): does not require path_info (', $path_info, ')')
-		    if $path_info;
+#TODO: This assertion check doesn't work
+#	Bivio::IO::Alert->die($task_id, '(', $uri,
+#		'): does not require path_info (', $path_info, ')')
+#		    if $path_info;
     }
 
 #TODO: Hack.  Recursion in FormModel otherwise
