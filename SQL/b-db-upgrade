@@ -206,8 +206,10 @@ ALTER TABLE realm_invite_t
 	}
 	my($email, $club_id) = ($1, $2);
 	# get the invite for the email/club
-	$invite->unauth_load(realm_id => $club_id, email => $email)
-		|| die("couldn't load invite for $shadow_email");
+	unless ($invite->unauth_load(realm_id => $club_id, email => $email)) {
+	    print(STDERR "\ncouldn't load invite for $shadow_email");
+	    next;
+	}
 	$invite->update({
 	    realm_user_id => $user_id
 	});
