@@ -364,16 +364,32 @@ C<undef>, returns the empty string.
 =cut
 
 sub strip_tags_and_whitespace {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     return '' unless defined($value);
     $value =~ s/<[^>]+>//g;
     # Some sites don't always terminate with a ';'
     $value =~ s/&nbsp;?/ /ig;
     # Must be after the tag stripping
-    $value = Bivio::HTML->unescape($value);
+    $value = $proto->unescape_html($value);
     $value =~ s/\s+/ /g;
     $value =~ s/^ | $//g;
     return $value;
+}
+
+=for html <a name="unescape_html"></a>
+
+=head2 static unescape_html(string value) : string
+
+Calls L<Bivio::HTML::unescape|Bivio::HTML/"unescape"> and fixes up
+ISO-88559-1 chars, e.g. \240 (non-breaking-space).
+
+=cut
+
+sub unescape_html {
+    shift;
+    my($v) = Bivio::HTML->unescape(shift);
+    $v =~ s/\240/ /g;
+    return $v;
 }
 
 =for html <a name="write_file"></a>
