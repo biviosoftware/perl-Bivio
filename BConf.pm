@@ -257,6 +257,7 @@ sub merge_http_log {
 		    'Facade::setup_request:.*: unknown facade uri',
                     'access to /favicon.ico failed',
 		    'Bivio::DieCode::FORBIDDEN',
+		    'Invalid URI in request',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
