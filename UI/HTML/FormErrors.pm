@@ -66,8 +66,11 @@ sub to_html {
 
 	# Interpolate in double quotes (double quotes have been escaped
 	# by _compile().  Do the get_field in case there is an error.
+	# Provide both a truncated and a non-truncated value.
 	my($res) = eval(qq(
-            my(\$value) = \$form->get_field_as_literal(\$field);
+            my(\$unsafe_value) = \$form->get_field_as_literal(\$field);
+            my(\$value) = \$unsafe_value;
+            substr(\$value, 20) = '...' if length(\$value) > 20;
             "$$msg";
         ));
 
@@ -169,8 +172,10 @@ $Id$
 # by default.
 # Fields may be blank iwc the text applies to all fields.
 # Double quotes in Text are escaped.  The result is eval'd when an error
-# occurs.  Valid variables during eval are: $value (may be truncated),
-# $source, $form, $field, $label, $error, plus anything in @{[]}.
+# occurs.  Valid variables during eval are: $unsafe_value (not truncated),
+# $value (truncated), $source, $form, $field, $label, $error,
+# plus anything in @{[]}.
+#
 # See to_html.
 #
 __DATA__
@@ -184,7 +189,7 @@ CreateUserForm
 RealmOwner.name
 EXISTS
 Another user has registered with this $label.  You may need to add a qualifier
-such as your zipcode, e.g. ${value}12345.
+such as your zipcode, e.g. ${value}$$.
 %%
 
 
@@ -198,4 +203,32 @@ The password you entered does not match the value stored
 in our database.
 Please remember that passwords are case-sensitive, i.e.
 "HELLO" is not the same as "hello".
+%%
+FileUploadForm
+source
+EMPTY
+The file uploaded is empty.  This may be because it doesn't
+exist or because it is really empty.  Select another
+file.  If you really want to create an empty file,
+click "OK" now (you need not supply a value for this field).
+%%
+FileUploadForm
+File.name_sort
+EXISTS
+The name you selected already exists in the folder you have
+selected.  If you really want to replace this file, you
+may do so by clicking "OK" after (reselecting File above).
+%%
+FileUploadForm
+source
+NOT_FOUND
+The file "$value" was not found.  To ensure the file exists,
+you may want to use the Browse button.  Please select another
+file and click OK.
+%%
+
+
+FILE_FIELD_RESET_FOR_SECURITY
+Your browser has reset this file field for security reasons.
+The value sent to us was: $unsafe_value
 %%
