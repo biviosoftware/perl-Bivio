@@ -125,7 +125,7 @@ getpwnam first.  Dies on first error.
 
 sub chown_by_name {
     my(undef, $owner, $group, @file) = @_;
-    my($o) = (CORE::getpwnam($owner))[3];
+    my($o) = (CORE::getpwnam($owner))[2];
     Bivio::Die->die($owner, ': no such user')
 	unless defined($o);
     my($g) = (CORE::getpwnam($group))[2];
