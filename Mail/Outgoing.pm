@@ -177,6 +177,22 @@ sub attach {
     return;
 }
 
+=for html <a name="get_body"></a>
+
+=head2 get_body() : scalar_ref
+
+Returns the receiver's body.
+
+=cut
+
+sub get_body {
+    my($self) = @_;
+    my($body) = $self->[$_IDI]->{body};
+    return (ref($body) eq 'SCALAR')
+        ? $body
+        : \$body
+}
+
 =for html <a name="remove_headers"></a>
 
 =head2 remove_headers(string name1, ...)

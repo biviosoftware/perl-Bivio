@@ -106,6 +106,18 @@ sub enqueue_send {
     return;
 }
 
+=for html <a name="get_last_queued_message"></a>
+
+=head2 get_last_queued_message() : Bivio::Mail::Outgoing
+
+Return the last queued message.
+
+=cut
+
+sub get_last_queued_message {
+    return $_QUEUE->[-1];
+}
+
 =for html <a name="handle_commit"></a>
 
 =head2 handle_commit()
