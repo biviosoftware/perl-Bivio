@@ -176,8 +176,9 @@ sub initialize {
 
     # Pad appropriately, because the enum may be smaller than the enumset.
     my($width) = 2 * $proto->get_width;
-    Bivio::Die->die($enum, ": EnumSet is narrower than Enum")
-		if $width - length($max) < 0;
+    Bivio::Die->die($enum, ": EnumSet ($width) is narrower than Enum (",
+	length($max), ")",
+    ) if $width - length($max) < 0;
     foreach my $m ('min', 'max') {
 	my($s) = unpack('h*', $_INFO{$class}->{$m});
 	$s .= '0' x ($width - length($s));
