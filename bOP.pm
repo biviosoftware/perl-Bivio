@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    empty option
+  * Bivio::Test fixed problems with custom expect/actual matches
+  * Bivio::Util::Release pwd needs to be carried through by _do_in_tmp
+
+  Revision 2.16  2004/03/23 20:22:00  nagler
+  * Bivio::ShellUtil->lock_action does not test hostname if it doesn't
+    exist in pid file
+  * Bivio::Util::LinuxConfig->ifcfg_static no longer requires a gateway
   * Bivio::Util::Release->install_tar chdirs out of the tmp dir before
     deleting it
   * Bivio::SQL::Connection::Postgres handles yet another left join case
