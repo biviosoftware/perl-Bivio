@@ -112,6 +112,7 @@ find this primary key.  There should only be one row returned.
 use Bivio::IO::Trace;
 use Bivio::Die;
 use Bivio::DieCode;
+use Bivio::Type;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::PrimaryId;
@@ -469,7 +470,9 @@ sub _format_uri {
 	    if $attrs->{this};
 
     # parent_id?
-    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
+#TODO: how to determine the type for the parent_id?
+#    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
+    $res .= 'p='.Bivio::Type->to_query($attrs->{parent_id}).'&'
 	    if $attrs->{parent_id};
 
     # page_number?
