@@ -36,6 +36,7 @@ C<Bivio::PetShop::UI::ViewShortcuts>
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Biz::QueryType;
 use Bivio::PetShop::Type::Category;
 use Bivio::UI::HTML::Widget::FormField;
 use Bivio::UI::HTML::Widget::Grid;
@@ -92,6 +93,30 @@ sub vs_address_fields {
 	   );
 }
 
+=for html <a name="vs_paging_table"></a>
+
+=head2 static vs_paging_table(Bivio::UI::HTML::Widget::Table table) : Bivio::UI::Widget
+
+Returns a widget which includes paging links for the specified table.
+
+=cut
+
+sub vs_paging_table {
+    my($proto, $table) = @_;
+
+    return $proto->vs_new('Grid', [
+	[
+	    _page_link($proto, 'prev'),
+	    _page_link($proto, 'next')->put(cell_align => 'E'),
+	],
+	[$table->put(cell_colspan => 2)],
+	[
+	    _page_link($proto, 'prev'),
+	    _page_link($proto, 'next')->put(cell_align => 'E'),
+	],
+    ]);
+}
+
 =for html <a name="vs_product_uri"></a>
 
 =head2 static vs_product_uri(any category) : href
@@ -135,6 +160,20 @@ sub vs_space {
 }
 
 #=PRIVATE METHODS
+
+# _page_link(proto, string direction) : Bivio::UI::Widget
+#
+# Returns a paging link for the specified direction.
+#
+sub _page_link {
+    my($proto, $direction) = @_;
+    my($type) = uc($direction).'_LIST';
+    return $proto->vs_new('Link',
+	$direction eq 'next' ? 'next page >>>' : '<<< previous page',
+	['list_model', '->format_uri', Bivio::Biz::QueryType->$type()], {
+	    control => [['list_model', '->get_query'], 'has_'.lc($direction)],
+	});
+}
 
 =head1 COPYRIGHT
 
