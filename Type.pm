@@ -215,7 +215,8 @@ Will look up names in C<Bivio::Type::> if I<type> is not a reference.
 sub get_instance {
     my($self, $type) = @_;
     unless (ref($type)) {
-	$type = 'Bivio::Type::'.$type unless $type =~ /::/;
+	$type = Bivio::IO::ClassLoader->map_require('Type#'.$type)
+		unless $type =~ /::/;
 	Bivio::IO::ClassLoader->simple_require($type);
     }
     Bivio::IO::Alert->die($type, ': not a Bivio::Type')
