@@ -264,7 +264,7 @@ sub rename {
 
 =for html <a name="rm_rf"></a>
 
-=head2 static rm_rf(string path)
+=head2 static rm_rf(string path) : string
 
 Recursively delete all files under I<path>.  Does not accept relative paths or
 '/'.  Returns I<path>
