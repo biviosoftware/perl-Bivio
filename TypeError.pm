@@ -675,6 +675,11 @@ __PACKAGE__->compile(
 	undef,
 	'This action can not be performed because more than one club investment has that ticker',
     ],
+    INVALID_OPENING_BALANCE_DATE => [
+	80,
+	undef,
+	'For tax reasons, the date may not be beyond the start of this fiscal year',
+    ],
 );
 
 #=PRIVATE METHODS
