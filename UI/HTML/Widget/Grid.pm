@@ -151,7 +151,7 @@ sub initialize {
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
     $p .= Bivio::UI::Align->as_html($align) if $align;
-    $p .= Bivio::UI::Color->as_html($bg) if $bg;
+    $p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
     $fields->{prefix} = $p . '>';
     $fields->{suffix} = '</table>';
     my($num_cols) = 0;
