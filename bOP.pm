@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.44  2003/03/14 23:17:10  moeller
+  added Bivio::Biz::Model::UserPasswordForm
+
+  Revision 1.43  2003/03/14 00:44:15  nagler
   * Bivio::Type::Number uses Math::FixedPrecision.  If you are using Red
     Hat 7.2, you need to install newer Math::BigInt package.
   * Bivio::IO::Alert shows more elements of arrays and hashes
