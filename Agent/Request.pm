@@ -386,6 +386,22 @@ sub clear_current {
     return;
 }
 
+=for html <a name="clear_nondurable_state"></a>
+
+=head2 clear_nondurable_state()
+
+Clears out models (Bivio::Biz::*) and any other nondurable state.  This
+method will be expanded over time.
+
+=cut
+
+sub clear_nondurable_state {
+    my($self) = @_;
+    # This is a hack for now
+    $self->delete(grep(/Bivio::/, @{$fields->{req}->get_keys}));
+    return;
+}
+
 =for html <a name="client_redirect"></a>
 
 =head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
