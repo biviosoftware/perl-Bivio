@@ -114,8 +114,15 @@ sub get_value {
 
     Carp::croak('missing date parameter') unless $date;
 
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select sum(entry_t.amount) from realm_transaction_t, entry_t, realm_account_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_account_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_account_entry_t.realm_account_id=? and realm_transaction_t.date_time <= '
+    my($sth) = Bivio::SQL::Connection->execute('
+	    SELECT SUM(entry_t.amount)
+            FROM realm_transaction_t, entry_t, realm_account_entry_t
+            WHERE realm_transaction_t.realm_transaction_id
+                = entry_t.realm_transaction_id
+            AND entry_t.entry_id = realm_account_entry_t.entry_id
+            AND realm_transaction_t.realm_id=?
+            AND realm_account_entry_t.realm_account_id=?
+            AND realm_transaction_t.date_time <= '
 	    .Bivio::Type::DateTime->to_sql_value('?'),
 	    [$self->get_request->get('auth_id'),
 		    $self->get('realm_account_id'),
