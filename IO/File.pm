@@ -34,6 +34,7 @@ use Bivio::IO::Trace;
 use Cwd ();
 use File::Path ();
 use File::Basename ();
+use File::Spec ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -276,6 +277,27 @@ sub rename {
     rename($old, $new)
 	    || Bivio::Die->die('rename(', $old, ',', $new, "): $!");
     return $new;
+}
+
+=for html <a name="rm_rf"></a>
+
+=head2 static rm_rf(string path)
+
+Recursively delete all files under I<path>.  Does not accept relative paths or
+'/'.  Returns I<path>
+
+Only works on Unix.
+
+=cut
+
+sub rm_rf {
+    my(undef, $path) = @_;
+    $path = File::Spec->canonpath($path);
+    Bivio::Die->die($path, ': file name unacceptable, must be absolute')
+	unless File::Spec->file_name_is_absolute($path)
+	    && $path ne File::Spec->rootdir;
+    system('rm', '-rf', $path);
+    return $path;
 }
 
 =for html <a name="write"></a>
