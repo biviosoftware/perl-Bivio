@@ -85,6 +85,14 @@ _compile(
     REALM_INSTRUMENT_NAME => ['Name', undef, 'RealmInstrument.name'],
     TICKER => ['Ticker', undef, 'Instrument.ticker_symbol'],
     NONE => [' '],
+
+    # NCA Import
+    CLUB_LEGACY_INVITE => ['Bring Members On-line'],
+    CLUB_LEGACY_SECURITY_RECONCILIATION => ['Identify Listed Investments'],
+    CLUB_ACCOUNTING_CLEAR => ['Clear On-line Accounting'],
+    CLUB_LEGACY_UPLOAD => ['Import Legacy Accounting'],
+    NCADATA => ['NCADATA.DAT'],
+    CLUB_ADMIN_TOOLS => ['Administration Tools'],
 );
 
 =head1 METHODS
