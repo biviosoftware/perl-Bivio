@@ -39,6 +39,7 @@ but can be any table with TH for headings.
 
 #=IMPORTS
 use Bivio::IO::Trace;
+use Bivio::Test::HTMLParser::Tables::Cell;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -76,6 +77,8 @@ sub new {
 Iterates over the rows over I<table_name>, calling
 L<do_rows_callback|"do_rows_callback"> for each row.
 
+The special field C<_row_index> is set to the value of the index of that row.
+
 =cut
 
 sub do_rows {
@@ -84,9 +87,13 @@ sub do_rows {
     my($t) = $self->get($table_name);
     foreach my $row (@{$t->{rows}}) {
 	my($i) = -1;
+	$index++;
         last unless $do_rows_callback->(
-	    {map({($_ => $row->[++$i]);} @{$t->{headings}})},
-	    ++$index,
+	    {
+		_row_index => $index,
+		map({($_->get('text') => $row->[++$i]);} @{$t->{headings}}),
+	    },
+	    $index,
 	);
     }
     return;
@@ -110,22 +117,23 @@ sub do_rows_callback {
 
 =for html <a name="find_row"></a>
 
-=head2 find_row(string column_name, string column_value) : int
+=head2 find_row(string column_name, string column_value) : hash_ref
 
-Return the index of the the row where the value in column column_name matches
-column_value. Return undef if now matching row is found.
+Return the hash_ref of the the row where the value in column column_name
+matches column_value. Return undef if now matching row is found.
 
 =cut
 
 sub find_row {
     my($self, $column_name, $column_value) = @_;
 
-    my($found_row);
+    my($found_row, $found_index);
     $self->do_rows($column_name,
 	sub {
 	    my($row, $index) = @_;
-	    $found_row = $row
-		if $row->{$column_name} eq $column_value;
+	    if ($row->{$column_name}->get('text') eq $column_value) {
+		$found_row = $row;
+	    }
 	    return !defined($found_row);
 	});
     return $found_row;
@@ -146,7 +154,7 @@ sub get_by_headings {
  TABLE: while (my($table, $values) = each(%$tables)) {
 	foreach my $n (@name) {
 	    next TABLE
-		unless grep($n eq $_, @{$values->{headings}});
+		unless grep($n eq $_->get('text'), @{$values->{headings}});
 	}
 	Bivio::Die->die(\@name, ': too many tables matched headings')
 	    if $found;
@@ -164,8 +172,10 @@ Dispatch to the _end_XXX routines.
 =cut
 
 sub html_parser_end {
-    my($self, $tag) = @_;
+    my($self, $tag) = (shift, @_);
     my($fields) = $self->[$_IDI];
+    $fields->{links}->html_parser_end(@_)
+	if $fields->{links};
     _call_op('end', $tag, $self);
     return;
 }
@@ -179,8 +189,10 @@ Calls _fixup_attr then dispatches to the _start_XXX routines.
 =cut
 
 sub html_parser_start {
-    my($self, $tag, $attr) = @_;
+    my($self, $tag, $attr) = (shift, @_);
     my($fields) = $self->[$_IDI];
+    $fields->{links}->html_parser_start(@_)
+	if $fields->{links};
     return if _call_op('start', $tag, $self, $attr);
     return _start_input($self, $attr)
 	if $attr->{type};
@@ -196,8 +208,10 @@ Parses the tables.  Called internally.
 =cut
 
 sub html_parser_text {
-    my($self, $text) = @_;
+    my($self, $text) = (shift, @_);
     my($fields) = $self->[$_IDI];
+    $fields->{links}->html_parser_text(@_)
+	if $fields->{links};
     return unless $fields->{in_data_table};
     $fields->{text} .= $text;
     return;
@@ -226,7 +240,7 @@ sub _call_op {
 sub _delete_empty_rows {
     my($rows) = @_;
     for (my($i) = 0; $i < @$rows; $i++) {
-	next if grep(defined($_) && length($_), @{$rows->[$i]});
+	next if grep(defined($_) && length($_->get('text')), @{$rows->[$i]});
 	_trace($rows->[$i]) if $_TRACE;
 	splice(@$rows, $i--, 1)
     }
@@ -318,7 +332,12 @@ sub _save_cell {
     return
 	unless $fields->{in_data_table} == 1;
     my($t) = $self->get('cleaner')->text(_text($fields));
-    push(@$row, $t);
+    push(@$row, Bivio::Test::HTMLParser::Tables::Cell->new({
+	text => $t,
+	Links => $fields->{links}->internal_put(
+	    $fields->{links}->get('elements'))->set_read_only,
+    }));
+    $fields->{links} = undef;
     _trace($t) if $_TRACE;
     push(@$row, undef)
 	while --$fields->{colspan} > 0;
@@ -362,6 +381,10 @@ sub _start_td {
     return unless _in_data($fields);
     $fields->{text} = '';
     $fields->{colspan} = $attr->{colspan} || 1;
+    $fields->{links} = Bivio::Test::HTMLParser::Links->new->internal_put({
+	cleaner => $self->get('cleaner'),
+	elements => {},
+    });
     return;
 }
 

@@ -70,17 +70,17 @@ Bivio::Test->new({
 	'petshop-cart' => [
 	    ['Forms', 'remove_0', 'visible', 'Quantity_0',
 		 'value'] => ['1'],
-	    ['Tables', 'Remove', 'headings', 0] => ['Remove'],
-	    ['Tables', 'Remove', 'rows', 0, 1] => ['EST-6'],
-	    ['Tables', 'Remove', 'rows', 0, 2] => ['Male Adult Corgi'],
-	    ['Tables', 'Remove', 'rows', 0, 5] => ['1'],
-	    ['Tables', 'Remove', 'rows', 1, 1] => ['Total:'],
-	    ['Tables', 'Remove', 'rows', 1, 6] => ['18.50'],
+	    ['Tables', 'Remove', 'headings', 0, 'text'] => ['Remove'],
+	    ['Tables', 'Remove', 'rows', 0, 1, 'text'] => ['EST-6'],
+	    ['Tables', 'Remove', 'rows', 0, 2, 'text'] => ['Male Adult Corgi'],
+	    ['Tables', 'Remove', 'rows', 0, 5, 'text'] => ['1'],
+	    ['Tables', 'Remove', 'rows', 1, 1, 'text'] => ['Total:'],
+	    ['Tables', 'Remove', 'rows', 1, 6, 'text'] => ['18.50'],
 	],
     ], [
 	'petshop-checkout' => [
-	    ['Tables', 'Item ID', 'headings', 2] => ['In Stock'],
-	    ['Tables', 'Item ID', 'rows', 0, 2] => ['yes'],
+	    ['Tables', 'Item ID', 'headings', 2, 'text'] => ['In Stock'],
+	    ['Tables', 'Item ID', 'rows', 0, 2, 'text'] => ['yes'],
 	],
     ], [
 	'petshop-cart-error' => [
@@ -98,12 +98,12 @@ Bivio::Test->new({
     ], [
 	'petshop-item-detail' => [
 	    ['Tables', 'item', 'headings'] => [[]],
-	    ['Tables', 'item', 'rows', 0, 1] => ['18.50'],
+	    ['Tables', 'item', 'rows', 0, 1, 'text'] => ['18.50'],
 	],
     ], [
 	'as-blacklist-summary' => [
-	    ['Tables', 'IP Address', 'rows', 0, 2] => ['0'],
-	    ['Tables', 'IP Address', 'rows', 1, 2] => ['2'],
+	    ['Tables', 'IP Address', 'rows', 0, 2, 'text'] => ['0'],
+	    ['Tables', 'IP Address', 'rows', 1, 2, 'text'] => ['2'],
 	    ['Links', '06/11/2003 GMT', 'href']
 	        => ['/demo/blacklists/detail?p=10400025'],
 	    ['Links', '06/11/2003 GMT_1', 'href']
@@ -111,12 +111,12 @@ Bivio::Test->new({
 	],
     ], [
 	'as-blacklist-detail' => [
-	    ['Tables', 'Server', 'rows', 2, 2] => ['request removal, website'],
+	    ['Tables', 'Server', 'rows', 2, 2, 'text'] => ['request removal, website'],
 	],
     ], [
 	'as-mail-campaign-list' => [
-	    ['Tables', 'First Seen', 'rows', 0, 1] => 'REMINDER: Boulder Software Club - First Annual Business Builders Series',
-	    ['Tables', 'First Seen', 'rows', 1, 1] => 'campaign.btest at 06/16/2003 17:21:39',
+	    ['Tables', 'First Seen', 'rows', 0, 1, 'text'] => 'REMINDER: Boulder Software Club - First Annual Business Builders Series',
+	    ['Tables', 'First Seen', 'rows', 1, 1, 'text'] => 'campaign.btest at 06/16/2003 17:21:39',
 	],
     ]),
     ['login', 'Forms'] => [
@@ -138,7 +138,9 @@ Bivio::Test->new({
 			unless $index eq 0;
 		}
 		die('In Stock is not yes')
-		    unless $row->{'In Stock'} eq 'yes';
+		    unless $row->{'In Stock'}->get('text') eq 'yes';
+		die($index, ': row index mismatch: ', $row)
+		    unless $row->{_row_index} eq $index;
 		$_TMP = $index;
 		return 0;
 	    }] => sub {
@@ -150,9 +152,17 @@ Bivio::Test->new({
 	do_rows => [
 	    ['First Seen', sub {
 		 my($row, $index) = @_;
-		 $_TMP = $row->{ID}
-		     if $index == 1 && $row->{Subject}
-			 eq 'campaign.btest at 06/16/2003 17:21:39';
+		 if ($index == 1 && $row->{Subject}->get('text')
+		     eq 'campaign.btest at 06/16/2003 17:21:39') {
+		     $_TMP = $row->{ID}->get('text');
+		     Bivio::Die->die(
+			 $row->{Subject}->get('Links')->get_shallow_copy,
+			 ': bad href'
+		     ) unless $row->{Subject}->get_nested('Links',
+			 'campaign.btest at 06/16/2003 17:21:39',
+			 'href',
+		     ) eq '/dev/campaign-domains?p=33600023';
+		 }
 		 return 1;
 	    }] => sub {
 		shift->actual_return([$_TMP]);
