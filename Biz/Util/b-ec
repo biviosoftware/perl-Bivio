@@ -1,0 +1,42 @@
+#!perl -w
+# Copyright (c) 2001 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-ec - calls Bivio::Biz::Util::EC
+
+=head1 SYNOPSIS
+
+b-ec [options] command [args...]
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::EC|Bivio::Biz::Util::EC>
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::EC;
+
+#=VARIABLES
+Bivio::Biz::Util::EC->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Biz::Util::EC
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
