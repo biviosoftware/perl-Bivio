@@ -64,7 +64,8 @@ The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
 =item values : array_ref (required)
 
 An array_ref of rows of array_ref of columns (cells).  A cell may
-be C<undef>.
+be C<undef>.  A cell may be a widget_value which returns a widget
+or a string or it may be a widget or a string.
 
 =item width : int []
 
@@ -194,7 +195,10 @@ sub initialize {
 	foreach $c (@cols) {
 	    my($p) = '<td';
 	    my($end) = 1;
-	    if (ref($c)) {
+	    if (ref($c) eq 'ARRAY') {
+		# Widget value, nothing to prepare.
+	    }
+	    elsif (ref($c)) {
 		# May set attributes on itself
 		$c->put('parent', $self);
 		$c->initialize($self, $source);
@@ -274,7 +278,11 @@ sub render {
     foreach $r (@{$fields->{rows}}) {
 	my($row) = "<tr>\n";
 	foreach $c (@$r) {
-	    ref($c) ? $c->render($source, \$row) : ($row .= $c);
+	    # Look up widget value
+	    my($w) = ref($c) eq 'ARRAY' ? $source->get_widget_value(@$c) : $c;
+	    # Render widget, string, or undef
+	    ref($w) ? $w->render($source, \$row) :
+		    defined($w) ? ($row .= $w) : ();
 	}
 	$row .= '</tr>';
 	# If row is completely empty, don't render it.
@@ -289,7 +297,8 @@ sub render {
 	my($constant) = 1;
 	foreach $r (@{$fields->{rows}}) {
 	    foreach $c (@$r) {
-		last unless $constant &&= !ref($c) || $c->is_constant;
+		last unless $constant &&= !ref($c) ||
+			ref($c) ne 'ARRAY' && $c->is_constant;
 	    }
 	}
 	# If values are constant, save off what we just rendered
