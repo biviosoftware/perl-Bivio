@@ -327,19 +327,6 @@ $_ = <<'}'; # emacs
 sub print {
 }
 
-=for html <a name="scalar_ref"></a>
-
-=head2 static scalar_ref(string arg) : scalar_ref
-
-Returns its argument as a scalar_ref.
-
-=cut
-
-sub scalar_ref {
-    my(undef, $arg) = @_;
-    return \$arg;
-}
-
 =for html <a name="unit"></a>
 
 =head2 static unit(array_ref tests)
