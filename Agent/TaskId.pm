@@ -903,6 +903,17 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentIncome
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_SPLIT
+        90
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/investment/split
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::InstrumentSplitForm
+        Bivio::UI::HTML::Club::InstrumentSplit
+        next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
        );
 
 __PACKAGE__->compile(
