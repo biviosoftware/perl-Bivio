@@ -18,5 +18,13 @@ Bivio::Test->new('Bivio::Type::Password')->unit([
 	} qw(aaaaa 12345)),
 	    ['123456'] => qr/[\w]+/,
 	],
+	is_equal => [
+	    ['kzltIzEfODKJg', 'abcdef'] => 1,
+	    ['kzltIzEfODKJg', '123456'] => 0,
+	    ['kzltIzEfODKJg', undef] => 0,
+	    [undef, 'abcdef'] => 0,
+	    # Special case when both or undefined.
+	    [undef, undef] => 0,
+	],
     ],
 ]);
