@@ -38,6 +38,10 @@ for layout issues).
 
 The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
 
+=item pad_left : int [0]
+
+Number of non-breaking spaces to pad on the left.
+
 =item value : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
@@ -97,6 +101,8 @@ sub initialize {
     return if exists($fields->{value});
     my($font) = $self->ancestral_get('string_font', undef);
     my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
+    my($pad_left) = $self->get_or_default('pad_left', 0);
+    $p .= '&nbsp;' x $pad_left if $pad_left > 0;
     $fields->{value} = $self->get('value');
     if ($fields->{is_constant} = !ref($fields->{value})) {
     	$fields->{value} = $p.Bivio::Util::escape_html($fields->{value}).$s;

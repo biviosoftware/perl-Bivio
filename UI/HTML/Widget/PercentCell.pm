@@ -90,6 +90,7 @@ sub initialize {
 	    value => [$field, 'Bivio::UI::HTML::Format::Printf',
 		'%.'.$d.'f%%'],
 	    column_align => 'E',
+	    pad_left => 1,
 	    string_font => 'number_cell',
 	   );
     $fields->{initialized} = 1;

@@ -90,6 +90,7 @@ sub initialize {
 	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d],
 	    column_align => 'E',
 	    string_font => 'number_cell',
+	    pad_left => 1,
 	   );
     $fields->{initialized} = 1;
     $self->SUPER::initialize;
