@@ -32,6 +32,13 @@ C<Bivio::UI::HTML::Widget::Image>
 
 =over 4
 
+=item align : string []
+
+How to align the image.  The allowed (case
+insensitive) values are defined in
+L<Bivio::UI::Align|Bivio::UI::Align>.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<IMG> tag.
+
 =item alt : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
@@ -44,6 +51,10 @@ Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
 May be C<undef>.
+
+=item hspace : int [0]
+
+HSPACE attribute value.
 
 =item image_border : int [0] (inherited)
 
@@ -70,6 +81,10 @@ Already been through lookup Icon.
 =item image_width : int [src's width] (inherited)
 
 See B<height>.
+
+=item vspace : int [0]
+
+VSPACE attribute value.
 
 =back
 
@@ -127,6 +142,18 @@ sub initialize {
     Carp::croak('only one of width and height defined')
 		unless defined($width) == defined($height);
     my($p) = '<img';
+
+    # hspace and vspace
+    foreach my $f (qw(hspace vspace)) {
+	my($v) = $self->unsafe_get($f);
+	next unless $v;
+	$p .= ' '.$f.'='.$v;
+    }
+
+    # align
+    my($v) = $self->unsafe_get('align');
+    $p .= Bivio::UI::Align->as_html($v) if $v;
+
     # Assume false until after first render.
     $fields->{is_constant} = 0;
     if (ref($alt)) {
