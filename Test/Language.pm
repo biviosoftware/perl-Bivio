@@ -289,6 +289,7 @@ sub test_run {
 	substr($$script, 0, 0) = 'use strict;';
 	my($die) = Bivio::Die->catch($script);
 #TODO: test_deviance is an attribute with a pattern to match against die->as-string.
+	_trace($die) if $_TRACE;
 	return unless $die;
 	$_SELF_IN_EVAL->test_log_output('test_run.err',
 	    $die->as_string . "\n" . $die->get('stack'))
@@ -296,6 +297,7 @@ sub test_run {
 	$die->throw;
 	# DOES NOT RETURN
     });
+    _trace($die) if $_TRACE;
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
     $_SELF_IN_EVAL = undef;
     _trace($script, ' ', $die) if $die && $_TRACE;
