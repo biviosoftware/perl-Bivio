@@ -2949,6 +2949,39 @@ my(@_CFG) = (
         _job/account_sync_process_all
         Bivio::Biz::Action::AccountSyncProcessAll
     )],
+    [qw(
+        ADM_REALM_NOTICE_LIST
+        257
+        GENERAL
+        ADMIN_WRITE
+        adm/notices
+        Bivio::Biz::Model::AdmRealmNoticeList->execute_load_page
+	Bivio::UI::HTML::Adm::RealmNoticeList
+        require_secure=1
+    )],
+    [qw(
+        ADM_REALM_NOTICE_DELETE
+        258
+        GENERAL
+        ADMIN_WRITE
+        adm/notice/delete
+        Bivio::Biz::Model::AdmRealmNoticeList->execute_load_this
+        Bivio::Biz::Model::RealmNotice->execute_unauth_delete_this
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=ADM_REALM_NOTICE_LIST
+        require_secure=1
+    )],
+    [qw(
+        ADM_REALM_NOTICE_CREATE
+        259
+        GENERAL
+        ADMIN_WRITE
+        adm/notice/create
+        Bivio::Biz::Model::AdmRealmNoticeForm
+        Bivio::UI::HTML::Adm::CreateRealmNotice
+        next=ADM_REALM_NOTICE_LIST
+        require_secure=1
+    )],
    );
 
 __PACKAGE__->compile([
