@@ -105,6 +105,10 @@ A field or field identity which further qualifies a query.
 Used when a list "this" points to another list, e.g.
 InstrumentSummaryList leads the user to InstrumentTransactionList.
 
+=item parent_id_type : string
+
+The type class of the parent_id field.
+
 =item primary_key : array_ref (required)
 
 The list of fields and field that uniquely identifies a row.
@@ -418,6 +422,10 @@ sub _init_column_lists {
     $attrs->{order_by_names} = [map {$_->{name}} @{$attrs->{order_by}}];
     $attrs->{column_names} = [sort(keys(%{$attrs->{columns}}))];
 
+    if ($attrs->{parent_id}) {
+	$attrs->{parent_id_type} = $attrs->{parent_id}->{type};
+    }
+
     # No BLOBs
     foreach my $c (values(%{$attrs->{columns}})) {
 	Bivio::Die->die($c->{name}, ': cannot have a blob in a ListModel')
@@ -457,8 +465,9 @@ sub _init_column_lists {
 
     # Create select from all columns and include auth_id and
     # parent_id constraints (if defined) in where.
-    $where = ' and '.$attrs->{parent_id}->{sql_name}.'='.$_PRIMARY_ID_SQL_VALUE
-	    .$where if $attrs->{parent_id};
+    $where = ' and '.$attrs->{parent_id}->{sql_name}.'='
+	    .$attrs->{parent_id_type}->to_sql_value('?').$where
+		    if $attrs->{parent_id};
     my($from) = ' from '.join(',',
 		    map {
 			my($tn) = $_->{instance}->get_info('table_name');
@@ -719,7 +728,7 @@ sub _prepare_where {
 
     # Insert parent_id and auth_id
     my($parent_id) =  $query->get('parent_id');
-    unshift(@$params, Bivio::Type::PrimaryId->to_sql_param($parent_id))
+    unshift(@$params, $attrs->{parent_id_type}->to_sql_param($parent_id))
 	    if $attrs->{parent_id};
     unshift(@$params, Bivio::Type::PrimaryId->to_sql_param(
 	    $query->get('auth_id')))
