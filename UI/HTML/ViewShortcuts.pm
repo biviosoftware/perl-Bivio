@@ -267,15 +267,15 @@ sub vs_new {
 
 =head2 static vs_string(any value) : Bivio::UI::Widget::String
 
-=head2 static vs_string(any value, string font) : Bivio::UI::Widget::String
+=head2 static vs_string(any value, string font, hash_ref attrs) : Bivio::UI::Widget::String
 
 B<DEPRECATED.  Use L<vs_new|"vs_new">>.
 
 =cut
 
 sub vs_string {
-    my($proto, $value, $font) = @_;
-    return $proto->vs_new('String', $value, $font);
+    my($proto, $value, $font, $attrs) = @_;
+    return $proto->vs_new('String', $value, $font, $attrs);
 }
 
 #=PRIVATE METHODS
