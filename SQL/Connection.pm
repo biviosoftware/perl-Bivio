@@ -29,9 +29,10 @@ to the database at all times.
 #=IMPORTS
 use Bivio::Die;
 use Bivio::DieCode;
-use Carp ();
 use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
+use Bivio::Util;
+use Carp ();
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -97,17 +98,17 @@ sub execute {
     };
     return $statement unless $@;
 
-    my($err) = $statement->err;
+    my($err) = $statement ? $statement->err : 0;
     my($attrs) = {
 	message => $@,
 	dbi_err => $err,
-	dbi_errstr => $statement->errstr,
+	dbi_errstr => $statement ? $statement->errstr : '',
 	sql => $sql,
 	sql_params => $params,
     };
     eval {
 	# Clean up just in case statement is cached
-	$statement->finish;
+	$statement->finish if $statement;
     };
 #TODO: add more application error processing here
 #TODO: Add reply processingn
