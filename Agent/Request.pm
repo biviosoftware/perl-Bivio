@@ -546,9 +546,8 @@ B<DOES NOT RETURN.>
 sub redirect {
     my($self, $new_task, $new_realm) = @_;
     $self->internal_redirect_realm($new_task, $new_realm);
-#TODO: should we be clearing the query?
-    # Need to set the uri, but the query is cleared
-    $self->put(uri => $self->format_uri($new_task, undef));
+    # keep the request's query for context on form OK and CANCEL
+    $self->put(uri => $self->format_uri($new_task));
     Bivio::Die->die(Bivio::DieCode::REDIRECT_TASK(), {task_id => $new_task});
     return;
 }
