@@ -311,6 +311,19 @@ sub get_field_name_for_html {
     return $col->{form_name}.$_SEP.$row;
 }
 
+=for html <a name="get_list_class"></a>
+
+=head2 get_list_class() : string
+
+Returns the name of the list class.
+
+=cut
+
+sub get_list_class {
+    my($self) = @_;
+    return $self->get_info('list_class');
+}
+
 =for html <a name="get_list_model"></a>
 
 =head2 get_list_model() : Bivio::Biz::ListModel
