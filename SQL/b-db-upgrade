@@ -221,6 +221,7 @@ sub _upgrade {
 
     _upgrade_add_csi_index();
     _upgrade_account_sync_index();
+    _upgrade_mail_t();
     print("\n*** done ***\n");
     return;
 }
@@ -251,7 +252,7 @@ CREATE INDEX account_sync_t6 on account_sync_t (
 sub _upgrade_add_csi_index {
     print("creating index csi_instrument_t4\n");
     _do_sql('
-CREATE INDEX csi_instrument_t4 on csi_instrument_t (
+CREATE UNIQUE INDEX csi_instrument_t4 on csi_instrument_t (
   instrument_id
 )
   tablespace index_1m
