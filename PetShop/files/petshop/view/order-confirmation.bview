@@ -10,33 +10,31 @@ view_put(header_title => 'Confirm Shipping Data');
 # context.
 my($order_field) = sub {
     my($req, $field) = @_;
-    my($value) = $req->get('Model.OrderConfirmationForm')
-        ->unsafe_get_context_field($field);
-    return $value;
+    return ($req->get('Model.OrderConfirmationForm')
+        ->unsafe_get_context_field($field))[0];
 };
 
 # Returns a widget which render the specified address fields.
 my($address_widget) = sub {
     my($name_prefix, $address) = @_;
+    $address ||= '';
 
     return Join([
-	String([$order_field, 'Order.'.$name_prefix.'_first_name']),
-	' ',
-	String([$order_field, 'Order.'.$name_prefix.'_last_name']),
+	String([$order_field, 'Order.' . $name_prefix . '_name']),
 	'<br>',
-	String([$order_field, 'EntityAddress_'.$address.'.addr1']),
+	String([$order_field, 'Address' . $address . '.street1']),
 	'<br>',
-	If([$order_field, 'EntityAddress_'.$address.'.addr2'],
+	If([$order_field, 'Address' . $address . '.street2'],
 	    Join([
-		String([$order_field, 'EntityAddress_'.$address.'.addr2']),
+		String([$order_field, 'Address' . $address . '.street2']),
 		'<br>',
 	    ]),
 	),
-	String([$order_field, 'EntityAddress_'.$address.'.city']),
+	String([$order_field, 'Address' . $address . '.city']),
 	', ',
-	String([$order_field, 'EntityAddress_'.$address.'.state']),
+	String([$order_field, 'Address' . $address . '.state']),
 	vs_blank_cell(2),
-	String([$order_field, 'EntityAddress_'.$address.'.zip']),
+	String([$order_field, 'Address' . $address . '.zip']),
 	'<p>',
     ]);
 };
@@ -51,11 +49,11 @@ view_put(menu_content => Form('OrderConfirmationForm', Grid([
     ], [
 	String('Billing Address', 'page_heading'),
     ], [
-	&$address_widget('bill_to', 1),
+	&$address_widget('bill_to'),
     ], [
 	String('Shipping Address', 'page_heading'),
     ], [
-	&$address_widget('ship_to', 2),
+	&$address_widget('ship_to', '_2'),
     ], [
 	ImageFormButton({
 	    image => 'continue',
