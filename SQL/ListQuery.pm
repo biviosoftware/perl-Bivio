@@ -180,6 +180,15 @@ Set this to true if you want to get the first element and
 set it as I<this>.  Used by
 L<Bivio::SQL::ListModel::load|Bivio::SQL::ListModel/"load">.
 
+=item want_only_one_order_by : boolean [0]
+
+When preparing the C<ORDER BY> clause, only include the first order by column,
+and ignore the rest.  This performance option is necessary for certain complex
+queries with Postgres.  Don't use this unless you are really sure you need it.
+I<want_only_one_order_by> does not affect I<order_by> of the query, but the
+implementation of the ORDER BY clause in
+L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
+
 =item want_page_count : boolean (optional)
 
 Set this to true if you want to count the number of pages.
@@ -853,9 +862,6 @@ sub _parse_order_by {
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
 		$orig_value) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
-        use Data::Dumper;
-        print(STDERR Dumper($order_by))
-            unless $order_by->[$index];
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
