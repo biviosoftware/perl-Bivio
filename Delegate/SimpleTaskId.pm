@@ -63,7 +63,6 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.ClientRedirect->execute_home_page_if_site_root
 	    Bivio::UI::View->execute_uri
-	    want_query=0
 	)],
 	[qw(
 	    LOCAL_FILE_PLAIN
@@ -125,6 +124,16 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Action.LocalFilePlain
+	)],
+	# Handy for demos and such.  You need to provide a link in the
+	# "plain" space to the view source, e.g.
+	#    cd plain; ln -s ../view vs
+	[qw(
+	    VIEW_AS_PLAIN_TEXT
+	    10
+	    GENERAL
+	    ANYBODY
+	    Action.ViewAsPlainText
 	)],
 ];
 }
