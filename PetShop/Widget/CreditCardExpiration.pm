@@ -36,8 +36,8 @@ expiration date selection widget.
 =cut
 
 #=IMPORTS
-use Bivio::PetShop::Type::CreditCardMonth;
 use Bivio::Type::Date;
+use Bivio::Type::Month;
 
 #=VARIABLES
 
@@ -69,10 +69,9 @@ Draws the expiration date onto the buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($date) = $source->get_widget_value($self->get('value'));
-    my($month) = Bivio::PetShop::Type::CreditCardMonth->from_int(
-	    Bivio::Type::Date->get_part($date, 'month'));
-    $$buffer .= $month->get_short_desc
-	    .'/'.Bivio::Type::Date->get_part($date, 'year');
+    $$buffer .= Bivio::Type::Month->from_int(
+        Bivio::Type::Date->get_part($date, 'month'))->get_short_desc
+        . ' ' . Bivio::Type::Date->get_part($date, 'year');
     return;
 }
 
