@@ -47,6 +47,7 @@ Bivio::IO::Config->register({
 	'database' => $ENV{ORACLE_SID} || Bivio::IO::Config->REQUIRED,
 	'user' => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
 	'password' => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
+	is_read_only => 0,
     },
 });
 my($_DEFAULT_OPTIONS) = {
