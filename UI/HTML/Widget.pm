@@ -247,7 +247,7 @@ sub button {
 		{1 => $proto->join($res),
 		    0 => $proto->join('')});
     }
-    return $proto->center(Bivio::UI::HTML::Widget::StandardSubmit->new());
+    return $proto->indent(Bivio::UI::HTML::Widget::StandardSubmit->new());
 }
 
 =for html <a name="center"></a>
@@ -970,7 +970,7 @@ Returns URL to support.
 
 sub link_support {
     my($proto) = @_;
-    return $proto->mailto([['->get_request'], 'support_email']);
+    return $proto->link(['support_email'], 'MAIL_SUPPORT');
 }
 
 =for html <a name="link_target_as_html"></a>
