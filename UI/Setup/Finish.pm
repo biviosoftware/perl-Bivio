@@ -94,7 +94,10 @@ sub render {
 
     $req->print('<form action='.'/'.$req->get_arg('club').'/admin>');
 
-    $req->print('Club setup completed.');
+    $req->print('Congratulations, club setup is completed. After
+pressing "next", enter your user name and password and you will be
+directed to the club user list screen. From there you can add additional
+club members.');
     $req->print('<p><input type="submit" value="Next">');
 
     $req->print('</form></td></tr></table>');
