@@ -171,13 +171,13 @@ sub get_nav_links {
 	$_NEXT_LINK->set_url('');
     }
 
-    my($finder) = $req->get_arg('mf');
-    # strip out the id(xxx)
-    $finder =~ s/,id\(\d+\)//;
-    # increment the index(xxx)
-    $finder =~ s/index\((\d+)\)/'index('.($1 + 1).')'/e;
+    #TODO: don't show if no index specified, fix 0,1 bug
 
-    my($back_url) = &_make_path('list', $req).'?mf='.$finder;
+    my($fp) = $req->get_model_args()->clone();
+    $fp->remove('id');
+    $fp->put('index', $fp->get('index') + 1) if $fp->get('index');
+
+    my($back_url) = &_make_path('list', $req).'?mf='.$fp->to_string();
 
     $_BACK_LINK->set_url($back_url);
 
@@ -188,13 +188,15 @@ sub get_nav_links {
 
 =head2 render(MessageList list, Request req)
 
-Draws middle element of the list.
+Draws the selected message body.
 
 =cut
 
 sub render {
     my($self, $list, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    #TODO: need to render from_name, date etc.
 
     my($message) = $list->get_selected_message();
     if ($message) {
