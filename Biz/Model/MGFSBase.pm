@@ -29,21 +29,67 @@ use Bivio::Biz::PropertyModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::MGFSBase>
+C<Bivio::Biz::Model::MGFSBase> base class of MGFS models
 
 =cut
 
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="CREATE_ONLY"></a>
+
+=head2 CREATE_ONLY : string
+
+Flag for "try_to_update_or_create()". Indicates records should be created
+only, not updated.
+
+=cut
+
+sub CREATE_ONLY {
+    return '0';
+}
+
+=for html <a name="CREATE_OR_UPDATE"></a>
+
+=head2 CREATE_OR_UPDATE : string
+
+Flag for "try_to_update_or_create()". Indicates that records should be
+updated if existant, or created otherwise.
+
+=cut
+
+sub CREATE_OR_UPDATE {
+    return '1';
+}
+
+=for html <a name="UPDATE_ONLY"></a>
+
+=head2 UPDATE_ONLY : string
+
+Flag for "try_to_update_or_create()". Indicates that existing records
+should be updated only, but never created.
+
+=cut
+
+sub UPDATE_ONLY {
+    return '2';
+}
+
 #=IMPORTS
 use Bivio::Agent::Request;
-use Bivio::Biz::Model::MGFSInstrument;
+use Bivio::Auth::Realm;
 use Bivio::Die;
 use Bivio::Data::MGFS::Importer;
 use Bivio::SQL::Connection;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Type::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 # keyed by class name
 my($_IMPORTER_MAP) = {};
+my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 my($_OLD_TICKER_TAG) = '-D';
 
@@ -130,7 +176,7 @@ Returns the defintion of the models MGFS import format.
 The import format should be:
    {
        file => {
-           <file name> => [<format index>, <update>],
+           <file name> => [<format index>, <update flag>],
            ...
        },
        format => [
@@ -141,6 +187,13 @@ The import format should be:
            ...
        ],
    }
+
+<format index> the index into the format array.
+<update flag> one of the CREATE/UPDATE constants above
+<file name> the prefix of the mgfs data file
+<type> one of the Bivio::Data::MGFS::FieldType enum values
+<offset> character offset into the data record
+<size> length of the field in the data record
 
 =cut
 
@@ -153,16 +206,134 @@ sub internal_get_mgfs_import_format {
 =head2 static post_import()
 
 Performs post-import processing.
-Ticker clashes are resolved by appending '-D' to defunct symbols.
 Commits changes after processing.
 
 =cut
 
 sub post_import {
-    my($proto) = @_;
 
-    my($mgfs_instrument) = Bivio::Biz::Model::MGFSInstrument->new(
-	    Bivio::Agent::Request->get_current_or_new);
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+
+    _resolve_symbol_clashes($req);
+    _audit_last_import_date($req);
+
+    Bivio::SQL::Connection->commit;
+    return;
+}
+
+=for html <a name="try_to_update_or_create"></a>
+
+=head2 Bivio::Die try_to_update_or_create(hash_ref values, int update_flag)
+
+Attempts to update or create a model with the specified values.
+See from_mgfs(). Returns undef on success, a Bivio::Die instance otherwise.
+
+The update_flag should be one of the following constants:
+CREATE_ONLY, CREATE_OR_UPDATE, UPDATE_ONLY defined above.
+
+=cut
+
+sub try_to_update_or_create {
+    my($self, $values, $update_flag) = @_;
+
+#TODO: probably better to have a handle_die() method?
+    my($die) = Bivio::Die->catch(
+	    sub {
+
+		# get the key fields from values
+		my($sql_support) = $self->internal_get_sql_support;
+		my(@key_names) = $sql_support->get('primary_key_names');
+
+		my(%key) = ();
+#TODO: use the first key array?
+		foreach my $k (@{$key_names[0]}) {
+		    $key{$k} = $values->{$k};
+		}
+
+		# existence check, update if it already exists
+		if ($self->unauth_load(%key)) {
+		    return if $update_flag == CREATE_ONLY();
+		    $self->update($values);
+		    return;
+		}
+
+		return if $update_flag == UPDATE_ONLY();
+
+		# otherwise create it
+		$self->create($values);
+	    });
+    return $die;
+}
+
+=for html <a name="write_reject_record"></a>
+
+=head2 write_reject_record(string record)
+
+Writes the specified record to a reject file titled <model>_reject
+
+=cut
+
+sub write_reject_record {
+    my($self, $die, $record) = @_;
+
+    my($reject_file) = ref($self)."_reject";
+#TODO: need a better way to open or create for append
+    open(OUT, ">>$reject_file") || open(OUT, $reject_file)
+	    || die("can't open file $reject_file");
+    print(OUT $die->as_string."#\n#\n# invalid record\n$record");
+    close(OUT);
+    return;
+}
+
+#=PRIVATE METHODS
+
+# _audit_last_import_date(Bivio::Agent::Request req)
+#
+# Audits any club's which have used the latest import dtae as a valuation date.
+#
+sub _audit_last_import_date {
+    my($req) = @_;
+
+    # get the most recent daily quote date
+    my($date_param) = Bivio::Type::DateTime->from_sql_value(
+	    'mgfs_daily_quote_t.date_time');
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT MAX($date_param)
+            FROM mgfs_daily_quote_t", []);
+    my($date);
+    while (my $row = $sth->fetchrow_arrayref) {
+	$date = $row->[0];
+    }
+
+    # find all clubs using that date for valuations
+    $sth = Bivio::SQL::Connection->execute("
+            SELECT DISTINCT(realm_id)
+            FROM member_entry_t
+            WHERE valuation_date = $_SQL_DATE_VALUE", [$date]);
+
+    # audit that books from the date forward
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm_id) = $row->[0];
+	$realm->unauth_load_or_die(realm_id => $realm_id);
+	$realm->get_request->set_realm(Bivio::Auth::Realm->new($realm));
+
+	# print a warning message for the logs
+	print(STDERR "WARNING: auditing realm_id $realm_id after import\n");
+	$realm->audit_units($date);
+    }
+    return;
+}
+
+# _resolve_symbol_clashes(Bivio::Agent::Request req)
+#
+# Ticker clashes are resolved by appending '-D' to defunct symbols.
+#
+sub _resolve_symbol_clashes {
+    my($req) = @_;
+
+    Bivio::Util::my_require('Bivio::Biz::Model::MGFSInstrument');
+    my($mgfs_instrument) = Bivio::Biz::Model::MGFSInstrument->new($req);
     my($handled_ids) = {};
     my($sth) = Bivio::SQL::Connection->execute('
             SELECT a.mg_id, b.mg_id, a.symbol
@@ -197,72 +368,8 @@ sub post_import {
 	$handled_ids->{$id} = $id;
 	$handled_ids->{$id2} = $id2;
     }
-    Bivio::SQL::Connection->commit;
     return;
 }
-
-=for html <a name="try_to_update_or_create"></a>
-
-=head2 Bivio::Die try_to_update_or_create(hash_ref values, int update_flag)
-
-Attempts to update or create a model with the specified values.
-See from_mgfs(). Returns undef on success, a Bivio::Die instance otherwise.
-If update_flag is 0, then only a create is attempted.
-If update_flag is 1, then an existence check will be tried, then update.
-If update_flag is 2, then an existence check will be created but not updated.
-
-=cut
-
-sub try_to_update_or_create {
-    my($self, $values, $update_flag) = @_;
-
-#TODO: probably better to have a handle_die() method?
-    my($die) = Bivio::Die->catch(
-	    sub {
-		if ($update_flag) {
-		    # get the key fields from values
-		    my($sql_support) = $self->internal_get_sql_support;
-		    my(@key_names) = $sql_support->get('primary_key_names');
-
-		    my(%key) = ();
-#TODO: use the first key array?
-		    foreach my $k (@{$key_names[0]}) {
-			$key{$k} = $values->{$k};
-		    }
-
-		    # existence check, update if it already exists
-		    if ($self->unauth_load(%key)) {
-			$self->update($values) if ($update_flag == 1);
-			return;
-		    }
-		    # otherwise drop through and create it
-		}
-		$self->create($values);
-	    });
-    return $die;
-}
-
-=for html <a name="write_reject_record"></a>
-
-=head2 write_reject_record(string record)
-
-Writes the specified record to a reject file titled <model>_reject
-
-=cut
-
-sub write_reject_record {
-    my($self, $die, $record) = @_;
-
-    my($reject_file) = ref($self)."_reject";
-#TODO: need a better way to open or create for append
-    open(OUT, ">>$reject_file") || open(OUT, $reject_file)
-	    || die("can't open file $reject_file");
-    print(OUT $die->as_string."#\n#\n# invalid record\n$record");
-    close(OUT);
-    return;
-}
-
-#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 
