@@ -69,7 +69,10 @@ Bivio::IO::Config->register({
 
 =head2 static format(Bivio::Agent::TaskId task_id, Bivio::Auth::Realm realm, Bivio::Agent::Request req, boolean no_context, string path_info) : string
 
+=head2 static format(Bivio::Agent::TaskId task_id, string realm_name, Bivio::Agent::Request req, boolean no_context, string path_info) : string
+
 Transforms I<task_id> and I<realm> (if needed) into a URI.
+I<realm_name> must be a legitimate realm name.
 
 B<path_info is not escaped>
 
@@ -88,8 +91,19 @@ sub format {
 # if no context added.
     # URI contains a lone
     if ($uri =~ /\?/) {
-	# If the realm doesn't have an owner, there's a bug somewhere
-	my($ro) = $realm->format_uri;
+	Bivio::IO::Alert->die('uri requires but realm not defined')
+		    unless defined($realm);
+	my($ro);
+	if (ref($realm)) {
+	    # If the realm doesn't have an owner, there's a bug somewhere
+	    $ro = $realm->format_uri;
+	}
+	else {
+	    # We're a little strict here, since we added this overload later
+	    Bivio::IO::Alert->die($realm, ': not a simple realm name')
+			unless $realm =~ /^\w+$/;
+	    $ro = $realm;
+	}
 	# Replace everything leading up to the ? with the uri prefix
 	$uri =~ s/.*\?/$ro/g;
     }
