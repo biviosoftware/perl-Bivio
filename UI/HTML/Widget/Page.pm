@@ -62,9 +62,12 @@ L<Bivio::UI::HTML::Widget::Title|Bivio::UI::HTML::Widget::Title>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::Config;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_SHOW_TIME) = 0;
 Bivio::IO::Config->register({
@@ -152,14 +155,21 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $$buffer .= "<html><head>\n";
+    $$buffer .=
+	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
+	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
     $$buffer .= $fields->{middle};
     $fields->{body}->render($source, $buffer);
     $$buffer .= "</body></html>\n";
-    $$buffer .= sprintf("<!-- %.3fs total -->\n<!-- %.3fs db -->\n",
+    return unless $_SHOW_TIME || $_TRACE;
+
+    # Output timing info
+    my($times) = sprintf('total=%.3fs; db=%.3fs',
 	    Bivio::Agent::Request->get_current->elapsed_time,
-	    Bivio::SQL::Connection->get_db_time) if $_SHOW_TIME;
+	    Bivio::SQL::Connection->get_db_time);
+    $$buffer .= '<!-- '.$times." -->\n" if $_SHOW_TIME;
+    _trace($times) if $_TRACE;
     return;
 }
 
