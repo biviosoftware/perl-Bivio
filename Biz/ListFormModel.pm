@@ -69,6 +69,24 @@ my($_PACKAGE) = __PACKAGE__;
 # You can't change this value. ;-)
 my($_SEP) = '_';
 
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new() : Bivio::Biz::ListFormModel
+
+Creates a new ListFormModel.
+
+=cut
+
+sub new {
+    my($self) = Bivio::Biz::FormModel::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
