@@ -81,18 +81,23 @@ Logs in the I<realm_owner> and updates the cookie.
 sub execute_ok {
     my($self) = @_;
     my($properties) = $self->internal_get;
-    my($req) = $self->get_request;
-    my($cookie) = $req->get('cookie');
+    unless ($properties->{validate_called}) {
+	$self->validate;
+	return if $self->in_error;
+	# Note that "realm_owner" may be undef
+    }
 
+    my($req) = $self->get_request;
+    my($cookie) = $req->unsafe_get('cookie');
     my($new_user) = $properties->{realm_owner};
     if (defined($new_user)) {
 	# Set (Login)
-	unless ($cookie->unsafe_get($_SU_FIELD)) {
-	    # Only set cookie field if not already set.  This keeps original
-	    # user and doesn't allow someone to su to an admin and then su
-	    # as that admin.
+	unless ($req->unsafe_get('super_user_id')) {
+	    # Only set super_user_id field if not already set.  This keeps
+	    # original user and doesn't allow someone to su to an admin and
+	    # then su as that admin.
 	    my($super_user_id) = $req->get('auth_user')->get('realm_id');
-	    $cookie->put($_SU_FIELD => $super_user_id);
+	    $cookie->put($_SU_FIELD => $super_user_id) if $cookie;
 	    $req->put(super_user_id => $super_user_id);
 	}
 
@@ -109,7 +114,7 @@ sub execute_ok {
     my($super_user_id) = $req->unsafe_get('super_user_id');
     if ($super_user_id) {
 	$req->delete('super_user_id');
-	$cookie->delete($_SU_FIELD);
+	$cookie->delete($_SU_FIELD) if $cookie;
 	# Load the super user and unset
 	my($new_user) = Bivio::Biz::Model::RealmOwner->new($req);
 	if ($new_user->unauth_load(
@@ -120,7 +125,9 @@ sub execute_ok {
 	    Bivio::Biz::Model::LoginForm->execute($req,
 		    {realm_owner => $new_user});
 	    $req->client_redirect(Bivio::Agent::TaskId::ADM_SUBSTITUTE_USER());
-	    # DOES NOT RETURN
+	    # Job::Dispatcher may ignore_redirects.  Forms must be coded
+	    # specially.
+	    return 0;
 	}
 
 	# Unable to load super user (no permissions), so ordinary logout
@@ -162,6 +169,12 @@ sub internal_initialize {
 		type => 'Bivio::Biz::Model::RealmOwner',
 		constraint => 'NONE',
 	    },
+	    {
+		# Do not set this if validate was not called
+		name => 'validate_called',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	],
 	auth_id => ['RealmOwner.realm_id'],
 	primary_key => [
@@ -183,14 +196,12 @@ Look up the user by email, user_id, or name.
 sub validate {
     my($self) = @_;
     my($properties) = $self->internal_get();
+    $properties->{validate_called} = 1;
     return unless defined($properties->{login});
 
     # Emulate what happens in Type::RealmName
     $properties->{login} = lc($properties->{login});
     $properties->{login} =~ s/\s+//g;
-
-    # Backwards compatibility (we used to require -admin to su to a club)
-    $properties->{login} =~ s/-admin$//;
 
     # Try to load
     my($login) = $properties->{'login'};
@@ -209,8 +220,9 @@ sub validate {
 	# Got a club?  Go to first admin
 	if ($owner->get('realm_type') == Bivio::Auth::RealmType::CLUB()) {
 	    return if $owner->unauth_load(realm_id =>
-		    Bivio::Biz::Model::RealmAdminList->get_first_admin($owner),
-		    realm_type => Bivio::Auth::RealmType::USER());
+		Bivio::Biz::Model->get_instance('RealmAdminList')
+		->get_first_admin($owner),
+		realm_type => Bivio::Auth::RealmType::USER());
 	}
     }
     $self->internal_put_error('login', Bivio::TypeError::NOT_FOUND());
