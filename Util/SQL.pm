@@ -43,15 +43,7 @@ C<Bivio::Util::SQL> executes SQL using the configured db.
 
 =head2 USAGE : string
 
-Returns:
-
-  usage: b-sql [options] command [args...]
-  commands:
-    create_db -- initializes database (must be run from files/ddl directory)
-    destroy_db -- drops all the tables, indexes, and sequences created
-    drop -- drops objects which would be created by running input
-    drop_and_run -- calls drop then run
-    run -- executes sql contained in input and dies on error
+Returns usage.
 
 =cut
 
@@ -63,6 +55,8 @@ commands:
     destroy_db -- drops all the tables, indexes, and sequences created
     drop -- drops objects which would be created by running input
     drop_and_run -- calls drop then run
+    export_db file -- exports database (only works for pg right now)
+    import_db file -- imports database
     run -- executes sql contained in input and dies on error
 EOF
 }
@@ -189,6 +183,28 @@ sub drop_and_run {
     return $self->run;
 }
 
+=for html <a name="export_db"></a>
+
+=head2 export_db(string dir) : string
+
+Dumps the current database to I<dir> (or '.') to a file of the form:
+
+   <db>-<datetime>.pg_dump
+
+=cut
+
+sub export_db {
+    my($self, $dir) = @_;
+    $self->get_request;
+    my($db) = Bivio::SQL::Connection->get_dbi_config;
+    my($f) = ($dir || '.') . '/' . $db->{database} . '-'
+	. Bivio::Type::DateTime->local_now_as_file_name . '.pg_dump';
+    $self->piped_exec(
+	"env PGUSER=$db->{user} pg_dump --clean --format=c --blobs "
+	. " --file='$f' $db->{database}");
+    return "Exported $db->{database} to $f\n";
+}
+
 =for html <a name="init_realm_role"></a>
 
 =head2 init_realm_role()
@@ -221,6 +237,25 @@ sub init_realm_role {
         $cmd = '';
     }
     return;
+}
+
+=for html <a name="import_db"></a>
+
+=head2 import_db(string file) : string
+
+Restores the database from file.
+
+=cut
+
+sub import_db {
+    my($self, $file) = @_;
+    $self->get_request;
+    my($db) = Bivio::SQL::Connection->get_dbi_config;
+    $self->are_you_sure("DROP DATABASE $db->{database} AND RESTORE?");
+    $self->piped_exec(
+	"env PGUSER=$db->{user} pg_restore --clean --format=c "
+	. " -d $db->{database} $file");
+    return "Imported $file into $db->{database}\n";
 }
 
 =for html <a name="realm_role_config"></a>
