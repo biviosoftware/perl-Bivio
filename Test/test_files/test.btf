@@ -1,3 +1,0 @@
-# A test to see if eval-ing works
-
-_trace("Statements did get properly eval-ed. \n") if $_TRACE;

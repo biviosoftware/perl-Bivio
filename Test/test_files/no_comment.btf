@@ -1,1 +1,0 @@
-_trace ("This file (which just prints) does in fact get properly eval-ed. \n") if $_TRACE;
