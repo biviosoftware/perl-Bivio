@@ -420,17 +420,9 @@ sub _die {
 #
 sub _eval_args {
     my($self) = shift;
-    return map({
-	my($x) = $_;
-	my($i) = 10;
-	while (ref($x) eq 'ARRAY') {
-	    $x = $self->get_widget_value(@$x);
-	    Bivio::Die->die(
-		'infinite loop trying to unwind widget value: ', $_,
-	    ) if --$i < 0;
-	}
-	$x;
-    } @_);
+    return map {
+	ref($_) eq 'ARRAY' ? $self->get_widget_value(@$_) : $_;
+    } @_;
 }
 
 =head1 COPYRIGHT
