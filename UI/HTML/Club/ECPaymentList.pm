@@ -70,7 +70,7 @@ sub new {
                 column_align => 'LEFT',
             }],
             ['RealmOwner.name', {
-                column_heading => 'ECPayment.name',
+                column_heading => 'ECPayment.user',
                 column_align => 'CENTER',
             }],
             ['ECPayment.payment_type', {
@@ -80,17 +80,14 @@ sub new {
                         my($list) = shift->get_list_model;
                         return defined($list->get('ECPayment.ec_subscription_id'));
                     }], {
+#TODO: Want to display subscription name, eg. "AccountSync"
                         1 => $self->load_and_new('Enum', {
                             field => 'ECPayment.payment_type',
                         }),
-                        0 => Bivio::UI::HTML::Widget::ListActions->new({
-                            values => [
-                                ['view detail',
-                                         'CLUB_ADMIN_PAYMENT_DETAIL',
-                                         'THIS_DETAIL'],
-                            ],
-                        }),
+                    }, $self->load_and_new('Enum', {
+                        field => 'ECPayment.payment_type',
                     }),
+                       ),
             }],
             ['ECPayment.status', {
                 column_align => 'CENTER',
