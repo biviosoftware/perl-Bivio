@@ -356,29 +356,42 @@ sub format_mailto {
 
 =for html <a name="format_uri"></a>
 
-=head2 abstract format_uri(Bivio::Agent::TaskId task_id) : string
+=head2 format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
 
-=head2 abstract format_uri(Bivio::Agent::TaskId task_id, string query) : string
-
-=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query) : string
-
-=head2 abstract format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
-
-=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
+=head2 format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
 If I<query> is not passed, will use this request's query string.
-If I<auth_realm> is not passed, this request's realm will be used.
-If I<auth_realm> is C<undef>, the task must not be in an owned realm.
+If I<auth_realm> is C<undef>, request's realm will be used.
 
-If I<task_id>, I<query> or I<auth_realm> is an array_ref, will call
-L<get_widget_value|"get_widget_value"> with array value to get value.
+If the task doesn't have a uri, returns undef.
 
 =cut
 
 sub format_uri {
-    CORE::die('abstract method');
+    my($self, $task_id, $query, $auth_realm) = @_;
+    # Note: Bivio::Agent::Mail::Request may call this.
+    $task_id = $self->get_widget_value(@$task_id) if ref($task_id) eq 'ARRAY';
+    $query = $self->get_widget_value(@$query) if ref($query) eq 'ARRAY';
+    $auth_realm = $self->get_widget_value(@$auth_realm)
+	    if ref($auth_realm) eq 'ARRAY';
+    $task_id = $self->get('task_id') unless $task_id;
+    # Allow the realm to be undef
+    my($uri) = Bivio::Agent::HTTP::Location->format(
+	    $task_id, int(@_) >= 4 ? $auth_realm :
+	    $self->internal_get_realm_for_task($task_id), $self);
+#TODO: Is this right?
+#PJM: I think so
+#RJN: Not now??? 12/15/99
+    $query = $self->get('query') unless int(@_) >= 3;
+    return $uri unless defined($query);
+    $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
+
+    # The uri may have a query string already, if the form requires context.
+    # Put the $query first, since the context is long and ugly
+    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+    return $uri;
 }
 
 =for html <a name="get_auth_role"></a>
