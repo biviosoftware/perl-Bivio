@@ -78,17 +78,6 @@ sub merge_overrides {
 	},
 	$proto->merge_class_loader({
 	    delegates => {
-		'Bivio::Agent::HTTP::Cookie' =>
-		    'Bivio::Delegate::PersistentCookie',
-		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
-	    },
-	    maps => {
-		Model => ['ColoSLA::Model'],
-		Type => ['ColoSLA::Type'],
-	    },
-	}),
-	$proto->merge_class_loader({
-	    delegates => {
 		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
 		'Bivio::UI::HTML::FormErrors' =>
