@@ -66,7 +66,29 @@ If C<BROWSER_HTML3> (read Netscape), will render a partial style sheet.
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-
+my($_TAGS) = join(',', qw(
+    address
+    blockquote
+    body
+    button
+    center
+    div
+    dl
+    input
+    ins
+    kbd
+    label
+    legend
+    menu
+    multicol
+    ol
+    p
+    pre
+    select
+    td
+    textarea
+    ul
+));
 
 =head1 FACTORIES
 
@@ -132,7 +154,7 @@ sub render {
     # Font
     my($font) = Bivio::UI::Font->get_attrs('default', $req);
     if ($font) {
-	$$buffer .= 'td,a:link,p,body {';
+	$$buffer .= $_TAGS." {\n";
 	# If the value isn't set or is zero, then don't render.
 	$$buffer .= ' font-family : '.$font->{family}.';' if $font->{family};
 	$$buffer .= ' font-size : '.$font->{size}.';'
