@@ -198,7 +198,7 @@ e-mailed except if recipients are not set.
 =cut
 
 sub send {
-    my($self, $email_errors) = @_;
+    my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($msg) = $self->as_string;
     Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0, 
