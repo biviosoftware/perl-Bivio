@@ -36,14 +36,32 @@ on its end date.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="INFINITE_END_DATE"></a>
+
+=head2 INFINITE_END_DATE : string
+
+End of infinite free trial.
+
+=cut
+
+my($_INFINITE_END_DATE);
+sub INFINITE_END_DATE {
+    # Needs to be a bit less than max for the software to work
+    return $_INFINITE_END_DATE
+	||= Bivio::Type::Date ->add_days(Bivio::Type::Date->get_max, -366);
+}
+
 #=IMPORTS
 use Bivio::Type::Date;
 use Bivio::Type::ECRenewalState;
 
 #=VARIABLES
 my($_D) = 'Bivio::Type::Date';
-# Needs to be a bit less than max for the software to work
-my($_INFINITE_END_DATE) = $_D->add_days($_D->get_max, -366);
 
 =head1 METHODS
 
@@ -98,7 +116,7 @@ Returns true if the subscription is infinite.
 
 sub is_infinite {
     my($self) = @_;
-    return $self->get('end_date') eq $_INFINITE_END_DATE ? 1 : 0;
+    return $self->get('end_date') eq $self->INFINITE_END_DATE ? 1 : 0;
 }
 
 =for html <a name="make_infinite"></a>
@@ -111,7 +129,7 @@ Updates to an infinite subscription.
 
 sub make_infinite {
     my($self) = @_;
-    return $self->update({end_date => $_INFINITE_END_DATE});
+    return $self->update({end_date => $self->INFINITE_END_DATE});
 }
 
 #=PRIVATE METHODS
