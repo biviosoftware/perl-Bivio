@@ -1,67 +1,48 @@
-# -*-perl-*-
-#
-# $Id$
-#
+#!/usr/bin/perl -w
 use strict;
-
-BEGIN { $| = 1; print "1..2\n"; }
-my($loaded) = 0;
-END {print "not ok 1\n" unless $loaded;}
+use Bivio::Test;
 use Bivio::SQL::Connection;
-$loaded = 1;
-print "ok 1\n";
-
-######################### End of black magic.
-
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::TypeError;
-use Bivio::IO::Config;
-
 
 my($_TABLE) = 't_connection_t';
-Bivio::Die->eval(sub {
-    Bivio::SQL::Connection->execute("drop table $_TABLE");
-});
-Bivio::SQL::Connection->execute(<<"EOF");
-create table $_TABLE (
-   f1 number,
-   f2 number,
-   unique(f1, f2)
-)
+Bivio::Test->unit([
+    Bivio::SQL::Connection->connect('dev') => [
+	execute => [
+	    # Drop the table first, we don't care about the result
+	    ["drop table $_TABLE"] => sub {1},
+	    # We expect to get a statement back.
+	    [<<"EOF"] => \&_expect_statement,
+		create table $_TABLE (
+		    f1 numeric(8),
+		    f2 numeric(8),
+		    unique(f1, f2)
+		)
 EOF
-Bivio::SQL::Connection->execute("insert into $_TABLE (f1, f2) values (1, 1)");
-my($die) = Bivio::Die->catch(sub {
-    Bivio::SQL::Connection->execute(
-    "insert into $_TABLE (f1, f2) values (1, 1)");
-});
-if ($die) {
-    if ($die->get('code') == Bivio::TypeError::EXISTS()) {
-	my($table) = $die->get('attrs')->{table};
-	my($cols) = $die->get('attrs')->{columns};
-	if ($table) {
-	    if ($table eq $_TABLE) {
-		my(@c) = sort(@$cols);
-		if ("@c" eq "f1 f2") {
-		    # Whew!  We got there!  Yow baby!
-		    print "ok 2\n";
-		}
-		else {
-		    print "not ok 2 (cols=@c)\n";
-		}
-	    }
-	    else {
-		print "not ok 2 (table=$table)\n";
-	    }
-	}
-	else {
-	    print "not ok 2 (no table)\n";
-	}
-    }
-    else {
-	print "not ok 2 (code=", $die->get('code')->get_name, ")\n";
-    }
+	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
+	    	=> \&_expect_statement,
+	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
+	        => Bivio::DieCode->DB_CONSTRAINT,
+	],
+	execute => [
+	    ["update $_TABLE set f2 = 2 where f2 = 1"] => \&_expect_one_row,
+	    ["select f2 from $_TABLE where f2 = 13"] => sub {
+		my($proto, $method, $params, $result) = @_;
+		return 0 unless _expect_statement(@_);
+		return $result->[0]->fetchrow_arrayref->[0] eq 13 ? 1 : 0;
+	    },
+	    ["delete from $_TABLE where f1 = 1"] => \&_expect_one_row,
+	],
+    ],
+]);
+
+sub _expect_statement {
+    my($proto, $method, $params, $result) = @_;
+    return 0 unless ref($result) eq 'ARRAY';
+    my($st) = $result->[0];
+    return ref($st) && UNIVERSAL::isa($st, 'DBI::st') ? 1 : 0;
 }
-else {
-    print "not ok 2 (no die)\n";
+
+sub _expect_one_row {
+    my($proto, $method, $params, $result) = @_;
+    return 0 unless _expect_statement(@_);
+    return $result->[0]->rows == 1 ? 1 : 0;
 }
