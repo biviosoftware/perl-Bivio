@@ -191,15 +191,15 @@ sub get_standard_footer {
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
-	    [
-		' ',
-	    ],
-	    [
-		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
-			cell_expand => 1,
-			cell_bgcolor => 'footer_line',
-		       ),
-	    ],
+#	    [
+#		' ',
+#	    ],
+#	    [
+#		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
+#			cell_expand => 1,
+#			cell_bgcolor => 'footer_line',
+#		       ),
+#	    ],
 	    [
 		Bivio::UI::HTML::Widget->toggle_secure(),
 		Bivio::UI::HTML::Widget::Grid->new({
@@ -422,21 +422,13 @@ sub get_standard_page {
 
 =head2 static get_standard_style() : Bivio::UI::HTML::Widget
 
-Returns the standard widget for style.  Renders "hover" of
-links in I<page_link_hover> color.
+Returns the standard widget for style.
 
 =cut
 
 sub get_standard_style {
-    return Bivio::UI::HTML::Widget->join([
-	"<style>\n",
-	"<!--\n",
-        "a:hover {\n",
-	['Bivio::UI::Color', '->format_html', 'page_link_hover', 'color:'],
-        "}\n",
-        "-->\n",
-	"</style>\n",
-    ]);
+    Bivio::UI::HTML::Widget->load_class('Style');
+    return Bivio::UI::HTML::Widget::Style->new;
 }
 
 =for html <a name="get_value"></a>
@@ -474,10 +466,10 @@ sub initialization_complete {
     	    header_height logo_icon site_name home_alt_text)) {
 	push(@bad, $n) unless defined($self->get_value($n));
     }
-    return unless @bad;
-
-    Bivio::IO::Alert->die($self, ': missing names: ', \@bad);
-    # DOES NOT RETURN
+    Bivio::IO::Alert->die($self, ': missing names: ', \@bad)
+		if @bad;
+    $self->SUPER::initialization_complete();
+    return;
 }
 
 =for html <a name="initialize_standard_support"></a>
@@ -495,24 +487,23 @@ sub initialize_standard_support {
     # widget.  It is not a required field.  Only if you are using
     # ImageMenu.
     my($icon) = $self->get_facade->get('Bivio::UI::Icon');
-    $self->create_group($icon->get_width($self->get_value('logo_icon'))
-	    + $icon->get_width('grad_y'),
-	    'text_menu_base_offset');
+    $self->group(text_menu_base_offset => 
+	    $icon->get_width($self->get_value('logo_icon'))
+	    + $icon->get_width('grad_y'));
 
-    $self->create_group(Bivio::UI::HTML::Widget->image('grad_y', ''),
-	    'image_menu_left_cell');
+    $self->group(image_menu_left_cell => 
+	    Bivio::UI::HTML::Widget->image('grad_y', ''));;
 
     # Used by standard header
-    $self->create_group(
+    $self->group(logo_icon_width_as_html =>
 	    $self->get_facade->get('Bivio::UI::Icon')
-	    ->get_width_as_html($self->get_value('logo_icon')),
-	    'logo_icon_width_as_html');
+	    ->get_width_as_html($self->get_value('logo_icon')));
     return;
 }
 
 =for html <a name="internal_initialize_value"></a>
 
-=head2 internal_initialize_value(hash_ref value, string name)
+=head2 internal_initialize_value(hash_ref value)
 
 There are three types of values at this time: strings,
 subs, and widgets.  Widgets are initialized by this module.
@@ -524,7 +515,7 @@ We check to make sure that the "widget" is truly a widget.
 =cut
 
 sub internal_initialize_value {
-    my($self, $value, $name) = @_;
+    my($self, $value) = @_;
 
     my($v) = $value->{config};
 

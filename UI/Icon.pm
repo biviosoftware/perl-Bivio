@@ -292,25 +292,26 @@ sub initialization_complete {
     while (my($name, $file) = each(%map)) {
 	my($v) = $self->internal_unsafe_get_value($name);
 	unless (defined($v)) {
-	    $self->create_group($file, $name);
+	    $self->group($name, $file);
 	}
 	elsif ($v->{config} ne $file) {
-	    $self->regroup($file, $name);
+	    $self->regroup($name, $file);
 	}
     }
+    $self->SUPER::initialization_complete();
     return;
 }
 
 =for html <a name="internal_initialize_value"></a>
 
-=head2 internal_initialize_value(hash_ref value, string name)
+=head2 internal_initialize_value(hash_ref value)
 
 Initializes the internal value from the configuration.
 
 =cut
 
 sub internal_initialize_value {
-    my($self, $value, $name) = @_;
+    my($self, $value) = @_;
     my($file) = $value->{config};
 
     my($f) = $_DIR.'/'.$file;
@@ -339,8 +340,8 @@ sub internal_initialize_value {
 	    return;
 	}
 
-	# Let 'em know and then put undef in the table
-	Bivio::IO::Alert->warn($f, ': Image::Size error: ', $err);
+	# Let 'em know and then put undef in the table.
+	$self->bad_value($value, 'Image::Size error: ', $err);
     }
 
     # Invalid or UNDEF_CONFIG

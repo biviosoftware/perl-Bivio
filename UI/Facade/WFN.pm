@@ -39,42 +39,10 @@ __PACKAGE__->new({
     uri => 'aristau',
     is_production => 0,
     'Bivio::UI::Color' => {
-	clone => undef,
 	initialize => sub {
 	    my($fc) = @_;
-	    $fc->create_group(-1, qw(
-		    list_form_even_row_bg
-		    list_form_odd_row_bg
-	    ));
-	    $fc->create_group(0xFFFFFF, qw(
-                    page_bg
-		    image_menu_separator
-		    celebrity_box_title
-		    profile_box_title
-		    celebrity_box_text_bg
-		    profile_box_text_bg
-            ));
-	    $fc->create_group(0x990000, qw(
-		    error
-		    warning
-	    ));
-	    $fc->create_group(0x000000, qw(
-    		    page_text
-            ));
-	    $fc->create_group(0x009999, qw(
-		    stripe_above_menu
-		    celebrity_disclaimer
-		    decor_disclaimer
-		    tax_disclaimer
-            ));
-	    # These are links, so don't set the color
-	    $fc->create_group(-1, qw(
-		    footer_menu
-	            user_name
-	            text_menu_font
-	            task_list_label_link
-            ));
-	    $fc->create_group(0x333399, qw(
+            $fc->value(page_link_hover => -1);
+	    $fc->regroup([qw(
 	            page_link
 	            page_vlink
 	            page_alink
@@ -85,145 +53,31 @@ __PACKAGE__->new({
 	            profile_box
 	            description_label
 	            task_list_label_no_link
-            ));
-	    $fc->create_group(0x336633, qw(
+                    realm_name
+            )],
+		    0x333399);
+	    $fc->regroup([qw(
 	            task_list_heading
 	            page_heading
                     table_heading
-            ));
-            $fc->create_group(0xEEEEEE, qw(
-                    icon_text_ia
-            ));
-            $fc->create_group(0x339933, qw(
-                    summary_line
-            ));
-	    $fc->create_group(0xcccccc, qw(
-	            table_separator
-            ));
-            $fc->create_group(0xFFFFFF, qw(
-                    table_even_row_bg
-            ));
-            $fc->create_group(0xFFFFCC, qw(
-                    table_odd_row_bg
-            ));
-            $fc->create_group(0x333399, qw(
-                    realm_name
-            ));
-            $fc->create_group(0xFFCC33, qw(
-                    image_menu_bg
-                    text_menu_line
-            ));
+            )],
+		    0x336633);
+
+	    #
+	    # Table
+	    #
+            $fc->value(summary_line => 0x339933);
+	    $fc->value(table_separator => 0xcccccc);
+            $fc->value(table_odd_row_bg => 0xFFFFCC);
+            $fc->value(table_even_row_bg => -1);
+
 	    return;
 	},
     },
     'Bivio::UI::Font' => {
-	clone => undef,
 	initialize => sub {
 	    my($fc) = @_;
-	    my($ss) = undef;
-	    $fc->create_group([$ss, 'celebrity_box_title', 'class=content'],
-		    'celebrity_box_title');
-	    $fc->create_group([$ss, 'profile_box_title', 'strong', 'class=content'],
-		    'profile_box_title');
-	    $fc->create_group([$ss, 'celebrity_disclaimer', 'small', 'class=content'],
-		    'celebrity_disclaimer');
-	    $fc->create_group([$ss, 'decor_disclaimer', 'small', 'class=content'],
-		    'decor_disclaimer');
-	    $fc->create_group([$ss, 'detail_chooser', 'strong', 'class=content'],
-		    'detail_chooser');
-	    $fc->create_group([$ss, 'error', 'big', 'strong', 'class=content'], qw(
-		    error_icon
-	            substitute_user
-            ));
-	    $fc->create_group([$ss, 'footer_menu', 'small', 'class=content'],
-		    'footer_menu');
-	    $fc->create_group([$ss, 'page_heading', 'small', 'class=content'],
-		    'checked_icon');
-	    $fc->create_group([$ss, 'page_heading', 'strong', 'class=content'],
-		    'page_heading');
-	    $fc->create_group([$ss, 'realm_name', 'strong', 'class=content'],
-		    'realm_name');
-	    $fc->create_group([$ss, 'tax_disclaimer', 'i', 'class=content'],
-		    'tax_disclaimer');
-	    $fc->create_group([$ss, 'text_menu_font', 'strong', 'class=content'], qw(
-		    prev_next_bar_link
-		    text_menu_selected
-            ));
-	    $fc->create_group([$ss, 'text_menu_font', 'class=content'],
-		    'text_menu_normal');
-	    $fc->create_group([$ss, 'user_name', 'big', 'class=content'],
-		    'user_name');
-	    $fc->create_group([$ss, undef, 'small', 'class=content'], qw(
-		    celebrity_box_text
-		    profile_box_text
-		    copyright_and_disclaimer
-		    report_footer
-		    time
-            ));
-	    $fc->create_group([$ss, 'table_heading',
-		'strong', 'class=content'], qw(
-		    table_heading
-		    normal_table_heading
-	    ));
-	    $fc->create_group([$ss, undef, 'class=content'], qw(
-		    form_submit
-                    message_subject
-                    prev_next_bar_text
-            ));
-	    $fc->create_group([undef, 'description_label', 'strong',
-		'class=content'],
-		    'description_label');
-	    $fc->create_group([undef, 'error', 'b', 'class=content'], qw(
-		    error
-		    form_field_error
-		    warning
-            ));
-	    $fc->create_group([undef, 'error', 'i', 'class=content'],
-		    'form_field_error_label');
-	    $fc->create_group([undef, 'error', 'small', 'class=content'],
-		    'list_error',
-		    'checkbox_error');
-	    $fc->create_group([undef, 'form_field_label_in_text', 'strong',
-		'class=content'],
-		    'form_field_label_in_text');
-	    $fc->create_group([undef, 'icon_text_ia', 'class=content'],
-		    'icon_text_ia');
-	    $fc->create_group([undef, 'page_text', 'class=content'],
-		    'realm_chooser_text');
-	    $fc->create_group([undef, 'task_list_label_link', 'class=content'],
-		    'task_list_label_link');
-	    $fc->create_group([undef, 'task_list_label_no_link', 'class=content'],
-		    'task_list_label_no_link');
-	    $fc->create_group([undef, 'task_list_heading', 'strong',
-		'class=content'],
-		    'task_list_heading');
-	    $fc->create_group([undef, undef, 'b', 'class=content'],
-		    'label_in_text');
-	    $fc->create_group([undef, undef, 'i', 'class=content'],
-		    'italic');
-	    $fc->create_group([undef, undef, 'small', 'class=content'], qw(
-		    file_tree_bytes
-		    list_action
-		    lookup_button
-            ));
-	    $fc->create_group([undef, undef, 'strong', 'class=content'], qw(
-                    action_bar_string
-                    strong
-                    table_row_title
-            ));
-	    $fc->create_group([undef, undef, 'class=content'], qw(
-		    form_field_description
-		    form_field_label
-		    table_cell
-		    number_cell
-                    action_button
-	    	    form_field_example
-		    report_page_heading
-	            radio
-                    descriptive_page
-                    page_legend
-                    checkbox
-            ));
+	    $fc->value(default => ['class=content']);
 	    return;
 	},
     },
@@ -234,15 +88,15 @@ __PACKAGE__->new({
 	    my($name) = 'WFN Investment Club Exchange';
 
 	    # Some required strings
-	    $fc->create_group('wfn', 'logo_icon');
-	    $fc->create_group($name, 'site_name');
-	    $fc->create_group($name.' home', 'home_alt_text');
-	    $fc->create_group(0, 'page_left_margin');
-	    $fc->create_group('left', 'table_default_align');
-	    $fc->create_group(1, 'scene_show_profile');
-	    $fc->create_group(undef, 'scene_header');
+	    $fc->group(logo_icon => 'wfn');
+	    $fc->group(site_name => $name);
+	    $fc->group(home_alt_text => $name.' home');
+	    $fc->group(page_left_margin => 0);
+	    $fc->group(table_default_align => 'left');
+	    $fc->group(scene_show_profile => 1);
+	    $fc->group(scene_header => undef);
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->join(
+	    $fc->group(content_widget => Bivio::UI::HTML::Widget->join(
 		    Bivio::UI::HTML::Widget->indirect(
 			    ['page_image_menu']
 		    ),
@@ -252,20 +106,18 @@ __PACKAGE__->new({
 		    Bivio::UI::HTML::Widget->indirect(
 			    ['page_scene']
 		    ),
-		   ),
-		    'content_widget');
+		   ));
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->string(
+	    $fc->group(realm_widget => Bivio::UI::HTML::Widget->string(
 		    [sub {my($source) = @_;
 			  my($o) = $source->get('auth_realm')->unsafe_get(
 				  'owner');
 			  return $o ? $o->get('display_name') : undef;
 		      }],
 		    'realm_name'
-		   )->put(undef_value => $name),
-		    'realm_widget');
+		   )->put(undef_value => $name));
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->director(
+	    $fc->group(login_widget => Bivio::UI::HTML::Widget->director(
 		    ['auth_user'],
 		    {},
 		    Bivio::UI::HTML::Widget->link(
@@ -281,44 +133,39 @@ __PACKAGE__->new({
 				    'Sign on to '.$name,
 				   ),
 			    'LOGIN'
-			   )
-		   ),
-		    'login_widget');
+			   ),
+		   ));
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->link(
+	    $fc->group(register_widget => Bivio::UI::HTML::Widget->link(
 		    Bivio::UI::HTML::Widget->image(
 			    'shared_join',
 			    'Register with '.$name,
 			   ),
 		    'USER_CREATE'
-		   ),
-		    'register_widget');
+		   ));
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->link(
+	    $fc->group(help_widget => Bivio::UI::HTML::Widget->link(
 		    Bivio::UI::HTML::Widget->image(
 			    'shared_help',
 			    'Get help using '.$name,
 			   ),
 		    ['->format_help_uri'],
-		   ),
-		    'help_widget');
+		   ));
 
 	    # These are required names, which are checked by page.
-	    $fc->create_group($fc->widget_from_template([<DATA>]),
-		    'page_widget');
+	    $fc->group(page_widget => $fc->widget_from_template([<DATA>]));
 	    # Avoid irrelevant perl warnings/errors
 	    close(DATA);
 
-	    $fc->create_group($fc->get_standard_header, 'header_widget');
-	    $fc->create_group($fc->get_standard_logo, 'logo_widget');
-	    $fc->create_group($fc->get_standard_head, 'head_widget');
-	    $fc->create_group($fc->get_standard_header_height,
-		    'header_height');
+	    $fc->group(header_widget => $fc->get_standard_header);
+	    $fc->group(logo_widget => $fc->get_standard_logo);
+	    $fc->group(head_widget => $fc->get_standard_head);
+	    $fc->group(header_height => $fc->get_standard_header_height);
 
-	    $fc->create_group(0, 'text_menu_base_offset');
-	    $fc->create_group(0, 'image_menu_left_cell');
+	    $fc->group(text_menu_base_offset => 0);
+	    $fc->group(image_menu_left_cell => 0);
 
-	    $fc->create_group(' width=0', 'logo_icon_width_as_html');
+	    $fc->group(logo_icon_width_as_html => ' width=0');
 	    return;
 	},
     },

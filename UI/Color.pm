@@ -73,7 +73,11 @@ If I<attr> contains a ':', returns a style attribute instead, e.g.
 
     color: "#abcdef";
 
-If I<thing> returns false (zero or C<undef>), returns an empty string.
+If I<attr> is the empty string, returns just the number sans quotes:
+
+    #abcdef
+
+If I<name> is false (0, C<undef>, ''), returns an empty string.
 
 See
 L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
@@ -97,19 +101,19 @@ sub format_html {
 
 =for html <a name="internal_initialize_value"></a>
 
-=head2 internal_initialize_value(hash_ref value, string name)
+=head2 internal_initialize_value(hash_ref value)
 
 Outputs a warning if not a valid value.  Always successful.
 
 =cut
 
 sub internal_initialize_value {
-    my($self, $value, $name) = @_;
+    my($self, $value) = @_;
     my($v) = $value->{config};
     unless ($v =~ /^-?\d+$/) {
-	$self->bad_value($value, $name, 'not an integer');
-	# We set the value to avoid cascading errors in Facade clones
-	$v = $value->{config} = -1;
+	$self->bad_value($value, 'not an integer');
+	# Mark as "no color"
+	$v = -1;
     }
 
     # Cache the most commonly used values
@@ -127,7 +131,8 @@ sub internal_initialize_value {
 sub _format_html {
     my($num, $attr) = @_;
     return '' if $num < 0;
-    return sprintf($attr =~ /:/ ? '%s "#%06X"'."\n" : ' %s="#%06X"',
+    return sprintf('#%06X', $num) unless length($attr);
+    return sprintf($attr =~ /:/ ? '%s "#%06X";' : ' %s="#%06X"',
 	    $attr, $num);
 }
 

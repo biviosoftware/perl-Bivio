@@ -39,191 +39,39 @@ __PACKAGE__->new({
     uri => 'muri',
     is_production => 0,
     'Bivio::UI::Color' => {
-	clone => undef,
 	initialize => sub {
 	    my($fc) = @_;
-	    $fc->create_group(-1, qw(
-		    list_form_even_row_bg
-		    list_form_odd_row_bg
-	    ));
-	    $fc->create_group(0xFFFFFF, qw(
-                    page_bg
-		    image_menu_separator
-		    celebrity_box_title
-		    profile_box_title
-		    celebrity_box_text_bg
-		    profile_box_text_bg
-            ));
-	    $fc->create_group(0x990000, qw(
-		    error
-		    warning
-	    ));
-	    $fc->create_group(0x000000, qw(
-    		    page_text
-            ));
-	    $fc->create_group(0x009999, qw(
-		    stripe_above_menu
-		    celebrity_disclaimer
-		    decor_disclaimer
-		    tax_disclaimer
-            ));
-	    # These are links, so don't set the color
-	    $fc->create_group(-1, qw(
-		    footer_menu
-	            user_name
-	            text_menu_font
-	            task_list_label_link
-            ));
-	    $fc->create_group(0x333399, qw(
-	            page_link
-	            page_vlink
-	            page_alink
-	            line_above_menu
-	            action_bar_border
-	            detail_chooser
-	            form_field_label_in_text
-	            celebrity_box
-	            profile_box
-	            description_label
-	            task_list_label_no_link
-            ));
-	    $fc->create_group(0x336633, qw(
-	            task_list_heading
-	            page_heading
-                    table_heading
-            ));
-            $fc->create_group(0xEEEEEE, qw(
-                    icon_text_ia
-            ));
-            $fc->create_group(0x339933, qw(
-                    summary_line
-            ));
-	    $fc->create_group(0xcccccc, qw(
-	            table_separator
-            ));
-            $fc->create_group(0xFFFFFF, qw(
-                    table_even_row_bg
-            ));
-            $fc->create_group(0xFFFFCC, qw(
-                    table_odd_row_bg
-            ));
-            $fc->create_group(0x333399, qw(
-                    realm_name
-            ));
-            $fc->create_group(0xFFCC33, qw(
-                    image_menu_bg
-                    text_menu_line
-            ));
+	    #
+	    # Links
+	    #
+            $fc->value(page_link_hover => -1);
+	    $fc->value(page_vlink => 0x003300);
+
+	    #
+	    # Text
+	    #
+	    # Basic emphasized text
+	    $fc->value(page_heading => 0x336633);
+            $fc->value(realm_name =>  0x333399);
+
+	    #
+	    # Table
+	    #
+	    $fc->value(table_heading => 0x336633);
+            $fc->value(table_even_row_bg => -1);
+            $fc->value(table_odd_row_bg => 0xFFFFCC);
+	    $fc->value(table_separator => 0xcccccc);
+            $fc->value(summary_line => 0x339933);
 	    return;
 	},
     },
     'Bivio::UI::Font' => {
-	clone => undef,
 	initialize => sub {
 	    my($fc) = @_;
-	    my($ss) = 'arial,sans-serif';
-	    $fc->create_group([$ss, 'celebrity_box_title', 'size=2'],
-		    'celebrity_box_title');
-	    $fc->create_group([$ss, 'profile_box_title', 'strong', 'size=2'],
-		    'profile_box_title');
-	    $fc->create_group([$ss, 'celebrity_disclaimer', 'size=1', ],
-		    'celebrity_disclaimer');
-	    $fc->create_group([$ss, undef, 'size=1', ],
-		    'decor_disclaimer');
-	    $fc->create_group([$ss, 'detail_chooser', 'strong', 'size=2'],
-		    'detail_chooser');
-	    $fc->create_group([$ss, 'error', 'big', 'strong', 'size=2'], qw(
-		    error_icon
-	            substitute_user
-            ));
-	    $fc->create_group([$ss, 'footer_menu', 'size=1', ],
-		    'footer_menu');
-	    $fc->create_group([$ss, 'page_heading', 'size=1', ],
-		    'checked_icon');
-	    $fc->create_group([$ss, 'page_heading', 'strong', 'size=2'],
-		    'page_heading');
-	    $fc->create_group([$ss, 'realm_name', 'strong', 'size=2'],
-		    'realm_name');
-	    $fc->create_group([$ss, 'tax_disclaimer', 'i', 'size=2'],
-		    'tax_disclaimer');
-	    $fc->create_group([$ss, 'text_menu_font', 'strong', 'size=2'], qw(
-		    prev_next_bar_link
-		    text_menu_selected
-            ));
-	    $fc->create_group([$ss, 'text_menu_font', 'size=2'],
-		    'text_menu_normal');
-	    $fc->create_group([$ss, 'user_name', 'size=3', ],
-		    'user_name');
-	    $fc->create_group([$ss, undef, 'size=1', ], qw(
-		    celebrity_box_text
-		    profile_box_text
-		    report_footer
-		    time
-            ));
-	    $fc->create_group([$ss, 'table_heading',
-		'strong', 'size=2'], qw(
-		    table_heading
-		    normal_table_heading
-	    ));
-	    $fc->create_group([$ss, undef, 'size=2'], qw(
-		    form_submit
-                    message_subject
-                    prev_next_bar_text
-            ));
-	    $fc->create_group([$ss, 'description_label', 'strong', 'size=2'],
-		    'description_label');
-	    $fc->create_group([$ss, 'error', 'b', 'size=2'], qw(
-		    error
-		    form_field_error
-		    warning
-            ));
-	    $fc->create_group([$ss, 'error', 'i', 'size=2'],
-		    'form_field_error_label');
-	    $fc->create_group([$ss, 'error', 'size=1', ],
-		    'list_error',
-		    'checkbox_error');
-	    $fc->create_group([$ss, 'form_field_label_in_text', 'strong', 'size=2'],
-		    'form_field_label_in_text');
-	    $fc->create_group([$ss, 'icon_text_ia', 'size=2'],
-		    'icon_text_ia');
-	    $fc->create_group([$ss, 'page_text', 'size=2'],
-		    'realm_chooser_text');
-	    $fc->create_group([$ss, 'task_list_label_link', 'size=2'],
-		    'task_list_label_link');
-	    $fc->create_group([$ss, 'task_list_label_no_link', 'size=2'],
-		    'task_list_label_no_link');
-	    $fc->create_group([$ss, 'task_list_heading', 'strong', 'size=2'],
-		    'task_list_heading');
-	    $fc->create_group([$ss, undef, 'b', 'size=2'],
-		    'label_in_text');
-	    $fc->create_group([$ss, undef, 'i', 'size=2'],
-		    'italic');
-	    $fc->create_group([$ss, undef, 'size=1', ], qw(
-		    file_tree_bytes
-		    list_action
-		    lookup_button
-            ));
-	    $fc->create_group([$ss, undef, 'strong', 'size=2'], qw(
-                    action_bar_string
-                    strong
-                    table_row_title
-            ));
-	    $fc->create_group([$ss, undef, 'size=2'], qw(
-		    form_field_description
-		    form_field_label
-		    table_cell
-		    number_cell
-                    action_button
-	    	    form_field_example
-		    report_page_heading
-	            radio
-                    descriptive_page
-                    page_legend
-                    checkbox
-            ));
-	    # Set by template
-	    $fc->create_group([undef, undef],
-                    'copyright_and_disclaimer');
+	    $fc->value(default => [
+		# The size is ok here as long as we aren't using it in a style
+		'family=arial,sans-serif', 'size=2',
+	    ]);
 	    return;
 	},
     },
@@ -234,14 +82,14 @@ __PACKAGE__->new({
 	    my($name) = 'BUYandHOLD Investment Clubs';
 
 	    # Some required strings
-	    $fc->create_group('band', 'logo_icon');
-	    $fc->create_group($name, 'site_name');
-	    $fc->create_group($name.' home', 'home_alt_text');
-	    $fc->create_group(0, 'page_left_margin');
-	    $fc->create_group('left', 'table_default_align');
-	    $fc->create_group(0, 'scene_show_profile');
-	    $fc->create_group('go_small', 'realm_chooser_button');
-	    $fc->create_group(Bivio::UI::HTML::Widget::Grid->new({
+	    $fc->group(logo_icon => 'band');
+	    $fc->group(site_name => $name);
+	    $fc->group(home_alt_text => $name.' home');
+	    $fc->group(page_left_margin => 0);
+	    $fc->group(table_default_align => 'left');
+	    $fc->group(scene_show_profile => 0);
+	    $fc->group(realm_chooser_button => 'go_small');
+	    $fc->group(scene_header => Bivio::UI::HTML::Widget::Grid->new({
 		cell_align => 'n',
 		space => 2,
 		values => [
@@ -278,33 +126,29 @@ __PACKAGE__->new({
 			),
 		    ],
 		],
-	    }),
-		    'scene_header');
+	    }));
 
-	    $fc->create_group(Bivio::UI::HTML->get_standard_copyright,
-		    'copyright_widget');
+	    $fc->group(copyright_widget =>
+		    Bivio::UI::HTML->get_standard_copyright);
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->indirect(
+	    $fc->group(content_widget => Bivio::UI::HTML::Widget->indirect(
 			    ['page_scene']
-		   ),
-		    'content_widget');
+		   ));
 
 	    # These are required names, which are checked by page.
-	    $fc->create_group($fc->widget_from_template([<DATA>]),
-		    'page_widget');
+	    $fc->group(page_widget => $fc->widget_from_template([<DATA>]));
 	    # Avoid irrelevant perl warnings/errors
 	    close(DATA);
 
-	    $fc->create_group($fc->get_standard_header, 'header_widget');
-	    $fc->create_group($fc->get_standard_logo, 'logo_widget');
-	    $fc->create_group($fc->get_standard_head, 'head_widget');
-	    $fc->create_group($fc->get_standard_header_height,
-		    'header_height');
+	    $fc->group(header_widget => $fc->get_standard_header);
+	    $fc->group(logo_widget => $fc->get_standard_logo);
+	    $fc->group(head_widget => $fc->get_standard_head);
+	    $fc->group(header_height => $fc->get_standard_header_height);
 
-	    $fc->create_group(0, 'text_menu_base_offset');
-	    $fc->create_group(0, 'image_menu_left_cell');
+	    $fc->group(text_menu_base_offset => 0);
+	    $fc->group(image_menu_left_cell => 0);
 
-	    $fc->create_group(' width=0', 'logo_icon_width_as_html');
+	    $fc->group(logo_icon_width_as_html => ' width=0');
 	    return;
 	},
     },

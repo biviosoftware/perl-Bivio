@@ -33,7 +33,7 @@ are more efficient on lookups.
 
 A FacadeComponent is initialized by a Facade.  It may be passed
 a I<clone> as a base initialization.  A I<value> is a hash_ref
-with at least one key, the I<config>, which is used to initialize
+with tow keys: I<config> and I<names>, both of which are used to initialize
 the rest of the I<value>.  See
 L<internal_initialize_value|"internal_initialize_value"> for
 more details.
@@ -91,7 +91,7 @@ sub new {
     };
 
     # Initialize undef value
-    my($uv) = {config => $self->UNDEF_CONFIG};
+    my($uv) = {config => $self->UNDEF_CONFIG, names => []};
     $self->internal_initialize_value($uv);
     $fields->{undef_value} = $uv;
 
@@ -105,31 +105,6 @@ sub new {
 =head1 METHODS
 
 =cut
-
-=for html <a name="add_group_aliases"></a>
-
-=head2 add_group_aliases(string group, string alias, ...)
-
-Adds I<aliases> to I<group>.  I<aliases> must be new.
-Use L<regroup|"regroup"> to reassociate a group of names.
-
-=cut
-
-sub add_group_aliases {
-    my($self, $group) = (shift, shift);
-    _assert_writable($self);
-
-    my($map) = $self->{$_PACKAGE}->{map};
-    Bivio::IO::Alert->die($self, '->', $group, ': group not found')
-		unless $map->{$group};
-    my($value) = $map->{$group};
-
-    # Map the names
-    foreach my $name (@_) {
-	_assign($self, $map, $name, $value);
-    }
-    return;
-}
 
 =for html <a name="as_string"></a>
 
@@ -146,43 +121,29 @@ sub as_string {
 
 =for html <a name="bad_value"></a>
 
-=head2 bad_value(hash_ref value, string name, string message, ...)
+=head2 bad_value(hash_ref value, string message, ...)
 
 Prints a warning based on arguments.
 
 =cut
 
 sub bad_value {
-    my($self, $value, $name) = (shift, shift, shift);
-    my($fields) = $self->{$_PACKAGE};
-    Bivio::IO::Alert->warn($self, '->', $name,
-	    ' (', $value, '): ', @_);
+    my($self, $value) = (shift, shift, shift);
+    Bivio::IO::Alert->warn($self, ' ', $value, ': ', @_);
     return;
 }
 
-=for html <a name="create_group"></a>
+=for html <a name="exists"></a>
 
-=head2 create_group(any value, string name, ...)
+=head2 exists(string name) : boolean
 
-Creates a new group.  The I<name>s must be unique.  The I<value>
-is defined by the subclass.  If it is a ref, ownership of I<value> is
-taken by this module.
+True if the name exists.  Note: should only be used in rare circumstances.
+The normal "get" and "format" routines handle undefined values properly.
 
 =cut
 
-sub create_group {
-    my($self, $value) = (shift, shift);
-    _assert_writable($self);
-    my($map) = $self->{$_PACKAGE}->{map};
-
-    # Initialize the value
-    $self->internal_initialize_value($value = {config => $value}, @_);
-
-    # Map the names
-    foreach my $name (@_) {
-	_assign($self, $map, $name, $value);
-    }
-    return;
+sub exists {
+    return defined(shift->{$_PACKAGE}->{map}->{lc(shift(@_))}) ? 1 : 0;
 }
 
 =for html <a name="get_facade"></a>
@@ -212,12 +173,41 @@ sub get_widget_value {
     return $self->$method(@_);
 }
 
+=for html <a name="group"></a>
+
+=head2 group(string name, any value)
+
+=head2 group(array_ref names, any value)
+
+Creates a new group.  The I<name>s must be unique.  The I<value>
+is defined by the subclass.  If it is a ref, ownership of I<value> is
+taken by this module.
+
+=cut
+
+sub group {
+    my($self, $names, $value) = @_;
+    _assert_writable($self);
+    my($map) = $self->{$_PACKAGE}->{map};
+    $names = ref($names) ? $names : [$names];
+
+    # Initialize the value
+    $value = {config => $value, names => $names};
+    $self->internal_initialize_value($value);
+
+    # Map the names
+    foreach my $name (@$names) {
+	_assign($self, $map, $name, $value);
+    }
+    return;
+}
+
 =for html <a name="initialization_complete"></a>
 
 =head2 initialization_complete()
 
 Called by the Facade after all initialization is complete.
-No more calls to L<create_group|"create_group">, etc. will
+No more calls to L<group|"group">, etc. will
 be accepted after this call.  Subclasses may override to
 validate initialization is truly complete.
 
@@ -227,6 +217,29 @@ sub initialization_complete {
     my($fields) = shift->{$_PACKAGE};
     $fields->{read_only} = 1;
     return;
+}
+
+=for html <a name="internal_get_all"></a>
+
+=head2 internal_get_all() : array_ref
+
+Returns a list of all values.  Use this routine only for initialization.
+The array is generated each call.
+This doesn't include the L<UNDEF_CONFIG|"UNDEF_CONFIG"> value.
+
+=cut
+
+sub internal_get_all {
+    my($map) = shift->{$_PACKAGE}->{map};
+
+    # Finds all group values.  The "value" is a hash_ref which is
+    # uniquely named, so dups (other members of the group) are found
+    # easily.
+    my(%values);
+    foreach my $v (values(%$map)) {
+	$values{$v} = $v;
+    }
+    return [values(%values)];
 }
 
 =for html <a name="internal_get_value"></a>
@@ -290,7 +303,7 @@ sub internal_unsafe_get_value {
 
 =for html <a name="internal_initialize_value"></a>
 
-=head2 abstract internal_initialize_value(hash_ref value, string name)
+=head2 abstract internal_initialize_value(array_ref names, hash_ref value)
 
 Called to initialize the properties of a value.  The I<config>
 property of the hash_ref is set, i.e. this class will call
@@ -298,19 +311,23 @@ its subclasses as follows:
 
     $self->internal_initialize_value({
         config => $value
+        names => $names,
     });
 
-The value of I<config> must not be modified, as it may be copied
-from the I<clone>.
+The value of I<config> and I<names> must not be modified,
+as they may be copied from the I<clone>.
 
 If there is an error, subclasses should try to recover outputting
-a warning using I<name>.
+a warning using I<names>.  Note that I<names> may be empty, in
+the case of L<UNDEF_CONFIG|"UNDEF_CONFIG">.
 
 =cut
 
 =for html <a name="regroup"></a>
 
-=head2 regroup(any new_value, string name, ...)
+=head2 regroup(string name, any new_value)
+
+=head2 regroup(array_ref names, any new_value)
 
 Takes existing I<names> and re-associates with I<new_value>.
 All names must exist.  Use L<add_group_aliases|"add_group_aliases">
@@ -319,34 +336,34 @@ to create new names in an existing group.
 =cut
 
 sub regroup {
-    my($self, $new_value) = (shift, shift);
+    my($self, $names, $new_value) = @_;
     _assert_writable($self);
     my($map) = $self->{$_PACKAGE}->{map};
+    $names = ref($names) ? $names : [$names];
 
     # Delete the names from the map
-    foreach my $name (@_) {
+    foreach my $name (@$names) {
 	Bivio::IO::Alert->die($self, '->', $name, ': name not found')
 		unless $map->{$name};
 	delete($map->{$name});
     }
 
     # Now can just create a new group
-    $self->create_group($new_value, @_);
+    $self->group($names, $new_value);
     return;
 }
 
-=for html <a name="set_group_value"></a>
+=for html <a name="value"></a>
 
-=head2 set_group_value(string name, any value)
+=head2 value(string name, any value)
 
 Sets I<value> for the group which contains I<name>.
 
-#TODO: Arg order is bad.  Conflicts with create_group which is also bad...
- 
+#TODO: Arg order is bad.  Conflicts with group which is also bad...
 
 =cut
 
-sub set_group_value {
+sub value {
     my($self, $name, $value) = @_;
     _assert_writable($self);
     my($map) = $self->{$_PACKAGE}->{map};
@@ -355,8 +372,8 @@ sub set_group_value {
 
     # Clear out old state and reinitialize
     my($old_value) = $map->{$name};
-    %$old_value = (config => $value);
-    $self->internal_initialize_value($old_value, $name);
+    %$old_value = (config => $value, names => $old_value->{names});
+    $self->internal_initialize_value($old_value);
     return;
 }
 

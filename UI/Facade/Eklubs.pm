@@ -39,138 +39,23 @@ __PACKAGE__->new({
     'Bivio::UI::Color' => {
 	initialize => sub {
 	    my($fc) = @_;
-	    $fc->regroup(0x0, qw(
-		    footer_line
-            ));
-            $fc->set_group_value(qw(
-                    realm_name
-            ),
-		    0xFF0300);
-            $fc->set_group_value(qw(
-                    image_menu_bg
-            ),
-		   0x84a4c4, );
-            $fc->set_group_value(qw(
-                    page_link_hover
-            ),
-		    0xc0c0c0);
-	    $fc->set_group_value(qw(
-	            page_link
-            ),
-		    0x336699);
+	    $fc->regroup(footer_line => 0x000000);
+            $fc->value(page_link_hover => 0xc0c0c0);
+	    $fc->value(page_link => 0x336699);
+	    $fc->value(page_vlink => 0x336699);
+	    $fc->value(page_heading => 0x336699);
+            $fc->value(realm_name => 0xFF0300);
+            $fc->value(image_menu_bg => 0x84a4c4);
+            $fc->value(summary_line => 0x6600CC);
 	    return;
 	},
     },
     'Bivio::UI::Font' => {
-	clone => undef,
 	initialize => sub {
 	    my($fc) = @_;
-	    my($ss) = undef;
-	    $fc->create_group([$ss, 'celebrity_box_title'],
-		    'celebrity_box_title');
-	    $fc->create_group([$ss, 'profile_box_title', 'strong'],
-		    'profile_box_title');
-	    $fc->create_group([$ss, 'celebrity_disclaimer', 'small'],
-		    'celebrity_disclaimer');
-	    $fc->create_group([$ss, 'decor_disclaimer', 'small'],
-		    'decor_disclaimer');
-	    $fc->create_group([$ss, 'detail_chooser', 'strong'],
-		    'detail_chooser');
-	    $fc->create_group([$ss, 'error', 'big', 'strong'], qw(
-		    error_icon
-	            substitute_user
-            ));
-	    $fc->create_group([$ss, 'footer_menu', 'size=-2'],
-		    'footer_menu');
-	    $fc->create_group([$ss, 'page_heading', 'small'],
-		    'checked_icon');
-	    $fc->create_group([$ss, 'page_heading', 'strong'],
-		    'page_heading');
-	    $fc->create_group([$ss, 'realm_name', 'strong'],
-		    'realm_name');
-	    $fc->create_group([$ss, 'tax_disclaimer', 'i'],
-		    'tax_disclaimer');
-	    $fc->create_group([$ss, 'text_menu_font', 'class=body', 'strong'],
-		    qw(
-		    prev_next_bar_link
-		    text_menu_selected
-                    help_log_button
-            ));
-	    $fc->create_group([$ss, 'text_menu_font', 'class=body',],
-		    'text_menu_normal');
-	    $fc->create_group([$ss, 'user_name', 'big'],
-		    'user_name');
-	    $fc->create_group([$ss, undef, 'small'], qw(
-		    celebrity_box_text
-		    profile_box_text
-		    report_footer
-		    time
-            ));
-	    $fc->create_group([$ss, undef, 'size=-2'], qw(
-		    copyright_and_disclaimer
-            ));
-	    $fc->create_group([$ss, undef, 'strong'], qw(
-		    table_heading
-		    normal_table_heading
-	    ));
-	    $fc->create_group([$ss, undef], qw(
-		    form_submit
-                    message_subject
-                    prev_next_bar_text
-            ));
-	    $fc->create_group([undef, 'description_label', 'strong'],
-		    'description_label');
-	    $fc->create_group([undef, 'error', 'b'], qw(
-		    error
-		    form_field_error
-		    warning
-            ));
-	    $fc->create_group([undef, 'error', 'i'],
-		    'form_field_error_label');
-	    $fc->create_group([undef, 'error', 'small'],
-		    'list_error',
-		    'checkbox_error');
-	    $fc->create_group([undef, 'page_text'],
-		    'help_sign_button');
-	    $fc->create_group([undef, 'form_field_label_in_text', 'strong'],
-		    'form_field_label_in_text');
-	    $fc->create_group([undef, 'icon_text_ia'],
-		    'icon_text_ia');
-	    $fc->create_group([undef, 'page_text'],
-		    'realm_chooser_text');
-	    $fc->create_group([undef, 'task_list_label_link'],
-		    'task_list_label_link');
-	    $fc->create_group([undef, 'task_list_label_no_link'],
-		    'task_list_label_no_link');
-	    $fc->create_group([undef, 'task_list_heading', 'strong'],
-		    'task_list_heading');
-	    $fc->create_group([undef, undef, 'b'],
-		    'label_in_text');
-	    $fc->create_group([undef, undef, 'i'],
-		    'italic');
-	    $fc->create_group([undef, undef, 'small'], qw(
-		    file_tree_bytes
-		    list_action
-		    lookup_button
-            ));
-	    $fc->create_group([undef, undef, 'strong'], qw(
-                    action_bar_string
-                    strong
-                    table_row_title
-            ));
-	    $fc->create_group([undef, undef], qw(
-		    form_field_description
-		    form_field_label
-		    table_cell
-		    number_cell
-                    action_button
-	    	    form_field_example
-		    report_page_heading
-	            radio
-                    descriptive_page
-                    page_legend
-                    checkbox
-            ));
+	    $fc->value(default => [
+		'family=arial', 'size=x-small',
+	    ]);
 	    return;
 	}
     },
@@ -180,48 +65,47 @@ __PACKAGE__->new({
 	    my($fc) = @_;
 
 	    # Some required strings and values
-	    $fc->create_group('logo', 'logo_icon');
-	    $fc->create_group('eklubs', 'site_name');
-	    $fc->create_group('eklubs home', 'home_alt_text');
+	    $fc->group(logo_icon => 'logo');
+	    $fc->group(site_name => 'eklubs');
+	    $fc->group(home_alt_text => 'eklubs home');
 
-	    $fc->create_group(20, 'page_left_margin');
-	    $fc->create_group('center', 'table_default_align');
-	    $fc->create_group(1, 'scene_show_profile');
-	    $fc->create_group(undef, 'scene_header');
+	    $fc->group(page_left_margin => 20);
+	    $fc->group(table_default_align => 'center');
+	    $fc->group(scene_show_profile => 1);
+	    $fc->group(scene_header => undef);
 
 	    # This one is used dynamically by ImageMenu in header_widget
 	    # widget.  It is not a required field.  Only if you are using
 	    # ImageMenu.
 	    my($icon) = $fc->get_facade->get('Bivio::UI::Icon');
-	    $fc->create_group($icon->get_width('logo_full')
-		    + $icon->get_width('grad'),
-		    'text_menu_base_offset');
+	    $fc->group(text_menu_base_offset =>
+		    $icon->get_width('logo_full') + $icon->get_width('grad'));
 
-	    $fc->create_group(Bivio::UI::HTML::Widget->image('grad', ''),
-		    'image_menu_left_cell');
+	    $fc->group(image_menu_left_cell =>
+		    Bivio::UI::HTML::Widget->image('grad', ''));
 
 	    # Used by standard header
-	    $fc->create_group($icon->get_width_as_html('logo_full'));
+	    $fc->group(logo_width_as_html =>
+		    $icon->get_width_as_html('logo_full'));
 
 	    # These are required names, which are checked by page.
 	    Bivio::UI::HTML::Widget->load_class('Page');
-	    $fc->create_group(Bivio::UI::HTML::Widget::Page->new({
+	    $fc->group(page_widget => Bivio::UI::HTML::Widget::Page->new({
 		head => $fc->get_standard_head(),
-		style => _style(),
+		style => $fc->get_standard_style(),
 		body => Bivio::UI::HTML::Widget->join([
 		    _header(),
 		    Bivio::UI::HTML::Widget->indirect(['page_scene']),
 		    _footer(),
 		]),
-	    }),
-		    'page_widget');
-	    $fc->create_group(_header(), 'header_widget');
-	    $fc->create_group($icon->get_height('logo_full')
+	    }));
+	    $fc->group(header_widget => _header());
+	    $fc->group(header_height => $icon->get_height('logo_full')
 		    + $icon->get_height('tag')
-		    + $icon->get_height('power_grad') + 100,
-		   'header_height');
-	    $fc->create_group($fc->get_standard_logo, 'logo_widget');
-	    $fc->create_group($fc->get_standard_head, 'head_widget');
+		    + $icon->get_height('power_grad') + 100
+		   );
+	    $fc->group(logo_widget => $fc->get_standard_logo);
+	    $fc->group(head_widget => $fc->get_standard_head);
 	    return;
 	},
     },
@@ -404,26 +288,6 @@ sub _header {
     # We set _top, because the header is used in a frame.
     return Bivio::UI::HTML::Widget->join('<a name="top"></a>',
 	    $top_part, $sub_menu);
-}
-
-# _style() : Bivio::UI::HTML::Widget
-#
-# Returns style widget.
-#
-sub _style {
-    return Bivio::UI::HTML::Widget->join([
-	"<style>\n",
-	"<!-- a:hover {\n",
-	['Bivio::UI::Color', '->format_html', 'page_link_hover', 'color:'],
-	"}\n",
-	"td,a:link,p,body {\n",
-	"font-family : Arial;\n",
-	"font-size : x-small;\n",
-	"font-style : normal;\n",
-	"}\n",
-	"-->\n",
-	"</style>\n",
-    ]);
 }
 
 =head1 COPYRIGHT
