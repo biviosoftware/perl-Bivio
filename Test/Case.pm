@@ -43,6 +43,24 @@ use Bivio::IO::Ref;
 
 =cut
 
+=for html <a name="actual_return"></a>
+
+=head2 actual_return(array_ref return)
+
+Sets the actual return value.  Need only be called from
+I<check_return>.
+
+=cut
+
+sub actual_return {
+    my($self, $return) = @_;
+    Bivio::Die->die('Error in case ', $self,
+	': expect must be an array_ref, not ', $return)
+	unless ref($return) eq 'ARRAY';
+    $self->put(return => $return);
+    return;
+}
+
 =for html <a name="as_string"></a>
 
 =head2 as_string() : string
