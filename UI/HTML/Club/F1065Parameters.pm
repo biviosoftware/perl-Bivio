@@ -1,0 +1,106 @@
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+package Bivio::UI::HTML::Club::F1065Parameters;
+use strict;
+$Bivio::UI::HTML::Club::F1065Parameters::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+=head1 NAME
+
+Bivio::UI::HTML::Club::F1065Parameters - IRS 1065 parameters
+
+=head1 SYNOPSIS
+
+    use Bivio::UI::HTML::Club::F1065Parameters;
+    Bivio::UI::HTML::Club::F1065Parameters->new();
+
+=cut
+
+=head1 EXTENDS
+
+L<Bivio::UI::HTML::DescriptivePage>
+
+=cut
+
+use Bivio::UI::HTML::DescriptivePage;
+@Bivio::UI::HTML::Club::F1065Parameters::ISA = ('Bivio::UI::HTML::DescriptivePage');
+
+=head1 DESCRIPTION
+
+C<Bivio::UI::HTML::Club::F1065Parameters> IRS 1065 parameters
+
+=cut
+
+#=IMPORTS
+
+#=VARIABLES
+my($_PACKAGE) = __PACKAGE__;
+
+=head1 METHODS
+
+=cut
+
+=for html <a name="create_content"></a>
+
+=head2 create_content()
+
+Returns the form.
+
+=cut
+
+sub create_content {
+    my($self) = @_;
+    return $self->form('F1065ParametersForm', [
+	    ['Tax1065.allocation_method', 'Allocation Method',
+		    <<'EOF',
+Determines the manner in which taxable entries are allocated to each
+member. The time based method allocates each taxable entry according
+to each member's ownership in the club at the time of the entry. The
+snapshot method allocates taxable entries according to the member
+ownership at the time of withdrawal, and at the end of the year.
+EOF
+		    undef, {show_unknown => 0}],
+	    ['Tax1065.partnership_type', 'Partnership Type',
+		    <<'EOF',
+Schedule B 1. The partner type determines the member's liability in the
+club. Most investment clubs are general partnerships, which can be made up
+of only general partners.  A general partner is personally liable for
+partnership debts. A limited partner is personally liable for partnership
+debts limited to the amount of money that partner contributed. There must
+be at least one general partner in a limited partnership. In a limited
+liability company, no partner is personally liable for its debts.
+EOF
+		    undef, {show_unknown => 0}],
+	    ['Tax1065.partner_is_partnership', 'Member is Partnership',
+		    <<'EOF'],
+Schedule B 2.
+EOF
+	    ['Tax1065.partnership_is_partner', 'Club is Partner',
+		   <<'EOF'],
+Schedule B 3.
+EOF
+	    ['Tax1065.consolidated_audit', 'Consolidated Audit', <<'EOF'],
+Schedule B 4. Generally, the tax treatment of partnership items is determined
+at the partnership level in a consolidated audit proceeding, rather than in
+separate proceedings with individual partners.
+EOF
+    ],
+    {
+	header => $_PACKAGE->join(<<'EOF')
+IRS 1065 tax fields. The default values should be suitable for most clubs.
+EOF
+    });
+}
+
+#=PRIVATE METHODS
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+1;
