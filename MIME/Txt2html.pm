@@ -402,7 +402,7 @@ sub add_custom_heading_regexp {
 sub convert {
     my($self) = shift;
 
-    local($*) = 1;			# Turn on multiline searches
+    # local($*) = 1;			# Turn on multiline searches
 
     # Re-initialize variables that need it for each conversion.
     $self->initialize();
@@ -441,8 +441,8 @@ sub convert {
         # if --titlefirst is set and --title isn't, use the first line
         # as the title.
         if ($self->{titlefirst} && !$self->{title}) {
-            ($self->{title}) = $self->{line} =~ /^ *(.*)/; # grab first line
-            $self->{title} =~ s/ *$//;	# strip trailing whitespace
+            ($self->{title}) = $self->{line} =~ /^ *(.*)/m; # grab first line
+            $self->{title} =~ s/ *$//m;	# strip trailing whitespace
         }
         $self->{title} = "" if !$self->{title};
         $self->emit("<TITLE>$self->{title}</TITLE>\n");
@@ -497,7 +497,7 @@ sub convert {
 
             $self->heading()   if (!$self->{explicit_headings} &&
                     !($self->{mode} & ($PRE | $HEADER)) &&
-                    $self->{nextline} =~ /^\s*[=\-\*\.~\+]+\s*$/);
+                    $self->{nextline} =~ /^\s*[=\-\*\.~\+]+\s*$/m);
 
 #	        &custom_tag if (($#{$self->{custom_tags_aref}} > -1)
 #                        && !($self->{mode} & $PRE)
@@ -518,9 +518,9 @@ sub convert {
             $self->shortline();
 
             $self->unhyphenate() if ($self->{unhyphenation} &&
-                    ($self->{line} =~ /[^\W\d_]\-$/) && # ends in hyphen
+                    ($self->{line} =~ /[^\W\d_]\-$/m) && # ends in hyphen
                     # next line starts w/letters
-                    ($self->{nextline} =~ /^\s*[^\W\d_]/) && 
+                    ($self->{nextline} =~ /^\s*[^\W\d_]/m) && 
                     !($self->{mode} & ($PRE |
                             $HEADER |
                             $MAILHEADER |
@@ -659,25 +659,25 @@ sub emit {
 
 sub is_blank {
     my($self) = shift;
-    return $_[0] =~ /^\s*$/;
+    return $_[0] =~ /^\s*$/m;
 }
 
 sub escape {
     my($self) = shift;
-    $self->{line} =~ s/&/&amp;/g;
-    $self->{line} =~ s/>/&gt;/g;
+    $self->{line} =~ s/&/&amp;/gm;
+    $self->{line} =~ s/>/&gt;/gm;
     $self->{line} =~ s/</&lt;/g;
 }
 
 sub hrule {
     my($self) = shift;
-    if ($self->{line} =~ /^\s*([-_~=\*]\s*){$self->{hrule_min},}$/) {
+    if ($self->{line} =~ /^\s*([-_~=\*]\s*){$self->{hrule_min},}$/m) {
         $self->{line} = "<HR>\n";
-        $self->{prev} =~ s/<P>//;
+        $self->{prev} =~ s/<P>//m;
         $self->{line_action} |= $HRULE;
-    } elsif ($self->{line} =~ /\014/) {
+    } elsif ($self->{line} =~ /\014/m) {
         $self->{line_action} |= $HRULE;
-        $self->{line} =~ s/\014/\n<HR>\n/g; # Linefeeds become horizontal rules
+        $self->{line} =~ s/\014/\n<HR>\n/gm; # Linefeeds become horizontal rules
     }
 }
 
@@ -707,16 +707,16 @@ sub shortline {
 
 sub mailstuff {
     my($self) = shift;
-    if ((($self->{line} =~ /^\w*&gt/)    # Handle "FF> Werewolves."
-            || ($self->{line} =~ /^\w*\|/)) # Handle "Igor| There wolves."
+    if ((($self->{line} =~ /^\w*&gt/m)    # Handle "FF> Werewolves."
+            || ($self->{line} =~ /^\w*\|/m)) # Handle "Igor| There wolves."
             && !$self->is_blank($self->{nextline})) {
-	$self->{line} =~ s/$/<BR>/;
+	$self->{line} =~ s/$/<BR>/m;
 	$self->{line_action} |= ($BREAK | $MAILQUOTE);
         if(!($self->{prev_action} & ($BREAK | $PAR))) {
             $self->{prev} .= "<P>\n";
             $self->{line_action} |= $PAR;
         }
-    } elsif (($self->{line} =~ /^(From:?)|(Newsgroups:) /)
+    } elsif (($self->{line} =~ /^(From:?)|(Newsgroups:) /m)
              && $self->is_blank($self->{prev})) {
 	$self->anchor_mail if !($self->{prev_action} & $MAILHEADER);
         chop $self->{line};
@@ -724,15 +724,15 @@ sub mailstuff {
 	$self->{line_action} |= ($BREAK
                 | $MAILHEADER
                 | $PAR);
-    } elsif (($self->{line} =~ /^[\w\-]*:/)  # Handle "Some-Header: blah"
+    } elsif (($self->{line} =~ /^[\w\-]*:/m)  # Handle "Some-Header: blah"
             && ($self->{prev_action} & $MAILHEADER)
             && !$self->is_blank($self->{nextline})) {
-	$self->{line} =~ s/$/<BR>/;
+	$self->{line} =~ s/$/<BR>/m;
 	$self->{line_action} |= ($BREAK | $MAILHEADER);
-    } elsif (($self->{line} =~ /^\s+\S/) &&   # Handle multi-line mail headers
+    } elsif (($self->{line} =~ /^\s+\S/m) &&   # Handle multi-line mail headers
             ($self->{prev_action} & $MAILHEADER) &&
             !$self->is_blank($self->{nextline})) {
-	$self->{line} =~ s/$/<BR>/;
+	$self->{line} =~ s/$/<BR>/m;
 	$self->{line_action} |= ($BREAK | $MAILHEADER);
     }
 }
@@ -772,7 +772,7 @@ sub count_indent {
     if($self->is_blank($line)) {
         return $prev_length;
     }
-    $ws = $line =~ /^( *)[^ ]/;
+    $ws = $line =~ /^( *)[^ ]/m;
     return length($ws);
 }
 
@@ -781,25 +781,25 @@ sub listprefix {
     my($line) = @_;
     my($prefix, $number, $rawprefix);
 
-    return (0,0,0) if (!($line =~ /^\s*[-=\*o]+\s+\S/ ) &&
-            !($line =~ /^\s*(\d+|[^\W\d_])[\.\)\]:]\s+\S/ ));
+    return (0,0,0) if (!($line =~ /^\s*[-=\*o]+\s+\S/m ) &&
+            !($line =~ /^\s*(\d+|[^\W\d_])[\.\)\]:]\s+\S/m ));
 
-    ($number) = $line =~ /^\s*(\d+|[^\W\d_])/;
+    ($number) = $line =~ /^\s*(\d+|[^\W\d_])/m;
     $number = 0 unless defined($number);
 
     # That slippery exception of "o" as a bullet
     # (This ought to be determined using the context of what lists
     #  we have in progress, but this will probably work well enough.)
-    if ($line =~ /^\s*o\s/) {
+    if ($line =~ /^\s*o\s/m) {
         $number = 0;
     }
 
     if ($number) {
-        ($rawprefix) = $line =~ /^(\s*(\d+|[^\W\d_]).)/; # XXX why ($rawprefix)?
+        ($rawprefix) = $line =~ /^(\s*(\d+|[^\W\d_]).)/m; # XXX why ($rawprefix)?
         $prefix = $rawprefix;
-        $prefix =~ s/(\d+|[^\W\d_])//; # Take the number out
+        $prefix =~ s/(\d+|[^\W\d_])//m; # Take the number out
     } else {
-        ($rawprefix) = $line =~ /^(\s*[-=o\*]+.)/;	# XXX why ($rawprefix)?
+        ($rawprefix) = $line =~ /^(\s*[-=o\*]+.)/m;	# XXX why ($rawprefix)?
         $prefix = $rawprefix;
     }
     return ($prefix, $number, $rawprefix);
@@ -850,9 +850,9 @@ sub endlist	{		# End N lists
 
 sub continuelist {
     my($self) = shift;
-    $self->{line} =~ s/^\s*[-=o\*]+\s*/$self->{list_indent}<LI> /
+    $self->{line} =~ s/^\s*[-=o\*]+\s*/$self->{list_indent}<LI> /m
             if ${$self->{list_aref}}[$self->{listnum}-1] == $UL;
-    $self->{line} =~ s/^\s*(\d+|[^\W\d_]).\s*/$self->{list_indent}<LI> /
+    $self->{line} =~ s/^\s*(\d+|[^\W\d_]).\s*/$self->{list_indent}<LI> /m
             if ${$self->{list_aref}}[$self->{listnum}-1] == $OL;
     $self->{line_action} |= $LIST;
 }
@@ -891,7 +891,7 @@ sub liststuff {
     # prefix starts.  This won't screw anything up, and if we don't do
     # it, the next line might appear to be indented relative to this
     # line, and get tagged as a new paragraph.
-    my($total_prefix) = $self->{line} =~ /^(\s*[\w-=o\*]+.\s*)/;
+    my($total_prefix) = $self->{line} =~ /^(\s*[\w-=o\*]+.\s*)/m;
     # Of course, we only use it if it really turns out to be a list.
 
     $islist = 1;
@@ -920,8 +920,8 @@ sub liststuff {
 # Returns true if the passed string is considered to be preformatted
 sub is_preformatted {
     my($self) = shift;
-    (($_[0] =~ /\s{$self->{preformat_whitespace_min},}\S+/o) # whitespaces
-     || ($_[0] =~ /\.{$self->{preformat_whitespace_min},}\S+/o)); # dots
+    (($_[0] =~ /\s{$self->{preformat_whitespace_min},}\S+/om) # whitespaces
+     || ($_[0] =~ /\.{$self->{preformat_whitespace_min},}\S+/om)); # dots
 }
 
 sub endpreformat {
@@ -942,8 +942,8 @@ sub preformat {
             ($self->is_preformatted($self->{line}) &&
                     ($self->{preformat_trigger_lines} == 1 ||
                             $self->is_preformatted($self->{nextline})))) {
-        $self->{line} =~ s/^/<PRE>\n/;
-        $self->{prev} =~ s/<P>//;
+        $self->{line} =~ s/^/<PRE>\n/m;
+        $self->{prev} =~ s/<P>//m;
         $self->{mode} |= $PRE;
         $self->{line_action} |= $PRE;
     }
@@ -976,14 +976,14 @@ sub make_new_anchor {
 sub anchor_mail {
     my($self) = shift;
     my($anchor) = $self->make_new_anchor(0);
-    $self->{line} =~ s/([^ ]*)/<A NAME="$anchor">$1<\/A>/;
+    $self->{line} =~ s/([^ ]*)/<A NAME="$anchor">$1<\/A>/m;
 }
 
 sub anchor_heading {
     my($self) = shift;
     my($level) = @_;
     my($anchor) = $self->make_new_anchor($level);
-    $self->{line} =~ s/(<H.>)(.*)(<\/H.>)/$1<A NAME="$anchor">$2<\/A>$3/;
+    $self->{line} =~ s/(<H.>)(.*)(<\/H.>)/$1<A NAME="$anchor">$2<\/A>$3/m;
 }
 
 sub heading_level {
@@ -997,11 +997,11 @@ sub heading_level {
 sub heading
 {
     my($self) = shift;
-    my($hoffset, $heading) = $self->{line} =~ /^(\s*)(.+)$/;
+    my($hoffset, $heading) = $self->{line} =~ /^(\s*)(.+)$/m;
 
     $hoffset = "" unless defined($hoffset);
     $heading = "" unless defined($heading);
-    my($uoffset, $underline) = $self->{nextline} =~ /^(\s*)(\S+)\s*$/;
+    my($uoffset, $underline) = $self->{nextline} =~ /^(\s*)(\S+)\s*$/m;
     $uoffset = "" unless defined($uoffset);
     $underline = "" unless defined($underline);
     my($lendiff, $offsetdiff);
@@ -1033,7 +1033,7 @@ sub custom_heading {
     my($self) = shift;
     my($i, $level);
     for($i=0; $i <= $#{$self->{custom_heading_regexp_aref}}; $i++) {
-        if ($self->{line} =~ /${$self->{custom_heading_regexp_aref}}[$i]/) {
+        if ($self->{line} =~ /${$self->{custom_heading_regexp_aref}}[$i]/m) {
             if ($self->{explicit_headings}) {
                 $level = $i + 1;
             } else {
@@ -1056,19 +1056,19 @@ sub unhyphenate {
     # Along with it, I pull out any punctuation that follows.
     # Preceding whitespace is preserved.  We don't want to screw up
     # our own guessing systems that rely on indentation.
-    ($second) =	$self->{nextline} =~ /^\s*([^\W\d_]+[\)\}\]\.,:;\'\"\>]*\s*)/; # "
-    $self->{nextline} =~ s/^(\s*)[^\W\d_]+[\)\}\]\.,:;\'\"\>]*\s*/$1/; # "
+    ($second) =	$self->{nextline} =~ /^\s*([^\W\d_]+[\)\}\]\.,:;\'\"\>]*\s*)/m; # "
+    $self->{nextline} =~ s/^(\s*)[^\W\d_]+[\)\}\]\.,:;\'\"\>]*\s*/$1/m; # "
     # (The silly comments are for my less-than-perfect code hilighter)
 
     $self->{nextline} = $self->getline() if $self->{nextline} eq "";
-    $self->{line} =~ s/\-\s*$/$second/;
+    $self->{line} =~ s/\-\s*$/$second/m;
     $self->{line} .= "\n";
 }
 
 sub untabify {
     my($self) = shift;
     my($line) = @_;
-    while ($line =~ /\011/) {
+    while ($line =~ /\011/m) {
         $line =~ s/\011/" " x ($self->{tab_width} - (length($`) % $self->{tab_width}))/e;
     }
     return $line;
@@ -1078,7 +1078,7 @@ sub tagline {
     my($self) = shift;
     my($tag) = @_;
     chop $self->{line};                 # Drop newline
-    $self->{line} =~ s/^\s*(.*)$/<$tag>$1<\/$tag>\n/;
+    $self->{line} =~ s/^\s*(.*)$/<$tag>$1<\/$tag>\n/m;
 }
 
 sub iscaps {
@@ -1088,7 +1088,7 @@ sub iscaps {
     # (And, yes, I could use the literal characters instead of the 
     # numeric codes, but this keeps the script 8-bit clean, which will
     # save someone a big headache when they transfer via ASCII ftp.
-    return (/^[^a-z\341\343\344\352\353\354\363\370\337\373\375\342\345\347\350\355\357\364\365\376\371\377\340\346\351\360\356\361\362\366\372\374<]*[A-Z\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\330\331\332\333\334\335\336]{$self->{min_caps_length},}[^a-z\341\343\344\352\353\354\363\370\337\373\375\342\345\347\350\355\357\364\365\376\371\377\340\346\351\360\356\361\362\366\372\374<]*$/);
+    return (/^[^a-z\341\343\344\352\353\354\363\370\337\373\375\342\345\347\350\355\357\364\365\376\371\377\340\346\351\360\356\361\362\366\372\374<]*[A-Z\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\330\331\332\333\334\335\336]{$self->{min_caps_length},}[^a-z\341\343\344\352\353\354\363\370\337\373\375\342\345\347\350\355\357\364\365\376\371\377\340\346\351\360\356\361\362\366\372\374<]*$/m);
 }
 
 sub caps {
@@ -1105,7 +1105,7 @@ sub glob2regexp {
     my($glob) = @_;
 
     # Escape funky chars
-    $glob =~ s/[^\w\[\]\*\?\|\\]/\\$&/g;
+    $glob =~ s/[^\w\[\]\*\?\|\\]/\\$&/gm;
     my($regexp, $i, $len, $escaped) = ("", 0, length($glob), 0);
 
     for (; $i < $len; $i++) {
@@ -1160,7 +1160,7 @@ sub add_literal_to_links_table {
     my($self) = shift;
     my($key, $URL, $switches) = @_;
 
-    $key =~ s/(\W)/\\$1/g; # Escape non-alphanumeric chars
+    $key =~ s/(\W)/\\$1/gm; # Escape non-alphanumeric chars
     $key = "\\b$key\\b"; # Make a regexp out of it
     $self->add_regexp_to_links_table($key, $URL, $switches);
 }
@@ -1181,44 +1181,44 @@ sub parse_dict {
     print STDERR "Parsing dictionary file $dictfile\n"
             if ($self->{dict_debug} & 1);
 
-    $dict =~ s/^\#.*$//g;	 # Strip lines that start with '#'
-    $dict =~ s/^.*[^\\]:\s*$//g; # Strip lines that end with unescaped ':'
+    $dict =~ s/^\#.*$//gm;	 # Strip lines that start with '#'
+    $dict =~ s/^.*[^\\]:\s*$//gm; # Strip lines that end with unescaped ':'
 
-    if($dict =~ /->\s*->/) {
+    if($dict =~ /->\s*->/m) {
         $message = "Two consecutive '->'s found in $dictfile\n";
 
         # Print out any useful context so they can find it.
-        ($near) = $dict =~ /([\S ]*\s*->\s*->\s*\S*)/;
-        $message .= "\n$near\n" if $near =~ /\S/; 
+        ($near) = $dict =~ /([\S ]*\s*->\s*->\s*\S*)/m;
+        $message .= "\n$near\n" if $near =~ /\S/m;
         die $message;
     }
 
-    while ($dict =~ /\s*(.+)\s+\-+([ieho]+\-+)?\>\s*(.*\S+)\s*\n/ig) {
+    while ($dict =~ /\s*(.+)\s+\-+([ieho]+\-+)?\>\s*(.*\S+)\s*\n/igm) {
         my($key, $URL, $switches, $options);
         $key = $1;
         $options = $2;
         $options = "" unless defined($options);
         $URL = $3;
         $switches = 0;
-        $switches += 1 if $options =~ /i/i; # Case insensitivity
-        $switches += 2 if $options =~ /e/i; # Evaluate as Perl code
-        $switches += 4 if $options =~ /h/i; # provides HTML, not just URL
-        $switches += 8 if $options =~ /o/i; # Only do this link once
+        $switches += 1 if $options =~ /i/im; # Case insensitivity
+        $switches += 2 if $options =~ /e/im; # Evaluate as Perl code
+        $switches += 4 if $options =~ /h/im; # provides HTML, not just URL
+        $switches += 8 if $options =~ /o/im; # Only do this link once
 
-        $key =~ s/\s*$//;		# Chop trailing whitespace
+        $key =~ s/\s*$//m;		# Chop trailing whitespace
 
-		if ($key =~ m|^/|) {	# Regexp
+		if ($key =~ m|^/|m) {	# Regexp
 			$key = substr($key,1);
-			$key =~ s|/$||;		# Allow them to forget the closing /
+			$key =~ s|/$||m;	# Allow them to forget the closing /
 			$self->add_regexp_to_links_table($key, $URL, $switches);
-		} elsif ($key =~ /^\|/) { # alternate regexp format
+		} elsif ($key =~ /^\|/m) { # alternate regexp format
 			$key = substr($key,1);
-			$key =~ s/\|$//;	# Allow them to forget the closing |
-			$key =~ s|/|\\/|g;	# Escape all slashes
+			$key =~ s/\|$//m;	# Allow them to forget the closing |
+			$key =~ s|/|\\/|gm;	# Escape all slashes
 			$self->add_regexp_to_links_table($key, $URL, $switches);
-		} elsif ($key =~ /\"/) {
+		} elsif ($key =~ /\"/m) {
 			$key = substr($key,1);
-			$key =~ s/\"$//;	# Allow them to forget the closing "
+			$key =~ s/\"$//m;	# Allow them to forget the closing "
 			$self->add_literal_to_links_table($key, $URL, $switches);
 		} else {
 			$self->add_glob_to_links_table($key, $URL, $switches);
@@ -1281,16 +1281,16 @@ EOCode
 		$key = $pattern;
 		$switches = ${$self->{links_switch_table_href}}{$key};
 
-		$s_sw = "";				# Options for searching
+		$s_sw = "m";				# Options for searching
 		$s_sw .= "i" if($switches & 1);
 
-		$r_sw = "";				# Options for replacing
+		$r_sw = "m";				# Options for replacing
 		$r_sw .= "i" if($switches & 1);
 		$r_sw .= "e" if($switches & 2);
 
 		$href = ${$self->{links_table_href}}{$key};
 
-		$href =~ s@/@\\/@g;
+		$href =~ s@/@\\/@gm;
 		$href = '<A HREF="' . $href . '">$&<\\/A>'
 				if !($switches & 4);
 
@@ -1368,7 +1368,7 @@ sub getline {
 #    $line = <>;
     $line = shift(@{$self->{source_aref}});
     $line = "" unless defined ($line);
-    $line =~ s/[ \011]*\015$//;	# Chop trailing whitespace and DOS CRs
+    $line =~ s/[ \011]*\015$//m;	# Chop trailing whitespace and DOS CRs
     $line = $self->untabify($line);   # Change all tabs to spaces
     return $line;
 }
