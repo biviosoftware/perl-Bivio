@@ -129,6 +129,7 @@ __PACKAGE__->new({
 			    'http://www.bivio.com',
 			)->put(
 			    cell_align => 'n',
+			    link_target => '_blank',
 			),
 		    ],
 		],
@@ -271,7 +272,7 @@ OpenWin = this.open(page, "CtrlWindow",
                   Your Goals</b></a></font></td>
               </tr>
               <tr height="2"> 
-                <td height="2"><img src="http://www.buyandhold.com/bh/en/images/greenarrow.gif" border="0" height="15" width="6" hspace="2"><font face="Arial,Helvetica,sans-serif" size="1"><a href="http://www.buyandhold.com/bh/en/goals/index.html"><b>Investment 
+                <td height="2"><img src="http://www.buyandhold.com/bh/en/images/greenarrow.gif" border="0" height="15" width="6" hspace="2"><font face="Arial,Helvetica,sans-serif" size="1"><a href="http://www.buyandhold.com/bh/en/investmentclubs/index.html"><b>Investment 
                   Clubs </b></a></font></td>
               </tr>
               <tr height="2"> 

@@ -57,7 +57,7 @@ sub create_content {
 	    [' ',
 	    $self->string($self->join(<<'EOF'), 'page_text')],
 Use bivio to organize your club. The first step is to
-<a href="http://www.bivio.com/pub/register">register with bivio</a>.
+<a href="http://www.bivio.com/pub/register" target=_blank>register with bivio</a>.
 <p>
 As part of registering, <b>create a club</b> on bivio. Each club gets
 its own Club Site&#153;. You'll need to pick a name for your
@@ -79,7 +79,7 @@ EOF
 	    [' ',
 	    $self->string($self->join(<<'EOF'), 'page_text')],
 You should establish a <b>partnership agreement</b>. We recommend the
-<a href="/goto?x=http://www.better-investing.org/clubs/sample-pa.html">sample partnership agreement</a>
+<a href="/goto?x=http://www.better-investing.org/clubs/sample-pa.html" target=_blank>sample partnership agreement</a>
 supplied by the NAIC&#153;. All members must sign a copy of your partnership
 agreement.
 <p>
@@ -90,7 +90,7 @@ bylaws to operate your club.
 US clubs must obtain an
 <a href="/hp/tax-id.html">Employer Identification Number</a>
 (EIN). Fill out
-<a href="/mr/irs/fss4.pdf">Form SS-4</a> and mail it in.
+<a href="/mr/irs/fss4.pdf">Form SS-4</a> and mail it in to the IRS.
 <p>
 Some US states and counties request you register. Once your club is
 actually doing business, you may want to contact your Secretary of
@@ -115,7 +115,7 @@ You are now ready to start investing together. The Web is a fabulous resource. U
 <p>
 Good luck! You are sure to have a fascinating journey when you Invest with
 your friends&#153;.
-<a href="http://www.bivio.com/pub/register"><b>Register now</b></a>!
+<a href="http://www.bivio.com/pub/register" target=_blank><b>Register now</b></a>!
 <br>
 &nbsp;
 EOF
