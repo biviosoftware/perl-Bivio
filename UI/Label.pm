@@ -49,6 +49,7 @@ _compile(
     CONFIRM_NEW_PASSWORD => ['Confirm New'],
     LOGIN => ['Login'],
     SAVE_PASSWORD => ['Save Password'],
+    SECURE_MODE => ['Secure Mode'],
 
     # Address labels
     ADDRESS => ['Address'],
@@ -175,6 +176,10 @@ _compile(
     HTTP_DOCUMENT => ['Home Page'],
     HELP => ['Help'],
     CLUB_CREATE => ['Create Club Site'],
+    CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
+
+    # Julie Stav
+    JULIE_STAV => ['Julie Stav'],
 
     # Table Headings
     NAME_HEADING => ['Name'],

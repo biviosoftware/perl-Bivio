@@ -172,6 +172,23 @@ sub dump {
     return;
 }
 
+=for html <a name="echo"></a>
+
+=head2 echo(any arg) : arg
+
+=head2 echo(any arg, ...) : array
+
+Returns its arguments.  Used for literal widget values.
+
+=cut
+
+sub echo {
+    shift;
+    return shift if int(@_) <= 1;
+    die('expecting an array context') unless wantarray;
+    return @_;
+}
+
 =for html <a name="get"></a>
 
 =head2 get(string key, ...) : (string, ...)
