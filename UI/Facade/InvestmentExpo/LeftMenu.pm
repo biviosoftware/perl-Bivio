@@ -80,11 +80,11 @@ sub initialize {
        'Home:/',
        'About Us:/about.html',
        'Exhibitors:/exhibitors.html',
-       # No URI
-       'Expo Clubs',
+       'Expo Hall:/expohall.html',
+       # No URI which _render_main() treats specially
+       'Investment Expo Clubs',
        # No label (handled by _render_sublist, can't be first in this list)
        \&_render_sublist,
-       'Expo Hall:/expohall.html',
        'Register:/register.html',
        'Shows:/shows.html',
        'Speakers:/nyspeakers.html',
