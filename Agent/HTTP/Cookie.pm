@@ -224,14 +224,15 @@ sub parse {
 	    push(@v, '') if int(@v) % 2;
 	    $data = {@v};
 	    _trace('data=', $data) if $_TRACE;
-	    unless ($data->{$_REMOTE_IP_FIELD}) {
-		$state = Bivio::Agent::HTTP::CookieState::NO_CLIENT();
-		last;
-	    }
-	    if ($r->connection->remote_ip ne $data->{$_REMOTE_IP_FIELD}) {
-		$state = Bivio::Agent::HTTP::CookieState::INVALID_CLIENT();
-		last;
-	    }
+#TODO: Better security than this.  It doesn't work for aol.
+#	    unless ($data->{$_REMOTE_IP_FIELD}) {
+#		$state = Bivio::Agent::HTTP::CookieState::NO_CLIENT();
+#		last;
+#	    }
+#	    if ($r->connection->remote_ip ne $data->{$_REMOTE_IP_FIELD}) {
+#		$state = Bivio::Agent::HTTP::CookieState::INVALID_CLIENT();
+#		last;
+#	    }
 	    # We try to get the user now, because we know basically
 	    # that everything in the cookie is ok.
 	    #
