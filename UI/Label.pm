@@ -265,6 +265,9 @@ _compile(
     TAX_COST_BASIS_HEADING => ['(e) Cost or other basis'],
     TAX_GAIN_HEADING => ['(f) Gain or (loss)'],
 
+    # Form Fields
+    INVITE_MESSAGE => ['Message'],
+
     # Misc. Features
     NEW_HARDWARE => ['New Computers'],
 );
