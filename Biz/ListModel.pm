@@ -91,9 +91,10 @@ sub PAGE_SIZE {
 }
 
 #=IMPORTS
+use Bivio::Biz::Model::SummaryList;
+use Bivio::Biz::QueryType;
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
-use Bivio::Biz::QueryType;
 use Bivio::Util;
 
 #=VARIABLES
@@ -438,6 +439,25 @@ sub get_search_as_html {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return $fields->{query}->get_search_as_html();
+}
+
+=for html <a name="get_summary"></a>
+
+=head2 get_summary() : Bivio::Biz::Model::SummaryList
+
+Returns the summary list for this model.
+
+=cut
+
+sub get_summary {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    unless (defined($fields->{summary})) {
+	$fields->{summary} = Bivio::Biz::Model::SummaryList->new([$self]);
+    }
+    $fields->{summary}->reset_cursor;
+    return $fields->{summary};
 }
 
 =for html <a name="has_next"></a>
