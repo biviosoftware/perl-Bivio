@@ -282,6 +282,24 @@ sub get_delegate_info {
 	    View.account
 	    next=PLACE_ORDER
 	)],
+	[qw(
+	    USER_ACCOUNT_EDIT_BY_SUPER_USER
+	    525
+	    USER
+	    SUPER_USER_TRANSIENT
+	    Model.UserAccountForm
+	    View.account
+	    next=SITE_ROOT
+	)],
+	# This isn't fully implemented
+	[qw(
+	    USER_ACCOUNT_DELETE
+	    526
+	    USER
+	    DATA_READ&DATA_WRITE&SUBSTITUTE_USER_TRANSIENT
+	    View.account
+	    next=SITE_ROOT
+	)],
     ]);
 }
 

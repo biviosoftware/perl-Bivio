@@ -204,6 +204,8 @@ sub _task {
     $t->group(MAIN => $t->get_facade->get('Text')->get_value('home_page_uri'));
     $t->group(USER_ACCOUNT_CREATE => 'my/create-account');
     $t->group(USER_ACCOUNT_EDIT => '?/account');
+    $t->group(USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account');
+    $t->group(USER_ACCOUNT_DELETE => '?/delete-account');
     $t->group(USER_ACCOUNT_CREATED => '?/account-created');
     $t->group(USER_ACCOUNT_UPDATED => '?/account-updated');
     $t->group(ORDER_COMMIT => '?/commit-order');
