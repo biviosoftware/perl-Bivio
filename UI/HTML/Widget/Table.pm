@@ -215,6 +215,11 @@ C<table_separator>.
 
 Should column sorting be displayed?
 
+=item width : string []
+
+Set the width of the table explicitly.  I<expand> should be
+used in most cases.
+
 =back
 
 =head1 COLUMN ATTRIBUTES
@@ -905,9 +910,13 @@ sub _render_start {
 	    $state->{self}->get_or_default('align',
 		    $html->get_value('table_default_align')));
 
-    $$buffer .= $html->get_value('page_left_margin')
-	    ? ' width="95%"' : ' width="100%"'
-		    if $state->{self}->unsafe_get('expand');
+    if ($state->{self}->unsafe_get('expand')) {
+	$$buffer .= $html->get_value('page_left_margin')
+		? ' width="95%"' : ' width="100%"';
+    }
+    elsif (my $width = $state->{self}->unsafe_get('width')) {
+	$$buffer .= ' width="'.$width.'"';
+    }
     $$buffer .= '>';
     return;
 }
