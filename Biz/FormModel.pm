@@ -256,9 +256,9 @@ sub clear_errors {
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request) : boolean
+=head2 static execute(Bivio::Agent::Request req) : boolean
 
-=head2 static execute(Bivio::Agent::Request, hash_ref values) : boolean
+=head2 static execute(Bivio::Agent::Request req, hash_ref values) : boolean
 
 There are two modes:
 
@@ -269,6 +269,8 @@ There are two modes:
 I<values> is not passed.  Form values are processed from I<req.form>.
 Loads a new instance of this model using the request.
 If the form processing ends in errors, any transactions are rolled back.
+
+The value I<form_model> is "put" on I<req> in this case only.
 
 =item action
 
@@ -288,8 +290,8 @@ sub execute {
     my($self) = $proto->new($req);
     my($fields) = $self->{$_PACKAGE};
 
-    # Save in request, so can be added to prev_context
-    $req->put(ref($self) => $self, form_model => $self);
+    # Save in request
+    $req->put(ref($self) => $self);
 
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
@@ -301,6 +303,10 @@ sub execute {
 	return 0 unless $fields->{errors};
 	Carp::croak($self->as_string, ": called with invalid values");
     }
+
+    # Only save "generically" if not executed explicitly.
+    # sub-forms shouldn't be put on as THE form_model
+    $req->put(form_model => $self);
 
     my($input) = $req->get_form();
 
@@ -473,10 +479,12 @@ sub get_context_from_request {
 #TODO: This is horribly inefficient, I think.
 	$form = $model->internal_get_field_values;
 	$context = $model->{$_PACKAGE}->{context};
+	_trace('from model: ', $form) if $_TRACE;
     }
     elsif ($model = $req->get('task')->get('form_model')) {
 	$model = $model->get_instance;
 	$form = $req->unsafe_get('form');
+	_trace('from request: ', $form) if $_TRACE;
     }
 
     # Construct a new context from existing state in request.
