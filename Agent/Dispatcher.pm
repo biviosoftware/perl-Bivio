@@ -32,7 +32,6 @@ use BSD::Resource;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Task;
-use Bivio::Agent::Views;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Trace;
@@ -124,7 +123,6 @@ Initialize Agent state.
 sub initialize {
     $_INITIALIZED && return;
     Bivio::Agent::HTTP::Location->initialize;
-    Bivio::Agent::Views->initialize;
     Bivio::Agent::Task->initialize;
     $_INITIALIZED = 1;
     return;
