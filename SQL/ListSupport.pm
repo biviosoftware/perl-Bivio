@@ -214,10 +214,12 @@ sub load {
     my($self, $query, $die) = @_;
     # If there is a select, load with "this" or "list".
     # Otherwise, no select such just return an empty list.
+    my($this);
     return $self->has_keys('select') ?
-	    $query->get('this') ? _load_this($self, $query, $die)
-		    : _load_list($self, $query, $die)
-			    : [];
+	    ($this = $query->get('this'))
+		    ? _load_this($self, $query, $this, $die)
+			    : _load_list($self, $query, $die)
+				    : [];
 }
 
 #=PRIVATE METHODS
@@ -311,6 +313,7 @@ sub _init_column_classes {
     __PACKAGE__->init_model_primary_key_maps($attrs);
 
     # order_by may be empty and stays in specified order.  Update some avlues
+    my($i) = 0;
     foreach my $c (@{$attrs->{order_by}}) {
 	my($cc) = $c->{constraint};
 #TODO: If SQL::Constraint changes, this will probably break.
@@ -321,6 +324,7 @@ sub _init_column_classes {
 	$c->{'<='}
 		= ' and '.$c->{sql_name}.'<='.$c->{type}->to_sql_value('?');
 	($c->{'>='} = $c->{'<='}) =~ s/\<\=/\>\=/;
+	$c->{order_by_index} = $i++;
     }
 
     return $where;
@@ -422,6 +426,7 @@ sub _load_list {
     my($row);
     # See note about $has_more at the end of this loop
     my($has_more) = 1;
+    my($start_time) = Bivio::Util::gettimeofday();
  ROW: while (($row = $statement->fetchrow_arrayref) || ($has_more = 0)) {
 	unless ($started) {
 	    # If this row matches just_prior primary key or if the first
@@ -478,12 +483,46 @@ sub _load_list {
     # and were told that, i.e. if while loop exited naturally.
     # In this case, $has_more will be false and won't call fetchrow
     $has_more &&= defined($statement->fetchrow_arrayref);
+    Bivio::SQL::Connection->increment_db_time($start_time);
     $query->put(($is_forward ? 'has_next' : 'has_prev') => $has_more);
 
     # Reverse the rows so ListModel doesn't need to concern itself
     # with is_forward.
     @$rows = reverse(@$rows) unless $is_forward || int(@$rows) <= 1;
     return $rows;
+}
+
+# _load_this(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, array_ref this, any die)
+#
+# Loads a single row.
+#
+sub _load_this {
+    my($self, $query, $this, $die) = @_;
+    my($attrs) = $self->internal_get;
+    my($auth_id) =  $query->get('auth_id');
+    my(@params) = Bivio::Type::PrimaryId->to_sql_param($auth_id);
+    my($i) = 0;
+    foreach my $col (@{$attrs->{primary_key}}) {
+	push(@params, $col->{type}->to_sql_param($this->[$i++]));
+    }
+    my($statement) = Bivio::SQL::Connection->execute(
+	    $attrs->{select_this}, \@params);
+    my($start_time) = Bivio::Util::gettimeofday();
+    my($row) = $statement->fetchrow_arrayref;
+    unless ($row) {
+	Bivio::SQL::Connection->increment_db_time($start_time);
+	return [];
+    }
+    die('too many rows returned') if $statement->fetchrow_arrayref;
+    Bivio::SQL::Connection->increment_db_time($start_time);
+    $i = 0;
+    return [{
+	(map {
+	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+	} @{$attrs->{select_columns}}),
+	# Add in auth_id to every row as constant.
+	$attrs->{auth_id}->{name} => $auth_id,
+    }];
 }
 
 =head1 COPYRIGHT
