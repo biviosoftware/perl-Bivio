@@ -45,17 +45,21 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Biz::ListModel source, ...) : Bivio::Biz::ListModel::SummaryList
+=head2 static new(array_ref source) : Bivio::Biz::ListModel::SummaryList
+
+=head2 static new(array_ref source, hash_ref static_properties) : Bivio::Biz::ListModel::SummaryList
 
 Creates a summary list which gets data from the specified source ListModel(s).
+Sets the static_properties to values supplied.
 
 =cut
 
 sub new {
-    my($proto, @source) = @_;
-    my($self) = &Bivio::Collection::Attributes::new($proto);
+    my($proto, $source, $static_properties) = @_;
+    my($self) = &Bivio::Collection::Attributes::new($proto,
+	    $static_properties);
     $self->{$_PACKAGE} = {
-	source => \@source,
+	source => $source,
 	loaded => 1,
     };
     return $self;
@@ -81,9 +85,11 @@ sub get {
     my($fields) = $self->{$_PACKAGE};
     my(@result) = ();
     foreach my $name (@keys) {
-	push(@result, _sum($fields->{source}, $name));
+	$self->put($name, _sum($fields->{source}, $name))
+		unless $self->has_keys($name);
+	
     }
-    return @result;
+    return $self->SUPER::get(@keys);
 }
 
 =for html <a name="get_widget_value"></a>
@@ -99,8 +105,9 @@ to do the rest.
 sub get_widget_value {
     my($self, $name, @params) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $self->put($name, $self->get($name))
-	    if $fields->{source}->[0]->has_keys($name);
+    # Only "get" if first source has this key.  "get" does a "put"
+    # if need be.
+    $self->get($name) if $fields->{source}->[0]->has_keys($name);
     return $self->SUPER::get_widget_value($name, @params);
 }
 
@@ -154,10 +161,7 @@ sub _sum {
 	$list->reset_cursor;
 	while ($list->next_row) {
 #TODO: use Math::BigInt
-	    my($value) = $list->get($name);
-	    $result += $value;
-#TODO: very odd, only sums summary lists correctly if broken into two lines, ex ValuationStatment, need to look into this, perl bug?
-#	    $result += $list->get($name);
+	    $result += scalar($list->get($name));
 	}
 	$list->reset_cursor;
     }
