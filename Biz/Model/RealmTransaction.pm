@@ -84,6 +84,39 @@ sub cascade_delete {
     return;
 }
 
+=for html <a name="generate_entry_remark"></a>
+
+=head2 generate_entry_remark() : string
+
+=head2 generate_entry_remark(string class, string entry_id) : string
+
+Return an appropriate remark for the entry.
+By default, the source_class of the transaction is used to generate the
+remark.
+
+=cut
+
+sub generate_entry_remark {
+    my($self, $class, $entry_id) = @_;
+
+    my($remark);
+    $class ||= $self->get('source_class');
+
+    if ($class eq Bivio::Type::EntryClass::INSTRUMENT()) {
+	$remark = _generate_instrument_remark($self, $entry_id);
+    }
+    elsif ($class eq Bivio::Type::EntryClass::MEMBER()) {
+	$remark = _generate_member_remark($self, $entry_id);
+    }
+    elsif ($class eq Bivio::Type::EntryClass::CASH()) {
+	$remark = _generate_account_remark($self, $entry_id);
+    }
+    else {
+	die("invalid entry class $class");
+    }
+    return $remark;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -121,6 +154,154 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _generate_account_remark() : string
+#
+# _generate_account_remark(string entry_id) : string
+#
+# Returns the account name.
+#
+sub _generate_account_remark {
+    my($self, $entry_id) = @_;
+
+    my($sth);
+    if (defined($entry_id)) {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT realm_account_t.name
+            FROM entry_t, realm_account_entry_t, realm_account_t
+            WHERE entry_t.entry_id=?
+            AND entry_t.entry_id = realm_account_entry_t.entry_id
+            AND realm_account_entry_t.realm_account_id
+                = realm_account_t.realm_account_id
+            AND realm_account_entry_t.realm_id=?',
+	    [$entry_id, $self->get('realm_id')]);
+    }
+    else {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT realm_account_t.name
+            FROM entry_t, realm_account_entry_t, realm_account_t
+            WHERE entry_t.realm_transaction_id=?
+            AND entry_t.entry_id = realm_account_entry_t.entry_id
+            AND realm_account_entry_t.realm_account_id
+                = realm_account_t.realm_account_id
+            AND realm_account_entry_t.realm_id=?',
+	    [$self->get('realm_transaction_id', 'realm_id')]);
+    }
+    my($result);
+    my($row);
+    while ($row = $sth->fetchrow_arrayref) {
+	$result ||= $row->[0].' Account';
+	# iterate the whole result set so the cursor closes
+	# there is only one row anyway
+    }
+    # guaranteed result if class is cash
+    return $result;
+}
+
+# _generate_instrument_remark() : string
+#
+# _generate_instrument_remark(string entry_id) : string
+#
+# [<count> Shares ] <name>
+#
+sub _generate_instrument_remark {
+    my($self, $entry_id) = @_;
+
+    my($sth);
+    if (defined($entry_id)) {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT instrument_t.name, realm_instrument_entry_t.count
+            FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
+                instrument_t
+            WHERE entry_t.entry_id=?
+            AND entry_t.entry_id = realm_instrument_entry_t.entry_id
+            AND realm_instrument_entry_t.realm_instrument_id
+                = realm_instrument_t.realm_instrument_id
+            AND realm_instrument_t.instrument_id
+                = instrument_t.instrument_id
+            AND realm_instrument_entry_t.realm_id=?',
+	    [$entry_id, $self->get('realm_id')]);
+    }
+    else {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT instrument_t.name, realm_instrument_entry_t.count
+            FROM entry_t, realm_instrument_entry_t, realm_instrument_t,
+                instrument_t
+            WHERE entry_t.realm_transaction_id=?
+            AND entry_t.entry_id = realm_instrument_entry_t.entry_id
+            AND realm_instrument_entry_t.realm_instrument_id
+                = realm_instrument_t.realm_instrument_id
+            AND realm_instrument_t.instrument_id
+                = instrument_t.instrument_id
+            AND realm_instrument_entry_t.realm_id=?',
+	    [$self->get('realm_transaction_id', 'realm_id')]);
+    }
+
+    my($result);
+    my($row);
+    while ($row = $sth->fetchrow_arrayref) {
+	my($name, $count) = @$row;
+	$result ||= $name;
+
+	# get the grammar right
+	if ($count == 1) {
+	    $result = '1 Share '.$name if $count > 0;
+	}
+	elsif ($count > 0) {
+	    $result = $count.' Shares '.$name if $count > 0;
+	}
+    }
+    # guaranteed result if class is instrument
+    return $result;
+}
+
+# _generate_member_remark() : string
+#
+# _generate_member_remark(string entry_id) : string
+#
+# If the number of member entries is > 1 then
+# 'Deposits for '.<number>.' members' is returned.
+# Otherwise the member display_name.
+#
+sub _generate_member_remark {
+    my($self, $entry_id) = @_;
+
+    my($sth);
+    if (defined($entry_id)) {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT realm_owner_t.display_name
+            FROM entry_t, member_entry_t, realm_owner_t
+            WHERE entry_t.entry_id=?
+            AND entry_t.entry_id = member_entry_t.entry_id
+            AND member_entry_t.user_id = realm_owner_t.realm_id
+            AND member_entry_t.realm_id=?',
+	    [$entry_id, $self->get('realm_id')]);
+    }
+    else {
+	$sth = Bivio::SQL::Connection->execute('
+            SELECT realm_owner_t.display_name
+            FROM entry_t, member_entry_t, realm_owner_t
+            WHERE entry_t.realm_transaction_id=?
+            AND entry_t.entry_id = member_entry_t.entry_id
+            AND member_entry_t.user_id = realm_owner_t.realm_id
+            AND member_entry_t.realm_id=?',
+	    [$self->get('realm_transaction_id', 'realm_id')]);
+    }
+
+    my($result);
+    my($row);
+    my($count) = 0;
+    while ($row = $sth->fetchrow_arrayref) {
+	$result ||= $row->[0];
+	$count++;
+    }
+    # change remark for group entries
+    if ($count > 1) {
+	$result = 'Deposits for '.$count.' members';
+    }
+    # guaranteed result if class is member
+    return $result;
+}
 
 =head1 COPYRIGHT
 
