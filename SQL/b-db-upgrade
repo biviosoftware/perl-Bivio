@@ -247,6 +247,75 @@ sub _upgrade {
     return;
 }
 
+# _upgrade_perms()
+#
+# MODIFY PERMISSION BITS
+#
+sub _upgrade_perms {
+
+    use Bivio::Biz::Util::RealmRole;
+
+    print("Modifying role permissions\n");
+
+    # Realm GENERAL
+    # Move MAIL_FORWARD permission from ANONYMOUS to USER
+    Bivio::Biz::Util::RealmRole->edit('GENERAL', 'ANONYMOUS', '-MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('GENERAL', 'USER', '+MAIL_FORWARD');
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('GENERAL', 'GUEST', '+ANY_REALM_USER');
+    # Add REALM_PUBLICIZE to ADMINISTRATOR
+    Bivio::Biz::Util::RealmRole->edit('GENERAL', 'ADMINISTRATOR', '+REALM_PUBLICIZE');
+
+    # Realm USER
+    # Move MAIL_FORWARD permission from ANONYMOUS to USER
+    Bivio::Biz::Util::RealmRole->edit('USER', 'ANONYMOUS', '-MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('USER', 'USER', '+MAIL_FORWARD');
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('USER', 'GUEST', '+ANY_REALM_USER');
+    # Add REALM_PUBLICIZE to ADMINISTRATOR
+    Bivio::Biz::Util::RealmRole->edit('USER', 'ADMINISTRATOR', '+REALM_PUBLICIZE');
+
+    # Realm CLUB
+    # Move MAIL_FORWARD permission from ANONYMOUS to USER
+    Bivio::Biz::Util::RealmRole->edit('CLUB', 'ANONYMOUS', '-MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('CLUB', 'USER', '+MAIL_FORWARD');
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('CLUB', 'GUEST', '+ANY_REALM_USER');
+    # Add REALM_PUBLICIZE to ACCOUNTANT
+    Bivio::Biz::Util::RealmRole->edit('CLUB', 'ACCOUNTANT', '+REALM_PUBLICIZE');
+
+    # Realm ask_candis_publish
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('ask_candis_publish', 'GUEST', '+ANY_REALM_USER');
+    # Add missing permissions
+    Bivio::Biz::Util::RealmRole->edit('ask_candis_publish', 'ACCOUNTANT', '+');
+    Bivio::Biz::Util::RealmRole->edit('ask_candis_publish', 'ADMINISTRATOR', '+');
+
+    # Realm trez_talk_publish
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('trez_talk_publish', 'GUEST', '+ANY_REALM_USER');
+    # Add missing permissions
+    Bivio::Biz::Util::RealmRole->edit('trez_talk_publish', 'ACCOUNTANT', '+');
+    Bivio::Biz::Util::RealmRole->edit('trez_talk_publish', 'ADMINISTRATOR', '+');
+
+    # Realm advoco
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('advoco', 'GUEST', '+ANY_REALM_USER');
+    # Add missing permissions
+    Bivio::Biz::Util::RealmRole->edit('advoco', 'ACCOUNTANT', '+');
+    Bivio::Biz::Util::RealmRole->edit('advoco', 'ADMINISTRATOR', '+');
+
+    # Realm amicus
+    # Add ANY_REALM_USER to GUEST
+    Bivio::Biz::Util::RealmRole->edit('amicus', 'GUEST', '+ANY_REALM_USER');
+    # Add missing permissions
+    Bivio::Biz::Util::RealmRole->edit('amicus', 'ACCOUNTANT', '+');
+    Bivio::Biz::Util::RealmRole->edit('amicus', 'ADMINISTRATOR', '+');
+
+    print("\n*** done ***\n");
+    return;
+}
+
 # _upgrade_delist_FTL()
 #
 # Delists Fruit of the Loom.
