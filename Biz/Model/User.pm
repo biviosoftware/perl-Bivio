@@ -34,6 +34,7 @@ and delete interface to the C<user_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::SQL::Constraint;
@@ -45,6 +46,7 @@ use Bivio::Type::PrimaryId;
 use Bivio::Type::Location;
 
 #=VARIABLES
+my($_SHADOW_PREFIX) = '=';
 
 =head1 METHODS
 
@@ -110,6 +112,34 @@ sub format_full_name {
     # Get rid of last ' '
     chop($res) if defined($res);
     return $res;
+}
+
+=for html <a name="generate_shadow_user_name"></a>
+
+=head2 static generate_shadow_user_name(string first_name, string last_name) : string
+
+Creates a shadow realm name for the user with the specified first/last name.
+The name will be unique across current realms.
+
+=cut
+
+sub generate_shadow_user_name {
+    my(undef, $first_name, $last_name) = @_;
+    die("invalid first and last name") unless ($first_name || $last_name);
+    my($name) = $last_name;
+    $name = $first_name.'_'.$name if defined($first_name);
+    $name =~ s/\s/_/g;
+    $name =~ s/[\W]//g;
+    $name = $_SHADOW_PREFIX.lc($name);
+
+    my($req) = Bivio::Agent::Request->get_current
+	    || Bivio::Agent::Request->new();
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($unique_num) = 0;
+    while ($realm->unauth_load(name => $name.$unique_num)) {
+	$unique_num++;
+    }
+    return $name.$unique_num;
 }
 
 =for html <a name="get_email_address"></a>
