@@ -1700,10 +1700,34 @@ my(@_CFG) = (
         ACCOUNTING_READ
         ?/accounting/reports/income_and_deductions
         Bivio::Biz::Action::ReportDate
-        Bivio::Biz::Model::MiscExpenseList
-        Bivio::Biz::Model::MiscIncomeList
+        Bivio::Biz::Model::PortfolioDeductionList
+        Bivio::Biz::Model::PortfolioIncomeList
         Bivio::UI::HTML::Club::MiscIncomeAndDeductions
         next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_F1065_TEST
+        162
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/tax99/f1065/test
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
+        Bivio::Biz::Model::F1065Form
+        Bivio::UI::HTML::FormDump
+        next=CLUB_ACCOUNTING_TAX99_F1065_TEST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_SCHEDULE_D_TEST
+        163
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/tax99/schedule_d/test
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::InstrumentSaleList->execute_load_all
+        Bivio::Biz::Model::ScheduleDForm
+        Bivio::UI::HTML::FormDump
+        next=CLUB_ACCOUNTING_TAX99_SCHEDULE_D_TEST
     )],
 );
 
