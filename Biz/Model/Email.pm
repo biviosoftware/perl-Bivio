@@ -83,6 +83,24 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="is_ignore"></a>
+
+=head2 is_ignore() : boolean
+
+=head2 static is_ignore(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Calls L<Bivio::Type::Email::is_ignore|Bivio::Type::Email/"is_ignore">
+on the email address.
+
+=cut
+
+sub is_ignore {
+    my($self, $list_model, $model_prefix) = @_;
+    my($p) = $model_prefix || '';
+    my($m) = $list_model || $self;
+    return Bivio::Type::Email->is_ignore($m->get($p.'email'));
+}
+
 =for html <a name="unauth_load"></a>
 
 =head2 unauth_load(hash query) : boolean
