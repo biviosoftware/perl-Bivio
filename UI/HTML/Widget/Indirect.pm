@@ -81,7 +81,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($v) = $self->get('value');
     return unless ref($v);
-    $v = $source->get_widget_value($v) if ref($v) eq 'ARRAY';
+    $v = $source->get_widget_value(@$v) if ref($v) eq 'ARRAY';
     $v->render($source, $buffer) if ref($v);
     return;
 }
