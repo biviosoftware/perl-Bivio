@@ -3,7 +3,6 @@
 #
 use strict;
 use Bivio::Test;
-use Bivio::Type::CreditCardNumber;
 use Bivio::TypeError;
 Bivio::Test->unit([
     'Bivio::Type::CreditCardNumber' => [
