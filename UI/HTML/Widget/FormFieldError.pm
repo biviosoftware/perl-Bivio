@@ -40,6 +40,10 @@ The model field name.
 
 Which form are we dealing with.
 
+=item label: string
+
+The label used for the error.
+
 =back
 
 =cut
@@ -86,6 +90,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     $fields->{field} = $self->get('field');
     $fields->{model} = $self->ancestral_get('form_model');
+    $fields->{label} = $self->unsafe_get('label') || '';
     return;
 }
 
@@ -115,7 +120,7 @@ sub render {
 	    $$buffer .= $p
 		    .Bivio::UI::HTML::FormErrors->to_html(
 			    $source, $model, $fields->{field},
-			    '', $error)
+			    $fields->{label}, $error)
 		    .$s."<br>\n";
 	}
     }
