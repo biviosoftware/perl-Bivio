@@ -77,6 +77,28 @@ sub internal_load_rows {
     return $rows;
 }
 
+=for html <a name="prune_members"></a>
+
+=head2 prune_members(string user_id, string date)
+
+Removes all rows except the one identified by the specified user_id.
+
+=cut
+
+sub prune_members {
+    my($self, $user_id, $date) = @_;
+    my($rows) = $self->internal_get_rows;
+    $date = Bivio::Type::Date->to_literal($date);
+    for (my $i = int(@$rows); --$i >= 0; ) {
+	my($row) = $rows->[$i];
+
+#TODO: hacked, date isn't property, but does appear in name text
+	next if $row->{user_id} eq $user_id && $row->{name} =~ /$date/;
+	splice(@$rows, $i, 1);
+    }
+    return;
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
