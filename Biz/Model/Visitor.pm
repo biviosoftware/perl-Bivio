@@ -57,6 +57,24 @@ sub create {
     return $self->SUPER::create($values);
 }
 
+=for html <a name="get_first_id_for_user"></a>
+
+=head2 get_first_id_for_user(string user_id) : string
+
+Returns newest visitor record for cookie.
+
+=cut
+
+sub get_first_id_for_user {
+    my($self, $user_id) = @_;
+    my($it) = $self->unauth_iterate_start('visitor_id desc',
+	    {user_id => $user_id});
+    my($res) = $self->iterate_next_and_load($it)
+	    ? $self->get('visitor_id') : undef;
+    $self->iterate_end($it);
+    return $res;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
