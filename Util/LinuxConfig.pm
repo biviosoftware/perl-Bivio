@@ -64,6 +64,7 @@ commands:
     add_sendmail_http_agent uri -- configures sendmail to pass mail b-sendmail-http
     add_user user[:uid] [group[:gid] [shell]] -- create a user
     add_users_to_group group user... -- add users to group
+    append_lines file owner group perms line ... -- appends lines to a file if they don't already exist
     create_ssl_crt iso_country state city organization hostname -- create ssl certificate
     delete_crontab_line user entry... -- delete entries from crontab
     delete_sendmail_class_line filename line ... -- delete values trusted-users, relay-domains, etc.
@@ -123,8 +124,8 @@ Add I<entry>s to this I<user>'s crontab.
 
 sub add_crontab_line {
     my($self, $user, @entry) = @_;
-    return _append_lines($self, "/var/spool/cron/$user", 'root', $user, 0600,
-	\@entry);
+    return $self->append_lines("/var/spool/cron/$user", 'root', $user, 0600,
+	@entry);
 }
 
 =for html <a name="add_group"></a>
@@ -165,8 +166,8 @@ creating if it doesn't exist.
 
 sub add_sendmail_class_line {
     my($self, $file, @value) = @_;
-    return _append_lines($self, "/etc/mail/$file", 'root', 'mail', 0640,
-	\@value);
+    return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
+	@value);
 }
 
 =for html <a name="add_sendmail_http_agent"></a>
@@ -273,6 +274,23 @@ sub allow_any_sendmail_smtp {
 	    "MaxMessageSize=$max_message_size"
         )
         . _exec($self, "chmod 0700 " . _prefix_file('/var/spool/mqueue'));
+}
+
+=for html <a name="append_lines"></a>
+
+=head2 append_lines(string file, string owner, string group, int perms, array lines) : string
+
+Adds lines to file, creating if necessary.
+
+=cut
+
+sub append_lines {
+    my($self, $file, $owner, $group, $perms, @lines) = @_;
+    my($lines) = 
+    return _add_file($self, $file, $owner, $group, $perms)
+	. _edit($self, $file, map {
+	    ['$', "$_\n", qr/^\Q$_\E$/m],
+	 } @lines);
 }
 
 =for html <a name="create_ssl_crt"></a>
@@ -534,18 +552,6 @@ sub _add_file {
     return "Created: $file\n";
 }
 
-# _append_lines(self, string file, string owner, string group, int perms, array_ref lines) : string
-#
-# Adds lines to file, creating if necessary.
-#
-sub _append_lines {
-    my($self, $file, $owner, $group, $perms, $lines) = @_;
-    return _add_file($self, $file, $owner, $group, $perms)
-	. _edit($self, $file, map {
-	    ['$', "$_\n", qr/^\Q$_\E$/m],
-	 } @$lines);
-}
-
 # _delete_lines(self, string file, array_ref lines) : string
 #
 # Removes lines to file.
@@ -584,7 +590,7 @@ sub _edit {
 	my($x) = "$search";
 	next if $$data =~ /$x/;
 	if ($where eq '$') {
-	    # Special case for _append_lines
+	    # Special case for append_lines
 	    Bivio::Die->die("$value: bad value") if ref($value);
 	    $$data .= $value;
 	}
