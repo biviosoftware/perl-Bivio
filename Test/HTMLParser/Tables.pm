@@ -138,6 +138,8 @@ sub find_row {
     $self->do_rows($table_name,
 	sub {
 	    my($row) = @_;
+            Bivio::Die->die('column name not found: ', $column_name)
+                unless exists($row->{$column_name});
 	    my($t) = $row->{$column_name}->get('text');
 	    return 1
 		unless $t eq $column_value || $t =~ $column_value;
