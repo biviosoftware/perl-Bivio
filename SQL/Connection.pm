@@ -36,6 +36,7 @@ use Bivio::DieCode;
 use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 use Bivio::Util;
+use Bivio::TypeError;
 use Carp ();
 
 #=VARIABLES
@@ -52,7 +53,6 @@ my($_NEED_PING) = 0;
 my($_NEED_COMMIT) = 0;
 my($_DB_TIME) = 0;
 my(%_ERR_TO_DIE_CODE) = (
-	1 => Bivio::DieCode::ALREADY_EXISTS(),
 # Why bother?
 #	1400 => Bivio::DieCode::ALREADY_EXISTS,
 #	die('required value missing') if $err == 1400;
@@ -109,6 +109,7 @@ sub execute {
 	$_NEED_COMMIT = 1 if $sql !~ /^\s*select/i;
 	ref($params) ? $statement->execute(@$params)
 		: $statement->execute();
+#TODO: need to inc when a failure
 	$self->increment_db_time($start_time);
     });
     return $statement unless $@;
@@ -116,28 +117,34 @@ sub execute {
     # If we get an error, it may be a timed-out connection.  We'll
     # check the connection the next time through.
     $_NEED_PING = 1;
-    my($err) = $statement ? $statement->err : 0;
+    my($err) = $statement && $statement->err ? $statement->err + 0 : 0;
+    my($errstr) = $statement && $statement->errstr ? $statement->errstr : '';
     my($attrs) = {
 	message => $@,
 	dbi_err => $err,
-	dbi_errstr => $statement ? $statement->errstr : '',
+	dbi_errstr => $errstr,
 	sql => $sql,
 	sql_params => $params,
     };
+    my($die_code);
+    if ($err == 1 && $errstr =~ /unique constraint \((\w+)\.(\w+)\)/i) {
+	$die_code = _find_constraint_columns($attrs, uc($1), uc($2));
+    }
     Bivio::Die->eval(sub {
 	# Clean up just in case statement is cached
 	$statement->finish if $statement;
     });
 #TODO: add more application error processing here
 #TODO: Add reply processingn
-    my($die_code);
-    if (defined($err) && defined($_ERR_TO_DIE_CODE{$err})) {
-	$err = $_ERR_TO_DIE_CODE{$err};
-    }
-    else {
-	$attrs->{program_error} = 1;
-	# Unexpected oracle error is treated as an assertion fault
-	$die_code = Bivio::DieCode::DIE();
+    unless ($die_code) {
+	if (defined($err) && defined($_ERR_TO_DIE_CODE{$err})) {
+	    $die_code = $_ERR_TO_DIE_CODE{$err};
+	}
+	else {
+	    $attrs->{program_error} = 1;
+	    # Unexpected oracle error is treated as an assertion fault
+	    $die_code = Bivio::DieCode::DIE();
+	}
     }
     $die ||= 'Bivio::Die';
     $die->die($die_code, $attrs, caller);
@@ -192,6 +199,49 @@ sub rollback {
 }
 
 #=PRIVATE METHODS
+
+# _find_constraint_columns(hash_ref attrs, string owner, string constraint) : Bivio::Type::Enum
+#
+# Will set "columns" and "table" in attrs.  Returns die code.
+#
+sub _find_constraint_columns {
+    my($attrs, $owner, $constraint) = @_;
+    my($die_code);
+    Bivio::Die->eval(sub {
+	my($statement) = _get_connection()->prepare(<<"EOF");
+	    SELECT user_cons_columns.table_name,
+		    user_cons_columns.column_name
+	    FROM user_cons_columns, user_constraints
+	    WHERE user_constraints.constraint_name = '$constraint'
+	    AND user_constraints.owner = '$owner'
+	    AND user_constraints.constraint_name
+	    = user_cons_columns.constraint_name
+EOF
+	$statement->execute();
+	my($row);
+	my($cols) = [];
+	my($table);
+	while ($row = $statement->fetchrow_arrayref) {
+	    $table = lc($row->[0]);
+	    push(@$cols, lc($row->[1]));
+	}
+	$_NEED_PING = 0;
+	if ($table) {
+	    $attrs->{columns} = $cols, $attrs->{table} = $table;
+	    _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
+		    if $_TRACE;
+	    $die_code = Bivio::TypeError::EXISTS();
+	}
+	else {
+	    _trace($owner, '.', $constraint,
+		    ': constraint query returned nothing') if $_TRACE;
+	}
+	# Connection works, no need to ping
+	1;
+    });
+    _trace($owner, '.', $constraint, ':', $@) if $_TRACE && $@;
+    return $die_code;
+}
 
 # static _get_connection() : connection
 #
