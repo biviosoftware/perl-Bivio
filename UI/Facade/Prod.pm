@@ -276,7 +276,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(logo_widget => $fc->get_standard_logo);
 	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(page_widget => $fc->get_standard_page);
-	    foreach my $r (qw(trez_talk ask_candis)) {
+	    foreach my $r (Bivio::Type::RealmName->CELEBRITY_CLUBS) {
 		$fc->group('mail_home_list_'.$r =>
 			$_W->load_and_new('MailHomeList', {realm_name => $r}));
 	    }
