@@ -428,7 +428,7 @@ sub _strip_non_mime {
     return $mime_header;
 }
 
-# _walk_attachment_tree(MIME::Entity entity, int dir_id, string mail_id, boolean is_public) : int
+# _walk_attachment_tree(MIME::Entity entity, int dir_id, string user_id, string name, boolean is_public) : int
 #
 # Descend into the message parts:
 #  - create a directory for multipart attachments
@@ -439,7 +439,7 @@ sub _strip_non_mime {
 #TODO: This routine might need a clearer structure
 #
 sub _walk_attachment_tree {
-    my($self, $entity, $dir_id, $user_id, $mail_id, $is_public) = @_;
+    my($self, $entity, $dir_id, $user_id, $name, $is_public) = @_;
     my($req) = $self->get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
 
@@ -454,7 +454,7 @@ sub _walk_attachment_tree {
         # Has sub-parts, so create directory and descend
         $file->create({
             is_directory => 1,
-            name => $mail_id,
+            name => $name,
             user_id => $user_id,
             aux_info => $aux_info,
             is_public => $is_public,
@@ -485,16 +485,16 @@ sub _walk_attachment_tree {
                     $parts[$i]->mime_type =~ m|^text/|) {
                 next unless $parts[$i]->mime_type eq 'text/html';
             }
-            # Pass $mail_id and $i separately, so a subpart can refer to its parent
+            # Create a new base name by adding a suffix to the existing name
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
-                    $mail_id . sprintf('%02x', $i), $is_public);
+                    $name . sprintf('_%02x', $i), $is_public);
         }
     }
     else {
         my($content) = $entity->bodyhandle->as_string;
         $file->create({
             is_directory => 0,
-            name => $mail_id,
+            name => $name,
             user_id => $user_id,
             aux_info => $aux_info,
             is_public => $is_public,
