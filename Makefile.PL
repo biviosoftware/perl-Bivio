@@ -19,7 +19,7 @@ sub find {
 	$pm{$file} = '$(INST_LIB)/' . $file;
 	return;
     }
-    -d && !/^[A-Z]/ && ($File::Find::prune = 1);
+    -d $_ && !/^[.A-Z]/ && ($File::Find::prune = 1);
 }
 
 File::Find::find(\&find, '.');
