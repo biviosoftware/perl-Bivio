@@ -328,14 +328,15 @@ test instance.
 sub test_setup {
     my($proto, $map_class, @setup_args) = _args(@_);
     my($self) = _assert_in_eval('test_setup');
-    _die('called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
+    _die($proto, 'called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
     my($subclass) = Bivio::IO::ClassLoader->map_require(
 	'TestLanguage', $map_class);
-    _die("$subclass is not a ", __PACKAGE__, ' class')
+    print STDERR $subclass, "\n";
+    _die($proto, "$subclass is not a ", __PACKAGE__, ' class')
 	unless $subclass->isa(__PACKAGE__);
     _trace($subclass, ' setup with ', \@setup_args) if $_TRACE;
     my($new_self) = $subclass->new;
-    _die("$subclass\->new didn't create an instance of ", __PACKAGE__)
+    _die($proto, "$subclass\->new didn't create an instance of ", __PACKAGE__)
 	unless $new_self->isa(__PACKAGE__);
     $new_self->put(
 	test_script => $self->get('test_script'),

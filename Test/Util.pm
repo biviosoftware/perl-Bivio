@@ -237,17 +237,13 @@ sub unit {
 #
 sub _expunge {
     my($self) = @_;
-    Bivio::IO::File->chdir($_CFG->{nightly_output_dir});
-    my(@dirs) = grep(/^\d{14}$/, <*>);
-    my($count) = scalar(@dirs);
-
     # this automatically loops through files in ascending order of timestamp
-    foreach my $dir (@dirs) {
-	last if $count <= 14;
-        $self->print("Deleting old test directory ",
-            $_CFG->{nightly_output_dir} . "/$dir\n");
-	system("rm -rf $dir");
-	$count--;
+    # only works for this millenium
+    my(@dirs) = glob("$_CFG->{nightly_output_dir}/2?????????????");
+    while (@dirs > 14) {
+	my($dir) = shift(@dirs);
+        $self->print("Deleting old test directory: $dir\n");
+	Bivio::IO::File->rm_rf($dir);
     }
     return;
 }
