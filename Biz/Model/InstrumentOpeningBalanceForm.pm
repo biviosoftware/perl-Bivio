@@ -182,14 +182,14 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'RealmTransaction.date_time',
-		type => 'Bivio::Type::Date',
-		constraint => Bivio::SQL::Constraint::NOT_NULL(),
+		type => 'Date',
+		constraint => 'NOT_NULL',
 	    },
 	    'Instrument.ticker_symbol',
 	    {
 		name => 'paid',
-		type => 'Bivio::Type::Amount',
-		constraint => Bivio::SQL::Constraint::NONE(),
+		type => 'Amount',
+		constraint => 'NOT_NULL',
 	    },
 	    'RealmInstrumentEntry.count',
 	    'RealmTransaction.remark'
