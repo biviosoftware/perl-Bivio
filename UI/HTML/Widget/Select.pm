@@ -79,6 +79,10 @@ Should the UNKNOWN type be displayed?
 
 How many rows should be visible
 
+=item enum_sort : string ['get_name']
+
+The comparison method for an enum.
+
 =back
 
 =cut
@@ -130,6 +134,7 @@ sub initialize {
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
+    $fields->{enum_sort} = $self->get_or_default('enum_sort', 'get_name');
 
     my($choices) = $self->get('choices');
     $fields->{list_source} = undef;
@@ -220,12 +225,13 @@ sub _load_items_from_enum_list {
     my($self, $list) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    # Sort
+    # Sort by method name
+    my($sort_method) = $fields->{enum_sort};
     my(@values) = sort {
 	# Always put "0" (unknown) first.
 	return -1 if $a->as_int == 0;
 	return 1 if $b->as_int == 0;
-	$a->get_name cmp $b->get_name
+	$a->$sort_method() cmp $b->$sort_method()
     } @$list;
 
     shift(@values) unless $self->get_or_default('show_unknown', 1);
