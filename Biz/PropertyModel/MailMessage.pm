@@ -46,6 +46,7 @@ use Bivio::Type::Line;
 use Bivio::Type::PrimaryId;
 use IO::Scalar;
 use MIME::Parser;
+use Bivio::Biz::Mime::MimeParse;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -72,7 +73,6 @@ Creates a mail message model from an L<Bivio::Mail::Incoming>.
 sub create {
     my($self, $msg, $realm_owner, $club) = @_;
     # Archive mail message first
-#TODO: don't get_unix_mailbox, get_rfc822.
     # $dttm is always valid
     my($dttm) = $msg->get_dttm() || time;
     my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
@@ -100,15 +100,21 @@ sub create {
     $self->SUPER::create($values);
     my($msgid) = $self->get('mail_message_id');
 #TODO: Update club_t.bytes here
+    #must get club and update number of bytes allocated and check
+    #to see if over the limit.
+    #Maybe add it to club.
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
 	    \$body) || die("create failed: $body");
     # Handle email attachments. Here's a first cut...
-    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
-    my($file) = $msg->get_rfc822_io;
-    my($entity) = $parser->read($file);
-    # now extract all the mime attachments
-    &_trace('extracting MIME attachments for this mail message') if $_TRACE;
-    _extract_mime($entity, 0, $club_name, $msgid);
+    my $filename = '/' . $club_name . '/messages/html/' . $msgid;
+    if($msg){
+	&_trace('msg is not null when we call ctor MimeParse.') if $_TRACE;
+    }
+    
+    my $mimeparser = Bivio::Biz::Mime::MimeParse->new($msg, $filename, $_FILE_CLIENT);
+    $mimeparser->parse();
+    # due to the above two lines, all the MIME stuff in this
+    # file will be removed shortly.
     return;
 }
 
@@ -149,8 +155,6 @@ sub get_keywords {
 =over 4
 
 =item file_server : string (required)
-
-Where the messages are stored.
 
 =back
 
@@ -243,13 +247,13 @@ sub setup_club {
 # [messageid].[index]_hdr
 #
 sub _extract_mime {
-    my($entity, $file_index, $club_name, $message_id) = @_;
+    my($entity, $file_index, $club_name, $message_id, $suffix) = @_;
     &_trace('extract index: ', $file_index) if $_TRACE;
     my($num_parts) = $entity->parts || 0;
     &_trace('number of parts: ', $num_parts) if $_TRACE;
 
     my($mime) = _extract_mime_body_decoded($entity);
-    my($output_file_name) = $message_id.'.'.$file_index;
+    my($output_file_name) = $message_id . $suffix ? "_$suffix" : undef;
     my($msg) = $$mime;
     my($textplain) = 0;
     my($write) = 1;
@@ -258,14 +262,11 @@ sub _extract_mime {
     &_trace('content type: ', $ctype) if $_TRACE;
     if ($mime) {
 	if ($ctype =~ /multipart\/alternative/) {
-	    # maybe throw away the text/plain, and just write out the HTML
-	    &_trace('content-type is multipart/alternative.',
-		    ' Not writing this part.') if $_TRACE;
-	    $write = 0;
+	    &_trace('content-type is multipart/alternative.') if $_TRACE;
+	    $write = 1;
 	}
 	if ($ctype =~ /multipart\/mixed/) {
-	    &_trace('content type is multipart/mixed. Not writing this part.')
-		    if $_TRACE;
+	    &_trace('content type is multipart/mixed.') if $_TRACE;
 	    $write = 0;
 	}
 	if ($ctype =~ /text\/plain/) {
@@ -340,7 +341,6 @@ sub _extract_mime_header {
     my($head) = $entity->head;
     &_trace('>>printing mime header to IO::Scalar<<') if $_TRACE;
     $head->print($file);
-#    $head->print(\*HEADERHANDLE);
     &_trace('done writing mime_header');
     return $s;
 }
