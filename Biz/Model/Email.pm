@@ -32,13 +32,14 @@ and delete interface to the C<email_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::HTTP::Cookie;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
 use Bivio::Type::Location;
 use Bivio::Type::PrimaryId;
-use Bivio::Type::Email;
 
 #=VARIABLES
+my($_COOKIE_USER_FIELD) = Bivio::Agent::HTTP::Cookie->USER_FIELD();
 
 =head1 METHODS
 
@@ -57,6 +58,23 @@ sub create {
     $values->{want_bulletin} = 1
 	    unless defined($values->{want_bulletin});
     return $self->SUPER::create($values);
+}
+
+=for html <a name="get_email_from_cookie"></a>
+
+=head2 static get_email_from_cookie(Bivio::Agent::Request req) : string
+
+Returns the email of the user in the cookie.
+Returns undef if realm can't be loaded or email address is invalid.
+
+=cut
+
+sub get_email_from_cookie {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    return undef unless $self->unauth_load(
+	    realm_id => $req->get('cookie')->unsafe_get($_COOKIE_USER_FIELD));
+    return $self->is_ignore ? undef : $self->get('email');
 }
 
 =for html <a name="internal_initialize"></a>
