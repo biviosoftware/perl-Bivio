@@ -105,9 +105,9 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     )] => '<i>${label}</i>${_}<br>',
 
     # Unique mappings
-    abstract => '<p><table width="70%" align=center border=0><tr>'
-        . '<td align=center>${_}</td></tr></table></p>',
-    attribution => '<div align=right>-- ${_}</div>',
+    abstract => '<p><table width="70%" align="center" border="0"><tr>'
+        . '<td align="center">${_}</td></tr></table></p>',
+    attribution => '<div align="right">-- ${_}</div>',
     blockquote => ['blockquote'],
     chapter => sub {
 	my($attr, $html, $clipboard) = @_;
@@ -117,7 +117,13 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     },
     'chapter/title' => ['h1'],
     comment => '<i>[COMMENT: ${_}]</i>',
-    emphasis => ['b'],
+    emphasis => sub {
+	my($attr, $html) = @_;
+	my($r) = !defined($attr->{role}) ? 'i'
+	    : $attr->{role} eq 'bold' ? 'b'
+	    : die($attr->{role}, ': bad role on emphasis');
+	return "<$r>$$html</$r>";
+    },
     'figure/title' => ['center', 'b'],
     footnote => sub {
 	my($attr, $html, $clipboard) = @_;
@@ -128,8 +134,9 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
 	    . "[$clipboard->{footnote_idx}]</a>";
 
     },
+    foreignphrase => ['i'],
     graphic => {
-	template => '<div align=${align}><img border=0 src="${fileref}"></div>',
+	template => '<div align="${align}"><img border="0" src="${fileref}"></div>',
 	default_align => 'center',
     },
     itemizedlist => ['ul'],
@@ -149,7 +156,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     'quote/quote' => q{'${_}'},
     'sect1/title' => ['h2'],
     'sect2/title' => ['h3'],
-    sidebar => '<table width="95%" border=1 cellpadding=5 bgcolor="#CCCCCC">'
+    sidebar => '<table width="95%" border="1" cellpadding="5" bgcolor="#CCCCCC">'
         . '<tr><td>${_}</td></tr></table>',
     'sidebar/title' => ['h3'],
     superscript => ['sup'],
@@ -234,7 +241,7 @@ sub _compile_program {
 #
 sub _compile_tags_to_html {
     my($names, $prefix) = @_;
-    return join('', map {"<$prefix$_>"} @$names);
+    return join('', map({"<$prefix$_>"} @$names));
 }
 
 # _count_words(array_ref children) : int
@@ -243,7 +250,8 @@ sub _compile_tags_to_html {
 #
 sub _count_words {
     my($children) = @_;
-    shift(@$children) if ref($children->[0]) eq 'HASH';
+    shift(@$children)
+	if ref($children->[0]) eq 'HASH';
     my($res) = 0;
     my(@dontcare);
     while (@$children) {
@@ -261,7 +269,8 @@ sub _count_words {
 #
 sub _eval_child {
     my($tag, $children, $parent_tag, $clipboard) = @_;
-    return HTML::Entities::encode($children) unless $tag;
+    return HTML::Entities::encode($children)
+	unless $tag;
     return _eval_op(
 	_lookup_op($tag, $parent_tag),
         shift(@$children),
@@ -290,13 +299,13 @@ sub _eval_op {
 sub _eval_template {
     my($op, $attr, $html) = @_;
     my($res) = $op->{template};
-    $res =~ s/\$\{(\w+)\}/
+    $res =~ s{\$\{(\w+)\}}{
 	$1 eq '_' ? $$html
 	    : defined($attr->{$1}) ? HTML::Entities::encode($attr->{$1})
 	    : defined($op->{'default_'.$1})
 		? HTML::Entities::encode($op->{'default_'.$1})
 	    : die("$1: missing attribute on tag <$op->{tag}> and no default")
-    /egx;
+    }egx;
     return $res;
 }
 
@@ -318,10 +327,12 @@ sub _lookup_op {
 #
 sub _to_html {
     my($tag, $children, $clipboard) = @_;
-    my($res) = '';
-    $res .= _eval_child(splice(@$children, 0, 2), $tag, $clipboard)
-	while @$children;
-    return \$res;
+    return \(join('',
+	map({
+	    _eval_child(
+		$children->[$_ *= 2], $children->[++$_], $tag, $clipboard);
+	} 0 .. @$children/2 - 1),
+    ));
 }
 
 =head1 COPYRIGHT
