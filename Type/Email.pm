@@ -133,7 +133,7 @@ sub invalidate {
 
 =head2 static is_ignore(string email) : boolean
 
-Returns true if is not L<is_valid|"is_valid"> or 
+Returns true if is not L<is_valid|"is_valid"> or
 begins with L<IGNORE_PREFIX|"IGNORE_PREFIX">.
 
 =cut
