@@ -156,8 +156,10 @@ sub _find_files {
     File::Find::find({
 	no_chdir => 1,
 	wanted => sub {
-	    return unless $_ =~ /\.$pattern$/ && -r $_;
-	    my(undef, $d, $f) = File::Spec->splitpath($_);
+	    return
+		unless $File::Find::name =~ /\.$pattern$/
+		    && -r $File::Find::name;
+	    my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
 	    $d = File::Spec->rel2abs($d, $pwd);
 	    push(@{$tests->{$d} ||= []}, $f);
 	    return;
