@@ -134,6 +134,15 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.ViewAsPlainText
 	)],
+	# If this is used, you need to overwrite it.
+	[qw(
+	    ADM_SUBSTITUTE_USER
+	    11
+	    GENERAL
+	    ADMIN_READ&ADMIN_WRITE
+            Action.ClientRedirect->execute_next
+            next=SITE_ROOT
+	)],
 ];
 }
 
