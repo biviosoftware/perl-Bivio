@@ -259,6 +259,7 @@ sub _upgrade_convert_fees_to_commissions {
     my($req) = @_;
     use Bivio::Data::EW::ClubImporter;
     print("converting investment fees into commissions\n");
+    my($date) = Bivio::Type::Date->from_literal('1/1/2002');
     my($sth) = Bivio::SQL::Connection->execute('
         SELECT realm_owner_t.name
         FROM realm_owner_t, club_t
@@ -268,7 +269,14 @@ sub _upgrade_convert_fees_to_commissions {
     while (my $row = $sth->fetchrow_arrayref) {
         my($name) = $row->[0];
         $req->set_realm($name);
-        Bivio::Data::EW::ClubImporter->convert_fees_into_commissions($req);
+
+        if (Bivio::Data::EW::ClubImporter
+            ->convert_fees_into_commissions($req)) {
+
+            print("\t", $name, "\n");
+            Bivio::Biz::Accounting::AllocationCache->new($req)
+                    ->invalidate($date);
+        }
     }
     return;
 }
