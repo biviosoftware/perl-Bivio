@@ -805,11 +805,10 @@ my(@_CFG) = (
         ADMIN_READ&MEMBER_READ
         %/admin/roster/detail
         Bivio::Biz::Model::ClubUserList
+        Bivio::Biz::Action::TargetRealm->execute_this
         Bivio::Biz::Model::RealmUserList->execute_load_all
         Bivio::UI::HTML::Club::UserDetail
     )],
-#        Bivio::Biz::Model::RealmUser
-#        Bivio::Biz::Action::TargetRealm->execute_this
     [qw(
         CLUB_ADMIN_MEMBER_TITLE_EDIT
         79
@@ -1264,7 +1263,7 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/address
         Bivio::Biz::Model::ClubUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::AddressForm
         Bivio::UI::HTML::Realm::EditAddress
         next=CLUB_ADMIN_USER_DETAIL
@@ -1287,7 +1286,7 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE&LOGIN
         %/admin/edit/member/tax_id
         Bivio::Biz::Model::ClubUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::TaxIdForm
         Bivio::UI::HTML::Realm::EditTaxId
         next=CLUB_ADMIN_USER_DETAIL
@@ -1523,7 +1522,7 @@ my(@_CFG) = (
         ADMIN_WRITE&MEMBER_WRITE
         %/admin/edit/member/phone
         Bivio::Biz::Model::ClubUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::PhoneForm
         Bivio::UI::HTML::Realm::EditPhone
         next=CLUB_ADMIN_USER_DETAIL
@@ -1536,7 +1535,7 @@ my(@_CFG) = (
         %/admin/edit/member/name
         Bivio::Type::NameEdit->execute_display_only
         Bivio::Biz::Model::ClubUserList
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::Club::EditUserName
         next=CLUB_ADMIN_USER_DETAIL
