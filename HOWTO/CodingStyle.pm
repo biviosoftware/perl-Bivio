@@ -53,7 +53,7 @@ continue) beginning the line:
 =item *
 
 All lines should be less than 80 characters, including pod.  Any perl line
-that exceeds 80 char should break on logic, '(', or '-&gt;', e.g.,
+that exceeds 80 char should break on logic, '(', or '->', e.g.,
 
     long_line_call(
         arg1, arg2);
