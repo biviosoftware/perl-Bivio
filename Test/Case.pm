@@ -80,9 +80,10 @@ Sets I<expect> attribute for this case.  Asserts that it is valid first.
 sub expect {
     my($self, $expect) = @_;
     Bivio::Die->die('Error in case ', $self,
-	': expect must be undef, array_ref, CODE, or Bivio::DieCode')
+	': expect must be undef, scalar, array_ref, CODE, Regexp or Bivio::DieCode, not ',
+        $expect)
 	unless !defined($expect) || ref($expect)
-	    && (ref($expect) =~ /^(ARRAY|CODE)$/
+	    && (ref($expect) =~ /^(ARRAY|CODE|Regexp)$/
 		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
     $self->put(expect => $expect);
     return;

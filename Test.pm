@@ -81,6 +81,10 @@ array_ref, e.g.
         [1, 2, 3] => [[1, 2, 3]],
     ]
 
+If the I<expect> is a regexp_ref, the I<entire> I<return> will be compared
+to I<expect>.  I<return> will be stringified with
+L<Bivio::IO::Ref::to_string|Bivio::IO::Ref/"to_string">.
+
 Here C<make_array_ref> is a routine being tested.  It returns an array_ref of
 its arguments.  We have an extra level of square brackets on the result
 of C<make_array_ref>.
@@ -448,14 +452,15 @@ sub _compile_method {
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
-    elsif (!ref($cases) || ref($cases) eq 'CODE') {
+    elsif (!ref($cases) || ref($cases) =~ /^(CODE|Regexp)$/) {
 	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
 	$cases = [
 	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
 	];
     }
     else {
-	_compile_die($state, 'cases is not an ARRAY, CODE, scalar or undef: ',
+	_compile_die($state,
+	    'cases is not an ARRAY, CODE, Regexp, scalar or undef: ',
 	    $cases);
     }
     my(@cases) = @$cases;
@@ -657,6 +662,13 @@ sub _eval_result {
 		Bivio::IO::Ref->nested_equals($case->get('expect'), $result);
 	    $custom = undef;
 	}
+    }
+    elsif (ref($case->get('expect')) eq 'Regexp'
+	&& ref($actual) ne 'Bivio::Die') {
+#TODO: Replace when perl bug is fixed.
+	my($x) = $case->get('expect');
+	$x = "$x";
+	return undef if ${Bivio::IO::Ref->to_string($actual)} =~ /$x/;
     }
     if ($custom) {
 	my($err);
