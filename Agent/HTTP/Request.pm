@@ -183,8 +183,9 @@ sub client_redirect {
 		if $new_task eq $self->get('task_id')
 		    || !Bivio::Agent::HTTP::Location->task_has_uri($new_task);
 
-	$self->internal_redirect_realm($new_task, $new_realm);
-	$uri = $self->format_uri($new_task, $new_query, $new_realm,
+	$uri = $self->format_uri($new_task, $new_query,
+		defined($new_realm) ? $new_realm
+		: $self->get_realm_for_task($new_task),
 		$new_path_info);
     }
     else {
