@@ -46,6 +46,7 @@ use Bivio::Type::UserAgent;
 
 #=VARIABLES
 my($_GENERAL);
+my($_IGNORE_REDIRECTS) = __PACKAGE__.'.ignore_redirects';
 
 =head1 FACTORIES
 
@@ -109,6 +110,57 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="client_redirect"></a>
+
+=head2 client_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, string new_path_info, boolean no_context)
+
+Will ignore redirects if L<ignore_redirects|"ignore_redirects"> was called.
+Otherwise passes off to SUPER.
+
+=cut
+
+sub client_redirect {
+    my($self) = shift;
+    return if $self->unsafe_get($_IGNORE_REDIRECTS);
+    $self->SUPER::client_redirect(@_);
+    return;
+}
+
+=for html <a name="ignore_redirects"></a>
+
+=head2 ignore_redirects()
+
+Sets internal state to ignore redirects.  This can be dangerous.
+
+B<EXPERIMENTAL>
+
+
+=cut
+
+sub ignore_redirects {
+    my($self) = @_;
+    $self->put_durable($_IGNORE_REDIRECTS => 1);
+    return;
+}
+
+=for html <a name="server_redirect"></a>
+
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, hash_ref new_query, hash_ref new_form, string new_path_info, boolean no_context)
+
+=head2 server_redirect(Bivio::Agent::TaskId new_task, Bivio::Auth::Realm new_realm, string new_query, hash_ref new_form, string new_path_info, boolean no_context)
+
+Will ignore redirects if L<ignore_redirects|"ignore_redirects"> was called.
+Otherwise passes off to SUPER.
+
+=cut
+
+sub server_redirect {
+    my($self) = shift;
+    return if $self->unsafe_get($_IGNORE_REDIRECTS);
+    $self->SUPER::server_redirect(@_);
+    return;
+}
 
 #=PRIVATE METHODS
 
