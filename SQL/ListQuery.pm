@@ -100,6 +100,11 @@ After the query is executed (via ListSupport), I<just_prior> becomes the
 hash_ref of the row just before the first row in the list in ascending order
 (i.e. disregards value of I<is_forward>).
 
+=item search : string
+
+An arbitrary search string.  The only parsing done by this module
+is to trim blanks and set to undef if zero length.
+
 =item this : array_ref
 
 The primary key values for this item.  The query should be to
@@ -122,6 +127,7 @@ my(%_QUERY_TO_FIELDS) = (
     'f' => 'first_order_by',
     'j' => 'just_prior',
     'o' => 'order_by',
+    's' => 'search',
     't' => 'this',
     'v' => 'version',
 );
@@ -259,6 +265,45 @@ sub format_uri_for_this {
     return _format_uri(\%attrs, $support);
 }
 
+=for html <a name="get_hidden_field_values"></a>
+
+=head2 get_hidden_field_values(Bivio::SQL::ListSupport sql_support) : array_ref
+
+Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
+
+=cut
+
+sub get_hidden_field_values {
+    my($self, $support) = @_;
+    my($attrs) = $self->internal_get();
+    my($columns) = $support->get('columns');
+    my($ob) = $attrs->{order_by};
+    my($res) = ['v', $attrs->{version}, 'a', 'N'];
+    if ($ob) {
+	my($o);
+	for (my($i) = 0; $i < int(@$ob); $i += 2) {
+	    $o .= $columns->{$ob->[$i]}->{order_by_index}
+		    . ($ob->[$i+1] ? 'a' : 'd');
+	}
+	push(@$res, 'o', $o);
+    }
+    return $res;
+}
+
+=for html <a name="get_search_as_html"></a>
+
+=head2 get_search_as_html() : string
+
+Return the escaped search string if any.
+
+=cut
+
+sub get_search_as_html {
+    my($self) = @_;
+    my($search) = $self->get('search');
+    return defined($search) ? Bivio::Util::escape_html($search) : '';
+}
+
 #=PRIVATE METHODS
 
 # _die(Bivio::Type::Enum code, string message, string value)
@@ -331,6 +376,10 @@ sub _format_uri {
 		    .$col->{type}->to_uri($limit_values->{$k});
 	}
     }
+
+    # search
+    $res .= '&s='.Bivio::Util::escape_uri($attrs->{search})
+	    if defined($attrs->{search});
     return $res;
 }
 
@@ -510,6 +559,21 @@ sub _parse_pk {
 		unless defined($v);
 	push(@$res, $v);
     }
+    return;
+}
+
+# _parse_search(hash_ref attrs, Bivio::SQL::ListSupport support)
+#
+# Parse the search string.  Make sure it doesn't have blanks.
+#
+sub _parse_search {
+    my($attrs, $support) = @_;
+    my($value) = $attrs->{'s'};
+    if (defined($value)) {
+	$value =~ s/^\s+|\s+$//g;
+	$attrs->{search} = $value, return if length($value);
+    }
+    $attrs->{search} = undef;
     return;
 }
 
