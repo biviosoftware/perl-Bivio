@@ -731,6 +731,9 @@ sub task_ok {
 # debugging purposes.
 #
 sub _get_realm {
+#TODO: This method should be in application code.  Probably should have
+#      hook for managing realms.  This is the only mention of clubs in
+#      all of this code.
     my($self, $realm_type, $task_id) = @_;
     # Find the appropriate realm
     if ($realm_type eq Bivio::Auth::RealmType::GENERAL()) {
@@ -738,9 +741,8 @@ sub _get_realm {
 	return $_GENERAL;
     }
     if ($realm_type eq Bivio::Auth::RealmType::CLUB()) {
-#TODO: This is wrong; need to allow user to go to club, from user realm
-	&_trace($task_id, ': for club realm, but no club specified');
-	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::DEMO_SUFFIX();
+#TODO: Why don't we want to return the demo_club?
+	my($demo_suffix) = Bivio::Biz::Action::CreateDemoClub::NAME_SUFFIX();
 	my($user_realms) = $self->get('user_realms');
 	my($role, $realm_id) = Bivio::Auth::Role::UNKNOWN->as_int;
 	foreach my $r (values(%$user_realms)) {
@@ -748,7 +750,7 @@ sub _get_realm {
 		    eq Bivio::Auth::RealmType::CLUB();
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 	    next unless  $rr > $role;
-	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix/x;
+	    next if $r->{'RealmOwner.name'} =~ /$demo_suffix$/x;
 	    $realm_id = $r->{'RealmUser.realm_id'};
 	    $role = $rr;
 	}
