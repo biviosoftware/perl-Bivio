@@ -128,7 +128,7 @@ sub render {
     if (defined($display_values) && exists($display_values->{$value})) {
 	$display_values->{$value}->render($source, $buffer);
     }
-    else {
+    elsif (defined($value)) {
 	$self->SUPER::render($source, $buffer);
     }
     return;
