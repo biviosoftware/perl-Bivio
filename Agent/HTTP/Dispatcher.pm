@@ -52,6 +52,7 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_SELF);
+my($_INITIALIZED);
 __PACKAGE__->initialize;
 
 =head1 FACTORIES
