@@ -100,6 +100,8 @@ B<Always begins with C</> if defined.>  Unlike CGI, I<path_info> is
 not extracted from I<uri>.  I<path_info> is used to generate other
 URIs, not to recreate the existing one.
 
+B<It is not escaped.>  HTTP::Location will escape it before appending.
+
 =item query : hash_ref
 
 Attributes in URI query string or other agent equivalent.
@@ -163,7 +165,7 @@ otherwise correct.  Currently only used in C<LoginForm>.
 
 =item uri : string
 
-URI from the incoming request unmodified.
+URI from the incoming request unmodified.  It is already "escaped".
 
 =item E<lt>ModuleE<gt> : Bivio::UNIVERSAL
 
