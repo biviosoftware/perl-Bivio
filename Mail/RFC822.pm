@@ -102,12 +102,24 @@ sub LWSP {
 
 =head2 SPECIALS : string
 
-Special characters which must be in quoted-string, to use within a word
+Special characters which must be in quoted-string, to use within a word.
 
 =cut
 
 sub SPECIALS {
     return '[][()<>@,;:\\\\".]';
+}
+
+=for html <a name="TSPECIALS"></a>
+
+=head2 TSPECIALS : string
+
+Tspecial characters which must be in quoted-string, to use within a token.
+
+=cut
+
+sub TSPECIALS {
+    return '[][()<>@,;:\\\\/".]';
 }
 
 =cut
