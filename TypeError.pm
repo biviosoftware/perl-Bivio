@@ -609,6 +609,26 @@ __PACKAGE__->compile(
 	undef,
 	'you must specify at least one Amount',
     ],
+    INVALID_EXPORT_FILE => [
+	67,
+	undef,
+	"import unsuccessful, the file has been sent to support@bivio.com for analysis",
+    ],
+    INCORRECT_EXPORT_FILE_NAME => [
+	68,
+	undef,
+	'the export file name must be NCADATA.DAT',
+    ],
+    IMPORT_IN_PROGRESS => [
+	69,
+	undef,
+	'an import for you club is already in progress',
+    ],
+    MEMBER_ALREADY_MERGED => [
+	70,
+	undef,
+	'this member has already been reconciled with existing data',
+    ],
 );
 
 #=PRIVATE METHODS
