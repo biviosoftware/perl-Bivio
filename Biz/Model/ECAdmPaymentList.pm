@@ -59,7 +59,7 @@ sub format_name {
 
 =head2 format_uri_hack() : string
 
-#TODO: This is a HACK!!!  But need to have detail uri formatted for each realm.
+#TODO: This is a HACK!!!  Need payment id for detail page
 
 =cut
 
@@ -68,7 +68,6 @@ sub format_uri_hack {
     return $self->get_request->format_uri(
 	    Bivio::Agent::TaskId::ADM_EC_SUBSCRIPTION_EDIT(), {
 		p => $self->get('ECPayment.ec_payment_id'),
-		realm => $self->get('RealmOwner.name'),
 	    });
 }
 
