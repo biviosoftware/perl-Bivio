@@ -22,7 +22,7 @@ sub handle_die {
     my($self, $die) = @_;
     $self eq 'Bivio::Die::T1' || die("huh?");
     $main::T1++;
-    grep(/test 2/, @{$die->get_errors}) && die('DEATH_TAG');
+    grep(/test 2/, $die->as_string) && die('DEATH_TAG');
 }
 
 sub sub_die {
@@ -40,8 +40,7 @@ package Bivio::Die::T2;
 sub handle_die {
     my($self, $die) = @_;
     $self eq 'Bivio::Die::T2' || die("huh?");
-    grep(/DEATH_TAG/, @{$die->get_errors})
-	    && $main::T2++;
+    grep(/DEATH_TAG/, $die->as_string) && $main::T2++;
     $main::T2++;
 }
 

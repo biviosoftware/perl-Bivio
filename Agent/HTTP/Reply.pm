@@ -27,12 +27,19 @@ output type will be 'text/html'.
 
 #=IMPORTS
 use Apache::Constants ();
+use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::IO::Trace;
+use Carp ();
+use UNIVERSAL;
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+# Can't initialize here, because get "deep recursion".  Don't ask me
+# why...
+my(%_DIE_TO_HTTP_CODE);
 
 =head1 FACTORIES
 
@@ -88,32 +95,35 @@ sub flush {
     $fields->{output} = '';
 }
 
-=for html <a name="get_http_return_code"></a>
+=for html <a name="die_to_http_code"></a>
 
-=head2 get_http_return_code() : int
+=head2 static die_to_mail_reply_code(Bivio::Die die) : int
 
-Returns the appropriate Apache::Constant depending on the current state
-of the request.
+=head2 static die_to_http_code(Bivio::DieCode die) : int
+
+Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
+
+If I<die> is C<undef>, returns C<Apache::Constants::OK>.
 
 =cut
 
-sub get_http_return_code {
-    my($self) = @_;
-    my($state) = $self->get_state();
-
-    # need to translate from Request state to Apache rc
-    return Apache::Constants::AUTH_REQUIRED()
-	    if $state == $self->AUTH_REQUIRED;
-    return Apache::Constants::FORBIDDEN()
-	    if $state == $self->FORBIDDEN;
-    return Apache::Constants::NOT_FOUND()
-	    if $state == $self->NOT_HANDLED;
-    return Apache::Constants::OK()
-	    if $state == $self->OK;
-    return Apache::Constants::SERVER_ERROR()
-	    if $state == $self->SERVER_ERROR;
-
-    warn("$state: unknown Bivio::Agent::Reply state");
+sub die_to_http_code {
+    my(undef, $die) = @_;
+    return Apache::Constants::OK() unless defined($die);
+    $die = $die->get('code') if UNIVERSAL::isa($die, 'Bivio::Die');
+    unless (%_DIE_TO_HTTP_CODE) {
+	%_DIE_TO_HTTP_CODE = (
+	    Bivio::DieCode::AUTH_REQUIRED()
+		=> Apache::Constants::AUTH_REQUIRED,
+	    Bivio::DieCode::FORBIDDEN() => Apache::Constants::FORBIDDEN,
+	    Bivio::DieCode::NOT_FOUND() => Apache::Constants::NOT_FOUND,
+	);
+    }
+    return $_DIE_TO_HTTP_CODE{$die}
+	    if defined($_DIE_TO_HTTP_CODE{$die});
+    # The rest get mapped to SERVER_ERROR
+    Carp::carp($die, ": unknown Bivio::DieCode")
+		unless UNIVERSAL::isa($die, 'Bivio::DieCode');
     return Apache::Constants::SERVER_ERROR();
 }
 
@@ -127,7 +137,7 @@ Writes the specified string to the request's output stream.
 
 sub print {
     my($self,$str) = @_;
-    defined($str) || die("ASSERTION_FAULT: argument undefined");
+    Carp::croak('argument undefined') unless defined($str);
     my($fields) = $self->{$_PACKAGE};
     $fields->{output} .= $str;
     return;

@@ -15,7 +15,8 @@ Bivio::Agent::Reply - a user agent reply
 
     $reply->set_output_type('image/gif');  # default is 'text/plain'
     $reply->print($image);
-    $reply->set_state($reply->OK);
+    $reply->set_die_code($die->get('code'));
+    $reply->set_die_code(undef);
     $reply->flush();
 
 =cut
@@ -32,71 +33,9 @@ that no action has been taken for the corresponding Request.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="OK"></a>
-
-=head2 OK : int
-
-successful
-
-=cut
-
-sub OK {
-    return 0
-}
-
-=for html <a name="FORBIDDEN"></a>
-
-=head2 FORBIDDEN : int
-
-use not authorized to do request
-
-=cut
-
-sub FORBIDDEN {
-    return 1;
-}
-
-=for html <a name="NOT_HANDLED"></a>
-
-=head2 NOT_HANDLED : int
-
-request not processed - ie not found
-
-=cut
-
-sub NOT_HANDLED {
-    return 2;
-}
-
-=for html <a name="AUTH_REQUIRED"></a>
-
-=head2 AUTH_REQUIRED : int
-
-needs authorization to proceed
-
-=cut
-
-sub AUTH_REQUIRED {
-    return 3;
-}
-
-=for html <a name="SERVER_ERROR"></a>
-
-=head2 SERVER_ERROR : int
-
-internal error
-
-=cut
-
-sub SERVER_ERROR {
-    return 4;
-}
-
 #=IMPORTS
+use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -112,7 +51,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 static new() : Bivio::Agent::Reply
 
-Creates a reply in the NOT_HANDLED state with the 'text/plain' output type.
+Creates a reply in an error state with the 'text/plain' output type.
 
 =cut
 
@@ -120,7 +59,7 @@ sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
     $self->{$_PACKAGE} = {
         'output_type' => 'text/plain',
-        'state' => SERVER_ERROR,
+        'die_code' => Bivio::DieCode::DIE(),
     };
     return $self;
 }
@@ -155,20 +94,20 @@ sub get_output_type {
     return $fields->{output_type};
 }
 
-=for html <a name="get_state"></a>
-
-=head2 get_state() : int
-
-Returns the state of the request. This should be one of the constant
-values described above.
-
-=cut
-
-sub get_state {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{state};
-}
+#TODO: Don't think we need this
+#=for html <a name="get_die_code"></a>
+#
+#=head2 get_die_code() : Bivio::DieCode or undef
+#
+#Returns the die code associated with the reply. 
+#
+#=cut
+#
+#sub get_die_code {
+#    my($self) = @_;
+#    my($fields) = $self->{$_PACKAGE};
+#    return $fields->{die_code};
+#}
 
 =for html <a name="print"></a>
 
@@ -198,21 +137,27 @@ sub set_output_type {
     return;
 }
 
-=for html <a name="set_state"></a>
-
-=head2 set_state(int state)
-
-Sets the state of the request the specified value. This should be one of the
-constant values describe above.
-
-=cut
-
-sub set_state {
-    my($self, $state) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{state} = $state;
-    return;
-}
+#TODO: Don't think we need this
+#=for html <a name="set_die_code"></a>
+#
+#=head2 set_die_code(Bivio::DieCode die_code)
+#
+#Sets I<die_code> to the appropriate state.
+#
+#=cut
+#
+#sub set_die_code {
+#    my($self, $die_code) = @_;
+#    my($fields) = $self->{$_PACKAGE};
+#    if (defined($die_code) && !UNIVERSAL::isa($die_code, 'Bivio::DieCode')) {
+#	my($dc) = Bivio::DieCode->from_any($die_code);
+#	# By calling die here, Bivio::Die takes over error handlingo
+#	Bivio::Die->die($die_code, {reply => $self}, caller) unless $dc;
+#	$die_code = $dc;
+#    }
+#    $fields->{die_code} = $die_code;
+#    return;
+#}
 
 #=PRIVATE METHODS
 

@@ -62,9 +62,9 @@ sub render {
     my($reply) = $req->get_reply();
 
 #TODO: handle update as well
-    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new();
-    my($email) = Bivio::Biz::PropertyModel::UserEmail->new();
-    my($club_user) = Bivio::Biz::PropertyModel::ClubUser->new();
+    my($demographics) = Bivio::Biz::PropertyModel::UserDemographics->new($req);
+    my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
+    my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
 
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
@@ -93,7 +93,7 @@ sub render {
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'gender', $req);
     $reply->print('<tr><td>&nbsp;</td></tr>');
     $reply->print('<tr><td>Role</td></tr>');
-    Bivio::UI::HTML::FieldUtil->entry_field($club_user, 'role', $req);
+    Bivio::UI::HTML::FieldUtil->entry_field($realm_user, 'role', $req);
 
     $reply->print('<tr><td>&nbsp;</td></tr>');
     $reply->print('<tr><td colspan=2 align=center>'

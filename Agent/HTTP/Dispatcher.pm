@@ -39,8 +39,10 @@ method L<set_handler|"set_handler">.
 =cut
 
 #=IMPORTS
-use Apache::Constants ();
+use Bivio::Util;
 use Bivio::Agent::Dispatcher;
+use Bivio::Agent::HTTP::Reply;
+use Bivio::Agent::HTTP::Request;
 use Bivio::Die;
 use Bivio::IO::Trace;
 
@@ -71,16 +73,24 @@ sub new {
 
 =cut
 
+=for html <a name="create_request"></a>
+
+=head2 create_request(Apache::Request r) : Bivio::Agent::Request
+
+Creates and returns the request.
+
+=cut
+
+sub create_request {
+    my($self, $r) = @_;
+    return Bivio::Agent::HTTP::Request->new($r);
+}
+
 =for html <a name="handler"></a>
 
 =head2 static handler(Apache::Request r) : int
 
-Handler called by L<mod_perl|mod_perl>, creates a
-L<Bivio::Agent::HTTP::Request|Bivio::Agent::HTTP::Request>
-which wraps L<Apache::Request|Apache::Request>.
-Then it invokes the appropriate
-L<Bivio::Agent::Controller|Bivio::Agent::Controller>
-to handle the request.
+Handler called by L<mod_perl|mod_perl>.
 
 Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 
@@ -88,36 +98,13 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 
 sub handler {
     my($r) = @_;
-    my($return_code);
-    Bivio::Agent::Request->clear_current;
-    my($res) = Bivio::Die->catch(sub {
-	$_INITIALIZED || __PACKAGE__->initialize;
-	my($request) = Bivio::Agent::HTTP::Request->new($r);
-	$_SELF->process_request($request);
-	my($reply) = $request->get('reply');
-	if (defined($reply)) {
-	    $return_code = $reply->get_http_return_code();
-	    $reply->flush if $return_code == Apache::Constants::OK();
-	}
-	1;
-    });
-    unless (defined($return_code)) {
-	$return_code = Apache::Constants::SERVER_ERROR();
-	eval {
-	    my($die) = Bivio::Die->get_last;
-	    defined($die) && warn(@{$die->get_errors});
-	    my($req) = Bivio::Agent::Request->get_current;
-	    my($reply) = ref($req) && $req->unsafe_get('reply');
-	    $return_code = ref($reply) ? $reply->get_http_return_code()
-		    : Apache::Constants::SERVER_ERROR();
-	    1;
-	} || warn($@);
-    }
-    Bivio::Agent::Request->clear_current;
-    Bivio::Die->clear_last;
-    $r->log_error($return_code)
-	    unless $return_code == Apache::Constants::OK();
-    return $return_code;
+    my($die);
+    $die = Bivio::Die->catch(sub {__PACKAGE__->initialize})
+	    unless $_INITIALIZED;
+    $die = $_SELF->process_request($r)
+	    unless $die;
+    $r->log_reason($die->as_string) if defined($die);
+    return Bivio::Agent::HTTP::Reply->die_to_http_code($die);
 }
 
 =for html <a name="initialize"></a>
@@ -162,19 +149,6 @@ A subclass for testing could look like this:
 	}
 	# handle the request in the base class (not -> notation)
 	return Bivio::Agent::HTTP::Dispatcher::handler($r);
-    }
-
-    sub create_site {
-	my($self) = @_;
-
-	Bivio::IO::Config->initialize();
-	#site creation here includeing controller registration
-    }
-
-    sub get_default_controller_name {
-	my($self) = @_;
-
-	# return the name of the default testing controller
     }
 
 Be sure that the subclass name is the entry in the httpd.conf so that it

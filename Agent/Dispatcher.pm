@@ -2,9 +2,7 @@
 # $Id$
 package Bivio::Agent::Dispatcher;
 use strict;
-use Apache::Constants();
-use Bivio::Agent::Request();
-use Bivio::Agent::HTTP::Request();
+
 $Bivio::Agent::Dispatcher::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
@@ -30,12 +28,19 @@ execute a task, and excutes the Task.
 =cut
 
 #=IMPORTS
+use BSD::Resource;
 use Bivio::Agent::HTTP::Location;
+use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Tasks;
 use Bivio::Agent::Views;
+use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::IO::Trace;
 
 #=VARIABLES
+# No cor dumps please
+setrlimit(RLIMIT_CORE, 0, 0);
+
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_INITIALIZED);
@@ -60,6 +65,44 @@ sub new {
 
 =cut
 
+=for html <a name="process_request"></a>
+
+=head2 process_request(array protocol_args) : undef or Bivio::Die
+
+Creates a request and returns a result.
+
+=cut
+
+sub process_request {
+    my($self, @protocol_args) = @_;
+    Bivio::Agent::Request->clear_current;
+    my($die) = Bivio::Die->catch(sub {
+	my($req) = $self->create_request(@protocol_args);
+	my($auth_realm, $auth_user, $task_id)
+		= $req->get(qw(auth_realm auth_user task_id));
+	my($owner) = $auth_realm->unsafe_get('owner');
+	if ($owner) {
+	    my($f) = $auth_realm->get('owner_id_field');
+	    $req->put(auth_owner_id => $owner->get($f),
+		    auth_owner_id_field => $f);
+	}
+	my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
+	my($reply) = $req->get('reply');
+	unless ($auth_realm->can_role_execute_task($auth_role, $task_id)) {
+	    Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
+		    {auth_user => $auth_user, entity => $auth_realm,
+			auth_role => $auth_role, operation => $task_id});
+	}
+	my($task) = Bivio::Agent::Task->get_by_id($task_id);
+	$req->put(task => $task, auth_role => $auth_role,
+		$owner ? (ref($owner) => $owner) : ());
+	$task->execute($req);
+	$reply->flush;
+    });
+    Bivio::Agent::Request->clear_current;
+    return $die;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 static initialize()
@@ -74,44 +117,6 @@ sub initialize {
     Bivio::Agent::Views->initialize;
     Bivio::Agent::Tasks->initialize;
     $_INITIALIZED = 1;
-    return;
-}
-
-=for html <a name="process_requets"></a>
-
-=head2 process_request(Bivio::Agent::Request req)
-
-Checks task authorization and executes.
-
-=cut
-
-sub process_request {
-    my($self, $req) = @_;
-    my($auth_realm, $auth_user, $task_id)
-	    = $req->get(qw(auth_realm auth_user task_id));
-    my($owner) = $auth_realm->unsafe_get('owner');
-    if ($owner) {
-	my($f) = $auth_realm->get('owner_id_field');
-	$req->put(auth_owner_id => $owner->get($f),
-		auth_owner_id_field => $f);
-    }
-    my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
-    my($reply) = $req->get('reply');
-    unless ($auth_realm->can_role_execute_task($auth_role, $task_id)) {
-	&_trace($auth_user, ": auth denied for ", $task_id, " as ",
-		$auth_role) if $_TRACE;
-	$reply->set_state($auth_user ? $reply->FORBIDDEN
-		: $reply->AUTH_REQUIRED);
-	return;
-    }
-    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-    $req->put(task => $task,
-	    auth_role => $auth_role,
-	    $owner ? (ref($owner) => $owner) : (),
-	   );
-    $task->execute($req);
-#TODO: Remove this?
-    $reply->set_state($reply->OK);
     return;
 }
 

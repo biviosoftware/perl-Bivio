@@ -37,6 +37,8 @@ to the database at all times.
 
 #=IMPORTS
 use Bivio::Biz::Error;
+use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::Ext::DBI;
 use Bivio::IO::Trace;
 
@@ -46,7 +48,13 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CONNECTION);
 my($_DB_TIME) = 0;
-
+my(%_ERR_TO_DIE_CODE) = (
+	1 => Bivio::DieCode::ALREADY_EXISTS(),
+# Why bother?
+#	1400 => Bivio::DieCode::ALREADY_EXISTS,
+#	die('required value missing') if $err == 1400;
+#    die('invalid number') if $err == 1722;
+);
 =head1 METHODS
 
 =cut
@@ -84,23 +92,23 @@ sub execute {
     };
     return unless $@;
 
-    my($eval_err) = $@;
-    # check for db errors
     my($err) = $statement->err;
-#TODO: Bivio::Die->no_catch, otherwise catches and calls recursively
+    my($attrs) = {
+	message => $@,
+	dbi_err => $err,
+	dbi_errstr => $statement->errstr,
+	entity => $model,
+	request => $model->get_request,
+    };
     eval {
 	# Clean up just in case statement is cached
 	$statement->finish;
-	# Save the error messages in request
-	$model->get_request->put(error_object => $model,
-		error_number => $err, error_message => $eval_err);
     };
 #TODO: add more application error processing here
-#TODO: Add reply processing
-    die('already exists') if $err == 1;
-    die('required value missing') if $err == 1400;
-    die('invalid number') if $err == 1722;
-    die $eval_err;
+#TODO: Add reply processingn
+    my($die_code) = defined($_ERR_TO_DIE_CODE{$err})
+	    ? $_ERR_TO_DIE_CODE{$err} : Bivio::DieCode::UNKNOWN;
+    Bivio::Die->die($die_code, $attrs, caller);
 }
 
 =for html <a name="get_connection"></a>

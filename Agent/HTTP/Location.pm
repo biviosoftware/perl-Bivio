@@ -36,6 +36,7 @@ use Bivio::Auth::Realm::User;
 use Bivio::Auth::Realm;
 use Bivio::Biz::PropertyModel::Club;
 use Bivio::Biz::PropertyModel::User;
+use Bivio::DieCode;
 
 #=VARIABLES
 my(%_FROM_URI);
@@ -128,11 +129,14 @@ sub parse {
     my(undef, $req, $uri) = @_;
 #TODO: Is this lc a dubious practice?  It will help clubs/users
 #      which like their names mixed case.
+    my($orig_uri) = $uri;
     $uri = lc($uri);
     $uri =~ s!^/+!!g;
     # Underscore is a special character
     my(@uri) = map {
-	die("$uri: uri contains underscore") if $_ eq '_';
+	$req->die(Bivio::DieCode::NOT_FOUND,
+		{entity => $orig_uri, message => 'contains underscore'})
+		if $_ eq '_';
 	$_
     } split(/\/+/, $uri);
     $uri = join('/', @uri);
@@ -143,8 +147,11 @@ sub parse {
     my($name) = shift(@uri);
     # Replace realm with underscore.  This is ugly, but good enough for now.
     $uri = join('/', '_', @uri);
-    die("$uri: uri within realm not found") unless defined($_FROM_URI{$uri});
+    $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri})
+	    unless defined($_FROM_URI{$uri});
     my($class, $realm);
+#TODO: Only search the appropriate realm.  Need to do something about
+#      shared realm uris.
     foreach $class ('Club', 'User') {
 	my($c) = "Bivio::Biz::PropertyModel::$class";
 	my($o) = $c->new($req);
@@ -153,9 +160,13 @@ sub parse {
 	$realm = $c->new($o);
 	last;
     }
-    die("$uri: realm not found") unless $realm;
+    $req->die(Bivio::DieCode::NOT_FOUND,
+	    {entity => $name, uri => $orig_uri, class => 'Bivio::Auth::Realm'})
+	    unless $realm;
     my($realm_class, $task_id) = @{$_FROM_URI{$uri}};
-    die("$uri: uri not within realm") unless $realm_class eq ref($realm);
+    $req->die(Bivio::DieCode::NOT_FOUND,
+	    {entity => $orig_uri, realm_class => $realm_class})
+	    unless $realm_class eq ref($realm);
     return ($realm, $task_id);
 }
 

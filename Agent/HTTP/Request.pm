@@ -43,10 +43,12 @@ and string respectively).
 =cut
 
 #=IMPORTS
-use Apache::Constants ();
+use Apache::Constants;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Reply;
 use Bivio::Biz::PropertyModel::User;
+use Bivio::Die;
+use Bivio::DieCode;
 use Bivio::Util;
 
 =head1 FACTORIES
@@ -133,9 +135,9 @@ sub _auth_user {
     my($user) = Bivio::Biz::PropertyModel::User->new($self);
     $user->load(name => $name);
     unless ($user->get('password') eq $password) {
-	my($reply) = $self->get('reply');
-	$reply->set_state($reply->AUTH_REQUIRED);
-	die('password mismatch');
+	Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
+		{request => $self, message => 'password mismatch',
+		    entity => $name, auth_user => $user});
     }
     return $user;
 }

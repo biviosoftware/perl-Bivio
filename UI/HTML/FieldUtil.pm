@@ -136,10 +136,10 @@ sub entry_field {
 #      we'll have security problems.
 	foreach $role (qw(ADMINISTRATOR MEMBER GUEST)) {
 	    my($r) = Bivio::Auth::Role->$role();
-	    my($i, $n) = ($r->as_int, ucfirst($r->as_string));
+	    my($i, $n) = ($r->as_int, ucfirst(lc($r->get_name)));
 	    my($checked) = defined($value) && $value == $i ? ' checked' : '';
 	    $reply->print(<<"EOF");
-$n<br><input type="radio" name="$field" value=$i$checked>
+<input type="radio" name="$field" value=$i$checked>&nbsp;$n<br>
 EOF
 	}
     }

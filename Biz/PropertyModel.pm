@@ -50,7 +50,9 @@ data.
 =cut
 
 #=IMPORTS
-use Carp;
+use Bivio::Die;
+use Bivio::DieCode;
+use Carp ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -89,7 +91,7 @@ C<internal_initialize>.
 
 sub new {
     my($proto, $req) = @_;
-    die('invalid request') unless ref($req);
+    Carp::croak('invalid request') unless ref($req);
     my($self) = &Bivio::Biz::Model::new($proto, $req);
     my($class) = ref($self);
     _initialize_class_info($class) unless $_CLASS_INFO{$class};
@@ -162,11 +164,11 @@ sub get {
     my($fields) = $self->{$_PACKAGE};
     my($properties) = $fields->{properties};
     my(@res) = map {
-	exists($properties->{$_}) || die("$_: unknown property");
+	Carp::croak("$_: unknown property") unless exists($properties->{$_});
 	$properties->{$_};
     } @names;
     return @res if wantarray;
-    die('get not called in array context') unless int(@res) == 1;
+    Carp::croak('get not called in array context') unless int(@res) == 1;
     return $res[0];
 }
 
@@ -242,7 +244,7 @@ keys for this model.
 =cut
 
 sub internal_initialize {
-    die('abstract method');
+    Carp::croak('abstract method');
 }
 
 =for html <a name="load"></a>
@@ -257,11 +259,8 @@ Subclasses shouldn't override this method.
 sub load {
     my($self) = shift;
     $self->unsafe_load(@_) && return;
-    my($req) = $self->get_request;
-    $req->put(error_object => $self, error_message => 'not found');
-    my($reply) = $req->get('reply');
-    $reply->set_state($reply->NOT_HANDLED);
-    die(ref($self), ': not found');
+    Bivio::Die->die(Bivio::DieCode::NOT_FOUND(),
+	    {@_, entity => $self, request => $self->get_request}, caller);
 }
 
 =for html <a name="unauth_load"></a>
@@ -292,7 +291,7 @@ sub unauth_load {
     # Create the where clause
     my($where, @values);
     while (my($k, $v) = each(%query)) {
-	die('invalid field name syntax') unless $k =~ /^\w{1,32}$/;
+	Carp::croak('invalid field name syntax') unless $k =~ /^\w{1,32}$/;
 	$where .= (defined($where) ? ' and ' : 'where ') . $k . '=?';
 	push(@values, $v);
     }
@@ -319,7 +318,7 @@ Subclasses shouldn't override this method.
 sub unsafe_load {
     my($self) = shift;
     my($fields) = $self->{$_PACKAGE};
-    die('no query arguments') unless @_;
+    Carp::croak('no query arguments') unless @_;
     my($req) = $fields->{request};
 
     # Ensure we are only getting data from the realm we are authorized
@@ -363,7 +362,7 @@ sub _get_property_info_value {
     my($self, $name, $index) = @_;
     my($property_info) = $self->{$_PACKAGE}->{class_info}->{property_info};
     my($property) = $property_info->{$name};
-    $property || die("$name: unknown property");
+    Carp::croak("$name: unknown property") unless $property;
     return $property->[$index];
 }
 

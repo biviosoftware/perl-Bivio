@@ -47,18 +47,6 @@ Only valid if I<auth_realm> has an owner.
 
 The user authenticated with the request
 
-=item error_object : Bivio::UNIVERSAL
-
-Object that is in error, e.g. Bivio::Biz::Model
-
-=item error_message : string
-
-Message associated with error
-
-=item error_number : string
-
-number associated with error, e.g. oracle error number
-
 =item form : hash_ref
 
 Attributes in url-encoded POST body or other agent equivalent.
@@ -113,6 +101,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Bivio::Die;
 use Bivio::Util;
 
 #=VARIABLES
@@ -164,6 +153,22 @@ sub clear_current {
     defined($_CURRENT) && $_CURRENT->delete_all;
     $_CURRENT = undef;
     return;
+}
+
+=for html <a name="die"></a>
+
+=head2 die(Bivio::Type::Enum code, hash_ref attrs)
+
+Terminate the request with a specific code.
+
+=cut
+
+sub die {
+    my($self, $code, $attrs) = @_;
+    $attrs || ($attrs = {});
+    ref($attrs) eq 'HASH' || ($attrs = {attrs => $attrs});
+    $attrs->{request} = $self;
+    Bivio::Die->die($code, $attrs, caller);
 }
 
 =for html <a name="elapsed_time"></a>

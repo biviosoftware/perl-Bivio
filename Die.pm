@@ -15,14 +15,11 @@ Bivio::Die - dispatch die_handler in modules on stack
     sub handle_die {
 	my($proto, $die_msg) = @_;
     }
-    Bivio::Die->get_last;
-    $die->push_error($new);
-    $die->get_errors;
 
 =cut
 
-use Bivio::UNIVERSAL;
-@Bivio::Die::ISA = qw(Bivio::UNIVERSAL);
+use Bivio::Type::Attributes;
+@Bivio::Die::ISA = qw(Bivio::Type::Attributes);
 
 =head1 DESCRIPTION
 
@@ -30,7 +27,7 @@ C<Bivio::Die> manages per-instance/class handlers for C<die>.  When C<die> is
 called, C<Bivio::Die> searches up the stack for calls to public
 methods of instances and classes which can C<handle_die>.  The
 C<handle_die> methods are called in LIFO order, i.e. the most recently
-called to last.
+called to current.
 
 Classes do not register with this module.  Instead, the method
 L<catch|"catch"> which sets C<$SIG{__DIE__}> locally is used.
@@ -48,16 +45,21 @@ and C<handle_die> implementers to do something about the errors.
 =cut
 
 #=IMPORTS
-use UNIVERSAL ();
+use Bivio::DieCode;
+use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Type::Enum;
+use UNIVERSAL ();
 
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_STACK_TRACE) = 0;
-my($_LAST_SELF);
+my($_CURRENT_SELF);
+my($_IN_CATCH) = 0;
+my($_IN_HANDLE_DIE) = 0;
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
 });
@@ -68,22 +70,27 @@ Bivio::IO::Config->register({
 
 =for html <a name="catch"></a>
 
-=head2 catch(sub code) : UNIVERSAL or undef
+=head2 catch(code sub) : Bivio::Die or undef
 
-Installs a local C<$SIG{__DIE__}> handler, calls I<code>,
-and returns the result of I<code>.  Callers must be able to
-detect whether I<code> executed successfully.  I<code> should
-therefore return something which is not undef if it executed
-correctly.
+Installs a local C<$SIG{__DIE__}> handler, calls I<sub>.
+If I<sub> succeeds without error, C<undef> is returned.
+Otherwise, a C<Bivio::Die> object is returned.  These my
+be chained, i.e. if there is a C<die> within a C<die>,
+the first instance will be linked to the second and can
+be retrieved with L<get_next|"get_next">.
 
 The stack is unwound until this method is found.  Therefore, callers of
-L<catch|"catch"> must take care to appear in the call stack I<after> the call to L<catch|"catch">, e.g.
+L<catch|"catch"> must take care to appear in the call stack I<after> the call
+to L<catch|"catch">, e.g.
 
     sub some_sub {
 	my($self) = @_;
-	Bivio::Die->catch(sub {
+	my($die) = Bivio::Die->catch(sub {
 	     $self->actual_sub;
 	});
+	if ($die && !$die->is_destroyed) {
+	    ... error case ...
+	}
     }
     sub actual_sub {
 	my($self);
@@ -94,100 +101,169 @@ L<catch|"catch"> must take care to appear in the call stack I<after> the call to
 	... process die ..
     }
 
-If a call to C<handle_die> results in a C<die>, C<$@> will be
-pushed on the list of errors.
+If a call to C<handle_die> results in a C<die>, a new die
+object will be created and chained on to the current die.
+
+You may not call catch from within a die handler, because
+C<$SIG{__DIE__}> is specifically disabled.
 
 =cut
 
 sub catch {
-    my($proto, $code) = @_;
-    $_LAST_SELF = undef;
+    my($proto, $sub) = @_;
+    Bivio::Die->die(Bivio::DieCode::CATCH_WITHIN_DIE(),
+	    {sub => $sub}, (caller)[0], (caller)[2])
+		if $_IN_HANDLE_DIE;
+    $_IN_CATCH++;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
 	$_STACK_TRACE && print STDERR Carp::longmess($msg);
-	my($self) = &Bivio::UNIVERSAL::new($proto);
-	$self->{$_PACKAGE} = {
-	    'errors' => [$msg],
-	};
-	$_LAST_SELF = $self;
-	&_handle_die($self);
+	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
+		{message => $msg}, caller));
     };
-    if (wantarray) {
-	my(@res);
-	eval {
-	    @res = &$code();
-	    $_LAST_SELF = undef;
-	};
-	return @res;
-    }
-    else {
-	my($res);
-	eval {
-	    $res = &$code();
-	    $_LAST_SELF = undef;
-	};
-	return $res;
-    }
+    my($self) = eval {
+	&$sub();
+	1;
+    } ? undef : $_CURRENT_SELF;
+    $_CURRENT_SELF = undef;
+    $_IN_CATCH--;
+    return $self;
 }
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="clear_errors"></a>
+=for html <a name="as_string"></a>
 
-=head2 clear_errors()
+=head2 as_string() : string
 
-Removes all errors associated with this instance.
+Returns Die object and all its subsequent errors as a string ending
+in "\n".
 
 =cut
 
-sub clear_errors {
-    my($fields) = shift(@_)->{$_PACKAGE};
-    $fields->{errors} = [];
+sub as_string {
+    my($self) = @_;
+    my($res) = '';
+    for (my($curr) = $self; $curr; $curr = $curr->get('next')) {
+	eval {
+	    return 0 if $curr->is_destroyed;
+	    my($c, $a, $p, $f, $l) = $curr->get(
+		'code', 'attrs', 'package', 'file', 'line');
+	    my($m) = [$c];
+	    if (%$a) {
+		# Don't just "join", because we want Alert to call
+		# as->string if appropriate.
+		push(@$m, ': ', map {
+		    ($_, ' => ', $a->{$_}, ', ')
+		} sort keys %$a);
+		pop(@$m);
+	    }
+	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef, $m);
+	    return 1;
+	} || ($res .= 'ERROR: ' . $curr . "\n");
+    }
+    return $res;
+}
+
+=for html <a name="destroy"></a>
+
+=head2 destroy()
+
+Destroys self and removes from the current chain.  The initial error is not
+actually destroyed, but is set in L<is_destroyed|"is_destroyed"> state.  This
+allows L<catch|"catch"> to know there is an error while also knowing all errors
+were handled.
+
+If self is not part of the current catch, then it is simply set to destroyed
+and its next link is left untouched.
+
+=cut
+
+sub destroy {
+    my($self) = @_;
+    $self->put('destroyed' => 1);
+
+    # No current chain
+    return unless $_CURRENT_SELF;
+
+    # Head of chain
+    if ($_CURRENT_SELF eq $self) {
+	my($next) = $_CURRENT_SELF->get('next');
+	$_CURRENT_SELF->put('next', undef);
+	$_CURRENT_SELF = $next;
+	return;
+    }
+
+    # Somewhere in the chain?
+    my($curr, $next) = $_CURRENT_SELF;
+    while ($next = $curr->get('next')) {
+	next unless $next eq $self;
+	$curr->put('next', $next->get('next'));
+	$self->put('next' => undef);
+	last;
+    }
+
+    # Not part of "current" chain.  Don't update next link.
     return;
 }
 
-=for html <a name="clear_last"></a>
+=for html <a name="die"></a>
 
-=head2 static clear_last()
+=head2 static die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
 
-Clears state associated with L<get_last|"get_last">.
+Any of the parameters may be undef. Package and line will be filled in by this
+module.  If you'd like to implement a module specific die, you might:
 
-=cut
+    sub die {
+	my($self, $code, $msg) = @_;
+	Bivio::Die->die(My::Package::DieCode->from_any($code),
+		{msg => $msg, object => $self}, caller);
+    }
 
-sub clear_last {
-    # This breaks any circular references, so AGC can work
-    defined($_LAST_SELF) && $_LAST_SELF->clear_errors;
-    $_LAST_SELF = undef;
-    return;
-}
+C<caller> will be called in an array context and return the appropriate
+attributes about the caller in the right order.  Note that
+L<Bivio::Type::Enum::from_any|Bivio::Type::Enum/"from_any">
+returns C<undef> if $code isn't found, so it is entirely safe.
 
-=for html <a name="get_errors"></a>
+If I<code> is C<undef>, it will be set to C<Bivio::DieCode::UNKNOWN>.
+If I<code> is a string, it will be converted to a L<Bivio::DieCode>
+if possible.
 
-=head2 get_errors() : array_ref OR undef
-
-Returns the current list of errors associated with this die, in
-the order they occurred.  If there are no errors, returns C<undef>.
-
-=cut
-
-sub get_errors {
-    my($fields) = shift(@_)->{$_PACKAGE};
-    return @{$fields->{errors}} ? $fields->{errors} : undef;
-}
-
-=for html <a name="get_last"></a>
-
-=head2 static get_last() : Bivio::Die or undef
-
-Returns the last Die object to be created by L<catch|"catch">.
-Returns C<undef> if the last L<catch|"catch"> returned successfully.
+If I<attrs> is C<undef>, it will be set to the empty hash.
+If I<attrs> is a not a reference, it will be set to C<{message => $attrs}>.
+If I<attrs> is not a hash, it will be set to C<{attrs => $attrs}>.
 
 =cut
 
-sub get_last {
-    return $_LAST_SELF;
+sub die {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    $package ||= (caller)[0];
+    $file ||= (caller)[1];
+    $line ||= (caller)[2];
+    if (defined($code)) {
+	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
+	    my($c) = Bivio::DieCode->from_any($code);
+	    if (defined($c)) {
+		$code = $c;
+	    }
+	    else {
+		$attrs = {code => $code, attrs => $attrs};
+		$code = Bivio::DieCode::INVALID_DIE_CODE();
+	    }
+	}
+    }
+    else {
+	$code = Bivio::DieCode::UNKNOWN();
+    }
+    unless (ref($attrs) eq 'HASH') {
+	$attrs = defined($attrs)
+		? !ref($attrs) ? {message => $attrs}
+			:  {attrs => $attrs} : {};
+    }
+    my($self) = _new($proto, $code, $attrs, $package, $line);
+    CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
 }
 
 =for html <a name="handle_config"></a>
@@ -210,50 +286,105 @@ sub handle_config {
     return;
 }
 
-=for html <a name="push_error"></a>
+=for html <a name="is_destroyed"></a>
 
-=head2 push_error(UNIVERSAL error)
+=head2 is_destroyed() : boolean
 
-Add a new error to this die.  The meaning of I<error> is application
-dependent.
+Returns true if the instance was destroyed.
 
 =cut
 
-sub push_error {
-    my($self, $error) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    defined($error) || die('missing argument or undef');
-    push(@{$fields->{errors}}, $error);
-    return;
+sub is_destroyed {
+    return shift->get('destroyed');
 }
-
 
 #=PRIVATE METHODS
 
-# Process a die request
+# _handle_die self
+#
+# Called from within $SIG{__DIE__} inside catch.  $_CURRENT_SELF is
+# already created.  Calls the die handles sequentially.  If errors
+# occur, chains them on to $_CURRENT_SELF by calling _new_from_core_die.
+#
 sub _handle_die {
-    my($self) = @_;
-    my($i) = 0;
-    my(@a);
-    my($prev_proto) = '';
-    while (do { { package DB; @a = caller($i++) } } ) {
-	my($sub, $has_args) = @a[3,4];
-	# Only call if argument is to a public method in a module
-	defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args || next;
-	$sub eq "${_PACKAGE}::catch" && next;
-	my($proto) = $DB::args[0];
-	UNIVERSAL::can($proto, 'handle_die') || next;
-	# Don't call twice if in same "entry" into module
-	$prev_proto ne $proto || next;
-	$prev_proto = $proto;
-	&_trace("calling ", ref($proto) || $proto, "->handle_die") if $_TRACE;
-	eval {
-	    $proto->handle_die($self);
-	    1;
-	} && next;
-	&_trace($proto, "->handle_die: ", $@) if $_TRACE;
-	$self->push_error($@);
+    $_IN_HANDLE_DIE++;
+    eval {
+	my($self) = @_;
+	my($i) = 0;
+	my(@a);
+	my($prev_proto) = '';
+	while (do { { package DB; @a = caller($i++) } } ) {
+	    my($sub, $has_args) = @a[3,4];
+	    # Only call if argument is to a public method in a module
+	    defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args || next;
+	    $sub eq "${_PACKAGE}::catch" && next;
+	    my($proto) = $DB::args[0];
+	    UNIVERSAL::can($proto, 'handle_die') || next;
+	    # Don't call twice if in same "entry" into module
+	    $prev_proto ne $proto || next;
+	    $prev_proto = $proto;
+	    eval {
+		&_trace("calling ", ref($proto) || $proto, "->handle_die")
+		    if $_TRACE;
+		$proto->handle_die($self);
+		1;
+	    } && next;
+	    my($msg) = $@;
+	    eval {
+		&_trace($proto, "->handle_die: ", $msg) if $_TRACE;
+	    };
+	    $msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
+	    _new_from_core_die($self, Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
+		    {message => $msg, proto => $proto},
+		    ref($proto) || $proto, $1, $2);
+	}
+	1;
+    } || warn($@);
+    $_IN_HANDLE_DIE--;
+}
+
+# _new proto attrs package file line : Bivio::Die
+#
+# Creates a new Bivio::Die from the specified parameters which all must
+# be "valid".  Sets $_CURRENT_SELF if $_CURRENT_SELF is undef.
+#
+sub _new {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    my($self) = Bivio::Type::Attributes::new($proto, {
+	next => undef,
+	destroyed => 0,
+	code => $code,
+	attrs => $attrs,
+	package => $package,
+	file => $file,
+	line => $line});
+    if ($_CURRENT_SELF) {
+	my($curr, $next) = $_CURRENT_SELF;
+	$curr = $next while $next = $curr->get('next');
+	$curr->put('next' => $self);
     }
+    else {
+	$_CURRENT_SELF = $self;
+    }
+    &_trace($self) if $_TRACE;
+    return $self;
+}
+
+# _new_from_core_die proto attrs package file line : Bivio::Die
+#
+# Called with the result of a CORE::die.  If $attrs->{message} is equal to the
+# string form of any of the current die values, then return that value.
+# Otherwise, create new Bivio::Die from the listed values.
+#
+sub _new_from_core_die {
+    my($proto, $code, $attrs, $package, $file, $line) = @_;
+    if ($_CURRENT_SELF) {
+	my($msg) = $attrs->{message};
+	for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->get('next')) {
+	    return $curr if $msg eq "$curr\n";
+	}
+    }
+    return _new(@_);
 }
 
 =head1 COPYRIGHT
