@@ -79,9 +79,13 @@ NOTE: Query strings must always have unique value names.
 
 L<Bivio::Agent::Reply|Bivio::Agent::Reply> for this request.
 
-=item start_time : float
+=item request : Bivio::Agent::Request
 
-The time the request started as a floating point number.
+Always C<$self>.  Convenient for L<get_widget_value|"get_widget_value">.
+
+=item start_time : array_ref
+
+The time the request started as an array of seconds and microseconds.
 See L<Bivio::Util::gettimeofday|Bivio::Util/"gettimeofday">.
 
 =item task : Bivio::Agent::Task
@@ -107,6 +111,7 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 #=IMPORTS
 use Bivio::IO::Config;
 use Bivio::Die;
+use Carp ();
 use Bivio::Util;
 
 #=VARIABLES
@@ -136,8 +141,9 @@ will be set as well, but may be overriden by subclass.
 sub new {
     my($proto, $hash) = @_;
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
-    $self->put('http_host', $_HTTP_HOST);
-    $self->put('mail_host', $_MAIL_HOST);
+    $self->put(request => $self,
+	    http_host => $_HTTP_HOST,
+	    mail_host => $_MAIL_HOST);
     return $_CURRENT = $self;
 }
 
@@ -199,12 +205,16 @@ sub elapsed_time {
 Formats the email address for inclusion in a mail header.
 If the host is missing, adds mail_host.
 
+If I<subject> or I<email> is an array_ref, will call
+L<get_widget_value|"get_widget_value"> with array value to get value.
+
 =cut
 
 sub format_email {
     my($self, $email) = @_;
 #TODO: Properly quote the email name???
 #Cache this?  Will bomb if no auth_realm, owner, or name.
+    $email = $self->get_widget_value(@$email) if ref($email);
     $email = $self->get('auth_realm')->get('owner_name')
 	    unless defined($email);
     $email .= '@' . $self->get('mail_host')
@@ -214,17 +224,20 @@ sub format_email {
 
 =for html <a name="format_http"></a>
 
-=head2 format_http(Bivio::Agent::TaskId task_id, hash_ref query) : string
+=head2 format_http(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
 
-Creates an http URI.  If I<query> is C<undef>, will not create a query
-string.
+Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
+
+If I<task_id>, I<query> or I<auth_realm> is an array_ref, will call
+L<get_widget_value|"get_widget_value"> with array value to get value.
 
 =cut
 
 sub format_http {
-    my($self, $task_id, $query) = @_;
+    my($self) = shift;
+    # Must be @_ so format_uri handles overloading properly
     return 'http://' . $self->get('http_host')
-	    . $self->format_uri($task_id, $query);
+	    . $self->format_uri(@_);
 }
 
 =for html <a name="format_mailto"></a>
@@ -235,15 +248,41 @@ Creates a mailto URI.  If I<email> is C<undef>, set to
 I<auth_realm> owner's name.   If I<email> is missing a host, uses
 I<mail_host>.
 
+If I<subject> or I<email> is an array_ref, will call
+L<get_widget_value|"get_widget_value"> with array value to get value.
+
 =cut
 
 sub format_mailto {
     my($self, $email, $subject) = @_;
     my($res) = 'mailto:'
 	    . Apache::Util::escape_uri($self->format_email($email));
+    $subject = $self->get_widget_value(@$subject) if ref($subject);
     $res .= '?subject=' . Apache::Util::escape_uri($subject)
 	    if defined($subject);
     return $res;
+}
+
+=for html <a name="format_uri"></a>
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id) : string
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query) : string
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
+
+Creates a URI relative to this host/port.
+If I<query> is C<undef>, will not create a query string.
+If I<auth_realm> is not passed, this request's realm will be used.
+If I<auth_realm> is C<undef>, the task must not be in an owned realm.
+
+If I<task_id>, I<query> or I<auth_realm> is an array_ref, will call
+L<get_widget_value|"get_widget_value"> with array value to get value.
+
+=cut
+
+sub format_uri {
+    CORE::die('abstract method');
 }
 
 =for html <a name="get_current"></a>

@@ -69,6 +69,9 @@ sub initialize {
 	Bivio::UI::Setup::Login
 	Bivio::UI::Setup::Finish
 	Bivio::UI::Setup::Intro
+	Bivio::UI::HTML::View::Test
+	Bivio::UI::HTML::View::TestForm
+	Bivio::UI::HTML::View::ClubTest
     )]) || return 0;
 
     # Assemble pages and presentations from views.  Note that

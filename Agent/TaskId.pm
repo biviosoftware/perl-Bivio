@@ -46,8 +46,8 @@ tasks defined in this module is:
 =item SETUP_USER_CREATE
 
 =item SETUP_USER_EDIT
-
-=item SETUP_CLUB_CREATE
+=
+item SETUP_CLUB_CREATE
 
 =item SETUP_INTRO
 
@@ -174,6 +174,33 @@ my(@_CFG) = (
         club/new
 	undef
 	Setup::Club
+    )],
+    [qw(
+	TEST_VIEW
+	13
+        PUBLIC
+        ANONYMOUS
+        test
+	undef
+	HTML::View::Test
+    )],
+    [qw(
+	TEST_FORM
+	14
+        PUBLIC
+        ANONYMOUS
+        test/form
+	undef
+	HTML::View::TestForm
+    )],
+    [qw(
+	CLUB_TEST_VIEW
+	15
+        CLUB
+        MEMBER
+        _/test
+	undef
+	HTML::View::ClubTest
     )],
 );
 # Fix up undefs to be real undefs

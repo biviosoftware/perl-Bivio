@@ -70,6 +70,9 @@ objects.
 sub new {
     my($proto, $id, $action_class, $view) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
+#MODIFIES_SQL
+#MODIFIES_FILES
+#MODIFIES_MAIL_QUEUE
     die("id invalid")
 	    unless $id->isa('Bivio::Agent::TaskId');
     $action_class || ref($view)
