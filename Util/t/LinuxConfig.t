@@ -3,10 +3,10 @@
 use strict;
 use Bivio::Test;
 use Bivio::Util::LinuxConfig;
-my($_tmp) = "$ENV{PWD}/LinuxConfig.tmp";
+my($_tmp) = "$ENV{PWD}/LinuxConfig.tmp/";
 Bivio::IO::Config->introduce_values({
     'Bivio::Util::LinuxConfig' => {
-	root_prefix => "$ENV{PWD}/LinuxConfig.tmp",
+	root_prefix => $_tmp,
     },
 });
 CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -a LinuxConfig/* $_tmp");
@@ -21,7 +21,7 @@ Bivio::Test->unit([
 		    my($object, $method, $params, $expect, $actual) = @_;
 		    return 0 unless ref($actual) eq 'ARRAY';
 		    foreach my $v (@$tests) {
-			my($data) = Bivio::IO::File->read("$_tmp/etc/$v->[0]");
+			my($data) = Bivio::IO::File->read("$_tmp/$v->[0]");
 			unless ($$data =~ /$v->[1]/s) {
 			    print(STDERR "$v->[1]: not found in $v->[0]\n");
 			    return 0;
@@ -39,21 +39,28 @@ Bivio::Test->unit([
 	    ]);
 	} [
 	    serial_console => [], [
-		['securetty', '/dev/ttyS0'],
-		['inittab', 'getty\s+ttyS0'],
-		['grub.conf', '#splash'],
-		['grub.conf', 'serial\s+--unit=0'],
-		['grub.conf', 'md2 console=ttyS0,38400'],
+		['etc/securetty', '/dev/ttyS0'],
+		['etc/inittab', 'getty\s+ttyS0'],
+		['etc/grub.conf', '#splash'],
+		['etc/grub.conf', 'serial\s+--unit=0'],
+		['etc/grub.conf', 'md2 console=ttyS0,38400'],
 	    ],
 	], [
 	    relay_domains => ['10.1.1.1'], [
-		['mail/relay-domains', '10.1.1.1'],
+		['etc/mail/relay-domains', '10.1.1.1'],
 	    ],
 	], [
 	    sshd_param =>
 	    ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'], [
-		['ssh/sshd_config', "\nPermitRootLogin no"],
-		['ssh/sshd_config', "\nVerifyReverseMapping yes"],
+		['etc/ssh/sshd_config', "\nPermitRootLogin no"],
+		['etc/ssh/sshd_config', "\nVerifyReverseMapping yes"],
+	    ],
+	], [
+	    create_ssl_crt =>
+		[qw(US Colorado Boulder LinuxCrazyMan www.linuxcrazy.man)], [
+		['ssl.key/www.linuxcrazy.man.key', '--END RSA PRIVATE KEY'],
+		['ssl.crt/www.linuxcrazy.man.crt', '--END CERTIFICATE--'],
+		['ssl.csr/www.linuxcrazy.man.csr', '--END CERTIFICATE REQ'],
 	    ],
 	]),
 	rename_rpmnew => [
@@ -64,17 +71,22 @@ Bivio::Test->unit([
     ],
     Bivio::Util::LinuxConfig->new(['-noexecute']) => [
 	add_user => [
-	    ['notuuu'] => ["Would have executed: useradd -m 'notuuu'\n"],
+	    ['root:0'] => [''],
+	    ['notuuu'] => [
+		"Would have executed: groupadd 'notuuu' 2>&1\n"
+		. "Would have executed: useradd -m -g 'notuuu' 'notuuu' 2>&1\n"],
 	    ['notuuu', '', '/bin/false'] => [
-		"Would have executed: useradd -m -s '/bin/false' 'notuuu'\n"],
+		"Would have executed: groupadd 'notuuu' 2>&1\n"
+		. "Would have executed: useradd -m -g 'notuuu' -s '/bin/false' 'notuuu' 2>&1\n"],
 	    ['notuuu:99'] => [
-		"Would have executed: useradd -m -u '99' 'notuuu'\n"],
+		"Would have executed: groupadd -g '99' 'notuuu' 2>&1\n"
+		. "Would have executed: useradd -m -u '99' -g 'notuuu' 'notuuu' 2>&1\n"],
 	    ['notuuu:99', 'notggg'] => [
-		"Would have executed: groupadd 'notggg'\n"
-		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu'\n"],
+		"Would have executed: groupadd 'notggg' 2>&1\n"
+		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu' 2>&1\n"],
 	    ['notuuu:99', 'notggg:777'] => [
-		"Would have executed: groupadd -g '777' 'notggg'\n"
-		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu'\n"],
+		"Would have executed: groupadd -g '777' 'notggg' 2>&1\n"
+		. "Would have executed: useradd -m -u '99' -g 'notggg' 'notuuu' 2>&1\n"],
         ],
     ],
 ]);
