@@ -80,7 +80,7 @@ sub render {
 
     $req->print('<table border=0><tr><td>');
 
-    $req->print('<form action='.$req->make_path('admin'));
+    $req->print('<form action='.$req->make_path('admin').' method="post">');
 
     $req->print('Welcome to club setup.');
     $req->print('<p><input type="submit" value="Next">');

@@ -94,7 +94,7 @@ sub render {
 	$req->print('</font>');
     }
 
-    $req->print('<form action='.$req->make_path().'>');
+    $req->print('<form action='.$req->make_path().' method="post">');
 
     $req->print('<input type="hidden" name="ma" value=add>');
     $req->print('<input type="hidden" name="admin" value='

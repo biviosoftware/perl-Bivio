@@ -90,8 +90,8 @@ sub render {
     $req->print('<table border=0><tr><td>');
     $req->print('<table border=0 cellpadding=0 cellspacing=0>');
 
-    $req->print('Enter user information below. Required fields are
-indicated with a *.<p>');
+    $req->print('Enter user information below. Required fields are'
+	    .' indicated with a *.<p>');
 
     if (! $user->get_status()->is_OK() ) {
 	$req->print('<font color="#FF0000">');
@@ -102,7 +102,7 @@ indicated with a *.<p>');
 	$req->print('</font>');
     }
 
-    $req->print('<form action='.$req->make_path().'>');
+    $req->print('<form action='.$req->make_path().' method="post">');
 
     $req->print('<input type="hidden" name="ma" value='.$action.'>');
     $req->print('<tr><td rowspan=100 width=15></td></tr>');

@@ -81,7 +81,8 @@ sub render {
 
     $req->print('<table border=0><tr><td>');
 
-    $req->print('<form action=/'.$req->get_arg('club').'/admin>');
+    $req->print('<form action=/'.$req->get_arg('club').'/admin'
+	    .' method="post">');
 
     $req->print('Congratulations, club setup is completed. After '
 	    .'pressing "next", enter your user name and password and you '
