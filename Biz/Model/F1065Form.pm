@@ -669,9 +669,17 @@ sub _calculate_income {
 	    $properties->{$field} = 0;
 	}
     }
-    Bivio::IO::Alert->warn($total, ' != ', $properties->{net_income})
-		unless $_M->compare($total, $properties->{net_income}) == 0;
 
+    my($diff) = $_M->sub($properties->{net_income}, $total);
+
+    # the Schedule D can be off by a few pennies, unfortunately
+    if ($diff != 0) {
+	Bivio::IO::Alert->warn('adjusting allocations ', $diff);
+
+	# use income_general_individual to take up the slack
+	$properties->{income_general_individual} = $_M->add(
+		$properties->{income_general_individual}, $diff);
+    }
     return;
 }
 
