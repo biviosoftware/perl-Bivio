@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::Email;
 use strict;
 $Bivio::Biz::Model::Email::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::Email::VERSION;
 
 =head1 NAME
 
@@ -32,12 +33,8 @@ and delete interface to the C<email_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::Agent::HTTP::Cookie;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Email;
-use Bivio::Type::Location;
-use Bivio::Type::PrimaryId;
 use Bivio::Biz::Model::LoginForm;
+use Bivio::Type::Email;
 
 #=VARIABLES
 
@@ -91,7 +88,7 @@ sub internal_initialize {
 	version => 2,
 	table_name => 'email_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             location => ['Location', 'PRIMARY_KEY'],
             email => ['Email', 'NOT_NULL_UNIQUE'],
 	    want_bulletin => ['Boolean', 'NOT_NULL'],

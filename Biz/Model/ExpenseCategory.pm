@@ -32,6 +32,7 @@ or non-deductible. May be a sub-category of an existing expense.
 =cut
 
 #=IMPORTS
+use Bivio::SQL::Connection;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -143,7 +144,7 @@ sub internal_initialize {
 	table_name => 'expense_category_t',
 	columns => {
             expense_category_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    name => ['Line', 'NOT_NULL'],
 	    deductible => ['Boolean', 'NOT_NULL'],
 	    parent_category_id => ['PrimaryId', 'NONE'],

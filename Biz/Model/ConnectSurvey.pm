@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::ConnectSurvey;
 use strict;
 $Bivio::Biz::Model::ConnectSurvey::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::ConnectSurvey::VERSION;
 
 =head1 NAME
 
@@ -32,14 +33,6 @@ and delete interface to the C<connect_survey_t> table.
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::Country;
-use Bivio::Survey::Outlook;
-use Bivio::Survey::Risk;
-use Bivio::Survey::AgeRange;
-use Bivio::Survey::Experience;
-use Bivio::Survey::Contribution;
-use Bivio::Survey::Vicinity;
 
 #=VARIABLES
 
@@ -60,20 +53,13 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'connect_survey_t',
 	columns => {
-	    realm_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    experience => ['Bivio::Survey::Experience',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	    contribution => ['Bivio::Survey::Contribution',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	    age_range  => ['Bivio::Survey::AgeRange',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	    vicinity  => ['Bivio::Survey::Vicinity',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	    risk  => ['Bivio::Survey::Risk',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	    outlook  => ['Bivio::Survey::Outlook',
-		Bivio::SQL::Constraint::NOT_NULL()],
+	    realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+	    experience => ['Bivio::Survey::Experience', 'NOT_NULL'],
+	    contribution => ['Bivio::Survey::Contribution', 'NOT_NULL'],
+	    age_range  => ['Bivio::Survey::AgeRange', 'NOT_NULL'],
+	    vicinity  => ['Bivio::Survey::Vicinity', 'NOT_NULL'],
+	    risk  => ['Bivio::Survey::Risk', 'NOT_NULL'],
+	    outlook  => ['Bivio::Survey::Outlook', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
     };

@@ -56,8 +56,9 @@ sub internal_initialize {
 	table_name => 'entry_t',
 	columns => {
             entry_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
-            realm_transaction_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+            realm_transaction_id => ['RealmTransaction.realm_transaction_id',
+		'NOT_NULL'],
             class => ['EntryClass', 'NOT_NULL'],
             entry_type => ['EntryType', 'NOT_NULL'],
             tax_category => ['TaxCategory', 'NOT_NULL'],

@@ -52,9 +52,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'expense_info_t',
 	columns => {
-	    entry_id => ['PrimaryId', 'PRIMARY_KEY'],
-            expense_category_id => ['PrimaryId', 'NOT_NULL'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+	    entry_id => ['Entry.entry_id', 'PRIMARY_KEY'],
+            expense_category_id => ['ExpenseCategory.expense_category_id',
+		'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    allocate_equally => ['Boolean', 'NOT_NULL'],
         },
 	auth_id => 'realm_id',
