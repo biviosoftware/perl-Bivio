@@ -55,8 +55,8 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    indb03 => [0, 0],
-	    indb04 => [0, 0],
+	    indb03 => [0, 1],
+	    indb04 => [0, 1],
 	    chgdb03 => [0, 1],
 	    chgdb04 => [0, 1],
 	},
