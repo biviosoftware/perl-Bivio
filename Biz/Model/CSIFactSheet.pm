@@ -132,23 +132,32 @@ sub _initialize {
 sub _sync_instrument_models {
     my($self, $values, $type) = @_;
     my($req) = $self->get_request;
+
     my($inst) = Bivio::Biz::Model::Instrument->new($req);
-    if ($inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
-        # Rename ticker symbol so it can be re-used later
-#TODO: Should move code into Model::Instrument?
+    my($csi_inst) = Bivio::Biz::Model::CSIInstrument->new($req);
+    my($is_csi_inst) = $csi_inst->unsafe_load(csi_id => $values->{csi_id})
+            && $inst->load(instrument_id => $csi_inst->get('instrument_id'));
+
+    if ($is_csi_inst ||
+            $inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
+        # DELETE OP: rename ticker symbol so it can be re-used later
         $inst->update({
             ticker_symbol => $values->{ticker_symbol}.'-D'
             .Bivio::Type::Date->to_file_name($values->{fact_date}),
         }) if $values->{fact_function}
-                eq Bivio::Data::CSI::FactSheetFunction::DELETE();
+                == Bivio::Data::CSI::FactSheetFunction::DELETE();
+        # MODIFY OP: update instrument attributes
         $inst->update({
             name => $values->{name},
             ticker_symbol => $values->{ticker_symbol},
             exchange_name => $values->{exchange_name},
         }) if $values->{fact_function}
-                eq Bivio::Data::CSI::FactSheetFunction::MODIFY();
+                == Bivio::Data::CSI::FactSheetFunction::MODIFY();
     }
     else {
+        # ADD OP: create new instrument
+        Bivio::Die->die('assertion failed') unless $values->{fact_function}
+                == Bivio::Data::CSI::FactSheetFunction::ADD();
         $inst->create({
             name => $values->{name},
             ticker_symbol => $values->{ticker_symbol},
@@ -157,8 +166,7 @@ sub _sync_instrument_models {
             fed_tax_free => Bivio::Type::Boolean::FALSE(),
         });
     }
-    my($csi_inst) = Bivio::Biz::Model::CSIInstrument->new($req);
-    unless ($csi_inst->unsafe_load(csi_id => $values->{csi_id})) {
+    unless ($is_csi_inst) {
         $csi_inst->create({
             csi_id => $values->{csi_id},
             instrument_id => $inst->get('instrument_id'),
