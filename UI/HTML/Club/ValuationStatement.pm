@@ -31,7 +31,13 @@ C<Bivio::UI::HTML::Club::ValuationStatement>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::ListModel::ListTotals;
 use Bivio::UI::HTML::Club::Page;
+use Bivio::UI::HTML::Format::Amount;
+use Bivio::UI::HTML::Format::Date;
+use Bivio::UI::HTML::Format::Printf;
+use Bivio::UI::HTML::Widget::Join;
+use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::Widget::Table;
 
 #=VARIABLES
@@ -53,8 +59,10 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    $fields->{table} = Bivio::UI::HTML::Widget::Table->new({
+    $fields->{securities_table} = Bivio::UI::HTML::Widget::Table->new({
 	source => ['Bivio::Biz::ListModel::InstrumentValuationList'],
+	pad => 3,
+	no_end_tag => 1,
 	headings => [
 	    'Security',
 	    'First Buy or Valuation Date',
@@ -70,21 +78,128 @@ sub new {
 	    string_font => 'table_heading',
 	    },
 	cells => [
-	    ['name'],
-	    ['first_buy_date'],
-	    ['shares'],
-	    ['cost_per_share'],
-	    ['total_cost'],
-	    ['share_price'],
-	    ['total_value'],
-	    ['percent'],
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['name'],
+		string_font => 'table_cell',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['first_buy_date',
+		    'Bivio::UI::HTML::Format::Date', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['shares',
+		    'Bivio::UI::HTML::Format::Amount', 3],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['cost_per_share',
+		    'Bivio::UI::HTML::Format::Amount', 4],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_cost',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['share_price',
+		    'Bivio::UI::HTML::Format::Amount', 4],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_value',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['percent',
+		    'Bivio::UI::HTML::Format::Printf', "%.1f%%"],
+		column_align => 'E',
+	    }),
 	],
 	cell_attrs => {
-	    string_font => 'table_cell',
+	    string_font => 'monospaced',
 	    column_nowrap => 1,
 	    },
     });
-    $fields->{table}->initialize;
+    $fields->{securities_table}->initialize;
+    $fields->{account_table} = Bivio::UI::HTML::Widget::Table->new({
+	source => ['Bivio::Biz::ListModel::AccountValuationList'],
+	no_start_tag => 1,
+	headings => [
+	    'Cash Account',
+#TODO: need a better way to insert space
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    'Total Cost',
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    'Total Value',
+	    'Percent of Total',
+	],
+	heading_attrs => {
+	    column_align => 'S',
+	    string_font => 'table_heading',
+	    },
+	cells => [
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['name'],
+		string_font => 'table_cell',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_cost',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_value',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['percent',
+		    'Bivio::UI::HTML::Format::Printf', "%.1f%%"],
+		column_align => 'E',
+	    }),
+	],
+	cell_attrs => {
+	    string_font => 'monospaced',
+	    column_nowrap => 1,
+	    },
+    });
+    $fields->{account_table}->initialize;
+
+    $fields->{report} = Bivio::UI::HTML::Widget::Join->new({
+	       values => [
+		       Bivio::UI::HTML::Widget::Join->new({
+			   values => ['<br>']
+		       }),
+		       $fields->{securities_table},
+		       $fields->{total_securities_table},
+		       $fields->{account_table}]});
+    $fields->{report}->initialize;
+
     return $self;
 }
 
@@ -103,8 +218,9 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+
     $req->put(page_subtopic => undef, page_heading => 'Valuation Statement',
-	   page_content => $fields->{table});
+	    page_content => $fields->{report});
     Bivio::UI::HTML::Club::Page->execute($req);
     return;
 }
