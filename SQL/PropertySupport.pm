@@ -231,19 +231,19 @@ I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 sub delete {
     my($self, $values, $die, $load_args) = @_;
     my($attrs) = $self->internal_get;
+    my($columns) = $attrs->{columns};
     my(@params) = map {
-	my($n) = $_->{name};
-	unless (exists($values->{$n})) {
-	    $die ||= 'Bivio::Die';
-	    $die->die('DIE', {
-		message => 'missing primary key value for delete',
-		entity => $self,
-		column => $n});
-	}
-	$_->{type}->to_sql_param($values->{$_});
-    } @{$attrs->{primary_keys}};
+        unless (exists($values->{$_})) {
+            $die ||= 'Bivio::Die';
+            $die->die('DIE', {
+                message => 'missing primary key value for delete',
+                entity => $self,
+                column => $_});
+        }
+	$columns->{$_}->{type}->to_sql_param($values->{$_});
+    } @{$attrs->{primary_key_names}};
     Bivio::SQL::Connection->execute($attrs->{delete}, \@params, $die,
-	   $attrs->{has_blob})->finish();
+           $attrs->{has_blob})->finish();
     return;
 }
 
