@@ -1021,6 +1021,19 @@ sub internal_stay_on_page {
     return;
 }
 
+=for html <a name="is_field_editable"></a>
+
+=head2 is_field_editable(string field) : boolean
+
+Returns true if the field is editable. By default all fields are editable,
+subclasses may override this to provide this value dynamically.
+
+=cut
+
+sub is_field_editable {
+    return 1;
+}
+
 =for html <a name="load_from_model_properties"></a>
 
 =head2 load_from_model_properties(string model)
