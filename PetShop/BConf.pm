@@ -7,7 +7,7 @@ $_ = $Bivio::PetShop::BConf::VERSION;
 
 =head1 NAME
 
-Bivio::PetShop::BConf - default petshop.bivio.net configuration
+Bivio::PetShop::BConf - default petshop.bivio.biz configuration
 
 =head1 RELEASE SCOPE
 
@@ -24,7 +24,7 @@ use Bivio::UNIVERSAL;
 
 =head1 DESCRIPTION
 
-C<Bivio::PetShop::BConf> default petshop.bivio.net configuration.
+C<Bivio::PetShop::BConf> default petshop.bivio.biz configuration.
 
 =cut
 
@@ -56,8 +56,8 @@ my($_DEFAULT_CONFIG) = Bivio::BConf->merge({
 	local_file_root => '/home/httpd/files',
     },
     'Bivio::UI::Text' => {
-	http_host => 'petshop.bivio.net',
-	mail_host => 'bivio.net',
+	http_host => 'petshop.bivio.biz',
+	mail_host => 'bivio.biz',
     },
     'Bivio::UI::HTML::Widget::SourceCode' => {
 	source_dir => '/home/httpd/files/src',

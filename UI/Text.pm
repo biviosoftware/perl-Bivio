@@ -488,11 +488,11 @@ sub value_host_groups {
     my($mail_method) =  $self->exists('mail_host') ? 'value' : 'group';
     if (Bivio::Agent::Request->is_production) {
 	if ($uri =~ /\./) {
-	    # Allows names like bivio.net
+	    # Allows names like bivio.biz
 	    $self->$http_method(http_host => $uri);
 	}
 	else {
-	    # Makes names like eklubs.bivio.com
+	    # Makes names like ic.bivio.com
 	    $http_host =~ s/^(?:www\.)?/$uri./;
 	    $self->$http_method(http_host => $http_host);
 	}

@@ -221,7 +221,7 @@ sub _text {
     # configured values and Request.is_production is true.
     $t->value_host_groups;
 
-    # Where to redirect to when coming in via /, i.e. http://petshop.bivio.net
+    # Where to redirect to when coming in via /, i.e. http://petshop.bivio.biz
     $t->group(home_page_uri => '/pub');
 
     # SITE_ROOT task calls View->execute_uri and we look for pages in

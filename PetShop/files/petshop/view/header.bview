@@ -36,7 +36,7 @@ view_main(Page({
 			vs_space(),
 			'<br>',
 			Link(Image('bivio_power')->put(align => 'se'),
-				'http://www.bivio.net'),
+				'http://www.bivio.biz'),
 		    ])->put(
 			cell_align => 'E',
 			string_font => 'menu_link',
