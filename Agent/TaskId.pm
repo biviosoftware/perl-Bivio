@@ -1397,16 +1397,17 @@ my(@_CFG) = (
         133
         CLUB
         ADMIN_WRITE
-        %/legacy/upload
+        %/legacy/upload2
         Bivio::Biz::Model::LegacyClubUploadForm
         Bivio::UI::HTML::Club::LegacyClubUpload
         next=CLUB_LEGACY_SECURITY_RECONCILLIATION
+        cancel=CLUB_HOME
     )],
     [qw(
         CLUB_LEGACY_INVITE
         134
         CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
+        ADMIN_WRITE
         %/legacy/invite
         Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
         Bivio::Biz::Model::ImportedMemberInviteForm
@@ -1417,12 +1418,23 @@ my(@_CFG) = (
         CLUB_LEGACY_SECURITY_RECONCILLIATION
         135
         CLUB
-        ACCOUNTING_WRITE&MEMBER_WRITE
+        ADMIN_WRITE
         %/legacy/securities
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::ImportedSecurityReconciliationForm
         Bivio::UI::HTML::Club::ImportedSecurityReconciliation
         next=CLUB_LEGACY_INVITE
+    )],
+    [qw(
+        CLUB_CONFIRM_LEGACY_UPLOAD
+        136
+        CLUB
+        ADMIN_WRITE
+        %/legacy/upload
+        Bivio::Biz::Model::ConfirmUploadForm
+        Bivio::UI::HTML::Club::ConfirmUpload
+        next=CLUB_LEGACY_UPLOAD
+        cancel=CLUB_HOME
     )],
 );
 
