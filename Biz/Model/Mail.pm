@@ -346,8 +346,6 @@ sub internal_initialize {
     		Bivio::SQL::Constraint::NOT_NULL()],
             is_public => ['Boolean',
     		Bivio::SQL::Constraint::NONE()],
-            is_inline_only => ['Boolean',
-    		Bivio::SQL::Constraint::NONE()],
             is_thread_root => ['Boolean',
     		Bivio::SQL::Constraint::NONE()],
             thread_root_id => ['PrimaryId',
@@ -409,6 +407,7 @@ sub _walk_attachment_tree {
             $entity = $msg->get_entity;
             $entity->head->unfold;
             # Handle the header as a separate part
+            # Note: message/header is not an official type, we use it internally only
             my($header) = MIME::Entity->build(Type => 'message/header',
                     Data => $entity->header_as_string);
             # Replace original header because we stored it separately already
@@ -437,6 +436,7 @@ sub _walk_attachment_tree {
         }
         # Append the given index or its content-id to the filename
         if(my($cid) = $entity->head->get('Content-ID')) {
+            $cid =~ s/(^\s*<|>\s*$)//g;
             $mail_id .= '_' . $cid;
         } elsif ($index) {
             $mail_id .= '_' . $index;
