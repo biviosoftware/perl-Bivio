@@ -58,7 +58,7 @@ Converts a negative into a positive number.
 
 sub abs {
     my($proto, $v) = @_;
-    return sprintf('%s', _make_object($proto, $v)->babs);
+    return _make_object($proto, $v)->babs->bstr;
 }
 
 =head2 static add(string v, string v2, int decimals) : string
@@ -71,7 +71,7 @@ If decimals is undef, then the default precision is used.
 sub add {
     my($proto, $v, $v2, $decimals) = @_;
     ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return sprintf('%s', $v->badd($v2));
+    return $v->badd($v2)->bstr;
 }
 
 =for html <a name="can_be_negative"></a>
@@ -142,7 +142,7 @@ Returns 'inf' when dividing by 0.
 sub div {
     my($proto, $v, $v2, $decimals) = @_;
     ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return sprintf('%s', scalar($v->bdiv($v2)));
+    return scalar($v->bdiv($v2))->bstr;
 }
 
 =for html <a name="fraction_as_string"></a>
@@ -250,7 +250,7 @@ If decimals is undef, then the default precision is used.
 sub mul {
     my($proto, $v, $v2, $decimals) = @_;
     ($v, $v2) = _make_objects($proto, $v, $v2);
-    return sprintf('%s', $v->bmul($v2));
+    return $v->bmul($v2)->bstr;
 }
 
 =for html <a name="neg"></a>
@@ -263,7 +263,7 @@ Returns a number with the opposite sign from the specified one.
 
 sub neg {
     my($proto, $number) = @_;
-    return sprintf('%s', _make_object($proto, $number)->bneg);
+    return _make_object($proto, $number)->bneg->bstr;
 }
 
 =for html <a name="round"></a>
@@ -277,8 +277,8 @@ Rounds the number to the specified number of decimal places.
 sub round {
     my($proto, $number, $decimals) = @_;
     Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
-    return sprintf('%s', _make_object($proto, $number, $decimals)
-        ->ffround(-$decimals, $_ROUNDING_MODE));
+    return _make_object($proto, $number, $decimals)
+        ->ffround(-$decimals, $_ROUNDING_MODE)->bstr;
 }
 
 =for html <a name="sign"></a>
@@ -309,7 +309,7 @@ If decimals is undef, then the default precision is used.
 sub sub {
     my($proto, $v, $v2, $decimals) = @_;
     ($v, $v2) = _make_objects($proto, $v, $v2, $decimals);
-    return sprintf('%s', $v->bsub($v2));
+    return $v->bsub($v2)->bstr;
 }
 
 =for html <a name="to_literal"></a>
@@ -345,8 +345,7 @@ Truncates the number to the specified number of decimal places.
 sub trunc {
     my($proto, $number, $decimals) = @_;
     Bivio::Die->die('invalid decimals: ', $decimals) if $decimals < 0;
-    return sprintf('%s', _make_object($proto, $number)
-        ->ffround(-$decimals, 'trunc'));
+    return _make_object($proto, $number)->ffround(-$decimals, 'trunc')->bstr;
 }
 
 #=PRIVATE METHODS
