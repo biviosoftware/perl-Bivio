@@ -24,6 +24,9 @@ C<Bivio::SQL::Connection> is a collection of static methods used
 to transact with the database. Connection maintains one connection
 to the database at all times.
 
+B<Bivio::Agent::Task depends on the fact that this the only module
+which modifies the database.>
+
 =cut
 
 #=IMPORTS
@@ -39,6 +42,7 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_CONNECTION);
+my($_NEED_COMMIT) = 0;
 my($_DB_TIME) = 0;
 my(%_ERR_TO_DIE_CODE) = (
 	1 => Bivio::DieCode::ALREADY_EXISTS(),
@@ -60,10 +64,10 @@ Commits all open transactions.
 =cut
 
 sub commit {
-    my($self) = @_;
-
+    return unless $_NEED_COMMIT;
     &_trace('commit') if $_TRACE;
-    $self->get_connection()->commit();
+    _get_connection()->commit();
+    $_NEED_COMMIT = 0;
     return;
 }
 
@@ -78,6 +82,8 @@ sub commit {
 Executes the specified statement and dies with an appropriate error
 if it fails.
 
+B<NOTE: All calls must go through this
+
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 
 =cut
@@ -91,7 +97,9 @@ sub execute {
 	my($start_time) = Bivio::Util::gettimeofday();
 #TODO: Need to investigate problems and performance of cached statements
 #TODO: If do cache, then make sure not "active" when making call.
-	$statement = $self->get_connection->prepare($sql);
+	$statement = _get_connection()->prepare($sql);
+	# Only need a commit if there has been data modification language
+	$_NEED_COMMIT = 1 if $sql !~ /^\s*select/i;
 	ref($params) ? $statement->execute(@$params)
 		: $statement->execute();
 	$self->increment_db_time($start_time);
@@ -116,22 +124,6 @@ sub execute {
 	    ? $_ERR_TO_DIE_CODE{$err} : Bivio::DieCode::UNKNOWN;
     $die ||= 'Bivio::Die';
     $die->die($die_code, $attrs, caller);
-}
-
-=for html <a name="get_connection"></a>
-
-=head2 static get_connection() : connection
-
-Returns a cached database connection.
-
-=cut
-
-sub get_connection {
-    if (!$_CONNECTION) {
-	&_trace('creating connection') if $_TRACE;
-	$_CONNECTION = Bivio::Ext::DBI->connect();
-    }
-    return $_CONNECTION;
 }
 
 =for html <a name="get_db_time"></a>
@@ -175,19 +167,31 @@ Rolls back all open transactions.
 =cut
 
 sub rollback {
-    my($self) = @_;
-
+    return unless $_NEED_COMMIT;
     &_trace('rollback') if $_TRACE;
-    $self->get_connection()->rollback();
+    _get_connection()->rollback();
+    $_NEED_COMMIT = 0;
     return;
 }
 
 #=PRIVATE METHODS
 
+# static _get_connection() : connection
+#
+# Returns a cached database connection.
+#
+sub _get_connection {
+    if (!$_CONNECTION) {
+	&_trace('creating connection') if $_TRACE;
+	$_CONNECTION = Bivio::Ext::DBI->connect();
+    }
+    return $_CONNECTION;
+}
+
 # _trace_sql(string sql, array_ref params)
 #
 # Traces the specified sql statement with parameters.
-
+#
 sub _trace_sql {
     my($sql, $params) = @_;
     my(@args);
