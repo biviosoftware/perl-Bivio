@@ -96,9 +96,9 @@ sub MEMBER_ROLES {
 
 =cut
 
-=for html <a name="bring_offline"></a>
+=for html <a name="take_offline"></a>
 
-=head2 bring_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
+=head2 take_offline(boolean any_user_ok) : Bivio::Biz::Model::RealmUser
 
 Creates an off-line version of the RealmUser and moves all associated
 records to the offline version. Returns the off-line realm user.
@@ -107,16 +107,24 @@ Dies if the user is not a member unless I<any_user_ok> is true.
 
 =cut
 
-sub bring_offline {
+sub take_offline {
     my($self, $any_user_ok) = @_;
     my($req) = $self->get_request;
 
-    # Sanity check.  Can't bring_offline if is admin or guest
+    # Sanity check...how many admins do we have?  Did user hack query?
+    my($role) = $self->get('role');
+    my($realm_admin_list) = Bivio::Biz::Model::RealmAdminList->new($req);
+    $realm_admin_list->load_all();
+    $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
+	    "Cannot delete sole ADMINISTRATOR")
+	    if ($role == Bivio::Auth::Role::ADMINISTRATOR()
+		    && $realm_admin_list->get_result_set_size() < 2);
+    # Can't take offline if guest
     $self->die('User ', $self->get('user_id'), ' is ',
-	    $self->get('role'), ' but must be a MEMBER of ',
-	    $self->get('realm_id'))
+	    $role, ' but must be a MEMBER/ADMIN of ', $self->get('realm_id'))
 	    unless $any_user_ok
-		    || $self->get('role') == Bivio::Auth::Role::MEMBER();
+		    || $role == Bivio::Auth::Role::MEMBER()
+		    || $role == Bivio::Auth::Role::ADMINISTRATOR();
 
     # create an off-line copy and move all associated records
     my($user) = Bivio::Biz::Model::User->new($req)
