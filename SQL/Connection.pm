@@ -16,7 +16,7 @@ Bivio::SQL::Connection - a database connection manager
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::SQL::Connection::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::SQL::Connection::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -95,6 +95,7 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_DBI_NAME) = undef;
+my($_DB_IS_READ_ONLY) = 0;
 my($_CONNECTION);
 # Set to the pid that creates the connection.  Ensures all children
 # use a different connection.
@@ -167,7 +168,7 @@ Commits all open transactions.
 sub commit {
     return unless $_NEED_COMMIT;
     &_trace('commit') if $_TRACE;
-    _get_connection()->commit();
+    _get_connection()->commit() unless $_DB_IS_READ_ONLY;
     $_NEED_COMMIT = 0;
     return;
 }
@@ -344,7 +345,7 @@ Rolls back all open transactions.
 sub rollback {
     return unless $_NEED_COMMIT;
     &_trace('rollback') if $_TRACE;
-    _get_connection()->rollback();
+    _get_connection()->rollback() unless $_DB_IS_READ_ONLY;
     $_NEED_COMMIT = 0;
     return;
 }
@@ -396,6 +397,7 @@ sub _execute_helper {
     # Tightly coupled with PropertySupport
     my($is_select) = $sql =~ /^\s*select/i
 	    && $sql !~ /for\s+update\s*$/i;
+    return if !$is_select && $_DB_IS_READ_ONLY;
     if ($has_blob) {
 	if ($is_select) {
 	    # Returns a value
@@ -520,6 +522,8 @@ sub _get_connection {
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
 	$_CONNECTION = Bivio::Ext::DBI->connect($_DBI_NAME);
+	$_DB_IS_READ_ONLY = Bivio::Ext::DBI->get_config($_DBI_NAME)
+		->{is_read_only};
 	# Got a connection which will be reused on next call.  We don't
 	# need to ping it (just in case parent process had an error on
 	# the connection).
