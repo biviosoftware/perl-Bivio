@@ -5,7 +5,7 @@
 #TODO: WAY more tests...  Especially tests which test addresses
 use strict;
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..7\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::Mail::Incoming;
@@ -162,6 +162,42 @@ EOF
     'reply_to_email' => undef,
     'subject' => 'hello',
     'date_time' => 932764367,
+},
+<<'EOF'
+Return-Path: <johnk@inil.com>
+Received: from mail.inil.com (inil.com [206.31.32.8])
+        by bivio.com (8.9.3/8.9.3) with ESMTP id PAA17492
+        for <my21cm@bivio.com>; Thu, 9 Dec 1999 15:18:36 -0700
+Received: from jknwlap ([207.49.255.153]) by mail.inil.com
+          (Post.Office MTA v3.5.3 release 223 ID# 177-57935U7500L650S0V35)
+          with SMTP id com for <my21cm@bivio.com>;
+          Thu, 9 Dec 1999 16:18:32 -0600
+Reply-To: <johnk@inil.com>
+From: johnk@inil.com (johnk)
+To: <my21cm@bivio.com>
+Subject: Re: Christmas meeting
+Date: Thu, 9 Dec 1999 16:18:41 -0600
+Message-ID: <A1EEBDC29AE0D211A55200104B9F09664290@DUALIV>
+MIME-Version: 1.0
+Content-Type: text/plain;
+        charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook CWS, Build 9.0.2416 (9.0.2910.0)
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V5.00.2314.1300
+
+Some body
+EOF
+=>
+{
+    'content_type' => 'text/plain',
+    'from_name' => 'johnk',
+    'from_email' => 'johnk@inil.com',
+    'reply_to_email' => 'johnk@inil.com',
+    'subject' => 'Re: Christmas meeting',
+    'date_time' => 944777921,
 },
 );
 
