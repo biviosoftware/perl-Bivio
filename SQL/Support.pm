@@ -536,6 +536,8 @@ sub _init_column_from_hash {
     $col->{constraint} = Bivio::SQL::Constraint->from_any(
 	    $decl->{constraint}) if $decl->{constraint};
     $col->{in_list} = $decl->{in_list} ? 1 : 0;
+    $col->{select_value} = $decl->{select_value}
+        if $decl->{select_value};
 
     # Syntax checked in FormSupport.  Not used by other Model types.
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
