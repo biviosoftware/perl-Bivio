@@ -186,7 +186,12 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(task_list_heading => ['bold']);
 	    $fc->group(label_in_text => ['bold']);
 	    $fc->group(italic => ['italic']);
-	    $fc->group(filtrum_top_holdings_heading => ['larger', 'bold']);
+	    $fc->group([qw(
+                    filtrum_top_holdings_heading
+                    register_now
+                    learn_more
+            )],
+		    ['larger', 'bold']);
 	    $fc->group([qw(
 		    file_tree_bytes
 		    list_action
