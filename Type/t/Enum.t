@@ -91,6 +91,9 @@ foreach $i (0..2) {
     my($e) = 'E' . $i;
     $t1->from_int($i) == $t1->$e() || last;
     $t1->from_any($e)->as_int == $i || last;
+    $t1->from_literal_or_die($e)->as_int == $i || last;
+    $t1->from_literal_or_die($t1->from_name($e))->as_int == $i || last;
+    $t1->from_literal_or_die($i)->as_int == $i || last;
     $t1->$e()->as_string eq (ref($t1).'::'.$e) || last;
     $t1->$e()->get_short_desc eq lc($e) || last;
     $t1->$e()->get_long_desc eq "e $i" || last;

@@ -436,9 +436,10 @@ sub execute {
 
 =for html <a name="from_literal"></a>
 
-=head2 static from_literal(int value) : Bivio::Type::Enum
+=head2 static from_literal(any value) : Bivio::Type::Enum
 
-Returns the enum for this integer or name.  If not found, returns an error.
+Returns the enum for this integer, name, or ref.
+If not found, returns an error.
 
 =cut
 
@@ -448,6 +449,9 @@ sub from_literal {
     my($info);
     if ($value =~ /^-?\d+$/) {
 	$info = _get_info($proto, $value, 1);
+    }
+    elsif (ref($value) && UNIVERSAL::isa($value, ref($proto) || $proto)) {
+	return $value;
     }
     else {
 	$info = _get_info($proto, $value = uc($value), 1);
