@@ -56,44 +56,16 @@ Returns widget which renders this page.
 sub create_content {
     my($self) = @_;
     $self->put_heading('CLUB_ACCOUNTING_TAXES_SUBSCRIPTION');
-    return $_VS->vs_join([
-	'<p>',
-	$_VS->vs_string('AccountSync', 'table_heading'),
-	' ',
-	$_VS->vs_link('subscribe now', 'CLUB_ADMIN_EC_SUBSCRIBE_ACCOUNT_SYNC'),
-	$_VS->vs_string('
-AccountSync[tm] is an electronic link between your brokerage account
-and bivio. Any activity in your account is automatically and securely
-transmitted to bivio, including member deposits, stock purchases and
-sales, interest, stock splits, mergers, dividends, spin-offs and
-more.
-
-Each day, AccountSync automatically and electronically records any
-brokerage activity into your bivio books.  AccountSync is a real life
-saver - especially when complex transactions occur such as stock
-mergers and spin-offs.  You\'ll never have to do the math by hand
-again, and you\'ll avoid mistakes. Only $89 per year. '),
-	$_VS->vs_link('[learn more]', '/hm/account-sync.html'),
-	'<p>',
-	$_VS->vs_string('Club Accounting', 'table_heading'),
-	' ',
-	$_VS->vs_link('subscribe now',
-	    'CLUB_ADMIN_EC_SUBSCRIBE_BASIC_SERVICE'),
-	$_VS->vs_string('
-The leading accounting solution for investment clubs, including daily
-club valuations, performance reports, IRS taxes and more for $59 per
-year. '),
-	$_VS->vs_link('[learn more]', '/hm/club-accounting.html'),
-	'<p>',
-	$_VS->vs_string('Taxes 2001', 'table_heading'),
-	' ',
-	$_VS->vs_link('subscribe now', 'CLUB_ADMIN_EC_SUBSCRIBE_TAX_SEASON'),
-	$_VS->vs_string('
-Special $19 Offer.  Want to use bivio during the tax season only?
-We are offering a special $19 subscription for the period January
-1st to April 15th 2002.  If your club disbanded during 2001, or you
-use bivio for its IRS tax features only, this offer is for you.'),
-    ]);
+    return $_VS->vs_template(<<'EOF');
+<p>
+You are currently registered for a
+vs_link('trial subscription', 'CLUB_ADMIN_EC_SUBSCRIPTION_INFO').
+<p>
+To gain complete access, please subscribe to one of our
+vs_link('economically priced services', 'SERVICES').
+<p>
+Special Offer: vs_link_static_site('Subscribe for tax season only.', 'hm/tax-season.html')
+EOF
 }
 
 #=PRIVATE METHODS
