@@ -679,6 +679,7 @@ sub _regexp {
 sub _send_request {
     my($self, $request) = @_;
     my($fields) = $self->[$_IDI];
+    $fields->{user_agent}->agent($self->get('test_script'));
     my($redirect_count) = 0;
     $fields->{response} = undef;
     $fields->{html_parser} = undef;
