@@ -36,6 +36,8 @@ sub main {
 	    'PL_FILES' => {}, # We don't want any installed
 	    'EXE_FILES' => \@_PROGRAMS,
 	    'PM' => \%_MODULES,
+	    MAN3PODS => {},
+	    MAN1PODS => {},
 #	    'TESTS' => join(' ', @_TESTS),
 	   );
 
