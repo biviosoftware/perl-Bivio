@@ -31,8 +31,15 @@ C<Bivio::Biz::Model::MemberWithdrawalInfo> member withdrawal information
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::InstrumentTransferList;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Type::Amount;
+use Bivio::Type::Date;
+use Bivio::Type::EntryClass;
+use Bivio::Type::EntryType;
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -66,7 +73,7 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'type',
-		type => 'Bivio::Type::EntryType',
+		type => 'EntryType',
 		constraint => 'NOT_NULL',
 	    },
 	    {
@@ -174,6 +181,11 @@ sub internal_initialize {
 		type => 'Amount',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'preparation_date',
+		type => 'Date',
+		constraint => 'NOT_NULL',
+	    },
 	],
     };
 }
@@ -276,6 +288,10 @@ sub internal_load {
 	    $properties->{withdrawal_allocations});
 
     $properties->{show_allocations} = _get_show_allocations($req);
+
+    # today
+    $properties->{preparation_date} = Bivio::Type::Date->to_local_date(
+	    Bivio::Type::Date->now);
     return;
 }
 
