@@ -191,15 +191,15 @@ sub get_standard_footer {
     return Bivio::UI::HTML::Widget::Grid->new({
 	expand => 1,
 	values => [
-#	    [
-#		' ',
-#	    ],
-#	    [
-#		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
-#			cell_expand => 1,
-#			cell_bgcolor => 'footer_line',
-#		       ),
-#	    ],
+	    [
+		' ',
+	    ],
+	    [
+		Bivio::UI::HTML::Widget->clear_dot(undef, 1)->put(
+			cell_expand => 1,
+			cell_bgcolor => 'footer_line',
+		       ),
+	    ],
 	    [
 		Bivio::UI::HTML::Widget->toggle_secure(),
 		Bivio::UI::HTML::Widget::Grid->new({
