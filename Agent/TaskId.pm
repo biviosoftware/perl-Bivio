@@ -1607,6 +1607,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE&MEMBER_WRITE
         ?/admin/add/members
+        Bivio::Biz::Model::Lock
         Bivio::Biz::Model::NumberedList->execute_load_page
         Bivio::Biz::Model::AddMemberListForm
         Bivio::UI::HTML::Club::AddMemberList
