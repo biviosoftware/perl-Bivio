@@ -33,7 +33,7 @@ company/index info
 
 #=IMPORTS
 use Bivio::Biz::Model::Instrument;
-use Bivio::Data::MGFS::Importer;
+use Bivio::Data::MGFS::DataType;
 use Bivio::Type::InstrumentType;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
@@ -43,6 +43,24 @@ use Bivio::Data::MGFS::Id;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_INSTRUMENT);
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::MGFSInstrument
+
+Creates a new MGFS Instrument model.
+
+=cut
+
+sub new {
+    my($self) = &Bivio::Biz::Model::MGFSBase::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
 
 =head1 METHODS
 
@@ -58,18 +76,45 @@ Creates an MGFS Instrument, and a corresponding Instrument model.
 
 sub create {
     my($self, $new_values) = @_;
-
     return if $new_values->{mg_id} eq 'DATE';
-    $_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new($self->get_request);
-    $_INSTRUMENT->create({
-	name => $new_values->{name},
-	ticker_symbol => $new_values->{symbol},
-	instrument_type => Bivio::Type::InstrumentType::STOCK(),
-	fed_tax_free => 0,
-    });
-    $new_values->{instrument_id} = $_INSTRUMENT->get('instrument_id');
+    # workaround for unnamed MGFS data
+    return if $new_values->{name} eq '';
+    use Data::Dumper;
+    print(Dumper($new_values));
+
+    $new_values = _synchronize_instrument($self, $new_values, 0);
     $self->SUPER::create($new_values);
     return;
+}
+
+=for html <a name="from_mgfs"></a>
+
+=head2 from_mgfs(string record, string file)
+
+Overrides from_mgfs to determine if it is a stock record.
+
+=cut
+
+sub from_mgfs {
+    my($self, $record, $file) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($file =~ /^q/) {
+	# all q files are stocks
+	$fields->{is_stock} = 1;
+    }
+    else {
+	my($data_type) = Bivio::Data::MGFS::DataType->from_mgfs(
+		substr($record, 4, 1));
+	if ($data_type == Bivio::Data::MGFS::DataType::STOCK()) {
+	    # skip companies, the names are shorter than the q files
+	    # but still need to process industries and composites,
+	    # they don't exists in q files
+	    return;
+	}
+	$fields->{is_stock} = 0;
+    }
+    return $self->SUPER::from_mgfs($record, $file);
 }
 
 =for html <a name="internal_get_mgfs_import_format"></a>
@@ -85,6 +130,8 @@ sub internal_get_mgfs_import_format {
 	file => {
 	    indb01 => [0, 0],
 	    chgdb01 => [0, 1],
+	    qspvsd => [1, 1],
+	    qcpvsd => [1, 1],
 	},
 	format => [
 	    {
@@ -93,6 +140,11 @@ sub internal_get_mgfs_import_format {
 		name => ['CHAR', 129, 30],
 		symbol => ['CHAR', 35, 8],
 	    },
+            {
+                mg_id => ['ID', 4, 8],
+                name => ['CHAR', 12, 80],
+                symbol => ['CHAR', 92, 5],
+            },
 	],
     };
 }
@@ -133,16 +185,52 @@ Updates an MGFS Instrument, and its corresponding Instrument.
 sub update {
     my($self, $new_values) = @_;
     return if $new_values->{mg_id} eq 'DATE';
-    $self->SUPER::update($new_values);
+    # workaround for unnamed MGFS data
+    return if exists($new_values->{name}) && $new_values->{name} eq '';
 
-    $new_values->{ticker_symbol} = $self->get('symbol');
-    $_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new($self->get_request);
-    $_INSTRUMENT->unauth_load(instrument_id => $self->get('instrument_id'));
-    $_INSTRUMENT->update($new_values);
+    $new_values = _synchronize_instrument($self, $new_values, 1);
+    $self->SUPER::update($new_values);
     return;
 }
 
 #=PRIVATE METHODS
+
+# _synchronize_instrument(hash_ref new_values, boolean update) : hash_ref
+#
+# Updates or creates a corresponding Instrument from the values.
+#
+sub _synchronize_instrument {
+    my($self, $new_values, $update) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # only create/update if it is a stock
+    if ($fields->{is_stock}) {
+	$_INSTRUMENT ||= Bivio::Biz::Model::Instrument->new(
+		$self->get_request);
+
+	if ($update) {
+	    $new_values->{ticker_symbol} = $self->get('symbol');
+	    $_INSTRUMENT->unauth_load(instrument_id =>
+		    $self->get('instrument_id'));
+	    $_INSTRUMENT->update($new_values);
+	}
+	else {
+	    $_INSTRUMENT->create({
+		name => $new_values->{name},
+		ticker_symbol => $new_values->{symbol},
+		instrument_type => Bivio::Type::InstrumentType::STOCK(),
+		fed_tax_free => 0,
+	    });
+	    $new_values->{instrument_id} = $_INSTRUMENT->get('instrument_id');
+	}
+    }
+    # otherwise, make the symbol the same as the mg_id for uniqueness
+    # it is an industry or composite record
+    else {
+	$new_values->{symbol} = $new_values->{mg_id};
+    }
+    return $new_values;
+}
 
 =head1 COPYRIGHT
 
