@@ -137,11 +137,6 @@ sub internal_initialize {
    	        type => 'Amount',
 	        constraint => 'NONE',
 	    },
-	    {
-	        name => 'units',
-   	        type => 'Amount',
-	        constraint => 'NONE',
-	    },
        ],
     };
 }
