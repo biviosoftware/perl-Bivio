@@ -3024,7 +3024,26 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REALM_ACCOUNT_EDIT
         require_secure=1
     )],
-   );
+    [qw(
+        CLUB_MEMBER_TAKE_OFFLINE
+        264
+        CLUB
+        ADMIN_READ&MEMBER_READ
+        ?/admin/member/take-offline
+        Bivio::Biz::Model::ClubUserList->execute_load_this
+        Bivio::Biz::Model::MemberOfflineForm
+        Bivio::UI::HTML::Club::MemberTakeOffline
+        next=CLUB_ADMIN_USER_LIST
+    )],
+    [qw(
+        MEMBER_OFFLINE_CONFIRMATION
+        265
+        USER
+        DOCUMENT_READ
+        ?/offline
+        Bivio::UI::HTML::User::MemberOfflineConfirmation
+    )],
+);
 
 __PACKAGE__->compile([
     map {($_->[0], [$_->[1]])} @_CFG
