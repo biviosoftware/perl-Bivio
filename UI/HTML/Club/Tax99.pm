@@ -37,6 +37,7 @@ use Bivio::UI::HTML::Widget::Grid;
 use Bivio::UI::HTML::Widget::Link;
 use Bivio::UI::HTML::Widget::HorizontalRule;
 use Bivio::UI::HTML::Widget::MultiColumnedList;
+use Bivio::UI::HTML::Widget::RadioGrid;
 use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::PageType;
 
@@ -67,13 +68,7 @@ sub create_content {
 	    [
 		Bivio::UI::HTML::Widget::String->new({
 		    value => <<'EOF',
-Investment clubs are required to file one copy of Form 1065, and one
-copy of Schedule K-1 for each member. Each member should also receive
-a copy of the Schedule K-1 for their records. Form 1065 is only an
-informational return, used to report gains and losses for the
-partnership. Taxable items are allocated proportionally among members,
-who then claim their portion of the club's tax burden on their
-individual tax returns.
+Investment clubs are required to file one copy of Form 1065, and one copy of Schedule K-1 for each member. Each member should also receive a copy of the Schedule K-1 for their records. Form 1065 is only an informational return, used to report gains and losses for the partnership. Taxable items are allocated proportionally among members, who then claim their portion of the club's tax burden on their individual tax returns.
 EOF
 		}),
 	    ],
@@ -89,8 +84,7 @@ EOF
 	    [
 		Bivio::UI::HTML::Widget::String->new({
 		    value => <<'EOF',
-Before selecting the reports below, follow the option links to specify
-extra information about your partnership and members.
+Before selecting the reports below, follow the option links to specify extra information about your partnership and members.
 
 EOF
 		}),
@@ -105,6 +99,55 @@ EOF
 			    'CLUB_ACCOUNTING_TAX99_K1_PARAMETERS'),
 		    '</li></ul>',
 		),
+	    ],
+	    [
+		$self->join('&nbsp;'),
+	    ],
+	    [
+		$self->join(
+		    $self->string('Allocation Method.', 'description_label'),
+		    $self->string(<<'EOF')),
+ Determines the manner in which taxable entries are allocated to each member. The time based method allocates each taxable entry according to each member's ownership in the club at the time of the entry. The snapshot method allocates taxable entries according to the member ownership at the time of withdrawal, and at the end of the year.
+EOF
+	    ],
+	    [
+		$self->join('&nbsp;'),
+	    ],
+	    [
+		Bivio::UI::HTML::Widget::Form->new({
+		    form_model => ['Bivio::Biz::Model::AllocationMethodForm'],
+		    value => Bivio::UI::HTML::Widget::Join->new({
+			values => [
+			    Bivio::UI::HTML::Widget::RadioGrid->new({
+				field => 'Tax1065.allocation_method',
+				choices => 'Bivio::Type::AllocationMethod',
+				show_unknown => 0,
+				auto_submit => 1,
+			    }),
+			    '<noscript><input type=submit value="Update">',
+			    '</noscript>',
+			],
+		    }),
+		}),
+	    ],
+	    [
+		Bivio::UI::HTML::Widget::HorizontalRule->new({
+		    size => 1,
+		    noshade => 1,
+		}),
+	    ],
+	    [
+		Bivio::UI::HTML::Widget::String->new({
+		    value => 'Informational Reports',
+		    string_font => 'page_heading',
+		}),
+	    ],
+	    [
+		$self->join('&nbsp;'),
+	    ],
+	    [
+		$self->link('Member Allocation Report',
+			'CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION'),
 	    ],
 	    [
 		$self->join('<br>',
@@ -157,7 +200,7 @@ EOF
 	    ],
 	    [
 		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Schedules and Itemizations',
+		    value => 'Required Schedules and Itemizations',
 		    string_font => 'page_heading',
 		}),
 	    ],
