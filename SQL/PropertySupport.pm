@@ -306,8 +306,11 @@ sub update {
 
 sub _equals {
     my($v, $v2) = @_;
-    return 0 if defined($v) != defined($v2);
-    return 1 unless defined($v);  # both undefined
+    # oracle treats '' and null the same
+    $v = '' unless defined($v);
+    $v2 = '' unless defined($v2);
+#    return 0 if defined($v) != defined($v2);
+#    return 1 unless defined($v);  # both undefined
     return $v eq $v2;
 }
 
