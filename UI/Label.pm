@@ -444,6 +444,7 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_TAXES_F1065_OPTIONS => 'IRS 1065 Tax Fields',
     CLUB_ACCOUNTING_TAXES_K1_OPTIONS => 'IRS K-1 Tax Fields',
     CLUB_ACCOUNTING_TAXES_MISSING_FIELDS => 'Missing Required Fields',
+    CLUB_ADMIN_CLUB_DELETE => 'Delete Club',
     CLUB_ADMIN_EC_PAYMENT_CANCELLED => 'Payment Cancelled',
     CLUB_ADMIN_EC_SUBSCRIPTIONS => 'Premium Subscriptions',
     CLUB_ADMIN_EC_SUBSCRIBE_DONE => 'Thank You!',
