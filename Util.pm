@@ -243,10 +243,10 @@ sub shell {
     my($pid) = open(IN, "-|");
     defined($pid) || die("fork: $!");
     unless ($pid) {
-	open(OUT, "| $command 2>&1") || die("open $command: $!");
+	open(OUT, "| exec $command") || die("open $command: $!");
 	print OUT $$in;
 	close(OUT) || die("write to $command failed: $!");
-	exit(0);
+	CORE::exit(0);
     }
     local($/) = undef;
     my($res) = <IN>;
