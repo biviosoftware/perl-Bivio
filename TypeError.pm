@@ -939,10 +939,10 @@ fiscal year',
 	undef,
 	'identify the expense deducted',
     ],
-    SHADOW_USER => [
+    OFFLINE_USER => [
 	133,
 	undef,
-	'operation not allowed for shadow user',
+	'operation not allowed for offline user',
     ],
     AMOUNT_OR_UNITS_INVALID => [
 	134,
@@ -968,7 +968,7 @@ fiscal year',
     MERGE_SIMILAR_MEMBERS => [
 	138,
 	undef,
-	'Must have one shadow member and one regular member'
+	'Must have one offline member and one regular member'
     ],
     ACTIVE_USER_DELETE => [
 	139,
