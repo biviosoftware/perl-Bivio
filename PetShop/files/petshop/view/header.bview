@@ -16,46 +16,44 @@ view_main(Page({
     head => Title({values => [view_widget_value('header_title')]}),
     string_font => 'page_text',
     body => Join([
-	Grid({
+	Grid([
+	    [
+		Link(Image('banner2', 'none'), 'MAIN'),
+		Search({}),
+		Join([
+		    Link(String('Cart'), 'CART'),
+		    ' | ',
+		    # display varies on logged in user state
+		    If(['auth_user'],
+			Join([
+			    Link(String('Sign-out'), 'LOGOUT'),
+			    ' | ',
+			    Link(String('MyAccount'), 'USER_ACCOUNT_EDIT'),
+			]),
+			Link(String('Sign-in'), 'LOGIN'),
+		       ),
+		    ' <br>',
+		    vs_blank_cell(),
+		    '<br>',
+		    Link(Image('bivio_power')->put(align => 'se'),
+			'http://www.bivio.biz'),
+		])->put(
+		    cell_align => 'E',
+		    string_font => 'menu_link',
+		    cell_nowrap => 1,
+		   ),
+	    ],
+	], {
 	    bgcolor => 'header_background',
 	    expand => 1,
-	    values => [
-		[
-		    Link(Image('banner2', 'none'), 'MAIN'),
-		    Search({}),
-		    Join([
-			Link(String('Cart'), 'CART'),
-			' | ',
-			# display varies on logged in user state
-			If(['auth_user'],
-			    Join([
-				Link(String('Sign-out'), 'LOGOUT'),
-				' | ',
-				Link(String('MyAccount'), 'USER_ACCOUNT_EDIT'),
-			    ]),
-			    Link(String('Sign-in'), 'LOGIN'),
-			),
-			' <br>',
-			vs_space(),
-			'<br>',
-			Link(Image('bivio_power')->put(align => 'se'),
-				'http://www.bivio.biz'),
-		    ])->put(
-			cell_align => 'E',
-			string_font => 'menu_link',
-			cell_nowrap => 1,
-		    ),
-		],
-	    ],
 	}),
-	Grid({
-	    expand => 1,
-	    values => [
-		[
-		    # The child's content
-		    view_widget_value('header_content'),
-		],
+	Grid([
+	    [
+		# The child's content
+		view_widget_value('header_content'),
 	    ],
+	], {
+	    expand => 1,
 	}),
 	'<p><hr>',
 	TaskInfo({}),

@@ -20,18 +20,13 @@ my($menu_cells) = [map {
 pop(@$menu_cells);
 
 view_put(header_content => Join([
-    Grid({
+    Grid([
+	[Join($menu_cells)->put(cell_align => 'center')],
+	[String(view_widget_value('menu_heading'))],
+    ], {
 	string_font => 'page_heading',
 	expand => 1,
 	pad => 4,
-	values => [
-	    [
-		Join($menu_cells)->put(cell_align => 'center'),
-	    ],
-	    [
-		String(view_widget_value('menu_heading')),
-	    ],
-	],
     }),
     view_widget_value('menu_content'),
 ]));

@@ -15,17 +15,15 @@ view_main(Page({
     head => Title({values => [Join([[$source_name]])]}),
     string_font => 'page_text',
     body => Join([
-	Grid({
+	Grid([
+	    [
+		Link(Image('banner2', 'none'), 'MAIN'),
+		vs_blank_cell(2),
+		String([$source_name], 'page_heading')->put(cell_expand => 1),
+	    ],
+	], {
 	    bgcolor => 'header_background',
 	    expand => 1,
-	    values => [
-		[
-		    Link(Image('banner2', 'none'), 'MAIN'),
-		    vs_space(2),
-		    String([$source_name], 'page_heading')->put(
-			    cell_expand => 1),
-		],
-	    ],
 	}),
 	SourceCode({
 	    uri => 'src',

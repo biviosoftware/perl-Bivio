@@ -18,132 +18,115 @@ my($address_widget) = sub {
 	String([$field, 'city']),
 	', ',
 	String([$field, 'state']),
-	vs_space(2),
+	vs_blank_cell(2),
 	String([$field, 'zip']),
     ])->put(string_font => 'page_text');
 };
 
-view_put(menu_content => Grid({
+view_put(menu_content => Grid([
+    [
+	Join([
+	    String('Date: ', 'page_heading'),
+	    String(['Model.Order', 'order_date', 'HTMLFormat.Date']),
+	]),
+    ], [
+	Join([
+	    String('Account: ', 'page_heading'),
+	    String(['auth_user', 'name']),
+	    '<br>',
+	]),
+    ], [
+	String('Order Information:', 'page_heading'),
+    ], [
+	Join([
+	    String('Order ID: ', 'form_field_label'),
+	    String(['Model.Order', 'order_id']),
+	    '<br>',
+	]),
+    ], [
+	Table('CartItemList', [
+	    'Item.item_id',
+	    ['item_name', {
+		wf_list_link => {
+		    query => 'THIS_CHILD_LIST',
+		    task => 'ITEM_DETAIL',
+		},
+	    }],
+	    'CartItem.unit_price',
+	    'CartItem.quantity',
+	    'total_cost',
+	], {
+	    cellpadding => 2,
+	    cellspacing => 2,
+	    footer_row_widgets => [
+		String('Total:', 'table_heading'),
+		vs_blank_cell()->put(column_span => 3),
+		TableSummaryCell({
+		    field => 'total_cost',
+		    string_font => 'table_heading',
+		}),
+	    ],
+	}),
+    ], [
+	String('Shipping Information:', 'page_heading'),
+    ], [
+	Join([
+	    String('Shipping Address:'),
+	    '<br>',
+	    String(['Model.Order', 'ship_to_first_name']),
+	    vs_blank_cell(),
+	    String(['Model.Order', 'ship_to_last_name']),
+	    '<br>',
+	    # Attribute is put on the request by view_pre_execute
+	    &$address_widget('order-commit.ship_to_address'),
+	]),
+    ], [
+	Join([
+	    String('Carrier: '),
+	    String(['Model.Order', 'courier']),
+	]),
+    ], [
+	String('Billing Information:', 'page_heading'),
+    ], [
+	Join([
+	    String('Bill To Address:'),
+	    '<br>',
+	    String(['Model.Order', 'bill_to_first_name']),
+	    vs_blank_cell(),
+	    String(['Model.Order', 'bill_to_last_name']),
+	    '<br>',
+	    # Attribute is put on the request by view_pre_execute
+	    &$address_widget('order-commit.bill_to_address'),
+	    '<p>',
+	]),
+    ], [
+	String('Credit Card Information:'),
+    ], [
+	Grid([
+	    [
+		String('Type: '),
+		    String([['Model.Order', 'card_type'], '->get_short_desc']),
+	    ], [
+		String('Number: '),
+		String(['Model.Order', 'credit_card']),
+	    ], [
+		String('Expiration Date: '),
+		CreditCardExpiration({
+		    value => ['Model.Order', 'expiration_date'],
+		}),
+	    ],
+	], {
+	    pad => 2,
+	}),
+    ], [
+	Join([
+	    String('Status: ', 'page_heading'),
+	    String([['Model.OrderStatus', 'status'], '->get_short_desc']),
+	]),
+    ],
+], {
     space => 12,
     string_font => 'page_text',
-    values => [
-	[
-	    Join([
-		String('Date: ', 'page_heading'),
-		String(['Model.Order', 'order_date', 'HTMLFormat.Date']),
-	    ]),
-	],
-	[
-	    Join([
-		String('Account: ', 'page_heading'),
-		String(['auth_user', 'name']),
-		'<br>',
-	    ]),
-	],
-	[
-	    String('Order Information:', 'page_heading'),
-	],
-	[
-	    Join([
-		String('Order ID: ', 'form_field_label'),
-		String(['Model.Order', 'order_id']),
-		'<br>',
-	    ]),
-	],
-	[
-	    Table('CartItemList', [
-		'Item.item_id',
-		['item_name', {
-		    wf_list_link => {
-			query => 'THIS_CHILD_LIST',
-			task => 'ITEM_DETAIL',
-		    },
-		}],
-		'CartItem.unit_price',
-		'CartItem.quantity',
-		'total_cost',
-	    ], {
-		cellpadding => 2,
-		cellspacing => 2,
-		footer_row_widgets => [
-		    String('Total:', 'table_heading'),
-		    vs_space()->put(column_span => 3),
-		    TableSummaryCell({
-			field => 'total_cost',
-			string_font => 'table_heading',
-		    }),
-		],
-	    }),
-	],
-	[
-	    String('Shipping Information:', 'page_heading'),
-	],
-	[
-	    Join([
-		String('Shipping Address:'),
-		'<br>',
-		String(['Model.Order', 'ship_to_first_name']),
-		vs_space(),
-		String(['Model.Order', 'ship_to_last_name']),
-		'<br>',
-		# Attribute is put on the request by view_pre_execute
-		&$address_widget('order-commit.ship_to_address'),
-	    ]),
-	],
-	[
-	    Join([
-		String('Carrier: '),
-		String(['Model.Order', 'courier']),
-	    ]),
-	],
-	[
-	    String('Billing Information:', 'page_heading'),
-	],
-	[
-	    Join([
-		String('Bill To Address:'),
-		'<br>',
-		String(['Model.Order', 'bill_to_first_name']),
-		vs_space(),
-		String(['Model.Order', 'bill_to_last_name']),
-		'<br>',
-		# Attribute is put on the request by view_pre_execute
-		&$address_widget('order-commit.bill_to_address'),
-		'<p>',
-	    ]),
-	],
-	[
-	    String('Credit Card Information:'),
-	],
-	[
-	    Grid({
-		pad => 2,
-		values => [
-		    [
-			String('Type: '),
-			String([['Model.Order', 'card_type'],
-			    '->get_short_desc']),
-		    ],
-		    [
-			String('Number: '),
-			String(['Model.Order', 'credit_card']),
-		    ],
-		    [
-			String('Expiration Date: '),
-			CreditCardExpiration({
-			    value => ['Model.Order', 'expiration_date'],
-			}),
-		    ],
-		],
-	    }),
-	],
-	[
-	    Join([
-		String('Status: ', 'page_heading'),
-		String([['Model.OrderStatus', 'status'], '->get_short_desc']),
-	    ]),
-	],
-    ],
 }));
 
 view_pre_execute(sub {

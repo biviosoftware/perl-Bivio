@@ -35,44 +35,35 @@ my($address_widget) = sub {
 	String(&$order_field('EntityAddress_'.$address.'.city')),
 	', ',
 	String(&$order_field('EntityAddress_'.$address.'.state')),
-	vs_space(2),
+	vs_blank_cell(2),
 	String(&$order_field('EntityAddress_'.$address.'.zip')),
 	'<p>',
     ]);
 };
 
-view_put(menu_content => Form({
-    form_class => 'OrderConfirmationForm',
-    value => Grid({
-	string_font => 'page_text',
-	pad => 5,
-	values => [
-	    [
-		String(Join([
-		    'Please confirm that the following data is correct '
-		    .'and press the <b>Continue</b> button to ship the '
-		    .'order',
-		])),
-	    ],
-	    [
-		String('Billing Address', 'page_heading'),
-	    ],
-	    [
-		&$address_widget('bill_to', 1),
-	    ],
-	    [
-		String('Shipping Address', 'page_heading'),
-	    ],
-	    [
-		&$address_widget('ship_to', 2),
-	    ],
-	    [
-		ImageFormButton({
-		    image => 'continue',
-		    field => 'ok_button',
-		    alt => 'Continue',
-		}),
-	    ],
-	],
-    }),
-}));
+view_put(menu_content => Form('OrderConfirmationForm', Grid([
+    [
+	String(Join([
+	    'Please confirm that the following data is correct '
+	    .'and press the <b>Continue</b> button to ship the '
+	    .'order',
+	])),
+    ], [
+	String('Billing Address', 'page_heading'),
+    ], [
+	&$address_widget('bill_to', 1),
+    ], [
+	String('Shipping Address', 'page_heading'),
+    ], [
+	&$address_widget('ship_to', 2),
+    ], [
+	ImageFormButton({
+	    image => 'continue',
+	    field => 'ok_button',
+	    alt => 'Continue',
+	}),
+    ],
+], {
+    string_font => 'page_text',
+    pad => 5,
+})));

@@ -10,26 +10,23 @@ view_put(header_title => 'Product Category');
 view_put(menu_heading => String(
 	[['Model.ItemList', '->set_cursor_or_die', 0], 'Product.name']));
 
-view_put(menu_content => Form({
-    form_class => 'ItemListForm',
-    value => Table('ItemListForm', [
-	'Item.item_id',
-	['item_name', {
-	    wf_list_link => {
-		query => 'THIS_CHILD_LIST',
-		task => 'ITEM_DETAIL',
-	    },
-	}],
-	'Item.list_price',
-	['add_to_cart', {
-	    column_widget => ImageFormButton({
-		image => 'add_to_cart',
-		field => 'add_to_cart',
-		alt => 'Add Item to Your Shopping Cart',
-	    }),
-	}],
-    ])->put(
-	    cellpadding => 2,
-	    cellspacing => 2,
-	   ),
-}));
+view_put(menu_content => Form('ItemListForm', Table('ItemListForm', [
+    'Item.item_id',
+    ['item_name', {
+	wf_list_link => {
+	    query => 'THIS_CHILD_LIST',
+	    task => 'ITEM_DETAIL',
+	},
+    }],
+    'Item.list_price',
+    ['add_to_cart', {
+	column_widget => ImageFormButton({
+	    image => 'add_to_cart',
+	    field => 'add_to_cart',
+	    alt => 'Add Item to Your Shopping Cart',
+	}),
+    }],
+], {
+    cellpadding => 2,
+    cellspacing => 2,
+})));

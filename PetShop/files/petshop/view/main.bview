@@ -17,7 +17,7 @@ my(@left_menu_cells) = map {
 		vs_product_uri($category)),
 	],
 	[String($category->get_long_desc, 'main_description_text')],
-	[Join(['<br>', vs_space()])],
+	[Join(['<br>', vs_blank_cell()])],
     );
 } @{view_get('header_categories')};
 
@@ -38,28 +38,26 @@ my(@image_map) = map {
 );
 
 # The header_content is defined in header.bview of which this view is a child.
-view_put(header_content => Grid({
+view_put(header_content => Grid([
+    [
+	Grid([
+	    @left_menu_cells,
+	], {
+	    cell_align => 'NW',
+	    space => 2,
+	    expand => 1,
+	    width => 200,
+	    cell_bgcolor => 'category_background',
+	}),
+	vs_blank_cell(),
+	Join(["<map name=\"mainmap\">\n",
+	    @image_map,
+	    "</map>\n",
+	    Image('main', 'none')->put(attributes => ' usemap="#mainmap"'),
+	]),
+    ],
+], {
     expand => 1,
     space => 2,
     pad => 2,
-    values => [
-	[
-	    Grid({
-		space => 2,
-		expand => 1,
-		width => 200,
-		cell_bgcolor => 'category_background',
-		values => [
-		    @left_menu_cells,
-		],
-		cell_align => 'NW',
-	    }),
-	    vs_space(),
-	    Join(["<map name=\"mainmap\">\n",
-		@image_map,
-		"</map>\n",
-		Image('main', 'none')->put(attributes => ' usemap="#mainmap"'),
-	    ]),
-	],
-    ],
 }));

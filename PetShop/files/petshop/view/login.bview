@@ -16,7 +16,7 @@ view_put(
 	    ], [
 		vs_form_field('UserLoginForm.RealmOwner.password'),
 	    ], [
-		vs_space(),
+		vs_blank_cell(),
 		ImageFormButton({
 		    cell_colspan => 2,
 		    image => 'submit',
@@ -24,14 +24,15 @@ view_put(
 		    alt => 'Submit',
 		}),
 	    ], [
-		vs_space(),
+		vs_blank_cell(),
 	    ], [
-		vs_space(),
-		vs_link('New User', 'USER_ACCOUNT_CREATE', 'page_text'),
+		vs_blank_cell(),
+		Link('New User', 'USER_ACCOUNT_CREATE'),
 	    ],
 	], {
 	    align => 'left',
 	    pad => 2,
+	    string_font => 'page_text',
 	})),
     ]),
 );
