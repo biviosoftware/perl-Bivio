@@ -69,7 +69,7 @@ sub get_instance {
         ) unless !$_SELF->get_current || $_SELF->get_current == $_SELF;
         return $_SELF;
     }
-    $_SELF = $proto->new({
+    $_SELF = $proto->internal_new({
 	auth_id => undef,
 	auth_user_id => undef,
 	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
