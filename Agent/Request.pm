@@ -173,12 +173,6 @@ and L<Bivio::Biz::Model::Preferences|Bivio::Biz::Model::Preferences>.
 
 Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
 
-=item user_id : string
-
-User associated with the request's cookie.  This is set by the
-cookie management code and my be cleared by Location for performance
-reasons (HTTP_DOCUMENT).
-
 =item uri : string
 
 URI from the incoming request unmodified.  It is already "escaped".
