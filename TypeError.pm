@@ -683,7 +683,7 @@ __PACKAGE__->compile([
     INVALID_OPENING_BALANCE_DATE => [
 	80,
 	undef,
-	'For tax reasons, the date may not be beyond the start of this fiscal year',
+	'Use this and subsequent forms to record the account, investment, and member opening balances IF your club has been in existence since before the beginning of the year.  You will be able to return and edit the balances at any time.',
     ],
     INVALID_PARTNERSHIP_TYPE => [
 	81,
