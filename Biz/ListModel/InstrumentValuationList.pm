@@ -109,21 +109,21 @@ to load values.
 
 =cut
 
-use Data::Dumper ();
-
 sub internal_load {
     my($self, $rows, $query) = @_;
 
     $self->SUPER::internal_load($rows, $query);
 
-    my($realm) = Bivio::Agent::Request->get_current()->get('auth_realm')
-	    ->get('owner');
+    my($req) = Bivio::Agent::Request->get_current();
+    my($realm) = $req->get('auth_realm')->get('owner');
 
 #TODO: get date from query if present
 #TODO: is time() the correct default?
     my($date) = Bivio::Type::DateTime->to_sql_param(time());
 
-    my($realm_value) = $realm->get_value($date);
+    my($realm_value) = $req->unsafe_get('realm_value')
+	    || $realm->get_value($date);
+    $req->put('realm_value' => $realm_value);
 
     my($inst_info) = $realm->get_instruments_info();
 
