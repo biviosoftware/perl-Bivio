@@ -175,6 +175,7 @@ my(@_CFG) = (
         help=account-summary
         want_query=0
     )],
+#10
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
@@ -296,9 +297,10 @@ my(@_CFG) = (
         next=CLUB_COMMUNICATIONS_MAIL_DETAIL
         help=mail
     )],
+#21-22
     [qw(
 	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
-	21
+	23
         CLUB
         ACCOUNTING_READ&INVESTMENT_READ&ACCOUNT_READ
         ?/accounting/reports/valuation
@@ -3157,21 +3159,46 @@ my(@_CFG) = (
         MAIL_READ
         ?/mail-expanded
         Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_page
-        Bivio::UI::HTML::Club::MailList
+        Bivio::Biz::Model::MailExpandedList->execute_load_page
+        Bivio::Biz::Model::MailExpandedListForm->execute_if_allowed
+        Bivio::UI::HTML::Club::MailExpandedList
         next=CLUB_COMMUNICATIONS_MAIL_EXPANDED_LIST
         help=mail
     )],
     [qw(
-        CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
+        CLUB_COMMUNICATIONS_MAIL_EXPANDED_DETAIL
         277
+        CLUB
+        MAIL_READ
+        ?/mail-expanded-msg
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::MailExpandedList->execute_load_this
+        Bivio::Biz::Model::MailPartList->execute_load_all
+        Bivio::UI::HTML::Club::MailDetail
+        help=mail
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
+        278
         CLUB
         MAIL_READ
         ?/mail-collapsed
         Bivio::Biz::Action::PublicRealm
-        Bivio::Biz::Model::MailList->execute_load_page
-        Bivio::UI::HTML::Club::MailList
+        Bivio::Biz::Model::MailCollapsedList->execute_load_page
+        Bivio::UI::HTML::Club::MailCollapsedList
         next=CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
+        help=mail
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_COLLAPSED_DETAIL
+        279
+        CLUB
+        MAIL_READ
+        ?/mail-collapsed-msg
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::MailCollapsedList->execute_load_this
+        Bivio::Biz::Model::MailPartList->execute_load_all
+        Bivio::UI::HTML::Club::MailDetail
         help=mail
     )],
 );
