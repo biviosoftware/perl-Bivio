@@ -491,7 +491,7 @@ _compile(\%_MAP, [
     LOGOUT => 'Logout',
     MY_CLUB_SITE => 'My Club Site',
     ['USER_ADMIN_PREFERENCES_EDIT', 'USER_ADMIN_PREFERENCES_EDIT_WITH_CONTEXT']
-        => 'Change Preferences',
+        => 'Change User Preferences',
     USER_AGREEMENT_TEXT => 'Terms of Service',
     ['USER_HOME', 'MY_SITE']
         => 'My Site',
