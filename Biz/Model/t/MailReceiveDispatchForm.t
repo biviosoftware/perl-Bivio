@@ -39,6 +39,7 @@ Bivio::Test->new({
     'Bivio::Biz::Model::MailReceiveDispatchForm' => [
 	execute => [
 	    ['demo-ignore', 'demo'] => ['demo', 'demo'],
+	    ['ignore.demo', 'demo'] => ['demo', 'demo'],
 	    ['demo-ignore', 'not_a_user'] => [undef, 'demo'],
 	    ['not_a_user-ignore', 'demo'] => Bivio::DieCode->NOT_FOUND,
 	    ['demo', 'demo'] => Bivio::DieCode->NOT_FOUND,
