@@ -254,15 +254,7 @@ sub _create_edit {
     }
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
-	if (exists($attrs->{format})) {
-	    return $_VS->vs_new('Text', {
-		field => $field,
-		size => 10,
-		%$attrs,
-	    });
-	}
-	$_VS->vs_new('Currency');
-	return $_VS->vs_new('Currency', {
+	return $_VS->vs_new('Text', {
 	    field => $field,
 	    size => 10,
 	    %$attrs,
