@@ -95,12 +95,21 @@ sub render {
     );
     foreach my $v (@{$self->get('values')}) {
 	my($e);
-	$entity->attach(
-	    Data => ${$self->render_value($name++, $v, $source)},
+	if (UNIVERSAL::isa($v, 'Bivio::UI::HTML::Widget::FileAttachment')) {
+	    $entity->attach(
+	        Path => ${$v->render_attr('path', $source)},
+                Disposition => 'attachment',
 	    map({
 		($_ => ${$v->render_attr('mime_' . lc($_), $source)});
 	    } qw(Type Encoding)),
-	);
+        );} else {
+            $entity->attach(
+	        Data => ${$self->render_value($name++, $v, $source)},
+	        map({
+		    ($_ => ${$v->render_attr('mime_' . lc($_), $source)});
+	        } qw(Type Encoding)),
+	    );
+        }
     }
     $$buffer .= $entity->body_as_string;
     $source->get_request->put(
