@@ -56,7 +56,7 @@ Create a new PropertyModel associated with the request.
 =cut
 
 sub new {
-    return &Bivio::Biz::Model::new(@_);
+    return Bivio::Biz::Model::new(@_);
 }
 
 =head1 METHODS
