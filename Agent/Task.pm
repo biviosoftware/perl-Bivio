@@ -80,7 +80,8 @@ L<Bivio::Auth::RealmType|Bivio::Auth::RealmType> for this task.
 =item require_context : boolean [form_model's require_context]
 
 The I<form_model> has C<require_context> defined, unless
-overriden by the configuration.
+overriden by the configuration.  You can't turn on I<require_context>
+if the I<form_model> doesn't require it already.
 
 =item want_query : boolean [1]
 
@@ -227,18 +228,7 @@ sub new {
     }
 
     # Set form
-    if ($attrs->{form_model}) {
-	Carp::croak($id->as_string, ": FormModels require \"next=\" item")
-		    unless $attrs->{next};
-	$attrs->{require_context} = $attrs->{form_model}->get_instance
-		->get_info('require_context')
-			unless defined($attrs->{require_context});
-	# default cancel to next unless present
-	$attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
-    }
-    else {
-	$attrs->{require_context} = 0;
-    }
+    _init_form_attrs($attrs);
 
     # Other defaults
     $attrs->{want_query} = 1 unless defined($attrs->{want_query});
@@ -473,6 +463,35 @@ sub _call_txn_resources {
 
     # Empty the list
     $req->put(txn_resources => []);
+    return;
+}
+
+# _init_form_attrs(hash_ref attrs)
+#
+# Initializes the form_model attributes.
+#
+sub _init_form_attrs {
+    my($attrs) = @_;
+    unless ($attrs->{form_model}) {
+	$attrs->{require_context} = 0;
+	return;
+    }
+
+    Bivio::Die->die($attrs->{id}, ": FormModels require \"next=\" item")
+		unless $attrs->{next};
+    # default cancel to next unless present
+    $attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
+
+    my($form_require) = $attrs->{form_model}->get_instance
+	    ->get_info('require_context');
+    if (defined($attrs->{require_context})) {
+	Bivio::Die->die($attrs->{id}, ": can't require_context, because",
+		" FormModel doesn't require it")
+		    if !$form_require && $attrs->{require_context};
+    }
+    else {
+	$attrs->{require_context} = $form_require;
+    }
     return;
 }
 
