@@ -271,54 +271,54 @@ sub execute {
     # Don't rollback, because unwind doesn't necessarily mean failure
     return unless _parse($self, $input);
 
-    # If the form has errors, the transaction will be rolled back
+    # If the form has errors, the transaction will be rolled back.
+    # validate is always called so we try to return as many errors
+    # to the user as possible.
+    $self->validate();
     unless ($fields->{errors}) {
-	$self->validate();
-	unless ($fields->{errors}) {
 	    # Try to catch and apply type errors thrown
-	    my($die) = Bivio::Die->catch(sub {$self->execute_input();});
-	    if ($die) {
-		# If not TypeError, just rethrow
-		$die->die() unless $die->get('code')->isa('Bivio::TypeError');
-		# Can we find the fields in the Form?
-		_apply_type_error($self, $die);
-	    }
-	    unless ($fields->{errors}) {
-		# Success, redirect to the next task or to the task in
-		# the context.
-		my($req) = $self->get_request;
-		$req->client_redirect($req->get('task')->get('next'))
-			unless $fields->{context};
+	my($die) = Bivio::Die->catch(sub {$self->execute_input();});
+	if ($die) {
+	    # If not TypeError, just rethrow
+	    $die->die() unless $die->get('code')->isa('Bivio::TypeError');
+	    # Can we find the fields in the Form?
+	    _apply_type_error($self, $die);
+	}
+	unless ($fields->{errors}) {
+	    # Success, redirect to the next task or to the task in
+	    # the context.
+	    my($req) = $self->get_request;
+	    $req->client_redirect($req->get('task')->get('next'))
+		    unless $fields->{context};
 
-		my($c) = $fields->{context};
-		my($f) = $c->{form};
-		unless ($f) {
-		    _trace('no form, client_redirect: ', $c->{uri},
-			    '?', $c->{query}) if $_TRACE;
-		    # If there is no form, redirect to client so looks
-		    # better.
-		    $req->client_redirect(@{$c}{qw(uri query)});
-		    # DOES NOT RETURN
-		}
-
-		# Do an server redirect to context, because can't do
-		# client redirect (no way to pass form state (reasonably)).
-		# Indicate to the next form that this is a SUBMIT_UNWIND
-		# Make sure you use that form's SUBMIT_UNWIND button.
-		$f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
-
-		# Ensure this form_model is seen as the redirect model
-		# by get_context_from_request and set a flag so it
-		# knows to pop context instead of pushing.
-		$req->put(form_model => $self);
-		$fields->{redirecting} = 1;
-
-		# Redirect calls us back in get_context_from_request
-		_trace('have form, server_redirect: ', $c->{uri},
+	    my($c) = $fields->{context};
+	    my($f) = $c->{form};
+	    unless ($f) {
+		_trace('no form, client_redirect: ', $c->{uri},
 			'?', $c->{query}) if $_TRACE;
-		$req->server_redirect(@{$c}{qw(uri query)}, $f);
+		# If there is no form, redirect to client so looks
+		# better.
+		$req->client_redirect(@{$c}{qw(uri query)});
 		# DOES NOT RETURN
 	    }
+
+	    # Do an server redirect to context, because can't do
+	    # client redirect (no way to pass form state (reasonably)).
+	    # Indicate to the next form that this is a SUBMIT_UNWIND
+	    # Make sure you use that form's SUBMIT_UNWIND button.
+	    $f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
+
+	    # Ensure this form_model is seen as the redirect model
+	    # by get_context_from_request and set a flag so it
+	    # knows to pop context instead of pushing.
+	    $req->put(form_model => $self);
+	    $fields->{redirecting} = 1;
+
+	    # Redirect calls us back in get_context_from_request
+	    _trace('have form, server_redirect: ', $c->{uri},
+		    '?', $c->{query}) if $_TRACE;
+	    $req->server_redirect(@{$c}{qw(uri query)}, $f);
+	    # DOES NOT RETURN
 	}
     }
     # Some type of error, rollback and fall through to the next
@@ -741,6 +741,14 @@ sub unsafe_get_context_field {
 By default this method does nothing. Subclasses should override it to provide
 form specific validation.
 
+C<validate> is always called, even if some of the fields do not
+meet the SQL constraints.  This allows us to return as many errors
+as possible to the user.
+
+B<Care must be taken when checking fields, because they may be undef.>
+In general, fields should not be checked by C<validate> if they are
+C<undef>.
+
 =cut
 
 sub validate {
@@ -758,7 +766,7 @@ if it fails.
 
 sub validate_greater_than_zero {
     my($self, $field) = @_;
-    my($value) = $self->internal_get()->{$field};
+    my($value) = $self->get($field);
     return unless defined($value);
 
     $self->internal_put_error($field, Bivio::TypeError::GREATER_THAN_ZERO())
@@ -777,7 +785,7 @@ if it fails.
 
 sub validate_not_negative {
     my($self, $field) = @_;
-    my($value) = $self->internal_get()->{$field};
+    my($value) = $self->get($field);
     return unless defined($value);
 
     $self->internal_put_error($field, Bivio::TypeError::NOT_NEGATIVE())

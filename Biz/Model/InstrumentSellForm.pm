@@ -139,15 +139,9 @@ sub validate {
 
     my($properties) = $self->internal_get;
 
-    # make sure the price/share amount is > 0
-    $self->internal_put_error('RealmInstrumentValuation.price_per_share',
-	    Bivio::TypeError::GREATER_THAN_ZERO())
-	  unless $properties->{'RealmInstrumentValuation.price_per_share'} > 0;
-
-    # make sure the count is > 0
-    $self->internal_put_error('RealmInstrumentEntry.count',
-	    Bivio::TypeError::GREATER_THAN_ZERO())
-	    unless $properties->{'RealmInstrumentEntry.count'} > 0;
+    $self->validate_greater_than_zero(
+	    'RealmInstrumentValuation.price_per_share');
+    $self->validate_greater_than_zero('RealmInstrumentEntry.count');
 
     my($req) = $self->get_request;
     my($realm) = $req->get('auth_realm')->get('owner');
@@ -158,8 +152,9 @@ sub validate {
     # number of shares shouldn't exceed owned
     $self->internal_put_error('RealmInstrumentEntry.count',
 	    Bivio::TypeError::SHARES_SOLD_EXCEEDS_OWNED())
-	    unless $properties->{'RealmInstrumentEntry.count'}
-		    <= $shares_owned;
+	    unless !defined($properties->{'RealmInstrumentEntry.count'})
+		    || $properties->{'RealmInstrumentEntry.count'}
+			    <= $shares_owned;
 
     return;
 }
