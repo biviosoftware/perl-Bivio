@@ -62,6 +62,22 @@ L<Bivio::UI::HTML::Widget::Title|Bivio::UI::HTML::Widget::Title>.
 Renders an inline style in the header.  The widget
 must render the C<STYLE> or C<META> tags as appropriate.
 
+=item background : string
+
+Name of the icon to use for the page background.
+
+=back
+
+=head1 FACADE ATTRIBUTES
+
+=over 4
+
+=item Bivio::UI::Color.page_link : string
+
+Color of links.
+
+=item INCOMPLETE
+
 =back
 
 =cut
@@ -142,6 +158,7 @@ sub initialize {
     }
     $fields->{style}->put_and_initialize(parent => $self)
 	    if $fields->{style} = $self->unsafe_get('style');
+    $fields->{background} = $self->get_or_default('background');
     return;
 }
 
@@ -167,6 +184,11 @@ sub render {
 	my($n) = 'page_'.$c;
 	$$buffer .= Bivio::UI::Color->format_html($n, $c, $req);
     }
+
+    # background image
+    $$buffer .= ' background="'
+	    .Bivio::UI::Icon->get_value($fields->{background}, $req)->{uri}
+		    .'"' if $fields->{background};
     $$buffer .= ">\n";
 
     $fields->{body}->render($source, $buffer);
