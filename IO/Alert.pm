@@ -317,17 +317,54 @@ sub _format {
     $text .= ' ';
     my($o);
     foreach $o (@$msg) {
-	# Don't let as_string calls crash;  Only call as_string on refs.
-	defined($o) || ($text .= '<undef>', next);
-	my($s);
-	$s = ref($o) && &UNIVERSAL::can($o, 'as_string') ?
-		(eval {$o->as_string} || $o) : $o;
-	$text .= length($s) > $_MAX_ARG_LENGTH
-		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
-			: $s;
+	$text .= _format_string($o);
     }
     substr($text, -1) eq "\n" || ($text .= "\n");
     return $text;
+}
+
+sub _format_string {
+    my($o) = @_;
+    # Don't let as_string calls crash;  Only call as_string on refs.
+    if (ref($o) eq 'ARRAY') {
+	my($s, $v) = '[';
+	my($i) = 10;
+	foreach $v (@$o) {
+	    $s .= _format_string_simple($v) .',';
+	    if (--$i <= 0) {
+		$s .= '<...>,';
+		last;
+	    }
+	}
+	return chop($s) eq '[' ? '[]' : $s.']';
+    }
+    if (ref($o) eq 'HASH') {
+	my($s, $v) = '{';
+	my($i) = 10;
+	foreach $v (sort(keys(%$o))) {
+	    $s .= _format_string_simple($v)
+		    .'=>'._format_string_simple($o->{$v}).',';
+	    if (--$i <= 0) {
+		$s .= '<...>,';
+		last;
+	    }
+	}
+	return chop($s) eq '{' ? '{}' : $s.'}';
+    }
+    if (ref($o) eq 'SCALAR') {
+	return _format_string_simple($$o)
+    }
+    return _format_string_simple($o);
+}
+
+sub _format_string_simple {
+    my($o) = @_;
+    return '<undef>' unless defined($o);
+    my($s) = ref($o) && &UNIVERSAL::can($o, 'as_string')
+	    ? (eval {$o->as_string} || $o) : $o;
+    return length($s) > $_MAX_ARG_LENGTH
+		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
+			: $s;
 }
 
 sub _initial_die_handler {
