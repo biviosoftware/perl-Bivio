@@ -483,7 +483,7 @@ _compile(\%_MAP, [
     ],
     CLUB_SETUP_ACCOUNTING => 'Step 2: Setup Accounting',
     CLUB_SETUP_AGE => 'Step 3: Club History',
-    CLUB_SETUP_OPENING_BALANCE_CHOICE => 'Step 4: Choose duration of accounting history',
+    CLUB_SETUP_OPENING_BALANCE_CHOICE => 'Step 4: Accounting Switchover',
     DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
