@@ -56,6 +56,8 @@ Bivio::IO::Trace->register;
 
 =head2 acquire()
 
+=head2 acquire(boolean no_txn_resource)
+
 Attempts to acquire a lock for the specified task for the current realm.
 Throws an UPDATE_COLLISION exception if it cannot acquire the lock.
 
@@ -67,7 +69,7 @@ task item.  Put this instance on the Task:
 =cut
 
 sub acquire {
-    my($self) = @_;
+    my($self, $no_txn_resource) = @_;
     my($req) = $self->get_request;
     $req->get(ref($self))->throw_die(
 	'EXISTS', {
@@ -89,7 +91,8 @@ sub acquire {
 	# DOES NOT RETURN
     }
     _trace($self) if $_TRACE;
-    $req->push_txn_resource($self);
+    $req->push_txn_resource($self)
+        unless $no_txn_resource;
     return;
 }
 
