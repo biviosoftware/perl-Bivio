@@ -144,7 +144,7 @@ sub _create_sell_table {
     while ($lot_list->next_row) {
 	my($row) = [
 		Bivio::UI::HTML::Format::Date->get_widget_value(
-			$lot_list->get('purchase_date')),
+			$lot_list->get('acquisition_date')),
 		Bivio::UI::HTML::Format::Amount->get_widget_value(
 			$lot_list->get('quantity'), 7, 1),
 		Bivio::UI::HTML::Format::Amount->get_widget_value(
@@ -163,7 +163,7 @@ sub _create_sell_table {
 	values => [
 	     [
 		 Bivio::UI::HTML::Widget::String->new({
-		     value => 'Purchase Date',
+		     value => 'Acquisition Date',
 		     string_font => 'table_heading',
 		 }),
 		 Bivio::UI::HTML::Widget::String->new({
