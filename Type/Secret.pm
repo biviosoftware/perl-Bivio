@@ -101,8 +101,6 @@ The way we encrypt the data.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    Carp::croak("$cfg->{domain}: domain must have two dots in it")
-		unless !$cfg->{domain} || $cfg->{domain} =~ /\..*\./;
     $_CIPHER = Crypt::CBC->new($cfg->{key}, 'IDEA');
     return;
 }
