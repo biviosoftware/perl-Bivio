@@ -386,7 +386,7 @@ sub parse {
 	# OPTIMIZATION: We know the DOCUMENT_TASK does not need
 	# a user.  It is visible to all users.  Therefore, we avoid
 	# a user lookup here which is a database hit.
-	$req->put(user_id => undef);
+	$req->put(user_id => undef, initial_uri => '/');
 
 	return ($_DOCUMENT_TASK, $_GENERAL, '', '/');
     }
@@ -402,6 +402,7 @@ sub parse {
     # There is always something in $uri and @uri at this point
     $uri = join('/', @uri);
     my($info);
+    $req->put(initial_uri => '/'.$uri);
 
     # General realm simple map; no placeholders or path_info.
     return ($info->{task}, $_GENERAL, '', $orig_uri)
