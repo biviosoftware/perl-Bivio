@@ -81,8 +81,8 @@ sub execute {
 # _process_all(self, Bivio::Agent::Request req) : boolean
 #
 # Go through list of all payments which need to be processed.
-# For each payment, setup user and realm, then execute a separate
-# task to process it.
+# For each payment, setup user and realm, then call ECCreditCardProcessor
+# to handle it.
 #
 sub _process_all {
     my($self, $req) = @_;
@@ -90,15 +90,13 @@ sub _process_all {
     # check batch before and after.  Sometimes there is an error downloading
     # the status, and we have accidentally resubmitted a payments.
     Bivio::Biz::Action::ECCreditCardProcessor->check_transaction_batch($req);
-    my($task) = Bivio::Agent::Task->get_by_id(
-            Bivio::Agent::TaskId->CLUB_ADMIN_EC_PROCESS_PAYMENT);
     my($ecp) = Bivio::Biz::Model->new($req, 'ECPayment');
     my($it) = $ecp->unauth_iterate_start('creation_date_time asc',
 	{status => Bivio::Type::ECPaymentStatus->needs_processing_list});
     while ($ecp->iterate_next_and_load($it)) {
         $req->set_user($ecp->get('user_id'));
         $req->set_realm($ecp->get('realm_id'));
-        $task->execute($req);
+	Bivio::Biz::Action::ECCreditCardProcessor->execute_process($req);
     }
     $ecp->iterate_end($it);
     return 0;
