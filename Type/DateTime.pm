@@ -204,6 +204,14 @@ my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my(@_MONTH) = ('Jan','Feb','Mar','Apr','May','Jun',
 	'Jul','Aug','Sep','Oct','Nov','Dec');
+my(%_PART_NAMES) = (
+    second => 0,
+    minute => 1,
+    hour => 2,
+    day => 3,
+    month => 4,
+    year => 5,
+);
 _initialize();
 
 =head1 METHODS
@@ -427,6 +435,29 @@ sub get_local_timezone {
     }) unless $local;
     return int($proto->diff_seconds($proto->from_unix($now), $local)
 	    / 60 + 0.5);
+}
+
+=for html <a name="get_part"></a>
+
+=head2 get_part(string date, string part_name) : string
+
+Returns the specific part of the date. Valid parts are:
+   second
+   minute
+   hour
+   day (of the month)
+   month
+   year
+
+=cut
+
+sub get_part {
+    my($proto, $date, $part_name) = @_;
+
+    my($index) = $_PART_NAMES{$part_name};
+    Bivio::Die->die('invalid part name', $part_name) unless defined($index);
+
+    return ($proto->to_parts($date))[$index];
 }
 
 =for html <a name="get_previous_day"></a>
