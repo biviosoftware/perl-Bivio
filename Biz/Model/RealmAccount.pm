@@ -35,9 +35,11 @@ and delete interface to the C<realm_account_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Die;
 use Bivio::SQL::Connection;
-use Bivio::Type::DateTime;
 use Bivio::Type::ClubPreference;
+use Bivio::Type::DateTime;
+use Bivio::Type::Institution;
 
 #=VARIABLES
 
@@ -58,6 +60,43 @@ sub create {
     $values->{institution} = Bivio::Type::Institution->UNKNOWN()
 	    unless $values->{institution};
     return $self->SUPER::create($values, @_);
+}
+
+=for html <a name="create_initial"></a>
+
+=head2 create_initial()
+
+=head2 create_initial(string realm_id)
+
+Create the initial account, "Broker"
+
+=cut
+
+sub create_initial {
+    my($self, $realm_id) = @_;
+
+    $self->create({
+	realm_id => $realm_id ||= $self->get_request->get('auth_id'),
+	name => 'Broker',
+	tax_free => 0,
+	in_valuation => 1,
+    });
+    return;
+}
+
+=for html <a name="get_account_sync_start"></a>
+
+=head2 static get_account_sync_start(Bivio::Agent::Request req) : string
+
+Returns the date the account sync subscription started. Dies otherwise.
+
+=cut
+
+sub get_account_sync_start {
+    my($proto, $req) = @_;
+    my($date) = _get_account_sync_start($req);
+    Bivio::Die->die("not subscribed to account sync") unless $date;
+    return $date;
 }
 
 =for html <a name="get_value"></a>
@@ -153,28 +192,6 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="create_initial"></a>
-
-=head2 create_initial()
-
-=head2 create_initial(string realm_id)
-
-Create the initial account, "Broker"
-
-=cut
-
-sub create_initial {
-    my($self, $realm_id) = @_;
-
-    $self->create({
-	realm_id => $realm_id ||= $self->get_request->get('auth_id'),
-	name => 'Broker',
-	tax_free => 0,
-	in_valuation => 1,
-    });
-    return;
-}
-
 =for html <a name="unsafe_load_default"></a>
 
 =head2 unsafe_load_default() : boolean
@@ -194,7 +211,40 @@ sub unsafe_load_default {
 	    ? 1 : 0;
 }
 
+=for html <a name="using_account_sync"></a>
+
+=head2 static using_account_sync(Bivio::Agent::Request req) : boolean
+
+Returns true if the club is currently subscribed to account sync.
+
+=cut
+
+sub using_account_sync {
+    my($proto, $req) = @_;
+    return defined(_get_account_sync_start($req)) ? 1 : 0;
+}
+
 #=PRIVATE METHODS
+
+# _get_account_sync_start(Bivio::Agent::Request req) : string
+#
+# Returns the subscription start or undef.
+#
+sub _get_account_sync_start {
+    my($req) = @_;
+    my($subscriptions) = Bivio::Biz::Model->new($req, 'ECSubscriptionList')
+	    ->load_all;
+
+    while ($subscriptions->next_row) {
+	my($type) = $subscriptions->get('ECSubscription.subscription_type');
+	next unless $type == $type->ACCOUNT_SYNC
+		|| $type == $type->ACCOUNT_KEEPER;
+
+	return $subscriptions->get('ECSubscription.start_date')
+		if $subscriptions->get_model('ECSubscription')->is_running;
+    }
+    return undef;
+}
 
 =head1 COPYRIGHT
 
