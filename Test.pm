@@ -97,8 +97,10 @@ object or method level.  Here's an example at instantiation:
     Bivio::Test->new->({
 	result_ok => sub {
 	    my($object, $method, $params, $expect, $actual) = @_;
-	    return POSIX::ceil($actual * 100000) / 100000;
-	}
+            # Round to 6 decimal places
+	    return POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000
+	        == $expect->[0];
+	},
     })->unit([
 	Bivio::Math::EMA->new(30) => [
 	    compute => [
@@ -116,8 +118,9 @@ as in:
         {
 	    object => Bivio::Math::EMA->new(30),
 	    result_ok => sub {
-		my($object, $method, $params, $expect, $actual) = @_;
-		return POSIX::ceil($actual * 100000) / 100000;
+		# Round to 6 decimal places
+		return POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000
+		    == $expect->[0];
 	    },
         } => [
 	    compute => [
