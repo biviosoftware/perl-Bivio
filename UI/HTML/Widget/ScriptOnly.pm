@@ -36,7 +36,7 @@ C<Bivio::UI::HTML::Widget::ScriptOnly> java script only widget rendering.
 
 The widget to render when javascript is present.
 
-=tiem alt_widget : Bivio::UI::HTML::Widget []
+=item alt_widget : Bivio::UI::HTML::Widget []
 
 The widget which is rendered if javascript is not present.
 
