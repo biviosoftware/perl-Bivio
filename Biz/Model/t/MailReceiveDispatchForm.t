@@ -42,7 +42,7 @@ Bivio::Test->new({
 	    ['demo', 'ignore.demo'] => ['demo', 'demo'],
 	    ['Bob <demo@bivio.biz>', 'ignore.demo'] => ['demo', 'demo'],
 	    ['not_a_user', 'demo-ignore'] => [undef, 'demo'],
-	    ['demo', 'not_a_user-ignore'] => Bivio::DieCode->NOT_FOUND,
+	    ['demo', 'not_a_user-ignore'] => Bivio::DieCode->MODEL_NOT_FOUND,
 	    ['demo', 'demo'] => Bivio::DieCode->NOT_FOUND,
 	    ['demo', 'demo-ignore+antything'] => ['demo', 'demo'],
 	    # Should not see "unknown facade uri"
