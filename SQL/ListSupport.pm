@@ -268,6 +268,7 @@ sub iterate_start {
 
     my($select) = $self->unsafe_get('select');
     $die->die('DIE', 'must support select') unless $select;
+    $select .= $where;
 
     return _execute_select($self, $query, \$select, $params, $die);
 }
