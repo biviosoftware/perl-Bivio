@@ -20,7 +20,7 @@ bOP
 =cut
 
 =head1 EXTENDS
-
+2
 L<MIME::Parser>
 
 =cut
@@ -28,11 +28,11 @@ L<MIME::Parser>
 # This avoids warning messages when MIME::Parser initializes.
 # The related Mail::Field class doesn't initialize nicely, and issues
 # warnings which shouldn't be caught by Bivio::IO::Alert and Bivio::Die.
-eval q{{
+BEGIN {
    local($SIG{__WARN__});
    local($SIG{__DIE__});
-   use MIME::Parser ();
-}};
+   eval('use MIME::Parser ()');
+}
 @Bivio::Ext::MIMEParser::ISA = ('MIME::Parser');
 
 =head1 DESCRIPTION
