@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    nothing.  You can say Link('label', 0, {name => 'hello'}) to create
+    an anchor called hello.  'hello' may be any widget value or widget.
+  * Fixed bug in ListModel iterator with converter
 
   Revision 1.66  2003/06/06 22:28:04  nagler
   * Bivio::UI::Text::Widget::CSV renders comma separated version views
