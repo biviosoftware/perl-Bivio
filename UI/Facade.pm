@@ -118,7 +118,7 @@ used.
 
 =item dubeli : fool
 
-=item bumpliz : AllWomenInvest
+=item allwomeninvest : AllWomenInvest (production)
 
 =item ollon :
 
