@@ -208,12 +208,7 @@ A view must either have a L<view_main|"view_main"> or a view_parent.
 sub view_parent {
     my($proto, $view_name) = _args(@_);
     _assert_value('view_parent', $view_name);
-    # COUPLING: View catches recursion, because it maintains the list
-    # of all views.  "parent" is a special word used by Collection::Attributes.
-    # We define both to keep consistency in the "view_*" attribute space.
-    my($parent) = Bivio::UI::View->get_instance($view_name);
-    _put(view_parent => $parent);
-    _put(parent => $parent);
+    _assert_in_eval('view_parent')->internal_set_parent($view_name);
     return;
 }
 
