@@ -122,6 +122,7 @@ sub find {
 	$fields->{selected} = undef;
     }
 
+    $fp->{index} ||= 0;
     $fields->{prev} = '';
     $fields->{next} = '';
     my($rows) = $self->internal_get_rows();
