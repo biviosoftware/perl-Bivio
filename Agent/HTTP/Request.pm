@@ -104,21 +104,7 @@ sub new {
     # Must re-escape the URI.
     $uri = Bivio::HTML->escape_uri($uri) if $uri;
 
-    # This special field is set by one of the handlers (LoginForm).
-    my($auth_user_id) = $self->unsafe_get('auth_user_id');
-    my($auth_user);
-    if ($auth_user_id) {
-	$auth_user = Bivio::Biz::Model::RealmOwner->new($self);
-	unless ($auth_user->unauth_load(
-		realm_id => $auth_user_id,
-		realm_type => Bivio::Auth::RealmType::USER())) {
-	    # Unknown user, so force logout (which clears cookie)
-	    Bivio::IO::Alert->warn($auth_user_id,
-		    ': user_id not found, logging out');
-	    Bivio::Biz::Model::LoginForm->invalidate_user($self);
-	    $auth_user = undef;
-	}
-    }
+    my($auth_user) = _get_auth_user($self);
 
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
@@ -349,6 +335,37 @@ sub server_redirect_in_handle_die {
 
 
 #=PRIVATE METHODS
+
+# _get_auth_user(self) : Bivio::Biz::Model::RealmOwner
+#
+# Extracts auth_user_id (set by LoginForm->handle_cookie_in) and
+# validates user.
+#
+sub _get_auth_user {
+    my($self) = @_;
+    # This special field is set by one of the handlers (LoginForm).
+    my($auth_user_id) = $self->unsafe_get('auth_user_id');
+    _trace('auth_user_id=', $auth_user_id) if $_TRACE;
+    return undef unless $auth_user_id;
+
+    # Make sure user loads and has a valid password (can login)
+    my($auth_user) = Bivio::Biz::Model::RealmOwner->new($self);
+    if ($auth_user->unauth_load(realm_id => $auth_user_id,
+	    realm_type => Bivio::Auth::RealmType::USER())) {
+	return $auth_user if $auth_user->has_valid_password();
+
+	# Not valid, but if su'd, ok
+	return $auth_user if $self->get('super_user_id');
+	$self->warn($auth_user, ': user is not valid');
+    }
+    else {
+	$self->warn($auth_user_id, ': user_id not found, logging out');
+    }
+
+    # Unknown or invalid user, so force logout (which clears cookie)
+    Bivio::Biz::Model::LoginForm->invalidate_user($self);
+    return undef;
+}
 
 # _is_hack_https_port(Apache r) : boolean
 #
