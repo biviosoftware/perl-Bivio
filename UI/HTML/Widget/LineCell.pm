@@ -35,7 +35,7 @@ The color of the space between the lines is C<page_bg>.
 
 =over 4
 
-=item color : string [line_cell]
+=item color : string [table_separator]
 
 Color of the line(s).
 
@@ -92,7 +92,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
-    my($c) = $self->get_or_default('color', 'line_cell');
+    my($c) = $self->get_or_default('color', 'table_separator');
     my($count) = $self->get_or_default('count', 1);
     $c = Bivio::UI::Color->as_html_bg($c);
     my($dot) = Bivio::UI::Icon->get_clear_dot->{uri};
