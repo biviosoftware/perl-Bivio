@@ -38,24 +38,22 @@ C<Bivio::Mail::Common>
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
+use Bivio::Die;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
-use Bivio::Agent::Request;
 use User::pwent ();
 
 #=VARIABLES
 use vars qw($_TRACE);
-my($_ERRORS_TO) = 'postmaster';
-# Deliver in background so errors are sent via e-mail
-#my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
-my($_SENDMAIL) = '/usr/lib/sendmail -U -oem -odb -i';
 Bivio::IO::Trace->register;
-my($_PKG) = __PACKAGE__;
 Bivio::IO::Config->register({
-    'errors_to' => $_ERRORS_TO,
-    'sendmail' => $_SENDMAIL,
+    errors_to => 'postmaster',
+    # Deliver in background so errors are sent via e-mail
+    sendmail => '/usr/lib/sendmail -U -oem -odb -i',
 });
-my(@_QUEUE) = ();
+my($_QUEUE) = [];
+my($_CFG);
 
 =head1 FACTORIES
 
@@ -79,14 +77,14 @@ sub new {
 
 =for html <a name="discard_queued_messages"></a>
 
-=head2 discard_queued_messages()
+=head2 static discard_queued_messages()
 
 Empties the send queue, throwing away all messages in the queue.
 
 =cut
 
 sub discard_queued_messages () {
-    @_QUEUE = ();
+    $_QUEUE = [];
     return;
 }
 
@@ -101,10 +99,9 @@ L<send_queued_messages|"send_queued_messages">.
 
 sub enqueue_send {
     my($self) = @_;
-#TODO: queue $self.
     Bivio::Agent::Request->get_current_or_new->push_txn_resource(ref($self))
-	unless @_QUEUE;
-    push(@_QUEUE, $self);
+	unless int(@$_QUEUE);
+    push(@$_QUEUE, $self);
     return;
 }
 
@@ -132,6 +129,10 @@ sub handle_commit {
 
 To whom should errors be sent.
 
+=item reroute_address : string []
+
+The email address to send all mail to. Used for testing.
+
 =item sendmail : string [/usr/lib/sendmail -O DeliveryMode=b -i]
 
 How to send mail.  Must accept a list of recipients on the
@@ -143,10 +144,9 @@ command line.  Arguments must be easily separated, i.e. no quoting.
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $cfg->{errors_to} =~ /['\\]/
-	    && die("$cfg->{errors_to}: invalid errors_to");
-    $_ERRORS_TO = $cfg->{errors_to};
-    $_SENDMAIL = $cfg->{sendmail};
+    Bivio::Die->die($cfg->{errors_to}, ': invalid errors_to')
+        if $cfg->{errors_to} =~ /['\\]/;
+    $_CFG = $cfg;
     return;
 }
 
@@ -166,21 +166,15 @@ sub handle_rollback {
 
 =for html <a name="send"></a>
 
-=head2 send(string recipients, string msg)
+=head2 static send(string or array_ref recipients, string msg)
 
-=head2 send(array_ref recipients, string msg)
+=head2 static send(string or array_ref recipients, string_ref msg, int offset)
 
-=head2 send(string recipients, string_ref msg, int offset)
-
-=head2 send(array_ref recipients, string_ref msg, int offset)
-
-=head2 send(string recipients, string_ref msg, int offset, string $from)
-
-=head2 send(array_ref recipients, string_ref msg, int offset, string $from)
+=head2 static send(string or array_ref recipients, string_ref msg, int offset, string from)
 
 Sends a message via configured C<sendmail> program.  Errors are
 mailed back to configured C<errors_to>--except if no I<recipients>
-iwc an exception is raised or no I<msg>.
+or no I<msg> iwc an exception is raised.
 
 Bounces are sent back to $from. $from is the envelope FROM, ie.
 the -f argument given to sendmail.
@@ -188,62 +182,28 @@ the -f argument given to sendmail.
 =cut
 
 sub send {
-    my(undef, $recipients, $msg, $offset, $from) = @_;
-    $offset ||= 0;
-    $offset < 0 && die("negative offset \"$offset\"\n");
-    defined($recipients) || die("no recipients\n");
-    defined($msg) || die("no message\n");
-    $from = defined($from) ? '-f'.$from : '';
-    $from =~ s/'/'\\''/g;
-    ref($recipients) && ($recipients = join(',', @$recipients));
+    my($proto, $recipients, $msg, $offset, $from) = @_;
+    Bivio::Die->die('no recipients')
+        unless defined($recipients);
+    $recipients = ref($recipients) ? join(',', @$recipients) : $recipients;
+    $msg = ref($msg) ? $msg : \$msg;
     $recipients =~ s/'/'\\''/g;
-    my($msg_ref) = ref($msg) ? $msg : \$msg;
-    # Use only one handle to avoid leaks
-    my($fh) = \*Bivio::Mail::Common::OUT;
-    my($err);
-#TODO: fork and exec, so can pass argument lists
-#TODO: recipients may be very long(?).  If so either throw an error
-#      or need to generate multiple sends.
-    _trace('sending to ', $recipients) if $_TRACE;
-    my($command) = "| $_SENDMAIL $from '$recipients'";
-    _trace($command) if $_TRACE;
-    unless (open($fh, $command)) {
-	$err = "open failed: $!";
-	goto error;
-    }
-    while (length($$msg_ref) > $offset) {
-	my($res) = syswrite($fh, $$msg_ref, length($$msg_ref) - $offset,
-		$offset);
-	unless (defined($res)) {
-	    $err = "write failed: $!";
-	    close($fh);
-	    goto error;
-	}
-	$offset += $res;
-    }
-    close($fh) && $? == 0 && return;
-    $err = "exit status non-zero ($?)";
+    Bivio::Die->die('no message')
+        unless defined($msg);
+    $offset ||= 0;
+    Bivio::Die->die('negative offset: ', $offset)
+        if $offset < 0;
+    $from = defined($from) ? '-f' . $from : '';
+    $from =~ s/'/'\\''/g;
+    my($err) = _send($proto, $recipients, $msg, $offset, $from);
 
- error:
-#TODO: Make a MIME delivery/report
-    _trace('ERROR ', $err) if $_TRACE;
-    my($u) = User::pwent::getpwuid($>);
-    $u = defined($u) ? $u->name : 'uid' . $>;
-    open($fh, "| $_SENDMAIL $_ERRORS_TO")
-	    || die("open \"$_SENDMAIL $_ERRORS_TO\": $!\n");
-    # From: filled in by sendmail
-    print $fh <<"EOF" || die("print to \"$_SENDMAIL $_ERRORS_TO\": $!\n");
-To: $_ERRORS_TO
-Subject: ERROR: unable to send mail
-Sender: "$0" <$u>
-X-Pert-Module: $_PKG
-
-Error while trying to message to $recipients:
-    $err
--------------------- Original Message Follows ----------------
-${$msg_ref}
-EOF
-    close($fh) || die("close \"$_SENDMAIL $_ERRORS_TO\": $!\n");
+    # send the error to the errors_to address
+    if ($err) {
+        $err = _send($proto, $_CFG->{errors_to},
+            _compose_error_message($proto, $err, $recipients, $msg), 0, '');
+        Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg)
+            if $err;
+    }
     return;
 }
 
@@ -258,13 +218,72 @@ postmaster.
 =cut
 
 sub send_queued_messages {
-    while (@_QUEUE) {
-	shift(@_QUEUE)->send;
+
+    while (@$_QUEUE) {
+	shift(@$_QUEUE)->send;
     }
     return;
 }
 
 #=PRIVATE METHODS
+
+# _compose_error_message(proto, string err, string recipients, string_ref msg) : string_ref
+#
+# Creates an error message to be sent to 'errors_to'.
+#
+sub _compose_error_message {
+    my($proto, $err, $recipients, $msg) = @_;
+    my($u) = User::pwent::getpwuid($>);
+    $u = defined($u) ? $u->name : 'uid' . $>;
+    my($errors_to) = $_CFG->{errors_to};
+    return \(<<"EOF");
+To: $errors_to
+Subject: ERROR: unable to send mail
+Sender: "$0" <$u>
+
+Error while trying to message to $recipients:
+    $err
+-------------------- Original Message Follows ----------------
+${$msg}
+EOF
+}
+
+# _send(proto, string recipients, string_ref msg, int offset, string from) : string
+#
+# Attempts to send the message. Returns an error string on failure.
+#
+sub _send {
+    my($proto, $recipients, $msg, $offset, $from) = @_;
+    # Use only one handle to avoid leaks
+    my($fh) = \*Bivio::Mail::Common::OUT;
+#TODO: fork and exec, so can pass argument lists
+#TODO: recipients may be very long(?).  If so either throw an error
+#      or need to generate multiple sends.
+    _trace('sending to ', $recipients) if $_TRACE;
+
+    if ($_CFG->{reroute_address}) {
+        $recipients = $_CFG->{reroute_address};
+    }
+    my($command) = '| ' . $_CFG->{sendmail} . " $from '$recipients'";
+    _trace($command) if $_TRACE;
+
+    unless (open($fh, $command)) {
+        return "open failed: $!";
+    }
+
+    while (length($$msg) > $offset) {
+	my($res) = syswrite($fh, $$msg, length($$msg) - $offset, $offset);
+
+	unless (defined($res)) {
+	    close($fh);
+	    return "write failed: $!";
+	}
+	$offset += $res;
+    }
+    close($fh);
+    # check the process return code
+    return $? == 0 ? '' : "exit status non-zero ($?)";
+}
 
 =head1 COPYRIGHT
 
