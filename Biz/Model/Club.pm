@@ -300,12 +300,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'club_t',
 	columns => {
-            club_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            kbytes_in_use => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            max_storage_kbytes => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            club_id => ['PrimaryId', 'PRIMARY_KEY'],
+            kbytes_in_use => ['Integer', 'NOT_NULL'],
+            max_storage_kbytes => ['Integer', 'NOT_NULL'],
+	    start_date => ['Date', 'NONE'],
         },
 	auth_id => 'club_id',
     };
