@@ -232,6 +232,9 @@ _compile([
     EXPENSE => ['Expense'],
     NEW_SHARES => ['New Shares'],
     CATEGORY => ['Category', 'ExpenseCategory.expense_category_id'],
+    TAX_FREE_INTEREST => ['Tax Free Interest', 'RealmAccount.tax_free'],
+    ACCOUNT_NAME => ['Name', 'RealmAccount.name'],
+    BALANCE => ['Cash Balance'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
