@@ -488,15 +488,21 @@ EOF
 
 =head2 static from_literal(int value) : Bivio::Type::Enum
 
-Returns the enum for this integer.  If not an integer, throws an exception.
+Returns the enum for this integer or name.  If not found, returns an error.
 
 =cut
 
 sub from_literal {
     my($proto, $value) = @_;
     return undef unless defined($value);
-    return (undef, Bivio::TypeError::ENUM()) unless $value =~ /^-?\d+$/;
-    my($info) = _get_info($proto, $value, 1);
+    my($info);
+    if ($value =~ /^-?\d+$/) {
+	$info = _get_info($proto, $value, 1);
+    }
+    else {
+	$info = _get_info($proto, $value = uc($value), 1);
+	$info = undef if $info && $info->[3] ne $value;
+    }
     return (undef, Bivio::TypeError::NOT_FOUND()) unless $info;
     return $info->[5];
 }
