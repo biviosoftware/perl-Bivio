@@ -51,17 +51,11 @@ file names.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::Biz::Model::FileQuota;
+use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::Type::BLOB;
 use Bivio::Type::DateTime;
 use Bivio::Type::FileVolume;
-use Bivio::Type::Integer;
-use Bivio::Type::Line;
-use Bivio::Type::PrimaryId;
-use Bivio::Type::Text;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -74,7 +68,7 @@ my($_MAX_SQL_PARAMS) = Bivio::SQL::Connection->MAX_PARAMETERS;
 
 =for html <a name="cascade_delete"></a>
 
-=head2 cascade_delete(Bivio::Biz::Model::RealmOwner realm)
+=head2 static cascade_delete(Bivio::Biz::Model::RealmOwner realm)
 
 Deletes all files and quota.
 
@@ -362,30 +356,18 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'file_t',
 	columns => {
-            file_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            volume => ['Bivio::Type::FileVolume',
-    		Bivio::SQL::Constraint::NOT_ZERO_ENUM()],
-            directory_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NONE()],
-            name => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            name_sort => ['Bivio::Type::Line',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            modified_date_time => ['Bivio::Type::DateTime',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            bytes => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            is_directory => ['Bivio::Type::Boolean',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            aux_info => ['Bivio::Type::Text',
-    		Bivio::SQL::Constraint::NONE()],
-            content => ['Bivio::Type::BLOB',
-    		Bivio::SQL::Constraint::NONE()],
+            file_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            volume => ['FileVolume', 'NOT_ZERO_ENUM'],
+            directory_id => ['PrimaryId', 'NONE'],
+            name => ['Line', 'NOT_NULL'],
+            name_sort => ['Line', 'NOT_NULL'],
+            user_id => ['PrimaryId', 'NOT_NULL'],
+            modified_date_time => ['DateTime', 'NOT_NULL'],
+            bytes => ['Integer', 'NOT_NULL'],
+            is_directory => ['Boolean', 'NOT_NULL'],
+            aux_info => ['Text', 'NONE'],
+            content => ['BLOB', 'NONE'],
         },
 	auth_id => [qw(realm_id)],
     };
