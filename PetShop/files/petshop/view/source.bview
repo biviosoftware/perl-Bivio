@@ -1,8 +1,36 @@
 # $Id$
 
+view_put(header_title => 'bOP Pet Shop Demo');
+
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::PetShop::UI::ViewShortcuts');
 
-view_main(SourceCode({
-    uri => 'src',
+my($source_name) = sub {
+    my($source) = @_;
+    my($req) = $source->get_request;
+    return $req->get('query')->{'s'}
+	    if $req->get('query') && $req->get('query')->{'s'};
+    return '';
+};
+
+view_main(Page({
+    head => Title({values => [Join([[$source_name]])]}),
+    string_font => 'page_text',
+    body => Join([
+	Grid({
+	    bgcolor => 'header_background',
+	    expand => 1,
+	    values => [
+		[
+		    Link(Image('banner2', 'none'), 'MAIN'),
+		    vs_space(2),
+		    String([$source_name], 'page_heading')->put(
+			    cell_expand => 1),
+		],
+	    ],
+	}),
+	SourceCode({
+	    uri => 'src',
+	}),
+    ]),
 }));
