@@ -103,7 +103,7 @@ sub execute_input {
     my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
     my($values) = $self->get_model_properties('RealmTransaction');
     $values->{realm_id} = $auth_id;
-    $values->{source_class} = Bivio::Type::EntryClass::MEMBER();
+    $values->{source_class} = Bivio::Type::EntryClass::INSTRUMENT();
     $values->{user_id} = $req->get('auth_user')->get('realm_id');
     $transaction->create($values);
 
@@ -136,8 +136,6 @@ sub execute_input {
 	realm_account_id => $properties->{
 	    'RealmAccountEntry.realm_account_id'},
 	amount => $total_amount,
-#TODO: really want a template for this kind of thing, for now ala easyware
-	remark => $realm_inst->get_model('Instrument')->get('name')
     });
 
     # lot sale and gain
