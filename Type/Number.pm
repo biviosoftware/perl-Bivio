@@ -55,6 +55,26 @@ sub add {
 	    defined($decimals) ? $decimals : $proto->get_decimals());
 }
 
+=for html <a name="compare"></a>
+
+=head2 static compare(string v, string v2, int decimals) : int
+
+Returns > 0 if I<v> is greater than I<v2>.
+Returns 0 if I<v> is equal to I<v2>.
+Returns < 0 if I<v> is less than I<v2>.
+
+=cut
+
+sub compare {
+    my($proto, $v, $v2, $decimals) = @_;
+
+    $decimals = $proto->get_decimals() unless defined($decimals);
+    $v = $proto->round($v, $decimals);
+    $v2 = $proto->round($v2, $decimals);
+
+    return _math_op('bcmp', $v, $v2, $decimals);
+}
+
 =for html <a name="div"></a>
 
 =head2 div(string numerator, string denominator, int decimals) : string
