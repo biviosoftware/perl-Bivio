@@ -84,7 +84,13 @@ sub new {
             ['MailMessage.date_time',
 		   'Bivio::UI::HTML::Format::Date', 2],
 	],
-	});
+	empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
+	    values => [<<'EOF'],
+<p align=left>
+Your club has no messages.
+EOF
+	}),
+    });
     $fields->{content}->initialize;
     $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
 	values => Bivio::UI::HTML::ActionButtons->get_list(
@@ -100,8 +106,7 @@ sub new {
 
 =for html <a name="execute"></a>
 
-=head2 execute() : 
-
+=head2 execute()
 
 
 =cut
@@ -110,9 +115,22 @@ sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    my($list) = $req->get('Bivio::Biz::Model::MessageList');
+    my($length) = $list->get_result_set_size;
+    my($heading) = '';
+    if ($length > 0) {
+	$list->set_cursor(0);
+	my($start) = Bivio::UI::HTML::Format::Date->get_widget_value(
+		$list->get('MailMessage.date_time'), 2);
+	$list->set_cursor($length - 1);
+	my($end) = Bivio::UI::HTML::Format::Date->get_widget_value(
+		$list->get('MailMessage.date_time'), 2);
+	$heading = $start ne $end ? "Messages from $start to $end"
+		: "Messages on $start";
+    }
     $req->put(
 	    page_subtopic => undef,
-	    page_heading => 'Messages',
+	    page_heading => $heading,
 	    page_content => $fields->{content},
 	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::LIST(),

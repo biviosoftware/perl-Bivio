@@ -79,7 +79,8 @@ sub execute {
 
     $fields->{report_links} = _create_report_links(),
 
-    $req->put(page_subtopic => undef, page_heading => 'Report List',
+    $req->put(page_subtopic => undef,
+#	    page_heading => 'Report List',
 	    page_content => $self);
     Bivio::UI::HTML::Club::Page->execute($req);
     return;

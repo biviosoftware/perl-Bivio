@@ -72,6 +72,7 @@ __PACKAGE__->compile(
 	'line_above_menu',
 	'action_bar_border',
 	'detail_chooser',
+	'page_heading',
     ],
     ICON_TEXT_IA => [
 	0xEEEEEE,

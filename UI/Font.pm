@@ -72,7 +72,7 @@ use Bivio::UI::Color;
 #   name => [face, color, size/style(s)]
 my($_SANS_SERIF) = 'arial,helvetica,sans-serif';
 _compile([
-    PAGE_HEADING => [$_SANS_SERIF, undef, 'big', 'strong'],
+    PAGE_HEADING => [$_SANS_SERIF, 'page_heading', 'strong'],
     TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     NORMAL_TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     TABLE_CELL => [undef, undef],

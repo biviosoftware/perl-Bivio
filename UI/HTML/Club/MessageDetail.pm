@@ -86,25 +86,34 @@ sub new {
  	    });
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
 	values => [
-	    '<center>',
+	    '<div align=left>',
 	    Bivio::UI::HTML::Widget::String->new({
-		value => ['page_heading'],
-		string_font => 'MESSAGE_SUBJECT',
-	    }),
-	    '<br>by ',
-	    Bivio::UI::HTML::Widget::Link->new({
-		href => ['->format_mailto',
-		    ['Bivio::Biz::Model::MailMessage', 'from_email'],
-		    ['reply_subject'],
-		],
-		value => Bivio::UI::HTML::Widget::String->new({
-		    value => ['Bivio::Biz::Model::MailMessage', 'from_name'],
+		string_font => 'page_heading',
+		value => Bivio::UI::HTML::Widget::Join->new({
+		    values => [
+			Bivio::UI::HTML::Widget::String->new({
+			    value => ['subject'],
+			}),
+			'<br>by ',
+			Bivio::UI::HTML::Widget::Link->new({
+			    href => ['->format_mailto',
+				['Bivio::Biz::Model::MailMessage',
+				    'from_email'],
+				['reply_subject'],
+			    ],
+			    value => Bivio::UI::HTML::Widget::String->new({
+				value => ['Bivio::Biz::Model::MailMessage',
+				    'from_name'],
+			    }),
+			}),
+			' on ',
+			['Bivio::Biz::Model::MailMessage', 'date_time',
+			    'Bivio::UI::HTML::Format::DateTime'],
+			' GMT',
+		    ],
 		}),
 	    }),
-	    ' on ',
-	    ['Bivio::Biz::Model::MailMessage', 'date_time',
-		'Bivio::UI::HTML::Format::DateTime'],
-	    ' GMT</center><p><div align=left>',
+	    '</div><p><div align=left>',
 	    ['Bivio::Biz::Model::MailMessage', '->get_body'],
 	    $fields->{mime_uri},
 	    '</div>',
@@ -181,7 +190,7 @@ sub execute {
 	    Bivio::UI::HTML::Format::ReplySubject->get_widget_value($subject);
     $req->put(
 	    page_subtopic => substr($subject, 0, 60),
-	    page_heading => $subject,
+#	    page_heading => $subject,
 	    page_content => $fields->{content},
 	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::DETAIL(),
@@ -193,6 +202,7 @@ sub execute {
 		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_DETAIL(),
 		    undef),
 	    reply_subject => $reply_subject,
+	    subject => $subject,
 	    );
     Bivio::UI::HTML::Club::Page->execute($req);
 }
