@@ -853,6 +853,9 @@ sub _parse_order_by {
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'invalid order_by',
 		$orig_value) unless $value =~ s/^(\d+)([ad])//;
 	my($index, $dir) = ($1, $2);
+        use Data::Dumper;
+        print(STDERR Dumper($order_by))
+            unless $order_by->[$index];
 	_die($die, Bivio::DieCode::CORRUPT_QUERY(), 'unknown order_by column',
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
@@ -874,7 +877,7 @@ sub _parse_page_number {
     my($attrs, $support, $die) = @_;
 
     # Returns undef if no page number.
-    $attrs->{page_number} = Bivio::Type::Integer->from_literal(
+    ($attrs->{page_number}) = Bivio::Type::Integer->from_literal(
 	    $attrs->{'n'} || $attrs->{page_number});
 
     # Set page_number to 1 by default (if invalid)
