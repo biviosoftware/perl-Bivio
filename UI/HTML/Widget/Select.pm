@@ -56,6 +56,10 @@ L<Bivio::Type::EnumSet|Bivio::Type::EnumSet>.
 Widget value which returns
 L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.
 
+=item disabled : boolean [0]
+
+Make the selection read-only
+
 =item list_display_field : string (required if 'choices' is a list)
 
 Name of the list field used for display.
@@ -70,6 +74,10 @@ TODO: this attribute shouldn't exist - it should use the primary key
 =item show_unknown : boolean [1]
 
 Should the UNKNOWN type be displayed?
+
+=item size : int [1]
+
+How many rows should be visible
 
 =back
 
@@ -165,8 +173,10 @@ sub render {
 	$fields->{prefix} = '<select name=';
 	$fields->{initialized} = 1;
     }
-    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
-	    ." size=1>\n";
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' size='.$self->get_or_default('size', 1);
+    $$buffer .= ' disabled' if $self->get_or_default('disabled', 0);
+    $$buffer .= ">\n";
 
     my($items) = $fields->{list_source}
 	    ? _load_items_from_list($self,
