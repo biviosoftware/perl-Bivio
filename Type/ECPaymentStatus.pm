@@ -95,6 +95,8 @@ my($_AUTHORIZE_NET_MAP) = {
     TRY_VOID => 'VOID',
     TRY_CREDIT => 'CREDIT',
 };
+my($_NEEDS_PROCESSING_LIST) = [map {__PACKAGE__->$_()}
+    qw(TRY_CAPTURE TRY_VOID TRY_CREDIT)];
 my($_APPROVED_SET, $_BAD_SET, $_NEEDS_PROCESSING_SET);
 
 =head1 METHODS
@@ -162,6 +164,18 @@ sub needs_processing {
     return _is_set(shift, \$_NEEDS_PROCESSING_SET);
 }
 
+=for html <a name="needs_processing_list"></a>
+
+=head2 needs_processing_list() : array_ref
+
+List of statuses which need processing.
+
+=cut
+
+sub needs_processing_list {
+    return [@$_NEEDS_PROCESSING_LIST];
+}
+
 #=PRIVATE METHODS
 
 # _init_set(string_ref set, array names) : string_ref
@@ -174,7 +188,7 @@ sub _init_set {
     return Bivio::Type::ECPaymentStatusSet->set(
 	$set,
 	map {
-	    __PACKAGE__->$_(),
+	    __PACKAGE__->from_any($_),
 	} @_
     );
 }
@@ -191,8 +205,7 @@ sub _is_set {
 	    'Bivio::Type::ECPaymentStatusSet');
 	_init_set(\$_APPROVED_SET, qw(CAPTURED VOIDED CREDITED));
 	_init_set(\$_BAD_SET, qw(DECLINED FAILED));
-	_init_set(\$_NEEDS_PROCESSING_SET,
-	    qw(TRY_CAPTURE TRY_VOID TRY_CREDIT));
+	_init_set(\$_NEEDS_PROCESSING_SET, @$_NEEDS_PROCESSING_LIST);
     }
     return Bivio::Type::ECPaymentStatusSet->is_set($set, $self);
 }
