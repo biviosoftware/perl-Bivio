@@ -470,7 +470,17 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
         help=account-transactions
     )],
-# 49
+    [qw(
+        CLUB_ACCOUNTING_ACCOUNT_INSTITUTION
+        49
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/account/institution
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
+        Bivio::Biz::Model::AccountInstitutionForm
+        Bivio::UI::HTML::Club::AccountInstitution
+        next=CLUB_ACCOUNTING_ACCOUNT_LIST
+    )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_SELL
         50
