@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * added Model.Lock->execute_general to allow locking the whole database
+  * SimpleWidgetFactory now renders links conditional on the task
+    being executable by the current user
+
+  Revision 1.74  2003/08/11 21:36:43  moeller
   All form fields are printed on error, except secure fields.
   Added REALM_DATA LocalFileType.
   Added b-realm-admin reset_password.
