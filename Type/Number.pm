@@ -38,6 +38,8 @@ It provides arbitrary precision arithmetic for like-based numbers.
 #=IMPORTS
 # also uses Bivio::TypeError dynamically
 use Bivio::IO::ClassLoader;
+# import Math::BigInt because Math::FixedPrecision uses it but doesn't 'use' it
+use Math::BigInt ();
 use Math::FixedPrecision ();
 
 #=VARIABLES
