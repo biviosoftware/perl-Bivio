@@ -123,6 +123,7 @@ _compile(\%_MAP, [
     REFRESH_BUTTON => 'Refresh',
     REGISTER_BUTTON => 'Register',
     SEND_BUTTON => ' Send ',
+    SEND_SUPPORT_BUTTON => ' Send To Customer Support ',
     TICKER_BUTTON => 'Ticker',
     ['UNLISTED_BUTTON', 'new_unlisted', 'new_unlisted_button']
         => 'New Unlisted',
@@ -542,7 +543,7 @@ _compile(\%_MAP, [
     ['FILE_IS_PUBLIC', 'File.is_public', 'MAIL_IS_PUBLIC', 'Mail.is_public']
         => 'Public',
     MAIL_IS_PUBLIC_ALT => 'Message is publicly viewable',
-    FILE_IS_PUBLIC_ALT => 'File is publicly viewable',
+    MAIL_SUPPORT => 'Customer Support',
 
     # FILES
     FILE_NAME => 'Name',
@@ -554,6 +555,7 @@ _compile(\%_MAP, [
     FILE_SIZE => 'Size',
     FILE_BYTES => 'Size',
     FILE_LOCATION => 'Folder',
+    FILE_IS_PUBLIC_ALT => 'File is publicly viewable',
     MAKE_PUBLIC => 'Publish Contents',
 
     # Table Headings
