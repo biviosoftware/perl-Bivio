@@ -9,7 +9,7 @@ b-mail - manipulate mail_t database table
 
 =head1 SYNOPSIS
 
-b-mail [-n] [-migrate from-id to-id]
+b-mail [-migrate-all|-migrate-club id|-migrate-msg id]
 
 =head1 DESCRIPTION
 
