@@ -5,10 +5,15 @@ use Bivio::SQL::Connection;
 
 my($_TABLE) = 't_connection_t';
 Bivio::Test->unit([
-    Bivio::SQL::Connection->connect('dev') => [
+    Bivio::SQL::Connection->connect('dev_postgres') => [
 	execute => [
 	    # Drop the table first, we don't care about the result
 	    ["drop table $_TABLE"] => sub {1},
+	],
+	commit => [
+	    [] => [],
+	],
+	execute => [
 	    # We expect to get a statement back.
 	    [<<"EOF"] => \&_expect_statement,
 		create table $_TABLE (
@@ -19,16 +24,19 @@ Bivio::Test->unit([
 EOF
 	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
 	    	=> \&_expect_statement,
-	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
-	        => Bivio::DieCode->DB_CONSTRAINT,
+	],
+	commit => [
+	    [] => [],
 	],
 	execute => [
-	    ["update $_TABLE set f2 = 2 where f2 = 1"] => \&_expect_one_row,
-	    ["select f2 from $_TABLE where f2 = 13"] => sub {
-		my($proto, $method, $params, $result) = @_;
-		return 0 unless _expect_statement(@_);
-		return $result->[0]->fetchrow_arrayref->[0] eq 13 ? 1 : 0;
-	    },
+	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
+	        => Bivio::DieCode->DB_CONSTRAINT,
+	    ["update $_TABLE set f2 = 13 where f2 = 1"] => \&_expect_one_row,
+	],
+	execute_one_row => [
+	    ["select f2 from $_TABLE where f2 = 13"] => [[13]]
+	],
+	execute => [
 	    ["delete from $_TABLE where f1 = 1"] => \&_expect_one_row,
 	],
     ],
