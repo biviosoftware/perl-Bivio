@@ -414,12 +414,8 @@ _compile(
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
-    CALLING_ALL_CLUBS => ['Calling All Clubs!'],
-    YAHOO_20000713 => ['Yahoo! Interview'],
-    COMPUFEST_2000 => ['CompuFest 2000'],
-    ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
-    A_NEW_LOOK =>['A New Look'],
-    PUBLIC_CLUB_SITES => ['Public Club Sites(tm)'],
+    ANNOUNCE_NYT =>['The New York Times'],
+    ANNOUNCE_ADJUSTMENTS => ['Negative Adjustments'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
