@@ -51,7 +51,6 @@ sub main {
     # want to avoid accidentally running this script
     my($method) = @argv;
     _usage("missing or bad method")
-#TODO: Change this back to "eq 'upgrade'"
 	    unless $method && $method  =~ /^_upgrade/;
 
     my($req) = Bivio::Agent::Request->get_current_or_new();
@@ -197,120 +196,16 @@ ALTER TABLE $table MODIFY $column $type
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    _drop_constraints('file_t', 'volume');
     _do_sql('
-ALTER TABLE file_t modify volume not null
-/
-ALTER TABLE file_t add check (volume BETWEEN 1 AND 5)
-/
-CREATE INDEX file_name_sort_i ON file_t (
-  name_sort
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
+UPDATE file_t SET is_public=0
 /
 ');
-    _add_column('file_t', 'is_public', 'NUMBER(1)');
-    _upgrade_part2();
+    use Bivio::Biz::Util::Mail;
+    Bivio::Biz::Util::Mail->do_all('migrate');
+    Bivio::Biz::Util::Mail->reinit_sequence;
     return;
 }
 
-# _upgrade_part2()
-#
-# Because the upgrade failed in the middle on test, had to split in
-# two parts.
-#
-sub _upgrade_part2 {
-    _modify_column('file_t', 'aux_info', 'VARCHAR(4000)');
-
-    # mail_t
-    _do_sql('
-CREATE TABLE mail_t (
-  mail_id NUMBER(18),
-  realm_id NUMBER(18),
-  message_id VARCHAR2(100),
-  date_time DATE,
-  from_name VARCHAR2(100),
-  from_name_sort VARCHAR2(100),
-  from_email VARCHAR2(100),
-  reply_to_email VARCHAR2(100),
-  subject VARCHAR2(100),
-  subject_sort VARCHAR2(100),
-  bytes NUMBER(9),
-  is_public NUMBER(1),
-  is_thread_root NUMBER(1),
-  thread_root_id NUMBER(18),
-  thread_parent_id NUMBER(18),
-  rfc822_file_id NUMBER(18),
-  cache_file_id NUMBER(18)
-)
-  storage (initial 50m next 50m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
-/
-CREATE INDEX mail_realm_i ON mail_t (
-  realm_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-CREATE INDEX mail_cache_file_i ON mail_t (
-  cache_file_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
-CREATE INDEX mail_rfc822_file_i ON mail_t (
-  rfc822_file_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
---
--- mail_t
---
-ALTER TABLE mail_t add primary key(mail_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE mail_t modify realm_id not null
-/
-ALTER TABLE mail_t 
-  add foreign key (realm_id)
-    references club_t(club_id)
-/
-ALTER TABLE mail_t modify message_id not null
-/
-ALTER TABLE mail_t modify date_time not null
-/
-ALTER TABLE mail_t modify from_name not null
-/
-ALTER TABLE mail_t modify from_name_sort not null
-/
-ALTER TABLE mail_t modify from_email not null
-/
-ALTER TABLE mail_t modify subject not null
-/
-ALTER TABLE mail_t modify subject_sort not null
-/
-ALTER TABLE mail_t modify is_public not null
-/
-ALTER TABLE mail_t modify is_thread_root not null
-/
-ALTER TABLE mail_t 
-  add foreign key (rfc822_file_id)
-    references file_t(file_id)
-/
-ALTER TABLE mail_t 
-  add foreign key (cache_file_id)
-    references file_t(file_id)
-/
-ALTER TABLE mail_t modify bytes not null
-/
-');
-    return;
-}
 
 
 # _usage(array message)
