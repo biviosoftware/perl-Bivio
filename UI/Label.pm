@@ -236,6 +236,8 @@ _compile([
     TAX_FREE_INTEREST => ['Tax Free Interest', 'RealmAccount.tax_free'],
     ACCOUNT_NAME => ['Name', 'RealmAccount.name'],
     BALANCE => ['Cash Balance'],
+    ALLOCATE_EQUALLY => ['Allocate Equally Among Members', undef,
+	'ExpenseInfo.allocate_equally'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT => ['Accounting Reports'],
