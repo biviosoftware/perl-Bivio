@@ -90,7 +90,7 @@ sub SUSPENSE {
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
-use Bivio::Type::Date;
+use Bivio::Type::DateTime;
 use Bivio::Type::Line;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
@@ -116,10 +116,10 @@ sub get_value {
 
     my($sth) = Bivio::SQL::Connection->execute(
 	    'select sum(entry_t.amount) from realm_transaction_t, entry_t, realm_account_entry_t where realm_transaction_t.realm_transaction_id = entry_t.realm_transaction_id and entry_t.entry_id = realm_account_entry_t.entry_id and realm_transaction_t.realm_id=? and realm_account_entry_t.realm_account_id=? and realm_transaction_t.date_time <= '
-	    .Bivio::Type::Date->to_sql_value('?'),
+	    .Bivio::Type::DateTime->to_sql_value('?'),
 	    [$self->get_request->get('auth_id'),
 		    $self->get('realm_account_id'),
-		    Bivio::Type::Date->to_sql_param($date)]);
+		    Bivio::Type::DateTime->to_sql_param($date)]);
 
     return $sth->fetchrow_arrayref()->[0] || '0';
 }

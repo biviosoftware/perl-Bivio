@@ -55,13 +55,7 @@ Processes an empty form.
 
 sub execute_empty {
     my($self) = @_;
-
     my($properties) = $self->internal_get;
-    # default date_time to now
-    $properties->{'RealmTransaction.date_time'} =
-	    Bivio::UI::HTML::Format::Date->get_widget_value(
-		    Bivio::Type::Date->now());
-
     # default account to Broker
     $properties->{'RealmAccountEntry.realm_account_id'} =
 	    $self->get_request->get(
@@ -82,8 +76,9 @@ sub execute_input {
 
     # need to convert date to display value, or next form will barf
     my($properties) = $self->internal_get;
+#TODO: Need a better way of passing info in forms
     $self->get_request->get('form')->{'RealmTransaction.date_time'}
-	    = Bivio::UI::HTML::Format::Date->get_widget_value(
+	    = Bivio::Type::Date->to_literal(
 		    $properties->{'RealmTransaction.date_time'});
 
     _fill_lots_fifo($self);

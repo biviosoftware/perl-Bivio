@@ -57,7 +57,7 @@ use Bivio::Biz::Model::RealmInstrument;
 use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::Amount;
-use Bivio::Type::Date;
+use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::RealmName;
 use Bivio::Type::Name;
@@ -67,7 +67,7 @@ use Bivio::Type::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_SQL_DATE_VALUE) = Bivio::Type::Date->to_sql_value('?');
+my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 =head1 FACTORIES
 
@@ -228,7 +228,7 @@ sub get_cost_per_share {
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
 	   [$self->get('realm_id'),
-		   Bivio::Type::Date->to_sql_param($date)]);
+		   Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($result) = {};
     my($row);
@@ -297,7 +297,8 @@ sub get_number_of_shares {
 	GROUP BY realm_instrument_entry_t.realm_instrument_id
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
-	   [$self->get('realm_id'), Bivio::Type::Date->to_sql_param($date)]);
+	   [$self->get('realm_id'),
+	       Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($result) = {};
     my($row);
@@ -330,8 +331,8 @@ sub get_share_price_and_date {
     my($j, undef) = $search_date =~ /^(.*)\s(.*)$/;
     my($dates) = '';
     for (1..8) {
-	$dates .= Bivio::Type::Date->to_sql_value(
-		"'".Bivio::Type::Date->to_sql_param($j--.' '
+	$dates .= Bivio::Type::DateTime->to_sql_value(
+		"'".Bivio::Type::DateTime->to_sql_param($j--.' '
 			.Bivio::Type::DateTime::DEFAULT_TIME())."'").',';
     }
     chop($dates);
@@ -341,7 +342,8 @@ sub get_share_price_and_date {
     #   if date < club-switch-over-date use local (TODO)
 
     my($id, $value, $date);
-    my($d) = Bivio::Type::Date->from_sql_value('mgfs_daily_quote_t.date_time');
+    my($d) = Bivio::Type::DateTime->from_sql_value(
+	    'mgfs_daily_quote_t.date_time');
     my($sth) = Bivio::SQL::Connection->execute(
 	    <<"EOF", [$self->get('realm_id')]);
 	    SELECT realm_instrument_t.realm_instrument_id,
@@ -357,7 +359,7 @@ EOF
     my($row);
     while ($row = $sth->fetchrow_arrayref) {
 	($id, $value, $date) = @$row;
-	$date = Bivio::Type::Date->from_sql_column($date);
+	$date = Bivio::Type::DateTime->from_sql_column($date);
 
 	unless (exists($result->{$id})) {
 	    $result->{$id} = [$value, $date];
@@ -380,7 +382,7 @@ EOF
 #TODO: this should override for club cross-over date to preserve easyware data
 	next if exists($result->{$id});
 
-	$d = Bivio::Type::Date->from_sql_value(
+	$d = Bivio::Type::DateTime->from_sql_value(
 		'realm_instrument_valuation_t.date_time');
 	$d = <<"EOF";
 	    SELECT realm_instrument_valuation_t.price_per_share,
@@ -393,12 +395,12 @@ EOF
 EOF
 	my($sth2) = Bivio::SQL::Connection->execute($d,
 		[$self->get('realm_id'), $id,
-			Bivio::Type::Date->to_sql_param($search_date)]);
+			Bivio::Type::DateTime->to_sql_param($search_date)]);
 
 	my($row2);
 	if ($row2 = $sth2->fetchrow_arrayref()) {
 	    ($value, $date) = @$row2;
-	    $date = Bivio::Type::Date->from_sql_column($date);
+	    $date = Bivio::Type::DateTime->from_sql_column($date);
 	    $result->{$id} = [$value, $date];
 	}
     }
@@ -427,7 +429,7 @@ sub get_unit_value {
 
 =for html <a name="get_units"></a>
 
-=head2 get_units(Bivio::Type::Date date) : string
+=head2 get_units(Bivio::Type::DateTime date) : string
 
 Returns the total number of units purchased in the realm up to the specified
 date.
@@ -451,7 +453,7 @@ sub get_units {
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
 	    [$self->get('realm_id'),
-		    Bivio::Type::Date->to_sql_param($date)]);
+		    Bivio::Type::DateTime->to_sql_param($date)]);
 
     my($units) = $sth->fetchrow_arrayref()->[0] || '0';
     $fields->{get_units} = $units;
@@ -460,7 +462,7 @@ EOF
 
 =for html <a name="get_value"></a>
 
-=head2 get_value(Bivio::Type::Date date) : string
+=head2 get_value(Bivio::Type::DateTime date) : string
 
 Returns the realm's value on the specified date.
 
@@ -490,7 +492,7 @@ sub get_value {
 
 =for html <a name="get_tax_basis"></a>
 
-=head2 get_tax_basis(EntryClass class, Bivio::Type::Date date) : string
+=head2 get_tax_basis(EntryClass class, Bivio::Type::DateTime date) : string
 
 Returns the total tax basis of the specified entry class up to the specified
 date.
@@ -512,7 +514,7 @@ sub get_tax_basis {
 EOF
     my($sth) = Bivio::SQL::Connection->execute($query,
 	   [$self->get('realm_id'), $class->as_int(),
-		   Bivio::Type::Date->to_sql_param($date)]);
+		   Bivio::Type::DateTime->to_sql_param($date)]);
     return $sth->fetchrow_arrayref()->[0] || '0.00';
 }
 
