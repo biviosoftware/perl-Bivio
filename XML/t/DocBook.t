@@ -1,16 +1,17 @@
 #!perl -w
+# Copyright (c) 1999-2003 bivio Software Artisans, Inc.  All rights reserved.
+# $Id$
 use strict;
 use Bivio::Test;
 use Bivio::IO::File;
-use Bivio::XML::DocBook;
-Bivio::Test->unit([
+Bivio::Test->new('Bivio::XML::DocBook')->unit([
     'Bivio::XML::DocBook' => [
 	to_html => [
-	    map {
-		my($html) = $_;
-		$html =~ s/xml$/html/;
-		[$_] => [Bivio::IO::File->read($html)];
-	    } sort(<DocBook/*.xml>)
+	    map({
+		["$_.xml"] => $_ =~ /dev/
+		   ? Bivio::DieCode->DIE
+		   : [Bivio::IO::File->read("$_.html")];
+	    } sort(map(/(.*)\.xml$/, <DocBook/*.xml>))),
 	],
         count_words => [
 	    ['DocBook/01.xml'] => ["4\n"],

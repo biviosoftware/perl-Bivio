@@ -29,8 +29,9 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::XML::DocBook> converts XML DocBook files to HTML.  Also can
-L<count_words|"count_words"> on XML files.
+C<Bivio::XML::DocBook> converts XML DocBook files to HTML.
+The mapping is only partially implemented by L<to_html|"to_html">.
+Also can L<count_words|"count_words"> on XML files.
 
 =cut
 
@@ -43,11 +44,7 @@ L<count_words|"count_words"> on XML files.
 
 =head2 USAGE : string
 
-Returns:
-  usage: b-docbook [options] command [args...]
-  commands:
-      to_html file.xml -- converts input xml to output html
-      count_words file.xml -- returns number of words in XML file
+Returns usage string.
 
 =cut
 
@@ -66,9 +63,9 @@ use HTML::Entities ();
 use XML::Parser ();
 
 #=VARIABLES
-my($_XML_TO_HTML_PROGRAM) = _compile_program([
-    # Shared mappings
-    [qw(
+my($_XML_TO_HTML_PROGRAM) = {
+    # Many-to-one mappings
+    map({$_ => []} qw(
         answer/para
 	epigraph
 	figure
@@ -80,13 +77,13 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
 	simplesect
 	term
 	varlistentry
-    )] => [],
-    [qw(
+    )),
+    map({$_ => ['i']} qw(
 	citetitle
 	firstterm
 	replaceable
-    )] => ['i'],
-    [qw(
+    )),
+    map({$_ => ['tt']} qw(
 	classname
 	command
 	constant
@@ -98,24 +95,29 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
 	type
 	userinput
 	varname
-    )] => ['tt'],
-    [qw(
+    )),
+    map({$_ => '<i>${label}</i>${_}<br>'} qw(
         answer
         question
-    )] => '<i>${label}</i>${_}<br>',
+    )),
+    map({(
+	$_ => sub {
+	    my($attr, $html, $clipboard) = @_;
+	    $$html .= "<h2>Footnotes</h2><ol>\n$clipboard->{footnotes}</ol>\n"
+		if $clipboard->{footnotes};
+	    return "<html><body>$$html</body></html>";
+	},
+	"$_/title" => ['h1'],
+    )} qw(
+        chapter
+        preface
+    )),
 
-    # Unique mappings
+    # One-to-one mappings
     abstract => '<p><table width="70%" align="center" border="0"><tr>'
         . '<td align="center">${_}</td></tr></table></p>',
     attribution => '<div align="right">-- ${_}</div>',
     blockquote => ['blockquote'],
-    chapter => sub {
-	my($attr, $html, $clipboard) = @_;
-	$$html .= "<h2>Footnotes</h2><ol>\n$clipboard->{footnotes}</ol>\n"
-	    if $clipboard->{footnotes};
-	return "<html><body>$$html</body></html>";
-    },
-    'chapter/title' => ['h1'],
     comment => '<i>[COMMENT: ${_}]</i>',
     emphasis => sub {
 	my($attr, $html) = @_;
@@ -168,7 +170,7 @@ my($_XML_TO_HTML_PROGRAM) = _compile_program([
     warning =>
         '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
     xref => '[CROSS-REFERENCE ${linkend}]',
-]);
+};
 
 =head1 METHODS
 
@@ -193,7 +195,9 @@ sub count_words {
 
 =head2 to_html(string xml_file) : string_ref
 
-Converts I<xml_file> from XML to HTML.
+Converts I<xml_file> from XML to HTML.  Dies if the XML is not well-formed or
+if a tag is not handled by the mapping.  See the initialization of
+$_XML_TO_HTML_PROGRAM for the list of handled tags.
 
 =cut
 
@@ -206,43 +210,6 @@ sub to_html {
 }
 
 #=PRIVATE METHODS
-
-# _compile_program(array_ref config) : hash_ref
-#
-# Creates the $_XML_TO_HTML_PROGRAM hash from $config, which is a mapping of
-# XML tags to HTML commands.  If the HTML command is an array_ref, calls
-# _compile_tags_to_html to create the template.  If the HTML command
-# is a code_ref, creates a 'code' element.  Defaults to a template.
-#
-sub _compile_program {
-    my($config) = @_;
-    my($res) = {};
-    while (@$config) {
-	my($xml_tags, $html) = splice(@$config, 0, 2);
-	foreach my $xml (ref($xml_tags) ? @$xml_tags : $xml_tags) {
-	    die("$xml: duplicate tag") if $res->{$xml};
-	    $res->{$xml} = ref($html) eq 'ARRAY'
-		? {template => _compile_tags_to_html($html, '')
-		    .'${_}'
-		    ._compile_tags_to_html([reverse(@$html)], '/')}
-		: ref($html) eq 'CODE' ? {code => $html}
-		: ref($html) eq 'HASH' ? {%$html}
-		: {template => $html};
-	    $res->{$xml}->{tag} = $xml;
-	}
-    }
-    return $res;
-}
-
-# _compile_tags_to_html(array_ref names, string prefix) : string
-#
-# Converts @$names to HTML tags with prefix ('/' or ''), and concatenates
-# the tags into a string.
-#
-sub _compile_tags_to_html {
-    my($names, $prefix) = @_;
-    return join('', map({"<$prefix$_>"} @$names));
-}
 
 # _count_words(array_ref children) : int
 #
@@ -264,8 +231,11 @@ sub _count_words {
 
 # _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
 #
-# Lookup $tag in context of $parent_tag to find operator, evaluate $children,
+# _eval_child(string tag, array_ref children, string parent_tag, hash_ref clipboard) : string
+#
+# Look up $tag in context of $parent_tag to find operator, evaluate $children,
 # and then evaluate the found operator.  Returns the result of _eval_op.
+# Modifies $children so this routine is not idempotent.
 #
 sub _eval_child {
     my($tag, $children, $parent_tag, $clipboard) = @_;
@@ -280,13 +250,21 @@ sub _eval_child {
 
 # _eval_op(any op, hash_ref attr, string_ref html, hash_ref clipboard) : string
 #
-# If $op has code, call the subroutine with $html and $clipboard.  Otherwise,
-# call _eval_template, which replaces attributes in $op->{template}.
+# Wraps $html in HTML tags defined by $op.  If $op is a ARRAY, call
+# _to_tags() to convert the simple tag names to form the prefix and
+# suffix.  If $op is a HASH or string (!ref), calls _eval_template.  If $op
+# is CODE, call the subroutine with $html and $clipboard.  Dies if
+# $op's type is not handled (program error in $_XML_TO_HTML_PROGRAM).
 #
 sub _eval_op {
     my($op, $attr, $html, $clipboard) = @_;
-    return $op->{code} ? &{$op->{code}}($attr, $html, $clipboard)
-	: _eval_template($op, $attr, $html);
+    return 'ARRAY' eq ref($op)
+	    ? _to_tags($op, '') . $$html  . _to_tags([reverse(@$op)], '/')
+	: ref($op) eq 'CODE'
+	    ? $op->($attr, $html, $clipboard)
+	: 'HASH' eq ref($op) || !ref($op)
+	    ? _eval_template($op, $attr, $html)
+        : Bivio::Die->die('bad operation ', $op);
 }
 
 # _eval_template(string op, hash_ref attr, string_ref html) : string
@@ -298,13 +276,13 @@ sub _eval_op {
 #
 sub _eval_template {
     my($op, $attr, $html) = @_;
-    my($res) = $op->{template};
+    my($res) = ref($op) ? $op->{template} : $op;
     $res =~ s{\$\{(\w+)\}}{
 	$1 eq '_' ? $$html
 	    : defined($attr->{$1}) ? HTML::Entities::encode($attr->{$1})
-	    : defined($op->{'default_'.$1})
+	    : ref($op) && defined($op->{'default_'.$1})
 		? HTML::Entities::encode($op->{'default_'.$1})
-	    : die("$1: missing attribute on tag <$op->{tag}> and no default")
+	    : die("$1: missing attribute on tag and no default")
     }egx;
     return $res;
 }
@@ -333,6 +311,16 @@ sub _to_html {
 		$children->[$_ *= 2], $children->[++$_], $tag, $clipboard);
 	} 0 .. @$children/2 - 1),
     ));
+}
+
+# _to_tags(array_ref names, string prefix) : string
+#
+# Converts @$names to HTML tags with prefix ('/' or ''), and concatenates
+# the tags into a string.
+#
+sub _to_tags {
+    my($names, $prefix) = @_;
+    return join('', map({"<$prefix$_>"} @$names));
 }
 
 =head1 COPYRIGHT
