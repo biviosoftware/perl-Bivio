@@ -3,6 +3,7 @@
 package Bivio::UI::Facade::InvestmentExpo::LeftMenu;
 use strict;
 $Bivio::UI::Facade::InvestmentExpo::LeftMenu::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::InvestmentExpo::LeftMenu::VERSION;
 
 =head1 NAME
 
@@ -33,6 +34,7 @@ out where we "are".
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Action::DemoClub;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -240,7 +242,8 @@ sub _render_sublist {
     }
 
     _render_item($state, Bivio::Agent::TaskId::DEMO_REDIRECT(),
-	   undef, $user ? $user->format_demo_club_name
+	   undef, $user ? (Bivio::Biz::Action::DemoClub
+		   ->format_demo_club_name($user))[0]
 	    : Bivio::Type::RealmName::DEMO_CLUB()
 	   );
 
