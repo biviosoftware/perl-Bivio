@@ -299,13 +299,15 @@ _compile(
     CLUB_MAIL_POST => ['Compose Message'],
     CLUB_MAIL_FORWARD => ['Forward Message'],
     CLUB_OPEN_BALANCE => ['Edit Opening Balances'],
+    DEMO_REDIRECT => ['Demo Club'],
     GENERAL_PRIVACY => ['Safe and Private'],
     HELP => ['Help'],
     HTTP_DOCUMENT => ['Home Page'],
     LOGOUT => ['Logout'],
+    MY_CLUB_SITE => ['My Club Site'],
     USER_ADMIN_PREFERENCES_EDIT => ['Change Preferences'],
     USER_AGREEMENT_TEXT => ['Terms of Service'],
-    USER_HOME => ['My Site'],
+    USER_HOME => ['My Site', 'MY_SITE'],
 
     # MAIL
     MAIL_FROM => ['From'],
