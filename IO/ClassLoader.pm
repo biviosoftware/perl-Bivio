@@ -63,7 +63,9 @@ Bivio::IO::Config->register({
 	AccountScraper => ['Bivio::Data::AccountScraper'],
     },
     model_classpath => ['Bivio::Biz::Model'],
-    class_values => {},
+    class_values => {
+	'Bivio::Agent::TaskId' => 'Bivio::Agent::Tasks',
+    },
 });
 my($_MODELS);
 
