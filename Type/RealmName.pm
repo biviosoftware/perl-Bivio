@@ -44,7 +44,7 @@ User which AccountImporter uses to enter values into the books.
 =cut
 
 sub ACCOUNT_IMPORTER {
-    return 'bivio';
+    return 'account_sync';
 }
 
 =for html <a name="CELEBRITY_CLUBS"></a>
