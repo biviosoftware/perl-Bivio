@@ -363,38 +363,6 @@ sub server_redirect_in_handle_die {
 
 #=PRIVATE METHODS
 
-# _get_auth_user(self) : Bivio::Biz::Model::RealmOwner
-#
-# Extracts auth_user_id (set by LoginForm->handle_cookie_in) and
-# validates user.
-#
-sub _get_auth_user {
-    my($self) = @_;
-    # This special field is set by one of the handlers (LoginForm).
-    my($auth_user_id) = $self->unsafe_get('auth_user_id');
-    _trace('auth_user_id=', $auth_user_id) if $_TRACE;
-    return undef unless $auth_user_id;
-
-    # Make sure user loads and has a valid password (can login)
-    my($auth_user) = Bivio::Biz::Model->new($self, 'RealmOwner');
-    if ($auth_user->unauth_load(realm_id => $auth_user_id,
-	    realm_type => Bivio::Auth::RealmType::USER())) {
-	return $auth_user if $auth_user->has_valid_password();
-
-	# Not valid, but if su'd, ok
-	return $auth_user if $self->get('super_user_id');
-	$self->warn($auth_user, ': user is not valid');
-    }
-    else {
-	$self->warn($auth_user_id, ': user_id not found, logging out');
-    }
-
-    # Unknown or invalid user, clear cookie
-    $self->get('cookie')->invalidate_user;
-
-    return undef;
-}
-
 =head1 SEE ALSO
 
 RFC2616 (HTTP/1.1), RFC1945 (HTTP/1.0), RFC1867 (multipart/form-data),
