@@ -663,7 +663,7 @@ __PACKAGE__->compile(
     FILE_NAME => [
 	77,
 	undef,
-	'File names may not contain \\, /, :, *, ?, ", <, >, or |',
+	'File names may not contain \\, /, :, *, ?, ", <, >, or |.  They may not be equal to "." or "..".',
     ],
     TOO_MANY_INSTRUMENTS_BUY => [
 	78,
