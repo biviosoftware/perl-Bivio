@@ -354,17 +354,26 @@ sub handle_die {
     my($die_code) = $die->get('code');
     if ($_REDIRECT_DIE_CODES{$die_code}) {
 	# commit redirects: current task is completed
+	_trace('commit: ', $die_code) if $_TRACE;
 	$proto->commit(Bivio::Agent::Request->get_current);
 	return;
     }
 
-    # Some type of unhandled error.  Rollback and check die_actions
-    $proto->rollback(Bivio::Agent::Request->get_current);
-    return unless ref($proto);
+    my($req) = Bivio::Agent::Request->get_current;
+    $proto->rollback($req);
 
     # Is this an HTTP request? (We don't redirect on non-http requests)
-    my($req) = Bivio::Agent::Request->get_current;
-    return unless UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request');
+    unless (UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request')) {
+	_trace('not an http request: ', $req) if $_TRACE;
+	return;
+    }
+
+    # Some type of unhandled error.  Rollback and check die_actions
+    unless (ref($proto)) {
+	_trace('called statically (probably should not happen)') if $_TRACE;
+	$req->warn('task_error=', $die);
+	return;
+    }
 
     # Mapped?
     my($new_task_id) = $proto->get('die_actions')->{$die_code};
@@ -372,7 +381,11 @@ sub handle_die {
 	# Default mapped?
 	$new_task_id = Bivio::Agent::TaskId->unsafe_from_any(
 		'DEFAULT_ERROR_REDIRECT_'.$die_code->get_name);
-	return unless defined($new_task_id);
+	unless (defined($new_task_id)) {
+	    $req->warn('task_error=', $die);
+	    _trace('not a mapped task: ', $die_code) if $_TRACE;
+	    return;
+	}
     }
 
     # Redirect to error redirect
