@@ -159,15 +159,8 @@ Adds fields to the array of fields return by L<get_fields|"get_fields">.
 
 sub create_caption {
     my($self, $caption, $widget) = @_;
-    my($fields) = $self->{$_PACKAGE};
 
-    my($label) = Bivio::UI::HTML::Widget::FormFieldLabel->new({
-	label => $caption,
-	field => $widget->get('field'),
-    });
-
-    push(@{$fields->{fields}}, [$label->get('field'), $label->get('label')]);
-    return ($label, $widget);
+    return $self->add_field($widget->get('field'), $caption, $widget);
 }
 
 =for html <a name="create_fields"></a>
