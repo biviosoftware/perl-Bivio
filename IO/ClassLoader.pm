@@ -236,7 +236,7 @@ sub map_require {
 	_trace($die) if $_TRACE;
     }
     Bivio::IO::Alert->bootstrap_die($map_class, ': not found In class map ',
-	    $map_name);
+        $map_name, $die ? (', die attrs: ', $die->get('attrs')) : ());
     # DOES NOT RETURN
 }
 
