@@ -85,8 +85,8 @@ my($_SELF) = __PACKAGE__->new({
             )],
 	       0x009999);
 
-	    $fc->group(['error', 'warning'] => 0x990000);
-            $fc->group(realm_name => 0xFF6633);
+	    $fc->group(['error', 'warning', 'realm_notice_list'] => 0x990000);
+            $fc->group(['realm_name'] => 0xFF6633);
 	    # These are links, so don't set the color
 	    $fc->group([qw(
 		    footer_menu
@@ -143,6 +143,7 @@ my($_SELF) = __PACKAGE__->new({
 	    $fc->group(profile_box_title => ['bold']);
 	    $fc->group(celebrity_disclaimer => ['smaller']);
 	    $fc->group(decor_disclaimer => ['smaller']);
+	    $fc->group(realm_notice_list => ['bold']);
 	    $fc->group(detail_chooser => ['bold']);
 	    $fc->group(['error_icon', 'substitute_user'] =>
 		    ['color=error', 'larger', 'bold']);
