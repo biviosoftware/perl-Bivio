@@ -33,6 +33,59 @@ and delete interface to the C<realm_account_t> table.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="BANK"></a>
+
+=head2 BANK : string
+
+Predefined bank account name.
+
+=cut
+
+sub BANK {
+    return 'BANK';
+}
+
+=for html <a name="BROKER"></a>
+
+=head2 BROKER : string
+
+Predefined broker account name.
+
+=cut
+
+sub BROKER {
+    return 'Broker';
+}
+
+=for html <a name="PETTY_CASH"></a>
+
+=head2 PETTY_CASH : string
+
+Predefined petty cash account name.
+
+=cut
+
+sub PETTY_CASH {
+    return 'Petty Cash';
+}
+
+=for html <a name="SUSPENSE"></a>
+
+=head2 SUSPENSE : string
+
+Predefined suspense account name
+
+=cut
+
+sub SUSPENSE {
+    return 'Suspense';
+}
+
 #=IMPORTS
 use Bivio::SQL::Constraint;
 use Bivio::Type::Boolean;
