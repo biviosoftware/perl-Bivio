@@ -78,6 +78,32 @@ main(@ARGV);
 
 #=PRIVATE METHODS
 
+# _do(string sql) : statement
+#
+# Returns the last statement executed.
+#
+sub _do {
+    my($sql) = @_;
+    my($statement);
+    my($s) = '';
+    foreach my $line (split(/\n/, $sql)) {
+	# Skip comments and blanks
+	next if $line =~ /^\s*--|^\s*$/;
+
+	# Execute statement if '/' found
+	if ($line =~ /^\s*\/\s*$/) {
+	    $statement = Bivio::SQL::Connection->execute($s);
+	    $s = '';
+	    next;
+	}
+
+	# Build up statement
+	$s .= $line."\n";
+    }
+    die("$s: left over statement") if $s;
+    return $statement;
+}
+
 # _upgrade()
 #
 # Replace this method with the table/data manipulations.
@@ -192,7 +218,7 @@ sub _upgrade {
 # Create japan_survey_t
 #
 sub _upgrade_jp {
-    Bivio::SQL::Connection->execute(<<'EOF');
+    _do(<<'EOF');
 CREATE TABLE japan_survey_t (
   creation_date_time DATE,
   client_addr VARCHAR2(30),
@@ -206,11 +232,19 @@ CREATE TABLE japan_survey_t (
 )
   storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
   tablespace realm_data
-EOF
-    Bivio::SQL::Connection->execute(<<'EOF');
+/
 ALTER TABLE japan_survey_t add primary key(creation_date_time, client_addr)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+/
+ALTER TABLE japan_survey_t add check (has_invested_before between 0 and 1)
+/
+ALTER TABLE japan_survey_t add check (has_broker between 0 and 1)
+/
+ALTER TABLE japan_survey_t add check (is_club_member between 0 and 1)
+/
+ALTER TABLE japan_survey_t add check (would_start_club between 0 and 1)
+/
 EOF
     return;
 }
