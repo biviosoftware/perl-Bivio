@@ -76,11 +76,10 @@ the map, so don't modify the hash after invoking this.
 
 =cut
 
-
 sub new {
     my($proto, $map) = @_;
-    my($self) = &Bivio::UNIVERSAL::new($proto);
-    $map = {} unless ref($map);
+    my($self) = Bivio::UNIVERSAL::new($proto);
+    $map = {} unless ref($map) eq 'HASH';
     $self->{$_PACKAGE} = $map;
     return $self;
 }
