@@ -144,7 +144,7 @@ my(@_CFG) = (
         14
         CLUB
         MEMBER_READ
-        _/admin/members
+        _/admin/roster
         Bivio::Biz::Model::ClubUserList
         Bivio::UI::HTML::Club::UserList
     )],
