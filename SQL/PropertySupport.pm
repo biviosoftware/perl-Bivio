@@ -73,12 +73,14 @@ This module takes ownership of I<decl>.
 =cut
 
 sub new {
-    my($proto, $attrs) = @_;
-    $proto->init_version($attrs, $attrs);
-    my($table_name) = $attrs->{table_name};
+    my($proto, $decl) = @_;
+    my($attrs) = {};
+    $proto->init_version($attrs, $decl);
+    my($table_name) = $decl->{table_name};
     Carp::croak("$table_name: invalid table name, must end in _t")
 		unless $table_name =~ m!^\w{1,28}_t$!;
-    my($column_cfg) = $attrs->{columns};
+    $attrs->{table_name} = $table_name;
+    my($column_cfg) = $decl->{columns};
     my($columns) = $attrs->{columns} = {};
     # Sort the columns, so in a guaranteed order.  Makes for better
     # Oracle caching of prepared statements.
@@ -94,6 +96,7 @@ sub new {
 	    name => $n,
 	    type => $cfg->[0],
 	    constraint => $cfg->[1],
+	    sql_name => $n,
 
 	    # Other attributes
 	    sql_pos_param => $cfg->[0]->to_sql_value('?'),
@@ -105,12 +108,17 @@ sub new {
     Carp::croak("$table_name: no primary keys")
 		unless int(@$primary_key_names);
 
-    # Convert auth_id to a column if it exists
-    if ($attrs->{auth_id}) {
-	Carp::croak($attrs->{auth_id}, ': auth_id not set')
-		    unless $columns->{$attrs->{auth_id}};
-	$attrs->{auth_id} = $columns->{$attrs->{auth_id}};
-    }
+    # Get auth_id and other columns
+    my($col_count) = int(keys(%$columns));
+    __PACKAGE__->init_column_classes($attrs, $decl, [qw(auth_id other)]);
+    __PACKAGE__->init_model_primary_key_maps($attrs);
+    Carp::croak('columns may not be added in "other" or "auth_id" category')
+		unless $col_count == int(keys(%$columns));
+    # auth_id must be at most one column.  Turn into that column or undef.
+    Carp::croak('too many auth_id fields')
+		if int(@{$attrs->{auth_id}}) > 1;
+    $attrs->{auth_id} = $attrs->{auth_id}->[0];
+
 
     # Cache as much of the statements as possible
     $attrs->{select} = 'select '.join (',', map {
