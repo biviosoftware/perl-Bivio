@@ -123,7 +123,7 @@ sub execute_input {
 	    # SU task again
 	    Bivio::Biz::Model::LoginForm->execute($req,
 		    {realm_owner => $new_user});
-	    $req->client_redirect(Bivio::Agent::TaskId::SUBSTITUTE_USER());
+	    $req->client_redirect(Bivio::Agent::TaskId::ADM_SUBSTITUTE_USER());
 	    # DOES NOT RETURN
 	}
 
