@@ -182,6 +182,9 @@ _compile(
     PREPARATION_DATE => ['Report Preparation Date'],
     REMAINING_BASIS => ['Remaining Basis Percentage'],
     INCOME_TYPE => ['Distribution Type'],
+    CALCULATE_BUTTON => ['Calculate'],
+    PARENT_PRICE => ['Parent Price/Share'],
+    CHILD_PRICE => ['Child Price/Share'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
@@ -232,6 +235,8 @@ _compile(
     CLUB_ACCOUNTING_ACCOUNT_LIST => ['Account Summary'],
     CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
+    CLUB_ACCOUNTING_INVESTMENT_SPINOFF_BASIS =>
+	['Investment Basis Calculator'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
     CLUB_ACCOUNTING_INVESTMENT_DETAIL => ['Investment Detail'],
     CLUB_ACCOUNTING_INVESTMENT_LIST => ['Investment Summary'],
