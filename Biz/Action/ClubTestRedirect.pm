@@ -44,7 +44,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub execute {
     my(undef, $req) = @_;
-    $req->redirect(Bivio::Agent::TaskId::CLUB_MEMBER_LIST());
+    $req->server_redirect(Bivio::Agent::TaskId::CLUB_MEMBER_LIST());
     return;
 }
 
