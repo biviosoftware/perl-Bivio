@@ -169,14 +169,14 @@ sub _check_exists {
     return $entry;
 }
 
-# _get_instrument(Bivio::Biz::Model::RealmTransaction txn) : Bivio::Biz::Model::RealmInstrument
+# _get_instruments(Bivio::Biz::Model::RealmTransaction txn) : Bivio::Biz::Model::RealmInstrument
 #
-# Returns the instrument associated with the transaction. Dies on failure.
+# Returns the instruments associated with the transaction. Dies on failure.
 #
-sub _get_instrument {
+sub _get_instruments {
     my($self, $txn) = @_;
 
-    my($inst);
+    my($result) = [];
     my($sth) = Bivio::SQL::Connection->execute("
             SELECT DISTINCT realm_instrument_entry_t.realm_instrument_id
             FROM entry_t, realm_instrument_entry_t
@@ -188,29 +188,31 @@ sub _get_instrument {
 	    ]);
     while (my $row = $sth->fetchrow_arrayref) {
 	my($id) = $row->[0];
-
-	Bivio::Die->die("instrument already loaded") if $inst;
-	$inst = Bivio::Biz::Model::RealmInstrument->new($self->get_request)
-		->load(realm_instrument_id => $id);
+	push(@$result, Bivio::Biz::Model::RealmInstrument->new(
+		$self->get_request)->load(realm_instrument_id => $id));
     }
-    Bivio::Die->die("couldn't find instrument for transaction") unless $inst;
-    return $inst;
+    Bivio::Die->die("couldn't find instruments for transaction")
+		unless int(@$result) > 0;
+    return $result;
 }
 
 # _post_delete(string date)
 #
 # Performs any post delete processing.
 #
-# This will
+# This will audit any instruments associated with the transaction, and
+# any units from the specified date forward.
 #
 sub _post_delete {
     my($self, $date) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if ($fields->{realm_instrument}) {
-	_trace("auditing ", $fields->{realm_instrument}->get_name) if $_TRACE;
-	Bivio::Biz::Accounting::InstrumentAudit->new($self->get_request)
-		    ->audit($date, $fields->{realm_instrument});
+    if ($fields->{realm_instruments}) {
+	foreach my $inst (@{$fields->{realm_instruments}}) {
+	    _trace("auditing ", $inst->get_name) if $_TRACE;
+	    Bivio::Biz::Accounting::InstrumentAudit->new($self->get_request)
+			->audit($date, $inst);
+	}
     }
 
     # need to update units after this date
@@ -232,7 +234,7 @@ sub _pre_delete {
     if ($txn->get('source_class') == Bivio::Type::EntryClass::INSTRUMENT()) {
 	_trace("pre delete instrument txn") if $_TRACE;
 	# used in post delete processing
-	$fields->{realm_instrument} = _get_instrument($self, $txn);
+	$fields->{realm_instruments} = _get_instruments($self, $txn);
     }
     elsif ($txn->get('source_class') == Bivio::Type::EntryClass::MEMBER()) {
 	_update_withdrawn_state($self, $txn);
