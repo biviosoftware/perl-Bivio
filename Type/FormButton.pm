@@ -6,7 +6,7 @@ $Bivio::Type::FormButton::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Type::FormButton - field to prompt instrument lookup
+Bivio::Type::FormButton - a form button type
 
 =head1 SYNOPSIS
 
