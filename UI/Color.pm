@@ -36,18 +36,6 @@ The current color names are:
 
 =over 4
 
-=item page_bg
-
-=item heading_bg
-
-=item text_tab_bg
-
-=item table_stripe_bg
-
-=item icon_text_ia
-
-=item error
-
 =back
 
 =cut
@@ -64,7 +52,7 @@ __PACKAGE__->compile(
 	'table_separator',
     ],
     TABLE_STRIPE_BG => [
-	0xFFF0F0,
+	0xFFE8E8,
     ],
     ERROR => [
 	0xFF0000,
@@ -77,6 +65,9 @@ __PACKAGE__->compile(
     ],
     SUMMARY_LINE => [
 	0x66CC66,
+    ],
+    ACTION_BAR => [
+	0xE9E3C7,
     ],
 );
 
