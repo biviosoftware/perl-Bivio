@@ -94,6 +94,7 @@ sub PAGE_SIZE {
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
 use Bivio::Biz::QueryType;
+use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -201,7 +202,9 @@ sub format_query {
 
     # Get the query using the method defined in QueryType
     my($method) = $type->get_short_desc;
-    return $fields->{query}->$method($self->internal_get_sql_support(), $arg);
+#TODO: may not be the right place to escape the uri
+    return Bivio::Util::escape_uri($fields->{query}->$method(
+	    $self->internal_get_sql_support(), $arg));
 }
 
 =for html <a name="format_uri"></a>
