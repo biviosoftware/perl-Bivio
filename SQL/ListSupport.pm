@@ -620,12 +620,14 @@ sub _load_list {
 
 	# Find the page.  We load the first row of the page here.
 	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
+        if ($start < 0) {
+            $start = 0;
+        }
 	for (my($i) = 0; $i <= $start; $i++) {
 	    next if $row = $statement->fetchrow_arrayref;
 
 	    # End of list.
 	    $statement->finish;
-
 	    # No need to backup, there are no rows
 	    unless ($i) {
 		_trace('no rows found') if $_TRACE;
