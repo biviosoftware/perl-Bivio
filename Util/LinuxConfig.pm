@@ -441,7 +441,7 @@ sub handle_config {
 
 =for html <a name="ifcfg_static"></a>
 
-=head2 ifcfg_static(string device, string hostname, string ip_cfg, string gateway) : string
+=head2 ifcfg_static(string device, string hostnames, string ip_cfg, string gateway) : string
 
 I<ip_addr> is of form w.x.y.z/n, e.g. 1.2.3.4/29 for a 3 bit subnet for
 host 1.2.3.4.  Updates:
@@ -450,10 +450,13 @@ host 1.2.3.4.  Updates:
     /etc/sysconfig/network-scripts/ifcfg-$device
     /etc/hosts
 
+I<hostnames> may contain space separated list.  First name is the primary host
+name.
+
 =cut
 
 sub ifcfg_static {
-    my($self, $device, $hostname, $ip_addr, $gateway) = @_;
+    my($self, $device, $hostnames, $ip_addr, $gateway) = @_;
     my($ip, $net, $mask)
 	= $ip_addr =~ m!^(((?:\d{1,3}\.){3})\d{1,3})/(\d{2})$!;
     $self->usage_error($ip_addr, ": ip address must be of form 1.2.3.4/28")
@@ -465,6 +468,7 @@ sub ifcfg_static {
 	unless $gateway =~ s/^(?=\d{1,3}$)/$net/
 	    || ($gateway =~ /^((?:\d{1,3}\.){3})d{1,3}$/)[0] eq $net;
     $mask = '255.255.255.' . (256 - (1 << (32 - $mask)));
+    my($hostname) = $hostnames =~ /^(\S+)/;
     return _edit($self, '/etc/sysconfig/network',
 	    [qr/^NETWORKING=.*\n/im, "NETWORKING=yes\n"],
 	    [qr/^HOSTNAME=.*\n/im, "HOSTNAME=$hostname\n"],
@@ -483,9 +487,12 @@ EOF
 	     }],
 	) . _edit($self, '/etc/hosts',
 	    [sub {
-		 ${shift(@_)} =~ s/^$hostname\s.*//im;
+		 my($data) = @_;
+		 return map({
+		     $$data =~ s/^\s*[\d\.]+.*\s+\Q$_\E\s.*\n?$//mi ? 1 : ();
+		 } split(' ', $hostnames));
 	    }],
-	    ['$', "$hostname\t$ip\n"],
+	    ['$', "$ip\t$hostnames\n"],
 	);
 }
 
