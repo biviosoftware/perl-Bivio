@@ -7,7 +7,11 @@ $_ = $Bivio::Biz::Model::ECPaymentList::VERSION;
 
 =head1 NAME
 
-Bivio::Biz::Model::ECPaymentList - list of payments made
+Bivio::Biz::Model::ECPaymentList - list of payments information
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
@@ -63,29 +67,41 @@ sub format_name {
 
 sub internal_initialize {
     return {
-        version => 1,
+        version => 2,
+	can_iterate => 1,
         primary_key => ['ECPayment.ec_payment_id'],
         auth_id => ['ECPayment.realm_id'],
         order_by => [qw(
             ECPayment.creation_date_time
             RealmOwner.name
-            ECPayment.payment_type
             ECPayment.amount
             ECPayment.method
             ECPayment.status
-            ECPayment.processed_date_time
+            ECCreditCardPayment.processed_date_time
         )],
         other => [
             [qw(ECPayment.user_id RealmOwner.realm_id)],
+	    [qw{ECPayment.ec_payment_id ECSubscription.ec_payment_id(+)}],
+	    [qw{ECPayment.ec_payment_id ECCheckPayment.ec_payment_id(+)}],
+	    [qw{ECPayment.ec_payment_id ECCreditCardPayment.ec_payment_id(+)}],
             qw(
-            ECPayment.ec_subscription_id
-            ECPayment.ec_subscription_start_date
-            ECPayment.processor_response
-            ECPayment.credit_card_number
-            ECPayment.credit_card_expiration_date
-            ECPayment.credit_card_name
-            ECPayment.credit_card_zip
+            ECPayment.user_id
+            ECPayment.description
             ECPayment.remark
+            ECPayment.salesperson_id
+            ECPayment.service
+            ECSubscription.start_date
+            ECSubscription.end_date
+            ECSubscription.renewal_state
+            ECCheckPayment.check_number
+            ECCheckPayment.institution
+            ECCreditCardPayment.processor_response
+            ECCreditCardPayment.processor_transaction_number
+            ECCreditCardPayment.card_number
+            ECCreditCardPayment.card_expiration_date
+            ECCreditCardPayment.card_name
+            ECCreditCardPayment.card_zip
+            ECCreditCardPayment.point_of_sale
        )],
     };
 }
