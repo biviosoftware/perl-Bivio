@@ -704,11 +704,19 @@ sub _format_uri_primary_key {
 #
 sub _get_parent_id_type {
     my($attrs, $support) = @_;
-    # use the list support first, otherwise default to first primary key
-    return $support->unsafe_get('parent_id_type')
-	    || ($support->unsafe_get('primary_key')
-		    && $support->get('primary_key')->[0]->{type})
-		    || 'Bivio::Type::PrimaryId';
+    # use the list support first
+    my($type) = $support->unsafe_get('parent_id_type');
+
+    # try the first primary key type
+    unless ($type) {
+	my($primary_key) = $support->unsafe_get('primary_key');
+	if ($primary_key && int(@$primary_key)) {
+	    $type = $primary_key->[0]->{type};
+	}
+    }
+
+    # default to PrimaryId
+    return $type || 'Bivio::Type::PrimaryId';
 }
 
 # _new(any proto, hash_ref attrs, Bivio::SQL::Support, ref die) : Bivio::SQL::ListQuery
