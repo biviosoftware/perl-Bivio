@@ -323,6 +323,17 @@ ALTER TABLE $table add check (role between 1 and 7)
 		Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
 	    ]);
 
+    _upgrade_realm_role();
+    return;
+}
+
+# _upgrade_realm_role()
+#
+# Initialize realm-role table b/c WITHDRAWN is new
+#
+sub _upgrade_realm_role {
+    use Bivio::Biz::Util::RealmRole;
+    Bivio::Biz::Util::RealmRole->init();
     return;
 }
 
