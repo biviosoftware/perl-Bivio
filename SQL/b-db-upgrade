@@ -220,157 +220,53 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_account_sync();
-    _upgrade_realm_notice();
-    _upgrade_adjustment_types();
+    _upgrade_create_spinoff_table();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_account_sync()
+# _upgrade_create_spinoff_table()
 #
-# Recreates the account_sync_t table.
+# Creates instrument_spinoff_t.
 #
-sub _upgrade_account_sync {
-    print("Recreating account_sync_\n");
+sub _upgrade_create_spinoff_table {
+    print("creating instrument_spinoff_t\n");
     _do_sql('
-DROP TABLE account_sync_t
-/
-CREATE TABLE account_sync_t (
-  realm_transaction_id NUMBER(18),
-  realm_id NUMBER(18),
-  sync_key VARCHAR2(100),
-  import_date DATE
+CREATE TABLE instrument_spinoff_t (
+  spinoff_date DATE,
+  source_instrument_id NUMBER(18),
+  new_instrument_id NUMBER(18),
+  remaining_basis NUMBER(20,6),
+  new_shares_ratio NUMBER(20,6)
 )
   tablespace data_1m
-  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+  pctfree 5 pctused 90 initrans 1 storage (freelists 1 pctincrease 0)
 /
-ALTER TABLE account_sync_t
-  add constraint account_sync_t1
-  primary key(realm_transaction_id)
+ALTER TABLE instrument_spinoff_t
+  add constraint instrument_spinoff_t1
+  primary key(spinoff_date, source_instrument_id, new_instrument_id)
   using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
 /
-ALTER TABLE account_sync_t
-  add constraint account_sync_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
-/
-ALTER TABLE account_sync_t modify realm_id not null
-/
-ALTER TABLE account_sync_t modify sync_key not null
-/
-CREATE INDEX account_sync_t3 on account_sync_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-/
-CREATE INDEX account_sync_t4 on account_sync_t (
-  sync_key
-)
-  tablespace index_1m
-  pctfree 0 initrans 4 storage (freelists 8)
-  /
-ALTER TABLE account_sync_t modify import_date NOT NULL
-/
-ALTER TABLE account_sync_t
-  add constraint account_sync_t5
-  foreign key (realm_transaction_id)
-  references realm_transaction_t(realm_transaction_id)
-/
-');
-    return;
-}
-
-# _upgrade_adjustment_types()
-#
-# Expands entry_type constraints to include cash/investment/member
-# adjustments.
-#
-sub _upgrade_adjustment_types {
-    print("expanding entry_type constraints\n");
-
-    _drop_constraints('entry_t', 'entry_type');
-    _do_sql('
-ALTER TABLE entry_t modify entry_type not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t7
-  check (entry_type between 1 and 9
-  or entry_type between 100 and 113
-  or entry_type=117
-  or entry_type between 200 and 221)
-/
-');
-    return;
-}
-
-# _upgrade_realm_notice()
-#
-# Creates realm notice table.
-#
-sub _upgrade_realm_notice {
-    print("Creating realm_notice_t\n");
-    _do_sql('
-CREATE TABLE realm_notice_t (
-  realm_notice_id NUMBER(18),
-  realm_id NUMBER(18),
-  -- Applies to this role or greater
-  at_least_role NUMBER(2),
-  creation_date_time DATE,
-  realm_notice_type NUMBER(2),
-  template_params VARCHAR(4000)
-)
-  tablespace data_1m
-  pctfree 5 pctused 90 initrans 2 storage (freelists 8)
+ALTER TABLE instrument_spinoff_t modify spinoff_date not null
 /
 
-CREATE sequence realm_notice_s
-  minvalue 100008 maxvalue 999999999999999999
-  nocycle cache 10 increment BY 100000
+ALTER TABLE instrument_spinoff_t modify source_instrument_id not null
 /
-
-ALTER TABLE realm_notice_t
-  add constraint realm_notice_t1
-  primary key(realm_notice_id)
-  using index tablespace index_1m pctfree 0 initrans 4 storage (freelists 8)
+ALTER TABLE instrument_spinoff_t
+  add constraint instrument_spinoff_t2
+  foreign key (source_instrument_id)
+  references instrument_t(instrument_id)
 /
-
---
--- realm_notice_t
---
-ALTER TABLE realm_notice_t modify realm_id not null
+ALTER TABLE instrument_spinoff_t modify new_instrument_id not null
 /
-ALTER TABLE realm_notice_t
-  add constraint realm_notice_t2
-  foreign key (realm_id)
-  references realm_owner_t(realm_id)
+ALTER TABLE instrument_spinoff_t
+  add constraint instrument_spinoff_t3
+  foreign key (new_instrument_id)
+  references instrument_t(instrument_id)
 /
-CREATE INDEX realm_notice_t3 on realm_notice_t (
-  realm_id
-)
-  tablespace index_1m
-  pctfree 50 initrans 4 storage (freelists 8)
+ALTER TABLE instrument_spinoff_t modify remaining_basis not null
 /
-ALTER TABLE realm_notice_t modify at_least_role not null
-/
-ALTER TABLE realm_notice_t
-  add constraint realm_notice_t4
-  check (at_least_role between 1 and 7)
-/
-ALTER TABLE realm_notice_t modify creation_date_time not null
-/
-CREATE INDEX realm_notice_t5 ON realm_notice_t (
-  creation_date_time
-)
-  tablespace index_1m
-  pctfree 50 initrans 4 storage (freelists 8)
-/
-ALTER TABLE realm_notice_t modify realm_notice_type not null
-/
-ALTER TABLE realm_notice_t
-  add constraint realm_notice_t6
-  check (realm_notice_type between 1 and 5)
+ALTER TABLE instrument_spinoff_t modify new_shares_ratio not null
 /
 ');
     return;
