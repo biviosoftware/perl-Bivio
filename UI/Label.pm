@@ -64,12 +64,24 @@ _compile(
 	'RealmUser.creation_date_time'],
 
     # User labels
-    USER_DISPLAY_NAME => ['Name'],
+    USER_DISPLAY_NAME => ['Name', undef, 'RealmOwner.display_name'],
     USER_NAME => ['User ID', undef, 'name_or_email'],
     USER_FIRST_NAME => ['First Name', undef, 'User.first_name'],
     USER_MIDDLE_NAME => ['Middle Name', undef, 'User.middle_name'],
     USER_LAST_NAME => ['Last Name', undef, 'User.last_name'],
 
+    # Accounting labels
+    TRANSACTION_DATE => ['Transaction Date', undef,
+	'RealmTransaction.date_time'],
+    VALUATION_DATE => ['Valuation Date', undef,
+	'MemberEntry.valuation_date'],
+    MULTIPLE_PAYMENT => ['Enter Member Payments'],
+    MULTIPLE_FEE => ['Enter Member Fees'],
+    AMOUNT => ['Amount', undef, 'Entry.amount'],
+    ACCOUNT => ['Account', undef, 'RealmAccountEntry.realm_account_id'],
+    REMARK => ['Remark', undef, 'RealmTransaction.remark'],
+    DEFAULT_REMARK => ['Default Remark'],
+    MEMBER_SPECIFIC_REMARK => ['Member Specific Remark'],
 );
 
 =head1 METHODS
