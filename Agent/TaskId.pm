@@ -1537,6 +1537,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::LocalValuationYearList->execute_load_all
         Bivio::UI::HTML::Club::AdminTools
+        help=admin-tools
     )],
     [qw(
         CLUB_LEGACY_UPLOAD_PROCESSOR
@@ -2205,6 +2206,7 @@ my(@_CFG) = (
 	ACCOUNTING_WRITE&ADMIN_WRITE&MEMBER_WRITE
         ?/admin/export
 	Bivio::UI::HTML::Club::Export
+        help=exporting-club-data
     )],
     [qw(
         CLUB_ADMIN_EXPORT_COMPRESSED
