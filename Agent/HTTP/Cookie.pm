@@ -288,6 +288,12 @@ use Crypt::CBC;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+
+# Number of seconds to be added to "now" when checking the cookie time.
+# Cookie times should never be far into the future, but the network
+# time synch may be off by a few seconds.
+my($_TIME_SLOP) = 10;
+
 my($_USER_FIELD) = 'u';
 my($_REMOTE_IP_FIELD) = 'i';
 my($_DOMAIN) = undef;
@@ -624,7 +630,7 @@ sub _parse {
 	# If we don't have a time field, the cookie is invalid.  Can't have
 	# time in the future or too far in the past.  We assume all our servers
 	# are time synchronized.
-	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time
+	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time + $_TIME_SLOP
 	       && $v{$_TIME_FIELD} > EPOCH()) {
 	    # Bad cookie
 	    _trace('unable to decrypt cookie: key=', $k, ', value=', $v)
