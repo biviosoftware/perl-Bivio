@@ -154,6 +154,8 @@ sub create {
     $values->{is_public} = 0
             unless $values->{is_public};
 
+    _set_title_in_auxinfo($values);
+
     # Set the volume from request if not set.
     $values->{volume} = $req->get('Bivio::Type::FileVolume')
 	    unless $values->{volume};
@@ -492,6 +494,39 @@ sub extract_mime_filename {
     return 'download.'.(defined($ext) ? $ext : 'bin');
 }
 
+=for html <a name="extract_mime_title"></a>
+
+=head2 extract_mime_title() : string
+
+=head2 static extract_mime_title(Bivio::Biz::ListModel list_model, string model_prefix) : string
+
+=head2 static extract_mime_title(string_ref aux_info) : string
+
+Finds "Title:" tag in aux_info treated as a MIME header.
+Returns the empty string if no title.
+
+=cut
+
+sub extract_mime_title {
+    my($self, $list_model, $model_prefix) = @_;
+    my($aux_info);
+    if (ref($list_model) eq 'SCALAR') {
+	# Make a copy just in case
+	$aux_info = $$list_model;
+    }
+    else {
+	my($p) = $model_prefix || '';
+	my($m) = $list_model || $self;
+	$aux_info = $m->get($p.'aux_info');
+    }
+    return '' unless defined($aux_info)
+	    && $aux_info =~ /title:\s*([^\n]+)/i;
+    my($title) = $1;
+    # unescape (loosely)
+    $title =~ s/\\(.)/$1/g if $title =~ s/^"|"$//g;
+    return $title;
+}
+
 =for html <a name="fixup_root_directory_name"></a>
 
 =head2 static fixup_root_directory_name(hash_ref properties, Bivio::Agent::Request req)
@@ -567,6 +602,8 @@ and I<volume>.
 
 Automatically sets I<bytes> and I<name_sort>.
 
+If you are setting I<content>, you should also set I<aux_info>.
+
 =cut
 
 sub update {
@@ -591,6 +628,7 @@ sub update {
 	my($c) = $new_values->{content};
 	$new_values->{bytes} = ref($c) ? length($$c) : 0;
 	$bytes = $new_values->{bytes} - $properties->{bytes};
+	_set_title_in_auxinfo($new_values);
     }
     $self->SUPER::update($new_values);
     _update_quota($self, $self->internal_get, $self->to_kbytes($bytes))
@@ -611,6 +649,33 @@ sub _extract_mime_filename {
     my($name) = $2;
     $name = Bivio::Type::FileName->get_tail($name);
     return $name;
+}
+
+# _set_title_in_auxinfo(hash_ref new_values)
+#
+# We extract the title from the document and append it to aux_info.
+# Must be called after bytes is is set.
+#
+sub _set_title_in_auxinfo {
+    my($values) = @_;
+
+    # Only handle text/html right now.
+    my($i) = $values->{aux_info};
+    return unless $values->{bytes} && $i && $i !~ /title:/i
+	    && $i =~ /content-type:\s*text.html/i;
+
+    my($t) = Bivio::HTML->unescape(
+	    ${$values->{content}}
+	    =~ /<title>\s*([.\n]+)\s*<\/title>/);
+    # Get rid of any special space chars and escape quoted literal
+    $t =~ s/\s+/ /g;
+    $t =~ s/(["\\])/\\$1/g;
+    $i .= "\r\nTitle: \"".$t.'"';
+    # just in case, truncate.  Doesn't matter if it is in the middle
+    # of the word--well almost, but LongText is very long.
+    $values->{aux_info} = substr(
+	    length($i), 0, Bivio::Type::LongText->get_width());
+    return;
 }
 
 # _update_directory(Bivio::Biz::Model::File self, hash_ref properties, int kbytes)
