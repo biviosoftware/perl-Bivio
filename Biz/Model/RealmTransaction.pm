@@ -40,6 +40,7 @@ use Bivio::Type::DateTime;
 use Bivio::Type::Name;
 use Bivio::Type::PrimaryId;
 use Bivio::Type::EntryClass;
+use Bivio::Type::EntryType;
 use Bivio::Type::Text;
 
 #=VARIABLES
@@ -247,7 +248,8 @@ sub _generate_instrument_remark {
 	if ($count == 1) {
 	    $result = '1 Share '.$name if $count > 0;
 	}
-	elsif ($count > 0) {
+	elsif ($count != 0) {
+	    $count = abs($count);
 	    $result = $count.' Shares '.$name if $count > 0;
 	}
     }
@@ -260,7 +262,7 @@ sub _generate_instrument_remark {
 # _generate_member_remark(string entry_id) : string
 #
 # If the number of member entries is > 1 then
-# 'Deposits for '.<number>.' members' is returned.
+# 'Deposits for '.<number>.' members' is returned for payment and fees.
 # Otherwise the member display_name.
 #
 sub _generate_member_remark {
@@ -269,7 +271,7 @@ sub _generate_member_remark {
     my($sth);
     if (defined($entry_id)) {
 	$sth = Bivio::SQL::Connection->execute('
-            SELECT realm_owner_t.display_name
+            SELECT realm_owner_t.display_name, entry_t.entry_type
             FROM entry_t, member_entry_t, realm_owner_t
             WHERE entry_t.entry_id=?
             AND entry_t.entry_id = member_entry_t.entry_id
@@ -279,7 +281,7 @@ sub _generate_member_remark {
     }
     else {
 	$sth = Bivio::SQL::Connection->execute('
-            SELECT realm_owner_t.display_name
+            SELECT realm_owner_t.display_name, entry_t.entry_type
             FROM entry_t, member_entry_t, realm_owner_t
             WHERE entry_t.realm_transaction_id=?
             AND entry_t.entry_id = member_entry_t.entry_id
@@ -289,14 +291,17 @@ sub _generate_member_remark {
     }
 
     my($result);
-    my($row);
+    my($first_type);
     my($count) = 0;
+    my($row);
     while ($row = $sth->fetchrow_arrayref) {
 	$result ||= $row->[0];
+	$first_type ||= Bivio::Type::EntryType->from_int($row->[1]);
 	$count++;
     }
     # change remark for group entries
-    if ($count > 1) {
+    if ($count > 1 && ($first_type eq Bivio::Type::EntryType::MEMBER_PAYMENT()
+	   || $first_type eq Bivio::Type::EntryType::MEMBER_PAYMENT_FEE())) {
 	$result = 'Deposits for '.$count.' members';
     }
     # guaranteed result if class is member
