@@ -92,6 +92,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::HTTPDocument
     )],
 #2
+    # This is the DOCUMENT_TASK.  See Bivio::HTTP::Agent::Location
     [qw(
 	HTTP_DOCUMENT
 	3
