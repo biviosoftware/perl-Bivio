@@ -610,7 +610,7 @@ Value',
     NEW_HARDWARE => 'New Computers',
 
     # Announcements
-    ANNOUNCE_NEW_PREFERENCES => 'New Preferences',
+    ANNOUNCE_ZACKS => 'Zacks Research',
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => 'prev',
