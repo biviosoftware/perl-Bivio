@@ -344,7 +344,6 @@ sub _init_column_classes {
 #
 sub _init_column_lists {
     my($attrs, $where) = @_;
-    my($columns) = $attrs->{columns};
 
     # Lists are sorted to keep Oracle's cache happy across invocations
     $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
@@ -352,6 +351,12 @@ sub _init_column_lists {
     # order_by can't be sorted, because order is important
     $attrs->{order_by_names} = [map {$_->{name}} @{$attrs->{order_by}}];
     $attrs->{column_names} = [sort(keys(%{$attrs->{columns}}))];
+
+    # No BLOBs
+    foreach my $c (values(%{$attrs->{columns}})) {
+	Carp::croak($c->{name}, ': cannot have a blob in a ListModel')
+		    if $c->{type} eq 'Bivio::Type::BLOB';
+    }
 
     # Nothing to select
     return unless defined($where);
@@ -420,7 +425,8 @@ sub _load_this {
     my($prev, $row);
     my($row_count) = 0;
     for (;;) {
-	return [] unless $row = $statement->fetchrow_arrayref;
+	$statement->finish(), return []
+		unless $row = $statement->fetchrow_arrayref;
 	$row_count++;
 
 	# Convert the entire primary key and save in $prev if no match
@@ -460,6 +466,7 @@ sub _load_this {
 		    $_->from_sql_column($row->[$j++]);
 		} @$types]);
     }
+    $statement->finish;
 
     # Which page are we on?
     $query->put(page_number => int(--$row_count / $count));
@@ -482,7 +489,7 @@ sub _load_list {
 
     # Find the page
     for (my($start) = $page_number * $count; $start > 0; $start--) {
-	return [] unless $statement->fetchrow_arrayref;
+	$statement->finish, return [] unless $statement->fetchrow_arrayref;
     }
 
     # Avoid pointer chasing in loop
@@ -495,7 +502,8 @@ sub _load_list {
     my(@rows, $row);
     while ($count-- > 0) {
 	# If no more, return what there is
-	return \@rows unless $row = $statement->fetchrow_arrayref;
+	$statement->finish, return \@rows
+		unless $row = $statement->fetchrow_arrayref;
 
 	my($i) = 0;
 	push(@rows, {
@@ -511,6 +519,7 @@ sub _load_list {
     # Is there a next?
     $query->put(has_next => 1, next => $page_number + 1) 
 	    if $statement->fetchrow_arrayref;
+    $statement->finish();
 
     # Return the page
     return \@rows;

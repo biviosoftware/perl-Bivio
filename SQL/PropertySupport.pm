@@ -33,6 +33,19 @@ supported throught L<"find">, L<"create">, L<"delete">, and L<"update">.
 Support uses the L<Bivio::SQL::Connection> for connections and
 statement execution.
 
+=head1 ATTRIBUTES
+
+See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
+
+=over 4
+
+=item has_blob : boolean
+
+Is true if the PropertModel has a BLOB data type.  Requires special
+handling in L<Bivio::SQL::Connection|Bivio::SQL::Connection>.
+
+=back
+
 =cut
 
 =head1 CONSTANTS
@@ -42,6 +55,7 @@ statement execution.
 #=IMPORTS
 use Bivio::SQL::Connection;
 use Bivio::IO::Trace;
+use Bivio::Type::PrimaryId;
 use Bivio::Util;
 use Carp ();
 
@@ -49,6 +63,7 @@ use Carp ();
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_EMPTY_ARRAY) = [];
+my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
 
 =head1 FACTORIES
 
@@ -88,6 +103,7 @@ sub new {
     my($primary_key_names) = $attrs->{primary_key_names} = [];
     my($primary_key) = $attrs->{primary_key} = [];
     $attrs->{column_aliases} = {};
+    $attrs->{has_blob} = 0;
     # Go through columns and
     my($n);
     foreach $n (@$column_names) {
@@ -95,19 +111,21 @@ sub new {
 	my($col) = $attrs->{column_aliases}->{$n} = $columns->{$n} = {
 	    # Bivio::SQL::Support attributes
 	    name => $n,
-	    type => $cfg->[0],
-	    sort_order => Bivio::SQL::ListQuery->get_sort_order_for_type(
-		    $cfg->[0]),
-	    constraint => $cfg->[1],
+	    constraint => Bivio::SQL::Constraint->from_any($cfg->[1]),
 	    sql_name => $n,
 
 	    # Other attributes
 	    sql_pos_param => $cfg->[0]->to_sql_value('?'),
 	};
+	Bivio::SQL::Support->init_type($col, $cfg->[0]);
+	$attrs->{has_blob} = 1
+		if UNIVERSAL::isa($cfg->[0], 'Bivio::Type::BLOB');
 	push(@$primary_key_names, $n), push(@$primary_key, $col)
 		if $columns->{$n}->{is_primary_key}
 			= $cfg->[1] eq Bivio::SQL::Constraint::PRIMARY_KEY();
     }
+    Carp::croak("$table_name: too many BLOBs")
+		if $attrs->{has_blob} > 1;
     Carp::croak("$table_name: no primary keys")
 		unless int(@$primary_key_names);
 
@@ -161,7 +179,8 @@ Inserts a new record into to database and loads the model's properties.
 Dies on errors.
 
 If there is a I<primary_id_column>, the value will be retrieved from
-the sequence I<table_name_s> (table_name sans '_t', that is).
+the sequence I<table_name_s> (table_name sans '_t', that is) I<if it
+not already set>.
 
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 
@@ -171,23 +190,36 @@ sub create {
     my($self, $new_values, $die) = @_;
     my($attrs) = $self->internal_get;
     my($sql) = $attrs->{insert};
+
+    # Allow the caller to overrid primary_id.  Probably should check
+    # that isn't a valid sequence.
+    my($pid) = $attrs->{primary_id_name};
+    if ($pid) {
+	if ($new_values->{$pid}) {
+#TODO: Need an assertion check about not using sequences....
+#	    $die->die('DIE', {message =>
+#		'special primary_id greater than min primary id',
+#		field => $pid, value => $new_values->{$pid}})
+#		    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
+	}
+	else {
+	    $new_values->{$pid} = _next_primary_id($self, $die);
+	}
+    }
     my($columns) = $attrs->{columns};
-    $new_values->{$attrs->{primary_id_name}}
-	    = _next_primary_id($self, $die)
-		    if $attrs->{primary_id_name};
-    # map is faster than foreach in this case
     my(@params) = map {
 	$columns->{$_}->{type}->to_sql_param($new_values->{$_});
     } @{$attrs->{column_names}};
-    Bivio::SQL::Connection->execute($sql, \@params, $die);
+    Bivio::SQL::Connection->execute($sql, \@params, $die,
+	    $attrs->{has_blob})->finish();
     return;
 }
 
 =for html <a name="delete"></a>
 
-=head2 delete(hash_ref old_values)
+=head2 delete(hash_ref values)
 
-=head2 delete(hash_ref old_values, ref die)
+=head2 delete(hash_ref values, ref die)
 
 Removes the row with identified by the specified parameterized where_clause
 and substitution values. If an error occurs during the delete, calls die.
@@ -197,12 +229,20 @@ I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
 =cut
 
 sub delete {
-    my($self, $old_values, $die) = @_;
+    my($self, $values, $die, $load_args) = @_;
     my($attrs) = $self->internal_get;
     my(@params) = map {
-	$old_values->{$_};
+	unless (exists($values->{$_})) {
+	    $die ||= 'Bivio::Die';
+	    $die->die('DIE', {
+		message => 'missing primary key value for delete',
+		entity => $self,
+		column => $_});
+	}
+	$values->{$_};
     } @{$attrs->{primary_key_names}};
-    Bivio::SQL::Connection->execute($attrs->{delete}, \@params, $die);
+    Bivio::SQL::Connection->execute($attrs->{delete}, \@params, $die,
+	   $attrs->{has_blob})->finish();
     return;
 }
 
@@ -233,20 +273,22 @@ sub unsafe_load {
 	$_.'='.$column->{sql_pos_param};
 	# Use a sort to force order which (may) help Oracle's cache.
     } sort keys(%$query));
-    my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die);
+    my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die,
+	   $attrs->{has_blob});
     my($start_time) = Bivio::Util::gettimeofday();
     my($row) = $statement->fetchrow_arrayref();
     my($too_many) = $statement->fetchrow_arrayref ? 1 : 0 if $row;
     Bivio::SQL::Connection->increment_db_time($start_time);
     my($values);
     if ($row) {
-	die('too many rows returned') if $too_many;
+	$statement->finish, die('too many rows returned') if $too_many;
 	my($columns) = $attrs->{columns};
 	my($i) = 0;
 	$values = {map {
 	    ($_, $columns->{$_}->{type}->from_sql_column($row->[$i++]));
 	} @{$attrs->{column_names}}};
     }
+    $statement->finish();
     return $values;
 }
 
@@ -280,9 +322,12 @@ sub update {
 	}
 	my($old) = $old_values->{$n};
 	my($new) = $new_values->{$n};
+	# This works for BLOBs, too.  If the scalar_ref is the same,
+	# then we don't update.
 	next if _equals($old, $new);
 	$set .= $n.'='.$column->{sql_pos_param}.',';
-	push(@params, $column->{type}->to_sql_param($new));
+	$new = $column->{type}->to_sql_param($new);
+	push(@params, $new);
     }
     # check if any changes required
     unless ($set) {
@@ -297,7 +342,8 @@ sub update {
 	push(@params, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
     }
     Bivio::SQL::Connection->execute(
-	    $attrs->{update}.$set.$attrs->{primary_where}, \@params, $die);
+	    $attrs->{update}.$set.$attrs->{primary_where}, \@params, $die,
+	    $attrs->{has_blob})->finish();
     return;
 }
 
