@@ -107,6 +107,8 @@ my(%_RESERVED) = map {($_, 1)} qw(
     messages
     mgfs
     my_club
+    my_club_site
+    my_site
     naic
     news
     nfs
