@@ -243,7 +243,7 @@ sub _initialize {
 	    "can't login as offline user",
 	    'Bivio::Data::EW::ClubImporter::_parse_tax_id.*changed to',
 	    "MemberAllocationList.*report_date isn't on year-end",
-	    'EW::ClubImporter::.*incorrect imported allocations',
+	    'warn::.*incorrect imported allocations',
 	    "Request::warn.*couldn't adjust, difference too great,",
 	    "::_create_stock_transfer_entry.*Couldn't find related stock",
 	    'HTTP::Form::parse.*unknown form Content-Type: <undef>',
