@@ -65,6 +65,11 @@ my($_CHAR_MAP) = {
 163 => "&pound;",
 165 => "&yen;",
 169 => "&copy;",
+174 => "&reg;",
+177 => "&plusmn;",
+182 => "&para;",
+247 => "&divide;",
+
 };
 
 
@@ -108,9 +113,7 @@ sub format_mail {
     my($s);
     my($out_io) = IO::Scalar->new();
     _parse($in_io, \$s);
-#TODO Don't use IO handles.
     $out_io->close();
-#    $in_io->close();
     return \$s;
 }
 
