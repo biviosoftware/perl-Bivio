@@ -105,6 +105,10 @@ transactions, messages, etc. SHOULD NOT be rolled back.
 
 Too many records were returned.
 
+=item NO_RESOURCES: model
+
+Insufficient resources to satisfy your request.
+
 =back
 
 =cut
@@ -189,6 +193,11 @@ __PACKAGE__->compile(
 	14,
 	'too many',
 	'the request returned too much data or too many records',
+    ],
+    NO_RESOURCES => [
+	15,
+	'no resources',
+	'insufficient resources to satisfy the request',
     ],
 );
 
