@@ -86,8 +86,8 @@ sub new {
 	client_addr => $r->connection->remote_ip,
 	is_secure => $ENV{HTTPS} || _is_https_port($r) ? 1 : 0,
     });
-    Bivio::Type::UserAgent->put_on_request(
-	$r->header_in('user-agent') || '', $self);
+    Bivio::Type::UserAgent->from_header($r->header_in('user-agent') || '')
+        ->put_on_request($self, 1);
 
     # Cookie parsed first, so log code works properly.
     # We must put the cookie now, because it may be used below.
