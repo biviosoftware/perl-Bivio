@@ -141,7 +141,9 @@ sub render {
     $b .= '<td width="100%">&nbsp;</td>'."\n";
 
     foreach my $v (@{$fields->{values}}) {
-	next unless $source->task_ok($v->get('button_task_id'));
+	my($task_id, $control) = $v->get('button_task_id', 'button_control');
+	next unless $source->task_ok($task_id);
+	next if $control && !$source->get_widget_value(@$control);
 	$b .= '<td nowrap>';
 	$v->render($source, \$b);
 	$b .= "</td>\n";
