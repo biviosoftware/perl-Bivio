@@ -614,9 +614,9 @@ sub initialize {
 
     my($prefix) = "\n<table border=";
     $prefix .= $self->get_or_default('border', 0);
-    $prefix .= ' cellspacing='.$self->get_or_default('cellspacing', 0);
-    $prefix .= ' cellpadding='.$self->get_or_default('cellpadding', 5);
-    $prefix .= ' id='.$self->get('id')
+    $prefix .= ' cellspacing=' . $self->get_or_default('cellspacing', 0);
+    $prefix .= ' cellpadding=' . $self->get_or_default('cellpadding', 5);
+    $prefix .= ' id="' . Bivio::HTML->escape_attr_value($self->get('id')) . '"'
 	if $self->unsafe_get('id');
     $fields->{table_prefix} = $prefix;
 
