@@ -115,7 +115,7 @@ use Carp ();
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -136,7 +136,7 @@ Creates a new Image widget using I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -155,7 +155,7 @@ src, and have_size.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{prefix});
 
     # Both must be defined
@@ -247,7 +247,7 @@ Render the image.
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
     $$buffer .= ' alt="'.Bivio::HTML->escape_attr_value(

@@ -36,7 +36,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_FRAC_REGEX) = Bivio::UI::PDF::Regex::FRAC_REGEX();
 
@@ -55,7 +55,7 @@ my($_FRAC_REGEX) = Bivio::UI::PDF::Regex::FRAC_REGEX();
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, $output_field, $get_widget_value_array_ref, $digit_count) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'output_field' => $output_field,
 	'get_widget_value_array_ref' => $get_widget_value_array_ref,
 	'digit_count' => $digit_count
@@ -77,7 +77,7 @@ sub new {
 
 sub add_value {
     my($self, $req, $output_values_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($input_value)
 	    = $req->get_widget_value($fields->{get_widget_value_array_ref});
     unless (defined($input_value)) {
@@ -140,7 +140,7 @@ sub format_frac {
 
 sub get_pdf_field_names {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'output_field'});
 }
 

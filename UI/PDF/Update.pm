@@ -30,7 +30,7 @@ by adding more text that describe the changes to the original.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -47,7 +47,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -65,7 +65,7 @@ sub new {
 
 sub get_prev_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": abstract method.\n");
     return;
 }
@@ -80,7 +80,7 @@ sub get_prev_offset {
 
 sub get_xref_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": abstract method.\n");
     return;
 }

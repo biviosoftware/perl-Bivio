@@ -56,7 +56,7 @@ use Bivio::UI::PDF::ParsedUpdate;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_EOL_REGEX) = Bivio::UI::PDF::Regex::EOL_REGEX();
 
@@ -75,8 +75,8 @@ my($_EOL_REGEX) = Bivio::UI::PDF::Regex::EOL_REGEX();
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
     my(undef, $arg1) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $self->{$_PACKAGE} = {
+    my($fields) = $self->[$_IDI];
+    $self->[$_IDI] = {
 	# Keep a reference to the original Pdf file text.
 	'pdf_text_ref' => undef,
 	# The Pdf literature doesn't seem to have a name for the pieces of
@@ -117,7 +117,7 @@ sub new {
 
 sub add_update {
     my($self, $update_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{'updates_ref'}}, $update_ref);
     return;
 }
@@ -132,7 +132,7 @@ sub add_update {
 
 sub emit {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($emit_ref) = Bivio::UI::PDF::Emit->new();
     local($_);
 
@@ -153,7 +153,7 @@ sub emit {
 
 sub get_field_ref_by_name {
     my($self, $field_name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(${$fields->{'field_refs_ref'}}{$field_name});
 }
 
@@ -167,7 +167,7 @@ Returns the value of the first update's info value.
 
 sub get_info_pointer {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'sorted_updates_ref'}->[0]->get_info_pointer());
 }
 
@@ -181,7 +181,7 @@ sub get_info_pointer {
 
 sub get_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     # Add up the lengths of all the top level updates.
@@ -202,7 +202,7 @@ sub get_length {
 
 sub get_obj_ref_by_number {
     my($self, $field_number) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(${$fields->{'object_refs_ref'}}{$field_number});
 }
 
@@ -216,7 +216,7 @@ sub get_obj_ref_by_number {
 
 sub get_pdf_text_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'pdf_text_ref'});
 }
 
@@ -230,7 +230,7 @@ sub get_pdf_text_ref {
 
 sub get_root_pointer {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'sorted_updates_ref'}->[0]->get_root_pointer());
 }
 
@@ -244,7 +244,7 @@ sub get_root_pointer {
 
 sub get_size {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'sorted_updates_ref'}->[0]->get_size());
 }
 
@@ -258,7 +258,7 @@ sub get_size {
 
 sub get_xref_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
 #TODO: This is a hack.  Linearized documents have a dummy xref section in the
 # first update, so use the secont.
@@ -281,7 +281,7 @@ sub get_xref_offset {
 
 sub parse_complete_pdf {
     my($self, $arg1) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($text_ref);
     my(@lines);
     local($_);
@@ -429,7 +429,7 @@ sub parse_complete_pdf {
 
 sub print_stuff {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     print("Root pointer is \"", $self->get_root_pointer()->get_value(), "\"\n");
     print("Size \"", $self->get_size()->get_value(), "\"\n");
@@ -448,7 +448,7 @@ sub print_stuff {
 
 sub set_base_root_pointer {
     my($self, $pointer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     ${$fields->{'updates_ref'}}[0]->set_root_pointer($pointer);
     return;
 }
@@ -463,7 +463,7 @@ sub set_base_root_pointer {
 
 sub set_base_xref_offset {
     my($self, $offset) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     ${$fields->{'updates_ref'}}[0]->set_xref_offset($offset);
     return;
 }
@@ -476,7 +476,7 @@ sub set_base_xref_offset {
 #
 sub _find_next_oldest_update {
     my($self, $update_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     map {
@@ -497,7 +497,7 @@ sub _find_next_oldest_update {
 #
 sub _find_no_prev {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     map {
@@ -516,7 +516,7 @@ sub _find_no_prev {
 #
 sub _get_dummy_startxref_update {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     map {
@@ -531,7 +531,7 @@ sub _get_dummy_startxref_update {
 
 sub _sort_updates {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
 #    # First find the update with no prev offset.  There should be only one, and
 #    # it should be the first update.

@@ -32,7 +32,7 @@ C<Bivio::t::Testee> used only for testing L<Bivio::Test|Bivio::Test>.
 use Bivio::DieCode;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -50,7 +50,7 @@ Instance created with I<default_return>
 sub new {
     my($proto, $default_return) = @_;
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	default_return => $default_return,
     };
     return $self;
@@ -86,7 +86,7 @@ If no instance, returns undef.
 sub ok {
     my($self) = shift;
     return @_ if int(@_) >= 1;
-    return ref($self) ? $self->{$_PACKAGE}->{default_return} : undef;
+    return ref($self) ? $self->[$_IDI]->{default_return} : undef;
 }
 
 #=PRIVATE METHODS

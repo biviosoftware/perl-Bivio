@@ -34,7 +34,7 @@ C<Bivio::UI::PDF::OpaqueUpdate>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -52,7 +52,7 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = Bivio::UI::PDF::Update::new(@_);
     my(undef, $text_ref, $root_ref, $size_ref, $xref_ref) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'text_ref' => $text_ref,
 	'root_ref' => $root_ref,
 	'size_ref' => $size_ref,
@@ -75,7 +75,7 @@ sub new {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $emit_ref->append($fields->{'text_ref'});
     return;
 }
@@ -90,7 +90,7 @@ sub emit {
 
 sub get_root_pointer {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'root_ref'});
 }
 
@@ -104,7 +104,7 @@ sub get_root_pointer {
 
 sub get_size {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'size_ref'});
 }
 
@@ -118,7 +118,7 @@ sub get_size {
 
 sub get_xref_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'xref_ref'});
 }
 

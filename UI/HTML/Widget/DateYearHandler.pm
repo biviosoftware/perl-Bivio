@@ -67,7 +67,6 @@ sub JAVASCRIPT_FUNCTION_NAME {
 use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 
 // Adds the current four digit year to the source date if

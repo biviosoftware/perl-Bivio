@@ -44,7 +44,7 @@ sub MAX_EMIT_LINE_LENGTH {
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_MAX_EMIT_LINE_LENGTH) = MAX_EMIT_LINE_LENGTH();
 
@@ -62,7 +62,7 @@ my($_MAX_EMIT_LINE_LENGTH) = MAX_EMIT_LINE_LENGTH();
 
 sub new {
     my($self) = Bivio::UI::PDF::PdfObj::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -80,7 +80,7 @@ sub new {
 
 sub extract_obj {
     my($self, $line_array_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": Abstract object\n");
     return;
 }
@@ -95,7 +95,7 @@ sub extract_obj {
 
 sub get_max_line {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($_MAX_EMIT_LINE_LENGTH);
 }
 
@@ -109,7 +109,7 @@ sub get_max_line {
 
 sub is_dictionary {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(0);
 }
 
@@ -123,7 +123,7 @@ sub is_dictionary {
 
 sub is_number {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(0);
 }
 
@@ -137,7 +137,7 @@ sub is_number {
 
 sub is_stream {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(0);
 }
 

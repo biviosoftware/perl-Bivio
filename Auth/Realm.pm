@@ -78,7 +78,7 @@ use Bivio::Auth::Support;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
@@ -139,7 +139,7 @@ sub new {
 
     # Instantiate and initialize with/out owner
     my($self) = &Bivio::Collection::Attributes::new($proto);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     unless ($owner) {
 	# If there is no owner, then permissions already retrieved from
 	# database.  Set "id" to realm_type.
@@ -202,7 +202,7 @@ sub can_user_execute_task {
     }
 
     # Load the permissions and cache
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{$auth_role} = Bivio::Auth::Support->load_permissions(
 	    $self, $auth_role, $req)
 	    unless defined($fields->{$auth_role});

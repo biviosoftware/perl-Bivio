@@ -105,7 +105,6 @@ use Pod::Html ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_HTML_ROOT_TAG) = '/SOME/UNIQUE/PATH/TO/FIND';
 
 =head1 METHODS

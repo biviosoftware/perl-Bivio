@@ -32,7 +32,6 @@ L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

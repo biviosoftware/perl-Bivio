@@ -43,7 +43,6 @@ class, defined by the ClassLoader.delegates configuration.
 use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my(@_HANDLERS);
 
 

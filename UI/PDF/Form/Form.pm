@@ -54,7 +54,7 @@ use Bivio::UI::PDF::Strings;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_EOL_REGEX) = Bivio::UI::PDF::Regex::EOL_REGEX();
 my($_NUMBER_REGEX) = Bivio::UI::PDF::Regex::NUMBER_REGEX();
@@ -83,7 +83,7 @@ my($_XLATOR_SET) = Bivio::UI::PDF::Strings::XLATOR_SET();
 
 sub new {
     my($self) = Bivio::UI::PDF::Pdf::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -101,7 +101,7 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Add an OpaqueUpdate that contains the base Pdf text to the Pdf object.
     my($base_update_ref) = $self->get_base_update_ref();

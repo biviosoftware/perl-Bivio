@@ -30,7 +30,6 @@ use Bivio::UI::PDF::Form::F1065::Y1999::Form;
 use Bivio::UI::PDF::Form::F1065::Y2000::Form;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -62,7 +62,7 @@ etc.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -84,7 +84,7 @@ Creates with named attributes.
 
 sub new {
     my($self) = Bivio::UI::Widget::ControlBase::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -102,7 +102,7 @@ Render I<control_on_value>.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->render_value('control_on_render', $fields->{on}, $source, $buffer);
     return;
 }
@@ -117,7 +117,7 @@ Initializes children.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{on});
     $fields->{on} = $self->initialize_attr('control_on_value');
     # ControlBase doesn't require control, but we do.  Result is stored

@@ -63,7 +63,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SEPARATION) = 10;
 
 =head1 FACTORIES
@@ -84,7 +84,7 @@ Creates a new StandardSubmit widget from I<attributes>.
 
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::Grid::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -102,7 +102,7 @@ Initialize grid.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{initialized};
     $fields->{initialized} = 1;
 

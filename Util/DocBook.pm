@@ -62,7 +62,6 @@ use XML::Parser;
 use Bivio::HTML;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 # Simple mapping of tags to values
 my(%_XML_TO_HTML) = (
     # 0 means do nothing.

@@ -32,7 +32,7 @@ C<Bivio::Math::EMA> is an exponential moving average.
 use Bivio::Type::Integer;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_LENGTH_RANGE) = Bivio::Type::Integer->new(
     1, Bivio::Type::Integer->get_max);
 
@@ -52,7 +52,7 @@ sub new {
     my($proto, $length) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     $length = $_LENGTH_RANGE->from_literal_or_die($length);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	length => $length,
 	alpha => 2.0 / ( $length + 1.0 ),
 	average => undef,
@@ -74,7 +74,7 @@ Adds I<value> to moving average and returns new average.
 
 sub compute {
     my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{average} = $value unless defined($fields->{average});
     return $fields->{average}
 	+= $fields->{alpha} * ($value - $fields->{average});

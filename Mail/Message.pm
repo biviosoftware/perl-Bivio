@@ -41,7 +41,7 @@ use MIME::Parser ();
 use Time::Local ();
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_SPECIAL_CHARS) = Bivio::Mail::RFC822::SPECIALS();
@@ -117,12 +117,12 @@ sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
     my(undef, $in) = @_;
     my($parser) = MIME::Parser->new(output_to_core => 'ALL');
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
         'entity' => $parser->parse_data(defined($in) ? $in : ''),
         'rfc822' => $in,
     };
     Bivio::Die->die('MIME parser failed to parse message')
-                unless defined($self->{$_PACKAGE}->{entity});
+                unless defined($self->[$_IDI]->{entity});
 
     # If a new message, do the boilerplate setup here
     unless (defined($in)) {
@@ -148,7 +148,7 @@ are part of the "envelope" associated with the message.
 
 sub add_recipients {
     my($self, $r) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{recipients}}, ref($r) eq 'ARRAY' ? @$r : $r);
     return;
 }
@@ -163,7 +163,7 @@ Return the current message text (header & body) as string
 
 sub as_string {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{entity}->as_string;
 }
 
@@ -227,7 +227,7 @@ Note: This might not represent the current message in case
 
 sub get_rfc822 {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{rfc822};
 }
 
@@ -241,7 +241,7 @@ Returns the MIME entity
 
 sub get_entity {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{entity};
 }
 
@@ -255,7 +255,7 @@ Returns the header
 
 sub get_head {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{entity}->head;
 }
 
@@ -269,7 +269,7 @@ Returns the body parts of this message.
 
 sub get_body {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{entity}->bodyhandle;
 }
 
@@ -350,7 +350,7 @@ L<add_recipients|"add_recipients">.
 
 sub get_recipients {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return @{$fields->{recipients}};
 }
 
@@ -368,7 +368,7 @@ or (if In-Reply-To does not exist) the last (most recent) id in the
 
 sub get_references {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($refs, @refs);
     if (defined($refs = $fields->{entity}->head->get('References'))) {
         while ($refs =~ s/<([^<>]+)>//) {
@@ -420,7 +420,7 @@ Return Message-Id
 
 sub get_message_id {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($id);
     if (defined($id = $fields->{entity}->head->get('Message-Id'))) {
         $id =~ s/<([^<>]+)>/$1/;
@@ -490,7 +490,7 @@ If I<req> is provided, a X-Bivio-Client-IP header field will be added.
 
 sub send {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     defined(@{$fields->{recipients}}) || die("no recipients\n");
 
     # Always have header to do loop counting
@@ -535,7 +535,7 @@ bounces are sent.
 
 sub set_envelope_from {
     my($self, $from) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{env_from} = $from;
     return;
 }

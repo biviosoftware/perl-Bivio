@@ -32,7 +32,6 @@ C<Bivio::MIME::Type> maps mime types from file extensions.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 # Lifted from:
 ##---------------------------------------------------------------------------##
 ##  File:

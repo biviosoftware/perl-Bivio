@@ -53,7 +53,6 @@ use Bivio::UI::HTML::Format::Amount;
 use Bivio::UI::HTML::Widget::AmountCell;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

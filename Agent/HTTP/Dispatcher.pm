@@ -55,7 +55,6 @@ use Bivio::SQL::Connection;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_SELF);
 __PACKAGE__->initialize;
 

@@ -86,7 +86,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -107,7 +107,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 
 sub new {
     my($self) = Bivio::UI::Widget::ControlBase::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -125,7 +125,7 @@ Render the link.
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
     $$buffer .= ' href="'.$source->get_widget_value(@{$fields->{href}}).'"'
@@ -147,7 +147,7 @@ It is fully initialized after first render.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{value};
 
     # href and value both must be defined

@@ -43,7 +43,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
 
@@ -105,7 +105,7 @@ sub new {
     # is an array_ref for efficiency
     my($self) = Bivio::Collection::Attributes::new($class,
 	    {@{$ci->{properties}}});
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	class_info => $ci,
         request => $req,
     };
@@ -130,13 +130,13 @@ be an instance, not a class name.  I<config> is ignored.
 
 sub new_anonymous {
     my($proto, $config, $req) = @_;
-    my($ci) = ref($proto) ? $proto->{$_PACKAGE}->{class_info}
+    my($ci) = ref($proto) ? $proto->[$_IDI]->{class_info}
 	    : _initialize_class_info($proto, $config);
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency.
     my($self) = Bivio::Collection::Attributes::new($proto,
 	    {@{$ci->{properties}}});
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	class_info => $ci,
 	# Never save the request for first time anonymous classes
         request => ref($proto) ? $req : undef,
@@ -159,7 +159,7 @@ Pretty prints an identifier for this model.
 
 sub as_string {
     my($self) = @_;
-    my($ci) = $self->{$_PACKAGE}->{class_info};
+    my($ci) = $self->[$_IDI]->{class_info};
     # All primary keys must be defined or just return ref($self).
     return ref($self) . '(' . join(',', map {
 	return ref($self) unless defined($_);
@@ -176,7 +176,7 @@ Throws an exception if this is the singleton instance.
 =cut
 
 sub assert_not_singleton {
-    my($fields) = shift->{$_PACKAGE};
+    my($fields) = shift->[$_IDI];
     return unless $fields->{is_singleton};
     Carp::croak("can't create, update, read, or delete singleton instance");
 }
@@ -282,7 +282,7 @@ Returns I<attr> for I<field>.
 =cut
 
 sub get_field_info {
-    return shift->{$_PACKAGE}->{class_info}->{sql_support}
+    return shift->[$_IDI]->{class_info}->{sql_support}
 	    ->get_column_info(@_);
 }
 
@@ -312,7 +312,7 @@ B<Do not modify references returned by this method.>
 =cut
 
 sub get_info {
-    return shift->{$_PACKAGE}->{class_info}->{sql_support}->get(shift);
+    return shift->[$_IDI]->{class_info}->{sql_support}->get(shift);
 }
 
 =for html <a name="get_model"></a>
@@ -414,7 +414,7 @@ Does the model have these fields?
 =cut
 
 sub has_fields {
-    return shift->{$_PACKAGE}->{class_info}->{sql_support}
+    return shift->[$_IDI]->{class_info}->{sql_support}
 	    ->has_columns(@_);
 }
 
@@ -429,7 +429,7 @@ when a reload occurs.
 
 sub internal_clear_model_cache {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     delete($fields->{models});
     return;
 }
@@ -445,7 +445,7 @@ only if this is not the singleton.  If it is the singleton, dies.
 
 sub internal_get_sql_support {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->assert_not_singleton if $fields->{is_singleton};
     return $fields->{class_info}->{sql_support};
 }
@@ -567,7 +567,7 @@ L<Bivio::Biz::PropertyModel::is_loaded|Bivio::Biz::PropertyModel/"is_loaded">.
 
 sub unsafe_get_model {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (defined($fields->{models})) {
 	return $fields->{models}->{$name} if $fields->{models}->{$name};
     }
@@ -595,7 +595,7 @@ Otherwise, returns the current request, if any.
 sub unsafe_get_request {
     my($self) = @_;
     my($req);
-    $req = $self->{$_PACKAGE}->{request} if ref($self);
+    $req = $self->[$_IDI]->{request} if ref($self);
     # DON'T SET the request for future calls, because this may
     # be an anonymous model or a singleton.
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
@@ -690,7 +690,7 @@ sub _initialize_class_info {
     # $_CLASS_INFO{$class} is sentinel to stop recursion
     $_CLASS_INFO{$class} = $ci;
     $ci->{singleton} = $class->new;
-    $ci->{singleton}->{$_PACKAGE}->{is_singleton} = 1;
+    $ci->{singleton}->[$_IDI]->{is_singleton} = 1;
     return;
 }
 

@@ -50,7 +50,6 @@ use Bivio::UI::Widget;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 

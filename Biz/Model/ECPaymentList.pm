@@ -33,7 +33,6 @@ C<Bivio::Biz::Model::ECPaymentList>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -37,7 +37,6 @@ use Bivio::Type::Date;
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

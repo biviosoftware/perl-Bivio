@@ -37,7 +37,6 @@ C<Bivio::Biz::Model::LocationBase> base class for Address, Email, etc.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

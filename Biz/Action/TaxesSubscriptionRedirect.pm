@@ -38,7 +38,6 @@ subscription page if taxes aren't enabled.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

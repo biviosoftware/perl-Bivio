@@ -44,7 +44,6 @@ L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -33,7 +33,7 @@ C<Bivio::UI::PDF::ObjRef>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -50,7 +50,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'obj_number' => undef,
 	'obj_generation' => undef
     };
@@ -71,9 +71,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::ObjRef->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'obj_number'} = $fields->{'obj_number'};
     $clone_fields->{'obj_generation'} = $fields->{'obj_generation'};
     return($clone);

@@ -69,7 +69,7 @@ L<get_widget_value|"get_widget_value"> on the rendering source.
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -85,7 +85,7 @@ Creates a new Form Button widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -103,7 +103,7 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
@@ -126,7 +126,7 @@ Render the input field.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};

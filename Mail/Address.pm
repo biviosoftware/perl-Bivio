@@ -33,7 +33,6 @@ use Bivio::Die;
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 # Copy constant strings into locals, can't use subroutine calls in regexps
 my($ATOM_ONLY_PHRASE) = Bivio::Mail::RFC822->ATOM_ONLY_PHRASE;
 my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;

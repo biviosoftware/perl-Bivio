@@ -44,7 +44,6 @@ for a subscription. The current choices are:
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
     NONE => [

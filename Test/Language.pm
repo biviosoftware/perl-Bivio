@@ -57,7 +57,7 @@ name of the script
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -75,7 +75,7 @@ Instantiates the test language class.
 sub new {
     my($proto) = @_;
     my($self) = Bivio::Collection::Attributes::new($proto);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -90,7 +90,7 @@ I<new_args>.
 
 sub setup {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return;
 }
 
@@ -109,7 +109,7 @@ You should call this like.
 
 sub cleanup {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return;
 }
 

@@ -39,7 +39,6 @@ text.
 use Bivio::UI::View;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -149,7 +149,7 @@ use Bivio::SQL::FormSupport;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::Agent::HTTP::Cookie->register(__PACKAGE__);
 
 =head1 FACTORIES
@@ -167,7 +167,7 @@ Create a new FormModel associated with the request.
 sub new {
     my($self) = &Bivio::Biz::Model::new(@_);
     # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	empty_properties => $self->internal_get,
 	stay_on_page => 0,
     };
@@ -188,7 +188,7 @@ Remove any errors on fields on the form.
 
 sub clear_errors {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{errors} = undef;
     return;
 }
@@ -347,7 +347,7 @@ after L<execute|"execute"> has been invoked.
 
 sub get_button_submitted {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{button_submitted};
 }
 
@@ -367,12 +367,12 @@ the size.
 
 sub get_context_from_request {
     my(undef, $req, $no_form) = @_;
-    my($model) = $req->unsafe_get('form_model');
+    my($self) = $req->unsafe_get('form_model');
 
     # If there is a model, make sure not redirecting
     my($form, $context);
-    if ($model) {
-	my($fields) = $model->{$_PACKAGE};
+    if ($self) {
+	my($fields) = $self->[$_IDI];
 	if ($fields->{redirecting}) {
 	    # Just in case, clear the sentinel
 	    $fields->{redirecting} = 0;
@@ -384,12 +384,12 @@ sub get_context_from_request {
 	    return $c;
 	}
 #TODO: This is horribly inefficient, I think.
-	$form = $model->internal_get_field_values;
-	$context = $model->{$_PACKAGE}->{context};
+	$form = $self->internal_get_field_values;
+	$context = $self->[$_IDI]->{context};
 	_trace('from model: ', $form) if $_TRACE;
     }
-    elsif ($model = $req->get('task')->get('form_model')) {
-	$model = $model->get_instance;
+    elsif ($self = $req->get('task')->get('form_model')) {
+	$self = $self->get_instance;
 	$form = $req->unsafe_get('form');
 	_trace('from request: ', $form) if $_TRACE;
     }
@@ -399,7 +399,7 @@ sub get_context_from_request {
     # Construct a new context from existing state in request.
     # This code is coupled with FormContext.
     my($res) = {
-	form_model => ref($model),
+	form_model => ref($self),
 	form => $form,
 	form_context => $context,
 	query => $req->unsafe_get('query'),
@@ -411,18 +411,18 @@ sub get_context_from_request {
 
     # Fix up file fields if any
     my($ff);
-    if ($form && $model
-	    && ($ff = $model->internal_get_file_field_names)) {
+    if ($form && $self
+	    && ($ff = $self->internal_get_file_field_names)) {
 	# Need to copy, because we don't want to trash existing form.
 	my($f) = {%$form};
 
 	# Iterate over file fields
 	foreach my $n (@$ff) {
-	    my($fn) = $model->get_field_name_for_html($n);
+	    my($fn) = $self->get_field_name_for_html($n);
 	    # Converts to just the file name.  We'd never get this back,
 	    # but we can stuff it into the form.  Widget::File
 	    # knows how to handle this.
-	    $f->{$fn} = $model->get_field_info($n, 'type')
+	    $f->{$fn} = $self->get_field_info($n, 'type')
 		    ->to_literal($f->{$fn});
 	    _trace($n, ': set value=', $f->{$fn}) if $_TRACE;
 	}
@@ -446,7 +446,7 @@ B<DO NOT MODIFY>.
 =cut
 
 sub get_errors {
-    return shift->{$_PACKAGE}->{errors};
+    return shift->[$_IDI]->{errors};
 }
 
 =for html <a name="get_field_as_html"></a>
@@ -462,7 +462,7 @@ Always returns a valid string, but may be undef.
 
 sub get_field_as_html {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_html($value)
 	    if defined($value);
@@ -484,7 +484,7 @@ Always returns a valid string, but may be the empty string.
 
 sub get_field_as_literal {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_literal($value)
 	    if defined($value);
@@ -503,7 +503,7 @@ Returns undef if field has no error associated with it.
 
 sub get_field_error {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return undef unless $fields->{errors};
     return $fields->{errors}->{$name};
 }
@@ -519,7 +519,7 @@ odd element is value).
 
 sub get_hidden_field_values {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($sql_support) = $self->internal_get_sql_support();
 #TODO: make a constant
     my(@res);
@@ -599,7 +599,7 @@ field I<name>.
 
 sub has_context_field {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return 0 unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
@@ -620,7 +620,7 @@ Returns true if any of the form fields are in error.
 =cut
 
 sub in_error {
-    return shift->{$_PACKAGE}->{errors} ? 1 : 0;
+    return shift->[$_IDI]->{errors} ? 1 : 0;
 }
 
 =for html <a name="internal_clear_error"></a>
@@ -635,7 +635,7 @@ If I<property> is null, clears the "form" error.
 
 sub internal_clear_error {
     my($self, $property) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return unless $fields->{errors};
     $property = '_' unless $property;
     delete($fields->{errors}->{$property});
@@ -653,7 +653,7 @@ Clears I<property>'s literal value.
 
 sub internal_clear_literal {
     my($self, $property) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     _put_literal($fields, $self->get_field_name_for_html($property), '');
     return;
 }
@@ -683,7 +683,7 @@ Returns the form as literals
 
 sub internal_get_field_values {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($properties) = $self->internal_get;
     my($res) = {
 	VERSION_FIELD() => $self->get_info('version'),
@@ -736,7 +736,7 @@ Returns the literals hash_ref.
 =cut
 
 sub internal_get_literals {
-    return shift->{$_PACKAGE}->{literals};
+    return shift->[$_IDI]->{literals};
 }
 
 =for html <a name="internal_get_visible_field_names"></a>
@@ -871,7 +871,7 @@ a name thereof.
 sub internal_put_error {
     my($self, $property, $error) = @_;
     Carp::croak('too many args, literal deprecated') if int(@_) > 3;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $error = Bivio::TypeError->from_any($error);
     $property = '_' unless $property;
     _trace($property, ': ', $error->as_string) if $_TRACE;
@@ -922,7 +922,7 @@ buttons which need to perform calculations on the current data.
 
 sub internal_stay_on_page {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{stay_on_page} = 1;
     return;
 }
@@ -988,7 +988,7 @@ Does the work for L<execute|"execute"> after execute creates a I<self>.
 
 sub process {
     my($self, $req, $values) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Save in request
     $self->put_on_request;
@@ -1114,7 +1114,7 @@ sub put_context_fields {
     # Allow zero fields (see _redirect)
     Carp::croak("must be an even number of parameters")
 		unless int(@_) % 2 == 0;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('form does not require_context') unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
@@ -1155,7 +1155,7 @@ Valid attributes are:
 
 sub unsafe_get_context {
     my($self, $attr) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Nothing in context or form doesn't support context
     return undef unless $fields->{context};
@@ -1181,7 +1181,7 @@ each time.
 
 sub unsafe_get_context_field {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('form does not require_context') unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->{form_model};
@@ -1231,7 +1231,7 @@ changes on errors.
 
 sub validate_and_execute_ok {
     my($self, $form_button) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
@@ -1427,7 +1427,7 @@ sub _get_literal {
 #
 sub _initial_context {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return unless $fields->{require_context};
 
     my($c) = $req->unsafe_get('form_context');
@@ -1445,7 +1445,7 @@ sub _initial_context {
 #
 sub _parse {
     my($self, $form) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # Clear any incoming errors
     delete($fields->{errors});
     my($sql_support) = $self->internal_get_sql_support;
@@ -1481,7 +1481,7 @@ sub _parse {
 #
 sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
 	    : 'internal_get_visible_field_names';
     foreach my $n (@{$self->$method()}) {
@@ -1567,7 +1567,7 @@ sub _parse_cols {
 #
 sub _parse_context {
     my($self, $form) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if ($form->{CONTEXT_FIELD()}) {
 	# If there is an incoming context, must be syntactically valid.
@@ -1645,7 +1645,7 @@ sub _put_file_field_reset_errors {
     my($file_fields) = $self->internal_get_file_field_names;
     return unless $file_fields;
 
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($properties) = $self->internal_get;
     foreach my $n (@$file_fields) {
 	# Don't replace an existing error
@@ -1680,7 +1680,7 @@ sub _put_literal {
 #
 sub _redirect {
     my($self, $which) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
 
     # Ensure this form_model is seen as the redirect model

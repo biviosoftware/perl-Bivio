@@ -41,7 +41,6 @@ use Bivio::TypeError;
 use Bivio::Type::Amount;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -64,7 +64,6 @@ use Bivio::TypeError;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_ERR_TO_DIE) = {
     # ORA-00060: deadlock detected
     60 => {

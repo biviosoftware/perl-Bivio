@@ -47,7 +47,6 @@ use Bivio::Type::Secret;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 # This field is used only locally.  See header_out()
 my($_MODIFIED_FIELD) = '_modified';
 # This field should always be returned with the cookie

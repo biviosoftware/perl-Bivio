@@ -50,7 +50,7 @@ use Bivio::UI::PDF::Form::TaxId1Xlator;
 use Bivio::UI::PDF::Form::TaxId2Xlator;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 # NOTE: The button fields in this form need the value 'On' instead of the more
 # standard 'Yes' to turn them on.
@@ -368,7 +368,7 @@ my(@_XLATORS) = (
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::F1065sk1::XlatorSet::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -399,7 +399,7 @@ sub get_xlators_ref {
 
 sub set_up {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Load the user's name on the request.
     my($realm_user) = $req->get('Bivio::Biz::Model::RealmUser');

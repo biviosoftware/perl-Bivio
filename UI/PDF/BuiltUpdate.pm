@@ -34,7 +34,7 @@ C<Bivio::UI::PDF::BuiltUpdate>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -51,7 +51,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::ClearUpdate::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -69,7 +69,7 @@ sub new {
 
 sub add_body_obj {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->get_body_ref()->add_obj($obj_ref);
     return;
 }
@@ -84,7 +84,7 @@ sub add_body_obj {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->get_body_ref()->emit($emit_ref);
     $self->_get_xref_ref()->emit($emit_ref);
 
@@ -108,7 +108,7 @@ sub emit {
 
 sub set_prev_offset {
     my($self, $offset_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->_get_trailer_ref()->set_prev_offset($offset_ref);
     return;
 }
@@ -123,7 +123,7 @@ sub set_prev_offset {
 
 sub set_root_pointer {
     my($self, $root_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->_get_trailer_ref()->set_root_pointer($root_ref);
     return;
 }
@@ -138,7 +138,7 @@ sub set_root_pointer {
 
 sub set_size {
     my($self, $size_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
      $self->_get_trailer_ref()->set_size($size_ref);
    return;
 }

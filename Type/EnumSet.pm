@@ -38,7 +38,6 @@ by an Enum.  This class must be subclassed.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my(%_INFO) = ();
 
 =head1 METHODS

@@ -68,7 +68,7 @@ If zero (0), renders nothing.
 use Bivio::Die;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -92,7 +92,7 @@ Creates a new Director widget with named attributes.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -126,7 +126,7 @@ Copies the attributes to local fields.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{control});
     ($fields->{control}, $fields->{values})
 	    = $self->get('control', 'values');
@@ -198,7 +198,7 @@ sub render {
 #
 sub _select {
     my($self, $source) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($ctl) = $source->get_widget_value(@{$fields->{control}});
     if (defined($ctl)) {
 	my($values) = $fields->{values};

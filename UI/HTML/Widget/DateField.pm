@@ -70,7 +70,7 @@ use Bivio::UI::HTML::Format::DateTime;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_MODE_INT) = Bivio::UI::DateTimeMode->DATE->as_int;
 my(@_ATTRS) = qw(
     allow_undef
@@ -93,7 +93,7 @@ Creates a Date widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -124,7 +124,7 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
@@ -149,7 +149,7 @@ Draws the date field on the specified buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};

@@ -51,7 +51,7 @@ use Bivio::UI::PDF::Form::TaxId1Xlator;
 use Bivio::UI::PDF::Form::TaxId2Xlator;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::StringXlator->new(
@@ -606,7 +606,7 @@ my(@_XLATORS) = (
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::F1065::XlatorSet::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -637,7 +637,7 @@ sub get_xlators_ref {
 
 sub set_up {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Load the club's address onto the request.
     my($club_address) = Bivio::Societas::Biz::Model::Address->new($req);

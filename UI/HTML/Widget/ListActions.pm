@@ -76,7 +76,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -93,7 +93,7 @@ Creates a new ListActions widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -111,7 +111,7 @@ Initializes "values" in field.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{values});
     $fields->{values} = [];
     my($target) = $_VS->vs_link_target_as_html($self);
@@ -140,7 +140,7 @@ Renders the list, skipping those tasks that are invalid.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($values) = $fields->{values};
     my($req) = $source->get_request;
 

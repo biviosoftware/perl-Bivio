@@ -40,7 +40,7 @@ use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 my($_INSTRUMENT_FEE_LIST) = Bivio::Biz::ListModel->new_anonymous({
     version => 1,
@@ -88,7 +88,7 @@ Creates a new portfolio deduction list.
 
 sub new {
     my($self) = Bivio::Biz::ListModel::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -108,7 +108,7 @@ a separate category on tax forms.
 sub execute_load_all_no_margin {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $fields->{exclude_margin_interest} = 1;
     $self->load_all;
@@ -237,7 +237,7 @@ Adds dynamic start/end dates to the SQL parameters.
 
 sub internal_pre_load {
     my($self, $query, $support, $params) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($end_date) = $self->get_request->get('report_date');
 
     # get tax year start

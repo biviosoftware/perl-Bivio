@@ -33,7 +33,7 @@ C<Bivio::UI::PDF::Xref>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_TRAILER_REGEX) = Bivio::UI::PDF::Regex::TRAILER_REGEX();
 
@@ -51,7 +51,7 @@ my($_TRAILER_REGEX) = Bivio::UI::PDF::Regex::TRAILER_REGEX();
 
 sub new {
     my($self, $header_ref, $body_ref) = Bivio::UI::PDF::Section::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'header_ref' => $header_ref,
 	'body_ref' => $body_ref,
 	# An array of references to the indirect objects in this update.
@@ -74,7 +74,7 @@ sub new {
 
 sub add_obj_ref {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{'obj_refs'}}, $obj_ref);
     return;
 }
@@ -89,7 +89,7 @@ sub add_obj_ref {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     # Sort the objects in order of object number.  The xref has subsections of
@@ -143,7 +143,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
 #TODO:  Just skip over the xref section for now.
     while (1) {

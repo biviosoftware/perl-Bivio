@@ -37,7 +37,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_ARRAY_END_REGEX) = Bivio::UI::PDF::Regex::ARRAY_END_REGEX();
 my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
@@ -56,7 +56,7 @@ my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'value_refs' => []
     };
     return $self;
@@ -76,9 +76,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::Array->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     local($_);
 
     map {
@@ -98,7 +98,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     $emit_ref->append_no_new_lines('[ ');
@@ -126,7 +126,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($length) = 4;	# 2 for the initial '[ ' and 1 for the final ']'.
     local($_);
 
@@ -147,7 +147,7 @@ sub emit_length {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # The current line nas the '[' on it.  It may or may not have array items
     # in it, too.  Get the text of the line, remove the '[', remove the current
@@ -193,7 +193,7 @@ sub extract {
 
 sub get_array_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'value_refs'});
 }
 

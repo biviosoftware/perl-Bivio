@@ -39,7 +39,7 @@ use Bivio::Type::DateTime;
 use Bivio::Type::IRR;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_M) = 'Bivio::Type::Amount';
 
 =head1 METHODS
@@ -56,7 +56,7 @@ Returns the IRR for the member's cash flow.
 
 sub get_irr {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{irr};
 }
 
@@ -144,7 +144,7 @@ Returns rows.
 
 sub internal_load_rows {
     my($self, @args) = @_;
-    my($fields) = $self->{$_PACKAGE} = {
+    my($fields) = $self->[$_IDI] = {
 	irr => Bivio::Type::IRR::NOT_APPLICABLE(),
     };
     my($req) = $self->get_request;

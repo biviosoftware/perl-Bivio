@@ -41,7 +41,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -57,7 +57,7 @@ Creates a reply in an error state with the 'text/plain' output type.
 
 sub new {
     my($self) = &Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
         'output_type' => 'text/plain',
         'die_code' => Bivio::DieCode::DIE(),
     };
@@ -78,7 +78,7 @@ Returns the reply format type.
 
 sub get_output_type {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{output_type};
 }
 
@@ -117,7 +117,7 @@ Sets the reply format type. For example this could be 'text/html'.
 
 sub set_output_type {
     my($self, $type) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{output_type} = $type;
     return;
 }

@@ -74,7 +74,6 @@ Bivio::IO::Trace->register;
 # the first *_require.  We load it dynamically, because Bivio::Type
 # imports this class and Bivio::DieCode is a Type.
 my($_DIE_INITIALIZED);
-my($_PACKAGE) = __PACKAGE__;
 # map_class -> class name.  If map_class was loaded by handler, then
 # it is defined, but undef.  See is_loaded().
 my(%_MAP_CLASS);

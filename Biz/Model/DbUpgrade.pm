@@ -41,7 +41,6 @@ db_upgrade_t.version, an upgrade can't run twice.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -66,7 +66,7 @@ use Bivio::Type::DateTime;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CONNECTIONS) = {};
 my($_DEFAULT_DBI_NAME);
 # Number of times we retry a single statement.
@@ -88,7 +88,7 @@ Do not call this method directly, use L<connect|"connect">.
 sub internal_new {
     my($proto, $dbi_name) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	dbi_name => $dbi_name,
 	db_is_read_only => 0,
 	connection => undef,
@@ -121,7 +121,7 @@ sub commit {
     my($self) = @_;
     return _get_instance($self)->commit
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return unless $fields->{need_commit};
     _trace('commit') if $_TRACE;
     _get_connection($self)->commit() unless $fields->{db_is_read_only};
@@ -166,7 +166,7 @@ sub disconnect {
     my($self) = @_;
     return _get_instance($self)->disconnect
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     _get_connection($self)->disconnect();
     $fields->{connection_pid} = undef;
     $fields->{connection} = undef;
@@ -204,7 +204,7 @@ sub execute {
     my($self, $sql, $params, $die, $has_blob) = @_;
     return _get_instance($self)->execute($sql, $params, $die, $has_blob)
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $sql = $self->internal_fixup_sql($sql);
     my($err, $errstr, $statement);
@@ -311,7 +311,7 @@ sub get_db_time {
     my($self) = @_;
     return _get_instance($self)->get_db_time
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($result) = $fields->{db_time};
     $fields->{db_time} = 0;
     return $result;
@@ -342,7 +342,7 @@ sub increment_db_time {
     my($self, $start_time) = @_;
     return _get_instance($self)->increment_db_time($start_time)
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die('invalid start_time') unless $start_time;
     $fields->{db_time} += Bivio::Type::DateTime->gettimeofday_diff_seconds(
 	    $start_time);
@@ -359,7 +359,7 @@ Clears the need_ping state.
 
 sub internal_clear_ping {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{need_ping} = 0;
     return;
 }
@@ -460,7 +460,7 @@ sub is_read_only {
     my($self) = @_;
     return _get_instance($self)->is_read_only
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{db_is_read_only};
 }
 
@@ -493,7 +493,7 @@ sub rollback {
     my($self) = @_;
     return _get_instance($self)->rollback
 	    unless ref($self);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return unless $fields->{need_commit};
     _trace('rollback') if $_TRACE;
     _get_connection($self)->rollback() unless $fields->{db_is_read_only};
@@ -536,7 +536,7 @@ sub set_dbi_name {
 #
 sub _execute_helper {
     my($self, $sql, $params, $has_blob, $statement) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     _trace_sql($sql, $params) if $_TRACE;
 #TODO: Need to investigate problems and performance of cached statements
@@ -574,7 +574,7 @@ sub _get_instance {
 #
 sub _get_connection {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if ($fields->{connection_pid} != $$) {
 	if ($fields->{connection}) {

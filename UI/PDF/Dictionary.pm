@@ -39,7 +39,7 @@ use Bivio::UI::PDF::Regex;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_DIC_END_REGEX) = Bivio::UI::PDF::Regex::DIC_END_REGEX();
 my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
@@ -59,7 +59,7 @@ my($_NAME_REGEX) = Bivio::UI::PDF::Regex::NAME_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'values' => {},
 	'order' => []	# Keep the key names in the order read in.
     };
@@ -80,9 +80,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::Dictionary->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     local($_);
 
     map {
@@ -103,7 +103,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     # Find out how many characters this object will emit to decide whether or
@@ -141,7 +141,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($length) = 6;	# For the initial '<< ' and final ' >>';
     my($name, $direct_obj_ref);
     while (($name, $direct_obj_ref) = each(%{$fields->{'values'}})) {
@@ -161,7 +161,7 @@ sub emit_length {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # The current line has the '<<' on it.  It may or may not have data
     # dictionary items as well.  Get the text of the line, remove the '<<",
@@ -222,7 +222,7 @@ sub extract {
 
 sub get_value {
     my($self, $key) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(${$fields->{'values'}}{$key});
 }
 
@@ -236,7 +236,7 @@ sub get_value {
 
 sub insert_field_value {
     my($self, $new_value, $form_ref, $field_type) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($return_value) = undef;
 
     unless (defined($field_type)) {
@@ -342,7 +342,7 @@ sub insert_field_value {
 
 sub is_dictionary {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(1);
 }
 
@@ -356,7 +356,7 @@ sub is_dictionary {
 
 sub set_value {
     my($self, $key, $new_value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     ${$fields->{'values'}}{$key} = $new_value;
     push(@{$fields->{'order'}}, $key);
     return;

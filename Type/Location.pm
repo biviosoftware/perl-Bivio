@@ -46,7 +46,6 @@ address, phone, or email resides.  The current choices are:
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
     HOME => [

@@ -40,7 +40,7 @@ use Bivio::UI::PDF::StringAngle;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_ENDOBJ_REGEX) = Bivio::UI::PDF::Regex::ENDOBJ_REGEX();
 my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
@@ -62,7 +62,7 @@ my($_STREAM_START_REGEX) = Bivio::UI::PDF::Regex::STREAM_START_REGEX();
 sub new {
     my($self) = Bivio::UI::PDF::PdfObj::new(@_);
     my(undef, $obj_number, $obj_generation) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'obj_number' => undef,
 	'obj_generation' => undef,
 	'direct_obj_ref' => undef,
@@ -85,9 +85,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::IndirectObj->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'obj_number'} = $fields->{'obj_number'};
     $clone_fields->{'obj_generation'} = $fields->{'obj_generation'};
     $clone_fields->{'direct_obj_ref'} = $fields->{'direct_obj_ref'}->clone();
@@ -105,7 +105,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Store the offset in the Pdf text that this object will have.
     $fields->{'offset'} = $emit_ref->get_length();
@@ -133,7 +133,7 @@ sub emit {
 
 sub emit_with_kids {
     my($self, $emit_ref, $pdf_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     # I think this only makes sense with a dictionary object.
@@ -170,7 +170,7 @@ lines of Pdf text.
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # The current line should be the one containing the object number, the
     # object generation, and the 'obj' keyword.
@@ -231,7 +231,7 @@ sub extract {
 
 sub get_direct_obj_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'direct_obj_ref'});
 }
 
@@ -245,7 +245,7 @@ sub get_direct_obj_ref {
 
 sub get_obj_generation {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'obj_generation'});
 }
 
@@ -259,7 +259,7 @@ sub get_obj_generation {
 
 sub get_obj_number {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'obj_number'});
 }
 
@@ -273,7 +273,7 @@ sub get_obj_number {
 
 sub get_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'offset'});
 }
 
@@ -287,7 +287,7 @@ sub get_offset {
 
 sub insert_field_value {
     my($self, $new_value, $form_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($obj_ref) = $fields->{'direct_obj_ref'};
     unless ($obj_ref->is_dictionary) {
 	die(__FILE__,", ", __LINE__, ": not a dictionary\n");
@@ -305,7 +305,7 @@ sub insert_field_value {
 
 sub is_dictionary {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     unless (defined($fields->{'direct_obj_ref'})) {
 	return(0);
     }
@@ -322,7 +322,7 @@ sub is_dictionary {
 
 sub is_indirect_obj {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(1);
 }
 
@@ -336,7 +336,7 @@ sub is_indirect_obj {
 
 sub is_stream {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     unless (defined($fields->{'direct_obj_ref'})) {
 	return(0);
     }

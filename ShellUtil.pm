@@ -248,7 +248,7 @@ use Bivio::TypeError;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
 
@@ -272,7 +272,7 @@ sub new {
     my($self) = Bivio::Collection::Attributes::new($proto);
     $argv ||= [];
     my($orig_argv) = [@$argv];
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     $self->internal_put(_parse_options($self, $argv));
     $self->put(argv => $orig_argv);
     return $self;
@@ -456,7 +456,7 @@ Calls L<commit_or_rollback|"commit_or_rollback"> and undoes setup.
 
 sub finish {
     my($self, $abort) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
     return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
 }
@@ -834,7 +834,7 @@ B<Doesn't configure the request if the db user isn't bivio.>
 
 sub setup {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
 
     Bivio::IO::ClassLoader->simple_require(qw{

@@ -33,7 +33,6 @@ C<Bivio::Type::CreditCardNumber> interprets a string as a credit card number.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 

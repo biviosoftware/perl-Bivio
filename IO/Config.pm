@@ -148,7 +148,6 @@ sub REQUIRED {
 # use Bivio::BConf;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 # The configuration read off disk or passed in
 my($_ACTUAL) = {};
 # List of packages registered

@@ -103,7 +103,7 @@ use Bivio::UI::HTML::Widget::JavaScript;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
 my($_JSV) = Bivio::UI::HTML::Widget::JavaScript->VERSION_VAR;
@@ -197,7 +197,7 @@ Creates a new DateTime widget with I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -216,7 +216,7 @@ field values.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{value});
     $fields->{value} = $self->get('value');
     $fields->{mode} = Bivio::UI::DateTimeMode->from_any(
@@ -271,7 +271,7 @@ Render the object.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die('not initialized') unless exists($fields->{value});
     my($value) = $source->get_widget_value(@{$fields->{value}});
 

@@ -36,7 +36,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_NUMBER_REGEX) = Bivio::UI::PDF::Regex::NUMBER_REGEX();
 
@@ -56,7 +56,7 @@ sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
     # $value will be undefined in some cases.
     my(undef, $value) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'value' => $value
     };
     return $self;
@@ -76,9 +76,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::Number->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'value'} = $fields->{'value'};
     return($clone);
 }
@@ -93,7 +93,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $emit_ref->append_no_new_lines($fields->{'value'});
     return;
 }
@@ -108,7 +108,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(length($fields->{'value'}));
 }
 
@@ -122,7 +122,7 @@ sub emit_length {
 
 sub equals {
     my($self, $other_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     unless ($other_ref->is_number()) {
 	die(__FILE__,", ", __LINE__, ": trying to compare non-number\n");
     }
@@ -139,7 +139,7 @@ sub equals {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if (${$line_iter_ref->current_ref()} =~ /$_NUMBER_REGEX/) {
 	if (defined($1)) {
@@ -167,7 +167,7 @@ sub extract {
 
 sub get_value {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'value'});
 }
 
@@ -181,7 +181,7 @@ sub get_value {
 
 sub is_number {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(1);
 }
 
@@ -195,7 +195,7 @@ sub is_number {
 
 sub set_value {
     my($self, $new_value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'value'} = $new_value;
     return;
 }

@@ -56,7 +56,6 @@ sub INVALID {
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my(@_SALT_CHARS) = (
     'a'..'z',
     'A'..'Z',

@@ -64,7 +64,6 @@ EOF
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my(@_DATA);
 my(@_SQL_FILES) = map {
     my($base) = $_;

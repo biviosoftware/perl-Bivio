@@ -36,7 +36,7 @@ use Bivio::IO::ClassLoader;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$AUTOLOAD');
 
 =head1 FACTORIES
@@ -54,7 +54,7 @@ Creates a new instance of the delegator and the delegate.
 sub new {
     my($proto, @args) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	delegate => _get_delegate_class($proto)->new(@args),
     };
     return $self;
@@ -84,7 +84,7 @@ sub AUTOLOAD {
 	    $method, '(', join(', ', @args), ')') if $_TRACE;
 
     if (ref($proto)) {
-	my($fields) = $proto->{$_PACKAGE};
+	my($fields) = $proto->[$_IDI];
 	return $fields->{delegate}->$method(@args);
     }
     return _get_delegate_class($proto)->$method(@args);

@@ -78,7 +78,7 @@ use Bivio::IO::Config;
 use Bivio::Die;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_DIE_ON_ERROR) = 0;
 Bivio::IO::Config->register({
     die_on_error => $_DIE_ON_ERROR,
@@ -105,7 +105,7 @@ sub new {
 	    unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
 
     # Set up our state
-    my($fields) = $self->{$_PACKAGE} = {
+    my($fields) = $self->[$_IDI] = {
 	map => {},
 	facade => $facade,
 	clone => $clone,
@@ -176,7 +176,7 @@ If I<name> is not found, does nothing.
 sub delete_group {
     my($self, $name) = @_;
     _assert_writable($self);
-    my($map) = $self->{$_PACKAGE}->{map};
+    my($map) = $self->[$_IDI]->{map};
     my($value) = $map->{$name};
     return unless $value;
     foreach my $n (@{$value->{names}}) {
@@ -212,7 +212,7 @@ The normal "get" and "format" routines handle undefined values properly.
 =cut
 
 sub exists {
-    return defined(shift->{$_PACKAGE}->{map}->{lc(shift(@_))}) ? 1 : 0;
+    return defined(shift->[$_IDI]->{map}->{lc(shift(@_))}) ? 1 : 0;
 }
 
 =for html <a name="get_error"></a>
@@ -230,7 +230,7 @@ sub get_error {
     my($self, $name, @msg) = @_;
     push(@msg, 'value not found') unless @msg;
     _error($self, '.', $name, ': ', @msg);
-    return $self->{$_PACKAGE}->{undef_value};
+    return $self->[$_IDI]->{undef_value};
 }
 
 =for html <a name="get_facade"></a>
@@ -242,7 +242,7 @@ Returns the Facade to which this instance belongs.
 =cut
 
 sub get_facade {
-    return shift->{$_PACKAGE}->{facade};
+    return shift->[$_IDI]->{facade};
 }
 
 =for html <a name="group"></a>
@@ -260,7 +260,7 @@ taken by this module.
 sub group {
     my($self, $names, $value) = @_;
     _assert_writable($self);
-    my($map) = $self->{$_PACKAGE}->{map};
+    my($map) = $self->[$_IDI]->{map};
     $names = ref($names) ? $names : [$names];
 
     # Initialize the value
@@ -328,7 +328,7 @@ initialized (see L<delete_group|"delete_group">).
 =cut
 
 sub initialization_complete {
-    my($fields) = shift->{$_PACKAGE};
+    my($fields) = shift->[$_IDI];
     $fields->{read_only} = 1;
     return;
 }
@@ -358,7 +358,7 @@ This doesn't include the L<UNDEF_CONFIG|"UNDEF_CONFIG"> value.
 =cut
 
 sub internal_get_all {
-    my($map) = shift->{$_PACKAGE}->{map};
+    my($map) = shift->[$_IDI]->{map};
 
     # Finds all group values.  The "value" is a hash_ref which is
     # uniquely named, so dups (other members of the group) are found
@@ -383,7 +383,7 @@ sub internal_get_all_groups {
     # Values have unique addresses (HASH(0xblabla)) so this trick works nicely
     my(%res) = map {
 	($_, $_);
-    } values(%{shift->{$_PACKAGE}->{map}});
+    } values(%{shift->[$_IDI]->{map}});
     return [values(%res)];
 }
 
@@ -436,7 +436,7 @@ attribute of I<req_or_facade>.
 sub internal_get_value {
     my($proto, $name, $req_or_facade) = @_;
     my($self) = $proto->internal_get_self($req_or_facade);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Return undef_value if passed in undef.  Shouldn't happen...
     return $self->get_error($self, ': passed undef as value to get')
@@ -489,7 +489,7 @@ I<name> is assumed to be already downcased.
 
 sub internal_unsafe_lc_get_value {
     my($self, $name) = @_;
-    return $self->{$_PACKAGE}->{map}->{$name};
+    return $self->[$_IDI]->{map}->{$name};
 }
 
 =for html <a name="regroup"></a>
@@ -506,7 +506,7 @@ All names must exist.
 sub regroup {
     my($self, $names, $new_value) = @_;
     _assert_writable($self);
-    my($map) = $self->{$_PACKAGE}->{map};
+    my($map) = $self->[$_IDI]->{map};
     $names = ref($names) ? $names : [$names];
 
     # Delete the names from the map
@@ -533,7 +533,7 @@ Sets I<value> for the group which contains I<name>.
 sub value {
     my($self, $name, $value) = @_;
     _assert_writable($self);
-    my($map) = $self->{$_PACKAGE}->{map};
+    my($map) = $self->[$_IDI]->{map};
     $self->die($name, 'group not found') unless $map->{$name};
 
     # Clear out old state and reinitialize
@@ -552,7 +552,7 @@ sub value {
 sub _assert_writable {
     my($self) = @_;
     Bivio::Die->die(undef, 'attempt to modify after initialization')
-		if $self->{$_PACKAGE}->{read_only};
+		if $self->[$_IDI]->{read_only};
     return;
 }
 
@@ -587,7 +587,7 @@ sub _error {
 sub _init_from_clone {
     my($self, $clone) = @_;
     return unless $clone;
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     _init_from_clone($self, $clone_fields->{clone});
     &{$clone_fields->{initialize}}($self) if $clone_fields->{initialize};
     return;
@@ -599,13 +599,13 @@ sub _init_from_clone {
 #
 sub _init_from_parent {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # No clone or have explicit initialize, need to copy
     return 0 unless $fields->{clone} && !$fields->{initialize};
 
     # Cloning from my parent?
     my($parent) = $fields->{facade}->unsafe_get('parent');
-    my($clone_fields) = $fields->{clone}->{$_PACKAGE};
+    my($clone_fields) = $fields->{clone}->[$_IDI];
     return 0 unless $parent && $parent == $clone_fields->{facade};
 
     # Copy fields and groups

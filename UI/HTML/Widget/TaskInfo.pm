@@ -41,7 +41,7 @@ use Bivio::Die;
 use Bivio::UI::HTML::Widget::SourceCode;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -57,7 +57,7 @@ Creates a new TaskInfo widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 

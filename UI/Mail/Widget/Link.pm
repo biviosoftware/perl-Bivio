@@ -56,7 +56,7 @@ C<$source-E<gt>get_widget_value> to get the uri to use.
 use Bivio::Die;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -77,7 +77,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -96,7 +96,7 @@ It is fully initialized after first render.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{value};
 
     $fields->{value} = _initialize_value($self);
@@ -130,7 +130,7 @@ Render the absolute URI.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($v) = $self->render_value('value', $fields->{value}, $source);
     # Insert http: prefix, if not already there.
     $$buffer .= $source->get_request->format_http_prefix

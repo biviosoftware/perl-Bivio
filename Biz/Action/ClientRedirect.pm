@@ -63,7 +63,7 @@ use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 _compile();
@@ -88,7 +88,7 @@ sub new {
     my($proto, $uri) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     if ($uri) {
-	$self->{$_PACKAGE} = {
+	$self->[$_IDI] = {
 	    uri => $uri,
 	};
     }
@@ -110,8 +110,8 @@ Redirects only if created with a I<uri>.
 sub execute {
     my($self, $req) = @_;
     Bivio::Die->die('cannot be called statically or without uri')
-		unless ref($self) && $self->{$_PACKAGE};
-    $req->client_redirect($self->{$_PACKAGE}->{uri});
+		unless ref($self) && $self->[$_IDI];
+    $req->client_redirect($self->[$_IDI]->{uri});
     # DOES NOT RETURN
 }
 

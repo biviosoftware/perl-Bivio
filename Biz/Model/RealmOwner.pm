@@ -48,7 +48,6 @@ use Bivio::Type::Password;
 use Bivio::Type::RealmName;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 #TODO: this needs to be configurable, maybe a method on RealmType?
 my(%_HOME_TASK_MAP) = (

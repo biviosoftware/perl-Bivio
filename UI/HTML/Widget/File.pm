@@ -56,7 +56,7 @@ How wide is the field represented.
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -72,7 +72,7 @@ Creates a File widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -90,7 +90,7 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
@@ -110,7 +110,7 @@ Draws the file field on the specified buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 

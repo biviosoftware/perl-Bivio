@@ -38,7 +38,6 @@ C<Bivio::PetShop::Model::ItemListForm>
 use Bivio::PetShop::Model::ItemForm;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

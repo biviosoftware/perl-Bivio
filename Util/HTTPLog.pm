@@ -63,7 +63,7 @@ use Sys::Hostname ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CFG) = {
     error_file => '/var/log/httpd/error.log',
     email => 'root',
@@ -131,7 +131,7 @@ I<interval_minutes> must match the execute time in cron.
 sub parse_errors {
     my($self, $interval_minutes) = _parse_errors_init(@_);
     return _parse_errors_complete($self) unless $interval_minutes;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($start) = Bivio::Type::DateTime->add_seconds(
 	    Bivio::Type::DateTime->now, -$interval_minutes * 60);
     my($error_countdown) = $_CFG->{error_count_for_page};
@@ -275,7 +275,7 @@ sub _initialize {
 #
 sub _pager_report {
     my($self, @args) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($msg) = Bivio::IO::Alert->format_args(@args);
     $fields->{res} = "CRITICAL ERRORS\n".$fields->{res}
 	    unless $fields->{res} =~ /^CRITICAL ERRORS/;
@@ -291,7 +291,7 @@ sub _pager_report {
 #
 sub _parse_errors_complete {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{fh}->close;
     my($pr) = join('', @{$fields->{pager_res}});
     $self->email_message($_CFG->{pager_email}, 'critical http errors', \$pr)
@@ -315,7 +315,7 @@ sub _parse_errors_init {
 	    'Errors on '.Sys::Hostname::hostname().' at '
 	    .Bivio::Type::DateTime->to_local_string(
 		    Bivio::Type::DateTime->now));
-    my($fields) = $self->{$_PACKAGE} = {
+    my($fields) = $self->[$_IDI] = {
 	res => '',
 	pager_res => [],
 	fh => IO::File->new,
@@ -347,7 +347,7 @@ sub _parse_line {
 #
 sub _parse_record {
     my($self, $record, $date) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $$record = undef;
     while (_parse_line($fields)) {
 	last if $$record && $fields->{line} =~ /$_RECORD_PREFIX/o;
@@ -372,7 +372,7 @@ sub _parse_record {
 #
 sub _report {
     my($self, @args) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{res} .= Bivio::IO::Alert->format_args(@args);
     return;
 }

@@ -27,7 +27,7 @@ C<Bivio::UI::PDF::ArrayIterator>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -45,12 +45,12 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
     my(undef, $array_ref, $index) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'index' => 0,
 	'array_ref' => $array_ref,
 	'push_array_ref' => []
     };
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (defined($index)) {
 	$fields->{'index'} = $index;
     }
@@ -71,7 +71,7 @@ sub new {
 
 sub at_end {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (($#{$fields->{'array_ref'}} < $fields->{'index'})
 	    && (-1 == $#{$fields->{'push_array_ref'}})) {
 	return(1);
@@ -90,7 +90,7 @@ sub at_end {
 
 sub current_eol_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if ($self->at_end()) {
 	return(undef);
     }
@@ -111,7 +111,7 @@ sub current_eol_ref {
 
 sub current_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if ($self->at_end()) {
 	return(undef);
     }
@@ -132,7 +132,7 @@ sub current_ref {
 
 sub increment {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if ($self->at_end()) {
 	return;
     }
@@ -156,7 +156,7 @@ sub increment {
 
 sub push_back {
     my($self, $text) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{'push_array_ref'}}, $text);
     return;
 }
@@ -171,7 +171,7 @@ sub push_back {
 
 sub replace_first {
     my($self, $text) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->increment();
     $self->push_back($text);
     return;

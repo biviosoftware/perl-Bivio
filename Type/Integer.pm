@@ -44,7 +44,7 @@ Dynamic subranges may be created using L<new|"new">.
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -69,7 +69,7 @@ sub new {
     Bivio::Die->die('invalid max value') unless defined($max);
     Bivio::Die->die('min greater than max') unless $min <= $max;
     my($self) = $proto->SUPER::new;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	# get_min and get_max return strings
 	min => "$min",
 	max => "$max",
@@ -170,7 +170,7 @@ L<new|"new"> value.
 sub get_max {
     my($proto) = @_;
     return '999999999' unless ref($proto);
-    return $proto->{$_PACKAGE}->{max};
+    return $proto->[$_IDI]->{max};
 }
 
 =for html <a name="get_min"></a>
@@ -189,7 +189,7 @@ L<new|"new"> value.
 sub get_min {
     my($proto) = @_;
     return '-999999999' unless ref($proto);
-    return $proto->{$_PACKAGE}->{min};
+    return $proto->[$_IDI]->{min};
 }
 
 =for html <a name="get_precision"></a>

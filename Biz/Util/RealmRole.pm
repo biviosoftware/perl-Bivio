@@ -75,7 +75,7 @@ use Bivio::IO::Trace;
 
 #=VARIABLES
 my(@_DATA);
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 
@@ -94,7 +94,7 @@ Initializes fields.
 
 sub new {
     my($self) = Bivio::ShellUtil::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -276,7 +276,7 @@ sub _get_permission_set {
 #
 sub _list_one {
     my($self, $realm, $roles) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $fields->{all_permissions} = [
 	sort {

@@ -39,7 +39,7 @@ use Bivio::Societas::UI::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -56,7 +56,7 @@ Creates a new Misc. Income and Deductions report.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    my($fields) = $self->{$_PACKAGE} = {};
+    my($fields) = $self->[$_IDI] = {};
 
     my($msg1) = $_VS->vs_string(
 	    'No miscellaneous income to report within the date range.',
@@ -139,7 +139,7 @@ Draws the PortfolioIncomeList and PortfolioDeductionList.
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $req->put(page_title_value => $fields->{heading},
 	    page_want_spreadsheet => 1,

@@ -67,7 +67,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 # Separates row index from simple field name.  Must not be a regexp
 # special and must be valid for a javascript field id.  Guess what?
 # You can't change this value. ;-)
@@ -87,7 +87,7 @@ Creates a new ListFormModel.
 
 sub new {
     my($self) = Bivio::Biz::FormModel::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -110,7 +110,7 @@ On exit, the cursor will be reset.
 
 sub execute_empty {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($lm) = _execute_init($self);
 
     # For each row, we have to copy primary_key values
@@ -305,7 +305,7 @@ sub get_field_name_for_html {
 
     # Row specified?
     unless (defined($row)) {
-	my($fields) = $self->{$_PACKAGE};
+	my($fields) = $self->[$_IDI];
 	Carp::croak('no cursor') unless defined($fields->{cursor})
 		&& $fields->{cursor} >= 0;
 	$row = $fields->{cursor};
@@ -338,7 +338,7 @@ of the list model.
 =cut
 
 sub get_list_model {
-    return shift->{$_PACKAGE}->{list_model};
+    return shift->[$_IDI]->{list_model};
 }
 
 =for html <a name="get_query"></a>
@@ -412,7 +412,7 @@ B<Used internally to this module and FormModel.>
 =cut
 
 sub internal_get_file_field_names {
-    return shift->{$_PACKAGE}->{file_field_names};
+    return shift->[$_IDI]->{file_field_names};
 }
 
 =for html <a name="internal_get_hidden_field_names"></a>
@@ -427,7 +427,7 @@ i.e. all list fields and the non-list fields.
 =cut
 
 sub internal_get_hidden_field_names {
-    return shift->{$_PACKAGE}->{hidden_field_names};
+    return shift->[$_IDI]->{hidden_field_names};
 }
 
 =for html <a name="internal_get_visible_field_names"></a>
@@ -442,7 +442,7 @@ i.e. all list fields and the non-list fields.
 =cut
 
 sub internal_get_visible_field_names {
-    return shift->{$_PACKAGE}->{visible_field_names};
+    return shift->[$_IDI]->{visible_field_names};
 }
 
 =for html <a name="internal_initialize_list"></a>
@@ -527,7 +527,7 @@ available in row-qualified form, i.e. I<name>.I<row>.
 
 sub next_row {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     Carp::croak('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
@@ -567,7 +567,7 @@ of I<list_model>.
 
 sub reset_cursor {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{list_model}->reset_cursor;
     $fields->{cursor} = -1;
     $self->internal_clear_model_cache;
@@ -588,7 +588,7 @@ L<validate_end|"validate_end">.
 
 sub validate {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($lm) = $self->get_list_model;
 
     # For each row, validate primary_key values are match list_model's exactly
@@ -745,7 +745,7 @@ sub _execute_init {
     }
 
     # Re-initialize fields
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	cursor => -1,
 	list_model => $lm,
 	visible_field_names => $visible,
@@ -787,7 +787,7 @@ sub _names {
     }
 
     # Row specified?
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (defined($row)) {
 	if (defined($fields->{cursor}) && $fields->{cursor} >= 0) {
 	    # If there is a cursor and it matches the row, then

@@ -35,7 +35,7 @@ use Bivio::UI::PDF::Regex;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_ARRAY_END_REGEX) = Bivio::UI::PDF::Regex::ARRAY_END_REGEX();
 my($_ARRAY_START_REGEX) = Bivio::UI::PDF::Regex::ARRAY_START_REGEX();
@@ -64,7 +64,7 @@ my($_STRING_START_PAREN_REGEX) = Bivio::UI::PDF::Regex::STRING_START_PAREN_REGEX
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -82,7 +82,7 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": abstract method.\n");
     return;
 }
@@ -97,7 +97,7 @@ sub clone {
 
 sub extract_direct_obj {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($direct_obj_ref);
 
@@ -158,7 +158,7 @@ sub extract_direct_obj {
 
 sub get_value {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": abstract method.\n");
     return;
 }
@@ -173,7 +173,7 @@ sub get_value {
 
 sub is_indirect_obj {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(0);
 }
 

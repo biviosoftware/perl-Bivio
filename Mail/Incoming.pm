@@ -50,7 +50,7 @@ require 'ctime.pl';
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 # Bivio::IO::Config->register;
 
 =head1 FACTORIES
@@ -95,7 +95,7 @@ Returns the body of the message or puts a copy in I<body>.
 
 sub get_body {
     my($self, $body) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (defined($body)) {
 	$$body = substr(${$fields->{rfc822}}, $fields->{body_offset});
 	return;
@@ -113,7 +113,7 @@ Returns the date specified by the message
 
 sub get_date_time {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     exists($fields->{date_time}) && return $fields->{date_time};
     my($date) = &_get_field($fields, 'date:');
 #TODO: If no Date: or bad Date: search Received: for valid dates
@@ -140,7 +140,7 @@ Return <I>From:</I> email address and name or just email if not array context.
 
 sub get_from {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (exists($fields->{from_email})) {
 	return wantarray ? ($fields->{from_email}, $fields->{from_name})
 	    : $fields->{from_email};
@@ -185,7 +185,7 @@ defined, fills in and returns I<headers>.
 sub get_headers {
     my($self, $headers) = @_;
     $headers ||= {};
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # Important to include the newline
     my($f);
     my($FIELD_NAME) = Bivio::Mail::RFC822->FIELD_NAME;
@@ -209,7 +209,7 @@ Returns the Message-Id for this message.
 
 sub get_message_id {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     exists($fields->{message_id}) && return $fields->{message_id};
     my($id) = &_get_field($fields, 'message-id:');
     unless (defined($id)) {
@@ -236,7 +236,7 @@ L<set_recipients|"set_recipients">.
 
 sub get_recipients {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($r) = $fields->{recipients};
     if (ref($r) ne 'ARRAY' && defined($r)) {
 	# Force to be an array for convenience of caller
@@ -258,7 +258,7 @@ if not array context.
 
 sub get_reply_to {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if (exists($fields->{reply_to})) {
 	return wantarray
 		? ($fields->{reply_to_email}, $fields->{reply_to_name})
@@ -290,7 +290,7 @@ the entire RFC822, offset by the header_offset.
 
 sub get_rfc822 {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return substr(${$fields->{rfc822}}, $fields->{header_offset});
 }
 
@@ -304,7 +304,7 @@ sub get_rfc822 {
 
 sub get_rfc822_io {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my $file = IO::Scalar->new($fields->{rfc822});
     $file->setpos($fields->{header_offset});
     return $file;
@@ -321,7 +321,7 @@ Returns length of C<rfc822>.
 
 sub get_rfc822_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return length(${$fields->{rfc822}}) - $fields->{header_offset};
 }
 
@@ -335,7 +335,7 @@ Returns I<Subject> of message or C<undef>.
 
 sub get_subject {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     exists($fields->{subject}) && return $fields->{subject};
     my($subject) = &_get_field($fields, 'subject:');
     unless (defined($subject)) {
@@ -359,7 +359,7 @@ Returns the message in unix mailbox format.  Always ends in a newline.
 
 sub get_unix_mailbox {
     my($self, $buffer, $offset) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # ctime already has newline
     return 'From unknown ' . ctime($fields->{time})
 	    . substr(${$fields->{rfc822}}, $fields->{header_offset})
@@ -411,7 +411,7 @@ sub initialize {
     #      The effect will be to lose quoted LF and replace it with a
     #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'rfc822' => $rfc822,
 	'header' => $h,
 	'header_offset' => $offset,
@@ -435,7 +435,7 @@ for "alias-like" forwarding only.
 
 sub send {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Bivio::Mail::Common->send($fields->{recipients}, $fields->{rfc822},
 	    $fields->{header_offset}, $self->get_from());
 }
@@ -453,7 +453,7 @@ are part of the "envelope" associated with the message.
 
 sub set_recipients {
     my($self, $recipients) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{recipients} = $recipients;
     return;
 }
@@ -468,7 +468,7 @@ Clear any state associated with this object.
 
 sub uninitialize {
     my($self) = @_;
-    delete($self->{$_PACKAGE});
+    delete($self->[$_IDI]);
     return;
 }
 

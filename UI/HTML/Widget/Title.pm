@@ -60,7 +60,7 @@ use Bivio::HTML;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_DEFAULT_SEPARATOR) = ' - ';
 
 =head1 FACTORIES
@@ -77,7 +77,7 @@ Creates a new Form widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -95,7 +95,7 @@ No op.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{values};
 
     my($i) = 0;
@@ -118,7 +118,7 @@ reply as well.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(@v, @t) = ();
     my($i) = 0;
     foreach my $v (@{$fields->{values}}) {

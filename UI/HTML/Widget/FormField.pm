@@ -58,7 +58,7 @@ use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::WidgetFactory;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -82,7 +82,7 @@ field automatically.
 
 sub new {
     my($self) = Bivio::UI::Widget::Join::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
 
     # adds the error widget and the edit widget
     $self->put(values => [

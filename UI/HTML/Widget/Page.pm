@@ -108,7 +108,7 @@ use Bivio::IO::Config;
 
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SHOW_TIME) = 0;
 Bivio::IO::Config->register({
     'show_time' => $_SHOW_TIME,
@@ -128,7 +128,7 @@ Creates a new Page widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -180,7 +180,7 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{head};
 
     my($v);
@@ -203,7 +203,7 @@ sub initialize {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $$buffer .=
 	    '<!doctype html public "-//w3c//dtd html 4.0 transitional//en">'
 	    ."\n<html><head>\n";

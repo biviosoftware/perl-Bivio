@@ -51,7 +51,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_READ_ONLY_ERROR) = 'attempt to modify read-only instance';
 
 # Not likely to be an attribute. NOT CHECKED.
@@ -80,7 +80,7 @@ sub new {
     my($proto, $map) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     $map = {} unless ref($map) eq 'HASH';
-    $self->{$_PACKAGE} = $map;
+    $self->[$_IDI] = $map;
     return $self;
 }
 
@@ -103,11 +103,11 @@ default.
 
 sub ancestral_get {
     my($self, $name, $default) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     while (1) {
 	return $fields->{$name} if defined($fields->{$name});
 	last unless defined($fields->{parent});
-	$fields = $fields->{parent}->{$_PACKAGE};
+	$fields = $fields->{parent}->[$_IDI];
     }
     return $default if int(@_) > 2;
     _die($self, $name, ': ancestral attribute not found');
@@ -126,14 +126,14 @@ instance or its ancestors.
 sub ancestral_has_keys {
     my($self, @names) = @_;
     _die($self, 'missing arguments') unless @names;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     while (@names) {
 	# Top of array checked first, since we're splicing as we go
 	for (my($i) = $#names; $i >= 0; $i--) {
 	    splice(@names, $i, 1) if exists($fields->{$names[$i]});
 	}
 	return @names ? 0 : 1 unless defined($fields->{parent});
-	$fields = $fields->{parent}->{$_PACKAGE};
+	$fields = $fields->{parent}->[$_IDI];
     }
     return 1;
 }
@@ -151,7 +151,7 @@ from this class' C<new>.>
 
 sub clone {
     my($self) = @_;
-    return $self->new({%{$self->{$_PACKAGE}}});
+    return $self->new({%{$self->[$_IDI]}});
 }
 
 =for html <a name="delete"></a>
@@ -164,7 +164,7 @@ Removes the named attribute(s) from the map.  They needn't exist.
 
 sub delete {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     map {delete($fields->{$_})} @_;
     return;
@@ -180,10 +180,10 @@ Removes all the parameters.
 
 sub delete_all {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # This is probably the fastest way to remove all elements
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return;
 }
 
@@ -197,7 +197,7 @@ Deletes all keys matching I<pattern>.
 
 sub delete_all_by_regexp {
     my($self, $pattern) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     foreach my $k (keys(%$fields)) {
 	next unless $k =~ /$pattern/;
 	delete($fields->{$k});
@@ -255,7 +255,7 @@ L<has_keys|"has_keys"> to test for existence.
 
 sub get {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(@res) = map {
 	_die($self, $_, ": attribute doesn't exist")
 		unless exists($fields->{$_});
@@ -278,7 +278,7 @@ sub get_by_regexp {
     my($self, $pattern) = @_;
     my($match) = _unsafe_get_by_regexp(@_);
     _die($self, $pattern, ': pattern not found') unless defined($match);
-    return $self->{$_PACKAGE}->{$match};
+    return $self->[$_IDI]->{$match};
 }
 
 =for html <a name="get_if_exists_else_put"></a>
@@ -310,7 +310,7 @@ Returns the list of keys.
 =cut
 
 sub get_keys {
-    my(@names) = keys(%{shift->{$_PACKAGE}});
+    my(@names) = keys(%{shift->[$_IDI]});
     return \@names;
 }
 
@@ -331,7 +331,7 @@ exists, but is C<undef>.
 
 sub get_nested {
     my($self, @names) = @_;
-    my($v) = $self->{$_PACKAGE};
+    my($v) = $self->[$_IDI];
     foreach my $name (@names) {
 	if (ref($v) eq 'HASH') {
 	    if (exists($v->{$name})) {
@@ -366,7 +366,7 @@ Returns the attribute if exists or I<default>.
 
 sub get_or_default {
     my($self, $name, $default) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return exists($fields->{$name}) ? $fields->{$name} : $default;
 }
 
@@ -379,7 +379,7 @@ Return a shallow copy of the attributes.
 =cut
 
 sub get_shallow_copy {
-    return {%{shift->{$_PACKAGE}}};
+    return {%{shift->[$_IDI]}};
 }
 
 =for html <a name="has_keys"></a>
@@ -391,7 +391,7 @@ Returns 1 if the named keys exist, otherwise 0.
 =cut
 
 sub has_keys {
-    my($fields) = shift->{$_PACKAGE};
+    my($fields) = shift->[$_IDI];
     map {exists($fields->{$_}) || return 0} @_;
     return 1;
 }
@@ -410,7 +410,7 @@ Modifying the hash will modify the attributes.
 sub internal_get {
     my($self) = @_;
     _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
-    return $self->{$_PACKAGE};
+    return $self->[$_IDI];
 }
 
 
@@ -429,7 +429,7 @@ sub internal_put {
     my($self, $fields) = @_;
     _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
-    $self->{$_PACKAGE} = $fields;
+    $self->[$_IDI] = $fields;
     return;
 }
 
@@ -442,7 +442,7 @@ Returns whether any attributes in the map.
 =cut
 
 sub is_empty {
-    return !%{shift->{$_PACKAGE}};
+    return !%{shift->[$_IDI]};
 }
 
 =for html <a name="is_read_only"></a>
@@ -454,7 +454,7 @@ Returns true if the view is READ_ONLY.
 =cut
 
 sub is_read_only {
-    return shift->{$_PACKAGE}->{$_READ_ONLY_ATTR} ? 1 : 0;
+    return shift->[$_IDI]->{$_READ_ONLY_ATTR} ? 1 : 0;
 }
 
 =for html <a name="put"></a>
@@ -469,7 +469,7 @@ Returns I<self>.
 
 sub put {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     _die($self, "must be an even number of parameters")
 	    unless int(@_) % 2 == 0;
@@ -489,7 +489,7 @@ Delete, put, etc. cannot be called.
 =cut
 
 sub set_read_only {
-    my($fields) = shift->{$_PACKAGE};
+    my($fields) = shift->[$_IDI];
     $fields->{$_READ_ONLY_ATTR} = 1;
     return;
 }
@@ -505,7 +505,7 @@ in its place.
 
 sub unsafe_get {
     my($self) = shift(@_);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(@res) = map {$fields->{$_}} @_;
     return @res if wantarray;
     _die($self, 'unsafe_get not called in array context')
@@ -527,7 +527,7 @@ If multiple found, throws exception.
 sub unsafe_get_by_regexp {
     my($self, $pattern) = @_;
     my($match) = _unsafe_get_by_regexp(@_);
-    return defined($match) ? $self->{$_PACKAGE}->{$match} : undef;
+    return defined($match) ? $self->[$_IDI]->{$match} : undef;
 }
 
 =for html <a name="unsafe_get_widget_value_by_name"></a>
@@ -542,7 +542,7 @@ Returns:
 
 sub unsafe_get_widget_value_by_name {
     my($self, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return ($fields->{$name}, exists($fields->{$name}) ? 1 : 0);
 }
 
@@ -566,7 +566,7 @@ sub _die {
 #
 sub _unsafe_get_by_regexp {
     my($self, $pattern) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($match);
     foreach my $k (keys(%$fields)) {
 	next unless $k =~ /$pattern/;

@@ -48,7 +48,7 @@ use Sys::Hostname ();
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 # Some of these were taken from majordomo's resend.  Others, just make
 # sense.  Check set_headers_for_list_send for headers which set but
 # not in this list.
@@ -133,7 +133,7 @@ sub new {
     else {
 	$fields->{headers} = {};
     }
-    $self->{$_PACKAGE} = $fields;
+    $self->[$_IDI] = $fields;
     return $self;
 }
 
@@ -155,7 +155,7 @@ Anything which is not of type text/* is encoded automatically.
 
 sub attach {
     my($self, $content, $type, $name, $binary) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
 #TODO: We can't keep this list perfectly up to date.
 #    Bivio::MIME::Type->to_extension($type)
@@ -183,7 +183,7 @@ Removes the named header fields.
 
 sub remove_headers {
     my($self, @names) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($name);
     foreach $name (@names) {
 	delete($fields->{lc($name)});
@@ -202,7 +202,7 @@ e-mailed except if recipients are not set.
 
 sub send {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($msg) = $self->as_string;
     Bivio::Mail::Common->send($fields->{recipients}, \$msg, 0, 
                               $fields->{env_from});
@@ -221,7 +221,7 @@ If I<body> is a reference, it will be retained.
 
 sub set_body {
     my($self, $body) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{body} = $body;
     return;
 }
@@ -236,7 +236,7 @@ Sets the Content-Type header field. Any previous setting is overridden.
 
 sub set_content_type {
     my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # Remove possibly existing Content-Type setting from the headers
     exists($fields->{headers}->{'content-type'})
             && delete($fields->{headers}->{'content-type'});
@@ -258,7 +258,7 @@ Returns the from email address or C<undef> if it couldn't set anything.
 
 sub set_from_with_user {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($name) = getpwuid($>);
     # We don't know the name, just let the MTA handle it.
     return unless defined($name);
@@ -286,7 +286,7 @@ ASSUMES: I<name> and I<value> conform to RFC 822.
 
 sub set_header {
     my($self, $name, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 #TODO: Should assert header name is valid and quote value if need be
     $fields->{headers}->{lc($name)} = $name . ': ' . $value . "\n";
     return;
@@ -311,7 +311,7 @@ by MTA (sendmail).
 
 sub set_headers_for_list_send {
     my($self, $list_name, $list_title, $reply_to_list, $list_in_subject) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($headers) = $fields->{headers};
 #TODO: Being too restrictive on list_name syntax?
     $list_name =~ /^[-\w]+$/s || die("$list_name: invalid list name");
@@ -357,7 +357,7 @@ or an array whose elements may contain scalar lists.
 
 sub set_recipients {
     my($self, $email_list) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{recipients} = $email_list;
     return;
 }
@@ -374,7 +374,7 @@ is used by MTAs to return bounces.
 
 sub set_envelope_from {
     my($self, $from) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{env_from} = $from;
     return;
 }
@@ -389,7 +389,7 @@ Returns string representation of the mail message, suitable for sending.
 
 sub as_string {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($res) = '';
     my(%headers) = %{$fields->{headers}};
     my($name);

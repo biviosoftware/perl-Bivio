@@ -57,7 +57,7 @@ for allowed attribute types.
 use Bivio::Mail::RFC822;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -77,7 +77,7 @@ to the attributes by the same names.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(_new_args(@_));
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -95,7 +95,7 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{email} = $self->initialize_attr('email');
     $fields->{name} = $self->unsafe_initialize_attr('name');
     return;
@@ -112,7 +112,7 @@ I<source>.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($b) = '';
     if ($self->unsafe_render_value('name', $fields->{name}, $source, \$b)) {
 	$$buffer .= Bivio::Mail::RFC822->escape_header_phrase($b).' <';

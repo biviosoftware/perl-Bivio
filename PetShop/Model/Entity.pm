@@ -37,7 +37,6 @@ C<Bivio::PetShop::Model::Entity>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

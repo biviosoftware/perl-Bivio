@@ -77,7 +77,7 @@ use Bivio::Type::Email;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -98,7 +98,7 @@ Create an MailTo widget using I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(_new_args(@_));
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -116,7 +116,7 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{email};
 
     foreach my $f (qw(value subject value_invalid)) {
@@ -172,7 +172,7 @@ Draws the file field on the specified buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
 
     # Format as an email first before seeing if ignore.  This

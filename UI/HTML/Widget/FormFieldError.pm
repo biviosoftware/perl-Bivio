@@ -58,7 +58,7 @@ use Bivio::UI::HTML::FormErrors;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -74,7 +74,7 @@ Creates a new DescriptiveFormField widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -92,7 +92,7 @@ Initializes the widgets internal structures.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{field} = $self->get('field');
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{label} = $self->unsafe_get('label') || '';
@@ -109,7 +109,7 @@ Appends the value of the widget to I<buffer>.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
 
     # check for errors.  Multi-field fields (ref(field)) handle errors

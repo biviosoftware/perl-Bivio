@@ -38,7 +38,6 @@ C<Bivio::UI::HTML::Tax::Subscription>
 use Bivio::Societas::UI::ViewShortcuts;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
 =head1 METHODS

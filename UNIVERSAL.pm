@@ -66,8 +66,7 @@ If you are concerned about performance, consider arrays or pseudo-hashes.
 
 sub new {
     my($proto) = @_;
-#TODO: return bless([], ref($proto) || $proto);
-    return bless({}, ref($proto) || $proto);
+    return bless([], ref($proto) || $proto);
 }
 
 =head1 METHODS

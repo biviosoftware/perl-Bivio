@@ -54,7 +54,7 @@ use Bivio::UI::HTML::Format::Printf;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -70,7 +70,7 @@ Creates a new PercentCell widget.
 
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::String::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -88,7 +88,7 @@ Initializes String attributes.
 
 sub initialize {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{initialized};
     my($field) = $self->get('field');
     my($d) = $self->get_or_default('decimals', 1);

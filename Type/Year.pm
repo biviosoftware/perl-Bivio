@@ -38,7 +38,6 @@ C<Bivio::Type::Year> date year field type
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

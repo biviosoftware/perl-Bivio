@@ -163,7 +163,7 @@ on any cell in the row.
 use Bivio::UI::Align;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
 
 
@@ -185,7 +185,7 @@ Creates a new Grid widget with I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -203,7 +203,7 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{rows});
     my($p) = '<table border='.$self->get_or_default('border', 0);
     # We don't want to check parents
@@ -403,7 +403,7 @@ sub layout_buttons_row_major {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($start) = length($$buffer);
     $$buffer .= $fields->{prefix};

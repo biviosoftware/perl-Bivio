@@ -134,7 +134,6 @@ sub XLATOR_SET {
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

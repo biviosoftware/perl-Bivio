@@ -66,7 +66,6 @@ use Image::Size ();
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_URI) = '/i';
 my($_CLEAR_DOT) = {
     uri => '/i/dot.gif',

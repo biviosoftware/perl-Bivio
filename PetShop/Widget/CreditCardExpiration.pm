@@ -40,7 +40,6 @@ use Bivio::PetShop::Type::CreditCardMonth;
 use Bivio::Type::Date;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

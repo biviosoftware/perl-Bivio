@@ -39,7 +39,7 @@ use Bivio::UI::PDF::Regex;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_COMMENT_REGEX) = Bivio::UI::PDF::Regex::COMMENT_REGEX();
 my($_IGNORE_REGEX) = Bivio::UI::PDF::Regex::IGNORE_REGEX();
@@ -61,7 +61,7 @@ my($_XREF_REGEX) = Bivio::UI::PDF::Regex::XREF_REGEX();
 sub new {
     my($self) = Bivio::UI::PDF::Section::new(@_);
     my(undef, $xref_ref, $trailer_ref) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'item_refs' => [],	# Indirect objects and comments.
 	'xref_ref' => $xref_ref,
 	'trailer_ref' => $trailer_ref
@@ -83,7 +83,7 @@ sub new {
 
 sub add_obj {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{'item_refs'}}, $obj_ref);
     return;
 }
@@ -98,7 +98,7 @@ sub add_obj {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     map {
@@ -122,7 +122,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     _trace("Extracting body") if $_TRACE;
 
@@ -177,7 +177,7 @@ sub extract {
 
 sub get_objects_array_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(@objects_array);
     local($_);
 

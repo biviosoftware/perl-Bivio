@@ -89,7 +89,6 @@ use HTTP::Request ();
 use LWP::UserAgent ();
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my($_CVS_RPM_SPEC_DIR);
 my($_RPM_HOME_DIR);
 my($_RPM_HTTP_ROOT);

@@ -39,7 +39,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -59,12 +59,12 @@ values if there is more than one Request field given.
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, @args) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'output_field' => $args[0],
 	'separators_ref' => [],
 	'get_widget_value_array_ref' => []
     };
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     push(@{$fields->{'separators_ref'}}, '');
     push(@{$fields->{'get_widget_value_array_ref'}}, $args[1]);
     for (my($indx) = 2; $indx <= $#args; $indx += 2) {
@@ -92,7 +92,7 @@ line characters to '\r\n', and eliminating any blank lines.
 
 sub add_value {
     my($self, $req, $output_values_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($output_value) = '';
 
     _trace("field \"", $fields->{'output_field'},
@@ -140,7 +140,7 @@ sub add_value {
 
 sub get_pdf_field_names {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'output_field'});
 }
 

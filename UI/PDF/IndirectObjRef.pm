@@ -38,7 +38,7 @@ use Bivio::UI::PDF::Regex;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_OBJ_REF_REGEX) = Bivio::UI::PDF::Regex::OBJ_REF_REGEX();
 
@@ -59,7 +59,7 @@ sub new {
     # The object number and object generation may be undefined if they are to
     # be extracted from an ArrayIterator.
     my(undef, $obj_number, $obj_generation) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'obj_number' => $obj_number,
 	'obj_generation' => $obj_generation
     };
@@ -80,9 +80,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::IndirectObjRef->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'obj_number'} = $fields->{'obj_number'};
     $clone_fields->{'obj_generation'} = $fields->{'obj_generation'};
    return($clone);
@@ -98,7 +98,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $emit_ref->append_no_new_lines($self->get_value());
     return;
 }
@@ -113,7 +113,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(length($self->get_value()));
 }
 
@@ -127,7 +127,7 @@ sub emit_length {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if (${$line_iter_ref->current_ref()} =~ /$_OBJ_REF_REGEX/) {
 	if (defined($1)) {
@@ -159,7 +159,7 @@ sub extract {
 
 sub get_obj_number {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'obj_number'});
 }
 
@@ -173,7 +173,7 @@ sub get_obj_number {
 
 sub get_value {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'obj_number'} . ' '
 	    . $fields->{'obj_generation'} . ' R');
 }

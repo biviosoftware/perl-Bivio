@@ -53,7 +53,7 @@ use Bivio::UI::LocalFileType;
 use File::Find ();
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_IGNORE_POD) = {
     '=for' => 1,
     '=over' => 1,
@@ -81,7 +81,7 @@ Creates a new SourceCode renderer.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 

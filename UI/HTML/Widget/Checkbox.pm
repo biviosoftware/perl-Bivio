@@ -74,7 +74,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -90,7 +90,7 @@ Creates a Checkbox widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -108,7 +108,7 @@ Initializes from configuration attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
@@ -137,7 +137,7 @@ Draws the checkbox on the specified buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};

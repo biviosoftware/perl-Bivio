@@ -37,7 +37,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_CONTINUED_STRING_REGEX) = Bivio::UI::PDF::Regex::CONTINUED_STRING_REGEX();
 
@@ -57,7 +57,7 @@ sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
     # The text argument is optional.
     my(undef, $text) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'text' => $text
     };
     return $self;
@@ -77,8 +77,8 @@ sub new {
 
 sub clone {
     my($self, $clone) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'text'} = $fields->{'text'};
     return;
 }
@@ -93,7 +93,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $emit_ref->append($self->_get_opening_char() . $fields->{'text'}
 	    . $self->_get_closing_char());
     return;
@@ -109,7 +109,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(length($fields->{'text'}) + 2);	# 2 for the enclosing chars.
 }
 
@@ -123,7 +123,7 @@ sub emit_length {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($text) = ${$line_iter_ref->current_ref()};
     my($opening_char) = "\\" . $self->_get_opening_char();
@@ -195,7 +195,7 @@ sub extract {
 
 sub get_value {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'text'});
 }
 

@@ -32,7 +32,7 @@ C<Bivio::Biz::Accounting::Ratio> safe ratio multiplication
 use Bivio::Type::Amount;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_M) = 'Bivio::Type::Amount';
 
 =head1 FACTORIES
@@ -54,7 +54,7 @@ sub new {
     # need to shift 1 decimal point to correctly round value
     # Bivio::Type::Amount truncates past precision
 
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	numerator => $_M->mul($numerator, 10),
 	denominator => $denominator,
     };
@@ -75,7 +75,7 @@ Returns the string form "numerator / denominator".
 
 sub as_string {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $_M->div($fields->{numerator}, 10).' / '.$fields->{denominator};
 }
 
@@ -89,7 +89,7 @@ Multiplies the specified value by the ratio, returning the result.
 
 sub multiply {
     my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # multiply and unshift
     my($result) = $_M->div(

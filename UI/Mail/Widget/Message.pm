@@ -79,7 +79,7 @@ the actual send-to addresses.
 use Bivio::Mail::Address;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -96,7 +96,7 @@ Creates a Message.  There is no positional notation for this widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -114,7 +114,7 @@ Creates and sends a mail message.
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Headers
     my($msg) = Bivio::Mail::Outgoing->new();
@@ -159,7 +159,7 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{recipients} = $self->initialize_attr('recipients');
     $fields->{from} = $self->initialize_attr('from');
     foreach my $f (qw(body cc to subject)) {

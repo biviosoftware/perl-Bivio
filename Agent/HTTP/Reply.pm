@@ -48,7 +48,7 @@ use UNIVERSAL;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 # Can't initialize here, because get "deep recursion".  Don't ask me
 # why...
 my(%_DIE_TO_HTTP_CODE);
@@ -69,7 +69,7 @@ output operations.
 sub new {
     my($proto, $r) = @_;
     my($self) = &Bivio::Agent::Reply::new($proto);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	output => '',
 	r => $r,
     };
@@ -92,12 +92,12 @@ Redirects the client to the specified uri.
 
 sub client_redirect {
     my($self, $req, $uri) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($r) = $fields->{r};
 
     # don't let any more data be sent
-    $self->{$_PACKAGE} = undef;
+    $self->[$_IDI] = undef;
 
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
@@ -128,7 +128,7 @@ Sends the buffered reply data.
 
 sub send {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($r) = $fields->{r};
     my($o) = $fields->{output};
 
@@ -172,7 +172,7 @@ sub send {
     # don't let any more data be sent.  Don't clear early in case
     # there is an error and we get called back in die_to_http_code
     # (then _error()).
-    $self->{$_PACKAGE} = undef;
+    $self->[$_IDI] = undef;
     return;
 }
 
@@ -255,7 +255,7 @@ Sets an arbitrary header value.
 
 sub set_header {
     my($self, $name, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     ($fields->{headers} ||= {})->{$name} = $value;
     return;
 }
@@ -271,7 +271,7 @@ C<NOT_FOUND>, C<HTTP_SERVICE_UNAVAILABLE>.
 
 sub set_http_status {
     my($self, $status) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # It is error prone keeping a list up to date, so we just check
     # a reasonable range.
     Bivio::Die->die($status, ': unknown HTTP status')
@@ -310,7 +310,7 @@ I<file> or I<value> will be owned by this method.
 
 sub set_output {
     my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die('too many calls to set_output') if $fields->{output};
     die('not a GLOB or SCALAR reference')
 	    unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB';
@@ -388,7 +388,7 @@ EOF
 sub _send_http_header {
     my($self, $req, $r) = @_;
     if ($req) {
-	my($fields) = $self->{$_PACKAGE};
+	my($fields) = $self->[$_IDI];
 	# Set the status if was set, otherwise defaults to 200 by Apache
 	$r->status($fields->{status}) if defined($fields->{status});
 

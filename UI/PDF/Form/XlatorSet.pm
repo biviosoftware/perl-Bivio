@@ -27,7 +27,7 @@ C<Bivio::UI::PDF::Form::XlatorSet>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -44,7 +44,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -62,7 +62,7 @@ sub new {
 
 sub create_value_objs {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     # Get a reference to the array of xlators for this set.  Call add_value for
@@ -87,7 +87,7 @@ sub create_value_objs {
 
 sub get_xlator_ref {
     my($self, $field_name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, " Abstract method\n");
     return;
 }
@@ -102,7 +102,7 @@ sub get_xlator_ref {
 
 sub set_up {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # Do nothing; override in sub-class if anything needs to be setup.
     return;
 }

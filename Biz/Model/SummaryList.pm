@@ -41,7 +41,7 @@ methods while iterating through the source(s).
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -63,7 +63,7 @@ sub new {
     my($proto, $source, $static_properties) = @_;
     my($self) = &Bivio::Collection::Attributes::new($proto,
 	    $static_properties);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	source => $source,
 	request => $source->[0]->get_request,
 	loaded => 1,
@@ -88,7 +88,7 @@ named column.
 
 sub get {
     my($self, @keys) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(@result) = ();
     foreach my $name (@keys) {
 	$self->put($name, _sum($fields->{source}, $name))
@@ -108,7 +108,7 @@ undef after the list is read.
 
 sub get_cursor {
     my($self) = shift;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     if ($fields->{loaded}) {
 	return -1;
     }
@@ -136,7 +136,7 @@ Returns the request associated with this list.
 =cut
 
 sub get_request {
-    return shift->{$_PACKAGE}->{request};
+    return shift->[$_IDI]->{request};
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -160,7 +160,7 @@ Returns the (first) source list model for this SummaryList.
 =cut
 
 sub get_source_list_model {
-    return shift->{$_PACKAGE}->{source}->[0];
+    return shift->[$_IDI]->{source}->[0];
 }
 
 =for html <a name="get_widget_value"></a>
@@ -175,7 +175,7 @@ to do the rest.
 
 sub get_widget_value {
     my($self, $name, @params) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # Only "get" if first source has this key.  "get" does a "put"
     # if need be.
     $self->get($name) if $fields->{source}->[0]->has_keys($name);
@@ -192,7 +192,7 @@ Summary lists return only one row.
 
 sub next_row {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('no cursor') unless defined($fields->{loaded});
     if ($fields->{loaded}) {
 	$fields->{loaded} = 0;
@@ -212,7 +212,7 @@ Places the cursor at the start of the list.
 
 sub reset_cursor {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{loaded} = 1;
     return;
 }

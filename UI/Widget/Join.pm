@@ -51,7 +51,7 @@ Widget_values can return widgets.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -69,7 +69,7 @@ Creates a new Join widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -87,7 +87,7 @@ Initializes widget state and children.
 
 sub initialize {
     my($self, $source) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Already initialized?
     return if $fields->{values};
@@ -147,7 +147,7 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($name) = 0;
     foreach my $v (@{$fields->{values}}) {
 	$self->unsafe_render_value($name++, $v, $source, $buffer);

@@ -29,7 +29,7 @@ and Bivio::UI::PDF::Xref.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -46,7 +46,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -64,7 +64,7 @@ sub new {
 
 sub emit_section_text {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": Abstract object\n");
     return;
 }
@@ -79,7 +79,7 @@ sub emit_section_text {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     die(__FILE__, ", ", __LINE__, ": Abstract object\n");
     return;
 }

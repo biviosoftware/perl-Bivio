@@ -54,7 +54,7 @@ Accessed dynamically.  Widget value must be a widget or false.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -77,7 +77,7 @@ really.  If it is a hash_ref, it must contain a I<value> attribute.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(_new_args(@_));
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 

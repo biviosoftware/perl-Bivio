@@ -63,7 +63,7 @@ use Bivio::Auth::Role;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 
@@ -109,7 +109,7 @@ was added to support L<Bivio::Biz::Util::File|Bivio::Biz::Util::File>.
 
 sub execute_simple {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($user) = $req->get('auth_user');
     my($club_id) = $req->get('auth_id');
     my($role) = $req->get('auth_role');

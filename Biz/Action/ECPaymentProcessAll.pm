@@ -36,7 +36,6 @@ one payment at a time.
 use Bivio::Societas::Biz::Model::ECPayment;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 

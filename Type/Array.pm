@@ -39,7 +39,6 @@ a string representable type.  Not all conversions are supported.
 use Bivio::Die;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -129,7 +129,7 @@ use Bivio::Type::Enum;
 
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my(@_ATTRS) = qw(
     auto_submit
     auto_submit
@@ -159,7 +159,7 @@ Creates a new Select widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -191,7 +191,7 @@ field values.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{model};
     $fields->{model} = $self->ancestral_get('form_model');
     $fields->{field} = $self->get('field');
@@ -228,7 +228,7 @@ to extract the field's type and can only do that when we have a form.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
@@ -359,7 +359,7 @@ sub _load_items_from_enum {
 #
 sub _load_items_from_enum_list {
     my($self, $list) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my(@values) = sort {
 	&{$fields->{enum_sort}}($a, $b);

@@ -70,7 +70,7 @@ If C<BROWSER_HTML3> (read Netscape), will render a partial style sheet.
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TAGS) = join(',', qw(
     address
     blockquote
@@ -109,7 +109,7 @@ Returns a new instance.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -139,7 +139,7 @@ Renders the appropriate style sheet.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
 
     # Only real browsers get style sheets, sorry.

@@ -324,7 +324,7 @@ use Bivio::UI::HTML::WidgetFactory;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_INFINITY_ROWS) = 0x7fffffff;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 
@@ -347,7 +347,7 @@ Creates a new Table widget with I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -444,7 +444,7 @@ I<empty_list_widget>.
 
 sub get_render_state {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($list_name) = $self->get('source_name');
     my($list) = $req->get($list_name);
@@ -514,7 +514,7 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{headings};
 
     # Make sure the class is loaded
@@ -675,7 +675,7 @@ Draws the table upon the output buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
     my($state) = $self->get_render_state($source, $buffer);
     return unless $state;

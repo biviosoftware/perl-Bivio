@@ -30,7 +30,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -47,7 +47,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::PdfObj::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'text_ref' => undef
     };
     return $self;
@@ -67,9 +67,9 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::Comment->new();
-    my($clone_fields) = $clone->{$_PACKAGE};
+    my($clone_fields) = $clone->[$_IDI];
     $clone_fields->{'text_ref'} = $fields->{'text_ref'};
     return($clone);
 }
@@ -84,7 +84,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $emit_ref->append(${$fields->{'text_ref'}} . "\n");
     return;
 }
@@ -99,7 +99,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     _trace("Extracting comment \"${$line_iter_ref->current_ref()}\"")
 	    if $_TRACE;

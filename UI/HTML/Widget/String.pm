@@ -113,7 +113,7 @@ use Bivio::UI::Font;
 use Bivio::UI::HTML::Format;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -135,7 +135,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -153,7 +153,7 @@ Initializes static information and child widgets.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
 
@@ -215,7 +215,7 @@ Render the object.  Outputs nothing if result is empty.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Bivio::Die->die("String widget not initialized: ", $self->get('value'))
 	    unless exists($fields->{value});
 

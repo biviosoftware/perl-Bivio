@@ -33,7 +33,7 @@ C<Bivio::UI::PDF::Trailer>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_DIC_START_REGEX) = Bivio::UI::PDF::Regex::DIC_START_REGEX();
 my($_EOF_REGEX) = Bivio::UI::PDF::Regex::EOF_REGEX();
@@ -55,7 +55,7 @@ my($_TRAILER_REGEX) = Bivio::UI::PDF::Regex::TRAILER_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::Section::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	# Reference to the trailer dictionary.
 	'dictionary' => Bivio::UI::PDF::Dictionary->new(),
 	# Reference to a number object containing the offset of the xref.
@@ -78,7 +78,7 @@ sub new {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $emit_ref->append("trailer\n");
     $fields->{'dictionary'}->emit($emit_ref);
@@ -99,7 +99,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     unless (${$line_iter_ref->current_ref()} =~ /$_TRAILER_REGEX/) {
 	die(__FILE__, ", ", __LINE__, "missing tralier keyword");
@@ -154,7 +154,7 @@ sub extract {
 
 sub get_prev_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'dictionary'}->get_value('Prev'));
 }
 
@@ -168,7 +168,7 @@ sub get_prev_offset {
 
 sub get_root_pointer {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'dictionary'}->get_value('Root'));
 }
 
@@ -182,7 +182,7 @@ sub get_root_pointer {
 
 sub get_size {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'dictionary'}->get_value('Size'));
 }
 
@@ -196,7 +196,7 @@ sub get_size {
 
 sub get_xref_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'startxref'});
 }
 
@@ -210,7 +210,7 @@ sub get_xref_offset {
 
 sub set_prev_offset {
     my($self, $number_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'dictionary'}->set_value('Prev', $number_ref);
     return;
 }
@@ -225,7 +225,7 @@ sub set_prev_offset {
 
 sub set_root_pointer {
     my($self, $indirect_obj_ref_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'dictionary'}->set_value('Root', $indirect_obj_ref_ref);
     return;
 }
@@ -240,7 +240,7 @@ sub set_root_pointer {
 
 sub set_size {
     my($self, $number_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'dictionary'}->set_value('Size', $number_ref);
     return;
 }
@@ -255,7 +255,7 @@ sub set_size {
 
 sub set_xref_offset {
     my($self, $number_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'startxref'} = $number_ref;
     return;
 }

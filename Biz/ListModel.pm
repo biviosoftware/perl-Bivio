@@ -122,7 +122,7 @@ use Bivio::Type::PageSize;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -197,7 +197,7 @@ Appends I<msg> to the internal load notes.
 
 sub append_load_notes {
     my($self, $msg) = @_;
-    $self->{$_PACKAGE}->{load_notes} .= $msg;
+    $self->[$_IDI]->{load_notes} .= $msg;
     return;
 }
 
@@ -239,7 +239,7 @@ Returns true if next_row can be called.
 =cut
 
 sub can_next_row {
-    return defined(shift->{$_PACKAGE}->{cursor}) ? 1 : 0;
+    return defined(shift->[$_IDI]->{cursor}) ? 1 : 0;
 }
 
 =for html <a name="execute_load_all"></a>
@@ -355,7 +355,7 @@ If I<args> are provided, they will be forwarded to the query formatting.
 
 sub format_query {
     my($self, $type, $args) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $args = {} unless defined($args);
 
     # Convert to enum unless already converted
@@ -406,7 +406,7 @@ L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>.
 
 sub format_uri {
     my($self, $type, $uri, $query_args, $req) = _format_uri_args(@_);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if ($type->get_name =~ /PATH/) {
 	my($c) = $fields->{cursor};
@@ -498,7 +498,7 @@ If I<direction> is undefined, uses the first field's default sort order.
 
 sub format_uri_for_sort {
     my($self, $uri_or_task, $direction, @order_fields) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($main_field) = $order_fields[0];
     my($main_order) = defined($direction)
@@ -564,7 +564,7 @@ undef after the list is read.
 =cut
 
 sub get_cursor {
-    return shift->{$_PACKAGE}->{cursor};
+    return shift->[$_IDI]->{cursor};
 }
 
 =for html <a name="get_hidden_field_values"></a>
@@ -580,7 +580,7 @@ Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"
 
 sub get_hidden_field_values {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $fields->{query}->get_hidden_field_values(
 	    $self->internal_get_sql_support());
 }
@@ -609,7 +609,7 @@ Used by Biz::Util::ListModel.
 
 sub get_load_notes {
     my($self) = @_;
-    return $self->{$_PACKAGE}->{load_notes};
+    return $self->[$_IDI]->{load_notes};
 }
 
 =for html <a name="get_query"></a>
@@ -623,7 +623,7 @@ associated with this list model.
 =cut
 
 sub get_query {
-    return shift->{$_PACKAGE}->{query};
+    return shift->[$_IDI]->{query};
 }
 
 =for html <a name="get_query_as_hash"></a>
@@ -657,7 +657,7 @@ Returns the number of rows loaded.
 =cut
 
 sub get_result_set_size {
-    my($rows) = shift->{$_PACKAGE}->{rows};
+    my($rows) = shift->[$_IDI]->{rows};
     Carp::croak('not loaded') unless $rows;
     return int(@$rows);
 }
@@ -688,7 +688,7 @@ and defined.
 =cut
 
 sub has_cursor {
-    my($cursor) = shift->{$_PACKAGE}->{cursor};
+    my($cursor) = shift->[$_IDI]->{cursor};
     return defined($cursor) && $cursor >= 0 ? 1 : 0;
 }
 
@@ -701,7 +701,7 @@ Is there next page or item to this list model?
 =cut
 
 sub has_next {
-    return shift->{$_PACKAGE}->{query}->get('has_next');
+    return shift->[$_IDI]->{query}->get('has_next');
 }
 
 =for html <a name="has_prev"></a>
@@ -713,7 +713,7 @@ Is there prev page or item to this list model?
 =cut
 
 sub has_prev {
-    return shift->{$_PACKAGE}->{query}->get('has_prev');
+    return shift->[$_IDI]->{query}->get('has_prev');
 }
 
 =for html <a name="internal_get_rows"></a>
@@ -728,7 +728,7 @@ hasn't been loaded, blows up.
 =cut
 
 sub internal_get_rows {
-    my($rows) = shift->{$_PACKAGE}->{rows};
+    my($rows) = shift->[$_IDI]->{rows};
     Carp::croak('not loaded') unless $rows;
     return $rows;
 }
@@ -764,7 +764,7 @@ Returns true if is loaded.
 =cut
 
 sub internal_is_loaded {
-    return shift->{$_PACKAGE}->{rows} ? 1 : 0;
+    return shift->[$_IDI]->{rows} ? 1 : 0;
 }
 
 =for html <a name="internal_load"></a>
@@ -783,9 +783,9 @@ all the rows are loaded if I<self> implements this method.
 sub internal_load {
     my($self, $rows, $query) = @_;
     # Easier to just replace the hash_ref
-    my($empty_properties, $load_notes) = @{$self->{$_PACKAGE}}{
+    my($empty_properties, $load_notes) = @{$self->[$_IDI]}{
 	qw(empty_properties load_notes)};
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	rows => $rows,
 	cursor => -1,
 	query => $query,
@@ -925,7 +925,7 @@ Returns false if there is no next.
 
 sub iterate_next_and_load {
     my($self, $iterator) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($row);
     if ($fields->{iterate_load}) {
 	$row = $fields->{rows}->[0];
@@ -1130,7 +1130,7 @@ B<Only returns false ONCE.  After that calls die.>
 
 sub next_row {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (++$fields->{cursor} >= int(@{$fields->{rows}})) {
@@ -1224,7 +1224,7 @@ B<Only returns false ONCE.  After that calls die.>
 
 sub prev_row {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (--$fields->{cursor} < 0) {
@@ -1245,7 +1245,7 @@ Places the cursor at the start of the list.
 =cut
 
 sub reset_cursor {
-    shift->{$_PACKAGE}->{cursor} = -1;
+    shift->[$_IDI]->{cursor} = -1;
     return;
 }
 
@@ -1265,7 +1265,7 @@ I<index> may also be L<LAST_ROW|"LAST_ROW">.
 
 sub set_cursor {
     my($self, $index) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Carp::croak('not loaded') unless $fields->{rows};
     $self->internal_clear_model_cache;
     my($n) = int(@{$fields->{rows}});
@@ -1354,7 +1354,7 @@ sub unauth_load_all {
 #
 sub _assert_all {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->throw_die(Bivio::DieCode::TOO_MANY(), 'more than '
 	    .$self->LOAD_ALL_SIZE.' records')
 	    if $fields->{query}->get('has_next');
@@ -1422,7 +1422,7 @@ sub _load_this {
 sub _new {
     my($self) = @_;
     # NOTE: fields are dynamically replaced.  See, e.g. load.
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	empty_properties => $self->internal_get,
 	load_notes => '',
     };
@@ -1447,7 +1447,7 @@ sub _new {
 #
 sub _unauth_load {
     my($self, $query) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{load_notes} =  '';
     my($sql_support) = $self->internal_get_sql_support;
 

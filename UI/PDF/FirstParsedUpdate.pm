@@ -35,7 +35,7 @@ C<Bivio::UI::PDF::FirstParsedUpdate>
 use Bivio::UI::PDF::Header;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -52,7 +52,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::ParsedUpdate::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'header_ref' => Bivio::UI::PDF::Header->new()
     };
     return $self;
@@ -72,7 +72,7 @@ sub new {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'header_ref'}->emit($emit_ref);
     $self->SUPER::emit($emit_ref);
     return;
@@ -88,7 +88,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'header_ref'}->extract($line_iter_ref);
     $self->SUPER::extract($line_iter_ref);
     return;

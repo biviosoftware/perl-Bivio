@@ -72,7 +72,7 @@ use Bivio::UI::HTML::Widget::String;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -88,7 +88,7 @@ Creates a new checklist item.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -106,7 +106,7 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # prepare constants (could be static)
     $fields->{prefix} = "\n<table border=0>\n<tr><td colspan=2>";
@@ -144,7 +144,7 @@ Draws the table upon the output buffer.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
 
@@ -183,7 +183,7 @@ sub render {
 #
 sub _initialize_subwidget {
     my($self, $widget, $name) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $widget->put(parent => $self);
     $widget->initialize;
     $fields->{$name} = $widget;

@@ -56,7 +56,7 @@ Values may be a string or Bivio::UI::Widget.
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -73,7 +73,7 @@ Creates a new Enum renderer.
 
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::String::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -91,7 +91,7 @@ Initializes display_values and string attributes.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{initialized};
 
     # convert any display values to string widgets if necessary

@@ -233,7 +233,7 @@ use Bivio::Type::UserAgent;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_IS_PRODUCTION) = 0;
 my($_CAN_SECURE);
 Bivio::IO::Config->register({
@@ -816,7 +816,7 @@ Changes the current realm if required by the new task.
 
 sub internal_redirect_realm {
     my($self, $new_task, $new_realm) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($task) = Bivio::Agent::Task->get_by_id($new_task);
 
     my($trt) = $task->get('realm_type');

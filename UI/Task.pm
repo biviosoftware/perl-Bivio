@@ -160,7 +160,7 @@ use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_GENERAL) = Bivio::Auth::Realm::General->new;
@@ -253,7 +253,7 @@ B<This is an experimental method.>
 sub format_realmless_uri {
     my($proto, $task_id, $path_info, $req) = @_;
     my($self) = $proto->internal_get_self($req);
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $proto->format_uri(
 	    $task_id,
 	    $fields->{realmless_uri}->{
@@ -488,7 +488,7 @@ sub parse_uri {
     $facade = $req->unsafe_get('facade')
 	    || Bivio::UI::Facade->setup_request($facade, $req);
     my($self) = $facade->get('Task');
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     my($orig_uri) = $uri;
     $uri =~ s!^/+!!;
@@ -628,7 +628,7 @@ realm_type.
 sub unsafe_get_from_uri {
     my($proto, $uri, $realm_type, $req_or_facade) = @_;
     my($self) = $proto->internal_get_self($req_or_facade);
-    my($from_uri) = $self->{$_PACKAGE}->{from_uri};
+    my($from_uri) = $self->[$_IDI]->{from_uri};
     $uri = $_REALM_PLACEHOLDER.'/'.$uri if $realm_type ne $_GENERAL;
     _clean_uri(\$uri);
     my($info) = $from_uri->{$uri};
@@ -730,7 +730,7 @@ sub _init_err {
 #
 sub _init_from_uri {
     my($self, $groups) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my(%from_uri);
 #TODO: Remove
 #    my(%path_info_uri);
@@ -860,12 +860,12 @@ sub _init_uri {
 
 # _initialize_fields(self) : hash_ref
 #
-# Initializes $self->{$_PACKAGE} during new. 
+# Initializes $self->[$_IDI] during new. 
 #
 sub _initialize_fields {
     my($self) = @_;
-    return $self->{$_PACKAGE} if $self->{$_PACKAGE};
-    return $self->{$_PACKAGE} = {
+    return $self->[$_IDI] if $self->[$_IDI];
+    return $self->[$_IDI] = {
 	# Used only at initialization
 	to_realm_type => {map {
 	    (uc($_->[0]) => uc($_->[2]));

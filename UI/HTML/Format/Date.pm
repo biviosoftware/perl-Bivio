@@ -39,7 +39,6 @@ C<Bivio::UI::HTML::Format::Date>
 use Bivio::Type::DateTime;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

@@ -31,7 +31,7 @@ use Bivio::UI::PDF::Trailer;
 use Bivio::UI::PDF::Xref;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -48,7 +48,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::ClearUpdate::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -66,7 +66,7 @@ sub new {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->get_body_ref()->emit($emit_ref);
     $self->_get_xref_ref()->emit($emit_ref);
     $self->_get_trailer_ref()->emit($emit_ref);
@@ -83,7 +83,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->get_body_ref()->extract($line_iter_ref);
     $self->_get_xref_ref()->extract($line_iter_ref);
     $self->_get_trailer_ref()->extract($line_iter_ref);
@@ -100,7 +100,7 @@ sub extract {
 
 sub get_objects_array_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($self->get_body_ref()->get_objects_array_ref());
 }
 

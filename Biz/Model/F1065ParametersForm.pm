@@ -43,7 +43,6 @@ use Bivio::Type::Location;
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 =head1 METHODS

@@ -36,7 +36,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_STREAM_END_REGEX) = Bivio::UI::PDF::Regex::STREAM_END_REGEX();
 my($_STREAM_START_REGEX) = Bivio::UI::PDF::Regex::STREAM_START_REGEX();
@@ -56,7 +56,7 @@ my($_STREAM_START_REGEX) = Bivio::UI::PDF::Regex::STREAM_START_REGEX();
 sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
     my(undef, $dictionary_ref) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'dictionary_ref' => $dictionary_ref,
 	'text' => undef
     };
@@ -77,7 +77,7 @@ sub new {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'dictionary_ref'}->emit($emit_ref);
 
     $emit_ref->append("\nstream" . $fields->{'text'}
@@ -95,7 +95,7 @@ sub emit {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     unless (${$line_iter_ref->current_ref()} =~ /$_STREAM_START_REGEX/) {
 	die(__FILE__,", ", __LINE__, ": no stream keyword\n");
@@ -140,7 +140,7 @@ sub extract {
 
 sub is_stream {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(1);
 }
 
@@ -154,7 +154,7 @@ sub is_stream {
 
 sub set_dictionary {
     my($self, $dictionary_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'dictionary_ref'} = $dictionary_ref;
     return;
 }

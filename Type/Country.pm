@@ -37,7 +37,6 @@ C<Bivio::Type::Country> represents the country in the database.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

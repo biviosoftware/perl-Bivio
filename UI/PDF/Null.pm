@@ -38,7 +38,7 @@ use Bivio::UI::PDF::Strings;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_NULL_OBJ_REGEX) = Bivio::UI::PDF::Regex::NULL_OBJ_REGEX();
 my($_NULL_OBJ_VALUE) = Bivio::UI::PDF::Strings::NULL_OBJ_VALUE();
@@ -57,7 +57,7 @@ my($_NULL_OBJ_VALUE) = Bivio::UI::PDF::Strings::NULL_OBJ_VALUE();
 
 sub new {
     my($self) = Bivio::UI::PDF::DirectObj::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -75,7 +75,7 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::Null->new();
     return($clone);
 }
@@ -90,7 +90,7 @@ sub clone {
 
 sub emit {
     my($self, $emit_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # A null object just consists of the key word 'null'.
     $emit_ref->append_no_new_lines($_NULL_OBJ_VALUE);
     return;
@@ -106,7 +106,7 @@ sub emit {
 
 sub emit_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(length($_NULL_OBJ_VALUE));
 }
 
@@ -120,7 +120,7 @@ sub emit_length {
 
 sub extract {
     my($self, $line_iter_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     if (${$line_iter_ref->current_ref()} =~ /$_NULL_OBJ_REGEX/) {
 	if (defined($1)) {
@@ -148,7 +148,7 @@ sub extract {
 
 sub get_value {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return $_NULL_OBJ_VALUE;
 }
 

@@ -43,7 +43,6 @@ C<Bivio::Type::CreditCardType> lists the currently supported credit card types.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
     UNKNOWN => [

@@ -44,7 +44,6 @@ use Bivio::Die;
 use Bivio::IO::Alert;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 # Don't allow queueing while in execute.
 my($_SELF);
 my($_IN_EXECUTE) = 0;

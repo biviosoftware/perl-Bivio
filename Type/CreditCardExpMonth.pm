@@ -33,7 +33,6 @@ C<Bivio::Type::CreditCardExpMonth> lists credit card expiration months
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
     JANUARY => [

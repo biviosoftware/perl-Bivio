@@ -64,7 +64,6 @@ use HTTP::Request ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_CFG) = {
     page => ['http://127.0.0.1'],
     email => 'root',

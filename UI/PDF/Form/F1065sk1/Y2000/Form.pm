@@ -35,7 +35,7 @@ C<Bivio::UI::PDF::Form::F1065sk1::Y2000::Form>
 use Bivio::UI::PDF::Form::F1065sk1::Y2000::Formf1065sk1;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -52,7 +52,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Form::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -70,7 +70,7 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $req->get('Bivio::Biz::Model::F1065K1List')->set_cursor_or_die(0);
     return Bivio::UI::PDF::Form::F1065sk1::Y2000::Formf1065sk1->new()
 	    ->execute($req);

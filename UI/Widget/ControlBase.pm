@@ -60,7 +60,7 @@ renders nothing.  May be a widget value, widget, etc.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -76,7 +76,7 @@ Initializes fields.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -94,7 +94,7 @@ Renders the I<control_off_value>.  May be overridden.
 
 sub control_off_render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $self->unsafe_render_value('control_off_value',
 	    $fields->{off_value}, $source, $buffer);
     return;
@@ -122,7 +122,7 @@ Initializes the control field
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{control};
 
     $fields->{control} = $self->unsafe_get('control');
@@ -147,7 +147,7 @@ default renders nothing.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return !$fields->{control}
 	    || $source->get_widget_value(@{$fields->{control}})
 		    ? $self->control_on_render($source, $buffer)

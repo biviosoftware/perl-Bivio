@@ -63,7 +63,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -79,7 +79,7 @@ Creates a new LineCell widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -97,7 +97,7 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
     my($count) = $self->get_or_default('count', 1);
@@ -118,7 +118,7 @@ Render the object.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($value) = $fields->{value};
 
     my($req) = $source->get_request;

@@ -52,7 +52,7 @@ Which form are we dealing with.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -69,7 +69,7 @@ Creates a YesNo widget.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -87,7 +87,7 @@ Startup initialization for the widget.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{yes_widget};
 
     foreach my $name (qw(yes no)) {
@@ -106,7 +106,7 @@ sub initialize {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(
 	$self->ancestral_get('form_model'));
 

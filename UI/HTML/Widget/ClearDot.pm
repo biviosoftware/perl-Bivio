@@ -69,7 +69,7 @@ use Bivio::UI::Icon;
 
 #=VARIABLES
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -89,7 +89,7 @@ Creates a new ClearDot widget using I<attributes>.
 
 sub new {
     my($self) = Bivio::UI::Widget::new(_new_args(@_));
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -122,7 +122,7 @@ sub as_html {
     elsif (!ref($self)) {
 	die('must pass width and height if called statically');
     }
-    return $self->{$_PACKAGE}->{value};
+    return $self->[$_IDI]->{value};
 }
 
 =for html <a name="initialize"></a>
@@ -135,7 +135,7 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if exists($fields->{value});
     $fields->{value} = '<img src="'
 	    .Bivio::UI::Icon->get_clear_dot->{uri}
@@ -167,7 +167,7 @@ Render the clear dot.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($start) = length($$buffer);
     $$buffer .= $fields->{value};
     return if $fields->{is_constant};

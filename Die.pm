@@ -56,7 +56,6 @@ use Carp ();
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
 my($_CURRENT_SELF);
@@ -554,7 +553,7 @@ sub _handle_die {
 	    my($sub, $has_args) = @a[3,4];
 	    # Only call if argument is to a public method in a module
 	    next unless defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args;
-	    if ($sub eq "${_PACKAGE}::catch") {
+	    if ($sub eq __PACKAGE__.'::catch') {
 		# This gives us one more loop iteration
 		$stop++;
 		next;

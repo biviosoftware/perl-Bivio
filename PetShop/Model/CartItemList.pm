@@ -38,7 +38,6 @@ C<Bivio::PetShop::Model::CartItemList>
 use Bivio::PetShop::Type::Price;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

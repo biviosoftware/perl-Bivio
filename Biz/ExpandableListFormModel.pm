@@ -34,7 +34,7 @@ C<Bivio::Biz::ExpandableListFormModel> list form which can have extra rows
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_ROW_INCREMENT) = 4;
 
 =head1 FACTORIES
@@ -53,7 +53,7 @@ Creates a new ExpandableListFormModel.
 sub new {
     my($proto, @args) = @_;
     my($self) = $proto->SUPER::new(@args);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	list_initialized => 0,
     };
     return $self;
@@ -124,7 +124,7 @@ Appends empty rows to the list.
 
 sub internal_initialize_list {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($list) = $self->SUPER::internal_initialize_list();
     return if $fields->{list_initialized};
     $fields->{list_initialized} = 1;

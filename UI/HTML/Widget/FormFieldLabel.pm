@@ -60,7 +60,7 @@ use Bivio::UI::HTML::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -77,7 +77,7 @@ Nothing here.
 
 sub new {
     my($self) = &Bivio::UI::Widget::Director::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -95,7 +95,7 @@ Builds up the attributes for SUPER (Director).
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return if $fields->{initialized};
     my($label, $field) = $self->get('label', 'field');
     my($model) = $self->ancestral_get('form_model');

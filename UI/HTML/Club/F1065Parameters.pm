@@ -38,7 +38,6 @@ use Bivio::Societas::UI::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

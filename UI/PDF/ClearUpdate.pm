@@ -34,7 +34,7 @@ C<Bivio::UI::PDF::ClearUpdate>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -51,13 +51,13 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::Update::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'body_ref' => undef,
 	'xref_ref' => undef,
 	'trailer_ref' => undef
     };
 
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($xref_ref) = Bivio::UI::PDF::Xref->new();
     my($trailer_ref) = Bivio::UI::PDF::Trailer->new();
 
@@ -82,7 +82,7 @@ sub new {
 
 sub get_body_ref {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'body_ref'});
 }
 
@@ -96,7 +96,7 @@ sub get_body_ref {
 
 sub get_prev_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'trailer_ref'}->get_prev_offset());
 }
 
@@ -110,7 +110,7 @@ sub get_prev_offset {
 
 sub get_root_pointer {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'trailer_ref'}->get_root_pointer());
 }
 
@@ -124,7 +124,7 @@ sub get_root_pointer {
 
 sub get_size {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'trailer_ref'}->get_size());
 }
 
@@ -138,7 +138,7 @@ sub get_size {
 
 sub get_xref_offset {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'trailer_ref'}->get_xref_offset());
 }
 
@@ -150,7 +150,7 @@ sub get_xref_offset {
 #
 sub _get_xref_ref {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'xref_ref'});
 }
 
@@ -160,7 +160,7 @@ sub _get_xref_ref {
 #
 sub _get_trailer_ref {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'trailer_ref'});
 }
 

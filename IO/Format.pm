@@ -103,7 +103,7 @@ L<get_result|"get_result">.
 use Bivio::Die;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 FACTORIES
 
@@ -119,7 +119,7 @@ Returns a new Bivio::IO::Format.
 
 sub new {
     my($self) = Bivio::Collection::Attributes::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	lines => [],
 	result => '',
 	line_num => undef,
@@ -148,7 +148,7 @@ Returns self.
 sub add_line {
     my($self, $format, $args) = @_;
     $args ||= [];
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     Bivio::Die->die('all arguments must be references')
 		if grep(!ref($_), @$args);
     _append_newline(\$format);
@@ -172,7 +172,7 @@ Returns self.
 
 sub clear_result {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{result} = '';
     return $self;
 }
@@ -186,7 +186,7 @@ Returns the internal value of the result by reference.  B<DO NOT MODIFY.>
 =cut
 
 sub get_result {
-    my($fields) = shift->{$_PACKAGE};
+    my($fields) = shift->[$_IDI];
     return \$fields->{result};
 }
 
@@ -202,7 +202,7 @@ Returns self.
 
 sub process {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     # We'll check for top here...
     local($^A);
     my($delete_blank_lines) = $self->get_or_default('delete_blank_lines', 0);
@@ -244,7 +244,7 @@ Returns self.
 
 sub put_top {
     my($self, $top) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     _append_newline(\$top);
     $fields->{top} = $^L.$top;
     $fields->{top_line_count} = _count_lines($top);

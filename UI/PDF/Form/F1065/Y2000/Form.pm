@@ -38,7 +38,7 @@ use Bivio::UI::PDF::Form::F1065::Y2000::Formf1065;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -55,7 +55,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Form::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -73,7 +73,7 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $req->get('Bivio::Biz::Model::F1065List')->set_cursor_or_die(0);
     return Bivio::UI::PDF::Form::F1065::Y2000::Formf1065->new()->execute($req);
 }

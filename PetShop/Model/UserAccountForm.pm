@@ -37,7 +37,6 @@ C<Bivio::PetShop::Model::UserAccountForm> creates a new user account.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

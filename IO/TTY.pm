@@ -32,7 +32,6 @@ C<Bivio::IO::TTY> performs operations on a TTY.
 use Term::ReadKey ();
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

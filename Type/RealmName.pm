@@ -37,7 +37,6 @@ C<Bivio::Type::RealmName> is the name of a realm's owner.
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

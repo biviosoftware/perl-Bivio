@@ -33,7 +33,6 @@ C<Bivio::Type::CreditCardExpYear>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 __PACKAGE__->compile([
     Y2000 => [

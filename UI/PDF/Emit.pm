@@ -28,7 +28,7 @@ C<Bivio::UI::PDF::Emit>
 #=IMPORTS
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -45,7 +45,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UNIVERSAL::new(@_);
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	# The Pdf text of the whole document.
 	'text' => '',
 	# The number of characters in the last line in 'text'.
@@ -75,7 +75,7 @@ sub new {
 
 sub add_obj_ref {
     my($self, $obj_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     ${$fields->{'obj_refs_ref'}}{$obj_ref->get_obj_number()} = $obj_ref;
     return;
 }
@@ -90,7 +90,7 @@ sub add_obj_ref {
 
 sub append {
     my($self, $text) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Handle either text or a reference to text as input.
     my($text_ref);
@@ -127,7 +127,7 @@ sub append {
 
 sub append_no_new_lines {
     my($self, $text) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'current_line_count'} += length($text);
     $fields->{'text'} .= $text;
     return;
@@ -143,7 +143,7 @@ sub append_no_new_lines {
 
 sub get_current_line_count {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'current_line_count'});
 }
 
@@ -157,7 +157,7 @@ sub get_current_line_count {
 
 sub get_length {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(length($fields->{'text'}));
 }
 
@@ -171,7 +171,7 @@ sub get_length {
 
 sub get_text_ref {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return(\$fields->{'text'});
 }
 
@@ -185,7 +185,7 @@ sub get_text_ref {
 
 sub get_xref_start {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'xref_start_ref'});
 }
 
@@ -199,7 +199,7 @@ sub get_xref_start {
 
 sub mark_xref_start {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     $fields->{'xref_start_ref'}
 	    = Bivio::UI::PDF::Number->new(length(${$self->get_text_ref()}));
     return;

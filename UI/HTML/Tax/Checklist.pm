@@ -46,7 +46,7 @@ use Bivio::Societas::UI::ViewShortcuts;
 #=VARIABLES
 my($_VS) = 'Bivio::Societas::UI::ViewShortcuts';
 
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 =head1 METHODS
 
@@ -62,7 +62,7 @@ Creates a tax 99 page contents.
 
 sub create_content {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE} = {};
+    my($fields) = $self->[$_IDI] = {};
     $self->put(page_heading => Bivio::UI::HTML::Club::ReportPage
 	    ->get_heading_with_one_date('page_heading'));
 
@@ -187,7 +187,7 @@ Draws the links.
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     Bivio::Societas::Biz::Model::Address->new($req)->load(
 	    location => Bivio::Type::Location::HOME());

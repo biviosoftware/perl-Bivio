@@ -74,7 +74,6 @@ If true, will force a widget to a be a select, if it can.
 use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 

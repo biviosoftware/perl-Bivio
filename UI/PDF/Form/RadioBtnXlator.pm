@@ -37,7 +37,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -55,11 +55,11 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, @args) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'get_widget_value_array_ref' => $args[0],
 	'hash' => {}
     };
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Store each reference to an Xlator, or reference to an array of Xlator
     # References, in the hash with the radio button field value that selects
@@ -85,7 +85,7 @@ sub new {
 
 sub add_value {
     my($self, $req, $output_values_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
     my($input_value)
 	    = $req->get_widget_value($fields->{get_widget_value_array_ref});
@@ -130,7 +130,7 @@ sub add_value {
 
 sub get_pdf_field_names {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     local($_);
 
     my($radio_button_value, $xlator_ref);

@@ -37,7 +37,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 my($_STRING_END_PAREN_REGEX) = Bivio::UI::PDF::Regex::STRING_END_PAREN_REGEX();
 
@@ -55,7 +55,7 @@ my($_STRING_END_PAREN_REGEX) = Bivio::UI::PDF::Regex::STRING_END_PAREN_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::String::new(@_);
-    $self->{$_PACKAGE} = {};
+    $self->[$_IDI] = {};
     return $self;
 }
 
@@ -73,7 +73,7 @@ sub new {
 
 sub clone {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     my($clone) = Bivio::UI::PDF::StringParen->new();
     $self->SUPER::clone($clone);
     return($clone);

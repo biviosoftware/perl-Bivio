@@ -36,7 +36,7 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_PACKAGE) = __PACKAGE__;
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 
 =head1 FACTORIES
@@ -54,7 +54,7 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, $output_field, $yes_value) = @_;
-    $self->{$_PACKAGE} = {
+    $self->[$_IDI] = {
 	'output_field' => $output_field,
 	'yes_value' => $yes_value
     };
@@ -75,7 +75,7 @@ sub new {
 
 sub add_value {
     my($self, $req, $output_values_ref) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
 
     # Create a StringParen object and add a reference to it to the output
     # values hash.
@@ -96,7 +96,7 @@ sub add_value {
 
 sub get_pdf_field_names {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
+    my($fields) = $self->[$_IDI];
     return($fields->{'output_field'});
 }
 
@@ -110,7 +110,7 @@ sub get_pdf_field_names {
 
 # sub set_value {
 #     my($self, $value) = @_;
-#     my($fields) = $self->{$_PACKAGE};
+#     my($fields) = $self->[$_IDI];
 #     $fields->{'value'} = $value;
 #     return;
 # }
