@@ -230,7 +230,8 @@ sub _upgrade_files {
 	$admins->unauth_load_all({auth_id => $realm_id});
 	my($emails) = $admins->get_outgoing_emails();
 	print join(' ', $realms{$realm_id}, $realm_id,
-		$realm->get('name'), $emails ? @$emails : '<no admins>');
+		$realm->get('name'), $emails ? @$emails : '<no admins>'),
+			"\n";
     }
     return;
 }
