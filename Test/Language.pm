@@ -50,9 +50,11 @@ file name of the script
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::IO::File;
 use Bivio::IO::ClassLoader;
+use File::Spec;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -60,6 +62,10 @@ Bivio::IO::Trace->register;
 use vars ('$AUTOLOAD');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SELF_IN_EVAL);
+Bivio::IO::Config->register(my $_CFG = {
+    log_dir => 'log',
+});
+my($_INLINE_LOG_PREFIX) = 'inline00000';
 
 =head1 FACTORIES
 
@@ -139,9 +145,34 @@ Test language classes should implement:
         return $self->SUPER::handle_cleanup;
     }
 
+All values will be deleted.
+
 =cut
 
 sub handle_cleanup {
+    my($self) = @_;
+    $self->delete_all;
+    return;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item log_dir : string [log]
+
+Subdir of test which contains log files.  The log files are prefixed with the
+test name.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
     return;
 }
 
@@ -184,6 +215,22 @@ sub test_cleanup {
     return ($_SELF_IN_EVAL || $proto)->handle_cleanup();
 }
 
+=for html <a name="test_log_output"></a>
+
+=head2 test_log_output(string file_name, string content)
+
+Writes output to a separate log file in I<test_log_prefix> directory.
+
+=cut
+
+sub test_log_output {
+    my($self, $file_name, $content) = @_;
+    return unless ref($self) && $self->unsafe_get('test_log_prefix');
+    Bivio::IO::File->write($self->get('test_log_prefix') . "-$file_name",
+	\$content);
+    return;
+}
+
 =for html <a name="test_run"></a>
 
 =head2 static test_run(string script_name) : Bivio::Die
@@ -206,8 +253,13 @@ sub test_run {
         $script = Bivio::IO::File->read($script_name) unless ref($script);
 	substr($$script, 0, 0) = 'use strict;';
 	my($die) = Bivio::Die->catch($script);
-	$die->throw if $die;
-	return;
+#TODO: test_deviance is an attribute with a pattern to match against die->as-string.
+	return unless $die;
+	$_SELF_IN_EVAL->test_log_output('test_run.err',
+	    $die->as_string . "\n" . $die->get('stack'))
+	    if $_SELF_IN_EVAL;
+	$die->throw;
+	# DOES NOT RETURN
     });
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
     $_SELF_IN_EVAL = undef;
@@ -228,15 +280,19 @@ test instance.
 sub test_setup {
     my($proto, $map_class, @setup_args) = _args(@_);
     my($self) = _assert_in_eval('test_setup');
-    _die('called test_setup() twice') if $self->[$_IDI]->{setup_called};
-    my($subclass) = Bivio::IO::ClassLoader->map_require('TestLanguage', $map_class);
+    _die('called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
+    my($subclass) = Bivio::IO::ClassLoader->map_require(
+	'TestLanguage', $map_class);
     _die("$subclass is not a ", __PACKAGE__, ' class')
 	unless $subclass->isa(__PACKAGE__);
     _trace($subclass, ' setup with ', \@setup_args) if $_TRACE;
     my($new_self) = $subclass->new;
     _die("$subclass\->new didn't create an instance of ", __PACKAGE__)
 	unless $new_self->isa(__PACKAGE__);
-    $new_self->put(test_script => $self->get('test_script'));
+    $new_self->put(
+	test_script => $self->get('test_script'),
+	test_log_prefix => _log_prefix($self->get('test_script')),
+    );
     $_SELF_IN_EVAL = $new_self;
     _trace($_SELF_IN_EVAL);
     $_SELF_IN_EVAL->handle_setup(@setup_args);
@@ -290,8 +346,27 @@ sub _check_autoload {
 #
 sub _die {
     my($self, @msg) = @_;
-    Bivio::Die->die(ref($self) ? $self->get('test_script') : __PACKAGE__, @msg);
+    Bivio::Die->die(ref($self) ? $self->get('test_script')
+	: __PACKAGE__, @msg);
     # DOES NOT RETURN
+}
+
+# _log_prefix(string script_name) : string
+#
+# Parses test_script and writes log prefix.
+#
+sub _log_prefix {
+    my($script_name) = @_;
+    my($v, $d, $f) = File::Spec->splitpath(
+	    File::Spec->rel2abs(
+		$script_name eq '<inline>' ? $_INLINE_LOG_PREFIX++
+		: $script_name));
+    return File::Spec->catpath(
+	'',
+	Bivio::IO::File->mkdir_p(
+	    File::Spec->catpath(
+		$v, $d, $_CFG->{log_dir})),
+	$f);
 }
 
 =head1 COPYRIGHT
