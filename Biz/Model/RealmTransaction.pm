@@ -34,6 +34,7 @@ and delete interface to the C<realm_transaction_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::SQL::Connection;
 use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::Name;
@@ -46,6 +47,42 @@ use Bivio::Type::Text;
 =head1 METHODS
 
 =cut
+
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes this transaction, and all its entires, member entries,
+instrument entries, and account entries.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+    my($id) = $self->get('realm_transaction_id');
+
+    # delete member, instrument, and account entries
+    foreach my $table ('member_entry_t', 'realm_instrument_entry_t',
+	    'realm_account_entry_t') {
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE entry_id IN (
+                SELECT entry_id FROM entry_t
+                WHERE realm_transaction_id=?)',
+	    [$id]);
+    }
+
+    # delete entries
+    Bivio::SQL::Connection->execute('
+            DELETE FROM entry_T
+            WHERE realm_transaction_id=?',
+	    [$id]);
+
+    # delete the transaction
+    $self->delete();
+
+    return;
+}
 
 =for html <a name="internal_initialize"></a>
 
