@@ -8,6 +8,10 @@ $Bivio::UI::HTML::Format::Printf::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\
 
 Bivio::UI::HTML::Format::Printf - allows printf formatting of values
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Format::Printf;
