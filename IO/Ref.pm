@@ -62,8 +62,9 @@ sub nested_differences {
 	unless ref($left);
 
     if (ref($left) eq 'ARRAY') {
-	return _diff_res($proto, $left, $right, $name . '->scalar()')
-	    unless int(@$left) == int(@$right);
+	return _diff_res(
+	    $proto, scalar(@$left), scalar(@$right), $name . '->scalar()')
+	    unless @$left == @$right;
 	my($res) = undef;
 	for (my($i) = 0; $i <= $#$left; $i++) {
 	    my($r) = $proto->nested_differences(
@@ -76,9 +77,10 @@ sub nested_differences {
     if (ref($left) eq 'HASH') {
 	my(@l_keys) = sort(keys(%$left));
 	my(@r_keys) = sort(keys(%$right));
-	return _diff_res($proto, \@l_keys, \@r_keys, $name . '->keys()')
-	    unless $proto->nested_equals(\@l_keys, \@r_keys);
-	my($res) = undef;
+	my($res) = $proto->nested_differences(
+	    \@l_keys, \@r_keys, $name . '->keys()');
+	return $res
+	    if $res;
 	foreach my $k (@l_keys) {
 	    my($r) = $proto->nested_differences($left->{$k}, $right->{$k},
 	       $name . "->{'$k'}");
