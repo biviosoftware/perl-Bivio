@@ -93,8 +93,6 @@ sub get_content_type {
     return $w->get_content_type($source);
 }
 
-=cut
-
 =for html <a name="initialize"></a>
 
 =head2 initialize()
@@ -149,8 +147,7 @@ sub _select {
     my($v) = $self->get('value');
     return unless ref($v);
     return $source->get_widget_value(@$v) if ref($v) eq 'ARRAY';
-    Bivio::Die->die($self->get('value'), ': bad indirect widget');
-    # DOES NOT RETURN
+    return $v;
 }
 
 =head1 COPYRIGHT
