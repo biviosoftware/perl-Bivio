@@ -52,7 +52,7 @@ sub create_content {
     $self->put_heading('CLUB_LEGACY_INVITE');
     return $self->form('ImportedMemberInviteForm', [], [
 	'RealmOwner.display_name',
-	['invite_email', 'Email', <<'EOF'],
+	['RealmInvite.email', undef, <<'EOF'],
 Fill in this field to bring your members on-line.  We will email
 the identified members an invitation to join your club on bivio.
 The message will identify you as the author of the invitation.

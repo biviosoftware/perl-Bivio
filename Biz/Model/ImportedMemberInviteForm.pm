@@ -79,7 +79,7 @@ sub execute_empty_row {
 	    unless ($self->get_request->unsafe_get('is_production')) {
 		$value = ':'.$value;
 	    }
-	    $self->internal_put_field('invite_email', $value);
+	    $self->internal_put_field('RealmInvite.email', $value);
 	    last;
 	}
     }
@@ -132,7 +132,7 @@ sub execute_input_row {
     my($self) = @_;
     my($properties) = $self->internal_get;
 
-    my($email) = $properties->{invite_email};
+    my($email) = $properties->{'RealmInvite.email'};
     if (defined($email)) {
 	_send_invite($self, $email,
 		$self->get_list_model->get_model('Email'));
@@ -154,10 +154,9 @@ sub internal_initialize {
 	list_class => 'ActiveShadowMemberList',
 	visible => [
 	    {
-		name => 'invite_email',
+		name => 'RealmInvite.email',
 		in_list => 1,
 		constraint => 'NONE',
-		type => 'Bivio::Type::Email',
 	    },
 	],
 	auth_id => 'RealmUser.realm_id',
@@ -194,25 +193,26 @@ sub validate_row {
     my($properties) = $self->internal_get;
 
     my($emails) = $fields->{emails};
-    my($email) = $properties->{invite_email};
+    my($email) = $properties->{'RealmInvite.email'};
 
     if (defined($email)) {
 	# check that all emails are unique in the list
 	if (exists($emails->{$email})) {
-	    $self->internal_put_error('invite_email',
+	    $self->internal_put_error('RealmInvite.email',
 		    Bivio::TypeError::EXISTS());
 	}
 	# check that it isn't an already merged member of the club
 	elsif (_is_merged_member_email($self, $email)) {
-	    $self->internal_put_error('invite_email',
+	    $self->internal_put_error('RealmInvite.email',
 		    Bivio::TypeError::MEMBER_ALREADY_MERGED);
 	}
 	# check that the member isn't already invited
 	else {
+#TODO: Optimize
 	    my($invite) = Bivio::Biz::Model::RealmInvite->new(
 		    $self->get_request);
 
-	    $self->internal_put_error('invite_email',
+	    $self->internal_put_error('RealmInvite.email',
 		    Bivio::TypeError::ALREADY_INVITED())
 		    if $invite->unsafe_load(email => $email);
 	}
