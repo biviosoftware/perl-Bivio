@@ -17,7 +17,7 @@ Bivio::Collection::Attributes - a collection of key/value pairs
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Collection::Attributes::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Collection::Attributes::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -102,6 +102,30 @@ sub ancestral_get {
     return $default if int(@_) > 2;
     Bivio::IO::Alert->die($name, ': ancestral attribute not found');
     # DOES NOT RETURN
+}
+
+=for html <a name="ancestral_has_keys"></a>
+
+=head2 ancestral_has_keys(string name, ...) : boolean
+
+Returns true if all the named attributes exist (but may be C<undef>) in this
+instance or its ancestors.
+
+=cut
+
+sub ancestral_has_keys {
+    my($self, @names) = @_;
+    Bivio::IO::Alert->die('missing arguments') unless @names;
+    my($fields) = $self->{$_PACKAGE};
+    while (@names) {
+	# Top of array checked first, since we're splicing as we go
+	for (my($i) = $#names; $i >= 0; $i--) {
+	    splice(@names, $i, 1) if exists($fields->{$names[$i]});
+	}
+	return @names ? 0 : 1 unless defined($fields->{parent});
+	$fields = $fields->{parent}->{$_PACKAGE};
+    }
+    return 1;
 }
 
 =for html <a name="clone"></a>
