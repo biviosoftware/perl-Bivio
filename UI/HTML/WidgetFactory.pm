@@ -248,6 +248,16 @@ sub _create_display {
 	});
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')) {
+	return Bivio::UI::HTML::Widget::String->new({
+	    field => $field,
+	    value => [$field],
+	    string_font => 'table_cell',
+	    column_align => 'right',
+	    %$attrs,
+	}),
+    }
+
     # Default number formatting
     if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
 	return Bivio::UI::HTML::Widget::AmountCell->new({
