@@ -263,7 +263,7 @@ EOF
 #TODO: Program to get size of jpgs
 		name => 'jerry_rip.jpg',
 		width => 170,
-		height => 109,
+		height => 106,
 	    },
 	    [<<'EOF'],
 Jerry Dressel and Rip West are America's leading experts in
