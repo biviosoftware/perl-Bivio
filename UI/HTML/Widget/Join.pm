@@ -132,9 +132,13 @@ sub render {
 		else {
 		    my($s) = '';
 		    $v->render($source, \$s);
-		    # Optimize case when some widgets are constant
-		    $v->is_constant ? ($fields->{values}->[$i] = $s)
-			    : ($fields->{is_constant} = 0);
+#TODO: there is a bug hidden in this somewhere
+# reproduced by starting server, viewing valuation report (ReportPage)
+# then going to account list (Page)
+# 		    # Optimize case when some widgets are constant
+#		    $v->is_constant ? ($fields->{values}->[$i] = $s)
+#			    : ($fields->{is_constant} = 0);
+		    $fields->{is_constant} = 0;
 		    $buf .= $s;
 		}
 	    }
