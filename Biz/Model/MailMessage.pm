@@ -115,17 +115,16 @@ sub create {
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
 	    \$rfc) || die("create failed: $rfc");
 #TODO: When parsing works, this should be taken out.
-return;
+#return;
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
     if($msg){
 	&_trace('msg is not null when we call ctor MimeDecode.') if $_TRACE;
     }
-    _trace('creating MIMEDecode object') if $_TRACE;
     my $mimeparser = Bivio::Mail::Store::MIMEDecode->new($msg, $filename, $_FILE_CLIENT);
     $mimeparser->parse_and_store();
     # due to the above two lines, all the MIME stuff in this
-    # file will be removed shortly.
+    # file will be removed
     my($nparts) = $mimeparser->get_num_parts();
     $self->update({
 	parts => $nparts,
