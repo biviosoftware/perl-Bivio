@@ -212,9 +212,9 @@ sub die {
 
 =for html <a name="eval"></a>
 
-=head2 eval(code_ref sub) : any
+=head2 static eval(code_ref sub) : any
 
-=head2 eval(string code) : any
+=head2 static eval(string code) : any
 
 Calls eval on I<code>, but turns off any handle_die processing.  This should be
 used everyhwere in place of a normal eval.  Returns the result of I<sub>.
@@ -225,6 +225,24 @@ sub eval {
     my($self, $code) = @_;
     local($SIG{__DIE__});
     return ref($code) ? eval {&$code();} : eval($code);
+}
+
+=for html <a name="eval_or_die"></a>
+
+=head2 static eval_or_die(any code) : any
+
+Calls L<eval|"eval"> and dies if it fails.
+
+=cut
+
+sub eval_or_die {
+    my($self) = shift;
+    my($res) = $self->eval(@_);
+    $self->throw_die('DIE', {
+	message => $@,
+	program_error => 1,
+    }) if $@;
+    return $res;
 }
 
 =for html <a name="handle_config"></a>
