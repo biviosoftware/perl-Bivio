@@ -126,22 +126,15 @@ sub render {
     my($field) = $fields->{field};
 
     # first render initialization
-    unless ($fields->{initialized}) {
-	$fields->{initialized} = 1;
-	my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
-	$fields->{prefix} = $p.'<input type=submit name=';
-	$fields->{suffix} = '" '.$self->get_or_default('attributes', '')
-		.'>'.$s;
-    }
-
-    $$buffer .= $fields->{prefix}
-	    .$form->get_field_name_for_html($field).' value="'.
-	    (ref($fields->{label})
+    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
+    $$buffer .= $p.'<input type=submit name='
+	    .$form->get_field_name_for_html($field).' value="'
+	    .(ref($fields->{label})
 		    ? Bivio::HTML->escape(
 			    $source->get_widget_value(@{$fields->{label}}))
 		    : $fields->{label})
-	    .$fields->{suffix};
-
+	    .'" '.$self->get_or_default('attributes', '')
+	    .'>'.$s;
     return;
 }
 
