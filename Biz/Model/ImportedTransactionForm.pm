@@ -173,7 +173,8 @@ sub execute_ok {
 
     # tag new transaction with account synch key
     $self->tag_transaction($self->get_request,
-	    $self->get_list_field('AccountSync.sync_key'));
+	    $self->get_list_field('AccountSync.sync_key'),
+	    $self->get_list_field('AccountSync.import_date'));
 
     # and create new transaction for any excess
     $self->create_excess_transaction(
@@ -235,7 +236,7 @@ sub internal_initialize {
 
 =for html <a name="tag_transaction"></a>
 
-=head2 static tag_transaction(Bivio::Agent::Request req, string sync_key)
+=head2 static tag_transaction(Bivio::Agent::Request req, string sync_key, string import_date)
 
 Tags the current transaction (on the request) with the specified
 sync_key.
@@ -243,7 +244,7 @@ sync_key.
 =cut
 
 sub tag_transaction {
-    my($proto, $req, $sync_key) = @_;
+    my($proto, $req, $sync_key, $import_date) = @_;
 
     Bivio::Biz::Model::AccountSync->new($req)->create({
 	realm_transaction_id => $req->get(
@@ -251,6 +252,7 @@ sub tag_transaction {
 			'realm_transaction_id'),
 	realm_id => $req->get('auth_id'),
 	sync_key => $sync_key,
+	import_date => $import_date,
     });
     return;
 }
