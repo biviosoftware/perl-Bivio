@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::SQL::Connection::Oracle uses all_cons_columns and
+    all_ind_columns instead of user_cons_columns and user_ind_columns.
+    This allows the database user to be different from the owner.
+
+  Revision 2.13  2004/03/09 21:31:34  nagler
+  * Bivio::Biz::ExpandableListFormModel saves itself on request instead
+    of just rows.  Allows all fields to be saved across server_redirect
     for ADD_rows.
   * Bivio::Biz::FormModel->validate is passed the form_button which was
     pressed.
