@@ -66,7 +66,7 @@ Select the account from which money was withdrawn to fund the purchase.
 EOF
 		    {
 			choices => [
-				'Bivio::Biz::Model::RealmValuationAccountList',
+				'Bivio::Biz::Model::RealmAccountList',
 			       ],
 			list_display_field => 'RealmAccount.name',
 			list_id_field => 'RealmAccount.realm_account_id',

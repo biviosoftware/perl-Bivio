@@ -67,7 +67,7 @@ Select the account which received the money from the sale.
 EOF
 		    {
 			choices => [
-				'Bivio::Biz::Model::RealmValuationAccountList',
+				'Bivio::Biz::Model::RealmAccountList',
 			       ],
 			list_display_field => 'RealmAccount.name',
 			list_id_field => 'RealmAccount.realm_account_id',
