@@ -57,6 +57,7 @@ the specified date.
 =cut
 
 sub get_cost_per_share {
+#TODO: input array of instruments and use group by
     my(undef, $realm_instrument_id, $date) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
@@ -83,6 +84,7 @@ instrument.
 =cut
 
 sub get_first_buy_date {
+#TODO: input array of instruments and use group by
     my(undef, $realm_instrument_id) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
@@ -121,6 +123,7 @@ owned by on the specified date.
 =cut
 
 sub get_number_of_shares {
+#TODO: input array of instruments and use group by
     my(undef, $realm_instrument_id, $date) = @_;
 
     # note: doesn't include fractional shares paid in cash (not tax basis)
@@ -141,6 +144,7 @@ date.
 =cut
 
 sub get_share_price {
+#TODO: input array of instruments and use group by
     my(undef, $realm_instrument_id, $date) = @_;
 
     my($sth) = Bivio::SQL::Connection->execute(
