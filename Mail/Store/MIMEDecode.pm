@@ -247,29 +247,12 @@ sub _extract_mime_body_decoded {
     my($file) = $fields->{io_scalar};
     $file->open(\$s);
     my($subpart_index) = 0;
-    my($req) = $fields->{request};
     my($io) = $entity->open('r');
     my($message_id) = $fields->{message}->get_message_id();
     if (defined($io)) {
 	while(!$io->eof()){
 	    my($line) = $io->getline();
-	    if($line =~ /("cid:part.*")/){
-		_trace('FOUND CID.PART match: ', $1) if $_TRACE;
-		my $sb = $1;
-		my $fname = $fields->{filename};
-		_trace('EXTRACTING TO FILE: ', $fname) if $_TRACE;
-		$fname =~ /_(\d*)$/;
-		my $index = $1+1+$subpart_index;
-		$fname =~ s/_(\d*)$/_$index/;
-		my $attachment_id = $fname;
-		$attachment_id =~ /\/(\d.*$)/;
-		_trace('task image ID is going to be ', $1);
-		my $uri = "\"".$req->format_uri(
-		    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
-		    "img=".$1)."\">";
-		_trace('setting URI: ', $uri) if $_TRACE;
-		$line =~ s/$sb/$uri/;
-	    }
+	    _handle_image_attachments(\$line, \$subpart_index, $fields);
 	    $file->print($line);# while defined($line);
 	}
 	$io->close();
@@ -306,6 +289,35 @@ sub _format_body {
     my($formatter) = Bivio::Mail::Store::Formatter->from_entity($entity);
     my($formatted_mail) = $formatter->format_item($entity->bodyhandle());
     return $formatted_mail;
+}
+
+# _handle_image_attachments() : 
+#
+#
+#
+sub _handle_image_attachments {
+    my($line, $subpart_index, $fields) = @_;
+    if($$line =~  /\<.*("cid:part.+")/){
+	_trace(']]]]]]]]]]]]]FOUND CID.PART match: ', $1) if $_TRACE;
+	my($req) = $fields->{request};
+	my $sb = $1;
+	my $fname = $fields->{filename};
+	$fname =~ /_(\d*)$/;
+	my $index = $1+1 + $$subpart_index;
+	$$subpart_index++;
+	$fname =~ s/_(\d*)$/_$index/;
+	my $attachment_id = $fname;
+	$attachment_id =~ /\/(\d.*$)/;
+	_trace('task image ID: ', $1);
+	my $uri = "\"".$req->format_uri(
+	    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_IMAGE_ATTACHMENT(),
+	    "img=".$1)."\"";
+	_trace('setting URI: ', $uri) if $_TRACE;
+	$$line =~ s/$sb/$uri/;
+	_trace('calling the method again...');
+	_handle_image_attachments($line, $subpart_index, $fields);
+    }
+    return;
 }
 
 # _parse_keywords(string_ref str, hash_ref keywords)
