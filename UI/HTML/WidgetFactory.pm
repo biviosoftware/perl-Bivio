@@ -238,23 +238,6 @@ sub _create_edit {
 	});
     }
 
-    if ($field eq 'valuation_search_date') {
-	# create a date field with a "refresh" button
-	return Bivio::UI::HTML::Widget::Join->new({
-	    field => $field,
-	    values => [
-		    Bivio::UI::HTML::Widget::DateField->new({
-			field => $field,
-			%$attrs,
-		    }),
-		    ' ',
-		    $proto->submit('REFRESH')->put(
-			    form_class => 'Bivio::Biz::Model::LocalPricesForm'
-			   ),
-	    ],
-	});
-    }
-
     if ($field =~ /is_public$/) {
 	return $proto->director(
 		[['->get_request'], 'user_can_modify_is_public'],
@@ -387,7 +370,7 @@ sub _create_edit {
 	$attrs->{label_on_field} = 0;
 	return Bivio::UI::HTML::Widget::FormButton->new({
 	    field => $field,
-	    text => Bivio::UI::Label->get_simple($field),
+	    label => Bivio::UI::Label->get_simple($field),
 	    %$attrs,
 	});
     }
