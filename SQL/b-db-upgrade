@@ -138,28 +138,12 @@ EOF
 #
 sub _upgrade {
 
+    use Bivio::Agent::Request;
+    use Bivio::Auth::Role;
+    use Bivio::Biz::Model::RealmInvite;
     use Bivio::Type::Date;
     use Bivio::Type::EntryType;
     use Bivio::Type::EntryClass;
-
-    # patches the bug in InstrumentBuy and InstrumentSell
-    # which was assigning the transaction the wrong source_class
-    Bivio::SQL::Connection->execute('
-            UPDATE realm_transaction_t
-            SET realm_transaction_t.source_class=?
-            WHERE realm_transaction_t.realm_transaction_id in (
-                SELECT DISTINCT realm_transaction_t.realm_transaction_id
-                FROM realm_transaction_t, entry_t
-                WHERE realm_transaction_t.realm_transaction_id
-                    = entry_t.realm_transaction_id
-                AND (entry_t.entry_type=? OR entry_t.entry_type=?)
-                AND realm_transaction_t.source_class=?)',
-	    [
-		    Bivio::Type::EntryClass::INSTRUMENT->as_int,
-		    Bivio::Type::EntryType::INSTRUMENT_BUY->as_int,
-		    Bivio::Type::EntryType::INSTRUMENT_SELL->as_int,
-		    Bivio::Type::EntryClass::MEMBER->as_int,
-	    ]);
 
     # fixes any existing payments where the valuation date > transaction date
     my($sth) = Bivio::SQL::Connection->execute('
@@ -182,6 +166,160 @@ sub _upgrade {
                 AND entry_id=?',
 		[$date, $realm_id, $entry_id]);
     }
+
+    # add new column realm_invite_t.realm_user_id
+    # update this column for outstanding shadow member invites
+    my($invite) = Bivio::Biz::Model::RealmInvite->new(
+	    Bivio::Agent::Request->get_current_or_new);
+
+    _do('
+ALTER TABLE realm_invite_t
+  add realm_user_id NUMBER(18)
+/
+');
+
+    _do('
+CREATE INDEX realm_invite_realm_user_i ON realm_invite_t (
+  realm_user_id
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_indx
+/
+');
+
+    _do('
+ALTER TABLE realm_invite_t
+  add foreign key (realm_user_id)
+    references user_t(user_id)
+/
+');
+
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT realm_id, email
+            FROM email_t
+            WHERE email like \'%:%\'', []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($user_id, $shadow_email) = @$row;
+	unless ($shadow_email =~ /^(.+):(\d+)$/) {
+	    print(STDERR "\nskipping email $shadow_email");
+	    next;
+	}
+	my($email, $club_id) = ($1, $2);
+	# get the invite for the email/club
+	$invite->unauth_load(realm_id => $club_id, email => $email)
+		|| die("couldn't load invite for $shadow_email");
+	$invite->update({
+	    realm_user_id => $user_id
+	});
+    }
+
+    # set user_t.last_name <-- realm_owner_t.name
+    # if first, middle and last are null
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT realm_owner_t.name, user_t.user_id
+            FROM realm_owner_t, user_t
+            WHERE realm_owner_t.realm_id=user_t.user_id
+            AND user_t.first_name IS NULL
+            AND user_t.middle_name IS NULL
+            AND user_t.last_name IS NULL', []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name, $user_id) = @$row;
+	Bivio::SQL::Connection->execute('
+                UPDATE user_t
+                SET last_name=?
+                WHERE user_id=?',
+		[$name, $user_id]);
+    }
+
+    # add new columns user_t.first_name_sort, last_name_sort, middle_name_sort
+    # populate with existing data
+    _do('
+ALTER TABLE user_t
+  add first_name_sort VARCHAR2(30)
+/
+ALTER TABLE user_t
+  add middle_name_sort VARCHAR2(30)
+/
+ALTER TABLE user_t
+  add last_name_sort VARCHAR2(30)
+/
+');
+
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT user_id, first_name, middle_name, last_name
+            FROM user_t', []);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($user_id, $first_name, $middle_name, $last_name) = @$row;
+	my($update) = '';
+	$update .= 'first_name_sort=lower(first_name),' if ($first_name);
+	$update .= 'middle_name_sort=lower(middle_name),' if ($middle_name);
+	$update .= 'last_name_sort=lower(last_name),' if ($last_name);
+	if ($update) {
+	    chop($update);
+	    Bivio::SQL::Connection->execute('
+                    UPDATE user_t
+                    SET '.$update.'
+                    WHERE user_id=?',
+		    [$user_id]);
+	}
+    }
+
+    # make space for the new Withdrawn role
+    # add one to roles after it, Withdrawn comes after USER
+    foreach my $table (qw(realm_user_t realm_invite_t realm_role_t)) {
+
+	_drop_constraints($table, 'role');
+	_do("
+ALTER TABLE $table modify role not null
+/
+ALTER TABLE $table add check (role between 1 and 7)
+/
+");
+
+	Bivio::SQL::Connection->execute("
+                UPDATE $table
+                SET role = role + 1
+                WHERE role > ?",
+		[Bivio::Auth::Role::USER->as_int]);
+    }
+
+    # set any guests with transactions to member
+    Bivio::SQL::Connection->execute('
+            UPDATE realm_user_t
+            SET role=?, title=?
+            WHERE role=?
+            AND EXISTS (
+                SELECT member_entry_t.entry_id
+                FROM member_entry_t
+                WHERE member_entry_t.realm_id=realm_user_t.realm_id
+                AND member_entry_t.user_id=realm_user_t.user_id)
+            AND realm_user_t.realm_id != realm_user_t.user_id',
+	    [
+		Bivio::Auth::Role::MEMBER->as_int,
+		'Member',
+		Bivio::Auth::Role::GUEST->as_int,
+	    ]);
+
+    # set withdrawn member's role to withdrawn
+    # easyware only allow one full withdrawal per member, so this is OK
+    Bivio::SQL::Connection->execute('
+            UPDATE realm_user_t
+            SET role=?, title=?
+            WHERE EXISTS (
+                SELECT realm_transaction_t.realm_transaction_id
+                FROM realm_transaction_t, entry_t, member_entry_t
+                WHERE realm_transaction_t.realm_transaction_id
+                    =entry_t.realm_transaction_id
+                AND entry_t.entry_id=member_entry_t.entry_id
+                AND member_entry_t.user_id=realm_user_t.user_id
+                AND entry_t.entry_type in (?, ?))
+            AND realm_user_t.realm_id != realm_user_t.user_id',
+	    [
+		Bivio::Auth::Role::WITHDRAWN->as_int,
+		'Withdrawn',
+		Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH->as_int,
+		Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
+	    ]);
 
     return;
 }
