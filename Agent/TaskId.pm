@@ -518,6 +518,26 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         cancel=CLUB_ACCOUNTING_REPORT_LIST
     )],
+    [qw(
+        SETUP_CLUB
+        56
+        GENERAL
+        DEBUG_ACTION
+        setup/club
+        Bivio::Biz::Model::ClubForm
+        Bivio::UI::HTML::Setup::Club
+        next=SETUP_MEMBER
+    )],
+    [qw(
+        SETUP_MEMBER
+        57
+        GENERAL
+        DEBUG_ACTION
+        setup/member
+        Bivio::Biz::Model::MemberForm
+        Bivio::UI::HTML::Setup::Member
+        next=SETUP_MEMBER
+    )],
 );
 
 __PACKAGE__->compile(
