@@ -46,10 +46,13 @@ sub QUERY_TAG {
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::Agent::TaskId;
 use Bivio::Util;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 _compile();
 
 =head1 METHODS
@@ -98,9 +101,10 @@ sub execute_query {
     # If there is a query, use that as the name of the realm
     my($query) = $req->unsafe_get('query');
     if ($query && defined($query->{QUERY_TAG()})) {
-	my($uri) = Bivio::Util::escape_uri($query->{QUERY_TAG()});
+	my($uri) = $query->{QUERY_TAG()};
 	# Insert absolute path if not already absolute
 	$uri =~ s,^(?!\w+:|\/),\/,;
+	_trace($uri) if $_TRACE;
 	$req->client_redirect($uri);
 	# DOES NOT RETURN
     }
