@@ -513,8 +513,10 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountTransactionList->execute_load_page
         Bivio::Biz::Model::RealmAccount->execute_load_parent
+        Bivio::Biz::Model::UnassignedTypeForm
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountDetail
+        next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
         help=account-detail
     )],
     [qw(
