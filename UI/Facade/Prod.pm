@@ -289,6 +289,17 @@ my($_SELF) = __PACKAGE__->new({
 		$fc->group('mail_home_list_'.$r =>
 			$_W->load_and_new('MailHomeList', {realm_name => $r}));
 	    }
+	    my($mld_uri) = 'http://www.mldirect.ml.com/publish/public/'
+		    .'offer.asp?medium=BIV0001';
+	    my($mld_alt) = 'Enroll with Merrill Lynch and get $100';
+	    $fc->group(north_banner_widget =>
+		    $_W->load_and_new('Advertizement', {
+			values => [
+			    # weight icon alt uri
+			    [1, 'mld_2_468x60', $mld_alt, $mld_uri],
+			    [1, 'mld_3_468x60', $mld_alt, $mld_uri],
+			    [1, 'mld_4_468x60_', $mld_alt, $mld_uri],
+			]}));
 
 	    # Home page widgets
 	    Bivio::IO::ClassLoader->simple_require(
