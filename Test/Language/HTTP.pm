@@ -35,14 +35,17 @@ C<Bivio::Test::Language::HTTP> contains support for HTTP tests.
 =cut
 
 #=IMPORTS
-use Bivio::IO::Config;
-use Bivio::IO::Ref;
 use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
+use Bivio::IO::Config;
+use Bivio::IO::Ref;
 use Bivio::IO::Trace;
 use Bivio::Test::HTMLParser;
+use File::Temp ();
 use HTTP::Cookies ();
 use HTTP::Request ();
+use HTTP::Request::Common ();
+use URI ();
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -104,6 +107,26 @@ L<Bivio::Test::HTMLParser::Tables::do_rows|Bivio::Test::HTMLParser::Tables/"do_r
 
 sub do_table_rows {
     return shift->get_html_parser()->get('Tables')->do_rows(@_);
+}
+
+=for html <a name="file_field"></a>
+
+=head2 file_field(string name, string content) : array_ref
+
+=head2 file_field(string name, string_ref content) : array_ref
+
+Returns a definition for the named file field value.
+Uses a temporary file which is cleaned up at program exit.
+
+=cut
+
+sub file_field {
+    my($self, $name, $content) = @_;
+    my($handle, $file) = File::Temp::tempfile(UNLINK => 1,
+        SUFFIX => '-' . $name);
+    print($handle ref($content) ? $$content : $content);
+    close($handle);
+    return [$file, $name];
 }
 
 =for html <a name="follow_link"></a>
@@ -273,7 +296,7 @@ sub submit_form {
 	_create_form_request(
 	    $self, uc($form->{method}),
 	    _fixup_uri($self, $form->{action}),
-	_format_form($form, $submit_button, $form_fields)));
+            _format_form($form, $submit_button, $form_fields)));
     _assert_form_response($self);
     return;
 }
@@ -389,7 +412,7 @@ sub _assert_response {
     return $fields->{response} || Bivio::Die->die('no valid response');
 }
 
-# _create_form_request(self, string method, string uri, string form) : HTTP::Request
+# _create_form_request(self, string method, string uri, array_ref form) : HTTP::Request
 #
 # Creates appropriate form request based on method (uc).
 #
@@ -398,12 +421,16 @@ sub _create_form_request {
     if ($method eq 'GET') {
 	# trim any query which might be there
 	$uri =~ s/\?.*//;
-	return HTTP::Request->new(GET => "$uri?$form");
+        my $url = URI->new('http:');
+        $url->query_form(@$form);
+	return HTTP::Request->new(GET => $uri . '?' . $url->query);
     }
-    my($request) = HTTP::Request->new($method => $uri);
-    $request->content_type('application/x-www-form-urlencoded');
-    $request->content($form);
-    return $request;
+    # file fields are array refs
+    return scalar(grep({ref($_)} @$form))
+        ? HTTP::Request::Common::POST($uri,
+            Content_Type => 'form-data',
+            Content => $form)
+        : HTTP::Request::Common::POST($uri, $form);
 }
 
 # _fixup_uri(self, string uri) : string
@@ -428,60 +455,60 @@ sub _fixup_uri {
 # Formats the field as $name=$value&.  If not defined($value), then
 # returns empty string.
 #
-sub _format_field {
-    my($field, $value) = @_;
-    Bivio::Die->die($value, ': invalid value for field ', $field->{name})
-	if ref($value);
-    return ''
-	unless defined($value);
-    if ($field->{options}) {
-	# Radio or Select: Allows the user to set value directly instead
-	# of matching label
-	foreach my $k (keys(%{$field->{options}})) {
-	    next unless $k eq $value;
-	    $value = $field->{options}->{$k}->{value};
-	    _trace($k, ': mapped to ', $value) if $_TRACE;
-	    last;
-	}
-    }
-    return defined($field->{name}) && length($field->{name})
-	? Bivio::HTML->escape_query($field->{name}) . '='
-	   . Bivio::HTML->escape_query($value) . '&'
-        : '';
-}
+#  sub _format_field {
+#      my($field, $value) = @_;
+#      Bivio::Die->die($value, ': invalid value for field ', $field->{name})
+#  	if ref($value);
+#      return ''
+#  	unless defined($value);
+#      if ($field->{options}) {
+#  	# Radio or Select: Allows the user to set value directly instead
+#  	# of matching label
+#  	foreach my $k (keys(%{$field->{options}})) {
+#  	    next unless $k eq $value;
+#  	    $value = $field->{options}->{$k}->{value};
+#  	    _trace($k, ': mapped to ', $value) if $_TRACE;
+#  	    last;
+#  	}
+#      }
+#      return defined($field->{name}) && length($field->{name})
+#  	? Bivio::HTML->escape_query($field->{name}) . '='
+#  	   . Bivio::HTML->escape_query($value) . '&'
+#          : '';
+#  }
 
-# _format_form(hash_ref form, string submit,  hash_ref form_fields) : string
+# _format_form(hash_ref form, string submit,  hash_ref form_fields) : array_ref
 #
 # Returns URL encoded form.  Undefined fields are not submitted.
 #
 sub _format_form {
     my($form, $submit, $form_fields) = @_;
-    my($res) = '';
+    my($result) = [];
     my($match) = {};
 #TODO: Add hidden form field testing
     while (my($k, $v) = each(%$form_fields)) {
 	my($f) = _assert_form_field($form, 'visible', $k);
 	$match->{$f}++;
- 	$res .= _format_field($f, $v);
+        push(@$result, $f->{name}, $v);
     }
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {
 	foreach my $v (values(%{$form->{$class}})) {
 	    next if $match->{$v};
-	    $res .= _format_field($v,
-		$v->{type} eq 'checkbox'
-		    ? $v->{checked}
-		        ? defined($v->{value})
-		            ? $v->{value}
-		            : 1
-		        : next
-		    : $v->{value});
+#  	    $res .= _format_field($v,
+#  		$v->{type} eq 'checkbox'
+#  		    ? $v->{checked}
+#  		        ? defined($v->{value})
+#  		            ? $v->{value}
+#  		            : 1
+#  		        : next
+#  		    : $v->{value});
+            push(@$result, $v->{name}, $v->{value});
 	}
     }
     # Needs to be some "true" value for our forms
-    $res .= _format_field(_assert_form_field($form, 'submit', $submit), '1');
-    chop($res);
-    return $res;
+    push(@$result, _assert_form_field($form, 'submit', $submit)->{name}, '1');
+    return $result;
 }
 
 # _log(self, string type, HTTP::Message msg)
