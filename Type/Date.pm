@@ -330,8 +330,8 @@ sub _from_date_time {
     my($value, $time) = @_;
     my($v, $e) = Bivio::Type::DateTime->from_literal($value);
     return ($v, $e) if $e;
-    return (undef, Bivio::TypeError::TIME_COMPONENT_OF_DATE())
-	    unless $time eq Bivio::Type::DateTime::DEFAULT_TIME();
+    return (undef, Bivio::TypeError->TIME_COMPONENT_OF_DATE)
+	    unless $time eq Bivio::Type::DateTime->DEFAULT_TIME;
     return $v;
 }
 
