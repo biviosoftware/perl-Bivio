@@ -2830,6 +2830,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ImportedTransactionList->execute_load_all_unassigned
         Bivio::Biz::Model::AllMemberList->execute_load_all_active
         Bivio::Biz::Model::RealmAccountList->execute_load_all_active
+        Bivio::Biz::Model::ExpenseCategoryList->execute_load_all
         Bivio::Biz::Model::ImportedTransactionForm
         Bivio::UI::HTML::Club::AccountingImportIdentify
         next=CLUB_ACCOUNTING_SYNC_IDENTIFY
