@@ -105,6 +105,24 @@ sub format_html {
     return _find(@_)->{html};
 }
 
+=for html <a name="format_html_attribute"></a>
+
+=head2 static format_html_attribute(string name, string attribute, Bivio::Collection::Attributes req_or_facade) : string
+
+Formats tag, e.g. background as in:
+
+     background="uri"
+
+Value contains a I<leading space>.
+
+=cut
+
+sub format_html_attribute {
+    my($proto, $name, $attribute, $req_or_facade) = @_;
+    return qq{ $attribute="}
+	. _find($proto, $name, $req_or_facade)->{value}->{uri} . '"';
+}
+
 =for html <a name="get_clear_dot"></a>
 
 =head2 static get_clear_dot() : hash_ref
