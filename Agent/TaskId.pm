@@ -425,7 +425,7 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_EXPENSE
-        47
+        48
         CLUB
         TREASURER
         _/accounting/account/expense
