@@ -225,26 +225,26 @@ I<point_expr> has access to the following variables:
 
 =over 4
 
-=item $file
+=item $file : string
 
 The file name containing the trace point.
 
-=item $line
+=item $line : int
 
 The line at which the trace point is defined.
 
-=item $msg
+=item $msg : array_ref
 
 An array of arguments to the trace point function.  You might want to check for
 something interesting in the message, e.g.
 
     grep(/something interesting/, @$msg)
 
-=item $pkg
+=item $pkg : string
 
 The package defining the trace point.
 
-=item $sub
+=item $sub : string
 
 The subroutine containing the trace point--includes the package
 name.
@@ -362,7 +362,8 @@ sub _define_pkg_symbols {
 	        # caller(1) can return an empty array, hence '|| undef'
 		. '((caller), (caller(1))[$[+3] || undef, \@_)';
     }
-    eval <<"EOF" || Bivio::IO::Alert->die("internal inconsistency: $@");
+    Bivio::IO::Alert->bootstrap_die("internal inconsistency: $@")
+	unless eval <<"EOF";
         package $pkg;
         use Bivio::IO::Trace;
         use strict;
