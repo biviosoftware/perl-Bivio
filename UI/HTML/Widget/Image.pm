@@ -52,6 +52,11 @@ before rendering.
 
 May be C<undef>.
 
+=item attributes : string []
+
+Arbitrary HTML attributes to be applied to the begin tag.  Must begin
+with leading space.
+
 =item hspace : int [0]
 
 HSPACE attribute value.
@@ -145,6 +150,8 @@ sub initialize {
     die('width and height must both be defined')
 	    unless defined($width) == defined($height);
     my($p) = '<img';
+    my($a) = $self->unsafe_get('attributes');
+    $p .= $a if $a;
 
     # hspace and vspace
     foreach my $f (qw(hspace vspace)) {
