@@ -31,25 +31,34 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
+=head2 static new() : Bivio::Agent::Controller
+
+Creates a new controller which has now views.
+
 =head2 static new(array views) : Bivio::Agent::Controller
 
 Creates a new controller which controls the specified views. The views
 are available later using the L<"get_view"> method.
 
+=head2 static new(array views, string default_view) : Bivio::Agent::Controller
+
+Creates a new controller which controls the specified views and uses
+the specified default view. The views are available later using the
+L<"get_view"> method.
+
 =cut
 
 sub new {
-    my($proto, $views) = @_;
+    my($proto, $views, $default_view) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
 
-    my($view_hash) = {};
-    my($view);
-    foreach $view (@$views) {
-	$view_hash->{$view->get_name()} = $view;
-    }
+    $views ||= [];
+
+    my(%view_hash) = map {$_->get_name() => $_} @$views;
 
     $self->{$_PACKAGE} = {
-	views => $view_hash
+	'views' => \%view_hash,
+	'default_view_name' => $default_view ? $default_view->get_name() : ''
     };
     return $self;
 }
@@ -58,9 +67,24 @@ sub new {
 
 =cut
 
+=for html <a name="get_default_view"></a>
+
+=head2 get_default_view_name() : string
+
+Returns the default view name, or '' if no default_view was specified in
+the constructor.
+
+=cut
+
+sub get_default_view_name {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{default_view_name};
+}
+
 =for html <a name="get_view"></a>
 
-=head2 get_view(string name) : View
+=head2 get_view(string name) : Bivio::UI::View
 
 Returns the named view or undef if a view by the name was never added.
 
