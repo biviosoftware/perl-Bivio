@@ -329,11 +329,11 @@ sub get_title {
 
 Returns the uri for the specified area on the parsed page.  Uses $section to
 find the major area of the page (eg: imagemenu, buttons, etc.).  Uses $target
-to find the relevant part of the section (eg: logout, communications).  In
-cases where the structure goes one level deeper, the optional $subtarget is
-used.
+to find the relevant part of the section (eg: logout, communications).
+Imagemenu has a unique structure and is handled separately.  May use a
+specified subtarget.  Capitalization should be as it appears on the page.
 
-Examples: get_uri('imagemenu', 'communications', 'mail')
+Examples: get_uri('imagemenu', 'Communications', 'Mail')
           get_uri('buttons', 'logout')
 
 =cut
@@ -341,9 +341,18 @@ Examples: get_uri('imagemenu', 'communications', 'mail')
 sub get_uri {
     my($self, $section, $target, $subtarget) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{$section}->{$target}->{links}->{$subtarget}
-	    if (defined $subtarget);
-    return $self->get($section)->{$target};
+
+    if ($section eq 'imagemenu') {
+	return $fields->{imagemenu}->{$target}->{links}->{$subtarget}
+	    if (exists $fields->{imagemenu}->{$target}->{links}->{$subtarget});
+		#if (defined $subtarget);
+	return $fields->{imagemenu}->{top_level}->{$target}
+		if (exists $fields->{imagemenu}->{top_level}->{$target});
+	die("Imagemenu target $target not found in page.");
+    }
+    return $fields->{$section}->{$target}
+	    if (exists $fields->{$section}->{$target});
+    die("Section: $section, Target: $target.  Not found in page.");
 }
 
 =for html <a name="list_form_fields"></a>
@@ -504,33 +513,48 @@ sub _find_button_my_site {
 # _find_imagemenu(Bivio::Test::HTMLAnalyzer self, hash_ref p)
 #
 # Identify the image menu on the HTML page, if any.
-# It is stored under fields->{imagemenu}.
+# The unexpanded part is stored under fields->{imagemenu}->{top_level}.
+# The exapanded part is stored under
+#       fields->{imagemenu}->{<expanded section name>}.
 #
 sub _find_imagemenu {
     my($self, $p) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    #this gets the expanded part
     for (my($i) = 0; $i < int(@{$p->{tables}}); $i++) {
 	if (exists($p->{tables}[$i]->{links}->{Roster})) {
 	    $fields->{imagemenu} = {} unless defined($fields->{imagemenu});
-	    $fields->{imagemenu}->{administration} = $p->{tables}[$i];
+	    $fields->{imagemenu}->{Administration} = $p->{tables}[$i];
 	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	    push(@{$p->{form_list}}, 'imagemenu');
 	}
 	elsif (exists($p->{tables}[$i]->{links}->{Taxes})) {
 	    $fields->{imagemenu} = {} unless defined($fields->{imagemenu});
-	    $fields->{imagemenu}->{accounting} = $p->{tables}[$i];
+	    $fields->{imagemenu}->{Accounting} = $p->{tables}[$i];
 	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	    push(@{$p->{form_list}}, 'imagemenu');
 	}
 	elsif (exists($p->{tables}[$i]->{links}->{Mail})) {
 	    $fields->{imagemenu} = {} unless defined($fields->{imagemenu});
-	    $fields->{imagemenu}->{communications} = $p->{tables}[$i];
+	    $fields->{imagemenu}->{Communications} = $p->{tables}[$i];
 	    $p->{tables}[$i]->{identification} = 'Image Menu';
 	    push(@{$p->{form_list}}, 'imagemenu');
 	}
     }
- 
+    #done here if there is no imagemenu
+    return unless (exists($fields->{imagemenu}));
+
+    #add unexpanded parts of the imagemenu under top_level
+    $fields->{imagemenu}->{top_level}->{Administration} =
+	    $p->{links}->{Administration};
+#		    if (exists($p->{links}->{Administration}); #why not work?
+    $fields->{imagemenu}->{top_level}->{Communications} =
+	    $p->{links}->{Communications};
+#		    if (exists($p->{links}->{Communications});
+    $fields->{imagemenu}->{top_level}->{Accounting} =
+	    $p->{links}->{Accounting};
+#		    if (exists($p->{links}->{Accounting});
     return;
 }
 
