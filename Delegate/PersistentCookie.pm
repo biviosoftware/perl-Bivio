@@ -171,8 +171,7 @@ sub header_out {
     if ($_DOMAIN) {
 	my($uri) = Bivio::UI::Facade->get_from_request_or_self($req)
 	    ->get('uri');
-	return 0 unless $_DOMAIN =~ /^$uri/;
-
+	return 0 unless $uri =~ /\Q$_DOMAIN\E$/i;
 	_trace("in cookie domain: ", $_DOMAIN, ', uri: ', $uri) if $_TRACE;
     }
 
