@@ -3088,7 +3088,7 @@ my(@_CFG) = (
         require_secure=1
     )],
     [qw(
-        CLUB_ADMIN_MEMBERS_MERGE
+        CLUB_ADMIN_MEMBER_MERGE
         270
         CLUB
         DOCUMENT_READ
@@ -3096,8 +3096,8 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ClubUserList->execute_load_this
         Bivio::Biz::Model::MemberList->execute_load_all
-        Bivio::Biz::Model::MembersMergeForm
-        Bivio::UI::HTML::Club::MembersMerge
+        Bivio::Biz::Model::MemberMergeForm
+        Bivio::UI::HTML::Club::MemberMerge
         next=CLUB_ADMIN_USER_LIST
     )],
 );
