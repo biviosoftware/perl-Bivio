@@ -658,7 +658,7 @@ __PACKAGE__->compile(
     MISSING_FIRST_LAST_MIDDLE => [
         76,
         undef,
-        'You must specify at least on of First, Middle, or Last Names',
+        'You must specify at least one of First, Middle, or Last Names',
     ]
 );
 
