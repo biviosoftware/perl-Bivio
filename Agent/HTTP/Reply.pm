@@ -142,7 +142,7 @@ sub send {
 	# we don't know the contents (typically from the database)
 	# This isn't *really* private, i.e. not setting Pragma: no-cache.
 	# This pragma screws up Netscape on animated gifs.
-	$self->set_cache_private(1);
+	$self->set_cache_private;
     }
     else {
 	# Files read from disk are never private
@@ -215,19 +215,15 @@ sub die_to_http_code {
 
 =for html <a name="set_cache_private"></a>
 
-=head2 set_cache_private(boolean not_really_private)
+=head2 set_cache_private()
 
-Do not allow shared caching of this response.  If I<not_really_private>, then
-don't set C<Pragma: no-cache>.  This case is necessary to handle animated gifs
-with Netscape.  Netscape retrieves the animated gif continuously if you set
-C<Pragma: no-cache>.
+Do not allow shared caching of this response.
 
 =cut
 
 sub set_cache_private {
-    my($self, $not_really_private) = @_;
+    my($self) = @_;
     $self->set_header('Cache-Control', 'private');
-    $self->set_header('Pragma', 'no-cache') unless $not_really_private;
     return;
 }
 
@@ -400,9 +396,8 @@ sub _send_http_header {
 	$r->status($fields->{status})
 	    if defined($fields->{status});
 
-	# We set the cookie if we don't cache this answer.  0 means
-	# *really* private.
-	$self->set_cache_private(0)
+	# We set the cookie if we don't cache this answer.
+	$self->set_cache_private
 	    if $req->get('cookie')->header_out($req, $r);
 
 	# Set any optional headers
