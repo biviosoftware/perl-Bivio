@@ -73,7 +73,7 @@ my($_VALID_LENGTH) = length(__PACKAGE__->encrypt('anything'));
 
 =head2 static is_equal(string encrypted, string incoming) : boolean
 
-Encrypts I<incoming> using I<salt> from I<encrypted>.
+Encrypts I<incoming> using I<salt> from I<encrypted>. Throws
 Returns true if encrypted versions match.
 
 =cut
@@ -93,7 +93,11 @@ Encrypts the password with a random I<salt> string.
 
 sub encrypt {
     my(undef, $password) = @_;
-    return crypt($password, Bivio::Type::Password->salt(2));
+    my($salt) = '';
+    for (my($i) = 0; $i < 2; $i++) {
+	$salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
+    };
+    return crypt($password, $salt);
 }
 
 =for html <a name="from_literal"></a>
@@ -137,23 +141,6 @@ Returns true if I<value> is valid.
 sub is_valid {
     my(undef, $value) = @_;
     return $value && length($value) == $_VALID_LENGTH ? 1 : 0;
-}
-
-=for html <a name="salt"></a>
-
-=head2 salt(length) : string
-
-Return a salt string of the requested length.
-
-=cut
-
-sub salt {
-    my(undef, $length) = @_;
-    my($result) = '';
-    for( ; $length > 0; --$length) {
-	$result .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
-    }
-    return $result;
 }
 
 #=PRIVATE METHODS
