@@ -45,14 +45,20 @@ Bivio::IO::Config->register({
 
 =for html <a name="new"></a>
 
+=head2 static new(boolean always_redirect) : Bivio::Ext::LWPUserAgent
+
 =head2 static new() : Bivio::Ext::LWPUserAgent
 
-Calls SUPER::new and sets timeout and proxy.
+Calls SUPER::new and sets timeout and proxy. Optionally follow all
+redirects. Normally only GETs are redirected.
 
 =cut
 
 sub new {
-    my($self) = LWP::UserAgent::new(@_);
+    my($self, $always_redirect) = LWP::UserAgent::new(@_);
+    $self->{__PACKAGE__} = {
+	always_redirect => $always_redirect ? 1 : 0,
+    };
     # Relatively short timeout, so we don't get stuck in remote services.
     $self->timeout(60);
     # Use a proxy if configured
@@ -85,6 +91,23 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_HTTP_PROXY = $cfg->{http_proxy};
     return;
+}
+
+=for html <a name="redirect_ok"></a>
+
+=head2 redirect_ok(HTTP::Request request) : boolean
+
+Always returns true. Overrides LWP::UserAgent redirect_ok() which
+does not redirect POSTs.
+
+=cut
+
+sub redirect_ok {
+    my($self, $request) = @_;
+    my($fields) = $self->{__PACKAGE__};
+    return $fields->{always_redirect}
+	? 1
+	: $self->SUPER::redirect_ok($request);
 }
 
 #=PRIVATE METHODS
