@@ -152,14 +152,9 @@ sub action_grid {
 	       ) if ref($value) eq 'ARRAY';
 	$value->put(cell_align => 'nw');
 
-	# Attributes: What's This
-	if (defined($attrs->{whats_this})) {
-	    push(@$rows, [$label, $value,
-		$proto->whats_this($attrs->{whats_this})]);
-	}
-	else {
-	    push(@$rows, [$label, $value]);
-	}
+	$value = $value->append_whats_this($attrs->{whats_this})
+		if $attrs->{whats_this};
+	push(@$rows, [$label, $value]);
     }
     return Bivio::UI::HTML::Widget::Grid->new({
 #TODO: If you put in this, it screws up the footer.  Don't ask me why...
@@ -167,6 +162,28 @@ sub action_grid {
 	pad => 5,
 	values => $rows,
     });
+}
+
+=for html <a name="append_whats_this"></a>
+
+=head2 append_whats_this(string help_topic) : Bivio::UI::HTML::Widget
+
+=head2 append_whats_this(string task) : Bivio::UI::HTML::Widget
+
+Adds a L<whats_this|"whats_this"> to the right of this widget.
+
+=cut
+
+sub append_whats_this {
+    my($self) = shift;
+    my($font) = $self->unsafe_get('string_font');
+    return $self->string(
+	    $self->join([
+		$self->put(string_font => 0),
+		'&nbsp;' x 5,
+		$self->whats_this(@_)->put(string_font => 0)
+	    ]),
+	    $font);
 }
 
 =for html <a name="blank_cell"></a>
@@ -836,8 +853,14 @@ sub link {
 	$widget_value = $label;
 	$label = Bivio::UI::Label->get_simple($widget_value);
     }
-    $label = $proto->string($label, defined($font) ? ($font) : ())
-	    unless UNIVERSAL::isa($label, 'Bivio::UI::HTML::Widget');
+    unless (UNIVERSAL::isa($label, 'Bivio::UI::HTML::Widget')) {
+	$label = $proto->string($label);
+    }
+    else {
+#TODO: Does this make sense. I put it it in for backward compatibility [RJN]
+	# Don't assign the font unless creating a string.
+	$font = undef;
+    }
     $widget_value = [['->get_request'], '->format_stateless_uri',
 	Bivio::Agent::TaskId->$widget_value()]
 	    # Use widget value or abs_uri (literal)
@@ -846,6 +869,7 @@ sub link {
 	href => $widget_value,
 	value => $label,
 	$control ? (control => $control) : (),
+	defined($font) ? (string_font => $font) : (),
     });
 }
 
