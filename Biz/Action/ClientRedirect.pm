@@ -125,8 +125,7 @@ Redirect to I<cancel> task.
 
 sub execute_cancel {
     my(undef, $req) = @_;
-    $req->client_redirect($req->get('task')->get('cancel'));
-    # DOES NOT RETURN
+    return 'cancel';
 }
 
 =for html <a name="execute_home_page_if_site_root"></a>
@@ -156,8 +155,7 @@ Redirect to I<next> task.
 
 sub execute_next {
     my(undef, $req) = @_;
-    $req->client_redirect($req->get('task')->get('next'));
-    # DOES NOT RETURN
+    return 'next';
 }
 
 =for html <a name="execute_next_stateless"></a>
@@ -170,8 +168,8 @@ Redirect to I<next> task without a query.
 
 sub execute_next_stateless {
     my(undef, $req) = @_;
-    $req->client_redirect($req->get('task')->get('next'), undef, undef);
-    # DOES NOT RETURN
+    $req->put(query => undef);
+    return 'next';
 }
 
 =for html <a name="execute_query"></a>
@@ -197,8 +195,7 @@ sub execute_query {
     }
 
     # Just redirect to the configured default
-    $req->client_redirect($req->get('task')->get('next'));
-    # DOES NOT RETURN
+    return 'next';
 }
 
 #=PRIVATE METHODS
