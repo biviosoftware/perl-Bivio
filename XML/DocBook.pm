@@ -2,8 +2,7 @@
 # $Id$
 package Bivio::XML::DocBook;
 use strict;
-$Bivio::XML::DocBook::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::XML::DocBook::VERSION;
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
@@ -59,8 +58,9 @@ EOF
 }
 
 #=IMPORTS
-use XML::Parser ();
+use Bivio::IO::File;
 use HTML::Entities ();
+use XML::Parser ();
 
 #=VARIABLES
 my($_TO_HTML) = _to_html_compile({
