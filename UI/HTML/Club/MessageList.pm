@@ -33,6 +33,8 @@ a message list.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::UI::HTML::ActionButtons;
+use Bivio::UI::HTML::Widget::ActionBar;
 use Bivio::Biz::Model::MessageList;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Widget::Link;
@@ -60,27 +62,35 @@ sub new {
 	source => ['Bivio::Biz::Model::MessageList'],
 	expand => 1,
 	headings => [
-		Bivio::UI::HTML::Widget::String->new({
-		    value => 'Subject',
-		    column_expand => 1,
-		    column_align => 'sw',
-		}),
-		'Author',
-		'Date',
+	    Bivio::UI::HTML::Widget::String->new({
+		value => 'Subject',
+		column_expand => 1,
+		column_align => 'sw',
+	    }),
+	    'Author',
+	    'Date',
 	],
 	cells => [
-		Bivio::UI::HTML::Widget::Link->new({
-            	    href => ['->format_uri_for_this'],
-		    value => Bivio::UI::HTML::Widget::String->new({
-			value => ['MailMessage.subject'],
+	    Bivio::UI::HTML::Widget::Link->new({
+		href => ['->format_uri_for_this'],
+		value => Bivio::UI::HTML::Widget::String->new({
+		    value => ['MailMessage.subject'],
 	        }),
 	    }),
-    	    ['MailMessage.from_name'],
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['MailMessage.from_name'],
+		column_nowrap => 1,
+	    }),
             ['MailMessage.dttm',
 		   'Bivio::UI::HTML::Format::Date', 2],
 	],
 	});
     $fields->{content}->initialize;
+    $fields->{action_bar} = Bivio::UI::HTML::Widget::ActionBar->new({
+	values => Bivio::UI::HTML::ActionButtons->get_list(
+	    'club_compose_message'),
+    });
+    $fields->{action_bar}->initialize;
     return $self;
 }
 
@@ -104,7 +114,9 @@ sub execute {
 	    page_subtopic => undef,
 	    page_heading => 'Messages',
 	    page_content => $fields->{content},
+	    page_action_bar => $fields->{action_bar},
 	    page_type => Bivio::UI::PageType::LIST(),
+#	    want_page_search => 1,
 	    list_model => $req->get('Bivio::Biz::Model::MessageList'),
 	    list_uri => $req->format_uri($req->get('task_id'), undef),
 	    detail_uri => $req->format_uri(
