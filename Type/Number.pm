@@ -135,13 +135,14 @@ sub compare_defined {
 Divides numerator by denominator and returns the result using the specified
 decimal precision.
 
-Returns 'inf' when dividing by 0.
+Dies if dividing by 0.
 
 =cut
 
 sub div {
     my($proto, $v, $v2, $decimals) = @_;
-    return 'inf' if $v2 =~ /^[0.]+$/;
+    Bivio::Die->die('divide by zero: ', $v, '/', $v2)
+        if $v2 =~ /^[0.]+$/;
     return _format($proto,
         GMP::Mpf::overload_diveq(_mpf($v), _mpf($v2), 0), $decimals);
 }
@@ -410,11 +411,13 @@ sub _mpf {
     my($value) = @_;
 
     unless (defined($value)) {
+        Bivio::Die->die('numeric amount not defined, defaulting to 0');
         Bivio::IO::Alert->info('numeric amount not defined, defaulting to 0');
         $value = 0;
     }
-    # leading + not accepted by GMP
+    # leading + and commas not accepted by GMP
     $value =~ s/^\+//;
+    $value =~ s/\,//g;
     # the empty concatenation is very important because it forces values
     # passed as floats, such as 0.03 which is represented inexactly
     # to become the literal '0.03' which can be more closely
