@@ -165,21 +165,6 @@ sub _initialize {
 		    $blank_cell,
 		],
 		[
-		    Bivio::UI::HTML::Widget::Director->new({
-			control => ['->unsafe_get', 'page_error'],
-			values => {},
-			cell_expand => 1,
-			cell_align => 'center',
-			undef_value => $blank_cell,
-			default_value => Bivio::UI::HTML::Widget::Join->new({
-			    values => [['page_error']],
-			}),
-		    }),
-		],
-		[
-		    $blank_cell,
-		],
-		[
 		    Bivio::UI::HTML::Widget::Grid->new({
 			pad => 5,
 			expand => 1,
@@ -195,6 +180,18 @@ sub _initialize {
 				}),
 			    ],
 			],
+		    }),
+		],
+		[
+		    Bivio::UI::HTML::Widget::Director->new({
+			control => ['->unsafe_get', 'page_error'],
+			values => {},
+			cell_expand => 1,
+			cell_align => 'nw',
+			undef_value => $blank_cell,
+			default_value => Bivio::UI::HTML::Widget::Join->new({
+			    values => ['&nbsp;<br>', ['page_error']],
+			}),
 		    }),
 		],
 		[
