@@ -80,7 +80,7 @@ my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 // c_year - current year (taken from local machine)
 // slash_1 - index of first slash
 // slash_2 - index of second slash (-1 if not present)
-function vd_complete_date(s) {
+function dy_complete_date(s) {
   c_date = new Date();
   c_year = c_date.getFullYear();
   slash_1 = s.value.indexOf('/');
@@ -123,7 +123,7 @@ Returns the inlined source for this method.
 
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
-    return ' onChange="vd_complete_date(this)"';
+    return ' onChange="dy_complete_date(this)"';
 }
 
 =for html <a name="initialize"></a>
