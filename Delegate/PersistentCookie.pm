@@ -170,7 +170,7 @@ sub header_out {
     # don't send header unless we are in the correct Facade
     if ($_DOMAIN) {
 	my($uri) = Bivio::UI::Facade->get_from_request_or_self($req)
-	    ->get('uri');
+	    ->get('r')->server->server_hostname;
 	return 0 unless $uri =~ /\Q$_DOMAIN\E$/i;
 	_trace("in cookie domain: ", $_DOMAIN, ', uri: ', $uri) if $_TRACE;
     }
@@ -189,8 +189,8 @@ sub header_out {
     $p .= "; domain=$_DOMAIN" if $_DOMAIN;
     my($v) = $p;
 
-    # Yahoo uses this magic date to mean forever.  We use it, too.
-    $p .= '; expires=Thu, 15 Apr 2010 20:00:00 GMT';
+    # Forever
+    $p .= '; expires=Thu, 15 Apr 2013 20:00:00 GMT';
 
     _trace('data=', $fields) if $_TRACE;
 
