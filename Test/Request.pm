@@ -64,22 +64,20 @@ Returns an instance of self.
 sub get_instance {
     my($proto) = @_;
     if ($_SELF) {
-	Bivio::Die->die($_SELF, ': self not current request ',
-	    $_SELF->get_current)
-	    unless $_SELF->get_current == $_SELF;
+	Bivio::Die->die(
+	    $_SELF, ': self not current request ', $_SELF->get_current,
+        ) unless !$_SELF->get_current || $_SELF->get_current == $_SELF;
     }
-    else {
-	$_SELF = $proto->new({
-	    auth_id => undef,
-	    auth_user_id => undef,
-	    task_id => Bivio::Agent::TaskId->SHELL_UTIL,
-	    timezone => Bivio::Type::DateTime->timezone,
-            is_secure => 0,
-	});
-	$_SELF->put(reply => Bivio::Test::Reply->new);
-	$_SELF->set_realm(undef);
-	$_SELF->set_user(undef);
-    }
+    $_SELF = $proto->new({
+	auth_id => undef,
+	auth_user_id => undef,
+	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
+	timezone => Bivio::Type::DateTime->timezone,
+	is_secure => 0,
+    });
+    $_SELF->put(reply => Bivio::Test::Reply->new);
+    $_SELF->set_realm(undef);
+    $_SELF->set_user(undef);
     return $_SELF;
 }
 
