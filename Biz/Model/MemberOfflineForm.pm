@@ -26,7 +26,9 @@ use Bivio::Biz::FormModel;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::Model::MemberOfflineForm>
+C<Bivio::Biz::Model::MemberOfflineForm> Takes a member offline relative to a
+club (they remain a bivio user).  If a user takes themself offline, they are
+redirected to a confirmation page in the realm my-site.
 
 =cut
 
@@ -41,9 +43,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="execute_ok"></a>
 
-=head2 execute_ok() : 
+=head2 execute_ok()
 
-
+Take user offline.  If user takes self offline, redirect to a confirmation page
+(since can't go back to UserList).
 
 =cut
 
