@@ -176,7 +176,7 @@ sub internal_get_error_code {
 
 =for html <a name="internal_get_retry_sleep"></a>
 
-=head2 internal_get_retry_sleep(string error) : int
+=head2 internal_get_retry_sleep(int error, string message) : int
 
 Returns the number of seconds to sleep for the specified transient
 error code. 0 indicates retry immediately, undef indicates don't
@@ -185,7 +185,7 @@ retury.
 =cut
 
 sub internal_get_retry_sleep {
-    my($self, $error) = @_;
+    my($self, $error, $message) = @_;
     return $_ERR_RETRY_SLEEP->{$error};
 }
 
