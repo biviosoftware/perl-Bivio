@@ -55,6 +55,7 @@ sub internal_initialize {
             realm_transaction_id => ['PrimaryId', 'PRIMARY_KEY'],
             realm_id => ['PrimaryId', 'NOT_NULL'],
 	    sync_key => ['Line', 'NOT_NULL'],
+	    import_date => ['Date', 'NOT_NULL'],
         },
     };
 }

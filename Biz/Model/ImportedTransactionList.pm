@@ -136,6 +136,7 @@ sub internal_initialize {
             Entry.entry_type
             Entry.tax_category
             AccountSync.sync_key
+            AccountSync.import_date
             RealmAccount.realm_account_id
 	    ),
 	    {

@@ -136,6 +136,7 @@ sub internal_initialize {
             RealmTransaction.date_time
             RealmTransaction.realm_transaction_id
             AccountSync.sync_key
+            AccountSync.import_date
             ),
 	    {
 		# Must be "unique" since other forms refer to this field
