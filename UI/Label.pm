@@ -209,6 +209,12 @@ _compile(
     CLUB_ADMIN => ['Administration'],
     CLUB_ACCOUNTING => ['Accounting'],
     CLUB_COMMUNICATIONS => ['Communications'],
+    USER_ADMIN => ['Administration'],
+    USER_CLUB => ['Clubs'],
+
+    # Page Titles
+    TITLE_HOME_PAGE => ['Home'],
+    TITLE_SITE => ['bivio'],
 
     REALM_CHOOSER => ['Select Site'],
 
