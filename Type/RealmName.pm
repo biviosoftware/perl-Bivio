@@ -77,20 +77,6 @@ sub DEMO_CLUB_SUFFIX {
     return '_'.DEMO_CLUB();
 }
 
-=for html <a name="SITE_SEARCH_CLUB"></a>
-
-=head2 HELP_CLUB : string
-
-Returns name of the adhoc club containing the static site pages
-
-#TODO: Should not live forever
-
-=cut
-
-sub HELP_CLUB {
-    return 'bivio_site_search';
-}
-
 =for html <a name="SHADOW_PREFIX"></a>
 
 =head2 SHADOW_PREFIX : string
@@ -103,6 +89,20 @@ Returns prefix character for shadow names.
 
 sub SHADOW_PREFIX {
     return '=';
+}
+
+=for html <a name="SITE_SEARCH"></a>
+
+=head2 SITE_SEARCH : string
+
+Returns the club name for the site search.
+
+#TODO: Make a config param
+
+=cut
+
+sub SITE_SEARCH {
+    return 'bivio_site_search';
 }
 
 =for html <a name="TEST_SUFFIX"></a>
