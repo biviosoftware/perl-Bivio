@@ -77,12 +77,14 @@ sub new {
     my($target, $controller, $view) = _parse_request($r->uri());
     $controller ||= $default_controller_name;
 
+    my(%args) = $r->args;
     my($self) = &Bivio::Agent::Request::new($proto, $target, $controller,
 	   $user);
     $self->{$_PACKAGE} = {
         r => $r,
 	view_name => $view,
-        header_sent => 0
+        header_sent => 0,
+	args => \%args
     };
 
     #default to html
@@ -113,7 +115,7 @@ sub get_action_name {
 =head2 get_arg(string name) : string
 
 Returns the named request argument value from the inquiry or posted
-parameters. If the argument doesn't exist, '' is returned.
+parameters.
 
 =cut
 
@@ -121,8 +123,7 @@ sub get_arg {
     my($self,$name) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my(%args) = $fields->{'r'}->args;
-    return $args{$name} || '';
+    return $fields->{args}->{$name};
 }
 
 =for html <a name="get_http_return_code"></a>
@@ -173,7 +174,7 @@ sub get_model_args {
 
     my($self) = @_;
     my($map) = {};
-    my($mf) = $self->get_arg('mf');
+    my($mf) = $self->get_arg('mf') || '';
 
     foreach (split(',', $mf)) {
 	if (/^(\w+)\((.*)\)$/) {
@@ -193,7 +194,7 @@ Returns the requested model name. Parsed from the 'm' argument.
 
 sub get_model_name {
     my($self) = @_;
-    return $self->get_arg('m');
+    return $self->get_arg('m') || '';
 }
 
 =for html <a name="get_view_name"></a>
@@ -221,7 +222,7 @@ Writes the specified message to an error log appropriate for the request.
 sub log_error {
     my($self, $message) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{'r'}->log_error($message);
+    $fields->{r}->log_error($message);
 }
 
 =for html <a name="print"></a>
@@ -236,14 +237,14 @@ sub print {
     my($self,$str) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if ($fields->{'header_sent'} == 0) {
+    if ($fields->{header_sent} == 0) {
 	# only do this on first print
-	$fields->{'header_sent'} = 1;
+	$fields->{header_sent} = 1;
 
-	$fields->{'r'}->content_type($self->get_reply_type());
-	$fields->{'r'}->send_http_header;
+	$fields->{r}->content_type($self->get_reply_type());
+	$fields->{r}->send_http_header;
     }
-    $fields->{'r'}->print($str);
+    $fields->{r}->print($str || 'undef');
 }
 
 =for html <a name="put_arg"></a>
@@ -258,9 +259,23 @@ sub put_arg {
     my($self, $name, $value) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    my(%args);
-    %args = $self->{'r'}->args;
-    $args{$name} = $value;
+    $fields->{args}->{$name} = $value;
+}
+
+=for html <a name="set_args"></a>
+
+=head2 set_args(hash args)
+
+Sets the request arguments to the specified hash. All previous arguments
+will be lost.
+
+=cut
+
+sub set_args {
+    my($self, $args) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    $fields->{args} = $args;
 }
 
 =for html <a name="set_view_name"></a>
