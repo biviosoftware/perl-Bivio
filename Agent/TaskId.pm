@@ -225,8 +225,8 @@ my(@_CFG) = (
         CLUB
         MAIL_READ
         ?/mail
-        Bivio::Biz::Model::MessageList
-        Bivio::UI::HTML::Club::MessageList
+        Bivio::Biz::Model::MailList
+        Bivio::UI::HTML::Club::MailList
 
     )],
     [qw(
@@ -243,7 +243,7 @@ my(@_CFG) = (
         CLUB
         MAIL_READ
         ?/mail-msg
-        Bivio::Biz::Model::MessageList
+        Bivio::Biz::Model::MailList
         Bivio::UI::HTML::Club::MessageDetail
     )],
     # These two tasks must have the same "first part".  The string
@@ -982,8 +982,8 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?
-        Bivio::Biz::Model::MessageList
-        Bivio::UI::HTML::Celebrity::MessageList
+        Bivio::Biz::Model::MailList
+        Bivio::UI::HTML::Celebrity::MailList
     )],
     [qw(
         CELEBRITY_MESSAGE_DETAIL
@@ -991,7 +991,7 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?/msg
-        Bivio::Biz::Model::MessageList
+        Bivio::Biz::Model::MailList
         Bivio::UI::HTML::Celebrity::MessageDetail
     )],
     # No actions, just a token for authentication action
