@@ -246,16 +246,18 @@ sub iterate_next_and_load {
 
 =for html <a name="load"></a>
 
-=head2 load(hash query)
+=head2 load(hash query) : Bivio::Biz::PropertyModel
 
 Loads the model or dies if not found or other error.
 Subclasses shouldn't override this method.
+
+Returns I<self>.
 
 =cut
 
 sub load {
     my($self) = shift;
-    $self->unsafe_load(@_) && return;
+    return $self if $self->unsafe_load(@_);
     $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
 }
 
@@ -389,16 +391,18 @@ sub unauth_load {
 
 =for html <a name="unauth_load_or_die"></a>
 
-=head2 unauth_load_or_die(hash query)
+=head2 unauth_load_or_die(hash query) : Bivio::Biz::Model
 
 See L<unauth_load|"unauth_load"> for params.  Throws a C<NOT_FOUND>
 exception if the load fails.
+
+Returns I<self>.
 
 =cut
 
 sub unauth_load_or_die {
     my($self) = shift;
-    return if $self->unauth_load(@_);
+    return $self if $self->unauth_load(@_);
     $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
 }
 
