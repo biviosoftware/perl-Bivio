@@ -11,7 +11,7 @@ Bivio::Util::Release - build and release management
 
 =head1 SYNOPSIS
 
-    use Bivio::Util::Release;
+    b-release [options] command [args...]
 
 =cut
 
@@ -26,7 +26,54 @@ use Bivio::ShellUtil;
 
 =head1 DESCRIPTION
 
-C<Bivio::Util::Release> build and release management
+C<Bivio::Util::Release> Build and Release Management with b-release
+
+Configuration
+
+  Host configuration is controlled via the bivio.conf
+
+  cvs_rpm_spec_dir - cvs directory with rpm package specifications
+  rpm_host         - rpm repository host name/port
+  rpm_home_dir     - location of rpms on rpm_host
+
+Build
+
+  In the common form, 'build' will create a new rpm file for the
+  package. The package's rpm spec file will be retrieved from cvs and
+  the package will be checked out of cvs, and assembled into an rpm
+  according to the spec file. By default the 'HEAD' or current version
+  will be used checked out from cvs unless the '-version' flag is
+  specified. The output from the command details the steps involved
+  and the output from the cvs and rpm utilities.
+
+  Example:
+
+    b-release build myproject
+
+  The commands executed would be (summarized):
+
+    cvs checkout -f -r HEAD <cvs_rpm_spec_dir>/myproject.spec
+    rpm -bb <cvs_rpm_spec_dir>/myproject.spec-build
+    cp -p i386/myproject-HEAD-<date_time>.i386.rpm <rpm_home_dir>
+    ln -s myproject-HEAD-<date_time>.i386.rpm myproject-HEAD.rpm
+
+  The myproject.spec-build file is created dynamically by
+  b-release.
+
+Installation
+
+  Installs the latest version of the package. The '-force' and
+  '-nodeps' can be used to control the rpm installation. The
+  '-version' flag determines the package version installed, the
+  default is 'HEAD'.
+
+  Example:
+
+    b-release install myproject
+
+  The commands executed would be:
+
+    rpm -Uvh <rpm_host><rpm_home_dir>/myproject-HEAD.rpm
 
 =cut
 
@@ -39,42 +86,19 @@ use LWP::UserAgent ();
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
-my($_RPM_HOST);
-my($_RPM_HOST_DIR);
-my($_TMP_DIR);
-my($_RPM_HOME_DIR);
 my($_CVS_RPM_SPEC_DIR);
+my($_RPM_HOME_DIR);
+my($_RPM_HOST);
 my($_RPM_USER);
+my($_TMP_DIR);
 
 Bivio::IO::Config->register({
-    # used by 'install'
-    rpm_host => 'http://locker.bivio.com:60000',
-    rpm_host_dir => '/dip/rpms/',
-
-    # used for building rpms
     cvs_rpm_spec_dir => 'pkgs',
     rpm_home_dir => '/home/dip/rpms',
-    tmp_dir => "/var/tmp/bap-$$",
+    rpm_host => 'http://locker.bivio.com:60000',
     rpm_user => 'httpd',
+    tmp_dir => "/var/tmp/build-$$",
 });
-
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::Util::Release
-
-Creates a new Release utility.
-
-=cut
-
-sub new {
-    my($self) = Bivio::ShellUtil::new(@_);
-    $self->{$_PACKAGE} = {};
-    return $self;
-}
 
 =head1 METHODS
 
@@ -84,12 +108,9 @@ sub new {
 
 =head2 OPTIONS : hash_ref
 
-    {
 	build_stage => ['String', 'b'],
 	nodeps => ['Boolean', 0],
-	package_suffix => ['String', 'HEAD'],
-        version => ['String', undef],
-    }
+        version => ['String', 'HEAD'],
 
 =cut
 
@@ -98,10 +119,8 @@ sub OPTIONS {
 	%{__PACKAGE__->SUPER::OPTIONS()},
 	build_stage => ['String', 'b'],
 	nodeps => ['Boolean', 0],
-	package_suffix => ['String', 'HEAD'],
-        version => ['String', undef],
+        version => ['String', 'HEAD'],
     };
-
 }
 
 =for html <a name="OPTIONS_USAGE"></a>
@@ -110,20 +129,20 @@ sub OPTIONS {
 
 Adds the following to standard options:
 
-    -build_stage - rpm build stage, valid values [p,c,i,b], identical to the rpm(1) -b option
+    -build_stage - rpm build stage, valid values [p,c,i,b],
+                   identical to the rpm(1) -b option
     -nodeps - install without checking dependencies
-    -package_suffix - suffix for rpm file (default: HEAD)
-    -version - the version to be built
+    -version - the version to be built (default: HEAD)
 
 =cut
 
 sub OPTIONS_USAGE {
     return __PACKAGE__->SUPER::OPTIONS_USAGE()
 	    .<<'EOF';
-    -build_stage - rpm build stage, valid values [p,c,i,b], identical to the rpm(1) -b option
+    -build_stage - rpm build stage, valid values [p,c,i,b],
+                   identical to the rpm(1) -b option
     -nodeps - install without checking dependencies
-    -package_suffix - suffix for rpm file (default: HEAD)
-    -version - the version to be built
+    -version - the version to be built (default: HEAD)
 EOF
 }
 
@@ -136,8 +155,9 @@ Returns:
 usage: b-release [options] command [args...]
 commands:
     build rpm-spec-file ... -- compile & build rpms
-    install package-name ... -- install rpms
-    list -- displays packages created by 'build'
+    install package-name ... -- install rpms from network
+                                repository
+    list [uri] -- displays packages in network repository
 
 =cut
 
@@ -145,34 +165,42 @@ sub USAGE {
     return <<'EOF';
 usage: b-release [options] command [args...]
 commands:
-    build rpm-spec-file ... -- compiles & builds an rpm
-    install package-name ... -- installs rpms
-    list -- displays packages created by 'build'
+    build package ... -- compile & build rpms
+    install package ... -- install rpms from network repository
+    list [uri] -- displays packages in network repository
 EOF
 }
 
 =for html <a name="build"></a>
 
-=head2 build(string rpm_spec_file, ...) : string
+=head2 build(string package, ...) : string
 
 Builds software in stages (prepare, compile, install, package),
-using an RPM spec file. bap is only a small wrapper around the original
-rpm application to help the user getting the right source code.
+using an RPM spec file. build is wrapper around the original
+rpm application to help the user access the right source code.
+
+package may be a fully qualified package spec such as
+
+  spec-dir/myproject.spec
+
+or simple name which will default spec in the default cvs directory
+
+  myproject
 
 Returns information about the commands executed.
 
 =cut
 
 sub build {
-    my($self, @rpm_spec_files) = @_;
-    $self->usage_error("Missing spec file") unless @rpm_spec_files;
+    my($self, @packages) = @_;
+    $self->usage_error("Missing spec file") unless @packages;
     $self->usage_error("Must be run as root") unless $> == 0;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage)
 	    unless $rpm_stage =~ /^[pcib]$/;
 
-    # validation configuration
-    Bivio::Die->die("rpm_home_dir dir, ", $_RPM_HOME_DIR, ' not found')
+    # validate configuration
+    Bivio::Die->die('rpm_home_dir dir, ', $_RPM_HOME_DIR, ' not found')
 		unless -d $_RPM_HOME_DIR;
 
     my($output) = '';
@@ -181,23 +209,23 @@ sub build {
     $output .= "Changing to $_TMP_DIR\n";
     Bivio::IO::File->chdir($_TMP_DIR);
 
-    my($arch) = _get_rpm_option($self, '_arch') || 'i386';
+    my($arch) = _get_rpm_arch();
     _system("ln -s . $arch", \$output) unless -e $arch;
 
-    for my $specin (@rpm_spec_files) {
+    for my $specin (@packages) {
 	unless ($specin =~ /\.spec$/) {
-	    $specin = $_CVS_RPM_SPEC_DIR.'/'.$specin.'.spec';
+	    $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
 	}
 	my($specout, $base, $fullname) = _create_rpm_spec($self, $specin,
 	       \$output);
 
+	my($rpm_command) = "rpm -b$rpm_stage $specout";
 	if ($self->get('noexecute')) {
-            $output .= "Would run: rpm -b$rpm_stage $specout\n"
+            $output .= "Would run: $rpm_command\n"
 		    ."           in directory $_TMP_DIR\n";
 	    next;
 	}
-
-	_system("rpm -b$rpm_stage $specout", \$output);
+	_system($rpm_command, \$output);
 	_save_rpm_file("$arch/$fullname.$arch.rpm", \$output);
 	_link_rpm_base("$fullname.$arch.rpm", "$base.rpm", \$output);
     }
@@ -212,17 +240,15 @@ sub build {
 
 =over 4
 
-=item rpm_host : string ['http://locker.bivio.com:60000']
-
-=item rpm_host_dir : string ['/dip/rpms/']
-
 =item cvs_rpm_spec_dir : string ['pkgs'],
 
 =item rpm_home_dir : string ['/home/dip/rpms'],
 
-=item tmp_dir : string ["/var/tmp/bap-$$"]
+=item rpm_host : string ['http://locker.bivio.com:60000']
 
 =item rpm_user : string ['httpd'],
+
+=item tmp_dir : string ["/var/tmp/build-$$"]
 
 =back
 
@@ -231,29 +257,36 @@ sub build {
 sub handle_config {
     my(undef, $cfg) = @_;
 
-    $_RPM_HOST = $cfg->{rpm_host};
-    $_RPM_HOST_DIR = $cfg->{rpm_host_dir};
     $_CVS_RPM_SPEC_DIR = $cfg->{cvs_rpm_spec_dir};
     $_RPM_HOME_DIR = $cfg->{rpm_home_dir};
-    $_TMP_DIR = $cfg->{tmp_dir};
+    $_RPM_HOST = $cfg->{rpm_host};
     $_RPM_USER = $cfg->{rpm_user};
+    $_TMP_DIR = $cfg->{tmp_dir};
     return;
 }
 
 =for html <a name="install"></a>
 
-=head2 install(string package_name, ...) : string
+=head2 install(string package, ...) : string
 
 Manages packages for a host. It will install/upgrade/remove packages.
-Uses the enviornment settings for http_proxy if present.
+Uses the environment settings for http_proxy if present.
+
+package may be a fully qualified name such as
+
+  myproject-1.5.2-2.i386.rpm
+
+or simple name which will default the current version
+
+  myproject
 
 Returns a list of commands executed.
 
 =cut
 
 sub install {
-    my($self, @package_names) = @_;
-    $self->usage_error("No packages to install?") unless @package_names;
+    my($self, @packages) = @_;
+    $self->usage_error("No packages to install?") unless @packages;
     my($output) = '';
 
     # process optional args
@@ -269,11 +302,16 @@ sub install {
     }
 
     # install all the packages
-    for my $package (@package_names) {
-	$package .= '-'.$self->get('package_suffix').'.rpm'
+    for my $package (@packages) {
+	$package .= '-'.$self->get('version').'.rpm'
 		unless $package =~ /\.rpm$/;
         my($uri) = _create_URI($package);
-	_system("rpm -Uvh $rpm_opt $uri\n", \$output);
+	my($command) = "rpm -Uvh $rpm_opt $uri\n";
+	if ($self->get('noexecute')) {
+	    $output .= "Would run: $command\n";
+	    next;
+	}
+	_system($command, \$output);
     }
     return $output;
 }
@@ -282,28 +320,35 @@ sub install {
 
 =head2 list() : string
 
-Displays packages created by I<build>.
+Displays packages in default network repository.
+
+=head2 list(string uri) : string
+
+Displays the packages at the specified repository. The uri may be of the
+complete form:
+
+ http://host:port/dir
+
+or directory form which will use the default host:
+
+ dir
 
 =cut
 
 sub list {
-    my($self) = @_;
+    my($self, $uri) = @_;
     my($output) = '';
 
-    my($uri) = _create_URI('');
+    $uri = _create_URI($uri || '');
     my($ua) = LWP::UserAgent->new();
     $ua->env_proxy();
     my($reply) = $ua->request(HTTP::Request->new('GET', $uri));
-
-    if ($reply->is_success) {
-        my(@lines) = split("\n", $reply->content);
-        for my $line (@lines) {
-	    if ($line =~ /.+\">\s(\S+\.rpm)<\/A>/) {
-		$output .= "$1\n";
-	    }
-        }
-    } else {
-	Bivio::IO::Alert->warn($uri, ": ", $reply->status_line);
+    Bivio::Die->die($uri, ": ", $reply->status_line)
+		unless $reply->is_success;
+    for my $line (split("\n", $reply->content)) {
+	if ($line =~ /.+\">\s(\S+\.rpm)<\/A>/) {
+	    $output .= "$1\n";
+	}
     }
     return $output;
 }
@@ -317,30 +362,27 @@ sub list {
 #
 sub _create_URI {
     my($name) = @_;
-    if ($name =~ /^http/) {
-        return $name;
-    } elsif ($name =~ m:^/:) {
-        return $_RPM_HOST.$name;
-    } else {
-        return $_RPM_HOST.$_RPM_HOST_DIR.$name;
-    }
+    return $name if $name =~ /^http/;
+    return "$_RPM_HOST/$name" if $name =~ m:^/:;
+    return "$_RPM_HOST$_RPM_HOME_DIR/$name";
 }
 
-# _create_rpm_spec(string specin, string_ref output) : string
+# _create_rpm_spec(string specin, string_ref output) : (string, string, string)
 #
 # Creates an rpm spec using the generic spec file specified.
 # Appends build info to the output buffer.
+# Returns (output spec file name, base name, full name).
 #
 sub _create_rpm_spec {
     my($self, $specin, $output) = @_;
-    my($cvstag) = $self->get('package_suffix');
+    my($version) = $self->get('version');
 
-    _system("cvs checkout -f -r $cvstag $specin", $output);
-    open(SPECIN, "<$specin") || Bivio::Die->die("$specin: $!");
-    my(@specin) = <SPECIN>;
-    close(SPECIN);
+    _system("cvs checkout -f -r $version $specin", $output);
+    my($base_spec) = _read_all("<$specin");
+    my($release) = _search('release', $base_spec) || _get_date_format();
+    $version = _search('version', $base_spec) || $version;
 
-    my($specout) = "$specin-bap";
+    my($specout) = "$specin-build";
     open(SPECOUT, ">$specout") || Bivio::Die->die("$specout: $!");
 
     # After rpm 3.0.2, relative filenames fail!
@@ -350,39 +392,34 @@ sub _create_rpm_spec {
 %define _srcrpmdir .
 %define _rpmdir $_TMP_DIR
 %define _builddir .
+%define cvs cvs checkout -f -r $version
+Release: $release
+Version: $version
 EOF
+    print(SPECOUT "Copyright: Bivio\n")
+	    unless _search('copyright', $base_spec);
 
-    print(SPECOUT "%define cvs cvs checkout -f -r $cvstag \n");
-    my($n, $r, $v);
-    grep(/^Name: (.+)/ && ($n = $1), @specin)
-	    || Bivio::Die->die("$specin: Missing Name: tag!\n");
-    if (!grep(/^Release: (.+)/ && ($r = $1), @specin)) {
-	$r = _get_date_format();
-	print(SPECOUT "Release: $r\n");
-    }
-    if (!grep(/^Version: (.+)/ && ($v = $1), @specin)) {
-	my($version) = $self->get_or_default('version', $cvstag);
-	print(SPECOUT "Version: $version\n");
-	$v = $version;
-    }
-    grep(/^Copyright:/, @specin) || print(SPECOUT "Copyright: Bivio\n");
-    my($l, $build_root, $source);
-    for $l (@specin) {
-	if($l =~ /^buildroot: (.+)$/i) {
-	    $build_root = $1;
+    for my $line (@$base_spec) {
+	if ($line =~ /^buildroot: (.+)$/i) {
+	    my($build_root) = $1;
 	    unless ($build_root =~ m,^/,) {
 		$build_root = Bivio::IO::File->pwd.'/'.$build_root;
 	    }
-	    print(SPECOUT "BuildRoot: ", $build_root, "\n");
-	    print(SPECOUT "%define allfiles cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'\n");
-	    print(SPECOUT "%define allcfgs cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'\n");
+	    print(SPECOUT <<"EOF");
+BuildRoot: $build_root
+%define allfiles cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'
+%define allcfgs cd $build_root; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'
+EOF
 	    next;
 	}
-	print(SPECOUT $l);
+	print(SPECOUT $line)
+		unless $line =~ /^release: /i || $line =~ /^version: /i;
     }
     close(SPECOUT);
 
-    return ($specout, "$n-$v", "$n-$v-$r");
+    my($name) = _search('name', $base_spec)
+	    || Bivio::Die->die("$specin: Missing Name: tag!\n");
+    return ($specout, "$name-$version", "$name-$version-$release");
 }
 
 # _get_date_format() : string
@@ -395,27 +432,15 @@ sub _get_date_format {
 	    $n[3], $n[2], $n[1], $n[0]);
 }
 
-# _get_rpm_option(string option) : string
+# _get_rpm_arch() : string
 #
-# Returns the value of the named rpm option.
+# Returns the _arch value from the rpm resource definition.
+# Defaults to 'i386' if not found.
 #
-sub _get_rpm_option {
-    my($self, $option) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    # used cached options, or reparse for first call
-    unless (defined($fields->{rpmrc})) {
-	$fields->{rpmrc} = {};
-
-	open(RPM, "rpm --showrc|") || Bivio::Die->die("$!");
-	foreach my $line (<RPM>) {
-	    if ($line =~ /^\-\d+: (\S+)\s+(\S+)/) {
-		$fields->{rpmrc}->{$1} = $2;
-	    }
-	}
-	close(RPM);
-    }
-    return $fields->{rpmrc}->{$option};
+sub _get_rpm_arch {
+    my($rc) = _read_all("rpm --showrc|");
+    grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
+    return 'i386';
 }
 
 # _link_rpm_base(string rpm_file, string_ref output)
@@ -425,10 +450,23 @@ sub _get_rpm_option {
 sub _link_rpm_base {
     my($rpm_file, $rpm_base, $output) = @_;
 
-    unlink("$_RPM_HOME_DIR/$rpm_base");
-    $$output .= "LINKING AS $_RPM_HOME_DIR/$rpm_base\n";
-    _system("ln -s $rpm_file $_RPM_HOME_DIR/$rpm_base", $output);
+    my($base_file) = "$_RPM_HOME_DIR/$rpm_base";
+    unlink($base_file);
+    $$output .= "LINKING AS $base_file\n";
+    _system("ln -s $rpm_file $base_file", $output);
     return;
+}
+
+# _read_all(string file) : array_ref
+#
+# Returns the entire contents of the named file.
+#
+sub _read_all {
+    my($file) = @_;
+    open(IN, $file) || Bivio::Die->die("$file: $!");
+    my(@data) = <IN>;
+    close(IN);
+    return \@data;
 }
 
 # _save_rpm_file(string filename, string_ref output)
@@ -441,8 +479,20 @@ sub _save_rpm_file {
 
     $$output .= "SAVING RPM $rpm_file in $_RPM_HOME_DIR\n";
     _system("chown $_RPM_USER.$_RPM_USER $rpm_file", $output);
-    _system("cp -p $rpm_file $_RPM_HOME_DIR", \$output);
+    _system("cp -p $rpm_file $_RPM_HOME_DIR", $output);
     return;
+}
+
+# _search(string tag, array_ref source) : string
+#
+# Searches for the specified tag in the source array. Returns the
+# value or undef if not found.
+#
+sub _search {
+    my($tag, $source) = @_;
+
+    grep(/^$tag: (.+)/i && (return $1), @$source);
+    return undef;
 }
 
 # _system(string command, string_ref output)
