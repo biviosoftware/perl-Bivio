@@ -197,6 +197,14 @@ credit card type not supported; Amex, Visa and MasterCard only
 
 card number does not match card type
 
+=item FILE_FIELD
+
+your browser has not submitted the file correctly; please try again
+
+=item EMPTY
+
+file cannot be empty
+
 =back
 
 =cut
@@ -429,6 +437,16 @@ sub get_delegate_info {
 	41,
 	undef,
 	"card number does not match card type",
+    ],
+    FILE_FIELD => [
+	42,
+	undef,
+	'your browser has not submitted the file correctly; please try again',
+    ],
+    EMPTY => [
+	43,
+	undef,
+	'file cannot be empty',
     ],
 ];
 }
