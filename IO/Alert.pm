@@ -378,42 +378,53 @@ sub _format {
     $text .= ' ';
     my($o);
     foreach $o (@$msg) {
-	$text .= _format_string($o);
+	# Only go three levels deep on structures
+	$text .= _format_string($o, 3);
     }
     substr($text, -1) eq "\n" || ($text .= "\n");
     return $text;
 }
 
+# _format_string(any o, int depth) : string
+#
+# Returns $o formatted as a string.  If $depth <= 0, don't go uwrap
+# structures.
+#
 sub _format_string {
-    my($o) = @_;
-    # Don't let as_string calls crash;  Only call as_string on refs.
-    if (ref($o) eq 'ARRAY') {
-	my($s, $v) = '[';
-	my($i) = 20;
-	foreach $v (@$o) {
-	    $s .= _format_string_simple($v) .',';
-	    if (--$i <= 0) {
-		$s .= '<...>,';
-		last;
+    my($o, $depth) = @_;
+
+    # Avoid deep nesting
+    if (--$depth > 0) {
+	# Don't let as_string calls crash;  Only call as_string on refs.
+	if (ref($o) eq 'ARRAY') {
+	    my($s, $v) = '[';
+	    my($i) = 20;
+	    foreach $v (@$o) {
+		$s .= _format_string($v, $depth) .',';
+		if (--$i <= 0) {
+		    $s .= '<...>,';
+		    last;
+		}
 	    }
+	    return chop($s) eq '[' ? '[]' : $s.']';
 	}
-	return chop($s) eq '[' ? '[]' : $s.']';
-    }
-    if (ref($o) eq 'HASH') {
-	my($s, $v) = '{';
-	my($i) = 20;
-	foreach $v (sort(keys(%$o))) {
-	    $s .= _format_string_simple($v)
-		    .'=>'._format_string_simple($o->{$v}).',';
-	    if (--$i <= 0) {
-		$s .= '<...>,';
-		last;
+
+	if (ref($o) eq 'HASH') {
+	    my($s, $v) = '{';
+	    my($i) = 20;
+	    foreach $v (sort(keys(%$o))) {
+		$s .= _format_string($v, $depth)
+			.'=>'._format_string($o->{$v}, $depth).',';
+		if (--$i <= 0) {
+		    $s .= '<...>,';
+		    last;
+		}
 	    }
+	    return chop($s) eq '{' ? '{}' : $s.'}';
 	}
-	return chop($s) eq '{' ? '{}' : $s.'}';
-    }
-    if (ref($o) eq 'SCALAR') {
-	return '\\${'._format_string_simple($$o).'}';
+	if (ref($o) eq 'SCALAR') {
+	    return '\\${'._format_string($$o, $depth).'}';
+	}
     }
     return _format_string_simple($o);
 }
