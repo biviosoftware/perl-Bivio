@@ -62,6 +62,7 @@ Do not commit the transaction.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
 use Bivio::Auth::RealmType;
@@ -163,6 +164,8 @@ sub init {
 	edit(undef, @args);
         $line = '';
     }
+    # Avoids error messages containing DATA
+    close(DATA);
     return;
 }
 
@@ -267,6 +270,7 @@ if either L<init|"init"> or L<edit|"edit"> is called.
 sub main {
     my(undef, @argv) = @_;
     Bivio::IO::Config->initialize(\@argv);
+    Bivio::Agent::Request->get_current_or_new;
     my($execute) = 1;
     $execute = 0, shift(@argv) if @argv && $argv[0] eq '-n';
     if (int(@argv) && $argv[0] eq '-init') {
