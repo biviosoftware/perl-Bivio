@@ -176,6 +176,22 @@ _compile(
     BASIS_AFTER_WITHDRAWAL => ["Member's Basis After Withdrawal"],
     RETURN_SINCE => ['Return Since'],
 
+    # Accounting Reports (Tasks)
+    CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL => ['Member Withdrawal Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION => [
+	'Member Tax Allocation Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status Report'],
+    CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY => ['Member Report'],
+    CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY => ['Investment Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE => [
+	'Investment Performance Report'],
+    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
+	'Income and Expense Report'],
+    CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Capital Gains and Losses Report'],
+    CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => ['Miscellaneous Income and Deductions Report'],
+
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
 
@@ -187,22 +203,26 @@ _compile(
     REALM_CHOOSER => ['Select Site'],
 
     # Tasks (sorted alphabetically)
+    CLUB_ACCOUNTING_ACCOUNT_DETAIL => ['Account Detail'],
+    CLUB_ACCOUNTING_ACCOUNT_LIST => ['Account Summary'],
     CLUB_ACCOUNTING_CLEAR => ['Clear Online Accounting'],
     CLUB_ACCOUNTING_FEE => ['Fees'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
+    CLUB_ACCOUNTING_INVESTMENT_DETAIL => ['Investment Detail'],
+    CLUB_ACCOUNTING_INVESTMENT_LIST => ['Investment Summary'],
     CLUB_ACCOUNTING_INVESTMENT_LOT_LIST => ['Investment Lots'],
     CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
     CLUB_ACCOUNTING_LOCAL_VALUATION_DATES => ['Change Past Valuations'],
+    CLUB_ACCOUNTING_MEMBER_DETAIL => ['Member Detail'],
+    CLUB_ACCOUNTING_MEMBER_LIST => ['Member Summary'],
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL => ['Member Withdrawal'],
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK => [
 	'Member Investment Withdrawal'],
     CLUB_ACCOUNTING_PAYMENT => ['Payments'],
-    CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
-	'Income and Expense Statement'],
-    CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Investment Sale Gain/(Loss)'],
-    CLUB_ACCOUNTING_REPORT_MEMBER_STATUS => ['Member Status'],
     CLUB_ACCOUNTING_TAX99 => ['U.S. Taxes'],
+    CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION => [
+	'Member Tax Allocation Report'],
     CLUB_ADMIN_EXPORT => ['Export Club Data'],
     CLUB_ADMIN_EXPORT_COMPRESSED => ['Compressed'],
     CLUB_ADMIN_EXPORT_PLAIN => ['Plain'],
@@ -350,6 +370,12 @@ _compile(
     YAHOO_20000713 => ['Yahoo! Live Webcast'],
     COMPUFEST_2000 => ['CompuFest 2000'],
     ABOUT_COM_GUIDE => ['About.com Guide Wanted'],
+
+    # Help topics
+    HELP_ENABLING_COOKIES => ['Enabling Cookies in your Browser'],
+    HELP_COOKIES => ['Cookies'],
+    HELP_VALUATION_DATE => ['Valuation Date'],
+    HELP_UNIT_VALUE => ['Unit Value'],
 );
 
 =head1 METHODS

@@ -121,7 +121,7 @@ sub new {
     $fields->{content}->initialize;
 
     $fields->{heading} = Bivio::UI::HTML::Club::ReportPage
-	    ->get_fiscal_heading_widget('Misc. Income and Deductions, ');
+	    ->get_heading_with_two_dates;
     return $self;
 }
 
@@ -142,7 +142,6 @@ sub execute {
     my($fields) = $self->{$_PACKAGE};
 
     $req->put(page_heading => $fields->{heading},
-	    page_subtopic => 'Misc. Income and Deductions',
 	    page_content => $fields->{content});
     Bivio::UI::HTML::Club::ReportPage->execute($req);
     return;

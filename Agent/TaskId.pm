@@ -35,7 +35,12 @@ DO NOT CHANGE the numbers in this list, the values may be
 stored in the database.
 
 URLs can be aliases, separated by a colon (:).  However, the first
-on is returned on get from task id.  See HTTP::Location code.
+on is returned on get from task id.  See
+L<Bivio::Agent::HTTP::Location|Bivio::Agent::HTTP::Location>.
+
+URI components should use dashes (-), not underscores (_), to
+make the component more readable.  Underscores disappear when
+underlined.
 
 A URI which contains a '?', will have a realm owner name in that
 position.
@@ -141,6 +146,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
+        help=account-summary
     )],
 #    [qw(
 #        CLUB_ACCOUNTING_HISTORY
@@ -161,6 +167,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=investment-summary
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_LIST
@@ -173,6 +180,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=member-summary
     )],
     # NOTE: This must not be CLUB_ACCOUNTING_REPORT_*, because
     # AccountingReportForm knows the list of accounting reports with
@@ -267,46 +275,45 @@ my(@_CFG) = (
 	Bivio::Biz::Model::AccountValuationList->execute_load_all
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
-        help=valuation_statement
+        help=valuation-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
         24
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/investments
+        ?/accounting/reports/investment
         Bivio::Biz::Model::InactiveForm->execute_active_only
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
-        help=investment_summary
+        help=investment-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
         26
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        ?/accounting/reports/members
+        ?/accounting/reports/member
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
-        help=member_summary
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         30
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/accounts
+        ?/accounting/reports/account
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
-        help=cash_summary_report
+        help=account-report
     )],
     [qw(
 	GENERAL_PRIVACY
@@ -336,6 +343,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Model::AllMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
+        help=member-detail
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -348,6 +356,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmInstrumentList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentDetail
+        help=investment-detail
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -360,6 +369,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmAccount
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::UI::HTML::Club::AccountDetail
+        help=account-detail
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_PAYMENT
@@ -718,7 +728,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubMemberTitleForm
         Bivio::UI::HTML::Club::EditMemberTitle
         next=CLUB_ADMIN_USER_DETAIL
-        help=changing_privileges
+        help=changing-privileges
     )],
 #TODO: not implemented
 #        Bivio::Biz::Action::TargetRealm->execute_this_real_member
@@ -1467,7 +1477,7 @@ my(@_CFG) = (
         156
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/investment-sale:?/accounting/reports/investment_sale
+        ?/accounting/reports/capital-gains-and-losses
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Action::ReportDateToday
@@ -1475,21 +1485,21 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSaleReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE
-        help=gains_losses_report
+        help=capital-gains-and-losses-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
         157
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/income-and-expense:?/accounting/reports/income_and_expense
+        ?/accounting/reports/income-and-expense
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Action::ReportDateToday
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::UI::HTML::Club::IncomeAndExpenseReport
         next=CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT
-        help=income_expense_statement
+        help=income-expense-report
     )],
     # Forces user to login and then redirects to USER_HOME
     [qw(
@@ -1514,7 +1524,7 @@ my(@_CFG) = (
         160
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/allocations
+        ?/accounting/reports/member-tax-allocations
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
@@ -1523,13 +1533,14 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MemberAllocationReport
         Bivio::UI::HTML::Club::ReportPage
         next=CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
+        help=member-tax-allocations-report
     )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
         161
         CLUB
         ACCOUNTING_READ
-        ?/accounting/reports/income-and-deductions:?/accounting/reports/income_and_deductions
+        ?/accounting/reports/misc-income-and-deductions
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Action::ReportDateToday
@@ -1537,6 +1548,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::PortfolioIncomeList->execute_load_all
         Bivio::UI::HTML::Club::MiscIncomeAndDeductions
         next=CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS
+        help=misc-income-and-deductions-report
     )],
     # All tax views are ACCOUNTING_WRITE so only the accountant can access
     [qw(
@@ -1923,13 +1935,14 @@ my(@_CFG) = (
         196
         CLUB
         ACCOUNTING_READ&MEMBER_READ
-        ?/accounting/reports/member-status:?/accounting/reports/member_status
+        ?/accounting/reports/member-status
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
         Bivio::Biz::Model::MemberStatusList->execute_load_all
         Bivio::UI::HTML::Club::MemberStatusReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
+        help=member-status-report
     )],
     [qw(
         CLUB_MAIL_POST
@@ -2054,7 +2067,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         !
         Bivio::UI::HTML::ErrorPages->execute_missing_cookies
-        help=enabling_cookies
+        help=enabling-cookies
     )],
     [qw(
         REALM_INVITE_WRONG_USER

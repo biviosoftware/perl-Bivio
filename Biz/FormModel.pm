@@ -340,7 +340,12 @@ sub execute {
     my($parse_res) = _parse($self, $input);
     # In the special case when execute_other returns true, we just
     # get out and don't rollback.
-    return $parse_res == -1 ? 1 : 0 unless $parse_res == 1;
+    unless ($parse_res == 1) {
+	return 1 if $parse_res == -1;
+
+	# Allow the subclass to modify the state of the form after an unwind
+	return $self->execute_unwind();
+    }
 
     # If the form has errors, the transaction will be rolled back.
     # validate is always called so we try to return as many errors
@@ -415,11 +420,33 @@ Processes the form after a cancel or other button is pressed.
 The button string is passed.  It will redirect to the cancel
 task for the form.
 
-B<Return true if you want the Form to execute immediately>
+Although it is unlikely, you'll ever want to do this.
+Return true if you want the Form to execute immediately.
 
 =cut
 
 sub execute_other {
+    return 0;
+}
+
+=for html <a name="execute_unwind"></a>
+
+=head2 execute_unwind() : boolean
+
+Called in the L<SUBMIT_UNWIND|"SUBMIT_UNWIND"> case.  The form
+is already parsed, but not validated.  You cannot assume any
+fields are valid.
+
+This method is called right before L<execute|"execute"> is
+about to return.  You can modify fields with
+L<internal_put_field|"internal_put_field">.
+
+Although it is unlikely, you'll ever want to do this.
+Return true if you want the Form to execute immediately.
+
+=cut
+
+sub execute_unwind {
     return 0;
 }
 

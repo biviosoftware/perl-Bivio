@@ -458,7 +458,7 @@ sub _parse_map_item {
 
     if ($cause eq 'help') {
 	Bivio::IO::Alert->die($attrs->{id}, ': invalid help=', $action)
-		unless $action =~ /^\w+$/;
+		unless $action =~ /^[\w-]+$/;
 #TODO: This presumes a lot.  Too much?
 	$attrs->{help} = '/'.$action.'.html';
 	Bivio::IO::Alert->die($attrs->{id}, ': help file not found: ',
