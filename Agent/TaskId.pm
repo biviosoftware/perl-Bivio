@@ -1374,6 +1374,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::LocalInstrumentForm
         Bivio::UI::HTML::Club::LocalInstrument
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=unlisted-investments
     )],
     [qw(
         CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
@@ -1384,6 +1385,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::LocalValuationYearList->execute_load_all
         Bivio::Biz::Model::LocalValuationDateList->execute_load_all
         Bivio::UI::HTML::Club::LocalValuationDates
+        help=value-unlisted-investments
     )],
     [qw(
         CLUB_ACCOUNTING_LOCAL_PRICES
@@ -1395,6 +1397,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::LocalPricesForm
         Bivio::UI::HTML::Club::LocalPrices
         next=CLUB_ACCOUNTING_LOCAL_VALUATION_DATES
+        help=value-unlisted-investments
     )],
     [qw(
         CLUB_ACCOUNTING_LOCAL_VALUE
@@ -1406,6 +1409,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::LocalPricesForm
         Bivio::UI::HTML::Club::LocalPrices
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+        help=value-unlisted-investments
     )],
     [qw(
         DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION
@@ -2486,6 +2490,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::BalanceSheetList->execute_load_all
         Bivio::UI::HTML::Club::BalanceSheet
         next=CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
+        help=balance-sheet-report
     )],
     [qw(
 	CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
