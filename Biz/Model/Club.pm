@@ -160,6 +160,7 @@ sub delete_instruments_and_transactions {
             realm_account_entry_t
             expense_info_t
             entry_t
+            account_sync_t
             realm_transaction_t
             realm_instrument_t
             member_allocation_t
