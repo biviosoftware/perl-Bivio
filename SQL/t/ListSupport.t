@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..22\n"; }
+BEGIN { $| = 1; print "1..16\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::SQL::ListSupport;
@@ -93,20 +93,27 @@ my($now) = Bivio::Type::DateTime->from_literal('2001/12/31 17:00:00');
 foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::Model::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
-    eval {
+    Bivio::Die->catch(sub {
 	Bivio::SQL::Connection->execute("drop table $table");
-    };
+    });
+    Bivio::SQL::Connection->commit;
     Bivio::SQL::Connection->execute(<<"EOF");
 	create table $table (
 	    date_time DATE,
-            toggle NUMBER(1) check (toggle between 0 and 1) not null,
-	    auth_id NUMBER(18) not null,
+            toggle NUMERIC(1) not null,
+	    auth_id NUMERIC(18) not null,
 	    name VARCHAR(30) not null,
             value VARCHAR(30),
-	    gender NUMBER(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL,
+	    gender NUMERIC(1) NOT NULL,
             primary key(date_time, toggle)
 	)
 EOF
+    Bivio::SQL::Connection->execute(
+	"alter table $table add constraint ${table}_c1
+             check (toggle between 0 and 1)");
+    Bivio::SQL::Connection->execute(
+	"alter table $table add constraint ${table}_c2
+            CHECK (gender BETWEEN 0 AND 2)");
     my($gender, $name, $auth_id);
     my($date_time) = $now;
     my($model) = $pkg->new($req);
@@ -153,7 +160,7 @@ my($query) = Bivio::SQL::ListQuery->new({
     count => 5,
 }, $support);
 
-my($rows) = $support->load($query);
+my($rows) = $support->load($query, '', []);
 t(int(@$rows), 5);
 # Make sure both primary keys are returned, even though we only listed one.
 t($rows->[0]->{'TListT1.date_time'}, $rows->[0]->{'TListT2.date_time'});
@@ -163,58 +170,17 @@ $query = Bivio::SQL::ListQuery->new({
     auth_id => 2,
     count => 100,
 }, $support);
-$rows = $support->load($query);
+$rows = $support->load($query, '', []);
 t(int(@$rows), 20);
 
-# Check begin limit
 $query = Bivio::SQL::ListQuery->new({
     auth_id => 2,
     count => 100,
-    b0 => 'name06',
-}, $support);
-$rows = $support->load($query);
-t(int(@$rows), 8);
-
-# Check end limit
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 2,
-    count => 100,
-    e0 => 'name03',
-}, $support);
-$rows = $support->load($query);
-t(int(@$rows), 8);
-
-# Check begin & end limit
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 2,
-    count => 100,
-    b0 => 'name06',
-    e0 => 'name07',
-}, $support);
-$rows = $support->load($query);
-t(int(@$rows), 4);
-
-# Check limiting two columns
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 2,
-    count => 100,
-    e0 => 'name03',
-    e1 => 1,
-}, $support);
-$rows = $support->load($query);
-t(int(@$rows), 4);
-
-# Check order of first sort by
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 2,
-    count => 100,
-    e0 => 'name03',
-    e1 => 1,
     o => '0d',
 }, $support);
-$rows = $support->load($query);
-t($rows->[0]->{'TListT1.name'}, 'name03');
-t($rows->[3]->{'TListT1.name'}, 'name00');
+$rows = $support->load($query, '', []);
+t($rows->[0]->{'TListT1.name'}, 'name09');
+t($rows->[3]->{'TListT1.name'}, 'name08');
 
 # Check order of second sort by (also type conversions)
 $query = Bivio::SQL::ListQuery->new({
@@ -222,33 +188,10 @@ $query = Bivio::SQL::ListQuery->new({
     count => 100,
     o => '0d1d',
 }, $support);
-$rows = $support->load($query);
+$rows = $support->load($query, '', []);
 t($rows->[0]->{'TListT1.gender'}, Bivio::Type::Gender::MALE());
 t($rows->[1]->{'TListT1.gender'}, Bivio::Type::Gender::FEMALE());
 
-
-# Check just prior
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 1,
-    count => 10,
-    j => $now."\177".0,
-    b0 => 'name00',
-}, $support);
-$rows = $support->load($query);
-# Should begin after first the first name.
-t($rows->[0]->{'TListT1.date_time'},
-    Bivio::Type::DateTime->add_seconds($now,  1));
-# DEBUG: map {print STDERR join(' ', %$_), "\n"} @$rows;
-
-# Check missed just prior
-$query = Bivio::SQL::ListQuery->new({
-    auth_id => 1,
-    count => 100,
-    j => (Bivio::Type::DateTime->add_seconds($now, 100000))."\177".0,
-    b0 => 'name00',
-}, $support);
-$rows = $support->load($query);
-t($rows->[0]->{'TListT1.name'}, 'name01');
 
 # Check internal fields which shouldn't be defined
 my($local_columns) = $support->get('local_columns');
@@ -263,7 +206,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 1,
     t => $now."\177".0,
 }, $support);
-$rows = $support->load($query);
+$rows = $support->load($query, '', []);
 t(int(@$rows), 1);
 t($rows->[0]->{'TListT1.name'}, 'name00');
 t($rows->[0]->{'TListT1.toggle'}, 0);
@@ -274,7 +217,7 @@ $query = Bivio::SQL::ListQuery->new({
     count => 1,
     t => Bivio::Type::DateTime->add_seconds($now, 10000)."\177".0,
 }, $support);
-$rows = $support->load($query);
+$rows = $support->load($query, '', []);
 t(int(@$rows), 0);
 
 
