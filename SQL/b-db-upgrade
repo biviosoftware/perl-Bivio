@@ -86,6 +86,7 @@ main(@ARGV);
 #
 sub _add_column {
     my($table, $column, $type, $value) = @_;
+    print "Adding $table.$column\n";
     _do_sql("
 ALTER TABLE $table
     ADD $column $type
@@ -94,6 +95,7 @@ ALTER TABLE $table
     return unless defined($value);
 
     # Insert default values
+    print "Inserting default into $table.$column\n";
     _do_sql("
 update $table $column = $value
 /");
@@ -127,9 +129,25 @@ sub _do_sql {
     return $statement;
 }
 
-# _drop_constraints(string table, string column)
+# _drop_column(string table, string column)
 #
-# Drop all the constraints on a particular table and column
+# Drops the column.
+#
+sub _drop_column {
+    my($table, $column) = @_;
+    print "Dropping $table.$column\n";
+    _do_sql("
+ALTER TABLE $table
+    DROP COLUMN $column
+/
+");
+    return;
+}
+
+# _drop_constraints(string table, string column) : int
+#
+# Drop all the constraints on a particular table and column.
+# Returns number of constraints dropped.
 #
 sub _drop_constraints {
     my($table, $column) = map {uc($_)} @_;
@@ -154,7 +172,7 @@ EOF
 	_do_sql("ALTER TABLE $table drop constraint $c
                 /");
     }
-    return;
+    return int(@constraints);
 }
 
 # _fix_mgfs_names(hash_ref name_map)
@@ -220,6 +238,21 @@ ALTER TABLE file_t add check (is_public BETWEEN 0 AND 1)
 ');
     _upgrade_mail_message_t();
     _upgrade_user_title();
+    _upgrade_columns();
+    return;
+}
+
+# _upgrade_columns()
+#
+# Deletes columns.
+#
+sub _upgrade_columns {
+    _drop_column('club_t', 'kbytes_in_use');
+    _drop_column('club_t', 'max_storage_kbytes');
+    _drop_column('realm_invite_t', 'title');
+    _drop_column('realm_user_t', 'title');
+    _drop_column('entry_t', 'remark');
+    _drop_column('realm_invite_t', 'message');
     return;
 }
 
@@ -240,40 +273,29 @@ sub _upgrade_mail_message_t {
 # and realm_invite_t.
 #
 sub _upgrade_user_title {
-    # maps title to honorific int
-    my($honors) = {};
-    for (my($i) = 0; $i < Bivio::Type::Honorific->get_count; $i++) {
-	my($value) = Bivio::Type::Honorific->from_int($i);
-	$honors->{lc($value->get_short_desc)} = $value->as_int;
-    }
-
     # drop constraints for title
     # add honorific
     # migrate title to honorific
     # add constraints to honorific
     foreach my $table (qw(realm_invite_t realm_user_t)) {
+
+	# Allow retry
+	_add_column($table, 'honorific', 'NUMBER(2)')
+		unless _drop_constraints($table, 'honorific');
 	_drop_constraints($table, 'title');
 
-	_do_sql("
-ALTER TABLE $table
-    ADD honorific NUMBER(2)
-/
-");
-	my($sth) = Bivio::SQL::Connection->execute("
-                SELECT realm_id, user_id, LOWER(title)
-                FROM $table");
-	while (my $row = $sth->fetchrow_arrayref) {
-	    my($realm_id, $user_id, $title) = @$row;
-	    my($honorific) = $honors->{$title}
-		    || die("unknown title $title");
+	for (my($i) = 0; $i < Bivio::Type::Honorific->get_count; $i++) {
 	    Bivio::SQL::Connection->execute("
                     UPDATE $table
-                    SET title=?, honorific=?
-                    WHERE realm_id=?
-                    AND user_id=?",
-		    [undef, $honorific, $realm_id, $user_id]);
+                    SET title=NULL, honorific=?
+                    WHERE title=?",
+		    [$i, Bivio::Type::Honorific->from_int($i)
+			->get_short_desc]);
 	}
-
+	my($sth) = Bivio::SQL::Connection->execute(
+		"select count(*) from $table where honorific is null");
+	my($n) = $sth->fetchrow_array();
+	warn("WARNING: $table: missing honorifics in $n cases") if $n;
 	_do_sql("
 ALTER TABLE $table add check (honorific between 1 and 9)
 /
