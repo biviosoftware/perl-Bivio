@@ -105,7 +105,7 @@ sub catch {
 		    program_error => 1,
 		},
 		(caller)[0,1,2],
-		Carp::longmess("\n"),
+		Carp::longmess("died"),
 	       ));
 	return;
     };
