@@ -269,7 +269,7 @@ CREATE TABLE ec_payment_t (
   status NUMBER(2),
   processed_date_time DATE,
   processor_response VARCHAR2(500),
-  credit_card_number VARCHAR2(30),
+  credit_card_number VARCHAR2(4000),
   credit_card_expiration_date DATE,
   credit_card_name VARCHAR2(100),
   credit_card_zip VARCHAR2(30),
