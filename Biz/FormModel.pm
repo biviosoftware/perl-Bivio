@@ -936,6 +936,22 @@ sub internal_put_field {
     return;
 }
 
+=for html <a name="internal_redirect_next"></a>
+
+=head2 internal_redirect_next()
+
+Redirects to the next form task. This can be used to double unwind
+a form context, popping another level when called from
+L<execute_unwind|"execute_unwind">.
+
+=cut
+
+sub internal_redirect_next {
+    my($self) = @_;
+    _redirect($self, 'next');
+    return;
+}
+
 =for html <a name="internal_stay_on_page"></a>
 
 =head2 internal_stay_on_page()
