@@ -423,7 +423,7 @@ my(@_CFG) = (
         %/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
         Bivio::Biz::Model::RealmUser
-        Bivio::Biz::Model::RealmMemberList->execute_load_all
+        Bivio::Biz::Model::AllMemberList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
@@ -435,7 +435,7 @@ my(@_CFG) = (
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentTransactionList
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
+        Bivio::Biz::Model::RealmInstrumentList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
@@ -541,16 +541,6 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
         cancel=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_INVESTMENT_VALUATION
-#        51
-#        CLUB
-#        ACCOUNTING_WRITE
-#        %/accounting/investment/valuation
-#        Bivio::Biz::Model::InstrumentValuationForm
-#        Bivio::UI::HTML::Club::InstrumentValuation
-#        next=CLUB_ACCOUNTING_INVESTMENT_LIST
-#    )],
     [qw(
         JAPAN_SURVEY
         52
@@ -780,16 +770,6 @@ my(@_CFG) = (
         !
 	Bivio::Biz::Action::HandleUnknownMail
     )],
-#    [qw(
-#        CLUB_ADMIN_INVITE
-#        75
-#        CLUB
-#        ADMIN_WRITE&MEMBER_WRITE
-#        %/admin/invite
-#        Bivio::Biz::Model::ClubInviteForm
-#        Bivio::UI::HTML::Club::Invite
-#        next=CLUB_ADMIN_INVITE_LIST
-#    )],
     [qw(
         CLUB_ADMIN_INVITE_LIST
         76
@@ -1527,18 +1507,6 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_update_collision
     )],
-#    [qw(
-#        CLUB_ADMIN_INVITE
-#        144
-#        CLUB
-#        ADMIN_WRITE&MEMBER_WRITE
-#        %/admin/add_as_member
-#        Bivio::Biz::Model::ClubInviteForm
-#        Bivio::UI::HTML::Club::Invite
-#        next=CLUB_ADMIN_INVITE_LIST
-#    )],
-#TODO: not implemented
-#        Bivio::Biz::Action::TargetRealm->execute_this_guest
     [qw(
         CLUB_ADMIN_MEMBER_PHONE_EDIT
         145
