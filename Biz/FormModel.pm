@@ -393,7 +393,7 @@ sub execute_empty {
 
 Processes the form after validation.  By default is an no-op.
 
-B<Return true if you want the Form to execute immediately>
+B<Return true if you want the Form to exit immediately.>
 
 =cut
 
