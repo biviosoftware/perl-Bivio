@@ -305,6 +305,18 @@ sub get_db_time {
     return $result;
 }
 
+=for html <a name="get_dbi_name"></a>
+
+=head2 get_dbi_name() : string
+
+Returns current dbi name.
+
+=cut
+
+sub get_dbi_name {
+    return $_DBI_NAME;
+}
+
 =for html <a name="increment_db_time"></a>
 
 =head2 static increment_db_time(int start_time) : int
