@@ -212,7 +212,7 @@ sub add_user {
     $res .= $self->add_group($group);
     $group =~ s/:.*//;
     my($uname, $uid) = split(/:/, $user);
-    my($real) = (getpwnam($uname))[3];
+    my($real) = (getpwnam($uname))[2];
     if (defined($real)) {
 	Bivio::IO::Alert->warn("$uname: expected uid ($uid) but got ($real)")
 	    if defined($uid) && $uid != $real;
