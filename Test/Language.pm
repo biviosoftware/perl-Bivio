@@ -115,8 +115,6 @@ sub AUTOLOAD {
     });
     _die($self, 'deviance call failed to die: ', $func, \@args)
 	unless $die;
-print STDERR $td, "\n";
-print STDERR $die->as_string, "\n";
     _die($self, 'deviance call to ', $func, \@args, ' failed with "',
 	$die, '" but did not match pattern: ', $td)
 	unless $die->as_string =~ $td;
