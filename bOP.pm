@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+
+  Revision 1.48  2003/03/23 13:37:19  nagler
+  * Bivio::UI::HTML::Widget::Hidden allows you to add hidden fields.
+
+  Revision 1.47  2003/03/23 13:35:44  nagler
+  * Bivio::Util::HTTPLog (b-http-log) allows you to monitor Apache logs
+    for repeated errors and crticial errors
   * Bivio::ShellUtil->lock_action supports locking closures with
     checking for process aliveness.  Old usage (locking by subprocess)
     is deprecated.
