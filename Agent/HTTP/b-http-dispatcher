@@ -288,7 +288,7 @@ LockFile httpd.lock
     Options FollowSymLinks
 </Directory>
 
-<Location /modperl-status>
+<Location /s>
     SetHandler perl-script
     PerlHandler Apache::Status
 </Location>
