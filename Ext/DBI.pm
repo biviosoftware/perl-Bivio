@@ -74,7 +74,7 @@ If an error is encountered, die is called.
 sub connect {
     my($proto, $database) = @_;
     my($cfg) = Bivio::IO::Config->get($database);
-    my($self) = &DBI::connect("dbi:Oracle:$cfg->{database}",
+    my($self) = DBI->connect("dbi:Oracle:$cfg->{database}",
 	    $cfg->{user}, $cfg->{password}, $_DEFAULT_OPTIONS);
     return $self;
 }
