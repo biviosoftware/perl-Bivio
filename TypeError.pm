@@ -137,6 +137,11 @@ __PACKAGE__->compile(
 	. ' contain letters, numbers, and underscores,'
 	. ' and be at least three characters',
     ],
+    GREATER_THAN_ZERO => [
+	20,
+	undef,
+	'must be greater than zero',
+    ],
 );
 
 #=PRIVATE METHODS
