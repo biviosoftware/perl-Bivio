@@ -288,7 +288,8 @@ sub init_model_primary_key_maps {
 	my($pk);
 	foreach $pk (@{$m->{instance}->get_info('primary_key_names')}) {
 	    my($cn) = $m->{name}.'.'.$pk;
-	    $proto->init_column($attrs, $cn, 'other', 0)
+	    $attrs->{column_aliases}->{$cn} = $proto->init_column(
+		    $attrs, $cn, 'other', 0)
 		    unless $attrs->{column_aliases}->{$cn};
 	    $m->{primary_key_map}->{$pk} = $attrs->{column_aliases}->{$cn};
 	}
