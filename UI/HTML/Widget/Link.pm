@@ -72,8 +72,7 @@ Anchor name.
 The value between the C<A> tags aka the label.  May be any
 renderable value
 (see L<Bivio::UI::Widget::render_value|Bivio::UI::Widget/"render_value">).
-If not a widget, will be wrapped in a I<Widget.String> with
-font I<link>.
+If not a widget, will be wrapped in a I<Widget.String>.
 
 =back
 
@@ -160,7 +159,7 @@ sub initialize {
 
     $fields->{value} = $self->initialize_attr('value');
     $fields->{value} = $_VS->vs_new(
-	    'String', $fields->{value}, 'link'
+	    'String', $fields->{value},
 	)->put_and_initialize(parent => $self)
 	unless ref($fields->{value})
 	    && UNIVERSAL::isa($fields->{value}, 'Bivio::UI::Widget');
