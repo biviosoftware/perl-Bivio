@@ -885,7 +885,7 @@ time zone.
 sub set_local_end_of_day {
     my($proto, $date_time) = @_;
     my($date, $time) = split(' ', $date_time);
-    my($tz) = $proto->_timezone;
+    my($tz) = $proto->timezone;
 
     return $date.' '.$_END_OF_DAY unless defined($tz);
     # The timezone is really a timezone offset for now.  This will
