@@ -220,10 +220,19 @@ EOF
 sub _upgrade {
     my($req) = @_;
 
-    _upgrade_expense_category_name();
-    _upgrade_account_sync_user();
     _upgrade_password_request();
+    _upgrade_account_sync_and_category();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_account_sync_and_category()
+#
+# Changes the account sync user, and the expense category name.
+#
+sub _upgrade_account_sync_and_category {
+    _upgrade_account_sync_user();
+    _upgrade_expense_category_name();
     return;
 }
 
