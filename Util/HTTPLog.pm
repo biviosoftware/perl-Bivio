@@ -210,6 +210,7 @@ sub _initialize {
 	'created shared memory segment',
 	'read request (?:line|headers) timed out for',
 	'(?:read|send) timed out for',
+        'buffer undefined after read',
 	# Front-end and SSL
 	'mod_ssl: SSL handshake interrupted',
 	'mod_ssl: SSL handshake timed out',
@@ -272,6 +273,7 @@ sub _initialize {
         '_process_sell: no lots owned',
         '_process_sell: can\'t process sale, oversold',
         '::DIE: couldn\'t parse instrument name/symbol',
+        '::get_balance.* balance parse failed',
     );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
