@@ -1,0 +1,43 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-club - manipulate club_t database table
+
+=head1 SYNOPSIS
+
+b-realm-owner -delete
+
+=head1 DESCRIPTION
+
+see L<Bivio::Biz::Util::Club|Bivio::Biz::Util::Club>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::Club;
+
+#=VARIABLES
+
+Bivio::Biz::Util::Club->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::IO::Config
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
