@@ -34,14 +34,15 @@ and delete interface to the C<realm_transaction_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Role;
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::Type::DateTime;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
-use Bivio::Type::Text;
+use Bivio::Type::Honorific;
+use Bivio::Type::Integer;
+#use Bivio::Biz::Model::EntryList;
+use Bivio::Biz::Model::MemberEntry;
+use Bivio::Biz::Model::RealmUser;
 
 #=VARIABLES
 
@@ -61,6 +62,8 @@ instrument entries, and account entries.
 sub cascade_delete {
     my($self) = @_;
     my($id) = $self->get('realm_transaction_id');
+
+    _pre_delete($self);
 
     # delete member, instrument, and account entries
     foreach my $table ('member_entry_t', 'realm_instrument_entry_t',
@@ -157,24 +160,16 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'realm_transaction_t',
 	columns => {
-            realm_transaction_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            source_class => ['Bivio::Type::EntryClass',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            date_time => ['Bivio::Type::DateTime',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            remark => ['Bivio::Type::Text',
-    		Bivio::SQL::Constraint::NONE()],
-            broker_code => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
+            realm_transaction_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'NOT_NULL'],
+            source_class => ['EntryClass', 'NOT_NULL'],
+            date_time => ['DateTime', 'NOT_NULL'],
+            user_id => ['PrimaryId', 'NOT_NULL'],
+            remark => ['Text', 'NONE'],
+            broker_code => ['Name', 'NONE'],
         },
 	auth_id => 'realm_id',
 	other => [
-#	    [qw(realm_id RealmOwner.realm_id)],
 	    [qw(user_id User.user_id)],
 	],
     };
@@ -334,6 +329,55 @@ sub _generate_member_remark {
     }
     # guaranteed result if class is member
     return $result;
+}
+
+# _pre_delete()
+#
+# Performs any pre-delete processing. For now this means resetting a
+# member's state after a full withdrawal is deleted.
+#
+sub _pre_delete {
+    my($self) = @_;
+    my($req) = $self->get_request;
+
+#TODO: this isn't modular, need a better approach for this
+
+    my($entry_list) = Bivio::Biz::Model::EntryList->new($req);
+    $entry_list->load({
+	p => $self->get('realm_transaction_id'),
+	count => Bivio::Type::Integer->get_max,
+    });
+
+    while ($entry_list->next_row) {
+	my($type) = $entry_list->get('Entry.entry_type');
+
+	# look for full withdrawals, reset the member role if necessary
+	next unless $type
+		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH()
+	        || $type
+		== Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK();
+
+	next unless $entry_list->get('Entry.class')
+		== Bivio::Type::EntryClass::MEMBER();
+
+	# set the target status to MEMBER if it is WITHDRAWN
+
+	my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req);
+	$member_entry->load(entry_id => $entry_list->get(
+		'Entry.entry_id'));
+	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+	$realm_user->load(user_id => $member_entry->get('user_id'));
+
+	if ($realm_user->get('role') == Bivio::Auth::Role::WITHDRAWN()) {
+	    my($honorific) = Bivio::Type::Honorific::MEMBER();
+	    $realm_user->update({
+		role => $honorific->get_role,
+		honorific => $honorific,
+	    });
+	}
+	last;
+    }
+    return;
 }
 
 =head1 COPYRIGHT
