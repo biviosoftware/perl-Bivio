@@ -36,6 +36,10 @@ The string is html-escaped and newlines are converted to C<E<lt>br E<gt>>.
 
 =over 4
 
+=item escape_html : boolean [true]
+
+Should we escape the value?  Only applies if the value is not a widget.
+
 =item format : Bivio::UI::HTML::Format []
 
 =item format : string []
@@ -124,6 +128,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
+    $fields->{escape} = $self->get_or_default('escape_html', 1);
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $fields->{prefix} = $pad_left > 0 ? ('&nbsp;' x $pad_left) : '';
 
@@ -137,7 +142,8 @@ sub initialize {
     $fields->{value} = $self->get('value');
     if ($fields->{is_literal} = !ref($fields->{value})) {
 	# Format the constant once
-	$fields->{value} = _format($fields->{format}, $fields->{value});
+	$fields->{value} = _format($fields->{format}, $fields->{value},
+		$fields->{escape});
 
 	# Only constant if there is no font
 	$fields->{value} = $fields->{prefix}.$fields->{value}
@@ -196,7 +202,7 @@ sub render {
 	    $value->render($source, \$b);
 	}
 	else {
-	    $b .= _format($fields->{format}, $value);
+	    $b .= _format($fields->{format}, $value, $fields->{escape});
 	}
     }
     # Don't output anything if string is empty
@@ -212,19 +218,21 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _format(Bivio::UI::HTML::Format format, string value) : string
+# _format(Bivio::UI::HTML::Format format, string value, boolean escape) : string
 #
 # Formats and escapes the string and replaces newlines with <br>.
 # An all space string equates to a &nbsp;
 #
 sub _format {
-    my($format, $value) = @_;
+    my($format, $value, $escape) = @_;
     if ($format) {
 	$value = $format->get_widget_value($value);
 	return $value if $format->result_is_html;
     }
     Bivio::Die->die('got ref where scalar expected: ', $value)
 		if ref($value);
+    return $value unless $escape;
+
     $value = Bivio::HTML->escape($value);
     $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
     return $value;
