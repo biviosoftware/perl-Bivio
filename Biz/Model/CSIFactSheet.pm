@@ -124,10 +124,7 @@ sub _initialize {
 
 # _sync_instrument_models(self, hash_ref values, Bivio::Type::InstrumentType type)
 #
-# Lookup an Instrument given a ticker symbol,
-# create a new instrument if necessary.
-# Lookup a CSI Instrument given a CSI Id,
-# create a new CSI instrument if necessary.
+# Given a CSI Id, try to load the instruments.
 #
 sub _sync_instrument_models {
     my($self, $values, $type) = @_;
@@ -135,17 +132,9 @@ sub _sync_instrument_models {
 
     my($inst) = Bivio::Biz::Model::Instrument->new($req);
     my($csi_inst) = Bivio::Biz::Model::CSIInstrument->new($req);
-    my($is_csi_inst) = $csi_inst->unsafe_load(csi_id => $values->{csi_id})
-            && $inst->load(instrument_id => $csi_inst->get('instrument_id'));
 
-    if ($is_csi_inst ||
-            $inst->unsafe_load(ticker_symbol => $values->{ticker_symbol})) {
-        # DELETE OP: rename ticker symbol so it can be re-used later
-        $inst->update({
-            ticker_symbol => $values->{ticker_symbol}.'-D'
-            .Bivio::Type::Date->to_file_name($values->{fact_date}),
-        }) if $values->{fact_function}
-                == Bivio::Data::CSI::FactSheetFunction::DELETE();
+    if ($csi_inst->unsafe_load(csi_id => $values->{csi_id})) {
+        $inst->load(instrument_id => $csi_inst->get('instrument_id'));
         # MODIFY OP: update instrument attributes
         $inst->update({
             name => $values->{name},
@@ -153,11 +142,11 @@ sub _sync_instrument_models {
             exchange_name => $values->{exchange_name},
         }) if $values->{fact_function}
                 == Bivio::Data::CSI::FactSheetFunction::MODIFY();
+        # DELETE OP is handled below
     }
     else {
         # ADD OP: create new instrument
-        Bivio::Die->die('assertion failed') unless $values->{fact_function}
-                == Bivio::Data::CSI::FactSheetFunction::ADD();
+        # Could be a delete/modify op in case we've not seen the ADD
         $inst->create({
             name => $values->{name},
             ticker_symbol => $values->{ticker_symbol},
@@ -165,14 +154,18 @@ sub _sync_instrument_models {
             instrument_type => $type,
             fed_tax_free => Bivio::Type::Boolean::FALSE(),
         });
-    }
-    unless ($is_csi_inst) {
         $csi_inst->create({
             csi_id => $values->{csi_id},
             instrument_id => $inst->get('instrument_id'),
             instrument_type => $type,
         });
     }
+    # DELETE OP: rename ticker symbol so it can be re-used later
+    $inst->update({
+        ticker_symbol => $values->{ticker_symbol}.'-D'
+        .Bivio::Type::Date->to_file_name($values->{fact_date}),
+    }) if $values->{fact_function}
+            == Bivio::Data::CSI::FactSheetFunction::DELETE();
     return;
 }
 
