@@ -1,0 +1,48 @@
+#!perl -w
+# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-partner - produce lists for Partner
+
+=head1 SYNOPSIS
+
+  b-partner email_list
+  b-partner sample_email_list
+
+=head1 DESCRIPTION
+
+See L<Bivio::Biz::Util::Partner|Bivio::Biz::Util::Partner>.
+
+=cut
+
+#=IMPORTS
+use Bivio::Biz::Util::Partner;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+Bivio::Biz::Util::Partner->main(@ARGV);
+
+=head1 SEE ALSO
+
+Bivio::Biz::Util::Partner
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 bivio, Inc.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
