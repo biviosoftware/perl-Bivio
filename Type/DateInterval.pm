@@ -31,6 +31,8 @@ offsets:
 
 =over 4
 
+=item DAY : 1 day
+
 =item WEEK : 7 days
 
 =item MONTH : 30 days
@@ -46,6 +48,9 @@ use Bivio::Type::DateTime;
 
 #=VARIABLES
 __PACKAGE__->compile([
+    DAY => [
+	1,
+    ],
     WEEK => [
 	7,
     ],
