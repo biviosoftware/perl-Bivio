@@ -1025,6 +1025,18 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=USER_ADMIN_PROFILE_EDIT
     )],
+    [qw(
+        CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
+        101
+        CLUB
+        ACCOUNTING_WRITE
+        _/accounting/member/withdrawal
+        Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::MemberWithdrawalForm
+        Bivio::UI::HTML::Club::MemberWithdrawal
+        next=CLUB_ACCOUNTING_MEMBER_DETAIL
+    )],
 );
 
 __PACKAGE__->compile(
