@@ -1583,6 +1583,8 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/tax99/f1065.pdf
         Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Type::ScheduleDParams->execute_hide_distributions
         Bivio::Biz::Model::InstrumentSaleList->execute_load_all
         Bivio::Biz::Model::ScheduleDForm
@@ -1599,6 +1601,8 @@ my(@_CFG) = (
         ?/accounting/tax99/f1065k1.pdf
         Bivio::Biz::Model::RealmUser
         Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::MemberTaxList->execute_load_all
+        Bivio::Biz::Accounting::Tax->check_required_fields
         Bivio::Biz::Model::IncomeAndExpenseList->execute_load_all
         Bivio::Biz::Model::MemberAllocationList->execute_load_all
         Bivio::Biz::Model::F1065K1Form
