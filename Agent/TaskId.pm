@@ -45,6 +45,9 @@ my(@_CFG) = (
     # DO NOT CHANGE the numbers in this list, the values may be
     # stored in the database.
     #
+    # URLs can be aliases, separated by a colon. However, the first
+    # on is returned on get from task id.  See HTTP::Location code.
+    #
     # ACHTUNG: Any static top level URI names, must be in
     #          Bivio::Type::RealmName::_RESERVED list
     [qw(

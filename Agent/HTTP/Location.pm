@@ -150,7 +150,8 @@ sub initialize {
 	}
 	my($rti) = $realm->get_type->as_int;
 	my($uri);
-	foreach $uri (split(/:/, $uri_list)) {
+	# Make the first one the alias
+	foreach $uri (reverse(split(/:/, $uri_list))) {
 	    die("$uri: must begin with '_'")
 		    unless $is_general || $uri =~ /^_(\/|$)/;
 	    if ($_FROM_URI{$uri}) {
