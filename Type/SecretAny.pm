@@ -112,6 +112,7 @@ sub to_literal {
     my($dd) = Data::Dumper->new([$value]);
     $dd->Indent(0);
     $dd->Terse(1);
+    $dd->Deepcopy(1);
 
     # Serialize and encrypt
     return $proto->SUPER::to_literal($dd->Dumpxs());

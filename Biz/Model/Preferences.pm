@@ -103,6 +103,7 @@ sub handle_commit {
     my($dd) = Data::Dumper->new([$fields->{values}]);
     $dd->Indent(0);
     $dd->Terse(1);
+    $dd->Deepcopy(1);
     my($perl) = $dd->Dumpxs();
 
     # Create or update?  Create if was able to load (see _get_instance)
