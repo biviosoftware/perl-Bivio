@@ -1,0 +1,26 @@
+test_setup('PetShop');
+home_page();
+follow_link('Fish');
+verify_text('Tiger Shark');
+follow_link('Angelfish');
+verify_text('Large Angelfish');
+add_to_cart('Small Angelfish');
+follow_link('Cart');
+verify_text('Total Cost');
+update_cart('Small Angelfish', 2);
+test_deviance('expecting a number without a decimal point');
+update_cart('Small Angelfish', 'a');
+test_conformance();
+follow_link('Cart');
+test_deviance('expecting a number without a decimal point');
+update_cart('Small Angelfish', '1.1');
+test_conformance();
+follow_link('Cart');
+test_deviance('The cart total exceeds the allowed precision');
+update_cart('Small Angelfish', 99999999);
+test_conformance();
+follow_link('Cart');
+test_deviance('number outside of expected range');
+update_cart('Small Angelfish', 9999999999);
+
+
