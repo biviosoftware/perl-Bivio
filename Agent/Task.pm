@@ -114,11 +114,13 @@ sub new {
 	    $fields->{$1} = Bivio::Agent::TaskId->from_any($2);
 	}
 	else {
-	    my($c) = Bivio::Collection::SingletonMap->get($i);
-	    Carp::croak($i, ": can't be executed (missing execute method)")
-			unless $c->can('execute');
+	    my($class, $method) = split(/->/, $i, 2);
+	    my($c) = Bivio::Collection::SingletonMap->get($class);
+	    $method ||= 'execute';
+	    Carp::croak($i, ": can't be executed (missing $method method)")
+			unless $c->can($method);
 	    $have_form++ if $c->isa('Bivio::Biz::FormModel');
-	    push(@new_items, $c);
+	    push(@new_items, [$c, $method]);
 	}
     }
     if ($have_form) {
@@ -164,7 +166,8 @@ sub execute {
     }
     my($i);
     foreach $i (@{$fields->{items}}) {
-	$i->execute($req);
+	my($instance, $method) = @$i;
+	$instance->$method($req);
     }
     _commit();
     $req->get('reply')->send($req);

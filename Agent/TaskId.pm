@@ -475,7 +475,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         _/accounting/investment/detail/buy
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -487,7 +487,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         _/accounting/investment/sell
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentSellForm
         Bivio::UI::HTML::Club::InstrumentSell
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
@@ -781,7 +781,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/investment/buy
-        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -863,7 +863,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         _/accounting/investment/income
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList
+        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentIncomeForm
         Bivio::UI::HTML::Club::InstrumentIncome
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL

@@ -97,6 +97,20 @@ sub execute {
     return;
 }
 
+=for html <a name="execute_load_all"></a>
+
+=head2 execute_load_all(Bivio::Agent::Request req)
+
+Loads "all" records of this model.
+
+=cut
+
+sub execute_load_all {
+    my($proto, $req) = @_;
+    $proto->new($req)->load_all();
+    return;
+}
+
 =for html <a name="format_uri_for_next"></a>
 
 =head2 format_uri_for_next() : string
