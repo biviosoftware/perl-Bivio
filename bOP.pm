@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    attributes
+  * Bivio::Util::Release added http_realm/user/password for retrieving
+    files
+
+  Revision 2.17  2004/03/25 03:17:49  moeller
+  * Bivio::Agent::HTTP::Form ignores Content-Length in content, only
+    included by HTTP::Request requests
+  * Bivio::Test::HTMLParser::Forms allows a select widget to have an
     empty option
   * Bivio::Test fixed problems with custom expect/actual matches
   * Bivio::Util::Release pwd needs to be carried through by _do_in_tmp
