@@ -255,6 +255,7 @@ sub merge_http_log {
 		    'Invalid method in request',
 		    'Facade::setup_request:.*: unknown facade uri',
                     'access to /favicon.ico failed',
+		    'Bivio::DieCode::FORBIDDEN',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
@@ -271,9 +272,7 @@ sub merge_http_log {
 		# See ignore_unless_count_list
 		ignore_unless_count_list => [
 		    'Bivio::DieCode::CLIENT_ERROR',
-		    'Bivio::DieCode::FORBIDDEN',
 		    'Bivio::DieCode::NOT_FOUND',
-		    'Bivio::DieCode::FORBIDDEN',
 		    'Bivio::DieCode::CORRUPT_QUERY',
 		    'Bivio::DieCode::UPDATE_COLLISION',
 		    'form_errors=\{',
