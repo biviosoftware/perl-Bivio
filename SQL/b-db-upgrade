@@ -250,27 +250,55 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_realm_notice($req);
+    _upgrade_add_charitable_sub_categories($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_realm_notice(Bivio::Agent::Request req)
+# _upgrade_add_charitable_sub_categories(Bivio::Agent::Request req)
 #
-# Expands realm_notice_t.realm_notice_type constraint
+# Adds "50% Limit Organization" and "20% Limit Orgainization"
+# categories under "Charitable Contributions".
 #
-sub _upgrade_realm_notice {
+sub _upgrade_add_charitable_sub_categories {
     my($req) = @_;
-    print("expanding realm_notice_t.realm_notice_type constraint\n");
-    _drop_constraints('realm_notice_t', 'realm_notice_type');
-    _do_sql('
-ALTER TABLE realm_notice_t modify realm_notice_type not null
-/
-ALTER TABLE realm_notice_t
-  add constraint realm_notice_t6
-  check (realm_notice_type between 1 and 6)
-/
-');
+    print("\nadding charitable contribution sub categories\n");
+
+    my($category) = Bivio::Biz::Model->new($req, 'ExpenseCategory');
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by realm_owner_t.name',
+            []);
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($realm_id, $name) = @$row;
+
+        my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
+                SELECT expense_category_id
+                FROM expense_category_t
+                WHERE name=?
+                AND deductible=1
+                AND realm_id=?',
+                ['Charitable Contributions', $realm_id]) || [])->[0];
+
+        unless ($parent_id) {
+            print("\t", $name, " - skipping, no parent expense category\n");
+            next;
+        }
+
+	foreach my $sub_category ('50% Limit Organization',
+	    '30% Limit Organization') {
+
+	    $category->create({
+		realm_id => $realm_id,
+		name => $sub_category,
+		deductible => 1,
+		parent_category_id => $parent_id,
+	    });
+	}
+    }
     return;
 }
 
