@@ -40,6 +40,7 @@ use Bivio::UI::HTML::Format::Date;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($math) = 'Bivio::Type::Amount';
 
 =head1 METHODS
 
@@ -73,18 +74,25 @@ sub execute_empty {
 
 sub execute_input {
     my($self) = @_;
+    my($req) = $self->get_request;
 
     # need to convert date to display value, or next form will barf
     my($properties) = $self->internal_get;
     my($date) = $properties->{'RealmTransaction.date_time'};
 #TODO: Need a better way of passing info in forms
-    $self->get_request->get('form')->{'RealmTransaction.date_time'}
+    $req->get('form')->{'RealmTransaction.date_time'}
 	    = Bivio::Type::Date->to_literal($date);
 
-    _fill_lots_fifo($self, $date);
+    my($inst) = $req->get('Bivio::Biz::Model::RealmInstrument');
+    if ($inst->get('average_cost_method')) {
+	_fill_lots_average_cost($self, $date);
+    }
+    else {
+	_fill_lots_fifo($self, $date);
+    }
 
     # hacked redirect to page two
-    $self->get_request->get('form')->{stay_on_page} = 1;
+    $req->get('form')->{stay_on_page} = 1;
     $self->internal_put_error(redirect => Bivio::TypeError::UNKNOWN);
 
     return;
@@ -104,16 +112,16 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'RealmTransaction.date_time',
-		type => 'Bivio::Type::Date',
-		constraint => Bivio::SQL::Constraint::NOT_NULL(),
+		type => 'Date',
+		constraint => 'NOT_NULL',
 	    },
 	    'RealmAccountEntry.realm_account_id',
 	    'RealmInstrumentEntry.count',
 	    'Entry.amount',
 	    {
 		name => 'commission',
-		type => 'Bivio::Type::Amount',
-		constraint => Bivio::SQL::Constraint::NONE(),
+		type => 'Amount',
+		constraint => 'NONE',
 	    },
 	    'RealmTransaction.remark',
 	],
@@ -163,6 +171,54 @@ sub validate {
 
 #=PRIVATE METHODS
 
+# _fill_lots_average_cost(string date)
+#
+# Loads lot fields using and average cost algorithm.
+#
+sub _fill_lots_average_cost {
+    my($self, $date) = @_;
+    my($req) = $self->get_request;
+    my($properties) = $self->internal_get;
+    my($count) = $properties->{'RealmInstrumentEntry.count'};
+
+    my($lot_list) = Bivio::Biz::Model::RealmInstrumentLotList->new($req);
+    $req->put(Bivio::Biz::Model::RealmInstrumentLotList::DATE_QUERY()
+	    => $date);
+    $lot_list->load();
+    my($lot_num) = 0;
+    my($form) = $req->get('form');
+
+    my($total) = 0;
+    while ($lot_list->next_row) {
+	$total = $math->add($total, $lot_list->get('quantity'));
+    }
+
+    # if selling all shares, use fifo
+    if ($math->compare($count, $total) == 0) {
+	_fill_lots_fifo($self, $date);
+	return;
+    }
+
+    my($total_dist) = 0;
+    $lot_list->reset_cursor;
+    while ($lot_list->next_row) {
+	my($quantity) = $lot_list->get('quantity');
+
+	my($dist) = $math->div($math->mul($quantity, $count), $total);
+	$form->{'lot'.$lot_num} = $math->to_literal($dist);
+	$total_dist = $math->add($total_dist, $dist);
+	$lot_num++;
+    }
+    # adjust last lot with difference between count and total_dist
+    if ($math->compare($total_dist, $count) != 0) {
+	my($adjustment) = $math->sub($count, $total_dist);
+	my($last_lot) = $lot_list->get_result_set_size - 1;
+	$form->{'lot'.$last_lot} = $math->to_literal(
+		$math->add($form->{'lot'.$last_lot}, $adjustment));
+    }
+    return;
+}
+
 # _fill_lots_fifo(string date)
 #
 # Loads the lot fields with values using first-in-first-out.
@@ -178,19 +234,18 @@ sub _fill_lots_fifo {
 	    => $date);
     $lot_list->load();
     my($lot_num) = 0;
+    my($form) = $req->get('form');
 
     while ($lot_list->next_row) {
 	my($quantity) = $lot_list->get('quantity');
 
 	if ($quantity >= $count) {
-	    $req->get('form')->{'lot'.$lot_num} =
-		    Bivio::Type::Amount->to_literal($count);
+	    $form->{'lot'.$lot_num} = $math->to_literal($count);
 	    last;
 	}
 	else {
-	    $req->get('form')->{'lot'.$lot_num} =
-		    Bivio::Type::Amount->to_literal($quantity);
-	    $count = Bivio::Type::Amount->sub($count, $quantity);
+	    $form->{'lot'.$lot_num} = $math->to_literal($quantity);
+	    $count = $math->sub($count, $quantity);
 	}
 	$lot_num++;
     }
