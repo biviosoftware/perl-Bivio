@@ -169,7 +169,7 @@ sub render {
 	$info = [];
 	# Check each of the actions for execute privs and if so push on $info
 	foreach my $v (@$values) {
-	    next unless $req->task_ok($v->{task_id});
+	    next unless $req->can_user_execute_task($v->{task_id});
 	    push (@$info, {
 		value => $v,
 		$v->{method}

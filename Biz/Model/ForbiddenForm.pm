@@ -80,7 +80,7 @@ sub execute_empty {
     if ($req->is_substitute_user) {
 	Bivio::Biz::Action->get_instance('UserLogout')->execute($req);
 	$self->internal_redirect_next
-	    if $req->task_ok($task);
+	    if $req->can_user_execute_task($task);
     }
     if ($req->is_super_user && !$req->get('auth_realm')->is_default) {
 	Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')->execute(
@@ -89,7 +89,7 @@ sub execute_empty {
 	    }
 	);
 	$self->internal_redirect_next
-	    if $req->task_ok($task);
+	    if $req->can_user_execute_task($task);
     }
     return 'next';
 }

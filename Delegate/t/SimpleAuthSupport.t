@@ -9,7 +9,7 @@ my($req) = Bivio::PetShop::Test::Request->initialize_fully;
 Bivio::Test->unit([
     $req => [
 	{
-	    method => 'task_ok',
+	    method => 'can_user_execute_task',
 	    compute_params => sub {
 		my(undef, $params) = @_;
 		$req->set_realm($params->[1]);
