@@ -98,15 +98,25 @@ sub create_db {
 
 =for html <a name="ddl_files"></a>
 
-=head2 abstract static ddl_files() : array_ref
+=head2 static ddl_files(array_ref base_names) : array_ref
 
 Returns list of SQL data files used by L<create_db|"create_db"> and
 L<destroy_db|"destroy_db">.
 
+Subclasses must overrided.  Call this method with a list of
+I<base_names>, e.g. ['bOP'], and it will return a list of
+constraints.
+
 =cut
 
-$_ = <<'}'; # emacs
 sub ddl_files {
+    my(undef, $base_names) = @_;
+    return [map {
+	my($base) = $_;
+	map {
+	    $base.'-'.$_.'.sql';
+	} qw(tables constraints sequences);
+    } @$base_names];
 }
 
 =for html <a name="destroy_db"></a>
