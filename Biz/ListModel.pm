@@ -35,7 +35,7 @@ use Bivio::SQL::ListQuery;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 #TODO: Move this into prefs
-my($_PAGE_SIZE) = 20;
+my($_PAGE_SIZE) = 10;
 
 
 =head1 FACTORIES
@@ -79,27 +79,130 @@ sub execute {
     return;
 }
 
+=for html <a name="format_uri_for_next"></a>
+
+=head2 format_uri_for_next() : string
+
+Returns the formated uri for next row.  The request bound to next list model
+must have a I<detail_uri> attribute not including the query string.
+
+=cut
+
+sub format_uri_for_next {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($c) = $fields->{cursor};
+    Carp::croak('no cursor') unless defined($c) && $c >= 0;
+    my($sql_support) = $self->internal_get_sql_support();
+    return $self->get_request->get('detail_uri')
+	    .'?'.$fields->{query}->format_uri_for_next(
+		    $self->internal_get(),
+		    $sql_support);
+}
+
+=for html <a name="format_uri_for_next_page"></a>
+
+=head2 format_uri_for_next_page() : string
+
+Returns the formated uri for the next page.  The request bound to this list
+model must have a I<list_uri> attribute not including the query string.
+
+=cut
+
+sub format_uri_for_next_page {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('not loaded') unless $fields->{rows};
+    my($sql_support) = $self->internal_get_sql_support();
+    my($row) = $fields->{rows}->[$#{$fields->{rows}}];
+    return $self->get_request->get('list_uri').'?'
+	    .$fields->{query}->format_uri_for_next_page($row, $sql_support);
+}
+
+=for html <a name="format_uri_for_prev"></a>
+
+=head2 format_uri_for_prev() : string
+
+Returns the formated uri for prev row.  The request bound to prev list model
+must have a I<detail_uri> attribute not including the query string.
+
+=cut
+
+sub format_uri_for_prev {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($c) = $fields->{cursor};
+    Carp::croak('no cursor') unless defined($c) && $c >= 0;
+    my($sql_support) = $self->internal_get_sql_support();
+    return $self->get_request->get('detail_uri')
+	    .'?'.$fields->{query}->format_uri_for_prev(
+		    $self->internal_get(),
+		    $sql_support);
+}
+
+=for html <a name="format_uri_for_prev_page"></a>
+
+=head2 format_uri_for_prev_page() : string
+
+Returns the formated uri for the previous page.  The request bound to this list
+model must have a I<list_uri> attribute not including the query string.
+
+=cut
+
+sub format_uri_for_prev_page {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    Carp::croak('not loaded') unless $fields->{rows};
+    my($sql_support) = $self->internal_get_sql_support();
+    my($row) = $fields->{rows}->[0];
+    return $self->get_request->get('list_uri').'?'
+	    .$fields->{query}->format_uri_for_prev_page($row, $sql_support);
+}
+
 =for html <a name="format_uri_for_this"></a>
 
 =head2 format_uri_for_this() : string
 
-Returns the formated uri for this row.
+Returns the formated uri for this row.  The request bound to this list model
+must have a I<detail_uri> attribute not including the query string.
 
 =cut
 
 sub format_uri_for_this {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    Carp::croak('no cursor')
-		unless defined($fields->{cursor}) && $fields->{cursor} >= 0;
+    my($c) = $fields->{cursor};
+    Carp::croak('no cursor') unless defined($c) && $c >= 0;
     my($sql_support) = $self->internal_get_sql_support();
-    my($properties) = $self->internal_get();
-    my(@this) = map {
-	$properties->{$_};
-    } @{$sql_support->get('primary_key_names')};
-    Carp::croak('no primary keys')
-		unless @this;
-    return $fields->{query}->format_uri_for_this(\@this, $sql_support);
+    return $self->get_request->get('detail_uri')
+	    .'?'.$fields->{query}->format_uri_for_this(
+		    $self->internal_get(),
+		    --$c >= 0 ? $fields->{rows}->[$c] :
+		    $fields->{query}->get('just_prior'),
+		    $sql_support);
+}
+
+=for html <a name="format_uri_for_this_list"></a>
+
+=head2 format_uri_for_this_list() : string
+
+Returns the formated uri for a list starting at this row.  The request bound to
+this list model must have a I<list_uri> attribute not including the query
+string.
+
+=cut
+
+sub format_uri_for_this_list {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($c) = $fields->{cursor};
+    Carp::croak('no cursor') unless defined($c) && $c >= 0;
+    my($sql_support) = $self->internal_get_sql_support();
+    return $self->get_request->get('list_uri')
+	    .'?'.$fields->{query}->format_uri_for_next_page(
+		    --$c >= 0 ? $fields->{rows}->[$c] :
+		    $fields->{query}->get('just_prior'),
+		    $sql_support);
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -114,6 +217,30 @@ sub get_result_set_size {
     my($rows) = shift->{$_PACKAGE}->{rows};
     Carp::croak('not loaded') unless $rows;
     return int(@$rows);
+}
+
+=for html <a name="has_next"></a>
+
+=head2 has_next() : boolean
+
+Is there next page or item to this list model?
+
+=cut
+
+sub has_next {
+    return shift->{$_PACKAGE}->{query}->get('has_next');
+}
+
+=for html <a name="has_prev"></a>
+
+=head2 has_prev() : boolean
+
+Is there prev page or item to this list model?
+
+=cut
+
+sub has_prev {
+    return shift->{$_PACKAGE}->{query}->get('has_prev');
 }
 
 =for html <a name="internal_get_rows"></a>
@@ -207,7 +334,7 @@ sub load {
     else {
 	$query->put('auth_id' => $auth_id);
     }
-    $self->internal_load($sql_support->load($query), $query);
+    $self->internal_load($sql_support->load($query, $self), $query);
     return;
 }
 

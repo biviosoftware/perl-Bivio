@@ -218,14 +218,8 @@ Data will be loaded starting at the specified index into the result set.
 
 sub load {
     my($self, $query, $die) = @_;
-    # If there is a select, load with "this" or "list".
-    # Otherwise, no select such just return an empty list.
-    my($this);
-    return $self->has_keys('select') ?
-	    ($this = $query->get('this'))
-		    ? _load_this($self, $query, $this, $die)
-			    : _load_list($self, $query, $die)
-				    : [];
+    # If no select such just return an empty list.
+    return $self->has_keys('select') ? _load_list($self, $query, $die) : [];
 }
 
 #=PRIVATE METHODS
@@ -238,13 +232,11 @@ sub _execute_select {
     my($self, $query, $fob_start) = @_;
     my($attrs) = $self->internal_get;
     my($auth_id) =  $query->get('auth_id');
-#TODO: If "this", then completely different query.  No order_by.
-#      No begin/end.
     my(@params) = Bivio::Type::PrimaryId->to_sql_param($auth_id);
     my($select) = $attrs->{select};
     $$fob_start = @{$attrs->{order_by}}
 	    ? _format_select_order_by($attrs, $query, \$select, \@params)
-	    : undef;
+		    : undef;
     return Bivio::SQL::Connection->execute($select, \@params);
 }
 
@@ -256,9 +248,22 @@ sub _execute_select {
 sub _format_select_order_by {
     my($attrs, $query, $select, $params) = @_;
     # Format constraints
-    my($begin, $end, $is_forward) = $query->get('begin', 'end', 'is_forward');
+    my($begin, $end, $is_forward, $qob, $fob)
+	    = $query->get(qw(begin end is_forward order_by first_order_by));
     my($compare, $limit) = '>=';
     my($columns) = $attrs->{columns};
+#TODO: strip out proper limit
+    if (defined($fob)) {
+	# Override limit in query (if there), but always make a copy first!
+	if ($is_forward) {
+	    $begin = $begin ? {%$begin} : {};
+	    $begin->{$qob->[0]} = $fob;
+	}
+	else {
+	    $end = $end ? {%$end} : {};
+	    $end->{$qob->[0]} = $fob;
+	}
+    }
     foreach $limit ($begin, $end) {
 	next unless $limit;
 	my($k);
@@ -272,7 +277,6 @@ sub _format_select_order_by {
 	$compare = '<=';
     }
     $$select .= ' order by';
-    my($qob) = $query->get('order_by');
     my($asc, $desc) = $is_forward ? (',', ' desc,') : (' desc,', ',');
     for (my($i) = 0; $i < int(@$qob); $i += 2) {
 	# Append the order_by with appropriate
@@ -402,11 +406,6 @@ sub _init_column_lists {
 	    .$attrs->{auth_id}->{sql_name}
 	    .'='.Bivio::Type::PrimaryId->to_sql_value('?')
 	    .$where;
-    # How to select a single item (_load_this)
-    $attrs->{select_this} = join(' and ', $attrs->{select},
-	    map {$_->{sql_name}.'='.$_->{type}->to_sql_value('?')}
-	    @{$attrs->{primary_key}});
-
     return;
 }
 
@@ -418,72 +417,97 @@ sub _init_column_lists {
 # first order_by value.  The first order by value is set by ListQuery to limit
 # the result set to the just_prior->fob_value.
 #
+# Searching for this is similar to just_prior, but we return the one row
+# containing this.
+#
 sub _load_list {
-    my($self, $query) = @_;
+    my($self, $query, $die) = @_;
     my($attrs) = $self->internal_get;
     my($fob_start);
     my($statement) = _execute_select($self, $query, \$fob_start);
-#TODO: "this" is a separate query.
-    my($auth_id, $count, $is_forward, $just_prior, $order_by) = $query->get(
-	    'auth_id', 'count', 'is_forward', 'just_prior', 'order_by');
-    my($started) = !$just_prior;
+    my($auth_id, $count, $is_forward, $just_prior, $order_by, $this)
+	    = $query->get(
+		    qw(auth_id count is_forward just_prior order_by this));
+    my($sentinel) = $this || $just_prior;
+    my($started) = !$sentinel;
     my($fob_index, $fob_type);
-    if (!$started && defined($fob_start)) {
+    if (defined($fob_start) && $just_prior && !$this) {
 	my($fob_col) = $attrs->{columns}->{$order_by->[0]};
 	$fob_index = $fob_col->{select_index};
 	$fob_type = $fob_col->{type};
 	_trace('looking for fob_start (', $fob_col->{name},
 		') = ', $fob_start) if $_TRACE;
     }
-    _trace('looking for just_prior ', $attrs->{primary_key_names},
-	    ' = ', $just_prior)
-	    if $_TRACE && $just_prior;
+    else {
+	$fob_start = undef;
+    }
+    _trace('looking for ', $this ? 'this ' : 'just prior ',
+	    $attrs->{primary_key_names}, ' = ', $sentinel)
+	    if $_TRACE && $sentinel;
     my($auth_id_name) = $attrs->{auth_id}->{name};
     my($select_columns) = $attrs->{select_columns};
     my($rows) = [];
     my($row);
     # See note about $has_more at the end of this loop
     my($has_more) = 1;
+    my($new_just_prior);
     my($start_time) = Bivio::Util::gettimeofday();
+    my($row_count) = 0;
  ROW: while (($row = $statement->fetchrow_arrayref) || ($has_more = 0)) {
+	$row_count++;
 	unless ($started) {
+#TODO: This is ugly, but need to make a copy.  fetchrow_arrayref is
+#      returns the same array_ref each time.
 	    # If this row matches just_prior primary key or if the first
 	    # order_by value has changed, start saving rows.
-	    my($j, $jp) = 0;
-	    foreach $jp (@$just_prior) {
+	    my($j, $s) = 0;
+	    foreach $s (@$sentinel) {
 		# If the primary key field compares with the returned value,
 		# keep iterating.  Else, check fob.
-		next if $jp eq
-			$select_columns->[$j]->{type}->from_sql_column(
-				$row->[$j]);
-		_trace('just_prior missed on ', $select_columns->[$j]->{name})
+		next if $s eq $select_columns->[$j]->{type}->from_sql_column(
+			$row->[$j]);
+		_trace('sentinel missed on ', $select_columns->[$j]->{name})
 			if $_TRACE;
 
 		# Primary key doesn't compare.  If $fob_start isn't defined,
-		# go on to next row.  This is an unlikely case, actually,
-		# because $fob_start must be defined.
-		next ROW unless defined($fob_start);
+		# go on to next row.  This will happen for "this" searches
+		# or if someone hacked a just_prior query.
+		unless (defined($fob_start)) {
+		    $new_just_prior = [@$row];
+		    next ROW;
+		}
 
 		# If fob for this row is same as $fob_start, keep going.
 		my($fob) = $fob_type->from_sql_column($row->[$fob_index]);
 		_trace('fob_start compare to ', $fob) if $_TRACE;
-		next ROW if defined($fob) && $fob_start eq $fob;
+		if (defined($fob) && $fob_start eq $fob) {
+		    $new_just_prior = [@$row];
+		    next ROW;
+		}
 #TODO: May want to "go back to" the beginning and process all rows.
 #      If we miss the just_prior, do we want an error message?
 
-		# If fob is different, means just_prior primary key not found
-		# Just start here (no better place, really).
+#TODO: This is "pretty accurate", but is it good enough for the long term?
+		# Missed just_prior (was deleted?), just start here.
 		$started = 1;
 		last;
 	    }
 	    continue {
 		$j++;
 	    }
-	    _trace($started ? 'passed fob_start' : 'found just_prior',
-		   ' at row #', $statement->rows) if $_TRACE;
+	    _trace($started ? 'passed fob_start' : 'found sentinel',
+		   ' at row #', $row_count) if $_TRACE;
 	    # Start with this row if $fob is different, else just_prior
-	    # primary key found so start with next.
-	    next ROW unless $started++;
+	    # primary key found so start with next.  If this found,
+	    # start here (this).
+	    unless ($started++ || $this) {
+		$new_just_prior = [@$row];
+		next ROW;
+	    }
+
+	    # Don't have a new just_prior.  We'll use the old one
+	    # (later) if it exists.
+	    $new_just_prior = undef if $row_count <= 1;
 	}
 	# Save rows until $count reaches zero
 	my($i) = 0;
@@ -500,47 +524,35 @@ sub _load_list {
     # because this will blow up if we already fetched the last row
     # and were told that, i.e. if while loop exited naturally.
     # In this case, $has_more will be false and won't call fetchrow
-    $has_more &&= defined($statement->fetchrow_arrayref);
-    Bivio::SQL::Connection->increment_db_time($start_time);
-    $query->put(($is_forward ? 'has_next' : 'has_prev') => $has_more);
-
-    # Reverse the rows so ListModel doesn't need to concern itself
-    # with is_forward.
-    @$rows = reverse(@$rows) unless $is_forward || int(@$rows) <= 1;
+    my($just_after) = $has_more ? $statement->fetchrow_arrayref : undef;
+    if ($is_forward) {
+	$query->put(has_next => $just_after ? 1 : 0);
+    }
+    else {
+	$query->put(has_prev => $just_after ? 1 : 0);
+	$new_just_prior = $just_after;
+	# Reverse the rows so ListModel doesn't need to concern itself
+	# with is_forward.
+	@$rows = reverse(@$rows) unless int(@$rows) <= 1;
+    }
+    if ($new_just_prior) {
+	my($i) = 0;
+	$query->put(
+		just_prior => {
+		    (map {
+			($_->{name}, $_->{type}->from_sql_column(
+				$new_just_prior->[$i++]));
+		    } @$select_columns),
+		    $auth_id_name => $auth_id
+		},
+		# first_order_by is invalid, because we have new just_prior
+		first_order_by => undef,
+	       );
+    }
+    else {
+	$query->put(just_prior => undef);
+    }
     return $rows;
-}
-
-# _load_this(Bivio::SQL::ListSupport self, Bivio::SQL::ListQuery query, array_ref this, any die)
-#
-# Loads a single row.
-#
-sub _load_this {
-    my($self, $query, $this, $die) = @_;
-    my($attrs) = $self->internal_get;
-    my($auth_id) =  $query->get('auth_id');
-    my(@params) = Bivio::Type::PrimaryId->to_sql_param($auth_id);
-    my($i) = 0;
-    foreach my $col (@{$attrs->{primary_key}}) {
-	push(@params, $col->{type}->to_sql_param($this->[$i++]));
-    }
-    my($statement) = Bivio::SQL::Connection->execute(
-	    $attrs->{select_this}, \@params);
-    my($start_time) = Bivio::Util::gettimeofday();
-    my($row) = $statement->fetchrow_arrayref;
-    unless ($row) {
-	Bivio::SQL::Connection->increment_db_time($start_time);
-	return [];
-    }
-    die('too many rows returned') if $statement->fetchrow_arrayref;
-    Bivio::SQL::Connection->increment_db_time($start_time);
-    $i = 0;
-    return [{
-	(map {
-	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
-	} @{$attrs->{select_columns}}),
-	# Add in auth_id to every row as constant.
-	$attrs->{auth_id}->{name} => $auth_id,
-    }];
 }
 
 =head1 COPYRIGHT
