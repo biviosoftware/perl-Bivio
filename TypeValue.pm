@@ -59,13 +59,12 @@ Sets the I<type> and I<value> attributes.
 
 sub new {
     my($proto, $type, $value) = @_;
-    Carp::croak("$type: not a type")
-		unless UNIVERSAL::isa($type, 'Bivio::Type');
-    my($self) = &Bivio::Collection::Attributes::new($proto, {
+    Bivio::Die->die($type, ': not a type')
+	unless UNIVERSAL::isa($type, 'Bivio::Type');
+    return Bivio::Collection::Attributes::new($proto, {
 	type => $type,
 	value => $value,
     });
-    return $self;
 }
 
 #=PRIVATE METHODS
