@@ -155,6 +155,12 @@ __PACKAGE__->compile(
 	undef,
 	'can not be negative',
     ],
+    # not really an error, just an indicator to put the form on the next page
+    NEXT_PAGE => [
+	24,
+	undef,
+	'next form page',
+    ],
 );
 
 #=PRIVATE METHODS
