@@ -70,8 +70,7 @@ sub new {
 	'index' => 0,
 	'size' => 0,
 	'selected' => undef,
-	'next' => '',
-	'prev' => ''
+	'selected_index' => -1
     };
     $_SQL_SUPPORT->initialize();
     return $self;
@@ -80,6 +79,148 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_default_sort_key"></a>
+
+=head2 get_default_sort_key() : string
+
+Returns the sort key to use if no other sorting is specified.
+
+=cut
+
+sub get_default_sort_key {
+    return 'dttm desc';
+}
+
+=for html <a name="get_heading"></a>
+
+=head2 get_heading() : string
+
+Returns a suitable heading for the model.
+
+=cut
+
+sub get_heading {
+    my($self) = @_;
+
+    return $self->get_title();
+}
+
+=for html <a name="get_finder_at"></a>
+
+=head2 get_finder_at(int row) : string
+
+Returns the model finder for the specified row. This should be the string
+format of a L<Bivio::Biz::FindParams>.
+
+=cut
+
+sub get_finder_at {
+    my($self, $row) = @_;
+
+    return undef if $row < 0 or $row >= $self->get_row_count();
+    return $self->internal_get_rows()->[$row]->[0]->[0];
+}
+
+=for html <a name="get_index"></a>
+
+=head2 get_index() : int
+
+Overrides get_index() to returns the index of the first item into the
+result set.
+
+=cut
+
+sub get_index {
+    my($self, $fp) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{index};
+}
+
+=for html <a name="get_selected_index"></a>
+
+=head2 get_selected_index() : int
+
+Returns the index of the selected item, or -1 if no item is selected.
+
+=cut
+
+sub get_selected_index {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{selected_index};
+}
+
+=for html <a name="get_selected_item"></a>
+
+=head2 get_selected_item() : Model
+
+Returns the selected email message or undef if none was selected.
+
+=cut
+
+sub get_selected_item {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    return $fields->{selected};
+}
+
+=for html <a name="get_sort_key"></a>
+
+=head2 get_sort_key(int col) : string
+
+Returns the sorting key for the specified column index.
+
+=cut
+
+sub get_sort_key {
+    my($self, $col) = @_;
+
+    return ('email_message.subject','from_name', 'dttm')[$col];
+}
+
+=for html <a name="get_title"></a>
+
+=head2 get_title() : string
+
+Returns a suitable title of the model.
+
+=cut
+
+sub get_title {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # detail view of the selected message
+    if ($fields->{selected}) {
+	return $fields->{selected}->get('subject');
+    }
+
+    return 'No Messages' if $self->get_row_count() == 0;
+
+    # otherwise show the range of messages displayed
+    my($index) = $self->get_index();
+    return 'Messages '.($index + 1)
+	    .' - '.($index + $self->get_row_count())
+	    .' / '.$self->get_result_set_size();
+}
+
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the total number of rows in the query.
+
+=cut
+
+sub get_result_set_size {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{size};
+}
 
 =for html <a name="find"></a>
 
@@ -126,145 +267,6 @@ sub load {
     return $self->get_status()->is_ok();
 }
 
-=for html <a name="get_default_sort_key"></a>
-
-=head2 get_default_sort_key() : string
-
-Returns the sort key to use if no other sorting is specified.
-
-=cut
-
-sub get_default_sort_key {
-    return 'dttm desc';
-}
-
-=for html <a name="get_heading"></a>
-
-=head2 abstract get_heading() : string
-
-Returns a suitable heading for the model.
-
-=cut
-
-sub get_heading {
-    my($self) = @_;
-
-    return $self->get_title();
-}
-
-=for html <a name="get_index"></a>
-
-=head2 get_index() : int
-
-Overrides get_index() to returns the index of the first item into the
-result set.
-
-=cut
-
-sub get_index {
-    my($self, $fp) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{index};
-}
-
-=for html <a name="get_next_message_id"></a>
-
-=head2 get_next_message_id() : 
-
-Returns the find-params for the next-to-the-selected message.
-
-=cut
-
-sub get_next_message_id {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{next};
-}
-
-=for html <a name="get_prev_message_id"></a>
-
-=head2 get_prev_message_id() : string
-
-Returns the find-params for the previous-to-the-selected message.
-
-=cut
-
-sub get_prev_message_id {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{prev};
-}
-
-=for html <a name="get_selected_message"></a>
-
-=head2 get_selected_message() : Message
-
-Returns the selected email message or undef if none was selected.
-
-=cut
-
-sub get_selected_message {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    return $fields->{selected};
-}
-
-=for html <a name="get_sort_key"></a>
-
-=head2 get_sort_key(int col) : string
-
-Returns the sorting key for the specified column index.
-
-=cut
-
-sub get_sort_key {
-    my($self, $col) = @_;
-
-    return ('email_message.subject','from_name', 'dttm')[$col];
-}
-
-=for html <a name="get_title"></a>
-
-=head2 abstract get_title() : string
-
-Returns a suitable title of the model.
-
-=cut
-
-sub get_title {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    # detail view of the selected message
-    if ($fields->{selected}) {
-	return $fields->{selected}->get('subject');
-    }
-
-    return 'No Messages' if $self->get_row_count() == 0;
-
-    # otherwise show the range of messages displayed
-    my($index) = $self->get_index();
-    return 'Messages '.($index + 1)
-	    .' - '.($index + $self->get_row_count())
-	    .' / '.$self->get_result_set_size();
-}
-
-=for html <a name="get_result_set_size"></a>
-
-=head2 get_result_set_size() : int
-
-Returns the total number of rows in the query.
-
-=cut
-
-sub get_result_set_size {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return $fields->{size};
-}
-
 #=PRIVATE METHODS
 
 # _create_model_references(FindParams fp)
@@ -278,9 +280,9 @@ sub _create_model_references {
     # iterate the results setting the first arg of the first
     # element (a model ref) to an appropriate finder value
 
+    $fields->{selected_index} = -1;
     my($rows) = $self->internal_get_rows();
     my($search_id) = defined($fp->get('id')) ? $fp->get('id') : -1;
-    my($search_index) = -1;
     my($fp2) = $fp->clone();
     $fp2->remove('club');
 
@@ -293,24 +295,11 @@ sub _create_model_references {
 	my($id) = $row->[0]->[0];
 
 	if ($id eq $search_id) {
-	    $search_index = $i;
+	    $fields->{selected_index} = $i;
 	}
 	$fp2->put('id', $id);
 	$fp2->put('index', $index);
 	$row->[0]->[0] = $fp2->as_string();
-    }
-
-    # set the prev and next into the search list if appropriate
-    $fields->{prev} = '';
-    $fields->{next} = '';
-
-    if ($search_index != -1) {
-	if ($search_index > 0) {
-	    $fields->{prev} = $rows->[$search_index-1]->[0]->[0];
-	}
-	if ($search_index < int(@$rows)) {
-	    $fields->{next} = $rows->[$search_index+1]->[0]->[0];
-	}
     }
     return;
 }
