@@ -77,7 +77,7 @@ _compile([
     NORMAL_TABLE_HEADING => [$_SANS_SERIF, undef, 'strong'],
     TABLE_CELL => [undef, undef],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
-    ERROR => [undef, 'error', 'i'],
+    ERROR => [undef, 'error', 'b'],
     ITALIC => [undef, undef, 'i'],
     TIME => [$_SANS_SERIF, undef, 'small'],
     NUMBER_CELL => [undef, undef],
