@@ -15,9 +15,10 @@ print "ok 1\n";
 
 print STDERR "\n";
 
-warn("this is a warning");
+Bivio::IO::Alert->warn("this is a warning");
+
 eval {
-    die("bye");
+    Bivio::IO::Alert->die("bye");
 };
 
 print "ok 2\n";
