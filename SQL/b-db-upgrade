@@ -245,6 +245,7 @@ sub _upgrade {
 
     _upgrade_instrument_type();
     _upgrade_csi_tables();
+    _upgrade_recreate_ticker_symbol_index();
     print("\n*** done ***\n");
     return;
 }
@@ -527,6 +528,24 @@ ALTER TABLE instrument_t DROP constraint instrument_t3
 ALTER TABLE instrument_t
   add constraint instrument_t3
   check (instrument_type between 1 and 4)
+/
+EOF
+    return;
+}
+
+# _upgrade_recreate_ticker_symbol_index() : 
+#
+# ticker_symbol must be unique
+#
+sub _upgrade_recreate_ticker_symbol_index {
+    _do_sql(<<'EOF');
+DROP INDEX instrument_t7
+/
+CREATE UNIQUE INDEX instrument_t7 ON instrument_t (
+  ticker_symbol
+)
+  tablespace index_1m
+  pctfree 50 initrans 2 storage (freelists 1)
 /
 EOF
     return;
