@@ -709,7 +709,9 @@ sub _unsafe_get_by_regexp {
 	next unless $k =~ /$pattern/;
 	_die($self, $pattern, ': pattern matches more than one key',
 		' (', $k, ' and ', $match, ')')
-		    if defined($match);
+		    if defined($match)
+#TODO: temporary to prevent problems with Model aliases on request
+			    && $self->get($match) ne $self->get($k);
 	$match = $k;
     }
     return $match;
