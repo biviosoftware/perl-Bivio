@@ -704,7 +704,7 @@ my(@_CFG) = (
         _/create_club
         Bivio::Biz::Model::CreateClubForm
         Bivio::UI::HTML::User::CreateClub
-        next=USER_CLUB_LIST
+        next=CLUB_CREATED
     )],
     # Default page for users, see MY_CLUB_REDIRECT
     [qw(
@@ -786,7 +786,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInviteAcceptForm
         Bivio::UI::HTML::General::InviteAccept
         cancel=HTTP_DOCUMENT
-        next=CLUB_HOME
+        next=CLUB_USER_NEW
         NOT_FOUND=REALM_INVITE_NOT_FOUND
     )],
 # Another task here which handles does the invite accept part.
@@ -934,17 +934,43 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::General::InviteNotFound
     )],
-    # Sets the realm to this user
     [qw(
         USER_CREATED
         92
         GENERAL
         DOCUMENT_READ
         !
-        Bivio::Biz::Model::RealmInviteAcceptForm->execute_if_found
         Bivio::UI::Mail::UserCreated
-        Bivio::UI::HTML::General::UserCreated
-        next=USER_HOME
+        Bivio::Biz::Model::RealmInviteAcceptForm->execute_or_cancel
+        Bivio::Biz::Action::ClientRedirect->execute_next
+        next=CLUB_USER_NEW
+        cancel=USER_NEW
+    )],
+    [qw(
+        USER_NEW
+        93
+        USER
+        DOCUMENT_READ
+        _/new
+        Bivio::UI::HTML::User::New
+    )],
+    [qw(
+        CLUB_USER_NEW
+        94
+        CLUB
+        DOCUMENT_READ
+        _/new_user
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::UI::HTML::Club::UserNew
+    )],
+    [qw(
+        CLUB_CREATED
+        95
+        CLUB
+        DOCUMENT_READ
+        _/new
+        Bivio::Biz::Model::RealmUser->execute_auth_user
+        Bivio::UI::HTML::Club::New
     )],
 );
 
