@@ -465,6 +465,11 @@ Performs any database specific changes to the Oracle SQL string.
 
 sub internal_fixup_sql {
     my($self, $sql) = @_;
+
+    # Removes 'order by' clause from 'select count(*) from ...' queries.
+    if  ($sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is) {
+        $sql =~ s/\border\s+by\s.*$//is;
+    }
     return $sql;
 }
 
