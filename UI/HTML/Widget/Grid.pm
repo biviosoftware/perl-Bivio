@@ -148,9 +148,12 @@ sub initialize {
 	foreach $c (@cols) {
 	    my($p) = '<td';
 	    if (ref($c)) {
+		# May set attributes on itself
+		$c->put('parent', $self);
+		$c->initialize($self, $source);
 		my($align);
-		($bg, $expand, $align, $rowspan) = $c->unsafe_get(qw(
-                        cell_bgcolor cell_expand cell_align cell_rowspan));
+		($bg, $expand, $align, $rowspan) = $c->unsafe_get(
+			qw(cell_bgcolor cell_expand cell_align cell_rowspan));
 		if ($expand) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -162,12 +165,16 @@ sub initialize {
 		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
 		$p .= " rowspan=$rowspan" if $rowspan;
-		$c->put('parent', $self);
-		$c->initialize($self, $source);
+	    }
+	    elsif (!defined($c)) {
+		$c = '';
+	    }
+	    elsif ($c =~ /^\s+$/) {
+		$c = '&nbsp;';
 	    }
 	    # Replace undef cells with something real.  Render
 	    # text strings literally.
-	    push(@$r, $p .'>', defined($c) ? $c : '', "</td>\n");
+	    push(@$r, $p .'>', $c, "</td>\n");
 	}
     }
     $fields->{rows} = $rows;
