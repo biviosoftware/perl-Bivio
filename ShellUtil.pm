@@ -1367,10 +1367,12 @@ sub _process_exists {
 sub _reap_daemon_children {
     my($children, $stopped) = @_;
     while (!$stopped || $stopped > 0) {
-	_trace('stopped: ', $stopped, ' ', $children->{$stopped})
-	    if $_TRACE;
-	Bivio::IO::Alert->warn($stopped, ': unknown pid')
-	    unless delete($children->{$stopped});
+	if ($stopped) {
+	    _trace('stopped: ', $stopped, ' ', $children->{$stopped})
+		if $_TRACE;
+	    Bivio::IO::Alert->warn($stopped, ': unknown pid')
+		unless delete($children->{$stopped});
+	}
 	$stopped = waitpid(-1, POSIX::WNOHANG());
     }
     return;
