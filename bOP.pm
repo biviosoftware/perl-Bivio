@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    control matching of messages which are sometimes interesting.
+  * Bivio::Util::LinuxConfig deletes the backup file before writing.
+  * Bivio::BConf added more http_log entries
 
   Revision 1.51  2003/03/24 23:11:15  moeller
   changed lost password query arg from 'p' to 'x'
