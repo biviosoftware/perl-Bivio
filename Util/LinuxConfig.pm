@@ -98,7 +98,8 @@ Updates /etc/bashrc to search /etc/bashrc.d.
 
 sub add_bashrc_d {
     my($self) = @_;
-    return _edit($self, '/etc/bashrc', ['$', <<'EOF', qr#/etc/bashrc.d/#]);
+    return _mkdir($self, '/etc/bashrc.d', 0755)
+	. _edit($self, '/etc/bashrc', ['$', <<'EOF', qr#/etc/bashrc.d/#]);
 
 # Load local bashrcs
 for i in /etc/bashrc.d/*.sh ; do
@@ -262,10 +263,8 @@ sub create_ssl_crt {
     my($res) = '';
     my($f) = {};
     foreach my $w (qw(key crt csr)) {
-	my($d) = _prefix_file("ssl.$w");
-	$f->{$w} = "$d/$hostname.$w";
-        next if -d $d;
-	$res .= "Created " . Bivio::IO::File->mkdir_p($d) . "\n";
+	$f->{$w} = _prefix_file("ssl.$w") . "/$hostname.$w";
+	$res .= _mkdir($self, "ssl.$w", 0750);
     }
     return _exec($self, "openssl genrsa -out $f->{key} 1024")
 	. _exec($self,
@@ -586,6 +585,18 @@ sub _exec {
     return "Would have executed: $cmd\n"
 	if $self->unsafe_get('noexecute');
     return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in)};
+}
+
+# _mkdir(self, string dir, int perms) : string
+#
+# Creates dir if it doesn't exist
+#
+sub _mkdir {
+    my($self, $dir, $perms) = @_;
+    $dir = _prefix_file($dir);
+    return '' if -d $dir;
+    return "Would have created: $dir\n" if $self->unsafe_get('noexecute');
+    return "Created " . Bivio::IO::File->mkdir_p($dir, $perms) . "\n";
 }
 
 # _prefix_file(string file) : string
