@@ -144,7 +144,7 @@ sub _end_a {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     _link($self, $fields->{text})
-	if $fields->{text} && defined($fields->{href});
+	if defined($fields->{text}) && defined($fields->{href});
     $fields->{href} = undef;
     return;
 }
