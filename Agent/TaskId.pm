@@ -1150,7 +1150,24 @@ my(@_CFG) = (
         !
         Bivio::UI::HTML::ErrorPages->execute_demo_club_action_forbidden
     )],
-#104-105
+    [qw(
+	USER_REFERRAL_CLIENT_REDIRECT
+	104
+        USER
+        LOGIN
+        ?/goto
+        Bivio::Biz::Action::ClientRedirect->execute_query
+        next=HTTP_DOCUMENT
+    )],
+    [qw(
+	CLUB_REFERRAL_CLIENT_REDIRECT
+	105
+        CLUB
+        LOGIN
+        ?/goto
+        Bivio::Biz::Action::ClientRedirect->execute_query
+        next=HTTP_DOCUMENT
+    )],
     [qw(
         CLUB_ADMIN_MEMBER_EMAIL_EDIT
         106
