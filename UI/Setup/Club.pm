@@ -25,7 +25,7 @@ C<Bivio::UI::Setup::Club> is a club creation view.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Biz::PropertyModel::Club;
+use Bivio::Biz::Model::Club;
 use Bivio::UI::HTML::FieldUtil;
 
 #=VARIABLES
@@ -44,7 +44,7 @@ sub execute {
     my($self, $req) = @_;
 #TODO: Need to allow for no model in rendering code
     $self->activate->render(
-	    Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
+	    Bivio::Biz::Model::RealmOwner->new($req), $req);
     return;
 }
 
@@ -60,7 +60,7 @@ sub render {
     my($self, $realm_owner, $req) = @_;
     my($reply) = $req->get_reply();
 
-    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
+    my($club) = Bivio::Biz::Model::Club->new($req);
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
 

@@ -31,10 +31,10 @@ C<Bivio::Biz::Action::InstrumentBuy>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::PropertyModel::Entry;
-use Bivio::Biz::PropertyModel::RealmAccountEntry;
-use Bivio::Biz::PropertyModel::RealmInstrumentEntry;
-use Bivio::Biz::PropertyModel::RealmTransaction;
+use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::RealmAccountEntry;
+use Bivio::Biz::Model::RealmInstrumentEntry;
+use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
@@ -74,7 +74,7 @@ sub execute {
 	    = $req->get('realm_instrument_id', 'date', 'shares',
 		    'cash_account_id', 'total_price', 'commission',
 		    'service_charge', 'remark');
-    my($transaction) = Bivio::Biz::PropertyModel::RealmTransaction->new($req);
+    my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
     $transaction->create({
 	realm_id => $req->get('auth_id'),
 	source_class => Bivio::Type::EntryClass::INSTRUMENT(),
@@ -84,7 +84,7 @@ sub execute {
     });
 
     # cash entry
-    my($entry) = Bivio::Biz::PropertyModel::Entry->new($req);
+    my($entry) = Bivio::Biz::Model::Entry->new($req);
     $entry->create({
 	realm_transaction_id => $transaction->get('realm_transaction_id'),
 	class => Bivio::Type::EntryClass::CASH(),
@@ -93,7 +93,7 @@ sub execute {
 	tax_basis => 1,
 	amount => - ($total_price + $commission + $service_charge),
     });
-    my($account_entry) = Bivio::Biz::PropertyModel::RealmAccountEntry
+    my($account_entry) = Bivio::Biz::Model::RealmAccountEntry
 	    ->new($req);
     $account_entry->create({
 	entry_id => $entry->get('entry_id'),
@@ -101,7 +101,7 @@ sub execute {
     });
 
     # calculate next block number
-    my($inst) = Bivio::Biz::PropertyModel::RealmInstrument->new($req);
+    my($inst) = Bivio::Biz::Model::RealmInstrument->new($req);
     $inst->load(realm_instrument_id => $realm_instrument_id);
     my($block) = $inst->get_next_block();
 
@@ -114,7 +114,7 @@ sub execute {
 	tax_basis => 1,
 	amount => - $total_price,
     });
-    my($instrument_entry) = Bivio::Biz::PropertyModel::RealmInstrumentEntry
+    my($instrument_entry) = Bivio::Biz::Model::RealmInstrumentEntry
 	    ->new($req);
     $instrument_entry->create({
 	entry_id => $entry->get('entry_id'),

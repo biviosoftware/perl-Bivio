@@ -40,8 +40,8 @@ Subclasses define the actual authorization policies.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
-use Bivio::Biz::PropertyModel::RealmOwner;
-use Bivio::Biz::PropertyModel::RealmUser;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::Auth::Role;
 use Bivio::IO::Trace;
 use Carp ();
@@ -94,9 +94,9 @@ sub new {
 	    {task_id_to_role =>
 		$_REALM_TO_TASK_ID_TO_ROLE{$_CLASS_TO_TYPE{$class}}});
     return $self unless $owner;
-    Carp::croak('owner not specified or not a PropertyModel::RealmOwner')
+    Carp::croak('owner not specified or not a Model::RealmOwner')
 	    unless UNIVERSAL::isa($owner,
-		    'Bivio::Biz::PropertyModel::RealmOwner');
+		    'Bivio::Biz::Model::RealmOwner');
 #TODO: Change this so everyone knows realm_id?
     my($owner_id) = $owner->get('realm_id');
     $owner_id || Carp::croak('owner must have valid id (must be loaded)');
@@ -166,7 +166,7 @@ sub get_type {
 
 =for html <a name="get_user_role"></a>
 
-=head2 abstract get_user_role(Bivio::Biz::PropertyModel::User auth_user, Bivio::Agent::Request req) : Bivio::Auth::Role
+=head2 abstract get_user_role(Bivio::Biz::Model::User auth_user, Bivio::Agent::Request req) : Bivio::Auth::Role
 
 Returns the role the (to be) authenticated user plays in this realm.
 
@@ -180,7 +180,7 @@ sub get_user_role {
     my($owner) = $self->unsafe_get('owner');
     return Bivio::Auth::Role::USER()
 	    unless $owner;
-    my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     return Bivio::Auth::Role::USER
 	    unless $realm_user->unauth_load(
 		    realm_id => $self->get('owner_id'),

@@ -29,7 +29,7 @@ C<Bivio::UI::HTML::TestMathView>
 
 #=IMPORTS
 use Bivio::UI::HTML::ListView;
-use Bivio::Biz::ListModel::Test;
+use Bivio::Biz::Model::TestList;
 use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::Presentation;
 
@@ -80,7 +80,7 @@ Returns the default model ready for rendering.
 
 sub get_default_model {
     #NOTE: could cache this
-    return Bivio::Biz::ListModel::Test->new();
+    return Bivio::Biz::Model::TestList->new();
 }
 
 =for html <a name="get_nav_links"></a>

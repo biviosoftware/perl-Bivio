@@ -30,13 +30,13 @@ member info, instrument info, and transactions.
 
 #=IMPORTS
 use Bivio::Agent::TestRequest;
-use Bivio::Biz::PropertyModel::RealmInstrument;
-use Bivio::Biz::PropertyModel::RealmInstrumentEntry;
-use Bivio::Biz::PropertyModel::RealmInstrumentValuation;
-use Bivio::Biz::PropertyModel::Entry;
-use Bivio::Biz::PropertyModel::MemberEntry;
-use Bivio::Biz::PropertyModel::RealmAccountEntry;
-use Bivio::Biz::PropertyModel::RealmTransaction;
+use Bivio::Biz::Model::RealmInstrument;
+use Bivio::Biz::Model::RealmInstrumentEntry;
+use Bivio::Biz::Model::RealmInstrumentValuation;
+use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::MemberEntry;
+use Bivio::Biz::Model::RealmAccountEntry;
+use Bivio::Biz::Model::RealmTransaction;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::EntryClass;
@@ -531,8 +531,8 @@ sub import_instruments {
     my($valuations) = _parse_file($self, $_VALUATION_FORMAT);
 
     my($req) = Bivio::Agent::TestRequest->new({});
-    my($instrument) = Bivio::Biz::PropertyModel::RealmInstrument->new($req);
-    my($valuation) = Bivio::Biz::PropertyModel::RealmInstrumentValuation
+    my($instrument) = Bivio::Biz::Model::RealmInstrument->new($req);
+    my($valuation) = Bivio::Biz::Model::RealmInstrumentValuation
 	    ->new($req);
 
     # load the club instruments
@@ -706,14 +706,14 @@ sub _compile_type_map {
 
 # _create_transaction(ID club_id, ID user_id, EntryClass class, date dttm) : Transaction
 #
-# Creates a Bivio::Biz::PropertyModel::RealmTransactions from the specified
+# Creates a Bivio::Biz::Model::RealmTransactions from the specified
 # data.
 
 sub _create_transaction {
     my($club_id, $user_id, $class, $dttm) = @_;
 
     my($req) = Bivio::Agent::TestRequest->new({});
-    my($transaction) = Bivio::Biz::PropertyModel::RealmTransaction->new($req);
+    my($transaction) = Bivio::Biz::Model::RealmTransaction->new($req);
 
     $transaction->create({
 	realm_id => $club_id,
@@ -909,7 +909,7 @@ sub _create_entry {
 	$tax_basis = $_TYPE_MAP->{$trans->{transaction_type}}->[3];
     }
 
-    my($entry) = Bivio::Biz::PropertyModel::Entry->new(
+    my($entry) = Bivio::Biz::Model::Entry->new(
 	    $transaction->get_request());
 
     $entry->create({
@@ -925,7 +925,7 @@ sub _create_entry {
     });
 
     if ($trans->{class} == Bivio::Type::EntryClass->MEMBER) {
-	my($member_entry) = Bivio::Biz::PropertyModel::MemberEntry->new(
+	my($member_entry) = Bivio::Biz::Model::MemberEntry->new(
 		$transaction->get_request());
 	$member_entry->create({
 	    entry_id => $entry->get('entry_id'),
@@ -935,7 +935,7 @@ sub _create_entry {
     }
     elsif ($trans->{class} == Bivio::Type::EntryClass->INSTRUMENT) {
 	my($instrument_entry) =
-		Bivio::Biz::PropertyModel::RealmInstrumentEntry->new(
+		Bivio::Biz::Model::RealmInstrumentEntry->new(
 			$transaction->get_request());
 	$instrument_entry->create({
 	    entry_id => $entry->get('entry_id'),
@@ -946,7 +946,7 @@ sub _create_entry {
 	});
     }
     elsif ($trans->{class} == Bivio::Type::EntryClass->CASH) {
-	my($account_entry) = Bivio::Biz::PropertyModel::RealmAccountEntry->new(
+	my($account_entry) = Bivio::Biz::Model::RealmAccountEntry->new(
 		$transaction->get_request());
 
 	my($account) = $trans->{account_type};
@@ -974,7 +974,7 @@ sub _create_entry {
 sub _lookup_instrument {
     my($symbol) = @_;
     my($req) = Bivio::Agent::TestRequest->new({});
-    my($instrument) = Bivio::Biz::PropertyModel::Instrument->new($req);
+    my($instrument) = Bivio::Biz::Model::Instrument->new($req);
     $instrument->load(ticker_symbol => $symbol);
     return $instrument;
 }

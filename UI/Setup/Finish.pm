@@ -41,7 +41,7 @@ use Bivio::Agent::TaskId;
 sub execute {
     my($self, $req) = @_;
     $self->activate->render(
-	    $req->get('Bivio::Biz::PropertyModel::RealmOwner'), $req);
+	    $req->get('Bivio::Biz::Model::RealmOwner'), $req);
     return;
 }
 

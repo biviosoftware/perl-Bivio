@@ -180,7 +180,7 @@ sub init_column {
 		    unless $qual_model && $column;
 	my($model);
 	unless ($model = $attrs->{models}->{$qual_model}) {
-	    my($package) = 'Bivio::Biz::PropertyModel::'.$qual_model;
+	    my($package) = 'Bivio::Biz::Model::'.$qual_model;
 	    $package =~ s!((?:_\d+)?)$!!;
 	    my($qual_index) = $1;
 	    # Make sure package is loaded

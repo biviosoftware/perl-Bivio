@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::ListModel::User;
+package Bivio::Biz::Model::UserList;
 use strict;
-$Bivio::Biz::ListModel::User::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::UserList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::ListModel::User - a list of user information
+Bivio::Biz::Model::UserList - a list of user information
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::ListModel::User;
-    Bivio::Biz::ListModel::User->new($req);
+    use Bivio::Biz::Model::UserList;
+    Bivio::Biz::Model::UserList->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::ListModel>
 =cut
 
 use Bivio::Biz::ListModel;
-@Bivio::Biz::ListModel::User::ISA = qw(Bivio::Biz::ListModel);
+@Bivio::Biz::Model::UserList::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel::User>
+C<Bivio::Biz::Model::UserList>
 
 =cut
 

@@ -25,8 +25,8 @@ email addresses.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::PropertyModel::ClubUser;
-use Bivio::Biz::PropertyModel::MailMessage;
+use Bivio::Biz::Model::ClubUser;
+use Bivio::Biz::Model::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 
@@ -50,7 +50,7 @@ Forwards the email to the owner of the auth_realm.
 sub execute {
     my(undef, $req) = @_;
     my($user_id) = $req->get('auth_id');
-    my($user) = Bivio::Biz::PropertyModel::User->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
     $user->load(user_id => $user_id);
     my($msg) = $req->get('message');
     &_trace($req->get('auth_realm')->get('owner'),

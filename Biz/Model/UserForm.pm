@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::FormModel::User;
+package Bivio::Biz::Model::UserForm;
 use strict;
-$Bivio::Biz::FormModel::User::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::UserForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::FormModel::User - a list of User information
+Bivio::Biz::Model::UserForm - a list of User information
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::FormModel::User;
-    Bivio::Biz::FormModel::User->new($req);
+    use Bivio::Biz::Model::UserForm;
+    Bivio::Biz::Model::UserForm->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::FormModel>
 =cut
 
 use Bivio::Biz::FormModel;
-@Bivio::Biz::FormModel::User::ISA = qw(Bivio::Biz::FormModel);
+@Bivio::Biz::Model::UserForm::ISA = qw(Bivio::Biz::FormModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::FormModel::User>
+C<Bivio::Biz::Model::UserForm>
 
 =cut
 
@@ -76,7 +76,7 @@ sub create {
     $model = $self->get_model('UserEmail');
     $model->create($values);
 
-    $model = Bivio::Biz::PropertyModel::RealmUser->new($self->get_request);
+    $model = Bivio::Biz::Model::RealmUser->new($self->get_request);
     $model->create({
 	'realm_id' => $values->{user_id},
 	'user_id' => $values->{user_id},

@@ -1,18 +1,18 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::ListModel::MailMessage;
+package Bivio::Biz::Model::MailMessageList;
 use strict;
 use Carp();
-$Bivio::Biz::ListModel::MailMessage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::MailMessageList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::ListModel::MailMessage - A list of mail messages.
+Bivio::Biz::Model::MailMessageList - A list of mail messages.
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::ListModel::MailMessage;
-    Bivio::Biz::ListModel::MailMessage->new($req);
+    use Bivio::Biz::Model::MailMessageList;
+    Bivio::Biz::Model::MailMessageList->new($req);
 
 =cut
 
@@ -23,17 +23,17 @@ L<Bivio::Biz::ListModel>
 =cut
 
 use Bivio::Biz::ListModel;
-@Bivio::Biz::ListModel::MailMessage::ISA = qw(Bivio::Biz::ListModel);
+@Bivio::Biz::Model::MailMessageList::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel::MailMessage>
+C<Bivio::Biz::Model::MailMessageList>
 
 =cut
 
 #=IMPORTS
 use Bivio::Biz::FieldDescriptor;
-use Bivio::Biz::PropertyModel::MailMessage;
+use Bivio::Biz::Model::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::ListSupport;
 
@@ -47,7 +47,7 @@ my($_SQL_SUPPORT);
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::ListModel::MailMessage
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::MailMessageList
 
 Creates a new message list model.
 
@@ -218,7 +218,7 @@ sub load {
 
     # set the selected message
     if ($query{mail_message_id}) {
-	my($message) = Bivio::Biz::PropertyModel::MailMessage->new(
+	my($message) = Bivio::Biz::Model::MailMessage->new(
 		$self->get_request);
 	# load overrides club_id to that of request, so don't bother adding
 	$message->load(mail_message_id => $query{mail_message_id});

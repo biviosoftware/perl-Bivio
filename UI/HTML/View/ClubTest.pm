@@ -32,7 +32,7 @@ C<Bivio::UI::HTML::View::ClubTest>
 
 #=IMPORTS
 use Bivio::UI::HTML::Club::Page;
-use Bivio::Biz::PropertyModel::Club;
+use Bivio::Biz::Model::Club;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;

@@ -19,14 +19,14 @@ use Bivio::UI::View;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::PropertyModel::User> model.
+C<Bivio::UI::Admin::UserView> allows editing a L<Bivio::Biz::Model::User> model.
 
 =cut
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Biz::PropertyModel::ClubUser;
-use Bivio::Biz::PropertyModel::User;
+use Bivio::Biz::Model::ClubUser;
+use Bivio::Biz::Model::User;
 use Bivio::UI::HTML::FieldUtil;
 
 #=VARIABLES
@@ -44,7 +44,7 @@ use Bivio::UI::HTML::FieldUtil;
 sub execute {
     my($self, $req) = @_;
 #TODO: Need to do load_from_request allowing for not found.
-    $self->activate->render(Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
+    $self->activate->render(Bivio::Biz::Model::RealmOwner->new($req), $req);
     return;
 }
 
@@ -52,7 +52,7 @@ sub execute {
 
 =head2 render(undef, Request req)
 
-Creates a form for editing the L<Bivio::Biz::PropertyModel::User> model.
+Creates a form for editing the L<Bivio::Biz::Model::User> model.
 
 =cut
 
@@ -61,9 +61,9 @@ sub render {
     my($reply) = $req->get_reply();
 
 #TODO: handle update as well
-    my($user) = Bivio::Biz::PropertyModel::User->new($req);
-    my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
-    my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
+    my($email) = Bivio::Biz::Model::UserEmail->new($req);
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
 
     $reply->print('<table border=0><tr><td>');
     $reply->print('<table border=0 cellpadding=0 cellspacing=0>');

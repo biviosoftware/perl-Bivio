@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::PropertyModel::Test;
+package Bivio::Biz::Model::Test;
 use strict;
-$Bivio::Biz::PropertyModel::Test::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::Test::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::PropertyModel::Test - a parameterized testing model
+Bivio::Biz::Model::Test - a parameterized testing model
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::PropertyModel::Test;
-    Bivio::Biz::PropertyModel::Test->new($req);
+    use Bivio::Biz::Model::Test;
+    Bivio::Biz::Model::Test->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::Model>
 =cut
 
 use Bivio::Biz::Model;
-@Bivio::Biz::PropertyModel::Test::ISA = qw(Bivio::Biz::Model);
+@Bivio::Biz::Model::Test::ISA = qw(Bivio::Biz::Model);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::PropertyModel::Test>
+C<Bivio::Biz::Model::Test>
 
 =cut
 
@@ -42,7 +42,7 @@ C<Bivio::Biz::PropertyModel::Test>
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::PropertyModel::Test
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::Test
 
 Creates a testing model.
 

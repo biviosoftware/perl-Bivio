@@ -26,10 +26,10 @@ C<Bivio::Biz::Action::CreateClub> creates a club and its administrator.
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Action::CreateClubUser;
-use Bivio::Biz::PropertyModel::ClubUser;
-use Bivio::Biz::PropertyModel::Club;
-use Bivio::Biz::PropertyModel::RealmOwner;
-use Bivio::Biz::PropertyModel::MailMessage;
+use Bivio::Biz::Model::ClubUser;
+use Bivio::Biz::Model::Club;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::MailMessage;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 
@@ -57,14 +57,14 @@ sub execute {
 
     my($values) = $req->get_fields('form', \@_ALLOWED_FIELDS);
     my($name) = $values->{name};
-    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
+    my($club) = Bivio::Biz::Model::Club->new($req);
     # There has to be an auth_user or can't create a club
     $values->{'kbytes_in_use'} = 0;
     $values->{'max_storage_kbytes'} = 8 * 1024;
     $club->create($values);
     my($club_id) = $club->get('club_id');
 
-    my($realm_owner) = Bivio::Biz::PropertyModel::RealmOwner->new($req);
+    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
     $realm_owner->create({name => $name,
 	realm_id => $club_id,
 	realm_type => Bivio::Auth::RealmType::CLUB()});
@@ -72,7 +72,7 @@ sub execute {
     # Create the first club user, the auth_user as administrator
     $req->get('form')->{role} = 'ADMINISTRATOR';
     my($user_id) = $req->get('auth_user')->get('realm_id');
-    my($user) = Bivio::Biz::PropertyModel::User->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
     # Needed so CreateClubUser sees this user. 
 #TODO: want $realm_owner->get_user(?), so we don't have to unauth_load here.
     $user->unauth_load(user_id => $user_id);
@@ -82,7 +82,7 @@ sub execute {
     Bivio::Biz::Action::CreateClubUser->execute($req);
 
     # Initialize the message manager
-    my($mm) = Bivio::Biz::PropertyModel::MailMessage->new($req);
+    my($mm) = Bivio::Biz::Model::MailMessage->new($req);
     $mm->setup_club($club);
     return;
 }

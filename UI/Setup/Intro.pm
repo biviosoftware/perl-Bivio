@@ -42,7 +42,7 @@ sub execute {
     my($self, $req) = @_;
 #TODO: Need to allow for no model in rendering code
     $self->activate->render(
-	    Bivio::Biz::PropertyModel::User->new($req), $req);
+	    Bivio::Biz::Model::User->new($req), $req);
     return;
 }
 

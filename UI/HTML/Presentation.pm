@@ -11,7 +11,7 @@ Bivio::UI::HTML::Presentation - A view arranger with NavBar and ActionBar.
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::Presentation;
-    my($model) = Bivio::Biz::PropertyModel::Test->new('test2', {}, 'title', 'heading');
+    my($model) = Bivio::Biz::Model::Test->new('test2', {}, 'title', 'heading');
     my($view) = Bivio::UI::TestView->new('test', '<i>a test view</i>', $model);
     my($page) = Bivio::UI::HTML::Presentation->new([view]);
     $view->activate()->render($model, $req);

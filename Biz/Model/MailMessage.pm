@@ -1,18 +1,18 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::PropertyModel::MailMessage;
+package Bivio::Biz::Model::MailMessage;
 use strict;
 
-$Bivio::Biz::PropertyModel::MailMessage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::MailMessage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::PropertyModel::MailMessage - an email message
+Bivio::Biz::Model::MailMessage - an email message
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::PropertyModel::MailMessage;
-    Bivio::Biz::PropertyModel::MailMessage->new($req);
+    use Bivio::Biz::Model::MailMessage;
+    Bivio::Biz::Model::MailMessage->new($req);
 
 =cut
 
@@ -23,11 +23,11 @@ L<Bivio::Biz::PropertyModel>
 =cut
 
 use Bivio::Biz::PropertyModel;
-@Bivio::Biz::PropertyModel::MailMessage::ISA = ('Bivio::Biz::PropertyModel');
+@Bivio::Biz::Model::MailMessage::ISA = ('Bivio::Biz::PropertyModel');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::PropertyModel::MailMessage> holds information about an email
+C<Bivio::Biz::Model::MailMessage> holds information about an email
 message, the body of which is stored in the file server.
 
 #TODO: Better description of storage structure and usage.
@@ -62,7 +62,7 @@ my($_FILE_CLIENT);
 
 =for html <a name="create"></a>
 
-=head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::PropertyModel::RealmOwner realm_owner, Bivio::Biz::PropertyModel::Club club)
+=head2 create(Bivio::Mail::Incoming msg, Bivio::Biz::Model::RealmOwner realm_owner, Bivio::Biz::Model::Club club)
 
 Creates a mail message model from an L<Bivio::Mail::Incoming>.
 
@@ -253,7 +253,7 @@ sub internal_initialize {
 
 =for html <a name="setup_club"></a>
 
-=head2 setup_club(Bivio::Biz::PropertyModel::Club club)
+=head2 setup_club(Bivio::Biz::Model::Club club)
 
 Creates the club message storage area.
 

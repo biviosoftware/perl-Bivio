@@ -20,13 +20,13 @@ use Bivio::UI::HTML::ListView;
 =head1 DESCRIPTION
 
 C<Bivio::UI::Admin::UserListView> is a view for the
-L<Bivio::Biz::ListModel::User> model showing all the members of a club. It exports
+L<Bivio::Biz::Model::UserList> model showing all the members of a club. It exports
 one action link to add a new user.
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::ListModel::User;
+use Bivio::Biz::Model::UserList;
 use Bivio::UI::HTML::Link;
 
 #=VARIABLES
@@ -49,7 +49,7 @@ my($_ACTION_LINKS) = [$_ADD_LINK];
 sub execute {
     my($self, $req) = @_;
     $self->activate->render(
-	    Bivio::Biz::ListModel::User->load_from_request($req), $req);
+	    Bivio::Biz::Model::UserList->load_from_request($req), $req);
     return;
 }
 

@@ -51,7 +51,7 @@ List of primary key types in the order of I<primary_key_names>.
 =head1 EXAMPLE
 
 The following declaration is taken from
-L<Bivio::Biz::ListModel::ClubUser|Bivio::Biz::ListModel::ClubUser>:
+L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>:
 
     Bivio::SQL::ListSupport->new({
 	version => 1,

@@ -26,12 +26,12 @@ C<Bivio::Biz::Action::CreateUser>
 #=IMPORTS
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Bivio::Biz::PropertyModel::Club;
-use Bivio::Biz::PropertyModel::ClubUser;
-use Bivio::Biz::PropertyModel::RealmOwner;
-use Bivio::Biz::PropertyModel::RealmUser;
-use Bivio::Biz::PropertyModel::User;
-use Bivio::Biz::PropertyModel::UserEmail;
+use Bivio::Biz::Model::Club;
+use Bivio::Biz::Model::ClubUser;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmUser;
+use Bivio::Biz::Model::User;
+use Bivio::Biz::Model::UserEmail;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::Gender;
@@ -74,7 +74,7 @@ sub execute {
     my(undef, $req) = @_;
 
     # Create user first to get user_id, so can create realm_owner
-    my($user) = Bivio::Biz::PropertyModel::User->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
     my($values) = $req->get_fields('form', \@_USER_FIELDS);
     my($gender) = $values->{gender};
     $values->{gender} = Bivio::Type::Gender->$gender();
@@ -84,7 +84,7 @@ sub execute {
     my($user_id) = $user->get('user_id');
 
     # make sure password fields match
-    my($realm_owner) = Bivio::Biz::PropertyModel::RealmOwner->new($req);
+    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
     $values = $req->get_fields('form', \@_REALM_OWNER_FIELDS);
 #TODO: Validate the list of form fields
     die('password fields must be filled in')
@@ -100,12 +100,12 @@ sub execute {
     $values->{realm_type} = Bivio::Auth::RealmType::USER();
     $realm_owner->create($values);
 
-    my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
+    my($email) = Bivio::Biz::Model::UserEmail->new($req);
     $values = $req->get_fields('form', \@_USER_EMAIL_FIELDS);
     $values->{user_id} = $user->get('user_id');
     $email->create($values);
 
-    my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     $realm_user->create({
 	'realm_id' => $user_id,
 	'user_id' => $user_id,

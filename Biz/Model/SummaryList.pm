@@ -1,26 +1,26 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::ListModel::SummaryList;
+package Bivio::Biz::Model::SummaryList;
 use strict;
-$Bivio::Biz::ListModel::SummaryList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::SummaryList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::ListModel::SummaryList - a list model summary
+Bivio::Biz::Model::SummaryList - a list model summary
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::ListModel::SummaryList;
-    Bivio::Biz::ListModel::SummaryList->new();
+    use Bivio::Biz::Model::SummaryList;
+    Bivio::Biz::Model::SummaryList->new();
 
 =cut
 
 use Bivio::Collection::Attributes;
-@Bivio::Biz::ListModel::SummaryList::ISA = ('Bivio::Collection::Attributes');
+@Bivio::Biz::Model::SummaryList::ISA = ('Bivio::Collection::Attributes');
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel::SummaryList> summarizes columns from a list model
+C<Bivio::Biz::Model::SummaryList> summarizes columns from a list model
 and implements a ListModel-like interface so it can be used in Tables.
 
 Note: SummaryList provides a summary only for the values currently loaded
@@ -45,9 +45,9 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(array_ref source) : Bivio::Biz::ListModel::SummaryList
+=head2 static new(array_ref source) : Bivio::Biz::Model::SummaryList
 
-=head2 static new(array_ref source, hash_ref static_properties) : Bivio::Biz::ListModel::SummaryList
+=head2 static new(array_ref source, hash_ref static_properties) : Bivio::Biz::Model::SummaryList
 
 Creates a summary list which gets data from the specified source ListModel(s).
 Sets the static_properties to values supplied.

@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Biz::ListModel::Test;
+package Bivio::Biz::Model::TestList;
 use strict;
-$Bivio::Biz::ListModel::Test::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Biz::Model::TestList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Biz::ListModel::Test - A testing list model.
+Bivio::Biz::Model::TestList - A testing list model.
 
 =head1 SYNOPSIS
 
-    use Bivio::Biz::ListModel::Test;
-    Bivio::Biz::ListModel::Test->new($req);
+    use Bivio::Biz::Model::TestList;
+    Bivio::Biz::Model::TestList->new($req);
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::Biz::ListModel>
 =cut
 
 use Bivio::Biz::ListModel;
-@Bivio::Biz::ListModel::Test::ISA = qw(Bivio::Biz::ListModel);
+@Bivio::Biz::Model::TestList::ISA = qw(Bivio::Biz::ListModel);
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::ListModel::Test>
+C<Bivio::Biz::Model::TestList>
 
 =cut
 
@@ -46,7 +46,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::Biz::ListModel::Test
+=head2 static new() : Bivio::Biz::Model::TestList
 
 Creates a new testing ListModel.
 

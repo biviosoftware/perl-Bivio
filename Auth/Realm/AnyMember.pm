@@ -63,7 +63,7 @@ sub new {
 
 =for html <a name="get_user_role"></a>
 
-=head2 get_user_role(Bivio::Biz::PropertyModel::Club auth_user) : Bivio::Auth::Role
+=head2 get_user_role(Bivio::Biz::Model::Club auth_user) : Bivio::Auth::Role
 
 Returns the role the (to be) authenticated user plays in this realm.
 

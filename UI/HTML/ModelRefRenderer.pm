@@ -90,7 +90,7 @@ sub render {
 
     my($query) = $model_ref->[0];
     my($text) = $model_ref->[1];
-#TODO: HACK.  Set in ListModel::MailMessage.  Needs to be passed in elsewhere
+#TODO: HACK.  Set in Model::MailMessageList.  Needs to be passed in elsewhere
     my($task_id) = $query->{task_id};
     delete $query->{task_id};
 

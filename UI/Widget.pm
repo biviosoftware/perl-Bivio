@@ -108,7 +108,7 @@ widget values:
 	['RealmOwner.name'],
 	['RealmUser.role', '->get_short_desc'],
     ],
-    source => ['Bivio::Biz::ListModel::ClubUser'],
+    source => ['Bivio::Biz::Model::ClubUserList'],
     alt => ['auth_user', 'name', 'Bivio::UI::HTML::Format::Printf',
     		'The auth_user is %s'],
 
@@ -159,9 +159,9 @@ L<Bivio::UI::HTML::Widget::HTML::Table|Bivio::UI::HTML::Widget::Table>.
 This widget value looks like a class, but there is a trick.  All
 models, which load themselves successfully, are put as attributes
 on the request by their class name.  So although
-C<Bivio::Biz::ListModel::ClubUser> I<can> C<get_widget_value>,
+C<Bivio::Biz::Model::ClubUserList> I<can> C<get_widget_value>,
 it won't.  Instead, the value of the
-C<'Bivio::Biz::ListModel::ClubUser'> instance which was loaded
+C<'Bivio::Biz::Model::ClubUserList'> instance which was loaded
 successfully is retrieved.
 
 =item cells
@@ -198,7 +198,7 @@ L<Bivio::UI::HTML::Widget::Image|Bivio::UI::HTML::Widget::Image>.
 This demonstrates "extreme" cascading of C<get_widget_value> arguments.
 The first argument causes the C<auth_user> attribute from the
 Request to be retrieved, which is a
-L<Bivio::Biz::PropertyModel::RealmOwner|Bivio::Biz::PropertyModel::RealmOwner>
+L<Bivio::Biz::Model::RealmOwner|Bivio::Biz::Model::RealmOwner>
 object.  The RealmOwner has a property C<name>, which is retrieved
 from this particular instance.
 

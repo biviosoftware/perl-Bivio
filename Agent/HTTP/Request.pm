@@ -35,9 +35,9 @@ The rest of the arguments are action parameters.  The path may be
 partially complete as the path components have default values.
 
 If the connection is using authentication and a
-L<Bivio::Biz::PropertyModel::User|Bivio::Biz::PropertyModel::User> exists
+L<Bivio::Biz::Model::User|Bivio::Biz::Model::User> exists
 for the login, then C<user> and C<password> entries will defined
-in the Request's context (a L<Bivio::Biz::PropertyModel::User|Bivio::Biz::PropertyModel::User>
+in the Request's context (a L<Bivio::Biz::Model::User|Bivio::Biz::Model::User>
 and string respectively).
 
 =cut
@@ -47,7 +47,7 @@ use Bivio::IO::Trace;
 use Apache::Constants;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Reply;
-use Bivio::Biz::PropertyModel::User;
+use Bivio::Biz::Model::User;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Util;
@@ -153,13 +153,13 @@ sub format_uri {
 
 #=PRIVATE METHODS
 
-# _auth_user(string name, string password) : Bivio::Biz::PropertyModel::User
+# _auth_user(string name, string password) : Bivio::Biz::Model::User
 #
 # Attempts to find a user with the specified login id.
 sub _auth_user {
     my($self, $name, $password) = @_;
     return undef unless defined($name);
-    my($user) = Bivio::Biz::PropertyModel::RealmOwner->new($self);
+    my($user) = Bivio::Biz::Model::RealmOwner->new($self);
 #TODO: Do we want to allow club logins?
     Bivio::Die->die(Bivio::DieCode::AUTH_REQUIRED(),
 	    {request => $self, entity => $name, message => 'user not found'})

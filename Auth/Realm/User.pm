@@ -11,7 +11,7 @@ Bivio::Auth::Realm::User - defines the realm owned by a particular user
 =head1 SYNOPSIS
 
     use Bivio::Auth::Realm::User;
-    Bivio::Auth::Realm::User->new(Bivio::Biz::PropertyModel::User owner);
+    Bivio::Auth::Realm::User->new(Bivio::Biz::Model::User owner);
 
 =cut
 
@@ -27,12 +27,12 @@ use Bivio::Auth::Realm;
 =head1 DESCRIPTION
 
 C<Bivio::Auth::Realm::User> defines the realm owned by a particular
-L<Bivio::Biz::PropertyModel::User|Bivio::Biz::PropertyModel::User>.
+L<Bivio::Biz::Model::User|Bivio::Biz::Model::User>.
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::PropertyModel::User;
+use Bivio::Biz::Model::User;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Role;
 
@@ -44,7 +44,7 @@ use Bivio::Auth::Role;
 
 =for html <a name="new"></a>
 
-=head2 static new(Bivio::Biz::PropertyModel::RealmOwner owner) : Bivio::Auth::Realm::User
+=head2 static new(Bivio::Biz::Model::RealmOwner owner) : Bivio::Auth::Realm::User
 
 Define the realm owned by this particular user.
 

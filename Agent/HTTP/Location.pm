@@ -34,7 +34,7 @@ use Bivio::Auth::Realm::Club;
 use Bivio::Auth::Realm::Public;
 use Bivio::Auth::Realm::User;
 use Bivio::Auth::Realm;
-use Bivio::Biz::PropertyModel::RealmOwner;
+use Bivio::Biz::Model::RealmOwner;
 use Bivio::DieCode;
 
 #=VARIABLES
@@ -137,7 +137,7 @@ sub parse {
     my($class, $realm);
 #TODO: Only search the appropriate realm.  Need to do something about
 #      shared realm uris.
-    my($o) = Bivio::Biz::PropertyModel::RealmOwner->new($req);
+    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
     $req->die(Bivio::DieCode::NOT_FOUND,
 	    {entity => $name, uri => $orig_uri, class => 'Bivio::Auth::Realm'})
 	    unless $o->unauth_load(name => $name);

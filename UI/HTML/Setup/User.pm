@@ -53,7 +53,7 @@ sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
     $fields->{form} = Bivio::UI::HTML::Widget::Form->new({
-	form_model => ['Bivio::Biz::FormModel::User'],
+	form_model => ['Bivio::Biz::Model::UserForm'],
 	value => Bivio::UI::HTML::Widget::Grid->new({
 	    pad => 5,
 	    values => [

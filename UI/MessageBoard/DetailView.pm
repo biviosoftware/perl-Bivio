@@ -11,7 +11,7 @@ Bivio::UI::MessageBoard::DetailView - a message detail view
 =head1 SYNOPSIS
 
     use Bivio::UI::MessageBoard::DetailView;
-    my($list) = Bivio::Biz::ListModel::MailMessage->new();
+    my($list) = Bivio::Biz::Model::MailMessageList->new();
     $list->load('club' => 100, 'id' => 20);
     my($view) = Bivio::UI::MessageBoard::DetailView->new();
     $view->render($list, $req);
@@ -37,7 +37,7 @@ to know the next/prev links and provide a way back to the original list.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
-use Bivio::Biz::ListModel::MailMessage;
+use Bivio::Biz::Model::MailMessageList;
 use Bivio::UI::HTML::Presentation;
 
 #=VARIABLES
@@ -75,7 +75,7 @@ my($_ACTION_LINKS) = [$_COMPOSE_LINK, $_REPLY_LINK];
 sub execute {
     my($self, $req) = @_;
     $self->activate->render(
-	    Bivio::Biz::ListModel::MailMessage->load_from_request($req), $req);
+	    Bivio::Biz::Model::MailMessageList->load_from_request($req), $req);
     return;
 }
 

@@ -24,8 +24,8 @@ C<Bivio::UI::Setup::Admin> shows an admin creation screen.
 =cut
 
 #=IMPORTS
-use Bivio::Biz::PropertyModel::User;
-use Bivio::Biz::PropertyModel::UserEmail;
+use Bivio::Biz::Model::User;
+use Bivio::Biz::Model::UserEmail;
 use Bivio::Agent::TaskId;
 
 #=VARIABLES
@@ -44,7 +44,7 @@ sub execute {
     my($self, $req) = @_;
 #TODO: Need to allow for no model in rendering code
     $self->activate->render(
-	    Bivio::Biz::PropertyModel::RealmOwner->new($req), $req);
+	    Bivio::Biz::Model::RealmOwner->new($req), $req);
     return;
 }
 
@@ -61,8 +61,8 @@ sub render {
     my($reply) = $req->get_reply();
 
     # used for type information only
-    my($user) = Bivio::Biz::PropertyModel::User->new($req);
-    my($email) = Bivio::Biz::PropertyModel::UserEmail->new($req);
+    my($user) = Bivio::Biz::Model::User->new($req);
+    my($email) = Bivio::Biz::Model::UserEmail->new($req);
 
 #TODO: Put some line breaks so easier to read.  Don't call print so many times.
     $reply->print('<table border=0><tr><td>');

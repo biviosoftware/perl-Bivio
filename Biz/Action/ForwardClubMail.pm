@@ -25,8 +25,8 @@ C<Bivio::Biz::Action::ForwardClubMail> creates a club and its administrator.
 
 #=IMPORTS
 use Bivio::Mail::Outgoing;
-use Bivio::Biz::PropertyModel::MailMessage;
-use Bivio::Biz::PropertyModel::RealmOwner;
+use Bivio::Biz::Model::MailMessage;
+use Bivio::Biz::Model::RealmOwner;
 use Bivio::Auth::RealmType;
 use Bivio::IO::Trace;
 
@@ -54,12 +54,12 @@ sub execute {
     die('auth_realm not a club')
 	    unless $realm_owner->get('realm_type') ==
 		    Bivio::Auth::RealmType::CLUB();
-    my($club) = Bivio::Biz::PropertyModel::Club->new($req);
+    my($club) = Bivio::Biz::Model::Club->new($req);
     $club->load(club_id => $realm_owner->get('realm_id'));
     my($msg) = $req->get('message');
     &_trace($realm_owner, ': ', $msg->get_message_id) if $_TRACE;
     my($in_msg);
-    $in_msg = Bivio::Biz::PropertyModel::MailMessage->new($req);
+    $in_msg = Bivio::Biz::Model::MailMessage->new($req);
     $in_msg->create($msg, $realm_owner, $club);
     my($out_msg) = Bivio::Mail::Outgoing->new($msg);
     $out_msg->set_recipients($club->get_outgoing_emails());

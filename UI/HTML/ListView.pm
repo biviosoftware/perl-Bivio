@@ -11,7 +11,7 @@ Bivio::UI::HTML::ListView - A view which renders a ListModel.
 =head1 SYNOPSIS
 
     use Bivio::UI::HTML::ListView;
-    my($users) = Bivio::Biz::ListModel::User->new();
+    my($users) = Bivio::Biz::Model::UserList->new();
     if ($users->load({'club' => $club_id})) {
         my($list_view) = Bivio::UI::HTML::ListView->new();
         $list_view->render($users, $req);

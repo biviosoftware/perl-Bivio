@@ -54,7 +54,7 @@ sub execute {
     # These must be set
     my($club_id) = $req->get('auth_id');
 #TODO: This is fragile.
-    my($user) = $req->get('Bivio::Biz::PropertyModel::User');
+    my($user) = $req->get('Bivio::Biz::Model::User');
     my($user_id) = $user->get('user_id');
     # not checking find result, should have succeeded or
     # it wouldn't be this far
@@ -62,14 +62,14 @@ sub execute {
     my($role) = $values->{role};
     die("invalid role ($role)")
 	    unless defined($_ROLE_IDS{$role});
-    my($realm_user) = Bivio::Biz::PropertyModel::RealmUser->new($req);
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     $realm_user->create({
 	'realm_id' => $club_id,
 	'user_id' => $user_id,
 	'role' => Bivio::Auth::Role->$role(),
     });
 
-    my($club_user) = Bivio::Biz::PropertyModel::ClubUser->new($req);
+    my($club_user) = Bivio::Biz::Model::ClubUser->new($req);
     $club_user->create({
 	'club_id' => $club_id,
 	'user_id' => $user_id,

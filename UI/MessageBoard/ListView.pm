@@ -11,7 +11,7 @@ Bivio::UI::MessageBoard::ListView - a list of messages
 =head1 SYNOPSIS
 
     use Bivio::UI::MessageBoard::ListView;
-    my($list) = Bivio::Biz::ListModel::MailMessage->new();
+    my($list) = Bivio::Biz::Model::MailMessageList->new();
     $list->load('club' => 100);
     my($view) = Bivio::UI::MessageBoard::ListView->new();
     $view->render($list, $req);
@@ -30,12 +30,12 @@ use Bivio::UI::HTML::ListView;
 =head1 DESCRIPTION
 
 C<Bivio::UI::MessageBoard::ListView> renders the
-L<Bivio::Biz::ListModel::MailMessage> model.
+L<Bivio::Biz::Model::MailMessageList> model.
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::ListModel::MailMessage;
+use Bivio::Biz::Model::MailMessageList;
 use Bivio::IO::Trace;
 use Bivio::UI::HTML::Link;
 use Bivio::UI::HTML::ListCellRenderer;
@@ -109,7 +109,7 @@ sub get_action_links {
 sub execute {
     my($self, $req) = @_;
     $self->activate->render(
-	    Bivio::Biz::ListModel::MailMessage->load_from_request($req), $req);
+	    Bivio::Biz::Model::MailMessageList->load_from_request($req), $req);
     return;
 }
 

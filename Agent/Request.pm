@@ -42,7 +42,7 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 Value of C<auth_realm->get('owner')->get('realm_id')>.
 Only valid if I<auth_realm> has an owner.
 
-=time auth_user : Bivio::Biz::PropertyModel::RealmOwner
+=time auth_user : Bivio::Biz::Model::RealmOwner
 
 The user authenticated with the request.
 
