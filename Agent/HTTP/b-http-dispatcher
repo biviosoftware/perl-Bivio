@@ -259,17 +259,17 @@ AllowOverride None
 Options FollowSymLinks
 </Directory>
 
-<LocationMatch "^/[a-z0-9A-Z_][a-z0-9A-Z_][a-z0-9A-Z_][a-z0-9A-Z_]+($|/)">
+<Location /modperl-status>
+SetHandler perl-script
+PerlHandler Apache::Status
+</Location>
+
+<LocationMatch "^/">
 AuthName bivio:<$port>
 AuthType Basic
 SetHandler perl-script
 PerlHandler <$handler>
 </LocationMatch>
-
-<Location /modperl-status>
-SetHandler perl-script
-PerlHandler Apache::Status
-</Location>
 
 #
 # Browsers
