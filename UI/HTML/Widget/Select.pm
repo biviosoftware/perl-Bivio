@@ -216,12 +216,15 @@ sub render {
 
     $field_value = '' unless defined($field_value);
     $field_value = $field_value->as_int if ref($field_value);
+    my($editable) = $form->is_field_editable($field);
 
     for (my($i) = 0; $i < int(@$items); $i += 2) {
 	my($v) = $items->[$i];
-	$$buffer .= '<option value='.$v;
-	$$buffer .= ' selected' if $field_value eq $v;
-	$$buffer .= '>'.$items->[$i+1]."\n";
+	if ($editable || $field_value eq $v) {
+	    $$buffer .= '<option value='.$v;
+	    $$buffer .= ' selected' if $field_value eq $v;
+	    $$buffer .= '>'.$items->[$i+1]."\n";
+	}
     }
     # No newline, don't know what follows.
     $$buffer .= '</select>'.$s;
