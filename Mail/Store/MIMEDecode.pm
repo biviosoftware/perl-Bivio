@@ -213,7 +213,7 @@ sub _extract_mime {
     my($subentity);
     for $subentity (@parts) {
 	$i++;
-#	_trace('getting part ', ++$i) if $_TRACE;
+#	_trace('getting part ', $i) if $_TRACE;
 #	_trace('subentity is valid') if $_TRACE && $subentity;
 	my($content_type) = Bivio::Type::MIMEType->from_content_type(
 		$subentity->head->get('content-type'));
@@ -462,6 +462,7 @@ sub _write_entity_to_file {
 	$msg_hdr .= "\n".$$msg_body if ($$msg_body)
     }
     $fields->{kbytes} += length($msg_hdr)/1024;
+#    _trace('writing entity to ' . $file_name) if $_TRACE;
     $fields->{file_client}->create($file_name, \$msg_hdr)
 	    || die("$file_name: write failed: $msg_hdr");
     $fields->{num_parts}++;
@@ -494,15 +495,15 @@ sub _write_multipart_alternative {
 		    Bivio::Type::MIMEType::TEXT_HTML());
 	    return;
 	}
-	elsif (defined($any)) {
+#	elsif (!defined($any)) {
+#HACK: Only use last alternative
+	else {
 	    $any = $subentity;
 	}
     }
 #TODO: Shouldn't get here, but could be jpg, gif, etc.
-    my($content_type) = Bivio::Type::MIMEType->from_content_type(
-	    $any->head->get('content-type'));
-    _write_entity_to_file($fields, $any, $file_name,
-	    $content_type);
+#MRL: Ok to get here, continue extracting recursively
+    _extract_mime($fields, $any, $file_name);
     return;
 }
 
