@@ -535,6 +535,7 @@ _compile(\%_MAP, [
     PASSWORD_FORGOTTEN => 'Forgot Your Password?',
     PASSWORD_FORGOTTEN_CONFIRMATION => 'Password Assistance',
     USER_AGREEMENT_TEXT => 'Terms of Service',
+    USER_ADMIN_USER_DELETE => 'Delete User',
     ['USER_HOME', 'MY_SITE']
         => 'My Site',
 
