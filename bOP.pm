@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Type::Password->is_equal/compare defines undef values as
+    always not equal for security reasons.  A successful encryption is
+    the only way to compare equal.
+
+  Revision 2.14  2004/03/11 00:21:33  nagler
   * Bivio::SQL::Connection::Oracle uses all_cons_columns and
     all_ind_columns instead of user_cons_columns and user_ind_columns.
     This allows the database user to be different from the owner.
