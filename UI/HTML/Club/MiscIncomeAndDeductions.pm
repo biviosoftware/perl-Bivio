@@ -33,8 +33,7 @@ and deductions.
 
 #=IMPORTS
 use Bivio::UI::HTML::Club::ReportPage;
-use Bivio::UI::HTML::Widget::Join;
-use Bivio::UI::HTML::Widget::Table;
+use Bivio::UI::HTML::Widget::DateTime;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -56,68 +55,66 @@ sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
 
-    my($msg1) = 'No miscellaneous income to report within the date range.';
-    my($msg2) = 'No deductions to report within the date range.';
+    my($msg1) = $self->string(
+	    'No miscellaneous income to report within the date range.',
+	    'page_text');
+    my($msg2) = $self->string(
+	    'No deductions to report within the date range.',
+	    'page_text');
 
-    $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
-	values => [
-	    '<table border=0 cellspacing=0 cellpadding=5>',
-	    Bivio::UI::HTML::Widget::Table->new({
-		list_class => 'PortfolioIncomeList',
-		start_tag => 0,
-		end_tag => 0,
-		columns => [
-		    # showing date_time as date
-		    ['RealmTransaction.date_time', {
-			column_widget => Bivio::UI::HTML::Widget::DateTime
-			->new({
-			    mode => 'DATE',
-			    column_align => 'E',
-			    value => ['RealmTransaction.date_time'],
-			}),
-		    }],
-		    'RealmTransaction.remark',
-		    'Entry.amount',
-		],
-		summarize => 1,
-		summary_line_type => '=',
-		title => 'Miscellaneous Income',
-		empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
-		    values => [
-			"\n<tr><td colspan=3>$msg1</td></tr>",
-		    ],
+    $fields->{content} = $self->join(
+	'<table border=0 cellspacing=0 cellpadding=5>',
+	$self->table('PortfolioIncomeList', [
+	    # showing date_time as date
+	    ['RealmTransaction.date_time', {
+		column_widget => Bivio::UI::HTML::Widget::DateTime->new({
+		    mode => 'DATE',
+		    column_align => 'E',
+		    value => ['RealmTransaction.date_time'],
 		}),
-	    }),
-	    "\n<tr><td><br></td></tr>",
-	    Bivio::UI::HTML::Widget::Table->new({
-		list_class => 'PortfolioDeductionList',
-		start_tag => 0,
-		end_tag => 0,
-		columns => [
-		    # showing date_time as date
-		    ['RealmTransaction.date_time', {
-			column_widget => Bivio::UI::HTML::Widget::DateTime
-			->new({
-			    mode => 'DATE',
-			    column_align => 'E',
-			    value => ['RealmTransaction.date_time'],
-			}),
-		    }],
-		    'RealmTransaction.remark',
-		    'Entry.amount',
-		],
-		summarize => 1,
-		summary_line_type => '=',
-		title => 'Deductions',
-		empty_list_widget => Bivio::UI::HTML::Widget::Join->new({
-		    values => [
-			"\n<tr><td colspan=3>$msg2</td></tr>",
-		    ],
-		}),
-	    }),
-	    "\n</table>",
+	    }],
+	    'RealmTransaction.remark',
+	    'Entry.amount',
 	],
-    });
+	{
+	    start_tag => 0,
+	    end_tag => 0,
+	    summarize => 1,
+	    summary_line_type => '=',
+	    title => 'Miscellaneous Income',
+	    empty_list_widget => $self->join(
+		    "\n<tr><td colspan=3>",
+		    $msg1,
+		    "</td></tr>",
+	    ),
+	}),
+	"\n<tr><td><br></td></tr>",
+	$self->table('PortfolioDeductionList', [
+	    # showing date_time as date
+	    ['RealmTransaction.date_time', {
+		column_widget => Bivio::UI::HTML::Widget::DateTime->new({
+		    mode => 'DATE',
+		    column_align => 'E',
+		    value => ['RealmTransaction.date_time'],
+		}),
+	    }],
+	    'RealmTransaction.remark',
+	    'Entry.amount',
+	],
+	{
+	    summarize => 1,
+	    start_tag => 0,
+	    end_tag => 0,
+	    summary_line_type => '=',
+	    title => 'Deductions',
+	    empty_list_widget => $self->join(
+		    "\n<tr><td colspan=3>",
+		    $msg2,
+		    "</td></tr>",
+	    ),
+	}),
+	"\n</table>",
+    );
     $fields->{content}->initialize;
 
     $fields->{heading} = Bivio::UI::HTML::Club::ReportPage
