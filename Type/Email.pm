@@ -29,6 +29,23 @@ C<Bivio::Type::Email> simple syntax checking on email addresses.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="IGNORE_PREFIX"></a>
+
+=head2 IGNORE_PREFIX : string
+
+Prefix we used to indicate ignored addresses.
+
+=cut
+
+sub IGNORE_PREFIX {
+    return 'ignore-';
+}
+
 #=IMPORTS
 use Bivio::TypeError;
 
@@ -81,6 +98,21 @@ sub from_literal {
 #	    unless /\@/;
     # Some other error
     return (undef, Bivio::TypeError::EMAIL());
+}
+
+=for html <a name="is_valid"></a>
+
+=head2 is_valid(string email) : boolean
+
+Checks to see the email is a valid address.  Used to check
+values stored in the database which may be invalidated by support.
+
+=cut
+
+sub is_valid {
+    my($proto, $email) = @_;
+    return defined($email) && $email =~ /^$_822_ATOM_ONLY_ADDR$/os
+	    ? 1 : 0;
 }
 
 #=PRIVATE METHODS
