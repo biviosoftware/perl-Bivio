@@ -295,3 +295,6 @@ $query = Bivio::SQL::ListQuery->new({
 my($rows2) = $support->load($query, '', []);
 # Shouldn't be the same
 t(Bivio::IO::Ref->nested_equals($rows, $rows2), 0);
+
+# can_iterate
+t($support->can_iterate, 1);
