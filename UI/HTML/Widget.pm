@@ -627,14 +627,19 @@ sub join {
 
 =head2 static label(string label) : Bivio::UI::HTML::Widget::String
 
-Looks up label and sets in C<LABEL_IN_TEXT> font.
+=head2 static label(string label, string font) : Bivio::UI::HTML::Widget::String
+
+Looks up I<label>.  Uses C<label_in_text> if I<font> is not supplied.
+Does not set I<string_font> if I<font> is C<undef>.
 
 =cut
 
 sub label {
-    my($proto, $label) = @_;
+    my($proto, $label, $font) = @_;
     return $proto->string(Bivio::UI::Label->get_simple($label),
-	    'label_in_text');
+#TODO: Fix once all deprecated usage of string()
+#    $font = 'label_in_text' if int(@_) < 3;
+	    int(@_) < 3 ? 'label_in_text' : defined($font) ? ($font) : ());
 }
 
 =for html <a name="link"></a>
@@ -646,6 +651,8 @@ sub label {
 =head2 static link(any label, string task, string font) : Bivio::UI::HTML::Widget::Link
 
 =head2 static link(any label, array_ref widget_value) : Bivio::UI::HTML::Widget::Link
+
+=head2 static link(any label, Bivio::UI::HTML::Widget widget) : Bivio::UI::HTML::Widget::Link
 
 =head2 static link(any label, string abs_uri) : Bivio::UI::HTML::Widget::Link
 
@@ -674,7 +681,8 @@ sub link {
 	$widget_value = $label;
 	$label = Bivio::UI::Label->get_simple($widget_value);
     }
-    $label = $proto->string($label, $font)
+#TODO: Fix once all deprecated usage of string()
+    $label = $proto->string($label, int(@_) >= 4 ? ($font) : ())
 	    unless UNIVERSAL::isa($label, 'Bivio::UI::HTML::Widget');
     $widget_value = ['->format_stateless_uri',
 	Bivio::Agent::TaskId->$widget_value()]
@@ -815,7 +823,8 @@ sub link_tm {
     # Must be in a join, because we are pre-escaping the string
     return $proto->link($proto->string(
 	    $proto->join(Bivio::Util::escape_html($label).'&#153;'),
-	    $font), $arg);
+#TODO: Fix once all deprecated usage of string()
+	    int(@_) >= 4 ? ($font) : ()), $arg);
 }
 
 =for html <a name="link_trez_talk"></a>
@@ -939,12 +948,19 @@ sub simple_form {
 =head2 static string(any value, string font) : Bivio::UI::Widget::String
 
 Returns a string widget for I<value> and I<font> if supplied.
-I<font> may be C<undef>.
+Use C<0> (zero) to set "no font".  Will not set font, if C<undef>.
 
 =cut
 
 sub string {
     my($self, $value, $font) = @_;
+#TODO: Next week (7/23/00) switch mode and fix all calls so that
+#      C<undef> means no font.  Search for all calls to string() in
+#      this package, because only place where deprecated usage was
+#      detected and corrected.  Should be able to just pass undef
+#      to simplify other uses.
+    Bivio::IO::Alert->warn('DEPRECATED USAGE BY ', caller)
+		if int(@_) >= 3 && !defined($font);
     _use('String');
     return Bivio::UI::HTML::Widget::String->new({
 	value => $value,
