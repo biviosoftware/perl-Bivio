@@ -434,6 +434,9 @@ sub _load_this {
 	my($match) = 1;
 	my(@prev) = map {
 	    my($v) = $_->from_sql_column($row->[$j]);
+#TODO: Should this be "is_equal"?  This is probably "good enough".
+#      It will slow it down a lot to make a method call for each
+#      row/attribute.  "eq" works in all cases and probably in future.
 	    $match &&= $this->[$j] eq $v;
 	    $j++;
 	    $v;

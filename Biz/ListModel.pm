@@ -561,7 +561,8 @@ sub load {
 Loads "all" the records in this realm.
 If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
 
-See 
+B<Does not use the query from the request.>  Does force I<auth_id>,
+however.
 
 =cut
 
@@ -666,9 +667,7 @@ Places the cursor at the start of the list.
 =cut
 
 sub reset_cursor {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{cursor} = -1;
+    shift->{$_PACKAGE}->{cursor} = -1;
     return;
 }
 
@@ -787,7 +786,7 @@ sub _assert_all {
 }
 
 =head1 COPYRIGHT
-
+v
 Copyright (c) 1999 bivio, LLC.  All rights reserved.
 
 =head1 VERSION
