@@ -178,7 +178,7 @@ my(@_XLATORS) = (
 		Bivio::Type::F1065Partnership::LIMITED_LIABILITY_COMPANY(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-12', 'Yes'),
 		Bivio::Type::F1065Partnership::LIMITED_LIABILITY(),
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-13', 'Yes'),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-14', 'Yes'),
 	       ),
 	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
@@ -333,6 +333,13 @@ my(@_XLATORS) = (
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-31', 'Yes'),
 		Bivio::Type::Boolean::FALSE(),
 		Bivio::UI::PDF::Form::ButtonXlator->new('c2-32', 'Yes')
+	       ),
+  	Bivio::UI::PDF::Form::StringXlator->new(
+		'f2-19a',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'number_of_8865_forms'
+		]
 	       ),
  	Bivio::UI::PDF::Form::IntXlator->new(
 		'f3-11',
