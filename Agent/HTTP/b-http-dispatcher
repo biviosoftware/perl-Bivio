@@ -238,7 +238,6 @@ PerlPassEnv DBI_PASS
 PerlPassEnv ORACLE_SID
 
 Timeout 60
-HostnameLookups off
 KeepAlive <$keepalive>
 MinSpareServers 1
 MaxSpareServers 4
@@ -257,7 +256,7 @@ LogLevel debug
 LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog <$log> combined
 TypesConfig /etc/mime.types
-DefaultType text/html
+DefaultType text/plain
 LockFile httpd.lock
 
 <Directory />
@@ -271,8 +270,6 @@ LockFile httpd.lock
 </Location>
 
 <LocationMatch "^/(index.html|[a-zA-Z0-9_]{2,}($|/))">
-    AuthName bivio:<$port>
-    AuthType Basic
     SetHandler perl-script
     PerlHandler <$handler>
 </LocationMatch>
