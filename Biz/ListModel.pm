@@ -197,6 +197,20 @@ sub append_load_notes {
     return;
 }
 
+=for html <a name="assert_has_cursor"></a>
+
+=head2 assert_has_cursor() : self
+
+Dies if cursor not set.
+
+=cut
+
+sub assert_has_cursor {
+    my($self) = @_;
+    $self->die('no cursor') unless $self->has_cursor;
+    return $self;
+}
+
 =for html <a name="can_iterate"></a>
 
 =head2 can_iterate() : boolean
@@ -287,7 +301,7 @@ sub execute_load_page {
 
 =head2 static execute_load_this(Bivio::Agent::Request req) : boolean
 
-Loads I<this> from I<req> query.
+Executes L<load_this|"load_this"> from I<req> query.
 
 =cut
 
@@ -295,9 +309,10 @@ sub execute_load_this {
     my($proto, $req) = @_;
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request();
-    $self->throw_die('CORRUPT_QUERY', {message => 'missing this',
-	query => $req->unsafe_get('query')})
-	    unless $query->unsafe_get('this');
+    $self->throw_die('CORRUPT_QUERY', {
+	message => 'missing this',
+	query => $req->unsafe_get('query'),
+    }) unless $query->unsafe_get('this');
     $self->load_this($query);
     return 0;
 }
@@ -1052,15 +1067,18 @@ I<auth_id> will be put in I<query> using the value in the request.
 
 Saves the model in the request.
 
-Returns I<self>.
+Returns I<self> after setting cursor to the first row (0).
 
 =cut
 
 sub load_this {
     my($self, $query) = @_;
     $query = $self->parse_query($query);
-    $self->throw_die('DIE', {message => 'missing this',
-	query => $query}) unless $query->unsafe_get('this');
+    $self->throw_die('DIE', {
+	message => 'missing this',
+	query => $query,
+	program_error => 1,
+    }) unless $query->unsafe_get('this');
     return _load_this($self, $query);
 }
 
@@ -1073,6 +1091,8 @@ sub load_this {
 Same as L<load_this|"load_this">, but if there is no I<this> on the
 query, loads the first element in the list.  If no first element,
 returns not found.
+
+Returns I<self> after setting cursor to the first row (0).
 
 =cut
 
@@ -1345,12 +1365,12 @@ sub _assert_all {
 
 # _load_this(self, Bivio::SQL::ListQuery query)
 #
-# Loads this or first.
+# Loads this or first.  Sets cursor to 0.
 #
 sub _load_this {
     my($self, $query) = @_;
     my($count) = _unauth_load($self, $query);
-    return $self if $count == 1;
+    return $self->set_cursor_or_die(0) if $count == 1;
 
     $self->throw_die('NOT_FOUND', {message => 'this not found',
 	query => $query}) unless $count;
