@@ -440,11 +440,12 @@ my(@_CFG) = (
         _ec_payments_process_all
         Bivio::Biz::Action::ECPaymentProcessAll
     )],
+    # This task runs as the user who entered the credit card info in CLUB
     [qw(
         CLUB_ADMIN_EC_PROCESS_PAYMENT
         37
         CLUB
-        ADMIN_WRITE
+        ADMIN_READ
         !
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::ECPayment->execute_process
