@@ -130,8 +130,9 @@ Same as escape_uri except escapes '+' as well.
 
 sub escape_query {
     my($proto, $text) = @_;
+    $text = $proto->escape_uri($text);
     $text =~ s/\+/\%2B/g;
-    return $proto->escape_uri($text);
+    return $text;
 }
 
 =for html <a name="escape_uri"></a>
