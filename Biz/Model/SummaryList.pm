@@ -151,6 +151,18 @@ sub get_result_set_size {
     return 1;
 }
 
+=for html <a name="get_source_list_model"></a>
+
+=head2 get_source_list_model() : Bivio::Biz::ListModel
+
+Returns the (first) source list model for this SummaryList.
+
+=cut
+
+sub get_source_list_model {
+    return shift->{$_PACKAGE}->{source}->[0];
+}
+
 =for html <a name="get_widget_value"></a>
 
 =head2 get_widget_value(string param1, ...) : any
