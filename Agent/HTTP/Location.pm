@@ -56,7 +56,6 @@ my($_DOCUMENT_TASK);
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_GENERAL);
 my($_DOCUMENT_ROOT) = undef;
-my($_HOME_URI) = undef;
 my($_HELP_ROOT) = undef;
 Bivio::IO::Config->register({
     document_root => Bivio::IO::Config->REQUIRED,
@@ -309,9 +308,6 @@ sub initialize {
 	    ->{task};
     die('HTTP_DOCUMENT: task must be configured') unless $_DOCUMENT_TASK;
 
-    $_HOME_URI = $_FROM_TASK_ID{Bivio::Agent::TaskId::HOME()}->{uri};
-    die('HOME: task must bo configured') unless $_HOME_URI;
-
     # Configure HELP_ROOT
     my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
     die('HELP: task not configured') unless $help;
@@ -349,7 +345,7 @@ sub parse {
     $uri =~ s!^/+!!;
 
     # Internal redirect to the home page.
-    $orig_uri = '/'.($uri = $_HOME_URI) unless length($uri);
+    $orig_uri = '/' unless length($uri);
 
     # Question mark is a special character
     my(@uri) = map {
