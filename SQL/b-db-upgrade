@@ -200,7 +200,8 @@ sub _upgrade_files {
     use Bivio::Biz::Model::RealmAdminList;
     use Bivio::Biz::Model::RealmOwner;
 
-    my($sth) = _do('select realm_id, file_id, name from file_t');
+    my($sth) = _do('select realm_id, file_id, name from file_t
+		/');
     my(@files);
     my(%realms);
     while (my $row = $sth->fetchrow_arrayref()) {
