@@ -218,7 +218,7 @@ If there is no I<msg>, will output "value not found" as the warning.
 
 sub get_error {
     my($self, $name, @msg) = @_;
-    push(@msg, ': value not found') unless @msg;
+    push(@msg, 'value not found') unless @msg;
     _error($self, '.', $name, ': ', @msg);
     return $self->{$_PACKAGE}->{undef_value};
 }
