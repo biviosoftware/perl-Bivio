@@ -66,13 +66,13 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp)
+=head2 load(FindParams fp)
 
 This is ignored because test model has no state.
 
 =cut
 
-sub find {
+sub load {
     #NOP
 }
 

@@ -31,7 +31,7 @@ C<Bivio::Biz::Club>
 =cut
 
 #=IMPORTS
-use Bivio::Biz::CreateClubAction;
+use Bivio::Biz::Action::CreateClub;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
@@ -67,7 +67,7 @@ my($_SQL_SUPPORT) = Bivio::SQL::Support->new('club',
 
 =head2 static new() : Bivio::Biz::Club
 
-Creates a new Club instance. Use find() to load it with values.
+Creates a new Club instance. Use load() to load it with values.
 
 =cut
 
@@ -108,7 +108,7 @@ sub create {
 	# make sure a user doesn't have the same name
 	my($user) = Bivio::Biz::User->new();
 
-	if ($user->find(Bivio::Biz::FindParams->new(
+	if ($user->load(Bivio::Biz::FindParams->new(
 		{'name' => $new_values->{'name'}}))) {
 	    $self->get_status()->add_error(
 		    Bivio::Biz::Error->new('already exists'));
@@ -142,25 +142,25 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if ($fp->get('id')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where id=?', $fp->get('id'));
     }
     if ($fp->get('name')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where name=?',	$fp->get('name'));
     }
 
@@ -181,7 +181,7 @@ sub get_action {
     my($self, $name) = @_;
 
     if ($name eq 'add') {
-	return Bivio::Biz::CreateClubAction->new();
+	return Bivio::Biz::Action::CreateClub->new();
     }
     die("no action $name");
 }

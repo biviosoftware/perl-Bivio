@@ -87,7 +87,7 @@ my($_FILE_CLIENT);
 
 =head2 static new() : Bivio::Biz::Mail::Message
 
-Creates a new email message. Use find() or create() to populate this
+Creates a new email message. Use load() or create() to populate this
 instance with data.
 
 =cut
@@ -191,21 +191,21 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds the message given the specified search parameters. Valid find keys
 are 'id'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if (defined($fp->get('id')) && $fp->get('club')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where id=? and club=?', $fp->get('id'), $fp->get('club'));
     }
 
@@ -401,7 +401,7 @@ $mail->create({
     'body' => \$body,
     });
 $mail->update({'dttm' => '5/6/1955'});
-$mail->find(Bivio::Biz::FindParams->new(
+$mail->load(Bivio::Biz::FindParams->new(
         {'id' => $id, 'club' => '7957448535598810'}));
 print($mail->get_body());
 #$Data::Dumper::Indent = 1;

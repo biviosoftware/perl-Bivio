@@ -13,7 +13,7 @@ Bivio::Biz::Model - a business object
     my($model) = ...;
 
     # load a model with data
-    $model->find(Bivio::Biz::FindParams->new({'id' => 100}));
+    $model->load(Bivio::Biz::FindParams->new({'id' => 100}));
 
     # execute an action
     $model->get_action('<action-name>')->execute($model, $req);
@@ -77,7 +77,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 abstract find(FindParams fp) : boolean
+=head2 abstract load(FindParams fp) : boolean
 
 Loads the model using values from the specified search parameters.
 Returns 1 if successful, or 0 if no data was loaded. See
@@ -85,7 +85,7 @@ L<Bivio::Biz::FindParams>.
 
 =cut
 
-sub find {
+sub load {
     die("abstract method");
 }
 

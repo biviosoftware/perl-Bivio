@@ -79,13 +79,13 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Loads the list given the specified search parameters.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
@@ -94,7 +94,7 @@ sub find {
     if ($fp->get('club')) {
 
 	# club users, max 1000?
-	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 0, 1000,
+	return $_SQL_SUPPORT->load($self, $self->internal_get_rows(), 0, 1000,
 		'where club_user.club=? and club_user.user_=user_.id'
 		.$self->get_order_by($fp), $fp->get('club'));
     }

@@ -300,7 +300,7 @@ sub initialize {
 
 =for html <a name="find"></a>
 
-=head2 find(PropertyModel model, hash properties, string where_clause, string value, ...) : boolean
+=head2 load(PropertyModel model, hash properties, string where_clause, string value, ...) : boolean
 
 Loads the specified properties with data using the parameterized where_clause
 and substitution values. If successful, the properties hash will contain the
@@ -309,7 +309,7 @@ messages.
 
 =cut
 
-sub find {
+sub load {
     my($self, $model, $properties, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{column_types} || Carp::croak("SqlSupport not initialized");

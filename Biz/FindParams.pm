@@ -21,7 +21,7 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::FindParams> provides a useful wrapper around a hash of values
-used when invoking Model.find(). from_string() and to_string() convert to
+used when invoking Model.load(). from_string() and to_string() convert to
 and from the URI format.
 
 =cut

@@ -16,7 +16,7 @@ Bivio::SQL::ListSupport - sql support for ListModels
     my($support) = Bivio::SQL::ListSupport->new('email_message',
 	['id,subject', 'from_name,from_email,subject', 'dttm']);
 
-    support->find($self, $self->internal_get_rows()
+    support->load($self, $self->internal_get_rows()
         $fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
 	$fp->get('club'));
 
@@ -86,7 +86,7 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(ListModel model, array rows, int index, int max, string where_clause, string value, ...) : boolean
+=head2 load(ListModel model, array rows, int index, int max, string where_clause, string value, ...) : boolean
 
 Loads the specified rows with data using the parameterized where_clause
 and substitution values. At most the specified max rows will be loaded.
@@ -94,7 +94,7 @@ Data will be loaded starting at the specified index into the result set.
 
 =cut
 
-sub find {
+sub load {
     my($self, $model, $rows, $index, $max, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{select} || Carp::croak("SqlListSupport not initialized");

@@ -76,7 +76,7 @@ my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_',
 
 =head2 static new() : Bivio::Biz::UserDemographics
 
-Creates an uninitialized UserDemographics model. Use find() to load
+Creates an uninitialized UserDemographics model. Use load() to load
 the model with values.
 
 =cut
@@ -146,21 +146,21 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds demographics given the specified search parameters. Valid parameters
 are 'id'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if ($fp->get('id')) {
-	$_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	$_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where id=?', $fp->get('id'));
     }
     else {

@@ -42,7 +42,7 @@ UserPreferences.
 
 #=IMPORTS
 use Bivio::Biz::Club;
-use Bivio::Biz::CreateUserAction;
+use Bivio::Biz::Action::CreateUser;
 use Bivio::Biz::Error;
 use Bivio::Biz::FieldDescriptor;
 use Bivio::Biz::FindParams;
@@ -75,7 +75,7 @@ my($_SQL_SUPPORT) = Bivio::SQL::Support->new('user_',
 
 =head2 static new() : Bivio::Biz::User
 
-Creates a new user model with all properties undefined. Use find() to
+Creates a new user model with all properties undefined. Use load() to
 load the model with values.
 
 =cut
@@ -117,7 +117,7 @@ sub create {
 	# make sure a club doesn't have the same name
 	my($club) = Bivio::Biz::Club->new();
 
-	if ($club->find(Bivio::Biz::FindParams->new(
+	if ($club->load(Bivio::Biz::FindParams->new(
 		{'name' => $new_values->{'name'}}))) {
 	    $self->get_status()->add_error(
 		    Bivio::Biz::Error->new('already exists'));
@@ -151,25 +151,25 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'id' or 'name'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if ($fp->get('id')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where id=?', $fp->get('id'));
     }
     if ($fp->get('name')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where name=?',	$fp->get('name'));
     }
 
@@ -191,7 +191,7 @@ sub get_action {
     my($self, $name) = @_;
 
     if ($name eq 'add') {
-	return Bivio::Biz::CreateUserAction->new();
+	return Bivio::Biz::Action::CreateUser->new();
     }
     die("no action $name");
 }
@@ -209,7 +209,7 @@ sub get_demographics {
 
 #TODO: model cache manager
     my($demo) = Bivio::Biz::UserDemographics->new();
-    $demo->find(Bivio::Biz::FindParams->new({'user_' => $self->get('id')}));
+    $demo->load(Bivio::Biz::FindParams->new({'user_' => $self->get('id')}));
     return $demo;
 }
 

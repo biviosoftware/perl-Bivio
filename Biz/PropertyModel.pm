@@ -12,7 +12,7 @@ Bivio::Biz::PropertyModel - An abstract model with a set of named elements
 
     my($model) = ...;
 
-    if ($model->find(Bivio::Biz::FindParams->new({'id' => 500}))) {
+    if ($model->load(Bivio::Biz::FindParams->new({'id' => 500}))) {
         for (@{$model->get_field_names()}) {
             print($_.' = '.$model->get($_)."\n");
         }

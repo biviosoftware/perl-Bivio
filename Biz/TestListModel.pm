@@ -67,14 +67,14 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Loads the list using the specified parameters. Query fields may be
 'index', ...
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
     my($fields) = $self->{$_PACKAGE};
 

@@ -127,21 +127,21 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'email'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if ($fp->get('email')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where email=?', $fp->get('email'));
     }
 
@@ -199,7 +199,7 @@ sub get_user {
     my($self) = @_;
 
     my($user) = Bivio::Biz::User->new();
-    $user->find(Bivio::Biz::FindParams->new({'id' => $self->get('user_')}));
+    $user->load(Bivio::Biz::FindParams->new({'id' => $self->get('user_')}));
     return $user;
 }
 

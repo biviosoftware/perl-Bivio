@@ -123,21 +123,21 @@ sub delete {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Finds the user given the specified search parameters. Valid find keys
 are 'club' and 'user_'.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
 
     # clear the status from previous invocations
     $self->get_status()->clear();
 
     if ($fp->has_keys('club', 'user_')) {
-	return $_SQL_SUPPORT->find($self, $self->internal_get_fields(),
+	return $_SQL_SUPPORT->load($self, $self->internal_get_fields(),
 		'where club=? and user_=?', $fp->get('club'),
 		$fp->get('user_'));
     }

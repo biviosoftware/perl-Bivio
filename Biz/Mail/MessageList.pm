@@ -83,13 +83,13 @@ sub new {
 
 =for html <a name="find"></a>
 
-=head2 find(FindParams fp) : boolean
+=head2 load(FindParams fp) : boolean
 
 Loads the list given the specified search parameters.
 
 =cut
 
-sub find {
+sub load {
     my($self, $fp) = @_;
     my($fields) = $self->{$_PACKAGE};
 
@@ -105,7 +105,7 @@ sub find {
 	$fields->{size} = $_SQL_SUPPORT->get_result_set_size($self,
 		'where club=?', $fp->get('club'));
 
-	$_SQL_SUPPORT->find($self, $self->internal_get_rows(),
+	$_SQL_SUPPORT->load($self, $self->internal_get_rows(),
 		$fields->{index}, 15, 'where club=?'.$self->get_order_by($fp),
 		$fp->get('club'));
     }
@@ -114,7 +114,7 @@ sub find {
     if ($fp->has_keys('id', 'club')) {
 
 	my($message) = Bivio::Biz::Mail::Message->new();
-	$fields->{selected} = $message->find($fp) ? $message : undef;
+	$fields->{selected} = $message->load($fp) ? $message : undef;
     }
     else {
 	$fields->{selected} = undef;
