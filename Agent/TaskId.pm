@@ -686,7 +686,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Model::RealmInviteAcceptForm
         Bivio::UI::HTML::General::InviteAccept
-        cancel=HTTP_DOCUMENT
+        cancel=MY_CLUB_SITE
         next=CLUB_USER_NEW
         NOT_FOUND=REALM_INVITE_NOT_FOUND
     )],
