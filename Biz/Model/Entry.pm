@@ -80,7 +80,6 @@ sub internal_initialize {
             remark => ['Bivio::Type::Text',
     		Bivio::SQL::Constraint::NONE()],
         },
-#TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
 #TODO: causes Deep recursion die
 #	    [qw(entry_id RealmAccountEntry.entry_id
@@ -88,6 +87,7 @@ sub internal_initialize {
 #		MemberEntry.entry_id)],
 	    [qw(realm_transaction_id RealmTransaction.realm_transaction_id)],
 	],
+	auth_id => 'realm_id',
     };
 }
 

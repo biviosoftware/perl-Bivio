@@ -105,6 +105,7 @@ sub internal_initialize {
 	other => [
 	    [qw(realm_instrument_id RealmInstrument.realm_instrument_id)],
 	],
+	auth_id => 'realm_id',
     };
 }
 

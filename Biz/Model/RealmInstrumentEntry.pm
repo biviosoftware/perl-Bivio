@@ -104,11 +104,11 @@ sub internal_initialize {
             external_identifier => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NOT_NULL()],
         },
-#TODO: SECURITY: Not authenticated, but ok to load other models?
 	other => [
 	    [qw(entry_id Entry.entry_id)],
 	    [qw(realm_instrument_id RealmInstrument.realm_instrument_id)],
 	],
+	auth_id => 'realm_id',
     };
 }
 

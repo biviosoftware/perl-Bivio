@@ -161,7 +161,7 @@ sub internal_initialize {
             external_password => ['Bivio::Type::Name',
     		Bivio::SQL::Constraint::NONE()],
         },
-#	auth_id => 'realm_id',
+	auth_id => 'realm_id',
 #	other => [
 #	    [qw(realm_id RealmOwner.realm_id)],
 #	],

@@ -100,6 +100,7 @@ sub internal_initialize {
 	    [qw(realm_account_id RealmAccount.realm_account_id)],
 	    [qw(entry_id RealmInstrumentEntry.entry_id)],
 	],
+	auth_id => 'realm_id',
     };
 }
 
