@@ -456,6 +456,20 @@ sub is_member_or_withdrawn {
 	    $list_model->get($model_prefix.'role'));
 }
 
+=for html <a name="unauth_load_user_or_die"></a>
+
+=head2 unauth_load_user_or_die() : Bivio::Biz::Model::User
+
+Loads the user for this RealmUser.
+
+=cut
+
+sub unauth_load_user_or_die {
+    my($self) = @_;
+    return Bivio::Biz::Model->new($self->get_request, 'User')
+	    ->unauth_load_or_die(user_id => $self->get('user_id'));
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
