@@ -83,21 +83,15 @@ sub process_request {
 	my($owner) = $auth_realm->unsafe_get('owner');
 	if ($owner) {
 	    my($f) = $auth_realm->get('owner_id_field');
+	    # owner is put by PropertyModel
 	    $req->put(auth_owner_id => $owner->get($f),
 		    auth_owner_id_field => $f);
 	}
 	my($auth_role) = $auth_realm->get_user_role($auth_user, $req);
-	my($reply) = $req->get('reply');
-	unless ($auth_realm->can_role_execute_task($auth_role, $task_id)) {
-	    Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
-		    {auth_user => $auth_user, entity => $auth_realm,
-			auth_role => $auth_role, operation => $task_id});
-	}
 	my($task) = Bivio::Agent::Task->get_by_id($task_id);
-	$req->put(task => $task, auth_role => $auth_role,
-		$owner ? (ref($owner) => $owner) : ());
+	$req->put(auth_role => $auth_role, task => $task);
+	# Task checks authorization
 	$task->execute($req);
-	$reply->flush;
     });
     Bivio::Agent::Request->clear_current;
     return $die;

@@ -99,15 +99,25 @@ sub new {
 
 =head2 execute(Bivio::Agent::Request req)
 
-Executes the task for the specified request.
+Executes the task for the specified request.  Checks that the request is
+authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
+Calls C<reply->flush>.
 
-B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.>
+B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
+the fact that L<handle_die|"handle_die"> is called to execute rollback.
 
 =cut
 
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($auth_realm, $auth_role) = $req->get('auth_realm', 'auth_role');
+    unless ($auth_realm->can_role_execute_task($auth_role, $fields->{id})) {
+	my($auth_user) = $req->get('auth_user');
+	Bivio::Die->die($auth_user ? 'FORBIDDEN' : 'AUTH_REQUIRED',
+		{auth_user => $auth_user, entity => $auth_realm,
+		    auth_role => $auth_role, operation => $fields->{id}});
+    }
     $fields->{action_class} && $fields->{action_class}->execute($req);
     $fields->{view} && $fields->{view}->execute($req);
     if ($fields->{action_class}) {
@@ -120,7 +130,8 @@ sub execute {
 	Bivio::Mail::Common->send_queued_messages;
 #TODO: Garbage collect state that doesn't agree with SQL DB
     }
-    # Note rollback is in handle_die
+    # Note: rollback is in handle_die
+    $req->get('reply')->flush;
     return;
 }
 
