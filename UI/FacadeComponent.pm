@@ -534,6 +534,7 @@ sub value {
     my($self, $name, $value) = @_;
     _assert_writable($self);
     my($map) = $self->[$_IDI]->{map};
+#TODO: may want to downcase key, otherwise Task->value() may be confusing
     $self->die($name, 'group not found') unless $map->{$name};
 
     # Clear out old state and reinitialize
