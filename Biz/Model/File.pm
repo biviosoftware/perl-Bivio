@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::File;
 use strict;
 $Bivio::Biz::Model::File::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::File::VERSION;
 
 =head1 NAME
 
@@ -22,7 +23,7 @@ L<Bivio::Biz::PropertyModel>
 =cut
 
 use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::File::ISA = qw(Bivio::Biz::PropertyModel);
+@Bivio::Biz::Model::File::ISA = ('Bivio::Biz::PropertyModel');
 
 =head1 DESCRIPTION
 
@@ -538,33 +539,41 @@ sub to_kbytes {
 
 =for html <a name="update"></a>
 
-=head2 update(hash_ref new_values, boolean in_update_directory)
+=head2 update(hash_ref new_values)
 
-B<NOT SUPPORTED.>
+Can update everything except I<is_directory>, I<bytes>,
+and I<volume>.
+
+Automatically sets I<bytes> and I<name_sort>.
 
 =cut
 
 sub update {
     my($self, $new_values, $in_update_directory) = @_;
-    die("only works from _update_directory, sorry")
-	    unless $in_update_directory;
-#TODO: Need to implement update for files
-#    my($properties) = $self->internal_get;
-#    $new_values->{modified_date_time} = Bivio::Type::DateTime->now()
-#	    unless $new_values->{modified_date_time};
-#    $new_values->{user_id} =
-#	    $self->get_request->get('auth_user')->get('realm_id')
-#	    unless $new_values->{user_id};
-#    foreach my $k (qw(bytes is_directory directory_id)) {
-#	$self->throw_die('DIE', "can't set $k in update")
-#		if exists($new_values->{$k});
-#    }
-#    if (exists($new_values->{content})) {
-#	my($c) = $new_values->{content};
-#	my($bytes) = -$properties->{bytes};
-#	$bytes += $new_values->{bytes} = ref($c) ? length($$c) : 0;
-#    }
+    Bivio::IO::Alert->warn_deprecated("don't pass second arg")
+		if $in_update_directory;
+    my($req) = $self->get_request;
+    my($properties) = $self->internal_get;
+    $new_values->{modified_date_time} = Bivio::Type::DateTime->now()
+	    unless $new_values->{modified_date_time};
+    $new_values->{user_id} = $req->get('auth_user')->get('realm_id')
+	    unless $new_values->{user_id};
+    foreach my $k (qw(bytes is_directory volume)) {
+	$self->throw_die('DIE', "can't set $k in update")
+		if exists($new_values->{$k});
+    }
+
+    $new_values->{name_sort} = lc($new_values->{name}) if $new_values->{name};
+
+    my($bytes);
+    if (exists($new_values->{content})) {
+	my($c) = $new_values->{content};
+	$new_values->{bytes} = ref($c) ? length($$c) : 0;
+	$bytes = $new_values->{bytes} - $properties->{bytes};
+    }
     $self->SUPER::update($new_values);
+    _update_quota($self, $self->internal_get, $self->to_kbytes($bytes))
+	    if $bytes;
     return;
 }
 
@@ -602,22 +611,28 @@ sub _update_directory {
 	    user_id => $properties->{user_id}},
 		1);
     }
-    return unless $kbytes && $properties->{volume}->in_quota;
+    _update_quota($self, $properties, $kbytes)
+	    if $kbytes && $properties->{volume}->in_quota;
 
-    # It is critical we try to reuse the same quota instance, because
-    # multiple operations (read "replace") may occur within the same task.
-    my($fq) = $req->unsafe_get('Bivio::Biz::Model::FileQuota');
-    unless ($fq && $fq->get('realm_id') eq $properties->{'realm_id'}) {
-	$fq = Bivio::Biz::Model::FileQuota->new($req);
-	$fq->load();
-    }
-    $fq->update({kbytes => $fq->get('kbytes') + $kbytes});
+    return;
+}
+
+# _update_directory(Bivio::Biz::Model::File self, hash_ref properties, int kbytes)
+#
+# Adjusts FileQuota if necessary.  Updates the modified_date_time
+# and user_id for directory from the properties.
+#
+sub _update_quota {
+    my($self, $properties, $kbytes) = @_;
+    Bivio::Biz::Model::FileQuota->get_current_or_load(
+	    $self->get_request, $properties->{realm_id})
+		->adjust_kbytes($kbytes);
     return;
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
