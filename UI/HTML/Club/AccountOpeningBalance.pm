@@ -68,7 +68,7 @@ EOF
 	['petty_cash', 'Petty Cash Balance', <<'EOF'],
 The opening balance of the club's non-deductible account.
 EOF
-	['suspense', 'Suspence Balance', <<'EOF'],
+	['suspense', 'Suspense Balance', <<'EOF'],
 The opening balance of the club's suspense account.
 EOF
     ]));
