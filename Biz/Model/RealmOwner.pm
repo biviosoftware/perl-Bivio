@@ -706,6 +706,27 @@ sub invalidate_password {
     return;
 }
 
+=for html <a name="is_auth_user"></a>
+
+=head2 is_auth_user() : boolean
+
+=head2 static is_auth_user(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if the current row is the request's auth_user.
+
+
+=cut
+
+sub is_auth_user {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    my($auth_user) = $list_model->get_request->get('auth_user');
+    return 0 unless $auth_user;
+    return $list_model->get($model_prefix.'realm_id')
+	    eq $auth_user->get('realm_id') ? 1 : 0;
+}
+
 =for html <a name="is_default"></a>
 
 =head2 is_default() : boolean
