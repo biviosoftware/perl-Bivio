@@ -670,6 +670,26 @@ sub internal_initialize {
     };
 }
 
+=for html <a name="is_name_eq_email"></a>
+
+=head2 static is_name_eq_email(Bivio::Agent::Request req, string name, string email) : boolean
+
+If I<name> points to I<email>, returns true.  Caller should
+put error C<EMAIL_LOOP> on the email.  If I<name> or I<email>
+C<undef>, returns false.
+
+=cut
+
+sub is_name_eq_email {
+    my($self, $req, $name, $email) = @_;
+    return 0 unless defined($name) && defined($email);
+#TODO: Make into a global
+    my($mail_host) = $req->get('mail_host');
+#TODO: ANY OTHER mail_host aliases?
+    return $email eq $name.'@'.$mail_host
+	    || $email eq $name.'@www.'.$mail_host;
+}
+
 =for html <a name="unauth_load_by_email"></a>
 
 =head2 unauth_load_by_email(string email) : boolean
