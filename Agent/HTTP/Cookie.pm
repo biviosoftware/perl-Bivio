@@ -621,16 +621,14 @@ sub _parse {
 	# are time synchronized.
 	unless ($v{$_TIME_FIELD} && $v{$_TIME_FIELD} <= time + $_TIME_SLOP
 	       && $v{$_TIME_FIELD} > EPOCH()) {
-	    # Bad cookie
-	    _trace('unable to decrypt cookie: key=', $k, ', value=', $v)
-		    if $_TRACE;
-	    # This will help us track users who hack cookies.
-#	    Bivio::IO::Alert->warn('invalid ',
-#		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
-#		    ' cookie: ', \@v);
+	    # Bad cookie.  This will help us track users who have
+	    # cookie problems.
+	    Bivio::IO::Alert->warn('invalid ',
+		    $k eq $_VOLATILE_TAG ? 'volatile' : 'persistent',
+		    ' cookie: encrypted=', $v, ' decrypted=', \@v);
 
 	    $bad = 1;
-	    # fall through, so we can see the fields in the warning below
+	    # fall through, so we can see other bad cookies
 	}
 
 	# Copy over all the field values; they will be parsed by the handlers
