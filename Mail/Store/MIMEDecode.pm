@@ -314,7 +314,7 @@ sub _parse_msg_line {
     $str =~ s/\<.*\>//g;
     #stripped out <...> tags. If there's a lone '<' we
     #are likely starting a multiline tag
-    if ($str =~ s/\<[a-z][A-Z]*/g) { #begin HTML tag
+    if ($str =~ s/\<[a-z][A-Z]*//g) { 
 	$multiline = 1;
     }
     if ($str =~ s/.*\>//g ) {
