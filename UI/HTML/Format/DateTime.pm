@@ -62,7 +62,7 @@ sub get_widget_value {
 	    $mode || 'DATE_TIME')->as_int;
     # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
     return (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
-	    .($m == 1 ? ' ' : '')
+	    .($m == 3 ? ' ' : '')
 	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
 	    # This is even correct if just a time, no?
 	    .' GMT';
