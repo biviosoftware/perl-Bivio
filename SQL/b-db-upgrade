@@ -132,6 +132,149 @@ EOF
     return;
 }
 
+# _fix_cost_basis_for_commissions()
+#
+# Changes the external_identifier on commissions to the same as the buy
+# identifier.
+#
+sub _fix_cost_basis_for_commissions {
+
+    # find commission with external_identifier of 0
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_owner_t.name,
+                entry_t.realm_transaction_id, entry_t.entry_id,
+                realm_instrument_entry_t.realm_instrument_id,
+                entry_t.amount
+            FROM realm_owner_t, entry_t, realm_instrument_entry_t
+            WHERE realm_owner_t.realm_id=entry_t.realm_id
+            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_type=?
+            AND external_identifier=?
+            ORDER BY realm_owner_t.name',
+	    [Bivio::Type::EntryType->INSTRUMENT_BUY_COMMISSION->as_sql_param,
+		    '0']);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name, $txn_id, $entry_id, $inst_id, $amount) = @$row;
+	next if $name =~ /_demo_club$/;
+
+	my($count) = _fix_cost_basis_get_count($txn_id);
+
+	# find and correct their external_identifier
+	my($lot) = _fix_cost_basis_get_lot($txn_id);
+	next unless $lot;
+
+	print(STDERR "\n$name, lot = $lot, commission = $amount");
+	Bivio::SQL::Connection->execute('
+                UPDATE realm_instrument_entry_t
+                SET external_identifier=?
+                WHERE entry_id=?',
+		[$lot, $entry_id]);
+
+	# find any sales for that lot, and update the cost basis
+	_fix_sale_cost_basis($inst_id, $lot, $count, $amount);
+    }
+    print(STDERR "\n");
+    return;
+}
+
+# _fix_cost_basis_get_count(string txn_id) : string
+#
+# Returns the number of shares bought for the specified transaction.
+#
+sub _fix_cost_basis_get_count {
+    my($txn_id) = @_;
+    my($count);
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT SUM(realm_instrument_entry_t.count)
+            FROM entry_t, realm_instrument_entry_t
+            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_t.realm_transaction_id=?',
+	    [$txn_id]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	$count = $row->[0];
+    }
+
+    die("couldn't find count") unless $count;
+    return $count;
+}
+
+# _fix_cost_basis_get_lot(string txn_id) : string
+#
+# Returns the lot id associated with the transaction.
+#
+sub _fix_cost_basis_get_lot {
+    my($txn_id) = @_;
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_instrument_entry_t.external_identifier
+            FROM entry_t, realm_instrument_entry_t
+            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_t.tax_basis=1
+            AND entry_t.realm_transaction_id=?
+            AND external_identifier != ?
+            AND external_identifier IS NOT NULL',
+	    [$txn_id, '0']);
+    my($lot);
+    while (my $row = $sth->fetchrow_arrayref) {
+	$lot = $row->[0];
+    }
+    unless ($lot) {
+	use Bivio::Biz::Model::RealmTransaction;
+	my($txn) = Bivio::Biz::Model::RealmTransaction->new();
+	$txn->unauth_load_or_die(realm_transaction_id => $txn_id);
+	print(STDERR "\n** skipping lot $txn_id, probable mutual fund, ".
+		Bivio::Type::Date->to_literal($txn->get('date_time'))." **");
+    }
+    return $lot;
+}
+
+# _fix_sale_cost_basis(string inst_id, string lot, string count, string amount)
+#
+# Updates any sale for the specified lot
+#
+sub _fix_sale_cost_basis {
+    my($inst_id, $lot, $count, $amount) = @_;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT entry_t.entry_id,
+                - realm_instrument_entry_t.count,
+                - entry_t.amount
+            FROM entry_t, realm_instrument_entry_t
+            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_t.tax_basis=1
+            AND entry_type=?
+            AND realm_instrument_entry_t.realm_instrument_id=?
+            and external_identifier=?',
+	    [Bivio::Type::EntryType->INSTRUMENT_SELL->as_sql_param,
+		    $inst_id, $lot]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($entry_id, $sell_count, $sell_amount) = @$row;
+	my($adjustment);
+	# risky, could be a split followed by a partial sale
+	if ($sell_count >= $count) {
+	    $adjustment = $amount;
+	}
+	else {
+	    $adjustment = Bivio::Type::Amount->round(
+		    Bivio::Type::Amount->mul($amount,
+		    Bivio::Type::Amount->div($sell_count, $count)), 2);
+	}
+	print(STDERR "\n\tadjust cost basis, $sell_amount by $adjustment ".
+		"($sell_count, $count)");
+
+	Bivio::SQL::Connection->execute('
+                UPDATE entry_t
+                SET amount=?
+                WHERE entry_id=?',
+		[Bivio::Type::Amount->neg(
+			Bivio::Type::Amount->add($sell_amount, $adjustment)),
+			$entry_id]);
+    }
+    return;
+}
+
+
 # _upgrade()
 #
 # Replace this method with the table/data manipulations.
@@ -158,6 +301,8 @@ sub _upgrade {
 	print(STDERR "\tcomputing acquisition dates\n");
 	Bivio::Data::EW::DateCalculator->generate_acquisition_dates($realm);
     }
+
+    _fix_cost_basis_for_commissions();
     return;
 }
 
