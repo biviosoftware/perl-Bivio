@@ -405,8 +405,8 @@ EOF
 
 =head2 get_cost_per_share(string date) : hash_ref
 
-Returns the average cost per share for all the RealmInstruments owned
-by the realm. Returns realm_instrument_id => cost.
+Returns the total cost per share for all the RealmInstruments owned
+by the realm. Returns realm_instrument_id => [cost per share, total cost].
 
 =cut
 
@@ -468,8 +468,8 @@ EOF
     }
     foreach my $id (keys(%$result)) {
 	my($total_cost, $total_count) = @{$result->{$id}};
-	$result->{$id} = $total_count == 0 ? 0
-	    : $_M->div($total_cost, $total_count);
+	next if $total_count == 0;
+	$result->{$id} = [$_M->div($total_cost, $total_count), $total_cost];
     }
     return $result;
 }
