@@ -9,6 +9,10 @@ $_ = $Bivio::Agent::Task::VERSION;
 
 Bivio::Agent::Task - defines the tuple (id, @items)
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Agent::Task;
@@ -494,7 +498,7 @@ sub _init_executables {
 	if ($c->isa('Bivio::Biz::FormModel')) {
 	    Bivio::Die->die($attrs->{id}, ': too many form models')
 			if $attrs->{form_model};
-	    $attrs->{form_model} = $class;
+	    $attrs->{form_model} = ref($c) || $c;
 	}
 	push(@new_items, [$c, $method, []]);
     }
