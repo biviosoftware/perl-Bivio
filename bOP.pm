@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Delegate::SimpleTaskId->FAVICON_ICO added
+  * Bivio::Ext::DBI changed die to warning on connection errors
+  * Bivio::SQL::Connection->execute changed catch back to eval
+
+  Revision 1.26  2002/10/23 22:48:20  nagler
+  * Bivio::Biz::Model::MailReceiveDispatchForm.parse_recipient parses x-x.realm correctly
+  * Bivio::Biz::Model::UserLoginForm::_assert_login/realm check for invalid password
   * Bivio::Ext::DBI prints better error messages when bad config
   * Bivio::Math::EMA->value returns value of EMA at any time
   * Bivio::Test::HTMLParser::Forms and Bivio::Test::Language::HTTP minor bugs
