@@ -1033,7 +1033,7 @@ sub load_all {
 
 =head2 load_page(hash_ref query)
 
-=head2 load_page(Bivio::SQL::ListQuery query)
+=head2 load_page(Bivio::SQL::ListQuery query) : self
 
 Loads the specified page in I<query> which must be a form
 acceptable to L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
@@ -1058,7 +1058,7 @@ sub load_page {
 	query => $query}) if $query->unsafe_get('this');
 
     _unauth_load($self, $query);
-    return;
+    return $self;
 }
 
 =for html <a name="load_this"></a>
