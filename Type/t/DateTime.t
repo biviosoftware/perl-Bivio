@@ -58,6 +58,22 @@ Bivio::Test->unit([
 	    ['2440588 0', -86401] => ['2440586 86399'],
 	    ['2440588 0', -1] => ['2440587 86399'],
 	],
+	{
+	    method => 'set_end_of_month',
+	    compute_params => sub {
+		my($obj, $method, $params) = @_;
+		return [$obj->from_literal_or_die($params->[0])];
+	    },
+	    result_ok => sub {
+		my($obj, $method, $params, $expect, $actual) = @_;
+		return $actual->[0] eq $obj->from_literal_or_die($expect->[0]);
+	    },
+	} => [
+	    ['12/1/2000 0:0:0'] => ['12/31/2000 0:0:0'],
+	    ['2/1/2000 0:0:0'] => ['2/29/2000 0:0:0'],
+	    ['2/26/1900 0:0:0'] => ['2/28/1900 0:0:0'],
+	    ['2/26/1980 0:32:0'] => ['2/29/1980 0:32:0'],
+	],
     ],
     'Bivio::Type::Date' => [
 	{
