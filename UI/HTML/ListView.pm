@@ -126,7 +126,7 @@ sub render {
     $self->render_body($model, $req);
     $req->print('</table>');
 
-=html
+=for comment
 
 <table width="100%" border=0 cellpadding=5 cellspacing=0>
 <tr bgcolor="#E0E0FF">
