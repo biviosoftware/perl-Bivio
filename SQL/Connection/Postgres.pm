@@ -274,7 +274,6 @@ sub _fixup_outer_join {
     }
     # Remove target table(s) from FROM and add $joins to FROM
     foreach my $source_table (sort(keys(%$joins))) {
-print STDERR $source_table, "\n";
 	$from_where =~ s/(?=FROMPOSTGRES-FIXME)(.*?\b$source_table\b)(?=\s*,|\s+WHERE\b)/$1$joins->{$source_table}/is
 	    || Bivio::Die->die('failed to insert outer join "',
 		$joins->{$source_table}, '" into ', $from_where);
