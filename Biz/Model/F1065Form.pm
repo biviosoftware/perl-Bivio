@@ -54,61 +54,70 @@ my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 Loads the form values.
 
-1065 page 1
+  1065 page 1
 
-name    Club.RealmOwner.display_name
-address Club.Address.street1
-        Club.Address.street2
-        Club.Address.city
-        Club.Address.state
-        Club.Address.zip
-A       F1065Form.business_activity
-B       F1065Form.principal_service
-C       F1065Form.business_code
-D       Club.TaxId.tax_id
-E       F1065Form.business_start_date
-G       F1065Form.return_type
-H       F1065Form.accounting_method
-I       F1065Form.number_of_k1s
+  name    Club.RealmOwner.display_name
+  address Club.Address.street1
+          Club.Address.street2
+          Club.Address.city
+          Club.Address.state
+          Club.Address.zip
+  A       F1065Form.business_activity
+  B       F1065Form.principal_service
+  C       F1065Form.business_code
+  D       Club.TaxId.tax_id
+  E       F1065Form.business_start_date
+  G       F1065Form.return_type
+  H       F1065Form.accounting_method
+  I       F1065Form.number_of_k1s
 
-1065 page 2 Schedule B
+  1065 page 2 Schedule B
 
- 1a     F1065Form.partnership_type
- 2      F1065Form.partner_is_partnership
- 3      F1065Form.partnership_is_partner
- 4      F1065Form.consolidated_audit
- 5      F1065Form.three_requirements
- 6      F1065Form.foreign_partners
- 7      F1065Form.publicly_traded
- 8      F1065Form.tax_shelter
- 9      F1065Form.foreign_account
- 9      F1065Form.foreign_account_country
-10      F1065Form.foreign_trust
-11      F1065Form.withdrawal
+   1a     F1065Form.partnership_type
+   2      F1065Form.partner_is_partnership
+   3      F1065Form.partnership_is_partner
+   4      F1065Form.consolidated_audit
+   5      F1065Form.three_requirements
+   6      F1065Form.foreign_partners
+   7      F1065Form.publicly_traded
+   8      F1065Form.tax_shelter
+   9      F1065Form.foreign_account
+   9      F1065Form.foreign_account_country
+  10      F1065Form.foreign_trust
+  11      F1065Form.transfer_of_interest
+  bottom
+  id      User.TaxId.tax_id
+  name    User.RealmOwner.display_name
+  address User.Address.street1
+          User.Address.street2
+          User.Address.city
+          User.Address.state
+          User.Address.zip
 
-1065 page 3 Schedule K
+  1065 page 3 Schedule K
 
- 4a     F1065Form.interest_income
- 4b     F1065Form.dividend_income
- 4d     F1065Form.net_stcg
- 4e     F1065Form.net_ltcg
- 4f     F1065Form.other_portfolio_income
-10      F1065Form.portfolio_deductions
-14b(1)  F1065Form.investment_income
-14b(2)  F1065Form.investment_expenses
-17a     F1065Form.foreign_income_type
-17c     F1065Form.foreign_income
-17e     F1065Form.foreign_tax_type
-17e     F1065Form.foreign_tax
-19      F1065Form.tax_exempt_interest
-22      F1065Form.cash_distribution
-23      F1065Form.property_distribution
+   4a     F1065Form.interest_income
+   4b     F1065Form.dividend_income
+   4d     F1065Form.net_stcg
+   4e     F1065Form.net_ltcg
+   4f     F1065Form.other_portfolio_income
+  10      F1065Form.portfolio_deductions
+  14b(1)  F1065Form.investment_income
+  14b(2)  F1065Form.investment_expenses
+  17a     F1065Form.foreign_income_type
+  17b     F1065Form.foreign_income_country
+  17c     F1065Form.foreign_income
+  17e     F1065Form.foreign_tax_type
+  17e     F1065Form.foreign_tax
+  19      F1065Form.tax_exempt_interest
+  22      F1065Form.cash_distribution
+  23      F1065Form.property_distribution
 
-1065 page 4 Analysis of Net Income
+  1065 page 4 Analysis of Net Income
 
-1       F1065Form.net_income
-2a(ii)  F1065Form.active_income
-2a(iii) F1065Form.passive_income
+  1       F1065Form.net_income
+  2a(ii)  F1065Form.active_income
+  2a(iii) F1065Form.passive_income
 
 =cut
 
@@ -127,6 +136,8 @@ sub execute_empty {
     $income->next_row || die("couldn't load income/expense list");
     $income->adjust_for_allocations;
 
+    my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDForm');
+
     $properties->{business_activity} = 'Finance';
     $properties->{principal_service} = 'Investment Club';
     $properties->{business_code} = '525990';
@@ -136,7 +147,7 @@ sub execute_empty {
 	    Bivio::Type::F1065AccountingMethod->CASH;
     $properties->{number_of_k1s} = _get_member_count($self, $date);
     $properties->{partnership_type} =
-	    Bivio::Type::F1065Partnership->GENERAL_PARTNERSHIP;
+	    Bivio::Type::F1065Partnership->GENERAL;
     $properties->{partner_is_partnership} = 0;
     $properties->{partnership_is_partner} = 0;
     $properties->{consolidated_audit} = 1;
@@ -147,27 +158,29 @@ sub execute_empty {
     $properties->{foreign_account} = 0;
     $properties->{foreign_account_country} = '';
     $properties->{foreign_trust} = 0;
-    $properties->{withdrawal} = _has_withdrawal($self, $date);
+    $properties->{transfer_of_interest} = _has_transfer_of_interest($self,
+	    $date);
 
     $properties->{interest_income} = $income->get(
 	    $tax->INTEREST->get_short_desc);
     $properties->{dividend_income} = $income->get(
 	    $tax->DIVIDEND->get_short_desc);
-    $properties->{net_stcg} = $income->get(
-	    $tax->SHORT_TERM_CAPITAL_GAIN->get_short_desc);
-    $properties->{net_ltcg} = $income->get(
-	    $tax->LONG_TERM_CAPITAL_GAIN->get_short_desc);
+    $properties->{net_stcg} = $schedule_d->get('net_stcg');
+    $properties->{net_ltcg} = $schedule_d->get('net_ltcg');
     $properties->{other_portfolio_income} = $income->get(
 	    $tax->MISC_INCOME->get_short_desc);
     $properties->{portfolio_deductions} = Bivio::Type::Amount->neg(
 	    $income->get($tax->MISC_EXPENSE->get_short_desc));
-    $properties->{investment_income} = _get_investment_income($self,
+    $properties->{investment_income} = $self->get_investment_income(
 	    $properties);
     $properties->{investment_expenses} = $properties->{portfolio_deductions};
-    $properties->{foreign_income_type} = 'Passive';
-    $properties->{foreign_income} = _get_foreign_income($self, $date);
+    $properties->{foreign_income} = $self->get_foreign_income(
+	    $self->get_request, $date);
     $properties->{foreign_tax} = Bivio::Type::Amount->neg($income->get(
 	    $tax->FOREIGN_TAX->get_short_desc));
+    $properties->{foreign_income_country} = '';
+    $properties->{foreign_income_type} = $properties->{foreign_tax} == 0
+	    ? '' : 'Passive';
     $properties->{foreign_tax_type} = $properties->{foreign_tax} == 0
 	    ? Bivio::Type::F1065ForeignTax->UNKNOWN
 	    : Bivio::Type::F1065ForeignTax->PAID;
@@ -180,6 +193,85 @@ sub execute_empty {
 
     _calculate_income($self, $properties);
     return;
+}
+
+=for html <a name="get_foreign_income"></a>
+
+=head2 static get_foreign_income(Bivio::Agent::Request req, string date) : string
+
+Returns the amount of foreign income for the specified year.
+
+=cut
+
+sub get_foreign_income {
+    my(undef, $req, $date) = @_;
+
+    # get tax year start
+    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
+	    $date);
+
+    my($total_amount) = 0;
+    # get the foreign tax entires within the year
+    my($date_param) = Bivio::Type::DateTime->from_sql_value(
+	    'realm_transaction_t.date_time');
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT $date_param,
+                entry_t.amount,
+                realm_instrument_entry_t.realm_instrument_id
+            FROM realm_transaction_t, entry_t, realm_instrument_entry_t,
+                realm_instrument_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =entry_t.realm_transaction_id
+            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND realm_instrument_entry_t.realm_instrument_id
+                =realm_instrument_t.realm_instrument_id
+            AND entry_t.tax_category=?
+            AND realm_transaction_t.date_time BETWEEN
+                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+            AND realm_transaction_t.realm_id=?",
+	    [Bivio::Type::TaxCategory::FOREIGN_TAX->as_int,
+		    $start_date, $date,
+		    $req->get('auth_id')]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($date, $amount, $inst_id) = @$row;
+
+	$amount = Bivio::Type::Amount->neg($amount);
+	$total_amount = Bivio::Type::Amount->add($total_amount, $amount);
+
+	my($div_amount) = 0;
+	# get the corresponding dividend
+	my($sth2) = Bivio::SQL::Connection->execute("
+                SELECT entry_t.amount
+                FROM realm_transaction_t, entry_t, realm_instrument_entry_t
+                WHERE realm_transaction_t.realm_transaction_id
+                    =entry_t.realm_transaction_id
+                AND entry_t.entry_id=realm_instrument_entry_t.entry_id
+                AND realm_instrument_entry_t.realm_instrument_id=?
+                AND entry_t.tax_category=?
+                AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
+                AND realm_transaction_t.realm_id=?",
+		[$inst_id, Bivio::Type::TaxCategory::DIVIDEND->as_int,
+			$date, $req->get('auth_id')]);
+	while (my $row2 = $sth2->fetchrow_arrayref) {
+	    $div_amount = $row2->[0];
+	}
+	$total_amount = Bivio::Type::Amount->add($total_amount, $div_amount);
+    }
+    return $total_amount;
+}
+
+=for html <a name="get_investment_income"></a>
+
+=head2 static get_investment_income(hash_ref properties) : string
+
+Returns the investment_income amount calculated from existing properties.
+
+=cut
+
+sub get_investment_income {
+    my(undef, $properties) = @_;
+    return _add($properties,
+	    qw(interest_income dividend_income other_portfolio_income));
 }
 
 =for html <a name="internal_initialize"></a>
@@ -285,7 +377,7 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'withdrawal',
+		name => 'transfer_of_interest',
 		type => 'Boolean',
 		constraint => 'NONE',
 	    },
@@ -331,6 +423,11 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'foreign_income_type',
+		type => 'Line',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'foreign_income_country',
 		type => 'Line',
 		constraint => 'NONE',
 	    },
@@ -434,83 +531,16 @@ sub _get_cash_withdrawal_amount {
 
     unless (exists($fields->{cash_withdrawal})) {
 	my($entry_type) = 'Bivio::Type::EntryType';
-	$fields->{cash_withdrawal} = _get_withdrawal_amount($self, $date, [
-		$entry_type->MEMBER_WITHDRAWAL_FULL_CASH->as_int,
-		$entry_type->MEMBER_WITHDRAWAL_PARTIAL_CASH->as_int]);
+	$fields->{cash_withdrawal} = _get_withdrawal_amount($self, $date,
+		Bivio::Type::EntryClass->CASH,
+		[
+		    $entry_type->MEMBER_WITHDRAWAL_FULL_CASH->as_int,
+		    $entry_type->MEMBER_WITHDRAWAL_PARTIAL_CASH->as_int,
+		    $entry_type->MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
+		    $entry_type->MEMBER_WITHDRAWAL_PARTIAL_STOCK->as_int,
+		]);
     };
     return $fields->{cash_withdrawal};
-}
-
-# _get_foreign_income(string date) : string
-#
-# Returns the amount of foreign income for the specified year.
-#
-sub _get_foreign_income {
-    my($self, $date) = @_;
-
-    # get tax year start
-    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
-	    $date);
-
-    my($total_amount) = 0;
-    # get the foreign tax entires within the year
-    my($date_param) = Bivio::Type::DateTime->from_sql_value(
-	    'realm_transaction_t.date_time');
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT $date_param,
-                entry_t.amount,
-                realm_instrument_entry_t.realm_instrument_id
-            FROM realm_transaction_t, entry_t, realm_instrument_entry_t,
-                realm_instrument_t
-            WHERE realm_transaction_t.realm_transaction_id
-                =entry_t.realm_transaction_id
-            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND realm_instrument_entry_t.realm_instrument_id
-                =realm_instrument_t.realm_instrument_id
-            AND entry_t.tax_category=?
-            AND realm_transaction_t.date_time BETWEEN
-                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
-            AND realm_transaction_t.realm_id=?",
-	    [Bivio::Type::TaxCategory::FOREIGN_TAX->as_int,
-		    $start_date, $date,
-		    $self->get_request->get('auth_id')]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($date, $amount, $inst_id) = @$row;
-
-	$amount = Bivio::Type::Amount->neg($amount);
-	$total_amount = Bivio::Type::Amount->add($total_amount, $amount);
-
-	my($div_amount) = 0;
-	# get the corresponding dividend
-	my($sth2) = Bivio::SQL::Connection->execute("
-                SELECT entry_t.amount
-                FROM realm_transaction_t, entry_t, realm_instrument_entry_t
-                WHERE realm_transaction_t.realm_transaction_id
-                    =entry_t.realm_transaction_id
-                AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-                AND realm_instrument_entry_t.realm_instrument_id=?
-                AND entry_t.tax_category=?
-                AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
-                AND realm_transaction_t.realm_id=?",
-		[$inst_id, Bivio::Type::TaxCategory::DIVIDEND->as_int,
-			$date, $self->get_request->get('auth_id')]);
-	while (my $row2 = $sth2->fetchrow_arrayref) {
-	    $div_amount = $row2->[0];
-	}
-	$total_amount = Bivio::Type::Amount->add($total_amount, $div_amount);
-    }
-    return $total_amount;
-}
-
-# _get_investment_income(hash_ref properties) : string
-#
-# Returns the total investment income.
-#
-sub _get_investment_income {
-    my($self, $properties) = @_;
-
-    return _add($properties,
-	    qw(interest_income dividend_income other_portfolio_income));
 }
 
 # _get_member_count(string date) : int
@@ -552,19 +582,32 @@ sub _get_stock_withdraw_amount {
 
     unless (exists($fields->{stock_withdrawal})) {
 	my($entry_type) = 'Bivio::Type::EntryType';
-	$fields->{stock_withdrawal} = _get_withdrawal_amount($self, $date, [
-		$entry_type->MEMBER_WITHDRAWAL_FULL_STOCK->as_int,
-		$entry_type->MEMBER_WITHDRAWAL_PARTIAL_STOCK->as_int]);
+	$fields->{stock_withdrawal} = _get_withdrawal_amount($self, $date,
+		Bivio::Type::EntryClass->INSTRUMENT,
+		[$entry_type->INSTRUMENT_TRANSFER->as_int]);
     }
     return $fields->{stock_withdrawal};
 }
 
-# _get_withdrawal_amount(string date, array_ref type) : string
+# _get_withdrawal_amount(string date, Bivio::Type::EntryClass class, array_ref type) : string
 #
 # Returns the total withdrawal amount for the specified type and date.
 #
 sub _get_withdrawal_amount {
-    my($self, $date, $type) = @_;
+    my($self, $date, $class, $type) = @_;
+
+    my($param);
+    if (int(@$type) == 1) {
+	$param = '=?';
+    }
+    else {
+	$param = ' in (';
+	for (1 .. int(@$type)) {
+	    $param .= '?,';
+	}
+	chop($param);
+	$param .= ')';
+    }
 
     # get tax year start
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
@@ -575,12 +618,11 @@ sub _get_withdrawal_amount {
             WHERE realm_transaction_t.realm_transaction_id
                 =entry_t.realm_transaction_id
             AND entry_t.class=?
-            AND entry_t.entry_type in (?, ?)
+            AND entry_t.entry_type $param
             AND realm_transaction_t.date_time BETWEEN
                 $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
             AND realm_transaction_t.realm_id=?",
-	    [Bivio::Type::EntryClass::MEMBER->as_int,
-		    @$type, $start_date, $date,
+	    [$class->as_int, @$type, $start_date, $date,
 		    $self->get_request->get('auth_id')]);
 
     my($amount) = 0;
@@ -590,18 +632,17 @@ sub _get_withdrawal_amount {
     return $amount;
 }
 
-# _has_withdrawal(string date) : boolean
+# _has_transfer_of_interest(string date) : boolean
 #
-# Returns 1 if a partner withdrew within the specified tax year.
+# Returns 1 if a partner withdrew in stock within the specified tax year.
 #
-sub _has_withdrawal {
+sub _has_transfer_of_interest {
     my($self, $date) = @_;
 
-    if (_get_cash_withdrawal_amount($self, $date) == 0
-	    && _get_stock_withdraw_amount($self, $date) == 0) {
-	return 0;
+    if (_get_stock_withdraw_amount($self, $date)) {
+	return 1;
     }
-    return 1;
+    return 0;
 }
 
 =head1 COPYRIGHT
