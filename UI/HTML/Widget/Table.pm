@@ -417,8 +417,10 @@ sub create_cell {
 	}
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize =>
-		    UNIVERSAL::isa($type,'Bivio::Type::Number')
-		    && ! UNIVERSAL::isa($type, 'Bivio::Type::Enum'));
+		UNIVERSAL::isa($type,'Bivio::Type::Number')
+		&& ! UNIVERSAL::isa($type, 'Bivio::Type::Enum')
+		&& ! UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')
+		? 1 : 0);
 	}
 	$cell->put(column_use_list => $use_list);
     }
