@@ -860,6 +860,11 @@ __PACKAGE__->compile([
 	undef,
 	'end date must be within the same year as the start date',
     ],
+    DATE_RANGE_GREATER_THAN_ONE_YEAR => [
+	116,
+	undef,
+	'the date range may not be greater than one year',
+    ],
 ]);
 
 #=PRIVATE METHODS
