@@ -2786,31 +2786,30 @@ my(@_CFG) = (
         want_query=0
         help=creating-accounts
      )],
-#TODO: to be added soon...
-#    [qw(
-#        CLUB_ACCOUNTING_IMPORT_REVIEW
-#        245
-#        CLUB
-#        ACCOUNTING_WRITE
-#        ?/accounting/import/review
-#        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
-#        Bivio::Biz::Model::ImportedTransactionTypeForm
-#        Bivio::UI::HTML::Club::AccountingImportReview
-#        next=CLUB_ACCOUNTING_IMPORT_REVIEW
-#    )],
-#    [qw(
-#        CLUB_ACCOUNTING_IMPORT_REVIEW2
-#        246
-#        CLUB
-#        ACCOUNTING_WRITE
-#        ?/accounting/import/review2
-#        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
-#        Bivio::Biz::Model::RealmUserList->execute_load_all_active
-#        Bivio::Biz::Model::RealmAccountList->execute_load_all_active
-#        Bivio::Biz::Model::ImportedTransactionForm
-#        Bivio::UI::HTML::Club::AccountingImportReview
-#        next=CLUB_ACCOUNTING_IMPORT_REVIEW
-#    )],
+    [qw(
+        CLUB_ACCOUNTING_IMPORT_REVIEW
+        245
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/import/review
+        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
+        Bivio::Biz::Model::ImportedTransactionTypeForm
+        Bivio::UI::HTML::Club::AccountingImportReview
+        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+    )],
+    [qw(
+        CLUB_ACCOUNTING_IMPORT_REVIEW2
+        246
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/import/review2
+        Bivio::Biz::Model::ImportedTransactionList->execute_load_all
+        Bivio::Biz::Model::RealmUserList->execute_load_all_active
+        Bivio::Biz::Model::RealmAccountList->execute_load_all_active
+        Bivio::Biz::Model::ImportedTransactionForm
+        Bivio::UI::HTML::Club::AccountingImportReview
+        next=CLUB_ACCOUNTING_IMPORT_REVIEW
+    )],
     [qw(
         CLUB_ACCOUNTING_TAXES_FOREIGN_INCOME
         247
