@@ -436,7 +436,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/detail/buy
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::ExistingInstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -448,7 +448,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/sell
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSellForm
         Bivio::UI::HTML::Club::InstrumentSell
         next=CLUB_ACCOUNTING_INVESTMENT_SELL2
@@ -538,7 +538,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
         Bivio::Type::EntryType->execute_member_payment_fee
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
 	Bivio::Biz::Model::SingleDepositForm
         Bivio::UI::HTML::Club::SingleDeposit
         next=CLUB_ACCOUNTING_MEMBER_LIST
@@ -738,7 +738,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/investment/buy
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentBuyForm
         Bivio::UI::HTML::Club::InstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -824,7 +824,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/income
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentIncomeForm
         Bivio::UI::HTML::Club::InstrumentIncome
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -1078,7 +1078,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/accounting/account/transfer
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::AccountTransferForm
         Bivio::UI::HTML::Club::AccountTransfer
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
@@ -1214,7 +1214,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MultiplePayment
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
-    # Order of lists is important.  RealmValuationAccountList must be last
+    # Order of lists is important.  RealmAccountList must be last
     [qw(
         CLUB_ACCOUNTING_FEE
         131
@@ -1223,7 +1223,7 @@ my(@_CFG) = (
         ?/accounting/fee
         Bivio::Type::EntryType->execute_member_payment_fee
         Bivio::Biz::Model::MemberList->execute_load_all
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::MultipleDepositForm
         Bivio::UI::HTML::Club::MultipleFee
         next=CLUB_ACCOUNTING_MEMBER_LIST
@@ -1868,8 +1868,9 @@ my(@_CFG) = (
         ?/accounting/member/withdrawal
         Bivio::Biz::Model::RealmUserList
         Bivio::Biz::Action::TargetRealm->execute_this_member
-        Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::MemberWithdrawalForm
+        Bivio::Biz::Model::AccountSummaryList->execute_load_valuation_only
         Bivio::UI::HTML::Club::MemberWithdrawal
         next=CLUB_ACCOUNTING_MEMBER_LIST
     )],
