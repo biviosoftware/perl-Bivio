@@ -249,21 +249,7 @@ sub die {
 		? !ref($attrs) ? {message => $attrs}
 			:  {attrs => $attrs} : {};
     }
-    if (defined($code)) {
-	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
-	    unless (eval {
-		my($c) = Bivio::DieCode->from_any($code);
-		$code = $c;
-	    }) {
-		$attrs = {code => $code, attrs => $attrs, program_error => 1};
-		$code = Bivio::DieCode::INVALID_DIE_CODE();
-	    };
-	}
-    }
-    else {
-	$code = Bivio::DieCode::UNKNOWN();
-	$attrs->{program_error} = 1;
-    }
+    $code = _check_code($code, $attrs);
     my($self) = _new($proto, $code, $attrs, $package, $line);
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
 }
@@ -326,7 +312,47 @@ sub is_destroyed {
     return !shift->get('code');
 }
 
+=for html <a name="set_code"></a>
+
+=head2 set_code(Bivio::Type::Enum code, string new_attr, any new_attr_value, ...)
+
+Change the I<code> associated with I<self> and set new attributes.
+
+=cut
+
+sub set_code {
+    my($self, $code, @new_attrs) = @_;
+    my($attrs) = $self->get('attrs');
+    $self->put(code => _check_code($code, $attrs));
+    %$attrs = (%$attrs, @new_attrs) if @new_attrs;
+    return;
+}
+
 #=PRIVATE METHODS
+
+# _check_code(any code, hash_ref attrs) : Bivio::Type::Enum
+#
+# Validates code and sets attributes to error state if invalid.
+#
+sub _check_code {
+    my($code, $attrs) = @_;
+    if (defined($code)) {
+	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
+	    if (my $c = Bivio::DieCode->unsafe_from_any($code)) {
+		$code = $c;
+	    } else {
+		my($a) = {%$attrs};
+		%$attrs = (code => $code, attrs => $a, program_error => 1);
+		$code = Bivio::DieCode::INVALID_DIE_CODE();
+	    }
+	}
+    }
+    else {
+	$code = Bivio::DieCode::UNKNOWN();
+	$attrs->{program_error} = 1;
+    }
+    return $code;
+}
 
 # _handle_die self
 #
