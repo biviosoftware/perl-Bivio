@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    rpms or what's on current host
+  * Bivio::Util::Release->install_stream updates all rpms in stream
+    whether they are on the host or not
+
+  Revision 2.45  2004/12/07 19:44:06  moeller
+  * PetShop warning color now different from error color so the
+    acceptance tests don't think the page is in error
+  * Bivio::Biz::Model::ECPayment added get_amount_sum()
+  * PetShop OrderForm now requires address fields
+  * Bivio::SQL::PropertySupport prints a warning if a primary key value
+    is changed in update()
   * Bivio::Test::HTMLParser::Tables, Bivio::Test::Language::HTTP
     improved error messages
   * Bivio::TypeValue added equals( and as_string()
