@@ -63,7 +63,9 @@ sub internal_initialize {
 	# Allow sorting by name and product_id
 	order_by => [
 	    'Product.name',
-	    'Product.product_id'
+	    'Product.product_id',
+ 	     # For example, to add a column, uncomment this line
+	     # 'Product.description',
 	],
 
 	# Narrows query to just this category_id; selectable by ListQuery
