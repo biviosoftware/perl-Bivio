@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML;
 use strict;
 $Bivio::UI::HTML::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::HTML::VERSION;
 
 =head1 NAME
 
@@ -57,6 +58,7 @@ use Bivio::Die;
 use Bivio::UI::Facade;
 
 #=VARIABLES
+my($_W) = 'Bivio::UI::HTML::Widget';
 # HTML uses all of these
 Bivio::UI::Facade->register(['Bivio::UI::Icon', 'Bivio::UI::Color',
     'Bivio::UI::Font']);
@@ -504,6 +506,16 @@ Initializes Page groups for standard widgets.
 sub initialize_standard_support {
     my($self) = @_;
 
+    # Home page isn't special
+    $self->group(want_secure => 0);
+    $self->group(home_page => '');
+    $self->group(descriptive_page_width => 600);
+
+    $self->group(page_left_margin => 20);
+    $self->group(table_default_align => 'center');
+    $self->group(scene_show_profile => 1);
+    $self->group(scene_header => undef);
+
     # This one is used dynamically by ImageMenu in header_widget
     # widget.  It is not a required field.  Only if you are using
     # ImageMenu.
@@ -522,6 +534,14 @@ sub initialize_standard_support {
     $self->group(logo_icon_width_as_html =>
 	    $self->get_facade->get('Bivio::UI::Icon')
 	    ->get_width_as_html($self->get_value('logo_icon')));
+
+    $self->group(club_counter => $_W->join([
+	[sub {Bivio::Biz::Model::Club->count_all}],
+    ]));
+
+    $self->group(user_counter => $_W->join([
+	[sub {Bivio::Biz::Model::User->count_all}],
+    ]));
     return;
 }
 
@@ -620,7 +640,7 @@ sub widget_from_template {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
