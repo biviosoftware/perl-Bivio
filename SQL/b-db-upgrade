@@ -71,7 +71,7 @@ sub main {
 	version => $VERSION,
 	run_date_time => Bivio::Type::DateTime->now
     });
-    Bivio::SQL::Connection->commit;
+    Bivio::Agent::Task->commit($req);
 
     return 1;
 }
@@ -245,6 +245,7 @@ sub _upgrade {
 
     _upgrade_rename_petty_cash_account();
     _upgrade_tax_beta();
+    _upgrade_set_default_account($req);
     print("\n*** done ***\n");
     return;
 }
@@ -262,6 +263,37 @@ sub _upgrade_rename_petty_cash_account {
             where in_valuation=0',
 	    ['Petty Cash - Off the Books']);
 
+    return;
+}
+
+# _upgrade_set_default_account(Bivio::Agent::Request req)
+#
+# Sets the default account to Broker, if still present.
+#
+sub _upgrade_set_default_account {
+    my($req) = @_;
+
+    use Bivio::Auth::Realm;
+    use Bivio::Data::EW::ClubImporter;
+
+    print("setting default account to Broker\n");
+    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by name',
+            []);
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($realm_id, $name) = @$row;
+        $realm_owner->unauth_load(realm_id => $realm_id);
+        $req->set_realm(Bivio::Auth::Realm->new($realm_owner));
+	Bivio::Die->catch( sub {
+	    Bivio::Data::EW::ClubImporter->set_default_account($req);
+	    print("\t$name\n");
+	});
+	# ignoring failure - the club no longer has an account named Broker
+    }
     return;
 }
 
