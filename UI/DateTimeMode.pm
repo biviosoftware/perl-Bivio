@@ -83,6 +83,7 @@ __PACKAGE__->compile([
     MONTH_AND_DAY => [5],
     FULL_MONTH_DAY_AND_YEAR_UC => [6],
     FULL_MONTH_AND_YEAR_UC => [7],
+    FULL_MONTH => [8],
 ]);
 
 #=PRIVATE METHODS
