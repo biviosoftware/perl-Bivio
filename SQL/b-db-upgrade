@@ -282,6 +282,8 @@ alter table csi_distribution_t drop primary key
 /
 alter table csi_distribution_t add amount_type NUMBER(2)
 /
+UPDATE csi_distribution_t set amount_type=distribution_type
+/
 ALTER TABLE csi_distribution_t
   add constraint csi_distribution_t1
   primary key(csi_id, distribution_date, amount_type)
@@ -290,8 +292,6 @@ ALTER TABLE csi_distribution_t
 ALTER TABLE csi_distribution_t
   add constraint csi_distribution_t3
   check (amount_type between 1 and 2)
-/
-UPDATE csi_distribution_t set amount_type=distribution_type
 /
 alter table csi_distribution_t drop column distribution_type
 /
@@ -302,11 +302,11 @@ alter table csi_fact_sheet_t drop constraint csi_fact_sheet_t3
 /
 alter table csi_fact_sheet_t add fact_function NUMBER(2)
 /
+UPDATE csi_fact_sheet_t set fact_function=fact_op
+/
 ALTER TABLE csi_fact_sheet_t
   add constraint csi_fact_sheet_t3
   check (fact_function between 1 and 3)
-/
-UPDATE csi_fact_sheet_t set fact_function=fact_op
 /
 alter table csi_fact_sheet_t drop column fact_op
 /
