@@ -223,7 +223,6 @@ use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::FormModel;
-use Bivio::Biz::Model::UserRealmList;
 use Bivio::Die;
 use Bivio::HTML;
 use Bivio::IO::Config;
@@ -1130,7 +1129,7 @@ sub set_user {
     if ($user) {
 	# Load the UserRealmList for this user.
 	my($user_id) = $user->get('realm_id');
-	my($list) = Bivio::Biz::Model::UserRealmList->new($self);
+	my($list) = Bivio::Biz::Model->new($self, 'UserRealmList');
 	$list->unauth_load_all({auth_id => $user_id});
 #TODO: This may be quite expensive if lots of realms(?)
 	$user_realms = $list->map_primary_key_to_rows;
@@ -1139,7 +1138,7 @@ sub set_user {
 	$user_realms = {};
     }
     Bivio::Die->die($user, ': not a RealmOwner')
-	    if defined($user) && !$user->isa('Bivio::Biz::Model::RealmOwner');
+	    if defined($user) && !$user->isa('Bivio::Biz::Model');
     $self->put(auth_user => $user,
 	    auth_user_id => $user ? $user->get('realm_id') : undef,
 	    user_realms => $user_realms);
@@ -1260,7 +1259,7 @@ sub _get_realm {
 	    $role = $rr;
 	}
 	return undef unless $realm_id;
-	my($club) = Bivio::Biz::Model::RealmOwner->new($self);
+	my($club) = Bivio::Biz::Model->new($self, 'RealmOwner');
 #TODO: This will bomb if the realm disappeared since (cached) user_realms
 #      was accessed.
 	$club->unauth_load(realm_id => $realm_id);
