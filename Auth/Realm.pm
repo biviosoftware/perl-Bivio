@@ -51,14 +51,17 @@ clubs and users.  General does not have an owner.
 
 Named retrieved from realm owner.  Not defined for the general realm.
 
+=item type : Bivio::Auth::RealmType
+
 =back
 
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
+use Bivio::Agent::TaskId;
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
-use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::Club;
 use Bivio::Auth::Realm::User;
 use Bivio::Auth::RealmType;
@@ -95,15 +98,27 @@ my(%_DEFAULT_PERMISSION_SET) = ();
 
 =head2 static new(Bivio::Biz::Model owner) : Bivio::Auth::Realm
 
-If the realm has an I<owner>, it will be stored here.
+=head2 static new(string owner_id, Bivio::Agent::Request req) : Bivio::Auth::Realm
+
+If the realm has an I<owner>, it will be saved.  If it
+has an I<owner_id>, the owner will be loaded first.  The owner
+must exist.
 
 =cut
 
 sub new {
-    my($proto, $owner) = @_;
+    my($proto, $owner, $req) = @_;
     $_INITIALIZED || _initialize();
     if ($proto eq __PACKAGE__) {
 	Carp::croak("no owner") unless $owner;
+	unless (ref($owner)) {
+	    Carp::croak("cannot create model without request")
+			unless ref($req);
+	    my($o) = Bivio::Biz::Model::RealmOwner->new($req);
+	    Carp::croak("$owner: realm_id not found")
+			unless $o->unauth_load(realm_id => $owner);
+	    $owner = $o;
+	}
 	my($realm_type) = $owner->get('realm_type');
 	return Bivio::Auth::Realm::Club->new($owner)
 		if $realm_type == Bivio::Auth::RealmType::CLUB();
@@ -130,7 +145,8 @@ sub new {
     Carp::croak('owner must have valid id (must be loaded)')
 		unless $id;
     $self->put(owner => $owner, id => $id,
-	    owner_name => $owner->get('name'));
+	    owner_name => $owner->get('name'),
+	    type => $_CLASS_TO_TYPE{ref($self)});
     return $self;
 }
 
