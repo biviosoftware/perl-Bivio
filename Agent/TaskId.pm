@@ -1752,7 +1752,7 @@ my(@_CFG) = (
         177
         GENERAL
         DOCUMENT_READ
-        /_mail_receive
+        /_mail_receive/*
         Bivio::Biz::Model::MailReceiveForm
         next=HTTP_DOCUMENT
         NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
