@@ -2440,6 +2440,19 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::BalanceSheet
         next=CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
     )],
+    [qw(
+	CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
+	239
+        CLUB
+        ACCOUNTING_READ&MEMBER_READ
+        ?/accounting/reports/transaction-summary
+        Bivio::Biz::Model::Lock
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Action::TransactionSummary
+	Bivio::UI::HTML::Club::TransactionSummary
+        next=CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
+    )],
 );
 
 __PACKAGE__->compile([
