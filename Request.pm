@@ -51,13 +51,15 @@ sub process_email ($$$) {
 	'header' => $header,
     };
     &_process($proto, $self, $code) && return &Apache::Constants::OK;
-    &Bivio::Mail::send(undef, 'postmaster',
-		       'ERROR: Bivio::Request::process_email', <<"EOF");
-Error while processing email message:
+    my($caller) = (caller)[0] eq 'main' ? (caller)[1] : (caller)[0];
+    &Bivio::Mail::send(
+	    undef, 'postmaster', "ERROR: $caller",
+	    <<"EOF", [], [{'value_type' => 'text', 'value' => '$header'}]);
+Error while processing email message via Bivio::Request::process_mail:
+
     $@
+
 Apache result code: $self->{result}
-Header:
-$header
 EOF
     return $self->{result};
 }
