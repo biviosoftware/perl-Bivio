@@ -124,10 +124,14 @@ my(%_ERR_TO_DIE_CODE) = (
 # See:
 # http://www.oracle.com/support/bulletins/net/net2/html/1523.html
 #
+# Always sleep between oracle errors and retries.  We saw ORA-00020 at
+# one point on the test system when we were having a spate of 3113
+# errors.  This led to defunct processes.
+#
 # Key=ora-#, value=sleep_seconds
 my(%_ERR_RETRY_SLEEP) = (
     # ORA-01012: not logged on to Oracle
-    1012 => 0,
+    1012 => 2,
     # ORA-01033: Oracle initialization or shutdown in progress
     1033 => 5,
     # ORA-01034: ORACLE not available
@@ -135,9 +139,9 @@ my(%_ERR_RETRY_SLEEP) = (
     # ORA-01089: immediate shutdown in progress - no operations are permitted
     1089 => 5,
     # ORA-03113: end-of-file on communication channel
-    3113 => 0,
+    3113 => 2,
     # ORA-03114: not connected to ORACLE
-    3114 => 0,
+    3114 => 2,
     # ORA-12203: TNS: unable to connect to destination
     12203 => 5,
     # ORA-12500: TNS: listener failed to start a dedicated server process
@@ -145,7 +149,7 @@ my(%_ERR_RETRY_SLEEP) = (
     # ORA-12537: TNS connection closed
     12537 => 5,
     # ORA-12571: TNS: packet writer failure
-    12571 => 1,
+    12571 => 2,
 );
 
 =head1 METHODS
@@ -468,6 +472,7 @@ sub _get_connection {
 	    Bivio::Die->eval(sub {
 		$_CONNECTION->ping && $_CONNECTION->rollback});
 	    Bivio::Die->eval(sub {$_CONNECTION->disconnect});
+	    Bivio::IO::Alert->warn("reconnecting to oracle: pid=$$");
 	    # Make sure we don't enter this code again.
 	    $_CONNECTION = undef;
 	}
