@@ -188,7 +188,7 @@ sub _get_lost_password_realm {
 #
 sub _get_owner {
     my($self) = @_;
-    return $self->new($self->get_request, 'RealmOwner')->load;
+    return $self->new_other('RealmOwner')->load;
 }
 
 # _validate_old_password(self)
