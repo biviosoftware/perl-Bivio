@@ -194,9 +194,21 @@ _compile(
     CLUB_MAIL_DELETE => ['Mail Delete'],
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL => ['Member Withdrawal'],
     CLUB_ADMIN_MEMBER_DELETE => ['Member Delete'],
+    CLUB_ACCOUNTING_EXPORT_CLUB_DATA => ['Export Club Data'],
+    CLUB_ACCOUNTING_EXPORT_CLUB_DATA_ZIP => ['Compressed by zip'],
+    CLUB_ACCOUNTING_EXPORT_CLUB_DATA_UNCOMPRESSED => ['Uncompressed'],
+    CLUB_ACCOUNTING_EXPORT_CLUB_DATA_GZ => ['Compressed by gzip'],
     CLUB_ADMIN_EXPORT => ['Export Club Data'],
     CLUB_ADMIN_EXPORT_COMPRESSED => ['Compressed'],
     CLUB_ADMIN_EXPORT_PLAIN => ['Plain'],
+
+    # MAIL
+    MAIL_FROM => ['From'],
+    MAIL_TO => ['To'],
+    MAIL_CC => ['Cc'],
+    MAIL_SUBJECT => ['Subject'],
+    MAIL_TEXT => ['Text'],
+    MAIL_ATT => ['Attach'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
