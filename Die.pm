@@ -57,11 +57,13 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_STACK_TRACE) = 0;
+my($_STACK_TRACE_ERROR) = 0;
 my($_CURRENT_SELF);
 my($_IN_CATCH) = 0;
 my($_IN_HANDLE_DIE) = 0;
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
+    'stack_trace_error' => $_STACK_TRACE_ERROR,
 });
 
 =head1 FACTORIES
@@ -112,14 +114,14 @@ C<$SIG{__DIE__}> is specifically disabled.
 sub catch {
     my($proto, $sub) = @_;
     Bivio::Die->die(Bivio::DieCode::CATCH_WITHIN_DIE(),
-	    {sub => $sub}, (caller)[0], (caller)[2])
+	    {sub => $sub, program_error => 1}, (caller)[0], (caller)[2])
 		if $_IN_HANDLE_DIE;
     $_IN_CATCH++;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
 	$_STACK_TRACE && print STDERR Carp::longmess($msg);
 	_handle_die(_new_from_core_die($proto, Bivio::DieCode::DIE(),
-		{message => $msg}, caller));
+		{message => $msg, program_error => 1}, caller));
     };
     my($self) = eval {
 	&$sub();
@@ -243,24 +245,25 @@ sub die {
     $package ||= (caller)[0];
     $file ||= (caller)[1];
     $line ||= (caller)[2];
+    unless (ref($attrs) eq 'HASH') {
+	$attrs = defined($attrs)
+		? !ref($attrs) ? {message => $attrs}
+			:  {attrs => $attrs} : {};
+    }
     if (defined($code)) {
 	unless (ref($code) && UNIVERSAL::isa($code, 'Bivio::Type::Enum')) {
 	    unless (eval {
 		my($c) = Bivio::DieCode->from_any($code);
 		$code = $c;
 	    }) {
-		$attrs = {code => $code, attrs => $attrs};
+		$attrs = {code => $code, attrs => $attrs, program_error => 1};
 		$code = Bivio::DieCode::INVALID_DIE_CODE();
 	    };
 	}
     }
     else {
 	$code = Bivio::DieCode::UNKNOWN();
-    }
-    unless (ref($attrs) eq 'HASH') {
-	$attrs = defined($attrs)
-		? !ref($attrs) ? {message => $attrs}
-			:  {attrs => $attrs} : {};
+	$attrs->{program_error} = 1;
     }
     my($self) = _new($proto, $code, $attrs, $package, $line);
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string);
@@ -276,6 +279,13 @@ sub die {
 
 If true, will print a stack trace on L<die|"die">.
 
+=item stack_trace_error : boolean [false]
+
+If true, will print a stack trace on a L<die|"die"> which contains a
+I<program_error> attribute which evaluates to I<true>.  I<program_error> is
+set automatically for C<CORE::die> calls and other internal errors in
+handling L<die|"die"> calls, e.g. die within die.
+
 =back
 
 =cut
@@ -283,6 +293,8 @@ If true, will print a stack trace on L<die|"die">.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_STACK_TRACE = $cfg->{stack_trace};
+    $_STACK_TRACE_ERROR = $cfg->{stack_trace_error};
+    $_STACK_TRACE_ERROR = 0 if $_STACK_TRACE;
     return;
 }
 
@@ -303,13 +315,18 @@ sub is_destroyed {
 # _handle_die self
 #
 # Called from within $SIG{__DIE__} inside catch.  $_CURRENT_SELF is
-# already created.  Calls the die handles sequentially.  If errors
+# already created.  Calls the die handlers sequentially.  If errors
 # occur, chains them on to $_CURRENT_SELF by calling _new_from_core_die.
 #
 sub _handle_die {
     $_IN_HANDLE_DIE++;
     eval {
 	my($self) = @_;
+	if ($_STACK_TRACE_ERROR) {
+	    my($attrs) = $self->get('attrs');
+	    print STDERR Carp::longmess($self->as_string)
+		    if $attrs->{program_error};
+	}
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -335,7 +352,7 @@ sub _handle_die {
 	    };
 	    $msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
 	    _new_from_core_die($self, Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
-		    {message => $msg, proto => $proto},
+		    {message => $msg, proto => $proto, program_error => 1},
 		    ref($proto) || $proto, $1, $2);
 	}
 	1;
