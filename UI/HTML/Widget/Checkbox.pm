@@ -118,12 +118,17 @@ sub render {
     my($field) = $fields->{field};
 
 #TODO: look into prefix optimization
-    $$buffer .= '<input name='.$form->get_field_name_for_html($field)
-	    .' type=checkbox value="'.$fields->{value}.'"';
-    $$buffer .= $form->get($field) ? ' checked' : '';
-    $$buffer .= ' onclick="submit()"' if ($fields->{auto_submit});
-    $$buffer .= '> '.Bivio::Util::escape_html($self->get('label')).' ';
-
+    unless ($fields->{initialized}) {
+	$fields->{prefix} = '<input name=';
+	$fields->{suffix} = ' type=checkbox value="'.$fields->{value}.'"';
+	$fields->{suffix} .= ' onclick="submit()"' if $fields->{auto_submit};
+	$fields->{suffix} .= '> '
+		.Bivio::Util::escape_html($self->get('label'))."\n";
+	$fields->{initialized} = 1;
+    }
+    $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field);
+    $$buffer .= ' checked' if $form->get($field);
+    $$buffer .= $fields->{suffix};
     return;
 }
 
