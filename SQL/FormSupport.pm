@@ -40,6 +40,11 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 A field or field identity which must be equal to
 request's I<auth_id> attribute.
 
+=item file_fields : array_ref
+
+The columns which are L<Bivio::Type::FileField|Bivio::Type::FileField>
+type.  C<undef> if no file fields.
+
 =item hidden : array_ref
 
 List of columns which are to be sent to and returned from the user, unmodified.
@@ -71,7 +76,15 @@ List of columns to be made visible to the user.
 
 =back
 
-=head1 EXAMPLE
+=head1 COLUMN ATTRIBUTES
+
+=over 4
+
+=item is_file_field : boolean
+
+True if the field is a file field.
+
+=back
 
 =cut
 
@@ -146,6 +159,7 @@ sub new {
 	# Columns which have no corresponding property model field
 	local_columns => [],
 	require_context => $decl->{require_context} ? 1 : 0,
+	has_field_field => 0,
     };
     $proto->init_version($attrs, $decl);
     _init_column_classes($attrs, $decl);
@@ -202,9 +216,16 @@ sub _init_column_classes {
     # Assign form_name to each of the fields that can be in the form
     # Add it as an alias for easy input parsing.
     my($i) = 0;
+    $attrs->{file_fields} = undef;
     foreach my $col (@{$attrs->{visible}}, @{$attrs->{hidden}}) {
 	$attrs->{column_aliases}->{$i} = $col;
-	$col->{form_name} = $i++;
+	# Can't just use a number here
+	$col->{form_name} = 'f'.$i++;
+	if ($col->{is_file_field} = UNIVERSAL::isa($col->{type},
+		'Bivio::Type::FileField') ? 1 : 0) {
+	    $attrs->{file_fields} = [] unless $attrs->{file_fields};
+	    push(@{$attrs->{file_fields}}, $col);
+	}
     }
     return;
 }
