@@ -777,7 +777,7 @@ my(@_CFG) = (
 	82
         GENERAL
         ADMIN_WRITE
-        adm/su:pub/su
+        adm/su
 	Bivio::Biz::Model::SubstituteUserForm
 	Bivio::UI::HTML::Adm::SubstituteUser
         next=USER_HOME
@@ -2343,7 +2343,7 @@ my(@_CFG) = (
         GENERAL
         ADMIN_WRITE
         adm/lookup
-        Bivio::Biz::Model::FindRealmOwnerForm
+        Bivio::Biz::Model::AdmFindRealmOwnerForm
         Bivio::UI::HTML::Adm::FindRealmOwner
         next=HTTP_DOCUMENT
     )],
