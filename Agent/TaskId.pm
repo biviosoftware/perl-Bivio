@@ -1606,6 +1606,7 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         %/admin/guest/delete
+        Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Model::DeleteGuestForm
         Bivio::UI::HTML::Club::DeleteGuest
         next=CLUB_ADMIN_USER_LIST
