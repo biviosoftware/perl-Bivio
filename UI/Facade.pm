@@ -72,6 +72,10 @@ this Facade.
 
 List of component instances for this facade.
 
+=item cookie_domain : string
+
+The domain to use for the cookie.
+
 =item initialize : sub (component)
 
 The initialization attribute is a C<sub> to initialize a Component.
@@ -241,6 +245,7 @@ sub new {
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_DEFAULT eq $self->simple_package_name ? 1 : 0,
 	children => {},
+        cookie_domain => delete($config->{cookie_domain}),
     });
     delete($config->{is_production});
 
