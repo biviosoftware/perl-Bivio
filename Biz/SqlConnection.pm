@@ -29,6 +29,7 @@ C<Bivio::Biz::SqlConnection>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Error;
 use Bivio::IO::Trace;
 
 #=VARIABLES
@@ -40,6 +41,40 @@ my($_CONNECTION);
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute"></a>
+
+=head2 execute(statement sth, Model m, string value, ...)
+
+Executes the specified statement and adds the appropriate error to the
+model if it fails.
+
+=cut
+
+sub execute {
+    my(undef, $statement, $model, @values) = @_;
+
+    eval {
+	$statement->execute(@values);
+    };
+
+    # check for db errors
+    if ($@) {
+	my($err) = $statement->err;
+	my($msg);
+
+	#TODO: add more application error processing here
+	$msg = 'already exists' if $err == 1;
+
+	if ($msg) {
+	    $model->get_status()->add_error(Bivio::Biz::Error->new($msg));
+	}
+	else {
+	    # not handled
+	    die $@;
+	}
+    }
+}
 
 =for html <a name="get_connection"></a>
 

@@ -85,9 +85,7 @@ sub new {
     my($self) = &Bivio::Biz::PropertyModel::new($proto, 'user',
 	    $_PROPERTY_INFO);
 
-    $self->{$_PACKAGE} = {
-    };
-
+    $self->{$_PACKAGE} = {};
     $_SQL_SUPPORT->initialize();
 
     return $self;
@@ -273,8 +271,8 @@ $Id$
 
 
 #use Bivio::Biz::ListModel;
-use Bivio::Biz::UserList;
 use Bivio::Biz::SqlConnection;
+use Bivio::Biz::UserList;
 use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
@@ -291,7 +289,7 @@ Bivio::IO::Config->initialize({
         },
     });
 
-=pod
+#=pod
 
 my($user) = Bivio::Biz::User->new();
 $user->find({id => 1});
@@ -301,12 +299,19 @@ $user->update({'password', "QWERTY"});
 $user->find({id => 3});
 $user->delete();
 $user->create({id => 3, name => 'ted', password => 'RAZOR'});
+print(Dumper($user->get_status()->get_errors()));
+$user->create({id => 3, name => 'ted2', password => 'RAZOR'});
+print(Dumper($user->get_status()->get_errors()));
 #print(Dumper($user));
 
-=cut
+#=cut
+
+=pod
 
 my($list) = Bivio::Biz::UserList->new();
 $list->find({});
 print(Dumper($list));
+
+=cut
 
 Bivio::Biz::SqlConnection->get_connection()->commit();

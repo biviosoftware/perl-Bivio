@@ -86,14 +86,10 @@ sub find {
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
     my($statement) = $conn->prepare_cached($sql);
 
-    #TODO: trap Oracle errors and set model's state
-
-    $statement->execute(@values);
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
 
     my($row);
     my($i) = 0;
-
-    #TODO: obviously this is not the fastest way
     while ($row = $statement->fetchrow_arrayref()) {
 
 	#TODO: need to handle compound fields

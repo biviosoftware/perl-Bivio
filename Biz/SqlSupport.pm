@@ -104,9 +104,7 @@ sub create {
     # not using prepare_cached
     my($statement) = $conn->prepare($sql);
 
-    #TODO: trap Oracle errors and set model's state
-
-    $statement->execute(@values);
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
     $statement->finish();
 
     # update all the model properties, undefined fields as well
@@ -138,9 +136,8 @@ sub delete {
     # not using prepare_cached
     my($statement) = $conn->prepare($sql);
 
-    #TODO: trap Oracle errors and set model's state
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
 
-    $statement->execute(@values);
     $statement->finish();
 
     return $model->get_status()->is_OK();
@@ -182,9 +179,7 @@ sub find {
     &_trace($sql, ' (', join(',', @values), ')') if $_TRACE;
     my($statement) = $conn->prepare_cached($sql);
 
-    #TODO: trap Oracle errors and set model's state
-
-    $statement->execute(@values);
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
 
     my($row) = $statement->fetchrow_arrayref();
 
@@ -235,9 +230,7 @@ sub update {
     # not using prepare_cached
     my($statement) = $conn->prepare($sql);
 
-    #TODO: trap Oracle errors and set model's state
-
-    $statement->execute(@values);
+    Bivio::Biz::SqlConnection->execute($statement, $model, @values);
 
     $statement->finish();
 
