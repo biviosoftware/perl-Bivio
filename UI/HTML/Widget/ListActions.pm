@@ -35,11 +35,18 @@ C<Bivio::UI::HTML::Widget::ListActions>
 =item values : array_ref (required)
 
 An array_ref of array_refs where the order is the order of the
-actions to appear and the first element of sub-array_ref is the
-name of the action and the second element is the task name.
-The third optional element of sub-array_ref is a
-L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>,
-default value is C<THIS_DETAIL>.
+actions to appear.
+
+The first element of sub-array_ref is the name of the action.
+
+The second element is the task name.
+
+The third optional element of sub-array_ref is
+either a
+L<Bivio::Biz::QueryType|Bivio::Biz::QueryType>
+(default value is C<THIS_DETAIL>)
+or a widget value which produces a URI.
+
 The fourth optional element is a control.  If the control returns
 true, the action is rendered.
 
@@ -97,8 +104,9 @@ sub initialize {
 	    prefix => '<a href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
 	    suffix => '">'.$p.Bivio::Util::escape_html($v->[0]).$s."</a>",
-	    method => Bivio::Biz::QueryType->from_any(
-		    $v->[2] || 'THIS_DETAIL'),
+	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
+	    : (method => Bivio::Biz::QueryType->from_any(
+		    $v->[2] || 'THIS_DETAIL')),
 	    control => $v->[3],
 	});
     }
@@ -127,7 +135,9 @@ sub render {
 	    next unless $req->task_ok($v->{task_id});
 	    push (@$info, {
 		value => $v,
-		uri => $req->format_stateless_uri($v->{task_id})
+		$v->{method}
+		? (uri => $req->format_stateless_uri($v->{task_id}))
+		: (),
 	    });
 	}
 
@@ -141,8 +151,11 @@ sub render {
 	my($v2) = $v->{value};
 	next if $v2->{control}
 		&& !$source->get_widget_value(@{$v2->{control}});
-	$$buffer .= $sep.$v2->{prefix}.$source->format_uri($v2->{method},
-		$v->{uri}).$v2->{suffix};
+	$$buffer .= $sep.$v2->{prefix}.
+		($v->{format_uri}
+			? $source->get_widget_value(@{$v2->{format_uri}})
+			: $source->format_uri($v2->{method}, $v->{uri}))
+			.$v2->{suffix};
 	$sep = ",\n";
     }
     return;
