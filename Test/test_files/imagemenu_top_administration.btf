@@ -1,0 +1,2 @@
+Login->execute();
+PageTools->click_imagemenu('Administration');
