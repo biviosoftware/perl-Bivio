@@ -482,7 +482,9 @@ sub initialization_complete {
     my($self) = @_;
     my(@bad);
     foreach my $n (qw(page_widget header_widget logo_widget head_widget
-    	    header_height logo_icon site_name home_alt_text)) {
+    	    header_height logo_icon site_name home_alt_text
+            want_secure page_left_margin table_default_align
+            home_page descriptive_page_width scene_show_profile)) {
 	push(@bad, $n) unless defined($self->get_value($n));
     }
     Bivio::Die->die($self, ': missing names: ', \@bad)
