@@ -80,13 +80,17 @@ my(@_CFG) = (
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
     )],
+#TODO: MY_CLUB_REDIRECT isn't right if user not part of club.
+#      Need a redirect to club or to user's home.
     [qw(
 	LOGIN
 	5
         GENERAL
-        DOCUMENT_READ
+        LOGIN
         login
-	Bivio::Biz::Action::Login
+	Bivio::Biz::Model::LoginForm
+	Bivio::UI::HTML::General::Login
+        next=MY_CLUB_REDIRECT
     )],
     [qw(
         MY_CLUB_NOT_FOUND
@@ -95,6 +99,24 @@ my(@_CFG) = (
         DOCUMENT_READ
         hm/start.html
         Bivio::Biz::Action::HTTPDocument
+    )],
+#TODO: Make searching for public docs general
+    [qw(
+	SLOGIN_GIF
+	7
+        GENERAL
+        LOGIN
+        i/slogan.gif
+        Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
+	LOGOUT
+	8
+        GENERAL
+        LOGIN
+        logout
+	Bivio::Biz::Action::Logout
+        next=LOGIN
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_LIST

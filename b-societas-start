@@ -239,6 +239,11 @@ use strict;
 	http_host => '<$host>:<$http_port>',
 	mail_host => '[<$host>]',
     },
+    'Bivio::Agent::HTTP::Cookie' => {
+	key => 'my big secret',
+	expire_seconds => 86400,
+#	domain => '.bivio.com',
+    },
     'Bivio::Agent::HTTP::Location' => {
 	document_root => '<$pwd>/html',
     },
@@ -261,7 +266,7 @@ use strict;
 	file_server => 'file',
     },
     'Bivio::Die' => {
-	stack_trace => 1,
+	stack_trace_error => 1,
     },
     'Bivio::Ext::DBI' => {
 	oracle_home => '<$ENV{ORACLE_HOME}>',
