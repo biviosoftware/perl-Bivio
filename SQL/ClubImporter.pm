@@ -210,16 +210,16 @@ my($_TYPE_MAP) = {
 	    0, 1, '-'],
     # Div-Inv
     53 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'DIVIDEND',
-	    6, 0],
+	    6, 1],
     # Int-Inv
     54 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'INTEREST',
-	    7, 0],
+	    7, 1],
     # Stcg-Inv
     55 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'SHORT_TERM_CAPITAL_GAIN',
-	    8, 0],
+	    8, 1],
     # Ltcg-Inv
     56 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'LONG_TERM_CAPITAL_GAIN',
-	    9, 0],
+	    9, 1],
     # RetCp-Inv
     57 => ['INSTRUMENT_DISTRIBUTION_RETURN_OF_CAPITAL', 'NOT_TAXABLE',
 	    10, 1],
@@ -318,7 +318,7 @@ my($_TYPE_MAP) = {
 	    0, 0],
     # Mtcg-Inv
     99 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT', 'MEDIUM_TERM_CAPITAL_GAIN',
-	    11, 0],
+	    11, 1],
     # MtcInvComm
     100 => ['INSTRUMENT_DISTRIBUTION_INVESTMENT_COMMISSION', 'NOT_TAXABLE',
 	    11, 1],
@@ -1031,6 +1031,7 @@ sub parse_file {
 
     $_END_OF_INPUT = 0;
     my($file_name) = $self->{$_PACKAGE}->{directory}.'/'.$format->{file_name};
+    print(STDERR "\n\n$file_name\n\n");
     open(IN, '< '.$file_name) or die("can't open file $file_name");
     binmode(IN); # for win32
 
