@@ -74,19 +74,13 @@ sub parse {
 
     # Some search engines escape the query string incorrectly.
     #   /pub/trez_talk/msg?v=1%26t=332800003%26o=0d1a2a
-    if ($string =~ /^(?:v=1%26|v%3d1)/i) {
-	my($req) = Bivio::Agent::Request->get_current;
-	if ($req) {
-	    my($r) = $req->get('r');
-	    Bivio::IO::Alert->warn('correcting query=', $string,
-		    ', uri=', $req->unsafe_get('uri'),
-		    ', referer=', $r ? $r->header_in('referer') : undef,
-		    ', client_addr=', $req->unsafe_get('client_addr'),
-		    ', user-agent=', $r ? $r->header_in('user-agent') : undef,
-		   );
-	}
-	$string = Bivio::HTML->unescape_uri($string);
-    }
+    $string = _correct('unescape_uri', $string)
+	    if $string =~ /^(?:v=1%26|v%3d1)/i;
+
+    # Some search engines don't unescape_html when parsing the page
+    #   /pub/trez_talk/msg?v=1&amp;t=292100003&amp;o=0d1a2a
+    $string = _correct('unescape_html', $string)
+	    if $string =~ /&amp;\w=/;
 
     # Split on & and then =
     my(@v);
@@ -112,6 +106,27 @@ sub parse {
 }
 
 #=PRIVATE METHODS
+
+# _correct(string method, string literal) : string
+#
+# Corrects the URI using specified unescape method
+#
+sub _correct {
+    my($method, $literal) = @_;
+    my(@msg) = ('correcting query=', $literal);
+    my($req) = Bivio::Agent::Request->get_current;
+    if ($req) {
+	my($r) = $req->get('r');
+	push(@msg,
+		', uri=', $req->unsafe_get('uri'),
+		', referer=', $r ? $r->header_in('referer') : undef,
+		', client_addr=', $req->unsafe_get('client_addr'),
+		', user-agent=', $r ? $r->header_in('user-agent') : undef,
+	       );
+    }
+    Bivio::IO::Alert->warn(@msg);
+    return Bivio::HTML->$method($literal);
+}
 
 =head1 COPYRIGHT
 
