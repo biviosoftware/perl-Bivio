@@ -192,14 +192,19 @@ sub as_string {
 
 =head2 static compare(any left, any right) : int
 
-Performs the numeric comparison of the enum values.
+Performs the numeric comparison of the enum values.  C<undef> is treated as
+"least".
 
 =cut
 
 sub compare {
     my(undef, $left, $right) = @_;
+    return defined($left) ? -1 : 1
+	unless defined($left) eq defined($right);
+    return 0
+	unless defined($left);
     Bivio::IO::Alert->bootstrap_die(ref($left), ' != ', ref($right),
-	    ': type mismatch') unless ref($left) eq ref($right);
+	': type mismatch') unless ref($left) eq ref($right);
     return $left->as_int <=> $right->as_int;
 }
 
@@ -631,15 +636,19 @@ sub is_continuous {
 
 =head2 static is_equal(Bivio::Type::Enum left, Bivio::Type::Enum right) : boolean
 
-Are the two values equal?  Uses "==" comparison.  undefs are not
-equal, paralleling what happens is SQL.
+Are the two values equal?  Uses "==" comparison.  undefs are
+equal.
 
 =cut
 
 sub is_equal {
     my(undef, $left, $right) = @_;
-    return 0 unless defined($left) && defined($right);
-    return $left == $right ? 1 : 0;
+    return defined($left) eq defined($right)
+	? defined($left)
+	    ? $left == $right
+		? 1 : 0
+	    : 1
+        : 0;
 }
 
 =for html <a name="is_valid_name"></a>
