@@ -6,7 +6,7 @@ use Bivio::Test;
 use Bivio::Type::DateInterval;
 use Bivio::Type::Date;
 my($_D) = 'Bivio::Type::Date';
-my($unit) = 'Bivio::Type::DateInterval';
+my($_DI) = 'Bivio::Type::DateInterval';
 Bivio::Test->new({
     compute_params => sub {
 	my($object, $method, $params) = @_;
@@ -21,7 +21,18 @@ Bivio::Test->new({
 	return $_D->from_literal_or_die($expected->[0]) eq $actual->[0];
     }
 })->unit([
-    $unit->DAY => [
+    $_DI->NONE => [
+	inc => [
+	    ['1/1/1911'] => ['1/1/1911'],
+#TODO: This is the current behavior.  It probably shouldn't die.
+	    [$_D->get_max] => Bivio::DieCode->DIE,
+	],
+	dec => [
+	    ['1/1/1911'] => ['1/1/1911'],
+	    [$_D->get_min] => [$_D->get_min],
+	],
+    ],
+    $_DI->DAY => [
 	inc => [
 	    ['1/1/1911'] => ['1/2/1911'],
 	    ['1/31/2000'] => ['2/1/2000'],
@@ -33,7 +44,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    $unit->WEEK => [
+    $_DI->WEEK => [
 	inc => [
 	    ['1/1/1911'] => ['1/8/1911'],
 	    ['12/31/2000'] => ['1/7/2001'],
@@ -45,7 +56,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    $unit->BEGINNING_OF_YEAR => [
+    $_DI->BEGINNING_OF_YEAR => [
 	inc => [
 	    ['5/5/1999'] => ['1/1/2000'],
 	    ['1/1/1911'] => ['1/1/1912'],
@@ -54,10 +65,10 @@ Bivio::Test->new({
 	dec => [
 	    ['5/5/1999'] => ['1/1/1999'],
 	    ['1/1/1911'] => ['1/1/1911'],
-	    [$_D->get_min] => Bivio::DieCode->DIE,
+	    [$_D->get_min] => [$_D->get_min],
         ],
     ],
-    $unit->MONTH => [
+    $_DI->MONTH => [
 	inc => [
 	    ['1/1/1911'] => ['2/1/1911'],
 	    ['1/31/2000'] => ['2/29/2000'],
@@ -70,7 +81,7 @@ Bivio::Test->new({
 	    [$_D->get_min] => Bivio::DieCode->DIE,
 	],
     ],
-    $unit->YEAR => [
+    $_DI->YEAR => [
 	inc => [
 	    ['1/1/1911'] => ['1/1/1912'],
 	    ['2/29/2000'] => ['2/28/2001'],
@@ -83,7 +94,7 @@ Bivio::Test->new({
 	    [$_D->get_max] => ['12/31/2198'],
 	],
     ],
-    $unit->FISCAL_YEAR => [
+    $_DI->FISCAL_YEAR => [
 	inc => [
 	    ['3/3/1911'] => ['1/1/1912'],
 	    ['1/1/1999'] => ['1/1/2000'],
@@ -92,7 +103,7 @@ Bivio::Test->new({
 	dec => [
 	    ['3/3/1911'] => ['1/1/1911'],
 	    ['1/1/1999'] => ['1/1/1999'],
-	    [$_D->get_min] => Bivio::DieCode->DIE,
+	    [$_D->get_min] => [$_D->get_min],
 	],
     ],
 ]);
