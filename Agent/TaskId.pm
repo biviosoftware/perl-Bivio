@@ -121,6 +121,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/accounts:_/accounts
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountList
     )],
@@ -138,6 +139,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investments:_/investments
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentList
     )],
@@ -147,16 +149,21 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/members
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberList
     )],
+    # NOTE: This must not be CLUB_ACCOUNTING_REPORT_*, because
+    # AccountingReportForm knows the list of accounting reports.
     [qw(
-        CLUB_ACCOUNTING_REPORT_LIST
+        CLUB_ACCOUNTING_REPORT
         13
         CLUB
         ACCOUNTING_READ
         _/accounting/reports
-        Bivio::UI::HTML::Club::ReportList
+        Bivio::Biz::Model::AccountingReportForm
+        Bivio::UI::HTML::Club::AccountingReport
+        next=CLUB_HOME
     )],
     [qw(
         CLUB_ADMIN_USER_LIST
@@ -223,141 +230,145 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/valuation
+        Bivio::Biz::Action::ReportDate
 	Bivio::Biz::Model::AccountValuationList->execute_load_all
 	Bivio::Biz::Model::InstrumentValuationList->execute_load_all
 	Bivio::UI::HTML::Club::ValuationReport
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
-        22
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/journal
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
-        23
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/transactions
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
+#        22
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/journal
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY
+#        23
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/transactions
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
         24
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/investments
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentSummaryReport
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY
-        25
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/investment-history
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_INVESTMENT_HISTORY
+#        25
+#        CLUB
+#        ACCOUNTING_READ
+#        _/accounting/reports/investment-history
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
         26
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         _/accounting/reports/members
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
-        27
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/member-status
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_MEMBER_VALUE
-        28
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/member-value
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_WITHDRAWAL_EARNINGS
-        29
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/withdrawal-earnings
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
+#        27
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/member-status
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_MEMBER_VALUE
+#        28
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/member-value
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_WITHDRAWAL_EARNINGS
+#        29
+#        CLUB
+#        ACCOUNTING_READ
+#        _/accounting/reports/withdrawal-earnings
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
         30
         CLUB
         ACCOUNTING_READ
         _/accounting/reports/accounts
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountSummaryList->execute_load_all
         Bivio::UI::HTML::Club::AccountSummaryReport
     )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_CASH_JOURNAL
-        31
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/cash-journal
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_CASH_CONTRIBUTIONS
-        32
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/cash-contributions
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_PETTY_CASH_CONTRIBUTIONS
-        33
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/pettycash-contributions
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_PETTY_CASH_JOURNAL
-        34
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/pettycash-journal
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_DISTRIBUTIONS
-        35
-        CLUB
-        ACCOUNTING_READ&MEMBER_READ
-        _/accounting/reports/distributions
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_INCOME_STATEMENT
-        36
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/income-expense
-        Bivio::UI::HTML::Club::Embargoed
-    )],
-    [qw(
-        CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
-        37
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/balance-sheet
-        Bivio::UI::HTML::Club::Embargoed
-    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_CASH_JOURNAL
+#        31
+#        CLUB
+#        ACCOUNTING_READ
+#        _/accounting/reports/cash-journal
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_CASH_CONTRIBUTIONS
+#        32
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/cash-contributions
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_PETTY_CASH_CONTRIBUTIONS
+#        33
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/pettycash-contributions
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_PETTY_CASH_JOURNAL
+#        34
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/pettycash-journal
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_DISTRIBUTIONS
+#        35
+#        CLUB
+#        ACCOUNTING_READ&MEMBER_READ
+#        _/accounting/reports/distributions
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_INCOME_STATEMENT
+#        36
+#        CLUB
+#        ACCOUNTING_READ
+#        _/accounting/reports/income-expense
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
+#    [qw(
+#        CLUB_ACCOUNTING_REPORT_BALANCE_SHEET
+#        37
+#        CLUB
+#        ACCOUNTING_READ
+#        _/accounting/reports/balance-sheet
+#        Bivio::UI::HTML::Club::Embargoed
+#    )],
     [qw(
 	GENERAL_PRIVACY
 	38
@@ -382,6 +393,7 @@ my(@_CFG) = (
         _/accounting/member/detail
         Bivio::Biz::Model::MemberTransactionList
         Bivio::Biz::Model::RealmUser
+        Bivio::Biz::Model::RealmUserList->execute_load_all
         Bivio::UI::HTML::Club::MemberDetail
     )],
     [qw(
@@ -390,8 +402,10 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/investment/detail
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::InstrumentTransactionList
         Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::InstrumentSummaryList->execute_load_all
         Bivio::UI::HTML::Club::InstrumentDetail
     )],
     [qw(
@@ -400,8 +414,10 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ
         _/accounting/account/detail
+        Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::AccountTransactionList
         Bivio::Biz::Model::RealmAccount
+        Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::UI::HTML::Club::AccountDetail
     )],
     [qw(
@@ -504,49 +520,17 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
     )],
     [qw(
-	CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT_PARAMS
-	52
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/valuation/date
-        Bivio::Biz::Model::ReportDateForm
-        Bivio::UI::HTML::Club::ReportDate
-        next=CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT
-        cancel=CLUB_ACCOUNTING_REPORT_LIST
+        JAPAN_SURVEY
+        52
+        GENERAL
+        LOGIN
+        pub/japan_survey
+        Bivio::Biz::Model::JapanSurveyForm
+        next=HTTP_DOCUMENT
     )],
-    [qw(
-	CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY_PARAMS
-	53
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/investments/date
-        Bivio::Biz::Model::ReportDateForm
-        Bivio::UI::HTML::Club::ReportDate
-        next=CLUB_ACCOUNTING_REPORT_INVESTMENT_SUMMARY
-        cancel=CLUB_ACCOUNTING_REPORT_LIST
-    )],
-    [qw(
-	CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY_PARAMS
-	54
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/members/date
-        Bivio::Biz::Model::ReportDateForm
-        Bivio::UI::HTML::Club::ReportDate
-        next=CLUB_ACCOUNTING_REPORT_MEMBER_SUMMARY
-        cancel=CLUB_ACCOUNTING_REPORT_LIST
-    )],
-    [qw(
-	CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY_PARAMS
-	55
-        CLUB
-        ACCOUNTING_READ
-        _/accounting/reports/accounts/date
-        Bivio::Biz::Model::ReportDateForm
-        Bivio::UI::HTML::Club::ReportDate
-        next=CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY
-        cancel=CLUB_ACCOUNTING_REPORT_LIST
-    )],
+    #53
+    #54
+    #55
     #56
     #57
     [qw(
@@ -556,7 +540,6 @@ my(@_CFG) = (
         MAIL_READ
         _/mail/attachment
         Bivio::UI::HTML::Club::MessageAttachment
-
     )],
     # MUST MATCH Bivio::Biz::Action::REALM_REDIRECT
     [qw(
@@ -566,7 +549,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         demo
 	Bivio::Biz::Action::DemoClubRedirect
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_HOME
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_FEE
@@ -762,7 +745,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::ClubUserList
         Bivio::Biz::Model::ClubUserForm
         Bivio::UI::HTML::Club::EditUser
-        next=CLUB_ADMIN_USER_LIST
+        next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LOOKUP
