@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Test::Language::HTTP->verify_text uses text_exists
+  * Bivio::Biz::Model::ECSubscription->INFINITE_END_DATE exports
+    constant used by make_infinite
+
+  Revision 2.55  2005/02/24 23:28:40  nagler
+  * Bivio::Biz::Model::RealmRole->change_public_permissions removed
+  * Bivio::Test::Language::HTTP->verify_local_mail returns string(s)
+    (formerly returned string_refs)
   * Bivio::Test::Language::HTTP::_fixup_uri calls URI to make absolute
     (expands possibilities, and does right thing directory relative
     uris)
