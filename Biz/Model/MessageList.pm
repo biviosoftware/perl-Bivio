@@ -43,22 +43,6 @@ Bivio::IO::Trace->register;
 
 =cut
 
-=for html <a name="hacked_uri"></a>
-
-=head2 hacked_uri() : 
-
-
-
-=cut
-
-sub hacked_uri {
-    my($self) = @_;
-    my($req) = Bivio::Agent::Request->get_current();
-    return $req->format_uri(
-	    Bivio::Agent::TaskId::CLUB_COMMUNICATIONS_MESSAGE_DETAIL(),
-	    'pk='.$self->get('MailMessage.mail_message_id'));
-}
-
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : 
