@@ -84,8 +84,8 @@ sub new {
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
-	is_secure => $ENV{HTTPS} || is_https_port($r)
-	? 1 : 0,
+	is_secure => $ENV{HTTPS} || _is_https_port($r)
+	    ? 1 : 0,
     });
     $self->put_durable(
 	    start_time => $self->get('start_time'),
@@ -274,18 +274,6 @@ sub get_form {
     return $form;
 }
 
-# is_https_port(Apache r) : boolean
-#
-# Returns true if the local port is 81.  We are using this trick between
-# the front-end and the middle tier to indicate it is running in secure
-# mode.
-#
-sub is_https_port {
-    my($r) = @_;
-    my($port) = unpack_sockaddr_in($r->connection->local_addr());
-    return $port == 81 ? 1 : 0;
-}
-
 =for html <a name="server_redirect"></a>
 
 =head2 server_redirect(string new_uri, hash_ref new_query, hash_ref new_form, string new_path_info)
@@ -362,6 +350,18 @@ sub server_redirect_in_handle_die {
 
 
 #=PRIVATE METHODS
+
+# _is_https_port(Apache r) : boolean
+#
+# Returns true if the local port is 81.  We are using this trick between
+# the front-end and the middle tier to indicate it is running in secure
+# mode.
+#
+sub _is_https_port {
+    my($r) = @_;
+    my($port) = unpack_sockaddr_in($r->connection->local_addr());
+    return $port == 81 ? 1 : 0;
+}
 
 =head1 SEE ALSO
 
