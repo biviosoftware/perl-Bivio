@@ -73,6 +73,19 @@ Name of the icon to use for the page background.
 
 =back
 
+=head1 COMPONENT ATTRIBUTES
+
+=over 4
+
+=item html_tag_attrs : string []
+
+Attributes to be applied to the html_tag used to generate the component.
+Only currently works for I<body> components.
+
+Must have a leading space.
+
+=back
+
 =head1 FACADE ATTRIBUTES
 
 =over 4
@@ -209,6 +222,8 @@ sub render {
     $$buffer .= ' background="'
 	    .Bivio::UI::Icon->get_value($fields->{background}, $req)->{uri}
 		    .'"' if $fields->{background};
+    my($hta) = $fields->{body}->unsafe_get('html_tag_attrs');
+    $$buffer .= $hta if $hta;
     $$buffer .= ">\n";
 
     $fields->{body}->render($source, $buffer);
