@@ -409,6 +409,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/interest
+        Bivio::Biz::Model::AccountSummaryList
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -419,6 +420,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/dividend
+        Bivio::Biz::Model::AccountSummaryList
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -429,6 +431,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/income
+        Bivio::Biz::Model::AccountSummaryList
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
@@ -439,6 +442,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         _/accounting/account/expense
+        Bivio::Biz::Model::AccountSummaryList
         Bivio::Biz::Model::AccountTransactionForm
         Bivio::UI::HTML::Club::AccountTransaction
         next=CLUB_ACCOUNTING_ACCOUNT_DETAIL
