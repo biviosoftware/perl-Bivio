@@ -52,9 +52,9 @@ List of choices will be constructed from a
 L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
 L<Bivio::Type::EnumSet|Bivio::Type::EnumSet> and value
 is a string (set)
-or type is L<Bivio::Type::EnumSet|Bivio::Type::Integer> and value
+or type is L<Bivio::Type::Integer|Bivio::Type::Integer> and value
 is an array_ref.
-or type is L<Bivio::Type::EnumSet|Bivio::Type::String> and value
+or type is L<Bivio::Type::String|Bivio::Type::String> and value
 is an array_ref of strings (value is 1..n)
 
 =item choices : array_ref (required, get_request)
