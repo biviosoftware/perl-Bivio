@@ -20,6 +20,144 @@
 ----------------------------------------------------------------
 
 --
+-- address_t
+--
+ALTER TABLE address_t
+  add constraint address_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX address_t3 on address_t (
+  realm_id
+)
+/
+ALTER TABLE address_t
+  add constraint address_t4
+  check (location between 1 and 2)
+/
+
+--
+-- ec_check_payment_t
+--
+
+ALTER TABLE ec_check_payment_t
+  ADD CONSTRAINT ec_check_payment_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+ALTER TABLE ec_check_payment_t
+  ADD CONSTRAINT ec_check_payment_t3
+  FOREIGN KEY (ec_payment_id)
+  REFERENCES ec_payment_t(ec_payment_id)
+/
+CREATE INDEX ec_check_payment_t4 ON ec_check_payment_t (
+  realm_id
+)
+/
+CREATE INDEX ec_check_payment_t5 ON ec_check_payment_t (
+  ec_payment_id
+)
+/
+
+--
+-- ec_credit_card_payment_t
+--
+
+ALTER TABLE ec_credit_card_payment_t
+  ADD CONSTRAINT ec_credit_card_payment_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+ALTER TABLE ec_credit_card_payment_t
+  ADD CONSTRAINT ec_credit_card_payment_t3
+  FOREIGN KEY (ec_payment_id)
+  REFERENCES ec_payment_t(ec_payment_id)
+/
+CREATE INDEX ec_credit_card_payment_t4 ON ec_credit_card_payment_t (
+  realm_id
+)
+/
+CREATE INDEX ec_credit_card_payment_t5 ON ec_credit_card_payment_t (
+  ec_payment_id
+)
+/
+
+--
+-- ec_payment_t
+--
+
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t3
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t5
+  CHECK (method between 1 and 4)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t6
+  CHECK (service between 0 and 6)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t7
+  FOREIGN KEY (salesperson_id)
+  REFERENCES user_t(user_id)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t8
+  CHECK (status between 0 and 9)
+/
+ALTER TABLE ec_payment_t
+  ADD CONSTRAINT ec_payment_t9
+  CHECK (point_of_sale between 0 and 5)
+/
+CREATE INDEX ec_payment_t10 ON ec_payment_t (
+  realm_id
+)
+/
+CREATE INDEX ec_payment_t11 ON ec_payment_t (
+  user_id
+)
+/
+CREATE INDEX ec_payment_t12 ON ec_payment_t (
+  salesperson_id
+)
+/
+
+--
+-- ec_subscription_t
+--
+
+ALTER TABLE ec_subscription_t
+  ADD CONSTRAINT ec_subscription_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+ALTER TABLE ec_subscription_t
+  ADD CONSTRAINT ec_subscription_t3
+  FOREIGN KEY (ec_payment_id)
+  REFERENCES ec_payment_t(ec_payment_id)
+/
+ALTER TABLE ec_subscription_t
+  ADD CONSTRAINT ec_subscription_t4
+  CHECK (renewal_state between 1 and 4)
+/
+CREATE INDEX ec_subscription_t5 ON ec_subscription_t (
+  realm_id
+)
+/
+CREATE INDEX ec_subscription_t6 ON ec_subscription_t (
+  ec_payment_id
+)
+/
+
+--
 -- email_t
 --
 ALTER TABLE email_t
@@ -48,6 +186,23 @@ ALTER TABLE email_t
 -- lock_t
 --
 -- These constraints intentionally left blank.
+
+--
+-- phone_t
+--
+ALTER TABLE phone_t
+  add constraint phone_t2
+  foreign key (realm_id)
+  references realm_owner_t(realm_id)
+/
+CREATE INDEX phone_t3 on phone_t (
+  realm_id
+)
+/
+ALTER TABLE phone_t
+  add constraint phone_t4
+  check (location between 1 and 2)
+/
 
 --
 -- realm_owner_t
