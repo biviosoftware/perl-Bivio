@@ -49,7 +49,7 @@ The number of rows to show.
 
 The number of character columns to show.
 
-=item wrap : string (optional) [HARD]
+=item wrap : string (optional) [NO]
 
 The text wrapping mode.
 
@@ -100,7 +100,7 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
-    $fields->{wrap} = $self->get_or_default('wrap', 'hard');
+    $fields->{wrap} = $self->get_or_default('wrap', 'no');
     return;
 }
 
