@@ -3150,6 +3150,30 @@ my(@_CFG) = (
         Bivio::Biz::Action::ClientRedirect->execute_next
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
     )],
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_EXPANDED_LIST
+        276
+        CLUB
+        MAIL_READ
+        ?/mail-expanded
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::MailList->execute_load_page
+        Bivio::UI::HTML::Club::MailList
+        next=CLUB_COMMUNICATIONS_MAIL_EXPANDED_LIST
+        help=mail
+    )],
+    [qw(
+        CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
+        277
+        CLUB
+        MAIL_READ
+        ?/mail-collapsed
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::MailList->execute_load_page
+        Bivio::UI::HTML::Club::MailList
+        next=CLUB_COMMUNICATIONS_MAIL_COLLAPSED_LIST
+        help=mail
+    )],
 );
 
 __PACKAGE__->compile([
