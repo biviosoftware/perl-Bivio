@@ -72,6 +72,8 @@ _compile(\%_MAP, [
         => 'Tax ID',
     ['EMAIL', 'Email.email', 'RealmInvite.email']
         => 'Email',
+    ['Email.want_bulletin']
+        => 'Receive monthly updates on bivio features and service.',
     ['PASSWORD', 'RealmOwner.password', 'RealmAccount.external_password']
         => 'Password',
     OLD_PASSWORD => 'Current Password',
