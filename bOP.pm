@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    if can_iterate, so can handle lists larger than MAX_SIZE
+  * Bivio::Util::LinuxConfig->disable_service ignores errors
+  * Bivio::Util::Release file exclude test ignores errors when no files
+
+  Revision 1.35  2002/12/16 22:20:30  nagler
+  * Bivio::Biz::ExpandableListFormModel->ROW_INCREMENT overridable
+  * Bivio::Biz::FormModel->internal_catch_field_constraint_error added
+  * Bivio::Biz::ListFormModel->execute_end can return a Task transition
+  * Bivio::Test::Request->get/put_form added
+  * Bivio::Type::DateTime->date_from_parts_or_die added
   * Bivio::UI::DateTimeMode->FULL_MONTH_AND_YEAR_UC and widget support added
   * Bivio::UI::HTML::Widget::FormField wraps label in String widget
   * Bivio::Util::LinuxConfig->add_user checks uid correctly
