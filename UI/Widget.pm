@@ -328,6 +328,20 @@ sub new {
 
 =cut
 
+=for html <a name="accepts_attribute"></a>
+
+=head2 static accepts_attribute(string attr) : boolean
+
+Does the widget accept this attribute?
+
+Returns false for backward compatibility.
+
+=cut
+
+sub accepts_attribute {
+    return 0;
+}
+
 =for html <a name="initialize"></a>
 
 =head2 initialize()
