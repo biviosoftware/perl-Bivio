@@ -146,6 +146,11 @@ Sets the cell width explicitly from a widget value.  The
 widget value must return the full attribute, e.g. use
 L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
 
+=item row_control : array_ref []
+
+If set, controls the rendering of an entire row.  Can be set
+on any cell in the row.
+
 =back
 
 =cut
@@ -382,7 +387,7 @@ sub render {
     $$buffer .= '>';
 
     my($r, $c);
-    foreach $r (@{$fields->{rows}}) {
+ ROW: foreach $r (@{$fields->{rows}}) {
 	my($row) = "<tr>\n";
 	foreach $c (@$r) {
 	    # Look up widget value
@@ -397,6 +402,8 @@ sub render {
 		    # Close cell start always.  See initialization.
 		    $row .= '>';
 		}
+		my($rc) = $w->unsafe_get('row_control');
+		next ROW if $rc && !$rc->get_widget_value(@$rc);
 		$w->render($source, \$row);
 	    }
 	    elsif (defined($w)) {
