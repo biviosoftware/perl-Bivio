@@ -189,6 +189,8 @@ sub _task {
     $t->group(USER_HOME => '?');
     $t->group(CLUB_HOME => '?');
     $t->group(CLIENT_REDIRECT => 'goto/*');
+    $t->group(DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef);
+    $t->group(FORBIDDEN => undef);
     $t->group(MY_SITE => 'my-site/*');
     $t->group(HELP => 'hp/*');
     $t->group(PRODUCTS => 'pub/products');
