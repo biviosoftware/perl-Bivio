@@ -218,8 +218,7 @@ sub initialize {
 	$p .= $self->get_or_default('pad', 5);
 	$p .= Bivio::UI::Align->as_html(
 		$self->get_or_default('align', 'center'));
-	$p .= ' width="95%"'
-		if $self->get_or_default('expand', 0);
+	$p .= ' width="100%"' if $self->get_or_default('expand', 0);
 	my($bgcolor) = $self->get_or_default('bgcolor', 0);
 	$p .= Bivio::UI::Color->as_html_bg($bgcolor) if $bgcolor;
 	$p .= '>';
@@ -374,8 +373,9 @@ sub _init_cell {
 	    $cell = $double;
 	}
 	elsif ($cell =~ /^\s+$/) {
+	    $cell =~ s/\s/&nbsp;/g;
 	    $cell = Bivio::UI::HTML::Widget::Join->new({
-		values => ['&nbsp;'],
+		values => [$cell],
 		%$attrs,
 	    });
 	}
