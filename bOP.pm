@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    Bivio::Ext::MIMEParser to avoid warnings (on older perls)
+  * Bivio::ShellUtil->lock_action allows global (file) locks on commands/actions
+  * Bivio::UI::HTML::Widget::Table.column_bgcolor sets color on column
+
+  Revision 1.27  2002/10/25 03:01:33  nagler
+  * Bivio::Auth::Realm->is_default_id added
+  * Bivio::Biz::Action::LocalFilePlain->execute_favicon added
   * Bivio::Delegate::SimpleTaskId->FAVICON_ICO added
   * Bivio::Ext::DBI changed die to warning on connection errors
   * Bivio::SQL::Connection->execute changed catch back to eval
