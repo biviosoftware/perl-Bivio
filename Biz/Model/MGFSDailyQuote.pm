@@ -57,6 +57,22 @@ my($_PACKAGE) = __PACKAGE__;
 my($_DATES) = 'a8' x 265;
 my($_AMOUNTS) = 'a6' x 265;
 
+# quotes which use the new decimal format, mg_id => ticker
+# the ticker isn't used now, but could be used for validation
+my($_DECIMAL_QUOTES) = {
+    # 8/28/2000
+    '00020707' => 'APC', # Anadarko Petroleum
+    '00009423' => 'FDX', # Fedex
+    '00032024' => 'GTW', # Gateway
+    '00004604' => 'HUG', # Hughes Supply
+    '00014900' => 'MNS', # MSC Software
+    '00002569' => 'FCEA', # Forest City class A
+    '00016051' => 'FCEB', # Forest City class B
+
+    # 9/25/2000
+
+};
+
 # used to unsplit values, it is keyed by mg_id and contains an
 # array of date, factor pairs
 my($_SPLITS) = {};
@@ -388,6 +404,7 @@ sub _unsplit {
     # only interested in first part
     $date =~ s/^(.*)\s/$1/;
 
+    # splits are aligned on a fractional boundary
     my($aligned) = 0;
     my($splits) = $_SPLITS->{$mg_id} || _get_splits($mg_id);
     for (my($i) = int(@$splits) - 2; $i >= 0; $i -= 2) {
@@ -408,7 +425,10 @@ sub _unsplit {
 	    last;
 	}
     }
-    unless ($aligned) {
+    if ($aligned || $_DECIMAL_QUOTES->{$mg_id}) {
+	;
+    }
+    else {
 	# align along fractional boundary
 	$values->{close} = _align($values->{close});
 	$values->{high} = _align($values->{high});
