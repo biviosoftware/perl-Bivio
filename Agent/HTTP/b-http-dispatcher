@@ -88,7 +88,7 @@ sub main {
     if ($execute) {
         -f 'httpd.pid' && kill('TERM', `cat httpd.pid`);
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
-	system('cvs checkout html; cd html/societas; make INSTALLDIR=../')
+	system('cvs checkout html; cd html/societas; make')
 		unless -f 'html/index.html';
 	&symlink('.', 'logs');
     }
@@ -123,8 +123,6 @@ EOF
 		RewriteLog rewrite.log
 		RewriteLogLevel 0
 
-		RewriteCond $pwd/html/i/selftrade/\$1 -f
-		RewriteRule ^/i/(.+) /i/selftrade/\$1  [NS,L]
 		RewriteRule ^/./ - [NS,L]
 		RewriteRule ^(.*) /*$facade\$1 [NS,PT]
 
