@@ -35,7 +35,7 @@ DO NOT CHANGE the numbers in this list, the values may be
 stored in the database.
 
 URLs can be aliases, separated by a colon (:).  However, the first
-on is returned on get from task id.  See
+one is returned on get from task id.  See
 L<Bivio::Agent::HTTP::Location|Bivio::Agent::HTTP::Location>.
 
 URI components should use dashes (-), not underscores (_), to
