@@ -250,79 +250,18 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_infinite_clubs($req);
-    _upgrade_add_bivio_expense($req);
+    _upgrade_add_realm_account_field($req);
     print("\n*** done ***\n");
     return;
 }
 
-
-# _upgrade_add_bivio_expense(Bivio::Agent::Request req)
+# _upgrade_add_realm_account_field(Bivio::Agent::Request req)
 #
-# Adds a 'bivio Subscription' to the deductible expense
-# categories for all clubs. Subcategory of 'Service Charges & Fees'.
+# Adds the realm_account_t.sub_account_number field.
 #
-sub _upgrade_add_bivio_expense {
+sub _upgrade_add_realm_account_field {
     my($req) = @_;
-    print("\nadding bivio subscription expenses to existing clubs\n");
-
-    my($category) = Bivio::Biz::Model->new($req, 'ExpenseCategory');
-
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_id, name
-            FROM realm_owner_t, club_t
-            WHERE realm_owner_t.realm_id=club_t.club_id
-            ORDER by realm_owner_t.name',
-            []);
-    while (my $row = $sth->fetchrow_arrayref) {
-        my($realm_id, $name) = @$row;
-
-        my($parent_id) = (Bivio::SQL::Connection->execute_one_row('
-                SELECT expense_category_id
-                FROM expense_category_t
-                WHERE name=?
-                AND deductible=1
-                AND realm_id=?',
-                ['Service Charges & Fees', $realm_id]) || [])->[0];
-
-        unless ($parent_id) {
-            print("\t", $name, " - skipping, no parent expense category\n");
-            next;
-        }
-
-        $category->create({
-            realm_id => $realm_id,
-            name => 'bivio Subscription',
-            deductible => 1,
-            parent_category_id => $parent_id,
-        });
-    }
-    return;
-}
-
-# _upgrade_infinite_clubs(Bivio::Agent::Request req)
-#
-# Sets infinite subscriptions for clubs like 'Ask Candis',...
-#
-sub _upgrade_infinite_clubs {
-    my($req) = @_;
-    print("setting infinite subscriptions for special clubs\n");
-
-    use Bivio::Biz::Util::EC;
-    use Bivio::Type::RealmName;
-
-    my($ec_util) = Bivio::Biz::Util::EC->new;
-    $ec_util->put(req => $req);
-    my($ro) = Bivio::Biz::Model->new($req, 'RealmOwner');
-
-    foreach my $name (qw(
-        demo_club
-    )) {
-	next unless $ro->unauth_load({name => $name});
-	$req->set_realm($name);
-	print("\t", $name, "\n");
-	$ec_util->infinite_subscription('FREE_TRIAL');
-    }
+    _add_column('realm_account_t', 'sub_account_number', 'VARCHAR2(4000)');
     return;
 }
 
