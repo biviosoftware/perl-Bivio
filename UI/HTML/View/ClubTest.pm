@@ -65,8 +65,9 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    $req->put(page_subtopic => undef, page_heading => 'Page Heading');
-    Bivio::UI::HTML::Club::Page->execute($req, $self);
+    $req->put(page_subtopic => undef, page_heading => 'Page Heading',
+	   page_content => $self);
+    Bivio::UI::HTML::Club::Page->execute($req);
     return;
 }
 
