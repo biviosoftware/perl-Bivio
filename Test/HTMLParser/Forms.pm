@@ -229,13 +229,15 @@ sub _end_form {
     Bivio::Die->die('unlabeled form field: ', $fields->{input},
 	' form: ', $fields->{current})
 	if $fields->{input};
+    _unwind_duplicates($fields);
     my($label) = $fields->{current}->{label};
     if (defined($label)) {
+	my($e) = $self->get('elements');
         Bivio::Die->die('duplicate form ', $label, ': ', $fields->{current})
-                if $self->get('elements')->{$label};
+                if $e->{$label}
+		    && !Bivio::IO::Ref->nested_equals($e->{$label}, $fields->{current});
         $self->get('elements')->{$label} = $fields->{current};
     }
-    _unwind_duplicates($fields);
     _trace($fields->{current}) if $_TRACE;
     $fields->{current} = undef;
     return;
