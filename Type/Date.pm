@@ -150,6 +150,7 @@ sub from_unix {
     return $j.$_TIME_SUFFIX;
 }
 
+
 =for html <a name="get_max"></a>
 
 =head2 get_max() : string

@@ -550,6 +550,20 @@ sub from_parts_or_die {
     return _from_or_die('from_parts', @_);
 }
 
+=for html <a name="get_default"></a>
+
+=head2 get_default() : string
+
+Returns L<local_end_of_today|"local_end_of_today">. This is used by
+L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+
+=cut
+
+sub get_default {
+    my($proto) = @_;
+    return $proto->local_end_of_today;
+}
+
 =for html <a name="get_last_day_in_month"></a>
 
 =head2 get_last_day_in_month(int mon, int year) : int
