@@ -180,6 +180,10 @@ sub handler {
 		$_SELF->get_default_controller_name());
 	$_SELF->process_request($request);
 	$return_code = $request->get_reply()->get_http_return_code();
+
+	if ($return_code == Apache::Constants::OK) {
+	    $request->get_reply()->flush();
+	}
 	1;
     };
     unless (defined($return_code)) {
