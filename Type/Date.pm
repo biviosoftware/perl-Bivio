@@ -139,7 +139,7 @@ sub to_sql_param {
     my(undef, $param_value) = @_;
     return undef unless defined($param_value);
     Carp::croak("$param_value: invalid date (clock component)")
-		if $param_value =~ /$_TIME_SUFFIX$/o;
+		unless $param_value =~ /$_TIME_SUFFIX$/o;
     return $param_value;
 }
 
