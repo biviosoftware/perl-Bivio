@@ -10,6 +10,8 @@ Bivio::IO::Config - simple configuration using perl syntax
 
 =head1 SYNOPSIS
 
+    b-<program> [--Module.param=value] [--TRACE=value]
+
     use Bivio::IO::Config;
     Bivio::IO::Config->register();
     sub configure {
@@ -17,7 +19,9 @@ Bivio::IO::Config - simple configuration using perl syntax
 	$cfg->{param1} && ...;
     }
 
-    Bivio::IO::Config->initialize(@ARGV);
+    Bivio::IO::Config->initialize();
+    Bivio::IO::Config->initialize(\@argv);
+    Bivio::IO::Config->initialize($file);
     Bivio::IO::Config->initialize({
 	'Some::Package' => {
 	    'some_param' => $some_value,
@@ -43,6 +47,10 @@ Each module defines a C<configure> method and
 calls L<register|"register"> during initialization.
 When L<initialize|"initialize"> is called, the registrants are
 upcalled with their configuration.
+
+Programs may pass I<@ARGV> to L<initialize|"initialize"> to allow
+individual configuration parameters to be set from command line arguments.
+See L<initialize|"initialize"> for syntax.
 
 =cut
 
@@ -75,22 +83,27 @@ sub REQUIRED {
     return \&REQUIRED;
 }
 
+#=VARIABLES
+my($_PACKAGE, $_ACTUAL, $_INITIALIZED, @_REGISTERED, %_SPEC, %_CONFIGURED);
+# Make sure we are initialized
+BEGIN {
+    $_PACKAGE = __PACKAGE__;
+    # The configuration read off disk or passed in
+    $_ACTUAL = {};
+    # Was "initialized" called once?
+    $_INITIALIZED = 0;
+    # List of packages registered
+    @_REGISTERED = ();
+    # Configuration specifications for registered packages
+    %_SPEC = ();
+    # Has a package been configured?
+    %_CONFIGURED = ();
+}
+
 #=IMPORTS
 # Do not use explicitly, to ensure this module initialized first
 # use Bivio::IO::Alert;
-
-#=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-# The configuration read off disk or passed in
-my($_ACTUAL) = {};
-# Was "initialized" called once?
-my($_INITIALIZED) = 0;
-# List of packages registered
-my(@_REGISTERED) = ();
-# Configuration specifications for registered packages
-my(%_SPEC) = ();
-# Has a package been configured?
-my(%_CONFIGURED) = ();
+# use Bivio::IO::Trace;
 
 =head1 METHODS
 
@@ -145,10 +158,10 @@ sub get {
     int(@_) < 2 && return $pkg_cfg;
     my($spec) = $_SPEC{$pkg};
     defined($spec) && defined($spec->{&NAMED})
-	    || die("$pkg: named config not specified");
+	    || die("$pkg: NAMED config not specified");
     if (defined($name)) {
 	defined($pkg_cfg->{$name})
-		|| die("$pkg $name: named config not found");
+		|| die("$pkg.$name: named config not found");
 	return $pkg_cfg->{$name};
     }
     # Retrieve the "undef" config, see _get_pkg
@@ -157,54 +170,115 @@ sub get {
 	    keys(%$cfg));
     @bad || return $cfg;
     @bad = sort @bad;
-    die("$pkg @bad: named config required");
+    die("$pkg.(@bad): named config required");
 }
 
 =for html <a name="initialize"></a>
 
-=head2 initialize(string arg1, ...)
+=head2 initialize(string file)
+=head2 initialize(string file, array argv)
 
-=head2 initialize(hash config)
+=head2 initialize(hash config, array argv)
 
-Initializes the configuration from the command line arguments, from an explicit
-hash, or from the environment variable C<$BIVIO_CONFIG> (only if not running
-setuid).
+=head2 initialize(array argv)
 
-Calls registrants if configuration is valid.
+=head2 initialize()
+
+Initializes the configuration from I<config> hash or I<file> which contains
+a hash.
+
+Without an argument or with just I<argv>, looks for the name of a configuration
+file as follows:
+
+=over 4
+
+=item 1.
+
+If running setuid, setgid, or as root, skip to step 4.
+
+=item 2.
+
+If the environment variable I<$BIVIO_CONF> is defined,
+identifies the name of the configuration file which
+must contain a hash.
+
+=item 3.
+
+If the file F<bivio.conf> exists (in the current directory),
+it must contain a hash.
+
+=item 4.
+
+The file F</etc/bivio.conf> must exist and contain a hash.
+
+=back
+
+If none of the files are found or they do not contain a hash, throws an
+exception.
+
+If I<argv> is supplied and not running setuid or setgid (but may be
+running as root), extracts (i.e. deletes) arguments from the
+I<argv> of the form:
+
+    --Module.param=value
+
+and sets configuration of the form:
+
+    Module->{param} = value;
+
+I<param> may be of the form I<idx1.idx2.idx3> which translates to:
+
+    Module->{idx1}->{idx2}->{idx3} = value;
+
+An error during evaluation causes program termination.  To set a
+value to undef, use the word C<undef>.
+
+HACK: Since it is fairly common, the option I<--TRACE> is translated
+to I<--Bivio::IO::Trace.package_filter> for brevity.
+
+NOTE: I<Module> and I<param> must contain only word characters (except
+for C<::> and C<.> separators) for this syntax to work.
+
+If a valid configuration is found, calls packages which have
+called L<register|"register">.
 
 =cut
 
 sub initialize {
     my(undef, $arg) = @_;
+    my($argv) = $_[$#_];
     $_INITIALIZED = 1;
     %_CONFIGURED = ();
     # On failure, we have no configuration.
     $_ACTUAL = {};
     my($file);
-    if (defined($arg)) {
+    my($not_setuid) = $< == $> && $( == $);
+    # If $arg is an ARRAY, then it is $argv
+    if (defined($arg) && ref($arg) ne 'ARRAY') {
 	if (ref($arg) eq 'HASH') {
 	    $_ACTUAL = $arg;
 	}
 	else {
-	    -r $arg || Bivio::IO::Alert->die(
-		    "$arg: not readable file\nusage: $0 config.pl");
 	    $file = $arg;
 	}
     }
-    # If we are setuid or setgid, then don't initialize from environment
-    # variables.
-    elsif ($< == $> && $( == $) && defined($ENV{BIVIO_CONFIG})) {
-	-r $ENV{BIVIO_CONFIG} || Bivio::IO::Alert->die(
-		"\$BIVIO_CONFIG environment variable invalid\n");
-	$file = $ENV{BIVIO_CONFIG};
+    else {
+	# If we are setuid or setgid or as root, then don't initialize from
+	# environment variables or files in the current directory.
+	# /etc/bivio.conf is last resort if the file doesn't exist.
+	$file = $ENV{BIVIO_CONF} || 'bivio.conf';
+	unless (-f $file && $< != 0 && $not_setuid) {
+	    $file = '/etc/bivio.conf';
+	}
     }
     if (defined($file)) {
-	my($data) = do $file;
-	ref($data) eq 'HASH' || Bivio::IO::Alert->die(
+	my($actual) = do $file;
+	ref($actual) eq 'HASH' || Bivio::IO::Alert->die(
 		"$file: config parse failed: ",
 		$@ ? $@ : "empty or not a hash_ref");
-	$_ACTUAL = $data;
+	$_ACTUAL = $actual;
     }
+    $not_setuid && ref($argv) eq 'ARRAY' && &_process_argv($_ACTUAL, $argv);
     # Call registrants in FIFO
     my($pkg);
     foreach $pkg (@_REGISTERED) {
@@ -287,7 +361,7 @@ sub _get_pkg {
 	    # If it is required, then it is an error
 	    if (defined($v) && $v eq &REQUIRED) {
 		defined($actual->{$k}) && next;
-		die("$pkg $k: config parameter not defined");
+		die("$pkg.$k: config parameter not defined");
 	    }
 	    # Have an actual value for specified config?
 	    exists($actual->{$k}) && next;
@@ -312,7 +386,7 @@ sub _get_pkg {
 		}
 		# Must be a named configuration section
 		my($named_actual) = $v;
-		ref($named_actual) || die("$pkg $k: invalid config parameter");
+		ref($named_actual) || die("$pkg.$k: invalid config parameter");
 		while (my($nk, $nv) = each(%$named_spec)) {
 		    # If it is required, then must be defined (not just exists)
 		    if (defined($nv) && $nv eq &REQUIRED) {
@@ -323,7 +397,7 @@ sub _get_pkg {
 			    $named_actual->{$nk} = $actual->{$nk};
 			    next;
 			}
-			die("$pkg $nk: named config parameter not defined");
+			die("$pkg.$nk: named config parameter not defined");
 		    }
 		    else {
 			# Have an actual value for specified named config?
@@ -347,13 +421,53 @@ sub _get_pkg {
     return $_ACTUAL->{$pkg} = $actual;
 }
 
+sub _process_argv {
+    my($actual, $argv) = @_;
+    for (my($i) = 0; $i < int(@$argv); $i++) {
+	my($a) = $argv->[$i];
+	# HACK: Probably want to generalize(?)
+	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/;
+	# Matches our form?
+	(my($m, $p, $v) = $a =~ /^--([\w:]+)\.([.\w]+)=(.*)$/s) || next;
+	$v eq 'undef' && ($v = undef);
+	# Ensure the hashes exist down the chain, starting at the module ($m)
+	# perl in Lispish
+	my($ref, $car, $cdr) = ($actual, $m, $p);
+	while (length($cdr)) {
+	    exists($ref->{$car}) || ($ref->{$car} = {});
+            $ref = $ref->{$car};
+	    ($car, $cdr) = split(/\./, $cdr, 2);
+	}
+	$ref->{$car} = $v;
+	# Get rid of processed parameter
+	splice(@$argv, $i--, 1);
+    }
+}
+
 =head1 ENVIRONMENT
 
 =over 4
 
-=item $BIVIO_CONFIG
+=item $BIVIO_CONF
 
-Name of configuration file if not passed command-line arguments.
+Name of configuration file if L<initialize|"initialize"> is not passed
+arguments and the program is not running setuid, setgid, or as root.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item bivio.conf
+
+Default value for environment variable I<$BIVIO_CONF>.
+
+=item /etc/bivio.conf
+
+Name of configuration used if L<initialize|"initialize"> is not passed
+arguments and the programming is running setuid, setgid, or as root, or the
+file identified by C<$BIVIO_CONF> (or its default) is not found.
 
 =back
 

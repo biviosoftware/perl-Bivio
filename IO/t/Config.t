@@ -87,3 +87,30 @@ foreach $k (qw(p3 p4 p5)) {
 foreach $k (qw(p1 p2)) {
     exists($c->{$k}) && die("shouldn't be set $k");
 }
+
+open(OUT, '> ' . ($ENV{BIVIO_CONF} = "bivio.conf$$")) || die("open: $!");
+print OUT <<'EOF';
+{
+    'Bivio::IO::Config::T1' => {
+	'p1' => 'p1',
+	'p3' => 'p3',
+    },
+}
+EOF
+close(OUT) || die("close: $!");
+my(@argv) = qw(
+    --Bivio::IO::Config::T1.p2=p2
+    --Bivio::IO::Config::T1.p4=p4
+    --Bivio::IO::Config::T1.p5=p5
+);
+&main::conf_init(\@argv);
+unlink($ENV{BIVIO_CONF});
+&main::conf_get(undef);
+$c = Bivio::IO::Config->get(undef);
+foreach $k (qw(p3 p4 p5)) {
+    $c->{$k} ne $k && die("missing or invalid $k");
+}
+$c = Bivio::IO::Config->get();
+foreach $k (qw(p1 p2)) {
+    $c->{$k} ne $k && die("missing or invalid $k");
+}
