@@ -83,7 +83,7 @@ sub from_mgfs {
 	$values->{factor} = $factors[$i];
 
 	my($die) = $self->try_to_update_or_create($values,
-		$file eq 'chgdb01x');
+		$file eq 'chgdb01');
 	if ($die) {
 	    $self->write_reject_record($die, $record);
 	    last;
