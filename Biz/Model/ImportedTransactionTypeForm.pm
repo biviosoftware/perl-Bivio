@@ -57,7 +57,7 @@ sub execute_empty {
     while ($list->next_row) {
 	my($type) = $list->get('Entry.entry_type');
 	$self->internal_put_field(selected_row => $list->get_cursor);
-	$self->internal_put_field('total_amount' => $list->get(
+	$self->internal_put_field('imported_total_amount' => $list->get(
 		'Entry.amount'));
 	last;
     }
@@ -136,7 +136,8 @@ sub internal_initialize {
             AccountSync.sync_key
             ),
 	    {
-		name => 'total_amount',
+		# Must be "unique" since other forms refer to this field
+		name => 'imported_total_amount',
 		type => 'Amount',
 		constraint => 'NONE',
 	    },
