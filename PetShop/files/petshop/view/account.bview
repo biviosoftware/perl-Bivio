@@ -15,13 +15,11 @@ my($edit_mode_condition) = sub {
 view_put(menu_content => Form('UserAccountForm',
     Grid([
 	[
-	    String('This a demonstration site.
-
+	    String(<<'EOF', 'error', {cell_colspan => 2}),
+This a demonstration site.
 DO NOT ENTER REAL DATA.
 
-Thank you,
-The Management',
-		'error', {cell_colspan => 2}),
+EOF
 	], [
 	    String('Account Information:', 'page_heading',
 		{cell_colspan => 2}),
