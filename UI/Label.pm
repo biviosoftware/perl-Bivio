@@ -397,7 +397,6 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_ACCOUNT_DIVIDEND => 'Account Dividend',
     CLUB_ACCOUNTING_ACCOUNT_EXPENSE => 'Account Expense',
     CLUB_ACCOUNTING_ACCOUNT_INCOME => 'Account Income',
-    CLUB_ACCOUNTING_ACCOUNT_INSTITUTION => 'AccountSync Configuration',
     CLUB_ACCOUNTING_ACCOUNT_INTEREST => 'Account Interest',
     CLUB_ACCOUNTING_ACCOUNT_LIST => 'Account Summary',
     CLUB_ACCOUNTING_ACCOUNT_TRANSFER => 'Account Transfer',
