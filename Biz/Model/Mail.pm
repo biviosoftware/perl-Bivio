@@ -235,9 +235,6 @@ sub delete {
                     WHERE realm_id = ?
                         AND mail_id = ?',
                     [$is_thread_root, $req->get('auth_id'), $new_root]);
-        } else {
-            Bivio::IO::Alert->warn('mail_id=', $mail_id,
-                    ': is_thread_root was true, but had no replies!');
         }
     }
     else {
