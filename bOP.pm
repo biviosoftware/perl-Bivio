@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::SQL::Connection->ping_connection added
+  * Bivio::SQL::Connection::Postgres handle 'server closed the
+    connection unexpectedly' error
+
+  Revision 1.41  2003/02/13 13:36:19  nagler
+  * Bivio::BConf sets TestLanguage map to Bivio::Test::Language by default
+  * Bivio::Biz::ListFormModel->execute_ok passes $button to execute_ok_*
+  * Bivio::Biz::ListModel calls Bivio::Type->get_instance('PageSize') instead
+    of hardwiring Bivio::Type::PageSize
   * Bivio::Test::HTMLParser::Forms.error_color is configurable
   * Bivio::UI::HTML::Widget::MathHandlerBase manipulates fields with commas
   * Bivio::XML::DocBook upgraded to match book example and added real xrefs
