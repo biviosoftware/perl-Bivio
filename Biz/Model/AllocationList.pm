@@ -31,9 +31,12 @@ C<Bivio::Biz::Model::AllocationList> allocation list base class
 =cut
 
 #=IMPORTS
+use Bivio::Type::Amount;
+use Bivio::Type::TaxCategory;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($math) = 'Bivio::Type::Amount';
 
 =head1 METHODS
 
@@ -43,7 +46,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 internal_calculate_net_profit(array_ref rows)
 
-Calculates the net profit field for each row.
+Calculates the net profit field for each row. Rounds values to the penny.
 
 =cut
 
@@ -55,8 +58,11 @@ sub internal_calculate_net_profit {
 	for (my($i) = 0; $i < Bivio::Type::TaxCategory->get_count; $i++) {
 	    my($tax) = Bivio::Type::TaxCategory->from_int($i);
 	    next if $tax == Bivio::Type::TaxCategory::NOT_TAXABLE();
-	    $net_profit = Bivio::Type::Amount->add($net_profit,
-		    $row->{$tax->get_short_desc});
+	    my($name) = $tax->get_short_desc;
+	    next unless $row->{$name};
+	    # round values first (affects only withdrawal list)
+	    $row->{$name} = $math->round($row->{$name}, 2);
+	    $net_profit = $math->add($net_profit, $row->{$name});
 	}
 	$row->{net_profit} = $net_profit;
     }
