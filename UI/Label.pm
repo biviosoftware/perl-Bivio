@@ -427,6 +427,9 @@ _compile(\%_MAP, [
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL => 'Member Withdrawal',
     CLUB_ACCOUNTING_MEMBER_WITHDRAWAL_STOCK => 'Member Investment Withdrawal',
     CLUB_ACCOUNTING_PAYMENT => 'Payments',
+    CLUB_ACCOUNTING_SYNC_IDENTIFY =>
+    'AccountSync Identify Unassigned Transactions',
+    CLUB_ACCOUNTING_SYNC_REVIEW => 'AccountSync Review',
     CLUB_ACCOUNTING_TAXES_ALLOCATIONS => 'Member Tax Allocations ',
     CLUB_ACCOUNTING_TAXES_ALLOCATION_METHOD => [
 	'' => 'Allocation Method',
