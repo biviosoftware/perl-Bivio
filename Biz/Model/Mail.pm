@@ -106,7 +106,7 @@ sub create {
     Bivio::Type::Email->invalidate(\$from_email)
                 if length($from_email) > $_MAX_WIDTH;
 
-    defined($from_name) || ($from_name = $from_email);
+    defined($from_name) && length($from_name) || ($from_name = $from_email);
     $from_name = substr($from_name, 0, $_MAX_WIDTH);
 
     my($reply_to_email) = $msg->get_reply_to || $from_email;
