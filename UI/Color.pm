@@ -68,6 +68,7 @@ __PACKAGE__->compile(
 	0x006666,
 	'page_vlink',
 	'page_alink',
+	'page_link',
 	'user_name',
 	'line_above_menu',
 	'action_bar_border',
