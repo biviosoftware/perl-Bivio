@@ -78,6 +78,32 @@ sub new {
 
 =cut
 
+=for html <a name="get_by_field_names"></a>
+
+=head2 get_by_field_names(string name, ...) : hash_ref
+
+Returns the form data by finding by I<name>(s) in visible and submit fields of
+forms.
+
+=cut
+
+sub get_by_field_names {
+    my($self, @name) = @_;
+    my($found);
+    my($forms) = $self->get_shallow_copy;
+ FORM: while (my($form, $values) = each(%$forms)) {
+	foreach my $n (@name) {
+	    next FORM
+		unless grep($n eq $_,
+		    keys(%{$values->{visible}}), keys(%{$values->{submit}}));
+	}
+	Bivio::Die->die(\@name, ': too many forms matched fields')
+	    if $found;
+	$found = $values;
+    }
+    return $found || Bivio::Die->die(\@name, ': no form matches named fields');
+}
+
 =for html <a name="html_parser_end"></a>
 
 =head2 html_parser_end(string tag, string origtext)
@@ -140,6 +166,7 @@ sub html_parser_text {
     return unless length($text);
     $fields->{text} .= $text;
 
+    return if _have_prefix_label($fields);
     return _label_option($fields) if $fields->{option} || $fields->{radio};
     return _label_visible($fields) if $fields->{input};
     return;
@@ -156,8 +183,8 @@ sub _end_font {
     my($f) = pop(@{$fields->{font}});
     return unless defined($f->{color})
 	&& $f->{color} eq $_ERROR_COLOR
-	# Errors don't apply to fields.   Fields end with ':'
-	&& $fields->{text} && $fields->{text} !~ /:$/;
+	&& $fields->{text}
+	&& !_have_prefix_label($fields);
     $fields->{input_error} = $fields->{text};
     $fields->{text} = undef;
     return;
@@ -247,6 +274,15 @@ sub _fixup_attr {
     $attr->{selected} = $attr->{checked} = 1 if $attr->{checked};
     $attr->{selected} = 1 if $attr->{selected};
     return;
+}
+
+# _have_prefix_label(hash_ref fields) : boolean
+#
+# Returns true if $fields->{text} is a prefix label (ends with colon)
+#
+sub _have_prefix_label {
+    my($fields) = @_;
+    return $fields->{text} && $fields->{text} =~ /:$/;
 }
 
 # _label_field(hash_ref fields, string class, hash_ref attr)
@@ -347,7 +383,7 @@ sub _label_visible {
     _label_field($fields, 'visible', $fields->{input});
     if ($fields->{input_error}) {
 	$fields->{input}->{error} = $fields->{input_error};
-	push(@{$fields->{current}->{errors}}, $fields->{input});
+	push(@{$fields->{current}->{errors} ||= []}, $fields->{input});
 	$fields->{input_error} = undef;
     }
     $fields->{input} = undef;
@@ -356,14 +392,15 @@ sub _label_visible {
 
 # _leftover_input(hash_ref fields, hash_ref next)
 #
-# Left over input field at start of new input.  Anonymous field.
+# Left over input field at start of new input.  Anonymous field.  Save
+# context for next field.
 #
 sub _leftover_input {
     my($fields, $next) = @_;
-    my($save) = $fields->{text};
+    my(@save) = @{$fields}{qw{text prev_cell_text}};
     $fields->{text} = '_anon';
     _label_visible($fields);
-    $fields->{text} = $save;
+    @{$fields}{qw{text prev_cell_text}} = @save;
     return;
 }
 
@@ -400,8 +437,9 @@ sub _start_form {
 #
 sub _start_input {
     my($fields, $attr) = @_;
-    _trace($fields->{text}, $fields->{input}, $fields->{prev_cell_text})
-	if $_TRACE; 
+    _trace($fields->{text}, ' ', $fields->{input}, ' ',
+	$fields->{prev_cell_text}, ' ', $attr)
+	if $_TRACE;
     _leftover_input($fields, $attr) if $fields->{input};
 
     return _label_hidden($fields, $attr) if $attr->{type} eq 'hidden';
@@ -483,7 +521,8 @@ sub _start_radio {
 sub _start_tx {
     my($fields, $attr, $tag) = @_;
     if ($tag =~ /th|td/) {
-	$fields->{prev_cell_text} = $fields->{text};
+	$fields->{prev_cell_text} = $fields->{text}
+	    if defined($fields->{text}) && length($fields->{text});
 	$fields->{text} = undef;
     }
     if ($fields->{in_data_table}) {
@@ -521,7 +560,7 @@ sub _text {
     my($fields) = @_;
     my($res) = $fields->{text} || $fields->{prev_cell_text};
     Bivio::Die->die('no text field: ', $fields)
-		unless $res;
+	unless $res;
     $fields->{prev_cell_text} = $fields->{text} = undef;
     return $res;
 }
@@ -543,6 +582,7 @@ sub _unwind_duplicates {
 	    my($i) = 0;
 	    foreach my $v (@$duplicates) {
 		$c->{$v->{label} = $k . '#' . $i++} = $v;
+		_trace('relabeled ', $v) if $_TRACE;
 	    }
 	    delete($c->{$k});
 	}
