@@ -170,6 +170,24 @@ sub delete {
     die("not supported");
 }
 
+=for html <a name="delete_club"></a>
+
+=head2 static delete_club(Bivio::Biz::Model::RealmOwner club)
+
+The counterpart to setup_club, this method deletes all the club's mail
+messages on the file server.
+
+=cut
+
+sub delete_club {
+    my(undef, $club) = @_;
+    my($res);
+    my($club_name) = $club->get('name');
+    $_FILE_CLIENT->rmtree($club_name, \$res)
+	    || die("couldn't delete_club $club_name: $res");
+    return;
+}
+
 =for html <a name="get_keywords"></a>
 
 =head2 get_keywords(void) : keywords (arrayref)
