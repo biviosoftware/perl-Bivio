@@ -53,6 +53,12 @@ Bivio::Test->unit([
 	   relay_domains => ['10.1.1.1'], [
 	       ['mail/relay-domains', '10.1.1.1'],
 	   ],
+       ], [
+	   sshd_param =>
+	   ['PermitRootLogin', 'no', 'VerifyReverseMapping', 'yes'], [
+	       ['ssh/sshd_config', "\nPermitRootLogin no"],
+	       ['ssh/sshd_config', "\nVerifyReverseMapping yes"],
+	   ],
        ],
     ],
 ]);

@@ -51,7 +51,9 @@ sub USAGE {
     return <<'EOF';
 usage: b-linux-config [options] command [args...]
 commands:
+    relay_domains host ... -- add hosts to sendmail relay-domains
     serial_console -- configure grub and init for serial port console
+    sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
 }
 
@@ -125,6 +127,23 @@ timeout=5
 serial --unit=0 --speed=38400
 terminal --timeout=1 serial
 EOF
+}
+
+=for html <a name="sshd_param"></a>
+
+=head2 static sshd_param(string param, string value, ...) : string
+
+Set I<param> to I<value> in sshd_config.  Knows how to replace only
+those parameters which already exist in the file.
+
+=cut
+
+sub sshd_param {
+    my($self, @args) = @_;
+    return _insert_text('/etc/ssh/sshd_config', map {
+	my($param, $value) = @$_;
+	["(?<=\n)\\s*#?\\s*$param\[^\n+]", "$param $value"],
+    } @{$self->group_args(2, \@args)});
 }
 
 #=PRIVATE METHODS
