@@ -53,7 +53,7 @@ sub create_content {
 	form_class => 'Bivio::Biz::Model::MemberOpeningBalanceForm',
 	header => $_PACKAGE->join(<<'EOF')
 Use this form to record a member's investment in the club at the time the
-accounting is transfered to bivio.
+accounting is transferred to bivio.
 EOF
     });
     $form->put(value => $form->create_fields([
