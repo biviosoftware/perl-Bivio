@@ -42,7 +42,7 @@ my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
-    is_production => 0,
+    is_production => 1,
     uri => 'petshop',
     Color => {
 	initialize => sub {
