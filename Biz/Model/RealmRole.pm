@@ -42,6 +42,57 @@ use Bivio::Auth::PermissionSet;
 
 =cut
 
+=for html <a name="add_permissions"></a>
+
+=head2 add_permissions(string realm_id, array_ref roles, Bivio::Auth::PermissionSet permissions)
+
+Add permissions to the roles for the given realm.
+Note: Creates entries for ALL ROLES if this one does not exist.
+
+=cut
+
+sub add_permissions {
+    my($self, $realm_id, $roles, $permissions) = @_;
+
+    # Copy permission set from CLUB if first role not found
+    $self->_clone_realm(Bivio::Auth::RealmType->CLUB()->as_int, $realm_id)
+            unless $self->unauth_load(realm_id => $realm_id,
+                    role => $roles->[0]);
+
+    my($ps, $role);
+    foreach $role (@$roles) {
+        # Load current permission set and add new ones
+        $self->die('NOT_FOUND',
+                { message => 'failed to load permission set', entity => $role})
+                unless $self->unauth_load(realm_id => $realm_id, role => $role);
+        $ps = $self->get('permission_set');
+        $ps |= $permissions;
+        $self->update({permission_set => $ps});
+    }
+    return;
+}
+
+=for html <a name="remove_permissions"></a>
+
+=head2 remove_permissions(string realm_id, array_ref roles, Bivio::Auth::PermissionSet permissions)
+
+Removes permissions from the roles for the given realm.
+
+=cut
+
+sub remove_permissions {
+    my($self, $realm_id, $roles, $permissions) = @_;
+    my($ps, $role);
+    foreach $role (@$roles) {
+        $self->die('NOT_FOUND', { message => 'missing role entry',
+            role => $role, entity => $realm_id})
+                unless $self->unauth_load(realm_id => $realm_id, role => $role);
+        $ps = $self->get('permission_set') & ~$permissions;
+        $self->update({permission_set => $ps});
+    }
+    return;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
@@ -67,6 +118,24 @@ sub internal_initialize {
 }
 
 #=PRIVATE METHODS
+
+# _create(string existing_realm, string new_realm) : 
+#
+# Clone the permission set for all roles
+#
+sub _clone_realm {
+    my($self, $existing, $new) = @_;
+
+    my($ps);
+    foreach my $role (Bivio::Auth::Role::get_list()) {
+        next if $role eq Bivio::Auth::Role::UNKNOWN();
+        $self->unauth_load(realm_id => $existing, role => $role);
+        $ps = $self->get('permission_set');
+        $self->create({realm_id => $new, role => $role,
+            permission_set => $ps});
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 

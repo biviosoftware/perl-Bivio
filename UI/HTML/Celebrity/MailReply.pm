@@ -65,7 +65,7 @@ sub create_content {
     my(%mode_map) = ();
     $mode_map{0} = $self->form('MailReplyForm', [
         # ['field', 'label', 'description', 'example text', options]
-	['from', 'MAIL_FROM', undef, undef, {size => 60}],
+	['from', 'MAIL_FROM_NAME', undef, undef, {size => 60}],
 	['to', 'MAIL_TO', undef, undef, {widget => $to_chooser}],
 	['subject', 'MAIL_SUBJECT', undef, undef, {size => 60}],
 	['text', 'MAIL_TEXT', undef, undef, {cols => 60, label_align => 'NE'}],

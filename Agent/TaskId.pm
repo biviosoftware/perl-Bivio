@@ -101,7 +101,7 @@ my(@_CFG) = (
         ANY_USER
         pub/my_club_site
 	Bivio::Biz::Action::MyClubRedirect
-        next=CLUB_HOME
+        next=CLUB_INTRO
     )],
     [qw(
 	LOGIN
@@ -148,14 +148,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::AccountList
         help=account-summary
     )],
-#    [qw(
-#        CLUB_ACCOUNTING_HISTORY
-#        10
-#        CLUB
-#        ACCOUNTING_READ
-#        ?/accounting/history
-#        Bivio::UI::HTML::Club::Embargoed
-#    )],
+#10
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_LIST
         11
@@ -215,14 +208,16 @@ my(@_CFG) = (
         Bivio::Biz::Action::Referral
     )],
     [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_LIST
+        CLUB_COMMUNICATIONS_MAIL_LIST
         16
         CLUB
         MAIL_READ
         ?/mail
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_page
+        Bivio::Biz::Model::MailListForm->execute_if_admin
         Bivio::UI::HTML::Club::MailList
-
+        next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
     [qw(
         USER_REFERRAL
@@ -233,11 +228,12 @@ my(@_CFG) = (
         Bivio::Biz::Action::Referral
     )],
     [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_DETAIL
+        CLUB_COMMUNICATIONS_MAIL_DETAIL
         18
         CLUB
         MAIL_READ
         ?/mail-msg
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Club::MailDetail
@@ -248,7 +244,7 @@ my(@_CFG) = (
     # a unique identifier.  It is there so attachments can be saved
     # to disk nicely.
     [qw(
-        CLUB_COMMUNICATIONS_MESSAGE_PART
+        CLUB_COMMUNICATIONS_MAIL_PART
         19
         CLUB
         MAIL_READ
@@ -388,13 +384,13 @@ my(@_CFG) = (
     # This needs to be a redirect, because we need the "directory" to
     # be correct so MESSAGE_PART works.
     [qw(
-        DEPRECATED_CLUB_COMMUNICATIONS_MESSAGE_DETAIL
+        DEPRECATED_CLUB_COMMUNICATIONS_MAIL_DETAIL
         44
         CLUB
         MAIL_READ
         ?/mail/msg
         Bivio::Biz::Action::ClientRedirect->execute_next
-        next=CLUB_COMMUNICATIONS_MESSAGE_DETAIL
+        next=CLUB_COMMUNICATIONS_MAIL_DETAIL
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_INTEREST
@@ -488,7 +484,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_ADDRESS_EDIT
         54
         CLUB
-        DOCUMENT_READ
+        ANY_REALM_USER
         ?/admin/edit/self/address
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::AddressForm
@@ -499,7 +495,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_NAME_EDIT
         55
         CLUB
-        DOCUMENT_READ
+        ANY_REALM_USER
         ?/admin/edit/self/name
         Bivio::Type::NameEdit->execute_both
         Bivio::Biz::Action::TargetRealm->execute_auth_user
@@ -511,7 +507,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_PHONE_EDIT
         56
         CLUB
-        DOCUMENT_READ
+        ANY_REALM_USER
         ?/admin/edit/self/phone
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::PhoneForm
@@ -522,7 +518,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_PASSWORD_EDIT
         57
         CLUB
-        DOCUMENT_READ&LOGIN
+        ANY_REALM_USER&LOGIN
         ?/admin/edit/self/password
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::PasswordForm
@@ -639,6 +635,9 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_READ
         ?
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Action::PublicRedirect
         Bivio::UI::HTML::Club::Home
     )],
     [qw(
@@ -873,7 +872,7 @@ my(@_CFG) = (
         CLUB_USER_NEW
         94
         CLUB
-        DOCUMENT_READ
+        ANY_REALM_USER
         ?/new_user
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::Biz::Model::Email->execute_auth_user
@@ -883,7 +882,7 @@ my(@_CFG) = (
         CLUB_CREATED
         95
         CLUB
-        DOCUMENT_READ
+        ADMIN_READ
         ?/new
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
@@ -960,6 +959,7 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_page
         Bivio::UI::HTML::Celebrity::MailList
     )],
@@ -969,6 +969,7 @@ my(@_CFG) = (
         PROXY
         DOCUMENT_READ
         pub/?/msg
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::UI::HTML::Celebrity::MailDetail
@@ -1003,12 +1004,16 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_READ
         ?/files/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Action::FileDownload->execute_if_file
         Bivio::Biz::Model::FileTreeList->execute_load_all
+        Bivio::Biz::Model::FileTreeListForm->execute_if_realm_user
         Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::FileTree
+	next=CLUB_COMMUNICATIONS_FILE_READ
+        NOT_FOUND=FILE_READ_NOT_FOUND
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_DELETE
@@ -1016,6 +1021,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file_delete/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileDeleteForm
@@ -1029,6 +1035,7 @@ my(@_CFG) = (
         CLUB
         DOCUMENT_WRITE
         ?/file_upload/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileUploadForm
@@ -1036,13 +1043,13 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::FileUpload
 	next=CLUB_COMMUNICATIONS_FILE_READ
     )],
-    #112
     [qw(
         CLUB_COMMUNICATIONS_FILE_REPLACE
-        113
+        112
         CLUB
         DOCUMENT_WRITE
         ?/file_replace/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::FileUploadForm
@@ -1052,16 +1059,25 @@ my(@_CFG) = (
     )],
     [qw(
         CLUB_COMMUNICATIONS_FILE_CREATE_DIRECTORY
-        114
+        113
         CLUB
         DOCUMENT_WRITE
         ?/new_file_folder/*
+        Bivio::Biz::Action::PublicRealm
         Bivio::Type::FileVolume->execute_file
         Bivio::Biz::Model::FilePathList
         Bivio::Biz::Model::CreateDirectoryForm
         Bivio::UI::HTML::Widget::FilePageHeading
         Bivio::UI::HTML::Club::CreateDirectory
 	next=CLUB_COMMUNICATIONS_FILE_READ
+    )],
+    [qw(
+        FILE_READ_NOT_FOUND
+        114
+        GENERAL
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_file_read_not_found
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSFER
@@ -1109,7 +1125,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_TAX_ID_EDIT
         122
         CLUB
-        DOCUMENT_READ&LOGIN
+        ANY_REALM_USER&LOGIN
         ?/admin/edit/self/tax_id
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::TaxIdForm
@@ -1173,7 +1189,7 @@ my(@_CFG) = (
         CLUB_ADMIN_SELF_EMAIL_EDIT
         128
         CLUB
-        DOCUMENT_READ
+        ANY_REALM_USER
         ?/admin/edit/self/email
         Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::EmailForm
@@ -1287,6 +1303,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE
         ?/admin/tools
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
         Bivio::Biz::Model::LocalValuationYearList->execute_load_all
         Bivio::UI::HTML::Club::AdminTools
@@ -1860,9 +1877,10 @@ my(@_CFG) = (
         CLUB
         MAIL_ADMIN
         ?/mail/delete
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Action::ClubMailDelete
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
     [qw(
         CLUB_ACCOUNTING_MEMBER_WITHDRAWAL
@@ -1950,10 +1968,11 @@ my(@_CFG) = (
         CLUB
         MAIL_WRITE&MAIL_READ
         ?/mail/post
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailPostForm
         Bivio::Biz::Model::MailToList->execute_load_all
         Bivio::UI::HTML::Club::MailPost
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
     [qw(
         CELEBRITY_MAIL_POST
@@ -1972,12 +1991,13 @@ my(@_CFG) = (
         CLUB
         MAIL_WRITE&MAIL_READ
         ?/mail/reply
+        Bivio::Biz::Action::PublicRealm
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailPartList->execute_load_all
         Bivio::Biz::Model::MailReplyForm
         Bivio::Biz::Model::MailToList->execute_load_all
         Bivio::UI::HTML::Club::MailReply
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
     [qw(
         CELEBRITY_MAIL_REPLY
@@ -2001,7 +2021,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MailList->execute_load_this
         Bivio::Biz::Model::MailForwardForm
         Bivio::UI::HTML::Club::MailForward
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        next=CLUB_COMMUNICATIONS_MAIL_LIST
     )],
     [qw(
         CELEBRITY_MAIL_FORWARD
@@ -2100,6 +2120,47 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::InstrumentPerformanceDetailReport
         next=CLUB_ACCOUNTING_REPORT_INVESTMENT_PERFORMANCE_DETAIL
     )],
+    [qw(
+        CLUB_ADMIN_PUBLIC
+        211
+        CLUB
+        REALM_PUBLICIZE
+        ?/admin/public
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::PublicRealmForm
+        Bivio::UI::HTML::Club::PublicRealm
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_ADMIN_PRIVATE
+        212
+        CLUB
+        ADMIN_WRITE
+        ?/admin/private
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Biz::Model::PrivateRealmForm
+        Bivio::UI::HTML::Club::PrivateRealm
+        next=CLUB_ADMIN_TOOLS
+    )],
+    [qw(
+        CLUB_INTRO
+        213
+        CLUB
+        DOCUMENT_READ
+        ?/intro
+        Bivio::Biz::Action::PublicRealm
+        Bivio::UI::HTML::Club::Home
+    )],
+#    [qw(
+#        ALL_PUBLIC_CLUBS
+#        213
+#        GENERAL
+#        LOGIN
+#        pub/clubs
+#        Bivio::Biz::Model::AllClubList->execute_load_all
+#        Bivio::UI::HTML::General::AllClubs
+#    )],
 );
 
 __PACKAGE__->compile(

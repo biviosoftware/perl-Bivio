@@ -70,10 +70,13 @@ use Bivio::Biz::Model::RealmRole;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 
 #=VARIABLES
 my(@_DATA);
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
@@ -331,9 +334,10 @@ sub _get_realms {
 	      FROM realm_owner_t, realm_role_t
 	      WHERE realm_role_t.realm_id = realm_owner_t.realm_id
 EOF
+    my($max_default_realm) = Bivio::Auth::RealmType->get_max->as_int;
     while (my($realm_id, $name) = $statement->fetchrow_array) {
 	# Don't re-insert default realms
-	next if $realm_id <= Bivio::Auth::RealmType->get_max;
+	next if $realm_id <= $max_default_realm;
 	$res{$realm_id} = $name;
     }
     return \%res;
@@ -392,17 +396,18 @@ sub _init {
 
 # _usage(array msg)
 #
-# Outputs a message and dies
+# Outputs a message and exits
 #
 sub _usage {
-    Bivio::DieCode::DIE()->die(<<"EOF");
-b-realm-role: @{[join('', @_)]}
+    print "b-realm-role: ", @{[join('', @_,)]}, "\n" if @_;
+    print <<'EOF';
 usage: b-realm-role [-n] edit realm role (+|-)(permission|role)...
        b-realm-role list [realm [role]]
        b-realm-role [-n] init
        b-realm-role [-n] init_defaults
        b-realm-role [-n] set_same new_permission like_permission
 EOF
+    exit(1);
 }
 
 =head1 COPYRIGHT
@@ -427,11 +432,13 @@ b-realm-role GENERAL ANONYMOUS - \
 b-realm-role GENERAL USER - \
     +ANONYMOUS \
     +ANY_USER \
+    +MAIL_FORWARD \
     +MAIL_RECEIVE
 b-realm-role GENERAL WITHDRAWN - \
     +USER
 b-realm-role GENERAL GUEST - \
-    +WITHDRAWN
+    +WITHDRAWN \
+    +ANY_REALM_USER
 b-realm-role GENERAL MEMBER - \
     +GUEST
 b-realm-role GENERAL ACCOUNTANT - \
@@ -466,13 +473,15 @@ b-realm-role CLUB ANONYMOUS - \
     +MAIL_WRITE
 b-realm-role CLUB USER - \
     +ANONYMOUS \
-    +ANY_USER
+    +ANY_USER \
+    +MAIL_FORWARD
 b-realm-role CLUB WITHDRAWN - \
     +USER
 b-realm-role CLUB GUEST - \
     +WITHDRAWN \
     +ADMIN_READ \
     +ACCOUNTING_READ \
+    +ANY_REALM_USER \
     +DOCUMENT_READ \
     +FINANCIAL_DATA_READ \
     +MAIL_READ \
@@ -521,7 +530,8 @@ b-realm-role ask_candis_publish ANONYMOUS - \
     +LOGIN
 b-realm-role ask_candis_publish USER - \
     +ANONYMOUS \
-    +ANY_USER
+    +ANY_USER \
+    +MAIL_FORWARD
 b-realm-role ask_candis_publish WITHDRAWN - \
     +USER
 b-realm-role ask_candis_publish GUEST - \
@@ -549,7 +559,8 @@ b-realm-role trez_talk_publish ANONYMOUS - \
     +LOGIN
 b-realm-role trez_talk_publish USER - \
     +ANONYMOUS \
-    +ANY_USER
+    +ANY_USER \
+    +MAIL_FORWARD
 b-realm-role trez_talk_publish WITHDRAWN - \
     +USER
 b-realm-role trez_talk_publish GUEST - \

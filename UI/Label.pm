@@ -276,6 +276,7 @@ _compile(
     FILE_LAST_MODIFIED => ['Last Modified'],
     FILE_ACTION => ['Action'],
     FILE_IS_PUBLIC => ['Public', undef, 'File.is_public'],
+    FILE_SIZE => ['Size'],
 
     # Julie Stav
     JULIE_STAV => ['Julie Stav'],
