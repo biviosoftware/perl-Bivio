@@ -518,7 +518,7 @@ sub _link_rpm_base {
 # %define perl_make_install ....
 #
 sub _perl_make {
-    return '%define perl_make umask 022; perl Makefile.PL;'
+    return '%define perl_make umask 022; perl Makefile.PL < /dev/null;'
 	. " make POD2MAN=true\n"
 	. '%define perl_make_install umask 022; make ' . join(' ', map {
 	    my($n) = "install$_";
