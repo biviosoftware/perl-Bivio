@@ -321,15 +321,15 @@ sub set_recipients {
     return;
 }
 
-=for html <a name="to_string"></a>
+=for html <a name="as_string"></a>
 
-=head2 to_string() : string
+=head2 as_string() : string
 
 Returns string representation of the mail message, suitable for sending.
 
 =cut
 
-sub to_string {
+sub as_string {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($res) = '';
@@ -355,7 +355,7 @@ sub _send {
 #TODO: Move to Mail::Common
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($msg) = $self->to_string;
+    my($msg) = $self->as_string;
     Bivio::Mail::Common->send($fields->{recipients}, \$msg);
 }
 

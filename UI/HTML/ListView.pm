@@ -214,7 +214,7 @@ sub render_heading {
 	    }
 	    $reply->print('<a href="/'.$req->get_target_name().'/'
 		    .$req->get_controller_name().'/'
-		    .$self->get_name().'/?'.$fp2->to_string().'">');
+		    .$self->get_name().'/?'.$fp2->as_string().'">');
 	}
 	$reply->print($model->get_column_heading($i));
 

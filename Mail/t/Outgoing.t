@@ -79,7 +79,7 @@ print "You should be receiving two identical mail messages\n";
 $bmo->send();
 $bmo->enqueue();
 $bmo->send_queued_messages();
-print $bmo->to_string eq $_OUT ? "ok $test\n" : "not ok $test\n";
+print $bmo->as_string eq $_OUT ? "ok $test\n" : "not ok $test\n";
 $test++;
 
 my($body) = 'what a body';
@@ -88,5 +88,5 @@ my($out) = $_OUT;
 $out =~ s/\n\n.*/\n\n/s;
 $out .= $body;
 $bmo->send();
-print $bmo->to_string eq $out ? "ok $test\n" : "not ok $test\n";
+print $bmo->as_string eq $out ? "ok $test\n" : "not ok $test\n";
 $test++;

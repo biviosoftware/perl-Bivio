@@ -185,7 +185,7 @@ sub get_nav_links {
     $fp->put('index', $fp->get('index') + 1) if $fp->get('index');
     $fp->remove('club');
 
-    my($back_url) = $req->make_path('list').'?'.$fp->to_string();
+    my($back_url) = $req->make_path('list').'?'.$fp->as_string();
 
     $_BACK_LINK->set_url($back_url);
 

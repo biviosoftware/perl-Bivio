@@ -21,7 +21,7 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::FindParams> provides a useful wrapper around a hash of values
-used when invoking Model.load(). from_string() and to_string() convert to
+used when invoking Model.load(). from_string() and as_string() convert to
 and from the URI format.
 
 =cut
@@ -213,16 +213,16 @@ sub remove {
     return;
 }
 
-=for html <a name="to_string"></a>
+=for html <a name="as_string"></a>
 
-=head2 to_string() : string
+=head2 as_string() : string
 
-Overrides Bivio::Universal::to_string() to return the URI value. See
+Overrides Bivio::Universal::as_string() to return the URI value. See
 from_string() for the format.
 
 =cut
 
-sub to_string {
+sub as_string {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 

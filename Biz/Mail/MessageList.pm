@@ -297,7 +297,7 @@ sub _create_model_references {
 	}
 	$fp2->put('id', $id);
 	$fp2->put('index', $index);
-	$row->[0]->[0] = $fp2->to_string();
+	$row->[0]->[0] = $fp2->as_string();
     }
 
     # set the prev and next into the search list if appropriate

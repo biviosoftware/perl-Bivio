@@ -121,7 +121,7 @@ Formats I<pkg>, I<file>, I<line>, I<sub>, and I<msg> into a pretty printed
 string.  Care is taken to truncate long arguments to
 L<get_max_arg_length|"get_max_arg_length">.  If an element of I<msg> is an
 object which supports
-<Bivio::UNIVERSAL::to_string|Bivio::UNIVERSAL/"to_string">, C<to_string> will
+<Bivio::UNIVERSAL::as_string|Bivio::UNIVERSAL/"as_string">, C<as_string> will
 be called to convert the object to a string.
 
 =cut
@@ -316,11 +316,11 @@ sub _format {
     $text .= ' ';
     my($o);
     foreach $o (@$msg) {
-	# Don't let to_string calls crash;
+	# Don't let as_string calls crash;
 	defined($o) || ($text .= '<undef>', next);
 	my($s);
-	$s = &UNIVERSAL::can($o, 'to_string') ?
-		(eval {$o->to_string} || $o) : $o;
+	$s = &UNIVERSAL::can($o, 'as_string') ?
+		(eval {$o->as_string} || $o) : $o;
 	$text .= length($s) > $_MAX_ARG_LENGTH
 		? (substr($s, 0, $_MAX_ARG_LENGTH) . '<...>')
 			: $s;

@@ -13,7 +13,7 @@ Bivio::UI::HTML::ModelRefRenderer - renders MODEL_REF types
     use Bivio::UI::HTML::ModelRefRenderer;
     my($fp) = Bivio::Biz::FindParams->new({'id' => 120});
     my($mr) = Bivio::UI::HTML::ModelRefRenderer->new();
-    $mr->render([$fp->to_string(), 'To be or not to be...'], $req);
+    $mr->render([$fp->as_string(), 'To be or not to be...'], $req);
 
 =cut
 

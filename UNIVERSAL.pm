@@ -68,15 +68,15 @@ sub equals {
     return $self == $that;
 }
 
-=for html <a name="to_string"></a>
+=for html <a name="as_string"></a>
 
-=head2 to_string() : string
+=head2 as_string() : string
 
 Returns the string form of C<$self>.  By default, this is just C<$self>.
 
 =cut
 
-sub to_string {
+sub as_string {
     my($self) = @_;
     # Ensure it is a string
     return $self;

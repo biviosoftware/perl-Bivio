@@ -203,7 +203,7 @@ sub _index {
     my($fp) = $req->get_model_args()->clone();
     $fp->put('index', $index);
     $fp->remove('club');
-    return '?'.$fp->to_string();
+    return '?'.$fp->as_string();
 }
 
 =head1 COPYRIGHT
