@@ -1110,7 +1110,18 @@ my(@_CFG) = (
         next=CONNECT_USER_NEW
         cancel=HTTP_DOCUMENT
     )],
-#97
+    [qw(
+        CLUB_ADMIN_PREFERENCES_EDIT
+        97
+        CLUB
+        ADMIN_WRITE
+        ?/admin/edit/configuration
+        Bivio::Biz::Model::ClubPreferencesForm
+        Bivio::UI::HTML::Club::EditPreferences
+        next=CLUB_ADMIN_PREFERENCES_EDIT
+        require_context=0
+        help=club-configuration
+    )],
 #TODO: Put user_new state into cookie
     [qw(
         CONNECT_USER_NEW
@@ -2880,17 +2891,6 @@ my(@_CFG) = (
         ?/setup-accounting
         Bivio::Biz::Model::RealmUser->execute_auth_user
         Bivio::UI::HTML::Club::New
-    )],
-    [qw(
-        CLUB_ADMIN_PREFERENCES_EDIT
-        251
-        CLUB
-        ADMIN_WRITE
-        ?/admin/edit/configuration
-        Bivio::Biz::Model::ClubPreferencesForm
-        Bivio::UI::HTML::Club::EditPreferences
-        next=CLUB_ADMIN_PREFERENCES_EDIT
-        require_context=0
     )],
 );
 
