@@ -72,6 +72,13 @@ sub auth_failure ($@) {
 }
 
 # Set a not found error code
+sub redirect ($$) {
+    my($self, $redirect) = @_;
+    $self->r->err_header_out('Location', $redirect);
+    $self->_terminate(&Apache::Constants::REDIRECT, 'redirect: ', $redirect);
+}
+
+# Set a not found error code
 sub not_found ($@) {
     shift->_terminate(&Apache::Constants::NOT_FOUND, @_);
 }
