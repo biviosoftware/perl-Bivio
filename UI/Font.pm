@@ -34,7 +34,7 @@ C<Bivio::UI::Font> is a map of font names to html values.
 
 The configuration of a font is an array_ref.  The elements are
 either C<key=value>, e.g. C<face=verdana,arial> and C<size=2>,
-or physical style tags, e.g. C<b> or C<tt>.
+or simple tags, e.g. C<bold> or C<smaller>.
 
 Here is a complete list of known tags.  All other tags will
 be rejected.  The list is kept small to avoid specification
@@ -49,6 +49,7 @@ errors.  Feel free to add to the list in internal_initialize:
     italic
     larger
     smaller
+    code
 
 Do not surround values to the right of the equals (=) with quotes.
 The string following size can be a number as long as a style sheet
@@ -301,6 +302,9 @@ sub _initialize {
 	elsif ($a eq 'italic') {
 	    $attrs{style} = 'italic';
 	}
+	elsif ($a eq 'code') {
+	    $attrs{code} = 1;
+	}
 	elsif ($a =~ /^(smaller|larger)$/) {
 	    # No one handles +1/-1 correctly with styles.  small
 	    # and big work everywhere, it seems.
@@ -361,6 +365,11 @@ sub _initialize_html {
     if (defined($attrs{weight}) && $attrs{weight} eq 'bold') {
 	$p .= '<b>';
 	$s = '</b>'.$s;
+    }
+
+    if ($attrs{code}) {
+	$p .= '<tt>';
+	$s = '</tt>'.$s;
     }
 
     # Generate physical styles: <B> and <I>
