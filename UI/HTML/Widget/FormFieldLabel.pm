@@ -15,6 +15,10 @@ Bivio::UI::HTML::Widget::FormFieldLabel - label which can check for errors
 
 =cut
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 EXTENDS
 
 L<Bivio::UI::Widget::Director>
@@ -89,7 +93,7 @@ sub new {
 
 =head2 initialize()
 
-Builds up the attributes for SUPER (Director). 
+Builds up the attributes for SUPER (Director).
 
 =cut
 
@@ -107,15 +111,9 @@ sub initialize {
 	       align => 'SW',
 	    }),
 	    '&nbsp',
-	    Bivio::UI::HTML::Widget::String->new({
-		value => $label,
-		string_font => 'form_field_error_label',
-	    }),
+	    $_VS->vs_string($label, 'form_field_error_label'),
 	]),
-	undef_value =>  Bivio::UI::HTML::Widget::String->new({
-	    value => $label,
-	    string_font => 'form_field_label',
-	}),
+	undef_value =>  $_VS->vs_string($label, 'form_field_label'),
     );
     $self->SUPER::initialize;
     $fields->{initialized} = 1;
