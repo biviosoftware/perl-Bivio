@@ -54,11 +54,11 @@ use Bivio::TypeError;
 my($_PACKAGE) = __PACKAGE__;
 my($_DEMO_CLUB_SUFFIX) = DEMO_CLUB_SUFFIX();
 my(%_RESERVED) = map {($_, 1)} qw(
+    abuse
     adm
     admin
     administrator
     amanda
-    asd
     beta
     bin
     bivio
