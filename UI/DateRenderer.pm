@@ -71,13 +71,8 @@ Writes the date as MM/DD/YY with no leading zeros.
 
 sub render {
     my($self, $date, $req) = @_;
-
-    # strip leading 0
-    $date =~ s/^0//;
-
-    # remove trailing century
-    $date =~ s/..(..)$/$1/;
-    $req->print($date);
+    my($d, $m, $y) = (gmtime($date))[3,4,5];
+    $req->print(sprintf('%02d/%02d/%02d', ++$m, $d, $y));
 }
 
 #=PRIVATE METHODS
