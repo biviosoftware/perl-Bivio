@@ -57,6 +57,9 @@ use Bivio::Biz::Model::RealmUser;
 Deletes this transaction, and all its entires, member entries,
 instrument entries, and account entries.
 
+Note: this method doesn't audit the books after the date. The caller
+is responsible for ensuring the books are audited after this operation.
+
 =cut
 
 sub cascade_delete {
@@ -82,15 +85,8 @@ sub cascade_delete {
             WHERE realm_transaction_id=?',
 	    [$id]);
 
-    my($date) = $self->get('date_time');
-    my($realm) = $self->get_request->get('auth_realm')->get('owner');
-
     # delete the transaction
     $self->delete();
-
-    # need to update units after this date
-    $realm->audit_units($date);
-
     return;
 }
 
