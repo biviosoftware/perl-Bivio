@@ -1428,7 +1428,7 @@ sub _unauth_load {
 	    $count = $self->PAGE_SIZE();
 	}
 	# only check preferences if that model is present
-	elsif (Bivio::IO::ClassLoader->is_class_loaded(
+	elsif (Bivio::IO::ClassLoader->is_loaded(
 		'Bivio::Biz::Model::Preferences')) {
 	    $count = Bivio::Biz::Model::Preferences->get_user_pref(
 		    $self->get_request, 'PAGE_SIZE');

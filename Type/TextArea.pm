@@ -69,7 +69,7 @@ sub from_literal {
     my($self, $value, $line_width) = @_;
 
     # careful to see if Preferences model is present before accessing
-    if (defined($value) && Bivio::IO::ClassLoader->is_class_loaded(
+    if (defined($value) && Bivio::IO::ClassLoader->is_loaded(
 	    'Bivio::Biz::Model::Preferences')
 	    && Bivio::Biz::Model::Preferences->get_user_pref(
 		    Bivio::Agent::Request->get_current,
