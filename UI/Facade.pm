@@ -85,14 +85,25 @@ If set to true, the Facade will be found in a production environment.
 Otherwise, won't be initialized if not running in the
 production environment.
 
+=item local_file_prefix : string (facade) [Facade.uri]
+
+Used by L<get_local_file_name|"get_local_file_name"> to create
+the absolute file name to return.  Always ends in a '/'.  Defaults
+to I<Facade.uri>.
+
 =item parent : Bivio::UI::Facade (children)
 
 Parent facade.
 
-=item uri : string (facade)
+=item uri : string (facade) [simple_package_name]
 
 Name of the facade as it appears in domain names and URIs.
-The base name of the Facade's package.
+Defaults to the lower case version of Facade's simple package name.
+
+=item want_local_file_cache : boolean (facade) [Bivio::UI::Facade.want_local_file_cache]
+
+Should local files be cached?  Typically, this is not set on the
+facade, but in the configuration.  See L<handle_config|"handle_config">.
 
 =item E<lt>SimpleClassE<gt> : Bivio::UI::FacadeComponent (facade)
 
@@ -108,6 +119,7 @@ use Bivio::Die;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
+use Bivio::Type::FileName;
 use Bivio::UI::FacadeChildType;
 
 #=VARIABLES
@@ -124,8 +136,13 @@ my(%_COMPONENTS);
 # Simple class names sorted topologically (prereqs first)
 my(@_COMPONENTS);
 my($_DEFAULT) = 'Prod';
+# Always ends in a trailing slash
+my($_LOCAL_FILE_ROOT);
+my($_WANT_LOCAL_FILE_CACHE) = 1;
 Bivio::IO::Config->register({
     default =>  $_DEFAULT,
+    local_file_root => Bivio::IO::Config->REQUIRED,
+    want_local_file_cache => $_WANT_LOCAL_FILE_CACHE,
 });
 
 =head1 FACTORIES
@@ -196,6 +213,10 @@ sub new {
 
     # Check the uri after the clone is loaded.
     my($uri) = lc($config->{uri} || $simple_class);
+    my($lfp) = $config->{local_file_prefix};
+    $lfp = $uri unless defined($lfp);
+    my($wlfc) = $config->{want_local_file_cache};
+    $wlfc = $_WANT_LOCAL_FILE_CACHE unless defined($wlfc);
 
     delete($config->{uri});
     Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
@@ -206,6 +227,8 @@ sub new {
     # Initialize this instance's attributes
     $self->internal_put({
 	uri => $uri,
+	local_file_prefix => Bivio::Type::FileName->add_trailing_slash($lfp),
+	want_local_file_cache => $wlfc,
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_DEFAULT eq $self->simple_package_name ? 1 : 0,
 	children => {},
@@ -248,8 +271,9 @@ sub new_child {
     my($type) = Bivio::UI::FacadeChildType->from_any($config->{child_type});
     delete($config->{child_type});
     $self->internal_put({
-	uri => $parent->get('uri'),
-	is_production => $parent->get('is_production'),
+	(map {
+	    ($_, $parent->get($_));
+	} qw(uri local_file_prefix want_local_file_cache is_production)),
 	is_default => 0,
 	child_type => $type,
 	parent => $parent,
@@ -283,7 +307,7 @@ sub as_string {
     my($self) = @_;
     my($type) = $self->unsafe_get('type')
 	    || Bivio::UI::FacadeChildType->DEFAULT;
-    return $self->simple_package_name.'.'.lc($type->get_name);
+    return 'Facade['.$self->simple_package_name.'.'.lc($type->get_name).']';
 }
 
 =for html <a name="get_default"></a>
@@ -298,6 +322,63 @@ sub get_default {
     return $_CLASS_MAP{$_DEFAULT};
 }
 
+=for html <a name="get_from_request_or_self"></a>
+
+=head2 static get_from_request_or_self(Bivio::Collection::Attributes req_or_facade) : self
+
+Returns facade from the I<req_or_facade> or just I<req_or_facade> if
+it isa Facade.
+
+If I<req_or_facade> is C<undef>, uses
+L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current">.
+
+=cut
+
+sub get_from_request_or_self {
+    my($proto, $req_or_facade) = @_;
+    if (ref($req_or_facade)) {
+	return $req_or_facade if UNIVERSAL::isa($req_or_facade, __PACKAGE__);
+    }
+    else {
+	# Not defined, just get current
+	$req_or_facade = Bivio::Agent::Request->get_current;
+    }
+    return $req_or_facade->get(__PACKAGE__);
+}
+
+=for html <a name="get_local_file_name"></a>
+
+=head2 get_local_file_name(Bivio::UI::LocalFileType type, string name) : string
+
+=head2 static get_local_file_name(Bivio::UI::LocalFileType type, string name, Bivio::Collection::Attributes req_or_facade) : string
+
+Returns the absolute path for the file I<name> (usually a URI) with file
+I<type> which can be opened locally using perl's open.  The structure of
+the resultant file should not be assumed except that I<name> is the last
+component.
+
+There is no guarantee the file identified by the returned path exists.
+
+For informational purposes, here's how the absolute path is
+currently constructed:
+
+    local_file_root/local_file_prefix/type->get_path/name
+
+I<Bivio::UI::Facade.local_file_root> is part of this class's configuration.
+I<Facade.local_file_prefix> is an attribute of the facade.
+
+May not be called statically if I<req> is C<undef>.
+
+=cut
+
+sub get_local_file_name {
+    my($self, $type, $name, $req) = @_;
+    $self = $self->get_from_request_or_self($req)
+	    if defined($req) || !ref($self);
+    return $_LOCAL_FILE_ROOT.$self->get('local_file_prefix')
+	    .$type->get_path.$name;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)
@@ -310,6 +391,21 @@ The default facade class to use, if no facade is specified or
 not found.  C<Bivio::UI::Facade::> will be inserted if not
 a fully qualified class name.
 
+=item local_file_root : string (required)
+
+The root of all files (icons, documents, views) read from this hosts disks
+for all facades.
+
+=item want_local_file_cache : boolean [true]
+
+The default value for I<Facade.want_local_file_cache>.  If true, local file
+information will be cached by users.  This can be a performance benefit at the
+expense of memory consumption.  L<Bivio::UI::View|Bivio::UI::View> will
+pre-compile all views.  L<Bivio::UI::Icon|Bivio::UI::Icon> will
+cache all icon sizes.
+
+For development, you probably want to set I<want_local_file_cache> to false.
+
 =back
 
 =cut
@@ -317,6 +413,12 @@ a fully qualified class name.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_DEFAULT = $cfg->{default};
+    Bivio::Die->die($cfg->{local_file_root},
+	    ": local_file_root is not a directory")
+		unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
+    $_LOCAL_FILE_ROOT = Bivio::Type::FileName->add_trailing_slash(
+	    $cfg->{local_file_root});
+    $_WANT_LOCAL_FILE_CACHE = $cfg->{want_local_file_cache};
     return;
 }
 
@@ -350,12 +452,19 @@ sub initialize {
 	    ': unable to find or load default Facade')
 		unless ref($_CLASS_MAP{$_DEFAULT});
 
-    # Make sure we loaded all components for all Facades
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::Icon');
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::View');
+
+    # Make sure we loaded all components for all Facades and
+    # initialize Icons and Views.
     foreach my $f (values(%_CLASS_MAP)) {
 	foreach my $c (@_COMPONENTS) {
 	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
 			unless $f->get($c);
 	}
+	# Icons used before views
+	Bivio::UI::Icon->initialize_by_facade($f);
+	Bivio::UI::View->initialize_by_facade($f);
     }
     return;
 }
@@ -379,7 +488,7 @@ sub prepare_to_render {
     # No children?  If already a child, then got an error during
     # rendering or server_redirect(?) and we should just stay in the
     # same facade.
-    unless ($children  && %$children) {
+    unless ($children && %$children) {
 	_trace($self, ': no children') if $_TRACE;
 	return;
     }
