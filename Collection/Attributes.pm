@@ -147,7 +147,7 @@ sub clone {
 
 =for html <a name="delete"></a>
 
-=head2 delete(string key, ...) : self
+=head2 delete(string key, ...)
 
 Removes the named attribute(s) from the map.  They needn't exist.
 
@@ -158,12 +158,12 @@ sub delete {
     my($fields) = $self->{$_PACKAGE};
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     map {delete($fields->{$_})} @_;
-    return $self;
+    return;
 }
 
 =for html <a name="delete_all"></a>
 
-=head2 delete_all() : self
+=head2 delete_all()
 
 Removes all the parameters.
 
@@ -175,12 +175,12 @@ sub delete_all {
     # This is probably the fastest way to remove all elements
     _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
     $self->{$_PACKAGE} = {};
-    return $self;
+    return;
 }
 
 =for html <a name="delete_all_by_regexp"></a>
 
-=head2 delete_all_by_regexp(string pattern) : self
+=head2 delete_all_by_regexp(string pattern)
 
 Deletes all keys matching I<pattern>.
 
@@ -193,7 +193,7 @@ sub delete_all_by_regexp {
 	next unless $k =~ /$pattern/;
 	delete($fields->{$k});
     }
-    return $self;
+    return;
 }
 
 =for html <a name="dump"></a>
@@ -445,14 +445,14 @@ sub get_widget_value {
     my($fields) = $self->{$_PACKAGE};
     _die($self, 'too few arguments passed to ', $self) unless @_;
     my($param1) = shift;
-    my(@value);
+    my($value);
 
     return $self->get_widget_value(@_) ? 0 : 1 if $param1 eq '!';
 
     # What value does $param1 identify?
     if (exists($fields->{$param1})) {
 	# Plain old attribute, may be undef
-	@value = ($fields->{$param1});
+	$value = $fields->{$param1};
     }
     else {
 	# No such key, try to call the method on $param1
@@ -471,10 +471,10 @@ sub get_widget_value {
 	}
 
 	if (ref($param1) eq 'ARRAY') {
-	    @value = $self->get_widget_value(@$param1);
+	    $value = $self->get_widget_value(@$param1);
 	}
 	elsif (ref($param1) eq 'CODE') {
-	    @value = (&$param1($self));
+	    $value = &$param1($self);
 	}
 	else {
 	    _die($self, $param1, ": not found and can't get_widget_value");
@@ -482,16 +482,16 @@ sub get_widget_value {
     }
 
     # Have value figure out what to do with it
-    unless (ref($value[0])) {
+    unless (ref($value)) {
 	# fall through, not a reference
     }
     elsif (!@_) {
 	# No more params, further checking not required
-	return wantarray ? @value : $value[0];
+	return $value;
     }
-    elsif ($value[0] =~ /=/) {
+    elsif ($value =~ /=/) {
 	# It's a blessed reference
-	return $value[0]->get_widget_value(@_);
+	return $value->get_widget_value(@_);
     }
     else {
 	# value is a hash or array ref
@@ -500,31 +500,31 @@ sub get_widget_value {
 		    unless defined($param2);
 	$param2 = $self->get_widget_value(@$param2)
 		if ref($param2) eq 'ARRAY';
-	if (ref($value[0]) eq 'HASH') {
+	if (ref($value) eq 'HASH') {
 	    # key must exist
 	    _die($self, $param1, '->{', $param2, '}: does not exist')
-			unless exists($value[0]->{$param2});
-	    @value = ($value[0]->{$param2});
+			unless exists($value->{$param2});
+	    $value = ($value->{$param2});
 	}
-	elsif (ref($value[0]) eq 'ARRAY') {
+	elsif (ref($value) eq 'ARRAY') {
 	    # index must exist (and be a number)
 	    die($self, $param1, '->[', $param2, ']: does not exist')
-			unless $param2 <= $#{$value[0]};
-	    @value = ($value[0]->[$param2]);
+			unless $param2 <= $#$value;
+	    $value = $value->[$param2];
 	}
 	else {
 	    die($self, $param1, ': unsupported reference type: ',
-		    ref($value[0]));
+		    ref($value));
 	}
     }
 
     # Check for next param which must be able to get_widget_value or
     # must be a widget value which returns something that can return
     # a widget value.
-    return wantarray ? @value : $value[0] unless @_;
+    return $value unless @_;
     $param1 = shift(@_);
     $param1 = $self->get_widget_value(@$param1) if ref($param1) eq 'ARRAY';
-    return $param1->get_widget_value(@value, @_)
+    return $param1->get_widget_value($value, @_)
 	    if UNIVERSAL::can($param1, 'get_widget_value');
     die($self, $param1,
 	    ": can't get_widget_value (not a formatter)");
