@@ -8,6 +8,10 @@ $Bivio::Mail::Store::MIMEDecode::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d
 
 Bivio::Mail::Store::MIMEDecode - splits mail messages (Incoming)
 into mime parts and stores each part to the file server.
+The format for such files is:
+
+/club_name/messages/html/message_id[_n][_n]
+
 Updates the mail_message_t database to indicate the number of
 MIME parts, and also update club_t kbytes_in_use to keep track
 of the amount of disk storage the club is using.
@@ -33,9 +37,11 @@ use Bivio::UNIVERSAL;
 C<Bivio::Mail::Store::MIMEDecode> is a simple MIME parsing engine.
 It takes a L<Bivio::Mail::Incoming|Bivio::Mail::Incoming>
 object, and recursively parses out the
-MIME parts. Additionally, it creates a keyword hash of all
-words found in all text/plain MIME parts.
-Ultimately, it will also parse text/html parts.
+MIME parts.
+
+Additionally, it creates a keyword hash of all words found in
+all text/plain MIME parts. Ultimately, it will also parse
+text/html parts.
 
 =cut
 
@@ -79,7 +85,6 @@ sub new {
 	file_name => $file_name,
 	kbytes => 0,
 	num_parts => 0,
-	#accumulates keywords parsed from text/plain message parts.
 	keywords => {},
 	io_scalar => IO::Scalar->new(),
 	file_client => $file_client,
@@ -122,7 +127,10 @@ sub get_num_parts {
 =head2 parse_and_store()
 
 Call this method to parse and write all MIME encoded parts to
-the appropriate file name on file_client.
+the appropriate file name on file_client. This method is
+the guts of parsing the MIME encoded parts of a mail message,
+indexing all the words found in text/plain or text/html
+MIME parts, and storing each MIME part off to the file server.
 
 =cut
 
@@ -139,18 +147,15 @@ sub parse_and_store {
     _parse_keywords($msg->get_subject(), $keywords);
     _parse_keywords($msg->get_reply_to(), $keywords);
     _parse_keywords($msg->get_dttm(), $keywords);
-    # now extract all the MIME attachments
+
     _trace('extracting MIME attachments for mail message. File: ',
 	    $file_name) if $_TRACE;
     _extract_mime($fields, $fields->{parser}->read(
 	    $msg->get_rfc822_io()), $file_name);
-#    _extract_mime($fields->{parser}->read($msg->get_rfc822_io()),
-#	    $file_name, undef, $keywords, \$fields->{num_parts},
-#	    \$fields->{kbytes});
     my($rslt);
     $fields->{file_client}->set_keywords($file_name, $keywords, \$rslt)
 	    || die("set_keywords failed: \$rslt");
-    _trace('total bytes written (MIME): ', $fields->{kbytes}, ' K') if $_TRACE;
+    _trace('total bytes written: ', $fields->{kbytes}, ' K') if $_TRACE;
     return;
 }
 
@@ -160,7 +165,7 @@ sub parse_and_store {
 #
 # Extracts sub mime parts for this mime entity. This method is called
 # recursively. kbytes is incremented every time we write a MIME Entity to
-# file storage.
+# file storage. 
 #
 sub _extract_mime {
     my($fields, $entity, $file_name) = @_;
@@ -185,7 +190,7 @@ sub _extract_mime {
 #           epilogue are not considered parts.  If you need them,
 #           use the preamble() and epilogue() methods.
 
-    # $i used only for trace
+    # $i used for trace and for appending to the filename
     my($i) = -1;
     my($subentity);
     for $subentity (@parts) {
@@ -193,16 +198,12 @@ sub _extract_mime {
 	_trace('subentity is valid') if $_TRACE && $subentity;
 	my($content_type) = Bivio::Type::MIMEType->from_content_type(
 		$subentity->head->get('content-type'));
-#TODO: BTW, 'eq' is a binary operator, not a method.  eq(bla) is not 
-#      appropriate syntax.
-#TODO: Use == on enums.  Use :: form, because faster and 'ok' in this case.
 	if ($content_type == Bivio::Type::MIMEType::MESSAGE_RFC822()) {
 #TODO We need to do the same thing for message/digest
 	    _trace('part', $i, ' is an rfc822 message.') if $_TRACE;
 	    my($parser) = MIME::Parser->new(output_to_core => 'ALL');
             my($root_entity) = $parser->read(
 		    $subentity->bodyhandle->open('r'));
-	    _trace('reading...') if $_TRACE;
 	    _trace('NO ROOT ENTITY WAS FOUND.') if $_TRACE && !$root_entity;
 	    return unless $root_entity;
 	    _extract_mime($fields, $root_entity, $file_name."_$i");
@@ -219,7 +220,12 @@ sub _extract_mime {
 
 # _extract_mime_body_decoded(hash_ref fields, MIME::Entity entity) : scalar_ref
 #
-# Extracts the body of a MIME Entity decoded.
+# Extracts the body of a MIME Entity, fully decoded.
+# Returns a scalar_ref
+#
+# The resulting decoded MIME entity is written to the file server
+# in _write_mime().
+#
 #
 sub _extract_mime_body_decoded {
     my($fields, $entity) = @_;
@@ -260,10 +266,7 @@ sub _extract_mime_header {
 #
 sub _parse_keywords {
     my($str, $keywords) = @_;
-
-    # this is not necessarily an error:
     return unless $str;
-
 #TODO: Algorithm probably need to take into account hyphenated words.
     my($w);
     $str =~ s/[\'\"\.\;\:]//g;
@@ -283,8 +286,9 @@ sub _parse_keywords {
 sub _parse_mime {
     my($fields, $entity, $content_type) = @_;
     _trace('CONTENT_TYPE: ' , $content_type) if $_TRACE;
-    if($content_type eq(Bivio::Type::MIMEType->TEXT_PLAIN)){
-	_trace('content type TEXT_PLAIN. Parsing for keywords') if $_TRACE;
+    if($content_type == Bivio::Type::MIMEType->TEXT_PLAIN
+	    ||  $content_type == Bivio::Type::MIMEType->TEXT_HTML){
+	_trace('content type TEXT_PLAIN or TEXT_HTML. Parsing for keywords') if $_TRACE;
         my($file) = IO::Scalar->new(_extract_mime_body_decoded(
 		$fields, $entity));
 	while (!$file->eof) {
@@ -297,19 +301,20 @@ sub _parse_mime {
 
 # _parse_msg_line(scalar line)
 #
-# Called for each line of a MIME part that is text/plain.
+# Called for each line of a MIME part that is text/plain
+# or text/html.
+#
 # This method also calls _strip_html_tags, which modifies
-# its string ref and the $fields->{multi_line_flag}
-# 
+# its string ref and the $fields->{multi_line_flag}, removing
+# all HTML tags from the string.
+#
 sub _parse_msg_line {
     my($str, $fields) = @_;
     my($keywords) = $fields->{keywords};
-    my($multiline) = $fields->{multi_line_flag};
     unless (length($str)) {
 	_trace('line is zero length, ignoring') if $_TRACE;
 	return;
     }
-
     #modifies both the string ref and $fields->{multi_line_flag}:
     _strip_html_tags(\$str, $fields);
 
