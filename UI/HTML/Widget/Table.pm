@@ -387,7 +387,11 @@ sub render {
 	my($html) = $req->get('Bivio::UI::HTML');
 	$$buffer .= Bivio::UI::Align->as_html(
 		$self->get_or_default('align',
-			$html->get_value('table_default_align')));
+
+#TODO: this is returning undef, needs investigation
+#			$html->get_value('table_default_align')));
+			'center'));
+
 	$$buffer .= $html->get_value('page_left_margin')
 		? ' width="95%"' : ' width="100%"'
 			if $self->unsafe_get('expand');
