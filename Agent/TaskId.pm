@@ -1392,6 +1392,38 @@ my(@_CFG) = (
         Bivio::Biz::Action::TestJob
         next=CLUB_HOME
     )],
+    [qw(
+        CLUB_LEGACY_UPLOAD
+        133
+        CLUB
+        ADMIN_WRITE
+        %/legacy/upload
+        Bivio::Biz::Model::LegacyClubUploadForm
+        Bivio::UI::HTML::Club::LegacyClubUpload
+        next=CLUB_LEGACY_SECURITY_RECONCILLIATION
+    )],
+    [qw(
+        CLUB_LEGACY_INVITE
+        134
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/legacy/invite
+        Bivio::Biz::Model::ActiveShadowMemberList->execute_load_all
+        Bivio::Biz::Model::ImportedMemberInviteForm
+        Bivio::UI::HTML::Club::ImportedMemberInvite
+        next=CLUB_HOME
+    )],
+    [qw(
+        CLUB_LEGACY_SECURITY_RECONCILLIATION
+        135
+        CLUB
+        ACCOUNTING_WRITE&MEMBER_WRITE
+        %/legacy/securities
+        Bivio::Biz::Model::RealmLocalSecurityList->execute_load_all
+        Bivio::Biz::Model::ImportedSecurityReconciliationForm
+        Bivio::UI::HTML::Club::ImportedSecurityReconciliation
+        next=CLUB_LEGACY_INVITE
+    )],
 );
 
 __PACKAGE__->compile(
