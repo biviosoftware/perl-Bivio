@@ -187,7 +187,7 @@ PerlWarn on
 # Can't be on and use PERLLIB.
 PerlFreshRestart on
 <$bivio_conf>
-PerlModule Bivio::Agent::HTTP:Dispatcher
+PerlModule Bivio::Agent::HTTP::Dispatcher
 
 #
 # Files
