@@ -100,6 +100,7 @@ sub _init_demo {
     _init_demo_categories($self);
     _init_demo_products($self);
     _init_demo_items($self, _init_demo_suppliers($self));
+    _init_demo_user($self);
     return;
 }
 
@@ -231,6 +232,30 @@ sub _init_demo_suppliers {
 	push(@id, $model->get('supplier_id'));
     }
     return \@id;
+}
+
+# _init_demo_user(self)
+#
+# Creates user demo with password "password".
+#
+sub _init_demo_user {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    Bivio::Biz::Model->new($req, 'UserAccountForm')->execute($req, {
+	'User.first_name' => 'Demo',
+	'User.last_name' => 'User',
+	'Email.email' => 'info@bivio.biz',
+	'EntityAddress.addr1' => '1313 Mockingbird Lane',
+	'EntityAddress.addr2' => undef,
+	'EntityAddress.city' => 'Boulder',
+	'EntityAddress.state' => 'CO',
+	'EntityAddress.zip' => '80304',
+	'EntityAddress.country' => 'US',
+	'EntityPhone.phone' => '555-1212',
+	'RealmOwner.name' => 'demo',
+	'RealmOwner.password' => 'password',
+    });
+    return;
 }
 
 =head1 COPYRIGHT
