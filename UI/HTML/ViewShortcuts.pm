@@ -1130,7 +1130,7 @@ sub vs_page_heading_banner_ad {
 #    return $proto->vs_link_static_site(
 #	    $proto->vs_image('promote_stop_small'), 'hm/account-sync.html')
 #	    ->put(control => $proto->vs_html_value('want_ads'));
-    return $proto->vs_link_goto(
+    return $proto->vs_link(
 	    $proto->vs_image('ad_bivio_stop_small', 'Learn about AccountSync'),
 	    '/hm/account-sync.html')
 	->put(control => $proto->vs_html_value('want_ads'));
