@@ -75,7 +75,7 @@ sub get_instance {
 
 =head2 capture_mail() : self
 
-Captures mail from L<Bivio::Mail::Message|Bivio::Mail::Message> using
+Captures mail from L<Bivio::Mail::Outgoing|Bivio::Mail::Outgoing> using
 Mock object.
 
 =cut
@@ -85,7 +85,6 @@ sub capture_mail {
     $self->put($_MSG_QUEUE_ATTR => []);
     Bivio::IO::ClassLoader->simple_require('Test::MockObject');
     foreach my $m (qw(
-	Bivio::Mail::Message
         Bivio::Mail::Outgoing
         Bivio::Mail::Common
     )) {
