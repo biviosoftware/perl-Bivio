@@ -558,25 +558,17 @@ sub get_short_desc {
 
 =for html <a name="get_widget_value"></a>
 
-=head2 get_widget_value(string method) : any
+=head2 get_widget_value(string method, any arg, ...) : any
 
-=head2 get_widget_value(string method, string formatter, ...) : any
-
-Calls I<method> on I<self>.
-
-If a formatter is specified, the formatter will be called with the value
-and the rest of the arguments.
+Calls I<method> with args on I<self>.
 
 =cut
 
 sub get_widget_value {
     my($self, $method) = (shift, shift);
-    Bivio::IO::Alert->warn_deprecated('method must be in brackets')
-		if @_;
     # Delete leading -> for compatibility with "standard" get_widget_value
     $method =~ s/^\-\>//;
-    my($value) = $self->$method();
-    return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
+    return $self->$method(@_);
 }
 
 =for html <a name="get_width"></a>
