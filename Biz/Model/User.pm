@@ -220,6 +220,9 @@ sub internal_initialize {
             gender => ['Gender', 'NOT_NULL'],
             birth_date => ['Date', 'NONE'],
         },
+	other => [
+            [qw(user_id RealmOwner.realm_id)],
+	],
 	auth_id => 'user_id',
     };
 }
