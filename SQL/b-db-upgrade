@@ -201,7 +201,7 @@ sub _upgrade {
 do('
 CREATE TABLE lock_t (
   realm_id NUMBER(18),
-  lock_type NUMBER(2),
+  type NUMBER(2),
   host VARCHAR2(100),
   process_id NUMBER(9),
   sentinel NUMBER(1),
@@ -216,15 +216,19 @@ ALTER TABLE lock_t
     references realm_owner_t(realm_id)
 /
 ALTER TABLE lock_t
-  add primary key(lock_type, realm_id)
+  add primary key(type, realm_id)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
-ALTER TABLE lock_t ADD CHECK (lock_type BETWEEN 0 AND 1)
+ALTER TABLE lock_t modify type NOT NULL
+/
+ALTER TABLE lock_t ADD CHECK (type BETWEEN 1 AND 1)
 /
 ALTER TABLE lock_t modify host NOT NULL
 /
 ALTER TABLE lock_t modify process_id NOT NULL
+/
+ALTER TABLE lock_t modify sentinel NOT NULL
 /
 ALTER TABLE lock_t ADD CHECK (sentinel BETWEEN 0 AND 1)
 /
