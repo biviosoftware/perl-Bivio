@@ -648,6 +648,25 @@ sub _format_form {
     return $result;
 }
 
+# _get_script_line(self) : string
+#
+# Returns the current line of the running script.
+#
+sub _get_script_line {
+    my($self) = @_;
+    my($i) = 0;
+
+    # search for the first AUTOLOAD method in the call stack
+    # (this may not always be the actual script if a script method
+    #  calls another AUTOLOAD method).
+    while (1) {
+        my($line, $sub) = (caller($i++))[2..3];
+        last unless $sub;
+        return $line if $sub =~ /AUTOLOAD/;
+    }
+    return '?';
+}
+
 # _log(self, string type, HTTP::Message msg)
 #
 # Writes the HTTP message to a file with a nice suffix.  Preserves file
@@ -679,7 +698,8 @@ sub _regexp {
 sub _send_request {
     my($self, $request) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{user_agent}->agent($self->get('test_script'));
+    $fields->{user_agent}->agent($self->get('test_script') . ':'
+        . _get_script_line($self));
     my($redirect_count) = 0;
     $fields->{response} = undef;
     $fields->{html_parser} = undef;
