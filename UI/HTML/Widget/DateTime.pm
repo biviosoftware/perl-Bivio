@@ -55,6 +55,36 @@ Not used if I<value> is a constant.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="JAVASCRIPT_FUNCTIONS"></a>
+
+=head2 JAVASCRIPT_FUNCTIONS : string
+
+Returns the functions loaded when javascript is loaded.
+
+=cut
+
+my($_FUNCS);
+sub JAVASCRIPT_FUNCTIONS {
+    return $_FUNCS;
+}
+
+=for html <a name="JAVASCRIPT_FUNCTION_NAME"></a>
+
+=head2 JAVASCRIPT_FUNCTION_NAME : string
+
+Return the tag used by this class to prefix javascript functions.
+
+=cut
+
+sub JAVASCRIPT_FUNCTION_NAME {
+    return 'dt';
+}
+
 #=IMPORTS
 use Bivio::Agent::Request;
 use Bivio::Type::DateTime;
@@ -67,36 +97,51 @@ my($_PACKAGE) = __PACKAGE__;
 my($_UNIX_EPOCH) = Bivio::Type::DateTime->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = Bivio::Type::DateTime->SECONDS_IN_DAY;
 my($_JSV) = Bivio::UI::HTML::Widget::JavaScript->VERSION_VAR;
+my($_FN) = JAVASCRIPT_FUNCTION_NAME();
 
 # Write once, run nowhere...  Date.getFullYear was not introduced
 # until JavaScript 1.2.  Date.getYear is totally broken.  Read
-# O'Reilly JavaScript book under Date.getYear.  IE3 doesn't go
-# before 1970.  NS3 does bizarre things with dates.  Anyway,
-# this is the solution.  Study it carefully before changing it.
-my($_FUNCS) = <<"EOF";
+# O'Reilly JavaScript book under Date.getYear.  
+$_FUNCS = <<"EOF";
 function dt(m,j,t,gmt){
-var y=j-$_UNIX_EPOCH;
-if(y<0
-&&navigator.appName.indexOf('Microsoft')
-&&navigator.appVersion<4.0){
-document.write(gmt);
-return;
+    // Subtract off the Julian year
+    var y=j-$_UNIX_EPOCH;
+
+    // If we have a negative year, IE3.0 won't render it at all; use GMT
+    if(y<0
+            &&navigator.appName.indexOf('Microsoft')
+            &&navigator.appVersion<4.0){
+        document.write(gmt);
+        return;
+    }
+    // Convert the time to milliseconds adding in the seconds component
+    var d=new Date((y*$_SECONDS+t)*1000);
+
+    // Format the date, time, or date time
+    // ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
+    document.write(
+            ((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d))
+                  :'')
+            +(m==3?' ':'')
+            +((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):''));
 }
-var d=new Date((y*$_SECONDS+t)*1000);
-document.write(
-((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d)):'')
-+(m==3?' ':'')
-+((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):''));
-}
+
 function dt_n(n){
-return n<10?'0'+n:n;
+    // Why doesn't javascript have a sprintf?  Insert leading 0s
+    return n<10?'0'+n:n;
 }
+
 function dt_y(d){
-if($_JSV>=1.2){return d.getFullYear();}
-var y=d.getYear();
-return y<1000?y+1900:y;
+    // NS3 does bizarre things with dates.  Anyway,
+    // this is the solution.  Study it carefully before changing it.
+    if($_JSV>=1.2){
+        return d.getFullYear();
+    }
+    var y=d.getYear();
+    return y<1000?y+1900:y;
 }
 EOF
+Bivio::UI::HTML::Widget::JavaScript->strip(\$_FUNCS);
 
 =head1 FACTORIES
 
@@ -155,24 +200,16 @@ sub render {
 
     # Don't display anything if null
     $$buffer .= $fields->{undef_value}, return unless defined($value);
-    my($req) = Bivio::Agent::Request->get_current;
-    unless ($req->unsafe_get('javascript_dt')) {
-	Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer);
-	# ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
-	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
-	$$buffer .= $_FUNCS;
-	$req->put(javascript_dt => 1);
-    }
-    else {
-	$$buffer .= "<script language=\"JavaScript\">\n<!--\n";
-    }
     my($gmt) = Bivio::UI::HTML::Format::DateTime->get_widget_value(
 	    $value, $fields->{mode});
     my($mi) = $fields->{mode};
-    $$buffer .= 'dt('.join(',', $mi, split(' ', $value), "'$gmt'").')'
-	    ."\n// -->\n</script><noscript>";
-    $$buffer .= $gmt;
-    $$buffer .= '</noscript>';
+
+    # Let Javascript do the work
+    Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
+	    $_FN,
+	    $_FUNCS,
+	    "$_FN(".join(',', $mi, split(' ', $value), "'$gmt'").')',
+	    $gmt);
     return;
 }
 
