@@ -1752,8 +1752,10 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/tax99
         Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::AllocationMethodForm
         Bivio::Biz::Model::MemberTaxList->execute_load_all
         Bivio::UI::HTML::Club::Tax99
+        next=CLUB_ACCOUNTING_TAX99
     )],
 #    [qw(
 #        CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWALS
@@ -1851,6 +1853,17 @@ my(@_CFG) = (
         Bivio::Biz::Model::InstrumentChargesForm
         Bivio::UI::HTML::Club::InstrumentCharges
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
+        174
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/tax99/allocations
+        Bivio::Biz::Action::ReportDate->execute1999
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::UI::HTML::Club::MemberAllocationReport
+        next=CLUB_ACCOUNTING_TAX99_MEMBER_ALLOCATION
     )],
 );
 
