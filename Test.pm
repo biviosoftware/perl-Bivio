@@ -336,6 +336,24 @@ $_ = <<'}'; # emacs
 sub compute_params {
 }
 
+=for html <a name="format_results"></a>
+
+=head2 static format_results(int num_ok, int max) : string
+
+Formats test results into a human readable string.
+
+=cut
+
+sub format_results {
+    my(undef, $num_ok, $max) = @_;
+    return $max == $num_ok
+	? "All ($max) tests PASSED\n"
+        : sprintf("FAILED %d (%.1f%%) and passed %d (%.1f%%)\n",
+	    map {
+		$_, 100 * $_ / $max;
+	    } ($max - $num_ok), $num_ok);
+}
+
 =for html <a name="print"></a>
 
 =head2 callback print(array args)
@@ -613,6 +631,7 @@ sub _eval {
     my($print) = $self->get_or_default('print', \&_default_print);
     $print->('1..' . int(@$tests) . "\n");
     my($err);
+    my($ok) = 0;
     foreach my $case (@$tests) {
 	$c++;
 	my($result);
@@ -640,10 +659,12 @@ sub _eval {
 	}
     }
     continue {
+	$ok++ unless $err;
 	$print->(!$err
 	    ? "ok $c\n" : ("not ok $c " . $case->as_string . ": $err\n"));
 	$err = undef;
     }
+    $print->($self->format_results($ok, int(@$tests)));
     return;
 }
 

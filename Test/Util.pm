@@ -64,11 +64,11 @@ EOF
 
 #=IMPORTS
 use Bivio::IO::Trace;
-use Test::Harness ();
 use Bivio::Test::Language;
 use File::Find ();
 use File::Spec ();
 use Bivio::IO::File;
+use Bivio::Test;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -200,17 +200,9 @@ sub _run {
         }
 	$self->print("*** Leaving: $d\n\n") unless $one_dir;
     }
-    unless ($max == $ok) {
-	$self->print(
-	    sprintf('FAILED %d (%.1f%%) and passed %d (%.1f%%)' . "\n",
-		map {
-		    ($_, 100 * $_ / $max);
-		} ($max - $ok), $ok
-	));
-	Bivio::Die->throw_quietly('DIE');
-        # DOES NOT RETURN
-    }
-    $self->print("All ($max) tests passed\n");
+    $self->print(Bivio::Test->format_results($ok, $max));
+    Bivio::Die->throw_quietly('DIE')
+	unless $max == $ok;
     return;
 }
 

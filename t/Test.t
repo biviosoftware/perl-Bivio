@@ -188,6 +188,10 @@ sub t {
 		    $err .= "Failed deviance: ".$msg
 			if grep($_ eq $n, @$not_ok);
 		}
+		elsif ($msg =~ /FAILED (\d+).*passed (\d+)/i) {
+		    $err .= "incorrect counts: $msg"
+			unless $1 == @$not_ok && $1 + $2 == $num_tests;
+		}
 		else {
 		    $err .= "Unexpected msg: ".$msg;
 		}
