@@ -114,6 +114,8 @@ sub create {
     my $rfc = $msg->get_rfc822();
     $_FILE_CLIENT->create('/'.$club_name.'/messages/rfc822/'.$msgid,
 	    \$rfc) || die("create failed: $rfc");
+#TODO: When parsing works, this should be taken out.
+return;
     # Handle email attachments. Here's a first cut...
     my $filename = '/' . $club_name . '/messages/html/' . $msgid;
     if($msg){
