@@ -242,6 +242,8 @@ sub rename {
 
 =head2 static write(string file_name, string_ref contents)
 
+=head2 static write(string file_name, string contents)
+
 Creates a file with I<file_name> and writes I<contents> to it.
 Dies with an IO_ERROR on errors.
 
@@ -251,14 +253,15 @@ If the file name is '-', writes to C<STDOUT>.
 
 sub write {
     my(undef, $file_name, $contents) = @_;
+    my($c) = ref($contents) ? $contents : \$contents;
     my($op) = 'open';
  TRY: {
 	open(OUT, $file_name eq '-' ? '>-' : '> '.$file_name) || last TRY;
 	$op = 'print';
-	(print OUT $$contents) || last TRY;
+	(print OUT $$c) || last TRY;
 	$op = 'close';
         close(OUT) || last TRY;
-	_trace('Wrote ', length($$contents), ' bytes to ', $file_name)
+	_trace('Wrote ', length($$c), ' bytes to ', $file_name)
 		if $_TRACE;
 	return;
     }
