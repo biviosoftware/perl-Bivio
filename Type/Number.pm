@@ -111,6 +111,43 @@ sub mul {
 	    defined($decimals) ? $decimals : $proto->get_decimals());
 }
 
+=for html <a name="neg"></a>
+
+=head2 neg(string number) : string
+
+Returns a number with the opposite sign from the specified one.
+
+=cut
+
+sub neg {
+    my($proto, $number) = @_;
+
+    my($sign, $num);
+    if (($sign, $num) = $number =~ /^([-+])(.*)$/) {
+	return ($sign eq '-' ? '+' : '-').$num;
+    }
+    return '-'.$number;
+}
+
+=for html <a name="round"></a>
+
+=head2 round(string number, int decimals) : string
+
+Rounds the number to the specified number of decimal places.
+
+=cut
+
+sub round {
+    my($proto, $number, $decimals) = @_;
+    die("invalid decimals $decimals") if $decimals < 0;
+    my($rounder) = '0.'.('0' x $decimals).'5';
+    if ($number =~ /^[-]/) {
+	$rounder = '-'.$rounder;
+    }
+    $number = $proto->add($number, $rounder, $decimals + 1);
+    return $proto->trunc($number, $decimals);
+}
+
 =for html <a name="sub"></a>
 
 =head2 static sub(string v, string v2, int decimals) : string
@@ -126,6 +163,29 @@ sub sub {
 
     return _math_op('bsub', $v, $v2,
 	    defined($decimals) ? $decimals : $proto->get_decimals());
+}
+
+=for html <a name="trunc"></a>
+
+=head2 trunc(string number, int decimals) : string
+
+Truncates the number to the specified number of decimal places.
+
+=cut
+
+sub trunc {
+    my($proto, $number, $decimals) = @_;
+    die("invalid decimals $decimals") if $decimals < 0;
+
+    my($int, $dec);
+    if (($int, $dec) = $number =~ /^(.*)\.(.*)$/) {
+
+	if (length($dec) > $decimals) {
+	    $dec = substr($dec, 0, $decimals);
+	    $number = $int.'.'.$dec;
+	}
+    }
+    return $number;
 }
 
 #=PRIVATE METHODS
@@ -207,5 +267,6 @@ Copyright (c) 1999 bivio, LLC.  All rights reserved.
 $Id$
 
 =cut
+
 
 1;
