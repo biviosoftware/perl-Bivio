@@ -363,12 +363,12 @@ sub _handle_submit {
     # input types in a single form.  However, no Bivio form should
     # have it.
     Bivio::Die->die("Duplicate submit fields: $origtext")
-		if defined($fields->{currentform}->{fields}->{$name});
+		if defined($fields->{currentform}->{hidden_fields}->{$name});
 
-    $fields->{currentform}->{fields}->{$name} = {};
-    $fields->{currentform}->{fields}->{$name}->{type} = $attr->{type};
-    $fields->{currentform}->{fields}->{$name}->{name} = $attr->{name};
-#   $fields->{currentform}->{fields}->{$name}->{value} = $attr->{value};
+    $fields->{currentform}->{hidden_fields}->{$name} = {};
+    $fields->{currentform}->{hidden_fields}->{$name}->{type} = $attr->{type};
+    $fields->{currentform}->{hidden_fields}->{$name}->{name} = $attr->{name};
+#   $fields->{currentform}->{hidden_fields}->{$name}->{value} = $attr->{value};
 
     return;
 }
