@@ -69,12 +69,11 @@ Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
 
 sub vs_text {
     my($self, @tag) = @_;
-    return [['->get_request'], 'Bivio::UI::Facade', 'Text', '->get_value',
+    return [['->get_request'], 'Bivio::UI::Facade', 'Text',
 	Bivio::UI::Text->join_tag(@tag)] if !ref($tag[0]);
-    # Repackage tag_widget_value with Text as (dynamic) formatter.
-    # The only way this works properly is if Bivio::UI::Text is a
-    # static formatter (which looks up req_or_facade) from itself.
-    return [@{$tag[0]}, 'Bivio::UI::Text'],
+    # Pass widget value (array_ref) verbatim.  Will be evaluated by
+    # get_widget_value.
+    return [['->get_request'], 'Bivio::UI::Facade', 'Text', $tag[0]],
 	    if ref($tag[0]) eq 'ARRAY';
     Bivio::Die->die(\@tag, ': tag must be a list of strings or array_ref');
     # DOES NOT RETURN
