@@ -422,9 +422,10 @@ sub _find_list_start {
 		page_number => ($page_number = $query->FIRST_PAGE));
 	}
 	if ($db->CAN_LIMIT_AND_OFFSET) {
+	    # We always get one more, so has_next works
 	    $statement = $db->execute(
 		$select . sprintf(' OFFSET %d LIMIT %d',
-		    ($page_number - 1) * $count, $count),
+		    ($page_number - 1) * $count, $count + 1),
 		 $params);
 	    return ($row, $statement)
 		if $row = $statement->fetchrow_arrayref;

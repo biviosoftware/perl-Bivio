@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..16\n"; }
+BEGIN { $| = 1; print "1..37\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::SQL::ListSupport;
@@ -231,6 +231,9 @@ $rows = $support->load($query, '', []);
 t(scalar(@$rows), 2);
 t('name00', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
+t($query->get('has_next'), 1);
+t($query->get('next_page') || 0, 2);
+t($query->get('has_prev'), 0);
 
 # Page 2
 $query = Bivio::SQL::ListQuery->new({
@@ -243,6 +246,10 @@ $rows = $support->load($query, '', []);
 t(scalar(@$rows), 2);
 t('name01', $rows->[1]->{'TListT1.name'});
 t($rows->[0]->{'TListT1.name'}, $rows->[1]->{'TListT1.name'});
+t($query->get('has_next'), 1);
+t($query->get('next_page') || 0, 3);
+t($query->get('has_prev'), 1);
+t($query->get('prev_page'), 1);
 
 # Past last page with want_page_count
 $query = Bivio::SQL::ListQuery->new({
