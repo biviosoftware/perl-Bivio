@@ -105,14 +105,8 @@ sub execute {
 	$filename = '/'.$club_name.'/messages/html/'.$attachment_id;
 	die("couldn't get mime  body for $attachment_id. Error: $body")
 	    unless $_FILE_CLIENT->get($filename, \$body);
-	my($i) = index($body, 'X-BivioNumParts: ');
-	$s = substr($body, $i);
-	$i = index($s, "\n");
-	$s = substr($s, $i);
-	$i = index($body, 'Content-Type: ');
-	my($ctypestr) = substr($body, $i);
-	$i = index($ctypestr, "\n");
-	$ctypestr = substr($ctypestr, 0, $i);
+#	$s = _numparts(\$s); 
+	my $ctypestr = _content_type(\$body);
 	if($ctypestr =~ 'text/plain'){$esc = 1;}
 	#everything we get from the file server should be text/html
 	if($ctypestr =~ 'text/html'){$esc = 0;}
@@ -163,6 +157,32 @@ sub handle_config {
 }
 
 #=PRIVATE METHODS
+
+# _content_type() : 
+#
+#
+#
+sub _content_type {
+    my($body) = @_;
+    my $i = index($$body, 'Content-Type: ');
+    my($ctypestr) = substr($$body, $i);
+    $i = index($ctypestr, "\n");
+    $ctypestr = substr($ctypestr, 0, $i);
+    return $ctypestr;
+}
+
+# _numparts() : 
+#
+#
+#
+sub _numparts {
+    my($body) = @_;
+    my($i) = index($$body, 'X-BivioNumParts: ');
+    my($s) = substr($$body, $i);
+    $i = index($s, "\n");
+    $s = substr($s, $i);
+    return $s;
+}
 
 =head1 COPYRIGHT
 
