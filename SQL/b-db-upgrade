@@ -290,10 +290,11 @@ EOF
     my($row, %shadow);
     while ($row = $sth->fetchrow_arrayref) {
 	my($e) = $row->[0];
-	$shadow{$e} = $1.':'.$2 if $e =~ /ignore-.(.+)_(\d+)$/;
+	$shadow{$e} = $1.':'.$2 if $e =~ /^ignore-.(.+)_(\d+)$/;
     }
 
     while (my($k, $v) = each(%shadow)) {
+	print STDERR "changing $k -> $v\n";
 	Bivio::SQL::Connection->execute(<<'EOF', [$v, $k]);
 		UPDATE email_t
                 SET email = ?
