@@ -86,7 +86,12 @@ sub dev {
 		http_host => "$host:$http_port",
 		mail_host => $host,
 	    },
-	    main => {
+	    'Bivio::Util::HTTPLog' => {
+		email => '',
+		error_file => 'stderr.log',
+		pager_email => '',
+	    },
+    	    main => {
 		http => {
 		    port => $http_port,
 		},
