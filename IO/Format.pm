@@ -9,6 +9,10 @@ $_ = $Bivio::IO::Format::VERSION;
 
 Bivio::IO::Format - uses formline to generate paged string output
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::IO::Format;
