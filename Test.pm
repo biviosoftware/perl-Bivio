@@ -180,13 +180,13 @@ See L<check_return|"check_return">.
 
 Name of class to test.  Will be loaded dynamically with
 L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader>.
-L<compute_object|"compute_object"> will be set to
-L<default_compute_object|"default_compute_object">
+L<create_object|"create_object"> will be set to
+L<default_create_object|"default_create_object">
 unless already set.
 
-=item compute_object : code_ref
+=item create_object : code_ref
 
-See L<compute_object|"compute_object">
+See L<create_object|"create_object">
 
 =item compute_params : code_ref
 
@@ -231,7 +231,7 @@ use Bivio::Test::Case;
 my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_object);
+my(@_CALLBACKS) = qw(check_return check_die_code compute_params create_object);
 my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
@@ -319,9 +319,9 @@ $_ = <<'}'; # emacs
 sub check_return {
 }
 
-=for html <a name="compute_object"></a>
+=for html <a name="create_object"></a>
 
-=head2 callback compute_object(Bivio::Test::Case case, array_ref params) : any
+=head2 callback create_object(Bivio::Test::Case case, array_ref params) : any
 
 Returns the object to be used for this method group.  I<params> is the value in
 the "object" location of the test case tree.  It can be an array_ref or a
@@ -331,7 +331,7 @@ the methods.
 =cut
 
 $_ = <<'}'; # emacs
-sub compute_object {
+sub create_object {
 }
 
 =for html <a name="compute_params"></a>
@@ -351,16 +351,16 @@ $_ = <<'}'; # emacs
 sub compute_params {
 }
 
-=for html <a name="default_compute_object"></a>
+=for html <a name="default_create_object"></a>
 
-=head2 subroutine default_compute_object(Bivio::Test::Case case, array_ref params) : any
+=head2 subroutine default_create_object(Bivio::Test::Case case, array_ref params) : any
 
-Implements L<compute_object|"compute_object"> interface.  Calls
+Implements L<create_object|"create_object"> interface.  Calls
 L<new|"new"> on I<class_name> attribute.
 
 =cut
 
-sub default_compute_object {
+sub default_create_object {
     my($case, $params) = @_;
     return $case->get('class_name')->new(@$params);
 }
@@ -577,23 +577,23 @@ sub _compile_object {
     my($self, $state, $tests, $object, $methods) = @_;
     $state = _compile_options($state, 'object', $object);
     if ($state->{class_name}) {
-	$state->{compute_object} = \&default_compute_object
-	    unless $state->{compute_object};
+	$state->{create_object} = \&default_create_object
+	    unless $state->{create_object};
     }
-    if ($state->{compute_object} || ref($state->{object}) eq 'CODE') {
+    if ($state->{create_object} || ref($state->{object}) eq 'CODE') {
 	my($fields) = $self->[$_IDI];
 	$state->{_eval_object} = @{$fields->{_eval_object} ||= []};
 	push(@{$fields->{_eval_object}}, [
 	    ref($state->{object}) eq 'CODE'
 	       ? ($state->{object}, [])
-	       : ($state->{compute_object},
+	       : ($state->{create_object},
 		   ref($state->{object}) eq 'ARRAY' ? $state->{object}
 		   : !ref($state->{object}) ? [$state->{object}]
 		   : _compile_die('object must be a scalar, ARRAY, or CODE',
 		       $state->{object})),
 	]);
 	$state->{object} = undef;
-	$state->{compute_object} = undef;
+	$state->{create_object} = undef;
     }
     elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
 	Bivio::IO::ClassLoader->unsafe_simple_require($state->{object})
@@ -770,7 +770,7 @@ sub _eval_object {
     my($fields) = $self->[$_IDI];
     my($object) = $fields->{_eval_object}->[$e];
     unless (defined($object)) {
-	$$err = 'prior compute_object call failed';
+	$$err = 'prior create_object call failed';
 	return 0;
     }
     if (ref($object) eq 'ARRAY') {
@@ -782,9 +782,9 @@ sub _eval_object {
 	    $$err = 'unable to load package ' . $case->get('class_name');
 	}
 	else {
-	    $case->put(compute_object => $code);
+	    $case->put(create_object => $code);
 	    $fields->{_eval_object}->[$e] = $object
-		= _eval_custom($case, 'compute_object', [$param], $err);
+		= _eval_custom($case, 'create_object', [$param], $err);
 	}
 	return 0 if $$err;
     }
@@ -847,7 +847,7 @@ sub _eval_result {
 	}
 	else {
 	    return $res ? undef
-		: "custom $custom return false because got"
+		: "check_$which returned false for result: "
 		    . Bivio::IO::Ref->to_short_string($case->get($which));
 
 	}

@@ -125,7 +125,7 @@ t(
 	],
 	{
 	    object => '3',
-	    compute_object => sub {
+	    create_object => sub {
 		my($case, $object) = @_;
 		return Bivio::t::Test::Testee->new(@$object),
 	    },
@@ -215,7 +215,7 @@ t(
 );
 t(
     {
-	compute_object => sub {
+	create_object => sub {
 	    my($case, $params) = @_;
 	    return Bivio::t::Test::Testee->new(@$params);
 	},
@@ -245,7 +245,7 @@ t(
 	    ok => 77,
 	],
 	{
-	    compute_object => sub {
+	    create_object => sub {
 		my($case, $params) = @_;
 		die($params, ': expected 99 as object')
 		    unless $params->[0] == 99;
