@@ -92,6 +92,36 @@ sub get {
     return $self->SUPER::get(@keys);
 }
 
+=for html <a name="get_cursor"></a>
+
+=head2 get_cursor() : int
+
+Returns the position.  Returns -1 before the list is read and
+undef after the list is read.
+
+=cut
+
+sub get_cursor {
+    my($self) = shift;
+    my($fields) = $self->{$_PACKAGE};
+    if ($fields->{loaded}) {
+	return -1;
+    }
+    return 0;
+}
+
+=for html <a name="get_result_set_size"></a>
+
+=head2 get_result_set_size() : int
+
+Returns the number of rows loaded.
+
+=cut
+
+sub get_result_set_size {
+    return 1;
+}
+
 =for html <a name="get_widget_value"></a>
 
 =head2 get_widget_value(string param1, ...) : any
