@@ -3,6 +3,7 @@
 package Bivio::Biz::Action::CopyClub;
 use strict;
 $Bivio::Biz::Action::CopyClub::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Action::CopyClub::VERSION;
 
 =head1 NAME
 
@@ -37,6 +38,9 @@ use Bivio::Auth::Role;
 use Bivio::Biz::Model::Address;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::ExpenseCategory;
+use Bivio::Biz::Model::ExpenseCategoryList;
+use Bivio::Biz::Model::ExpenseInfo;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::Phone;
@@ -49,6 +53,7 @@ use Bivio::Biz::Model::RealmTransaction;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Biz::Model::TaxId;
 use Bivio::SQL::Connection;
+use Bivio::Type::EntryType;
 use Bivio::Type::Honorific;
 
 #=VARIABLES
@@ -134,13 +139,51 @@ sub execute {
 		'entry_id');
     }
 
+    # expense categories, copied manually because of the parent id reference
+    my($list) = Bivio::Biz::Model::ExpenseCategoryList->new($req);
+    my($old_auth_id) = $req->get('auth_id');
+#TODO: can't override auth_id in list query, set it in request, very bad
+    $req->put(auth_id => $source_id);
+    $list->unauth_load_all({auth_id => $source_id});
+    $req->put(auth_id => $old_auth_id);
+    while ($list->next_row) {
+	my($id) = $list->get('ExpenseCategory.expense_category_id');
+	my($parent) = $list->get('ExpenseCategory.parent_category_id');
+	my($category) = Bivio::Biz::Model::ExpenseCategory->new($req);
+	$category->create({
+	    realm_id => $realm_id,
+	    name => $list->get('ExpenseCategory.name'),
+	    deductible => $list->get('ExpenseCategory.deductible'),
+	    parent_category_id => defined($parent)
+	    ? $id_map->{$parent} : undef,
+	});
+	$id_map->{$id} = $category->get('expense_category_id');
+    }
+
+    # expense entry info
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT entry_id
+            FROM entry_t
+            WHERE entry_t.realm_id=?
+            AND entry_t.entry_type=?',
+	    [$source_id, Bivio::Type::EntryType::CASH_EXPENSE()->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($entry_id) = $row->[0];
+	_copy($id_map, 'expense_info', {entry_id => $entry_id,
+	    realm_id => $source_id},
+		Bivio::Biz::Model::ExpenseInfo->new($req),
+		'expense_category_id');
+    }
+
     # members and entries
     _copy($id_map, 'realm_user', {realm_id => $source_id},
 	    Bivio::Biz::Model::RealmUser->new($req));
-    my($sth) = Bivio::SQL::Connection->execute(
-	    'select user_id from realm_user_t where realm_id=?', [$source_id]);
-    my($row);
-    while ($row = $sth->fetchrow_arrayref) {
+    $sth = Bivio::SQL::Connection->execute('
+	    SELECT user_id
+            FROM realm_user_t
+            WHERE realm_id=?',
+	    [$source_id]);
+    while (my $row = $sth->fetchrow_arrayref) {
 	my($user_id) = $row->[0];
 	# users map to themselves, they are not copied
 	$id_map->{$user_id} = $user_id;
@@ -186,7 +229,7 @@ sub _copy {
 	for (my($i) = 0; $i < int(@$fields); $i++ ) {
 	    $properties->{$fields->[$i]} = $row->[$i];
 	}
-	# Can't have "now" be before clu bcreation date
+	# Can't have "now" be before club creation date
 	$properties->{creation_date_time} = $now if $now;
 
 	my($source_id) = $properties->{$table_base."_id"};
