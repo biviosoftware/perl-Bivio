@@ -28,6 +28,17 @@ Bivio::Test->unit([
 	    [bb => sub {22}] => 22,
 	    [bb => sub {44}] => 22,
 	],
+	map_each => [
+	    [sub {
+		 shift;
+		 return (shift(@_) => 1);
+	    }] => sub {
+		my($case, $actual) = @_;
+		$case->actual_return([{@{$actual->[0]}}]);
+		return [{map(($_ => 1),
+		    sort(@{$case->get('object')->get_keys}))}];
+	    },
+	],
     ],
 ]);
 

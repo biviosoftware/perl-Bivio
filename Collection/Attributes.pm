@@ -468,6 +468,41 @@ sub is_read_only {
     return shift->[$_IDI]->{$_READ_ONLY_ATTR} ? 1 : 0;
 }
 
+=for html <a name="map_each"></a>
+
+=head2 map_each(code_ref map_each_handler) : array_ref
+
+Calls L<map_each_handler|"map_each_handler"> for each (key, value) attribute
+pair.  Values are copied with L<get_shallow_copy|"get_shallow_copy">.  You
+cannot modify them in place, but if a value is a reference, you can modify what
+it points to.
+
+Returns the aggregated result of L<map_each_handler|"map_each_handler">
+as an array_ref.
+
+=cut
+
+sub map_each {
+    my($self, $map_each_handler) = @_;
+    my($c) = $self->get_shallow_copy;
+    return [map($map_each_handler->($self, $_, $c->{$_}), keys(%$c))];
+}
+
+=for html <a name="map_each_handler"></a>
+
+=head2 callback map_each_handler(Bivio::Collection::Attributes self, string key, any value) : array
+
+Called by L<map_each|"map_each"> for each attribute.  . Returns value(s) which are pushed onto the resultant array by L<map_each|"map_each">.
+
+To use as a simple C<foreach> and not a C<map>, put a C<return;> at the end, so
+that nothing is returned.  I<map_each_handler> is called in a list context.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub map_each_handler {
+}
+
 =for html <a name="put"></a>
 
 =head2 put(string key, string value, ...) : Bivio::Collection::Attributes
