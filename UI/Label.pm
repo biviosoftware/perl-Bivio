@@ -460,6 +460,7 @@ _compile([
 
     # Page headings
     MAIL_LIST_PAGE_HEADING => ['Mail Message Board'],
+    MAIL_DETAIL_PAGE_HEADING => ['Mail Message'],
     SEARCH_LIST_PAGE_HEADING => ['Search Results'],
 
     # Invite List
