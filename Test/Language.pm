@@ -321,6 +321,18 @@ sub test_run {
     return $die;
 }
 
+=for html <a name="test_script"></a>
+
+=head2 test_script() : string
+
+Returns name of test script.
+
+=cut
+
+sub test_script {
+   return _assert_in_eval('test_script')->get('test_script');
+}
+
 =for html <a name="test_setup"></a>
 
 =head2 static test_setup(string map_class, array setup_args) : Bivio::Test::Language
