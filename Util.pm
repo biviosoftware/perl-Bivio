@@ -86,6 +86,21 @@ sub compile_attribute_accessors ($@) {
     return eval $eval . '; 1' || croak("accessor compilation failed: $@");
 }
 
+=for html <a name="dump_stack"></a>
+
+=head2 static dump_stack
+
+Prints the current stack to STDERR
+
+=cut
+
+sub dump_stack {
+    my($i) = 0;
+    while (my($package, $file, $line) = caller($i++)) {
+	print(STDERR $package.' '.$file.' '.$line."\n");
+    }
+}
+
 # return an "@bivio.com" email address for the arg
 sub email ($) {
     return shift() . '@bivio.com';
