@@ -423,7 +423,8 @@ sub format_context_as_query {
 
     # If the task we are going to is the same as the unwind task,
     # don't render the context.  Prevents infinite recursion.
-    return '' if $c->{unwind_task} == $uri_task;
+    # If we don't have an unwind task, we don't return a context
+    return '' if !$c->{unwind_task} || $c->{unwind_task} == $uri_task;
 
 #TODO: Tightly coupled with Widget::Form which knows this is fc=
 #      Need to understand better how to stop the context propagation
@@ -495,7 +496,7 @@ sub get_context_from_request {
     # This code is coupled with FormContext.
     my($res) = {
 	form_model => ref($model),
-	form => $form ,
+	form => $form,
 	form_context => $context,
 	query => $req->unsafe_get('query'),
 	path_info => $req->unsafe_get('path_info'),
