@@ -109,7 +109,6 @@ sub _parse {
 	$req->die('CORRUPT_FORM',
 		{message => 'negative Content-Length', entity => $len})
 		if $len < 0;
-print STDERR "Content-Length: $len\n";
     }
     else {
 	_trace('Content-Length: not set') if $_TRACE;
