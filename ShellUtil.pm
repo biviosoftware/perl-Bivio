@@ -301,6 +301,23 @@ sub get_request {
     return $req;
 }
 
+=for html <a name="initialize_ui"></a>
+
+=head2 initialize_ui()
+
+Initializes the UI and sets up the default facade.  This takes some,
+so classes should use this sparingly.
+
+=cut
+
+sub initialize_ui {
+    my($self) = @_;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher');
+    Bivio::Agent::Dispatcher->initialize;
+    Bivio::Agent::HTTP::Location->setup_facade(undef, $self->get_request);
+    return;
+}
+
 =for html <a name="main"></a>
 
 =head2 static main(array argv)
@@ -463,11 +480,11 @@ sub setup {
 	auth_user_id => $user,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
     }),
-	   program => $p);
+	    program => $p);
 
+    my($req) = $self->get('req');
     if ($realm && !$user) {
 	# No user, but have a realm, so set a user
-	my($req) = $self->get('req');
         $req->set_user(
 		Bivio::Biz::Model::RealmOwner->new($req)->unauth_load_or_die(
 			realm_id => Bivio::Biz::Model->new($req,
@@ -550,6 +567,7 @@ sub write_file {
 	(print OUT $$contents) || last OUT;
 	$op = 'close';
         close(OUT) || last OUT;
+	_trace('Wrote ', $file_name) if $_TRACE;
 	return;
     }
 
