@@ -263,9 +263,9 @@ Includes the time in the log messages.
 sub handle_config {
     my(undef, $cfg) = @_;
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
-	    = $cfg->{max_arg_length};
-    $_MAX_ARG_DEPTH = $cfg->{max_arg_depth};
-    $_MAX_ELEMENT_COUNT = $cfg->{max_element_count};
+	    = $cfg->{max_arg_length} + 0;
+    $_MAX_ARG_DEPTH = $cfg->{max_arg_depth} + 0;
+    $_MAX_ELEMENT_COUNT = $cfg->{max_element_count} + 0;
 
     # Must reset warn counter.  We don't call this except at config
     # time, so probably ok.  The low level code shouldn't loop. :-(
