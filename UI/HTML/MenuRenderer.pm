@@ -73,6 +73,7 @@ sub menus are anchored upward.
 sub render {
     my($self, $menu, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
     my($names) = $menu->get_names();
     my($display_names) = $menu->get_display_names();
@@ -83,7 +84,7 @@ sub render {
         return;
     }
 
-    $req->print('<table border=0 cellpadding=2 cellspacing=0><tr>');
+    $reply->print('<table border=0 cellpadding=2 cellspacing=0><tr>');
 
     my($pad) = '<td></td>';
     my($html) = '<td>&nbsp;</td>';
@@ -111,16 +112,16 @@ sub render {
     }
 
     if ($menu->is_top()) {
-        $req->print($html);
-        $req->print('</tr><tr>');
-        $req->print($pad);
+        $reply->print($html);
+        $reply->print('</tr><tr>');
+        $reply->print($pad);
     }
     else {
-        $req->print($pad);
-        $req->print('</tr><tr>');
-        $req->print($html);
+        $reply->print($pad);
+        $reply->print('</tr><tr>');
+        $reply->print($html);
     }
-    $req->print('</tr></table>');
+    $reply->print('</tr></table>');
     return;
 }
 

@@ -83,7 +83,7 @@ sub render {
     else {
 	$str = $target;
     }
-    $req->print($str);
+    $req->get_reply()->print($str);
     return;
 }
 

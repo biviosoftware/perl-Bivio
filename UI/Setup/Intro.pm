@@ -77,15 +77,16 @@ Draws an introductary club setup view.
 sub render {
     my($self, $user, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
-    $req->print('<table border=0><tr><td>');
+    $reply->print('<table border=0><tr><td>');
 
-    $req->print('<form action='.$req->make_path('admin').' method="post">');
+    $reply->print('<form action='.$req->make_path('admin').' method="post">');
 
-    $req->print('Welcome to club setup.');
-    $req->print('<p><input type="submit" value="Next">');
+    $reply->print('Welcome to club setup.');
+    $reply->print('<p><input type="submit" value="Next">');
 
-    $req->print('</form></td></tr></table>');
+    $reply->print('</form></td></tr></table>');
     return;
 }
 

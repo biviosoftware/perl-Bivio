@@ -80,6 +80,7 @@ Creates a form for editing the L<Bivio::Biz::User> model.
 sub render {
     my($self, $user, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
 #TODO: handle update as well
     my($action) = 'add';
@@ -87,50 +88,50 @@ sub render {
     my($email) = Bivio::Biz::UserEmail->new();
     my($club_user) = Bivio::Biz::ClubUser->new();
 
-    $req->print('<table border=0><tr><td>');
-    $req->print('<table border=0 cellpadding=0 cellspacing=0>');
+    $reply->print('<table border=0><tr><td>');
+    $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
 
-    $req->print('Enter user information below. Required fields are'
+    $reply->print('Enter user information below. Required fields are'
 	    .' indicated with a *.<p>');
 
     if (! $user->get_status()->is_ok() ) {
-	$req->print('<font color="#FF0000">');
+	$reply->print('<font color="#FF0000">');
 	my($errors) = $user->get_status()->get_errors();
 	foreach (@$errors) {
-	    $req->print($_->get_message().'<br>');
+	    $reply->print($_->get_message().'<br>');
 	}
-	$req->print('</font>');
+	$reply->print('</font>');
     }
 
-    $req->print('<form action='.$req->make_path().' method="post">');
+    $reply->print('<form action='.$req->make_path().' method="post">');
 
-    $req->print('<input type="hidden" name="ma" value='.$action.'>');
-    $req->print('<tr><td rowspan=100 width=15></td></tr>');
+    $reply->print('<input type="hidden" name="ma" value='.$action.'>');
+    $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($user, 'password', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($email, 'email', $req, 1);
 
-    $req->print('<tr><td>&nbsp;</td></tr>');
+    $reply->print('<tr><td>&nbsp;</td></tr>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'first_name', $req);
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'middle_name',$req);
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'last_name', $req);
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'age', $req);
-    $req->print('<tr><td>&nbsp;</td></tr>');
+    $reply->print('<tr><td>&nbsp;</td></tr>');
     Bivio::UI::HTML::FieldUtil->entry_field($demographics, 'gender', $req);
-    $req->print('<tr><td>&nbsp;</td></tr>');
-    $req->print('<tr><td>Role</td></tr>');
+    $reply->print('<tr><td>&nbsp;</td></tr>');
+    $reply->print('<tr><td>Role</td></tr>');
     Bivio::UI::HTML::FieldUtil->entry_field($club_user, 'role', $req);
 
-    $req->print('<tr><td>&nbsp;</td></tr>');
-    $req->print('<tr><td colspan=2 align=center>'
+    $reply->print('<tr><td>&nbsp;</td></tr>');
+    $reply->print('<tr><td colspan=2 align=center>'
 	    .'<input type="submit" value="OK">&nbsp'
 #	    .'<input type="submit" value="Cancel">'
 	    .'</td></tr>');
 
-    $req->print('</table></form>');
-    $req->print('</td></tr></table>');
+    $reply->print('</table></form>');
+    $reply->print('</td></tr></table>');
     return;
 }
 

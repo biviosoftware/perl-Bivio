@@ -58,9 +58,10 @@ of a table. The table should be rendered before calling this method.
 
 sub entry_field {
     my(undef, $model, $field, $req, $required) = @_;
+    my($reply) = $req->get_reply();
 
-    $req->print('<tr><td>');
-    $req->print('*&nbsp;') if $required;
+    $reply->print('<tr><td>');
+    $reply->print('*&nbsp;') if $required;
     my($fd) = $model->get_field_descriptor($field);
 
     # get the current value from the request or the model
@@ -71,78 +72,78 @@ sub entry_field {
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::NUMBER
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::DATE
 	    || $fd->get_type() == Bivio::Biz::FieldDescriptor::EMAIL) {
-	$req->print('<label for="'.$field.'">'
+	$reply->print('<label for="'.$field.'">'
 		.$model->get_field_caption($field).': </label></td><td>');
-	$req->print('<input type="text" name="'.$field
+	$reply->print('<input type="text" name="'.$field
 		.'" maxlength='.$fd->get_size());
 
 	if ($value) {
-	    $req->print(' value="'.$value.'"');
+	    $reply->print(' value="'.$value.'"');
 	}
 	if ($fd->get_size() < 15) {
-	    $req->print(' size='.$fd->get_size());
+	    $reply->print(' size='.$fd->get_size());
 	}
 	elsif ($fd->get_size() > 40) {
 	    # 40 is pretty big for an entry field
-	    $req->print(' size=40');
+	    $reply->print(' size=40');
 	}
-	$req->print('>');
+	$reply->print('>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::BOOLEAN) {
-	$req->print('<input type="checkbox" name="'.$field.'"');
+	$reply->print('<input type="checkbox" name="'.$field.'"');
 	if ($value) {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('>');
+	$reply->print('>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::GENDER) {
-	$req->print('<input type="radio" name="'.$field
+	$reply->print('<input type="radio" name="'.$field
 		.'" value="M"');
 	if ($value && $value eq "M") {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('> Male <br><input type="radio" name="'
+	$reply->print('> Male <br><input type="radio" name="'
 		.$field.'" value="F"');
 	if ($value && $value eq "F") {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('> Female <br>');
+	$reply->print('> Female <br>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::PASSWORD) {
-	$req->print('<label for="password">Password: </label></td><td>'
+	$reply->print('<label for="password">Password: </label></td><td>'
 		.'<input type="password" name="password" maxlength=32');
 	if ($value) {
-	    $req->print(' value="'.$value.'"');
+	    $reply->print(' value="'.$value.'"');
 	}
-	$req->print('><br></td></tr><tr><td>');
-	$req->print('*&nbsp;') if $required;
-	$req->print('<label for="confirm_password">Confirm password: </label>'
+	$reply->print('><br></td></tr><tr><td>');
+	$reply->print('*&nbsp;') if $required;
+	$reply->print('<label for="confirm_password">Confirm password: </label>'
 		.'</td><td><input type="password" name="confirm_password"'
 		.' maxlength=32');
 	if ($value) {
-	    $req->print(' value="'.$value.'"');
+	    $reply->print(' value="'.$value.'"');
 	}
-	$req->print('><br></td></tr>');
+	$reply->print('><br></td></tr>');
     }
     elsif ($fd->get_type() == Bivio::Biz::FieldDescriptor::ROLE) {
-	$req->print('<input type="radio" name="'.$field
+	$reply->print('<input type="radio" name="'.$field
 		.'" value="0"');
 	if ($value && $value == 0) {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('> Administrator<br><input type="radio" name="'
+	$reply->print('> Administrator<br><input type="radio" name="'
 		.$field.'" value="1"');
 	if ($value && $value == 1) {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('> Member<br><input type="radio" name="'
+	$reply->print('> Member<br><input type="radio" name="'
 	       .$field.'" value="2"');
 	if ($value && $value == 2) {
-	    $req->print(' checked');
+	    $reply->print(' checked');
 	}
-	$req->print('> Guest<br>');
+	$reply->print('> Guest<br>');
     }
-    $req->print('</td></tr>');
+    $reply->print('</td></tr>');
     return;
 }
 

@@ -163,34 +163,35 @@ Renders a view with NavBar, ActionBar, and Menu.
 
 sub render {
     my($self, $model, $req) = @_;
+    my($reply) = $req->get_reply();
 
-    $req->print('<table border=0 cellpadding=0 cellspacing=0 width="100%">'
+    $reply->print('<table border=0 cellpadding=0 cellspacing=0 width="100%">'
 	    .'<tr><td colspan=3>'
 	    ."\n<!-- TITLE -->");
 
     $self->render_title($model, $req);
 
-    $req->print('</td></tr><tr><td valign=top>'
+    $reply->print('</td></tr><tr><td valign=top>'
 	    ."\n<!-- NAV BAR -->");
 
     $self->render_nav_bar($model, $req);
 
-    $req->print('</td><td width="1%" rowspan=2>'
+    $reply->print('</td><td width="1%" rowspan=2>'
 	    ."\n<!-- SPACER -->&nbsp;</td>");
 
-    $req->print('<td width="1%" rowspan=2 valign="top">'
+    $reply->print('<td width="1%" rowspan=2 valign="top">'
 	    .'<table border=0 cellpadding=0 cellspacing=0>'
 	    ."<tr><td>\n<!-- VIEW ACTIONS -->");
 
     $self->render_action_bar($model, $req);
 
-    $req->print('</td></tr></table></td></tr>'
+    $reply->print('</td></tr></table></td></tr>'
 	    .'<tr><td valign=top><br>'
 	    ."\n<!-- PRESENTATION VIEW -->");
 
     $self->get_active_view()->render($model, $req);
 
-    $req->print('</td></tr></table>');
+    $reply->print('</td></tr></table>');
     return;
 }
 
@@ -205,6 +206,7 @@ view L<Bivio::UI::HTML::LinkSupport/"get_action_links"> method.
 
 sub render_action_bar {
     my($self, $model, $req) = @_;
+    my($reply) = $req->get_reply();
 
     # see if the active view implements LinkSupport
     my($action_links) = undef;
@@ -215,16 +217,16 @@ sub render_action_bar {
 
     if ($action_links && scalar(@$action_links)) {
 
-	$req->print('<table border=0 cellpadding=5 cellspacing=0'
+	$reply->print('<table border=0 cellpadding=5 cellspacing=0'
 		.' bgcolor="#E9E3C7"><tr>'
 		.'<td align=center valign="top"><small>');
 
 	my($link);
 	foreach $link (@$action_links) {
-	    $req->print('<p>');
+	    $reply->print('<p>');
 	    $link->render($model, $req);
 	}
-	$req->print('</small></td></tr></table>');
+	$reply->print('</small></td></tr></table>');
     }
     return;
 }
@@ -241,8 +243,9 @@ method.
 
 sub render_nav_bar {
     my($self, $model, $req) = @_;
+    my($reply) = $req->get_reply();
 
-    $req->print('<table border=0 cellpadding=0 cellspacing=0'
+    $reply->print('<table border=0 cellpadding=0 cellspacing=0'
 	    .' width="100%"><tr>');
 
     my($nav_links) = undef;
@@ -251,26 +254,26 @@ sub render_nav_bar {
 	$nav_links = $self->get_active_view()->get_nav_links(
 		$model, $req);
 
-	$req->print('<td width="1%">');
+	$reply->print('<td width="1%">');
 
 	my($link) = &_find_named_object(NAV_BACK(), $nav_links);
 	if ($link) {
 	    $link->render($model, $req);
-	    $req->print('</td><td width="1%">');
+	    $reply->print('</td><td width="1%">');
 	}
 	$link = &_find_named_object(NAV_UP(), $nav_links)
 		|| $_EMPTY_LINK;
         $link->render($model, $req);
 
-	$req->print('</td><td width="1%">');
+	$reply->print('</td><td width="1%">');
 	$link = &_find_named_object(NAV_DOWN(), $nav_links)
 		|| $_EMPTY_LINK;
 	$link->render($model, $req);
 
-	$req->print('</td>');
+	$reply->print('</td>');
     }
 
-    $req->print('<td width="100%" valign=top align=center>'
+    $reply->print('<td width="100%" valign=top align=center>'
 	    ."\n<!-- VIEW MENU -->");
 
     my($menu) = $self->get_menu();
@@ -278,24 +281,24 @@ sub render_nav_bar {
 	$menu->set_selected($self->get_active_view()->get_name());
 	$_MENU_RENDERER->render($menu, $req);
     }
-    $req->print('</td>');
+    $reply->print('</td>');
 
     if ($nav_links) {
 
-	$req->print('<td width="1%">');
+	$reply->print('<td width="1%">');
 
 	my($link) = &_find_named_object(NAV_LEFT(), $nav_links)
 		|| $_EMPTY_LINK;
         $link->render($model, $req);
 
-	$req->print('</td><td width="1%">');
+	$reply->print('</td><td width="1%">');
 	$link = &_find_named_object(NAV_RIGHT(), $nav_links)
 		|| $_EMPTY_LINK;
 	$link->render($model, $req);
 
-	$req->print('</td>');
+	$reply->print('</td>');
     }
-    $req->print('</tr></table>');
+    $reply->print('</tr></table>');
     return;
 }
 
@@ -310,16 +313,17 @@ L<Bivio::Biz::Model/"get_title"> method of L<BIvio::Biz::Model>.
 
 sub render_title {
     my($self, $model, $req) = @_;
+    my($reply) = $req->get_reply();
 
-    $req->print('<table border=0 cellpadding=5 cellspacing=0 width="100%">'
+    $reply->print('<table border=0 cellpadding=5 cellspacing=0 width="100%">'
 	    .'<tr bgcolor="#E0E0FF">'
 	    .'<td width="100%" colspan=2>'
 	    .'<font face="arial,helvetica,sans-serif">'
 	    .'<big><strong>');
 
-    $req->print($model->get_title() || '&nbsp;');
+    $reply->print($model->get_title() || '&nbsp;');
 
-    $req->print('</strong></big></font></td></tr></table>');
+    $reply->print('</strong></big></font></td></tr></table>');
     return;
 }
 

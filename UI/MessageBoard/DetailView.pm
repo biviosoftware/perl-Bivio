@@ -203,10 +203,11 @@ sub render {
 
     my($message) = $list->get_selected_message();
     if ($message) {
-	$req->print('<pre>'.${$message->get_body()}.'</pre>');
+	$req->get_reply()->print('<pre>'.${$message->get_body()}.'</pre>');
     }
     else {
-	$req->print('<font color="red">Could not find message.</font>');
+	$req->get_reply()->print(
+		'<font color="red">Could not find message.</font>');
     }
     return;
 }

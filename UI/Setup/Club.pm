@@ -78,41 +78,42 @@ Creates a form for editing the specified Club model.
 sub render {
     my($self, $club, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
-    $req->print('<table border=0><tr><td>');
-    $req->print('<table border=0 cellpadding=0 cellspacing=0>');
+    $reply->print('<table border=0><tr><td>');
+    $reply->print('<table border=0 cellpadding=0 cellspacing=0>');
 
-    $req->print('Now enter a short name for the club identifier, and a '
+    $reply->print('Now enter a short name for the club identifier, and a '
 	    .'descriptive name for the full name.<p>');
 
     if (! $club->get_status()->is_ok() ) {
-	$req->print('<font color="#FF0000">');
+	$reply->print('<font color="#FF0000">');
 	my($errors) = $club->get_status()->get_errors();
 	foreach (@$errors) {
-	    $req->print($_->get_message().'<br>');
+	    $reply->print($_->get_message().'<br>');
 	}
-	$req->print('</font>');
+	$reply->print('</font>');
     }
 
-    $req->print('<form action='.$req->make_path().' method="post">');
+    $reply->print('<form action='.$req->make_path().' method="post">');
 
-    $req->print('<input type="hidden" name="ma" value=add>');
-    $req->print('<input type="hidden" name="admin" value='
+    $reply->print('<input type="hidden" name="ma" value=add>');
+    $reply->print('<input type="hidden" name="admin" value='
 	    .$req->get_arg('admin').' >');
-    $req->print('<tr><td rowspan=100 width=15></td></tr>');
+    $reply->print('<tr><td rowspan=100 width=15></td></tr>');
 
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'name', $req, 1);
     Bivio::UI::HTML::FieldUtil->entry_field($club, 'full_name', $req, 1);
 
     # could add club preferences here...
 
-    $req->print('<tr><td>&nbsp;</td></tr>');
-    $req->print('<tr><td>'
+    $reply->print('<tr><td>&nbsp;</td></tr>');
+    $reply->print('<tr><td>'
 	    .'<input type="submit" value="Next">'
 	    .'</td></tr>');
 
-    $req->print('</table></form>');
-    $req->print('</td></tr></table>');
+    $reply->print('</table></form>');
+    $reply->print('</td></tr></table>');
     return;
 }
 

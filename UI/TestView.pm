@@ -90,7 +90,7 @@ sub render {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $req->print($fields->{output});
+    $req->get_reply()->print($fields->{output});
     return;
 }
 

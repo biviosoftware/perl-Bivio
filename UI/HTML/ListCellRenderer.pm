@@ -92,9 +92,9 @@ sub render {
     if ($fields->{attributes}) {
 	$str .= ' '.$fields->{attributes};
     }
-    $req->print($str.'><small>');
+    $req->get_reply()->print($str.'><small>');
     $fields->{inner}->render($target, $req);
-    $req->print('</small></td>');
+    $req->get_reply()->print('</small></td>');
     return;
 }
 

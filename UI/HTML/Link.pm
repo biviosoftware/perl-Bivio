@@ -207,6 +207,7 @@ Draws the link onto the request's output stream.
 sub render {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
     my($url) = $fields->{url};
     my($icon) = $fields->{icon};
@@ -214,16 +215,16 @@ sub render {
     my($text) = $fields->{text};
 
     if ($url) {
-	$req->print('<a href="'.$url.'">');
+	$reply->print('<a href="'.$url.'">');
     }
     if ($icon) {
-	$req->print('<img src='.$icon.' alt="'.$description.'"><br>');
+	$reply->print('<img src='.$icon.' alt="'.$description.'"><br>');
     }
     if ($text) {
-	$req->print($text);
+	$reply->print($text);
     }
     if ($url) {
-	$req->print('</a>');
+	$reply->print('</a>');
     }
     return;
 }

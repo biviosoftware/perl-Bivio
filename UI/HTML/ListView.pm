@@ -122,10 +122,10 @@ sub render {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    $req->print('<table '.$fields->{attributes}.'>');
+    $req->get_reply()->print('<table '.$fields->{attributes}.'>');
     $self->render_heading($model, $req);
     $self->render_body($model, $req);
-    $req->print('</table>');
+    $req->get_reply()->print('</table>');
     return;
 }
 
@@ -142,15 +142,16 @@ data type is created by invoking L<"get_default_renderer">.
 sub render_body {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
     my($max_row) = $model->get_row_count();
     my($max_col) = $model->get_column_count();
 
     for (my($row) = 0; $row < $max_row; $row++ ) {
 	if ($row & 0x01) {
-	    $req->print('<tr bgcolor="#EEEEEE">');
+	    $reply->print('<tr bgcolor="#EEEEEE">');
 	}
 	else {
-	    $req->print('<tr>');
+	    $reply->print('<tr>');
         }
 
 	for (my($col) = 0; $col < $max_col; $col++ ) {
@@ -164,7 +165,7 @@ sub render_body {
 	    }
 	    $cell_renderer->render($model->get_value_at($row, $col), $req);
 	}
-	$req->print('</tr>');
+	$reply->print('</tr>');
     }
     return;
 }
@@ -182,12 +183,13 @@ is rendered as an HTML link for sorting the data.
 sub render_heading {
     my($self, $model, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($reply) = $req->get_reply();
 
-    $req->print('<tr bgcolor="#E0E0FF">');
+    $reply->print('<tr bgcolor="#E0E0FF">');
     for (my($i) = 0; $i < $model->get_column_count(); $i++ ) {
 
-	$req->print('<th align=left>');
-	$req->print('<font face="arial,helvetica,sans-serif"><small>');
+	$reply->print('<th align=left>');
+	$reply->print('<font face="arial,helvetica,sans-serif"><small>');
 	my($dir) = '';
 
 	# no sort key means the column doesn't support sorting
@@ -210,19 +212,19 @@ sub render_heading {
 	    else {
 		$fp2->put('sort', 'a'.$i);
 	    }
-	    $req->print('<a href="/'.$req->get_target_name().'/'
+	    $reply->print('<a href="/'.$req->get_target_name().'/'
 		    .$req->get_controller_name().'/'
 		    .$self->get_name().'/?'.$fp2->to_string().'">');
 	}
-	$req->print($model->get_column_heading($i));
+	$reply->print($model->get_column_heading($i));
 
-	$req->print('</a>') if ($model->get_sort_key($i));
-	$req->print($dir) if ($dir);
-	$req->print('</small></font>');
+	$reply->print('</a>') if ($model->get_sort_key($i));
+	$reply->print($dir) if ($dir);
+	$reply->print('</small></font>');
 
-	$req->print('</th>');
+	$reply->print('</th>');
     }
-    $req->print('</tr>');
+    $reply->print('</tr>');
     return;
 }
 

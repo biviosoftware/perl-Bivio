@@ -100,7 +100,7 @@ sub render {
 
     # view_name or controller_name fields may be null
 
-    $req->print('<a href="'.$req->make_path($fields->{view_name},
+    $req->get_reply()->print('<a href="'.$req->make_path($fields->{view_name},
 	    $fields->{controller_name}).'?'.$id.'">'.$text.'</a>');
     return;
 }

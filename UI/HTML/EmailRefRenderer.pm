@@ -88,8 +88,8 @@ sub render {
 # <a href="mailto:CbereJacki@aol.com?subject=Re:%20YahooClubs">CbereJacki</a>
 
     $subject = Apache::Util::escape_uri($subject);
-    $req->print('<a href="mailto:'.$address.'?subject='.$subject.'">'
-	    .$name.'</a>');
+    $req->get_reply()->print('<a href="mailto:'.$address.'?subject='.$subject
+	    .'">'.$name.'</a>');
     return;
 }
 
