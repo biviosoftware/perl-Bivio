@@ -55,10 +55,15 @@ sub new {
     my($proto, $table_name, $col_map) = @_;
     my($self) = &Bivio::UNIVERSAL::new($proto);
 
+    # number of fields per column entry
+    my($col_field_count) = [];
+    foreach (@$col_map) {
+	push(@$col_field_count, &_count_occurances($_, ',') + 1);
+    }
+
     $self->{$_PACKAGE} = {
-	table_name => $table_name,
 	select => 'select '.join(',', @$col_map).' from '.$table_name.' ',
-	col_map => $col_map
+	col_field_count => $col_field_count
     };
     return $self;
 }
@@ -79,10 +84,13 @@ and substitution values. At most the specified max rows will be loaded.
 sub find {
     my($self, $model, $rows, $max, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
+    my($col_field_count) = $fields->{col_field_count};
 
     # clear the result set
-#    $#{@$rows} = 0;
-    0 while (pop(@$rows));
+#    $#{@$rows} = 0; 	# doesn't work
+#    0 while (pop(@$rows)); #works
+    my(@a) = @$rows;
+    $#a = 0;
 
     my($conn) = Bivio::Biz::SqlConnection->get_connection();
     my($sql) = $fields->{select}.$where_clause;
@@ -95,10 +103,25 @@ sub find {
     my($i) = 0;
     while ($row = $statement->fetchrow_arrayref()) {
 
-	#TODO: need to handle compound fields
-	for (my($j) = 0; $j < scalar(@$row); $j++) {
-	    $rows->[$i]->[$j] = $row->[$j];
+#	#TODO: need to handle compound fields
+#	for (my($j) = 0; $j < scalar(@$row); $j++) {
+#	    $rows->[$i]->[$j] = $row->[$j];
+#	}
+	my($col) = 0;
+	for (my($j) = 0; $j < scalar(@$col_field_count); $j++) {
+	    my($val);
+	    if ($col_field_count->[$j] == 1 ) {
+		$val = $row->[$col++];
+	    }
+	    else {
+		$val = [];
+		for (my($k) = 0; $k < $col_field_count->[$j]; $k++) {
+		    push(@$val, $row->[$col++]);
+		}
+	    }
+	    $rows->[$i]->[$j] = $val;
 	}
+
 	if( ++$i >= $max) {
 	    last;
 	}
@@ -109,6 +132,20 @@ sub find {
 }
 
 #=PRIVATE METHODS
+
+# Returns the number of occurances of the specified value within a string.
+#
+sub _count_occurances {
+    my($str, $search) = @_;
+
+    my($count) = 0;
+    my($pos) = -1;
+    while (($pos = index($str, ',', $pos)) > -1) {
+	$count++;
+	$pos++;
+    }
+    return $count;
+}
 
 =head1 COPYRIGHT
 
