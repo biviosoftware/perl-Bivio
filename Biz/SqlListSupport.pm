@@ -83,7 +83,7 @@ and substitution values. At most the specified max rows will be loaded.
 =cut
 
 sub find {
-    my($self, $model, $rows, $max, $where_clause, @values) = @_;
+    my($self, $model, $rows, $index, $max, $where_clause, @values) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($col_field_count) = $fields->{col_field_count};
 
@@ -102,12 +102,13 @@ sub find {
 
     my($row);
     my($i) = 0;
+    my($count) = 0;
     while ($row = $statement->fetchrow_arrayref()) {
 
-#	#TODO: need to handle compound fields
-#	for (my($j) = 0; $j < scalar(@$row); $j++) {
-#	    $rows->[$i]->[$j] = $row->[$j];
-#	}
+	if (++$count < $index) {
+	    next;
+	}
+
 	my($col) = 0;
 	for (my($j) = 0; $j < scalar(@$col_field_count); $j++) {
 	    my($val);
@@ -123,7 +124,7 @@ sub find {
 	    $rows->[$i]->[$j] = $val;
 	}
 
-	if( ++$i >= $max) {
+	if (++$i >= $max) {
 	    last;
 	}
     }
