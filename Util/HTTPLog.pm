@@ -65,7 +65,8 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CFG) = {
-    error_file => '/var/log/httpd/error.log',
+    error_file => (-d '/var/log/httpd/error_log'
+       ? '/var/log/httpd/error_log' : '/var/log/httpd/error.log'),
     email => 'root',
     pager_email => '',
     error_count_for_page => 3,
@@ -101,7 +102,7 @@ if it is defined.
 How many $_ERROR_REGEX messages in an interval are required before
 a pager message is sent?
 
-=item error_file : string [/var/log/httpd/error.log]
+=item error_file : string [/var/log/httpd/error.log || /var/log/httpd/error_log]
 
 File where errors are writted by httpd.
 
