@@ -314,7 +314,6 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_READ&MEMBER_READ
         ?/accounting/reports/members
-        Bivio::Biz::Model::InactiveForm->execute_active_only
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Model::MemberSummaryList->execute_load_all
         Bivio::UI::HTML::Club::MemberSummaryReport
@@ -539,7 +538,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::RealmInstrument
         Bivio::Biz::Model::RealmValuationAccountList->execute_load_all
         Bivio::Biz::Model::InstrumentBuyForm
-        Bivio::UI::HTML::Club::InstrumentBuy
+        Bivio::UI::HTML::Club::ExistingInstrumentBuy
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
     )],
     [qw(
@@ -897,7 +896,6 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/sell2
         Bivio::Biz::Model::RealmInstrument
-        Bivio::Biz::Model::RealmInstrumentLotList->execute_load_all
         Bivio::Biz::Model::InstrumentSellForm2
         Bivio::UI::HTML::Club::InstrumentSell2
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
@@ -1682,6 +1680,18 @@ my(@_CFG) = (
         DOCUMENT_READ
         hp/index.html
         Bivio::Biz::Action::HTTPDocument
+    )],
+    [qw(
+        CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
+        160
+        CLUB
+        ACCOUNTING_READ
+        ?/accounting/reports/allocations
+        Bivio::Biz::Action::ReportDate
+        Bivio::Biz::Model::WithdrawnAllocationList->execute_load_all
+        Bivio::Biz::Model::MemberAllocationList->execute_load_all
+        Bivio::UI::HTML::Club::MemberAllocationReport
+        next=CLUB_ACCOUNTING_REPORT_MEMBER_ALLOCATION
     )],
 );
 
