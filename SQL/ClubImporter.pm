@@ -34,9 +34,11 @@ use Bivio::Biz::Model::RealmInstrument;
 use Bivio::Biz::Model::RealmInstrumentEntry;
 use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::EntryList;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmTransaction;
+use Bivio::Collection::Attributes;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
@@ -784,7 +786,7 @@ sub _create_transaction_id_set {
     $_TRANSACTION_ID_SET->[0] = [];
 }
 
-# _create_entries(hash_ref easyware_trans, Transaction transaction, int source_id, date date_time, int transaction_type, hash_ref attributes)
+# _create_entries(array_ref easyware_trans, Transaction transaction, int source_id, date date_time, int transaction_type, hash_ref attributes)
 #
 # Creates the entries for all the data which occurs on the specified date
 # for the specified transaction.
@@ -797,8 +799,7 @@ sub _create_entries {
     my($set) = $_TRANSACTION_ID_SET->[$set_index];
     my($handled) = 0;
 
-    my($trans);
-    foreach $trans (@$easyware_trans) {
+    foreach my $trans (@$easyware_trans) {
 	next if (! defined($trans));
 
 	my($type) = $trans->{transaction_type};
@@ -808,7 +809,7 @@ sub _create_entries {
 
 	    # group deposit and earning distributions
 	    if ($trans->{id} == $source_id
-		    || _is_deposit($type)
+		    || _is_group_deposit($trans, $easyware_trans)
 		    || _is_earnings_distribution($type)
 		    || _is_related_spinoff($type, $trans->{id}, $source_id,
 			    $date_time)) {
@@ -855,17 +856,30 @@ sub _create_stock_transfer_entry {
     die("Couldn't find related stock transfer for stock withdrawal");
 }
 
-# _is_deposit(int type) : boolean
+# _is_group_deposit(hash_ref trans, array_ref easyware_trans) : boolean
 #
 # Returns true if the specified easyware transaction type is a member
 # deposit.
 
-sub _is_deposit {
-    my($type) = @_;
+sub _is_group_deposit {
+    my($trans, $easyware_trans) = @_;
 
-    return $type == 10
-	    || $type == 11
-	    || $type == 12;
+    my($type) = $trans->{transaction_type};
+    if ($type == 10 || $type == 11 || $type == 12) {
+
+	# see if there is an cash entry with id == 0 on same date
+
+	for (my($i) = 0; $i < int(@$easyware_trans); $i++) {
+	    my($t) = $easyware_trans->[$i];
+	    next unless $t;
+	    if ($t->{date_time} eq $trans->{date_time}
+		    && $t->{class} == Bivio::Type::EntryClass->CASH()
+		    && $t->{id} == 0) {
+		return 1;
+	    }
+	}
+    }
+    return 0;
 }
 
 # _is_earnings_distribution(int type) : boolean
