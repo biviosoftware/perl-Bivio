@@ -428,13 +428,15 @@ sub register {
 
 =for html <a name="setup_request"></a>
 
-=head2 static setup_request(string uri, Bivio::Collection::Attributes req)
+=head2 static setup_request(string uri, Bivio::Collection::Attributes req) : sel
 
 Sets up the request with the appropriate Facade.  Sets the attribute
 I<Bivio::UI::Facade>.  If I<uri> is not a valid Facade, writes a warning (only
 once) and uses the default Facade.
 
 Only outputs the warning once.
+
+Returns the facade.
 
 =cut
 
@@ -459,7 +461,7 @@ sub setup_request {
 #      which are normally on the request.
     my($html) = $self->get('HTML');
     $html->setup_request($req) if $html->can('setup_request');
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
