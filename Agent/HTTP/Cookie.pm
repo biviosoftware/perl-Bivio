@@ -17,7 +17,7 @@ bOP
 
     use Bivio::Agent::HTTP::Cookie;
     my($cookie) = Bivio::Agent::HTTP::Cookie->new($req, $r);
-    $cookie->header_out($r);
+    $cookie->header_out($req, $r);
 
 =head1 EXTENDS
 
