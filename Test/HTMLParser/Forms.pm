@@ -72,10 +72,10 @@ sub new {
 
 =for html <a name="get_by_field_names"></a>
 
-=head2 get_by_field_names(string name, ...) : hash_ref
+=head2 get_by_field_names(any name, ...) : hash_ref
 
 Returns the form data by finding by I<name>(s) in visible and submit fields of
-forms.
+forms.  See interpretation of I<name> in L<unsafe_get_field|"unsafe_get_field">.
 
 =cut
 
@@ -86,8 +86,7 @@ sub get_by_field_names {
  FORM: while (my($form, $values) = each(%$forms)) {
 	foreach my $n (@name) {
 	    next FORM
-		unless grep($n eq $_,
-		    keys(%{$values->{visible}}), keys(%{$values->{submit}}));
+		unless @{$self->unsafe_get_field($values, $n)};
 	}
 	Bivio::Die->die(\@name, ': too many forms matched fields')
 	    if $found;
@@ -97,6 +96,25 @@ sub get_by_field_names {
     Bivio::Die->die(\@name, ': no form matches named fields, visible fields: ',
         map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
             values(%$forms)));
+}
+
+=for html <a name="get_field"></a>
+
+=head2 static get_field(hash_ref form, any name) : hash_ref
+
+Calls L<unsafe_get_field|"unsafe_get_field"> and dies unless matches
+fields exactly.
+
+=cut
+
+sub get_field {
+    my($proto, $form, $name) = @_;
+    my($res) = shift->unsafe_get_field(@_);
+    Bivio::Die->die($name, ': ',
+	(@$res ? ('matches too many fields: ', @$res) : 'field not found'),
+	' in ', $form->{label})
+        unless @$res == 1;
+    return $res->[0];
 }
 
 =for html <a name="handle_config"></a>
@@ -191,6 +209,29 @@ sub html_parser_text {
     return _label_option($fields) if $fields->{option} || $fields->{radio};
     return _label_visible($fields) if $fields->{input};
     return;
+}
+
+=for html <a name="unsafe_get_field"></a>
+
+=head2 static unsafe_get_field(hash_ref form, any name) : array_ref
+
+Returns field from I<form>.  I<name> may be a string or a regular expression.
+If it is a string and it matches '(?.*)', I<name> will be treated as a regular
+expression.  Returns list of matches or empty array_ref.
+
+=cut
+
+sub unsafe_get_field {
+    my(undef, $form, $name) = @_;
+    $name = $name =~ /^\(\?.*\)$/s ? qr/$name/ : qr/^\Q$name\E$/s
+	unless ref($name);
+    my($res) = [];
+    foreach my $c (qw(visible submit hidden)) {
+	push(@$res, map(
+	    $form->{$c}->{$_},
+	    grep($_ =~ $name, keys(%{$form->{$c}}))));
+    }
+    return $res;
 }
 
 #=PRIVATE METHODS

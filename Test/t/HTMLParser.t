@@ -141,6 +141,11 @@ Bivio::Test->new({
 	    ['User ID or Email:', 'Password:', 'Save Password'] => undef,
 	    ['Not found'] => Bivio::DieCode->DIE,
 	],
+	get_by_field_names => [
+	    [qr/User ID/] => undef,
+	    [qr/User ID/ . ''] => undef,
+	    [qr/Not fo/] => Bivio::DieCode->DIE,
+	],
     ],
     ['petshop-cart', 'Tables'] => [
 	get_by_headings => [
