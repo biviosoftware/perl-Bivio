@@ -76,6 +76,24 @@ sub from_literal {
     return Bivio::Type::DateTime->date_from_parts($2, $1, $3);
 }
 
+=for html <a name="from_unix"></a>
+
+=head2 from_unix(int unix_time) : string
+
+Return date from unix time (interpreted in GMT).
+
+=cut
+
+sub from_unix {
+    my(undef, $unix_time) = @_;
+    # Must be same truncation algorithm as Time::from_unix
+    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY());
+    my($j) = int(($unix_time - $s)
+	    / Bivio::Type::DateTime::SECONDS_IN_DAY())
+	    + Bivio::Type::DateTime::UNIX_EPOCH_IN_JULIAN_DAYS();
+    return $j.$_TIME_SUFFIX;
+}
+
 =for html <a name="get_days_between"></a>
 
 =head2 get_days_between(string date, string date2) : int
@@ -136,12 +154,7 @@ Returns date with DEFAULT_TIME for now.
 =cut
 
 sub now {
-    my($unix_time) = time;
-    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY());
-    my($j) = int(($unix_time - $s)
-	    / Bivio::Type::DateTime::SECONDS_IN_DAY())
-	    + Bivio::Type::DateTime::UNIX_EPOCH_IN_JULIAN_DAYS();
-    return $j.$_TIME_SUFFIX;
+    return shift->from_unix(time);
 }
 
 =for html <a name="to_literal"></a>

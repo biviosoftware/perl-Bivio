@@ -84,6 +84,21 @@ sub from_literal {
     return Bivio::Type::DateTime->time_from_parts($s, $m, $h);
 }
 
+=for html <a name="from_unix"></a>
+
+=head2 from_unix(int unix_time) : string
+
+Returns the clock component of I<unix_time> interpreted in GMT.
+
+=cut
+
+sub from_unix {
+    my(undef, $unix_time) = @_;
+    # Must be same truncation algorithm as Date::from_unix
+    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY());
+    return $_DATE_PREFIX.$s;
+}
+
 =for html <a name="get_max"></a>
 
 =head2 get_max() : int
@@ -117,9 +132,7 @@ Returns time with DEFAULT_DATE for now.
 =cut
 
 sub now {
-    my($unix_time) = time;
-    my($s) = int($unix_time % Bivio::Type::DateTime::SECONDS_IN_DAY() + 0.5);
-    return $_DATE_PREFIX.$s;
+    return shift->from_unix(time);
 }
 
 =for html <a name="to_literal"></a>
