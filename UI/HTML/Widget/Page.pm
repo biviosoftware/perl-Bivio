@@ -246,9 +246,10 @@ sub render {
     }
 
     # background image
-    $$buffer .= ' background="'
-	    .Bivio::UI::Icon->get_value($fields->{background}, $req)->{uri}
-		    .'"' if $fields->{background};
+    my($bg) = '';
+    $$buffer .= Bivio::UI::Icon->format_html_attribute(
+	$bg, 'background', $req)
+	if $self->unsafe_render_attr('background', $source, \$bg) && $bg;
     my($hta) = $fields->{body}->unsafe_get('html_tag_attrs');
     $$buffer .= $hta if $hta;
     $$buffer .= ">\n";
