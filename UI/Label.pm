@@ -173,6 +173,7 @@ _compile(
     CLUB_ADMIN_INVITE_LIST => ['Invites'],
     CLUB_ADMIN_USER_LIST => ['Roster'],
     CLUB_COMMUNICATIONS_FILE_READ => ['Files'],
+    CLUB_COMMUNICATIONS_MESSAGE_LIST => ['Mail'],
     CLUB_ACCOUNTING_REPORT_INVESTMENT_SALE => ['Investment Sale Gain/(Loss)'],
     CLUB_ACCOUNTING_REPORT_INCOME_EXPENSE_STATEMENT => [
 	'Income and Expense Statement'],
