@@ -32,6 +32,17 @@ parse html documents.  This method delegates the HTML::Parser calls to its
 clients.  Clients define L<html_parser_start|"html_parser_start">, etc.
 to receive the upcalls.
 
+=head1 EXAMPLE
+
+  sub parse_html {
+      my($self, $content) = @_;
+      my($fields) = $self->{$_PACKAGE};
+      $fields->{html_parser} = Bivio::Ext::HTMLParser->new($self)
+	      unless $fields->{html_parser};
+      $fields->{html_parser}->parse($$content);
+      return;
+  }
+
 =cut
 
 #=IMPORTS
