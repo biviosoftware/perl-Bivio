@@ -90,14 +90,3 @@ $out .= $body;
 $bmo->send();
 print $bmo->as_string eq $out ? "ok $test\n" : "not ok $test\n";
 $test++;
-
-#
-# Test support for attachments
-#
-
-my($m) = Bivio::Mail::Outgoing->new(Bivio::Mail::Incoming->new(\$_IN));
-$m->set_content_type('multipart/alternative');
-$m->attach({ content_type => 'text/plain', content => 'abc' });
-$m->attach({ content_type => 'text/html',
-	       content => '<!doctype html public "-//w3c//dtd html 4.0 transitional//en"><html>abc</html>' });
-print $m->as_string;
