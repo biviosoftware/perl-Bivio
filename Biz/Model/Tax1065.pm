@@ -36,6 +36,8 @@ use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Address;
 use Bivio::Type::AllocationMethod;
 use Bivio::Type::F1065IRSCenter;
+use Bivio::Type::F1065Partnership;
+use Bivio::Type::F1065Return;
 use Bivio::Type::Location;
 
 #=VARIABLES
@@ -100,7 +102,7 @@ sub load_or_default {
 	    foreign_account_country => undef,
 	    foreign_trust => 0,
 	    return_type => Bivio::Type::F1065Return::UNKNOWN(),
-	    irs_center => Bivio::Type::F1065IRSCenter->UNKNOWN,
+	    irs_center => Bivio::Type::F1065IRSCenter::UNKNOWN(),
 	    allocation_method => Bivio::Type::AllocationMethod::TIME_BASED(),
 	    draft => 1,
 	});
