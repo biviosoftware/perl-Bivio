@@ -1923,7 +1923,7 @@ my(@_CFG) = (
         CLUB_MAIL_FORWARD
         197
         CLUB
-        MAIL_READ
+        MAIL_FORWARD
         ?/mail/forward
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailForwardForm
@@ -1934,7 +1934,7 @@ my(@_CFG) = (
         CELEBRITY_MAIL_FORWARD
         198
         PROXY
-        MAIL_READ
+        MAIL_FORWARD
         pub/?/forward
         Bivio::Biz::Model::MailList
         Bivio::Biz::Model::MailForwardForm
