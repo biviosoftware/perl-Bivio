@@ -489,7 +489,7 @@ EOF
 	    [sub {
 		 my($data) = @_;
 		 return map({
-		     $$data =~ s/^\s*[\d\.]+.*\s+\Q$_\E\s.*\n?$//mi ? 1 : ();
+		     $$data =~ s/^\s*[\d\.]+.*\s+\Q$_\E\s.*\n?$//mig ? 1 : ();
 		 } @$hostnames);
 	    }],
 	    ['$', "$ip\t@$hostnames\n"],
