@@ -49,7 +49,7 @@ my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
     id => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    name => ['Club ID',
+    name => ['Club Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
     full_name => ['Full Name',
 	    Bivio::Biz::FieldDescriptor->lookup('STRING', 128)],
@@ -246,30 +246,3 @@ $Id$
 =cut
 
 1;
-
-=pod
-
-use Data::Dumper;
-
-$Data::Dumper::Indent = 1;
-Bivio::IO::Config->initialize({
-    'Bivio::Ext::DBI' => {
-	ORACLE_HOME => '/usr/local/oracle/product/8.0.5',
-	database => 'surf_test',
-	user => 'moeller',
-	password => 'bivio,ho'
-        },
-
-    'Bivio::IO::Trace' => {
-	'package_filter' => '/Bivio/'
-        },
-    });
-
-my($club) = Bivio::Biz::Club->new();
-$club->create({id => 1, name => 'rolfers', full_name => 'The ROLFing Club',
-    bytes_in_use => 0, bytes_max => 2048});
-print(Dumper($club->get_status()));
-
-Bivio::Biz::SqlConnection->get_connection()->commit();
-
-=cut
