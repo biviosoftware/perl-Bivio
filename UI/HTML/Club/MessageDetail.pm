@@ -166,6 +166,10 @@ sub execute {
 	$mime_urls->initialize;
 	$fields->{mime_uri}->put(value => $mime_urls);
     }
+    else {
+    	$fields->{mime_uri}->put(value => 0);
+    }
+
 
     my($reply_subject) =
 	    Bivio::UI::HTML::Format::ReplySubject->get_widget_value($subject);
