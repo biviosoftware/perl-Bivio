@@ -182,33 +182,25 @@ CREATE TABLE file_t (
 /
 
 --
--- file_volume_t
+-- file_quota_t
 --
-ALTER TABLE file_volume_t add primary key(realm_id, type)
+ALTER TABLE file_quota_t add primary key(realm_id)
   using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
-ALTER TABLE file_volume_t modify type not null
-/
-ALTER TABLE file_volume_t add check (type between 1 and 4)
-/
-ALTER TABLE file_volume_t
+ALTER TABLE file_quota_t
   add foreign key (realm_id)
     references realm_owner_t(realm_id)
 /
-ALTER TABLE file_volume_t modify realm_id not null
+ALTER TABLE file_t modify realm_id not null
 /
-ALTER TABLE file_volume_t modify kbytes not null
+ALTER TABLE file_quota_t modify kbytes not null
 /
-ALTER TABLE file_volume_t add check (kbytes >= 0)
+ALTER TABLE file_quota_t add check (kbytes >= 0)
 /
-ALTER TABLE file_volume_t modify files not null
+ALTER TABLE file_quota_t modify max_kbytes not null
 /
-ALTER TABLE file_volume_t add check (files >= 0)
-/
-ALTER TABLE file_volume_t modify in_quota not null
-/
-ALTER TABLE file_volume_t add check (in_quota BETWEEN 0 AND 1)
+ALTER TABLE file_quota_t add check (kbytes <= max_kbytes)
 /
 
 --
