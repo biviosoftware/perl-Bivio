@@ -76,22 +76,24 @@ Creates a member deposit transaction with entries for member and account.
 
 sub execute_ok {
     my($self) = @_;
+    my($req) = $self->get_request;
     my($type) = $self->get('Entry.entry_type');
 
     # redirect to multiple payment/fee page if selected
 
-    $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_PAYMENT())
+    $req->server_redirect(Bivio::Agent::TaskId::CLUB_ACCOUNTING_PAYMENT())
 	    if $type == $type->MEMBER_MULTIPLE_PAYMENT;
 
-    $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_FEE())
+    $req->server_redirect(Bivio::Agent::TaskId::CLUB_ACCOUNTING_FEE())
 	    if $type == $type-> MEMBER_MULTIPLE_PAYMENT_FEE;
 
     # otherwise go to the txn editor detail
-
-    $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY2());
+    # preserves the query for date sort order
+    $req->server_redirect(
+	    Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY2(),
+	    $req->get('auth_realm'),
+	    $req->get('query')
+	   );
 
     # DOES NOT RETURN
 }
@@ -157,12 +159,16 @@ Ensures the fields are valid.
 
 sub validate {
     my($self) = @_;
-    if ($self->get('Entry.entry_type')
-	    == Bivio::Type::EntryType::CASH_UNASSIGNED_CREDIT()) {
 
-	$self->internal_put_error('Entry.entry_type',
-		Bivio::TypeError::SELECT_VALID_CREDIT_TYPE());
-    }
+    $self->internal_put_error('Entry.entry_type',
+	    Bivio::TypeError::SELECT_VALID_CREDIT_TYPE())
+	    if $self->get('Entry.entry_type')
+		    == Bivio::Type::EntryType::CASH_UNASSIGNED_CREDIT();
+
+    $self->internal_put_error('Entry.entry_type',
+	    Bivio::TypeError::SELECT_VALID_DEBIT_TYPE())
+	    if $self->get('Entry.entry_type')
+		    == Bivio::Type::EntryType::CASH_UNASSIGNED_DEBIT();
     return;
 }
 

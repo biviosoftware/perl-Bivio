@@ -69,14 +69,27 @@ sub create_excess_transaction {
 
     my($remainder) = $_M->sub($entry->get('amount'), $amount);
 
-    if ($_M->compare($remainder, 0) > 0) {
-	# save any excess
+    # income
+    if ($entry->get('amount') > 0 && $remainder > 0) {
 	$entry->update({amount => $remainder});
     }
+    # expense
+    elsif ($entry->get('amount') < 0 && $remainder < 0) {
+	$entry->update({amount => $remainder});
+    }
+    # otherwise delete the old transaction
     else {
-	# otherwise delete the old transaction
 	$txn->cascade_delete;
     }
+
+#    if ($_M->compare($remainder, 0) > 0) {
+#	# save any excess
+#	$entry->update({amount => $remainder});
+#    }
+#    else {
+#	# otherwise delete the old transaction
+#	$txn->cascade_delete;
+#    }
     return;
 }
 
@@ -113,6 +126,12 @@ sub execute_empty {
 	    $type_form->get('Entry.entry_type'));
     $self->internal_put_field('MemberEntry.valuation_date' =>
 	    $self->get('RealmTransaction.date_time'));
+
+    $self->internal_put_field('Entry.amount' =>
+	    $_M->neg($self->get('Entry.amount')))
+	    if $self->get('Entry.entry_type')
+		    == Bivio::Type::EntryType::CASH_EXPENSE();
+
     return;
 }
 
@@ -128,8 +147,9 @@ sub execute_ok {
     my($self) = @_;
 
     my($type) = $self->get('Entry.entry_type');
-    if ($type == $type->CASH_INCOME()) {
-	_execute_income($self);
+    if ($type == $type->CASH_INCOME()
+	   || $type == $type->CASH_EXPENSE) {
+	_execute_income_or_expense($self);
     }
     elsif ($type == $type->CASH_TRANSFER()) {
 	_execute_transfer($self);
@@ -144,6 +164,12 @@ sub execute_ok {
     }
 
     return if $self->in_error;
+
+    # restore the amount sign for expenses
+    if ($type == $type->CASH_EXPENSE()) {
+	$self->internal_put_field('Entry.amount' =>
+		$_M->neg($self->get('Entry.amount')));
+    }
 
     # tag new transaction with account synch key
     $self->tag_transaction($self->get_request,
@@ -184,8 +210,16 @@ sub internal_initialize {
 	    constraint => 'NONE',
 	},
 	{
-	    name => 'target_account_id',
+	    name => 'source_account_id',
 	    type => 'PrimaryId',
+	    constraint => 'NONE',
+	},
+	{
+	    name => 'ExpenseCategory.expense_category_id',
+	    constraint => 'NONE',
+	},
+	{
+	    name => 'ExpenseInfo.allocate_equally',
 	    constraint => 'NONE',
 	},
 	],
@@ -239,17 +273,15 @@ sub validate {
 
 #=PRIVATE METHODS
 
-# _execute_income()
+# _execute_income_or_expense()
 #
-# Creates an income entry.
+# Creates an income or expense entry.
 #
-sub _execute_income {
+sub _execute_income_or_expense {
     my($self) = @_;
 
     my($values) = {
 	%{$self->internal_get},
-	'ExpenseInfo.allocate_equally' => undef,
-	'ExpenseCategory.expense_category_id' => undef,
     };
 
     # load the correct entry type, for the account txn form to use
@@ -317,7 +349,7 @@ sub _execute_transfer {
 
     my($values) = {
 	%{$self->internal_get},
-	source_account_id => $self->get('RealmAccount.realm_account_id'),
+	target_account_id => $self->get('RealmAccount.realm_account_id'),
     };
 
 #TODO: need Form->validate
