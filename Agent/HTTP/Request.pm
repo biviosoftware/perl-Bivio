@@ -68,6 +68,7 @@ sub new {
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
+	is_secure => $ENV{HTTPS} ? 1 : 0,
     });
     my($uri) = $r->uri;
     my($task_id, $auth_realm)
@@ -76,10 +77,10 @@ sub new {
 #TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
-    my $query_string = $r->args;
+    my $qs = $r->args;
 #TODO: Apache bug: ?bla&foo=1 will generate "odd number elements in hash"
 #      warning.
-    my($query) = defined($query_string) ? {$r->args} : undef;
+    my($query) = defined($qs) ? {$r->args} : undef;
     my($form) = $r->method_number() eq Apache::Constants::M_POST()
 	    ? {$r->content()} : undef;
     _trace($r->method, ': form=', $form, '; query=', $query) if $_TRACE;
@@ -95,7 +96,6 @@ sub new {
 	    uri => $uri,
 	    form => $form,
 	    query => $query,
-	    query_string => $query_string,
 	    task_id => $task_id,
 	   );
     $self->internal_initialize($auth_realm, $auth_user);
@@ -145,11 +145,42 @@ sub client_redirect {
 	$self->SUPER::server_redirect($self->get('task_id'), undef, $new_query)
 		if $new_uri eq $self->get('uri');
 	$uri = $new_uri;
-	$uri .= '?'.Bivio::Agent::HTTP::Query->format($new_query)
-		if $new_query;
+	if ($new_query) {
+	    my($query) = Bivio::Agent::HTTP::Query->format($new_query);
+	    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+	}
     }
     $self->get('reply')->client_redirect($self, $uri);
     Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
+}
+
+=for html <a name="format_http_toggling_secure"></a>
+
+=head2 format_http_toggling_secure() : string
+
+Formats the uri for this request, but toggles secure mode.  This
+is a very special and only used in one location--thank goodness!
+
+=cut
+
+sub format_http_toggling_secure {
+    my($self) = @_;
+    my($is_secure, $host, $r, $redirect_count, $uri, $query) = $self->get(
+	    qw(is_secure http_host r redirect_count uri query));
+
+    # This is particularly strange.  FormModel deletes the incoming
+    # query context.   If we haven't internally redirected, we use
+    # the original query string so we get the format_context.  If
+    # we redirected, don't bother with the form_context.
+#TODO: This is screwed up.  Probably best to take the current
+#      form's context and shove it on the URL.  Wouldn't hurt if not
+#      really the form_model.
+    $query = $redirect_count ? Bivio::Agent::HTTP::Query->format($query)
+	    : $r->args;
+    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query) if $query;
+
+    # Go into secure if not secure and vice-versa
+    return ($is_secure ? 'http://' : 'https://').$host.$uri;
 }
 
 =for html <a name="format_stateless_uri"></a>
@@ -191,13 +222,18 @@ sub format_uri {
     # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, int(@_) >= 4 ? $auth_realm :
-	    $self->internal_get_realm_for_task($task_id));
+	    $self->internal_get_realm_for_task($task_id), $self);
 #TODO: Is this right?
 #PJM: I think so
-    $query = $self->get('query_string') unless int(@_) >= 3;
+#RJN: Not now??? 12/15/99
+    $query = $self->get('query') unless int(@_) >= 3;
     return $uri unless defined($query);
     $query = Bivio::Agent::HTTP::Query->format($query) if ref($query);
-    return $uri.'?'.$query;
+
+    # The uri may have a query string already, if the form requires context.
+    # Put the $query first, since the context is long and ugly
+    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+    return $uri;
 }
 
 =for html <a name="server_redirect"></a>
