@@ -43,6 +43,42 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="append"></a>
+
+=head2 static append(string file_name, string_ref contents)
+
+=head2 static append(string file_name, string contents)
+
+Appends to a file with I<file_name> and appends I<contents> to it.
+Dies with an IO_ERROR on errors.
+
+If the file name is '-', appends to C<STDOUT>.
+
+=cut
+
+sub append {
+    my(undef, $file_name, $contents) = @_;
+    my($c) = ref($contents) ? $contents : \$contents;
+    my($op) = 'open';
+#TODO: Share with write
+ TRY: {
+	open(OUT, $file_name eq '-' ? '>>-' : '>> '.$file_name) || last TRY;
+	$op = 'print';
+	(print OUT $$c) || last TRY;
+	$op = 'close';
+        close(OUT) || last TRY;
+	_trace('Wrote ', length($$c), ' bytes to ', $file_name) if $_TRACE;
+	return;
+    }
+
+    Bivio::Die->throw_die('IO_ERROR', {
+	message => "$!",
+	operation => $op,
+	entity => $file_name,
+    });
+    # DOES NOT RETURN
+}
+
 =for html <a name="chdir"></a>
 
 =head2 static chdir(string directory) : string
