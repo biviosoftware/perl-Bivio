@@ -235,7 +235,7 @@ _compile(\%_MAP, [
         => 'Federal Tax Free Interest',
     PAID => 'Total Paid',
     EARNINGS => 'Earnings Allocated',
-    ADD_ROWS => 'Add Rows',
+    ADD_ROWS => 'Add More Rows',
     FEE => 'Fee',
     WITHDRAWAL_TYPE => 'Type',
     SELECTED => 'Selected',
