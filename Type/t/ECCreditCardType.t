@@ -13,6 +13,7 @@ Bivio::Test->unit([
 	    ['5222222222222227'] => [Bivio::Type::ECCreditCardType
 		->MASTERCARD],
 	    ['342222222222223'] => [Bivio::Type::ECCreditCardType->AMEX],
+	    ['6011222222222229'] => [Bivio::Type::ECCreditCardType->DISCOVER],
 	],
     ],
 ]);

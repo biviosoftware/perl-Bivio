@@ -40,6 +40,8 @@ C<Bivio::Type::ECCreditCardType> lists the currently supported credit card types
 
 =item AMEX
 
+=item DISCOVER
+
 =back
 
 =cut
@@ -53,10 +55,11 @@ __PACKAGE__->compile([
     VISA => [1],
     MASTERCARD => [2, 'MasterCard'],
     AMEX => [3, 'Amex', 'American Express'],
+    DISCOVER => [4],
 ]);
 
 Bivio::IO::Config->register({
-    supported_card_list => 'VISA MASTERCARD AMEX',
+    supported_card_list => 'VISA MASTERCARD AMEX DISCOVER',
 });
 my($_SUPPORTED_CARDS);
 
@@ -84,6 +87,8 @@ sub get_by_number {
             if $len == 16 && $number =~ /^5[1-5]/;
     return $proto->AMEX
             if $len == 15 && $number =~ /^3[47]/;
+    return $proto->DISCOVER
+	    if $len == 16 && $number =~ /^6011/;
     return $proto->UNKNOWN;
 }
 
