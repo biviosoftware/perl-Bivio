@@ -35,12 +35,14 @@ system, so create other methods and "chain" them.
 use Bivio::Agent::Request;
 use Bivio::Auth::Realm;
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::DbUpgrade;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::ShellUtil;
 use Bivio::Type::Date;
+use Bivio::Type::DateInterval;
 use Bivio::Type::DateTime;
 
 #=VARIABLES
@@ -248,83 +250,50 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_ec_constraints();
+    _upgrade_existing_ak_dates();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_celeb_bios()
+# _upgrade_existing_ak_dates()
 #
-# status
+# Change all account keeper customers to fiscal year 2001
 #
-sub _upgrade_celeb_bios {
-    print("upgrading profile bio's\n");
+sub _upgrade_existing_ak_dates {
+    print ("changing all account keeper customers to fiscal year 2001\n");
     my($req) = Bivio::Agent::Request->get_current_or_new;
-    Bivio::Biz::Model->new($req, 'RealmDecor')
-		->unauth_load_or_die(realm_id =>
-			Bivio::Biz::Model->new($req, 'RealmOwner')
-			->unauth_load_or_die(name => 'take_stock')
-			->get('realm_id'))
-		->update({
-	profile_bio => <<'EOF',
-Ellis Traub has a mission to help you discover how easy it is to produce
-as good a portfolio as your professional friends - or better.
-<br>&nbsp;<br>
-Ellis' columns:
-<br>&nbsp;<br>
-<a href="/hm/take-stock.html">Worthy Mission and Some Staunch Allies</a>
-<br>&nbsp;<br>
-<a href="/hm/take-stock-010331.html">There's No Time Like the Present.
-Let the Good Times Roll!</a>
-<br>&nbsp;<br>
-Father of Technamental Analysis, author of the book "Take Stock" and
-chairman of <a href="/goto?x=http://www.investware.com">InvestWare</a>,
-Ellis Traub is also well known as the creator of NAIC's official
-software, the Investor's Toolkit.
-EOF
-		});
+    my($p) = Bivio::Biz::Model->new($req, 'ECPayment');
+    my($s) = Bivio::Biz::Model->new($req, 'ECSubscription');
+    my($it) = $p->unauth_iterate_start('creation_date_time');
 
-    # Change all <p> to <br>&nbsp;<br>, because fonts don't cross <p> in IE
-    foreach my $celeb (qw(club_cafe trez_talk ask_candis)) {
-	my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
-	next unless $decor->unauth_load(realm_id =>
-		Bivio::Biz::Model->new($req, 'RealmOwner')
-		->unauth_load_or_die(name => $celeb)
-		->get('realm_id'));
-	my($bio) = $decor->get('profile_bio');
-	$bio =~ s/<p>/<br>&nbsp;<br>/g;
-	$decor->update({profile_bio => $bio});
+    my($start_date) = Bivio::Biz::Accounting::Tax
+	    ->get_start_of_fiscal_year(Bivio::Type::Date->now);
+    my($end_date) = Bivio::Biz::Accounting::Tax
+	    ->get_end_of_fiscal_year(Bivio::Type::Date->now);
+    my($period) = Bivio::Type::DateInterval::FISCAL_YEAR();
+
+    while ($p->iterate_next_and_load($it)) {
+	next unless $p->get('ec_subscription_id');
+	$s->unauth_load_or_die({ec_subscription_id =>
+	    $p->get('ec_subscription_id')});
+	next unless $s->get('subscription_type') == Bivio::Type::ECSubscription
+		->ACCOUNT_KEEPER;
+	$p->update({ec_subscription_start_date => $start_date,
+	    ec_subscription_end_date => $end_date,
+	    ec_subscription_period => $period});
+	$s->update({start_date => $start_date,
+	    end_date => $end_date,
+	    renewal_period => $period});
     }
     return;
 }
+#    _do_sql("
+#UPDATE ec_subscription_t
+#  set start_date = '01-JAN-01', end_date = '01-JAN-02'
+#  where subscription_type = '3';
+#/
+#");
 
-# _upgrade_ec_constraints() : 
-#
-#
-#
-sub _upgrade_ec_constraints {
-    print ("allowing fiscal year in constraint ec_payment_t7\n");
-    _do_sql('
-ALTER TABLE ec_payment_t DROP CONSTRAINT ec_payment_t7
-/
-ALTER TABLE ec_payment_t
-  add constraint ec_payment_t7
-  check (ec_subscription_period = 0 or ec_subscription_period = -2
-         or ec_subscription_period = -3 OR ec_subscription_period = -4)
-/
-');
-    print ("allowing fiscal year in constraint ec_subscription_t5\n");
-    _do_sql('
-ALTER TABLE ec_subscription_t DROP CONSTRAINT ec_subscription_t5
-/
-ALTER TABLE ec_subscription_t
-  add constraint ec_subscription_t5
-  check (renewal_period = 0 or renewal_period = -2 or renewal_period = -3
-	or renewal_period = -4)
-/
-');
-    return;
-}
 
 # _usage(array message)
 #
