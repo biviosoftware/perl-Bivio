@@ -72,7 +72,7 @@ sub new {
 	start_time => $start_time,
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
-	client_addr => $r->connection->remote_ip,
+	client_addr => $r->header_in('via') || $r->connection->remote_ip,
 	is_secure => $ENV{HTTPS} || _is_hack_https_port($r)
 	? 1 : 0,
     });
