@@ -66,8 +66,7 @@ sub append {
 	    $file_name eq '-' ? '>>-' : ('>> ' . $file_name));
 	binmode($file_name);
     }
-    $proto->write($file, ref($contents) ? $contents : \$contents);
-    return;
+    return $proto->write($file, ref($contents) ? $contents : \$contents);
 }
 
 =for html <a name="chdir"></a>
@@ -286,15 +285,17 @@ sub rm_rf {
 
 =for html <a name="write"></a>
 
-=head2 static write(string file_name, any contents)
+=head2 static write(string file_name, any contents) : any
 
-=head2 static write(glob_ref file, any contents)
+=head2 static write(glob_ref file, any contents) : any
 
 Creates a file with I<file_name> and writes I<contents> to it.
 Dies with an IO_ERROR on errors.
 
 If the file name is '-', writes to C<STDOUT>.  Calls C<binmode> just after
 opening file.  If you don't want this, pass I<file> as a glob_ref.
+
+Returns its first argument.
 
 =cut
 
@@ -313,7 +314,7 @@ sub write {
 	or _err('close', $file, $file_name);
     _trace('Wrote ', length($$c), ' bytes to ', $file_name)
 	if $_TRACE;
-    return;
+    return $file_name;
 }
 
 #=PRIVATE METHODS
