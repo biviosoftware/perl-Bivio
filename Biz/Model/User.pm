@@ -74,7 +74,7 @@ sub cascade_delete {
     my($id) = $self->get('user_id');
     my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
     $realm->unauth_load(realm_id => $id)
-	    || die("couldn't load realm from club");
+	    || die("couldn't load realm from user");
     # delete this user's RealmUser
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($self->get_request);
     $realm_user->unauth_load(realm_id => $id, user_id => $id)
@@ -296,6 +296,24 @@ sub internal_initialize {
         },
 	auth_id => 'user_id',
     };
+}
+
+=for html <a name="set_encrypted_password"></a>
+
+=head2 set_encrypted_password(string encrypted) : 
+
+Sets a user's encrypted password to a new value.
+
+=cut
+
+sub set_encrypted_password {
+    my($self, $encrypted) = @_;
+
+    my($id) = $self->get('user_id');
+    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
+    $realm->unauth_load(realm_id => $id)
+	    || die("couldn't load realm from user");
+    return $realm->update({password => $encrypted});
 }
 
 =for html <a name="update"></a>
