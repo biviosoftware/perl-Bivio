@@ -25,7 +25,7 @@ C<Bivio::UI::Mail::ClubCreated>
 =cut
 
 #=IMPORTS
-use Bivio::UI::Mail::CustomerSupport;
+use Bivio::UI::Mail::SupportAuthor;
 
 #=VARIABLES
 
@@ -47,9 +47,9 @@ sub execute {
     my($club) = $req->get('Bivio::Biz::Model::RealmOwner');
     my($url) = $club->format_http();
     my($recipient) = $club->format_email();
-    my($msg) = Bivio::UI::Mail::CustomerSupport->enqueue_message($req,
+    my($msg) = Bivio::UI::Mail::SupportAuthor->enqueue_message($req,
 	    $recipient,
-	    # email software puts into the club's name
+	    # For syntax see Common::_text_to_html
 	    "Welcome to bivio", <<"EOF");
 Thank you for bringing your club to bivio.  You may access your
 club's space at the following URL:
