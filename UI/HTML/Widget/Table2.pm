@@ -300,7 +300,7 @@ sub render {
     my($even_row) = 0;
     while ($list->next_row) {
 	_render_row($cells, $list, $buffer,
-		$fields->{$even_row ? 'even_row' : 'odd_row'});
+		$fields->{$even_row ? 'even_row' : 'odd_row'}, 1);
 	$even_row = ! $even_row;
     }
 
@@ -551,19 +551,25 @@ sub _initialize_widget {
     return;
 }
 
-# _render_row(array_ref cells, any source, string_ref buffer, string row_prefix)
+# _render_row(array_ref cells, any source, string_ref buffer, string row_prefix, boolean fix_space)
 #
 # _render_row(array_ref cells, any source, string_ref buffer)
 #
 # Renders the specified set of widgets onto the output buffer.
+# If fix_space is true, then empty strings will be rendered as '&nbsp;'.
 #
 sub _render_row {
-    my($cells, $source, $buffer, $row_prefix) = @_;
+    my($cells, $source, $buffer, $row_prefix, $fix_space) = @_;
     $row_prefix ||= "\n<tr>";
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
 	$$buffer .= "\n<td".$cell->get_or_default('column_prefix', '').'>';
+
+	# Insert a "&nbsp;" if the widget doesn't render.  This
+	# makes the table look nicer on certain browsers.
+	my($start) = length($$buffer);
 	$cell->render($source, $buffer);
+	$$buffer .= '&nbsp;' if length($$buffer) == $start && $fix_space;
 	$$buffer .= '</td>';
     }
     $$buffer .= "\n</tr>";
