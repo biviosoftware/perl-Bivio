@@ -83,28 +83,62 @@ sub vs_address_fields {
        );
 }
 
+=for html <a name="vs_items_form"></a>
+
+=head2 static vs_items_form(string form_name) : Bivio::UI::Widget
+
+Returns the items form with or without Search names.
+
+=cut
+
+sub vs_items_form {
+    my($proto, $form_name) = @_;
+    return $proto->vs_new('Form', $form_name,
+	 $proto->vs_new('Table', $form_name, [
+	    'Item.item_id',
+	    ['item_name', {
+		column_order_by => ['Item.attr1', 'Product.name'],
+		wf_list_link => {
+		    query => 'THIS_CHILD_LIST',
+		    task => 'ITEM_DETAIL',
+		},
+	    }],
+	    'Item.list_price',
+	    ['add_to_cart', {
+		column_widget => $proto->vs_new('ImageFormButton', {
+		    image => 'add_to_cart',
+		    field => 'add_to_cart',
+		    alt => 'Add Item to Your Shopping Cart',
+		}),
+	    }],
+	], {
+	    cellpadding => 2,
+	    cellspacing => 2,
+	    # string_font is inherited by widgets in this hierarchy
+	    string_font => 'page_text',
+	    empty_list_widget => $proto->vs_new('String', 'No items found.'),
+	}),
+    );
+}
+
 =for html <a name="vs_paging_table"></a>
 
-=head2 static vs_paging_table(Bivio::UI::HTML::Widget::Table table) : Bivio::UI::Widget
+=head2 static vs_paging_table(Bivio::UI::Widget widget) : Bivio::UI::Widget
 
-Returns a widget which includes paging links for the specified table.
+Returns a widget which includes paging links.  I<table_args> are passed
+directly to Table widget.
 
 =cut
 
 sub vs_paging_table {
-    my($proto, $table) = @_;
-
-    return $proto->vs_new('Grid', [
-	[
-	    _page_link($proto, 'prev'),
-	    _page_link($proto, 'next')->put(cell_align => 'E'),
-	],
-	[$table->put(cell_colspan => 2)],
-	[
-	    _page_link($proto, 'prev'),
-	    _page_link($proto, 'next')->put(cell_align => 'E'),
-	],
-    ]);
+    my($proto, $model, $widget) = @_;
+    return $proto->vs_new('Grid', [[
+	_page_links($proto, $model),
+    ], [
+	$widget->put(cell_colspan => 2),
+    ], [
+	_page_links($proto, $model),
+    ]]);
 }
 
 =for html <a name="vs_product_uri"></a>
@@ -133,18 +167,31 @@ sub vs_product_uri {
 
 #=PRIVATE METHODS
 
-# _page_link(proto, string direction) : Bivio::UI::Widget
+# _page_link(proto, string model, string direction) : Bivio::UI::Widget
 #
 # Returns a paging link for the specified direction.
 #
 sub _page_link {
-    my($proto, $direction) = @_;
+    my($proto, $model, $direction) = @_;
+    $model = "Model.$model";
     my($type) = uc($direction).'_LIST';
     return $proto->vs_new('Link',
 	$direction eq 'next' ? 'next page >>>' : '<<< previous page',
-	['list_model', '->format_uri', Bivio::Biz::QueryType->$type()], {
-	    control => [['list_model', '->get_query'], 'has_'.lc($direction)],
+	[$model, '->format_uri', Bivio::Biz::QueryType->$type()], {
+	    control => [[$model, '->get_query'], 'has_'.lc($direction)],
 	});
+}
+
+# _page_links(proto, string model) : array
+#
+# Returns a next/prev links.
+#
+sub _page_links {
+    my($proto, $model) = @_;
+    return (
+	_page_link($proto, $model, 'prev'),
+	_page_link($proto, $model, 'next')->put(cell_align => 'E'),
+    );
 }
 
 =head1 COPYRIGHT
