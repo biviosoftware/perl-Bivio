@@ -332,3 +332,8 @@ ExpenseCategory.expense_category_id
 PRIMARY_ID
 You must select an expense category.
 %%
+RealmAccountForm
+RealmAccount.name
+EXISTS
+An account already exists with that name.
+%%
