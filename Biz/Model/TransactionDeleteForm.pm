@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::TransactionDeleteForm;
 use strict;
 $Bivio::Biz::Model::TransactionDeleteForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::TransactionDeleteForm::VERSION;
 
 =head1 NAME
 
@@ -31,9 +32,42 @@ C<Bivio::Biz::Model::TransactionDeleteForm> deletes a transaction and entries
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
+use Bivio::Auth::Role;
+use Bivio::Biz::Accounting::InstrumentAudit;
+use Bivio::Biz::Model::Entry;
+use Bivio::Biz::Model::MemberEntry;
+use Bivio::Biz::Model::RealmInstrument;
+use Bivio::Biz::Model::RealmUser;
+use Bivio::Die;
+use Bivio::IO::Alert;
+use Bivio::SQL::Connection;
+use Bivio::Type::EntryClass;
+use Bivio::Type::EntryType;
+use Bivio::Type::Honorific;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::TransactionDeleteForm
+
+Creates a new TransactionDeleteForm.
+
+=cut
+
+sub new {
+    my($self) = Bivio::Biz::FormModel::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
 
 =head1 METHODS
 
@@ -69,10 +103,9 @@ sub execute_ok {
     my($txn) = $entry->get_model('RealmTransaction');
     my($date) = $txn->get('date_time');
 
+    _pre_delete($self, $txn);
     $txn->cascade_delete;
-
-    # need to update units after this date
-    $self->get_request->get('auth_realm')->get('owner')->audit_units($date);
+    _post_delete($self, $date);
 
     return;
 }
@@ -134,6 +167,125 @@ sub _check_exists {
 	# DOES NOT RETURN
     }
     return $entry;
+}
+
+# _get_instrument(Bivio::Biz::Model::RealmTransaction txn) : Bivio::Biz::Model::RealmInstrument
+#
+# Returns the instrument associated with the transaction. Dies on failure.
+#
+sub _get_instrument {
+    my($self, $txn) = @_;
+
+    my($inst);
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT DISTINCT realm_instrument_entry_t.realm_instrument_id
+            FROM entry_t, realm_instrument_entry_t
+            WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
+            AND entry_t.realm_transaction_id=?
+            AND entry_t.realm_id=?",
+	    [$txn->get('realm_transaction_id'),
+		$self->get_request->get('auth_id'),
+	    ]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($id) = $row->[0];
+
+	Bivio::Die->die("instrument already loaded") if $inst;
+	$inst = Bivio::Biz::Model::RealmInstrument->new($self->get_request)
+		->load(realm_instrument_id => $id);
+    }
+    Bivio::Die->die("couldn't find instrument for transaction") unless $inst;
+    return $inst;
+}
+
+# _post_delete(string date)
+#
+# Performs any post delete processing.
+#
+# This will
+#
+sub _post_delete {
+    my($self, $date) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{realm_instrument}) {
+	_trace("auditing ", $fields->{realm_instrument}->get_name) if $_TRACE;
+	Bivio::Biz::Accounting::InstrumentAudit->new($self->get_request)
+		    ->audit($date, $fields->{realm_instrument});
+    }
+
+    # need to update units after this date
+    $self->get_request->get('auth_realm')->get('owner')->audit_units($date);
+
+    return;
+}
+
+# _pre_delete(Bivio::Biz::Model::RealmTransaction txn)
+#
+# Peforms and preparation prior to deleting the transaction.
+#
+# Deleting a full withdrawal, resets the member's state to 'member'.
+#
+sub _pre_delete {
+    my($self, $txn) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($txn->get('source_class') == Bivio::Type::EntryClass::INSTRUMENT()) {
+	_trace("pre delete instrument txn") if $_TRACE;
+	# used in post delete processing
+	$fields->{realm_instrument} = _get_instrument($self, $txn);
+    }
+    elsif ($txn->get('source_class') == Bivio::Type::EntryClass::MEMBER()) {
+	_update_withdrawn_state($self, $txn);
+    }
+    return;
+}
+
+# _update_withdrawn_state(Bivio::Biz::Model::RealmTransaction txn)
+#
+# If the transaction is a full withdrawal, then the associated member
+# state is returned to 'member'.
+#
+sub _update_withdrawn_state {
+    my($self, $txn) = @_;
+    my($req) = $self->get_request;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT entry_id
+            FROM entry_t
+            WHERE realm_transaction_id=?
+            AND class=?
+            AND entry_type in (?,?)
+            AND realm_id=?',
+	    [$txn->get('realm_transaction_id'),
+		Bivio::Type::EntryClass::MEMBER->as_sql_param,
+		Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_CASH
+		->as_sql_param,
+		Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FULL_STOCK
+		->as_sql_param,
+		$req->get('auth_id'),
+	    ]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($entry_id) = $row->[0];
+
+	_trace("pre delete, changing withdrawn to member state") if $_TRACE;
+
+	# set the target status to MEMBER if it is WITHDRAWN
+	my($member_entry) = Bivio::Biz::Model::MemberEntry->new($req)
+		->load(entry_id => $entry_id);
+	my($realm_user) = Bivio::Biz::Model::RealmUser->new($req)
+		->load(user_id => $member_entry->get('user_id'));
+
+	if ($realm_user->get('role') == Bivio::Auth::Role::WITHDRAWN()) {
+	    my($honorific) = Bivio::Type::Honorific::MEMBER();
+	    $realm_user->update({
+		role => $honorific->get_role,
+		honorific => $honorific,
+	    });
+	}
+	last;
+    }
+    return;
 }
 
 =head1 COPYRIGHT
