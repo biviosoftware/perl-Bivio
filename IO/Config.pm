@@ -467,14 +467,15 @@ sub _initialize {
     # On failure, we have no configuration.
     $_ACTUAL = {};
     my($not_setuid) = $< == $> && $( == $);
+#TODO: Port to other operating systems
+    my($not_root) = $^O eq 'MSWin32' || $> != 0;
     # If we are setuid or setgid or as root, then don't _initialize from
     # environment variables or files in the current directory.
     # /etc/bivio.bconf is last resort if the file doesn't exist.
-#TODO: Removed deprecated form BIVIO_CONF
-    my($file) = $ENV{'BCONF'} || $ENV{'BIVIO_CONF'};
-    unless (defined($file) && -f $file && -r $file && $> != 0 && $not_setuid) {
-#TODO: Remove deprecated form of /etc/bivio.conf
-	$file = -f '/etc/bivio.bconf' ? '/etc/bivio.bconf' : '/etc/bivio.conf';
+    my($file) = $ENV{'BCONF'};
+    unless (defined($file) && -f $file && -r $file
+	    && $not_root && $not_setuid) {
+	$file = '/etc/bivio.bconf';
     }
     if (defined($file)) {
 #TODO: Should probably die if not readable?
