@@ -181,15 +181,10 @@ widget is based on the column's field type.
 use Bivio::Biz::Model;
 use Bivio::UI::Align;
 use Bivio::UI::Color;
-use Bivio::UI::HTML::Widget::AmountCell;
-use Bivio::UI::HTML::Widget::DateTime;
-use Bivio::UI::HTML::Widget::Enum;
+use Bivio::UI::HTML::WidgetFactory;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::LineCell;
-use Bivio::UI::HTML::Widget::MailTo;
-use Bivio::UI::HTML::Widget::PercentCell;
 use Bivio::UI::HTML::Widget::String;
-use Bivio::UI::Icon;
 use Bivio::UI::Label;
 
 #=VARIABLES
@@ -379,67 +374,6 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _create_cell_widget(string field, string type, hash_ref attrs) : Bivio::UI::HTML::Widget
-#
-# Creates a widget which can render the specified type.
-#
-sub _create_cell_widget {
-    my($field, $type, $attrs) = @_;
-
-    if ($field =~ /percent/) {
-	return Bivio::UI::HTML::Widget::PercentCell->new({
-	    field => $field,
-	    %$attrs,
-	});
-    }
-
-#TODO: should check if the list class "can()" format_name()
-    if ($field eq 'RealmOwner.name') {
-	return Bivio::UI::HTML::Widget::String->new({
-	    value => ['->format_name'],
-	    %$attrs,
-	});
-    }
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
-	return Bivio::UI::HTML::Widget::AmountCell->new({
-	    field => $field,
-	    %$attrs,
-	});
-    }
-    if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
-	return Bivio::UI::HTML::Widget::DateTime->new({
-	    mode => 'DATE',
-	    column_align => 'E',
-	    value => [$field],
-	    %$attrs,
-	});
-    }
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
-	return Bivio::UI::HTML::Widget::Enum->new({
-	    field => $field,
-	    %$attrs,
-	});
-    }
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Email')) {
-	return Bivio::UI::HTML::Widget::MailTo->new({
-	    email => [$field],
-	    %$attrs,
-	});
-    }
-
-    # Numbers are just right adjusted strings.  Falls through
-    if (UNIVERSAL::isa($type, 'Bivio::Type::Number')) {
-	$attrs->{column_align} = 'right' unless $attrs->{column_align}
-    }
-
-    # default type is string
-    return Bivio::UI::HTML::Widget::String->new({
-	value => [$field],
-	string_font => 'table_cell',
-	%$attrs,
-    });
-}
-
 # _get_cell(Bivio::Biz::ListModel list, string col, hash_ref attrs) : Bivio::UI::HTML::Widget
 #
 # Returns the widget for the specified cell. The list model is used for
@@ -463,7 +397,8 @@ sub _get_cell {
     }
     else {
 	my($type) = $list->get_field_type($col);
-	$cell = _create_cell_widget($col, $type, $attrs);
+	$cell = Bivio::UI::HTML::WidgetFactory->create(
+		ref($list).'.'.$col, $attrs);
 	unless ($cell->has_keys('column_summarize')) {
 	    $cell->put(column_summarize => UNIVERSAL::isa($type,
 		    'Bivio::Type::Amount'));
