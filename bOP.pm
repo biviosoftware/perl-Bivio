@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    apply a function which returns an array_ref (similar to map).
+  * Bivio::Biz::PropertyModel->execute_unauth_load_this supports
+    model loading from tasks without "auth_id".
+
+  Revision 1.77  2003/09/02 19:36:20  nagler
+  * Bivio::SQL::Connection->CAN_LIMIT_AND_OFFSET identifies a connnection
+    implementation as supporting LIMIT and OFFSET.  Postgres supports
+    this SQL feature, and it makes ListModels perform better
+  * Bivio::SQL::ListSupport.want_only_one_order_by allows a ListModel
+    query to be limited to one ORDER BY value, which in certain cases
+    with Postgres, improves performance.  Use warily, because it does
+    change the semantics
+  * Bivio::SQL::Connection->get_instance replaces create().  create()
+    cached instances, so it has been deprecated.
+  * files/ddl/bOP*.sql has been updated to include e-commerce support and
+    address and phone tablesN
+  * Bivio::Test::Language->test_deviance accepts a regular expression
     that must match the Bivio::Die->as_string value, or the deviance
     test fails.
   * Bivio::Type::Date->compare removed
