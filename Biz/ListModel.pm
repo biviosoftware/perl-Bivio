@@ -170,6 +170,40 @@ sub execute_load_all {
     return;
 }
 
+=for html <a name="format_query"></a>
+
+=head2 format_query(Bivio::Biz::QueryType type) : string
+
+=head2 format_query(string type) : string
+
+Just the query part of L<format_uri|"format_uri">.
+
+=cut
+
+sub format_query {
+    my($self, $type) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Convert to enum unless already converted
+    $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
+
+    # Determine if need to pass in current row
+    my($arg);
+
+    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST/) {
+	my($c) = $fields->{cursor};
+	Carp::croak('no cursor') unless defined($c) && $c >= 0;
+	$arg = $self->internal_get();
+    }
+    else {
+	Carp::croak('not loaded') unless $fields->{rows};
+    }
+
+    # Get the query using the method defined in QueryType
+    my($method) = $type->get_short_desc;
+    return $fields->{query}->$method($self->internal_get_sql_support(), $arg);
+}
+
 =for html <a name="format_uri"></a>
 
 =head2 format_uri(Bivio::Biz::QueryType type) : string
@@ -193,22 +227,7 @@ sub format_uri {
     # Convert to enum unless already converted
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
-    # Determine if need to pass in current row
-    my($arg);
-
-    if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST/) {
-	my($c) = $fields->{cursor};
-	Carp::croak('no cursor') unless defined($c) && $c >= 0;
-	$arg = $self->internal_get();
-    }
-    else {
-	Carp::croak('not loaded') unless $fields->{rows};
-    }
-
-    # Get the query using the method defined in QueryType
-    my($method) = $type->get_short_desc;
-    my($query) = $fields->{query}->$method(
-	    $self->internal_get_sql_support(), $arg);
+    my($query) = $self->format_query($type);
 
     # Need to get the list_uri or detail_uri from the request?
     $uri ||= $self->get_request->get($type->get_long_desc);
