@@ -104,6 +104,9 @@ sub execute {
             realm_is_public => $realm_is_public,
 #TODO: Trace
 	    user_can_modify_is_public => $realm_is_public
+#TODO: Need to work for all realms
+	    && $req->get('auth_realm')->get('type')
+	    == Bivio::Auth::RealmType::CLUB()
 	    && $req->can_user_execute_task(
 		    Bivio::Agent::TaskId::CLUB_ADMIN_PUBLIC()),
            );
