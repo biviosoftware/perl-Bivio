@@ -121,7 +121,9 @@ sub control_on_render {
     my($req) = $source->get_request;
     my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $self->get('field');
-    my($value) = ${$self->render_attr('value', $source)};
+    my($value) = UNIVERSAL::isa($self->get('value'), 'Bivio::Type::Enum')
+        ? $self->get('value')
+        : ${$self->render_attr('value', $source)};
     $$buffer .= '<input name='
 	    . $form->get_field_name_for_html($field)
 #TODO: is_equal?
