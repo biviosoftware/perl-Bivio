@@ -187,8 +187,12 @@ sub put_form {
 	$form->VERSION_FIELD => $form->get_info('version'),
 	map({
 	    my($f) = $_;
-	    ($form->get_field_name_for_html($f) =>
-		$form->get_field_type($f)->to_literal($fields->{$f}));
+	    # There are sometimes junk fields in fields of form, e.g.
+	    # ListFormModel fields.
+	    defined($form->get_field_name_for_html($f))
+	        ? ($form->get_field_name_for_html($f) =>
+		    $form->get_field_type($f)->to_literal($fields->{$f}))
+	        : ();
 	} keys(%$fields)),
     });
 }
