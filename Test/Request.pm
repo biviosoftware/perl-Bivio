@@ -47,6 +47,7 @@ use Socket ();
 
 #=VARIABLES
 my($_SELF);
+my($_MSG_QUEUE_ATTR) = __PACKAGE__ . '.msg_queue';
 
 =head1 FACTORIES
 
@@ -85,18 +86,89 @@ sub get_instance {
 
 =cut
 
+=for html <a name="capture_mail"></a>
+
+=head2 capture_mail() : self
+
+Captures mail from L<Bivio::Mail::Message|Bivio::Mail::Message> using
+Mock object.
+
+=cut
+
+sub capture_mail {
+    my($self) = @_;
+    $self->put($_MSG_QUEUE_ATTR => []);
+    Bivio::IO::ClassLoader->simple_require('Test::MockObject');
+    foreach my $m (qw(
+	Bivio::Mail::Message
+        Bivio::Mail::Outgoing
+        Bivio::Mail::Common
+    )) {
+	Bivio::IO::ClassLoader->simple_require($m);
+	Test::MockObject->fake_module($m,
+	    map({
+		$_ => sub {
+		    push(@{$self->get($_MSG_QUEUE_ATTR)},
+			shift->as_string);
+		    return;
+		};
+	    } qw(send enqueue_send)),
+	);
+    }
+    return $self;
+}
+
 =for html <a name="execute_task"></a>
 
-=head2 static execute_task(any task_id, hash_ref req_attrs) : string_ref
+=head2 static execute_task(any task_id, hash_ref req_attrs) : array_ref
 
 Executes I<task_id> in the context of a fully initialized instance.
 I<req_attrs> allows you to add any configuration, e.g. query.
 
+Returns an array_ref with Reply output string reference followed by
+any messages queued by the request.
+
 =cut
 
 sub execute_task {
+    my($self) = shift->initialize_fully(@_);
+    $self->get('task')->execute($self);
+    my($o) = $self->get('reply')->get_output;
+    return [$o ? $$o : undef, @{$self->get_captured_mail}];
+}
+
+=for html <a name="get_captured_mail"></a>
+
+=head2 get_captured_mail() : array_ref
+
+Returns captured mail and clears queue.
+
+Returns empty array_ref if no queue mail.
+
+=cut
+
+sub get_captured_mail {
+    my($self) = @_;
+    my($res) = $self->unsafe_get($_MSG_QUEUE_ATTR);
+    Bivio::Die->die('you need to call capture_mail() first')
+	unless $res;
+    $self->put($_MSG_QUEUE_ATTR => []);
+    return $res;
+}
+
+=for html <a name="initialize_fully"></a>
+
+=head2 initialize_fully(string task_id, hash_ref req_attrs) : self
+
+Initializes L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> fully
+with I<task_id> (defaults to SHELL_UTIL).
+
+=cut
+
+sub initialize_fully {
     my($proto, $task_id, $req_attrs) = @_;
-    ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any($task_id);
+    ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any(
+	$task_id || 'SHELL_UTIL');
     Bivio::IO::ClassLoader->simple_require(
 	'Bivio::Agent::Dispatcher')->initialize;
     my($self) = $proto->get_instance->put(%$req_attrs)->setup_facade;
@@ -104,8 +176,7 @@ sub execute_task {
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
     ) unless Bivio::UI::Facade->is_fully_initialized;
-    $self->get('task')->execute($self);
-    return $self->get('reply')->get_output;
+    return $self;
 }
 
 =for html <a name="set_realm_and_user"></a>
@@ -180,12 +251,19 @@ sub setup_http {
 	    },
 	},
     });
+    # Cookie overwrites, so we have to reset below
+    my($user) = $self->get('auth_user');
     $self->put_durable(
 	uri => '/',
 	path_info => undef,
 	query => undef,
 	cookie => Bivio::Agent::HTTP::Cookie->new($self, $r),
+	client_addr => $c->remote_ip,
     );
+    # Sets user after
+    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($self, {
+	realm_owner => $user,
+    });
     return $self;
 }
 
