@@ -166,13 +166,17 @@ The following options are allowed:
 
 =over 4
 
-=item check_die : code_ref
+=item check_die_code : code_ref
 
-See L<check_die|"check_die">.
+See L<check_die_code|"check_die_code">.
 
 =item check_return : code_ref
 
 See L<check_return|"check_return">.
+
+=item compute_object : code_ref
+
+See L<compute_object|"compute_object">
 
 =item compute_params : code_ref
 
@@ -214,9 +218,10 @@ use Bivio::DieCode;
 use Bivio::Test::Case;
 
 #=VARIABLES
+my($_IDI) = __PACKAGE__->instance_data_index;
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my(@_CALLBACKS) = qw(check_return check_die compute_params);
+my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_object);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', 'method_is_autoloaded');
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 
@@ -237,26 +242,28 @@ See L<OPTIONS|"OPTIONS"> for more details.
 sub new {
     my($proto, $options) = @_;
     _assert_options($options) if $options;
-    return Bivio::Collection::Attributes::new($proto, $options);
+    my($self) = Bivio::Collection::Attributes::new($proto, $options);
+    $self->[$_IDI] = {};
+    return $self;
 }
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="check_die"></a>
+=for html <a name="check_die_code"></a>
 
-=head2 abstract check_die(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : boolean
+=head2 abstract check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : boolean
 
-=head2 abstract check_die(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : Bivio::DieCode
+=head2 abstract check_die_code(Bivio::Test::Case case, Bivio::Die die, Bivio::DieCode expect) : Bivio::DieCode
 
-This callback is defined as a I<check_die> group attribute.
+This callback is defined as a I<check_die_code> group attribute.
 
-Will be called only if the case results in an exception (L<Bivio::Die|Bivio::Die> and I<expect> is a L<Bivio::Die|Bivio::Die>, i.e. not
+Will be called only if the case results in an exception (L<Bivio::Die|Bivio::Die> and I<expect> is a L<Bivio::DieCode|Bivio::DieCode>, i.e. not
 an array_ref or C<undef>.
 
-Returns 1 or 0 when it compares the I<die> to the I<expect> or
-some other criteria.  1 means pass.
+Returns 1 or 0 when it compares the I<die> (note the type is Bivio::Die, not
+Bivio::DieCode) to the I<expect> or some other criteria.  1 means pass.
 
 Returns a L<Bivio::DieCode|Bivio::DieCode> for the new value of I<case.expect>.
 This module will then compare the I<expect> with I<die>.
@@ -266,7 +273,7 @@ B<Called as a I<sub>, not a method>.
 =cut
 
 $_ = <<'}'; # emacs
-sub check_die {
+sub check_die_code {
 }
 
 =for html <a name="check_return"></a>
@@ -296,6 +303,20 @@ B<Called as a I<sub>, not a method>.
 
 $_ = <<'}'; # emacs
 sub check_return {
+}
+
+=for html <a name="compute_object"></a>
+
+=head2 abstract compute_object(Bivio::Test::Case case, any object) : any
+
+Returns the object to be used for this method group.  I<object> is the
+value in the "object" location of the test case tree.  It can be any
+value.  The result must be an object, which "can" the methods.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub compute_object {
 }
 
 =for html <a name="compute_params"></a>
@@ -405,7 +426,7 @@ sub _compile {
     my(@objects) = @$objects;
     my($tests) = [];
     while (@objects) {
-	_compile_object($state, $tests, splice(@objects, 0, 2));
+	_compile_object($self, $state, $tests, splice(@objects, 0, 2));
     }
     return $tests;
 }
@@ -473,11 +494,6 @@ sub _compile_method {
     my($state, $tests, $method, $cases) = @_;
     $state = _compile_options($state, 'method', $method);
     $method = $state->{method};
-    _compile_die($state, (ref($state->{object}) || $state->{object}),
-	' does not implement method "', $method, '"')
-	unless $state->{method_is_autoloaded}
-	    || defined($method) && !ref($method)
-		&& UNIVERSAL::can($state->{object}, $method);
     if (ref($cases) eq 'ARRAY') {
 	_compile_assert_even($cases, $state);
     }
@@ -500,16 +516,28 @@ sub _compile_method {
     return;
 }
 
-# _compile_object(hash_ref state, array_ref tests, any object, array_ref methods)
+# _compile_object(self, hash_ref state, array_ref tests, any object, array_ref methods)
 #
 # Validates $object and sets object info on state.  Compiles methods.
 #
 sub _compile_object {
-    my($state, $tests, $object, $methods) = @_;
+    my($self, $state, $tests, $object, $methods) = @_;
     $state = _compile_options($state, 'object', $object);
-    $object = $state->{object};
-    _compile_die($state, 'object is not a blessed reference or class (did you forget to import it?)')
-	unless UNIVERSAL::isa($object, 'UNIVERSAL');
+    if ($state->{compute_object} || ref($state->{object}) eq 'CODE') {
+	my($fields) = $self->[$_IDI];
+	$state->{_eval_object} = @{$fields->{_eval_object} ||= []};
+	push(@{$fields->{_eval_object}}, [
+	    $state->{compute_object} || $state->{object},
+	    $state->{object},
+	]);
+	$state->{object} = undef;
+	$state->{compute_object} = undef;
+    }
+    elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
+	_compile_die($state,
+	    'object is not a subclass of UNIVERSAL (forgot to "use"?) or CODE: ',
+	    $state->{object});
+    }
     _compile_assert_even($methods, $state);
     $state->{method_num} = 0;
     my(@methods) = @$methods;
@@ -588,17 +616,19 @@ sub _eval {
     foreach my $case (@$tests) {
 	$c++;
 	my($result);
-	$case->put(params => _eval_params($case, \$err));
-	next if $err;
+	next unless _prepare_case($self, $case, \$err);
 	my($die) = Bivio::Die->catch(sub {
-	    my($method) = $case->get('method');
 	    _trace($case) if $_TRACE;
+            my($method) = $case->get('method');
 	    $result = [$case->get('object')->$method(@{$case->get('params')})];
 	    return;
 	});
 	_trace('returned ', $die || $result) if $_TRACE;
 	if ($die) {
-	    $case->put(die => $die->get('code'));
+	    $case->put(
+		die_code => $die->get('code'),
+		die => $die,
+	    );
 	    $err = _eval_result($case, $die);
 	}
 	elsif (defined($case->unsafe_get('expect'))) {
@@ -637,37 +667,67 @@ sub _eval_custom {
 	return undef;
     }
     if ($which =~ /params/ && ref($res) ne 'ARRAY') {
-	$$err = 'custom compute_params did not return an array_ref: '
-	    . Bivio::IO::Ref->to_short_string($res);
-	return undef;
+	$$err = 'an array_ref';
     }
-    if ($which =~ /expect|return/
+    elsif ($which =~ /object/ && !UNIVERSAL::isa($res, 'UNIVERSAL')) {
+	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
+    }
+    elsif ($which =~ /expect|return/
 	&& ref($res) && ref($res) ne 'ARRAY') {
-	$$err = 'custom check_return did not return an array_ref or scalar: '
-	    . Bivio::IO::Ref->to_short_string($res);
-	return undef;
+	$$err = 'an array_ref or scalar';
     }
-    if ($which =~ /die/
+    elsif ($which =~ /die/
 	&& ref($res) && !UNIVERSAL::isa($res, 'Bivio::DieCode')) {
-	$$err = 'custom check_die did not return a Bivio::DieCode or scalar: '
-	    . Bivio::IO::Ref->to_short_string($res);
-	return undef;
+	$$err = 'a Bivio::DieCode or scalar';
     }
-    return $res;
+    else {
+	return $res;
+    }
+    $$err = "$which did not return ${$err}: "
+	. Bivio::IO::Ref->to_short_string($res);
+    return undef;
 }
 
-# _eval_params(Bivio::Test::Case case, string_ref err) : array_ref
+# _eval_object(self, Bivio::Test::Case case, string_ref err) : boolean
 #
-# Returns params.
+# Returns true if eval worked.  Objects are cached.
+#
+sub _eval_object {
+    my($self, $case, $err) = @_;
+    return $case->get('object')
+	unless defined(my $e = $case->unsafe_get('_eval_object'));
+    my($fields) = $self->[$_IDI];
+    my($object) = $fields->{_eval_object}->[$e];
+    unless (defined($object)) {
+	$$err = 'prior compute_object call failed';
+	return 0;
+    }
+    if (ref($object) eq 'ARRAY') {
+	my($code, $param) = @$object;
+	$case->put(compute_object => $code);
+	$fields->{_eval_object}->[$e] = $object
+	    = _eval_custom($case, 'compute_object', [$param], $err);
+	return 0 if $$err;
+    }
+    $case->put(object => $object);
+    return 1;
+}
+
+# _eval_params(Bivio::Test::Case case, string which, string_ref err) : boolean
+#
+# Returns true if eval worked.
 #
 sub _eval_params {
     my($case, $err) = @_;
     foreach my $custom (qw(params compute_params)) {
-	return _eval_custom(
-	    $case, $custom, [$case->get(qw(params method object))], $err)
-	    if ref($case->unsafe_get($custom)) eq 'CODE';
+	next unless ref($case->unsafe_get($custom)) eq 'CODE';
+	my($res) = _eval_custom(
+	    $case, $custom, [$case->get(qw(params method object))], $err);
+	return 0 if $$err;
+	$case->put(params => $res);
+	last;
     }
-    return $case->get('params');
+    return 1;
 }
 
 # _eval_result(Bivio::Test::Case case, any actual) : string
@@ -679,7 +739,7 @@ sub _eval_result {
     my($case, $actual) = @_;
     my($custom);
     my($result, $which) = ref($actual) eq 'Bivio::Die'
-	? ($actual->get('code'), 'die') : ($actual, 'return');
+	? ($actual->get('code'), 'die_code') : ($actual, 'return');
     if (ref($case->get('expect')) eq 'CODE') {
 	# Only on success do we eval a case-specific check_return
 	$custom = 'expect'
@@ -701,6 +761,7 @@ sub _eval_result {
 	return undef if ${Bivio::IO::Ref->to_string($result)} =~ /$x/;
     }
     if ($custom) {
+#TODO: Move off to seperate method
 	my($err);
 	my($res) = _eval_custom(
 	    $case, $custom, [$actual, $case->get('expect')], \$err);
@@ -732,6 +793,24 @@ sub _eval_result {
     return 'expected ' . Bivio::IO::Ref->to_short_string($case->get('expect'))
 	.' but got '
 	. Bivio::IO::Ref->to_short_string($case->get($which));
+}
+
+# _prepare_case(self, Bivio::Test::Case case, string_ref err) : boolean
+#
+# Returns false if err.  Calls _eval_object_or_params and
+# then checks method.
+#
+sub _prepare_case {
+    my($self, $case, $err) = @_;
+    return 0
+	unless _eval_object($self, $case, $err) && _eval_params($case, $err);
+    return 1
+	if $case->unsafe_get('method_is_autoloaded')
+	    || UNIVERSAL::can($case->get('object'), $case->get('method'));
+    $$err = $case->get('method')
+	. ': not implemented by '
+	    . (ref($case->get('object')) || $case->get('object'));
+    return 0;
 }
 
 =head1 COPYRIGHT

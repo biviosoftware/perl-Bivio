@@ -12,6 +12,7 @@ use Bivio::t::Test::Testee;
 $loaded = 1;
 print "ok 1\n";
 
+my($_OBJECT);
 my($_T) = 2;
 t(
     {
@@ -107,9 +108,55 @@ t(
 		my($case, $return) = @_;
 		return '3';
 	    },
+	    {
+		method => 'die',
+		compute_params => sub {
+		    return 3;
+		},
+		check_die_code => sub {
+		    my($case, $die, $expect) = @_;
+		    return 0 unless ref($die) eq 'Bivio::Die'
+			&& ref($expect) eq 'Bivio::DieCode';
+		    return $expect;
+	        },
+	    } => [
+		sub {['CLIENT_ERROR']} => Bivio::DieCode->CLIENT_ERROR,
+	    ],
 	],
+	{
+	    object => '3',
+	    compute_object => sub {
+		my($case, $object) = @_;
+		return Bivio::t::Test::Testee->new($object),
+	    },
+	} => [
+	    ok => [
+		[] => sub {
+		    $_OBJECT = shift->get('object');
+		    return [3];
+		},
+		[] => sub {
+		    my($case) = @_;
+		    # Objects should be the same
+		    $case->actual_return([shift->get('object')]);
+		    return [$_OBJECT];
+		},
+	    ],
+	],
+	sub {
+	    return Bivio::t::Test::Testee->new(5);
+        } => [
+	    ok => [
+		[] => sub {
+		    # Objects should be diffferent
+		    return 0 if $_OBJECT eq shift->get('object');
+		    return [5];
+		},
+	    ],
+        ],
+#TODO: Need more deviance tests
     ],
-    28,
+    32,
     [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28],
 );
 
