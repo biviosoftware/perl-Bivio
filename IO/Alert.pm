@@ -55,10 +55,11 @@ BEGIN {
 use Bivio::IO::Config;
 use Carp ();
 
-#=INITIALIZATION
+#=VARIABLES
 # Normalize error messages
 # $SIG{__DIE__} = \&_initial_die_handler;
 # $SIG{__WARN__} = \&_warn_handler;
+my($_LAST_WARNING);
 Bivio::IO::Config->register({
     intercept_die => 0,
     stack_trace_die => 0,
@@ -130,6 +131,18 @@ be called to convert the object to a string.
 
 sub format {
     return &_format(@_);
+}
+
+=for html <a name="get_last_warning"></a>
+
+=head2 static get_last_warning() : string
+
+Returns the last warning output.
+
+=cut
+
+sub get_last_warning {
+    return $_LAST_WARNING;
 }
 
 =for html <a name="get_max_arg_length"></a>
@@ -277,7 +290,8 @@ Note: If the message consists of a single newline, nothing is output.
 sub warn {
     shift(@_);
     int(@_) == 1 && $_[0] eq "\n" && return;
-    &$_LOGGER('err', &_call_format(\@_));
+    $_LAST_WARNING = _call_format(\@_);
+    &$_LOGGER('err', $_LAST_WARNING);
 }
 
 #=PRIVATE METHODS
