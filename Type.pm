@@ -25,6 +25,7 @@ C<Bivio::Type> base class of all types.
 =cut
 
 #=IMPORTS
+# also uses Bivio::Die and Bivio::TypeError dynamically
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
@@ -144,6 +145,7 @@ sub from_literal_or_die {
     my($proto, $value) = @_;
     my($v, $e) = $proto->from_literal($value);
     return $v if defined($v);
+    Bivio::IO::ClassLoader->simple_require(qw(Bivio::Die Bivio::TypeError));
     $e ||= Bivio::TypeError::NULL();
     Bivio::Die->throw_die('DIE', {
 	message => 'from_literal failed: '.$e->get_long_desc,
