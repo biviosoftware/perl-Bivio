@@ -687,13 +687,9 @@ sub get_current_or_new {
     my($proto) = @_;
     my($current) = $proto->get_current;
     return $current if $current;
-
-    # This class doesn't set current; need to do it explicitly
-    return $proto->internal_new()->internal_set_current
-	    if $proto eq __PACKAGE__;
-
-    # Subclasses set current
-    return $proto->new();
+    return $proto->internal_new->internal_set_current
+	if $proto eq __PACKAGE__;
+    return $proto->new;
 }
 
 =for html <a name="get_fields"></a>
@@ -864,8 +860,7 @@ Called by subclass after it has initialized all state.
 
 sub internal_initialize {
     my($self, $auth_realm, $auth_user) = @_;
-    # By default, set_user also sets auth_role.  The 1 turns this off.
-    $self->set_user($auth_user, 1);
+    $self->set_user($auth_user);
     $self->set_realm($auth_realm);
     return;
 }
@@ -935,7 +930,7 @@ Called by subclasses when Request initialized.  Returns self.
 sub internal_set_current {
     my($self) = @_;
     Bivio::Die->die($self, ': must be reference')
-		unless ref($self);
+	unless ref($self);
     return $_CURRENT = $self;
 }
 
@@ -1123,11 +1118,15 @@ Returns I<auth_user>, which my be C<undef>.
 =cut
 
 sub set_user {
-    # dont_set_role is used internally, don't pass if outside this module.
     my($self, $user, $dont_set_role) = @_;
+    Bivio::IO::Alert->warn_deprecated(
+	"dont_set_role is not longer a valid parameter")
+	    if $dont_set_role;
+    # We don't set the role if there's not auth_realm
+    $dont_set_role = $self->unsafe_get('auth_realm') ? 0 : 1;
     $user = Bivio::Biz::Model->new($self, 'RealmOwner')
-	    ->unauth_load_by_id_or_name_or_die($user, 'USER')
-		    unless ref($user) || !defined($user);
+	->unauth_load_by_id_or_name_or_die($user, 'USER')
+	    unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
     _trace($user) if $_TRACE;
@@ -1143,13 +1142,13 @@ sub set_user {
 	$user_realms = {};
     }
     Bivio::Die->die($user, ': not a RealmOwner')
-	    if defined($user) && !$user->isa('Bivio::Biz::Model');
+        if defined($user) && !$user->isa('Bivio::Biz::Model');
     $self->put_durable(auth_user => $user,
-	    auth_user_id => $user ? $user->get('realm_id') : undef,
-	    user_realms => $user_realms);
+	auth_user_id => $user ? $user->get('realm_id') : undef,
+	user_realms => $user_realms);
     # Set the (cached) auth_role if requested (by default).
     $self->put_durable(auth_role => _get_role($self, $self->get('auth_id')))
-	    unless $dont_set_role;
+	unless $dont_set_role;
     return $user;
 }
 
@@ -1305,7 +1304,7 @@ sub _get_role {
 	    if ref($user_realms->{$realm_id});
 
     # User has no special privileges in realm
-    return Bivio::Auth::Role::USER();
+    return Bivio::Auth::Role->USER;
 }
 
 =head1 SEE ALSO
