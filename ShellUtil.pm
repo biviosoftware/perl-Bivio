@@ -31,9 +31,60 @@ All shell utilities take a I<command> as their first argument
 followed by zero or more arguments.  I<command> must map to a
 method in the subclass.  The arguments are parsed by the method.
 
+Before L<main|"main"> calls the I<command> method, it calls
+L<setup|"setup"> which creates a request from the standard
+options (I<user>, I<db>, and I<realm>).
+
 Options precede the command.  See L<OPTIONS|"OPTIONS">.
 
 For an example, see L<Bivio::SQL::Util|Bivio::SQL::Util>.
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item argv : array_ref
+
+Unmodified argument vector.
+
+=item db : string [undef]
+
+Name of database to connect to.
+
+=item email : string [undef]
+
+Where to mail the output.  Uses I<result_type> and I<result_name>,
+if available.
+
+=item program : string
+
+Name of the program sans suffix and directory.
+
+=item quiet : boolean [0]
+
+Don't output verbosely.
+
+=item realm : string [undef]
+
+The auth realm in which we are operating.
+
+=item req : Bivio::Agent::Request
+
+Request used for the call.  Initialized by L<setup|"setup">.
+
+=item result_name : string []
+
+File name of the result as set by the caller I<command> method.
+
+=item result_type : string []
+
+MIME type of the result as set by the caller I<command> method.
+
+=item user : string [undef]
+
+The auth user used to execute I<command>.
+
+=back
 
 =cut
 
@@ -41,15 +92,45 @@ For an example, see L<Bivio::SQL::Util|Bivio::SQL::Util>.
 
 =cut
 
+=for html <a name="OPTIONS_USAGE"></a>
+
+=head2 OPTIONS_USAGE : string
+
+Called by L<usage|"usage"> and returns the string:
+
+  options:
+	  -db - name of database connection
+	  -email - who to mail the results to (may be a comma separated list)
+	  -realm - realm_id or realm name
+	  -quiet -- don't display lots of messages
+	  -user - user_id or user name
+
+=cut
+
+sub OPTIONS_USAGE {
+    return <<'EOF';
+options:
+        -db - name of database connection
+        -email - who to mail the results to (may be a comma separated list)
+        -realm - realm_id or realm name
+        -quiet -- don't display lots of messages
+        -user - user_id or user name
+EOF
+}
+
 =for html <a name="OPTIONS"></a>
 
 =head2 OPTIONS : hash_ref
 
 Returns a mapping of options to bivio types and default values.
-For example,
+The default values are:
 
     {
-        quiet => ['Boolean', 0],
+	realm => ['Name', undef],
+	user => ['Name', undef],
+	db => ['Name', undef],
+	email => ['Text', undef],
+	quiet => ['Boolean', 0],
     }
 
 Boolean is treated specially, but all other options are parsed
@@ -68,14 +149,20 @@ letter version is also supported.
 =cut
 
 sub OPTIONS {
-    return {};
+    return {
+	realm => ['Name', undef],
+	user => ['Name', undef],
+	db => ['Name', undef],
+	email => ['Text', undef],
+	quiet => ['Boolean', 0],
+    };
 }
 
 =for html <a name="USAGE"></a>
 
-=head2 USAGE : string
+=head2 abstract USAGE : string
 
-B<Subclasses should override this method.>
+B<Subclasses must override this method.>
 
 Returns the usage string, e.g.
 
@@ -86,23 +173,25 @@ Returns the usage string, e.g.
 	   recover_standby
 	   sql2csv file.sql [database [email]]
 	   switch_logs_and_count_rows
-    options:
-           -q -- quiet mode
 
 =cut
 
 sub USAGE {
-    return '';
+    die('abstract method');
 }
 
 #=IMPORTS
 use Bivio::IO::Trace;
 use Bivio::Type;
 use Bivio::TypeError;
+# This is here to avoid a bunch of error messages when societas
+# is started in stack_trace_warn.
+use MIME::Parser;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my($_PACKAGE) = __PACKAGE__;
 
 =head1 METHODS
 
@@ -142,26 +231,36 @@ sub are_you_sure {
     return;
 }
 
-=for html <a name="getopt"></a>
+=for html <a name="command_line"></a>
 
-=head2 getopt(string name) : any
+=head2 command_line() : string
 
-=head2 static getopt(string name) : undef
-
-Return the value of the option.  If called statically, always returns
-C<undef> (options can't be passed to classes).
+Returns the command line that was used to execute this command.
 
 =cut
 
-sub getopt {
-    my($self, $name) = @_;
-    _trace($self->internal_get) if $_TRACE;
-    return ref($self) ? $self->unsafe_get($name) : undef;
+sub command_line {
+    my($self) = @_;
+    return join(' ', $self->get('program'), @{$self->get('argv')});
+}
+
+=for html <a name="finish"></a>
+
+=head2 finish()
+
+Clean up work of setup.
+
+=cut
+
+sub finish {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return Bivio::SQL::Connection->set_dbi_name($fields->{prior_db});
 }
 
 =for html <a name="main"></a>
 
-=head2 static main(array argv) : int
+=head2 static main(array argv)
 
 Parses its arguments.  If I<argv[0]> contains is a valid public
 method (definition: begins with a letter), will call it.
@@ -174,20 +273,31 @@ Global options precede the command and are set on the instance.
 
 sub main {
     my($proto, @argv) = @_;
-    Bivio::IO::Config->initialize(\@argv);
+    my(@orig_argv) = @argv;
 
     local($|) = 1;
     my($self) = $proto->new(_parse_options($proto, \@argv));
-
-    # Execute the method only if defined in subclass (except for usage)
-    if (@argv && $argv[0] =~ /^([a-z]\w*)$/i && $self->can($1)
-	   && (!__PACKAGE__->can($1) || $1 eq 'usage')) {
-	shift(@argv);
-	$self->$1(@argv);
-    }
-    else {
-	$self->usage('unknown or missing command');
-    }
+    $self->put(argv => \@orig_argv);
+    $self->{$_PACKAGE} = {};
+    $self->setup();
+    my($cmd, $res);
+    my($die) = Bivio::Die->catch(sub {
+	# Execute the method only if defined in subclass
+	# (except for usage)
+	if (@argv && $argv[0] =~ /^([a-z]\w*)$/i && $self->can($1)
+		&& (!__PACKAGE__->can($1) || $1 eq 'usage')) {
+	    $cmd = shift(@argv);
+	    $res = $self->$cmd(@argv);
+	}
+	else {
+	    $self->usage('unknown or missing command');
+	}
+	return $res;
+    });
+    $self->finish();
+    $die->throw() if $die;
+    $self->result($cmd, $res);
+    return;
 }
 
 =for html <a name="piped_exec"></a>
@@ -225,6 +335,109 @@ sub piped_exec {
     return \$res;
 }
 
+=for html <a name="print"></a>
+
+=head2 print(any arg, ...) : int
+
+Writes output to STDOUT.  Returns result of print.
+This method may be overriden.
+
+=cut
+
+sub print {
+    shift;
+    return print STDOUT @_;
+}
+
+=for html <a name="put"></a>
+
+=head2 static put(string key, string value, ...)
+
+=head2 put(string key, string value, ...) : Bivio::Collection::Attributes
+
+If called statically, has no effect.  Otherwise, just calls
+L<Bivio::Collection::Attributes::put|Bivio::Collection::Attributes/"put">.
+
+=cut
+
+sub put {
+    my($self) = shift;
+    return unless ref($self);
+    return $self->SUPER::put(@_);
+}
+
+=for html <a name="result"></a>
+
+=head2 result(string cmd, any res)
+
+Processes I<res> by sending via I<email> or printing to STDOUT.
+
+=cut
+
+sub result {
+    my($self, $cmd, $res) = @_;
+    $res = _result_ref($res);
+    return unless $res;
+    return if _result_email(@_);
+    print STDOUT $$res;
+    return;
+}
+
+=for html <a name="setup"></a>
+
+=head2 setup()
+
+Configures the environment with a Job::Request and database
+connection (if need be).
+
+=cut
+
+sub setup {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($db, $user, $realm) = $self->unsafe_get(qw(db user realm));
+
+
+    Bivio::IO::ClassLoader->simple_require(qw{
+        Bivio::Agent::Job::Request
+        Bivio::Agent::TaskId
+        Bivio::SQL::Connection
+    });
+    $fields->{prior_db} = Bivio::SQL::Connection->set_dbi_name($db);
+
+    my($p) = $0;
+    $p =~ s!.*/!!;
+    $p =~ s!\.\w+$!!;
+    $self->put(req => Bivio::Agent::Job::Request->new({
+	auth_id => _parse_realm_id($self, 'realm'),
+	auth_user_id => _parse_realm_id($self, 'user'),
+	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
+    }),
+	   program => $p);
+    return;
+}
+
+=for html <a name="unsafe_get"></a>
+
+=head2 static unsafe_get(string name, ...) : undef
+
+=head2 unsafe_get(string name, ...) : any
+
+Return the attribute(s).  Returns C<undef> or empty array
+if called statically.
+
+Otherwise, just calls
+L<Bivio::Collection::Attributes::unsafe_get|Bivio::Collection::Attributes/"unsafe_get">.
+
+=cut
+
+sub unsafe_get {
+    my($self) = shift;
+    return $self->SUPER::unsafe_get(@_) if ref($self);
+    return () if wantarray;
+    return undef;
+}
+
 =for html <a name="usage"></a>
 
 =head2 static usage(array msg)
@@ -235,9 +448,25 @@ Dies with I<msg> followed by L<USAGE|"USAGE">.
 
 sub usage {
     my($proto) = shift;
-    Bivio::DieCode::DIE()->die(<<"EOF".$proto->USAGE());
+    Bivio::Die->die(
+	    <<"EOF".$proto->USAGE().$proto->OPTIONS_USAGE());
 ERROR: @{[join('', @_)]}
 EOF
+}
+
+=for html <a name="verbose"></a>
+
+=head2 verbose(any arg, ...)
+
+Calls L<print|"print"> if I<quiet> option is not set.
+
+=cut
+
+sub verbose {
+    my($self) = shift;
+    return if $self->unsafe_get('quiet');
+    $self->print(@_);
+    return;
 }
 
 #=PRIVATE METHODS
@@ -305,7 +534,7 @@ sub _parse_options {
 	my($v, $e) = shift(@$argv);
 	($v, $e) = $opt->[1]->from_literal($v);
 	$proto->usage("-$k: ", $e->get_long_desc) if $e;
-	$res->{$opt->[0]} = 1;
+	$res->{$opt->[0]} = $v;
     }
 
     # Set the (defined) defaults
@@ -317,6 +546,67 @@ sub _parse_options {
 
     _trace($res) if $_TRACE;
     return $res;
+}
+
+# _parse_realm_id(Bivio::ShellUtil self, string attr) : string
+#
+# Returns the id or undef for realm.
+#
+sub _parse_realm_id {
+    my($self, $attr) = @_;
+    my($realm) = $self->unsafe_get($attr);
+    return $realm unless defined($realm) && $realm !~ /^\d+$/;
+    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model');
+    my($ro) = Bivio::Biz::Model->get_instance('RealmOwner')->new();
+    $ro->unauth_load_or_die(name => $realm);
+    return $ro->get('realm_id');
+}
+
+# _result_email(Bivio::ShellUtil self, string cmd, string_ref res)
+#
+# Emails the result if there is an email option (returns true in that case).
+#
+sub _result_email {
+    my($self, $cmd, $res) = @_;
+    my($email) = $self->unsafe_get('email');
+    return 0 unless $email;
+
+    Bivio::IO::ClassLoader->simple_require('Bivio::Mail::Outgoing');
+    my($msg) = Bivio::Mail::Outgoing->new();
+    my($name, $type) = $self->unsafe_get('result_name', 'result_type');
+    $name ||= $cmd;
+    $msg->set_recipients($email);
+    $msg->set_header('Subject', $name.' generated by "'
+	    .$self->command_line().'"');
+    if ($type) {
+	$msg->set_content_type('multipart/mixed');
+	# Can't use -B and couldn't get IO::Scalar to work.
+	# Just assume is binary
+	$msg->attach($res, $type, $name, 1);
+    }
+    else {
+	$msg->set_body($res);
+    }
+    $msg->send();
+    return 1;
+}
+
+# _result_ref(any res) : scalar_ref
+#
+# Returns a scalar reference to the result or undef if no result to print.
+#
+sub _result_ref {
+    my($res) = @_;
+    return undef unless defined($res);
+    my($ref) = \$res;
+    if (ref($res)) {
+	unless (ref($res) eq 'SCALAR') {
+	    Bivio::IO::Alert->warn('result is not a scalar: ', $res);
+	    return undef;
+	}
+	$ref = $res;
+    }
+    return defined($$ref) && length($$ref) ? $ref : undef;
 }
 
 =head1 COPYRIGHT
