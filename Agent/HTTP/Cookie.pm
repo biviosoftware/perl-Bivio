@@ -560,7 +560,7 @@ sub _encrypt {
 	    length($res)) if $_TRACE;
 
     # encrypt and store as value
-    return $tag.'='.$res;
+    return $tag.'="'.$res.'"';
 }
 
 # _parse(string cookie) : hash_ref
