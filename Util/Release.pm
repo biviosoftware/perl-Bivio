@@ -91,6 +91,7 @@ my($_RPM_HOME_DIR);
 my($_RPM_HOST);
 my($_RPM_USER);
 my($_TMP_DIR);
+my($_START_DIR) = Bivio::IO::File->pwd;
 
 Bivio::IO::Config->register({
     cvs_rpm_spec_dir => 'pkgs',
@@ -374,11 +375,13 @@ sub _create_rpm_spec {
     my($self, $specin, $output) = @_;
     my($version) = $self->get('version');
 
-    unless ($specin =~ /\.spec$/) {
+    if ($specin =~ /\.spec$/) {
+        $specin = $_START_DIR.'/'.$specin unless $specin =~ m!^/!;
+    } else {
         $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
     }
-    my($base_spec) = _read_all("<$specin");
+    my($base_spec) = _read_all($specin);
     my($release) = _search('release', $base_spec) || _get_date_format();
 #    $version = _search('version', $base_spec) || $version;
 
