@@ -193,37 +193,24 @@ sub internal_initialize_sql_support {
     return $sql_support;
 }
 
-=for html <a name="iterate_end"></a>
+=for html <a name="iterate_start></a>
 
-=head2 iterate_end(ref iterator)
+=head2 iterate_start(string order_by) : ref
 
-Terminates the iterator.  See L<iterate_start|"iterate_start">.
+Returns a handle which can be used to iterate the rows for this
+realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
+should be called, too.
 
-=cut
-
-sub iterate_end {
-    my($self) = shift;
-    return $self->internal_get_sql_support->iterate_end(@_);
-}
-
-=for html <a name="iterate_next"></a>
-
-=head2 iterate_next(ref iterator, hash_ref row) : boolean
-
-=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
-
-I<iterator> was returned by L<iterate_start|"iterate_start">.
-I<row> is the resultant values by field name.
-I<converter> is optional and is the name of a
-L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
-
-Returns false if there is no next.
+I<order_by> is an SQL C<ORDER BY> clause without the keywords C<ORDER BY>.
 
 =cut
 
-sub iterate_next {
+sub iterate_start {
     my($self) = shift;
-    return $self->internal_get_sql_support->iterate_next(@_);
+    my($auth_id) = $self->get_request->get('auth_id');
+    $self->die('DIE', 'no auth_id') unless $auth_id;
+    return $self->internal_get_sql_support->iterate_start(
+	    $self, $auth_id, @_);
 }
 
 =for html <a name="iterate_next_and_load"></a>
@@ -244,42 +231,6 @@ sub iterate_next_and_load {
     return 0 unless $self->internal_get_sql_support->iterate_next(
 	    $it, $values);
     return _load($self, $values);
-}
-
-=for html <a name="iterate_start></a>
-
-=head2 iterate_start(string order_by) : ref
-
-Returns a handle which can be used to iterate the rows for this
-realm with L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
-should be called, too.
-
-I<order_by> is an SQL C<ORDER BY> clause without the keywords
-C<ORDER BY>.
-
-=cut
-
-sub iterate_start {
-    my($self) = shift;
-    my($auth_id) = $self->get_request->get('auth_id');
-    $self->die('DIE', 'no auth_id') unless $auth_id;
-    return $self->internal_get_sql_support->iterate_start(
-	    $self, $auth_id, @_);
-}
-
-=for html <a name="iterate_start_with_id"></a>
-
-=head2 iterate_start_with_id(string id, string order_by) : ref
-
-Same as iterate_start, but takes a value for auth_id to use in the request
-instead of using the one on the request.
-
-=cut
-
-sub iterate_start_with_id {
-    my($self) = @_;
-    my($id) = shift;
-    return $self->internal_get_sql_support->iterate_start($self, $id, @_);
 }
 
 =for html <a name="load"></a>
@@ -385,7 +336,6 @@ should be called, too.
 
 I<order_by> is an SQL C<ORDER BY> clause without the keywords
 C<ORDER BY>.
-
 
 =cut
 
