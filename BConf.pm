@@ -70,7 +70,7 @@ sub dev {
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
 	    },
-	    'Bivio::Test::Language' => {
+	    'Bivio::Test::Language::HTTP' => {
 		home_page_uri => "http://$host:$port",
 	    },
 	    'Bivio::UI::FacadeComponent' => {
