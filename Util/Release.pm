@@ -109,6 +109,9 @@ Bivio::IO::Config->register(my $_CFG = {
     rpm_http_root => undef,
     rpm_user => Bivio::IO::Config->REQUIRED,
     rpm_group => undef,
+    http_realm => undef,
+    http_user => undef,
+    http_password => undef,
     install_umask => 022,
     facades_dir => '/var/www/facades',
     facades_user => undef,
@@ -315,6 +318,19 @@ writable.
 
 User to install facades files as.
 
+=item http_password : string [undef]
+
+Password used if I<http_realm> set.
+
+=item http_realm : string [undef]
+
+Use basic authentication to retrieve files.  It is recommended that
+files are accessed via https to avoid passwords being sent in the clear.
+
+=item http_user : string [undef]
+
+User to use if I<http_realm> set.
+
 =item install_umask : int [022]
 
 Umask for builds and installs of binaries and libraries.  See also
@@ -399,10 +415,11 @@ sub install {
     $self->usage_error("No packages to install?") unless @packages;
     my($output) = '';
 
-    my(@command) = ('rpm', '-Uvh');
-    push(@command, '--force') if $self->unsafe_get('force');
-    push(@command, '--nodeps') if $self->unsafe_get('nodeps');
-    push(@command, _get_proxy($self));
+    my($command) = ['rpm', '-Uvh'];
+    push(@$command, '--force') if $self->unsafe_get('force');
+    push(@$command, '--nodeps') if $self->unsafe_get('nodeps');
+    push(@$command, _get_proxy($self))
+	unless $_CFG->{http_realm};
 
     # install all the packages
     for my $package (@packages) {
@@ -410,16 +427,27 @@ sub install {
 	    if $package =~ /\.\d+$/;
 	$package .= '-'.$self->get('version').'.rpm'
 	    unless $package =~ /\.rpm$/;
-	push(@command, _create_uri($package));
+	push(@$command, _create_uri($package));
     }
 
-    $self->print(join(' ', 'command:', @command, "\n"));
+    _umask('install_umask');
+    $output .= _do_in_tmp($self, 0, sub {
+	my($tmp, $output) = @_;
+        foreach my $arg (@$command) {
+	    next unless $arg =~ /^http/;
+	    my($file) = $arg =~ m{([^/]+)$};
+	    Bivio::IO::File->write($file, _http_get($arg, $output));
+	    substr($arg, 0) = $file;
+	}
+    }) if $_CFG->{http_realm};
+
+    $self->print($output, join(' ', @$command, "\n"));
     return
 	if $self->get('noexecute');
 
-    _umask('install_umask');
-    exec(@command);
+    exec(@$command);
     die("command failed: $!\n");
+    # DOES NOT RETURN
 }
 
 =for html <a name="install_facades"></a>
@@ -506,7 +534,7 @@ or directory.
 sub list {
     my($self, $uri) = @_;
     return join('',
-	map("$_\n", _http_get($uri || '') =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
+	map("$_\n", ${_http_get($uri || '')} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
 }
 
 =for html <a name="list_installed"></a>
@@ -898,7 +926,7 @@ sub _get_rpm_arch {
     return 'i386';
 }
 
-# _http_get(string uri, string_ref output) : string
+# _http_get(string uri, string_ref output) : string_ref
 #
 # Returns content pointed to by $uri.  Handles local files as well
 # as remote files.
@@ -907,13 +935,18 @@ sub _http_get {
     my($uri, $output) = @_;
     ($uri = _create_uri($uri)) =~ /^\w+:/
 	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
-    $$output .= "Executing: GET $uri\n"
+    $$output .= "GET $uri\n"
 	if $output;
-    my($reply) = Bivio::Ext::LWPUserAgent->new(1)->request(
+    my($ua) = Bivio::Ext::LWPUserAgent->new(1);
+    $ua->credentials(
+	URI->new($uri)->host_port,
+	@$_CFG{qw(http_realm http_user http_password)},
+    ) if $_CFG->{http_realm};
+    my($reply) = $ua->request(
 	HTTP::Request->new('GET', $uri));
     Bivio::Die->die($uri, ": GET failed: ", $reply->status_line)
 	unless $reply->is_success;
-    return $reply->content;
+    return \($reply->content);
 }
 
 # _link_base_version(string version, string base, string_ref output)
