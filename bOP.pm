@@ -29,7 +29,7 @@ bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
-We'll be writing more here later.  Please visit 
+We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
 =cut
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 2.34  2004/09/23 20:27:41  dobbs
+  * Bivio::Test::Language::HTTP->verify_local_email() can now check for
+    multiple messages matching the given criteria
+
+  Revision 2.33  2004/09/20 23:22:27  dobbs
+  * removed ECCreditCardPayment.card_number in
+    Bivio::Biz::Model::ECPaymentList
+  * added Bivio::Test::Language::HTTP->clear_cookies(),
+  * renamed Bivio::Test::Language::HTTP->generate_email() to
     generate_local_email()
   * Bivio::Test::Language::HTTP->verify_mail() now accepts compiled
     regular expressions, and also correctly matches recipient email address
