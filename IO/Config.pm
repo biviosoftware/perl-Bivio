@@ -412,6 +412,8 @@ sub _initialize {
 	$file = '/etc/bivio.conf';
     }
     if (defined($file)) {
+#TODO: Should probably die if not readable?
+        warn("$file: not readable\n") unless -r $file;
 	my($actual) = do($file);
 	unless (ref($actual) eq 'HASH') {
 	    -e $file && die("$file: config parse failed: ",
