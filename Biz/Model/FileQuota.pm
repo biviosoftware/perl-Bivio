@@ -72,6 +72,21 @@ use Bivio::Type::PrimaryId;
 
 =cut
 
+=for html <a name="adjust_kbytes"></a>
+
+=head2 adjust_kbytes(int addend)
+
+Increments I<kbytes> by I<addend>.
+
+=cut
+
+sub adjust_kbytes {
+    my($self, $addend) = @_;
+#TODO: Make this atomic (UPDATE SET kbytes = kbytes + $addend WHERE 
+    $self->update({kbytes => $self->get('kbytes') + $addend});
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
@@ -82,13 +97,36 @@ I<auth_id>.
 =cut
 
 sub create {
-    my($self, $values) = @_;
+    my($self, $values) = (shift, shift);
     foreach my $a (qw(kbytes max_kbytes)) {
 	$values->{$a} = 0 unless defined($values->{$a});
     }
     $values->{realm_id} = $self->get_request->get('auth_id')
 	    unless $values->{realm_id};
-    return $self->SUPER::create($values);
+    return $self->SUPER::create($values, @_);
+}
+
+=for html <a name="get_current_or_load"></a>
+
+=head2 static get_current_or_load(Bivio::Agent::Request req) : Bivio::Biz::Model::FileQuota
+
+=head2 static get_current_or_load(Bivio::Agent::Request req, string realm_id) : Bivio::Biz::Model::FileQuota
+
+Returns file quota on the request if same as I<realm_id> (or req's auth_id)
+or loads.
+
+It is critical we try to reuse the same quota instance, because
+multiple operations (read "replace") may occur within the same task.
+
+=cut
+
+sub get_current_or_load {
+    my($proto, $req, $realm_id) = @_;
+    $realm_id ||= $req->get('auth_id');
+    my($self) = $req->unsafe_get(ref($proto));
+    return $self && $self->get('realm_id') eq $realm_id
+	    ? $self
+	    : $proto->new($req)->unauth_load_or_die(realm_id => $realm_id);
 }
 
 =for html <a name="internal_initialize"></a>
