@@ -266,10 +266,10 @@ my($_SELF) = __PACKAGE__->new({
 
 	    # These are required names, which are checked by page.
 	    $fc->group(header_widget => $fc->get_standard_header);
-	    $fc->group(page_widget => $fc->get_standard_page);
+	    $fc->group(header_height => $fc->get_standard_header_height);
 	    $fc->group(logo_widget => $fc->get_standard_logo);
 	    $fc->group(head_widget => $fc->get_standard_head);
-	    $fc->group(header_height => $fc->get_standard_header_height);
+	    $fc->group(page_widget => $fc->get_standard_page);
 	    return;
 	},
     },

@@ -66,9 +66,9 @@ __PACKAGE__->new({
 	    # These are required names, which are checked by page.
 	    _header($fc);
 	    _footer($fc);
+	    $fc->group(head_widget => $fc->get_standard_head);
 	    $fc->group(page_widget => $fc->get_standard_page);
 	    $fc->group(logo_widget => $fc->get_standard_logo);
-	    $fc->group(head_widget => $fc->get_standard_head);
 	    return;
 	},
     },
