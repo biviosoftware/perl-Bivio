@@ -903,11 +903,12 @@ for a description of I<task>'s values.
 =cut
 
 sub link_help {
-    my($self, $label, $task, $font) = @_;
+    my($proto, $label, $task, $font) = @_;
     Bivio::Die->die($label, ": label must be a string")
 	if !defined($label) || ref($label);
 
-    return shift->link($label, ['->format_help_uri', $task], $font);
+    return $proto->link($label, ['->format_help_uri', $task], $font)
+	    ->put(control => $proto->html_value('want_help'));
 }
 
 =for html <a name="link_secure"></a>
@@ -1396,7 +1397,8 @@ sub _link_help {
 	    Bivio::UI::Label->get_simple($label),
 	    ['->format_uri', Bivio::Agent::TaskId::HELP(), undef,
 		undef, $path_info],
-	    'help_hint');
+	    'help_hint')
+	    ->put(control => $proto->html_value('want_help'));
 }
 
 # _use(string class, ....) : array
