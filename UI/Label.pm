@@ -84,6 +84,7 @@ _compile(\%_MAP, [
     ['SAVE_PASSWORD', 'LoginForm.save_password']
         => 'Save Password',
     SECURE_MODE => 'Secure Mode',
+    NAIC_CLUB_ACCOUNTING => 'NAIC Club Accounting(tm)',
 
     # Address labels
     ADDRESS => 'Address',
@@ -381,7 +382,6 @@ _compile(\%_MAP, [
     # Page Titles
     TITLE_HOME_PAGE => 'Home',
     TITLE_SITE => 'bivio',
-
     REALM_CHOOSER => 'Select Site',
 
     # Tasks (sorted alphabetically)
@@ -456,11 +456,13 @@ _compile(\%_MAP, [
 	help_topic => 'Public Access',
     ],
     CLUB_ADMIN_PRIVATE => 'Close Public Access',
+
     CLUB_COMMUNICATIONS_FILE_READ => 'Files',
     CLUB_COMMUNICATIONS_FILE_RENAME => 'Rename File',
     CLUB_COMMUNICATIONS_MESSAGE_LIST => 'Mail',
     CLUB_COMMUNICATIONS_MAIL_LIST => 'Mail',
     CLUB_CREATE => 'Create Club Site',
+    CLUB_CREATED => 'Congratulations!',
     CLUB_HOME => 'Club Site',
     CLUB_ADMIN_SHADOW_MEMBER_INVITE => 'Bring Members Online',
     CLUB_LEGACY_SECURITY_RECONCILIATION => 'Identify Listed Investments',
@@ -475,6 +477,8 @@ _compile(\%_MAP, [
 	'' => 'Edit Opening Balances',
 	help_topic => 'Editing Opening Balances',
     ],
+    CLUB_SETUP_ACCOUNTING => 'Step 2: Setup Accounting',
+    CLUB_SETUP_AGE => 'Step 3: Club History',
     DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
     HELP => 'Help',
