@@ -85,8 +85,6 @@ A map is a named path, e.g.
 
    AccountScraper => ['Bivio::Data::AccountScraper'],
 
-=back
-
 =item delegates : hash_ref []
 
 A map of class names to delegate class names.
