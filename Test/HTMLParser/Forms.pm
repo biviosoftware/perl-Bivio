@@ -182,7 +182,8 @@ sub html_parser_text {
     $text = $self->get('cleaner')->text($text);
     # We never label fields with blanks.  There are occassions where blanks
     # are upcalled just after the actual text.
-    return unless length($text);
+    # Select widgets may have an empty value.
+    return unless length($text) || $fields->{option};
     $fields->{text} .= $text;
 
     return if _have_prefix_label($fields);
@@ -357,7 +358,7 @@ sub _label_option {
 	    ? $fields->{radios}->{$fields->{radio}->{name}}
 	    : $fields->{select};
     my($o) = $fields->{$which};
-    $o->{label} = _text($fields);
+    $o->{label} = _text($fields, $fields->{option} ? 1 : 0);
     _trace($o) if $_TRACE;
     Bivio::Die->die('duplicate ', $which, ': ', $o, ' select: ', $group)
 	if $group->{options}->{$o->{label}};
