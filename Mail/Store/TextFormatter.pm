@@ -55,6 +55,17 @@ use Bivio::IO::Trace;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
+my($_CHAR_MAP) = {
+38 => "&amp;",
+34 => "&quot;",
+60 => "&lt;",
+62 => "&gt;",
+160 =>"&nbsp;",
+162 => "&cent;",
+163 => "&pound;",
+165 => "&yen;",
+169 => "&copy;",
+};
 
 
 =head1 FACTORIES
@@ -96,17 +107,16 @@ sub format_mail {
     my($in_io) = @_;
     my($s);
     my($out_io) = IO::Scalar->new();
-    $out_io->open(\$s);
-    _parse($in_io, $out_io);
+    _parse($in_io, \$s);
 #TODO Don't use IO handles.
     $out_io->close();
-    $in_io->close();
+#    $in_io->close();
     return \$s;
 }
 
 #=PRIVATE METHODS
 
-# _parse(IO::Handle in, IO::Handle out) : 
+# _parse(IO::Handle in, scalar_ref out) : 
 #
 # parses the in handle and writes modified lines
 # (formatted in HTML) to out.
@@ -118,15 +128,15 @@ sub _parse {
     #\r\n for the sake of RFC822 consistency. Kinda not necessary, since
     #we're formatting this for display in HTML, and it is no longer text/plain:
 
-    $out->print("\r\n<!DOCTYPE HTML PUBLIC");
-    $out->print("\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n");
-    $out->print("<HTML><HEAD></HEAD><BODY BGCOLOR=\"#CCCCCC\">");
+    $$out .= "\r\n<!DOCTYPE HTML PUBLIC";
+    $$out .= "\"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
+    $$out .= "<HTML><HEAD></HEAD><BODY BGCOLOR=\"#CCCCCC\">";
     my $s='';
     while(!$in->eof){
 	$s .= $in->getline();
     }
     _subparse(\$s, $out);
-    $out->print("</BODY></HTML>");
+    $$out .= "</BODY></HTML>";
     return;
 }
 
@@ -141,25 +151,13 @@ sub _parse_line {
     return "" unless ($len > 0);
     my $newline = ();
     my $res = '';
-#TODO make this a static data structure.    
-    my $map = {
-	38 => "&amp;",
-	34 => "&quot;",
-	60 => "&lt;",
-	62 => "&gt;",
-	160 =>"&nbsp;",
-	162 => "&cent;",
-	163 => "&pound;",
-	165 => "&yen;",
-	169 => "&copy;",
-    };
     foreach my $word (@words){
 	if($word =~ /(.*@[a-z]*[A-Z]*\.[a-z]*[A-Z]*)/){
+	    _trace('found email: ' , $word) if $_TRACE;
 	    my $str = $1;
 	    $word =~ s/$str/\<a HREF=mailto:$str\>$str\<\/a\>/;
 	}
 	elsif($word =~ /(http:\/\/.*)/){
-	    print(STDERR "\nmatched: $1");
 	    my $uri = $1;
 	    my $suri = $1;
 	    $suri =~ s/\?/\\?/g;
@@ -171,11 +169,12 @@ sub _parse_line {
 	    $suri =~ s/\?/\\?/g;
 	    $word =~ s/$suri/\<a HREF=$uri\>$uri\<\/a\>/;
 	}
-	my @chars = unpack("a*", $word);
+	$res = '';
+	my @chars = split(//, $word);#unpack("a*", $word);
 	foreach my $x (@chars){
-	    $res = $map->{ord($x)} || next;
+	    $res .= $_CHAR_MAP->{ord($x)} || next;
 	    next if ord($x) < 40 || ord($x) == 127;
-	    $res = '&#'.ord($x).';', next if ord($x) > 127;
+	    $res .= '&#'.ord($x).';', next if ord($x) > 127;
 	}
 	$word = $res if(! $res eq(''));
 	push @$newline, $word;
@@ -202,7 +201,7 @@ sub _parse_paragraph {
     }
     foreach my $line (@lines){
 	$line =~ s/\>/\<BR\>&gt;/g;
-	$out->print( _parse_line($line));
+	$$out .= "\n" . _parse_line($line);
     }
 }
 
