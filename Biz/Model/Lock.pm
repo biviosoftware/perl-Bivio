@@ -10,7 +10,7 @@ Bivio::Biz::Model::Lock - mutual exclusion for an area of a realm
 
 =head1 SYNOPSIS
 
-    Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT;
+    Bivio::Biz::Model::Lock->execute_accounting_import;
 
 =cut
 
@@ -67,7 +67,7 @@ You probably shouldn't be calling this method.  Locks should be acquired as a
 task item.  Put the execute_LOCK_TYPE before any actions or forms in your
 task item list, e.g.
 
-    Bivio::Biz::Model::Lock->execute_ACCOUNTING_IMPORT
+    Bivio::Biz::Model::Lock->execute_accounting_import
 
 =cut
 
@@ -238,8 +238,9 @@ sub release {
 sub _compile {
     foreach my $t (Bivio::Type::Lock->get_list) {
 	my($n) = $t->get_name;
+	my($ln) = lc($n);
 	eval(<<"EOF") || die($@);
-        sub execute_$n {
+        sub execute_$ln {
 	    my(undef, \$req) = \@_;
             return __PACKAGE__->execute(\$req, Bivio::Type::Lock::$n());
         }
