@@ -110,7 +110,7 @@ __PACKAGE__->new({
 	    my($ss) = 'verdana,arial,sans-serif';
 	    $comp->create_group([$ss, 'celebrity_box_title'],
 		    'celebrity_box_title');
-	    $comp->create_group([$ss, 'profile_box_title'],
+	    $comp->create_group([$ss, 'profile_box_title', 'strong'],
 		    'profile_box_title');
 	    $comp->create_group([$ss, 'celebrity_disclaimer', 'small'],
 		    'celebrity_disclaimer');
