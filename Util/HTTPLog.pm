@@ -232,6 +232,9 @@ sub _initialize {
 	    'Bivio::DieCode::TOO_MANY:.*::Biz::Model::FileTreeList',
 	    "can't login as shadow user",
 	    'Bivio::Data::EW::ClubImporter::_parse_tax_id.*changed to',
+	    "MemberAllocationList.*report_date isn't on year-end",
+	    'EW::ClubImporter::.*incorrect imported allocations',
+	    "Request::warn.*couldn't adjust, difference too great,",
 	   );
     # Value is sent to the pager if error_count is exceeded
     $_ERROR_REGEX = join('|',
