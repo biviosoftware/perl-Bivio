@@ -8,6 +8,10 @@ $Bivio::Type::LongText::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 Bivio::Type::LongText - longer (4000 char) version of Text
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::LongText;
