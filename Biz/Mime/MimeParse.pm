@@ -27,14 +27,15 @@ use Bivio::UNIVERSAL;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Mime::MimeParse> is a simple MIME parsing engine.
-It takes a MailIncoming object, and parses out the MIME parts.
-Additionally, it creates a keyword hash of all words found in all
-text/plain MIME parts. Ultimately, it will also parse HTML
-parts.
+It takes a MailIncoming object, and recursively parses out the
+MIME parts. Additionally, it creates a keyword hash of all
+words found in all text/plain MIME parts.
+Ultimately, it will also parse HTML parts.
 
 =cut
 
 #=IMPORTS
+use Bivio::IO::Config;
 use Bivio::File::Client;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
@@ -47,6 +48,9 @@ use MIME::Parser;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
+Bivio::IO::Config->register({
+    'file_server' => Bivio::IO::Config->REQUIRED,
+});
 
 my($_FILE_CLIENT);
 
@@ -63,7 +67,7 @@ my($_FILE_CLIENT);
 
 sub new {
     my($proto, $mailincoming, $filename, $fclient) = @_;
-    $_FILE_CLIENT = $fclient;
+#    $_FILE_CLIENT = $fclient;
     my($self) = &Bivio::UNIVERSAL::new($proto);
     my($parser) = MIME::Parser->new(output_to_core => 'ALL');
     my(%keywords) = (); #accumulates keywords parsed from text/plain message parts.
@@ -76,9 +80,23 @@ sub new {
     return $self;
 }
 
-=head1 METHODS
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item file_server : string (required)
+
+=back
 
 =cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_FILE_CLIENT = Bivio::File::Client->new($cfg->{file_server});
+    return;
+}
 
 =for html <a name="parse"></a>
 
@@ -107,7 +125,7 @@ sub parse {
     # now extract all the mime attachments
     &_trace('extracting MIME attachments for mail message. File: ', $filename) if $_TRACE;
     # the second field is the file "extension". For the main message part, this should
-    # be undef since there is no .0, .1, .0.1 suffix
+    # be undef since there is no _0, _1, _0_1 suffix
     _extract_mime($entity, $filename, undef, $keywords);
 
     &_trace('getting all the keywords we found...') if $_TRACE;
@@ -140,7 +158,7 @@ sub _extract_mime {
     }
     _trace('filename: ', $filename, ' ext: ', $ext) if $_TRACE;
     _parse_mime($entity, $keywords); #parses keywords only if this is text/plain
-    $filename .= $ext;
+    $filename .= $ext || "";
     _trace('filename after concat: ', $filename) if $_TRACE;
     
 
