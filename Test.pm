@@ -182,10 +182,44 @@ See L<compute_params|"compute_params">
 
 See L<create_object|"create_object">
 
+=item method : any (method attribute)
+
+Name of the method to call in the method group.  The following
+two are equivalent:
+
+    {
+        method => 'my_method',
+    } => [
+        <cases>,
+    ],
+
+and
+
+    my_method => [
+        <cases>,
+    ],
+
 =item method_is_autoloaded : boolean [0]
 
 By default, an object must implement the methods in the test cases. For
 AUTOLOAD cases, set this option to true.
+
+=item object : any (object attribute)
+
+Used as the object, to create the object, or as params to
+L<default_create_object|"default_create_object">.  The following
+two are equivalent:
+
+    {
+        object => <create arg>,
+    } => [
+        <method groups>,
+    ],
+
+and
+    <creation args> => [
+        <method groups>,
+    ],
 
 =item print : code_ref (global attribute)
 
