@@ -62,17 +62,17 @@ Bivio::Test->new({
 	'petshop-cart' => [
 	    ['Forms', 'remove_0', 'visible', 'Quantity_0',
 		 'value'] => ['1'],
-	    ['Tables', 0, 'headings', 0] => ['Remove'],
-	    ['Tables', 0, 'rows', 0, 1] => ['EST-6'],
-	    ['Tables', 0, 'rows', 0, 2] => ['Male Adult Corgi'],
-	    ['Tables', 0, 'rows', 0, 5] => ['1'],
-	    ['Tables', 0, 'rows', 1, 1] => ['Total:'],
-	    ['Tables', 0, 'rows', 1, 6] => ['18.50'],
+	    ['Tables', 'Remove', 'headings', 0] => ['Remove'],
+	    ['Tables', 'Remove', 'rows', 0, 1] => ['EST-6'],
+	    ['Tables', 'Remove', 'rows', 0, 2] => ['Male Adult Corgi'],
+	    ['Tables', 'Remove', 'rows', 0, 5] => ['1'],
+	    ['Tables', 'Remove', 'rows', 1, 1] => ['Total:'],
+	    ['Tables', 'Remove', 'rows', 1, 6] => ['18.50'],
 	],
     ], [
 	'petshop-checkout' => [
-	    ['Tables', 0, 'headings', 2] => ['In Stock'],
-	    ['Tables', 0, 'rows', 0, 2] => ['yes'],
+	    ['Tables', 'Item ID', 'headings', 2] => ['In Stock'],
+	    ['Tables', 'Item ID', 'rows', 0, 2] => ['yes'],
 	],
     ], [
 	'petshop-cart-error' => [
@@ -87,7 +87,11 @@ Bivio::Test->new({
 	    ['Forms', 'User ID:', 'visible', 'State/Province:', 'name']
 	        => ['f8'],
 	],
-
+    ], [
+	'petshop-item-detail' => [
+	    ['Tables', 'item', 'headings'] => [[]],
+	    ['Tables', 'item', 'rows', 0, 1] => ['18.50'],
+	],
     ]),
     ['login', 'Forms'] => [
 	get_by_field_names => [

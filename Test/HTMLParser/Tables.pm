@@ -147,6 +147,7 @@ Parses the tables.  Called internally.
 sub html_parser_text {
     my($self, $text) = @_;
     my($fields) = $self->[$_IDI];
+    return unless $fields->{in_data_table};
     $fields->{text} .= $fields->{cleaner}->text($text);
     return;
 }
@@ -190,8 +191,9 @@ sub _end_table {
     return unless $fields->{in_data_table} && !--$fields->{in_data_table};
     # Delete totally empty rows (probably separators)
     _delete_empty_rows($fields->{table}->{rows});
-    $fields->{tables}->{scalar(keys(%{$fields->{tables}}))}
-	= $fields->{table};
+    $fields->{tables}->{
+	$fields->{table}->{label} ||= '_anon#' . keys(%{$fields->{tables}})
+    } = $fields->{table};
     _trace($fields->{table}) if $_TRACE;
     delete($fields->{table});
     return;
@@ -211,12 +213,34 @@ sub _end_td {
 
 # _end_th(hash_ref fields)
 #
-# Ends the "th".
+# Ends the "th".  Saves the cell and id for table (if not already there).
 #
 sub _end_th {
     my($fields) = @_;
     return unless $fields->{table};
-    _save_cell($fields, $fields->{table}->{headings});
+    my($t) = _save_cell($fields, $fields->{table}->{headings});
+    $fields->{table}->{label} ||= $t;
+    return;
+}
+
+# _found_table(hash_ref fields, string id)
+#
+# Either at <table id=xxx> or at every <th>.  Returns true if
+# initializes table.
+#
+sub _found_table {
+    my($fields, $id) = @_;
+    unless ($fields->{in_data_table}) {
+	$fields->{in_data_table}++;
+	$fields->{table} = {
+	    headings => [],
+	    rows => [],
+	    label => $id,
+	};
+    }
+    elsif ($fields->{in_data_table} > 1) {
+	die('nested data tables not supported');
+    }
     return;
 }
 
@@ -229,19 +253,21 @@ sub _in_data {
     return ($fields->{in_data_table} || 0) == 1 ? 1 : 0;
 }
 
-# _save_cell(hash_ref fields, array_ref row)
+# _save_cell(hash_ref fields, array_ref row) : string
 #
-# Checks colspan to see if needs filling
+# Checks colspan to see if needs filling.  Returns the found text,
+# if any.
 #
 sub _save_cell {
     my($fields, $row) = @_;
     return
 	unless $fields->{in_data_table} == 1;
-    push(@$row, _text($fields));
-    _trace($row->[$#$row]) if $_TRACE;
+    my($t) = _text($fields);
+    push(@$row, $t);
+    _trace($t) if $_TRACE;
     push(@$row, undef)
 	while --$fields->{colspan} > 0;
-    return;
+    return $t;
 }
 
 # _start_input(hash_ref fields, hash_ref attr)
@@ -254,14 +280,16 @@ sub _start_input {
     return;
 }
 
-# _start_table(hash_ref fields)
+# _start_table(hash_ref fields, hash_ref attr)
 #
 # Increments in_data_table
 #
 sub _start_table {
-    my($fields) = @_;
+    my($fields, $attr) = @_;
     $fields->{in_data_table}++
 	if $fields->{in_data_table};
+    _found_table($fields, $attr->{id})
+	if $attr->{id};
     return;
 }
 
@@ -285,16 +313,7 @@ sub _start_td {
 #
 sub _start_th {
     my($fields, $attrs) = @_;
-    unless ($fields->{in_data_table}) {
-	$fields->{in_data_table}++;
-	$fields->{table} = {
-	    headings => [],
-	    rows => [],
-	};
-    }
-    elsif ($fields->{in_data_table} > 1) {
-	die('nested data tables not handled');
-    }
+    _found_table($fields);
     return _start_td(@_);
 }
 
