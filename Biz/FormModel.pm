@@ -56,6 +56,19 @@ sub SUBMIT_CANCEL {
     return 'Cancel';
 }
 
+=for html <a name="SUBMIT_NEXT"></a>
+
+=head2 SUBMIT_NEXT : string
+
+Returns the Next button value.
+
+=cut
+
+sub SUBMIT_NEXT {
+#TODO: not valid HTML, but can't fix now
+    return 'Next >>';
+}
+
 =for html <a name="SUBMIT_OK"></a>
 
 =head2 SUBMIT_OK : string
@@ -69,8 +82,8 @@ sub SUBMIT_OK {
 }
 
 #=IMPORTS
-use Bivio::IO::Trace;
 use Bivio::Agent::Task;
+use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
 
 #=VARIABLES
@@ -435,7 +448,7 @@ sub _parse_submit {
 	    $req->redirect($req->get('task')->get('next'));
 	    # Does not return
 	}
-	return if $value eq SUBMIT_OK();
+	return if $value eq SUBMIT_OK()	|| $value eq SUBMIT_NEXT();
     }
     $self->die(Bivio::DieCode::CORRUPT_FORM(),
 	    {field => SUBMIT(),
