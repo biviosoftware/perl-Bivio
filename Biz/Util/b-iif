@@ -5,7 +5,7 @@ use strict;
 
 =head1 NAME
 
-b-iif - calls Bivio::Biz::Util:IIF
+b-iif - calls Bivio::Biz::Util::IIF
 
 =head1 RELEASE SCOPE
 
@@ -17,19 +17,19 @@ b-iif [options] command [args...]
 
 =head1 DESCRIPTION
 
-See L<Bivio::Biz::Util:IIF|Bivio::Biz::Util:IIF>
+See L<Bivio::Biz::Util::IIF|Bivio::Biz::Util::IIF>
 
 =cut
 
 #=IMPORTS
-use Bivio::Biz::Util:IIF;
+use Bivio::Biz::Util::IIF;
 
 #=VARIABLES
-Bivio::Biz::Util:IIF->main(@ARGV);
+Bivio::Biz::Util::IIF->main(@ARGV);
 
 =head1 SEE ALSO
 
-Bivio::Biz::Util:IIF
+Bivio::Biz::Util::IIF
 
 =head1 COPYRIGHT
 
