@@ -81,6 +81,11 @@ the query string.
 The list must be loaded.  The page_number and this will be cleared,
 only the order_by and parent will be used.
 
+=item THIS_AS_PARENT
+
+Transform I<this> of the list to a I<parent_id> on the query.
+Otherwise, the same as THIS_DETAIL.
+
 =back
 
 =cut
