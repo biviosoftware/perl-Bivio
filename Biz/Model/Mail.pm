@@ -96,8 +96,9 @@ sub create {
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
 
-    my($subject, $sortable_subject) =
-            _sortable_subject($msg->get_head->get('subject'), $realm_name);
+    my($subject) = $msg->get_head->get('subject');
+    my($sortable_subject);
+    ($subject, $sortable_subject) = _sortable_subject($subject, $realm_name);
 
     my($values) = {
 	realm_id => $realm_id,
@@ -272,8 +273,10 @@ sub cache_parts {
 
         # Allow updating the subject which possibly changed
         my($realm_name) = $req->get('auth_realm')->get('owner')->get('name');
-        my($subject, $sortable_subject) =
-                _sortable_subject($entity->head->get('subject'), $realm_name);
+        my($subject) = $entity->head->get('subject');
+        my($sortable_subject);
+        ($subject, $sortable_subject)
+                = _sortable_subject($subject, $realm_name);
         $self->update({
             subject => $subject,
             subject_sort => $sortable_subject,
