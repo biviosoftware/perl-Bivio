@@ -44,6 +44,7 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
+use Bivio::Type::Email;
 use Bivio::Type::PrimaryId;
 use IO::Scalar;
 use MIME::Parser;
@@ -57,8 +58,8 @@ Bivio::IO::Config->register({
     'file_server' => Bivio::IO::Config->REQUIRED,
 });
 my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
-
 my($_FILE_CLIENT);
+my($_UNKNOWN_ADDRESS);
 
 =head1 METHODS
 
@@ -87,8 +88,13 @@ sub create {
     my($date_time) = $msg->get_date_time() || time;
     my($club_id, $club_name) = $realm_owner->get('realm_id', 'name');
     my($from_email, $from_name) = $msg->get_from;
-    $from_email = $req->format_email('ignore-unknown')
-	    unless defined($from_email);
+    unless (defined($from_email)) {
+	$_UNKNOWN_ADDRESS = $req->format_email(
+		Bivio::Type::Email->IGNORE_PREFIX.'unknown')
+		unless $_UNKNOWN_ADDRESS;
+	$from_email = $_UNKNOWN_ADDRESS;
+    }
+
     defined($from_name) || ($from_name = $from_email);
     my($reply_to_email) = $msg->get_reply_to;
     my($body) = $msg->get_body;

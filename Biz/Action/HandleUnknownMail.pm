@@ -36,8 +36,10 @@ use Bivio::DieCode;
 use Bivio::Biz::Action::ForwardClubMail;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::Club;
+use Bivio::Type::Email;
 
 #=VARIABLES
+my($_IGNORE) = Bivio::Type::Email->IGNORE_PREFIX;
 
 =head1 METHODS
 
@@ -55,6 +57,7 @@ toss, or bounce.
 sub execute {
     my(undef, $req) = @_;
     my($msg) = $req->get('message');
+
     # There should only be one recipient
     my($who) = $msg->get_recipients->[0];
     if ($who =~ /^owner-|-owner$/i) {
@@ -62,10 +65,11 @@ sub execute {
 	$msg->enqueue_send;
 	return;
     }
-    if ($who =~ /^ignore-/i) {
-	# Toss the message
-	return;
-    }
+
+    # Ignore?
+    return if $who =~ /^$_IGNORE/oi;
+
+#TODO: Really should be in Mail::Request and TaskId configuration
     if ($who =~ /^(\w+)-(people|board)$/i) {
 	my($name, $which) = (lc($1), $2);
 	my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);

@@ -36,9 +36,11 @@ use Bivio::SQL::Constraint;
 use Bivio::Type::Email;
 use Bivio::Type::Location;
 use Bivio::Type::PrimaryId;
+use Bivio::Type::Email;
 
 #=VARIABLES
 my($_SHADOW_PREFIX) = '=';
+my($_IGNORE) = Bivio::Type::Email->IGNORE_PREFIX;
 
 =head1 METHODS
 
@@ -71,7 +73,7 @@ returns ''.
 sub format_email {
     my($self) = @_;
     my($email) = $self->get('email');
-    return ($email =~ /^ignore-/) ? '' : $email;
+    return ($email =~ /^$_IGNORE/o) ? '' : $email;
 }
 
 =for html <a name="generate_shadow_email"></a>
@@ -84,7 +86,7 @@ Returns a shadow email address for the specified email / club_id combo.
 
 sub generate_shadow_email {
     my(undef, $email, $club_id) = @_;
-    return 'ignore-'.$_SHADOW_PREFIX.$email.'_'.$club_id;
+    return $_IGNORE.$_SHADOW_PREFIX.$email.'_'.$club_id;
 }
 
 =for html <a name="internal_initialize"></a>
