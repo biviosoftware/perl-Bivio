@@ -319,6 +319,21 @@ sub to_extension {
     return wantarray ? @ext : $ext[0];
 }
 
+=for html <a name="to_header"></a>
+
+=head2 static to_header(string type) : string
+
+Formats I<type> as a MIME header.  If $type is blank or undef, returns
+an empty string.
+
+=cut
+
+sub to_header {
+    my(undef, $type) = @_;
+    return '' unless $type;
+    return 'Content-Type: '.$type."\n";
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
