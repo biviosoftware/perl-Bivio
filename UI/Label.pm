@@ -48,6 +48,7 @@ _compile([
     OLD_PASSWORD => ['Current Password'],
     NEW_PASSWORD => ['New Password'],
     CONFIRM_NEW_PASSWORD => ['Confirm New'],
+    CONFIRM_PASSWORD => ['Confirm'],
     LOGIN => ['Login'],
     SAVE_PASSWORD => ['Save Password', undef, 'LoginForm.save_password'],
     SECURE_MODE => ['Secure Mode'],
@@ -480,11 +481,16 @@ _compile([
 
     # Form Fields
     INVITE_MESSAGE => ['Message'],
+    CREATE_USER_DISPLAY_NAME_IN_TEXT => ['Describe yourself'],
+    CREATE_USER_DISPLAY_NAME => ['Your Name'],
+    CREATE_USER_NAME_IN_TEXT => ['Pick your own User ID and Password'],
 
     # Misc. Features
     NEW_HARDWARE => ['New Computers'],
 
     # Announcements
+    ANNOUNCE_RMIF => ['Rocky Mountain Investors Fair'],
+    ANNOUNCE_EXPO => ['Miami Investment Expo'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
