@@ -81,6 +81,9 @@ Email is set to an ignored value if it doesn't exist.
 The only difference between this method and execute_ok is that
 the user is logged in at that point.
 
+Will not create email if value is
+L<Bivio::Type::Email::IGNORE_PREFIX|Bivio::Type::Email::IGNORE_PREFIX>.
+
 =cut
 
 sub internal_create_models {
@@ -107,7 +110,8 @@ sub internal_create_models {
 	    . '-' . time),
 	location => Bivio::Type::Location->HOME,
 	want_bulletin => 0,
-    });
+    }) unless ($self->unsafe_get('Email.email') || '')
+	eq Bivio::Type::Email->IGNORE_PREFIX;
     $self->new($req, 'RealmUser')->create({
 	realm_id => $user->get('user_id'),
 	user_id => $user->get('user_id'),
