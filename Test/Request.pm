@@ -273,8 +273,8 @@ sub setup_http {
     my($user) = $self->get('auth_user');
     $self->put_durable(
 	uri => '/',
-	path_info => undef,
-	query => undef,
+	path_info => $self->unsafe_get('path_info'),
+	query => $self->unsafe_get('query'),
 	cookie => Bivio::Agent::HTTP::Cookie->new($self, $r),
 	client_addr => $c->remote_ip,
     );
