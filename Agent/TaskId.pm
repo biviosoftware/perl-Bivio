@@ -1728,16 +1728,8 @@ my(@_CFG) = (
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
-        MAIL_RECEIVE_OK
-        178
-        GENERAL
-        DOCUMENT_READ
-        !
-        Bivio::UI::Mail::Receive
-    )],
-    [qw(
         MAIL_RECEIVE_NO_RESOURCES
-        179
+        178
         GENERAL
         DOCUMENT_READ
         !
@@ -1745,61 +1737,79 @@ my(@_CFG) = (
     )],
     [qw(
         MAIL_RECEIVE_NOT_FOUND
-        180
+        179
         GENERAL
         DOCUMENT_READ
         !
         Bivio::UI::HTML::ErrorPages->execute_mail_receive_not_found
     )],
     [qw(
-        CLUB_MAIL_POST
+        USER_MAIL_RECEIVE
+        180
+        USER
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::UserMailPeople
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+    )],
+    [qw(
+        CLUB_MAIL_RECEIVE
         181
         CLUB
         MAIL_WRITE
-        ?/mail/post
-        Bivio::Biz::Model::MailPostForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Club::MailPost
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        !
+        Bivio::Biz::Action::ClubMailBoard
+        Bivio::Biz::Action::ClubMailMembers
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
-        CELEBRITY_MAIL_POST
+        CLUB_MAIL_BOARD_RECEIVE
         182
-        PROXY
-        DOCUMENT_READ
-        pub/?/post
-        Bivio::Biz::Model::MailPostForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Celebrity::MailPost
-        next=CELEBRITY_MESSAGE_LIST
+        CLUB
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailBoard
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
-        CLUB_MAIL_REPLY
+        CLUB_MAIL_MEMBERS_RECEIVE
         183
         CLUB
-        MAIL_WRITE&MAIL_READ
-        ?/mail/reply
-        Bivio::Biz::Model::MailList
-        Bivio::Biz::Model::MailPartList->execute_load_all
-        Bivio::Biz::Model::MailReplyForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Club::MailReply
-        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailMembers
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
     [qw(
-        CELEBRITY_MAIL_REPLY
+        CLUB_MAIL_PEOPLE_RECEIVE
         184
-        PROXY
-        DOCUMENT_READ
-        pub/?/reply
-        Bivio::Biz::Model::MailList
-        Bivio::Biz::Model::MailPartList->execute_load_all
-        Bivio::Biz::Model::MailReplyForm
-        Bivio::Biz::Model::MailToList->execute_load_all
-        Bivio::UI::HTML::Celebrity::MailReply
-        next=CELEBRITY_MESSAGE_LIST
+        CLUB
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailPeople
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
-# 185
+    [qw(
+        CLUB_MAIL_ADMIN_RECEIVE
+        185
+        CLUB
+        MAIL_WRITE
+        !
+        Bivio::Biz::Action::ClubMailAdmin
+        Bivio::UI::Mail::Receive
+        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
+        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
+    )],
     [qw(
         CLUB_MEMBER_OPEN_BALANCE
         186
@@ -1921,8 +1931,56 @@ my(@_CFG) = (
         next=CLUB_ACCOUNTING_REPORT_MEMBER_STATUS
       )],
     [qw(
-        CLUB_MAIL_FORWARD
+        CLUB_MAIL_POST
         197
+        CLUB
+        MAIL_WRITE
+        ?/mail/post
+        Bivio::Biz::Model::MailPostForm
+        Bivio::Biz::Model::MailToList->execute_load_all
+        Bivio::UI::HTML::Club::MailPost
+        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
+    [qw(
+        CELEBRITY_MAIL_POST
+        198
+        PROXY
+        DOCUMENT_READ
+        pub/?/post
+        Bivio::Biz::Model::MailPostForm
+        Bivio::Biz::Model::MailToList->execute_load_all
+        Bivio::UI::HTML::Celebrity::MailPost
+        next=CELEBRITY_MESSAGE_LIST
+    )],
+    [qw(
+        CLUB_MAIL_REPLY
+        199
+        CLUB
+        MAIL_WRITE&MAIL_READ
+        ?/mail/reply
+        Bivio::Biz::Model::MailList
+        Bivio::Biz::Model::MailPartList->execute_load_all
+        Bivio::Biz::Model::MailReplyForm
+        Bivio::Biz::Model::MailToList->execute_load_all
+        Bivio::UI::HTML::Club::MailReply
+        next=CLUB_COMMUNICATIONS_MESSAGE_LIST
+    )],
+    [qw(
+        CELEBRITY_MAIL_REPLY
+        200
+        PROXY
+        DOCUMENT_READ
+        pub/?/reply
+        Bivio::Biz::Model::MailList
+        Bivio::Biz::Model::MailPartList->execute_load_all
+        Bivio::Biz::Model::MailReplyForm
+        Bivio::Biz::Model::MailToList->execute_load_all
+        Bivio::UI::HTML::Celebrity::MailReply
+        next=CELEBRITY_MESSAGE_LIST
+    )],
+    [qw(
+        CLUB_MAIL_FORWARD
+        201
         CLUB
         MAIL_FORWARD
         ?/mail/forward
@@ -1933,7 +1991,7 @@ my(@_CFG) = (
     )],
     [qw(
         CELEBRITY_MAIL_FORWARD
-        198
+        202
         PROXY
         MAIL_FORWARD
         pub/?/forward
