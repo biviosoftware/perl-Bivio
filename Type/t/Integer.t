@@ -27,6 +27,7 @@ my(@tests) = (
 	can_be_negative => 1,
 	from_literal => [
 	    undef, undef,
+	    '', undef,
 	    '00009' => '9',
 	    '+00009' => '9',
 	    '-00009' => '-9',
@@ -66,7 +67,7 @@ while (@tests) {
 	    next;
 	}
 	my(@v) = @$v;
-	foreach (@v) {
+	while (@v) {
 	    my($case, $res) = (shift(@v), shift(@v));
 	    t($class, $method, $case, $res);
 	}
