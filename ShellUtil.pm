@@ -1128,7 +1128,7 @@ sub _setup_for_main {
 	auth_id => undef,
 	auth_user_id => undef,
 	task_id => Bivio::Agent::TaskId::SHELL_UTIL(),
-	timezone => Bivio::Type::DateTime->get_local_timezone(),
+	timezone => Bivio::Type::DateTime->timezone(),
     }));
     $self->set_realm_and_user(_parse_realm_id($self, 'realm'),
 	_parse_realm_id($self, 'user'));
