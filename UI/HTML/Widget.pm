@@ -1094,17 +1094,22 @@ sub mailto {
 
 =for html <a name="page_text"></a>
 
-=head2 static page_text(any value) : Bivio::UI::HTML::Widget::String
+=head2 static page_text(array_ref values) : Bivio::UI::HTML::Widget::String
 
 Returns a String widget with I<string_font> C<page_text> and
 the html is NOT escaped.  Used for long strings which contain
-html.
+html.  I<value> will be enclosed in a join if it contains more
+than one element.
 
 =cut
 
 sub page_text {
     my($proto, $value) = @_;
-    return $proto->string($value, 'page_text')->put(escape_html => 0);
+    die('value must be an array_ref') unless ref($value) eq 'ARRAY';
+    return $proto->string(
+	    int(@$value) == 1 ? $value->[0] : $proto->join($value),
+	    'page_text')
+	    ->put(escape_html => 0);
 }
 
 =for html <a name="realm_name"></a>
