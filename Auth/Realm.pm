@@ -320,6 +320,20 @@ sub is_default {
     return $self->get('owner')->is_default;
 }
 
+=for html <a name="is_default_id"></a>
+
+=head2 static is_default_id(string id) : boolean
+
+Returns true if I<id> is a default realm_id.
+
+=cut
+
+sub is_default_id {
+    my(undef, $id) = @_;
+    # At least info is in one place...
+    return $id < Bivio::Type::PrimaryId->get_min ? 1 : 0;
+}
+
 #=PRIVATE METHODS
 
 # _initialize()
