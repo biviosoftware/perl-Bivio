@@ -222,7 +222,7 @@ use strict;
     'Bivio::IO::Alert' => {
 # Doesn't work with Bivio::Die in the way
 	stack_trace_die => 0,
-	stack_trace_warn => 0,
+	stack_trace_warn => 1,
 	want_stderr => 1,
 	want_pid => 1,
 # This doesn't work right now.
