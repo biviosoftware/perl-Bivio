@@ -34,7 +34,7 @@ C<Bivio::PetShop::Agent::Cookie> manages cookies arriving via HTTP and returns
 cookies to the user.
 
 Cookies are persistent in this demo.  A real shop probably wouldn't always
-"stave password", but for our purposes this simplifies the implementation.
+"save password", but for our purposes this simplifies the implementation.
 
 =cut
 
