@@ -443,9 +443,12 @@ sub get_context_from_request {
 
     # Construct a new context from existing state in request
     my($res) = {};
-    foreach my $c (qw(uri form query form_context)) {
+    foreach my $c (qw(form query form_context)) {
 	$res->{$c} = $req->unsafe_get($c);
     }
+    $res->{next} = $req->unsafe_get('uri');
+    my($cancel) = $req->get('task')->unsafe_get('cancel');
+    $res->{cancel} = $req->format_uri($cancel) if $cancel;
     $res->{form_model} = ref($model);
 
     # Fix up file fields if any
@@ -1051,12 +1054,11 @@ sub _initialize_context {
 
     my($c) = $req->unsafe_get('form_context');
     unless ($c) {
-	my($next) = $req->get('task')->get('next');
-	my($form_model) = Bivio::Agent::Task->get_by_id($next)
-		->get('form_model');
+	my($task) = $req->get('task');
 	$c = {
-	    form_model => $form_model,
-	    uri => $req->format_stateless_uri($next),
+	    form_model => undef,
+	    next => $req->format_stateless_uri($task->get('next')),
+	    cancel => $req->format_stateless_uri($task->get('cancel')),
 	    query => undef,
 	    # Only create a form if there is a form_model on next task
 	    form => undef,
@@ -1313,11 +1315,13 @@ sub _redirect {
     my($c) = $fields->{context};
     my($f) = $c->{form};
     unless ($f) {
-	_trace('no form, client_redirect: ', $c->{uri},
+	# There may not be a next
+	$c->{$which} ||= $c->{next};
+	_trace('no form, client_redirect: ', $c->{$which},
 		'?', $c->{query}) if $_TRACE;
 	# If there is no form, redirect to client so looks
 	# better.
-	$req->client_redirect(@{$c}{qw(uri query)});
+	$req->client_redirect($c->{$which}, $c->{'query'});
 	# DOES NOT RETURN
     }
 
@@ -1325,7 +1329,10 @@ sub _redirect {
     # client redirect (no way to pass form state (reasonably)).
     # Indicate to the next form that this is a SUBMIT_UNWIND
     # Make sure you use that form's SUBMIT_UNWIND button.
-    $f->{$self->SUBMIT} = $c->{form_model}->SUBMIT_UNWIND;
+    # In the cancel case, we chain the cancels.
+    $f->{$c->{form_model}->SUBMIT} = $which eq 'cancel'
+	    ? $c->{form_model}->SUBMIT_CANCEL
+	    : $c->{form_model}->SUBMIT_UNWIND;
 
     # Ensure this form_model is seen as the redirect model
     # by get_context_from_request and set a flag so it
@@ -1334,9 +1341,9 @@ sub _redirect {
     $fields->{redirecting} = 1;
 
     # Redirect calls us back in get_context_from_request
-    _trace('have form, server_redirect: ', $c->{uri},
+    _trace('have form, server_redirect: ', $c->{next},
 	    '?', $c->{query}) if $_TRACE;
-    $req->server_redirect(@{$c}{qw(uri query)}, $f);
+    $req->server_redirect($c->{next}, $c->{query}, $f);
     # DOES NOT RETURN
 }
 
