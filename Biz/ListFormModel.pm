@@ -230,6 +230,18 @@ sub format_uri {
     return $self->get_list_model->format_uri(@_);
 }
 
+=for html <a name="format_uri_for_sort"></a>
+
+=head2 format_uri_for_sort() : 
+
+Proxy to ListModel::format_uri_for_sort, see there for details.
+
+=cut
+
+sub format_uri_for_sort {
+    return shift->get_list_model->format_uri_for_sort(@_);
+}
+
 =for html <a name="get_field_info"></a>
 
 =head2 get_field_info(string field, string attr) : any
@@ -291,6 +303,20 @@ of the list model.
 
 sub get_list_model {
     return shift->{$_PACKAGE}->{list_model};
+}
+
+=for html <a name="get_query"></a>
+
+=head2 get_query() : Bivio::SQL::ListQuery
+
+Returns the
+L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>
+associated with the list model.
+
+=cut
+
+sub get_query {
+    return shift->get_list_model->get_query;
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -524,7 +550,7 @@ L<validate_end|"validate_end">.
 sub validate {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($lm) = _execute_init($self);
+    my($lm) = $self->get_list_model;
 
     # For each row, validate primary_key values are match list_model's exactly
     my($primary_key) = $lm->get_info('primary_key');
