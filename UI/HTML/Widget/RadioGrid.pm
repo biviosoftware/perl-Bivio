@@ -102,7 +102,7 @@ sub new {
     # Only allow Enum right now
     my($items);
     if (UNIVERSAL::isa($choices, 'Bivio::Type::Enum')) {
-	_load_items_from_enum($self, $choices);
+	$items = _load_items_from_enum($self, $choices);
     }
     elsif ($choices->isa('Bivio::TypeValue')
 	   && $choices->get('type')->isa('Bivio::Type::Enum')
