@@ -54,6 +54,10 @@ See L<Bivio::UI::Color|Bivio::UI::Color>.
 
 The value to be passed to the C<BORDER> attributes of the C<TABLE> tag.
 
+=item end_tag : boolean [true]
+
+If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
+
 =item expand : boolean [false]
 
 If true, the table will C<WIDTH> will be C<100%>.
@@ -65,6 +69,10 @@ The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
 =item space : number [0]
 
 The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
+
+=item start_tag : boolean [true]
+
+If false, this widget won't render the C<&gt;TABLE&lt;>tag.
 
 =item values : array_ref (required)
 
@@ -404,15 +412,17 @@ sub layout_buttons_row_major {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
-
-    my($start) = length($$buffer);
-    $$buffer .= $fields->{prefix};
-    my($bg) = $self->unsafe_get('bgcolor');
     my($req) = $source->get_request;
-    $$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req) if $bg;
-    $$buffer .= ' width="'.$source->get_widget_value(@{$fields->{width}}).'"'
-	    if $fields->{width};
-    $$buffer .= '>';
+
+    if ($self->get_or_default('start_tag', 1)) {
+	$$buffer .= $fields->{prefix};
+	my($bg) = $self->unsafe_get('bgcolor');
+	$$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req) if $bg;
+	$$buffer .= ' width="'
+	    .$source->get_widget_value(@{$fields->{width}}).'"'
+		if $fields->{width};
+	$$buffer .= '>';
+    }
 
     my($r, $c);
  ROW: foreach $r (@{$fields->{rows}}) {
@@ -443,7 +453,8 @@ sub render {
 	# If row is completely empty, don't render it.
 	$$buffer .= $row unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
     }
-    $$buffer .= $fields->{suffix};
+    $$buffer .= $fields->{suffix}
+	if $self->get_or_default('end_tag', 1);
     return;
 }
 
