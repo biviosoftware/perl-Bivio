@@ -48,38 +48,55 @@ use Bivio::Type::RealmName;
 #=VARIABLES
 my($_ACTIVE_ROLES) = '';
 Bivio::Auth::RoleSet->set(\$_ACTIVE_ROLES,
-	Bivio::Auth::Role::GUEST(),
-	Bivio::Auth::Role::MEMBER(),
-	Bivio::Auth::Role::ACCOUNTANT(),
-	Bivio::Auth::Role::ADMINISTRATOR(),
-	);
+    Bivio::Auth::Role->GUEST,
+    Bivio::Auth::Role->MEMBER,
+    Bivio::Auth::Role->ACCOUNTANT,
+    Bivio::Auth::Role->ADMINISTRATOR,
+   );
 my($_MEMBER_ROLES) = '';
 Bivio::Auth::RoleSet->set(\$_MEMBER_ROLES,
-	Bivio::Auth::Role::MEMBER(),
-	Bivio::Auth::Role::ACCOUNTANT(),
-	Bivio::Auth::Role::ADMINISTRATOR(),
-       );
+    Bivio::Auth::Role->MEMBER,
+    Bivio::Auth::Role->ACCOUNTANT,
+    Bivio::Auth::Role->ADMINISTRATOR,
+   );
+my($_OFFICER_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_OFFICER_ROLES,
+    Bivio::Auth::Role->ACCOUNTANT,
+    Bivio::Auth::Role->ADMINISTRATOR,
+   );
 
 my($_MEMBER_OR_WITHDRAWN_ROLES) = '';
 Bivio::Auth::RoleSet->set(\$_MEMBER_OR_WITHDRAWN_ROLES,
-	Bivio::Auth::Role::WITHDRAWN(),
-	Bivio::Auth::Role::MEMBER(),
-	Bivio::Auth::Role::ACCOUNTANT(),
-	Bivio::Auth::Role::ADMINISTRATOR(),
-       );
+    Bivio::Auth::Role->WITHDRAWN,
+    Bivio::Auth::Role->MEMBER,
+    Bivio::Auth::Role->ACCOUNTANT,
+    Bivio::Auth::Role->ADMINISTRATOR,
+   );
 my($_IS_SOLE_ADMIN_QUERY) = "SELECT count(*)
-	    FROM realm_owner_t, realm_user_t
-	    WHERE realm_user_t.realm_id = ?
-	    AND user_id != ?
-	    AND role = "
-	    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
-	    AND realm_user_t.user_id = realm_owner_t.realm_id
-	    AND realm_owner_t.name NOT LIKE '"
-	    .Bivio::Type::RealmName->OFFLINE_PREFIX."\%'";
+    FROM realm_owner_t, realm_user_t
+    WHERE realm_user_t.realm_id = ?
+    AND user_id != ?
+    AND role = "
+    .Bivio::Auth::Role::ADMINISTRATOR->as_sql_param."
+    AND realm_user_t.user_id = realm_owner_t.realm_id
+    AND realm_owner_t.name NOT LIKE '"
+    .Bivio::Type::RealmName->OFFLINE_PREFIX."\%'";
 
 =head1 CONSTANTS
 
 =cut
+
+=for html <a name="OFFICER_ROLES"></a>
+
+=head2 OFFICER_ROLES : string
+
+Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
+
+=cut
+
+sub OFFICER_ROLES {
+    return $_OFFICER_ROLES;
+}
 
 =for html <a name="VALID_ACTIVE_ROLES"></a>
 
