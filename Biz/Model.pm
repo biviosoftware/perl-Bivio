@@ -308,6 +308,27 @@ sub get_model {
     return $model;
 }
 
+=for html <a name="put_on_request"></a>
+
+=head2 put_on_request()
+
+Adds this instance to the request, stored with the key
+'Model.<simple package name>'.
+
+=cut
+
+sub put_on_request {
+    my($self) = @_;
+    my($req) = $self->unsafe_get_request;
+    return unless $req;
+
+    $req->put('Model.'.$self->simple_package_name => $self);
+
+    # for backward compatibility
+    $req->put(ref($self) => $self);
+    return;
+}
+
 =for html <a name="throw_die"></a>
 
 =head2 static throw_die(Bivio::Type::Enum code, hash_ref attrs, string package, string file, int line)
@@ -568,6 +589,7 @@ sub unsafe_get_request {
     $req = $self->{$_PACKAGE}->{request} if ref($self);
     # DON'T SET the request for future calls, because this may
     # be an anonymous model or a singleton.
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Request');
     return $req ? $req : Bivio::Agent::Request->get_current;
 }
 
