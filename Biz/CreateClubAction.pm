@@ -71,22 +71,22 @@ sub execute {
     eval {
 	my($values) = &_create_field_map($club, $req);
 
-	#TODO: need to have the db assign the id as a sequence
+#TODO: need to have the db assign the id as a sequence
 	$values->{'id'} = int(rand(999999)) + 1;
 	$values->{'bytes_in_use'} = 0;
 	$values->{'bytes_max'} = 8 * 1024 * 1024;
 	$club->create($values);
 
-	if ($club->get_status()->is_OK()) {
+	if ($club->get_status()->is_ok()) {
 
 	    # create the club's admin user
 	    if ($req->get_arg('admin')) {
 		my($club_user) = Bivio::Biz::ClubUser->new();
 		$club_user->create({
-		    club => $club->get('id'),
-		    user => $req->get_arg('admin'),
-		    role => 0,
-		    email_mode => 1
+		    'club' => $club->get('id'),
+		    'user_' => $req->get_arg('admin'),
+		    'role' => 0,
+		    'email_mode' => 1
 		});
 
 		# need to add errors to club, it is what is sent through
@@ -106,7 +106,7 @@ sub execute {
 	die($@);
     }
 
-    if ($club->get_status()->is_OK()) {
+    if ($club->get_status()->is_ok()) {
 	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }

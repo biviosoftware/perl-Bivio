@@ -71,11 +71,11 @@ sub new {
     }
 
     $self->{$_PACKAGE} = {
-	select => undef,
-	count => 'select count(*) from '.$table_name.' ',
-	col_field_count => $col_field_count,
-	col_map => $col_map,
-	table_name => $table_name
+	'select' => undef,
+	'count' => 'select count(*) from '.$table_name.' ',
+	'col_field_count' => $col_field_count,
+	'col_map' => $col_map,
+	'table_name' => $table_name
     };
     return $self;
 }
@@ -125,7 +125,7 @@ sub find {
 	}
 
 	my($col) = 0;
-	for (my($j) = 0; $j < scalar(@$col_field_count); $j++) {
+	for (my($j) = 0; $j < int(@$col_field_count); $j++) {
 	    my($val);
 	    if ($col_field_count->[$j] == 1 ) {
 		$val = &_convert_value($types, $col, $row->[$col]);
@@ -152,7 +152,7 @@ sub find {
 	Bivio::Biz::SqlConnection->increment_db_time(
 		Bivio::Util::time_delta_in_seconds($start_time));
     }
-    return $model->get_status()->is_OK();
+    return $model->get_status()->is_ok();
 }
 
 =for html <a name="get_result_set_size"></a>
@@ -215,7 +215,7 @@ sub initialize {
     $fields->{types} = $types;
 
     my($select) = 'select ';
-    for(my($i) = 0; $i < scalar(@$names); $i++) {
+    for(my($i) = 0; $i < int(@$names); $i++) {
 	if ($types->[$i] == Bivio::Biz::SqlSupport::SQL_DATE_TYPE()) {
 	    $select .= 'TO_CHAR('.$names->[$i].",'"
 		    .Bivio::Biz::SqlSupport::DATE_FORMAT()."'),";
@@ -232,6 +232,7 @@ sub initialize {
 
     $select .= ' from '.$fields->{table_name}.' ';
     $fields->{select} = $select;
+    return;
 }
 
 #=PRIVATE METHODS

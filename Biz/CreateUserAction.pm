@@ -82,14 +82,15 @@ sub execute {
     }
 
     eval {
+#TODO: need to have the db assign the id as a sequence
+	$req->put_arg('id', int(rand(999999)) + 1);
+
 	my($values) = &_create_field_map($user, $req);
 
-	#TODO: need to have the db assign the id as a sequence
-	$values->{'id'} = int(rand(999999)) + 1;
 	$user->create($values);
-	if ($user->get_status()->is_OK()) {
+	if ($user->get_status()->is_ok()) {
 
-	    $req->put_arg('user', $user->get('id'));
+	    $req->put_arg('user_', $user->get('id'));
 	    my($demographics) = Bivio::Biz::UserDemographics->new();
 	    $values = &_create_field_map($demographics, $req);
 
@@ -100,7 +101,7 @@ sub execute {
 		$user->get_status()->add_error($_);
 	    }
 
-	    if ($user->get_status()->is_OK()) {
+	    if ($user->get_status()->is_ok()) {
 		# the same for email
 		my($email) = Bivio::Biz::UserEmail->new();
 		$values = &_create_field_map($email, $req);
@@ -114,23 +115,23 @@ sub execute {
 
 	    #HACK: ignoring for club setup
 	    # add the user to the club if necessary
-	    if ($user->get_status()->is_OK()
+	    if ($user->get_status()->is_ok()
 		    && $req->get_target_name() ne 'club') {
 
-		#TODO: need cache of club, but where?
+#TODO: need cache of club, but where?
 		my($club) = Bivio::Biz::Club->new();
 		$club->find(Bivio::Biz::FindParams->new(
-			{name => $req->get_target_name()}));
+			{'name' => $req->get_target_name()}));
 
 		# not checking find result, should have succeeded or
 		# it wouldn't be this far
 		my($club_user) = Bivio::Biz::ClubUser->new();
 
 		$club_user->create({
-		    club => $club->get('id'),
-		    user => $user->get('id'),
-		    role => $req->get_arg('role'),
-		    email_mode => 1
+		    'club' => $club->get('id'),
+		    'user_' => $user->get('id'),
+		    'role' => $req->get_arg('role'),
+		    'email_mode' => 1
 		});
 
 		foreach (@{$club_user->get_status()->get_errors()}) {
@@ -143,13 +144,10 @@ sub execute {
     # check for exceptions
     if ($@) {
 	Bivio::Biz::SqlConnection->rollback();
-	&_trace($@);
-
-	# probably want to raise an alert - something crashed.
-	return 0;
+	die($@);
     }
 
-    if ($user->get_status()->is_OK()) {
+    if ($user->get_status()->is_ok()) {
 	Bivio::Biz::SqlConnection->commit();
 	return 1;
     }
