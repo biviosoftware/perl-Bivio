@@ -36,10 +36,6 @@ use Bivio::IO::Config;
 use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 
-# upgrade imports
-use Bivio::Type::EntryClass;
-use Bivio::Type::EntryType;
-
 #=VARIABLES
 
 sub main {
@@ -54,10 +50,9 @@ sub main {
 
     my($req) = Bivio::Agent::Request->new();
     my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
-#TODO: uncomment this for subsequent versions, the table isn't there yet.
-#    if ($upgrade->unauth_load(version => $VERSION)) {
-#	_usage("$VERSION already ran");
-#    }
+    if ($upgrade->unauth_load(version => $VERSION)) {
+	_usage("$VERSION already ran");
+    }
 
     # Sometimes there may be multiple upgrades and they need to be installed at
     # different times (on test system).  Probably good to keep this flexibility
@@ -110,143 +105,20 @@ sub _do {
 #
 sub _upgrade {
 
+    use Bivio::SQL::ClubImporter;
+
     #
-    # create the db_upgrate_t table first in case _upgrade was already run
+    # Determine valuation dates for easyware valuations.
     #
+    my($sth) = _do('
+            SELECT realm_id from realm_owner_t
+            /');
 
-    Bivio::SQL::Connection->execute('
-            CREATE TABLE db_upgrade_t (
-              version VARCHAR2(30),
-              run_date_time DATE
-            )
-            storage (initial 10m next 10m minextents 1
-              maxextents 500 pctincrease 0)
-            tablespace realm_data', []);
-    Bivio::SQL::Connection->execute('
-            ALTER TABLE db_upgrade_t add primary key(version)
-              using index tablespace realm_indx
-              storage (initial 10m NEXT 10m minextents 1
-                maxextents 500 pctincrease 0)', []);
-    Bivio::SQL::Connection->execute('
-            ALTER TABLE db_upgrade_t modify run_date_time not null', []);
-
-
-    # Fixes the transaction source class for sell entries. I messed this up
-    # in Bivio::Biz::Model::InstrumentSellForm2 which was setting it as
-    # a MEMBER source class. Fixed now.
-
-    # get all sell entries
-    my($sth) = Bivio::SQL::Connection->execute('
-            SELECT realm_transaction_t.realm_transaction_id,
-                realm_transaction_t.source_class
-            FROM realm_transaction_t, entry_t
-            WHERE realm_transaction_t.realm_transaction_id
-                = entry_t.realm_transaction_id
-            AND entry_t.entry_type=?',
-	    [Bivio::Type::EntryType::INSTRUMENT_SELL->as_int]);
-    # update transaction source_class if it isn't already INSTRUMENT
     my($row);
-    while ($row = $sth->fetchrow_arrayref) {
-	my($tran_id, $class) = @$row;
-	if ($class != Bivio::Type::EntryClass::INSTRUMENT->as_int) {
-	    Bivio::SQL::Connection->execute('
-                    UPDATE realm_transaction_t
-                    SET source_class=?
-                    WHERE realm_transaction_id=?',
-		    [Bivio::Type::EntryClass::INSTRUMENT->as_int,
-			    $tran_id]);
-	}
+    while($row = $sth->fetchrow_arrayref) {
+	my($id) = $row->[0];
+	Bivio::SQL::ClubImporter->generate_valuation_dates($id);
     }
-
-    #
-    # moves remarks from entries to transactions
-    #
-
-    my(%UPDATED_TRANSACTION_IDS) = ();
-
-    # get all entries
-    $sth = Bivio::SQL::Connection->execute('
-            SELECT realm_transaction_t.realm_transaction_id,
-                realm_transaction_t.remark,
-                realm_transaction_t.source_class,
-                entry_t.class, entry_t.remark
-            FROM realm_transaction_t, entry_t
-            WHERE realm_transaction_t.realm_transaction_id
-                = entry_t.realm_transaction_id', []);
-
-    while ($row = $sth->fetchrow_arrayref) {
-	my($tran_id, $tran_remark, $source_class, $entry_class,
-		$entry_remark) = @$row;
-
-	next unless defined($entry_remark);
-
-	# skip it if already updated, easyware duplicates remarks
-	next if exists($UPDATED_TRANSACTION_IDS{$tran_id});
-
-	# skip legacy generated valuation date entry remark
-	next if defined($entry_remark)
-		&& ($entry_remark =~ /\/..\sValuation/);
-
-	# see if the entry is the source of the transaction
-	if ($source_class == $entry_class) {
-	    # extra paranoid
-	    die("transaction remark already defined: $tran_remark")
-		    if defined($tran_remark);
-
-	    Bivio::SQL::Connection->execute('
-                    UPDATE realm_transaction_t
-                    SET remark=?
-                    WHERE realm_transaction_id=?',
-		    [$entry_remark, $tran_id]);
-	    $UPDATED_TRANSACTION_IDS{$tran_id} = $tran_id;
-	}
-    }
-
-    # clear all existing remark fields
-    Bivio::SQL::Connection->execute('
-            UPDATE entry_t
-            SET remark=?',
-	    ['']);
-
-    # In separate method, because _upgrade was already run on test
-    # system and need to test _upgrade_jp on test system.
-    _upgrade_jp();
-}
-
-# _upgrade_jp()
-#
-# Create japan_survey_t
-#
-sub _upgrade_jp {
-    _do(<<'EOF');
-CREATE TABLE japan_survey_t (
-  creation_date_time DATE,
-  client_addr VARCHAR2(30),
-  has_invested_before NUMBER(1),
-  has_broker NUMBER(1),
-  is_club_member NUMBER(1),
-  would_start_club NUMBER(1),
-  is_interested_in_market CHAR(2),
-  would_invest_yen NUMBER(20,7),
-  email VARCHAR2(100)
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
-/
-ALTER TABLE japan_survey_t add primary key(creation_date_time, client_addr)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE japan_survey_t add check (has_invested_before between 0 and 1)
-/
-ALTER TABLE japan_survey_t add check (has_broker between 0 and 1)
-/
-ALTER TABLE japan_survey_t add check (is_club_member between 0 and 1)
-/
-ALTER TABLE japan_survey_t add check (would_start_club between 0 and 1)
-/
-EOF
-    return;
 }
 
 # _usage(array message)
