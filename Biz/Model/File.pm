@@ -335,15 +335,17 @@ EOF
 	my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
 	    	SELECT file_id, bytes
 		FROM file_t
-		WHERE realm_id = ?
-                AND volume = ?
-		start with file_id = ?
-		CONNECT BY directory_id = PRIOR file_id
+		START WITH file_id = ?
+                    AND realm_id = ?
+                    AND volume = ?
+		CONNECT BY realm_id = ?
+                    AND volume = ?
+                    AND directory_id = PRIOR file_id
 		ORDER BY LEVEL DESC
 EOF
-		[$args->{realm_id},
-		    $args->{volume}->as_sql_param,
-		    $args->{file_id}]);
+		[$args->{file_id}, $args->{realm_id},
+                    $args->{volume}->as_sql_param, $args->{realm_id},
+                    $args->{volume}->as_sql_param]);
 
 	# Add in the files which this directory contains
 	my($row);
