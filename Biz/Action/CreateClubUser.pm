@@ -24,6 +24,7 @@ C<Bivio::Biz::Action::CreateClubUser>
 =cut
 
 #=IMPORTS
+use Bivio::Auth::Role;
 use Bivio::Biz::Action::CreateUser;
 
 #=VARIABLES
