@@ -129,6 +129,8 @@ my(%_SIZE_MAP) = (
     'x-large' => 6,
     'xx-large' => 7,
 );
+# Attribute should only be used by this module
+my($_CONFIG_ATTR) = '_config';
 
 =head1 METHODS
 
@@ -224,6 +226,43 @@ sub initialization_complete {
     return;
 }
 
+=for html <a name="initialize_children"></a>
+
+=head2 static initialize_children(Bivio::UI::Facade facade)
+
+Initializes the default facades.
+
+=cut
+
+sub initialize_children {
+    my($proto, $facade) = @_;
+    # Only initialize children if parent was created.  Won't be
+    # created on production if not is_production.
+    return unless $facade;
+
+    my(@default) = @{$facade->get('Bivio::UI::Font')->get_attrs('default')
+			     ->{$_CONFIG_ATTR}};
+    foreach my $cfg (
+	    ['small', 'xx-small'], # 1
+	    ['large', 'small'], # 3
+	    ['extra_large', 'medium']) { # 4
+	$facade->new_child({
+	    child_type => $cfg->[0],
+	    'Bivio::UI::Font' => {
+		initialize => sub {
+		    my($fc) = @_;
+		    $fc->value(default => [map {
+			s/^size=(.*)/size=$cfg->[1]/;
+			$_;
+			} @default
+		    ]);
+		    return;
+		},
+	    },
+	});
+    }
+}
+
 =for html <a name="internal_initialize_value"></a>
 
 =head2 internal_initialize_value(hash_ref value)
@@ -272,6 +311,7 @@ sub _initialize {
 
     # Parse the config
     my(%attrs, @tags);
+    $attrs{$_CONFIG_ATTR} = \@c;
     foreach my $a (@c) {
 	if ($a eq 'bold') {
 	    $attrs{weight} = 'bold';
