@@ -102,6 +102,11 @@ L<Bivio::Agent::Reply|Bivio::Agent::Reply> for this request.
 
 Always C<$self>.  Convenient for L<get_widget_value|"get_widget_value">.
 
+=item super_user_id : string
+
+If the request is operating is substitute user mode, this is the
+id of the super user.
+
 =item start_time : array_ref
 
 The time the request started as an array of seconds and microseconds.

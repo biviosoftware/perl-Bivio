@@ -131,6 +131,7 @@ my($_DOMAIN) = undef;
 my($_CIPHER) = undef;
 my($_TAG) = 'D';
 my($_TIMEZONE_FIELD) = TIMEZONE_FIELD();
+my($_SU_FIELD) = SU_FIELD();
 
 Bivio::IO::Config->register({
     domain => $_DOMAIN,
@@ -260,7 +261,9 @@ sub parse {
 	    $data = undef;
 	}
 	$req->put(cookie => $data, cookie_state => $state,
-		timezone => $data ? $data->{$_TIMEZONE_FIELD} : undef);
+		timezone => $data ? $data->{$_TIMEZONE_FIELD} : undef,
+		super_user_id => $data ? $data->{$_SU_FIELD} : undef
+	       );
     }
     _trace('state=', $state, '; data=', $data) if $_TRACE;
     return $user;

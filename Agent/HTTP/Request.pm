@@ -264,14 +264,17 @@ sub server_redirect_in_handle_die {
 Sets I<user> to be C<auth_user>.  May be C<undef>.  Also caches
 user_realms and updates user in connection for logging.
 
+Tags the user specially if I<super_user_id> is set on this request.
+
 =cut
 
 sub set_user {
     my($self) = shift;
     $self->SUPER::set_user(@_);
     my($user) = shift;
-    $self->get('r')->connection->user(
-	    defined($user) ? $user->get('name') : $_ANONYMOUS);
+    $user = defined($user) ? $user->get('name') : $_ANONYMOUS;
+    $user = 'su-'.$user if $self->unsafe_get('super_user_id');
+    $self->get('r')->connection->user($user);
     return;
 }
 

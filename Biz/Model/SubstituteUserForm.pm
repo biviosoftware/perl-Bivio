@@ -88,11 +88,13 @@ sub execute_input {
     my($properties) = $self->internal_get;
     my($req) = $self->get_request;
 
+    my($super_user_id) = $req->get('auth_user')->get('realm_id');
     # Only set the user if not already su'd
     Bivio::Agent::HTTP::Cookie->set_field($req, $_COOKIE_FIELD,
-	    $req->get('auth_user')->get('realm_id'))
+	    $super_user_id)
 		unless defined(Bivio::Agent::HTTP::Cookie->unsafe_get_field(
 			$req, $_COOKIE_FIELD));
+    $req->put(super_user_id => $super_user_id);
 
     # Loaded by validate
     $req->set_user($req->get('Bivio::Biz::Model::RealmOwner'));
