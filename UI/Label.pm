@@ -44,7 +44,7 @@ _compile(
     TAX_ID => ['Tax ID', undef, 'TaxId.tax_id'],
     EMAIL => ['Email', undef, 'Email.email', 'RealmInvite.email'],
     PASSWORD => ['Password', undef, 'RealmOwner.password'],
-    OLD_PASSWORD => ['Old Password'],
+    OLD_PASSWORD => ['Current Password'],
     NEW_PASSWORD => ['New Password'],
     CONFIRM_NEW_PASSWORD => ['Confirm New'],
     LOGIN => ['Login'],
