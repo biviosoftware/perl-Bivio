@@ -58,14 +58,49 @@ use Cwd ();
 use Sys::Hostname ();
 
 #=VARIABLES
-my($_APACHE_HOME) = '/usr/local/apache';
-my($_HTTPD) = $_APACHE_HOME . '/bin/httpd';
+my($_HTTPD);
+# Search for local install first
+my(@_HTTPD) = qw(
+    /usr/local/apache/bin/httpd
+    /usr/sbin/httpd
+);
+foreach my $h (@_HTTPD) {
+    if (-x $h) {
+	$_HTTPD = $h;
+	last;
+    }
+}
+die("no httpd found; tried @_HTTPD") unless $_HTTPD;
 Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
 	'port' => Bivio::IO::Config->REQUIRED,
 	'handler' => 'Bivio::Agent::HTTP::Dispatcher',
     },
 });
+my($_DYNAMIC_MODULES) = <<'EOF';
+LoadModule env_module         modules/mod_env.so
+LoadModule config_log_module  modules/mod_log_config.so
+LoadModule mime_module        modules/mod_mime.so
+LoadModule status_module      modules/mod_status.so
+LoadModule info_module        modules/mod_info.so
+LoadModule rewrite_module     modules/mod_rewrite.so
+LoadModule setenvif_module    modules/mod_setenvif.so
+LoadModule perl_module        modules/libperl.so
+
+#  Reconstruction of the complete module list from all available modules
+#  (static and shared ones) to achieve correct module execution order.
+#  [WHENEVER YOU CHANGE THE LOADMODULE SECTION ABOVE UPDATE THIS, TOO]
+ClearModuleList
+AddModule mod_env.c
+AddModule mod_log_config.c
+AddModule mod_mime.c
+AddModule mod_status.c
+AddModule mod_info.c
+AddModule mod_rewrite.c
+AddModule mod_so.c
+AddModule mod_setenvif.c
+AddModule mod_perl.c
+EOF
 
 sub main {
     my(@argv) = @_;
@@ -91,6 +126,8 @@ sub main {
 	CORE::system(
 	    'rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd*.sem');
 	&symlink('.', 'logs');
+	# Need for RH7.1, can ignore otherwise
+	&symlink('/etc/httpd/modules', 'modules');
     }
     else {
 	print <<"EOF";
@@ -130,6 +167,9 @@ EOF
 	    </VirtualHost>
 EOF
     }
+
+    # We need to specify dynamic modules if it is the generic install
+    my($modules) = $_HTTPD eq '/usr/sbin/httpd' ? $_DYNAMIC_MODULES : '';
 
     local($_);
     my($conf) = $execute ? "httpd$$.conf" : "&STDOUT";
@@ -257,6 +297,8 @@ __DATA__
 #
 ResourceConfig /dev/null
 AccessConfig /dev/null
+
+<$modules>
 
 Listen <$port>
 User <$user>
