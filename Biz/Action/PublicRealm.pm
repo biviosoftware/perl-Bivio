@@ -31,10 +31,28 @@ use Bivio::DieCode;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="ROLES"></a>
+
+=head2 ROLES() : array_ref
+
+Return list of roles which need to be managed for controlling public access
+
+=cut
+
+sub ROLES {
+    return [
+        Bivio::Auth::Role::ANONYMOUS(),
+        Bivio::Auth::Role::USER(),
+        Bivio::Auth::Role::WITHDRAWN(),
+    ];
+}
 
 =for html <a name="execute"></a>
 
@@ -52,18 +70,14 @@ sub execute {
 
     my($user) = $req->get('auth_user');
     my($club_id) = $req->get('auth_id');
+    my($role) = $req->get('auth_role');
 
-    # Check user is either a member or guest of the club
     my($is_realm_user) = 0;
-    if (defined($user)) {
-        my($user_id) = $user->get('realm_id');
-        my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
-        $is_realm_user = $realm_user->unauth_load(
-		realm_id => $club_id, user_id => $user_id)
-		&& $realm_user->is_member_or_guest();
+    # A user belongs to a realm if it plays a reasonable role in it
+    if (defined($user) && !grep($role eq $_, @{ROLES()})) {
+        $is_realm_user = 1;
     }
-
-    # Check ANONYMOUS role has DOCUMENT_READ access
+    # A realm is public if ANONYMOUS role has DOCUMENT_READ access
     my($rr) = Bivio::Biz::Model::RealmRole->new();
     my($realm_is_public) = 0;
     if ($rr->unauth_load(realm_id => $club_id,
@@ -73,6 +87,8 @@ sub execute {
                 Bivio::Auth::Permission::DOCUMENT_READ());
     }
 
+    _trace('is_realm_user,realm_is_public=',
+            $is_realm_user, ',', $realm_is_public) if $_TRACE;
     $req->put(
             is_realm_user => $is_realm_user,
             realm_is_public => $realm_is_public,
