@@ -145,6 +145,12 @@ sub _initialize {
 	    expand => 1,
 	    values => [
 		[
+		    Bivio::UI::HTML::Widget::String->new({
+			value => 'Welcome to bivio',
+			string_font => 'italic',
+			cell_expand => 1,
+			cell_align => 'nw',
+		    }),
 		    Bivio::UI::HTML::Widget::Link->new({
 			href => '/test-site',
 			value => Bivio::UI::HTML::Widget::Image->new({
@@ -152,20 +158,7 @@ sub _initialize {
 			    alt => 'bivio home',
 			}),
 			cell_compact => 1,
-			cell_align => 'sw',
-		    }),
-		    Bivio::UI::HTML::Widget::String->new({
-			value => 'Welcome to bivio',
-			string_font => 'italic',
-			cell_expand => 1,
-			cell_align => 's',
-		    }),
-		    Bivio::UI::HTML::Widget::String->new({
-			value => [start_time => 0,
-				'Bivio::UI::HTML::Format::DateTime'],
-			cell_align => 'se',
-			cell_compact => 1,
-			string_font => 'time',
+			cell_align => 'ne',
 		    }),
 		],
 		[
