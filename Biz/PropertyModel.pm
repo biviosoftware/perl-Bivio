@@ -64,10 +64,12 @@ sub new {
 
 =for html <a name="create"></a>
 
-=head2 create(hash_ref new_values)
+=head2 create(hash_ref new_values) : Bivio::Biz::PropertyModel
 
 Creates a new model in the database with the specified values. After creation,
 this instance takes ownership of I<new_values>.  Dies on error.
+
+Returns I<self>.
 
 =cut
 
@@ -84,7 +86,7 @@ sub create {
     $self->internal_put($new_values);
     my($req) = $self->unsafe_get_request;
     $req->put(ref($self), $self) if $req;
-    return;
+    return $self;
 }
 
 =for html <a name="delete"></a>
@@ -436,10 +438,12 @@ sub unsafe_load {
 
 =for html <a name="update"></a>
 
-=head2 update(hash_ref new_values)
+=head2 update(hash_ref new_values) : Bivio::Biz::PropertyModel
 
 Updates the current model's values.
-NOTE: find should be called prior to an update.
+NOTE: load() should be called prior to an update.
+
+Returns I<self>.
 
 =cut
 
@@ -451,7 +455,7 @@ sub update {
     foreach $n (keys(%$new_values)) {
 	$properties->{$n} =  $new_values->{$n};
     }
-    return;
+    return $self;
 }
 
 #=PRIVATE METHODS
