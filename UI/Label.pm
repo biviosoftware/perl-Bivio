@@ -473,6 +473,8 @@ _compile(
     HELP_TAX_ALLOCATION_METHODS => ['Tax Allocation Methods'],
     HELP_EXPENSES => ['Expenses'],
     HELP_FEES => ['Fees'],
+    HELP_PRINTING => ['Printing'],
+    HELP_FONT_SIZE => ['Font Size'],
 
     # Preferences
     PAGE_SIZE => ['List Size'],
