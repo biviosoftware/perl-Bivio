@@ -103,16 +103,30 @@ sub SUBMIT_OK {
     return '  OK  ';
 }
 
+=for html <a name="TIMEZONE_FIELD"></a>
+
+=head2 TIMEZONE_FIELD : string
+
+Returns field used in forms to set timezone.
+
+=cut
+
+sub TIMEZONE_FIELD {
+    return 'tz';
+}
+
 #=IMPORTS
 use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
 use Bivio::Util;
+use Bivio::Agent::HTTP::Cookie;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_TIMEZONE_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->TIMEZONE_FIELD;
 
 =head1 FACTORIES
 
@@ -218,18 +232,6 @@ sub execute {
 }
 
 
-=for html <a name="execute_cancel"></a>
-
-=head2 execute_cancel()
-
-Processes the form after a cancel.
-
-=cut
-
-sub execute_cancel {
-    return;
-}
-
 =for html <a name="execute_empty"></a>
 
 =head2 execute_empty()
@@ -251,6 +253,20 @@ Processes the form after validation.  By default is an no-op.
 =cut
 
 sub execute_input {
+    return;
+}
+
+=for html <a name="execute_other"></a>
+
+=head2 execute_other(string button)
+
+Processes the form after a cancel or other button is pressed.
+The button string is passed.  It will redirect to the cancel
+task for the form.
+
+=cut
+
+sub execute_other {
     return;
 }
 
@@ -516,17 +532,6 @@ sub _convert_values_to_form {
     return;
 }
 
-# _put_self(Bivio::Biz::FormModel self)
-#
-# Sets itself in the request and returns.
-#
-sub _put_self {
-    my($self) = @_;
-    # Render form filled in from db, new form, or form with errors
-    $self->get_request->put(ref($self) => $self, form_model => $self);
-    return;
-}
-
 # _parse(Bivio::Biz::FormModel self, hash_ref form)
 #
 # Parses the form. If Cancel is encountered, redirects immediately.
@@ -540,6 +545,7 @@ sub _parse {
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self, $form->{version}, $sql_support);
     _parse_submit($self, $form->{$self->SUBMIT});
+    _parse_timezone($self, $form->{TIMEZONE_FIELD()});
     my($values) = {};
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
@@ -594,26 +600,46 @@ sub _parse_cols {
 sub _parse_submit {
     my($self, $value) = @_;
 
+    # Default is cancel
+
     # default to OK, submit isn't passed when user presses 'enter'
-    $value ||= $self->SUBMIT_OK;
+    return unless defined($value) && length($value);
 
-    if ($value eq $self->SUBMIT_CANCEL) {
-	my($req) = $self->get_request;
-	$self->execute_cancel();
-	# client redirect on cancel
-	$req->client_redirect($req->get('task')->get('cancel'));
-	# Does not return
-    }
-    return if $value eq $self->SUBMIT_OK;
+    # We assume it is a cancel if we don't get a match to ok
+    # It is better than returning corrupt form for now.
+    my($submit_ok) = $self->SUBMIT_OK;
+    return if $value eq $submit_ok;
 
-#TODO: need a general fix for this
-    # lynx trims submit padding!
-    return if $self->SUBMIT_OK =~ /$value/x;
+    # If has same letters in same order, then is ok.
+    $submit_ok =~ s/\s+//g;
+    my($v) = $value;
+    $v =~ s/\s+//g;
+    return if lc($v) eq lc($submit_ok);
 
-    $self->die(Bivio::DieCode::CORRUPT_FORM(),
-	    {field => $self->SUBMIT(),
-		expected => $self->SUBMIT_OK.' or '.$self->SUBMIT_CANCEL,
-		actual => $value});
+    # Cancel or another button
+    my($req) = $self->get_request;
+    $self->execute_other($v);
+    # client redirect on cancel
+    $req->client_redirect($req->get('task')->get('cancel'));
+    # DOES NOT RETURN
+}
+
+# _parse_timezone(Bivio::Biz::FormModel self, string value)
+#
+# If it is set, will set in cookie.  Otherwise, not set in cookie.
+#
+sub _parse_timezone {
+    my($self, $value) = @_;
+
+    # Parse the integer
+    my($v) = Bivio::Type::Integer->from_literal($value);
+    # Only go on if could parse.   Otherwise, other modules know how
+    # to handle timezone as undef.
+    return unless defined($v);
+
+    my($req) = $self->get_request;
+    Bivio::Agent::HTTP::Cookie->set_field($req, $_TIMEZONE_COOKIE_FIELD, $v);
+    $req->put(timezone => $v);
     return;
 }
 
@@ -631,6 +657,17 @@ sub _parse_version {
 	    {field => 'version',
 		expected => $sql_support->get('version'),
 		actual => $value});
+    return;
+}
+
+# _put_self(Bivio::Biz::FormModel self)
+#
+# Sets itself in the request and returns.
+#
+sub _put_self {
+    my($self) = @_;
+    # Render form filled in from db, new form, or form with errors
+    $self->get_request->put(ref($self) => $self, form_model => $self);
     return;
 }
 
