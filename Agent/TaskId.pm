@@ -75,7 +75,7 @@ my(@_CFG) = (
 	MY_CLUB_REDIRECT
 	4
         GENERAL
-        DEBUG_ACTION
+        DOCUMENT_READ
         my_club
 	Bivio::Biz::Action::MyClubRedirect
         next=CLUB_COMMUNICATIONS_MESSAGE_LIST
