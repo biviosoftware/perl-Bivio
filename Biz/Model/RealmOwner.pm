@@ -162,6 +162,31 @@ sub audit_units {
     return;
 }
 
+=for html <a name="cascade_delete"></a>
+
+=head2 cascade_delete()
+
+Deletes this realm and any realm specific information (email, phone, address,
+roles). This method will not remove a realm from RealmUser. If the user/realm
+is a club member this method will die.
+
+=cut
+
+sub cascade_delete {
+    my($self) = @_;
+    my($id) = $self->get('realm_id');
+
+    # delete related records
+    foreach my $table ('email_t', 'phone_t', 'address_t', 'realm_role_t') {
+	Bivio::SQL::Connection->execute('
+                DELETE FROM '.$table.'
+                WHERE realm_id=?',
+		[$id]);
+    }
+    $self->delete();
+    return;
+}
+
 =for html <a name="create"></a>
 
 =head2 create(hash_ref new_values)
