@@ -56,27 +56,29 @@ values.
 =cut
 
 sub create_or_update {
-    my(undef, $realm_instrument_id, $date, $price) = @_;
-
+    my($self, $realm_instrument_id, $date, $price) = @_;
     my($req) = Bivio::Agent::Request->get_current;
-    my($inst_val) = Bivio::Biz::Model::RealmInstrumentValuation->new($req);
+
+    unless (ref($self)) {
+	$self = Bivio::Biz::Model::RealmInstrumentValuation->new($req);
+    }
 
     # see if a valuation already exists, if so update it
-    if ($inst_val->unsafe_load(
+    if ($self->unsafe_load(
 	    realm_instrument_id => $realm_instrument_id,
 	    date_time => $date)) {
 
-	$inst_val->update({price_per_share => $price});
+	$self->update({price_per_share => $price});
     }
     else {
-	$inst_val->create({
+	$self->create({
 	    realm_id => $req->get('auth_id'),
 	    realm_instrument_id => $realm_instrument_id,
 	    date_time => $date,
 	    price_per_share => $price,
 	});
     }
-    return $inst_val;
+    return $self;
 }
 
 =for html <a name="internal_initialize"></a>
