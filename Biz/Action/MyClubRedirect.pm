@@ -56,7 +56,6 @@ sub execute {
     # All the work is in redirect which switches realms for us
     # Go to the task for my_club
     $req->client_redirect($req->get('task')->get('next'));
-#    $req->redirect($req->get('task')->get('next'));
     # DOES NOT RETURN
 }
 
