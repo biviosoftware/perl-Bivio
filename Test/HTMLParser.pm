@@ -90,7 +90,8 @@ sub new {
 	form_count => 0,
 	
 	# counter used to create unique form names.
-	unnamed_count => 0
+	unnamed_count => 0,
+	in_title => 0
     };
 
     # call the HTML::Parser parser
@@ -117,7 +118,7 @@ cases it will call the procedure named _parse_end_$tag.
 sub end {
     my($self, $tag, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($_INTERESTING_TAGS) = 'a|form|select|table|tr';
+    my($_INTERESTING_TAGS) = 'a|form|select|table|tr|title';
 
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
@@ -157,7 +158,7 @@ sub start {
     my($self, $tag, $attr, $attrseq, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($_INTERESTING_TAGS)
-	    = 'a|form|input|img|option|select|table|textarea|tr';
+	    = 'a|form|input|img|option|select|table|textarea|tr|title';
 
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
@@ -239,7 +240,7 @@ sub text {
 	}
 	delete $fields->{radio_or_checkbox};
     }
-  
+
     # forms and hyperlinks just get cached for later processing
     elsif (defined($fields->{currentform}) || defined($fields->{a})) {
 	if (defined($fields->{text})) {
@@ -248,6 +249,12 @@ sub text {
 	else {
 	    $fields->{currenttext} .= $text;
 	}
+    }
+
+    # cache document title
+    elsif ($fields->{in_title}) {
+	$fields->{title} = defined($fields->{title})
+		? $fields->{title}.$text : $text;
     }
 
     # anything gets saved until later.
@@ -530,6 +537,17 @@ sub _parse_end_table {
 	delete $fields->{currenttable};
     }
     delete $fields->{currenttext};
+    return;
+}
+
+# _parse_end_title(Bivio::Test::HTMLParser self)
+#
+# Stop collecting information about document title.
+#
+sub _parse_end_title {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{in_title} = 0;
     return;
 }
 
@@ -851,6 +869,17 @@ sub _parse_start_textarea {
     if (defined($fields->{currentform})) {
 	$self->_handle_text($self, $attr, $origtext);
     }
+    return;
+}
+
+# _parse_start_title(Bivio::Test::HTMLParser self, hash_ref attr, string origtext)
+#
+# Start recording information about the document's title.
+#
+sub _parse_start_title {
+    my($self, $attr, $origtext) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{in_title} = 1;
     return;
 }
 

@@ -61,8 +61,10 @@ sub new {
     my($proto,$content) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     my($fields) = $self->{$_PACKAGE} = {};
- 
+
     my($p) = Bivio::Test::HTMLParser->new($content)->get_fields();
+
+    $fields->{title} = $p->{title};
 
     # save parser's output, for reference when debugging.
     # for convenience when reading the output, we temporarily put
@@ -268,8 +270,21 @@ sub get_form_method {
 
     my($form_name) = $fields->{$name}->{form_name};
     return ($fields->{$name}->{forms}->{$form_name}->{method});
-   
-    return;
+}
+
+=for html <a name="get_title"></a>
+
+=head2 get_title(Bivio::Test::HTMLAnalyzer self) : string
+
+Return a string containing the "title" of the document.  If none
+was defined, an 'undef' is returned.
+
+=cut
+
+sub get_title {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return ($fields->{title});
 }
 
 =for html <a name="list_private_fields"></a>
