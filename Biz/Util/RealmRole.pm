@@ -105,6 +105,8 @@ sub edit {
 
     # Get the database value or an empty set
     my($ps) = _get_permission_set($realm_id, $role, 1);
+    _trace('current ', $role, ' ', Bivio::Auth::PermissionSet->to_literal($ps))
+	    if $_TRACE;
 
     # Modify the initial value
     foreach my $op (@operations) {
@@ -120,10 +122,13 @@ sub edit {
 		_usage("$op: neither a Role nor Permission")
 			unless $r && $r->get_name eq $operand;
 		my($s) = _get_permission_set($realm_id, $r, 0);
+		_trace($which, $r, ' ',
+			Bivio::Auth::PermissionSet->to_literal($s)) if $_TRACE;
 		# Set lengths must match for ~$s to work properly
-		Bivio::DieCode::DIE()->die(
-			'ASSERTION FAULT: set lengths differ')
-			    unless length($s) eq length($ps);
+		Bivio::Die->die(
+			'ASSERTION FAULT: set lengths differ: ',
+			length($s), ' != ', length($ps))
+			    if length($s) != length($ps);
 		$ps = $which eq '+' ? ($ps | $s) : ($ps & ~$s);
 	    }
 	}
