@@ -1,16 +1,16 @@
 # Copyright (c) 2000 bivio, Inc.  All rights reserved.
 # $Id$
-package Bivio::UI::HTML::BUYandHOLD::Home;
+package Bivio::UI::Facade::BUYandHOLD::Home;
 use strict;
-$Bivio::UI::HTML::BUYandHOLD::Home::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::UI::Facade::BUYandHOLD::Home::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::HTML::BUYandHOLD::Home - start a club home page
+Bivio::UI::Facade::BUYandHOLD::Home - start a club home page
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::HTML::BUYandHOLD::Home;
+    use Bivio::UI::Facade::BUYandHOLD::Home;
 
 =cut
 
@@ -21,11 +21,11 @@ L<Bivio::UI::HTML::DescriptivePage>
 =cut
 
 use Bivio::UI::HTML::DescriptivePage;
-@Bivio::UI::HTML::BUYandHOLD::Home::ISA = ('Bivio::UI::HTML::DescriptivePage');
+@Bivio::UI::Facade::BUYandHOLD::Home::ISA = ('Bivio::UI::HTML::DescriptivePage');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::HTML::BUYandHOLD::Home>
+C<Bivio::UI::Facade::BUYandHOLD::Home>
 
 =cut
 
