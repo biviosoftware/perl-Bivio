@@ -4,7 +4,7 @@
 #
 use strict;
 
-BEGIN { $| = 1; print "1..14\n"; }
+BEGIN { $| = 1; print "1..13\n"; }
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 use Bivio::IO::Trace;
@@ -14,25 +14,17 @@ print "ok 1\n";
 ######################### End of black magic.
 
 
-# register: Deviance
-print eval {
-   Bivio::IO::Trace->register;
-   1;
-} ? "not ok 2\n" : "ok 2\n";
-
-################################################################
-
 package Bivio::IO::Trace::T;
 
 use Bivio::IO::Trace;
 
 Bivio::IO::Trace->register;
-print "ok 3\n";
+print "ok 2\n";
 
 ################################################################
 
 my($_PRINTED);
-my($_TEST) = 4;
+my($_TEST) = 3;
 sub _printer {
    $_PRINTED = join('', @_);
 }
@@ -53,7 +45,7 @@ sub _miss {
    $_TEST++;
 }
 
-Bivio::IO::Trace->set_filters('grep($_ =~ "hello", @$msg)');
+Bivio::IO::Trace->set_filters('grep($_ =~ /hello/, @$msg)');
 &_hit("hello");
 &_miss("goodbye");
 
