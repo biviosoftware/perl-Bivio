@@ -4,7 +4,10 @@ test_setup('PetShop');
 home_page();
 follow_link('Reptiles');
 follow_link('Rattlesnake');
-follow_link('Rattleless Rattlesnake');
-add_to_cart();
+add_to_cart('Rattleless Rattlesnake');
 remove_from_cart('Rattleless Rattlesnake');
-verify_cart_is_empty();
+
+search_for('Angelfish');
+add_to_cart('Large Angelfish');
+update_cart('Large Angelfish', 0);
+
