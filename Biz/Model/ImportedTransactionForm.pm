@@ -302,8 +302,6 @@ sub _execute_payment {
 
     my($values) = {
 	%{$self->internal_get},
-	'RealmAccountEntry.realm_account_id' => $self->get(
-		'RealmAccount.realm_account_id'),
     };
 
     if ($self->get('Entry.entry_type')
