@@ -3,6 +3,7 @@
 package Bivio::Type::TextArea;
 use strict;
 $Bivio::Type::TextArea::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::TextArea::VERSION;
 
 =head1 NAME
 
@@ -66,10 +67,16 @@ up the user's preference.
 
 sub from_literal {
     my($self, $value, $line_width) = @_;
-    return $self->SUPER::from_literal($value)
-            unless defined($value) && Bivio::Agent::Request->get_current
-            ->get_user_pref('TEXTAREA_WRAP_LINES');
-    return $self->wrap_lines($value, $line_width || $self->LINE_WIDTH);
+
+    # careful to see if Preferences model is present before accessing
+    if (defined($value) && Bivio::IO::ClassLoader->is_class_loaded(
+	    'Bivio::Biz::Model::Preferences')
+	    && Bivio::Biz::Model::Preferences->get_user_pref(
+		    Bivio::Agent::Request->get_current,
+		    'TEXTAREA_WRAP_LINES')) {
+	return $self->wrap_lines($value, $line_width || $self->LINE_WIDTH);
+    }
+    return $self->SUPER::from_literal($value);
 }
 
 =for html <a name="get_width"></a>
