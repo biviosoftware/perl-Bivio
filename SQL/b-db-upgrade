@@ -242,7 +242,26 @@ sub _upgrade {
 	Bivio::Data::EW::ClubImporter->new($req)->value_unlisted_purchases;
     }
 
+    _upgrade_delist_FTL();
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_delist_FTL()
+#
+# Delists Fruit of the Loom.
+#
+sub _upgrade_delist_FTL {
+
+    use Bivio::Biz::Model::MGFSInstrument;
+
+    # updating the MGFS Instrument automatically synchronizes with
+    # instrument_t
+    my($req) = Bivio::Agent::Request->get_current_or_new;
+    my($mgfs_inst) = Bivio::Biz::Model::MGFSInstrument->new($req);
+    $mgfs_inst->load(symbol => 'FTL');
+    $mgfs_inst->update({symbol => 'FTL-D'});
+
     return;
 }
 
