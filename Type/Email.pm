@@ -139,8 +139,7 @@ values stored in the database which may be invalidated by support.
 
 sub is_valid {
     my($proto, $email) = @_;
-    my($ATOM_ONLY_ADDR) = Bivio::Mail::RFC822->ATOM_ONLY_ADDR;
-    return defined($email) && $email =~ /^$ATOM_ONLY_ADDR$/os ? 1 : 0;
+    return defined($email) && $email =~ /^$_ATOM_ONLY_ADDR$/os ? 1 : 0;
 }
 
 =for html <a name="to_xml"></a>

@@ -58,7 +58,7 @@ before rendering.
 
 Renders the C<FORM> end tag if true.
 
-=item form_class : Bivio::Biz::FormModel (inherited)
+=item form_class : Bivio::Biz::FormModel (inherited, get_request)
 
 This value is computed from I<form_model> if it can be.  It
 also be set.
@@ -67,7 +67,7 @@ also be set.
 
 The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
 
-=item form_model : array_ref [*computed*] (required, inherited)
+=item form_model : array_ref [*computed*] (required, inherited, get_request)
 
 B<DEPRECATED>. Which form are we dealing with.
 Use I<form_class>.
@@ -205,7 +205,8 @@ Render the form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($model) = $source->get_widget_value($fields->{class});
+    my($req) = $source->get_request;
+    my($model) = $req->get_widget_value($fields->{class});
 
     # Method
     $$buffer .= $fields->{prefix};
@@ -216,8 +217,7 @@ sub render {
 	# If there is an action, get it.  Otherwise, the action is
 	# this current task's action.
 	$action = ref($action)
-		? $source->get_widget_value(@$action)
-			: Bivio::Agent::Request->get_current->format_uri();
+		? $source->get_widget_value(@$action) : $req->format_uri();
 #TODO: Tightly Coupled with FormModel & Location.  Do not propagate form
 #      context when you have a form to store the context in fields.
 #      Context management is hard....

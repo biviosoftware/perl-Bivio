@@ -36,7 +36,7 @@ C<Bivio::UI::HTML::Widget::FormButton> a form specific submit button.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -108,7 +108,7 @@ to extract the field's type and can only do that when we have a form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
     my($value) = $fields->{prefix}

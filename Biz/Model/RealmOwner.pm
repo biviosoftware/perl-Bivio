@@ -76,6 +76,7 @@ sub SHADOW_WITHDRAWN_SUFFIX {
 }
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Biz::Accounting::Audit;
 use Bivio::Biz::Model::Email;
@@ -97,6 +98,10 @@ my($_DEMO_THRESHOLD) = Bivio::Type::RealmName->get_width
 	- length($_DEMO_SUFFIX);
 my($_SHADOW_PREFIX) = SHADOW_PREFIX();
 my($math) = 'Bivio::Type::Amount';
+my(%_HOME_TASK_MAP) = (
+    Bivio::Auth::RealmType::CLUB() => Bivio::Agent::TaskId::CLUB_HOME(),
+    Bivio::Auth::RealmType::USER() => Bivio::Agent::TaskId::USER_HOME(),
+);
 
 =head1 FACTORIES
 
@@ -243,9 +248,10 @@ See L<format_name|"format_name"> for params.
 
 sub format_email {
     my($proto) = shift;
-#TODO: Need to modify Request to handle this case.
+    my($list_model) = @_;
+    my($m) = $list_model || $proto;
     my($name) = $proto->format_name(@_);
-    return $name ? $name.'@'.$proto->get_request->get('mail_host') : '';
+    return $name ? $m->get_request->format_email($name) : '';
 }
 
 =for html <a name="format_http"></a>
@@ -264,9 +270,9 @@ See L<format_name|"format_name"> for params.
 
 sub format_http {
     my($proto) = shift;
-#TODO: This is a total hack.   Need to know the "root" task
-    return 'https://'.$proto->get_request->get('http_host')
-	    .'/'.$proto->format_name(@_);
+    my($list_model) = @_;
+    my($m) = $list_model || $proto;
+    return $m->get_request->format_http_prefix.$proto->format_uri(@_);
 }
 
 =for html <a name="format_mailto"></a>
@@ -283,7 +289,9 @@ See L<format_name|"format_name"> for params.
 
 sub format_mailto {
     my($proto) = shift;
-    return 'mailto:'.$proto->format_email(@_);
+    my($list_model) = @_;
+    my($m) = $list_model || $proto;
+    return $m->get_request->format_mailto($proto->format_email(@_));
 }
 
 =for html <a name="format_name"></a>
@@ -332,9 +340,7 @@ sub format_name {
 
 =head2 static format_uri(Bivio::Biz::ListModel list_model, string model_prefix) : string
 
-Returns the URI to access (the root of) this realm.
-
-HACK!
+Returns the URI to access the HOME task for this realm.
 
 See L<format_name|"format_name"> for params.
 
@@ -342,8 +348,16 @@ See L<format_name|"format_name"> for params.
 
 sub format_uri {
     my($proto) = shift;
-#TODO: This is a total hack.   Need to know the "root" task
-    return '/'.$proto->format_name(@_);
+    my($list_model, $model_prefix) = @_;
+    my($m) = $list_model || $proto;
+    my($p) = $model_prefix || '';
+    my($name) = $proto->format_name(@_);
+    Bivio::IO::Alert->die($m->get($p.'name'),
+	    ': must not be shadow user') unless $name;
+    my($t) = $_HOME_TASK_MAP{$m->get($p.'realm_type')};
+    Bivio::IO::Alert->die($m->get($p.'name'), ', ',
+	    $m->get($p.'realm_type'), ': invalid realm type') unless $t;
+    return $m->get_request->format_uri($t, $name, undef, undef);
 }
 
 =for html <a name="get_instruments_info"></a>

@@ -105,7 +105,7 @@ If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
 
 The stripe color to use for even rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
-undefined (NO_COLOR_TAG), no striping will occur.
+undefined, no striping will occur.
 
 =item expand : boolean [false]
 
@@ -121,13 +121,13 @@ C<Bivio::Biz::Model::> prefix will be inserted if need be.
 
 The stripe color to use for odd rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
-undefined (NO_COLOR_TAG), no striping will occur.
+undefined, no striping will occur.
 
 =item show_headings : boolean [true]
 
 If true, then the column headings are rendered.
 
-=item source_name : string
+=item source_name : string [list_class] (get_request)
 
 The name of the list model as it appears upon the request. This value will
 default to the 'list_class' attribute if not defined.
@@ -357,7 +357,8 @@ Draws the table upon the output buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($list) = $source->get($self->get('source_name'));
+    my($req) = $source->get_request;
+    my($list) = $req->get($self->get('source_name'));
 
     # check for an empty list
     return $fields->{empty_list_widget}->render($source, $buffer)
@@ -393,13 +394,15 @@ sub render {
     my($is_even_row) = 0;
     # alternating row colors
     my($odd_row) = "\n<tr"
-	    .Bivio::UI::Color->as_html_bg(
+	    .Bivio::UI::Color->format_html(
 		    $self->get_or_default('odd_row_bgcolor',
-			    'table_odd_row_bg')).'>';
+			    'table_odd_row_bg'),
+		    'bgcolor', $req).'>';
     my($even_row) = "\n<tr"
-	    .Bivio::UI::Color->as_html_bg(
+	    .Bivio::UI::Color->format_html(
 		    $self->get_or_default('even_row_bgcolor',
-			    'table_even_row_bg')).'>';
+			    'table_even_row_bg'),
+		    'bgcolor', $req).'>';
 
 
     while ($list->next_row) {

@@ -39,7 +39,7 @@ Font is always C<FORM_SUBMIT>.
 Attributes to be applied to the button.  C<StandardSubmit>
 uses this to set "onclick=reset()".
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -116,8 +116,9 @@ sub render {
 
     my($value) = $fields->{value};
 
-    my($p, $s) = Bivio::UI::Font->as_html('form_submit');
-    my($model) = $source->get_request->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
+    my($model) = $req->get_widget_value(@{$fields->{model}});
     $$buffer .= $p.'<input type=submit name="'.$model->SUBMIT().'" value="'
 	    .Bivio::Util::escape_html(
 		    ref($value) ? $source->get_widget_value(@$value)

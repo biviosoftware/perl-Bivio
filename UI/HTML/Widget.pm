@@ -239,6 +239,43 @@ sub center {
     return ("\n<div align=center>\n", @_, "\n</div>\n");
 }
 
+=for html <a name="clear_dot"></a>
+
+=head2 clear_dot(any width, any height) : Bivio::UI::HTML::Widget::ClearDot
+
+=head2 clear_dot(any width, any height) : Bivio::UI::HTML::Widget::ClearDot
+
+Returns a ClearDot widget.  I<width> and I<height> may be C<undef>,
+a widget value or an integer.
+
+=cut
+
+sub clear_dot {
+    my(undef, $width, $height) = shift;
+    _use('ClearDot');
+    return Bivio::UI::HTML::Widget::ClearDot->new({
+	defined($width) ? (width => $width) : (),
+	defined($height) ? (height => $height) : (),
+    });
+}
+
+=for html <a name="clear_dot_as_html"></a>
+
+=head2 clear_dot_as_html(int width, int height) : string
+
+Returns an html string which loads a ClearDot image in
+width and height.
+
+Don't use in rendering code.  Use L<clear_dot|"clear_dot"> instead.
+
+=cut
+
+sub clear_dot_as_html {
+    my(undef) = shift;
+    _use('ClearDot');
+    return Bivio::UI::HTML::Widget::ClearDot->as_html(@_);
+}
+
 =for html <a name="date_time"></a>
 
 =head2 static date_time(any value) : Bivio::UI::HTML::Widget::DateTime
@@ -500,6 +537,23 @@ sub highlight {
 	    unless ref($value) eq 'Bivio::UI::HTML::Widget::String';
     $value->put(string_font => 'strong');
     return $value;
+}
+
+=for html <a name="image"></a>
+
+=head2 static image(any icon, any alt) : Bivio::UI::HTML::Widget::Image
+
+Returns an Image widget configured with I<icon> and I<alt>.
+
+=cut
+
+sub image {
+    my($proto, $icon, $alt) = @_;
+    _use('Image');
+    return Bivio::UI::HTML::Widget::Image->new({
+	src => $icon,
+	alt => $alt,
+    });
 }
 
 =for html <a name="indent"></a>
@@ -889,6 +943,25 @@ sub task_list {
 	values => $values,
 	want_sort => $want_sort,
     });
+}
+
+=for html <a name="toggle_secure"></a>
+
+=head2 toggle_secure() : Bivio::UI::HTML::Widget::ToggleSecureModeButton
+
+Returns an lock/unlock image link to toggle secure mode.
+
+=cut
+
+sub toggle_secure {
+    my($proto) = @_;
+    return $proto->link(
+	    $proto->director(['is_secure'], {
+		0 => $proto->image('unlock', 'Switch to secure mode (slower)'),
+		1 => $proto->image('lock',
+			'Switch to non-secure mode (faster)'),
+	    }),
+	    ['->format_http_toggling_secure']);
 }
 
 =for html <a name="tour"></a>

@@ -375,7 +375,7 @@ _compile(
     EMAIL_AND_PHONE => ["Email\nPhone"],
     PRIVILEGES_AND_USER_ID => ["Privileges\nUser ID"],
     USER_CLUB_PRIVILEGES => ['Your Privileges'],
-    USER_CLUB_HEADING => ['Your Privileges'],
+    USER_CLUB_HEADING => ['Club'],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],

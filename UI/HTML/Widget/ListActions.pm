@@ -151,7 +151,7 @@ sub render {
 
     # Write executable actions
     my($sep) = '';
-    my($p, $s) = Bivio::UI::Font->as_html('list_action');
+    my($p, $s) = Bivio::UI::Font->format_html('list_action', $req);
     foreach my $v (@$info) {
 	my($v2) = $v->{value};
 	next if $v2->{control}

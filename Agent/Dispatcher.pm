@@ -151,6 +151,8 @@ sub initialize {
     $_INITIALIZED = 1;
     Bivio::Agent::HTTP::Location->initialize;
     Bivio::Agent::Task->initialize;
+    Bivio::Util::my_require('Bivio::UI::Facade');
+    Bivio::UI::Facade->initialize;
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;
     return;
 }

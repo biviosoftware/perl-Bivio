@@ -56,11 +56,11 @@ May be C<undef>.
 
 HSPACE attribute value.
 
-=item image_border : int [0] (inherited)
+=item border : int [0]
 
 Set to zero by default, so you rarely need to set this.
 
-=item image_height : int [src's height] (inherited)
+=item height : int [src's height]
 
 The (constant) height of the image.  Useful in combination with single pixel
 clear gif for forcing dimensions of an area.  Both B<height> and
@@ -70,15 +70,15 @@ For "real" gifs, the dimensions are extracted from the file.
 
 =item src : array_ref (required)
 
-Image to use for C<SRC> attribute of C<IMG> tag.  An "image" is
-a hash_ref as returned, e.g. as returned by
-L<Bivio::UI::Icon::get_widget_value|Bivio::UI::Icon/"get_widget_value">.
+Image to use for C<SRC> attribute of C<IMG> tag.  I<src>'s
+get_widget_value returns a string,  which is looked up via
+L<Bivio::UI::Icon|Bivio::UI::Icon>.
 
-=item src : hash_ref (required)
+=item src : string
 
-Already been through lookup Icon.
+Name of the L<Bivio::UI::Icon|Bivio::UI::Icon> to use.
 
-=item image_width : int [src's width] (inherited)
+=item width : int [src's width]
 
 See B<height>.
 
@@ -92,6 +92,7 @@ VSPACE attribute value.
 
 #=IMPORTS
 use Bivio::Util;
+use Bivio::UI::Icon;
 use Carp ();
 
 #=VARIABLES
@@ -133,14 +134,15 @@ src, and have_size.
 sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return if exists($fields->{is_constant});
+    return if exists($fields->{prefix});
+
     # Both must be defined
     my($src, $alt) = $self->get(qw(src alt));
     my($width, $height, $border) = $self->unsafe_get(
-	    qw(image_width image_height image_border));
+	    qw(width height border));
     $border = 0 unless defined($border);
-    Carp::croak('only one of width and height defined')
-		unless defined($width) == defined($height);
+    die('width and height must both be defined')
+	    unless defined($width) == defined($height);
     my($p) = '<img';
 
     # hspace and vspace
@@ -155,7 +157,6 @@ sub initialize {
     $p .= Bivio::UI::Align->as_html($v) if $v;
 
     # Assume false until after first render.
-    $fields->{is_constant} = 0;
     if (ref($alt)) {
 	$fields->{alt} = $alt;
     }
@@ -171,28 +172,8 @@ sub initialize {
     $p .= " border=$border";
     $fields->{prefix} = $p;
     $fields->{have_size} = defined($width);
-    # Source is always requested.  If it is a constant, Bivio::UI::Icon
-    # will say so and we'll end up returning a single constant string.
     $fields->{src} = $src;
-    $fields->{is_first_render} = 1;
-    $fields->{is_constant} = 0;
     return;
-}
-
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Is this instance a constant?
-
-
-=cut
-
-sub is_constant {
-    my($fields) = shift->{$_PACKAGE};
-    Carp::croak('can only be called after first render')
-		if $fields->{is_first_render};
-    return $fields->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -208,29 +189,33 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     # Optimization: only if both src and alt are constants
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
+
     $$buffer .= $fields->{prefix};
     $$buffer .= ' alt="'.Bivio::Util::escape_html(
 	    $source->get_widget_value(@{$fields->{alt}})).'"'
 		    if $fields->{alt};
-    if ($fields->{is_first_render}) {
-	my($src) = $fields->{src};
-	$src = $source->get_widget_value(@$src) unless ref($src) eq 'HASH';
-	my($img) = ' src="'.Bivio::Util::escape_html($src->{uri}).'"';
-	$img .= " width=$src->{width} height=$src->{height}"
-		if !$fields->{have_size} && defined($src->{width});
-	# Only look up once, if is a constant
-	if ($src->{is_constant}) {
-	    $fields->{prefix} .= $img;
-	    unless ($fields->{alt}) {
-		$fields->{is_constant} = 1;
-		$fields->{value} = $fields->{prefix} . '>';
-		delete($fields->{prefix});
-	    }
-	    delete($fields->{src});
-	}
-	$$buffer .= $img;
-	$fields->{is_first_render} = 0;
+
+    # May be a widget value
+    my($src) = $fields->{src};
+    $src = $source->get_widget_value(@$src) if ref($src) eq 'ARRAY';
+
+    # Must return a string (used to return a hash)
+    Bivio::IO::Alert->die($fields->{src}, ' return a ref: ', $src)
+		if ref($src);
+
+    unless ($fields->{have_size}) {
+	# Normal case: icon is dynamic and size comes from Icon
+	$$buffer .= Bivio::UI::Icon->format_html(
+		$src, $source->get_request).'>';
+	return;
     }
+
+    # Have a size, so must format explicitly.
+    $src = Bivio::UI::Icon->get_value($src, $source->get_request);
+
+    $$buffer .= ' src="'.Bivio::Util::escape_html($src->{uri}).'"';
+    $$buffer .= " width=$src->{width} height=$src->{height}"
+	    if !$fields->{have_size} && defined($src->{width});
     $$buffer .= '>';
     return;
 }

@@ -94,7 +94,8 @@ sub new {
     # Location next, because may not be found or location may want
     # to clear 'auth_user_id'.
     my($uri) = $r->uri;
-    my($task_id, $auth_realm, $path_info)
+    my($task_id, $auth_realm, $path_info);
+    ($task_id, $auth_realm, $path_info, $uri)
 	    = Bivio::Agent::HTTP::Location->parse($self, $uri);
 
     # Must re-escape the URI.
@@ -116,7 +117,6 @@ sub new {
 	}
     }
 
-#TODO: Make secure.  Need to watch for large queries and forms here.
     # NOTE: Syntax is weird to avoid passing $r->args in an array context
     # which avoids parsing $r->args.
     my($query) = Bivio::Agent::HTTP::Query->parse(scalar($r->args));

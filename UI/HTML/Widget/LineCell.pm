@@ -93,12 +93,10 @@ sub initialize {
     return if exists($fields->{value});
     my($h) = $self->get_or_default('height', 1);
     my($count) = $self->get_or_default('count', 1);
-    my($dot) = Bivio::UI::Icon->get_clear_dot->{uri};
-    my($line) = "<td><img src=\"$dot\" height=$h width=1 border=0></td>";
-    my($pc) = Bivio::UI::Color->as_html_bg('page_bg');
+    my($line) = "<td>".$self->clear_dot_as_html(1, $h)."</td>";
     $fields->{value} = "<table width=\"100%\" cellspacing=0"
 	    . " cellpadding=0 border=0>\n"
-	    . (("<tr!COLOR!>$line</tr>\n<tr$pc>$line</tr>\n") x --$count)
+	    . (("<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n") x --$count)
 	    . "<tr!COLOR!>$line</tr></table>";
 }
 
@@ -115,11 +113,14 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my($value) = $fields->{value};
 
+    my($req) = $source->get_request;
     my($c) = $self->get_or_default('color', 'table_separator');
-    if ($c) {
-	$c = Bivio::UI::Color->as_html_bg($c);
-	$value =~ s/!COLOR!/$c/g;
-    }
+    $c = $c ? Bivio::UI::Color->format_html($c, 'bgcolor', $req) : '';
+    $value =~ s/!COLOR!/$c/g;
+
+    $c = Bivio::UI::Color->format_html('page_bg', 'bgcolor', $req);
+    $value =~ s/!PAGE_BG!/$c/g if $c;
+
     $$buffer .= $value;
     return;
 }

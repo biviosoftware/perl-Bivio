@@ -61,7 +61,6 @@ use Bivio::UI::HTML::Widget::Image;
 
 #=VARIABLES
 # Maps realm owner names to instances of this class
-my($_NAV_BAR_MAP);
 my($_MAP);
 _initialize();
 
@@ -71,7 +70,7 @@ _initialize();
 
 =for html <a name="new"></a>
 
-=head2 static new(string realm_owner, string title, hash_ref icon, array_ref text, string disclaimer) : Bivio::UI::HTML::Celebrity::Page
+=head2 static new(string realm_owner, string title, string icon, array_ref text, string disclaimer) : Bivio::UI::HTML::Celebrity::Page
 
 Creates the static instance of a celebrity page.  Caller
 must supply the I<title>, I<icon>, and I<text>
@@ -95,11 +94,6 @@ sub new {
 	}),
 	string_font => 'celebrity_disclaimer',
     });
-    # Look up the icon
-    my($picture) = Bivio::UI::Icon->get_widget_value($icon->{name});
-    $picture->{width} = $icon->{width} if $icon->{width};
-    $picture->{height} = $icon->{height} if $icon->{height};
-
     # Render the frame that contains the content.
     my($frame) = Bivio::UI::HTML::Widget::Grid->new({
 	values => [[
@@ -149,7 +143,7 @@ sub new {
 		height => 1,
 	    }),
 	    Bivio::UI::HTML::Widget::Grid->new({
-		cell_width => $picture->{width},
+		cell_width => ['Bivio::UI::Icon', '->get_width', $icon],
 		cell_align => 'ne',
 		bgcolor => 'celebrity_box',
 		pad => 1,
@@ -163,7 +157,7 @@ sub new {
 		    ],
 		    [
 			Bivio::UI::HTML::Widget::Image->new({
-			    src => $picture,
+			    src => $icon,
 			    alt => $title,
 			}),
 		    ],
@@ -216,7 +210,7 @@ sub execute {
 	    page_action_bar => undef,
 	    celeb_page_action_bar => $action_bar,
 	    page_type => $page_type,
-	    tool_bar_nav => $_NAV_BAR_MAP->{$page_type});
+	   );
     return $_MAP->{$owner_name}->SUPER::execute($req);
 }
 
@@ -253,7 +247,6 @@ sub internal_task_to_topic {
 sub _initialize {
     return if $_MAP;
     $_MAP = {};
-    _initialize_nav_bar_map();
     #
     # Syntax:
     # proxy_name
@@ -264,12 +257,7 @@ sub _initialize {
     __PACKAGE__->new(
 	    'ask_candis',
 	    'Candis King',
-	    {
-#TODO: Program to get size of jpgs
-		name => 'candis_king.jpg',
-		width => 150,
-		height => 189,
-	    },
+	    'candis_king',
 	    [<<'EOF'],
 Feel free to ask Candis King your nuts-and-bolts questions about bivio,
 investing, and the investment club experience.
@@ -294,12 +282,7 @@ EOF
     __PACKAGE__->new(
 	    'trez_talk',
 	    'Jerry & Rip',
-	    {
-#TODO: Program to get size of jpgs
-		name => 'jerry_rip.jpg',
-		width => 170,
-		height => 106,
-	    },
+	    name => 'jerry_rip',
 	    [<<'EOF'],
 Jerry Dressel and Rip West will answer your questions about club
 accounting and taxes.
@@ -325,118 +308,6 @@ When in doubt, follow the advice of your local tax advisor or accountant
 who is familiar with your particular circumstances.
 EOF
 	   );
-    return;
-}
-
-#TODO: Move back to Page
-# _initialize_nav_bar_map() : Bivio::UI::HTML::Widget
-#
-# Returns the nav bar buttons.
-#
-sub _initialize_nav_bar_map {
-    # Already initialized?
-    return if $_NAV_BAR_MAP;
-
-    my($spacer) = Bivio::UI::HTML::Widget::ClearDot->as_html(4, 1);
-    $_NAV_BAR_MAP = {
-	Bivio::UI::PageType::NONE() => undef,
-	Bivio::UI::PageType::REPORT() => undef,
-	Bivio::UI::PageType::LIST() => Bivio::UI::HTML::Widget::Join->new({
-	    pad => 2,
-	    values => [
-		# Page Up
-		Bivio::UI::HTML::Widget::Director->new({
-		    control => ['list_model', '->has_prev'],
-		    values => {
-			0 => Bivio::UI::HTML::Widget::Image->new({
-			    src => ['Bivio::UI::Icon', 'scroll_up_w_ia'],
-			    alt => 'No previous page',
-			}),
-			1 => Bivio::UI::HTML::Widget::Link->new({
-			    href => ['list_model',
-				'->format_uri_for_prev_page'],
-			    value => Bivio::UI::HTML::Widget::Image->new({
-				src => ['Bivio::UI::Icon', 'scroll_up_w_off'],
-				alt => 'Previous page',
-			    }),
-			}),
-		    },
-		}),
-		$spacer,
-		# Page Down
-		Bivio::UI::HTML::Widget::Director->new({
-		    control => ['list_model', '->has_next'],
-		    values => {
-			0 => Bivio::UI::HTML::Widget::Image->new({
-			    src => ['Bivio::UI::Icon', 'scroll_down_w_ia'],
-			    alt => 'No next page',
-			}),
-			1 => Bivio::UI::HTML::Widget::Link->new({
-			    href => ['list_model',
-				'->format_uri_for_next_page'],
-			    value => Bivio::UI::HTML::Widget::Image->new({
-				src => ['Bivio::UI::Icon', 'scroll_down_w_off'],
-				alt => 'Next page',
-			    }),
-			}),
-		    },
-		}),
-	    ],
-	}),
-	Bivio::UI::PageType::DETAIL() => Bivio::UI::HTML::Widget::Join->new({
-	    values => [
-		# Back to list
-		Bivio::UI::HTML::Widget::Link->new({
-		    href => ['list_model', '->format_uri_for_this_page'],
-		    value => Bivio::UI::HTML::Widget::Image->new({
-			src => ['Bivio::UI::Icon', 'back_w_off'],
-			alt => 'Back to list',
-		    }),
-		}),
-		$spacer,
-		# Previous
-		Bivio::UI::HTML::Widget::Director->new({
-		    control => ['list_model', '->has_prev'],
-		    values => {
-			0 => Bivio::UI::HTML::Widget::Image->new({
-			    src => ['Bivio::UI::Icon', 'scroll_up_w_ia'],
-			    alt => 'This is the first item in list',
-			}),
-			1 => Bivio::UI::HTML::Widget::Link->new({
-			    href => ['list_model',
-				'->format_uri_for_prev'],
-			    value => Bivio::UI::HTML::Widget::Image->new({
-				src => ['Bivio::UI::Icon', 'scroll_up_w_off'],
-				alt => 'Previous in list',
-			    }),
-			}),
-		    },
-		}),
-		$spacer,
-		# Next
-		Bivio::UI::HTML::Widget::Director->new({
-		    control => ['list_model', '->has_next'],
-		    values => {
-			0 => Bivio::UI::HTML::Widget::Image->new({
-			    src => ['Bivio::UI::Icon', 'scroll_down_w_ia'],
-			    alt => 'This is the last item in list',
-			}),
-			1 => Bivio::UI::HTML::Widget::Link->new({
-			    href => ['list_model',
-				'->format_uri_for_next'],
-			    value => Bivio::UI::HTML::Widget::Image->new({
-				src => ['Bivio::UI::Icon', 'scroll_down_w_off'],
-				alt => 'Next in list',
-			    }),
-			}),
-		    },
-		}),
-	    ],
-	}),
-    };
-    foreach my $w (values(%$_NAV_BAR_MAP)) {
-	$w->initialize if $w;
-    }
     return;
 }
 

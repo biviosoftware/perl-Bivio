@@ -82,7 +82,7 @@ rendered.  Renders I<script> and I<no_script_html> if defined.
 sub render {
     my(undef, $source, $buffer, $module_tag, $common_code,
 	    $script, $no_script_html) = @_;
-    my($req) = Bivio::Agent::Request->get_current;
+    my($req) = $source->get_request;
     my($tag) = 'javascript_'.$module_tag;
 
     # Render common code

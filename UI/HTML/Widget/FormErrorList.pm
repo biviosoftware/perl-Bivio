@@ -34,7 +34,7 @@ If the form isn't in error, renders nothing.
 
 =over 4
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -108,11 +108,11 @@ calls.  If the I<value> is a constant, then it will only be rendered once.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-#TODO: Optimize for is_constant
-    my($model) = $source->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($model) = $req->get_widget_value(@{$fields->{model}});
     return unless $model->in_error;
     my($errors) = $model->get_errors;
-    my($p, $s) = Bivio::UI::Font->as_html('error');
+    my($p, $s) = Bivio::UI::Font->format_html('error', $req);
     my($e) = "${p}Please correct the following errors:$s<p><ul>";
 
     # iterate errors, so general errors don't have to be bound to a field

@@ -36,7 +36,7 @@ string, the button won't be rendered.
 
 =over 4
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -125,7 +125,7 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     $$buffer .= $fields->{value}, return unless $fields->{is_first_render};
 
-    my($form) = $source->get_widget_value(
+    my($form) = $source->get_request->get_widget_value(
 	    @{$self->ancestral_get('form_model')});
     my($separation) = $self->ancestral_get('standard_submit_separation', 10);
     my($row) = [

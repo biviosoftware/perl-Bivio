@@ -45,7 +45,7 @@ before rendering.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -96,7 +96,7 @@ sub initialize {
     my($label, $field) = $self->get('label', 'field');
     my($model) = $self->ancestral_get('form_model');
     $self->put(
-	control => [$model, '->get_field_error', $field],
+	control => [['->get_request'], $model, '->get_field_error', $field],
 	values => {},
 	default_value => Bivio::UI::HTML::Widget::String->new({
 	    value => $label,

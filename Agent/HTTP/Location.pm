@@ -56,6 +56,7 @@ my($_DOCUMENT_TASK);
 my($_GENERAL_INT) = Bivio::Auth::RealmType->GENERAL->as_int;
 my($_GENERAL);
 my($_DOCUMENT_ROOT) = undef;
+my($_HOME_URI) = undef;
 my($_HELP_ROOT) = undef;
 Bivio::IO::Config->register({
     document_root => Bivio::IO::Config->REQUIRED,
@@ -96,7 +97,7 @@ sub format {
 	my($ro);
 	if (ref($realm)) {
 	    # If the realm doesn't have an owner, there's a bug somewhere
-	    $ro = $realm->format_uri;
+	    $ro = $realm->get('owner_name');
 	}
 	else {
 	    # We're a little strict here, since we added this overload later
@@ -308,6 +309,9 @@ sub initialize {
 	    ->{task};
     die('HTTP_DOCUMENT: task must be configured') unless $_DOCUMENT_TASK;
 
+    $_HOME_URI = $_FROM_TASK_ID{Bivio::Agent::TaskId::HOME()}->{uri};
+    die('HOME: task must bo configured') unless $_HOME_URI;
+
     # Configure HELP_ROOT
     my($help) = $_FROM_TASK_ID{Bivio::Agent::TaskId::HELP()};
     die('HELP: task not configured') unless $help;
@@ -330,7 +334,7 @@ sub initialize {
 
 =head2 static parse(string uri, Bivio::Agent::Request req) : array
 
-Returns I<task_id>, I<auth_realm>, and I<path_info> for I<uri>.
+Returns I<task_id>, I<auth_realm>, I<path_info>, and new I<uri> for I<uri>.
 
 Note that the I<path_info> is left on the URI.
 
@@ -338,9 +342,16 @@ Note that the I<path_info> is left on the URI.
 
 sub parse {
     my(undef, $req, $uri) = @_;
+    my($facade) = $uri =~ s!^/*\*(\w+)!! ? $1 : undef;
+    Bivio::UI::Facade->setup_request($facade, $req)
+		unless $req->has_keys('facade');
     my($orig_uri) = $uri;
-    $uri =~ s!^/+!!g;
-    # Percent is a special character
+    $uri =~ s!^/+!!;
+
+    # Internal redirect to the home page.
+    $orig_uri = '/'.($uri = $_HOME_URI) unless length($uri);
+
+    # Question mark is a special character
     my(@uri) = map {
 	$req->die(Bivio::DieCode::NOT_FOUND,
 		{entity => $orig_uri, message => 'contains special char'})
@@ -352,7 +363,7 @@ sub parse {
 
     my($info);
     # General realm simple map; no placeholders or path_info
-    return ($info->{task}, $_GENERAL, '')
+    return ($info->{task}, $_GENERAL, '', $orig_uri)
 	    if defined($info = $_FROM_URI{$uri}->[$_GENERAL_INT]);
 
     # Is this a general realm with path_info?  The above always
@@ -363,8 +374,8 @@ sub parse {
 	# Bivio::Type::RealmName values.  Therefore, we fail with
 	# not found if it matches the first component, but there
 	# isn't a task for realm_info.
-	return ($info->{task}, $_GENERAL, '/'.join('/', @uri[1..$#uri]))
-		if $info->{has_path_info};
+	return ($info->{task}, $_GENERAL, '/'.join('/', @uri[1..$#uri]),
+                $orig_uri) if $info->{has_path_info};
 
 	# The URI doesn't accept path_info, so not found.
 	$req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
@@ -384,7 +395,7 @@ sub parse {
 	    # a user lookup here which is a database hit.
 	    $req->put(user_id => undef);
 
-	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, '');
+	    return ($_DOCUMENT_TASK, $_GENERAL, $uri, '', $orig_uri);
 	}
 
 	# Not found
@@ -439,7 +450,7 @@ sub parse {
     $uri = join('/', @uri);
     my($rti) = $realm->get('type')->as_int;
     # No path info?
-    return ($_FROM_URI{$uri}->[$rti]->{task}, $realm, '')
+    return ($_FROM_URI{$uri}->[$rti]->{task}, $realm, '', $orig_uri)
 	    if defined($_FROM_URI{$uri}) && defined($_FROM_URI{$uri}->[$rti]);
 
     # Is this a path_info URI?  Note this may seem a bit "slow", but it
@@ -447,7 +458,7 @@ sub parse {
     # requests anyway.
     $uri = join('/', @uri[0..$path_info_index]);
     return ($info->{task}, $realm,
-	    '/'.join('/', @uri[$path_info_index+1..$#uri]))
+	    '/'.join('/', @uri[$path_info_index+1..$#uri]), $orig_uri)
 	    if defined($_FROM_URI{$uri})
 		    && defined($info = $_FROM_URI{$uri}->[$rti])
 			    && $info->{has_path_info};

@@ -46,7 +46,7 @@ I<event_handler> will be rendered before this field.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -164,7 +164,7 @@ to extract the field's type and can only do that when we have a form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
     unless ($fields->{initialized}) {
@@ -173,7 +173,7 @@ sub render {
 		.($type->isa('Bivio::Type::Password') ? 'password' : 'text')
 		.' size='.$fields->{size}.' maxlength='.$type->get_width();
 	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
-		$field) if $fields->{handler};
+		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
 	$fields->{initialized} = 1;
     }

@@ -11,27 +11,6 @@ Bivio::Type::Enum - base class for enumerated types
 =head1 SYNOPSIS
 
     use Bivio::Type::Enum;
-    @<PACKAGE>:ISA = qw(Bivio::Type::Enum);
-    __PACKAGE__->compile(
-        'NAME' => {
-            0,
-            'short description',
-            'long description',
-            'alias 1',
-            ...,
-            'alias N',
-        },
-    );
-    __PACKAGE__->NAME;
-    __PACKAGE__->NAME->as_string;
-    __PACKAGE__->NAME->as_int;
-    __PACKAGE__->NAME->get_short_desc;
-    __PACKAGE__->NAME->get_long_desc;
-    __PACKAGE__->from_int(0);
-    __PACKAGE__->from_any('NAME');
-    __PACKAGE__->from_any(0);
-    __PACKAGE__->from_any(__PACKAGE__->from_int(0));
-    __PACKAGE__->execute_NAME;
 
 =cut
 
@@ -140,6 +119,24 @@ sub unsafe_from_any {
     my($proto, $thing) = @_;
     ref($thing) || ($thing = uc($thing));
     my($info) = _get_info($proto, $thing, 1);
+    return $info ? $info->[5] : undef;
+}
+
+=for html <a name="unsafe_from_name"></a>
+
+=head2 static unsafe_from_name(string name) : Bivio::Type::Enum
+
+Returns enum value for specified I<name> in a case-insensitive manner.
+If not found, returns C<undef>.
+
+ASSERTS: I<name> is not a ref.
+
+=cut
+
+sub unsafe_from_name {
+    my($proto, $name) = @_;
+    Bivio::IO::Alert->die($name, ': is not a string') if ref($name);
+    my($info) = _get_info($proto, uc($name), 1);
     return $info ? $info->[5] : undef;
 }
 
@@ -302,6 +299,26 @@ to enums in a case-insensitive manner.
 
 As many aliases as you like may be provided.  However, duplicates
 will cause an error.
+
+Example compile:
+
+    __PACKAGE__->compile(
+        'NAME1' => {
+            1,
+            'short description',
+            'long description',
+            'alias 1',
+            '...',
+            'alias N',
+        },
+        'NAME2' => {
+            2,
+        },
+    );
+
+Reference an Enum value with:
+
+    __PACKAGE__->NAME1;
 
 =cut
 

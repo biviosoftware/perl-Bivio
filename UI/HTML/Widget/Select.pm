@@ -37,7 +37,7 @@ a list of choices.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -51,7 +51,7 @@ List of choices will be constructed from a
 L<Bivio::TypeValue|Bivio::TypeValue> whose type is a
 L<Bivio::Type::EnumSet|Bivio::Type::EnumSet>.
 
-=item choices : array_ref (required)
+=item choices : array_ref (required, get_request)
 
 Widget value which returns
 L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.
@@ -157,7 +157,8 @@ to extract the field's type and can only do that when we have a form.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
@@ -166,8 +167,11 @@ sub render {
     }
     $$buffer .= $fields->{prefix}.$form->get_field_name_for_html($field)
 	    ." size=1>\n";
-    _load_items_from_list($self, $source) if $fields->{list_source};
-    my($items) = $fields->{items};
+
+    my($items) = $fields->{list_source}
+	    ? _load_items_from_list($self,
+		    $req->get_widget_value(@{$fields->{list_source}}))
+	    : $fields->{items};
     my($field_value) = $form->get($field);
 
     $field_value = '' unless defined($field_value);
@@ -242,16 +246,13 @@ sub _load_items_from_enum_set {
     return _load_items_from_enum_list($self, \@choices);
 }
 
-# _load_items_from_list(Bivio::UI::HTML::Widget::Select self, any source)
+# _load_items_from_list(Bivio::UI::HTML::Widget::Select self, Bivio::Biz::Listmodel list) : array_ref
 #
 # Loads items from the list choices attribute. List values are
 # dynamic so this is called during render.
 #
 sub _load_items_from_list {
-    my($self, $source) = @_;
-    my($fields) = $self->{$_PACKAGE};
-
-    my($list) = $source->get_widget_value(@{$fields->{list_source}});
+    my($self, $list) = @_;
     my($display_name) = $self->get('list_display_field');
     my($id_name) = $self->get('list_id_field');
 
@@ -261,12 +262,11 @@ sub _load_items_from_list {
     while($list->next_row) {
 	push(@items, $list->get($id_name), $list->get($display_name));
     }
-    $fields->{items} = \@items;
 
     # reset the list cursor for the next guy
     $list->reset_cursor;
 
-    return;
+    return \@items;
 }
 
 =head1 COPYRIGHT

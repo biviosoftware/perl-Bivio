@@ -61,6 +61,7 @@ sub new {
 	    $static_properties);
     $self->{$_PACKAGE} = {
 	source => $source,
+	request => $source->[0]->get_request,
 	loaded => 1,
     };
     return $self;
@@ -108,6 +109,18 @@ sub get_cursor {
 	return -1;
     }
     return 0;
+}
+
+=for html <a name="get_request"></a>
+
+=head2 get_request() : Bivio::Agent::Request
+
+Returns the request associated with this list.
+
+=cut
+
+sub get_request {
+    return shift->{$_PACKAGE}->{request};
 }
 
 =for html <a name="get_result_set_size"></a>

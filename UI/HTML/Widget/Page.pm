@@ -128,6 +128,7 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{head};
+
     my($v);
     foreach $v (($fields->{head}, $fields->{body})
 	    = $self->get('head', 'body')) {
@@ -151,11 +152,12 @@ sub render {
 	    ."\n<html><head>\n";
     $fields->{head}->render($source, $buffer);
     $$buffer .= '</head><body';
+    my($req) = $source->get_request;
     # Always have a background color
-    $$buffer .= Bivio::UI::Color->as_html_bg('page_bg');
+    $$buffer .= Bivio::UI::Color->format_html('page_bg', 'bgcolor', $req);
     foreach my $c ('text', 'link', 'alink', 'vlink') {
 	my($n) = 'page_'.$c;
-	$$buffer .= Bivio::UI::Color->as_html($c, $n);
+	$$buffer .= Bivio::UI::Color->format_html($n, $c, $req);
     }
     $$buffer .= ">\n";
 

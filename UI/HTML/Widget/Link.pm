@@ -35,7 +35,7 @@ an C<HREF> attribute.
 
 =item control : string []
 
-=item control : Bivio::Agent::TaskId []
+=item control : Bivio::Agent::TaskId [] (get_request)
 
 =item control : array_ref []
 

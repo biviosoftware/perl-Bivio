@@ -37,7 +37,7 @@ It always has a label, but the label may be a string or widget.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -116,12 +116,13 @@ Draws the date field on the specified buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($req) = $source->get_request;
+    my($form) = $req->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
     my($value) = $fields->{value};
 
     # first render initialization
-    my($p, $s) = Bivio::UI::Font->as_html('RADIO');
+    my($p, $s) = Bivio::UI::Font->format_html('radio', $req);
     unless ($fields->{initialized}) {
 	$fields->{prefix} = '<input name=';
 	$fields->{suffix} = ' type=radio value="'

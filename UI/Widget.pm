@@ -241,13 +241,15 @@ a value as their first argument and configuration parameters
 as their subsequent parameters.  They format the value according
 to the configuration parameters.
 
-=head2 Current Request
+=head2 Request
 
 Some widgets assume there is a request.  While it might make
 sense to have dynamic binding through widget values, there is
 a well-known call
-L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current">,
-which returns the current request.
+
+    $source->get_request
+
+which always returns the request being processed.
 It makes sense to avoid clutter in the configuration and
 instead assume there is a request for those widgets that need it.
 An example is
@@ -344,7 +346,7 @@ sub accepts_attribute {
 
 =for html <a name="initialize"></a>
 
-=head2 initialize()
+=head2 abstract initialize()
 
 Initializes the widgets internal structures.  Widgets should cache static
 attributes.  Widgets initialize should be callable more than once.
@@ -368,6 +370,27 @@ Returns false by default.
 
 sub is_constant {
     return 0;
+}
+
+=for html <a name="put_and_initialize"></a>
+
+=head2 put_and_initialize(string name, any value, ...) : Bivio::UI::Widget
+
+Puts the attributes and initializes.  Typically used in the form:
+
+    $fields->{my_child} = $self->some_widget(...)->put_and_initialize(
+           parent => $self,
+    );
+
+Returns I<self>.
+
+=cut
+
+sub put_and_initialize {
+    my($self) = shift;
+    $self->put(@_);
+    $self->initialize;
+    return $self;
 }
 
 =for html <a name="render"></a>

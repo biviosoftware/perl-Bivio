@@ -117,6 +117,12 @@ blank place holders.
 
 Sets the cell height explicitly.
 
+=item cell_height : array_ref []
+
+Sets the cell height explicitly from a widget value.  The
+widget value must return the full attribute, e.g. use
+L<Bivio::UI::Icon::get_height_as_html|Bivio::UI::Icon/"get_height_as_html">.
+
 =item cell_nowrap : boolean [false]
 
 If true, the cell will not be wrapped.
@@ -128,6 +134,12 @@ The value passed to C<ROWSPAN> attribute of the C<TD> tag.
 =item cell_width : int []
 
 Sets the cell width explicitly.
+
+=item cell_width : array_ref []
+
+Sets the cell height explicitly from a widget value.  The
+widget value must return the full attribute, e.g. use
+L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
 
 =back
 
@@ -196,12 +208,12 @@ sub initialize {
 	$#$r = -1;
 	my($c);
 	foreach $c (@cols) {
-	    my($p) = '<td';
+	    my(@p) = ('<td');
 	    my($end) = 1;
 	    my($form_end) = 0;
 	    if (ref($c) eq 'ARRAY') {
 		# Widget value, nothing to prepare.
-		$p .= '>';
+		_append(\@p, '>');
 	    }
 	    elsif (ref($c)) {
 		# May set attributes on itself
@@ -216,19 +228,23 @@ sub initialize {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
 		    # width to 100%.
-		    $p .= " colspan=$expand_cols" if $expand_cols > 1;
-		    $p .= ' width="100%"' if $expand;
+		    _append(\@p, " colspan=$expand_cols") if $expand_cols > 1;
+		    _append(\@p, ' width="100%"') if $expand;
 		    $expand_cols = 1;
 		}
 #TODO: Need better crosschecking
-		$p .= ' width="1%"' if $c->get_or_default('cell_compact', 0);
-		$p .= Bivio::UI::Align->as_html($align) if $align;
-		$p .= " rowspan=$rowspan" if $rowspan;
-		$p .= " colspan=$colspan" if $colspan;
-		$p .= ' nowrap' if $c->get_or_default('cell_nowrap', 0);
+		_append(\@p, ' width="1%"')
+			if $c->get_or_default('cell_compact', 0);
+		_append(\@p, Bivio::UI::Align->as_html($align)) if $align;
+		_append(\@p, " rowspan=$rowspan") if $rowspan;
+		_append(\@p, " colspan=$colspan") if $colspan;
+		_append(\@p, ' nowrap')
+			if $c->get_or_default('cell_nowrap', 0);
 #TODO: Should be a number or percent?
-		$p .= qq! width="$width"! if $width;
-		$p .= qq! height="$height"! if $height;
+		_append(\@p, ref($width) ? $width : qq! width="$width"!)
+			if $width;
+		_append(\@p, ref($height) ? $height : qq! height="$height"!)
+			if $height;
 		# NOTE: Start tag will be closed by render in case there
 		# is a cell_bgcolor.
 		$end = $c->get_or_default('cell_end', 1);
@@ -236,18 +252,18 @@ sub initialize {
 	    }
 	    elsif (!defined($c)) {
 		# Replace undef cells with something real. 
-		$p .= '>';
+		_append(\@p, '>');
 		$c = '';
 	    }
 	    elsif ($c =~ /^\s+$/) {
-		$p .= ' width="1%">';
 		$c =~ s/\s/&nbsp;/g;
+		_append(\@p, ' width="1%">');
 	    }
 	    else {
-		$p .= '>';
+		_append(\@p, '>');
 	    }
 	    # Render scalars literally.
-	    push(@$r, $p, $c, $end ? "</td>\n" : '',
+	    push(@$r, @p, $c, $end ? "</td>\n" : '',
 		   $form_end ? '</form>' : '');
 	}
     }
@@ -312,7 +328,8 @@ sub render {
     my($start) = length($$buffer);
     $$buffer .= $fields->{prefix};
     my($bg) = $self->unsafe_get('bgcolor');
-    $$buffer .= Bivio::UI::Color->as_html_bg($bg) if $bg;
+    my($req) = $source->get_request;
+    $$buffer .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req) if $bg;
     $$buffer .= '>';
 
     my($r, $c);
@@ -326,7 +343,8 @@ sub render {
 		# Render widget
 		unless ($is_widget_value) {
 		    my($bg) = $c->unsafe_get('cell_bgcolor');
-		    $row .= Bivio::UI::Color->as_html_bg($bg) if $bg;
+		    $row .= Bivio::UI::Color->format_html($bg, 'bgcolor', $req)
+			    if $bg;
 		    # Close cell start always.  See initialization.
 		    $row .= '>';
 		}
@@ -346,6 +364,25 @@ sub render {
 }
 
 #=PRIVATE METHODS
+
+# _append(array_ref list, string element)
+# _append(array_ref list, ref element)
+#
+# Appends element literally to $list->[$#list] both parts are a string,
+# else pushes on a new element.
+#
+sub _append {
+    my($list, $element) = @_;
+    if (ref($list->[$#$list]).ref($element) eq '') {
+	# both are strings
+	$list->[$#$list] .= $element;
+    }
+    else {
+	# Last or this element is a ref
+	push(@$list, $element);
+    }
+    return;
+}
 
 =head1 COPYRIGHT
 

@@ -52,6 +52,8 @@ use Bivio::IO::Config;
 use Bivio::IO::Alert;
 use Cwd ();
 use Sys::Hostname;
+use Bivio::Agent::Request;
+use Bivio::UI::Facade;
 
 #=VARIABLES
 my($_APACHE_HOME) = '/usr/local/apache';
@@ -110,6 +112,30 @@ EOF
 	    ? "PerlSetEnv BIVIO_CONF $ENV{'BIVIO_CONF'}" : '';
     my($hostip) = sprintf("%d.%d.%d.%d",
             unpack('C4', (gethostbyname($hostname))[4]));
+
+    Bivio::UI::Facade->initialize;
+    my($facades) = '';
+    foreach my $facade (@{Bivio::UI::Facade->get_uri_list}) {
+	$facades .= <<"EOF";
+	    <VirtualHost $hostip:$port>
+		ServerName $facade.$hostname
+		RewriteEngine On
+		RewriteLog rewrite.log
+		RewriteLogLevel 0
+
+		RewriteCond $pwd/html/i/selftrade/\$1 -f
+		RewriteRule ^/i/(.+) /i/selftrade/\$1  [NS,L]
+		RewriteRule ^/./ - [NS,L]
+		RewriteRule ^(.*) /*$facade\$1 [NS,PT]
+
+		<LocationMatch "^/(index.html|[*a-zA-Z0-9_\-]{2,}(\$|/))">
+		    SetHandler perl-script
+		    PerlHandler $handler
+		</LocationMatch>
+	    </VirtualHost>
+EOF
+    }
+
     local($_);
     my($conf) = $execute ? "httpd$$.conf" : "&STDOUT";
     open(OUT, ">$conf") || die("open $conf: $!");
@@ -274,28 +300,13 @@ NameVirtualHost <$hostip>:<$port>
 
 <VirtualHost <$hostip>:<$port> 127.0.0.1:<$port>>
     ServerName <$hostname>
-    <LocationMatch "^/(index.html|[a-zA-Z0-9_\-]{2,}($|/))">
+    <LocationMatch "^/(index.html|[*a-zA-Z0-9_\-]{2,}($|/))">
         SetHandler perl-script
         PerlHandler <$handler>
     </LocationMatch>
 </VirtualHost>
 
-<VirtualHost <$hostip>:<$port>>
-    ServerName selftrade.<$hostname>
-    RewriteEngine On
-    RewriteLog rewrite.log
-    RewriteLogLevel 0
-
-    RewriteCond <$pwd>/html/i/selftrade/$1 -f
-    RewriteRule ^/i/(.+) /i/selftrade/$1  [NS,L]
-    RewriteRule ^/./ - [NS,L]
-    RewriteRule ^(.*) /selftrade$1 [NS,PT]
-
-    <LocationMatch "^/(index.html|[a-zA-Z0-9_\-]{2,}($|/))">
-        SetHandler perl-script
-        PerlHandler <$handler>
-    </LocationMatch>
-</VirtualHost>
+<$facades>
 
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0

@@ -81,7 +81,14 @@ tasks defined in this module is:
 
 #=VARIABLES
 my(@_CFG) = (
-#1
+    [qw(
+	HOME
+	1
+        GENERAL
+        DOCUMENT_READ
+        index.html
+	Bivio::Biz::Action::HTTPDocument
+    )],
 #2
     # This is the home page task.
     [qw(

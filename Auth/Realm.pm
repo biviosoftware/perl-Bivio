@@ -280,7 +280,7 @@ sub format_uri {
     return $uri if $uri;
 
     # Not a Proxy, just compute and cache (since we are checking anyway)
-    $uri = '/'.$self->get('owner_name');
+    $uri = $self->get('owner')->format_uri();
     $self->put(_uri => $uri);
     return $uri;
 }

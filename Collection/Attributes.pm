@@ -344,8 +344,8 @@ sub get_widget_value {
 	    return $param1->get_widget_value(@_) if @_;
 
 #TODO: Document this very special case...
-	    # Return self if we're looking for self
-	    return $self if ref($self) eq $param1;
+#	    # Return self if we're looking for self
+#	    return $self if ref($self) eq $param1;
 
 	    # Otherwise, couldn't find it.
 	    Bivio::IO::Alert->die($param1, ': not found in source ', $self);

@@ -18,157 +18,111 @@ Bivio::UI::Color - named colors
 
 =head1 EXTENDS
 
-L<Bivio::Type::Enum>
+L<Bivio::UI::FacadeComponent>
 
 =cut
 
-use Bivio::Type::Enum;
-@Bivio::UI::Color::ISA = ('Bivio::Type::Enum');
+use Bivio::UI::FacadeComponent;
+@Bivio::UI::Color::ISA = ('Bivio::UI::FacadeComponent');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Color> is a map of names to rgb color values.  The
-color values are represented integers.  Therefore, no two colors
-are alike.  However, there can be three aliases (name, short
-description, and long description) for each color.
-
-If a color is negative, it is not displayed.
-
-The current color names are:
-
-=over 4
-
-=back
+C<Bivio::UI::Color> is a map of names to RGB color values.  The
+color values are represented integers.  If a color is negative,
+it means "no color".
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="UNDEF_CONFIG"></a>
+
+=head2 UNDEF_CONFIG() : int
+
+Returns "no color" config.
+
+=cut
+
+sub UNDEF_CONFIG {
+    return -1;
+}
+
 #=IMPORTS
+use Bivio::UI::Facade;
 
 #=VARIABLES
-__PACKAGE__->compile(
-    NO_COLOR_TAG => [
-	-1,
-	'table_odd_row_bg',
-    ],
-    PAGE_BG => [
-	0xFFFFFF,
-	'image_menu_separator',
-	'report_page_heading_bg',
-        'celebrity_box_title',
-        'celebrity_box_text_bg',
-    ],
-    ERROR => [
-	0x990000,
-	'warning',
-    ],
-    PAGE_TEXT => [
-	0x000000,
-	'table_separator',
-    ],
-    STRIPE_ABOVE_MENU => [
-	0x009999,
-	'celebrity_disclaimer',
-	'tax_disclaimer',
-    ],
-    FOOTER_MENU => [
-	0x006666,
-	'page_vlink',
-	'page_alink',
-	'page_link',
-	'user_name',
-	'line_above_menu',
-	'action_bar_border',
-	'detail_chooser',
-	'page_heading',
-	'form_field_label_in_text',
-	'text_menu_font',
-        'celebrity_box',
-	'description_label',
-	'task_list_heading',
-	'task_list_label',
-    ],
-    ICON_TEXT_IA => [
-	0xEEEEEE,
-    ],
-    SUMMARY_LINE => [
-	0x66CC66,
-    ],
-    TABLE_EVEN_ROW_BG => [
-	# This is not websafe, but it will round down to 0xCCCCCC
-	# on systems that have only 256 colors.
-	0xE4E4E4,
-    ],
-    REALM_NAME => [
-	0xFF6633,
-    ],
-    TOP_MENU_BG => [
-	0xffcc33,
-	'action_bar_bg',
-	'text_menu_line',
-    ],
-#    TEXT_MENU_FONT => [
-#	0xCC9900,
-#    ],
-);
+Bivio::UI::Facade->register;
 
 =head1 METHODS
 
 =cut
 
-=for html <a name="as_html"></a>
+=for html <a name="format_html"></a>
 
-=head2 static as_html(string attr, any thing) : string
+=head2 static format_html(string name, string attr, Bivio::Collection::Attributes req_or_facade) : string
 
-Returns the color as an attribute=value string suitable for HTML.
+=head2 format_html(string name, string attr) : string
+
+Returns the color as an attribute=value string suitable for HTML,
+with a I<leading space>.
 
 If I<thing> returns false (zero or C<undef>), returns an empty string.
 
+See
+L<Bivio::UI::FacadeComponent::internal_get_value|Bivio::UI::FacadeComponent/"internal_get_value">
+for description of last argument.
+
 =cut
 
-sub as_html {
-    die('expecting exactly three args') unless int(@_) == 3;
-    my($proto, $attr, $thing) = @_;
-    return '' unless $thing;
+sub format_html {
+    my($proto, $name, $attr, $req) = @_;
+    return '' unless $name;
 
-    my($c) = Bivio::Type::Enum::from_any($proto, $thing)->as_int;
-    return $c >= 0 ? sprintf(' %s="#%06X"', $attr, $c) : '';
+    # Lookup name
+    my($v) = $proto->internal_get_value($name, $req);
+    return '' unless $v;
+
+    # Return cached value
+    return defined($v->{$attr}) ? $v->{$attr}
+	    : _format_html($v->{config}, $attr);
 }
 
-=for html <a name="as_html_bg"></a>
+=for html <a name="internal_initialize_value"></a>
 
-=head2 static as_html_bg(any thing) : string
+=head2 internal_initialize_value(hash_ref value, string name)
 
-Same as L<as_html|"as_html">, but generates C<BGCOLOR> attribute.
-
-=cut
-
-sub as_html_bg {
-    shift->as_html('bgcolor', @_);
-}
-
-=head2 static as_html_fg(any thing) : string
-
-Returns the color as a C<COLOR> attribute.
+Outputs a warning if not a valid value.  Always successful.
 
 =cut
 
-sub as_html_fg {
-    shift->as_html('color', @_);
-}
+sub internal_initialize_value {
+    my($self, $value, $name) = @_;
+    my($v) = $value->{config};
+    unless ($v =~ /^-?\d+$/) {
+	$self->bad_value($value, $name, 'not an integer');
+	# We set the value to avoid cascading errors in Facade clones
+	$v = $value->{config} = -1;
+    }
 
-=for html <a name="is_continuous"></a>
-
-=head2 static is_continuous : false
-
-Returns false.
-
-=cut
-
-sub is_continuous {
-    return 0;
+    # Cache the most commonly used values
+    $value->{bgcolor} = _format_html($v, 'bgcolor');
+    $value->{color} = _format_html($v, 'color');
+    return;
 }
 
 #=PRIVATE METHODS
+
+# _format_html(int num, string attr) : string
+#
+# Formats the color attribute.
+#
+sub _format_html {
+    my($num, $attr) = @_;
+    return $num >= 0 ? sprintf(' %s="#%06X"', $attr, $num) : '';
+}
 
 =head1 COPYRIGHT
 

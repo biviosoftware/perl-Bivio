@@ -91,6 +91,9 @@ Renders a clear dot and returns the string.  In the first case renders
 this instance (must be initialized).  With arguments, renders a
 constant string with the secified params.
 
+Don't use in rendering code, because dynamically creates a ClearDot widget.
+Instead create a ClearDot widget and have it do the dynamic rendering.
+
 =cut
 
 sub as_html {
@@ -99,6 +102,9 @@ sub as_html {
 #TODO: optimize
 	$self = __PACKAGE__->new({width => $width, height => $height});
 	$self->initialize;
+    }
+    elsif (!ref($self)) {
+	die('must pass width and height if called statically');
     }
     return $self->{$_PACKAGE}->{value};
 }
@@ -116,7 +122,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{value});
     $fields->{value} = '<img src="'
-	    .Bivio::Util::escape_html(Bivio::UI::Icon->get_clear_dot->{uri})
+	    .Bivio::UI::Icon->get_clear_dot->{uri}
             .'" border=0';
     $fields->{is_constant} = 1;
     foreach my $f (qw(width height)) {

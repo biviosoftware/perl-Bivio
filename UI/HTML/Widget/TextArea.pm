@@ -37,7 +37,7 @@ attribute C<TYPE=TEXTAREA>.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -115,7 +115,7 @@ Render the input field.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
     # need first time initialization to get field name from form model

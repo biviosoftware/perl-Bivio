@@ -169,10 +169,6 @@ Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
 
 Same as I<task>'s I<id>.
 
-=item this_host : string
-
-This host (hostname).
-
 =item timezone : string
 
 The user's timezone (if available).  The timezone is an offsite in
@@ -233,9 +229,6 @@ my($_HTTP_HOST) = sprintf('%d.%d.%d.%d',
 	unpack('C4', (gethostbyname(substr(`hostname`, 0, -1)))[4]));
 my($_IS_PRODUCTION) = 0;
 my($_MAIL_HOST) = "[$_HTTP_HOST]";
-my($_THIS_HOST) = `hostname`;
-chop($_THIS_HOST);
-die('unable to get hostname') unless $_THIS_HOST;
 my($_SUPPORT_PHONE);
 my($_SUPPORT_EMAIL);
 my($_SUPPORT_EMAIL_AS_HTML);
@@ -274,10 +267,10 @@ sub new {
     my($proto, $hash) = @_;
     my($self) = &Bivio::Collection::Attributes::new($proto, $hash);
     $self->put(request => $self,
-	    http_host => $_HTTP_HOST,
 	    is_production => $_IS_PRODUCTION,
+
+	    http_host => $_HTTP_HOST,
 	    mail_host => $_MAIL_HOST,
-	    this_host => $_THIS_HOST,
 	    support_phone => $_SUPPORT_PHONE,
 	    support_email => $_SUPPORT_EMAIL,
 	    support_email_as_html => $_SUPPORT_EMAIL_AS_HTML,
@@ -307,7 +300,7 @@ sub can_user_execute_task {
     my($self, $task) = @_;
 
     # If we can't get a realm, than can execute task
-    my($realm) = $self->internal_get_realm_for_task($task);
+    my($realm) = $self->get_realm_for_task($task);
     return 0 unless $realm;
 
     # Execute in this realm?
@@ -560,7 +553,7 @@ sub format_uri {
 
     my($uri) = Bivio::Agent::HTTP::Location->format(
 	    $task_id, defined($auth_realm) ? $auth_realm :
-	    $self->internal_get_realm_for_task($task_id), $self, 0,
+	    $self->get_realm_for_task($task_id), $self, 0,
 	    $path_info);
 
     # Yes, we don't want $query unless it is passed.
@@ -689,16 +682,26 @@ sub get_form {
     return undef;
 }
 
-=for html <a name="get_http_host"></a>
+=for html <a name="get_realm_for_task"></a>
 
-=head2 get_http_host() : string
+=head2 get_realm_for_task(Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
 
-Returns the http host name used for configuration.
+Returns the realm for the specified task.  If the realm type of the
+task matches the current realm, current realm is returned.  Otherwise,
+we return the best realm that matches the type of the task.
 
 =cut
 
-sub get_http_host {
-    return $_HTTP_HOST;
+sub get_realm_for_task {
+    my($self, $task_id) = @_;
+    # If is current task, just return current realm.
+    my($realm) = $self->get('auth_realm');
+    return $realm if $task_id == $self->get('task_id');
+    my($task) = Bivio::Agent::Task->get_by_id($task_id);
+    my($trt) = $task->get('realm_type');
+    return $realm if $trt == $realm->get('type');
+    # Else, different realm type, look up
+    return _get_realm($self, $trt, $task_id);
 }
 
 =for html <a name="get_reply"></a>
@@ -795,28 +798,6 @@ sub handle_config {
     $_SUPPORT_EMAIL_AS_HTML = '<a href="mailto:'.$_SUPPORT_EMAIL
 	    .'">'.$_SUPPORT_EMAIL.'</a>';
     return;
-}
-
-=for html <a name="internal_get_realm_for_task"></a>
-
-=head2 internal_get_realm_for_task(Bivio::Agent::TaskId task_id) : Bivio::Auth::Realm
-
-Returns the realm for the specified task.  If the realm type of the
-task matches the current realm, current realm is returned.  Otherwise,
-we return the best realm that matches the type of the task.
-
-=cut
-
-sub internal_get_realm_for_task {
-    my($self, $task_id) = @_;
-    # If is current task, just return current realm.
-    my($realm) = $self->get('auth_realm');
-    return $realm if $task_id == $self->get('task_id');
-    my($task) = Bivio::Agent::Task->get_by_id($task_id);
-    my($trt) = $task->get('realm_type');
-    return $realm if $trt == $realm->get('type');
-    # Else, different realm type, look up
-    return _get_realm($self, $trt, $task_id);
 }
 
 =for html <a name="internal_redirect_realm"></a>

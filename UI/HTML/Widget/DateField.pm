@@ -49,7 +49,7 @@ I<event_handler> will be rendered before this field.
 
 Name of the form field.
 
-=item form_model : array_ref (required, inherited)
+=item form_model : array_ref (required, inherited, get_request)
 
 Which form are we dealing with.
 
@@ -144,7 +144,7 @@ Draws the date field on the specified buffer.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($form) = $source->get_widget_value(@{$fields->{model}});
+    my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
 
 #TODO: Merge with Text.  Too much duplicated code.
@@ -155,7 +155,7 @@ sub render {
 	my($width) = $type->get_width();
 	$fields->{prefix} = "<input type=text size=$width maxlength=$width";
 	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
-		$field) if $fields->{handler};
+		$field, $source) if $fields->{handler};
 	$fields->{prefix} .= ' name=';
 	$fields->{suffix} = '">';
 	$fields->{initialized} = 1;
