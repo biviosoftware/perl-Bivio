@@ -379,7 +379,8 @@ sub _send_http_header {
 
 	# We set the cookie if we don't cache this answer.  0 means
 	# *really* private.
-	$self->set_cache_private(0) if $req->get('cookie')->header_out($r);
+	$self->set_cache_private(0)
+		if $req->get('cookie')->header_out($r, $req);
 
 	# Set any optional headers
 	if ($fields->{headers}) {

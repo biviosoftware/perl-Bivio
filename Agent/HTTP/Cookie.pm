@@ -259,6 +259,7 @@ use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::LoginCookie;
+use Bivio::Type::UserAgent;
 use Bivio::Util;
 use Crypt::CBC;
 
@@ -304,10 +305,16 @@ Bivio::IO::Config->register({
 Initializes the cookie object from the request.  Does not put anything
 on the request, but upcalls the cookie handlers.
 
+Initializes an empty cookie unless
+L<Bivio::Type::UserAgent|Bivio::Type::UserAgent> is a C<BROWSER>.
+
 =cut
 
 sub new {
     my($proto, $req, $r) = @_;
+    return Bivio::Collection::Attributes::new($proto, {})
+	    unless $req->get('Bivio::Type::UserAgent')
+		    == Bivio::Type::UserAgent::BROWSER();
     my($cookie) = $r->header_in('Cookie');
     _trace($cookie) if $_TRACE;
     my($fields) = _parse($cookie || '');
@@ -407,18 +414,23 @@ sub handle_cookie_in {
 
 =for html <a name="header_out"></a>
 
-=head2 header_out(Apache::Request r) : boolean
+=head2 header_out(Apache::Request r, Bivio::Agent::Request req) : boolean
 
-Sets the cookie in the header. Returns true if the cookie was modified
+Sets the cookie in the header if the
+L<Bivio::Type::UserAgent|Bivio::Type::UserAgent>
+is C<BROWSER>. Returns true if the cookie was modified
 and set thusly.
 
 =cut
 
 sub header_out {
-    my($self, $r) = @_;
+    my($self, $r, $req) = @_;
     my($fields) = $self->internal_get;
 
-    return 0 unless $fields->{MODIFIED_FIELD()};
+    # Only set if a modified and a browser.
+    return 0 unless $fields->{MODIFIED_FIELD()}
+	    && $req->get('Bivio::Type::UserAgent')
+		    == Bivio::Type::UserAgent::BROWSER();
 
     # Since our fields is encrypted, we don't need to header_out "secure".
     # Allows us to track users better (on non-secure portions of the site).
