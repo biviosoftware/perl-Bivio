@@ -11,7 +11,8 @@ Bivio::UI::Color - named colors
 =head1 SYNOPSIS
 
     use Bivio::UI::Color;
-    Bivio::UI::Color->new();
+    '<font Bivio::UI::Color->as_html('text_ia')>';
+    '<td '.Bivio::UI::Color->as_html_bg('page_bg').'>';
 
 =cut
 
@@ -30,6 +31,24 @@ C<Bivio::UI::Color> is a map of names to rgb color values.  The
 color values are represented integers.  Therefore, no two colors
 are alike.  However, there can be three aliases (name, short
 description, and long description) for each color.
+
+The current color names are:
+
+=over 4
+
+=item page_bg
+
+=item heading_bg
+
+=item text_tab_bg
+
+=item table_stripe_bg
+
+=item icon_text_ia
+
+=item error
+
+=back
 
 =cut
 

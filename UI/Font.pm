@@ -11,7 +11,7 @@ Bivio::UI::Font - named fonts
 =head1 SYNOPSIS
 
     use Bivio::UI::Font;
-    Bivio::UI::Font->new();
+    join('my heading', Bivio::UI::Font->as_html('page_heading'));
 
 =cut
 
@@ -26,7 +26,27 @@ use Bivio::Type::Enum;
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::Font> is a map of names to html values.
+C<Bivio::UI::Font> is a map of font names to html values.
+
+The current font names are:
+
+=over 4
+
+=item PAGE_HEADING
+
+=item TABLE_HEADING
+
+=item TABLE_CELL
+
+=item ICON_TEXT_IA
+
+=item ERROR
+
+=item ITALIC
+
+=item TIME
+
+=back
 
 =cut
 

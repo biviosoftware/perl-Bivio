@@ -11,6 +11,7 @@ Bivio::UI::Align - html table alignments (north, center, bottom, etc.)
 =head1 SYNOPSIS
 
     use Bivio::UI::Align;
+    '<td '.Bivio::UI::Align->as_html('north').'>';
 
 =cut
 
@@ -28,6 +29,30 @@ use Bivio::Type::Enum;
 C<Bivio::UI::Align> is a enum of alignment names to html alignment
 values (via C<get_long_desc>).
 
+The alignments and their values are:
+
+=over 4
+
+=item N (north, top): valign=top align=center
+
+=item NE (northeast): valign=top align=right
+
+=item E (east, right): align=right
+
+=item SE (southeast): valign=bottom align=right
+
+=item S (south, bottom): valign=bottom align=center
+
+=item SW (southwest): valign=bottom align=left
+
+=item W (west, left):
+
+=item NW (northwest): valign=top align=left
+
+=item center: align=center
+
+=back
+
 =cut
 
 #=IMPORTS
@@ -37,67 +62,67 @@ __PACKAGE__->compile(
     'N' => [
 	1,
 	'north',
-	'valign=top align=center',
+	' valign=top align=center',
     ],
     'NE' => [
 	2,
 	'northeast',
-	'valign=top align=right',
+	' valign=top align=right',
     ],
     'E' => [
 	3,
 	'east',
-	'align=right',
+	' align=right',
     ],
     'SE' => [
 	4,
 	'southeast',
-	'valign=bottom align=right',
+	' valign=bottom align=right',
     ],
     'S' => [
 	5,
 	'south',
-	'valign=bottom align=center',
+	' valign=bottom align=center',
     ],
     'SW' => [
 	6,
 	'southwest',
-	'valign=bottom align=left',
+	' valign=bottom align=left',
     ],
     'W' => [
 	7,
 	'west',
-	'align=left',
+	' align=left',
     ],
     'NW' => [
 	8,
 	'northwest',
-	'valign=top align=left',
+	' valign=top align=left',
     ],
     CENTER => [
 	9,
-	'center',
-	'align=center',
+	undef,
+	' align=center',
     ],
     LEFT => [
 	10,
-	'left',
-	'align=left',
+	undef,
+	' align=left',
     ],
     RIGHT => [
 	11,
-	'right',
-	'align=right',
+	undef,
+	' align=right',
     ],
     TOP => [
 	12,
-	'top',
-	'valign=top align=center',
+	undef,
+	' valign=top align=center',
     ],
     BOTTOM => [
 	13,
-	'bottom',
-	'valign=bottom align=center',
+	undef,
+	' valign=bottom align=center',
     ],
 );
 
@@ -117,7 +142,7 @@ of C<TD> tag.  Prefixed with leading space.
 =cut
 
 sub as_html {
-    return ' '.Bivio::Type::Enum::from_any(@_)->get_long_desc;
+    return Bivio::Type::Enum::from_any(@_)->get_long_desc;
 }
 
 #=PRIVATE METHODS
