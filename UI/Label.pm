@@ -425,6 +425,7 @@ _compile(
 
     # Announcements
     ANNOUNCE_SORTING => ['Sorting'],
+    ANNOUNCE_SOLD => ['Investment Sold'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
