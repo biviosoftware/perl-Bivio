@@ -86,7 +86,8 @@ sub execute {
     # make sure password fields match
     if ($req->get_arg('password') ne $req->get_arg('confirm_password')) {
 	$user->get_status()->add_error(Bivio::Biz::Error->new(
-		'password fields do not match'));
+		'password fields did not match'));
+	$req->put_arg('password', '');
 	return 0;
     }
 
