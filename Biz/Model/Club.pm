@@ -246,7 +246,6 @@ If it isn't, throws a C<NO_RESOURCES> exception.
 sub update {
     my($self, $new_values) = @_;
     my($properties) = $self->internal_get;
-print STDERR join("!", %$new_values), "\n";
     my($kb) = defined($new_values->{kbytes_in_use})
 	    ? $new_values->{kbytes_in_use} : $properties->{kbytes_in_use};
     my($max) = defined($new_values->{max_storage_kbytes})
