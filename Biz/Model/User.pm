@@ -198,6 +198,8 @@ sub create {
 
 =head2 format_full_name() : string
 
+=head2 static format_full_name(Bivio::Biz::Model model, string model_prefix) : string
+
 Returns the first, middle, and last names as one string.
 
 B<You should use RealmOwner.display_name whenever possible as the
@@ -206,11 +208,15 @@ values are identical.>
 =cut
 
 sub format_full_name {
-    my($self) = @_;
-    my($res) = '';
+    my($self, $model, $model_prefix) = @_;
     # Always have at least one name.
-    foreach my $n ($self->unsafe_get(qw(first_name middle_name last_name))) {
- 	$res .= $n.' ' if defined($n);
+    my($p) = $model_prefix || '';
+    my($m) = $model || $self;
+
+    my($res) = '';
+    foreach my $n ($m->unsafe_get(
+	    $p.'first_name', $p.'middle_name', $p.'last_name')) {
+	$res .= $n.' ' if defined($n);
     }
     # Get rid of last ' '
     chop($res);
@@ -231,7 +237,7 @@ See L<format_name|"format_name"> for params.
 
 sub format_last_first_middle {
     my($self, $list_model, $model_prefix) = @_;
-    # Have at least on name or returns undef
+    # Have at least one name or returns undef
     my($p) = $model_prefix || '';
     my($m) = $list_model || $self;
 
