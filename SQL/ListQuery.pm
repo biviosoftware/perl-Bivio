@@ -746,7 +746,7 @@ sub _parse_begin_date {
     my($attrs, $support, $die) = @_;
     $attrs->{begin_date} = _parse_date_value(
 	    $attrs->{b} || $attrs->{begin_date} || undef,
-	    0, $die);
+	    $support, $die, 0);
     return;
 }
 
@@ -759,27 +759,32 @@ sub _parse_date {
     $attrs->{date} = _parse_date_value(
 	    $attrs->{d} || $attrs->{date} || $attrs->{end_date}
 	    || $attrs->{report_date} || undef,
-	    $support->unsafe_get('want_date'), $die);
+	    $support, $die, $support->unsafe_get('want_date'));
     return;
 }
 
-# _parse_date_value(string literal, boolean want_date, ref die) : string
+# _parse_date_value(string literal, Bivio::SQL::Support support, ref die, boolean want_date) : string
 #
 # Parses the literal and returns a Type::Date. We handle both a literal
 # DateTime (J SSSSS) and a Date (mm/dd/yyyy).  We also check for report_date
 # and date passed in.  If the date is invalid, we set it to undef or now
-# depending on value of want_date.
+# depending on whether support is passed in or not.
+#
+# Backwards compatibility issues: Default to Bivio::Type::DateTime for type.
 #
 sub _parse_date_value {
-    my($literal, $want_date, $die) = @_;
-    return $want_date
-	    ? Bivio::Type::DateTime->local_end_of_today : undef
-		    unless $literal;
-
+    my($literal, $support, $die, $want_date) = @_;
+    my($type) = $support->unsafe_get('date');
+    $type = $type ? $type->{type} : 'Bivio::Type::DateTime';
+    return $want_date ? $type->get_default : undef
+	unless $literal;
+    my($value, $e) = $type->from_literal($literal);
+    return $value if $value;
+#TODO: can we get rid of this?
     # Try a date first, because that's the common case
-    my($value, $e) = Bivio::Type::Date->from_literal($literal);
-    ($value, $e) = Bivio::Type::DateTime->from_literal($literal)
-	unless $value;
+    ($value, $e) = Bivio::Type::Date->from_literal($literal);
+    return $value if $value;
+    ($value, $e) = Bivio::Type::DateTime->from_literal($literal);
     _die($die, Bivio::DieCode::CORRUPT_QUERY(), {
 	message => 'invalid date',
 	type_error => $e,
