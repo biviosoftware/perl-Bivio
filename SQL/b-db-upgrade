@@ -246,8 +246,40 @@ sub _upgrade {
     _upgrade_realm_transaction();
     _upgrade_entry();
     _upgrade_institution();
+    _upgrade_account_data($req);
 
     print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_account_data()
+#
+# Deleted unused petty cash accounts, and sets the default account to
+# broker.
+#
+sub _upgrade_account_data {
+    my($req) = @_;
+
+    use Bivio::Auth::Realm;
+    use Bivio::Biz::Model::RealmOwner;
+    use Bivio::Data::EW::ClubImporter;
+
+    print("deleting unused petty cash accounts, setting default account\n");
+    my($realm_owner) = Bivio::Biz::Model::RealmOwner->new($req);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT realm_id, name
+            FROM realm_owner_t, club_t
+            WHERE realm_owner_t.realm_id=club_t.club_id
+            ORDER by name',
+            []);
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($realm_id, $name) = @$row;
+        print("\t$name\n");
+        $realm_owner->unauth_load(realm_id => $realm_id);
+        $req->set_realm(Bivio::Auth::Realm->new($realm_owner));
+	Bivio::Data::EW::ClubImporter->delete_unused_petty_cash_account($req);
+	Bivio::Data::EW::ClubImporter->set_default_account($req);
+    }
     return;
 }
 
