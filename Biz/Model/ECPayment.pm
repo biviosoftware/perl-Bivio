@@ -94,6 +94,7 @@ sub internal_initialize {
             remark => ['Text', 'NONE'],
 	    salesperson_id => ['PrimaryId', 'NONE'],
 	    service => ['ECService', 'NOT_NULL'],
+	    point_of_sale => ['ECPointOfSale', 'NOT_NULL'],
         },
         auth_id => 'realm_id',
     };
