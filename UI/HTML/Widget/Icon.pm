@@ -164,7 +164,7 @@ sub initialize {
     my($text, $alt_ia) = $self->unsafe_get(qw(text alt_ia));
     my($icon, $href) = $self->get(qw(name href));
     my($image) = Bivio::UI::HTML::Widget::Image->new({
-	src => ['Bivio::UI::Icon', $icon],
+	src => ['Bivio::UI::Facade', 'Icon', $icon],
 	alt => $self->get('alt'),
     });
     my($font) = $self->ancestral_get('icon_font', undef);
@@ -188,7 +188,7 @@ sub initialize {
     );
     if (defined($alt_ia)) {
 	my($image_ia) = Bivio::UI::HTML::Widget::Image->new({
-	    src => ['Bivio::UI::Icon', $icon . '_ia'],
+	    src => ['Bivio::UI::Facade', 'Icon', $icon.'_ia'],
 	    alt => $alt_ia,
 	});
 	my($text_ia) = $self->unsafe_get('text_ia');

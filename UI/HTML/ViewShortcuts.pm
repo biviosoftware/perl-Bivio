@@ -683,7 +683,8 @@ as an array ref.
 
 sub vs_html_value {
     my($proto, $attr) = @_;
-    return [['->get_request'], 'Bivio::UI::HTML', '->get_value', $attr];
+    return [['->get_request'], 'Bivio::UI::Facade', 'HTML',
+	'->get_value', $attr];
 }
 
 =for html <a name="vs_image"></a>
@@ -1276,6 +1277,32 @@ sub vs_string {
 	# Allow caller to set font to undef
 	defined($font) ? (string_font => $font) : (),
     });
+}
+
+=for html <a name="vs_support_email"></a>
+
+=head2 static vs_support_email() : array_ref
+
+Returns a widget value which gets the support email.
+
+=cut
+
+sub vs_support_email {
+    #TODO: Replace with real facade-based value.
+    return [['->get_request'], 'support_email'];
+}
+
+=for html <a name="vs_support_phone"></a>
+
+=head2 static vs_support_phone() : array_ref
+
+Returns a widget value which gets the support phone
+
+=cut
+
+sub vs_support_phone {
+    #TODO: Replace with real facade-based value.
+    return [['->get_request'], 'support_phone'];
 }
 
 =for html <a name="vs_table"></a>

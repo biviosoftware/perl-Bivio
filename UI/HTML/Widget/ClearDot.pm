@@ -150,19 +150,6 @@ sub initialize {
     return;
 }
 
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Returns true if is a constant.
-
-=cut
-
-sub is_constant {
-    my($fields) = shift->{$_PACKAGE};
-    return $fields->{is_constant};
-}
-
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)

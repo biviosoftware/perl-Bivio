@@ -198,8 +198,6 @@ Render the image.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    # Optimization: only if both src and alt are constants
-    $$buffer .= $fields->{value}, return if $fields->{is_constant};
 
     $$buffer .= $fields->{prefix};
     $$buffer .= ' alt="'.Bivio::HTML->escape(

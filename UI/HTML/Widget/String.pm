@@ -22,7 +22,7 @@ L<Bivio::UI::Widget>
 =cut
 
 use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::String::ISA = qw(Bivio::UI::Widget);
+@Bivio::UI::HTML::Widget::String::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -159,28 +159,12 @@ sub initialize {
     if ($fields->{is_literal} = !ref($fields->{value})) {
 	# Format the constant once
 	$fields->{value} = _format($fields, $fields->{value});
-
-	# Only constant if there is no font
-	$fields->{value} = $fields->{prefix}.$fields->{value}
-		if $fields->{is_constant} = !$fields->{font};
     }
     elsif ($fields->{is_widget} = ref($fields->{value}) ne 'ARRAY') {
 	$fields->{value}->put(parent => $self);
 	$fields->{value}->initialize;
     }
     return;
-}
-
-=for html <a name="is_constant"></a>
-
-=head2 is_constant : boolean
-
-Will return true if always renders exactly the same way.
-
-=cut
-
-sub is_constant {
-    return shift->{$_PACKAGE}->{is_constant};
 }
 
 =for html <a name="render"></a>
@@ -194,10 +178,8 @@ Render the object.  Outputs nothing if result is empty.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    die("String not initialized: ".$self->get('value'))
+    Bivio::Die->die("String widget not initialized: ", $self->get('value'))
 	    unless exists($fields->{value});
-
-    $$buffer .= $fields->{value}, return if $fields->{is_constant};
 
     my($b) = '';
     if ($fields->{is_literal}) {

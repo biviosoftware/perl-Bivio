@@ -23,7 +23,7 @@ L<Bivio::UI::Widget>
 =cut
 
 use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::Page::ISA = qw(Bivio::UI::Widget);
+@Bivio::UI::HTML::Widget::Page::ISA = ('Bivio::UI::Widget');
 
 =head1 DESCRIPTION
 
@@ -121,16 +121,18 @@ sub new {
 
 =cut
 
-=for html <a name="get_content_type"></a>
+=for html <a name="execute"></a>
 
-=head2 get_content_type(any source) : string
+=head2 execute(Bivio::Agent::Request req)
 
-Returns C<text/html>.
+Calls L<Bivio::UI::Widget::execute_with_content_type|Bivio::UI::Widget/"execute_with_content_type">
+as text/html.
 
 =cut
 
-sub get_content_type {
-    return 'text/html';
+sub execute {
+    my($self, $req) = @_;
+    return $self->execute_with_content_type($req, 'text/html');
 }
 
 =for html <a name="handle_config"></a>

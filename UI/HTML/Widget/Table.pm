@@ -911,13 +911,14 @@ sub _render_start {
     my($state) = @_;
     my($buffer) = $state->{buffer};
     $$buffer .= $state->{fields}->{table_prefix};
-    my($html) = $state->{req}->get('Bivio::UI::HTML');
     $$buffer .= Bivio::UI::Align->as_html(
 	    $state->{self}->get_or_default('align',
-		    $html->get_value('table_default_align')));
+		    Bivio::UI::HTML->get_value('table_default_align',
+			    $state->{req})));
 
     if ($state->{self}->unsafe_get('expand')) {
-	$$buffer .= $html->get_value('page_left_margin')
+	$$buffer .= Bivio::UI::HTML->get_value('page_left_margin',
+		$state->{req})
 		? ' width="95%"' : ' width="100%"';
     }
     elsif (my $width = $state->{self}->unsafe_get('width')) {
