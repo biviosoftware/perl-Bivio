@@ -134,6 +134,20 @@ sub from_literal {
     return (undef, Bivio::TypeError::DATE());
 }
 
+=head2 from_sql_column(string result) : string
+
+Ensures the time component is valid.
+
+=cut
+
+sub from_sql_column {
+    my($proto) = shift;
+    my($value) = $proto->SUPER::from_sql_column(@_);
+    Bivio::Die->die($value, ': invalid date in database (clock component)')
+        if defined($value) && $value !~ /$_TIME_SUFFIX$/o;
+    return $value;
+}
+
 =for html <a name="from_unix"></a>
 
 =head2 from_unix(int unix_time) : string
@@ -151,7 +165,6 @@ sub from_unix {
 	    + Bivio::Type::DateTime::UNIX_EPOCH_IN_JULIAN_DAYS();
     return $j.$_TIME_SUFFIX;
 }
-
 
 =for html <a name="get_max"></a>
 
