@@ -88,7 +88,8 @@ Mode for files created by module.
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
-    $_CFG->{directory} = File::Spec->rel2abs($_CFG->{directory});
+    $_CFG->{directory} = File::Spec->rel2abs($_CFG->{directory})
+	if File::Spec->can('rel2abs');
     return;
 }
 
