@@ -51,8 +51,8 @@ use Bivio::IO::Trace;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
-my($_INITIALIZED);
 my($_SELF);
+__PACKAGE__->initialize;
 
 =head1 FACTORIES
 
@@ -119,8 +119,6 @@ Returns an HTTP code defined in L<Apache::Constants|Apache::Constants>.
 sub handler {
     my($r) = @_;
     my($die);
-    $die = Bivio::Die->catch(sub {__PACKAGE__->initialize})
-	    unless $_INITIALIZED;
     $die = $_SELF->process_request($r)
 	    unless $die;
     $r->log_reason($die->as_string) if defined($die);
