@@ -965,6 +965,7 @@ L<Bivio::UI::HTML::Widget::ListActions|Bivio::UI::HTML::Widget::ListActions>.
 
 sub list_actions {
     my($proto, $actions) = @_;
+    _use('ListActions');
     return {
 	column_heading => 'list_actions',
 	column_widget => Bivio::UI::HTML::Widget::ListActions->new({
