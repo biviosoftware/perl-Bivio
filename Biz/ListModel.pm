@@ -241,6 +241,34 @@ sub can_next_row {
     return defined(shift->[$_IDI]->{cursor}) ? 1 : 0;
 }
 
+=for html <a name="do_rows"></a>
+
+=head2 do_rows(code_ref do_rows_handler) : self
+
+Calls L<reset_cursor|"reset_cursor">, then I<do_rows_handler> for each row in
+the list.  If I<do_rows_handler> returns false, stops iteration.
+
+=cut
+
+sub do_rows {
+    my($self, $do_rows_handler) = @_;
+    $self->reset_cursor;
+    0 while $self->next_row && $do_rows_handler->($self);
+    return $self;
+}
+
+=for html <a name="do_rows_handler"></a>
+
+=head2 callback do_rows_handler(self) : boolean
+
+Called by L<do_rows|"do_rows">.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub do_rows_handler {
+}
+
 =for html <a name="empty_query"></a>
 
 =head2 empty_query() : Bivio::SQL::ListQuery
