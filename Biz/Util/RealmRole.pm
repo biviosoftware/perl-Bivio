@@ -12,12 +12,6 @@ Bivio::Biz::Util::RealmRole - manipulate realm_role_t database table
 =head1 SYNOPSIS
 
     use Bivio::Biz::Util::RealmRole;
-    Bivio::Biz::Util::RealmRole->init();
-    Bivio::Biz::Util::RealmRole->init_defaults();
-    Bivio::Biz::Util::RealmRole->edit($realm, $role, @operations);
-    Bivio::Biz::Util::RealmRole->list($realm, $role);
-    Bivio::Biz::Util::RealmRole->set_same($new, $like);
-    Bivio::Biz::Util::RealmRole->main(@ARGV);
 
 =cut
 
@@ -649,13 +643,14 @@ b-realm-role -r club_cafe edit ANONYMOUS - \
 b-realm-role -r club_cafe edit USER - \
     +ANONYMOUS \
     +ANY_USER \
+    +MAIL_FORWARD \
     +MAIL_POST
 b-realm-role -r club_cafe edit WITHDRAWN - \
     +USER
 b-realm-role -r club_cafe edit GUEST - \
     +WITHDRAWN \
     +ANY_REALM_USER \
-    +MAIL_FORWARD
+    +MAIL_WRITE
 b-realm-role -r club_cafe edit MEMBER - \
     +GUEST \
     +MAIL_RECEIVE

@@ -250,50 +250,58 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_existing_ak_dates();
+    _upgrade_club_cafe();
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_existing_ak_dates()
+# _upgrade_club_cafe()
 #
-# Change all account keeper customers to fiscal year 2001
+# Make permissions looser.
 #
-sub _upgrade_existing_ak_dates {
-    print ("changing all account keeper customers to fiscal year 2001\n");
-    my($req) = Bivio::Agent::Request->get_current_or_new;
-    my($p) = Bivio::Biz::Model->new($req, 'ECPayment');
-    my($s) = Bivio::Biz::Model->new($req, 'ECSubscription');
-    my($it) = $p->unauth_iterate_start('creation_date_time');
-
-    my($start_date) = Bivio::Biz::Accounting::Tax
-	    ->get_start_of_fiscal_year(Bivio::Type::Date->now);
-    my($end_date) = Bivio::Biz::Accounting::Tax
-	    ->get_end_of_fiscal_year(Bivio::Type::Date->now);
-    my($period) = Bivio::Type::DateInterval::FISCAL_YEAR();
-
-    while ($p->iterate_next_and_load($it)) {
-	next unless $p->get('ec_subscription_id');
-	$s->unauth_load_or_die({ec_subscription_id =>
-	    $p->get('ec_subscription_id')});
-	next unless $s->get('subscription_type') == Bivio::Type::ECSubscription
-		->ACCOUNT_KEEPER;
-	$p->update({ec_subscription_start_date => $start_date,
-	    ec_subscription_end_date => $end_date,
-	    ec_subscription_period => $period});
-	$s->update({start_date => $start_date,
-	    end_date => $end_date,
-	    renewal_period => $period});
-    }
+sub _upgrade_club_cafe {
+    print("Upgrading club cafe permissions\n");
+    use Bivio::Biz::Util::RealmRole;
+    my($rr) = Bivio::Biz::Util::RealmRole->new(['-r', 'club_cafe']);
+    $rr->edit(qw(ANONYMOUS -
+    +DOCUMENT_READ
+    +LOGIN
+    +MAIL_READ));
+    $rr->edit(qw(USER -
+    +ANONYMOUS
+    +ANY_USER
+    +MAIL_FORWARD
+    +MAIL_POST));
+    $rr->edit(qw(WITHDRAWN -
+    +USER));
+    $rr->edit(qw(GUEST -
+    +WITHDRAWN
+    +ANY_REALM_USER
+    +MAIL_WRITE));
+    $rr->edit(qw(MEMBER -
+    +GUEST
+    +MAIL_RECEIVE));
+    $rr->edit(qw(ACCOUNTANT -
+    +MEMBER
+    +ACCOUNTING_READ
+    +ACCOUNTING_WRITE
+    +ACCOUNT_READ
+    +ADMIN_READ
+    +ADMIN_WRITE
+    +DEBUG_ACTION
+    +DOCUMENT_WRITE
+    +FILE_ADMIN
+    +INVESTMENT_READ
+    +MAIL_ADMIN
+    +MEMBER_READ
+    +MEMBER_WRITE
+    +MOTION_READ
+    +MOTION_WRITE
+    +REALM_PUBLICIZE));
+    $rr->edit(qw(ADMINISTRATOR -
+    +ACCOUNTANT));
     return;
 }
-#    _do_sql("
-#UPDATE ec_subscription_t
-#  set start_date = '01-JAN-01', end_date = '01-JAN-02'
-#  where subscription_type = '3';
-#/
-#");
-
 
 # _usage(array message)
 #
