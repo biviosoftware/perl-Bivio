@@ -43,6 +43,20 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
+=for html <a name="execute_active_only"></a>
+
+=head2 static execute_active_only(Bivio::Agent::Request req)
+
+Loads this form forcing show_inactive to false.
+
+=cut
+
+sub execute_active_only {
+    my($proto, $req) = @_;
+    $proto->execute($req, {show_inactive => 0});
+    return;
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
@@ -66,15 +80,15 @@ sub internal_initialize {
 
 =for html <a name="validate"></a>
 
-=head2 validate(boolean is_create)
+=head2 validate()
 
-Always creates errors, never leave this form.
+We force an error so that FormModel doesn't redirect to "next".
 
 =cut
 
 sub validate {
     my($self) = @_;
-    $self->internal_put_error('', Bivio::TypeError::UNKNOWN());
+    $self->internal_put_error(undef, Bivio::TypeError::UNKNOWN());
     return;
 }
 
