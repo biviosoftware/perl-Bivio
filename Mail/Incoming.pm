@@ -468,7 +468,7 @@ Clear any state associated with this object.
 
 sub uninitialize {
     my($self) = @_;
-    delete($self->[$_IDI]);
+    $self->[$_IDI] = undef;
     return;
 }
 
