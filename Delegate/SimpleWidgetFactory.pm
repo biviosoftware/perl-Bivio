@@ -148,6 +148,12 @@ sub internal_create_display {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Dollar')) {
+	return $_VS->vs_new('DollarCell', {
+	    field => $field,
+	    %$attrs,
+	});
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
 	return $_VS->vs_new('AmountCell', {
 	    field => $field,
