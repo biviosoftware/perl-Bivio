@@ -16,7 +16,7 @@ Bivio::Agent::HTTP::Location - provides URL to realm/task_id mapping
 =cut
 
 use Bivio::UNIVERSAL;
-@Bivio::Agent::HTTP::Location::ISA = qw(Bivio::UNIVERSAL);
+@Bivio::Agent::HTTP::Location::ISA = ('Bivio::UNIVERSAL');
 
 =head1 DESCRIPTION
 
@@ -418,14 +418,14 @@ Note that the I<path_info> is left on the URI.
 =cut
 
 sub parse {
-    my(undef, $req, $uri) = @_;
+    my($proto, $req, $uri) = @_;
 
 #TODO: Need to make Location a separate module.
     # We don't set the facade if the request already has one,
     # because parse is currently called from more than one place
     # during the request.
     my($facade) = $uri =~ s/^\/*\*(\w+)// ? $1 : undef;
-    _setup_facade($facade, $req) unless $req->has_keys('facade');
+    $proto->setup_facade($facade, $req) unless $req->has_keys('facade');
 
     my($orig_uri) = $uri;
     $uri =~ s!^/+!!;
@@ -541,6 +541,31 @@ sub parse {
 	message => 'no such URI for this realm'})
 }
 
+=for html <a name="setup_facade"></a>
+
+=head2 static setup_facade(string facade, Bivio::Agent::Request req)
+
+Sets up the facade.  We diddle http_host here for lack of
+a better place right now.
+
+TODO: Make this general.  For now it will work fine.
+
+=cut
+
+sub setup_facade {
+    my($proto, $facade, $req) = @_;
+    Bivio::UI::Facade->setup_request($facade, $req);
+    $facade = $req->get('facade');
+    return if $facade->get('is_default');
+
+    # Not the default facade
+    my($http_host) = $req->get(qw(http_host));
+    my($uri) = $facade->get('uri');
+    $http_host =~ s/^(?:www\.)?/$uri./;
+    $req->put(http_host => $http_host);
+    return;
+}
+
 =for html <a name="task_has_uri"></a>
 
 =head2 task_has_uri(Bivio::Agent::TaskId task_id) : boolean
@@ -558,27 +583,6 @@ sub task_has_uri {
 
 
 #=PRIVATE METHODS
-
-# _setup_facade(string facade, Bivio::Agent::Request req)
-#
-# Sets up the facade.  We diddle http_host here for lack of
-# a better place right now.
-#
-#TODO: Make this general.  For now it will work fine.
-#
-sub _setup_facade {
-    my($facade, $req) = @_;
-    Bivio::UI::Facade->setup_request($facade, $req);
-    $facade = $req->get('facade');
-    return if $facade->get('is_default');
-
-    # Not the default facade
-    my($http_host) = $req->get(qw(http_host));
-    my($uri) = $facade->get('uri');
-    $http_host =~ s/^(?:www\.)?/$uri./;
-    $req->put(http_host => $http_host);
-    return;
-}
 
 =head1 COPYRIGHT
 
