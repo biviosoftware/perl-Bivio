@@ -60,7 +60,7 @@ sub execute_ok {
     my($self) = @_;
     Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
 	$self->get_request,
-	{realm_owner => $self->internal_create_models});
+	{realm_owner => ($self->internal_create_models)[0]});
     return;
 
 }
