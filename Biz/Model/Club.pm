@@ -57,7 +57,7 @@ Bivio::IO::Trace->register;
 =head2 cascade_delete()
 
 Deletes the club, and all of its related transactions, membership records,
-and file server messages.
+files, and file server messages.
 
 =cut
 
@@ -85,6 +85,10 @@ sub cascade_delete {
 	    [$id]);
 
     # delete file server/mail messages
+    Bivio::Biz::Model::File->cascade_delete($realm);
+
+    # Always delete file server files last, since other
+    # calls may fail.  Eventually this will go away.
     Bivio::Biz::Model::MailMessage->delete_club($realm);
     $self->delete();
     $realm->cascade_delete;
@@ -175,11 +179,12 @@ sub get_outgoing_emails {
     my($result) = [];
     my($row);
     while($row = $statement->fetchrow_arrayref()) {
-	push(@$result, $row->[0]);
+	push(@$result, $row->[0])
+		if Bivio::Type::Email->is_valid($row->[0]);
     }
 #TODO: Do we need statement->finish here?
 #    $statement->finish();
-    return $result;
+    return @$result ? $result : undef;
 }
 
 
