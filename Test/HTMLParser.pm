@@ -74,11 +74,12 @@ sub new {
 #	length => length($$content),
 	forms => {},
 	links => {},
-	text => {},
+	tables => [],
 
 	line_no => 1,
 	table_count => 0,
 	table_depth => 0,
+	form_count => 0,
 	
 	# counter used to create unique form names.
 	unnamed_count => 0
@@ -134,7 +135,7 @@ sub start {
     my($self, $tag, $attr, $attrseq, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
     my($_INTERESTING_TAGS)
-	    = 'a|form|input|img|option|select|table|textarea';
+	    = 'a|form|input|img|option|select|table|textarea|tr';
 
     # return if we don't care about this tag
     return unless $tag =~ /^(?:$_INTERESTING_TAGS)$/io;
@@ -220,8 +221,26 @@ sub text {
     else {
 	_trace ("text '", $text, "': found") if $_TRACE;
 	# following line doesn't seem to do what I intended...
-#	push (@{$fields->{text}}, qw/$text/);
-	$fields->{text}->{$text} = 1;
+
+	$fields->{text} = [] unless (defined ($fields->{text}));
+	push (@{$fields->{text}}, $text);
+
+#	$fields->{text}->{$text} = 1;
+	if (defined ($fields->{currentform})) {
+	    $fields->{currentform}->{text} = []
+		    unless (defined ($fields->{currentform}->{text}));
+	    push (@{$fields->{currentform}->{text}}, $text);
+	}
+	if (defined ($fields->{currenttable})) {
+	    $fields->{currenttable}->{text} = []
+		    unless (defined ($fields->{currenttable}->{text}));
+	    push (@{$fields->{currenttable}->{text}}, $text);
+	}
+	if (defined ($fields->{currentrow})) {
+	    $fields->{currentrow}->{text} = []
+		    unless (defined ($fields->{currentrow}->{text}));
+	    push (@{$fields->{currentrow}->{text}}, $text);
+	}
     }
 	
     return;
@@ -330,6 +349,19 @@ sub _parse_end_a {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
 
+    if (defined ($fields->{currenttable})) {
+	$fields->{currenttable}->{links} = {}
+		unless (defined ($fields->{currenttable}->{links}));
+    }
+    if (defined ($fields->{currentform})) {
+	$fields->{currentform}->{links} = {}
+		unless (defined ($fields->{currentform}->{links}));
+    }
+    if (defined ($fields->{currentrow})) {
+	$fields->{currentrow}->{links} = {}
+		unless (defined ($fields->{currentrow}->{links}));
+    }
+    
     my($text);
     if (defined ($fields->{currenttext})) {
 	$text = $fields->{currenttext};
@@ -352,6 +384,15 @@ sub _parse_end_a {
     if ($text) {
 	_trace('\${links}->{$text} = $href') if $_TRACE;
 	$fields->{links}->{$text} = $href;
+	if (defined ($fields->{currentform})) {
+	    $fields->{currentform}->{links}->{$text} = $href;
+	}
+	if (defined ($fields->{currenttable})) {
+	    $fields->{currenttable}->{links}->{$text} = $href;
+	}
+	if (defined ($fields->{currentrow})) {
+	    $fields->{currentrow}->{links}->{$text} = $href;
+	}
     }
 
     if ($img_base) {
@@ -367,6 +408,15 @@ sub _parse_end_a {
 	}
         _trace('\${links}->{$img_base} = $href') if $_TRACE;
         $fields->{links}->{$img_base} = $href;
+	if (defined ($fields->{currentform})) {
+	   $fields->{currentform}->{links}->{$img_base} = $href;
+	}
+	if (defined ($fields->{currenttable})) {
+	   $fields->{currenttable}->{links}->{$img_base} = $href;
+       }
+	if (defined ($fields->{currentrow})) {
+	    $fields->{currentrow}->{links}->{$img_base} = $href;
+	}
     }
 
     delete $fields->{image_name};
@@ -407,16 +457,29 @@ sub _parse_end_table {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{table_depth}--;
+    if ($fields->{table_depth} == 0) {
+	delete $fields->{currenttable};
+    }
     return;
 }
 
 # _parse_end_tr(Bivio::Test::HTMLParser self) : 
 #
+# If this was an "interesting" table row, save it.
 # Delete the temporary fields "text" and "radio_or_checkbox".
 #
 sub _parse_end_tr {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+    if (defined ($fields->{currentrow})) {
+	if (defined ($fields->{currenttable})) {
+	    $fields->{currenttable}->{rows} = []
+		    unless (defined ($fields->{currenttable}->{rows}));
+	    push (@{$fields->{currenttable}->{rows}}, $fields->{currentrow});
+	    $fields->{unnamed_count}++;
+	}
+	delete ($fields->{currentrow});
+    }
     delete $fields->{currenttext};
     delete $fields->{radio_or_checkbox};
     return;
@@ -539,7 +602,16 @@ sub _parse_start_form {
     }
 
     $fields->{currentform} = $fields->{forms}->{$name} = {};
+    $fields->{currentform}->{attr} = $attr;
+    $fields->{currentform}->{line_no} = $fields->{line_no};
     $fields->{currentform}->{name} = $name;
+    $fields->{currentform}->{position} = $fields->{form_count}++;
+
+    if (defined ($fields->{currenttable})) {
+	$fields->{currenttable}->{forms} = {}
+		unless (defined ($fields->{currenttable}->{forms}));
+	$fields->{currenttable}->{forms}->{$name} = $fields->{forms}->{$name};
+    }
     
     # if an action is specified, save it.
     if ($action) {
@@ -566,6 +638,21 @@ sub _parse_start_img {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
     $fields->{image_name} = $attr->{src};
+
+    $fields->{images} = [] unless defined ($fields->{images});
+    push (@{$fields->{images}}, $attr);
+    
+    if (defined ($fields->{currenttable})) {
+	$fields->{currenttable}->{images} = []
+		unless (defined ($fields->{currenttable}->{images}));
+	push (@{$fields->{currenttable}->{images}}, $attr);
+    }
+    if (defined ($fields->{currentrow})) {
+	$fields->{currentrow}->{images} = []
+		unless (defined ($fields->{currentrow}->{images}));
+	push (@{$fields->{currentrow}->{images}}, $attr);
+    }
+
     return;
 }
 
@@ -645,6 +732,20 @@ sub _parse_start_select {
 sub _parse_start_table {
     my($self, $attr, $origtext) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{table_depth} == 0) {
+	push (@{$fields->{tables}}, ($fields->{currenttable} = {}));
+	$fields->{currenttable}->{line_no} = $fields->{line_no};
+
+	# cache attributes, if any
+	if (defined ($attr)) {
+	    $fields->{currenttable}->{attr} = $attr;
+	}
+    }
+    
+    # nested tables blow out the current row.
+    delete ($fields->{currentrow}) if (defined ($fields->{currentrow}));
+
     $fields->{table_depth}++;
     $fields->{table_count}++;
     return;
@@ -659,6 +760,22 @@ sub _parse_start_textarea {
     my($fields) = $self->{$_PACKAGE};
     if (defined ($fields->{currentform})) {
 	$self->_handle_text_password_file_textarea($self, $attr, $origtext);
+    }
+    return;
+}
+
+# _parse_start_tr(Bivio::Test::HTMLParser self, hash_ref attr, string origtext) : 
+#
+# Start recording information about a new row.
+#
+sub _parse_start_tr {
+    my($self, $attr, $origtext) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{currentrow} = {};
+
+    # cache row attributes, if any
+    if (defined ($attr)) {
+	$fields->{currentrow}->{attr} = $attr;
     }
     return;
 }
