@@ -98,7 +98,7 @@ might be due to an error on the server.
 
 =item CLIENT_REDIRECT_TASK: task_id
 
-redirects the user agent to the specified task. As with internal redirects,
+redirects the user agent to the specified task. As with server redirects,
 transactions, messages, etc. SHOULD NOT be rolled back.
 
 =item TOO_MANY: model
