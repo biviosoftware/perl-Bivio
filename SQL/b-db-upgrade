@@ -299,6 +299,18 @@ ALTER TABLE expense_category_t
   add constraint expense_category_t4
   check (deductible between 0 and 1)
 /
+CREATE INDEX expense_category_t5 on expense_category_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
+CREATE INDEX expense_category_t6 on expense_category_t (
+  parent_category_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
+/
 CREATE sequence expense_category_s
   minvalue 100013 maxvalue 999999999999999999
   nocycle cache 10 increment BY 100000
@@ -344,6 +356,12 @@ ALTER TABLE expense_info_t modify allocate_equally not null
 ALTER TABLE expense_info_t
   add constraint expense_info_t5
   check (allocate_equally between 0 and 1)
+/
+CREATE INDEX expense_info_t6 on expense_info_t (
+  realm_id
+)
+  tablespace index_1m
+  pctfree 0 initrans 4 storage (freelists 8)
 /
 ');
 
