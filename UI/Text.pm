@@ -229,7 +229,7 @@ L<UNDEF_CONFIG|"UNDEF_CONFIG">
 
 sub get_value {
     my($proto, @tag_part) = @_;
-    my($req_or_facade) = ref(@tag_part->[$#tag_part]) ? pop(@tag_part) : undef;
+    my($req_or_facade) = ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef;
     my($self) = $proto->internal_get_self($req_or_facade);
     my($tag) = _join_tag(\@tag_part);
     # We search a diagonal matrix.  We iterate over the $tag until we
