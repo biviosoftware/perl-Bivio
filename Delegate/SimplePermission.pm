@@ -91,6 +91,10 @@ Edit data about the realm.
 Set when the user executing the request is a super_user which is
 substituted as another user.
 
+=item SUPER_USER_TRANSIENT
+
+Set when the user executing the request is a super_user.
+
 =back
 
 =cut
@@ -104,6 +108,7 @@ sub get_delegate_info {
 	ADMIN_READ => [5],
 	ADMIN_WRITE => [6],
 	SUBSTITUTE_USER_TRANSIENT => [7],
+	SUPER_USER_TRANSIENT => [8],
     ];
 }
 

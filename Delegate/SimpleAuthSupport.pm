@@ -117,24 +117,24 @@ Returns true if I<user> has all permissions in I<task>.
 
 =head2 static task_permission_ok(Bivio::Auth::PermissionSet user, Bivio::Auth::PermissionSet task, Bivio::Agent::Request req) : boolean
 
-Returns the permissions for this user loaded from the database.
+Returns the permissions for this user loaded from the database.  Computes
+SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
 
 =cut
 
 sub task_permission_ok {
     my($proto, $user, $task, $req) = @_;
-
-    # Does this role have all the required permission?
-    return 1 if ($user & $task) eq $task;
-
-    # Handle special SUBSTITUTE_USER_TRANSIENT
-    if ($req->is_substitute_user) {
-	Bivio::Auth::PermissionSet->set(\$user,
-	    Bivio::Auth::Permission->SUBSTITUTE_USER_TRANSIENT);
-	_trace('substitute user: ', $user) if $_TRACE;
+    foreach my $op ('', qw(super substitute)) {
+	if ($op) {
+	    my($method) = 'is_' . $op . '_user';
+	    next unless $req->$method();
+	    Bivio::Auth::PermissionSet->set(\$user,
+		Bivio::Auth::Permission->from_name($op . '_user_transient'));
+	    _trace($op, ' user: ', $user) if $_TRACE;
+	}
+	# Does this role have all the required permission?
 	return 1 if ($user & $task) eq $task;
     }
-
     _trace('insufficient privileges') if $_TRACE;
     return 0;
 }
