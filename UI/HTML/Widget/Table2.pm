@@ -149,6 +149,7 @@ use Bivio::UI::Align;
 use Bivio::UI::Color;
 use Bivio::UI::HTML::Widget::AmountCell;
 use Bivio::UI::HTML::Widget::DateTime;
+use Bivio::UI::HTML::Widget::Enum;
 use Bivio::UI::HTML::Widget::Join;
 use Bivio::UI::HTML::Widget::LineCell;
 use Bivio::UI::HTML::Widget::PercentCell;
@@ -340,17 +341,31 @@ sub _create_cell_widget {
 	    %$attrs,
 	});
     }
+
+#TODO: should check if the list class "can()" format_name()
+    if ($field eq 'RealmOwner.name') {
+	return Bivio::UI::HTML::Widget::String->new({
+	    value => ['->format_name'],
+	    %$attrs,
+	});
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
 	return Bivio::UI::HTML::Widget::AmountCell->new({
 	    field => $field,
 	    %$attrs,
 	});
     }
-    elsif (UNIVERSAL::isa($type, 'Bivio::Type::Date')) {
+    if (UNIVERSAL::isa($type, 'Bivio::Type::DateTime')) {
 	return Bivio::UI::HTML::Widget::DateTime->new({
 	    mode => 'DATE',
 	    column_align => 'E',
 	    value => [$field],
+	    %$attrs,
+	});
+    }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
+	return Bivio::UI::HTML::Widget::Enum->new({
+	    field => $field,
 	    %$attrs,
 	});
     }
