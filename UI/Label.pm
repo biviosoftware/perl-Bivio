@@ -454,6 +454,7 @@ _compile([
     SHOW_INACTIVE => ['Show All'],
     SHOW_INACTIVE_INSTRUMENTS => ['Show All Investments'],
     SHOW_INACTIVE_MEMBERS => ['Show Withdrawn Members'],
+    SHOW_INACTIVE_ACCOUNTS => ['Show All Accounts'],
     LIST_ACTIONS_HEADING => ['Actions'],
     NAME_AND_ADDRESS => ["Name\nAddress"],
     EMAIL_AND_PHONE => ["Email\nPhone"],
