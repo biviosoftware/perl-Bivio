@@ -144,6 +144,9 @@ _compile(
     ADD_ROWS => ['Add Rows'],
     LOOKUP_BUTTON => ['Symbol Lookup'],
     NEW_UNLISTED => ['New Unlisted'],
+    FEE => ['Fee'],
+    WITHDRAWAL_TYPE => ['Type'],
+    REFRESH => ['Refresh'],
 
     # NCA Import
     NCADATA => ['NCADATA.DAT'],
@@ -231,12 +234,20 @@ _compile(
     PERCENT_OF_TOTAL_HEADING => ["Percent\nofTotal"],
     CASH_ACCOUNT_HEADING => ['Cash Account'],
     REALMTRANSACTION_DATE_TIME_HEADING => ['Date'],
-    REALMTRANSACTION_REMARK_HEADING => ['Description'],
+    REALMTRANSACTION_REMARK_HEADING => ['Remark'],
     ENTRY_AMOUNT_HEADING => ['Amount'],
     REALMINSTRUMENTENTRY_COUNT_HEADING => ['Shares'],
     RECIPIENT_HEADING => ['Recipient'],
     COUNT_HEADING => ['Quantity'],
     CLUB_COST_BASIS_HEADING => ["Club's\nCost Basis"],
+    EXEC_HEADING => ['Exec.'],
+    ENTRY_ENTRY_TYPE_HEADING => ['Type'],
+    ENTRY_TAX_CATEGORY_HEADING => ['Tax'],
+    REMARK_HEADING => ['Remark'],
+    ACTION_HEADING => ['Action'],
+    REALMOWNER_NAME_HEADING => ['Name'],
+    MEMBERENTRY_VALUATION_DATE_HEADING => ['Val. Date'],
+    MEMBERENTRY_UNITS_HEADING => ['Units'],
 
     # HTML Tax attachment label headings
     TAX_DESCRIPTION_OF_PROPERTY_1_HEADING => ['1 (a) Description of property'],
