@@ -77,9 +77,6 @@ sub from_mgfs {
     if (substr($record, 4, 1) eq 'D') {
 	$self->SUPER::from_mgfs($record, $file);
     }
-
-#TODO: create split records
-
     return;
 }
 
