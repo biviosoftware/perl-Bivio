@@ -403,7 +403,8 @@ EOF
         $$buf .= "\nContent-Type: $p->{type}";
         defined($p->{name}) && ($$buf .= ";\n name=\"$p->{name}\"");
         if ($p->{type} =~ m!^text/! && !$p->{binary}) {
-            $$buf .= "\n\n" . ${$p->{content}} . "\n\n";
+            $$buf .= "\nContent-Transfer-Encoding: 7bit\n\n";
+            $$buf .= ${$p->{content}} . "\n\n";
         } else {
             $$buf .= "\nContent-Transfer-Encoding: base64\n\n";
             $$buf .= MIME::Base64::encode(${$p->{content}});
