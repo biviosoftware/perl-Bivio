@@ -313,7 +313,8 @@ sub internal_load_rows {
 		$tax->MISC_INCOME->get_short_desc, 0),
 	foreign_tax => $_M->neg($allocations->get_or_default(
 		$tax->FOREIGN_TAX->get_short_desc, 0)),
-	foreign_income_country => '',
+	foreign_income_country => Bivio::Biz::Model::F1065Form
+	->get_foreign_income_country($self->get_request),
 	tax_exempt_interest => $allocations->get_or_default(
 		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc, 0),
 	cash_distribution => _get_cash_withdrawal_amount($self, $user, $date),
