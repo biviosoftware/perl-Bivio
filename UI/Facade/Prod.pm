@@ -121,7 +121,7 @@ my($_SELF) = __PACKAGE__->new({
 		    mail_home_list_odd_bg
 		    mail_home_list_even_bg
 	    )],
-	       0xFFEEEE);
+	       0xFFFFFF);
 
 	    #
 	    # Image menu in header
