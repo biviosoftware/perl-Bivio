@@ -799,10 +799,10 @@ sub internal_load {
     my($req) = $self->unsafe_get_request;
     $req->put(list_model => $self) if $req;
 
-    # Fixup if need be
     if ($self->can('internal_post_load_row')) {
-	foreach my $r (@$rows) {
-	    $self->internal_post_load_row($r);
+	for (my($i) = 0; $i <= $#$rows; $i++) {
+	    splice(@$rows, $i--, 1)
+		unless $self->internal_post_load_row($rows->[$i]);
 	}
     }
     return;
@@ -810,10 +810,12 @@ sub internal_load {
 
 =for html <a name="internal_post_load_row"></a>
 
-=head2 abstract internal_post_load_row(hash_ref row)
+=head2 abstract internal_post_load_row(hash_ref row) : boolean
 
 Used to fix up a row after loading.  No state should be assumed except
 the row itself.
+
+Returns false if the row should be ignored.
 
 =cut
 
@@ -883,22 +885,21 @@ Returns false if there is no next.
 Subclasses: Calls L<internal_post_load_row|"internal_post_load_row"> after
 the row is loaded if I<self> implements this method.  Care must
 be taken when using the values returned, because converter is
-already applied.
+already applied.  If internal_post_load_row returns false, the row isn't
+returned and another row is attempted.
 
 =cut
 
 sub iterate_next {
     my($self, $iterator, $row) = (shift, shift, shift);
-    unless ($self->internal_get_sql_support->iterate_next(
-	    $iterator, $row, @_)) {
-	return 0;
+    while ($self->internal_get_sql_support->iterate_next(
+	$iterator, $row, @_)) {
+	next if $self->can('internal_post_load_row')
+	   && !$self->internal_post_load_row($row);
+	$self->internal_put($row);
+	return 1;
     }
-
-    # Fixup the row if loaded.
-    $self->internal_post_load_row($row)
-	    if $self->can('internal_post_load_row');
-    $self->internal_put($row);
-    return 1;
+    return 0;
 }
 
 =for html <a name="iterate_next_and_load"></a>
@@ -907,7 +908,6 @@ sub iterate_next {
 
 I<iterator> was returned by L<iterate_start|"iterate_start">.
 Will iterate to the next row and load the model with the row.
-Can be used to update a row.
 
 It appears as if the model was loaded with one row and the
 cursor was set at 0. Do not call L<next_row|"next_row">,
@@ -926,28 +926,21 @@ Returns false if there is no next.
 sub iterate_next_and_load {
     my($self, $iterator) = @_;
     my($fields) = $self->[$_IDI];
-    my($row);
-    if ($fields->{iterate_load}) {
-	$row = $fields->{rows}->[0];
-    }
-    else {
-	# Initialize once.  It will be overwritten if a real load happens.
-	$fields->{rows} = [$row = {}];
-	$fields->{cursor} = 0;
-    }
-    unless ($self->internal_get_sql_support->iterate_next(
-	    $iterator, $row)) {
+    my($row) = {};
+    # Initialize once.  It will be overwritten if a real load happens.
+    $fields->{rows} = [$row];
+    $fields->{cursor} = 0;
+    while ($self->internal_get_sql_support->iterate_next($iterator, $row)) {
+	next if $self->can('internal_post_load_row')
+	    && !$self->internal_post_load_row($row);
 	$self->internal_clear_model_cache;
-	$self->internal_put($fields->{empty_properties});
-	return 0;
+	$self->internal_put($row);
+	return 1;
     }
-
-    # Fixup the row if loaded.
-    $self->internal_post_load_row($row)
-	    if $self->can('internal_post_load_row');
     $self->internal_clear_model_cache;
-    $self->internal_put($row);
-    return 1;
+    $self->internal_put($fields->{empty_properties});
+    $fields->{rows} = undef;
+    return 0;
 }
 
 =head2 iterate_start(hash_ref query) : ref
@@ -967,13 +960,17 @@ Calls L<internal_pre_load|"internal_pre_load">, but does not call
 L<internal_load|"internal_load">.  See L<iterate_next|"iterate_next">
 for semantics of row fixups.
 
+TODO: Can't have multiple iterators on same model.  It's too inconvenient.
+
 =cut
 
 sub iterate_start {
     my($self, $query) = @_;
-    $self->throw_die('DIE', 'iteration not supported') unless $self->can_iterate;
+    $self->throw_die('DIE', 'iteration not supported')
+	unless $self->can_iterate;
 
-    $query = $self->parse_query($query);
+    my($fields) = $self->[$_IDI];
+    $fields->{query} = $query = $self->parse_query($query);
     my($sql_support) = $self->internal_get_sql_support;
 
     # Let the subclass add specializations to the query.
