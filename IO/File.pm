@@ -53,6 +53,7 @@ sub chdir {
 	    unless defined($directory) && length($directory);
     Bivio::Die->die('chdir(', $directory, "): $!")
 		unless chdir($directory);
+    _trace($directory) if $_TRACE;
     return $directory;
 }
 
@@ -71,6 +72,7 @@ sub mkdir_p {
     Bivio::Die->die('no path supplied')
 	    unless defined($path) && length($path);
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
+    _trace($path) if $_TRACE;
     return $path;
 }
 
