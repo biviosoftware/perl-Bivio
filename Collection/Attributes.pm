@@ -310,8 +310,7 @@ Returns the list of keys.
 =cut
 
 sub get_keys {
-    my(@names) = keys(%{shift->[$_IDI]});
-    return \@names;
+    return [grep($_ ne $_READ_ONLY_ATTR, keys(%{shift->[$_IDI]}))];
 }
 
 =for html <a name="get_nested"></a>
@@ -383,7 +382,9 @@ Return a shallow copy of the attributes.
 =cut
 
 sub get_shallow_copy {
-    return {%{shift->[$_IDI]}};
+    my($res) = {%{shift->[$_IDI]}};
+    delete($res->{$_READ_ONLY_ATTR});
+    return $res;
 }
 
 =for html <a name="has_keys"></a>
@@ -409,12 +410,18 @@ method (enforced).
 
 Modifying the hash will modify the attributes.
 
+Not allowed if read-only.
+
 =cut
 
 sub internal_get {
     my($self) = @_;
+    my($fields) = $self->[$_IDI];
+#    _die($self, $_READ_ONLY_ERROR) if $fields->{$_READ_ONLY_ATTR};
+    Bivio::IO::Alert->warn_deprecated('internal_get on read-only instance')
+	if $fields->{$_READ_ONLY_ATTR};
     _die($self, "protected method") unless caller(0)->isa(__PACKAGE__);
-    return $self->[$_IDI];
+    return $fields;
 }
 
 
