@@ -986,7 +986,7 @@ sub load_from_model_properties {
     my($sql_support) = $self->internal_get_sql_support();
     my($properties) = $self->internal_get();
     my($models) = $sql_support->get('models');
-    Carp::croak($model, ': no such model') unless defined($models->{$model});
+    $self->die($model, ': no such model') unless defined($models->{$model});
     my(%res);
     my($column_aliases) = $sql_support->get('column_aliases');
     my($m) = $self->get_model($model);
