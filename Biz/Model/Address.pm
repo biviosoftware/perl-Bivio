@@ -44,7 +44,7 @@ and delete interface to the C<address_t> table.
 
 =head2 format() : string
 
-=head2 static format(Bivio::Biz::ListModel list_model, string model_prefix) : string
+=head2 static format(Bivio::Biz::Model model, string model_prefix) : string
 
 Returns the street1, street2, city, state, zip, and country as
 a single string (with embedded newlines).
@@ -54,7 +54,7 @@ List Models can declare a method of the form:
 
     sub format_address {
 	my($self) = shift;
-	Bivio::Biz::Model::Address->format($self, 'Address.', @_);
+	Bivio::Biz::Model::Address->format($self, 'Address.');
     }
 
 Always returns a valid (defined) string, but may be zero length.
@@ -62,9 +62,8 @@ Always returns a valid (defined) string, but may be zero length.
 =cut
 
 sub format {
-    my($self, $list_model, $model_prefix) = @_;
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
+    my($self, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($m, $p) = ($model, $model_prefix);
     my($sep) = ', ';
     my($csz) = undef;
     foreach my $n ($m->unsafe_get($p.'city', $p.'state', $p.'zip')) {
