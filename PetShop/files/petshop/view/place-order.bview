@@ -20,14 +20,14 @@ view_put(menu_content => Form({
 			->put(cell_colspan => 2),
 	    ],
 	    [
-		vs_form_field('OrderForm.Order.card_type', {
+		FormField('OrderForm.Order.card_type', {
 		    show_unknown => 0,
 		    wf_want_select => 1,
 		    enum_sort => 'as_int',
-		}),
+		})->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('OrderForm.Order.credit_card'),
+		FormField('OrderForm.Order.credit_card')->get_label_and_field,
 	    ],
 	    [
 		String('Expiration Date: ', 'form_field_label'),
@@ -53,14 +53,17 @@ view_put(menu_content => Form({
 		]))->put(cell_colspan => 2),
 	    ],
 	    [
-		vs_form_field('OrderForm.Order.bill_to_first_name'),
+		FormField('OrderForm.Order.bill_to_first_name')
+		        ->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('OrderForm.Order.bill_to_last_name'),
+		FormField('OrderForm.Order.bill_to_last_name')
+		        ->get_label_and_field,
 	    ],
 	    vs_address_fields('OrderForm', '_1'),
 	    [
-		vs_form_field('OrderForm.ship_to_billing_address'),
+		FormField('OrderForm.ship_to_billing_address')
+	                ->get_label_and_field,
 	    ],
 	    [
 		ImageFormButton({

@@ -17,10 +17,12 @@ view_put(menu_content => Form({
 			->put(cell_colspan => 2),
 	    ],
 	    [
-		vs_form_field('ShippingAddressForm.Order.ship_to_first_name'),
+		FormField('ShippingAddressForm.Order.ship_to_first_name')
+		        ->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('ShippingAddressForm.Order.ship_to_last_name'),
+		FormField('ShippingAddressForm.Order.ship_to_last_name')
+		        ->get_label_and_field,
 	    ],
 	    vs_address_fields('OrderForm', '_2'),
 	    [

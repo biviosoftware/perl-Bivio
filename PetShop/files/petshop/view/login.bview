@@ -19,10 +19,12 @@ view_put(menu_content => Join([
 	    pad => 2,
 	    values => [
 		[
-		    vs_form_field('LoginForm.RealmOwner.name'),
+		    FormField('LoginForm.RealmOwner.name')
+			    ->get_label_and_field,
 		],
 		[
-		    vs_form_field('LoginForm.RealmOwner.password'),
+		    FormField('LoginForm.RealmOwner.password')
+		            ->get_label_and_field
 		],
 		[
 		    vs_space(),

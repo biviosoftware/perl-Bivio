@@ -29,25 +29,27 @@ view_put(menu_content => Form({
 		String(['Model.UserAccountForm', 'RealmOwner.name']),
 	    ],
 	    [
-		vs_form_field('UserAccountForm.RealmOwner.name', {},
-			['!', $edit_mode_condition]),
+		FormField('UserAccountForm.RealmOwner.name', {},
+			['!', $edit_mode_condition])->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('UserAccountForm.RealmOwner.password', {},
-			['!', $edit_mode_condition]),
+		FormField('UserAccountForm.RealmOwner.password', {},
+			['!', $edit_mode_condition])->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('UserAccountForm.Email.email'),
+		FormField('UserAccountForm.Email.email')->get_label_and_field,
 	    ],
 	    [
 		String('Address:', 'page_heading')
 		        ->put(cell_colspan => 2),
 	    ],
 	    [
-		vs_form_field('UserAccountForm.User.first_name'),
+		FormField('UserAccountForm.User.first_name')
+		        ->get_label_and_field,
 	    ],
 	    [
-		vs_form_field('UserAccountForm.User.last_name'),
+		FormField('UserAccountForm.User.last_name')
+		        ->get_label_and_field,
 	    ],
 	    vs_address_fields('UserAccountForm', ''),
 	    [
