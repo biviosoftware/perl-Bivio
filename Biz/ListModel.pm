@@ -358,7 +358,7 @@ sub format_query {
     $type = Bivio::Biz::QueryType->from_name($type) unless ref($type);
 
     # Get the query using the method defined in QueryType
-    my($method) = $type->get_short_desc;
+    my($method) = $type->get_method;
     return undef unless $method;
 
     # Determine if need to pass in current row
@@ -413,7 +413,7 @@ sub format_uri {
     }
 
     # Need to get the list_uri or detail_uri from the request?
-    $uri ||= $req->get($type->get_long_desc);
+    $uri ||= $req->get($type->get_uri_attr);
 
     if ($type->get_name =~ /PATH/) {
 	my($c) = $fields->{cursor};
