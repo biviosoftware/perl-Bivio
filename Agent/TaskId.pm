@@ -2393,8 +2393,10 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::CompleteJournalDateForm
         Bivio::Biz::Model::CompleteJournalList->execute_load_all
 	Bivio::UI::HTML::Club::CompleteJournal
+        next=CLUB_ACCOUNTING_REPORT_COMPLETE_JOURNAL
     )],
 );
 
