@@ -52,8 +52,6 @@ sub execute {
     my($http) = $req->format_http_prefix;
     my($ak) = $http
 	    .$_W->format_uri_static_site($req, 'hm/account-keeper.html');
-    my($ps) = $http
-	    .$_W->format_uri_static_site($req, 'hm/premium-support.html');
     my($msg) = Bivio::UI::Mail::SupportAuthor->enqueue_message($req,
 	    $recipient,
 	    # For syntax see Common::_text_to_html
@@ -67,10 +65,6 @@ Use bivio to:
     * Keep your club books.
     * Generate financial and performance reports.
     * Share documents and exchange messages.
-
-Sign your whole club up for a full 12 months of Premium Support for only \$39:
-
-    $ps
 
 Promote yourself to CFO.  Let your bivio AccountKeeper do all the work for
 only \$195 per year, including year-end tax forms:
