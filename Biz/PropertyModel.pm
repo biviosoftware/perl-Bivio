@@ -243,6 +243,24 @@ sub format_query {
 	    $self->internal_get_sql_support, $self->internal_get);
 }
 
+=for html <a name="get_keys"></a>
+
+=head2 get_keys() : array_ref
+
+B<DEPRECATED>
+
+Returns a copy of the I<column_names> attribute.
+
+TODO: Need to move this up to Model, but I think this might break ListModel and
+FormModel, because get_keys returns all keys and column_names only returns
+declared columns.  Some models don't declare all their columns.
+
+=cut
+
+sub get_keys {
+    return [@{shift->get_info('column_names')}];
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
