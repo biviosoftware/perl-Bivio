@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::PublicRealm;
 use strict;
 $Bivio::Biz::Action::PublicRealm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Action::PublicRealm::VERSION;
 
 =head1 NAME
 
@@ -37,7 +38,7 @@ Set to true if user as "is_public" privs and the realm is public.
 =cut
 
 #=IMPORTS
-use Bivio::DieCode;
+use Bivio::IO::Trace;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -77,7 +78,32 @@ Set C<is_realm_user> to I<true> is user is a member or guest.
 
 sub execute {
     my($self, $req) = @_;
+    $self->execute_simple($req);
+    my($can_modify) = $req->get('realm_is_public')
+#TODO: Need to work for all realms
+	    && $req->get('auth_realm')->get('type')
+		    == Bivio::Auth::RealmType::CLUB()
+	    && $req->can_user_execute_task(
+		    Bivio::Agent::TaskId::CLUB_ADMIN_PUBLIC())
+		    ? 1 : 0;
+    _trace('user_can_modify_is_public=', $can_modify) if $_TRACE;
+    $req->put(user_can_modify_is_public => $can_modify);
+    return 0;
+}
 
+=for html <a name="execute_simple"></a>
+
+=head2 execute_simple(Bivio::Agent::Request req) : boolean
+
+This version is used for lists which don't have forms, i.e. you
+don't need to know about I<user_can_modify_is_public>.  This
+was added to support L<Bivio::Biz::Util::File|Bivio::Biz::Util::File>.
+
+=cut
+
+sub execute_simple {
+    my($self, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
     my($user) = $req->get('auth_user');
     my($club_id) = $req->get('auth_id');
     my($role) = $req->get('auth_role');
@@ -102,15 +128,8 @@ sub execute {
     $req->put(
             is_realm_user => $is_realm_user,
             realm_is_public => $realm_is_public,
-#TODO: Trace
-	    user_can_modify_is_public => $realm_is_public
-#TODO: Need to work for all realms
-	    && $req->get('auth_realm')->get('type')
-	    == Bivio::Auth::RealmType::CLUB()
-	    && $req->can_user_execute_task(
-		    Bivio::Agent::TaskId::CLUB_ADMIN_PUBLIC()),
            );
-    return;
+    return 0;
 }
 
 #=PRIVATE METHODS
@@ -118,7 +137,7 @@ sub execute {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
