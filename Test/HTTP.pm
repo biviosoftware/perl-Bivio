@@ -33,14 +33,11 @@ use Data::Dumper ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
-my($_BASE_URI);
 my($_PACKAGE) = __PACKAGE__;
 my($_PASSWORD);
 my($_SAVE_PASS);
 my($_USER);
 Bivio::IO::Config->register({
-    base_uri => "http://www.test.bivio.com",
-#    base_uri => "http://127.0.0.1:8000",
     password => "foobar",
     save_pass => "0",
     user => "btfuserx",
@@ -65,9 +62,9 @@ sub click_button {
     my($parsed_res) = $board->get('response');
     die ("Must visit a page before clicking on a button.")
 	    unless (defined $parsed_res);
-    my($uri_to_request) = $parsed_res->get_uri('buttons', $target);
-    _trace("Uri for button: $uri_to_request") if $_TRACE;
-    $board->get('HTTPUtil')->http_href($_BASE_URI.$uri_to_request);
+    my($path_to_request) = $parsed_res->get_uri('buttons', $target);
+    _trace("Uri for button: $path_to_request") if $_TRACE;
+    $board->get('HTTPUtil')->http_href($path_to_request);
     return;
 }
 
@@ -88,12 +85,12 @@ sub click_imagemenu {
     die ("Must visit a page before clicking on imagemenu.")
 	    unless (defined $parsed_res);
 
-    my($uri_to_request) = $parsed_res->get_uri(
+    my($path_to_request) = $parsed_res->get_uri(
 	    'imagemenu', $target, $subtarget);
-    _trace("Uri for imagemenu: $uri_to_request") if $_TRACE;
+    _trace("Path for imagemenu: $path_to_request") if $_TRACE;
 
     $board->get('HTTPUtil')->http_href(
-	    $_BASE_URI.$uri_to_request);
+	    $path_to_request);
     return;
 }
 
@@ -125,10 +122,6 @@ sub dump_analyzer {
 
 =over 4
 
-=item base_uri : string
-
-uri of test system in use (typically local server or http://www.test.bivio.com)
-
 =item password : string
 
 password for default user
@@ -150,7 +143,6 @@ sub handle_config {
     $_USER = $cfg->{user};
     $_PASSWORD = $cfg->{password};
     $_SAVE_PASS = $cfg->{save_pass};
-    $_BASE_URI = $cfg->{base_uri};
     return;
 }
 
@@ -312,12 +304,7 @@ sub visit {
     my(undef, $uri) = @_;
     _trace("passed url:", $uri, "\n")
 	    if $_TRACE;
-    my($board) = Bivio::Test::BulletinBoard->get_current();
-    unless ($uri =~ /http:/) {
-	$uri =~ s/(.*)/$_BASE_URI$1/;
-	_trace("Full uri is: $uri") if $_TRACE;
-    }
-    $board->get('HTTPUtil')->http_href(
+    Bivio::Test::BulletinBoard->get_current()->get('HTTPUtil')->http_href(
 	    $uri);
     return;
 }
