@@ -51,6 +51,7 @@ my(@_USER_FIELDS) = qw(
     last_name
     age
     gender
+    display_name
 );
 my(@_USER_EMAIL_FIELDS) = qw(
     email
@@ -77,6 +78,8 @@ sub execute {
     my($values) = $req->get_fields('form', \@_USER_FIELDS);
     my($gender) = $values->{gender};
     $values->{gender} = Bivio::Type::Gender->$gender();
+    $values->{display_name} = _generate_default_display_name($req)
+	    unless defined($values->{display_name});
     $user->create($values);
     my($user_id) = $user->get('user_id');
 
@@ -112,6 +115,36 @@ sub execute {
 }
 
 #=PRIVATE METHODS
+
+# _generate_default_display_name(hash values)
+#
+# Formats name in precedence:
+#   last, first middle
+#   last, first
+#   last
+#   first
+#   login
+
+sub _generate_default_display_name {
+    my($req) = @_;
+
+    my($values) = $req->get_fields('form',
+	    ['first_name', 'middle_name', 'last_name', 'name']);
+    my($first, $middle, $last, $login) = ($values->{first_name},
+	    $values->{middle_name}, $values->{last_name},
+	    $values->{name});
+
+    if ($last) {
+	if ($first) {
+	    if ($middle) {
+		return $last.', '.$first.' '.$middle;
+	    }
+	    return $last.', '.$first;
+	}
+	return $last;
+    }
+    return $first ? $first : $login;
+}
 
 =head1 COPYRIGHT
 
