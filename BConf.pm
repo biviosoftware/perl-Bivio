@@ -237,8 +237,13 @@ sub merge_http_log {
 	    $overrides || {}, {
 		ignore_list => [
 		    # Standard apache notices and info
-		    '\] \[(?:info|notice)\] \w+',
+		    '\] \[(?:info|notice)\] ',
 		    'Dispatcher::execute_queue:\d+ \d+ JOB_(?:START|END):',
+		    # Virii and such
+		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida)',
+		    'DieCode::MISSING_COOKIES',
+		    'client sent HTTP/1.1 request without hostname',
+		    'mod_ssl: SSL handshake timed out',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
