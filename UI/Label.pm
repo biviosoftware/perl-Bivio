@@ -252,8 +252,8 @@ _compile([
 	'Member Withdrawal Summary'],
     CLUB_ACCOUNTING_REPORT_MISC_INCOME_AND_DEDUCTIONS => [
 	'Miscellaneous Income and Deductions Report'],
-    CLUB_ACCOUNTING_REPORT_TRANSACTION_SUMMARY => [
-	'Transaction Summary Report'],
+    CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY => [
+	'Transaction History Report'],
     CLUB_ACCOUNTING_REPORT_VALUATION_STATEMENT => ['Valuation Report'],
 
     # NCA Import
