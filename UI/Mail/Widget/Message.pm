@@ -136,7 +136,8 @@ sub execute {
 	unless $email;
     $msg->set_envelope_from($email);
 
-    my($recipients) = $self->unsafe_render_attr('recipients', $req);
+    my($recipients) = '';
+    $self->unsafe_render_attr('recipients', $req, \$recipients);
     my(@recips) = ();
     foreach my $header (qw(to cc subject)) {
 	my($value) = '';
@@ -147,7 +148,7 @@ sub execute {
     }
     $msg->set_recipients(
 	$recipients
-	? $$recipients
+	? $recipients
         : join(',', @recips));
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
