@@ -31,6 +31,7 @@ C<Bivio::UI::HTML::Club::ValuationStatement>
 =cut
 
 #=IMPORTS
+use Bivio::Biz::ListModel::SummaryList;
 use Bivio::UI::HTML::Club::Page;
 use Bivio::UI::HTML::Format::Amount;
 use Bivio::UI::HTML::Format::Date;
@@ -58,7 +59,7 @@ my($_PACKAGE) = __PACKAGE__;
 sub new {
     my($self) = &Bivio::UI::HTML::Widget::new(@_);
     my($fields) = $self->{$_PACKAGE} = {};
-    $fields->{securities_table} = Bivio::UI::HTML::Widget::Table->new({
+    $fields->{security_table} = Bivio::UI::HTML::Widget::Table->new({
 	source => ['Bivio::Biz::ListModel::InstrumentValuationList'],
 	pad => 3,
 	no_end_tag => 1,
@@ -122,13 +123,78 @@ sub new {
 	    column_nowrap => 1,
 	    },
     });
-    $fields->{securities_table}->initialize;
+    $fields->{security_table}->initialize;
+    $fields->{security_summary_table} = Bivio::UI::HTML::Widget::Table->new({
+	source => ['security_summary'],
+	no_start_tag => 1,
+	no_end_tag => 1,
+	headings => [
+	    '',
+	    '',
+	    '',
+	    '',
+	    '-',
+	    '',
+	    '-',
+	    '-',
+	],
+	cells => [
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => [
+		    Bivio::UI::HTML::Widget::String->new({
+			value => "Total Securities",
+			string_font => 'table_cell',
+			column_align => 'NW',
+		    }),
+#TODO: not optimal certainly
+		    '<br>&nbsp;'
+		],
+	    }),
+#TODO: need a better way to insert space
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_cost',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'NE',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_value',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'NE',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['percent',
+		    'Bivio::UI::HTML::Format::Printf', "%.1f%%"],
+		column_align => 'NE',
+	    }),
+	],
+	cell_attrs => {
+	    string_font => 'monospaced',
+	    column_nowrap => 1,
+	    },
+	heading_bgcolor => 'page_bg',
+	heading_attrs => {
+	    column_align => 'center',
+	    },
+    });
+    $fields->{security_summary_table}->initialize;
     $fields->{account_table} = Bivio::UI::HTML::Widget::Table->new({
 	source => ['Bivio::Biz::ListModel::AccountValuationList'],
 	no_start_tag => 1,
+	no_end_tag => 1,
 	headings => [
 	    'Cash Account',
-#TODO: need a better way to insert space
 	    Bivio::UI::HTML::Widget::Join->new({
 		values => ['&nbsp;']
 	    }),
@@ -188,14 +254,133 @@ sub new {
 	    },
     });
     $fields->{account_table}->initialize;
+    $fields->{account_summary_table} = Bivio::UI::HTML::Widget::Table->new({
+	source => ['account_summary'],
+	no_start_tag => 1,
+	no_end_tag => 1,
+	headings => [
+	    '',
+	    '',
+	    '',
+	    '',
+	    '-',
+	    '',
+	    '-',
+	    '-',
+	],
+	cells => [
+	    Bivio::UI::HTML::Widget::String->new({
+		value => "Total Cash Accounts",
+		string_font => 'table_cell',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_cost',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_value',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['percent',
+		    'Bivio::UI::HTML::Format::Printf', "%.1f%%"],
+		column_align => 'E',
+	    }),
+	],
+	cell_attrs => {
+	    string_font => 'monospaced',
+	    column_nowrap => 1,
+	    },
+	heading_bgcolor => 'page_bg',
+	heading_attrs => {
+	    column_align => 'center',
+	    },
+    });
+    $fields->{account_summary_table}->initialize;
+    $fields->{grand_summary_table} = Bivio::UI::HTML::Widget::Table->new({
+	source => ['grand_summary'],
+	no_start_tag => 1,
+	headings => [
+	    '',
+	    '',
+	    '',
+	    '',
+	    '-',
+	    '',
+	    '-',
+	    '-',
+	],
+	cells => [
+#TODO: need to be able to specifiy a wide column
+	    Bivio::UI::HTML::Widget::String->new({
+		value => "Grand Total",
+		string_font => 'table_cell',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_cost',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['&nbsp;']
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['total_value',
+		    'Bivio::UI::HTML::Format::Amount', 2],
+		column_align => 'E',
+	    }),
+	    Bivio::UI::HTML::Widget::String->new({
+		value => ['percent',
+		    'Bivio::UI::HTML::Format::Printf', "%.1f%%"],
+		column_align => 'E',
+	    }),
+	],
+	cell_attrs => {
+	    string_font => 'monospaced',
+	    column_nowrap => 1,
+	    },
+	heading_bgcolor => 'page_bg',
+	heading_attrs => {
+	    column_align => 'center',
+	    },
+    });
+    $fields->{grand_summary_table}->initialize;
 
     $fields->{report} = Bivio::UI::HTML::Widget::Join->new({
-	       values => [
-		       Bivio::UI::HTML::Widget::Join->new({
-			   values => ['<br>']
-		       }),
-		       $fields->{securities_table},
-		       $fields->{account_table}]});
+	values => [
+	    Bivio::UI::HTML::Widget::Join->new({
+		values => ['<br>']
+	    }),
+	    $fields->{security_table},
+	    $fields->{security_summary_table},
+	    $fields->{account_table},
+	    $fields->{account_summary_table},
+	    $fields->{grand_summary_table},
+	]
+    });
     $fields->{report}->initialize;
 
     return $self;
@@ -216,6 +401,14 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    $req->put('security_summary', Bivio::Biz::ListModel::SummaryList->new(
+	    $req->get('Bivio::Biz::ListModel::InstrumentValuationList')));
+    $req->put('account_summary', Bivio::Biz::ListModel::SummaryList->new(
+	    $req->get('Bivio::Biz::ListModel::AccountValuationList')));
+    $req->put('grand_summary', Bivio::Biz::ListModel::SummaryList->new(
+	    $req->get('security_summary'),
+	    $req->get('account_summary')));
 
     $req->put(page_subtopic => undef, page_heading => 'Valuation Statement',
 	    page_content => $fields->{report});
