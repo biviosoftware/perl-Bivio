@@ -2,15 +2,13 @@
 #
 # $Id$
 #
-# b-db-backup-adhoc [db-login] [db-name] [backup-host] [transfer-host] [reqng-host] [keep-days]
+# b-db-backup-adhoc [db-login] [db-name] [backup-host] [keep-days]
 #
 
 DB_LOGIN=${1:-bivio/bivio}
 DB_NAME=${2:-SOC}
 BACKUP_HOST=${3:-s2b}
-TRANSFER_HOST=${4:-locker}
-REQNG_HOST=${5:-s1b}
-KEEP_DAYS=${6:-6}
+KEEP_DAYS=${4:-6}
 
 HOST=`hostname`
 HOST=`expr $HOST : '\([^\.]*\)\.' '|' $HOST`
@@ -37,16 +35,6 @@ $ORACLE_HOME/bin/exp ${DB_LOGIN}@$DB_NAME grants=n compress=y indexes=n rows=y c
 echo Compressing export dump files
 gzip *.dmp
 
-echo dbs-admin-$HOST
-tar czf - $ORACLE_HOME/dbs $ORACLE_HOME/network/admin >$ts-$HOST-dbs-admin.tgz
-
-if [ "$REQNG_HOST" != "NONE" ]; then
-    echo reqng-${REQNG_HOST}
-    /usr/local/bin/ssh ${REQNG_HOST} tar czf - /usr/local/reqng >$ts-${REQNG_HOST}-reqng.tgz 
-    /usr/local/bin/ssh ${REQNG_HOST} tar czf - /home/httpd >$ts-${REQNG_HOST}-httpd.tgz 
-    /usr/local/bin/ssh ${REQNG_HOST} tar czf - /home/connect >$ts-${REQNG_HOST}-connect.tgz 
-fi
-
 # Return to /home/bkp
 cd ..
 
@@ -54,19 +42,6 @@ if [ "$BACKUP_HOST" != "NONE" ]; then
     echo Transferring to $BACKUP_HOST
     ssh $BACKUP_HOST "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
     scp -pr $ts ${BACKUP_HOST}:/home/bkp/$DB_NAME
-fi
-
-if [ "$TRANSFER_HOST" != "NONE" ]; then
-    echo Transferring to $TRANSFER_HOST
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST mkdir /home/bkp/$DB_NAME/$ts"
-    # For now, don't transfer the DB export dumps to yet another machine
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts/*.tgz ${TRANSFER_HOST}:/home/bkp/$DB_NAME/$ts"
-    # Unpack reqng and log files for easy access
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST rm -rf /usr/local/reqng/active.old /usr/local/reqng/resolved.old"
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST mv /usr/local/reqng/active /usr/local/reqng/active.old"
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST mv /usr/local/reqng/resolved /usr/local/reqng/resolved.old"
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST tar zxCf / /home/bkp/$DB_NAME/$ts/$ts-${REQNG_HOST}-reqng.tgz usr/local/reqng/active usr/local/reqng/resolved\*"
-    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST tar zxCf / /home/bkp/$DB_NAME/$ts/$ts-${REQNG_HOST}-httpd.tgz home/httpd/logs/m\*"
 fi
 
 # Keep a few days worth of backup online
