@@ -52,7 +52,7 @@ sub execute_empty {
     my($self) = @_;
     $self->internal_put_field('RealmAccount.realm_account_id',
 	    => $self->get_request->get('Bivio::Biz::Model::RealmAccountList')
-	    ->get_default_broker_account);
+	    ->set_cursor_or_die(0)->get('RealmAccount.realm_account_id'));
     $self->load_from_model_properties('RealmAccount');
     return;
 }
@@ -109,7 +109,7 @@ sub validate {
     return if $self->get_errors;
 
     my($properties) = $self->internal_get;
-    return if $properties->{institution}
+    return if $properties->{'RealmAccount.institution'}
 	    == Bivio::Type::Institution::UNKNOWN();
 
     foreach my $f (qw(account_number external_password)) {
