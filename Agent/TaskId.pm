@@ -616,6 +616,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::CreateClubForm
         Bivio::UI::HTML::User::CreateClub
         next=CLUB_CREATED
+        cancel=USER_CLUB_LIST
     )],
     [qw(
         CLUB_HOME
