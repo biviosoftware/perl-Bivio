@@ -48,6 +48,8 @@ my($_PACKAGE) = __PACKAGE__;
 my($_PROPERTY_INFO) = {
     id => ['Internal ID',
 	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
+    club => ['Internal Club ID',
+	    Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
     ok => ['OK',
 	    Bivio::Biz::FieldDescriptor->lookup('BOOLEAN', 1)],
     rfc822_id => ['RFC822 ID',
@@ -72,6 +74,7 @@ my($_PROPERTY_INFO) = {
 
 my($_SQL_SUPPORT) = Bivio::Biz::SqlSupport->new('email_message', {
     id => 'id',
+    club => 'club',
     ok => 'ok',
     rfc822_id => 'rfc822_id',
     date => 'dttm',
