@@ -108,10 +108,11 @@ sub create {
     my($self, $values) = (shift, shift);
     $values->{gender} ||= Bivio::Type::Gender::UNKNOWN();
     my($got_one) = 0;
-    foreach my $n (qw(last_name first_name middle_name)) {
-	if (defined($values->{$n}) && length($values->{$n})) {
+    foreach my $field (qw(last_name first_name middle_name)) {
+	my($value) = $values->{$field};
+	if (defined($value) && length($value)) {
+	    $values->{$field.'_sort'} = lc($value);
 	    $got_one++;
-	    last;
 	}
     }
     $self->die('must have at least one of first, last, and middle names')
@@ -163,7 +164,7 @@ sub generate_shadow_user_name {
 
     die("invalid first and last name")
 	    unless defined($first_name) || defined($last_name);
-    my($name) = $last_name;
+    my($name) = $last_name || '';
     $name = $first_name.'_'.$name if defined($first_name);
     $name =~ s/\s/_/g;
     $name =~ s/[\W]//g;
@@ -229,18 +230,15 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'user_t',
 	columns => {
-            user_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            first_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            middle_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            last_name => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::NONE()],
-            gender => ['Bivio::Type::Gender',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            birth_date => ['Bivio::Type::Date',
-    		Bivio::SQL::Constraint::NONE()],
+            user_id => ['PrimaryId', 'PRIMARY_KEY'],
+            first_name => ['Name', 'NONE'],
+            first_name_sort => ['Name', 'NONE'],
+            middle_name => ['Name', 'NONE'],
+            middle_name_sort => ['Name', 'NONE'],
+            last_name => ['Name', 'NONE'],
+            last_name_sort => ['Name', 'NONE'],
+            gender => ['Gender', 'NOT_NULL'],
+            birth_date => ['Date', 'NONE'],
         },
 	auth_id => 'user_id',
     };
