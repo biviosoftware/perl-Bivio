@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Alert;
 use strict;
 $Bivio::IO::Alert::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::IO::Alert::VERSION;
 
 =head1 NAME
 
@@ -138,7 +139,25 @@ be called to convert the object to a string.
 =cut
 
 sub format {
-    return &_format(@_);
+    return _format(@_);
+}
+
+=for html <a name="format_args"></a>
+
+=head2 static format_args(any arg, ...) : string
+
+Formats I<arg>s as a string.  Truncation, C<undef>, etc. handled properly.
+
+=cut
+
+sub format_args {
+    shift;
+    my($res) = '';
+    foreach my $o (@_) {
+	# Only go three levels deep on structures
+	$res .= _format_string($o, 3);
+    }
+    return $res;
 }
 
 =for html <a name="get_last_warning"></a>
@@ -323,7 +342,7 @@ Note: If the message consists of a single newline, nothing is output.
 sub warn {
     my($proto) = shift(@_);
     int(@_) == 1 && $_[0] eq "\n" && return;
-    $_LAST_WARNING = _call_format(\@_);
+    $_LAST_WARNING = _call_format($proto, \@_);
     &$_LOGGER('err', $_LAST_WARNING);
     return unless --$_WARN_COUNTER < 0;
 
@@ -354,10 +373,10 @@ sub warn_deprecated {
 #=PRIVATE METHODS
 
 sub _call_format {
-    my($msg) = @_;
+    my($proto, $msg) = @_;
     my($i) = 0;
     $i++ while caller($i) eq __PACKAGE__;
-    return _format(undef,
+    return _format($proto,
 	    ((caller($i))[0,1,2], (caller($i+1))[3] || undef),
 	    $msg);
 }
@@ -369,7 +388,7 @@ sub _die_handler {
 }
 
 sub _format {
-    my(undef, $pkg, $file, $line, $sub, $msg) = @_;
+    my($proto, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
     my($text) = $_WANT_PID ? "[$$]" : '';
     $text .= $_WANT_TIME ? _timestamp() : '';
@@ -393,12 +412,7 @@ sub _format {
 	$text .= defined($pkg) ? $pkg : defined($file) ? $file : '';
     }
     defined($line) && ($text .= ":$line");
-    $text .= ' ';
-    my($o);
-    foreach $o (@$msg) {
-	# Only go three levels deep on structures
-	$text .= _format_string($o, 3);
-    }
+    $text .= ' '.$proto->format_args(@$msg);
     substr($text, -1) eq "\n" || ($text .= "\n");
     return $text;
 }
@@ -460,13 +474,13 @@ sub _format_string_simple {
 sub _initial_die_handler {
     my($msg) = @_;
     $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    CORE::die(&_call_format([$msg]));
+    CORE::die(_call_format(__PACKAGE__, [$msg]));
 }
 
 sub _initial_warn_handler {
     my($msg) = @_;
     $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    print STDERR &_call_format([$msg]);
+    print STDERR _call_format(__PACKAGE__, [$msg]);
 }
 
 sub _log_apache {
@@ -517,7 +531,7 @@ sub _warn_handler {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999,2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
