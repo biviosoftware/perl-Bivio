@@ -139,10 +139,8 @@ sub render {
     my($req) = $source->get_request;
     my($email) = $source->get_widget_value(@{$fields->{email}});
 
-    # Don't render anything from this domain which begins with ignore-
-    # or isn't defined, length, etc.
-    if (!defined($email) || !length($email)
-	    || !Bivio::Type::Email->is_valid($email)) {
+    # Don't render anything which is ignored.
+    if (Bivio::Type::Email->is_ignore($email)) {
 	# Don't make visible ignored addresses
 	if ($fields->{email} eq $fields->{value}
 		|| $email eq $source->get_widget_value(@{$fields->{value}})) {
