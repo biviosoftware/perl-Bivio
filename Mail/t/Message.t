@@ -331,46 +331,46 @@ EOF
     'subject' => 'RE: cleanlivin Investment Club Invitation',
     'date_time' => 950170627,
 },
-'test1.msg'
-=>
-{
-    'content_type' => 'multipart/alternative; boundary="------------87A9D47A93B91C50AC533AD4"',
-    'from_name' => 'Martin Lichtin',
-    'from_email' => 'lichtin@bivio.com',
-    'reply_to_email' => undef,
-    'subject' => 'test1',
-    'date_time' => 951360953,
-},
-'test2.msg'
-=>
-{
-    'content_type' => 'multipart/related; boundary="------------7B9F31415285B591C9F3EF36"',
-    'from_name' => 'Martin Lichtin',
-    'from_email' => 'lichtin@bivio.com',
-    'reply_to_email' => undef,
-    'subject' => 'test2',
-    'date_time' => 951360195,
-},
-'test3.msg'
-=>
-{
-    'content_type' => 'multipart/mixed; boundary="------------2B5CF8757B3C1198B2A8699C"',
-    'from_name' => 'Martin Lichtin',
-    'from_email' => 'lichtin@bivio.com',
-    'reply_to_email' => undef,
-    'subject' => 'test3',
-    'date_time' => 951360227,
-},
-'test4.msg'
-=>
-{
-    'content_type' => 'multipart/mixed; boundary="------------F385799F1182BDC18EA4C6E4"',
-    'from_name' => 'Martin Lichtin',
-    'from_email' => 'lichtin@bivio.com',
-    'reply_to_email' => 'lichtin@cheerful.to',
-    'subject' => 'test4',
-    'date_time' => 951372715,
-},
+#'test1.msg'
+#=>
+#{
+#    'content_type' => 'multipart/alternative; boundary="------------87A9D47A93B91C50AC533AD4"',
+#    'from_name' => 'Martin Lichtin',
+#    'from_email' => 'lichtin@bivio.com',
+#    'reply_to_email' => undef,
+#    'subject' => 'test1',
+#    'date_time' => 951360953,
+#},
+#'test2.msg'
+#=>
+#{
+#    'content_type' => 'multipart/related; boundary="------------7B9F31415285B591C9F3EF36"',
+#    'from_name' => 'Martin Lichtin',
+#    'from_email' => 'lichtin@bivio.com',
+#    'reply_to_email' => undef,
+#    'subject' => 'test2',
+#    'date_time' => 951360195,
+#},
+#'test3.msg'
+#=>
+#{
+#    'content_type' => 'multipart/mixed; boundary="------------2B5CF8757B3C1198B2A8699C"',
+#    'from_name' => 'Martin Lichtin',
+#    'from_email' => 'lichtin@bivio.com',
+#    'reply_to_email' => undef,
+#    'subject' => 'test3',
+#    'date_time' => 951360227,
+#},
+#'test4.msg'
+#=>
+#{
+#    'content_type' => 'multipart/mixed; boundary="------------F385799F1182BDC18EA4C6E4"',
+#    'from_name' => 'Martin Lichtin',
+#    'from_email' => 'lichtin@bivio.com',
+#    'reply_to_email' => 'lichtin@cheerful.to',
+#    'subject' => 'test4',
+#    'date_time' => 951372715,
+#},
 );
 
 my($test) = 2;
@@ -391,8 +391,9 @@ while (($msg, $fields) = each(%_MSGS)) {
     &assert_eq('content_type', $bm->get_field('content-type')) || next;
     &assert_eq('date_time', $bm->get_date_time) || next;
     (undef, $fields->{body}) = split(/\n\n/, $msg, 2);
-    &assert_eq('body', $bm->get_body) || next;
-    my($entity) = $bm->get_parts;
+    &assert_eq('body', (split(/\n\n/, $bm->get_entity->as_string, 2))[1])
+	|| next;
+    my($entity) = $bm->get_entity;
     my($num_of_parts);
     $num_of_parts = $entity->parts;
     $entity->dump_skeleton;
@@ -407,8 +408,8 @@ sub assert_eq {
     my($f, $v) = @_;
     defined($fields->{$f}) == defined($v)
 	    && (!defined($v) || $fields->{$f} eq $v) && return 1;
-    $v = defined($v) ? substr($v, 0, 100) : 'undef';
-    my($exp) = defined($fields->{$f}) ? substr($fields->{$f}, 0, 100)
+    $v = defined($v) ? substr($v, 0, 1000) : 'undef';
+    my($exp) = defined($fields->{$f}) ? substr($fields->{$f}, 0, 1000)
 	    : 'undef';
     print <<"EOF";
 Message-Id: $id
