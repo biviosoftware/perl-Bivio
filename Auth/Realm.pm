@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
 $Bivio::Auth::Realm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Auth::Realm::VERSION;
 
 =head1 NAME
 
@@ -280,6 +281,19 @@ sub format_uri {
     return $uri;
 }
 
+=for html <a name="get_default_name"></a>
+
+=head2 get_default_name() : string
+
+Returns the owner name used for the three default realms (general, club, user).
+
+=cut
+
+sub get_default_name {
+    my($self) = @_;
+    return lc($self->get('type')->get_name);
+}
+
 =for html <a name="get_type"></a>
 
 =head2 static get_type() : Bivio::Auth::RealmType
@@ -348,7 +362,7 @@ sub _initialize {
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
