@@ -117,7 +117,7 @@ sub render {
     my($value) = $fields->{value};
 
     my($p, $s) = Bivio::UI::Font->as_html('form_submit');
-    my($model) = $source->get_widget_value(@{$fields->{model}});
+    my($model) = $source->get_request->get_widget_value(@{$fields->{model}});
     $$buffer .= $p.'<input type=submit name="'.$model->SUBMIT().'" value="'
 	    .Bivio::Util::escape_html(
 		    ref($value) ? $source->get_widget_value(@$value)
