@@ -134,6 +134,18 @@ sub unsafe_from_any {
 
 =cut
 
+=for html <a name="get_count"></a>
+
+=head2 static abstract get_count() : int
+
+Return number of elements.
+
+=cut
+
+sub get_count {
+    die('abstract method');
+}
+
 =for html <a name="get_decimals"></a>
 
 =head2 static get_decimals : int
@@ -342,6 +354,7 @@ EOF
     $min = $min->[3];
     $max = $max->[3];
     my($list) = join(',', @list);
+    my($count) = int(@list);
     eval <<"EOF" || Carp::Croak("compilation failed: $@");
         package $pkg;
         sub can_be_negative {return $can_be_negative;}
@@ -354,6 +367,7 @@ EOF
         sub get_width {return $name_width;}
         sub get_width_long_desc {return $long_width;}
         sub get_width_short_desc {return $short_width;}
+        sub get_count {return $count;}
         1;
 EOF
     return;
