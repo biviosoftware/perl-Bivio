@@ -377,6 +377,30 @@ sub verify_link {
     return;
 }
 
+=for html <a name="verify_options"></a>
+
+=head2 verify_options(string select_field, array_ref options)
+
+Verifies that the given I<select_field> includes the given I<options>.
+
+=cut
+
+sub verify_options {
+    my($self, $select_field, $options) = @_;
+    my($fields) = $self->[$_IDI];
+    my($form) = _assert_html($self)->get('Forms')
+	->get_by_field_names($select_field);
+    my $f = _assert_form_field($form, 'visible', $select_field);
+    Bivio::Die->die('Select field "', $select_field, '" does not contain any options.')
+	    unless $f->{options};
+    foreach my $option (@$options) {
+	    Bivio::Die->die('Select field "', $select_field,
+		'" does not contain option "', $option, '".')
+		    unless $f->{options}->{$option};
+    }
+    return;
+}
+
 =for html <a name="verify_text"></a>
 
 =head2 verify_text(string text)
@@ -402,10 +426,11 @@ Verifies that the current uri (not including http://.../) is the provided uri.
 
 sub verify_uri {
     my($self, $uri) = @_;
-    my($current_uri) = $self->[$_IDI]->{uri};
-    $current_uri =~ s{http.*//[^/]*/}{};
-    Bivio::Die->die('Current uri is ', $current_uri, ', not ', $uri)
-	unless $current_uri eq $uri;
+    my($current_uri) = $self->get_uri;
+#    $current_uri =~ s{http.*//[^/]*/}{};
+    Bivio::Die->die('Current uri is ', $current_uri, ' does not match ', $uri)
+#	unless $current_uri eq $uri;
+	unless $current_uri =~ $uri;
     return;
 }
 
@@ -606,6 +631,15 @@ sub _log {
 	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
 	$msg->as_string);
     return;
+}
+
+# _regexp(string_or_regexp_ref pattern) : regexp_ref
+#
+# Coerce the given I<pattern> into a regexp_ref if it isn't one already.
+#
+sub _regexp {
+    my($pattern) = shift;
+    return (ref($pattern) eq 'Regexp') ? $pattern : qr{\Q$pattern};
 }
 
 # _send_request(self, HTTP::Request request)
