@@ -53,8 +53,8 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    indb01 => [0, 0],
-	    chgdb01 => [0, 1],
+	    indb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+	    chgdb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_OR_UPDATE()],
 	},
 	format => [
 	    {
@@ -81,14 +81,10 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_fundamental_t',
 	columns => {
-	    mg_id => ['Bivio::Data::MGFS::Id',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    data_type => ['Bivio::Data::MGFS::DataType',
-		    Bivio::SQL::Constraint::NOT_NULL()],
-	    inst_holding_percent => ['Bivio::Data::MGFS::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	    employees => ['Bivio::Data::MGFS::Amount',
-		    Bivio::SQL::Constraint::NONE()],
+	    mg_id => ['Bivio::Data::MGFS::Id', 'PRIMARY_KEY'],
+	    data_type => ['Bivio::Data::MGFS::DataType', 'NOT_NULL'],
+	    inst_holding_percent => ['Bivio::Data::MGFS::Amount', 'NONE'],
+	    employees => ['Bivio::Data::MGFS::Amount', 'NONE'],
         },
     };
 }

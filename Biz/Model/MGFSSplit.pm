@@ -103,8 +103,8 @@ Returns the defintion of the models MGFS import format.
 sub internal_get_mgfs_import_format {
     return {
 	file => {
-	    indb01 => [0, 0],
-	    chgdb01 => [0, 1],
+	    indb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_ONLY()],
+	    chgdb01 => [0, Bivio::Biz::Model::MGFSBase::CREATE_OR_UPDATE()],
 	},
 	format => [
 	    {
@@ -127,12 +127,9 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'mgfs_split_t',
 	columns => {
-	    mg_id => ['Bivio::Data::MGFS::Id',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    date_time => ['Bivio::Data::MGFS::Date',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    factor => ['Bivio::Data::MGFS::Amount',
-		    Bivio::SQL::Constraint::NOT_NULL()],
+	    mg_id => ['Bivio::Data::MGFS::Id', 'PRIMARY_KEY'],
+	    date_time => ['Bivio::Data::MGFS::Date', 'PRIMARY_KEY'],
+	    factor => ['Bivio::Data::MGFS::Amount', 'NOT_NULL'],
 	},
     };
 }
