@@ -36,6 +36,7 @@ and delete interface to the C<realm_user_t> table.
 #=IMPORTS
 use Bivio::SQL::Constraint;
 use Bivio::Type::PrimaryId;
+use Bivio::Auth::Role;
 
 #=VARIABLES
 
