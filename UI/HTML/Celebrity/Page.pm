@@ -282,7 +282,7 @@ EOF
     __PACKAGE__->new(
 	    'trez_talk',
 	    'Jerry & Rip',
-	    name => 'jerry_rip',
+	    'jerry_rip',
 	    [<<'EOF'],
 Jerry Dressel and Rip West will answer your questions about club
 accounting and taxes.
