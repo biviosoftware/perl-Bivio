@@ -715,7 +715,7 @@ sub map_iterate {
 
 =for html <a name="map_iterate_handler"></a>
 
-=head2 callback map_iterate_handler(Bivio::Biz::Model self) : boolean
+=head2 callback map_iterate_handler(Bivio::Biz::Model self) : array
 
 Called by L<map_iterate|"map_iterate"> for each row of the iteration.  Passed
 the model which is being iterated. Returns value(s) which are pushed onto the
