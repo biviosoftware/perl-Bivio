@@ -94,6 +94,8 @@ use Config ();
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
+my($_FILES_LIST) = '%{build_root}/b_release_files.list';
+my($_EXCLUDE_LIST) = '%{build_root}/b_release_files.exclude';
 my($_CVS_RPM_SPEC_DIR);
 my($_RPM_HOME_DIR);
 my($_RPM_HTTP_ROOT);
@@ -181,10 +183,6 @@ Returns:
 
 usage: b-release [options] command [args...]
 commands:
-    build rpm-spec-file ... -- compile & build rpms
-    install package-name ... -- install rpms from network
-                                repository
-    list [uri] -- displays packages in network repository
 
 =cut
 
@@ -195,6 +193,7 @@ commands:
     build package ... -- compile & build rpms
     install package ... -- install rpms from network repository
     list [uri] -- displays packages in network repository
+    list_installed match -- lists packages which match pattern
 EOF
 }
 
@@ -236,7 +235,7 @@ sub build {
     Bivio::IO::File->chdir($_TMP_DIR);
 
     my($arch) = _get_rpm_arch();
-    _system("ln -s . $arch", \$output) unless -e $arch;
+    _system("ln -s . $arch", \$output) unless -d $arch;
 
     for my $specin (@packages) {
 	my($specout, $base, $fullname) = _create_rpm_spec($self, $specin,
@@ -403,7 +402,91 @@ sub list {
     return $output;
 }
 
+=for html <a name="list_installed"></a>
+
+=head2 list_installed(string match) : string
+
+Lists installed packages with Group and BuildHost for easy parsing.
+I<match> is a regexp which can be used to limit packages listed.
+Case is ignored on the match.
+
+=cut
+
+sub list_installed {
+    my($self, $match) = @_;
+    return join('', grep(/$match/i, split(/(?=\n)/,
+	`rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
+       )));
+}
+
 #=PRIVATE METHODS
+
+# _b_release_files(string instructions) : string
+#
+# Evaluates line oriented instructions.
+#
+sub _b_release_files {
+    my($instructions) = @_;
+    my($prefix) = '';
+    my($res) = '';
+    foreach my $line (split(/\n/, $instructions)) {
+	$line =~ s/^\s+|\s+$//g;
+	next unless length($line);
+	if ($line =~ /^\%defattr/) {
+	    $res .= "echo '$line'";
+	}
+	elsif ($line eq '%files') {
+	    $res .= <<"EOF";
+test -s '$_FILES_LIST' || {
+    echo 'ERROR: Empty files list'
+    exit 1
+}
+
+\%files -f $_FILES_LIST
+EOF
+            next;
+        }
+	elsif ($line =~ /^%/) {
+	    $prefix = $line . ' ';
+	    next;
+	}
+	elsif ($line eq '+') {
+	    $res .= <<"EOF";
+{
+    perl -p -e 's#[^/]+##' $_FILES_LIST
+    echo /b_release_files.list
+    echo /b_release_files.exclude
+} > $_EXCLUDE_LIST
+{
+    # Protect against error exit
+    %{allfiles} | fgrep -v -f $_EXCLUDE_LIST
+} @{[$prefix ? qq{| sed -e 's#^#$prefix#' } : '']}
+EOF
+	}
+	elsif ($line =~ m#^/#) {
+	    $res .= "echo '$prefix$line'";
+	}
+	else {
+	    die($line, ": unknown _b_release_files instruction");
+	}
+	$res .= ">> $_FILES_LIST\n";
+    }
+    # Don't need last \n
+    chop($res);
+    return $res;
+}
+
+# _b_release_include(string to_include, string spec_dir, string version, string_ref output) : string
+#
+# Returns contents of $to_include
+#
+sub _b_release_include {
+    my($to_include, $spec_dir, $version, $output) = @_;
+    _system("cd $_TMP_DIR && cvs checkout -f -r $version"
+	. " $_CVS_RPM_SPEC_DIR/$to_include", $output)
+	if $version;
+    return ${Bivio::IO::File->read("$spec_dir$to_include")};
+}
 
 # _build_root(array_ref specin)
 #
@@ -416,10 +499,11 @@ sub _build_root {
     return <<"EOF"
 BuildRoot: $build_root
 \%define build_root $build_root
+\%define files_list $_FILES_LIST
 EOF
         . <<'EOF';
-%define allfiles cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\.//'
-%define allcfgs cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\./%config /'
+%define allfiles cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
+%define allcfgs cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
 EOF
 }
 
@@ -449,6 +533,7 @@ sub _create_rpm_spec {
     my($release) = _search('release', $base_spec) || _get_date_format();
     my($name) = _search('name', $base_spec)
 	|| (Bivio::Type::FileName->get_tail($specin) =~ /(.*)\.spec$/);
+    my($provides) = _search('provides', $base_spec) || $name;
     my($buf) = <<"EOF" . _perl_make();
 %define _sourcedir .
 %define _topdir .
@@ -458,6 +543,7 @@ sub _create_rpm_spec {
 %define cvs cvs -Q checkout -f -r $version
 Release: $release
 Name: $name
+Provides: $provides
 EOF
     $buf .= "Version: $version\n"
 	    unless _search('version', $base_spec);
@@ -465,10 +551,11 @@ EOF
 	    unless _search('copyright', $base_spec);
     $buf .= _build_root(_search('buildroot', $base_spec));
     for my $line (@$base_spec) {
-        $line =~ s{^\s*_b_release_include\(\s*'(\S+)'\s*\);}
-	    {_include($1, $spec_dir, $cvs ? $version : 0, $output)}xe;
-	$buf .= $line unless $line =~ /^(buildroot|release|name): /i;
+        $line =~ s{^\s*_b_release_include\(([^;]+)\);}
+	    {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xee;
+	$buf .= $line unless $line =~ /^(buildroot|release|name|provides): /i;
     }
+    $buf =~ s/\b(_b_release_files\([^;]+\));/$1/eeg;
 
     $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
     my($specout) = "$specin-build";
@@ -518,18 +605,6 @@ sub _get_rpm_arch {
     my($rc) = _read_all("rpm --showrc|");
     grep(/^\-\d+: _arch\s+(\S+)/ && (return $1), @$rc);
     return 'i386';
-}
-
-# _include(string to_include, string spec_dir, string version, string_ref output) : string
-#
-# Returns contents of to_include.
-#
-sub _include {
-    my($to_include, $spec_dir, $version, $output) = @_;
-    _system("cd $_TMP_DIR && cvs checkout -f -r $version"
-	. " $_CVS_RPM_SPEC_DIR/$to_include", $output)
-	if $version;
-    return ${Bivio::IO::File->read("$spec_dir$to_include")};
 }
 
 # _link_rpm_base(string rpm_file, string_ref output)
