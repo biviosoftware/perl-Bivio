@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =cut
 
@@ -41,6 +41,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.29  2002/10/31 00:32:44  nagler
+  * Bivio::Biz::Model::MailReceiveDispatchForm no longer accepts Reply-To:
+  * Bivio::UI::ViewLanguage improved error messages
+
+  Revision 1.28  2002/10/28 00:57:25  nagler
+  * Bivio::Biz::Action::JobBase allows easy job scheduling
+  * Bivio::Biz::Action::ECPaymentProcessAll uses JobBase
+  * Bivio::Type::Location delegates to Bivio::Delegate::SimpleLocation
+  * Bivio::IO::Alert no longer import MIME::Parser.  use
     Bivio::Ext::MIMEParser to avoid warnings (on older perls)
   * Bivio::ShellUtil->lock_action allows global (file) locks on commands/actions
   * Bivio::UI::HTML::Widget::Table.column_bgcolor sets color on column
