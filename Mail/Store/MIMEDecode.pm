@@ -54,7 +54,8 @@ use Bivio::Type::MIMEType;
 use Carp ();
 use IO::Scalar;
 use MIME::Parser;
-use Bivio::Mail::Store::MailFormatter;
+use Bivio::Mail::Store::Formatter;
+use Bivio::Mail::Store::TextFormatter;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -132,6 +133,8 @@ the appropriate file name on file_client. This method is
 the guts of parsing the MIME encoded parts of a mail message,
 indexing all the words found in text/plain or text/html
 MIME parts, and storing each MIME part off to the file server.
+Additionally, I<Bivio::Mail::Store::Formatter> is used to
+format the MIME parts for display in HTML.
 
 =cut
 
@@ -259,18 +262,15 @@ sub _extract_mime_header {
     return $s;
 }
 
-# _format_body(scalar_ref body) : scalar_ref
+# _format_body(MIMEEntity entity) : scalar_ref
 #
 # formats the email and returns a scalar reference to the
 # result. Uses MailFormatter.
 
 sub _format_body {
-    my($body) = @_;
-    if(!$body){ #not necessarily an error condition
-	return undef;
-    }
-    my($formatter) = Bivio::Mail::Store::MailFormatter->new($body);
-    my($formatted_mail) = $formatter->format_mail();
+    my($entity) = @_;
+    my($formatter) = Bivio::Mail::Store::Formatter->from_entity($entity);
+    my($formatted_mail) = $formatter->format_item($entity->bodyhandle());
     return $formatted_mail;
 }
 
@@ -388,7 +388,7 @@ sub _write_entity_to_file {
 	    if $_TRACE && !(defined($$msg_body) && length($$msg_body));
     if($content_type == Bivio::Type::MIMEType::TEXT_PLAIN){
 	_trace('message is text/plain so formatting it...') if $_TRACE;
-	my($formatted_mail) = _format_body($msg_body);
+	my($formatted_mail) = _format_body($entity);
 	_trace('formatted mail: ', $$formatted_mail);
 	$msg_hdr .= $$formatted_mail if defined($$formatted_mail);
     }

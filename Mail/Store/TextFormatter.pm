@@ -1,13 +1,35 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::Mail::Store::MailFormatter;
+package Bivio::Mail::Store::TextFormatter;
 use strict;
-$Bivio::Mail::Store::MailFormatter::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::Mail::Store::TextFormatter::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::Mail::Store::MailFormatter - A simple mail formatting tool.
-This package takes a mail body and formats it for display as HTML.
+Bivio::Mail::Store::TextFormatter - A simple text/plain formatting tool.
+
+=head1 SYNOPSIS
+
+    use Bivio::Mail::Store::TextFormatter;
+    Bivio::Mail::Store::TextFormatter->format_item();
+
+=cut
+
+=head1 EXTENDS
+
+L<Bivio::Mail::Store::Formatter>
+
+=cut
+
+use Bivio::Mail::Store::Formatter;
+@Bivio::Mail::Store::TextFormatter::ISA = ('Bivio::Mail::Store::Formatter');
+
+=head1 DESCRIPTION
+
+C<Bivio::Mail::Store::TextFormatter> Formats mail for
+display in a web page.
+
+This package takes a text/plain mail body and formats it for display as HTML.
 It will color code the 'quoted' email portions, re-wrap badly
 formatted paragraphs (for example, paragraphs that were pasted
 into an email from Netscape, or 80 column emails that have been
@@ -21,27 +43,6 @@ I expect, before I am done with this, the package will have to
 do multiple-pass parsing. Once, for example, to 'guess' if the
 message has a badly formatted paragraph, and then again to reformat
 that paragraph. 
-
-=head1 SYNOPSIS
-
-    use Bivio::Mail::Store::MailFormatter;
-    Bivio::Mail::Store::MailFormatter->new();
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UNIVERSAL>
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::Mail::Store::MailFormatter::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::Mail::Store::MailFormatter> Formats mail for
-display in a web page.
 
 =cut
 
@@ -60,30 +61,24 @@ Bivio::IO::Trace->register;
 
 =cut
 
-=for html <a name="new"></a>
-
-=head2 static new(scalar_ref msg) : Bivio::Mail::Store::MailFormatter
-
-msg is a scalar reference to a mail body.
-
-=cut
-
-sub new {
-    _trace('new MailFormatter being created.') if $_TRACE;
-    my($proto, $msg) = @_;
-    my($self) = &Bivio::UNIVERSAL::new($proto);
-    $self->{$_PACKAGE} = {
-	message => $msg,
-	in_io => IO::Scalar->new(),
-	out_io => IO::Scalar->new(),
-	char_table => _init(),
-    };
-    return $self;
-}
-
 =head1 METHODS
 
 =cut
+
+=for html <a name="format_item"></a>
+
+=head2 static format_item(MIME::Body body) : scalar_ref
+
+Formats the text/plain MIME body.
+
+=cut
+
+sub format_item {
+    my($proto, $body) = @_;
+    _trace('body: ', $body) if $_TRACE;
+    my($io) = $body->open('r');
+    return format_mail($io);
+}
 
 =for html <a name="format_mail"></a>
 
@@ -98,14 +93,12 @@ Returns a scalar ref to the output.
 =cut
 
 sub format_mail {
-    my($self) = @_;
+    my($in_io) = @_;
     my($s);
-    my($fields) = $self->{$_PACKAGE};
-    my($msg) = $fields->{message};
-    my($in_io) = $fields->{in_io}->open($msg);
-    my($out_io) = $fields->{out_io}->open(\$s);
-    my($chars) = $fields->{char_table};
-    _parse($in_io, $out_io, $fields->{char_table});
+    my($out_io) = IO::Scalar->new();
+    $out_io->open(\$s);
+    my($chars) = _init();
+    _parse($in_io, $out_io, $chars);
     $out_io->close();
     $in_io->close();
     return \$s;
@@ -120,7 +113,7 @@ sub format_mail {
 # to their HTML equivalents (i.e. '<', '>', '&', etc).
 #
 #TODO change this to be a static data structure. No need to pay
-# the initialization costs on every new();
+# the initialization costs on every format_item();
 sub _init {
     my($chars) = {};
     my $i = 34;
