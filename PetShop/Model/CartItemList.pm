@@ -123,8 +123,7 @@ sub internal_pre_load {
     my($self, $query, $support, $params) = @_;
     # use the cart_id on the request, otherwise from the cookie
     push(@$params, $self->get_request->unsafe_get('cart_id')
-	|| $self->new($self->get_request, 'Cart')->load_from_cookie
-	    ->get('cart_id'));
+	|| $self->new_other('Cart')->load_from_cookie->get('cart_id'));
     return 'cart_item_t.cart_id=?';
 }
 

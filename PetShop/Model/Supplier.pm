@@ -52,8 +52,8 @@ Creates an I<Model.Entity> if I<entity_id> is not set.
 
 sub create {
     my($self, $values) = @_;
-    $values->{supplier_id} = $self->new($self->get_request, 'Entity')
-	->create->get('entity_id')
+    $values->{supplier_id} = $self->new_other('Entity')->create
+        ->get('entity_id')
 	    unless $values->{supplier_id};
     return $self->SUPER::create($values);
 }

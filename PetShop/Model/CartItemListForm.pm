@@ -69,11 +69,10 @@ Redirects to the checkout form if OK is pressed.
 
 sub execute_ok_end {
     my($self) = @_;
-    my($req) = $self->get_request;
 
     # ensure the the cart grand total doesn't exceed the Price precision
     my($value, $err) = Bivio::PetShop::Type::Price->from_literal(
-	$self->new($req, 'Cart')->load_from_cookie->get_total);
+	$self->new_other('Cart')->load_from_cookie->get_total);
 
     if ($err) {
 	# put the error on the first row
@@ -86,7 +85,7 @@ sub execute_ok_end {
 
     if ($self->get('ok_button')) {
 	# redirect to the checkout page
-	$req->client_redirect(Bivio::Agent::TaskId->CHECKOUT);
+	$self->get_request->client_redirect(Bivio::Agent::TaskId->CHECKOUT);
     }
     return;
 }

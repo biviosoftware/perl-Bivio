@@ -61,30 +61,26 @@ Loads values for the current user, if present.
 sub execute_empty {
     my($self) = @_;
     return unless _is_editing($self);
-
-    my($req) = $self->get_request;
-    $self->load_from_model_properties($req->get('auth_user'));
-
+    $self->load_from_model_properties($self->get_request->get('auth_user'));
     # create a default account if necessary
-    my($account) = $self->new($req, 'UserAccount');
+    my($account) = $self->new_other('UserAccount');
+
     unless ($account->unsafe_load) {
 	$account = _create_default_account($self);
     }
 
     foreach my $model (qw(EntityAddress EntityPhone)) {
 	$self->load_from_model_properties(
-		$self->new($req, $model)->load({
-		    entity_id => $account->get('entity_id'),
-		    location => Bivio::PetShop::Type::EntityLocation
-		    ->PRIMARY,
-		}));
+            $self->new_other($model)->load({
+                entity_id => $account->get('entity_id'),
+                location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
+            }));
     }
-
-    $self->load_from_model_properties($self->new($req, 'User')->load);
+    $self->load_from_model_properties($self->new_other('User')->load);
     $self->load_from_model_properties(
-	    $self->new($req, 'Email')->load({
-		location => Bivio::Type::Location->HOME,
-	    }));
+        $self->new_other('Email')->load({
+            location => Bivio::Type::Location->HOME,
+        }));
     return;
 }
 
@@ -98,27 +94,23 @@ Saves the current values into the models.
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
-
     _create_user($self)
 	unless _is_editing($self);
-
-    my($account) = $self->new($req, 'UserAccount')->load;
+    my($account) = $self->new_other('UserAccount')->load;
 
     foreach my $model (qw(User Email)) {
-	$self->new($req, $model)->load->update(
+	$self->new_other($model)->load->update(
 	    $self->get_model_properties($model));
     }
 
     foreach my $model (qw(EntityAddress EntityPhone)) {
-	$self->new($req, $model)->load({
+	$self->new_other($model)->load({
 	    entity_id => $account->get('entity_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
 	})->update($self->get_model_properties($model));
     }
-
     Bivio::Die->die("invalid password")
-	    unless $req->get('auth_user')->has_valid_password;
+	unless $self->get_request->get('auth_user')->has_valid_password;
     return;
 }
 
@@ -132,7 +124,7 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
 	    'User.first_name',
@@ -159,9 +151,7 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
         ],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 =for html <a name="validate"></a>
@@ -195,17 +185,15 @@ sub validate {
 #
 sub _create_default_account {
     my($self) = @_;
-    my($req) = $self->get_request;
-
-    my($account) = $self->new($req, 'UserAccount')->create({
-	user_id => $req->get('auth_user_id'),
-	entity_id => $self->new($req, 'Entity')->create->get('entity_id'),
+    my($account) = $self->new_other('UserAccount')->create({
+	user_id => $self->get_request->get('auth_user_id'),
+	entity_id => $self->new_other('Entity')->create->get('entity_id'),
 	status => Bivio::PetShop::Type::UserStatus->CUSTOMER,
 	user_type => Bivio::PetShop::Type::UserType->HOME_CONSUMER,
     });
 
     foreach my $model (qw(EntityAddress EntityPhone)) {
-	$self->new($req, $model)->create({
+	$self->new_other($model)->create({
 	    entity_id => $account->get('entity_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
 	});
@@ -219,12 +207,9 @@ sub _create_default_account {
 #
 sub _create_user {
     my($self) = @_;
-    my($req) = $self->get_request;
-
-    my($user) = $self->new($req, 'User')->create(
+    my($user) = $self->new_other('User')->create(
 	$self->get_model_properties('User'));
-
-    my($realm) = $self->new($req, 'RealmOwner')->create({
+    my($realm) = $self->new_other('RealmOwner')->create({
 	%{$self->get_model_properties('RealmOwner')},
         name => 'u' . $user->get('user_id'),
 	realm_id => $user->get('user_id'),
@@ -232,18 +217,17 @@ sub _create_user {
 	password => Bivio::Type::Password->encrypt(
 	    $self->get('RealmOwner.password')),
     });
-
-    $self->new($req, 'RealmUser')->create({
+    $self->new_other('RealmUser')->create({
 	realm_id => $user->get('user_id'),
 	user_id => $user->get('user_id'),
 	honorific => Bivio::Type::Honorific->SELF,
     });
-
-    $self->new($req, 'Email')->create({
+    $self->new_other('Email')->create({
 	realm_id => $user->get('user_id'),
 	location => Bivio::Type::Location->HOME,
 	%{$self->get_model_properties('Email')},
     });
+    my($req) = $self->get_request;
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $realm,
     });

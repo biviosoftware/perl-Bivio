@@ -57,7 +57,7 @@ Returns the total amount of the cart purchase.
 sub get_total {
     my($self) = @_;
     my($amount) = 0;
-    my($list) = $self->new($self->get_request, 'CartItemList')->load_all;
+    my($list) = $self->new_other('CartItemList')->load_all;
 
     while ($list->next_row) {
 	$amount = Bivio::PetShop::Type::Price->add($amount,
@@ -128,8 +128,9 @@ sub load_from_cookie {
     if (defined($cart_id) && $self->unsafe_load(cart_id => $cart_id)) {
 
 	# don't use the cart_id if an order is associated with it
-	if ($self->new($req, 'Order')
-		->unauth_load(cart_id => $cookie->get('cart_id'))) {
+	if ($self->new_other('Order')->unauth_load({
+            cart_id => $cookie->get('cart_id'),
+        })) {
 	    $cart_id = undef;
 	}
     }

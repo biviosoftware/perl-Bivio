@@ -60,22 +60,20 @@ Loads the form with data defaulted for the current user.
 
 sub execute_empty {
     my($self) = @_;
-    my($req) = $self->get_request;
-
     $self->internal_put_field('Order.credit_card'
 	    => '9999 9999 9999 9999');
     $self->internal_put_field(ship_to_billing_address => 1);
 
     # name
-    my($user) = $self->new($req, 'User')->load;
+    my($user) = $self->new_other('User')->load;
     $self->internal_put_field('Order.bill_to_first_name'
 	    => $user->get('first_name'));
     $self->internal_put_field('Order.bill_to_last_name'
 	    => $user->get('last_name'));
 
     # address
-    my($account) = $self->new($req, 'UserAccount')->load;
-    my($address) = $self->new($req, 'EntityAddress')->load({
+    my($account) = $self->new_other('UserAccount')->load;
+    my($address) = $self->new_other('EntityAddress')->load({
 	entity_id => $account->get('entity_id'),
 	location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
     });
@@ -85,11 +83,11 @@ sub execute_empty {
     }
 
     # phone
-    $self->internal_put_field('EntityPhone_1.phone'
-	    => $self->new($req, 'EntityPhone')->load({
-		entity_id => $account->get('entity_id'),
-		location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
-	    })->get('phone'));
+    $self->internal_put_field('EntityPhone_1.phone' =>
+        $self->new_other('EntityPhone')->load({
+            entity_id => $account->get('entity_id'),
+            location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
+        })->get('phone'));
 
     $self->internal_put_field(confirmed_order => 0);
 
@@ -279,7 +277,7 @@ sub _copy_billing_info {
 sub _decrease_inventory {
     my($self) = @_;
 
-    my($list) = $self->new($self->get_request, 'CartItemList')->load_all;
+    my($list) = $self->new_other('CartItemList')->load_all;
     while ($list->next_row) {
 	my($inventory) = $list->get_model('Inventory');
 	$inventory->update({
@@ -302,7 +300,7 @@ sub _get_bonus_miles {
     my($self, $amount) = @_;
     my($miles) = $amount >= 100 ? 1000 : 500;
 
-    if ($self->new($self->get_request, 'UserAccount')->load->get(
+    if ($self->new_other('UserAccount')->load->get(
 	    'status') == Bivio::PetShop::Type::UserStatus->GOLD_CUSTOMER) {
 	$miles += 1000;
     }
@@ -329,16 +327,14 @@ sub _get_expiration_date {
 #
 sub _save_order {
     my($self) = @_;
-    my($req) = $self->get_request;
-
-    my($cart) = $self->new($req, 'Cart')->load_from_cookie;
+    my($cart) = $self->new_other('Cart')->load_from_cookie;
     my($total) = $cart->get_total;
 
     # create the entity and order
-    my($order) = $self->new($req, 'Order')->create({
-	order_id => $self->new($req, 'Entity')->create({})
+    my($order) = $self->new_other('Order')->create({
+	order_id => $self->new_other('Entity')->create({})
 	    ->get('entity_id'),
-	user_id => $req->get('auth_user_id'),
+	user_id => $self->get_request->get('auth_user_id'),
 	cart_id => $cart->get('cart_id'),
 	order_date => Bivio::Type::Date->now,
 	courier => 'UPS',
@@ -350,14 +346,14 @@ sub _save_order {
 
     # create the entity address/phone for billing/shipping
     foreach my $location (qw(BILL_TO SHIP_TO)) {
-	$self->new($req, 'EntityAddress')->create({
+	$self->new_other('EntityAddress')->create({
 	    entity_id => $order->get('order_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->$location(),
 	    %{$self->get_model_properties('EntityAddress_'
 		    .($location eq 'BILL_TO' ? 1 : 2))},
 	});
 
-	$self->new($req, 'EntityPhone')->create({
+	$self->new_other('EntityPhone')->create({
 	    entity_id => $order->get('order_id'),
 	    location => Bivio::PetShop::Type::EntityLocation->$location(),
 	    %{$self->get_model_properties('EntityPhone_'
@@ -366,9 +362,9 @@ sub _save_order {
     }
 
     # create the order status
-    $self->new($req, 'OrderStatus')->create({
+    $self->new_other('OrderStatus')->create({
 	order_id => $order->get('order_id'),
-	user_id => $req->get('auth_user_id'),
+	user_id => $self->get_request->get('auth_user_id'),
 	time_stamp => $order->get('order_date'),
 	status => Bivio::PetShop::Type::OrderStatus->PENDING,
     });
