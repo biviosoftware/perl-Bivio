@@ -240,6 +240,16 @@ __PACKAGE__->compile(
 	undef,
 	'there must be at least one Administrator in a club',
     ],
+    INVALID_SUM => [
+	41,
+	undef,
+	'shares sold doesn\'t match sum',
+    ],
+    GREATER_THAN_QUANTITY => [
+	42,
+	undef,
+	'shares sold is greater than the lot quantity',
+    ],
 );
 
 #=PRIVATE METHODS
