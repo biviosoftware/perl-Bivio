@@ -1155,7 +1155,7 @@ sub put_context_fields {
 
 =for html <a name="unsafe_get_context"></a>
 
-=head2 unsafe_get_context(string attr) : Bivio::Biz::FormContext
+=head2 unsafe_get_context() : Bivio::Biz::FormContext
 
 Returns the context object for this form.
 
