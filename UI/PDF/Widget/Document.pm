@@ -44,7 +44,9 @@ The page footer widget to render on each page.
 
 The page footer widget to render on each page.
 
-=item page_size : array_ref [595, 842]
+=item page_size : string [A4]
+
+The name of the page size. A0 - A6, B5, letter, legal, ledger, 11x17.
 
 The PDF page size [width, height] in points. Defaults to A4.
 
@@ -62,7 +64,21 @@ use Bivio::UI::PDF;
 
 #=VARIABLES
 my($_IDI) = __PACKAGE__->instance_data_index;
-my(@_DEFAULT_PAGE_SIZE) = (595, 842);
+my($_PAGE_SIZE) = {
+    A0 => [2380, 3368],
+    A1 => [1684, 2380],
+    A2 => [1190, 1684],
+    A3 => [842, 1190],
+    A4 => [595, 842],
+    A5 => [421, 595],
+    A6 => [297, 421],
+    B5 => [501, 709],
+    letter => [612, 792],
+    legal => [612, 1008],
+    ledger => [1224, 792],
+    '11x17' => [792, 1224],
+};
+my($_MARGIN) = 20;
 
 =head1 FACTORIES
 
@@ -97,8 +113,12 @@ Initializes static information.
 
 sub initialize {
     my($self) = @_;
-    $self->put(page_size => [@_DEFAULT_PAGE_SIZE])
+    $self->put(page_size => 'A4')
         unless $self->unsafe_get('page_size');
+
+    my($width, $height) = @{$_PAGE_SIZE->{$self->get('page_size')}};
+    $self->put(location => [$_MARGIN, $_MARGIN]);
+    $self->put(size => [$width - 2 * $_MARGIN, $height - 2 * $_MARGIN]);
 
     foreach my $section (@{$self->get('sections')}) {
         $self->initialize_value('section', $section);
@@ -116,10 +136,16 @@ Starts a new PDF page.
 
 sub new_page {
     my($self, $pdf) = @_;
-    $pdf->begin_page(@{$self->get('page_size')});
+    my($page_size) = $_PAGE_SIZE->{$self->get('page_size')};
+    $pdf->begin_page(@$page_size);
+
+    $pdf->rect(@{$self->get('location')}, @{$self->get('size')});
+    $pdf->stroke;
+
 #TODO: render page header and footer
     # set the text baseline to the top of the page
-    $pdf->set_text_pos(0, $self->get('page_size')->[1]);
+    my($location) = $self->get('location');
+    $pdf->set_text_pos($location->[0], $page_size->[1] - $location->[1]);
     return;
 }
 
