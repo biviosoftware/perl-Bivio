@@ -50,6 +50,7 @@ use Cwd ();
 
 #=VARIABLES
 my($_APACHE_HOME) = '/usr/local/apache';
+my($_HTTPD) = $_APACHE_HOME . '/bin/httpd';
 Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
 	'port' => Bivio::IO::Config->REQUIRED,
@@ -71,6 +72,10 @@ sub main {
 	$server_name = $_;
     }
     my($cfg) = Bivio::IO::Config->get($server_name);
+    if ($ENV{PERLLIB}) {
+	my($httpd) = $ENV{PERLLIB} . '../external/apache/src/httpd';
+	-x $httpd && ($_HTTPD = $httpd);
+    }
     if ($execute) {
 	system('rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf');
 	-d 'html/i' || system('cvs checkout html/i');
@@ -108,11 +113,12 @@ EOF
     close(OUT) || die("close $conf: $!");
     close(DATA);
     if ($execute) {
-	exec("$_APACHE_HOME/bin/httpd", '-X', '-d', $pwd, '-f', "$pwd/$conf");
-	die("$_APACHE_HOME/bin/httpd: $!");
+	print STDERR "Starting: $_HTTPD -X -d $pwd -f $pwd/$conf\n";
+	exec("$_HTTPD", '-X', '-d', $pwd, '-f', "$pwd/$conf");
+	die("$_HTTPD: $!");
     }
     else {
-	print "Starting: $_APACHE_HOME/bin/httpd -X -d $pwd -f $pwd/$conf\n";
+	print "Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n";
     }
 }
 
@@ -143,7 +149,7 @@ EOF
 =item $PERLLIB
 
 Must point to the appropriate development directory if you are
-starting the server for testing your own copy.
+starting the server for testing your own copy.  See L<"FILES">.
 
 =back
 
@@ -171,6 +177,10 @@ is removed and rewritten with new pid
 =item libexec
 
 is linked to F</usr/local/apache/libexec> if it already doesn't exist.
+
+=item $PERLLIB/../external/apache/src/httpd
+
+binary to be used if it exists and is executable
 
 =back
 
@@ -215,7 +225,7 @@ KeepAlive off
 #
 PerlWarn on
 # Can't be on and use PERLLIB.
-PerlFreshRestart on
+PerlFreshRestart off
 <$bivio_conf>
 PerlModule <$handler>
 
