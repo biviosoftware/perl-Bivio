@@ -108,6 +108,8 @@ sub internal_get_error_code {
 	    /Cannot insert a duplicate key into unique index (\w+)/i) {
 	return _interpret_constraint_violation($self, $die_attrs, $1);
     }
+    $die_attrs->{dbi_errstr} =~
+	s/(Unterminated quoted string)/$1; There is a null character in one of the parameters/;
     return $self->SUPER::internal_get_error_code($die_attrs);
 }
 
