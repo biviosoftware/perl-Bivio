@@ -331,6 +331,49 @@ sub is_loaded {
     return %{shift->internal_get} ? 1 : 0;
 }
 
+=for html <a name="iterate_next_and_load"></a>
+
+=head2 iterate_next_and_load(ref iterator) : boolean
+
+I<iterator> was returned by L<iterate_start|"iterate_start">.
+Will iterate to the next row and load the model with the row.
+Can be used to update a row.
+
+Returns false if there is no next.
+
+=cut
+
+sub iterate_next_and_load {
+    my($self, $it) = @_;
+    my($values) = {};
+    unless ($self->internal_get_sql_support->iterate_next(
+	    $it, $values)) {
+	return _unload($self);
+    }
+
+    return _load($self, $values);
+}
+
+=for html <a name="iterate_next_and_load_new"></a>
+
+=head2 iterate_next_and_load_new(ref iterator) : Bivio::Biz::PropertyModel
+
+Same as L<iterate_next_and_load|"iterate_next_and_load">, but
+returns a new model instance for each row if iteration proceeds.
+Returns C<undef> if end of iteration.
+
+=cut
+
+sub iterate_next_and_load_new {
+    my($self, $it) = @_;
+    my($values) = {};
+    return undef
+	unless $self->internal_get_sql_support->iterate_next($it, $values);
+    my($new) = $self->new();
+    _load($new, $values);
+    return $new;
+}
+
 =for html <a name="iterate_start></a>
 
 =head2 iterate_start(string order_by) : ref
@@ -357,29 +400,6 @@ sub iterate_start {
     return $support->iterate_start($self, $order_by, $query);
 }
 
-=for html <a name="iterate_next_and_load"></a>
-
-=head2 iterate_next_and_load(ref iterator) : boolean
-
-I<iterator> was returned by L<iterate_start|"iterate_start">.
-Will iterate to the next row and load the model with the row.
-Can be used to update a row.
-
-Returns false if there is no next.
-
-=cut
-
-sub iterate_next_and_load {
-    my($self, $it) = @_;
-    my($values) = {};
-    unless ($self->internal_get_sql_support->iterate_next(
-	    $it, $values)) {
-	return _unload($self);
-    }
-
-    return _load($self, $values);
-}
-
 =for html <a name="load"></a>
 
 =head2 load(hash_ref query) : self
@@ -400,7 +420,8 @@ B<DEPRECATED>
 sub load {
     my($self) = shift;
     return $self if $self->unsafe_load(@_);
-    $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
+    _die_not_found($self, \@_, caller);
+    # DOES NOT RETURN
 }
 
 =for html <a name="load_parent_from_request"></a>
@@ -547,7 +568,8 @@ B<DEPRECATED>
 sub unauth_load_or_die {
     my($self) = shift;
     return $self if $self->unauth_load(@_);
-    $self->throw_die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
+    _die_not_found($self, \@_, caller);
+    # DOES NOT RETURN
 }
 
 =for html <a name="unsafe_load"></a>
@@ -640,6 +662,17 @@ sub update {
 }
 
 #=PRIVATE METHODS
+
+# _die_not_found(self, array_ref args, string pkg, string file, string line)
+#
+# Dies with appropriate exception.
+#
+sub _die_not_found {
+    my($self, $args, $pkg, $file, $line) = @_;
+    ($self, $args) = _load_args($self, @$args);
+    $self->throw_die(Bivio::DieCode::NOT_FOUND(), $args, $pkg, $file, $line);
+    # DOES NOT RETURN
+}
 
 # _get_primary_keys(self, hash_ref new_values) : hash_ref
 #
