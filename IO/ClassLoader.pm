@@ -196,8 +196,11 @@ L<Bivio::UNIVERSAL|Bivio::UNIVERSAL>.
 sub is_loaded {
     my($proto, $class) = @_;
     # this seems to work
+#TODO: This test is insufficient.  Need something more general.
     return ($class =~ /$_SEP/o ? exists($_MAP_CLASS{$class})
-	    : UNIVERSAL::isa($class, 'Bivio::UNIVERSAL')) ? 1 : 0;
+	    	: ($_SIMPLE_CLASS{$class}
+		    || UNIVERSAL::isa($class, 'Bivio::UNIVERSAL')))
+	    ? 1 : 0;
 }
 
 =for html <a name="is_valid_map"></a>
@@ -427,7 +430,8 @@ sub _require {
     my($pkg) = @_;
 
     # Is this class already loaded?
-    return $pkg if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
+    return $pkg if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL')
+	    || $_SIMPLE_CLASS{$pkg};
 
     # Avoid problems with uses of $_ in $pkg
     {
@@ -441,8 +445,8 @@ sub _require {
 	# Must be a "bareword" for require to do the '::' substitution
 	return undef unless eval("require $pkg");
     };
-    Bivio::IO::Alert->die($pkg, ': not a Bivio::UNIVERSAL')
-	    unless UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
+#    Bivio::IO::Alert->die($pkg, ': not a Bivio::UNIVERSAL')
+#	    unless UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL');
 
     _trace($pkg) if $_TRACE;
     $_SIMPLE_CLASS{$pkg}++;
