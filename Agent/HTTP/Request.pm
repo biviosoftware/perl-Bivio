@@ -32,6 +32,7 @@ use Bivio::Agent::HTTP::CookieState;
 use Bivio::Agent::HTTP::Location;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::HTTP::Reply;
+use Bivio::Agent::Task;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Biz::Model::RealmOwner;
@@ -138,7 +139,7 @@ sub client_redirect {
 	$uri .= '?'.Bivio::Agent::HTTP::Query->format($new_query)
 		if $new_query;
     }
-    $self->get('reply')->client_redirect($uri);
+    $self->get('reply')->client_redirect($self, $uri);
     Bivio::Die->die(Bivio::DieCode::CLIENT_REDIRECT_TASK());
 }
 
@@ -178,7 +179,11 @@ sub format_uri {
     $task_id = $self->get('task_id') unless $task_id;
     # Allow the realm to be undef
     my($uri) = Bivio::Agent::HTTP::Location->format(
-	    $task_id, int(@_) >= 4 ? $auth_realm : $self->get('auth_realm'));
+	    $task_id, int(@_) >= 4 ? $auth_realm :
+	    $self->internal_get_realm_for_task(
+		    Bivio::Agent::Task->get_by_id($task_id)
+		    ->get('realm_type'),
+		    $task_id));
 #TODO: Is this right?
 #PJM: I think so
     $query = $self->get('query_string') unless int(@_) >= 3;
