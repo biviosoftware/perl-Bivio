@@ -305,7 +305,9 @@ sub delete_all_in_volume {
 
 =for html <a name="extract_mime_content_id"></a>
 
-=head2 extract_mime_content_id()
+=head2 extract_mime_content_id() : string
+
+=head2 static extract_mime_content_id(Bivio::Biz::Model model, string model_prefix) : string
 
 Treats aux_info field as a MIME header to find the content id.
 Returns undef if not available.
@@ -313,10 +315,8 @@ Returns undef if not available.
 =cut
 
 sub extract_mime_content_id {
-    my($self, $list_model, $model_prefix) = @_;
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
-    my($aux_info) = $m->get($p.'aux_info');
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($aux_info) = $model->get($model_prefix.'aux_info');
 
     return $1 if defined($aux_info)
 	    && $aux_info =~ /content-id:\s+<?([^;\s>]+)>?/i;
@@ -370,7 +370,7 @@ sub extract_mime_content_type {
 
 =head2 extract_mime_filename() : string
 
-=head2 static extract_mime_filename(Bivio::Biz::ListModel list_model, string model_prefix) : string
+=head2 static extract_mime_filename(Bivio::Biz::Model model, string model_prefix) : string
 
 Treats aux_info field as a MIME header to find the (file)name specified.
 
@@ -390,22 +390,20 @@ List Models can declare a method of the form:
 
     sub extract_mime_filename {
 	my($self) = shift;
-	Bivio::Biz::Model::File->extract_mime_filename($self, 'File.', @_);
+	Bivio::Biz::Model::File->extract_mime_filename($self, 'File.');
     }
 
 =cut
 
 sub extract_mime_filename {
-    my($self, $list_model, $model_prefix) = @_;
-    my($p) = $model_prefix || '';
-    my($m) = $list_model || $self;
-    my($aux_info) = $m->get($p.'aux_info');
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    my($aux_info) = $model->get($model_prefix.'aux_info');
     my($fn) = _extract_mime_filename($aux_info);
     return $fn if defined($fn);
 
     # Create a name based on the Content-Type based file suffix
     # Use 'download.bin' in case the file type is unknown
-    my($ct) = $self->extract_mime_content_type($list_model, $model_prefix);
+    my($ct) = $proto->extract_mime_content_type($model, $model_prefix);
     return 'download.bin' unless defined($ct);
     my($ext) = Bivio::MIME::Type->to_extension($ct);
     return 'download.'.(defined($ext) ? $ext : 'bin');
