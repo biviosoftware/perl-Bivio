@@ -573,7 +573,8 @@ sub _prepare_select {
     my($sql) = $attrs->{select};
     if ($query) {
 	$sql .=' where '.join(' and ', map {
-	    Bivio::Die->die('invalid field name: ', $_) unless $columns->{$_};
+	    Bivio::Die->die('invalid field name: ', $_)
+		unless $columns->{$_};
 	    _prepare_select_param($columns->{$_}, $query->{$_}, $params);
 	    # Use a sort to force order which (may) help Oracle's cache.
 	} sort keys(%$query));
@@ -583,18 +584,21 @@ sub _prepare_select {
 
 # _prepare_select_param(hash_ref column, any value, array_ref params) : any
 #
-# Returns the string for the query.  Pushes the value on params.
-# Handles ARRAY parameters.
+# Returns the string for the query.  If undef, adds "IS NULL" test. Pushes the
+# value on params, otherwise.  Handles ARRAY parameters as IN (?, ...).
 #
 sub _prepare_select_param {
     my($column, $value, $params) = @_;
+    return $column->{sql_name} . ' IS NULL'
+	unless defined($value);
     unless (ref($value) eq 'ARRAY') {
 	push(@$params, $column->{type}->to_sql_param($value));
-	return $column->{sql_name}.'='.$column->{sql_pos_param};
+	return $column->{sql_name} . '=' . $column->{sql_pos_param};
     }
     push(@$params, @{$column->{type}->to_sql_param_list($value)});
-    return $column->{sql_name}.' in '
-	.$column->{type}->to_sql_value_list($value);
+    return $column->{sql_name}
+	. ' IN '
+	. $column->{type}->to_sql_value_list($value);
 }
 
 # _register_with_parents(hash_ref attrs)
