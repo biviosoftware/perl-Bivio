@@ -32,6 +32,11 @@ use Bivio::Collection::Attributes;
 
 C<Bivio::Test::Case> provides the execution environment for at test case.
 
+You may use the I<case> instance as a temporary storage location between
+I<compute_params> and I<check_return> or I<check_die>.   To ensure your
+attribute is unique and won't conflict with future attributes on
+cases, begin the attribute with I<my_>, e.g. C<my_buf>.
+
 =cut
 
 #=IMPORTS
