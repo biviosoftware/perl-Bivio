@@ -69,6 +69,12 @@ use C<exists> or C<defined>.
 
 NOTE: Query strings must always have unique value names.
 
+=item query_string : string
+
+URI query string or other agent equivalent.
+Is C<undef>, if there is no query_string--still ok to
+use C<exists> or C<defined>.
+
 =item reply : Bivio::Agent::Reply
 
 L<Bivio::Agent::Reply|Bivio::Agent::Reply> for this request.
@@ -261,12 +267,17 @@ sub format_mailto {
 
 =head2 abstract format_uri(Bivio::Agent::TaskId task_id) : string
 
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, string query) : string
+
 =head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query) : string
+
+=head2 abstract format_uri(Bivio::Agent::TaskId task_id, string query, Bivio::Auth::Realm auth_realm) : string
 
 =head2 abstract format_uri(Bivio::Agent::TaskId task_id, hash_ref query, Bivio::Auth::Realm auth_realm) : string
 
 Creates a URI relative to this host/port.
 If I<query> is C<undef>, will not create a query string.
+If I<query> is not passed, will use this request's query string.
 If I<auth_realm> is not passed, this request's realm will be used.
 If I<auth_realm> is C<undef>, the task must not be in an owned realm.
 
