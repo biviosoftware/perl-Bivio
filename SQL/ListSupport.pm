@@ -738,7 +738,7 @@ sub _prepare_where {
 	    $query->get('auth_id')))
 	    if $attrs->{auth_id};
     # Allows complex FROM clauses
-    if ($$where =~ s/^\s*AND(?=\s+FROM)//is) {
+    if ($$where && $$where =~ s/^\s*AND(?=\s+FROM)//is) {
 	$$from_where =~ s/^\s*\bFROM\s+.*?(?:(?=\bWHERE\b)|$)//is
 	    || die($$from_where, ': bad where configuration');
 	push(@$params, @$qualifiers);
