@@ -64,18 +64,22 @@ use XML::Parser;
 my($_PACKAGE) = __PACKAGE__;
 # Simple mapping of tags to values
 my(%_XML_TO_HTML) = (
+    # 0 means do nothing.
+    # Other values map one to one to HTML tags.
+    # All tags must be in this table or handled explicitly by
+    # _xml_to_html_parse_<tag>.
     chapter => 0,
     citetitle => 'i',
     classname => 'tt',
     command => 'tt',
     constant => 'tt',
     emphasis => 'strong',
+    envar => 'tt',
+    figure => 0,
     filename => 'tt',
     firstterm => 'i',
     function => 'tt',
-    varname => 'tt',
     literal => 'tt',
-    envar => 'tt',
     orderedlist => 'ol',
     para => 'p',
     programlisting => 'pre',
@@ -87,6 +91,7 @@ my(%_XML_TO_HTML) = (
     userinput => 'tt',
     variablelist => 'dl',
     varlistentry => 0,
+    varname => 'tt',
 );
 
 =head1 METHODS
@@ -169,11 +174,7 @@ sub _xml_to_html_parse {
 #
 sub _xml_to_html_parse_attribution {
     my($state, $tree) = @_;
-    my($out) = $state->{out};
-    $state->{out} = '';
-    _xml_to_html_parse($state, $tree);
-    $state->{attribution} = $state->{out};
-    $state->{out} = $out;
+    $state->{attribution} = _xml_to_html_save_parse($state, $tree);
     return;
 }
 
@@ -216,12 +217,26 @@ sub _xml_to_html_parse_footnote {
     my($state, $tree) = @_;
     my($i) = $state->{footnote_counter}++;
     $state->{out} .= '<a href="#footnoote-'.$i.'">['.$i."]</a>\n";
-    my($out) = $state->{out};
-    $state->{out} = '';
-    _xml_to_html_parse($state, $tree);
-    $state->{out} =~ s!(<p>)!$1<a name="footnoote-$i">[$i]</a>\n!;
-    $state->{footnotes} .= $state->{out};
-    $state->{out} = $out;
+    my($res) = _xml_to_html_save_parse($state, $tree);
+    $res =~ s!(<p>)!$1<a name="footnoote-$i">[$i]</a>\n!;
+    $state->{footnotes} .= $res;
+    return;
+}
+
+# _xml_to_html_parse_graphic(hash_ref state, array_ref tree)
+#
+# Parses a graphic.  Look for a file in subdirectory by the name
+# of the graphic.  Order is gif and jpg.
+#
+sub _xml_to_html_parse_graphic {
+    my($state, $tree) = @_;
+    my($f) = $state->{attrs}->{fileref};
+    die('<graphic> missing fileref attribute') unless $f;
+    foreach my $s (qw(gif jpg)) {
+	next unless -r "$f.$s";
+	$f .= ".$s";
+    }
+    $state->{out} .= "<br><img border=0 src=$f align=center><br>\n";
     return;
 }
 
@@ -277,20 +292,21 @@ sub _xml_to_html_parse_sidebar {
 #
 sub _xml_to_html_parse_systemitem {
     my($state, $tree) = @_;
-    my($out) = $state->{out};
-    $state->{out} = '';
-    _xml_to_html_parse($state, $tree);
-    $state->{out} = $out.'<a href="'.$state->{out}.'">'.$state->{out}.'</a>';
+    my($res) = _xml_to_html_save_parse($state, $tree);
+    $state->{out} .= '<a href="'.$res.'">'.$res.'</a>';
     return;
 }
 
 # _xml_to_html_parse_title(hash_ref state, array_ref tree)
 #
-# Converts to <head1>.
+# Converts to <hN>, where N is based on the stack depth.
+# If in a figure, will center and bold.
 #
 sub _xml_to_html_parse_title {
     my($state, $tree) = @_;
-    my($h) = 'h'.int(int(@{$state->{tag}})/2);
+    my($h) = $state->{tag}->[1] eq 'figure'
+	? ['center', 'bold']
+	: 'h'.int(int(@{$state->{tag}})/2);
     return _xml_to_html_parse(@_, $h);
 }
 
@@ -316,6 +332,21 @@ sub _xml_to_html_parse_xref {
 	.$state->{attrs}->{linkend}.'</a>';
     # There is no value with an xref
     return;
+}
+
+# _xml_to_html_save_parse(hash_ref state, array_ref tree) : string
+#
+# Parses output in a standalone mode.  Saving out and restoring after
+# parse.
+#
+sub _xml_to_html_save_parse {
+    my($state, $tree) = @_;
+    my($save) = $state->{out};
+    $state->{out} = '';
+    _xml_to_html_parse($state, $tree);
+    my($res) = $state->{out};
+    $state->{out} = $save;
+    return $res;
 }
 
 =head1 COPYRIGHT
