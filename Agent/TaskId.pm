@@ -526,9 +526,17 @@ my(@_CFG) = (
         LOGIN
         pub/japan_survey
         Bivio::Biz::Model::JapanSurveyForm
-        next=HTTP_DOCUMENT
+        next=JAPAN_SURVEY_THANKS
+        cancel=HTTP_DOCUMENT
     )],
-    #53
+    [qw(
+        JAPAN_SURVEY_THANKS
+        53
+        GENERAL
+        LOGIN
+        hm/thanks_japan.html
+	Bivio::Biz::Action::HTTPDocument
+    )],
     #54
     #55
     #56
