@@ -141,6 +141,12 @@ sub _sync_instrument_models {
             .Bivio::Type::Date->to_file_name($values->{fact_date}),
         }) if $values->{fact_function}
                 eq Bivio::Data::CSI::FactSheetFunction::DELETE();
+        $inst->update({
+            name => $values->{name},
+            ticker_symbol => $values->{ticker_symbol},
+            exchange_name => $values->{exchange_name},
+        }) if $values->{fact_function}
+                eq Bivio::Data::CSI::FactSheetFunction::MODIFY();
     }
     else {
         $inst->create({
