@@ -33,6 +33,7 @@ opening balance.
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::Instrument;
 use Bivio::Biz::Model::InstrumentLookupForm;
 use Bivio::Biz::Model::InstrumentLookupList;
@@ -41,12 +42,12 @@ use Bivio::Biz::Model::RealmInstrumentEntry;
 use Bivio::Biz::Model::RealmInstrumentValuation;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::SQL::Constraint;
+use Bivio::TypeError;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::EntryType;
 use Bivio::Type::TaxCategory;
 use Bivio::Type::EntryClass;
-use Bivio::TypeError;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -65,8 +66,13 @@ Initializes the empty form.
 
 sub execute_empty {
     my($self) = @_;
-    $self->internal_get->{
-	Bivio::Biz::Model::InstrumentLookupList::SHOW_LOCAL()} = 1;
+    my($properties) = $self->internal_get;
+
+    $properties->{Bivio::Biz::Model::InstrumentLookupList::SHOW_LOCAL()} = 1;
+
+    # default the purchase date to the start of this tax year
+    $properties->{'RealmTransaction.date_time'} = Bivio::Biz::Accounting::Tax
+	    ->get_this_fiscal_year;
     return;
 }
 
@@ -220,6 +226,14 @@ sub validate {
     $self->validate_not_negative('paid');
     $self->validate_greater_than_zero('RealmInstrumentEntry.count');
 
+    # check that the year is not over the fiscal boundary
+    if (Bivio::Type::Date->compare(
+	    $self->get('RealmTransaction.date_time'),
+	    Bivio::Biz::Accounting::Tax->get_this_fiscal_year) > 0) {
+
+	$self->internal_put_error('RealmTransaction.date_time',
+		Bivio::TypeError::INVALID_OPENING_BALANCE_DATE())
+    }
     return;
 }
 

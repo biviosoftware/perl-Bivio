@@ -31,9 +31,11 @@ C<Bivio::Biz::Model::MemberOpeningBalanceForm> opening balance entry form
 =cut
 
 #=IMPORTS
+use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::MemberEntry;
 use Bivio::Biz::Model::RealmTransaction;
 use Bivio::SQL::Constraint;
+use Bivio::TypeError;
 use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::EntryClass;
@@ -45,6 +47,24 @@ my($_PACKAGE) = __PACKAGE__;
 =head1 METHODS
 
 =cut
+
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Sets default fields
+
+=cut
+
+sub execute_empty {
+    my($self) = @_;
+    my($properties) = $self->internal_get;
+
+    # default the date to the start of this tax year
+    $properties->{'RealmTransaction.date_time'} = Bivio::Biz::Accounting::Tax
+	    ->get_this_fiscal_year;
+    return;
+}
 
 =for html <a name="execute_input"></a>
 
@@ -154,6 +174,14 @@ sub validate {
     $self->validate_not_negative('earnings');
     $self->validate_greater_than_zero('MemberEntry.units');
 
+    # check that the year is not over the fiscal boundary
+    if (Bivio::Type::Date->compare(
+	    $self->get('RealmTransaction.date_time'),
+	    Bivio::Biz::Accounting::Tax->get_this_fiscal_year) > 0) {
+
+	$self->internal_put_error('RealmTransaction.date_time',
+		Bivio::TypeError::INVALID_OPENING_BALANCE_DATE())
+    }
     return;
 }
 
