@@ -543,7 +543,7 @@ sub _init_executables {
 	my($c) = Bivio::Collection::SingletonMap->get($class);
 	$method ||= 'execute';
 	Bivio::Die->die($i, ": can't be executed (missing $method method)")
-	    unless $c->can($method);
+	    unless $c->can($method) || $c->can('AUTOLOAD');
 	if ($c->isa('Bivio::Biz::FormModel')) {
 	    Bivio::Die->die($attrs->{id}, ': too many form models')
 	        if $attrs->{form_model};
