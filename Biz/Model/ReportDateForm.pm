@@ -32,9 +32,12 @@ for selecting a report date.
 =cut
 
 #=IMPORTS
+use Bivio::Util;
+use Bivio::Type::Date;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_DATE_KEY) = 'date';
 
 =for html <a name="new"></a>
 
@@ -72,9 +75,27 @@ sub create {
     my($self) = @_;
 
     my($req) = $self->get_request();
-    $req->put('report_date', $self->get('report_date'));
+    $req->put('query_string', $_DATE_KEY.'='
+	    .Bivio::Util::escape_uri($self->get('report_date')));
 
     return;
+}
+
+=for html <a name="get_date"></a>
+
+=head2 static get_date(Bivio::Agent::Request req) : string
+
+Returns the date encoded on the request, or the current date if not
+present.
+
+=cut
+
+sub get_date {
+    my(undef, $req) = @_;
+    my($date);
+    my($query) = $req->get('query');
+    $date = $query->{$_DATE_KEY} if defined($query);
+    return $date || Bivio::Type::Date->now;
 }
 
 =for html <a name="internal_initialize"></a>
