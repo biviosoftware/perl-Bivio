@@ -34,6 +34,7 @@ C<Bivio::Biz::Model::ImportedMemberInviteForm> invite imported shadow members
 use Bivio::Type::FileVolume;
 use Bivio::Biz::Model::ClubInviteForm;
 use Bivio::Biz::Model::File;
+use Bivio::Biz::Model::RealmInvite;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
 use Bivio::Type::ClubUserTitle;
@@ -187,6 +188,7 @@ sub validate_row {
 
     my($emails) = $fields->{emails};
     my($email) = $properties->{invite_email};
+
     if (defined($email)) {
 	# check that all emails are unique in the list
 	if (exists($emails->{$email})) {
@@ -197,6 +199,15 @@ sub validate_row {
 	elsif (_is_merged_member_email($self, $email)) {
 	    $self->internal_put_error('invite_email',
 		    Bivio::TypeError::MEMBER_ALREADY_MERGED);
+	}
+	# check that the member isn't already invited
+	else {
+	    my($invite) = Bivio::Biz::Model::RealmInvite->new(
+		    $self->get_request);
+
+	    $self->internal_put_error('invite_email',
+		    Bivio::TypeError::ALREADY_INVITED())
+		    if $invite->unsafe_load(email => $email);
 	}
 	$emails->{$email} = $email;
     }
