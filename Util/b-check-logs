@@ -65,7 +65,7 @@ sub check_httpd_logs {
         warn "REQUEST ERRORS:\n", @type_problems, "\n";
     }
     foreach my $host (keys(%host_problems)) {
-        $name = &dig($host);
+        $name = dig($host);
         warn "HOST [$host]", $name ne $host ? " $name" : '', " ERRORS\n";
         warn $host_problems{$host}, "\n";
     }
@@ -79,14 +79,14 @@ sub main {
         if ($arg eq '-debug') {
             $debug++;
         } elsif ($arg eq '-help') {
-            &usage();
+            usage();
         } elsif ($arg eq '-interval') {
-            $interval = shift || &usage("-internal: need argument");
+            $interval = shift || usage("-internal: need argument");
         } else {
-            &usage("$arg: Unknown or misplaced option");
+            usage("$arg: Unknown or misplaced option");
         }
     }
-    &check_httpd_logs($interval);
+    check_httpd_logs($interval);
 }
 
 # dig($ip_addr) -> $hostname
@@ -116,4 +116,4 @@ EOF
     exit(@_ ? 1:0);
 }
 
-&main(@ARGV);
+main(@ARGV);
