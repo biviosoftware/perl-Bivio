@@ -173,7 +173,7 @@ sub _get_field_name {
 sub _get_label_value {
     my($self) = @_;
 
-    my($label_name) = _get_field_name($self);
+    my($label_name) = $self->get('field');
     # strip out any suffix, not used for label lookup
     $label_name =~ s/_\d+(\.\w+)$/$1/;
     return [['->get_request'], 'Bivio::UI::Facade', 'Text',
