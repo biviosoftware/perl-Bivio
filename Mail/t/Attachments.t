@@ -1,3 +1,4 @@
+# Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # -*-perl-*-
 #
 # $Id$
@@ -15,7 +16,8 @@ print "ok 1\n";
 
 use User::pwent ();
 
-my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
+#my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
+my($_USER) = 'nobody@example.com';
 
 my($test) = 2;
 
@@ -55,17 +57,17 @@ print $out eq $exp_out ? '' : 'not ', "ok $test\n";
 $test++;
 my($vcf) = <<'EOF';
 begin:vcard
-n:Yadigaroglu;Ion
-tel;fax:+1 (212) 898-0358
-tel;work:+1 (917) 848 5779
+n:User;Some
+tel;fax:+1 (999) 555-1212
+tel;work:+1 (303) 555 1212
 x-mozilla-html:FALSE
-url:http://bivio.com
-org:bivio Inc.
-adr:;;2369 Spotswood Place;Boulder;CO;80304;
+url:http://bivio.biz
+org:bivio Software Inc.
+adr:;;1313 Mockingbird Lane;Boulder;CO;80304;
 version:2.1
-email;internet:ion@bivio.com
+email;internet:cool-dude@example.com
 title:CEO
-fn:Ion Yadigaroglu
+fn:Some User
 end:vcard
 EOF
 my($m2) = Bivio::Mail::Outgoing->new();
