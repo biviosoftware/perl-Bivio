@@ -337,7 +337,7 @@ sub get_share_price_and_date {
             ORDER BY mgfs_daily_quote_t.date_time DESC
 EOF
     my($row);
-    while ($row = $sth->fetchrow_arrayref()) {
+    while ($row = $sth->fetchrow_arrayref) {
 	($id, $value, $date) = @$row;
 	$date = Bivio::Type::Date->from_sql_column($date);
 
@@ -346,33 +346,41 @@ EOF
 	}
     }
 
-    # look for local valuations for non MGFS instruments
-    # check for valuation within roughly 6 months (good enough?)
-    my($six_months_ago) = Bivio::Type::Date->to_sql_param(($j - 180).' '
-	       .Bivio::Type::DateTime::DEFAULT_TIME());
+    # make sure that valuations exists for every realm instrument
+    # if not, then go to the realm_instrument_valuation_t which
+    # is guarenteed to have at least buy/sell valuations
 
-    $d = Bivio::Type::Date->from_sql_value(
-	    'realm_instrument_valuation_t.date_time');
-    my($d2) = Bivio::Type::Date->to_sql_value('?');
-    $d = <<"EOF";
-	    SELECT realm_instrument_valuation_t.realm_instrument_id,
-	    realm_instrument_valuation_t.price_per_share,
+    $sth = Bivio::SQL::Connection->execute('
+            SELECT realm_instrument_t.realm_instrument_id
+            FROM realm_instrument_t
+            WHERE realm_instrument_t.realm_id=?',
+	    [$self->get('realm_id')]);
+
+    while ($row = $sth->fetchrow_arrayref) {
+	($id) = @$row;
+
+#TODO: this should override for club cross-over date to preserve easyware data
+	next if exists($result->{$id});
+
+	$d = Bivio::Type::Date->from_sql_value(
+		'realm_instrument_valuation_t.date_time');
+	$d = <<"EOF";
+	    SELECT realm_instrument_valuation_t.price_per_share,
 	    $d
 	    FROM realm_instrument_valuation_t
 	    WHERE realm_instrument_valuation_t.realm_id=?
-            AND realm_instrument_valuation_t.date_time between $d2 and $d2
+            AND realm_instrument_valuation_t.realm_instrument_id=?
+            AND realm_instrument_valuation_t.date_time <= $_SQL_DATE_VALUE
 	    ORDER BY realm_instrument_valuation_t.date_time DESC
 EOF
-    $sth = Bivio::SQL::Connection->execute(
-	    $d, [$self->get('realm_id'), $six_months_ago,
-		Bivio::Type::Date->to_sql_param($search_date)]);
+	my($sth2) = Bivio::SQL::Connection->execute($d,
+		[$self->get('realm_id'), $id,
+			Bivio::Type::Date->to_sql_param($search_date)]);
 
-    while ($row = $sth->fetchrow_arrayref()) {
-	($id, $value, $date) = @$row;
-	$date = Bivio::Type::Date->from_sql_column($date);
-
-#TODO: this should override for club cross-over date to preserve easyware data
-	unless (exists($result->{$id})) {
+	my($row2);
+	if ($row2 = $sth2->fetchrow_arrayref()) {
+	    ($value, $date) = @$row2;
+	    $date = Bivio::Type::Date->from_sql_column($date);
 	    $result->{$id} = [$value, $date];
 	}
     }
