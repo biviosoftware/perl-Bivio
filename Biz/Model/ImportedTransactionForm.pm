@@ -197,7 +197,7 @@ sub internal_initialize {
     my($self) = @_;
     my($info) = {
 	list_class => 'ImportedTransactionList',
-	version => 1,
+	version => 2,
 	visible => [qw(
             Entry.amount
 	    MemberEntry.valuation_date
@@ -207,7 +207,7 @@ sub internal_initialize {
 	    in_list => 1,
 	},
 	{
-	    name => 'MemberEntry.user_id',
+	    name => 'RealmUser.user_id',
 	    constraint => 'NONE',
 	},
 	{
@@ -316,21 +316,6 @@ sub _execute_payment {
 		  Bivio::TypeError::VALUATION_DATE_EXCEED_TRANSACTION_DATE());
 	}
 	return if $self->in_error;
-    }
-
-#TODO: need a better way to do this
-    # load the target realm owner
-    my($realm) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
-    $realm->unauth_load_or_die(realm_id => $self->get('MemberEntry.user_id'));
-    # make sure they are in the club
-    my($user_list) = $self->get_request->get(
-	    'Bivio::Biz::Model::AllMemberList');
-    $user_list->reset_cursor;
-    while ($user_list->next_row) {
-	next unless $user_list->get('RealmUser.user_id')
-		eq $realm->get('realm_id');
-	$self->get_request->put(target_realm_owner => $realm);
-	last;
     }
 
     # load the correct entry type, for the payment form to use
