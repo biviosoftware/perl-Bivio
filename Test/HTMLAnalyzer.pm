@@ -61,7 +61,7 @@ sub new {
     my($proto,$content) = @_;
     my($self) = Bivio::UNIVERSAL::new($proto);
     my($fields) = $self->{$_PACKAGE} = {};
-  
+ 
     my($p) = Bivio::Test::HTMLParser->new($content)->get_fields();
 
     # save parser's output, for reference when debugging.
@@ -78,7 +78,7 @@ sub new {
     }
 
     $fields->{form_list} = [];
-    
+   
     _find_button_home_page($self, $p);
     _find_button_logout($self, $p);
     _find_button_my_site($self, $p);
@@ -99,7 +99,7 @@ sub new {
 	    push(@{$fields->{form_list}}, 'main');
 	}
     }
-  
+ 
     return $self;
 }
 
@@ -156,6 +156,7 @@ sub gen_form_data {
     my($fields) = $self->{$_PACKAGE};
     my($data) = [];
     my($key);
+    my($_VALID_METHODS) = 'post|get';
 
     Bivio::Die->die ("specified form does not exist: $name!")
 		unless defined($fields->{$name});
@@ -163,6 +164,9 @@ sub gen_form_data {
     my($form_name) = $fields->{$name}->{form_name};
     my($form) = $fields->{$name}->{forms}->{$form_name};
     my($method) = $form->{method};
+
+    Bivio::Die->die ("unexpected form method: $method")
+		unless ($method =~ /^(?:$_VALID_METHODS)$/io);
     $method = 'post' if ($method =~ /^post$/io);
     $method = 'get' if ($method =~ /^get$/io);
 
@@ -192,7 +196,7 @@ sub gen_form_data {
 
 =for html <a name="gen_form_uri"></a>
 
-=head2 gen_form_uri(Bivio::Test::HTMLAnalyzer self, string name, hash_ref fields) : array_ref 
+=head2 gen_form_uri(Bivio::Test::HTMLAnalyzer self, string name, hash_ref fields) : array_ref
 
 Generate the URI and passed data for the named form and values.  If the
 field hash_ref is undefined, the default values are used.
@@ -215,7 +219,7 @@ sub gen_form_uri {
 
     $form_fields = $fields->{$name}->{forms}->{$form_name}->{fields}
 	    unless defined($form_fields);
-    
+   
     return &{\&{$method}} ({ form => $fields->{$name}->{forms}->{$form_name},
 	fields => $form_fields });
 }
@@ -257,7 +261,7 @@ sub get_form_method {
 
     my($form_name) = $fields->{$name}->{form_name};
     return ($fields->{$name}->{forms}->{$form_name}->{method});
-    
+   
     return;
 }
 
@@ -357,7 +361,7 @@ sub _find_button_logout {
 sub _find_button_my_site {
     my($self, $p) = @_;
     my($fields) = $self->{$_PACKAGE};
-  
+ 
     if (exists($p->{links}->{'My Site'})) {
 	$fields->{buttons} = {} unless defined($fields->{buttons});
 	$fields->{buttons}->{mysite} = $p->{links}->{'My Site'};
@@ -394,7 +398,7 @@ sub _find_imagemenu {
 	    push(@{$p->{form_list}}, 'imagemenu');
 	}
     }
-  
+ 
     return;
 }
 
