@@ -39,6 +39,7 @@ use Time::Local;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_SPECIAL_CHARS) = Bivio::Mail::RFC822::SPECIALS();
 my($_ERRORS_TO) = 'postmaster';
 # Deliver in background so errors are sent via e-mail
 my($_SENDMAIL) = '/usr/lib/sendmail -U -O ErrorMode=m -O DeliveryMode=b -i';
@@ -124,6 +125,24 @@ sub new {
 }
 
 =head1 METHODS
+
+=for html <a name="add_recipients"></a>
+
+=head2 add_recipients(string recipients)
+
+=head2 add_recipients(array_ref recipients)
+
+Add recipients of this message to I<recipients>.  The recipients
+are part of the "envelope" associated with the message.
+
+=cut
+
+sub add_recipients {
+    my($self, $r) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    push(@{$fields->{recipients}}, ref($r) eq 'ARRAY' ? @$r : $r);
+    return;
+}
 
 =for html <a name="as_string"></a>
 
@@ -231,6 +250,87 @@ sub get_body {
     return $fields->{entity}->bodyhandle;
 }
 
+=for html <a name="get_date_time"></a>
+
+=head2 get_date_time() : time
+
+Returns the date (UNIX time) specified by the message.
+Returns undef if the date cannot be parsed or is not available.
+
+=cut
+
+sub get_date_time {
+    my($self) = @_;
+    my($date) = $self->get_field('date') || $self->get_field('received');
+    if (defined($date)) {
+        my($date_time) = _parse_date($date);
+        &_trace($date, ' -> ', $date_time) if $_TRACE;
+        return $date_time;
+    } else {
+	Bivio::IO::Alert->warn("no Date or Received field avalable");
+	&_trace('no Date or Received field avalable') if $_TRACE;
+	return undef;
+    }
+}
+
+=for html <a name="get_from"></a>
+
+=head2 get_from() : (string addr, string name)
+
+=head2 get_from() : string addr
+
+Return (email, name) or just email if not array context.
+Returns undef if the From: cannot be parsed or is not available.
+
+=cut
+
+sub get_from {
+    my($self) = @_;
+    my($head) = $self->get_head;
+    my($from) = $head->get('from') || $head->get('apparently-from');
+    if (defined($from)) {
+        my($email, $name) = Bivio::Mail::Address::parse($from);
+        &_trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
+        return wantarray ? ($email, $name) : $email;
+    } else {
+	Bivio::IO::Alert->warn('Missing From: header');
+        return wantarray ? (undef, undef) : undef;
+    }
+}
+
+=for html <a name="get_field"></a>
+
+=head2 get_field(string name) : string
+
+Returns the value for field "name", or undef if field does not exist
+
+=cut
+
+sub get_field {
+    my($self, $name) = @_;
+    my($value) = $self->get_head->get($name);
+    return undef unless defined($value);
+    chomp($value);
+    # Return unfolded value
+    $value =~ s/\r?\n[ \t]/ /gs;
+    return $value;
+}
+
+=for html <a name="get_recipients"></a>
+
+=head2 get_recipients() : array
+
+Returns the "envelope" recipients that were set with
+L<add_recipients|"add_recipients">.
+
+=cut
+
+sub get_recipients {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return @{$fields->{recipients}};
+}
+
 =for html <a name="get_references"></a>
 
 =head2 get_references() : array
@@ -260,6 +360,31 @@ sub get_references {
     return grep(!$saw{$_}++, @refs);
 }
 
+=for html <a name="get_reply_to"></a>
+
+=head2 get_reply_to() : (string addr, string name)
+
+=head2 get_reply_to() : string addr
+
+Return I<Reply-To:> email address and name or just email
+if not array context.
+
+Returns undef if Reply-To is not set or cannot be parsed.
+
+=cut
+
+sub get_reply_to {
+    my($self) = @_;
+    my($reply_to) = $self->get_head->get('reply-to');
+    if (defined($reply_to)) {
+        my($email, $name) = Bivio::Mail::Address::parse($reply_to);
+        &_trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
+        return wantarray ? ($email, $name) : $email;
+    } else {
+        return wantarray ? (undef, undef) : undef;
+    }
+}
+
 =for html <a name="get_message_id"></a>
 
 =head2 get_message_id() : string
@@ -277,6 +402,34 @@ sub get_message_id {
         chomp($id);
     }
     return $id;
+}
+
+=for html <a name="handle_config"></a>
+
+=head2 static handle_config(hash cfg)
+
+=over 4
+
+=item errors_to : string [postmaster]
+
+To whom should errors be sent.
+
+=item sendmail : string [/usr/lib/sendmail -O DeliveryMode=b -i]
+
+How to send mail.  Must accept a list of recipients on the
+command line.  Arguments must be easily separated, i.e. no quoting.
+
+=back
+
+=cut
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $cfg->{errors_to} =~ /['\\]/
+	    && die("$cfg->{errors_to}: invalid errors_to");
+    $_ERRORS_TO = $cfg->{errors_to};
+    $_SENDMAIL = $cfg->{sendmail};
+    return;
 }
 
 =for html <a name="send_queued_messages"></a>
@@ -331,9 +484,46 @@ sub send {
     }
     else { # child
         my(@cmd) = split(/\s+/, $_SENDMAIL);
-        defined($fields->{from}) && push(@cmd, '-f', $fields->{from});
+        defined($fields->{env_from}) && push(@cmd, '-f', $fields->{env_from});
         exec(@cmd, @{$fields->{recipients}}) || die("$_SENDMAIL: $!");
     }
+    return;
+}
+
+=for html <a name="set_envelope_from"></a>
+
+=head2 set_envelope_from(string from)
+
+Sets the FROM envelope address of this message to I<from>. This address
+will be used to set Return-Path: and is therefore the address to which
+bounces are sent.
+
+=cut
+
+sub set_envelope_from {
+    my($self, $from) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $fields->{env_from} = $from;
+    return;
+}
+
+=for html <a name="set_from"></a>
+
+=head2 set_from(string from_email, string from_name)
+
+Sets the From header properly. Need to quote the from name if contains
+any special characters. Need to escape double-quotes at that point.
+
+=cut
+
+sub set_from {
+    my($self, $from, $from_name) = @_;
+    if (defined($from_name)) {
+        my($quote) = $from_name =~ /$_SPECIAL_CHARS/ ? '"' : '';
+        $from_name =~ s/"/\\"/g;
+        $from = $quote . $from_name . $quote . ' <' . $from . '>';
+    }
+    $self->get_head->replace('From', $from);
     return;
 }
 
@@ -368,7 +558,7 @@ sub set_headers_for_list_send {
     my($sender) = $list_name . '-owner@' . $req->get('mail_host');
     $head->replace('Sender', $sender);
     $head->replace('Precedence', 'list');
-    $self->set_from($sender);
+    $self->set_envelope_from($sender);
     $reply_to_list && $head->replace('Reply-To', "\"$list_title\" <$list_name>");
     # If there is no From:, add it now.
     $head->get('From') || $head->add('From', $sender);
@@ -387,147 +577,6 @@ sub set_headers_for_list_send {
     return;
 }
 
-=for html <a name="set_from"></a>
-
-=head2 set_from(string from)
-
-Sets the FROM envelope address of this message to I<from>. This address
-will be used to set Return-Path: and is therefore the address to which
-bounces are sent.
-
-=cut
-
-sub set_from {
-    my($self, $from) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{from} = $from;
-    return;
-}
-
-=for html <a name="add_recipients"></a>
-
-=head2 add_recipients(string recipients)
-
-=head2 add_recipients(array_ref recipients)
-
-Add recipients of this message to I<recipients>.  The recipients
-are part of the "envelope" associated with the message.
-
-=cut
-
-sub add_recipients {
-    my($self, $r) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    push(@{$fields->{recipients}}, ref($r) eq 'ARRAY' ? @$r : $r);
-    return;
-}
-
-=for html <a name="get_recipients"></a>
-
-=head2 get_recipients() : array
-
-Returns the "envelope" recipients that were set with
-L<add_recipients|"add_recipients">.
-
-=cut
-
-sub get_recipients {
-    my($self) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    return @{$fields->{recipients}};
-}
-
-=for html <a name="get_reply_to"></a>
-
-=head2 get_reply_to() : (string addr, string name)
-
-=head2 get_reply_to() : string addr
-
-Return I<Reply-To:> email address and name or just email
-if not array context.
-
-Returns undef if Reply-To is not set or cannot be parsed.
-
-=cut
-
-sub get_reply_to {
-    my($self) = @_;
-    my($reply_to) = $self->get_head->get('reply-to');
-    if (defined($reply_to)) {
-        my($email, $name) = Bivio::Mail::Address::parse($reply_to);
-        &_trace($reply_to, ' -> (', $email, ',', $name, ')') if $_TRACE;
-        return wantarray ? ($email, $name) : $email;
-    } else {
-        return wantarray ? (undef, undef) : undef;
-    }
-}
-
-=for html <a name="get_from"></a>
-
-=head2 get_from() : (string addr, string name)
-
-=head2 get_from() : string addr
-
-Return (email, name) or just email if not array context.
-Returns undef if the From: cannot be parsed or is not available.
-
-=cut
-
-sub get_from {
-    my($self) = @_;
-    my($head) = $self->get_head;
-    my($from) = $head->get('from') || $head->get('apparently-from');
-    if (defined($from)) {
-        my($email, $name) = Bivio::Mail::Address::parse($from);
-        &_trace($from, ' -> (', $email, ',', $name, ')') if $_TRACE;
-        return wantarray ? ($email, $name) : $email;
-    } else {
-	Bivio::IO::Alert->warn('Missing From: header');
-        return wantarray ? (undef, undef) : undef;
-    }
-}
-
-=for html <a name="get_date_time"></a>
-
-=head2 get_date_time() : time
-
-Returns the date (UNIX time) specified by the message.
-Returns undef if the date cannot be parsed or is not available.
-
-=cut
-
-sub get_date_time {
-    my($self) = @_;
-    my($date) = $self->get_field('date') || $self->get_field('received');
-    if (defined($date)) {
-        my($date_time) = _parse_date($date);
-        &_trace($date, ' -> ', $date_time) if $_TRACE;
-        return $date_time;
-    } else {
-	Bivio::IO::Alert->warn("no Date or Received field avalable");
-	&_trace('no Date or Received field avalable') if $_TRACE;
-	return undef;
-    }
-}
-
-=for html <a name="get_field"></a>
-
-=head2 get_field(string name) : string
-
-Returns the value for field "name", or undef if field does not exist
-
-=cut
-
-sub get_field {
-    my($self, $name) = @_;
-    my($value) = $self->get_head->get($name);
-    return undef unless defined($value);
-    chomp($value);
-    # Return unfolded value
-    $value =~ s/\r?\n[ \t]/ /gs;
-    return $value;
-}
-
 =for html <a name="set_field"></a>
 
 =head2 set_field(string name, string value) :
@@ -540,34 +589,6 @@ sub set_field {
     my($self, $name, $value) = @_;
     $value =~ /\n$/ || ($value .= "\n");
     $self->get_head->replace($name, $value);
-    return;
-}
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item errors_to : string [postmaster]
-
-To whom should errors be sent.
-
-=item sendmail : string [/usr/lib/sendmail -O DeliveryMode=b -i]
-
-How to send mail.  Must accept a list of recipients on the
-command line.  Arguments must be easily separated, i.e. no quoting.
-
-=back
-
-=cut
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $cfg->{errors_to} =~ /['\\]/
-	    && die("$cfg->{errors_to}: invalid errors_to");
-    $_ERRORS_TO = $cfg->{errors_to};
-    $_SENDMAIL = $cfg->{sendmail};
     return;
 }
 
