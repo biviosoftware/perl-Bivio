@@ -64,6 +64,43 @@ sub add_permissions {
     return;
 }
 
+=for html <a name="change_public_permissions"></a>
+
+=head2 change_public_permissions(Bivio::Biz::Model::RealmOwner realm, string method)
+
+Changes public permissions on a club using L<add_permissions|"add_permissions">
+or L<remove_permissions|"remove_permissions"> for a club.
+
+=cut
+
+sub change_public_permissions {
+    my($self, $realm, $method) = @_;
+    my($req) = $realm->get_request;
+
+    # Mail/file read and post is available for all users and visitors.
+    my($ps) = Bivio::Auth::PermissionSet->get_min;
+    Bivio::Auth::PermissionSet->set(\$ps,
+            Bivio::Auth::Permission::DOCUMENT_READ(),
+            Bivio::Auth::Permission::MAIL_POST(),
+            Bivio::Auth::Permission::MAIL_READ(),
+           );
+    my($roles) = [
+        Bivio::Auth::Role::USER(),
+        Bivio::Auth::Role::WITHDRAWN(),
+        Bivio::Auth::Role::ANONYMOUS(),
+    ];
+    Bivio::Biz::Model::RealmRole->new($req)->$method($realm, $roles, $ps);
+
+    # Mail forward is only available for users and withdrawn
+    pop(@$roles);
+    $ps = Bivio::Auth::PermissionSet->get_min;
+    Bivio::Auth::PermissionSet->set(\$ps,
+            Bivio::Auth::Permission::MAIL_FORWARD(),
+           );
+    Bivio::Biz::Model::RealmRole->new($req)->$method($realm, $roles, $ps);
+    return;
+}
+
 =for html <a name="get_roles_for_permission"></a>
 
 =head2 get_roles_for_permission(Bivio::Biz::Model::RealmOwner realm, Bivio::Auth::Permission permission) : Bivio::Auth::RoleSet
