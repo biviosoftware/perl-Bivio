@@ -249,14 +249,17 @@ sub delete {
 
 =head2 cache_parts(Bivio::Agent::Request req, MIME::Entity e, int user_id) : int
 
-Unpack all parts recursively, convert simple text into HTML and store all
-parts in cache. Returns the top-level directory id.
-Loads message from file_t in case a MIME entity is not provided.
+Unpack all parts recursively and store in MAIL_CACHE volume.
+Returns the top-level file id for the cache.
+
+Loads raw RFC822 message from MAIL volume in case a MIME entity
+is not provided.
 
 =cut
 
 sub cache_parts {
     my($self, $req, $entity, $user_id) = @_;
+    my($properties) = $self->internal_get;
 
     unless( defined($entity) ) {
         my($file) = Bivio::Biz::Model::File->new($req);
@@ -264,8 +267,13 @@ sub cache_parts {
                 file_id => $self->get('rfc822_file_id'),
                 volume => $_MAIL_VOLUME,
                );
+        # Parse message
         $entity = MIME::Parser->new(output_to_core => 'ALL')
                 ->parse_data($file->get('content'));
+        # Delete cache files
+            $file->delete(file_id => $properties->{cache_file_id},
+                    volume => $_CACHE_VOLUME)
+                    if defined($properties->{cache_file_id});
     }
     my($volume) = $_CACHE_VOLUME;
     my($cache_id) = _walk_attachment_tree($self, $entity,
