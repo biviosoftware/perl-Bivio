@@ -105,7 +105,7 @@ sub catch {
 		    program_error => 1,
 		},
 		(caller)[0,1,2],
-		Carp::longmess("died"),
+		Carp::longmess("die"),
 	       ));
 	return;
     };
@@ -205,7 +205,7 @@ sub die {
 	program_error => 1,
     },
 	    (caller)[0,1,2],
-	    Carp::longmess("\n"),
+	    Carp::longmess('Bivio::Die::die'),
 	   );
     # DOES NOT RETURN
 }
@@ -331,7 +331,7 @@ sub throw {
 		? "\n" : $proto->as_string."\n");
     }
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
-	    $stack || Carp::longmess("\n"));
+	    $stack || Carp::longmess('Bivio::Die::throw'));
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
 }
 
@@ -347,7 +347,8 @@ C<$die> object (see e.g. L<Bivio::SQL::Connection|Bivio::SQL::Connection>).
 
 sub throw_die {
     my($proto, $code, $attrs, $package, $file, $line) = @_;
-    shift->throw($code, $attrs, $package, $file, $line, Carp::longmess("\n"));
+    shift->throw($code, $attrs, $package, $file, $line,
+	    Carp::longmess('Bivio::Die::throw_die'));
     # DOES NOT RETURN
 }
 
@@ -366,11 +367,11 @@ sub throw_quietly {
     if (ref($proto)) {
 	$proto->put(throw_quietly => 1);
 	$proto->throw($proto, $code, $attrs, $package, $file, $line,
-		Carp::longmess("\n"));
+		Carp::longmess('Bivio::Die::throw_quietly'));
 	# DOES NOT RETURN
     }
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
-	    Carp::longmess("\n"));
+	    Carp::longmess('Bivio::Die::throw_quietly'));
     $self->put(throw_quietly => 1);
     # Be quiet
     CORE::die($_IN_CATCH ? "$self\n" : "\n");
@@ -487,7 +488,7 @@ sub _handle_die {
 			Bivio::DieCode::DIE_WITHIN_HANDLE_DIE(),
 			{message => $msg, proto => $proto, program_error => 1},
 			ref($proto) || $proto, $1, $2,
-			Carp::longmess("\n"));
+			Carp::longmess('Bivio::Die::_handle_die'));
 	    }
 	}
 	1;
