@@ -23,10 +23,39 @@ use Bivio::Biz::Model;
 
 =head1 DESCRIPTION
 
-C<Bivio::Biz::FormModel>
+C<Bivio::Biz::FormModel> is the business logic behind HTML forms.  A FormModel
+has fields like other models.  Fields are either I<visible> or
+I<hidden>.  A FormModel may have a primary_key which is useful to know
+how to load the form values from the database.
+
+There are two modes the forms operate in: create and update.  update is
+currently broken.  create is the mode where there is blank form which
+has been filled in by the user.
+
+If there is a form associated with the request, the individual fields are
+validated and then the form-specific L<validate|"validate"> method is
+called to do cross-field validation.
+
+If the validation passes, i.e. no errors are put with
+L<internal_put_error|"internal_put_error">, then either L<update|"update">
+or L<create|"create"> is called depending on whether a database record
+could be loaded with the information on the form or not.
+
+Form field errors are always one of the enums in
+L<Bivio::TypeError|Bivio::TypeError>.
+
+The only tight connection to HTML is the way submit buttons are rendered.
+The problem is that the value of a submit type field is the text that
+appears in the button.  This means what the user sees is what we get
+back.  The routines L<SUBMIT|"SUBMIT">, L<SUBMIT_OK|"SUBMIT_OK">, and
+L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> can be overridden by subclasses if
+they would like different text to appear.
+
+Free form input widgets (Text and TextArea) retrieve field values with
+L<get_field_as_html|"get_field_as_html">, because the field may be in error and
+the errant literal value may not be valid for the type.
 
 =cut
-
 
 =head1 CONSTANTS
 
@@ -37,6 +66,8 @@ C<Bivio::Biz::FormModel>
 =head2 SUBMIT : string
 
 Returns name of submit button.
+
+May be overriden.
 
 =cut
 
@@ -50,23 +81,12 @@ sub SUBMIT {
 
 Returns Cancel button value
 
+May be overriden.
+
 =cut
 
 sub SUBMIT_CANCEL {
     return 'Cancel';
-}
-
-=for html <a name="SUBMIT_NEXT"></a>
-
-=head2 SUBMIT_NEXT : string
-
-Returns the Next button value.
-
-=cut
-
-sub SUBMIT_NEXT {
-#TODO: not valid HTML, but can't fix now
-    return 'Next >>';
 }
 
 =for html <a name="SUBMIT_OK"></a>
@@ -74,6 +94,8 @@ sub SUBMIT_NEXT {
 =head2 SUBMIT_OK : string
 
 Returns OK button value.
+
+May be overriden.
 
 =cut
 
@@ -85,6 +107,7 @@ sub SUBMIT_OK {
 use Bivio::Agent::Task;
 use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
+use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -129,27 +152,40 @@ sub execute {
     my($proto, $req) = @_;
     my($input) = $req->unsafe_get('form');
     my($self) = $proto->new($req);
-#TODO: Bind to "form" too?
-#    my($list_model) = $req->unsafe_get('list_model');
-    my($list_properties);
-#    # If there is a list_model associated with this form, then we have
-#    # to make sure it loaded successfully and that there was a "this"
-#    # on the query.
-#    if ($list_model) {
-#	$self->die(Bivio::DieCode::NOT_FOUND(),
-#		list_model => $list_model) unless $list_model->next_row;
-#	$list_properties = $list_model->internal_get();
-#    }
     if ($input) {
-	_execute_input($self, $input, $list_properties);
+	$self->internal_execute_input($input);
 	# Errors occured processing input, rollback
 	Bivio::Agent::Task->rollback if $self->{$_PACKAGE}->{errors};
     }
     else {
-	_load($self, $list_properties);
+	$self->execute_empty;
     }
     # Render form filled in from db, new form, or form with errors
     $req->put(ref($self) => $self, form_model => $self);
+    return;
+}
+
+=for html <a name="execute_empty"></a>
+
+=head2 execute_empty()
+
+Processes an empty form.  By default is a no-op.
+
+=cut
+
+sub execute_empty {
+    return;
+}
+
+=for html <a name="execute_input"></a>
+
+=head2 execute_input()
+
+Processes the form after validation.  By default is an no-op.
+
+=cut
+
+sub execute_input {
     return;
 }
 
@@ -167,6 +203,27 @@ sub get_errors {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return $fields->{errors};
+}
+
+=for html <a name="get_field_as_html"></a>
+
+=head2 get_field_as_html(string name) : string
+
+Returns the field value as html.  If the field is in error and there
+is no value, returns the literal value escaped for html.
+
+Always returns a valid string, but may be undef.
+
+=cut
+
+sub get_field_as_html {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($value) = $self->unsafe_get($name);
+    return $self->get_field_type($name)->to_html($value) if defined($value);
+    return '' unless
+	    $fields->{literals} && defined($fields->{literals}->{$name});
+    return Bivio::Util::escape_html($fields->{literals}->{$name});
 }
 
 =for html <a name="get_field_error"></a>
@@ -196,14 +253,19 @@ odd element is value).
 
 sub get_hidden_field_values {
     my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
     my($sql_support) = $self->internal_get_sql_support();
 #TODO: make a constant
     my(@res);
     push(@res, 'version', $sql_support->get('version'));
     my($properties) = $self->internal_get();
+    my($literals) = $fields->{literals};
     foreach my $col (@{$sql_support->get('hidden')}) {
-	push(@res, $col->{form_name},
-		$col->{type}->to_literal($properties->{$col->{name}}));
+	my($n) = $col->{name};
+	my($v) = $col->{type}->to_literal($properties->{$n});
+        $v = $literals && defined($literals->{$n}) ? $literals->{$n} : ''
+		unless defined($v);
+	push(@res, $col->{form_name}, $v);
     }
     return \@res;
 }
@@ -258,6 +320,40 @@ sub in_error {
     return defined(shift->{$_PACKAGE}->{errors});
 }
 
+=for html <a name="internal_execute_input"></a>
+
+=head2 internal_execute_input(hash_ref input)
+
+Parses the input with L<_parse|"_parse">.  If succesful, checks to see
+list_properties (if exists) against this form's primary_key.  All
+the values should match or someone is trying to stuff data into an
+arbitrary data field by hacking the primary_id of the form.
+
+Finally, call the execute_input method on the class.  This will
+do the work necessary to store the form data.
+
+=cut
+
+sub internal_execute_input {
+    my($self, $input) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    # Cancel causes an immediate redirect.  False means there was
+    # form input error that the user should correct.  We don't check
+    # the list_model unless the form parses correctly.
+    _parse($self, $input);
+    return if $fields->{errors};
+    my($sql_support) = $self->internal_get_sql_support();
+    my($properties) = $self->internal_get();
+    $self->validate();
+    return if $fields->{errors};
+    $self->execute_input();
+    return if $fields->{errors};
+    # Success, redirect to the next task.
+    my($req) = $self->get_request;
+    $req->client_redirect($req->get('task')->get('next'));
+    # DOES NOT RETURN
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
@@ -276,108 +372,29 @@ sub internal_initialize_sql_support {
 
 =head2 internal_put_error(string property, Bivio::TypeError error)
 
-Associate I<error> with I<property>.
+=head2 internal_put_error(string property, Bivio::TypeError error, string literal)
+
+Associate I<error> with I<property>.  If I<literal> in error is defined,
+associate as well.
 
 =cut
 
 sub internal_put_error {
-    my($self, $property, $error) = @_;
+    my($self, $property, $error, $literal) = @_;
     my($fields) = $self->{$_PACKAGE};
     Carp::croak('not a Bivio::TypeError')
 		unless UNIVERSAL::isa($error, 'Bivio::TypeError');
     _trace($property, ': ', $error->as_string) if $_TRACE;
     $fields->{errors} = {} unless $fields->{errors};
     $fields->{errors}->{$property} = $error;
+    if (defined($literal)) {
+	$fields->{literals} = {} unless $fields->{literals};
+	$fields->{literals}->{$property} = $literal;
+    }
     return;
 }
 
 #=PRIVATE METHODS
-
-# _execute_input(Bivio::Biz::FormModel self, hash_ref input, hash_ref list_properties)
-#
-# Parses the input with _parse().  If succesful, checks to see
-# list_properties (if exists) against this form's primary_key.  All
-# the values should match or someone is trying to stuff data into an
-# arbitrary data field by hacking the primary_id of the form.
-#
-# Finally, call the execute_input method on the class.  This will
-# do the work necessary to store the form data.
-#
-sub _execute_input {
-    my($self, $input, $list_properties) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    # Cancel causes an immediate redirect.  False means there was
-    # form input error that the user should correct.  We don't check
-    # the list_model unless the form parses correctly.
-    _parse($self, $input);
-    return if $fields->{errors};
-    my($sql_support) = $self->internal_get_sql_support();
-    my($properties) = $self->internal_get();
-    if ($list_properties) {
-#TODO: SECURITY: Is this elegant or a total hack?
-	# Validate that the inpu
-	foreach my $n ($sql_support->get('primary_key_names')) {
-	    next if defined($properties->{$n})
-		    && defined($list_properties->{$n})
-			    && $properties->{$n} eq $list_properties->{$n};
-	    $self->die(Bivio::DieCode::NOT_FOUND,
-		    message => 'mismatched list model primary key',
-		    field => $n, field_value => $properties->{$n});
-	}
-	# Form and List are in synch.  Authorized
-    }
-#TODO: Security fails if no list model.
-    my($op) = 'update';
-    foreach my $n ($sql_support->get('primary_key_names')) {
-	$op = 'create', last unless defined($properties->{$n});
-    }
-    $self->validate($op eq 'create');
-    return if $fields->{errors};
-    $self->$op();
-    return if $fields->{errors};
-    # Success, redirect to the next task.
-    my($req) = $self->get_request;
-    $req->client_redirect($req->get('task')->get('next'));
-    # DOES NOT RETURN
-}
-
-# _load(Bivio::Biz::FormModel self, hash_ref list_properties)
-#
-# If there are list_properties, load them into the form and load any
-# other model properties that are missing from this form.
-#
-sub _load {
-    my($self, $list_properties) = @_;
-    return unless $list_properties;
-#TODO: Is this elegant or a total hack?
-    # Copy all identical properties from list model
-    my($properties) = {};
-    my($sql_support) = $self->internal_get_sql_support();
-    my(@missed);
-    foreach my $col ($sql_support->get('columns')) {
-	my($n) = $col->{name};
-	if (exists($list_properties->{$n})) {
-	    $properties->{$n} = $list_properties->{$n};
-	}
-	else {
-	    $properties->{$n} = undef;
-	    push(@missed, $col);
-	}
-    }
-    # Store the properties so get_model can find them.
-    $self->internal_put($properties);
-
-    # Fill in missing properties by trying to load models
-    #TODO: On complex traversals, this won't work, because the order in
-    #      which the models are loaded.  May want to loop here
-    # (
-    foreach my $col (@missed) {
-	next unless $col->{model};
-	my($m) = $self->get_model($col->{model});
-	$properties->{$col->{name}} = $m->get($col->{column_name});
-    }
-    return;
-}
 
 # _parse(Bivio::Biz::FormModel self, hash_ref form)
 #
@@ -388,13 +405,10 @@ sub _parse {
     my($fields) = $self->{$_PACKAGE};
     # Clear any incoming errors
     delete($fields->{errors});
-    # Delete the form, because we don't want other models processing
-    # it.  We've handled it already.
     my($sql_support) = $self->internal_get_sql_support;
-    $self->get_request->delete('form');
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self, $form->{version}, $sql_support);
-    _parse_submit($self, $form->{SUBMIT()});
+    _parse_submit($self, $form->{$self->SUBMIT});
     my($values) = {};
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
@@ -405,7 +419,7 @@ sub _parse {
 # _parse_col(Bivio::Biz::FormModel self, hash_ref form, Bivio::SQL::FormSupport sql_support, hash_ref values, boolean is_hidden)
 #
 # Parses the form field and returns the value.  Stores errors in the
-# fields->{errors}.  Errors in hidden fields
+# fields->{errors}.
 #
 #
 sub _parse_cols {
@@ -416,20 +430,20 @@ sub _parse_cols {
 	my($v, $err) = $col->{type}->from_literal($form->{$fn});
 	$values->{$col->{name}} = $v;
 	next if defined($v);
-	if ($is_hidden) {
-	    # Hidden fields must always be defined
-	    $err = Bivio::TypeError::NULL() unless $err;
-	    $self->die(Bivio::DieCode::CORRUPT_FORM(),
-		    {field => $col->{name}, field_error => $err,
-			field_value => $form->{$fn}});
-	}
-	# Null visible field ok?
+	# Null field ok?
 	unless ($err) {
 	    next if $col->{constraint} == Bivio::SQL::Constraint::NONE();
 	    $err = Bivio::TypeError::NULL();
 	}
-	# Error in visible field
-	$self->internal_put_error($col->{name}, $err);
+	# Error in field.  Save the original value.
+	if ($is_hidden) {
+	    $self->die(Bivio::DieCode::CORRUPT_FORM(),
+		    {field => $col->{name}, actual => $form->{$fn},
+			error => $err});
+	}
+	else {
+	    $self->internal_put_error($col->{name}, $err, $form->{$fn});
+	}
     }
     return;
 }
@@ -444,24 +458,23 @@ sub _parse_submit {
     my($self, $value) = @_;
 
     # default to OK, submit isn't passed when user presses 'enter'
-    $value ||= SUBMIT_OK();
+    $value ||= $self->SUBMIT_OK;
 
-    if ($value eq SUBMIT_CANCEL()) {
+    if ($value eq $self->SUBMIT_CANCEL) {
 	my($req) = $self->get_request;
 	# client redirect on cancel
 	$req->client_redirect($req->get('task')->get('cancel'));
 	# Does not return
     }
-    return if $value eq SUBMIT_OK() || $value eq SUBMIT_NEXT();
+    return if $value eq $self->SUBMIT_OK;
 
 #TODO: need a general fix for this
     # lynx trims submit padding!
-    return if SUBMIT_OK =~ /$value/x;
+    return if $self->SUBMIT_OK =~ /$value/x;
 
     $self->die(Bivio::DieCode::CORRUPT_FORM(),
-	    {field => SUBMIT(),
-		expected => SUBMIT_OK().' or '.SUBMIT_CANCEL()
-		.' or '.SUBMIT_NEXT(),
+	    {field => $self->SUBMIT(),
+		expected => $self->SUBMIT_OK.' or '.$self->SUBMIT_CANCEL,
 		actual => $value});
     return;
 }
