@@ -30,6 +30,7 @@ use Bivio::IO::Trace;
 use Bivio::Test::BulletinBoard;
 use Bivio::Test::HTTPUtil;
 use Data::Dumper ();
+
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
@@ -55,7 +56,7 @@ Bivio::IO::Config->register({
 Visits page associated with the url for the I<target> button.
 
 =cut
-
+#TODO Deprecate once new interface is available
 sub click_button {
     my(undef, $target) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
@@ -77,7 +78,7 @@ The optional argument I<subtarget> is used for accessing the expanded part of
 the imagemenu.
 
 =cut
-#TODO: subtarget won't be optional until the other parts of imagemenu are there
+#TODO: deprecate once new interface is available
 sub click_imagemenu {
     my(undef, $target, $subtarget) = @_;
     my($board) = Bivio::Test::BulletinBoard->get_current();
@@ -151,11 +152,9 @@ sub handle_config {
 =head2 login(optional string $user, optional string $pass, optional boolean $save)
 
 login is a static wrapper for the object method Login->execute().  It gets the
-current login object from the BulletinBoard.  If login information (user, pass)
-are specified and do not match the current login object, a new login object is
-made and the login is performed.
-
-
+current login object from the C<Bivio::Test::BulletinBoard>.  If login
+information (I<user>, I<pass>) are specified and do not match the current login
+object, a new login object is made and the login is performed.
 
 =cut
 
@@ -239,7 +238,7 @@ sub verify_all {
 
 =head2 verify_text(string text)
 
-Dies if specified text is not found within the current parsed response.
+Dies if I<text> is not found within the current parsed response.
 
 =cut
 
@@ -257,7 +256,8 @@ sub verify_text {
 
 =head2 verify_title(string $match_title)
 
-Dies if title in current page does not match string $title (case insensitive).
+Dies if title in current page does not match I<$match_title> (case
+insensitive).
 
 =cut
 
@@ -275,9 +275,9 @@ sub verify_title {
 
 =head2 verify_uri(string path)
 
-Verifies that the uri of the current response contains the specified string.
-The specified uri should optimally be only the path after the base uri so that
-this will succeed with different base uris.
+Verifies that the uri of the current response contains I<path>.  The specified
+uri should optimally be only the path after the base uri so that this will
+succeed with different base uris.
 
 =cut
 
@@ -294,9 +294,9 @@ sub verify_uri {
 
 =head2 static visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
 
-Visits the page specified by uri and puts the response and uri in the current
-BulletinBoard object.  The uri may be the path beyond a base uri which will be
-substituted in.
+Visits the page specified by I<uri> and puts the response and uri in the
+current C<Bivio::Test::BulletinBoard> object.  The uri may be the path beyond a
+base uri which will be substituted in.
 
 =cut
 
