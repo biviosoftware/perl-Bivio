@@ -38,7 +38,10 @@ new request running in general realm.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
+# For convenience
+use Bivio::Test;
 use Bivio::Test::Bean;
+use Bivio::ShellUtil;
 use Socket ();
 
 #=VARIABLES
@@ -79,6 +82,24 @@ sub get_instance {
 =head1 METHODS
 
 =cut
+
+=for html <a name="set_realm_and_user"></a>
+
+=head2 static set_realm_and_user(any realm, any user) : self
+
+Sets the realm and user.  See
+L<Bivio::ShellUtil|Bivio::ShellUtil> for details.
+
+If called statically, will call L<get_instance|"get_instance"> first.
+
+=cut
+
+sub set_realm_and_user {
+    my($self) = shift;
+    $self = $self->get_instance unless ref($self);
+    Bivio::ShellUtil->set_realm_and_user(@_);
+    return $self;
+}
 
 =for html <a name="setup_http"></a>
 
