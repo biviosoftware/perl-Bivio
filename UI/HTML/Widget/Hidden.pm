@@ -11,7 +11,7 @@ Bivio::UI::HTML::Widget::Hidden - hidden form field
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 
