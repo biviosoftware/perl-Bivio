@@ -54,7 +54,8 @@ is an array_ref.
 =item choices : array_ref (required, get_request)
 
 Widget value which returns
-L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>.
+L<Bivio::Biz::ListModel|Bivio::Biz::ListModel>
+or a TypeValue which is an EnumSet.
 
 =item disabled : boolean [0]
 
@@ -187,28 +188,13 @@ sub initialize {
     $fields->{enum_sort} = _enum_sort($self);
 
     my($choices) = $self->get('choices');
-    $fields->{list_source} = undef;
-    if (UNIVERSAL::isa($choices, 'Bivio::Type::Enum')) {
-	$fields->{items} = _load_items_from_enum($self, $choices);
-    }
-    elsif (!ref($choices)) {
-	Carp::croak($choices, ': unknown choices type (not a ref)');
-    }
-    elsif (ref($choices) eq 'ARRAY') {
+    if (ref($choices) eq 'ARRAY') {
 	# load it dynamically during render
-	$fields->{list_source} = $choices;
-    }
-    elsif ($choices->isa('Bivio::TypeValue')
-	   && $choices->get('type')->isa('Bivio::Type::EnumSet')) {
-	$fields->{items} = _load_items_from_enum_set($self, $choices);
-    }
-    elsif ($choices->isa('Bivio::TypeValue')
-	   && $choices->get('type')->isa('Bivio::Type::Integer')
-	   && ref($choices->get('value')) eq 'ARRAY') {
-	$fields->{items} = _load_items_from_integer_array($self, $choices);
+	$fields->{choices} = $choices;
     }
     else {
-	Carp::croak(ref($choices), ': unknown choices type (not a set)');
+	$fields->{choices} = undef;
+	$fields->{items} = _load_items($self, $choices);
     }
     $fields->{auto_submit} = $self->get_or_default('auto_submit', 0);
 
@@ -253,9 +239,8 @@ sub render {
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
 
-    my($items) = $fields->{list_source}
-	    ? _load_items_from_list($self,
-		    $req->get_widget_value(@{$fields->{list_source}}))
+    my($items) = $fields->{choices}
+	    ? _load_items($self, $req->get_widget_value(@{$fields->{choices}}))
 	    : $fields->{items};
     my($field_value) = $form->get($field);
 
@@ -319,6 +304,33 @@ sub _enum_sort_by_int {
     return $left->as_int <=> $right->as_int;
 }
 
+# _load_items(self, any choices) : array_ref
+#
+# Returns choices from the list of choices.
+#
+sub _load_items {
+    my($self, $choices) = @_;
+    # Most common dynamic case is first
+    return _load_items_from_list($self, $choices)
+	    if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
+    return _load_items_from_enum($self, $choices)
+	    if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
+    if (UNIVERSAL::isa($choices, 'Bivio::TypeValue')) {
+	my($t) = $choices->get('type');
+	return _load_items_from_enum_set($self, $choices)
+		if $t->isa('Bivio::Type::EnumSet');
+	return _load_items_from_integer_array($self, $choices)
+		if $t->isa('Bivio::Type::Integer')
+			&& ref($choices->get('value')) eq 'ARRAY';
+    }
+    Bivio::Die->throw_die('DIE', {
+	message => 'unknown choices type',
+	program_error => 1,
+	entity => $choices,
+    });
+    # DOES NOT RETURN
+}
+
 # _load_items_from_enum(Bivio::UI::HTML::Widget::Select self, Bivio::Type::Enum enum)
 #
 # Loads items from the enum choices attribute. Enum values are static
@@ -330,7 +342,7 @@ sub _load_items_from_enum {
     return _load_items_from_enum_list($self, [$enum->get_list]);
 }
 
-# _load_items_from_enum_list(Bivio::UI::HTML::Widget::Select self, array_ref list)
+# _load_items_from_enum_list(Bivio::UI::HTML::Widget::Select self, array_ref list) : array_ref
 #
 # Creates "items" from "list" of enum values.  Helper to _load_items_from_enum
 # and _load_items_from_enum_set.
