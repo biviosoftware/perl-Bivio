@@ -34,6 +34,11 @@ for layout issues).
 
 =over 4
 
+=item escape_text : boolean [1]
+
+Determines whether the value will be passed to
+L<Bivio::Util::escape_html|Bivio::Util/"escape_html"> before rendering.
+
 =item string_font : string [] (inherited)
 
 The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
@@ -50,8 +55,6 @@ to get string to use (see below).
 =item value : string (required)
 
 Text to render.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
-before rendering.
 
 =back
 
@@ -105,7 +108,9 @@ sub initialize {
     $p .= '&nbsp;' x $pad_left if $pad_left > 0;
     $fields->{value} = $self->get('value');
     if ($fields->{is_constant} = !ref($fields->{value})) {
-    	$fields->{value} = $p.Bivio::Util::escape_html($fields->{value}).$s;
+    	$fields->{value} = $p.($self->get_or_default('escape_text', 1)
+		? Bivio::Util::escape_html($fields->{value})
+		: $fields->{value}).$s;
     }
     else {
 	$fields->{prefix} = $p;
@@ -137,10 +142,14 @@ Render the object.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
+    die("String not initialized") unless exists($fields->{value});
+
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
+    my($value) = $source->get_widget_value(@{$fields->{value}});
     $$buffer .= $fields->{prefix}
-	    .Bivio::Util::escape_html($source->get_widget_value(
-		    @{$fields->{value}}))
+	    .($self->get_or_default('escape_text', 1)
+		    ? Bivio::Util::escape_html($value)
+		    : $value)
 	    .$fields->{suffix};
     return;
 }
