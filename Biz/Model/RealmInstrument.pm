@@ -5,6 +5,7 @@
 package Bivio::Biz::Model::RealmInstrument;
 use strict;
 $Bivio::Biz::Model::RealmInstrument::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::RealmInstrument::VERSION;
 
 =head1 NAME
 
@@ -34,17 +35,9 @@ and delete interface to the C<realm_instrument_t> table.
 
 #=IMPORTS
 use Bivio::Biz::Model::Instrument;
+use Bivio::Biz::Model::RealmAccount;
 use Bivio::SQL::Connection;
-use Bivio::SQL::Constraint;
-use Bivio::Type::Boolean;
-use Bivio::Type::DateTime;
-use Bivio::Type::EntryType;
-use Bivio::Type::InstrumentType;
-use Bivio::Type::Line;
-use Bivio::Type::Name;
-use Bivio::Type::PrimaryId;
-use Bivio::Type::Text;
-use Bivio::Type::TaxCategory;
+use Bivio::Type::EntryClass;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -310,6 +303,75 @@ sub internal_initialize {
 	],
 	auth_id => 'realm_id',
     };
+}
+
+=for html <a name="unsafe_get_account"></a>
+
+=head2 unsafe_get_account() : Bivio::Biz::Model::RealmAccount
+
+Returns the account associated with this instrument. This is determined by
+the most recent transaction's account. If there are no transactions, then
+the club default account is used.
+
+Returns undef if there are no transactions, and the default account is not
+valid.
+
+=cut
+
+sub unsafe_get_account {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($account) = Bivio::Biz::Model::RealmAccount->new($req);
+
+    # try to get the latest account used for this instrument
+    my($account_id);
+    my($sth) = Bivio::SQL::Connection->execute('
+            SELECT DISTINCT realm_account_entry_t.realm_account_id
+            FROM realm_transaction_t,
+                entry_t ie,
+                entry_t ae,
+                realm_account_entry_t,
+                realm_instrument_entry_t
+            WHERE realm_transaction_t.realm_id=?
+            AND realm_transaction_t.realm_transaction_id
+                =ie.realm_transaction_id
+            AND realm_transaction_t.realm_transaction_id
+                =ae.realm_transaction_id
+            AND ie.entry_id=realm_instrument_entry_t.entry_id
+            AND realm_instrument_entry_t.realm_instrument_id=?
+            AND ae.entry_id=realm_account_entry_t.entry_id
+            AND realm_transaction_t.date_time=(
+                SELECT max(realm_transaction_t.date_time)
+                FROM realm_transaction_t, entry_t ie, entry_t ae,
+                    realm_instrument_entry_t
+                WHERE realm_transaction_t.realm_id=?
+                AND realm_transaction_t.realm_transaction_id
+                =ie.realm_transaction_id
+                AND realm_transaction_t.realm_transaction_id
+                =ae.realm_transaction_id
+		AND ie.entry_id=realm_instrument_entry_t.entry_id
+                AND realm_instrument_entry_t.realm_instrument_id=?
+                AND ae.class=?
+            )',
+	    [$req->get('auth_id'), $self->get('realm_instrument_id'),
+		    $req->get('auth_id'), $self->get('realm_instrument_id'),
+		    Bivio::Type::EntryClass::CASH()->as_int]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	$account_id = $row->[0];
+    }
+
+    if ($account_id) {
+	$account->load(realm_account_id => $account_id);
+    }
+    elsif ($account->unsafe_load_default) {
+	# use the default account
+    }
+    else {
+	# no default account found
+	return undef;
+    }
+    return $account;
 }
 
 #=PRIVATE METHODS
