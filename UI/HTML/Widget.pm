@@ -548,13 +548,9 @@ sub heading_as_label {
 
 =head2 static heading_with_inactive_form(string label, boolean is_report) : Bivio::UI::HTML::Widget
 
-Renders the heading for the InstrumentList and MemberList pages.
+DEPRECATED
 
-I<label> is a L<Bivio::UI::Label|Bivio::UI::Label>
-and appears on the checkbox.
-
-The heading includes a form with a single check box.
-The task must have an InactiveForm in its business logic items.
+REMOVE AFTER 1/1/2001.  REMOVE anchor in EditPreferencesTable.
 
 =cut
 
@@ -572,22 +568,13 @@ sub heading_with_inactive_form {
 				return Bivio::UI::Label->get_simple(
 					shift->get('task_id')->get_name);
 			    }],
-				'page_heading')),
-		Bivio::UI::HTML::Widget::Form->new({
-		    end_tag => 0,
-		    cell_end_form => 1,
-		    cell_align => 'E',
-		    form_class => 'Bivio::Biz::Model::InactiveForm',
-		    value => $proto->join(
-			    Bivio::UI::HTML::Widget::Checkbox->new({
-				field => 'show_inactive',
-				label => Bivio::UI::Label->get_simple($label),
-				auto_submit => 1,
-			    }),
-			    '<noscript><input type=submit value="Refresh">',
-			    '</noscript>',
-			   ),
-		}),
+				'page_heading'))->put(align => 'left',
+					cell_expand => 1),
+		$proto->link(
+			$label.' is a now preference',
+			'#preferences',
+		       'help_hint')->put(align => 'right',
+			      cell_nowrap => 1),
 	    ],
         ],
     });
