@@ -152,7 +152,7 @@ sub get_delegate_info {
             next=SITE_ROOT
 	)],
 	# To make this visible, add this to Task section of your facade:
-	#   $t->group(FAVICON_ICO => ['/favicon.ico']);
+	#   $t->group(FAVICON_ICO => '/favicon.ico');
         # and in the Text section:
 	#   $t->group(favicon_uri => '/i/favicon.ico');
 	[qw(
