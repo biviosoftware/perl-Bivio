@@ -166,6 +166,16 @@ __PACKAGE__->compile(
 	undef,
 	'four digit year required (mm/dd/yyyy)',
     ],
+    STATE => [
+	26,
+	undef,
+	'state must be exactly two letters',
+    ],
+    MGFS_RATIO => [
+	27,
+	undef,
+	'invalid ratio',
+    ],
 );
 
 #=PRIVATE METHODS
