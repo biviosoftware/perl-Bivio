@@ -38,17 +38,17 @@ which is stored in mail_t and file_t, volume MAIL & MAIL_CACHE
 
 =cut
 
-=for html <a name="_MAIL_PART_URL"></a>
+=for html <a name="_MAIL_CID_PART_URL"></a>
 
-=head2 _MAIL_PART_URL : string
+=head2 _MAIL_CID_PART_URL : string
 
 The URL that's used in HTML message parts to replace "cid:<content-id>"
 links. The actual content-id as appended to this constant string.
 
 =cut
 
-sub MAIL_PART_URL {
-    return '../../mail-part?t=';
+sub MAIL_CID_PART_URL {
+    return 'msg-part?t=';
 }
 
 #=IMPORTS
@@ -70,6 +70,8 @@ use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_MAX_SUBJECT) = Bivio::Type::Line->get_width;
 my($_UNKNOWN_ADDRESS);
+my($_MAIL_VOLUME) = Bivio::Type::FileVolume->MAIL;
+my($_CACHE_VOLUME) = Bivio::Type::FileVolume->MAIL_CACHE;
 
 =head1 METHODS
 
@@ -141,10 +143,11 @@ sub create {
 # TODO: Remove this procedure after the migration is completed
     $self->setup_club($realm_owner);
 
-    my($volume) = Bivio::Type::FileVolume::MAIL;
-    my($user_id) = $req->unsafe_get('auth_user');
+    my($volume) = $_MAIL_VOLUME;
+    my($user_id) = $req->unsafe_get('auth_user_id');
     # Get user of root directory if we don't have an auth_user
     unless( $user_id ) {
+        _trace('No user_id, inheriting it from the root directory') if $_TRACE;
         my($root_dir_id) = $volume->get_root_directory_id($req->get('auth_id'));
         my($root_dir) = Bivio::Biz::Model::File->new($req);
         $root_dir->load(file_id => $root_dir_id);
@@ -199,7 +202,8 @@ sub delete {
                 SET thread_parent_id = ?
                 WHERE thread_parent_id = ?',
                 [$properties->{thread_parent_id}, $properties->{mail_id}]);
-    } elsif ($properties->{is_thread_root}) {
+    }
+    elsif ($properties->{is_thread_root}) {
         # Deleting the root of a thread!
         # Get the first reply and make it the new thread root
         my($sth) = Bivio::SQL::Connection->execute('
@@ -231,27 +235,33 @@ sub delete {
                     ': is_thread_root was true, but had no replies!');
         }
     }
+    else {
+        _trace('Message not part of a thread') if $_TRACE;
+    }
     my($file) = Bivio::Biz::Model::File->new($req);
     if( defined($properties->{rfc822_file_id}) ) {
-        _trace('Deleting file, id=', $properties->{rfc822_file_id}) if $_TRACE;
-        $file->delete(
+        _trace('Deleting rfc822 file, id=', $properties->{rfc822_file_id}) if $_TRACE;
+        # Not clear why have to load it to delete it??
+        $file->load(
                 file_id => $properties->{rfc822_file_id},
-                volume => Bivio::Type::FileVolume::MAIL,
+                volume => $_MAIL_VOLUME,
                );
+        $file->delete;
     }
     if( defined($properties->{cache_file_id}) ) {
-        _trace('Deleting file, id=', $properties->{cache_file_id}) if $_TRACE;
-        $file->delete(
+        _trace('Deleting cache file, id=', $properties->{cache_file_id}) if $_TRACE;
+        $file->load(
                 file_id => $properties->{cache_file_id},
-                volume => Bivio::Type::FileVolume::MAIL_CACHE,
+                volume => $_CACHE_VOLUME,
                );
+        $file->delete;
     }
     return $self->SUPER::delete(@_);
 }
 
 =for html <a name="setup_club"></a>
 
-=head2 setup_club(Bivio::Biz::Model::RealmOwner club) :
+=head2 setup_club(Bivio::Auth::Realm realm) :
 
 Setup necessary volumes. Only needed during the transition phase.
 Can be removed afterwards because newly created clubs will have
@@ -264,20 +274,17 @@ sub setup_club {
     my($req) = $self->unsafe_get_request;
 
     my($club_id) = $realm_owner->get('realm_id');
-
-    # Get club admin (pick first in list)
-    my($admins) = Bivio::Biz::Model::RealmAdminList->new($req);
-    $admins->unauth_load_all({auth_id => $club_id});
-    $admins->set_cursor(0);
-    my($user_id) = $admins->get('RealmUser.user_id');
+    my($user_id) = Bivio::Biz::Model::RealmAdminList->get_first_admin($realm_owner);
 
     # Initialize club's file volumes MAIL and MAIL_CACHE, if necessary
     my($v);
-    for $v (Bivio::Type::FileVolume::MAIL, Bivio::Type::FileVolume::MAIL_CACHE) {
+    for $v ($_MAIL_VOLUME, $_CACHE_VOLUME) {
         my($file) = Bivio::Biz::Model::File->new($req);
         # Try to load top-level directory for this volume
         unless( $file->unsafe_load(file_id => $v->get_root_directory_id($club_id)) ) {
             # Create top-level volume
+            _trace('Initializing volume ', $v, ' for club ', $club_id,
+                    ', user ', $user_id) if $_TRACE;
             $file->create_volume($club_id, $user_id, $v);
         }
     }
@@ -297,7 +304,7 @@ sub unpack_and_cache {
     my($self, $req, $entity, $user_id, $mail_id) = @_;
 
     # Convert and store attachments
-    my($volume) = Bivio::Type::FileVolume::MAIL_CACHE;
+    my($volume) = $_CACHE_VOLUME;
     my($cache_id) = _walk_attachment_tree($self, $entity,
             $volume->get_root_directory_id($req->get('auth_id')),
             $user_id, $mail_id, undef);
@@ -370,14 +377,20 @@ sub internal_initialize {
 #  - create a file for each actual part
 # Store the MIME header in file_t.aux_info field
 # Returns file_id in case of a single part message, directory_id otherwise
-# TODO: This needs clearer structure
+#
+#TODO: This routine might need a clearer structure
+#
 sub _walk_attachment_tree {
     my($self, $entity, $dir_id, $user_id, $mail_id, $index) = @_;
     my($req) = $self->unsafe_get_request;
     my($file) = Bivio::Biz::Model::File->new($req);
+
+    $entity->head->unfold;
     my($ct) = $entity->mime_type;
     my(@parts) = $entity->parts;
-    if (@parts) {
+
+    # Special message/rfc822 handling, it becomes multipart (header and rest)
+    if (@parts || $ct eq 'message/rfc822' ) {
         # Has sub-parts, so create directory and descend
         $mail_id .= '_' . $index if $index;
         $file->create({
@@ -386,12 +399,26 @@ sub _walk_attachment_tree {
             user_id => $user_id,
             aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
             directory_id => $dir_id,
-            volume => Bivio::Type::FileVolume::MAIL_CACHE,
+            volume => $_CACHE_VOLUME,
         });
-        $dir_id = $file->get('directory_id');
+        $dir_id = $file->get('file_id');
+        if( $ct eq 'message/rfc822' ) {
+            # Re-parse this part as a separate mail message
+            my($content) = $entity->bodyhandle->as_string;
+            my($msg) = Bivio::Mail::Message->new(\$content);
+            $msg->get_entity->head->unfold;
+            # Handle the header as a separate part
+            my($header) = MIME::Entity->build(Type => 'message/header',
+                    Data => $msg->get_entity->header_as_string);
+            # Replace original header because we stored it separately already
+            $msg->get_entity->head(MIME::Head->new());
+            $msg->get_entity->head->replace('Content-Type', $msg->get_entity->mime_type);
+            @parts = ( $header, $msg->get_entity);
+        }
         my($i);
         for $i (0..$#parts) {
-            if( $ct eq 'multipart/alternative' && $parts[$i]->mime_type =~ m|^text/| ) {
+            if( $ct eq 'multipart/alternative' &&
+                    $parts[$i]->mime_type =~ m|^text/| ) {
                 # Only keep the HTML version
                 next unless $parts[$i]->mime_type eq 'text/html';
             }
@@ -399,31 +426,19 @@ sub _walk_attachment_tree {
             _walk_attachment_tree($self, $parts[$i], $dir_id, $user_id,
                     $mail_id, sprintf('%02X', $i));
         }
-    } else {
-        if( $ct =~ m!^text/! ) {
+    }
+    else {
+        if( Bivio::MIME::TextToHTML->can_convert($ct) ) {
             my($tohtml) = Bivio::MIME::TextToHTML->new;
-            $tohtml->convert($entity, $self->MAIL_PART_URL);
+            $tohtml->convert($entity, $self->MAIL_CID_PART_URL);
+        }
+        # Append the given index or its content-id to the filename
+        if(my($cid) = $entity->head->get('Content-ID')) {
+            $mail_id .= '_' . $cid;
+        } elsif ($index) {
+            $mail_id .= '_' . $index;
         }
         my($content) = $entity->bodyhandle->as_string;
-# TODO: This wouldn't work for more than one forwarded message. Need to
-#       handle message/rfc822 as if it would have subparts (in another else clause)
-        if( $ct eq 'message/rfc822' ) {
-            # Recursively unpack this message
-            my($msg) = Bivio::Mail::Message->new(\$content);
-            _walk_attachment_tree($self, $msg->get_entity, $dir_id, $user_id,
-                    $mail_id, sprintf('%02X', $index+1));
-            # Store the header as its own part
-            $content = $entity->header_as_string;
-            $mail_id .= '_' . $index;
-            $index = undef;
-        } else {
-            # Append the given index or its content-id to the filename
-            if(my($cid) = $entity->head->get('Content-ID')) {
-                $mail_id .= '_' . $cid;
-            } elsif ($index) {
-                $mail_id .= '_' . $index;
-            }
-        }
         $file->create({
             is_directory => 0,
             name => $mail_id,
@@ -432,7 +447,7 @@ sub _walk_attachment_tree {
             aux_info => $index ? $entity->header_as_string : 'Content-Type: ' . $ct,
             content => \$content,
             directory_id => $dir_id,
-            volume => Bivio::Type::FileVolume::MAIL_CACHE,
+            volume => $_CACHE_VOLUME,
         });
     }
     return $file->get('file_id');
@@ -449,10 +464,12 @@ sub _attach_to_thread {
     # Shortcutting the procedure... only use newest message-id
 # TODO: Search for all message ids
     my($in_reply_to) = $msg->get_references;
+    _trace('Looking for in_reply-to ', $in_reply_to) if $in_reply_to && $_TRACE;
     if ($in_reply_to) {
         # Have existing message with message_id = $in_reply_to?
         my($sth) = Bivio::SQL::Connection->execute('
-                SELECT mail_id,is_thread_root,thread_root_id FROM mail_t
+                SELECT mail_id,is_thread_root,thread_root_id
+                FROM mail_t
                 WHERE message_id=?',
                 [$in_reply_to]);
         my($row) = $sth->fetchrow_arrayref;
@@ -464,7 +481,8 @@ sub _attach_to_thread {
     unless (exists($values->{thread_parent_id})) {
         # Have message(s) with the same subject? Attach to root message
         my($sth) = Bivio::SQL::Connection->execute('
-                SELECT mail_id,is_thread_root,thread_root_id FROM mail_t
+                SELECT mail_id,is_thread_root,thread_root_id
+                FROM mail_t
                 WHERE subject_sort = ? AND thread_root_id = NULL
                 ORDER BY date_time DESC',
                 [$values->{subject_sort}]);
