@@ -128,7 +128,10 @@ sub control_on_render {
     my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' href="'.$source->get_widget_value(@{$fields->{href}}).'"'
+    $$buffer .= ' href="'
+	. _fixup_href($source->get_request,
+	    $source->get_widget_value(@{$fields->{href}}))
+	. '"'
 	    if $fields->{href};
     $$buffer .= '>';
     $self->render_value('value', $fields->{value}, $source, $buffer);
@@ -207,6 +210,18 @@ sub internal_new_args {
 }
 
 #=PRIVATE METHODS
+
+# _fixup_href(Bivio::Agent::Request req, any href) : string
+#
+# Returns a string.  May format if not already a TaskId.
+#
+sub _fixup_href {
+    my($req, $href) = @_;
+    return $href unless ref($href);
+    Bivio::Die->die('unknown type for href: ', $href)
+	unless ref($href) eq 'Bivio::Agent::TaskId';
+    return $req->format_stateless_uri($href);
+}
 
 # _initialize_href(self) : any
 #
