@@ -242,6 +242,10 @@ sub initialize {
 	$num_columns = $nc;
         # Doesn't end in </tr>
     }
+    else {
+#TODO: fix this hack, cells already expect the heading
+	$fields->{headings} = ['<tr>'];
+    }
 
     # Cells
     if ($self->unsafe_get('cells')) {
