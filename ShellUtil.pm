@@ -317,7 +317,8 @@ sub new_other {
     }
     my($other) = $class->new($options);
     $other->put_request($self->get_request);
-    $other->put(program => $self->unsafe_get('program') || '');
+    $other->put(program => $self->unsafe_get('program'))
+	if ref($self) && $self->has_keys('program');
     return $other;
 }
 
@@ -604,11 +605,7 @@ sub main {
 
 =for html <a name="piped_exec"></a>
 
-=head2 static piped_exec(string command) : string_ref
-
-=head2 static piped_exec(string command, string input) : string_ref
-
-=head2 static piped_exec(string command, string_ref input) : string_ref
+=head2 static piped_exec(string command, string input, boolean ignore_exit_code) : string_ref
 
 =head2 static piped_exec(string command, string_ref input, boolean ignore_exit_code) : string_ref
 
@@ -637,14 +634,43 @@ sub piped_exec {
     local($/) = undef;
     my($res) = <IN>;
     $res ||= '';
+    _trace($command, " -> ", $$res) if $_TRACE;
     unless (close(IN)) {
 	Bivio::Die->throw_die('DIE', {
 	    message => 'command died with non-zero status',
 	    entity => $command,
+	    output => \$res,
 	    exit_code => $?,
 	}) unless $ignore_exit_code;
     }
     return \$res;
+}
+
+=for html <a name="piped_exec_remote"></a>
+
+=head2 static piped_exec(string host, string command, string input, boolean ignore_exit_code) : string_ref
+
+=head2 static piped_exec(string host, string command, string_ref input, boolean ignore_exit_code) : string_ref
+
+Run I<command> remotely using C<ssh>.  Returns result.  Assumes remote shell
+understands single quote escaping.
+
+=cut
+
+sub piped_exec_remote {
+    my($self, $host, $command, $input, $ignore_exit_code) = @_;
+    if (defined($host)) {
+	$command =~ s/'/'\''/g;
+	$command = "ssh $host '($command) && echo OK$$'";
+    }
+    my($res) = $self->piped_exec($command, $input, $ignore_exit_code);
+    Bivio::Die->throw_die('DIE', {
+	message => 'remote command failed',
+	host => $host,
+	entity => $command,
+	output => $res,
+    }) unless $$res =~ s/OK$$\n// || $ignore_exit_code;
+    return $res;
 }
 
 =for html <a name="print"></a>
