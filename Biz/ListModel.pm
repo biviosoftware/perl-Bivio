@@ -94,7 +94,7 @@ May be overridden.
 =cut
 
 sub LOAD_ALL_SIZE {
-    return Bivio::Type::PageSize->get_max;
+    return Bivio::Type->get_instance('PageSize')->get_max;
 }
 
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
@@ -117,7 +117,6 @@ use Bivio::Biz::Model::SummaryList;
 use Bivio::Biz::QueryType;
 use Bivio::SQL::ListSupport;
 use Bivio::SQL::ListQuery;
-use Bivio::Type::PageSize;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -1478,7 +1477,7 @@ sub _unauth_load {
 
     # Add in count if not there
     unless ($query->has_keys('count')) {
-	my($count) = Bivio::Type::PageSize->get_default;
+	my($count) = Bivio::Type->get_instance('PageSize')->get_default;
 	if ($self->can('PAGE_SIZE')) {
 	    $count = $self->PAGE_SIZE();
 	}
