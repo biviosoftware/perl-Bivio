@@ -129,8 +129,6 @@ Creates and sends a mail message.
 sub execute {
     my($self, $req) = @_;
     my($msg) = Bivio::Mail::Outgoing->new();
-    my($recipients) = $self->render_attr('recipients', $req);
-    $msg->set_recipients($$recipients);
     my($from) = $self->render_attr('from', $req);
     $msg->set_header('From', $$from);
     my($email) = Bivio::Mail::Address->parse($$from);
@@ -138,11 +136,19 @@ sub execute {
 	unless $email;
     $msg->set_envelope_from($email);
 
-    foreach my $f (qw(to cc subject)) {
-	my($b) = '';
-	$msg->set_header(ucfirst($f), $b)
-		if $self->unsafe_render_attr($f, $req, \$b);
+    my($recipients) = $self->unsafe_render_attr('recipients', $req);
+    my(@recips) = ();
+    foreach my $header (qw(to cc subject)) {
+	my($value) = '';
+	if ($self->unsafe_render_attr($header, $req, \$value)) {
+	    $msg->set_header(ucfirst($header), $value);
+	    push(@recips, $value);
+	}
     }
+    $msg->set_recipients(
+	$recipients
+	? $$recipients
+        : join(',', @recips));
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	    if $req->has_keys('client_addr');
 
@@ -173,9 +179,8 @@ Initializes child widgets.
 
 sub initialize {
     my($self) = @_;
-    $self->initialize_attr('recipients');
     $self->initialize_attr('from');
-    foreach my $f (qw(body cc to subject headers log_file)) {
+    foreach my $f (qw(recipients body cc to subject headers log_file)) {
 	$self->unsafe_initialize_attr($f);
     }
     return;
