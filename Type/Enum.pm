@@ -178,7 +178,7 @@ sub compile {
 	$info{$d->[0]} = $d;
 	push(@list, $d->[0]);
 	$eval .= <<"EOF";
-	    \sub $name {return \\&$name;}
+	    sub $name {return \\&$name;}
 	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
 	    \$_INFO->{&$name} = \$_INFO->{'$name'};
 EOF
@@ -282,7 +282,7 @@ sub max {
 sub _get_info {
     my($self, $name, $field) = @_;
     my($info) = $_MAP{ref($self) || $self};
-    Carp::croak('not an enumerated type') unless defined($info);
+    Carp::croak($self, ': not an enumerated type') unless defined($info);
     return $info->{defined($name) ? $name : $self};
 }
 
