@@ -86,8 +86,7 @@ If false, this widget won't render the C<&gt;TABLE&lt;>tag.
 
 =item summarize : boolean [false]
 
-If true, a Bivio::Biz::Model::SummaryList will be created and
-rendered for the current list model.
+If true, the list's summary model will be rendered.
 
 =item summary_line_type : string
 
@@ -313,7 +312,7 @@ sub render {
 
     # summary
     if ($self->unsafe_get('summarize')) {
-	my($summary_list) = Bivio::Biz::Model::SummaryList->new([$list]);
+	my($summary_list) = $list->get_summary;
 	_render_row($summary_cells, $summary_list, $buffer);
     }
 
