@@ -198,6 +198,7 @@ sub initialize_fully {
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
     ) unless Bivio::UI::Facade->is_fully_initialized;
+    $self->put_durable(uri => $self->format_uri);
     return $self;
 }
 
