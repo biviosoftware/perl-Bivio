@@ -373,7 +373,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/payment
         Bivio::Biz::Model::RealmUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Type::EntryType->execute_member_payment
         Bivio::Biz::Model::RealmAccountList->execute_load_all
         Bivio::Biz::Model::SingleDepositForm
@@ -557,7 +557,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE&MEMBER_WRITE
         ?/accounting/member/fee
         Bivio::Biz::Model::RealmUserList->execute_load_this
-        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Action::TargetRealm->execute_this_member_or_withdrawn
         Bivio::Type::EntryType->execute_member_payment_fee
         Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
 	Bivio::Biz::Model::SingleDepositForm
@@ -2298,6 +2298,41 @@ my(@_CFG) = (
         Bivio::Biz::Model::SpinoffBasisForm
         Bivio::UI::HTML::Club::SpinoffBasis
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
+    )],
+    [qw(
+        CLUB_ACCOUNTING_TRANSACTION_EDIT
+        231
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/edit
+        Bivio::Biz::Model::ContextRedirectForm
+        Bivio::Biz::Action::EditTransaction
+        next=CLUB_ACCOUNTING_TRANSACTION_EDIT
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INVESTMENT_DELETE
+        232
+        CLUB
+        ACCOUNTING_WRITE
+        ?/accounting/investment/detail/delete
+        Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Action::InstrumentDelete
+    )],
+    [qw(
+        CLUB_ACCOUNTING_LEGACY_EDIT_FAILURE
+        233
+        CLUB
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_club_accounting_legacy_edit_failure
+    )],
+    [qw(
+        CLUB_ACCOUNTING_INSTRUMENT_DELETE_FAILURE
+        234
+        CLUB
+        DOCUMENT_READ
+        !
+        Bivio::UI::HTML::ErrorPages->execute_club_accounting_instrument_delete_faliure
     )],
 );
 
