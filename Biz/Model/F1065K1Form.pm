@@ -51,6 +51,7 @@ use Bivio::Type::F1065Partner;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
+my($math) = 'Bivio::Type::Amount';
 
 =head1 METHODS
 
@@ -147,7 +148,7 @@ sub execute_empty {
 	$tax->LONG_TERM_CAPITAL_GAIN->get_short_desc, 0);
     $properties->{other_portfolio_income} = $allocations->get_or_default(
 	$tax->MISC_INCOME->get_short_desc, 0);
-    $properties->{portfolio_deductions} = _negative(
+    $properties->{portfolio_deductions} = $math->neg(
 	    $allocations->get_or_default($tax->MISC_EXPENSE->get_short_desc,
 		    0));
 
@@ -155,7 +156,7 @@ sub execute_empty {
 	    ->get_investment_income($properties);
     $properties->{investment_expenses} = $properties->{portfolio_deductions};
 
-    $properties->{foreign_tax} = _negative(
+    $properties->{foreign_tax} = $math->neg(
 	    $allocations->get_or_default($tax->FOREIGN_TAX->get_short_desc,
 		    0));
     $properties->{foreign_income} = _get_foreign_income($self,
@@ -173,7 +174,7 @@ sub execute_empty {
     $properties->{property_distribution} =
 	    _get_stock_withdrawal_amount($self, $user, $date);
 
-    _round_all($self, $properties);
+    Bivio::Biz::Accounting::Tax->round_all($self, $properties);
     return;
 }
 
@@ -377,8 +378,8 @@ sub _get_foreign_income {
 
     # return the percentage of the total foreign income
     # in proportion to the foreign_tax percentage
-    return Bivio::Type::Amount->mul($total_foreign_income,
-	    Bivio::Type::Amount->div($foreign_tax, $total_foreign_tax));
+    return $math->neg($math->mul($total_foreign_income,
+	    $math->div($foreign_tax, $total_foreign_tax)));
 }
 
 # _get_irs_center(Bivio::Biz::Model::TaxK1 taxk1) : Bivio::Type::F1065IRSCenter
@@ -409,8 +410,7 @@ sub _get_percentage {
     my($date_own) = $ownership->get_ownership($date);
     return 0 unless exists($date_own->{$user->get('realm_id')});
 
-    return Bivio::Type::Amount->mul(
-	    $date_own->{$user->get('realm_id')}->[0], 100);
+    return $math->mul($date_own->{$user->get('realm_id')}->[0], 100);
 }
 
 # _get_return_type(Bivio::Biz::Model::RealmOwner user, string date) : Bivio::Type::F1065Return
@@ -511,34 +511,6 @@ sub _get_user_allocations {
     }
     # return an empty set on failure
     return Bivio::Collection::Attributes->new({});
-}
-
-# _negative(string amount) : string
-#
-# Returns the negative value for the specified amount.
-#
-sub _negative {
-    my($amount) = @_;
-    unless (Bivio::Type::Amount->compare($amount, 0) == 0) {
-	$amount = Bivio::Type::Amount->neg($amount);
-    }
-    return $amount;
-}
-
-# _round_all(hash_ref properties)
-#
-# Rounds all the Amount values to 2 decimal places.
-#
-sub _round_all {
-    my($self, $properties) = @_;
-    foreach my $field (keys(%$properties)) {
-	my($type) = $self->get_field_type($field);
-	if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
-	    $properties->{$field} = Bivio::Type::Amount->round(
-		    $properties->{$field}, 2);
-	}
-    }
-    return;
 }
 
 =head1 COPYRIGHT
