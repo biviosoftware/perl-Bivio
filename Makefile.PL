@@ -24,10 +24,7 @@ sub find {
 	push(@tests, $File::Find::name);
 	return;
     }
-    if (-d $_) {
-        !/^[.A-Z]|^t$/ && ($File::Find::prune = 1);
-        $_ eq 'Support' && ($File::Find::prune = 1);
-    }
+    -d $_ && !/^[.A-Z]|^t$/ && ($File::Find::prune = 1);
 }
 
 File::Find::find(\&find, '.');
