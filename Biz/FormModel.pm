@@ -722,7 +722,7 @@ Returns I<hidden_field_names> attribute.
 =cut
 
 sub internal_get_hidden_field_names {
-    return shift->internal_get_sql_support()->get('hidden_field_names');
+    return shift->get_info('hidden_field_names');
 }
 
 =for html <a name="internal_get_literals"></a>
@@ -750,7 +750,7 @@ Returns I<visible_field_names> attribute.
 =cut
 
 sub internal_get_visible_field_names {
-    return shift->internal_get_sql_support()->get('visible_field_names');
+    return shift->get_info('visible_field_names');
 }
 
 =for html <a name="internal_initialize"></a>
