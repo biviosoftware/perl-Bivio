@@ -747,7 +747,7 @@ sub _new {
 sub _parse_begin_date {
     my($attrs, $support, $die) = @_;
     $attrs->{begin_date} = _parse_date_value(
-	    $attrs->{e} || $attrs->{begin_date} || undef,
+	    $attrs->{b} || $attrs->{begin_date} || undef,
 	    0, $die);
     return;
 }
