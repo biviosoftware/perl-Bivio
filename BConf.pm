@@ -38,6 +38,8 @@ Set your $BCONF variable to point to this file, e.g. for bash:
 
 #=IMPORTS
 use Bivio::IO::Config;
+use Cwd ();
+use Sys::Hostname ();
 
 #=VARIABLES
 
@@ -47,22 +49,21 @@ use Bivio::IO::Config;
 
 =for html <a name="dev"></a>
 
-=head2 dev(int port, hash_ref overrides) : hash_ref
+=head2 dev(int http_port, hash_ref overrides) : hash_ref
 
 Development environment configuration.
 
 =cut
 
 sub dev {
-    my($proto, $port, $overrides) = @_;
+    my($proto, $http_port, $overrides) = @_;
 
-    my($pwd) = $^O eq 'MSWin32' ? `cmd /c cd` : `pwd`;
-    chomp($pwd);
-    my($host) = `hostname`;
-    chomp($host);
+    my($pwd) = Cwd::getcwd();
+    my($host) = Sys::Hostname::hostname();
+    my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     return _merge(
 	$overrides || {},
-	$proto->dev_overrides($pwd, $host),
+	$proto->dev_overrides($pwd, $host, $user, $http_port),
 	{
 	    'Bivio::Agent::Request' => {
 		can_secure => 0,
@@ -71,7 +72,7 @@ sub dev {
 		want_time => 0,
 	    },
 	    'Bivio::Test::Language::HTTP' => {
-		home_page_uri => "http://$host:$port",
+		home_page_uri => "http://$host:$http_port",
 	    },
 	    'Bivio::UI::FacadeComponent' => {
 		die_on_error => 1,
@@ -81,23 +82,23 @@ sub dev {
 		want_local_file_cache => 0,
 	    },
 	    'Bivio::UI::Text' => {
-		http_host => "$host:$port",
+		http_host => "$host:$http_port",
 		mail_host => $host,
 	    },
 	    main => {
 		http => {
-		    port => $port,
+		    port => $http_port,
 		},
 	    },
 	},
-	$proto->merge_overrides,
+	$proto->merge_overrides($host),
 	_base(),
     );
 }
 
 =for html <a name="dev_overrides"></a>
 
-=head2 static dev_overrides(string pwd, string host) : hash_ref
+=head2 static dev_overrides(string pwd, string host, string user, int http_port) : hash_ref
 
 Returns any overrides to the development configuration, called by
 L<dev|"dev">.  Returns an empty hash by default.
@@ -119,12 +120,40 @@ module.
 
 sub merge {
     my($proto, $overrides) = @_;
-    return _merge($overrides || {}, $proto->merge_overrides, _base());
+    return _merge($overrides || {},
+	$proto->merge_overrides(Sys::Hostname::hostname()), _base());
+}
+
+=for html <a name="merge_dir"></a>
+
+=head2 static merge_dir(hash_ref overrides) : hash_ref
+
+Reads the /etc/bconf.d directory for *.bconf files.  Merges in reverse
+alphabetical order.  I<overrides> take precedence over dir, and dir
+takes precedence over the rest.
+
+=cut
+
+sub merge_dir {
+    my($proto, $overrides) = @_;
+    return _merge(
+	$overrides || {},
+	(
+	    map {
+		my($file) = $_;
+		my($data) = do($file) || die($@);
+		die($file, ': did not return a hash_ref')
+		    unless ref($data) eq 'HASH';
+		$data;
+	    } sort(</etc/bconf.d/*.bconf>),
+	),
+	$proto->merge_overrides(Sys::Hostname::hostname()),
+	_base());
 }
 
 =for html <a name="merge_overrides"></a>
 
-=head2 abstract static merge_overrides(string pwd, string host) : hash_ref
+=head2 abstract static merge_overrides(string host) : hash_ref
 
 Returns any overrides to the base configuration, called by
 L<merge|"merge">.  Returns an empty hash by default.
@@ -145,30 +174,26 @@ sub _base {
     return {
 	'Bivio::IO::ClassLoader' => {
 	    delegates => {
-		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
-		'Bivio::Auth::Permission' =>
-		    'Bivio::Delegate::SimplePermission',
-		'Bivio::UI::FacadeChildType' =>
-		    'Bivio::Delegate::SimpleFacadeChildType',
-		'Bivio::UI::HTML::FormErrors' =>
-		    'Bivio::Delegate::SimpleFormErrors',
-		'Bivio::UI::HTML::WidgetFactory' =>
-		    'Bivio::Delegate::SimpleWidgetFactory',
-		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
-		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
+		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
+		'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
 		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
+		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
+		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
+		'Bivio::UI::FacadeChildType' => 'Bivio::Delegate::SimpleFacadeChildType',
+		'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
+		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
 	    },
 	    maps => {
-		Model => ['Bivio::Biz::Model'],
-		Type => ['Bivio::Type'],
-		HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
-		HTMLFormat => ['Bivio::UI::HTML::Format'],
-		MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
-		FacadeComponent => ['Bivio::UI'],
 		Action => ['Bivio::Biz::Action'],
+		FacadeComponent => ['Bivio::UI'],
+		HTMLFormat => ['Bivio::UI::HTML::Format'],
+		HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+		Model => ['Bivio::Biz::Model'],
 		TestHTMLParser => ['Bivio::Test::HTMLParser'],
+		Type => ['Bivio::Type'],
 	    },
 	},
 	'Bivio::Die' => {
