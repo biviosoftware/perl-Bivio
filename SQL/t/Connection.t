@@ -42,6 +42,10 @@ EOF
     ],
 ]);
 
+# sub _expect_statement(any proto, string method, array_ref params, array_ref result) : boolean
+#
+# Returns true if $result->[0] is a DBI::st.
+#
 sub _expect_statement {
     my($proto, $method, $params, $result) = @_;
     return 0 unless ref($result) eq 'ARRAY';
@@ -49,6 +53,10 @@ sub _expect_statement {
     return ref($st) && UNIVERSAL::isa($st, 'DBI::st') ? 1 : 0;
 }
 
+# sub _expect_one_row(any proto, string method, array_ref params, array_ref result) : boolean
+#
+# Returns true if $result->[0] is a DBI::st and we processed one row.
+#
 sub _expect_one_row {
     my($proto, $method, $params, $result) = @_;
     return 0 unless _expect_statement(@_);
