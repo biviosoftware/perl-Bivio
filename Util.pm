@@ -42,6 +42,7 @@ my($_THIS_YEAR) = (localtime)[5] + 1900;
 #
 # Returns if user answers yes from STDIN.  Otherwise, dies with "Aborted".
 sub are_you_sure {
+    return unless -t STDIN;
     my($prompt) = @_;
     $prompt ||= 'Are you sure?';
     print STDERR $prompt, " (yes or no) ";
