@@ -62,7 +62,11 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {};
 
     $fields->{content} = Bivio::UI::HTML::Widget::Join->new({
-	values => [['Bivio::Biz::Model::Mail', '->get_body']],
+	values => [
+	    Bivio::UI::HTML::Widget::MailPartList->new({
+		download_task => 'CLUB_COMMUNICATIONS_MESSAGE_PART',
+	    }),
+        ],
     });
     $fields->{content}->initialize;
 
