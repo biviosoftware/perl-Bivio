@@ -784,6 +784,16 @@ __PACKAGE__->compile(
 	undef,
 	'the end date may not be greater than today',
     ],
+    TICKER_NOT_FOUND => [
+	101,
+	undef,
+	'ticker symbol not found',
+    ],
+    QUOTES_NOT_AVAILABLE_AT_START => [
+	102,
+	undef,
+	'quotes for that ticker are not available from the specified start date',
+    ],
 );
 
 #=PRIVATE METHODS
