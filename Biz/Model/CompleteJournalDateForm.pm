@@ -43,8 +43,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =head2 execute_empty()
 
-Sets default dates, using the existing report_date, and the start_date
-user preference.
+Sets default dates, using the date boundaries for the existing report_date.
 
 =cut
 
@@ -65,7 +64,7 @@ sub execute_empty {
 
 =head2 execute_ok()
 
-Sets the start_date and report_date request values. Saves user preferences.
+Sets the start and end date values.
 
 =cut
 
