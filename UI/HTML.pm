@@ -535,13 +535,17 @@ sub initialize_standard_support {
 	    $self->get_facade->get('Bivio::UI::Icon')
 	    ->get_width_as_html($self->get_value('logo_icon')));
 
+    # Home page widgets
+    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Util::Filtrum');
+    $self->group(filtrum_holdings => $_W->join([
+	[sub {${Bivio::Biz::Util::Filtrum->realm_file('holdings_file')}}],
+    ]));
+    $self->group(home_login => $_W->load_and_new('HomeLogin'));
+
     $self->group(club_counter => $_W->join([
 	[sub {Bivio::Biz::Model::Club->count_all}],
     ]));
-
-    $self->group(user_counter => $_W->join([
-	[sub {Bivio::Biz::Model::User->count_all}],
-    ]));
+#    month_day widget;
     return;
 }
 
