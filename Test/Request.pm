@@ -110,9 +110,7 @@ Sets up the default facade.  Sets up http unless already setup.
 =cut
 
 sub setup_facade {
-    my($self) = @_;
-    $self = $self->get_instance unless ref($self);
-    $self->setup_http unless $self->unsafe_get('r');
+    my($self) = shift->setup_http;
     Bivio::ShellUtil->initialize_ui;
     return $self;
 }
@@ -134,6 +132,7 @@ Redirects are ignored.
 sub setup_http {
     my($self, $cookie_class) = @_;
     $self = $self->get_instance unless ref($self);
+    return $self if $self->unsafe_get('r');
     $self->ignore_redirects(1);
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER->execute($self, 1);
