@@ -446,12 +446,12 @@ my($_XML_TO_LATEX_PROGRAM) = {
     },
     programlisting => sub {
         $programlisting = 1;
-	return '\begin{quote}\verb#';
+	return '\newline\verb#';
     },
     '/programlisting' => sub {
         $programlisting = 0;
         _end_verb();
-	return '\end{quote}';
+	return '\newline';
     },
     quote => '``',
     '/quote' => '\'\'',
@@ -634,6 +634,8 @@ sub _clean_tex {
     $tex =~ s/\&lt;/</g;
     $tex =~ s/\\&gt;/>/g;
     $tex =~ s/\&gt;/>/g;
+    $tex =~ s{(?<=^\\verb#)(\s+)}{' ' x int(length($1) / 2)}meg;
+    return;
 }
 
 # _count_words(array_ref children) : int
@@ -659,9 +661,12 @@ sub _count_words {
 # Adds necessary information to end of tex string
 #
 sub _end_tex {
-    $tex .= '\backmatter' . "\n";
-    $tex .= '\printindex' . "\n";
-    $tex .= '\end{document}' . "\n";
+    $tex .= <<'EOF';
+\backmatter
+\printindex
+\end{document}
+EOF
+    return;
 }
 
 # _end_verb()
@@ -849,33 +854,37 @@ sub _process_xml_file {
 #
 sub _start_tex {
     my($paper_size) = @_;
-    $tex .= '\documentclass[11pt';
-    $tex .= ',letterpaper' if $paper_size eq "letter";
-    $tex .= ',a4paper' if $paper_size eq "a4";
-    $tex .= ',makeidx]{book}' . "\n";
-    $tex .= '\usepackage{color}' . "\n";
-    $tex .= '\usepackage{graphicx}' . "\n";
-    $tex .= '\usepackage{alltt}' . "\n";
-    $tex .= '\usepackage{fancyhdr}' . "\n";
-    $tex .= '\usepackage{makeidx}' . "\n";
-    $tex .= '\RequirePackage[pdftex,pdfpagemode=none, pdftoolbar=true,
-pdffitwindow=true,pdfcenterwindow=true]{hyperref}' . "\n";
-    $tex .= '\pagestyle{fancy}' . "\n";
-    $tex .= '\fancyhf{}' . "\n";
-    $tex .= '\makeindex' . "\n";
-    $tex .= '\renewcommand{\headrulewidth}{0}' . "\n";
-    $tex .= '\renewcommand{\footrulewidth}{0}' . "\n";
-    $tex .= '\lfoot{Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}' . "\n";
-    $tex .= '\rfoot{\thepage}' . "\n";
-    $tex .= '\begin{document}' . "\n";
-    $tex .= '\frontmatter';
-    $tex .= '\title{Extreme Programming in Perl}' . "\n";
-    $tex .= '\author{Robert Nagler}' . "\n";
-    # Why doesn't this center?????
-    $tex .= '\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}' . "\n";
-    $tex .= '\maketitle' . "\n";
-    $tex .= '\thispagestyle{empty}' . "\n";
-    $tex .= '\tableofcontents' . "\n";
+    $tex .= '\documentclass[11pt,' . $paper_size . "paper,makeidx]{book}\n"
+	. <<'EOF';
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{alltt}
+\usepackage{fancyhdr}
+\usepackage{makeidx}
+% Need to figure out these
+% \topmargin 0in
+% \footskip 1in
+% \oddsidemargin -.5in
+% \evensidemargin .5in
+\RequirePackage[pdftex,pdfpagemode=none, pdftoolbar=true, pdffitwindow=true,pdfcenterwindow=true]{hyperref}
+\pagestyle{fancy}
+\fancyhf{}
+\makeindex
+\renewcommand{\headrulewidth}{0}
+\renewcommand{\footrulewidth}{0}
+\lfoot{Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}
+\rfoot{\thepage}
+\begin{document}
+\frontmatter
+\title{Extreme Programming in Perl}
+\author{Robert Nagler}
+% Why doesn't this center?
+\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}
+\maketitle
+\thispagestyle{empty}
+\tableofcontents
+EOF
+    return;
 }
 
 # _to_html(string tag, array_ref children, hash_ref clipboard) : string_ref
