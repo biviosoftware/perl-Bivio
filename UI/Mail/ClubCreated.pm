@@ -52,6 +52,8 @@ sub execute {
     my($url) = $club->format_http();
     my($recipient) = $club->format_email();
     my($http) = $req->format_http_prefix;
+    my($subscribe) = $http
+	    .$_VS->vs_format_uri_static_site($req, 'need-link-to-form'');
     my($as) = $http
 	    .$_VS->vs_format_uri_static_site($req, 'hm/account-sync.html');
     my($ak) = $http
@@ -69,20 +71,20 @@ Use bivio to:
     * Keep your club books.
     * Generate financial and performance reports.
     * Exchange messages and documents with club members.
+    * Fill out IRS tax forms.
 
-Did you know you can reconcile your books electronically?  AccountSync
+Your club will have complete access to bivio for 3 full months (only tax
+features are disabled during the free trial).  You can subscribe at any
+time by visiting:
+
+    $subscribe
+
+Upgrade your subscription to AccountSync, and never enter a transaction
+by hand again - your books will be updated automatically.  AccountSync
 works with many popular brokerages, including Charles Schwab, E*Trade,
-TD Waterhouse, Ameritrade and BUYandHOLD.  Sign up and avoid entering
-transactions by hand:
+TD Waterhouse, Ameritrade and BUYandHOLD.  
 
     $as
-
-Promote yourself to CFO with full service bookkeeping.  Your bivio
-AccountKeeper does all the work.  We will even print, sign and send
-your club IRS tax forms, all for only \$195 per year (certain
-restrictions apply).  To learn more, please visit:
-
-    $ak
 
 A final tip.  To send a message to your club, use this email address:
 
