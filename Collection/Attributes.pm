@@ -83,10 +83,12 @@ default.
 
 sub ancestral_get {
     my($self, $name, $default) = @_;
-    my($v) = $self->unsafe_get($name);
-    return $v if defined($v);
-    my($p) = $self->unsafe_get('parent');
-    return $p->ancestral_get($name, $default) if defined($p);
+    my($fields) = $self->{$_PACKAGE};
+    while (1) {
+	return $fields->{$name} if defined($fields->{$name});
+	last unless defined($fields->{parent});
+	$fields = $fields->{parent}->{$_PACKAGE};
+    }
     return $default if int(@_) > 2;
     Carp::croak("$name: ancestral attribute not found");
 }
