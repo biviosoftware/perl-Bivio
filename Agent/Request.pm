@@ -222,6 +222,7 @@ use Bivio::Auth::Realm::General;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
 use Bivio::Auth::RoleSet;
+use Bivio::Biz::Action::DemoClub;
 use Bivio::Biz::FormModel;
 use Bivio::Biz::Model::Preferences;
 use Bivio::Biz::Model::UserRealmList;
@@ -951,7 +952,8 @@ sub internal_redirect_realm {
 			    'misconfiguration of DEMO_REDIRECT task')
 				if Bivio::Agent::TaskId::DEMO_REDIRECT()
 					eq $new_task;
-		    my($demo_name) = $auth_user->format_demo_club_name;
+		    my($demo_name) = Bivio::Biz::Action::DemoClub
+			    ->format_demo_club_name($auth_user);
 		    my($demo_realm)
 			    = Bivio::Biz::Model::RealmOwner->new($self);
 		    # Only redirect to personal demo club if found
@@ -1218,7 +1220,8 @@ sub set_realm {
     return unless $new_realm->get('type') == Bivio::Auth::RealmType::CLUB();
 
     # Don't save the demo club as a visited club
-    return if $new_realm->get('owner')->is_demo_club();
+    return if Bivio::Biz::Action::DemoClub->is_demo_club(
+	    $new_realm->get('owner'));
 
     # Don't save if not a guest or member
     return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_CLUB_ROLES,
@@ -1418,7 +1421,7 @@ sub _get_realm {
 	    my($rr) = $r->{'RealmUser.role'}->as_int;
 #TODO: Roles aren't necessarily ordered
 	    next unless  $rr > $role;
-	    next if Bivio::Biz::Model::RealmOwner->is_demo_club(
+	    next if Bivio::Biz::Action::DemoClub->is_demo_club(
 		    $r->{'RealmOwner.name'});
 	    $realm_id = $r->{'RealmUser.realm_id'};
 	    $role = $rr;
