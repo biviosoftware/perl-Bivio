@@ -7,7 +7,7 @@ $_ = $Bivio::Delegate::SimpleRealmName::VERSION;
 
 =head1 NAME
 
-Bivio::Delegate::SimpleRealmName - realm owner name, e.g. club or user name
+Bivio::Delegate::SimpleRealmName - validates RealmOwner.name
 
 =head1 RELEASE SCOPE
 
@@ -30,37 +30,13 @@ use Bivio::Type::Name;
 
 =head1 DESCRIPTION
 
-C<Bivio::Delegate::SimpleRealmName> RealmOwner.name.
+C<Bivio::Delegate::SimpleRealmName> validates RealmOwner.name values.
 
 =cut
 
 =head1 CONSTANTS
 
 =cut
-
-=for html <a name="DEMO_CLUB"></a>
-
-=head2 DEMO_CLUB : string
-
-Name used for the demo club.
-
-=cut
-
-sub DEMO_CLUB {
-    return 'demo_club';
-}
-
-=for html <a name="DEMO_CLUB_SUFFIX"></a>
-
-=head2 DEMO_CLUB_SUFFIX : string
-
-Suffix for a user's demo club.
-
-=cut
-
-sub DEMO_CLUB_SUFFIX {
-    return '_'.DEMO_CLUB();
-}
 
 =for html <a name="OFFLINE_PREFIX"></a>
 
@@ -74,25 +50,11 @@ sub OFFLINE_PREFIX {
     return '=';
 }
 
-=for html <a name="TEST_SUFFIX"></a>
-
-=head2 TEST_SUFFIX : string
-
-Convention which identifies of test clubs and users.
-
-=cut
-
-sub TEST_SUFFIX {
-    return '_test';
-}
-
 #=IMPORTS
 use Bivio::HTML;
 use Bivio::TypeError;
 
 #=VARIABLES
-my($_PACKAGE) = __PACKAGE__;
-my($_DEMO_CLUB_SUFFIX) = DEMO_CLUB_SUFFIX();
 my($_OFFLINE_PREFIX) = OFFLINE_PREFIX();
 
 =head1 METHODS
@@ -103,8 +65,12 @@ my($_OFFLINE_PREFIX) = OFFLINE_PREFIX();
 
 =head2 static from_literal(string value) : array
 
+Trims whitespace and checks syntax an returns (value).
+
 Returns C<undef> if the name is empty or zero length.
-Checks syntax and returns L<Bivio::TypeError|Bivio::TypeError>.
+
+Return (C<undef>, L<Bivio::TypeError::REALM_NAME|Bivio::TypeError::REALM_NAME>)
+if the syntax check fails.
 
 =cut
 
@@ -118,8 +84,6 @@ sub from_literal {
     # Must begin with a letter and be at least three chars
     return (undef, Bivio::TypeError::REALM_NAME())
 	    unless $value =~ /^[a-z][a-z0-9_]{2,}$/;
-    return (undef, Bivio::TypeError::DEMO_CLUB_SUFFIX())
-	    if $value =~ /$_DEMO_CLUB_SUFFIX/o;
     return $value;
 }
 
