@@ -42,6 +42,45 @@ C<Bivio::UI::PDF::Widget>
 
 =cut
 
+=for html <a name="get_location_on_page"></a>
+
+=head2 get_location_on_page() : array_ref
+
+=head2 get_location_on_page(float x, float y) : array_ref
+
+Returns the [x, y] coordinate of the widget's location on the page.
+
+=cut
+
+sub get_location_on_page {
+    my($self, $x, $y) = @_;
+    my($location) = defined($x) ? [$x, $y] : [@{$self->get('location')}];
+    my($parent) = $self->unsafe_get('parent');
+
+    while ($parent) {
+        my($parent_location) = $parent->unsafe_get('location');
+        if ($parent_location) {
+            $location->[0] += $parent_location->[0];
+            $location->[1] += $parent_location->[1];
+        }
+        $parent = $parent->unsafe_get('parent');
+    }
+    return $location;
+}
+
+=for html <a name="get_pdf_y"></a>
+
+=head2 get_pdf_y(Bivio::UI::PDF pdf, string y) : string
+
+Returns the y location in PDF coordinates.
+
+=cut
+
+sub get_pdf_y {
+    my($self, $pdf, $y) = @_;
+    return $pdf->get_value('pageheight', 0) - $y;
+}
+
 =for html <a name="render"></a>
 
 =head2 abstract render(any source, Bivio::UI::PDF pdf)
