@@ -67,6 +67,7 @@ sub new {
 	start_time => $start_time,
 	reply => Bivio::Agent::HTTP::Reply->new($r),
 	r => $r,
+	client_addr => $r->connection->remote_ip,
     });
     my($uri) = $r->uri;
     my($task_id, $auth_realm)
