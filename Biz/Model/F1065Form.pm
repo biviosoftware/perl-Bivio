@@ -203,11 +203,6 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'business_start_date',
-		type => 'Date',
-		constraint => 'NONE',
-	    },
-	    {
 		name => 'return_type',
 		type => 'F1065Return',
 		constraint => 'NONE',
@@ -280,6 +275,11 @@ sub internal_initialize {
 	    {
 		name => 'transfer_of_interest',
 		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'number_of_8865_forms',
+		type => 'Amount',
 		constraint => 'NONE',
 	    },
 	    {
@@ -409,7 +409,6 @@ Returns a single row with calculated values.
   B       F1065Form.principal_service
   C       F1065Form.business_code
   D       Club.TaxId.tax_id
-  E       F1065Form.business_start_date
   G       F1065Form.return_type
   H       F1065Form.accounting_method
   I       F1065Form.number_of_k1s
@@ -428,6 +427,7 @@ Returns a single row with calculated values.
    9      F1065Form.foreign_account_country
   10      F1065Form.foreign_trust
   11      F1065Form.transfer_of_interest
+  12      F1065Form.number_of_8865_forms
   bottom
   id      User.TaxId.tax_id
   name    User.RealmOwner.display_name
@@ -484,13 +484,13 @@ sub internal_load_rows {
 	business_activity => 'Finance',
 	principal_service => 'Investment Club',
 	business_code => '525990',
-	business_start_date => undef,
 	accounting_method => Bivio::Type::F1065AccountingMethod->CASH,
 	number_of_k1s => _get_member_count($self),
 	three_requirements => _meets_three_requirements($self, $date),
 	foreign_partners => _has_foreign_partners($self, $date),
 	foreign_account => 0,
 	transfer_of_interest => _has_transfer_of_interest($self, $date),
+	number_of_8865_forms => 0,
 	interest_income => $income->get($tax->INTEREST->get_short_desc),
 	dividend_income => $income->get($tax->DIVIDEND->get_short_desc),
 	net_stcg => $schedule_d->get('net_stcg'),
@@ -554,10 +554,11 @@ sub _calculate_income {
     $properties->{net_income} = _add($properties,
 	    qw(interest_income dividend_income net_stcg	net_ltcg
                other_portfolio_income));
+
+    # subtract deductions
     $properties->{net_income} = $_M->sub(
-	    $properties->{net_income}, $properties->{portfolio_deductions});
-    $properties->{net_income} = $_M->sub(
-	    $properties->{net_income}, $properties->{foreign_tax});
+	    $properties->{net_income}, _add($properties,
+		    qw(portfolio_deductions margin_interest foreign_tax)));
 
     # passive_income
     $properties->{passive_income} = $properties->{foreign_income};
