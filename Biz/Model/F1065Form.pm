@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::F1065Form;
 use strict;
 $Bivio::Biz::Model::F1065Form::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::F1065Form::VERSION;
 
 =head1 NAME
 
@@ -44,6 +45,25 @@ use Bivio::Type::F1065ForeignTax;
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
+my($_M) = 'Bivio::Type::Amount';
+
+=head1 FACTORIES
+
+=cut
+
+=for html <a name="new"></a>
+
+=head2 static new(Bivio::Agent::Request req) : Bivio::Biz::Model::F1065Form
+
+Creates a new 1065 information model.
+
+=cut
+
+sub new {
+    my($self) = Bivio::Biz::ListModel::new(@_);
+    $self->{$_PACKAGE} = {};
+    return $self;
+}
 
 =head1 METHODS
 
@@ -87,10 +107,10 @@ sub get_foreign_income {
 		    $start_date, $date,
 		    $req->get('auth_id')]);
     while (my $row = $sth->fetchrow_arrayref) {
-	my($date, $amount, $inst_id) = @$row;
+	my($txn_date, $amount, $inst_id) = @$row;
 
-	$amount = Bivio::Type::Amount->neg($amount);
-	$total_amount = Bivio::Type::Amount->add($total_amount, $amount);
+	$amount = $_M->neg($amount);
+	$total_amount = $_M->add($total_amount, $amount);
 
 	my($div_amount) = 0;
 	# get the corresponding dividend
@@ -105,11 +125,11 @@ sub get_foreign_income {
                 AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
                 AND realm_transaction_t.realm_id=?",
 		[$inst_id, Bivio::Type::TaxCategory::DIVIDEND->as_int,
-			$date, $req->get('auth_id')]);
+			$txn_date, $req->get('auth_id')]);
 	while (my $row2 = $sth2->fetchrow_arrayref) {
 	    $div_amount = $row2->[0];
 	}
-	$total_amount = Bivio::Type::Amount->add($total_amount, $div_amount);
+	$total_amount = $_M->add($total_amount, $div_amount);
     }
     return $total_amount;
 }
@@ -119,6 +139,7 @@ sub get_foreign_income {
 =head2 static get_investment_income(hash_ref properties) : string
 
 Returns the investment_income amount calculated from existing properties.
+Also called by the F1065K1Form.
 
 =cut
 
@@ -414,79 +435,58 @@ Returns a single row with calculated values.
 
 sub internal_load_rows {
     my($self) = @_;
-    my($fields) = $self->{$_PACKAGE} = {};
+    my($fields) = $self->{$_PACKAGE};
     my($req) = $self->get_request;
-    my($properties) = {};
 
     my($date) = $req->get('report_date');
-    my($tax1065) = Bivio::Biz::Model::Tax1065->new($req);
-    $tax1065->load_or_default($date);
     my($tax) = 'Bivio::Type::TaxCategory';
 
-    my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList');
-    $income->reset_cursor;
-    $income->next_row || die("couldn't load income/expense list");
+    my($income) = $req->get('Bivio::Biz::Model::IncomeAndExpenseList')
+	    ->set_cursor_or_die(0);
+    my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDList')
+	    ->set_cursor_or_die(0);
 
-    my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDList');
-    $schedule_d->set_cursor_or_die(0);
+    my($properties) = {
+	%{Bivio::Biz::Model::Tax1065->new($req)
+		    ->load_or_default($date)->get_shallow_copy()},
+	business_activity => 'Finance',
+	principal_service => 'Investment Club',
+	business_code => '525990',
+	business_start_date => undef,
+	accounting_method => Bivio::Type::F1065AccountingMethod->CASH,
+	number_of_k1s => _get_member_count($self),
+	three_requirements => _meets_three_requirements($self, $date),
+	foreign_partners => _has_foreign_partners($self, $date),
+	foreign_account => 0,
+	transfer_of_interest => _has_transfer_of_interest($self, $date),
+	interest_income => $income->get($tax->INTEREST->get_short_desc),
+	dividend_income => $income->get($tax->DIVIDEND->get_short_desc),
+	net_stcg => $schedule_d->get('net_stcg'),
+	net_ltcg => $schedule_d->get('net_ltcg'),
+	other_portfolio_income => $income->get(
+		$tax->MISC_INCOME->get_short_desc),
+	portfolio_deductions => $_M->neg(
+		$income->get($tax->MISC_EXPENSE->get_short_desc)),
+	foreign_income => $self->get_foreign_income($self->get_request, $date),
+	foreign_tax => $_M->neg($income->get(
+		$tax->FOREIGN_TAX->get_short_desc)),
+	foreign_income_country => '',
+	tax_exempt_interest => $income->get(
+		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc),
+	cash_distribution => _get_cash_withdrawal_amount($self, $date),
+	property_distribution => _get_stock_withdraw_amount($self, $date),
+    };
 
-    $properties->{business_activity} = 'Finance';
-    $properties->{principal_service} = 'Investment Club';
-    $properties->{business_code} = '525990';
-    $properties->{business_start_date} = undef;
-    $properties->{return_type} = $tax1065->get('return_type');
-    $properties->{accounting_method} =
-	    Bivio::Type::F1065AccountingMethod->CASH;
-    $properties->{number_of_k1s} = _get_member_count($self, $date);
-    $properties->{partnership_type} = $tax1065->get('partnership_type');
-    $properties->{partner_is_partnership} =
-	    $tax1065->get('partner_is_partnership');
-    $properties->{partnership_is_partner} =
-	    $tax1065->get('partnership_is_partner');
-    $properties->{consolidated_audit} =
-	    $tax1065->get('consolidated_audit');
-    $properties->{three_requirements} = _meets_three_requirements($self,
-	    $date);
-    $properties->{foreign_partners} = _has_foreign_partners($self, $date);
-    $properties->{publicly_traded} = $tax1065->get('publicly_traded');
-    $properties->{tax_shelter} = $tax1065->get('tax_shelter');
-    $properties->{foreign_account} = 0;
-    $properties->{foreign_account_country} =
-	    $tax1065->get('foreign_account_country');
-    $properties->{foreign_trust} = $tax1065->get('foreign_trust');
-    $properties->{transfer_of_interest} = _has_transfer_of_interest($self,
-	    $date);
-
-    $properties->{interest_income} = $income->get(
-	    $tax->INTEREST->get_short_desc);
-    $properties->{dividend_income} = $income->get(
-	    $tax->DIVIDEND->get_short_desc);
-    $properties->{net_stcg} = $schedule_d->get('net_stcg');
-    $properties->{net_ltcg} = $schedule_d->get('net_ltcg');
-    $properties->{other_portfolio_income} = $income->get(
-	    $tax->MISC_INCOME->get_short_desc);
-    $properties->{portfolio_deductions} = Bivio::Type::Amount->neg(
-	    $income->get($tax->MISC_EXPENSE->get_short_desc));
-    $properties->{investment_income} = $self->get_investment_income(
-	    $properties);
-    $properties->{investment_expenses} = $properties->{portfolio_deductions};
-    $properties->{foreign_income} = $self->get_foreign_income(
-	    $self->get_request, $date);
-    $properties->{foreign_tax} = Bivio::Type::Amount->neg($income->get(
-	    $tax->FOREIGN_TAX->get_short_desc));
-    $properties->{foreign_income_country} = '';
-    $properties->{foreign_income_type} = $properties->{foreign_tax} == 0
-	    ? '' : 'Passive';
-    $properties->{foreign_tax_type} = $properties->{foreign_tax} == 0
-	    ? Bivio::Type::F1065ForeignTax->UNKNOWN
-	    : Bivio::Type::F1065ForeignTax->PAID;
-    $properties->{tax_exempt_interest} = $income->get(
-	    $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc);
-    $properties->{cash_distribution} =
-	    _get_cash_withdrawal_amount($self, $date);
-    $properties->{property_distribution} =
-	    _get_stock_withdraw_amount($self, $date);
-    $properties->{draft} = $tax1065->get('draft');
+    $properties = {
+	%$properties,
+	investment_income => $self->get_investment_income($properties),
+	investment_expenses => $properties->{portfolio_deductions},
+	foreign_income_type => ($properties->{foreign_tax} == 0
+	        ? '' : 'Passive'),
+	foreign_tax_type => ($properties->{foreign_tax} == 0
+	        ? Bivio::Type::F1065ForeignTax->UNKNOWN
+	        : Bivio::Type::F1065ForeignTax->PAID),
+    };
 
     Bivio::Biz::Accounting::Tax->round_all($self, $properties);
     _calculate_income($self, $properties);
@@ -504,7 +504,7 @@ sub _add {
     my($properties, @fields) = @_;
     my($sum) = 0;
     foreach my $field (@fields) {
-	$sum = Bivio::Type::Amount->add($sum, $properties->{$field});
+	$sum = $_M->add($sum, $properties->{$field});
     }
     return $sum;
 }
@@ -521,16 +521,16 @@ sub _calculate_income {
     $properties->{net_income} = _add($properties,
 	    qw(interest_income dividend_income net_stcg	net_ltcg
                other_portfolio_income));
-    $properties->{net_income} = Bivio::Type::Amount->sub(
+    $properties->{net_income} = $_M->sub(
 	    $properties->{net_income}, $properties->{portfolio_deductions});
-    $properties->{net_income} = Bivio::Type::Amount->sub(
+    $properties->{net_income} = $_M->sub(
 	    $properties->{net_income}, $properties->{foreign_tax});
 
     # passive_income
     $properties->{passive_income} = $properties->{foreign_income};
 
     # active_income
-    $properties->{active_income} = Bivio::Type::Amount->sub(
+    $properties->{active_income} = $_M->sub(
 	    $properties->{net_income}, $properties->{passive_income});
     return;
 }
@@ -557,33 +557,15 @@ sub _get_cash_withdrawal_amount {
     return $fields->{cash_withdrawal};
 }
 
-# _get_member_count(string date) : int
+# _get_member_count() : int
 #
 # Returns the number of members who were active in the club for the
-# specified year.
+# current year.
 #
 sub _get_member_count {
-    my($self, $date) = @_;
-
-    # get tax year start
-    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
-	    $date);
-
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT COUNT(DISTINCT member_entry_t.user_id)
-            FROM realm_transaction_t, entry_t, member_entry_t
-            WHERE entry_t.realm_transaction_id
-                =realm_transaction_t.realm_transaction_id
-            AND member_entry_t.entry_id=entry_t.entry_id
-            AND realm_transaction_t.date_time BETWEEN
-                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
-            AND realm_transaction_t.realm_id=?",
-	    [$start_date, $date, $self->get_request->get('auth_id')]);
-    my($count) = 0;
-    while (my $row = $sth->fetchrow_arrayref) {
-	$count = $row->[0] || 0;
-    }
-    return $count;
+    my($self) = @_;
+    return $self->get_request->get('Bivio::Biz::Model::MemberAllocationList')
+	    ->get_result_set_size;
 }
 
 # _get_stock_withdraw_amount(string date) : string
