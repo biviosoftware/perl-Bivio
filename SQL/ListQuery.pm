@@ -134,6 +134,9 @@ page number of next page.
 An arbitrary search string.  The only parsing done by this module
 is to trim blanks and set to undef if zero length.
 
+You can pass C<search> in the query string and it will be parsed
+if the single character attribute doesn't exist.
+
 =item this : array_ref
 
 The primary key values for this item.  The query should be to
@@ -473,20 +476,6 @@ sub get_hidden_field_values {
 	push(@res, 'o' => $o);
     }
     return \@res;
-}
-
-=for html <a name="get_search_as_html"></a>
-
-=head2 get_search_as_html() : string
-
-Return the escaped search string if any.
-
-=cut
-
-sub get_search_as_html {
-    my($self) = @_;
-    my($search) = $self->get('search');
-    return defined($search) ? Bivio::HTML->escape($search) : '';
 }
 
 =for html <a name="get_sort_order_for_type"></a>
@@ -829,14 +818,18 @@ sub _parse_pk {
 
 # _parse_search(hash_ref attrs, Bivio::SQL::Support support, ref die)
 #
-# Parse the search string.  Make sure it doesn't have blanks.
+# Parse the search string.  Make sure it doesn't have blanks.  Allows
+# "s" or "search" to be supplied.
 #
 sub _parse_search {
     my($attrs, $support, $die) = @_;
-    my($value) = $attrs->{'s'};
+    my($value) = defined($attrs->{'s'}) ? $attrs->{'s'} : $attrs->{'search'};
     if (defined($value)) {
 	$value =~ s/^\s+|\s+$//g;
-	$attrs->{search} = $value, return if length($value);
+	if (length($value)) {
+	    $attrs->{search} = $value;
+	    return;
+	}
     }
     $attrs->{search} = undef;
     return;
