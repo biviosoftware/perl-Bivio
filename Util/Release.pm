@@ -435,12 +435,11 @@ sub _create_rpm_spec {
     my($self, $specin, $output) = @_;
     my($version) = $self->get('version');
 
-    if ($specin =~ /\.spec$/) {
-        $specin = $_START_DIR.'/'.$specin unless $specin =~ m!^/!;
-    } else {
+    unless ($specin =~ /\.spec$/) {
         $specin = "$_CVS_RPM_SPEC_DIR/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
     }
+    $specin = $_START_DIR.'/'.$specin unless $specin =~ m!^/!;
     my($spec_dir) = $specin;
     $spec_dir =~ s#[^/]+$##;
     my($base_spec) =  _read_all($specin);
