@@ -54,8 +54,11 @@ Value of button.
 =cut
 
 #=IMPORTS
+use Bivio::UI::Font;
+use Bivio::Util;
 
 #=VARIABLES
+my($_FONT_PREFIX, $_FONT_SUFFIX) = Bivio::UI::Font->as_html('RADIO');
 my($_PACKAGE) = __PACKAGE__;
 
 =head1 FACTORIES
@@ -118,13 +121,13 @@ sub render {
 	$fields->{prefix} = '<nobr><input name='
 		.$form->get_field_name_for_html($field).' type=radio';
 	$fields->{suffix} = ' value="'.$value->to_html($value)."\">\n&nbsp;"
-		.Bivio::Util::escape_html($self->get('label'))
-		.'</nobr>';
+		.$_FONT_PREFIX. Bivio::Util::escape_html($self->get('label'))
+		.$_FONT_SUFFIX.'</nobr>';
 	$fields->{initialized} = 1;
     }
 
     $$buffer .= $fields->{prefix}
-	    .($value eq $form->get($field)? ' checked' : '')
+	    .($value eq $form->get($field) ? ' checked' : '')
 	    .$fields->{suffix};
     return;
 }
