@@ -2207,8 +2207,8 @@ my(@_CFG) = (
         PUBLIC_CLUBS
         218
         GENERAL
-        DOCUMENT_READ
-        pub/clubs
+        ADMIN_WRITE
+        adm/clubs
         Bivio::Biz::Model::PublicClubList->execute_load_all_with_query
         Bivio::UI::HTML::General::PublicClubs
     )],
