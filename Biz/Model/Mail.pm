@@ -133,9 +133,6 @@ sub create {
     $self->SUPER::create($values);
     $mail_id = $self->get('mail_id');
 
-# TODO: Remove this procedure after the migration is completed
-    $self->setup_club($realm_owner);
-
     my($volume) = $_MAIL_VOLUME;
     my($user_id) = $req->unsafe_get('auth_user_id');
     # Get user of root directory if we don't have an auth_user
@@ -249,38 +246,6 @@ sub delete {
         $file->delete;
     }
     return $self->SUPER::delete(@_);
-}
-
-=for html <a name="setup_club"></a>
-
-=head2 setup_club(Bivio::Auth::Realm realm) :
-
-Setup necessary volumes. Only needed during the transition phase.
-Can be removed afterwards because newly created clubs will have
-all current volumes initialized.
-
-=cut
-
-sub setup_club {
-    my($self, $realm_owner) = @_;
-    my($req) = $self->unsafe_get_request;
-
-    my($club_id) = $realm_owner->get('realm_id');
-    my($user_id) = Bivio::Biz::Model::RealmAdminList->get_first_admin($realm_owner);
-
-    # Initialize club's file volumes MAIL and MAIL_CACHE, if necessary
-    my($v);
-    for $v ($_MAIL_VOLUME, $_CACHE_VOLUME) {
-        my($file) = Bivio::Biz::Model::File->new($req);
-        # Try to load top-level directory for this volume
-        unless( $file->unsafe_load(file_id => $v->get_root_directory_id($club_id)) ) {
-            # Create top-level volume
-            _trace('Initializing volume ', $v, ' for club ', $club_id,
-                    ', user ', $user_id) if $_TRACE;
-            $file->create_volume($club_id, $user_id, $v);
-        }
-    }
-    return;
 }
 
 =for html <a name="cache_parts"></a>
