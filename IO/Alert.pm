@@ -34,16 +34,21 @@ redefinitions here.
 
 =cut
 
-use Bivio::IO::Config;
-
 #=VARIABLES
-# What perl outputs on "die" or "warn" without a newline
-my($_PERL_MSG_AT_LINE) = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
-my($_PACKAGE) = __PACKAGE__;
-my($_LOGGER) = \&_log_stderr;
-my($_DEFAULT_MAX_ARG_LENGTH) = 128;
-my($_MAX_ARG_LENGTH) = $_DEFAULT_MAX_ARG_LENGTH;
-my($_WANT_PID) = 0;
+my($_PERL_MSG_AT_LINE, $_PACKAGE, $_LOGGER,
+	$_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID);
+BEGIN {
+    # What perl outputs on "die" or "warn" without a newline
+    $_PERL_MSG_AT_LINE = ' at (\S+|\(eval \d+\)) line \d+\.' . "\n\$";
+    $_PACKAGE = __PACKAGE__;
+    $_LOGGER = \&_log_stderr;
+    $_DEFAULT_MAX_ARG_LENGTH = 128;
+    $_MAX_ARG_LENGTH = $_DEFAULT_MAX_ARG_LENGTH;
+    $_WANT_PID = 0;
+}
+
+#=IMPORTS
+use Bivio::IO::Config;
 
 #=INITIALIZATION
 # Normalize error messages

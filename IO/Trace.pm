@@ -44,24 +44,25 @@ L<filter|"filter">  will be treated as always true.
 
 =cut
 
+#=VARIABLES
+my(@_REGISTERED, $_POINT_FILTER, $_PKG_FILTER, $_PKG_SUB, $_PRINTER);
+BEGIN {
+    # Packages which are registered
+    @_REGISTERED = ();
+    # The package sub must be registered to be false, because of the
+    # algorithm in &_define_pkg_symbols.
+    # This must be visible to the outside world.
+    $Bivio::IO::Trace::_POINT_SUB = undef;
+    $_PKG_SUB = \&_false;
+    # Sub used for printing.  See &print.
+    $_PRINTER = \&default_printer;
+}
+
 #=IMPORTS
 use Bivio::IO::Alert;
 use Bivio::IO::Config;
 use Carp ();
 
-#=VARIABLES
-
-# Packages which are registered
-my(@_REGISTERED) = ();
-
-# The package sub must be registered to be false, because of the
-# algorithm in &_define_pkg_symbols.
-my($_POINT_FILTER, $_PKG_FILTER);
-# This must be visible to the outside world.
-$Bivio::IO::Trace::_POINT_SUB = undef;
-my($_PKG_SUB) = \&_false;
-# Sub used for printing.  See &print.
-my($_PRINTER) = \&default_printer;
 Bivio::IO::Config->register({
     'filter' => undef,
     'package_filter' => undef,
