@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::PortfolioIncomeList;
 use strict;
 $Bivio::Biz::Model::PortfolioIncomeList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::PortfolioIncomeList::VERSION;
 
 =head1 NAME
 
@@ -32,13 +33,13 @@ C<Bivio::Biz::Model::PortfolioIncomeList> lists portfolio income entries
 
 #=IMPORTS
 use Bivio::Biz::Accounting::Tax;
-use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
 use Bivio::Type::EntryType;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 =head1 METHODS
 
@@ -59,10 +60,6 @@ sub internal_initialize {
 	primary_key => [
 	    [qw(Entry.entry_id)],
 	],
-#	order_by => [qw(
-#	    RealmTransaction.date_time
-#            RealmTransaction.remark
-#        )],
 	other => [qw(
 	    RealmTransaction.date_time
             RealmTransaction.remark
@@ -77,11 +74,14 @@ sub internal_initialize {
 	where => [
 	    'Entry.entry_type', '=',
 	    Bivio::Type::EntryType::CASH_INCOME()->as_sql_param,
-            'and',
+            'AND',
             'Entry.class', '=',
 	    Bivio::Type::EntryClass::CASH()->as_sql_param,
-	    'and',
+	    'AND',
 	    'Entry.tax_basis', '=', '1',
+	    'AND',
+	    'RealmTransaction.date_time', 'BETWEEN',
+	    $_SQL_DATE_VALUE, 'AND', $_SQL_DATE_VALUE,
 	],
     };
 }
@@ -90,26 +90,20 @@ sub internal_initialize {
 
 =head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
 
-Returns the where clause and params associated as the result of a
-"search" or other "pre_load".
+Adds dynamic start/end dates to the SQL parameters.
 
 =cut
 
 sub internal_pre_load {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($date) = $req->get('report_date');
+    my($self, $query, $support, $params) = @_;
+    my($end_date) = $self->get_request->get('report_date');
 
     # get tax year start
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
-	    $date);
+	    $end_date);
 
-    my($start) = Bivio::Type::DateTime->to_sql_value("'$start_date'");
-    my($end) = Bivio::Type::DateTime->to_sql_value("'$date'");
-    return "realm_transaction_t.date_time >= $start and ".
-	    "realm_transaction_t.date_time <= $end\n".
-		    'order by realm_transaction_t.date_time, '.
-			    'realm_transaction_t.remark';
+    push(@$params, $start_date, $end_date);
+    return '';
 }
 
 
