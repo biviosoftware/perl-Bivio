@@ -244,36 +244,32 @@ EOF
     return $res;
 }
 
-# _upgrade(Bivio::Agent::Request req)
-#
-# Replace this method with the table/data manipulations.
-#
 sub _upgrade {
     my($req) = @_;
-    _upgrade_entry_type_constraints($req);
+    _upgrade_add_ellis_bio_link($req);
     print("\n*** done ***\n");
     return;
 }
 
-# _upgrade_entry_type_constraints(Bivio::Agent::Request req)
+# _upgrade_add_ellis_bio_link(Bivio::Agent::Request req)
 #
-# Upgrades entry_t.entry_type constraints.
+# Adds a link to a new article in Ellis' bio.
 #
-sub _upgrade_entry_type_constraints {
+sub _upgrade_add_ellis_bio_link {
     my($req) = @_;
-    _drop_constraints('entry_t', 'entry_type');
-    _do_sql(<<'EOF');
-ALTER TABLE entry_t modify entry_type not null
-/
-ALTER TABLE entry_t
-  add constraint entry_t7
-  check (entry_type between 1 and 9
-  or entry_type between 100 and 113
-  or entry_type=117
-  or entry_type between 200 and 221
-  or entry_type BETWEEN 223 AND 224)
-/
-EOF
+    $req->set_realm('take_stock');
+
+    my($article_link) = qq|<a href="/hm/take-stock-020523.html">When Why should you Sell?</a>
+<br>&nbsp;<br>
+|;
+
+    my($decor) = Bivio::Biz::Model->new($req, 'RealmDecor');
+    $decor->load;
+    my($bio) = $decor->get('profile_bio');
+    $bio =~ s/(Father of Technamental)/$article_link$1/
+	|| die("couldn't find text in bio");
+    $decor->update({profile_bio => $bio});
+
     return;
 }
 
