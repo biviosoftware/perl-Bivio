@@ -171,8 +171,8 @@ sub extract {
     $text =~ s/\<\<//;
     $line_iter_ref->replace_first($text);
 
-    _trace("Extracting dictionary starting\n\t\"",
-	    ${$line_iter_ref->current_ref()}, "\"") if $_TRACE;
+    #_trace("Extracting dictionary starting\n\t\"",
+	#    ${$line_iter_ref->current_ref()}, "\"") if $_TRACE;
 
     while (1) {
 	if (${$line_iter_ref->current_ref()}
@@ -184,7 +184,7 @@ sub extract {
 		# Remove the text up to and including that which we matched.
 		$line_iter_ref->replace_first($'); #'
 
-		_trace("Dictionary key \"$name\"") if $_TRACE;
+		# _trace("Dictionary key \"$name\"") if $_TRACE;
 
 		# Extract the value that goes with the name.
 		my($direct_obj_ref) = $self->extract_direct_obj($line_iter_ref);

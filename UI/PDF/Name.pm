@@ -129,7 +129,7 @@ sub extract {
 	    $fields->{'value'} = $1;
 	    $line_iter_ref->replace_first($');
 
-	    _trace("Extracting name \"$1\"") if $_TRACE;
+	    #_trace("Extracting name \"$1\"") if $_TRACE;
 	} else {
 	    die(__FILE__,", ", __LINE__, ": no matched text returned\n");
 	}

@@ -146,8 +146,8 @@ sub extract {
 
 		$line_iter_ref->replace_first($');
 
-		_trace("Extracting ", $self->_get_string_type(),
-			" string\n\t\"", $fields->{'text'}, "\"") if $_TRACE;
+		#_trace("Extracting ", $self->_get_string_type(),
+                # " string\n\t\"", $fields->{'text'}, "\"") if $_TRACE;
 		last;
 	    }
 	    elsif (defined($2)) {

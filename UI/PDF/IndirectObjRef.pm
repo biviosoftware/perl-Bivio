@@ -139,7 +139,7 @@ sub extract {
 	    $fields->{'obj_generation'} = $2;
 	    $line_iter_ref->replace_first($'); #'
 
-	    _trace("Indirect object ref \"$1 $2\"") if $_TRACE;
+	    #_trace("Indirect object ref \"$1 $2\"") if $_TRACE;
 	} else {
 	    die(__FILE__,", ", __LINE__, ": no matched text returned\n");
 	}

@@ -101,7 +101,7 @@ sub extract_direct_obj {
 
     my($direct_obj_ref);
 
-    _trace('Input text is "', ${$line_iter_ref->current_ref()}, '"') if $_TRACE;
+    #_trace('Input text is "', ${$line_iter_ref->current_ref()}, '"') if $_TRACE;
 
     if (${$line_iter_ref->current_ref()} =~ /$_ARRAY_START_REGEX|$_BOOLEAN_REGEX|$_DIC_START_REGEX|$_NAME_REGEX|$_OBJ_REF_REGEX|$_NUMBER_REGEX|$_STRING_START_PAREN_REGEX|$_STRING_START_ANGLE_REGEX|$_NULL_OBJ_REGEX/) {
 	if (defined($1)) {
