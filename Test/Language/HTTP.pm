@@ -517,6 +517,7 @@ messages found.
 
 sub verify_local_mail {
     my($self, $email, $body_regex, $count) = @_;
+    sleep(2);  # intentionally loose the race with sendmail ;-)
     $count ||= 1;
     my($seen) = {};
     Bivio::Die->die($_CFG->{mail_dir},
