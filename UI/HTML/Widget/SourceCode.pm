@@ -257,17 +257,18 @@ sub _contains {
 sub _find_files {
 
     File::Find::find(
-	    sub {
-		my($name) = $File::Find::name;
-		return unless $name =~ /\.pm$/;
+	sub {
+	    my($name) = $File::Find::name;
+	    return unless $name =~ /\.pm$/;
 
-		# turn the file name into a package name
-		$name =~ s,^$_SOURCE_DIR/(.*)\.pm$,$1,;
-		$name =~ s,/,::,g;
+	    # turn the file name into a package name
+	    $name =~ s,^$_SOURCE_DIR/(.*)\.pm$,$1,;
+	    $name =~ s,/,::,g;
 
-		$_FILES->{$name} = 1;
-	    },
-	    $_SOURCE_DIR);
+	    $_FILES->{$name} = 1;
+	},
+	# Might be a symlink
+	$_SOURCE_DIR . '/.');
     return $_FILES;
 }
 
