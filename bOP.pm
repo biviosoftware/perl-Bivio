@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.  
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::SQL::ListSupport allows internal_pre_load to return a where
+    clause which includes the FROM.  Allows for complex Postgres LEFT JOIN
+    statements.
+
+  Revision 1.45  2003/03/20 00:12:57  nagler
+  * Bivio::IO::Alert.max_element_count configures number of hash/array
+    elements displayed in formatted messages.n
+  * Bivio::SQL::Connection forces commit or rollback for Postgres
+    connections even if no DML is executed.  Postgres requires rollback
+    in the event of DQL errors.
+  * Bivio::ShellUtil->lock_action accepts a closure.  Deprecated form
+    would use a subprocess, which isn't practical in web servers.
   * Bivio::Util::LinuxConfig->serial_console accepts the speed to configure
   * Bivio::Util::LinuxConfig->rename_rpmnew accepts a list of directories
   * Fixes to Bivio::Util::SQL and Bivio::Biz::Model::UserPasswordForm
