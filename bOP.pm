@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.76  2003/08/19 18:39:19  david
+  * Added Bivio::Type::Date->compare to compare two DateTimes only with
+    respect to their dates.
+
+  Revision 1.75  2003/08/14 21:11:51  moeller
   * added Model.Lock->execute_general to allow locking the whole database
   * SimpleWidgetFactory now renders links conditional on the task
     being executable by the current user
