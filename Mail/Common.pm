@@ -156,8 +156,9 @@ sub send {
     defined($recipients) || die("no recipients\n");
     defined($msg) || die("no message\n");
     $from = defined($from) ? '-f'.$from : '';
+    $from =~ s/'/'\\''/g;
     ref($recipients) && ($recipients = join(',', @$recipients));
-    $recipients =~ s/(['\\])/\\$1/g;
+    $recipients =~ s/'/'\\''/g;
     my($msg_ref) = ref($msg) ? $msg : \$msg;
     # Use only one handle to avoid leaks
     my($fh) = \*Bivio::Mail::Common::OUT;
