@@ -335,7 +335,7 @@ sub _start_tr {
 #
 sub _text {
     my($fields) = @_;
-    my($res) = $fields->{text} || '';
+    my($res) = defined($fields->{text}) ? $fields->{text} : '';
     $fields->{text} = undef;
     return $res;
 }
