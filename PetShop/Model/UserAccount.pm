@@ -58,7 +58,6 @@ sub internal_initialize {
             user_id => ['User.user_id', 'PRIMARY_KEY'],
 	    status => ['UserStatus', 'NOT_NULL'],
 	    user_type => ['UserType', 'NOT_NULL'],
-	    last_cart_id => ['Cart.cart_id', 'NONE'],
 	},
 	auth_id => 'user_id',
     };
