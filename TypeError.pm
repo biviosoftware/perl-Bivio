@@ -261,6 +261,11 @@ __PACKAGE__->compile(
 	undef,
 	'enter at least one distribution amount',
     ],
+    TEXT_TOO_LONG => [
+	45,
+	undef,
+	'input is too long.  Maximum size is 500 characters.',
+    ],
 );
 
 #=PRIVATE METHODS
