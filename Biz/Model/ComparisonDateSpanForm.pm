@@ -81,10 +81,12 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    my($proto) = @_;
-    my($res) = $proto->SUPER::internal_initialize;
-    push(@{$res->{visible}}, 'MGFSInstrument.symbol');
-    return $res;
+    my($self) = @_;
+    my($info) = {
+	visible => ['MGFSInstrument.symbol']
+    };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="validate"></a>

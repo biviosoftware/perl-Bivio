@@ -34,7 +34,7 @@ called to do cross-field validation.
 
 If the validation passes, i.e. no errors are put with
 L<internal_put_error|"internal_put_error">, then
-L<execute_input|"execute_input"> is called.
+L<execute_ok|"execute_ok"> is called.
 
 A form may have a context.  This is specified by the C<require_context>
 in
@@ -65,9 +65,6 @@ appears in the button.  This means what the user sees is what we get
 back.  The routines L<SUBMIT|"SUBMIT">, L<SUBMIT_OK|"SUBMIT_OK">, and
 L<SUBMIT_CANCEL|"SUBMIT_CANCEL"> can be overridden by subclasses if
 they would like different text to appear.
-
-A form may specialize its L<is_submit_ok|"is_submit_ok"> method.
-This allows, for example, the form to have multiple "ok" buttons.
 
 Form field errors are always one of the enums in
 L<Bivio::TypeError|Bivio::TypeError>.
@@ -110,68 +107,6 @@ sub MAX_FIELD_SIZE {
     return 0x10000;
 }
 
-=for html <a name="SUBMIT"></a>
-
-=head2 SUBMIT : string
-
-Returns name of submit button.
-
-May be overriden.
-
-=cut
-
-sub SUBMIT {
-    return 'submit';
-}
-
-=for html <a name="SUBMIT_CANCEL"></a>
-
-=head2 SUBMIT_CANCEL : string
-
-Returns Cancel button value
-
-May be overriden.
-
-=cut
-
-sub SUBMIT_CANCEL {
-    return 'Cancel';
-}
-
-=for html <a name="SUBMIT_OK"></a>
-
-=head2 SUBMIT_OK : string
-
-Returns OK button value.
-
-May be overriden.
-
-=cut
-
-sub SUBMIT_OK {
-    return '  OK  ';
-}
-
-=for html <a name="SUBMIT_UNWIND"></a>
-
-=head2 SUBMIT_UNWIND : string
-
-Returns the internal tag string for continuation of a form
-which was redirected initially to another form.
-
-B<DO NOT USE THIS VALUE FOR SUBMIT LABELS.>
-
-If you want to treate C<SUBMIT_UNWIND> as
-L<SUBMIT_OK|"SUBMIT_OK">, override in subclass
-and return C<SUBMIT_OK>'s value.  This method always checks
-C<SUBMIT_OK> before C<SUBMIT_UNWIND>.
-
-=cut
-
-sub SUBMIT_UNWIND {
-    return '!@#unwind#@!';
-}
-
 =for html <a name="TIMEZONE_FIELD"></a>
 
 =head2 TIMEZONE_FIELD : string
@@ -211,8 +146,6 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_TIMEZONE_COOKIE_FIELD) = Bivio::Agent::HTTP::Cookie->TIMEZONE_FIELD;
 Bivio::Agent::HTTP::Cookie->register($_PACKAGE);
-my($_OLD_VERSION_FIELD) = 'version';
-my($_OLD_CONTEXT_FIELD) = 'context';
 
 =head1 FACTORIES
 
@@ -300,7 +233,7 @@ sub execute {
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-	return 1 if $self->execute_input();
+	return 1 if $self->execute_ok('ok_button');
 	return 0 unless $fields->{errors};
 	Bivio::Die->die($self->as_string,
 		": called with invalid values");
@@ -353,57 +286,44 @@ sub execute {
     # on SUBMIT_UNWIND
     $fields->{literals} = $input;
 
-    # Don't rollback, because unwind doesn't necessarily mean failure
-    my($parse_res) = _parse($self, $input);
-    # In the special case when execute_other returns true, we just
-    # get out and don't rollback.
-    unless ($parse_res == 1) {
-	return 1 if $parse_res == -1;
-
+    unless (_parse($self, $input)) {
 	# Allow the subclass to modify the state of the form after an unwind
+	$self->clear_errors;
 	return $self->execute_unwind();
     }
 
-    # If the form has errors, the transaction will be rolled back.
-    # validate is always called so we try to return as many errors
-    # to the user as possible.
-    $self->validate();
-    if ($fields->{errors}) {
-	_put_file_field_reset_errors($self);
-    }
-    else {
-	# Catch errors and rethrow unless we can process
-	my($res);
-	my($die) = Bivio::Die->catch(sub {$res = $self->execute_input();});
-	if ($die) {
-	    if ($die->get('code')->isa('Bivio::TypeError')) {
-		# Type errors are "normal"
-		_apply_type_error($self, $die);
-	    }
-	    else {
-		$die->throw_die();
-		# DOES NOT RETURN
-	    }
-
-	    # Can we find the fields in the Form?
-	}
-
-	# If execute_input returns true, just get out.  The task will
-	# stop executing so no need to test errors.
-	return 1 if $res;
-
-	if ($fields->{errors}) {
-	    _put_file_field_reset_errors($self);
-	}
-	elsif ( ! $fields->{stay_on_page}) {
-	    _redirect($self, 'next');
-	    # DOES NOT RETURN
+    # determine the selected button, default is ok
+    my($button, $button_type) = ('ok_button', 'Bivio::Type::OKButton');
+    foreach my $field (@{$self->get_keys}) {
+	if (defined($self->get($field))) {
+	    my($type) = $self->get_field_type($field);
+	    ($button, $button_type) = ($field, $type)
+		    if $type->isa('Bivio::Type::FormButton');
 	}
     }
-    # Some type of error, rollback and fall through to the next
-    # task items.
-    Bivio::Agent::Task->rollback;
-    return 0;
+    $fields->{button_submitted} = $button;
+
+    return $self->validate_and_execute_ok($button)
+	    if $button_type->isa('Bivio::Type::OKButton');
+
+    return $self->execute_cancel($button)
+	    if $button_type->isa('Bivio::Type::CancelButton');
+
+    return $self->execute_other($button);
+}
+
+=for html <a name="execute_cancel"></a>
+
+=head2 execute_cancel(string button_field) : boolean
+
+Default cancel processing, redirects to the cancel task.
+
+=cut
+
+sub execute_cancel {
+    my($self, $button_field) = @_;
+    # client redirect on cancel, no state is saved
+    _redirect($self, 'cancel');
 }
 
 
@@ -421,9 +341,9 @@ sub execute_empty {
     return 0;
 }
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input() : boolean
+=head2 execute_ok(string button_field) : boolean
 
 Processes the form after validation.  By default is an no-op.
 
@@ -431,13 +351,13 @@ B<Return true if you want the Form to exit immediately.>
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     return 0;
 }
 
 =for html <a name="execute_other"></a>
 
-=head2 execute_other(string button) : boolean
+=head2 execute_other(string button_field) : boolean
 
 Processes the form after a cancel or other button is pressed.
 The button string is passed.  It will redirect to the cancel
@@ -496,6 +416,21 @@ sub format_context_as_query {
 #      Need to understand better how to stop the context propagation
     return '?fc='.Bivio::HTML->escape_query(
 	    Bivio::Biz::FormContext->to_literal($req, $c));
+}
+
+=for html <a name="get_button_submitted"></a>
+
+=head2 get_button_submitted() : string
+
+Returns the name of the button field selected. This value is valid only
+after L<execute|"execute"> has been invoked.
+
+=cut
+
+sub get_button_submitted {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    return $fields->{button_submitted};
 }
 
 =for html <a name="get_context_from_request"></a>
@@ -887,6 +822,32 @@ sub internal_get_visible_field_names {
     return shift->internal_get_sql_support()->get('visible_field_names');
 }
 
+=for html <a name="internal_initialize"></a>
+
+=head2 internal_initialize() : hash_ref;
+
+B<FOR INTERNAL USE ONLY>
+
+=cut
+
+sub internal_initialize {
+
+    return {
+	visible => [
+	    {
+		name => 'ok_button',
+		type => 'OKButton',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'cancel_button',
+		type => 'CancelButton',
+		constraint => 'NONE',
+	    },
+	],
+    };
+}
+
 =for html <a name="internal_initialize_sql_support"></a>
 
 =head2 static internal_initialize_sql_support() : Bivio::SQL::Support
@@ -990,37 +951,6 @@ sub internal_stay_on_page {
     my($fields) = $self->{$_PACKAGE};
     $fields->{stay_on_page} = 1;
     return;
-}
-
-=for html <a name="is_submit_ok"></a>
-
-=head2 is_submit_ok(string button_value, hash_ref form) : boolean
-
-Returns true if the button value is L<SUBMIT_OK|"SUBMIT_OK">.
-Subclasses can override this, but probably don't need to.
-
-If overriding, you must catch the L<SUBMIT_UNWIND|"SUBMIT_UNWIND">
-if you don't want to render the form without errors in the event
-of an unwind.
-
-=cut
-
-sub is_submit_ok {
-    my($self, $value, $form) = @_;
-    # Default is cancel
-
-    # default to OK, submit isn't passed when user presses 'enter'
-    return 1 unless defined($value) && length($value);
-
-    # We assume it is a cancel if we don't get a match to ok
-    # It is better than returning corrupt form for now.
-    my($submit_ok) = $self->SUBMIT_OK;
-    return 1 if $value eq $submit_ok;
-
-    # If has same letters in same order, then is ok.
-    $submit_ok =~ s/\s+//g;
-    $value =~ s/\s+//g;
-    return lc($value) eq lc($submit_ok) ? 1 : 0;
 }
 
 =for html <a name="load_from_model_properties"></a>
@@ -1169,6 +1099,63 @@ sub validate {
     return;
 }
 
+=for html <a name="validate_and_execute_ok"></a>
+
+=head2 validate_and_execute_ok(string form_button) : boolean
+
+Validates the form, calling L<validate|"validate">, then executes
+it, catching any exceptions and adding them to errors. Rolls back
+changes on errors.
+
+=cut
+
+sub validate_and_execute_ok {
+    my($self, $form_button) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # If the form has errors, the transaction will be rolled back.
+    # validate is always called so we try to return as many errors
+    # to the user as possible.
+    $self->validate();
+    if ($fields->{errors}) {
+	_put_file_field_reset_errors($self);
+    }
+    else {
+	# Catch errors and rethrow unless we can process
+	my($res);
+	my($die) = Bivio::Die->catch(sub {
+	        $res = $self->execute_ok($form_button);});
+	if ($die) {
+	    if ($die->get('code')->isa('Bivio::TypeError')) {
+		# Type errors are "normal"
+		_apply_type_error($self, $die);
+	    }
+	    else {
+		$die->throw_die();
+		# DOES NOT RETURN
+	    }
+
+	    # Can we find the fields in the Form?
+	}
+
+	# If execute_ok returns true, just get out.  The task will
+	# stop executing so no need to test errors.
+	return 1 if $res;
+
+	if ($fields->{errors}) {
+	    _put_file_field_reset_errors($self);
+	}
+	elsif ( ! $fields->{stay_on_page}) {
+	    _redirect($self, 'next');
+	    # DOES NOT RETURN
+	}
+    }
+    # Some type of error, rollback and fall through to the next
+    # task items.
+    Bivio::Agent::Task->rollback;
+    return 0;
+}
+
 =for html <a name="validate_greater_than_zero"></a>
 
 =head2 validate_greater_than_zero(string field)
@@ -1291,14 +1278,12 @@ sub _initial_context {
     return $c;
 }
 
-# _parse(Bivio::Biz::FormModel self, hash_ref form) : int
+# _parse(Bivio::Biz::FormModel self, hash_ref form) : boolean
 #
-# Parses the form. If Cancel or Other is encountered, redirects immediately.
-# If it is SUBMIT_UNWIND, returns false.  If it is ok, returns true.
+# Parses the form.
 #
-# Returns -1 if execute_other returns true.
 # Returns 0 if unwind.
-# Returns 1 if OK.
+# Returns 1 otherwise
 #
 sub _parse {
     my($self, $form) = @_;
@@ -1308,11 +1293,9 @@ sub _parse {
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self,
-#TODO: Remove in a while...
-	    # Handle old version field ('version')
-	    $form->{VERSION_FIELD()} ||= $form->{$_OLD_VERSION_FIELD},
+	    $form->{VERSION_FIELD()},
 	    $sql_support);
-    # Parse context first, so can be used by parse_submit (is_submit_ok)
+    # Parse context first
     _parse_context($self, $form) if $sql_support->get('require_context');
     # Ditto for timezone
     _parse_timezone($self, $form->{TIMEZONE_FIELD()});
@@ -1320,18 +1303,17 @@ sub _parse {
     # Allow ListFormModel to initialize its state
     $self->internal_pre_parse_columns();
 
-    # parse, but only save errors if it is a submit
-    my($is_submit) = _parse_submit($self, $form);
-
-    # Get out immediately if execute_other returns true
-    return -1 if $is_submit == -1;
     my($values) = {};
-
     _parse_cols($self, $form, $sql_support, $values, 1);
     _parse_cols($self, $form, $sql_support, $values, 0);
     $self->internal_put($values);
-    delete($fields->{errors}) unless ($is_submit);
-    return $is_submit;
+
+    # .next is set in _redirect()
+    my($next) = $form->{'.next'} || '';
+    _redirect($self, 'cancel') if $next eq 'cancel';
+    return 0 if $next eq 'unwind';
+
+    return 1;
 }
 
 # _parse_col(Bivio::Biz::FormModel self, hash_ref form, Bivio::SQL::FormSupport sql_support, hash_ref values, boolean is_hidden)
@@ -1421,9 +1403,7 @@ sub _parse_context {
     my($self, $form) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-#TODO: Remove in a while...
-    # Handle old context field name
-    if ($form->{CONTEXT_FIELD()} ||= $form->{$_OLD_CONTEXT_FIELD}) {
+    if ($form->{CONTEXT_FIELD()}) {
 	# If there is an incoming context, must be syntactically valid.
 	# Overwrites the query context, if any.
 	# Note that we don't convert "from_html", because we write the
@@ -1438,42 +1418,6 @@ sub _parse_context {
     }
     _trace('context: ', $fields->{context}) if $_TRACE;
     return;
-}
-
-# _parse_submit(Bivio::Biz::FormModel self, string value, hash_ref form) : int
-#
-# Parses the submit button.  If there is an error, throws CORRUPT_FORM.
-# If the button is Cancel, will redirect immediately.  If the button
-# is "OK", returns true.  If the button is SUBMIT_UNWIND, returns false.
-#
-# Returns -1 if execute_other returns true.
-# Returns 0 if unwind.
-# Returns 1 if OK.
-#
-sub _parse_submit {
-    my($self, $form) = @_;
-    my($value) = $form->{$self->SUBMIT};
-
-    # Is the button an OK?
-    # If SUBMIT_UNWIND is the same as SUBMIT_OK, will act as OK.
-    return 1 if $self->is_submit_ok($value, $form);
-
-    # It wasn't an ok, if SUBMIT_UNWIND, then don't parse the form.
-    if ($self->SUBMIT_UNWIND eq $value) {
-	_trace('unwind button, not parsing form') if $_TRACE;
-	return 0;
-    }
-
-    # Cancel or other doesn't parse form, but allows the subclass
-    # to do something on cancel, e.g. clear a cookie.
-    _trace('cancel or other button: ', $value) if $_TRACE;
-
-    my($req) = $self->get_request;
-    return -1 if $self->execute_other($value);
-
-    # client redirect on cancel, no state is saved
-    _redirect($self, 'cancel');
-    # DOES NOT RETURN
 }
 
 # _parse_timezone(Bivio::Biz::FormModel self, string value)
@@ -1548,7 +1492,7 @@ sub _put_file_field_reset_errors {
     return;
 }
 
-# _redirect(Bivio::Biz::FormModel self, string which) : 
+# _redirect(Bivio::Biz::FormModel self, string which)
 #
 # Redirect to the "next" or "cancel" task depending on "which" if there
 # is no context.  Otherwise, redirect to context.
@@ -1593,9 +1537,7 @@ sub _redirect {
 
     # Initializes context
     my($f) = $c->{form};
-    $f->{$c->{form_model}->SUBMIT} = $which eq 'cancel'
-	    ? $c->{form_model}->SUBMIT_CANCEL
-	    : $c->{form_model}->SUBMIT_UNWIND;
+    $f->{'.next'} = $which eq 'cancel' ? 'cancel' : 'unwind';
 
     # Ensure this form_model is seen as the redirect model
     # by get_context_from_request and set a flag so it

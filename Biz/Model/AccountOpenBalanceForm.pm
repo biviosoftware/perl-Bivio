@@ -30,24 +30,6 @@ C<Bivio::Biz::Model::AccountOpenBalanceForm> opening account balance entry
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="SUBMIT_OK"></a>
-
-=head2 SUBMIT_OK : string
-
-Returns OK button value.
-
-May be overriden.
-
-=cut
-
-sub SUBMIT_OK {
-    return ' Next ';
-}
-
 #=IMPORTS
 use Bivio::Biz::Accounting::Tax;
 use Bivio::Biz::Model::AccountOpenBalanceList;
@@ -123,15 +105,15 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input()
+=head2 execute_ok()
 
 Creates opening balance entries for each account.
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request();
     my($realm) = $req->get('auth_realm')->get('owner');
@@ -196,7 +178,8 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
 	require_context => 1,
 	visible => [
@@ -234,6 +217,8 @@ sub internal_initialize {
 		     'Entry.realm_transaction_id']
 	],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="validate"></a>

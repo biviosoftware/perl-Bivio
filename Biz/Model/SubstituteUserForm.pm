@@ -33,34 +33,6 @@ so we know the we are operating in super-user mode.
 
 =cut
 
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="SUBMIT_OK"></a>
-
-=head2 SUBMIT_OK : string
-
-Returns login button.
-
-=cut
-
-sub SUBMIT_OK {
-    return ' Login ';
-}
-
-=for html <a name="SUBMIT_CANCEL"></a>
-
-=head2 SUBMIT_CANCEL : string
-
-There is no cancel button for login forms.
-
-=cut
-
-sub SUBMIT_CANCEL {
-    return '';
-}
-
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Biz::Model::LoginForm;
@@ -77,15 +49,15 @@ my($_SU_FIELD) = Bivio::Agent::HTTP::Cookie->SU_FIELD();
 
 =cut
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input() : boolean
+=head2 execute_ok() : boolean
 
 Logs in the I<realm_owner> and updates the cookie.
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
     my($properties) = $self->internal_get;
     my($req) = $self->get_request;
@@ -145,7 +117,8 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
 	visible => [
 	    {
@@ -166,6 +139,8 @@ sub internal_initialize {
 	    'RealmOwner.realm_id',
 	],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="validate"></a>

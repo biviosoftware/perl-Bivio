@@ -92,11 +92,12 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	visible => [
 	    {
 		name => 'add_rows',
-		type => 'FormButton',
+		type => 'OKButton',
 		constraint => 'NONE',
 	    },
 	],
@@ -108,6 +109,8 @@ sub internal_initialize {
 	    },
 	],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="internal_initialize_list"></a>

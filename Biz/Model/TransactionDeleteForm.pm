@@ -39,15 +39,15 @@ my($_PACKAGE) = __PACKAGE__;
 
 =cut
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input()
+=head2 execute_ok()
 
 Deletes the selected entry, its transactions and all its entries.
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
 
@@ -75,11 +75,14 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
 	require_context => 1,
 	auth_id => ['RealmTransaction.realm_id', 'RealmOwner.realm_id'],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 #=PRIVATE METHODS

@@ -70,15 +70,15 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input()
+=head2 execute_ok()
 
 Deletes the selected guest from the current club.
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
 
@@ -126,9 +126,12 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 #=PRIVATE METHODS

@@ -27,7 +27,7 @@ use Bivio::Biz::FormModel;
 =head1 DESCRIPTION
 
 C<Bivio::Biz::Model::InactiveForm> has a single boolean value. The form
-will never execute_input(), but keeps track of the value.
+will never execute_ok(), but keeps track of the value.
 
 =cut
 
@@ -66,7 +66,8 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
 	visible => [
             {
@@ -76,6 +77,8 @@ sub internal_initialize {
 	    },
 	],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="validate"></a>

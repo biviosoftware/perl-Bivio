@@ -153,67 +153,67 @@ sub execute_empty_start {
     return;
 }
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input()
+=head2 execute_ok()
 
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
 
 #TODO: Optimize.  Don't make calls if method doesn't exist
     # Do start/row/end
     $self->reset_cursor;
-    $self->execute_input_start;
+    $self->execute_ok_start;
     while ($self->next_row) {
-	$self->execute_input_row;
+	$self->execute_ok_row;
     }
-    $self->execute_input_end;
+    $self->execute_ok_end;
     $self->reset_cursor;
     return;
 }
 
-=for html <a name="execute_input_end"></a>
+=for html <a name="execute_ok_end"></a>
 
-=head2 execute_input_end()
+=head2 execute_ok_end()
 
 Subclasses should override if they need to perform an
-operation during L<execute_input|"execute_input">
+operation during L<execute_ok|"execute_ok">
 B<after> all rows have been processed.
 
 =cut
 
-sub execute_input_end {
+sub execute_ok_end {
     return;
 }
 
-=for html <a name="execute_input_row"></a>
+=for html <a name="execute_ok_row"></a>
 
-=head2 execute_input_row()
+=head2 execute_ok_row()
 
 Subclasses should override if they need to perform an
-operation during L<execute_input|"execute_input">
+operation during L<execute_ok|"execute_ok">
 B<for each row>.
 
 =cut
 
-sub execute_input_row {
+sub execute_ok_row {
     return;
 }
 
-=for html <a name="execute_input_start"></a>
+=for html <a name="execute_ok_start"></a>
 
-=head2 execute_input_start()
+=head2 execute_ok_start()
 
 Subclasses should override if they need to perform an
-operation during L<execute_input|"execute_input">
+operation during L<execute_ok|"execute_ok">
 B<before> all rows have been processed.
 
 =cut
 
-sub execute_input_start {
+sub execute_ok_start {
     return;
 }
 

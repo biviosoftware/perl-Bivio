@@ -80,15 +80,15 @@ sub execute_empty {
     return;
 }
 
-=for html <a name="execute_input"></a>
+=for html <a name="execute_ok"></a>
 
-=head2 execute_input()
+=head2 execute_ok()
 
 Saves new settings.
 
 =cut
 
-sub execute_input {
+sub execute_ok {
     my($self) = @_;
     my($req) = $self->get_request;
     my($values) = $self->get_model_properties('Tax1065');
@@ -126,7 +126,8 @@ B<FOR INTERNAL USE ONLY>
 =cut
 
 sub internal_initialize {
-    return {
+    my($self) = @_;
+    my($info) = {
 	version => 1,
 	visible => [
 	    'Tax1065.partnership_type',
@@ -169,6 +170,8 @@ sub internal_initialize {
 	    'Tax1065.fiscal_end_date',
 	],
     };
+    return $self->merge_initialize_info(
+	    $self->SUPER::internal_initialize, $info);
 }
 
 =for html <a name="validate"></a>
