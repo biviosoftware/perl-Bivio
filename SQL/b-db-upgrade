@@ -250,7 +250,7 @@ EOF
 #
 sub _upgrade {
     my($req) = @_;
-    _upgrade_add_realm_account_field($req);
+    _upgrade_round_entry_amounts($req);
     print("\n*** done ***\n");
     return;
 }
@@ -263,6 +263,87 @@ sub _upgrade_add_realm_account_field {
     my($req) = @_;
     _add_column('realm_account_t', 'sub_account_number', 'VARCHAR2(4000)');
     return;
+}
+
+# _upgrade_round_entry_amounts(Bivio::Agent::Request req)
+#
+# Rounds the cash and instrument amounts to the exact penny.
+#
+sub _upgrade_round_entry_amounts {
+    my($req) = @_;
+    print("rounding entry amounts\n");
+    use Bivio::Biz::Accounting::Allocator;
+    use Bivio::Biz::Accounting::Audit;
+    use Bivio::Type::Amount;
+    use Bivio::Type::Date;
+    use Bivio::Type::EntryClass;
+
+    my($sth) = Bivio::SQL::Connection->execute('
+        SELECT realm_owner_t.name
+        FROM realm_owner_t, club_t
+        WHERE realm_owner_t.realm_id=club_t.club_id
+        ORDER BY realm_owner_t.name',
+	[]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($name) = $row->[0];
+	$req->set_realm($name);
+
+	my($date) = _round_entries($req, Bivio::Type::EntryClass->CASH);
+	_round_entries($req, Bivio::Type::EntryClass->INSTRUMENT);;
+	Bivio::Biz::Accounting::Audit->new($req)->audit_units($date)
+		if $date;
+    }
+    return;
+}
+
+# _round_entries(Bivio::Agent::Request req, Bivio::Type::EntryClass class) : string
+#
+# Rounds all values which aren't on the penny for the current realm.
+# Returns the earliest date of a rounded value.
+#
+sub _round_entries {
+    my($req, $class) = @_;
+    my($_M) = 'Bivio::Type::Amount';
+    my($rows) = [];
+    my($min_date);
+    my($d) = Bivio::Type::Date->from_sql_value(
+	'realm_transaction_t.date_time');
+    my($sth) = Bivio::SQL::Connection->execute("
+        SELECT $d, entry_t.entry_id, amount
+        FROM realm_transaction_t, entry_t
+        WHERE realm_transaction_t.realm_transaction_id
+            =entry_t.realm_transaction_id
+        AND entry_t.class=?
+        AND realm_transaction_t.realm_id=?
+        ORDER BY realm_transaction_t.date_time, entry_t.entry_id",
+	[$class->as_int, $req->get('auth_id')]);
+
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($date, $entry_id, $amount) = @$row;
+	next unless $_M->compare($amount, $_M->round($amount, 2));
+
+	$min_date ||= $date;
+	push(@$rows, {
+	    entry_id => $entry_id,
+	    amount => $amount,
+	});
+    }
+
+    Bivio::Biz::Accounting::Allocator->round_to_the_penny($rows, 'amount');
+
+    my($entry) = Bivio::Biz::Model->new($req, 'Entry');
+    foreach my $row (@$rows) {
+	$entry->load({entry_id => $row->{entry_id}});
+
+	print("\t", $req->get('auth_realm')->get('owner')->get('name'), ' ',
+	    $class->get_name, ' ', $entry->get('amount'), ' --> ',
+	    $row->{amount}, "\n");
+	$entry->update({
+	    amount => $row->{amount},
+	});
+    }
+    return $min_date;
 }
 
 # _usage(array message)
