@@ -42,6 +42,7 @@ Bivio::Test->unit([
 		    ]);
 		    return [{
 			'Product.product_id' => 'FI-FW-01',
+                        'Product.category_id' => 'FISH',
 			'Product.name' => 'Koi',
 		    }];
 		},
