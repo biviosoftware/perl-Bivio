@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::BUYandHOLD::Home;
 use strict;
 $Bivio::UI::Facade::BUYandHOLD::Home::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::BUYandHOLD::Home::VERSION;
 
 =head1 NAME
 
@@ -101,9 +102,16 @@ EOF
 	    [$self->image('three', 'Start Investing'),
 	     $self->string('Start Investing', 'page_heading')],
 	    [' ',
-	    $self->string($self->join(<<'EOF'), 'page_text')],
+	    $self->string($self->join(<<'EOF',
 You're now ready to open a <b>brokerage account</b> with
-<a href="/goto?x=http://www.buyandhold.com/Buy?request%3Drr.refBy%26ref%3DBIVIO">BUYandHOLD.com</a>.
+EOF
+		    $self->link_goto(
+			    'BUYandHOLD.com',
+			    'http://www.buyandhold.com/Buy?request=rr.refBy'
+			    .'&ref=BIVIO&dest=/bh/en/advert/closed'
+			    .'/splash_plain.html'),
+		    <<'EOF',
+.
 <p>
 Finally, all you need is <b>money to invest</b>. The
 <a href="http://www.bivio.com/hp/valuation-date.html" target=_blank>Valuation Date</a>
@@ -119,6 +127,7 @@ your friends&#153;.
 <br>
 &nbsp;
 EOF
+		   ), 'page_text')],
 	    ],
     });
 }
@@ -127,7 +136,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
