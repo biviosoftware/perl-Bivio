@@ -108,8 +108,7 @@ invalid password; must be at least six characters
 
 The name you create must begin with a letter and only contain
 letters, numbers, and underscores, and be at least
-three characters long. Once created, you will be able to
-send mail to thename@bivio.com.
+three characters long.
 
 =item GREATER_THAN_ZERO
 
@@ -371,8 +370,7 @@ __PACKAGE__->compile([
 	undef,
 	'The name you create must begin with a letter and only contain'
 	.' letters, numbers, and underscores, and be at least'
-	.' three characters long. Once created, you will be able to'
-	.' send mail to thename@bivio.com.',
+	.' three characters long.',
     ],
     GREATER_THAN_ZERO => [
 	20,
