@@ -71,7 +71,8 @@ sub create {
     die("contains club-local field and an instrument_id")
 	    if (exists($values->{instrument_id})
 		    && ($values->{fed_tax_free} || $values->{instrument_type}
-			    || $values->{name} || $values->{ticker_symbol}));
+			    || $values->{name} || $values->{ticker_symbol}
+			    || $values->{exchange_name}));
 
     return $self->SUPER::create($values);
 }
@@ -91,6 +92,30 @@ sub get_name {
     return defined($self->get('instrument_id'))
 	    ? $self->get_model('Instrument')->get('name')
 	    : $self->get('name');
+}
+
+=for html <a name="set_instrument_id"></a>
+
+=head2 set_instrument_id(string instrument_id)
+
+Sets the instrument id and clears all local instrument fields for the
+current model.
+
+=cut
+
+sub set_instrument_id {
+    my($self, $instrument_id) = @_;
+    die("missing instrument_id") unless defined($instrument_id);
+
+    $self->update({
+	instrument_id => $instrument_id,
+	name => undef,
+	ticker_symbol => undef,
+	exchange_name => undef,
+	instrument_type => undef,
+	fed_tax_free => undef,
+    });
+    return;
 }
 
 =for html <a name="unsafe_find_or_create"></a>
