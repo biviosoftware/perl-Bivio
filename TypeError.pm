@@ -769,6 +769,11 @@ __PACKAGE__->compile(
 	undef,
 	'the selected member already has a withdrawal on this date',
     ],
+    START_DATE_GREATER_THAN_REPORT_DATE => [
+	98,
+	undef,
+	'the start date my not be greater than the end date',
+    ],
 );
 
 #=PRIVATE METHODS
