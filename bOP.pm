@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+    string case)
+  * Bivio::Agent::Request->internal_server_redirect handles
+    ListQuery.attr format for queries
+
+  Revision 1.71  2003/07/09 23:18:43  nagler
+  * Bivio::UI::HTML::Widget::SelectSearch encapsulates selecting a
+    search value from a list.
   * Bivio::Biz::Model->get_qualified gets "Model.field" or "field"
     from current model.  Useful if you aren't sure if the field is
     coming from a ListModel or PropertyModel
