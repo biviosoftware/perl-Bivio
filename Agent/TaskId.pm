@@ -2235,21 +2235,21 @@ my(@_CFG) = (
         Bivio::Biz::Model::PublicClubList->execute_load_all
         Bivio::UI::HTML::General::PublicClubs
     )],
-#    [qw(
-#        CLUB_COMMUNICATIONS_FILE_RENAME
-#        219
-#        CLUB
-#        DOCUMENT_WRITE
-#        ?/file_rename/*
-#        Bivio::Biz::Action::PublicRealm
-#        Bivio::Type::FileVolume->execute_file
-#        Bivio::Biz::Model::FilePathList
-#        Bivio::Biz::Model::FileDirectoryList->execute_load_all
-#        Bivio::Biz::Model::FileRenameForm
-#        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
-#        Bivio::UI::HTML::Club::FileRename
-#	 next=CLUB_COMMUNICATIONS_FILE_READ
-#    )],
+    [qw(
+        CLUB_COMMUNICATIONS_FILE_RENAME
+        219
+        CLUB
+        DOCUMENT_WRITE
+        ?/file_rename/*
+        Bivio::Biz::Action::PublicRealm
+        Bivio::Type::FileVolume->execute_file
+        Bivio::Biz::Model::FilePathList
+        Bivio::Biz::Model::FileDirectoryList->execute_load_all
+        Bivio::Biz::Model::FileRenameForm
+        Bivio::UI::HTML::Widget::FilePageHeading->execute_no_links
+        Bivio::UI::HTML::Club::FileRename
+        next=CLUB_COMMUNICATIONS_FILE_READ
+    )],
     [qw(
         CLUB_ACCOUNTING_REPORT_COMPARISON_PERFORMANCE
         220
