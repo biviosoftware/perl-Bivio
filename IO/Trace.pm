@@ -12,8 +12,8 @@ Bivio::IO::Trace - statement level trace management
 
     use Bivio::IO::Trace;
     Bivio::IO::Trace->register;
-    &_trace("this is my message");
-    &_trace("This is ", &a_complex, " list of arguments") if $_TRACE;
+    _trace("this is my message") if $_TRACE;
+    _trace("This is ", &a_complex, " list of arguments") if $_TRACE;
     Bivio::IO::Trace->set_filters('/my message/');
 
 =cut
@@ -182,8 +182,11 @@ the calling package:
 =item $_TRACE
 
 is defined if tracing is turned on in the calling package.
+It is common place to use it as the qualifier to any trace statement,
+since it is faster than calling the subroutine if tracing is off
+in thecalling package.
 
-=item &_trace
+=item _trace()
 
 is the routine to define a trace point.
 
@@ -192,10 +195,10 @@ is the routine to define a trace point.
 These values will be modified dynamically as tracing is turned on/off
 programmatically.
 
-Use C<&_trace> for defining trace_points.  To avoid argument computation, use
+Use C<_trace()> for defining trace_points.  To avoid argument computation, use
 the form:
 
-    &_trace(bla, bla, bla, bla) if $_TRACE;
+    _trace(bla, bla, bla, bla) if $_TRACE;
 
 You will need to experiment with which trace points are expensive and require
 this more elaborate form.  In general, a simple string argument
