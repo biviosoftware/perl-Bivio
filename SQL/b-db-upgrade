@@ -235,7 +235,7 @@ ALTER TABLE entry_t
             UPDATE entry_t
             SET amount = -amount
             WHERE entry_type=?',
-	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE->as_int]);
+	    [Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()->as_sql_param]);
 
     return;
 }
