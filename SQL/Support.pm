@@ -84,6 +84,11 @@ Used by ListFormModel to indicate a column is in the list.
 Used by ListModel to indicate a column is in the select.
 Can be used to force C<LEVEL> to be in select.
 
+=item is_searchable : boolean [0]
+
+True, if the PropertyModel column should be included in the global search
+index.
+
 =item sort_order : boolean
 
 Default order by option.

@@ -88,6 +88,11 @@ Creates a SQL support instance. I<decl> is defined as follows:
        table_name => 'name',
        columns => {
             column_name => [Bivio::Type, Bivio::SQL::Constraint]
+            searchable => [
+                type => 'MyType',
+                constraint => 'NOT_NULL',
+                is_searchable => 1,
+            ],
        }
     }
 
@@ -97,52 +102,26 @@ This module takes ownership of I<decl>.
 
 sub new {
     my($proto, $decl) = @_;
-    my($attrs) = {};
+    my($attrs) = {
+	table_name => $decl->{table_name},
+	columns => {},
+	primary_key => [],
+	column_aliases => {},
+	has_blob => 0,
+    };
     $proto->init_version($attrs, $decl);
-    my($table_name) = $decl->{table_name};
-    Carp::croak("$table_name: invalid table name, must end in _t")
-		unless $table_name =~ m!^\w{1,28}_t$!;
-    $attrs->{table_name} = $table_name;
-    my($column_cfg) = $decl->{columns};
-    my($columns) = $attrs->{columns} = {};
-    # Sort the columns, so in a guaranteed order.  Makes for better
-    # Oracle caching of prepared statements.
-    my($column_names) = $attrs->{column_names} = [sort(keys(%$column_cfg))];
-    my($primary_key_names) = $attrs->{primary_key_names} = [];
-    my($primary_key) = $attrs->{primary_key} = [];
-    $attrs->{column_aliases} = {};
-    $attrs->{has_blob} = 0;
-    # Go through columns and
-    my($n);
-    foreach $n (@$column_names) {
-	my($cfg) = $column_cfg->{$n};
-	my($col) = $attrs->{column_aliases}->{$n} = $columns->{$n} = {
-	    # Bivio::SQL::Support attributes
-	    name => $n,
-	    constraint => Bivio::SQL::Constraint->from_any($cfg->[1]),
-	    sql_name => $n,
+    die("$attrs->{table_name}: invalid table name, must end in _t")
+	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
-	};
-	Bivio::SQL::Support->init_type($col, $cfg->[0]);
-	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
-	$attrs->{has_blob} = 1
-		if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
-	$columns->{$n}->{is_primary_key}
-		= $col->{constraint} eq Bivio::SQL::Constraint::PRIMARY_KEY();
-	push(@$primary_key_names, $n), push(@$primary_key, $col)
-		if $columns->{$n}->{is_primary_key};
-    }
-    Carp::croak("$table_name: too many BLOBs")
-		if $attrs->{has_blob} > 1;
-    Carp::croak("$table_name: no primary keys")
-		unless int(@$primary_key_names);
+    _init_columns($attrs, $decl->{columns});
 
     # Get auth_id and other columns
-    my($col_count) = int(keys(%$columns));
+    my($save_count) = int(keys(%{$attrs->{columns}}));
     __PACKAGE__->init_column_classes($attrs, $decl, [qw(auth_id other)]);
     __PACKAGE__->init_model_primary_key_maps($attrs);
     Carp::croak('columns may not be added in "other" or "auth_id" category')
-		unless $col_count == int(keys(%$columns));
+		unless $save_count == int(keys(%{$attrs->{columns}}));
+
     # auth_id must be at most one column.  Turn into that column or undef.
     Carp::croak('too many auth_id fields')
 		if int(@{$attrs->{auth_id}}) > 1;
@@ -150,35 +129,7 @@ sub new {
     $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
 
     # Cache as much of the statements as possible
-    $attrs->{select_columns} = [map {
-	$columns->{$_};
-    } @$column_names];
-    $attrs->{select} = 'select '.join (',', map {
-	$columns->{$_}->{type}->from_sql_value($_);
-    } @$column_names)." from $table_name ";
-    $attrs->{insert} = "insert into $table_name ("
-	    .join(',', @$column_names).') values ('
-	    .join(',', map {$columns->{$_}->{sql_pos_param}} @$column_names)
-	    .')';
-    $attrs->{primary_where} = ' where ' . join(' and ',
-	    map {$_.'='.$columns->{$_}->{sql_pos_param}}
-	    @{$primary_key_names});
-    $attrs->{delete} = "delete from $table_name ".$attrs->{primary_where};
-    $attrs->{update} = "update $table_name set ";
-
-    # Need to lock records for update if has blob.  Coupled with
-    # Connection
-    $attrs->{update_lock} = "select ".$primary_key_names->[0]
-	    ." from $table_name ".$attrs->{primary_where}." for update";
-
-    my($primary_id_name) = $attrs->{table_name};
-    $primary_id_name =~ s/_t$/_id/;
-    if ($columns->{$primary_id_name}) {
-	$attrs->{primary_id_name} = $primary_id_name;
-	$attrs->{next_primary_id} = 'select '
-		. substr($attrs->{table_name}, 0, -2)
-		. '_s.nextval from dual';
-    }
+    _init_statements($attrs);
     return &Bivio::SQL::Support::new($proto, $attrs);
 }
 
@@ -412,6 +363,98 @@ sub _equals {
 #    return 0 if defined($v) != defined($v2);
 #    return 1 unless defined($v);  # both undefined
     return $v eq $v2;
+}
+
+# _init_columns(hash_ref attrs, hash_ref column_cfg)
+#
+# Initializes the columns.
+#
+sub _init_columns {
+    my($attrs, $column_cfg) = @_;
+    # Sort the columns, so in a guaranteed order.  Makes for better
+    # Oracle caching of prepared statements.  We sort first, so
+    # primary keys are sorted as well.
+    $attrs->{column_names} = [sort(keys(%$column_cfg))];
+
+    foreach my $n (@{$attrs->{column_names}}) {
+	my($cfg) = $column_cfg->{$n};
+	my($col) = ref($cfg) eq 'HASH' ? $cfg : {
+	    type => $cfg->[0],
+	    constraint => $cfg->[1],
+	};
+	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
+	Bivio::SQL::Support->init_type($col, $col->{type});
+	$col->{constraint}
+		= Bivio::SQL::Constraint->from_any($col->{constraint});
+	$col->{sql_name} = $col->{name} = $n;
+	$col->{is_searchable} = 0 unless $col->{is_searchable};
+	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
+	$attrs->{has_blob} = 1
+		if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
+	$col->{is_primary_key}
+		= $col->{constraint} eq Bivio::SQL::Constraint::PRIMARY_KEY()
+			? 1 : 0;
+	push(@{$attrs->{primary_key}}, $col)
+		if $col->{is_primary_key};
+    }
+    Bivio::Die->die($attrs->{table_name}, ': too many BLOBs')
+		if $attrs->{has_blob} > 1;
+    Bivio::Die->die($attrs->{table_name}, ': no primary keys')
+		unless int(@{$attrs->{primary_key}});
+
+    $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
+    return;
+}
+
+# _init_statements(hash_ref)
+#
+# Initializes select, update etc.
+#
+sub _init_statements {
+    my($attrs) = @_;
+
+    # Select
+    $attrs->{select_columns} = [map {
+	$attrs->{columns}->{$_};
+    } @{$attrs->{column_names}}];
+
+    $attrs->{select} = 'select '.join (',', map {
+	$attrs->{columns}->{$_}->{type}->from_sql_value($_);
+    } @{$attrs->{column_names}})." from $attrs->{table_name} ";
+
+    # Insert
+    $attrs->{insert} = "insert into $attrs->{table_name} ("
+	    .join(',', @{$attrs->{column_names}}).') values ('
+	    .join(',', map {
+		$attrs->{columns}->{$_}->{sql_pos_param}
+	    } @{$attrs->{column_names}})
+	    .')';
+
+    # Delete & update
+    $attrs->{primary_where} = ' where ' . join(' and ',
+	    map {
+		$_.'='.$attrs->{columns}->{$_}->{sql_pos_param}
+	    } @{$attrs->{primary_key_names}});
+    $attrs->{delete} = "delete from $attrs->{table_name} "
+	    .$attrs->{primary_where};
+    $attrs->{update} = "update $attrs->{table_name} set ";
+
+    # Need to lock records for update if has blob.  Coupled with
+    # Connection
+    $attrs->{update_lock} = "select ".$attrs->{primary_key_names}->[0]
+	    ." from $attrs->{table_name} "
+		    .$attrs->{primary_where}." for update";
+
+    # Next_primary_id
+    my($primary_id_name) = $attrs->{table_name};
+    $primary_id_name =~ s/_t$/_id/;
+    if ($attrs->{columns}->{$primary_id_name}) {
+	$attrs->{primary_id_name} = $primary_id_name;
+	$attrs->{next_primary_id} = 'select '
+		. substr($attrs->{table_name}, 0, -2)
+		. '_s.nextval from dual';
+    }
+    return;
 }
 
 # _next_primary_id(Bivio::SQL::PropertySupport self, ref die) : string
