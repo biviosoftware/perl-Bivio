@@ -416,7 +416,7 @@ sub _determine_gain_type {
     my(@parts) = Bivio::Type::DateTime->to_parts($sell_date);
     my($sell_year) = $parts[5];
     if ($sell_year == 1997) {
-	if (Bivio::Type::DateTime->compare($_MAY_7_1997, $sell_date)) {
+	if (Bivio::Type::DateTime->compare($_MAY_7_1997, $sell_date) > 0) {
 	    return 'mtcg';
 	}
 #TODO; need to determine 18 months holding
