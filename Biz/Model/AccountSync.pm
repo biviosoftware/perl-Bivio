@@ -52,11 +52,14 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'account_sync_t',
 	columns => {
-            realm_transaction_id => ['PrimaryId', 'PRIMARY_KEY'],
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+#TODO: this is not really a primary key - there are none for this table
+            realm_transaction_id => ['RealmTransaction.realm_transaction_id',
+		'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    sync_key => ['Line', 'NOT_NULL'],
 	    import_date => ['Date', 'NOT_NULL'],
         },
+	auth_id => 'realm_id',
     };
 }
 
