@@ -324,7 +324,6 @@ sub _list_one {
     $realm_name = $realm->get('type')->get_name unless $realm_name;
     foreach my $role (@$roles) {
 	unless ($rr->unauth_load(realm_id => $realm_id, role => $role)) {
-	    # print $realm_name, ' ', $role->get_name, ": not set\n";
 	    next;
 	}
 	# Always clear the set before adding in values
