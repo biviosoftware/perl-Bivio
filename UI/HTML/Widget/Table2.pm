@@ -40,6 +40,14 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> attributes of the C<TABLE> tag.
 
+=item cellpadding : int [5]
+
+Padding inside each cell in pixels.
+
+=item cellspacing : int [0]
+
+Spacing around each cell in pixels.
+
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
@@ -66,11 +74,6 @@ widget.  The name of field is in the attribute named C<field>.
 
 An empty field will be rendered as a empty cell.
 
-=item column_control_hash : string
-
-Is the name of an attribute on I<source> which maps all columns to
-a boolean value.  If the boolean is true, the column will be rendered.
-
 =item column_enabler : UNIVERSAL
 
 The object which determines which columns to dynamically enable.
@@ -94,6 +97,10 @@ If not set, displays an empty table (with headers).
 
 If false, this widget won't render the C<&gt;/TABLE&lt;> tag.
 
+=item expand : boolean [false]
+
+If true, the table C<WIDTH> will be C<100%>.
+
 =item list_class : string (required)
 
 The class name of the list model to be rendered. The list_class is used
@@ -112,6 +119,12 @@ default to the 'list_class' attribute if not defined.
 =item start_tag : boolean [true]
 
 If false, this widget won't render the C<&gt;TABLE&lt;>tag.
+
+=item stripe_bgcolor : string [table_stripe_bg]
+
+The stripe color to use for even rows as defined by
+L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
+undefined (NO_COLOR_TAG), no striping will occur.
 
 =item summarize : boolean [false]
 
@@ -144,6 +157,14 @@ insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
+=item column_control : value
+
+A widget value which, if set, must be a true value to render the column.
+
+=item column_expand : boolean [false]
+
+If true, the column will be C<width="100%">.
+
 =item column_heading : string
 
 The heading label to use for the columns heading. By default, the column
@@ -172,6 +193,11 @@ numeric columns. By default, numeric columns always summarize.
 The widget which will be used to render the column. By default the column
 widget is based on the column's field type.
 
+=item heading_align : string [S]
+
+How to align the heading.
+The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TH> tag.
+
 =back
 
 =cut
@@ -189,6 +215,8 @@ use Bivio::UI::Label;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
+use vars qw($_TRACE);
+Bivio::IO::Trace->register;
 
 =head1 FACTORIES
 
@@ -267,15 +295,16 @@ sub initialize {
 
     # alternating row colors
     $fields->{odd_row} = "\n<tr>";
+    my($bgcolor) = $self->get_or_default('stripe_bgcolor', 'table_stripe_bg');
     $fields->{even_row} = "\n<tr"
-	    .Bivio::UI::Color->as_html_bg('table_stripe_bg').'>';
+	    .Bivio::UI::Color->as_html_bg($bgcolor).'>';
 
     my($title) = $self->unsafe_get('title');
     if (defined($title)) {
 	$fields->{title} = Bivio::UI::HTML::Widget::String->new({
-	    value => "\n$title\n",
-	    string_font => 'table_heading',
-	});
+            value => "\n$title\n",
+            string_font => 'table_heading',
+        });
 	$fields->{title}->initialize;
     }
 
@@ -292,9 +321,12 @@ sub initialize {
 	$fields->{empty_list_widget}->initialize;
     }
 
-    my($prefix) = "\n<table border=0 cellspacing=0 cellpadding=5";
+    my($prefix) = "\n<table border=0 cellspacing=";
+    $prefix .= $self->get_or_default('cellspacing', 0);
+    $prefix .= ' cellpadding=' . $self->get_or_default('cellpadding', 5);
     $prefix .= Bivio::UI::Align->as_html($self->get('align'))
 	    if $self->has_keys('align');
+    $prefix .= ' width="100%"' if $self->unsafe_get('expand');
     $fields->{table_prefix} = $prefix.'>';
     return;
 }
@@ -436,45 +468,30 @@ sub _get_enabled_widgets {
     my($all_summary_lines) = $fields->{summary_lines};
 
     my($enabler) = $self->unsafe_get('column_enabler');
-    unless ($enabler) {
-	# The enabler is a hash
-	my($a) = $self->unsafe_get('column_control_hash');
-	$enabler = $source->get($a) if $a;
-    }
-    if (ref($enabler)) {
+    my($headings) = [];
+    my($cells) = [];
+    my($summary_cells) = [];
+    my($summary_lines) = [];
+    my($control);
 
-	my($headings) = [];
-	my($cells) = [];
-	my($summary_cells) = [];
-	my($summary_lines) = [];
-
-	# determine which columns to render
-	my($columns) = $self->get('columns');
-	for (my($i) = 0; $i < int(@$columns); $i++) {
-	    my($col) = $columns->[$i];
-	    if ($col) {
-		# The enabler is a hash
-		if (ref($enabler) eq 'HASH') {
-		    unless ($enabler->{$col}) {
-			Bivio::IO::Alert->die('column_control_hash (',
-				$self->unsafe_get('column_control_hash'),
-				') missing column:', $col)
-				    unless defined($enabler->{$col});
-			next;
-		    }
-		}
-		else {
-		    next unless $enabler->enable_column($col, $self);
-		}
-	    }
-	    push(@$headings, $all_headings->[$i]);
-	    push(@$cells, $all_cells->[$i]);
-	    push(@$summary_cells, $all_summary_cells->[$i]);
-	    push(@$summary_lines, $all_summary_lines->[$i]);
-	}
-	return ($headings, $cells, $summary_cells, $summary_lines);
+    # determine which columns to render
+    my($columns) = $self->get('columns');
+    for (my($i) = 0; $i < int(@$columns); $i++) {
+        my($col) = $columns->[$i];
+        if ($col) {
+            if (defined($enabler)) {
+                next unless $enabler->enable_column($col, $self);
+            }
+            elsif ($control = $all_cells->[$i]->unsafe_get('column_control')) {
+                next unless $source->get_widget_value($control);
+            }
+        }
+        push(@$headings, $all_headings->[$i]);
+        push(@$cells, $all_cells->[$i]);
+        push(@$summary_cells, $all_summary_cells->[$i]);
+        push(@$summary_lines, $all_summary_lines->[$i]);
     }
-    return ($all_headings, $all_cells, $all_summary_cells, $all_summary_lines);
+    return ($headings, $cells, $summary_cells, $summary_lines);
 }
 
 # _get_heading(string col, Bivio::UI::HTML::Widget cell) : Bivio::UI::HTML::Widget
@@ -486,16 +503,18 @@ sub _get_heading {
 
     my($label) = $cell->get_or_default('column_heading', $col);
     if ($label) {
-	$label .= '_HEADING';
-	$label =~ s/\s/_/g;
-	$label =~ s/\./_/;
-	$label = Bivio::UI::Label->get_simple($label);
+        my($l) = $label;
+	$l =~ s/\s/_/g;
+	$l =~ s/\./_/;
+	$label = Bivio::UI::Label->unsafe_get_simple($l.'_HEADING');
+	$label = Bivio::UI::Label->get_simple($l) unless defined($label);
     }
     my($heading) = Bivio::UI::HTML::Widget::String->new({
 	value => $label,
 	string_font => 'table_heading',
-	column_align => 'S',
+	column_align => $cell->get_or_default('heading_align', 'S'),
 	column_span => $cell->get_or_default('column_span', 1),
+        heading_expand => $cell->unsafe_get('column_expand'),
     });
     _initialize_widget($self, $heading);
     return $heading;
@@ -592,7 +611,10 @@ sub _render_row {
     $row_prefix ||= "\n<tr>";
     $$buffer .= $row_prefix;
     foreach my $cell (@$cells) {
-	$$buffer .= "\n<td".$cell->get_or_default('column_prefix', '').'>';
+	$$buffer .= "\n<td" . $cell->get_or_default('column_prefix', '');
+        $$buffer .= ' width="100%"'
+                if $cell->get_or_default('heading_expand', 0);
+        $$buffer .= '>';
 
 	# Insert a "&nbsp;" if the widget doesn't render.  This
 	# makes the table look nicer on certain browsers.
