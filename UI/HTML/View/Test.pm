@@ -81,25 +81,12 @@ sub new {
 sub execute {
     my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
-    $fields->{request} = $req;
     my($buffer) = $fields->{prefix};
 # Cache this?
     $self->get('child')->render($req, \$buffer);
     $buffer .= $fields->{suffix};
     $req->get('reply')->print($buffer);
-    $fields->{request} = undef;
     return;
-}
-
-=for html <a name="get_object"></a>
-
-=head2 get_object(string name) : Bivio::UNIVERSAL
-
-=cut
-
-sub get_object {
-    my($self, $name) = @_;
-    return $self->{$_PACKAGE}->{request}->get($name);
 }
 
 =for html <a name="initialize"></a>
@@ -119,23 +106,23 @@ EOF
 EOF
     $self->put('child', Bivio::UI::HTML::Widget::Grid->new({
 	parent => $self,
-        rows => [[
+        values => [[
 	    Bivio::UI::HTML::Widget::Grid->new({
-	    rows => [
+	    values => [
 		[
 		    Bivio::UI::HTML::Widget::String->new({
 			value => ['task_id', 'get_short_desc',
 			       'Bivio::UI::HTML::Format::Printf',
 			       'The Task is %s',],
-			font_color => 'green',
-			grid_cell_expand => 1,
-			grid_cell_align => 'center',
+			string_font => 'page_heading',
+			cell_expand => 1,
+			cell_align => 'center',
 		    }),
 		],
 		[
 		    Bivio::UI::HTML::Widget::String->new({
 			value => 'south east',
-			grid_cell_align => 'SE',
+			cell_align => 'SE',
 		    }),
 		    Bivio::UI::HTML::Widget::Director->new({
 			control => ['auth_user'],
@@ -150,19 +137,19 @@ EOF
 				    'The auth_user is %s'],
 			}),
 			values => {},
-			grid_cell_align => 'right',
+			cell_align => 'right',
 		    }),
 		    Bivio::UI::HTML::Widget::String->new({
 			value => 'NW',
-			grid_cell_align => 'NW',
+			cell_align => 'NW',
 		    }),
 		],
 		[
 		    Bivio::UI::HTML::Widget::String->new({
 			value => ['start_time', 0,
-				'Bivio::UI::HTML::Format::DateTime'],
-			font_style => 'blink',
-			font_color => 'red'}),
+			    'Bivio::UI::HTML::Format::DateTime'],
+			string_font => 'table_heading',
+		    }),
 		    Bivio::UI::HTML::Widget::String->new({
 			value => 'Elapsed time:',
 		    }),
@@ -186,11 +173,8 @@ EOF
 		],
 		[
 		    Bivio::UI::HTML::Widget::TextTabMenu->new({
-			request => ['request'],
-			tab_color => 'purple',
-			tab_height => 0,
-			clear_dot => '/i/dot.gif',
-			tab_orient => 'up',
+			text_tab_height => 0,
+			orient => 'up',
 			values => [
 			    Form => Bivio::Agent::TaskId::TEST_FORM(),
 			    This => [Bivio::Agent::TaskId::TEST_VIEW()],
@@ -200,17 +184,14 @@ EOF
 	    ],
 	   }),
 	   Bivio::UI::HTML::Widget::ActionBar->new({
-	      request => ['request'],
 	      values => Bivio::UI::HTML::ActionButtons->get_list('test_view',
 		     'test_view'),
-	      bgcolor => 'olive',
-	      font_color => 'white',
-	      font_size => 'small',
-	      grid_cell_align => 'right',
+	      bgcolor => 'icon_text_ia',
+	      string_font => 'error',
+	      cell_align => 'right',
 	   }),
 	]],
     }));
-    $self->put(font_color => 'blue');
     $self->get('child')->initialize;
     return;
 }

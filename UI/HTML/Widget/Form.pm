@@ -40,25 +40,25 @@ No special formatting is implemented.  For layout, use, e.g.
 
 =over 4
 
-=item form_action : string (required,simple)
+=item action : string (required)
 
 Literal text to use as
 the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item form_action : array_ref (required,simple)
+=item action : array_ref (required)
 
 Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
 used as the C<ACTION> attribute of the C<FORM> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item form_method : string [POST]
+=item form_method : string [POST] (inherited)
 
 The value to be passed to the C<METHOD> attribute of the C<FORM> tag.
 
-=item value : Bivio::UI::Widget (required,simple)
+=item value : Bivio::UI::Widget (required)
 
 How to render the form.  Usually a
 L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>
@@ -110,9 +110,9 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{prefix};
     my($p) = '<form method=';
-    $p .= $self->get_or_default('form_method', $_DEFAULT_METHOD);
+    $p .= $self->ancestral_get('form_method', $_DEFAULT_METHOD);
     my($action);
-    ($action, $fields->{value}) = $self->simple_get('action', 'value');
+    ($action, $fields->{value}) = $self->get('action', 'value');
     $p .= ' action="';
     if (ref($action)) {
 	$fields->{action} = $action;

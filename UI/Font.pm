@@ -43,6 +43,8 @@ _compile([
     TABLE_CELL => [undef, undef, 'small'],
     ICON_TEXT_IA => [undef, 'icon_text_ia'],
     ERROR => [undef, 'error', 'i'],
+    ITALIC => [undef, undef, 'i'],
+    TIME => [$_SANS_SERIF, undef, 'small'],
 ]);
 
 =head1 METHODS
@@ -81,7 +83,7 @@ sub _compile {
 	my($p, $s) = ('', '');
 	while (@styles) {
 	    my($style) = shift(@styles);
-	    $size = $style, next if $style !~ /^[-+]?\d+$/;
+	    $size = $style, next if $style =~ /^[-+]?\d+$/;
 	    $p .= "<$style>";
 	    $s = "</$style>" . $s;
 	}

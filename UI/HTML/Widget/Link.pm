@@ -33,12 +33,12 @@ an C<HREF> attribute.
 
 =over 4
 
-=item href : array_ref (required,simple)
+=item href : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item href : string (required,simple)
+=item href : string (required)
 
 Literal text to use for C<HREF> attribute of C<A> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
@@ -48,7 +48,7 @@ The result will be used for C<HREF> attribute of C<A> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item value : widget (required,simple)
+=item value : widget (required)
 
 The value between the C<A> tags aka the label.
 
@@ -99,7 +99,7 @@ sub initialize {
     return if exists($fields->{value});
     # Both must be defined
     my($href);
-    ($fields->{value}, $href) = $self->simple_get('value', 'href');
+    ($fields->{value}, $href) = $self->get('value', 'href');
     my($p, $s) = ('<a', '');
     if (ref($href)) {
 	$fields->{href} = $href;

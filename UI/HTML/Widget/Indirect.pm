@@ -34,11 +34,9 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 =over 4
 
-=item value : array_ref (required,simple)
+=item value : Bivio::UI::HTML::Widget (required)
 
-Dereferenced and passed to C<$source-E<gt>get_widget_value>
-to the widget to render.  Accessed dynamically.  If the dynamic
-value is false, nothing is rendered.
+Accessed dynamically.  If the dynamic value is false, nothing is rendered.
 
 =back
 
@@ -75,9 +73,7 @@ nothing is rendered.
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($v) = $self->simple_get('value');
-    return unless $v;
-    $v = $source->get_widget_value(@$v);
+    my($v) = $self->get('value');
     $v->render($source, $buffer) if $v;
     return;
 }

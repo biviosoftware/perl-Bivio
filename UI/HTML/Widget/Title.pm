@@ -34,14 +34,14 @@ is rendered dynamically by accessing this widget's attributes dynamically.
 
 =over 4
 
-=item values : array_ref (required,simple)
+=item values : array_ref (required)
 
 Each element can be an array_ref or a string to be rendered.
 If the element is an array_ref, will be dereferenced and passed
 to C<$source-E<gt>get_widget_value>. If result is C<undef>, no value
 is rendered.  In all cases, the strings are passed to escaped.
 
-=item title_separator : string [' - ']
+=item title_separator : string [' - '] (inherited)
 
 Used to separate values in title.
 
@@ -92,8 +92,8 @@ sub initialize {
     return if $fields->{values};
     $fields->{values} = [map {
 	ref($_) ? $_ : Bivio::Util::escape_html($_);
-    } @{$self->simple_get('simple_values')}];
-    $fields->{separator} = $self->get_or_default('title_separator',
+    } @{$self->get('values')}];
+    $fields->{separator} = $self->ancestral_get('title_separator',
 	    $_DEFAULT_SEPARATOR);
     return;
 }

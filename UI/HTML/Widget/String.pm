@@ -34,16 +34,16 @@ for layout issues).
 
 =over 4
 
-=item string_font : string []
+=item string_font : string [] (inherited)
 
 The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
 
-=item value : array_ref (required,simple)
+=item value : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item value : string (required,simple)
+=item value : string (required)
 
 Text to render.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
@@ -97,7 +97,7 @@ sub initialize {
     return if exists($fields->{value});
     my($font) = $self->unsafe_get('string_font');
     my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
-    $fields->{value} = $self->simple_get('value');
+    $fields->{value} = $self->get('value');
     if (ref($fields->{value})) {
 	$fields->{prefix} = $p;
 	$fields->{suffix} = $s;

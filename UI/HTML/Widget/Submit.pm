@@ -36,11 +36,11 @@ C<Bivio::UI::HTML::Widget::Submit> draws a submit button.
 
 I<Not implemented.>
 
-=item submit_name : string []
+=item submit_name : string [] (inherited)
 
 The value to be passed to the C<NAME> attribute of the C<INPUT> tag.
 
-=item submit_value : string []
+=item submit_value : string [] (inherited)
 
 The value to be passed to the C<VALUE> attribute of the C<INPUT> tag.
 I<Note: this is also the label on the button>.

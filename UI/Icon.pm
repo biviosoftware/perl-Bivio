@@ -39,17 +39,37 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_DIR);
 my($_URI);
-my($_MISSING);
+my($_CLEAR_DOT) = {
+    uri => '/i/dot.gif',
+    height => 1,
+    width => 1,
+    is_constant => 1,
+};
+my($_MISSING) = {%$_CLEAR_DOT};
+$_MISSING->{uri} = '/missing-image';
 my(%_CACHE) = ();
 Bivio::IO::Config->register({
     'uri' => Bivio::IO::Config->REQUIRED,
     'directory' => Bivio::IO::Config->REQUIRED,
-    'not_found_uri' => '/not_found',
+    'missing_uri' => $_MISSING->{uri},,
+    'clear_dot_uri' => $_CLEAR_DOT->{uri},
 });
 
 =head1 METHODS
 
 =cut
+
+=for html <a name="get_clear_dot"></a>
+
+=head2 get_clear_dot() : string
+
+Returns single pixel transparent gif.
+
+=cut
+
+sub get_clear_dot {
+    return $_CLEAR_DOT;
+}
 
 =for html <a name="get_widget_value"></a>
 
@@ -103,17 +123,22 @@ sub get_widget_value {
 
 =over 4
 
+=item clear_dot_uri : string [/i/dot.gif]
+
+URI of single pixel transparent gif.
+See L<get_clear_dot|"get_clear_dot">.
+
 =item directory : string (required)
 
 Directory in which icons reside.
 
-=item uri : string (required)
-
-URI prefix for icons.
-
 =item missing_uri : string [/missing-image]
 
 URI to be used when an icon could not be found.
+
+=item uri : string (required)
+
+URI prefix for icons.
 
 =back
 
@@ -127,10 +152,8 @@ sub handle_config {
     $_DIR = $cfg->{directory};
     warn("$_DIR: not a directory") unless -d $_DIR;
     $_DIR =~ s!([^/])$!$1/!;
-    $_MISSING = {
-	uri => $cfg->{missing_uri},
-	is_constant => 1,
-    };
+    $_MISSING->{uri} = $cfg->{missing_uri};
+    $_CLEAR_DOT->{uri} = $cfg->{clear_dot_uri};
     return;
 }
 

@@ -40,19 +40,19 @@ No special pageatting is implemented.  For layout, use, e.g.
 
 =over 4
 
-=item body : Bivio::UI::Widget (required,simple)
+=item body : Bivio::UI::Widget (required)
 
 How to render the C<BODY> tag contents.  Usually a
 L<Bivio::UI::HTML::Widget::Join|Bivio::UI::HTML::Widget::Join>
 or
 L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
-=item page_bgcolor : string [page_bg]
+=item page_bgcolor : string [page_bg] (inherited)
 
 Value of C<BGCOLOR> attribute of C<BODY> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item head : Bivio::UI::Widget (required,simple)
+=item head : Bivio::UI::Widget (required)
 
 How to render the C<HEAD> tag contents.
 Usually a
@@ -100,7 +100,7 @@ sub new {
 
 =over 4
 
-=item show_time : boolean [false]
+=item show_time : boolean [false] (inherited)
 
 Show the elapsed time in page trailer.
 
@@ -127,12 +127,12 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{prefix};
     $fields->{middle} = '</head><body';
-    my($bg) = $self->get_or_default('page_bgcolor', 'page_bg');
+    my($bg) = $self->ancestral_get('page_bgcolor', 'page_bg');
     $fields->{middle} .= Bivio::UI::Color->as_html_bg($bg) if $bg;
     $fields->{middle} .= ">\n";
     my($v);
     foreach $v (($fields->{head}, $fields->{body})
-	    = $self->simple_get('head', 'body')) {
+	    = $self->get('head', 'body')) {
 	$v->put(parent => $self);
 	$v->initialize;
     }

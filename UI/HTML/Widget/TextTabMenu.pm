@@ -39,37 +39,24 @@ string can be mapped to one or more tasks.
 
 =over 4
 
-=item clear_dot : string (required)
-
-The URI of a clear single pixel image.
-
-=item request : Bivio::Agent::Request (required)
-
-Dereferenced and passed to C<$source-E<gt>get_widget_value>.
-Must result in a L<Bivio::Agent::Request>.  Used to map
-tasks to URIs and get the current task.
-
-If a destination (URI) task is not authorized for I<auth_role>, the menu item
-will not be drawn.
-
-=item text_tab_color : string [text_tab_bg]
+=item text_tab_color : string [text_tab_bg] (inherited)
 
 Color of the tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item text_tab_font : string []
+=item text_tab_font : string [] (inherited)
 
 Font for the tab tab.  See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item text_tab_height : int [1]
+=item text_tab_height : int [1] (inherited)
 
 How high should the tab "extension" be.  If zero, no extension
 will be drawn.
 
-=item text_tab_orient : string (required)
+=item orient : string (required)
 
 Must be either C<up> or C<down>.  Defines the direction of the tabs.
 
-=item values : array_ref (required,simple)
+=item values : array_ref (required)
 
 The list of labels to task ids.  Each label may map to more than
 one task id.  The first task id is the defines the URI to which
@@ -88,6 +75,7 @@ the menu item points.  For example,
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::UI::Color;
+use Bivio::UI::Icon;
 use Carp ();
 
 #=VARIABLES
@@ -127,28 +115,25 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{items};
-    my($dot, $o);
-    ($dot, $fields->{request}, $tc, $o)
-	    = $self->get(qw(clear_dot request
-                            text_tab_orient));
-    my($values) = $self->simple_get('values');
-    my($th) = $self->get_or_default('text_tab_height', 1);
-    my($tc) = $self->get_or_default('text_tab_color', 'text_tab_bg');
+    my($o) = $self->get('orient');
+    my($values) = $self->get('values');
+    my($th) = $self->ancestral_get('text_tab_height', 1);
+    my($tc) = $self->ancestral_get('text_tab_color', 'text_tab_bg');
     $tc = Bivio::UI::Color->as_html_bg($tc) if $tc;
     $o = lc($o);
-    $fields->{tab_up} = 1 if $o eq 'up';
-    $fields->{tab_up} = 0 if $o eq 'down';
-    Carp::croak("$o: invalid tab_orient value")
-		unless exists($fields->{tab_up});
+    $fields->{up} = 1 if $o eq 'up';
+    $fields->{up} = 0 if $o eq 'down';
+    Carp::croak("$o: invalid orient value") unless exists($fields->{up});
+    my($dot) = Bivio::UI::Icon->get_clear_dot->{uri};
     $fields->{highlight_extender} =
 	    qq!<td$tc><img src="$dot" height=$th!
 		    . " width=1 border=0></td>"
 			    if $fields->{tab_height} = $th;
     $fields->{highlight_prefix} = qq!<td$tc><strong>!;
     $fields->{highlight_suffix} = "</strong></td>";
-    my($tf) = $self->get_or_default('text_tab_font', undef);
+    my($tf) = $self->ancestral_get('text_tab_font', undef);
     $fields->{text_prefix} = '<td>';
-    $fields->{text_suffix} = '<td>';
+    $fields->{text_suffix} = '</td>';
     if ($tf) {
 	my(@f) = Bivio::UI::Font->as_html($tf);
 	$fields->{text_prefix} .= $f[0];
@@ -186,7 +171,7 @@ calls.  If the I<value> is a constant, then it will only be rendered once.
 sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($req) = $source->get_widget_value(@{$fields->{request}});
+    my($req) = Bivio::Agent::Request->get_current;
     my($task) = $req->get('task_id');
     my($this_task) = $fields->{task2first_task}->{$task};
     die($task->get_name, ': unknown task') unless defined($this_task);
@@ -217,7 +202,7 @@ sub render {
     $$buffer .= "<table border=0 cellpadding=2 cellspacing=0><tr>\n";
     # 9 is length of '<td></td>'.
     $$buffer .= $th == 0 ? $labels
-	    : $fields->{tab_up} ? ($labels."</tr><tr>\n".$pad."\n")
+	    : $fields->{up} ? ($labels."</tr><tr>\n".$pad."\n")
 	    : ($pad."\n</tr><tr>\n".$labels);
     $$buffer .= "</tr></table>\n";
     return;

@@ -32,12 +32,12 @@ C<Bivio::UI::HTML::Widget::Hidden> renders hidden fields of a form.
 
 =over 4
 
-=item values : array_ref (required,simple)
+=item values : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value> to
 get hash_ref to use (see below).
 
-=item values : hash_ref (required,simple)
+=item values : hash_ref (required)
 
 Keys are passed C<NAME> attribute of C<INPUT> tag (not escaped).
 Values are passed C<VALUE> attribute of C<INPUT> tag and
@@ -87,7 +87,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{is_constant});
-    my($values) = $self->simple_get(qw(values));
+    my($values) = $self->get(qw(values));
     if ($fields->{is_constant} = (ref($values) eq 'HASH')) {
 	my($v) = '';
 	_render($values, \$v);

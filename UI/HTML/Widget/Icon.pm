@@ -36,47 +36,47 @@ B<Note that C<Icon>s must be rendered within a table cell.>
 
 =over 4
 
-=item alt : array_ref (required,simple)
+=item alt : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item alt : string (required,simple)
+=item alt : string (required)
 
 Literal text to use for C<ALT> attribute of active C<IMG> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item alt_ia : array_ref [] (simple)
+=item alt_ia : array_ref []
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item alt_ia : string [] (simple)
+=item alt_ia : string []
 
 Literal text to use for C<ALT> attribute of inactive C<IMG> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item icon_font : string []
+=item icon_font : string [] (inherited)
 
 The font to be passed to
 L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 to be applied to C<text_ia>.
 
-=item icon_font_ia : string [icon_text_ia]
+=item icon_font_ia : string [icon_text_ia] (inherited)
 
 The font to be passed to
 L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 to be applied to C<text_ia>.
 
-=item href : array_ref (required,simple)
+=item href : array_ref (required) (inherited)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use for href in links.  Must return C<undef>
 if there is no link.
 
-=item name : string (required,simple)
+=item name : string (required) (inherited)
 
 Name of the icon.  Inactive image is always, the name followed
 by C<_ia> (inactive).  If there is no I<alt_ia> attribute, then
@@ -86,12 +86,12 @@ Attributes for
 L<Bivio::UI::HTML::Widget::Image|Bivio::UI::HTML::Widget::Image>
 will be applied through C<parent> inheritance.
 
-=item text : array_ref [] (simple)
+=item text : array_ref []
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item text : string [] (simple)
+=item text : string []
 
 How to render the label.
 
@@ -99,12 +99,12 @@ Attributes for
 L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 will be applied through C<parent> inheritance.
 
-=item text_ia : array_ref [] (simple)
+=item text_ia : array_ref []
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item text_ia : string [] (simple)
+=item text_ia : string []
 
 How to render the label in inactive case.  There must be an
 inactive icon for this case, i.e. I<alt_ia> must be defined.
@@ -158,13 +158,13 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
-    my($text, $alt_ia) = $self->simple_unsafe_get(qw(text alt_ia));
-    my($icon, $href) = $self->simple_get(qw(name href));
+    my($text, $alt_ia) = $self->unsafe_get(qw(text alt_ia));
+    my($icon, $href) = $self->get(qw(name href));
     my($image) = Bivio::UI::HTML::Widget::Image->new({
 	src => ['Bivio::UI::Icon', $icon],
-	alt => $self->get('ican_alt'),
+	alt => $self->get('alt'),
     });
-    my($font) = $self->get_or_default('icon_font', undef);
+    my($font) = $self->ancestral_get('icon_font', undef);
     $self->put(
 	control => $href,
 	values => {},
@@ -186,11 +186,11 @@ sub initialize {
     if (defined($alt_ia)) {
 	my($image_ia) = Bivio::UI::HTML::Widget::Image->new({
 	    src => ['Bivio::UI::Icon', $icon . '_ia'],
-	    alt => $self->simple_get('alt'),
+	    alt => $alt_ia,
 	});
-	my($text_ia) = $self->simple_unsafe_get('text_ia');
+	my($text_ia) = $self->unsafe_get('text_ia');
 	if (defined($text_ia)) {
-	    my($font_ia) = $simple->get_or_default('icon_font_ia',
+	    my($font_ia) = $simple->ancestral_get('icon_font_ia',
 		    'icon_text_ia');
 	    $self->put(
 		undef_value => Bivio::UI::HTML::Widget::Join->new({

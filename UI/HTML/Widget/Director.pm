@@ -33,24 +33,24 @@ of widgets.  A C<Director> is never constant but its I<values> might be.
 
 =over 4
 
-=item control : array_ref (required,simple)
+=item control : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>.
 The result must match one of the keys in I<values>
 or I<default_value> will be returned.  If I<default_value>
 is not defined, is an error.
 
-=item values : hash_ref (required,simple)
+=item values : hash_ref (required)
 
 The value selection of values.  The keys must match the type
 of I<control>.  The values are widgets.
 
-=item default_value : widget [] (simple)
+=item default_value : widget []
 
 The widget to use when the I<control> does not match any of
 the keys in I<values>.
 
-=item undef_value : widget [] (simple)
+=item undef_value : widget []
 
 The widget to use when the I<control> is undefined.
 
@@ -98,9 +98,9 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{control});
     ($fields->{control}, $fields->{values})
-	    = $self->simple_get('control', 'values');
-    $fields->{default_value} = $self->simple_unsafe_get('default_value');
-    $fields->{undef_value} = $self->simple_unsafe_get('undef_value');
+	    = $self->get('control', 'values');
+    $fields->{default_value} = $self->unsafe_get('default_value');
+    $fields->{undef_value} = $self->unsafe_get('undef_value');
     my($child);
     foreach $child (values(%{$fields->{values}}), $fields->{default_value},
 	    $fields->{undef_value}) {

@@ -34,7 +34,7 @@ L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 
 =over 4
 
-=item cells : array_ref (required,simple)
+=item cells : array_ref (required)
 
 The widgets that are to be used to render the cells.  If the
 widget is a scalar or array_ref, it identifies the field in the
@@ -42,17 +42,17 @@ list model to use.
 A L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 instance will be created with the corresponding value.
 
-=item table_cell_attrs : hash_ref [{string_font => 'table_cell'}]
+=item table_cell_attrs : hash_ref [{string_font => 'table_cell'}] (inherited)
 
 Attributes to be applied to all table cells.  They will be overriden
 by cell specific attributes.
 
-=item cell_source : array_ref (required,simple)
+=item cell_source : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get the source to pass to the table cell widgets.
 
-=item headings : array_ref (required,simple)
+=item headings : array_ref (required)
 
 The widgets that are to be used for the column headings.
 If the heading value is itself an array_ref, the first value is
@@ -61,21 +61,21 @@ to the list model.  If the widget is a string, not a widget,
 a L<Bivio::UI::HTML::Widget::String|Bivio::UI::HTML::Widget::String>
 instance will be created.
 
-=item table_heading_attrs: hash_ref [{string_font => 'table_heading'}]
+=item table_heading_attrs: hash_ref [{string_font => 'table_heading'}] (inherited)
 
 Attributes to be applied to all table cells.  They will be overriden
 by heading specific attributes.
 
-=item table_heading_bgcolor : string [heading_bg]
+=item table_heading_bgcolor : string [heading_bg] (inherited)
 
 The bgcolor of the heading row as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item table_pad : number [5]
+=item table_pad : number [5] (inherited)
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
 
-=item table_stripe_bgcolor : string [table_stripe_bg]
+=item table_stripe_bgcolor : string [table_stripe_bg] (inherited)
 
 The stripe color to use for even rows as defined by
 L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
@@ -87,7 +87,7 @@ false, no striping will occur.
 
 =over 4
 
-=item table_column_align : string [LEFT]
+=item table_column_align : string [LEFT] (inherited)
 
 How to align the value within the cell or heading.  The allowed (case
 insensitive) values are defined in
@@ -96,7 +96,7 @@ The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
 The value applies separately to headings and cells.
 
-=item table_column_expand : boolean [false]
+=item table_column_expand : boolean [false] (inherited)
 
 If true, the column will be C<width="100%">.  Should only be
 applied to headings.
@@ -153,16 +153,16 @@ sub initialize {
     return if exists($fields->{rows});
     my($p) = '<table border=0 cellspacing=0 cellpadding=';
     # We don't want to check parents
-    my($expand) = $self->simple_unsafe_get('table_expand');
-    $p .= $self->get_or_default('table_pad', $_DEFAULT_PAD);
+    my($expand) = $self->unsafe_get('table_expand');
+    $p .= $self->ancestral_get('table_pad', $_DEFAULT_PAD);
     $p .= ' width="100%"' if $expand;
     $fields->{prefix} = $p . '>';
     $fields->{suffix} = '</table>';
-    my($cell_attrs) = $self->get_or_default('table_cell_attrs',
+    my($cell_attrs) = $self->ancestral_get('table_cell_attrs',
 	   {string_font => 'table_cell'});
     $fields->{cells} = [];
     my($c);
-    foreach $c (@{$fields->{cells} = $self->simple_get('cells')}) {
+    foreach $c (@{$fields->{cells} = $self->get('cells')}) {
 	unless (UNIVERSAL::isa($c, 'Bivio::UI::HTML::Widget')) {
 	    $c = Bivio::UI::HTML::Widget::String->new({
 		value => ref($c) ? $c : [$c],
@@ -178,9 +178,9 @@ sub initialize {
 	}
     }
     my($h);
-    my($heading_attrs) = $self->get_or_default('table_heading_attrs',
+    my($heading_attrs) = $self->ancestral_get('table_heading_attrs',
 	    {string_font => 'table_heading'});
-    foreach $h (@{$fields->{headings} = $self->simple_get('headings')}) {
+    foreach $h (@{$fields->{headings} = $self->get('headings')}) {
 
 	unless (UNIVERSAL::isa($c, 'Bivio::UI::HTML::Widget')) {
 	    $c = Bivio::UI::HTML::Widget::String->new({
@@ -197,7 +197,7 @@ sub initialize {
 	}
     }
 
-    my($heading_bgcolor) = $self->get_or_default('table_heading_bgcolor',
+    my($heading_bgcolor) = $self->ancestral_get('table_heading_bgcolor',
 	    'heading_bg');
     my($c);
     foreach $c (@{$fields->{cells}}) {

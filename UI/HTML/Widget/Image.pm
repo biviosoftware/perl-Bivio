@@ -32,22 +32,22 @@ C<Bivio::UI::HTML::Widget::Image>
 
 =over 4
 
-=item alt : array_ref (required,simple)
+=item alt : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
 to get string to use (see below).
 
-=item alt : string (required,simple)
+=item alt : string (required)
 
 Literal text to use for C<ALT> attribute of C<IMG> tag.
 Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
 before rendering.
 
-=item image_border : int [0]
+=item image_border : int [0] (inherited)
 
 Set to zero by default, so you rarely need to set this.
 
-=item image_height : int [src's height]
+=item image_height : int [src's height] (inherited)
 
 The (constant) height of the image.  Useful in combination with single pixel
 clear gif for forcing dimensions of an area.  Both B<height> and
@@ -55,13 +55,13 @@ B<width> must be set.
 
 For "real" gifs, the dimensions are extracted from the file.
 
-=item src : array_ref (required,simple)
+=item src : array_ref (required)
 
 Image to use for C<SRC> attribute of C<IMG> tag.  An "image" is
 a hash_ref as returned, e.g. as returned by
 L<Bivio::UI::Icon::get_widget_value|Bivio::UI::Icon/"get_widget_value">.
 
-=item image_width : int [src's width]
+=item image_width : int [src's width] (inherited)
 
 See B<height>.
 
@@ -114,8 +114,8 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if exists($fields->{is_constant});
     # Both must be defined
-    my($src, $alt) = $self->simple_get(qw(src alt));
-    my($width, $height, $border) = $self->simple_unsafe_get(
+    my($src, $alt) = $self->get(qw(src alt));
+    my($width, $height, $border) = $self->unsafe_get(
 	    qw(image_width image_height simple_border));
     $border = 0 unless defined($border);
     Carp::croak('only one of width and height defined')

@@ -33,20 +33,20 @@ There are two types of attributes: table and cell.
 
 =over 4
 
-=item grid_bgcolor : string []
+=item bgcolor : string []
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item grid_expand : boolean [false]
+=item expand : boolean [false]
 
 If true, the table will C<WIDTH> will be C<100%>.
 
-=item grid_pad : number [0]
+=item pad : number [0]
 
 The value to be passed to the C<CELLPADDING> attribute of the C<TABLE> tag.
 
-=item values : array_ref (required,simple)
+=item values : array_ref (required)
 
 An array_ref of rows of array_ref of columns (cells).  A cell may
 be C<undef>.
@@ -57,19 +57,19 @@ be C<undef>.
 
 =over 4
 
-=item grid_cell_align : string []
+=item cell_align : string []
 
 How to align the value within the cell.  The allowed (case
 insensitive) values are defined in
 L<Bivio::UI::Align|Bivio::UI::Align>.
 The value affects the C<ALIGN> and C<VALIGN> attributes of the C<TD> tag.
 
-=item grid_cell_bgcolor : string []
+=item cell_bgcolor : string []
 
 The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
 See L<Bivio::UI::Color|Bivio::UI::Color>.
 
-=item grid_cell_expand : boolean [false]
+=item cell_expand : boolean [false]
 
 If true, the cell will consume any excess columns in its row.
 Excess columns are not the same as C<undef> columns which are
@@ -123,15 +123,14 @@ sub initialize {
     return if exists($fields->{rows});
     my($p) = '<table border=0 cellspacing=0 cellpadding=';
     # We don't want to check parents
-    my($expand, $bg) = $self->simple_unsafe_get(
-	    qw(grid_expand grid_bgcolor));
-    $p .= $self->get_or_default('grid_pad', $_DEFAULT_PAD);
+    my($expand, $bg) = $self->unsafe_get(qw(expand bgcolor));
+    $p .= $self->get_or_default('pad', $_DEFAULT_PAD);
     $p .= ' width="100%"' if $expand;
     $p .= Bivio::UI::Color->as_html($bg) if $bg;
     $fields->{prefix} = $p . '>';
     $fields->{suffix} = '</table>';
     my($num_cols) = 0;
-    my($rows, $r) = $self->simple_get('values');
+    my($rows, $r) = $self->get('values');
     foreach $r (@$rows) {
 	$num_cols = int(@$r) if $num_cols < int(@$r);
     }
@@ -144,10 +143,9 @@ sub initialize {
 	foreach $c (@cols) {
 	    my($p) = '<td';
 	    if (ref($c)) {
-		# parent not set, so won't pick up $self's $bgcolor, etc.
 		my($align);
 		($bg, $expand, $align) = $c->unsafe_get(qw(
-                        grid_cell_bgcolor grid_cell_expand grid_cell_align));
+                        cell_bgcolor cell_expand cell_align));
 		if ($expand) {
 		    # First expanded cell gets all the rest of the columns.
 		    # If the grid is expanded itself, then set this cell's
@@ -158,10 +156,7 @@ sub initialize {
 		}
 		$p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
 		$p .= Bivio::UI::Align->as_html($align) if $align;
-#TODO: Grid doesn't connect parent to child to avoid strange inheritance,
-#      e.g. grids within grids.  Perhaps this is ok.  Need to try out.
-#      If ok, then document above.
-#		$c->put('parent', $self);
+		$c->put('parent', $self);
 		$c->initialize($self, $source);
 	    }
 	    # Replace undef cells with something real.  Render

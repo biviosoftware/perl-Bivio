@@ -117,7 +117,7 @@ of C<TD> tag.  Prefixed with leading space.
 =cut
 
 sub as_html {
-    return ' '.Bivio::Type::Enum(@_)->get_long_desc;
+    return ' '.Bivio::Type::Enum::from_any(@_)->get_long_desc;
 }
 
 #=PRIVATE METHODS

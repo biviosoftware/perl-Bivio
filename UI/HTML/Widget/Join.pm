@@ -33,7 +33,7 @@ and literal text (no escaping).
 
 =over 4
 
-=item values : array_ref (required,simple)
+=item values : array_ref (required)
 
 The widgets and text which will be rendered as a part of the sequence.
 The rendered values are unmodified.  If all the values are constant,
@@ -82,7 +82,7 @@ sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{values};
-    $fields->{values} = $self->simple_get('values');
+    $fields->{values} = $self->get('values');
     $fields->{is_first_render} = 1;
     my($v);
     foreach $v (@{$fields->{values}}) {
