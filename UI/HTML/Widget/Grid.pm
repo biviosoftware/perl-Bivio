@@ -405,7 +405,7 @@ sub render {
 		    $row .= '>';
 		}
 		my($rc) = $w->unsafe_get('row_control');
-		next ROW if $rc && !$rc->get_widget_value(@$rc);
+		next ROW if $rc && !$source->get_widget_value(@$rc);
 		$w->render($source, \$row);
 	    }
 	    elsif (defined($w)) {
