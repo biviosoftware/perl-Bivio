@@ -30,6 +30,8 @@ URI for the most part, so we do, too.]
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::Ext::ApacheConstants;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::HTTP::Form;
@@ -44,7 +46,6 @@ use Bivio::IO::Trace;
 # Avoid circular import
 #use Bivio::Biz::Action::Logout;
 use Bivio::Type::UserAgent;
-use Bivio::Util;
 use Socket;
 
 #=VARIABLES
@@ -66,7 +67,7 @@ separated.
 
 sub new {
     my($proto, $r) = @_;
-    my($start_time) = Bivio::Util::gettimeofday();
+    my($start_time) = Bivio::Type::DateTime->gettimeofday();
     # Set remote IP address if passed through Via: header
     my($via) = $r->header_in('via');
     $r->connection->remote_ip($via) if defined($via);
@@ -99,7 +100,7 @@ sub new {
     $self->internal_set_current();
 
     # Must re-escape the URI.
-    $uri = Bivio::Util::escape_uri($uri) if $uri;
+    $uri = Bivio::HTML->escape_uri($uri) if $uri;
 
     # This special field is set by one of the handlers (LoginForm).
     my($auth_user_id) = $self->unsafe_get('auth_user_id');

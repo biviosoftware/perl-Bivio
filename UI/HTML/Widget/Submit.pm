@@ -58,6 +58,7 @@ dynamic submit buttons.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -119,7 +120,7 @@ sub render {
     my($p, $s) = Bivio::UI::Font->format_html('form_submit', $req);
     $$buffer .= $p.'<input type=submit name="'
 	    .$fields->{class}->SUBMIT().'" value="'
-	    .Bivio::Util::escape_html(
+	    .Bivio::HTML->escape(
 		    ref($value) ? $source->get_widget_value(@$value)
 		    : $fields->{class}->$value())
 	    .($fields->{attributes}

@@ -197,12 +197,12 @@ sub VERSION_FIELD {
 }
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Agent::Task;
 use Bivio::Biz::FormContext;
 use Bivio::IO::Trace;
 use Bivio::SQL::FormSupport;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -493,7 +493,7 @@ sub format_context_as_query {
 
 #TODO: Tightly coupled with Widget::Form which knows this is fc=
 #      Need to understand better how to stop the context propagation
-    return '?fc='.Bivio::Util::escape_query(
+    return '?fc='.Bivio::HTML->escape_query(
 	    Bivio::Biz::FormContext->to_literal($req, $c));
 }
 
@@ -607,7 +607,7 @@ sub get_field_as_html {
     return $self->get_field_info($name, 'type')->to_html($value)
 	    if defined($value);
     my($fn) = $self->get_field_name_for_html($name);
-    return Bivio::Util::escape_html(_get_literal($fields, $fn));
+    return Bivio::HTML->escape(_get_literal($fields, $fn));
 }
 
 =for html <a name="get_field_as_literal"></a>

@@ -41,13 +41,13 @@ get hash_ref to use (see below).
 
 Keys are passed C<NAME> attribute of C<INPUT> tag (not escaped).
 Values are passed C<VALUE> attribute of C<INPUT> tag and
-are passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+are passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -141,7 +141,7 @@ sub _render {
     my($k);
     foreach $k (sort(keys(%$values))) {
 	$$buffer .= '<input type=hidden name="'.$k.'" value="'
-		.Bivio::Util::escape_html($values->{$k})."\">\n";
+		.Bivio::HTML->escape($values->{$k})."\">\n";
     }
     return;
 }

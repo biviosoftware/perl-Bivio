@@ -77,6 +77,8 @@ sub UPDATE_ONLY {
 }
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::Agent::Request;
 use Bivio::Auth::Realm;
 use Bivio::Die;
@@ -332,7 +334,7 @@ sub _audit_last_import_date {
 sub _resolve_symbol_clashes {
     my($req) = @_;
 
-    Bivio::Util::my_require('Bivio::Biz::Model::MGFSInstrument');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model::MGFSInstrument');
     my($mgfs_instrument) = Bivio::Biz::Model::MGFSInstrument->new($req);
     my($handled_ids) = {};
     my($sth) = Bivio::SQL::Connection->execute('

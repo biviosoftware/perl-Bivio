@@ -73,7 +73,7 @@ field's type.)
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 use Bivio::UI::HTML::Format;
 use Bivio::Type::Password;
 
@@ -192,7 +192,7 @@ sub render {
 	if ($f) {
 	    $v = $f->get_widget_value($form->get($field));
 	    # Formatter must always return a defined value
-	    $v = Bivio::Util::escape_html($v) unless $f->result_is_html;
+	    $v = Bivio::HTML->escape($v) unless $f->result_is_html;
 	}
     }
     $v = $form->get_field_as_html($field) unless defined($v);

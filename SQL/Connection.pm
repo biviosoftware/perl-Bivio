@@ -80,12 +80,13 @@ sub MAX_RETRIES {
 }
 
 #=IMPORTS
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::Die;
 use Bivio::DieCode;
 use Bivio::Ext::DBI;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
-use Bivio::Util;
 use Bivio::TypeError;
 use DBD::Oracle qw(:ora_types);
 use Carp ();
@@ -204,7 +205,7 @@ sub execute {
     my($retries) = 0;
  TRY: {
 	# Execute the statement
-	my($start_time) = Bivio::Util::gettimeofday();
+	my($start_time) = Bivio::Type::DateTime->gettimeofday();
 	my($ok) = Bivio::Die->eval(sub {
         	_execute_helper($self, $sql, $params, $has_blob, \$statement);
 		return 1;
@@ -316,7 +317,7 @@ returns its new value.
 sub increment_db_time {
     my(undef, $start_time) = @_;
     Carp::croak('invalid start_time') unless $start_time;
-    $_DB_TIME += Bivio::Util::time_delta_in_seconds($start_time);
+    $_DB_TIME += Bivio::Type::DateTime->gettimeofday_diff_seconds($start_time);
     return $_DB_TIME;
 }
 

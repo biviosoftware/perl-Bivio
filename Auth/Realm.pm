@@ -61,6 +61,8 @@ Type of this realm.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 #Avoid circular import: See code in _initialize
 use Bivio::Auth::Permission;
 use Bivio::Auth::PermissionSet;
@@ -307,8 +309,8 @@ sub get_type {
 sub _initialize {
     $_INITIALIZED && return;
     # Avoid circular import
-    Bivio::Util::my_require('Bivio::Biz::Model::RealmOwner');
-    Bivio::Util::my_require('Bivio::Biz::Model::RealmRole');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model::RealmOwner');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Model::RealmRole');
 
     my($rr) = Bivio::Biz::Model::RealmRole->new();
     my(@roles) = grep($_ ne Bivio::Auth::Role::UNKNOWN(),
@@ -318,7 +320,7 @@ sub _initialize {
 	my($rt) = Bivio::Auth::RealmType->$t();
 	my($rti) = $rt->as_int;
 	my($rc) = $_TYPE_TO_CLASS{$rt};
-	Bivio::Util::my_require($rc);
+	Bivio::IO::ClassLoader->simple_require($rc);
 	my($dp) = $_DEFAULT_PERMISSION_SET{$rt} = {};
 	foreach my $r (@roles) {
 	    die($rt->as_string, ': unable to load default permissions for ',

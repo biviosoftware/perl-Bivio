@@ -58,8 +58,8 @@ Should the a click submit the form?
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::UI::Font;
-use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -130,7 +130,7 @@ sub render {
 		."\""
 		.($fields->{auto_submit} ? ' onclick="submit()"' : '')
 		.">&nbsp;"
-		.$p. Bivio::Util::escape_html($self->get('label')).$s;
+		.$p. Bivio::HTML->escape($self->get('label')).$s;
 	$fields->{initialized} = 1;
     }
 

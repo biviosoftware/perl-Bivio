@@ -24,7 +24,8 @@ C<Bivio::Type> base class of all types.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::IO::Alert;
 
 #=VARIABLES
@@ -157,7 +158,7 @@ sub get_instance {
     my($self, $type) = @_;
     unless (ref($type)) {
 	$type = 'Bivio::Type::'.$type unless $type =~ /::/;
-	Bivio::Util::my_require($type);
+	Bivio::IO::ClassLoader->simple_require($type);
     }
     Bivio::IO::Alert->die($type, ': not a Bivio::Type')
 		unless UNIVERSAL::isa($type, 'Bivio::Type');
@@ -246,7 +247,7 @@ empty string.  Otherwise, escapes html and returns.
 sub to_html {
     my($self, $value) = @_;
     return '' unless defined($value);
-    return Bivio::Util::escape_html($self->to_literal($value));
+    return Bivio::HTML->escape($self->to_literal($value));
 }
 
 =for html <a name="to_literal"></a>
@@ -275,7 +276,7 @@ Similar to L<to_uri|"to_uri">, but also escapes "&" and "="
 
 sub to_query {
     my($proto, $value) = @_;
-    return Bivio::Util::escape_query($proto->to_uri($value));
+    return Bivio::HTML->escape_query($proto->to_uri($value));
 }
 
 =for html <a name="to_sql_param"></a>
@@ -342,7 +343,7 @@ empty string.  Otherwise, escapes uri and returns.
 sub to_uri {
     my($proto, $value) = @_;
     return '' unless defined($value);
-    return Bivio::Util::escape_uri($proto->to_literal($value));
+    return Bivio::HTML->escape_uri($proto->to_literal($value));
 }
 
 =for html <a name="to_xml"></a>

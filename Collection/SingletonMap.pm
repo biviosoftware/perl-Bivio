@@ -36,7 +36,7 @@ to instantiate.
 
 #=IMPORTS
 use Carp ();
-use Bivio::Util;
+use Bivio::IO::ClassLoader;
 
 #=VARIABLES
 # Key to this is a package name ($proto).  The value is a
@@ -92,7 +92,7 @@ sub put {
     my($c);
     foreach $c (@classes) {
 	next if $map->{$c};
-	Bivio::Util::my_require($c);
+	Bivio::IO::ClassLoader->simple_require($c);
 	$map->{$c} = $c->can('get_instance') ? $c->get_instance : $c->new;
     }
     return;

@@ -47,7 +47,7 @@ to get string to use (see below).
 =item alt : string (required)
 
 Literal text to use for C<ALT> attribute of C<IMG> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 May be C<undef>.
@@ -91,7 +91,7 @@ VSPACE attribute value.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 use Bivio::UI::Icon;
 use Carp ();
 
@@ -161,7 +161,7 @@ sub initialize {
 	$fields->{alt} = $alt;
     }
     elsif (defined($alt)) {
-	$p .= ' alt="'.Bivio::Util::escape_html($alt).'"';
+	$p .= ' alt="'.Bivio::HTML->escape($alt).'"';
     }
     # If width defined, then height defined.
     if (defined($width)) {
@@ -191,7 +191,7 @@ sub render {
     $$buffer .= $fields->{value}, return if $fields->{is_constant};
 
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' alt="'.Bivio::Util::escape_html(
+    $$buffer .= ' alt="'.Bivio::HTML->escape(
 	    $source->get_widget_value(@{$fields->{alt}})).'"'
 		    if $fields->{alt};
 
@@ -213,7 +213,7 @@ sub render {
     # Have a size, so must format explicitly.
     $src = Bivio::UI::Icon->get_value($src, $source->get_request);
 
-    $$buffer .= ' src="'.Bivio::Util::escape_html($src->{uri}).'"';
+    $$buffer .= ' src="'.Bivio::HTML->escape($src->{uri}).'"';
     $$buffer .= " width=$src->{width} height=$src->{height}"
 	    if !$fields->{have_size} && defined($src->{width});
     $$buffer .= '>';

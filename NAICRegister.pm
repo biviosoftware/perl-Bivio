@@ -6,7 +6,6 @@ package Bivio::NAICRegister;
 use strict;
 use Apache::Constants qw(OK);
 use Bivio::Mail::Outgoing;
-use Bivio::Util;
 
 my($_FORM) = <<'EOF';
 <html><head><title>NAIC Denver Chapter Registration Form</title>
@@ -130,7 +129,7 @@ sub _render_form {
 	$form =~ s/(<H2>.*<\/H2>)/$1$x/;
 	foreach (@_FIELDS) {
 	    if (length($args->{$_})) {
-		my($v) = Bivio::Util::escape_html($args->{$_});
+		my($v) = Bivio::HTML->escape($args->{$_});
 		$form =~ s/(name=$_)\b/$1 value="$v"/;
 	    }
 	    elsif (!$_NOT_REQUIRED_FIELDS{$_}) {
@@ -165,4 +164,5 @@ sub _check_fields {
     return !$err;
 }
 
+use Bivio::HTML;
 1;

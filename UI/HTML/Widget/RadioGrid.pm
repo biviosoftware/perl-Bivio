@@ -59,6 +59,7 @@ Should the a click submit the form?
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Type::Enum;
 use Bivio::UI::HTML::Widget::Radio;
 
@@ -135,7 +136,7 @@ sub _load_items_from_enum_list {
     # id, display pairs
     my(@items);
     foreach my $item (@values) {
-	push(@items, [$item, Bivio::Util::escape_html($item->get_long_desc)]);
+	push(@items, [$item, Bivio::HTML->escape($item->get_long_desc)]);
     }
 
     # Result

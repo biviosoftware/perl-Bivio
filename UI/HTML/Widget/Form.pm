@@ -44,14 +44,14 @@ No special formatting is implemented.  For layout, use, e.g.
 
 Literal text to use as
 the C<ACTION> attribute of the C<FORM> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =item action : array_ref [$req->format_uri]
 
 Dereferenced, passed to C<$source-E<gt>get_widget_value>, and
 used as the C<ACTION> attribute of the C<FORM> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =item end_tag : boolean [1]
@@ -94,7 +94,7 @@ L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 use Bivio::UI::HTML::Widget::TimezoneField;
 
 #=VARIABLES
@@ -179,7 +179,7 @@ sub initialize {
 	$fields->{action} = $action;
     }
     elsif (defined($action)) {
-	$p .= Bivio::Util::escape_html($action);
+	$p .= Bivio::HTML->escape($action);
     }
     else {
 	$fields->{action} = 1;
@@ -242,7 +242,7 @@ sub render {
     while (@$hidden) {
 	# hidden fields have been converted to literal, but not  escaped.
 	$$buffer .= '<input type=hidden name='.shift(@$hidden).' value="'
-		.Bivio::Util::escape_html(shift(@$hidden))."\">\n";
+		.Bivio::HTML->escape(shift(@$hidden))."\">\n";
     }
 
     # Rest of the form

@@ -60,6 +60,7 @@ sub INVALID_PREFIX {
 }
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::TypeError;
 use Bivio::Mail::RFC822;
 
@@ -171,7 +172,7 @@ This is assumed by L<Bivio::UI::XML::ClubExport|Bivio::UI::XML::ClubExport>.
 sub to_xml {
     my($proto, $value) = @_;
     return '' unless defined($value) && !$proto->is_ignore($value);
-    return Bivio::Util::escape_html($value);
+    return Bivio::HTML->escape($value);
 }
 
 #=PRIVATE METHODS

@@ -40,8 +40,9 @@ see things, e.g. date/time format.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::IO::Alert;
-use Bivio::Util;
 
 #=VARIABLES
 
@@ -68,7 +69,7 @@ sub get_instance {
 	$class = ref($class) if ref($class);
 	$class = 'Bivio::UI::HTML::Format::'.$class unless $class =~ /::/;
 	# Make sure the class is loaded.
-	Bivio::Util::my_require($class);
+	Bivio::IO::ClassLoader->simple_require($class);
     }
     else {
 	$class = ref($proto) || $proto;

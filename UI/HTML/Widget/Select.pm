@@ -91,8 +91,8 @@ The comparison method for an enum.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::IO::Trace;
-use Bivio::Util;
 use Bivio::Type::Enum;
 
 #=VARIABLES
@@ -251,7 +251,7 @@ sub _load_items_from_enum_list {
     my(@items);
     foreach my $item (@values) {
 	push(@items, $item->as_int,
-		Bivio::Util::escape_html($item->get_short_desc));
+		Bivio::HTML->escape($item->get_short_desc));
     }
 
     # Result

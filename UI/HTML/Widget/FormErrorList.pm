@@ -49,6 +49,7 @@ time.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::IO::Trace;
 use Bivio::UI::HTML::FormErrors;
 
@@ -119,7 +120,7 @@ sub render {
     foreach my $name (keys(%$errors)) {
 	my($caption) = _get_caption($self, $name);
 	$e .= "\n<li>";
-	$e .= Bivio::Util::escape_html($caption.': ') if $caption;
+	$e .= Bivio::HTML->escape($caption.': ') if $caption;
 	$e .= Bivio::UI::HTML::FormErrors->to_html(
 		$source, $model, $name, $caption || '', $errors->{$name});
     }

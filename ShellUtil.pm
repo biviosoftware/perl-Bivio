@@ -108,6 +108,40 @@ Bivio::IO::Trace->register;
 
 =cut
 
+=for html <a name="are_you_sure"></a>
+
+=head2 static are_you_sure()
+
+=head2 static are_you_sure(string prompt)
+
+Writes I<prompt> (default: "Are you sure?") to STDERR.  User must
+answer "yes", on STDIN or the routine throws an exception.
+
+Always returns in STDIN is not a tty (-t STDIN returns false).
+
+It is assumed STDERR is set up for autoflushing.
+
+=cut
+
+sub are_you_sure {
+    my($prompt) = @_;
+
+    # Not a tty?
+    return unless -t STDIN;
+
+    # Ask
+    $prompt ||= 'Are you sure?';
+    print STDERR $prompt, " (yes or no) ";
+
+    # Get answer stripping spaces to be nice.
+    my $answer = <STDIN>;
+    $answer =~ s/\s+//g;
+    die("Operation aborted\n") unless $answer eq 'yes';
+
+    # Yes answer
+    return;
+}
+
 =for html <a name="getopt"></a>
 
 =head2 getopt(string name) : any
@@ -121,7 +155,7 @@ C<undef> (options can't be passed to classes).
 
 sub getopt {
     my($self, $name) = @_;
-_trace($self->internal_get) if $_TRACE;
+    _trace($self->internal_get) if $_TRACE;
     return ref($self) ? $self->unsafe_get($name) : undef;
 }
 
@@ -145,14 +179,50 @@ sub main {
     local($|) = 1;
     my($self) = $proto->new(_parse_options($proto, \@argv));
 
-    # Execute the method
-    if (@argv && $argv[0] =~ /^([a-z]\w*)$/i && $self->can($1)) {
+    # Execute the method only if defined in subclass (except for usage)
+    if (@argv && $argv[0] =~ /^([a-z]\w*)$/i && $self->can($1)
+	   && (!__PACKAGE__->can($1) || $1 eq 'usage')) {
 	shift(@argv);
 	$self->$1(@argv);
     }
     else {
 	$self->usage('unknown or missing command');
     }
+}
+
+=for html <a name="piped_exec"></a>
+
+=head2 static piped_exec(string command) : string_ref
+
+=head2 static piped_exec(string command, string input) : string_ref
+
+=head2 static piped_exec(string command, string_ref input) : string_ref
+
+Runs I<command> with I<input> (or empty input) and returns output.
+I<input> may be C<undef>.
+
+Throws exception if it can't write the input or if the command returns
+a non-zero exit result.
+
+=cut
+
+sub piped_exec {
+    my(undef, $command, $input) = @_;
+    my($in) = ref($input) ? $input : \$input;
+    $$in = '' unless defined($$in);
+    my($pid) = open(IN, "-|");
+    defined($pid) || die("fork: $!");
+    unless ($pid) {
+	open(OUT, "| exec $command") || die("open $command: $!");
+	print OUT $$in;
+	close(OUT) || die("write to $command failed: $!");
+	CORE::exit(0);
+    }
+    local($/) = undef;
+    my($res) = <IN>;
+    $res ||= '';
+    close(IN) || die("$res\n$command failed: $!");
+    return \$res;
 }
 
 =for html <a name="usage"></a>

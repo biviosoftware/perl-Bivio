@@ -146,7 +146,7 @@ id of the super user.
 =item start_time : array_ref
 
 The time the request started as an array of seconds and microseconds.
-See L<Bivio::Util::gettimeofday|Bivio::Util/"gettimeofday">.
+See L<Bivio::Type::DateTime->gettimeofday|Bivio::Util/"gettimeofday">.
 
 =item target_realm_owner : Bivio::Biz::Model::RealmOwner
 
@@ -201,6 +201,8 @@ L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::Agent::HTTP::Query;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
@@ -218,7 +220,6 @@ use Bivio::Type::RealmName;
 use Bivio::Type::UserAgent;
 use Bivio::Type::UserPreference;
 use Bivio::Type::ClubPreference;
-use Bivio::Util;
 use Carp ();
 
 #=VARIABLES
@@ -396,7 +397,7 @@ Returns the number of seconds elapsed since the request was created.
 
 sub elapsed_time {
     my($self) = @_;
-    return Bivio::Util::time_delta_in_seconds($self->get('start_time'));
+    return Bivio::Type::DateTime->gettimeofday_diff_seconds($self->get('start_time'));
 }
 
 =for html <a name="format_email"></a>
@@ -507,7 +508,7 @@ L<get_widget_value|"get_widget_value"> with array value to get value.
 sub format_mailto {
     my($self, $email, $subject) = @_;
     my($res) = 'mailto:'
-	    . Bivio::Util::escape_uri($self->format_email($email));
+	    . Bivio::HTML->escape_uri($self->format_email($email));
     $subject = $self->get_widget_value(@$subject) if ref($subject);
     if (defined($subject)) {
 	# This is a bug.  Currently Outlook doesn't understand

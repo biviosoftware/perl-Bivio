@@ -140,6 +140,7 @@ sub FIRST_PAGE {
 }
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Agent::HTTP::Query;
 use Bivio::IO::Trace;
 use Bivio::Die;
@@ -148,7 +149,6 @@ use Bivio::Type;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use Bivio::Type::PrimaryId;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -457,7 +457,7 @@ Return the escaped search string if any.
 sub get_search_as_html {
     my($self) = @_;
     my($search) = $self->get('search');
-    return defined($search) ? Bivio::Util::escape_html($search) : '';
+    return defined($search) ? Bivio::HTML->escape($search) : '';
 }
 
 =for html <a name="get_sort_order_for_type"></a>
@@ -590,7 +590,7 @@ sub _format_uri {
     }
 
     # search
-    $res .= 's='.Bivio::Util::escape_query($attrs->{search}).'&'
+    $res .= 's='.Bivio::HTML->escape_query($attrs->{search}).'&'
 	    if defined($attrs->{search});
 
     # Delete trailing '&'

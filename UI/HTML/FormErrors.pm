@@ -27,10 +27,10 @@ C<get_long_desc> on the L<Bivio::TypeError|Bivio::TypeError>.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
 use Bivio::Die;
-use Bivio::Util;
 
 #=VARIABLES
 # form_class->field->error returns a scalar ref
@@ -75,9 +75,9 @@ sub to_html {
             my(\$unsafe_value) = \$form->get_field_as_literal(\$field);
             my(\$value) = \$unsafe_value;
             substr(\$value, 20) = '...' if length(\$value) > 20;
-            \$unsafe_value = Bivio::Util::escape_html(\$unsafe_value);
-            \$value = Bivio::Util::escape_html(\$value);
-            \$label = Bivio::Util::escape_html(\$label);
+            \$unsafe_value = Bivio::HTML->escape(\$unsafe_value);
+            \$value = Bivio::HTML->escape(\$value);
+            \$label = Bivio::HTML->escape(\$label);
             "$$msg";
         ));
 
@@ -89,7 +89,7 @@ sub to_html {
     }
 
     # Use TypeError as default or if error
-    return Bivio::Util::escape_html($error->get_long_desc);
+    return Bivio::HTML->escape($error->get_long_desc);
 }
 
 #=PRIVATE METHODS
@@ -148,7 +148,7 @@ sub _compile {
 #
 sub _escape {
     my($text) = @_;
-    return Bivio::Util::escape_html($text);
+    return Bivio::HTML->escape($text);
 }
 
 # _link(any source, string task) : string
@@ -162,8 +162,8 @@ sub _link {
     $task = Bivio::Agent::TaskId->$task();
     $text = Bivio::UI::Label->get_simple($task->get_name) unless $text;
     return '<a href="'
-	    .Bivio::Util::escape_html($source->format_stateless_uri($task))
-	    .'">'.Bivio::Util::escape_html($text).'</a>';
+	    .Bivio::HTML->escape($source->format_stateless_uri($task))
+	    .'">'.Bivio::HTML->escape($text).'</a>';
 }
 
 # _lookup(string class, string field, string error) : string

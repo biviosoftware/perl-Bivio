@@ -45,6 +45,7 @@ sub MAX_SERVER_REDIRECTS {
 }
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
 use BSD::Resource;
 use Bivio::Agent::HTTP::Request;
 use Bivio::Agent::Task;
@@ -152,16 +153,16 @@ sub initialize {
     Bivio::Agent::Request->get_current_or_new;
 
     # Initialize URI map
-    Bivio::Util::my_require('Bivio::Agent::HTTP::Location');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::HTTP::Location');
     Bivio::Agent::HTTP::Location->initialize;
 
     # Initialize all tasks and task items
     Bivio::Agent::Task->initialize;
 
     # Initialize user interface support
-    Bivio::Util::my_require('Bivio::UI::Facade');
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::Facade');
     Bivio::UI::Facade->initialize;
-    Bivio::Util::my_require('Bivio::UI::HTML::Page');
+    Bivio::IO::ClassLoader->simple_require('Bivio::UI::HTML::Page');
     Bivio::UI::HTML::Page->initialize;
 
     _trace("Size of process before fork\n", `ps v $$`) if $_TRACE;

@@ -40,7 +40,7 @@ to get string to use (see below).
 =item alt : string (required)
 
 Literal text to use for C<ALT> attribute of C<IMG> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 May be C<undef>.
@@ -62,6 +62,7 @@ Icon name.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 
 #=VARIABLES
 
@@ -110,7 +111,7 @@ sub initialize {
 	$fields->{alt} = $alt;
     }
     elsif (defined($alt)) {
-	$fields->{prefix} .= ' alt="'.Bivio::Util::escape_html($alt).'"';
+	$fields->{prefix} .= ' alt="'.Bivio::HTML->escape($alt).'"';
     }
     $fields->{prefix} .= ' name="';
     return;
@@ -134,7 +135,7 @@ sub render {
 		    : 'submit';
 
     $$buffer .= $fields->{prefix}.$field.'"';
-    $$buffer .= ' alt="'.Bivio::Util::escape_html(
+    $$buffer .= ' alt="'.Bivio::HTML->escape(
 	    $source->get_widget_value(@{$fields->{alt}})).'"'
 		    if $fields->{alt};
     $$buffer .= ' src="'

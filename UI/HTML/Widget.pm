@@ -34,17 +34,18 @@ Provides many utility routines to help create widgets.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 #NOTE: Do not import any widgets here, use _use().
 #      This class uses many other Widgets, but it is the parent class
 #      of all Widgets.  We avoid import circularities by using
-#      Bivio::Util::my_require via _use().  It is also used in
+#      Bivio::IO::ClassLoader->simple_require via _use().  It is also used in
 #      facade initialization.
 use Bivio::Agent::Request;
 use Bivio::Agent::TaskId;
 use Bivio::Biz::Model;
 use Bivio::IO::Alert;
 use Bivio::UI::Label;
-use Bivio::Util;
 
 #=VARIABLES
 
@@ -809,7 +810,7 @@ Default is '_top', because we don't use frames.
 sub link_target_as_html {
     my($self) = @_;
     my($t) = $self->ancestral_get('link_target', '_top');
-    return defined($t) ? (' target="'.Bivio::Util::escape_html($t).'"') : '';
+    return defined($t) ? (' target="'.Bivio::HTML->escape($t).'"') : '';
 }
 
 =for html <a name="link_tm"></a>
@@ -833,7 +834,7 @@ sub link_tm {
 
     # Must be in a join, because we are pre-escaping the string
     return $proto->link($proto->string(
-	    $proto->join(Bivio::Util::escape_html($label).'&#153;'),
+	    $proto->join(Bivio::HTML->escape($label).'&#153;'),
 #TODO: Fix once all deprecated usage of string()
 	    int(@_) >= 4 ? ($font) : ()), $arg);
 }
@@ -1082,7 +1083,7 @@ EOF
 
 # _use(string class, ....)
 #
-# Executes Bivio::Util::my_require on its args.  Inserts
+# Executes Bivio::IO::ClassLoader->simple_require on its args.  Inserts
 # Bivio::UI::HTML::Widget:: prefix, if class does not contain
 # colons.
 #
@@ -1091,7 +1092,7 @@ sub _use {
     foreach my $c (@class) {
 	$c =~ s/^([^:]+)$/Bivio::UI::HTML::Widget::$1/;
     }
-    Bivio::Util::my_require(@class);
+    Bivio::IO::ClassLoader->simple_require(@class);
     return;
 }
 

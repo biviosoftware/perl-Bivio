@@ -48,6 +48,7 @@ sub REALM_PLACEHOLDER {
 }
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::Realm;
@@ -159,7 +160,7 @@ sub format {
 	    Bivio::IO::Alert->die($task_id, '(', $uri,
 		    '): path_info must begin with slash (', $path_info, ')')
 			unless $path_info =~ /^\//;
-	    $uri .= Bivio::Util::escape_uri($path_info);
+	    $uri .= Bivio::HTML->escape_uri($path_info);
 	}
     }
     else {

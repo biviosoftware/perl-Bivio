@@ -50,7 +50,7 @@ Used to separate values in title.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -91,7 +91,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{values};
     $fields->{values} = [map {
-	ref($_) ? $_ : Bivio::Util::escape_html($_);
+	ref($_) ? $_ : Bivio::HTML->escape($_);
     } @{$self->get('values')}];
     $fields->{separator} = $self->ancestral_get('title_separator',
 	    $_DEFAULT_SEPARATOR);
@@ -117,7 +117,7 @@ sub render {
 	    $x = $source->get_widget_value(@$x);
 	    next unless defined($x) && length($x);
 	}
-	push(@v, Bivio::Util::escape_html($x));
+	push(@v, Bivio::HTML->escape($x));
 	push(@t, $x);
     }
     $$buffer .= '<title>'.join($fields->{separator}, @v)."</title>\n";

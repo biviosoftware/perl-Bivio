@@ -37,6 +37,7 @@ handler.  It creates a single instance of itself on the first request.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
 use Bivio::Ext::ApacheConstants;
 use Bivio::Agent::Dispatcher;
 use Bivio::Agent::HTTP::Reply;
@@ -45,7 +46,6 @@ use Bivio::Agent::TaskId;
 use Bivio::Die;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-use Bivio::Util;
 # Required in initialize
 # use Bivio::Agent::Job::Dispatcher
 
@@ -148,7 +148,7 @@ sub initialize {
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize();
     # Avoids import problems
-    Bivio::Util::my_require('Bivio::Agent::Job::Dispatcher');
+    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
     # clear db time
     Bivio::SQL::Connection->get_db_time;
     return;

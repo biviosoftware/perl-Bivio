@@ -166,7 +166,9 @@ sub UNIX_EPOCH_IN_JULIAN_DAYS {
 }
 
 #=IMPORTS
+use Bivio::Type::Array;
 use Bivio::TypeError;
+$^O !~ /win32/i && CORE::require 'syscall.ph';
 
 #=VARIABLES
 my($_MIN) = FIRST_YEAR_IN_JULIAN_DAYS().' 0';
@@ -301,6 +303,39 @@ sub get_previous_day {
     return ($j - 1) . ' ' . $s;
 }
 
+=for html <a name="gettimeofday"></a>
+
+=head2 static gettimeofday() : array_ref
+
+Wraps the unix gettimeofday call in something handier to use.
+Returns an array_ref of seconds and microseconds.
+
+=cut
+
+sub gettimeofday {
+    my($i) = '8..bytes';
+    syscall(&SYS_gettimeofday, $i, 0);
+    return [unpack('ll', $i)];
+}
+
+=for html <a name="gettimeofday_diff_seconds"></a>
+
+=head2 static gettimeofday_diff_seconds(array_ref start_time) : float
+
+Returns the delta in seconds from I<start_time>
+to L<gettimeofday|"gettimeofday"> as a floating point number.
+I<start_time> is a return result of L<gettimeofday|"gettimeofday">.
+
+=cut
+
+sub gettimeofday_diff_seconds {
+    my($proto, $start_time) = @_;
+    Carp::croak('invalid start_time') unless $start_time;
+    my($end_time) = $proto->gettimeofday;
+    return $end_time->[0] - $start_time->[0]
+        + ($end_time->[1] - $start_time->[1]) / 1000000.0;
+}
+
 =for html <a name="local_end_of_today"></a>
 
 =head2 local_end_of_today() : string
@@ -369,6 +404,21 @@ Returns date/time for now.
 
 sub now {
     return from_unix(__PACKAGE__, time);
+}
+
+=for html <a name="now_as_file_name"></a>
+
+=head2 static now_as_file_name() : string
+
+Returns L<now|"now"> as a timestamp which can be embedded in a file name.
+
+=cut
+
+sub now_as_file_name {
+    my($time) = time;
+    my($sec, $min, $hour, $day, $mon, $year) = gmtime($time);
+    return sprintf('%04d%02d%02d%02d%02d%02d', $year + 1900, $mon + 1, $day,
+	   $hour, $min, $sec);
 }
 
 =for html <a name="now_as_string"></a>
@@ -586,7 +636,7 @@ sub to_parts {
     my($hour) = int(($time - $min)/ 60 + 0.5);
 
     # Search for $date in julian tables
-    my($exact, $i) = Bivio::Util::bsearch_numeric($date, \@_YEAR_BASE);
+    my($exact, $i) = Bivio::Type::Array->bsearch_numeric($date, \@_YEAR_BASE);
     my($year) = FIRST_YEAR() + $i;
     return ($sec, $min, $hour, 1, 1, $year) if $exact;
 
@@ -606,7 +656,7 @@ sub to_parts {
     my($month_base) = $_MONTH_BASE[$_IS_LEAP_YEAR[$i]];
 
     # Search for month (always in range)
-    ($exact, $i) = Bivio::Util::bsearch_numeric($date, $month_base);
+    ($exact, $i) = Bivio::Type::Array->bsearch_numeric($date, $month_base);
     # Adjust month if base is after $date
     $i-- if $month_base->[$i] > $date;
     my($mon) = $i + 1;

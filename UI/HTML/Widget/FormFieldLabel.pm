@@ -38,7 +38,7 @@ or C<form_field_error_label> fonts.
 =item label : string (required)
 
 Text to render for the visible label.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =item field : string (required)
@@ -54,6 +54,7 @@ Which form are we dealing with.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;

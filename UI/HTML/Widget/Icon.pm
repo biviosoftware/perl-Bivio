@@ -44,7 +44,7 @@ to get string to use (see below).
 =item alt : string (required)
 
 Literal text to use for C<ALT> attribute of active C<IMG> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =item alt_ia : array_ref []
@@ -55,7 +55,7 @@ to get string to use (see below).
 =item alt_ia : string []
 
 Literal text to use for C<ALT> attribute of inactive C<IMG> tag.
-Will be passed to L<Bivio::Util::escape_html|Bivio::Util/"escape_html">
+Will be passed to L<Bivio::HTML->escape|Bivio::Util/"escape_html">
 before rendering.
 
 =item icon_font : string [] (inherited)
@@ -119,7 +119,7 @@ I<font_ia>.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;

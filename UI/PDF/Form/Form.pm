@@ -43,12 +43,13 @@ sub SECTION_NAME_REGEX {
 }
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::UI::PDF::BuiltUpdate;
 use Bivio::UI::PDF::OpaqueUpdate;
 use Bivio::UI::PDF::Strings;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -270,7 +271,7 @@ die("undef text_ref") if ! defined($text_ref);
 	elsif ($_XLATOR_SET eq $last_section) {
 	    _trace('Got xlator set section');
 	    chop(${$text_ref});
-	    Bivio::Util::my_require($$text_ref);
+	    Bivio::IO::ClassLoader->simple_require($$text_ref);
 	    $xlator_set_ref = ${$text_ref}->new();
 	}
 	else {

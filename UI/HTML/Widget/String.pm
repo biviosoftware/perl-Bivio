@@ -81,10 +81,10 @@ must generate proper html.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::UI::Font;
 use Bivio::UI::HTML::Format;
-use Bivio::Util;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -225,7 +225,7 @@ sub _format {
     }
     Bivio::IO::Alert->die('got ref where scalar expected: ', $value)
 		if ref($value);
-    $value = Bivio::Util::escape_html($value);
+    $value = Bivio::HTML->escape($value);
     $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
     return $value;
 }

@@ -134,10 +134,11 @@ used.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::UI::FacadeChildType;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -242,7 +243,7 @@ sub new {
     delete($config->{is_production});
 
     # Load all relevant components first.  This modifies @_COMPONENTS.
-    Bivio::Util::my_require(keys(%$config));
+    Bivio::IO::ClassLoader->simple_require(keys(%$config));
 
     _initialize($self, $config, $clone);
 
@@ -407,7 +408,7 @@ sub initialize {
 
 
     # Load 'em up
-    Bivio::Util::my_require(@classes);
+    Bivio::IO::ClassLoader->simple_require(@classes);
 
     # Make sure the default facade is there and was properly initialized
     Bivio::IO::Alert->die($_DEFAULT,
@@ -467,7 +468,7 @@ sub register {
 
     # Load prerequisites first, so they register.  This forces the
     # toposort.
-    Bivio::Util::my_require(@$required_components)
+    Bivio::IO::ClassLoader->simple_require(@$required_components)
 		if $required_components;
 
     # Assert that this component is kosher.
@@ -573,7 +574,7 @@ sub _initialize {
 sub _load {
     my($clone) = @_;
     $clone = __PACKAGE__.'::'.$clone unless $clone =~ /::/;
-    Bivio::Util::my_require($clone);
+    Bivio::IO::ClassLoader->simple_require($clone);
     Bivio::IO::Alert->die($clone, ': not a Bivio::UI::Facade')
 		unless UNIVERSAL::isa($clone, 'Bivio::UI::Facade');
     Bivio::IO::Alert->die($clone, ": did not call this module's new "

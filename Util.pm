@@ -73,7 +73,7 @@ sub time_delta_in_seconds ($) {
         + ($end_time->[1] - $start_time->[1]) / 1000000.0;
 }
 
-#
+# NOT USED
 # compile_attribute_accessors \@attrs [@options] -> \@attr_names
 #
 sub compile_attribute_accessors ($@) {
@@ -107,6 +107,8 @@ sub compile_attribute_accessors ($@) {
 
 =head2 static dump_stack
 
+NOT USED
+
 Prints the current stack to STDERR
 
 =cut
@@ -118,11 +120,13 @@ sub dump_stack {
     }
 }
 
+# NOT USED
 # return an "@bivio.com" email address for the arg
 sub email ($) {
     return shift() . '@bivio.com';
 }
 
+# NOT USED
 # href $link ; $label
 #   If link is undef, then returns label.
 sub href ($;$) {
@@ -132,6 +136,7 @@ sub href ($;$) {
     return &href_with_html_label($href, &escape_html($label));
 }
 
+# NOT USED
 # href_with_html_label $link $label
 #   If link is undef, then returns label.  The label is in html and doesn't
 #   need to be escaped.
@@ -141,6 +146,7 @@ sub href_with_html_label ($$) {
     return '<a href="' . $href . '">' . $label . '</a>';
 }
 
+# NOT USED
 # mailto $email ; $label $subject
 sub mailto_uri ($;$) {
     my($email, $subject) = @_;
@@ -153,6 +159,7 @@ sub mailto_uri ($;$) {
     return 'mailto:' . $email;
 }
 
+# NOT USED
 # mailto $email ; $label $subject
 sub mailto ($;$$) {
     my($email, $label, $subject) = @_;
@@ -160,6 +167,7 @@ sub mailto ($;$$) {
     return &href(&mailto_uri($email, $subject), $label);
 }
 
+# BARELY
 # Returns a stringified timestamp
 sub timestamp ($) {
     my($time) = shift;
@@ -169,6 +177,7 @@ sub timestamp ($) {
 	   $hour, $min, $sec);
 }
 
+#NOT USED
 sub date ($) {
     my($time) = shift;
     defined($time) || return undef;
@@ -180,6 +189,7 @@ sub date ($) {
     return $time;
 }
 
+#NOT USED
 sub date_range ($$) {
     my($left, $right) = (&date(shift), &date(shift));
     if (defined($left)) {
@@ -195,6 +205,7 @@ sub date_range ($$) {
 }
 
 
+#other approach?
 sub my_require {
     my(@pkg) = @_;
     my($pkg);
@@ -216,6 +227,7 @@ sub my_require {
     }
 }
 
+#DONE
 sub bsearch_numeric {
     my($key, $array) = @_;
     my($upper) = $#$array;
@@ -240,6 +252,7 @@ sub bsearch_numeric {
     return (0, $middle);
 }
 
+#done ShellUtil
 # shell(string command) : string_ref
 # shell(string command, string input) : string_ref
 # shell(string command, string_ref input) : string_ref
@@ -260,6 +273,7 @@ sub shell {
     }
     local($/) = undef;
     my($res) = <IN>;
+    $res ||= '';
     close(IN) || die("$res\n$command failed: $!");
     return \$res;
 }

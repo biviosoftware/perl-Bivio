@@ -73,7 +73,7 @@ The value between the C<A> tags aka the label.
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 use Carp ();
 
 #=VARIABLES
@@ -119,7 +119,7 @@ sub initialize {
     ($fields->{value}, $href) = $self->get('value', 'href');
     my($p, $s) = ('<a'.$self->link_target_as_html, '');
     my($n) = $self->get_or_default('name', 0);
-    $p .= ' name="'.Bivio::Util::escape_html($n).'"' if $n;
+    $p .= ' name="'.Bivio::HTML->escape($n).'"' if $n;
     if (ref($href)) {
 	$fields->{href} = $href;
     }

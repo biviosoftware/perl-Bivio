@@ -94,6 +94,9 @@ NOT NORMALLY USED.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
@@ -239,7 +242,7 @@ sub init_column {
 	    $package =~ s!((?:_\d+)?)$!!;
 	    my($qual_index) = $1;
 	    # Make sure package is loaded
-	    Bivio::Util::my_require($package);
+	    Bivio::IO::ClassLoader->simple_require($package);
 	    my($instance) = $package->get_instance;
 	    $model = $attrs->{models}->{$qual_model} = {
 		name => $qual_model,
@@ -429,7 +432,7 @@ Returns false if there is no next.
 
 sub iterate_next {
     my($self, $iterator, $row, $converter) = @_;
-    my($start_time) = Bivio::Util::gettimeofday();
+    my($start_time) = Bivio::Type::DateTime->gettimeofday();
     my($r) = $iterator->fetchrow_arrayref;
     Bivio::SQL::Connection->increment_db_time($start_time);
     unless ($r) {

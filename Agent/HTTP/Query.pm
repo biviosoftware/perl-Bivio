@@ -25,7 +25,7 @@ C<Bivio::Agent::HTTP::Query> formats a hash_ref into a query string
 =cut
 
 #=IMPORTS
-use Bivio::Util;
+use Bivio::HTML;
 
 #=VARIABLES
 
@@ -47,10 +47,10 @@ sub format {
     return undef unless $query;
     my($res) = '';
     foreach my $k (keys(%$query)) {
-	$res .= Bivio::Util::escape_query($k).'='
+	$res .= Bivio::HTML->escape_query($k).'='
 		# Sometimes the query value is not defined.  It may
 		# be a corrupt query, but shouldn't blow up.
-		.Bivio::Util::escape_query(defined($query->{$k})
+		.Bivio::HTML->escape_query(defined($query->{$k})
 			? $query->{$k} : '').'&';
     }
     chop($res);
@@ -85,7 +85,7 @@ sub parse {
 		    ', user-agent=', $r ? $r->header_in('user-agent') : undef,
 		   );
 	}
-	$string = Bivio::Util::unescape_uri($string);
+	$string = Bivio::HTML->unescape_uri($string);
     }
 
     # Split on & and then =
@@ -100,8 +100,8 @@ sub parse {
 
 	# $v may not be defined.  This is a malformed query, but
 	# let's handle anyway.
-	push(@v, Bivio::Util::unescape_uri($k),
-		defined($v) ? Bivio::Util::unescape_uri($v) : undef);
+	push(@v, Bivio::HTML->unescape_uri($k),
+		defined($v) ? Bivio::HTML->unescape_uri($v) : undef);
     }
 
     # No valid elements?

@@ -58,10 +58,11 @@ WHERE.
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::SQL::Connection;
 use Bivio::IO::Trace;
 use Bivio::Type::PrimaryId;
-use Bivio::Util;
 use Carp ();
 
 #=VARIABLES
@@ -314,7 +315,7 @@ sub unsafe_load {
     my($sql) = _prepare_select($self, $query, \@params);
     my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
-    my($start_time) = Bivio::Util::gettimeofday();
+    my($start_time) = Bivio::Type::DateTime->gettimeofday();
     my($row) = $statement->fetchrow_arrayref();
     my($too_many) = $statement->fetchrow_arrayref ? 1 : 0 if $row;
     Bivio::SQL::Connection->increment_db_time($start_time);

@@ -32,11 +32,12 @@ loads a new auth_realm every time.
 =cut
 
 #=IMPORTS
+use Bivio::Type::DateTime;
+use Bivio::HTML;
 use Bivio::Agent::Reply;
 use Bivio::Auth::Realm::General;
 use Bivio::Auth::Realm;
 use Bivio::Type::UserAgent;
-use Bivio::Util;
 
 #=VARIABLES
 my($_GENERAL);
@@ -55,7 +56,7 @@ Creates a Request from the queued I<params>.
 
 sub new {
     my($proto, $params) = @_;
-    my($start_time) = Bivio::Util::gettimeofday();
+    my($start_time) = Bivio::Type::DateTime->gettimeofday();
 #TODO: Need to handle Facades!
     my($self) = Bivio::Agent::Request::internal_new($proto, {
 	# We set the params here, because we want to override values

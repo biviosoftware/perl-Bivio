@@ -61,6 +61,7 @@ Links will be rendered in the C<list_action> font.
 =cut
 
 #=IMPORTS
+use Bivio::HTML;
 use Bivio::Biz::QueryType;
 
 #=VARIABLES
@@ -107,7 +108,7 @@ sub initialize {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    label => Bivio::Util::escape_html($v->[0]),
+	    label => Bivio::HTML->escape($v->[0]),
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),

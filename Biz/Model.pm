@@ -32,8 +32,9 @@ L<Bivio::Biz::ListModel>, L<Bivio::Biz::FormModel>.
 =cut
 
 #=IMPORTS
+use Bivio::IO::ClassLoader;
+use Bivio::HTML;
 use Bivio::IO::Trace;
-use Bivio::Util;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -66,7 +67,7 @@ sub get_instance {
 	$class = ref($class) if ref($class);
 	$class = 'Bivio::Biz::Model::'.$class unless $class =~ /::/;
 	# First time, make sure the class is loaded.
-	Bivio::Util::my_require($class) unless $_CLASS_INFO{$class};
+	Bivio::IO::ClassLoader->simple_require($class) unless $_CLASS_INFO{$class};
     }
     else {
 	$class = ref($proto) || $proto;
