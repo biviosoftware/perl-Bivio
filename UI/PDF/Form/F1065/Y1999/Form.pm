@@ -73,7 +73,6 @@ sub new {
 
 sub execute {
     my($self, $req) = @_;
-    my($fields) = $self->{$_PACKAGE};
     $req->get('Bivio::Biz::Model::F1065Form')->set_cursor_or_die(0);
     return Bivio::UI::PDF::Form::F1065::Y1999::Formf1065->new()->execute($req);
 }
