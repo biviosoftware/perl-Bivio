@@ -34,10 +34,13 @@ and delete interface to the C<club_t> table.
 =cut
 
 #=IMPORTS
+use Bivio::Biz::ListModel;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::RealmUser;
 use Bivio::IO::Trace;
 use Bivio::SQL::Constraint;
+use Bivio::Type::Email;
 use Bivio::Type::Integer;
 use Bivio::Type::Line;
 use Bivio::Type::Location;
@@ -47,6 +50,25 @@ use Bivio::Type::PrimaryId;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
+#TODO: Need to fix this so looks at all roles and checks MAIL_RECEIVE
+#TODO: Need Location policy.  Probably need a field added to table.
+#      which says where people want email sent from bivio.
+my($_ROLES) = Bivio::Biz::Model::RealmUser->MEMBER_ROLES();
+my($_EMAIL_LIST) = Bivio::Biz::ListModel->new_anonymous({
+    version => 1,
+    other => [
+	'Email.email',
+    ],
+    auth_id => [qw(RealmUser.realm_id)],
+    primary_key => [
+	['RealmUser.user_id', 'Email.realm_id'],
+    ],
+    where => [
+	'RealmUser.role',
+	'IN',
+	Bivio::Auth::RoleSet->to_sql_list(\$_ROLES),
+    ],
+});
 
 =head1 METHODS
 
@@ -164,26 +186,12 @@ If an error occurs during processing, then undef is returned.
 
 sub get_outgoing_emails {
     my($self) = @_;
-#TODO: Need to fix this so looks at all roles and checks MAIL_RECEIVE
-#TODO: Need Location policy.  Probably need a field added to table.
-#      which says where people want email sent from bivio.
-    my($sql) = 'select email_t.email '
-	    .' from email_t, realm_user_t '
-	    .' where realm_user_t.realm_id=?'
-	    .' and realm_user_t.role >='
-	    .Bivio::Auth::Role::MEMBER->as_int
-	    .' and realm_user_t.user_id=email_t.realm_id';
-    my($statement) = Bivio::SQL::Connection->execute($sql,
-	    [$self->get('club_id')], $self);
-
+    $_EMAIL_LIST->unauth_load_all({auth_id => $self->get('club_id')});
     my($result) = [];
-    my($row);
-    while($row = $statement->fetchrow_arrayref()) {
-	push(@$result, $row->[0])
-		if Bivio::Type::Email->is_valid($row->[0]);
+    while ($_EMAIL_LIST->next_row) {
+	my($e) = $_EMAIL_LIST->get('Email.email');
+	push(@$result, $e) if Bivio::Type::Email->is_valid($e);
     }
-#TODO: Do we need statement->finish here?
-#    $statement->finish();
     return @$result ? $result : undef;
 }
 

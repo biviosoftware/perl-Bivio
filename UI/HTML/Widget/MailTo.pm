@@ -99,6 +99,7 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{email};
+
     foreach my $f (qw(value subject value_invalid)) {
 	my($v) = $self->unsafe_get($f);
 	$fields->{$f} = $v ? $v : '';

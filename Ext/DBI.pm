@@ -89,6 +89,24 @@ sub connect {
 
 =cut
 
+=for html <a name="get_config"></a>
+
+=head2 static get_config() : hash_ref
+
+=head2 static get_config(string database) : hash_ref
+
+Returns the C<user>, C<password>, and C<database> used C<oracle_home>
+used to make connections.  The hash_ref is a copy of the configuration.
+
+=cut
+
+sub get_config {
+    my($self, $database) = @_;
+    my($res) = {%{Bivio::IO::Config->get($database)}};
+    $res->{oracle_home} = $_ORACLE_HOME;
+    return $res;
+}
+
 =for html <a name="handle_config"></a>
 
 =head2 static handle_config(hash cfg)

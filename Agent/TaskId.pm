@@ -53,6 +53,9 @@ my(@_CFG) = (
     #
     # Use '!' to mean "no uri".
     #
+#TODO: Make this really true.  We should tag tasks this way so we
+#      have an idea of the tasks which need to be secure, but right
+#      now user decides.
     # LOGIN privileges mean something special.  It means the task
     # must be executed from an encrypted context.  Only tasks which
     # require the user to enter sensitive information, e.g. passwords,
@@ -556,48 +559,46 @@ my(@_CFG) = (
         hm/thanks_japan.html
 	Bivio::Biz::Action::HTTPDocument
     )],
-    # This assumes that user always has privileges to edit "self"
-    # Technically, this isn't the case.
     [qw(
-        CLUB_ADMIN_USER_ADDRESS_EDIT
+        CLUB_ADMIN_SELF_ADDRESS_EDIT
         54
         CLUB
         DOCUMENT_READ
         %/admin/edit/self/address
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::AddressForm
-        Bivio::UI::HTML::User::EditAddress
+        Bivio::UI::HTML::Realm::EditAddress
         next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(
-        CLUB_ADMIN_USER_NAME_EDIT
+        CLUB_ADMIN_SELF_NAME_EDIT
         55
         CLUB
         DOCUMENT_READ
         %/admin/edit/self/name
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::User::EditName
         next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(
-        CLUB_ADMIN_USER_COMM_EDIT
+        CLUB_ADMIN_SELF_PHONE_EDIT
         56
         CLUB
         DOCUMENT_READ
-        %/admin/edit/self/phone_email
-        Bivio::Biz::Action::SetUserTarget
-        Bivio::Biz::Model::CommForm
-        Bivio::UI::HTML::User::EditComm
+        %/admin/edit/self/phone
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
+        Bivio::Biz::Model::PhoneForm
+        Bivio::UI::HTML::Realm::EditPhone
         next=CLUB_ADMIN_USER_DETAIL
     )],
     [qw(
-        CLUB_ADMIN_USER_PASSWORD_EDIT
+        CLUB_ADMIN_SELF_PASSWORD_EDIT
         57
         CLUB
         DOCUMENT_READ&LOGIN
         %/admin/edit/self/password
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
         next=CLUB_ADMIN_USER_DETAIL
@@ -700,7 +701,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         %/admin/edit/name
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::UserNameForm
         Bivio::UI::HTML::User::EditName
         next=USER_ADMIN_INFO
@@ -729,7 +730,7 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE&LOGIN
         %/admin/edit/password
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::PasswordForm
         Bivio::UI::HTML::User::EditPassword
         next=USER_ADMIN_INFO
@@ -740,20 +741,20 @@ my(@_CFG) = (
         USER
         ADMIN_WRITE
         %/admin/edit/address
-        Bivio::Biz::Action::SetUserTarget
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::AddressForm
-        Bivio::UI::HTML::User::EditAddress
+        Bivio::UI::HTML::Realm::EditAddress
         next=USER_ADMIN_INFO
     )],
     [qw(
-        USER_ADMIN_COMM_EDIT
+        USER_ADMIN_PHONE_EDIT
         73
         USER
         ADMIN_WRITE
-        %/admin/edit/phone_email
-        Bivio::Biz::Action::SetUserTarget
-        Bivio::Biz::Model::CommForm
-        Bivio::UI::HTML::User::EditComm
+        %/admin/edit/phone
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::PhoneForm
+        Bivio::UI::HTML::Realm::EditPhone
         next=USER_ADMIN_INFO
     )],
     [qw(
@@ -945,7 +946,7 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         !
-        Bivio::UI::HTML::General::InviteNotFound
+        Bivio::UI::HTML::ErrorPages->execute_invite_not_found
     )],
     [qw(
         USER_CREATED
@@ -1057,18 +1058,19 @@ my(@_CFG) = (
         CLUB
         ADMIN_WRITE
         %/admin/edit/name
+        Bivio::Biz::Action::NotDemoClub
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
         Bivio::Biz::Model::ClubNameForm
         Bivio::UI::HTML::Club::EditName
-        next=CLUB_ADMIN_USER_LIST
-        FORBIDDEN=CLUB_ADMIN_DEMO_RENAME
+        next=CLUB_ADMIN_INFO
     )],
     [qw(
-        CLUB_ADMIN_DEMO_RENAME
+        DEMO_CLUB_ACTION_FORBIDDEN
         103
         CLUB
-        ADMIN_WRITE
+        DOCUMENT_READ
         !
-        Bivio::UI::HTML::Club::DemoRename
+        Bivio::UI::HTML::ErrorPages->execute_demo_club_action_forbidden
     )],
 #TODO: Shadow realms have no data protection.  We may need to
 #      have a second security check in SetProxyRealm or something.
@@ -1105,7 +1107,7 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         !
-        Bivio::UI::HTML::General::Forbidden
+        Bivio::UI::HTML::ErrorPages->execute_forbidden
     )],
     [qw(
         USER_ADMIN_PROFILE_EDIT_DONE
@@ -1236,7 +1238,114 @@ my(@_CFG) = (
         GENERAL
         DOCUMENT_READ
         !
-        Bivio::UI::HTML::General::NoResources
+        Bivio::UI::HTML::ErrorPages->execute_no_resources
+    )],
+    [qw(
+        CLUB_ADMIN_ADDRESS_EDIT
+        120
+        CLUB
+        ADMIN_WRITE
+        %/admin/edit/address
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::AddressForm
+        Bivio::UI::HTML::Realm::EditAddress
+        next=CLUB_ADMIN_INFO
+    )],
+    [qw(
+        CLUB_ADMIN_MEMBER_ADDRESS_EDIT
+        121
+        CLUB
+        ADMIN_WRITE&MEMBER_WRITE
+        %/admin/edit/member/address
+        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Model::AddressForm
+        Bivio::UI::HTML::Realm::EditAddress
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_SELF_TAX_ID_EDIT
+        122
+        CLUB
+        DOCUMENT_READ&LOGIN
+        %/admin/edit/self/tax_id
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
+        Bivio::Biz::Model::TaxIdForm
+        Bivio::UI::HTML::Realm::EditTaxId
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_MEMBER_TAX_ID_EDIT
+        123
+        CLUB
+        ADMIN_WRITE&MEMBER_WRITE&LOGIN
+        %/admin/edit/member/tax_id
+        Bivio::Biz::Action::TargetRealm->execute_this_member
+        Bivio::Biz::Model::TaxIdForm
+        Bivio::UI::HTML::Realm::EditTaxId
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        USER_ADMIN_TAX_ID_EDIT
+        124
+        USER
+        ADMIN_WRITE&LOGIN
+        %/admin/edit/member/tax_id
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::TaxIdForm
+        Bivio::UI::HTML::Realm::EditTaxId
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_TAX_ID_EDIT
+        125
+        CLUB
+        ADMIN_WRITE&LOGIN
+        %/admin/edit/tax_id
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::TaxIdForm
+        Bivio::UI::HTML::Realm::EditTaxId
+        next=CLUB_ADMIN_INFO
+    )],
+    [qw(
+        CLUB_ADMIN_INFO
+        126
+        CLUB
+        ADMIN_READ
+        %/admin/info
+        Bivio::UI::HTML::Club::AdminInfo
+    )],
+    [qw(
+        USER_ADMIN_EMAIL_EDIT
+        127
+        USER
+        ADMIN_WRITE
+        %/admin/edit/email
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::EmailForm
+        Bivio::UI::HTML::Realm::EditEmail
+        next=USER_ADMIN_INFO
+    )],
+    [qw(
+        CLUB_ADMIN_SELF_EMAIL_EDIT
+        128
+        CLUB
+        DOCUMENT_READ
+        %/admin/edit/self/email
+        Bivio::Biz::Action::TargetRealm->execute_auth_user
+        Bivio::Biz::Model::EmailForm
+        Bivio::UI::HTML::Realm::EditEmail
+        next=CLUB_ADMIN_USER_DETAIL
+    )],
+    [qw(
+        CLUB_ADMIN_PHONE_EDIT
+        129
+        CLUB
+        ADMIN_WRITE
+        %/admin/edit/phone
+        Bivio::Biz::Action::TargetRealm->execute_auth_realm
+        Bivio::Biz::Model::PhoneForm
+        Bivio::UI::HTML::Realm::EditPhone
+        next=CLUB_ADMIN_INFO
     )],
 );
 

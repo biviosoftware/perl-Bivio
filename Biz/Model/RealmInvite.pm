@@ -31,6 +31,23 @@ and delete interface to the C<realm_invite_t> table.
 
 =cut
 
+
+=head1 CONSTANTS
+
+=cut
+
+=for html <a name="EXPIRE_DAYS"></a>
+
+=head2 EXPIRE_DAYS : int
+
+Number of days for expiry.
+
+=cut
+
+sub EXPIRE_DAYS {
+    return 7;
+}
+
 #=IMPORTS
 use Bivio::Agent::HTTP::Cookie;
 use Bivio::Auth::Role;

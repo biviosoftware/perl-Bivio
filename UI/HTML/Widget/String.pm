@@ -36,13 +36,25 @@ The string is html-escaped and newlines are converted to C<E<lt>br E<gt>>.
 
 =over 4
 
-=item string_font : string [] (inherited)
+=item format : Bivio::UI::HTML::Format []
 
-The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
+=item format : string []
+
+The name of the formatter to use on I<value> before escaping the html.
+Only valid if I<value> is not a widget.
 
 =item pad_left : int [0]
 
 Number of non-breaking spaces to pad on the left.
+
+=item string_font : string [] (inherited)
+
+The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
+
+=item undef_value : string ['']
+
+What to display if I<value> is C<undef>.
+Not used if I<value> is a constant.
 
 =item value : array_ref (required)
 
@@ -63,11 +75,6 @@ font on a collection of strings join.
 
 The values returned by the widget are not "escaped".  The widget
 must generate proper html.
-
-=item undef_value : string ['']
-
-What to display if I<value> is C<undef>.
-Not used if I<value> is a constant.
 
 =back
 
@@ -119,10 +126,25 @@ sub initialize {
     my($p, $s) = $font ? Bivio::UI::Font->as_html($font) : ('', '');
     my($pad_left) = $self->get_or_default('pad_left', 0);
     $p .= '&nbsp;' x $pad_left if $pad_left > 0;
-    $fields->{value} = $self->get('value');
+
+    # Formatter
+    $fields->{format} = $self->get_or_default('format', 0);
+    if ($fields->{format}) {
+	$fields->{format} = 'Bivio::UI::HTML::Format::'.$fields->{format}
+		unless $fields->{format} =~ /::/;
+	die($fields->{format}, ': not a Bivio::UI::HTML::Format')
+		unless UNIVERSAL::isa($fields->{format},
+			'Bivio::UI::HTML::Format');
+    }
+
     $fields->{undef_value} = $self->get_or_default('undef_value', '');
+
+    # Value
+    $fields->{value} = $self->get('value');
     if ($fields->{is_constant} = !ref($fields->{value})) {
-    	$fields->{value} = $p._escape($fields->{value}).$s;
+	my($v) = $fields->{value};
+	$v = $fields->{format}->get_widget_value($v) if $fields->{format};
+    	$fields->{value} = $p._escape($v).$s;
     }
     else {
 	$fields->{prefix} = $p;
@@ -172,10 +194,12 @@ sub render {
 			: $fields->{undef_value}
 				unless defined($value);
 	# Result may be a widget!
-	if (ref($value)) {
+	if (ref($value) && UNIVERSAL::isa($value, 'Bivio::UI::HTML::Widget')) {
 	    $value->render($source, \$b);
 	}
 	else {
+	    $value = $fields->{format}->get_widget_value($value)
+		    if $fields->{format};
 	    $b .= _escape($value);
 	}
     }
@@ -193,6 +217,7 @@ sub render {
 #
 sub _escape {
     my($value) = @_;
+    die('got ref where scalar expected') if ref($value);
     $value = Bivio::Util::escape_html($value);
     $value =~ s/\n/<br>/mg || $value =~ s/^\s+$/&nbsp;/s;
     return $value;

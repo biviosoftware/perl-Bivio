@@ -426,10 +426,7 @@ b-realm-role CLUB MEMBER - \
     +GUEST \
     +DOCUMENT_WRITE \
     +MAIL_RECEIVE
-b-realm-role CLUB ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +MEMBER_WRITE
+b-realm-role CLUB ACCOUNTANT +
 b-realm-role CLUB ADMINISTRATOR +
 
 #
@@ -481,11 +478,8 @@ b-realm-role ask_candis_publish MEMBER - \
     +DOCUMENT_WRITE \
     +MAIL_RECEIVE \
     +MAIL_WRITE
-b-realm-role ask_candis_publish ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +MEMBER_WRITE
-b-realm-role ask_candis_publish ADMINISTRATOR +
+b-realm-role CLUB ACCOUNTANT +
+b-realm-role CLUB ADMINISTRATOR +
 
 #
 # trez_talk_publish Permissions (same as club except for MAIL_WRITE)
@@ -510,8 +504,5 @@ b-realm-role trez_talk_publish MEMBER - \
     +DOCUMENT_WRITE \
     +MAIL_RECEIVE \
     +MAIL_WRITE
-b-realm-role trez_talk_publish ACCOUNTANT - \
-    +MEMBER \
-    +ACCOUNTING_WRITE \
-    +MEMBER_WRITE
-b-realm-role trez_talk_publish ADMINISTRATOR +
+b-realm-role CLUB ACCOUNTANT +
+b-realm-role CLUB ADMINISTRATOR +

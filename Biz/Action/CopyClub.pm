@@ -33,11 +33,14 @@ demo clubs.
 
 #=IMPORTS
 use Bivio::Auth::RealmType;
+use Bivio::Biz::Model::Address;
 use Bivio::Biz::Model::Club;
 use Bivio::Biz::Model::Entry;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
 use Bivio::Biz::Model::MemberEntry;
+use Bivio::Biz::Model::Phone;
+use Bivio::Biz::Model::TaxId;
 use Bivio::Biz::Model::RealmAccount;
 use Bivio::Biz::Model::RealmAccountEntry;
 use Bivio::Biz::Model::RealmInstrument;
@@ -64,6 +67,7 @@ parameters to copy club data.
 
 sub execute {
     my($self, $req) = @_;
+    # NOTE: Keep in synch with Model::CreateClubForm
 
     my($source) = $req->get('source');
     my($source_id) = $source->get('realm_id');
@@ -78,13 +82,20 @@ sub execute {
 	kbytes_in_use => $old_club->get('kbytes_in_use'),
 	max_storage_kbytes => $old_club->get('max_storage_kbytes')
     });
+    my($realm_id) = $new_club->get('club_id');
+
     my($new_realm) = Bivio::Biz::Model::RealmOwner->new($req);
     $new_realm->create({
-	realm_id => $new_club->get('club_id'),
+	realm_id => $realm_id,
 	name => $name,
 	realm_type => Bivio::Auth::RealmType::CLUB(),
 	display_name => $display_name,
     });
+
+    # Create (empty) Address & Phone
+    Bivio::Biz::Model::Address->new($req)->create({realm_id => $realm_id});
+    Bivio::Biz::Model::Phone->new($req)->create({realm_id => $realm_id});
+    Bivio::Biz::Model::TaxId->new($req)->create({realm_id => $realm_id});
 
     my($id_map) = {$source_id => $new_realm->get('realm_id')};
 

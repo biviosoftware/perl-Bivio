@@ -50,6 +50,12 @@ Bivio::Auth::RoleSet->set(\$_CLUB_ROLES,
 	Bivio::Auth::Role::ACCOUNTANT(),
 	Bivio::Auth::Role::ADMINISTRATOR(),
 	);
+my($_MEMBER_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_MEMBER_ROLES,
+	Bivio::Auth::Role::MEMBER(),
+	Bivio::Auth::Role::ACCOUNTANT(),
+	Bivio::Auth::Role::ADMINISTRATOR(),
+       );
 
 =head1 CONSTANTS
 
@@ -65,6 +71,18 @@ Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
 
 sub VALID_CLUB_ROLES {
     return $_CLUB_ROLES;
+}
+
+=for html <a name="MEMBER_ROLES"></a>
+
+=head2 MEMBER_ROLES : string
+
+Value is a L<Bivio::Auth::RoleSet|Bivio::Auth::RoleSet>.
+
+=cut
+
+sub MEMBER_ROLES {
+    return $_MEMBER_ROLES;
 }
 
 =head1 METHODS
@@ -172,6 +190,33 @@ sub internal_initialize {
 	    [qw(user_id User_2.user_id  RealmOwner_2.realm_id)],
 	],
     };
+}
+
+=for html <a name="is_member"></a>
+
+=head2 is_member() : boolean
+
+=head2 static is_member(Bivio::Biz::ListModel list_model, string model_prefix) : boolean
+
+Returns true if the user is a member or above, i.e. I<role> must
+be MEMBER, ACCOUNT, or ADMINISTRATOR.
+
+In the second form, I<list_model> is used to get the values, not I<self>.
+List Models can declare a method of the form:
+
+    sub is_member {
+	my($self) = shift;
+	Bivio::Biz::Model::RealmUser->format($self, 'RealmUser.', @_);
+    }
+
+=cut
+
+sub is_member {
+    my($self, $list_model, $model_prefix) = @_;
+    $model_prefix ||= '';
+    $list_model ||= $self;
+    return Bivio::Auth::RoleSet->is_set(\$_MEMBER_ROLES,
+	    $list_model->get($model_prefix.'role'));
 }
 
 #=PRIVATE METHODS

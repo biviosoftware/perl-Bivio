@@ -127,7 +127,7 @@ sub can_be_zero {
 
 =for html <a name="from_literal"></a>
 
-=head2 static from_literal(string value) : int
+=head2 static from_literal(string value) : array
 
 Makes sure is a number and within min/max.
 

@@ -179,7 +179,7 @@ sub initialize {
 
 =head2 is_set(string_ref vector, Bivio::Type::Enum bit, ...) : boolean
 
-Returns true if I<bit>(s) are set in I<vector>.
+Returns true if all I<bit>(s) are set in I<vector>.
 
 =cut
 
@@ -219,6 +219,22 @@ Same as L<to_sql_param|"to_sql_param">.
 
 sub to_literal {
     return shift->to_sql_param(@_);
+}
+
+=for html <a name="to_sql_list"></a>
+
+=head2 static to_sql_list(string_ref vector) : string
+
+Returns a list of the form '(N,M,O,P)'.
+
+=cut
+
+sub to_sql_list {
+    my($proto, $vector) = @_;
+    return '()' unless defined($vector) && length($vector);
+    return '('.join(',',
+	    map {vec($$vector, $_, 1) ? ($_) : ()} 0..length($$vector)*8-1)
+	    .')';
 }
 
 =for html <a name="to_sql_param"></a>

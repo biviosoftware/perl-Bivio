@@ -598,6 +598,11 @@ __PACKAGE__->compile(
 	undef,
 	'source account and target account must be different',
     ],
+    FED_TAX_ID => [
+	65,
+	undef,
+	'invalid federal tax identifier must contain exactly 9 digits',
+    ],
 );
 
 #=PRIVATE METHODS

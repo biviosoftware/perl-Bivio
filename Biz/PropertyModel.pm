@@ -319,6 +319,21 @@ sub unauth_load {
     return 1;
 }
 
+=for html <a name="unauth_load_or_die"></a>
+
+=head2 unauth_load_or_die(hash query)
+
+See L<unauth_load|"unauth_load"> for params.  Throws a C<NOT_FOUND>
+exception if the load fails.
+
+=cut
+
+sub unauth_load_or_die {
+    my($self) = shift;
+    return if $self->unauth_load(@_);
+    $self->die(Bivio::DieCode::NOT_FOUND(), {@_}, caller);
+}
+
 =for html <a name="unsafe_load"></a>
 
 =head2 unsafe_load(hash query) : boolean

@@ -35,6 +35,33 @@ L<new_anonymous|Bivio::Biz::PropertyModel/"new_anonymous">.
 
 =cut
 
+=for html <a name="LAST_ROW"></a>
+
+=head2 LAST_ROW() : int
+
+Returns a constant which means the "last_row".
+
+=cut
+
+sub LAST_ROW {
+    # Something that isn't likely to be hit by subtracting around zero.
+    return -999999;
+}
+
+=for html <a name="LOAD_ALL_SIZE"></a>
+
+=head2 LOAD_ALL_SIZE : int
+
+The number of rows loaded by L<load_all|"load_all">.
+
+May be overridden.
+
+=cut
+
+sub LOAD_ALL_SIZE {
+    return 200;
+}
+
 =for html <a name="NOT_FOUND_IF_EMPTY"></a>
 
 =head2 NOT_FOUND_IF_EMPTY : boolean
@@ -92,22 +119,28 @@ sub new {
     return $self;
 }
 
+=for html <a name="new_anonymous"></a>
+
+=head2 static new_anonymous(hash_ref config) : Bivio::Biz::ListModel
+
+=head2 static new_anonymous(hash_ref config, Bivio::Agent::Request req) : Bivio::Biz::ListModel
+
+Create a new_anonymous ListModel associated with the request.
+
+=cut
+
+sub new_anonymous {
+    my($self) = &Bivio::Biz::Model::new_anonymous(@_);
+    # NOTE: fields are dynamically replaced.  See, e.g. load.
+    $self->{$_PACKAGE} = {
+	empty_properties => $self->internal_get,
+    };
+    return $self;
+}
+
 =head1 METHODS
 
 =cut
-
-=for html <a name="LAST_ROW"></a>
-
-=head2 LAST_ROW() : int
-
-Returns a constant which means the "last_row".
-
-=cut
-
-sub LAST_ROW {
-    # Something that isn't likely to be hit by subtracting around zero.
-    return -999999;
-}
 
 =for html <a name="execute"></a>
 
@@ -509,15 +542,14 @@ sub load {
 Loads "all" the records in this realm.
 If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
 
+See 
+
 =cut
 
 sub load_all {
     my($self) = @_;
-#TODO: What's the magic number?
-    $self->load({count => 200});
-    my($fields) = $self->{$_PACKAGE};
-    $self->die(Bivio::DieCode::TOO_MANY(), "more than 200 records")
-	    if $fields->{query}->get('has_next');
+    $self->load({count => $self->LOAD_ALL_SIZE});
+    _assert_all($self);
     return;
 }
 
@@ -696,7 +728,44 @@ sub unauth_load {
     return;
 }
 
+=for html <a name="unauth_load_all"></a>
+
+=head2 unauth_load(hash_ref attrs)
+
+=head2 unauth_load(Bivio::SQL::ListQuery query)
+
+Adds in I<count> equal to L<LOAD_ALL_SIZE|"LOAD_ALL_SIZE">.
+
+If the return is too large, throws a I<Bivio::DieCode::TOO_MANY> exception.
+
+=cut
+
+sub unauth_load_all {
+    my($self, $query) = @_;
+    if (ref($query) eq 'HASH') {
+	$query->{count} = $self->LOAD_ALL_SIZE;
+    }
+    else {
+	$query->put(count => $self->LOAD_ALL_SIZE);
+    }
+    $self->unauth_load($query);
+    _assert_all($self);
+    return;
+}
+
 #=PRIVATE METHODS
+
+# _assert_all(Bivio::Biz::ListModel self)
+#
+# Throws an exception if there are too many rows returned.
+#
+sub _assert_all {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    $self->die(Bivio::DieCode::TOO_MANY(), "more than 200 records")
+	    if $fields->{query}->get('has_next');
+    return;
+}
 
 =head1 COPYRIGHT
 

@@ -137,170 +137,52 @@ EOF
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-
-    use Bivio::Agent::Request;
-    use Bivio::Biz::Model::RealmTransaction;
-
-    my($tran) = Bivio::Biz::Model::RealmTransaction->new(
-	    Bivio::Agent::Request->new());
-
-    # remove all instrument_t which aren't companies
-    my($sth) = _do('
-            SELECT instrument_t.instrument_id, mgfs_instrument_t.mg_id
-            FROM mgfs_fundamental_t, mgfs_instrument_t, instrument_t
-            WHERE mgfs_fundamental_t.mg_id=mgfs_instrument_t.mg_id
-            AND mgfs_instrument_t.instrument_id=instrument_t.instrument_id
-            AND mgfs_fundamental_t.data_type != 2
-            /');
-    my($row);
-    while ($row = $sth->fetchrow_arrayref) {
-	my($instrument_id, $mg_id) = @$row;
-	Bivio::SQL::Connection->execute('
-                UPDATE mgfs_instrument_t
-                SET instrument_id=NULL, symbol=?
-                WHERE mg_id=?',
-		[$mg_id, $mg_id]);
-
-	# extra work to get rid of any transactions on bad instruments
-	# NOTE: doesn't affect production system, no bad data currently
-	#       no realm instruments for bad instruments have been created
-	my($sth2) = Bivio::SQL::Connection->execute('
-                SELECT DISTINCT entry_t.realm_transaction_id
-                FROM entry_t, realm_instrument_entry_t, realm_instrument_t
-                WHERE entry_t.entry_id=realm_instrument_entry_t.entry_id
-                AND realm_instrument_entry_t.realm_instrument_id
-                    = realm_instrument_t.realm_instrument_id
-                AND realm_instrument_t.instrument_id=?',
-		[$instrument_id]);
-	my($row2);
-	while ($row2 = $sth2->fetchrow_arrayref) {
-	    my($id) = $row->[0];
-	    $tran->unauth_load(realm_transaction_id => $id)
-		    || die("couldn't find transaction $id");
-	    $tran->cascade_delete();
-	}
-
-	# delete valuations for bad instruments
-	Bivio::SQL::Connection->execute('
-                DELETE from realm_instrument_valuation_t
-                WHERE realm_instrument_id in (
-                    SELECT realm_instrument_id
-                    FROM realm_instrument_t
-                    WHERE instrument_id=?)',
-		    [$instrument_id]);
-
-	# delete realm instruments and instruments for bad data
-	foreach my $table ('realm_instrument_t', 'instrument_t') {
-	    Bivio::SQL::Connection->execute("
-                    DELETE from $table
-                    WHERE instrument_id=?",
-		    [$instrument_id]);
-	}
-    }
-
-    # remove duplicate tickers (EGGS, HON, PTV)
-    # these are best guesses
-    foreach my $mg_id (qw(00023966 00000876 00001802)) {
-	foreach my $table (qw(
-                MGFS_SPLIT_T
-                MGFS_COMPANY_BOARD_T
-                MGFS_COMPANY_SEGMENT_T
-                MGFS_COMPANY_T
-                MGFS_BALANCE_SHEET_T
-                MGFS_CASH_FLOW_T
-                MGFS_INCOME_STATEMENT_T
-                MGFS_DAILY_QUOTE_T
-                MGFS_FUNDAMENTAL_T
-                MGFS_INSTRUMENT_T
-                )) {
-	    Bivio::SQL::Connection->execute("
-                    DELETE from $table
-                    WHERE mg_id=?",
-		    [$mg_id]);
-	}
-	Bivio::SQL::Connection->execute('
-                DELETE from instrument_t
-                WHERE instrument_id in (
-                    SELECT instrument_id
-                    FROM mgfs_instrument_t
-                    WHERE mg_id=?)',
-		[$mg_id]);
-    }
-
-    # add shares_outstanding_cco to mgfs_balance_sheet_t
-    Bivio::SQL::Connection->execute('
-            ALTER TABLE mgfs_balance_sheet_t
-            ADD shares_outstanding_cco NUMBER(20,3)');
-
-    # create the mgfs download table, it records stats
-    _do('
-CREATE TABLE mgfs_download_t (
-  file_name VARCHAR2(30),
-  file_date DATE,
-  file_size NUMBER(20,7),
-  download_date DATE
+    _do(<<'EOF');
+--
+-- Create tax table
+--
+CREATE TABLE tax_id_t (
+  realm_id NUMBER(18),
+  tax_id VARCHAR2(30)
 )
-storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-tablespace mgfs_data
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
 /
-');
-
-    _do('
-ALTER TABLE mgfs_download_t modify download_date not null
+ALTER TABLE tax_id_t modify realm_id not null
 /
-ALTER TABLE mgfs_download_t add primary key (file_name, file_date, file_size)
-  using index tablespace mgfs_indx
+ALTER TABLE tax_id_t 
+  add foreign key (realm_id)
+    references realm_owner_t(realm_id)
+/
+ALTER TABLE tax_id_t add primary key(realm_id)
+  using index tablespace realm_indx
   storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
 /
-');
 
-    # delete quotes with all 0 values
-    # represents the lack of data in an MGFS record, shouldn't be in db
-    $sth = Bivio::SQL::Connection->execute('
-            SELECT DISTINCT mg_id
-            FROM mgfs_daily_quote_t
-            WHERE close=0 AND high=0 AND low=0 AND volume=0',
-	    []);
-    while ($row = $sth->fetchrow_arrayref) {
-	my($mg_id) = $row->[0];
-	Bivio::SQL::Connection->execute('
-                DELETE FROM mgfs_daily_quote_t
-                WHERE mg_id=?
-                AND close=0 AND high=0 AND low=0 AND volume=0',
-		[$mg_id]);
-	Bivio::SQL::Connection->commit;
-    }
-
-    _upgrade_shadow_emails();
-    return;
-}
-
-# _upgrade_shadow_emails()
-#
-# Change ignore-=.*_realm_id to: .*:realm_id.  This must match the
-# algorithm in Model::Email.
-#
-sub _upgrade_shadow_emails {
-    my($sth) = Bivio::SQL::Connection->execute(<<'EOF', []);
-            SELECT email
-            FROM email_t
-            WHERE email like 'ignore-%'
-            AND email not like '%bivio.com'
+--
+-- Insert rows into all tax tables
+--
+INSERT INTO tax_id_t (realm_id)
+  SELECT realm_id
+  FROM realm_owner_t
+  WHERE realm_id > 10
+/
+--
+-- Add Address and Phone to all Clubs
+--
+INSERT INTO address_t (realm_id, location)
+  SELECT realm_id, 1
+  FROM realm_owner_t
+  WHERE realm_id > 10
+    AND realm_type = 3
+/
+INSERT INTO phone_t (realm_id, location)
+  SELECT realm_id, 1
+  FROM realm_owner_t
+  WHERE realm_id > 10
+    AND realm_type = 3
+/
 EOF
-    my($row, %shadow);
-    while ($row = $sth->fetchrow_arrayref) {
-	my($e) = $row->[0];
-	$shadow{$e} = $1.':'.$2 if $e =~ /^ignore-.(.+)_(\d+)$/;
-    }
-
-    while (my($k, $v) = each(%shadow)) {
-	print STDERR "changing $k -> $v\n";
-	Bivio::SQL::Connection->execute(<<'EOF', [$v, $k]);
-		UPDATE email_t
-                SET email = ?
-                WHERE email = ?
-EOF
-    }
     return;
 }
 

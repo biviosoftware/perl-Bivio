@@ -256,6 +256,23 @@ every investment mistake there is," she says, "but we've learned from them,
 and so our experience has been overwhelmingly positive."
 EOF
 	   );
+    __PACKAGE__->new(
+	    'trez_talk',
+	    'Jerry & Rip',
+	    {
+#TODO: Program to get size of jpgs
+		name => 'jerry_rip.jpg',
+		width => 173,
+		height => 152,
+	    },
+	    [<<'EOF'],
+Jerry Dressel and Rip West are America's leading experts in
+investment club accounting.  When they talk, E.F. Hutton listens.
+<p>
+Fire your questions at Trez Talk and you'll get more than
+your money's worth!
+EOF
+	   );
     return;
 }
 

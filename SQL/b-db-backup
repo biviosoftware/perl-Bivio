@@ -1,0 +1,47 @@
+#!perl -w
+# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-db-backup - export database tables
+
+=head1 SYNOPSIS
+
+b-db-backup [-n] -export dir
+
+=head1 DESCRIPTION
+
+See L<Bivio::SQL::Backup|Bivio::SQL::Backup>.
+
+=cut
+
+#=IMPORTS
+use Bivio::SQL::Backup;
+
+#=VARIABLES
+
+#=PRIVATE METHODS
+
+#=MAIN
+
+exit(Bivio::SQL::Backup->main(@ARGV));
+
+=head1 SEE ALSO
+
+Bivio::SQL::Backup
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999 bivio, LLC.  All rights reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:

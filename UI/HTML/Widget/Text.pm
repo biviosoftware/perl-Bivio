@@ -50,6 +50,17 @@ Name of the form field.
 
 Which form are we dealing with.
 
+=item format : string []
+
+=item format : array_ref []
+
+Widget value which returns the formatter to format the field
+if it is not in error.  May return C<undef> iwc no formatting
+will done.
+
+The formatter must format the field's value, not the html.
+The html will be escaped.
+
 =item size : int (required)
 
 How wide is the field represented.  (maxlength comes from the
@@ -110,6 +121,8 @@ sub initialize {
 	$fields->{handler}->put(parent => $self);
 	$fields->{handler}->initialize;
     }
+
+    $fields->{format} = $self->unsafe_get('format');
     return;
 }
 
@@ -127,6 +140,7 @@ sub render {
     my($fields) = $self->{$_PACKAGE};
     my($form) = $source->get_widget_value(@{$fields->{model}});
     my($field) = $fields->{field};
+
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 	$fields->{prefix} = '<input name='
@@ -140,7 +154,22 @@ sub render {
     }
     $fields->{handler}->render($source, $buffer) if $fields->{handler};
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' value="'.$form->get_field_as_html($field).'">';
+
+    # Format if provided
+    my($v);
+    if ($fields->{format} && !$form->get_field_error($field)) {
+	my($f) = ref($fields->{format}) eq 'ARRAY'
+		? $source->get_widget_value(@{$fields->{format}})
+		: $fields->{format};
+	if ($f) {
+	    $v = $f->get_widget_value($form->get($field));
+	    # Formatter must always return a defined value
+	    $v = Bivio::Util::escape_html($v);
+	}
+    }
+    $v = $form->get_field_as_html($field) unless defined($v);
+
+    $$buffer .= ' value="'.$v.'">';
     return;
 }
 

@@ -74,8 +74,8 @@ In the second form, I<list_model> is used to get the values, not I<self>.
 List Models can declare a method of the form:
 
     sub format_address {
-	my($self) = @_;
-	Bivio::Biz::Model::Address->format($self, 'Address.');
+	my($self) = shift;
+	Bivio::Biz::Model::Address->format($self, 'Address.', @_);
     }
 
 =cut

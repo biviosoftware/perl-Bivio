@@ -107,6 +107,18 @@ Always C<$self>.  Convenient for L<get_widget_value|"get_widget_value">.
 The time the request started as an array of seconds and microseconds.
 See L<Bivio::Util::gettimeofday|Bivio::Util/"gettimeofday">.
 
+=item target_realm_owner : Bivio::Biz::Model::RealmOwner
+
+Set by L<Bivio::Biz::Action::TargetRealm|Bivio::Biz::Action::TargetRealm>.
+Used to allow a different realm to be operated on within the current
+realm.  Allows shareable code for AddressForm and such.
+
+You can use I<target_realm_owner> as an "authenticated" value, because
+C<TargetRealm> checks permissions properly.  Don't use "this" as
+an authenticated value.  See
+L<Bivio::UI::HTML::Club::UserDetail|Bivio::UI::HTML::Club::UserDetail>
+for an example when it loads C<TaxId>.
+
 =item task : Bivio::Agent::Task
 
 Tuple containing the Action and View to be executed.

@@ -65,7 +65,6 @@ use Bivio::Type::Amount;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
 use Bivio::Type::EntryClass;
-#use Bivio::Type::FedTaxId;
 use Bivio::Type::Integer;
 use Bivio::Type::Name;
 use Bivio::Type::Number;
@@ -282,8 +281,8 @@ In the second form, I<list_model> is used to get the values, not I<self>.
 List Models can declare a method of the form:
 
     sub format_name {
-	my($self) = @_;
-	Bivio::Biz::Model::Address->format($self, 'RealmOwner.');
+	my($self) = shift;
+	Bivio::Biz::Model::Address->format($self, 'RealmOwner.', @_);
     }
 
 =cut
@@ -716,7 +715,6 @@ sub internal_initialize {
             realm_type => ['Bivio::Auth::RealmType', 'NOT_NULL'],
 	    display_name => ['Line', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
-#	    fed_tax_id => ['FedTaxId', 'NONE'],
         },
 	auth_id => 'realm_id',
 	other => [
