@@ -759,18 +759,20 @@ sub join {
 
 =for html <a name="label"></a>
 
-=head2 static label(string label) : Bivio::UI::HTML::Widget::String
-
 =head2 static label(string label, string font) : Bivio::UI::HTML::Widget::String
 
-Looks up I<label>.  Uses C<label_in_text> if I<font> is not supplied.
-Does not set I<string_font> if I<font> is C<undef>.
+=head2 static label(array_ref label, string font) : Bivio::UI::HTML::Widget::String
+
+Looks up I<label>--dereferencing the array_ref if necessary.  Uses
+C<label_in_text> if I<font> is not supplied.  Does not set I<string_font> if
+I<font> is C<undef>.
 
 =cut
 
 sub label {
     my($proto, $label, $font) = @_;
-    return $proto->string(Bivio::UI::Label->get_simple($label),
+    return $proto->string(Bivio::UI::Label->get_simple(
+	    ref($label) ? @$label : $label),
 	    defined($font) ? $font : 'label_in_text');
 }
 
