@@ -69,6 +69,8 @@ my($_DEFAULT_SEPARATOR) = ' - ';
 
 =for html <a name="new"></a>
 
+=head2 static new(array_ref values, string separator, hash_ref attributes) : Bivio::UI::HTML::Widget::Form
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Form
 
 Creates a new Form widget.
@@ -105,6 +107,24 @@ sub initialize {
     $fields->{separator} = $self->ancestral_get('title_separator',
 	    $_DEFAULT_SEPARATOR);
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args() : hash_ref 
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $values, $seperator, $attributes) = @_;
+    return '"values" must be defined' unless ref($values);
+    return {
+	values => $values,
+	(defined($seperator) ? (seperator => $seperator) : ()),
+	($attributes ? %$attributes : ()),
+    };
 }
 
 =for html <a name="render"></a>
