@@ -97,9 +97,9 @@ sub create {
 
     defined($from_name) || ($from_name = $from_email);
     $from_name = substr($from_name, 0, $_MAX_WIDTH);
-    my($reply_to_email) = $msg->get_reply_to;
-    $reply_to_email = substr($reply_to_email, 0, $_MAX_WIDTH)
-            if defined($reply_to_email);
+    my($reply_to_email) = $msg->get_reply_to || $from_email;
+    $self->die('DIE', {message => 'Reply-To: mail address too long'})
+                if length($reply_to_email) > $_MAX_WIDTH;
 
     my($subject) = $msg->get_field('subject');
     my($sortable_subject);
