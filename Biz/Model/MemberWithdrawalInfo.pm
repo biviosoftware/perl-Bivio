@@ -74,11 +74,15 @@ sub execute_empty {
 	    $member_entry->get('valuation_date');
 
     $properties->{units_withdrawn} = $math->neg($member_entry->get('units'));
-    $properties->{withdrawal_fee} = $math->neg(_get_fee($txn));
+    $properties->{withdrawal_fee} = $math->neg(_get_transaction_amount($txn,
+	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE()));
     $properties->{withdrawal_amount} = $math->neg($entry->get('amount'));
-    $properties->{cash_withdrawn} = $math->neg(_get_cash_withdrawn($txn));
+    $properties->{cash_withdrawn} = $math->neg(_get_transaction_amount(
+	    $txn, undef, Bivio::Type::EntryClass::CASH()));
     $properties->{withdrawal_adjustment} = $math->neg($math->round(
-	    _get_adjustment($txn), 2));
+	    _get_transaction_amount($txn,
+		    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_ADJUSTMENT()),
+	    2));
 
     my($transfer_list) = Bivio::Biz::Model::InstrumentTransferList->new($req);
     $transfer_list->load_all;
@@ -91,21 +95,22 @@ sub execute_empty {
 	    $transfer_list->get_member_tax_basis), 2);
     $properties->{member_instrument_cost_basis} = $math->round(
 	    $transfer_list->get_summary->get('member_cost_basis'), 2);
-
     $properties->{withdrawal_allocations} = $math->round($math->neg(
 	    $transfer_list->get_allocations), 2);
 
     $properties->{realized_gain} = _add($properties, qw(
             member_tax_basis withdrawal_allocations cash_withdrawn
             member_instrument_cost_basis));
+    $properties->{show_realized_gain} = 1;
 
     # partial withdrawals can't have a positive realized_gain
     if (($properties->{type} ==
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_STOCK
 	    || $properties->{type} ==
 	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_PARTIAL_CASH)
-	    && $math->compare($properties->{realized_gain}, 0) < 0) {
+	    && $math->compare($properties->{realized_gain}, 0) <= 0) {
 	$properties->{realized_gain} = 0;
+	$properties->{show_realized_gain} = 0;
     }
     $properties->{withdrawal_value} = _add($properties, qw(
             cash_withdrawn instrument_fmv withdrawal_fee
@@ -218,6 +223,11 @@ sub internal_initialize {
 		type => 'Amount',
 		constraint => 'NOT_NULL',
 	    },
+	    {
+		name => 'show_realized_gain',
+		type => 'Boolean',
+		constraint => 'NOT_NULL',
+	    },
 	],
     };
 }
@@ -237,54 +247,23 @@ sub _add {
     return $sum;
 }
 
-# _get_adjustment(Bivio::Biz::Model::RealmTransaction txn) : string
+# _get_transaction_amount(Bivio::Biz::Model::RealmTransaction txn, Bivio::Type::EntryType type, Bivio::Type::EntryClass class) : string
 #
-# Returns any adjustment associated with the specified withdrawal
-# transaction.
+# Returns the entry amount for the specified transaction/type/class.
+# Either type or class can be undef.
 #
-sub _get_adjustment {
-    my($txn) = @_;
+sub _get_transaction_amount {
+    my($txn, $type, $class) = @_;
     my($entry) = Bivio::Biz::Model::Entry->new($txn->get_request);
-    my($adjustment) = 0;
+    my($amount) = 0;
     if ($entry->unsafe_load(
 	    realm_transaction_id => $txn->get('realm_transaction_id'),
-	    entry_type =>
-	    Bivio::Type::EntryType::MEMBER_WITHDRAWAL_ADJUSTMENT())) {
-	$adjustment = $entry->get('amount');
+	    defined($type)
+		    ? (entry_type => $type)
+		    : (class => $class))) {
+	$amount = $entry->get('amount');
     }
-    return $adjustment;
-}
-
-# _get_cash_withdrawn(Bivio::Biz::Model::RealmTransaction txn) : string
-#
-# Returns the cash amount for the specified withdrawal transaction.
-#
-sub _get_cash_withdrawn {
-    my($txn) = @_;
-    my($entry) = Bivio::Biz::Model::Entry->new($txn->get_request);
-    my($cash) = 0;
-    if ($entry->unsafe_load(
-	    realm_transaction_id => $txn->get('realm_transaction_id'),
-	    class => Bivio::Type::EntryClass::CASH())) {
-	$cash = $entry->get('amount');
-    }
-    return $cash;
-}
-
-# _get_fee(Bivio::Biz::Model::RealmTransactions txn) : string
-#
-# Returns any fee associated with the specified withdrawal transaction.
-#
-sub _get_fee {
-    my($txn) = @_;
-    my($entry) = Bivio::Biz::Model::Entry->new($txn->get_request);
-    my($fee) = 0;
-    if ($entry->unsafe_load(
-	    realm_transaction_id => $txn->get('realm_transaction_id'),
-	    entry_type => Bivio::Type::EntryType::MEMBER_WITHDRAWAL_FEE())) {
-	$fee = $entry->get('amount');
-    }
-    return $fee;
+    return $amount;
 }
 
 =head1 COPYRIGHT
