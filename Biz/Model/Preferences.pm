@@ -37,12 +37,32 @@ converted to "sql" first.   This makes it is easy to do comparisons.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Task;
+use Bivio::Auth::RealmType;
+use Bivio::Auth::Role;
+use Bivio::Auth::RoleSet;
+use Bivio::Biz::Action::DemoClub;
+use Bivio::Die;
 use Bivio::IO::Trace;
+use Bivio::Type::ClubPreference;
+use Bivio::Type::UserPreference;
 
 #=VARIABLES
 use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
+my($_ACTIVE_CLUB_ROLES) = '';
+Bivio::Auth::RoleSet->set(\$_ACTIVE_CLUB_ROLES,
+	Bivio::Auth::Role::GUEST(),
+	Bivio::Auth::Role::MEMBER(),
+	Bivio::Auth::Role::ACCOUNTANT(),
+	Bivio::Auth::Role::ADMINISTRATOR(),
+	);
+my($_CLUB_PREFS) = Bivio::Type::ClubPreference->REQUEST_ATTRIBUTE;
+my($_USER_PREFS) = Bivio::Type::UserPreference->REQUEST_ATTRIBUTE;
+
+# used to save the user's "current club" user preference
+Bivio::Agent::Task->register($_PACKAGE);
 
 =head1 METHODS
 
@@ -120,6 +140,40 @@ sub handle_commit {
     return;
 }
 
+=for html <a name="handle_pre_execute_task"></a>
+
+=head2 handle_pre_execute_task(Bivio::Agent::Request req)
+
+Saves the CLUB_LAST_VISITED User Preference.
+
+=cut
+
+sub handle_pre_execute_task {
+    my($proto, $req) = @_;
+
+    # Don't set preferences unless browser
+    return unless $req->get('Bivio::Type::UserAgent')->is_browser;
+
+    # Don't set preferences if no auth_user
+    return unless $req->get('auth_user');
+
+    # Only for clubs
+    return unless $req->get('auth_realm')->get('type')
+	    == Bivio::Auth::RealmType::CLUB();
+
+    # Don't save the demo club as a visited club
+    return if Bivio::Biz::Action::DemoClub->is_demo_club(
+	    $req->get('auth_realm')->get('owner'));
+
+    # Don't save if not a guest or member
+    return unless Bivio::Auth::RoleSet->is_set(\$_ACTIVE_CLUB_ROLES,
+	    $req->get('auth_role'));
+
+    # Set CLUB_LAST_VISITED preference
+    $proto->set_user_pref($req, 'CLUB_LAST_VISITED', $req->get('auth_id'));
+    return;
+}
+
 =for html <a name="handle_rollback"></a>
 
 =head2 handle_rollback()
@@ -134,6 +188,49 @@ sub handle_rollback {
     $self->get_request->delete($fields->{attr});
     _trace_self($fields) if $_TRACE;
     return;
+}
+
+=for html <a name="get_club_pref"></a>
+
+=head2 static get_club_pref(Bivio::Agent::Request req, any pref) : any
+
+Gets a club preference.  I<pref> must be a
+L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
+The value returned may be C<undef> if club is undefined or preference
+not set iwc the default should be used.
+
+=cut
+
+sub get_club_pref {
+    my($proto, $req, $pref) = @_;
+    my($auth_realm) = $req->get('auth_realm');
+    return $proto->get_value(
+	    $req,
+	    $_CLUB_PREFS,
+	    $auth_realm && $auth_realm->get('type')
+		    == Bivio::Auth::RealmType::CLUB()
+	    ? $auth_realm->get('owner') : undef,
+	    Bivio::Type::ClubPreference->from_any($pref));
+}
+
+=for html <a name="get_user_pref"></a>
+
+=head2 static get_user_pref(Bivio::Agent::Request req, any pref) : any
+
+Gets a user preference.  I<pref> must be a
+L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
+The value returned may be C<undef> if user undefined or preference
+not set iwc the default should be used.
+
+=cut
+
+sub get_user_pref {
+    my($proto, $req, $pref) = @_;
+    return $proto->get_value(
+	    $req,
+	    $_USER_PREFS,
+	    $req->get('auth_user'),
+	    Bivio::Type::UserPreference->from_any($pref));
 }
 
 =for html <a name="internal_initialize"></a>
@@ -154,6 +251,59 @@ sub internal_initialize {
         },
 	auth_id => 'realm_id',
     };
+}
+
+=for html <a name="set_club_pref"></a>
+
+=head2 static set_club_pref(Bivio::Agent::Request req, any pref, any value)
+
+Sets a club preference.  I<pref> must be a
+L<Bivio::Type::ClubPreference|Bivio::Type::ClubPreference>.
+I<value> may be undef.
+
+Avoid setting defaults in the file.  If the value is same as
+default, don't set it.
+
+=cut
+
+sub set_club_pref {
+    my($proto, $req, $pref, $value) = @_;
+    my($auth_realm) = $req->get('auth_realm');
+    return undef unless $auth_realm && $auth_realm->get('type')
+	    == Bivio::Auth::RealmType::CLUB();
+    $proto->set_value(
+	    $req,
+	    $_CLUB_PREFS,
+	    $auth_realm->get('owner'),
+	    Bivio::Type::ClubPreference->from_any($pref),
+	    $value);
+    return;
+}
+
+=for html <a name="set_user_pref"></a>
+
+=head2 static set_user_pref(Bivio::Agent::Request req, any pref, any value)
+
+Sets a user preference.  I<pref> must be a
+L<Bivio::Type::UserPreference|Bivio::Type::UserPreference>.
+I<value> may be undef.
+
+Avoid setting defaults in the file.  If the value is same as
+default, don't set it.
+
+=cut
+
+sub set_user_pref {
+    my($proto, $req, $pref, $value) = @_;
+    my($auth_user) = $req->get('auth_user');
+    return unless $auth_user;
+    $proto->set_value(
+	    $req,
+	    $_USER_PREFS,
+	    $auth_user,
+	    Bivio::Type::UserPreference->from_any($pref),
+	    $value);
+    return;
 }
 
 =for html <a name="set_value"></a>
