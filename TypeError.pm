@@ -650,6 +650,16 @@ __PACKAGE__->compile(
 	undef,
 	'please enter your name, not your club\'s name',
     ],
+    INVALID => [
+        75,
+        undef,
+        'value is invalid',
+    ],
+    MISSING_FIRST_LAST_MIDDLE => [
+        76,
+        undef,
+        'You must specify at least on of First, Middle, or Last Names',
+    ]
 );
 
 #=PRIVATE METHODS
