@@ -1853,17 +1853,7 @@ my(@_CFG) = (
         NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
         NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
     )],
-    [qw(
-        CLUB_MAIL_PEOPLE_RECEIVE
-        184
-        CLUB
-        MAIL_WRITE
-        !
-        Bivio::Biz::Action::ClubMailPeople
-        Bivio::UI::Mail::Receive
-        NOT_FOUND=MAIL_RECEIVE_NOT_FOUND
-        NO_RESOURCES=MAIL_RECEIVE_NO_RESOURCES
-    )],
+#184
     [qw(
         CLUB_MAIL_ADMIN_RECEIVE
         185
