@@ -178,22 +178,22 @@ sub execute_empty_start {
 
 =for html <a name="execute_ok"></a>
 
-=head2 execute_ok() : boolean
+=head2 execute_ok(string button) : boolean
 
+calls L<execute_ok_start|"execute_ok_start">,
+L<execute_ok_row|"execute_ok_row"> and then
+L<execute_ok_end|"execute_ok_end">.
 
 =cut
 
 sub execute_ok {
-    my($self) = @_;
-
-#TODO: Optimize.  Don't make calls if method doesn't exist
-    # Do start/row/end
+    my($self, $button) = @_;
     $self->reset_cursor;
-    $self->execute_ok_start;
+    $self->execute_ok_start($button);
     while ($self->next_row) {
-	$self->execute_ok_row;
+	$self->execute_ok_row($button);
     }
-    my($result) = $self->execute_ok_end;
+    my($result) = $self->execute_ok_end($button);
     $self->reset_cursor;
     return $result;
 }
