@@ -2,6 +2,12 @@
 # $Id$
 package Bivio::Biz::PropertyModel::MailMessage;
 use strict;
+use MIME::Parser;
+use IO::File;
+use IO::Stringy;
+use IO::Scalar;
+
+
 $Bivio::Biz::PropertyModel::MailMessage::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
@@ -66,6 +72,16 @@ sub create {
     my($mon, $year) = (gmtime($dttm))[4,5];
     $year < 1900 && ($year += 1900);
     my($club_id, $club_name) = $club->get('club_id', 'name');
+
+    # next, we'll want to do a file create to a subdirectory.
+    # I am not sure how to check result codes to see if a directory
+    # does not exist!
+    
+#    my $result = $_FILE_CLIENT->create('/'. $club_name . '/messagebox/'
+#	    . sprintf("%04d%02d", $year, ++$mon), \$mbox);
+
+#	    || die("mbox create failed: $mbox");
+
     $_FILE_CLIENT->append('/'. $club_name . '/mbox/'
 	    . sprintf("%04d%02d", $year, ++$mon), \$mbox)
 	    || die("mbox append failed: $mbox");
@@ -92,6 +108,34 @@ sub create {
     $_FILE_CLIENT->create('/' . $club_name . '/messages/'
 	    . $values->{mail_message_id}, \$body)
 	    || die("file server failed: $body");
+
+# Handle email attachments. Here's a first cut...
+
+    my($mail_message) = $msg->get_rfc( ); #offset from header
+    # note that above method returns a COPY not a REFERENCE.
+    # this may actually be necessary, I don't know. I think
+    # parser->read( ) will WRITE to this area!!
+
+    my $parser = new MIME::Parser;
+#    $parser->output_dir("/home/tjv/test_data");
+
+    #now use an IO::Scalar so that the parser thinks it is
+    #reading from a file. 
+    my $file = new IO::Scalar;
+    $file->open(\$mail_message);
+    print(STDERR "\nPOSITION: " . $file->getpos( ));
+    my $entity = $parser->read($file);
+    print(STDERR "\nPOSITION: " . $file->getpos( ));
+    $file->close;
+
+    #now extract all the mime attachments
+    print(STDERR "\n\nextracting MIME attachments for this mail message\n");
+    my $msgid = $values->{mail_message_id};
+
+    _extract_mime($entity, 0, $club_name, $msgid);
+
+    
+    print(STDERR "Done extractng MIME attachments.\n");
     return;
 }
 
@@ -244,6 +288,67 @@ sub _sortable_name {
     $str =~ s/[!#$%^&*-+=]/\s/g;
     print(STDERR "stripped user name: " . $str);
     return $str;
+}
+
+
+#NOTE this method returns a scalar, not a reference.
+#The mime header is assumed to be small.
+sub _extract_mime_header($ ){
+    my($entity) = @_;
+    my $s;
+    tie *HEADERHANDLE, 'IO::Scalar', \$s;
+    my $head = $entity->head( );
+    $head->print(\*HEADERHANDLE);
+    return $s;
+}
+
+# NOTE this method returns a scalar reference.
+sub _extract_mime_body_decoded($ ){
+    my($entity) = @_;
+    my $s;
+    tie *FILEHANDLE, 'IO::Scalar', \$s;
+    if (my $io = $entity->open("r")) {
+       while (defined($_ = $io->getline)) { print (FILEHANDLE $_); }
+       $io->close;
+    }
+    return \$s
+    
+}
+
+# This method should extract all mime attachments and save each
+# one off to a file.
+
+
+sub _extract_mime( ){
+    my($entity, $fileindex, $club_name, $message_id) = @_;
+    print(STDERR "extract index: $fileindex\n");
+    my($numparts) = $entity->parts( ) || 0; #number of parts;
+
+    if($fileindex > 0 ){
+	my $mime = _extract_mime_body_decoded($entity);
+	my $outputfilename = $message_id . "." . $fileindex;
+	print(STDERR "writing file: $outputfilename\n");
+	$_FILE_CLIENT->create('/' . $club_name . '/messages/'
+		. $outputfilename, $mime)
+		|| die("file server failed: $$mime");
+	my $hdr = _extract_mime_header($entity);
+	
+	# just for my own edification (tjv:
+#	$_FILE_CLIENT->create('/' . $club_name . '/messages/'
+#		. $outputfilename . "_header", \$hdr)
+#		|| die("file server failed: $hdr");
+    }
+
+
+    print(STDERR "found $numparts elements. ");
+    $numparts != 0 ? print("Iterating...\n") : print "No parts. Not iterating...\n";
+    for(my $index=0; $index < $numparts; $index += 1){
+	print(STDERR "index: $index\n");
+	my $e = $entity->part($index);
+	print(STDERR "got part $index\n");
+	$fileindex = $fileindex + 1;
+        _extract_mime($e, $fileindex, $club_name, $message_id);
+    }
 }
 
 1;
