@@ -85,19 +85,6 @@ sub get_arg {
     return $fields->{args}->{$name};
 }
 
-=for html <a name="log_error"></a>
-
-=head2 log_error(string message)
-
-Writes the message to STDERR.
-
-=cut
-
-sub log_error {
-    my($self, $message) = @_;
-    print(STDERR $message);
-}
-
 =for html <a name="print"></a>
 
 =head2 print(string str)

@@ -226,18 +226,6 @@ sub get_user {
     return $fields->{user};
 }
 
-=for html <a name="log_error"></a>
-
-=head2 abstract log_error(string message)
-
-Writes the specified message to an error log appropriate for the request.
-
-=cut
-
-sub log_error {
-    die("abstract method");
-}
-
 =for html <a name="print"></a>
 
 =head2 abstract print(string str)
