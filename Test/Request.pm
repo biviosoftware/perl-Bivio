@@ -85,6 +85,29 @@ sub get_instance {
 
 =cut
 
+=for html <a name="execute_task"></a>
+
+=head2 static execute_task(any task_id, hash_ref req_attrs) : string_ref
+
+Executes I<task_id> in the context of a fully initialized instance.
+I<req_attrs> allows you to add any configuration, e.g. query.
+
+=cut
+
+sub execute_task {
+    my($proto, $task_id, $req_attrs) = @_;
+    ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any($task_id);
+    Bivio::IO::ClassLoader->simple_require(
+	'Bivio::Agent::Dispatcher')->initialize;
+    my($self) = $proto->get_instance->put(%$req_attrs)->setup_facade;
+    Bivio::Die->die(
+	'facade not fully initialized; this method must be called before'
+	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
+    ) unless Bivio::UI::Facade->is_fully_initialized;
+    $self->get('task')->execute($self);
+    return $self->get('reply')->get_output;
+}
+
 =for html <a name="set_realm_and_user"></a>
 
 =head2 static set_realm_and_user(any realm, any user) : self
