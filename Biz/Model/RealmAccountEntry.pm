@@ -51,6 +51,8 @@ Creates the account entry, and transaction entry for the specified
 transaction, using the values from the specified properties hash. Dies
 on failure.
 
+Defaults tax_category to NOT_TAXABLE, and tax_basis to true.
+
 =cut
 
 sub create_entry {
@@ -60,6 +62,12 @@ sub create_entry {
     ($properties->{realm_id}, $properties->{realm_transaction_id})
 	    = $trans->get('realm_id', 'realm_transaction_id');
     $properties->{realm_transaction_id} = $trans->get('realm_transaction_id');
+
+    # defaults
+    $properties->{tax_category} = Bivio::Type::TaxCategory::NOT_TAXABLE()
+	    unless defined($properties->{tax_category});
+    $properties->{tax_basis} = 1
+	    unless defined($properties->{tax_basis});
 
     my($entry) = Bivio::Biz::Model::Entry->new($self->get_request);
     $entry->create($properties);
