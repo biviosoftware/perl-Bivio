@@ -165,7 +165,7 @@ my(@_XLATORS) = (
  	Bivio::UI::PDF::Form::RadioBtnXlator->new(
 		[
 		    'Bivio::Biz::Model::F1065K1Form',
-		    'foreign'
+		    'foreign_partner'
 		],
 		Bivio::Type::Boolean::FALSE(),
  		Bivio::UI::PDF::Form::ButtonXlator->new('c1-4', 'On'),
