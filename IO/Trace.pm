@@ -196,8 +196,7 @@ the form:
 
     _trace(bla, bla, bla, bla) if $_TRACE;
 
-You will need to experiment with which trace points are expensive and require
-this more elaborate form.  In general, a simple string argument
+You will need to experiment with which trace points are expensive.
 
 =cut
 
@@ -392,7 +391,7 @@ The filters are a huge security hole.  A proper implementation would only allow
 certain operations within the filter.  This is not possible at this time
 without creating a special interpreter.  Therefore, environment variable
 initialization can't be used if the program is setgid or setuid.  Moreover,
-programmitic control must be limited.  In general, an expression builder should
+programmatic control must be limited.  In general, an expression builder should
 be provided to allow the developer enough flexibility to debug without allowing
 full perl expressions.  Limiting the filters to regular expressions does
 nothing to reduce the risk due to perl's string interpolation facilities.
