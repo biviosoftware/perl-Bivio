@@ -43,6 +43,8 @@ a realm can be subscribed to. The current choices are:
 
 =item FREE_TRIAL
 
+=item TAX_SEASON
+
 =back
 
 =cut
@@ -77,6 +79,10 @@ __PACKAGE__->compile([
 	5,
 	'Free Trial',
     ],
+    TAX_SEASON => [
+	6,
+	'Tax Season',
+    ],
 ]);
 # Tells us whether we can upgrade to the new value.  UNKNOWN is
 # not upgradeable.
@@ -88,6 +94,7 @@ my(%_UPGRADE_INDEX);
     } qw(
 	FREE_TRIAL
 	PREMIUM_SUPPORT
+	TAX_SEASON
 	BASIC_SERVICE
 	ACCOUNT_SYNC
 	ACCOUNT_KEEPER
