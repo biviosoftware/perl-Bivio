@@ -132,6 +132,37 @@ sub handle_config {
     return;
 }
 
+=for html <a name="post_form"></a>
+
+=head2 post_form(hashref fields_and_input)
+
+Interfaces with HTTP methods to submit a form post.  Input is a hash with exact
+field names for public fields and the content to post.  This method assumes
+that the last page visited contains the form to submit.
+
+=cut
+
+sub post_form {
+    my($proto, $fields_and_input) = @_;
+    my($board) = Bivio::Test::BulletinBoard->get_current();
+    my($parsed_res) = $board->get('response');
+    #get form by looking at first field listed
+    my($form) = $parsed_res->get_form_by_field_name(
+	    (keys(%{$fields_and_input}))[0]);
+    _trace("Form to fill out: $form") if $_TRACE;
+    #TODO: doesn't check rest of fields
+
+    #Put each input under $input->{<field>}->{value}
+    my($form_fields) = $parsed_res->list_public_fields($form);
+    foreach my $field (keys(%{$fields_and_input})) {
+	$form_fields->{$field}->{value} = $fields_and_input->{$field};
+    }
+
+    #Get page, parse, and store
+    $board->get('HTTPUtil')->http_form($form_fields, $form);
+    return;
+}
+
 =for html <a name="visit"></a>
 
 =head2 visit(Bivio::Test::BulletinBoard board, hash_ref uri) 
