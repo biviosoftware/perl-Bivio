@@ -84,7 +84,7 @@ Spacing around each cell in pixels.
 =item columns : array_ref (required)
 
 The column names to display, in order. Column headings will be assigned
-by looking up ('table_column_heading', field).
+by looking up (simple list class, field).
 
 Each column element is specified in one of the following forms:
 
@@ -684,7 +684,8 @@ sub _get_heading {
 	# wrap it in a string widget
 	$heading = Bivio::UI::HTML::Widget::String->new({
 	    value => length($heading)
-	    ? $_VS->vs_text('table_column_heading', $heading) : $heading,
+	    ? $_VS->vs_text($list->simple_package_name,
+		    'table_column_heading', $heading) : $heading,
 	    string_font => $self->get_or_default(
 		    'heading_font', 'table_heading'),
 	});
