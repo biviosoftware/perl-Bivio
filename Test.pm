@@ -40,13 +40,17 @@ define what you want to test very succinctly.  Here's an example:
         ],
     ]);
 
-You declare the class or instance you are testing followed by a list of tests.
-Each test is a method name followed by a list of cases.  Each case is a tuple
-of parameter(s) and return value(s).
+The first argument to L<run|"run"> is a list of object groups.  An object
+group is tuple of the object (class or instance) and a list of method groups.
+A method group is a tuple of the method name followed by a list of test cases.
+Each test case is a tuple of a list of parameter(s) and a return value.
 
 If there is no return value, specify C<[undef]>.  That's what the method should
-return if it doesn't return anything.  (All perl subs return C<undef>
-implicitly.
+return if it doesn't return anything.  perl methods return C<undef> implicitly
+if the last statement they execute is C<return;>.  We recommend you always end
+your methods in a C<return> statement to avoid unexpected return values being
+used.  perl by default returns the value of the last statement executed.  This
+can have serious side-effects unless one is careful.
 
 To ignore the return result, specify C<undef> (as a scalar, not wrapped in an
 array_ref), i.e. the test case tuple should only include the parameter(s).
