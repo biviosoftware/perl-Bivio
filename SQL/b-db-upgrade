@@ -278,10 +278,16 @@ EOF
     Bivio::Biz::Util::RealmRole->edit('ask_candis', 'USER', '+MAIL_WRITE');
     Bivio::Biz::Util::RealmRole->edit('ask_candis', 'WITHDRAWN', '+MAIL_WRITE');
     Bivio::Biz::Util::RealmRole->edit('ask_candis', 'GUEST', '+MAIL_WRITE');
+    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'USER', '+MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'WITHDRAWN', '+MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('ask_candis', 'GUEST', '+MAIL_FORWARD');
     Bivio::Biz::Util::RealmRole->edit('trez_talk', 'ANONYMOUS', '+MAIL_WRITE');
     Bivio::Biz::Util::RealmRole->edit('trez_talk', 'USER', '+MAIL_WRITE');
     Bivio::Biz::Util::RealmRole->edit('trez_talk', 'WITHDRAWN', '+MAIL_WRITE');
     Bivio::Biz::Util::RealmRole->edit('trez_talk', 'GUEST', '+MAIL_WRITE');
+    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'USER', '+MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'WITHDRAWN', '+MAIL_FORWARD');
+    Bivio::Biz::Util::RealmRole->edit('trez_talk', 'GUEST', '+MAIL_FORWARD');
 
     print("Setup decoration for the celebies\n");
     my($realm) = Bivio::Biz::Model::RealmOwner->new($req);
