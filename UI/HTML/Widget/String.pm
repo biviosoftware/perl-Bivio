@@ -200,7 +200,7 @@ sub internal_new_args {
     return '"value" attribute must be defined' unless defined($value);
     return {
 	value => $value,
-	defined($font) ? (string_font => $font) : (),
+	(defined($font) ? (string_font => $font) : ()),
 	($attributes ? %$attributes : ()),
     };
 }
