@@ -101,8 +101,8 @@ sub execute {
 	}
 	_trace('subtype of this image is: ', $subtype) if $_TRACE;
 	my($stream) = substr($body, $i);
-	$i = index($stream, "\n");
-	$stream = substr($stream, $i+1);
+	$i = index($stream, "\n\n");
+	$stream = substr($stream, $i+2);
 	_trace('writing the image data to the stream') if $_TRACE;
 	_trace('output type: ', 'image/', $subtype) if $_TRACE;
 	$req->get('reply')->set_output_type("image/".$subtype);
