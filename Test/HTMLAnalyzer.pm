@@ -245,6 +245,20 @@ sub gen_form_uri {
 	fields => $form_fields });
 }
 
+=for html <a name="get_button_uri"></a>
+
+=head2 get_button_uri(string $label) : string
+
+Returns the url associated with a button name.
+
+=cut
+
+sub get_button_uri {
+    my($self, $label) = @_;
+    return $self->{$_PACKAGE}->{buttons}->{$label}
+	    || die("Can't find button: $label");
+}
+
 =for html <a name="get_form_action"></a>
 
 =head2 get_form_action(Bivio::Test::HTMLAnalyzer self, string name) : string
