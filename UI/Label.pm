@@ -822,7 +822,7 @@ EOF
     ECPAYMENT_USER => 'Paid By',
     ['ECPAYMENT_CREATION_DATE_TIME', 'ECPayment.creation_date_time']
         => 'Entered On',
-    ECPAYMENT_PAYMENT_TYPE => 'Paid For',
+    ['ECPAYMENT_PAYMENT_TYPE', 'ECPayment.payment_type'] => 'Paid For',
     ECPAYMENT_PROCESSOR_TRANSACTION_NUMBER => 'Transaction #',
     ECPAYMENT_PROCESSED_DATE_TIME => 'Processed On',
     ECPAYMENT_PROCESSOR_RESPONSE => 'Processor Response',
@@ -842,7 +842,8 @@ EOF
         => 'Started on',
     ['ECSUBSCRIPTION_END_DATE', 'ECSubscription.end_date']
         => 'Ends On',
-    ECSUBSCRIPTION_RENEWAL_METHOD => 'Next Renewal Method',
+    ['ECSUBSCRIPTION_RENEWAL_METHOD', 'ECSubscription.renewal_method']
+        => 'Next Renewal Method',
     ['ECSUBSCRIPTION_RENEWAL_PERIOD', 'ECSubscription.renewal_period']
         => 'Renewal Period',
     EC_TYPE => 'Subscriptions',
