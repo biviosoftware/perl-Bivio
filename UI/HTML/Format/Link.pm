@@ -41,7 +41,9 @@ links.
 
 =for html <a name="get_widget_value"></a>
 
-=head2 static get_widget_value(string href, string site) : string
+=head2 static get_widget_value(string href) : string
+
+=head2 static get_widget_value(any href, string site) : string
 
 Returns an href, possibly as an /goto link.  If I<site> is specified,
 must match one of the site implementations below.
@@ -60,6 +62,16 @@ sub get_widget_value {
 }
 
 #=PRIVATE METHODS
+
+# _site_yahoo_quotes(array_ref ticker) : string
+#
+# Returns href for Yahoo Quotes site.
+#
+sub _site_yahoo_quotes {
+    my($tickers) = @_;
+    return 'http://quote.yahoo.com/q?d=v1&s='.
+	    Bivio::HTML->escape_query(join(' ', @$tickers));
+}
 
 # _site_zacks_quotes(string ticker) : string
 #
