@@ -39,8 +39,9 @@ if (defined($ENV{MOD_PERL})) {
     ';
     $@ && die($@);
     # Order defines the order in the top menu.
+    my($docs) = Bivio::Club::Page::Documents->new();
     @_PAGES = (
-	Bivio::Club::Page::Documents->new(),
+	$docs,
 	Bivio::Club::Page::Distributions->new(),
 	Bivio::Club::Page::Members->new(),
 	$_MESSAGE_PAGE = $_DEFAULT_PAGE = Bivio::Club::Page::Messages->new(),
@@ -49,8 +50,10 @@ if (defined($ENV{MOD_PERL})) {
     );
     $_PAGE_MENU = Bivio::Club::Menu->new(\@_PAGES);
     %_URI_TO_PAGE_MAP = map {($_->URI, $_)} @_PAGES;
-    %_MAILINGLIST_URI_TO_PAGE_MAP = map {($_->URI, $_)} ($_MESSAGE_PAGE);
-    $_MAILINGLIST_PAGE_MENU = Bivio::Club::Menu->new([$_MESSAGE_PAGE]);
+    %_MAILINGLIST_URI_TO_PAGE_MAP = map {($_->URI, $_)} (
+	    $docs, $_MESSAGE_PAGE);
+    $_MAILINGLIST_PAGE_MENU = Bivio::Club::Menu->new([
+	    $docs, $_MESSAGE_PAGE]);
 }
 
 sub message_page { $_MESSAGE_PAGE }
