@@ -94,8 +94,16 @@ sub execute_empty {
     # get the type and selected row from the ImportedTransactionTypeForm
     # from the previous task
 
-    my($type_form) = $self->get_request->get(
+    my($type_form) = $self->get_request->unsafe_get(
 	    'Bivio::Biz::Model::ImportedTransactionTypeForm');
+
+    # the previous state was lost (from changing sort order)
+    # return to the original identify page
+    unless ($type_form) {
+	$self->get_request->client_redirect(
+		Bivio::Agent::TaskId::CLUB_ACCOUNTING_SYNC_IDENTIFY());
+    }
+
     $self->internal_put_field(selected_row =>
 	    $type_form->get('selected_row'));
 
