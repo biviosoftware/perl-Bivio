@@ -1,8 +1,9 @@
-# Copyright (c) 1999 bivio, LLC.  All rights reserved.
+# Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::FileQuota;
 use strict;
 $Bivio::Biz::Model::FileQuota::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::FileQuota::VERSION;
 
 =head1 NAME
 
@@ -62,11 +63,11 @@ sub DEFAULT_MAX_KBYTES_FOR_DEMO_CLUB {
 }
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::Integer;
-use Bivio::Type::PrimaryId;
+use Bivio::Type::FileVolume;
 
 #=VARIABLES
+my($_IN_QUOTA_SQL_LIST, @_IN_QUOTA_PARAMS);
+_initialize();
 
 =head1 METHODS
 
@@ -142,22 +143,56 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'file_quota_t',
 	columns => {
-            realm_id => ['Bivio::Type::PrimaryId',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-            kbytes => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
-            max_kbytes => ['Bivio::Type::Integer',
-    		Bivio::SQL::Constraint::NOT_NULL()],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            kbytes => ['Integer', 'NOT_NULL'],
+            max_kbytes => ['Integer', 'NOT_NULL'],
         },
 	auth_id => [qw(realm_id)],
     };
 }
 
+=for html <a name="recompute"></a>
+
+=head2 recompute() : self
+
+Recomputes the quota for I<self>.  This will reload the instance
+after the recompute.
+
+=cut
+
+sub recompute {
+    my($self) = @_;
+    my($realm_id) = $self->get('realm_id');
+    Bivio::SQL::Connection->execute('
+        UPDATE file_quota_t
+        SET kbytes = (
+	    SELECT sum(decode(bytes, 0, 1, floor((bytes+1023)/1024)))
+	    FROM file_t
+	    WHERE realm_id = ?
+	    AND volume IN ('.$_IN_QUOTA_SQL_LIST.'))
+        WHERE realm_id = ?',
+	    [$realm_id, @_IN_QUOTA_PARAMS, $realm_id]);
+    return $self->unauth_load_or_die(realm_id => $realm_id);
+}
+
 #=PRIVATE METHODS
+
+# _initialize()
+#
+# Initializes $_IN_QUOTA_PARAMS and $_IN_QUOTA_SQL_LIST
+#
+sub _initialize {
+    return if @_IN_QUOTA_PARAMS;
+    @_IN_QUOTA_PARAMS = map {
+	$_->in_quota ? $_->as_sql_param : ()
+    } Bivio::Type::FileVolume->get_list;
+    $_IN_QUOTA_SQL_LIST = join(',', map {'?'} @_IN_QUOTA_PARAMS);
+    return;
+}
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999 bivio, LLC.  All rights reserved.
+Copyright (c) 1999-2001 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
