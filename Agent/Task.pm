@@ -195,41 +195,26 @@ sub new {
     die($id->as_string, ': id already defined') if $_ID_TO_TASK{$id};
     my($i, $next, @new_items);
 
-    # If there is an error, we'll be caching instances in one of the
-    # hashes which may never be used.  Unlikely we'll be continuing after
-    # the error anyway...
-    my($attrs) = {
+    my($self) = Bivio::Collection::Attributes::new($proto, {
 	id => $id,
 	realm_type => $realm_type,
 	permission_set => $perm,
 	die_actions => {},
 	form_model => undef,
-    };
+    });
+    my($attrs) = $self->internal_get;
+    # Make the task visible to the items being initialized
+    $_ID_TO_TASK{$id} = $self;
+    my(@executables);
     foreach $i (@items) {
 	if ($i =~ /=/) {
 	    # Map item
 	    _parse_map_item($attrs, split(/=/, $i, 2));
 	    next;
 	}
-	if (ref($i) eq 'CODE') {
-	    push(@new_items, [undef, $i]);
-	    next;
-	}
-
-	# Executable item
-	my($class, $method) = split(/->/, $i, 2);
-	my($c) = Bivio::Collection::SingletonMap->get($class);
-	$method ||= 'execute';
-	Bivio::Die->die($i,
-		": can't be executed (missing $method method)")
-		    unless $c->can($method);
-	if ($c->isa('Bivio::Biz::FormModel')) {
-	    Bivio::Die->die($id->as_string, ': too many form models')
-			if $attrs->{form_model};
-	    $attrs->{form_model} = $class;
-	}
-	push(@new_items, [$c, $method]);
+	push(@executables, $i);
     }
+    my($new_items) = _init_executables($attrs, \@executables);
 
     # Set form
     _init_form_attrs($attrs);
@@ -241,10 +226,9 @@ sub new {
     # If there is an error, we'll be caching instances in one of the
     # hashes which may never be used.  Unlikely we'll be continuing after
     # the error anyway...
-    $attrs->{items} = \@new_items;
-    my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
+    $attrs->{items} = $new_items;
     $self->set_read_only;
-    return $_ID_TO_TASK{$id} = $self;
+    return $self;
 }
 
 =head1 METHODS
@@ -470,6 +454,36 @@ sub _call_txn_resources {
     # Empty the list
     $req->put(txn_resources => []);
     return;
+}
+
+# _init_executables(hash_ref attrs, array_ref executables) : array_ref
+#
+# Returns the parsed and initialized executables.
+#
+sub _init_executables {
+    my($attrs, $executables) = @_;
+    my(@new_items);
+    foreach my $i (@$executables) {
+	if (ref($i) eq 'CODE') {
+	    push(@new_items, [undef, $i]);
+	    next;
+	}
+
+	# Executable item
+	my($class, $method) = split(/->/, $i, 2);
+	my($c) = Bivio::Collection::SingletonMap->get($class);
+	$method ||= 'execute';
+	Bivio::Die->die($i,
+		": can't be executed (missing $method method)")
+		    unless $c->can($method);
+	if ($c->isa('Bivio::Biz::FormModel')) {
+	    Bivio::Die->die($attrs->{id}, ': too many form models')
+			if $attrs->{form_model};
+	    $attrs->{form_model} = $class;
+	}
+	push(@new_items, [$c, $method]);
+    }
+    return \@new_items;
 }
 
 # _init_form_attrs(hash_ref attrs)
