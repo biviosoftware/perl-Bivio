@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,45 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::Util::SQL->ddl_files accepts base names (see
+    Bivio::PetShop::Util
+  * Bivio::Test::Reply added
+
+  Revision 1.21  2002/09/11 03:33:23  nagler
+  * Bivio::Test::Language::HTTP->home_page_uri returns configured URI
+  * Bivio::Test had major API change to simplify anonymous
+    compute_params and check_return.  Still needs documentation.
+  * Bivio::Test::Case holds state of unit test, which allows cleaner
+    check_return and compute_params.
+  * Bivio::Agent::Request->set_realm accepts "undef" to mean GENERAL realm
+  * Fixed formatting of some Pet Shop views
+  * Bivio::Biz::Action::ECCreditCardProcessor sends card_zip for AVS
+  * Bivio::Biz::ListModel won't check for Request's auth_id if List
+    doesn't have one.
+  * Bivio::Biz::Model::Email->execute_load_home loads HOME email
+  * Bivio::Ext::LWPUserAgent doesn't let LWP::UserAgent redirect
+    automatically.  LWP::UserAgent API change causes certain redirects
+    to not show up unless redirect_ok() returns false.
+  * Bivio::Ext::LWPUserAgent turns on LWP::Debug if tracing on
+  * Bivio::IO::Ref->nested_equals compares structures (moved from Bivio::Test)
+  * Bivio::IO::Ref->to_short_string gives brief summary of structure
+  * Bivio::PetShop::Action::UserLogout works around a Postgres bug
+    when a row is added and deleted in same transaction.
+  * Fix to Pet Shop cart management when no cookies.  Used to create
+    carts always, even if cookies not turned on.
+  * Added paging to Pet Shop
+  * Bivio::PetShop::Model::UserAccountForm now can be directly executed
+  * Bivio::Type::Secret supports de/encrypt_http_base64, which
+    uses Bivio::MIME::Base64 to encode HTTP-safe values.
+  * Bivio::UI::Font allows style attributes
+  * Bivio::UI::HTML::Widget::AmountCell.pad_left attribute added
+  * Bivio::UI::HTML::Widget::ClearDot->new supports attributes
+  * Bivio::UI::HTML::Widget::DateField.handler is dynamically rendered
+  * Bivio::UI::HTML::Widget::Grid.{background,hide_empty_cells,height} added
+  * Bivio::UI::HTML::Widget::Page.background is dynamically rendered
+  * Bivio::UI::HTML::Widget::Select.handler is dynamically rendered
+  * Bivio::UI::HTML::Widget::Style.other_styles added
+  * Bivio::UI::HTML::Widget::Table.{row_bgcolor,id} added
   * Bivio::UI::HTML::Widget::Text.handler is dynamically rendered
   * Bivio::UI::HTML::Widget::Title->new accepts value as first arg
   * Bivio::UI::Icon->format_html_attribute returns icon name in HTML attr
