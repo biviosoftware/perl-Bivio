@@ -388,7 +388,13 @@ sub _walk_attachment_tree {
     my(@parts) = $entity->parts;
 
     # Special message/rfc822 handling, it becomes multipart (header and rest)
-    if (@parts || $ct eq 'message/rfc822' ) {
+    # Special text/plain handling, it becomes multipart (text/plain and text/html)
+    if (@parts || $ct eq 'message/rfc822' || $ct eq 'text/plain' ) {
+        if( $ct eq 'text/plain' ) {
+            $ct = 'x-bivio/alternative';
+            $entity->head(MIME::Head->new());
+            $entity->head->replace('Content-Type', $ct);
+        }
         # Has sub-parts, so create directory and descend
         $mail_id .= '_' . $index if $index;
         $file->create({
@@ -415,11 +421,17 @@ sub _walk_attachment_tree {
             $entity->head->replace('Content-Type', $entity->mime_type);
             @parts = ( $header, $msg->get_entity);
         }
+        elsif( $ct eq 'x-bivio/alternative' ) {
+            my($clone) = MIME::Entity->build(Type => 'text/keep-plain',
+                    Data => $entity->body_as_string);
+            $entity->head->replace('Content-Type', 'text/make-html');
+            @parts = ( $entity, $clone);
+        }
         my($i);
         for $i (0..$#parts) {
+            # For multipart/alternatives, only keep the HTML text-type part
             if( $ct eq 'multipart/alternative' &&
                     $parts[$i]->mime_type =~ m|^text/| ) {
-                # Only keep the HTML version
                 next unless $parts[$i]->mime_type eq 'text/html';
             }
             # Pass $mail_id and $i separately, so a subpart can refer to its parent
