@@ -11,19 +11,12 @@ use Bivio::Mail::Outgoing;
 
 sub handler {
     my $r = shift;
-    print(STDERR "handler invoked\n");
     $r->content_type("text/html");
     $r->send_http_header;
     my(%args) = $r->args;
     my(@keys) = keys %args;
     my(@values) = values %args;
-    while(@keys){
-	print(STDERR "\n" . pop(@keys) . "=" . pop(@values));
-    }
-    print(STDERR "\n\n");
-
     if (%args){
-	print(STDERR "arguments found.\n");
 	my($view) = $args{view};
 	if($view eq('result')){
 	    _render_result($r, \%args );
@@ -41,9 +34,11 @@ sub _send_mail{
     my($arguments) = @_;
     my $s;
     my $outmail = Bivio::Mail::Outgoing->new( );
-    $outmail->set_recipients([qw(tom@vilot.com)]);
+    $outmail->set_recipients([qw(nagler)]);
 
     $outmail->set_header("From", $arguments->{email});
+    $outmail->set_header("To", 'nagler');
+    $outmail->set_header("Cc", $arguments->{email});
     $s .= "\nThe following information was submitted by " . $arguments->{username};
     $s .= "\n\nName: \t" . $arguments->{username};
     $s .= "\nHome Phone:\t" . $arguments->{homephone};
@@ -94,7 +89,7 @@ sub _render_result{
 sub _render_form{
     my($output) = @_;
     $output->print("<CENTER><H2>NAIC Denver Chapter Registration Form</H2>\n");
-    $output->print("<FORM action = \"/naic\">\n");
+    $output->print("<FORM action = \"/naic-denver\">\n");
     $output->print("<INPUT type=hidden name=view value=\"result\">\n");
     $output->print("<TABLE width = 90%>\n");
     $output->print("<TR><TD>Name:</TD><TD colspan = 2><input type=text size=50 name=username>\n");
