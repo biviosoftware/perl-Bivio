@@ -29,6 +29,7 @@ _upgrade() method and check in the new version.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::Request;
 use Bivio::Biz::Model::DbUpgrade;
 use Bivio::Collection::Attributes;
 use Bivio::IO::Config;
@@ -42,21 +43,26 @@ use Bivio::Type::EntryType;
 #=VARIABLES
 
 sub main {
-    # want to avoid accidentally running this script
-    my($magic_word) = @_;
-    die("usage: b-db-upgrade upgrade\n")
-	    unless $magic_word && ($magic_word eq 'upgrade');
-    Bivio::IO::Config->initialize();
+    my(@argv) = @_;
+    Bivio::IO::Config->initialize(\@argv);
 
-    my($req) = Bivio::Collection::Attributes->new();
+    # want to avoid accidentally running this script
+    my($method) = @argv;
+    _usage("missing or bad method")
+#TODO: Change this back to "eq 'upgrade'"
+	    unless $method && $method  =~ /^_upgrade/;
+
+    my($req) = Bivio::Agent::Request->new();
     my($upgrade) = Bivio::Biz::Model::DbUpgrade->new($req);
 #TODO: uncomment this for subsequent versions, the table isn't there yet.
 #    if ($upgrade->unauth_load(version => $VERSION)) {
-#	print(STDERR "b-db-upgrade $VERSION already ran\n");
-#	exit -1;
+#	_usage("$VERSION already ran");
 #    }
 
-    _upgrade();
+    # Sometimes there may be multiple upgrades and they need to be installed at
+    # different times (on test system).  Probably good to keep this flexibility
+    # in the tool for now.  Avo
+    &{\&{$method}}();
 
     # creates a completion entry in db to prevent re-running
     $upgrade->create({
@@ -79,7 +85,7 @@ main(@ARGV);
 sub _upgrade {
 
     #
-    # create the db_upgrate_t table
+    # create the db_upgrate_t table first in case _upgrade was already run
     #
 
     Bivio::SQL::Connection->execute('
@@ -176,7 +182,49 @@ sub _upgrade {
             SET remark=?',
 	    ['']);
 
+    # In separate method, because _upgrade was already run on test
+    # system and need to test _upgrade_jp on test system.
+    _upgrade_jp();
+}
+
+# _upgrade_jp()
+#
+# Create japan_survey_t
+#
+sub _upgrade_jp {
+    Bivio::SQL::Connection->execute(<<'EOF');
+CREATE TABLE japan_survey_t (
+  creation_date_time DATE,
+  client_addr VARCHAR2(30),
+  has_invested_before NUMBER(1),
+  has_broker NUMBER(1),
+  is_club_member NUMBER(1),
+  would_start_club NUMBER(1),
+  is_interested_in_market CHAR(2),
+  would_invest_yen NUMBER(20,7),
+  email VARCHAR2(100)
+)
+  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
+  tablespace realm_data
+EOF
+    Bivio::SQL::Connection->execute(<<'EOF');
+ALTER TABLE japan_survey_t add primary key(creation_date_time, client_addr)
+  using index tablespace realm_indx
+  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
+EOF
     return;
+}
+
+# _usage(array message)
+#
+# Print a message and terminate
+sub _usage {
+    my($msg) = join('', @_);
+    print STDERR <<"EOF";
+$0: $msg
+usage: $0 _upgrade
+EOF
+    exit(1);
 }
 
 =head1 SEE ALSO
