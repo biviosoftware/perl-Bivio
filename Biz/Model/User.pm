@@ -83,14 +83,22 @@ sub cascade_delete {
 
     # Clear the user from any outstanding invites.
     # This happens if the user is a shadow user.
+    my($params) = [$id];
     Bivio::SQL::Connection->execute('
             DELETE from realm_invite_t
             WHERE realm_user_id=?',
-	    [$id]);
+	    $params);
     Bivio::SQL::Connection->execute('
             DELETE from tax_k1_t
             WHERE user_id=?',
-	    [$id]);
+	    $params);
+
+    # Delete any links from visitor_t.
+    Bivio::SQL::Connection->execute('
+            UPDATE visitor_t
+            SET user_id = NULL
+            WHERE user_id=?',
+	    $params);
 
     $self->delete();
 

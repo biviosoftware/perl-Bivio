@@ -193,13 +193,22 @@ sub cascade_delete {
     my($id) = $self->get('realm_id');
 
     # delete related records
+    my($params) = [$id];
     foreach my $table (qw(email_t phone_t address_t realm_role_t
 	    tax_id_t preferences_t tax_1065_t)) {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
                 WHERE realm_id=?',
-		[$id]);
+		$params);
     }
+
+    # Delete any links from visitor_t
+    Bivio::SQL::Connection->execute('
+            UPDATE visitor_t
+            SET referer_realm_id = NULL
+            WHERE referer_realm_id=?',
+	    $params);
+
     $self->delete();
     return;
 }
