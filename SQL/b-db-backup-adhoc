@@ -58,6 +58,11 @@ fi
 if [ "$TRANSFER_HOST" != "NONE" ]; then
     echo Transferring to $TRANSFER_HOST
     ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
+    # Unpack reqng and log files for easy access
+    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST mv /usr/local/reqng/active /usr/local/reqng/active.old"
+    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST mv /usr/local/reqng/resolved /usr/local/reqng/resolved.old"
+    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST tar zxCf / /home/bkp/$DB_NAME/$ts/$ts-${REQNG_HOST}-reqng.tgz usr/local/reqng/active usr/local/reqng/resolved\*"
+    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; ssh $TRANSFER_HOST tar zxCf / /home/bkp/$DB_NAME/$ts/$ts-${REQNG_HOST}-httpd.tgz home/httpd/logs/m\*"
 fi
 
 # Keep a few days worth of backup online
