@@ -113,7 +113,7 @@ sub render {
     foreach $v (@{$fields->{values}}) {
 	push(@v, $v), next unless ref($v);
 	my($x) = $source->get_widget_value(@$v);
-	next unless defined($x);
+	next unless defined($x) && length($x);
 	push(@v, Bivio::Util::escape_html($x));
     }
     $$buffer .= '<title>'.join($fields->{separator}, @v)."</title>\n";
