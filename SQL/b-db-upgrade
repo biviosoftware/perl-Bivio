@@ -39,6 +39,7 @@ use Bivio::Biz::Model::DbUpgrade;
 use Bivio::Biz::Model::MGFSInstrument;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::IO::Config;
+use Bivio::ShellUtil;
 use Bivio::SQL::Connection;
 use Bivio::Type::Date;
 use Bivio::Type::DateTime;
@@ -63,13 +64,13 @@ sub main {
     # Sometimes there may be multiple upgrades and they need to be installed at
     # different times (on test system).  Probably good to keep this flexibility
     # in the tool for now.
-    &{\&{$method}}();
+    &{\&{$method}}($req);
 
     # creates a completion entry in db to prevent re-running
-    $upgrade->create({
-	version => $VERSION,
-	run_date_time => Bivio::Type::DateTime->now
-    });
+#    $upgrade->create({
+#	version => $VERSION,
+#	run_date_time => Bivio::Type::DateTime->now
+#    });
     Bivio::SQL::Connection->commit;
 
     return 1;
@@ -210,13 +211,105 @@ ALTER TABLE $table MODIFY $column $type
     return;
 }
 
-# _upgrade()
+# _sqlplus(string db_login, string actions) : string_ref
+#
+# Runs I<actions> in sqlplus with I<db_login>.
+# Returns result of the execution.
+#
+# I<actions> will have a semicolon (;) appended to it.
+#
+# If any of I<actions> fails, will rollback and exit.
+#
+sub _sqlplus {
+    my($db_login, $actions) = @_;
+    my($res) = Bivio::ShellUtil::piped_exec("sqlplus $db_login", <<"EOF");
+set linesize 10000
+set pagesize 10000
+whenever sqlerror exit sql.sqlcode rollback
+whenever oserror exit sql.sqlcode rollback
+$actions;
+disconnect
+exit
+EOF
+    return $res;
+}
+
+# _upgrade(Bivio::Agent::Request req)
 #
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
+    my($req) = @_;
 
-    print("\n*** done ***\n");
+    my($dba) = $req->is_production ? 'prod_dba' : 'test_dba';
+    my($prior_db) = Bivio::SQL::Connection->set_dbi_name($dba);
+
+    _do_sql(<<'EOF');
+CREATE TABLESPACE ctxapp
+  datafile '/db/2/4/ctxapp_01.dbf' size 1025M reuse
+  default storage (initial 64m next 64m pctincrease 0
+      minextents 1 maxextents 32)
+  online
+EOF
+    my($ora_home) = Bivio::Ext::DBI->get_config($dba)->{oracle_home};
+    _sqlplus('internal', <<'EOF');
+@$ora_home/ctx/admin/dr0csys ctxsys ctxapp temp
+EOF
+    # Need to pass the full path to the ctxx library
+    _sqlplus('ctxsys/ctxsys', <<"EOF");
+@$ora_home/ctx/admin/dr0inst $ora_home/ctx/lib/libctxx8.so
+EOF
+    _sqlplus('ctxsys/ctxsys', <<"EOF");
+@$ora_home/ctx/admin/defaults/drdefus
+EOF
+
+    my($sth) = Bivio::SQL::Connection->execute(<<'EOF');
+BEGIN Ctx_Adm.set_parameter('log_directory', '/var/log/oracle'); END;
+EOF
+
+    Bivio::SQL::Connection->set_dbi_name($prior_db);
+    _upgrade_volume4_names();
+
+    print("\nRESTART DATABASE TO COMPLETE THE UPGRADE\n");
+    #print("\n*** done ***\n");
+    return;
+}
+
+# _upgrade_volume4_names()
+#
+# Fix file names in volume 4 (MAIL_CACHE)
+#
+sub _upgrade_volume4_names {
+    my($req) = @_;
+
+    my($delim) = '-';
+    my($sth) = _do_sql(<<'EOF');
+SELECT file_id, name from file_t WHERE volume = 4
+/
+EOF
+    while (my $row = $sth->fetchrow_arrayref) {
+        my($file_id, $name) = @$row;
+        next if $name =~ /^MAIL_CACHE/;
+        # skip if basename or conversion done already
+        next if $name =~ /00003$/ || $name =~ /\-/;
+        my($base, $suffix) = $name =~ /^(.+00003)(.+)$/;
+        die("$name: does not match pattern") unless defined($base);
+        die("$suffix: not even length") if length($suffix) % 2;
+        my($fixed_name) = $base;
+        if ($suffix =~ /_/) {
+            $suffix =~ s/_/-/g;
+            $fixed_name .= $suffix;
+        }
+        else {
+            while ($suffix =~ s/^(..)//) {
+                $fixed_name .= $delim . $1;
+            }
+        }
+        print("$name => $fixed_name\n");
+        my($sth2) = Bivio::SQL::Connection->execute('
+UPDATE file_t SET name = ? WHERE file_id = ? AND volume = 4',
+                [$fixed_name, $file_id]);
+    }
     return;
 }
 
