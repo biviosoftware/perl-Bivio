@@ -978,13 +978,12 @@ sub load_from_model_properties {
     }
     $self->die($model, ': no such model')
         unless defined($models->{$model});
-    my($properties) = $self->internal_get();
     my($column_aliases) = $sql_support->get('column_aliases');
     foreach my $cn (@{$models->{$model}->{column_names_referenced}}) {
 #TODO: Document this is being used elsewhere!
 	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
 	# Copy the model's property to this model
-	$properties->{$pn} = $m->get($cn);
+        $self->internal_put_field($pn => $m->get($cn));
     }
     return;
 }
