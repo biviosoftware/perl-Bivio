@@ -70,7 +70,8 @@ sub new {
     my($start_time) = Bivio::Type::DateTime->gettimeofday();
     # Set remote IP address if passed through Via: header
     my($via) = $r->header_in('via');
-    $r->connection->remote_ip($via) if defined($via);
+    $r->connection->remote_ip($via)
+            if defined($via) && $via =~ /^(\d+\.){3}\d+$/;
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = Bivio::Agent::Request::internal_new($proto, {
 	start_time => $start_time,
