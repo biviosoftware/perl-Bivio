@@ -131,6 +131,7 @@ function dt(m,j,t,gmt){
     //          and MONTH_NAME_AND_DAY_NUMBER=4, DAY_AND_NUMBER=5
     //          FULL_MONTH_DAY_AND_YEAR_UC=6,
     //          FULL_MONTH_AND_YEAR_UC=7
+    //          FULL_MONTH=8
     // This renders more compact javascript and is possibly slower on client.
     document.write(
         m<=3?
@@ -142,6 +143,7 @@ function dt(m,j,t,gmt){
         :m==5?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())
         :m==6?dt_mn(d).toUpperCase()+' '+dt_n(d.getDate())+', '+dt_y(d)
         :m==7?dt_mn(d).toUpperCase()+', '+dt_y(d)
+        :m==8?dt_mn(d)
         :'');
 }
 
