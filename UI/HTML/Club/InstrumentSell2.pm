@@ -70,7 +70,8 @@ sub create_fields {
 
     return [
 	[
-	    Bivio::UI::HTML::Widget::String->new({
+	    Bivio::UI::HTML::Widget::DateTime->new({
+		mode => 'DATE',
 		value => ['Bivio::Biz::Model::InstrumentSellForm2',
 		    'RealmTransaction.date_time',
 		],
