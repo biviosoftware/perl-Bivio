@@ -70,12 +70,13 @@ sub format {
     Carp::croak($task_id->as_string, ': no such task')
 	    unless $_FROM_TASK_ID{$task_id};
     my($uri) = $_FROM_TASK_ID{$task_id}->[1];
-    if ($uri =~ /_/) {
+#TODO: Only can have realm owner at front of uri.
+    if ($uri =~ /^_/) {
 	# If the realm doesn't have an owner, there's a bug somewhere
 	my($ro) = $realm->get('owner_name');
-	$uri =~ s/_/$ro/g;
+	$uri =~ s/^_/$ro/g;
     }
-    return '/' . $uri;
+    return $uri =~ /^\// ? $uri : '/'.$uri;
 }
 
 =for html <a name="get_document_root"></a>
@@ -169,7 +170,7 @@ sub initialize {
 
 =head2 static parse(string uri, Bivio::Agent::Request req) : array
 
-Parses I<uri> for the realm and task_id.
+Returns I<task_id> and I<auth_realm> for I<uri>.
 
 =cut
 
@@ -189,12 +190,12 @@ sub parse {
     } split(/\/+/, $uri);
     $uri = join('/', @uri);
     # General realm is direct map, no underscores
-    return ($_GENERAL, $_FROM_URI{$uri}->[$_GENERAL_INT]->[0])
+    return ($_FROM_URI{$uri}->[$_GENERAL_INT]->[0], $_GENERAL)
 	    if defined($_FROM_URI{$uri}->[$_GENERAL_INT]);
 
     # If document_root is set, look for the file directly.  If found,
     # go to HTTP_DOCUMENT task.
-    return ($_GENERAL, $_DOCUMENT_TASK->[0])
+    return ($_DOCUMENT_TASK->[0], $_GENERAL)
 	    if defined($_DOCUMENT_ROOT) && -e ($_DOCUMENT_ROOT . $uri);
 
     # If '/', then always not found
@@ -218,7 +219,7 @@ sub parse {
     $req->die(Bivio::DieCode::NOT_FOUND, {entity => $orig_uri,
             realm_type => $realm->get_type->get_name})
 	    unless defined($_FROM_URI{$uri}->[$rti]);
-    return ($realm, $_FROM_URI{$uri}->[$rti]->[0]);
+    return ($_FROM_URI{$uri}->[$rti]->[0], $realm);
 }
 
 
