@@ -129,6 +129,7 @@ _compile(
     USER_AGREEMENT_TEXT => ['Terms of Service'],
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
     CLUB_ACCOUNTING_INVESTMENT_BUY => ['Record Purchase'],
+    CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
 );
 
 =head1 METHODS
