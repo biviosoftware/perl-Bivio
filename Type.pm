@@ -402,6 +402,19 @@ sub to_sql_param {
     return shift;
 }
 
+=for html <a name="to_sql_param_list"></a>
+
+=head2 static to_sql_param_list(array_ref param_values) : array_ref
+
+Converts I<param_values> using L<to_sql_param|"to_sql_param">.
+
+=cut
+
+sub to_sql_param_list {
+    my($proto, $param_values) = @_;
+    return [map {$proto->to_sql_param($_)} @$param_values];
+}
+
 =for html <a name="to_sql_value"></a>
 
 =head2 static to_sql_value(string place_holder) : string
@@ -420,6 +433,23 @@ See also L<to_sql_param|"to_sql_param">.
 sub to_sql_value {
     shift;
     return shift;
+}
+
+=for html <a name="to_sql_value_list"></a>
+
+=head2 static to_sql_value_list(array_ref param_values) : string
+
+Creates a parameter string (C<(?,?,?)>) using L<to_sql_value|"to_sql_value">
+to match the args handled by L<to_sql_param_list|"to_sql_param_list">.
+
+Dies if I<param_values> is empty.
+
+=cut
+
+sub to_sql_value_list {
+    my($proto, $param_values) = @_;
+    die('empty param values') unless @$param_values;
+    return '('.join(',', map {$proto->to_sql_value('?')} @$param_values).')';
 }
 
 =for html <a name="to_string"></a>

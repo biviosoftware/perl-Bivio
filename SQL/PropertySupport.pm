@@ -271,11 +271,13 @@ sub get_children {
 
 =for html <a name="iterate_start></a>
 
-=head2 iterate_start(ref die, string order_by) : ref
+=head2 iterate_start(ref die, string order_by, hash_ref query) : ref
 
 Returns a handle which can be used to iterate the rows with
 L<iterate_next|"iterate_next">.  L<iterate_end|"iterate_end">
 should be called, too.
+
+I<query> is formatted like L<unsafe_load|"unsafe_load">.
 
 I<auth_id> must be the auth_id for the table.  It need not be set
 iwc all rows will be returned.
@@ -315,8 +317,15 @@ sub register_child_model {
 
 =head2 unsafe_load(hash_ref query, ref die) : hash_ref
 
-Loads the specified properties with data using the parameterized where_clause
+Loads the specified properties with data using the parameterized where clause
 and substitution values. If successful, the values hash will returned.
+
+I<query> is processed into the where.  Values in the query which
+are array_refs are converted with
+L<Bivio::Type::to_sql_param_list|Bivio::Type/"to_sql_param_list">.
+Other values are processed with
+L<Bivio::Type::to_sql_param|Bivio::Type/"to_sql_param">.
+
 Returns undef if no rows were returned.
 
 I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
@@ -553,14 +562,28 @@ sub _prepare_select {
     my($sql) = $attrs->{select};
     if ($query) {
 	$sql .=' where '.join(' and ', map {
-	    my($column) = $columns->{$_};
-	    Bivio::Die->die('invalid field name: ', $_) unless $column;
-	    push(@$params, $column->{type}->to_sql_param($query->{$_}));
-	    $_.'='.$column->{sql_pos_param};
+	    Bivio::Die->die('invalid field name: ', $_) unless $columns->{$_};
+	    _prepare_select_param($columns->{$_}, $query->{$_}, $params);
 	    # Use a sort to force order which (may) help Oracle's cache.
 	} sort keys(%$query));
     }
     return $sql;
+}
+
+# _prepare_select_param(hash_ref column, any value, array_ref params) : any
+#
+# Returns the string for the query.  Pushes the value on params.
+# Handles ARRAY parameters.
+#
+sub _prepare_select_param {
+    my($column, $value, $params) = @_;
+    unless (ref($value) eq 'ARRAY') {
+	push(@$params, $column->{type}->to_sql_param($value));
+	return $column->{sql_name}.'='.$column->{sql_pos_param};
+    }
+    push(@$params, @{$column->{type}->to_sql_param_list($value)});
+    return $column->{sql_name}.' in '
+	.$column->{type}->to_sql_value_list($value);
 }
 
 # _register_with_parents(hash_ref attrs)
