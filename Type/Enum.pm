@@ -146,122 +146,6 @@ sub unsafe_from_name {
 
 =cut
 
-=for html <a name="compare"></a>
-
-=head2 static compare(any left, any right) : int
-
-Performs the numeric comparison of the enum values.
-
-=cut
-
-sub compare {
-    my(undef, $left, $right) = @_;
-    Bivio::IO::Alert->die(ref($left), ' != ', ref($right),
-	    ': type mismatch') unless ref($left) eq ref($right);
-    return $left->as_int <=> $right->as_int;
-}
-
-=for html <a name="execute"></a>
-
-=head2 execute(Bivio::Agent::Request req) : boolean
-
-Put I<self> on the request as its class.
-
-=cut
-
-sub execute {
-    my($self, $req) = @_;
-    die('not a reference') unless ref($self);
-    $req->put(ref($self) => $self);
-    return 0;
-}
-
-=for html <a name="get_count"></a>
-
-=head2 static abstract get_count() : int
-
-Return number of elements.
-
-=cut
-
-sub get_count {
-    die('abstract method');
-}
-
-=for html <a name="get_decimals"></a>
-
-=head2 static get_decimals : int
-
-Returns 0.
-
-=cut
-
-sub get_decimals {
-    return 0;
-}
-
-=for html <a name="get_list"></a>
-
-=head2 abstract static get_list : array
-
-Return the list of all enumerated types.  These are not returned in
-any particular order.
-
-=cut
-
-sub get_list {
-    die('abstract method');
-}
-
-=for html <a name="get_width"></a>
-
-=head2 static abstract get_width : int
-
-Defines the maximum width of L<get_name|"get_name">.
-
-=cut
-
-sub get_width {
-    die('abstract method');
-}
-
-=for html <a name="get_width_long_desc"></a>
-
-=head2 static abstract get_width_long_desc() : int
-
-Defines the maximum width of L<get_long_desc|"get_long_desc">.
-
-=cut
-
-sub get_width_long_desc {
-    die('abstract method');
-}
-
-=for html <a name="get_width_short_desc"></a>
-
-=head2 static abstract get_width_short_desc() : int
-
-Defines the maximum width of L<get_short_desc|"get_short_desc">.
-
-=cut
-
-sub get_width_short_desc {
-    die('abstract method');
-}
-
-=for html <a name="is_continuous"></a>
-
-=head2 static is_continuous() : boolean
-
-Is this enumeration an unbroken sequence?  By default, this is true.
-Enumerations which don't want to be continous should override this method.
-
-=cut
-
-sub is_continuous {
-    return 1;
-}
-
 =for html <a name="as_int"></a>
 
 =head2 as_int() : int
@@ -299,6 +183,21 @@ sub as_string {
     return _get_info($self, undef)->[4];
 }
 
+=for html <a name="compare"></a>
+
+=head2 static compare(any left, any right) : int
+
+Performs the numeric comparison of the enum values.
+
+=cut
+
+sub compare {
+    my(undef, $left, $right) = @_;
+    Bivio::IO::Alert->die(ref($left), ' != ', ref($right),
+	    ': type mismatch') unless ref($left) eq ref($right);
+    return $left->as_int <=> $right->as_int;
+}
+
 =for html <a name="compile"></a>
 
 =head2 static compile(array_ref declaration)
@@ -320,17 +219,17 @@ will cause an error.
 Example compile:
 
     __PACKAGE__->compile([
-        'NAME1' => {
+        'NAME1' => [
             1,
             'short description',
             'long description',
             'alias 1',
             '...',
             'alias N',
-        },
-        'NAME2' => {
+        ],
+        'NAME2' => [
             2,
-        },
+        ],
     ]);
 
 An array_ref is used, so this module can check for duplicate names.
@@ -473,6 +372,40 @@ EOF
     return;
 }
 
+=for html <a name="compile_with_numbers"></a>
+
+=head2 static compile_with_numbers(array_ref names)
+
+Compiles as in L<compile|"compile">, but I<names> is just a list
+of names.  The numbers are assigned dynamically.  If the
+first element is named "UNKNOWN", starts with 0.  Otherwise
+starts with 1.
+
+=cut
+
+sub compile_with_numbers {
+    my($proto, $names) = @_;
+    my($i) = $names->[0] =~ /^UNKNOWN$/i ? 0 : 1;
+    return $proto->compile([map {
+	($_, [$i++]);
+    } @$names]);
+}
+
+=for html <a name="execute"></a>
+
+=head2 execute(Bivio::Agent::Request req) : boolean
+
+Put I<self> on the request as its class.
+
+=cut
+
+sub execute {
+    my($self, $req) = @_;
+    die('not a reference') unless ref($self);
+    $req->put(ref($self) => $self);
+    return 0;
+}
+
 =for html <a name="from_literal"></a>
 
 =head2 static from_literal(int value) : Bivio::Type::Enum
@@ -508,6 +441,43 @@ sub from_sql_column {
     my($proto, $value) = @_;
     return undef unless defined($value);
     return _get_info($proto, $value + 0)->[5];
+}
+
+=for html <a name="get_count"></a>
+
+=head2 static abstract get_count() : int
+
+Return number of elements.
+
+=cut
+
+sub get_count {
+    die('abstract method');
+}
+
+=for html <a name="get_decimals"></a>
+
+=head2 static get_decimals : int
+
+Returns 0.
+
+=cut
+
+sub get_decimals {
+    return 0;
+}
+
+=for html <a name="get_list"></a>
+
+=head2 abstract static get_list : array
+
+Return the list of all enumerated types.  These are not returned in
+any particular order.
+
+=cut
+
+sub get_list {
+    die('abstract method');
 }
 
 =for html <a name="get_long_desc"></a>
@@ -577,6 +547,55 @@ sub get_widget_value {
     $method =~ s/^\-\>//;
     my($value) = $self->$method();
     return @_ ? shift(@_)->get_widget_value($value, @_) : $value;
+}
+
+=for html <a name="get_width"></a>
+
+=head2 static abstract get_width : int
+
+Defines the maximum width of L<get_name|"get_name">.
+
+=cut
+
+sub get_width {
+    die('abstract method');
+}
+
+=for html <a name="get_width_long_desc"></a>
+
+=head2 static abstract get_width_long_desc() : int
+
+Defines the maximum width of L<get_long_desc|"get_long_desc">.
+
+=cut
+
+sub get_width_long_desc {
+    die('abstract method');
+}
+
+=for html <a name="get_width_short_desc"></a>
+
+=head2 static abstract get_width_short_desc() : int
+
+Defines the maximum width of L<get_short_desc|"get_short_desc">.
+
+=cut
+
+sub get_width_short_desc {
+    die('abstract method');
+}
+
+=for html <a name="is_continuous"></a>
+
+=head2 static is_continuous() : boolean
+
+Is this enumeration an unbroken sequence?  By default, this is true.
+Enumerations which don't want to be continous should override this method.
+
+=cut
+
+sub is_continuous {
+    return 1;
 }
 
 =for html <a name="is_equal"></a>
