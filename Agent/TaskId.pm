@@ -2083,6 +2083,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::MemberWithdrawalInfo->execute_load_all
         Bivio::UI::HTML::Club::MemberWithdrawalReport
         next=CLUB_ACCOUNTING_REPORT_MEMBER_WITHDRAWAL
+        help=member-withdrawal-report
     )],
     [qw(
         DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
