@@ -53,6 +53,8 @@ If there is no control, always calls L<control_on_render|"control_on_render">.
 The value to use when I<control> returns false.  If not defined,
 renders nothing.  May be a widget value, widget, etc.
 
+=back
+
 =cut
 
 #=IMPORTS
