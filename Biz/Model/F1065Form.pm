@@ -149,6 +149,54 @@ sub get_investment_income {
 	    qw(interest_income dividend_income other_portfolio_income));
 }
 
+=for html <a name="get_margin_interest"></a>
+
+=head2 get_margin_interest(Bivio::Agent::Request req, string date) : (string, string)
+
+Returns the amount of expenses classified as margin interest, as two
+values (normal, equal allocation).
+
+=cut
+
+sub get_margin_interest {
+    my(undef, $req, $date) = @_;
+
+    my($normal_allocated) = 0;
+    my($equally_allocated) = 0;
+
+    # get tax year start
+    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
+	    $date);
+
+    # get the margin interest within the year, by equal allocation
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT expense_info_t.allocate_equally, -SUM(entry_t.amount)
+            FROM realm_transaction_t, entry_t,
+                expense_info_t, expense_category_t
+            WHERE realm_transaction_t.realm_transaction_id
+                =entry_t.realm_transaction_id
+            AND entry_t.entry_id=expense_info_t.entry_id
+            AND expense_info_t.expense_category_id
+                =expense_category_t.expense_category_id
+            AND expense_category_t.name='Margin Interest'
+            AND realm_transaction_t.date_time BETWEEN
+                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
+            AND realm_transaction_t.realm_id=?
+            GROUP BY expense_info_t.allocate_equally",
+	    [$start_date, $date,
+		$req->get('auth_id')]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($equal, $amount) = @$row;
+	if ($equal) {
+	    $equally_allocated = $amount || 0;
+	}
+	else {
+	    $normal_allocated = $amount || 0;
+	}
+    }
+    return ($normal_allocated, $equally_allocated);
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref;
@@ -287,6 +335,11 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'margin_interest',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'investment_income',
 		type => 'Amount',
 		constraint => 'NONE',
@@ -414,6 +467,7 @@ Returns a single row with calculated values.
    4e     F1065Form.net_ltcg
    4f     F1065Form.other_portfolio_income
   10      F1065Form.portfolio_deductions
+  14a     F1065Form.margin_interest
   14b(1)  F1065Form.investment_income
   14b(2)  F1065Form.investment_expenses
   17a     F1065Form.foreign_income_type
@@ -465,8 +519,6 @@ sub internal_load_rows {
 	net_ltcg => $schedule_d->get('net_ltcg'),
 	other_portfolio_income => $income->get(
 		$tax->MISC_INCOME->get_short_desc),
-	portfolio_deductions => $_M->neg(
-		$income->get($tax->MISC_EXPENSE->get_short_desc)),
 	foreign_income => $self->get_foreign_income($self->get_request, $date),
 	foreign_tax => $_M->neg($income->get(
 		$tax->FOREIGN_TAX->get_short_desc)),
@@ -476,6 +528,8 @@ sub internal_load_rows {
 	cash_distribution => _get_cash_withdrawal_amount($self, $date),
 	property_distribution => _get_stock_withdraw_amount($self, $date),
     };
+
+    _get_expenses($self, $properties, $income, $date);
 
     $properties = {
 	%$properties,
@@ -555,6 +609,26 @@ sub _get_cash_withdrawal_amount {
 		]);
     };
     return $fields->{cash_withdrawal};
+}
+
+# _get_expenses(hash_ref properties, Bivio::Biz::Model::IncomeAndExpenseList income, string date)
+#
+# Calculates the portfolio_deductions and margin_interest fields.
+#
+sub _get_expenses {
+    my($self, $properties, $income, $date) = @_;
+
+    my($deductions) = $_M->neg(
+	    $income->get(Bivio::Type::TaxCategory->MISC_EXPENSE
+		    ->get_short_desc));
+
+    my($margin, $equal_margin) = $self->get_margin_interest(
+	    $self->get_request, $date);
+
+    $properties->{margin_interest} = $_M->add($margin, $equal_margin);
+    $properties->{portfolio_deductions} = $_M->sub(
+	    $deductions, $properties->{margin_interest});
+    return;
 }
 
 # _get_member_count() : int
