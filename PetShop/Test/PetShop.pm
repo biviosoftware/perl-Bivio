@@ -129,7 +129,6 @@ Logs in as I<user> and I<password>.
 
 sub login_as {
     my($self, $user, $password) = @_;
-    my($fields) = $self->[$_IDI];
     $self->follow_link('Sign-out')
 	if $self->get_html_parser->get('Links')->unsafe_get('Sign-out');
     $self->follow_link('Sign-in');
