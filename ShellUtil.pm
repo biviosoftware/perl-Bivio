@@ -485,6 +485,27 @@ sub get_request {
     return $req;
 }
 
+=for html <a name="group_args"></a>
+
+=head2 static group_args(string group_size, array_ref args) : array_ref
+
+Returns an array of I<group_size> tuples (array_refs).  Calls
+L<usage_error|"usage_error"> if I<args> not modulo I<group_size>.
+
+I<args> is modified.
+
+=cut
+
+sub group_args {
+    my($proto, $group_size, $args) = @_;
+    $proto->usage_error("arguments must come in $group_size-tupes")
+	unless @$args % $group_size == 0;
+    my($res) = [];
+    push(@$res, [splice(@$args, 0, $group_size)])
+	while @$args;
+    return $res;
+}
+
 =for html <a name="initialize_ui"></a>
 
 =head2 initialize_ui()
