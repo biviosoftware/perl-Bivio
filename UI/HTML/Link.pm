@@ -55,7 +55,7 @@ Returns the string form of the next_ia.gif (inactive).
 =cut
 
 sub NEXT_IA_ICON {
-    return '"/i/next.gif" height=31 width=31 border=0';
+    return '"/i/next_ia.gif" height=31 width=31 border=0';
 }
 
 =for html <a name="NEXT_ICON"></a>
@@ -79,7 +79,7 @@ Returns the string form of the prev_ia.gif (inactive).
 =cut
 
 sub PREV_IA_ICON {
-    return '"/i/prev_ia.gif height=31 width=31 border=0';
+    return '"/i/prev_ia.gif" height=31 width=31 border=0';
 }
 
 =for html <a name="PREV_ICON"></a>
