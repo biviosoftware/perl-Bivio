@@ -37,7 +37,6 @@ use Bivio::Biz::Model::Instrument;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-_initialize();
 
 =head1 METHODS
 
