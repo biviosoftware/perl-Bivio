@@ -181,7 +181,7 @@ sub render {
     Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
 		unless -e $file;
 
-    my($lines) = [`cat $file | perl2html -c`];
+    my($lines) = [`cat $file | perl2html -c -t $package`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package);
 
@@ -233,8 +233,13 @@ sub _add_links {
 
 	# iterate the matches, substituting in hrefs into the line
 	foreach my $package (@$matches) {
-	    $line =~ s,($package),<a href="/$uri?s=$1">$1</a>,
-		    || Bivio::Die->die('invalid package match: ', $package);
+	    unless ($line
+		    =~ s,([^=>])($package),$1<a href="/$uri?s=$2">$2</a>,) {
+
+		$line =~ s,($package),<a href="/$uri?s=$1">$1</a>,
+			|| Bivio::Die->die('invalid package match: ',
+				$package);
+	    }
 	}
 
 	# add links to the view's parent
@@ -290,7 +295,7 @@ sub _reformat_pod {
     my($in_pod) = 0;
     foreach my $line (@$lines) {
 	my($pod, $doc);
-	if ($line =~ /^(<font.*[^>]>)?(=[chiobpfbe]\w+)\s?(.*)$/) {
+	if ($line =~ m,^(<font.*[^>]>)?(=[chiobpfbe]\w+)\s?(.*?)(</font>)?$,) {
 	    $in_pod = 1;
 	    $pod = $2;
 	    $doc = $3;
@@ -298,22 +303,29 @@ sub _reformat_pod {
 
 	next unless $in_pod;
 
-	$line = '# '._unescape_pod($line);
+	$line = _unescape_pod($line);
 
-	next unless $pod;
+	unless ($pod) {
+	    $line = '# '.$line;
+	    next;
+	}
 
 	$line =~ s/$pod\s?//;
 
-	if ($doc) {
-	    $doc = _unescape_pod($doc);
-	    my($match_doc) = $doc;
-	    $match_doc =~ s/([()\[\]])/\\$1/g;
-	    $line =~ s,$match_doc,<b>$doc</b>,;
+	if ($_IGNORE_POD->{$pod}) {
+	    $line =~ s/$doc// if $doc;
+	    $line =~ s/\n//;
+	}
+	else {
+	    if ($doc) {
+		$doc = _unescape_pod($doc);
+		my($match_doc) = $doc;
+		$match_doc =~ s/([()\[\]])/\\$1/g;
+		$line =~ s,$match_doc,<b>$doc</b>,;
+	    }
+	    $line = '# '.$line;
 	}
 
-	if ($_IGNORE_POD->{$pod}) {
-	    $line = '';
-	}
 	if ($pod eq '=cut') {
 	    $in_pod = 0;
 	}
