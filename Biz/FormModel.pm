@@ -227,7 +227,8 @@ sub get_model_properties {
 #TODO: Document this is being used elsewhere!
 	my($pn) = $column_aliases->{$model.'.'.$cn}->{name};
 	# Copy the property to the $cn if defined.
-	$res{$cn} = $properties->{$pn} if exists($properties->{$pn});
+	$res{$cn} = $properties->{$pn}
+		if defined($pn) && exists($properties->{$pn});
     }
     return \%res;
 }
