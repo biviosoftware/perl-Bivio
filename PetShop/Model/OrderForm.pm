@@ -36,11 +36,16 @@ C<Bivio::PetShop::Model::OrderForm>
 
 #=IMPORTS
 use Bivio::Agent::TaskId;
+use Bivio::Auth::RealmType;
+use Bivio::Die;
 use Bivio::IO::Trace;
-use Bivio::PetShop::Type::EntityLocation;
-use Bivio::PetShop::Type::OrderStatus;
-use Bivio::PetShop::Type::UserStatus;
+use Bivio::SQL::ListQuery;
 use Bivio::Type::Date;
+use Bivio::Type::ECPaymentMethod;
+use Bivio::Type::ECPaymentStatus;
+use Bivio::Type::ECService;
+use Bivio::Type::Honorific;
+use Bivio::Type::Location;
 
 #=VARIABLES
 use vars ('$_TRACE');
@@ -60,37 +65,22 @@ Loads the form with data defaulted for the current user.
 
 sub execute_empty {
     my($self) = @_;
-    $self->internal_put_field('Order.credit_card'
-	    => '9999 9999 9999 9999');
+    $self->internal_put_field('ECCreditCardPayment.card_number' =>
+        '4222 2222 2222 2');
     $self->internal_put_field(ship_to_billing_address => 1);
 
     # name
     my($user) = $self->new_other('User')->load;
-    $self->internal_put_field('Order.bill_to_first_name'
-	    => $user->get('first_name'));
-    $self->internal_put_field('Order.bill_to_last_name'
-	    => $user->get('last_name'));
+    $self->internal_put_field('Order.bill_to_name' => $user->format_full_name);
 
-    # address
-    my($account) = $self->new_other('UserAccount')->load;
-    my($address) = $self->new_other('EntityAddress')->load({
-	entity_id => $account->get('entity_id'),
-	location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
-    });
-    foreach my $field (qw(addr1 addr2 city state zip country)) {
-	$self->internal_put_field('EntityAddress_1.'.$field
-		=> $address->get($field));
+    # address and phone
+    foreach my $model (qw(Address Phone)) {
+	$self->load_from_model_properties(
+            $self->new_other($model)->load({
+                location => Bivio::Type::Location->PRIMARY,
+            }));
     }
-
-    # phone
-    $self->internal_put_field('EntityPhone_1.phone' =>
-        $self->new_other('EntityPhone')->load({
-            entity_id => $account->get('entity_id'),
-            location => Bivio::PetShop::Type::EntityLocation->PRIMARY,
-        })->get('phone'));
-
     $self->internal_put_field(confirmed_order => 0);
-
     return;
 }
 
@@ -107,25 +97,22 @@ sub execute_ok {
     my($self) = @_;
 
     if ($self->get('confirmed_order')) {
-	my($order_id) = _save_order($self);
-#TODO: need to put order id on query
-	$self->get_request->put(query => {p => $order_id});
+        $self->get_request->set_realm(_save_order($self));
 	return;
     }
-
     _copy_billing_info($self)
-	    if $self->get('ship_to_billing_address');
+        if $self->get('ship_to_billing_address');
 
-    unless (defined($self->get('Order.ship_to_first_name'))) {
+    unless (defined($self->get('Order.ship_to_name'))) {
 	_trace("redirecting to shipping address page") if $_TRACE;
 	$self->get_request->server_redirect(
-		Bivio::Agent::TaskId->SHIPPING_ADDRESS);
+            Bivio::Agent::TaskId->SHIPPING_ADDRESS);
 	# DOES NOT RETURN
     }
-
+#TODO: try returning task id
     _trace("redirecting to order confirmation page") if $_TRACE;
     $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId->ORDER_CONFIRMATION);
+        Bivio::Agent::TaskId->ORDER_CONFIRMATION);
     # DOES NOT RETURN
 }
 
@@ -146,10 +133,9 @@ sub execute_unwind {
 	$self->internal_redirect_next;
 	# DOES NOT RETURN
     }
-
     _trace("redirecting to order confirmation page") if $_TRACE;
     $self->get_request->server_redirect(
-	    Bivio::Agent::TaskId->ORDER_CONFIRMATION);
+        Bivio::Agent::TaskId->ORDER_CONFIRMATION);
     # DOES NOT RETURN
 }
 
@@ -163,68 +149,38 @@ B<FOR INTERNAL USE ONLY>
 
 sub internal_initialize {
     my($self) = @_;
-    my($info) = {
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	version => 1,
 	visible => [
-	    'Order.card_type',
-	    'Order.credit_card',
-	    {
-		name => 'card_expire_month',
-		type => 'CreditCardMonth',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'card_expire_year',
-		type => 'CreditCardYear',
-		constraint => 'NOT_NULL',
-	    },
+            'ECCreditCardPayment.card_number',
+  	    {
+  		name => 'card_expire_month',
+  		type => 'ECCreditCardExpMonth',
+  		constraint => 'NOT_NULL',
+  	    },
+  	    {
+  		name => 'card_expire_year',
+  		type => 'ECCreditCardExpYear',
+  		constraint => 'NOT_NULL',
+  	    },
 	    # billing info
-	    'Order.bill_to_first_name',
-	    'Order.bill_to_last_name',
-	    'EntityAddress_1.addr1',
-	    'EntityAddress_1.addr2',
-	    'EntityAddress_1.city',
-	    'EntityAddress_1.state',
-	    'EntityAddress_1.zip',
-	    'EntityAddress_1.country',
-	    'EntityPhone_1.phone',
+	    'Order.bill_to_name',
+            'Address.street1',
+            'Address.street2',
+            'Address.city',
+            'Address.state',
+            'Address.zip',
+            'Address.country',
+            'Phone.phone',
 	    # shipping info
-	    {
-		name => 'Order.ship_to_first_name',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'Order.ship_to_last_name',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.addr1',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.addr2',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.city',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.state',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.zip',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityAddress_2.country',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'EntityPhone_2.phone',
-		constraint => 'NONE',
-	    },
+            map({
+                {
+                    name => $_,
+                    constraint => 'NONE',
+                }
+            } (qw(Order.ship_to_name Address_2.street1 Address_2.street2
+                Address_2.city Address_2.state Address_2.zip Address_2.country
+                Phone_2.phone))),
 	    {
 		name => 'ship_to_billing_address',
 		type => 'Boolean',
@@ -238,9 +194,7 @@ sub internal_initialize {
 	        constraint => 'NOT_NULL',
 	    },
 	],
-    };
-    return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+    });
 }
 
 #=PRIVATE METHODS
@@ -253,20 +207,18 @@ sub _copy_billing_info {
     my($self) = @_;
 
     # address
-    foreach my $field (qw(addr1 addr2 city state zip country)) {
-	$self->internal_put_field('EntityAddress_2.'.$field
-		=> $self->get('EntityAddress_1.'.$field));
+    foreach my $field (qw(street1 street2 city state zip country)) {
+	$self->internal_put_field('Address_2.' . $field =>
+            $self->get('Address.' . $field));
     }
 
     # phone
-    $self->internal_put_field('EntityPhone_2.phone'
-	    => $self->get('EntityPhone_1.phone'));
+    $self->internal_put_field('Phone_2.phone' =>
+        $self->get('Phone.phone'));
 
     # name
-    foreach my $field (qw(first_name last_name)) {
-	$self->internal_put_field('Order.ship_to_'.$field
-		=> $self->get('Order.bill_to_'.$field));
-    }
+    $self->internal_put_field('Order.ship_to_name' =>
+        $self->get('Order.bill_to_name'));
     return;
 }
 
@@ -276,8 +228,8 @@ sub _copy_billing_info {
 #
 sub _decrease_inventory {
     my($self) = @_;
-
     my($list) = $self->new_other('CartItemList')->load_all;
+
     while ($list->next_row) {
 	my($inventory) = $list->get_model('Inventory');
 	$inventory->update({
@@ -288,25 +240,6 @@ sub _decrease_inventory {
     return;
 }
 
-# _get_bonus_miles(string amount) : int
-#
-# Returns the bonus miles credited for the order.
-#
-# < $100 : 500 miles
-# >= $100 : 1000 miles
-# gold customers : + 1000 miles
-#
-sub _get_bonus_miles {
-    my($self, $amount) = @_;
-    my($miles) = $amount >= 100 ? 1000 : 500;
-
-    if ($self->new_other('UserAccount')->load->get(
-	    'status') == Bivio::PetShop::Type::UserStatus->GOLD_CUSTOMER) {
-	$miles += 1000;
-    }
-    return $miles;
-}
-
 # _get_expiration_date() : string
 #
 # Returns the credit card expiration date.
@@ -314,8 +247,8 @@ sub _get_bonus_miles {
 sub _get_expiration_date {
     my($self) = @_;
     my($date, $err) = Bivio::Type::Date->date_from_parts(1,
-	    $self->get('card_expire_month')->as_int,
-	    $self->get('card_expire_year')->as_int);
+        $self->get('card_expire_month')->as_int,
+        $self->get('card_expire_year')->as_int);
     Bivio::Die->die($err) if $err;
     return $date;
 }
@@ -323,55 +256,59 @@ sub _get_expiration_date {
 # _save_order() : string
 #
 # Creates the order models using the current information.
-# Returns the order_id for the new Order.
+# Returns the realm_id for the new Order.
 #
 sub _save_order {
     my($self) = @_;
     my($cart) = $self->new_other('Cart')->load_from_cookie;
-    my($total) = $cart->get_total;
-
-    # create the entity and order
+    # create the order (in the club realm)
+    my($club) = $self->new_other('Club')->create({});
     my($order) = $self->new_other('Order')->create({
-	order_id => $self->new_other('Entity')->create({})
-	    ->get('entity_id'),
-	user_id => $self->get_request->get('auth_user_id'),
+        realm_id => $self->new_other('RealmOwner')->create({
+            display_name => 'Order ' . $club->get('club_id'),
+            name => 'o' . $club->get('club_id'),
+            realm_id => $club->get('club_id'),
+            realm_type => Bivio::Auth::RealmType->CLUB,
+        })->get('realm_id'),
 	cart_id => $cart->get('cart_id'),
-	order_date => Bivio::Type::Date->now,
-	courier => 'UPS',
-	bonus_miles => _get_bonus_miles($self, $total),
-	total_price => $total,
-	expiration_date => _get_expiration_date($self),
+        ec_payment_id => $self->new_other('ECCreditCardPayment')->create({
+            realm_id => $club->get('club_id'),
+            ec_payment_id => $self->new_other('ECPayment')->create({
+                realm_id => $club->get('club_id'),
+                amount => $cart->get_total,
+                method => Bivio::Type::ECPaymentMethod->CREDIT_CARD,
+                status => Bivio::Type::ECPaymentStatus->TRY_CAPTURE,
+                service => Bivio::Type::ECService->ANIMAL,
+                point_of_sale => Bivio::Type::ECPointOfSale->INTERNET,
+            })->get('ec_payment_id'),
+            card_name => $self->get('Order.bill_to_name'),
+            card_expiration_date => _get_expiration_date($self),
+            card_zip => $self->get('Address.zip'),
+            %{$self->get_model_properties('ECCreditCardPayment')},
+        })->get('ec_payment_id'),
 	%{$self->get_model_properties('Order')},
     });
 
     # create the entity address/phone for billing/shipping
     foreach my $location (qw(BILL_TO SHIP_TO)) {
-	$self->new_other('EntityAddress')->create({
-	    entity_id => $order->get('order_id'),
-	    location => Bivio::PetShop::Type::EntityLocation->$location(),
-	    %{$self->get_model_properties('EntityAddress_'
-		    .($location eq 'BILL_TO' ? 1 : 2))},
-	});
 
-	$self->new_other('EntityPhone')->create({
-	    entity_id => $order->get('order_id'),
-	    location => Bivio::PetShop::Type::EntityLocation->$location(),
-	    %{$self->get_model_properties('EntityPhone_'
-		    .($location eq 'BILL_TO' ? 1 : 2))},
-	});
+        foreach my $model (qw(Address Phone)) {
+            $self->new_other($model)->create({
+                realm_id => $order->get('realm_id'),
+                location => Bivio::Type::Location->from_name($location),
+                %{$self->get_model_properties($model
+                    . ($location eq 'BILL_TO' ? '' : '_2'))},
+            });
+        }
     }
-
-    # create the order status
-    $self->new_other('OrderStatus')->create({
-	order_id => $order->get('order_id'),
-	user_id => $self->get_request->get('auth_user_id'),
-	time_stamp => $order->get('order_date'),
-	status => Bivio::PetShop::Type::OrderStatus->PENDING,
+    # grant the user access to view the order
+    $self->new_other('RealmUser')->create({
+        realm_id => $order->get('realm_id'),
+        user_id => $self->get_request->get('auth_user_id'),
+        honorific => Bivio::Type::Honorific->MEMBER,
     });
-
     _decrease_inventory($self);
-
-    return $order->get('order_id');
+    return $order->get('realm_id');
 }
 
 =head1 COPYRIGHT
