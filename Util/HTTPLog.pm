@@ -196,10 +196,12 @@ sub _initialize {
 	    'child process \d+ still did not exit',
 	    'created shared memory segment',
 	    'read request (?:line|headers) timed out for',
-	    '/(?:read|send) timed out for/',
-	    # SSL
+	    '(?:read|send) timed out for',
+	    # Front-end and SSL
 	    'mod_ssl: SSL handshake interrupted',
+	    'mod_ssl: SSL handshake timed out',
 	    'System: Connection reset by peer',
+	    'System: Broken pipe',
 	    # Skip regular Bivio messages
 	    'Agent::Job::Dispatcher:.*JOB_(?:START|END)',
 	    'SQL::Connection::_get_connection.*reconnecting',
