@@ -82,6 +82,10 @@ If an error is encountered, die is called.
 sub connect {
     my($proto, $database) = @_;
     my($cfg) = Bivio::IO::Config->get($database);
+
+    Bivio::Die->die("database not set, check 'BConf Bivio::Ext::DBI' section")
+            if $cfg->{database} eq 'none';
+
 #TODO: Is this really true
     # Mod_perl wipes out %ENV on each request, it seems...
     $ENV{ORACLE_HOME} ||= $_ORACLE_HOME if $_ORACLE_HOME;
@@ -89,10 +93,9 @@ sub connect {
 	    $cfg->{user}, '/', $cfg->{password},
 	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
     Bivio::IO::Alert->warn('DATABASE IS READ ONLY') if $cfg->{is_read_only};
-
     my($self) = DBI->connect($cfg->{connection}->get_dbi_prefix($cfg)
-	    .$cfg->{database}, $cfg->{user}, $cfg->{password},
-	    $_DEFAULT_OPTIONS);
+        .$cfg->{database}, $cfg->{user}, $cfg->{password},
+        $_DEFAULT_OPTIONS);
     return $self;
 }
 
