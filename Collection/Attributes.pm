@@ -245,6 +245,26 @@ sub get_by_regexp {
     return $self->{$_PACKAGE}->{$match};
 }
 
+=for html <a name="get_if_exists_else_put"></a>
+
+=head2 get_if_exists_else_put(string key, code_ref compute_value) : any
+
+Returns value of I<key> if it exists.  Otherwise, calls I<compute_value>
+and return the computed value.  Used to "cache" values which are
+expensive to compute.
+
+Returns the gotten or computed value.
+
+=cut
+
+sub get_if_exists_else_put {
+    my($self, $key, $compute_value) = @_;
+    return $self->get($key) if $self->has_keys($key);
+    my($res) = &$compute_value();
+    $self->put($key => $res);
+    return $res;
+}
+
 =for html <a name="get_keys"></a>
 
 =head2 get_keys() : array_ref
