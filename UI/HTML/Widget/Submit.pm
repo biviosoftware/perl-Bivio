@@ -118,7 +118,7 @@ sub is_constant {
 
 =head2 render(any source, string_ref buffer)
 
-Draws the date field on the specified buffer.
+Draws the submit button.
 
 =cut
 
