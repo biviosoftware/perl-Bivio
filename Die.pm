@@ -144,7 +144,7 @@ sub as_string {
 		pop(@$m);
 	    }
 	    $res .= Bivio::IO::Alert->format($p, $f, $l, undef, $m);
-	    chop;
+	    chop($res);
 	    return 1;
 	} || ($res .= 'ERROR: ' . $curr . "\n");
     }
