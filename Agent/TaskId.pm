@@ -2264,6 +2264,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/merger
         Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentMergerForm
         Bivio::UI::HTML::Club::InstrumentMerger
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
@@ -2275,6 +2276,7 @@ my(@_CFG) = (
         ACCOUNTING_WRITE
         ?/accounting/investment/spin-off
         Bivio::Biz::Model::RealmInstrument
+        Bivio::Biz::Model::RealmAccountList->execute_load_valuation_only
         Bivio::Biz::Model::InstrumentSpinoffForm
         Bivio::UI::HTML::Club::InstrumentSpinoff
         next=CLUB_ACCOUNTING_INVESTMENT_DETAIL
