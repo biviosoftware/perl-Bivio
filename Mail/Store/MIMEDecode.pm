@@ -149,7 +149,8 @@ sub parse_and_store {
     # we know the first part is the main mail message. We want
     # to store keywords For Subject, To, Date, and From fields
     _parse_keywords($msg->get_subject(), $keywords);
-    _parse_keywords($msg->get_reply_to(), $keywords);
+    my $s = $msg->get_reply_to();
+    _parse_keywords($s, $keywords);
     _parse_keywords($msg->get_dttm(), $keywords);
 
     _trace('extracting MIME attachments for mail message. File: ',
@@ -293,8 +294,10 @@ sub _parse_keywords {
     return unless $str;
 #TODO: Algorithm probably need to take into account hyphenated words.
     my($w);
-    $str =~ s/[\'\"\.\;\:]//g;
+    $str =~ s/\"//g;
+#    $str =~ s/[\.\;\:]//g;
     foreach $w (split(/\s+/, $str)) {
+	_trace('keyword: ', $w);
 	$keywords->{$w}++;
     }
     return;
