@@ -55,22 +55,16 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'order_t',
 	columns => {
-            order_id => ['Entity.entity_id', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    cart_id => ['Cart.cart_id', 'NOT_NULL'],
-	    user_id => ['UserAccount.user_id', 'NOT_NULL'],
-	    order_date => ['Date', 'NOT_NULL'],
-	    courier => ['Line', 'NOT_NULL'],
-	    total_price => ['Price', 'NOT_NULL'],
-	    bill_to_first_name => ['Line', 'NOT_NULL'],
-	    bill_to_last_name => ['Line', 'NOT_NULL'],
-	    ship_to_first_name => ['Line', 'NOT_NULL'],
-	    ship_to_last_name => ['Line', 'NOT_NULL'],
-	    credit_card => ['CreditCard', 'NOT_NULL'],
-	    expiration_date => ['Date', 'NOT_NULL'],
-	    card_type => ['CardType', 'NOT_NULL'],
-	    bonus_miles => ['Integer', 'NONE'],
+            ec_payment_id => ['ECPayment.ec_payment_id', 'NOT_NULL'],
+            bill_to_name => ['Line', 'NOT_NULL'],
+	    ship_to_name => ['Line', 'NOT_NULL'],
 	},
-	auth_id => 'user_id',
+	auth_id => 'realm_id',
+        other => [
+            [qw(ec_payment_id ECPayment.ec_payment_id)],
+        ],
     };
 }
 
