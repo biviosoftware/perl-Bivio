@@ -304,7 +304,9 @@ sub _parse_errors_init {
 	fh => IO::File->new,
     };
     unless ($fields->{fh}->open($_CFG->{error_file})) {
-	_pager_report($self, $_CFG->{error_file}, ': ', "$!");
+	my($err) = $_CFG->{error_file}, ': ', "$!";
+	_pager_report($self, $err);
+	_report($self, $err);
 	return ($self, 0);
     }
     return ($self, $interval_minutes);
