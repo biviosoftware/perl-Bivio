@@ -86,23 +86,26 @@ my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 function @{[__PACKAGE__->MATH_ROUND]}(field)
 {
   // numeric coercion
-  field.value = parseFloat(field.value);
-  if (isNaN(field.value)) {
+  tmp = new String(field.value.replace(/,/g, ''));
+  tmp = parseFloat(tmp);
+  if (isNaN(tmp)) {
     field.value = '';
     return;
   }
 
   // round to the penny
-  field.value = Math.round(field.value * 100) / 100;
+  tmp = Math.round(tmp * 100) / 100;
 
   // add trailing and leading 0 if necessary
-  dotIndex = field.value.indexOf('.');
+  tmp = new String(tmp);
+  dotIndex = tmp.indexOf('.');
   if (dotIndex == -1)
-    field.value += ".00";
-  else if (field.value.length - dotIndex == 2)
-    field.value += "0";
+    tmp += ".00";
+  else if (tmp.length - dotIndex == 2)
+    tmp += "0";
   if (dotIndex == 0)
-    field.value = "0" + field.value;
+    tmp = "0" + tmp;
+  field.value = tmp;
 }
 // multiplies the value by a given constant
 function @{[__PACKAGE__->MATH_MULTIPLY]}(field)
