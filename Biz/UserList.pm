@@ -45,12 +45,12 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my($_COLUMN_INFO) = [
     ['Internal ID', Bivio::Biz::FieldDescriptor->lookup('NUMBER', 16)],
-    ['User ID', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
+    ['Login Name', Bivio::Biz::FieldDescriptor->lookup('STRING', 32)],
     ['Password', Bivio::Biz::FieldDescriptor->lookup('PASSWORD', 32)]
     ];
 
-my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('user_',
-	['id', 'name', 'password']);
+my($_SQL_SUPPORT) = Bivio::Biz::SqlListSupport->new('user_, club_user',
+	['user_.id', 'user_.name', 'user_.password']);
 
 =head1 FACTORIES
 
@@ -91,8 +91,18 @@ sub find {
     # clear the status from previous invocations
     $self->get_status()->clear();
 
-    # userlist doesn't use a where clause yet
-    return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
+    #TODO: remove hard-coded 100s
+
+    if ($fp->{'club'}) {
+	# club users
+	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100,
+		'where club_user.club=? and club_user.user_=user_.id',
+		$fp->{'club'});
+    }
+    else {
+	# all users
+	return $_SQL_SUPPORT->find($self, $self->internal_get_rows(), 100, '');
+    }
 }
 
 =for html <a name="get_heading"></a>
