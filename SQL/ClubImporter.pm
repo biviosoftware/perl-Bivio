@@ -711,10 +711,13 @@ sub import_valuations {
     # load instrument valuations
     my($val);
     foreach $val (@$valuations) {
+	my($realm_instrument_id) = $attributes->{instrument_id_map}
+		->{$val->{instrument_id}};
+#TODO: not detecting deleted valuations
+	next unless $realm_instrument_id;
 	$valuation->create({
 	    realm_id => $attributes->{club_id},
-	    realm_instrument_id => $attributes->{instrument_id_map}
-	    ->{$val->{instrument_id}},
+	    realm_instrument_id => $realm_instrument_id,
 	    date_time => $val->{date_time},
 	    price_per_share => $val->{price_per_share},
 	});
