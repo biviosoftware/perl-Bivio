@@ -59,15 +59,7 @@ my($_DELEGATES);
 my($_MAPS);
 my($_MODELS);
 my($_SEP) = MAP_SEPARATOR();
-Bivio::IO::Config->register({
-    maps => {
-	AccountScraper => ['Bivio::Data::AccountScraper'],
-	Model => ['Bivio::Biz::Model'],
-    },
-    delegates => {
-	'Bivio::Agent::TaskId' => 'Bivio::Agent::TaskIdDelegate',
-    },
-});
+Bivio::IO::Config->register;
 
 =head1 METHODS
 
@@ -125,6 +117,20 @@ sub handle_config {
     _find_property_models($model_path) if $model_path;
     $_DELEGATES = $cfg->{delegates};
     return;
+}
+
+=for html <a name="is_class_loaded"></a>
+
+=head2 static is_class_loaded(string class) : boolean
+
+Returns true if the class module has been loaded into the perl interpreter.
+
+=cut
+
+sub is_class_loaded {
+    my($proto, $class) = @_;
+    # this seems to work
+    return UNIVERSAL::isa($class, $class);
 }
 
 =for html <a name="map_require"></a>
