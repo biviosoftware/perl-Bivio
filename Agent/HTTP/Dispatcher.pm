@@ -51,11 +51,14 @@ use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
-use BSD::Resource;
+# May not be available on some systems
+Bivio::Die->eval('
+    use BSD::Resource;
+    setrlimit(RLIMIT_CORE, 0, 0);
+');
 
 #=VARIABLES
 # No core dumps please
-setrlimit(RLIMIT_CORE, 0, 0);
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_SELF);
