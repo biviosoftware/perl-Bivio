@@ -78,17 +78,21 @@ sub get_instance {
 
 =for html <a name="execute"></a>
 
-=head2 abstract execute(Bivio::Agent::Request req) : boolean
+=head2 abstract execute(Bivio::Agent::Request req) : any
 
 Perform an action on I<req>.  Usually modifies state of I<req>.
 
 B<Subclasses must override this method>.
 
-=head2 static execute(Bivio::Agent::Request req, string class) : boolean
+=head2 static execute(Bivio::Agent::Request req, string class) : any
 
 If I<class> is supplied, will be loaded with
 L<get_instance|"get_instance"> and that instance's execute
 method will be called without a I<class> argument.
+
+Returns true if execution should stop.  Returns a
+L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> to transition
+to a specific task.
 
 =cut
 

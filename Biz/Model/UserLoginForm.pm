@@ -193,9 +193,10 @@ sub internal_initialize {
 
 =for html <a name="substitute_user"></a>
 
-=head2 static substitute_user(Bivio::Biz::Model realm, Bivio::Agent::Request req)
+=head2 static substitute_user(Bivio::Biz::Model realm, Bivio::Agent::Request req) : Bivio::Agent::TaskId
 
-Become another user if you are super_user.
+Become another user if you are super_user.  Returns the task to switch
+to or undef (default).
 
 =cut
 
@@ -214,8 +215,9 @@ sub substitute_user {
 	    if $cookie;
 	$req->put_durable(super_user_id => $super_user_id);
     }
-    $proto->execute($req, {realm_owner => $realm});
-    return;
+    _trace($req->unsafe_get('super_user_id'), ' => ', $realm)
+	if $_TRACE;
+    return $proto->execute($req, {realm_owner => $realm});
 }
 
 =for html <a name="validate"></a>
@@ -308,7 +310,7 @@ sub _get {
     return $cookie && $cookie->unsafe_get($field);
 }
 
-# _load_cookie_user(proto, Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req) : boolean
+# _load_cookie_user(proto, Bivio::Agent::HTTP::Cookie cookie, Bivio::Agent::Request req) : Model.RealmOwner
 #
 # Returns auth_user if logged in.  Otherwise indicates logged out or
 # just visitor.
@@ -395,7 +397,9 @@ sub _set_user {
     my($proto, $user, $cookie, $req) = @_;
     $req->set_user($user);
     $req->put_durable(
-	super_user_id => _get($cookie, $proto->SUPER_USER_FIELD),
+	# Cookie overrides but may not have a cookie so super_user_id
+	super_user_id => _get($cookie, $proto->SUPER_USER_FIELD)
+	    || $req->unsafe_get('super_user_id'),
 	user_state => $user ? Bivio::Type::UserState->LOGGED_IN
 	    : _get($cookie, $proto->USER_FIELD)
 	    ? Bivio::Type::UserState->LOGGED_OUT
@@ -405,7 +409,7 @@ sub _set_user {
     return $user;
 }
 
-# _su_logout(self) : boolean
+# _su_logout(self) : Bivio::Agent::TaskId
 #
 # Logout as substitute user, return to super user.
 #
@@ -421,9 +425,9 @@ sub _su_logout {
 	realm_owner => $realm->unauth_load({realm_id => $su})
 	    ? $realm : undef,
     });
-    $req->client_redirect(Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER)
-	if $realm;
-    return undef;
+    _trace($realm) if $_TRACE;
+    return $realm->is_loaded
+	? Bivio::Agent::TaskId->ADM_SUBSTITUTE_USER : 0;
 }
 
 =head1 COPYRIGHT

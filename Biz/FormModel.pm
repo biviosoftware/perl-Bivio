@@ -264,7 +264,8 @@ sub execute_empty {
 
 Processes the form after validation.  By default is an no-op.
 
-B<Return true if you want the Form to exit immediately.>
+Return true if you want the Form to exit immediately.
+Return a Bivio::Agent::TaskId, if you want to change next.
 
 =cut
 
@@ -999,7 +1000,8 @@ sub process {
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-	return 1 if _call_execute($self, 'execute_ok', 'ok_button');
+	my($res) = _call_execute($self, 'execute_ok', 'ok_button');
+	return $res if $res;
 	return 0 unless $fields->{errors};
 	if ($_TRACE) {
 	    my($msg) = '';
@@ -1244,7 +1246,7 @@ sub validate_and_execute_ok {
 	# Catch errors and rethrow unless we can process
 	my($res);
 	my($die) = Bivio::Die->catch(sub {
-	        $res = $self->execute_ok($form_button);});
+	    $res = $self->execute_ok($form_button);});
 	if ($die) {
 	    if ($die->get('code')== Bivio::DieCode->DB_CONSTRAINT) {
 		# Type errors are "normal"
@@ -1260,7 +1262,7 @@ sub validate_and_execute_ok {
 
 	# If execute_ok returns true, just get out.  The task will
 	# stop executing so no need to test errors.
-	return 1 if $res;
+	return $res if $res;
 
 	if ($fields->{errors}) {
 	    _put_file_field_reset_errors($self);

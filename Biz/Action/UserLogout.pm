@@ -39,7 +39,7 @@ and in the cookie.
 
 =for html <a name="execute"></a>
 
-=head2 static execute(Bivio::Agent::Request req) : boolean
+=head2 static execute(Bivio::Agent::Request req) : Bivio::Agent::TaskId
 
 Calls the I<Model.LoginForm> to clear the user.
 
@@ -47,9 +47,8 @@ Calls the I<Model.LoginForm> to clear the user.
 
 sub execute {
     my(undef, $req) = @_;
-    Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
+    return Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
 	$req, {realm_owner => undef});
-    return 0;
 }
 
 #=PRIVATE METHODS

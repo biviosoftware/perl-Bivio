@@ -241,7 +241,9 @@ Executes the task for the specified request.  Checks that the request is
 authorized.  Calls C<commit> and C<send_queued_messages> if there is an action.
 Calls C<reply-E<gt>send>.
 
-If I<execute> returns true, stops item execution.
+If I<execute> returns true, stops item execution.  If the return result
+is a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>, control will be
+redirected to with L<Bivio::Agent::Request::client_redirect|Bivio::Agent::Request/"client_redirect">.
 
 B<Must be called within L<Bivio::Die::catch|Bivio::Die/"catch">.> Depends on
 the fact that L<handle_die|"handle_die"> is called to execute rollback.
@@ -269,8 +271,15 @@ sub execute {
     foreach $i (@{$self->get('items')}) {
 	my($instance, $method, $args) = @$i;
 	# Don't continue if returns true.
-	last if defined($instance)
+	my($res) = defined($instance)
 		? $instance->$method(@$args, $req) : &$method(@$args, $req);
+	next unless $res;
+	last unless ref($res);
+	$req->client_redirect($res)
+	    if UNIVERSAL::isa($res, 'Bivio::Agent::TaskId');
+	Bivio::IO::Alert->warn_deprecated(
+	    'execute must return boolean or a Bivio::Agent::TaskId');
+	last;
     }
     $self->commit($req);
     $req->get('reply')->send($req);

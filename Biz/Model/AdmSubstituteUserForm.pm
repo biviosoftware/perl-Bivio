@@ -74,17 +74,16 @@ Logs in the I<realm_owner> and updates the cookie.
 
 sub execute_ok {
     my($self) = @_;
-    unless ($self->get('validate_called')) {
+    unless ($self->unsafe_get('validate_called')) {
 	$self->validate;
 	return if $self->in_error;
 	# Note that "realm_owner" may be undef
     }
 
-    $self->get_instance('UserLoginForm')->substitute_user(
+    return $self->get_instance('UserLoginForm')->substitute_user(
 	$self->get('realm_owner'),
 	$self->get_request,
     );
-    return 0;
 }
 
 =for html <a name="internal_initialize"></a>
