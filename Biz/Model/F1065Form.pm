@@ -54,40 +54,61 @@ my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 
 Loads the form values.
 
-		business_activity
-		principal_service
-		business_code
-		business_start_date
-		return_type
-		accounting_method
-		number_of_k1s
-		partnership_type
-		partner_is_partnership
-		partnership_is_partner
-		tax_shelter
-		foreign_account
-		foreign_account_country
-		foreign_trust
-		foreign_partners
-		withdrawal
-		interest_income
-		dividend_income
-		net_stcg
-		net_ltcg
-		other_portfolio_income
-		portfolio_deductions
-		investment_income
-		investment_expenses
-		tax_exempt_interest
-		foreign_income_type
-		foreign_income
-		foreign_tax_type
-		foreign_tax
-		cash_distribution
-		property_distribution
-		net_income
-		active_income
-		passive_income
+1065 page 1
+
+name    Club.RealmOwner.display_name
+address Club.Address.street1
+        Club.Address.street2
+        Club.Address.city
+        Club.Address.state
+        Club.Address.zip
+A       F1065Form.business_activity
+B       F1065Form.principal_service
+C       F1065Form.business_code
+D       Club.TaxId.tax_id
+E       F1065Form.business_start_date
+G       F1065Form.return_type
+H       F1065Form.accounting_method
+I       F1065Form.number_of_k1s
+
+1065 page 2 Schedule B
+
+ 1a     F1065Form.partnership_type
+ 2      F1065Form.partner_is_partnership
+ 3      F1065Form.partnership_is_partner
+ 4      F1065Form.consolidated_audit
+ 5      F1065Form.three_requirements
+ 6      F1065Form.foreign_partners
+ 7      F1065Form.publicly_traded
+ 8      F1065Form.tax_shelter
+ 9      F1065Form.foreign_account
+ 9      F1065Form.foreign_account_country
+10      F1065Form.foreign_trust
+11      F1065Form.withdrawal
+
+1065 page 3 Schedule K
+
+ 4a     F1065Form.interest_income
+ 4b     F1065Form.dividend_income
+ 4d     F1065Form.net_stcg
+ 4e     F1065Form.net_ltcg
+ 4f     F1065Form.other_portfolio_income
+10      F1065Form.portfolio_deductions
+14b(1)  F1065Form.investment_income
+14b(2)  F1065Form.investment_expenses
+17a     F1065Form.foreign_income_type
+17c     F1065Form.foreign_income
+17e     F1065Form.foreign_tax_type
+17e     F1065Form.foreign_tax
+19      F1065Form.tax_exempt_interest
+22      F1065Form.cash_distribution
+23      F1065Form.property_distribution
+
+1065 page 4 Analysis of Net Income
+
+1       F1065Form.net_income
+2a(ii)  F1065Form.active_income
+2a(iii) F1065Form.passive_income
 
 =cut
 
@@ -118,12 +139,16 @@ sub execute_empty {
 	    Bivio::Type::F1065Partnership->GENERAL_PARTNERSHIP;
     $properties->{partner_is_partnership} = 0;
     $properties->{partnership_is_partner} = 0;
+    $properties->{consolidated_audit} = 1;
+    $properties->{three_requirements} = 1;
+    $properties->{foreign_partners} = 0;
+    $properties->{publicly_traded} = 0;
     $properties->{tax_shelter} = 0;
     $properties->{foreign_account} = 0;
     $properties->{foreign_account_country} = '';
     $properties->{foreign_trust} = 0;
-    $properties->{foreign_partners} = 0;
     $properties->{withdrawal} = _has_withdrawal($self, $date);
+
     $properties->{interest_income} = $income->get(
 	    $tax->INTEREST->get_short_desc);
     $properties->{dividend_income} = $income->get(
@@ -136,10 +161,9 @@ sub execute_empty {
 	    $tax->MISC_INCOME->get_short_desc);
     $properties->{portfolio_deductions} = Bivio::Type::Amount->neg(
 	    $income->get($tax->MISC_EXPENSE->get_short_desc));
-    $properties->{investment_income} = $income->get('total_income'),
+    $properties->{investment_income} = _get_investment_income($self,
+	    $properties);
     $properties->{investment_expenses} = $properties->{portfolio_deductions};
-    $properties->{tax_exempt_interest} = $income->get(
-	    $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc);
     $properties->{foreign_income_type} = 'Passive';
     $properties->{foreign_income} = _get_foreign_income($self, $date);
     $properties->{foreign_tax} = Bivio::Type::Amount->neg($income->get(
@@ -147,10 +171,13 @@ sub execute_empty {
     $properties->{foreign_tax_type} = $properties->{foreign_tax} == 0
 	    ? Bivio::Type::F1065ForeignTax->UNKNOWN
 	    : Bivio::Type::F1065ForeignTax->PAID;
+    $properties->{tax_exempt_interest} = $income->get(
+	    $tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc);
     $properties->{cash_distribution} =
 	    _get_cash_withdrawal_amount($self, $date);
     $properties->{property_distribution} =
 	    _get_stock_withdraw_amount($self, $date);
+
     _calculate_income($self, $properties);
     return;
 }
@@ -218,6 +245,26 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
+		name => 'consolidated_audit',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'three_requirements',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'foreign_partners',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'publicly_traded',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
+	    {
 		name => 'tax_shelter',
 		type => 'Boolean',
 		constraint => 'NONE',
@@ -234,11 +281,6 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'foreign_trust',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'foreign_partners',
 		type => 'Boolean',
 		constraint => 'NONE',
 	    },
@@ -288,11 +330,6 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    },
 	    {
-		name => 'tax_exempt_interest',
-		type => 'Amount',
-		constraint => 'NONE',
-	    },
-	    {
 		name => 'foreign_income_type',
 		type => 'Line',
 		constraint => 'NONE',
@@ -309,6 +346,11 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'foreign_tax',
+		type => 'Amount',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'tax_exempt_interest',
 		type => 'Amount',
 		constraint => 'NONE',
 	    },
@@ -460,6 +502,17 @@ sub _get_foreign_income {
     return $total_amount;
 }
 
+# _get_investment_income(hash_ref properties) : string
+#
+# Returns the total investment income.
+#
+sub _get_investment_income {
+    my($self, $properties) = @_;
+
+    return _add($properties,
+	    qw(interest_income dividend_income other_portfolio_income));
+}
+
 # _get_member_count(string date) : int
 #
 # Returns the number of members who were active in the club for the
@@ -517,7 +570,7 @@ sub _get_withdrawal_amount {
     my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
 	    $date);
     my($sth) = Bivio::SQL::Connection->execute("
-            SELECT SUM(entry_t.amount)
+            SELECT -SUM(entry_t.amount)
             FROM realm_transaction_t, entry_t
             WHERE realm_transaction_t.realm_transaction_id
                 =entry_t.realm_transaction_id
