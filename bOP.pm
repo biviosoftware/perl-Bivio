@@ -30,7 +30,7 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =cut
 
@@ -41,6 +41,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 1.68  2003/06/10 23:39:29  nagler
+  * Bivio::Collection::Attributes->ancestral_get uses "exists" instead
+    of "defined".  Was impossible to undef an attribute before.
+
+  Revision 1.67  2003/06/09 23:33:24  nagler
+  * Bivio::UI::HTML::Widget::Link supports undefined hrefs, which print
     nothing.  You can say Link('label', 0, {name => 'hello'}) to create
     an anchor called hello.  'hello' may be any widget value or widget.
   * Fixed bug in ListModel iterator with converter
