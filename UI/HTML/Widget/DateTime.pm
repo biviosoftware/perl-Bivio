@@ -184,9 +184,14 @@ EOF
 
 =for html <a name="new"></a>
 
+=head2 static new(array_ref value, any mode, boolean show_timezone, string undef_value, hash_ref attributes) : Bivio::UI::HTML::Widget::DateTime
+
+Creates a new DateTime widget from required I<value> and optional
+I<mode>, I<show_timezone>, I<undef_value>, and I<attributes>.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::DateTime
 
-Creates a new DateTime widget.
+Creates a new DateTime widget with I<attributes>.
 
 =cut
 
@@ -223,6 +228,39 @@ sub initialize {
     return;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 internal_new_args(any arg, ...) : hash_ref
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $value, $mode, $show_timezone, $undef_value, $attributes) = @_;
+    return '"value" attribute must be an array_ref'
+	unless ref($value) eq 'ARRAY';
+    if (defined($mode)) {
+	my($m) = Bivio::UI::DateTimeMode->unsafe_from_any($mode);
+	return '"mode" must be a DateTimeMode' unless $m;
+	$mode = $m;
+    }
+    return '"show_timezone" attribute must be a boolean'
+	if defined($show_timezone) && (
+	    ref($show_timezone)
+	    || $show_timezone !~ /^[01]$/
+	);
+    return '"undef_value" must be a scalar'
+	if defined($undef_value) && ref($undef_value);
+    return {
+	value => $value,
+	defined($mode) ? (mode => $mode) : (),
+	defined($show_timezone) ? (show_timezone => $show_timezone) : (),
+	defined($undef_value) ? (undef_value => $undef_value) : (),
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)
@@ -246,7 +284,8 @@ sub render {
 	$$buffer .= $s;
 	return;
     }
-    my($gmt) = Bivio::UI::HTML::Format::DateTime->get_widget_value(
+    my($gmt) = Bivio::UI::HTML::Format->get_instance('DateTime')
+	->get_widget_value(
 	    $value, $fields->{mode}, $fields->{no_timezone});
     my($mi) = $fields->{mode};
 

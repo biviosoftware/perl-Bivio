@@ -173,9 +173,13 @@ my($_SPACER) = '&nbsp;' x 3;
 
 =for html <a name="new"></a>
 
+=head2 static new(array_ref values, hash_ref attributes) : Bivio::UI::HTML::Widget::Grid
+
+Creates a new Grid widget with I<values> and optional I<attributes>.
+
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Grid
 
-Creates a new Grid widget.
+Creates a new Grid widget with I<attributes>.
 
 =cut
 
@@ -291,6 +295,24 @@ sub initialize {
     }
     $fields->{rows} = $rows;
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $values, $attributes) = @_;
+    return "'values' must be an array_ref (rows) of array_refs (cells)"
+	unless ref($values) eq 'ARRAY';
+    return {
+        values => $values,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 

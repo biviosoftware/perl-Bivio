@@ -119,16 +119,18 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(string value) : Bivio::UI::Widget::Prose
+=head2 static new(string value, hash_ref attrs) : Bivio::UI::Widget::Prose
+
+Creates widget with I<value> and optionally attrs.
 
 =head2 static new(hash_ref attrs) : Bivio::UI::Widget::Prose
 
-Creates super class.  Value must be set.
+Creates widget.  I<value> must be set at instantiation.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::Join::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::Join::new(@_);
     return $self->put(values => _parse($self->get('value')));
 }
 
@@ -136,19 +138,25 @@ sub new {
 
 =cut
 
-#=PRIVATE METHODS
+=for html <a name="internal_new_args"></a>
 
-# _new_args(proto, any value) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $value) = @_;
-    return ($proto, $value) if ref($value) eq 'HASH';
-    return ($proto, {value => $value}) if defined($value) && !ref($value);
-    Bivio::Die->die('invalid arguments to new');
-    # DOES NOT RETURN
+=head2 static internal_new_args(any arg) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $value, $attributes) = @_;
+    return "'value' must be a defined scalar"
+	unless defined($value) && !ref($value);
+    return {
+        value => $value,
+	($attributes ? %$attributes : ()),
+    };
 }
+
+#=PRIVATE METHODS
 
 # _parse(string value) : array_ref
 #

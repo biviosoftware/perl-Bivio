@@ -68,7 +68,7 @@ Creates a new Join widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -121,6 +121,24 @@ sub internal_as_string {
     return int(@res) > 2 ? (splice(@res, 0, 2), '...') : @res;
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $values, $attributes) = @_;
+    return '"values" attribute must be an array_ref'
+	unless ref($values) eq 'ARRAY';
+    return {
+	values => $values,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 =for html <a name="render"></a>
 
 =head2 render(string_ref buffer)
@@ -138,19 +156,6 @@ sub render {
 }
 
 #=PRIVATE METHODS
-
-# _new_args(proto, any value) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $value) = @_;
-    return ($proto, $value) if ref($value) eq 'HASH';
-    return ($proto, {values => $value}) if ref($value) eq 'ARRAY';
-    return ($proto, {}) unless defined($value);
-    Bivio::Die->die('invalid arguments to new');
-    # DOES NOT RETURN
-}
 
 =head1 COPYRIGHT
 

@@ -319,15 +319,10 @@ use Bivio::Die;
 use Bivio::UI::Align;
 use Bivio::UI::Color;
 use Bivio::UI::HTML::ViewShortcuts;
-use Bivio::UI::HTML::Widget::FormFieldError;
-use Bivio::UI::HTML::Widget::LineCell;
-use Bivio::UI::HTML::Widget::String;
 use Bivio::UI::HTML::WidgetFactory;
-use Bivio::UI::Widget::Join;
 
 #=VARIABLES
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_INFINITY_ROWS) = 0x7fffffff;
 my($_PACKAGE) = __PACKAGE__;
 use vars qw($_TRACE);
@@ -339,25 +334,19 @@ Bivio::IO::Trace->register;
 
 =for html <a name="new"></a>
 
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Table
-
-=head2 static new(string list_class, array_ref columns) : Bivio::UI::HTML::Widget::Table
-
 =head2 static new(string list_class, array_ref columns, hash_ref attributes) : Bivio::UI::HTML::Widget::Table
 
-Creates a new Table widget.
+Creates a new Table with I<list_class>, I<columns>, and optional
+I<attributes>.
+
+=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Table
+
+Creates a new Table widget with I<attributes>.
 
 =cut
 
 sub new {
-    my($proto, $list_class, $columns, $attributes) = @_;
-    my($self) = ref($list_class) eq 'HASH'
-	    ? Bivio::UI::Widget::new($proto, $list_class)
-	    : Bivio::UI::Widget::new($proto, {
-		list_class => $list_class,
-		columns => $columns,
-		($attributes ? %$attributes : ()),
-	    });
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -386,7 +375,7 @@ sub create_cell {
     }
     elsif ($col eq '') {
 #TODO: optimize, could share instances with common span
-	$cell =  Bivio::UI::Widget::Join->new({
+	$cell =  $_VS->vs_new('Join', {
 	    values => ['&nbsp;'],
 	    column_span => $attrs->{column_span} || 1,
 	});
@@ -412,12 +401,12 @@ sub create_cell {
 		ref($model).'.'.$col, $attrs);
 	if ($need_error_widget) {
 	    # wrap the cell, including an error widget
-	    $cell = Bivio::UI::Widget::Join->new({
+	    $cell = $_VS->vs_new('Join', {
 		# Need to copy attributes when putting Widget around $cell.
 		%{$cell->get_shallow_copy},
 		# Our attributes override, however.
 		values => [
-		    Bivio::UI::HTML::Widget::FormFieldError->new({
+		    $_VS->vs_new('FormFieldError', {
 			field => $col,
 		        label => $_VS->vs_text(
 				$model->simple_package_name, $col),
@@ -507,7 +496,7 @@ sub initialize {
 
     my($title) = $self->unsafe_get('title');
     if (defined($title)) {
-	$fields->{title} = Bivio::UI::HTML::Widget::String->new({
+	$fields->{title} = $_VS->vs_new('String', {
             value => "\n$title\n",
             string_font => 'table_heading',
         });
@@ -515,7 +504,7 @@ sub initialize {
     }
 
     # heading separator and summary
-    $fields->{separator} = Bivio::UI::HTML::Widget::LineCell->new({
+    $fields->{separator} = $_VS->vs_new('LineCell', {
 	height => 1,
 	color => 'table_separator',
     });
@@ -561,6 +550,27 @@ sub initialize_child_widget {
     $column_prefix .= " colspan=$span" if $span != 1;
     $widget->put(column_prefix => $column_prefix);
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $list_class, $columns, $attributes) = @_;
+    return '"list_class" must be a defined scalar'
+	unless defined($list_class) && !ref($list_class);
+    return '"columns" must be an array_ref'
+	unless ref($columns) eq 'ARRAY';
+    return {
+	list_class => $list_class,
+	columns => $columns,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 =for html <a name="render"></a>
@@ -689,7 +699,7 @@ sub _get_heading {
 
     unless (UNIVERSAL::isa($heading, 'Bivio::UI::Widget')) {
 	# wrap it in a string widget
-	$heading = Bivio::UI::HTML::Widget::String->new({
+	$heading = $_VS->vs_new('String', {
 	    value => length($heading)
 	    ? $_VS->vs_text($list->simple_package_name, $heading) : $heading,
 	    string_font => $cell->get_or_default(
@@ -752,7 +762,7 @@ sub _get_summary_cell {
 	return $cell;
     }
 #TODO: optimize, could share instances with common span
-    my($blank_string) = Bivio::UI::Widget::Join->new({
+    my($blank_string) = $_VS->vs_new('Join', {
 	values => ['&nbsp;'],
 	column_span => $cell->get_or_default('column_span', 1),
     });
@@ -774,14 +784,14 @@ sub _get_summary_line {
 	my($line_type) = $self->unsafe_get('summary_line_type');
 	if ($line_type eq '-') {
 #TODO: optimize, could share instances with common span
-	    $widget =  Bivio::UI::HTML::Widget::LineCell->new({
+	    $widget =  $_VS->vs_new('LineCell', {
 		color => 'summary_line',
 		column_align => 'N'
 	    });
 	}
 	elsif ($line_type eq '=') {
 #TODO: optimize, could share instances with common span
-	    $widget = Bivio::UI::HTML::Widget::LineCell->new({
+	    $widget = $_VS->vs_new('LineCell', {
 		color => 'summary_line',
 		column_align => 'N',
 		count => 2
@@ -793,7 +803,7 @@ sub _get_summary_line {
     }
     else {
 #TODO: optimize, could share instances with common span
-	$widget = Bivio::UI::HTML::Widget::String->new({
+	$widget = $_VS->vs_new('String', {
 	    value => '',
 	});
     }

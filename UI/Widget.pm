@@ -189,16 +189,31 @@ use Bivio::IO::ClassLoader;
 
 =for html <a name="new"></a>
 
+=head2 static new() : Bivio::UI::Widget
+
 =head2 static new(hash_ref attrs) : Bivio::UI::Widget
 
-creates a new instance and binds the initial attributes.  Instantation is
+Creates a new instance and binds the initial attributes.  Instantation is
 passive as far as the widgets are concerned, i.e.  attribute binding is the
 only action that occurs.
+
+=head2 static new(any arg, ...) : Bivio::UI::Widget
+
+Same as other two versions, but L<internal_new_args|"internal_new_args">
+is called to get the hash_ref to pass to
+L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>.
 
 =cut
 
 sub new {
-    return Bivio::Collection::Attributes::new(@_);
+    return Bivio::Collection::Attributes::new(@_, {}) if int(@_) == 1;
+    return Bivio::Collection::Attributes::new(@_) if ref($_[1]) eq 'HASH';
+    my($proto) = shift;
+    Bivio::Die->die($proto, '->new: only accepts a hash_ref argument')
+	unless $proto->can('internal_new_args');
+    my($res) = $proto->internal_new_args(@_);
+    Bivio::Die->die($proto, '->new: ', $res) unless ref($res) eq 'HASH';
+    return Bivio::Collection::Attributes::new($proto, $res);
 }
 
 =head1 METHODS
@@ -405,6 +420,31 @@ sub internal_as_string {
 	return ($v) if defined($v);
     }
     return ();
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 abstract static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">, e.g.
+
+    If(['auth_user'], String(Join(['Hi ', ['auth_user', 'display_name']))))
+
+Subclasses define this method if they accept something other than a hash_ref or
+nothing as arguments to new.  See for example
+L<Bivio::UI::Widget::Director|Bivio::UI::Widget::Director>
+or L<Bivio::UI::Join|Bivio::UI::Join>.
+
+Traditionally, L<new|"new"> accepts a hash_ref as the last argument to new.
+This allows arbitrary parameters to be passed.
+
+Must return a hash_ref if succesful.  Otherwise, returns a string
+or array_ref which contains the error.
+
+=cut
+
+$_ = <<'}'; # emacs
+sub internal_new_args {
 }
 
 =for html <a name="put_and_initialize"></a>

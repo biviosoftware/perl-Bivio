@@ -71,10 +71,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(array_ref control, any control_on_value, any control_off_value) : Bivio::UI::Widget::If
+=head2 static new(array_ref control, any control_on_value, any control_off_value, hash_ref attributes) : Bivio::UI::Widget::If
 
 Creates with attributes I<control>, I<control_on_value>, and
-I<control_off_value>.
+I<control_off_value>.  Optionally, I<attributes> are applied.
 
 =head2 static new(hash_ref attributes) : Bivio::UI::Widget::If
 
@@ -83,7 +83,7 @@ Creates with named attributes.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::ControlBase::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -126,24 +126,28 @@ sub initialize {
     return $self->SUPER::initialize();
 }
 
-#=PRIVATE METHODS
+=for html <a name="internal_new_args"></a>
 
-# _new_args(proto, any arg, ...) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $control, $on, $off) = @_;
-    return ($proto, $control) if ref($control) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
+=head2 static internal_new_args(any args, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $control, $on, $off, $attributes) = @_;
+    return '"control" attribute must be defined' unless defined($control);
+    return '"on" attribute must be defined' unless defined($on);
+    return {
 	control => $control,
 	control_on_value => $on,
 	# Optional
 	control_off_value => $off,
-    }) if ref($control) eq 'ARRAY' && defined($on);
-    $proto->die(undef, undef, 'invalid arguments to new');
-    # DOES NOT RETURN
+	($attributes ? %$attributes : ()),
+    };
 }
+
+#=PRIVATE METHODS
 
 =head1 COPYRIGHT
 

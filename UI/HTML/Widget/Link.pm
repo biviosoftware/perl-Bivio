@@ -95,9 +95,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(any value, any href) : Bivio::UI::HTML::Widget::Link
+=head2 static new(any value, any href, hash_ref attributes) : Bivio::UI::HTML::Widget::Link
 
 Creates a C<Link> widget with attributes I<value> and I<href>.
+And optionally, set extra I<attributes>.
 
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Link
 
@@ -106,7 +107,7 @@ If I<attributes> supplied, creates with attribute (name, value) pairs.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::ControlBase::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::ControlBase::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -187,6 +188,25 @@ sub internal_as_string {
     return $self->unsafe_get('value', 'href');
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args() : 
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $value, $href, $attributes) = @_;
+    return '"value" must be defined' unless defined($value);
+    return '"href" must be defined' unless defined($href);
+    return {
+	value => $value,
+	href => $href,
+	($attributes ? %$attributes : ()),
+    };
+}
+
 #=PRIVATE METHODS
 
 # _initialize_href(self) : any
@@ -207,21 +227,6 @@ sub _initialize_href {
 	Bivio::Agent::TaskId->$href()]
 	    if Bivio::Agent::TaskId->is_valid_name($href);
     return $href;
-}
-
-# _new_args(proto, any value) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $value, $href) = @_;
-    return ($proto, $value) if ref($value) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
-	value => $value,
-	href => $href,
-    }) if defined($value) && defined($href);
-    Bivio::Die->die('invalid arguments to new');
-    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT

@@ -73,7 +73,7 @@ Creates a new AmountCell widget.
 =cut
 
 sub new {
-    my($self) = &Bivio::UI::HTML::Widget::String::new(@_);
+    my($self) = Bivio::UI::HTML::Widget::String::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -95,7 +95,7 @@ sub initialize {
     my($fields) = $self->{$_PACKAGE};
     return if $fields->{initialized};
     $self->put(
-	    value => [$self->get('field'), 'Bivio::UI::HTML::Format::Amount',
+	    value => [$self->get('field'), 'HTMLFormat.Amount',
 		$self->get_or_default('decimals', 2), 1,
 		$self->get_or_default('zero_as_blank', 0)],
 	    column_align => $self->get_or_default('column_align', 'E'),

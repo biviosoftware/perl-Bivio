@@ -123,10 +123,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(any icon, any alt_text) : Bivio::UI::HTML::Widget::Image
+=head2 static new(any icon, any alt_text, hash_ref attributes) : Bivio::UI::HTML::Widget::Image
 
 Passes I<icon> and I<alt_text> (or I<icon> as I<alt_text> if I<alt_text> is
-undef) as attributes.
+undef) as attributes.  And optionally, set extra I<attributes>.
 
 =head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::Image
 
@@ -135,7 +135,7 @@ Creates a new Image widget using I<attributes>.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -218,6 +218,26 @@ sub internal_as_string {
     return ($self->unsafe_get('src'));
 }
 
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $icon, $text, $attributes) = @_;
+    return '"icon" attribute must be defined' unless defined($icon);
+    return {
+	src => $icon,
+	alt_text => defined($text) ? $text : $icon,
+	($attributes ? %$attributes : ()),
+    };
+    # DOES NOT RETURN
+    return;
+}
+
 =for html <a name="render"></a>
 
 =head2 render(any source, string_ref buffer)
@@ -261,21 +281,6 @@ sub render {
 }
 
 #=PRIVATE METHODS
-
-# _new_args(proto, any arg, ...) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $icon, $text) = @_;
-    return ($proto, $icon) if ref($icon) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
-	src => $icon,
-	alt_text => defined($text) ? $text : $icon,
-    }) if defined($icon);
-    $proto->die(undef, undef, 'invalid arguments to new');
-    # DOES NOT RETURN
-}
 
 # _render_alt(self, hash_ref fields, any source, Bivio::Agent::Request req) : string
 #

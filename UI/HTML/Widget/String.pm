@@ -116,19 +116,20 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new(any value, string font) : Bivio::UI::HTML::Widget::String
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::String
+=head2 static new(any value, string font, hash_ref attributes) : Bivio::UI::HTML::Widget::String
 
 Create a C<String> widget with I<value> and I<font> (if supplied and defined).
 Pass C<0> (zero) as I<font> to set "no font".  Will not set font, if C<undef>.
+Optionally, pass other I<attributes>.
+
+=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::String
 
 If I<attributes> supplied, creates with attribute (name, value) pairs.
 
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(_new_args(@_));
+    my($self) = Bivio::UI::Widget::new(@_);
     $self->{$_PACKAGE} = {};
     return $self;
 }
@@ -178,6 +179,24 @@ sub initialize {
 	$fields->{value}->put_and_initialize(parent => $self);
     }
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args(any arg, ...) : any
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $value, $font, $attributes) = @_;
+    return '"value" attribute must be defined' unless defined($value);
+    return {
+	value => $value,
+	defined($font) ? (string_font => $font) : (),
+	($attributes ? %$attributes : ()),
+    };
 }
 
 =for html <a name="render"></a>
@@ -259,21 +278,6 @@ sub _format {
 		if ref($value);
     # Note the treatment of escape when -1 or +1.
     return $fields->{escape} ? _escape($fields, $value) : $value;
-}
-
-# _new_args(proto, any value) : array
-#
-# Returns arguments to be passed to Attributes::new.
-#
-sub _new_args {
-    my($proto, $value, $font) = @_;
-    return ($proto, $value) if ref($value) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
-	value => $value,
-	defined($font) ? (string_font => $font) : (),
-    }) if defined($value);
-    Bivio::Die->die('invalid arguments to new');
-    # DOES NOT RETURN
 }
 
 =head1 COPYRIGHT
