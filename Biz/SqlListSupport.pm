@@ -105,7 +105,7 @@ sub find {
     my($count) = 0;
     while ($row = $statement->fetchrow_arrayref()) {
 
-	if (++$count < $index) {
+	if ($count++ < $index) {
 	    next;
 	}
 
