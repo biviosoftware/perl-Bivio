@@ -116,17 +116,40 @@ sub render {
     return unless $model->in_error;
     my($errors) = $model->get_errors;
     my($e) = $fields->{prefix};
-    foreach my $f (@{$fields->{fields}}) {
-	my($n) = $f->[0];
-	next unless defined($errors->{$n});
-	$e .= "\n<li>".Bivio::Util::escape_html(
-		$f->[1].': '.$errors->{$n}->get_long_desc);
+
+    # iterate errors, so general errors don't have to be bound to a field
+    foreach my $name (keys(%$errors)) {
+	my($caption) = _get_caption($self, $name);
+	if ($caption) {
+	    $e .= "\n<li>".Bivio::Util::escape_html(
+		    $caption.': '.$errors->{$name}->get_long_desc);
+	}
+	else {
+	    $e .= "\n<li>".Bivio::Util::escape_html(
+		    $errors->{$name}->get_long_desc);
+	}
     }
+
     $$buffer .= $e.$fields->{suffix};
     return;
 }
 
 #=PRIVATE METHODS
+
+# _get_caption(string name) : string
+#
+# Returns the caption for the specified field name. Returns undef if no
+# field exists for the name.
+#
+sub _get_caption {
+    my($self, $name) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    foreach my $f (@{$fields->{fields}}) {
+	return $f->[1] if ($f->[0] eq $name);
+    }
+    return undef;
+}
 
 =head1 COPYRIGHT
 
