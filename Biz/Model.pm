@@ -440,7 +440,7 @@ Not supported.
 =cut
 
 sub put {
-    CORE::die('not supported');
+    CORE::die('put: not supported');
 }
 
 =for html <a name="unsafe_get_request"></a>
