@@ -50,6 +50,9 @@ displays the date and time.
 
 displays a long month name and day number, e.g. October 31
 
+=item MONTH_AND_DAY
+
+displays month/day.
 
 =back
 
@@ -65,6 +68,7 @@ __PACKAGE__->compile([
     TIME => [2],
     DATE_TIME => [3],
     MONTH_NAME_AND_DAY_NUMBER => [4],
+    MONTH_AND_DAY => [5],
 ]);
 
 #=PRIVATE METHODS

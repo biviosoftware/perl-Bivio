@@ -41,6 +41,10 @@ Passed to
 L<Bivio::UI::DateTimeMode::from_any|Bivio::UI::DateTimeMode/"from_any">
 so can be just the string name.
 
+=item show_timezone : boolean [1]
+
+If GMT is displayed (no JavaScript), show the time zone.
+
 =item value : array_ref (required)
 
 Dereferenced and passed to C<$source-E<gt>get_widget_value>
@@ -101,7 +105,7 @@ my($_FN) = JAVASCRIPT_FUNCTION_NAME();
 
 # Write once, run nowhere...  Date.getFullYear was not introduced
 # until JavaScript 1.2.  Date.getYear is totally broken.  Read
-# O'Reilly JavaScript book under Date.getYear.  
+# O'Reilly JavaScript book under Date.getYear.
 $_FUNCS = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
 function dt(m,j,t,gmt){
     // Subtract off the Julian year
@@ -118,14 +122,17 @@ function dt(m,j,t,gmt){
     var d=new Date((y*$_SECONDS+t)*1000);
 
     // ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2, DATE_TIME=3
-    //          and MONTH_NAME_AND_DAY_NUMBER=4
+    //          and MONTH_NAME_AND_DAY_NUMBER=4, DAY_AND_NUMBER=5
     // This renders more compact javascript and is possibly slower on client.
     document.write(
+        m<=3?
             ((m&1)?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())+'/'+dt_n(dt_y(d))
                   :'')
             +(m==3?' ':'')
             +((m&2)?dt_n(d.getHours())+':'+dt_n(d.getMinutes()):'')
-            +(m==4?dt_mn(d)+' '+d.getDate():''));
+        :m==4?dt_mn(d)+' '+d.getDate()
+        :m==5?dt_n(d.getMonth()+1)+'/'+dt_n(d.getDate())
+        :'');
 }
 
 // Returns a zero-padded number
@@ -205,6 +212,7 @@ sub initialize {
 	    $self->get_or_default('mode', 'DATE'))->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
+    $fields->{no_timezone} = !$self->get_or_default('show_timezone', 1);
     warn("initialized without parent") unless $self->get('parent');
     return;
 }
@@ -233,7 +241,7 @@ sub render {
 	return;
     }
     my($gmt) = Bivio::UI::HTML::Format::DateTime->get_widget_value(
-	    $value, $fields->{mode});
+	    $value, $fields->{mode}, $fields->{no_timezone});
     my($mi) = $fields->{mode};
 
     # Let Javascript do the work

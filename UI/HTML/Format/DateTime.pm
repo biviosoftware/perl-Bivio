@@ -78,16 +78,23 @@ sub get_widget_value {
     return '' unless defined($time);
     my($sec, $min, $hour, $mday, $mon, $year)
 	    = Bivio::Type::DateTime->to_parts($time);
-    my($m) = Bivio::UI::DateTimeMode->from_any(
-	    $mode || 'DATE_TIME')->as_int;
+    $mode = Bivio::UI::DateTimeMode->from_any($mode || 'DATE_TIME');
+    my($m) = $mode->as_int;
     # ASSUMES: Bivio::UI::DateTimeMode is DATE=1, TIME=2 & DATE_TIME=3
-    return $_MONTH_NAMES[$mon].' '.$mday.($no_timezone ? '': ' GMT')
-	    if $m == 4;
     return (($m & 1) ? sprintf('%02d/%02d/%04d', $mon, $mday, $year) : '')
 	    .($m == 3 ? ' ' : '')
 	    .(($m & 2) ? sprintf('%02d:%02d:%02d', $hour, $min, $sec) : '')
 	    # This is even correct if just a time, no?
-	    .($no_timezone ? '': ' GMT');
+	    .($no_timezone ? '': ' GMT') if $m <= 3;
+    return $_MONTH_NAMES[$mon].' '.$mday.($no_timezone ? '': ' GMT')
+	    if $mode == Bivio::UI::DateTimeMode::MONTH_NAME_AND_DAY_NUMBER();
+    return sprintf('%02d/%02d', $mon, $mday).($no_timezone ? '': ' GMT')
+	    if $mode == Bivio::UI::DateTimeMode::MONTH_AND_DAY();
+    Bivio::Die->throw_die('DIE', {
+	message => 'unknown DateTimeMode',
+	entity => $mode
+    });
+    # DOES NOT RETURN
 }
 
 #=PRIVATE METHODS
