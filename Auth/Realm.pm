@@ -56,7 +56,7 @@ my(%_CLASS_TO_TYPE) = map {
     # Don't need to "use" these modules, because don't actually
     # reference the class--just a name here.
     ("Bivio::Auth::Realm::$class", $_);
-} Bivio::Auth::RealmType->LIST;
+} Bivio::Auth::RealmType->get_list;
 my(%_REALM_TO_TASK_ID_TO_ROLE) = ();
 
 =head1 FACTORIES
