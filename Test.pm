@@ -838,7 +838,7 @@ sub _eval_result {
 	$custom = 'expect'
 	    if ref($result) eq 'ARRAY';
     }
-    else {
+    elsif ($actual_which eq $expect_which) {
 	$custom = "check_$expect_which";
 	$custom = undef
 	    unless $case->unsafe_get($custom);
@@ -878,9 +878,8 @@ sub _eval_result {
     }
     return "expected != actual:\n"
 	. Bivio::IO::Ref->to_short_string($case->get('expect'))
-	.' != '
-	. ($show ? $$show : Bivio::IO::Ref->to_short_string(
-	    $case->get($actual_which)));
+	. ' != '
+	. ($show ? $$show : Bivio::IO::Ref->to_short_string($actual));
 }
 
 # _eval_result_regexp(Bivio::Test::Case case, any result, string_ref show) : boolean

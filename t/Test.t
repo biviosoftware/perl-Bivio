@@ -247,10 +247,24 @@ t(
 	    # Deviance 53
 	    die => '33',
 	],
+	{
+	    object => Bivio::t::Test::Testee->new('33'),
+	    check_return => sub {
+		return 1;
+	    },
+	    check_die_code => sub {
+		return 1;
+	    },
+        } => [
+	    # Deviance 54
+	    die => 1,
+	    # Deviance 55
+	    ok => Bivio::DieCode->DIE,
+	],
 #TODO: Need more deviance tests
     ],
-    53,
-    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44, 52, 53],
+    55,
+    [3, 5, 8, 9, 12, 14, 16, 19, 24, 25, 27, 28, 37, 40, 41, 42, 43, 44, 52, 53, 54, 55],
 );
 t(
     {
