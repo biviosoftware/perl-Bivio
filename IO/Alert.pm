@@ -31,8 +31,8 @@ It is probably best to use C<CORE::warn> and C<CORE::die> instead of the
 redefinitions here.
 
 C<max_warnings> in any given program invocation is limited to
-a (default) 1000. You can L<reset_warn_counter|"reset_warn_counter">
-in the event.
+a (default) 1000. You can L<reset_warn_counter|"reset_warn_counter">,
+which is typically used by servers.
 
 =cut
 
