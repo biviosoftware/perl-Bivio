@@ -50,17 +50,17 @@ See also L<Bivio::SQL::Support|Bivio::SQL::Support> for more attributes.
 Is true if the PropertModel has a BLOB data type.  Requires special
 handling in L<Bivio::SQL::Connection|Bivio::SQL::Connection>.
 
-=item select : string
-
-The list of select_columns followed FROM table.  Does not include
-WHERE.
-
 =item primary_id_name : string
 
 Computed from the columns.  If there is a column which matches the table name
 followed by C<_id>, e.g. I<table_name_id> for a table called I<table_name_t>,
 this will be the I<primary_id_name> for the table.  See L<create|"create"> for
 how it is set automatically from its corresponding sequence.
+
+=item select : string
+
+The list of select_columns followed FROM table.  Does not include
+WHERE.
 
 =back
 
