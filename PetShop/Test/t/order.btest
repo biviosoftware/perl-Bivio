@@ -1,0 +1,31 @@
+# Copyright (c) 2002 bivio Software Artisans, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+follow_link('Birds');
+follow_link('Finch');
+submit_form('add_to_cart_0');
+submit_form('checkout');
+follow_link('continue');
+submit_form(submit => {
+    'E-Mail Address:' => 'test_' . rand() . '@' . rand() . '.bivio.biz',
+    'Password:' => 'x' x 6,
+    'First Name:' => 'First',
+    'Last Name:' => 'Last',
+});
+test_deviance('You must supply a value for Postal Code.');
+submit_form(continue => {
+    'Street Address:' => 'Address',
+    'City:' => 'City',
+    'State/Province:' => 'ST',
+});
+test_conformance();
+reload_page();
+submit_form(continue => {
+    'Street Address:' => 'Address',
+    'City:' => 'City',
+    'State/Province:' => 'ST',
+    'Postal Code:' => '12345',
+});
+submit_form('continue');
+verify_text('Order Information:');
