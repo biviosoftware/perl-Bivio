@@ -102,100 +102,50 @@ sub _do {
     return $statement;
 }
 
+# _drop_constraints(string table, string column)
+#
+# Drop all the constraints on a particular table and column
+#
+sub _drop_constraints {
+    my($table, $column) = map {uc($_)} @_;
+    # Find all constraints on the table
+    my($statement) = _do(<<"EOF");
+	    SELECT user_cons_columns.constraint_name
+	      FROM user_cons_columns, user_constraints
+	      WHERE user_cons_columns.column_name = '$column'
+	      AND user_cons_columns.table_name = '$table'
+	      AND user_constraints.constraint_name
+	      = user_cons_columns.constraint_name
+              /
+EOF
+    my(@constraints);
+    while (my($name) = $statement->fetchrow_array) {
+	push(@constraints, $name);
+    }
+    $statement->finish;
+
+    # Drop the constraints
+    foreach my $c (@constraints) {
+	_do("ALTER TABLE $table drop constraint $c
+                /");
+    }
+    return;
+}
+
 # _upgrade()
 #
 # Replace this method with the table/data manipulations.
 #
 sub _upgrade {
-    use Bivio::Biz::Util::RealmInvite;
+    # drops the foreign key reference and the NOT NULL
+    _drop_constraints('realm_instrument_t', 'instrument_id');
 
-    my($count) = Bivio::Biz::Util::RealmInvite->expire(1);
-    print STDERR "Deleting $count invites\n";
-    _do(<<'EOF');
--- Add the column
-ALTER TABLE realm_invite_t add user_id NUMBER(18)
-/
--- Make sure user_id is initialized to something.
--- This will bridge current uses.
-UPDATE realm_invite_t set user_id = realm_id
-/
--- from realm_constraints.sql
-ALTER TABLE realm_invite_t modify user_id not null
-/
--- from realm_indices.sql
-CREATE INDEX realm_invite_realm_i ON realm_invite_t (
-  realm_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-
-CREATE INDEX realm_invite_user_i ON realm_invite_t (
-  user_id
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_indx
-/
-EOF
-    _upgrade_connect();
+    # add the foreign key reference back in
+    _do('ALTER TABLE realm_instrument_t
+            add foreign key (instrument_id)
+            references instrument_t(instrument_id)
+            /');
     return;
-}
-
-# _upgrade_connect()
-#
-# Special for connect_survey_t
-#
-sub _upgrade_connect {
-    _do(<<'EOF');
-CREATE TABLE connect_survey_t (
-  realm_id NUMBER(18),
-  experience NUMBER(2),
-  contribution NUMBER(2),
-  age_range NUMBER(2),
-  vicinity NUMBER(2),
-  risk NUMBER(2),
-  outlook NUMBER(2)
-)
-  storage (initial 10m next 10m minextents 1 maxextents 500 pctincrease 0)
-  tablespace realm_data
-/
-
---
--- connect_survey_t
---
-ALTER TABLE connect_survey_t add primary key(realm_id)
-  using index tablespace realm_indx
-  storage (initial 10m NEXT 10m minextents 1 maxextents 500 pctincrease 0)
-/
-ALTER TABLE connect_survey_t
-  add foreign key (realm_id)
-    references realm_owner_t(realm_id)
-/
-ALTER TABLE connect_survey_t modify experience not null
-/
-ALTER TABLE connect_survey_t add check (experience between 0 and 3)
-/
-ALTER TABLE connect_survey_t modify contribution not null
-/
-ALTER TABLE connect_survey_t add check (contribution between 0 and 3)
-/
-ALTER TABLE connect_survey_t modify age_range not null
-/
-ALTER TABLE connect_survey_t add check (age_range between 0 and 4)
-/
-ALTER TABLE connect_survey_t modify vicinity not null
-/
-ALTER TABLE connect_survey_t add check (vicinity between 0 and 5)
-/
-ALTER TABLE connect_survey_t modify risk not null
-/
-ALTER TABLE connect_survey_t add check (risk between 0 and 4)
-/
-ALTER TABLE connect_survey_t modify outlook not null
-/
-ALTER TABLE connect_survey_t add check (outlook between 0 and 4)
-/
-EOF
 }
 
 # _usage(array message)
