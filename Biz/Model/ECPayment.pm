@@ -63,6 +63,25 @@ sub create {
     return $self->SUPER::create($new_values);
 }
 
+=for html <a name="get_amount_sum"></a>
+
+=head2 get_amount_sum() : string
+
+Returns the sum of all payments in this realm.  Returns 0 if no payments
+for this realm.
+
+=cut
+
+sub get_amount_sum {
+    my($self) = @_;
+    return (Bivio::SQL::Connection->execute_one_row(
+	'SELECT SUM(amount)
+         FROM ec_payment_t
+         WHERE realm_id = ?',
+	[$self->get_request->get('auth_id')])
+	|| [0])->[0];
+}
+
 =for html <a name="internal_initialize"></a>
 
 =head2 internal_initialize() : hash_ref
