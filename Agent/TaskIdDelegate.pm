@@ -3157,7 +3157,18 @@ sub get_delegate_info {
         help=taking-offline
         want_query=0
     )],
-    ];
+    [qw(
+        ADM_EC_SUBSCRIPTION_EDIT
+        279
+        GENERAL
+        ADMIN_WRITE
+        ?/adm/ec-edit
+        Bivio::Biz::Model::AdmECSubscriptionEditForm
+	Bivio::UI::HTML::Adm::ECSubscriptionEdit
+        next=HTTP_DOCUMENT
+        require_secure=1
+    )],
+];
 }
 
 #=PRIVATE METHODS
