@@ -127,7 +127,7 @@ Initializes static inpageation.
 sub initialize {
     my($self, $source) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return if $fields->{prefix};
+    return if $fields->{head};
     my($v);
     foreach $v (($fields->{head}, $fields->{body})
 	    = $self->get('head', 'body')) {
