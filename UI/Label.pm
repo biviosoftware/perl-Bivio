@@ -509,7 +509,7 @@ _compile([
     # Announcements
     ANNOUNCE_RMIF => ['Rocky Mountain Investors Fair'],
     ANNOUNCE_EXPO => ['Miami Investment Expo'],
-    ANNOUNCE_EXPENSES => ['Expense Categories'],
+    ANNOUNCE_ACCOUNTS => ['Multiple Accounts'],
 
     # PrevNextBar
     PREV_NEXT_BAR_PREV_LIST => ['prev'],
