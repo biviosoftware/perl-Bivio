@@ -53,7 +53,7 @@ sub get_widget_value {
     my(undef, $time) = @_;
     return '' unless defined($time);
     my($sec, $min, $hour, $mday, $mon, $year)
-	    = Bivio::Type::DateTime::to_parts($time);
+	    = Bivio::Type::DateTime->to_parts($time);
     return sprintf('%02d/%02d/%04d %02d:%02d:%02d',
 	    $mon, $mday, $year, $hour, $min, $sec);
 }
