@@ -35,11 +35,12 @@ and delete interface to the C<club_t> table.
 
 #=IMPORTS
 use Bivio::Biz::ListModel;
-use Bivio::Biz::Model::ClubUserList;
 use Bivio::Biz::Model::File;
 use Bivio::Biz::Model::MailMessage;
+use Bivio::Biz::Model::RealmAdminList;
 use Bivio::Biz::Model::RealmOwner;
 use Bivio::Biz::Model::RealmUser;
+use Bivio::Biz::Model::RealmUserList;
 use Bivio::Biz::Model::User;
 use Bivio::IO::Trace;
 use Bivio::SQL::Connection;
@@ -96,6 +97,7 @@ sub cascade_delete {
     $realm->unauth_load(realm_id => $id)
 	    || die("couldn't load realm from club");
 
+    # delete all accounting and shadow users
     $self->delete_instruments_and_transactions();
 
     foreach my $table (qw(
@@ -112,14 +114,19 @@ sub cascade_delete {
             WHERE club_id=?',
 	    [$id]);
 
+    # delete realm invites
+    Bivio::Biz::Model::RealmInvite->cascade_delete($realm);
+
     # delete file server/mail messages
     Bivio::Biz::Model::File->cascade_delete($realm);
 
-    # Always delete file server files last, since other
-    # calls may fail.  Eventually this will go away.
-    Bivio::Biz::Model::MailMessage->delete_club($realm);
+    my($club_name) = $realm->get('name');
     $self->delete();
     $realm->cascade_delete;
+
+    # Always delete file server files last, since other
+    # calls may fail.  Eventually this will go away.
+    Bivio::Biz::Model::MailMessage->delete_club($club_name);
     return;
 }
 
@@ -187,10 +194,10 @@ sub delete_instruments_and_transactions {
     # delete realm's existing shadow members
     my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
     my($user) = Bivio::Biz::Model::User->new($req);
-    my($list) = Bivio::Biz::Model::ClubUserList->new($req);
+    my($list) = Bivio::Biz::Model::RealmUserList->new($req);
     $list->load_all;
     while ($list->next_row) {
-	next unless $list->get('RealmOwner.name') =~ /^=/;
+	next unless $list->is_shadow_user;
 
 	$realm_user->load(user_id => $list->get('RealmUser.user_id'));
 	$realm_user->delete;
@@ -201,20 +208,37 @@ sub delete_instruments_and_transactions {
     return;
 }
 
-=for html <a name="delete_member"></a>
+=for html <a name="delete_member_by_name"></a>
 
-=head2 delete_member(string member)
+=head2 delete_member_by_name(string member) : boolean
 
-Delete a member
+Returns true if could delete.  Returns false if the member has
+transactions associated, can't be .
 
 =cut
 
-sub delete_member {
+sub delete_member_by_name {
     my($self, $member) = @_;
     my($id) = $self->get('club_id');
-    my($sql) = 'DELETE FROM realm_user_t WHERE realm_id=? AND '.
-            'user_id = (SELECT realm_id FROM realm_owner_t WHERE name=?)';
-    Bivio::SQL::Connection->execute($sql, [$id, $member]);
+    my($req) = $self->get_request;
+
+    # Find user
+    my($user) = Bivio::Biz::Model::RealmOwner->new($req);
+    $user->unauth_load_or_die(name => $member);
+    my($user_id) = $user->get('realm_id');
+
+    # If has txns, can't delete.
+    my($txn_list) = Bivio::Biz::Model::MemberTransactionList->new($req);
+    $txn_list->unauth_load({auth_id => $id, parent_id => $user_id});
+    $user->die('user has transactions') if $txn_list->get_result_set_size();
+
+#TODO: Need to check for owner of Files and admin of Transactions
+
+    # Delete RealmUser first to auth and lock record
+    my($realm_user) = Bivio::Biz::Model::RealmUser->new($req);
+    $realm_user->load(
+	    realm_id => $id, user_id => $user_id);
+    $realm_user->delete();
     return;
 }
 
