@@ -103,6 +103,11 @@ Name of the list field used as the item id.
 TODO: this attribute shouldn't exist - it should use the primary key
       fields of the list model.
 
+=item list_item_control : string []
+
+The list field name which controls whether the current row should
+be added to the list.
+
 =item show_unknown : boolean [1]
 
 Should the UNKNOWN type be displayed?
@@ -408,11 +413,17 @@ sub _load_items_from_list {
     my($id_name) = $self->get('list_id_field');
     my($display_type) = $list->get_field_info($display_name, 'type');
     my($id_type) = $list->get_field_info($id_name, 'type');
+    my($control) = $self->unsafe_get('list_item_control');
 
     # id, display pairs
     my(@items);
     $list->reset_cursor;
     while($list->next_row) {
+	# skip rows unless the control value is set
+	if ($control) {
+	    next unless $list->get($control);
+	}
+
 	push(@items, $id_type->to_html($list->get($id_name)),
 		$display_type->to_html($list->get($display_name)));
     }
