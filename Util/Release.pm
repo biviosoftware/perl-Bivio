@@ -822,7 +822,9 @@ sub _do_in_tmp {
     Bivio::IO::File->mkdir_p($_CFG->{tmp_dir});
     return _do_output(sub {
         my($output) = @_;
+	my($prev_dir) = Bivio::IO::File->pwd;
 	$op->(_chdir($_CFG->{tmp_dir}, $output), $output);
+	_chdir($prev_dir);
 	Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
 	    unless $self->get('noexecute');
 	return;
