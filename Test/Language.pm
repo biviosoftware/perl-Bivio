@@ -231,7 +231,7 @@ sub test_cleanup {
 
 =head2 test_conformance()
 
-Turn of deviance testing mode.  See also L<test_deviance|"test_deviance">.
+Turn off deviance testing mode.  See also L<test_deviance|"test_deviance">.
 
 =cut
 
