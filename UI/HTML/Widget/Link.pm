@@ -135,11 +135,16 @@ sub control_on_render {
     my($fields) = $self->[$_IDI];
 
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' href="'
-	. _fixup_href($source->get_request,
-	    $source->get_widget_value(@{$fields->{href}}))
-	. '"'
-	    if $fields->{href};
+    my($n) = '';
+    $$buffer .= ' name="' . Bivio::HTML->escape($n) . '"'
+	if $self->unsafe_render_attr('name', $source, \$n);
+    if ($fields->{href}) {
+	my($href) = $source->get_widget_value(@{$fields->{href}});
+	$$buffer .= ' href="'
+	    . _fixup_href($source->get_request,	$href)
+	    . '"'
+	    if defined($href);
+    }
     my($handler) = $self->unsafe_get('event_handler');
     $$buffer .= $handler->get_html_field_attributes(undef, $source)
 	if $handler;
@@ -167,12 +172,11 @@ sub initialize {
 
     # href and value both must be defined
     my($p, $s) = ('<a'.$_VS->vs_link_target_as_html($self), '');
-    my($n) = $self->get_or_default('name', 0);
-    $p .= ' name="'.$n.'"' if $n;
     my($a) = $self->unsafe_get('attributes');
     $p .= $a if $a;
 
     $self->unsafe_initialize_attr('event_handler');
+    $self->unsafe_initialize_attr('name');
     $fields->{value} = $self->initialize_attr('value');
     $fields->{value} = $_VS->vs_new(
 	    'String', $fields->{value},
@@ -181,8 +185,9 @@ sub initialize {
 	    && UNIVERSAL::isa($fields->{value}, 'Bivio::UI::Widget');
     $fields->{href} = _initialize_href($self);
     unless (ref($fields->{href})) {
-	# Format literally if a constant
-	$p .= ' href="'.$fields->{href}.'"';
+	# Format literally if a constant, but not if 0
+	$p .= ' href="'.$fields->{href}.'"'
+	    if $fields->{href};
 	delete($fields->{href});
     }
     $fields->{prefix} = $p;
