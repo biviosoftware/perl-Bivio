@@ -301,7 +301,7 @@ URI of home page.
 Directory in which mail resides.  Set up your .procmailrc to have a rule:
 
     :0 H
-    * ^TO_.*\+btest_
+    * ^TO_.*\<btest_
     btest-mail/.
 
 Make sure the permissions are 0600 on your .procmailrc.
