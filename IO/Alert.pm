@@ -294,7 +294,7 @@ sub _format {
     my(undef, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
     my($text) = $_WANT_PID ? "[$$]" : '';
-    my($is_eval) = $file =~ s/^\(eval (\d+)\)$/eval$1/s;
+    my($is_eval) = $file && $file =~ s/^\(eval (\d+)\)$/eval$1/s;
     if (defined($pkg) && $pkg eq 'main') {
 	# main doesn't give us much info, so use the file instead
 	$pkg = defined($file) ? $file : 'main';
