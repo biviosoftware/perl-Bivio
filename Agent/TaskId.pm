@@ -544,6 +544,7 @@ my(@_CFG) = (
         DOCUMENT_READ
         pub/japan_survey
         Bivio::Biz::Model::JapanSurveyForm
+        Bivio::Biz::Action::ClientRedirect->JAPAN_SURVEY_TEXT
         next=JAPAN_SURVEY_THANKS
         cancel=HTTP_DOCUMENT
     )],
@@ -638,7 +639,14 @@ my(@_CFG) = (
         %/mail/image
         Bivio::UI::HTML::Club::ImageAttachment
     )],
-    #62
+    [qw(
+        JAPAN_SURVEY_TEXT
+        62
+        GENERAL
+        DOCUMENT_READ
+        hm/intro_japan.html
+	Bivio::Biz::Action::HTTPDocument
+    )],
     # This URI must identify the user agreement document file.
     [qw(
         USER_AGREEMENT_TEXT
