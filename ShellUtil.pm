@@ -634,7 +634,7 @@ sub piped_exec {
     local($/) = undef;
     my($res) = <IN>;
     $res ||= '';
-    _trace($command, " -> ", $$res) if $_TRACE;
+    _trace($command, " -> ", $res) if $_TRACE;
     unless (close(IN)) {
 	Bivio::Die->throw_die('DIE', {
 	    message => 'command died with non-zero status',
@@ -648,9 +648,9 @@ sub piped_exec {
 
 =for html <a name="piped_exec_remote"></a>
 
-=head2 static piped_exec(string host, string command, string input, boolean ignore_exit_code) : string_ref
+=head2 static piped_exec_remote(string host, string command, string input, boolean ignore_exit_code) : string_ref
 
-=head2 static piped_exec(string host, string command, string_ref input, boolean ignore_exit_code) : string_ref
+=head2 static piped_exec_remote(string host, string command, string_ref input, boolean ignore_exit_code) : string_ref
 
 Run I<command> remotely using C<ssh>.  Returns result.  Assumes remote shell
 understands single quote escaping.
