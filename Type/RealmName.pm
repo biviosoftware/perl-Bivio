@@ -153,6 +153,7 @@ my(%_RESERVED) = map {($_, 1)} qw(
     daemon
     dba
     decode
+    demo
     dump
     dumper
     email
