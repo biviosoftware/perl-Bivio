@@ -242,14 +242,13 @@ row id.
 
 sub get_field_name_for_html {
     my($self, $name) = @_;
-    my($sql_support) = $self->internal_get_sql_support;
 
     # Parse out the row number
     my($row);
     $name =~ s/$_SEP(\d+)$//o && ($row = $1);
 
     # Get the column info and return if not in_list
-    my($col) = $sql_support->get_column_info($name);
+    my($col) = $self->get_field_info($name);
     unless ($col->{in_list}) {
 	Carp::croak($name, ': not in_list and row specified')
 		if defined($row);
