@@ -172,7 +172,6 @@ _compile(
     TASK_ID => ['Task', undef, 'task_id2'],
     FEE_PERCENT => ['Percent Fee Type'],
     MONTH => ['Month'],
-
     PRE_WITHDRAWAL_BASIS => ["Member's Basis Before Withdrawal"],
     ADJUSTED_BASIS => ['(A)  Adjusted basis'],
     BASIS_WITHDRAWN => ['(B)  Total'],
@@ -181,6 +180,7 @@ _compile(
     RETURN_SINCE => ['Return Since'],
     RETURN_TO => ['Return To'],
     PREPARATION_DATE => ['Report Preparation Date'],
+    REMAINING_BASIS => ['Remaining Basis Percentage'],
 
     # Accounting Reports (Tasks sorted alphabetically)
     CLUB_ACCOUNTING_REPORT_CASH_ACCOUNT_SUMMARY => ['Account Report'],
@@ -237,6 +237,7 @@ _compile(
     CLUB_ACCOUNTING_INVESTMENT_LOT_LIST => ['Investment Lots'],
     CLUB_ACCOUNTING_INVESTMENT_MERGER => ['Investment Merger'],
     CLUB_ACCOUNTING_INVESTMENT_SELL => ['Record Sale'],
+    CLUB_ACCOUNTING_INVESTMENT_SPINOFF => ['Investment Spin-off'],
     CLUB_ACCOUNTING_LOCAL_INSTRUMENT => ['New Unlisted Investment'],
     CLUB_ACCOUNTING_LOCAL_VALUATION_DATES => ['Change Past Valuations'],
     CLUB_ACCOUNTING_MEMBER_DETAIL => ['Member Detail'],
