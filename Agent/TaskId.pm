@@ -558,6 +558,7 @@ my(@_CFG) = (
         Bivio::UI::HTML::Club::MessageAttachment
 
     )],
+    # MUST MATCH Bivio::Biz::Action::REALM_REDIRECT
     [qw(
 	DEMO_REDIRECT
 	59

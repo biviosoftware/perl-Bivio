@@ -30,6 +30,20 @@ in the query string.
 
 =cut
 
+=for html <a name="DEMO_VALUE"></a>
+
+=head2 DEMO_VALUE : string
+
+Returns the value to be used for demo clubs.
+
+Must match C<DEMO_REDIRECT> task's url.
+
+=cut
+
+sub DEMO_VALUE {
+    return 'demo';
+}
+
 =for html <a name="QUERY_TAG"></a>
 
 =head2 QUERY_TAG : string
