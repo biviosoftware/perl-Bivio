@@ -137,7 +137,8 @@ sub execute_empty {
     $income->reset_cursor;
     $income->next_row || die("couldn't load income/expense list");
 
-    my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDForm');
+    my($schedule_d) = $req->get('Bivio::Biz::Model::ScheduleDList');
+    $schedule_d->set_cursor_or_die(0);
 
     $properties->{business_activity} = 'Finance';
     $properties->{principal_service} = 'Investment Club';
