@@ -203,9 +203,13 @@ If true, the column will be C<width="100%">.
 
 =item column_heading : string
 
+=item column_heading : Bivio::UI::HTML::Widget
+
 The heading label to use for the columns heading. By default, the column
 name is used to look up the heading label.  The name of the label
 is the I<column_heading> with C<_HEADING> appended.
+
+If the heading is a widget, then it will be used to render the heading.
 
 =item column_heading : string_ref
 
@@ -596,33 +600,39 @@ sub _get_enabled_widgets {
 sub _get_heading {
     my($self, $list, $col, $cell, $sort_fields) = @_;
 
-    my($label) = $cell->get_or_default('column_heading', $col);
-    if ($label) {
-	# try to get the heading label first
-	my($hl) = $label;
-	$hl =~ s/\s/_/g;
-	$hl =~ s/\./_/;
-	$hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
+    my($heading) = $cell->get_or_default('column_heading', $col);
 
-	if (defined($hl)) {
-	    $label = $hl;
-	}
-	else {
-	    # try the simple version
-	    my($l) = $label;
-	    $l =~ s/\s/_/g;
-	    $label = Bivio::UI::Label->unsafe_get_simple($l);
+    unless (UNIVERSAL::isa($heading, 'Bivio::UI::HTML::Widget')) {
+	if ($heading) {
+	    # try to get the heading label first
+	    my($hl) = $heading;
+	    $hl =~ s/\s/_/g;
+	    $hl =~ s/\./_/;
+	    $hl = Bivio::UI::Label->unsafe_get_simple($hl.'_HEADING');
 
-	    # then without periods
-	    $l =~ s/\./_/;
-	    $label = Bivio::UI::Label->get_simple($l) unless defined($label);
+	    if (defined($hl)) {
+		$heading = $hl;
+	    }
+	    else {
+		# try the simple version
+		my($l) = $heading;
+		$l =~ s/\s/_/g;
+		$heading = Bivio::UI::Label->unsafe_get_simple($l);
+
+		# then without periods
+		$l =~ s/\./_/;
+		$heading = Bivio::UI::Label->get_simple($l)
+			unless defined($heading);
+	    }
 	}
+
+	# wrap it in a string widget
+	$heading = Bivio::UI::HTML::Widget::String->new({
+	    value => $heading,
+	    string_font => 'table_heading',
+	});
     }
 
-    my($heading) = Bivio::UI::HTML::Widget::String->new({
-        value => $label,
-        string_font => 'table_heading',
-    });
     if (defined($sort_fields) && @$sort_fields) {
         # Restriction: Main sort field must be identical to column field
         Bivio::Die->die($sort_fields->[0], ' ne ', $col,
