@@ -339,11 +339,14 @@ sub disable_service {
     my($self, @service) = @_;
     my($res);
     foreach my $s (@service) {
-	next unless
-	    ${$self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1)}
-		=~ /^$s\s.*\bon\b/;
-	$res .= _exec($self, "chkconfig --del $s")
-	    . _exec($self, "/etc/rc.d/init.d/$s stop");
+	# Ignore uninstalled services
+	my($chk) = $self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1);
+	# Look for a line like: $s 0 or $s on...
+	next unless $$chk =~ /^\Q$s\E\s+\w/ && $$chk =~ /^\Q$s\E\s.*\bon\b/;
+	$res .= -x "/etc/rc.d/init.d/$s"
+	    ? _exec($self, "chkconfig --del $s")
+		. _exec($self, "/etc/rc.d/init.d/$s stop")
+	    : _exec($self, "chkconfig $s off");
     }
     return $res;
 }
@@ -360,9 +363,9 @@ sub enable_service {
     my($self, @service) = @_;
     my($res);
     foreach my $s (@service) {
-	next
-	    if ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
-		=~ /^$s\s.*\bon\b/;
+	# Should blow up if service doesn't exist
+	next if ${$self->piped_exec("chkconfig --list $s 2>/dev/null")}
+	    =~ /^$s\s.*\bon\b/;
 	$res .= _exec($self, "chkconfig --level 2345 $s on");
 	$res .= _exec($self, "/etc/rc.d/init.d/$s start")
 	    if -x "/etc/rc.d/init.d/$s";
