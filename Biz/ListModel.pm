@@ -36,6 +36,9 @@ C<Bivio::Biz::ListModel>
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
 
+#=IMPORTS
+use Bivio::Util;
+
 =head1 FACTORIES
 
 =cut
@@ -92,7 +95,7 @@ Returns the descriptor for the indexed column.
 sub get_column_descriptor {
     my($self, $col) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{column_info}->[1];
+    return $fields->{column_info}->[$col][1];
 }
 
 =for html <a name="get_column_heading"></a>
@@ -106,7 +109,7 @@ Returns the heading for the specified column.
 sub get_column_heading {
     my($self, $col) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return $fields->{column_info}->[0];
+    return $fields->{column_info}->[$col][0];
 }
 
 =for html <a name="get_row_count"></a>
@@ -120,6 +123,7 @@ Returns the number of rows in the model result set.
 sub get_row_count {
     my($self) = @_;
     my($fields) = $self->{$_PACKAGE};
+
     return scalar(@{$fields->{rows}});
 }
 
