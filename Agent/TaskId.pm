@@ -1118,7 +1118,7 @@ my(@_CFG) = (
         ?/admin/edit/configuration
         Bivio::Biz::Model::ClubPreferencesForm
         Bivio::UI::HTML::Club::EditPreferences
-        next=CLUB_ADMIN_PREFERENCES_EDIT
+        next=CLUB_ADMIN_TOOLS
         require_context=0
         help=club-configuration
     )],
