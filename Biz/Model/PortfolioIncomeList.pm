@@ -60,10 +60,16 @@ sub internal_initialize {
 	primary_key => [
 	    [qw(Entry.entry_id)],
 	],
-	other => [qw(
-	    RealmTransaction.date_time
+	order_by => [
+	    {
+		name => 'RealmTransaction.date_time',
+		sort_order => 1,
+	    },
+	    qw(
             RealmTransaction.remark
             Entry.amount
+	)],
+	other => [qw(
             Entry.entry_type
             Entry.class
             Entry.tax_basis
