@@ -48,14 +48,16 @@ cd ..
 
 echo "$(date +"%m/%d/%y") tar 200b $ts" >> TAPE
 cp TAPE $ts
-ssh ${BACKUP_HOST} "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
+echo Transferring to $BACKUP_HOST
+ssh $BACKUP_HOST "[ -d /home/bkp/$DB_NAME ] || mkdir /home/bkp/$DB_NAME"
 scp -pr $ts ${BACKUP_HOST}:/home/bkp/$DB_NAME
+echo Writing to tape on $BACKUP_HOST
+/usr/local/bin/ssh $BACKUP_HOST "[ -c /dev/tape ] && tar cbf 200b /dev/tape /home/bkp/$DB_NAME/$ts"
 
-echo Writing to tape on ${BACKUP_HOST}
-/usr/local/bin/ssh ${BACKUP_HOST} tar cbf 200b /dev/tape /home/bkp/$DB_NAME/$ts
-
-echo Transferring to ${TRANSFER_HOST}
-ssh ${BACKUP_HOST} ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
+if [ "$TRANSFER_HOST" != "NONE" ]; then
+    echo Transferring to $TRANSFER_HOST
+    ssh $BACKUP_HOST ". /etc/ssh2/ssh2_agent; scp -pr /home/bkp/$DB_NAME/$ts ${TRANSFER_HOST}:/home/bkp/$DB_NAME"
+fi
 
 # Keep a few days worth of backup online
 thin=`ls -dt [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] | tail +$THIN_DAYS`
