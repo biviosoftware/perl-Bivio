@@ -55,44 +55,23 @@ Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 my(%_PACKAGES);
 my(%_MAP_CLASS);
+my($_DELEGATES);
 my($_MAPS);
+my($_MODELS);
 my($_SEP) = MAP_SEPARATOR();
-my($_CLASS_VALUES);
 Bivio::IO::Config->register({
     maps => {
 	AccountScraper => ['Bivio::Data::AccountScraper'],
+	Model => ['Bivio::Biz::Model'],
     },
-    model_classpath => ['Bivio::Biz::Model'],
-    class_values => {
-	'Bivio::Agent::TaskId' => 'Bivio::Agent::Tasks',
+    delegates => {
+	'Bivio::Agent::TaskId' => 'Bivio::Agent::TaskIdDelegate',
     },
 });
-my($_MODELS);
 
 =head1 METHODS
 
 =cut
-
-=for html <a name="get_class_values"></a>
-
-=head2 get_class_values(string class) : ref
-
-Returns a dynamic implementation values for the specified class.
-The configuration parameter class_values defines location of the
-implementation specific file. Dies if there is no implementation
-available for the class.
-
-=cut
-
-sub get_class_values {
-    my($proto, $class) = @_;
-    my($module) = $_CLASS_VALUES->{$class};
-    Bivio::IO::Alert->die("no class values found for $class")
-		unless $module;
-    $proto->simple_require($module);
-    $module =~ s,\:\:,/,g;
-    return do("$module.pm") || Bivio::IO::Alert->die("$module: $!");
-}
 
 =for html <a name="handle_config"></a>
 
@@ -105,6 +84,12 @@ sub get_class_values {
 A map is a named path, e.g.
 
    AccountScraper => ['Bivio::Data::AccountScraper'],
+
+=back
+
+=item delegates : hash_ref []
+
+A map of class names to delegate class names.
 
 =back
 
@@ -138,8 +123,9 @@ sub handle_config {
 	    $x;
 	} @$v];
     }
-    _find_property_models($cfg->{model_classpath});
-    $_CLASS_VALUES = $cfg->{class_values};
+    my($model_path) = $cfg->{maps}->{'Model'};
+    _find_property_models($model_path) if $model_path;
+    $_DELEGATES = $cfg->{delegates};
     return;
 }
 
@@ -176,6 +162,36 @@ sub map_require {
 	    ? $last_real_error
 	    : 'no paths in map');
     # DOES NOT RETURN
+}
+
+=for html <a name="require_delegate"></a>
+
+=head2 require_delegate(string class) : Bivio::UNIVERSAL
+
+Returns the delegate for the specified class.
+
+=cut
+
+sub require_delegate {
+    my($proto, $class) = @_;
+    my($module) = $_DELEGATES->{$class};
+    Bivio::IO::Alert->die("no delegate found for $class") unless $module;
+    $proto->simple_require($module);
+    return $module;
+}
+
+=for html <a name="require_delegate_info"></a>
+
+=head2 require_delegate_info(string class) : ref
+
+Returns the class specific delegate information. The delegate should
+define L<get_delegate_info|"get_delegate_info">.
+
+=cut
+
+sub require_delegate_info {
+    my($proto, $class) = @_;
+    return $proto->require_delegate($class)->get_delegate_info;
 }
 
 =for html <a name="require_property_models"></a>
