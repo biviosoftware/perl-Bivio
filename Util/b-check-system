@@ -32,14 +32,15 @@ while ($arg = shift) {
     else { &usage("unexpected option '$arg'"); }
 }
 
-&check_diskuse;
-&check_raid;
-&check_mailq;
-&check_messages;
-%msgs && &send_notice;
+check_diskuse();
+check_raid();
+# Can't check mail queue easily as the cron job always
+# has a pending request...
+# check_mailq();
+check_messages() && print_report();
 exit(0);
 
-sub send_notice {
+sub print_report {
     my($level, $first_problem);
     foreach $level (@levels) {
         $msgs{$level} || next;
@@ -77,7 +78,7 @@ sub check_messages {
     foreach $level (@levels) {
         $debug && print "Opening $level file\n";
         open(LOGFILE, "<$level") || 
-            (&add_problem($level, "$level: $!"), next);
+            (add_problem($level, "$level: $!"), next);
         $line = 0;
         while (<LOGFILE>) {
             $line++; chop;
@@ -87,10 +88,10 @@ sub check_messages {
             /syslogd \S+: restart/ && next;
 
             /^(\w\w\w)\s+(\d+) (\d\d):(\d\d):(\d\d) \S+\s+(\S+): (.*)$/ || 
-                (&add_problem($level, "CAN'T PARSE: '$_'"), next);
+                (add_problem($level, "CAN'T PARSE: '$_'"), next);
             
             defined($mmap{$1}) || # Sanity check: complain if month is unknown
-                (&add_problem($level, "CAN'T PARSE MONTH: '$_'"), next);
+                (add_problem($level, "CAN'T PARSE MONTH: '$_'"), next);
             # Check current month greater or equal, otherwise last year msg
             my($happened) = $now - &timelocal($5, $4, $3, $2, $mmap{$1},
                                           $mmap{$1} > $month ? $year -1:$year);
@@ -189,11 +190,11 @@ sub check_messages {
             /httpd: httpd startup succeeded/ && next;
             
 	    # END OF FILTERING KNOWN MESSAGES
-            &add_problem($level, $_);
+            add_problem($level, $_);
         }
         close(LOGFILE);
     }
-
+    return %msgs;
 }
 
 sub add_problem {
