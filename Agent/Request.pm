@@ -582,7 +582,8 @@ sub format_uri {
 
     # The uri may have a query string already, if the form requires context.
     # Put the $query first, since the context is long and ugly
-    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
+    $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query)
+	    if length($query);
     return $uri;
 }
 
