@@ -215,7 +215,9 @@ sub new {
     };
     $proto->init_version($attrs, $decl);
     _init_column_lists($attrs, _init_column_classes($attrs, $decl));
-    return &Bivio::SQL::Support::new($proto, $attrs);
+    my($self) = Bivio::SQL::Support::new($proto, $attrs);
+    Bivio::SQL::ListQuery->initialize_support($self);
+    return $self;
 }
 
 =head1 METHODS

@@ -225,8 +225,6 @@ sub load_from_request {
     my($req) = $self->get_request;
     my($support) = $self->internal_get_sql_support;
     my($list_model, $q) = $req->unsafe_get('list_model', 'query');
-#TODO: Version checking screwed up.  Need to check version against this
-#      model, not the list model.  Tight coupling...
     # Pass a copy of the query, because it is trashed by ListQuery.
     my($query) = $list_model ? $list_model->get_query()
 	    : $q ? Bivio::SQL::ListQuery->new({

@@ -126,11 +126,8 @@ my(%_QUERY_TO_FIELDS) = (
     'p' => 'parent_id',
     's' => 'search',
     't' => 'this',
-    'v' => 'version',
 );
-# Always check version first
-my(@_QUERY) = ('version', grep($_ ne 'version',
-	sort(values(%_QUERY_TO_FIELDS))));
+my(@_QUERY) = sort(values(%_QUERY_TO_FIELDS));
 
 =head1 FACTORIES
 
@@ -169,8 +166,6 @@ sub new {
 Creates a new ListQuery using the I<attrs> supplied.  No checking
 is done on the values.  I<auth_id> may or may not be set.
 
-I<version> will be set from I<model>.
-
 B<I<attrs> will be subsumed by this module.  Do not use it again.>
 
 =cut
@@ -178,7 +173,6 @@ B<I<attrs> will be subsumed by this module.  Do not use it again.>
 sub unauth_new {
     my($proto, $attrs, $model, $support) = @_;
     # Always set these
-    $attrs->{v} = $model->get_info('version');
     foreach my $k (@_QUERY) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
 		unless exists($attrs->{$k});
@@ -263,14 +257,11 @@ sub format_uri_for_prev_page {
 Generates the query string (URL-encoded) for the primary key
 of I<this_row> using the current query parameters.
 
-May be called statically iwc the version is pulled from support.
-
 =cut
 
 sub format_uri_for_this {
     my($self, $support, $this_row) = @_;
-    my(%attrs) = ref($self) ? %{$self->internal_get()} :
-	    (version => $support->get('version'));
+    my(%attrs) = ref($self) ? %{$self->internal_get()} : ();
     $attrs{this} = $this_row;
     $attrs{page_number} = undef;
     return _format_uri(\%attrs, $support);
@@ -289,7 +280,6 @@ sub format_uri_for_this_child {
     my($self, $support, $this_row) = @_;
     my(%attrs) = %{$self->internal_get()};
 #TODO: Probably need a check that this is really a primary id
-#TODO: Version in query is incorrect here.  Should be for child...
     $attrs{parent_id} = $this_row->{$support->get('primary_key_names')->[0]};
     $attrs{this} = undef;
     $attrs{page_number} = undef;
@@ -331,9 +321,8 @@ sub format_uri_for_this_parent {
 
 #TODO: Need to know which detail_model this is bound
     # Format explicitly, because breaks all the rules
-    my($res) = 'v='.$attrs->{version};
     die('no parent_id associated with query') unless $attrs->{parent_id};
-    $res .= '&t='.$attrs->{parent_id};
+    my($res) = 't='.$attrs->{parent_id};
 
     # We don't know ordering, because this is the parent list
     return $res;
@@ -352,8 +341,7 @@ May be called statically iwc the version is pulled from support.
 
 sub format_uri_for_this_path {
     my($self, $support, $this_row) = @_;
-    my(%attrs) = ref($self) ? %{$self->internal_get()} :
-	    (version => $support->get('version'));
+    my(%attrs) = ref($self) ? %{$self->internal_get()} : ();
     $attrs{this} = undef;
     $attrs{page_number} = undef;
     return _format_uri(\%attrs, $support);
@@ -376,7 +364,7 @@ sub get_hidden_field_values {
     my($ob) = $attrs->{order_by};
     # Since this is a search, there is no page_number or this, but
     # there may be need to be a parent_id.
-    my(@res) = ('v' => $attrs->{version});
+    my(@res) = ();
 #TODO: Should this be here?
 #    push(@res, 'p' => Bivio::Type::PrimaryId->to_literal($attrs->{parent_id}))
 #	    if $attrs->{parent_id};
@@ -424,6 +412,32 @@ sub get_sort_order_for_type {
 		    ? 0 : 1,
 }
 
+=for html <a name="initialize_support"></a>
+
+=head2 static initialize_support(Bivio::SQL::Support support)
+
+Should only be called by L<Bivio::SQL::Support|Bivio::SQL::Support>.
+
+Sets up the default order_by on the I<support>.
+
+=cut
+
+sub initialize_support {
+    my($proto, $support) = @_;
+
+    return unless $support->unsafe_get('order_by');
+
+    # This requires intimate knowledge of format_uri and parse_order_by
+    my($attrs) = {};
+    # Always fills in defaults
+    _parse_order_by($attrs, $support, 'Bivio::Die');
+
+    # format_uri needs default_order_by_query to be set
+    $support->put(default_order_by_query => '');
+    $support->put(default_order_by_query => _format_uri($attrs, $support));
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _die(Bivio::Type::Enum code, string message, string value)
@@ -447,34 +461,38 @@ sub _die {
 #
 sub _format_uri {
     my($attrs, $support) = @_;
-    my($res) = 'v='.$attrs->{version};
+    my($res) = '';
     my($columns) = $support->get('columns');
 
     # this?
-    $res .= '&t='._format_uri_primary_key($attrs->{this}, $support)
+    $res .= 't='._format_uri_primary_key($attrs->{this}, $support).'&'
 	    if $attrs->{this};
 
     # parent_id?
-    $res .= '&p='.Bivio::Type::PrimaryId->to_uri($attrs->{parent_id})
+    $res .= 'p='.Bivio::Type::PrimaryId->to_uri($attrs->{parent_id}).'&'
 	    if $attrs->{parent_id};
 
     # page_number?
-    $res .= '&n='.Bivio::Type::Integer->to_uri($attrs->{page_number})
+    $res .= 'n='.Bivio::Type::Integer->to_uri($attrs->{page_number}).'&'
 	    if defined($attrs->{page_number});
 
     # order_by
     if ($attrs->{order_by} && @{$attrs->{order_by}}) {
 	my($ob) = $attrs->{order_by};
-	$res .= '&o=';
+	my($s) = 'o=';
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
-	    $res .= $columns->{$ob->[$i]}->{order_by_index}
+	    $s .= $columns->{$ob->[$i]}->{order_by_index}
 		    . ($ob->[$i+1] ? 'a' : 'd');
 	}
+	$res .= $s.'&' if $s ne $support->get('default_order_by_query');
     }
 
     # search
-    $res .= '&s='.Bivio::Util::escape_uri($attrs->{search})
+    $res .= 's='.Bivio::Util::escape_uri($attrs->{search}).'&'
 	    if defined($attrs->{search});
+
+    # Delete trailing '&'
+    chop($res);
     return $res;
 }
 
@@ -522,7 +540,8 @@ sub _parse_order_by {
 		$index) unless $order_by->[$index];
 	push(@$res, $order_by->[$index], $dir eq 'a');
     }
-    # Add in order_by values not explicitly listed.
+
+    # Add in default order_by values not explicitly listed.
     foreach my $ob (@$order_by) {
 	push(@$res, $ob, $columns->{$ob}->{sort_order})
 		unless grep($_ eq $ob, @$res);
@@ -611,20 +630,6 @@ sub _parse_search {
 sub _parse_this {
     _parse_pk(@_, 't', 'this');
     return;
-}
-
-# _parse_version(hash_ref attrs, Bivio::SQL::Support support, ref die)
-#
-# The version must either be undef or match the model.  If it doesn't
-# match the model, throw a version exception.
-#
-sub _parse_version {
-    my($attrs, $support, $die) = @_;
-    my($value) = $attrs->{v};
-    $attrs->{version} = $support->get('version');
-    return unless defined($value);
-    return if $attrs->{version} eq $value;
-    _die($die, Bivio::DieCode::VERSION_MISMATCH(), 'invalid version', $value);
 }
 
 =head1 COPYRIGHT
