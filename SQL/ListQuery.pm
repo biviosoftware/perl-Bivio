@@ -66,9 +66,11 @@ Initialized to false.
 
 =item next : array_ref
 
-=item next : int
+primary key of previous item.
 
-primary key or page name of next item or page, respectively.
+=item next_page : int
+
+page number of previous page.
 
 =item order_by : array_ref
 
@@ -88,11 +90,13 @@ L<Bivio::SQL::ListSupport|Bivio::SQL::ListSupport>.
 Primary id of parent list.  It is used to further qualify a
 list of lists.
 
-=item next : array_ref
+=item prev : array_ref
 
-=item next : int
+primary key of next item.
 
-primary key or page name of previous item or page, respectively.
+=item prev_page : int
+
+page number of next page.
 
 =item search : string
 
@@ -150,17 +154,13 @@ B<I<query> will be subsumed by this module.  Do not use it again.>
 
 sub new {
     my($proto, $attrs, $support, $die) = @_;
-    Carp::croak('missing auth_id')
-		if $support->get('auth_id') && !$attrs->{auth_id};
+    die('missing auth_id') if $support->get('auth_id') && !$attrs->{auth_id};
 #TODO: There may be junk in the query.  Probably should "clean" it?
 #      Doesn't really matter as ALL the attributes are set explicitly.
     foreach my $k (@_QUERY) {
 	&{\&{'_parse_'.$k}}($attrs, $support, $die);
     }
-    # Reset attrs that are set by Support
-    @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
-    my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
-    return $self;
+    return _new($proto, $attrs);
 }
 
 =for html <a name="unauth_new"></a>
@@ -181,9 +181,7 @@ sub unauth_new {
 	&{\&{'_parse_'.$k}}($attrs, $support, $model)
 		unless exists($attrs->{$k});
     }
-    @{$attrs}{'has_prev','has_next', 'prev', 'next'} = (0, 0, undef, undef);
-    my($self) = &Bivio::Collection::Attributes::new($proto, $attrs);
-    return $self;
+    return _new($proto, $attrs);
 }
 
 =head1 METHODS
@@ -218,7 +216,7 @@ sub format_uri_for_next_page {
     my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
     $attrs{this} = undef;
-    $attrs{page_number} = $attrs{next};
+    $attrs{page_number} = $attrs{next_page};
     return _format_uri(\%attrs, $support);
 }
 
@@ -250,7 +248,7 @@ sub format_uri_for_prev_page {
     my($self, $support) = @_;
     my(%attrs) = %{$self->internal_get()};
     $attrs{this} = undef;
-    $attrs{page_number} = $attrs{prev};
+    $attrs{page_number} = $attrs{prev_page};
     return _format_uri(\%attrs, $support);
 }
 
@@ -442,6 +440,25 @@ sub initialize_support {
     return;
 }
 
+=for html <a name="set_request_this"></a>
+
+=head2 static set_request_this(Bivio::Agent::Request req, string this_id)
+
+Set I<this_id> on I<req>'s query.  I<this_id> must be
+L<Bivio::Type::PrimaryId|Bivio::Type::PrimaryId>.
+
+=cut
+
+sub set_request_this {
+    my(undef, $req, $this_id) = @_;
+    die('this_id must be a PrimaryId')
+	    if defined($this_id) && $this_id !~ /^\d+$/;
+    my($query) = $req->get('query') || {};
+    $query->{t} = Bivio::Type::PrimaryId->to_literal($this_id);
+    $req->put(query => $query);
+    return;
+}
+
 #=PRIVATE METHODS
 
 # _die(Bivio::Type::Enum code, string message, string value)
@@ -472,10 +489,8 @@ sub _format_uri {
     $res .= 't='._format_uri_primary_key($attrs->{this}, $support).'&'
 	    if $attrs->{this};
 
-    # parent_id?
-#TODO: how to determine the type for the parent_id?
-#    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
-    $res .= 'p='.Bivio::Type->to_query($attrs->{parent_id}).'&'
+    # parent_id?  Must be a PrimaryId per the spec
+    $res .= 'p='.Bivio::Type::PrimaryId->to_query($attrs->{parent_id}).'&'
 	    if $attrs->{parent_id};
 
     # page_number?
@@ -520,6 +535,18 @@ sub _format_uri_primary_key {
     }
     chop($res);
     return $res;
+}
+
+# _new(any proto, hash_ref attrs) : Bivio::SQL::ListQuery
+#
+# Initializes default attrs and instantiates.
+#
+sub _new {
+    my($proto, $attrs) = @_;
+    # Reset attrs that are set by Support
+    @{$attrs}{'has_prev', 'has_next', 'prev', 'next', 'prev_page', 'next_page'
+	  } = (0, 0, undef, undef, undef, undef);
+    return Bivio::Collection::Attributes::new($proto, $attrs);
 }
 
 # _parse_order_by(hash_ref attrs, Bivio::SQL::Support support, ref die)
