@@ -72,6 +72,8 @@ sub new {
     my($fields) = $self->{$_PACKAGE} = {};
     my($blank_cell) = Bivio::UI::HTML::Widget::Join->new({
 	values => ['&nbsp;']});
+    my($empty_cell) = Bivio::UI::HTML::Widget::String->new({
+	value => ''});
     $fields->{form} = Bivio::UI::HTML::Widget::Form->new({
 	form_model => ['Bivio::Biz::Model::SingleDepositForm'],
 	value => Bivio::UI::HTML::Widget::Grid->new({
@@ -94,6 +96,31 @@ sub new {
 			    Bivio::UI::HTML::Widget::Date->new({
 				field => 'RealmTransaction.date_time',
 			    })),
+		],
+		[
+		    Bivio::UI::HTML::Widget::Director->new({
+			control => ['show_valuation_date'],
+			values => {
+			    1 => Bivio::UI::HTML::Widget::FormFieldLabel->new({
+				label => 'Valuation Date',
+				field => 'valuation_date_time',
+			    }),
+			    0 => $empty_cell,
+			},
+		    }),
+		    Bivio::UI::HTML::Widget::Director->new({
+			control => ['show_valuation_date'],
+			values => {
+			    1 => Bivio::UI::HTML::Widget::Date->new({
+				field => 'valuation_date_time',
+			    }),
+			    0 => $empty_cell,
+			},
+		    }),
+#		    _field('Valuation Date',
+#			    Bivio::UI::HTML::Widget::Date->new({
+#				field => 'valuation_date_time',
+#			    })),
 		],
 		[
 		    _field('Account',
@@ -138,6 +165,7 @@ sub new {
 	    ],
 	}),
     });
+    push(@$_FIELDS, ['valuation_date_time', 'Valuation Date']);
     $fields->{form}->initialize;
     return $self;
 }
@@ -167,21 +195,24 @@ sub execute {
     my($owner) = $list->get_model('RealmOwner');
 
     my($task_id) = $req->get('task_id');
-    my($heading, $account_list);
+    my($heading, $account_list, $show_valuation_date);
     if ($task_id
 	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_PAYMENT()) {
 	$heading = 'Payment: ';
 	$account_list = Bivio::Biz::Model::RealmAccountList->new($req);
+	$show_valuation_date = 1;
     }
     elsif ($task_id
 	    == Bivio::Agent::TaskId::CLUB_ACCOUNTING_MEMBER_FEE()) {
 	$heading = 'Fee: ';
 	$account_list = Bivio::Biz::Model::RealmValuationAccountList
 		->new($req);
+	$show_valuation_date = 0;
     }
     else {
 	die("unhandled task_id $task_id");
     }
+    $req->put(show_valuation_date => $show_valuation_date);
     $account_list->load();
 
     $req->put(page_heading => $heading.$owner->get('display_name'),
