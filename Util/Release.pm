@@ -334,6 +334,7 @@ sub install {
     my(@command) = ('rpm', '-Uvh');
     push(@command, '--force') if $self->unsafe_get('force');
     push(@command, '--nodeps') if $self->unsafe_get('nodeps');
+    push(@command, _get_proxy($self));
 
     # install all the packages
     for my $package (@packages) {
@@ -592,6 +593,23 @@ sub _get_date_format {
     my(@n) = localtime;
     return sprintf("%4d%02d%02d_%02d%02d%02d", 1900+$n[5], 1+$n[4],
 	    $n[3], $n[2], $n[1], $n[0]);
+}
+
+# _get_proxy(self) : array
+#
+# Returns the http proxy arguments if present, parsed from the
+# environment variable http_proxy.
+#
+sub _get_proxy {
+    my($self) = @_;
+    my($proxy) = $ENV{http_proxy};
+    return () unless $proxy;
+    $proxy =~ m,/(\w+):(\d+),
+        || Bivio::Die->die('couldn\'t parse proxy: ', $proxy);
+    return (
+        '--httpproxy', $1,
+        '--httpport', $2,
+       );
 }
 
 # _get_rpm_arch() : string
