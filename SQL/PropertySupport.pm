@@ -266,59 +266,6 @@ sub delete {
     return $rows ? 1 : 0;
 }
 
-=for html <a name="iterate_end"></a>
-
-=head2 iterate_end(ref iterator)
-
-Terminates the iterator.
-
-=cut
-
-sub iterate_end {
-    my($self, $iterator) = @_;
-    $iterator->finish;
-    return;
-}
-
-=for html <a name="iterate_next"></a>
-
-=head2 iterate_next(ref iterator, hash_ref row) : boolean
-
-=head2 iterate_next(ref iterator, hash_ref row, string converter) : boolean
-
-I<iterator> was returned by L<iterate_start|"iterate_start">.
-I<row> is the resultant values by field name.
-I<converter> is optional and is the name of a
-L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
-
-Returns false if there is no next.
-
-=cut
-
-sub iterate_next {
-    my($self, $iterator, $row, $converter) = @_;
-    my($start_time) = Bivio::Util::gettimeofday();
-    my($r) = $iterator->fetchrow_arrayref;
-    Bivio::SQL::Connection->increment_db_time($start_time);
-    unless ($r) {
-	# End
-	%$row = ();
-	$iterator->finish;
-	return 0;
-    }
-
-    # Convert values
-    my($attrs) = $self->internal_get;
-    my($cols) = $attrs->{select_columns};
-    for (my $i = $#$r; $i >= 0; $i--) {
-	my($c) = $cols->[$i];
-	my($t) = $c->{type};
-	my($v) = $t->from_sql_column($r->[$i]);
-	$row->{$c->{name}} = $converter ? $t->$converter($v) : $v;
-    }
-    return 1;
-}
-
 =for html <a name="iterate_start></a>
 
 =head2 iterate_start(ref die, string auth_id, string order_by) : ref
