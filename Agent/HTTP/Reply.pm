@@ -20,7 +20,7 @@ use Bivio::Agent::Reply;
 =head1 DESCRIPTION
 
 C<Bivio::Agent::HTTP::Reply> is the complement to
-L<Bivio::Agent::HTTP::Request|"Bivio::Agent::HTTPRequest">. By default the
+L<Bivio::Agent::HTTP::Request>. By default the
 output type will be 'text/html'.
 
 =cut
@@ -52,6 +52,7 @@ sub new {
     my($self) = &Bivio::Agent::Reply::new($proto);
     $self->{$_PACKAGE} = {
         'header_sent' => 0,
+	'output' => '',
 	'r' => $r
     };
     # default output to html
@@ -63,6 +64,29 @@ sub new {
 =head1 METHODS
 
 =cut
+
+=for html <a name="flush"></a>
+
+=head2 abstract flush()
+
+Sends the buffered reply data.
+
+=cut
+
+sub flush {
+    my($self,$str) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    if ($fields->{header_sent} == 0) {
+	# only do this the first time
+	$fields->{header_sent} = 1;
+
+	$fields->{r}->content_type($self->get_output_type());
+	$fields->{r}->send_http_header;
+    }
+    $fields->{r}->print($fields->{output});
+    $fields->{output} = '';
+}
 
 =for html <a name="get_http_return_code"></a>
 
@@ -104,14 +128,7 @@ sub print {
     my($self,$str) = @_;
     my($fields) = $self->{$_PACKAGE};
 
-    if ($fields->{header_sent} == 0) {
-	# only do this on first print
-	$fields->{header_sent} = 1;
-
-	$fields->{r}->content_type($self->get_output_type());
-	$fields->{r}->send_http_header;
-    }
-    $fields->{r}->print(defined($str) ? $str : 'undef');
+    $fields->{output} .= defined($str) ? $str : 'undef';
     return;
 }
 
