@@ -119,7 +119,7 @@ Bivio::SQL::Connection->commit;
 $load = $support->unsafe_load({$_ID => $_MIN_ID});
 t(defined($load));
 t($load->{name} eq 'name' && $load->{line} eq 'line'
-	&& $load->{text} eq 'text' && $load->{amount} eq '20.7');
+	&& $load->{text} eq 'text' && $load->{amount} eq '20.7000000');
 t($load->{boolean} == 1);
 t($load->{date_time} eq Bivio::Type::DateTime->from_unix($time));
 t($load->{tm} eq Bivio::Type::Time->from_unix($time));
