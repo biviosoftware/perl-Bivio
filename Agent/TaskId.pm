@@ -838,20 +838,6 @@ my(@_CFG) = (
         next=USER_ADMIN_INFO
     )],
     [qw(
-        CLUB_ADMIN_EC_SUBSCRIBE_PREMIUM_SUPPORT
-        74
-        CLUB
-        ADMIN_READ
-        ?/admin/subscribe/premium-support
-        Bivio::Biz::Model::Lock
-        Bivio::Type::ECSubscription->execute_premium_support
-        Bivio::Biz::Model::ECSubscriptionForm
-        Bivio::UI::HTML::Club::ECSubscription
-        next=CLUB_ADMIN_EC_SUBSCRIBE_DONE
-        cancel=CLUB_ADMIN_EC_PAYMENT_CANCELLED
-        require_secure=1
-    )],
-    [qw(
         USER_ADMIN_EC_PAYMENT
         75
         USER
