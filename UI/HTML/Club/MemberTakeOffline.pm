@@ -51,7 +51,7 @@ Returns the page contents.
 
 sub create_content {
     my($self) = @_;
-    $self->put_heading('CLUB_MEMBER_TAKE_OFFLINE');
+    $self->put_heading('CLUB_ADMIN_MEMBER_TAKE_OFFLINE');
     return $self->director([sub {
 				my($req) = shift;
 				$req->get('auth_user_id')
@@ -99,7 +99,7 @@ sub _page_member {
 		header => $self->join(
 			'Would you like to take the following '
 			.'Member offline? ',
-			$self->whats_this('CLUB_MEMBER_TAKE_OFFLINE'),
+			$self->whats_this('CLUB_ADMIN_MEMBER_TAKE_OFFLINE'),
 			$self->indent($self->string(['member_info'])),
 			'<p>',
 			'If you wish to bring them online again, select '
@@ -119,7 +119,7 @@ sub _page_self {
 	    {
 		header => $self->join(
 			'Are you sure you want to take yourself offline? ',
-			$self->whats_this('CLUB_MEMBER_TAKE_OFFLINE'),
+			$self->whats_this('CLUB_ADMIN_MEMBER_TAKE_OFFLINE'),
 			'<p>',
 			'You will remain a bivio member but will not be able'
 			.' to access this club.  If you wish to regain access,'
