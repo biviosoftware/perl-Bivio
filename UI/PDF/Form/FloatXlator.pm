@@ -1,17 +1,17 @@
 # Copyright (c) 1999 bivio, LLC.  All rights reserved.
 # $Id$
-package Bivio::UI::PDF::Form::TaxId2Xlator;
+package Bivio::UI::PDF::Form::FloatXlator;
 use strict;
-$Bivio::UI::PDF::Form::TaxId2Xlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$Bivio::UI::PDF::Form::FloatXlator::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::UI::PDF::Form::TaxId2Xlator - 
+Bivio::UI::PDF::Form::FloatXlator - 
 
 =head1 SYNOPSIS
 
-    use Bivio::UI::PDF::Form::TaxId2Xlator;
-    Bivio::UI::PDF::Form::TaxId2Xlator->new();
+    use Bivio::UI::PDF::Form::FloatXlator;
+    Bivio::UI::PDF::Form::FloatXlator->new();
 
 =cut
 
@@ -22,11 +22,11 @@ L<Bivio::UI::PDF::Form::Xlator>
 =cut
 
 use Bivio::UI::PDF::Form::Xlator;
-@Bivio::UI::PDF::Form::TaxId2Xlator::ISA = ('Bivio::UI::PDF::Form::Xlator');
+@Bivio::UI::PDF::Form::FloatXlator::ISA = ('Bivio::UI::PDF::Form::Xlator');
 
 =head1 DESCRIPTION
 
-C<Bivio::UI::PDF::Form::TaxId2Xlator>
+C<Bivio::UI::PDF::Form::FloatXlator>
 
 =cut
 
@@ -38,6 +38,8 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
+my($_FLOAT_REGEX) = Bivio::UI::PDF::Regex::FLOAT_REGEX();
+
 
 =head1 FACTORIES
 
@@ -45,7 +47,7 @@ my($_PACKAGE) = __PACKAGE__;
 
 =for html <a name="new"></a>
 
-=head2 static new() : Bivio::UI::PDF::Form::TaxId2Xlator
+=head2 static new() : Bivio::UI::PDF::Form::FloatXlator
 
 
 
@@ -53,10 +55,13 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-    my(undef, $output_field, $get_widget_value_array_ref) = @_;
+    my(undef, $output_field, $get_widget_value_array_ref, $separator,
+	    $digit_count) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
-	'get_widget_value_array_ref' => $get_widget_value_array_ref
+	'get_widget_value_array_ref' => $get_widget_value_array_ref,
+	'separator' => $separator,
+	'digit_count' => $digit_count
     };
     return $self;
 }
@@ -87,12 +92,33 @@ sub add_value {
     _trace("field \"", $fields->{'output_field'},
 	    "\": input value is \"", $input_value, "\"") if $_TRACE;
 
-    my($output_value) = 0;
-    $input_value =~ s/[^0-9]//g;
-    $output_value = substr($input_value, 2);
+    my($int, $frac);
+    if ($input_value =~ /$_FLOAT_REGEX/) {
+	if (defined($1)) {
+	    # There is an integer part.
+	    $int = Bivio::UI::PDF::Form::IntXlator
+		    ->format_int($1, $fields->{'separator'});
+	}
+	else {
+	    $int = 0;
+	}
+
+	if (defined($2)) {
+	    # There is a fractional part.
+	    $frac = $2;
+	} else {
+	    $frac = 0;
+	}
+	$frac = Bivio::UI::PDF::Form::FracXlator
+		->format_frac($2, $fields->{'digit_count'});
+    }
+    else {
+	die(__FILE__, ", ", __LINE__, ": no match\n");
+    }
 
     # Add the output value to the values hash.
-    ${$output_values_ref}{$fields->{'output_field'}} = $output_value;
+    ${$output_values_ref}{$fields->{'output_field'}}
+	    = $int . '.' . $frac;
 
     return;
 }

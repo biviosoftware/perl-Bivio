@@ -61,7 +61,7 @@ sub new {
 =cut
 
 sub create_value_objs {
-    my($self, $request_ref) = @_;
+    my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
 
     # Get a reference to the array of xlators for this set.  Call add_value for
@@ -70,7 +70,7 @@ sub create_value_objs {
 
     my($xlators_array_ref) = $self->get_xlators_ref();
     map {
-	$_->add_value($request_ref, \%value_objs);
+	$_->add_value($req, \%value_objs);
     } @{$xlators_array_ref};
 
     return(\%value_objs);
@@ -88,6 +88,21 @@ sub get_xlator_ref {
     my($self, $field_name) = @_;
     my($fields) = $self->{$_PACKAGE};
     die(__FILE__, ", ", __LINE__, " Abstract method\n");
+    return;
+}
+
+=for html <a name="set_up"></a>
+
+=head2 set_up() : 
+
+
+
+=cut
+
+sub set_up {
+    my($self, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    # Do nothing; override in sub-class if anything needs to be setup.
     return;
 }
 

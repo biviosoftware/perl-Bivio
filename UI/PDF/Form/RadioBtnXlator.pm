@@ -31,8 +31,11 @@ C<Bivio::UI::PDF::Form::RadioBtnXlator>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -52,7 +55,7 @@ sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
     my(undef, @args) = @_;
     $self->{$_PACKAGE} = {
-	'input_field' => $args[0],
+	'get_widget_value_array_ref' => $args[0],
 	'hash' => {}
     };
     my($fields) = $self->{$_PACKAGE};
@@ -77,13 +80,27 @@ sub new {
 =cut
 
 sub add_value {
-    my($self, $request_ref, $output_values_ref) = @_;
+    my($self, $req, $output_values_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($input_value) = $request_ref->get_input($fields->{'input_field'});
+    my($input_value)
+	    = $req->get_widget_value($fields->{get_widget_value_array_ref});
+    unless (defined($input_value)) {
+	die(__FILE__, ", ", __LINE__,
+		": no input value for input field \"",
+		$fields->{'input_field'},
+		"\"\n");
+    }
+    _trace("input value is \"", $input_value, "\"");
 
     my($button_ref) = ${$fields->{'hash'}}{$input_value};
-    $button_ref->set_value('Yes');
-    $button_ref->add_value($request_ref, $output_values_ref);
+
+    unless (defined($button_ref)) {
+	# Just ignore this field.
+	_trace("\tno button") if $_TRACE;
+	return;
+    }
+
+    $button_ref->add_value($req, $output_values_ref);
 
     return;
 }

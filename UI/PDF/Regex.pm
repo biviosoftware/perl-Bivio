@@ -140,6 +140,19 @@ sub EOL_REGEX {
     return('((?:\r\n)|\r|\n)');
 }
 
+=for html <a name="FLOAT_REGEX"></a>
+
+=head2 FLOAT_REGEX : string
+
+This regular expression matches a number and returns the integer and fractional
+parts separately.
+
+=cut
+
+sub FLOAT_REGEX {
+    return('([-+]?[0-9]*)\.?([0-9]*)');
+}
+
 =for html <a name="FRAC_REGEX"></a>
 
 =head2 FRAC_REGEX : string

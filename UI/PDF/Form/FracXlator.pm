@@ -31,8 +31,11 @@ C<Bivio::UI::PDF::Form::FracXlator>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_FRAC_REGEX) = Bivio::UI::PDF::Regex::FRAC_REGEX();
@@ -51,10 +54,10 @@ my($_FRAC_REGEX) = Bivio::UI::PDF::Regex::FRAC_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-    my(undef, $output_field, $input_field, $digit_count) = @_;
+    my(undef, $output_field, $get_widget_value_array_ref, $digit_count) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
-	'input_field' => $input_field,
+	'get_widget_value_array_ref' => $get_widget_value_array_ref,
 	'digit_count' => $digit_count
     };
     return $self;
@@ -73,9 +76,19 @@ sub new {
 =cut
 
 sub add_value {
-    my($self, $request_ref, $output_values_ref) = @_;
+    my($self, $req, $output_values_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($input_value) = $request_ref->get_input($fields->{'input_field'});
+    my($input_value)
+	    = $req->get_widget_value($fields->{get_widget_value_array_ref});
+    unless (defined($input_value)) {
+	# Ignore this field.
+	_trace("field \"", $fields->{'output_field'},
+		"\": undefined input value") if $_TRACE;
+	return;
+    }
+    _trace("field \"", $fields->{'output_field'},
+	    "\": input value is \"", $input_value, "\"") if $_TRACE;
+
     my($output_value) = 0;
     if ($input_value =~ /$_FRAC_REGEX/) {
 	if (defined($1)) {
@@ -89,17 +102,32 @@ sub add_value {
 
     # Create a StringParen object and add a reference to it to the output
     # values hash.
-    my($digit_count) = $fields->{'digit_count'};
-    unless ($digit_count == length($output_value)) {
-	my($format) = '%-' . $digit_count . '.' . $digit_count . 's';
-	$output_value = sprintf($format, $output_value);
-	# sprintf doesn't do right padding with zeros, so do the following
-	# instead.
-	$output_value =~ s/ /0/g;
-    }
-    ${$output_values_ref}{$fields->{'output_field'}} = $output_value;
+    ${$output_values_ref}{$fields->{'output_field'}}
+	    = $self->format_frac($output_value, $fields->{'digit_count'});
 
     return;
+}
+
+=for html <a name="format_frac"></a>
+
+=head2 static format_frac() : 
+
+
+
+=cut
+
+sub format_frac {
+    my(undef, $input_value, $digit_count) = @_;
+
+    unless ($digit_count == length($input_value)) {
+	my($format) = '%-' . $digit_count . '.' . $digit_count . 's';
+	$input_value = sprintf($format, $input_value);
+	# sprintf doesn't do right padding with zeros, so do the following
+	# instead.
+	$input_value =~ s/ /0/g;
+    }
+
+    return($input_value);
 }
 
 =for html <a name="get_pdf_field_names"></a>

@@ -31,8 +31,11 @@ C<Bivio::UI::PDF::Form::ButtonXlator>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 
@@ -50,11 +53,10 @@ my($_PACKAGE) = __PACKAGE__;
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-    my(undef, $output_field, $input_field) = @_;
+    my(undef, $output_field, $yes_value) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
-	'input_field' => $input_field,
-	'value' => undef
+	'yes_value' => $yes_value
     };
     return $self;
 }
@@ -72,22 +74,14 @@ sub new {
 =cut
 
 sub add_value {
-    my($self, $request_ref, $output_values_ref) = @_;
+    my($self, $req, $output_values_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($input_value);
-    if (defined($fields->{'input_field'})) {
-	$input_value = $request_ref->get_input($fields->{'input_field'});
-    }
-    elsif (defined($fields->{'value'})) {
-	$input_value = $fields->{'value'};
-    }
-    else {
-	die(__FILE__, ", ", __LINE__, ": no value\n");
-    }
 
     # Create a StringParen object and add a reference to it to the output
     # values hash.
-    ${$output_values_ref}{$fields->{'output_field'}} = $input_value;
+    _trace("field \"", $fields->{'output_field'},
+	    "\": yes value is \"", $fields->{'yes_value'}, "\"");
+    ${$output_values_ref}{$fields->{'output_field'}} = $fields->{'yes_value'};
 
     return;
 }
@@ -114,12 +108,12 @@ sub get_pdf_field_names {
 
 =cut
 
-sub set_value {
-    my($self, $value) = @_;
-    my($fields) = $self->{$_PACKAGE};
-    $fields->{'value'} = $value;
-    return;
-}
+# sub set_value {
+#     my($self, $value) = @_;
+#     my($fields) = $self->{$_PACKAGE};
+#     $fields->{'value'} = $value;
+#     return;
+# }
 
 #=PRIVATE METHODS
 

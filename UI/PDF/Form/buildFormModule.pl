@@ -54,7 +54,7 @@ $module_text =~ s/(%%% Base Xref Offset %%%)/$1\n$xref_offset/;
 # Find all the Pdf fields referenced in the XlatorSet and insert their text.
 eval("require $xlator_set_class;");
 if ($@) {
-    die(__FILE__, ", ", __LINE__, ": require error \"$@\"\n");
+    die("require error \"$@\"\n");
 }
 my($xlators_array_ref) = $xlator_set_class->get_xlators_ref();
 my($emit_ref) = Bivio::UI::PDF::Emit->new();
@@ -62,6 +62,9 @@ map {
     my(@field_names) = $_->get_pdf_field_names();
     map {
 	my($field_ref) = $pdf_ref->get_field_ref_by_name($_);
+	unless (defined($field_ref)) {
+	    die("Field \"", $_, "\" not found");
+	}
 	$field_ref->emit_with_kids($emit_ref, $pdf_ref);
     } @field_names;
 } @{$xlators_array_ref};
@@ -134,6 +137,8 @@ my($_FIELD_DICTIONARY_REF);
 # Value = reference to corresponding indirect object.
 my($_OBJ_DICTIONARY_REF);
 
+my($_INITIALIZED) = 0;
+
 =head1 FACTORIES
 
 =cut
@@ -181,7 +186,11 @@ sub get_base_update_ref {
 sub get_field_ref {
     my($self, $field_name) = @_;
     my($fields) = $self->{$_PACKAGE};
-    return(${$_FIELD_DICTIONARY_REF}{$field_name}->clone());
+    my($field_obj_ref) = ${$_FIELD_DICTIONARY_REF}{$field_name};
+    unless (defined($field_obj_ref)) {
+	die("Clone failure; did you forget to remake the Form.pm file?");
+    }
+    return($field_obj_ref->clone());
 }
 
 =for html <a name="get_obj_ref"></a>
@@ -225,7 +234,23 @@ sub initialize {
     ($_BASE_UPDATE_REF, $_XLATOR_SET_REF, $_FIELD_DICTIONARY_REF,
 	   $_OBJ_DICTIONARY_REF)
 	    = $proto->_read_data(\*DATA);
+
+    $_INITIALIZED = 1;
+
     return;
+}
+
+=for html <a name="initialized"></a>
+
+=head2 initialized() : 
+
+
+
+=cut
+
+sub initialized {
+    my($proto) = @_;
+    return($_INITIALIZED);
 }
 
 #=PRIVATE METHODS

@@ -31,8 +31,11 @@ C<Bivio::UI::PDF::Form::IntXlator>
 =cut
 
 #=IMPORTS
+use Bivio::IO::Trace;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 
 my($_INT_REGEX) = Bivio::UI::PDF::Regex::INT_REGEX();
@@ -51,10 +54,10 @@ my($_INT_REGEX) = Bivio::UI::PDF::Regex::INT_REGEX();
 
 sub new {
     my($self) = Bivio::UI::PDF::Form::Xlator::new(@_);
-    my(undef, $output_field, $input_field, $separator) = @_;
+    my(undef, $output_field, $get_widget_value_array_ref, $separator) = @_;
     $self->{$_PACKAGE} = {
 	'output_field' => $output_field,
-	'input_field' => $input_field,
+	'get_widget_value_array_ref' => $get_widget_value_array_ref,
 	'separator' => $separator
     };
     return $self;
@@ -73,9 +76,19 @@ sub new {
 =cut
 
 sub add_value {
-    my($self, $request_ref, $output_values_ref) = @_;
+    my($self, $req, $output_values_ref) = @_;
     my($fields) = $self->{$_PACKAGE};
-    my($input_value) = $request_ref->get_input($fields->{'input_field'});
+    my($input_value)
+	    = $req->get_widget_value($fields->{get_widget_value_array_ref});
+    unless (defined($input_value)) {
+	# Ignore this field.
+	_trace("field \"", $fields->{'output_field'},
+		"\": undefined input value") if $_TRACE;
+	return;
+    }
+    _trace("field \"", $fields->{'output_field'},
+	    "\": input value is \"", $input_value, "\"") if $_TRACE;
+
     my($output_value) = 0;
     if ($input_value =~ /$_INT_REGEX/) {
 	if (defined($1)) {
@@ -87,18 +100,35 @@ sub add_value {
 	}
     }
 
-    # Add separator characters between groups of 3 digits.
-    if (defined($fields->{'separator'})) {
-	my($separator) = $fields->{'separator'};
-	my($reversed) = reverse($output_value);
-	$reversed =~ s/(\d\d\d)(?=\d)/$1$fields->{'separator'}/g;
-	$output_value = reverse($reversed);
-    }
-
     # Add the output value to the values hash.
-    ${$output_values_ref}{$fields->{'output_field'}} = $output_value;
+    ${$output_values_ref}{$fields->{'output_field'}}
+	    = $self->format_int($output_value, $fields->{'separator'});
 
     return;
+}
+
+=for html <a name="format_int"></a>
+
+=head2 static format_int() : 
+
+
+
+=cut
+
+sub format_int {
+    my(undef, $input_value, $separator) = @_;
+
+    # Get rid of plus signs.
+    $input_value =~ s/^\+//;
+
+    # Add separator characters between groups of 3 digits.
+     if (defined($separator)) {
+ 	my($reversed) = scalar reverse($input_value);
+ 	$reversed =~ s/(\d\d\d)(?=\d)/$1$separator/g;
+ 	$input_value = reverse($reversed);
+     }
+
+    return($input_value);
 }
 
 =for html <a name="get_pdf_field_names"></a>

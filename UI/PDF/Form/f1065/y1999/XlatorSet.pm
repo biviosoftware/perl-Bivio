@@ -33,9 +33,15 @@ C<Bivio::UI::PDF::Form::f1065::y1999::XlatorSet>
 =cut
 
 #=IMPORTS
+use Bivio::Type::Boolean;
+use Bivio::Type::F1065AccountingMethod;
+use Bivio::Type::F1065ForeignTax;
+use Bivio::Type::F1065Partnership;
+use Bivio::Type::F1065Return;
 use Bivio::UI::PDF::Form::ButtonXlator;
 use Bivio::UI::PDF::Form::IntXlator;
 use Bivio::UI::PDF::Form::FracXlator;
+use Bivio::UI::PDF::Form::MoneyXlator;
 use Bivio::UI::PDF::Form::RadioBtnXlator;
 use Bivio::UI::PDF::Form::StringCatXlator;
 use Bivio::UI::PDF::Form::StringXlator;
@@ -46,128 +52,549 @@ use Bivio::UI::PDF::Form::TaxId2Xlator;
 my($_PACKAGE) = __PACKAGE__;
 
 my(@_XLATORS) = (
-	Bivio::UI::PDF::Form::StringXlator->new('f1-4', 'display_name'),
-	Bivio::UI::PDF::Form::StringCatXlator->new('f1-5', 'street1', ', ',
-		'street2'),
- 	Bivio::UI::PDF::Form::StringCatXlator->new('f1-6', 'city', ', ',
-		'state', ' ', 'zip'),
-	Bivio::UI::PDF::Form::StringXlator->new('f1-7', 'business_activity'),
-	Bivio::UI::PDF::Form::StringXlator->new('f1-8', 'principal_service'),
-	Bivio::UI::PDF::Form::StringXlator->new('f1-9', 'business_code'),
-	Bivio::UI::PDF::Form::TaxId1Xlator->new('f1-10', 'tax_id'),
-	Bivio::UI::PDF::Form::TaxId2Xlator->new('f1-11', 'tax_id'),
-	Bivio::UI::PDF::Form::StringXlator->new('f1-12', 'business_start_date'),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('return_type',
-		'initial',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-1', undef),
-		'final',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-2', undef),
-		'address',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-3', undef),
-		'amended',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-4', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('accounting_method',
-		'cash',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-5', undef),
-		'accrual',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-6', undef),
-		'other',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c1-7', undef)),
-	Bivio::UI::PDF::Form::StringXlator->new('f1-16', 'number_of_k1s'),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('partnership_type',
-		'general',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-10', undef),
-		'limited',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-11', undef),
-		'liability',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-12', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('partner_is_partnership',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-15', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-16', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('partnership_is_partner',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-17', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-18', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('consolidated_audit',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-19', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-20', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('three_requirements',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-21', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-22', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('foreigh_partners',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-23', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-24', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('publicly_traded',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-25', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-26', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('tax_shelter',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-27', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-28', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('foreign_account',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-29', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-30', undef)),
-	Bivio::UI::PDF::Form::StringXlator->new('f2-19', 'foreign_account_country'),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('foreign_trust',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-31', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-32', undef)),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('withdrawal',
-		'yes',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-33', undef),
-		'no',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c2-34', undef)),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-11', 'interest_income', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-12', 'interest_income', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-13', 'dividend_income', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-14', 'dividend_income', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-17', 'net_stcg', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-18', 'net_stcg', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-20', 'net_ltcg', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-21', 'net_ltcg', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-22', 'other_portfolio_income', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-23', 'other_portfolio_income', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-34', 'portfolio_deductions', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-35', 'portfolio_deductions', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-56', 'investment_income', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-57', 'investment_income', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-58', 'investment_expenses', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-59', 'investment_expenses', 2),
-	Bivio::UI::PDF::Form::StringXlator->new('f3-78', 'foreign_income_type'),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-80', 'foreign_income', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-81', 'foreign_income', 2),
-	Bivio::UI::PDF::Form::RadioBtnXlator->new('foreign_tax_type',
-		'paid',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c3-1', undef),
-		'accrued',
-		Bivio::UI::PDF::Form::ButtonXlator->new('c3-2', undef)),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-84', 'foreign_tax', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-85', 'foreign_tax', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-93', 'tex_exempt_interest', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-94', 'tex_exempt_interest', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-99', 'cash_distribution', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-100', 'cash_distribution', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f3-101', 'property_distribution', ','),
-	Bivio::UI::PDF::Form::FracXlator->new('f3-102', 'property_distribution', 2),
-	Bivio::UI::PDF::Form::IntXlator->new('f4-1', 'net_income'),
-	Bivio::UI::PDF::Form::FracXlator->new('f4-2', 'net_income', 2),
-	Bivio::UI::PDF::Form::StringXlator->new('f4-4', 'active_income'),
-	Bivio::UI::PDF::Form::StringXlator->new('f4-5', 'passive_income')
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-4',
+		[
+		    'auth_realm',
+		    'owner',
+		    'display_name'
+		]
+	       ),
+  	Bivio::UI::PDF::Form::StringCatXlator->new(
+		'f1-5',
+		[
+		    'Club.Address',
+		    'street1'
+		],
+		', ',
+		[
+		    'Club.Address',
+		    'street2'
+		],
+	       ),
+  	Bivio::UI::PDF::Form::StringCatXlator->new(
+		'f1-6',
+		[
+		    'Club.Address',
+		    'city'
+		],
+		', ',
+		[
+		    'Club.Address',
+		    'state'
+		],
+		' ',
+		[
+		    'Club.Address',
+		    'zip'
+		],
+	       ),
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-7',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'business_activity'
+		]
+	       ),
+   	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-8',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'principal_service'
+		]
+	       ),
+   	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-9',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'business_code'
+		]
+	       ),
+  	Bivio::UI::PDF::Form::TaxId1Xlator->new(
+ 		'f1-10',
+ 		[
+ 		    'Club.TaxId',
+ 		    'tax_id'
+ 		]
+ 	       ),
+ 	Bivio::UI::PDF::Form::TaxId2Xlator->new(
+		'f1-11',
+		[
+		    'Club.TaxId',
+		    'tax_id'
+		]
+	       ),
+  	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-12',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'business_start_date'
+		]
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'return_type'
+		],
+		Bivio::Type::F1065Return::INITIAL_RETURN(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-1', 'Yes'),
+		Bivio::Type::F1065Return::FINAL_RETURN(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-2', 'Yes'),
+		Bivio::Type::F1065Return::CHANGE_IN_ADDRESS(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-3', 'Yes'),
+		Bivio::Type::F1065Return::AMENDED_RETURN(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-4', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'accounting_method'
+		],
+		Bivio::Type::F1065AccountingMethod::CASH(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-5', 'Yes'),
+		Bivio::Type::F1065AccountingMethod::ACCRUAL(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-6', 'Yes'),
+		Bivio::Type::F1065AccountingMethod::OTHER(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c1-7', 'Yes')
+	       ),
+  	Bivio::UI::PDF::Form::StringXlator->new(
+		'f1-16',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'number_of_k1s'
+		]
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'partnership_type'
+		],
+		Bivio::Type::F1065Partnership::GENERAL(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-10', 'Yes'),
+		Bivio::Type::F1065Partnership::LIMITED(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-11', 'Yes'),
+		Bivio::Type::F1065Partnership::LIMITED_LIABILITY_COMPANY(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-12', 'Yes'),
+		Bivio::Type::F1065Partnership::LIMITED_LIABILITY(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-13', 'Yes'),
+		Bivio::Type::F1065Partnership::OTHER(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-14', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'partner_is_partnership'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-15', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-16', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'partnership_is_partner'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-17', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-18', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'consolidated_audit'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-19', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-20', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'three_requirements'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-21', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-22', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_partners'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-23', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-24', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'publicly_traded'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-25', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-26', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'tax_shelter'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-27', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-28', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_account'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-29', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-30', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::StringXlator->new(
+		'f2-19',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_account_country'
+		]
+	       ),
+	Bivio::UI::PDF::Form::StringXlator->new(
+		'f2-20',
+		[
+		    'User.RealmOwner',
+		    'display_name'
+		]
+	       ),
+  	Bivio::UI::PDF::Form::StringXlator->new(
+ 		'f2-21',
+ 		[
+ 		    'User.TaxId',
+ 		    'tax_id'
+ 		]
+ 	       ),
+   	Bivio::UI::PDF::Form::StringCatXlator->new(
+		'f2-22',
+		[
+		    'User.Address',
+		    'street1'
+		],
+		', ',
+		[
+		    'User.Address',
+		    'street2'
+		],
+	       ),
+  	Bivio::UI::PDF::Form::StringCatXlator->new(
+		'f2-23',
+		[
+		    'User.Address',
+		    'city'
+		],
+		', ',
+		[
+		    'User.Address',
+		    'state'
+		],
+		' ',
+		[
+		    'User.Address',
+		    'zip'
+		],
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_trust'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-31', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-32', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'transfer_of_interest'
+		],
+		Bivio::Type::Boolean::TRUE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-33', 'Yes'),
+		Bivio::Type::Boolean::FALSE(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c2-34', 'Yes')
+	       ),
+ 	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-11',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'interest_income'
+		],
+		','),
+ 	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-12',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'interest_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-13',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'dividend_income'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-14',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'dividend_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-17',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_stcg'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-18',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_stcg'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-20',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_ltcg'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-21',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_ltcg'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-22',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'other_portfolio_income'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-23',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'other_portfolio_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-34',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'portfolio_deductions'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-35',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'portfolio_deductions'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-56',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'investment_income'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-57',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'investment_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-58',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'investment_expenses'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-59',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'investment_expenses'
+		],
+		2
+	       ),
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f3-78',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income_type'
+		]
+	       ),
+ 	Bivio::UI::PDF::Form::StringXlator->new(
+		'f3-79',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income_country'
+		]
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-80',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-81',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::RadioBtnXlator->new(
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax_type'
+		],
+		Bivio::Type::F1065ForeignTax::PAID(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c3-1', 'Yes'),
+		Bivio::Type::F1065ForeignTax::ACCRUED(),
+		Bivio::UI::PDF::Form::ButtonXlator->new('c3-2', 'Yes')
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-84',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-85',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'foreign_tax'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-93',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'tax_exempt_interest'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-94',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'tax_exempt_interest'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-99',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'cash_distribution'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-100',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'cash_distribution'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f3-101',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'property_distribution'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f3-102',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'property_distribution'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::IntXlator->new(
+		'f4-1',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_income'
+		],
+		','
+	       ),
+	Bivio::UI::PDF::Form::FracXlator->new(
+		'f4-2',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'net_income'
+		],
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-4',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'active_income'
+		],
+		',',
+		2
+	       ),
+	Bivio::UI::PDF::Form::MoneyXlator->new(
+		'f4-5',
+		[
+		    'Bivio::Biz::Model::F1065Form',
+		    'passive_income'
+		],
+		',',
+		2
+	       ),
 );
 
 =head1 FACTORIES
@@ -203,6 +630,48 @@ sub new {
 sub get_xlators_ref {
     my($self) = @_;
     return(\@_XLATORS);
+}
+
+=for html <a name="set_up"></a>
+
+=head2 set_up() : 
+
+
+
+=cut
+
+sub set_up {
+    my($self, $req) = @_;
+    my($fields) = $self->{$_PACKAGE};
+
+    # Load the club's address onto the request.
+    my($club_address) = Bivio::Biz::Model::Address->new($req);
+    $club_address->load(location => Bivio::Type::Location::HOME());
+    $req->put('Club.Address' => $club_address);
+
+    # Load the club's tax id onto the request.
+    my($club_tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    $club_tax_id->load();
+    $req->put('Club.TaxId' => $club_tax_id);
+
+    # Load the user's realm id onto the request.
+    my($user_realm) = $req->get('auth_user');
+    $user_realm->unauth_load_or_die(realm_id => $user_realm->get('realm_id'));
+    $req->put('User.RealmOwner' => $user_realm);
+
+    # Load the user's address onto the request.
+    my($user_address) = Bivio::Biz::Model::Address->new($req);
+    $user_address->unauth_load_or_die(
+	    realm_id => $user_realm->get('realm_id'),
+	    location => Bivio::Type::Location::HOME());
+    $req->put('User.Address' => $user_address);
+
+    # Load the user's tax_id onto the request.
+    my($user_tax_id) = Bivio::Biz::Model::TaxId->new($req);
+    $user_tax_id->unauth_load_or_die(realm_id => $user_realm->get('realm_id'));
+    $req->put('User.TaxId' => $user_tax_id);
+
+    return;
 }
 
 #=PRIVATE METHODS

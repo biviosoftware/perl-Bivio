@@ -94,8 +94,12 @@ sub new {
 =cut
 
 sub execute {
-    my($self, $request_ref) = @_;
+    my($self, $req) = @_;
     my($fields) = $self->{$_PACKAGE};
+
+    unless ($self->initialized()) {
+	$self->initialize();
+    }
 
     # Add an OpaqueUpdate that contains the base Pdf text to the Pdf object.
     my($base_update_ref) = $self->get_base_update_ref();
@@ -106,11 +110,15 @@ sub execute {
     my($update_ref) = Bivio::UI::PDF::BuiltUpdate->new();
     $self->add_update($update_ref);
 
+    my($xlator_set_ref) = $self->get_xlator_set_ref();
+
+    # Do any initialization of the XlatorSet.
+    $xlator_set_ref->set_up($req);
+
     # Create an hash of output values.  Each key is the name of a field in the
     # Pdf document, and its value is reference to a direct object that contains
     # the value for the field.
-    my($value_obj_ref)
-	= $self->get_xlator_set_ref()->create_value_objs($request_ref);
+    my($value_obj_ref) = $xlator_set_ref->create_value_objs($req);
 
     my($key, $value);
     while (($key, $value) = each(%{$value_obj_ref})) {
@@ -135,6 +143,19 @@ sub execute {
     $update_ref->set_prev_offset($base_update_ref->get_xref_offset());
     $update_ref->set_root_pointer($base_update_ref->get_root_pointer());
     $update_ref->set_size($base_update_ref->get_size());
+
+    # Get the text of the PDF file to output.
+    my($text_ref) = $self->emit();
+
+    my($reply) = $req->get('reply');
+    $reply->set_output_type('application/pdf');
+    $reply->set_output($text_ref);
+
+#TODO:  Temporary hack.
+    open(OUT, '>/home/yates/junk/Form.pdf')
+	    or die("Can't open PDF output file.\n");
+    print(OUT ${$text_ref});
+    close(OUT);
 
     return;
 }
