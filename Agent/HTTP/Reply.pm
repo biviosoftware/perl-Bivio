@@ -225,6 +225,7 @@ sub _error {
     my($code, $r) = @_;
     return $code if $code == Apache::Constants::OK();
     $r->status($code);
+    $r->content_type('text/html');
     $r->send_http_header;
     # make it look like apache's redirect
     my($uri) = $r->uri;
