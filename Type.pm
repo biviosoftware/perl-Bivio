@@ -291,6 +291,20 @@ sub is_equal {
     return $left eq $right ? 1 : 0;
 }
 
+=for html <a name="is_password"></a>
+
+=head2 is_password() : boolean
+
+Is this value a password, i.e. should it not be displayed?
+
+Default is false.
+
+=cut
+
+sub is_password {
+    return 0;
+}
+
 =for html <a name="to_html"></a>
 
 =head2 static to_html(any value) : string
