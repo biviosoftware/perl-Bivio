@@ -155,7 +155,6 @@ sub render {
     if ($file =~ /^View\./) {
 	$file =~ s/^View\.//;
 	$file .= '.bview';
-#TODO: probably don't want the views directly browsable
 	$file = Bivio::UI::Facade->get_local_file_name(
 		Bivio::UI::LocalFileType->VIEW, $file, $req);
     }
@@ -167,6 +166,7 @@ sub render {
     Bivio::Die->throw(Bivio::DieCode::NOT_FOUND())
 		unless -e $file;
 
+#TODO: Don't hardwire path or allow override
     my($lines) = [`cat $file | /usr/local/bin/perl2html -c -s`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package);
