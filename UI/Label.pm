@@ -103,7 +103,7 @@ _compile(\%_MAP, [
     ADDRESS_STATE => 'State',
 
     # Form Buttons
-    APPLY_CHANGES_BUTTON => ' Apply Changes ',
+    ['APPLY_CHANGES_BUTTON', 'MAIL_APPLY'] => 'Apply Changes',
     CALCULATE_BUTTON => 'Calculate',
     CANCEL_BUTTON => 'Cancel',
     CHANGE_PREFERENCES_BUTTON => 'Refresh',
@@ -429,11 +429,18 @@ _compile(\%_MAP, [
     CLUB_ADMIN_GUEST_INVITE => 'Invite Guests',
     CLUB_ADMIN_INVITE => 'Add Members',
     CLUB_ADMIN_INVITE_LIST => 'Invites',
-    CLUB_ADMIN_MEMBER_ADD => 'Add Members',
+    CLUB_ADMIN_INFO => 'Club Info',
+    CLUB_ADMIN_MEMBER_ADD => [
+	'' => 'Add Members',
+	help_topic => 'Adding Members and Guests',
+    ],
     CLUB_ADMIN_MEMBER_DELETE => 'Member Delete',
     CLUB_ADMIN_TOOLS => 'Administrative Tools',
     CLUB_ADMIN_USER_LIST => 'Club Roster',
-    CLUB_ADMIN_PUBLIC => 'Allow Public Access',
+    CLUB_ADMIN_PUBLIC => [
+	'' => 'Allow Public Access',
+	help_topic => 'Public Access',
+    ],
     CLUB_ADMIN_PRIVATE => 'Close Public Access',
     CLUB_COMMUNICATIONS_FILE_READ => 'Files',
     CLUB_COMMUNICATIONS_FILE_RENAME => 'Rename File',
@@ -443,13 +450,16 @@ _compile(\%_MAP, [
     CLUB_HOME => 'Club Site',
     CLUB_ADMIN_SHADOW_MEMBER_INVITE => 'Bring Members Online',
     CLUB_LEGACY_SECURITY_RECONCILIATION => 'Identify Listed Investments',
-    CLUB_LEGACY_UPLOAD => 'Import NAIC Club Accounting(tm)',
+    CLUB_LEGACY_UPLOAD => [
+	'' => 'Import NAIC Club Accounting(tm)',
+	help_topic => 'Importing NAIC Club Accounting(tm)',
+    ],
     CLUB_MAIL_DELETE => 'Mail Delete',
     CLUB_MAIL_POST => 'Compose Message',
     CLUB_MAIL_FORWARD => 'Forward Message',
     CLUB_OPEN_BALANCE => [
 	'' => 'Edit Opening Balances',
-	HELP_TOPIC => 'Editing Opening Balances',
+	help_topic => 'Editing Opening Balances',
     ],
     DEMO_REDIRECT => 'Demo Club',
     GENERAL_PRIVACY => 'Safe and Private',
@@ -477,10 +487,10 @@ _compile(\%_MAP, [
     MAIL_ATT => 'Attach',
     ['MAIL_BYTES', 'size'] => 'Size',
     ['MAIL_DELETE', 'delete'] => 'Delete',
-    ['MAIL_IS_PUBLIC', 'Mail.is_public']
+    ['FILE_IS_PUBLIC', 'File.is_public', 'MAIL_IS_PUBLIC', 'Mail.is_public']
         => 'Public',
     MAIL_IS_PUBLIC_ALT => 'Message is publicly viewable',
-    MAIL_APPLY => 'Apply Changes',
+    FILE_IS_PUBLIC_ALT => 'File is publicly viewable',
 
     # FILES
     FILE_NAME => 'Name',
@@ -489,9 +499,6 @@ _compile(\%_MAP, [
     FILE_LAST_MODIFIED => 'Last Modified',
     FILE_MODIFIED_DATE_TIME => 'Last Modified',
     FILE_ACTION => 'Action',
-    ['FILE_IS_PUBLIC', 'File.is_public']
-        => 'Public',
-    FILE_IS_PUBLIC_ALT => 'File is publicly viewable',
     FILE_SIZE => 'Size',
     FILE_BYTES => 'Size',
     FILE_LOCATION => 'Folder',
@@ -644,6 +651,8 @@ Value',
     HELP_EXPENSE_ALLOCATION_METHODS => 'Expense Allocation Methods',
     HELP_SUSPENSE_ACCOUNT => 'Suspense Account',
     HELP_SECURE_DATA => 'Secure Data Fields',
+    HELP_TAX_ID => 'Tax ID (EIN)',
+    HELP_CHANGING_PRIVILEGES => 'Changing Privileges',
 
     # Help links
     WHATS_THIS => "[what's this?]",
