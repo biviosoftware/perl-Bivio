@@ -37,18 +37,6 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Role;
 
 #=VARIABLES
-#TODO: Move to database so we can specify tasks on a per-club basis
-my(%_TASK_ID_TO_ROLE) = map {
-    my($t, $r) = split(/:/);
-    (Bivio::Agent::TaskId->$t(), Bivio::Auth::Role->$r())
-} qw(
-    CLUB_MESSAGE_DETAIL:MEMBER
-    CLUB_MESSAGE_LIST:MEMBER
-    CLUB_MEMBER_ADD:ADMINISTRATOR
-    CLUB_MEMBER_ADD_EDIT:ADMINISTRATOR
-    CLUB_MEMBER_LIST:MEMBER
-    CLUB_MAIL_FORWARD:ANONYMOUS
-);
 
 =head1 FACTORIES
 
@@ -64,7 +52,7 @@ Define the realm owned by this particular user.
 
 sub new {
     my($proto, $owner) = @_;
-    return &Bivio::Auth::Realm::new($proto, \%_TASK_ID_TO_ROLE,
+    return &Bivio::Auth::Realm::new($proto,
 	    $owner, 'Bivio::Biz::PropertyModel::Club', 'club_id');
 }
 

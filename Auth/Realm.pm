@@ -38,20 +38,25 @@ Subclasses define the actual authorization policies.
 =cut
 
 #=IMPORTS
+use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
 use Bivio::Auth::Role;
-use Carp ();
 use Bivio::IO::Trace;
+use Carp ();
 
 #=VARIABLES
+my($_INITIALIZED) = 0;
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 # Create class names from REALM_TYPE names.
 my(%_CLASS_TO_TYPE) = map {
-    my($class) = lc($_->as_string);
+    my($class) = lc($_->get_name);
     $class =~ s/(^|_)(\w)/\u$2/g;
+    # Don't need to "use" these modules, because don't actually
+    # reference the class--just a name here.
     ("Bivio::Auth::Realm::$class", $_);
 } Bivio::Auth::RealmType->get_list;
+my(%_REALM_TO_TASK_ID_TO_ROLE) = ();
 
 =head1 FACTORIES
 
@@ -68,9 +73,12 @@ If the realm has an I<owner>, it will be stored here.
 =cut
 
 sub new {
-    my($proto, $task_id_to_role, $owner, $owner_class, $owner_id_field) = @_;
+    my($proto, $owner, $owner_class, $owner_id_field) = @_;
+    $_INITIALIZED || _initialize();
+    my($class) = ref($proto) || $proto;
     my($self) = &Bivio::Type::Attributes::new($proto,
-	    {task_id_to_role => $task_id_to_role});
+	    {task_id_to_role =>
+		$_REALM_TO_TASK_ID_TO_ROLE{$_CLASS_TO_TYPE{$class}}});
     return $self
 	    unless defined($owner_class);
     Carp::croak('owner not specified or not a ', $owner_class)
@@ -168,6 +176,20 @@ sub get_user_role {
 
 
 #=PRIVATE METHODS
+
+sub _initialize {
+    $_INITIALIZED && return;
+    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
+    map {
+	my($id_name, $realm_type, $role_name) = @{$_}[0,2,3];
+	my($rt) = Bivio::Auth::RealmType->$realm_type();
+	$_REALM_TO_TASK_ID_TO_ROLE{$rt} = {}
+		unless $_REALM_TO_TASK_ID_TO_ROLE{$rt};
+	$_REALM_TO_TASK_ID_TO_ROLE{$rt}->{Bivio::Agent::TaskId->$id_name()}
+		= Bivio::Auth::Role->$role_name();
+    } @$cfg;
+    $_INITIALIZED = 1;
+}
 
 =head1 COPYRIGHT
 

@@ -43,13 +43,6 @@ use Bivio::IO::Trace;
 #=VARIABLES
 use vars qw($_TRACE);
 Bivio::IO::Trace->register;
-my(%_TASK_ID_TO_ROLE) = map {
-    my($t, $r) = split(/:/);
-    (Bivio::Agent::TaskId->$t(), Bivio::Auth::Role->$r())
-} (
-    'SETUP_CLUB_CREATE:USER',
-    'SETUP_CLUB_EDIT:USER',
-);
 
 =head1 FACTORIES
 
@@ -63,7 +56,7 @@ my(%_TASK_ID_TO_ROLE) = map {
 
 sub new {
     my($proto) = @_;
-    return &Bivio::Auth::Realm::new($proto, \%_TASK_ID_TO_ROLE);
+    return &Bivio::Auth::Realm::new($proto);
 }
 
 #=PRIVATE METHODS

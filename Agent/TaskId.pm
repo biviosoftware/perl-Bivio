@@ -70,72 +70,108 @@ my(@_CFG) = (
     [qw(
         CLUB_MESSAGE_DETAIL
         1
+        CLUB
+        MEMBER
+        _/messages/detail
 	undef
 	MessageBoard::DetailView
     )],
     [qw(
         CLUB_MESSAGE_LIST
         2
+        CLUB
+        MEMBER
+        _:_/messages
 	undef
 	MessageBoard::ListView
     )],
     [qw(
 	CLUB_MEMBER_ADD
 	3
+        CLUB
+        ADMINISTRATOR
+        _/members/added
 	AddClubUser
 	Admin::UserListView
     )],
     [qw(
 	CLUB_MEMBER_ADD_EDIT
 	4
+        CLUB
+        ADMINISTRATOR
+        _/members/new
 	undef
 	Admin::UserView
     )],
     [qw(
 	CLUB_MEMBER_LIST
 	5
+        CLUB
+        MEMBER
+        _/members
 	undef
 	Admin::UserListView
     )],
     [qw(
 	SETUP_USER_CREATE
 	6
+	PUBLIC
+	ANONYMOUS
+	user/created
 	CreateUser
 	Setup::Login
     )],
     [qw(
 	SETUP_USER_EDIT
 	7
+	PUBLIC
+	ANONYMOUS
+	user/new
 	undef
 	Setup::Admin
     )],
     [qw(
 	SETUP_CLUB_CREATE
 	8
+        ANY_USER
+        USER
+        club/created
 	CreateClub
 	Setup::Finish
     )],
     [qw(
 	SETUP_INTRO
 	9
+	PUBLIC
+	ANONYMOUS
+	club/setup
 	undef
 	Setup::Intro
     )],
     [qw(
 	CLUB_MAIL_FORWARD
 	10
+        CLUB
+        ANONYMOUS
+        :
 	ForwardClubMail
 	undef
     )],
     [qw(
 	USER_MAIL_FORWARD
 	11
+        USER
+        ANONYMOUS
+        :
 	ForwardUserMail
 	undef
     )],
     [qw(
 	SETUP_CLUB_EDIT
 	12
+        ANY_USER
+        USER
+        club/new
 	undef
 	Setup::Club
     )],

@@ -37,13 +37,6 @@ use Bivio::Agent::TaskId;
 use Bivio::Auth::Role;
 
 #=VARIABLES
-#TODO: Move to database so we can specify tasks on a per-user basis
-my(%_TASK_ID_TO_ROLE) = map {
-    my($t, $r) = split(/:/);
-    (Bivio::Agent::TaskId->$t(), Bivio::Auth::Role->$r())
-} qw(
-    USER_MAIL_FORWARD:ANONYMOUS
-);
 
 =head1 FACTORIES
 
@@ -59,7 +52,7 @@ Define the realm owned by this particular user.
 
 sub new {
     my($proto, $owner) = @_;
-    return &Bivio::Auth::Realm::new($proto, \%_TASK_ID_TO_ROLE,
+    return &Bivio::Auth::Realm::new($proto,
 	    $owner, 'Bivio::Biz::PropertyModel::User', 'user_id');
 }
 

@@ -52,7 +52,7 @@ L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
 sub initialize {
     my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
     map {
-	my($id_name, undef, $action_class, $view_class) = @$_;
+	my($id_name, $action_class, $view_class) = @{$_}[0,5,6];
 	if ($action_class) {
 	    $action_class = 'Bivio::Biz::Action::' . $action_class;
 	    Bivio::Util::my_require($action_class);

@@ -39,23 +39,9 @@ use Bivio::Biz::PropertyModel::User;
 use Bivio::DieCode;
 
 #=VARIABLES
+my($_INITIALIZED) = 0;
 my(%_FROM_URI);
 my(%_FROM_TASK_ID);
-# Is empty after initialization.
-# Last task_id in list is mapped in $_FROM_TASK_ID
-my(@_MAP_INITIALIZER) = qw(
-    PUBLIC 	club/setup 		SETUP_INTRO
-    "		user/new		SETUP_USER_EDIT
-    "		user/created		SETUP_USER_CREATE
-    ANY_USER    club/new	        SETUP_CLUB_EDIT
-    "		club/created	        SETUP_CLUB_CREATE
-    CLUB        _                       CLUB_MESSAGE_LIST
-    "           _/messages		CLUB_MESSAGE_LIST
-    "           _/messages/detail	CLUB_MESSAGE_DETAIL
-    "           _/members		CLUB_MEMBER_LIST
-    "           _/members/new		CLUB_MEMBER_ADD_EDIT
-    "           _/members/added		CLUB_MEMBER_ADD
-);
 
 =head1 METHODS
 
@@ -88,32 +74,32 @@ Initializes %_FROM_URI using simplified syntax to allow easier configuration.
 =cut
 
 sub initialize {
-    @_MAP_INITIALIZER || return;
-    die('@_MAP_INITIALIZER size must be a multiple of 3')
-	    if int(@_MAP_INITIALIZER) % 3;
+    $_INITIALIZED && return;
     my(%static) = (
-	    PUBLIC => Bivio::Auth::Realm::Public->new(),
-	    ANY_USER => Bivio::Auth::Realm::AnyUser->new(),
-	    ANY_MEMBER => Bivio::Auth::Realm::AnyMember->new(),
-	   );
-    local($_);
-    my($realm, $uri, $task_id_name);
-    while (@_MAP_INITIALIZER) {
-	my($new_realm) = shift(@_MAP_INITIALIZER);
-	($uri, $task_id_name)
-		= (shift(@_MAP_INITIALIZER), shift(@_MAP_INITIALIZER));
+	PUBLIC => Bivio::Auth::Realm::Public->new(),
+	ANY_USER => Bivio::Auth::Realm::AnyUser->new(),
+	ANY_MEMBER => Bivio::Auth::Realm::AnyMember->new(),
+    );
+    my($cfg) = Bivio::Agent::TaskId->get_cfg_list;
+    map {
+	my($task_id_name, $realm_type, $uri_list) = @{$_}[0,2,4];
 	my($task_id) = Bivio::Agent::TaskId->$task_id_name();
 	# Test for all the realms we understand, explicitly.
-	unless ($new_realm eq '"' || ($realm = $static{$new_realm})) {
-	    die("$new_realm: unknown realm type")
-		    unless $new_realm =~ /^(CLUB|USER)$/;
-	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($new_realm));
+	my($realm) = $static{$realm_type};
+	unless ($realm) {
+	    die("$realm_type: unknown realm type")
+		    unless $realm_type =~ /^(CLUB|USER)$/;
+	    $realm = 'Bivio::Auth::Realm::' . ucfirst(lc($realm_type));
 	}
-	die("$uri: uri already mapped") if defined($_FROM_URI{$uri});
-#TODO: Make a better mapping algorithm
-	$_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri} = [$realm, $task_id, $uri];
-    }
-    undef(@_MAP_INITIALIZER);
+	my($uri);
+	foreach $uri (split(/:/, $uri_list)) {
+	    die("$uri: uri already mapped") if $_FROM_URI{$uri};
+	    #TODO: Make a better mapping algorithm
+	        $_FROM_TASK_ID{$task_id} = $_FROM_URI{$uri}
+			= [$realm, $task_id, $uri];
+	}
+    } @$cfg;
+    $_INITIALIZED = 1;
     return;
 }
 
