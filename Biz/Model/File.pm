@@ -275,10 +275,34 @@ EOF
 	    unless ($row) {
 		# NOT_FOUND means deleted
 		_trace('ignoring, not found: ', $args) if $_TRACE;
+                return 0;
 	    }
 	    $args->{file_id} = $row->[0];
 	    $args->{bytes} = $row->[1];
 	}
+        elsif (!(defined($args->{bytes}) && defined($args->{is_directory}))) {
+	    Carp::croak('file_id: missing from load_args')
+			unless defined($args->{file_id});
+	    # Lookup missing bytes and/or is_directory attributes
+	    my($statement) = Bivio::SQL::Connection->execute(<<'EOF',
+	    	SELECT bytes, is_directory
+		FROM file_t
+		WHERE realm_id = ?
+                AND volume = ?
+                AND file_id = ?
+EOF
+		    [$args->{realm_id}, $args->{volume}->as_sql_param,
+			$args->{file_id}]);
+	    # Process result
+	    my($row) = $statement->fetchrow_arrayref();
+	    unless ($row) {
+		# NOT_FOUND means deleted
+		_trace('ignoring, not found: ', $args) if $_TRACE;
+                return 0;
+	    }
+	    $args->{bytes} = $row->[0];
+	    $args->{is_directory} = $row->[1];
+        }
 	foreach my $p (qw(is_directory file_id bytes)) {
 	    Carp::croak("$p: missing from load_args on File::delete")
 			unless defined($args->{$p});
