@@ -88,11 +88,6 @@ Creates a mail message model from an L<Bivio::Mail::Incoming>.
 
 sub create {
     my($self, $msg, $realm_owner, $club) = @_;
-    unless ($realm_owner && $club) {
-	# use the super class create
-	$self->SUPER::create($msg);
-	return;
-    }
     # Archive mail message first
     # $dttm is always valid
     my($dttm) = $msg->get_dttm() || time;
