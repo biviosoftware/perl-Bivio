@@ -292,7 +292,7 @@ sub get_standard_head {
 
 =for html <a name="get_standard_header"></a>
 
-=head2 static get_standard_header() : Bivio::UI::HTML::Widget
+=head2 get_standard_header() : Bivio::UI::HTML::Widget
 
 Returns a widget which renders a logo, an ImageMenu, RealmChooser,
 etc.  The standard bivio setup.  We'll modify this as we go.
@@ -300,12 +300,10 @@ etc.  The standard bivio setup.  We'll modify this as we go.
 =cut
 
 sub get_standard_header {
-    my($proto) = @_;
+    my($self) = @_;
     # The header is different for each realm type
     $_W->load_class(qw(RealmChooser Grid));
-    my($realm_info) = Bivio::UI::HTML::Widget::RealmChooser->new({
-	pad_left => ['Bivio::UI::Icon', '->get_width', 'grad_y'],
-    });
+    my($realm_info) = $self->get_value('realm_chooser');
     $realm_info->put(cell_nowrap => 1, cell_align => 'left',
 	    cell_colspan => 2, cell_expand => 1);
     my($top_menu) = $_W->indirect(
@@ -322,7 +320,7 @@ sub get_standard_header {
 	expand => 1,
 	values => [
 	    [
-		$proto->get_logo()->put(
+		$self->get_logo()->put(
 			cell_rowspan => 5,
 			cell_align => 'sw',
 			cell_width_as_html => [
@@ -343,7 +341,9 @@ sub get_standard_header {
 			cell_bgcolor => 'stripe_above_menu',
 		       ),
 		$_W->join([
-		    $_W->link($_W->image('help_off'), ['->format_help_uri']),
+		    $self->get_value('want_help')
+		    ? $_W->link($_W->image('help_off'), ['->format_help_uri'])
+		    : $_W->join(''),
 		    $_W->director(
 			    ['auth_user'],
 			    {},
@@ -419,8 +419,9 @@ sub get_standard_logo {
 =head2 get_standard_page() : Bivio::UI::HTML::Widget::Page
 
 Returns a Page widget combined of a L<get_standard_style|"get_standard_style">
-L<get_standard_body|"get_standard_body">, and
-L<get_standard_head|"get_standard_head">.
+L<get_standard_body|"get_standard_body">.
+
+Uses I<head_widget>.
 
 =cut
 
@@ -428,7 +429,7 @@ sub get_standard_page {
     my($self) = @_;
     $_W->load_class('Page');
     return Bivio::UI::HTML::Widget::Page->new({
-	head => $self->get_standard_head(),
+	head => $self->get_value('head_widget'),
 	body => $self->get_standard_body(),
 	style => $self->get_standard_style(),
     });
@@ -481,7 +482,8 @@ sub initialization_complete {
     foreach my $n (qw(page_widget header_widget logo_widget head_widget
     	    header_height logo_icon site_name home_alt_text
             want_secure page_left_margin table_default_align
-            home_page descriptive_page_width scene_show_profile)) {
+            home_page descriptive_page_width scene_show_profile
+            request_attrs)) {
 	push(@bad, $n) unless defined($self->get_value($n));
     }
     Bivio::Die->die($self, ': missing names: ', \@bad)
@@ -511,6 +513,16 @@ sub initialize_standard_support {
     $self->group(scene_show_profile => 1);
     $self->group(scene_header => undef);
 
+    # May be overridden.
+    my($uri) = $self->get_facade->unsafe_get('uri');
+    my($attrs) = {};
+    if ($uri) {
+	my($http_host) = Bivio::Agent::Request->get_current->get('http_host');
+	$http_host =~ s/^(?:www\.)?/$uri./;
+	$attrs->{http_host} = $http_host;
+    }
+    $self->group(request_attrs => $attrs);
+
     # This one is used dynamically by ImageMenu in header_widget
     # widget.  It is not a required field.  Only if you are using
     # ImageMenu.
@@ -521,9 +533,12 @@ sub initialize_standard_support {
 
     $self->group(image_menu_left_cell => 
 	    $_W->image('grad_y', ''));;
-
+    $self->group(realm_chooser => $_W->load_and_new('RealmChooser', {
+	pad_left => ['Bivio::UI::Icon', '->get_width', 'grad_y'],
+    }));
     $self->group(image_menu_separator_width => 1);
     $self->group(text_menu_left_cell => undef);
+    $self->group(want_help => 1);
 
     # Used by standard header
     $self->group(logo_icon_width_as_html =>
