@@ -199,10 +199,24 @@ sub get_body {
     my($self) = @_;
     my($body);
 #TODO: Is this what we want?  Probably more complex than just single get.
-    $_FILE_CLIENT->get('/'.$self->get('club_id')
-	    .'/messages/html/'.$self->get('mail_message_id').'.0',
-	    \$body) || die("couldn't get mail body: $body");
-    return \$body;
+    
+    my($sql) = 'select name from realm_owner_t where realm_id = ?';
+    my($statement) = Bivio::SQL::Connection->execute($sql,
+	    [$self->get('club_id')], $self);
+    my($result) = [];
+    my($row);
+    my($club_name) = '';
+    while($row = $statement->fetchrow_arrayref()) {
+	push(@$result, $row->[0]);
+	_trace('row[0] = ', $row->[0]);
+	$club_name = $row->[0];
+    }
+    my $filename = '/' . $club_name . '/messages/html/' . $self->get('mail_message_id');
+    $_FILE_CLIENT->get($filename, \$body) || die("couldn't get mail body: $body");
+    my($i) = index $body, "<!DOCTYPE";
+    my($sub_body) = '';
+    $sub_body = substr $body, $i unless ($i eq(-1));
+    return \$sub_body;
 }
 
 =for html <a name="internal_initialize"></a>
