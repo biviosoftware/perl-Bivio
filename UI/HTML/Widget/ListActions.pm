@@ -85,6 +85,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 =for html <a name="new"></a>
 
+=head2 static new(array_ref values, hash_ref attributes) : Bivio::UI::HTML::Widget::ListActions
+
 =head2 static new() : Bivio::UI::HTML::Widget::ListActions
 
 Creates a new ListActions widget.
@@ -92,7 +94,7 @@ Creates a new ListActions widget.
 =cut
 
 sub new {
-    my($self) = Bivio::UI::Widget::new(@_);
+    my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {};
     return $self;
 }
@@ -120,7 +122,7 @@ sub initialize {
 	push(@{$fields->{values}}, {
 	    prefix => '<a'.$target.' href="',
 	    task_id => Bivio::Agent::TaskId->from_name($v->[1]),
-	    label => _init_label($self, $v->[0]),
+	    label => _init_label($self, $v->[0], $fields->{font}),
 	    ref($v->[2]) eq 'ARRAY' ? (format_uri => $v->[2])
 	    : (method => Bivio::Biz::QueryType->from_any(
 		    $v->[2] || 'THIS_DETAIL')),
@@ -128,6 +130,23 @@ sub initialize {
 	});
     }
     return;
+}
+
+=for html <a name="internal_new_args"></a>
+
+=head2 static internal_new_args() : 
+
+Implements positional argument parsing for L<new|"new">.
+
+=cut
+
+sub internal_new_args {
+    my(undef, $values, $attributes) = @_;
+    return '"values" must be defined' unless defined($values);
+    return {
+	values => $values,
+	($attributes ? %$attributes : ()),
+    };
 }
 
 =for html <a name="render"></a>
@@ -185,14 +204,15 @@ sub render {
 
 #=PRIVATE METHODS
 
-# _init_label(self, any label) : any
+# _init_label(self, any label, any font) : any
 #
 # Returns the label value.  Initializing appropriately.
 #
 sub _init_label {
-    my($self, $label) = @_;
-    return ref($label) ? $label->put_and_initialize(parent => $self)
-	    : Bivio::HTML->escape($label);
+    my($self, $label, $font) = @_;
+    $label = $_VS->vs_new('String', $label, $font, {hard_spaces => 1})
+	unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
+    return $label->put_and_initialize(parent => $self);
 }
 
 =head1 COPYRIGHT
