@@ -1,8 +1,9 @@
-# Copyright (c) 2000 bivio, Inc.  All rights reserved.
+# Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade::InvestmentExpo::Home;
 use strict;
 $Bivio::UI::Facade::InvestmentExpo::Home::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::UI::Facade::InvestmentExpo::Home::VERSION;
 
 =head1 NAME
 
@@ -52,6 +53,25 @@ sub create_content {
 	pad => 5,
 	expand => 1,
 	values => [
+	    [$self->string($self->join(<<'EOF'), 'page_text')
+Investment Expo presents a wealth of useful information.  How can you best
+follow what you've learned at the Expo?  By starting an investment club with
+friends, family, co-workers, or fellow Expo attendees.  It's a great way to
+learn with others, achieve your goals, and invest successfully.
+<p>
+What are investment clubs?  Clubs are investing partnerships of 10 to 100
+people. Investment decisions are made collectively, and everyone gets a
+fair chance to participate.  Members can join at different dollar levels
+(often investing $10 to $100 per month).
+<p>
+We've teamed up with bivio, the leading investment club Website, to make
+it easy to start an investment club. You can use these free online tools
+to do your accounting, file club taxes, and keep in touch with club members.
+To get started, follow these three simple steps.
+<p>
+&nbsp;<br>
+EOF
+		     ->put(cell_colspan => 2)],
 	    [$self->image('one', 'Sign up'),
 	     $self->string('Sign up', 'page_heading')],
 	    [' ',
@@ -101,10 +121,14 @@ EOF
 	    [$self->image('three', 'Start Investing'),
 	     $self->string('Start Investing', 'page_heading')],
 	    [' ',
-	    $self->string($self->join(<<'EOF'), 'page_text')],
-You're now ready to open a <b>brokerage account</b>. Have a look at our
-sponsor <a href="/hm/bandh.html">BUYandHOLD.com</a>. They focus on the
-long term investor and offer ultra-low trading fees.
+	    $self->string($self->join([<<'EOF',
+You're now ready to open a <b>brokerage account</b>.  Visit
+EOF
+		$self->link_goto('Gomez.com',
+			'http://www.gomez.com/scorecards/index.asp?'
+			.'topcat_id=3&subSect=finance'),
+		<<'EOF',
+, a site which rates all brokers.
 <p>
 Finally, all you need is <b>money to invest</b>. The
 <a href="/hp/valuation-date.html" target=_top>Valuation Date</a>
@@ -121,7 +145,8 @@ your friends&#153;.
 <br>
 &nbsp;
 EOF
-	    ],
+	    ]), 'page_text')],
+	],
     });
 }
 
@@ -129,7 +154,7 @@ EOF
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 bivio, Inc.  All rights reserved.
+Copyright (c) 2000 bivio Inc.  All rights reserved.
 
 =head1 VERSION
 
