@@ -371,7 +371,7 @@ sub _get_pkg {
 	    # If it is required, then it is an error
 	    if (defined($v) && $v eq &REQUIRED) {
 		defined($actual->{$k}) && next;
-		die("$pkg.$k: config parameter not defined");
+		die("$pkg.$k: config parameter not defined. You may have to edit b-societas-start to add this file.");
 	    }
 	    # Have an actual value for specified config?
 	    exists($actual->{$k}) && next;
