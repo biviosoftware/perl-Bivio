@@ -40,6 +40,7 @@ which does the work.
 #=IMPORTS
 
 #=VARIABLES
+my($_SENTINEL) = __PACKAGE__ . '.internal_execute';
 
 =head1 METHODS
 
@@ -58,12 +59,12 @@ sub execute {
     my($self, $req) = @_;
     die($self, ': does not implement internal_execute')
 	unless $self->can('internal_execute');
-    my($flag) = ref($self) . '.internal_execute';
     return $self->internal_execute($req)
-	if $req->unsafe_get($flag);
+	if $req->unsafe_get($_SENTINEL)
+	    || $req->isa('Bivio::Agent::Job:a:Request');
     Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
     Bivio::Agent::Job::Dispatcher->enqueue(
-	$req, $req->get('task_id'), {$flag => 1});
+	$req, $req->get('task_id'), {$_SENTINEL => 1});
     my($buffer) = '';
     $req->get('reply')->set_output(\$buffer);
     return 0;
@@ -79,6 +80,20 @@ Called when the task is running in background.
 
 $_ = <<'}'; # emacs
 sub internal_execute {
+}
+
+=for html <a name="set_sentinel"></a>
+
+=head2 set_sentinel(Bivio::Agent::Request req)
+
+Sets the sentinel used by L<execute|"execute"> to call
+L<internal_execute|"internal_execute">.
+
+=cut
+
+sub set_sentinel {
+    my(undef, $req) = @_;
+    return $req->put($_SENTINEL => 1);
 }
 
 #=PRIVATE SUBROUTINES
