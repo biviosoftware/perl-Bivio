@@ -146,7 +146,7 @@ sub internal_initialize {
             tax_free => ['Boolean', 'NOT_NULL'],
             in_valuation => ['Boolean', 'NOT_NULL'],
             institution => ['Institution', 'NOT_NULL'],
-            account_number => ['Name', 'NONE'],
+            account_number => ['ExternalAccount', 'NONE'],
             external_password => ['ExternalPassword', 'NONE'],
         },
 	auth_id => 'realm_id',
