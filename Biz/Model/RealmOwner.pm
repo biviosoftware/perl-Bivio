@@ -161,7 +161,8 @@ sub cascade_delete {
     # delete related records
     my($params) = [$id];
     foreach my $table (qw(email_t phone_t address_t realm_role_t
-            realm_decor_t tax_id_t preferences_t tax_1065_t)) {
+            realm_decor_t tax_id_t preferences_t tax_1065_t
+            password_request_t)) {
 	Bivio::SQL::Connection->execute('
                 DELETE FROM '.$table.'
                 WHERE realm_id=?',
