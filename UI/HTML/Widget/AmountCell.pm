@@ -87,7 +87,7 @@ sub initialize {
     my($field) = $self->get('field');
     my($d) = $self->get_or_default('decimals', 2);
     $self->put(
-	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d],
+	    value => [$field, 'Bivio::UI::HTML::Format::Amount', $d, 1],
 	    column_align => 'E',
 	    string_font => 'number_cell',
 	    pad_left => 1,
