@@ -801,7 +801,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_INVESTMENT_LIST
-        help=investment-transactions
+        help=deleting-transactions
     )],
 #TODO: Cancel is broken on detail, because FormModel doesn't do the right thing
     [qw(
@@ -814,6 +814,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_MEMBER_LIST
+        help=deleting-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_ACCOUNT_TRANSACTION_DELETE
@@ -825,7 +826,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::TransactionDeleteForm
         Bivio::UI::HTML::Club::TransactionDelete
         next=CLUB_ACCOUNTING_ACCOUNT_LIST
-        help=account-transactions
+        help=deleting-transactions
     )],
     [qw(
         CLUB_ACCOUNTING_INVESTMENT_INCOME
