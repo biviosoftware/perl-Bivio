@@ -47,7 +47,9 @@ __PACKAGE__->new({
 		    image_menu_separator
 		    report_page_heading_bg
 		    celebrity_box_title
+		    profile_box_title
 		    celebrity_box_text_bg
+		    profile_box_text_bg
             ));
 	    $comp->create_group(0x990000, qw(
 		    error
@@ -60,6 +62,7 @@ __PACKAGE__->new({
 	    $comp->create_group(0x009999, qw(
 		    stripe_above_menu
 		    celebrity_disclaimer
+		    decor_disclaimer
 		    tax_disclaimer
             ));
 	    $comp->create_group(0x006666, qw(
@@ -75,6 +78,7 @@ __PACKAGE__->new({
 	            form_field_label_in_text
 	            text_menu_font
 	            celebrity_box
+	            profile_box
 	            description_label
 	            task_list_heading
 	            task_list_label
@@ -106,8 +110,12 @@ __PACKAGE__->new({
 	    my($ss) = 'verdana,arial,sans-serif';
 	    $comp->create_group([$ss, 'celebrity_box_title'],
 		    'celebrity_box_title');
+	    $comp->create_group([$ss, 'profile_box_title'],
+		    'profile_box_title');
 	    $comp->create_group([$ss, 'celebrity_disclaimer', 'small'],
 		    'celebrity_disclaimer');
+	    $comp->create_group([$ss, 'decor_disclaimer', 'small'],
+		    'decor_disclaimer');
 	    $comp->create_group([$ss, 'detail_chooser', 'strong'],
 		    'detail_chooser');
 	    $comp->create_group([$ss, 'error', 'big', 'strong'], qw(
@@ -136,6 +144,7 @@ __PACKAGE__->new({
 		    'user_name');
 	    $comp->create_group([$ss, undef, 'small'], qw(
 		    celebrity_box_text
+		    profile_box_text
 		    copyright_and_disclaimer
 		    report_footer
 		    time
