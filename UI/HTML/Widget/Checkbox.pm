@@ -111,7 +111,7 @@ sub initialize {
     $l = Bivio::UI::Label->get_form_field(
 	    $self->ancestral_get('form_class'), $fields->{field})
 		unless defined($l);
-    $fields->{label} = $self->template_as_string(' '.$l.'<br>', 'checkbox')
+    $fields->{label} = $self->template_as_string(' '.$l, 'checkbox')
 	    ->put_and_initialize(parent => $self);
     return;
 }
