@@ -81,58 +81,35 @@ Returns the amount of foreign income for the specified year.
 sub get_foreign_income {
     my(undef, $req, $date) = @_;
 
-    # get tax year start
-    my($start_date) = Bivio::Biz::Accounting::Tax->get_start_of_fiscal_year(
-	    $date);
+    return $req->get('Bivio::Biz::Model::ForeignIncomeList')
+	    ->get_summary->get('foreign_income');
+}
 
-    my($total_amount) = 0;
-    # get the foreign tax entires within the year
-    my($date_param) = Bivio::Type::DateTime->from_sql_value(
-	    'realm_transaction_t.date_time');
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT $date_param,
-                entry_t.amount,
-                realm_instrument_entry_t.realm_instrument_id
-            FROM realm_transaction_t, entry_t, realm_instrument_entry_t,
-                realm_instrument_t
-            WHERE realm_transaction_t.realm_transaction_id
-                =entry_t.realm_transaction_id
-            AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-            AND realm_instrument_entry_t.realm_instrument_id
-                =realm_instrument_t.realm_instrument_id
-            AND entry_t.tax_category=?
-            AND realm_transaction_t.date_time BETWEEN
-                $_SQL_DATE_VALUE AND $_SQL_DATE_VALUE
-            AND realm_transaction_t.realm_id=?",
-	    [Bivio::Type::TaxCategory::FOREIGN_TAX->as_int,
-		    $start_date, $date,
-		    $req->get('auth_id')]);
-    while (my $row = $sth->fetchrow_arrayref) {
-	my($txn_date, $amount, $inst_id) = @$row;
+=for html <a name="get_foreign_income_country"></a>
 
-	$amount = $_M->neg($amount);
-	$total_amount = $_M->add($total_amount, $amount);
+=head2 get_foreign_income_country(Bivio::Agent::Request req) : string
 
-	my($div_amount) = 0;
-	# get the corresponding dividend
-	my($sth2) = Bivio::SQL::Connection->execute("
-                SELECT entry_t.amount
-                FROM realm_transaction_t, entry_t, realm_instrument_entry_t
-                WHERE realm_transaction_t.realm_transaction_id
-                    =entry_t.realm_transaction_id
-                AND entry_t.entry_id=realm_instrument_entry_t.entry_id
-                AND realm_instrument_entry_t.realm_instrument_id=?
-                AND entry_t.tax_category=?
-                AND realm_transaction_t.date_time = $_SQL_DATE_VALUE
-                AND realm_transaction_t.realm_id=?",
-		[$inst_id, Bivio::Type::TaxCategory::DIVIDEND->as_int,
-			$txn_date, $req->get('auth_id')]);
-	while (my $row2 = $sth2->fetchrow_arrayref) {
-	    $div_amount = $row2->[0];
-	}
-	$total_amount = $_M->add($total_amount, $div_amount);
-    }
-    return $total_amount;
+Returns the name of the foreign country, or "See attached" if > 1.
+
+=cut
+
+sub get_foreign_income_country {
+    my(undef, $req) = @_;
+
+    my($list) = $req->get('Bivio::Biz::Model::ForeignIncomeList');
+    my($size) = $list->get_result_set_size;
+
+    return '' if $size == 0;
+    return "See attached" if $size > 1;
+
+    $list->set_cursor_or_die(0);
+
+    my($code) = Bivio::Type::CountryCode->unsafe_from_any(
+	    $list->get('RealmInstrument.country'));
+
+    return $code
+	    ? $code->get_short_desc
+	    : $list->get('RealmInstrument.country') || '';
 }
 
 =for html <a name="get_investment_income"></a>
@@ -523,7 +500,8 @@ sub internal_load_rows {
 	foreign_income => $self->get_foreign_income($self->get_request, $date),
 	foreign_tax => $_M->neg($income->get(
 		$tax->FOREIGN_TAX->get_short_desc)),
-	foreign_income_country => _get_foreign_income_country($self),
+	foreign_income_country => $self->get_foreign_income_country(
+		$self->get_request),
 	tax_exempt_interest => $income->get(
 		$tax->FEDERAL_TAX_FREE_INTEREST->get_short_desc),
 	cash_distribution => _get_cash_withdrawal_amount($self, $date),
@@ -630,30 +608,6 @@ sub _get_expenses {
     $properties->{portfolio_deductions} = $_M->sub(
 	    $deductions, $properties->{margin_interest});
     return;
-}
-
-# _get_foreign_income_country() : string
-#
-# Returns the name of the foreign country, or "See Attached" if > 1.
-#
-sub _get_foreign_income_country {
-    my($self) = @_;
-
-    my($list) = Bivio::Biz::Model::ForeignTaxCountryList->new(
-	    $self->get_request)->load_all;
-    my($size) = $list->get_result_set_size;
-
-    return '' if $size == 0;
-    return "See Attached" if $size > 1;
-
-    $list->set_cursor_or_die(0);
-
-    my($code) = Bivio::Type::CountryCode->unsafe_from_any(
-	    $list->get('RealmInstrument.country'));
-
-    return $code
-	    ? $code->get_short_desc
-	    : $list->get('RealmInstrument.country') || '';
 }
 
 # _get_member_count() : int
