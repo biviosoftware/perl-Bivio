@@ -2374,6 +2374,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::EditPreferencesForm
         Bivio::UI::HTML::User::EditPreferences
         next=USER_ADMIN_PREFERENCES_EDIT
+        help=change-preferences
     )],
 );
 
