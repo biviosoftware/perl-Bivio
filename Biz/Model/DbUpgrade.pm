@@ -31,9 +31,6 @@ C<Bivio::Biz::Model::DbUpgrade> database upgrade indicator
 =cut
 
 #=IMPORTS
-use Bivio::SQL::Constraint;
-use Bivio::Type::DateTime;
-use Bivio::Type::Name;
 
 #=VARIABLES
 my($_PACKAGE) = __PACKAGE__;
@@ -55,10 +52,8 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'db_upgrade_t',
 	columns => {
-            version => ['Bivio::Type::Name',
-    		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	    run_date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NOT_NULL()],
+            version => ['Name', 'PRIMARY_KEY'],
+	    run_date_time => ['DateTime', 'NOT_NULL'],
         },
     };
 }
