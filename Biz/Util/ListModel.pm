@@ -81,6 +81,10 @@ one is written.  The others are just loaded.
 sub csv {
     my($self, $models, $query, $columns) = @_;
     $self->usage('too few arguments') unless int(@_) >= 2;
+
+    my($req) = $self->get_request;
+    Bivio::Biz::Action->get_instance('PublicRealm')->execute_simple($req);
+
     my($model) = $models;
     unless (ref($model)) {
 	foreach my $model_name (split(/[,\s]+/, $models)) {
