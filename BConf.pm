@@ -98,7 +98,7 @@ sub dev {
 	    },
 	},
 	$proto->merge_overrides($host),
-	_base(),
+	_base($proto),
     ));
 }
 
@@ -127,7 +127,57 @@ module.
 sub merge {
     my($proto, $overrides) = @_;
     return _merge($overrides || {},
-	$proto->merge_overrides(Sys::Hostname::hostname()), _base());
+	$proto->merge_overrides(Sys::Hostname::hostname()), _base($proto));
+}
+
+=for html <a name="merge_class_loader"></a>
+
+=head2 static merge_class_loader(hash_ref overrides) : array
+
+Merges L<Bivio::IO::ClassLoader|Bivio::IO::ClassLoader> config by prefixing
+I<maps> array refs with values standard values.  Other values overwritten.
+Returns the array:
+
+    'Bivio::IO::ClassLoader' => {
+        merged configuration,
+    },
+
+Usage in your BConf.pm
+
+    ...
+    $proto->merge_class_loader({
+        maps => [
+             Facade => ['OurSite::Facade'],
+             Model => ['OurSite::Model'],
+             ...,
+        ],
+    }),
+    ...
+
+=cut
+
+sub merge_class_loader {
+    my($proto, $overrides) = @_;
+    return (
+	'Bivio::IO::ClassLoader' => Bivio::IO::Config->merge(
+	    $overrides || {}, {
+		maps => {
+		    Action => ['Bivio::Biz::Action'],
+		    FacadeComponent => ['Bivio::UI'],
+		    HTMLFormat => ['Bivio::UI::HTML::Format'],
+		    HTMLWidget =>
+		        ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		    MailWidget =>
+		        ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+		    TestLanguage => ['Bivio::Test::Language'],
+		    Model => ['Bivio::Biz::Model'],
+		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
+		    Type => ['Bivio::Type'],
+		},
+	    },
+	    1,
+	),
+    );
 }
 
 =for html <a name="merge_dir"></a>
@@ -154,7 +204,57 @@ sub merge_dir {
 	    } sort(</etc/bconf.d/*.bconf>),
 	),
 	$proto->merge_overrides(Sys::Hostname::hostname()),
-	_base());
+	_base($proto));
+}
+
+=for html <a name="merge_http_log"></a>
+
+=head2 static merge_http_log(hash_ref overrides) : array
+
+Merges L<Bivio::Util::HTTPLog|Bivio::Util::HTTPLog> config by prefixing
+standard array refs (ignore, critical, error) with standard valus.  Other
+values overwritten.  Returns the array:
+
+    'Bivio::Util::HTTPLog' => {
+        merged configuration,
+    },
+
+Usage in your BConf.pm
+
+    ...
+    $proto->merge_http_log({
+        ignore_list => [
+        ],
+    }),
+    ...
+
+=cut
+
+sub merge_http_log {
+    my($proto, $overrides) = @_;
+    return (
+	'Bivio::Util::HTTPLog' => Bivio::IO::Config->merge(
+	    $overrides || {}, {
+		ignore_list => [
+		    # Standard apache notices and info
+		    '\] \[(?:info|notice)\] \w+',
+		    'Dispatcher::execute_queue:\d+ \d+ JOB_(?:START|END):',
+		],
+		error_list => [
+		    # Don't add errors that we don't want counts on, e.g.
+		    # login_error.  Not ignored, so shows up in email, but
+		    # never goes criticial
+		    'Bivio::DieCode::DIE',
+		    'Bivio::DieCode::CONFIG_ERROR',
+		    'exit signal Segmentation fault (11)',
+		],
+		critical_list => [
+		    'Bivio::DieCode::DB_ERROR',
+		],
+	    },
+	    1,
+	),
+    );
 }
 
 =for html <a name="merge_overrides"></a>
@@ -172,13 +272,14 @@ sub merge_overrides {
 
 #=PRIVATE METHODS
 
-# _base() : hash_ref
+# _base(proto) : hash_ref
 #
 # Returns _base configuration.
 #
 sub _base {
+    my($proto) = @_;
     return {
-	'Bivio::IO::ClassLoader' => {
+	$proto->merge_class_loader({
 	    delegates => {
 		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
 		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
@@ -192,18 +293,7 @@ sub _base {
 		'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
 		'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
 	    },
-	    maps => {
-		Action => ['Bivio::Biz::Action'],
-		FacadeComponent => ['Bivio::UI'],
-		HTMLFormat => ['Bivio::UI::HTML::Format'],
-		HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
-		MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
-		TestLanguage => ['Bivio::Test::Language'],
-		Model => ['Bivio::Biz::Model'],
-		TestHTMLParser => ['Bivio::Test::HTMLParser'],
-		Type => ['Bivio::Type'],
-	    },
-	},
+	}),
 	'Bivio::Die' => {
 	    stack_trace_error => 1,
 	},
@@ -229,6 +319,11 @@ sub _base {
 	    http_host => 'localhost',
 	    mail_host => 'localhost',
 	},
+	$proto->merge_http_log({
+	    email => 'root',
+	    pager_email => 'root',
+	    error_count_for_page => 5,
+	}),
 	main => {
 	    http => {
 		port => '80',
