@@ -1039,7 +1039,7 @@ sub list_actions {
 	column_widget => Bivio::UI::HTML::Widget::ListActions->new({
 	    values => $actions,
 	}),
-	column_align => 'nw',
+	column_align => 'w',
     };
 }
 
