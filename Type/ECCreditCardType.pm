@@ -1,17 +1,21 @@
 # Copyright (c) 2000-2002 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Type::CreditCardType;
+package Bivio::Type::ECCreditCardType;
 use strict;
-$Bivio::Type::CreditCardType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::CreditCardType::VERSION;
+$Bivio::Type::ECCreditCardType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::ECCreditCardType::VERSION;
 
 =head1 NAME
 
-Bivio::Type::CreditCardType - supported credit card types
+Bivio::Type::ECCreditCardType - supported credit card types
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::CreditCardType;
+    use Bivio::Type::ECCreditCardType;
 
 =cut
 
@@ -22,11 +26,11 @@ L<Bivio::Type::Enum>
 =cut
 
 use Bivio::Type::Enum;
-@Bivio::Type::CreditCardType::ISA = ('Bivio::Type::Enum');
+@Bivio::Type::ECCreditCardType::ISA = ('Bivio::Type::Enum');
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::CreditCardType> lists the currently supported credit card types.
+C<Bivio::Type::ECCreditCardType> lists the currently supported credit card types.
 
 =over 4
 
@@ -45,22 +49,10 @@ C<Bivio::Type::CreditCardType> lists the currently supported credit card types.
 #=VARIABLES
 
 __PACKAGE__->compile([
-    UNKNOWN => [
-        0,
-    ],
-    VISA => [
-        1,
-	'Visa',
-    ],
-    MASTERCARD => [
-        2,
-	'MasterCard',
-    ],
-    AMEX => [
-        3,
-	'Amex',
-	'American Express',
-    ],
+    UNKNOWN => [0],
+    VISA => [1],
+    MASTERCARD => [2, 'MasterCard'],
+    AMEX => [3, 'Amex', 'American Express'],
 ]);
 
 =head1 METHODS
@@ -69,7 +61,7 @@ __PACKAGE__->compile([
 
 =for html <a name="get_by_number"></a>
 
-=head2 static get_by_number(string number) : Bivio::Type::CreditCard
+=head2 static get_by_number(string number) : Bivio::Type::ECCreditCard
 
 Given a card I<number>, return its type  Handles C<undef> as unknown.
 
@@ -77,23 +69,23 @@ Given a card I<number>, return its type  Handles C<undef> as unknown.
 
 sub get_by_number {
     my($proto, $number) = @_;
-    return Bivio::Type::CreditCardType->UNKNOWN unless defined($number);
+    return $proto->UNKNOWN unless defined($number);
     $number =~ s/\s+//g;
-    return Bivio::Type::CreditCardType->UNKNOWN if $number =~ /\D/;
+    return $proto->UNKNOWN if $number =~ /\D/;
     my($len) = length($number);
-    return Bivio::Type::CreditCardType->VISA
+    return $proto->VISA
             if ($len == 13 || $len == 16) && $number =~ /^4/;
-    return Bivio::Type::CreditCardType->MASTERCARD
+    return $proto->MASTERCARD
             if $len == 16 && $number =~ /^5[1-5]/;
-    return Bivio::Type::CreditCardType->AMEX
+    return $proto->AMEX
             if $len == 15 && $number =~ /^3[47]/;
-#    return Bivio::Type::CreditCardType->DISCOVER
+#    return $proto->DISCOVER
 #            if $len == 15 && $number =~ /^6/;
-#    return Bivio::Type::CreditCardType->DINERS
+#    return $proto->DINERS
 #            if $len == 15 && $number =~ /^3[068]/;
-#    return Bivio::Type::CreditCardType->JCB
+#    return $proto->JCB
 #            if $len == 15 && $number =~ /^35/;
-    return Bivio::Type::CreditCardType->UNKNOWN;
+    return $proto->UNKNOWN;
 }
 
 =for html <a name="is_supported_by_number"></a>

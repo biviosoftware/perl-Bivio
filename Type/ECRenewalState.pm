@@ -11,7 +11,7 @@ Bivio::Type::ECRenewalState - subscription renewal states
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 

@@ -11,7 +11,7 @@ Bivio::Type::ECPaymentStatusSet - set of ECPaymentStatus
 
 =head1 RELEASE SCOPE
 
-Societas
+bOP
 
 =head1 SYNOPSIS
 

@@ -1,17 +1,21 @@
 # Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Type::CreditCardNumber;
+package Bivio::Type::ECCreditCardNumber;
 use strict;
-$Bivio::Type::CreditCardNumber::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::CreditCardNumber::VERSION;
+$Bivio::Type::ECCreditCardNumber::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::ECCreditCardNumber::VERSION;
 
 =head1 NAME
 
-Bivio::Type::CreditCardNumber - a credit card number, TEST MODULE ONLY!
+Bivio::Type::ECCreditCardNumber - a credit card number, TEST MODULE ONLY!
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::CreditCardNumber;
+    use Bivio::Type::ECCreditCardNumber;
 
 =cut
 
@@ -22,11 +26,11 @@ L<Bivio::Type::Secret>
 =cut
 
 use Bivio::Type::Secret;
-@Bivio::Type::CreditCardNumber::ISA = ('Bivio::Type::Secret');
+@Bivio::Type::ECCreditCardNumber::ISA = ('Bivio::Type::Secret');
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::CreditCardNumber> interprets a string as a credit card number.
+C<Bivio::Type::ECCreditCardNumber> interprets a string as a credit card number.
 
 =cut
 
@@ -52,10 +56,6 @@ sub from_literal {
     my($proto, $value) = @_;
     $value = $proto->SUPER::from_literal($value);
     return undef unless defined($value);
-
-#TODO: See doc about Secret::to_literal/to_html
-#    # The user theoretically didn't modify the value.
-#    return $value if $proto->value_is_blanked($value);
 
     # Remove dashes and spaces to be friendly
     $value =~ s/[-\s]+//g;

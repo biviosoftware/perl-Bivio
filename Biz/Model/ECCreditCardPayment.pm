@@ -79,7 +79,7 @@ sub internal_initialize {
             processed_date_time => ['DateTime', 'NONE'],
             processor_response => ['Text', 'NONE'],
             processor_transaction_number => ['Name', 'NONE'],
-            card_number => ['CreditCardNumber', 'NONE'],
+            card_number => ['ECCreditCardNumber', 'NONE'],
             card_expiration_date => ['Date', 'NONE'],
             card_name => ['Line', 'NONE'],
             card_zip => ['Name', 'NONE'],

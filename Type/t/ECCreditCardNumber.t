@@ -4,10 +4,10 @@
 use strict;
 use Bivio::Test;
 use Bivio::TypeError;
-use Bivio::Type::CreditCardNumber;
+use Bivio::Type::ECCreditCardNumber;
 
 Bivio::Test->unit([
-    'Bivio::Type::CreditCardNumber' => [
+    'Bivio::Type::ECCreditCardNumber' => [
 	{
 	    method => 'from_literal',
 	    # Expect is always params->[0]

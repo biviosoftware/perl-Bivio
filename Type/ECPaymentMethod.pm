@@ -9,6 +9,10 @@ $_ = $Bivio::Type::ECPaymentMethod::VERSION;
 
 Bivio::Type::ECPaymentMethod - list of possible payment methods
 
+=head1 RELEASE SCOPE
+
+bOP
+
 =head1 SYNOPSIS
 
     use Bivio::Type::ECPaymentMethod;

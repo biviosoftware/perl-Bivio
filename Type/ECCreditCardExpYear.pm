@@ -1,17 +1,21 @@
 # Copyright (c) 2000 bivio Inc.  All rights reserved.
 # $Id$
-package Bivio::Type::CreditCardExpYear;
+package Bivio::Type::ECCreditCardExpYear;
 use strict;
-$Bivio::Type::CreditCardExpYear::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::CreditCardExpYear::VERSION;
+$Bivio::Type::ECCreditCardExpYear::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Type::ECCreditCardExpYear::VERSION;
 
 =head1 NAME
 
-Bivio::Type::CreditCardExpYear - list of possible credit card expiration years
+Bivio::Type::ECCreditCardExpYear - list of possible credit card expiration years
+
+=head1 RELEASE SCOPE
+
+bOP
 
 =head1 SYNOPSIS
 
-    use Bivio::Type::CreditCardExpYear;
+    use Bivio::Type::ECCreditCardExpYear;
 
 =cut
 
@@ -22,11 +26,11 @@ L<Bivio::Type::Enum>
 =cut
 
 use Bivio::Type::Enum;
-@Bivio::Type::CreditCardExpYear::ISA = ('Bivio::Type::Enum');
+@Bivio::Type::ECCreditCardExpYear::ISA = ('Bivio::Type::Enum');
 
 =head1 DESCRIPTION
 
-C<Bivio::Type::CreditCardExpYear>
+C<Bivio::Type::ECCreditCardExpYear>
 
 =cut
 
