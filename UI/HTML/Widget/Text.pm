@@ -171,7 +171,7 @@ sub render {
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
 	$fields->{prefix} = '<input type='
-		.($type->isa('Bivio::Type::Password') ? 'password' : 'text')
+		.($type->is_password ? 'password' : 'text')
 		.' size='.$fields->{size}.' maxlength='.$type->get_width();
 	$fields->{prefix} .= $fields->{handler}->get_html_field_attributes(
 		$field, $source) if $fields->{handler};

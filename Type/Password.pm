@@ -95,6 +95,18 @@ sub from_literal {
     return $value;
 }
 
+=for html <a name="is_password"></a>
+
+=head2 is_password() : boolean
+
+Returns true.
+
+=cut
+
+sub is_password {
+    return 1;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
