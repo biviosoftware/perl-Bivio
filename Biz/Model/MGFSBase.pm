@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::MGFSBase;
 use strict;
 $Bivio::Biz::Model::MGFSBase::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+$_ = $Bivio::Biz::Model::MGFSBase::VERSION;
 
 =head1 NAME
 
@@ -77,17 +78,23 @@ sub UPDATE_ONLY {
 }
 
 #=IMPORTS
+use Bivio::IO::Trace;
 use Bivio::IO::ClassLoader;
 use Bivio::HTML;
 use Bivio::Agent::Request;
 use Bivio::Auth::Realm;
+use Bivio::Biz::Model::RealmOwner;
+use Bivio::Biz::Model::MGFSDailyQuote;
 use Bivio::Die;
 use Bivio::Data::MGFS::Importer;
+use Bivio::Data::MGFS::Market;
 use Bivio::SQL::Connection;
-use Bivio::Biz::Model::RealmOwner;
+use Bivio::Type::Amount;
 use Bivio::Type::DateTime;
 
 #=VARIABLES
+use vars ('$_TRACE');
+Bivio::IO::Trace->register;
 my($_PACKAGE) = __PACKAGE__;
 # keyed by class name
 my($_IMPORTER_MAP) = {};
@@ -216,8 +223,10 @@ sub post_import {
 
     my($req) = Bivio::Agent::Request->get_current_or_new;
 
+    my($date) = _get_oldest_quote_date($req);
     _resolve_symbol_clashes($req);
-    _audit_last_import_date($req);
+    _audit_last_import_date($req, $date);
+    _align_nasdaq_quotes($req, $date);
 
     Bivio::SQL::Connection->commit;
     return;
@@ -289,26 +298,50 @@ sub write_reject_record {
 
 #=PRIVATE METHODS
 
-# _audit_last_import_date(Bivio::Agent::Request req)
+# _align_nasdaq_quotes(Bivio::Agent::Request req, string date)
+#
+# Aligns all NASDAQ quotes on a 1/64 boundary.
+#
+sub _align_nasdaq_quotes {
+    my($req, $date) = @_;
+
+    _trace("aligning NASDAQ quotes");
+    my($quote) = Bivio::Biz::Model::MGFSDailyQuote->new($req);
+
+    # loading individually because loading by date took FOREVER...
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT mgfs_company_t.mg_id
+            FROM mgfs_company_t
+            WHERE mgfs_company_t.market IN (?, ?)",
+	    [Bivio::Data::MGFS::Market->NASDAQ->as_int,
+		Bivio::Data::MGFS::Market->NASDAQ_NATIONAL_MARKETS->as_int]);
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($mg_id) = $row->[0];
+
+	next unless $quote->unsafe_load(mg_id => $mg_id,
+		date_time => $date);
+
+	my($price) = Bivio::Biz::Model::MGFSDailyQuote->align_price(
+		$quote->get('close'));
+
+	next if Bivio::Type::Amount->compare(
+		$price, $quote->get('close')) == 0;
+	_trace("updating $mg_id, $price, ", $quote->get('close'));
+
+	$quote->update({close => $price});
+    }
+    return;
+}
+
+# _audit_last_import_date(Bivio::Agent::Request req, string date)
 #
 # Audits any club's which have used the latest import dtae as a valuation date.
 #
 sub _audit_last_import_date {
-    my($req) = @_;
-
-    # get the most recent daily quote date
-    my($date_param) = Bivio::Type::DateTime->from_sql_value(
-	    'mgfs_daily_quote_t.date_time');
-    my($sth) = Bivio::SQL::Connection->execute("
-            SELECT MAX($date_param)
-            FROM mgfs_daily_quote_t", []);
-    my($date);
-    while (my $row = $sth->fetchrow_arrayref) {
-	$date = $row->[0];
-    }
+    my($req, $date) = @_;
 
     # find all clubs using that date for valuations
-    $sth = Bivio::SQL::Connection->execute("
+    my($sth) = Bivio::SQL::Connection->execute("
             SELECT DISTINCT(realm_id)
             FROM member_entry_t
             WHERE valuation_date = $_SQL_DATE_VALUE", [$date]);
@@ -326,6 +359,25 @@ sub _audit_last_import_date {
 	$realm->audit_units($date);
     }
     return;
+}
+
+# _get_oldest_quote_date(Bivio::Agent::Request) : string
+#
+# Returns the date of the most recent MGFS quote.
+#
+sub _get_oldest_quote_date {
+    my($req) = @_;
+    # get the most recent daily quote date
+    my($date_param) = Bivio::Type::DateTime->from_sql_value(
+	    'mgfs_daily_quote_t.date_time');
+    my($sth) = Bivio::SQL::Connection->execute("
+            SELECT MAX($date_param)
+            FROM mgfs_daily_quote_t", []);
+    my($date);
+    while (my $row = $sth->fetchrow_arrayref) {
+	$date = $row->[0];
+    }
+    return $date;
 }
 
 # _resolve_symbol_clashes(Bivio::Agent::Request req)
