@@ -25,14 +25,14 @@ C<Bivio::Mail::Message>
 =cut
 
 #=IMPORTS
-use Carp;
-use Time::Local ();
-use MIME::Parser;
-use Bivio::Mail::RFC822;
+use Bivio::Agent::Request;
 use Bivio::IO::Alert;
+use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
-use Bivio::IO::Config;
+use Bivio::Mail::RFC822;
+use MIME::Parser;
+use Time::Local;
 
 #=VARIABLES
 use vars qw($_TRACE);
@@ -326,7 +326,8 @@ sub set_headers_for_list_send {
     foreach $name (@_REMOVE_FOR_LIST_RESEND) {
 	$head->delete($name);
     }
-    my($sender) = "$list_name-owner";
+    my($req) = Bivio::Agent::Request->get_current_or_new();
+    my($sender) = $list_name . '-owner@' . $req->get('mail_host');
     $head->replace('Sender', $sender);
     $head->replace('Precedence', 'list');
     $self->set_from($sender);
