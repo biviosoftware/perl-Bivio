@@ -188,9 +188,9 @@ sub validate {
     my($owner) = Bivio::Biz::Model::RealmOwner->new($self->get_request);
     $properties->{realm_owner} = $owner;
     if ($owner->unauth_load_by_email_id_or_name($login)) {
-	# No shadow users please
-	if ($owner->is_shadow_user) {
-	    $self->internal_put_error('login', 'SHADOW_USER');
+	# No offline users please
+	if ($owner->is_offline_user) {
+	    $self->internal_put_error('login', 'OFFLINE_USER');
 	    return;
 	}
 
