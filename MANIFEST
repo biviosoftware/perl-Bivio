@@ -9,3 +9,5 @@ Club/Members.pm
 Club/Page.pm
 Club/Messages.pm
 test.pl
+Instrument.pm
+t/Instrument.t

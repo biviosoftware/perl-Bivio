@@ -21,11 +21,10 @@ my $_Cache = {};
 
 # &lookup $file $proto $br -> $value | undef
 #
-#    Finds $file in cache or reads from disk and puts in cache.
-#    Checks mtime to make sure cache isn't out of date.
-#    If the value is read, $proto->init($file, $br) is called to,
-#    for example, bless a reference.  Returns undef if the file doesn't
-#    exist.
+#    Finds $file in cache or reads from disk and puts in cache.  Checks mtime
+#    to make sure cache isn't out of date.  If the value is read and $proto is
+#    defined, $proto->init($file, $br) is called to, for example, bless a
+#    reference,Returns undef if the file doesn't exist.
 #
 sub lookup ($$$)
 {
@@ -61,7 +60,7 @@ sub lookup ($$$)
 	# uninitialized variables errors in cache hit detection above).
 	return undef;
     }
-    $proto->init($value, $br); 						# bless
+    defined($proto) && $proto->init($value, $br); 			# bless
     $_Cache->{$file} = {
 	'absfile' => $absfile,
 	'mtime' => $mtime,

@@ -7,14 +7,23 @@ package Bivio::Request;
 use strict;
 use Carp ();
 use Apache::Constants ();
+use Bivio::Util;
 
 $Bivio::Request::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+BEGIN {
+    use Bivio::Util;
+    &Bivio::Util::compile_attribute_accessors([qw(club user path_info)]);
+    defined($ENV{BIVIO_REQUEST_DEBUG}) && ($SIG{__DIE__} = \&Carp::confess);
+}
+
 
 # execute $class $r $sub
 # Creates a new request and saves a copy of "$r" in "r"
 sub execute ($$$) {
     my($proto, $r, $code) = @_;
     my($self) = {
+	'start_time' => &Bivio::Util::gettimeofday,
 	'r' => $r,
     };
     bless($self, ref($proto) || $proto);
@@ -34,28 +43,8 @@ sub r ($) {
     return shift->{r};
 }
 
-# Returns the club associated with this request
-sub club ($) {
-    return shift->{club};
-}
-
-# Sets the club associated with this request
-sub set_club ($$) {
-    $_[0]->{club} = $_[1];
-}
-
-# Returns the user associated with this request
-sub user ($) {
-    return shift->{user};
-}
-
-# Sets the user associated with this request
-sub set_user ($$) {
-    $_[0]->{user} = $_[1];
-}
-
 # Indicates that the user is only allowed to access read-only data
-sub set_read_only ($$) {
+sub make_read_only ($$) {
     shift->{read_only} = 1;
 }
 
@@ -108,6 +97,12 @@ sub _terminate ($$@) {
 	? ($self->{user}->{name}. ': ')
 	: '',
 	@_, "\n");				     	 # \n avoids perl noise
+}
+
+# elapsed_time $self -> $seconds
+#   Time since request was initiated (in seconds)
+sub elapsed_time ($) {
+    return &Bivio::Util::time_delta_in_seconds(shift->{start_time});
 }
 
 1;

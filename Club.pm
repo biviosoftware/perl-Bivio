@@ -8,11 +8,35 @@ use strict;
 use Bivio::Request;
 use Bivio::Data;
 use Bivio::User;
-use Bivio::Club::Members;
+use Bivio::Club::Page;
+use Bivio::Club::Page::Agreement;
+#use Bivio::Club::Page::Distributions;
+#use Bivio::Club::Page::Members;
+#use Bivio::Club::Page::Messages;
+use Bivio::Club::Page::Watchlist;
 
 $Bivio::Club::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-my $_HOME = 'clubs/';
+BEGIN {
+    use Bivio::Util;
+    &Bivio::Util::compile_attribute_accessors(
+	[qw(title full_name watchlist name members guests data_dir main_pages)],
+	'no_set');
+}
+
+my($_HOME) = 'clubs/';
+
+my($_DEFAULT_PAGE);
+# Order is important
+my(@_PAGES) = (
+    Bivio::Club::Page::Agreement->new(),
+#    Bivio::Club::Page::Distributions->new(),
+#    Bivio::Club::Page::Members->new(),
+#    Bivio::Club::Page::Messages->new(),
+    $_DEFAULT_PAGE = Bivio::Club::Page::Watchlist->new(),
+);
+
+my(%_URI_TO_PAGE_MAP) = map {($_->URI, $_)} @_PAGES;
 
 sub handler ($) {
     return Bivio::Request->execute(shift, \&_request);
@@ -21,44 +45,47 @@ sub handler ($) {
 sub init ($$) {
     my($proto, $self, $br) = @_;
     bless($self, ref($proto) || $proto);
-#    $self->{template} = new Bivio::Club::Page($self);
-    Bivio::Club::Members->init($self->{members}, $br);
-#    $self->{messages} = new Bivio::Club::Messages($self);
-#    $self->{distributions} = new Bivio::Club::Distributions($self);
-#    $self->{securities} = new Bivio::Club::Securities($self);
+    $self->{main_pages} = \@_PAGES;
     return $self;
 }
 
+# _request $br
+#
+#   Authenticates the user for the club and passes on to one of @_PAGES.
+#
 sub _request ($) {
     my($br) = @_;
     my($user) = Bivio::User->authenticate($br);
-    my($r) = $br->r;
     my($path);
-    ($path = $r->uri()) =~ s<^/([^/]+)><>;
+    ($path = $br->r->uri) =~ s,^/([^/]+),,;
     my($name) = $1;
-    my($self) = &Bivio::Data::lookup($_HOME . $name, Bivio::Club::, $br);
+    my($data) = $_HOME . $name;
+    my($self) = &Bivio::Data::lookup($data, Bivio::Club::, $br);
     defined($self) || $br->not_found($name, ': no such club');
-    $br->set_club($self);
-    $self->{members}->authenticate($br);
-# Causes SEGV
-#    length($path) || $br->redirect($r->uri() . '/');
-    my($ct) = "text/html";
-    {
-	$path =~ /CVS/ && $br->not_found("CVS directory");
-	$path =~ /.html$/ && last;
-	$path =~ /^[^.]*$/ && ($path .= '/index.html', last);  	    # no suffix
-	$path =~ /.gif$/ && ($ct = "image/gif", last);
-	$br->not_found("bad suffix");
-    }
-    open('Bivio::Club::IN', $r->document_root . '/' . $name . '/' . $path)
-	|| $br->not_found("file not found");
-    $r->content_type($ct);
-    $r->send_http_header();
-    $r->send_fd('Bivio::Club::IN');
-    close('Bivio::Club::IN');
-    return &Apache::Constants::OK;
+    $self->{data_dir} = $data . '/';
+    $self->authenticate($br);
+    my($page);
+    $path =~ s,^/([^/]+),, && ($page = $1); # NOTE: $1 not reset if match fails
+    $page = !defined($page) ? $_DEFAULT_PAGE
+	: defined($_URI_TO_PAGE_MAP{$page}) ? $_URI_TO_PAGE_MAP{$page}
+	    : $br->not_found("no such page");
+    $br->set_path_info($path);
+    return $page->request($br);
 }
 
+# authenticate $self $br
+#   	Validates the current user is a member or guest of the club.  Guests
+#	are not allowed to modify the club, but may browse so set_read_only.
+sub authenticate ($$)
+{
+    my($self, $br) = @_;
+    $br->set_club($self);
+    defined($self->{members}->{$br->user->{name}}) && return; 	  # club member
+    defined($self->{guests}) &&
+	defined($self->{guests}->{$self->{name}}) ||
+	    $br->forbidden('not a club member'); 		  # not a guest
+    $br->make_read_only;				  # guest, limit access
+}
 
 1;
 __END__

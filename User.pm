@@ -21,7 +21,7 @@ sub authenticate ($$)
     my($ret, $sent_pw) = $br->r->get_basic_auth_pw();
     $ret != 0 && $br->auth_failure('need user/passwd');
     my($name) = $br->r->connection->user;
-    my($self) = &Bivio::Data::lookup($_HOME . $name, $proto, $br);
+    my($self) = &lookup($proto, $name, $br);
     defined($self) || $br->auth_failure($name, ': no such user');
     my($salt) = substr($self->{passwd}, 0, 2);
     crypt($sent_pw, $salt) eq $self->{passwd} ||
@@ -33,6 +33,15 @@ sub authenticate ($$)
 sub init ($$$) {
     my($proto, $self, $br) = @_;
     bless($self, ref($proto) || $proto);
+}
+
+# lookup $proto $name $br -> $user
+#
+#   Looks up the user and returns it.  If the user isn't found, undef is
+#   returned.  Should not be used to authenticate users.  See &authenticate.
+sub lookup ($$$) {
+    my($proto, $name, $br) = @_;
+    my($self) = &Bivio::Data::lookup($_HOME . $name, $proto, $br);
 }
 
 1;

@@ -8,6 +8,7 @@ use strict;
 
 use HTML::Entities ();
 use Carp ();
+require 'syscall.ph';
 
 BEGIN {
     # Create routines dynamically
@@ -33,29 +34,41 @@ BEGIN {
 
 sub unescape_html { &HTML::Entities::decode }
 
+# gettimeofday -> [seconds, micros]
+sub gettimeofday () {
+    my($i) = '8..bytes';
+    syscall(&SYS_gettimeofday, $i);
+    return [unpack('ll', $i)];
+}
+
+# time_delta_in_seconds $start_time -> $seconds
+#
+#   Time $start_time was initiated (in seconds)
+sub time_delta_in_seconds ($) {
+    my($start_time) = shift;
+    my($end_time) = &gettimeofday;
+    return $end_time->[0] - $start_time->[0]
+        + ($end_time->[1] - $start_time->[1]) / 1000000.0;
+}
 
 #
-# compile_attribute_accessors \@attrs -> \@attr_names
+# compile_attribute_accessors \@attrs [@options] -> \@attr_names
 #
-sub compile_attribute_accessors ($) {
+sub compile_attribute_accessors ($@) {
     my($attrs) = shift;
+    my($no_set, $no_undef) = (0, 0);
+    my($option);
+    foreach $option (@_) {
+	$option =~ /^no_undef$/i && ($no_undef = 1, next);
+	$option =~ /^no_set$/i && ($no_set = 1, next);
+	&Carp::croak("$option: unknown characteristic for attribute");
+    }
+    $no_set && $no_undef
+	&& Carp::croak('only one of no_undef & no_set may be used');
     my($pkg) = caller;
-    my($a);
+    my($name);
     my($eval) = "package $pkg; use Carp ();\n";
-    foreach $a (@$attrs) {
-	my($name, $no_set, $no_undef) = ($a, 0, 0);
-	if (ref($a)) {
-	    my(@a_copy) = @$a;
-	    $name = shift(@a_copy);
-	    my($v);
-	    foreach $v (@a_copy) {
-		$v =~ /^no_undef$/i && ($no_undef = 1, next);
-		$v =~ /^no_set$/i && ($no_set = 1, next);
-		&Carp::croak("$v: unknown characteristic for attribute");
-	    }
-	}
-	$no_set && $no_undef
-	    && Carp::croak('only one of no_undef & no_set may be used');
+    foreach $name (@$attrs) {
 	$name =~ /^\w+$/ || Carp::croak("$name: invalid attribute name");
 	$eval .=  "sub $name {shift->{$name}}\n"; 			  # get
 	unless ($no_set) {
@@ -99,12 +112,10 @@ the name of the attribute prefixed with C<set_> as follows:
 	$self->{<attr_name>} = shift;
     }
 
-The only argument to C<compile_attribute_accessors> is a list of
-attributes.  If the element is string, the attribute will be defined
-as writable, i.e. the get and set accessors are defined.  If the
-attribute is a reference, it must be a array reference whose first
-element is the attribute's name and subsequent elements specify
-characteristics of the attribute.
+The first argument to C<compile_attribute_accessors> is a list of attribute
+names.  The second argument is an option: C<'no_undef'> or C<'no_set'> which
+element specify the attribute may not be set to C<undef> or not set at all,
+respectively.
 
 =head1 EXAMPLES
 
@@ -127,28 +138,22 @@ To make C<name> read-only, use:
 
     BEGIN {
         use Bivio::Util;
-        &Bivio::Util::compile_attribute_accessors([
-	    ['name', 'no_set'],
-	    'date',
-	]);
+        &Bivio::Util::compile_attribute_accessors(['name'], 'no_set');
     }
-   
-This will create all of the accessors except C<&set_name>.
 
-If you attributes are not allowed to be undefined, use the following:
+This will create a get accessor, but not a C<&set_name>.
+
+If attributes are not allowed to be undefined, use the following:
 
     BEGIN {
         use Bivio::Util;
-        &Bivio::Util::compile_attribute_accessors([
-	    ['name', 'no_undef'],
-	    'date',
-	]);
+        &Bivio::Util::compile_attribute_accessors(
+	    [qw(name date)], 'no_undef');
     }
 
-In this case, the C<&set_name> accessor will be defined, but if the
-caller passes in C<undef>, croak will be called with an appropriate
-error message.
-   
+In this case, the set accessors will be defined, but if the caller passes in
+C<undef>, croak will be called with an appropriate error message.
+
 =head1 AUTHOR
 
 Rob Nagler <nagler@bivio.com>
