@@ -236,7 +236,7 @@ sub is_equal {
 
 =for html <a name="to_html"></a>
 
-=head2 to_html(any value) : string
+=head2 static to_html(any value) : string
 
 Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
 empty string.  Otherwise, escapes html and returns.
@@ -251,7 +251,7 @@ sub to_html {
 
 =for html <a name="to_literal"></a>
 
-=head2 abstract to_literal(any value) : string
+=head2 static to_literal(any value) : string
 
 Converts from internal form to a literal string value.
 
@@ -264,9 +264,26 @@ sub to_literal {
     return shift;
 }
 
+=for html <a name="to_query"></a>
+
+=head2 static to_query(any value) : string
+
+Returns a value that can be used as a query string.
+Similar to L<to_uri|"to_uri">, but also escapes "&" and "="
+
+=cut
+
+sub to_query {
+    my($proto, $value) = @_;
+    my($v) = $proto->to_uri($value);
+    $v =~ s/\&/\%26/g;
+    $v =~ s/=/\%3D/g;
+    return $v;
+}
+
 =for html <a name="to_sql_param"></a>
 
-=head2 to_sql_param(string param_value) : string
+=head2 static to_sql_param(string param_value) : string
 
 Converts I<param_value>, which is in the perl representation the data type, to
 a value to a value execute can use.  For most types, simply returns
@@ -283,7 +300,7 @@ sub to_sql_param {
 
 =for html <a name="to_sql_value"></a>
 
-=head2 to_sql_value(string place_holder) : string
+=head2 static to_sql_value(string place_holder) : string
 
 Converts I<place_holder> to an appropriately formed SQL value for the type.
 Typically, I<place_holder> is a question-mark (?) and the text generated
@@ -303,7 +320,7 @@ sub to_sql_value {
 
 =for html <a name="to_string"></a>
 
-=head2 to_string(any value) : string
+=head2 static to_string(any value) : string
 
 Returns the L<to_literal|"to_literal"> representation of the value.
 Always returns a defined value.  I<undef> is returned as the empty string.
@@ -318,7 +335,7 @@ sub to_string {
 
 =for html <a name="to_uri"></a>
 
-=head2 to_uri(any value) : string
+=head2 static to_uri(any value) : string
 
 Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
 empty string.  Otherwise, escapes uri and returns.
@@ -326,9 +343,9 @@ empty string.  Otherwise, escapes uri and returns.
 =cut
 
 sub to_uri {
-    my($self, $value) = @_;
+    my($proto, $value) = @_;
     return '' unless defined($value);
-    return Bivio::Util::escape_uri($self->to_literal($value));
+    return Bivio::Util::escape_uri($proto->to_literal($value));
 }
 
 =for html <a name="to_xml"></a>
