@@ -684,8 +684,7 @@ sub internal_redirect_realm {
 			    'misconfiguration of DEMO_REDIRECT task')
 				if Bivio::Agent::TaskId::DEMO_REDIRECT()
 					eq $new_task;
-		    my($demo_name) = $auth_user->get('name')
-			    .Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
+		    my($demo_name) = $auth_user->format_demo_club_name;
 		    my($demo_realm)
 			    = Bivio::Biz::Model::RealmOwner->new($self);
 		    # Only redirect to personal demo club if found

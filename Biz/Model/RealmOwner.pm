@@ -78,6 +78,8 @@ use vars ('$_TRACE');
 Bivio::IO::Trace->register;
 my($_SQL_DATE_VALUE) = Bivio::Type::DateTime->to_sql_value('?');
 my($_DEMO_SUFFIX) = Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
+my($_DEMO_THRESHOLD) = Bivio::Type::RealmName->get_width
+	- length($_DEMO_SUFFIX);
 
 =head1 FACTORIES
 
@@ -209,6 +211,26 @@ sub create {
     $values->{password} = 'xx'
 	    unless defined($values->{password});
     return $self->SUPER::create($values);
+}
+
+=for html <a name="format_demo_club_name"></a>
+
+=head2 format_demo_club_name() : string
+
+Formats demo club name for this user.
+
+=cut
+
+sub format_demo_club_name {
+    my($self) = @_;
+    my($fields) = $self->{$_PACKAGE};
+    my($n) = $self->get('name');
+
+    # This is a legitimate realm name, but users can't enter it because
+    # it begins with a number and ends with the demo suffix.
+    # See Type::RealmName
+    $n = $self->get('realm_id') if length($n) > $_DEMO_THRESHOLD;
+    return $n.Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
 }
 
 =for html <a name="format_email"></a>

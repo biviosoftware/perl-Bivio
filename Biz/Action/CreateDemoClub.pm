@@ -61,13 +61,17 @@ sub execute {
     $realm->unauth_load(realm_id => $user->get('user_id'));
 
     # load and copy the demo club
-    my($name) = $realm->get('name').Bivio::Type::RealmName::DEMO_CLUB_SUFFIX();
-    my($display_name) = $realm->get('display_name');
+    my($name) = $realm->format_demo_club_name;
+
+    # Make sure display_name isn't too long
+    my($display_name) = substr($realm->get('display_name'), 0,
+	    $realm->get_field_type('display_name')->get_width - 15)
+	    ."'s Demo Club";
     $realm->unauth_load(name => 'demo_club')
 	    || die("couldn't find demo realm");;
     $req->put(source => $realm);
     $req->put(target_name => $name);
-    $req->put(target_display_name => $display_name."'s Demo Club");
+    $req->put(target_display_name => $display_name);
     Bivio::Biz::Action::CopyClub->get_instance()->execute($req);
 
     # add the user to its demo club
