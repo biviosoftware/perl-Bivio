@@ -116,6 +116,7 @@ sub render {
     # need first time initialization to get field name from form model
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
+#TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea name='
 		.$form->get_field_name_for_html($field)
 		.' rows='.$fields->{rows}
@@ -124,8 +125,7 @@ sub render {
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix};
-    $$buffer .= $fields->{type}->to_html($form->get($field))
-	    .'</textarea>';
+    $$buffer .= $form->get_field_as_html($field).'</textarea>';
     return;
 }
 

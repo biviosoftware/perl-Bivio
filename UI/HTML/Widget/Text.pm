@@ -123,7 +123,7 @@ sub render {
 	$fields->{initialized} = 1;
     }
     $$buffer .= $fields->{prefix};
-    $$buffer .= ' value="'.$fields->{type}->to_html($form->get($field)).'">';
+    $$buffer .= ' value="'.$form->get_field_as_html($field).'">';
     return;
 }
 
