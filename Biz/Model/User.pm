@@ -86,7 +86,7 @@ sub cascade_delete {
     Bivio::SQL::Connection->execute('
             DELETE from realm_invite_t
             WHERE realm_user_id=?',
-	    [undef, $id]);
+	    [$id]);
 
     $self->delete();
 
