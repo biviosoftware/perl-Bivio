@@ -252,13 +252,14 @@ sub _upgrade {
     my($req) = @_;
     _upgrade_add_basic_service_subscription($req);
     _upgrade_subscribed_taxes($req);
+    _upgrade_subscribe_free_trial($req);
     print("\n*** done ***\n");
     return;
 }
 
 # _upgrade_add_basic_service_subscription(Bivio::Agent::Request req)
 #
-# Expands the subscription type to include Basic Service.
+# Expands the subscription type to include Basic Service and Free Trial.
 #
 sub _upgrade_add_basic_service_subscription {
     my($req) = @_;
@@ -270,10 +271,41 @@ ALTER TABLE ec_subscription_t modify subscription_type not null
 /
 ALTER TABLE ec_subscription_t
   add constraint ec_subscription_t3
-  check (subscription_type between 1 and 4)
+  check (subscription_type between 1 and 5)
 /
 ');
 
+    return;
+}
+
+# _upgrade_subscribe_free_trial(Bivio::Agent::Request req)
+#
+# Subscribes all clubs to a free trial period.
+#
+sub _upgrade_subscribe_free_trial {
+    my($req) = @_;
+    print("subscribing all clubs to free trial\n");
+
+    use Bivio::Type::RealmName;
+    my($d) = Bivio::Type::Date->from_sql_value(
+	'realm_owner_t.creation_date_time');
+
+    my($sth) = Bivio::SQL::Connection->execute("
+        SELECT realm_owner_t.realm_id,
+            $d,
+            realm_owner_t.name
+        FROM realm_owner_t, club_t
+        WHERE realm_owner_t.realm_id=club_t.club_id
+        AND realm_owner_t.name NOT LIKE ?
+        ORDER BY realm_owner_t.name",
+	['%'.Bivio::Type::RealmName->DEMO_CLUB]);
+
+    my($subscription) = Bivio::Biz::Model->new($req, 'ECSubscription');
+    while (my $row = $sth->fetchrow_arrayref) {
+	my($realm_id, $date, $name) = @$row;
+	print("\t", $name, "\n");
+	$subscription->start_free_trial($realm_id, $date);
+    }
     return;
 }
 
@@ -284,6 +316,8 @@ ALTER TABLE ec_subscription_t
 sub _upgrade_subscribed_taxes {
     my($req) = @_;
     use Bivio::Biz::Util::RealmRole;
+    use Bivio::Type::ECSubscription;
+
     print("updating TAXES permissions for subscribed clubs\n");
     my($role_util) = Bivio::Biz::Util::RealmRole->new();
 
@@ -294,7 +328,9 @@ sub _upgrade_subscribed_taxes {
         AND SYSDATE BETWEEN
            ec_subscription_t.start_date
            AND ec_subscription_t.end_date
-        ORDER BY realm_owner_t.name', []);
+        AND ec_subscription_t.subscription_type != ?
+        ORDER BY realm_owner_t.name',
+	[Bivio::Type::ECSubscription->FREE_TRIAL->as_int]);
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my($name) = $row->[0];
