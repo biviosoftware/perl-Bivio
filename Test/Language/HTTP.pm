@@ -519,7 +519,7 @@ sub verify_mail {
 	    Bivio::Die->die('too many messages matched: ', \@found)
 	        if @found > 1;
 	    unlink($found[0]->[0]);
-	    _log($self, 'mail', $found[0]->[1]);
+	    _log($self, 'msg', $found[0]->[1]);
 	    return;
 	}
     }
