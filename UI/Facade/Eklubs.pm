@@ -89,6 +89,9 @@ __PACKAGE__->new({
 	    $fc->group(image_menu_left_cell =>
 		    Bivio::UI::HTML::Widget->image('grad', ''));
 
+	    $fc->group(image_menu_separator_width => 1);
+	    $fc->group(text_menu_left_cell => undef);
+
 	    # Used by standard header
 	    $fc->group(logo_width_as_html =>
 		    $icon->get_width_as_html('logo_full'));

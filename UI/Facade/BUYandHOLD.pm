@@ -32,9 +32,22 @@ Women's Financial Network Investment Club Exchange.
 
 #=IMPORTS
 use Bivio::UI::HTML::Widget;
-use Bivio::UI::HTML::BUYandHOLD::Home;
+use Bivio::UI::Facade::BUYandHOLD::Home;
 
 #=VARIABLES
+my($_INFO_INTRO) = {
+    uri => 'http://www.buyandhold.com/bh/en/investmentclubs/index.html',
+    display_name => 'Intro'
+};
+my($_INFO_START) = {
+    uri => '/',
+    display_name => 'Start a Club',
+};
+my($_INFO_FOOL) = {
+    uri => 'http://www.fool.com/partners/buyandhold/investmentclub'
+    .'/investmentclubintroduction.htm',
+    display_name => 'Motley Fool Investment Club Guide'
+};
 __PACKAGE__->new({
     clone => 'Prod',
     uri => 'buyandhold',
@@ -86,13 +99,14 @@ __PACKAGE__->new({
 	    $fc->group(logo_icon => 'bivio');
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
+
 	    $fc->group(page_left_margin => 0);
 	    $fc->group(table_default_align => 'left');
 	    $fc->group(scene_show_profile => 0);
 	    $fc->group(realm_chooser_button => 'go_small');
 
 	    # Special BUYandHOLD page
-	    $fc->group(home_page => Bivio::UI::HTML::BUYandHOLD::Home->new);
+	    $fc->group(home_page => Bivio::UI::Facade::BUYandHOLD::Home->new);
 	    $fc->group(descriptive_page_width => 480);
 
 	    $fc->group(scene_header => Bivio::UI::HTML::Widget::Grid->new({
@@ -174,20 +188,17 @@ sub _chooser {
     return Bivio::UI::HTML::Widget::RealmChooser->render_buyandhold(
 	    shift->get_request,
 	    [
-		['http://www.buyandhold.com/bh/en/investmentclubs/index.html',
-			 'Intro'],
-		['/', 'Start a Club'],
+		$_INFO_INTRO,
+		$_INFO_START,
 		@{Bivio::UI::HTML::Widget::RealmChooser
 			    ->get_celebrity_columns},
-		['http://www.fool.com/partners/buyandhold/investmentclub'
-		    .'/investmentclubintroduction.htm',
-		    'Motley Fool Investment Club Guide'],
+		$_INFO_FOOL,
 	    ]);
 }
 
-# _copyright() : 
+# _copyright()
 #
-#
+# Returns a copyright widget.
 #
 sub _copyright {
     my($year) = (gmtime(time))[5] + 1900;

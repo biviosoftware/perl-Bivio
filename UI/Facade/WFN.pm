@@ -91,6 +91,7 @@ __PACKAGE__->new({
 	    $fc->group(logo_icon => 'wfn');
 	    $fc->group(site_name => $name);
 	    $fc->group(home_alt_text => $name.' home');
+
 	    $fc->group(page_left_margin => 0);
 	    $fc->group(table_default_align => 'left');
 	    $fc->group(scene_show_profile => 1);
@@ -168,6 +169,7 @@ __PACKAGE__->new({
 
 	    $fc->group(text_menu_base_offset => 0);
 	    $fc->group(image_menu_left_cell => 0);
+	    $fc->group(image_menu_separator_width => 1);
 
 	    $fc->group(logo_icon_width_as_html => ' width=0');
 	    return;

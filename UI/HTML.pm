@@ -513,6 +513,9 @@ sub initialize_standard_support {
     $self->group(image_menu_left_cell => 
 	    Bivio::UI::HTML::Widget->image('grad_y', ''));;
 
+    $self->group(image_menu_separator_width => 1);
+    $self->group(text_menu_left_cell => undef);
+
     # Used by standard header
     $self->group(logo_icon_width_as_html =>
 	    $self->get_facade->get('Bivio::UI::Icon')
