@@ -7,9 +7,11 @@ use Bivio::Math::EMA;
 use POSIX ();
 Bivio::Test->new({
     check_return => sub {
-	my(undef, $return) = @_;
+	my($case, $return, $expect) = @_;
 	# Round to 6 decimal places
-	return [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000];
+	$case->actual_return(
+	    [POSIX::floor($return->[0] * 1000000 + 0.5) / 1000000]);
+	return $expect;
     },
 })->unit([
     Bivio::Math::EMA->new(30) => [

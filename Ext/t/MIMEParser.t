@@ -8,7 +8,8 @@ Bivio::Test->unit([
 	parse_data => [
 	    [[<DATA>]] => sub {
 		my($case, $return) = @_;
-		return $return->[0]->head->get('to') eq "NAGLER\@BIVIO.COM\n";
+		return $return->[0]->head->get('to') eq "NAGLER\@BIVIO.COM\n"
+		    ? 1 : 0;
 	    },
         ],
     ],

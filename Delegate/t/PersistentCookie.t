@@ -41,7 +41,7 @@ Bivio::Test->new({
 	new => [
 	    [$_req, $_req->get('r')] => sub {
 		my($case, $return) = @_;
-		return $return->[0]->get('x1') eq 'v1';
+		return $return->[0]->get('x1') eq 'v1' ? 1 : 0;
 	    },
         ],
     ],
