@@ -1815,7 +1815,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&MEMBER_WRITE&ADMIN_WRITE
         ?/accounting/members/openbal
-        Bivio::Biz::Model::MemberOpenBalanceList
+        Bivio::Biz::Model::MemberOpenBalanceList->execute_load_all
         Bivio::Biz::Model::MemberOpenBalanceListForm
         Bivio::UI::HTML::Club::MemberOpenBalanceList
         next=CLUB_LEGACY_INVITE
@@ -1826,7 +1826,7 @@ my(@_CFG) = (
         CLUB
         ACCOUNTING_WRITE&ADMIN_WRITE
         ?/accounting/investments/openbal
-        Bivio::Biz::Model::InstrumentOpenBalanceList
+        Bivio::Biz::Model::InstrumentOpenBalanceList->execute_load_all
         Bivio::Biz::Model::InstrumentOpenBalanceListForm
         Bivio::UI::HTML::Club::InstrumentOpenBalanceList
         next=CLUB_MEMBER_OPEN_BALANCE
