@@ -66,6 +66,11 @@ The value to be passed to the C<CELLSPACING> attribute of the C<TABLE> tag.
 An array_ref of rows of array_ref of columns (cells).  A cell may
 be C<undef>.
 
+=item width : int []
+
+Set the width of the table explicitly.  I<expand> should be
+used in most cases.
+
 =back
 
 =head1 CELL ATTRIBUTES
@@ -165,10 +170,12 @@ sub initialize {
     return if exists($fields->{rows});
     my($p) = '<table border='.$self->get_or_default('border', 0);
     # We don't want to check parents
-    my($expand, $bg, $align) = $self->unsafe_get(qw(expand bgcolor align));
+    my($expand, $bg, $align, $width)
+	    = $self->unsafe_get(qw(expand bgcolor align width));
     $p .= ' cellpadding='.$self->get_or_default('pad', 0);
     $p .= ' cellspacing='.$self->get_or_default('space', 0);
     $p .= ' width="100%"' if $expand;
+    $p .= " width=\"$width\"" if $width;
     $p .= Bivio::UI::Align->as_html($align) if $align;
     $p .= Bivio::UI::Color->as_html_bg($bg) if $bg;
     $fields->{prefix} = $p . '>';
