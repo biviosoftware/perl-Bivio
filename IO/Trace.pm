@@ -282,7 +282,7 @@ sub set_filters {
     # If package filter w/o point filter, force to be true.
     my($point_sub, $pkg_sub);
     if (defined($point_filter)) {
-	if ($point_filter =~ '^\s*1\s*$') {
+	if ($point_filter =~ /^\s*1\s*$/s) {
 	    $point_sub = undef;
 	}
 	else {

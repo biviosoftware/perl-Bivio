@@ -188,7 +188,7 @@ sub eval_or_warn {
     # If the warning was already output, the following operation has
     # no effect.
     my($msg) = $@;
-    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os;
     Bivio::IO::Alert->warn($msg);
     return undef;
 }
@@ -271,7 +271,7 @@ sub _format {
     my(undef, $pkg, $file, $line, $sub, $msg) = @_;
     # depends heavily on perl's "die" syntax
     my($text) = $_WANT_PID ? "[$$]" : '';
-    my($is_eval) = $file =~ s/^\(eval (\d+)\)$/eval$1/;
+    my($is_eval) = $file =~ s/^\(eval (\d+)\)$/eval$1/s;
     if (defined($pkg) && $pkg eq 'main') {
 	# main doesn't give us much info, so use the file instead
 	$pkg = defined($file) ? $file : 'main';
@@ -309,13 +309,13 @@ sub _format {
 
 sub _initial_die_handler {
     my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os;
     CORE::die(&_call_format([$msg]));
 }
 
 sub _initial_warn_handler {
     my($msg) = @_;
-    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os;
     print STDERR &_call_format([$msg]);
 }
 
@@ -338,7 +338,7 @@ sub _log_stderr {
 sub _warn_handler {
     my($msg) = @_;
     # Trim perl's message format (not enough info)
-    $msg =~ s/$_PERL_MSG_AT_LINE//o;
+    $msg =~ s/$_PERL_MSG_AT_LINE//os;
     Bivio::IO::Alert->warn($msg);
 }
 

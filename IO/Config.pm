@@ -426,7 +426,7 @@ sub _process_argv {
     for (my($i) = 0; $i < int(@$argv); $i++) {
 	my($a) = $argv->[$i];
 	# HACK: Probably want to generalize(?)
-	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/;
+	$a =~ s/^--TRACE=/--Bivio::IO::Trace.package_filter=/s;
 	# Matches our form?
 	(my($m, $p, $v) = $a =~ /^--([\w:]+)\.([.\w]+)=(.*)$/s) || next;
 	$v eq 'undef' && ($v = undef);
