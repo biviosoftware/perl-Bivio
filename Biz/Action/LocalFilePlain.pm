@@ -82,7 +82,7 @@ sub _open {
     my($doc) = Bivio::UI::Facade->get_local_file_name(
 	    Bivio::UI::LocalFileType->PLAIN, $uri, $req);
     # No files which begin with '.' or contain CVS are allowed
-    if ($doc =~ /\/\./ || $doc =~ /\/CVS/) {
+    if ($uri =~ /\/\./ || $uri =~ /\/CVS/) {
 	_trace($doc, ': invalid name') if $_TRACE;
     }
     else {
