@@ -69,7 +69,7 @@ _compile([
     APPLY_CHANGES_BUTTON => [' Apply Changes '],
     CALCULATE_BUTTON => ['Calculate'],
     CANCEL_BUTTON => ['Cancel'],
-    CHANGE_PREFERENCES_BUTTON => ['Change Preferences'],
+    CHANGE_PREFERENCES_BUTTON => ['Refresh'],
     CREATE_BUTTON => ['Create'],
     I_ACCEPT_BUTTON => [' I Accept '],
     I_DECLINE_BUTTON => [' I Decline '],
@@ -453,9 +453,9 @@ _compile([
     AMOUNT_INVESTED_HEADING => ['Investments'],
     AMOUNT_RETURNED_HEADING => ['Returns'],
     SHOW_INACTIVE => ['Show All'],
-    SHOW_INACTIVE_INSTRUMENTS => ['Show All Investments'],
+    SHOW_INACTIVE_INSTRUMENTS => ['Show Inactive Investments'],
     SHOW_INACTIVE_MEMBERS => ['Show Withdrawn Members'],
-    SHOW_INACTIVE_ACCOUNTS => ['Show All Accounts'],
+    SHOW_INACTIVE_ACCOUNTS => ['Show Inactive Accounts'],
     LIST_ACTIONS_HEADING => ['Actions'],
     NAME_AND_ADDRESS => ["Name\nAddress"],
     EMAIL_AND_PHONE => ["Email\nPhone"],
@@ -481,6 +481,7 @@ _compile([
     MAIL_LIST_PAGE_HEADING => ['Mail Message Board'],
     MAIL_DETAIL_PAGE_HEADING => ['Mail Message'],
     SEARCH_LIST_PAGE_HEADING => ['Search Results'],
+    TO_MODIFY_CLICK_ON_FIELD => ['To modify, click on a field name'],
 
     # Invite List
     REALMINVITE_EMAIL_HEADING => ['Email'],
