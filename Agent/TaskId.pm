@@ -2449,6 +2449,7 @@ my(@_CFG) = (
         Bivio::Biz::Model::Lock
         Bivio::Biz::Action::ReportDate
         Bivio::Biz::Action::LocalDateHack
+        Bivio::Biz::Model::TransactionSummaryDateForm
         Bivio::Biz::Action::TransactionSummary
 	Bivio::UI::HTML::Club::TransactionSummary
         next=CLUB_ACCOUNTING_REPORT_TRANSACTION_HISTORY
