@@ -5,7 +5,7 @@ use Bivio::Agent::HTTP::Cookie;
 use Bivio::Test;
 use Bivio::Test::Request;
 Bivio::IO::Config->introduce_values({
-    'Bivio::Delegate::PersistentCookie' => {
+    'Bivio::Delegate::Cookie' => {
 	# Can't test with a domain (FakeRequest is too simple),
 	# but not a big problem.
 	domain => undef,
