@@ -38,6 +38,7 @@ new request running in general realm.
 #=IMPORTS
 use Bivio::Agent::TaskId;
 use Bivio::Type::DateTime;
+use Bivio::UI::Task;
 # For convenience
 use Bivio::Test;
 use Bivio::Test::Bean;
@@ -198,7 +199,8 @@ sub initialize_fully {
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
     ) unless Bivio::UI::Facade->is_fully_initialized;
-    $self->put_durable(uri => $self->format_uri);
+    $self->put_durable(uri => $self->format_uri)
+        if Bivio::UI::Task->has_uri($self->get('task_id'), $self);
     return $self;
 }
 
