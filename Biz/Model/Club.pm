@@ -234,6 +234,30 @@ sub rename {
     return;
 }
 
+=for html <a name="update"></a>
+
+=head2 update(hash_ref new_values)
+
+Checks to see C<kbytes_in_use> is less than C<max_storage_kbytes>.
+If it isn't, throws a C<NO_RESOURCES> exception.
+
+=cut
+
+sub update {
+    my($self, $new_values) = @_;
+    my($properties) = $self->internal_get;
+print STDERR join("!", %$new_values), "\n";
+    my($kb) = defined($new_values->{kbytes_in_use})
+	    ? $new_values->{kbytes_in_use} : $properties->{kbytes_in_use};
+    my($max) = defined($new_values->{max_storage_kbytes})
+	    ? $new_values->{max_storage_kbytes}
+		    : $properties->{max_storage_kbytes};
+    $self->die('NO_RESOURCES', max_storage_kbytes => $max,
+	    kbytes_in_use => $kb) if $max < $kb;
+    $self->SUPER::update($new_values);
+    return;
+}
+
 #=PRIVATE METHODS
 
 =head1 COPYRIGHT
