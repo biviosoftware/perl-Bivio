@@ -82,11 +82,13 @@ sub get_instance {
 
 =for html <a name="setup_http"></a>
 
-=head2 setup_http(string cookie_class) : self
+=head2 static setup_http(string cookie_class) : self
 
 Sets up self to look like an http request.  You probably don't need
 to pass I<cookie_class>.  See UserLoginForm.t and
 PersistentCookie.t for examples.
+
+If called statically, will call L<get_instance|"get_instance"> first.
 
 Redirects are ignored.
 
@@ -94,6 +96,7 @@ Redirects are ignored.
 
 sub setup_http {
     my($self, $cookie_class) = @_;
+    $self = $self->get_instance unless ref($self);
     $self->ignore_redirects;
     # What's required by bOP infrastructure.
     Bivio::Type::UserAgent->BROWSER->execute($self, 1);
