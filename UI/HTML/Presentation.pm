@@ -44,6 +44,18 @@ in a menu. The format looks like:
 
 =cut
 
+=for html <a name="NAV_BACK"></a>
+
+=head2 NAV_BACK : string
+
+Name used to look up the 'back' nagivation link from the active view.
+
+=cut
+
+sub NAV_BACK {
+    return 'back';
+}
+
 =for html <a name="NAV_DOWN"></a>
 
 =head2 NAV_DOWN : string
@@ -239,7 +251,12 @@ width="100%"><tr>');
 
 	$req->print('<td width="1%">');
 
-	my($link) = &_find_named_object(NAV_UP(), $nav_links)
+	my($link) = &_find_named_object(NAV_BACK(), $nav_links);
+	if ($link) {
+	    $link->render($model, $req);
+	    $req->print('</td><td width="1%">');
+	}
+	$link = &_find_named_object(NAV_UP(), $nav_links)
 		|| $_EMPTY_LINK;
         $link->render($model, $req);
 
