@@ -89,7 +89,7 @@ sub _render_result{
 sub _render_form{
     my($output) = @_;
     $output->print("<CENTER><H2>NAIC Denver Chapter Registration Form</H2>\n");
-    $output->print("<FORM action = \"/denver\">\n");
+    $output->print("<FORM action = \"/denver-register\">\n");
     $output->print("<INPUT type=hidden name=view value=\"result\">\n");
     $output->print("<TABLE width = 90%>\n");
     $output->print("<TR><TD>Name:</TD><TD colspan = 2><input type=text size=50 name=username>\n");
