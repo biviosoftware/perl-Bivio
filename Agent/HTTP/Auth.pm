@@ -57,6 +57,8 @@ sub authorize_admin {
 
     my($club, $club_user) = $self->authorize_club_user($req);
 
+    $club || return undef;
+
     # is the user an admin of the club?
     return undef if $club_user->get('role') != 0;
 
